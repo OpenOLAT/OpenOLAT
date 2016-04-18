@@ -181,6 +181,21 @@ public class VelocityRenderDecorator implements Closeable {
 		return "";
 	}
 	
+	public String javaScriptCommand(String command, String key, String value) {
+		renderer.getUrlBuilder().buildXHREvent(target, null, false, false,
+				new NameValuePair(VelocityContainer.COMMAND_ID, command),
+				new NameValuePair(key, value));
+		return "";
+	}
+	
+	public String javaScriptCommand(String command, String key1, String value1, String key2, String value2) {
+		renderer.getUrlBuilder().buildXHREvent(target, null, false, false,
+				new NameValuePair(VelocityContainer.COMMAND_ID, command),
+				new NameValuePair(key1, value1),
+				new NameValuePair(key2, value2));
+		return "";
+	}
+	
 	/**
 	 * Creates the start of a java script fragment to execute a background request. It's
 	 * up to you to close the javascript call.

@@ -48,6 +48,7 @@ import org.olat.ims.qti21.ui.editor.interactions.ChoiceScoreController;
 import org.olat.ims.qti21.ui.editor.interactions.EssayEditorController;
 import org.olat.ims.qti21.ui.editor.interactions.FIBEditorController;
 import org.olat.ims.qti21.ui.editor.interactions.FIBScoreController;
+import org.olat.ims.qti21.ui.editor.interactions.HotspotChoiceScoreController;
 import org.olat.ims.qti21.ui.editor.interactions.HotspotEditorController;
 import org.olat.ims.qti21.ui.editor.interactions.KPrimEditorController;
 import org.olat.ims.qti21.ui.editor.interactions.MultipleChoiceEditorController;
@@ -249,7 +250,7 @@ public class AssessmentItemEditorController extends BasicController {
 		itemEditor = new HotspotEditorController(ureq, getWindowControl(), hotspotItemBuilder,
 				rootDirectory, rootContainer, itemFile);
 		listenTo(itemEditor);
-		scoreEditor = new MinimalScoreController(ureq, getWindowControl(), hotspotItemBuilder, itemRef);
+		scoreEditor = new HotspotChoiceScoreController(ureq, getWindowControl(), hotspotItemBuilder, itemRef);
 		listenTo(scoreEditor);
 		feedbackEditor = new FeedbackEditorController(ureq, getWindowControl(), hotspotItemBuilder, false, true, true);
 		listenTo(feedbackEditor);

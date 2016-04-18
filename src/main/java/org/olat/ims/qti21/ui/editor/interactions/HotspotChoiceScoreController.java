@@ -92,6 +92,7 @@ public class HotspotChoiceScoreController extends AssessmentItemRefEditorControl
 				translate("form.score.assessment.per.answer")
 		};
 		assessmentModeEl = uifactory.addRadiosHorizontal("assessment.mode", "form.score.assessment.mode", formLayout, modeKeys, modeValues);
+		assessmentModeEl.addActionListener(FormEvent.ONCHANGE);
 		if(itemBuilder.getScoreEvaluationMode() == ScoreEvaluation.perAnswer) {
 			assessmentModeEl.select(ScoreEvaluation.perAnswer.name(), true);
 		} else {
@@ -232,6 +233,13 @@ public class HotspotChoiceScoreController extends AssessmentItemRefEditorControl
 			pointsEl.setUserObject(this);
 			if(choice != null) {
 				String answer = choice.getHotspotLabel();
+				if(!StringHelper.containsNonWhitespace(answer)) {
+					answer = choice.getLabel();
+				}
+				if(!StringHelper.containsNonWhitespace(answer)) {
+					answer = choice.getIdentifier().toString();
+				}
+				
 				answer = FilterFactory.getHtmlTagAndDescapingFilter().filter(answer);
 				answer = answer.trim();
 				summary = Formatter.truncate(answer, 128);

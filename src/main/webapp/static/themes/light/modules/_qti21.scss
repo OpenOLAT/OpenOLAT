@@ -26,6 +26,10 @@ ul.sessionControl {
 	 margin: 0 15px 0.5em 15px;
 }
 
+/* drawing */
+.o_draw_circle.o_qti_hotspot_correct, .o_draw_rectangle.o_qti_hotspot_correct {
+	background-color: rgba(229, 255, 204, 0.6);
+}
 
 
 .o_info.o_assessmentsection_rubrics {

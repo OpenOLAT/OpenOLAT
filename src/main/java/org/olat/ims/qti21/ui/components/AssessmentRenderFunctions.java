@@ -574,7 +574,6 @@ public class AssessmentRenderFunctions {
 		
 		String relativePath = component.relativePathTo(resolvedAssessmentItem);
 		uri = component.getMapperUri() + "/file?href=" + relativePath + uri;
-		System.out.println("Rewrite: " + uri);
 		return uri;
 	}
 

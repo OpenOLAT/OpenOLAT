@@ -36,10 +36,12 @@ import org.olat.core.commons.services.image.ImageService;
 import org.olat.core.commons.services.image.Size;
 import org.olat.core.dispatcher.mapper.Mapper;
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FileElement;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
+import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.RichTextElement;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
@@ -49,6 +51,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.FileElementEvent
 import org.olat.core.gui.components.htmlheader.jscss.JSAndCSSFormItem;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
+import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.media.NotFoundMediaResource;
@@ -85,6 +88,8 @@ public class HotspotEditorController extends FormBasicController {
 		mimeTypes.add("image/jpeg");
 		mimeTypes.add("image/png");
 	}
+	
+	private static final String[] correctKeys = new  String[]{ "correct" };
 	
 	private TextElement titleEl;
 	private RichTextElement textEl;
@@ -136,6 +141,7 @@ public class HotspotEditorController extends FormBasicController {
 		//responses
 		String page = velocity_root + "/hotspots.html";
 		hotspotsCont = FormLayoutContainer.createCustomFormLayout("answers", getTranslator(), page);
+		hotspotsCont.getFormItemComponent().addListener(this);
 		hotspotsCont.setRootForm(mainForm);
 		hotspotsCont.contextPut("mapperUri", backgroundMapperUri);
 		JSAndCSSFormItem js = new JSAndCSSFormItem("js", new String[] { "js/jquery/openolat/jquery.drawing.js" });
@@ -149,7 +155,7 @@ public class HotspotEditorController extends FormBasicController {
 
 		List<HotspotChoice> choices = itemBuilder.getHotspotChoices();
 		for(HotspotChoice choice:choices) {
-			HotspotWrapper spot = new HotspotWrapper(choice);
+			HotspotWrapper spot = createWrapper(choice);
 			choiceWrappers.add(spot);
 		}
 		hotspotsCont.contextPut("hotspots", choiceWrappers);
@@ -201,6 +207,19 @@ public class HotspotEditorController extends FormBasicController {
 	}
 
 	@Override
+	public void event(UserRequest ureq, Component source, Event event) {
+		if(hotspotsCont.getFormItemComponent() == source) {
+			doSelectHotspot(ureq);
+		}
+		super.event(ureq, source, event);
+	}
+
+	@Override
+	protected void event(UserRequest ureq, Controller source, Event event) {
+		super.event(ureq, source, event);
+	}
+
+	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(newCircleButton == source) {
 			createHotspotChoice(Shape.CIRCLE, "60,60,25");
@@ -227,14 +246,28 @@ public class HotspotEditorController extends FormBasicController {
 			}
 			updateBackground();
 			updateHotspots(ureq);
+		} else if(source instanceof MultipleSelectionElement) {
+			MultipleSelectionElement correctEl = (MultipleSelectionElement)source;
+			Object uobject = correctEl.getUserObject();
+			if(uobject instanceof HotspotWrapper) {
+				HotspotWrapper wrapper = (HotspotWrapper)uobject;
+				itemBuilder.setCorrect(wrapper.getChoice(), correctEl.isAtLeastSelected(1));
+				flc.setDirty(true);
+			}
 		}
 		super.formInnerEvent(ureq, source, event);
+	}
+	
+	private void doSelectHotspot(UserRequest ureq) {
+		String cmd = ureq.getParameter("cid");
+		String hotspotId = ureq.getParameter("hotspot");
+		System.out.println(cmd + " :: " + hotspotId);
 	}
 	
 	private void createHotspotChoice(Shape shape, String coords) {
 		Identifier identifier = IdentifierGenerator.newNumberAsIdentifier("hc");
 		HotspotChoice choice = itemBuilder.createHotspotChoice(identifier, shape, coords);
-		HotspotWrapper wrapper = new HotspotWrapper(choice);
+		HotspotWrapper wrapper = createWrapper(choice);
 		choiceWrappers.add(wrapper);
 	}
 	
@@ -298,6 +331,17 @@ public class HotspotEditorController extends FormBasicController {
 		fireEvent(ureq, new AssessmentItemEvent(AssessmentItemEvent.ASSESSMENT_ITEM_CHANGED, itemBuilder.getAssessmentItem(), QTI21QuestionType.hotspot));
 	}
 	
+	private HotspotWrapper createWrapper(HotspotChoice choice) {
+		MultipleSelectionElement correctEl = uifactory.addCheckboxesHorizontal(choice.getIdentifier().toString(), hotspotsCont, correctKeys, new String[]{choice.getIdentifier().toString() });
+		correctEl.addActionListener(FormEvent.ONCHANGE);
+		HotspotWrapper wrapper = new HotspotWrapper(choice, correctEl);
+		if(itemBuilder.isCorrect(choice)) {
+			correctEl.select(correctKeys[0], true);
+		}
+		correctEl.setUserObject(wrapper);
+		return wrapper;
+	}
+	
 	private void updateHotspots(UserRequest ureq) {
 		Map<String,HotspotWrapper> wrapperMap = new HashMap<>();
 		for(HotspotWrapper wrapper:choiceWrappers) {
@@ -326,9 +370,19 @@ public class HotspotEditorController extends FormBasicController {
 	public static class HotspotWrapper {
 
 		private final HotspotChoice choice;
+		private final MultipleSelectionElement correctEl;
 		
-		public HotspotWrapper(HotspotChoice choice) {
+		public HotspotWrapper(HotspotChoice choice, MultipleSelectionElement correctEl) {
 			this.choice = choice;
+			this.correctEl = correctEl;
+		}
+		
+		public boolean isCorrect() {
+			return correctEl.isAtLeastSelected(1);
+		}
+		
+		public HotspotChoice getChoice() {
+			return choice;
 		}
 
 		public String getIdentifier() {
@@ -356,6 +410,10 @@ public class HotspotEditorController extends FormBasicController {
 		public void setCoords(String coords) {
 			List<Integer> coordList = AssessmentItemFactory.coordsList(coords);
 			choice.setCoords(coordList);
+		}
+		
+		public String getCorrectComponentName() {
+			return correctEl.getComponent().getComponentName();
 		}
 	}
 	

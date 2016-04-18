@@ -45,14 +45,14 @@
 	}
 	
 	Drawing.prototype.newShape = function(prefix, shape, coords) {
-		this.shape(this.generateInputsAndId(prefix, shape, coords), shape, coords)
+		return this.shape(this.generateInputsAndId(prefix, shape, coords), shape, coords)
 	}
 	
 	Drawing.prototype.shape = function(id, shape, coords) {
 		if("circle" == shape) {
-			this.circle(id, coords)
+			return this.circle(id, coords)
 		} else if("rect" == shape || "rectangle" == shape) {
-			this.rectangle(id, coords)
+			return this.rectangle(id, coords)
 		}
 	}
 	
@@ -77,14 +77,14 @@
 			top = parseInt(parts[1]) - radius - 3;
 		}
 
-		jQuery("#" + id).height(height + 'px').width(width + 'px')
+		return jQuery("#" + id).height(height + 'px').width(width + 'px')
 			.css('top', top + 'px').css('left', left + 'px')
 			.resizable({ aspectRatio: true, handles: "all", stop: function(event, ui) {
 				calculateCircleCoords(this);
 			}})
 			.draggable({ containment: "parent", scroll: false, stop: function(event, ui) {
 				calculateCircleCoords(this);
-			} });
+			}});
 	}
 	
 	/**
@@ -106,7 +106,7 @@
 			height = parseInt(parts[3]) - top;
 		}
 		
-		jQuery("#" + id).height(height + 'px').width(width + 'px')
+		return jQuery("#" + id).height(height + 'px').width(width + 'px')
 			.css('top', top + 'px').css('left', left + 'px')
 			.resizable({ handles: "all", stop: function(event, ui) {
 				calculateRectangleCoords(this);

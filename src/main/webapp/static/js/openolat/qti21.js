@@ -472,11 +472,11 @@ function highlighHotspotAreas(responseValue) {
 	}
 }
 
-function clickHotspotArea(spot, containerId, responseIdentifier) {
+function clickHotspotArea(spot, containerId, responseIdentifier, maxChoices) {
 	var areaEl = jQuery('#' + spot)
 	var data = areaEl.data('maphilight') || {};
 	if(!data.alwaysOn) {
-		var numOfChoices = 1;
+		var numOfChoices = maxChoices;
 		if(numOfChoices > 0) {
 			var countChoices = 0;
 			jQuery("area", "map[name='" + containerId + "_map']").each(function(index, el) {
@@ -501,7 +501,7 @@ function clickHotspotArea(spot, containerId, responseIdentifier) {
 		if(cData.alwaysOn) {
 			var inputElement = jQuery('<input type="hidden"/>')
 				.attr('name', 'qtiworks_response_' + responseIdentifier)
-				.attr('value', areaEl.attr('id'));
+				.attr('value', cAreaEl.attr('id'));
 			divContainer.append(inputElement);
 		}
 	});

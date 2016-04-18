@@ -10,8 +10,17 @@
 jQuery(function() {
 	var board = jQuery("#o_qti_hotspots_edit").drawing();
 	#foreach($hotspot in $hotspots)
-		board.shape('${hotspot.identifier}','${hotspot.shape}','${hotspot.coords}');
+		board.shape('${hotspot.identifier}','${hotspot.shape}','${hotspot.coords}')
+			.on('click', function(e) {
+				jQuery(this).css('background-color','red');
+				$r.javaScriptCommand("select-hotspot","hotspot","${hotspot.identifier}")
+			}).addClass(#if($hotspot.correct) 'o_qti_hotspot_correct' #else 'o_qti_hotspot_not_correct' #end);
 	#end
 });
 /* ]]> */
 </script>
+<div class="o_block">
+#foreach($hotspot in $hotspots)
+	$r.render($hotspot.correctComponentName)
+#end
+</div>

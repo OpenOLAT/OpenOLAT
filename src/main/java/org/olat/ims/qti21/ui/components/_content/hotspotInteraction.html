@@ -1,6 +1,6 @@
 #set($identifier = $r.toString($interaction.identifier))
 #set($responseIdentifier = $r.toString($interaction.responseIdentifier))
-#set($appletContainerId = "qtiworks_id_appletContainer_" + $responseIdentifier)
+#set($qtiContainerId = "qtiworks_id_appletContainer_" + $responseIdentifier)
 #set($responseValue = $r.getResponseValue($interaction.responseIdentifier))
 
 <input name="qtiworks_presented_${responseIdentifier}" type="hidden" value="1"/>
@@ -17,9 +17,9 @@
     </div>
 	#end
 	
-	<div id="${appletContainerId}" class="appletContainer v2">
-		<img id="${appletContainerId}_img" width="${interaction.object.width}" height="${interaction.object.height}" src="${r.convertLinkFull($interaction.object.data)}" usemap="#${appletContainerId}_map"></img>
-		<map name="${appletContainerId}_map">
+	<div id="${qtiContainerId}" class="appletContainer v2">
+		<img id="${qtiContainerId}_img" width="${interaction.object.width}" height="${interaction.object.height}" src="${r.convertLinkFull($interaction.object.data)}" usemap="#${qtiContainerId}_map"></img>
+		<map name="${qtiContainerId}_map">
 		#foreach($hotspotChoice in $interaction.getHotspotChoices())
             <!-- Match group, label -->
           	<area id="$hotspotChoice.identifier" shape="$hotspotChoice.shape" coords="$r.coordsToString($hotspotChoice.coords)" href="javascript:clickArea('$r.toString($hotspotChoice.identifier)')" data-maphilight=''></area>
@@ -27,7 +27,7 @@
 		</map>
 		<script type="text/javascript">
 			jQuery(function() {
-				jQuery('#${appletContainerId}_img').maphilight({
+				jQuery('#${qtiContainerId}_img').maphilight({
 					fillColor: '888888',
 					strokeColor: '0000ff',
 					strokeWidth: 3
@@ -42,7 +42,7 @@
 			function clickArea(spot) { };
 		#else
 			function clickArea(spot) {
-				clickHotspotArea(spot, '${appletContainerId}','$responseIdentifier')
+				clickHotspotArea(spot, '${qtiContainerId}','$responseIdentifier', $interaction.maxChoices)
 			};
 		#end
 		</script>

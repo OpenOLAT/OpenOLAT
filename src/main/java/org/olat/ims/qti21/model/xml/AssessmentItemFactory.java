@@ -91,7 +91,10 @@ import uk.ac.ed.ph.jqtiplus.value.Cardinality;
 import uk.ac.ed.ph.jqtiplus.value.DirectedPairValue;
 import uk.ac.ed.ph.jqtiplus.value.FloatValue;
 import uk.ac.ed.ph.jqtiplus.value.IdentifierValue;
+import uk.ac.ed.ph.jqtiplus.value.MultipleValue;
+import uk.ac.ed.ph.jqtiplus.value.SingleValue;
 import uk.ac.ed.ph.jqtiplus.value.StringValue;
+import uk.ac.ed.ph.jqtiplus.value.Value;
 
 /**
  * 
@@ -174,27 +177,6 @@ public class AssessmentItemFactory {
 		outcomeDeclarations.getOutcomeDeclarations().add(feedbackOutcomeDeclaration);
 	}
 	
-	/*
-	<responseDeclaration identifier="RESPONSE" cardinality="single" baseType="identifier">
-		<correctResponse>
-			<value>Choice0</value>
-		</correctResponse>
-	</responseDeclaration>
-	*/
-	public static ResponseDeclaration createHotspotEntryResponseDeclarationSingle(AssessmentItem assessmentItem,
-			Identifier responseIdentifier, Identifier correctAnswerIdentifier) {
-		ResponseDeclaration responseDeclaration = new ResponseDeclaration(assessmentItem);
-		responseDeclaration.setIdentifier(responseIdentifier);
-		responseDeclaration.setCardinality(Cardinality.SINGLE);
-		responseDeclaration.setBaseType(BaseType.IDENTIFIER);
-		
-		//correct response
-		CorrectResponse correctResponse = new CorrectResponse(responseDeclaration);
-		responseDeclaration.setCorrectResponse(correctResponse);
-		appendIdentifierValue(correctResponse, correctAnswerIdentifier);
-		return responseDeclaration;
-	}
-	
 	public static HotspotInteraction appendHotspotInteraction(ItemBody itemBody, Identifier responseDeclarationId, Identifier correctResponseId) {
 		HotspotInteraction hotspotInteraction = new HotspotInteraction(itemBody);
 		hotspotInteraction.setResponseIdentifier(responseDeclarationId);
@@ -219,6 +201,46 @@ public class AssessmentItemFactory {
 		hotspotInteraction.getHotspotChoices().add(choice);
 		
 		return hotspotInteraction;
+	}
+	
+	/*
+	<responseDeclaration identifier="RESPONSE" cardinality="single" baseType="identifier">
+		<correctResponse>
+			<value>Choice0</value>
+		</correctResponse>
+	</responseDeclaration>
+	*/
+	public static ResponseDeclaration createHotspotEntryResponseDeclarationSingle(AssessmentItem assessmentItem,
+			Identifier responseIdentifier, Identifier correctAnswerIdentifier) {
+		ResponseDeclaration responseDeclaration = new ResponseDeclaration(assessmentItem);
+		responseDeclaration.setIdentifier(responseIdentifier);
+		responseDeclaration.setCardinality(Cardinality.SINGLE);
+		responseDeclaration.setBaseType(BaseType.IDENTIFIER);
+		
+		//correct response
+		CorrectResponse correctResponse = new CorrectResponse(responseDeclaration);
+		responseDeclaration.setCorrectResponse(correctResponse);
+		appendIdentifierValue(correctResponse, correctAnswerIdentifier);
+		return responseDeclaration;
+	}
+	
+	public static ResponseDeclaration createHotspotCorrectResponseDeclaration(AssessmentItem assessmentItem, Identifier declarationId, List<Identifier> correctResponseIds) {
+		ResponseDeclaration responseDeclaration = new ResponseDeclaration(assessmentItem);
+		responseDeclaration.setIdentifier(declarationId);
+		if(correctResponseIds == null || correctResponseIds.size() == 0 || correctResponseIds.size() > 1) {
+			responseDeclaration.setCardinality(Cardinality.MULTIPLE);
+		} else {
+			responseDeclaration.setCardinality(Cardinality.SINGLE);
+		}
+		responseDeclaration.setBaseType(BaseType.IDENTIFIER);
+
+		CorrectResponse correctResponse = new CorrectResponse(responseDeclaration);
+		responseDeclaration.setCorrectResponse(correctResponse);
+		
+		for(Identifier correctResponseId:correctResponseIds) {
+			appendIdentifierValue(correctResponse, correctResponseId);
+		}
+		return responseDeclaration;
 	}
 	
 	public static TextEntryInteraction appendTextEntryInteraction(ItemBody itemBody, Identifier responseDeclarationId) {
@@ -939,5 +961,28 @@ public class AssessmentItemFactory {
 			}
 		}
 		return list;
+	}
+	
+	public static void extractIdentifiersFromCorrectResponse(CorrectResponse correctResponse, List<Identifier> correctAnswers) {
+		ResponseDeclaration responseDeclaration = correctResponse.getParent();
+		if(responseDeclaration.hasCardinality(Cardinality.MULTIPLE)) {
+			Value value = FieldValue.computeValue(Cardinality.MULTIPLE, correctResponse.getFieldValues());
+			if(value instanceof MultipleValue) {
+				MultipleValue multiValue = (MultipleValue)value;
+				for(SingleValue sValue:multiValue.getAll()) {
+					if(sValue instanceof IdentifierValue) {
+						IdentifierValue identifierValue = (IdentifierValue)sValue;
+						Identifier correctAnswer = identifierValue.identifierValue();
+						correctAnswers.add(correctAnswer);
+					}
+				}
+			}
+		} else if(responseDeclaration.hasCardinality(Cardinality.SINGLE)) {
+			Value value = FieldValue.computeValue(Cardinality.SINGLE, correctResponse.getFieldValues());
+			if(value instanceof IdentifierValue) {
+				IdentifierValue identifierValue = (IdentifierValue)value;
+				correctAnswers.add(identifierValue.identifierValue());
+			}
+		}
 	}
 }
