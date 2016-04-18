@@ -255,7 +255,6 @@ public class BaseFullWebappController extends BasicController implements DTabs, 
 		
     	if(assessmentGuardCtrl == null
     			&& (resumeSessionCtrl == null || (!resumeSessionCtrl.redirect() && !resumeSessionCtrl.userInteractionNeeded()))
-    			&& usess.getEntry("AuthDispatcher:entryUrl") == null
     			&& usess.getEntry("AuthDispatcher:businessPath") == null) {
     		String bc = initializeDefaultSite(ureq);
     		if(StringHelper.containsNonWhitespace(bc) && usess.getEntry("redirect-bc") == null) {
@@ -282,16 +281,19 @@ public class BaseFullWebappController extends BasicController implements DTabs, 
 		GlobalStickyMessage.registerForGlobalStickyMessage(this, getIdentity());	
 	}
 	
+	@Override
+	public boolean isLoginInterceptionInProgress() {
+		return resumeSessionCtrl != null && resumeSessionCtrl.userInteractionNeeded();
+	}
+
 	/**
 	 * Remove all possible redirect commands in session.
 	 * 
 	 * @param usess
 	 */
 	private void removeRedirects(UserSession usess) {
-   		usess.removeEntry("AuthDispatcher:entryUrl");
     	usess.removeEntry("AuthDispatcher:businessPath");
     	usess.removeEntry("redirect-bc");
-    	usess.removeEntryFromNonClearedStore("AuthDispatcher:entryUrl");
     	usess.removeEntryFromNonClearedStore("AuthDispatcher:businessPath");
     	usess.removeEntryFromNonClearedStore("redirect-bc");
 	}
@@ -676,6 +678,7 @@ public class BaseFullWebappController extends BasicController implements DTabs, 
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if(resumeSessionCtrl == source) {
 			resumeSessionCtrl.redirect();
+			resumeSessionCtrl = null;
 			initializeDefaultSite(ureq);
 		} else if(assessmentGuardCtrl == source) {
 			if(event instanceof ChooseAssessmentModeEvent) {

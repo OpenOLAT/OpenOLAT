@@ -101,6 +101,11 @@ public class MessageWindowController extends DefaultChiefController {
 	}
 	
 	@Override
+	public boolean isLoginInterceptionInProgress() {
+		return false;
+	}
+	
+	@Override
 	public boolean hasStaticSite(Class<? extends SiteInstance> type) {
 		return false;
 	}
