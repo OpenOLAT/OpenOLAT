@@ -39,6 +39,7 @@ import org.olat.ims.qti.statistics.model.StatisticsItem;
 import org.olat.ims.qti21.QTI21StatisticsManager;
 import org.olat.ims.qti21.model.QTI21StatisticSearchParams;
 import org.olat.ims.qti21.ui.statistics.interactions.ChoiceInteractionStatisticsController;
+import org.olat.ims.qti21.ui.statistics.interactions.HotspotInteractionStatisticsController;
 import org.olat.ims.qti21.ui.statistics.interactions.KPrimStatisticsController;
 import org.olat.ims.qti21.ui.statistics.interactions.TextEntryInteractionsStatisticsController;
 import org.olat.ims.qti21.ui.statistics.interactions.UnsupportedInteractionController;
@@ -47,6 +48,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import uk.ac.ed.ph.jqtiplus.node.item.AssessmentItem;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.ChoiceInteraction;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.EndAttemptInteraction;
+import uk.ac.ed.ph.jqtiplus.node.item.interaction.HotspotInteraction;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.Interaction;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.MatchInteraction;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.TextEntryInteraction;
@@ -137,6 +139,9 @@ public class QTI21AssessmentItemStatisticsController extends BasicController {
 				interactionCtrl = new KPrimStatisticsController(ureq, getWindowControl(),
 						itemRef, item, (MatchInteraction)interaction, resourceResult);
 			}
+		} else if(interaction instanceof HotspotInteraction) {
+			interactionCtrl = new HotspotInteractionStatisticsController(ureq, getWindowControl(),
+					itemRef, item, (HotspotInteraction)interaction, itemStats, resourceResult);
 		}
 
 		if(interactionCtrl == null) {

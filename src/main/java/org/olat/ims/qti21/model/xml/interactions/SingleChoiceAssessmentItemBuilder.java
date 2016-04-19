@@ -217,11 +217,13 @@ public class SingleChoiceAssessmentItemBuilder extends SimpleChoiceAssessmentIte
 		/*
 			<responseElseIf>
 				<match>
-					<variable identifier="RESPONSE_1" /><correct identifier="RESPONSE_1" />
+					<variable identifier="RESPONSE_1" />
+					<correct identifier="RESPONSE_1" />
 				</match>
 				<setOutcomeValue identifier="SCORE">
 					<sum>
-						<variable identifier="SCORE" /><variable identifier="MAXSCORE" />
+						<variable identifier="SCORE" />
+						<variable identifier="MAXSCORE" />
 					</sum>
 				</setOutcomeValue>
 				<setOutcomeValue identifier="FEEDBACKBASIC">
@@ -316,7 +318,8 @@ public class SingleChoiceAssessmentItemBuilder extends SimpleChoiceAssessmentIte
 				</not>
 				<setOutcomeValue identifier="SCORE">
 					<sum>
-						<variable identifier="SCORE" /><mapResponse identifier="RESPONSE_1" />
+						<variable identifier="SCORE" />
+						<mapResponse identifier="RESPONSE_1" />
 					</sum>
 				</setOutcomeValue>
 				<setOutcomeValue identifier="FEEDBACKBASIC">

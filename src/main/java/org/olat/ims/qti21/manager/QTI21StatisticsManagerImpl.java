@@ -40,6 +40,7 @@ import org.olat.ims.qti.statistics.model.StatisticsItem;
 import org.olat.ims.qti21.QTI21StatisticsManager;
 import org.olat.ims.qti21.model.QTI21StatisticSearchParams;
 import org.olat.ims.qti21.model.statistics.AbstractTextEntryInteractionStatistics;
+import org.olat.ims.qti21.model.statistics.HotspotChoiceStatistics;
 import org.olat.ims.qti21.model.statistics.KPrimStatistics;
 import org.olat.ims.qti21.model.statistics.NumericalInputInteractionStatistics;
 import org.olat.ims.qti21.model.statistics.SimpleChoiceStatistics;
@@ -51,11 +52,13 @@ import org.springframework.stereotype.Service;
 
 import uk.ac.ed.ph.jqtiplus.node.item.AssessmentItem;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.ChoiceInteraction;
+import uk.ac.ed.ph.jqtiplus.node.item.interaction.HotspotInteraction;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.MatchInteraction;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.TextEntryInteraction;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.choice.SimpleAssociableChoice;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.choice.SimpleChoice;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.choice.SimpleMatchSet;
+import uk.ac.ed.ph.jqtiplus.node.item.interaction.graphic.HotspotChoice;
 import uk.ac.ed.ph.jqtiplus.node.item.response.declaration.MapEntry;
 import uk.ac.ed.ph.jqtiplus.node.item.response.declaration.ResponseDeclaration;
 import uk.ac.ed.ph.jqtiplus.types.Identifier;
@@ -281,6 +284,39 @@ public class QTI21StatisticsManagerImpl implements QTI21StatisticsManager {
 		return choicesStatistics;
 	}
 	
+	@Override
+	public List<HotspotChoiceStatistics> getHotspotInteractionStatistics(String itemRefIdent,
+			AssessmentItem assessmentItem, HotspotInteraction hotspotInteraction,
+			QTI21StatisticSearchParams searchParams) {
+
+		List<RawData> results = getRawDatas(itemRefIdent, hotspotInteraction.getResponseIdentifier().toString(), searchParams);
+		
+		List<HotspotChoice> hotspotChoices = hotspotInteraction.getHotspotChoices();
+		long[] counts = new long[hotspotChoices.size()];
+		for(int i=counts.length; i-->0; ) {
+			counts[i] = 0l;
+		}
+
+		for(RawData result:results) {
+			Long numOfAnswers = result.getCount();;
+			if(numOfAnswers != null && numOfAnswers.longValue() > 0) {
+				String stringuifiedResponse = result.getStringuifiedResponse();
+				for(int i=hotspotChoices.size(); i-->0; ) {
+					String identifier = hotspotChoices.get(i).getIdentifier().toString();
+					if(stringuifiedResponse.contains(identifier)) {
+						counts[i] += numOfAnswers.longValue();
+					}
+				}
+			}
+		}
+
+		List<HotspotChoiceStatistics> choicesStatistics = new ArrayList<>();
+		for(int i=0; i<hotspotChoices.size(); i++) {
+			choicesStatistics.add(new HotspotChoiceStatistics(hotspotChoices.get(i), counts[i]));
+		}
+		return choicesStatistics;
+	}
+
 	//stringuifiedResponse: [a93247453265982 correct][b93247453265983 correct][c93247453265984 correct][d93247453265985 correct]
 	@Override
 	public List<KPrimStatistics> getKPrimStatistics(String itemRefIdent, AssessmentItem item, MatchInteraction interaction,

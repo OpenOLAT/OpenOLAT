@@ -28,7 +28,6 @@ import javax.xml.transform.stream.StreamResult;
 
 import org.olat.core.gui.render.StringOutput;
 import org.olat.ims.qti21.QTI21Constants;
-import org.olat.ims.qti21.model.xml.AssessmentItemBuilder;
 
 import uk.ac.ed.ph.jqtiplus.node.content.basic.Block;
 import uk.ac.ed.ph.jqtiplus.node.expression.general.BaseValue;
@@ -62,7 +61,7 @@ import uk.ac.ed.ph.jqtiplus.value.SingleValue;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public abstract class SimpleChoiceAssessmentItemBuilder extends AssessmentItemBuilder {
+public abstract class SimpleChoiceAssessmentItemBuilder extends ChoiceAssessmentItemBuilder {
 
 	protected boolean shuffle;
 	protected String question;
