@@ -1,0 +1,34 @@
+<div id="$r.getId('d3mapdiv')">
+	<div id='$r.getId("d3mapholder")' class="d3chart" style="position:relative; width:${width}px; height:${height}px; background-color:purple; #if($filename && !${filename.isEmpty()}) background-image: url($mapperUri/$filename); #end"></div>
+<script type='text/javascript'>
+/* <![CDATA[ */
+jQuery(function () {
+	var d = $bubbles.data;
+	var svg = d3.select('#$r.getId("d3mapholder")').append('svg')
+    	.attr('width', ${width})
+    	.attr('height', ${height});
+
+	var vis = svg.selectAll('circle')
+	    .data(d);
+
+	vis.enter().append('circle')
+		.attr('transform', function(d) {
+			var shape = d[1].toLowerCase();
+			var x1 = d[2][0];
+			var y1 = d[2][1];
+			if(shape == "circle") {
+				var r = d[2][2] / 2;
+				return 'translate(' + (x1 + r) + ',' + (y1 + r) + ')';
+			} else if(shape == "rect") {
+				var x2 = d[2][2];
+				var y2 = d[2][3];
+				return 'translate(' + ((x1 + x2) / 2) + ',' + ((y1 + y2) / 2) + ')';
+			}
+			return 'translate(' + x1 + ',' + y1 + ')';
+		})
+		.attr('r', function(d) { return d[3]; })
+		.attr('class', function(d) { return 'bubble bubble_default'; });
+	
+});
+/* ]]> */</script>
+</div>

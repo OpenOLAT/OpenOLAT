@@ -10,8 +10,12 @@
 			<td>$wrongAnswers</td></tr>
 		#end
 	</tbody></table>
-
-	$r.render("questionChart")
+	#if($r.available("questionMap"))
+		$r.render("questionMap")
+	#end
+	#if($r.available("questionChart"))
+		$r.render("questionChart")
+	#end
 	<ul>
 	#foreach($responseInfo in $series.responseInfos)
 		#if($responseInfo.survey)

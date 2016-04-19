@@ -20,6 +20,7 @@
 package org.olat.ims.qti21.ui.statistics;
 
 import java.io.File;
+import java.net.URI;
 import java.util.List;
 
 import org.olat.core.CoreSpringFactory;
@@ -112,6 +113,11 @@ public class QTI21StatisticResourceResult implements StatisticResourceResult {
 			statisticAssessment = qtiStatisticsManager.getAssessmentStatistics(searchParams);
 		}
 		return statisticAssessment;
+	}
+	
+	public File getAssessmentItemFile(AssessmentItemRef itemRef) {
+		URI itemUri = resolvedAssessmentTest.getSystemIdByItemRefMap().get(itemRef);
+		return new File(itemUri);
 	}
 
 	@Override

@@ -2,7 +2,7 @@
 .d3chart {
 	.bar { shape-rendering: crispEdges; }
 	.bar_default_light { fill: $o-d3chart-light; }
-	.bar_default { fill: $o-d3chart-default; }
+	.bar_default, .bubble_default { fill: $o-d3chart-default; }
 	.bar_default_dark { fill: $o-d3chart-dark; }
 
 	.axis { font: 12px sans-serif; }
