@@ -60,8 +60,7 @@ public class CopyRepositoryEntryController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		String sourceName = StringHelper.escapeHtml(sourceEntry.getDisplayname());
-		sourceName += " " + translate("copy.suffix");
+		String sourceName = sourceEntry.getDisplayname() + " " + translate("copy.suffix");
 		displaynameEl = uifactory.addTextElement("cif.displayname", "cif.displayname", 100, sourceName, formLayout);
 		displaynameEl.setDisplaySize(30);
 		displaynameEl.setMandatory(true);
