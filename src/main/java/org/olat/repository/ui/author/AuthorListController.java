@@ -418,6 +418,7 @@ public class AuthorListController extends FormBasicController implements Activat
 				searchParams.setAuthor(null);
 				searchParams.setDisplayname(null);
 				searchParams.setDescription(null);
+				searchParams.setOwnedResourcesOnly(false);
 			}
 		} else if(userSearchCtr == source) {
 			@SuppressWarnings("unchecked")
