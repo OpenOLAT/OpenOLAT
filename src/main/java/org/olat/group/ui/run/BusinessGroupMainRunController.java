@@ -1127,8 +1127,8 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 			nodeResources = gtnChild;
 		}
 
-		if (businessGroup.isOwnersVisibleIntern() || businessGroup.isParticipantsVisibleIntern()) {
-			// either owners or participants, or both are visible
+		if (businessGroup.isOwnersVisibleIntern() || businessGroup.isParticipantsVisibleIntern() || businessGroup.isWaitingListVisibleIntern()) {
+			// either owners, participants, the waiting list or all three are visible
 			// otherwise the node is not visible
 			gtnChild = new GenericTreeNode(nodeIdPrefix.concat("members"));
 			gtnChild.setTitle(translate("menutree.members"));
