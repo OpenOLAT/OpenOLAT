@@ -480,8 +480,8 @@ public class MetaInfoFormController extends FormBasicController {
 				
 		if(isFileRenamed()) {
 			//check if filetype is directory
-				valid &= FileUtils.validateFilename(getFilename());
-			if(!valid) {
+			if(!FileUtils.validateFilename(getFilename())) {
+				valid = false;
 				if (item instanceof VFSContainer) {
 					filename.setErrorKey("folder.name.notvalid", new String[0]);
 				} else {					
