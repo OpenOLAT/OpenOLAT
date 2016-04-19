@@ -106,7 +106,15 @@ public class AdministrationPage {
 		WebElement membershipConfirmationEl = browser.findElement(membershipConfirmationBy);
 		OOGraphene.check(membershipConfirmationEl, new Boolean(mandatory));
 		OOGraphene.waitBusy(browser);
-		
+		return this;
+	}
+	
+	public AdministrationPage setGroupConfirmationForAuthor(boolean mandatory) {
+		By membershipConfirmationBy = By.cssSelector("input[name='mandatory.membership'][value='authors']");
+		OOGraphene.waitElement(membershipConfirmationBy, 5, browser);
+		WebElement membershipConfirmationEl = browser.findElement(membershipConfirmationBy);
+		OOGraphene.check(membershipConfirmationEl, new Boolean(mandatory));
+		OOGraphene.waitBusy(browser);
 		return this;
 	}
 }

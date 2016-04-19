@@ -41,11 +41,13 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.olat.selenium.page.Administrator;
+import org.olat.selenium.page.Author;
 import org.olat.selenium.page.LoginPage;
 import org.olat.selenium.page.NavigationPage;
 import org.olat.selenium.page.Participant;
 import org.olat.selenium.page.Student;
 import org.olat.selenium.page.User;
+import org.olat.selenium.page.core.AdministrationPage;
 import org.olat.selenium.page.core.BookingPage;
 import org.olat.selenium.page.core.MenuTreePageFragment;
 import org.olat.selenium.page.course.AssessmentCEConfigurationPage;
@@ -249,9 +251,10 @@ public class CourseTest {
 			.next()
 			.finish();
 		
-		RepositoryEditDescriptionPage editDescription = RepositoryEditDescriptionPage.getPage(browser);
+		RepositoryEditDescriptionPage editDescription = new RepositoryEditDescriptionPage(browser);
 		//from description editor, back to details and launch the course
 		editDescription
+			.assertOnGeneralTab()
 			.clickToolbarBack();
 		
 		//open course editor
@@ -1836,6 +1839,128 @@ public class CourseTest {
 			.assertWithTitle(msTitle.substring(0, 20))
 			.assertWithTitle(foTitle.substring(0, 20))
 			.assertWithTitle(infoTitle.substring(0, 20));
+	}
+	
+	/**
+	 *  First, an administrator make in administration part
+	 * the confirmation of group's membership mandatory if
+	 * the group is created by an author.<br>
+	 * 
+	 * An author create a course and a group and add two
+	 * participants. The first user jump to the course
+	 * with a rest url, log in, confirm its membership
+	 * and see the course.<br>
+	 * The second participant log-in, confirm its membership,
+	 * go the "My courses" and visit the course.
+	 * 
+	 * @param loginPage
+	 * @param authorBrowser
+	 * @param participantBrowser
+	 * @param reiBrowser
+	 * @throws IOException
+	 * @throws URISyntaxException
+	 */
+	@Test
+	@RunAsClient
+	public void confirmMembershipForCourse(@InitialPage LoginPage loginPage,
+			@Drone @Author WebDriver authorBrowser,
+			@Drone @Participant WebDriver participantBrowser,
+			@Drone @Student WebDriver reiBrowser)
+	throws IOException, URISyntaxException {
+		
+		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
+		UserVO rei = new UserRestClient(deploymentUrl).createRandomUser("Rei");
+		UserVO participant = new UserRestClient(deploymentUrl).createRandomUser();
+		
+		//admin make the confirmation of membership mandatory
+		//for groups created by standard users.
+		loginPage
+			.loginAs("administrator", "openolat")
+			.resume();
+		AdministrationPage administration = new NavigationPage(browser)
+			.openAdministration()
+			.openGroupSettings()
+			.setGroupConfirmationForAuthor(true);
+		
+		//author create a course
+		String courseTitle = "Membership " + UUID.randomUUID();
+		LoginPage.getLoginPage(authorBrowser, deploymentUrl)
+			.loginAs(author)
+			.resume();
+		NavigationPage authorNavBar = new NavigationPage(authorBrowser);
+		authorNavBar
+			.openAuthoringEnvironment()
+			.createCourse(courseTitle)
+			.clickToolbarBack();
+
+		String groupName = "Groupship " + UUID.randomUUID();
+		MembersPage members = CoursePageFragment
+			.getCourse(authorBrowser)
+			.members();
+		//create a group
+		members
+			.selectBusinessGroups()
+			.createBusinessGroup(groupName, "-", 1, false, false);
+		//return to course
+		authorNavBar.openCourse(courseTitle);
+		//add the 2 participants to the group
+		members
+			.selectMembers()
+			.addMember()
+			.searchMember(rei, true)
+			.next()
+			.next()
+			.selectGroupAsParticipant(groupName)
+			.next()
+			.finish();
+		members
+			.addMember()
+			.searchMember(participant, true)
+			.next()
+			.next()
+			.selectGroupAsParticipant(groupName)
+			.next()
+			.finish();
+		members
+			.clickToolbarBack();
+		
+		//set the course for members only
+		CoursePageFragment
+			.getCourse(authorBrowser)
+			.accessConfiguration()
+			.setUserAccess(UserAccess.registred);
+		
+		String currentUrl = authorBrowser.getCurrentUrl();
+		int index = currentUrl.indexOf("/Access");
+		Assert.assertTrue(index > 0);
+		String courseUrl = currentUrl.substring(0, index);
+		
+		//rest url -> login -> accept membership
+		reiBrowser.get(courseUrl);
+		new LoginPage(reiBrowser)
+			.loginAs(rei.getLogin(), rei.getPassword())
+			.assertOnMembershipConfirmation()
+			.confirmMembership();
+		new CoursePageFragment(reiBrowser)
+			.assertOnCoursePage()
+			.assertOnTitle(courseTitle);
+		
+		//participant login -> accept membership -> my courses -> course
+		LoginPage participantLoginPage = LoginPage.getLoginPage(participantBrowser, deploymentUrl);
+		participantLoginPage
+			.loginAs(participant.getLogin(), participant.getPassword())
+			.assertOnMembershipConfirmation()
+			.confirmMembership();
+		NavigationPage participantNavBar = new NavigationPage(participantBrowser);
+		participantNavBar
+			.openMyCourses()
+			.select(courseTitle);
+		new CoursePageFragment(participantBrowser)
+			.assertOnCoursePage()
+			.assertOnTitle(courseTitle);
+		
+		//reset the settings
+		administration.setGroupConfirmationForAuthor(false);	
 	}
 	
 	/**

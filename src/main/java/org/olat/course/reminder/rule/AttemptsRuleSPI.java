@@ -24,6 +24,8 @@ import java.util.List;
 import java.util.Map;
 
 import org.olat.core.id.Identity;
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.export.CourseEnvironmentMapper;
@@ -46,6 +48,8 @@ import org.springframework.stereotype.Service;
  */
 @Service
 public class AttemptsRuleSPI implements FilterRuleSPI {
+	
+	private static final OLog log = Tracing.createLoggerFor(AttemptsRuleSPI.class);
 	
 	@Autowired
 	private ReminderRuleDAO helperDao;
@@ -81,6 +85,11 @@ public class AttemptsRuleSPI implements FilterRuleSPI {
 			
 			ICourse course = CourseFactory.loadCourse(entry);
 			CourseNode courseNode = course.getRunStructure().getNode(nodeIdent);
+			if (courseNode == null) {
+				identities.clear();
+				log.error("Attempts rule in course " + entry.getKey() + " (" + entry.getDisplayname() + ") is missing a course element");
+				return;
+			}
 
 			Map<Long, Integer> attempts = helperDao.getAttempts(entry, courseNode, identities);
 			

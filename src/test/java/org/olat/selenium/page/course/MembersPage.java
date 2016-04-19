@@ -21,7 +21,6 @@ package org.olat.selenium.page.course;
 
 import java.util.List;
 
-import org.jboss.arquillian.drone.api.annotation.Drone;
 import org.junit.Assert;
 import org.olat.selenium.page.graphene.OOGraphene;
 import org.olat.selenium.page.group.GroupPage;
@@ -43,12 +42,7 @@ import org.openqa.selenium.WebElement;
  */
 public class MembersPage {
 
-	@Drone
 	private WebDriver browser;
-	
-	public MembersPage() {
-		//
-	}
 	
 	public MembersPage(WebDriver browser) {
 		this.browser = browser;
@@ -72,6 +66,17 @@ public class MembersPage {
 		By groupsItemBy = By.cssSelector("li.o_sel_membersmgt_groups a");
 		browser.findElement(groupsItemBy).click();
 		OOGraphene.waitBusy(browser);
+		By groupTitleby = By.cssSelector("h4 i.o_icon.o_icon_group");
+		OOGraphene.waitElement(groupTitleby, 5, browser);
+		return this;
+	}
+	
+	public MembersPage selectMembers() {
+		By groupsItemBy = By.cssSelector("li.o_sel_membersmgt_members a");
+		browser.findElement(groupsItemBy).click();
+		OOGraphene.waitBusy(browser);
+		By groupTitleby = By.cssSelector("h4 i.o_icon.o_icon_group");
+		OOGraphene.waitElement(groupTitleby, 5, browser);
 		return this;
 	}
 	

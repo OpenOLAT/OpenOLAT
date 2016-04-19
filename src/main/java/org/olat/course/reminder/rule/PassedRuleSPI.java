@@ -25,6 +25,8 @@ import java.util.List;
 import java.util.Map;
 
 import org.olat.core.id.Identity;
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.assessment.AssessmentHelper;
@@ -51,6 +53,8 @@ import org.springframework.stereotype.Service;
  */
 @Service
 public class PassedRuleSPI implements FilterRuleSPI {
+	
+	private static final OLog log = Tracing.createLoggerFor(PassedRuleSPI.class);
 	
 	@Autowired
 	private ReminderRuleDAO helperDao;
@@ -84,6 +88,11 @@ public class PassedRuleSPI implements FilterRuleSPI {
 			
 			ICourse course = CourseFactory.loadCourse(entry);
 			CourseNode courseNode = course.getRunStructure().getNode(nodeIdent);
+			if (courseNode == null) {
+				identities.clear();
+				log.error("Passed rule in course " + entry.getKey() + " (" + entry.getDisplayname() + ") is missing a course element");
+				return;
+			}
 			
 			Map<Long, Boolean> passeds;
 			if(courseNode instanceof STCourseNode) {

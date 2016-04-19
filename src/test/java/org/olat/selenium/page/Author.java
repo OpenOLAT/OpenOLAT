@@ -28,13 +28,13 @@ import org.jboss.arquillian.drone.api.annotation.Qualifier;
 
 /**
  * 
- * Initial date: 18.04.2016<br>
+ * Initial date: 08.07.2014<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ ElementType.FIELD, ElementType.PARAMETER })
 @Qualifier
-public @interface Student {
+public @interface Author {
 
 }

@@ -556,7 +556,8 @@ public class CourseEditorPageFragment {
 		OOGraphene.waitBusy(browser);
 		OOGraphene.closeBlueMessageWindow(browser);
 		
-		WebElement main = browser.findElement(By.id("o_main"));
-		return Graphene.createPageFragment(CoursePageFragment.class, main);
+		By mainId = By.id("o_main");
+		OOGraphene.waitElement(mainId, 5, browser);
+		return new CoursePageFragment(browser);
 	}
 }
