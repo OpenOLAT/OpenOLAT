@@ -22,7 +22,6 @@ package org.olat.modules.video.ui;
 import java.util.HashMap;
 import java.util.Locale;
 
-import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.services.commentAndRating.CommentAndRatingDefaultSecurityCallback;
 import org.olat.core.commons.services.commentAndRating.CommentAndRatingSecurityCallback;
 import org.olat.core.commons.services.commentAndRating.ui.UserCommentsAndRatingsController;
@@ -50,7 +49,7 @@ import org.olat.resource.OLATResource;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
- *
+ * 
  * Initial date: 01.04.2015<br>
  * @author Dirk Furrer, dirk.furrer@frentix.com, http://www.frentix.com
  *
@@ -59,6 +58,8 @@ public class VideoDisplayController extends BasicController {
 
 	@Autowired
 	private MovieService movieService;
+	@Autowired
+	VideoManager videoManager;
 
 	private UserCommentsAndRatingsController commentsAndRatingCtr;
 	private VelocityContainer mainVC;
@@ -75,18 +76,18 @@ public class VideoDisplayController extends BasicController {
 
 	public VideoDisplayController(UserRequest ureq, WindowControl wControl, RepositoryEntry entry, Boolean autoplay, Boolean showComments, Boolean showRating, String OresSubPath, boolean customDescription, boolean autoWidth, String descriptionText) {
 		super(ureq, wControl);
-
 		mainVC = createVelocityContainer("video_run");
 		mainVC.contextPut("displayName", entry.getDisplayname());
+		
 		StringOutput sb = new StringOutput(50);
 		Renderer.renderStaticURI(sb, "movie/mediaelementplayer.min.css");
 		String cssPath = sb.toString();
 		JSAndCSSComponent mediaelementjs = new JSAndCSSComponent("mediaelementjs", new String[] { "movie/mediaelement-and-player.min.js" },new String[] {cssPath});
+		
 		mainVC.put("mediaelementjs", mediaelementjs);
 		putInitialPanel(mainVC);
-
-		VideoManager videoManager = CoreSpringFactory.getImpl(VideoManager.class);
-
+		
+		//load video as VFSLeaf
 		VFSLeaf video = getVideo(entry);
 		if(video != null) {
 			String filename = video.getName();
@@ -150,6 +151,7 @@ public class VideoDisplayController extends BasicController {
 		}
 	}
 
+	// get the videoFile
 	private VFSLeaf getVideo(RepositoryEntry entry) {
 		OLATResource resource = entry.getOlatResource();
 		VFSContainer fResourceFileroot = FileResourceManager.getInstance()

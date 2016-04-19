@@ -24,6 +24,7 @@ import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.util.vfs.VFSLeaf;
 
 /**
+ *	model of a tablerow in the table of different videotracks in the videoconfiguration
  *
  * Initial date: 07.04.2015<br>
  * @author dfurrer, dirk.furrer@frentix.com, http://www.frentix.com

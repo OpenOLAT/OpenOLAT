@@ -23,7 +23,8 @@ import org.olat.core.gui.components.form.flexible.FormUIFactory;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 
 /**
- *
+ * Row in the table of videoconfiguration to list the different quality-versiosn of a video
+ * 
  * Initial date: 07.04.2015<br>
  * @author dfurrer, dirk.furrer@frentix.com, http://www.frentix.com
  *
