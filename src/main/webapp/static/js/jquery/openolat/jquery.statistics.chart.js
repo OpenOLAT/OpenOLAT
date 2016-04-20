@@ -205,8 +205,6 @@
     	
     	var sum =  settings.participants;
     	var max = sum;
-    	
-    	console.log(settings.colors);
 
     	var x = d3.scale.linear()
     	  .domain([0, max])

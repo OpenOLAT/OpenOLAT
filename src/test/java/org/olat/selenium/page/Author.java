@@ -17,40 +17,24 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.gotomeeting.model;
+package org.olat.selenium.page;
+
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
+ 
+import org.jboss.arquillian.drone.api.annotation.Qualifier;
 
 /**
  * 
- * Initial date: 24.03.2016<br>
+ * Initial date: 08.07.2014<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public enum GoToErrors {
-	Unkown(""),
-	DuplicateRegistrant(""),
-	OrganizerOverlap("error.organizer.overbooked"),
-	TrainingOver("error.code.TrainingOver"),
-	InvalidRequest("error.code.unkown"),
-	NoSuchTraining("error.code.NoSuchTraining"),
-	TrainingInSession("error.code.TrainingInSession"),
-	InvalidTrainingDatesMaxDuration("error.code.InvalidTrainingDatesMaxDuration");
-	
-	private final String i18nKey;
-	
-	private GoToErrors(String i18nKey) {
-		this.i18nKey = i18nKey;
-	}
-	
-	public String i18nKey() {
-		return i18nKey;
-	}
-	
-	public static final GoToErrors valueOfOrNull(String val) {
-		for(GoToErrors error:GoToErrors.values()) {
-			if(error.name().equals(val)) {
-				return error;
-			}
-		}
-		return null;
-	}
+@Retention(RetentionPolicy.RUNTIME)
+@Target({ ElementType.FIELD, ElementType.PARAMETER })
+@Qualifier
+public @interface Author {
+
 }

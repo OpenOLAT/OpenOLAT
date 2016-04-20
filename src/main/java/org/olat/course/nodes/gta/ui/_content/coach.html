@@ -60,6 +60,9 @@
 			<br />
 			$r.translate("coach.waiting.submitted.documents.description")
 		#end
+		#if($r.available("coach.collect.task") && $r.visible("coach.collect.task"))
+			<div class="o_button_group">$r.render("coach.collect.task")</div>
+		#end
 		</div>
 	</div>
 	<script type='text/javascript'>/* <![CDATA[ */

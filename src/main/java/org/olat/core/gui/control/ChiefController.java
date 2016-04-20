@@ -55,6 +55,8 @@ public interface ChiefController extends Controller {
 	
 	public ScreenMode getScreenMode();
 	
+	public boolean isLoginInterceptionInProgress();
+	
 	/**
 	 * The method is called by the poller thread.
 	 * 

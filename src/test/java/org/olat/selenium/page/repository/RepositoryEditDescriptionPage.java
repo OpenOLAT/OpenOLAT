@@ -23,8 +23,6 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
-import org.jboss.arquillian.drone.api.annotation.Drone;
-import org.jboss.arquillian.graphene.Graphene;
 import org.junit.Assert;
 import org.olat.core.util.Formatter;
 import org.olat.selenium.page.NavigationPage;
@@ -45,12 +43,10 @@ public class RepositoryEditDescriptionPage {
 	
 	public static final By generaltabBy = By.className("o_sel_edit_repositoryentry");
 
-	@Drone
 	private WebDriver browser;
 	
-	public static RepositoryEditDescriptionPage getPage(WebDriver browser) {
-		WebElement main = browser.findElement(By.id("o_main_wrapper"));
-		return Graphene.createPageFragment(RepositoryEditDescriptionPage.class, main);
+	public RepositoryEditDescriptionPage(WebDriver browser) {
+		this.browser = browser;
 	}
 	
 	public RepositoryEditDescriptionPage assertOnGeneralTab() {

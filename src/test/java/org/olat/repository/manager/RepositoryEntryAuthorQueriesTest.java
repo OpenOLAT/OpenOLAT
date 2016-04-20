@@ -36,6 +36,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
+ * Check if the query with the sort argument are "playable" but don't
+ * check if the order by goes in the right direction.
+ * 
  * Initial date: 04.06.2014<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *

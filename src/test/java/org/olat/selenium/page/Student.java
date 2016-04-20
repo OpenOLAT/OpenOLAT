@@ -28,7 +28,7 @@ import org.jboss.arquillian.drone.api.annotation.Qualifier;
 
 /**
  * 
- * Initial date: 08.07.2014<br>
+ * Initial date: 18.04.2016<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */

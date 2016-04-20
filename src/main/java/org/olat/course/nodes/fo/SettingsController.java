@@ -63,7 +63,7 @@ public class SettingsController extends FormBasicController {
 		
 		if(forumModule.isAnonymousPostingWithPseudonymEnabled()) {
 			String[] allowPseudonymValues = new String[] { translate("allow.pseudonym.post") };
-			allowPseudonymEl = uifactory.addCheckboxesHorizontal("allow.pseudonym", formLayout,
+			allowPseudonymEl = uifactory.addCheckboxesHorizontal("allow.pseudonym", null, formLayout,
 					allowKeys, allowPseudonymValues);
 			allowPseudonymEl.setElementCssClass("o_sel_course_forum_allow_pseudo");
 			allowPseudonymEl.setLabel(null, null);
@@ -75,7 +75,7 @@ public class SettingsController extends FormBasicController {
 		}
 		
 		String[] allowGuestValues = new String[] { translate("allow.guest.post") };
-		allowGuestEl = uifactory.addCheckboxesHorizontal("allow.guest", formLayout,
+		allowGuestEl = uifactory.addCheckboxesHorizontal("allow.guest", null, formLayout,
 				allowKeys, allowGuestValues);
 		allowGuestEl.setElementCssClass("o_sel_course_forum_allow_guest");
 		allowGuestEl.setLabel(null, null);

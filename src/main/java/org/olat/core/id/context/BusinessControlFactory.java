@@ -255,7 +255,6 @@ public class BusinessControlFactory {
 		return bc.getAsString();
 	}
 	
-	
 	public BusinessControl createFromString(String businessControlString) {
 		final List<ContextEntry> ces = createCEListFromString(businessControlString);
 		if (ces.isEmpty() || ces.get(0) ==null) {
@@ -566,24 +565,27 @@ public class BusinessControlFactory {
 		try {
 			restPart = URLDecoder.decode(restPart, "UTF8");
 		} catch (UnsupportedEncodingException e) {
-			e.printStackTrace();
-			//log.error("Unsupported encoding", e);
+			log.error("Unsupported encoding", e);
 		}
 		
 		String[] split = restPart.split("/");
 		if (split.length % 2 != 0) {
 			return null;
 		}
-		String businessPath = "";
+		return formatFromSplittedURI(split);
+	}
+	
+	public String formatFromSplittedURI(String[] split) {
+		StringBuilder businessPath = new StringBuilder(64);
 		for (int i = 0; i < split.length; i=i+2) {
 			String key = split[i];
 			if(key != null && key.startsWith("path=")) {
 				key = key.replace("~~", "/");
 			}
 			String value = split[i+1];
-			businessPath += "[" + key + ":" + value +"]";
+			businessPath.append("[").append(key).append(":").append(value).append("]");
 		}
-		return businessPath;
+		return businessPath.toString();
 	}
 }	
 

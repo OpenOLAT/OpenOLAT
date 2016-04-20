@@ -24,8 +24,6 @@
 */
 package org.olat.course.nodes.sp;
 
-import java.util.UUID;
-
 import org.olat.core.commons.modules.singlepage.SinglePageController;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -76,10 +74,10 @@ public class SPPeekviewController extends BasicController {
 				// Render normal view but scaled down to 75%
 				boolean allowRelativeLinks = config.getBooleanSafe(SPEditController.CONFIG_KEY_ALLOW_RELATIVE_LINKS);
 				// in preview, randomize the mapper of the html page
-				String frameId = userCourseEnv.getCourseEditorEnv() == null ? null : UUID.randomUUID().toString();
 				SinglePageController spController =  new SinglePageController(ureq, wControl,
 						userCourseEnv.getCourseEnvironment().getCourseFolderContainer(), 
-						file, allowRelativeLinks, frameId, ores, deliveryOptions);		
+						file, allowRelativeLinks, null, ores, deliveryOptions,
+						userCourseEnv.getCourseEnvironment().isPreview());		
 				// but add scaling to fit preview into minimized space
 				spController.setScaleFactorAndHeight(0.75f, 400, true);
 				listenTo(spController);

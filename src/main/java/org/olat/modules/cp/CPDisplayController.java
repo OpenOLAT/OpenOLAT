@@ -128,7 +128,7 @@ public class CPDisplayController extends BasicController implements Activateable
 		//TODO:gs:a
 		//may add an additional config for disabling, enabling IFrame style or not in CP mode
 		//but always disable IFrame display when in screenreader mode (no matter whether style gets ugly)
-		cpContentCtr = new IFrameDisplayController(ureq, getWindowControl(),rootContainer, null, ores, deliveryOptions, true);
+		cpContentCtr = new IFrameDisplayController(ureq, getWindowControl(),rootContainer, null, ores, deliveryOptions, true, false);
 		cpContentCtr.setAllowDownload(true);
 		listenTo(cpContentCtr);
 		myContent.put("cpContent", cpContentCtr.getInitialComponent());

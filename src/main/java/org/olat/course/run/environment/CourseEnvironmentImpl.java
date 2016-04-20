@@ -84,6 +84,11 @@ public class CourseEnvironmentImpl implements CourseEnvironment {
 		return System.currentTimeMillis();
 	}
 
+	@Override
+	public boolean isPreview() {
+		return false;
+	}
+
 	/**
 	 * @see org.olat.course.run.environment.CourseEnvironment#getCourseGroupManager()
 	 */

@@ -47,6 +47,7 @@ import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
+import org.olat.core.util.CodeHelper;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.event.GenericEventListener;
 import org.olat.core.util.event.MultiUserEvent;
@@ -110,7 +111,7 @@ public class IFrameDisplayController extends BasicController implements GenericE
 	 * @param ores - send an OLATresourcable of the context (e.g. course) where the iframe runs and it will be checked if the user has textmarking (glossar) enabled in this course
 	 */
 	public IFrameDisplayController(UserRequest ureq, WindowControl wControl, File fileRoot, OLATResourceable ores) {
-		this(ureq, wControl, new LocalFolderImpl(fileRoot), null, ores, null, false);
+		this(ureq, wControl, new LocalFolderImpl(fileRoot), null, ores, null, false, false);
 	}
 	/**
 	 * 
@@ -119,7 +120,7 @@ public class IFrameDisplayController extends BasicController implements GenericE
 	 * @param rootDir VFSItem that points to the root folder of the resource
 	 */
 	public IFrameDisplayController(UserRequest ureq, WindowControl wControl, VFSContainer rootDir) {
-		this(ureq, wControl, rootDir, null, null, null, false);
+		this(ureq, wControl, rootDir, null, null, null, false, false);
 	}
 	/**
 	 * 
@@ -129,7 +130,7 @@ public class IFrameDisplayController extends BasicController implements GenericE
 	 * @param ores - send an OLATresourcable of the context (e.g. course) where the iframe runs and it will be checked if the user has textmarking (glossar) enabled in this course
 	 */
 	public IFrameDisplayController(UserRequest ureq, WindowControl wControl, VFSContainer rootDir, OLATResourceable ores, DeliveryOptions deliveryOptions) {
-		this(ureq, wControl, rootDir, null, ores, deliveryOptions, false);
+		this(ureq, wControl, rootDir, null, ores, deliveryOptions, false, false);
 	}
 	/**
 	 * 
@@ -140,17 +141,17 @@ public class IFrameDisplayController extends BasicController implements GenericE
 	 * @param enableTextmarking to enable textmakring of the content in the iframe enable it here
 	 */
 	public IFrameDisplayController(final UserRequest ureq, WindowControl wControl, VFSContainer rootDir, String frameId,
-			OLATResourceable contextRecourcable, DeliveryOptions options, boolean persistMapper) {
+			OLATResourceable contextResourceable, DeliveryOptions options, boolean persistMapper, boolean randomizeMapper) {
 		super(ureq, wControl);
 		
 		//register this object for textMarking on/off events
 		//TODO:gs how to unregister and where? unregister need ureq so dispose does not work
-		if (contextRecourcable != null) {
-			ureq.getUserSession().getSingleUserEventCenter().registerFor(this, getIdentity(), contextRecourcable);
+		if (contextResourceable != null) {
+			ureq.getUserSession().getSingleUserEventCenter().registerFor(this, getIdentity(), contextResourceable);
 		}
 		this.deliveryOptions = options;
 		
-		boolean  enableTextmarking = TextMarkerManagerImpl.getInstance().isTextmarkingEnabled(ureq, contextRecourcable);
+		boolean  enableTextmarking = TextMarkerManagerImpl.getInstance().isTextmarkingEnabled(ureq, contextResourceable);
 		// Set correct user content theme
 		String themeBaseUri = wControl.getWindowBackOffice().getWindow().getGuiTheme().getBaseURI();
 		if (frameId == null) {
@@ -181,6 +182,9 @@ public class IFrameDisplayController extends BasicController implements GenericE
 			// Add classname to the file path to remove conflicts with other
 			// usages of the same file path
 			mapperID = this.getClass().getSimpleName() + ":" + mapperID;
+			if(randomizeMapper) {
+				mapperID += CodeHelper.getRAMUniqueID();
+			}
 			baseURI = registerCacheableMapper(ureq, mapperID, contentMapper);				
 		}
 		myContent.contextPut("baseURI", baseURI);

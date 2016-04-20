@@ -53,6 +53,7 @@ public class FolderPage {
 	
 	public FolderPage assertOnFolderCmp() {
 		By folderCmpBy = By.className("o_briefcase_foldercomp");
+		OOGraphene.waitElement(folderCmpBy, 5, browser);
 		List<WebElement> folderCmpEl = browser.findElements(folderCmpBy);
 		Assert.assertFalse(folderCmpEl.isEmpty());
 		return this;
