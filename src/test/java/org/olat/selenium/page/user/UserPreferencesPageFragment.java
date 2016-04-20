@@ -94,6 +94,21 @@ public class UserPreferencesPageFragment {
 		WebElement saveButton = browser.findElement(saveSystemSettingsButton);
 		saveButton.click();
 		OOGraphene.waitBusy(browser);
+		OOGraphene.waitAndCloseBlueMessageWindow(browser);
+		return this;
+	}
+	
+	/**
+	 * Set the landing page
+	 * @param businessPath
+	 * @return
+	 */
+	public UserPreferencesPageFragment setLandingPage(String businessPath) {
+		By landingPageBy = By.cssSelector("div.o_sel_home_settings_landing_page input[type='text']");
+		browser.findElement(landingPageBy).sendKeys(businessPath);
+		browser.findElement(saveSystemSettingsButton).click();
+		OOGraphene.waitBusy(browser);
+		OOGraphene.waitAndCloseBlueMessageWindow(browser);
 		return this;
 	}
 	

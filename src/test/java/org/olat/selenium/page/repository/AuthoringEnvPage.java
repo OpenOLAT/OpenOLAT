@@ -51,6 +51,19 @@ public class AuthoringEnvPage {
 		this.browser = browser;
 	}
 	
+	/**
+	 * Check that the segment for the "Search" in author environment is selected.
+	 * 
+	 * @return
+	 */
+	public AuthoringEnvPage assertOnGenericSearch() {
+		By genericSearchBy = By.xpath("//div[contains(@class,'o_segments')]//a[contains(@class,'btn-primary')][contains(@onclick,'search.generic')]");
+		OOGraphene.waitElement(genericSearchBy, 5, browser);
+		WebElement genericSearchSegment = browser.findElement(genericSearchBy);
+		Assert.assertTrue(genericSearchSegment.isDisplayed());
+		return this;
+	}
+	
 	public RepositoryEditDescriptionPage createCP(String title) {
 		return openCreateDropDown()
 			.clickCreate(ResourceType.cp)
