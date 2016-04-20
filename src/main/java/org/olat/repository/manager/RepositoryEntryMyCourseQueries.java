@@ -432,7 +432,14 @@ public class RepositoryEntryMyCourseQueries {
 		return needIdentityKey;
 	}
 	
-
+	/**
+	 * Append additional informations and values to the select part of the query
+	 * needed by the order by.
+	 * 
+	 * @param params
+	 * @param sb
+	 * @return
+	 */
 	private boolean appendOrderByInSelect(SearchMyRepositoryEntryViewParams params, StringBuilder sb) {
 		boolean needIdentityKey = false;
 		OrderBy orderBy = params.getOrderBy();
@@ -493,7 +500,12 @@ public class RepositoryEntryMyCourseQueries {
 					appendAsc(sb, asc).append(" nulls last, lower(v.displayname) asc");
 					break;
 				case title:
-					sb.append(" order by lower(v.displayname)");
+					//life cycle always sorted from the newer to the older.
+					if(asc) {
+						sb.append(" order by lower(v.displayname) asc, lifecycle.validFrom desc nulls last, lower(v.externalRef) asc nulls last");
+					} else {
+						sb.append(" order by lower(v.displayname) desc, lifecycle.validFrom desc nulls last, lower(v.externalRef) desc nulls last");
+					}
 					appendAsc(sb, asc);
 					break;
 				case lifecycle:
