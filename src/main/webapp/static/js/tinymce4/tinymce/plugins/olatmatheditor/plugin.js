@@ -15,18 +15,9 @@
 		 * @param {string} url Absolute URL to where the plugin is located.
 		 */
 		init : function(ed, url) {
-			
-			MathJax.Hub.Config({
-				extensions: ["jsMath2jax.js"],
-				jsMath2jax: {
-					preview: "none"
-				},
-				tex2jax: {
-					ignoreClass: "math"
-				}
-			});
-			
+
 			var cachedTrans;
+			var MathJax = window.MathJax;
 			// Load the OLAT translator.
 			function translator() {	
 				if(cachedTrans) return cachedTrans;
@@ -56,16 +47,23 @@
 			}
 			
 			function updatePreview() {
-			    var tex = win.find('#latex')[0].value();
-			    var math = MathJax.Hub.getAllJax("mathpreviewFormula")[0];
-			    if(typeof math === "undefined") {
-			    	MathJax.Hub.Queue(function() {
-			    		jQuery("#mathpreviewFormula .math").text(tex);
-			    		MathJax.Hub.Typeset("#mathpreviewFormula");
-			    	});	
-			    } else {
-			    	MathJax.Hub.Queue(["Text", math, tex]);
-			    }
+				if(typeof MathJax === "undefined") {
+					o_mathjax(function() {
+						MathJax = window.MathJax;
+						updatePreview();
+					});
+				} else {
+					var tex = win.find('#latex')[0].value();
+				    var math = MathJax.Hub.getAllJax("mathpreviewFormula")[0];
+				    if(typeof math === "undefined") {
+				    	MathJax.Hub.Queue(function() {
+				    		jQuery("#mathpreviewFormula .math").text(tex);
+				    		MathJax.Hub.Typeset("#mathpreviewFormula");
+				    	});	
+				    } else {
+				    	MathJax.Hub.Queue(["Text", math, tex]);
+				    }
+				}
 			}
 			
 			function showDialog() {
