@@ -25,6 +25,7 @@ import org.jboss.arquillian.drone.api.annotation.Drone;
 import org.jboss.arquillian.graphene.Graphene;
 import org.junit.Assert;
 import org.olat.selenium.page.LoginPage;
+import org.olat.selenium.page.core.FolderPage;
 import org.olat.selenium.page.graphene.OOGraphene;
 import org.olat.selenium.page.portfolio.PortfolioPage;
 import org.openqa.selenium.By;
@@ -75,6 +76,27 @@ public class UserToolsPage {
 		WebElement notificationPanel = browser.findElement(notificationPanelBy);
 		Assert.assertTrue(notificationPanel.isDisplayed());
 		return this;
+	}
+	
+	/**
+	 * Check if we see the calendar.
+	 * @return
+	 */
+	public UserToolsPage assertOnCalendar() {
+		By calendarBy = By.cssSelector("div.o_cal div.fc-content");
+		OOGraphene.waitElement(calendarBy, 5, browser);
+		WebElement calendarEl = browser.findElement(calendarBy);
+		Assert.assertTrue(calendarEl.isDisplayed());
+		return this;
+	}
+	
+	/**
+	 * Check if we see the calendar.
+	 * @return
+	 */
+	public FolderPage assertOnFolder() {
+		return new FolderPage(browser)
+			.assertOnFolderCmp();
 	}
 	
 	/**

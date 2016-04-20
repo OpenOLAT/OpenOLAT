@@ -48,6 +48,14 @@ public class MyCoursesPage {
 		this.browser = browser;
 	}
 	
+	public MyCoursesPage assertOnMyCourses() {
+		By myCoursesSegmentBy = By.cssSelector("div.o_segments a.btn.o_sel_mycourses_my");
+		OOGraphene.waitElement(myCoursesSegmentBy, 5, browser);
+		WebElement myCoursesSegmentEl = browser.findElement(myCoursesSegmentBy);
+		Assert.assertTrue(myCoursesSegmentEl.isDisplayed());
+		return this;
+	}
+	
 	public MyCoursesPage openSearch() {
 		By searchBy = By.className("o_sel_mycourses_search");
 		WebElement searchLink = browser.findElement(searchBy);
