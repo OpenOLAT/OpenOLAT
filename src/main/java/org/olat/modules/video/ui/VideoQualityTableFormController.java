@@ -49,7 +49,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * table to show the different available qualityversions of a video ressource 
- * @author Dirk Furrer
+ * @author dfurrer, dirk.furrer@frentix.com, http://www.frentix.com
  *
  */
 public class VideoQualityTableFormController extends FormBasicController {

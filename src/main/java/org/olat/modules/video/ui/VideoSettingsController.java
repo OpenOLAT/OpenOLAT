@@ -32,6 +32,11 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.repository.RepositoryEntry;
 
+/**
+ * 
+ * @author dfurrer, dirk.furrer@frentix.com, http://www.frentix.com
+ *
+ */
 public class VideoSettingsController extends BasicController {
 
 	private RepositoryEntry entry;

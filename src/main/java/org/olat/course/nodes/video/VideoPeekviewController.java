@@ -29,6 +29,12 @@ import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.modules.video.manager.MediaMapper;
 
+/**
+ * peekviewcontroller of videomodule
+ * 
+ * @author dfakae, dirk.furrer@frentix.com, http://www.frentix.com
+ *
+ */
 public class VideoPeekviewController  extends BasicController implements Controller{
 
 	public VideoPeekviewController(UserRequest ureq, WindowControl wControl,  VFSContainer posterFolder) {

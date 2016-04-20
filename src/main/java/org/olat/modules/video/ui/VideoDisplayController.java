@@ -151,7 +151,7 @@ public class VideoDisplayController extends BasicController {
 		}
 	}
 
-	// get the videoFile
+	// get the videoFile using the fileresourcemanager to get the resourcefolder
 	private VFSLeaf getVideo(RepositoryEntry entry) {
 		OLATResource resource = entry.getOlatResource();
 		VFSContainer fResourceFileroot = FileResourceManager.getInstance()

@@ -26,6 +26,7 @@ import org.olat.core.gui.translator.Translator;
 import org.olat.modules.video.ui.QualityTableRow;
 
 /**
+ * Tablemodel for qualityversions listing 
  *
  * Initial date: 01.04.2015<br>
  * @author Dirk Furrer, dirk.furrer@frentix.com, http://www.frentix.com
@@ -58,8 +59,6 @@ public class VideoQualityTableModel extends DefaultFlexiTableDataModel<QualityTa
 			default: return "";
 		}
 	}
-
-
 
 	public enum QualityTableCols {
 		type("quality.table.header.type"),

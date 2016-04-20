@@ -22,7 +22,6 @@ package org.olat.course.nodes.video;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -62,14 +61,20 @@ import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.controllers.ReferencableEntriesSearchController;
 import org.olat.resource.OLATResource;
+import org.springframework.beans.factory.annotation.Autowired;
 
+/**
+ * Editcontroller of videonode
+ * 
+ * @author dfakae, dirk.furrer@frentix.com, http://www.frentix.com
+ *
+ */
 public class VideoEditController  extends ActivateableTabbableDefaultController implements ControllerEventListener {
 
 	public static final String PANE_TAB_VIDEOCONFIG = "pane.tab.videoconfig";
 	private static final String PANE_TAB_ACCESSIBILITY = "pane.tab.accessibility";
 	final static String[] paneKeys = { PANE_TAB_VIDEOCONFIG, PANE_TAB_ACCESSIBILITY };
 
-	// NLS support:
 	public static final String NLS_ERROR_VIDEOREPOENTRYMISSING = "error.videorepoentrymissing";
 	private static final String NLS_CONDITION_ACCESSIBILITY_TITLE = "condition.accessibility.title";
 	private static final String NLS_COMMAND_CHOOSEVIDEO = "command.choosevideo";
@@ -214,7 +219,6 @@ public class VideoEditController  extends ActivateableTabbableDefaultController 
 	public void event(UserRequest urequest, Controller source, Event event) {
 		if (source == searchController) {
 			if (event == ReferencableEntriesSearchController.EVENT_REPOSITORY_ENTRY_SELECTED) {
-				// search controller done
 				// -> close closeable modal controller
 				cmc.deactivate();
 				re = searchController.getSelectedEntry();
@@ -295,7 +299,8 @@ class VideoOptionsForm extends FormBasicController{
 	 *
 	 * @author Dirk Furrer
 	 */
-	protected VideoManager videoManager = CoreSpringFactory.getImpl(VideoManager.class);
+	@Autowired	
+	protected VideoManager videoManager;
 
 	private OLATResource video;
 	private SelectionElement videoComments;
@@ -338,6 +343,7 @@ class VideoOptionsForm extends FormBasicController{
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		//add checkboxes for displayoptions
 		videoComments = uifactory.addCheckboxesHorizontal("videoComments", "video.config.comments", formLayout, new String[]{"xx"}, new String[]{null});
 		videoComments.select("xx",commentsEnabled);
 		videoRating = uifactory.addCheckboxesHorizontal("videoRating", "video.config.rating", formLayout, new String[]{"xx"}, new String[]{null});
@@ -350,6 +356,7 @@ class VideoOptionsForm extends FormBasicController{
 		descriptionOptions.put("resourceDescription", "Resource description");
 		descriptionOptions.put("customDescription", "custom description");
 
+		//add textfield for custom description
 		description = uifactory.addDropdownSingleselect("video.config.description", formLayout, descriptionOptions.keySet().toArray(new String[3]), descriptionOptions.values().toArray(new String[3]), new String[3]);
 		description.addActionListener(FormEvent.ONCHANGE);
 		description.select(config.getStringValue(VideoEditController.CONFIG_KEY_DESCRIPTION_SELECT,"none"), true);
@@ -358,6 +365,7 @@ class VideoOptionsForm extends FormBasicController{
 		uifactory.addFormSubmitButton("submit", formLayout);
 	}
 
+	//update visibility of the textfield for entering custom description
 	private void updateDescriptionField(){
 		switch(description.getSelected()){
 		case 2:

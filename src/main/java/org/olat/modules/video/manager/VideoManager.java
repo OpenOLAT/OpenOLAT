@@ -63,14 +63,6 @@ public abstract class VideoManager extends BasicManager {
 
 	public abstract void removeTrack(OLATResource video, String lang);
 
-	public abstract void setCommentsEnabled(OLATResource video, boolean isEnabled);
-
-	public abstract boolean getCommentsEnabled(OLATResource video);
-
-	public abstract void setRatingEnabled(OLATResource video, boolean isEnabled);
-
-	public abstract boolean getRatingEnabled(OLATResource video);
-
 	public abstract boolean getFrame(OLATResource video, int frameNumber, VFSLeaf frame) throws IOException;
 
 	public abstract void setDescription(OLATResource video, String text);

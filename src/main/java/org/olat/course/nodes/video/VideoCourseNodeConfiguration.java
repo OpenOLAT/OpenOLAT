@@ -31,6 +31,12 @@ import org.olat.course.nodes.CourseNodeGroup;
 import org.olat.course.nodes.VideoCourseNode;
 import org.olat.modules.video.VideoModule;
 
+/**
+ * Configuration of videocoursenode
+ * 
+ * @author dfurrer, dirk.furrer@frentix.com, http://www.frentix.com
+ *
+ */
 public class VideoCourseNodeConfiguration  extends AbstractCourseNodeConfiguration {
 
 	private VideoCourseNodeConfiguration() {

@@ -65,16 +65,15 @@ import org.olat.modules.video.models.VideoMetadata;
 import org.olat.modules.video.ui.VideoDisplayController;
 import org.olat.modules.video.ui.VideoRuntimeController;
 import org.olat.repository.RepositoryEntry;
-import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.model.RepositoryEntrySecurity;
 import org.olat.repository.ui.RepositoryEntryRuntimeController.RuntimeControllerCreator;
 import org.olat.resource.OLATResource;
 import org.olat.resource.OLATResourceManager;
-import org.springframework.beans.factory.annotation.Autowired;
 
 
 /** 
+ * Handler to import MP4-files as videoresource
  * Initial Date:  Mar 27, 2015
  *
  * @author Dirk Furrer
@@ -84,8 +83,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class VideoHandler extends FileHandler {
 
 	private static final OLog log = Tracing.createLoggerFor(VideoHandler.class);
-	@Autowired
-	private RepositoryManager repositoryManager;
 
 	private VideoManager videoManager;
 	private VideoModule videomodule ;
@@ -165,20 +162,18 @@ public class VideoHandler extends FileHandler {
 		Size videoSize = CoreSpringFactory.getImpl(MovieServiceImpl.class).getSize(new LocalFileImpl(target), "mp4");
 		videoManager.setVideoSize(resource, videoSize);
 		VFSLeaf posterResource = VFSManager.resolveOrCreateLeafFromPath(FileResourceManager.getInstance().getFileResourceMedia(resource), "/poster.jpg");
-
+		
+		// get the 20th frame as default poster for the video
 		videoManager.getFrame(resource, 20, posterResource);
-
 		videoManager.setPosterframe(resource, posterResource);
 		}catch(IOException e){
 			log.warn("wasnt able to create poster for video"+filename);
 		}
-
+		//let the manager transcode the different quality versions of the videofile
 		if(videomodule.isTranscodingEnabled()){
 			videoManager.optimizeVideoRessource(resource);
 		}
 
-		videoManager.setRatingEnabled(resource, false);
-		videoManager.setCommentsEnabled(resource, false);
 		return re;
 	}
 
@@ -229,7 +224,7 @@ public class VideoHandler extends FileHandler {
 
 	@Override
 	public LockResult acquireLock(OLATResourceable ores, Identity identity) {
-    //nothing to do
+		//nothing to do
 		return null;
 	}
 

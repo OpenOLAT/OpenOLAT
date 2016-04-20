@@ -23,6 +23,12 @@ import java.io.File;
 
 import org.olat.core.commons.services.image.Size;
 
+/**
+ * Model of quality-versions to save in a seperate xml-file
+ * 
+ * @author Dirk Furrer, dirk.furrer@frentix.com, http://www.frentix.com
+ *
+ */
 public class VideoQualityVersion{
 	// Properties
 	File file;

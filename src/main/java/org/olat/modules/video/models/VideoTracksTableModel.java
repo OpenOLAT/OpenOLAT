@@ -28,7 +28,8 @@ import org.olat.core.gui.translator.Translator;
 import org.olat.modules.video.ui.TrackTableRow;
 
 /**
- *
+ * table-model for to list de available subtitle-tracks in the metadata
+ *	
  * Initial date: 01.04.2015<br>
  * @author Dirk Furrer, dirk.furrer@frentix.com, http://www.frentix.com
  *
@@ -58,8 +59,6 @@ public class VideoTracksTableModel extends DefaultFlexiTableDataModel<TrackTable
 			default: return "";
 		}
 	}
-
-
 
 	public enum TrackTableCols {
 		file("track.table.header.file"),

@@ -47,7 +47,11 @@ import org.olat.modules.video.models.VideoTracksTableModel;
 import org.olat.modules.video.models.VideoTracksTableModel.TrackTableCols;
 import org.olat.resource.OLATResource;
 import org.springframework.beans.factory.annotation.Autowired;
-
+/**
+ * 
+ * @author dfurrer, dirk.furrer@frentix.com, http://www.frentix.com
+ *
+ */
 public class VideoTrackEditController extends FormBasicController {
 	protected FormUIFactory uifactory = FormUIFactory.getInstance();
 

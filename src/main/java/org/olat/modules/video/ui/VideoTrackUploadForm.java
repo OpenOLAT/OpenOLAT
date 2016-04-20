@@ -44,9 +44,10 @@ import org.olat.fileresource.FileResourceManager;
 import org.olat.resource.OLATResource;
 
 /**
- *
+ * Uploadform to uplaod track files and save the corresponding language
+ * 
  * Initial date: 01.04.2015<br>
- * @author Dirk Furrer, dirk.furrer@frentix.com, http://www.frentix.com
+ * @author dfurrer, dirk.furrer@frentix.com, http://www.frentix.com
  *
  */
 

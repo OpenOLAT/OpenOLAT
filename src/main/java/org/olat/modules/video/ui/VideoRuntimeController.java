@@ -37,7 +37,7 @@ import org.olat.repository.ui.RepositoryEntryRuntimeController;
  * The runtime add configuration management and delivery options.
  *
  * Initial date: 01.04.2015<br>
- * @author Dirk Furrer, dirk.furrer@frentix.com, http://www.frentix.com
+ * @author dfurrer, dirk.furrer@frentix.com, http://www.frentix.com
  *
  */
 public class VideoRuntimeController extends RepositoryEntryRuntimeController {

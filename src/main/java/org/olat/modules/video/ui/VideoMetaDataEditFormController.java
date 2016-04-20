@@ -35,7 +35,12 @@ import org.olat.modules.video.manager.VideoManager;
 import org.olat.resource.OLATResource;
 import org.springframework.beans.factory.annotation.Autowired;
 
-
+/**
+ * First page of video preferences
+ * 
+ * @author Dirk Furrer, dirk.furrer@frentix.com, http://www.frentix.com
+ *
+ */
 public class VideoMetaDataEditFormController extends FormBasicController {
 
 	protected FormUIFactory uifactory = FormUIFactory.getInstance();

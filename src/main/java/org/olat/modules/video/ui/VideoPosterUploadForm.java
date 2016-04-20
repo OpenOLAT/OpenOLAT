@@ -37,9 +37,10 @@ import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSManager;
 import org.olat.fileresource.FileResourceManager;
 import org.olat.resource.OLATResource;
+
 /**
  * Videoposter upload form for create a 
- * @author dfakae
+ * @author dfurrer, dirk.furrer@frentix.com, http://www.frentix.com
  *
  */
 

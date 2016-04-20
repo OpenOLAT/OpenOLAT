@@ -27,8 +27,9 @@ import org.olat.core.commons.services.image.Size;
 import org.olat.core.id.OLATResourceable;
 
 /**
- * Initial Date:  Apr 9, 2015
+ * Model of the videoresource metadata to persist in xml
  *
+ * Initial Date:  Apr 9, 2015
  * @author Dirk Furrer
  * 
  */

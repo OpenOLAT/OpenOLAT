@@ -46,6 +46,12 @@ import org.olat.repository.RepositoryManager;
 import org.olat.util.logging.activity.LoggingResourceable;
 import org.springframework.beans.factory.annotation.Autowired;
 
+/**
+ * 
+ * @author dfakae, dirk.furrer@frentix.com, http://www.frentix.com
+ *
+ */
+
 public class VideoRunController extends BasicController {
 	private static final OLog log = Tracing.createLoggerFor(CPRunController.class);
 
@@ -61,7 +67,7 @@ public class VideoRunController extends BasicController {
 	private RepositoryManager repositoryManager;
 	
 	/**
-	 * Constructor for single page run controller 
+	 * single page run controller 
 	 * @param wControl
 	 * @param ureq
 	 * @param userCourseEnv
@@ -76,7 +82,7 @@ public class VideoRunController extends BasicController {
 		this.videoNode = videoNode;
 		addLoggingResourceable(LoggingResourceable.wrap(videoNode));
 
-		// jump to either the forum or the folder if the business-launch-path says so.
+		
 		BusinessControl bc = getWindowControl().getBusinessControl();
 		ContextEntry ce = bc.popLauncherContextEntry();
 		if ( ce != null ) { // a context path is left for me
@@ -89,7 +95,6 @@ public class VideoRunController extends BasicController {
 			String path = typeName.substring("path=".length());
 			if  (path.length() > 0) {
 			  if(log.isDebug()) log.debug("direct navigation to container-path=" + path);
-//			  this.nodecmd = path;
 			}
 		}
 		

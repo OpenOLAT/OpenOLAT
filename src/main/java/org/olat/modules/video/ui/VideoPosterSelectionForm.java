@@ -50,6 +50,11 @@ import org.olat.modules.video.manager.MediaMapper;
 import org.olat.modules.video.manager.VideoManager;
 import org.olat.resource.OLATResource;
 
+/**
+ * 
+ * @author dfurrer, dirk.furrer@frentix.com, http://www.frentix.com
+ *
+ */
 public class VideoPosterSelectionForm extends BasicController {
 	protected FormUIFactory uifactory = FormUIFactory.getInstance();
 	long remainingSpace;

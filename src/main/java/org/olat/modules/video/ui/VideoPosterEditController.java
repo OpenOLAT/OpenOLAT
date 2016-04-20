@@ -40,7 +40,12 @@ import org.olat.modules.video.manager.MediaMapper;
 import org.olat.modules.video.manager.VideoManager;
 import org.olat.resource.OLATResource;
 import org.springframework.beans.factory.annotation.Autowired;
-
+/**
+ * Formcontroller for editform of the video poster
+ * 
+ * @author Dirk Furrer, dirk.furrer@frentix.com, http://www.frentix.com
+ *
+ */
 public class VideoPosterEditController extends FormBasicController {
 
 

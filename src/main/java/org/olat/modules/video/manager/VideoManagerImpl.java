@@ -46,6 +46,12 @@ import org.olat.modules.video.models.VideoQualityVersion;
 import org.olat.resource.OLATResource;
 import org.springframework.stereotype.Service;
 
+/**
+ * Manager for Videoressource
+ * 
+ * @author dfakae, dirk.furrer@frentix.com, http://www.frentix.com
+ *
+ */
 @Service("videoManager")
 public class VideoManagerImpl extends VideoManager {
 	private FileResourceManager fileResourceManager = FileResourceManager.getInstance();
@@ -55,11 +61,17 @@ public class VideoManagerImpl extends VideoManager {
 		INSTANCE = this;
 	}
 
+	/**
+	 * return the resolution of the video in size format from its metadata
+	 */
 	@Override
 	public Size getVideoSize(OLATResource video) {
 		return readVideoMetadataFile(video).getSize();
 	}
 
+	/**
+	 * set the resolution of a video in metadata
+	 */
 	@Override
 	public void setVideoSize(OLATResource video, Size size){
 		VideoMetadata metaData = readVideoMetadataFile(video);
@@ -67,6 +79,9 @@ public class VideoManagerImpl extends VideoManager {
 		writeVideoMetadataFile(metaData, video);
 	}
 
+	/**
+	 * get the configured posterframe
+	 */
 	@Override
 	public VFSLeaf getPosterframe(OLATResource video) {
 		String posterframePath = readVideoMetadataFile(video).getPosterframe();
@@ -74,6 +89,9 @@ public class VideoManagerImpl extends VideoManager {
 		return posterFrame;
 	}
 
+	/**
+	 * set a specific VFSLeaf as posterframe in video metadata
+	 */
 	@Override
 	public void setPosterframe(OLATResource video, VFSLeaf posterframe){
 		VideoMetadata metaData = readVideoMetadataFile(video);
@@ -95,6 +113,9 @@ public class VideoManagerImpl extends VideoManager {
 
 	}
 
+	/**
+	 * set the title of the video in metadata
+	 */
 	@Override
 	public void setTitle(OLATResource video, String title){
 		VideoMetadata metaData = readVideoMetadataFile(video);
@@ -102,11 +123,17 @@ public class VideoManagerImpl extends VideoManager {
 		writeVideoMetadataFile(metaData, video);
 	}
 
+	/**
+	 * get the title of the video
+	 */
 	@Override
 	public String getTitle(OLATResource video) {
 		return readVideoMetadataFile(video).getTitle();
 	}
 
+	/**
+	 * add a subtitle-track to the videoresource
+	 */
 	@Override
 	public void addTrack(OLATResource video, String lang, VFSLeaf trackFile){
 		VideoMetadata metaData = readVideoMetadataFile(video);
@@ -114,6 +141,29 @@ public class VideoManagerImpl extends VideoManager {
 		writeVideoMetadataFile(metaData, video);
 	}
 
+	/**
+	 * get a specific subtitle-track of the videoresource
+	 */
+	@Override
+	public VFSLeaf getTrack(OLATResource video, String lang) {
+		VideoMetadata metaData = readVideoMetadataFile(video);
+		return resolve(video, metaData.getTrack(lang));
+	}
+	
+	/**
+	 * remove a specific track from the videoresource
+	 */
+	@Override
+	public void removeTrack(OLATResource video, String lang){
+		VideoMetadata metaData = readVideoMetadataFile(video);
+		resolve(video, metaData.getTrack(lang)).delete();
+		metaData.removeTrack(lang);
+		writeVideoMetadataFile(metaData, video);
+	}
+	
+	/**
+	 * get all tracks saved in the video metadata as map
+	 */
 	@Override
 	public HashMap<String, VFSLeaf> getAllTracks(OLATResource video) {
 		VideoMetadata metaData = readVideoMetadataFile(video);
@@ -124,46 +174,12 @@ public class VideoManagerImpl extends VideoManager {
 		return tracks;
 	}
 
-	@Override
-	public VFSLeaf getTrack(OLATResource video, String lang) {
-		VideoMetadata metaData = readVideoMetadataFile(video);
-		return resolve(video, metaData.getTrack(lang));
-	}
-
-	@Override
-	public void removeTrack(OLATResource video, String lang){
-		VideoMetadata metaData = readVideoMetadataFile(video);
-		resolve(video, metaData.getTrack(lang)).delete();
-		metaData.removeTrack(lang);
-		writeVideoMetadataFile(metaData, video);
-	}
-
-	@Override
-	public void setCommentsEnabled(OLATResource video, boolean isEnabled) {
-		VideoMetadata metaData = readVideoMetadataFile(video);
-		metaData.setCommentsEnabled(isEnabled);
-		writeVideoMetadataFile(metaData, video);
-	}
-
-	@Override
-	public boolean getCommentsEnabled(OLATResource video) {
-		VideoMetadata metaData = readVideoMetadataFile(video);
-		return metaData.getCommentsEnabled();
-	}
-
-	@Override
-	public void setRatingEnabled(OLATResource video, boolean isEnabled) {
-		VideoMetadata metaData = readVideoMetadataFile(video);
-		metaData.setRatingEnabled(isEnabled);
-		writeVideoMetadataFile(metaData, video);
-	}
-
-	@Override
-	public boolean getRatingEnabled(OLATResource video) {
-		VideoMetadata metaData = readVideoMetadataFile(video);
-		return metaData.getRatingEnabled();
-	}
-
+	/**
+	 * write the the given frame at frameNumber in the frame leaf
+	 * @param video videoresource
+	 * @param frameNumber the frameNumber at which the frame should be taken from
+	 * @param frame the VFSLeaf to write the picked image to
+	 */
 	@Override
 	public boolean getFrame(OLATResource video, int frameNumber, VFSLeaf frame) throws IOException{
 		File rootFolder = fileResourceManager.getFileResourceRoot(video);
@@ -186,20 +202,31 @@ public class VideoManagerImpl extends VideoManager {
 		}
 		//TODO: throw correct exception
 	}
-
+	
+	/**
+	 * set descriptiontext which is stored in the metadata of the videoresource
+	 * @param video videoresource
+	 * @param text descriptiontext
+	 */
 	@Override
 	public void setDescription(OLATResource video, String text) {
 		VideoMetadata metaData = readVideoMetadataFile(video);
 		metaData.setDescription(text);
 		writeVideoMetadataFile(metaData, video);
 	}
-
+	
+	/**
+	 * get the the descriptiontext stored in the metadata of the videoresource
+	 */
 	@Override
 	public String getDescription(OLATResource video) {
 		VideoMetadata metaData = readVideoMetadataFile(video);
 		return metaData.getDescription();
 	}
 
+	/**
+	 * get the File of the videoresource 
+	 */
 	@Override
 	public File getVideoFile(OLATResource video) {
 		File rootFolder = fileResourceManager.getFileResourceRoot(video);
@@ -209,6 +236,12 @@ public class VideoManagerImpl extends VideoManager {
 	}
 
 
+	/**
+	 * resolve the given path to a videoresource file and return it
+	 * @param video corresponding videoresource
+	 * @param path path to the videofile
+	 * @return VFSLeaf of videofile of resource
+	 */
 	private VFSLeaf resolve(OLATResource video, String path){
 		VFSItem item = VFSManager.resolveFile(fileResourceManager.getFileResourceMedia(video), path);
 		if(item instanceof VFSLeaf){
@@ -218,18 +251,31 @@ public class VideoManagerImpl extends VideoManager {
 		}
 	}
 
+	/**
+	 * write the metdatadata-xml in the videoresource folder
+	 * @param metaData
+	 * @param video
+	 */
 	private void writeVideoMetadataFile(VideoMetadata metaData, OLATResource video){
 		File videoResourceFileroot = FileResourceManager.getInstance().getFileResourceRootImpl(video).getBasefile();
 		File metaDataFile = new File(videoResourceFileroot,"video_metadata.xml");
 		XStreamHelper.writeObject(XStreamHelper.createXStreamInstance(), metaDataFile, metaData);
 	}
 
+	/**
+	 * return the metdatadata-xml in the videoresource folder
+	 * @param video
+	 * @return
+	 */
 	private VideoMetadata readVideoMetadataFile(OLATResource video){
 		File videoResourceFileroot = FileResourceManager.getInstance().getFileResourceRootImpl(video).getBasefile();
 		File metaDataFile = new File(videoResourceFileroot, "video_metadata.xml");
 		return (VideoMetadata) XStreamHelper.readObject(XStreamHelper.createXStreamInstance(), metaDataFile);
 	}
-
+	
+	/**
+	 * TODO
+	 */
 	@Override
 	public boolean optimizeVideoRessource(OLATResource video) {
 		File file = getVideoFile(video);
@@ -258,8 +304,6 @@ public class VideoManagerImpl extends VideoManager {
 
 		pb.redirectErrorStream(true);
 		pb.inheritIO();
-
-
 		 
 		try {
 			logInfo("+--------------------------HANDBRAKE STARTS TRANSCODING------------------------------------+");
