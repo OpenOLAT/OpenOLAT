@@ -43,6 +43,14 @@ public class GroupsPage {
 		this.browser = browser;
 	}
 	
+	public GroupsPage assertOnMyGroupsSelected() {
+		By myGroupsBy = By.cssSelector("div.o_segments a.btn.btn-primary.o_sel_group_all_groups_seg");
+		OOGraphene.waitElement(myGroupsBy, 5, browser);
+		WebElement myGroupsEl = browser.findElement(myGroupsBy);
+		Assert.assertTrue(myGroupsEl.isDisplayed());
+		return this;
+	}
+	
 	/**
 	 * Select the tab "Published groups"
 	 * 
