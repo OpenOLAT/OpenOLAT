@@ -2,6 +2,7 @@
 	<div id='$r.getId("d3mapholder")' class="d3chart" style="position:relative; width:${width}px; height:${height}px; background-color:purple; #if($filename && !${filename.isEmpty()}) background-image: url($mapperUri/$filename); #end"></div>
 <script type='text/javascript'>
 /* <![CDATA[ */
+## data: [['1','CIRCLE',[297,75,44],3],['2','CIRCLE',[218,212,25],1],['3','RECT',[51,53,164,123],0]]
 jQuery(function () {
 	var d = $bubbles.data;
 	var svg = d3.select('#$r.getId("d3mapholder")').append('svg')
@@ -10,24 +11,39 @@ jQuery(function () {
 
 	var vis = svg.selectAll('circle')
 	    .data(d);
+	
+	var r = d3.scale.ordinal()
+	  .domain(d.map(function(d) { return d[3]; }))
+	  .rangeRoundBands([50, 0]);
 
-	vis.enter().append('circle')
-		.attr('transform', function(d) {
-			var shape = d[1].toLowerCase();
+	var node = vis.enter()
+	   .append('g')
+	     .attr('class','bubble bubble_green')
+	     .attr('transform', function(d) {
 			var x1 = d[2][0];
 			var y1 = d[2][1];
+			var bubbleRadius = r(d[3]);
+			var shape = d[1].toLowerCase();
+			
+			var x,y;
 			if(shape == "circle") {
-				var r = d[2][2] / 2;
-				return 'translate(' + (x1 + r) + ',' + (y1 + r) + ')';
+				x = x1;
+				y = y1;
 			} else if(shape == "rect") {
 				var x2 = d[2][2];
 				var y2 = d[2][3];
-				return 'translate(' + ((x1 + x2) / 2) + ',' + ((y1 + y2) / 2) + ')';
+				x = ((x1 + x2) / 2);
+				y = ((y1 + y2) / 2);
 			}
-			return 'translate(' + x1 + ',' + y1 + ')';
-		})
-		.attr('r', function(d) { return d[3]; })
-		.attr('class', function(d) { return 'bubble bubble_default'; });
+			return 'translate(' + x + ',' + y + ')';
+	     });
+	 node.append('circle')
+		 .attr('r', function(d) { return r(d[3]); })
+		 .style("fill", function(d) { return '#008800'; });
+	 node.append("svg:text")
+		 .attr("text-anchor", "middle")
+		 .attr("dy", ".3em")
+		 .text(function(d) { return d[0] + '.'; });
 	
 });
 /* ]]> */</script>

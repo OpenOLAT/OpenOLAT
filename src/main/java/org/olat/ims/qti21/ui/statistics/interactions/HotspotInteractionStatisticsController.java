@@ -167,68 +167,6 @@ public class HotspotInteractionStatisticsController extends BasicController {
 		return new HotspotBubbles(bubbles);
 	}
 	
-	public static class HotspotBubbles {
-		private final List<HotspotBubble> bubbles;
-		
-		public HotspotBubbles(List<HotspotBubble> bubbles) {
-			this.bubbles = bubbles;
-		}
-
-		public List<HotspotBubble> getBubbles() {
-			return bubbles;
-		}
-		
-		public String getData() {
-			StringBuilder data = new StringBuilder();
-			data.append("[");
-			for(HotspotBubble bubble:bubbles) {
-				if(data.length() > 1) data.append(",");
-				
-				data.append("['").append(bubble.getLabel()).append("','")
-				    .append(bubble.getShape().name()).append("',[");
-				for(int i=0; i<bubble.getCoords().size(); i++) {
-					if(i > 0) data.append(",");
-					data.append(bubble.getCoords().get(i).intValue());
-				}   
-				data.append("],").append(bubble.getNumOfCorrect())
-				    .append("]");
-			}
-			data.append("]");
-			return data.toString();
-		}
-	}
-	
-	public static class HotspotBubble {
-		
-		private final String label;
-		private final Shape shape;
-		private final List<Integer> coords;
-		private final long numOfCorrect;
-		
-		public HotspotBubble(String label, Shape shape, List<Integer> coords, long numOfCorrect) {
-			this.label = label;
-			this.coords = coords;
-			this.shape = shape;
-			this.numOfCorrect = numOfCorrect;
-		}
-
-		public String getLabel() {
-			return label;
-		}
-
-		public Shape getShape() {
-			return shape;
-		}
-
-		public List<Integer> getCoords() {
-			return coords;
-		}
-
-		public long getNumOfCorrect() {
-			return numOfCorrect;
-		}
-	}
-	
 	private Series getSingleChoice(List<HotspotChoiceStatistics> statisticResponses) {
 		boolean survey = QTIType.survey.equals(resourceResult.getType());
 		int numOfParticipants = resourceResult.getQTIStatisticAssessment().getNumOfParticipants();
@@ -343,6 +281,68 @@ public class HotspotInteractionStatisticsController extends BasicController {
 			text = choice.getIdentifier().toString();
 		}
 		return text;
+	}
+	
+	public static class HotspotBubbles {
+		private final List<HotspotBubble> bubbles;
+		
+		public HotspotBubbles(List<HotspotBubble> bubbles) {
+			this.bubbles = bubbles;
+		}
+
+		public List<HotspotBubble> getBubbles() {
+			return bubbles;
+		}
+		
+		public String getData() {
+			StringBuilder data = new StringBuilder();
+			data.append("[");
+			for(HotspotBubble bubble:bubbles) {
+				if(data.length() > 1) data.append(",");
+				
+				data.append("['").append(bubble.getLabel()).append("','")
+				    .append(bubble.getShape().name()).append("',[");
+				for(int i=0; i<bubble.getCoords().size(); i++) {
+					if(i > 0) data.append(",");
+					data.append(bubble.getCoords().get(i).intValue());
+				}   
+				data.append("],").append(bubble.getNumOfCorrect())
+				    .append("]");
+			}
+			data.append("]");
+			return data.toString();
+		}
+	}
+	
+	public static class HotspotBubble {
+		
+		private final String label;
+		private final Shape shape;
+		private final List<Integer> coords;
+		private final long numOfCorrect;
+		
+		public HotspotBubble(String label, Shape shape, List<Integer> coords, long numOfCorrect) {
+			this.label = label;
+			this.coords = coords;
+			this.shape = shape;
+			this.numOfCorrect = numOfCorrect;
+		}
+
+		public String getLabel() {
+			return label;
+		}
+
+		public Shape getShape() {
+			return shape;
+		}
+
+		public List<Integer> getCoords() {
+			return coords;
+		}
+
+		public long getNumOfCorrect() {
+			return numOfCorrect;
+		}
 	}
 	
 	private static class BackgroundMapper implements Mapper {
