@@ -11,16 +11,16 @@ jQuery(function() {
 	var board = jQuery("#o_qti_hotspots_edit").drawing();
 	#foreach($hotspot in $hotspots)
 		board.shape('${hotspot.identifier}','${hotspot.shape}','${hotspot.coords}')
-			.on('click', function(e) {
-				jQuery(this).css('background-color','red');
-				$r.javaScriptCommand("select-hotspot","hotspot","${hotspot.identifier}")
-			}).addClass(#if($hotspot.correct) 'o_qti_hotspot_correct' #else 'o_qti_hotspot_not_correct' #end);
+			.addClass(#if($hotspot.correct) 'o_qti_hotspot_correct' #else 'o_qti_hotspot_not_correct' #end)
+			.on("resizestop dragstop", function(event, ui) {
+				$r.openJavaScriptCommand("move-hotspot"),'hotspot',ui.helper.attr('id'),'coords',board.getCoords(ui.helper));
+			})
+			.append("<span class='o_qti_hotspot_label'>${foreach.count}.</span>")
+			.append("<a class='o_qti_hotspot_delete' href='javascript:;' data-qti-hotspot='${hotspot.identifier}'><i class='o_icon o_icon_remove'> </i></a>");
 	#end
+	jQuery("#o_qti_hotspots_edit a.o_qti_hotspot_delete").on('click', function(e) {
+		$r.openJavaScriptCommand("delete-hotspot"),'hotspot',jQuery(this).data('qti-hotspot'));
+	})
 });
 /* ]]> */
 </script>
-<div class="o_block">
-#foreach($hotspot in $hotspots)
-	$r.render($hotspot.correctComponentName)
-#end
-</div>

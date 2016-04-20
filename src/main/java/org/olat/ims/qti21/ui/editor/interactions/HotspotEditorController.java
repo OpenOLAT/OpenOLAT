@@ -23,6 +23,7 @@ import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -89,13 +90,12 @@ public class HotspotEditorController extends FormBasicController {
 		mimeTypes.add("image/png");
 	}
 	
-	private static final String[] correctKeys = new  String[]{ "correct" };
-	
 	private TextElement titleEl;
 	private RichTextElement textEl;
 	private FileElement backgroundEl;
 	private FormLayoutContainer hotspotsCont;
 	private FormLink newCircleButton, newRectButton;
+	private MultipleSelectionElement correctHotspotsEl;
 	
 	private final HotspotAssessmentItemBuilder itemBuilder;
 	
@@ -153,12 +153,10 @@ public class HotspotEditorController extends FormBasicController {
 		newRectButton = uifactory.addFormLink("new.rectangle", "new.rectangle", null, hotspotsCont, Link.BUTTON);
 		newRectButton.setIconLeftCSS("o_icon o_icon-lg o_icon_rectangle");
 
-		List<HotspotChoice> choices = itemBuilder.getHotspotChoices();
-		for(HotspotChoice choice:choices) {
-			HotspotWrapper spot = createWrapper(choice);
-			choiceWrappers.add(spot);
-		}
-		hotspotsCont.contextPut("hotspots", choiceWrappers);
+		String[] emptyKeys = new String[0];
+		correctHotspotsEl = uifactory.addCheckboxesHorizontal("form.imd.correct.spots", formLayout, emptyKeys, emptyKeys);
+		correctHotspotsEl.addActionListener(FormEvent.ONCHANGE);
+		rebuildWrappersAndCorrectSelection();
 		
 		initialBackgroundImage = getCurrentBackground();
 		backgroundEl = uifactory.addFileElement(getWindowControl(), "form.imd.background", "form.imd.background", formLayout);
@@ -209,7 +207,12 @@ public class HotspotEditorController extends FormBasicController {
 	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
 		if(hotspotsCont.getFormItemComponent() == source) {
-			doSelectHotspot(ureq);
+			String cmd = event.getCommand();
+			if("delete-hotspot".equals(cmd)) {
+				doDeleteHotspot(ureq);
+			} else if("move-hotspot".equals(cmd)) {
+				doMoveHotspot(ureq);
+			}
 		}
 		super.event(ureq, source, event);
 	}
@@ -246,29 +249,70 @@ public class HotspotEditorController extends FormBasicController {
 			}
 			updateBackground();
 			updateHotspots(ureq);
-		} else if(source instanceof MultipleSelectionElement) {
+		} else if(correctHotspotsEl == source) {
 			MultipleSelectionElement correctEl = (MultipleSelectionElement)source;
-			Object uobject = correctEl.getUserObject();
-			if(uobject instanceof HotspotWrapper) {
-				HotspotWrapper wrapper = (HotspotWrapper)uobject;
-				itemBuilder.setCorrect(wrapper.getChoice(), correctEl.isAtLeastSelected(1));
-				flc.setDirty(true);
-			}
+			Collection<String> correctResponseIds = correctEl.getSelectedKeys();
+			doCorrectAnswers(correctResponseIds);
+			flc.setDirty(true);
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
 	
-	private void doSelectHotspot(UserRequest ureq) {
-		String cmd = ureq.getParameter("cid");
+	private void doMoveHotspot(UserRequest ureq) {
+		String coords = ureq.getParameter("coords");
 		String hotspotId = ureq.getParameter("hotspot");
-		System.out.println(cmd + " :: " + hotspotId);
+		if(StringHelper.containsNonWhitespace(hotspotId) && StringHelper.containsNonWhitespace(coords)) {
+			for(HotspotWrapper choiceWrapper:choiceWrappers) {
+				if(choiceWrapper.getIdentifier().equals(hotspotId)) {
+					choiceWrapper.setCoords(coords);
+				}
+			}
+		}
+	}
+	
+	private void doDeleteHotspot(UserRequest ureq) {
+		String hotspotId = ureq.getParameter("hotspot");
+		HotspotChoice choiceToDelete = itemBuilder.getHotspotChoice(hotspotId);
+		if(choiceToDelete != null) {
+			itemBuilder.deleteHotspotChoice(choiceToDelete);
+			rebuildWrappersAndCorrectSelection();
+		}
 	}
 	
 	private void createHotspotChoice(Shape shape, String coords) {
 		Identifier identifier = IdentifierGenerator.newNumberAsIdentifier("hc");
-		HotspotChoice choice = itemBuilder.createHotspotChoice(identifier, shape, coords);
-		HotspotWrapper wrapper = createWrapper(choice);
-		choiceWrappers.add(wrapper);
+		itemBuilder.createHotspotChoice(identifier, shape, coords);
+		rebuildWrappersAndCorrectSelection();
+	}
+	
+	private void rebuildWrappersAndCorrectSelection() {
+		choiceWrappers.clear();
+		
+		List<HotspotChoice> choices = itemBuilder.getHotspotChoices();
+		String[] keys = new String[choices.size()];
+		String[] values = new String[choices.size()];
+		for(int i=0; i<choices.size(); i++) {
+			HotspotChoice choice = choices.get(i);
+			keys[i] = choice.getIdentifier().toString();
+			values[i] = Integer.toString(i + 1) + ".";
+			choiceWrappers.add(new HotspotWrapper(choice));
+		}
+		correctHotspotsEl.setKeysAndValues(keys, values);
+		for(int i=0; i<choices.size(); i++) {
+			if(itemBuilder.isCorrect(choices.get(i))) {
+				correctHotspotsEl.select(keys[i], true);
+			}
+		}
+		hotspotsCont.contextPut("hotspots", choiceWrappers);
+	}
+	
+	private void doCorrectAnswers(Collection<String> correctResponseIds) {
+		List<HotspotChoice> choices = itemBuilder.getHotspotChoices();
+		for(int i=0; i<choices.size(); i++) {
+			HotspotChoice choice = choices.get(i);
+			boolean correct = correctResponseIds.contains(choice.getIdentifier().toString());
+			itemBuilder.setCorrect(choice, correct);
+		}
 	}
 	
 	private void updateBackground() {
@@ -331,17 +375,6 @@ public class HotspotEditorController extends FormBasicController {
 		fireEvent(ureq, new AssessmentItemEvent(AssessmentItemEvent.ASSESSMENT_ITEM_CHANGED, itemBuilder.getAssessmentItem(), QTI21QuestionType.hotspot));
 	}
 	
-	private HotspotWrapper createWrapper(HotspotChoice choice) {
-		MultipleSelectionElement correctEl = uifactory.addCheckboxesHorizontal(choice.getIdentifier().toString(), hotspotsCont, correctKeys, new String[]{choice.getIdentifier().toString() });
-		correctEl.addActionListener(FormEvent.ONCHANGE);
-		HotspotWrapper wrapper = new HotspotWrapper(choice, correctEl);
-		if(itemBuilder.isCorrect(choice)) {
-			correctEl.select(correctKeys[0], true);
-		}
-		correctEl.setUserObject(wrapper);
-		return wrapper;
-	}
-	
 	private void updateHotspots(UserRequest ureq) {
 		Map<String,HotspotWrapper> wrapperMap = new HashMap<>();
 		for(HotspotWrapper wrapper:choiceWrappers) {
@@ -367,22 +400,20 @@ public class HotspotEditorController extends FormBasicController {
 		}
 	}
 
-	public static class HotspotWrapper {
+	public class HotspotWrapper {
 
 		private final HotspotChoice choice;
-		private final MultipleSelectionElement correctEl;
 		
-		public HotspotWrapper(HotspotChoice choice, MultipleSelectionElement correctEl) {
+		public HotspotWrapper(HotspotChoice choice) {
 			this.choice = choice;
-			this.correctEl = correctEl;
-		}
-		
-		public boolean isCorrect() {
-			return correctEl.isAtLeastSelected(1);
 		}
 		
 		public HotspotChoice getChoice() {
 			return choice;
+		}
+		
+		public boolean isCorrect() {
+			return itemBuilder.isCorrect(choice);
 		}
 
 		public String getIdentifier() {
@@ -410,10 +441,6 @@ public class HotspotEditorController extends FormBasicController {
 		public void setCoords(String coords) {
 			List<Integer> coordList = AssessmentItemFactory.coordsList(coords);
 			choice.setCoords(coordList);
-		}
-		
-		public String getCorrectComponentName() {
-			return correctEl.getComponent().getComponentName();
 		}
 	}
 	

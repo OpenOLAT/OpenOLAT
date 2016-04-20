@@ -275,6 +275,16 @@ public class HotspotAssessmentItemBuilder extends AssessmentItemBuilder {
 		this.question = question;
 	}
 	
+	public HotspotChoice getHotspotChoice(String identifier) {
+		List<HotspotChoice> choices = getHotspotChoices();
+		for(HotspotChoice choice:choices) {
+			if(choice.getIdentifier().toString().equals(identifier)) {
+				return choice;
+			}
+		}
+		return null;
+	}
+	
 	public List<HotspotChoice> getHotspotChoices() {
 		return hotspotInteraction.getHotspotChoices();
 	}
@@ -287,6 +297,11 @@ public class HotspotAssessmentItemBuilder extends AssessmentItemBuilder {
 		choice.setCoords(AssessmentItemFactory.coordsList(coords));
 		hotspotInteraction.getHotspotChoices().add(choice);
 		return choice;
+	}
+	
+	public void deleteHotspotChoice(HotspotChoice choice) {
+		hotspotInteraction.getHotspotChoices().remove(choice);
+		correctAnswers.remove(choice.getIdentifier());
 	}
 	
 	@Override

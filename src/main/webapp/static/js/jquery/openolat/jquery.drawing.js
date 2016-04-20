@@ -116,6 +116,14 @@
 			}});
 	}
 	
+	Drawing.prototype.getCoords = function(spot) {
+        if(spot.hasClass('o_draw_circle')) {
+        	return calculateCircleCoords(spot);
+        } else if(spot.hasClass('o_draw_rectangle')) {
+        	return calculateRectangleCoords(spot);
+        }
+	}
+	
 	Drawing.prototype.generateInputsAndId = function(prefix, shape, coords) {
 		if(typeof coords === "undefined") {
 			prefix = "id";
@@ -133,6 +141,7 @@
         var coords = (position.left + radius) + "," + (position.top + radius) + "," + radius;
         jQuery("#" + id + "_shape").val("circle");
         jQuery("#" + id + "_coords").val(coords);
+        return coords;
 	};
 	
 	calculateRectangleCoords = function(spot) {
@@ -143,6 +152,7 @@
         var coords = position.left + "," + position.top + "," + (position.left + width) + "," + (position.top + height);
         jQuery("#" + id + "_shape").val("rect");
         jQuery("#" + id + "_coords").val(coords);
+        return coords;
 	};
 	
 }(jQuery));

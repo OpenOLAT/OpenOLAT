@@ -20,7 +20,10 @@
 package org.olat.ims.qti21.ui.editor.interactions;
 
 import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -37,14 +40,15 @@ import org.olat.core.util.Util;
 import org.olat.core.util.filter.FilterFactory;
 import org.olat.ims.qti21.model.xml.AssessmentItemBuilder;
 import org.olat.ims.qti21.model.xml.ScoreBuilder;
-import org.olat.ims.qti21.model.xml.interactions.SimpleChoiceAssessmentItemBuilder.ScoreEvaluation;
 import org.olat.ims.qti21.model.xml.interactions.HotspotAssessmentItemBuilder;
+import org.olat.ims.qti21.model.xml.interactions.SimpleChoiceAssessmentItemBuilder.ScoreEvaluation;
 import org.olat.ims.qti21.ui.editor.AssessmentTestEditorController;
 import org.olat.ims.qti21.ui.editor.SyncAssessmentItem;
 import org.olat.ims.qti21.ui.editor.events.AssessmentItemEvent;
 
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.graphic.HotspotChoice;
 import uk.ac.ed.ph.jqtiplus.node.test.AssessmentItemRef;
+import uk.ac.ed.ph.jqtiplus.types.Identifier;
 
 /**
  * 
@@ -99,7 +103,7 @@ public class HotspotChoiceScoreController extends AssessmentItemRefEditorControl
 			assessmentModeEl.select(ScoreEvaluation.allCorrectAnswers.name(), true);
 		}
 		
-		String scorePage = velocity_root + "/choices_score.html";
+		String scorePage = velocity_root + "/hotspot_choices_score.html";
 		scoreCont = FormLayoutContainer.createCustomFormLayout("scores", getTranslator(), scorePage);
 		formLayout.add(scoreCont);
 		scoreCont.setLabel(null, null);
@@ -121,10 +125,19 @@ public class HotspotChoiceScoreController extends AssessmentItemRefEditorControl
 	@Override
 	public void sync(UserRequest ureq, AssessmentItemBuilder assessmentItemBuilder) {
 		if(itemBuilder == assessmentItemBuilder) {
+			Set<Identifier> choiceIdentifiers = new HashSet<>();
 			for(HotspotChoice choice:itemBuilder.getHotspotChoices()) {
 				HotspotChoiceWrapper wrapper = getHotspotChoiceWrapper(choice);
 				if(wrapper == null) {
 					wrappers.add(createHotspotChoiceWrapper(choice));
+				}
+				choiceIdentifiers.add(choice.getIdentifier());
+			}
+			
+			for(Iterator<HotspotChoiceWrapper> wrapperIt=wrappers.iterator(); wrapperIt.hasNext(); ) {
+				HotspotChoiceWrapper wrapper = wrapperIt.next();
+				if(!choiceIdentifiers.contains(wrapper.getChoice().getIdentifier())) {
+					wrapperIt.remove();
 				}
 			}
 		}
@@ -135,6 +148,10 @@ public class HotspotChoiceScoreController extends AssessmentItemRefEditorControl
 		Double score = itemBuilder.getMapping(choice.getIdentifier());
 		if(score != null) {
 			points = score.toString();
+		} else if(itemBuilder.isCorrect(choice)) {
+			points = "1";
+		} else {
+			points = "0";
 		}
 		String pointElId = "points_" + counter++;
 		TextElement pointEl = uifactory.addTextElement(pointElId, null, 5, points, scoreCont);
