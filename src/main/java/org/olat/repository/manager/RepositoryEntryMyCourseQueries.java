@@ -506,7 +506,6 @@ public class RepositoryEntryMyCourseQueries {
 					} else {
 						sb.append(" order by lower(v.displayname) desc, lifecycle.validFrom desc nulls last, lower(v.externalRef) desc nulls last");
 					}
-					appendAsc(sb, asc);
 					break;
 				case lifecycle:
 					sb.append(" order by lifecycle.validFrom ");
@@ -576,8 +575,11 @@ public class RepositoryEntryMyCourseQueries {
 					appendAsc(sb, asc).append(" nulls last, lower(v.displayname) asc");
 					break;
 				default:
-					sb.append(" order by lower(v.displayname)");
-					appendAsc(sb, asc);
+					if(asc) {
+						sb.append(" order by lower(v.displayname) asc, lifecycle.validFrom desc nulls last, lower(v.externalRef) asc nulls last");
+					} else {
+						sb.append(" order by lower(v.displayname) desc, lifecycle.validFrom desc nulls last, lower(v.externalRef) desc nulls last");
+					}
 					break;
 			}
 		}
