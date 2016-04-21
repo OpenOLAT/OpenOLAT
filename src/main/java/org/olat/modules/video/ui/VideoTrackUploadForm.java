@@ -36,12 +36,11 @@ import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.util.vfs.LocalFolderImpl;
 import org.olat.core.util.vfs.Quota;
 import org.olat.core.util.vfs.VFSContainer;
-import org.olat.core.util.vfs.VFSManager;
-import org.olat.fileresource.FileResourceManager;
+import org.olat.modules.video.VideoManager;
 import org.olat.resource.OLATResource;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * Uploadform to uplaod track files and save the corresponding language
@@ -52,12 +51,13 @@ import org.olat.resource.OLATResource;
  */
 
 public class VideoTrackUploadForm extends FormBasicController {
-	private OLATResource videoResource;
 	private FileElement fileEl;
-	SingleSelection langsItem;
-	long remainingSpace;
-	private VFSContainer videoResourceFileroot;
-	private VFSContainer metaDataFolder;
+	private SingleSelection langsItem;
+	private long remainingSpace;
+	private VFSContainer mediaContainer;
+	
+	@Autowired
+	private VideoManager videoManager;
 
 	private static final Set<String> trackMimeTypes = new HashSet<String>();
 	static {
@@ -66,15 +66,13 @@ public class VideoTrackUploadForm extends FormBasicController {
 
 	public VideoTrackUploadForm(UserRequest ureq, WindowControl wControl, OLATResource videoResource) {
 		super(ureq, wControl);
-		this.videoResource = videoResource;
+		mediaContainer = videoManager.getMediaContainer(videoResource);
 		initForm(ureq);
 	}
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		remainingSpace = Quota.UNLIMITED;
-		videoResourceFileroot = new LocalFolderImpl(FileResourceManager.getInstance().getFileResourceRootImpl(videoResource).getBasefile());
-		metaDataFolder = VFSManager.getOrCreateContainer(videoResourceFileroot, "media");
 		List<String> langs = new ArrayList<String>();
 		List<String> dispLangs = new ArrayList<String>();
 
@@ -110,7 +108,7 @@ public class VideoTrackUploadForm extends FormBasicController {
 					return;
 				}
 			}else{
-				fireEvent(ureq, new FolderEvent(FolderEvent.UPLOAD_EVENT, fileEl.moveUploadFileTo(metaDataFolder)));
+				fireEvent(ureq, new FolderEvent(FolderEvent.UPLOAD_EVENT, fileEl.moveUploadFileTo(mediaContainer)));
 			}
 		}else{
 			fileEl.setErrorKey("track.upload.error.nofile", null);

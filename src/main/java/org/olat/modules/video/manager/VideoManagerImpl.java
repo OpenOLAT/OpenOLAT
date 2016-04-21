@@ -25,7 +25,9 @@ import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.RandomAccessFile;
+import java.math.RoundingMode;
 import java.nio.channels.FileChannel;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -39,6 +41,8 @@ import org.jcodec.common.FileChannelWrapper;
 import org.olat.core.commons.services.image.Size;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.vfs.LocalFolderImpl;
+import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSManager;
@@ -47,6 +51,7 @@ import org.olat.fileresource.FileResourceManager;
 import org.olat.modules.video.VideoManager;
 import org.olat.modules.video.model.VideoMetadata;
 import org.olat.modules.video.model.VideoQualityVersion;
+import org.olat.repository.RepositoryEntry;
 import org.olat.resource.OLATResource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -54,11 +59,18 @@ import org.springframework.stereotype.Service;
 /**
  * Manager for Videoressource
  * 
- * @author dfakae, dirk.furrer@frentix.com, http://www.frentix.com
+ * @author dfurrer, dirk.furrer@frentix.com, http://www.frentix.com
  *
  */
 @Service("videoManager")
 public class VideoManagerImpl implements VideoManager {
+	private static final String FILENAME_POSTER_JPG = "poster.jpg";
+	private static final String FILENAME_VIDEO_MP4 = "video.mp4";
+	private static final String DIRNAME_MEDIA = "media";
+	private static final String DIRNAME_OPTIMIZED_VIDEO_DATA = "optimizedVideoData";
+	private static final String FILENAME_OPTIMIZED_VIDEO_METADATA_XML = "optimizedVideo_metadata.xml";
+	private static final String FILENAME_VIDEO_METADATA_XML = "video_metadata.xml";
+	
 	@Autowired
 	private FileResourceManager fileResourceManager;
 	private static final OLog log = Tracing.createLoggerFor(VideoManagerImpl.class);
@@ -68,7 +80,17 @@ public class VideoManagerImpl implements VideoManager {
 	 */
 	@Override
 	public Size getVideoSize(OLATResource video) {
-		return readVideoMetadataFile(video).getSize();
+		Size size = null;
+		VideoMetadata metaData = readVideoMetadataFile(video);
+		if (metaData == null || metaData.getSize() == null) {
+			// unknown size, set to most common 4:3 aspect ratio
+			size = new Size(800, 600, false);
+			setVideoSize(video, size);			
+		} else {
+			size = metaData.getSize();
+		}
+		
+		return size;
 	}
 
 	/**
@@ -105,7 +127,7 @@ public class VideoManagerImpl implements VideoManager {
 			}
 		}
 
-		VFSLeaf newPoster = VFSManager.resolveOrCreateLeafFromPath(fileResourceManager.getFileResourceMedia(video), "/poster.jpg");
+		VFSLeaf newPoster = VFSManager.resolveOrCreateLeafFromPath(fileResourceManager.getFileResourceMedia(video), FILENAME_POSTER_JPG);
 
 		if(!newPoster.isSame(posterframe)){
 		VFSManager.copyContent(posterframe, newPoster);
@@ -185,8 +207,8 @@ public class VideoManagerImpl implements VideoManager {
 	@Override
 	public boolean getFrame(OLATResource video, int frameNumber, VFSLeaf frame) throws IOException{
 		File rootFolder = fileResourceManager.getFileResourceRoot(video);
-		File metaDataFile = new File(rootFolder, "media");
-		File videoFile = new File(metaDataFile, "video.mp4");
+		File metaDataFile = new File(rootFolder, DIRNAME_MEDIA);
+		File videoFile = new File(metaDataFile, FILENAME_VIDEO_MP4);
 
 		try(RandomAccessFile randomAccessFile = new RandomAccessFile(videoFile, "r")){
 			FileChannel ch = randomAccessFile.getChannel();
@@ -231,8 +253,8 @@ public class VideoManagerImpl implements VideoManager {
 	@Override
 	public File getVideoFile(OLATResource video) {
 		File rootFolder = fileResourceManager.getFileResourceRoot(video);
-		File metaDataFile = new File(rootFolder, "media");
-		File videoFile = new File(metaDataFile, "video.mp4");
+		File metaDataFile = new File(rootFolder, DIRNAME_MEDIA);
+		File videoFile = new File(metaDataFile, FILENAME_VIDEO_MP4);
 		return videoFile;
 	}
 
@@ -259,7 +281,7 @@ public class VideoManagerImpl implements VideoManager {
 	 */
 	private void writeVideoMetadataFile(VideoMetadata metaData, OLATResource video){
 		File videoResourceFileroot = FileResourceManager.getInstance().getFileResourceRootImpl(video).getBasefile();
-		File metaDataFile = new File(videoResourceFileroot,"video_metadata.xml");
+		File metaDataFile = new File(videoResourceFileroot,FILENAME_VIDEO_METADATA_XML);
 		XStreamHelper.writeObject(XStreamHelper.createXStreamInstance(), metaDataFile, metaData);
 	}
 
@@ -270,7 +292,7 @@ public class VideoManagerImpl implements VideoManager {
 	 */
 	private VideoMetadata readVideoMetadataFile(OLATResource video){
 		File videoResourceFileroot = FileResourceManager.getInstance().getFileResourceRootImpl(video).getBasefile();
-		File metaDataFile = new File(videoResourceFileroot, "video_metadata.xml");
+		File metaDataFile = new File(videoResourceFileroot, FILENAME_VIDEO_METADATA_XML);
 		return (VideoMetadata) XStreamHelper.readObject(XStreamHelper.createXStreamInstance(), metaDataFile);
 	}
 	
@@ -281,8 +303,8 @@ public class VideoManagerImpl implements VideoManager {
 	public boolean optimizeVideoRessource(OLATResource video) {
 		File file = getVideoFile(video);
 		File videoResourceFileroot = fileResourceManager.getFileResourceRoot(video);
-		File optimizedFolder = new File(videoResourceFileroot, "optimizedVideoData");
-		File metaDataFile = new File(optimizedFolder,"optimizedVideo_metadata.xml");
+		File optimizedFolder = new File(videoResourceFileroot, DIRNAME_OPTIMIZED_VIDEO_DATA);
+		File metaDataFile = new File(optimizedFolder,FILENAME_OPTIMIZED_VIDEO_METADATA_XML);
 		optimizedFolder.mkdirs();
 
 		ArrayList<String> cmd = new ArrayList<String>();
@@ -318,23 +340,107 @@ public class VideoManagerImpl implements VideoManager {
 	
 	@Override
 	public List<VideoQualityVersion> getQualityVersions(OLATResource video){
-		File videoResourceFileroot = fileResourceManager.getFileResourceRoot(video);
-		File optimizedFolder = new File(videoResourceFileroot, "optimizedVideoData");
-		File metaDataFile = new File(optimizedFolder,"optimizedVideo_metadata.xml");
+		VFSContainer optimizedDataContainer = getOptimizedDataContainer(video);
+		VFSLeaf optimizedMetadataFile = VFSManager.resolveOrCreateLeafFromPath(optimizedDataContainer, FILENAME_OPTIMIZED_VIDEO_METADATA_XML);
+		
 		List<VideoQualityVersion> versions;
 		
-		if(!metaDataFile.exists()){
-			try {
-				metaDataFile.createNewFile();
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
+		if (optimizedMetadataFile.getSize() == 0) {
 			versions = new ArrayList<VideoQualityVersion>();
-		}else{
-			Object fileContent = XStreamHelper.readObject(XStreamHelper.createXStreamInstance(), metaDataFile);
+		} else {
+			Object fileContent = XStreamHelper.readObject(XStreamHelper.createXStreamInstance(), optimizedMetadataFile);
 			versions = (List<VideoQualityVersion>) fileContent;
 		}
 		return versions;
+	}
+
+	@Override
+	public String getAspectRatio(Size videoSize) {
+		DecimalFormat df = new DecimalFormat("#.##");
+		df.setRoundingMode(RoundingMode.FLOOR);
+		String ratioCalculated = null;
+		String ratioString = "unknown";
+		
+		if (videoSize.getHeight() != 0) {
+			ratioCalculated = df.format(videoSize.getWidth() / (videoSize.getHeight() + 1.0));
+		}
+		switch (ratioCalculated) {
+		case "1.2": 
+			ratioString = "6:5 Fox Movietone";
+			break;
+		case "1.25": 
+			ratioString = "5:4 TV";
+			break;
+		case "1.33": 
+			ratioString = "4:3 TV";
+			break;
+		case "1.37": 
+			ratioString = "11:8 Academy standard film";
+			break;
+		case "1.41": 
+			ratioString = "A4";
+			break;
+		case "1.43": 
+			ratioString = "IMAX";
+			break;
+		case "1.5": 
+			ratioString = "3:2 35mm";
+			break;
+		case "1.6": 
+			ratioString = "16:10 Computer";
+			break;
+		case "1.61": 
+			ratioString = "16.18:10 The golden ratio";
+			break;
+		case "1.66": 
+			ratioString = "5:3 Super 16mm";
+			break;
+		case "1.77": 
+			ratioString = "16:9 HD video";
+			break;
+		case "1.78": 
+			ratioString = "16:9 HD video";
+			break;
+		case "1.85": 
+			ratioString = "1.85:1 Widescreen cinema";
+			break;
+		case "2.35": 
+			ratioString = "2.35:1 Widescreen cinema";
+			break;
+		case "2.39": 
+			ratioString = "2.39:1 Widescreen cinema";
+			break;
+		case "2.41": 
+			ratioString = "2.414:1 The silver ratio";		
+			break;
+		default :
+			ratioString = videoSize.getWidth() + ":" + videoSize.getHeight();
+		}
+		return ratioString;
+	}
+	
+	@Override
+	public VFSContainer getMediaContainer(OLATResource videoResource) {
+		VFSContainer videoResourceFileroot =  new LocalFolderImpl(FileResourceManager.getInstance().getFileResourceRootImpl(videoResource).getBasefile());
+		VFSContainer metaDataFolder = VFSManager.getOrCreateContainer(videoResourceFileroot, DIRNAME_MEDIA);
+		return metaDataFolder;
+	}
+
+	
+	@Override
+	public VFSContainer getOptimizedDataContainer(OLATResource videoResource) {
+		VFSContainer videoResourceFileroot =  new LocalFolderImpl(FileResourceManager.getInstance().getFileResourceRootImpl(videoResource).getBasefile());
+		VFSContainer optimizedDataFolder = VFSManager.getOrCreateContainer(videoResourceFileroot, DIRNAME_OPTIMIZED_VIDEO_DATA);
+		return optimizedDataFolder;
+	}
+	
+	
+	@Override
+	public VFSLeaf getMasterVideoFile(RepositoryEntry videoRepoEntry) {
+		OLATResource resource = videoRepoEntry.getOlatResource();
+		VFSContainer mediaContainer = getMediaContainer(resource);
+		VFSLeaf videoFile = (VFSLeaf) mediaContainer.resolve(FILENAME_VIDEO_MP4);
+		return videoFile;
 	}
 
 }

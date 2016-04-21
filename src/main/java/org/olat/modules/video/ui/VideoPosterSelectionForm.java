@@ -29,7 +29,6 @@ import java.util.Map;
 
 import org.jcodec.common.FileChannelWrapper;
 import org.jcodec.containers.mp4.demuxer.MP4Demuxer;
-import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.modules.bc.FolderEvent;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -41,14 +40,13 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.helpers.Settings;
-import org.olat.core.util.vfs.LocalFolderImpl;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSManager;
-import org.olat.fileresource.FileResourceManager;
 import org.olat.modules.video.VideoManager;
 import org.olat.modules.video.manager.MediaMapper;
 import org.olat.resource.OLATResource;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -56,23 +54,24 @@ import org.olat.resource.OLATResource;
  *
  */
 public class VideoPosterSelectionForm extends BasicController {
+	private static final String FILENAME_POSTFIX_JPG = ".jpg";
+	private static final String FILENAME_PREFIX_PROPOSAL_POSTER = "proposalPoster";
+	private static final String DIRNAME_PROPOSAL_POSTERS = "proposalPosters";
+	
 	protected FormUIFactory uifactory = FormUIFactory.getInstance();
 	long remainingSpace;
-	private VFSContainer videoResourceFileroot;
-	private VFSContainer metaDataFolder;
-	private VideoManager videoManager = CoreSpringFactory.getImpl(VideoManager.class);
+	private VFSContainer mediaContainer;
+	@Autowired
+	private VideoManager videoManager;
 	VelocityContainer proposalLayout = createVelocityContainer("video_poster_proposal");
 
 	private Map<String, String> generatedPosters;
 	private Map<Link, VFSLeaf> buttons = new HashMap<Link, VFSLeaf>();
 
-
-
 	public VideoPosterSelectionForm(UserRequest ureq, WindowControl wControl, OLATResource videoResource) {
 		super(ureq, wControl);
 
-		videoResourceFileroot =  new LocalFolderImpl(FileResourceManager.getInstance().getFileResourceRootImpl(videoResource).getBasefile());
-		metaDataFolder = VFSManager.getOrCreateContainer(videoResourceFileroot, "media");
+		mediaContainer = videoManager.getMediaContainer(videoResource);
 		generatedPosters = new HashMap<String, String>();
 
 
@@ -98,10 +97,10 @@ public class VideoPosterSelectionForm extends BasicController {
 		for(int x=0; x<=duration;x+=firstThirdDuration ){
 			try {
 
-				VFSContainer proposalContainer = VFSManager.getOrCreateContainer(metaDataFolder, "proposalPosters");
-				VFSLeaf posterProposal = proposalContainer.createChildLeaf("proposalPoster"+x+".jpg");
+				VFSContainer proposalContainer = VFSManager.getOrCreateContainer(mediaContainer, DIRNAME_PROPOSAL_POSTERS);
+				VFSLeaf posterProposal = proposalContainer.createChildLeaf(FILENAME_PREFIX_PROPOSAL_POSTER + x + FILENAME_POSTFIX_JPG);
 				if(posterProposal == null){
-					posterProposal = (VFSLeaf) proposalContainer.resolve("/proposalPoster"+x+".jpg");
+					posterProposal = (VFSLeaf) proposalContainer.resolve("/" + FILENAME_PREFIX_PROPOSAL_POSTER + x + FILENAME_POSTFIX_JPG);
 				}else{
 				videoManager.getFrame(videoResource, x, posterProposal);
 				}
@@ -116,7 +115,7 @@ public class VideoPosterSelectionForm extends BasicController {
 				buttons.put(button, posterProposal);
 //				.addFormLink(posterProposal.getName(), "selectPoster", "track.delete", "track.delete", null, Link.BUTTON);
 
-				generatedPosters.put(mediaUrl+"/proposalPoster"+x+".jpg", String.valueOf(x));
+				generatedPosters.put(mediaUrl + "/" + FILENAME_PREFIX_PROPOSAL_POSTER + x + FILENAME_POSTFIX_JPG, String.valueOf(x));
 			} catch (Exception e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();

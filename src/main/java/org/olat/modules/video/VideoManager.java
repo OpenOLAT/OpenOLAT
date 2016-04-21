@@ -25,8 +25,10 @@ import java.util.HashMap;
 import java.util.List;
 
 import org.olat.core.commons.services.image.Size;
+import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.modules.video.model.VideoQualityVersion;
+import org.olat.repository.RepositoryEntry;
 import org.olat.resource.OLATResource;
 
 /**
@@ -69,4 +71,36 @@ public interface VideoManager {
 	public abstract boolean optimizeVideoRessource(OLATResource video);
 	
 	public abstract List<VideoQualityVersion> getQualityVersions(OLATResource video);
+
+	/**
+	 * Get a human readable aspect ratio from the given video size. Recognizes
+	 * the most common aspect ratios
+	 * 
+	 * @param videoSize
+	 *            Must not be NULL
+	 * @return String containing a displayable aspect ratio
+	 */
+	public abstract String getAspectRatio(Size videoSize);
+
+	/**
+	 * Get the media container for this resource where the actual video is stored
+	 * @param videoResource
+	 * @return VFSContainer
+	 */
+	public abstract VFSContainer getMediaContainer(OLATResource videoResource);
+	
+	/**
+	 * Get the container where all the transcoded videos are stored
+	 * @param videoResource
+	 * @return VFSContainer
+	 */
+	public abstract VFSContainer getOptimizedDataContainer(OLATResource videoResource);
+	
+	/**
+	 * Get the master video file 
+	 * @param videoRepoEntry
+	 * @return VFSLeaf or NULL if it does not exist
+	 */
+	public abstract VFSLeaf getMasterVideoFile(RepositoryEntry videoRepoEntry);
+
 }

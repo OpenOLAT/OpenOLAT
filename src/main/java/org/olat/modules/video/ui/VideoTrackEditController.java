@@ -107,6 +107,7 @@ public class VideoTrackEditController extends FormBasicController {
 		}
 //		tableEl.setVisible(!videoManager.getAllTracks(videoResource).isEmpty());
 		tableEl.setVisible(true);
+		tableEl.setEmtpyTableMessageKey("track.notrack");
 
 		addButton = uifactory.addFormLink("add.track", generalCont, Link.BUTTON);
 	}

@@ -38,14 +38,10 @@ import org.olat.core.gui.render.Renderer;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.util.CSSHelper;
 import org.olat.core.util.FileUtils;
-import org.olat.core.util.vfs.VFSContainer;
-import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
-import org.olat.fileresource.FileResourceManager;
 import org.olat.modules.video.VideoManager;
 import org.olat.modules.video.manager.MediaMapper;
 import org.olat.repository.RepositoryEntry;
-import org.olat.resource.OLATResource;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -88,7 +84,7 @@ public class VideoDisplayController extends BasicController {
 		putInitialPanel(mainVC);
 		
 		//load video as VFSLeaf
-		VFSLeaf video = getVideo(entry);
+		VFSLeaf video = videoManager.getMasterVideoFile(entry);
 		if(video != null) {
 			String filename = video.getName();
 			mainVC.contextPut("filename", filename);
@@ -149,26 +145,6 @@ public class VideoDisplayController extends BasicController {
 				fireEvent(ureq, ENDED_EVENT);
 			}
 		}
-	}
-
-	// get the videoFile using the fileresourcemanager to get the resourcefolder
-	private VFSLeaf getVideo(RepositoryEntry entry) {
-		OLATResource resource = entry.getOlatResource();
-		VFSContainer fResourceFileroot = FileResourceManager.getInstance()
-				.getFileResourceRootImpl(resource);
-
-		VFSLeaf document = null;
-		for(VFSItem item:fResourceFileroot.getItems()) {
-			if (item instanceof VFSContainer && item.getName().endsWith("media")) {
-				VFSContainer mediaFolder = (VFSContainer) item;
-				for (VFSItem video:mediaFolder.getItems()) {
-					if (video instanceof VFSLeaf && video.getName().endsWith("mp4")) {
-						document = (VFSLeaf)video;
-					}
-				}
-			}
-		}
-		return document;
 	}
 
 }

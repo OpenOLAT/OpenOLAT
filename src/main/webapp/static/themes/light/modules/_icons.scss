@@ -270,7 +270,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_FileResource-SOUND_icon:before { content: $fa-var-file-audio-o; }
 .o_FileResource-MOVIE_icon:before { content: $fa-var-file-video-o; }
 .o_FileResource-FILE_icon:before { content: $fa-var-file-o; }
-
+.o_FileResource-VIDEO_icon:before { content: $fa-var-film; }
 .o_CourseModule_icon_closed:before { content: $fa-var-ban; }
 
 /* course element icons */
@@ -304,6 +304,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_cmembers_icon:before { content: $fa-var-users;}
 .o_cl_icon:before { content: $fa-var-check-square-o;}
 .o_vc_icon:before { content: $fa-var-desktop;}
+.o_video_icon:before { content: $fa-var-film;}
 .o_vitero_icon:before { content: $fa-var-desktop;}
 .o_openmeetings_icon:before { content: $fa-var-desktop;}
 .o_gotomeeting_icon:before { content: $fa-var-desktop;}
