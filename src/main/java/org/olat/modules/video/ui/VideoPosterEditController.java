@@ -36,8 +36,8 @@ import org.olat.core.helpers.Settings;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.fileresource.FileResourceManager;
+import org.olat.modules.video.VideoManager;
 import org.olat.modules.video.manager.MediaMapper;
-import org.olat.modules.video.manager.VideoManager;
 import org.olat.resource.OLATResource;
 import org.springframework.beans.factory.annotation.Autowired;
 /**

@@ -17,7 +17,7 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.video.manager;
+package org.olat.modules.video;
 
 import java.io.File;
 import java.io.IOException;
@@ -25,9 +25,8 @@ import java.util.HashMap;
 import java.util.List;
 
 import org.olat.core.commons.services.image.Size;
-import org.olat.core.manager.BasicManager;
 import org.olat.core.util.vfs.VFSLeaf;
-import org.olat.modules.video.models.VideoQualityVersion;
+import org.olat.modules.video.model.VideoQualityVersion;
 import org.olat.resource.OLATResource;
 
 /**
@@ -37,9 +36,7 @@ import org.olat.resource.OLATResource;
  * Initial date: 01.04.2015<br>
  * @author Dirk Furrer, dirk.furrer@frentix.com, http://www.frentix.com
  */
-public abstract class VideoManager extends BasicManager {
-
-	protected static VideoManager INSTANCE;
+public interface VideoManager {
 
 	public abstract File getVideoFile(OLATResource video);
 

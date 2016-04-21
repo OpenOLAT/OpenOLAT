@@ -39,6 +39,8 @@ public class VideoModule extends AbstractSpringModule {
 	private static final String VIDEO_ENABLED = "video.enabled";
 	private static final String VIDEOCOURSENODE_ENABLED = "video.coursenode.enabled";
 	private static final String VIDEOTRANSCODING_ENABLED = "video.transcoding.enabled";
+	@Value("${video.transcoding.provider:handbrake}")
+	private String transcodingProvider;
 
 	@Value("${video.enabled:true}")
 	private boolean enabled;

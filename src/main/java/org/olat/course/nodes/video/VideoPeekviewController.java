@@ -48,6 +48,7 @@ public class VideoPeekviewController  extends BasicController implements Control
 
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
+		
 	}
 
 	@Override

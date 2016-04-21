@@ -17,7 +17,7 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.video.models;
+package org.olat.modules.video.model;
 
 import java.io.File;
 

@@ -18,7 +18,7 @@
  * <p>
  */
 
-package org.olat.modules.video.models;
+package org.olat.modules.video.model;
 
 import java.io.Serializable;
 import java.util.HashMap;
@@ -53,6 +53,7 @@ public class VideoMetadata implements Serializable{
 		private boolean ratingEnabled;
 		private String description;
 		
+		@SuppressWarnings("unused")
 		private int modelVersion = 0; 
 				
 		public VideoMetadata(OLATResourceable resource){

@@ -1,4 +1,4 @@
-package org.olat.modules.video.service;
+package org.olat.modules.video.manager;
 
 import java.util.Map;
 

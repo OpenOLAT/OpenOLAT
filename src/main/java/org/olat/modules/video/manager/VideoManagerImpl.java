@@ -17,6 +17,7 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
+
 package org.olat.modules.video.manager;
 
 import java.awt.image.BufferedImage;
@@ -36,14 +37,18 @@ import org.apache.commons.io.FileUtils;
 import org.jcodec.api.FrameGrab;
 import org.jcodec.common.FileChannelWrapper;
 import org.olat.core.commons.services.image.Size;
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSManager;
 import org.olat.core.util.xml.XStreamHelper;
 import org.olat.fileresource.FileResourceManager;
-import org.olat.modules.video.models.VideoMetadata;
-import org.olat.modules.video.models.VideoQualityVersion;
+import org.olat.modules.video.VideoManager;
+import org.olat.modules.video.model.VideoMetadata;
+import org.olat.modules.video.model.VideoQualityVersion;
 import org.olat.resource.OLATResource;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 /**
@@ -53,13 +58,10 @@ import org.springframework.stereotype.Service;
  *
  */
 @Service("videoManager")
-public class VideoManagerImpl extends VideoManager {
-	private FileResourceManager fileResourceManager = FileResourceManager.getInstance();
-	private RandomAccessFile randomAccessFile;
-
-	public VideoManagerImpl() {
-		INSTANCE = this;
-	}
+public class VideoManagerImpl implements VideoManager {
+	@Autowired
+	private FileResourceManager fileResourceManager;
+	private static final OLog log = Tracing.createLoggerFor(VideoManagerImpl.class);
 
 	/**
 	 * return the resolution of the video in size format from its metadata
@@ -186,10 +188,9 @@ public class VideoManagerImpl extends VideoManager {
 		File metaDataFile = new File(rootFolder, "media");
 		File videoFile = new File(metaDataFile, "video.mp4");
 
-		randomAccessFile = new RandomAccessFile(videoFile, "r");
-		FileChannel ch = randomAccessFile.getChannel();
-		FileChannelWrapper in = new FileChannelWrapper(ch);
-		try{
+		try(RandomAccessFile randomAccessFile = new RandomAccessFile(videoFile, "r")){
+			FileChannel ch = randomAccessFile.getChannel();
+			FileChannelWrapper in = new FileChannelWrapper(ch);
 			FrameGrab frameGrab = new FrameGrab(in).seekToFrameSloppy(frameNumber);
 			OutputStream frameOutputStream = frame.getOutputStream(true);
 
@@ -306,7 +307,7 @@ public class VideoManagerImpl extends VideoManager {
 		pb.inheritIO();
 		 
 		try {
-			logInfo("+--------------------------HANDBRAKE STARTS TRANSCODING------------------------------------+");
+			log.info("+--------------------------HANDBRAKE STARTS TRANSCODING------------------------------------+");
 			Process process = pb.start();
 			return true;
 		} catch (Exception e) {

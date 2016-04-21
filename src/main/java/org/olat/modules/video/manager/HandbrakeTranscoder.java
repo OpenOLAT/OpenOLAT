@@ -1,4 +1,4 @@
-package org.olat.modules.video.service;
+package org.olat.modules.video.manager;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -8,7 +8,7 @@ import org.olat.core.CoreSpringFactory;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.fileresource.FileResourceManager;
-import org.olat.modules.video.manager.VideoManager;
+import org.olat.modules.video.VideoManager;
 import org.olat.resource.OLATResource;
 
 public class HandbrakeTranscoder implements Transcoder {

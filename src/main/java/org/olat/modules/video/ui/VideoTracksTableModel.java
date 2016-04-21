@@ -17,59 +17,56 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.video.models;
+package org.olat.modules.video.ui;
+
+import java.util.Locale;
 
 import org.olat.core.gui.components.form.flexible.FormUIFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.translator.Translator;
-import org.olat.modules.video.ui.QualityTableRow;
 
 /**
- * Tablemodel for qualityversions listing 
- *
+ * table-model for to list de available subtitle-tracks in the metadata
+ *	
  * Initial date: 01.04.2015<br>
  * @author Dirk Furrer, dirk.furrer@frentix.com, http://www.frentix.com
  *
  */
-public class VideoQualityTableModel extends DefaultFlexiTableDataModel<QualityTableRow>{
+public class VideoTracksTableModel extends DefaultFlexiTableDataModel<TrackTableRow>{
 
 	protected FormUIFactory uifactory = FormUIFactory.getInstance();
 	private Translator translator;
-	public VideoQualityTableModel(FlexiTableColumnModel columnModel, Translator translator) {
+	public VideoTracksTableModel(FlexiTableColumnModel columnModel, Translator translator) {
 		super(columnModel);
 		this.translator = translator;
 	}
 
 	@Override
-	public VideoQualityTableModel createCopyWithEmptyList() {
-		return new VideoQualityTableModel(getTableColumnModel(), translator);
+	public VideoTracksTableModel createCopyWithEmptyList() {
+		return new VideoTracksTableModel(getTableColumnModel(), translator);
 	}
 
 
 	@Override
 	public Object getValueAt(int row, int col) {
-		QualityTableRow video = getObject(row);
-		switch(QualityTableCols.values()[col]) {
-			case type: return video.getType();
-			case dimension: return video.getDimension();
-			case size: return video.getSize();
-			case format: return video.getFormat();
-			case view: return video.getViewLink();
+		TrackTableRow track = getObject(row);
+		switch(TrackTableCols.values()[col]) {
+			case file: return track.getTrack();
+			case language: return new Locale(track.getLanguage()).getDisplayLanguage(this.translator.getLocale());
+			case delete: return track.getDeleteLink();
 			default: return "";
 		}
 	}
 
-	public enum QualityTableCols {
-		type("quality.table.header.type"),
-		dimension("quality.table.header.dimension"),
-		size("quality.table.header.size"),
-		format("quality.table.header.format"),
-		view("quality.table.header.view");
+	public enum TrackTableCols {
+		file("track.table.header.file"),
+		language("track.table.header.language"),
+		delete("track.table.header.delete");
 
 		private final String i18nKey;
 
-		private QualityTableCols(String i18nKey) {
+		private TrackTableCols(String i18nKey) {
 			this.i18nKey = i18nKey;
 		}
 

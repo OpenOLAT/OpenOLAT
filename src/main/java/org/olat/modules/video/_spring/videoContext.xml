@@ -5,11 +5,6 @@
   http://www.springframework.org/schema/beans
   http://www.springframework.org/schema/beans/spring-beans.xsd">
 
-<bean id="videoManager" class="org.olat.modules.video.manager.VideoManagerImpl">
-</bean>
-
-<bean id="transcodingService" class="org.olat.modules.video.service.TranscoderService">
-</bean>
 
 
 <bean class="org.olat.core.extensions.action.GenericActionExtension" init-method="initExtensionPoints">

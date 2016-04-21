@@ -55,7 +55,7 @@ import org.olat.course.nodes.VideoCourseNode;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.fileresource.types.VideoFileResource;
 import org.olat.modules.ModuleConfiguration;
-import org.olat.modules.video.manager.VideoManager;
+import org.olat.modules.video.VideoManager;
 import org.olat.modules.video.ui.VideoDisplayController;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
