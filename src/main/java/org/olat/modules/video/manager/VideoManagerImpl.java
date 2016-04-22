@@ -22,7 +22,7 @@ package org.olat.modules.video.manager;
 
 import java.awt.image.BufferedImage;
 import java.io.File;
-import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.RandomAccessFile;
 import java.math.RoundingMode;
@@ -32,26 +32,32 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map.Entry;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipFile;
 
 import javax.imageio.ImageIO;
 
-import org.apache.commons.io.FileUtils;
 import org.jcodec.api.FrameGrab;
 import org.jcodec.common.FileChannelWrapper;
 import org.olat.core.commons.services.image.Size;
+import org.olat.core.commons.services.video.MovieService;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
-import org.olat.core.util.vfs.LocalFolderImpl;
+import org.olat.core.util.Formatter;
+import org.olat.core.util.ZipUtil;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSManager;
 import org.olat.core.util.xml.XStreamHelper;
 import org.olat.fileresource.FileResourceManager;
+import org.olat.fileresource.types.ResourceEvaluation;
 import org.olat.modules.video.VideoManager;
+import org.olat.modules.video.VideoModule;
 import org.olat.modules.video.model.VideoMetadata;
 import org.olat.modules.video.model.VideoQualityVersion;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryManager;
 import org.olat.resource.OLATResource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -64,15 +70,23 @@ import org.springframework.stereotype.Service;
  */
 @Service("videoManager")
 public class VideoManagerImpl implements VideoManager {
+	private static final String FILETYPE_MP4 = "mp4";
 	private static final String FILENAME_POSTER_JPG = "poster.jpg";
 	private static final String FILENAME_VIDEO_MP4 = "video.mp4";
 	private static final String DIRNAME_MEDIA = "media";
-	private static final String DIRNAME_OPTIMIZED_VIDEO_DATA = "optimizedVideoData";
+	static final String DIRNAME_OPTIMIZED_VIDEO_DATA = "optimizedVideoData";
 	private static final String FILENAME_OPTIMIZED_VIDEO_METADATA_XML = "optimizedVideo_metadata.xml";
 	private static final String FILENAME_VIDEO_METADATA_XML = "video_metadata.xml";
 	
 	@Autowired
 	private FileResourceManager fileResourceManager;
+	@Autowired
+	private MovieService movieService;
+	@Autowired
+	private VideoModule videoModule;
+	@Autowired 
+	private RepositoryManager repositoryManager;
+	
 	private static final OLog log = Tracing.createLoggerFor(VideoManagerImpl.class);
 
 	/**
@@ -134,6 +148,14 @@ public class VideoManagerImpl implements VideoManager {
 		}
 		metaData.setPosterframe(newPoster.getName());
 		writeVideoMetadataFile(metaData, video);
+		
+		// Update also repository entry image, use new posterframe
+		VFSContainer mediaContainer = getMediaContainer(video);
+		VFSLeaf posterImage = (VFSLeaf)mediaContainer.resolve(FILENAME_POSTER_JPG);
+		if (posterImage != null) {
+			RepositoryEntry repoEntry = repositoryManager.lookupRepositoryEntry(video, true);
+			repositoryManager.setImage(posterImage, repoEntry);
+		}
 
 	}
 
@@ -205,12 +227,12 @@ public class VideoManagerImpl implements VideoManager {
 	 * @param frame the VFSLeaf to write the picked image to
 	 */
 	@Override
-	public boolean getFrame(OLATResource video, int frameNumber, VFSLeaf frame) throws IOException{
+	public boolean getFrame(OLATResource video, int frameNumber, VFSLeaf frame) {
 		File rootFolder = fileResourceManager.getFileResourceRoot(video);
 		File metaDataFile = new File(rootFolder, DIRNAME_MEDIA);
 		File videoFile = new File(metaDataFile, FILENAME_VIDEO_MP4);
 
-		try(RandomAccessFile randomAccessFile = new RandomAccessFile(videoFile, "r")){
+		try (RandomAccessFile randomAccessFile = new RandomAccessFile(videoFile, "r")) {
 			FileChannel ch = randomAccessFile.getChannel();
 			FileChannelWrapper in = new FileChannelWrapper(ch);
 			FrameGrab frameGrab = new FrameGrab(in).seekToFrameSloppy(frameNumber);
@@ -220,10 +242,9 @@ public class VideoManagerImpl implements VideoManager {
 			ImageIO.write(bufImg, "JPG", frameOutputStream);
 
 			return true;
-		}catch(	Exception e){
+		} catch (Exception e) {
 			return false;
 		}
-		//TODO: throw correct exception
 	}
 	
 	/**
@@ -311,7 +332,7 @@ public class VideoManagerImpl implements VideoManager {
 
 		//create Metadata
 		List<VideoQualityVersion> versions = getQualityVersions(video);
-		VideoQualityVersion version = new VideoQualityVersion("normal", FileUtils.byteCountToDisplaySize(file.length()), getVideoSize(video), "mp4");
+		VideoQualityVersion version = new VideoQualityVersion("normal", Formatter.formatBytes(file.length()), getVideoSize(video), FILETYPE_MP4);
 		
 		//start transcoding with handbrake
 		cmd.add("taskset");
@@ -426,26 +447,129 @@ public class VideoManagerImpl implements VideoManager {
 	
 	@Override
 	public VFSContainer getMediaContainer(OLATResource videoResource) {
-		VFSContainer videoResourceFileroot =  new LocalFolderImpl(FileResourceManager.getInstance().getFileResourceRootImpl(videoResource).getBasefile());
-		VFSContainer metaDataFolder = VFSManager.getOrCreateContainer(videoResourceFileroot, DIRNAME_MEDIA);
-		return metaDataFolder;
+		return FileResourceManager.getInstance().getFileResourceMedia(videoResource);
 	}
 
 	
 	@Override
 	public VFSContainer getOptimizedDataContainer(OLATResource videoResource) {
-		VFSContainer videoResourceFileroot =  new LocalFolderImpl(FileResourceManager.getInstance().getFileResourceRootImpl(videoResource).getBasefile());
+		VFSContainer videoResourceFileroot =  FileResourceManager.getInstance().getFileResourceRootImpl(videoResource);
 		VFSContainer optimizedDataFolder = VFSManager.getOrCreateContainer(videoResourceFileroot, DIRNAME_OPTIMIZED_VIDEO_DATA);
 		return optimizedDataFolder;
 	}
 	
 	
 	@Override
-	public VFSLeaf getMasterVideoFile(RepositoryEntry videoRepoEntry) {
-		OLATResource resource = videoRepoEntry.getOlatResource();
-		VFSContainer mediaContainer = getMediaContainer(resource);
+	public VFSLeaf getMasterVideoFile(OLATResource videoResource) {
+		VFSContainer mediaContainer = getMediaContainer(videoResource);
 		VFSLeaf videoFile = (VFSLeaf) mediaContainer.resolve(FILENAME_VIDEO_MP4);
 		return videoFile;
+	}
+	
+	@Override
+	public VideoExportMediaResource getVideoExportMediaResource(OLATResource videoResource) {
+		VFSContainer baseContainer= FileResourceManager.getInstance().getFileResourceRootImpl(videoResource);
+		String title = getTitle(videoResource);
+		VideoExportMediaResource exportResource = new VideoExportMediaResource(baseContainer, title);
+		return exportResource;
+	}
+
+	@Override
+	public void validateVideoExportArchive(File file,  ResourceEvaluation eval) {
+		ZipFile zipFile;
+		try {
+			zipFile = new ZipFile(file);
+			// 1) Check if it contains a metadata file
+			ZipEntry metadataEntry = zipFile.getEntry(VideoManagerImpl.FILENAME_VIDEO_METADATA_XML);
+			InputStream metaDataStream = zipFile.getInputStream(metadataEntry);
+			VideoMetadata videoMetadata = (VideoMetadata) XStreamHelper.readObject(XStreamHelper.createXStreamInstance(), metaDataStream);
+			zipFile.close();
+			if (videoMetadata != null) {
+				// 2) copy some metadata to the evaluation to be applied to the repo entry
+				eval.setDisplayname(videoMetadata.getTitle());
+				eval.setDescription(videoMetadata.getDescription());
+				eval.setValid(true);
+			}
+		} catch (Exception e) {
+			log.error("Error while checking for video resource archive", e);
+		}
+	}
+	
+	@Override
+	public boolean importFromMasterFile(RepositoryEntry repoEntry, VFSLeaf masterVideo) {
+		OLATResource videoResource = repoEntry.getOlatResource();
+		
+		// 1) copy master video to final destination with standard name
+		VFSContainer mediaContainer = getMediaContainer(videoResource);
+		VFSLeaf targetFile = VFSManager.resolveOrCreateLeafFromPath(mediaContainer, FILENAME_VIDEO_MP4);
+		VFSManager.copyContent(masterVideo, targetFile);
+		masterVideo.delete();
+
+		// 2) generate Metadata file
+		VideoMetadata metaData = new VideoMetadata(videoResource);
+		metaData.setTitle(repoEntry.getDisplayname());
+		metaData.setDescription(repoEntry.getDescription());
+		// calculate video size
+		Size videoSize = movieService.getSize(getMasterVideoFile(videoResource),FILETYPE_MP4);
+		metaData.setSize(videoSize);
+		// generate a poster image, use 20th frame as a default
+		VFSLeaf posterResource = VFSManager.resolveOrCreateLeafFromPath(
+				FileResourceManager.getInstance().getFileResourceMedia(videoResource), FILENAME_POSTER_JPG);
+		getFrame(videoResource, 20, posterResource);
+		metaData.setPosterframe(FILENAME_POSTER_JPG);
+		// finally safe to disk
+		writeVideoMetadataFile(metaData, videoResource);
+
+		// 4) Set poster image for repo entry
+		VFSLeaf posterImage = (VFSLeaf)mediaContainer.resolve(FILENAME_POSTER_JPG);
+		if (posterImage != null) {
+			repositoryManager.setImage(posterImage, repoEntry);
+		}
+		
+		// 5) start transcoding process
+		if (videoModule.isTranscodingEnabled()) {
+			optimizeVideoRessource(videoResource);
+		}
+		
+		return true;
+	}
+
+	@Override
+	public boolean importFromExportArchive(RepositoryEntry repoEntry, VFSLeaf exportArchive) {
+		OLATResource videoResource = repoEntry.getOlatResource();
+		// 1) unzip archive
+		VFSContainer baseContainer= FileResourceManager.getInstance().getFileResourceRootImpl(videoResource);
+		ZipUtil.unzip(exportArchive, baseContainer);
+		exportArchive.delete();
+		
+		// 2) update metadata from the repo entry (maybe changed during import
+		VideoMetadata metaData = readVideoMetadataFile(videoResource);
+		String title = repoEntry.getDisplayname();
+		boolean dirty = false;
+		if (title != null && !title.equals(metaData.getTitle())) {
+			metaData.setTitle(title);
+			dirty = true;
+		}
+		String desc = repoEntry.getDescription();
+		if (desc != null && !title.equals(metaData.getDescription())) {
+			metaData.setDescription(desc);
+			dirty = true;
+		}
+		if (dirty) {
+			writeVideoMetadataFile(metaData, videoResource);
+		}
+		// 3) Set poster image for repo entry
+		VFSContainer mediaContainer = getMediaContainer(videoResource);
+		VFSLeaf posterImage = (VFSLeaf)mediaContainer.resolve(FILENAME_POSTER_JPG);
+		if (posterImage != null) {
+			repositoryManager.setImage(posterImage, repoEntry);
+		}
+		// 3) start transcoding process
+		if (videoModule.isTranscodingEnabled()) {
+			optimizeVideoRessource(videoResource);
+		}
+
+		return true;
 	}
 
 }

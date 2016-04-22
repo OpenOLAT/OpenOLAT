@@ -30,7 +30,7 @@ import org.springframework.stereotype.Service;
  * V
  *
  * Initial date: 23.2.2016<br>
- * @author dfakae, dirk.furrer@frentix.com, http://www.frentix.com
+ * @author dfurrer, dirk.furrer@frentix.com, http://www.frentix.com
  *
  */
 @Service

@@ -59,11 +59,12 @@ public class VideoMetaDataEditFormController extends FormBasicController {
 		setFormTitle("tab.video.metaDataConfig");
 
 		Size videoSize = videoManager.getVideoSize(videoResource);
-
 		uifactory.addStaticTextElement("video.config.width", String.valueOf(videoSize.getWidth()) + "px", formLayout);
 		uifactory.addStaticTextElement("video.config.height", String.valueOf(videoSize.getHeight()) + "px", formLayout);
+
 		String aspcectRatio = videoManager.getAspectRatio(videoSize);
 		uifactory.addStaticTextElement("video.config.ratio", aspcectRatio, formLayout);
+
 		uifactory.addStaticTextElement("video.config.creationDate", StringHelper.formatLocaleDateTime(videoResource.getCreationDate().getTime(), getLocale()), formLayout);
 		uifactory.addStaticTextElement("video.config.fileSize", Formatter.formatBytes(videoManager.getVideoFile(videoResource).length()), formLayout);
 

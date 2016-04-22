@@ -84,7 +84,7 @@ public class VideoDisplayController extends BasicController {
 		putInitialPanel(mainVC);
 		
 		//load video as VFSLeaf
-		VFSLeaf video = videoManager.getMasterVideoFile(entry);
+		VFSLeaf video = videoManager.getMasterVideoFile(entry.getOlatResource());
 		if(video != null) {
 			String filename = video.getName();
 			mainVC.contextPut("filename", filename);
