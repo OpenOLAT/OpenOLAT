@@ -93,7 +93,7 @@ public class VideoPosterSelectionForm extends BasicController {
 			}
 
 
-		long firstThirdDuration = duration/3;
+		long firstThirdDuration = duration/7;
 		for(int x=0; x<=duration;x+=firstThirdDuration ){
 			try {
 

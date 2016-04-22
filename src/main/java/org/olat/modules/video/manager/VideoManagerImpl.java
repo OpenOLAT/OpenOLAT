@@ -311,10 +311,12 @@ public class VideoManagerImpl implements VideoManager {
 
 		//create Metadata
 		List<VideoQualityVersion> versions = getQualityVersions(video);
-		versions.add(new VideoQualityVersion("normal", FileUtils.byteCountToDisplaySize(file.length()), getVideoSize(video), "mp4"));
-		XStreamHelper.writeObject(XStreamHelper.createXStreamInstance(), metaDataFile, versions);
+		VideoQualityVersion version = new VideoQualityVersion("normal", FileUtils.byteCountToDisplaySize(file.length()), getVideoSize(video), "mp4");
 		
 		//start transcoding with handbrake
+		cmd.add("taskset");
+		cmd.add("-c");
+		cmd.add("0,1");
 		cmd.add("HandBrakeCLI");
 		cmd.add("-i"+file.getAbsolutePath());
 		cmd.add("-o"+optimizedFolder.getAbsolutePath()+"/optimized_"+file.getName());
@@ -331,6 +333,9 @@ public class VideoManagerImpl implements VideoManager {
 		try {
 			log.info("+--------------------------HANDBRAKE STARTS TRANSCODING------------------------------------+");
 			Process process = pb.start();
+			version.setIsTransforming(true);
+			versions.add(version);
+			XStreamHelper.writeObject(XStreamHelper.createXStreamInstance(), metaDataFile, versions);
 			return true;
 		} catch (Exception e) {
 			return false;
