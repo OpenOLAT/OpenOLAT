@@ -17,14 +17,34 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.video.manager;
+package org.olat.modules.video.ui;
 
-import org.springframework.stereotype.Service;
+import org.olat.core.gui.control.Event;
 
-@Service
-public class TranscoderService{
+/**
+ * Event fired when the user interacts with the movie
+ * Initial date: 22.04.2016<br>
+ * @author gnaegi, gnaegi@frentix.com, http://www.frentix.com
+ *
+ */
+public class VideoEvent extends Event {
+	public static final String PLAY = "play";
+	public static final String PAUSE = "pause";
+	public static final String SEEKED = "seeked";
+	public static final String ENDED = "ended";
+	
+	private final String timeCode;
 
+	public VideoEvent(String command, String timeCode) {
+		super(command);
+		this.timeCode = timeCode;
+	}
 
-
-
+	/**
+	 * @return The timecode for this event or NULL if not available
+	 */
+	public String getTimeCode() {
+		return timeCode;
+	}
+	
 }

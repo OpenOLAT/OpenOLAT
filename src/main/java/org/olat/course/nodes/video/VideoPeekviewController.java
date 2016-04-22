@@ -27,7 +27,7 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.util.vfs.VFSContainer;
-import org.olat.modules.video.manager.MediaMapper;
+import org.olat.modules.video.manager.VideoMediaMapper;
 
 /**
  * peekviewcontroller of videomodule
@@ -40,7 +40,7 @@ public class VideoPeekviewController  extends BasicController implements Control
 	public VideoPeekviewController(UserRequest ureq, WindowControl wControl,  VFSContainer posterFolder) {
 		super(ureq, wControl);
 		VelocityContainer peekviewVC = createVelocityContainer("peekview");
-		String mediaUrl = registerMapper(ureq, new MediaMapper(posterFolder));
+		String mediaUrl = registerMapper(ureq, new VideoMediaMapper(posterFolder));
 		peekviewVC.contextPut("mediaUrl", mediaUrl);
 		peekviewVC.contextPut("nodeLink", posterFolder);
 		putInitialPanel(peekviewVC);

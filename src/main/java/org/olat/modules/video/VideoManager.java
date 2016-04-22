@@ -144,4 +144,22 @@ public interface VideoManager {
 	 */
 	public abstract boolean importFromExportArchive(RepositoryEntry repoEntry, VFSLeaf exportArchive);
 
+	/**
+	 * Create and add a new transcoding version to the video resource. The
+	 * version is set to "isTransforming".
+	 * 
+	 * @param video The video resource
+	 * @param resolution The resolution for the transcoding process
+	 * @return VideoQualityVersion for this new version
+	 */
+	public abstract VideoQualityVersion addNewVersionForTranscoding(OLATResource video, String resolution);
+
+	/**
+	 * Update an already existing version or add as new version.
+	 * 
+	 * @param video
+	 * @param updatedVersion
+	 */
+	public abstract void updateVersion(OLATResource video, VideoQualityVersion updatedVersion);
+
 }

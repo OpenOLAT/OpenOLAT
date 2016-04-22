@@ -37,7 +37,7 @@ import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.fileresource.FileResourceManager;
 import org.olat.modules.video.VideoManager;
-import org.olat.modules.video.manager.MediaMapper;
+import org.olat.modules.video.manager.VideoMediaMapper;
 import org.olat.resource.OLATResource;
 import org.springframework.beans.factory.annotation.Autowired;
 /**
@@ -148,7 +148,7 @@ public class VideoPosterEditController extends FormBasicController {
 	private void updatePosterImage(UserRequest ureq, OLATResource video){
 		posterFile = videoManager.getPosterframe(video);
 		VFSContainer mediaBase = FileResourceManager.getInstance().getFileResourceMedia(video);
-		MediaMapper mediaMapper = new MediaMapper(mediaBase);
+		VideoMediaMapper mediaMapper = new VideoMediaMapper(mediaBase);
 		String mediaUrl = registerMapper(ureq, mediaMapper);
 		String serverUrl = Settings.createServerURI();
 		displayContainer.contextPut("serverUrl", serverUrl);

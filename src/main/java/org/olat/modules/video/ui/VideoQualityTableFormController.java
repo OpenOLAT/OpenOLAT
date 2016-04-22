@@ -85,6 +85,7 @@ public class VideoQualityTableFormController extends FormBasicController {
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(true, QualityTableCols.size.i18nKey(), QualityTableCols.size.ordinal(), true, QualityTableCols.size.name()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(true, QualityTableCols.format.i18nKey(), QualityTableCols.format.ordinal(), true, QualityTableCols.format.name()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(true, QualityTableCols.view.i18nKey(), QualityTableCols.view.ordinal(), true, QualityTableCols.view.name()));
+		// TODO: delete/recode link
 		tableModel = new VideoQualityTableModel(columnsModel, getTranslator());
 
 		List<QualityTableRow> rows = new ArrayList<QualityTableRow>();
@@ -96,7 +97,23 @@ public class VideoQualityTableFormController extends FormBasicController {
 		List<VideoQualityVersion> versions = videoManager.getQualityVersions(videoResource);
 		for(VideoQualityVersion version:versions){
 			viewButton = uifactory.addFormLink(version.getType(), "viewQuality", "quality.view", "qulaity.view", null, Link.LINK);
-			rows.add(new QualityTableRow(version.getType(), version.getDimension().getWidth() +"x"+ version.getDimension().getHeight(),  version.getFileSize(), version.getFormat(),viewButton));
+			Size size = version.getDimension();
+			String dimension = "";
+			if (size != null) {
+				dimension = version.getDimension().getWidth() +"x"+ version.getDimension().getHeight();
+			} 
+			String fileSize = "";
+			if (version.getFileSize() != null) {
+				fileSize = version.getFileSize();
+			} else if (version.getIsTransforming()) {
+				// TODO refactor to separate column
+				if (version.getTranscodingStatus() == 0) {
+					fileSize = translate("transcoding.waiting");
+				} else {
+					fileSize = translate("transcoding.processing") + ": " + version.getTranscodingStatus() + "%";					
+				}
+			}
+			rows.add(new QualityTableRow(translate("quality.type." + version.getType()), dimension,  fileSize, version.getFormat(),viewButton));
 		}
 		
 		tableModel.setObjects(rows);
@@ -107,7 +124,7 @@ public class VideoQualityTableFormController extends FormBasicController {
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(source == viewButton){
-			
+			//FIXME: does not work! shows the master file and there is only one single viewButton!!
 			VideoDisplayController videoDispController = new VideoDisplayController(ureq, getWindowControl(), videoEntry, true);
 			cmc = new CloseableModalController(getWindowControl(), "close", videoDispController.getInitialComponent());
 			cmc.activate();

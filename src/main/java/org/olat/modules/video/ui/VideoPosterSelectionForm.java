@@ -44,7 +44,7 @@ import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSManager;
 import org.olat.modules.video.VideoManager;
-import org.olat.modules.video.manager.MediaMapper;
+import org.olat.modules.video.manager.VideoMediaMapper;
 import org.olat.resource.OLATResource;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -104,7 +104,7 @@ public class VideoPosterSelectionForm extends BasicController {
 				}else{
 				videoManager.getFrame(videoResource, x, posterProposal);
 				}
-				MediaMapper mediaMapper = new MediaMapper(proposalContainer);
+				VideoMediaMapper mediaMapper = new VideoMediaMapper(proposalContainer);
 				String mediaUrl = registerMapper(ureq, mediaMapper);
 				String serverUrl = Settings.createServerURI();
 				proposalLayout.contextPut("serverUrl", serverUrl);

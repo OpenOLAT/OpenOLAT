@@ -57,7 +57,7 @@ public class VideoCourseNodeConfiguration  extends AbstractCourseNodeConfigurati
 
 	@Override
 	public String getIconCSSClass() {
-		return "o_FileResource-MOVIE_icon";
+		return "o_FileResource-VIDEO_icon";
 	}
 
 	@Override

@@ -1,10 +1,17 @@
 <div class="o_video_run o_clearfix">
-#if($image)
-	<img src="$mediaUrl/$filename" />
-#elseif($movie)
 	<div class="olatFlashMovieViewer">
-		<video id="$r.getId("o_vid")" width="$width" height="$height" poster="$mediaUrl/poster.jpg" controls  #if( $autoplay ) autoplay #end class="o_video">
-	    	<source type="video/mp4" src="$mediaUrl/$filename" />
+		<video id="$r.getId("o_vid")" width="$width" height="$height" poster="$mediaUrl/poster.jpg" controls  #if( $autoplay ) autoplay #end class="o_video">			
+	    	#foreach( $video in $videos)
+	    		#if(!$video.getIsTransforming())
+	    			#set( $hasOptimizedVideo = true)
+		    		<source type="video/mp4" src="$mediaUrl/optimizedVideoData/${video.getType()}video.mp4" title="$r.translate("quality.type.${video.getType()}") (${video.getFileSize()})"/>
+	    		#end
+	    	#end	    	
+	    	## Use master video file if not optimized video is found
+	    	#if (!$hasOptimizedVideo)
+		    	<source type="video/mp4" src="$mediaUrl/media/$filename" />
+		    #end
+	    	
 	  		#if( $trackfiles )
 		  		#foreach( $track in $trackfiles.keySet())
 		  		<track kind="subtitles" src="$mediaUrl/$trackfiles.get($track)" srclang="$track" />
@@ -15,30 +22,57 @@
 
 		<script defer="defer" type="text/javascript">
 		// <![CDATA[
-		// using jQuery
+		## using jQuery
+		var mediaElementBaseUrl = BPlayer._mediaElementBaseUrl();
 		jQuery('#$r.getId("o_vid")').mediaelementplayer({
+			enablePluginDebug: BPlayer.debugEnabled,
+
+			## Configuration for flash fallback			
+			## Set mode:'shim' to force flash usage
+			pluginPath: mediaElementBaseUrl,
+			flashName: 'flashmediaelement.swf',
+			silverlightName: 'silverlightmediaelement.xap',
+			plugins: ['flash','silverlight'],
+			
+			## Enabled features - should be same order as in player.js. 
+			## Special here is tracks and sourcechooser which are not available in player.js
+			features: ['playpause','current','volume','progress','duration','tracks','sourcechooser','fullscreen'],
+			
+			## Callback to communicate with the server
 			success: function (mediaElement, domObject) {
-		        // add event listener
+		        ## listen to play events, fired when movie is finished
+		        mediaElement.addEventListener('play', function(e) {
+		        	if (!o_info.linkbusy) {
+		        		$r.openJavaScriptCommand("play"), 'currentTime', mediaElement.currentTime);
+					}
+		        }, false);
+		        ## listen to pause events, fired when movie is paused by user
+		        mediaElement.addEventListener('pause', function(e) {
+		        	if (!o_info.linkbusy) {
+						$r.openJavaScriptCommand("pause"), 'currentTime', mediaElement.currentTime);
+					}
+		        }, false);
+		        ## listen to seeked events, fired when user uses the slider in the movie
+		        mediaElement.addEventListener('seeked', function(e) {
+		        	if (!o_info.linkbusy) {
+						$r.openJavaScriptCommand("seeked"), 'currentTime', mediaElement.currentTime);
+					}
+		        }, false);
+		        ## listen to end events, fired when movie is finished
 		        mediaElement.addEventListener('ended', function(e) {
 		        	if (!o_info.linkbusy) {
-						window.suppressOlatOnUnloadOnce = true;
-						o_beforeserver();
-						$r.javaScriptBgCommand("ended");
+						$r.openJavaScriptCommand("ended"), 'currentTime', mediaElement.currentTime);
 					}
-
 		        }, false);
-		    }
-
-
+			}
 		});
 		// ]]>
 		</script>
 	</div>
-#elseif($r.available("content"))
-	<div class="o_content clearfix">$r.render("content")</div>
-#end
-$r.render("commentsAndRating")
-#if($description)
-$description
-#end
+	#if($r.available("commentsAndRating"))
+		$r.render("commentsAndRating")
+	#end
+	<div class="o_desc">
+		$description
+	</div>
 </div>

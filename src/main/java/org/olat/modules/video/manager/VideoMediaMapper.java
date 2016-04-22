@@ -29,18 +29,18 @@ import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSMediaResource;
 
-public class MediaMapper implements Mapper {
+public class VideoMediaMapper implements Mapper {
 	
 	private final VFSContainer mediaBase;
 	
-	public MediaMapper(VFSContainer mediaBase) {
+	public VideoMediaMapper(VFSContainer mediaBase) {
 		this.mediaBase = mediaBase;
 	}
 
 	@Override
 	public MediaResource handle(String relPath, HttpServletRequest request) {
 		VFSItem mediaFile = mediaBase.resolve(relPath);
-		if (mediaFile instanceof VFSLeaf){
+		if (mediaFile instanceof VFSLeaf && !relPath.endsWith("xml")){
 			return new VFSMediaResource((VFSLeaf)mediaFile);
 		} else {
  			return new NotFoundMediaResource(relPath);

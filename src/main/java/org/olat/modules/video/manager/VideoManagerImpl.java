@@ -29,6 +29,7 @@ import java.math.RoundingMode;
 import java.nio.channels.FileChannel;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map.Entry;
@@ -39,11 +40,12 @@ import javax.imageio.ImageIO;
 
 import org.jcodec.api.FrameGrab;
 import org.jcodec.common.FileChannelWrapper;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.services.image.Size;
+import org.olat.core.commons.services.taskexecutor.TaskExecutorManager;
 import org.olat.core.commons.services.video.MovieService;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
-import org.olat.core.util.Formatter;
 import org.olat.core.util.ZipUtil;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
@@ -70,7 +72,7 @@ import org.springframework.stereotype.Service;
  */
 @Service("videoManager")
 public class VideoManagerImpl implements VideoManager {
-	private static final String FILETYPE_MP4 = "mp4";
+	public static final String FILETYPE_MP4 = "mp4";
 	private static final String FILENAME_POSTER_JPG = "poster.jpg";
 	private static final String FILENAME_VIDEO_MP4 = "video.mp4";
 	private static final String DIRNAME_MEDIA = "media";
@@ -322,47 +324,25 @@ public class VideoManagerImpl implements VideoManager {
 	 */
 	@Override
 	public boolean optimizeVideoRessource(OLATResource video) {
-		File file = getVideoFile(video);
-		File videoResourceFileroot = fileResourceManager.getFileResourceRoot(video);
-		File optimizedFolder = new File(videoResourceFileroot, DIRNAME_OPTIMIZED_VIDEO_DATA);
-		File metaDataFile = new File(optimizedFolder,FILENAME_OPTIMIZED_VIDEO_METADATA_XML);
-		optimizedFolder.mkdirs();
-
-		ArrayList<String> cmd = new ArrayList<String>();
-
-		//create Metadata
-		List<VideoQualityVersion> versions = getQualityVersions(video);
-		VideoQualityVersion version = new VideoQualityVersion("normal", Formatter.formatBytes(file.length()), getVideoSize(video), FILETYPE_MP4);
-		
-		//start transcoding with handbrake
-		cmd.add("taskset");
-		cmd.add("-c");
-		cmd.add("0,1");
-		cmd.add("HandBrakeCLI");
-		cmd.add("-i"+file.getAbsolutePath());
-		cmd.add("-o"+optimizedFolder.getAbsolutePath()+"/optimized_"+file.getName());
-		cmd.add("--optimize");
-		cmd.add("--preset");
-		cmd.add("Normal");
-
-		ProcessBuilder pb = new ProcessBuilder(cmd);
-		pb.directory(optimizedFolder);
-
-		pb.redirectErrorStream(true);
-		pb.inheritIO();
-		 
-		try {
-			log.info("+--------------------------HANDBRAKE STARTS TRANSCODING------------------------------------+");
-			Process process = pb.start();
-			version.setIsTransforming(true);
-			versions.add(version);
-			XStreamHelper.writeObject(XStreamHelper.createXStreamInstance(), metaDataFile, versions);
-			return true;
-		} catch (Exception e) {
-			return false;
+		//TODO: check for existing version, add option to force rebuild of all versions
+		Size size = getVideoSize(video);
+		int height = size.getHeight();
+		TaskExecutorManager taskManager = CoreSpringFactory.getImpl(TaskExecutorManager.class);
+		//TODO: add to module and admin console which version to generate
+		int[] resolutions = {1080, 720, 480, 360, 240, 144};
+		for (int resolution : resolutions) {
+			if (height < resolution) {
+				continue;
+			}
+			VideoQualityVersion version = addNewVersionForTranscoding(video, Integer.toString(resolution));
+			VideoTranscodingTask task = new VideoTranscodingTask(video, version);
+			taskManager.execute(task, null, video, null, new Date());		
 		}
-
+		// start transcoding immediately
+		taskManager.executeTaskToDo();
+		return true;
 	}
+	
 	
 	@Override
 	public List<VideoQualityVersion> getQualityVersions(OLATResource video){
@@ -572,4 +552,46 @@ public class VideoManagerImpl implements VideoManager {
 		return true;
 	}
 
+	
+	@Override
+	public VideoQualityVersion addNewVersionForTranscoding(OLATResource video, String resolution) {
+		List<VideoQualityVersion> versions = getQualityVersions(video);
+		VideoQualityVersion version = new VideoQualityVersion(resolution, null, null, VideoManagerImpl.FILETYPE_MP4);
+		version.setIsTransforming(true);
+		versions.add(version);
+		// Store on disk
+		VFSContainer optimizedDataContainer = getOptimizedDataContainer(video);
+		VFSLeaf optimizedMetadataFile = VFSManager.resolveOrCreateLeafFromPath(optimizedDataContainer, FILENAME_OPTIMIZED_VIDEO_METADATA_XML);
+		XStreamHelper.writeObject(XStreamHelper.createXStreamInstance(), optimizedMetadataFile, versions);
+		
+		return version;
+	}
+
+	@Override
+	public void updateVersion(OLATResource video, VideoQualityVersion updatedVersion) {
+		//TODO: fix concurrency issues, not multithread safe
+		List<VideoQualityVersion> versions = getQualityVersions(video);
+		boolean found = false;
+		for (VideoQualityVersion existingVersion : versions) {
+			if (updatedVersion.getType().equals(existingVersion.getType())) {
+				// update properties
+				existingVersion.setDimension(updatedVersion.getDimension());
+				existingVersion.setFileSize(updatedVersion.getFileSize());
+				existingVersion.setFormat(updatedVersion.getFormat());
+				existingVersion.setIsTransforming(updatedVersion.getIsTransforming());
+				existingVersion.setTranscodingStatus(updatedVersion.getTranscodingStatus());
+				found = true;
+				break;
+			}
+		}
+		if (!found) {
+			versions.add(updatedVersion);
+		}
+		// Store on disk
+		VFSContainer optimizedDataContainer = getOptimizedDataContainer(video);
+		VFSLeaf optimizedMetadataFile = VFSManager.resolveOrCreateLeafFromPath(optimizedDataContainer, FILENAME_OPTIMIZED_VIDEO_METADATA_XML);
+		XStreamHelper.writeObject(XStreamHelper.createXStreamInstance(), optimizedMetadataFile, versions);
+	}
+
+	
 }

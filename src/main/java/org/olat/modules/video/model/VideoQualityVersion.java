@@ -19,8 +19,6 @@
  */
 package org.olat.modules.video.model;
 
-import java.io.File;
-
 import org.olat.core.commons.services.image.Size;
 
 /**
@@ -31,12 +29,12 @@ import org.olat.core.commons.services.image.Size;
  */
 public class VideoQualityVersion{
 	// Properties
-	File file;
-	String type;
-	String fileSize;
-	Size dimension;
-	String format;
-	boolean isTransforming;
+	private String type;
+	private String fileSize;
+	private Size dimension;
+	private String format;
+	private boolean isTransforming;
+	private int transcodingStatus = 0;
 	
 	public VideoQualityVersion(String type, String fileSize, Size dimension, String format){
 		this.type = type;
@@ -85,11 +83,18 @@ public class VideoQualityVersion{
 		this.isTransforming = isTranscoding;
 	}
 	
-	public File getFile(){
-		return file;
+	/**
+	 * @return 0: transcoding has not yet startet; 100: transcoding is done
+	 */
+	public int getTranscodingStatus() {
+		return this.transcodingStatus;
 	}
-	
-	public void setFile(File file){
-		this.file = file;
+
+	/**
+	 * Set transcoding status in percent
+	 * @param status
+	 */
+	public void setTranscodingStatus(int status) {
+		this.transcodingStatus = status;
 	}
 }
