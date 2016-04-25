@@ -274,7 +274,16 @@ public class VideoEditController  extends ActivateableTabbableDefaultController 
 	 * @return boolean
 	 */
 	public static boolean isModuleConfigValid(ModuleConfiguration moduleConfiguration) {
-		return (moduleConfiguration.get(CONFIG_KEY_REPOSITORY_SOFTKEY) != null);
+		boolean isValid = moduleConfiguration.get(CONFIG_KEY_REPOSITORY_SOFTKEY) != null;
+		if (isValid) {
+			Object repoEntry = getVideoReference(moduleConfiguration, false);
+			if (repoEntry == null) {
+				isValid = false;
+				removeVideoReference(moduleConfiguration);
+			}
+		}
+		
+		return isValid;
 	}
 
 	/**
