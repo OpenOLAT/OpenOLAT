@@ -19,6 +19,7 @@
  */
 package org.olat.modules.video;
 
+import java.io.File;
 import java.util.Arrays;
 
 import org.olat.core.configuration.AbstractSpringModule;
@@ -26,6 +27,8 @@ import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.coordinate.CoordinatorManager;
+import org.olat.core.util.vfs.LocalFolderImpl;
+import org.olat.core.util.vfs.VFSContainer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -51,16 +54,20 @@ public class VideoModule extends AbstractSpringModule {
 	private boolean enabled;
 	@Value("${video.coursenode.enabled:true}")
 	private boolean coursenodeEnabled;
+	// transcoding related configuration
 	@Value("${video.transcoding.enabled:false}")
 	private boolean transcodingEnabled;
 	@Value("${video.transcoding.resolutions}")
 	private int[] transcodingResolutions;
 	@Value("${video.transcoding.taskset.cpuconfig}")
 	private String transcodingTasksetConfig;
+	@Value("${video.transcoding.dir}")
+	private String transcodingDir;
+	
 	
 	@Bean
 	public static ConversionService conversionService() {
-		// needed to create the transcodingResolutions property by spring
+		// needed to create the transcodingResolutions (int[]) property by spring
 	    return new DefaultFormattingConversionService();
 	}
 	
@@ -96,13 +103,38 @@ public class VideoModule extends AbstractSpringModule {
 	}
 
 	/**
-	 * @return Array of transcoding resolutions. The values represent the target
-	 *         height of the transcoded video, 1080 for 1080p video size etc.
+	 * The values represent the target height of the transcoded video, 1080 for
+	 * 1080p video size etc. This config can only be set in
+	 * olat.localproperties, see "video.transcoding.resolutions"
+	 * 
+	 * @return Array of transcoding resolutions.
 	 */
 	public int[] getTranscodingResolutions() {
 		return transcodingResolutions;
 	}
 
+	/**
+	 * The base container where the transcoded videos are stored. This config can only be set in
+	 * olat.localproperties, see "video.transcoding.dir"
+	 * @return
+	 */
+	public VFSContainer getTranscodingBaseContainer() {
+		if (transcodingDir != null) {
+			File base = new File(transcodingDir);
+			if (base.exists() || base.mkdirs()) {
+				return new LocalFolderImpl(base);
+			}
+		} 
+		if (transcodingEnabled) {
+			log.error("Error, no valid transcoding dir. Disabling transcoding. video.transcoding.dir=" + transcodingDir);
+			// only disable variabe, don't store it in persisted properties
+			transcodingEnabled = false;
+		}
+		return null;
+	}
+
+
+	
 	/**
 	 * @return null to indicate that taskset is disabled or the -c options to control the number of cores, e.g. "0,1"
 	 */

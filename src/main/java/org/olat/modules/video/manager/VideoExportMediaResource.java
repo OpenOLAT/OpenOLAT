@@ -114,8 +114,8 @@ public class VideoExportMediaResource implements MediaResource {
 					String names = relativeFile.toString();
 					
 					if(!attrs.isDirectory()) {
-						// do not include the optimized videos nor the poster images, they are recreated on import
-						if (names.startsWith(VideoManagerImpl.DIRNAME_OPTIMIZED_VIDEO_DATA) || names.contains("proposalPosters")) {
+						// do not include poster proposal images
+						if (names.contains("proposalPosters")) {
 							return FileVisitResult.SKIP_SUBTREE;
 						}
 						zout.putNextEntry(new ZipEntry(names));							

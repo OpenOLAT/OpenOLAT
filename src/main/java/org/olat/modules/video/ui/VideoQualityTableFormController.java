@@ -22,7 +22,6 @@ package org.olat.modules.video.ui;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.commons.io.FileUtils;
 import org.olat.core.commons.services.image.Size;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -36,10 +35,14 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFle
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.link.Link;
+import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
+import org.olat.core.util.Formatter;
+import org.olat.core.util.vfs.VFSContainer;
 import org.olat.modules.video.VideoManager;
+import org.olat.modules.video.manager.VideoMediaMapper;
 import org.olat.modules.video.model.VideoQualityVersion;
 import org.olat.modules.video.ui.VideoQualityTableModel.QualityTableCols;
 import org.olat.repository.RepositoryEntry;
@@ -47,7 +50,7 @@ import org.olat.resource.OLATResource;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
- * table to show the different available qualityversions of a video ressource 
+ * table to show the different available transcoded video versions of a video resource 
  * @author dfurrer, dirk.furrer@frentix.com, http://www.frentix.com
  *
  */
@@ -55,19 +58,17 @@ public class VideoQualityTableFormController extends FormBasicController {
 
 	private FlexiTableElement tableEl;
 	private VideoQualityTableModel tableModel;
-	private FormLink viewButton;
 	private CloseableModalController cmc;
+	private VelocityContainer previewVC;
+	private OLATResource videoResource;
 
 	@Autowired
 	private VideoManager videoManager;
-	private OLATResource videoResource;
-	private RepositoryEntry videoEntry;
 
 
 	public VideoQualityTableFormController(UserRequest ureq, WindowControl wControl, RepositoryEntry videoEntry) {
 		super(ureq, wControl, LAYOUT_VERTICAL);
 		this.videoResource = videoEntry.getOlatResource();
-		this.videoEntry = videoEntry;
 		initForm(ureq);
 	}
 
@@ -90,13 +91,15 @@ public class VideoQualityTableFormController extends FormBasicController {
 
 		List<QualityTableRow> rows = new ArrayList<QualityTableRow>();
 		Size origSize = videoManager.getVideoSize(videoResource);
-		
-		viewButton = uifactory.addFormLink("view", "viewQuality", "quality.view", "qulaity.view", null, Link.LINK);
-		rows.add(new QualityTableRow(translate("quality.resolution.original"), origSize.getWidth() +"x"+ origSize.getHeight(),  FileUtils.byteCountToDisplaySize(videoManager.getVideoFile(videoResource).length()), "mp4",viewButton));
-		
+
+		// Add master video file
+		FormLink previewMasterLink = uifactory.addFormLink("view", "viewQuality", "quality.view", "qulaity.view", null, Link.LINK);
+		rows.add(new QualityTableRow(translate("quality.resolution.original"), origSize.getWidth() +"x"+ origSize.getHeight(),  Formatter.formatBytes(videoManager.getVideoFile(videoResource).length()), "mp4",previewMasterLink));
+		// Add all the transcoded versions
 		List<VideoQualityVersion> versions = videoManager.getQualityVersions(videoResource);
 		for(VideoQualityVersion version:versions){
-			viewButton = uifactory.addFormLink(Integer.toString(version.getResolution()), "viewQuality", "quality.view", "qulaity.view", null, Link.LINK);
+			FormLink previewVersionLink = uifactory.addFormLink(Integer.toString(version.getResolution()), "viewQuality", "quality.view", "qulaity.view", null, Link.LINK);
+			previewVersionLink.setUserObject(version);
 			Size size = version.getDimension();
 			String dimension = "";
 			if (size != null) {
@@ -107,10 +110,10 @@ public class VideoQualityTableFormController extends FormBasicController {
 				fileSize = version.getFileSize();
 			} else if (version.getTranscodingStatus() == VideoQualityVersion.TRANSCODING_STATUS_WAITING) {
 				fileSize = translate("transcoding.waiting");
-			} else if (version.getTranscodingStatus() == VideoQualityVersion.TRANSCODING_STATUS_DONE){
+			} else if (version.getTranscodingStatus() <= VideoQualityVersion.TRANSCODING_STATUS_DONE){
 				fileSize = translate("transcoding.processing") + ": " + version.getTranscodingStatus() + "%";					
 			}
-			rows.add(new QualityTableRow(translate("quality.resolution." + version.getResolution()), dimension,  fileSize, version.getFormat(),viewButton));
+			rows.add(new QualityTableRow(translate("quality.resolution." + version.getResolution()), dimension,  fileSize, version.getFormat(),previewVersionLink));
 		}
 		
 		tableModel.setObjects(rows);
@@ -120,10 +123,35 @@ public class VideoQualityTableFormController extends FormBasicController {
 	
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if(source == viewButton){
-			//FIXME: does not work! shows the master file and there is only one single viewButton!!
-			VideoDisplayController videoDispController = new VideoDisplayController(ureq, getWindowControl(), videoEntry, true);
-			cmc = new CloseableModalController(getWindowControl(), "close", videoDispController.getInitialComponent());
+		if (source instanceof FormLink) {
+			if (cmc == null) {
+				// initialize preview controller only once
+				previewVC = createVelocityContainer("video_preview");
+				cmc = new CloseableModalController(getWindowControl(), "close", previewVC);
+			}
+			// Get the user object from the link to access version object
+			FormLink link = (FormLink) source;
+			VideoQualityVersion version = (VideoQualityVersion) link.getUserObject();
+			if (version == null) {
+				// this is the master video
+				Size size =  videoManager.getVideoSize(videoResource);
+				previewVC.contextPut("width", size.getWidth());
+				previewVC.contextPut("height", size.getHeight());
+				previewVC.contextPut("filename", "video.mp4");
+				VFSContainer container = videoManager.getMediaContainer(videoResource);
+				String transcodedUrl = registerMapper(ureq, new VideoMediaMapper(container));
+				previewVC.contextPut("mediaUrl", transcodedUrl);
+			} else {				
+				// this is a version
+				Size size = version.getDimension();
+				previewVC.contextPut("width", size.getWidth());
+				previewVC.contextPut("height", size.getHeight());
+				previewVC.contextPut("filename", version.getResolution() + "video.mp4");
+				VFSContainer container = videoManager.getTranscodingContainer(videoResource);
+				String transcodedUrl = registerMapper(ureq, new VideoMediaMapper(container));
+				previewVC.contextPut("mediaUrl", transcodedUrl);
+			}
+			// activate dialog to bring it in front
 			cmc.activate();
 		}
 	}

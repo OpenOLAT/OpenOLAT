@@ -46,6 +46,7 @@ import org.olat.core.commons.services.video.MovieService;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.ZipUtil;
+import org.olat.core.util.vfs.LocalFileImpl;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
@@ -74,8 +75,6 @@ public class VideoManagerImpl implements VideoManager {
 	public static final String FILETYPE_MP4 = "mp4";
 	private static final String FILENAME_POSTER_JPG = "poster.jpg";
 	private static final String FILENAME_VIDEO_MP4 = "video.mp4";
-	private static final String DIRNAME_MEDIA = "media";
-	static final String DIRNAME_OPTIMIZED_VIDEO_DATA = "optimizedVideoData";
 	private static final String FILENAME_OPTIMIZED_VIDEO_METADATA_XML = "optimizedVideo_metadata.xml";
 	private static final String FILENAME_VIDEO_METADATA_XML = "video_metadata.xml";
 	
@@ -147,7 +146,7 @@ public class VideoManagerImpl implements VideoManager {
 		VFSLeaf newPoster = VFSManager.resolveOrCreateLeafFromPath(fileResourceManager.getFileResourceMedia(video), FILENAME_POSTER_JPG);
 
 		if(!newPoster.isSame(posterframe)){
-		VFSManager.copyContent(posterframe, newPoster);
+			VFSManager.copyContent(posterframe, newPoster);
 		}
 		metaData.setPosterframe(newPoster.getName());
 		writeVideoMetadataFile(metaData, video);
@@ -231,10 +230,8 @@ public class VideoManagerImpl implements VideoManager {
 	 */
 	@Override
 	public boolean getFrame(OLATResource video, int frameNumber, VFSLeaf frame) {
-		File rootFolder = fileResourceManager.getFileResourceRoot(video);
-		File metaDataFile = new File(rootFolder, DIRNAME_MEDIA);
-		File videoFile = new File(metaDataFile, FILENAME_VIDEO_MP4);
-
+		File videoFile = ((LocalFileImpl)getMasterVideoFile(video)).getBasefile();
+		
 		try (RandomAccessFile randomAccessFile = new RandomAccessFile(videoFile, "r")) {
 			FileChannel ch = randomAccessFile.getChannel();
 			FileChannelWrapper in = new FileChannelWrapper(ch);
@@ -281,10 +278,9 @@ public class VideoManagerImpl implements VideoManager {
 	 */
 	@Override
 	public File getVideoFile(OLATResource video) {
-		File rootFolder = fileResourceManager.getFileResourceRoot(video);
-		File metaDataFile = new File(rootFolder, DIRNAME_MEDIA);
-		File videoFile = new File(metaDataFile, FILENAME_VIDEO_MP4);
-		return videoFile;
+		VFSContainer mediaContainer = getMediaContainer(video);
+		LocalFileImpl videoFile = (LocalFileImpl) mediaContainer.resolve(FILENAME_VIDEO_MP4);
+		return videoFile.getBasefile();
 	}
 
 
@@ -325,11 +321,8 @@ public class VideoManagerImpl implements VideoManager {
 		return (VideoMetadata) XStreamHelper.readObject(XStreamHelper.createXStreamInstance(), metaDataFile);
 	}
 	
-	/**
-	 * TODO
-	 */
 	@Override
-	public boolean optimizeVideoRessource(OLATResource video) {
+	public void startTranscodingProcess(OLATResource video) {
 		//TODO: check for existing version, add option to force rebuild of all versions
 		Size size = getVideoSize(video);
 		int height = size.getHeight();
@@ -345,13 +338,12 @@ public class VideoManagerImpl implements VideoManager {
 		}
 		// start transcoding immediately
 		taskManager.executeTaskToDo();
-		return true;
 	}
 	
 	
 	@Override
 	public List<VideoQualityVersion> getQualityVersions(OLATResource video){
-		VFSContainer optimizedDataContainer = getOptimizedDataContainer(video);
+		VFSContainer optimizedDataContainer = getTranscodingContainer(video);
 		VFSLeaf optimizedMetadataFile = VFSManager.resolveOrCreateLeafFromPath(optimizedDataContainer, FILENAME_OPTIMIZED_VIDEO_METADATA_XML);
 		
 		List<VideoQualityVersion> versions;
@@ -437,10 +429,11 @@ public class VideoManagerImpl implements VideoManager {
 
 	
 	@Override
-	public VFSContainer getOptimizedDataContainer(OLATResource videoResource) {
-		VFSContainer videoResourceFileroot =  FileResourceManager.getInstance().getFileResourceRootImpl(videoResource);
-		VFSContainer optimizedDataFolder = VFSManager.getOrCreateContainer(videoResourceFileroot, DIRNAME_OPTIMIZED_VIDEO_DATA);
-		return optimizedDataFolder;
+	public VFSContainer getTranscodingContainer(OLATResource videoResource) {
+		VFSContainer baseContainer = videoModule.getTranscodingBaseContainer();
+		VFSContainer resourceTranscodingContainer = VFSManager.getOrCreateContainer(baseContainer,
+				String.valueOf(videoResource.getResourceableId()));
+		return resourceTranscodingContainer;
 	}
 	
 	
@@ -513,7 +506,7 @@ public class VideoManagerImpl implements VideoManager {
 		
 		// 5) start transcoding process
 		if (videoModule.isTranscodingEnabled()) {
-			optimizeVideoRessource(videoResource);
+			startTranscodingProcess(videoResource);
 		}
 		
 		return true;
@@ -551,7 +544,7 @@ public class VideoManagerImpl implements VideoManager {
 		}
 		// 3) start transcoding process
 		if (videoModule.isTranscodingEnabled()) {
-			optimizeVideoRessource(videoResource);
+			startTranscodingProcess(videoResource);
 		}
 
 		return true;
@@ -565,7 +558,7 @@ public class VideoManagerImpl implements VideoManager {
 		version.setTranscodingStatus(VideoQualityVersion.TRANSCODING_STATUS_WAITING);
 		versions.add(version);
 		// Store on disk
-		VFSContainer optimizedDataContainer = getOptimizedDataContainer(video);
+		VFSContainer optimizedDataContainer = getTranscodingContainer(video);
 		VFSLeaf optimizedMetadataFile = VFSManager.resolveOrCreateLeafFromPath(optimizedDataContainer, FILENAME_OPTIMIZED_VIDEO_METADATA_XML);
 		XStreamHelper.writeObject(XStreamHelper.createXStreamInstance(), optimizedMetadataFile, versions);
 		
@@ -592,7 +585,7 @@ public class VideoManagerImpl implements VideoManager {
 			versions.add(updatedVersion);
 		}
 		// Store on disk
-		VFSContainer optimizedDataContainer = getOptimizedDataContainer(video);
+		VFSContainer optimizedDataContainer = getTranscodingContainer(video);
 		VFSLeaf optimizedMetadataFile = VFSManager.resolveOrCreateLeafFromPath(optimizedDataContainer, FILENAME_OPTIMIZED_VIDEO_METADATA_XML);
 		XStreamHelper.writeObject(XStreamHelper.createXStreamInstance(), optimizedMetadataFile, versions);
 	}

@@ -70,7 +70,6 @@ public class VideoPosterEditController extends FormBasicController {
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormTitle("tab.video.posterConfig");
 
-
 		String posterPage = velocity_root + "/poster_config.html";
 		displayContainer = FormLayoutContainer.createCustomFormLayout("tasks", getTranslator(), posterPage);
 
@@ -114,7 +113,7 @@ public class VideoPosterEditController extends FormBasicController {
 
 	@Override
 	public void event(UserRequest ureq, Controller source, Event event) {
-		if(source == posterUploadForm|| source == posterSelectionForm){
+		if(source == posterUploadForm || source == posterSelectionForm){
 			if(event instanceof FolderEvent){
 				posterFile = (VFSLeaf) ((FolderEvent) event).getItem();
 				flc.setDirty(true);
@@ -125,6 +124,20 @@ public class VideoPosterEditController extends FormBasicController {
 					posterFile.delete();
 				}
 				updatePosterImage(ureq, videoResource);
+				// cleanup controllers
+				if (posterSelectionForm != null) {
+					removeAsListenerAndDispose(posterSelectionForm);
+					posterSelectionForm = null;
+				}
+				if (posterUploadForm != null) {
+					removeAsListenerAndDispose(posterUploadForm);
+					posterUploadForm = null;
+				}
+				if (cmc != null) {
+					removeAsListenerAndDispose(cmc);
+					cmc = null;
+				}
+				
 			}
 		}
 	}

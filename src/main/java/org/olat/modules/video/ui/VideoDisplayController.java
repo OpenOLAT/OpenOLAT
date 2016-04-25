@@ -42,6 +42,7 @@ import org.olat.core.gui.util.CSSHelper;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.prefs.Preferences;
+import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.modules.video.VideoManager;
 import org.olat.modules.video.manager.VideoMediaMapper;
@@ -104,11 +105,11 @@ public class VideoDisplayController extends BasicController {
 			String cssClass = CSSHelper.createFiletypeIconCssClassFor(lowerFilename);
 			mainVC.contextPut("cssClass", cssClass);
 
-			String extension = FileUtils.getFileSuffix(filename);
-			String mediaUrl = registerMapper(ureq, new VideoMediaMapper(video.getParentContainer().getParentContainer()));
+			String mediaUrl = registerMapper(ureq, new VideoMediaMapper(video.getParentContainer()));
 			mainVC.contextPut("movie", filename);
 			mainVC.contextPut("mediaUrl", mediaUrl);
 			
+			String extension = FileUtils.getFileSuffix(filename);
 			Size realSize = movieService.getSize(video, extension);
 			if(autoWidth){
 				mainVC.contextPut("height", 480);
@@ -129,7 +130,7 @@ public class VideoDisplayController extends BasicController {
 				userPreferredResolution = new Integer(720);
 			}
 
-			// Add versions
+			// Add transcoded versions
 			List<VideoQualityVersion> videos = videoManager.getQualityVersions(entry.getOlatResource());
 			List<VideoQualityVersion> readyToPlayVideos = new ArrayList<>();
 			int preferredAvailableResolution = 0;
@@ -146,6 +147,11 @@ public class VideoDisplayController extends BasicController {
 			mainVC.contextPut("videos", readyToPlayVideos);
 			mainVC.contextPut("useSourceChooser", Boolean.valueOf(readyToPlayVideos.size() > 1));
 			mainVC.contextPut(GUIPREF_KEY_PREFERRED_RESOLUTION, preferredAvailableResolution);
+			// mapper for versions specific because not in same base as the resource itself
+			VFSContainer transcodedContainer = videoManager.getTranscodingContainer(entry.getOlatResource());
+			String transcodedUrl = registerMapper(ureq, new VideoMediaMapper(transcodedContainer));
+			mainVC.contextPut("transcodedUrl", transcodedUrl);
+
 			
 			//FIXME: ???? load tracks from config
 			HashMap<String, String> trackfiles = new HashMap<String, String>();

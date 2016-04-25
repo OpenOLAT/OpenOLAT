@@ -70,7 +70,13 @@ public interface VideoManager {
 
 	public abstract String getDescription(OLATResource video);
 
-	public abstract boolean optimizeVideoRessource(OLATResource video);
+	/**
+	 * Trigger the transcoding process to generate versions of the video
+	 * 
+	 * @param video
+	 * @return
+	 */
+	public abstract void startTranscodingProcess(OLATResource video);
 	
 	public abstract List<VideoQualityVersion> getQualityVersions(OLATResource video);
 
@@ -96,7 +102,7 @@ public interface VideoManager {
 	 * @param videoResource
 	 * @return VFSContainer
 	 */
-	public abstract VFSContainer getOptimizedDataContainer(OLATResource videoResource);
+	public abstract VFSContainer getTranscodingContainer(OLATResource videoResource);
 	
 	/**
 	 * Get the master video file 

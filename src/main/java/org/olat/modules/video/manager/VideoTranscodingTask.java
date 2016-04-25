@@ -35,7 +35,7 @@ import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.vfs.LocalFileImpl;
-import org.olat.fileresource.FileResourceManager;
+import org.olat.core.util.vfs.LocalFolderImpl;
 import org.olat.modules.video.VideoManager;
 import org.olat.modules.video.VideoModule;
 import org.olat.modules.video.model.VideoQualityVersion;
@@ -71,10 +71,8 @@ public class VideoTranscodingTask implements LongRunnable, Sequential {
 		VideoModule videoModule = CoreSpringFactory.getImpl(VideoModule.class);
 		VideoManager videoManager = CoreSpringFactory.getImpl(VideoManager.class);
 		File masterFile = videoManager.getVideoFile(video);
-		FileResourceManager fileResourceManager = CoreSpringFactory.getImpl(FileResourceManager.class);		
-		File videoResourceFileroot = fileResourceManager.getFileResourceRoot(video);
-		File optimizedFolder = new File(videoResourceFileroot, VideoManagerImpl.DIRNAME_OPTIMIZED_VIDEO_DATA);
-		transcodedFile = new File(optimizedFolder,  Integer.toString(version.getResolution()) + masterFile.getName());
+		File transcodingFolder = ((LocalFolderImpl)videoManager.getTranscodingContainer(video)).getBasefile();
+		transcodedFile = new File(transcodingFolder,  Integer.toString(version.getResolution()) + masterFile.getName());
 		
 		ArrayList<String> cmd = new ArrayList<>();
 		String tasksetConfig = videoModule.getTranscodingTasksetConfig();

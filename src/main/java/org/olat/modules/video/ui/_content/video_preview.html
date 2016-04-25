@@ -1,0 +1,28 @@
+<div class="o_video_run o_block_large_bottom o_clearfix">
+	<div class="olatFlashMovieViewer">
+		<video id="$r.getId("o_vid")" width="$width" height="$height" controls  autoplay class="o_video">			
+	    	<source type="video/mp4" src="$mediaUrl/$filename" />
+		</video>
+
+		<script defer="defer" type="text/javascript">
+		// <![CDATA[
+		## using jQuery
+		var mediaElementBaseUrl = BPlayer._mediaElementBaseUrl();
+		jQuery('#$r.getId("o_vid")').mediaelementplayer({
+			enablePluginDebug: BPlayer.debugEnabled,
+
+			## Configuration for flash fallback			
+			## Set mode:'shim' to force flash usage
+			pluginPath: mediaElementBaseUrl,
+			flashName: 'flashmediaelement.swf',
+			silverlightName: 'silverlightmediaelement.xap',
+			plugins: ['flash','silverlight'],
+			
+			## Enabled features - should be same order as in player.js. 
+			## Special here is tracks and sourcechooser which are not available in player.js
+			features: ['playpause','current','volume','progress','duration','fullscreen']
+		});
+		// ]]>
+		</script>
+	</div>
+</div>
