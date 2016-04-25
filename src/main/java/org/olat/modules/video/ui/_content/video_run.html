@@ -1,15 +1,11 @@
-<div class="o_video_run o_clearfix">
+<div class="o_video_run o_block_large_bottom o_clearfix">
 	<div class="olatFlashMovieViewer">
 		<video id="$r.getId("o_vid")" width="$width" height="$height" poster="$mediaUrl/poster.jpg" controls  #if( $autoplay ) autoplay #end class="o_video">			
-   			#set( $hasOptimizedVideo = false)
-	    	#foreach( $video in $videos)
-	    		#if($video.getTranscodingStatus() == 100)
-	    			#set( $hasOptimizedVideo = true)
-		    		<source type="video/mp4" src="$mediaUrl/optimizedVideoData/${video.getResolution()}video.mp4" title="$r.translate("quality.type.${video.getType()}") (${video.getFileSize()})"/>
-	    		#end
+	    	#foreach($video in $videos)
+	    		<source type="video/mp4" src="$mediaUrl/optimizedVideoData/${video.getResolution()}video.mp4" title="$r.translate("quality.resolution.${video.getResolution()}") (${video.getFileSize()})"/>
 	    	#end	    	
 	    	## Use master video file if not optimized video is found
-	    	#if (!$hasOptimizedVideo)
+	    	#if ($videos.size() == 0)
 		    	<source type="video/mp4" src="$mediaUrl/media/$filename" />
 		    #end
 	    	
@@ -37,34 +33,39 @@
 			
 			## Enabled features - should be same order as in player.js. 
 			## Special here is tracks and sourcechooser which are not available in player.js
-			features: ['playpause','current','volume','progress','duration','tracks','sourcechooser','fullscreen'],
+			features: ['playpause','current','volume','progress','duration','tracks',#if($useSourceChooser)'sourcechooser'#end,'fullscreen'],
 			
 			## Callback to communicate with the server
 			success: function (mediaElement, domObject) {
 		        ## listen to play events, fired when movie is finished
 		        mediaElement.addEventListener('play', function(e) {
 		        	if (!o_info.linkbusy) {
-		        		$r.openJavaScriptCommand("play"), 'currentTime', mediaElement.currentTime);
+		        		$r.openJavaScriptCommand("play"), 'currentTime', mediaElement.currentTime, 'src', mediaElement.src);
 					}
 		        }, false);
 		        ## listen to pause events, fired when movie is paused by user
 		        mediaElement.addEventListener('pause', function(e) {
 		        	if (!o_info.linkbusy) {
-						$r.openJavaScriptCommand("pause"), 'currentTime', mediaElement.currentTime);
+						$r.openJavaScriptCommand("pause"), 'currentTime', mediaElement.currentTime, 'src', mediaElement.src);
 					}
 		        }, false);
 		        ## listen to seeked events, fired when user uses the slider in the movie
 		        mediaElement.addEventListener('seeked', function(e) {
 		        	if (!o_info.linkbusy) {
-						$r.openJavaScriptCommand("seeked"), 'currentTime', mediaElement.currentTime);
+						$r.openJavaScriptCommand("seeked"), 'currentTime', mediaElement.currentTime, 'src', mediaElement.src);
 					}
 		        }, false);
 		        ## listen to end events, fired when movie is finished
 		        mediaElement.addEventListener('ended', function(e) {
 		        	if (!o_info.linkbusy) {
-						$r.openJavaScriptCommand("ended"), 'currentTime', mediaElement.currentTime);
+						$r.openJavaScriptCommand("ended"), 'currentTime', mediaElement.currentTime, 'src', mediaElement.src);
 					}
 		        }, false);
+		        ##
+		        ## Preselect the preferred source
+		        #if($useSourceChooser)
+		        jQuery(jQuery('.mejs-sourcechooser-selector input')[$preferredResolution]).prop("checked", true).trigger("click");;
+		        #end
 			}
 		});
 		// ]]>

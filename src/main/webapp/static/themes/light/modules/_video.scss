@@ -44,3 +44,27 @@
 .o_video_run {
 	
 }
+
+.mejs-controls .mejs-sourcechooser-button .mejs-sourcechooser-selector {
+	visibility: visible !important;
+	ul li {
+		label {
+			font-weight: normal;
+			&:hover {
+				color: #eee;
+			}
+			.type {
+				display: none;
+			}
+		}
+		input {
+			/* hide ugly input radio button */
+			visibility: hidden;
+			margin: 0;
+			width: 0;
+			&:checked+label {
+				color: $brand-danger;
+			}
+		}
+	}	
+}

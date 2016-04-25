@@ -29,7 +29,7 @@ import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSMediaResource;
 
-public class VideoMediaMapper implements Mapper {
+public class VideoMediaMapper implements Mapper  {
 	
 	private final VFSContainer mediaBase;
 	
