@@ -829,16 +829,12 @@ public class MailManagerImpl implements MailManager, InitializingBean  {
 		
 		List<DBMailAttachment> attachments = getAttachments(mail);
 
-		try {
-			Address from = createAddress(WebappHelper.getMailConfig("mailFrom"));
-			Address to = createAddress(identity, result, true);
-			MimeMessage message = createForwardMimeMessage(from, to, mail.getSubject(), mail.getBody(), attachments, result);
-			if(message != null) {
-				sendMessage(message, result);
-			}
-		} catch (AddressException e) {
-			log.error("mailFrom is not configured", e);
+		Address to = createAddress(identity, result, true);
+		MimeMessage message = createForwardMimeMessage(to, to, mail.getSubject(), mail.getBody(), attachments, result);
+		if(message != null) {
+			sendMessage(message, result);
 		}
+
 		return result;
 	}
 	
@@ -1388,11 +1384,7 @@ public class MailManagerImpl implements MailManager, InitializingBean  {
 			List<DBMailAttachment> attachments, MailerResult result) {
 		
 		try {
-			Address convertedFrom = getRawEmailFromAddress(from);
-			MimeMessage msg = createMessage(convertedFrom);
-			msg.setFrom(from);
-			msg.setSubject(subject, "utf-8");
-
+			MimeMessage msg = createMessage(subject, from);
 			if(to != null) {
 				msg.addRecipient(RecipientType.TO, to);
 			}
@@ -1430,18 +1422,26 @@ public class MailManagerImpl implements MailManager, InitializingBean  {
 			msg.setSentDate(new Date());
 			msg.saveChanges();
 			return msg;
-		} catch (MessagingException e) {
+		} catch (MessagingException | UnsupportedEncodingException e) {
 			log.error("", e);
 			return null;
 		}
 	}
 	
 	/**
+	 * Only legal way to create a MimeMessage!
 	 * 
-	 * @param bounceAdress must be a raw email, without anything else (no "bla bli <bla@bli.ch>" !)
+	 * @see FXOLAT-74: send all mails as <fromemail> (in config) to have a valid reverse lookup and therefore pass spam protection.
+	 *
+	 * @param subject
+	 * @param from
 	 * @return
+	 * @throws AddressException
+	 * @throws MessagingException
+	 * @throws UnsupportedEncodingException
 	 */
-	private MimeMessage createMessage(Address bounceAdress) {
+	private MimeMessage createMessage(String subject, Address from)
+	throws AddressException, MessagingException, UnsupportedEncodingException {
 		String mailhost = WebappHelper.getMailConfig("mailhost");
 		String mailport = WebappHelper.getMailConfig("mailport");
 		String mailhostTimeout = WebappHelper.getMailConfig("mailTimeout");
@@ -1459,7 +1459,6 @@ public class MailManagerImpl implements MailManager, InitializingBean  {
 		}
 		
 		Properties p = new Properties();
-		p.put("mail.smtp.from", bounceAdress.toString());
 		p.put("mail.smtp.host", mailhost);
 		if(StringHelper.containsNonWhitespace(mailport)) {
 			p.put("mail.smtp.port", mailport);
@@ -1485,7 +1484,18 @@ public class MailManagerImpl implements MailManager, InitializingBean  {
 			// enable mail session debugging on console
 			mailSession.setDebug(true);
 		}
-		return new MimeMessage(mailSession);
+		MimeMessage msg = new MimeMessage(mailSession);
+		
+		String platformFrom = WebappHelper.getMailConfig("mailFrom");
+		String platformName = WebappHelper.getMailConfig("mailFromName");
+		Address viewableFrom = createAddressWithName(platformFrom, platformName);
+		msg.setFrom(viewableFrom);
+		msg.setSubject(subject, "utf-8");
+		// reply to can only be an address without name (at least for postfix!), see FXOLAT-312
+		Address convertedFrom = getRawEmailFromAddress(from); 
+		msg.setReplyTo(new Address[] { convertedFrom });
+		
+		return msg;
 	}
 	
 	// converts an address "bla bli <bla@bli.ch>" => "bla@bli.ch"
@@ -1503,16 +1513,7 @@ public class MailManagerImpl implements MailManager, InitializingBean  {
 			List<File> attachments, MailerResult result) {
 		
 		try {
-			//	see FXOLAT-74: send all mails as <fromemail> (in config) to have a valid reverse lookup and therefore pass spam protection.
-			// following doesn't work correctly, therefore add bounce-address in message already
-			Address convertedFrom = getRawEmailFromAddress(from); 
-			MimeMessage msg = createMessage(convertedFrom);
-			Address viewableFrom = createAddressWithName(WebappHelper.getMailConfig("mailFrom"), WebappHelper.getMailConfig("mailFromName"));
-			msg.setFrom(viewableFrom);
-			msg.setSubject(subject, "utf-8");
-			// reply to can only be an address without name (at least for postfix!), see FXOLAT-312
-			msg.setReplyTo(new Address[] { convertedFrom });
-
+			MimeMessage msg = createMessage(subject, from);
 			if(tos != null && tos.length > 0) {
 				msg.addRecipients(RecipientType.TO, tos);
 			}
@@ -1617,27 +1618,32 @@ public class MailManagerImpl implements MailManager, InitializingBean  {
 			} else if (mailModule.isMailHostEnabled() && result.getReturnCode() == MailerResult.OK) {
 				// now send the mail
 				if(Settings.isDebuging()) {
-					try {
-						log.info("E-mail send: " + msg.getSubject());
-						log.info("Content    : " + msg.getContent());
-					} catch (IOException e) {
-						log.error("", e);
-					}
+					logMessage(msg);
 				}
 				Transport.send(msg);
 			} else if(Settings.isDebuging() && result.getReturnCode() == MailerResult.OK) {
-				try {
-					log.info("E-mail send: " + msg.getSubject());
-					log.info("Content    : " + msg.getContent());
-				} catch (IOException e) {
-					log.error("", e);
-				}
+				logMessage(msg);
 			} else {
 				result.setReturnCode(MailerResult.MAILHOST_UNDEFINED);
 			}
 		} catch (MessagingException e) {
 			result.setReturnCode(MailerResult.SEND_GENERAL_ERROR);
 			log.warn("Could not send mail", e);
+		}
+	}
+	
+	private void logMessage(MimeMessage msg) throws MessagingException {
+		try {
+			log.info("E-mail send: " + msg.getSubject());
+			log.info("Content    : " + msg.getContent());
+			
+			//File file = new File("/HotCoffee/tmp/mail_" + CodeHelper.getForeverUniqueID() + ".msg");
+			//OutputStream os = new FileOutputStream(file);
+			//msg.writeTo(os);
+			//IOUtils.closeQuietly(os);
+			
+		} catch (IOException e) {
+			log.error("", e);
 		}
 	}
 	
