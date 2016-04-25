@@ -30,8 +30,6 @@ import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.services.image.Size;
 import org.olat.core.commons.services.taskexecutor.LongRunnable;
 import org.olat.core.commons.services.taskexecutor.Sequential;
-import org.olat.core.commons.services.taskexecutor.Task;
-import org.olat.core.commons.services.taskexecutor.TaskAwareRunnable;
 import org.olat.core.commons.services.video.MovieService;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
@@ -39,49 +37,52 @@ import org.olat.core.util.Formatter;
 import org.olat.core.util.vfs.LocalFileImpl;
 import org.olat.fileresource.FileResourceManager;
 import org.olat.modules.video.VideoManager;
+import org.olat.modules.video.VideoModule;
 import org.olat.modules.video.model.VideoQualityVersion;
 import org.olat.resource.OLATResource;
 
 /**
+ * This task implements transcoding of a single video file using the Handbrake CLI. 
+ * 
  * Initial date: 22.04.2016<br>
  * @author gnaegi, gnaegi@frentix.com, http://www.frentix.com
  *
  */
-public class VideoTranscodingTask implements LongRunnable, TaskAwareRunnable, Sequential {
+public class VideoTranscodingTask implements LongRunnable, Sequential {
+	private static final long serialVersionUID = 2982868860465334552L;
 	private static final OLog log = Tracing.createLoggerFor(VideoTranscodingTask.class);
-	private transient Task task;
 	private OLATResource video;
-	private String resolution;
 	private VideoQualityVersion version;
 	private File transcodedFile;
 	
+	/**
+	 * 
+	 * @param video
+	 * @param version
+	 */
 	VideoTranscodingTask(OLATResource video, VideoQualityVersion version) {
 		this.video = video;
 		this.version = version;
-		this.resolution = version.getType();
-	}
-
-
-	@Override
-	public void setTask(Task task) {
-		this.task = task;
 	}
 
 	
 	@Override
 	public void run() {
+		VideoModule videoModule = CoreSpringFactory.getImpl(VideoModule.class);
 		VideoManager videoManager = CoreSpringFactory.getImpl(VideoManager.class);
 		File masterFile = videoManager.getVideoFile(video);
 		FileResourceManager fileResourceManager = CoreSpringFactory.getImpl(FileResourceManager.class);		
 		File videoResourceFileroot = fileResourceManager.getFileResourceRoot(video);
 		File optimizedFolder = new File(videoResourceFileroot, VideoManagerImpl.DIRNAME_OPTIMIZED_VIDEO_DATA);
-		transcodedFile = new File(optimizedFolder,  resolution + masterFile.getName());
+		transcodedFile = new File(optimizedFolder,  Integer.toString(version.getResolution()) + masterFile.getName());
 		
-		ArrayList<String> cmd = new ArrayList<String>();
-		//TODO make configurable (taskset on osx not available)
-//		cmd.add("taskset");
-//		cmd.add("-c");
-//		cmd.add("0,1");
+		ArrayList<String> cmd = new ArrayList<>();
+		String tasksetConfig = videoModule.getTranscodingTasksetConfig();
+		if (tasksetConfig != null) {
+			cmd.add("taskset");
+			cmd.add("-c");
+			cmd.add(tasksetConfig);			
+		}
 		cmd.add("HandBrakeCLI");
 		cmd.add("-i"); 
 		cmd.add(masterFile.getAbsolutePath());
@@ -91,7 +92,7 @@ public class VideoTranscodingTask implements LongRunnable, TaskAwareRunnable, Se
 		cmd.add("--preset");
 		cmd.add("Normal");
 		cmd.add("--height");
-		cmd.add(resolution);
+		cmd.add(Integer.toString(version.getResolution()));
 		cmd.add("--deinterlace");
 		cmd.add("--crop");
 		cmd.add("0:0:0:0");
@@ -110,11 +111,15 @@ public class VideoTranscodingTask implements LongRunnable, TaskAwareRunnable, Se
 				process.destroy();
 				process = null;
 			}
-			//TODO: remove version file, cleanup
+			//TODO: remove version file, cleanup, remove job
 		}
 	}
 
-	
+
+	/**
+	 * Internal helper to deal with the handbrake console output and update the transcoding metadata
+	 * @param proc
+	 */
 	private final void executeProcess(Process proc) {
 		VideoManager videoManager = CoreSpringFactory.getImpl(VideoManager.class);
 		
@@ -122,6 +127,7 @@ public class VideoTranscodingTask implements LongRunnable, TaskAwareRunnable, Se
 		StringBuilder output = new StringBuilder();
 		String line;
 		
+		// Read from standard input and parse percentages of transcoding process
 		InputStream stdout = proc.getInputStream();
 		InputStreamReader isr = new InputStreamReader(stdout);
 		BufferedReader br = new BufferedReader(isr);
@@ -148,7 +154,9 @@ public class VideoTranscodingTask implements LongRunnable, TaskAwareRunnable, Se
 			//
 		}
 
-		InputStream stderr = proc.getErrorStream();
+		// Read and ignore errors, Handbrake outputs a lot info on startup. Only
+		// display errors in debug level
+ 		InputStream stderr = proc.getErrorStream();
 		InputStreamReader iserr = new InputStreamReader(stderr);
 		BufferedReader berr = new BufferedReader(iserr);
 		line = null;
@@ -162,22 +170,19 @@ public class VideoTranscodingTask implements LongRunnable, TaskAwareRunnable, Se
 		}
 
 		try {
+			// On finish, update metadata file
 			int exitValue = proc.waitFor();
 			if (exitValue == 0) {
-				// done, update metadata file
 				MovieService movieService = CoreSpringFactory.getImpl(MovieService.class);
 				Size videoSize = movieService.getSize(new LocalFileImpl(transcodedFile), VideoManagerImpl.FILETYPE_MP4);
 				version.setDimension(videoSize);
 				version.setFileSize(Formatter.formatBytes(transcodedFile.length()));
-				version.setIsTransforming(false);
-				version.setTranscodingStatus(100);
+				version.setTranscodingStatus(VideoQualityVersion.TRANSCODING_STATUS_DONE);
 				videoManager.updateVersion(video, version);
-				
-				//TODO: do I need to remove task from DB?
-
 			}
 		} catch (InterruptedException e) {
 			//
+			//TODO: do I need to remove task from DB?
 		}
 	}
 }

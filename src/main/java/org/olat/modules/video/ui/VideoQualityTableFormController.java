@@ -80,7 +80,7 @@ public class VideoQualityTableFormController extends FormBasicController {
 		formLayout.add(generalCont);
 
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(true, QualityTableCols.type.i18nKey(), QualityTableCols.type.ordinal(), true, QualityTableCols.type.name()));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(true, QualityTableCols.resolution.i18nKey(), QualityTableCols.resolution.ordinal(), true, QualityTableCols.resolution.name()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(true, QualityTableCols.dimension.i18nKey(), QualityTableCols.dimension.ordinal(), true, QualityTableCols.dimension.name()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(true, QualityTableCols.size.i18nKey(), QualityTableCols.size.ordinal(), true, QualityTableCols.size.name()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(true, QualityTableCols.format.i18nKey(), QualityTableCols.format.ordinal(), true, QualityTableCols.format.name()));
@@ -92,11 +92,11 @@ public class VideoQualityTableFormController extends FormBasicController {
 		Size origSize = videoManager.getVideoSize(videoResource);
 		
 		viewButton = uifactory.addFormLink("view", "viewQuality", "quality.view", "qulaity.view", null, Link.LINK);
-		rows.add(new QualityTableRow("original", origSize.getWidth() +"x"+ origSize.getHeight(),  FileUtils.byteCountToDisplaySize(videoManager.getVideoFile(videoResource).length()), "mp4",viewButton));
+		rows.add(new QualityTableRow(translate("quality.resolution.original"), origSize.getWidth() +"x"+ origSize.getHeight(),  FileUtils.byteCountToDisplaySize(videoManager.getVideoFile(videoResource).length()), "mp4",viewButton));
 		
 		List<VideoQualityVersion> versions = videoManager.getQualityVersions(videoResource);
 		for(VideoQualityVersion version:versions){
-			viewButton = uifactory.addFormLink(version.getType(), "viewQuality", "quality.view", "qulaity.view", null, Link.LINK);
+			viewButton = uifactory.addFormLink(Integer.toString(version.getResolution()), "viewQuality", "quality.view", "qulaity.view", null, Link.LINK);
 			Size size = version.getDimension();
 			String dimension = "";
 			if (size != null) {
@@ -105,15 +105,12 @@ public class VideoQualityTableFormController extends FormBasicController {
 			String fileSize = "";
 			if (version.getFileSize() != null) {
 				fileSize = version.getFileSize();
-			} else if (version.getIsTransforming()) {
-				// TODO refactor to separate column
-				if (version.getTranscodingStatus() == 0) {
-					fileSize = translate("transcoding.waiting");
-				} else {
-					fileSize = translate("transcoding.processing") + ": " + version.getTranscodingStatus() + "%";					
-				}
+			} else if (version.getTranscodingStatus() == VideoQualityVersion.TRANSCODING_STATUS_WAITING) {
+				fileSize = translate("transcoding.waiting");
+			} else if (version.getTranscodingStatus() == VideoQualityVersion.TRANSCODING_STATUS_DONE){
+				fileSize = translate("transcoding.processing") + ": " + version.getTranscodingStatus() + "%";					
 			}
-			rows.add(new QualityTableRow(translate("quality.type." + version.getType()), dimension,  fileSize, version.getFormat(),viewButton));
+			rows.add(new QualityTableRow(translate("quality.resolution." + version.getResolution()), dimension,  fileSize, version.getFormat(),viewButton));
 		}
 		
 		tableModel.setObjects(rows);

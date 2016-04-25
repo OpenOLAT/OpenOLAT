@@ -31,7 +31,7 @@ import org.olat.core.gui.components.form.flexible.elements.FormLink;
  */
 public class QualityTableRow {
 
-	String type;
+	String resolution;
 	String dimension;
 	String size;
 	String format;
@@ -39,8 +39,8 @@ public class QualityTableRow {
 
 	protected FormUIFactory uifactory = FormUIFactory.getInstance();
 
-	public QualityTableRow(String type, String dimension, String size, String format, FormLink viewLink) {
-		this.type = type;
+	public QualityTableRow(String resolution, String dimension, String size, String format, FormLink viewLink) {
+		this.resolution = resolution;
 		this.dimension = dimension;
 		this.size = size;
 		this.format = format;
@@ -49,12 +49,12 @@ public class QualityTableRow {
 
 	}
 
-	public String getType() {
-		return type;
+	public String getResolution() {
+		return resolution;
 	}
 
 	public void setType(String type) {
-		this.type = type;
+		this.resolution = type;
 	}
 
 	public String getDimension() {

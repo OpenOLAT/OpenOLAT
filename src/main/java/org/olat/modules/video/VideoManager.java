@@ -148,11 +148,14 @@ public interface VideoManager {
 	 * Create and add a new transcoding version to the video resource. The
 	 * version is set to "isTransforming".
 	 * 
-	 * @param video The video resource
-	 * @param resolution The resolution for the transcoding process
+	 * @param video
+	 *            The video resource
+	 * @param resolution
+	 *            The resolution for the transcoding process. This is the height
+	 *            of the target video size (e.g. 720 for 720p resolution)
 	 * @return VideoQualityVersion for this new version
 	 */
-	public abstract VideoQualityVersion addNewVersionForTranscoding(OLATResource video, String resolution);
+	public abstract VideoQualityVersion addNewVersionForTranscoding(OLATResource video, int resolution);
 
 	/**
 	 * Update an already existing version or add as new version.

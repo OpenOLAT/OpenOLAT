@@ -40,7 +40,6 @@ import javax.imageio.ImageIO;
 
 import org.jcodec.api.FrameGrab;
 import org.jcodec.common.FileChannelWrapper;
-import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.services.image.Size;
 import org.olat.core.commons.services.taskexecutor.TaskExecutorManager;
 import org.olat.core.commons.services.video.MovieService;
@@ -88,6 +87,8 @@ public class VideoManagerImpl implements VideoManager {
 	private VideoModule videoModule;
 	@Autowired 
 	private RepositoryManager repositoryManager;
+	@Autowired
+	private TaskExecutorManager taskManager;
 	
 	private static final OLog log = Tracing.createLoggerFor(VideoManagerImpl.class);
 
@@ -327,14 +328,13 @@ public class VideoManagerImpl implements VideoManager {
 		//TODO: check for existing version, add option to force rebuild of all versions
 		Size size = getVideoSize(video);
 		int height = size.getHeight();
-		TaskExecutorManager taskManager = CoreSpringFactory.getImpl(TaskExecutorManager.class);
-		//TODO: add to module and admin console which version to generate
-		int[] resolutions = {1080, 720, 480, 360, 240, 144};
+		//TODO: GUI to admin console to manage transcoding resolutions
+		int[] resolutions = videoModule.getTranscodingResolutions();
 		for (int resolution : resolutions) {
 			if (height < resolution) {
 				continue;
 			}
-			VideoQualityVersion version = addNewVersionForTranscoding(video, Integer.toString(resolution));
+			VideoQualityVersion version = addNewVersionForTranscoding(video, resolution);
 			VideoTranscodingTask task = new VideoTranscodingTask(video, version);
 			taskManager.execute(task, null, video, null, new Date());		
 		}
@@ -554,10 +554,10 @@ public class VideoManagerImpl implements VideoManager {
 
 	
 	@Override
-	public VideoQualityVersion addNewVersionForTranscoding(OLATResource video, String resolution) {
+	public VideoQualityVersion addNewVersionForTranscoding(OLATResource video, int resolution) {
 		List<VideoQualityVersion> versions = getQualityVersions(video);
 		VideoQualityVersion version = new VideoQualityVersion(resolution, null, null, VideoManagerImpl.FILETYPE_MP4);
-		version.setIsTransforming(true);
+		version.setTranscodingStatus(VideoQualityVersion.TRANSCODING_STATUS_WAITING);
 		versions.add(version);
 		// Store on disk
 		VFSContainer optimizedDataContainer = getOptimizedDataContainer(video);
@@ -573,12 +573,11 @@ public class VideoManagerImpl implements VideoManager {
 		List<VideoQualityVersion> versions = getQualityVersions(video);
 		boolean found = false;
 		for (VideoQualityVersion existingVersion : versions) {
-			if (updatedVersion.getType().equals(existingVersion.getType())) {
+			if (updatedVersion.getResolution() == existingVersion.getResolution()) {
 				// update properties
 				existingVersion.setDimension(updatedVersion.getDimension());
 				existingVersion.setFileSize(updatedVersion.getFileSize());
 				existingVersion.setFormat(updatedVersion.getFormat());
-				existingVersion.setIsTransforming(updatedVersion.getIsTransforming());
 				existingVersion.setTranscodingStatus(updatedVersion.getTranscodingStatus());
 				found = true;
 				break;

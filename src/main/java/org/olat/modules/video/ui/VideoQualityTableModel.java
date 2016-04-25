@@ -50,7 +50,7 @@ public class VideoQualityTableModel extends DefaultFlexiTableDataModel<QualityTa
 	public Object getValueAt(int row, int col) {
 		QualityTableRow video = getObject(row);
 		switch(QualityTableCols.values()[col]) {
-			case type: return video.getType();
+			case resolution: return video.getResolution();
 			case dimension: return video.getDimension();
 			case size: return video.getSize();
 			case format: return video.getFormat();
@@ -60,7 +60,7 @@ public class VideoQualityTableModel extends DefaultFlexiTableDataModel<QualityTa
 	}
 
 	public enum QualityTableCols {
-		type("quality.table.header.type"),
+		resolution("quality.table.header.resolution"),
 		dimension("quality.table.header.dimension"),
 		size("quality.table.header.size"),
 		format("quality.table.header.format"),
