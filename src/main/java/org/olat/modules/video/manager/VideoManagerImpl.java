@@ -244,10 +244,15 @@ public class VideoManagerImpl implements VideoManager {
 			BufferedImage bufImg = frameGrab.getFrame();
 			ImageIO.write(bufImg, "JPG", frameOutputStream);
 
+			// close everything to prevent resource leaks
+			frameOutputStream.close();
+			in.close();
+			ch.close();
+
 			return true;
 		} catch (Exception e) {
 			return false;
-		}
+		} 
 	}
 	
 	/**
