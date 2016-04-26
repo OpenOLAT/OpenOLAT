@@ -100,7 +100,7 @@ public class VideoQualityTableFormController extends FormBasicController {
 		for(VideoQualityVersion version:versions){
 			FormLink previewVersionLink = uifactory.addFormLink(Integer.toString(version.getResolution()), "viewQuality", "quality.view", "qulaity.view", null, Link.LINK);
 			previewVersionLink.setUserObject(version);
-			if(version.getTranscodingStatus()<100){
+			if (version.getTranscodingStatus() < VideoQualityVersion.TRANSCODING_STATUS_DONE) {
 				previewVersionLink.setEnabled(false);
 			}
 			Size size = version.getDimension();
