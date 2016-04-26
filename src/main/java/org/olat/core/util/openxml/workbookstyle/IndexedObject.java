@@ -17,37 +17,23 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.ims.qti21;
-
-import java.math.BigDecimal;
-
-import org.olat.core.id.CreateInfo;
-import org.olat.core.id.ModifiedInfo;
+package org.olat.core.util.openxml.workbookstyle;
 
 /**
  * 
- * Initial date: 02.02.2016<br>
+ * Initial date: 22.04.2016<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public interface AssessmentItemSession extends CreateInfo, ModifiedInfo {
+abstract class IndexedObject {
 	
-	public Long getKey();
+	private final int index;
 	
-	public String getAssessmentItemIdentifier();
+	public IndexedObject(int index) {
+		this.index = index;
+	}
 	
-	public Boolean getPassed();
-
-	public void setPassed(Boolean passed);
-	
-	public Long getDuration();
-	
-	public void setDuration(Long duration);
-	
-	public BigDecimal getScore();
-
-	public void setScore(BigDecimal score);
-	
-	public AssessmentTestSession getAssessmentTestSession();
-
+	public int getIndex() {
+		return index;
+	}
 }

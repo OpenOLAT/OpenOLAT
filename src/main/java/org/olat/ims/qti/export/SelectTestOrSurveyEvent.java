@@ -17,37 +17,37 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.ims.qti21;
+package org.olat.ims.qti.export;
 
-import java.math.BigDecimal;
-
-import org.olat.core.id.CreateInfo;
-import org.olat.core.id.ModifiedInfo;
+import org.olat.core.gui.control.Event;
+import org.olat.course.assessment.model.AssessmentNodeData;
 
 /**
  * 
- * Initial date: 02.02.2016<br>
+ * Initial date: 20.04.2016<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public interface AssessmentItemSession extends CreateInfo, ModifiedInfo {
+public class SelectTestOrSurveyEvent extends Event {
 	
-	public Long getKey();
+	private static final long serialVersionUID = 3534998004349935422L;
 	
-	public String getAssessmentItemIdentifier();
+	private final QTIArchiver archiver;
+	private final AssessmentNodeData data;
 	
-	public Boolean getPassed();
+	public SelectTestOrSurveyEvent(QTIArchiver archiver, AssessmentNodeData data) {
+		super("select-test-surv");
+		this.data = data;
+		this.archiver = archiver;
+	}
 
-	public void setPassed(Boolean passed);
-	
-	public Long getDuration();
-	
-	public void setDuration(Long duration);
-	
-	public BigDecimal getScore();
+	public AssessmentNodeData getData() {
+		return data;
+	}
 
-	public void setScore(BigDecimal score);
+	public QTIArchiver getArchiver() {
+		return archiver;
+	}
 	
-	public AssessmentTestSession getAssessmentTestSession();
-
+	
 }

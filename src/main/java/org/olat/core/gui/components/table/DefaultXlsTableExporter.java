@@ -24,29 +24,23 @@
 */
 package org.olat.core.gui.components.table;
 
-import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
+import java.util.Date;
 
 import org.apache.commons.lang.StringEscapeUtils;
-import org.apache.poi.hssf.usermodel.HSSFWorkbook;
-import org.apache.poi.ss.usermodel.Cell;
-import org.apache.poi.ss.usermodel.CellStyle;
-import org.apache.poi.ss.usermodel.Font;
-import org.apache.poi.ss.usermodel.Row;
-import org.apache.poi.ss.usermodel.Sheet;
-import org.apache.poi.ss.usermodel.Workbook;
-import org.apache.poi.ss.util.WorkbookUtil;
-import org.olat.core.gui.media.CleanupAfterDeliveryFileMediaResource;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.translator.Translator;
-import org.olat.core.logging.AssertException;
-import org.olat.core.util.CodeHelper;
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
-import org.olat.core.util.WebappHelper;
 import org.olat.core.util.filter.FilterFactory;
+import org.olat.core.util.openxml.OpenXMLWorkbook;
+import org.olat.core.util.openxml.OpenXMLWorkbookResource;
+import org.olat.core.util.openxml.OpenXMLWorksheet;
+import org.olat.core.util.openxml.OpenXMLWorksheet.Row;
 
 /**
  * Description:<br>
@@ -57,8 +51,7 @@ import org.olat.core.util.filter.FilterFactory;
  * @author patrick
  */
 public class DefaultXlsTableExporter implements TableExporter {
-	private CellStyle headerCellStyle;
-
+	private static final OLog log = Tracing.createLoggerFor(DefaultXlsTableExporter.class);
 
 	/**
 	 * @see org.olat.core.gui.components.table.TableExporter#export(org.olat.core.gui.components.table.Table)
@@ -69,21 +62,28 @@ public class DefaultXlsTableExporter implements TableExporter {
 		int cdcnt = table.getColumnCount();
 		int rcnt = table.getRowCount();
 		
-		Workbook wb = new HSSFWorkbook();
-		headerCellStyle = getHeaderCellStyle(wb);
-		
-		String tableExportTitle = translator.translate("table.export.title");
-		String saveTitle = WorkbookUtil.createSafeSheetName(tableExportTitle);
-		Sheet exportSheet = wb.createSheet(saveTitle);
-		createHeader(table, translator, cdcnt, exportSheet);
-		createData(table, cdcnt, rcnt, exportSheet);
-		
-		return createMediaResourceFromDocument(wb);
+		String label = "TableExport_"
+				+ Formatter.formatDatetimeFilesystemSave(new Date(System.currentTimeMillis()))
+				+ ".xlsx";
+
+		return new OpenXMLWorkbookResource(label) {
+			@Override
+			protected void generate(OutputStream out) {
+				try(OpenXMLWorkbook workbook = new OpenXMLWorkbook(out, 1)) {
+					OpenXMLWorksheet sheet = workbook.nextWorksheet();
+					createHeader(table, translator, cdcnt, sheet, workbook);
+					createData(table, cdcnt, rcnt, sheet);
+				} catch (IOException e) {
+					log.error("", e);
+				}
+			}
+		};
 	}
 
-	private void createHeader(final Table table, final Translator translator, final int cdcnt, final Sheet exportSheet) {
-		
-		Row headerRow = exportSheet.createRow(0);
+	private void createHeader(final Table table, final Translator translator, final int cdcnt,
+			final OpenXMLWorksheet exportSheet, final OpenXMLWorkbook workbook) {
+		Row headerRow = exportSheet.newRow();
+		exportSheet.setHeaderRows(1);
 		for (int c = 0; c < cdcnt; c++) {
 			ColumnDescriptor cd = table.getColumnDescriptor(c);
 			if (cd instanceof StaticColumnDescriptor) {
@@ -92,16 +92,13 @@ public class DefaultXlsTableExporter implements TableExporter {
 			}
 			String headerKey = cd.getHeaderKey();
 			String headerVal = cd.translateHeaderKey() ? translator.translate(headerKey) : headerKey;
-			Cell cell = headerRow.createCell(c);
-			cell.setCellValue(headerVal);
-			cell.setCellStyle(headerCellStyle);
+			headerRow.addCell(c, headerVal, workbook.getStyles().getHeaderStyle());
 		}
 	}
 
-	private void createData(final Table table, final int cdcnt, final int rcnt, final Sheet exportSheet) {
-		
+	private void createData(final Table table, final int cdcnt, final int rcnt, final OpenXMLWorksheet exportSheet) {
 		for (int r = 0; r < rcnt; r++) {
-			Row dataRow = exportSheet.createRow(r+1);
+			Row dataRow = exportSheet.newRow();
 			for (int c = 0; c < cdcnt; c++) {
 				ColumnDescriptor cd = table.getColumnDescriptor(c);
 				if (cd instanceof StaticColumnDescriptor) {
@@ -119,39 +116,8 @@ public class DefaultXlsTableExporter implements TableExporter {
 						cellValue = Formatter.truncate(cellValue, 32760);
 					}
 				}
-				Cell cell = dataRow.createCell(c);
-				cell.setCellValue(cellValue);
+				dataRow.addCell(c, cellValue, null);
 			}
 		}
-	}
-
-
-	private MediaResource createMediaResourceFromDocument(final Workbook wb) {
-		FileOutputStream fos = null;
-		try {
-			File f = new File(WebappHelper.getTmpDir(), "TableExport" + CodeHelper.getUniqueID() + ".xls");
-			fos = new FileOutputStream(f);
-			wb.write(fos);
-			fos.close();
-			return new CleanupAfterDeliveryFileMediaResource(f);
-		} catch (IOException e) {
-			throw new AssertException("error preparing media resource for XLS Table Export", e);
-		} finally {
-			if(fos != null){
-				try {
-					fos.close();
-				} catch (IOException e1) {
-					throw new AssertException("error preparing media resource for XLS Table Export and closing stream", e1);
-				}
-			}
-		}
-	}
-	
-	private CellStyle getHeaderCellStyle(final Workbook wb) {
-		CellStyle cellStyle = wb.createCellStyle();
-		Font boldFont = wb.createFont();
-		boldFont.setBoldweight(Font.BOLDWEIGHT_BOLD);
-		cellStyle.setFont(boldFont);
-		return cellStyle;
 	}
 }

@@ -25,6 +25,7 @@
 
 package org.olat.ims.qti.export;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -32,21 +33,20 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
-import org.olat.core.gui.components.table.ColumnDescriptor;
-import org.olat.core.gui.components.table.CustomRenderColumnDescriptor;
-import org.olat.core.gui.components.table.DefaultColumnDescriptor;
-import org.olat.core.gui.components.table.TableController;
-import org.olat.core.gui.components.table.TableGuiConfiguration;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
+import org.olat.core.gui.control.generic.wizard.Step;
+import org.olat.core.gui.control.generic.wizard.StepRunnerCallback;
+import org.olat.core.gui.control.generic.wizard.StepsMainRunController;
+import org.olat.core.gui.control.generic.wizard.StepsRunContext;
+import org.olat.core.gui.media.MediaResource;
 import org.olat.core.id.OLATResourceable;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
-import org.olat.course.assessment.IndentedNodeRenderer;
 import org.olat.course.assessment.model.AssessmentNodeData;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.IQSELFCourseNode;
@@ -62,20 +62,15 @@ import org.olat.course.nodes.IQTESTCourseNode;
  * of the current user.  
  */
 public class CourseQTIArchiveController extends BasicController {
-		
-	private static final String CMD_SELECT_NODE = "cmd.select.node";
-	
-	private VelocityContainer introVC;
-	
-	private TableController nodeListCtr;
-	
-	private QTIArchiveWizardController qawc;
+
 	private CloseableModalController cmc;
-	private OLATResourceable ores;
-	
-	private List<AssessmentNodeData> nodesTableObjectArrayList;
-	private Link startExportDummyButton;
-	private Link startExportButton;
+	private StepsMainRunController archiveWizardCtrl;
+	private SelectTestOrSurveyController simpleArchiveCtrl;
+
+	private Link startExportDummyButton, startExportButton;
+
+	private final OLATResourceable courseOres;
+	private final List<AssessmentNodeData> nodeList;
 	
 	/**
 	 * Constructor for the assessment tool controller. 
@@ -83,24 +78,20 @@ public class CourseQTIArchiveController extends BasicController {
 	 * @param wControl
 	 * @param course
 	 */
-	public CourseQTIArchiveController(UserRequest ureq, WindowControl wControl, OLATResourceable ores) { 
-		
+	public CourseQTIArchiveController(UserRequest ureq, WindowControl wControl, OLATResourceable courseOres) { 
 		super(ureq, wControl);	
-		
-		this.ores = ores;
+		this.courseOres = courseOres;
 
-		introVC = this.createVelocityContainer("intro");
+		VelocityContainer introVC = createVelocityContainer("intro");
 		startExportDummyButton = LinkFactory.createButtonSmall("command.start.exportwizard.dummy", introVC, this);
 		startExportButton = LinkFactory.createButtonSmall("command.start.exportwizard", introVC, this);
-		
-		nodesTableObjectArrayList = doNodeChoose(ureq);
-		
-		if (nodesTableObjectArrayList == null) {
+
+		nodeList = doNodeChoose(ureq);
+		if (nodeList == null || nodeList.isEmpty()) {
 			introVC.contextPut("hasQTINodes", Boolean.FALSE);
 		} else {
 			introVC.contextPut("hasQTINodes", Boolean.TRUE);
 		}
-		
 		putInitialPanel(introVC);
 	}
 	
@@ -110,17 +101,11 @@ public class CourseQTIArchiveController extends BasicController {
 	 */
 	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
-		ICourse course = CourseFactory.loadCourse(ores);
 		if (source == startExportButton){
-			qawc = new QTIArchiveWizardController(false, ureq, nodesTableObjectArrayList, course, getWindowControl());
-		}	else if (source == startExportDummyButton){
-			qawc = new QTIArchiveWizardController(true, ureq, nodesTableObjectArrayList, course, getWindowControl());
+			doAdvancedArchive(ureq, true);
+		} else if (source == startExportDummyButton) {
+			doSimpleArchive(ureq);
 		}
-		listenTo(qawc);
-		String title = qawc.getAndRemoveWizardTitle();
-		cmc = new CloseableModalController(getWindowControl(), translate("close"), qawc.getInitialComponent(), true, title);
-		cmc.setContextHelp(getTranslator(), "Archiving Results of Tests and Questionnaires");
-		cmc.activate();
 	}
 	
 	/**
@@ -129,43 +114,83 @@ public class CourseQTIArchiveController extends BasicController {
 	 */
 	@Override
 	public void event(UserRequest ureq, Controller source, Event event) {
-		if (source == qawc){
-			if (event == Event.DONE_EVENT || event == Event.CANCELLED_EVENT) {
-				cmc.deactivate();
+		if (source == archiveWizardCtrl){
+			getWindowControl().pop();
+			cleanUp();
+		} else if(simpleArchiveCtrl == source) {
+			if(event instanceof SelectTestOrSurveyEvent) {
+				SelectTestOrSurveyEvent stos = (SelectTestOrSurveyEvent)event;
+				doExportSimpleArchive(ureq, stos.getArchiver(), stos.getData());
 			}
+			cmc.deactivate();
+			cleanUp();
+		} else if(cmc == source) {
+			cleanUp();
+		}
+	}
+	
+	private void cleanUp() {
+		removeAsListenerAndDispose(archiveWizardCtrl);
+		removeAsListenerAndDispose(simpleArchiveCtrl);
+		removeAsListenerAndDispose(cmc);
+		archiveWizardCtrl = null;
+		simpleArchiveCtrl = null;
+		cmc = null;
+	}
+
+	private void doSimpleArchive(UserRequest ureq) {
+		QTIArchiver archiver = new QTIArchiver(courseOres, getIdentity(), getLocale());
+		simpleArchiveCtrl = new SelectTestOrSurveyController(ureq, getWindowControl(), archiver, nodeList);
+		listenTo(simpleArchiveCtrl);
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), simpleArchiveCtrl.getInitialComponent(),
+				true, translate("archive.wizard.title"));
+		cmc.activate();
+		listenTo(cmc);
+	}
+	
+	private void doExportSimpleArchive(UserRequest ureq, QTIArchiver archiver, AssessmentNodeData data) {
+		try {
+			archiver.setData(data);
+			MediaResource resource = archiver.export();
+			ureq.getDispatchResult().setResultingMediaResource(resource);
+		} catch (IOException e) {
+			logError("", e);
+		}
+	}
+	
+	private void doAdvancedArchive(UserRequest ureq, boolean advanced) {
+		StepRunnerCallback finish = new FinishArchive();
+		Step start  = new Archive_1_SelectNodeStep(ureq, courseOres, nodeList, advanced);
+		archiveWizardCtrl = new StepsMainRunController(ureq, getWindowControl(), start, finish, null,
+				translate("archive.wizard.title"), "o_sel_test_archive_wizard");
+		listenTo(archiveWizardCtrl);
+		getWindowControl().pushAsModalDialog(archiveWizardCtrl.getInitialComponent());
+	}
+	
+	public class FinishArchive implements StepRunnerCallback {
+		@Override
+		public Step execute(UserRequest uureq, WindowControl lwControl, StepsRunContext runContext) {
+			try {
+				QTIArchiver archiver = (QTIArchiver)runContext.get("archiver");
+				MediaResource resource = archiver.export();
+				uureq.getDispatchResult().setResultingMediaResource(resource);
+			} catch (IOException e) {
+				logError("", e);
+			}
+			return StepsMainRunController.DONE_MODIFIED;
 		}
 	}
 	
 	/**
-	 * 
+	 * A filtered list of course nodes
 	 * @param ureq
 	 * @return 
 	 */
 	private List<AssessmentNodeData> doNodeChoose(UserRequest ureq){
-	    //table configuraton
-		TableGuiConfiguration tableConfig = new TableGuiConfiguration();
-		tableConfig.setTableEmptyMessage(translate("nodesoverview.nonodes"));
-		tableConfig.setDownloadOffered(false);
-		tableConfig.setSortingEnabled(false);
-		tableConfig.setDisplayTableHeader(true);
-		tableConfig.setDisplayRowCount(false);
-		tableConfig.setPageingEnabled(false);
-		
-		nodeListCtr = new TableController(tableConfig, ureq, getWindowControl(), getTranslator());
-		listenTo(nodeListCtr);
-		
-		// table columns		
-		nodeListCtr.addColumnDescriptor(new CustomRenderColumnDescriptor("table.header.node", 0, 
-				null, ureq.getLocale(), ColumnDescriptor.ALIGNMENT_LEFT, new IndentedNodeRenderer()));
-		nodeListCtr.addColumnDescriptor(new DefaultColumnDescriptor("table.action.select", 1,
-				CMD_SELECT_NODE, ureq.getLocale()));
-		
 		// get list of course node data and populate table data model
-		ICourse course = CourseFactory.loadCourse(ores);
+		ICourse course = CourseFactory.loadCourse(courseOres);
 		CourseNode rootNode = course.getRunStructure().getRootNode();
-		List<AssessmentNodeData> objectArrayList = addQTINodesAndParentsToList(0, rootNode);
-		
-		return objectArrayList;		
+		return addQTINodesAndParentsToList(0, rootNode);
 	}
 	
 	/**
@@ -212,8 +237,8 @@ public class CourseQTIArchiveController extends BasicController {
 	/**
 	 * @see org.olat.core.gui.control.DefaultController#doDispose(boolean)
 	 */
+	@Override
 	protected void doDispose() {		
 		//
 	}
 }
-

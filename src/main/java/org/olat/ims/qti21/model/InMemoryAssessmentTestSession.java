@@ -23,6 +23,7 @@ import java.math.BigDecimal;
 import java.util.Date;
 
 import org.olat.ims.qti21.AssessmentTestSession;
+import org.olat.modules.assessment.AssessmentEntry;
 
 /**
  * 
@@ -135,6 +136,11 @@ public class InMemoryAssessmentTestSession implements AssessmentTestSession {
 	@Override
 	public void setDuration(Long duration) {
 		this.duration = duration;
+	}
+
+	@Override
+	public AssessmentEntry getAssessmentEntry() {
+		return null;
 	}
 
 	@Override

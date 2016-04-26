@@ -24,6 +24,7 @@ import java.util.Date;
 
 import org.olat.core.id.CreateInfo;
 import org.olat.core.id.ModifiedInfo;
+import org.olat.modules.assessment.AssessmentEntry;
 
 /**
  * 
@@ -68,5 +69,6 @@ public interface AssessmentTestSession extends CreateInfo, ModifiedInfo {
 	public String getStorage();
 	
 
+	public AssessmentEntry getAssessmentEntry();
 
 }

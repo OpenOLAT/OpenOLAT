@@ -40,7 +40,7 @@ import org.olat.course.nodes.CourseNode;
 import org.olat.ims.qti.QTIResult;
 import org.olat.ims.qti.QTIResultManager;
 import org.olat.ims.qti.editor.beecom.parser.ItemParser;
-import org.olat.ims.qti.export.QTIArchiveWizardController;
+import org.olat.ims.qti.export.QTIArchiver;
 import org.olat.ims.qti.export.QTIExportEssayItemFormatConfig;
 import org.olat.ims.qti.export.QTIExportFIBItemFormatConfig;
 import org.olat.ims.qti.export.QTIExportFormatter;
@@ -120,8 +120,8 @@ public class QTIStatisticsResource implements MediaResource {
 			String emb = "\""; // fields embedded by
 			String car = "\\r\\n"; // carriage return
 			
-			sep = QTIArchiveWizardController.convert2CtrlChars(sep);
-			car = QTIArchiveWizardController.convert2CtrlChars(car);
+			sep = QTIArchiver.convert2CtrlChars(sep);
+			car = QTIArchiver.convert2CtrlChars(car);
 			
 			int exportType = 1;
 			QTIExportFormatter formatter;

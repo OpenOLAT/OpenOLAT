@@ -24,11 +24,13 @@ import java.util.Date;
 import java.util.List;
 
 import org.olat.core.commons.persistence.DB;
+import org.olat.core.id.UserConstants;
 import org.olat.ims.qti21.AssessmentItemSession;
 import org.olat.ims.qti21.AssessmentResponse;
 import org.olat.ims.qti21.AssessmentTestSession;
 import org.olat.ims.qti21.model.ResponseLegality;
 import org.olat.ims.qti21.model.jpa.AssessmentResponseImpl;
+import org.olat.repository.RepositoryEntryRef;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -80,6 +82,59 @@ public class AssessmentResponseDAO {
 				dbInstance.getCurrentEntityManager().persist(response);
 			}
 		}
+	}
+	
+	/**
+	 * Check if there are some responses from a terminated session.
+	 * 
+	 * @param courseEntry
+	 * @param subIdent
+	 * @param testEntry
+	 * @return
+	 */
+	public boolean hasResponses(RepositoryEntryRef courseEntry, String subIdent, RepositoryEntryRef testEntry) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select response.key from qtiassessmentresponse response ")
+		  .append(" inner join response.assessmentItemSession itemSession")
+		  .append(" inner join itemSession.assessmentTestSession testSession")
+		  .append(" where testSession.repositoryEntry.key=:repoEntryKey")
+		  .append("  and testSession.testEntry.key=:testEntryKey")
+		  .append("  and testSession.subIdent=:subIdent")
+		  .append("  and testSession.terminationTime is not null");
+		
+		List<Long> responses = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Long.class)
+				.setParameter("repoEntryKey", courseEntry.getKey())
+				.setParameter("testEntryKey", testEntry.getKey())
+				.setParameter("subIdent", subIdent)
+				.setFirstResult(0)
+				.setMaxResults(1)
+				.getResultList();
+		return responses.size() > 0 && responses.get(0) != null;
+	}
+	
+	public List<AssessmentResponse> getResponse(RepositoryEntryRef courseEntry, String subIdent, RepositoryEntryRef testEntry) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select response from qtiassessmentresponse response ")
+		  .append(" inner join fetch response.assessmentItemSession itemSession")
+		  .append(" inner join fetch itemSession.assessmentTestSession testSession")
+		  .append(" inner join fetch testSession.assessmentEntry assessmentEntry")
+		  .append(" inner join assessmentEntry.identity as ident")
+		  .append(" inner join ident.user as usr")
+		  .append(" where testSession.repositoryEntry.key=:repoEntryKey")
+		  .append("  and testSession.testEntry.key=:testEntryKey")
+		  .append("  and testSession.subIdent=:subIdent")
+		  .append("  and testSession.terminationTime is not null");
+
+		//need to be anonymized
+		sb.append(" order by usr.userProperties['").append(UserConstants.LASTNAME).append("'] , testSession.key, itemSession.key");
+		
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), AssessmentResponse.class)
+				.setParameter("repoEntryKey", courseEntry.getKey())
+				.setParameter("testEntryKey", testEntry.getKey())
+				.setParameter("subIdent", subIdent)
+				.getResultList();
 	}
 
 }

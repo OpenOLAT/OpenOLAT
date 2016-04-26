@@ -23,6 +23,7 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
+import java.io.OutputStream;
 import java.io.Writer;
 import java.util.Date;
 import java.util.List;
@@ -31,24 +32,18 @@ import java.util.Locale;
 import javax.annotation.PostConstruct;
 
 import org.apache.pdfbox.io.IOUtils;
-import org.apache.poi.hssf.usermodel.HSSFWorkbook;
-import org.apache.poi.ss.usermodel.Cell;
-import org.apache.poi.ss.usermodel.CellStyle;
-import org.apache.poi.ss.usermodel.Font;
-import org.apache.poi.ss.usermodel.Row;
-import org.apache.poi.ss.usermodel.Sheet;
-import org.apache.poi.ss.usermodel.Workbook;
-import org.apache.poi.ss.util.WorkbookUtil;
 import org.olat.basesecurity.IdentityImpl;
 import org.olat.core.gui.media.MediaResource;
-import org.olat.core.gui.media.WorkbookMediaResource;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.Util;
-import org.olat.core.util.filter.FilterFactory;
+import org.olat.core.util.openxml.OpenXMLWorkbook;
+import org.olat.core.util.openxml.OpenXMLWorkbookResource;
+import org.olat.core.util.openxml.OpenXMLWorksheet;
+import org.olat.core.util.openxml.OpenXMLWorksheet.Row;
 import org.olat.core.util.xml.XStreamHelper;
 import org.olat.instantMessaging.InstantMessage;
 import org.olat.instantMessaging.model.InstantMessageImpl;
@@ -106,61 +101,35 @@ public class ChatLogHelper {
 	}
 	
 	public MediaResource logMediaResource(OLATResourceable ores, Locale locale) {
-		Workbook wb = log(ores, locale);
-		WorkbookMediaResource resource = new WorkbookMediaResource(wb);
-		return resource;		
-	}
-	
-	public Workbook log(OLATResourceable ores, Locale locale) {
 		Translator translator = Util.createPackageTranslator(ChatController.class, locale);
-
-		Workbook wb = new HSSFWorkbook();
 		String tableExportTitle = translator.translate("logChat.export.title");
-		String saveTitle = WorkbookUtil.createSafeSheetName(tableExportTitle);
-		Sheet exportSheet = wb.createSheet(saveTitle);
-		Formatter formatter = Formatter.getInstance(locale);
+		String label = tableExportTitle
+				+ Formatter.formatDatetimeFilesystemSave(new Date(System.currentTimeMillis()))
+				+ ".xlsx";
 		
-		//headers
-		Row headerRow = exportSheet.createRow(0);
-		CellStyle headerCellStyle = getHeaderCellStyle(wb);
-		addHeader(headerRow, headerCellStyle, "User", 0);
-		addHeader(headerRow, headerCellStyle, "Date", 1);
-		addHeader(headerRow, headerCellStyle, "Content", 2);
-		
-		//content
-		List<InstantMessage> messages = imDao.getMessages(ores, null, 0, -1);
-		int count = 1;
-		for(InstantMessage message:messages) {
-			Row dataRow = exportSheet.createRow(count++);
-			addCell(dataRow, message.getFromNickName(), 0);
-			addCell(dataRow, message.getCreationDate(), 1, formatter);
-			addCell(dataRow, message.getBody(), 2);
-		}
-		return wb;
-	}
+		return new OpenXMLWorkbookResource(label) {
+			@Override
+			protected void generate(OutputStream out) {
+				try(OpenXMLWorkbook workbook = new OpenXMLWorkbook(out, 1)) {
+					//headers
+					OpenXMLWorksheet exportSheet = workbook.nextWorksheet();
+					Row headerRow = exportSheet.newRow();
+					headerRow.addCell(0, "User", workbook.getStyles().getHeaderStyle());
+					headerRow.addCell(1, "Date", workbook.getStyles().getHeaderStyle());
+					headerRow.addCell(2, "Content", workbook.getStyles().getHeaderStyle());
 
-	private void addCell(Row dataRow, String val, int position) {
-		val = FilterFactory.getHtmlTagsFilter().filter(val);
-		Cell cell = dataRow.createCell(position);
-		cell.setCellValue(val);
-	}
-	
-	private void addCell(Row dataRow, Date val, int position, Formatter formatter) {
-		Cell cell = dataRow.createCell(position);
-		cell.setCellValue(formatter.formatDateAndTime(val));
-	}
-	
-	private void addHeader(Row headerRow, CellStyle headerCellStyle, String val, int position) {
-		Cell cell = headerRow.createCell(position);
-		cell.setCellValue(val);
-		cell.setCellStyle(headerCellStyle);
-	}
-	
-	private CellStyle getHeaderCellStyle(final Workbook wb) {
-		CellStyle cellStyle = wb.createCellStyle();
-		Font boldFont = wb.createFont();
-		boldFont.setBoldweight(Font.BOLDWEIGHT_BOLD);
-		cellStyle.setFont(boldFont);
-		return cellStyle;
+					//content
+					List<InstantMessage> messages = imDao.getMessages(ores, null, 0, -1);
+					for(InstantMessage message:messages) {
+						Row dataRow = exportSheet.newRow();
+						dataRow.addCell(0, message.getFromNickName(), null);
+						dataRow.addCell(1, message.getCreationDate(), workbook.getStyles().getDateStyle());
+						dataRow.addCell(2, message.getBody(), null);
+					}
+				} catch (IOException e) {
+					log.error("", e);
+				}
+			}
+		};		
 	}
 }

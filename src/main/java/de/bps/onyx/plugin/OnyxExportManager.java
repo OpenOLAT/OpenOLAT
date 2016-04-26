@@ -25,6 +25,7 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FilenameFilter;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -160,6 +161,21 @@ public class OnyxExportManager {
 			ZipUtil.zip(files, directory, archiveName);
 		}
 		return filename;
+	}
+	
+	public void exportResults(final File surveyPath, final CourseNode courseNode, OutputStream out) {
+		ZipOutputStream zout = new ZipOutputStream(out);
+		zout.setLevel(9);
+
+		if (surveyPath.exists()) {
+			final String[] allXmls = surveyPath.list(new myFilenameFilter(courseNode.getIdent()));
+			if (allXmls != null && allXmls.length > 0) {
+				for (final String file : allXmls) {
+					File xmlFile = new File(surveyPath, file);
+					ZipUtil.addFileToZip(file, xmlFile, zout);
+				}
+			}
+		}
 	}
 
 	private String createTargetFilename(final String shortTitle, final String type) {

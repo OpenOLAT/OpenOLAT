@@ -175,6 +175,10 @@ public class AssessmentTestSessionDAO {
 		return dbInstance.getCurrentEntityManager().merge(testSession);
 	}
 	
+	public boolean hasTestSession() {
+		return false;
+	}
+	
 	public List<AssessmentTestSession> getUserTestSessions(RepositoryEntryRef courseEntry, String courseSubIdent, IdentityRef identity) {
 		return dbInstance.getCurrentEntityManager()
 				.createNamedQuery("loadTestSessionsByUserAndRepositoryEntryAndSubIdent", AssessmentTestSession.class)

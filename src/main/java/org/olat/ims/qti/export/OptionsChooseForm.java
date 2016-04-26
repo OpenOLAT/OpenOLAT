@@ -31,10 +31,12 @@ import java.util.Map;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
-import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
+import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.control.Controller;
-import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.generic.wizard.StepFormBasicController;
+import org.olat.core.gui.control.generic.wizard.StepsEvent;
+import org.olat.core.gui.control.generic.wizard.StepsRunContext;
 
 
 
@@ -43,7 +45,7 @@ import org.olat.core.gui.control.WindowControl;
  * 
  * @author Alexander Schneider
  */
-public class OptionsChooseForm extends FormBasicController {
+public class OptionsChooseForm extends StepFormBasicController {
   
   private static final String SCQ_ITEMCOLS = "scqitemcols";
   private static final String SCQ_POSCOL = "scqposcol";
@@ -72,14 +74,18 @@ public class OptionsChooseForm extends FormBasicController {
   private boolean hasFIB = false;
   private boolean hasEssay = false;
   
-  private Map mapWithConfigs;
+  private Map<Class<?>, QTIExportItemFormatConfig> mapWithConfigs;
   
   private MultipleSelectionElement scq, mcq, kprim, fib, essay;
   private String[] scqKeys, mcqKeys, kprimKeys, fibKeys, essayKeys;
   private String[] scqVals, mcqVals, kprimVals, fibVals, essayVals;
   
-	public OptionsChooseForm(UserRequest ureq, WindowControl wControl, Map mapWithConfigs) {
-		super(ureq, wControl);
+  
+  
+	public OptionsChooseForm(UserRequest ureq, WindowControl wControl,
+			Map<Class<?>, QTIExportItemFormatConfig> mapWithConfigs,
+			StepsRunContext runContext, Form form) {
+		super(ureq, wControl, form, runContext, LAYOUT_DEFAULT, null);
 		
 		this.mapWithConfigs = mapWithConfigs;
 
@@ -182,7 +188,7 @@ public class OptionsChooseForm extends FormBasicController {
 
 	@Override
 	protected void formOK(UserRequest ureq) {
-		fireEvent (ureq, Event.DONE_EVENT);
+		fireEvent(ureq, StepsEvent.ACTIVATE_NEXT);
 	}
 
 	@Override
@@ -190,7 +196,7 @@ public class OptionsChooseForm extends FormBasicController {
 		
 		scq = uifactory.addCheckboxesVertical("scq", "form.scqtitle", formLayout, scqKeys, scqVals, 1);
 		if(hasSCQ){
-			QTIExportItemFormatConfig c = (QTIExportItemFormatConfig) mapWithConfigs.get(QTIExportSCQItemFormatConfig.class);
+			QTIExportItemFormatConfig c = mapWithConfigs.get(QTIExportSCQItemFormatConfig.class);
 			scq.select(SCQ_ITEMCOLS, c.hasResponseCols());
 			scq.select(SCQ_POSCOL,   c.hasPositionsOfResponsesCol());
 			scq.select(SCQ_POINTCOL, c.hasPointCol());
@@ -201,7 +207,7 @@ public class OptionsChooseForm extends FormBasicController {
 
 		mcq = uifactory.addCheckboxesVertical("mcq", "form.mcqtitle", formLayout, mcqKeys, mcqVals, 1);
 		if(hasMCQ){
-			QTIExportItemFormatConfig c = (QTIExportItemFormatConfig) mapWithConfigs.get(QTIExportMCQItemFormatConfig.class);
+			QTIExportItemFormatConfig c = mapWithConfigs.get(QTIExportMCQItemFormatConfig.class);
 			mcq.select(MCQ_ITEMCOLS, c.hasResponseCols());
 			mcq.select(MCQ_POSCOL,   c.hasPositionsOfResponsesCol());
 			mcq.select(MCQ_POINTCOL, c.hasPointCol());
@@ -212,7 +218,7 @@ public class OptionsChooseForm extends FormBasicController {
 		
 		kprim = uifactory.addCheckboxesVertical("kprim", "form.kprimtitle", formLayout, kprimKeys, kprimVals, 1);
 		if(hasKRIM){
-			QTIExportItemFormatConfig c = (QTIExportItemFormatConfig) mapWithConfigs.get(QTIExportKPRIMItemFormatConfig.class);
+			QTIExportItemFormatConfig c = mapWithConfigs.get(QTIExportKPRIMItemFormatConfig.class);
 			kprim.select(KPRIM_ITEMCOLS, c.hasResponseCols());
 			kprim.select(KPRIM_POINTCOL, c.hasPointCol());
 			kprim.select(KPRIM_TIMECOLS, c.hasTimeCols());
@@ -222,7 +228,7 @@ public class OptionsChooseForm extends FormBasicController {
 		
 		fib = uifactory.addCheckboxesVertical("fib", "form.fibtitle", formLayout, fibKeys, fibVals, 1);
 		if(hasFIB){
-			QTIExportItemFormatConfig c = (QTIExportItemFormatConfig) mapWithConfigs.get(QTIExportFIBItemFormatConfig.class);
+			QTIExportItemFormatConfig c = mapWithConfigs.get(QTIExportFIBItemFormatConfig.class);
 			fib.select(FIB_ITEMCOLS, c.hasResponseCols());
 			fib.select(FIB_POINTCOL, c.hasPointCol());
 			fib.select(FIB_TIMECOLS, c.hasTimeCols());
@@ -232,19 +238,16 @@ public class OptionsChooseForm extends FormBasicController {
 		
 		essay = uifactory.addCheckboxesVertical("essay", "form.essaytitle", formLayout, essayKeys, essayVals, 1);
 		if(hasEssay){
-			QTIExportItemFormatConfig c = (QTIExportItemFormatConfig) mapWithConfigs.get(QTIExportEssayItemFormatConfig.class);
+			QTIExportItemFormatConfig c = mapWithConfigs.get(QTIExportEssayItemFormatConfig.class);
 			essay.select(FIB_ITEMCOLS, c.hasResponseCols());
 			essay.select(FIB_TIMECOLS, c.hasTimeCols());
 		} else {
 			essay.setVisible(false);
 		}
-		
-		uifactory.addFormSubmitButton("next", formLayout);
 	}
 
 	@Override
 	protected void doDispose() {
 		//
 	}
-	
 }

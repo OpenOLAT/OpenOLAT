@@ -17,37 +17,40 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.ims.qti21;
-
-import java.math.BigDecimal;
-
-import org.olat.core.id.CreateInfo;
-import org.olat.core.id.ModifiedInfo;
+package org.olat.core.util.openxml.workbookstyle;
 
 /**
  * 
- * Initial date: 02.02.2016<br>
+ * Initial date: 21.04.2016<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public interface AssessmentItemSession extends CreateInfo, ModifiedInfo {
+public class Fill extends IndexedObject {
 	
-	public Long getKey();
+	private final String patternType;
+	private final String fgColorRgb;
+	private final String bgColorIndexed;
 	
-	public String getAssessmentItemIdentifier();
+	public Fill(int index, String patternType) {
+		this(index, patternType, null, null);
+	}
 	
-	public Boolean getPassed();
+	public Fill(int index, String patternType, String fgColorRgb, String bgColorIndexed) {
+		super(index);
+		this.patternType = patternType;
+		this.fgColorRgb = fgColorRgb;
+		this.bgColorIndexed = bgColorIndexed;
+	}
 
-	public void setPassed(Boolean passed);
-	
-	public Long getDuration();
-	
-	public void setDuration(Long duration);
-	
-	public BigDecimal getScore();
+	public String getPatternType() {
+		return patternType;
+	}
 
-	public void setScore(BigDecimal score);
-	
-	public AssessmentTestSession getAssessmentTestSession();
+	public String getFgColorRgb() {
+		return fgColorRgb;
+	}
 
+	public String getBgColorIndexed() {
+		return bgColorIndexed;
+	}
 }

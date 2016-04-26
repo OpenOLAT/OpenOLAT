@@ -19,16 +19,13 @@
  */
 package org.olat.course.nodes.cl.ui;
 
+import java.io.IOException;
+import java.io.OutputStream;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import org.apache.commons.lang.StringEscapeUtils;
-import org.apache.poi.hssf.usermodel.HSSFWorkbook;
-import org.apache.poi.ss.usermodel.Cell;
-import org.apache.poi.ss.usermodel.CellStyle;
-import org.apache.poi.ss.usermodel.Row;
-import org.apache.poi.ss.usermodel.Sheet;
-import org.apache.poi.ss.usermodel.Workbook;
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
@@ -39,17 +36,21 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableComponent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableModelDelegate;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.XlsFlexiTableExporter;
 import org.olat.core.gui.media.MediaResource;
-import org.olat.core.gui.media.WorkbookMediaResource;
 import org.olat.core.gui.render.EmptyURLBuilder;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.StringOutputPool;
 import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
+import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.filter.FilterFactory;
-import org.olat.course.assessment.AssessmentHelper;
+import org.olat.core.util.openxml.OpenXMLWorkbook;
+import org.olat.core.util.openxml.OpenXMLWorkbookResource;
+import org.olat.core.util.openxml.OpenXMLWorksheet;
+import org.olat.core.util.openxml.OpenXMLWorksheet.Row;
 import org.olat.course.nodes.cl.model.Checkbox;
 import org.olat.course.nodes.cl.model.CheckboxList;
 
@@ -62,6 +63,8 @@ import org.olat.course.nodes.cl.model.CheckboxList;
 public class CheckListAssessmentDataModel extends DefaultFlexiTableDataModel<CheckListAssessmentRow>
 	implements FilterableFlexiTableModel, SortableFlexiTableDataModel<CheckListAssessmentRow>,
 	    ExportableFlexiTableDataModel {
+	
+	private static final OLog log = Tracing.createLoggerFor(CheckListAssessmentDataModel.class);
 	
 	public static final int USER_PROPS_OFFSET = 500;
 	public static final int CHECKBOX_OFFSET = 5000;
@@ -226,56 +229,63 @@ public class CheckListAssessmentDataModel extends DefaultFlexiTableDataModel<Che
 	private static class CheckListXlsFlexiTableExporter {
 		private static final URLBuilder ubu = new EmptyURLBuilder();
 		
-		private CellStyle headerCellStyle;
+
 		private CheckListAssessmentDataModel dataModel;
 
 		public MediaResource export(FlexiTableComponent ftC, CheckListAssessmentDataModel model,
 				List<FlexiColumnModel> columns, Translator translator) {
-			Workbook wb = new HSSFWorkbook();
-			headerCellStyle = XlsFlexiTableExporter.getHeaderCellStyle(wb);
+
 			this.dataModel = model;
+
 			
-			Sheet exportSheet = wb.createSheet("Sheet 1");
-			createHeader(columns, translator, exportSheet);
-			createData(ftC, columns, translator, exportSheet);
-			
-			return new WorkbookMediaResource(wb);
+			String label = "CheckList_"
+					+ Formatter.formatDatetimeFilesystemSave(new Date(System.currentTimeMillis()))
+					+ ".xlsx";
+
+			return new OpenXMLWorkbookResource(label) {
+				@Override
+				protected void generate(OutputStream out) {
+					try(OpenXMLWorkbook workbook = new OpenXMLWorkbook(out, 1)) {
+						OpenXMLWorksheet sheet = workbook.nextWorksheet();
+						createHeader(columns, translator, sheet, workbook);
+						createData(ftC, columns, translator, sheet);
+					} catch (IOException e) {
+						log.error("", e);
+					}
+				}
+			};
 		}
 
-		private void createHeader(List<FlexiColumnModel> columns, Translator translator, Sheet sheet) {
-			Row headerRow = sheet.createRow(0);
+		private void createHeader(List<FlexiColumnModel> columns, Translator translator,
+				OpenXMLWorksheet sheet, OpenXMLWorkbook workbook) {
+			sheet.setHeaderRows(1);
+			Row headerRow = sheet.newRow();
 			int pos = 0;
 			for (int c=0; c<columns.size(); c++) {
 				FlexiColumnModel cd = columns.get(c);
 				String headerVal = cd.getHeaderLabel() == null ?
 						translator.translate(cd.getHeaderKey()) : cd.getHeaderLabel();
-				
-				Cell cell = headerRow.createCell(pos++);
-				cell.setCellValue(headerVal);
-				cell.setCellStyle(headerCellStyle);
+				headerRow.addCell(pos++, headerVal, workbook.getStyles().getHeaderStyle());
 				
 				if(cd.getColumnIndex() >= CHECKBOX_OFFSET) {
 					int propIndex = cd.getColumnIndex() - CHECKBOX_OFFSET;
 					Checkbox box = dataModel.checkboxList.getList().get(propIndex);
 					if(box.getPoints() != null && box.getPoints().floatValue() > 0f) {
-						Cell cellPoints = headerRow.createCell(pos++);
-						cellPoints.setCellValue("");
-						cellPoints.setCellStyle(headerCellStyle);
+						headerRow.addCell(pos++, "", workbook.getStyles().getHeaderStyle());
 					}
 				}
 			}
 		}
 
-		private void createData(FlexiTableComponent ftC, List<FlexiColumnModel> columns, Translator translator, Sheet sheet) {
+		private void createData(FlexiTableComponent ftC, List<FlexiColumnModel> columns, Translator translator, OpenXMLWorksheet sheet) {
 			int numOfRow = dataModel.getRowCount();
 			int numOfColumns = columns.size();
 			
 			for (int r=0; r<numOfRow; r++) {
 				int pos = 0;
-				Row dataRow = sheet.createRow(r+1);
+				Row dataRow = sheet.newRow();
 				for (int c = 0; c<numOfColumns; c++) {
 					FlexiColumnModel cd = columns.get(c);
-					Cell cell = dataRow.createCell(pos++);
 					Object value = dataModel.getValueAt(r, cd.getColumnIndex());
 					
 					if(cd.getColumnIndex() >= CHECKBOX_OFFSET) {
@@ -289,29 +299,28 @@ public class CheckListAssessmentDataModel extends DefaultFlexiTableDataModel<Che
 							checked = false;
 						}
 						String checkVal = checked ? "x" : "";
-						cell.setCellValue(checkVal);
+						dataRow.addCell(pos++, checkVal, null);
 						
 						if(box.getPoints() != null && box.getPoints().floatValue() > 0f) {
-							Cell cellPoints = dataRow.createCell(pos++);
 							CheckListAssessmentRow assessmentRow = dataModel.getObject(r);
 							Float[] scores = assessmentRow.getScores();
 							if(checked && scores != null && scores.length > 0 && propIndex < scores.length) {
-								String val = AssessmentHelper.getRoundedScore(scores[propIndex]);
-								cellPoints.setCellValue(val);
+								dataRow.addCell(pos++, scores[propIndex], null);
 							}
 						}
 					} else {
-						renderCell(cell, value, r, ftC, cd, translator);
+						renderCell(dataRow, pos++, value, r, ftC, cd, translator);
 					}
 				}
 			}
 		}
 		
-		protected void renderCell(Cell cell,Object value, int row, FlexiTableComponent ftC, FlexiColumnModel cd, Translator translator) {
+		protected void renderCell(Row dataRow, int sheetCol, Object value, int row, FlexiTableComponent ftC, FlexiColumnModel cd, Translator translator) {
 			if(value instanceof Boolean) {
 				Boolean val = (Boolean)value;
-				String cellValue = val.booleanValue() ? "x" : "";
-				cell.setCellValue(cellValue);
+				dataRow.addCell(sheetCol, val.booleanValue() ? "x" : "", null);
+			} else if(value instanceof Float || value instanceof Double) {
+				dataRow.addCell(sheetCol, (Number)value, null);
 			} else {
 				StringOutput so = StringOutputPool.allocStringBuilder(1000);
 				cd.getCellRenderer().render(null, so, value, row, ftC, ubu, translator);
@@ -322,9 +331,8 @@ public class CheckListAssessmentDataModel extends DefaultFlexiTableDataModel<Che
 				if(StringHelper.containsNonWhitespace(cellValue)) {
 					cellValue = StringEscapeUtils.unescapeHtml(cellValue);
 				}
-				cell.setCellValue(cellValue);
+				dataRow.addCell(sheetCol, cellValue, null);
 			}
 		}
-		
 	}
 }

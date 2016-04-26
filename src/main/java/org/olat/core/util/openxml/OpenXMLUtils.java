@@ -23,10 +23,15 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.StringReader;
+import java.util.zip.ZipOutputStream;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.stream.FactoryConfigurationError;
+import javax.xml.stream.XMLOutputFactory;
+import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamWriter;
 import javax.xml.transform.OutputKeys;
 import javax.xml.transform.Result;
 import javax.xml.transform.Transformer;
@@ -41,6 +46,7 @@ import org.olat.core.commons.services.image.Size;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.io.ShieldOutputStream;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.xml.sax.Attributes;
@@ -114,6 +120,15 @@ public class OpenXMLUtils {
 			}
 		}
 		return found;
+	}
+	
+	public static final XMLStreamWriter createStreamWriter(ZipOutputStream out) {
+		try {
+			return XMLOutputFactory.newInstance().createXMLStreamWriter(new ShieldOutputStream(out));
+		} catch (XMLStreamException | FactoryConfigurationError e) {
+			log.error("", e);
+			return null;
+		}
 	}
 	
 	public static final Document createDocument() {

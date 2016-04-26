@@ -38,6 +38,7 @@ import org.olat.ims.qti.statistics.model.StatisticsItem;
 import org.olat.ims.qti.statistics.ui.ResponseInfos;
 import org.olat.ims.qti.statistics.ui.Series;
 import org.olat.ims.qti21.QTI21StatisticsManager;
+import org.olat.ims.qti21.manager.CorrectResponsesUtil;
 import org.olat.ims.qti21.model.statistics.SimpleChoiceStatistics;
 import org.olat.ims.qti21.model.xml.AssessmentHtmlBuilder;
 import org.olat.ims.qti21.ui.statistics.QTI21AssessmentItemStatisticsController;
@@ -50,14 +51,9 @@ import uk.ac.ed.ph.jqtiplus.node.item.CorrectResponse;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.ChoiceInteraction;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.choice.SimpleChoice;
 import uk.ac.ed.ph.jqtiplus.node.item.response.declaration.ResponseDeclaration;
-import uk.ac.ed.ph.jqtiplus.node.shared.FieldValue;
 import uk.ac.ed.ph.jqtiplus.node.test.AssessmentItemRef;
 import uk.ac.ed.ph.jqtiplus.types.Identifier;
 import uk.ac.ed.ph.jqtiplus.value.Cardinality;
-import uk.ac.ed.ph.jqtiplus.value.IdentifierValue;
-import uk.ac.ed.ph.jqtiplus.value.MultipleValue;
-import uk.ac.ed.ph.jqtiplus.value.SingleValue;
-import uk.ac.ed.ph.jqtiplus.value.Value;
 
 /**
  * 
@@ -120,46 +116,13 @@ public class ChoiceInteractionStatisticsController extends BasicController {
 		return false;
 	}
 	
-	private List<Identifier> getCorrectResponses() {
-		List<Identifier> correctAnswers = new ArrayList<>();
-		
-		ResponseDeclaration responseDeclaration = assessmentItem.getResponseDeclaration(interaction.getResponseIdentifier());
-		if(responseDeclaration != null && responseDeclaration.getCorrectResponse() != null) {
-			CorrectResponse correctResponse = responseDeclaration.getCorrectResponse();
-			if(correctResponse.getCardinality().isOneOf(Cardinality.SINGLE)) {
-				List<FieldValue> values = correctResponse.getFieldValues();
-				Value value = FieldValue.computeValue(Cardinality.SINGLE, values);
-				if(value instanceof IdentifierValue) {
-					IdentifierValue identifierValue = (IdentifierValue)value;
-					Identifier correctAnswer = identifierValue.identifierValue();
-					correctAnswers.add(correctAnswer);
-				}
-				
-			} else if(correctResponse.getCardinality().isOneOf(Cardinality.MULTIPLE)) {
-				Value value = FieldValue.computeValue(Cardinality.MULTIPLE, correctResponse.getFieldValues());
-				if(value instanceof MultipleValue) {
-					MultipleValue multiValue = (MultipleValue)value;
-					for(SingleValue sValue:multiValue.getAll()) {
-						if(sValue instanceof IdentifierValue) {
-							IdentifierValue identifierValue = (IdentifierValue)sValue;
-							Identifier correctAnswer = identifierValue.identifierValue();
-							correctAnswers.add(correctAnswer);
-						}
-					}
-				}
-			}
-		}
-		
-		return correctAnswers;
-	}
-	
 	private Series getSingleChoice() {
 		List<SimpleChoiceStatistics> statisticResponses = qtiStatisticsManager
 				.getChoiceInteractionStatistics(itemRef.getIdentifier().toString(), assessmentItem, interaction, resourceResult.getSearchParams());
 	
 		boolean survey = QTIType.survey.equals(resourceResult.getType());
 		int numOfParticipants = resourceResult.getQTIStatisticAssessment().getNumOfParticipants();
-		List<Identifier> correctAnswers = getCorrectResponses();
+		List<Identifier> correctAnswers = CorrectResponsesUtil.getCorrectIdentifierResponses(assessmentItem, interaction);
 		
 		int i = 0;
 		long numOfResults = 0;
@@ -216,7 +179,7 @@ public class ChoiceInteractionStatisticsController extends BasicController {
 		boolean survey = QTIType.survey.equals(resourceResult.getType());
 		int numOfParticipants = resourceResult.getQTIStatisticAssessment().getNumOfParticipants();
 		int notAnswered = numOfParticipants - (itemStats == null ? 0 : itemStats.getNumOfResults());
-		List<Identifier> correctAnswers = getCorrectResponses();
+		List<Identifier> correctAnswers = CorrectResponsesUtil.getCorrectIdentifierResponses(assessmentItem, interaction);
 		
 		int i = 0;
 		List<ResponseInfos> responseInfos = new ArrayList<>();

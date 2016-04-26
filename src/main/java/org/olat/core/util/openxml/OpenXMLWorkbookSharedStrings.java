@@ -17,37 +17,46 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.ims.qti21;
+package org.olat.core.util.openxml;
 
-import java.math.BigDecimal;
-
-import org.olat.core.id.CreateInfo;
-import org.olat.core.id.ModifiedInfo;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 
 /**
  * 
- * Initial date: 02.02.2016<br>
+ * Initial date: 25.04.2016<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public interface AssessmentItemSession extends CreateInfo, ModifiedInfo {
-	
-	public Long getKey();
-	
-	public String getAssessmentItemIdentifier();
-	
-	public Boolean getPassed();
+public class OpenXMLWorkbookSharedStrings implements Iterable<String> {
 
-	public void setPassed(Boolean passed);
+	private final List<String> sharedStrings = new ArrayList<>();
 	
-	public Long getDuration();
+	public OpenXMLWorkbookSharedStrings() {
+		sharedStrings.add("OpenOLAT");//prevent empty list
+	}
 	
-	public void setDuration(Long duration);
-	
-	public BigDecimal getScore();
+	/**
+	 * Add a shared string and return the index.
+	 * @param string
+	 * @return
+	 */
+	public int add(String string) {
+		int index = sharedStrings.indexOf(string);
+		if(index < 0) {
+			sharedStrings.add(string);
+			index = sharedStrings.size() - 1;
+		}
+		return index;
+	}
 
-	public void setScore(BigDecimal score);
+	@Override
+	public Iterator<String> iterator() {
+		return sharedStrings.iterator();
+	}
 	
-	public AssessmentTestSession getAssessmentTestSession();
-
+	public int size() {
+		return sharedStrings.size();
+	}
 }

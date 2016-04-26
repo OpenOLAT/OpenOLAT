@@ -38,4 +38,6 @@ public interface AssessmentResponse extends CreateInfo, ModifiedInfo {
 	
 	public void setStringuifiedResponse(String response);
 	
+	public AssessmentItemSession getAssessmentItemSession();
+	
 }

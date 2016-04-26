@@ -19,25 +19,27 @@
  */
 package org.olat.core.gui.components.form.flexible.impl.elements.table;
 
+import java.io.IOException;
+import java.io.OutputStream;
+import java.util.Date;
 import java.util.List;
 
 import org.apache.commons.lang.StringEscapeUtils;
-import org.apache.poi.hssf.usermodel.HSSFWorkbook;
-import org.apache.poi.ss.usermodel.Cell;
-import org.apache.poi.ss.usermodel.CellStyle;
-import org.apache.poi.ss.usermodel.Font;
-import org.apache.poi.ss.usermodel.Row;
-import org.apache.poi.ss.usermodel.Sheet;
-import org.apache.poi.ss.usermodel.Workbook;
 import org.olat.core.gui.media.MediaResource;
-import org.olat.core.gui.media.WorkbookMediaResource;
 import org.olat.core.gui.render.EmptyURLBuilder;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.StringOutputPool;
 import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
+import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.filter.FilterFactory;
+import org.olat.core.util.openxml.OpenXMLWorkbook;
+import org.olat.core.util.openxml.OpenXMLWorkbookResource;
+import org.olat.core.util.openxml.OpenXMLWorksheet;
+import org.olat.core.util.openxml.OpenXMLWorksheet.Row;
 
 /**
  * Export as excel file with POI
@@ -47,70 +49,74 @@ import org.olat.core.util.filter.FilterFactory;
  *
  */
 public class XlsFlexiTableExporter implements FlexiTableExporter {
+	private static final OLog log = Tracing.createLoggerFor(XlsFlexiTableExporter.class);
 	private static final URLBuilder ubu = new EmptyURLBuilder();
 	
-	private CellStyle headerCellStyle;
-
+	@Override
 	public MediaResource export(FlexiTableComponent ftC, List<FlexiColumnModel> columns, Translator translator) {
-		Workbook wb = new HSSFWorkbook();
-		headerCellStyle = getHeaderCellStyle(wb);
+
+		String label = "TableExport_"
+				+ Formatter.formatDatetimeFilesystemSave(new Date(System.currentTimeMillis()))
+				+ ".xlsx";
 		
-		Sheet exportSheet = wb.createSheet("Sheet 1");
-		createHeader(columns, translator, exportSheet);
-		createData(ftC, columns, translator, exportSheet);
-		
-		return new WorkbookMediaResource(wb);
+		return new OpenXMLWorkbookResource(label){
+			@Override
+			protected void generate(OutputStream out) {
+				try(OpenXMLWorkbook workbook = new OpenXMLWorkbook(out, 1)) {
+					OpenXMLWorksheet sheet = workbook.nextWorksheet();
+					createHeader(columns, translator, sheet, workbook);
+					createData(ftC, columns, translator, sheet, workbook);
+				} catch (IOException e) {
+					log.error("", e);
+				}
+			}
+		};
 	}
 
-	private void createHeader(List<FlexiColumnModel> columns, Translator translator, Sheet sheet) {
-		Row headerRow = sheet.createRow(0);
+	private void createHeader(List<FlexiColumnModel> columns, Translator translator,
+			OpenXMLWorksheet sheet, OpenXMLWorkbook workbook) {
+		sheet.setHeaderRows(1);
+		Row headerRow = sheet.newRow();
 		for (int c=0; c<columns.size(); c++) {
 			FlexiColumnModel cd = columns.get(c);
 			String headerVal = cd.getHeaderLabel() == null ?
 					translator.translate(cd.getHeaderKey()) : cd.getHeaderLabel();
-			Cell cell = headerRow.createCell(c);
-			cell.setCellValue(headerVal);
-			cell.setCellStyle(headerCellStyle);
+			headerRow.addCell(c, headerVal, workbook.getStyles().getHeaderStyle());
 		}
 	}
 
-	private void createData(FlexiTableComponent ftC, List<FlexiColumnModel> columns, Translator translator, Sheet sheet) {
+	private void createData(FlexiTableComponent ftC, List<FlexiColumnModel> columns, Translator translator,
+			OpenXMLWorksheet sheet, OpenXMLWorkbook workbook) {
 		FlexiTableDataModel<?> dataModel = ftC.getFlexiTableElement().getTableDataModel();
 		
 		int numOfRow = dataModel.getRowCount();
 		int numOfColumns = columns.size();
 		for (int r=0; r<numOfRow; r++) {
-			Row dataRow = sheet.createRow(r+1);
+			Row dataRow = sheet.newRow();
 			for (int c = 0; c<numOfColumns; c++) {
 				FlexiColumnModel cd = columns.get(c);
-				Cell cell = dataRow.createCell(c);
+				
 				int colIndex = cd.getColumnIndex();
 				if(colIndex >= 0) {
 					Object value = dataModel.getValueAt(r, colIndex);
-					renderCell(cell, value, r, ftC, cd, translator);
+					if(value instanceof Date) {
+						dataRow.addCell(r, (Date)value, workbook.getStyles().getDateStyle());
+					} else if(value instanceof Number) {
+						dataRow.addCell(r, (Number)value, null);
+					} else {
+						StringOutput so = StringOutputPool.allocStringBuilder(1000);
+						cd.getCellRenderer().render(null, so, value, r, ftC, ubu, translator);
+						String cellValue = StringOutputPool.freePop(so);
+						
+						cellValue = StringHelper.stripLineBreaks(cellValue);
+						cellValue = FilterFactory.getHtmlTagsFilter().filter(cellValue);
+						if(StringHelper.containsNonWhitespace(cellValue)) {
+							cellValue = StringEscapeUtils.unescapeHtml(cellValue);
+						}
+						dataRow.addCell(c, cellValue, null);
+					}
 				}
 			}
 		}
-	}
-	
-	protected void renderCell(Cell cell,Object value, int row, FlexiTableComponent ftC, FlexiColumnModel cd, Translator translator) {
-		StringOutput so = StringOutputPool.allocStringBuilder(1000);
-		cd.getCellRenderer().render(null, so, value, row, ftC, ubu, translator);
-
-		String cellValue = StringOutputPool.freePop(so);
-		cellValue = StringHelper.stripLineBreaks(cellValue);
-		cellValue = FilterFactory.getHtmlTagsFilter().filter(cellValue);
-		if(StringHelper.containsNonWhitespace(cellValue)) {
-			cellValue = StringEscapeUtils.unescapeHtml(cellValue);
-		}
-		cell.setCellValue(cellValue);
-	}
-	
-	public static CellStyle getHeaderCellStyle(final Workbook wb) {
-		CellStyle cellStyle = wb.createCellStyle();
-		Font boldFont = wb.createFont();
-		boldFont.setBoldweight(Font.BOLDWEIGHT_BOLD);
-		cellStyle.setFont(boldFont);
-		return cellStyle;
 	}
 }

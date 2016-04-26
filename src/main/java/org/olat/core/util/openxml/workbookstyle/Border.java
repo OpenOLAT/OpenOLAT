@@ -17,37 +17,64 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.ims.qti21;
-
-import java.math.BigDecimal;
-
-import org.olat.core.id.CreateInfo;
-import org.olat.core.id.ModifiedInfo;
+package org.olat.core.util.openxml.workbookstyle;
 
 /**
  * 
- * Initial date: 02.02.2016<br>
+ * Initial date: 21.04.2016<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public interface AssessmentItemSession extends CreateInfo, ModifiedInfo {
+public class Border extends IndexedObject {
 	
-	public Long getKey();
-	
-	public String getAssessmentItemIdentifier();
-	
-	public Boolean getPassed();
+	private String right;
+	private String left;
+	private String top;
+	private String bottom;
 
-	public void setPassed(Boolean passed);
+	public Border(int index) {
+		super(index);
+	}
 	
-	public Long getDuration();
-	
-	public void setDuration(Long duration);
-	
-	public BigDecimal getScore();
+	public Border(int index, String right, String left, String top, String bottom) {
+		super(index);
+		this.right = right;
+		this.left = left;
+		this.top = top;
+		this.bottom = bottom;
+	}
 
-	public void setScore(BigDecimal score);
-	
-	public AssessmentTestSession getAssessmentTestSession();
+	public String getRight() {
+		return right;
+	}
 
+	public void setRight(String right) {
+		this.right = right;
+	}
+
+	public String getLeft() {
+		return left;
+	}
+
+	public void setLeft(String left) {
+		this.left = left;
+	}
+
+	public String getTop() {
+		return top;
+	}
+
+	public void setTop(String top) {
+		this.top = top;
+	}
+
+	public String getBottom() {
+		return bottom;
+	}
+
+	public void setBottom(String bottom) {
+		this.bottom = bottom;
+	}
+	
+	
 }

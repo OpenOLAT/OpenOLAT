@@ -20,19 +20,11 @@
  */
 package org.olat.course.db;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.poi.hssf.usermodel.HSSFWorkbook;
-import org.apache.poi.ss.usermodel.Cell;
-import org.apache.poi.ss.usermodel.CellStyle;
-import org.apache.poi.ss.usermodel.Font;
-import org.apache.poi.ss.usermodel.Row;
-import org.apache.poi.ss.usermodel.Sheet;
-import org.apache.poi.ss.usermodel.Workbook;
-import org.apache.poi.ss.util.WorkbookUtil;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -53,6 +45,10 @@ import org.olat.core.util.ExportUtil;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.coordinate.SyncerExecutor;
+import org.olat.core.util.openxml.OpenXMLWorkbook;
+import org.olat.core.util.openxml.OpenXMLWorkbookResource;
+import org.olat.core.util.openxml.OpenXMLWorksheet;
+import org.olat.core.util.openxml.OpenXMLWorksheet.Row;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.nodes.CourseNode;
@@ -60,7 +56,6 @@ import org.olat.course.properties.CoursePropertyManager;
 import org.olat.course.tree.CourseEditorTreeNode;
 import org.olat.properties.Property;
 import org.olat.restapi.security.RestSecurityHelper;
-import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -244,89 +239,47 @@ public class CustomDBController extends FormBasicController {
 		updateUI();
 	}
 	
-	private void exportDb(UserRequest ureq, String category) {
-		ICourse course = CourseFactory.loadCourse(courseKey);
-    byte[] content = getDbsContent(course.getCourseTitle(), category);
-    if(content == null) {
-    	showError("customDb.export.failed");
-    } else {
-    	UserManager um = UserManager.getInstance();
-      String charset = um.getUserCharset(ureq.getIdentity());
-    	String fileName = ExportUtil.createFileNameWithTimeStamp("DBS_" + course.getCourseTitle(), "xls");
-			MediaResource export = new CourseDBMediaResource(charset, fileName, content);
-			ureq.getDispatchResult().setResultingMediaResource(export);
-    }
-	}
-	
-	private byte[] getDbsContent(String courseTitle, String category) {
-		ICourse course = CourseFactory.loadCourse(courseKey);
-		List<CourseDBEntry> content = courseDbManager.getValues(course, null, category, null);
+	private void exportDb(UserRequest ureq, final String category) {
+		final ICourse course = CourseFactory.loadCourse(courseKey);
+    	String label = ExportUtil.createFileNameWithTimeStamp("DBS_" + course.getCourseTitle(), "xls");
 
-		Workbook wb = new HSSFWorkbook();
-		CellStyle headerCellStyle = getHeaderCellStyle(wb);
-		String saveTitle = WorkbookUtil.createSafeSheetName(courseTitle);
-		Sheet exportSheet = wb.createSheet(saveTitle);
-		
-		//create the headers
-		Row headerRow = exportSheet.createRow(0);
-		Cell cell = headerRow.createCell(0);
-		cell.setCellValue(translate("customDb.category"));
-		cell.setCellStyle(headerCellStyle);
-		
-		cell = headerRow.createCell(1);
-		cell.setCellValue(translate("customDb.entry.identity"));
-		cell.setCellStyle(headerCellStyle);
-		
-		cell = headerRow.createCell(2);
-		cell.setCellValue(translate("customDb.entry.name"));
-		cell.setCellStyle(headerCellStyle);
-		
-		cell = headerRow.createCell(3);
-		cell.setCellValue(translate("customDb.entry.value"));
-		cell.setCellStyle(headerCellStyle);
+    	MediaResource export =  new OpenXMLWorkbookResource(label) {
+			@Override
+			protected void generate(OutputStream out) {
+				try(OpenXMLWorkbook workbook = new OpenXMLWorkbook(out, 1)) {
+					List<CourseDBEntry> content = courseDbManager.getValues(course, null, category, null);
 
-		int count = 0;
-		for (CourseDBEntry entry:content) {
-			User user = entry.getIdentity().getUser();
-			String name = user.getProperty(UserConstants.FIRSTNAME, null) + " " + user.getProperty(UserConstants.LASTNAME, null); 
+					OpenXMLWorksheet exportSheet = workbook.nextWorksheet();
+					
+					//create the headers
+					Row headerRow = exportSheet.newRow();
+					headerRow.addCell(0, translate("customDb.category"), workbook.getStyles().getHeaderStyle());
+					headerRow.addCell(1, translate("customDb.entry.identity"), workbook.getStyles().getHeaderStyle());
+					headerRow.addCell(2, translate("customDb.entry.name"), workbook.getStyles().getHeaderStyle());
+					headerRow.addCell(3, translate("customDb.entry.value"), workbook.getStyles().getHeaderStyle());
 
-			Row dataRow = exportSheet.createRow(++count);
-			Cell dataCell = dataRow.createCell(0);
-			dataCell.setCellValue(entry.getCategory());
-			
-			dataCell = dataRow.createCell(1);
-			dataCell.setCellValue(name);
+					for (CourseDBEntry entry:content) {
+						User user = entry.getIdentity().getUser();
+						String name = user.getProperty(UserConstants.FIRSTNAME, null) + " " + user.getProperty(UserConstants.LASTNAME, null); 
 
-			if(StringHelper.containsNonWhitespace(entry.getName())) {
-				dataCell = dataRow.createCell(2);
-				dataCell.setCellValue(entry.getName());
+						Row dataRow = exportSheet.newRow();
+						dataRow.addCell(0, entry.getCategory(), null);
+						dataRow.addCell(1, name, null);
+						if(StringHelper.containsNonWhitespace(entry.getName())) {
+							dataRow.addCell(2, entry.getName(), null);
+						}
+						if(entry.getValue() != null) {
+							dataRow.addCell(3, entry.getValue().toString(), null);
+						}
+					}
+				} catch (IOException e) {
+					logError("", e);
+				}
 			}
-			
-			if(entry.getValue() != null) {
-				dataCell = dataRow.createCell(3);
-				dataCell.setCellValue(entry.getValue().toString());
-			}
-		}
-		
-		try {
-			ByteArrayOutputStream fos = new ByteArrayOutputStream();
-			wb.write(fos);
-			fos.flush();
-			return fos.toByteArray();
-		} catch (IOException e) {
-			logError("", e);
-		}
-		return null;
+		};
+		ureq.getDispatchResult().setResultingMediaResource(export);
 	}
 
-	private CellStyle getHeaderCellStyle(final Workbook wb) {
-		CellStyle cellStyle = wb.createCellStyle();
-		Font boldFont = wb.createFont();
-		boldFont.setBoldweight(Font.BOLDWEIGHT_BOLD);
-		cellStyle.setFont(boldFont);
-		return cellStyle;
-	}
-	
 	private void deleteCustomDb(final ICourse course, final String category) {
 		CoordinatorManager.getInstance().getCoordinator().getSyncer().doInSync(course, new SyncerExecutor() {
 			@Override

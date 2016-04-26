@@ -85,8 +85,8 @@ public class QTIExportFormatterCSVType1 extends QTIExportFormatter {
 		this.tagless = tagless;
 		// initialize user property handlers
 		UserManager um = UserManager.getInstance();
-		this.userPropertyHandlers = um.getUserPropertyHandlersFor(this.getClass().getName(), true);
-		this.translator = um.getPropertyHandlerTranslator(this.translator);	
+		userPropertyHandlers = um.getUserPropertyHandlersFor(QTIArchiver.TEST_USER_PROPERTIES, true);
+		translator = um.getPropertyHandlerTranslator(translator);	
 
 	}
 	
