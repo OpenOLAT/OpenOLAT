@@ -20,6 +20,8 @@
 package org.olat.course.nodes.gta.ui;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.olat.core.commons.editor.htmleditor.HTMLEditorController;
 import org.olat.core.commons.editor.htmleditor.WysiwygFactory;
@@ -28,6 +30,7 @@ import org.olat.core.commons.services.notifications.SubscriptionContext;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.form.flexible.elements.DownloadLink;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.RichTextElement;
@@ -104,6 +107,8 @@ public class GTAAssignmentEditController extends FormBasicController {
 	private final ModuleConfiguration config;
 	private final CourseEditorEnv courseEditorEnv;
 	private final SubscriptionContext subscriptionContext;
+	
+	private int linkCounter = 0;
 	
 	@Autowired
 	private GTAManager gtaManager;
@@ -221,7 +226,17 @@ public class GTAAssignmentEditController extends FormBasicController {
 	
 	private void updateModel() {
 		fileExistsRenderer.setFilenames(tasksFolder.list());
-		taskModel.setObjects(taskList.getTasks());
+		List<TaskDefinitionRow> rows = new ArrayList<>(taskList.getTasks().size());
+		for(TaskDefinition def:taskList.getTasks()) {
+			DownloadLink downloadLink = null;
+			VFSItem item = tasksContainer.resolve(def.getFilename());
+			if(item instanceof VFSLeaf) {
+				downloadLink = uifactory
+					.addDownloadLink("file_" + (++linkCounter), def.getFilename(), null, (VFSLeaf)item, taskDefTableEl);
+			}
+			rows.add(new TaskDefinitionRow(def, downloadLink));
+		}
+		taskModel.setObjects(rows);
 		taskDefTableEl.reset();
 	}
 	
@@ -245,9 +260,9 @@ public class GTAAssignmentEditController extends FormBasicController {
 			fireEvent(ureq, Event.DONE_EVENT);
 		} else if(editTaskCtrl == source) {
 			if(event == Event.DONE_EVENT) {
-				fireEvent(ureq, Event.DONE_EVENT);
-				taskDefTableEl.reloadData();
 				doFinishReplacementOfTask(editTaskCtrl.getFilenameToReplace(), editTaskCtrl.getTask());
+				updateModel();
+				fireEvent(ureq, Event.DONE_EVENT);
 				notificationsManager.markPublisherNews(subscriptionContext, null, false);
 			}
 			cmc.deactivate();
@@ -327,15 +342,15 @@ public class GTAAssignmentEditController extends FormBasicController {
 		} else if(taskDefTableEl == source) {
 			if(event instanceof SelectionEvent) {
 				SelectionEvent se = (SelectionEvent)event;
-				TaskDefinition row = taskModel.getObject(se.getIndex());
+				TaskDefinitionRow row = taskModel.getObject(se.getIndex());
 				if("edit".equals(se.getCommand())) {
-					doEdit(ureq, row);
+					doEdit(ureq, row.getTaskDefinition());
 				} else if("delete".equals(se.getCommand())) {
 					RepositoryEntry entry = courseEditorEnv.getCourseGroupManager().getCourseEntry();
-					if(gtaManager.isTaskInProcess(entry, gtaNode, row.getFilename())) {
-						doConfirmDelete(ureq, row);
+					if(gtaManager.isTaskInProcess(entry, gtaNode, row.getTaskDefinition().getFilename())) {
+						doConfirmDelete(ureq, row.getTaskDefinition());
 					} else {
-						doDelete(ureq, row);
+						doDelete(ureq, row.getTaskDefinition());
 					}
 				}
 			}

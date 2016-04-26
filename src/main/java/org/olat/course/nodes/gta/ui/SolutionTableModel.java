@@ -44,7 +44,8 @@ public class SolutionTableModel extends DefaultFlexiTableDataModel<SolutionRow> 
 		SolutionRow solutionRow = getObject(row);
 		switch(SolCols.values()[col]) {
 			case title: return solutionRow.getSolution().getTitle();
-			case file: return solutionRow.getSolution().getFilename();
+			case file: return solutionRow.getDownloadLink() == null
+					? solutionRow.getSolution().getFilename() : solutionRow.getDownloadLink();
 			case author: return solutionRow.getAuthor();
 			case edit: return solutionRow.getSolution().getFilename().endsWith(".html");
 			default: return "ERROR";

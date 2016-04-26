@@ -32,6 +32,7 @@ import org.olat.core.commons.services.notifications.SubscriptionContext;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.form.flexible.elements.DownloadLink;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
@@ -50,6 +51,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
+import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSManager;
 import org.olat.course.editor.CourseEditorEnv;
 import org.olat.course.nodes.GTACourseNode;
@@ -83,6 +85,8 @@ public class GTASampleSolutionsEditController extends FormBasicController {
 	private final File solutionDir;
 	private final VFSContainer solutionContainer;
 	private final SubscriptionContext subscriptionContext;
+	
+	private int linkCounter = 0;
 	
 	@Autowired
 	private UserManager userManager;
@@ -148,8 +152,14 @@ public class GTASampleSolutionsEditController extends FormBasicController {
 					author = userManager.getUserDisplayName(metaInfo.getAuthorIdentityKey());
 				}
 			}
+			
+			DownloadLink downloadLink = null;
+			if(item instanceof VFSLeaf) {
+				downloadLink = uifactory
+					.addDownloadLink("file_" + (++linkCounter), filename, null, (VFSLeaf)item, solutionTable);
+			}
 
-			rows.add(new SolutionRow(solution, author));
+			rows.add(new SolutionRow(solution, author, downloadLink));
 		}
 		solutionModel.setObjects(rows);
 		solutionTable.reset();
