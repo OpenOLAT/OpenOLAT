@@ -22,7 +22,6 @@ package org.olat.modules.video.ui;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Locale;
 
 import org.olat.core.commons.services.commentAndRating.CommentAndRatingDefaultSecurityCallback;
 import org.olat.core.commons.services.commentAndRating.CommentAndRatingSecurityCallback;
@@ -152,14 +151,11 @@ public class VideoDisplayController extends BasicController {
 			String transcodedUrl = registerMapper(ureq, new VideoMediaMapper(transcodedContainer));
 			mainVC.contextPut("transcodedUrl", transcodedUrl);
 
-			
-			//FIXME: ???? load tracks from config
+			//load the track from config
 			HashMap<String, String> trackfiles = new HashMap<String, String>();
-			for(String lang : Locale.getISOLanguages()){
-				VFSLeaf track = videoManager.getTrack(entry.getOlatResource(), lang);
-				if(track != null){
-					trackfiles.put(lang, track.getName());
-				}
+			HashMap<String, VFSLeaf> configTracks = videoManager.getAllTracks(entry.getOlatResource());
+			for (HashMap.Entry<String, VFSLeaf> track : configTracks.entrySet()) {
+				trackfiles.put(track.getKey(), track.getValue().getName());
 			}
 			mainVC.contextPut("trackfiles",trackfiles);
 
