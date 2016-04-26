@@ -27,11 +27,15 @@ package org.olat.admin.user.imp;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.apache.velocity.VelocityContext;
 import org.olat.basesecurity.Authentication;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.core.commons.persistence.DB;
@@ -49,10 +53,19 @@ import org.olat.core.gui.control.generic.wizard.Step;
 import org.olat.core.gui.control.generic.wizard.StepRunnerCallback;
 import org.olat.core.gui.control.generic.wizard.StepsMainRunController;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
+import org.olat.core.gui.translator.Translator;
+import org.olat.core.helpers.Settings;
 import org.olat.core.id.Identity;
 import org.olat.core.id.User;
+import org.olat.core.id.UserConstants;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.Util;
+import org.olat.core.util.i18n.I18nManager;
+import org.olat.core.util.mail.MailBundle;
+import org.olat.core.util.mail.MailManager;
 import org.olat.core.util.mail.MailPackage;
+import org.olat.core.util.mail.MailTemplate;
+import org.olat.core.util.mail.MailerResult;
 import org.olat.group.BusinessGroupService;
 import org.olat.group.model.BusinessGroupMembershipChange;
 import org.olat.login.auth.OLATAuthManager;
@@ -88,6 +101,8 @@ public class UserImportController extends BasicController {
 	private DB dbInstance;
 	@Autowired
 	private UserManager um;
+	@Autowired
+	private MailManager mailService;
 	@Autowired
 	private BaseSecurity securityManager;
 	@Autowired
@@ -252,11 +267,14 @@ public class UserImportController extends BasicController {
 					if (runContext.containsKey("validImport") && ((Boolean) runContext.get("validImport")).booleanValue()) {
 						// create new users and persist
 						int count = 0;
-
 						@SuppressWarnings("unchecked")
 						List<TransientIdentity> newIdents = (List<TransientIdentity>) runContext.get("newIdents");
+						Map<TransientIdentity,Identity> newPersistedIdentities = new HashMap<>();
 						for (TransientIdentity newIdent:newIdents) {
-							doCreateAndPersistIdentity(newIdent, report);
+							Identity newIdentity = doCreateAndPersistIdentity(newIdent, report);
+							if(newIdentity != null) {
+								newPersistedIdentities.put(newIdent, newIdentity);
+							}
 							if(++count % 10 == 0) {
 								dbInstance.commitAndCloseSession();
 							}
@@ -286,6 +304,11 @@ public class UserImportController extends BasicController {
 							Boolean sendMailObj = (Boolean)runContext.get("sendMail");
 							boolean sendmail = sendMailObj == null ? true : sendMailObj.booleanValue();
 							processGroupAdditionForAllIdents(allIdents, ownGroups, partGroups, sendmail);
+						} else {
+							Boolean sendMailObj = (Boolean)runContext.get("sendMail");
+							if(sendMailObj != null && sendMailObj) {
+								sendMailToNewIdentities(newPersistedIdentities);
+							}
 						}
 						report.setHasChanges(true);
 					}
@@ -321,6 +344,51 @@ public class UserImportController extends BasicController {
 		List<Identity> nextIds = securityManager.findIdentitiesByName(usernames);
 		identities.addAll(nextIds);
 		return identities;
+	}
+	
+	private void sendMailToNewIdentities(Map<TransientIdentity,Identity> newIdentities) {
+		MailerResult result = new MailerResult();
+		for(Map.Entry<TransientIdentity, Identity> newEntry:newIdentities.entrySet()) {
+			if(newEntry.getKey() != null && newEntry.getValue() != null) {
+				Identity newIdentity = newEntry.getValue();
+				MailTemplate template = createMailTemplateForNewIdentity(newIdentity, newEntry.getKey());
+				MailBundle bundle = mailService.makeMailBundle(null, newIdentity, template, getIdentity(), null, result);
+				if(bundle != null) {
+					mailService.sendExternMessage(bundle, result, true);
+				}
+			}
+		}
+	}
+	
+	private MailTemplate createMailTemplateForNewIdentity(Identity identity, TransientIdentity transientIdentity) {
+		// get some data about the actor and fetch the translated subject / body via i18n module
+		String[] bodyArgs = new String[] {
+				identity.getName(),												//{0}
+				identity.getUser().getProperty(UserConstants.FIRSTNAME, null),	//{1}
+				identity.getUser().getProperty(UserConstants.LASTNAME, null),	//{2}
+				identity.getUser().getProperty(UserConstants.EMAIL, null),		//{3}
+				Settings.getServerContextPathURI(),								//{4}
+				transientIdentity.getPassword()									//{5}
+		};
+		Locale locale = I18nManager.getInstance().getLocaleOrDefault(identity.getUser().getPreferences().getLanguage());
+		Translator translator = Util.createPackageTranslator(UserImportController.class, locale);
+
+		String subject = translator.translate("mail.new.identity.subject");
+		String body = translator.translate("mail.new.identity.text", bodyArgs);
+		
+		// create a mail template which all these data
+		MailTemplate mailTempl = new MailTemplate(subject, body, null) {
+			@Override
+			public void putVariablesInMailContext(VelocityContext context, Identity identity) {
+				// Put user variables into velocity context
+				User user = identity.getUser();
+				context.put("firstname", user.getProperty(UserConstants.FIRSTNAME, null));
+				context.put("lastname", user.getProperty(UserConstants.LASTNAME, null));
+				//the email of the user, needs to stay named 'login'
+				context.put("login", user.getProperty(UserConstants.EMAIL, null));
+			}
+		};
+		return mailTempl;
 	}
 
 	private void processGroupAdditionForAllIdents(List<Identity> allIdents, List<Long> tutorGroups, List<Long> partGroups, boolean sendmail) {
