@@ -46,6 +46,9 @@ import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.manager.BasicManager;
 import org.olat.resource.OLATResource;
+import org.quartz.JobDetail;
+import org.quartz.Scheduler;
+import org.quartz.SchedulerException;
 
 /**
  * 
@@ -65,6 +68,7 @@ public class TaskExecutorManagerImpl extends BasicManager implements TaskExecuto
 	private final ExecutorService sequentialTaskExecutor;
 	
 	private DB dbInstance;
+	private Scheduler scheduler;
 	private PersistentTaskDAO persistentTaskDao;
 
 	/**
@@ -73,6 +77,14 @@ public class TaskExecutorManagerImpl extends BasicManager implements TaskExecuto
 	private TaskExecutorManagerImpl(ExecutorService mpTaskExecutor, ExecutorService sequentialTaskExecutor) {
 		this.taskExecutor = mpTaskExecutor;
 		this.sequentialTaskExecutor = sequentialTaskExecutor;
+	}
+	
+	/**
+	 * [used by Spring]
+	 * @param scheduler
+	 */
+	public void setScheduler(Scheduler scheduler) {
+		this.scheduler = scheduler;
 	}
 	
 	/**
@@ -137,6 +149,15 @@ public class TaskExecutorManagerImpl extends BasicManager implements TaskExecuto
 
 	@Override
 	public void executeTaskToDo() {
+		try {
+			JobDetail detail = scheduler.getJobDetail("taskExecutorJob", Scheduler.DEFAULT_GROUP);
+			scheduler.triggerJob(detail.getName(), detail.getGroup());
+		} catch (SchedulerException e) {
+			log.error("", e);
+		}
+	}
+	
+	protected void processTaskToDo() {
 		try {
 			List<Long> todos = persistentTaskDao.tasksToDo();
 			for(Long todo:todos) {

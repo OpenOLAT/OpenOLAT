@@ -10,6 +10,7 @@
 		<constructor-arg index="1" ref="sequentialTaskExecutorService" />
 		<property name="persistentTaskDao" ref="persistentTaskDao"/>
 		<property name="dbInstance" ref="database"/>
+		<property name="scheduler" ref="schedulerFactoryBean"/>
 	</bean>
 	
 	<bean id="mpTaskExecutorService" class="org.springframework.core.task.support.ExecutorServiceAdapter">

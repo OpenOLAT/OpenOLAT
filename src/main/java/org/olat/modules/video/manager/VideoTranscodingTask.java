@@ -76,7 +76,7 @@ public class VideoTranscodingTask implements LongRunnable, Sequential {
 		
 		ArrayList<String> cmd = new ArrayList<>();
 		String tasksetConfig = videoModule.getTranscodingTasksetConfig();
-		if (tasksetConfig != null) {
+		if (tasksetConfig != null && !"Mac OS X".equals(System.getProperty("os.name"))) {
 			cmd.add("taskset");
 			cmd.add("-c");
 			cmd.add(tasksetConfig);			

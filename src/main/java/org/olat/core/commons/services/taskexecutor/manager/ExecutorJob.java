@@ -21,7 +21,6 @@ package org.olat.core.commons.services.taskexecutor.manager;
 
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.services.scheduler.JobWithDB;
-import org.olat.core.commons.services.taskexecutor.TaskExecutorManager;
 import org.quartz.JobExecutionContext;
 
 /**
@@ -37,10 +36,11 @@ public class ExecutorJob extends JobWithDB {
 	/**
 	 * @see org.olat.core.commons.services.scheduler.JobWithDB#executeWithDB(org.quartz.JobExecutionContext)
 	 */
+	@Override
 	public void executeWithDB(JobExecutionContext context) {
 		try {
 			log.info("Starting checking task to do");
-			CoreSpringFactory.getImpl(TaskExecutorManager.class).executeTaskToDo();
+			CoreSpringFactory.getImpl(TaskExecutorManagerImpl.class).processTaskToDo();
 		} catch (Exception e) {
 			// ups, something went completely wrong! We log this but continue next time
 			log.error("Error while checking task to do", e);
