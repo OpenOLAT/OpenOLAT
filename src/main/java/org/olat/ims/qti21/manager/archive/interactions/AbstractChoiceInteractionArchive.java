@@ -21,6 +21,7 @@ package org.olat.ims.qti21.manager.archive.interactions;
 
 import java.util.List;
 
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.openxml.OpenXMLWorkbook;
 import org.olat.core.util.openxml.OpenXMLWorksheet.Row;
 import org.olat.ims.qti21.AssessmentResponse;
@@ -65,21 +66,25 @@ public abstract class AbstractChoiceInteractionArchive extends DefaultInteractio
 
 	@Override
 	public int writeInteractionData(AssessmentItem item, AssessmentResponse response, Interaction interaction, int itemNumber, Row dataRow, int col, OpenXMLWorkbook workbook) {
-		String stringuifiedResponses = response.getStringuifiedResponse();
+		String stringuifiedResponses = response == null ? null : response.getStringuifiedResponse();
 		List<Identifier> correctAnswers = CorrectResponsesUtil.getCorrectIdentifierResponses(item, interaction);
 		List<? extends Choice> choices = getChoices(interaction);
-		for(int i=0; i<choices.size(); i++) {
-			Identifier choiceIdentifier = choices.get(i).getIdentifier();
-			if(stringuifiedResponses.contains("[" + choiceIdentifier + "]")) {
-				if(correctAnswers.contains(choiceIdentifier)) {
-					//the checked answer is correct
-					dataRow.addCell(col++, "x", workbook.getStyles().getCorrectStyle());
-				} else {
-					dataRow.addCell(col++, "x");
+		if(StringHelper.containsNonWhitespace(stringuifiedResponses)) {
+			for(int i=0; i<choices.size(); i++) {
+				Identifier choiceIdentifier = choices.get(i).getIdentifier();
+				if(stringuifiedResponses.contains("[" + choiceIdentifier + "]")) {
+					if(correctAnswers.contains(choiceIdentifier)) {
+						//the checked answer is correct
+						dataRow.addCell(col++, "x", workbook.getStyles().getCorrectStyle());
+					} else {
+						dataRow.addCell(col++, "x");
+					}
+				}  else {
+					col++;
 				}
-			}  else {
-				col++;
 			}
+		} else {
+			col += choices.size();
 		}
 		return col;
 	}

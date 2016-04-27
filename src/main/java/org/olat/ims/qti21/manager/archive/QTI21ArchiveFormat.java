@@ -60,9 +60,20 @@ import org.olat.ims.qti21.manager.archive.interactions.AssociateInteractionArchi
 import org.olat.ims.qti21.manager.archive.interactions.ChoiceInteractionArchive;
 import org.olat.ims.qti21.manager.archive.interactions.DefaultInteractionArchive;
 import org.olat.ims.qti21.manager.archive.interactions.ExtendedTextInteractionArchive;
+import org.olat.ims.qti21.manager.archive.interactions.GapMatchInteractionArchive;
+import org.olat.ims.qti21.manager.archive.interactions.GraphicAssociateInteractionArchive;
+import org.olat.ims.qti21.manager.archive.interactions.GraphicGapMatchInteractionArchive;
+import org.olat.ims.qti21.manager.archive.interactions.GraphicOrderInteractionArchive;
 import org.olat.ims.qti21.manager.archive.interactions.HotspotInteractionArchive;
+import org.olat.ims.qti21.manager.archive.interactions.HottextInteractionArchive;
+import org.olat.ims.qti21.manager.archive.interactions.InlineChoiceInteractionArchive;
 import org.olat.ims.qti21.manager.archive.interactions.InteractionArchive;
 import org.olat.ims.qti21.manager.archive.interactions.MatchInteractionArchive;
+import org.olat.ims.qti21.manager.archive.interactions.MediaInteractionArchive;
+import org.olat.ims.qti21.manager.archive.interactions.OrderInteractionArchive;
+import org.olat.ims.qti21.manager.archive.interactions.PositionObjectInteractionArchive;
+import org.olat.ims.qti21.manager.archive.interactions.SelectPointInteractionArchive;
+import org.olat.ims.qti21.manager.archive.interactions.SliderInteractionArchive;
 import org.olat.ims.qti21.manager.archive.interactions.TextEntryInteractionArchive;
 import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.repository.RepositoryEntry;
@@ -134,26 +145,26 @@ public class QTI21ArchiveFormat {
 	private void initInteractionWriters() {
 		interactionArchiveMap.put(AssociateInteraction.QTI_CLASS_NAME, new AssociateInteractionArchive());
 		interactionArchiveMap.put(ChoiceInteraction.QTI_CLASS_NAME, new ChoiceInteractionArchive());
-		interactionArchiveMap.put(DrawingInteraction.QTI_CLASS_NAME, new DefaultInteractionArchive());
+		interactionArchiveMap.put(DrawingInteraction.QTI_CLASS_NAME, new DefaultInteractionArchive());//like file
 		interactionArchiveMap.put(ExtendedTextInteraction.QTI_CLASS_NAME, new ExtendedTextInteractionArchive());
-		interactionArchiveMap.put(GapMatchInteraction.QTI_CLASS_NAME, new DefaultInteractionArchive());
-		interactionArchiveMap.put(GraphicAssociateInteraction.QTI_CLASS_NAME, new DefaultInteractionArchive());
-		interactionArchiveMap.put(GraphicGapMatchInteraction.QTI_CLASS_NAME, new DefaultInteractionArchive());
-		interactionArchiveMap.put(GraphicOrderInteraction.QTI_CLASS_NAME, new DefaultInteractionArchive()); 
+		interactionArchiveMap.put(GapMatchInteraction.QTI_CLASS_NAME, new GapMatchInteractionArchive());
+		interactionArchiveMap.put(GraphicAssociateInteraction.QTI_CLASS_NAME, new GraphicAssociateInteractionArchive());
+		interactionArchiveMap.put(GraphicGapMatchInteraction.QTI_CLASS_NAME, new GraphicGapMatchInteractionArchive());
+		interactionArchiveMap.put(GraphicOrderInteraction.QTI_CLASS_NAME, new GraphicOrderInteractionArchive()); 
 		interactionArchiveMap.put(HotspotInteraction.QTI_CLASS_NAME, new HotspotInteractionArchive());
-		interactionArchiveMap.put(SelectPointInteraction.QTI_CLASS_NAME, new DefaultInteractionArchive());
-		interactionArchiveMap.put(HottextInteraction.QTI_CLASS_NAME, new DefaultInteractionArchive());
-		interactionArchiveMap.put(MatchInteraction.QTI_CLASS_NAME, new MatchInteractionArchive());
-		interactionArchiveMap.put(MediaInteraction.QTI_CLASS_NAME, new DefaultInteractionArchive());
-		interactionArchiveMap.put(OrderInteraction.QTI_CLASS_NAME, new DefaultInteractionArchive());
-		interactionArchiveMap.put(PositionObjectInteraction.QTI_CLASS_NAME, new DefaultInteractionArchive());
-		interactionArchiveMap.put(SliderInteraction.QTI_CLASS_NAME, new DefaultInteractionArchive());
+		interactionArchiveMap.put(SelectPointInteraction.QTI_CLASS_NAME, new SelectPointInteractionArchive());
+		interactionArchiveMap.put(HottextInteraction.QTI_CLASS_NAME, new HottextInteractionArchive());
+		interactionArchiveMap.put(MatchInteraction.QTI_CLASS_NAME, new MatchInteractionArchive());//only kprim
+		interactionArchiveMap.put(MediaInteraction.QTI_CLASS_NAME, new MediaInteractionArchive());
+		interactionArchiveMap.put(OrderInteraction.QTI_CLASS_NAME, new OrderInteractionArchive());
+		interactionArchiveMap.put(PositionObjectInteraction.QTI_CLASS_NAME, new PositionObjectInteractionArchive());
+		interactionArchiveMap.put(SliderInteraction.QTI_CLASS_NAME, new SliderInteractionArchive());
 		interactionArchiveMap.put(UploadInteraction.QTI_CLASS_NAME, new DefaultInteractionArchive());
 	//custom
 		interactionArchiveMap.put(CustomInteraction.QTI_CLASS_NAME, new DefaultInteractionArchive());
 	//inline
-		interactionArchiveMap.put(EndAttemptInteraction.QTI_CLASS_NAME, new DefaultInteractionArchive());
-		interactionArchiveMap.put(InlineChoiceInteraction.QTI_CLASS_NAME, new DefaultInteractionArchive());
+		interactionArchiveMap.put(EndAttemptInteraction.QTI_CLASS_NAME, new DefaultInteractionArchive());//not really usefull
+		interactionArchiveMap.put(InlineChoiceInteraction.QTI_CLASS_NAME, new InlineChoiceInteractionArchive());
 		interactionArchiveMap.put(TextEntryInteraction.QTI_CLASS_NAME, new TextEntryInteractionArchive());
 	}
 	
