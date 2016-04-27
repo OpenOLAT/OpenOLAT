@@ -21,7 +21,7 @@ package org.olat.ims.qti21.manager.archive.interactions;
 
 import java.util.List;
 
-import uk.ac.ed.ph.jqtiplus.node.item.interaction.ChoiceInteraction;
+import uk.ac.ed.ph.jqtiplus.node.item.interaction.HotspotInteraction;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.Interaction;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.choice.Choice;
 
@@ -31,11 +31,12 @@ import uk.ac.ed.ph.jqtiplus.node.item.interaction.choice.Choice;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class ChoiceInteractionArchive extends AbstractChoiceInteractionArchive {
+public class HotspotInteractionArchive extends AbstractChoiceInteractionArchive {
 	
 	@Override
 	public List<? extends Choice> getChoices(Interaction interaction) {
-		ChoiceInteraction choiceInteraction = (ChoiceInteraction)interaction;
-		return choiceInteraction.getSimpleChoices();
+		HotspotInteraction choiceInteraction = (HotspotInteraction)interaction;
+		return choiceInteraction.getHotspotChoices();
 	}
+
 }

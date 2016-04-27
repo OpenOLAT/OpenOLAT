@@ -60,6 +60,7 @@ import org.olat.ims.qti21.manager.archive.interactions.AssociateInteractionArchi
 import org.olat.ims.qti21.manager.archive.interactions.ChoiceInteractionArchive;
 import org.olat.ims.qti21.manager.archive.interactions.DefaultInteractionArchive;
 import org.olat.ims.qti21.manager.archive.interactions.ExtendedTextInteractionArchive;
+import org.olat.ims.qti21.manager.archive.interactions.HotspotInteractionArchive;
 import org.olat.ims.qti21.manager.archive.interactions.InteractionArchive;
 import org.olat.ims.qti21.manager.archive.interactions.MatchInteractionArchive;
 import org.olat.ims.qti21.manager.archive.interactions.TextEntryInteractionArchive;
@@ -139,7 +140,7 @@ public class QTI21ArchiveFormat {
 		interactionArchiveMap.put(GraphicAssociateInteraction.QTI_CLASS_NAME, new DefaultInteractionArchive());
 		interactionArchiveMap.put(GraphicGapMatchInteraction.QTI_CLASS_NAME, new DefaultInteractionArchive());
 		interactionArchiveMap.put(GraphicOrderInteraction.QTI_CLASS_NAME, new DefaultInteractionArchive()); 
-		interactionArchiveMap.put(HotspotInteraction.QTI_CLASS_NAME, new DefaultInteractionArchive());
+		interactionArchiveMap.put(HotspotInteraction.QTI_CLASS_NAME, new HotspotInteractionArchive());
 		interactionArchiveMap.put(SelectPointInteraction.QTI_CLASS_NAME, new DefaultInteractionArchive());
 		interactionArchiveMap.put(HottextInteraction.QTI_CLASS_NAME, new DefaultInteractionArchive());
 		interactionArchiveMap.put(MatchInteraction.QTI_CLASS_NAME, new MatchInteractionArchive());
