@@ -57,10 +57,14 @@ public class SendMailConfirmationController extends StepFormBasicController {
 		List<Long> ownGroups = (List<Long>) getFromRunContext("ownerGroups");
 		@SuppressWarnings("unchecked")
 		List<Long> partGroups = (List<Long>) getFromRunContext("partGroups");
+		@SuppressWarnings("unchecked")
+		List<TransientIdentity> newIdents = (List<TransientIdentity>)getFromRunContext("newIdents");
 		
 		String[] values = new String[] { translate("step3.send.mail") };
 		typEl = uifactory.addCheckboxesVertical("typ", "step3.send.label", formLayout, keys, values, 1);
-		typEl.setEnabled(ownGroups.size() > 0 || partGroups.size() > 0);
+		typEl.setEnabled((ownGroups != null && ownGroups.size() > 0)
+				|| (partGroups != null && partGroups.size() > 0)
+				|| (newIdents != null && newIdents.size() > 0));
 	}
 	
 	@Override

@@ -29,23 +29,24 @@ import org.olat.course.nodes.gta.model.TaskDefinition;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class TaskDefinitionTableModel extends DefaultFlexiTableDataModel<TaskDefinition> {
+public class TaskDefinitionTableModel extends DefaultFlexiTableDataModel<TaskDefinitionRow> {
 	
 	public TaskDefinitionTableModel(FlexiTableColumnModel columnModel) {
 		super(columnModel);
 	}
 
 	@Override
-	public DefaultFlexiTableDataModel<TaskDefinition> createCopyWithEmptyList() {
+	public DefaultFlexiTableDataModel<TaskDefinitionRow> createCopyWithEmptyList() {
 		return new TaskDefinitionTableModel(getTableColumnModel());
 	}
 
 	@Override
 	public Object getValueAt(int row, int col) {
-		TaskDefinition taskDef = getObject(row);
+		TaskDefinitionRow taskDefRow = getObject(row);
+		TaskDefinition taskDef = taskDefRow.getTaskDefinition();
 		switch(TDCols.values()[col]) {
 			case title: return taskDef.getTitle();
-			case file: return taskDef.getFilename();
+			case file: return  taskDefRow.getDownloadLink() == null ? taskDef.getFilename() : taskDefRow.getDownloadLink();
 			case edit: return taskDef.getFilename().endsWith(".html");
 			default: return "ERROR";
 		}

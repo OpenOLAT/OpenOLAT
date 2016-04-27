@@ -48,6 +48,8 @@ junit and integration tests in OpenOLAT 8
 - junit integration tests that load the framework to execute (execution time ca. 10m)
   - MySQL
 	  mvn clean test -Dwith-mysql -Ptomcat
+	  or with more options
+	  mvn clean test -Dwith-mysql -Dtest.env.db.user=root -Dtest.env.db.pass=serial -Ptomcat
 	  
   - PostgreSQL
 	  mvn clean test -Dwith-postgresql -Ptomcat
