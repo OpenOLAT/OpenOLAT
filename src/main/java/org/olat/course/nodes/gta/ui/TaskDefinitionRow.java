@@ -20,35 +20,29 @@
 package org.olat.course.nodes.gta.ui;
 
 import org.olat.core.gui.components.form.flexible.elements.DownloadLink;
-import org.olat.course.nodes.gta.model.Solution;
+import org.olat.course.nodes.gta.model.TaskDefinition;
 
 /**
  * 
- * Initial date: 02.06.2015<br>
+ * Initial date: 26.04.2016<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class SolutionRow {
+public class TaskDefinitionRow {
 	
-	private final Solution solution;
-	private final String author;
-	private final DownloadLink downloadLink;
+	private TaskDefinition taskDefinition;
+	private DownloadLink downloadLink;
 	
-	public SolutionRow(Solution solution, String author, DownloadLink downloadLink) {
-		this.solution = solution;
-		this.author = author;
+	public TaskDefinitionRow(TaskDefinition taskDefinition, DownloadLink downloadLink) {
+		this.taskDefinition = taskDefinition;
 		this.downloadLink = downloadLink;
-	}
-
-	public Solution getSolution() {
-		return solution;
-	}
-
-	public String getAuthor() {
-		return author;
 	}
 	
 	public DownloadLink getDownloadLink() {
 		return downloadLink;
+	}
+
+	public TaskDefinition getTaskDefinition() {
+		return taskDefinition;
 	}
 }

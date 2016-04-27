@@ -142,6 +142,8 @@ public class RichTextConfiguration implements Disposable {
 	private String linkBrowserUploadRelPath;
 	private String linkBrowserRelativeFilePath;
 	private String linkBrowserAbsolutFilePath;
+	private boolean relativeUrls = true;
+	private boolean removeScriptHost = true;
 	private boolean allowCustomMediaFactory = true;
 	private CustomLinkTreeModel linkBrowserCustomTreeModel;	
 	// DOM ID of the flexi form element
@@ -301,6 +303,40 @@ public class RichTextConfiguration implements Disposable {
 		// Plugins without buttons
 		setNoneditableContentEnabled(true, null);
 		setTabFocusEnabled(true);
+	}
+
+	public boolean isRelativeUrls() {
+		return relativeUrls;
+	}
+	
+	/**
+	 * If this option is set to true, all URLs returned from the MCFileManager and
+	 * linkConverter will be relative from the specified document_base_url. If it's
+	 * set to false all URLs will be converted to absolute URLs.
+	 * 
+	 * @see https://www.tinymce.com/docs/configure/url-handling/#relative_urls
+	 * 
+	 * @param relativeUrls
+	 */
+	public void setRelativeUrls(boolean relativeUrls) {
+		this.relativeUrls = relativeUrls;
+	}
+
+	public boolean isRemoveScriptHost() {
+		return removeScriptHost;
+	}
+
+	/**
+	 * If this option is enabled the protocol and host part of the URLs returned
+	 * from the MCFileManager and linkConverter will be removed. This option is
+	 * only used if the relative_urls option is set to false.
+	 * 
+	 * @see https://www.tinymce.com/docs/configure/url-handling/#remove_script_host
+	 * 
+	 * @param removeScriptHost
+	 */
+	public void setRemoveScriptHost(boolean removeScriptHost) {
+		this.removeScriptHost = removeScriptHost;
 	}
 
 	public boolean isAllowCustomMediaFactory() {
@@ -792,6 +828,8 @@ public class RichTextConfiguration implements Disposable {
  		tinyMenuSb.append("plugins: '").append(tinyConfig.getPlugins()).append("',\n")
  		  .append("image_advtab:true,\n")
 		  .append("statusbar:true,\n")
+		  .append("relative_urls:").append(isRelativeUrls()).append(",\n")
+		  .append("remove_script_host:").append(isRemoveScriptHost()).append(",\n")
 		  .append("menubar:").append(tinyConfig.hasMenu()).append(",\n");
  		
  		String leftAndClear = "Left and clear";

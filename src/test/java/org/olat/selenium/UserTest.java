@@ -45,6 +45,7 @@ import org.olat.selenium.page.User;
 import org.olat.selenium.page.course.CoursePageFragment;
 import org.olat.selenium.page.graphene.OOGraphene;
 import org.olat.selenium.page.group.GroupsPage;
+import org.olat.selenium.page.repository.AuthoringEnvPage;
 import org.olat.selenium.page.user.ImportUserPage;
 import org.olat.selenium.page.user.PortalPage;
 import org.olat.selenium.page.user.UserAdminPage;
@@ -224,6 +225,45 @@ public class UserTest {
 		Assert.assertTrue(resumeButtons.isEmpty());
 		//double check that we are really logged in
 		loginPage.assertLoggedIn(user);
+	}
+	
+
+	/**
+	 * An user configures its landing page, log out
+	 * and try it.
+	 * 
+	 * 
+	 * @param loginPage
+	 * @throws IOException
+	 * @throws URISyntaxException
+	 */
+	@Test
+	@RunAsClient
+	public void loginInHomeWithLandingPage(@InitialPage LoginPage loginPage)
+	throws IOException, URISyntaxException {
+		//create a random user
+		UserRestClient userClient = new UserRestClient(deploymentUrl);
+		UserVO user = userClient.createAuthor();
+
+		loginPage
+			.assertOnLoginPage()
+			.loginAs(user.getLogin(), user.getPassword());
+		
+		userTools
+				.openUserToolsMenu()
+				.openMySettings()
+				.openPreferences()
+				.setResume(ResumeOption.none)
+				.setLandingPage("/RepositorySite/0/Search/0");
+		
+		userTools.logout();
+		
+		loginPage
+			.assertOnLoginPage()
+			.loginAs(user.getLogin(), user.getPassword());
+		
+		new AuthoringEnvPage(browser)
+			.assertOnGenericSearch();
 	}
 	
 	/**

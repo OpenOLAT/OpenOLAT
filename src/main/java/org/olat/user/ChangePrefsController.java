@@ -244,6 +244,7 @@ class SpecialPrefsForm extends FormBasicController {
 		}
 		
 		landingPageEl = uifactory.addTextElement("landingpages", "landing.pages", 256, "", formLayout);
+		landingPageEl.setElementCssClass("o_sel_home_settings_landing_page");
 		
 		update();
 		
