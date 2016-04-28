@@ -39,7 +39,7 @@ import uk.ac.ed.ph.jqtiplus.node.item.interaction.TextEntryInteraction;
 public class TextEntryInteractionArchive extends DefaultInteractionArchive {
 
 	@Override
-	public int writeHeader2(Interaction interaction, int itemNumber, int interactionNumber, Row dataRow, int col, OpenXMLWorkbook workbook) {
+	public int writeHeader2(AssessmentItem item, Interaction interaction, int itemNumber, int interactionNumber, Row dataRow, int col, OpenXMLWorkbook workbook) {
 		String header = (itemNumber + 1) + "_FIB" + (interactionNumber + 1);
 		dataRow.addCell(col++, header, workbook.getStyles().getHeaderStyle());
 		return col;

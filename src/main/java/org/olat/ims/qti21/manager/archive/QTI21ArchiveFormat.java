@@ -59,6 +59,7 @@ import org.olat.ims.qti21.manager.QTI21ServiceImpl;
 import org.olat.ims.qti21.manager.archive.interactions.AssociateInteractionArchive;
 import org.olat.ims.qti21.manager.archive.interactions.ChoiceInteractionArchive;
 import org.olat.ims.qti21.manager.archive.interactions.DefaultInteractionArchive;
+import org.olat.ims.qti21.manager.archive.interactions.NoOutputInteractionArchive;
 import org.olat.ims.qti21.manager.archive.interactions.ExtendedTextInteractionArchive;
 import org.olat.ims.qti21.manager.archive.interactions.GapMatchInteractionArchive;
 import org.olat.ims.qti21.manager.archive.interactions.GraphicAssociateInteractionArchive;
@@ -122,7 +123,8 @@ public class QTI21ArchiveFormat {
 	
 	private ResolvedAssessmentTest resolvedAssessmentTest;
 	private List<UserPropertyHandler> userPropertyHandlers;
-	private final Map<String,ItemInfos> itemInfosMap = new HashMap<>();
+
+	private List<ItemInfos> itemInfos;
 	private final Map<String, InteractionArchive> interactionArchiveMap = new HashMap<>();
 	
 	private final QTI21Service qtiService;
@@ -143,29 +145,29 @@ public class QTI21ArchiveFormat {
 	}
 	
 	private void initInteractionWriters() {
-		interactionArchiveMap.put(AssociateInteraction.QTI_CLASS_NAME, new AssociateInteractionArchive());
-		interactionArchiveMap.put(ChoiceInteraction.QTI_CLASS_NAME, new ChoiceInteractionArchive());
-		interactionArchiveMap.put(DrawingInteraction.QTI_CLASS_NAME, new DefaultInteractionArchive());//like file
-		interactionArchiveMap.put(ExtendedTextInteraction.QTI_CLASS_NAME, new ExtendedTextInteractionArchive());
-		interactionArchiveMap.put(GapMatchInteraction.QTI_CLASS_NAME, new GapMatchInteractionArchive());
-		interactionArchiveMap.put(GraphicAssociateInteraction.QTI_CLASS_NAME, new GraphicAssociateInteractionArchive());
-		interactionArchiveMap.put(GraphicGapMatchInteraction.QTI_CLASS_NAME, new GraphicGapMatchInteractionArchive());
-		interactionArchiveMap.put(GraphicOrderInteraction.QTI_CLASS_NAME, new GraphicOrderInteractionArchive()); 
-		interactionArchiveMap.put(HotspotInteraction.QTI_CLASS_NAME, new HotspotInteractionArchive());
-		interactionArchiveMap.put(SelectPointInteraction.QTI_CLASS_NAME, new SelectPointInteractionArchive());
-		interactionArchiveMap.put(HottextInteraction.QTI_CLASS_NAME, new HottextInteractionArchive());
-		interactionArchiveMap.put(MatchInteraction.QTI_CLASS_NAME, new MatchInteractionArchive());//only kprim
+		interactionArchiveMap.put(AssociateInteraction.QTI_CLASS_NAME, new AssociateInteractionArchive());					//ok
+		interactionArchiveMap.put(ChoiceInteraction.QTI_CLASS_NAME, new ChoiceInteractionArchive());						//ok
+		interactionArchiveMap.put(DrawingInteraction.QTI_CLASS_NAME, new DefaultInteractionArchive());						//like file
+		interactionArchiveMap.put(ExtendedTextInteraction.QTI_CLASS_NAME, new ExtendedTextInteractionArchive());			//ok
+		interactionArchiveMap.put(GapMatchInteraction.QTI_CLASS_NAME, new GapMatchInteractionArchive());					//ok
+		interactionArchiveMap.put(GraphicAssociateInteraction.QTI_CLASS_NAME, new GraphicAssociateInteractionArchive());	//ok
+		interactionArchiveMap.put(GraphicGapMatchInteraction.QTI_CLASS_NAME, new GraphicGapMatchInteractionArchive());		//ok
+		interactionArchiveMap.put(GraphicOrderInteraction.QTI_CLASS_NAME, new GraphicOrderInteractionArchive()); 			//ok
+		interactionArchiveMap.put(HotspotInteraction.QTI_CLASS_NAME, new HotspotInteractionArchive());						//ok
+		interactionArchiveMap.put(SelectPointInteraction.QTI_CLASS_NAME, new SelectPointInteractionArchive());				//ok
+		interactionArchiveMap.put(HottextInteraction.QTI_CLASS_NAME, new HottextInteractionArchive());						//ok
+		interactionArchiveMap.put(MatchInteraction.QTI_CLASS_NAME, new MatchInteractionArchive());							//ok
 		interactionArchiveMap.put(MediaInteraction.QTI_CLASS_NAME, new MediaInteractionArchive());
-		interactionArchiveMap.put(OrderInteraction.QTI_CLASS_NAME, new OrderInteractionArchive());
+		interactionArchiveMap.put(OrderInteraction.QTI_CLASS_NAME, new OrderInteractionArchive());							//ok
 		interactionArchiveMap.put(PositionObjectInteraction.QTI_CLASS_NAME, new PositionObjectInteractionArchive());
-		interactionArchiveMap.put(SliderInteraction.QTI_CLASS_NAME, new SliderInteractionArchive());
+		interactionArchiveMap.put(SliderInteraction.QTI_CLASS_NAME, new SliderInteractionArchive());						//ok
 		interactionArchiveMap.put(UploadInteraction.QTI_CLASS_NAME, new DefaultInteractionArchive());
 	//custom
-		interactionArchiveMap.put(CustomInteraction.QTI_CLASS_NAME, new DefaultInteractionArchive());
+		interactionArchiveMap.put(CustomInteraction.QTI_CLASS_NAME, new NoOutputInteractionArchive());						//ok
 	//inline
-		interactionArchiveMap.put(EndAttemptInteraction.QTI_CLASS_NAME, new DefaultInteractionArchive());//not really usefull
-		interactionArchiveMap.put(InlineChoiceInteraction.QTI_CLASS_NAME, new InlineChoiceInteractionArchive());
-		interactionArchiveMap.put(TextEntryInteraction.QTI_CLASS_NAME, new TextEntryInteractionArchive());
+		interactionArchiveMap.put(EndAttemptInteraction.QTI_CLASS_NAME, new NoOutputInteractionArchive());					//ok
+		interactionArchiveMap.put(InlineChoiceInteraction.QTI_CLASS_NAME, new InlineChoiceInteractionArchive());			//ok
+		interactionArchiveMap.put(TextEntryInteraction.QTI_CLASS_NAME, new TextEntryInteractionArchive());					//ok
 	}
 	
 	public boolean hasResults(RepositoryEntry courseEntry, String subIdent, RepositoryEntry testEntry) {
@@ -216,18 +218,14 @@ public class QTI21ArchiveFormat {
 		}
 		col += 5;// homepage -> test duration
 		
-		List<AssessmentItemRef> itemRefs = getAssessmentItemRefs();
-		for(int i=0; i<itemRefs.size(); i++) {
-			AssessmentItemRef itemRef = itemRefs.get(i);
-			ResolvedAssessmentItem resolvedAssessmentItem = resolvedAssessmentTest.getResolvedAssessmentItem(itemRef);
-			AssessmentItem item = resolvedAssessmentItem.getRootNodeLookup().extractIfSuccessful();
-			
-			ItemInfos itemInfos = getItemInfos(itemRef);
-			List<Interaction> interactions = itemInfos.getInteractions();
+		List<ItemInfos> infos = getItemInfos();
+		for(int i=0; i<infos.size(); i++) {
+			ItemInfos item = infos.get(i);
+			List<Interaction> interactions = item.getInteractions();
 			for(int j=0; j<interactions.size(); j++) {
 				Interaction interaction = interactions.get(j);
 				col = interactionArchiveMap.get(interaction.getQtiClassName())
-						.writeHeader1(item, interaction, i, j, header1Row, col, workbook);
+						.writeHeader1(item.getAssessmentItem(), interaction, i, j, header1Row, col, workbook);
 			}
 			col += 3;//score, start, duration
 		}
@@ -256,16 +254,15 @@ public class QTI21ArchiveFormat {
 		//header2Row.addCell(col++, translator.translate("column.header.ipaddress"), headerStyle);
 		header2Row.addCell(col++, translator.translate("column.header.date"), headerStyle);
 		header2Row.addCell(col++, translator.translate("column.header.duration"), headerStyle);
-		
-		List<AssessmentItemRef> itemRefs = getAssessmentItemRefs();
-		for(int i=0; i<itemRefs.size(); i++) {
-			AssessmentItemRef itemRef = itemRefs.get(i);
-			ItemInfos itemInfos = getItemInfos(itemRef);
-			List<Interaction> interactions = itemInfos.getInteractions();
+
+		List<ItemInfos> infos = getItemInfos();
+		for(int i=0; i<infos.size(); i++) {
+			ItemInfos info = infos.get(i);
+			List<Interaction> interactions = info.getInteractions();
 			for(int j=0; j<interactions.size(); j++) {
 				Interaction interaction = interactions.get(j);
 				col = interactionArchiveMap.get(interaction.getQtiClassName())
-						.writeHeader2(interaction, i, j, header2Row, col, workbook);
+						.writeHeader2(info.getAssessmentItem(), interaction, i, j, header2Row, col, workbook);
 			}
 
 			header2Row.addCell(col++, translator.translate("item.score"), headerStyle);
@@ -329,22 +326,21 @@ public class QTI21ArchiveFormat {
 		//dataRow.addCell(col++, "0.0.0.1", null);
 		dataRow.addCell(col++, testSession.getCreationDate(), workbook.getStyles().getDateStyle());
 		dataRow.addCell(col++, toDurationInMilliseconds(testSession.getDuration()), null);
-		
-		List<AssessmentItemRef> itemRefs = getAssessmentItemRefs();
-		for(int i=0; i<itemRefs.size(); i++) {
-			AssessmentItemRef itemRef = itemRefs.get(i);
+
+		List<ItemInfos> infos = getItemInfos();
+		for(int i=0; i<infos.size(); i++) {
+			ItemInfos info = infos.get(i);
+			AssessmentItemRef itemRef = info.getAssessmentItemRef();
 			String itemRefIdentifier = itemRef.getIdentifier().toString();
 			AssessmentItemSession itemSession = responses.getItemSession(itemRefIdentifier);
-			ItemInfos itemInfos = getItemInfos(itemRef);
-			AssessmentItem item = itemInfos.getAssessmentItem();
-
-			List<Interaction> interactions = itemInfos.getInteractions();
+			
+			List<Interaction> interactions = info.getInteractions();
 			for(int j=0; j<interactions.size(); j++) {
 				Interaction interaction = interactions.get(j);
 				 AssessmentResponse response = responses
 						 .getResponse(itemRefIdentifier, interaction.getResponseIdentifier());
 				col = interactionArchiveMap.get(interaction.getQtiClassName())
-							.writeInteractionData(item, response, interaction, j, dataRow, col, workbook);
+							.writeInteractionData(info.getAssessmentItem(), response, interaction, j, dataRow, col, workbook);
 			}
 			
 			//score, start, duration
@@ -363,18 +359,17 @@ public class QTI21ArchiveFormat {
 		return value.longValue() / 1000l;
 	}
 	
-	private List<AssessmentItemRef> getAssessmentItemRefs() {
-		return resolvedAssessmentTest.getAssessmentItemRefs();
-	}
-	
-	private ItemInfos getItemInfos(AssessmentItemRef itemRef) {
-		String itemRefIdentifier = itemRef.getIdentifier().toString();
-		ItemInfos itemInfos = itemInfosMap.get(itemRefIdentifier);
+	private List<ItemInfos> getItemInfos() {
 		if(itemInfos == null) {
-			ResolvedAssessmentItem resolvedItem = resolvedAssessmentTest.getResolvedAssessmentItem(itemRef);
-			AssessmentItem item = resolvedItem.getRootNodeLookup().extractIfSuccessful();
-			itemInfos = new ItemInfos(item, item.getItemBody().findInteractions());
-			itemInfosMap.put(itemRefIdentifier, itemInfos);
+			itemInfos = new ArrayList<>();
+			List<AssessmentItemRef> itemRefs = resolvedAssessmentTest.getAssessmentItemRefs();
+			for(AssessmentItemRef itemRef:itemRefs) {
+				ResolvedAssessmentItem resolvedItem = resolvedAssessmentTest.getResolvedAssessmentItem(itemRef);
+				AssessmentItem item = resolvedItem.getRootNodeLookup().extractIfSuccessful();
+				if(item != null) {
+					itemInfos.add(new ItemInfos(itemRef, item, item.getItemBody().findInteractions()));
+				}
+			}
 		}
 		return itemInfos;
 	}
@@ -430,12 +425,18 @@ public class QTI21ArchiveFormat {
 	
 	private static class ItemInfos {
 		
+		private final AssessmentItemRef itemRef;
 		private final AssessmentItem assessmentItem;
 		private final List<Interaction> interactions;
 		
-		public ItemInfos(AssessmentItem assessmentItem, List<Interaction> interactions) {
+		public ItemInfos(AssessmentItemRef itemRef, AssessmentItem assessmentItem, List<Interaction> interactions) {
+			this.itemRef = itemRef;
 			this.interactions = interactions;
 			this.assessmentItem = assessmentItem;
+		}
+		
+		public AssessmentItemRef getAssessmentItemRef() {
+			return itemRef;
 		}
 		
 		public AssessmentItem getAssessmentItem() {

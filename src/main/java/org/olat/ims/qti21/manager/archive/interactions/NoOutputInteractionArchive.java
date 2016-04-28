@@ -19,25 +19,35 @@
  */
 package org.olat.ims.qti21.manager.archive.interactions;
 
-import uk.ac.ed.ph.jqtiplus.node.item.interaction.AssociateInteraction;
+import org.olat.core.util.openxml.OpenXMLWorkbook;
+import org.olat.core.util.openxml.OpenXMLWorksheet.Row;
+import org.olat.ims.qti21.AssessmentResponse;
+
+import uk.ac.ed.ph.jqtiplus.node.item.AssessmentItem;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.Interaction;
 
 /**
  * 
- * Initial date: 26.04.2016<br>
+ * Doesn't make any cells
+ * 
+ * Initial date: 27.04.2016<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class AssociateInteractionArchive extends AbstractAssociateInteractionArchive {
+public class NoOutputInteractionArchive implements InteractionArchive  {
 
 	@Override
-	protected int getMaxAssociations(Interaction interaction) {
-		AssociateInteraction associateInteraction = (AssociateInteraction)interaction;
-		int max = associateInteraction.getMaxAssociations();
-		if(max == 0) {
-			max = associateInteraction.getSimpleAssociableChoices().size() * (associateInteraction.getSimpleAssociableChoices().size() - 1);
-		}
-		return max;
+	public int writeHeader1(AssessmentItem item, Interaction interaction, int itemNumber, int interactionNumber, Row dataRow, int col, OpenXMLWorkbook workbook) {
+		return col;
 	}
 
+	@Override
+	public int writeHeader2(AssessmentItem item, Interaction interaction, int itemNumber, int interactionNumber, Row dataRow, int col, OpenXMLWorkbook workbook) {
+		return col;
+	}
+
+	@Override
+	public int writeInteractionData(AssessmentItem item, AssessmentResponse response, Interaction interaction, int itemNumber, Row dataRow, int col, OpenXMLWorkbook workbook) {
+		return col;
+	}
 }

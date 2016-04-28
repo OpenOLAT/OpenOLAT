@@ -17,27 +17,35 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.ims.qti21.manager.archive.interactions;
+package org.olat.ims.qti21.manager.archive;
 
-import uk.ac.ed.ph.jqtiplus.node.item.interaction.AssociateInteraction;
-import uk.ac.ed.ph.jqtiplus.node.item.interaction.Interaction;
+import java.util.List;
+
+import uk.ac.ed.ph.jqtiplus.node.QtiNode;
+import uk.ac.ed.ph.jqtiplus.node.content.basic.FlowStatic;
+import uk.ac.ed.ph.jqtiplus.node.content.basic.TextRun;
 
 /**
  * 
- * Initial date: 26.04.2016<br>
+ * Initial date: 28.04.2016<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class AssociateInteractionArchive extends AbstractAssociateInteractionArchive {
-
-	@Override
-	protected int getMaxAssociations(Interaction interaction) {
-		AssociateInteraction associateInteraction = (AssociateInteraction)interaction;
-		int max = associateInteraction.getMaxAssociations();
-		if(max == 0) {
-			max = associateInteraction.getSimpleAssociableChoices().size() * (associateInteraction.getSimpleAssociableChoices().size() - 1);
+public class SimpleContentRenderer {
+	
+	public static final String renderFlowStatics(List<FlowStatic> flowStatics) {
+		StringBuilder sb = new StringBuilder();
+		for(FlowStatic flowStatic:flowStatics) {
+			render(sb, flowStatic);
 		}
-		return max;
+		
+		return sb.toString();
+	}
+	
+	private static void render(StringBuilder sb, QtiNode node) {
+		if(node instanceof TextRun) {
+			sb.append(((TextRun)node).getTextContent());
+		}
 	}
 
 }

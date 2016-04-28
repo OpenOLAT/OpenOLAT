@@ -55,7 +55,7 @@ public abstract class AbstractChoiceInteractionArchive extends DefaultInteractio
 	}
 
 	@Override
-	public int writeHeader2(Interaction interaction, int itemNumber, int interactionNumber, Row dataRow, int col, OpenXMLWorkbook workbook) {
+	public int writeHeader2(AssessmentItem item, Interaction interaction, int itemNumber, int interactionNumber, Row dataRow, int col, OpenXMLWorkbook workbook) {
 		List<? extends Choice> choices = getChoices(interaction);
 		for(int i=0; i<choices.size(); i++) {
 			String header = (itemNumber + 1) + "_C" + i;

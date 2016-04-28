@@ -176,6 +176,7 @@ import org.junit.runners.Suite;
 	org.olat.ims.qti.statistics.manager.StatisticsTest.class,
 	org.olat.ims.qti21.manager.AssessmentTestSessionDAOTest.class,
 	org.olat.ims.qti21.manager.AssessmentResponseDAOTest.class,
+	org.olat.ims.qti21.manager.CorrectResponsesUtilTest.class,
 	org.olat.ims.lti.LTIManagerTest.class,
 	org.olat.modules.webFeed.FeedManagerImplTest.class,
 	org.olat.modules.qpool.manager.MetadataConverterHelperTest.class,

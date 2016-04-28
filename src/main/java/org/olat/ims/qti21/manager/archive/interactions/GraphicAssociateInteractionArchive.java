@@ -19,11 +19,6 @@
  */
 package org.olat.ims.qti21.manager.archive.interactions;
 
-import org.olat.core.util.openxml.OpenXMLWorkbook;
-import org.olat.core.util.openxml.OpenXMLWorksheet.Row;
-import org.olat.ims.qti21.AssessmentResponse;
-
-import uk.ac.ed.ph.jqtiplus.node.item.AssessmentItem;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.GraphicAssociateInteraction;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.Interaction;
 
@@ -33,15 +28,15 @@ import uk.ac.ed.ph.jqtiplus.node.item.interaction.Interaction;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class GraphicAssociateInteractionArchive extends DefaultInteractionArchive {
+public class GraphicAssociateInteractionArchive extends AbstractAssociateInteractionArchive {
 	
 	@Override
-	public int writeInteractionData(AssessmentItem item, AssessmentResponse response, Interaction interaction,
-			int itemNumber, Row dataRow, int col, OpenXMLWorkbook workbook) {
+	protected int getMaxAssociations(Interaction interaction) {
 		GraphicAssociateInteraction associateInteraction = (GraphicAssociateInteraction)interaction;
-		associateInteraction.getAssociableHotspots();
-		// choices but really associable choices (hotspot) GraphicGapMatchInteraction
-		return super.writeInteractionData(item, response, associateInteraction, itemNumber, dataRow, col, workbook);
+		int max = associateInteraction.getMaxAssociations();
+		if(max == 0) {
+			max = associateInteraction.getAssociableHotspots().size() * (associateInteraction.getAssociableHotspots().size() - 1);
+		}
+		return max;
 	}
-
 }

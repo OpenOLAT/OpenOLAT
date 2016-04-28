@@ -39,6 +39,8 @@ public class PositionObjectInteractionArchive extends DefaultInteractionArchive 
 	public int writeInteractionData(AssessmentItem item, AssessmentResponse response, Interaction interaction,
 			int itemNumber, Row dataRow, int col, OpenXMLWorkbook workbook) {
 		PositionObjectInteraction positionInteraction = (PositionObjectInteraction)interaction;
+		
+		
 		return super.writeInteractionData(item, response, positionInteraction, itemNumber, dataRow, col, workbook);
 	}
 

@@ -17,27 +17,31 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.ims.qti21.manager.archive.interactions;
+package org.olat.ims.qti21.manager;
 
-import uk.ac.ed.ph.jqtiplus.node.item.interaction.AssociateInteraction;
-import uk.ac.ed.ph.jqtiplus.node.item.interaction.Interaction;
+import java.util.List;
+
+import org.junit.Assert;
+import org.junit.Test;
 
 /**
  * 
- * Initial date: 26.04.2016<br>
+ * Initial date: 27.04.2016<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class AssociateInteractionArchive extends AbstractAssociateInteractionArchive {
-
-	@Override
-	protected int getMaxAssociations(Interaction interaction) {
-		AssociateInteraction associateInteraction = (AssociateInteraction)interaction;
-		int max = associateInteraction.getMaxAssociations();
-		if(max == 0) {
-			max = associateInteraction.getSimpleAssociableChoices().size() * (associateInteraction.getSimpleAssociableChoices().size() - 1);
-		}
-		return max;
+public class CorrectResponsesUtilTest {
+	
+	@Test
+	public void parseResponses() {
+		String stringuifiedResponses = "[20 30][test][]";
+		List<String> responses = CorrectResponsesUtil.parseResponses(stringuifiedResponses);
+		
+		Assert.assertNotNull(responses);
+		Assert.assertEquals(3, responses.size());
+		Assert.assertEquals("20 30", responses.get(0));
+		Assert.assertEquals("test", responses.get(1));
+		Assert.assertEquals("", responses.get(2));
 	}
 
 }

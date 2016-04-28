@@ -19,13 +19,21 @@
  */
 package org.olat.ims.qti21.manager.archive.interactions;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
 import org.olat.core.util.openxml.OpenXMLWorkbook;
 import org.olat.core.util.openxml.OpenXMLWorksheet.Row;
 import org.olat.ims.qti21.AssessmentResponse;
+import org.olat.ims.qti21.manager.CorrectResponsesUtil;
 
 import uk.ac.ed.ph.jqtiplus.node.item.AssessmentItem;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.Interaction;
-import uk.ac.ed.ph.jqtiplus.node.item.interaction.SelectPointInteraction;
+import uk.ac.ed.ph.jqtiplus.node.item.response.declaration.AreaMapEntry;
+import uk.ac.ed.ph.jqtiplus.node.item.response.declaration.AreaMapping;
+import uk.ac.ed.ph.jqtiplus.node.item.response.declaration.ResponseDeclaration;
+import uk.ac.ed.ph.jqtiplus.value.PointValue;
 
 /**
  * 
@@ -36,11 +44,83 @@ import uk.ac.ed.ph.jqtiplus.node.item.interaction.SelectPointInteraction;
 public class SelectPointInteractionArchive extends DefaultInteractionArchive {
 
 	@Override
-	public int writeInteractionData(AssessmentItem item, AssessmentResponse response, Interaction interaction,
-			int itemNumber, Row dataRow, int col, OpenXMLWorkbook workbook) {
-		SelectPointInteraction selectInteraction = (SelectPointInteraction)interaction;
-		return super.writeInteractionData(item, response, selectInteraction, itemNumber, dataRow, col, workbook);
+	public int writeHeader1(AssessmentItem item, Interaction interaction, int itemNumber, int interactionNumber, Row dataRow, int col, OpenXMLWorkbook workbook) {
+		if(interactionNumber == 0) {
+			String header = item.getTitle();
+			dataRow.addCell(col++, header, workbook.getStyles().getHeaderStyle());
+		} else {
+			col++;
+		}
+		List<AreaMapEntry> areaMapEntries = getAreaMapEntries(item, interaction);
+		if(areaMapEntries.size() > 0) {
+			col += (areaMapEntries.size() - 1);
+		}
+		return col;
+	}
+
+	@Override
+	public int writeHeader2(AssessmentItem item, Interaction interaction, int itemNumber, int interactionNumber, Row dataRow, int col, OpenXMLWorkbook workbook) {
+		List<AreaMapEntry> areaMapEntries = getAreaMapEntries(item, interaction);
+		if(areaMapEntries.size() == 0) {
+			col++;
+		} else {
+			for(AreaMapEntry areaMapEntry:areaMapEntries) {
+				dataRow.addCell(col++, areaMapEntry.getShape().toQtiString());
+			}
+		}
+		return col;
+	}
+
+	@Override
+	public int writeInteractionData(AssessmentItem item, AssessmentResponse response, Interaction interaction, int itemNumber, Row dataRow, int col, OpenXMLWorkbook workbook) {
+		List<AreaMapEntry> areaMapEntries = getAreaMapEntries(item, interaction);
+		if(areaMapEntries.size() == 0) {
+			col++;
+		} else {
+			String stringuifiedResponse = response == null ? null : response.getStringuifiedResponse();
+			List<String> responses = CorrectResponsesUtil.parseResponses(stringuifiedResponse);
+			List<PointValue> responsePoints =  CorrectResponsesUtil.parseResponses(responses);
+			
+			List<Integer> freeSlots = new ArrayList<>();
+			for(AreaMapEntry areaMapEntry:areaMapEntries) {
+				int[] coords = CorrectResponsesUtil.convertCoordinates(areaMapEntry.getCoordinates());
+				
+				PointValue foundPoints = null;
+				for(PointValue responsePoint:responsePoints) {
+					if(areaMapEntry.getShape().isInside(coords, responsePoint)) {
+						foundPoints = responsePoint;
+						responsePoints.remove(responsePoint);
+						break;
+					}
+				}
+				
+				if(foundPoints != null) {
+					dataRow.addCell(col++, foundPoints.toQtiString(), workbook.getStyles().getCorrectStyle());
+				} else {
+					freeSlots.add(new Integer(col));
+					dataRow.addCell(col++, "", null);
+				}
+			}
+			
+			//fill the rest
+			for(PointValue responsePoint: responsePoints) {
+				if(freeSlots.size() > 0) {
+					Integer slot = freeSlots.get(0);
+					dataRow.addCell(slot, responsePoint.toQtiString(), null);
+				}
+			}
+		}
+		return col++;
 	}
 	
-
+	private List<AreaMapEntry> getAreaMapEntries(AssessmentItem item, Interaction interaction) {
+		ResponseDeclaration responseDeclaration = item.getResponseDeclaration(interaction.getResponseIdentifier());
+		if(responseDeclaration != null && responseDeclaration.getAreaMapping() != null) {
+			AreaMapping mapping = responseDeclaration.getAreaMapping();
+			if(mapping != null) {
+				return mapping.getAreaMapEntries();
+			}
+		}
+		return Collections.emptyList();
+	}
 }

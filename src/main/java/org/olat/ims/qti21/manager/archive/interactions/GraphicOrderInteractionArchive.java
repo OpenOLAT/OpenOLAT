@@ -21,9 +21,16 @@ package org.olat.ims.qti21.manager.archive.interactions;
 
 import java.util.List;
 
+import org.olat.core.util.openxml.OpenXMLWorkbook;
+import org.olat.core.util.openxml.OpenXMLWorksheet.Row;
+import org.olat.ims.qti21.AssessmentResponse;
+import org.olat.ims.qti21.manager.CorrectResponsesUtil;
+
+import uk.ac.ed.ph.jqtiplus.node.item.AssessmentItem;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.GraphicOrderInteraction;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.Interaction;
-import uk.ac.ed.ph.jqtiplus.node.item.interaction.choice.Choice;
+import uk.ac.ed.ph.jqtiplus.node.item.interaction.graphic.HotspotChoice;
+import uk.ac.ed.ph.jqtiplus.types.Identifier;
 
 /**
  * 
@@ -31,12 +38,67 @@ import uk.ac.ed.ph.jqtiplus.node.item.interaction.choice.Choice;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class GraphicOrderInteractionArchive extends AbstractChoiceInteractionArchive {
+public class GraphicOrderInteractionArchive extends DefaultInteractionArchive {
 
 	@Override
-	public List<? extends Choice> getChoices(Interaction interaction) {
+	public int writeHeader1(AssessmentItem item, Interaction interaction, int itemNumber, int interactionNumber, Row dataRow, int col, OpenXMLWorkbook workbook) {
+		if(interactionNumber == 0) {
+			String header = item.getTitle();
+			dataRow.addCell(col++, header, workbook.getStyles().getHeaderStyle());
+		}
+		
 		GraphicOrderInteraction orderInteraction = (GraphicOrderInteraction)interaction;
-		return orderInteraction.getHotspotChoices();
+		List<HotspotChoice> choices = orderInteraction.getHotspotChoices();
+		if(choices.size() > 0) {
+			col += (choices.size() - 1);
+		}
+		return col;
 	}
 
+	@Override
+	public int writeHeader2(AssessmentItem item, Interaction interaction, int itemNumber, int interactionNumber, Row dataRow, int col, OpenXMLWorkbook workbook) {
+		GraphicOrderInteraction orderInteraction = (GraphicOrderInteraction)interaction;
+		List<HotspotChoice> choices = orderInteraction.getHotspotChoices();
+		if(choices.size() > 0) {
+			for(int i=0; i<choices.size(); i++) {
+				String header = (itemNumber + 1) + "_GO" + i;
+				dataRow.addCell(col++, header, workbook.getStyles().getHeaderStyle());
+			}
+		} else {
+			col++;
+		}
+		return col;
+	}
+
+	@Override
+	public int writeInteractionData(AssessmentItem item, AssessmentResponse response, Interaction interaction, int itemNumber, Row dataRow, int col, OpenXMLWorkbook workbook) {
+		GraphicOrderInteraction orderInteraction = (GraphicOrderInteraction)interaction;
+
+		List<HotspotChoice> choices = orderInteraction.getHotspotChoices();
+		if(choices.size() > 0) {
+			String stringuifiedResponse = response == null ? null : response.getStringuifiedResponse();
+			List<String> responses = CorrectResponsesUtil.parseResponses(stringuifiedResponse);
+			List<Identifier> correctAnswers = CorrectResponsesUtil.getCorrectOrderedIdentifierResponses(item, interaction);
+			
+			for(int i=0; i<choices.size(); i++) {
+				String currentResponse = null;
+				if(responses.size() > i) {
+					currentResponse = responses.get(i);
+				}
+				String correctAnswer = null;
+				if(correctAnswers.size() > i) {
+					correctAnswer = correctAnswers.get(i).toString();
+				}
+				
+				if(correctAnswer != null && correctAnswer.equals(currentResponse)) {
+					dataRow.addCell(col++, currentResponse, workbook.getStyles().getCorrectStyle());
+				} else {
+					dataRow.addCell(col++, currentResponse, null);
+				}
+			}
+		} else {
+			col++;
+		}
+		return col;
+	}
 }

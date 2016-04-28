@@ -19,6 +19,7 @@
  */
 package org.olat.ims.qti21.manager.archive.interactions;
 
+import java.util.List;
 import java.util.Set;
 
 import org.olat.core.util.StringHelper;
@@ -26,6 +27,7 @@ import org.olat.core.util.openxml.OpenXMLWorkbook;
 import org.olat.core.util.openxml.OpenXMLWorksheet.Row;
 import org.olat.ims.qti21.AssessmentResponse;
 import org.olat.ims.qti21.manager.CorrectResponsesUtil;
+import org.olat.ims.qti21.manager.archive.SimpleContentRenderer;
 
 import uk.ac.ed.ph.jqtiplus.node.item.AssessmentItem;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.Interaction;
@@ -49,19 +51,27 @@ public class MatchInteractionArchive extends DefaultInteractionArchive {
 		}
 		MatchInteraction matchInteraction = (MatchInteraction)interaction;
 		int numOfChoices = matchInteraction.getSimpleMatchSets().get(0).getSimpleAssociableChoices().size();
-		if(interaction.getResponseIdentifier().toString().startsWith("KPRIM_")) {
+		if(numOfChoices > 0) {
 			col += (numOfChoices - 1);
 		}
-		return col++;
+		return col;
 	}
 
 	@Override
-	public int writeHeader2(Interaction interaction, int itemNumber, int interactionNumber, Row dataRow, int col, OpenXMLWorkbook workbook) {
+	public int writeHeader2(AssessmentItem item, Interaction interaction, int itemNumber, int interactionNumber, Row dataRow, int col, OpenXMLWorkbook workbook) {
 		MatchInteraction matchInteraction = (MatchInteraction)interaction;
+
+		boolean kprim = matchInteraction.getResponseIdentifier().toString().startsWith("KPRIM_");
+		String fix = kprim ? "_KP" : "_K";
+		
 		int numOfChoices = matchInteraction.getSimpleMatchSets().get(0).getSimpleAssociableChoices().size();
-		for(int i=0; i<numOfChoices; i++) {
-			String header = (itemNumber + 1) + "_K" + i;
-			dataRow.addCell(col++, header, workbook.getStyles().getHeaderStyle());
+		if(numOfChoices > 0) {
+			for(int i=0; i<numOfChoices; i++) {
+				String header = (itemNumber + 1) + fix + (i + 1);
+				dataRow.addCell(col++, header, workbook.getStyles().getHeaderStyle());
+			}
+		} else {
+			col++;
 		}
 		return col;
 	}
@@ -73,36 +83,78 @@ public class MatchInteractionArchive extends DefaultInteractionArchive {
 		String stringuifiedResponse = response == null ? null : response.getStringuifiedResponse();
 		if(!StringHelper.containsNonWhitespace(stringuifiedResponse)) {
 			col += matchInteraction.getSimpleMatchSets().get(0).getSimpleAssociableChoices().size();
-		} else if(matchInteraction.getResponseIdentifier().toString().startsWith("KPRIM_")) {
-			Set<String> rightResponses = CorrectResponsesUtil.getCorrectKPrimResponses(item, matchInteraction);
-			SimpleMatchSet fourMatchSet = matchInteraction.getSimpleMatchSets().get(0);
-			for(SimpleAssociableChoice choice:fourMatchSet.getSimpleAssociableChoices()) {
+		} else {
+			boolean kprim = matchInteraction.getResponseIdentifier().toString().startsWith("KPRIM_");
+			
+			Set<String> correctAnswers = CorrectResponsesUtil.getCorrectDirectPairResponses(item, matchInteraction, false);
+			List<String> responses = CorrectResponsesUtil.parseResponses(stringuifiedResponse);
+			
+			SimpleMatchSet firstMatchSet = matchInteraction.getSimpleMatchSets().get(0);
+			SimpleMatchSet secondMatchSet = matchInteraction.getSimpleMatchSets().get(1);
+			
+			for(SimpleAssociableChoice choice:firstMatchSet.getSimpleAssociableChoices()) {
 				String choiceIdentifier = choice.getIdentifier().toString();
-				String markerCorrect = "[" + choiceIdentifier + " correct]";
-				String markerWrong = "[" + choiceIdentifier + " wrong]";
 				
-				boolean isCorrectRight = rightResponses.contains(markerCorrect);
-				String rightFlag = isCorrectRight ? markerCorrect : markerWrong;
-				String wrongFlag = isCorrectRight ? markerWrong : markerCorrect;
-				
-				String value = null;
-				if(stringuifiedResponse.contains(markerCorrect)) {
-					value = "+";
-				} else if(stringuifiedResponse.contains(markerWrong)) {
-					value = "-";
-				}
-				
-				if(stringuifiedResponse.indexOf(rightFlag) >= 0) {
-					dataRow.addCell(col++, value, workbook.getStyles().getCorrectStyle());
-				} else if(stringuifiedResponse.indexOf(wrongFlag) >= 0) {
-					dataRow.addCell(col++, value, null);
+				if(kprim) {
+					String markerCorrect = choiceIdentifier + " correct";
+					String markerWrong = choiceIdentifier + " wrong";
+					
+					boolean isCorrectRight = correctAnswers.contains(markerCorrect);
+					String rightFlag = isCorrectRight ? markerCorrect : markerWrong;
+					String wrongFlag = isCorrectRight ? markerWrong : markerCorrect;
+					
+					String value = null;
+					if(stringuifiedResponse.contains(markerCorrect)) {
+						value = "+";
+					} else if(stringuifiedResponse.contains(markerWrong)) {
+						value = "-";
+					}
+					
+					if(stringuifiedResponse.indexOf(rightFlag) >= 0) {
+						dataRow.addCell(col++, value, workbook.getStyles().getCorrectStyle());
+					} else if(stringuifiedResponse.indexOf(wrongFlag) >= 0) {
+						dataRow.addCell(col++, value, null);
+					} else {
+						col++;
+					}
 				} else {
-					col++;
+					String aResponse = null;
+					for(String r:responses) {
+						if(r.startsWith(choiceIdentifier)) {
+							aResponse = r;
+						}
+					}
+					
+					if(StringHelper.containsNonWhitespace(aResponse)) {
+						boolean correct = correctAnswers.contains(aResponse);
+						
+						String value = null;
+						for(SimpleAssociableChoice association:secondMatchSet.getSimpleAssociableChoices()) {
+							if(aResponse.endsWith(association.getIdentifier().toString())) {
+								value = getContent(association);
+								break;
+							}
+						}
+						
+						if(correct) {
+							dataRow.addCell(col++, value, workbook.getStyles().getCorrectStyle());
+						} else {
+							dataRow.addCell(col++, value, null);
+						}
+					} else {
+						col++;
+					}
 				}
 			}
-		} else {
-			col += matchInteraction.getSimpleMatchSets().get(0).getSimpleAssociableChoices().size();
 		}
 		return col;
+	}
+	
+	private String getContent(SimpleAssociableChoice association) {
+		String content = SimpleContentRenderer.renderFlowStatics(association.getFlowStatics());
+		if(StringHelper.containsNonWhitespace(content)) {
+			return content;
+		}
+		return association.getIdentifier().toString();
 	}
 }

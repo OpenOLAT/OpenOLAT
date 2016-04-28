@@ -571,13 +571,17 @@ public class IQConfigurationController extends BasicController {
 
 	private boolean needManualCorrectionQTI21(AssessmentItemRef itemRef, ResolvedAssessmentTest resolvedAssessmentTest) {
 		ResolvedAssessmentItem resolvedAssessmentItem = resolvedAssessmentTest.getResolvedAssessmentItem(itemRef);
-		AssessmentItem assessmentItem = resolvedAssessmentItem.getItemLookup().getRootNodeHolder().getRootNode();
-		List<Interaction> interactions = assessmentItem.getItemBody().findInteractions();
-		for(Interaction interaction:interactions) {
-			if(interaction instanceof UploadInteraction
-					|| interaction instanceof DrawingInteraction
-					|| interaction instanceof ExtendedTextInteraction) {
-				return true;
+		if(resolvedAssessmentItem != null
+				&& resolvedAssessmentItem.getItemLookup() != null
+				&& resolvedAssessmentItem.getItemLookup().getRootNodeHolder() != null) {
+			AssessmentItem assessmentItem = resolvedAssessmentItem.getItemLookup().getRootNodeHolder().getRootNode();
+			List<Interaction> interactions = assessmentItem.getItemBody().findInteractions();
+			for(Interaction interaction:interactions) {
+				if(interaction instanceof UploadInteraction
+						|| interaction instanceof DrawingInteraction
+						|| interaction instanceof ExtendedTextInteraction) {
+					return true;
+				}
 			}
 		}
 		return false;

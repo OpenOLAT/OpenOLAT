@@ -21,64 +21,88 @@ package org.olat.ims.qti21.manager.archive.interactions;
 
 import java.util.List;
 
-import org.olat.core.util.StringHelper;
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
 import org.olat.core.util.openxml.OpenXMLWorkbook;
 import org.olat.core.util.openxml.OpenXMLWorksheet.Row;
 import org.olat.ims.qti21.AssessmentResponse;
 import org.olat.ims.qti21.manager.CorrectResponsesUtil;
 
+import uk.ac.ed.ph.jqtiplus.internal.util.Pair;
 import uk.ac.ed.ph.jqtiplus.node.item.AssessmentItem;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.Interaction;
+import uk.ac.ed.ph.jqtiplus.types.DataTypeBinder;
+import uk.ac.ed.ph.jqtiplus.types.Identifier;
 
 /**
  * 
- * Initial date: 27.04.2016<br>
+ * Initial date: 28.04.2016<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class SliderInteractionArchive extends DefaultInteractionArchive {
+abstract class AbstractAssociateInteractionArchive extends DefaultInteractionArchive {
 	
+	private static final OLog log = Tracing.createLoggerFor(AbstractAssociateInteractionArchive.class);
+
 	@Override
 	public int writeHeader1(AssessmentItem item, Interaction interaction, int itemNumber, int interactionNumber, Row dataRow, int col, OpenXMLWorkbook workbook) {
+		int maxAssociation = getMaxAssociations(interaction);
 		if(interactionNumber == 0) {
 			String header = item.getTitle();
 			dataRow.addCell(col, header, workbook.getStyles().getHeaderStyle());
 		}
-
-		col += 1;
+		col += Math.max(1, maxAssociation);
 		return col;
 	}
 
 	@Override
 	public int writeHeader2(AssessmentItem item, Interaction interaction, int itemNumber, int interactionNumber, Row dataRow, int col, OpenXMLWorkbook workbook) {
-		String header = (itemNumber + 1) + "_SL1";
-		dataRow.addCell(col++, header, workbook.getStyles().getHeaderStyle());
+		int maxAssociation = getMaxAssociations(interaction);
+		if(maxAssociation > 0) {
+			for(int i=0; i<maxAssociation; i++) {
+				String header = (itemNumber + 1) + "_A" + i;
+				dataRow.addCell(col++, header, workbook.getStyles().getHeaderStyle());
+			}
+		} else {
+			col++;
+		}
 		return col;
 	}
 
 	@Override
 	public int writeInteractionData(AssessmentItem item, AssessmentResponse response, Interaction interaction,
 			int itemNumber, Row dataRow, int col, OpenXMLWorkbook workbook) {
+		int maxAssociation = getMaxAssociations(interaction);
 		
-		List<Integer> correctAnswers = CorrectResponsesUtil.getCorrectIntegerResponses(item, interaction);
 		String stringuifiedResponse = response == null ? null : response.getStringuifiedResponse();
-		Integer selectedResponse = null;
-		if(StringHelper.containsNonWhitespace(stringuifiedResponse)) {
-			try {
-				selectedResponse = Integer.parseInt(CorrectResponsesUtil.stripResponse(stringuifiedResponse));
-			} catch (NumberFormatException e) {
-				//parsing can be a problem
-			}
-		}
+		List<String> responsesAssociations = CorrectResponsesUtil.parseResponses(stringuifiedResponse);
+		List<String> correctAnswers = CorrectResponsesUtil.getCorrectMultiplePairResponses(item, interaction, false);
 		
-		if(selectedResponse == null) {
-			col++;
-		} else if(correctAnswers.contains(selectedResponse)) {
-			dataRow.addCell(col++, selectedResponse, workbook.getStyles().getCorrectStyle());
-		} else {
-			dataRow.addCell(col++, selectedResponse, null);
+		for(int i=0; i<maxAssociation; i++) {
+			String association = null;
+			String reverseAssociation = null;
+			if(responsesAssociations.size() > i) {
+				association = responsesAssociations.get(i);
+				try {
+					Pair<Identifier, Identifier> pair = DataTypeBinder.parsePair(association);
+					reverseAssociation = pair.getSecond() + " " + pair.getFirst();
+				} catch (Exception e) {
+					log.error("", e);
+					association = null;
+				}
+			}
+			
+			if(association == null) {
+				col++;
+			} else if(correctAnswers.contains(association) || correctAnswers.contains(reverseAssociation)) {
+				dataRow.addCell(col++, association, workbook.getStyles().getCorrectStyle());
+			} else {
+				dataRow.addCell(col++, association, null);
+			}
 		}
 		return col;
 	}
-}
+	
+	protected abstract int getMaxAssociations(Interaction associateInteraction);
 
+}

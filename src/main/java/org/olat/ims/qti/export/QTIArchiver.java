@@ -126,10 +126,34 @@ public class QTIArchiver {
 	}
 
 	public void setData(AssessmentNodeData data) {
+		this.type = null;
+		this.results = null;
 		this.data = data;
 		ICourse course = CourseFactory.loadCourse(courseOres);
 		courseNode = course.getRunStructure().getNode(data.getIdent());
 		getQTIItemConfigs();
+		getType();
+	}
+	
+	public Type getType() {
+		if(type == null) {
+			if (courseNode.getModuleConfiguration().get(IQEditController.CONFIG_KEY_TYPE_QTI) != null) {
+				boolean isOnyx = courseNode.getModuleConfiguration().get(IQEditController.CONFIG_KEY_TYPE_QTI).equals(IQEditController.CONFIG_VALUE_QTI2);
+				if(isOnyx) {
+					type = Type.onyx;
+				}
+			}
+			
+			if(type != Type.onyx) {
+				RepositoryEntry testRe = courseNode.getReferencedRepositoryEntry();
+				if(ImsQTI21Resource.TYPE_NAME.equals(testRe.getOlatResource().getResourceableTypeName())) {
+			    	type = Type.qti21;
+			    } else {
+			    	type = Type.qti12;
+			    }
+			}
+		}
+		return type;
 	}
 	
 	public boolean hasResults() {

@@ -21,9 +21,19 @@ package org.olat.ims.qti21.manager.archive.interactions;
 
 import java.util.List;
 
+import org.olat.core.util.StringHelper;
+import org.olat.core.util.openxml.OpenXMLWorkbook;
+import org.olat.core.util.openxml.OpenXMLWorksheet.Row;
+import org.olat.ims.qti21.AssessmentResponse;
+import org.olat.ims.qti21.manager.CorrectResponsesUtil;
+
+import uk.ac.ed.ph.jqtiplus.node.content.basic.TextRun;
+import uk.ac.ed.ph.jqtiplus.node.content.variable.TextOrVariable;
+import uk.ac.ed.ph.jqtiplus.node.item.AssessmentItem;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.InlineChoiceInteraction;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.Interaction;
-import uk.ac.ed.ph.jqtiplus.node.item.interaction.choice.Choice;
+import uk.ac.ed.ph.jqtiplus.node.item.interaction.choice.InlineChoice;
+import uk.ac.ed.ph.jqtiplus.types.Identifier;
 
 /**
  * 
@@ -31,12 +41,69 @@ import uk.ac.ed.ph.jqtiplus.node.item.interaction.choice.Choice;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class InlineChoiceInteractionArchive extends AbstractChoiceInteractionArchive {
+public class InlineChoiceInteractionArchive extends DefaultInteractionArchive {
+	
+	@Override
+	public int writeHeader1(AssessmentItem item, Interaction interaction, int itemNumber, int interactionNumber, Row dataRow, int col, OpenXMLWorkbook workbook) {
+		if(interactionNumber == 0) {
+			String header = item.getTitle();
+			dataRow.addCell(col, header, workbook.getStyles().getHeaderStyle());
+		}
+
+		col += 1;
+		return col;
+	}
 
 	@Override
-	public List<? extends Choice> getChoices(Interaction interaction) {
+	public int writeHeader2(AssessmentItem item, Interaction interaction, int itemNumber, int interactionNumber, Row dataRow, int col, OpenXMLWorkbook workbook) {
+		String header = (itemNumber + 1) + "_IC1";
+		dataRow.addCell(col++, header, workbook.getStyles().getHeaderStyle());
+		return col;
+	}
+
+	@Override
+	public int writeInteractionData(AssessmentItem item, AssessmentResponse response, Interaction interaction, int itemNumber, Row dataRow, int col, OpenXMLWorkbook workbook) {
 		InlineChoiceInteraction choiceInteraction = (InlineChoiceInteraction)interaction;
-		return choiceInteraction.getInlineChoices();
+		
+		List<Identifier> correctAnswers = CorrectResponsesUtil.getCorrectIdentifierResponses(item, interaction);
+		String stringuifiedResponse = response == null ? null : response.getStringuifiedResponse();
+		if(StringHelper.containsNonWhitespace(stringuifiedResponse)) {
+			String inlineResponse = CorrectResponsesUtil.stripResponse(stringuifiedResponse);
+			Identifier responseIdentifier = Identifier.assumedLegal(inlineResponse);
+		
+			boolean correct = false;
+			for(Identifier correctAnswer:correctAnswers) {
+				if(responseIdentifier.equals(correctAnswer)) {
+					correct = true;
+					break;
+				}
+			}
+			
+			InlineChoice selectedChoice = choiceInteraction.getInlineChoice(responseIdentifier);
+			if(selectedChoice != null) {
+				String value = getTextContent(selectedChoice);
+				if(correct) {
+					dataRow.addCell(col++, value, workbook.getStyles().getCorrectStyle());
+				} else {
+					dataRow.addCell(col++, value);
+				}
+			} else {
+				col++;
+			}
+		} else {
+			col++;
+		}
+		return col;
+	}
+	
+	private String getTextContent(InlineChoice selectedChoice) {
+		List<TextOrVariable> values = selectedChoice.getTextOrVariables();
+		for(TextOrVariable value:values) {
+			if(value instanceof TextRun) {
+				return ((TextRun)value).getTextContent();
+			}
+		}
+		return selectedChoice.getIdentifier().toString();
 	}
 
 }

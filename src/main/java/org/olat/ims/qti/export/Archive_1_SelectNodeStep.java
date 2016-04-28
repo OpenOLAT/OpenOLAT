@@ -36,6 +36,7 @@ import org.olat.core.gui.control.generic.wizard.StepsEvent;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
 import org.olat.core.id.OLATResourceable;
 import org.olat.course.assessment.model.AssessmentNodeData;
+import org.olat.ims.qti.export.QTIArchiver.Type;
 
 /**
  * 
@@ -110,7 +111,12 @@ public class Archive_1_SelectNodeStep extends BasicStep {
 		protected void event(UserRequest ureq, Controller source, Event event) {
 			if(source == selectCtrl) {
 				if(event instanceof SelectTestOrSurveyEvent) {
-					fireEvent(ureq, StepsEvent.ACTIVATE_NEXT);
+					QTIArchiver archiver = ((QTIArchiver)getFromRunContext("archiver"));
+					if(archiver.getType() == Type.onyx || archiver.getType() == Type.qti21) {
+						fireEvent(ureq, StepsEvent.INFORM_FINISHED);
+					} else {
+						fireEvent(ureq, StepsEvent.ACTIVATE_NEXT);
+					}
 				}
 			}
 			super.event(ureq, source, event);
