@@ -114,10 +114,7 @@ public class VideoExportMediaResource implements MediaResource {
 					String names = relativeFile.toString();
 					
 					if(!attrs.isDirectory()) {
-						// do not include poster proposal images
-						if (names.contains("proposalPosters")) {
-							return FileVisitResult.SKIP_SUBTREE;
-						}
+						// add everything that belongs to resource to zip
 						zout.putNextEntry(new ZipEntry(names));							
 						
 						try(InputStream in=Files.newInputStream(file)) {

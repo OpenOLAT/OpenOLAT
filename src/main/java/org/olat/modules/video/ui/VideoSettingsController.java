@@ -105,6 +105,7 @@ public class VideoSettingsController extends BasicController {
 	private void doOpenMetaDataConfig(UserRequest ureq) {
 		if(metaDataController == null) {
 			metaDataController = new VideoMetaDataEditFormController(ureq, getWindowControl(), entry.getOlatResource());
+			listenTo(metaDataController);
 		}
 		mainVC.put("segmentCmp", metaDataController.getInitialComponent());
 	}
@@ -112,6 +113,7 @@ public class VideoSettingsController extends BasicController {
 	private void doOpenPosterConfig(UserRequest ureq) {
 		if(posterEditController == null) {
 			posterEditController = new VideoPosterEditController(ureq, getWindowControl(), entry.getOlatResource());
+			listenTo(posterEditController);
 		}
 		mainVC.put("segmentCmp", posterEditController.getInitialComponent());
 	}
@@ -119,14 +121,17 @@ public class VideoSettingsController extends BasicController {
 	private void doOpenTrackConfig(UserRequest ureq) {
 		if(trackEditController == null) {
 			trackEditController = new VideoTrackEditController(ureq, getWindowControl(), entry.getOlatResource());
+			listenTo(trackEditController);
 		}
 		mainVC.put("segmentCmp", trackEditController.getInitialComponent());
 	}
 
 	private void doOpenQualityConfig(UserRequest ureq) {
-		if(qualityEditController == null) {
-			qualityEditController = new VideoQualityTableFormController(ureq, getWindowControl(), entry);
+		if(qualityEditController != null) {
+			removeAsListenerAndDispose(qualityEditController);
 		}
+		qualityEditController = new VideoQualityTableFormController(ureq, getWindowControl(), entry);
+		listenTo(qualityEditController);
 		mainVC.put("segmentCmp", qualityEditController.getInitialComponent());
 	}
 

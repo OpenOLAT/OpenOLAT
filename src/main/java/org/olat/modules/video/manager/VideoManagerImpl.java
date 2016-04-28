@@ -45,6 +45,7 @@ import org.olat.core.commons.services.taskexecutor.TaskExecutorManager;
 import org.olat.core.commons.services.video.MovieService;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.FileUtils;
 import org.olat.core.util.ZipUtil;
 import org.olat.core.util.vfs.LocalFileImpl;
 import org.olat.core.util.vfs.VFSContainer;
@@ -590,5 +591,16 @@ public class VideoManagerImpl implements VideoManager {
 		XStreamHelper.writeObject(XStreamHelper.createXStreamInstance(), optimizedMetadataFile, versions);
 	}
 
-	
+	@Override
+	public void copyVideo(OLATResource sourceResource, OLATResource targetResource) {
+		// 1) Copy files on disk
+		File sourceFileroot = FileResourceManager.getInstance().getFileResourceRootImpl(sourceResource).getBasefile();
+		File targetFileroot = FileResourceManager.getInstance().getFileResourceRootImpl(targetResource).getBasefile();
+		FileUtils.copyDirContentsToDir(sourceFileroot, targetFileroot, false, "copyVideoResource");
+		// 2) Trigger transcoding in background
+		if (videoModule.isTranscodingEnabled()) {
+			startTranscodingProcess(targetResource);
+		}
+	}
+
 }

@@ -48,7 +48,6 @@ import org.olat.core.util.coordinate.LockResult;
 import org.olat.core.util.vfs.LocalFileImpl;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.course.assessment.AssessmentMode;
-import org.olat.fileresource.FileResourceManager;
 import org.olat.fileresource.types.FileResource;
 import org.olat.fileresource.types.ResourceEvaluation;
 import org.olat.fileresource.types.VideoFileResource;
@@ -206,9 +205,8 @@ public class VideoHandler extends FileHandler {
 			RepositoryEntry target) {
 		OLATResource sourceResource = source.getOlatResource();
 		OLATResource targetResource = target.getOlatResource();
-		File sourceFileroot = FileResourceManager.getInstance().getFileResourceRootImpl(sourceResource).getBasefile();
-		File targetFileroot = FileResourceManager.getInstance().getFileResourceRootImpl(targetResource).getBasefile();
-		FileUtils.copyDirContentsToDir(sourceFileroot, targetFileroot, false, "copy");
+		VideoManager videoManager = CoreSpringFactory.getImpl(VideoManager.class);
+		videoManager.copyVideo(sourceResource, targetResource);
 		return target;
 	}
 

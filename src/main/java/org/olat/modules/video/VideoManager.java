@@ -171,4 +171,11 @@ public interface VideoManager {
 	 */
 	public abstract void updateVersion(OLATResource video, VideoQualityVersion updatedVersion);
 
+	/**
+	 * Copy video resource to identical new video resource. 
+	 * @param sourceResource the existing video resource
+	 * @param targetResource the empty new resource
+	 */
+	public abstract void copyVideo(OLATResource sourceResource, OLATResource targetResource);
+
 }
