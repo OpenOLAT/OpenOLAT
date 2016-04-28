@@ -68,7 +68,6 @@ import org.olat.ims.qti21.QTI21Constants;
 import org.olat.ims.qti21.QTI21DeliveryOptions;
 import org.olat.ims.qti21.QTI21Service;
 import org.olat.ims.qti21.manager.ResponseFormater;
-import org.olat.ims.qti21.model.AssessmentFileSubmission;
 import org.olat.ims.qti21.model.CandidateItemEventType;
 import org.olat.ims.qti21.model.CandidateTestEventType;
 import org.olat.ims.qti21.model.ResponseLegality;
@@ -568,15 +567,9 @@ public class AssessmentTestDisplayController extends BasicController implements 
 	//public CandidateSession handleResponses(final CandidateSessionContext candidateSessionContext,
     //        final Map<Identifier, StringResponseData> stringResponseMap,
     //        final Map<Identifier, MultipartFile> fileResponseMap,
-    //        final String candidateComment)
-            
+    //        final String candidateComment)       
 	private void handleResponse(UserRequest ureq, Map<Identifier, StringResponseData> stringResponseMap,
 			Map<Identifier,MultipartFileInfos> fileResponseMap, String candidateComment) {
-		
-		//Assert.notNull(candidateSessionContext, "candidateSessionContext");
-        //assertSessionType(candidateSessionContext, AssessmentObjectType.ASSESSMENT_TEST);
-        //final CandidateSession candidateSession = candidateSessionContext.getCandidateSession();
-        //assertSessionNotTerminated(candidateSession);
 
 		NotificationRecorder notificationRecorder = new NotificationRecorder(NotificationLevel.INFO);
 		TestSessionState testSessionState = testSessionController.getTestSessionState();
@@ -593,19 +586,15 @@ public class AssessmentTestDisplayController extends BasicController implements 
 		TestPlanNodeKey currentItemKey = testSessionState.getCurrentItemKey();
 		String assessmentItemIdentifier = currentItemKey.getIdentifier().toString();
 		AssessmentItemSession itemSession = qtiService.getOrCreateAssessmentItemSession(candidateSession, assessmentItemIdentifier);
-        
-        Map<Identifier, AssessmentFileSubmission> fileSubmissionMap = new HashMap<Identifier, AssessmentFileSubmission>();
+		Map<Identifier,File> fileSubmissionMap = new HashMap<>();
         if (fileResponseMap!=null) {
             for (Entry<Identifier, MultipartFileInfos> fileResponseEntry : fileResponseMap.entrySet()) {
                 Identifier identifier = fileResponseEntry.getKey();
                 MultipartFileInfos multipartFile = fileResponseEntry.getValue();
                 if (!multipartFile.isEmpty()) {
-                	String storedFilePath = qtiService.importFileSubmission(candidateSession, multipartFile);
-                	File storedFile = new File(storedFilePath);
-                	final FileResponseData fileResponseData = new FileResponseData(storedFile, multipartFile.getContentType(), multipartFile.getFileName());
-                    responseDataMap.put(identifier, fileResponseData);
-                    //final CandidateFileSubmission fileSubmission = candidateUploadService.importFileSubmission(candidateSession, multipartFile);
-                    //fileSubmissionMap.put(identifier, fileSubmission);
+                	File storedFile = qtiService.importFileSubmission(candidateSession, multipartFile);
+                    responseDataMap.put(identifier, new FileResponseData(storedFile, multipartFile.getContentType(), multipartFile.getFileName()));
+                    fileSubmissionMap.put(identifier, storedFile);
                 }
             }
         }
@@ -623,15 +612,19 @@ public class AssessmentTestDisplayController extends BasicController implements 
             }
 		
             switch (responseData.getType()) {
-                case STRING:
+                case STRING: {
                 	List<String> data = ((StringResponseData) responseData).getResponseData();
                 	String stringuifiedResponse = ResponseFormater.format(data);
                     candidateItemResponse.setStringuifiedResponse(stringuifiedResponse);
                     break;
-                case FILE:
-                    //candidateItemResponse.setFileSubmission(fileSubmissionMap.get(responseIdentifier));
-                    //break;
-
+                }
+                case FILE: {
+                	if(fileSubmissionMap.get(responseIdentifier) != null) {
+                		File storedFile = fileSubmissionMap.get(responseIdentifier);
+                		candidateItemResponse.setStringuifiedResponse(storedFile.getName());
+                	}
+                    break;
+                }
                 default:
                     throw new OLATRuntimeException("Unexpected switch case: " + responseData.getType());
             }
@@ -640,8 +633,6 @@ public class AssessmentTestDisplayController extends BasicController implements 
         
         boolean allResponsesValid = true;
         boolean allResponsesBound = true;
-		
-		//TODO files upload
 		final Date timestamp = ureq.getRequestTimestamp();
         if (candidateComment != null) {
             testSessionController.setCandidateCommentForCurrentItem(timestamp, candidateComment);
@@ -666,11 +657,7 @@ public class AssessmentTestDisplayController extends BasicController implements 
                 CandidateTestEventType.ITEM_EVENT, candidateItemEventType, testSessionState, notificationRecorder);
         //candidateAuditLogger.logCandidateEvent(candidateEvent);
         this.lastEvent = candidateEvent;
-        
-        
-        
-        
-        
+
         /* Record current result state */
         AssessmentResult assessmentResult = computeAndRecordTestAssessmentResult(ureq, testSessionState, false);
         
@@ -681,9 +668,6 @@ public class AssessmentTestDisplayController extends BasicController implements 
 		processOutcomeVariables_bricolage(itemResult, itemSession);
         /* Persist CandidateResponse entities */
         qtiService.recordTestAssessmentResponses(itemSession, candidateResponseMap.values());
-        
-        
-        
 
         /* Save any change to session state */
         candidateSession = qtiService.updateAssessmentTestSession(candidateSession);

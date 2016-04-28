@@ -152,6 +152,7 @@ public interface QTI21Service {
 	
 	public void recordTestAssessmentResponses(AssessmentItemSession assessmentItemSession, Collection<AssessmentResponse> responses);
 	
+
 	public AssessmentTestSession recordTestAssessmentResult(AssessmentTestSession candidateSession, TestSessionState testSessionState, AssessmentResult assessmentResult);
 	
 	public AssessmentTestSession finishTestSession(AssessmentTestSession candidateSession, TestSessionState testSessionState, AssessmentResult assessmentResul, Date timestamp);
@@ -181,6 +182,13 @@ public interface QTI21Service {
 	public CandidateEvent recordCandidateItemEvent(AssessmentTestSession candidateSession,
             CandidateItemEventType itemEventType, ItemSessionState itemSessionState);
 	
-	public String importFileSubmission(AssessmentTestSession candidateSession, MultipartFileInfos multipartFile);
+	/**
+	 * Import submitted file by an assessed identity in its session storage.
+	 * 
+	 * @param candidateSession
+	 * @param multipartFile
+	 * @return
+	 */
+	public File importFileSubmission(AssessmentTestSession candidateSession, MultipartFileInfos multipartFile);
 
 }

@@ -390,8 +390,7 @@ public class AssessmentItemDisplayController extends BasicController implements 
                 final MultipartFileInfos multipartFile = fileResponseEntry.getValue();
                 if (!multipartFile.isEmpty()) {
                     //final CandidateFileSubmission fileSubmission = candidateUploadService.importFileSubmission(candidateSession, multipartFile);
-                	String storedFilePath = qtiService.importFileSubmission(candidateSession, multipartFile);
-                	File storedFile = new File(storedFilePath);
+                	File storedFile = qtiService.importFileSubmission(candidateSession, multipartFile);
                 	final FileResponseData fileResponseData = new FileResponseData(storedFile, multipartFile.getContentType(), multipartFile.getFileName());
                     responseDataMap.put(identifier, fileResponseData);
                     //fileSubmissionMap.put(identifier, fileSubmission);

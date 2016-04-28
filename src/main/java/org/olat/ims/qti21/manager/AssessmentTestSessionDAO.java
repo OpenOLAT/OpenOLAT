@@ -56,6 +56,12 @@ public class AssessmentTestSessionDAO {
 	@Autowired
 	private DB dbInstance;
 	
+	public String formatDate(Date date) {
+		synchronized(formater) {
+			return formater.format(date);
+		}
+	}
+	
 	public AssessmentTestSession createAndPersistTestSession(RepositoryEntry testEntry,
 			RepositoryEntry repositoryEntry, String subIdent,
 			AssessmentEntry assessmentEntry, Identity identity,

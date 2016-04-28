@@ -27,6 +27,9 @@ import java.math.BigDecimal;
 import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
@@ -134,6 +137,8 @@ public class QTI21ServiceImpl implements QTI21Service, InitializingBean, Disposa
 	static {
 		configXstream.alias("deliveryOptions", QTI21DeliveryOptions.class);
 	}
+	
+	private static final DateFormat submittedFileDateFormat = new SimpleDateFormat("yyyyMMdd_hhmmss");
 	
 	@Autowired
 	private EventDAO eventDao;
@@ -650,10 +655,9 @@ public class QTI21ServiceImpl implements QTI21Service, InitializingBean, Disposa
 	        }
 		}
 	}
-	
 
 	@Override
-	public String importFileSubmission(AssessmentTestSession candidateSession, MultipartFileInfos multipartFile) {
+	public File importFileSubmission(AssessmentTestSession candidateSession, MultipartFileInfos multipartFile) {
 		File myStore = testSessionDao.getSessionStorage(candidateSession);
         File submissionDir = new File(myStore, "submissions");
         if(!submissionDir.exists()) {
@@ -661,12 +665,28 @@ public class QTI21ServiceImpl implements QTI21Service, InitializingBean, Disposa
         }
         
         try {
-			File submittedFile = new File(submissionDir, multipartFile.getFileName());
-			Files.move(multipartFile.getFile().toPath(), submittedFile.toPath());
+        	//add the date in the file
+        	String filename = multipartFile.getFileName();
+        	String extension = FileUtils.getFileSuffix(filename);
+        	if(extension != null && extension.length() > 0) {
+        		filename = filename.substring(0, filename.length() - extension.length() - 1);
+        		extension = "." + extension;
+        	} else {
+        		extension = "";
+        	}
+        	String date = testSessionDao.formatDate(new Date());
+        	String datedFilename = filename + date + extension;
+        	//make sure we don't overwrite an existing file
+			File submittedFile = new File(submissionDir, datedFilename);
+			String renamedFile = FileUtils.rename(submittedFile);
+			if(!datedFilename.equals(renamedFile)) {
+				submittedFile = new File(submissionDir, datedFilename);
+			}
+			Files.move(multipartFile.getFile().toPath(), submittedFile.toPath(), StandardCopyOption.ATOMIC_MOVE);
+			return submittedFile;
 		} catch (IOException e) {
 			log.error("", e);
+			return null;
 		}
-
-		return myStore.getAbsolutePath();
 	}
 }
