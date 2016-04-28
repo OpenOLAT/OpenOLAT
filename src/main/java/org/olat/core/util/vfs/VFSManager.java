@@ -40,15 +40,13 @@ import org.olat.core.commons.modules.bc.vfs.OlatRootFileImpl;
 import org.olat.core.commons.modules.bc.vfs.OlatRootFolderImpl;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
-import org.olat.core.manager.BasicManager;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.vfs.callbacks.VFSSecurityCallback;
 import org.olat.core.util.vfs.util.ContainerAndFile;
 
-public class VFSManager extends BasicManager {
+public class VFSManager {
 	private static final OLog log = Tracing.createLoggerFor(VFSManager.class);
-	private static final int BUFFER_SIZE = 2048;
 	
 	/**
 	 * Make sure we always have a path that starts with a "/".
@@ -697,7 +695,7 @@ public class VFSManager extends BasicManager {
 			OutputStream out = new BufferedOutputStream(target.getOutputStream(false));
 			// write the input to the output
 			try {
-				byte[] buf = new byte[BUFFER_SIZE];
+				byte[] buf = new byte[FileUtils.BSIZE];
 				int i = 0;
         while ((i = in.read(buf)) != -1) {
             out.write(buf, 0, i);
@@ -786,7 +784,7 @@ public class VFSManager extends BasicManager {
 			OutputStream out = new BufferedOutputStream(target.getOutputStream(false));
 			// write the input to the output
 			try {
-				byte[] buf = new byte[BUFFER_SIZE];
+				byte[] buf = new byte[FileUtils.BSIZE];
 				int i = 0;
         while ((i = in.read(buf)) != -1) {
             out.write(buf, 0, i);

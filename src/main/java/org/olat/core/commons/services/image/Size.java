@@ -69,13 +69,20 @@ public class Size {
 		return size;
 	}
 
+	/**
+	 * The minimal value for width is 1px
+	 * @return
+	 */
 	public int getWidth() {
 		if(width <= 0) {
 			return 1;
 		}
 		return width;
 	}
-
+	/**
+	 * The minimal value for height is 1px
+	 * @return
+	 */
 	public int getHeight() {
 		if(height <= 0) {
 			return 1;

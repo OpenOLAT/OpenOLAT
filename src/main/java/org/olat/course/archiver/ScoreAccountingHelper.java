@@ -268,8 +268,9 @@ public class ScoreAccountingHelper {
 						if (comment != null) {
 							// put comment between double quote in order to prevent that
 							// '\t','\r' or '\n' destroy the excel table
+							// A (double) quote must be represented by two (double) quotes.
 							tableContent.append("\"");
-							tableContent.append(comment);
+							tableContent.append(comment.replace("\"", "\"\""));
 							tableContent.append("\"\t");
 						} else {
 							tableContent.append(mi);
@@ -288,8 +289,9 @@ public class ScoreAccountingHelper {
 						if (coachComment != null) {
 							// put coachComment between double quote in order to prevent that
 							// '\t','\r' or '\n' destroy the excel table
+							// A (double) quote must be represented by two (double) quotes.
 							tableContent.append("\"");
-							tableContent.append(coachComment);
+							tableContent.append(coachComment.replace("\"", "\"\""));
 							tableContent.append("\"\t");
 						} else {
 							tableContent.append(mi);
