@@ -141,7 +141,7 @@ public class VideoQualityTableFormController extends FormBasicController {
 				previewVC.contextPut("width", size.getWidth());
 				previewVC.contextPut("height", size.getHeight());
 				previewVC.contextPut("filename", "video.mp4");
-				VFSContainer container = videoManager.getMediaContainer(videoResource);
+				VFSContainer container = videoManager.getMasterContainer(videoResource);
 				String transcodedUrl = registerMapper(ureq, new VideoMediaMapper(container));
 				previewVC.contextPut("mediaUrl", transcodedUrl);
 			} else {				

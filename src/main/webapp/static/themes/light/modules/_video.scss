@@ -42,7 +42,19 @@
 }
 
 .o_video_run {
+	.o_author {
+		margin-top: 0.5em;
+		margin-bottom: 1em;
+		line-height: normal;
+		font-size: 90%;
+		color: $o-coursesite-meta-author-color;
+	}		
 	
+	.o_ratings_and_comments {
+		margin-top: 2em;
+		border-top: 1px solid #eee;
+		padding-top: 1em;
+	}
 }
 
 /* beautify source chooser plugin, remove radio button */

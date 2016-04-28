@@ -23,7 +23,6 @@ import org.olat.core.commons.services.image.Size;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.FormUIFactory;
-import org.olat.core.gui.components.form.flexible.elements.RichTextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
@@ -45,7 +44,6 @@ public class VideoMetaDataEditFormController extends FormBasicController {
 	@Autowired
 	private VideoManager videoManager;
 	private OLATResource videoResource;
-	private RichTextElement descriptionField;
 
 	public VideoMetaDataEditFormController(UserRequest ureq, WindowControl wControl, OLATResource re) {
 		super(ureq, wControl);
@@ -68,18 +66,16 @@ public class VideoMetaDataEditFormController extends FormBasicController {
 		uifactory.addStaticTextElement("video.config.creationDate", StringHelper.formatLocaleDateTime(videoResource.getCreationDate().getTime(), getLocale()), formLayout);
 		uifactory.addStaticTextElement("video.config.fileSize", Formatter.formatBytes(videoManager.getVideoFile(videoResource).length()), formLayout);
 
-		descriptionField = uifactory.addRichTextElementForStringDataMinimalistic("description", "video.config.description", videoManager.getDescription(videoResource), -1, -1, formLayout, getWindowControl());
-		uifactory.addFormSubmitButton("submit", formLayout);
 	}
 
 	@Override
 	protected void formOK(UserRequest ureq) {
-		videoManager.setDescription(videoResource, descriptionField.getValue());
+		// nothing to do
 	}
 
 	@Override
 	protected void doDispose() {
-
+		// nothing to do
 	}
 
 }

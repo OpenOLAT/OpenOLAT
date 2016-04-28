@@ -24,6 +24,7 @@ import java.io.File;
 import java.util.List;
 import java.util.Locale;
 
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.stack.BreadcrumbPanel;
 import org.olat.core.gui.control.Controller;
@@ -43,8 +44,8 @@ import org.olat.course.nodes.video.VideoRunController;
 import org.olat.course.run.navigation.NodeRunConstructionResult;
 import org.olat.course.run.userview.NodeEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
-import org.olat.fileresource.FileResourceManager;
-import org.olat.fileresource.types.ImsCPFileResource;
+import org.olat.fileresource.types.VideoFileResource;
+import org.olat.modules.video.VideoManager;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryImportExport;
 import org.olat.repository.handlers.RepositoryHandler;
@@ -140,7 +141,8 @@ public class VideoCourseNode extends AbstractAccessableCourseNode {
 	public void importNode(File importDirectory, ICourse course, Identity owner, Locale locale, boolean withReferences) {
 		RepositoryEntryImportExport rie = new RepositoryEntryImportExport(importDirectory, getIdent());
 		if(withReferences && rie.anyExportedPropertiesAvailable()) {
-			RepositoryHandler handler = RepositoryHandlerFactory.getInstance().getRepositoryHandler(ImsCPFileResource.TYPE_NAME);
+			//TODO: test
+			RepositoryHandler handler = RepositoryHandlerFactory.getInstance().getRepositoryHandler(VideoFileResource.TYPE_NAME);
 			RepositoryEntry re = handler.importResource(owner, rie.getInitialAuthor(), rie.getDisplayName(),
 					rie.getDescription(), false, locale, rie.importGetExportedFile(), null);
 			VideoEditController.setVideoReference(re, getModuleConfiguration());
@@ -152,9 +154,9 @@ public class VideoCourseNode extends AbstractAccessableCourseNode {
 	@Override
 	public Controller createPeekViewRunController(UserRequest ureq, WindowControl wControl, UserCourseEnvironment userCourseEnv,
 			NodeEvaluation ne) {
-//		updateModuleConfigDefaults(false);
-		VFSContainer mediaFolder = FileResourceManager.getInstance().getFileResourceMedia(getReferencedRepositoryEntry().getOlatResource());
-		Controller controller = new VideoPeekviewController(ureq, wControl, mediaFolder);
+		VideoManager videoManager = CoreSpringFactory.getImpl(VideoManager.class);
+		VFSContainer masterFolder = videoManager.getMasterContainer(getReferencedRepositoryEntry().getOlatResource());
+		Controller controller = new VideoPeekviewController(ureq, wControl, masterFolder);
 		return controller;
 	}
 }

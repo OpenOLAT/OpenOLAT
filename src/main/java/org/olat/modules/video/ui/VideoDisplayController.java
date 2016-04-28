@@ -27,7 +27,6 @@ import org.olat.core.commons.services.commentAndRating.CommentAndRatingDefaultSe
 import org.olat.core.commons.services.commentAndRating.CommentAndRatingSecurityCallback;
 import org.olat.core.commons.services.commentAndRating.ui.UserCommentsAndRatingsController;
 import org.olat.core.commons.services.image.Size;
-import org.olat.core.commons.services.video.MovieService;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.htmlheader.jscss.JSAndCSSComponent;
@@ -37,8 +36,6 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.render.Renderer;
 import org.olat.core.gui.render.StringOutput;
-import org.olat.core.gui.util.CSSHelper;
-import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.prefs.Preferences;
 import org.olat.core.util.vfs.VFSContainer;
@@ -59,8 +56,6 @@ public class VideoDisplayController extends BasicController {
 
 	private static final String GUIPREF_KEY_PREFERRED_RESOLUTION = "preferredResolution";
 	@Autowired
-	private MovieService movieService;
-	@Autowired
 	VideoManager videoManager;
 
 	private UserCommentsAndRatingsController commentsAndRatingCtr;
@@ -69,6 +64,9 @@ public class VideoDisplayController extends BasicController {
 	// User preferred resolution, stored in GUI prefs
 	private Integer userPreferredResolution = null;
 	
+	private RepositoryEntry entry;
+	private String descriptionText;
+		
 	public static final Event ENDED_EVENT = new Event("videoEnded");
 
 
@@ -82,8 +80,11 @@ public class VideoDisplayController extends BasicController {
 
 	public VideoDisplayController(UserRequest ureq, WindowControl wControl, RepositoryEntry entry, Boolean autoplay, Boolean showComments, Boolean showRating, String OresSubPath, boolean customDescription, boolean autoWidth, String descriptionText) {
 		super(ureq, wControl);
+		this.entry = entry;
+		this.descriptionText = (customDescription ? this.descriptionText = descriptionText : null);
+		
 		mainVC = createVelocityContainer("video_run");
-		mainVC.contextPut("displayName", entry.getDisplayname());
+		putInitialPanel(mainVC);
 
 		// load mediaelementjs player and sourcechooser plugin
 		StringOutput sb = new StringOutput(50);
@@ -92,24 +93,10 @@ public class VideoDisplayController extends BasicController {
 		String[] jsCodePath= new String[] { "movie/mediaelementjs/mediaelement-and-player.min.js", "movie/mediaelementjs/features/oo-mep-feature-sourcechooser.js" };
 		JSAndCSSComponent mediaelementjs = new JSAndCSSComponent("mediaelementjs", jsCodePath ,cssPath);
 		mainVC.put("mediaelementjs", mediaelementjs);
-		
-		putInitialPanel(mainVC);
-
-		//load video as VFSLeaf
+				
 		VFSLeaf video = videoManager.getMasterVideoFile(entry.getOlatResource());
 		if(video != null) {
-			String filename = video.getName();
-			mainVC.contextPut("filename", filename);
-			String lowerFilename = filename.toLowerCase();
-			String cssClass = CSSHelper.createFiletypeIconCssClassFor(lowerFilename);
-			mainVC.contextPut("cssClass", cssClass);
-
-			String mediaUrl = registerMapper(ureq, new VideoMediaMapper(video.getParentContainer()));
-			mainVC.contextPut("movie", filename);
-			mainVC.contextPut("mediaUrl", mediaUrl);
-			
-			String extension = FileUtils.getFileSuffix(filename);
-			Size realSize = movieService.getSize(video, extension);
+			Size realSize = videoManager.getVideoSize(entry.getOlatResource());
 			if(autoWidth){
 				mainVC.contextPut("height", 480);
 				mainVC.contextPut("width", "100%");
@@ -129,6 +116,52 @@ public class VideoDisplayController extends BasicController {
 				userPreferredResolution = new Integer(720);
 			}
 
+			mainVC.contextPut("autoplay", autoplay);
+	
+			// Mapper for Video
+			String masterUrl = registerMapper(ureq, new VideoMediaMapper(videoManager.getMasterContainer(entry.getOlatResource())));
+			mainVC.contextPut("masterUrl", masterUrl);
+			// mapper for versions specific because not in same base as the resource itself
+			VFSContainer transcodedContainer = videoManager.getTranscodingContainer(entry.getOlatResource());
+			String transcodedUrl = registerMapper(ureq, new VideoMediaMapper(transcodedContainer));
+			mainVC.contextPut("transcodedUrl", transcodedUrl);
+			
+			if (showComments || showRating) {
+				CommentAndRatingSecurityCallback ratingSecCallback = new CommentAndRatingDefaultSecurityCallback(getIdentity(), false, false);
+				commentsAndRatingCtr = new UserCommentsAndRatingsController(ureq, getWindowControl(),entry.getOlatResource(), OresSubPath , ratingSecCallback,showComments, showRating, true);
+				listenTo(commentsAndRatingCtr);				
+				mainVC.put("commentsAndRating", commentsAndRatingCtr.getInitialComponent());
+			}
+
+			// Finally load the video, transcoded versions and tracks
+			loadVideo(ureq, video);
+		}
+	}
+
+
+	/**
+	 * Reload the video, e.g. when new captions or transcoded versions are available
+	 * @param ureq
+	 */
+	protected void reloadVideo(UserRequest ureq) {
+		//load video as VFSLeaf
+		VFSLeaf video = videoManager.getMasterVideoFile(entry.getOlatResource());
+		loadVideo(ureq, video);
+	}
+
+	/**
+	 * Internal helper to do the actual video loading, checking for transcoded versions and captions
+	 * @param ureq
+	 * @param video
+	 */
+	private void loadVideo(UserRequest ureq, VFSLeaf video) {
+		mainVC.contextPut("title", entry.getDisplayname());
+		String desc = (descriptionText   != null ? descriptionText : entry.getDescription());
+		mainVC.contextPut("description", (StringHelper.containsNonWhitespace(desc) ? desc : null));
+		String authors = entry.getAuthors();
+		mainVC.contextPut("authors", (StringHelper.containsNonWhitespace(authors) ? authors : null));
+
+		if(video != null) {
 			// Add transcoded versions
 			List<VideoQualityVersion> videos = videoManager.getQualityVersions(entry.getOlatResource());
 			List<VideoQualityVersion> readyToPlayVideos = new ArrayList<>();
@@ -146,34 +179,14 @@ public class VideoDisplayController extends BasicController {
 			mainVC.contextPut("videos", readyToPlayVideos);
 			mainVC.contextPut("useSourceChooser", Boolean.valueOf(readyToPlayVideos.size() > 1));
 			mainVC.contextPut(GUIPREF_KEY_PREFERRED_RESOLUTION, preferredAvailableResolution);
-			// mapper for versions specific because not in same base as the resource itself
-			VFSContainer transcodedContainer = videoManager.getTranscodingContainer(entry.getOlatResource());
-			String transcodedUrl = registerMapper(ureq, new VideoMediaMapper(transcodedContainer));
-			mainVC.contextPut("transcodedUrl", transcodedUrl);
 
-			//load the track from config
+			// Load the track from config
 			HashMap<String, String> trackfiles = new HashMap<String, String>();
 			HashMap<String, VFSLeaf> configTracks = videoManager.getAllTracks(entry.getOlatResource());
 			for (HashMap.Entry<String, VFSLeaf> track : configTracks.entrySet()) {
 				trackfiles.put(track.getKey(), track.getValue().getName());
 			}
-			mainVC.contextPut("trackfiles",trackfiles);
-
-			if (showComments || showRating) {
-				CommentAndRatingSecurityCallback ratingSecCallback = new CommentAndRatingDefaultSecurityCallback(getIdentity(), false, false);
-				commentsAndRatingCtr = new UserCommentsAndRatingsController(ureq, getWindowControl(),entry.getOlatResource(), OresSubPath , ratingSecCallback,showComments, showRating, true);
-				listenTo(commentsAndRatingCtr);				
-				mainVC.put("commentsAndRating", commentsAndRatingCtr.getInitialComponent());
-			}
-
-			mainVC.contextPut("autoplay", autoplay);
-
-			if (customDescription) {
-				mainVC.contextPut("description", descriptionText);
-			} else {
-				mainVC.contextPut("description", videoManager.getDescription(entry.getOlatResource()));
-			}
-			
+			mainVC.contextPut("trackfiles",trackfiles);			
 		}
 	}
 

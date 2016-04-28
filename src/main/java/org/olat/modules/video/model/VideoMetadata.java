@@ -42,16 +42,12 @@ public class VideoMetadata implements Serializable{
 
 		// Data model versioning
 		public static final int CURRENT_MODEL_VERSION = 1;
-	
-		// Properties
-		private String title;
-
+		
 		private Size size;
 		private String posterframe;
 		private HashMap<String, String> tracks;
 		private boolean commentsEnabled;
 		private boolean ratingEnabled;
-		private String description;
 		
 		@SuppressWarnings("unused")
 		private int modelVersion = 0; 
@@ -68,14 +64,6 @@ public class VideoMetadata implements Serializable{
 
 		public void setSize(Size size) {
 			this.size = size;
-		}
-
-		public String getTitle() {
-			return title;
-		}
-
-		public void setTitle(String title) {
-			this.title = title;
 		}
 
 		public String getPosterframe() {
@@ -116,13 +104,5 @@ public class VideoMetadata implements Serializable{
 		
 		public boolean getRatingEnabled(){
 			return this.ratingEnabled;
-		}
-		
-		public void setDescription(String text){
-			this.description = text;
-		}
-		
-		public String getDescription(){
-			return this.description;
 		}
 }

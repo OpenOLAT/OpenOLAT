@@ -37,6 +37,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.layout.MainLayoutController;
 import org.olat.core.gui.control.generic.wizard.StepsMainRunController;
 import org.olat.core.gui.media.MediaResource;
+import org.olat.core.gui.media.NotFoundMediaResource;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.logging.AssertException;
@@ -56,6 +57,7 @@ import org.olat.modules.video.manager.VideoExportMediaResource;
 import org.olat.modules.video.ui.VideoDisplayController;
 import org.olat.modules.video.ui.VideoRuntimeController;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.model.RepositoryEntrySecurity;
 import org.olat.repository.ui.RepositoryEntryRuntimeController.RuntimeControllerCreator;
@@ -138,9 +140,13 @@ public class VideoHandler extends FileHandler {
 
 	@Override
 	public MediaResource getAsMediaResource(OLATResourceable res, boolean backwardsCompatible) {
-		OLATResource ores = OLATResourceManager.getInstance().findResourceable(res);
-		VideoManager videoManager = CoreSpringFactory.getImpl(VideoManager.class);
-		VideoExportMediaResource exportResource = videoManager.getVideoExportMediaResource(ores);
+		RepositoryManager repoManager = CoreSpringFactory.getImpl(RepositoryManager.class);
+		RepositoryEntry repoEntry = repoManager.lookupRepositoryEntry(res, false);
+		if (repoEntry == null) {
+			return new NotFoundMediaResource("Video Resource not found. ResourceableId::" + res.getResourceableId());
+		}
+		VideoManager videoManager = CoreSpringFactory.getImpl(VideoManager.class);		
+		VideoExportMediaResource exportResource = videoManager.getVideoExportMediaResource(repoEntry);
 		return exportResource;
 	}
 

@@ -25,7 +25,7 @@ import org.olat.core.gui.components.dropdown.Dropdown;
 import org.olat.core.gui.components.dropdown.Dropdown.Spacer;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
-import org.olat.core.gui.control.Controller;
+import org.olat.core.gui.components.stack.RootEvent;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.repository.RepositoryEntry;
@@ -43,6 +43,7 @@ import org.olat.repository.ui.RepositoryEntryRuntimeController;
 public class VideoRuntimeController extends RepositoryEntryRuntimeController {
 
 	private Link settingsLink;
+	private VideoSettingsController settingsCtr;
 
 	public VideoRuntimeController(UserRequest ureq, WindowControl wControl,
 			RepositoryEntry re, RepositoryEntrySecurity reSecurity, RuntimeControllerCreator runtimeControllerCreator) {
@@ -65,17 +66,27 @@ public class VideoRuntimeController extends RepositoryEntryRuntimeController {
 	protected void event(UserRequest ureq, Component source, Event event) {
 		if(settingsLink == source){
 			doSettingsconfig(ureq);
-		}
-		else {
+		} else {
+			if (event instanceof RootEvent) {
+				// reload the video, maybe some new transcoded files available
+				VideoDisplayController videoDisplayCtr = (VideoDisplayController)getRuntimeController();
+				videoDisplayCtr.reloadVideo(ureq);
+			}
+			// maybe something else needs to be done
 			super.event(ureq, source, event);
 		}
+		
 	}
 
 
 	private void doSettingsconfig(UserRequest ureq) {
+		if (settingsCtr != null) {
+			removeAsListenerAndDispose(settingsCtr);
+		}
 		RepositoryEntry entry = getRepositoryEntry();
-		Controller configCtrl = new VideoSettingsController(ureq, getWindowControl(), entry);
-		pushController(ureq, translate("tab.video.settings"), configCtrl);
+		VideoSettingsController configCtrl = new VideoSettingsController(ureq, getWindowControl(), entry);
+		listenTo(configCtrl);
+		settingsCtr = pushController(ureq, translate("tab.video.settings"), configCtrl);
 		setActiveTool(settingsLink);
 	}
 

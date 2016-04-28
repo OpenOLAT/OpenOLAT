@@ -66,7 +66,7 @@ public class VideoTrackUploadForm extends FormBasicController {
 
 	public VideoTrackUploadForm(UserRequest ureq, WindowControl wControl, OLATResource videoResource) {
 		super(ureq, wControl);
-		mediaContainer = videoManager.getMediaContainer(videoResource);
+		mediaContainer = videoManager.getMasterContainer(videoResource);
 		initForm(ureq);
 	}
 

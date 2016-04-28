@@ -60,7 +60,6 @@ import org.olat.modules.video.ui.VideoDisplayController;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.controllers.ReferencableEntriesSearchController;
-import org.olat.resource.OLATResource;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -97,7 +96,7 @@ public class VideoEditController  extends ActivateableTabbableDefaultController 
 	private VelocityContainer videoConfigurationVc;
 
 	private ModuleConfiguration config;
-	private RepositoryEntry re;
+	private RepositoryEntry repositoryEntry;
 
 	private ReferencableEntriesSearchController searchController;
 
@@ -122,31 +121,33 @@ public class VideoEditController  extends ActivateableTabbableDefaultController 
 		changeVideoButton.setElementCssClass("o_sel_cp_change_repofile");
 
 		if (config.get(CONFIG_KEY_REPOSITORY_SOFTKEY) != null) {
-			// fetch repository entry to display the repository entry title of the chosen cp
-						re = getVideoReference(config, false);
-						if (re == null) { // we cannot display the entries name, because the
-							// repository entry had been deleted between the time when it was chosen here, and now
-							showError(NLS_ERROR_VIDEOREPOENTRYMISSING);
-							videoConfigurationVc.contextPut("showPreviewButton", Boolean.FALSE);
-							videoConfigurationVc.contextPut(VC_CHOSENVIDEO, translate("no.video.chosen"));
-						} else {
-							videoConfigurationVc.contextPut("showPreviewButton", Boolean.TRUE);
-							String displayname = StringHelper.escapeHtml(re.getDisplayname());
-							previewLink = LinkFactory.createCustomLink("command.preview", "command.preview", displayname, Link.NONTRANSLATED, videoConfigurationVc, this);
-							previewLink.setTitle(getTranslator().translate("command.preview"));
-							previewLink.setEnabled(true);
-						}
-						videoConfigurationVc.contextPut("showOptions", Boolean.TRUE);
-						VideoOptionsForm videoOptions = new VideoOptionsForm(ureq, getWindowControl(), re.getOlatResource(), config);
-						videoConfigurationVc.put("videoOptions", videoOptions.getInitialComponent());
-						listenTo(videoOptions);
+			// fetch repository entry to display the repository entry title of
+			// the chosen cp
+			repositoryEntry = getVideoReference(config, false);
+			if (repositoryEntry == null) { 
+				// we cannot display the entries name, because the repository
+				// entry had been deleted between the time when it was chosen
+				// here, and now
+				showError(NLS_ERROR_VIDEOREPOENTRYMISSING);
+				videoConfigurationVc.contextPut("showPreviewButton", Boolean.FALSE);
+				videoConfigurationVc.contextPut(VC_CHOSENVIDEO, translate("no.video.chosen"));
+			} else {
+				videoConfigurationVc.contextPut("showPreviewButton", Boolean.TRUE);
+				String displayname = StringHelper.escapeHtml(repositoryEntry.getDisplayname());
+				previewLink = LinkFactory.createCustomLink("command.preview", "command.preview", displayname, Link.NONTRANSLATED, videoConfigurationVc, this);
+				previewLink.setTitle(getTranslator().translate("command.preview"));
+				previewLink.setEnabled(true);
+			}
+			videoConfigurationVc.contextPut("showOptions", Boolean.TRUE);
+			VideoOptionsForm videoOptions = new VideoOptionsForm(ureq, getWindowControl(), repositoryEntry, config);
+			videoConfigurationVc.put("videoOptions", videoOptions.getInitialComponent());
+			listenTo(videoOptions);
 		} else {
 			// no valid config yet
 			videoConfigurationVc.contextPut("showPreviewButton", Boolean.FALSE);
 			videoConfigurationVc.contextPut("showOptions", Boolean.FALSE);
 			videoConfigurationVc.contextPut(VC_CHOSENVIDEO, translate(NLS_NO_VIDEO_CHOSEN));
 		}
-
 
 
 		// Accessibility precondition
@@ -195,13 +196,13 @@ public class VideoEditController  extends ActivateableTabbableDefaultController 
 			switch(config.getStringValue(VideoEditController.CONFIG_KEY_DESCRIPTION_SELECT)){
 
 			case "resourceDescription":
-					previewController = new VideoDisplayController(ureq, getWindowControl(), re, config.getBooleanSafe(VideoEditController.CONFIG_KEY_AUTOPLAY), config.getBooleanSafe(VideoEditController.CONFIG_KEY_COMMENTS), config.getBooleanSafe(VideoEditController.CONFIG_KEY_RATING), "", false,false, "");
+					previewController = new VideoDisplayController(ureq, getWindowControl(), repositoryEntry, config.getBooleanSafe(VideoEditController.CONFIG_KEY_AUTOPLAY), config.getBooleanSafe(VideoEditController.CONFIG_KEY_COMMENTS), config.getBooleanSafe(VideoEditController.CONFIG_KEY_RATING), "", false,false, "");
 					break;
 			case "customDescription":
-					previewController = new VideoDisplayController(ureq, getWindowControl(), re, config.getBooleanSafe(VideoEditController.CONFIG_KEY_AUTOPLAY), config.getBooleanSafe(VideoEditController.CONFIG_KEY_COMMENTS), config.getBooleanSafe(VideoEditController.CONFIG_KEY_RATING), "", true,false, config.getStringValue(VideoEditController.CONFIG_KEY_DESCRIPTION_CUSTOMTEXT));
+					previewController = new VideoDisplayController(ureq, getWindowControl(), repositoryEntry, config.getBooleanSafe(VideoEditController.CONFIG_KEY_AUTOPLAY), config.getBooleanSafe(VideoEditController.CONFIG_KEY_COMMENTS), config.getBooleanSafe(VideoEditController.CONFIG_KEY_RATING), "", true,false, config.getStringValue(VideoEditController.CONFIG_KEY_DESCRIPTION_CUSTOMTEXT));
 					break;
 			case "none":
-					previewController = new VideoDisplayController(ureq, getWindowControl(), re, config.getBooleanSafe(VideoEditController.CONFIG_KEY_AUTOPLAY), config.getBooleanSafe(VideoEditController.CONFIG_KEY_COMMENTS), config.getBooleanSafe(VideoEditController.CONFIG_KEY_RATING), "", true,false, "");
+					previewController = new VideoDisplayController(ureq, getWindowControl(), repositoryEntry, config.getBooleanSafe(VideoEditController.CONFIG_KEY_AUTOPLAY), config.getBooleanSafe(VideoEditController.CONFIG_KEY_COMMENTS), config.getBooleanSafe(VideoEditController.CONFIG_KEY_RATING), "", true,false, "");
 					break;
 			}
 			cmc = new CloseableModalController(
@@ -221,11 +222,11 @@ public class VideoEditController  extends ActivateableTabbableDefaultController 
 			if (event == ReferencableEntriesSearchController.EVENT_REPOSITORY_ENTRY_SELECTED) {
 				// -> close closeable modal controller
 				cmc.deactivate();
-				re = searchController.getSelectedEntry();
-				if (re != null) {
-					setVideoReference(re, config);
+				repositoryEntry = searchController.getSelectedEntry();
+				if (repositoryEntry != null) {
+					setVideoReference(repositoryEntry, config);
 					videoConfigurationVc.contextPut("showPreviewButton", Boolean.TRUE);
-					String displayname = StringHelper.escapeHtml(re.getDisplayname());
+					String displayname = StringHelper.escapeHtml(repositoryEntry.getDisplayname());
 					previewLink = LinkFactory.createCustomLink("command.preview", "command.preview", displayname, Link.NONTRANSLATED, videoConfigurationVc, this);
 					previewLink.setCustomEnabledLinkCSS("o_preview");
 					previewLink.setTitle(getTranslator().translate("command.preview"));
@@ -233,7 +234,7 @@ public class VideoEditController  extends ActivateableTabbableDefaultController 
 					fireEvent(urequest, NodeEditController.NODECONFIG_CHANGED_EVENT);
 
 					videoConfigurationVc.contextPut("showOptions", Boolean.TRUE);
-					VideoOptionsForm videoOptions = new VideoOptionsForm(urequest, getWindowControl(), re.getOlatResource(), config);
+					VideoOptionsForm videoOptions = new VideoOptionsForm(urequest, getWindowControl(), repositoryEntry, config);
 					videoConfigurationVc.put("videoOptions", videoOptions.getInitialComponent());
 					listenTo(videoOptions);
 				}
@@ -311,7 +312,7 @@ class VideoOptionsForm extends FormBasicController{
 	@Autowired	
 	protected VideoManager videoManager;
 
-	private OLATResource video;
+	private RepositoryEntry repoEntry;
 	private SelectionElement videoComments;
 	private SelectionElement videoRating;
 	private SelectionElement videoAutoplay;
@@ -324,10 +325,10 @@ class VideoOptionsForm extends FormBasicController{
 
 
 
-	VideoOptionsForm(UserRequest ureq, WindowControl wControl, OLATResource video, ModuleConfiguration moduleConfiguration) {
+	VideoOptionsForm(UserRequest ureq, WindowControl wControl, RepositoryEntry repoEntry, ModuleConfiguration moduleConfiguration) {
 		super(ureq, wControl);
 		this.config = moduleConfiguration;
-		this.video = video;
+		this.repoEntry = repoEntry;
 		this.commentsEnabled = config.getBooleanSafe(VideoEditController.CONFIG_KEY_COMMENTS);
 		this.ratingEnabled = config.getBooleanSafe(VideoEditController.CONFIG_KEY_RATING);
 		this.autoplay = config.getBooleanSafe(VideoEditController.CONFIG_KEY_AUTOPLAY);
@@ -369,7 +370,8 @@ class VideoOptionsForm extends FormBasicController{
 		description = uifactory.addDropdownSingleselect("video.config.description", formLayout, descriptionOptions.keySet().toArray(new String[3]), descriptionOptions.values().toArray(new String[3]), new String[3]);
 		description.addActionListener(FormEvent.ONCHANGE);
 		description.select(config.getStringValue(VideoEditController.CONFIG_KEY_DESCRIPTION_SELECT,"none"), true);
-		descriptionField = uifactory.addRichTextElementForStringDataMinimalistic("description", "", videoManager.getDescription(video), -1, -1, formLayout, getWindowControl());
+		String desc = repoEntry.getDescription();
+		descriptionField = uifactory.addRichTextElementForStringDataMinimalistic("description", "", desc, -1, -1, formLayout, getWindowControl());
 		updateDescriptionField();
 		uifactory.addFormSubmitButton("submit", formLayout);
 	}
@@ -382,7 +384,7 @@ class VideoOptionsForm extends FormBasicController{
 			break;
 		case 1:
 			descriptionField.setVisible(true);
-			descriptionField.setValue(videoManager.getDescription(video));
+			descriptionField.setValue(repoEntry.getDescription());
 			descriptionField.setEnabled(false);
 			break;
 		case 0:

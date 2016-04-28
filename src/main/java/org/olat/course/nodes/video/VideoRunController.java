@@ -42,9 +42,7 @@ import org.olat.course.run.navigation.NodeRunConstructionResult;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.video.ui.VideoDisplayController;
 import org.olat.repository.RepositoryEntry;
-import org.olat.repository.RepositoryManager;
 import org.olat.util.logging.activity.LoggingResourceable;
-import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -61,11 +59,7 @@ public class VideoRunController extends BasicController {
 	
 	private VideoDisplayController videoDispCtr;
 	private VideoCourseNode videoNode;
-	
-
-	@Autowired
-	private RepositoryManager repositoryManager;
-	
+		
 	/**
 	 * single page run controller 
 	 * @param wControl

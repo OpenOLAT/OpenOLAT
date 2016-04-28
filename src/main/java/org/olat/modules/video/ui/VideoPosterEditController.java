@@ -160,8 +160,8 @@ public class VideoPosterEditController extends FormBasicController {
 
 	private void updatePosterImage(UserRequest ureq, OLATResource video){
 		posterFile = videoManager.getPosterframe(video);
-		VFSContainer mediaBase = FileResourceManager.getInstance().getFileResourceMedia(video);
-		VideoMediaMapper mediaMapper = new VideoMediaMapper(mediaBase);
+		VFSContainer masterContainer = posterFile.getParentContainer();
+		VideoMediaMapper mediaMapper = new VideoMediaMapper(masterContainer);
 		String mediaUrl = registerMapper(ureq, mediaMapper);
 		String serverUrl = Settings.createServerURI();
 		displayContainer.contextPut("serverUrl", serverUrl);
