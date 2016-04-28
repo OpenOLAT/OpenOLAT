@@ -35,7 +35,6 @@ import org.olat.core.gui.control.generic.closablewrapper.CloseableModalControlle
 import org.olat.core.helpers.Settings;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSLeaf;
-import org.olat.fileresource.FileResourceManager;
 import org.olat.modules.video.VideoManager;
 import org.olat.modules.video.manager.VideoMediaMapper;
 import org.olat.resource.OLATResource;
