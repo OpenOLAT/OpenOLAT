@@ -58,10 +58,11 @@ import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Roles;
 import org.olat.core.id.UserConstants;
 import org.olat.core.logging.AssertException;
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
 import org.olat.core.logging.activity.ActionType;
 import org.olat.core.logging.activity.OlatResourceableType;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
-import org.olat.core.manager.BasicManager;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.coordinate.CoordinatorManager;
@@ -103,9 +104,12 @@ import org.springframework.stereotype.Service;
  * 
  */
 @Service("repositoryManager")
-public class RepositoryManager extends BasicManager {
+public class RepositoryManager {
 	
-	public static final int PICTUREWIDTH = 570;
+	private static final OLog log = Tracing.createLoggerFor(RepositoryManager.class);
+	
+	public static final int PICTURE_WIDTH = 570;
+	public static final int PICTURE_HEIGHT = (PICTURE_WIDTH / 3) * 2;
 
 	@Autowired
 	private ImageService imageHelper;
@@ -201,11 +205,25 @@ public class RepositoryManager extends BasicManager {
 			}
 			currentImage.delete();
 		}
-
-		VFSContainer repositoryHome = new LocalFolderImpl(new File(FolderConfig.getCanonicalRepositoryHome()));
-		VFSLeaf repoImage = repositoryHome.createChildLeaf(re.getResourceableId() + ".png");
 		
-		Size size = imageHelper.scaleImage(newImageFile, repoImage, PICTUREWIDTH, PICTUREWIDTH, false);
+		String targetExtension = ".png";
+		String extension = FileUtils.getFileSuffix(newImageFile.getName());
+		if("jpg".equalsIgnoreCase(extension) || "jpeg".equalsIgnoreCase(extension)) {
+			targetExtension = ".jpg";
+		}
+		
+		VFSContainer repositoryHome = new LocalFolderImpl(new File(FolderConfig.getCanonicalRepositoryHome()));
+		VFSLeaf repoImage = repositoryHome.createChildLeaf(re.getResourceableId() + targetExtension);
+		
+		if(targetExtension.equals(".png") || targetExtension.equals(".jpg")) {
+			Size newImageSize = imageHelper.getSize(newImageFile, extension);
+			if(newImageSize != null && newImageSize.getWidth() <= PICTURE_WIDTH && newImageSize.getHeight() <= PICTURE_HEIGHT) {
+				boolean success = VFSManager.copyContent(newImageFile, repoImage);
+				return success;
+			}
+		}
+
+		Size size = imageHelper.scaleImage(newImageFile, repoImage, PICTURE_WIDTH, PICTURE_WIDTH, false);
 		return size != null;
 	}
 
@@ -895,7 +913,7 @@ public class RepositoryManager extends BasicManager {
 		long start = System.currentTimeMillis();
 		List<RepositoryEntry> genericResults = queryByTypeLimitAccess(identity, restrictedType, roles);
 		long timeQuery3 = System.currentTimeMillis() - start;
-		logInfo("Repo-Perf: queryByTypeLimitAccess#3 takes " + timeQuery3);
+		log.info("Repo-Perf: queryByTypeLimitAccess#3 takes " + timeQuery3);
 		
 		if(results.isEmpty()) {
 			results.addAll(genericResults);
@@ -1481,7 +1499,7 @@ public class RepositoryManager extends BasicManager {
 				} finally {
 					ThreadLocalUserActivityLogger.setStickyActionType(actionType);
 				}
-				logAudit("Identity(.key):" + ureqIdentity.getKey() + " added identity '" + identity.getName()
+				log.audit("Identity(.key):" + ureqIdentity.getKey() + " added identity '" + identity.getName()
 						+ "' to repoentry with key " + re.getKey());
 			}//else silently ignore already owner identities
 		}
@@ -1527,7 +1545,7 @@ public class RepositoryManager extends BasicManager {
 		} finally {
 			ThreadLocalUserActivityLogger.setStickyActionType(actionType);
 		}
-		logAudit("Identity(.key):" + ureqIdentity.getKey() + " removed identity '" + identity.getName()
+		log.audit("Identity(.key):" + ureqIdentity.getKey() + " removed identity '" + identity.getName()
 				+ "' from repositoryentry with key " + re.getKey());
 	}
 	
@@ -1610,7 +1628,7 @@ public class RepositoryManager extends BasicManager {
 		} finally {
 			ThreadLocalUserActivityLogger.setStickyActionType(actionType);
 		}
-		logAudit("Identity(.key):" + ureqIdentity.getKey() + " added identity '" + identity.getName()
+		log.audit("Identity(.key):" + ureqIdentity.getKey() + " added identity '" + identity.getName()
 				+ "' to repositoryentry with key " + re.getKey());
 	}
 	
@@ -1642,7 +1660,7 @@ public class RepositoryManager extends BasicManager {
 		} finally {
 			ThreadLocalUserActivityLogger.setStickyActionType(actionType);
 		}
-		logAudit("Identity(.key):" + ureqIdentity.getKey() + " removed identity '" + identity.getName()
+		log.audit("Identity(.key):" + ureqIdentity.getKey() + " removed identity '" + identity.getName()
 				+ "' from repositoryentry with key " + re.getKey());
 	}
 	
@@ -1708,7 +1726,7 @@ public class RepositoryManager extends BasicManager {
 		} finally {
 			ThreadLocalUserActivityLogger.setStickyActionType(actionType);
 		}
-		logAudit("Identity(.key):" + ureqIdentity.getKey() + " added identity '" + identity.getName()
+		log.audit("Identity(.key):" + ureqIdentity.getKey() + " added identity '" + identity.getName()
 				+ "' to repositoryentry with key " + re.getKey());
 	}
 	
@@ -1744,7 +1762,7 @@ public class RepositoryManager extends BasicManager {
 		} finally {
 			ThreadLocalUserActivityLogger.setStickyActionType(actionType);
 		}
-		logAudit("Identity(.key):" + ureqIdentity.getKey() + " removed identity '" + identity.getName()
+		log.audit("Identity(.key):" + ureqIdentity.getKey() + " removed identity '" + identity.getName()
 				+ "' from repositoryentry with key " + re.getKey());
 	}
 	
@@ -1791,7 +1809,7 @@ public class RepositoryManager extends BasicManager {
 			for (Identity member : members) {
 				sb.append(member.getName()).append(", ");
 			}
-			logAudit(sb.toString());					
+			log.audit(sb.toString());					
 		}
 		
 		for(Identity identity:members) {

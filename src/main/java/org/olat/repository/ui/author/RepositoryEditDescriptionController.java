@@ -322,7 +322,7 @@ public class RepositoryEditDescriptionController extends FormBasicController {
 		
 		VFSLeaf img = repositoryManager.getImage(repositoryEntry);
 		fileUpload = uifactory.addFileElement(getWindowControl(), "rentry.pic", "rentry.pic", descCont);
-		fileUpload.setExampleKey("rentry.pic.example", new String[] {RepositoryManager.PICTUREWIDTH + "x" + (RepositoryManager.PICTUREWIDTH / 3 * 2)});
+		fileUpload.setExampleKey("rentry.pic.example", new String[] {RepositoryManager.PICTURE_WIDTH + "x" + (RepositoryManager.PICTURE_HEIGHT)});
 		fileUpload.setMaxUploadSizeKB(picUploadlimitKB, null, null);
 		fileUpload.setPreview(ureq.getUserSession(), true);
 		fileUpload.addActionListener(FormEvent.ONCHANGE);

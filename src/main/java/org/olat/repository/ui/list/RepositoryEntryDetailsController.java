@@ -228,14 +228,14 @@ public class RepositoryEntryDetailsController extends FormBasicController {
 				ImageComponent ic = new ImageComponent(ureq.getUserSession(), "thumbnail");
 				if(movie != null) {
 					ic.setMedia(movie);
-					ic.setMaxWithAndHeightToFitWithin(500, 300);
+					ic.setMaxWithAndHeightToFitWithin(RepositoryManager.PICTURE_WIDTH, RepositoryManager.PICTURE_HEIGHT);
 					// add poster image
 					if (image != null) {
 						ic.setPoster(image);
 					}
 				} else {
 					ic.setMedia(image);
-					ic.setMaxWithAndHeightToFitWithin(500, 300);
+					ic.setMaxWithAndHeightToFitWithin(RepositoryManager.PICTURE_WIDTH, RepositoryManager.PICTURE_HEIGHT);
 				}
 				layoutCont.put("thumbnail", ic);
 			}

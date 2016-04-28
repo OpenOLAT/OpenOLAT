@@ -64,6 +64,8 @@ public class FileUtils {
 	private static final OLog log = Tracing.createLoggerFor(FileUtils.class);
 	
 	private static int buffSize = 32 * 1024;
+	// the following is for cleaning up file I/O stuff ... so it works fine on NFS
+	public static final int BSIZE = 8*1024;
 
 	// matches files and folders of type:
 	// bla, bla1, bla12, bla.html, bla1.html, bla12.html
@@ -874,11 +876,6 @@ public class FileUtils {
 		}
 		return tmpDir;
 	}
-	
-	
-	// the following is for cleaning up file I/O stuff ... so it works fine on NFS
-	
-	public static final int BSIZE = 8*1024;
 	
 	public static void bcopy (File src, File dst, String wt) throws FileNotFoundException, IOException {
 		bcopy (new FileInputStream(src), new FileOutputStream(dst), wt);
