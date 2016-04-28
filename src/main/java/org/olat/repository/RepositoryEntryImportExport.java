@@ -205,7 +205,20 @@ public class RepositoryEntryImportExport {
 				log.error("", e);
 			}
 		}
-		
+		return setRepoEntryPropertiesFromImport(newEntry);
+	}
+
+	/**
+	 * Update the repo entry property from the current import information in the database
+	 * 
+	 * @param newEntry
+	 * @return
+	 */
+	public RepositoryEntry setRepoEntryPropertiesFromImport(RepositoryEntry newEntry) {
+		if(!propertiesLoaded) {
+			loadConfiguration();
+		}
+		RepositoryManager repositoryManager = CoreSpringFactory.getImpl(RepositoryManager.class);
 		return repositoryManager.setDescriptionAndName(newEntry, newEntry.getDisplayname(), null,
 				repositoryProperties.getAuthors(), repositoryProperties.getDescription(),
 				repositoryProperties.getObjectives(), repositoryProperties.getRequirements(),

@@ -40,6 +40,7 @@ import javax.imageio.ImageIO;
 
 import org.jcodec.api.FrameGrab;
 import org.jcodec.common.FileChannelWrapper;
+import org.olat.core.commons.modules.bc.vfs.OlatRootFolderImpl;
 import org.olat.core.commons.services.image.Size;
 import org.olat.core.commons.services.taskexecutor.TaskExecutorManager;
 import org.olat.core.commons.services.video.MovieService;
@@ -48,6 +49,7 @@ import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.ZipUtil;
 import org.olat.core.util.vfs.LocalFileImpl;
+import org.olat.core.util.vfs.LocalFolderImpl;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
@@ -60,6 +62,7 @@ import org.olat.modules.video.VideoModule;
 import org.olat.modules.video.model.VideoMetadata;
 import org.olat.modules.video.model.VideoQualityVersion;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryImportExport;
 import org.olat.repository.RepositoryManager;
 import org.olat.resource.OLATResource;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -73,6 +76,7 @@ import org.springframework.stereotype.Service;
  */
 @Service("videoManager")
 public class VideoManagerImpl implements VideoManager {
+	protected static final String DIRNAME_REPOENTRY = "repoentry";
 	public static final String FILETYPE_MP4 = "mp4";
 	private static final String FILENAME_POSTER_JPG = "poster.jpg";
 	private static final String FILENAME_VIDEO_MP4 = "video.mp4";
@@ -414,7 +418,12 @@ public class VideoManagerImpl implements VideoManager {
 	@Override
 	public VideoExportMediaResource getVideoExportMediaResource(RepositoryEntry repoEntry) {
 		OLATResource videoResource = repoEntry.getOlatResource();
-		VFSContainer baseContainer= FileResourceManager.getInstance().getFileResourceRootImpl(videoResource);
+		OlatRootFolderImpl baseContainer= FileResourceManager.getInstance().getFileResourceRootImpl(videoResource);
+		// 1) dump repo entry metadata to resource folder
+		LocalFolderImpl repoentryContainer = (LocalFolderImpl)VFSManager.resolveOrCreateContainerFromPath(baseContainer, DIRNAME_REPOENTRY); 
+		RepositoryEntryImportExport importExport = new RepositoryEntryImportExport(repoEntry, repoentryContainer.getBasefile());
+		importExport.exportDoExportProperties();
+		// 2) package everything in resource folder to streaming zip resource
 		VideoExportMediaResource exportResource = new VideoExportMediaResource(baseContainer, repoEntry.getDisplayname());
 		return exportResource;
 	}
@@ -430,6 +439,7 @@ public class VideoManagerImpl implements VideoManager {
 			VideoMetadata videoMetadata = (VideoMetadata) XStreamHelper.readObject(XStreamHelper.createXStreamInstance(), metaDataStream);
 			zipFile.close();
 			if (videoMetadata != null) {
+				//FIXME:FG load displaytitle from repo.xml
 				eval.setValid(true);
 			}
 		} catch (Exception e) {
@@ -481,22 +491,15 @@ public class VideoManagerImpl implements VideoManager {
 		ZipUtil.unzip(exportArchive, baseContainer);
 		exportArchive.delete();
 		
-		// 2) update metadata from the repo entry (maybe changed during import
-		VideoMetadata metaData = readVideoMetadataFile(videoResource);
-		String title = repoEntry.getDisplayname();
-//		boolean dirty = false;
-//		if (title != null && !title.equals(metaData.getTitle())) {
-//			metaData.setTitle(title);
-//			dirty = true;
-//		}
-//		String desc = repoEntry.getDescription();
-//		if (desc != null && !title.equals(metaData.getDescription())) {
-//			metaData.setDescription(desc);
-//			dirty = true;
-//		}
-//		if (dirty) {
-//			writeVideoMetadataFile(metaData, videoResource);
-//		}
+		// 2) update metadata from the repo entry export
+		LocalFolderImpl repoentryContainer = (LocalFolderImpl) baseContainer.resolve(DIRNAME_REPOENTRY); 
+		if (repoentryContainer != null) {
+			RepositoryEntryImportExport importExport = new RepositoryEntryImportExport(repoentryContainer.getBasefile());
+			importExport.setRepoEntryPropertiesFromImport(repoEntry);
+			// now delete the import folder, not used anymore
+			repoentryContainer.delete();
+		}
+		
 		// 3) Set poster image for repo entry
 		VFSContainer masterContainer = getMasterContainer(videoResource);
 		VFSLeaf posterImage = (VFSLeaf)masterContainer.resolve(FILENAME_POSTER_JPG);
