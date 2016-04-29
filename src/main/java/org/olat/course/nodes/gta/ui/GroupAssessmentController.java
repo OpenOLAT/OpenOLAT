@@ -427,24 +427,38 @@ public class GroupAssessmentController extends FormBasicController {
 		boolean allOk = true;
 
 		if(withScore) {
-			List<AssessmentRow> rows = model.getObjects();	
-			for(AssessmentRow row:rows) {
-				TextElement scoreEl = row.getScoreEl();
-				String value = scoreEl.getValue();
-				if(StringHelper.containsNonWhitespace(value)) {
-					try {
-						float score = Float.parseFloat(value);
-						if(score < 0.0f) {
-							//not acceptable
-						}
-					} catch (NumberFormatException e) {
-						allOk = false;
-					}
+			if(applyToAllEl.isAtLeastSelected(1)) {
+				allOk &= validateScore(groupScoreEl);
+			} else {
+				List<AssessmentRow> rows = model.getObjects();	
+				for(AssessmentRow row:rows) {
+					allOk &= validateScore(row.getScoreEl());
 				}
 			}
 		}
 	
 		return allOk & super.validateFormLogic(ureq);
+	}
+	
+	private boolean validateScore(TextElement scoreEl) {
+		boolean allOk = true;
+		
+		scoreEl.clearError();
+		String value = scoreEl.getValue();
+		if(StringHelper.containsNonWhitespace(value)) {
+			try {
+				float score = Float.parseFloat(value);
+				if(score < 0.0f) {
+					scoreEl.setErrorKey("error.score.format", null);
+					allOk &= false;
+				}
+			} catch (NumberFormatException e) {
+				scoreEl.setErrorKey("error.score.format", null);
+				allOk &= false;
+			}
+		}
+		
+		return allOk;
 	}
 
 	@Override
