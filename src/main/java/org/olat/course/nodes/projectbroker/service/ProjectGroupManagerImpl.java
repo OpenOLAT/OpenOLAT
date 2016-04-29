@@ -26,6 +26,7 @@
 package org.olat.course.nodes.projectbroker.service;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
@@ -35,7 +36,9 @@ import org.olat.basesecurity.SecurityGroup;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.id.Identity;
-import org.olat.core.manager.BasicManager;
+import org.olat.core.logging.AssertException;
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.coordinate.SyncerCallback;
 import org.olat.core.util.event.MultiUserEvent;
@@ -63,7 +66,9 @@ import org.springframework.stereotype.Service;
  * @author guretzki
  */
 @Service
-public class ProjectGroupManagerImpl extends BasicManager implements ProjectGroupManager {
+public class ProjectGroupManagerImpl implements ProjectGroupManager {
+	
+	private static final OLog log = Tracing.createLoggerFor(ProjectGroupManagerImpl.class);
 	
 	@Autowired
 	private DB dbInstance;
@@ -90,66 +95,93 @@ public class ProjectGroupManagerImpl extends BasicManager implements ProjectGrou
 	
 	@Override
 	public BusinessGroup getAccountManagerGroupFor(CoursePropertyManager cpm, CourseNode courseNode, ICourse course, String groupName, String groupDescription, Identity identity) {
-		Long groupKey = null;
 		BusinessGroup accountManagerGroup = null;
-		Property accountManagerGroupProperty = cpm.findCourseNodeProperty(courseNode, null, null, ProjectBrokerCourseNode.CONF_ACCOUNTMANAGER_GROUP_KEY);
-		// Check if account-manager-group-key-property already exist
-		if (accountManagerGroupProperty != null) {
-			groupKey = accountManagerGroupProperty.getLongValue();
-			logDebug("accountManagerGroupProperty=" + accountManagerGroupProperty + "  groupKey=" + groupKey);
-		} 
-		logDebug("groupKey=" + groupKey);
-		if (groupKey != null) {
-			accountManagerGroup = businessGroupService.loadBusinessGroup(groupKey);
-			logDebug("load businessgroup=" + accountManagerGroup);
-			if (accountManagerGroup != null) {
-				return accountManagerGroup;
-			} else {
-				if (accountManagerGroupProperty != null) {
-					cpm.deleteProperty(accountManagerGroupProperty);
+		try {
+			Long groupKey = null;
+			Property accountManagerGroupProperty = cpm.findCourseNodeProperty(courseNode, null, null, ProjectBrokerCourseNode.CONF_ACCOUNTMANAGER_GROUP_KEY);
+			// Check if account-manager-group-key-property already exist
+			if (accountManagerGroupProperty != null) {
+				groupKey = accountManagerGroupProperty.getLongValue();
+				log.debug("accountManagerGroupProperty=" + accountManagerGroupProperty + "  groupKey=" + groupKey);
+			} 
+			log.debug("groupKey=" + groupKey);
+			if (groupKey != null) {
+				accountManagerGroup = businessGroupService.loadBusinessGroup(groupKey);
+				log.debug("load businessgroup=" + accountManagerGroup);
+				if (accountManagerGroup != null) {
+					return accountManagerGroup;
+				} else {
+					if (accountManagerGroupProperty != null) {
+						cpm.deleteProperty(accountManagerGroupProperty);
+					}
+					groupKey = null;
+					log.warn("ProjectBroker: Account-manager does no longer exist, create a new one", null);
 				}
-				groupKey = null;
-				logWarn("ProjectBroker: Account-manager does no longer exist, create a new one", null);
+			} else {
+				log.debug("No group for project-broker exist => create a new one");
+				RepositoryEntry re = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
+				accountManagerGroup = businessGroupService.createBusinessGroup(identity, groupName, groupDescription, -1, -1, false, false, re);
+				int i = 2;
+				while (accountManagerGroup == null) {
+					// group with this name exist already, try another name
+					accountManagerGroup = businessGroupService.createBusinessGroup(identity, groupName + " _" + i, groupDescription, -1, -1, false, false, re);
+					i++;
+				}
+				log.debug("createAndPersistBusinessGroup businessgroup=" + accountManagerGroup);			
+				
+				saveAccountManagerGroupKey(accountManagerGroup.getKey(), cpm, courseNode);
+				log.debug("created account-manager default businessgroup=" + accountManagerGroup);
 			}
-		} else {
-			logDebug("No group for project-broker exist => create a new one");
-			RepositoryEntry re = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
-			accountManagerGroup = businessGroupService.createBusinessGroup(identity, groupName, groupDescription, -1, -1, false, false, re);
-			int i = 2;
-			while (accountManagerGroup == null) {
-				// group with this name exist already, try another name
-				accountManagerGroup = businessGroupService.createBusinessGroup(identity, groupName + " _" + i, groupDescription, -1, -1, false, false, re);
-				i++;
+		} catch (AssertException e) {
+			log.error("", e);
+			if(tryToRepareAccountManagerProperty(cpm, courseNode)) {
+				accountManagerGroup = getAccountManagerGroupFor(cpm, courseNode, course, groupName, groupDescription, identity);
 			}
-			logDebug("createAndPersistBusinessGroup businessgroup=" + accountManagerGroup);			
-			
-			saveAccountManagerGroupKey(accountManagerGroup.getKey(), cpm, courseNode);
-			logDebug("created account-manager default businessgroup=" + accountManagerGroup);
 		} 
 		return accountManagerGroup;
 	}
 	
-
+	@Override
 	public void saveAccountManagerGroupKey(Long accountManagerGroupKey, CoursePropertyManager cpm, CourseNode courseNode) {
 		Property accountManagerGroupKeyProperty = cpm.createCourseNodePropertyInstance(courseNode, null, null, ProjectBrokerCourseNode.CONF_ACCOUNTMANAGER_GROUP_KEY, null, accountManagerGroupKey, null, null);
 		cpm.saveProperty(accountManagerGroupKeyProperty);	
-		logDebug("saveAccountManagerGroupKey accountManagerGroupKey=" + accountManagerGroupKey);
+		log.debug("saveAccountManagerGroupKey accountManagerGroupKey=" + accountManagerGroupKey);
 	}
 
+	@Override
 	public boolean isAccountManager(Identity identity, CoursePropertyManager cpm, CourseNode courseNode) {
-		Property accountManagerGroupProperty = cpm.findCourseNodeProperty(courseNode, null, null, ProjectBrokerCourseNode.CONF_ACCOUNTMANAGER_GROUP_KEY);
-		if (accountManagerGroupProperty != null) {
-			Long groupKey = accountManagerGroupProperty.getLongValue();
-			BusinessGroup accountManagerGroup = businessGroupService.loadBusinessGroup(groupKey);
-			if (accountManagerGroup != null) {
-				return isAccountManager(identity,  accountManagerGroup);
+		try {
+			Property accountManagerGroupProperty = cpm.findCourseNodeProperty(courseNode, null, null, ProjectBrokerCourseNode.CONF_ACCOUNTMANAGER_GROUP_KEY);
+			if (accountManagerGroupProperty != null) {
+				Long groupKey = accountManagerGroupProperty.getLongValue();
+				BusinessGroup accountManagerGroup = businessGroupService.loadBusinessGroup(groupKey);
+				if (accountManagerGroup != null) {
+					return isAccountManager(identity,  accountManagerGroup);
+				}
+			}
+		} catch (AssertException e) {//detected multiple properties
+			log.error("", e);
+			if(tryToRepareAccountManagerProperty(cpm, courseNode)) {
+				return isAccountManager(identity, cpm, courseNode);
 			}
 		}
 		return false;
  	}
+	
+	private boolean tryToRepareAccountManagerProperty(CoursePropertyManager cpm, CourseNode courseNode) {
+		List<Property> properties = cpm.findCourseNodeProperties(courseNode, null, null, ProjectBrokerCourseNode.CONF_ACCOUNTMANAGER_GROUP_KEY);
+		if(properties.size() > 1) {
+			Collections.sort(properties, (p1, p2) -> { return p1.getCreationDate().compareTo(p2.getCreationDate()); });
+			for(int i=1; i<properties.size(); i++) {
+				cpm.deleteProperty(properties.get(i));
+			}
+			dbInstance.commit();
+		}
+		return false;
+	}
 
 	public void deleteAccountManagerGroup( CoursePropertyManager cpm, CourseNode courseNode) {
-		logDebug("deleteAccountManagerGroup start...");
+		log.debug("deleteAccountManagerGroup start...");
   	Property accountManagerGroupProperty = cpm.findCourseNodeProperty(courseNode, null, null, ProjectBrokerCourseNode.CONF_ACCOUNTMANAGER_GROUP_KEY);
   	if (accountManagerGroupProperty != null) {
   		Long groupKey = accountManagerGroupProperty.getLongValue();
@@ -158,15 +190,15 @@ public class ProjectGroupManagerImpl extends BasicManager implements ProjectGrou
 				if (accountManagerGroup != null) {
 					BusinessGroupService bgs = businessGroupService;
 					bgs.deleteBusinessGroup(accountManagerGroup);
-					logAudit("ProjectBroker: Deleted accountManagerGroup=" + accountManagerGroup);
+					log.audit("ProjectBroker: Deleted accountManagerGroup=" + accountManagerGroup);
 				} else {
-					logDebug("deleteAccountManagerGroup: accountManagerGroup=" + accountManagerGroup + " has already been deleted");
+					log.debug("deleteAccountManagerGroup: accountManagerGroup=" + accountManagerGroup + " has already been deleted");
 				}
 			}
   		cpm.deleteProperty(accountManagerGroupProperty);
-			logDebug("deleteAccountManagerGroup: deleted accountManagerGroupProperty=" + accountManagerGroupProperty );
+			log.debug("deleteAccountManagerGroup: deleted accountManagerGroupProperty=" + accountManagerGroupProperty );
  	} else {
-			logDebug("deleteAccountManagerGroup: found no accountManagerGroup-key");
+			log.debug("deleteAccountManagerGroup: found no accountManagerGroup-key");
 		}
 	}
 
@@ -192,7 +224,7 @@ public class ProjectGroupManagerImpl extends BasicManager implements ProjectGrou
 		CourseGroupManager cgm = CourseFactory.loadCourse(courseId).getCourseEnvironment().getCourseGroupManager();
 		RepositoryEntry re = cgm.getCourseEntry();
 
-		logDebug("createProjectGroupFor groupName=" + groupName);
+		log.debug("createProjectGroupFor groupName=" + groupName);
 		BusinessGroup projectGroup = businessGroupService.createBusinessGroup(identity, groupName, groupDescription, -1, -1, false, false, re);
 		// projectGroup could be null when a group with name already exists
 		int counter = 2;
@@ -202,7 +234,7 @@ public class ProjectGroupManagerImpl extends BasicManager implements ProjectGrou
 			projectGroup = businessGroupService.createBusinessGroup(identity, newGroupName, groupDescription, -1, -1, false, false, re);
 			counter++;
 		}
-		logDebug("Created a new projectGroup=" + projectGroup);
+		log.debug("Created a new projectGroup=" + projectGroup);
 		return projectGroup;
 	}
 
@@ -235,7 +267,7 @@ public class ProjectGroupManagerImpl extends BasicManager implements ProjectGrou
 					if (!securityManager.isIdentityInSecurityGroup(identity, project.getCandidateGroup()) ) {
 						securityManager.addIdentityToSecurityGroup(identity, project.getCandidateGroup());
 						addedIdentityList.add(identity);
-						logAudit("ProjectBroker: Add user as candidate, identity=" + identity);
+						log.audit("ProjectBroker: Add user as candidate, identity=" + identity);
 					}
 					// fireEvents ?
 				}
@@ -252,7 +284,7 @@ public class ProjectGroupManagerImpl extends BasicManager implements ProjectGrou
 				Project reloadedProject = (Project) dbInstance.loadObject(project, true);
 				for (Identity identity : addIdentities) {
 					securityManager.removeIdentityFromSecurityGroup(identity, reloadedProject.getCandidateGroup());
-					logAudit("ProjectBroker: Remove user as candidate, identity=" + identity);
+					log.audit("ProjectBroker: Remove user as candidate, identity=" + identity);
 					// fireEvents ?
 				}
 				return Boolean.TRUE;
@@ -274,7 +306,7 @@ public class ProjectGroupManagerImpl extends BasicManager implements ProjectGrou
 				for (final Identity identity : identities) {
 					if (businessGroupService.hasRoles(identity, reloadedProject.getProjectGroup(), GroupRoles.participant.name())) {
 						securityManager.removeIdentityFromSecurityGroup(identity, reloadedProject.getCandidateGroup());
-						logAudit("ProjectBroker: Accept candidate, identity=" + identity + " project=" + reloadedProject);
+						log.audit("ProjectBroker: Accept candidate, identity=" + identity + " project=" + reloadedProject);
 					}		
 				}
 				return Boolean.TRUE;
@@ -287,7 +319,7 @@ public class ProjectGroupManagerImpl extends BasicManager implements ProjectGrou
 		if (isAcceptSelectionManually && (reloadedProject.getMaxMembers() != Project.MAX_MEMBERS_UNLIMITED) 
 				&& reloadedProject.getSelectedPlaces() >= reloadedProject.getMaxMembers()) {
 			projectBrokerManager.setProjectState(reloadedProject, Project.STATE_ASSIGNED);
-			logInfo("ProjectBroker: Accept candidate, change project-state=" + Project.STATE_ASSIGNED);
+			log.info("ProjectBroker: Accept candidate, change project-state=" + Project.STATE_ASSIGNED);
 		}
 		return response;
 	}
@@ -322,7 +354,7 @@ public class ProjectGroupManagerImpl extends BasicManager implements ProjectGrou
 	public BusinessGroup setProjectGroupMaxMembers(Identity ureqIdentity, BusinessGroup projectGroup, int maxMembers ) {
   	 BusinessGroupService bgs = businessGroupService;
   	 BusinessGroup reloadedBusinessGroup = bgs.loadBusinessGroup(projectGroup);
-  	 logDebug("ProjectGroup.name=" + reloadedBusinessGroup.getName() + " setMaxParticipants=" + maxMembers);
+  	 log.debug("ProjectGroup.name=" + reloadedBusinessGroup.getName() + " setMaxParticipants=" + maxMembers);
   	 return bgs.updateBusinessGroup(ureqIdentity, reloadedBusinessGroup, reloadedBusinessGroup.getName(), 
   			 reloadedBusinessGroup.getDescription(), reloadedBusinessGroup.getExternalId(), reloadedBusinessGroup.getManagedFlagsString(),
   			 reloadedBusinessGroup.getMinParticipants(), maxMembers);
@@ -348,7 +380,7 @@ public class ProjectGroupManagerImpl extends BasicManager implements ProjectGrou
 			Project project = iterator.next();
 			List<Identity> candidates = securityManager.getIdentitiesOfSecurityGroup(project.getCandidateGroup());
 			if (!candidates.isEmpty()) {
-				logAudit("ProjectBroker: Accept ALL candidates, project=" + project);
+				log.audit("ProjectBroker: Accept ALL candidates, project=" + project);
 				acceptCandidates(candidates, project, actionIdentity, autoSignOut, isAcceptSelectionManually);
 			}
 		}	
