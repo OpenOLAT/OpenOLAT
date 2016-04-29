@@ -33,6 +33,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map.Entry;
+import java.util.stream.IntStream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
@@ -44,6 +45,7 @@ import org.olat.core.commons.modules.bc.vfs.OlatRootFolderImpl;
 import org.olat.core.commons.services.image.Size;
 import org.olat.core.commons.services.taskexecutor.TaskExecutorManager;
 import org.olat.core.commons.services.video.MovieService;
+import org.olat.core.gui.translator.Translator;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
@@ -63,6 +65,7 @@ import org.olat.modules.video.model.VideoMetadata;
 import org.olat.modules.video.model.VideoQualityVersion;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryImportExport;
+import org.olat.repository.RepositoryEntryImportExport.RepositoryEntryImport;
 import org.olat.repository.RepositoryManager;
 import org.olat.resource.OLATResource;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -293,16 +296,21 @@ public class VideoManagerImpl implements VideoManager {
 	@Override
 	public void startTranscodingProcess(OLATResource video) {
 		//TODO: check for existing version, add option to force rebuild of all versions
+		//TODO: GUI to admin console to manage transcoding resolutions
 		Size size = getVideoSize(video);
 		int height = size.getHeight();
-		//TODO: GUI to admin console to manage transcoding resolutions
+		// 1) setup transcoding job for original file size
+		VideoQualityVersion version = addNewVersionForTranscoding(video, height);
+		VideoTranscodingTask task = new VideoTranscodingTask(video, version);
+		taskManager.execute(task, null, video, null, new Date());		
+		// 2) setup transcoding jobs for all configured sizes below the original size
 		int[] resolutions = videoModule.getTranscodingResolutions();
 		for (int resolution : resolutions) {
-			if (height < resolution) {
+			if (height <= resolution) {
 				continue;
 			}
-			VideoQualityVersion version = addNewVersionForTranscoding(video, resolution);
-			VideoTranscodingTask task = new VideoTranscodingTask(video, version);
+			version = addNewVersionForTranscoding(video, resolution);
+			task = new VideoTranscodingTask(video, version);
 			taskManager.execute(task, null, video, null, new Date());		
 		}
 		// start transcoding immediately
@@ -392,6 +400,15 @@ public class VideoManagerImpl implements VideoManager {
 	}
 	
 	@Override
+	public String getDisplayTitleForResolution(int resolution, Translator translator) {
+		int[] resolutions = videoModule.getTranscodingResolutions();
+		boolean knownResolution = IntStream.of(resolutions).anyMatch(x -> x == resolution);
+		String title = (knownResolution ? translator.translate("quality.resolution." + resolution) : resolution + "p");
+		return title;
+	}
+	
+	
+	@Override
 	public VFSContainer getMasterContainer(OLATResource videoResource) {
 		VFSContainer baseContainer =  FileResourceManager.getInstance().getFileResourceRootImpl(videoResource);
 		VFSContainer masterContainer = VFSManager.resolveOrCreateContainerFromPath(baseContainer, DIRNAME_MASTER);
@@ -435,13 +452,26 @@ public class VideoManagerImpl implements VideoManager {
 			zipFile = new ZipFile(file);
 			// 1) Check if it contains a metadata file
 			ZipEntry metadataEntry = zipFile.getEntry(VideoManagerImpl.FILENAME_VIDEO_METADATA_XML);
-			InputStream metaDataStream = zipFile.getInputStream(metadataEntry);
-			VideoMetadata videoMetadata = (VideoMetadata) XStreamHelper.readObject(XStreamHelper.createXStreamInstance(), metaDataStream);
-			zipFile.close();
-			if (videoMetadata != null) {
-				//FIXME:FG load displaytitle from repo.xml
-				eval.setValid(true);
+			VideoMetadata videoMetadata = null;
+			if (metadataEntry != null) {
+				InputStream metaDataStream = zipFile.getInputStream(metadataEntry);
+				videoMetadata = (VideoMetadata) XStreamHelper.readObject(XStreamHelper.createXStreamInstance(), metaDataStream);
+				if (videoMetadata != null) {
+					eval.setValid(true);
+				}
 			}
+			// 2) Propose title from repo metadata
+			ZipEntry repoMetadataEntry = zipFile.getEntry(DIRNAME_REPOENTRY + "/" + RepositoryEntryImportExport.PROPERTIES_FILE);
+			RepositoryEntryImport repoMetadata = null;
+			if (repoMetadataEntry != null) {
+				InputStream repoMetaDataStream = zipFile.getInputStream(repoMetadataEntry);
+				repoMetadata = RepositoryEntryImportExport.getConfiguration(repoMetaDataStream);
+				if (repoMetadata != null) {
+					eval.setDisplayname(repoMetadata.getDisplayname());
+				}
+			}
+			
+			zipFile.close();
 		} catch (Exception e) {
 			log.error("Error while checking for video resource archive", e);
 		}

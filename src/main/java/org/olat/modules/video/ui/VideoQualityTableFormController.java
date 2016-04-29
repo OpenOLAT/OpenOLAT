@@ -42,6 +42,7 @@ import org.olat.core.gui.control.generic.closablewrapper.CloseableModalControlle
 import org.olat.core.util.Formatter;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.modules.video.VideoManager;
+import org.olat.modules.video.VideoModule;
 import org.olat.modules.video.manager.VideoMediaMapper;
 import org.olat.modules.video.model.VideoQualityVersion;
 import org.olat.modules.video.ui.VideoQualityTableModel.QualityTableCols;
@@ -64,7 +65,8 @@ public class VideoQualityTableFormController extends FormBasicController {
 
 	@Autowired
 	private VideoManager videoManager;
-
+	@Autowired
+	private VideoModule videoModule;
 
 	public VideoQualityTableFormController(UserRequest ureq, WindowControl wControl, RepositoryEntry videoEntry) {
 		super(ureq, wControl, LAYOUT_VERTICAL);
@@ -94,7 +96,7 @@ public class VideoQualityTableFormController extends FormBasicController {
 
 		// Add master video file
 		FormLink previewMasterLink = uifactory.addFormLink("view", "viewQuality", "quality.view", "qulaity.view", null, Link.LINK);
-		rows.add(new QualityTableRow(translate("quality.resolution.original"), origSize.getWidth() +"x"+ origSize.getHeight(),  Formatter.formatBytes(videoManager.getVideoFile(videoResource).length()), "mp4",previewMasterLink));
+		rows.add(new QualityTableRow(translate("quality.master"), origSize.getWidth() +"x"+ origSize.getHeight(),  Formatter.formatBytes(videoManager.getVideoFile(videoResource).length()), "mp4",previewMasterLink));
 		// Add all the transcoded versions
 		List<VideoQualityVersion> versions = videoManager.getQualityVersions(videoResource);
 		for(VideoQualityVersion version:versions){
@@ -116,7 +118,9 @@ public class VideoQualityTableFormController extends FormBasicController {
 			} else if (version.getTranscodingStatus() <= VideoQualityVersion.TRANSCODING_STATUS_DONE){
 				fileSize = translate("transcoding.processing") + ": " + version.getTranscodingStatus() + "%";					
 			}
-			rows.add(new QualityTableRow(translate("quality.resolution." + version.getResolution()), dimension,  fileSize, version.getFormat(),previewVersionLink));
+			// Set title for version - standard version or original size
+			String title = videoManager.getDisplayTitleForResolution(version.getResolution(), getTranslator());
+			rows.add(new QualityTableRow(title, dimension,  fileSize, version.getFormat(),previewVersionLink));
 		}
 		
 		tableModel.setObjects(rows);

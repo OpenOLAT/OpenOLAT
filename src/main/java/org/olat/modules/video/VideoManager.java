@@ -25,6 +25,7 @@ import java.util.HashMap;
 import java.util.List;
 
 import org.olat.core.commons.services.image.Size;
+import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.fileresource.types.ResourceEvaluation;
@@ -81,6 +82,17 @@ public interface VideoManager {
 	 * @return String containing a displayable aspect ratio
 	 */
 	public abstract String getAspectRatio(Size videoSize);
+
+	/**
+	 * Create a display title for the given resolution. The title uses the i18n
+	 * keys for standard resolutions. For non standard resolutions, the
+	 * "original" translation is used
+	 * 
+	 * @param resolution The resolution of the video
+	 * @param translator The translator to be used
+	 * @return The display title for this resolution
+	 */
+	public abstract String getDisplayTitleForResolution(int resolution, Translator translator);
 
 	/**
 	 * Get the master container for this resource where the actual video is stored

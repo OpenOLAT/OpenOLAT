@@ -165,6 +165,7 @@ public class VideoDisplayController extends BasicController {
 			// Add transcoded versions
 			List<VideoQualityVersion> videos = videoManager.getQualityVersions(entry.getOlatResource());
 			List<VideoQualityVersion> readyToPlayVideos = new ArrayList<>();
+			List<String> displayTitles = new ArrayList<>();
 			int preferredAvailableResolution = 0;
 						
 			for (VideoQualityVersion videoVersion : videos) {
@@ -174,12 +175,16 @@ public class VideoDisplayController extends BasicController {
 					if (videoVersion.getResolution() >= userPreferredResolution.intValue()) {
 						preferredAvailableResolution = readyToPlayVideos.size() - 1;
 					}
+					// Calculate title. Standard title for standard resolution, original title if not standard resolution
+					String title = videoManager.getDisplayTitleForResolution(videoVersion.getResolution(), getTranslator());
+					displayTitles.add(title);
 				}
 			}
 			mainVC.contextPut("videos", readyToPlayVideos);
+			mainVC.contextPut("displayTitles", displayTitles);
 			mainVC.contextPut("useSourceChooser", Boolean.valueOf(readyToPlayVideos.size() > 1));
 			mainVC.contextPut(GUIPREF_KEY_PREFERRED_RESOLUTION, preferredAvailableResolution);
-
+			
 			// Load the track from config
 			HashMap<String, String> trackfiles = new HashMap<String, String>();
 			HashMap<String, VFSLeaf> configTracks = videoManager.getAllTracks(entry.getOlatResource());
