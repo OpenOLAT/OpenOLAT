@@ -57,7 +57,7 @@ public class PersistentTaskRunnable implements Runnable {
 		} catch (Throwable e) {
 			DBFactory.getInstance().rollbackAndCloseSession();
 			markAsFailed(task);
-			log.error("Error while running task in a separate thread: " + task.getKey(), e);
+			log.error("Error while running task in a separate thread: " + (task == null ? "NULL" : task.getKey()), e);
 		}
 	}
 	
