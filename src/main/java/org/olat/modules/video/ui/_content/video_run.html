@@ -3,7 +3,7 @@
 		<video id="$r.getId("o_vid")" width="$width" height="$height" poster="$masterUrl/poster.jpg" controls  #if( $autoplay ) autoplay #end class="o_video">			
 	    	#foreach($video in $videos)
 	    		#set($position = $velocityCount - 1)
-	    		<source type="video/mp4" src="$transcodedUrl/${video.getResolution()}video.mp4" title="$displayTitles.get($position) (${video.getFileSize()})"/>
+	    		<source type="video/mp4" src="$transcodedUrl/${video.getResolution()}video.mp4" title="$displayTitles.get($position) (${video.getFileSize()})" />
 	    	#end	    	
 	    	## Use master video file if not optimized video is found
 	    	#if ($videos.size() == 0)
@@ -38,7 +38,10 @@
 			
 			## Callback to communicate with the server
 			success: function (mediaElement, domObject) {
-		        ## listen to play events, fired when movie is finished
+#*
+## does not work for now with autoplay
+
+				## listen to play events, fired when movie is finished
 		        mediaElement.addEventListener('play', function(e) {
 		        	if (!o_info.linkbusy) {
 		        		$r.openJavaScriptCommand("play"), 'currentTime', mediaElement.currentTime, 'src', mediaElement.src);
@@ -62,7 +65,8 @@
 						$r.openJavaScriptCommand("ended"), 'currentTime', mediaElement.currentTime, 'src', mediaElement.src);
 					}
 		        }, false);
-		        ##
+*#
+				##
 		        ## Preselect the preferred source
 		        #if($useSourceChooser)
 		        jQuery(jQuery('.mejs-sourcechooser-selector input')[$preferredResolution]).prop("checked", true).trigger("click");;

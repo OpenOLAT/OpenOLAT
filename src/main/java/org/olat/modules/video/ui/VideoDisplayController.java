@@ -211,12 +211,16 @@ public class VideoDisplayController extends BasicController {
 				switch(cmd) {
 					case "play":
 						fireEvent(ureq, new VideoEvent(VideoEvent.PLAY, currentTime));
+						break;
 					case "pause":
 						fireEvent(ureq, new VideoEvent(VideoEvent.PAUSE, currentTime));
+						break;
 					case "seeked":
 						fireEvent(ureq, new VideoEvent(VideoEvent.SEEKED, currentTime));					
+						break;
 					case "ended":
 						fireEvent(ureq, new VideoEvent(VideoEvent.ENDED, currentTime));
+						break;
 				}
 				updateGUIPreferences(ureq, src);
 			}
