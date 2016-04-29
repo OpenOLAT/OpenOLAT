@@ -78,8 +78,8 @@ public class EssayEditorController extends FormBasicController {
 		VFSContainer itemContainer = (VFSContainer)rootContainer.resolve(relativePath);
 
 		String description = itemBuilder.getQuestion();
-		textEl = uifactory.addRichTextElementForStringData("desc", "form.imd.descr", description, 8, -1, true, itemContainer, null,
-				formLayout, ureq.getUserSession(), getWindowControl());
+		textEl = uifactory.addRichTextElementForStringDataCompact("desc", "form.imd.descr", description, 8, -1, itemContainer,
+				formLayout, getWindowControl());
 		
 		String placeholder = itemBuilder.getPlaceholder();
 		placeholderEl = uifactory.addTextElement("placeholder", "fib.placeholder", 256, placeholder, formLayout);

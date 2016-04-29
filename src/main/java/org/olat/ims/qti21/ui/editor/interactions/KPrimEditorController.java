@@ -99,8 +99,8 @@ public class KPrimEditorController extends FormBasicController {
 		VFSContainer itemContainer = (VFSContainer)rootContainer.resolve(relativePath);
 		
 		String description = itemBuilder.getQuestion();
-		textEl = uifactory.addRichTextElementForStringData("desc", "form.imd.descr", description, 8, -1, true, itemContainer, null,
-				metadata, ureq.getUserSession(), getWindowControl());
+		textEl = uifactory.addRichTextElementForStringDataCompact("desc", "form.imd.descr", description, 8, -1, itemContainer,
+				metadata, getWindowControl());
 		
 		//shuffle
 		String[] yesnoValues = new String[]{ translate("yes"), translate("no") };
@@ -123,7 +123,7 @@ public class KPrimEditorController extends FormBasicController {
 		if(interaction != null) {
 			List<SimpleAssociableChoice> choices = itemBuilder.getKprimChoices();
 			for(SimpleAssociableChoice choice:choices) {
-				wrapAnswer(ureq, choice);
+				wrapAnswer(choice);
 			}
 		}
 		answersCont.contextPut("choices", choiceWrappers);
@@ -138,11 +138,11 @@ public class KPrimEditorController extends FormBasicController {
 		uifactory.addFormSubmitButton("submit", buttonsContainer);
 	}
 	
-	private void wrapAnswer(UserRequest ureq, SimpleAssociableChoice choice) {
+	private void wrapAnswer(SimpleAssociableChoice choice) {
 		String choiceContent =  itemBuilder.getHtmlHelper().flowStaticString(choice.getFlowStatics());
 		String choiceId = "answer" + count++;
-		RichTextElement choiceEl = uifactory.addRichTextElementForStringData(choiceId, "form.imd.answer", choiceContent, 8, -1, true, null, null,
-				answersCont, ureq.getUserSession(), getWindowControl());
+		RichTextElement choiceEl = uifactory.addRichTextElementForStringDataCompact(choiceId, "form.imd.answer", choiceContent, 8, -1, null,
+				answersCont, getWindowControl());
 		choiceEl.setUserObject(choice);
 		answersCont.add("choiceId", choiceEl);
 		

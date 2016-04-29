@@ -89,8 +89,8 @@ public class FIBEditorController extends FormBasicController {
 		VFSContainer itemContainer = (VFSContainer)rootContainer.resolve(relativePath);
 		
 		String question = itemBuilder.getQuestion();
-		textEl = uifactory.addRichTextElementForStringData("desc", "form.imd.descr", question, 16, -1, true, itemContainer, null,
-				formLayout, ureq.getUserSession(), getWindowControl());
+		textEl = uifactory.addRichTextElementForStringDataCompact("desc", "form.imd.descr", question, 16, -1, itemContainer,
+				formLayout, getWindowControl());
 		textEl.addActionListener(FormEvent.ONCLICK);
 		textEl.setEnabled(!restrictedEdit);
 		RichTextConfiguration richTextConfig = textEl.getEditorConfiguration();

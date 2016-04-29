@@ -73,7 +73,6 @@ public class QTI21RuntimeController extends RepositoryEntryRuntimeController  {
 	
 	@Override
 	protected void initRuntimeTools(Dropdown toolsDropdown) {
-		
 		if (reSecurity.isEntryAdmin()) {
 			boolean managed = RepositoryEntryManagedFlag.isManaged(getRepositoryEntry(), RepositoryEntryManagedFlag.editcontent);
 			editLink = LinkFactory.createToolLink("edit.cmd", translate("details.openeditor"), this, "o_sel_repository_editor");

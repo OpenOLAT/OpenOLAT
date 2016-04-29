@@ -106,6 +106,7 @@ public class AssessmentItemEditorController extends BasicController {
 		this.resolvedAssessmentItem = resolvedAssessmentItem;
 		
 		mainVC = createVelocityContainer("assessment_item_editor");
+		mainVC.contextPut("restrictedEdit", restrictedEdit);
 		tabbedPane = new TabbedPane("itemTabs", getLocale());
 		tabbedPane.addListener(this);
 		mainVC.put("tabbedpane", tabbedPane);
@@ -132,6 +133,7 @@ public class AssessmentItemEditorController extends BasicController {
 		this.resolvedAssessmentItem = resolvedAssessmentItem;
 		
 		mainVC = createVelocityContainer("assessment_item_editor");
+		mainVC.contextPut("restrictedEdit", restrictedEdit);
 		tabbedPane = new TabbedPane("itemTabs", getLocale());
 		tabbedPane.addListener(this);
 		mainVC.put("tabbedpane", tabbedPane);
@@ -142,7 +144,7 @@ public class AssessmentItemEditorController extends BasicController {
 		displayCtrl = new AssessmentItemDisplayController(ureq, getWindowControl(),
 				testEntry, assessmentEntry, true, resolvedAssessmentItem, itemRef, rootDirectory);
 		listenTo(displayCtrl);
-		tabbedPane.addTab("Preview", displayCtrl);
+		tabbedPane.addTab(translate("preview"), displayCtrl);
 		
 		putInitialPanel(mainVC);
 	}

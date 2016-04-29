@@ -104,8 +104,8 @@ public class MultipleChoiceEditorController extends FormBasicController {
 		VFSContainer itemContainer = (VFSContainer)rootContainer.resolve(relativePath);
 		
 		String description = itemBuilder.getQuestion();
-		textEl = uifactory.addRichTextElementForStringData("desc", "form.imd.descr", description, 8, -1, true, itemContainer, null,
-				metadata, ureq.getUserSession(), getWindowControl());
+		textEl = uifactory.addRichTextElementForStringDataCompact("desc", "form.imd.descr", description, 8, -1, itemContainer,
+				metadata, getWindowControl());
 		
 		//shuffle
 		String[] yesnoValues = new String[]{ translate("yes"), translate("no") };
@@ -129,7 +129,7 @@ public class MultipleChoiceEditorController extends FormBasicController {
 			
 			List<SimpleChoice> choices = itemBuilder.getSimpleChoices();
 			for(SimpleChoice choice:choices) {
-				wrapAnswer(ureq, choice);
+				wrapAnswer(choice);
 			}
 		}
 		answersCont.contextPut("choices", choiceWrappers);
@@ -137,18 +137,18 @@ public class MultipleChoiceEditorController extends FormBasicController {
 		recalculateUpDownLinks();
 
 		// Submit Button
-		FormLayoutContainer buttonsContainer = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
+		FormLayoutContainer buttonsContainer = FormLayoutContainer.createDefaultFormLayout("buttons", getTranslator());
 		buttonsContainer.setRootForm(mainForm);
 		formLayout.add(buttonsContainer);
 		formLayout.add("buttons", buttonsContainer);
 		uifactory.addFormSubmitButton("submit", buttonsContainer);
 	}
 
-	private void wrapAnswer(UserRequest ureq, SimpleChoice choice) {
+	private void wrapAnswer(SimpleChoice choice) {
 		String choiceContent =  itemBuilder.getHtmlHelper().flowStaticString(choice.getFlowStatics());
 		String choiceId = "answer" + count++;
-		RichTextElement choiceEl = uifactory.addRichTextElementForStringData(choiceId, "form.imd.answer", choiceContent, 8, -1, true, null, null,
-				answersCont, ureq.getUserSession(), getWindowControl());
+		RichTextElement choiceEl = uifactory.addRichTextElementForStringDataCompact(choiceId, "form.imd.answer", choiceContent, 8, -1, null,
+				answersCont, getWindowControl());
 		choiceEl.setUserObject(choice);
 		answersCont.add("choiceId", choiceEl);
 		
@@ -246,7 +246,7 @@ public class MultipleChoiceEditorController extends FormBasicController {
 			if("rm".equals(cmd)) {
 				doRemoveSimpleChoice((SimpleChoiceWrapper)button.getUserObject());
 			} else if("add".equals(cmd)) {
-				doAddSimpleChoice(ureq);
+				doAddSimpleChoice();
 			} else if("up".equals(cmd)) {
 				doMoveSimpleChoiceUp((SimpleChoiceWrapper)button.getUserObject());
 			} else if("down".equals(cmd)) {
@@ -256,14 +256,14 @@ public class MultipleChoiceEditorController extends FormBasicController {
 		super.formInnerEvent(ureq, source, event);
 	}
 	
-	private void doAddSimpleChoice(UserRequest ureq) {
+	private void doAddSimpleChoice() {
 		ChoiceInteraction interaction = itemBuilder.getChoiceInteraction();
 		SimpleChoice newChoice = new SimpleChoice(interaction);
 		newChoice.setIdentifier(IdentifierGenerator.newAsIdentifier("mc"));
 		P firstChoiceText = AssessmentItemFactory.getParagraph(newChoice, "New answer");
 		newChoice.getFlowStatics().add(firstChoiceText);
 		
-		wrapAnswer(ureq, newChoice);
+		wrapAnswer(newChoice);
 		flc.setDirty(true);
 	}
 	

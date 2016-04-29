@@ -1,3 +1,6 @@
+#if($restrictedEdit)
+	<div class="o_warning">$r.translate("warning.in.use")</div>
+#end
 <div class="o_assessment_test_editor_and_composer">
 	<h2><i class="$cssClass"> </i> $title <small>$identifier</small></h2>
 	<section>$r.render("content")</section>

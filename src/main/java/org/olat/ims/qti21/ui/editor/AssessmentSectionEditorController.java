@@ -77,15 +77,15 @@ public class AssessmentSectionEditorController extends ItemSessionControlControl
 		titleEl.setMandatory(true);
 		
 		if(section.getRubricBlocks().isEmpty()) {
-			RichTextElement rubricEl = uifactory.addRichTextElementForStringData("rubric" + counter++, "form.imd.rubric", "", 8, -1, true, null, null,
-					formLayout, ureq.getUserSession(), getWindowControl());
+			RichTextElement rubricEl = uifactory.addRichTextElementForStringDataCompact("rubric" + counter++, "form.imd.rubric", "", 8, -1, null,
+					formLayout, getWindowControl());
 			rubricEl.getEditorConfiguration().setFileBrowserUploadRelPath("media");
 			rubricEls.add(rubricEl);
 		} else {
 			for(RubricBlock rubricBlock:section.getRubricBlocks()) {
 				String rubric = htmlBuilder.blocksString(rubricBlock.getBlocks());
-				RichTextElement rubricEl = uifactory.addRichTextElementForStringData("rubric" + counter++, "form.imd.rubric", rubric, 8, -1, true, null, null,
-						formLayout, ureq.getUserSession(), getWindowControl());
+				RichTextElement rubricEl = uifactory.addRichTextElementForStringDataCompact("rubric" + counter++, "form.imd.rubric", rubric, 8, -1, null,
+						formLayout, getWindowControl());
 				rubricEl.getEditorConfiguration().setFileBrowserUploadRelPath("media");
 				rubricEl.setUserObject(rubricBlock);
 				rubricEls.add(rubricEl);

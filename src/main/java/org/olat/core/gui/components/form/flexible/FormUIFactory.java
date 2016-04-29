@@ -746,6 +746,19 @@ public class FormUIFactory {
 		formLayout.add(rte);
 		return rte;
 	}
+	
+	public RichTextElement addRichTextElementForStringDataCompact(String name, String i18nLabel, String initialHTMLValue, int rows,
+			int cols, VFSContainer baseContainer, FormItemContainer formLayout, WindowControl wControl) {
+		// Create rich text element with bare bone configuration
+		RichTextElement rte = new RichTextElementImpl(name, initialHTMLValue, rows, cols, formLayout.getRootForm(), formLayout.getTranslator().getLocale());
+		setLabelIfNotNull(i18nLabel, rte);
+		// Now configure editor
+		Theme theme = wControl.getWindowBackOffice().getWindow().getGuiTheme();
+		rte.getEditorConfiguration().setConfigProfileFormCompactEditor(theme, baseContainer);			
+		// Add to form and finish
+		formLayout.add(rte);
+		return rte;
+	}
 
 	/**
 	 * Add a rich text formattable element that offers complex formatting

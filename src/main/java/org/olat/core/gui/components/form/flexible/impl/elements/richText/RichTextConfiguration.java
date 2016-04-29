@@ -144,6 +144,7 @@ public class RichTextConfiguration implements Disposable {
 	private String linkBrowserAbsolutFilePath;
 	private boolean relativeUrls = true;
 	private boolean removeScriptHost = true;
+	private boolean statusBar = true;
 	private boolean allowCustomMediaFactory = true;
 	private CustomLinkTreeModel linkBrowserCustomTreeModel;	
 	// DOM ID of the flexi form element
@@ -205,6 +206,21 @@ public class RichTextConfiguration implements Disposable {
 		setQuotedConfigValue(INVALID_ELEMENTS, INVALID_ELEMENTS_FORM_MINIMALISTIC_VALUE_UNSAVE);
 		
 		tinyConfig = TinyConfig.minimalisticConfig;
+	}
+	
+	public void setConfigProfileFormCompactEditor(Theme guiTheme, VFSContainer baseContainer) {
+		setConfigBasics(guiTheme);
+		// Add additional plugins
+		TinyMCECustomPluginFactory customPluginFactory = CoreSpringFactory.getImpl(TinyMCECustomPluginFactory.class);
+		List<TinyMCECustomPlugin> enabledCustomPlugins = customPluginFactory.getCustomPlugionsForProfile();
+		for (TinyMCECustomPlugin tinyMCECustomPlugin : enabledCustomPlugins) {
+			setCustomPluginEnabled(tinyMCECustomPlugin);
+		}
+		
+		// Don't allow javascript or iframes, if the file browser is there allow also media elements (the full values)
+		setQuotedConfigValue(INVALID_ELEMENTS, (baseContainer == null ? INVALID_ELEMENTS_FORM_SIMPLE_VALUE_UNSAVE : INVALID_ELEMENTS_FORM_FULL_VALUE_UNSAVE));
+		tinyConfig = TinyConfig.editorCompactConfig;
+		setStatusBar(false);
 	}
 
 
@@ -345,6 +361,23 @@ public class RichTextConfiguration implements Disposable {
 
 	public void setAllowCustomMediaFactory(boolean allowCustomMediaFactory) {
 		this.allowCustomMediaFactory = allowCustomMediaFactory;
+	}
+	
+
+
+	public boolean isStatusBar() {
+		return statusBar;
+	}
+
+	/**
+	 * Allow to remove the status bar
+	 * 
+	 * @see https://www.tinymce.com/docs/configure/editor-appearance/#statusbar
+	 * 
+	 * @param statusBar
+	 */
+	public void setStatusBar(boolean statusBar) {
+		this.statusBar = statusBar;
 	}
 
 	/**
@@ -830,6 +863,7 @@ public class RichTextConfiguration implements Disposable {
 		  .append("statusbar:true,\n")
 		  .append("relative_urls:").append(isRelativeUrls()).append(",\n")
 		  .append("remove_script_host:").append(isRemoveScriptHost()).append(",\n")
+		  .append("statusbar:").append(isStatusBar()).append(",\n")
 		  .append("menubar:").append(tinyConfig.hasMenu()).append(",\n");
  		
  		String leftAndClear = "Left and clear";

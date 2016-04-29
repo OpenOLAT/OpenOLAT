@@ -29,6 +29,7 @@ package org.olat.core.gui.components.form.flexible.impl.elements.richText;
 public class TinyConfig {
 	protected static final TinyConfig editorConfig;
 	protected static final TinyConfig editorFullConfig;
+	protected static final TinyConfig editorCompactConfig;
 	protected static final TinyConfig fileEditorConfig;
 	protected static final TinyConfig minimalisticConfig;
 
@@ -49,6 +50,19 @@ public class TinyConfig {
 		};
 		String tools1 = "bold italic underline | alignjustify alignright aligncenter alignleft | formatselect | fontselect fontsizeselect | forecolor backcolor | bullist numlist indent outdent | olatqtifibtext olatqtifibnumerical olatmovieviewer image charmap olatsmileys hr link | code";
 		editorConfig = new TinyConfig(plugins, menu, tools1);
+	}
+	//compact profile
+	static {
+		String plugins =   "contextmenu,colorpicker,textcolor,hr,olatsmileys,paste,link,charmap,quotespliter,olatmatheditor,tabfocus,visualchars,visualblocks,noneditable,table";
+		String[] menu = {
+				"edit: {title: 'Edit', items: 'undo redo | cut copy paste pastetext | selectall searchreplace'}",
+				"insert: {title: 'Insert', items: 'olatmovieviewer media image link | olatmatheditor hr charmap insertdatetime olatsmileys'}",
+				"view: {title: 'View', items: 'visualblocks visualchars visualaid | preview fullscreen'}",
+				"format: {title: 'Format', items: 'bold italic underline strikethrough superscript subscript | formats | removeformat'}",
+				"table: {title: 'Table', items: 'inserttable tableprops deletetable | cell row column'}"
+		};
+		String tools1 = "bold italic underline | alignjustify alignright aligncenter alignleft  | styleselect | forecolor backcolor | bullist numlist indent outdent | olatqtifibtext olatqtifibnumerical olatmovieviewer image charmap hr link | code";
+		editorCompactConfig = new TinyConfig(plugins, menu, tools1);
 	}
 	//full profile
 	static {

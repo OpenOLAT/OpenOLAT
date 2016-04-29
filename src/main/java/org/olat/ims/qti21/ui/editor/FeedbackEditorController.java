@@ -70,8 +70,8 @@ public class FeedbackEditorController extends FormBasicController {
 			feedbackCorrectTitleEl.setUserObject(correctFeedback);
 			feedbackCorrectTitleEl.setEnabled(!restrictedEdit);
 			String correctText = correctFeedback == null ? "" : correctFeedback.getText();
-			feedbackCorrectTextEl = uifactory.addRichTextElementForStringData("correctText", "form.imd.correct.text", correctText, 8, -1, true, null, null,
-					formLayout, ureq.getUserSession(), getWindowControl());
+			feedbackCorrectTextEl = uifactory.addRichTextElementForStringDataCompact("correctText", "form.imd.correct.text", correctText, 8, -1, null,
+					formLayout, getWindowControl());
 			feedbackCorrectTextEl.setEnabled(!restrictedEdit);
 			RichTextConfiguration richTextConfig = feedbackCorrectTextEl.getEditorConfiguration();
 			richTextConfig.setFileBrowserUploadRelPath("media");// set upload dir to the media dir
@@ -84,8 +84,8 @@ public class FeedbackEditorController extends FormBasicController {
 			feedbackEmptyTitleEl.setUserObject(emptyFeedback);
 			feedbackEmptyTitleEl.setEnabled(!restrictedEdit);
 			String emptyText = emptyFeedback == null ? "" : emptyFeedback.getText();
-			feedbackEmptyTextEl = uifactory.addRichTextElementForStringData("emptyText", "form.imd.empty.text", emptyText, 8, -1, true, null, null,
-					formLayout, ureq.getUserSession(), getWindowControl());
+			feedbackEmptyTextEl = uifactory.addRichTextElementForStringDataCompact("emptyText", "form.imd.empty.text", emptyText, 8, -1, null,
+					formLayout, getWindowControl());
 			feedbackEmptyTextEl.setEnabled(!restrictedEdit);
 			RichTextConfiguration richTextConfig = feedbackEmptyTextEl.getEditorConfiguration();
 			richTextConfig.setFileBrowserUploadRelPath("media");// set upload dir to the media dir
@@ -99,8 +99,8 @@ public class FeedbackEditorController extends FormBasicController {
 			feedbackIncorrectTitleEl.setUserObject(incorrectFeedback);
 			feedbackIncorrectTitleEl.setEnabled(!restrictedEdit);
 			String incorrectText = incorrectFeedback == null ? "" : incorrectFeedback.getText();
-			feedbackIncorrectTextEl = uifactory.addRichTextElementForStringData("incorrectText", "form.imd.incorrect.text", incorrectText, 8, -1, true, null, null,
-					formLayout, ureq.getUserSession(), getWindowControl());
+			feedbackIncorrectTextEl = uifactory.addRichTextElementForStringDataCompact("incorrectText", "form.imd.incorrect.text", incorrectText, 8, -1, null,
+					formLayout, getWindowControl());
 			feedbackIncorrectTextEl.setEnabled(!restrictedEdit);
 			RichTextConfiguration richTextConfig2 = feedbackIncorrectTextEl.getEditorConfiguration();
 			richTextConfig2.setFileBrowserUploadRelPath("media");// set upload dir to the media dir

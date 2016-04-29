@@ -734,6 +734,7 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 		mainVC.contextPut("cssClass", selectedNode.getIconCssClass());
 		mainVC.contextPut("identifier", selectedNode.getIdent());
 		mainVC.contextPut("title", selectedNode.getTitle());
+		mainVC.contextPut("restrictedEdit", restrictedEdit);
 
 		Object uobject = selectedNode.getUserObject();
 		if(uobject instanceof AssessmentTest) {
