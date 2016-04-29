@@ -65,6 +65,7 @@ public class AssessmentTestPartEditorController extends ItemSessionControlContro
 		String mode = testPart.getNavigationMode() == null ? NavigationMode.LINEAR.name() : testPart.getNavigationMode().name();
 		navigationModeEl = uifactory.addRadiosHorizontal("navigationMode", "form.testPart.navigationMode", formLayout, navigationKeys, navigationValues);
 		navigationModeEl.select(mode, true);
+		navigationModeEl.setEnabled(!restrictedEdit);
 
 		FormLayoutContainer buttonsCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		formLayout.add(buttonsCont);

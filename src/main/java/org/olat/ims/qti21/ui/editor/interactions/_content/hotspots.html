@@ -1,4 +1,6 @@
-<div class="btn-group small">$r.render("new.circle") $r.render("new.rectangle")</div>
+#if($r.visible("new.circle"))
+	<div class="btn-group small">$r.render("new.circle")  $r.render("new.rectangle")</div>
+#end
 <div id="o_qti_hotspots_edit" style="position:relative; width:${width}px; height:${height}px; #if($filename && !${filename.isEmpty()}) background-image: url($mapperUri/$filename); #end">
 #foreach($hotspot in $hotspots)
 	<input type="hidden" id="${hotspot.identifier}_shape" name="${hotspot.identifier}_shape" value="${hotspot.shape}" />
@@ -8,15 +10,17 @@
 <script type="text/javascript">
 /* <![CDATA[ */
 jQuery(function() {
-	var board = jQuery("#o_qti_hotspots_edit").drawing();
+	var board = jQuery("#o_qti_hotspots_edit").drawing({ resize: !${restrictedEdit}, drag: !${restrictedEdit} });
 	#foreach($hotspot in $hotspots)
 		board.shape('${hotspot.identifier}','${hotspot.shape}','${hotspot.coords}')
 			.addClass(#if($hotspot.correct) 'o_qti_hotspot_correct' #else 'o_qti_hotspot_not_correct' #end)
+			.append("<span class='o_qti_hotspot_label'>${foreach.count}.</span>")
+		#if(!${restrictedEdit})
 			.on("resizestop dragstop", function(event, ui) {
 				$r.openJavaScriptCommand("move-hotspot"),'hotspot',ui.helper.attr('id'),'coords',board.getCoords(ui.helper));
 			})
-			.append("<span class='o_qti_hotspot_label'>${foreach.count}.</span>")
-			.append("<a class='o_qti_hotspot_delete' href='javascript:;' data-qti-hotspot='${hotspot.identifier}'><i class='o_icon o_icon_remove'> </i></a>");
+			.append("<a class='o_qti_hotspot_delete' href='javascript:;' data-qti-hotspot='${hotspot.identifier}'><i class='o_icon o_icon_remove'> </i></a>")
+		#end ;
 	#end
 	jQuery("#o_qti_hotspots_edit a.o_qti_hotspot_delete").on('click', function(e) {
 		$r.openJavaScriptCommand("delete-hotspot"),'hotspot',jQuery(this).data('qti-hotspot'));

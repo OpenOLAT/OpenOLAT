@@ -181,10 +181,25 @@ public class AssessmentTestSessionDAO {
 		return dbInstance.getCurrentEntityManager().merge(testSession);
 	}
 	
-	public boolean hasTestSession() {
-		return false;
+	/**
+	 * Search test session without the author mode flag set to true.
+	 * @param testEntry
+	 * @return
+	 */
+	public boolean hasActiveTestSession(RepositoryEntryRef testEntry) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select session.key from qtiassessmenttestsession session ")
+		  .append("where session.testEntry.key=:testEntryKey and session.authorMode=false");
+		
+		List<Long> sessionKey = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Long.class)
+				.setParameter("testEntryKey", testEntry.getKey())
+				.setFirstResult(0)
+				.setMaxResults(1)
+				.getResultList();
+		return sessionKey != null && sessionKey.size() > 0 && sessionKey.get(0) != null;
 	}
-	
+
 	public List<AssessmentTestSession> getUserTestSessions(RepositoryEntryRef courseEntry, String courseSubIdent, IdentityRef identity) {
 		return dbInstance.getCurrentEntityManager()
 				.createNamedQuery("loadTestSessionsByUserAndRepositoryEntryAndSubIdent", AssessmentTestSession.class)

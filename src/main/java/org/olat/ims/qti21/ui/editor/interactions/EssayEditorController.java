@@ -53,16 +53,19 @@ public class EssayEditorController extends FormBasicController {
 	private final File itemFile;
 	private final File rootDirectory;
 	private final VFSContainer rootContainer;
+	
+	private final boolean restrictedEdit;
 	private final EssayAssessmentItemBuilder itemBuilder;
 	
 	public EssayEditorController(UserRequest ureq, WindowControl wControl, EssayAssessmentItemBuilder itemBuilder,
-			File rootDirectory, VFSContainer rootContainer, File itemFile) {
+			File rootDirectory, VFSContainer rootContainer, File itemFile, boolean restrictedEdit) {
 		super(ureq, wControl);
 		setTranslator(Util.createPackageTranslator(AssessmentTestEditorController.class, getLocale()));
 		this.itemFile = itemFile;
 		this.itemBuilder = itemBuilder;
 		this.rootDirectory = rootDirectory;
 		this.rootContainer = rootContainer;
+		this.restrictedEdit = restrictedEdit;
 		initForm(ureq);
 	}
 
@@ -84,14 +87,18 @@ public class EssayEditorController extends FormBasicController {
 		//width (expectedLength), height (expectedLines)
 		String expectedLength = getValue(itemBuilder.getExpectedLength());
 		widthEl = uifactory.addTextElement("cols", "essay.columns", -1, expectedLength, formLayout);
+		widthEl.setEnabled(!restrictedEdit);
 		String expectedLines = getValue(itemBuilder.getExpectedLines());
 		heightEl = uifactory.addTextElement("rows", "essay.rows", -1, expectedLines, formLayout);
+		heightEl.setEnabled(!restrictedEdit);
 
 		//words count min. max. (maxStrings)
 		String minStrings = getValue(itemBuilder.getMinStrings());
 		minWordsEl = uifactory.addTextElement("min.strings", "essay.min.strings", -1, minStrings, formLayout);
+		minWordsEl.setEnabled(!restrictedEdit);
 		String maxStrings = getValue(itemBuilder.getMaxStrings());
 		maxWordsEl = uifactory.addTextElement("max.strings", "essay.max.strings", -1, maxStrings, formLayout);
+		maxWordsEl.setEnabled(!restrictedEdit);
 
 		// Submit Button
 		FormLayoutContainer buttonsContainer = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
@@ -158,12 +165,14 @@ public class EssayEditorController extends FormBasicController {
 		itemBuilder.setQuestion(questionText);
 		
 		itemBuilder.setPlaceholder(placeholderEl.getValue());
-		//width and height
-		itemBuilder.setExpectedLength(getValue(widthEl));
-		itemBuilder.setExpectedLines(getValue(heightEl));
-		//min. max. words
-		itemBuilder.setMinStrings(getValue(minWordsEl));
-		itemBuilder.setMaxStrings(getValue(maxWordsEl));
+		if(!restrictedEdit) {
+			//width and height
+			itemBuilder.setExpectedLength(getValue(widthEl));
+			itemBuilder.setExpectedLines(getValue(heightEl));
+			//min. max. words
+			itemBuilder.setMinStrings(getValue(minWordsEl));
+			itemBuilder.setMaxStrings(getValue(maxWordsEl));
+		}
 		
 		fireEvent(ureq, new AssessmentItemEvent(AssessmentItemEvent.ASSESSMENT_ITEM_CHANGED, itemBuilder.getAssessmentItem(), QTI21QuestionType.essay));
 	}

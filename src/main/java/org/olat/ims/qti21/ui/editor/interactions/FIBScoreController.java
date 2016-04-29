@@ -68,9 +68,9 @@ public class FIBScoreController extends AssessmentItemRefEditorController implem
 	
 	private int counter = 0;
 	
-	public FIBScoreController(UserRequest ureq, WindowControl wControl, FIBAssessmentItemBuilder itemBuilder,
-			AssessmentItemRef itemRef) {
-		super(ureq, wControl, itemRef);
+	public FIBScoreController(UserRequest ureq, WindowControl wControl,
+			FIBAssessmentItemBuilder itemBuilder, AssessmentItemRef itemRef, boolean restrictedEdit) {
+		super(ureq, wControl, itemRef, restrictedEdit);
 		setTranslator(Util.createPackageTranslator(AssessmentTestEditorController.class, getLocale()));
 		this.itemBuilder = itemBuilder;
 		initForm(ureq);
@@ -81,10 +81,12 @@ public class FIBScoreController extends AssessmentItemRefEditorController implem
 		super.initForm(formLayout, listener, ureq);
 		minScoreEl = uifactory.addTextElement("min.score", "min.score", 8, "0.0", formLayout);
 		minScoreEl.setEnabled(false);
+		minScoreEl.setEnabled(!restrictedEdit);
 		
 		ScoreBuilder maxScore = itemBuilder.getMaxScoreBuilder();
 		String maxValue = maxScore == null ? "" : (maxScore.getScore() == null ? "" : maxScore.getScore().toString());
 		maxScoreEl = uifactory.addTextElement("max.score", "max.score", 8, maxValue, formLayout);
+		maxScoreEl.setEnabled(!restrictedEdit);
 		
 		String[] modeValues = new String[]{
 				translate("form.score.assessment.all.correct"),
@@ -92,6 +94,7 @@ public class FIBScoreController extends AssessmentItemRefEditorController implem
 		};
 		assessmentModeEl = uifactory.addRadiosHorizontal("assessment.mode", "form.score.assessment.mode", formLayout, modeKeys, modeValues);
 		assessmentModeEl.addActionListener(FormEvent.ONCHANGE);
+		assessmentModeEl.setEnabled(!restrictedEdit);
 		if(itemBuilder.getScoreEvaluationMode() == ScoreEvaluation.perAnswer) {
 			assessmentModeEl.select(ScoreEvaluation.perAnswer.name(), true);
 		} else {
@@ -153,6 +156,7 @@ public class FIBScoreController extends AssessmentItemRefEditorController implem
 		String pointElId = "points_" + counter++;
 		TextElement pointEl = uifactory.addTextElement(pointElId, null, 5, points, scoreCont);
 		pointEl.setDisplaySize(5);
+		pointEl.setEnabled(!restrictedEdit);
 		scoreCont.add(pointElId, pointEl);
 		return new TextEntryWrapper(entry, pointEl);
 	}
@@ -199,6 +203,8 @@ public class FIBScoreController extends AssessmentItemRefEditorController implem
 
 	@Override
 	protected void formOK(UserRequest ureq) {
+		if(restrictedEdit) return;
+		
 		String maxScoreValue = maxScoreEl.getValue();
 		Double maxScore = Double.parseDouble(maxScoreValue);
 		itemBuilder.setMaxScore(maxScore);

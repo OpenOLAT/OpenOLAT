@@ -48,14 +48,16 @@ public class AssessmentTestOptionsEditorController extends FormBasicController {
 	private TextElement titleEl, maxScoreEl, cutValueEl;
 	private SingleSelection exportScoreEl;
 	
+	private final boolean restrictedEdit;
 	private final AssessmentTest assessmentTest;
 	private final AssessmentTestBuilder testBuilder;
 	
 	public AssessmentTestOptionsEditorController(UserRequest ureq, WindowControl wControl,
-			AssessmentTest assessmentTest, AssessmentTestBuilder testBuilder) {
+			AssessmentTest assessmentTest, AssessmentTestBuilder testBuilder, boolean restrictedEdit) {
 		super(ureq, wControl, Util.createPackageTranslator(AssessmentTestDisplayController.class, ureq.getLocale()));
 		this.assessmentTest = assessmentTest;
 		this.testBuilder = testBuilder;
+		this.restrictedEdit = restrictedEdit;
 		initForm(ureq);
 	}
 
@@ -68,6 +70,7 @@ public class AssessmentTestOptionsEditorController extends FormBasicController {
 		//export score
 		String[] yesnoValues = new String[] { translate("yes"), translate("no") };
 		exportScoreEl = uifactory.addRadiosHorizontal("form.test.export.score", formLayout, yesnoKeys, yesnoValues);
+		exportScoreEl.setEnabled(!restrictedEdit);
 		if(testBuilder.isExportScore()) {
 			exportScoreEl.select(yesnoKeys[0], true);
 		} else {
@@ -81,6 +84,7 @@ public class AssessmentTestOptionsEditorController extends FormBasicController {
 		Double cutValue = testBuilder.getCutValue();
 		String cutValueStr = cutValue == null ? "" : cutValue.toString();
 		cutValueEl = uifactory.addTextElement("cut.value", "cut.value", 8, cutValueStr, formLayout);
+		cutValueEl.setEnabled(!restrictedEdit);
 
 		FormLayoutContainer buttonsCont = FormLayoutContainer.createButtonLayout("butons", getTranslator());
 		formLayout.add(buttonsCont);

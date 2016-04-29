@@ -48,7 +48,7 @@ public abstract class ItemSessionControlController extends FormBasicController {
 	private SingleSelection allowCommentEl, showSolutionEl;
 	private TextElement maxAttemptsEl, maxTimeEl;
 	
-	private final boolean restrictedEdit;
+	protected final boolean restrictedEdit;
 	private final AbstractPart part;
 	
 	public ItemSessionControlController(UserRequest ureq, WindowControl wControl,
@@ -69,6 +69,7 @@ public abstract class ItemSessionControlController extends FormBasicController {
 		}
 		maxTimeEl = uifactory.addTextElement("time.limit", "time.limit.max", 4, timeMax, formLayout);
 		maxTimeEl.setDisplaySize(4);
+		maxTimeEl.setEnabled(!restrictedEdit);
 
 		ItemSessionControl itemSessionControl = part.getItemSessionControl();//can be null
 		
@@ -77,6 +78,7 @@ public abstract class ItemSessionControlController extends FormBasicController {
 			maxAttempts = Integer.toString(itemSessionControl.getMaxAttempts());
 		}
 		maxAttemptsEl = uifactory.addTextElement("attempts", "item.session.control.attempts", 4, maxAttempts, formLayout);
+		maxAttemptsEl.setEnabled(!restrictedEdit);
 		
 		String[] yesnoValues = new String[] { translate("yes"), translate("no") };
 		allowCommentEl = uifactory.addRadiosHorizontal("item.session.control.allow.comment", formLayout, yesnoKeys, yesnoValues);

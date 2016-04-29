@@ -114,6 +114,14 @@ public interface QTI21Service {
 	 */
 	public QTI21DeliveryOptions getDeliveryOptions(RepositoryEntry testEntry);
 	
+	/**
+	 * Check if some user made assessment with this test.
+	 * 
+	 * @param testEntry
+	 * @return
+	 */
+	public boolean isAssessmentTestActivelyUsed(RepositoryEntry testEntry);
+	
 	public void setDeliveryOptions(RepositoryEntry testEntry, QTI21DeliveryOptions options);
 	
 	

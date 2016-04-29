@@ -70,19 +70,21 @@ public class MultipleChoiceEditorController extends FormBasicController {
 	private final VFSContainer rootContainer;
 	
 	private int count = 0;
+	private final boolean restrictedEdit;
 	private final MultipleChoiceAssessmentItemBuilder itemBuilder;
 	
 	private static final String[] yesnoKeys = new String[]{ "y", "n"};
 
 	public MultipleChoiceEditorController(UserRequest ureq, WindowControl wControl,
 			MultipleChoiceAssessmentItemBuilder itemBuilder,
-			File rootDirectory, VFSContainer rootContainer, File itemFile) {
+			File rootDirectory, VFSContainer rootContainer, File itemFile, boolean restrictedEdit) {
 		super(ureq, wControl, "simple_choices_editor");
 		setTranslator(Util.createPackageTranslator(AssessmentTestEditorController.class, getLocale()));
 		this.itemBuilder = itemBuilder;
 		this.itemFile = itemFile;
 		this.rootDirectory = rootDirectory;
 		this.rootContainer = rootContainer;
+		this.restrictedEdit = restrictedEdit;
 		initForm(ureq);
 	}
 
@@ -108,6 +110,7 @@ public class MultipleChoiceEditorController extends FormBasicController {
 		//shuffle
 		String[] yesnoValues = new String[]{ translate("yes"), translate("no") };
 		shuffleEl = uifactory.addRadiosHorizontal("shuffle", "form.imd.shuffle", metadata, yesnoKeys, yesnoValues);
+		shuffleEl.setEnabled(!restrictedEdit);
 		if (itemBuilder.isShuffle()) {
 			shuffleEl.select("y", true);
 		} else {
@@ -130,6 +133,7 @@ public class MultipleChoiceEditorController extends FormBasicController {
 			}
 		}
 		answersCont.contextPut("choices", choiceWrappers);
+		answersCont.contextPut("restrictedEdit", restrictedEdit);
 		recalculateUpDownLinks();
 
 		// Submit Button
@@ -150,21 +154,25 @@ public class MultipleChoiceEditorController extends FormBasicController {
 		
 		FormLink removeLink = uifactory.addFormLink("rm-".concat(choiceId), "rm", "", null, answersCont, Link.NONTRANSLATED);
 		removeLink.setIconLeftCSS("o_icon o_icon-lg o_icon_delete");
+		removeLink.setEnabled(!restrictedEdit);
 		answersCont.add(removeLink);
 		answersCont.add("rm-".concat(choiceId), removeLink);
 		
 		FormLink addLink = uifactory.addFormLink("add-".concat(choiceId), "add", "", null, answersCont, Link.NONTRANSLATED);
 		addLink.setIconLeftCSS("o_icon o_icon-lg o_icon_add");
+		addLink.setEnabled(!restrictedEdit);
 		answersCont.add(addLink);
 		answersCont.add("add-".concat(choiceId), addLink);
 		
 		FormLink upLink = uifactory.addFormLink("up-".concat(choiceId), "up", "", null, answersCont, Link.NONTRANSLATED);
 		upLink.setIconLeftCSS("o_icon o_icon-lg o_icon_move_up");
+		upLink.setEnabled(!restrictedEdit);
 		answersCont.add(upLink);
 		answersCont.add("up-".concat(choiceId), upLink);
 		
 		FormLink downLink = uifactory.addFormLink("down-".concat(choiceId), "down", "", null, answersCont, Link.NONTRANSLATED);
 		downLink.setIconLeftCSS("o_icon o_icon-lg o_icon_move_down");
+		downLink.setEnabled(!restrictedEdit);
 		answersCont.add(downLink);
 		answersCont.add("down-".concat(choiceId), downLink);
 		

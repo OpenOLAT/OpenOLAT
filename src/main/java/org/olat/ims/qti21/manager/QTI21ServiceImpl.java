@@ -28,8 +28,6 @@ import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
@@ -137,8 +135,6 @@ public class QTI21ServiceImpl implements QTI21Service, InitializingBean, Disposa
 	static {
 		configXstream.alias("deliveryOptions", QTI21DeliveryOptions.class);
 	}
-	
-	private static final DateFormat submittedFileDateFormat = new SimpleDateFormat("yyyyMMdd_hhmmss");
 	
 	@Autowired
 	private EventDAO eventDao;
@@ -252,6 +248,11 @@ public class QTI21ServiceImpl implements QTI21Service, InitializingBean, Disposa
 				log.error("", e);
 			}
 		}
+	}
+
+	@Override
+	public boolean isAssessmentTestActivelyUsed(RepositoryEntry testEntry) {
+		return testSessionDao.hasActiveTestSession(testEntry);
 	}
 
 	@Override

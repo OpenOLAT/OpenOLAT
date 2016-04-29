@@ -44,13 +44,16 @@ public abstract class AssessmentItemRefEditorController extends FormBasicControl
 	private TextElement maxAttemptsEl;
 	private SingleSelection limitAttemptsEl;
 	
+	protected final boolean restrictedEdit;
 	private final AssessmentItemRef assessmentItemRef;
 
 	private static final String[] yesnoKeys = new String[] { "y", "n" };
 	
-	public AssessmentItemRefEditorController(UserRequest ureq, WindowControl wControl, AssessmentItemRef itemRef) {
+	public AssessmentItemRefEditorController(UserRequest ureq, WindowControl wControl,
+			AssessmentItemRef itemRef, boolean restrictedEdit) {
 		super(ureq, wControl);
 		this.assessmentItemRef = itemRef;
+		this.restrictedEdit = restrictedEdit;
 	}
 
 	@Override
@@ -68,10 +71,11 @@ public abstract class AssessmentItemRefEditorController extends FormBasicControl
 		limitAttemptsEl = uifactory.addRadiosHorizontal("form.imd.limittries", formLayout, yesnoKeys, yesnoValues);
 		limitAttemptsEl.addActionListener(FormEvent.ONCLICK);
 		limitAttemptsEl.select(maxAttempts.length() > 0 ? yesnoKeys[0] : yesnoKeys[1], true);
+		limitAttemptsEl.setEnabled(!restrictedEdit);
 		
 		maxAttemptsEl = uifactory.addTextElement("maxAttempts", null, 8, maxAttempts, formLayout);
 		maxAttemptsEl.setVisible(limitAttemptsEl.isSelected(0));
-
+		maxAttemptsEl.setEnabled(!restrictedEdit);
 	}
 	
 	@Override

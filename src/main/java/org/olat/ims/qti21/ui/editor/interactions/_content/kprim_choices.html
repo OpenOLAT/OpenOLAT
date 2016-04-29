@@ -11,10 +11,10 @@
 
 <div class="form-group #if($f.hasError($item)) has-feedback has-error #end clearfix">
 	<div class="col-sm-1">
-		<input type="radio" name="${choice.getIdentifierString()}" value="correct" #if(${choice.isCorrect()}) checked #end/>
+		<input type="radio" name="${choice.getIdentifierString()}" value="correct" #if($restrictedEdit) disabled #end #if(${choice.isCorrect()}) checked #end/>
 	</div>
 	<div class="col-sm-1">
-		<input type="radio" name="${choice.getIdentifierString()}" value="wrong" #if(!${choice.isCorrect()}) checked #end/>
+		<input type="radio" name="${choice.getIdentifierString()}" value="wrong" #if($restrictedEdit) disabled #end #if(!${choice.isCorrect()}) checked #end/>
 	</div>
 	<div class="col-sm-8">
 		$r.render(${choice.getAnswer().getComponent().getComponentName()})

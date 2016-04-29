@@ -152,14 +152,14 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 		
 		this.toolbar = toolbar;
 		this.testEntry = testEntry;
-		restrictedEdit = false;
+		restrictedEdit = qtiService.isAssessmentTestActivelyUsed(testEntry);
 		
 		// test structure
 		menuTree = new MenuTree("atTree");
 		menuTree.setExpandSelectedNode(false);
-		menuTree.setDragEnabled(true);
-		menuTree.setDropEnabled(true);
-		menuTree.setDropSiblingEnabled(true);	
+		menuTree.setDragEnabled(!restrictedEdit);
+		menuTree.setDropEnabled(!restrictedEdit);
+		menuTree.setDropSiblingEnabled(!restrictedEdit);	
 		menuTree.setDndAcceptJSMethod("treeAcceptDrop_notWithChildren");	
 		menuTree.setElementCssClass("o_assessment_test_editor_menu");
 		menuTree.addListener(this);
@@ -170,9 +170,11 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 		updateTreeModel();
 		manifestBuilder = ManifestBuilder.read(new File(unzippedDirRoot, "imsmanifest.xml"));
 		
+		
 		//add elements
 		addItemTools = new Dropdown("editTools", "new.elements", false, getTranslator());
 		addItemTools.setIconCSS("o_icon o_icon-fw o_icon_add");
+		addItemTools.setVisible(!restrictedEdit);
 		toolbar.addTool(addItemTools, Align.left);
 		
 		newSectionLink = LinkFactory.createToolLink("new.section", translate("new.section"), this, "o_mi_qtisection");
@@ -218,11 +220,13 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 		//changes
 		changeItemTools = new Dropdown("changeTools", "change.elements", false, getTranslator());
 		changeItemTools.setIconCSS("o_icon o_icon-fw o_icon_customize");
+		changeItemTools.setVisible(!restrictedEdit);
 		toolbar.addTool(changeItemTools, Align.left);
-		
+
 		deleteLink = LinkFactory.createToolLink("import.pool", translate("tools.change.delete"), this, "o_icon_delete_item");
 		deleteLink.setDomReplacementWrapperRequired(false);
 		changeItemTools.addComponent(deleteLink);
+
 		copyLink = LinkFactory.createToolLink("import.table", translate("tools.change.copy"), this, "o_icon_copy");
 		copyLink.setDomReplacementWrapperRequired(false);
 		changeItemTools.addComponent(copyLink);
@@ -733,7 +737,7 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 
 		Object uobject = selectedNode.getUserObject();
 		if(uobject instanceof AssessmentTest) {
-			currentEditorCtrl = new AssessmentTestEditorController(ureq, getWindowControl(), (AssessmentTest)uobject);
+			currentEditorCtrl = new AssessmentTestEditorController(ureq, getWindowControl(), (AssessmentTest)uobject, restrictedEdit);
 		} else if(uobject instanceof TestPart) {
 			currentEditorCtrl = new AssessmentTestPartEditorController(ureq, getWindowControl(), (TestPart)uobject, restrictedEdit);
 		} else if(uobject instanceof AssessmentSection) {
@@ -752,12 +756,16 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 				File itemFile = new File(itemUri);
 				ManifestMetadataBuilder metadata = getMetadataBuilder(itemRef);
 				currentEditorCtrl = new AssessmentItemEditorController(ureq, getWindowControl(), testEntry,
-						item, itemRef, metadata, unzippedDirRoot, unzippedContRoot, itemFile);
+						item, itemRef, metadata, unzippedDirRoot, unzippedContRoot, itemFile, restrictedEdit);
 			}
 		}
 		
-		deleteLink.setEnabled(uobject instanceof AssessmentSection || uobject instanceof AssessmentItemRef);
-		copyLink.setEnabled(uobject instanceof AssessmentItemRef);
+		if(deleteLink != null) {
+			deleteLink.setEnabled(uobject instanceof AssessmentSection || uobject instanceof AssessmentItemRef);
+		}
+		if(copyLink != null) {
+			copyLink.setEnabled(uobject instanceof AssessmentItemRef);
+		}
 		
 		if(currentEditorCtrl != null) {
 			listenTo(currentEditorCtrl);

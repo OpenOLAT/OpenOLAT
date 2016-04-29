@@ -22,16 +22,21 @@
  * ========================================================
  */
 (function($) {
-    $.fn.drawing = function(type, options) {
+    $.fn.drawing = function(options) {
     	var draw = this.data("data-oo-drawing");
     	if(typeof draw === "undefined") {
-    		draw = new Drawing(this, type, options);
+    		draw = new Drawing(this, options);
     		this.data("data-oo-drawing", draw);
     	}
     	return draw;
 	};
 	
-	var Drawing = function(panels) {
+	var Drawing = function(panels, params) {
+		this.settings = $.extend({
+    		resize: true,
+    		drag: true
+        }, params );
+		
 		this.divPanel = panels.get(0);
 		this.canvas = jQuery("canvas", this.divPanel);
 	}
@@ -77,14 +82,19 @@
 			top = parseInt(parts[1]) - radius - 3;
 		}
 
-		return jQuery("#" + id).height(height + 'px').width(width + 'px')
-			.css('top', top + 'px').css('left', left + 'px')
-			.resizable({ aspectRatio: true, handles: "all", stop: function(event, ui) {
-				calculateCircleCoords(this);
-			}})
-			.draggable({ containment: "parent", scroll: false, stop: function(event, ui) {
+		var nodes = jQuery("#" + id).height(height + 'px').width(width + 'px')
+			.css('top', top + 'px').css('left', left + 'px');
+		if(this.settings.resize) {
+			nodes = nodes.resizable({ aspectRatio: true, handles: "all", stop: function(event, ui) {
 				calculateCircleCoords(this);
 			}});
+		}
+		if(this.settings.drag) {
+			nodes = nodes.draggable({ containment: "parent", scroll: false, stop: function(event, ui) {
+				calculateCircleCoords(this);
+			}});
+		}
+		return nodes;
 	}
 	
 	/**
@@ -106,14 +116,20 @@
 			height = parseInt(parts[3]) - top;
 		}
 		
-		return jQuery("#" + id).height(height + 'px').width(width + 'px')
-			.css('top', top + 'px').css('left', left + 'px')
-			.resizable({ handles: "all", stop: function(event, ui) {
-				calculateRectangleCoords(this);
-			}})
-			.draggable({ containment: "parent", scroll: false, stop: function(event, ui) {
+		var nodes = jQuery("#" + id).height(height + 'px').width(width + 'px')
+			.css('top', top + 'px').css('left', left + 'px');
+		if(this.settings.resize) {
+			nodes = nodes.resizable({ handles: "all", stop: function(event, ui) {
 				calculateRectangleCoords(this);
 			}});
+		}
+
+		if(this.settings.drag) {
+			nodes = nodes.draggable({ containment: "parent", scroll: false, stop: function(event, ui) {
+				calculateRectangleCoords(this);
+			}});
+		}
+		return nodes;
 	}
 	
 	Drawing.prototype.getCoords = function(spot) {

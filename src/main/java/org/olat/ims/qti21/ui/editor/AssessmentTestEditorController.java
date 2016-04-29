@@ -49,13 +49,15 @@ public class AssessmentTestEditorController extends BasicController {
 	private AssessmentTestOptionsEditorController optionsCtrl;
 	private AssessmentTestFeedbackEditorController feedbackCtrl;
 	
+	private final boolean restrictedEdit;
 	private final AssessmentTest assessmentTest;
 	private final AssessmentTestBuilder testBuilder;
 	
 	public AssessmentTestEditorController(UserRequest ureq, WindowControl wControl,
-			AssessmentTest assessmentTest) {
+			AssessmentTest assessmentTest, boolean restrictedEdit) {
 		super(ureq, wControl, Util.createPackageTranslator(AssessmentTestDisplayController.class, ureq.getLocale()));
 		this.assessmentTest = assessmentTest;
+		this.restrictedEdit = restrictedEdit;
 		testBuilder = new AssessmentTestBuilder(assessmentTest);
 		
 		mainVC = createVelocityContainer("assessment_test_editor");
@@ -74,9 +76,9 @@ public class AssessmentTestEditorController extends BasicController {
 	
 	private void initTestEditor(UserRequest ureq) {
 		if(QTI21Constants.TOOLNAME.equals(assessmentTest.getToolName())) {
-			optionsCtrl = new AssessmentTestOptionsEditorController(ureq, getWindowControl(), assessmentTest, testBuilder);
+			optionsCtrl = new AssessmentTestOptionsEditorController(ureq, getWindowControl(), assessmentTest, testBuilder, restrictedEdit);
 			listenTo(optionsCtrl);
-			feedbackCtrl = new AssessmentTestFeedbackEditorController(ureq, getWindowControl(), testBuilder);
+			feedbackCtrl = new AssessmentTestFeedbackEditorController(ureq, getWindowControl(), testBuilder, restrictedEdit);
 			listenTo(feedbackCtrl);
 			
 			tabbedPane.addTab(translate("assessment.test.config"), optionsCtrl.getInitialComponent());

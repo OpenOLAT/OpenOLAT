@@ -81,7 +81,6 @@ public class AssessmentSectionEditorController extends ItemSessionControlControl
 					formLayout, ureq.getUserSession(), getWindowControl());
 			rubricEl.getEditorConfiguration().setFileBrowserUploadRelPath("media");
 			rubricEls.add(rubricEl);
-			
 		} else {
 			for(RubricBlock rubricBlock:section.getRubricBlocks()) {
 				String rubric = htmlBuilder.blocksString(rubricBlock.getBlocks());
@@ -103,13 +102,16 @@ public class AssessmentSectionEditorController extends ItemSessionControlControl
 		} else {
 			shuffleEl.select("n", true);
 		}
+		shuffleEl.setEnabled(!restrictedEdit);
 		
 		String num = section.getSelection() != null ? Integer.toString(section.getSelection().getSelect()) : "";
 		randomSelectedEl = uifactory.addTextElement("selectionPre", "form.section.selection_pre", 255, num, formLayout);
 		randomSelectedEl.setHelpText(translate("form.section.selection_pre.hover"));
+		randomSelectedEl.setEnabled(!restrictedEdit);
 		
 		//visible
 		visibleEl = uifactory.addRadiosHorizontal("visible", "form.section.visible", formLayout, yesnoKeys, yesnoValues);
+		visibleEl.setEnabled(!restrictedEdit);
 		if (section.getVisible()) {
 			visibleEl.select("y", true);
 		} else {

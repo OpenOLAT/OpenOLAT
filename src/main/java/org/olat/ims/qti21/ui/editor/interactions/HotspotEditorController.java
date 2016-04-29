@@ -97,6 +97,7 @@ public class HotspotEditorController extends FormBasicController {
 	private FormLink newCircleButton, newRectButton;
 	private MultipleSelectionElement correctHotspotsEl;
 	
+	private final boolean restrictedEdit;
 	private final HotspotAssessmentItemBuilder itemBuilder;
 	
 	private File itemFile;
@@ -114,13 +115,14 @@ public class HotspotEditorController extends FormBasicController {
 	private ImageService imageService;
 	
 	public HotspotEditorController(UserRequest ureq, WindowControl wControl, HotspotAssessmentItemBuilder itemBuilder,
-			File rootDirectory, VFSContainer rootContainer, File itemFile) {
+			File rootDirectory, VFSContainer rootContainer, File itemFile, boolean restrictedEdit) {
 		super(ureq, wControl);
 		setTranslator(Util.createPackageTranslator(AssessmentTestEditorController.class, getLocale()));
 		this.itemFile = itemFile;
 		this.itemBuilder = itemBuilder;
 		this.rootDirectory = rootDirectory;
 		this.rootContainer = rootContainer;
+		this.restrictedEdit = restrictedEdit;
 		backgroundMapperUri = registerMapper(ureq, new BackgroundMapper(itemFile));
 		initForm(ureq);
 	}
@@ -144,22 +146,27 @@ public class HotspotEditorController extends FormBasicController {
 		hotspotsCont.getFormItemComponent().addListener(this);
 		hotspotsCont.setRootForm(mainForm);
 		hotspotsCont.contextPut("mapperUri", backgroundMapperUri);
+		hotspotsCont.contextPut("restrictedEdit", restrictedEdit);
 		JSAndCSSFormItem js = new JSAndCSSFormItem("js", new String[] { "js/jquery/openolat/jquery.drawing.js" });
 		formLayout.add(js);
 		formLayout.add(hotspotsCont);
 		
 		newCircleButton = uifactory.addFormLink("new.circle", "new.circle", null, hotspotsCont, Link.BUTTON);
 		newCircleButton.setIconLeftCSS("o_icon o_icon-lg o_icon_circle");
+		newCircleButton.setVisible(!restrictedEdit);
 		newRectButton = uifactory.addFormLink("new.rectangle", "new.rectangle", null, hotspotsCont, Link.BUTTON);
 		newRectButton.setIconLeftCSS("o_icon o_icon-lg o_icon_rectangle");
+		newRectButton.setVisible(!restrictedEdit);
 
 		String[] emptyKeys = new String[0];
 		correctHotspotsEl = uifactory.addCheckboxesHorizontal("form.imd.correct.spots", formLayout, emptyKeys, emptyKeys);
+		correctHotspotsEl.setEnabled(!restrictedEdit);
 		correctHotspotsEl.addActionListener(FormEvent.ONCHANGE);
 		rebuildWrappersAndCorrectSelection();
 		
 		initialBackgroundImage = getCurrentBackground();
 		backgroundEl = uifactory.addFileElement(getWindowControl(), "form.imd.background", "form.imd.background", formLayout);
+		backgroundEl.setEnabled(!restrictedEdit);
 		if(initialBackgroundImage != null) {
 			backgroundEl.setInitialFile(initialBackgroundImage);
 		}
@@ -259,6 +266,8 @@ public class HotspotEditorController extends FormBasicController {
 	}
 	
 	private void doMoveHotspot(UserRequest ureq) {
+		if(restrictedEdit) return;
+		
 		String coords = ureq.getParameter("coords");
 		String hotspotId = ureq.getParameter("hotspot");
 		if(StringHelper.containsNonWhitespace(hotspotId) && StringHelper.containsNonWhitespace(coords)) {
@@ -271,6 +280,8 @@ public class HotspotEditorController extends FormBasicController {
 	}
 	
 	private void doDeleteHotspot(UserRequest ureq) {
+		if(restrictedEdit) return;
+		
 		String hotspotId = ureq.getParameter("hotspot");
 		HotspotChoice choiceToDelete = itemBuilder.getHotspotChoice(hotspotId);
 		if(choiceToDelete != null) {

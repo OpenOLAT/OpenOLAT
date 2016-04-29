@@ -67,19 +67,21 @@ public class SingleChoiceEditorController extends FormBasicController {
 	private final File itemFile;
 	private final File rootDirectory;
 	private final VFSContainer rootContainer;
+	private final boolean restrictedEdit;
 	private final SingleChoiceAssessmentItemBuilder itemBuilder;
 	
 	private static final String[] yesnoKeys = new String[]{ "y", "n"};
 
 	public SingleChoiceEditorController(UserRequest ureq, WindowControl wControl,
 			SingleChoiceAssessmentItemBuilder itemBuilder,
-			File rootDirectory, VFSContainer rootContainer, File itemFile) {
+			File rootDirectory, VFSContainer rootContainer, File itemFile, boolean restrictedEdit) {
 		super(ureq, wControl, "simple_choices_editor");
 		setTranslator(Util.createPackageTranslator(AssessmentTestEditorController.class, getLocale()));
 		this.itemBuilder = itemBuilder;
 		this.itemFile = itemFile;
 		this.rootDirectory = rootDirectory;
 		this.rootContainer = rootContainer;
+		this.restrictedEdit = restrictedEdit;
 		initForm(ureq);
 	}
 
@@ -103,6 +105,7 @@ public class SingleChoiceEditorController extends FormBasicController {
 		//shuffle
 		String[] yesnoValues = new String[]{ translate("yes"), translate("no") };
 		shuffleEl = uifactory.addRadiosHorizontal("shuffle", "form.imd.shuffle", metadata, yesnoKeys, yesnoValues);
+		shuffleEl.setEnabled(!restrictedEdit);
 		if (itemBuilder.isShuffle()) {
 			shuffleEl.select("y", true);
 		} else {
@@ -118,13 +121,13 @@ public class SingleChoiceEditorController extends FormBasicController {
 
 		ChoiceInteraction interaction = itemBuilder.getChoiceInteraction();
 		if(interaction != null) {
-			
 			List<SimpleChoice> choices = itemBuilder.getSimpleChoices();
 			for(SimpleChoice choice:choices) {
 				wrapAnswer(ureq, choice);
 			}
 		}
 		answersCont.contextPut("choices", choiceWrappers);
+		answersCont.contextPut("restrictedEdit", restrictedEdit);
 		recalculateUpDownLinks();
 
 		// Submit Button
@@ -145,21 +148,25 @@ public class SingleChoiceEditorController extends FormBasicController {
 		
 		FormLink removeLink = uifactory.addFormLink("rm-".concat(choiceId), "rm", "", null, answersCont, Link.NONTRANSLATED);
 		removeLink.setIconLeftCSS("o_icon o_icon-lg o_icon_delete");
+		removeLink.setEnabled(!restrictedEdit);
 		answersCont.add(removeLink);
 		answersCont.add("rm-".concat(choiceId), removeLink);
 		
 		FormLink addLink = uifactory.addFormLink("add-".concat(choiceId), "add", "", null, answersCont, Link.NONTRANSLATED);
 		addLink.setIconLeftCSS("o_icon o_icon-lg o_icon_add");
+		addLink.setEnabled(!restrictedEdit);
 		answersCont.add(addLink);
 		answersCont.add("add-".concat(choiceId), addLink);
 		
 		FormLink upLink = uifactory.addFormLink("up-".concat(choiceId), "up", "", null, answersCont, Link.NONTRANSLATED);
 		upLink.setIconLeftCSS("o_icon o_icon-lg o_icon_move_up");
+		upLink.setEnabled(!restrictedEdit);
 		answersCont.add(upLink);
 		answersCont.add("up-".concat(choiceId), upLink);
 		
 		FormLink downLink = uifactory.addFormLink("down-".concat(choiceId), "down", "", null, answersCont, Link.NONTRANSLATED);
 		downLink.setIconLeftCSS("o_icon o_icon-lg o_icon_move_down");
+		downLink.setEnabled(!restrictedEdit);
 		answersCont.add(downLink);
 		answersCont.add("down-".concat(choiceId), downLink);
 		
@@ -199,19 +206,24 @@ public class SingleChoiceEditorController extends FormBasicController {
 		String questionText = textEl.getValue();
 		itemBuilder.setQuestion(questionText);
 		
-		//correct response
-		String correctAnswer = ureq.getParameter("correct");
-		Identifier correctAnswerIdentifier = Identifier.parseString(correctAnswer);
-		itemBuilder.setCorrectAnswer(correctAnswerIdentifier);
-		
-		//shuffle
-		itemBuilder.setShuffle(shuffleEl.isOneSelected() && shuffleEl.isSelected(0));
+		Identifier correctAnswerIdentifier = null;
+		if(!restrictedEdit) {
+			//correct response
+			String correctAnswer = ureq.getParameter("correct");
+			correctAnswerIdentifier = Identifier.parseString(correctAnswer);
+			itemBuilder.setCorrectAnswer(correctAnswerIdentifier);
+			
+			//shuffle
+			itemBuilder.setShuffle(shuffleEl.isOneSelected() && shuffleEl.isSelected(0));
+		}
 		
 		//replace simple choices
 		List<SimpleChoice> choiceList = new ArrayList<>();
 		for(SimpleChoiceWrapper choiceWrapper:choiceWrappers) {
 			SimpleChoice choice = choiceWrapper.getSimpleChoice();
-			choiceWrapper.setCorrect(correctAnswerIdentifier.equals(choiceWrapper.getIdentifier()));
+			if(!restrictedEdit) {
+				choiceWrapper.setCorrect(correctAnswerIdentifier.equals(choiceWrapper.getIdentifier()));
+			}
 			//text
 			String answer = choiceWrapper.getAnswer().getValue();
 			itemBuilder.getHtmlHelper().appendHtml(choice, answer);
@@ -276,8 +288,8 @@ public class SingleChoiceEditorController extends FormBasicController {
 		int numOfChoices = choiceWrappers.size();
 		for(int i=0; i<numOfChoices; i++) {
 			SimpleChoiceWrapper choiceWrapper = choiceWrappers.get(i);
-			choiceWrapper.getUp().setEnabled(i != 0);
-			choiceWrapper.getDown().setEnabled(i < (numOfChoices - 1));
+			choiceWrapper.getUp().setEnabled(i != 0 && !restrictedEdit);
+			choiceWrapper.getDown().setEnabled(i < (numOfChoices - 1) && !restrictedEdit);
 		}
 	}
 

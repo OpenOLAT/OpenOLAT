@@ -45,16 +45,18 @@ public class FeedbackEditorController extends FormBasicController {
 	private TextElement feedbackCorrectTitleEl, feedbackIncorrectTitleEl, feedbackEmptyTitleEl;
 	private RichTextElement feedbackCorrectTextEl, feedbackIncorrectTextEl, feedbackEmptyTextEl;
 
+	private final boolean restrictedEdit;
 	private final boolean empty, correct, incorrect;
 	private AssessmentItemBuilder itemBuilder;
 	
 	public FeedbackEditorController(UserRequest ureq, WindowControl wControl, AssessmentItemBuilder itemBuilder,
-			boolean empty, boolean correct, boolean incorrect) {
+			boolean empty, boolean correct, boolean incorrect, boolean restrictedEdit) {
 		super(ureq, wControl);
 		this.empty = empty;
 		this.correct = correct;
 		this.incorrect = incorrect;
 		this.itemBuilder = itemBuilder;
+		this.restrictedEdit = restrictedEdit;
 		initForm(ureq);
 	}
 
@@ -66,9 +68,11 @@ public class FeedbackEditorController extends FormBasicController {
 			String correctTitle = correctFeedback == null ? "" : correctFeedback.getTitle();
 			feedbackCorrectTitleEl = uifactory.addTextElement("correctTitle", "form.imd.correct.title", -1, correctTitle, formLayout);
 			feedbackCorrectTitleEl.setUserObject(correctFeedback);
+			feedbackCorrectTitleEl.setEnabled(!restrictedEdit);
 			String correctText = correctFeedback == null ? "" : correctFeedback.getText();
 			feedbackCorrectTextEl = uifactory.addRichTextElementForStringData("correctText", "form.imd.correct.text", correctText, 8, -1, true, null, null,
 					formLayout, ureq.getUserSession(), getWindowControl());
+			feedbackCorrectTextEl.setEnabled(!restrictedEdit);
 			RichTextConfiguration richTextConfig = feedbackCorrectTextEl.getEditorConfiguration();
 			richTextConfig.setFileBrowserUploadRelPath("media");// set upload dir to the media dir
 		}
@@ -78,9 +82,11 @@ public class FeedbackEditorController extends FormBasicController {
 			String emptyTitle = emptyFeedback == null ? "" : emptyFeedback.getTitle();
 			feedbackEmptyTitleEl = uifactory.addTextElement("emptyTitle", "form.imd.empty.title", -1, emptyTitle, formLayout);
 			feedbackEmptyTitleEl.setUserObject(emptyFeedback);
+			feedbackEmptyTitleEl.setEnabled(!restrictedEdit);
 			String emptyText = emptyFeedback == null ? "" : emptyFeedback.getText();
 			feedbackEmptyTextEl = uifactory.addRichTextElementForStringData("emptyText", "form.imd.empty.text", emptyText, 8, -1, true, null, null,
 					formLayout, ureq.getUserSession(), getWindowControl());
+			feedbackEmptyTextEl.setEnabled(!restrictedEdit);
 			RichTextConfiguration richTextConfig = feedbackEmptyTextEl.getEditorConfiguration();
 			richTextConfig.setFileBrowserUploadRelPath("media");// set upload dir to the media dir
 		}
@@ -91,22 +97,28 @@ public class FeedbackEditorController extends FormBasicController {
 			String incorrectTitle = incorrectFeedback == null ? "" : incorrectFeedback.getTitle();
 			feedbackIncorrectTitleEl = uifactory.addTextElement("incorrectTitle", "form.imd.incorrect.title", -1, incorrectTitle, formLayout);
 			feedbackIncorrectTitleEl.setUserObject(incorrectFeedback);
+			feedbackIncorrectTitleEl.setEnabled(!restrictedEdit);
 			String incorrectText = incorrectFeedback == null ? "" : incorrectFeedback.getText();
 			feedbackIncorrectTextEl = uifactory.addRichTextElementForStringData("incorrectText", "form.imd.incorrect.text", incorrectText, 8, -1, true, null, null,
 					formLayout, ureq.getUserSession(), getWindowControl());
+			feedbackIncorrectTextEl.setEnabled(!restrictedEdit);
 			RichTextConfiguration richTextConfig2 = feedbackIncorrectTextEl.getEditorConfiguration();
 			richTextConfig2.setFileBrowserUploadRelPath("media");// set upload dir to the media dir
 		}
 	
 		// Submit Button
-		FormLayoutContainer buttonsContainer = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
-		buttonsContainer.setRootForm(mainForm);
-		formLayout.add(buttonsContainer);
-		uifactory.addFormSubmitButton("submit", buttonsContainer);
+		if(!restrictedEdit) {
+			FormLayoutContainer buttonsContainer = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
+			buttonsContainer.setRootForm(mainForm);
+			formLayout.add(buttonsContainer);
+			uifactory.addFormSubmitButton("submit", buttonsContainer);
+		}
 	}
 
 	@Override
 	protected void formOK(UserRequest ureq) {
+		if(restrictedEdit) return;
+		
 		if(correct) {
 			String correctTitle = feedbackCorrectTitleEl.getValue();
 			String correctText = feedbackCorrectTextEl.getValue();

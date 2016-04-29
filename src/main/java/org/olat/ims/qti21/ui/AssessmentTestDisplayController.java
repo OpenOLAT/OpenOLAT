@@ -167,11 +167,14 @@ public class AssessmentTestDisplayController extends BasicController implements 
 	 * @param wControl
 	 * @param listener
 	 * @param testEntry
-	 * @param entry Course repository entry (optional)
-	 * @param subIdent The course node identifier (mandatory only if in a course is used)
+	 * @param entry
+	 * @param subIdent
+	 * @param deliveryOptions
+	 * @param authorMode if true, the database objects are not counted and can be deleted without warning
 	 */
 	public AssessmentTestDisplayController(UserRequest ureq, WindowControl wControl, OutcomesListener listener,
-			RepositoryEntry testEntry, RepositoryEntry entry, String subIdent, QTI21DeliveryOptions deliveryOptions) {
+			RepositoryEntry testEntry, RepositoryEntry entry, String subIdent, QTI21DeliveryOptions deliveryOptions,
+			boolean authorMode) {
 		super(ureq, wControl);
 
 		this.entry = entry;
@@ -197,7 +200,7 @@ public class AssessmentTestDisplayController extends BasicController implements 
 			lastSession = qtiService.getResumableAssessmentTestSession(getIdentity(), entry, subIdent, testEntry);
 		}
 		if(lastSession == null) {
-			candidateSession = qtiService.createAssessmentTestSession(getIdentity(), assessmentEntry, entry, subIdent, testEntry, false);
+			candidateSession = qtiService.createAssessmentTestSession(getIdentity(), assessmentEntry, entry, subIdent, testEntry, authorMode);
 			testSessionController = enterSession(ureq);
 		} else {
 			candidateSession = lastSession;

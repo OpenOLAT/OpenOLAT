@@ -69,16 +69,19 @@ public class KPrimEditorController extends FormBasicController {
 	private final File itemFile;
 	private final File rootDirectory;
 	private final VFSContainer rootContainer;
+	
+	private final boolean restrictedEdit;
 	private final KPrimAssessmentItemBuilder itemBuilder;
 	
 	public KPrimEditorController(UserRequest ureq, WindowControl wControl, KPrimAssessmentItemBuilder itemBuilder,
-			File rootDirectory, VFSContainer rootContainer, File itemFile) {
+			File rootDirectory, VFSContainer rootContainer, File itemFile, boolean restrictedEdit) {
 		super(ureq, wControl, "simple_choices_editor");
 		setTranslator(Util.createPackageTranslator(AssessmentTestEditorController.class, getLocale()));
 		this.itemFile = itemFile;
 		this.itemBuilder = itemBuilder;
 		this.rootDirectory = rootDirectory;
 		this.rootContainer = rootContainer;
+		this.restrictedEdit = restrictedEdit;
 		initForm(ureq);
 	}
 
@@ -102,6 +105,7 @@ public class KPrimEditorController extends FormBasicController {
 		//shuffle
 		String[] yesnoValues = new String[]{ translate("yes"), translate("no") };
 		shuffleEl = uifactory.addRadiosHorizontal("shuffle", "form.imd.shuffle", metadata, yesnoKeys, yesnoValues);
+		shuffleEl.setEnabled(!restrictedEdit);
 		if (itemBuilder.isShuffle()) {
 			shuffleEl.select("y", true);
 		} else {
@@ -123,6 +127,7 @@ public class KPrimEditorController extends FormBasicController {
 			}
 		}
 		answersCont.contextPut("choices", choiceWrappers);
+		answersCont.contextPut("restrictedEdit", restrictedEdit);
 		recalculateUpDownLinks();
 
 		// Submit Button
@@ -143,11 +148,13 @@ public class KPrimEditorController extends FormBasicController {
 		
 		FormLink upLink = uifactory.addFormLink("up-".concat(choiceId), "up", "", null, answersCont, Link.NONTRANSLATED);
 		upLink.setIconLeftCSS("o_icon o_icon-lg o_icon_move_up");
+		upLink.setEnabled(!restrictedEdit);
 		answersCont.add(upLink);
 		answersCont.add("up-".concat(choiceId), upLink);
 		
 		FormLink downLink = uifactory.addFormLink("down-".concat(choiceId), "down", "", null, answersCont, Link.NONTRANSLATED);
 		downLink.setIconLeftCSS("o_icon o_icon-lg o_icon_move_down");
+		downLink.setEnabled(!restrictedEdit);
 		answersCont.add(downLink);
 		answersCont.add("down-".concat(choiceId), downLink);
 		
@@ -169,9 +176,10 @@ public class KPrimEditorController extends FormBasicController {
 		String questionText = textEl.getValue();
 		itemBuilder.setQuestion(questionText);
 		
-		
 		//shuffle
-		itemBuilder.setShuffle(shuffleEl.isOneSelected() && shuffleEl.isSelected(0));
+		if(!restrictedEdit) {
+			itemBuilder.setShuffle(shuffleEl.isOneSelected() && shuffleEl.isSelected(0));
+		}
 		
 		//update kprims
 		List<SimpleAssociableChoice> choiceList = new ArrayList<>();
@@ -183,17 +191,19 @@ public class KPrimEditorController extends FormBasicController {
 		}
 		
 		//set associations
-		for(KprimWrapper choiceWrapper:choiceWrappers) {
-			SimpleAssociableChoice choice = choiceWrapper.getSimpleChoice();
-			Identifier choiceIdentifier = choice.getIdentifier();
-			String association = ureq.getHttpReq().getParameter(choiceIdentifier.toString());
-			if("correct".equals(association)) {
-				itemBuilder.setAssociation(choiceIdentifier, QTI21Constants.CORRECT_IDENTIFIER);
-			} else if("wrong".equals(association)) {
-				itemBuilder.setAssociation(choiceIdentifier, QTI21Constants.WRONG_IDENTIFIER);
+		if(!restrictedEdit) {
+			for(KprimWrapper choiceWrapper:choiceWrappers) {
+				SimpleAssociableChoice choice = choiceWrapper.getSimpleChoice();
+				Identifier choiceIdentifier = choice.getIdentifier();
+				String association = ureq.getHttpReq().getParameter(choiceIdentifier.toString());
+				if("correct".equals(association)) {
+					itemBuilder.setAssociation(choiceIdentifier, QTI21Constants.CORRECT_IDENTIFIER);
+				} else if("wrong".equals(association)) {
+					itemBuilder.setAssociation(choiceIdentifier, QTI21Constants.WRONG_IDENTIFIER);
+				}
+				choiceWrapper.setCorrect(itemBuilder.isCorrect(choiceIdentifier));
+				choiceWrapper.setWrong(itemBuilder.isWrong(choiceIdentifier));
 			}
-			choiceWrapper.setCorrect(itemBuilder.isCorrect(choiceIdentifier));
-			choiceWrapper.setWrong(itemBuilder.isWrong(choiceIdentifier));
 		}
 
 		fireEvent(ureq, new AssessmentItemEvent(AssessmentItemEvent.ASSESSMENT_ITEM_CHANGED, itemBuilder.getAssessmentItem(), QTI21QuestionType.kprim));
@@ -237,11 +247,10 @@ public class KPrimEditorController extends FormBasicController {
 		int numOfChoices = choiceWrappers.size();
 		for(int i=0; i<numOfChoices; i++) {
 			KprimWrapper choiceWrapper = choiceWrappers.get(i);
-			choiceWrapper.getUp().setEnabled(i != 0);
-			choiceWrapper.getDown().setEnabled(i < (numOfChoices - 1));
+			choiceWrapper.getUp().setEnabled(i != 0 && !restrictedEdit);
+			choiceWrapper.getDown().setEnabled(i < (numOfChoices - 1) && !restrictedEdit);
 		}
 	}
-
 
 	public static final class KprimWrapper {
 		

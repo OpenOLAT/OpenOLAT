@@ -47,9 +47,9 @@ public class MinimalScoreController extends AssessmentItemRefEditorController {
 	
 	private AssessmentItemBuilder itemBuilder;
 	
-	public MinimalScoreController(UserRequest ureq, WindowControl wControl, AssessmentItemBuilder itemBuilder,
-			AssessmentItemRef itemRef) {
-		super(ureq, wControl, itemRef);
+	public MinimalScoreController(UserRequest ureq, WindowControl wControl,
+			AssessmentItemBuilder itemBuilder, AssessmentItemRef itemRef, boolean restrictedEdit) {
+		super(ureq, wControl, itemRef, restrictedEdit);
 		this.itemBuilder = itemBuilder;
 		initForm(ureq);
 	}
@@ -59,10 +59,12 @@ public class MinimalScoreController extends AssessmentItemRefEditorController {
 		super.initForm(formLayout, listener, ureq);
 		minScoreEl = uifactory.addTextElement("min.score", "min.score", 8, "0.0", formLayout);
 		minScoreEl.setEnabled(false);
+		minScoreEl.setEnabled(!restrictedEdit);
 		
 		ScoreBuilder maxScore = itemBuilder.getMaxScoreBuilder();
 		String maxValue = maxScore == null ? "" : (maxScore.getScore() == null ? "" : maxScore.getScore().toString());
 		maxScoreEl = uifactory.addTextElement("max.score", "max.score", 8, maxValue, formLayout);
+		maxScoreEl.setEnabled(!restrictedEdit);
 
 		// Submit Button
 		FormLayoutContainer buttonsContainer = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
@@ -73,6 +75,8 @@ public class MinimalScoreController extends AssessmentItemRefEditorController {
 
 	@Override
 	protected void formOK(UserRequest ureq) {
+		if(restrictedEdit) return;
+		
 		String maxScoreValue = maxScoreEl.getValue();
 		Double maxScore = Double.parseDouble(maxScoreValue);
 		itemBuilder.setMaxScore(maxScore);

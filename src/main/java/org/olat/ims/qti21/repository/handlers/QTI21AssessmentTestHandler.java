@@ -340,7 +340,8 @@ public class QTI21AssessmentTestHandler extends FileHandler {
 							RepositoryEntry entry, RepositoryEntrySecurity repoSecurity, AssessmentMode mode) {
 						InMemoryOutcomesListener listener = new InMemoryOutcomesListener();
 						QTI21DeliveryOptions options = qtiService.getDeliveryOptions(entry);
-						return new AssessmentTestDisplayController(uureq, wwControl, listener, entry, entry, null, options);
+						boolean authorMode = reSecurity.isEntryAdmin();
+						return new AssessmentTestDisplayController(uureq, wwControl, listener, entry, entry, null, options, authorMode);
 					}
 				});
 	}

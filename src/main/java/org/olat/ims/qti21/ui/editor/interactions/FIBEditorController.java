@@ -63,11 +63,12 @@ public class FIBEditorController extends FormBasicController {
 	private final File rootDirectory;
 	private final VFSContainer rootContainer;
 	private final QTI21QuestionType preferredType;
+	private final boolean restrictedEdit;
 	private final FIBAssessmentItemBuilder itemBuilder;
 	
 	public FIBEditorController(UserRequest ureq, WindowControl wControl,
 			QTI21QuestionType preferredType, FIBAssessmentItemBuilder itemBuilder,
-			File rootDirectory, VFSContainer rootContainer, File itemFile) {
+			File rootDirectory, VFSContainer rootContainer, File itemFile, boolean restrictedEdit) {
 		super(ureq, wControl);
 		setTranslator(Util.createPackageTranslator(AssessmentTestEditorController.class, getLocale()));
 		this.itemFile = itemFile;
@@ -75,6 +76,7 @@ public class FIBEditorController extends FormBasicController {
 		this.preferredType = preferredType;
 		this.rootDirectory = rootDirectory;
 		this.rootContainer = rootContainer;
+		this.restrictedEdit = restrictedEdit;
 		initForm(ureq);
 	}
 
@@ -90,6 +92,7 @@ public class FIBEditorController extends FormBasicController {
 		textEl = uifactory.addRichTextElementForStringData("desc", "form.imd.descr", question, 16, -1, true, itemContainer, null,
 				formLayout, ureq.getUserSession(), getWindowControl());
 		textEl.addActionListener(FormEvent.ONCLICK);
+		textEl.setEnabled(!restrictedEdit);
 		RichTextConfiguration richTextConfig = textEl.getEditorConfiguration();
 		
 		boolean hasNumericals = itemBuilder.hasNumericalInputs();
