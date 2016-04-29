@@ -19,6 +19,7 @@
  */
 package org.olat.course.nodes.gotomeeting;
 
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.Iterator;
@@ -39,8 +40,6 @@ import org.olat.modules.gotomeeting.GoToMeetingManager;
 import org.olat.modules.gotomeeting.model.GoToType;
 import org.olat.repository.RepositoryEntry;
 import org.springframework.beans.factory.annotation.Autowired;
-
-import edu.emory.mathcs.backport.java.util.Collections;
 
 /**
  * 
