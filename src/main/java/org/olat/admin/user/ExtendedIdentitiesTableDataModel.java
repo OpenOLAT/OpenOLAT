@@ -150,6 +150,10 @@ public class ExtendedIdentitiesTableDataModel extends DefaultTableDataModel<Iden
 	public int getColumnCount() {
 		return colCount + 1;
 	}
+	
+	public boolean contains(Identity identity) {
+		return objects.contains(identity);
+	}
 
 	/**
 	 * @param selection
