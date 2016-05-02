@@ -25,6 +25,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.Date;
 import java.util.List;
 
 import org.olat.core.commons.fullWebApp.LayoutMain3ColsController;
@@ -48,13 +49,18 @@ import org.olat.core.gui.control.VetoableCloseController;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.MainLayoutBasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
+import org.olat.core.gui.control.generic.messages.MessageController;
+import org.olat.core.gui.control.generic.messages.MessageUIFactory;
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.gui.control.generic.wizard.Step;
 import org.olat.core.gui.control.generic.wizard.StepRunnerCallback;
 import org.olat.core.gui.control.generic.wizard.StepsMainRunController;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
+import org.olat.core.util.Formatter;
 import org.olat.core.util.Util;
+import org.olat.core.util.coordinate.CoordinatorManager;
+import org.olat.core.util.coordinate.LockResult;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.fileresource.FileResourceManager;
 import org.olat.ims.qti21.QTI21Constants;
@@ -89,6 +95,7 @@ import org.olat.modules.qpool.ui.SelectItemController;
 import org.olat.modules.qpool.ui.events.QItemViewEvent;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.ui.RepositoryEntryRuntimeController.ToolbarAware;
+import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import uk.ac.ed.ph.jqtiplus.node.item.AssessmentItem;
@@ -114,14 +121,14 @@ import uk.ac.ed.ph.jqtiplus.types.Identifier;
 public class AssessmentTestComposerController extends MainLayoutBasicController implements VetoableCloseController, ToolbarAware {
 	
 	
-	private final MenuTree menuTree;
-	private final Dropdown addItemTools, changeItemTools;
-	private final Link newSectionLink, newSingleChoiceLink, newMultipleChoiceLink, newKPrimLink,
+	private MenuTree menuTree;
+	private Dropdown addItemTools, changeItemTools;
+	private Link newSectionLink, newSingleChoiceLink, newMultipleChoiceLink, newKPrimLink,
 		newFIBLink, newNumericalLink, newHotspotLink, newEssayLink;
-	private final Link importFromPoolLink, importFromTableLink;
-	private final Link deleteLink, copyLink;
+	private Link importFromPoolLink, importFromTableLink;
+	private Link deleteLink, copyLink;
 	private final TooledStackedPanel toolbar;
-	private final VelocityContainer mainVC;
+	private VelocityContainer mainVC;
 
 	private Controller currentEditorCtrl;
 	private CloseableModalController cmc;
@@ -130,8 +137,8 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 	private StepsMainRunController importTableWizard;
 	private final LayoutMain3ColsController columnLayoutCtr;
 	
-	private final File unzippedDirRoot;
-	private final VFSContainer unzippedContRoot;
+	private File unzippedDirRoot;
+	private VFSContainer unzippedContRoot;
 	
 	private final RepositoryEntry testEntry;
 	private ManifestBuilder manifestBuilder;
@@ -141,8 +148,13 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 	private final boolean restrictedEdit;
 	private boolean assessmentChanged = false;
 	
+	private LockResult lockEntry;
+	private LockResult activeSessionLock;
+	
 	@Autowired
 	private QTI21Service qtiService;
+	@Autowired
+	private UserManager userManager;
 	@Autowired
 	private QTI21QPoolServiceProvider qti21QPoolServiceProvider;
 	
@@ -154,6 +166,23 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 		this.toolbar = toolbar;
 		this.testEntry = testEntry;
 		restrictedEdit = qtiService.isAssessmentTestActivelyUsed(testEntry);
+		
+		lockEntry = CoordinatorManager.getInstance().getCoordinator().getLocker().aquirePersistentLock(testEntry.getOlatResource(), getIdentity(), null);
+		if (lockEntry.isSuccess()) {
+			// acquired a lock for the duration of the session only
+			//fileResource has the RepositoryEntre.getOlatResource within, which is used in qtiPackage
+			activeSessionLock = CoordinatorManager.getInstance().getCoordinator().getLocker().acquireLock(testEntry.getOlatResource(), getIdentity(), null);
+		} else {
+			String fullName = userManager.getUserDisplayName(lockEntry.getOwner());
+			String msg = translate("error.lock", new String[] { fullName, Formatter.formatDatetime(new Date(lockEntry.getLockAquiredTime())) });
+			wControl.setWarning(msg);
+			MessageController contentCtr = MessageUIFactory.createInfoMessage(ureq, getWindowControl(), translate("error.lock.title"), msg);
+			listenTo(contentCtr);
+			columnLayoutCtr = new LayoutMain3ColsController(ureq, getWindowControl(), contentCtr);
+			listenTo(columnLayoutCtr); // auto dispose later
+			putInitialPanel(columnLayoutCtr.getInitialComponent());
+			return;
+		}
 		
 		// test structure
 		menuTree = new MenuTree("atTree");
@@ -258,7 +287,12 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 	
 	@Override
 	protected void doDispose() {
-		//
+		if (lockEntry != null && lockEntry.isSuccess()) {
+			CoordinatorManager.getInstance().getCoordinator().getLocker().releasePersistentLock(lockEntry);
+		}
+		if (activeSessionLock != null && activeSessionLock.isSuccess()) {
+			CoordinatorManager.getInstance().getCoordinator().getLocker().releaseLock(activeSessionLock);			
+		}
 	}
 	
 	@Override
