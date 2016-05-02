@@ -205,7 +205,6 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 		addItemTools = new Dropdown("editTools", "new.elements", false, getTranslator());
 		addItemTools.setIconCSS("o_icon o_icon-fw o_icon_add");
 		addItemTools.setVisible(!restrictedEdit);
-		toolbar.addTool(addItemTools, Align.left);
 		
 		newSectionLink = LinkFactory.createToolLink("new.section", translate("new.section"), this, "o_mi_qtisection");
 		newSectionLink.setDomReplacementWrapperRequired(false);
@@ -251,7 +250,6 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 		changeItemTools = new Dropdown("changeTools", "change.elements", false, getTranslator());
 		changeItemTools.setIconCSS("o_icon o_icon-fw o_icon_customize");
 		changeItemTools.setVisible(!restrictedEdit);
-		toolbar.addTool(changeItemTools, Align.left);
 
 		deleteLink = LinkFactory.createToolLink("import.pool", translate("tools.change.delete"), this, "o_icon_delete_item");
 		deleteLink.setDomReplacementWrapperRequired(false);

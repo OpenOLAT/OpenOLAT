@@ -123,8 +123,6 @@ public class QTI21RuntimeController extends RepositoryEntryRuntimeController  {
 					AssessmentTestComposerController composerCtrl = (AssessmentTestComposerController)popedCtrl;
 					if(composerCtrl.hasChanges()) {
 						doReloadRuntimeController(ureq);
-					} else {
-						initToolbar();
 					}
 				}
 			}
@@ -135,7 +133,6 @@ public class QTI21RuntimeController extends RepositoryEntryRuntimeController  {
 	private void doReloadRuntimeController(UserRequest ureq) {
 		disposeRuntimeController();
 		launchContent(ureq, reSecurity);
-		initToolbar();
 	}
 	
 	private Activateable2 doQtiOptions(UserRequest ureq) {

@@ -102,7 +102,7 @@ public class AssessmentTestComponentRenderer extends AssessmentObjectComponentRe
 		TestSessionController testSessionController = cmp.getTestSessionController();
 
 		if(testSessionController.getTestSessionState().isEnded()) {
-			sb.append("<h1>The End <small>say the renderer</small></h1>");
+			renderTerminated(sb, translator);
 		} else {
 	        /* Create appropriate options that link back to this controller */
 	        TestSessionState testSessionState = testSessionController.getTestSessionState();
@@ -112,7 +112,7 @@ public class AssessmentTestComponentRenderer extends AssessmentObjectComponentRe
 	        if (candidateSession.isExploded()) {
 	            renderExploded(sb);
 	        } else if (candidateSessionContext.isTerminated()) {
-	            renderTerminated(sb);
+	            renderTerminated(sb, translator);
 	        } else {
 				/* Touch the session's duration state if appropriate */
 				if (testSessionState.isEntered() && !testSessionState.isEnded()) {
@@ -131,8 +131,8 @@ public class AssessmentTestComponentRenderer extends AssessmentObjectComponentRe
 		sb.append("<h1>Exploded <small>say the renderer</small></h1>");
     }
 
-    private void renderTerminated(StringOutput sb) {
-		sb.append("<h1>Terminated <small>say the renderer</small></h1>");
+    private void renderTerminated(StringOutput sb, Translator translator) {
+		sb.append("<div class='o_info'>").append(translator.translate("terminated.msg")).append("</div>");
     }
     
 	private void renderTestEvent(TestSessionController testSessionController, AssessmentRenderer renderer, StringOutput target,
@@ -145,7 +145,7 @@ public class AssessmentTestComponentRenderer extends AssessmentObjectComponentRe
         /* If session has terminated, render appropriate state and exit */
         final TestSessionState testSessionState = testSessionController.getTestSessionState();
         if (candidateSessionContext.isTerminated() || testSessionState.isExited()) {
-        	renderTerminated(target);
+        	renderTerminated(target, translator);
         } else if (testEventType == CandidateTestEventType.REVIEW_ITEM) {
         	renderer.setReviewMode(true);
         	TestPlanNodeKey itemKey = extractTargetItemKey(candidateEvent);
@@ -241,7 +241,7 @@ public class AssessmentTestComponentRenderer extends AssessmentObjectComponentRe
 			renderControl(sb, component, title, "o_sel_next_question", new NameValuePair("cid", Event.nextItem.name()));
 		}
 		//testPartNavigationAllowed"
-		if(options.isTestPartNavigationAllowed()) {
+		if(options.isTestPartNavigationAllowed() && component.isRenderNavigation()) {
 			String title = translator.translate("assessment.test.questionMenu");
 			renderControl(sb, component, title, "o_sel_question_menu", new NameValuePair("cid", Event.testPartNavigation.name()));
 		}
@@ -629,10 +629,6 @@ public class AssessmentTestComponentRenderer extends AssessmentObjectComponentRe
 	
 			sb.append("</button>");
 			sb.append("</div></div>");
-		} else {
-			
-			sb.append("Bouhouhou");
-			
 		}
 	}
 	
