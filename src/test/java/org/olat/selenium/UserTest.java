@@ -210,7 +210,6 @@ public class UserTest {
 			.openMySettings()
 			.openPreferences()
 			.setResume(ResumeOption.none);
-		OOGraphene.waitAndCloseBlueMessageWindow(browser);
 		
 		//logout
 		userTools.logout();
