@@ -123,5 +123,67 @@ public class AssessmentTestSessionDAOTest extends OlatTestCase {
 		Assert.assertNotNull(lastTestSession);
 		Assert.assertEquals(testSession2, lastTestSession);
 	}
+	
+	@Test
+	public void hasActiveTestSession() {
+		// prepare a test and a user
+		RepositoryEntry testEntry = JunitTestHelper.createAndPersistRepositoryEntry();
+		Identity assessedIdentity = JunitTestHelper.createAndPersistIdentityAsRndUser("session-4");
+		AssessmentEntry assessmentEntry = assessmentService.getOrCreateAssessmentEntry(assessedIdentity, testEntry, null, testEntry);
+		dbInstance.commit();
+		//create an assessment test session
+		AssessmentTestSession testSession1 = testSessionDao.createAndPersistTestSession(testEntry, null, null, assessmentEntry, assessedIdentity, false);
+		Assert.assertNotNull(testSession1);
+		dbInstance.commitAndCloseSession();
+		
+		//check
+		boolean hasTestSession = testSessionDao.hasActiveTestSession(testEntry);
+		Assert.assertTrue(hasTestSession);
+	}
+
+	@Test
+	public void hasActiveTestSession_negative() {
+		// prepare a test and a user
+		RepositoryEntry testEntry = JunitTestHelper.createAndPersistRepositoryEntry();
+		Identity assessedIdentity = JunitTestHelper.createAndPersistIdentityAsRndUser("session-5");
+		AssessmentEntry assessmentEntry = assessmentService.getOrCreateAssessmentEntry(assessedIdentity, testEntry, null, testEntry);
+		dbInstance.commit();
+		//create an assessment test session
+		AssessmentTestSession testSession1 = testSessionDao.createAndPersistTestSession(testEntry, null, null, assessmentEntry, assessedIdentity, true);
+		Assert.assertNotNull(testSession1);
+		dbInstance.commitAndCloseSession();
+		
+		//check that there isn't any active test session (only author mode)
+		boolean hasTestSession = testSessionDao.hasActiveTestSession(testEntry);
+		Assert.assertFalse(hasTestSession);
+	}
+	
+	@Test
+	public void getAuthorAssessmentTestSession() {
+		// prepare a test and 2 users
+		RepositoryEntry testEntry = JunitTestHelper.createAndPersistRepositoryEntry();
+		Identity author1 = JunitTestHelper.createAndPersistIdentityAsRndUser("session-6");
+		Identity author2 = JunitTestHelper.createAndPersistIdentityAsRndUser("session-7");
+		Identity assessedIdentity = JunitTestHelper.createAndPersistIdentityAsRndUser("session-8");
+		AssessmentEntry assessmentEntry1 = assessmentService.getOrCreateAssessmentEntry(author1, testEntry, null, testEntry);
+		AssessmentEntry assessmentEntry2 = assessmentService.getOrCreateAssessmentEntry(author2, testEntry, null, testEntry);
+		AssessmentEntry assessmentEntry3 = assessmentService.getOrCreateAssessmentEntry(assessedIdentity, testEntry, null, testEntry);
+		dbInstance.commit();
+		//create an assessment test session
+		AssessmentTestSession testSession1 = testSessionDao.createAndPersistTestSession(testEntry, null, null, assessmentEntry1, author1, true);
+		AssessmentTestSession testSession2 = testSessionDao.createAndPersistTestSession(testEntry, null, null, assessmentEntry2, author2, true);
+		AssessmentTestSession testSession3 = testSessionDao.createAndPersistTestSession(testEntry, null, null, assessmentEntry3, assessedIdentity, false);
+		dbInstance.commitAndCloseSession();
+		
+		//check that there isn't any active test session (only author mode)
+		List<AssessmentTestSession> authorSessions = testSessionDao.getAuthorAssessmentTestSession(testEntry);
+		Assert.assertNotNull(authorSessions);
+		Assert.assertEquals(2, authorSessions.size());
+		Assert.assertTrue(authorSessions.contains(testSession1));
+		Assert.assertTrue(authorSessions.contains(testSession2));
+		Assert.assertFalse(authorSessions.contains(testSession3));
+		
+		
+	}
 
 }

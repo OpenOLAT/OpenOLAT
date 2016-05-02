@@ -25,12 +25,15 @@ import org.olat.core.gui.components.dropdown.Dropdown;
 import org.olat.core.gui.components.dropdown.Dropdown.Spacer;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
+import org.olat.core.gui.components.stack.PopEvent;
+import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.resource.OresHelper;
+import org.olat.ims.qti21.ui.editor.AssessmentTestComposerController;
 import org.olat.ims.qti21.ui.statistics.QTI21AssessmentTestStatisticsController;
 import org.olat.modules.assessment.ui.AssessmentOverviewController;
 import org.olat.modules.assessment.ui.AssessmentToolSecurityCallback;
@@ -112,8 +115,27 @@ public class QTI21RuntimeController extends RepositoryEntryRuntimeController  {
 			doAssessmentTool(ureq);
 		} else if(qtiOptionsLink == source) {
 			doQtiOptions(ureq);
+		} else if(toolbarPanel == source) {
+			if(event instanceof PopEvent) {
+				PopEvent pe = (PopEvent)event;
+				Controller popedCtrl = pe.getController();
+				if(popedCtrl instanceof AssessmentTestComposerController) {
+					AssessmentTestComposerController composerCtrl = (AssessmentTestComposerController)popedCtrl;
+					if(composerCtrl.hasChanges()) {
+						doReloadRuntimeController(ureq);
+					} else {
+						initToolbar();
+					}
+				}
+			}
 		}
 		super.event(ureq, source, event);
+	}
+	
+	private void doReloadRuntimeController(UserRequest ureq) {
+		disposeRuntimeController();
+		launchContent(ureq, reSecurity);
+		initToolbar();
 	}
 	
 	private Activateable2 doQtiOptions(UserRequest ureq) {

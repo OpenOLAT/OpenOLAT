@@ -330,6 +330,17 @@ public class QTI21ServiceImpl implements QTI21Service, InitializingBean, Disposa
 	}
 
 	@Override
+	public boolean deleteAuthorAssessmentTestSession(RepositoryEntryRef testEntry) {
+		List<AssessmentTestSession> sessions = testSessionDao.getAuthorAssessmentTestSession(testEntry);
+		for(AssessmentTestSession session:sessions) {
+			File fileStorage = testSessionDao.getSessionStorage(session);
+			testSessionDao.deleteTestSession(session);
+			FileUtils.deleteDirsAndFiles(fileStorage, true, true);
+		}
+		return true;
+	}
+
+	@Override
 	public AssessmentTestSession createAssessmentTestSession(Identity identity, AssessmentEntry assessmentEntry,
 			RepositoryEntry entry, String subIdent, RepositoryEntry testEntry, boolean authorMode) {
 		return testSessionDao.createAndPersistTestSession(testEntry, entry, subIdent, assessmentEntry, identity, authorMode);

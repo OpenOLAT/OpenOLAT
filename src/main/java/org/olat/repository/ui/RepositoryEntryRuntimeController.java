@@ -918,6 +918,13 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 			toolbarPanel.rootController(re.getDisplayname(), runtimeController);
 		}
 	}
+	
+	protected void disposeRuntimeController() {
+		if(runtimeController != null) {
+			removeAsListenerAndDispose(runtimeController);
+			runtimeController = null;
+		}
+	}
 
 	public interface RuntimeControllerCreator {
 		

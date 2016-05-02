@@ -199,6 +199,21 @@ public class AssessmentTestSessionDAO {
 				.getResultList();
 		return sessionKey != null && sessionKey.size() > 0 && sessionKey.get(0) != null;
 	}
+	
+	/**
+	 * Return all assessment test session of a test with the author flag set to true.
+	 * @param testEntry
+	 * @return
+	 */
+	public List<AssessmentTestSession> getAuthorAssessmentTestSession(RepositoryEntryRef testEntry) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select session from qtiassessmenttestsession session ")
+		  .append("where session.testEntry.key=:testEntryKey and session.authorMode=true");
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), AssessmentTestSession.class)
+				.setParameter("testEntryKey", testEntry.getKey())
+				.getResultList();
+	}
 
 	public List<AssessmentTestSession> getUserTestSessions(RepositoryEntryRef courseEntry, String courseSubIdent, IdentityRef identity) {
 		return dbInstance.getCurrentEntityManager()

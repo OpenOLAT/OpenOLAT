@@ -325,9 +325,9 @@ public class AssessmentItemEditorController extends BasicController {
 		if(metadataBuilder == null) return;
 		
 		//update manifest
-		metadataBuilder.setTechnicalFormat(ManifestBuilder.ASSESSMENTITEM_MIMETYPE);		
-		metadataBuilder.setQtiMetadata(itemBuilder.getInteractionNames());
+		metadataBuilder.setTechnicalFormat(ManifestBuilder.ASSESSMENTITEM_MIMETYPE);
 		if(itemBuilder != null) {
+			metadataBuilder.setQtiMetadata(itemBuilder.getInteractionNames());
 			metadataBuilder.setOpenOLATMetadataQuestionType(itemBuilder.getQuestionType().getPrefix());
 		} else {
 			metadataBuilder.setOpenOLATMetadataQuestionType(QTI21QuestionType.unkown.getPrefix());

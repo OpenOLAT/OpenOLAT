@@ -50,8 +50,9 @@ public interface AssessmentService {
 	/**
 	 * 
 	 * @param assessedIdentity
-	 * @param entry The repository entry, the course
-	 * @param subIdent An additional reference for the cours element
+	 * @param entry The repository entry where the assessment happens (the course if the test is in a course or
+	 * 		same as the reference entry if the test is launched as a standalone test).
+	 * @param subIdent An additional reference for the course element
 	 * @param referenceEntry The test repository entry 
 	 * @return
 	 */

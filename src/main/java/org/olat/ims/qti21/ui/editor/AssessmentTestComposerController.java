@@ -139,6 +139,7 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 	
 	private final boolean survey = false;
 	private final boolean restrictedEdit;
+	private boolean assessmentChanged = false;
 	
 	@Autowired
 	private QTI21Service qtiService;
@@ -251,6 +252,10 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 		menuTree.setTreeModel(new AssessmentTestEditorAndComposerTreeModel(resolvedAssessmentTest));
 	}
 	
+	public boolean hasChanges() {
+		return assessmentChanged;
+	}
+	
 	@Override
 	protected void doDispose() {
 		//
@@ -289,6 +294,7 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 		} else if(event instanceof AssessmentItemEvent) {
 			AssessmentItemEvent aie = (AssessmentItemEvent)event;
 			if(AssessmentItemEvent.ASSESSMENT_ITEM_CHANGED.equals(aie.getCommand())) {
+				assessmentChanged = true;
 				doUpdate(aie.getAssessmentItemRef().getIdentifier(), aie.getAssessmentItem().getTitle());
 				doSaveManifest();
 			} else if(AssessmentItemEvent.ASSESSMENT_ITEM_METADATA_CHANGED.equals(aie.getCommand())) {
@@ -635,6 +641,7 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 		URI testUri = resolvedAssessmentTest.getTestLookup().getSystemId();
 		File testFile = new File(testUri);
 		qtiService.updateAssesmentObject(testFile, resolvedAssessmentTest);
+		assessmentChanged = true;
 
 		//reload the test
 		updateTreeModel();
@@ -668,10 +675,7 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 			AssessmentItem assessmentItem = itemBuilder.getAssessmentItem();
 			qtiService.persistAssessmentObject(itemFile, assessmentItem);
 			
-			URI testUri = resolvedAssessmentTest.getTestLookup().getSystemId();
-			File testFile = new File(testUri);
-			qtiService.updateAssesmentObject(testFile, resolvedAssessmentTest);
-
+			doSaveAssessmentTest();
 			manifestBuilder.appendAssessmentItem(itemFile.getName());
 			doSaveManifest();
 			
@@ -701,6 +705,7 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 	}
 	
 	private void doSaveAssessmentTest() {
+		assessmentChanged = true;
 		URI testURI = resolvedAssessmentTest.getTestLookup().getSystemId();
 		File testFile = new File(testURI);
 		qtiService.updateAssesmentObject(testFile, resolvedAssessmentTest);
@@ -808,11 +813,7 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 				
 				//add to section
 				section.getSectionParts().add(itemRef);
-				
-				URI testUri = resolvedAssessmentTest.getTestLookup().getSystemId();
-				File testFile = new File(testUri);
-				qtiService.updateAssesmentObject(testFile, resolvedAssessmentTest);
-
+				doSaveAssessmentTest();
 				manifestBuilder.appendAssessmentItem(itemFile.getName());
 				doSaveManifest();
 			} catch (Exception e) {
@@ -865,9 +866,7 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 			return;//cannot delete test or test part
 		}
 		
-		URI testUri = resolvedAssessmentTest.getTestLookup().getSystemId();
-		File testFile = new File(testUri);
-		qtiService.updateAssesmentObject(testFile, resolvedAssessmentTest);
+		doSaveAssessmentTest();
 		doSaveManifest();
 		updateTreeModel();
 
@@ -896,6 +895,9 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 				File itemFile = new File(itemUri);
 				deleted = itemFile.delete();
 			}
+		}
+		if(deleted) {
+			assessmentChanged = true;
 		}
 		
 		logAudit(removed + " " + deleted + " removed item ref", null);

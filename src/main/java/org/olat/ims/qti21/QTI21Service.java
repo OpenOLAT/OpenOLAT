@@ -107,6 +107,16 @@ public interface QTI21Service {
 	public boolean persistAssessmentObject(File resourceFile, AssessmentObject assessmentObject);
 	
 	/**
+	 * Remove all test sessions in author mode, e.g. after an assessment test
+	 * was changed.
+	 * 
+	 * @param testEntry
+	 * @return
+	 */
+	public boolean deleteAuthorAssessmentTestSession(RepositoryEntryRef testEntry);
+	
+	
+	/**
 	 * Set some extra options for the QTI package.
 	 * 
 	 * @param testEntry
