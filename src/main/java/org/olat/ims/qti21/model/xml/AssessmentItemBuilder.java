@@ -53,7 +53,7 @@ public abstract class AssessmentItemBuilder {
 	protected final AssessmentItem assessmentItem;
 	protected final QtiSerializer qtiSerializer;
 	protected final AssessmentHtmlBuilder htmlHelper;
-	protected final AssessmentBuilderHelper builderHelper;
+	protected final BadRessourceHelper builderHelper;
 	
 	private ScoreBuilder minScoreBuilder;
 	private ScoreBuilder maxScoreBuilder;
@@ -66,7 +66,7 @@ public abstract class AssessmentItemBuilder {
 	public AssessmentItemBuilder(AssessmentItem assessmentItem, QtiSerializer qtiSerializer) {
 		this.assessmentItem = assessmentItem;
 		this.qtiSerializer = qtiSerializer;
-		builderHelper = new AssessmentBuilderHelper();
+		builderHelper = new BadRessourceHelper();
 		htmlHelper = new AssessmentHtmlBuilder(qtiSerializer);
 		extract();
 	}
@@ -201,7 +201,7 @@ public abstract class AssessmentItemBuilder {
 		incorrectFeedback = null;
 	}
 	
-	public AssessmentBuilderHelper getHelper() {
+	public BadRessourceHelper getHelper() {
 		return builderHelper;
 	}
 	

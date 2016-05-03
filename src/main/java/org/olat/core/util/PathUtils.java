@@ -42,6 +42,23 @@ import java.util.ServiceConfigurationError;
  */
 public class PathUtils {
 	
+	/**
+	 * 
+	 * @param source
+	 * @param targetDir
+	 * @param path Relative path where the file is saved from targetDir
+	 * @return
+	 * @throws IOException
+	 */
+	public static boolean copyFileToDir(Path source, File targetDir, String path) throws IOException {
+		File targetFile = new File(targetDir, path);
+		if(!targetFile.getParentFile().exists()) {
+			targetFile.getParentFile().mkdirs();
+		}
+		Files.copy(source, targetFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
+		return true;
+	}
+	
 	public static Path visit(File file, String filename, FileVisitor<Path> visitor) 
 	throws IOException, IllegalArgumentException {
 		if(!StringHelper.containsNonWhitespace(filename)) {

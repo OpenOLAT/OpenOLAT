@@ -28,7 +28,7 @@ import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.ims.qti21.model.xml.AssessmentBuilderHelper;
+import org.olat.ims.qti21.model.xml.BadRessourceHelper;
 
 import uk.ac.ed.ph.jqtiplus.provision.BadResourceException;
 
@@ -60,7 +60,7 @@ public class BadResourceController extends FormBasicController {
 
 			StringBuilder out = new StringBuilder();
 			if(resourceException != null) {
-				AssessmentBuilderHelper.extractMessage(resourceException, out);
+				BadRessourceHelper.extractMessage(resourceException, out);
 				layoutCont.contextPut("message", out.toString());
 			}
 			layoutCont.contextPut("directory", unzippedDirectory.toString());

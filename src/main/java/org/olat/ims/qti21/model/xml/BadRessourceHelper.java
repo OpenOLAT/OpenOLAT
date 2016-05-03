@@ -33,7 +33,7 @@ import uk.ac.ed.ph.jqtiplus.xmlutils.XmlParseResult;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class AssessmentBuilderHelper {
+public class BadRessourceHelper {
 
 	public static void extractMessage(BadResourceException e, StringBuilder out) {
         if(e instanceof QtiXmlInterpretationException) {

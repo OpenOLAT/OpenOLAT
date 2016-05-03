@@ -169,6 +169,20 @@ public class ImsQTI21Resource extends FileResource {
 	                log.error("File {} does not exist:" + systemId, e);
 	                return null;
 				}
+	        } else if("zip".equals(systemId.getScheme())) {
+	        	try {
+					String toPath = systemId.toString();
+					if(toPath.contains(":")) {
+						int index = toPath.indexOf(':');
+						String relative = toPath.substring(index + 1);
+						Path newPath = root.resolve(relative);
+						return Files.newInputStream(newPath);
+					}
+					
+				} catch (Exception e) {
+	                log.error("File {} does not exist:" + systemId, e);
+	                return null;
+				}
 	        }
 			return null;
 		}

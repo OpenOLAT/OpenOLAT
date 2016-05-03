@@ -236,7 +236,7 @@ public class ManifestBuilder {
         return itemResourceType;
 	}
 	
-	private List<ResourceType> getResourceList() {
+	public List<ResourceType> getResourceList() {
 		ResourcesType resources = manifest.getResources();
 		if(resources == null) {
 			resources = cpObjectFactory.createResourcesType();
@@ -245,7 +245,7 @@ public class ManifestBuilder {
 		return resources.getResource();
 	}
 	
-	private void appendFile(ResourceType resource, String href) {
+	public void appendFile(ResourceType resource, String href) {
 		FileType itemFileType = cpObjectFactory.createFileType();
         itemFileType.setHref(href);
         resource.getFile().add(itemFileType);
@@ -309,6 +309,17 @@ public class ManifestBuilder {
 					.createUnmarshaller().unmarshal(in)).getValue();
 			return new ManifestBuilder(manifest);
 		} catch (JAXBException | IOException e) {
+			log.error("", e);
+			return null;
+		}
+	}
+	
+	public static final ManifestBuilder read(InputStream in) {
+		try {
+			ManifestType manifest = (ManifestType)((JAXBElement<?>)context
+					.createUnmarshaller().unmarshal(in)).getValue();
+			return new ManifestBuilder(manifest);
+		} catch (JAXBException e) {
 			log.error("", e);
 			return null;
 		}

@@ -32,7 +32,6 @@ import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.ims.qti21.QTI21Service;
 import org.olat.ims.qti21.model.QTI21QuestionType;
-import org.olat.ims.qti21.model.QTI21QuestionTypeDetector;
 import org.olat.ims.qti21.model.xml.AssessmentItemBuilder;
 import org.olat.ims.qti21.model.xml.ManifestBuilder;
 import org.olat.ims.qti21.model.xml.ManifestMetadataBuilder;
@@ -161,7 +160,7 @@ public class AssessmentItemEditorController extends BasicController {
 	private void initItemEditor(UserRequest ureq) {
 		AssessmentItem item = resolvedAssessmentItem.getItemLookup().getRootNodeHolder().getRootNode();
 		
-		QTI21QuestionType type = QTI21QuestionTypeDetector.getType(item);
+		QTI21QuestionType type = QTI21QuestionType.getType(item);
 		switch(type) {
 			case sc: itemBuilder = initSingleChoiceEditors(ureq, item); break;
 			case mc: itemBuilder = initMultipleChoiceEditors(ureq, item); break;

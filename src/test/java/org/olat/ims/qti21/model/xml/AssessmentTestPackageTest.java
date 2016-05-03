@@ -194,7 +194,7 @@ public class AssessmentTestPackageTest {
         
         BadResourceException e = test.getResolvedAssessmentTest().getTestLookup().getBadResourceException();
         StringBuilder out = new StringBuilder();
-        AssessmentBuilderHelper.extractMessage(e, out);
+        BadRessourceHelper.extractMessage(e, out);
         log.info(out.toString());
 
         Assert.assertTrue(test.getModelValidationErrors().isEmpty());

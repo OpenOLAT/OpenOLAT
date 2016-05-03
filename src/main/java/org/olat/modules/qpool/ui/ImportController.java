@@ -106,6 +106,7 @@ public class ImportController extends FormBasicController {
 		File file = fileEl.getUploadFile();
 		List<QuestionItem> importItems = qpoolservice.importItems(getIdentity(), getLocale(), filename, file);
 		if(importItems == null || importItems.isEmpty()) {
+			fireEvent(ureq, Event.DONE_EVENT);
 			showWarning("import.failed");
 		} else {
 			boolean editable = editableEl == null ? true : editableEl.isSelected(0);

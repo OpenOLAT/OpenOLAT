@@ -84,16 +84,7 @@ public class AssessmentItemFileResourceValidator {
 		} else if(filename.toLowerCase().endsWith(".zip")) {
 			ZipInputStream oZip = new ZipInputStream(in);
 			try {
-				ZipEntry oEntr = oZip.getNextEntry();
-				while (oEntr != null) {
-					if (!oEntr.isDirectory() && !"imsmanifest.xml".equals(oEntr.getName())) {
-						if(validateXml(new ShieldInputStream(oZip))) {
-							valid = true;
-						}
-					}
-					oZip.closeEntry();
-					oEntr = oZip.getNextEntry();
-				}
+				valid = walkZip(oZip);
 			} catch(Exception e) {
 				log.error("", e);
 				valid = false;
@@ -103,6 +94,32 @@ public class AssessmentItemFileResourceValidator {
 			}
 		}
 		
+		return valid;
+	}
+	
+	private boolean walkZip(ZipInputStream oZip) {
+		boolean valid = false;
+		try {
+			ZipEntry oEntr = oZip.getNextEntry();
+			while (oEntr != null) {
+				if (!oEntr.isDirectory()) {
+					String fname = oEntr.getName().toLowerCase();
+					if(!"imsmanifest.xml".equals(fname) && fname.endsWith(".xml")) {
+						if(validateXml(new ShieldInputStream(oZip))) {
+							valid = true;
+						}
+					} else if(fname.endsWith(".zip")) {
+						ZipInputStream subZip = new ZipInputStream(new ShieldInputStream(oZip));
+						valid |= walkZip(subZip);
+					}
+				}
+				oZip.closeEntry();
+				oEntr = oZip.getNextEntry();
+			}
+		} catch(Exception e) {
+			log.error("", e);
+			valid = false;
+		}
 		return valid;
 	}
 

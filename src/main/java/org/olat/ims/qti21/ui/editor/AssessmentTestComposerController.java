@@ -68,7 +68,6 @@ import org.olat.ims.qti21.QTI21Constants;
 import org.olat.ims.qti21.QTI21Service;
 import org.olat.ims.qti21.model.IdentifierGenerator;
 import org.olat.ims.qti21.model.QTI21QuestionType;
-import org.olat.ims.qti21.model.QTI21QuestionTypeDetector;
 import org.olat.ims.qti21.model.xml.AssessmentItemBuilder;
 import org.olat.ims.qti21.model.xml.AssessmentTestFactory;
 import org.olat.ims.qti21.model.xml.ManifestBuilder;
@@ -877,7 +876,7 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 		
 		ResolvedAssessmentItem resolvedAssessmentItem = resolvedAssessmentTest.getResolvedAssessmentItem(itemRefToCopy);
 		AssessmentItem originalAssessmentItem = resolvedAssessmentItem.getItemLookup().extractIfSuccessful();
-		QTI21QuestionType type = QTI21QuestionTypeDetector.getType(originalAssessmentItem);
+		QTI21QuestionType type = QTI21QuestionType.getType(originalAssessmentItem);
 
 		File itemFile = null;
 		try {
