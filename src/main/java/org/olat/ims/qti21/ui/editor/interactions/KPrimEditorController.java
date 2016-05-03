@@ -36,6 +36,7 @@ import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.ims.qti21.QTI21Constants;
@@ -131,7 +132,7 @@ public class KPrimEditorController extends FormBasicController {
 		recalculateUpDownLinks();
 
 		// Submit Button
-		FormLayoutContainer buttonsContainer = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
+		FormLayoutContainer buttonsContainer = FormLayoutContainer.createDefaultFormLayout("buttons", getTranslator());
 		buttonsContainer.setRootForm(mainForm);
 		formLayout.add(buttonsContainer);
 		formLayout.add("buttons", buttonsContainer);
@@ -158,9 +159,7 @@ public class KPrimEditorController extends FormBasicController {
 		answersCont.add(downLink);
 		answersCont.add("down-".concat(choiceId), downLink);
 		
-		boolean correct = itemBuilder.isCorrect(choice.getIdentifier());
-		boolean wrong = itemBuilder.isWrong(choice.getIdentifier());
-		choiceWrappers.add(new KprimWrapper(choice, correct, wrong, choiceEl, upLink, downLink));
+		choiceWrappers.add(new KprimWrapper(choice, choiceEl, upLink, downLink));
 	}
 	
 	@Override
@@ -201,8 +200,6 @@ public class KPrimEditorController extends FormBasicController {
 				} else if("wrong".equals(association)) {
 					itemBuilder.setAssociation(choiceIdentifier, QTI21Constants.WRONG_IDENTIFIER);
 				}
-				choiceWrapper.setCorrect(itemBuilder.isCorrect(choiceIdentifier));
-				choiceWrapper.setWrong(itemBuilder.isWrong(choiceIdentifier));
 			}
 		}
 
@@ -215,12 +212,29 @@ public class KPrimEditorController extends FormBasicController {
 			FormLink button = (FormLink)source;
 			String cmd = button.getCmd();
 			if("up".equals(cmd)) {
+				updateMatch(ureq);
 				doMoveSimpleChoiceUp((KprimWrapper)button.getUserObject());
 			} else if("down".equals(cmd)) {
+				updateMatch(ureq);
 				doMoveSimpleChoiceDown((KprimWrapper)button.getUserObject());
 			}
 		}
 		super.formInnerEvent(ureq, source, event);
+	}
+	
+	private void updateMatch(UserRequest ureq) {
+		for(KprimWrapper choiceWrapper:choiceWrappers) {
+			SimpleAssociableChoice choice = choiceWrapper.getSimpleChoice();
+			Identifier choiceIdentifier = choice.getIdentifier();
+			String association = ureq.getHttpReq().getParameter(choiceIdentifier.toString());
+			if(StringHelper.containsNonWhitespace(association)) {
+				if("correct".equals(association)) {
+					itemBuilder.setAssociation(choiceIdentifier, QTI21Constants.CORRECT_IDENTIFIER);
+				} else if("wrong".equals(association)) {
+					itemBuilder.setAssociation(choiceIdentifier, QTI21Constants.WRONG_IDENTIFIER);
+				}
+			}
+		}
 	}
 
 	private void doMoveSimpleChoiceUp(KprimWrapper choiceWrapper) {
@@ -252,21 +266,16 @@ public class KPrimEditorController extends FormBasicController {
 		}
 	}
 
-	public static final class KprimWrapper {
+	public final class KprimWrapper {
 		
 		private final SimpleAssociableChoice choice;
 		private final RichTextElement answerEl;
 		private final FormLink upLink, downLink;
-		
-		private boolean correct;
-		private boolean wrong;
 		private final Identifier choiceIdentifier;
 		
-		public KprimWrapper(SimpleAssociableChoice choice, boolean correct, boolean wrong, RichTextElement answerEl,
+		public KprimWrapper(SimpleAssociableChoice choice, RichTextElement answerEl,
 				FormLink upLink, FormLink downLink) {
 			this.choice = choice;
-			this.correct = correct;
-			this.wrong = wrong;
 			this.choiceIdentifier = choice.getIdentifier();
 			this.answerEl = answerEl;
 			answerEl.setUserObject(this);
@@ -285,19 +294,11 @@ public class KPrimEditorController extends FormBasicController {
 		}
 		
 		public boolean isCorrect() {
-			return correct;
-		}
-		
-		public void setCorrect(boolean correct) {
-			this.correct = correct;
+			return itemBuilder.isCorrect(choiceIdentifier);
 		}
 		
 		public boolean isWrong() {
-			return wrong;
-		}
-		
-		public void setWrong(boolean wrong) {
-			this.wrong = wrong;
+			return itemBuilder.isWrong(choiceIdentifier);
 		}
 		
 		public SimpleAssociableChoice getSimpleChoice() {

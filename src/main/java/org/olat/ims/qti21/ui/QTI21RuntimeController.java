@@ -133,6 +133,9 @@ public class QTI21RuntimeController extends RepositoryEntryRuntimeController  {
 	private void doReloadRuntimeController(UserRequest ureq) {
 		disposeRuntimeController();
 		launchContent(ureq, reSecurity);
+		if(toolbarPanel.getTools().isEmpty()) {
+			initToolbar();
+		}
 	}
 	
 	private Activateable2 doQtiOptions(UserRequest ureq) {

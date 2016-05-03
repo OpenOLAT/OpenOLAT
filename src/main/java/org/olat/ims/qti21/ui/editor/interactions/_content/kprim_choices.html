@@ -1,14 +1,13 @@
 <fieldset class="o_form">
 
 <div class="form-group #if($f.hasError($item)) has-feedback has-error #end clearfix">
-	<div class="col-sm-1"><strong>[+]</strong></div>
-	<div class="col-sm-1"><strong>[-]</strong></div>
-	<div class="col-sm-8"><strong>[Answer]</strong></div>
-	<div class="col-sm-2"><strong>[Actions]</strong></div>
+	<div class="col-sm-1"><strong>$r.translate("form.imd.correct.kprim")</strong></div>
+	<div class="col-sm-1"><strong>$r.translate("form.imd.wrong.kprim")</strong></div>
+	<div class="col-sm-9"><strong>$r.translate("answers")</strong></div>
+	<div class="col-sm-1"><strong></strong></div>
 </div>
 
 #foreach($choice in $choices)
-
 <div class="form-group #if($f.hasError($item)) has-feedback has-error #end clearfix">
 	<div class="col-sm-1">
 		<input type="radio" name="${choice.getIdentifierString()}" value="correct" #if($restrictedEdit) disabled #end #if(${choice.isCorrect()}) checked #end/>
@@ -16,13 +15,13 @@
 	<div class="col-sm-1">
 		<input type="radio" name="${choice.getIdentifierString()}" value="wrong" #if($restrictedEdit) disabled #end #if(!${choice.isCorrect()}) checked #end/>
 	</div>
-	<div class="col-sm-8">
+	<div class="col-sm-9">
 		$r.render(${choice.getAnswer().getComponent().getComponentName()})
 		#if($f.hasError($item))
 			<span class="o_icon o_icon_error form-control-feedback"></span>
 		#end
 	</div>
-	<div class="col-sm-2">
+	<div class="col-sm-1">
 		#if($r.available(${choice.getUp().getComponent().getComponentName()}) && $r.visible(${choice.getUp().getComponent().getComponentName()}))
 			$r.render(${choice.getUp().getComponent().getComponentName()})
 		#end
@@ -37,6 +36,5 @@
 		</div>
 	#end
 </div>
-
 #end
 </fieldset>

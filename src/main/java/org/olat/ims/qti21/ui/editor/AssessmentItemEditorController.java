@@ -75,6 +75,7 @@ public class AssessmentItemEditorController extends BasicController {
 	private final TabbedPane tabbedPane;
 	private final VelocityContainer mainVC;
 	
+	private final int displayTabPosition;
 	private MetadataEditorController metadataEditor;
 	private AssessmentItemDisplayController displayCtrl;
 	private Controller itemEditor, scoreEditor, feedbackEditor;
@@ -84,6 +85,7 @@ public class AssessmentItemEditorController extends BasicController {
 	private final VFSContainer rootContainer;
 	
 	private final boolean restrictedEdit;
+	private RepositoryEntry testEntry;
 	private AssessmentItemBuilder itemBuilder;
 	private ManifestMetadataBuilder metadataBuilder;
 	
@@ -114,7 +116,7 @@ public class AssessmentItemEditorController extends BasicController {
 		
 		displayCtrl = new AssessmentItemDisplayController(ureq, getWindowControl(), resolvedAssessmentItem, rootDirectory, itemFile);
 		listenTo(displayCtrl);
-		tabbedPane.addTab("Preview", displayCtrl.getInitialComponent());
+		displayTabPosition = tabbedPane.addTab(translate("preview"), displayCtrl.getInitialComponent());
 		
 		putInitialPanel(mainVC);
 	}
@@ -126,6 +128,7 @@ public class AssessmentItemEditorController extends BasicController {
 		this.itemRef = itemRef;
 		this.metadataBuilder = metadataBuilder;
 		this.itemFile = itemFile;
+		this.testEntry = testEntry;
 		this.rootDirectory = rootDirectory;
 		this.rootContainer = rootContainer;
 		this.restrictedEdit = restrictedEdit;
@@ -143,7 +146,7 @@ public class AssessmentItemEditorController extends BasicController {
 		displayCtrl = new AssessmentItemDisplayController(ureq, getWindowControl(),
 				testEntry, assessmentEntry, true, resolvedAssessmentItem, itemRef, rootDirectory);
 		listenTo(displayCtrl);
-		tabbedPane.addTab(translate("preview"), displayCtrl);
+		displayTabPosition = tabbedPane.addTab(translate("preview"), displayCtrl);
 		
 		putInitialPanel(mainVC);
 	}
@@ -287,6 +290,17 @@ public class AssessmentItemEditorController extends BasicController {
 			Controller selectedCtrl = tabbedPane.getSelectedController();
 			if(selectedCtrl instanceof SyncAssessmentItem) {
 				((SyncAssessmentItem)selectedCtrl).sync(ureq, itemBuilder);
+			} else if(selectedCtrl == displayCtrl) {
+				if(testEntry != null) {
+					AssessmentEntry assessmentEntry = assessmentService.getOrCreateAssessmentEntry(getIdentity(), testEntry, null, testEntry);
+					displayCtrl = new AssessmentItemDisplayController(ureq, getWindowControl(),
+						testEntry, assessmentEntry, true, resolvedAssessmentItem, itemRef, rootDirectory);
+				} else {
+					displayCtrl = new AssessmentItemDisplayController(ureq, getWindowControl(), resolvedAssessmentItem, rootDirectory, itemFile);
+				}
+				
+				listenTo(displayCtrl);
+				tabbedPane.replaceTab(displayTabPosition, displayCtrl);
 			}
 		}
 	}

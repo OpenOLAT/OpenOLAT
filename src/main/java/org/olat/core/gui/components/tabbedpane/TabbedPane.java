@@ -191,6 +191,13 @@ public class TabbedPane extends Container implements Activateable2 {
 		return -1;
 	}
 	
+	public void replaceTab(int pos, Controller controller) {
+		tabPanes.get(pos).setController(controller);
+		if(pos == selectedPane) {
+			super.put("atp", controller.getInitialComponent());
+		}
+	}
+	
 	public void replaceTab(int pos, Component component) {
 		tabPanes.get(pos).setComponent(component);
 		if(pos == selectedPane) {

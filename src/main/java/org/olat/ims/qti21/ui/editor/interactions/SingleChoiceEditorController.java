@@ -170,8 +170,7 @@ public class SingleChoiceEditorController extends FormBasicController {
 		answersCont.add(downLink);
 		answersCont.add("down-".concat(choiceId), downLink);
 		
-		boolean correct = itemBuilder.isCorrect(choice);
-		choiceWrappers.add(new SimpleChoiceWrapper(choice, correct, choiceEl, removeLink, addLink, upLink, downLink));
+		choiceWrappers.add(new SimpleChoiceWrapper(choice, choiceEl, removeLink, addLink, upLink, downLink));
 	}
 
 	@Override
@@ -189,6 +188,7 @@ public class SingleChoiceEditorController extends FormBasicController {
 			allOk &= false;
 		}
 		
+		answersCont.clearError();
 		String correctAnswer = ureq.getParameter("correct");
 		if(!StringHelper.containsNonWhitespace(correctAnswer)) {
 			allOk &= false;
@@ -221,9 +221,6 @@ public class SingleChoiceEditorController extends FormBasicController {
 		List<SimpleChoice> choiceList = new ArrayList<>();
 		for(SimpleChoiceWrapper choiceWrapper:choiceWrappers) {
 			SimpleChoice choice = choiceWrapper.getSimpleChoice();
-			if(!restrictedEdit) {
-				choiceWrapper.setCorrect(correctAnswerIdentifier.equals(choiceWrapper.getIdentifier()));
-			}
 			//text
 			String answer = choiceWrapper.getAnswer().getValue();
 			itemBuilder.getHtmlHelper().appendHtml(choice, answer);
@@ -240,16 +237,28 @@ public class SingleChoiceEditorController extends FormBasicController {
 			FormLink button = (FormLink)source;
 			String cmd = button.getCmd();
 			if("rm".equals(cmd)) {
+				updateCorrectAnswer(ureq);
 				doRemoveSimpleChoice((SimpleChoiceWrapper)button.getUserObject());
 			} else if("add".equals(cmd)) {
+				updateCorrectAnswer(ureq);
 				doAddSimpleChoice(ureq);
 			} else if("up".equals(cmd)) {
+				updateCorrectAnswer(ureq);
 				doMoveSimpleChoiceUp((SimpleChoiceWrapper)button.getUserObject());
 			} else if("down".equals(cmd)) {
+				updateCorrectAnswer(ureq);
 				doMoveSimpleChoiceDown((SimpleChoiceWrapper)button.getUserObject());
 			}
 		}
 		super.formInnerEvent(ureq, source, event);
+	}
+	
+	private void updateCorrectAnswer(UserRequest ureq) {
+		String correctAnswer = ureq.getParameter("correct");
+		if(StringHelper.containsNonWhitespace(correctAnswer)) {
+			Identifier correctAnswerIdentifier = Identifier.parseString(correctAnswer);
+			itemBuilder.setCorrectAnswer(correctAnswerIdentifier);
+		}
 	}
 	
 	private void doAddSimpleChoice(UserRequest ureq) {
@@ -293,19 +302,17 @@ public class SingleChoiceEditorController extends FormBasicController {
 		}
 	}
 
-	public static final class SimpleChoiceWrapper {
+	public final class SimpleChoiceWrapper {
 		
 		private final SimpleChoice choice;
 		private final RichTextElement answerEl;
 		private final FormLink removeLink, addLink, upLink, downLink;
 		
-		private boolean correct;
 		private final Identifier choiceIdentifier;
 		
-		public SimpleChoiceWrapper(SimpleChoice choice, boolean correct, RichTextElement answerEl,
+		public SimpleChoiceWrapper(SimpleChoice choice, RichTextElement answerEl,
 				FormLink removeLink, FormLink addLink, FormLink upLink, FormLink downLink) {
 			this.choice = choice;
-			this.correct = correct;
 			this.choiceIdentifier = choice.getIdentifier();
 			this.answerEl = answerEl;
 			answerEl.setUserObject(this);
@@ -328,11 +335,7 @@ public class SingleChoiceEditorController extends FormBasicController {
 		}
 		
 		public boolean isCorrect() {
-			return correct;
-		}
-		
-		public void setCorrect(boolean correct) {
-			this.correct = correct;
+			return itemBuilder.isCorrect(choice);
 		}
 		
 		public SimpleChoice getSimpleChoice() {
