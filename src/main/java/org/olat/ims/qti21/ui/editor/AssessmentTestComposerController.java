@@ -27,6 +27,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Date;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.olat.core.commons.fullWebApp.LayoutMain3ColsController;
 import org.olat.core.gui.UserRequest;
@@ -98,6 +99,7 @@ import org.olat.repository.ui.RepositoryEntryRuntimeController.ToolbarAware;
 import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import uk.ac.ed.ph.jqtiplus.node.QtiNode;
 import uk.ac.ed.ph.jqtiplus.node.item.AssessmentItem;
 import uk.ac.ed.ph.jqtiplus.node.test.AbstractPart;
 import uk.ac.ed.ph.jqtiplus.node.test.AssessmentItemRef;
@@ -109,6 +111,8 @@ import uk.ac.ed.ph.jqtiplus.resolution.ResolvedAssessmentItem;
 import uk.ac.ed.ph.jqtiplus.resolution.ResolvedAssessmentTest;
 import uk.ac.ed.ph.jqtiplus.resolution.RootNodeLookup;
 import uk.ac.ed.ph.jqtiplus.types.Identifier;
+import uk.ac.ed.ph.jqtiplus.utils.QueryUtils;
+import uk.ac.ed.ph.jqtiplus.utils.TreeWalkNodeHandler;
 
 /**
  * Assessment test editor and composer.
@@ -122,10 +126,10 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 	
 	
 	private MenuTree menuTree;
-	private Dropdown addItemTools, changeItemTools;
+	private Dropdown exportItemTools, addItemTools, changeItemTools;
 	private Link newSectionLink, newSingleChoiceLink, newMultipleChoiceLink, newKPrimLink,
 		newFIBLink, newNumericalLink, newHotspotLink, newEssayLink;
-	private Link importFromPoolLink, importFromTableLink;
+	private Link importFromPoolLink, importFromTableLink, exportToPoolLink;
 	private Link deleteLink, copyLink;
 	private final TooledStackedPanel toolbar;
 	private VelocityContainer mainVC;
@@ -246,6 +250,14 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 		importFromTableLink.setDomReplacementWrapperRequired(false);
 		addItemTools.addComponent(importFromTableLink);
 		
+		exportItemTools = new Dropdown("exportTools", "tools.export.header", false, getTranslator());
+		exportItemTools.setIconCSS("o_icon o_icon_export");
+		//export
+		exportToPoolLink = LinkFactory.createToolLink("export.pool", translate("tools.export.qpool"), this, "o_mi_qpool_export");
+		exportToPoolLink.setIconLeftCSS("o_icon o_icon_table o_icon-fw");
+		exportToPoolLink.setDomReplacementWrapperRequired(false);
+		exportItemTools.addComponent(exportToPoolLink);
+
 		//changes
 		changeItemTools = new Dropdown("changeTools", "change.elements", false, getTranslator());
 		changeItemTools.setIconCSS("o_icon o_icon-fw o_icon_customize");
@@ -295,6 +307,7 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 	
 	@Override
 	public void initToolbar() {
+		toolbar.addTool(exportItemTools, Align.left);
 		toolbar.addTool(addItemTools, Align.left);
 		toolbar.addTool(changeItemTools, Align.left);
 	}
@@ -403,6 +416,8 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 			doSelectQItem(ureq);
 		} else if(importFromTableLink == source) {
 			doImportTable(ureq);
+		} else if(exportToPoolLink == source) {
+			doExportPool();
 		} else if(deleteLink == source) {
 			doConfirmDelete(ureq);
 		} else if(copyLink == source) {
@@ -522,6 +537,47 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 		}
 	}
 	
+	private void doExportPool() {
+		TreeNode selectedNode = menuTree.getSelectedNode();
+		if(selectedNode == null) return;
+		
+		AtomicInteger counter = new AtomicInteger();
+		Object uobject = selectedNode.getUserObject();
+		if(uobject instanceof AssessmentItemRef) {
+			doExportPool((AssessmentItemRef)uobject);
+			counter.incrementAndGet();
+		} else if(uobject instanceof QtiNode) {
+			QtiNode qtiNode = (QtiNode)uobject;
+			QueryUtils.walkTree(new TreeWalkNodeHandler() {
+				
+				@Override
+				public boolean handleNode(QtiNode node) {
+					if(node instanceof AssessmentItemRef) {
+						doExportPool((AssessmentItemRef)node);
+						counter.incrementAndGet();
+					}
+					return true;
+				}
+			}, qtiNode);
+		}
+		
+		if(counter.get() > 0) {
+			showInfo("export.qpool.successful", counter.toString());
+		}
+	}
+	
+	private void doExportPool(AssessmentItemRef itemRef) {
+		AssessmentItem assessmentItem = resolvedAssessmentTest
+				.getResolvedAssessmentItem(itemRef).getRootNodeLookup().extractIfSuccessful();
+
+		ManifestBuilder clonedManifestBuilder = ManifestBuilder.read(new File(unzippedDirRoot, "imsmanifest.xml"));
+		ResourceType resource = getResourceType(clonedManifestBuilder, itemRef);
+		ManifestMetadataBuilder metadata = clonedManifestBuilder.getMetadataBuilder(resource, true);
+
+		qti21QPoolServiceProvider
+				.importAssessmentItemRef(getIdentity(), itemRef, assessmentItem, metadata, unzippedDirRoot, getLocale());
+	}
+	
 	private void doImportTable(UserRequest ureq) {
 		removeAsListenerAndDispose(importTableWizard);
 
@@ -585,7 +641,7 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 				AssessmentItemRef itemRef = doInsert(section, assessmentItem);
 				ManifestMetadataBuilder metadata = manifestBuilder.getResourceBuilderByHref(itemRef.getHref().toString());
 				metadata.setQtiMetadata(itemBuilder.getInteractionNames());
-				itemAndMetadata.transfer(metadata, getLocale());
+				itemAndMetadata.toBuilder(metadata, getLocale());
 				if(firstItemId == null) {
 					firstItemId = itemRef.getIdentifier().toString();
 				}
@@ -596,7 +652,6 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 		}
 		
 		//persist metadata
-		
 		doSaveManifest();
 		updateTreeModel();
 		
@@ -952,6 +1007,10 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 	}
 
 	private ResourceType getResourceType(AssessmentItemRef itemRef) {
+		return getResourceType(manifestBuilder, itemRef);
+	}
+
+	private ResourceType getResourceType(ManifestBuilder builder, AssessmentItemRef itemRef) {
 		ResolvedAssessmentItem resolvedAssessmentItem = resolvedAssessmentTest.getResolvedAssessmentItem(itemRef);
 		if(resolvedAssessmentItem == null) return null;
 		RootNodeLookup<AssessmentItem> rootNode = resolvedAssessmentItem.getItemLookup();
@@ -960,7 +1019,7 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 		URI itemUri = rootNode.getSystemId();
 		File itemFile = new File(itemUri);
 		String relativePathToManifest = unzippedDirRoot.toPath().relativize(itemFile.toPath()).toString();
-		return manifestBuilder.getResourceTypeByHref(relativePathToManifest);
+		return builder.getResourceTypeByHref(relativePathToManifest);
 	}
 	
 	private ManifestMetadataBuilder getMetadataBuilder(AssessmentItemRef itemRef) {

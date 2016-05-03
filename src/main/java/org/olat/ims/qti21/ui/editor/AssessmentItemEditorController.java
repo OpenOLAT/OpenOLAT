@@ -183,7 +183,7 @@ public class AssessmentItemEditorController extends BasicController {
 	private void initItemCreatedByUnkownEditor(UserRequest ureq) {
 		itemEditor = new UnkownItemEditorController(ureq, getWindowControl());
 		listenTo(itemEditor);
-		tabbedPane.addTab("Unkown", itemEditor);
+		tabbedPane.addTab(translate("form.unkown"), itemEditor);
 	}
 
 	private AssessmentItemBuilder initSingleChoiceEditors(UserRequest ureq, AssessmentItem item) {

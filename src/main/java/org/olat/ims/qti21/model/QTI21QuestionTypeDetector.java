@@ -59,7 +59,7 @@ public class QTI21QuestionTypeDetector {
 		
 		return newIdentifier;
 	}
-	
+
 	public static QTI21QuestionType getType(AssessmentItem item) {
 
 		if(QTI21Constants.TOOLNAME.equals(item.getToolName())) {

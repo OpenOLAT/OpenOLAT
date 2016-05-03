@@ -137,7 +137,7 @@ public class HotspotEditorController extends FormBasicController {
 		
 		String question = itemBuilder.getQuestion();
 		textEl = uifactory.addRichTextElementForStringDataCompact("desc", "form.imd.descr", question, 8, -1, itemContainer,
-				formLayout, getWindowControl());
+				formLayout, ureq.getUserSession(), getWindowControl());
 		textEl.addActionListener(FormEvent.ONCLICK);
 		
 		//responses

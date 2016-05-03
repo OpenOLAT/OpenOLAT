@@ -90,7 +90,7 @@ public class FIBEditorController extends FormBasicController {
 		
 		String question = itemBuilder.getQuestion();
 		textEl = uifactory.addRichTextElementForStringDataCompact("desc", "form.imd.descr", question, 16, -1, itemContainer,
-				formLayout, getWindowControl());
+				formLayout, ureq.getUserSession(),  getWindowControl());
 		textEl.addActionListener(FormEvent.ONCLICK);
 		textEl.setEnabled(!restrictedEdit);
 		RichTextConfiguration richTextConfig = textEl.getEditorConfiguration();

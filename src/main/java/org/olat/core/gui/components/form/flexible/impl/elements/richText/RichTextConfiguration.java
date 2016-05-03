@@ -208,7 +208,7 @@ public class RichTextConfiguration implements Disposable {
 		tinyConfig = TinyConfig.minimalisticConfig;
 	}
 	
-	public void setConfigProfileFormCompactEditor(Theme guiTheme, VFSContainer baseContainer) {
+	public void setConfigProfileFormCompactEditor(UserSession usess, Theme guiTheme, VFSContainer baseContainer) {
 		setConfigBasics(guiTheme);
 		// Add additional plugins
 		TinyMCECustomPluginFactory customPluginFactory = CoreSpringFactory.getImpl(TinyMCECustomPluginFactory.class);
@@ -221,6 +221,14 @@ public class RichTextConfiguration implements Disposable {
 		setQuotedConfigValue(INVALID_ELEMENTS, (baseContainer == null ? INVALID_ELEMENTS_FORM_SIMPLE_VALUE_UNSAVE : INVALID_ELEMENTS_FORM_FULL_VALUE_UNSAVE));
 		tinyConfig = TinyConfig.editorCompactConfig;
 		setStatusBar(false);
+		
+		// Setup file and link browser
+		if (baseContainer != null) {
+			tinyConfig = tinyConfig.enableImageAndMedia();
+			setFileBrowserCallback(baseContainer, null, IMAGE_SUFFIXES_VALUES, MEDIA_SUFFIXES_VALUES, FLASH_PLAYER_SUFFIXES_VALUES);
+			// since in form editor mode and not in file mode we use null as relFilePath
+			setDocumentMediaBase(baseContainer, null, usess);			
+		}
 	}
 
 

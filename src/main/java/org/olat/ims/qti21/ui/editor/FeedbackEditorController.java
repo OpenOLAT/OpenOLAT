@@ -71,7 +71,7 @@ public class FeedbackEditorController extends FormBasicController {
 			feedbackCorrectTitleEl.setEnabled(!restrictedEdit);
 			String correctText = correctFeedback == null ? "" : correctFeedback.getText();
 			feedbackCorrectTextEl = uifactory.addRichTextElementForStringDataCompact("correctText", "form.imd.correct.text", correctText, 8, -1, null,
-					formLayout, getWindowControl());
+					formLayout, ureq.getUserSession(), getWindowControl());
 			feedbackCorrectTextEl.setEnabled(!restrictedEdit);
 			RichTextConfiguration richTextConfig = feedbackCorrectTextEl.getEditorConfiguration();
 			richTextConfig.setFileBrowserUploadRelPath("media");// set upload dir to the media dir
@@ -85,7 +85,7 @@ public class FeedbackEditorController extends FormBasicController {
 			feedbackEmptyTitleEl.setEnabled(!restrictedEdit);
 			String emptyText = emptyFeedback == null ? "" : emptyFeedback.getText();
 			feedbackEmptyTextEl = uifactory.addRichTextElementForStringDataCompact("emptyText", "form.imd.empty.text", emptyText, 8, -1, null,
-					formLayout, getWindowControl());
+					formLayout, ureq.getUserSession(), getWindowControl());
 			feedbackEmptyTextEl.setEnabled(!restrictedEdit);
 			RichTextConfiguration richTextConfig = feedbackEmptyTextEl.getEditorConfiguration();
 			richTextConfig.setFileBrowserUploadRelPath("media");// set upload dir to the media dir
@@ -100,7 +100,7 @@ public class FeedbackEditorController extends FormBasicController {
 			feedbackIncorrectTitleEl.setEnabled(!restrictedEdit);
 			String incorrectText = incorrectFeedback == null ? "" : incorrectFeedback.getText();
 			feedbackIncorrectTextEl = uifactory.addRichTextElementForStringDataCompact("incorrectText", "form.imd.incorrect.text", incorrectText, 8, -1, null,
-					formLayout, getWindowControl());
+					formLayout, ureq.getUserSession(), getWindowControl());
 			feedbackIncorrectTextEl.setEnabled(!restrictedEdit);
 			RichTextConfiguration richTextConfig2 = feedbackIncorrectTextEl.getEditorConfiguration();
 			richTextConfig2.setFileBrowserUploadRelPath("media");// set upload dir to the media dir

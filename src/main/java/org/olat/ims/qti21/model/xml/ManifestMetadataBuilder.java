@@ -87,6 +87,10 @@ public class ManifestMetadataBuilder {
 		return metadata;
 	}
 	
+	public void setMetadata(MetadataType metadata) {
+		this.metadata = metadata;
+	}
+	
 	public String getTitle() {
 		GeneralType general = getGeneral(false);
 		if(general != null) {

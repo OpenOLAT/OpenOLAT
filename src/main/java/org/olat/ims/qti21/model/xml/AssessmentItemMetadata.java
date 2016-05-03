@@ -20,6 +20,7 @@
 package org.olat.ims.qti21.model.xml;
 
 import java.math.BigDecimal;
+import java.util.Locale;
 
 import org.olat.ims.qti21.model.QTI21QuestionType;
 
@@ -49,6 +50,14 @@ public class AssessmentItemMetadata {
 	
 	private QTI21QuestionType questionType;
 	private String interactionType;
+	
+	public AssessmentItemMetadata() {
+		//
+	}
+	
+	public AssessmentItemMetadata(ManifestMetadataBuilder metadaBuilder) {
+		fromBuilder(metadaBuilder);
+	}
 	
 	public QTI21QuestionType getQuestionType() {
 		return questionType;
@@ -176,5 +185,34 @@ public class AssessmentItemMetadata {
 
 	public void setHasError(boolean hasError) {
 		this.hasError = hasError;
+	}
+	
+	public void toBuilder(ManifestMetadataBuilder metadata, Locale locale) {
+		if(getQuestionType() != null) {
+			metadata.setOpenOLATMetadataQuestionType(getQuestionType().getPrefix());
+		}
+		metadata.setTechnicalFormat(ManifestBuilder.ASSESSMENTITEM_MIMETYPE);
+
+		/*
+		private String taxonomyPath;
+		private String keywords;
+		private String coverage;
+		private String level;
+		private String typicalLearningTime;
+		private String license;
+		private String editor;
+		private String editorVersion;
+		private int numOfAnswerAlternatives;
+		private BigDecimal difficulty;
+		private BigDecimal differentiation;
+		private BigDecimal stdevDifficulty;
+		*/
+	}
+	
+	public void fromBuilder(ManifestMetadataBuilder builder) {
+	
+		
+		
+		
 	}
 }

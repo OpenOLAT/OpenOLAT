@@ -20,6 +20,7 @@
 package org.olat.ims.qti21.pool;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
@@ -43,7 +44,10 @@ import org.olat.modules.qpool.model.QItemType;
 import org.olat.modules.qpool.model.QLicense;
 import org.olat.modules.qpool.model.QuestionItemImpl;
 
+import uk.ac.ed.ph.jqtiplus.node.content.xhtml.image.Img;
 import uk.ac.ed.ph.jqtiplus.node.item.AssessmentItem;
+import uk.ac.ed.ph.jqtiplus.utils.QueryUtils;
+import uk.ac.ed.ph.jqtiplus.node.content.xhtml.object.Object;
 
 /**
  * 
@@ -87,6 +91,21 @@ public class QTI21ImportProcessor {
 		return null;
 	}
 	
+	protected List<String> getMaterials(AssessmentItem item) {
+		List<String> materials = new ArrayList<>();
+		QueryUtils.search(Img.class, item).forEach((img) -> {
+			if(img.getSrc() != null) {
+				materials.add(img.getSrc().toString());
+			}
+		});
+
+		QueryUtils.search(Object.class, item).forEach((object) -> {
+			if(StringHelper.containsNonWhitespace(object.getData())) {
+				materials.add(object.getData());
+			}
+		});
+		return materials;
+	}
 
 	protected QuestionItemImpl processItem(AssessmentItem assessmentItem, String comment, String originalItemFilename,
 			String editor, String editorVersion, AssessmentItemMetadata metadata) {

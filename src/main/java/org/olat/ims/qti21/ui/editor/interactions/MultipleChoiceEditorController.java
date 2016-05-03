@@ -105,7 +105,7 @@ public class MultipleChoiceEditorController extends FormBasicController {
 		
 		String description = itemBuilder.getQuestion();
 		textEl = uifactory.addRichTextElementForStringDataCompact("desc", "form.imd.descr", description, 8, -1, itemContainer,
-				metadata, getWindowControl());
+				metadata, ureq.getUserSession(), getWindowControl());
 		
 		//shuffle
 		String[] yesnoValues = new String[]{ translate("yes"), translate("no") };
@@ -129,7 +129,7 @@ public class MultipleChoiceEditorController extends FormBasicController {
 			
 			List<SimpleChoice> choices = itemBuilder.getSimpleChoices();
 			for(SimpleChoice choice:choices) {
-				wrapAnswer(choice);
+				wrapAnswer(ureq, choice);
 			}
 		}
 		answersCont.contextPut("choices", choiceWrappers);
@@ -144,11 +144,11 @@ public class MultipleChoiceEditorController extends FormBasicController {
 		uifactory.addFormSubmitButton("submit", buttonsContainer);
 	}
 
-	private void wrapAnswer(SimpleChoice choice) {
+	private void wrapAnswer(UserRequest ureq, SimpleChoice choice) {
 		String choiceContent =  itemBuilder.getHtmlHelper().flowStaticString(choice.getFlowStatics());
 		String choiceId = "answer" + count++;
 		RichTextElement choiceEl = uifactory.addRichTextElementForStringDataCompact(choiceId, "form.imd.answer", choiceContent, 8, -1, null,
-				answersCont, getWindowControl());
+				answersCont, ureq.getUserSession(), getWindowControl());
 		choiceEl.setUserObject(choice);
 		answersCont.add("choiceId", choiceEl);
 		
@@ -246,7 +246,7 @@ public class MultipleChoiceEditorController extends FormBasicController {
 			if("rm".equals(cmd)) {
 				doRemoveSimpleChoice((SimpleChoiceWrapper)button.getUserObject());
 			} else if("add".equals(cmd)) {
-				doAddSimpleChoice();
+				doAddSimpleChoice(ureq);
 			} else if("up".equals(cmd)) {
 				doMoveSimpleChoiceUp((SimpleChoiceWrapper)button.getUserObject());
 			} else if("down".equals(cmd)) {
@@ -256,14 +256,14 @@ public class MultipleChoiceEditorController extends FormBasicController {
 		super.formInnerEvent(ureq, source, event);
 	}
 	
-	private void doAddSimpleChoice() {
+	private void doAddSimpleChoice(UserRequest ureq) {
 		ChoiceInteraction interaction = itemBuilder.getChoiceInteraction();
 		SimpleChoice newChoice = new SimpleChoice(interaction);
 		newChoice.setIdentifier(IdentifierGenerator.newAsIdentifier("mc"));
 		P firstChoiceText = AssessmentItemFactory.getParagraph(newChoice, "New answer");
 		newChoice.getFlowStatics().add(firstChoiceText);
 		
-		wrapAnswer(newChoice);
+		wrapAnswer(ureq, newChoice);
 		flc.setDirty(true);
 	}
 	
