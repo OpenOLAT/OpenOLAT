@@ -25,6 +25,7 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
+import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
@@ -37,6 +38,7 @@ import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.StringHelper;
 import org.olat.ims.qti21.QTI21DeliveryOptions;
+import org.olat.ims.qti21.QTI21DeliveryOptions.ShowResultsOnFinish;
 import org.olat.ims.qti21.QTI21Service;
 import org.olat.repository.RepositoryEntry;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -51,12 +53,15 @@ public class QTI21DeliveryOptionsController extends FormBasicController implemen
 	
 	private static final String[] onKeys = new String[]{ "on" };
 	private static final String[] onValues = new String[]{ "" };
-	
+
 	private MultipleSelectionElement showTitlesEl;
 	private MultipleSelectionElement personalNotesEl;
 	private MultipleSelectionElement enableCancelEl, enableSuspendEl;
 	private MultipleSelectionElement limitAttemptsEl, blockAfterSuccessEl;
 	private MultipleSelectionElement displayQuestionProgressEl, displayScoreProgressEl;
+	private MultipleSelectionElement showResultsOnFinishEl;
+	private SingleSelection typeShowResultsOnFinishEl;
+	
 	
 	private TextElement maxAttemptsEl;
 	
@@ -123,6 +128,26 @@ public class QTI21DeliveryOptionsController extends FormBasicController implemen
 			enableCancelEl.select(onKeys[0], true);
 		}
 		
+		showResultsOnFinishEl = uifactory.addCheckboxesHorizontal("resultOnFiniish", "qti.form.results.onfinish", formLayout, onKeys, onValues);
+		showResultsOnFinishEl.addActionListener(FormEvent.ONCHANGE);
+		if(deliveryOptions.getShowResultsOnFinish() != null && !ShowResultsOnFinish.none.equals(deliveryOptions.getShowResultsOnFinish())) {
+			showResultsOnFinishEl.select(onKeys[0], true);
+		}
+		
+		String[] typeShowResultsOnFinishKeys = new String[] {
+			ShowResultsOnFinish.compact.name(), ShowResultsOnFinish.sections.name(), ShowResultsOnFinish.details.name()
+		};
+		String[] typeShowResultsOnFinishValues = new String[] {
+			translate("qti.form.summary.compact"), translate("qti.form.summary.section"), translate("qti.form.summary.detailed")
+		};
+		typeShowResultsOnFinishEl = uifactory.addRadiosVertical("typeResultOnFiniish", "qti.form.summary", formLayout, typeShowResultsOnFinishKeys, typeShowResultsOnFinishValues);
+		typeShowResultsOnFinishEl.setVisible(showResultsOnFinishEl.isAtLeastSelected(1));
+		if(deliveryOptions.getShowResultsOnFinish() != null && !ShowResultsOnFinish.none.equals(deliveryOptions.getShowResultsOnFinish())) {
+			typeShowResultsOnFinishEl.select(deliveryOptions.getShowResultsOnFinish().name(), true);
+		} else {
+			typeShowResultsOnFinishEl.select(ShowResultsOnFinish.compact.name(), true);
+		}
+		
 		FormLayoutContainer buttonsLayout = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		buttonsLayout.setRootForm(mainForm);
 		formLayout.add(buttonsLayout);
@@ -166,6 +191,9 @@ public class QTI21DeliveryOptionsController extends FormBasicController implemen
 		if(limitAttemptsEl == source) {
 			maxAttemptsEl.setVisible(limitAttemptsEl.isAtLeastSelected(1));
 		}
+		if(showResultsOnFinishEl == source) {
+			typeShowResultsOnFinishEl.setVisible(showResultsOnFinishEl.isAtLeastSelected(1));
+		}
 		super.formInnerEvent(ureq, source, event);
 	}
 
@@ -183,6 +211,16 @@ public class QTI21DeliveryOptionsController extends FormBasicController implemen
 		deliveryOptions.setEnableSuspend(enableSuspendEl.isAtLeastSelected(1));
 		deliveryOptions.setDisplayQuestionProgress(displayQuestionProgressEl.isAtLeastSelected(1));
 		deliveryOptions.setDisplayScoreProgress(displayScoreProgressEl.isAtLeastSelected(1));
+		if(showResultsOnFinishEl.isAtLeastSelected(1)) {
+			if(typeShowResultsOnFinishEl.isOneSelected()) {
+				String selectedType = typeShowResultsOnFinishEl.getSelectedKey();
+				deliveryOptions.setShowResultsOnFinish(ShowResultsOnFinish.valueOf(selectedType));
+			} else {
+				deliveryOptions.setShowResultsOnFinish(ShowResultsOnFinish.compact);
+			}
+		} else {
+			deliveryOptions.setShowResultsOnFinish(ShowResultsOnFinish.none);
+		}
 		qtiService.setDeliveryOptions(testEntry, deliveryOptions);
 		fireEvent(ureq, Event.DONE_EVENT);
 	}

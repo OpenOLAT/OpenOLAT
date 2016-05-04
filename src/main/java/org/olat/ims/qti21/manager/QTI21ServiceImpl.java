@@ -93,6 +93,9 @@ import uk.ac.ed.ph.jqtiplus.node.result.ItemVariable;
 import uk.ac.ed.ph.jqtiplus.node.result.OutcomeVariable;
 import uk.ac.ed.ph.jqtiplus.notification.NotificationRecorder;
 import uk.ac.ed.ph.jqtiplus.reading.AssessmentObjectXmlLoader;
+import uk.ac.ed.ph.jqtiplus.reading.QtiObjectReadResult;
+import uk.ac.ed.ph.jqtiplus.reading.QtiObjectReader;
+import uk.ac.ed.ph.jqtiplus.reading.QtiXmlInterpretationException;
 import uk.ac.ed.ph.jqtiplus.reading.QtiXmlReader;
 import uk.ac.ed.ph.jqtiplus.resolution.ResolvedAssessmentItem;
 import uk.ac.ed.ph.jqtiplus.resolution.ResolvedAssessmentObject;
@@ -111,6 +114,7 @@ import uk.ac.ed.ph.jqtiplus.value.RecordValue;
 import uk.ac.ed.ph.jqtiplus.value.SingleValue;
 import uk.ac.ed.ph.jqtiplus.value.Value;
 import uk.ac.ed.ph.jqtiplus.xmlutils.XmlFactories;
+import uk.ac.ed.ph.jqtiplus.xmlutils.XmlResourceNotFoundException;
 import uk.ac.ed.ph.jqtiplus.xmlutils.locators.ClassPathResourceLocator;
 import uk.ac.ed.ph.jqtiplus.xmlutils.locators.ResourceLocator;
 import uk.ac.ed.ph.jqtiplus.xmlutils.xslt.XsltSerializationOptions;
@@ -379,6 +383,7 @@ public class QTI21ServiceImpl implements QTI21Service, InitializingBean, Disposa
     private Document loadStateDocument(AssessmentTestSession candidateSession) {
         File sessionFile = getTestSessionStateFile(candidateSession);
         if(sessionFile.exists()) {
+        	System.out.println(sessionFile);
 	        try {
 		        DocumentBuilder documentBuilder = XmlFactories.newDocumentBuilder();
 	            return documentBuilder.parse(sessionFile);
@@ -504,7 +509,7 @@ public class QTI21ServiceImpl implements QTI21Service, InitializingBean, Disposa
             		Value value = itemVariable.getComputedValue();
             		if(value instanceof NumberValue) {
             			double score = ((NumberValue)value).doubleValue();
-            			candidateSession.setScore(new BigDecimal(Double.toString(score)));
+            			candidateSession.setScore(new BigDecimal(score));
             			System.out.println("Score: " + score);
             		}
             	} else if(QTI21Constants.PASS_IDENTIFIER.equals(identifier)) {
@@ -512,6 +517,7 @@ public class QTI21ServiceImpl implements QTI21Service, InitializingBean, Disposa
             		if(value instanceof BooleanValue) {
             			boolean pass = ((BooleanValue)value).booleanValue();
             			candidateSession.setPassed(pass);
+            			System.out.println("Pass: " + pass);
             		}
             	}
             }
@@ -602,7 +608,25 @@ public class QTI21ServiceImpl implements QTI21Service, InitializingBean, Disposa
     	return eventDao.create(candidateSession, itemEventType);
     }
 	
-    public void storeItemSessionState(CandidateEvent candidateEvent, ItemSessionState itemSessionState) {
+    @Override
+	public AssessmentResult getAssessmentResult(AssessmentTestSession candidateSession) {
+    	File assessmentResultFile = getAssessmentResultFile(candidateSession);
+    	ResourceLocator fileResourceLocator = new PathResourceLocator(assessmentResultFile.getParentFile().toPath());
+		ResourceLocator inputResourceLocator = 
+        		ImsQTI21Resource.createResolvingResourceLocator(fileResourceLocator);
+    	
+		URI assessmentResultUri = assessmentResultFile.toURI();
+    	QtiObjectReader qtiObjectReader = qtiXmlReader().createQtiObjectReader(inputResourceLocator, false, false);
+		try {
+			QtiObjectReadResult<AssessmentResult> result = qtiObjectReader.lookupRootNode(assessmentResultUri, AssessmentResult.class);
+			return result.getRootNode();
+		} catch (XmlResourceNotFoundException | QtiXmlInterpretationException | ClassCastException e) {
+			log.error("", e);
+			return null;
+		}
+	}
+
+	public void storeItemSessionState(CandidateEvent candidateEvent, ItemSessionState itemSessionState) {
         Document stateDocument = ItemSessionStateXmlMarshaller.marshal(itemSessionState);
         File sessionFile = getItemSessionStateFile(candidateEvent);
         storeStateDocument(stateDocument, sessionFile);

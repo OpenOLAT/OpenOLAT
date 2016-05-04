@@ -66,6 +66,7 @@ import org.olat.ims.qti21.AssessmentTestSession;
 import org.olat.ims.qti21.OutcomesListener;
 import org.olat.ims.qti21.QTI21Constants;
 import org.olat.ims.qti21.QTI21DeliveryOptions;
+import org.olat.ims.qti21.QTI21DeliveryOptions.ShowResultsOnFinish;
 import org.olat.ims.qti21.QTI21Service;
 import org.olat.ims.qti21.manager.ResponseFormater;
 import org.olat.ims.qti21.model.CandidateItemEventType;
@@ -137,6 +138,7 @@ public class AssessmentTestDisplayController extends BasicController implements 
 	private VelocityContainer mainVC;
 	private final StackedPanel mainPanel;
 	private QtiWorksController qtiWorksCtrl;
+	private AssessmentResultController resultCtrl;
 	private TestSessionController testSessionController;
 
 	private DialogBoxController advanceTestPartDialog;
@@ -773,6 +775,7 @@ public class AssessmentTestDisplayController extends BasicController implements 
         this.lastEvent = candidateTestEvent;
 
         if (terminated) {
+        	qtiWorksCtrl.updateGUI(ureq);
         	doExitTest(ureq);
         }
 	}
@@ -1133,13 +1136,13 @@ public class AssessmentTestDisplayController extends BasicController implements 
 				}
 			}
 
-			updateGUI();
+			updateGUI(ureq);
 		}
 
 		@Override
 		protected void formOK(UserRequest ureq) {
 			processResponse(ureq, qtiEl.getSubmitButton());
-			updateGUI();
+			updateGUI(ureq);
 		}
 
 		@Override
@@ -1161,7 +1164,7 @@ public class AssessmentTestDisplayController extends BasicController implements 
 				processResponse(ureq, formLink);
 			}
 			super.formInnerEvent(ureq, source, event);
-			updateGUI();
+			updateGUI(ureq);
 		}
 		
 		@Override
@@ -1178,6 +1181,12 @@ public class AssessmentTestDisplayController extends BasicController implements 
 			fireEvent(ureq, new QTIWorksAssessmentTestEvent(QTIWorksAssessmentTestEvent.Event.response, stringResponseMap, fileResponseMap, comment, source));
 		}
 		
+		/**
+		 * Make sure that the end test part is not clicked 2x (which
+		 * the qtiworks runtime don't like).
+		 * 
+		 * @param ureq
+		 */
 		private void doEndTestPart(UserRequest ureq) {
 			TestSessionState testSessionState = testSessionController.getTestSessionState();
 			CandidateSessionContext candidateSessionContext = AssessmentTestDisplayController.this;
@@ -1193,6 +1202,11 @@ public class AssessmentTestDisplayController extends BasicController implements 
 			}
 		}
 		
+		/**
+		 * Make sure that the close test happens only once.
+		 * 
+		 * @param ureq
+		 */
 		private void doCloseTest(UserRequest ureq) {
 			TestSessionState testSessionState = testSessionController.getTestSessionState();
 			CandidateSessionContext candidateSessionContext = AssessmentTestDisplayController.this;
@@ -1214,8 +1228,17 @@ public class AssessmentTestDisplayController extends BasicController implements 
 			fireEvent(ureq, new Event("suspend"));
 		}
 		
-		private void updateGUI() {
+		private void updateGUI(UserRequest ureq) {
 			//updateButtons();
+			if(testSessionController.getTestSessionState().isEnded()
+					&& deliveryOptions.getShowResultsOnFinish() != null
+					&& !ShowResultsOnFinish.none.equals(deliveryOptions.getShowResultsOnFinish())) {
+				removeAsListenerAndDispose(resultCtrl);
+				resultCtrl = new AssessmentResultController(ureq, getWindowControl(), getIdentity(),
+						AssessmentTestDisplayController.this.getCandidateSession(), fUnzippedDirRoot, mapperUri);
+				listenTo(resultCtrl);
+				flc.add("qtiResults", resultCtrl.getInitialFormItem());
+			}
 			updateQtiWorksStatus();
 		}
 		

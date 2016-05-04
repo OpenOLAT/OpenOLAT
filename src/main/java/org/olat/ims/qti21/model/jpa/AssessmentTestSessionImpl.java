@@ -55,7 +55,7 @@ import org.olat.repository.RepositoryEntry;
 @Entity(name="qtiassessmenttestsession")
 @Table(name="o_qti_assessmenttest_session")
 @NamedQueries({
-	@NamedQuery(name="loadTestSessionsByUserAndRepositoryEntryAndSubIdent", query="select session from qtiassessmenttestsession session where session.repositoryEntry.key=:repositoryEntryKey and session.identity.key=:identityKey and session.subIdent=:subIdent")
+	@NamedQuery(name="loadTestSessionsByUserAndRepositoryEntryAndSubIdent", query="select session from qtiassessmenttestsession session left join fetch session.testEntry testEntry left join fetch testEntry.olatResource testResource where session.repositoryEntry.key=:repositoryEntryKey and session.identity.key=:identityKey and session.subIdent=:subIdent")
 	
 })
 public class AssessmentTestSessionImpl implements AssessmentTestSession, Persistable {

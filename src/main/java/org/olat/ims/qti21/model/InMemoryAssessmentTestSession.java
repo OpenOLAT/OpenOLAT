@@ -24,6 +24,7 @@ import java.util.Date;
 
 import org.olat.ims.qti21.AssessmentTestSession;
 import org.olat.modules.assessment.AssessmentEntry;
+import org.olat.repository.RepositoryEntry;
 
 /**
  * 
@@ -140,6 +141,11 @@ public class InMemoryAssessmentTestSession implements AssessmentTestSession {
 
 	@Override
 	public AssessmentEntry getAssessmentEntry() {
+		return null;
+	}
+
+	@Override
+	public RepositoryEntry getTestEntry() {
 		return null;
 	}
 

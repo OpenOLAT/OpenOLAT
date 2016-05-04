@@ -46,9 +46,18 @@ public class AssessmentTestResultComponentRenderer extends AssessmentObjectCompo
 		AssessmentTestResultComponent cmp = (AssessmentTestResultComponent)source;
 		TestSessionController testSessionController = cmp.getTestSessionController();
 
-		if(testSessionController.getTestSessionState().isEnded()) {
-			sb.append("Render results");
+		if(testSessionController != null && testSessionController.getTestSessionState().isEnded()) {
+			renderAssessmentTestResults();
 		}
+	}
+	
+	/**
+	 * Write the header
+	 */
+	protected void renderAssessmentTestResults() {
+		// name
+		// start / stop
+		
 	}
 
 	@Override

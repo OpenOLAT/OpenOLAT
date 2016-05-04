@@ -80,6 +80,7 @@ import uk.ac.ed.ph.jqtiplus.node.item.response.processing.ResponseProcessing;
 import uk.ac.ed.ph.jqtiplus.node.item.response.processing.ResponseRule;
 import uk.ac.ed.ph.jqtiplus.node.item.response.processing.SetOutcomeValue;
 import uk.ac.ed.ph.jqtiplus.node.outcome.declaration.OutcomeDeclaration;
+import uk.ac.ed.ph.jqtiplus.node.shared.BaseTypeAndCardinality;
 import uk.ac.ed.ph.jqtiplus.node.shared.FieldValue;
 import uk.ac.ed.ph.jqtiplus.node.shared.declaration.DefaultValue;
 import uk.ac.ed.ph.jqtiplus.node.test.View;
@@ -933,7 +934,6 @@ public class AssessmentItemFactory {
 		return responseProcessing;
 	}
 
-	
 	public static P getParagraph(QtiNode parent, String content) {
 		P paragraph = new P(parent);
 		TextRun text = new TextRun(paragraph, content);
@@ -964,7 +964,7 @@ public class AssessmentItemFactory {
 	}
 	
 	public static void extractIdentifiersFromCorrectResponse(CorrectResponse correctResponse, List<Identifier> correctAnswers) {
-		ResponseDeclaration responseDeclaration = correctResponse.getParent();
+		BaseTypeAndCardinality responseDeclaration = correctResponse.getParent();
 		if(responseDeclaration.hasCardinality(Cardinality.MULTIPLE)) {
 			Value value = FieldValue.computeValue(Cardinality.MULTIPLE, correctResponse.getFieldValues());
 			if(value instanceof MultipleValue) {

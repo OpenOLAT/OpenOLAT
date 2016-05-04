@@ -187,6 +187,7 @@ public interface QTI21Service {
 			CandidateItemEventType itemEventType, TestPlanNodeKey itemKey, TestSessionState testSessionState, NotificationRecorder notificationRecorder);
 	
 	
+	public AssessmentResult getAssessmentResult(AssessmentTestSession candidateSession);
 	
 
 	public AssessmentTestSession finishItemSession(AssessmentTestSession candidateSession, AssessmentResult assessmentResul, Date timestamp);

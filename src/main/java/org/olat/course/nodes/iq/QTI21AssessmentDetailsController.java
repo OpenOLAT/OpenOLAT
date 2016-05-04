@@ -19,6 +19,7 @@
  */
 package org.olat.course.nodes.iq;
 
+import java.io.File;
 import java.util.List;
 
 import org.olat.core.gui.UserRequest;
@@ -41,8 +42,9 @@ import org.olat.core.id.Identity;
 import org.olat.course.nodes.IQTESTCourseNode;
 import org.olat.course.nodes.iq.QTI21TestSessionTableModel.TSCols;
 import org.olat.course.run.userview.UserCourseEnvironment;
-import org.olat.ims.qti21.QTI21Service;
+import org.olat.fileresource.FileResourceManager;
 import org.olat.ims.qti21.AssessmentTestSession;
+import org.olat.ims.qti21.QTI21Service;
 import org.olat.ims.qti21.ui.AssessmentResultController;
 import org.olat.repository.RepositoryEntry;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -141,7 +143,10 @@ public class QTI21AssessmentDetailsController extends FormBasicController {
 	private void doOpenResult(UserRequest ureq, AssessmentTestSession row) {
 		if(resultCtrl != null) return;
 		
-		resultCtrl = new AssessmentResultController(ureq, getWindowControl());
+		String mapperUri = null;//TODO qti
+		FileResourceManager frm = FileResourceManager.getInstance();
+		File fUnzippedDirRoot = frm.unzipFileResource(row.getTestEntry().getOlatResource());
+		resultCtrl = new AssessmentResultController(ureq, getWindowControl(), assessedIdentity, row, fUnzippedDirRoot, mapperUri);
 		listenTo(resultCtrl);
 		cmc = new CloseableModalController(getWindowControl(), "close", resultCtrl.getInitialComponent(),
 				true, translate("table.header.results"));

@@ -39,6 +39,8 @@ public class QTI21DeliveryOptions {
 	
 	private boolean blockAfterSuccess;
 	private int maxAttempts;
+	
+	private ShowResultsOnFinish showResultsOnFinish;
 
 	public boolean isEnableCancel() {
 		return enableCancel;
@@ -104,6 +106,14 @@ public class QTI21DeliveryOptions {
 		this.maxAttempts = maxAttempts;
 	}
 
+	public ShowResultsOnFinish getShowResultsOnFinish() {
+		return showResultsOnFinish;
+	}
+
+	public void setShowResultsOnFinish(ShowResultsOnFinish showResultsOnFinish) {
+		this.showResultsOnFinish = showResultsOnFinish;
+	}
+
 	public static final QTI21DeliveryOptions defaultSettings() {
 		QTI21DeliveryOptions defaultSettings = new QTI21DeliveryOptions();
 		defaultSettings.enableCancel = false;
@@ -114,6 +124,7 @@ public class QTI21DeliveryOptions {
 		defaultSettings.personalNotes = false;
 		defaultSettings.blockAfterSuccess = false;
 		defaultSettings.maxAttempts = 0;
+		defaultSettings.showResultsOnFinish = ShowResultsOnFinish.none;
 		return defaultSettings;
 	}
 
@@ -128,6 +139,14 @@ public class QTI21DeliveryOptions {
 		clone.personalNotes = personalNotes;
 		clone.blockAfterSuccess = blockAfterSuccess;
 		clone.maxAttempts = maxAttempts;
+		clone.showResultsOnFinish = showResultsOnFinish;
 		return clone;
+	}
+	
+	public enum ShowResultsOnFinish {
+		none,
+		compact,//without solution
+		sections,//summary without solution
+		details,//with solution
 	}
 }
