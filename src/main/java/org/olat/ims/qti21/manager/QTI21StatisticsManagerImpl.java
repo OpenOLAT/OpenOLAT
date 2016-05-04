@@ -138,6 +138,7 @@ public class QTI21StatisticsManagerImpl implements QTI21StatisticsManager {
 		double maxDuration = 0d;
 		
 		int dataPos = 0;
+		boolean hasScore = false;
 		for(Object[] rawData:rawDatas) {
 			BigDecimal score = (BigDecimal)rawData[0];
 			if(score != null) {
@@ -145,6 +146,7 @@ public class QTI21StatisticsManagerImpl implements QTI21StatisticsManager {
 				scores[dataPos] = scored;
 				maxScore = Math.max(maxScore, scored);
 				minScore = Math.min(minScore, scored);
+				hasScore = true;
 			}
 			
 			Boolean passed = (Boolean)rawData[1];
@@ -181,10 +183,12 @@ public class QTI21StatisticsManagerImpl implements QTI21StatisticsManager {
 		long averageDuration = Math.round(totalDuration / numOfParticipants);
 		stats.setAverageDuration(averageDuration);
 		stats.setAverage(statisticsHelper.getMean());
-		double range = maxScore - minScore;
-		stats.setRange(range);
-		stats.setMaxScore(maxScore);
-		stats.setMinScore(minScore);
+		if(hasScore) {
+			double range = maxScore - minScore;
+			stats.setRange(range);
+			stats.setMaxScore(maxScore);
+			stats.setMinScore(minScore);
+		}
 		stats.setStandardDeviation(statisticsHelper.getStdDev());
 		stats.setMedian(statisticsHelper.median());
 		stats.setMode(statisticsHelper.mode());

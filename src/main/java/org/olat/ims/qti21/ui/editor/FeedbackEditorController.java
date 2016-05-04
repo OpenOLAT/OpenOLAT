@@ -47,7 +47,7 @@ public class FeedbackEditorController extends FormBasicController {
 
 	private final boolean restrictedEdit;
 	private final boolean empty, correct, incorrect;
-	private AssessmentItemBuilder itemBuilder;
+	private final AssessmentItemBuilder itemBuilder;
 	
 	public FeedbackEditorController(UserRequest ureq, WindowControl wControl, AssessmentItemBuilder itemBuilder,
 			boolean empty, boolean correct, boolean incorrect, boolean restrictedEdit) {
