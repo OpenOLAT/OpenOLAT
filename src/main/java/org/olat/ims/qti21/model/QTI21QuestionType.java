@@ -42,22 +42,24 @@ import uk.ac.ed.ph.jqtiplus.value.Cardinality;
  *
  */
 public enum QTI21QuestionType {
-	sc(true, "sc", QuestionType.SC),
-	mc(true, "mc", QuestionType.MC),
-	kprim(true, "kprim", QuestionType.KPRIM),
-	fib(true, "fib", QuestionType.FIB),
-	numerical(true, "numerical", QuestionType.NUMERICAL),
-	hotspot(true, "hotspot", QuestionType.HOTSPOT),
-	essay(true, "essay", QuestionType.ESSAY),
-	unkown(false, null, null);
+	sc(true, "sc", "o_mi_qtisc", QuestionType.SC),
+	mc(true, "mc", "o_mi_qtimc", QuestionType.MC),
+	kprim(true, "kprim", "o_mi_qtikprim", QuestionType.KPRIM),
+	fib(true, "fib", "o_mi_qtifib", QuestionType.FIB),
+	numerical(true, "numerical", "o_mi_qtinumerical", QuestionType.NUMERICAL),
+	hotspot(true, "hotspot", "o_mi_qtihotspot", QuestionType.HOTSPOT),
+	essay(true, "essay", "o_mi_qtiessay", QuestionType.ESSAY),
+	unkown(false, null, "o_mi_qtiunkown", null);
 	
 	private final String prefix;
 	private final boolean editor;
+	private final String cssClass;
 	private final QuestionType poolQuestionType;
 	
-	private QTI21QuestionType(boolean editor, String prefix, QuestionType poolQuestionType) {
+	private QTI21QuestionType(boolean editor, String prefix, String cssClass, QuestionType poolQuestionType) {
 		this.editor = editor;
 		this.prefix = prefix;
+		this.cssClass = cssClass;
 		this.poolQuestionType = poolQuestionType;
 	}
 	
@@ -69,6 +71,10 @@ public enum QTI21QuestionType {
 		return prefix;
 	}
 	
+	public String getCssClass() {
+		return cssClass;
+	}
+
 	public QuestionType getPoolQuestionType() {
 		return poolQuestionType;
 	}

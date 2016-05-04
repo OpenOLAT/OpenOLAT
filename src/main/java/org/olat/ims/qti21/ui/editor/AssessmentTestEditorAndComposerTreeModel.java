@@ -25,6 +25,7 @@ import org.olat.core.gui.components.tree.DnDTreeModel;
 import org.olat.core.gui.components.tree.GenericTreeModel;
 import org.olat.core.gui.components.tree.GenericTreeNode;
 import org.olat.core.gui.components.tree.TreeNode;
+import org.olat.ims.qti21.model.QTI21QuestionType;
 
 import uk.ac.ed.ph.jqtiplus.node.item.AssessmentItem;
 import uk.ac.ed.ph.jqtiplus.node.test.AssessmentItemRef;
@@ -117,7 +118,13 @@ public class AssessmentTestEditorAndComposerTreeModel extends GenericTreeModel i
 			} else {
 				AssessmentItem assessmentItem = resolvedAssessmentItem.getItemLookup().getRootNodeHolder().getRootNode();
 				itemNode.setTitle(assessmentItem.getTitle());
-				itemNode.setIconCssClass("o_icon o_mi_qtisc");
+				
+				QTI21QuestionType type = QTI21QuestionType.getType(assessmentItem);
+				if(type != null) {
+					itemNode.setIconCssClass("o_icon ".concat(type.getCssClass()));
+				} else {
+					itemNode.setIconCssClass("o_icon o_mi_qtiunkown");
+				}
 				itemNode.setUserObject(itemRef);
 				parentNode.addChild(itemNode);
 			}
