@@ -101,10 +101,23 @@ public class AssessmentIdentitiesCourseTreeController extends BasicController im
 			if(rootNode.getUserObject() instanceof CourseNode) {
 				doSelectCourseNode(ureq, (CourseNode)rootNode.getUserObject());
 			}
+		} else {
+			String resourceTypeName = entries.get(0).getOLATResourceable().getResourceableTypeName();
+			if("Node".equalsIgnoreCase(resourceTypeName)) {
+				Long nodeIdent = entries.get(0).getOLATResourceable().getResourceableId();
+				CourseNode courseNode = CourseFactory.loadCourse(courseEntry).getRunStructure().getNode(nodeIdent.toString());
+				if(courseNode != null) {
+					Controller ctrl = doSelectCourseNode(ureq, courseNode);
+					if(ctrl instanceof Activateable2) {
+						List<ContextEntry> subEntries = entries.subList(1, entries.size());
+						((Activateable2)ctrl).activate(ureq, subEntries, null);
+					}
+				}
+			}
 		}
 		
 		if(currentCtrl instanceof Activateable2) {
-			((Activateable2)currentCtrl).activate(ureq, null, state);
+			((Activateable2)currentCtrl).activate(ureq, entries, state);
 		}
 	}
 

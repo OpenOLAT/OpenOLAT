@@ -28,14 +28,17 @@ import java.util.Map;
 import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
+import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableModelDelegate;
 import org.olat.core.gui.control.Controller;
@@ -50,6 +53,7 @@ import org.olat.course.Structure;
 import org.olat.course.assessment.AssessmentMainController;
 import org.olat.course.assessment.AssessmentToolManager;
 import org.olat.course.assessment.model.SearchAssessedIdentityParams;
+import org.olat.course.assessment.ui.tool.event.UserSelectionEvent;
 import org.olat.course.nodes.CourseNode;
 import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
@@ -67,8 +71,6 @@ import org.springframework.beans.factory.annotation.Autowired;
  *
  */
 public class AssessmentToReviewSmallController extends FormBasicController {
-	
-
 	
 	private final RepositoryEntry courseEntry;
 	private final boolean isAdministrativeUser;
@@ -167,6 +169,21 @@ public class AssessmentToReviewSmallController extends FormBasicController {
 	@Override
 	protected void doDispose() {
 		//
+	}
+
+	@Override
+	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
+		if(source == tableEl) {
+			if(event instanceof SelectionEvent) {
+				SelectionEvent se = (SelectionEvent)event;
+				if("select".equals(se.getCommand())) {
+					int index = se.getIndex();
+					UserToReviewRow row = usersTableModel.getObject(index);
+					fireEvent(ureq, new UserSelectionEvent(row.getIdentityKey(), row.getNodeIndents()));
+				}
+			}
+		}
+		super.formInnerEvent(ureq, source, event);
 	}
 
 	@Override

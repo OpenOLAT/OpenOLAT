@@ -41,6 +41,7 @@ import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.assessment.AssessmentMainController;
 import org.olat.course.assessment.manager.AssessmentNotificationsHandler;
+import org.olat.course.assessment.ui.tool.event.UserSelectionEvent;
 import org.olat.course.certificate.CertificatesManager;
 import org.olat.group.BusinessGroupService;
 import org.olat.group.model.SearchBusinessGroupParams;
@@ -159,6 +160,16 @@ public class AssessmentCourseOverviewController extends BasicController implemen
 	@Override
 	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
 		//
+	}
+
+	@Override
+	protected void event(UserRequest ureq, Controller source, Event event) {
+		if(toReviewCtrl == source) {
+			if(event instanceof UserSelectionEvent) {
+				fireEvent(ureq, event);
+			}
+		}
+		super.event(ureq, source, event);
 	}
 
 	@Override

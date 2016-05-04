@@ -364,6 +364,19 @@ public class IdentityListCourseNodeController extends FormBasicController implem
 
 		tableEl.setSelectedFilterKey(filter);
 		updateModel(ureq, null, tableEl.getSelectedFilters(), null);
+		
+		if(entries != null && entries.size() > 0) {
+			String resourceType = entries.get(0).getOLATResourceable().getResourceableTypeName();
+			if("Identity".equals(resourceType)) {
+				Long identityKey = entries.get(0).getOLATResourceable().getResourceableId();
+				for(int i=usersTableModel.getRowCount(); i--> 0; ) {
+					AssessedIdentityCourseElementRow row = usersTableModel.getObject(i);
+					if(row.getIdentityKey().equals(identityKey)) {
+						doSelect(ureq, row);
+					}
+				}
+			}	
+		}
 	}
 
 	@Override

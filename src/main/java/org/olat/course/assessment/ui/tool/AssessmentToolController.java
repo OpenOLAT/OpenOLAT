@@ -41,6 +41,7 @@ import org.olat.core.util.resource.OresHelper;
 import org.olat.course.assessment.AssessmentMainController;
 import org.olat.course.assessment.EfficiencyStatementAssessmentController;
 import org.olat.course.assessment.bulk.BulkAssessmentOverviewController;
+import org.olat.course.assessment.ui.tool.event.UserSelectionEvent;
 import org.olat.modules.assessment.ui.AssessmentToolSecurityCallback;
 import org.olat.repository.RepositoryEntry;
 
@@ -128,6 +129,18 @@ public class AssessmentToolController extends MainLayoutBasicController implemen
 				doSelectPassedView(ureq);
 			} else if(event == AssessmentCourseOverviewController.SELECT_FAILED_EVENT) {
 				doSelectFailedView(ureq);
+			} else if (event instanceof UserSelectionEvent) {
+				UserSelectionEvent use = (UserSelectionEvent)event;
+				if(use.getCourseNodeIdents() == null || use.getCourseNodeIdents().isEmpty() || use.getCourseNodeIdents().size() > 1) {
+					OLATResourceable resource = OresHelper.createOLATResourceableInstance("Identity", use.getIdentityKey());
+					List<ContextEntry> entries = BusinessControlFactory.getInstance().createCEListFromString(resource);
+					doSelectUsersView(ureq).activate(ureq, entries, null);
+				} else {
+					OLATResourceable nodeRes = OresHelper.createOLATResourceableInstance("Node", new Long(use.getCourseNodeIdents().get(0)));
+					OLATResourceable idRes = OresHelper.createOLATResourceableInstance("Identity", use.getIdentityKey());
+					List<ContextEntry> entries = BusinessControlFactory.getInstance().createCEListFromString(nodeRes, idRes);
+					doSelectUsersView(ureq).activate(ureq, entries, null);
+				}
 			}
 		}
 		super.event(ureq, source, event);
@@ -152,7 +165,7 @@ public class AssessmentToolController extends MainLayoutBasicController implemen
 		stackPanel.pushController(translate("menu.efficiency.statment"), efficiencyStatementCtrl);
 	}
 
-	private void doSelectUsersView(UserRequest ureq) {
+	private AssessmentIdentitiesCourseTreeController doSelectUsersView(UserRequest ureq) {
 		OLATResourceable ores = OresHelper.createOLATResourceableInstance("Users", 0l);
 		WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ores, null, getWindowControl());
 		addToHistory(ureq, bwControl);
@@ -162,6 +175,7 @@ public class AssessmentToolController extends MainLayoutBasicController implemen
 		stackPanel.pushController(translate("users"), treeCtrl);
 		currentCtl = treeCtrl;
 		treeCtrl.activate(ureq, null, null);
+		return treeCtrl;
 	}
 	
 	private void doSelectPassedView(UserRequest ureq) {
