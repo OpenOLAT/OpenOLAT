@@ -812,10 +812,15 @@ public class OpenXMLWorkbook implements Closeable {
 			for (String sharedString: sharedStrings) {
 				writer.writeStartElement("si");
 				writer.writeStartElement("t");
-				writer.writeCharacters(sharedString);
+				if(sharedString.contains("<") || sharedString.contains(">")) {
+					writer.writeCData(sharedString);
+				} else {
+					writer.writeCharacters(sharedString);
+				}
 				writer.writeEndElement();
 				writer.writeEndElement();
 			}
+			
 			writer.writeEndElement();// end sst
 			writer.flush();
 			writer.close();

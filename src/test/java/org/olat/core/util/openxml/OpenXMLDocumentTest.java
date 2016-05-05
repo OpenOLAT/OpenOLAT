@@ -24,6 +24,7 @@ import java.io.FileOutputStream;
 import java.util.zip.ZipOutputStream;
 
 import org.apache.commons.io.IOUtils;
+import org.junit.Assert;
 import org.junit.Test;
 
 /**
@@ -46,7 +47,8 @@ public class OpenXMLDocumentTest {
 
 	@Test
 	public void writeDoc() throws Exception {
-		FileOutputStream fileOut = new FileOutputStream(new File("/HotCoffee/tmp/test_1_min.docx"));
+		File file = File.createTempFile("worddoc", "_min.xlsx");
+		FileOutputStream fileOut = new FileOutputStream(file);
 		ZipOutputStream out = new ZipOutputStream(fileOut);
 		
 		OpenXMLDocument document = new OpenXMLDocument();
@@ -60,5 +62,9 @@ public class OpenXMLDocumentTest {
 		fileOut.flush();
 		IOUtils.closeQuietly(out);
 		IOUtils.closeQuietly(fileOut);
+		
+		Assert.assertTrue(file.exists());
+		Assert.assertTrue(file.length() > 4096);
+		file.delete();
 	}
 }

@@ -304,13 +304,26 @@ public class OpenXMLWorksheet {
                        - 460;      // leap days in previous 1900 years
         return 365 * (yr - (use1904windowing ? 1904 : 1900)) + leapDays;
     }
-	
-	private String getColumn(int c) {
-		if (c <= 25) {
-			return Character.toString(COLUMNS[c]);
-		} else {
-			return String.valueOf(new char[] { COLUMNS[c / COLUMNS.length - 1], COLUMNS[c % COLUMNS.length] });
-		}
+	/**
+	 * Thanks to POI project and the argument c is zero based.
+	 * @param c The column position, start with zero
+	 * @return
+	 */
+	protected static final String getColumn(int c) {
+		int excelColNum = c + 1;
+
+        StringBuilder colRef = new StringBuilder(3);
+        int colRemain = excelColNum;
+        while(colRemain > 0) {
+            int thisPart = colRemain % 26;
+            if(thisPart == 0) {
+            	thisPart = 26;
+            }
+            colRemain = (colRemain - thisPart) / 26;
+            char colChar = (char)(thisPart + 64);// A is at 65
+            colRef.insert(0, colChar);
+        }
+        return colRef.toString();
 	}
     
 	public class Row {

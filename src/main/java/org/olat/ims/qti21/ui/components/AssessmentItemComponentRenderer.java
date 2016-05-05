@@ -70,9 +70,9 @@ public class AssessmentItemComponentRenderer extends AssessmentObjectComponentRe
         /* Create appropriate options that link back to this controller */
 		final AssessmentTestSession candidateSession = candidateSessionContext.getCandidateSession();
         if (candidateSession != null && candidateSession.isExploded()) {
-            renderExploded(sb);
+            renderExploded(sb, translator);
         } else if (candidateSessionContext.isTerminated()) {
-            renderTerminated(sb);
+            renderTerminated(sb, translator);
         } else {
             /* Look up most recent event */
             final CandidateEvent latestEvent = candidateSessionContext.getLastEvent();// assertSessionEntered(candidateSession);
@@ -94,14 +94,6 @@ public class AssessmentItemComponentRenderer extends AssessmentObjectComponentRe
 		sb.append("</div>");
 	}
 	
-    private void renderExploded(StringOutput sb) {
-		sb.append("<h1>Exploded <small>say the renderer</small></h1>");
-    }
-
-    private void renderTerminated(StringOutput sb) {
-		sb.append("<h1>Terminated <small>say the renderer</small></h1>");
-    }
-	
     private void renderItemEvent(AssessmentRenderer renderer, StringOutput sb, AssessmentItemComponent component,
     		CandidateEvent candidateEvent, ItemSessionState itemSessionState, URLBuilder ubu, Translator translator) {
         
@@ -112,7 +104,7 @@ public class AssessmentItemComponentRenderer extends AssessmentObjectComponentRe
 
         /* If session has terminated, render appropriate state and exit */
         if (itemSessionState.isExited()) {
-        	renderTerminated(sb);
+        	renderTerminated(sb, translator);
             return;
         }
 
@@ -153,9 +145,8 @@ public class AssessmentItemComponentRenderer extends AssessmentObjectComponentRe
              * In this case, the best we can do for the candidate is to 'explode' the session.
              * See bug #49.
              */
-        	e.printStackTrace();
         	log.error("", e);
-            renderExploded(sb);
+            renderExploded(sb, translator);
         }
     }
     

@@ -49,6 +49,8 @@ import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.logging.OLATRuntimeException;
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.ims.qti21.AssessmentTestSession;
 import org.olat.ims.qti21.QTI21Service;
@@ -94,6 +96,8 @@ import uk.ac.ed.ph.jqtiplus.value.Value;
  */
 public class AssessmentTestComponentRenderer extends AssessmentObjectComponentRenderer {
 	
+	private static final OLog log = Tracing.createLoggerFor(AssessmentTestComponentRenderer.class);
+	
 	@Override
 	public void render(Renderer renderer, StringOutput sb, Component source, URLBuilder ubu,
 			Translator translator, RenderResult renderResult, String[] args) {
@@ -110,7 +114,7 @@ public class AssessmentTestComponentRenderer extends AssessmentObjectComponentRe
 			final AssessmentTestSession candidateSession = candidateSessionContext.getCandidateSession();
 			
 	        if (candidateSession.isExploded()) {
-	            renderExploded(sb);
+	            renderExploded(sb, translator);
 	        } else if (candidateSessionContext.isTerminated()) {
 	            renderTerminated(sb, translator);
 	        } else {
@@ -126,14 +130,6 @@ public class AssessmentTestComponentRenderer extends AssessmentObjectComponentRe
 			}
 		}
 	}
-	
-    private void renderExploded(StringOutput sb) {
-		sb.append("<h1>Exploded <small>say the renderer</small></h1>");
-    }
-
-    private void renderTerminated(StringOutput sb, Translator translator) {
-		sb.append("<div class='o_info'>").append(translator.translate("terminated.msg")).append("</div>");
-    }
     
 	private void renderTestEvent(TestSessionController testSessionController, AssessmentRenderer renderer, StringOutput target,
 			AssessmentTestComponent component, URLBuilder ubu, Translator translator) {
@@ -188,9 +184,9 @@ public class AssessmentTestComponentRenderer extends AssessmentObjectComponentRe
 	
 	private void renderTestEntry(StringOutput sb, AssessmentTestComponent component, Translator translator) {
 		int numOfParts = component.getAssessmentTest().getTestParts().size();
-		sb.append("<h2>Test Entry Page</h2><p>")
-		  .append("This test consists of")
-		  .append("  up to ").append(numOfParts).append("  parts.</p>");
+		sb.append("<h2>").append(translator.translate("test.entry.page.title")).append("</h2><p>")
+		  .append(translator.translate("test.entry.page.text", new String[]{ Integer.toString(numOfParts) }))
+		  .append("</p>");
 		//precondition -> up to
 		
 		String title = translator.translate("assessment.test.enter.test");
@@ -437,11 +433,11 @@ public class AssessmentTestComponentRenderer extends AssessmentObjectComponentRe
         sb.append("<div class='qtiworks o_assessmenttest testFeedback'>")
 		  .append("<h1>");
 		if(component.hasMultipleTestParts()) {
-			sb.append("Test part");
+			sb.append(translator.translate("test.part.complete"));
 		} else {
-			sb.append("Test");
+			sb.append(translator.translate("test.complete"));
 		}
-		sb.append(" Complete</h1>");
+		sb.append("</h1>");
 
 		 // Show 'atEnd' testPart feedback 
 		TestPlanNode currentTestPartNode = component.getCurrentTestPartNode();
@@ -708,7 +704,7 @@ public class AssessmentTestComponentRenderer extends AssessmentObjectComponentRe
 			transformer.transform(new DOMSource(doc), 
 			     new StreamResult(new OutputStreamWriter(out, "UTF-8")));
 		} catch (IllegalArgumentException | UnsupportedEncodingException | TransformerFactoryConfigurationError | TransformerException e) {
-			e.printStackTrace();
+			log.error("", e);
 		}
 	}
 	

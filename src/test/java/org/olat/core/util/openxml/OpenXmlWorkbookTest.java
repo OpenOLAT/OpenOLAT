@@ -25,11 +25,9 @@ import java.io.IOException;
 import java.util.Date;
 
 import org.apache.commons.io.IOUtils;
+import org.junit.Assert;
 import org.junit.Test;
-import org.olat.core.util.CodeHelper;
 import org.olat.core.util.openxml.OpenXMLWorksheet.Row;
-
-
 
 /**
  * 
@@ -39,10 +37,14 @@ import org.olat.core.util.openxml.OpenXMLWorksheet.Row;
  */
 public class OpenXmlWorkbookTest {
 	
+	/**
+	 * Sadly, I can only test if our system produce a non empty file.
+	 * @throws IOException
+	 */
 	@Test
 	public void creationOfWorkbook() throws IOException {
-		
-		FileOutputStream fileOut = new FileOutputStream(new File("/HotCoffee/tmp/test_" + CodeHelper.getForeverUniqueID() + "_min.xlsx"));
+		File file = File.createTempFile("workbook", "_min.xlsx");
+		FileOutputStream fileOut = new FileOutputStream(file);
 		
 		OpenXMLWorkbook workbook = new OpenXMLWorkbook(fileOut, 1);
 		OpenXMLWorksheet sheet = workbook.nextWorksheet();
@@ -62,15 +64,25 @@ public class OpenXmlWorkbookTest {
 		sheet.newRow();
 		Row row4 = sheet.newRow();
 		row4.addCell(5, new Date(), workbook.getStyles().getDateStyle());
-		
-		
+
 		workbook.close();
 		fileOut.flush();
 		IOUtils.closeQuietly(fileOut);
+		
+		Assert.assertTrue(file.exists());
+		Assert.assertTrue(file.length() > 4096);
+		file.delete();
 	}
 	
-
-	
-	
-
+	/**
+	 * Don't forget that the argument of getColumn is zero based
+	 * @throws IOException
+	 */
+	@Test
+	public void getExcelColumn() throws IOException {
+		String col_27 = OpenXMLWorksheet.getColumn(27);
+		Assert.assertEquals("AB", col_27);
+		String col_702 = OpenXMLWorksheet.getColumn(702);
+		Assert.assertEquals("AAA", col_702);
+	}
 }

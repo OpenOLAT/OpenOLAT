@@ -163,6 +163,14 @@ public abstract class AssessmentObjectComponentRenderer extends DefaultComponent
 	private static final String velocity_root = Util.getPackageVelocityRoot(AssessmentObjectComponentRenderer.class);
 	private static final URI ctopXsltUri = URI.create("classpath:/org/olat/ims/qti21/ui/components/_content/ctop.xsl");
 	
+	protected void renderExploded(StringOutput sb, Translator translator) {
+		sb.append("<div class='o_error'>").append(translator.translate("exploded.msg")).append("</div>");
+    }
+
+    protected void renderTerminated(StringOutput sb, Translator translator) {
+		sb.append("<div class='o_info'>").append(translator.translate("terminated.msg")).append("</div>");
+    }
+	
 	protected void renderItemStatus(StringOutput sb, ItemSessionState itemSessionState, RenderingRequest options, Translator translator) {
 		if(options != null && options.isSolutionMode()) {
 			sb.append("<span class='o_assessmentitem_status review'>").append(translator.translate("assessment.item.status.modelSolution")).append("</span>");

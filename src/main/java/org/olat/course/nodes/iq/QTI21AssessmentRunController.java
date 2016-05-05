@@ -241,7 +241,7 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 				QTI21Event qe = (QTI21Event)event;
 				if(QTI21Event.EXIT.equals(qe.getCommand())) {
 					doExitAssessment(ureq, event);
-					exposeResults(ureq);
+					initAssessment(ureq);
 				}
 			}
 		}

@@ -58,6 +58,7 @@ import org.olat.core.gui.control.generic.wizard.Step;
 import org.olat.core.gui.control.generic.wizard.StepRunnerCallback;
 import org.olat.core.gui.control.generic.wizard.StepsMainRunController;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
+import org.olat.core.helpers.Settings;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.Util;
 import org.olat.core.util.coordinate.CoordinatorManager;
@@ -823,7 +824,9 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 
 		//fill with the new
 		mainVC.contextPut("cssClass", selectedNode.getIconCssClass());
-		mainVC.contextPut("identifier", selectedNode.getIdent());
+		if(Settings.isDebuging()) {
+			mainVC.contextPut("identifier", selectedNode.getIdent());
+		}
 		mainVC.contextPut("title", selectedNode.getTitle());
 		mainVC.contextPut("restrictedEdit", restrictedEdit);
 
