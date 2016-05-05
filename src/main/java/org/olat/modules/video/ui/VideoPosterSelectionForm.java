@@ -31,7 +31,6 @@ import org.jcodec.containers.mp4.demuxer.MP4Demuxer;
 import org.olat.core.commons.modules.bc.FolderEvent;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
-import org.olat.core.gui.components.form.flexible.FormUIFactory;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.velocity.VelocityContainer;
@@ -57,13 +56,11 @@ public class VideoPosterSelectionForm extends BasicController {
 	private static final String FILENAME_POSTFIX_JPG = ".jpg";
 	private static final String FILENAME_PREFIX_PROPOSAL_POSTER = "proposalPoster";
 	
-	protected FormUIFactory uifactory = FormUIFactory.getInstance();
-	long remainingSpace;
 	private VFSContainer tmpContainer;
 
 	@Autowired
 	private VideoManager videoManager;
-	VelocityContainer proposalLayout = createVelocityContainer("video_poster_proposal");
+	private VelocityContainer proposalLayout = createVelocityContainer("video_poster_proposal");
 
 	private Map<String, String> generatedPosters = new HashMap<String, String>();
 

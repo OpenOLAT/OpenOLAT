@@ -41,6 +41,7 @@ import org.olat.course.nodes.cp.CPRunController;
 import org.olat.course.run.navigation.NodeRunConstructionResult;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.video.ui.VideoDisplayController;
+import org.olat.modules.video.ui.VideoEvent;
 import org.olat.repository.RepositoryEntry;
 import org.olat.util.logging.activity.LoggingResourceable;
 
@@ -108,8 +109,12 @@ public class VideoRunController extends BasicController {
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if(source == videoDispCtr){
-			if(VideoDisplayController.ENDED_EVENT.equals(event)){
-				//TODO: catch even fired when video ended
+			if (event instanceof VideoEvent	) {
+				VideoEvent videoEvent = (VideoEvent) event;
+				if (videoEvent.getCommand().equals(VideoEvent.ENDED)) {
+					//TODO: catch even fired when video ended
+					// increment attempt variable
+				}
 			}
 		}
 	}

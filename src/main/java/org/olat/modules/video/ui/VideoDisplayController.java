@@ -56,7 +56,7 @@ public class VideoDisplayController extends BasicController {
 
 	private static final String GUIPREF_KEY_PREFERRED_RESOLUTION = "preferredResolution";
 	@Autowired
-	VideoManager videoManager;
+	private VideoManager videoManager;
 
 	private UserCommentsAndRatingsController commentsAndRatingCtr;
 	private VelocityContainer mainVC;
@@ -66,8 +66,6 @@ public class VideoDisplayController extends BasicController {
 	
 	private RepositoryEntry entry;
 	private String descriptionText;
-		
-	public static final Event ENDED_EVENT = new Event("videoEnded");
 
 
 	public VideoDisplayController(UserRequest ureq, WindowControl wControl, RepositoryEntry entry, boolean autoWidth) {

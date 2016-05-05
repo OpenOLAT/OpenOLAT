@@ -22,7 +22,6 @@ package org.olat.modules.video.ui;
 import org.olat.core.commons.services.image.Size;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
-import org.olat.core.gui.components.form.flexible.FormUIFactory;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
@@ -39,8 +38,6 @@ import org.springframework.beans.factory.annotation.Autowired;
  *
  */
 public class VideoMetaDataEditFormController extends FormBasicController {
-
-	protected FormUIFactory uifactory = FormUIFactory.getInstance();
 	@Autowired
 	private VideoManager videoManager;
 	private OLATResource videoResource;

@@ -131,8 +131,7 @@ public class VideoManagerImpl implements VideoManager {
 	 */
 	@Override
 	public VFSLeaf getPosterframe(OLATResource videoResource) {
-		String posterframePath = readVideoMetadataFile(videoResource).getPosterframe();
-		VFSLeaf posterFrame = resolveFromMasterContainer(videoResource,posterframePath);
+		VFSLeaf posterFrame = resolveFromMasterContainer(videoResource, FILENAME_POSTER_JPG);
 		return posterFrame;
 	}
 
@@ -141,23 +140,9 @@ public class VideoManagerImpl implements VideoManager {
 	 */
 	@Override
 	public void setPosterframe(OLATResource videoResource, VFSLeaf posterframe){
-		VideoMetadata metaData = readVideoMetadataFile(videoResource);
-		String oldPath = metaData.getPosterframe();
-		if(oldPath != null){
-			VFSLeaf oldPoster = resolveFromMasterContainer(videoResource, metaData.getPosterframe());
-			if(oldPoster != null){
-				oldPoster.delete();
-			}
-		}
-		
 		VFSContainer masterContainer = getMasterContainer(videoResource);
 		VFSLeaf newPoster = VFSManager.resolveOrCreateLeafFromPath(masterContainer, FILENAME_POSTER_JPG);
-
-		if(!newPoster.isSame(posterframe)){
-			VFSManager.copyContent(posterframe, newPoster);
-		}
-		metaData.setPosterframe(newPoster.getName());
-		writeVideoMetadataFile(metaData, videoResource);
+		VFSManager.copyContent(posterframe, newPoster);
 		
 		// Update also repository entry image, use new posterframe
 		VFSLeaf posterImage = (VFSLeaf)masterContainer.resolve(FILENAME_POSTER_JPG);
@@ -165,7 +150,6 @@ public class VideoManagerImpl implements VideoManager {
 			RepositoryEntry repoEntry = repositoryManager.lookupRepositoryEntry(videoResource, true);
 			repositoryManager.setImage(posterImage, repoEntry);
 		}
-
 	}
 
 	/**
@@ -495,7 +479,6 @@ public class VideoManagerImpl implements VideoManager {
 		// generate a poster image, use 20th frame as a default
 		VFSLeaf posterResource = VFSManager.resolveOrCreateLeafFromPath(masterContainer, FILENAME_POSTER_JPG);
 		getFrame(videoResource, 20, posterResource);
-		metaData.setPosterframe(FILENAME_POSTER_JPG);
 		// finally safe to disk
 		writeVideoMetadataFile(metaData, videoResource);
 

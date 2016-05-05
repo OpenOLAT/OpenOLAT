@@ -46,7 +46,7 @@ import org.olat.resource.OLATResource;
 
 public class VideoPosterUploadForm extends FormBasicController {
 	private OLATResource videoResource;
-	long remainingSpace;
+	private long remainingSpace;
 	private VFSContainer videoResourceFileroot;
 	private VFSContainer metaDataFolder;
 	private FileElement posterField;

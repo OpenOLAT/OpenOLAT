@@ -32,9 +32,9 @@ import org.olat.core.util.vfs.VFSLeaf;
  */
 public class TrackTableRow {
 
-	String language;
-	VFSLeaf track;
-	FormLink deleteLink;
+	private String language;
+	private VFSLeaf track;
+	private FormLink deleteLink;
 
 	protected FormUIFactory uifactory = FormUIFactory.getInstance();
 

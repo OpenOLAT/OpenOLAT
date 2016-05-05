@@ -31,11 +31,11 @@ import org.olat.core.gui.components.form.flexible.elements.FormLink;
  */
 public class QualityTableRow {
 
-	String resolution;
-	String dimension;
-	String size;
-	String format;
-	FormLink viewLink;
+	private String resolution;
+	private String dimension;
+	private String size;
+	private String format;
+	private FormLink viewLink;
 
 	protected FormUIFactory uifactory = FormUIFactory.getInstance();
 

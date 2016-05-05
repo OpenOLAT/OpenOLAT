@@ -44,10 +44,7 @@ public class VideoMetadata implements Serializable{
 		public static final int CURRENT_MODEL_VERSION = 1;
 		
 		private Size size;
-		private String posterframe;
 		private HashMap<String, String> tracks;
-		private boolean commentsEnabled;
-		private boolean ratingEnabled;
 		
 		@SuppressWarnings("unused")
 		private int modelVersion = 0; 
@@ -65,15 +62,7 @@ public class VideoMetadata implements Serializable{
 		public void setSize(Size size) {
 			this.size = size;
 		}
-
-		public String getPosterframe() {
-			return posterframe;
-		}
-
-		public void setPosterframe(String posterframe) {
-			this.posterframe = posterframe;
-		}
-
+		
 		public HashMap<String, String> getAllTracks(){
 			return tracks;
 		}
@@ -88,21 +77,5 @@ public class VideoMetadata implements Serializable{
 		
 		public void removeTrack(String lang){
 			tracks.remove(lang);
-		}
-		
-		public void setCommentsEnabled(boolean isEnabled){
-			this.commentsEnabled = isEnabled;
-		}
-		
-		public boolean getCommentsEnabled(){
-			return this.commentsEnabled;
-		}
-		
-		public void setRatingEnabled(boolean isEnabled){
-			this.ratingEnabled = isEnabled;
-		}
-		
-		public boolean getRatingEnabled(){
-			return this.ratingEnabled;
-		}
+		}		
 }

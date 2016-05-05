@@ -42,7 +42,6 @@ import org.olat.core.gui.control.generic.closablewrapper.CloseableModalControlle
 import org.olat.core.util.Formatter;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.modules.video.VideoManager;
-import org.olat.modules.video.VideoModule;
 import org.olat.modules.video.manager.VideoMediaMapper;
 import org.olat.modules.video.model.VideoQualityVersion;
 import org.olat.modules.video.ui.VideoQualityTableModel.QualityTableCols;
@@ -65,8 +64,6 @@ public class VideoQualityTableFormController extends FormBasicController {
 
 	@Autowired
 	private VideoManager videoManager;
-	@Autowired
-	private VideoModule videoModule;
 
 	public VideoQualityTableFormController(UserRequest ureq, WindowControl wControl, RepositoryEntry videoEntry) {
 		super(ureq, wControl, LAYOUT_VERTICAL);
@@ -135,6 +132,7 @@ public class VideoQualityTableFormController extends FormBasicController {
 				// initialize preview controller only once
 				previewVC = createVelocityContainer("video_preview");
 				cmc = new CloseableModalController(getWindowControl(), "close", previewVC);
+				listenTo(cmc);
 			}
 			// Get the user object from the link to access version object
 			FormLink link = (FormLink) source;

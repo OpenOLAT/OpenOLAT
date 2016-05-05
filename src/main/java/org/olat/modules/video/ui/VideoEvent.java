@@ -28,6 +28,8 @@ import org.olat.core.gui.control.Event;
  *
  */
 public class VideoEvent extends Event {
+	private static final long serialVersionUID = 5180562757687791093L;
+	
 	public static final String PLAY = "play";
 	public static final String PAUSE = "pause";
 	public static final String SEEKED = "seeked";

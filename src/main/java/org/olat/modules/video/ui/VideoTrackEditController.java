@@ -57,10 +57,8 @@ public class VideoTrackEditController extends FormBasicController {
 	private FlexiTableElement tableEl;
 	private VideoTracksTableModel tableModel;
 	private FormLink addButton;
-	VideoTrackUploadForm trackUploadForm;
-	VideoPosterUploadForm posterUploadForm;
-	VideoPosterSelectionForm posterSelectionForm;
-	CloseableModalController cmc;
+	private VideoTrackUploadForm trackUploadForm;
+	private CloseableModalController cmc;
 
 	private Map<String, TrackTableRow> rows;
 
@@ -146,9 +144,14 @@ public class VideoTrackEditController extends FormBasicController {
 			tableEl.setVisible(true);
 			tableEl.setEnabled(true);
 			cmc.deactivate();
-		}
-		else if(event.getCommand() == "CLOSE_MODAL_EVENT"){
+			// cleanup
+			removeAsListenerAndDispose(trackUploadForm);
+			removeAsListenerAndDispose(cmc);
+		} else if(event.getCommand() == "CLOSE_MODAL_EVENT"){
 			cmc.deactivate();
+			// cleanup
+			removeAsListenerAndDispose(trackUploadForm);
+			removeAsListenerAndDispose(cmc);
 		}
 	}
 
