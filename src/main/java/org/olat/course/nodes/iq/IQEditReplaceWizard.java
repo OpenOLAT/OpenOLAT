@@ -51,7 +51,9 @@ import org.olat.core.util.mail.MailerResult;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.nodes.CourseNode;
+import org.olat.course.nodes.IQSELFCourseNode;
 import org.olat.course.nodes.IQSURVCourseNode;
+import org.olat.course.nodes.IQTESTCourseNode;
 import org.olat.fileresource.DownloadeableMediaResource;
 import org.olat.ims.qti.QTIResult;
 import org.olat.ims.qti.QTIResultManager;
@@ -61,6 +63,8 @@ import org.olat.ims.qti.export.QTIExportEssayItemFormatConfig;
 import org.olat.ims.qti.export.QTIExportFIBItemFormatConfig;
 import org.olat.ims.qti.export.QTIExportFormatter;
 import org.olat.ims.qti.export.QTIExportFormatterCSVType1;
+import org.olat.ims.qti.export.QTIExportFormatterCSVType2;
+import org.olat.ims.qti.export.QTIExportFormatterCSVType3;
 import org.olat.ims.qti.export.QTIExportItemFormatConfig;
 import org.olat.ims.qti.export.QTIExportKPRIMItemFormatConfig;
 import org.olat.ims.qti.export.QTIExportMCQItemFormatConfig;
@@ -195,7 +199,16 @@ public class IQEditReplaceWizard extends WizardController {
 			QTIExportManager qem = QTIExportManager.getInstance();
 			Long repositoryRef = results.get(0).getResultSet().getRepositoryRef();
 			List<QTIItemObject> qtiItemObjectList = new QTIObjectTreeBuilder().getQTIItemObjectList(repositoryRef);
-			QTIExportFormatter formatter = new QTIExportFormatterCSVType1(ureq.getLocale(), "\t", "\"", "\r\n", false);
+			
+			QTIExportFormatter formatter;
+			if (courseNode instanceof IQTESTCourseNode) {
+				formatter = new QTIExportFormatterCSVType1(ureq.getLocale(), "\t", "\"", "\r\n", false);
+			} else if (courseNode instanceof IQSELFCourseNode) {
+				formatter = new QTIExportFormatterCSVType2(ureq.getLocale(), null, "\t", "\"", "\r\n", false);
+			} else {
+				formatter = new QTIExportFormatterCSVType3(ureq.getLocale(), null, "\t", "\"", "\r\n", false);
+			}
+			
 			Map<Class<?>, QTIExportItemFormatConfig> qtiItemConfigs = getQTIItemConfigs(qtiItemObjectList);
 			formatter.setMapWithExportItemConfigs(qtiItemConfigs);
 			resultExportFile = qem.exportResults(formatter, results, qtiItemObjectList, courseNode.getShortTitle(), exportDir, charset, ".xls");

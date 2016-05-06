@@ -521,7 +521,7 @@ public class PublishProcess {
 		File exportDirectory = CourseFactory.getOrCreateDataExportDirectory(identity, course.getCourseTitle());
 		String archiveName = cn.getType() + "_"
 				+ StringHelper.transformDisplayNameToFileSystemName(cn.getShortName())
-				+ "_" + Formatter.formatDatetimeFilesystemSave(new Date(System.currentTimeMillis()));
+				+ "_" + Formatter.formatDatetimeFilesystemSave(new Date(System.currentTimeMillis())) + ".zip";
 		
 		FileOutputStream fileStream = null;
 		ZipOutputStream exportStream = null;

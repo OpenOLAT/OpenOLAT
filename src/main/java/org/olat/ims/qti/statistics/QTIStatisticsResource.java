@@ -45,7 +45,7 @@ import org.olat.ims.qti.export.QTIExportEssayItemFormatConfig;
 import org.olat.ims.qti.export.QTIExportFIBItemFormatConfig;
 import org.olat.ims.qti.export.QTIExportFormatter;
 import org.olat.ims.qti.export.QTIExportFormatterCSVType1;
-import org.olat.ims.qti.export.QTIExportFormatterCSVType2;
+import org.olat.ims.qti.export.QTIExportFormatterCSVType3;
 import org.olat.ims.qti.export.QTIExportItemFormatConfig;
 import org.olat.ims.qti.export.QTIExportKPRIMItemFormatConfig;
 import org.olat.ims.qti.export.QTIExportMCQItemFormatConfig;
@@ -130,7 +130,7 @@ public class QTIStatisticsResource implements MediaResource {
 				formatter = new QTIExportFormatterCSVType1(locale, sep, emb, car, true);
 		  	} else if (QTIType.survey.equals(resourceResult.getType())) {
 		  		exportType = 2;
-		  		formatter = new QTIExportFormatterCSVType2(locale, null, sep, emb, car, true);
+		  		formatter = new QTIExportFormatterCSVType3(locale, null, sep, emb, car, true);
 		  	} else {
 		  		return;
 		  	}
