@@ -1235,7 +1235,8 @@ public class AssessmentTestDisplayController extends BasicController implements 
 					&& !ShowResultsOnFinish.none.equals(deliveryOptions.getShowResultsOnFinish())) {
 				removeAsListenerAndDispose(resultCtrl);
 				resultCtrl = new AssessmentResultController(ureq, getWindowControl(), getIdentity(),
-						AssessmentTestDisplayController.this.getCandidateSession(), fUnzippedDirRoot, mapperUri);
+						AssessmentTestDisplayController.this.getCandidateSession(),
+						deliveryOptions.getShowResultsOnFinish(), fUnzippedDirRoot, mapperUri);
 				listenTo(resultCtrl);
 				flc.add("qtiResults", resultCtrl.getInitialFormItem());
 			}

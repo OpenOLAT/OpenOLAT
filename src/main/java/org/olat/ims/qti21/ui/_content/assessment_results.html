@@ -4,7 +4,7 @@
 #end
 <div class="panel panel-default o_personal">
   	<div class="panel-heading">
- 		<h4 class="panel-title">$r.translate("head.assessment.overview")</h4>
+ 		<h4 class="panel-title"><i class="o_icon o_qtiassessment_icon"> </i> $r.translate("head.assessment.overview")</h4>
  	</div>
 	<table class="table"><tbody>
 		<tr class="o_score">
@@ -17,7 +17,7 @@
 		</tr>
 		<tr class="o_score">
 			<th>$r.translate("results.duration")</th>
-			<td>$testResults.duration</td> 
+			<td>$r.formatDurationInMillis($testResults.duration)</td> 
 		</tr>
 		#if(${testResults.hasMaxScore()})
 		<tr class="o_score">
@@ -49,6 +49,56 @@
 		#end
 	</tbody></table>
 </div>
-#if($r.visible("qtiresults"))
-	$r.render("qtiresults")
+
+#foreach($itemResult in $itemResults)
+
+<div class="panel panel-default o_personal">
+  	<div class="panel-heading">
+ 		<h5 class="panel-title"><i class="o_icon $itemResult.cssClass"> </i> $itemResult.title</h5>
+ 	</div>
+	<table class="table"><tbody>
+		<tr class="o_score">
+			<th>$r.translate("results.entry.time")</th>
+			<td>$r.formatDateAndTime($itemResult.entryTime)</td> 
+		</tr>
+		<tr class="o_score">
+			<th>$r.translate("results.end.time")</th>
+			<td>$r.formatDateAndTime($itemResult.endTime)</td> 
+		</tr>
+		<tr class="o_score">
+			<th>$r.translate("results.duration")</th>
+			<td>$r.formatDurationInMillis($itemResult.duration)</td> 
+		</tr>
+		#if(${itemResult.hasMaxScore()})
+		<tr class="o_score">
+			<th>$r.translate("score.max")</th>
+			<td>$itemResult.maxScore</td> 
+		</tr>
+		#end
+		#if(${itemResult.hasScore()})
+		<tr class="o_score">
+			<th>$r.translate("results.score.yourscore")</th>
+			<td>$itemResult.score</td> 
+		</tr>
+		#end
+		#if(${itemResult.hasPass()})
+		<tr class="o_state #if(${testResults.getPass().booleanValue()}) o_passed #elseif(!${testResults.getPass().booleanValue()}) o_failed #else o_unknown #end">
+			<th>$r.translate("passed.yourpassed")</th>
+			<td> 
+			#if(${itemResult.getPass().booleanValue()})	
+				<i class="o_icon o_icon_passed"></i> 
+				$r.translate("passed.yes")
+			#elseif(!${itemResult.getPass().booleanValue()})		
+				<i class="o_icon o_icon_failed"></i> 
+				$r.translate("passed.no")
+			#else
+				$r.translateWithPackage("org.olat.course.nodes.st", "passed.noinfo")
+			#end
+			</td>
+		</tr>
+		#end
+	</tbody></table>
+</div>
+
+	
 #end

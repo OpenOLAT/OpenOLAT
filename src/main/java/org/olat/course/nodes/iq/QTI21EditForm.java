@@ -32,7 +32,9 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.StringHelper;
+import org.olat.ims.qti.process.AssessmentInstance;
 import org.olat.ims.qti21.QTI21DeliveryOptions;
+import org.olat.ims.qti21.QTI21DeliveryOptions.ShowResultsOnFinish;
 import org.olat.modules.ModuleConfiguration;
 
 /**
@@ -53,6 +55,8 @@ public class QTI21EditForm extends FormBasicController {
 	private MultipleSelectionElement enableCancelEl, enableSuspendEl;
 	private MultipleSelectionElement limitAttemptsEl, blockAfterSuccessEl;
 	private MultipleSelectionElement displayQuestionProgressEl, displayScoreProgressEl;
+	private MultipleSelectionElement showResultsOnFinishEl;
+	private SingleSelection typeShowResultsOnFinishEl;
 	
 	private TextElement maxAttemptsEl;
 	
@@ -153,6 +157,33 @@ public class QTI21EditForm extends FormBasicController {
 			enableCancelEl.select(onKeys[0], true);
 		}
 		
+		showResultsOnFinishEl = uifactory.addCheckboxesHorizontal("resultOnFinish", "qti.form.results.onfinish", formLayout, onKeys, onValues);
+		showResultsOnFinishEl.addActionListener(FormEvent.ONCHANGE);
+		
+		ShowResultsOnFinish showSummary = deliveryOptions.getShowResultsOnFinish();
+		String defaultConfSummary = showSummary == null ? AssessmentInstance.QMD_ENTRY_SUMMARY_COMPACT : showSummary.getIQEquivalent();
+		String confSummary = modConfig.getStringValue(IQEditController.CONFIG_KEY_SUMMARY, defaultConfSummary);
+		if(!AssessmentInstance.QMD_ENTRY_SUMMARY_NONE.equals(confSummary)) {
+			showResultsOnFinishEl.select(onKeys[0], true);
+		}
+
+		String[] typeShowResultsOnFinishKeys = new String[] {
+				AssessmentInstance.QMD_ENTRY_SUMMARY_COMPACT, AssessmentInstance.QMD_ENTRY_SUMMARY_SECTION, AssessmentInstance.QMD_ENTRY_SUMMARY_DETAILED
+		};
+		String[] typeShowResultsOnFinishValues = new String[] {
+			translate("qti.form.summary.compact"), translate("qti.form.summary.section"), translate("qti.form.summary.detailed")
+		};
+		typeShowResultsOnFinishEl = uifactory.addRadiosVertical("typeResultOnFinish", "qti.form.summary", formLayout, typeShowResultsOnFinishKeys, typeShowResultsOnFinishValues);
+		typeShowResultsOnFinishEl.setVisible(showResultsOnFinishEl.isAtLeastSelected(1));
+		if(StringHelper.containsNonWhitespace(confSummary)) {
+			for(String typeShowResultsOnFinishKey:typeShowResultsOnFinishKeys) {
+				typeShowResultsOnFinishEl.select(typeShowResultsOnFinishKey, true);
+			}
+		} 
+		if(typeShowResultsOnFinishEl.isOneSelected()) {
+			typeShowResultsOnFinishEl.select(AssessmentInstance.QMD_ENTRY_SUMMARY_COMPACT, true);
+		}
+		
 		uifactory.addFormSubmitButton("submit", formLayout);
 	}
 	
@@ -210,6 +241,17 @@ public class QTI21EditForm extends FormBasicController {
 		modConfig.setBooleanEntry(IQEditController.CONFIG_KEY_ENABLESUSPEND, enableSuspendEl.isSelected(0));
 		modConfig.setBooleanEntry(IQEditController.CONFIG_KEY_QUESTIONPROGRESS, displayQuestionProgressEl.isSelected(0));
 		modConfig.setBooleanEntry(IQEditController.CONFIG_KEY_SCOREPROGRESS, displayScoreProgressEl.isSelected(0));
+		
+		if(showResultsOnFinishEl.isAtLeastSelected(1)) {
+			if(typeShowResultsOnFinishEl.isOneSelected()) {
+				modConfig.set(IQEditController.CONFIG_KEY_SUMMARY, typeShowResultsOnFinishEl.getSelectedKey());
+			} else {
+				modConfig.set(IQEditController.CONFIG_KEY_SUMMARY, AssessmentInstance.QMD_ENTRY_SUMMARY_NONE);
+			}
+		} else {
+			modConfig.set(IQEditController.CONFIG_KEY_SUMMARY, AssessmentInstance.QMD_ENTRY_SUMMARY_NONE);
+		}
+		
 		fireEvent(ureq, Event.DONE_EVENT);
 	}
 }

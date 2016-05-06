@@ -44,6 +44,7 @@ import org.olat.course.nodes.iq.QTI21TestSessionTableModel.TSCols;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.fileresource.FileResourceManager;
 import org.olat.ims.qti21.AssessmentTestSession;
+import org.olat.ims.qti21.QTI21DeliveryOptions.ShowResultsOnFinish;
 import org.olat.ims.qti21.QTI21Service;
 import org.olat.ims.qti21.ui.AssessmentResultController;
 import org.olat.repository.RepositoryEntry;
@@ -146,7 +147,8 @@ public class QTI21AssessmentDetailsController extends FormBasicController {
 		String mapperUri = null;//TODO qti
 		FileResourceManager frm = FileResourceManager.getInstance();
 		File fUnzippedDirRoot = frm.unzipFileResource(row.getTestEntry().getOlatResource());
-		resultCtrl = new AssessmentResultController(ureq, getWindowControl(), assessedIdentity, row, fUnzippedDirRoot, mapperUri);
+		resultCtrl = new AssessmentResultController(ureq, getWindowControl(), assessedIdentity, row,
+				ShowResultsOnFinish.details, fUnzippedDirRoot, mapperUri);
 		listenTo(resultCtrl);
 		cmc = new CloseableModalController(getWindowControl(), "close", resultCtrl.getInitialComponent(),
 				true, translate("table.header.results"));

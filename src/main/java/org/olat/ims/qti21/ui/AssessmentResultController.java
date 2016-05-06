@@ -20,8 +20,11 @@
 package org.olat.ims.qti21.ui;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.olat.admin.user.UserShortDescription;
 import org.olat.core.gui.UserRequest;
@@ -37,15 +40,30 @@ import org.olat.fileresource.types.ImsQTI21Resource;
 import org.olat.fileresource.types.ImsQTI21Resource.PathResourceLocator;
 import org.olat.ims.qti21.AssessmentTestSession;
 import org.olat.ims.qti21.QTI21Constants;
+import org.olat.ims.qti21.QTI21DeliveryOptions.ShowResultsOnFinish;
 import org.olat.ims.qti21.QTI21Service;
+import org.olat.ims.qti21.model.QTI21QuestionType;
 import org.olat.ims.qti21.ui.components.AssessmentTestResultFormItem;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import uk.ac.ed.ph.jqtiplus.node.item.AssessmentItem;
 import uk.ac.ed.ph.jqtiplus.node.result.AssessmentResult;
+import uk.ac.ed.ph.jqtiplus.node.result.ItemResult;
 import uk.ac.ed.ph.jqtiplus.node.result.ItemVariable;
 import uk.ac.ed.ph.jqtiplus.node.result.OutcomeVariable;
 import uk.ac.ed.ph.jqtiplus.node.result.TestResult;
+import uk.ac.ed.ph.jqtiplus.node.test.AssessmentItemRef;
+import uk.ac.ed.ph.jqtiplus.resolution.ResolvedAssessmentItem;
+import uk.ac.ed.ph.jqtiplus.resolution.ResolvedAssessmentTest;
+import uk.ac.ed.ph.jqtiplus.state.AssessmentSectionSessionState;
+import uk.ac.ed.ph.jqtiplus.state.ControlObjectSessionState;
+import uk.ac.ed.ph.jqtiplus.state.ItemSessionState;
+import uk.ac.ed.ph.jqtiplus.state.TestPlan;
+import uk.ac.ed.ph.jqtiplus.state.TestPlanNode;
+import uk.ac.ed.ph.jqtiplus.state.TestPlanNode.TestNodeType;
+import uk.ac.ed.ph.jqtiplus.state.TestPlanNodeKey;
 import uk.ac.ed.ph.jqtiplus.state.TestSessionState;
+import uk.ac.ed.ph.jqtiplus.types.Identifier;
 import uk.ac.ed.ph.jqtiplus.value.BooleanValue;
 import uk.ac.ed.ph.jqtiplus.value.NumberValue;
 import uk.ac.ed.ph.jqtiplus.value.Value;
@@ -62,24 +80,28 @@ public class AssessmentResultController extends FormBasicController {
 	private AssessmentTestResultFormItem qtiResultEl;
 
 	private final String mapperUri;
-	
 	private final File fUnzippedDirRoot;
+	private final ShowResultsOnFinish resultsOnfinish;
 	
 	private TestSessionState testSessionState;
 	private AssessmentResult assessmentResult;
+	private final ResolvedAssessmentTest resolvedAssessmentTest;
 	private final UserShortDescription assessedIdentityInfosCtrl;
 	
 	@Autowired
 	private QTI21Service qtiService;
 	
 	public AssessmentResultController(UserRequest ureq, WindowControl wControl, Identity assessedIdentity,
-			AssessmentTestSession candidateSession, File fUnzippedDirRoot, String mapperUri) {
+			AssessmentTestSession candidateSession, ShowResultsOnFinish resultsOnfinish, File fUnzippedDirRoot, String mapperUri) {
 		super(ureq, wControl, "assessment_results");
 		this.mapperUri = mapperUri;
 		this.fUnzippedDirRoot = fUnzippedDirRoot;
+		this.resultsOnfinish = resultsOnfinish;
 		
 		assessedIdentityInfosCtrl = new UserShortDescription(ureq, getWindowControl(), assessedIdentity);
 		listenTo(assessedIdentityInfosCtrl);
+		
+		resolvedAssessmentTest = qtiService.loadAndResolveAssessmentTest(fUnzippedDirRoot, false);
 		
 		testSessionState = qtiService.loadTestSessionState(candidateSession);
 		assessmentResult = qtiService.getAssessmentResult(candidateSession);
@@ -106,11 +128,59 @@ public class AssessmentResultController extends FormBasicController {
 			FormLayoutContainer layoutCont = (FormLayoutContainer)formLayout;
 			layoutCont.put("assessedIdentityInfos", assessedIdentityInfosCtrl.getInitialComponent());
 			
-			Results results = new Results(testSessionState);
+			Results results = new Results(false, "o_qtiassessment_icon");
+			results.setSessionState(testSessionState);
+			
 			layoutCont.contextPut("testResults", results);
 			TestResult testResult = assessmentResult.getTestResult();
 			if(testResult != null) {
 				extractOutcomeVariable(testResult.getItemVariables(), results);
+			}
+			
+			List<Results> itemResults = new ArrayList<>();
+			layoutCont.contextPut("itemResults", itemResults);
+			
+			if(resultsOnfinish == ShowResultsOnFinish.sections || resultsOnfinish == ShowResultsOnFinish.details) {
+				Map<Identifier, AssessmentItemRef> identifierToRefs = new HashMap<>();
+				for(AssessmentItemRef itemRef:resolvedAssessmentTest.getAssessmentItemRefs()) {
+					identifierToRefs.put(itemRef.getIdentifier(), itemRef);
+				}
+	
+				TestPlan testPlan = testSessionState.getTestPlan();
+				List<TestPlanNode> nodes = testPlan.getTestPlanNodeList();
+				for(TestPlanNode node:nodes) {
+					TestPlanNodeKey testPlanNodeKey = node.getKey();
+					TestNodeType testNodeType = node.getTestNodeType();
+					if(testNodeType == TestNodeType.ASSESSMENT_SECTION) {
+						Results r = new Results(true, node.getSectionPartTitle(), "o_mi_qtisection");
+						AssessmentSectionSessionState sectionState = testSessionState.getAssessmentSectionSessionStates().get(testPlanNodeKey);
+						if(sectionState != null) {
+							r.setSessionState(sectionState);
+						}
+						itemResults.add(r);
+					} else if(testNodeType == TestNodeType.ASSESSMENT_ITEM_REF) {
+						if(resultsOnfinish == ShowResultsOnFinish.details) {
+							Identifier identifier = testPlanNodeKey.getIdentifier();
+							AssessmentItemRef itemRef = identifierToRefs.get(identifier);
+							ResolvedAssessmentItem resolvedAssessmentItem = resolvedAssessmentTest.getResolvedAssessmentItem(itemRef);
+							AssessmentItem assessmentItem = resolvedAssessmentItem.getRootNodeLookup().extractIfSuccessful();
+							QTI21QuestionType type = QTI21QuestionType.getType(assessmentItem);
+							Results r = new Results(false, type.getCssClass());
+							
+							ItemSessionState sectionState = testSessionState.getItemSessionStates().get(testPlanNodeKey);
+							if(sectionState != null) {
+								r.setSessionState(sectionState);
+							}
+							
+							ItemResult itemResult = assessmentResult.getItemResult(identifier.toString());
+							if(itemResult != null) {
+								r.setTitle(node.getSectionPartTitle());
+								extractOutcomeVariable(itemResult.getItemVariables(), r);
+							}
+							itemResults.add(r);
+						}
+					}
+				}
 			}
 		}
 	}
@@ -157,19 +227,54 @@ public class AssessmentResultController extends FormBasicController {
 	
 	public class Results {
 		
-		private final Date entryTime;
-		private final Date endTime;
-		private final Long duration;
+		private Date entryTime;
+		private Date endTime;
+		private Long duration;
 		
 		private String score;
 		private String maxScore;
 		
 		private Boolean pass;
 		
-		public Results(TestSessionState testSessionState) {
-			entryTime = testSessionState.getEntryTime();
-			endTime = testSessionState.getEndTime();
-			duration = testSessionState.getDurationAccumulated();
+		private boolean section;
+		private String title;
+		private String cssClass;
+		
+		public Results(boolean section, String cssClass) {
+			this.section = section;
+			this.cssClass = cssClass;
+		}
+		
+		public Results(boolean section, String title, String cssClass) {
+			this.section = section;
+			this.title = title;
+			this.cssClass = cssClass;
+		}
+		
+		public void setSessionState(ControlObjectSessionState sessionState) {
+			entryTime = sessionState.getEntryTime();
+			endTime = sessionState.getEndTime();
+			duration = sessionState.getDurationAccumulated();
+		}
+		
+		public String getCssClass() {
+			return cssClass;
+		}
+		
+		public String getTitle() {
+			return title;
+		}
+		
+		public void setTitle(String title) {
+			this.title = title;
+		}
+		
+		public boolean isSection() {
+			return section;
+		}
+		
+		public void setSection(boolean section) {
+			this.section = section;
 		}
 
 		public Date getEntryTime() {

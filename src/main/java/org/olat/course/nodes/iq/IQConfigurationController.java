@@ -80,6 +80,7 @@ import org.olat.ims.qti.process.AssessmentInstance;
 import org.olat.ims.qti.process.QTIHelper;
 import org.olat.ims.qti21.QTI21DeliveryOptions;
 import org.olat.ims.qti21.QTI21Service;
+import org.olat.ims.qti21.QTI21DeliveryOptions.ShowResultsOnFinish;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.iq.IQManager;
 import org.olat.modules.iq.IQPreviewSecurityCallback;
@@ -642,10 +643,14 @@ public class IQConfigurationController extends BasicController {
 					moduleConfiguration.set(IQEditController.CONFIG_KEY_TYPE_QTI, IQEditController.CONFIG_VALUE_QTI2);
 					setOnyxVariables(re);
 				} else if(ImsQTI21Resource.TYPE_NAME.equals(re.getOlatResource().getResourceableTypeName())) {
-					//TODO qti
 					myContent.contextPut("showOutcomes", Boolean.FALSE);
 					moduleConfiguration.set(IQEditController.CONFIG_KEY_TYPE_QTI, IQEditController.CONFIG_VALUE_QTI21);
-					
+					QTI21DeliveryOptions deliveryOptions = qti21service.getDeliveryOptions(re);
+					if(deliveryOptions != null) {
+						ShowResultsOnFinish showSummary = deliveryOptions.getShowResultsOnFinish();
+						String defaultConfSummary = showSummary == null ? AssessmentInstance.QMD_ENTRY_SUMMARY_COMPACT : showSummary.getIQEquivalent();
+						moduleConfiguration.set(IQEditController.CONFIG_KEY_SUMMARY, defaultConfSummary);
+					}
 				} else {
 					myContent.contextPut("showOutcomes", Boolean.FALSE);
 					moduleConfiguration.set(IQEditController.CONFIG_KEY_TYPE_QTI, IQEditController.CONFIG_VALUE_QTI1);

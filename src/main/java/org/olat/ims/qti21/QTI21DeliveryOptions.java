@@ -19,6 +19,9 @@
  */
 package org.olat.ims.qti21;
 
+import org.olat.core.util.StringHelper;
+import org.olat.ims.qti.process.AssessmentInstance;
+
 /**
  * 
  * External options
@@ -147,6 +150,29 @@ public class QTI21DeliveryOptions {
 		none,
 		compact,//without solution
 		sections,//summary without solution
-		details,//with solution
+		details;//with solution
+		
+		public String getIQEquivalent() {
+			switch(this) {
+				case none: return AssessmentInstance.QMD_ENTRY_SUMMARY_NONE;
+				case compact: return AssessmentInstance.QMD_ENTRY_SUMMARY_COMPACT;
+				case sections: return AssessmentInstance.QMD_ENTRY_SUMMARY_SECTION;
+				case details: return AssessmentInstance.QMD_ENTRY_SUMMARY_DETAILED;
+				default: return null;
+			}
+		}
+		
+		public static final ShowResultsOnFinish fromIQEquivalent(String value, ShowResultsOnFinish defaultValue) {
+			if(StringHelper.containsNonWhitespace(value)) {
+				switch(value) {
+					case AssessmentInstance.QMD_ENTRY_SUMMARY_NONE: return none;
+					case AssessmentInstance.QMD_ENTRY_SUMMARY_COMPACT: return compact;
+					case AssessmentInstance.QMD_ENTRY_SUMMARY_SECTION: return sections;
+					case AssessmentInstance.QMD_ENTRY_SUMMARY_DETAILED: return details;
+					default: return defaultValue;
+				}
+			}
+			return defaultValue;
+		}
 	}
 }

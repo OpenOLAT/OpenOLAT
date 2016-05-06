@@ -383,7 +383,6 @@ public class QTI21ServiceImpl implements QTI21Service, InitializingBean, Disposa
     private Document loadStateDocument(AssessmentTestSession candidateSession) {
         File sessionFile = getTestSessionStateFile(candidateSession);
         if(sessionFile.exists()) {
-        	System.out.println(sessionFile);
 	        try {
 		        DocumentBuilder documentBuilder = XmlFactories.newDocumentBuilder();
 	            return documentBuilder.parse(sessionFile);
