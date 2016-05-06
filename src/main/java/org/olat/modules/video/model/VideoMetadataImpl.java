@@ -22,8 +22,8 @@ package org.olat.modules.video.model;
 
 import java.io.Serializable;
 import java.util.HashMap;
+import java.util.Map;
 
-import org.olat.core.id.OLATResourceable;
 import org.olat.modules.video.VideoMetadata;
 
 /**
@@ -40,8 +40,8 @@ public class VideoMetadataImpl implements Serializable, VideoMetadata {
 		private int height;
 		private HashMap<String, String> tracks;
 		
-		public VideoMetadataImpl(OLATResourceable resource){
-			this.tracks = new HashMap<String, String>();
+		public VideoMetadataImpl() {
+			tracks = new HashMap<String, String>();
 		}
 				
 		@Override
@@ -65,7 +65,7 @@ public class VideoMetadataImpl implements Serializable, VideoMetadata {
 		}
 		
 		@Override
-		public HashMap<String, String> getAllTracks(){
+		public Map<String, String> getAllTracks(){
 			return tracks;
 		}
 		

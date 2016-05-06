@@ -31,9 +31,6 @@ import org.olat.core.util.vfs.LocalFolderImpl;
 import org.olat.core.util.vfs.VFSContainer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.Bean;
-import org.springframework.core.convert.ConversionService;
-import org.springframework.format.support.DefaultFormattingConversionService;
 import org.springframework.stereotype.Service;
 
 /**
@@ -46,6 +43,8 @@ import org.springframework.stereotype.Service;
 @Service
 public class VideoModule extends AbstractSpringModule {
 
+	private static final OLog log = Tracing.createLoggerFor(VideoModule.class);
+	
 	private static final String VIDEO_ENABLED = "video.enabled";
 	private static final String VIDEOCOURSENODE_ENABLED = "video.coursenode.enabled";
 	private static final String VIDEOTRANSCODING_ENABLED = "video.transcoding.enabled";
@@ -58,24 +57,34 @@ public class VideoModule extends AbstractSpringModule {
 	@Value("${video.transcoding.enabled:false}")
 	private boolean transcodingEnabled;
 	@Value("${video.transcoding.resolutions}")
-	private int[] transcodingResolutions;
+	private String transcodingResolutions;
 	@Value("${video.transcoding.taskset.cpuconfig}")
 	private String transcodingTasksetConfig;
 	@Value("${video.transcoding.dir}")
 	private String transcodingDir;
 	
-	
-	@Bean
-	public static ConversionService conversionService() {
-		// needed to create the transcodingResolutions (int[]) property by spring
-	    return new DefaultFormattingConversionService();
-	}
-	
-	private static final OLog log = Tracing.createLoggerFor(VideoModule.class);
+	private int[] transcodingResolutionsArr = new int[] { 1080,720,480,360 };
 
 	@Autowired
 	public VideoModule(CoordinatorManager coordinatorManager) {
 		super(coordinatorManager);
+	}
+
+	@Override
+	protected void initDefaultProperties() {
+		if(StringHelper.containsNonWhitespace(transcodingResolutions)) {
+			try {
+				String[] resolutions = transcodingResolutions.split(",");
+				int[] resolutionInts = new int[resolutions.length];
+				for(int i=resolutions.length; i-->0; ) {
+					resolutionInts[i] = Integer.parseInt(resolutions[i]);
+				}
+				transcodingResolutionsArr = resolutionInts;
+			} catch (NumberFormatException e) {
+				log.error("Cannot parse transcoding resolutions", e);
+			}
+		}
+		super.initDefaultProperties();
 	}
 
 	@Override
@@ -110,7 +119,7 @@ public class VideoModule extends AbstractSpringModule {
 	 * @return Array of transcoding resolutions.
 	 */
 	public int[] getTranscodingResolutions() {
-		return transcodingResolutions;
+		return transcodingResolutionsArr;
 	}
 
 	/**

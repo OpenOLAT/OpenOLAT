@@ -430,7 +430,7 @@ public class VideoManagerImpl implements VideoManager {
 		masterVideo.delete();
 
 		// 2) generate Metadata file
-		VideoMetadata metaData = new VideoMetadataImpl(videoResource);
+		VideoMetadata metaData = new VideoMetadataImpl();
 		// calculate video size
 		Size videoSize = movieService.getSize(targetFile, FILETYPE_MP4);
 		metaData.setWidth(videoSize.getWidth());

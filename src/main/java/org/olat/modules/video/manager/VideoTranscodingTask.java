@@ -27,6 +27,7 @@ import java.io.InputStreamReader;
 import java.util.ArrayList;
 
 import org.olat.core.CoreSpringFactory;
+import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.commons.services.image.Size;
 import org.olat.core.commons.services.taskexecutor.LongRunnable;
 import org.olat.core.commons.services.taskexecutor.Sequential;
@@ -146,6 +147,7 @@ public class VideoTranscodingTask implements LongRunnable, Sequential {
 						// update version file for UI
 						videoTranscoding.setStatus(Integer.parseInt(percent));
 						videoTranscoding = videoManager.updateVideoTranscoding(videoTranscoding);
+						DBFactory.getInstance().commitAndCloseSession();
 					}
 				}
 			}
@@ -179,6 +181,7 @@ public class VideoTranscodingTask implements LongRunnable, Sequential {
 				videoTranscoding.setSize(transcodedFile.length());
 				videoTranscoding.setStatus(VideoTranscoding.TRANSCODING_STATUS_DONE);
 				videoTranscoding = videoManager.updateVideoTranscoding(videoTranscoding);
+				DBFactory.getInstance().commitAndCloseSession();
 			}
 		} catch (InterruptedException e) {
 			//

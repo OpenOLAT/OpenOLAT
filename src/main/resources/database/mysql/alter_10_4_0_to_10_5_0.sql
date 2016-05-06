@@ -80,11 +80,8 @@ create table o_vid_transcoding (
 alter table o_vid_transcoding ENGINE = InnoDB;
 
 alter table o_vid_transcoding add constraint fk_resource_id_idx foreign key (fk_resource_id) references o_olatresource (resource_id);
-
-	
-
-
-
+create index vid_status_trans_idx on o_vid_transcoding(vid_status);
+create index vid_transcoder_trans_idx on o_vid_transcoding(vid_transcoder);
 
 
 

@@ -49,10 +49,9 @@ import org.olat.resource.OLATResourceImpl;
 @Entity(name="videotranscoding")
 @Table(name="o_vid_transcoding")
 public class VideoTranscodingImpl implements VideoTranscoding, Persistable, ModifiedInfo {
-	
-	//FIXME:RS: what serialVersionUID to use if null? Copy from GoToRegistrantImpl
-	private static final long serialVersionUID = 4285228843020012527L;
-	
+
+	private static final long serialVersionUID = 8360999803434426958L;
+
 	@Id
 	@GeneratedValue(generator = "system-uuid")
 	@GenericGenerator(name = "system-uuid", strategy = "hilo")
@@ -190,8 +189,7 @@ public class VideoTranscodingImpl implements VideoTranscoding, Persistable, Modi
 
 	@Override
 	public int hashCode() {
-		//FIXME:RS: what key to use if null? Copy from GoToRegistrantImpl
-		return key == null ? -794215 : key.hashCode();
+		return key == null ? -827346537 : key.hashCode();
 	}
 
 	@Override
@@ -210,5 +208,4 @@ public class VideoTranscodingImpl implements VideoTranscoding, Persistable, Modi
 	public boolean equalsByPersistableKey(Persistable persistable) {
 		return equals(persistable);
 	}
-
 }

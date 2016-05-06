@@ -1188,6 +1188,21 @@ create table o_goto_registrant (
    primary key (id)
 );
 
+create table o_vid_transcoding (
+   id bigint not null,
+   creationdate datetime not null,
+   lastmodified datetime not null,
+   vid_resolution bigint default null,
+   vid_width bigint default null,
+   vid_height bigint default null,
+   vid_size bigint default null,
+   vid_format varchar(128) default null,
+   vid_status bigint default null,
+   vid_transcoder varchar(128) default null,
+   fk_resource_id bigint not null,
+   primary key (id)
+);
+
 -- calendar
 create table o_cal_use_config (
    id bigint not null,
@@ -1822,6 +1837,7 @@ alter table o_rem_sent_reminder ENGINE = InnoDB;
 alter table o_goto_organizer ENGINE = InnoDB;
 alter table o_goto_meeting ENGINE = InnoDB;
 alter table o_goto_registrant ENGINE = InnoDB;
+alter table o_vid_transcoding ENGINE = InnoDB;
 
 -- rating
 alter table o_userrating add constraint FKF26C8375236F20X foreign key (creator_id) references o_bs_identity (id);
@@ -2127,6 +2143,11 @@ alter table o_goto_meeting add constraint goto_meet_organizer_idx foreign key (f
 
 alter table o_goto_registrant add constraint goto_regis_meeting_idx foreign key (fk_meeting_id) references o_goto_meeting (id);
 alter table o_goto_registrant add constraint goto_regis_ident_idx foreign key (fk_identity_id) references o_bs_identity (id);
+
+-- video
+alter table o_vid_transcoding add constraint fk_resource_id_idx foreign key (fk_resource_id) references o_olatresource (resource_id);
+create index vid_status_trans_idx on o_vid_transcoding(vid_status);
+create index vid_transcoder_trans_idx on o_vid_transcoding(vid_transcoder);
 
 -- calendar
 alter table o_cal_use_config add constraint cal_u_conf_to_ident_idx foreign key (fk_identity) references o_bs_identity (id);

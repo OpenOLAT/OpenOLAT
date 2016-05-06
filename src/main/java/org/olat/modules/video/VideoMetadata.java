@@ -19,7 +19,7 @@
  */
 package org.olat.modules.video;
 
-import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Represents the metadata of a master video file 
@@ -53,7 +53,7 @@ public interface VideoMetadata {
 	/**
 	 * @return Map of caption tracks
 	 */
-	public HashMap<String, String> getAllTracks();
+	public Map<String, String> getAllTracks();
 
 	/**
 	 * Add a caption track for a specific language

@@ -22,8 +22,6 @@ package org.olat.modules.video.manager;
 import java.util.Date;
 import java.util.List;
 
-import javax.persistence.TypedQuery;
-
 import org.olat.core.commons.persistence.DB;
 import org.olat.modules.video.VideoTranscoding;
 import org.olat.modules.video.model.VideoTranscodingImpl;
@@ -54,7 +52,7 @@ public class VideoTranscodingDAO {
 	public VideoTranscoding createVideoTranscoding(OLATResource videoResource, int resolution, String format) {
 		VideoTranscodingImpl videoTranscoding = new VideoTranscodingImpl();
 		videoTranscoding.setCreationDate(new Date());
-		videoTranscoding.setLastModified(new Date());
+		videoTranscoding.setLastModified(videoTranscoding.getCreationDate());
 		videoTranscoding.setVideoResource(videoResource);
 		videoTranscoding.setResolution(resolution);
 		videoTranscoding.setFormat(format);
@@ -68,17 +66,15 @@ public class VideoTranscodingDAO {
 		sb.append("select trans from videotranscoding as trans")
 		  .append(" inner join fetch trans.videoResource as res")
 		  .append(" where res.key=:resourceKey");
-		TypedQuery<VideoTranscoding> query = dbInstance.getCurrentEntityManager()
+		return dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), VideoTranscoding.class)
-				.setParameter("resourceKey", videoResource.getKey());
-		return query.getResultList();
+				.setParameter("resourceKey", videoResource.getKey())
+				.getResultList();
 	}
 
 	public VideoTranscoding updateTranscoding(VideoTranscoding videoTranscoding) {
 		((VideoTranscodingImpl)videoTranscoding).setLastModified(new Date());
 		VideoTranscoding trans = dbInstance.getCurrentEntityManager().merge(videoTranscoding);
-		//FIXME:SR: is that needed? flush did not work
-		dbInstance.commit();
 		return trans;
 	}
 
