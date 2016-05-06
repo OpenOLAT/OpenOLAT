@@ -73,6 +73,7 @@ import uk.ac.ed.ph.jqtiplus.types.Identifier;
 import uk.ac.ed.ph.jqtiplus.types.ResponseData;
 import uk.ac.ed.ph.jqtiplus.utils.QueryUtils;
 import uk.ac.ed.ph.jqtiplus.value.BaseType;
+import uk.ac.ed.ph.jqtiplus.value.Cardinality;
 import uk.ac.ed.ph.jqtiplus.value.FileValue;
 import uk.ac.ed.ph.jqtiplus.value.ListValue;
 import uk.ac.ed.ph.jqtiplus.value.Orientation;
@@ -167,6 +168,24 @@ public class AssessmentObjectVelocityRenderDecorator extends VelocityRenderDecor
 	//<xsl:sequence select="$unboundResponseIdentifiers=$identifier"/>
 	public boolean isBadResponse(Identifier identifier) {
 		return AssessmentRenderFunctions.isBadResponse(itemSessionState, identifier);
+	}
+	
+	/**
+	 * Check the maxChoices and the cardinality
+	 * @param interaction
+	 * @return
+	 */
+	public boolean isSingleChoice(Interaction interaction) {
+		if(interaction instanceof ChoiceInteraction) {
+			ChoiceInteraction choiceInteraction = (ChoiceInteraction)interaction;
+			boolean sc = choiceInteraction.getMaxChoices() == 1;
+			ResponseDeclaration responseDeclaration = assessmentItem.getResponseDeclaration(choiceInteraction.getResponseIdentifier());
+			if(responseDeclaration != null && responseDeclaration.hasCardinality(Cardinality.MULTIPLE)) {
+				return false;
+			}
+			return sc;
+		}
+		return false;
 	}
 	
 	public String getOrientation(Orientation orientation) {

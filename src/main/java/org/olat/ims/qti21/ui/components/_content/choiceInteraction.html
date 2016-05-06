@@ -47,7 +47,7 @@
 				#end
 				<td class="control">
 					<input name="qtiworks_response_${responseIdentifier}" value="$r.toString($simpleChoice.identifier)"
-					 #if($interaction.maxChoices == 1) type="radio" #else type="checkbox" #end
+					 #if($r.isSingleChoice($interaction)) type="radio" #else type="checkbox" #end
 					 #if($r.isItemSessionEnded()) disabled #end
 					 #if($r.valueContains($r.getResponseValue($interaction.responseIdentifier), $simpleChoice.identifier)) checked #end />
 				</td>
