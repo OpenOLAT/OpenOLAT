@@ -33,12 +33,11 @@ import org.olat.core.commons.services.taskexecutor.Sequential;
 import org.olat.core.commons.services.video.MovieService;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
-import org.olat.core.util.Formatter;
 import org.olat.core.util.vfs.LocalFileImpl;
 import org.olat.core.util.vfs.LocalFolderImpl;
 import org.olat.modules.video.VideoManager;
 import org.olat.modules.video.VideoModule;
-import org.olat.modules.video.model.VideoQualityVersion;
+import org.olat.modules.video.VideoTranscoding;
 import org.olat.resource.OLATResource;
 
 /**
@@ -52,7 +51,7 @@ public class VideoTranscodingTask implements LongRunnable, Sequential {
 	private static final long serialVersionUID = 2982868860465334552L;
 	private static final OLog log = Tracing.createLoggerFor(VideoTranscodingTask.class);
 	private OLATResource video;
-	private VideoQualityVersion version;
+	private VideoTranscoding videoTranscoding;
 	private File transcodedFile;
 	
 	/**
@@ -60,9 +59,9 @@ public class VideoTranscodingTask implements LongRunnable, Sequential {
 	 * @param video
 	 * @param version
 	 */
-	VideoTranscodingTask(OLATResource video, VideoQualityVersion version) {
+	VideoTranscodingTask(OLATResource video, VideoTranscoding videoTranscoding) {
 		this.video = video;
-		this.version = version;
+		this.videoTranscoding = videoTranscoding;
 	}
 
 	
@@ -72,7 +71,10 @@ public class VideoTranscodingTask implements LongRunnable, Sequential {
 		VideoManager videoManager = CoreSpringFactory.getImpl(VideoManager.class);
 		File masterFile = videoManager.getVideoFile(video);
 		File transcodingFolder = ((LocalFolderImpl)videoManager.getTranscodingContainer(video)).getBasefile();
-		transcodedFile = new File(transcodingFolder,  Integer.toString(version.getResolution()) + masterFile.getName());
+		transcodedFile = new File(transcodingFolder,  Integer.toString(videoTranscoding.getResolution()) + masterFile.getName());
+		// mark this as beeing transcoded by this local transcoder
+		videoTranscoding.setTranscoder(VideoTranscoding.TRANSCODER_LOCAL);
+		videoTranscoding = videoManager.updateVideoTranscoding(videoTranscoding);
 		
 		ArrayList<String> cmd = new ArrayList<>();
 		String tasksetConfig = videoModule.getTranscodingTasksetConfig();
@@ -90,7 +92,7 @@ public class VideoTranscodingTask implements LongRunnable, Sequential {
 		cmd.add("--preset");
 		cmd.add("Normal");
 		cmd.add("--height");
-		cmd.add(Integer.toString(version.getResolution()));
+		cmd.add(Integer.toString(videoTranscoding.getResolution()));
 		cmd.add("--deinterlace");
 		cmd.add("--crop");
 		cmd.add("0:0:0:0");
@@ -109,7 +111,6 @@ public class VideoTranscodingTask implements LongRunnable, Sequential {
 				process.destroy();
 				process = null;
 			}
-			//TODO: remove version file, cleanup, remove job
 		}
 	}
 
@@ -143,8 +144,8 @@ public class VideoTranscodingTask implements LongRunnable, Sequential {
 						String percent = line.substring(2, end);
 						log.debug("Output: " + percent);		
 						// update version file for UI
-						version.setTranscodingStatus(Integer.parseInt(percent));
-						videoManager.updateVersion(video, version);
+						videoTranscoding.setStatus(Integer.parseInt(percent));
+						videoTranscoding = videoManager.updateVideoTranscoding(videoTranscoding);
 					}
 				}
 			}
@@ -173,10 +174,11 @@ public class VideoTranscodingTask implements LongRunnable, Sequential {
 			if (exitValue == 0) {
 				MovieService movieService = CoreSpringFactory.getImpl(MovieService.class);
 				Size videoSize = movieService.getSize(new LocalFileImpl(transcodedFile), VideoManagerImpl.FILETYPE_MP4);
-				version.setDimension(videoSize);
-				version.setFileSize(Formatter.formatBytes(transcodedFile.length()));
-				version.setTranscodingStatus(VideoQualityVersion.TRANSCODING_STATUS_DONE);
-				videoManager.updateVersion(video, version);
+				videoTranscoding.setWidth(videoSize.getWidth());
+				videoTranscoding.setHeight(videoSize.getHeight());
+				videoTranscoding.setSize(transcodedFile.length());
+				videoTranscoding.setStatus(VideoTranscoding.TRANSCODING_STATUS_DONE);
+				videoTranscoding = videoManager.updateVideoTranscoding(videoTranscoding);
 			}
 		} catch (InterruptedException e) {
 			//

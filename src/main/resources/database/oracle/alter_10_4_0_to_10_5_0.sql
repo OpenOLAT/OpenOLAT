@@ -66,3 +66,20 @@ alter table o_goto_registrant add constraint goto_regis_ident_idx foreign key (f
 create index idx_goto_regis_ident_idx on o_goto_registrant(fk_identity_id);
 
 
+create table o_vid_transcoding (
+   id number(20) not null,
+   creationdate date not null,
+   lastmodified date not null,
+   vid_resolution number(20) default null,
+   vid_width number(20) default null,
+   vid_height number(20) default null,
+   vid_size number(20) default null,
+   vid_format varchar(128) default null,
+   vid_status number(20) default null,
+   vid_transcoder varchar(128) default null,
+   fk_resource_id number(20) not null,
+   primary key (id)
+);
+alter table o_vid_transcoding add constraint fk_resource_id_idx foreign key (fk_resource_id) references o_olatresource (resource_id);
+
+

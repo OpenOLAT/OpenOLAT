@@ -216,4 +216,17 @@ public class VideoHandler extends FileHandler {
 		return target;
 	}
 
+	@Override
+	public boolean cleanupOnDelete(RepositoryEntry entry, OLATResourceable res) {
+		boolean success = super.cleanupOnDelete(entry, res);
+		if (success) {
+			// remove transcodings
+			VideoManager videoManager = CoreSpringFactory.getImpl(VideoManager.class);
+			success = videoManager.deleteVideoTranscodings(entry.getOlatResource());
+		}
+		return success;
+	}
+	
+	
+
 }

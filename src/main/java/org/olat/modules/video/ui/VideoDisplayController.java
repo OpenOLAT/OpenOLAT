@@ -26,7 +26,6 @@ import java.util.List;
 import org.olat.core.commons.services.commentAndRating.CommentAndRatingDefaultSecurityCallback;
 import org.olat.core.commons.services.commentAndRating.CommentAndRatingSecurityCallback;
 import org.olat.core.commons.services.commentAndRating.ui.UserCommentsAndRatingsController;
-import org.olat.core.commons.services.image.Size;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.htmlheader.jscss.JSAndCSSComponent;
@@ -41,8 +40,9 @@ import org.olat.core.util.prefs.Preferences;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.modules.video.VideoManager;
+import org.olat.modules.video.VideoMetadata;
+import org.olat.modules.video.VideoTranscoding;
 import org.olat.modules.video.manager.VideoMediaMapper;
-import org.olat.modules.video.model.VideoQualityVersion;
 import org.olat.repository.RepositoryEntry;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -94,13 +94,13 @@ public class VideoDisplayController extends BasicController {
 				
 		VFSLeaf video = videoManager.getMasterVideoFile(entry.getOlatResource());
 		if(video != null) {
-			Size realSize = videoManager.getVideoSize(entry.getOlatResource());
+			VideoMetadata videoMetadata = videoManager.readVideoMetadataFile(entry.getOlatResource());
 			if(autoWidth){
 				mainVC.contextPut("height", 480);
 				mainVC.contextPut("width", "100%");
-			} else if(realSize != null) {
-				mainVC.contextPut("height", realSize.getHeight());
-				mainVC.contextPut("width", realSize.getWidth());
+			} else if(videoMetadata != null) {
+				mainVC.contextPut("height", videoMetadata.getHeight());
+				mainVC.contextPut("width", videoMetadata.getWidth());
 			} else {
 				mainVC.contextPut("height", 480);
 				mainVC.contextPut("width", 640);
@@ -124,9 +124,10 @@ public class VideoDisplayController extends BasicController {
 			String transcodedUrl = registerMapper(ureq, new VideoMediaMapper(transcodedContainer));
 			mainVC.contextPut("transcodedUrl", transcodedUrl);
 			
-			if (showComments || showRating) {
+			if ((showComments || showRating) && !ureq.getUserSession().getRoles().isGuestOnly()) {
 				CommentAndRatingSecurityCallback ratingSecCallback = new CommentAndRatingDefaultSecurityCallback(getIdentity(), false, false);
 				commentsAndRatingCtr = new UserCommentsAndRatingsController(ureq, getWindowControl(),entry.getOlatResource(), OresSubPath , ratingSecCallback,showComments, showRating, true);
+				commentsAndRatingCtr.expandComments(ureq);
 				listenTo(commentsAndRatingCtr);				
 				mainVC.put("commentsAndRating", commentsAndRatingCtr.getInitialComponent());
 			}
@@ -161,20 +162,20 @@ public class VideoDisplayController extends BasicController {
 
 		if(video != null) {
 			// Add transcoded versions
-			List<VideoQualityVersion> videos = videoManager.getQualityVersions(entry.getOlatResource());
-			List<VideoQualityVersion> readyToPlayVideos = new ArrayList<>();
+			List<VideoTranscoding> videos = videoManager.getVideoTranscodings(entry.getOlatResource());
+			List<VideoTranscoding> readyToPlayVideos = new ArrayList<>();
 			List<String> displayTitles = new ArrayList<>();
 			int preferredAvailableResolution = 0;
 						
-			for (VideoQualityVersion videoVersion : videos) {
-				if (videoVersion.getTranscodingStatus() == VideoQualityVersion.TRANSCODING_STATUS_DONE) {
-					readyToPlayVideos.add(videoVersion);
+			for (VideoTranscoding videoTranscoding : videos) {
+				if (videoTranscoding.getStatus() == VideoTranscoding.TRANSCODING_STATUS_DONE) {
+					readyToPlayVideos.add(videoTranscoding);
 					// Use the users preferred resolution or the next higher resolution
-					if (videoVersion.getResolution() >= userPreferredResolution.intValue()) {
+					if (videoTranscoding.getResolution() >= userPreferredResolution.intValue()) {
 						preferredAvailableResolution = readyToPlayVideos.size() - 1;
 					}
 					// Calculate title. Standard title for standard resolution, original title if not standard resolution
-					String title = videoManager.getDisplayTitleForResolution(videoVersion.getResolution(), getTranslator());
+					String title = videoManager.getDisplayTitleForResolution(videoTranscoding.getResolution(), getTranslator());
 					displayTitles.add(title);
 				}
 			}

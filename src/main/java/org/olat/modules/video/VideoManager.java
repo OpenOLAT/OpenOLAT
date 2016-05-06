@@ -24,13 +24,11 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 
-import org.olat.core.commons.services.image.Size;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.fileresource.types.ResourceEvaluation;
 import org.olat.modules.video.manager.VideoExportMediaResource;
-import org.olat.modules.video.model.VideoQualityVersion;
 import org.olat.repository.RepositoryEntry;
 import org.olat.resource.OLATResource;
 
@@ -44,10 +42,6 @@ import org.olat.resource.OLATResource;
 public interface VideoManager {
 
 	public abstract File getVideoFile(OLATResource videoResource);
-
-	public abstract Size getVideoSize(OLATResource videoResource);
-
-	public abstract void setVideoSize(OLATResource videoResource, Size size);
 
 	public abstract VFSLeaf getPosterframe(OLATResource videoResource);
 
@@ -64,6 +58,13 @@ public interface VideoManager {
 	public abstract boolean getFrame(OLATResource videoResource, int frameNumber, VFSLeaf frame) throws IOException;
 
 	/**
+	 * Read the the metdatadata-xml in the videoresource folder
+	 * @param videoResource
+	 * @return
+	 */
+	public VideoMetadata readVideoMetadataFile(OLATResource videoResource);
+
+	/**
 	 * Trigger the transcoding process to generate versions of the video
 	 * 
 	 * @param video
@@ -71,17 +72,17 @@ public interface VideoManager {
 	 */
 	public abstract void startTranscodingProcess(OLATResource video);
 	
-	public abstract List<VideoQualityVersion> getQualityVersions(OLATResource video);
+	public abstract List<VideoTranscoding> getVideoTranscodings(OLATResource video);
 
 	/**
 	 * Get a human readable aspect ratio from the given video size. Recognizes
 	 * the most common aspect ratios
 	 * 
-	 * @param videoSize
-	 *            Must not be NULL
+	 * @param width
+	 * @param height
 	 * @return String containing a displayable aspect ratio
 	 */
-	public abstract String getAspectRatio(Size videoSize);
+	public abstract String getAspectRatio(int width, int height);
 
 	/**
 	 * Create a display title for the given resolution. The title uses the i18n
@@ -155,25 +156,12 @@ public interface VideoManager {
 	public abstract boolean importFromExportArchive(RepositoryEntry repoEntry, VFSLeaf exportArchive);
 
 	/**
-	 * Create and add a new transcoding version to the video resource. The
-	 * version is set to "isTransforming".
+	 * Update video transcoding
 	 * 
-	 * @param videoResource
-	 *            The video resource
-	 * @param resolution
-	 *            The resolution for the transcoding process. This is the height
-	 *            of the target video size (e.g. 720 for 720p resolution)
-	 * @return VideoQualityVersion for this new version
+	 * @param videoTranscoding
+	 * @return VideoTranscoding the updated transcoding object
 	 */
-	public abstract VideoQualityVersion addNewVersionForTranscoding(OLATResource videoResource, int resolution);
-
-	/**
-	 * Update an already existing version or add as new version.
-	 * 
-	 * @param videoResource
-	 * @param updatedVersion
-	 */
-	public abstract void updateVersion(OLATResource videoResource, VideoQualityVersion updatedVersion);
+	public VideoTranscoding updateVideoTranscoding(VideoTranscoding videoTranscoding);
 
 	/**
 	 * Copy video resource to identical new video resource. 
@@ -181,5 +169,12 @@ public interface VideoManager {
 	 * @param targetResource the empty new resource
 	 */
 	public abstract void copyVideo(OLATResource sourceResource, OLATResource targetResource);
+
+	/**
+	 * Delete the video transcodings on disk an in database
+	 * @param videoResource
+	 * @return true: success; false: failed
+	 */
+	public abstract boolean deleteVideoTranscodings(OLATResource videoResource);
 
 }

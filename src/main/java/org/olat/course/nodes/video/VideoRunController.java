@@ -125,10 +125,7 @@ public class VideoRunController extends BasicController {
 	 */
 	@Override
 	protected void doDispose() {
-		if (videoDispCtr != null) {
-			videoDispCtr.dispose();
-			videoDispCtr = null;
-		}	
+		// controllers auto-disposed
 	}
 	
 	private void doLaunch(UserRequest ureq){
@@ -154,7 +151,7 @@ public class VideoRunController extends BasicController {
 				break;
 		}
 		
-		videoDispCtr.addControllerListener(this);
+		listenTo(videoDispCtr);
 		
 		myContent.put("videoDisplay", videoDispCtr.getInitialComponent());
 		main.setContent(myContent);

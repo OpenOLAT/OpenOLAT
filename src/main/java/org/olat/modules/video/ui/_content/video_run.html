@@ -3,7 +3,7 @@
 		<video id="$r.getId("o_vid")" width="$width" height="$height" poster="$masterUrl/poster.jpg" controls  #if( $autoplay ) autoplay #end class="o_video">			
 	    	#foreach($video in $videos)
 	    		#set($position = $velocityCount - 1)
-	    		<source type="video/mp4" src="$transcodedUrl/${video.getResolution()}video.mp4" title="$displayTitles.get($position) (${video.getFileSize()})" />
+	    		<source type="video/mp4" src="$transcodedUrl/${video.getResolution()}video.mp4" title="$displayTitles.get($position) ($r.formatBytes(${video.getSize()}))" />
 	    	#end	    	
 	    	## Use master video file if not optimized video is found
 	    	#if ($videos.size() == 0)

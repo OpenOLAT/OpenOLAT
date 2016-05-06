@@ -19,7 +19,6 @@
  */
 package org.olat.modules.video.ui;
 
-import org.olat.core.commons.services.image.Size;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
@@ -28,6 +27,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.modules.video.VideoManager;
+import org.olat.modules.video.VideoMetadata;
 import org.olat.resource.OLATResource;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -52,12 +52,12 @@ public class VideoMetaDataEditFormController extends FormBasicController {
 	protected void initForm(FormItemContainer formLayout, Controller listener,
 			UserRequest ureq) {
 		setFormTitle("tab.video.metaDataConfig");
+		
+		VideoMetadata videoMetadata = videoManager.readVideoMetadataFile(videoResource);
+		uifactory.addStaticTextElement("video.config.width", String.valueOf(videoMetadata.getWidth()) + "px", formLayout);
+		uifactory.addStaticTextElement("video.config.height", String.valueOf(videoMetadata.getHeight()) + "px", formLayout);
 
-		Size videoSize = videoManager.getVideoSize(videoResource);
-		uifactory.addStaticTextElement("video.config.width", String.valueOf(videoSize.getWidth()) + "px", formLayout);
-		uifactory.addStaticTextElement("video.config.height", String.valueOf(videoSize.getHeight()) + "px", formLayout);
-
-		String aspcectRatio = videoManager.getAspectRatio(videoSize);
+		String aspcectRatio = videoManager.getAspectRatio(videoMetadata.getWidth(), videoMetadata.getHeight());
 		uifactory.addStaticTextElement("video.config.ratio", aspcectRatio, formLayout);
 
 		uifactory.addStaticTextElement("video.config.creationDate", StringHelper.formatLocaleDateTime(videoResource.getCreationDate().getTime(), getLocale()), formLayout);

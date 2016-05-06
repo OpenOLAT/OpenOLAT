@@ -28,7 +28,6 @@ import java.io.RandomAccessFile;
 import java.math.RoundingMode;
 import java.nio.channels.FileChannel;
 import java.text.DecimalFormat;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -52,17 +51,20 @@ import org.olat.core.util.FileUtils;
 import org.olat.core.util.ZipUtil;
 import org.olat.core.util.vfs.LocalFileImpl;
 import org.olat.core.util.vfs.LocalFolderImpl;
+import org.olat.core.util.vfs.VFSConstants;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSManager;
+import org.olat.core.util.vfs.VFSStatus;
 import org.olat.core.util.xml.XStreamHelper;
 import org.olat.fileresource.FileResourceManager;
 import org.olat.fileresource.types.ResourceEvaluation;
 import org.olat.modules.video.VideoManager;
+import org.olat.modules.video.VideoMetadata;
 import org.olat.modules.video.VideoModule;
-import org.olat.modules.video.model.VideoMetadata;
-import org.olat.modules.video.model.VideoQualityVersion;
+import org.olat.modules.video.VideoTranscoding;
+import org.olat.modules.video.model.VideoMetadataImpl;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryImportExport;
 import org.olat.repository.RepositoryEntryImportExport.RepositoryEntryImport;
@@ -83,7 +85,6 @@ public class VideoManagerImpl implements VideoManager {
 	public static final String FILETYPE_MP4 = "mp4";
 	private static final String FILENAME_POSTER_JPG = "poster.jpg";
 	private static final String FILENAME_VIDEO_MP4 = "video.mp4";
-	private static final String FILENAME_OPTIMIZED_VIDEO_METADATA_XML = "optimizedVideo_metadata.xml";
 	private static final String FILENAME_VIDEO_METADATA_XML = "video_metadata.xml";
 	private static final String DIRNAME_MASTER = "master";
 
@@ -95,36 +96,10 @@ public class VideoManagerImpl implements VideoManager {
 	private RepositoryManager repositoryManager;
 	@Autowired
 	private TaskExecutorManager taskManager;
+	@Autowired
+	private VideoTranscodingDAO videoTranscodingDao;
 	
 	private static final OLog log = Tracing.createLoggerFor(VideoManagerImpl.class);
-
-	/**
-	 * return the resolution of the video in size format from its metadata
-	 */
-	@Override
-	public Size getVideoSize(OLATResource videoResource) {
-		Size size = null;
-		VideoMetadata metaData = readVideoMetadataFile(videoResource);
-		if (metaData == null || metaData.getSize() == null) {
-			// unknown size, set to most common 4:3 aspect ratio
-			size = new Size(800, 600, false);
-			setVideoSize(videoResource, size);			
-		} else {
-			size = metaData.getSize();
-		}
-		
-		return size;
-	}
-
-	/**
-	 * set the resolution of a video in metadata
-	 */
-	@Override
-	public void setVideoSize(OLATResource videoResource, Size size){
-		VideoMetadata metaData = readVideoMetadataFile(videoResource);
-		metaData.setSize(size);
-		writeVideoMetadataFile(metaData, videoResource);
-	}
 
 	/**
 	 * get the configured posterframe
@@ -266,12 +241,8 @@ public class VideoManagerImpl implements VideoManager {
 		XStreamHelper.writeObject(XStreamHelper.createXStreamInstance(), metaDataFile, metaData);
 	}
 
-	/**
-	 * return the metdatadata-xml in the videoresource folder
-	 * @param videoResource
-	 * @return
-	 */
-	private VideoMetadata readVideoMetadataFile(OLATResource videoResource){
+	@Override
+	public VideoMetadata readVideoMetadataFile(OLATResource videoResource){
 		VFSContainer baseContainer= FileResourceManager.getInstance().getFileResourceRootImpl(videoResource);
 		VFSLeaf metaDataFile = VFSManager.resolveOrCreateLeafFromPath(baseContainer, FILENAME_VIDEO_METADATA_XML);
 		return (VideoMetadata) XStreamHelper.readObject(XStreamHelper.createXStreamInstance(), metaDataFile);
@@ -281,11 +252,11 @@ public class VideoManagerImpl implements VideoManager {
 	public void startTranscodingProcess(OLATResource video) {
 		//TODO: check for existing version, add option to force rebuild of all versions
 		//TODO: GUI to admin console to manage transcoding resolutions
-		Size size = getVideoSize(video);
-		int height = size.getHeight();
+		VideoMetadata videoMetadata = readVideoMetadataFile(video);
+		int height = videoMetadata.getHeight();
 		// 1) setup transcoding job for original file size
-		VideoQualityVersion version = addNewVersionForTranscoding(video, height);
-		VideoTranscodingTask task = new VideoTranscodingTask(video, version);
+		VideoTranscoding videoTranscoding = videoTranscodingDao.createVideoTranscoding(video, height, VideoTranscoding.FORMAT_MP4);
+		VideoTranscodingTask task = new VideoTranscodingTask(video, videoTranscoding);
 		taskManager.execute(task, null, video, null, new Date());		
 		// 2) setup transcoding jobs for all configured sizes below the original size
 		int[] resolutions = videoModule.getTranscodingResolutions();
@@ -293,8 +264,8 @@ public class VideoManagerImpl implements VideoManager {
 			if (height <= resolution) {
 				continue;
 			}
-			version = addNewVersionForTranscoding(video, resolution);
-			task = new VideoTranscodingTask(video, version);
+			videoTranscoding = videoTranscodingDao.createVideoTranscoding(video, resolution, VideoTranscoding.FORMAT_MP4);
+			task = new VideoTranscodingTask(video, videoTranscoding);
 			taskManager.execute(task, null, video, null, new Date());		
 		}
 		// start transcoding immediately
@@ -303,31 +274,18 @@ public class VideoManagerImpl implements VideoManager {
 	
 	
 	@Override
-	public List<VideoQualityVersion> getQualityVersions(OLATResource video){
-		VFSContainer optimizedDataContainer = getTranscodingContainer(video);
-		VFSLeaf optimizedMetadataFile = VFSManager.resolveOrCreateLeafFromPath(optimizedDataContainer, FILENAME_OPTIMIZED_VIDEO_METADATA_XML);
-		
-		List<VideoQualityVersion> versions;
-		
-		if (optimizedMetadataFile.getSize() == 0) {
-			versions = new ArrayList<VideoQualityVersion>();
-		} else {
-			Object fileContent = XStreamHelper.readObject(XStreamHelper.createXStreamInstance(), optimizedMetadataFile);
-			versions = (List<VideoQualityVersion>) fileContent;
-		}
-		return versions;
+	public List<VideoTranscoding> getVideoTranscodings(OLATResource video){
+		List<VideoTranscoding> videoTranscodings = videoTranscodingDao.getVideoTranscodings(video);
+		return videoTranscodings;
 	}
 
 	@Override
-	public String getAspectRatio(Size videoSize) {
+	public String getAspectRatio(int width, int height) {
 		DecimalFormat df = new DecimalFormat("#.##");
 		df.setRoundingMode(RoundingMode.FLOOR);
-		String ratioCalculated = null;
+		String ratioCalculated = df.format(width / (height + 1.0));
 		String ratioString = "unknown";
 		
-		if (videoSize.getHeight() != 0) {
-			ratioCalculated = df.format(videoSize.getWidth() / (videoSize.getHeight() + 1.0));
-		}
 		switch (ratioCalculated) {
 		case "1.2": 
 			ratioString = "6:5 Fox Movietone";
@@ -378,7 +336,7 @@ public class VideoManagerImpl implements VideoManager {
 			ratioString = "2.414:1 The silver ratio";		
 			break;
 		default :
-			ratioString = videoSize.getWidth() + ":" + videoSize.getHeight();
+			ratioString = width + ":" + height;
 		}
 		return ratioString;
 	}
@@ -436,11 +394,11 @@ public class VideoManagerImpl implements VideoManager {
 			zipFile = new ZipFile(file);
 			// 1) Check if it contains a metadata file
 			ZipEntry metadataEntry = zipFile.getEntry(VideoManagerImpl.FILENAME_VIDEO_METADATA_XML);
-			VideoMetadata videoMetadata = null;
+			VideoMetadata videoMetadataImpl = null;
 			if (metadataEntry != null) {
 				InputStream metaDataStream = zipFile.getInputStream(metadataEntry);
-				videoMetadata = (VideoMetadata) XStreamHelper.readObject(XStreamHelper.createXStreamInstance(), metaDataStream);
-				if (videoMetadata != null) {
+				videoMetadataImpl = (VideoMetadata) XStreamHelper.readObject(XStreamHelper.createXStreamInstance(), metaDataStream);
+				if (videoMetadataImpl != null) {
 					eval.setValid(true);
 				}
 			}
@@ -472,10 +430,11 @@ public class VideoManagerImpl implements VideoManager {
 		masterVideo.delete();
 
 		// 2) generate Metadata file
-		VideoMetadata metaData = new VideoMetadata(videoResource);
+		VideoMetadata metaData = new VideoMetadataImpl(videoResource);
 		// calculate video size
 		Size videoSize = movieService.getSize(targetFile, FILETYPE_MP4);
-		metaData.setSize(videoSize);
+		metaData.setWidth(videoSize.getWidth());
+		metaData.setHeight(videoSize.getHeight());
 		// generate a poster image, use 20th frame as a default
 		VFSLeaf posterResource = VFSManager.resolveOrCreateLeafFromPath(masterContainer, FILENAME_POSTER_JPG);
 		getFrame(videoResource, 20, posterResource);
@@ -527,44 +486,9 @@ public class VideoManagerImpl implements VideoManager {
 		return true;
 	}
 
-	
 	@Override
-	public VideoQualityVersion addNewVersionForTranscoding(OLATResource video, int resolution) {
-		List<VideoQualityVersion> versions = getQualityVersions(video);
-		VideoQualityVersion version = new VideoQualityVersion(resolution, null, null, VideoManagerImpl.FILETYPE_MP4);
-		version.setTranscodingStatus(VideoQualityVersion.TRANSCODING_STATUS_WAITING);
-		versions.add(version);
-		// Store on disk
-		VFSContainer optimizedDataContainer = getTranscodingContainer(video);
-		VFSLeaf optimizedMetadataFile = VFSManager.resolveOrCreateLeafFromPath(optimizedDataContainer, FILENAME_OPTIMIZED_VIDEO_METADATA_XML);
-		XStreamHelper.writeObject(XStreamHelper.createXStreamInstance(), optimizedMetadataFile, versions);
-		
-		return version;
-	}
-
-	@Override
-	public void updateVersion(OLATResource video, VideoQualityVersion updatedVersion) {
-		//TODO: fix concurrency issues, not multithread safe
-		List<VideoQualityVersion> versions = getQualityVersions(video);
-		boolean found = false;
-		for (VideoQualityVersion existingVersion : versions) {
-			if (updatedVersion.getResolution() == existingVersion.getResolution()) {
-				// update properties
-				existingVersion.setDimension(updatedVersion.getDimension());
-				existingVersion.setFileSize(updatedVersion.getFileSize());
-				existingVersion.setFormat(updatedVersion.getFormat());
-				existingVersion.setTranscodingStatus(updatedVersion.getTranscodingStatus());
-				found = true;
-				break;
-			}
-		}
-		if (!found) {
-			versions.add(updatedVersion);
-		}
-		// Store on disk
-		VFSContainer optimizedDataContainer = getTranscodingContainer(video);
-		VFSLeaf optimizedMetadataFile = VFSManager.resolveOrCreateLeafFromPath(optimizedDataContainer, FILENAME_OPTIMIZED_VIDEO_METADATA_XML);
-		XStreamHelper.writeObject(XStreamHelper.createXStreamInstance(), optimizedMetadataFile, versions);
+	public VideoTranscoding updateVideoTranscoding(VideoTranscoding videoTranscoding) {
+		return videoTranscodingDao.updateTranscoding(videoTranscoding);
 	}
 
 	@Override
@@ -578,5 +502,13 @@ public class VideoManagerImpl implements VideoManager {
 			startTranscodingProcess(targetResource);
 		}
 	}
+	
+	@Override
+	public boolean deleteVideoTranscodings(OLATResource videoResource) {
+		videoTranscodingDao.deleteVideoTranscodings(videoResource);
+		VFSStatus deleteStatus = getTranscodingContainer(videoResource).delete();
+		return (deleteStatus == VFSConstants.YES ? true : false);
+	}
+
 
 }

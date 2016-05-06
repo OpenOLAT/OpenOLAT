@@ -48,12 +48,12 @@ public class VideoPeekviewController  extends BasicController implements Control
 
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
-		
+		//TODO: click on image should launch run view, activate in autoplay mode		
 	}
 
 	@Override
 	protected void doDispose() {
-		// TODO Auto-generated method stub
+		// nothing to dispose
 	}
 
 }

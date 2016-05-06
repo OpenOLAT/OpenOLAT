@@ -23,8 +23,8 @@ package org.olat.modules.video.model;
 import java.io.Serializable;
 import java.util.HashMap;
 
-import org.olat.core.commons.services.image.Size;
 import org.olat.core.id.OLATResourceable;
+import org.olat.modules.video.VideoMetadata;
 
 /**
  * Model of the videoresource metadata to persist in xml
@@ -34,47 +34,52 @@ import org.olat.core.id.OLATResourceable;
  * 
  */
 
-public class VideoMetadata implements Serializable{
-		/**
-	 * 
-	 */
+public class VideoMetadataImpl implements Serializable, VideoMetadata {
 	private static final long serialVersionUID = 1L;
-
-		// Data model versioning
-		public static final int CURRENT_MODEL_VERSION = 1;
-		
-		private Size size;
+		private int width;
+		private int height;
 		private HashMap<String, String> tracks;
 		
-		@SuppressWarnings("unused")
-		private int modelVersion = 0; 
-				
-		public VideoMetadata(OLATResourceable resource){
+		public VideoMetadataImpl(OLATResourceable resource){
 			this.tracks = new HashMap<String, String>();
-			// new model constructor, set to current version
-			this.modelVersion = CURRENT_MODEL_VERSION;
 		}
 				
-		public Size getSize() {
-			return size;
+		@Override
+		public int getWidth() {
+			return width;
 		}
 
-		public void setSize(Size size) {
-			this.size = size;
+		@Override
+		public void setWidth(int width) {
+			this.width = width;
+		}
+
+		@Override
+		public int getHeight() {
+			return height;
+		}
+
+		@Override
+		public void setHeight(int height) {
+			this.height = height;
 		}
 		
+		@Override
 		public HashMap<String, String> getAllTracks(){
 			return tracks;
 		}
 		
+		@Override
 		public void addTrack(String lang, String trackFile){
 			tracks.put(lang, trackFile);
 		}
 		
+		@Override
 		public String getTrack(String lang){
 			return tracks.get(lang);
 		}
 		
+		@Override
 		public void removeTrack(String lang){
 			tracks.remove(lang);
 		}		
