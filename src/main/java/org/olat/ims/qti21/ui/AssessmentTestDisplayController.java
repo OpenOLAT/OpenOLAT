@@ -156,6 +156,7 @@ public class AssessmentTestDisplayController extends BasicController implements 
 	private RepositoryEntry entry;
 	private String subIdent;
 	
+	private final boolean showCloseResults;
 	private OutcomesListener outcomesListener;
 
 	@Autowired
@@ -172,11 +173,13 @@ public class AssessmentTestDisplayController extends BasicController implements 
 	 * @param entry
 	 * @param subIdent
 	 * @param deliveryOptions
+	 * @param showCloseResults set to false prevent the close results button to appears (this boolean
+	 * 		don't change the settings to show or not the results at the end of the test)
 	 * @param authorMode if true, the database objects are not counted and can be deleted without warning
 	 */
 	public AssessmentTestDisplayController(UserRequest ureq, WindowControl wControl, OutcomesListener listener,
 			RepositoryEntry testEntry, RepositoryEntry entry, String subIdent, QTI21DeliveryOptions deliveryOptions,
-			boolean authorMode) {
+			boolean showCloseResults, boolean authorMode) {
 		super(ureq, wControl);
 
 		this.entry = entry;
@@ -184,6 +187,7 @@ public class AssessmentTestDisplayController extends BasicController implements 
 		this.testEntry = testEntry;
 		this.outcomesListener = listener;
 		this.deliveryOptions = deliveryOptions;
+		this.showCloseResults = showCloseResults;
 		
 		FileResourceManager frm = FileResourceManager.getInstance();
 		fUnzippedDirRoot = frm.unzipFileResource(testEntry.getOlatResource());
@@ -256,6 +260,10 @@ public class AssessmentTestDisplayController extends BasicController implements 
 	public Date getCurrentRequestTimestamp() {
 		return currentRequestTimestamp;
 	}
+	
+	public boolean isResultsVisible() {
+		return qtiWorksCtrl.isResultsVisible();
+	}
 
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
@@ -282,6 +290,8 @@ public class AssessmentTestDisplayController extends BasicController implements 
 				doConfirmCancel(ureq);
 			} else if("suspend".equals(event.getCommand())) {
 				doConfirmSuspend(ureq);
+			} else if(QTI21Event.CLOSE_RESULTS.equals(event.getCommand())) {
+				fireEvent(ureq, event);
 			} else if(event instanceof QTIWorksAssessmentTestEvent) {
 				processQTIEvent(ureq, (QTIWorksAssessmentTestEvent)event);
 			}
@@ -291,6 +301,10 @@ public class AssessmentTestDisplayController extends BasicController implements 
 
 	private void doExitTest(UserRequest ureq) {
 		fireEvent(ureq, new QTI21Event(QTI21Event.EXIT));
+	}
+	
+	private void doCloseResults(UserRequest ureq) {
+		fireEvent(ureq, new QTI21Event(QTI21Event.CLOSE_RESULTS));
 	}
 	
 	private void doConfirmSuspend(UserRequest ureq) {
@@ -775,7 +789,7 @@ public class AssessmentTestDisplayController extends BasicController implements 
         this.lastEvent = candidateTestEvent;
 
         if (terminated) {
-        	qtiWorksCtrl.updateGUI(ureq);
+        	qtiWorksCtrl.updateStatusAndResults(ureq);
         	doExitTest(ureq);
         }
 	}
@@ -1061,8 +1075,9 @@ public class AssessmentTestDisplayController extends BasicController implements 
 		private AssessmentTestFormItem qtiEl;
 		private AssessmentTreeFormItem qtiTreeEl;
 		private ProgressBarItem scoreProgress, questionProgress;
-		private FormLink endTestPartButton, closeTestButton, cancelTestButton, suspendTestButton;
+		private FormLink endTestPartButton, closeTestButton, cancelTestButton, suspendTestButton, closeResultsButton;
 		
+		private boolean resultsVisible = false;
 		private final QtiWorksStatus qtiWorksStatus = new QtiWorksStatus();
 		
 		public QtiWorksController(UserRequest ureq, WindowControl wControl) {
@@ -1094,6 +1109,9 @@ public class AssessmentTestDisplayController extends BasicController implements 
 			if(deliveryOptions.isEnableSuspend()) {
 				suspendTestButton = uifactory.addFormLink("suspendTest", "suspend.test", null, formLayout, Link.BUTTON);
 			}
+			
+			closeResultsButton = uifactory.addFormLink("closeResults", "assessment.test.close.results", null, formLayout, Link.BUTTON);
+			closeResultsButton.setVisible(false);
 
 			ResourceLocator fileResourceLocator = new PathResourceLocator(fUnzippedDirRoot.toPath());
 			final ResourceLocator inputResourceLocator = 
@@ -1135,14 +1153,22 @@ public class AssessmentTestDisplayController extends BasicController implements 
 					formLayout.add("questionProgress", questionProgress);
 				}
 			}
-
-			updateGUI(ureq);
+			
+			updateStatusAndResults(ureq);
 		}
 
 		@Override
 		protected void formOK(UserRequest ureq) {
 			processResponse(ureq, qtiEl.getSubmitButton());
-			updateGUI(ureq);
+			updateStatusAndResults(ureq);
+		}
+
+		@Override
+		protected void event(UserRequest ureq, Controller source, Event event) {
+			if(source == resultCtrl) {
+				fireEvent(ureq, event);
+			}
+			super.event(ureq, source, event);
 		}
 
 		@Override
@@ -1155,6 +1181,8 @@ public class AssessmentTestDisplayController extends BasicController implements 
 				doCancelTest(ureq);
 			} else if(suspendTestButton == source) {
 				doSuspendTest(ureq);
+			} else if(closeResultsButton == source) {
+				doCloseResults(ureq);
 			} else if(source == qtiEl || source == qtiTreeEl) {
 				if(event instanceof QTIWorksAssessmentTestEvent) {
 					fireEvent(ureq, event);
@@ -1164,7 +1192,7 @@ public class AssessmentTestDisplayController extends BasicController implements 
 				processResponse(ureq, formLink);
 			}
 			super.formInnerEvent(ureq, source, event);
-			updateGUI(ureq);
+			updateStatusAndResults(ureq);
 		}
 		
 		@Override
@@ -1228,8 +1256,20 @@ public class AssessmentTestDisplayController extends BasicController implements 
 			fireEvent(ureq, new Event("suspend"));
 		}
 		
-		private void updateGUI(UserRequest ureq) {
+		public boolean isResultsVisible() {
+			return resultsVisible;
+		}
+		
+		/**
+		 * Update the status and show the test results the test is at the end
+		 * and the configuration allow it.
+		 * 
+		 * @param ureq
+		 * @return true if the results are visible
+		 */
+		private boolean updateStatusAndResults(UserRequest ureq) {
 			//updateButtons();
+			resultsVisible = false;
 			if(testSessionController.getTestSessionState().isEnded()
 					&& deliveryOptions.getShowResultsOnFinish() != null
 					&& !ShowResultsOnFinish.none.equals(deliveryOptions.getShowResultsOnFinish())) {
@@ -1239,8 +1279,11 @@ public class AssessmentTestDisplayController extends BasicController implements 
 						deliveryOptions.getShowResultsOnFinish(), fUnzippedDirRoot, mapperUri);
 				listenTo(resultCtrl);
 				flc.add("qtiResults", resultCtrl.getInitialFormItem());
+				resultsVisible = true;
 			}
+			closeResultsButton.setVisible(resultsVisible && showCloseResults);
 			updateQtiWorksStatus();
+			return resultsVisible;
 		}
 		
 		/*private void updateButtons() {

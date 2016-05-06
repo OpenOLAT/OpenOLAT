@@ -31,6 +31,7 @@ public class QTI21Event extends Event {
 
 	private static final long serialVersionUID = -5722474172353820050L;
 	public static final String EXIT = "exit";
+	public static final String CLOSE_RESULTS = "close-results";
 	
 	public QTI21Event(String cmd) {
 		super(cmd);

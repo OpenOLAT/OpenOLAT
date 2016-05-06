@@ -247,6 +247,7 @@ public class AssessmentTestComponentRenderer extends AssessmentObjectComponentRe
 					? translator.translate("assessment.test.end.testPart") : translator.translate("assessment.test.end.test");
 			renderControl(sb, component, title, "o_sel_end_testpart", new NameValuePair("cid", Event.endTestPart.name()));
 		}
+		
 		//reviewMode
 		if(options.isReviewMode()) {
 			String title = translator.translate("assessment.test.backToTestFeedback");

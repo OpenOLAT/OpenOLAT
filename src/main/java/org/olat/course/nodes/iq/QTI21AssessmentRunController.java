@@ -241,6 +241,11 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 			} else if(event instanceof QTI21Event) {
 				QTI21Event qe = (QTI21Event)event;
 				if(QTI21Event.EXIT.equals(qe.getCommand())) {
+					if(!displayCtrl.isResultsVisible()) {
+						doExitAssessment(ureq, event);
+						initAssessment(ureq);
+					}
+				} else if(QTI21Event.CLOSE_RESULTS.equals(qe.getCommand())) {
 					doExitAssessment(ureq, event);
 					initAssessment(ureq);
 				}
@@ -256,9 +261,8 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 		ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ores));
 		WindowControl bwControl = addToHistory(ureq, ores, null);
 		
-		
 		RepositoryEntry courseRe = userCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
-		displayCtrl = new AssessmentTestDisplayController(ureq, bwControl, this, testEntry, courseRe, courseNode.getIdent(), deliveryOptions, false);
+		displayCtrl = new AssessmentTestDisplayController(ureq, bwControl, this, testEntry, courseRe, courseNode.getIdent(), deliveryOptions, true, false);
 		listenTo(displayCtrl);
 		if(displayCtrl.isTerminated()) {
 			//do nothing

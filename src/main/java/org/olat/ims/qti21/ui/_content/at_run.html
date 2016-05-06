@@ -14,9 +14,11 @@
 		#if(${qtiWorksStatus.maySuspendTest()} && $r.available("suspendTest") && $r.visible("suspendTest"))
 			$r.render("suspendTest")
 		#end
+		#if($r.available("closeResults") && $r.visible("closeResults"))
+			$r.render("closeResults")
+		#end
 		</div>
 	</div>
-	
 
 	#if (!$qtiWorksStatus.isSurvey() && (($displayScoreProgress && $qtiWorksStatus.hasScore()) || $displayQuestionProgress))
 	<div id="o_qti_run_infos" class="panel panel-default"><div class="panel-body">
