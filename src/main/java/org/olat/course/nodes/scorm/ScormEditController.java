@@ -215,9 +215,9 @@ public class ScormEditController extends ActivateableTabbableDefaultController i
 
 		// Accessibility precondition
 		Condition accessCondition = scormNode.getPreConditionAccess();
-		accessibilityCondContr = new ConditionEditController(ureq, getWindowControl(), 
+		accessibilityCondContr = new ConditionEditController(ureq, getWindowControl(), euce, 
 				accessCondition,
-				AssessmentHelper.getAssessableNodes(course.getEditorTreeModel(), scormNode), euce);		
+				AssessmentHelper.getAssessableNodes(course.getEditorTreeModel(), scormNode));		
 		listenTo(accessibilityCondContr);
 
 		DeliveryOptions deliveryOptions = (DeliveryOptions)config.get(CONFIG_DELIVERY_OPTIONS);

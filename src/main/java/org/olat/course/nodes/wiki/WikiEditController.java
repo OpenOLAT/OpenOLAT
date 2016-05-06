@@ -124,15 +124,15 @@ public class WikiEditController extends ActivateableTabbableDefaultController im
 		CourseEditorTreeModel editorModel = course.getEditorTreeModel();
 		// Accessibility precondition
 		Condition accessCondition = wikiCourseNode.getPreConditionAccess();
-		accessCondContr = new ConditionEditController(ureq, getWindowControl(), accessCondition,
-				AssessmentHelper.getAssessableNodes(editorModel, wikiCourseNode), euce);		
+		accessCondContr = new ConditionEditController(ureq, getWindowControl(), euce, accessCondition,
+				AssessmentHelper.getAssessableNodes(editorModel, wikiCourseNode));		
 		listenTo(accessCondContr);
 		editAccessVc.put("readerCondition", accessCondContr.getInitialComponent());
 		
 		//wiki read / write preconditions
 		Condition editCondition = wikiCourseNode.getPreConditionEdit();
-		editCondContr = new ConditionEditController(ureq, getWindowControl(), editCondition, AssessmentHelper
-				.getAssessableNodes(editorModel, wikiCourseNode), euce);		
+		editCondContr = new ConditionEditController(ureq, getWindowControl(), euce, editCondition, AssessmentHelper
+				.getAssessableNodes(editorModel, wikiCourseNode));		
 		listenTo(editCondContr);
 		editAccessVc.put("editCondition", editCondContr.getInitialComponent());
 		

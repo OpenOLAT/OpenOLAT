@@ -386,8 +386,8 @@ public class IQEditController extends ActivateableTabbableDefaultController impl
 		myContent.put("filechoosecreateedit", fcContent);
 		
 		Condition accessCondition = courseNode.getPreConditionAccess();
-		accessibilityCondContr = new ConditionEditController(ureq, getWindowControl(), accessCondition,
-				AssessmentHelper.getAssessableNodes(course.getEditorTreeModel(), courseNode),euce);		
+		accessibilityCondContr = new ConditionEditController(ureq, getWindowControl(), euce, accessCondition,
+				AssessmentHelper.getAssessableNodes(course.getEditorTreeModel(), courseNode));		
 		listenTo(accessibilityCondContr);
 
 		main.setContent(myContent);

@@ -71,8 +71,8 @@ public class CheckListEditController extends ActivateableTabbableDefaultControll
 		
 		// Accessibility precondition
 		Condition accessCondition = courseNode.getPreConditionAccess();
-		accessibilityCondCtrl = new ConditionEditController(ureq, getWindowControl(),
-				accessCondition, AssessmentHelper.getAssessableNodes(course.getEditorTreeModel(), courseNode), euce);		
+		accessibilityCondCtrl = new ConditionEditController(ureq, getWindowControl(), euce,
+				accessCondition, AssessmentHelper.getAssessableNodes(course.getEditorTreeModel(), courseNode));		
 		listenTo(accessibilityCondCtrl);
 		
 

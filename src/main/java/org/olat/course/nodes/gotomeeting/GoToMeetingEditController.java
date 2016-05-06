@@ -57,9 +57,8 @@ public class GoToMeetingEditController extends ActivateableTabbableDefaultContro
 		this.courseNode = courseNode;
 		
 		Condition accessCondition = courseNode.getPreConditionAccess();
-		accessibilityCondContr = new ConditionEditController(ureq, wControl,
-				accessCondition, AssessmentHelper.getAssessableNodes(course.getEditorTreeModel(), courseNode),
-				userCourseEnv);
+		accessibilityCondContr = new ConditionEditController(ureq, wControl, userCourseEnv,
+				accessCondition, AssessmentHelper.getAssessableNodes(course.getEditorTreeModel(), courseNode));
 		listenTo(accessibilityCondContr);
 		
 	}

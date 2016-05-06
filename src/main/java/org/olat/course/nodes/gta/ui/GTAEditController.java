@@ -98,8 +98,8 @@ public class GTAEditController extends ActivateableTabbableDefaultController {
 		// Accessibility precondition
 		Condition accessCondition = gtaNode.getPreConditionAccess();
 		CourseEditorTreeModel editorModel = course.getEditorTreeModel();
-		accessibilityCondCtrl = new ConditionEditController(ureq, getWindowControl(),
-				accessCondition, AssessmentHelper.getAssessableNodes(editorModel, gtaNode), euce);		
+		accessibilityCondCtrl = new ConditionEditController(ureq, getWindowControl(), euce,
+				accessCondition, AssessmentHelper.getAssessableNodes(editorModel, gtaNode));		
 		listenTo(accessibilityCondCtrl);
 		//workflow
 		workflowCtrl = new GTAWorkflowEditController(ureq, getWindowControl(), gtaNode, euce.getCourseEditorEnv());

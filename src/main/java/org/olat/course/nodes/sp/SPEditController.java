@@ -138,8 +138,8 @@ public class SPEditController extends ActivateableTabbableDefaultController impl
 		// Access conditions
 		CourseEditorTreeModel editorModel = course.getEditorTreeModel();
 		Condition accessCondition = courseNode.getPreConditionAccess();
-		accessibilityCondContr = new ConditionEditController(ureq, getWindowControl(), accessCondition,
-				AssessmentHelper.getAssessableNodes(editorModel, spCourseNode), euce);		
+		accessibilityCondContr = new ConditionEditController(ureq, getWindowControl(), euce, accessCondition,
+				AssessmentHelper.getAssessableNodes(editorModel, spCourseNode));		
 		listenTo(accessibilityCondContr);
 
 		// Delivery options form

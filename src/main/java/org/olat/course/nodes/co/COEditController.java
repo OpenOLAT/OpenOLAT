@@ -130,8 +130,8 @@ public class COEditController extends ActivateableTabbableDefaultController impl
 		// not needed: setInitialComponent(myContent);
 		// Accessibility precondition
 		Condition accessCondition = courseNode.getPreConditionAccess();
-		accessibilityCondContr = new ConditionEditController(ureq, getWindowControl(),
-				accessCondition, AssessmentHelper.getAssessableNodes(course.getEditorTreeModel(), coCourseNode), euce);		
+		accessibilityCondContr = new ConditionEditController(ureq, getWindowControl(), euce,
+				accessCondition, AssessmentHelper.getAssessableNodes(course.getEditorTreeModel(), coCourseNode));		
 		listenTo(accessibilityCondContr);
 
 		main.setContent(myContent);
@@ -149,6 +149,7 @@ public class COEditController extends ActivateableTabbableDefaultController impl
 	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest,
 	 *      org.olat.core.gui.control.Controller, org.olat.core.gui.control.Event)
 	 */
+	@Override
 	public void event(UserRequest ureq, Controller source, Event event) {
 		if (source == accessibilityCondContr) {
 			if (event == Event.CHANGED_EVENT) {

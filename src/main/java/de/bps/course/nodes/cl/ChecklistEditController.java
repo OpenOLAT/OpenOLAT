@@ -79,8 +79,8 @@ public class ChecklistEditController extends ActivateableTabbableDefaultControll
 		checklist = courseNode.loadOrCreateChecklist(course.getCourseEnvironment().getCoursePropertyManager());
 
 		Condition accessCondition = courseNode.getPreConditionAccess();
-		accessibilityCondContr = new ConditionEditController(ureq, wControl,
-				accessCondition, AssessmentHelper.getAssessableNodes(course.getEditorTreeModel(), courseNode), euce);
+		accessibilityCondContr = new ConditionEditController(ureq, wControl, euce,
+				accessCondition, AssessmentHelper.getAssessableNodes(course.getEditorTreeModel(), courseNode));
 		listenTo(accessibilityCondContr);
 		
 		editVc = createVelocityContainer("edit");

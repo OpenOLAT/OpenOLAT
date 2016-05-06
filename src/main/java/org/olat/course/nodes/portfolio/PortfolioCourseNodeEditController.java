@@ -93,8 +93,8 @@ public class PortfolioCourseNodeEditController extends ActivateableTabbableDefau
 		//Accessibility precondition
 		CourseEditorTreeModel editorModel = course.getEditorTreeModel();
 		Condition accessCondition = node.getPreConditionAccess();
-		accessibilityCondContr = new ConditionEditController(ureq, getWindowControl(), accessCondition,
-				AssessmentHelper.getAssessableNodes(editorModel, node), euce);		
+		accessibilityCondContr = new ConditionEditController(ureq, getWindowControl(), euce, accessCondition,
+				AssessmentHelper.getAssessableNodes(editorModel, node));		
 		listenTo(accessibilityCondContr);
 		
 	// if there is already user data available, make for read only

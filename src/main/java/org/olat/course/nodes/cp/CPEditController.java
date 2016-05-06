@@ -175,8 +175,8 @@ public class CPEditController extends ActivateableTabbableDefaultController impl
 
 		// Accessibility precondition
 		Condition accessCondition = cpNode.getPreConditionAccess();
-		accessibilityCondContr = new ConditionEditController(ureq, getWindowControl(),
-				accessCondition, AssessmentHelper.getAssessableNodes(course.getEditorTreeModel(), cpNode), euce);		
+		accessibilityCondContr = new ConditionEditController(ureq, getWindowControl(), euce,
+				accessCondition, AssessmentHelper.getAssessableNodes(course.getEditorTreeModel(), cpNode));		
 		listenTo(accessibilityCondContr);
 
 		DeliveryOptions deliveryOptions = (DeliveryOptions)config.get(CPEditController.CONFIG_DELIVERYOPTIONS);

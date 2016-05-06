@@ -97,8 +97,8 @@ public class ENEditController extends ActivateableTabbableDefaultController impl
 
 		// Accessibility precondition
 		Condition accessCondition = courseNode.getPreConditionAccess();
-		accessibilityCondContr = new ConditionEditController(ureq, getWindowControl(), accessCondition,
-				AssessmentHelper.getAssessableNodes(courseP.getEditorTreeModel(), enCourseNode), euceP);		
+		accessibilityCondContr = new ConditionEditController(ureq, getWindowControl(), euceP, accessCondition,
+				AssessmentHelper.getAssessableNodes(courseP.getEditorTreeModel(), enCourseNode));		
 		listenTo(accessibilityCondContr);
 
 		// not needed: setInitialComponent(myContent) since tabbable controller

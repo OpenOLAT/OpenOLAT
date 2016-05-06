@@ -99,15 +99,15 @@ public class CalEditController extends ActivateableTabbableDefaultController imp
 		CourseEditorTreeModel editorModel = course.getEditorTreeModel();
 		// Accessibility precondition
 		Condition accessCondition = calCourseNode.getPreConditionAccess();
-		accessCondContr = new ConditionEditController(ureq, getWindowControl(), accessCondition,
-				AssessmentHelper.getAssessableNodes(editorModel, calCourseNode), euce);
+		accessCondContr = new ConditionEditController(ureq, getWindowControl(), euce, accessCondition,
+				AssessmentHelper.getAssessableNodes(editorModel, calCourseNode));
 		this.listenTo(accessCondContr);
 		editAccessVc.put("readerCondition", accessCondContr.getInitialComponent());
 
 		// cal read / write preconditions
 		Condition editCondition = calCourseNode.getPreConditionEdit();
-		editCondContr = new ConditionEditController(ureq, getWindowControl(), editCondition,
-				AssessmentHelper.getAssessableNodes(editorModel, calCourseNode), euce);
+		editCondContr = new ConditionEditController(ureq, getWindowControl(), euce, editCondition,
+				AssessmentHelper.getAssessableNodes(editorModel, calCourseNode));
 		listenTo(editCondContr);
 		editAccessVc.put("editCondition", editCondContr.getInitialComponent());
 

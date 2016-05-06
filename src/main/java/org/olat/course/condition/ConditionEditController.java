@@ -78,15 +78,14 @@ public class ConditionEditController extends BasicController {
 	/**
 	 * Create a controller which can edit a condition in easy and expert mode
 	 * @param ureq User Request data
-	 * @param groupMgr The course group manager
+	 * @param wControl Owning window control
+	 * @param euce 
 	 * @param cond The condition which should be used to initialize the forms
 	 * can then be used to embedd the condition form in your velocity container with $r.render("mainComponentName")
-	 * @param formName Name of the condition form - must be unique within a HTML page
 	 * @param nodeIdentList
-	 * @param euce 
 	 */
-	public ConditionEditController(UserRequest ureq, WindowControl wControl,
-			Condition cond, List<CourseNode> nodeIdentList, UserCourseEnvironment euce) {
+	public ConditionEditController(UserRequest ureq, WindowControl wControl, UserCourseEnvironment euce,
+			Condition cond, List<CourseNode> nodeIdentList) {
 		this(ureq, wControl, cond, nodeIdentList, euce, false);
 	}
 	

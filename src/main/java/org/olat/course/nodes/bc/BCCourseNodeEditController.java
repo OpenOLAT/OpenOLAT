@@ -101,9 +101,9 @@ public class BCCourseNodeEditController extends ActivateableTabbableDefaultContr
 
 		// Uploader precondition
 		Condition uploadCondition = bcNode.getPreConditionUploaders();
-		uploaderCondContr = new ConditionEditController(ureq, getWindowControl(),
+		uploaderCondContr = new ConditionEditController(ureq, getWindowControl(), euce,
 				uploadCondition, AssessmentHelper
-						.getAssessableNodes(course.getEditorTreeModel(), bcNode), euce);		
+						.getAssessableNodes(course.getEditorTreeModel(), bcNode));		
 		listenTo(uploaderCondContr);
 
 		if(bcNode.getModuleConfiguration().getStringValue(CONFIG_SUBPATH, "").startsWith("/_sharedfolder")){
@@ -115,9 +115,9 @@ public class BCCourseNodeEditController extends ActivateableTabbableDefaultContr
 
 		// Uploader precondition
 		Condition downloadCondition = bcNode.getPreConditionDownloaders();
-		downloaderCondContr = new ConditionEditController(ureq, getWindowControl(),
+		downloaderCondContr = new ConditionEditController(ureq, getWindowControl(), euce,
 				downloadCondition, AssessmentHelper
-						.getAssessableNodes(course.getEditorTreeModel(), bcNode), euce);
+						.getAssessableNodes(course.getEditorTreeModel(), bcNode));
 		listenTo(downloaderCondContr);
 		accessabiliryContent.put("downloadCondition", downloaderCondContr.getInitialComponent());
 

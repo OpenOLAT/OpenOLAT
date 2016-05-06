@@ -136,8 +136,8 @@ public class NodeEditController extends ActivateableTabbableDefaultController im
 
 		// Visibility precondition
 		Condition visibCondition = luNode.getPreConditionVisibility();
-		visibilityCondContr = new ConditionEditController(ureq, getWindowControl(), visibCondition, 
-				AssessmentHelper.getAssessableNodes(editorModel, luNode), euce);
+		visibilityCondContr = new ConditionEditController(ureq, getWindowControl(), euce, visibCondition, 
+				AssessmentHelper.getAssessableNodes(editorModel, luNode));
 		//set this useractivity logger for the visibility condition controller
 		listenTo(visibilityCondContr);
 		visibilityVc.put("visibilityCondition", visibilityCondContr.getInitialComponent());

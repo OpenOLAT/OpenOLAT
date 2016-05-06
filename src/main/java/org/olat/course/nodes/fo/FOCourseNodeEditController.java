@@ -82,22 +82,22 @@ public class FOCourseNodeEditController extends ActivateableTabbableDefaultContr
 		CourseEditorTreeModel editorModel = course.getEditorTreeModel();
 		// Reader precondition
 		Condition readerCondition = foNode.getPreConditionReader();
-		readerCondContr = new ConditionEditController(ureq, getWindowControl(), readerCondition,
-				AssessmentHelper.getAssessableNodes(editorModel, forumNode), euce);		
+		readerCondContr = new ConditionEditController(ureq, getWindowControl(), euce, readerCondition,
+				AssessmentHelper.getAssessableNodes(editorModel, forumNode));		
 		listenTo(readerCondContr);
 		myContent.put("readerCondition", readerCondContr.getInitialComponent());
 
 		// Poster precondition
 		Condition posterCondition = foNode.getPreConditionPoster();
-		posterCondContr = new ConditionEditController(ureq, getWindowControl(), posterCondition,
-				AssessmentHelper.getAssessableNodes(editorModel, forumNode), euce);		
+		posterCondContr = new ConditionEditController(ureq, getWindowControl(), euce, posterCondition,
+				AssessmentHelper.getAssessableNodes(editorModel, forumNode));		
 		listenTo(posterCondContr);
 		myContent.put("posterCondition", posterCondContr.getInitialComponent());
 
 		// Moderator precondition
 		Condition moderatorCondition = foNode.getPreConditionModerator();
-		moderatorCondContr = new ConditionEditController(ureq, getWindowControl(), moderatorCondition,
-				AssessmentHelper.getAssessableNodes(editorModel, forumNode), euce);		
+		moderatorCondContr = new ConditionEditController(ureq, getWindowControl(), euce, moderatorCondition,
+				AssessmentHelper.getAssessableNodes(editorModel, forumNode));		
 		listenTo(moderatorCondContr);
 		myContent.put("moderatorCondition", moderatorCondContr.getInitialComponent());
 		
