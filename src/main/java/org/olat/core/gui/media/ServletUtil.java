@@ -227,7 +227,9 @@ public class ServletUtil {
 			FileUtils.closeSafely(out);
 			String className = e.getClass().getSimpleName();
 			if("ClientAbortException".equals(className)) {
-				log.warn("client browser probably abort when serving media resource", e);
+				if(log.isDebug()) {//video generate a lot of these errors
+					log.warn("client browser probably abort when serving media resource", e);
+				}
 			} else {
 				log.error("client browser probably abort when serving media resource", e);
 			}

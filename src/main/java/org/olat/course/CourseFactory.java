@@ -141,13 +141,13 @@ import org.olat.util.logging.activity.LoggingResourceable;
  * Description: <BR>
  * Use the course factory to create course run and edit controllers or to load a
  * course from disk
- * 
+ *
  * Initial Date: Oct 12, 2004
  * @author Felix Jost
  * @author guido
  */
 public class CourseFactory {
-		
+
 	private static CacheWrapper<Long,PersistingCourseImpl> loadedCourses;
 	private static ConcurrentMap<Long, ModifyCourseEvent> modifyCourseEvents = new ConcurrentHashMap<Long, ModifyCourseEvent>();
 
@@ -158,8 +158,8 @@ public class CourseFactory {
 	private static RepositoryManager repositoryManager;
 	private static ReferenceManager referenceManager;
 	private static RepositoryService repositoryService;
-	
-	
+
+
 	/**
 	 * [used by spring]
 	 */
@@ -173,7 +173,7 @@ public class CourseFactory {
 
 	/**
 	 * Create an editor controller for the given course resourceable
-	 * 
+	 *
 	 * @param ureq
 	 * @param wControl
 	 * @param courseEntry
@@ -206,7 +206,7 @@ public class CourseFactory {
 	/**
 	 * Creates an empty course with a single root node. The course is linked to
 	 * the resourceable ores. The efficiency statment are enabled per default!
-	 * 
+	 *
 	 * @param ores
 	 * @param shortTitle Short title of root node
 	 * @param longTitle Long title of root node
@@ -217,9 +217,9 @@ public class CourseFactory {
 			String shortTitle, String longTitle, String learningObjectives) {
 		OLATResource courseResource = courseEntry.getOlatResource();
 		PersistingCourseImpl newCourse = new PersistingCourseImpl(courseResource);
-		// Put new course in course cache    
+		// Put new course in course cache
 		loadedCourses.put(newCourse.getResourceableId(), newCourse);
-		
+
 		Structure initialStructure = new Structure();
 		CourseNode runRootNode = new STCourseNode();
 		runRootNode.setShortTitle(shortTitle);
@@ -234,7 +234,7 @@ public class CourseFactory {
 		editorTreeModel.setRootNode(editorRootNode);
 		newCourse.setEditorTreeModel(editorTreeModel);
 		newCourse.saveEditorTreeModel();
-		
+
 		//enable efficiency statement per default
 		CourseConfig courseConfig = newCourse.getCourseConfig();
 		courseConfig.setEfficencyStatementIsEnabled(true);
@@ -242,8 +242,8 @@ public class CourseFactory {
 
 		return newCourse;
 	}
-	
-	
+
+
 
 	/**
 	 * Gets the course from cache if already there, or loads the course and puts it into cache.
@@ -263,7 +263,7 @@ public class CourseFactory {
 			// that no invalidate cache event was missed
 			PersistingCourseImpl theCourse = new PersistingCourseImpl(courseEntry);
 			theCourse.load();
-			
+
 			PersistingCourseImpl cachedCourse = loadedCourses.putIfAbsent(resourceableId, theCourse);
 			if(cachedCourse != null) {
 				course = cachedCourse;
@@ -274,10 +274,10 @@ public class CourseFactory {
 		} else {
 			course.updateCourseEntry(courseEntry);
 		}
-		
+
 		return course;
 	}
-	
+
 	public static ICourse loadCourse(final Long resourceableId) {
 		if (resourceableId == null) throw new AssertException("No resourceable ID found.");
 		PersistingCourseImpl course = loadedCourses.get(resourceableId);
@@ -287,7 +287,7 @@ public class CourseFactory {
 			OLATResource resource = OLATResourceManager.getInstance().findResourceable(resourceableId, "CourseModule");
 			PersistingCourseImpl theCourse = new PersistingCourseImpl(resource);
 			theCourse.load();
-			
+
 			PersistingCourseImpl cachedCourse = loadedCourses.putIfAbsent(resourceableId, theCourse);
 			if(cachedCourse != null) {
 				course = cachedCourse;
@@ -300,7 +300,7 @@ public class CourseFactory {
 
 	/**
 	 * Load the course for the given course resourceable
-	 * 
+	 *
 	 * @param olatResource
 	 * @return the course for the given course resourceable
 	 */
@@ -308,30 +308,30 @@ public class CourseFactory {
 		Long resourceableId = olatResource.getResourceableId();
 		return loadCourse(resourceableId);
 	}
-			
+
 	/**
-	 * 
+	 *
 	 * @param resourceableId
 	 */
 	private static void removeFromCache(Long resourceableId) { //o_clusterOK by: ld
-		loadedCourses.remove(resourceableId);	
+		loadedCourses.remove(resourceableId);
 		log.debug("removeFromCache");
 	}
-	
+
 	/**
 	 * Puts the current course in the local cache and removes it from other caches (other cluster nodes).
 	 * @param resourceableId
 	 * @param course
 	 */
-	private static void updateCourseInCache(Long resourceableId, PersistingCourseImpl course) { //o_clusterOK by:ld    
-		loadedCourses.update(resourceableId, course);				
+	private static void updateCourseInCache(Long resourceableId, PersistingCourseImpl course) { //o_clusterOK by:ld
+		loadedCourses.update(resourceableId, course);
 		log.debug("updateCourseInCache");
 	}
 
 	/**
 	 * Delete a course including its course folder and all references to resources
 	 * this course holds.
-	 * 
+	 *
 	 * @param res
 	 */
 	public static void deleteCourse(RepositoryEntry entry, OLATResource res) {
@@ -344,7 +344,7 @@ public class CourseFactory {
 		} catch (CorruptedCourseException e) {
 			log.error("Try to delete a corrupted course, I make want I can.");
 		}
-		
+
 		// call cleanupOnDelete for nodes
 		if(course != null) {
 			Visitor visitor = new NodeDeletionVisitor(course);
@@ -364,7 +364,7 @@ public class CourseFactory {
 		if(course != null) {
 			CourseConfigManagerImpl.getInstance().deleteConfigOf(course);
 		}
-		
+
 		CoreSpringFactory.getImpl(TaskExecutorManager.class).delete(res);
 
 		// delete course group- and rightmanagement
@@ -405,7 +405,7 @@ public class CourseFactory {
 		CalendarManager calMan = CoreSpringFactory.getImpl(CalendarManager.class);
 		CalendarNotificationManager notificationManager = CoreSpringFactory.getImpl(CalendarNotificationManager.class);
 		NotificationsManager nfm = NotificationsManager.getInstance();
-		
+
 		if(course != null) {
 			CourseGroupManager courseGroupManager = course.getCourseEnvironment().getCourseGroupManager();
 			List<BusinessGroup> learningGroups = courseGroupManager.getAllBusinessGroups();
@@ -423,7 +423,7 @@ public class CourseFactory {
 		try {
 			/**
 			 * TODO:gs 2010-01-26
-			 * OLAT-4947: if we do not have an repo entry we get an exception here. 
+			 * OLAT-4947: if we do not have an repo entry we get an exception here.
 			 * This is normal in the case of courseimport and click canceling.
 			 */
 			KalendarRenderWrapper courseCalendar = calMan.getCalendarForDeletion(res);
@@ -436,12 +436,12 @@ public class CourseFactory {
 			//if we have a broken course (e.g. canceled import or no repo entry somehow) skip calendar deletion...
 		}
 	}
-	
+
 	/**
 	 * Copies a course. More specifically, the run and editor structures and the
 	 * course folder will be copied to create a new course.
-	 *  
-	 * 
+	 *
+	 *
 	 * @param sourceRes
 	 * @param ureq
 	 * @return copy of the course.
@@ -450,10 +450,10 @@ public class CourseFactory {
 		PersistingCourseImpl sourceCourse = (PersistingCourseImpl)loadCourse(sourceRes);
 		PersistingCourseImpl targetCourse = new PersistingCourseImpl(targetRes);
 		File fTargetCourseBasePath = targetCourse.getCourseBaseContainer().getBasefile();
-		
+
 		//close connection before file copy
 		DBFactory.getInstance().commitAndCloseSession();
-		
+
 		synchronized (sourceCourse) { // o_clusterNOK - cannot be solved with doInSync since could take too long (leads to error: "Lock wait timeout exceeded")
 			// copy configuration
 			CourseConfig courseConf = CourseConfigManagerImpl.getInstance().copyConfigOf(sourceCourse);
@@ -467,7 +467,7 @@ public class CourseFactory {
 			// copy course folder
 			File fSourceCourseFolder = sourceCourse.getIsolatedCourseBaseFolder();
 			if (fSourceCourseFolder.exists()) FileUtils.copyDirToDir(fSourceCourseFolder, fTargetCourseBasePath, false, "copy course folder");
-			
+
 			// copy folder nodes directories
 			File fSourceFoldernodesFolder = new File(FolderConfig.getCanonicalRoot()
 					+ BCCourseNode.getFoldernodesPathRelToFolderBase(sourceCourse.getCourseEnvironment()));
@@ -477,7 +477,7 @@ public class CourseFactory {
 			File fSourceTaskfoldernodesFolder = new File(FolderConfig.getCanonicalRoot()
 					+ TACourseNode.getTaskFoldersPathRelToFolderRoot(sourceCourse.getCourseEnvironment()));
 			if (fSourceTaskfoldernodesFolder.exists()) FileUtils.copyDirToDir(fSourceTaskfoldernodesFolder, fTargetCourseBasePath, false, "copy task folder directories");
-			
+
 			// update references
 			List<Reference> refs = referenceManager.getReferences(sourceCourse);
 			int count = 0;
@@ -487,7 +487,7 @@ public class CourseFactory {
 					DBFactory.getInstance().intermediateCommit();
 				}
 			}
-			
+
 			// set quotas
 			Quota sourceQuota = VFSManager.isTopLevelQuotaContainer(sourceCourse.getCourseFolderContainer());
 			Quota targetQuota = VFSManager.isTopLevelQuotaContainer(targetCourse.getCourseFolderContainer());
@@ -499,12 +499,12 @@ public class CourseFactory {
 				}
 			}
 		}
-		return targetRes;			
+		return targetRes;
 	}
 
 	/**
-	 * Exports an entire course to a zip file. 
-	 * 
+	 * Exports an entire course to a zip file.
+	 *
 	 * @param sourceRes
 	 * @param fTargetZIP
 	 * @return true if successfully exported, false otherwise.
@@ -532,7 +532,7 @@ public class CourseFactory {
 
 	/**
 	 * Import a course from a ZIP file.
-	 * 
+	 *
 	 * @param ores
 	 * @param zipFile
 	 * @return New Course.
@@ -541,17 +541,17 @@ public class CourseFactory {
 		// Generate course with filesystem
 		PersistingCourseImpl newCourse = new PersistingCourseImpl(ores);
 		CourseConfigManagerImpl.getInstance().deleteConfigOf(newCourse);
-		
+
 		// Unzip course strucure in new course
 		File fCanonicalCourseBasePath = newCourse.getCourseBaseContainer().getBasefile();
 		if (ZipUtil.unzip(zipFile, fCanonicalCourseBasePath)) {
 			// Load course strucure now
 			try {
 				newCourse.load();
-				CourseConfig cc = CourseConfigManagerImpl.getInstance().loadConfigFor(newCourse);								
+				CourseConfig cc = CourseConfigManagerImpl.getInstance().loadConfigFor(newCourse);
 				//newCourse is not in cache yet, so we cannot call setCourseConfig()
 				newCourse.setCourseConfig(cc);
-				loadedCourses.put(newCourse.getResourceableId(), newCourse);						
+				loadedCourses.put(newCourse.getResourceableId(), newCourse);
 				return newCourse;
 			} catch (AssertException ae) {
 				// ok failed, cleanup below
@@ -568,7 +568,7 @@ public class CourseFactory {
 	 * Deploys a course from an exported course ZIP file. This process is unatended and
 	 * therefore relies on some default assumptions on how to setup the entry and add
 	 * any referenced resources to the repository.
-	 * 
+	 *
 	 * @param exportedCourseZIPFile
 	 */
 	public static RepositoryEntry deployCourseFromZIP(File exportedCourseZIPFile, String softKey, int access) {
@@ -582,21 +582,21 @@ public class CourseFactory {
 			log.info("RepositoryEntry with softkey " + softKey + " already exists. Course will not be deployed.");
 			return existingEntry;
 		}
-		
-		
+
+
 		RepositoryHandler courseHandler = RepositoryHandlerFactory.getInstance().getRepositoryHandler(CourseModule.getCourseTypeName());
 		RepositoryEntry re = courseHandler.importResource(null, importExport.getInitialAuthor(), importExport.getDisplayName(), importExport.getDescription(),
 				true, Locale.ENGLISH, exportedCourseZIPFile, exportedCourseZIPFile.getName());
-		
+
 		re.setSoftkey(softKey);
 		repositoryService.update(re);
-		
+
 		ICourse course = loadCourse(re);
 		publishCourse(course, access, false,  null, Locale.ENGLISH);
 		return re;
 	}
 
-	
+
 	/**
 	 * Publish the course with some standard options
 	 * @param course
@@ -617,7 +617,7 @@ public class CourseFactory {
 		 //RepositoryEntry.ACC_USERS_GUESTS // users and guests can see the course
 		 //fxdiff VCRP-1,2: access control of resources
 		 publishProcess.changeGeneralAccess(identity, newAccess, membersOnly);
-		 
+
 		 if (publishTreeModel.hasPublishableChanges()) {
 			 List<String>nodeToPublish = new ArrayList<String>();
 			 visitPublishModel(publishTreeModel.getRootNode(), publishTreeModel, nodeToPublish);
@@ -632,7 +632,7 @@ public class CourseFactory {
 					 return;
 				 }
 			 }
-			 
+
 			 try {
 				 course = CourseFactory.openCourseEditSession(course.getResourceableId());
 				 publishProcess.applyPublishSet(identity, locale);
@@ -646,7 +646,7 @@ public class CourseFactory {
 
 	/**
 	 * Create a user locale dependent help-course run controller
-	 * 
+	 *
 	 * @param ureq The user request
 	 * @param wControl The current window controller
 	 * @return The help-course run controller
@@ -670,19 +670,19 @@ public class CourseFactory {
 			// Increment launch counter
 			rs.incrementLaunchCounter(entry);
 			ICourse course = loadCourse(entry);
-			
+
 			ContextEntry ce = BusinessControlFactory.getInstance().createContextEntry(entry);
-			WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ce, wControl);	
+			WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ce, wControl);
 			RepositoryEntrySecurity reSecurity = new RepositoryEntrySecurity(false, false, false, false, false, false, false, true);
 			RunMainController launchC = new RunMainController(ureq, bwControl, null, course, entry, reSecurity, null);
-			return launchC;			
-		}		
+			return launchC;
+		}
 	}
 
 	/**
 	 * visit all nodes in the specified course and make them archiving any data
 	 * into the identity's export directory.
-	 * 
+	 *
 	 * @param res
 	 * @param charset
 	 * @param locale
@@ -697,11 +697,11 @@ public class CourseFactory {
 		boolean isOresInstitutionalManager = RepositoryManager.getInstance().isInstitutionalRessourceManagerFor(identity, roles, courseRe);
 		archiveCourse(identity, course, charset, locale, exportDirectory, isOLATAdmin, isOresOwner, isOresInstitutionalManager);
 	}
-		
+
 	/**
 	 * visit all nodes in the specified course and make them archiving any data
 	 * into the identity's export directory.
-	 * 
+	 *
 	 * @param res
 	 * @param charset
 	 * @param locale
@@ -711,25 +711,25 @@ public class CourseFactory {
 		// archive course results overview
 		List<Identity> users = ScoreAccountingHelper.loadUsers(course.getCourseEnvironment());
 		List<AssessableCourseNode> nodes = ScoreAccountingHelper.loadAssessableNodes(course.getCourseEnvironment());
-		
+
 		String result = ScoreAccountingHelper.createCourseResultsOverviewTable(users, nodes, course, locale);
 		String fileName = ExportUtil.createFileNameWithTimeStamp(course.getCourseTitle(), "xls");
 		ExportUtil.writeContentToFile(fileName, result, exportDirectory, charset);
-		
+
 		// archive all nodes content
 		Visitor archiveV = new NodeArchiveVisitor(locale, course, exportDirectory, charset);
 		TreeVisitor tv = new TreeVisitor(archiveV, course.getRunStructure().getRootNode(), true);
 		tv.visitAll();
 		// archive all course log files
-		//OLATadmin gets all logfiles independent of the visibility configuration		
+		//OLATadmin gets all logfiles independent of the visibility configuration
 		boolean isOresOwner = (oresRights.length > 0)?oresRights[0]:false;
 		boolean isOresInstitutionalManager = (oresRights.length > 1)?oresRights[1]:false;
-		
+
 		boolean aLogV = isOresOwner || isOresInstitutionalManager || isOLATAdmin;
 		boolean uLogV = isOLATAdmin;
 		boolean sLogV = isOresOwner || isOresInstitutionalManager || isOLATAdmin;
-		
-		// make an intermediate commit here to make sure long running course log export doesn't 
+
+		// make an intermediate commit here to make sure long running course log export doesn't
 		// cause db connection timeout to be triggered
 		//@TODO transactions/backgroundjob:
 		// rework when backgroundjob infrastructure exists
@@ -741,15 +741,15 @@ public class CourseFactory {
 		}, course.getResourceableId(), exportDirectory.getPath(), null, null, aLogV, uLogV, sLogV, charset, null, null);
 
 		course.getCourseEnvironment().getCourseGroupManager().archiveCourseGroups(exportDirectory);
-		
+
 		CoreSpringFactory.getImpl(ChatLogHelper.class).archive(course, exportDirectory);
-		
+
 	}
 
 	/**
 	 * Returns the data export directory. If the directory does not yet exist the
 	 * directory will be created
-	 * 
+	 *
 	 * @param ureq The user request
 	 * @param courseName The course name or title. Will be used as directory name
 	 * @return The file representing the dat export directory
@@ -767,11 +767,11 @@ public class CourseFactory {
 		}
 		return exportFolder;
 	}
-	
-	
+
+
 	/**
-	 * Returns the data export directory. 
-	 * 
+	 * Returns the data export directory.
+	 *
 	 * @param ureq The user request
 	 * @param courseName The course name or title. Will be used as directory name
 	 * @return The file representing the dat export directory
@@ -783,7 +783,7 @@ public class CourseFactory {
 						+ Formatter.makeStringFilesystemSave(courseName));
 		return exportFolder;
 	}
-	
+
 	/**
 	 * Returns the personal folder of the given identity.
 	 * <p>
@@ -797,13 +797,13 @@ public class CourseFactory {
 		if (identity==null) {
 			return null;
 		}
-		return new File(FolderConfig.getCanonicalRoot() + FolderConfig.getUserHomes() + "/" + identity.getName());		
+		return new File(FolderConfig.getCanonicalRoot() + FolderConfig.getUserHomes() + "/" + identity.getName());
 	}
-	
+
 	/**
 	 * Returns the data export directory. If the directory does not yet exist the
 	 * directory will be created
-	 * 
+	 *
 	 * @param ureq The user request
 	 * @param courseName The course name or title. Will be used as directory name
 	 * @return The file representing the dat export directory
@@ -821,14 +821,14 @@ public class CourseFactory {
 		}
 		return exportFolder;
 	}
-	
+
 	/**
 	 * Stores the editor tree model AND the run structure (both xml files). Called at publish.
 	 * @param resourceableId
 	 */
 	public static void saveCourse(final Long resourceableId) {
 		if (resourceableId == null) throw new AssertException("No resourceable ID found.");
-				
+
 		PersistingCourseImpl theCourse = getCourseEditSession(resourceableId);
 		if(theCourse!=null) {
 			//o_clusterOK by: ld (although the course is locked for editing, we still have to insure that load course is synchronized)
@@ -839,10 +839,10 @@ public class CourseFactory {
 						course.initHasAssessableNodes();
 						course.saveRunStructure();
 						course.saveEditorTreeModel();
-		        
+
 						//clear modifyCourseEvents at publish, since the updateCourseInCache is called anyway
 						modifyCourseEvents.remove(resourceableId);
-						updateCourseInCache(resourceableId, course);		        
+						updateCourseInCache(resourceableId, course);
 					} else if(!course.isReadAndWrite()) {
 						throw new AssertException("Cannot saveCourse because theCourse is readOnly! You have to open an courseEditSession first!");
 					}
@@ -852,20 +852,20 @@ public class CourseFactory {
 			throw new AssertException("Cannot saveCourse because theCourse is null! Have you opened a courseEditSession yet?");
 		}
 	}
-	
+
 	/**
 	 * Stores ONLY the editor tree model (e.g. at course tree editing - add/remove/move course nodes).
 	 * @param resourceableId
 	 */
 	public static void saveCourseEditorTreeModel(Long resourceableId) {
 		if (resourceableId == null) throw new AssertException("No resourceable ID found.");
-				
-		PersistingCourseImpl course = getCourseEditSession(resourceableId);		
-		if(course!=null && course.isReadAndWrite()) {	
+
+		PersistingCourseImpl course = getCourseEditSession(resourceableId);
+		if(course!=null && course.isReadAndWrite()) {
 			synchronized(loadedCourses) { //o_clusterOK by: ld (clusterOK since the course is locked for editing)
 		    course.saveEditorTreeModel();
-		   
-		    modifyCourseEvents.putIfAbsent(resourceableId, new ModifyCourseEvent(resourceableId));	
+
+		    modifyCourseEvents.putIfAbsent(resourceableId, new ModifyCourseEvent(resourceableId));
 			}
 		} else if(course==null) {
 			throw new AssertException("Cannot saveCourseEditorTreeModel because course is null! Have you opened a courseEditSession yet?");
@@ -873,25 +873,25 @@ public class CourseFactory {
 			throw new AssertException("Cannot saveCourse because theCourse is readOnly! You have to open an courseEditSession first!");
 		}
 	}
-	
+
 	/**
 	 * Updates the course cache forcing other cluster nodes to reload this course. <br/>
 	 * This is triggered after the course editor is closed. <br/>
 	 * It also removes the courseEditSession for this course.
-	 * 
+	 *
 	 * @param resourceableId
 	 */
 	public static void fireModifyCourseEvent(Long resourceableId) {
-		ModifyCourseEvent modifyCourseEvent = modifyCourseEvents.get(resourceableId); 
+		ModifyCourseEvent modifyCourseEvent = modifyCourseEvents.get(resourceableId);
 		if(modifyCourseEvent!=null){
 			synchronized(modifyCourseEvents) { //o_clusterOK by: ld
 				modifyCourseEvent = modifyCourseEvents.remove(resourceableId);
-				if(modifyCourseEvent != null) {					
+				if(modifyCourseEvent != null) {
 					PersistingCourseImpl course = getCourseEditSession(resourceableId);
 			    if(course!=null) {
-			    	updateCourseInCache(resourceableId, course);			    	
+			    	updateCourseInCache(resourceableId, course);
 			    }
-				}				
+				}
 			}
 		}
 		//close courseEditSession if not already closed
@@ -901,7 +901,7 @@ public class CourseFactory {
 	/**
 	 * Create a custom css object for the course layout. This can then be set on a
 	 * MainLayoutController to activate the course layout
-	 * 
+	 *
 	 * @param usess The user session
 	 * @param courseEnvironment the course environment
 	 * @return The custom course css or NULL if no course css is available
@@ -931,7 +931,7 @@ public class CourseFactory {
 			throw new OLATRuntimeException(PersistingCourseImpl.class, "Could not resolve course base path:" + courseRootContainer, null);
 		return courseRootContainer;
 	}
-	
+
 	/**
 	 * Save courseConfig and update cache.
 	 * @param resourceableId
@@ -939,7 +939,7 @@ public class CourseFactory {
 	 */
 	public static void setCourseConfig(final Long resourceableId, final CourseConfig cc) {
 		if (resourceableId == null) throw new AssertException("No resourceable ID found.");
-		
+
 		PersistingCourseImpl theCourse = getCourseEditSession(resourceableId);
 		if(theCourse!=null) {
 			//o_clusterOK by: ld (although the course is locked for editing, we still have to insure that load course is synchronized)
@@ -954,14 +954,14 @@ public class CourseFactory {
 			});
 		} else {
 			throw new AssertException("Cannot setCourseConfig because theCourse is null! Have you opened a courseEditSession yet?");
-		}	
+		}
 	}
-	
+
 	/**
 	 * Loads the course or gets it from cache, and adds it to the courseEditSessionMap. <br/>
 	 * It guarantees that the returned value is never null. <br/>
 	 * The courseEditSession object should live between acquire course lock and release course lock.
-	 * 
+	 *
 	 * TODO: remove course from courseEditSessionMap at close course editor
 	 * @param resourceableId
 	 * @return
@@ -976,19 +976,19 @@ public class CourseFactory {
 			course.setReadAndWrite(true);
 			courseEditSessionMap.put(resourceableId, course);
 			log.debug("getCourseEditSession - put course in courseEditSessionMap: " + resourceableId);
-		}	
+		}
 		return course;
 	}
-	
+
 	public static boolean isCourseEditSessionOpen(Long resourceableId) {
 		return courseEditSessionMap.containsKey(resourceableId);
 	}
-	
+
 	/**
 	 * Provides the currently edited course object with this id. <br/>
 	 * It guarantees that the returned value is never null if the openCourseEditSession was called first. <br/>
 	 * The CourseEditSession object should live between acquire course lock and release course lock.
-	 * 
+	 *
 	 * TODO: remove course from courseEditSessionMap at close course editor
 	 * @param resourceableId
 	 * @return
@@ -998,10 +998,10 @@ public class CourseFactory {
 		PersistingCourseImpl course = courseEditSessionMap.get(resourceableId);
 		if(course==null) {
 			throw new AssertException("No edit session open for this course: " + resourceableId + " - Open a session first!");
-		}	
+		}
 		return course;
 	}
-	
+
 	/**
 	 * TODO: remove course from courseEditSessionMap at releaseLock
 	 * @param resourceableId
@@ -1016,7 +1016,7 @@ public class CourseFactory {
 		  log.debug("removeCourseEditSession for course: " + resourceableId);
 		}
 	}
-	
+
 	private static void visitPublishModel(TreeNode node, PublishTreeModel publishTreeModel, Collection<String> nodeToPublish) {
 		int numOfChildren = node.getChildCount();
 		for (int i = 0; i < numOfChildren; i++) {
@@ -1027,7 +1027,7 @@ public class CourseFactory {
 			}
 		}
 	}
-	
+
 	private static class NodeArchiveVisitor implements Visitor {
 		private File exportPath;
 		private Locale locale;
@@ -1057,7 +1057,7 @@ public class CourseFactory {
 			String archiveName = cn.getType() + "_"
 					+ StringHelper.transformDisplayNameToFileSystemName(cn.getShortName())
 					+ "_" + Formatter.formatDatetimeFilesystemSave(new Date(System.currentTimeMillis()));
-			
+
 			FileOutputStream fileStream = null;
 			ZipOutputStream exportStream = null;
 			try {
@@ -1073,14 +1073,14 @@ public class CourseFactory {
 			}
 		}
 	}
-	
+
 	private static class NodeDeletionVisitor implements Visitor {
 
 		private ICourse course;
 
 		/**
 		 * Constructor of the node deletion visitor
-		 * 
+		 *
 		 * @param course
 		 */
 		public NodeDeletionVisitor(ICourse course) {
@@ -1089,7 +1089,7 @@ public class CourseFactory {
 
 		/**
 		 * Visitor pattern to delete the course nodes
-		 * 
+		 *
 		 * @see org.olat.core.util.tree.Visitor#visit(org.olat.core.util.nodes.INode)
 		 */
 		public void visit(INode node) {
@@ -1100,11 +1100,11 @@ public class CourseFactory {
 }
 
 /**
- * 
+ *
  * Description:<br>
- * Event triggered if a course was edited - namely the course tree model have changed 
+ * Event triggered if a course was edited - namely the course tree model have changed
  * (e.g. nodes added, deleted)
- * 
+ *
  * <P>
  * Initial Date:  22.07.2008 <br>
  * @author Lavinia Dumitrescu
@@ -1117,9 +1117,9 @@ class ModifyCourseEvent extends MultiUserEvent {
 	 */
 	public ModifyCourseEvent(Long resourceableId) {
 		super("modify_course");
-		courseId = resourceableId;		
+		courseId = resourceableId;
 	}
-	
+
 	public Long getCourseId() {
 		return courseId;
 	}

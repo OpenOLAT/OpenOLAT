@@ -1,0 +1,86 @@
+/**
+ * <a href="http://www.openolat.org">
+ * OpenOLAT - Online Learning and Training</a><br>
+ * <p>
+ * Licensed under the Apache License, Version 2.0 (the "License"); <br>
+ * you may not use this file except in compliance with the License.<br>
+ * You may obtain a copy of the License at the
+ * <a href="http://www.apache.org/licenses/LICENSE-2.0">Apache homepage</a>
+ * <p>
+ * Unless required by applicable law or agreed to in writing,<br>
+ * software distributed under the License is distributed on an "AS IS" BASIS, <br>
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. <br>
+ * See the License for the specific language governing permissions and <br>
+ * limitations under the License.
+ * <p>
+ * Initial code contributed and copyrighted by<br>
+ * frentix GmbH, http://www.frentix.com
+ * <p>
+ */
+
+package org.olat.modules.video.model;
+
+import java.io.Serializable;
+import java.util.HashMap;
+import java.util.Map;
+
+import org.olat.modules.video.VideoMetadata;
+
+/**
+ * Model of the videoresource metadata to persist in xml
+ *
+ * Initial Date:  Apr 9, 2015
+ * @author Dirk Furrer
+ * 
+ */
+
+public class VideoMetadataImpl implements Serializable, VideoMetadata {
+	private static final long serialVersionUID = 1L;
+		private int width;
+		private int height;
+		private HashMap<String, String> tracks;
+		
+		public VideoMetadataImpl() {
+			tracks = new HashMap<String, String>();
+		}
+				
+		@Override
+		public int getWidth() {
+			return width;
+		}
+
+		@Override
+		public void setWidth(int width) {
+			this.width = width;
+		}
+
+		@Override
+		public int getHeight() {
+			return height;
+		}
+
+		@Override
+		public void setHeight(int height) {
+			this.height = height;
+		}
+		
+		@Override
+		public Map<String, String> getAllTracks(){
+			return tracks;
+		}
+		
+		@Override
+		public void addTrack(String lang, String trackFile){
+			tracks.put(lang, trackFile);
+		}
+		
+		@Override
+		public String getTrack(String lang){
+			return tracks.get(lang);
+		}
+		
+		@Override
+		public void removeTrack(String lang){
+			tracks.remove(lang);
+		}		
+}

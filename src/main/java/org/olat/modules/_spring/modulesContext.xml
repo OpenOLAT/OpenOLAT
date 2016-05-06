@@ -18,6 +18,7 @@
 	<import resource="classpath:/org/olat/modules/webFeed/_spring/webFeedContext.xml"/>
 	<import resource="classpath:/org/olat/modules/wiki/_spring/wikiContext.xml"/>
 	<import resource="classpath:/org/olat/modules/reminder/_spring/reminderContext.xml"/>
+	<import resource="classpath:/org/olat/modules/video/_spring/videoContext.xml"/>
 	
 	
 	

@@ -69,7 +69,7 @@ public class RepositoryEntryImportExport {
 	private static final OLog log = Tracing.createLoggerFor(RepositoryEntryImportExport.class);
 
 	private static final String CONTENT_FILE = "repo.zip";
-	private static final String PROPERTIES_FILE = "repo.xml";
+	public static final String PROPERTIES_FILE = "repo.xml";
 	private static final String PROP_ROOT = "RepositoryEntryProperties";
 	private static final String PROP_SOFTKEY = "Softkey";
 	private static final String PROP_RESOURCENAME = "ResourceName";
@@ -205,7 +205,20 @@ public class RepositoryEntryImportExport {
 				log.error("", e);
 			}
 		}
-		
+		return setRepoEntryPropertiesFromImport(newEntry);
+	}
+
+	/**
+	 * Update the repo entry property from the current import information in the database
+	 * 
+	 * @param newEntry
+	 * @return
+	 */
+	public RepositoryEntry setRepoEntryPropertiesFromImport(RepositoryEntry newEntry) {
+		if(!propertiesLoaded) {
+			loadConfiguration();
+		}
+		RepositoryManager repositoryManager = CoreSpringFactory.getImpl(RepositoryManager.class);
 		return repositoryManager.setDescriptionAndName(newEntry, newEntry.getDisplayname(), null,
 				repositoryProperties.getAuthors(), repositoryProperties.getDescription(),
 				repositoryProperties.getObjectives(), repositoryProperties.getRequirements(),
@@ -255,6 +268,13 @@ public class RepositoryEntryImportExport {
 		}
 	}
 	
+	/**
+	 * Get the repo entry import metadata from the given path. E.g. usefull
+	 * when reading from an unzipped archive.
+	 * 
+	 * @param repoXmlPath
+	 * @return The RepositoryEntryImport or NULL
+	 */
 	public static RepositoryEntryImport getConfiguration(Path repoXmlPath) {
 		try (InputStream in=Files.newInputStream(repoXmlPath)) {
 			XStream xstream = getXStream();
@@ -265,7 +285,25 @@ public class RepositoryEntryImportExport {
 		}
 	}
 	
-	public static XStream getXStream() {
+	/**
+	 * Get the repo entry import metadata from the given stream. E.g. usefull
+	 * when reading from an ZIP file without inflating it.
+	 * 
+	 * @param repoMetaFileInputStream
+	 * @return The RepositoryEntryImport or NULL
+	 */
+	public static RepositoryEntryImport getConfiguration(InputStream repoMetaFileInputStream) {
+		XStream xstream = getXStream();
+		return (RepositoryEntryImport)xstream.fromXML(repoMetaFileInputStream);
+	}
+	
+	/**
+	 * Helper to load the xstream instances with all the aliases for the
+	 * RepositoryEntryImport class
+	 * 
+	 * @return
+	 */
+	private static XStream getXStream() {
 		XStream xStream = XStreamHelper.createXStreamInstance();
 		xStream.alias(PROP_ROOT, RepositoryEntryImport.class);
 		xStream.aliasField(PROP_SOFTKEY, RepositoryEntryImport.class, "softkey");

@@ -21,7 +21,6 @@ package org.olat.repository.ui;
 
 import javax.servlet.http.HttpServletRequest;
 
-import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.services.image.Size;
 import org.olat.core.commons.services.video.MovieService;
 import org.olat.core.dispatcher.mapper.Mapper;
@@ -45,6 +44,7 @@ import org.olat.core.util.vfs.VFSMediaResource;
 import org.olat.fileresource.FileResourceManager;
 import org.olat.repository.RepositoryEntry;
 import org.olat.resource.OLATResource;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -53,6 +53,9 @@ import org.olat.resource.OLATResource;
  *
  */
 public class WebDocumentRunController extends BasicController {
+
+	@Autowired
+	private MovieService movieService;
 
 	public WebDocumentRunController(UserRequest ureq, WindowControl wControl, RepositoryEntry entry) {
 		super(ureq, wControl);
@@ -78,7 +81,7 @@ public class WebDocumentRunController extends BasicController {
 				String mediaUrl = registerMapper(ureq, new MediaMapper(document));
 				mainVC.contextPut("movie", filename);
 				mainVC.contextPut("mediaUrl", Settings.createServerURI() + mediaUrl);
-				Size realSize = CoreSpringFactory.getImpl(MovieService.class).getSize(document, extension);
+				Size realSize = movieService.getSize(document, extension);
 				if(realSize != null) {
 					mainVC.contextPut("height", realSize.getHeight());
 					mainVC.contextPut("width", realSize.getWidth());

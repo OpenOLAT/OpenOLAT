@@ -51,6 +51,7 @@ import org.olat.fileresource.types.ImsCPFileResource;
 import org.olat.fileresource.types.ImsQTI21Resource;
 import org.olat.fileresource.types.PodcastFileResource;
 import org.olat.fileresource.types.ScormCPFileResource;
+import org.olat.fileresource.types.VideoFileResource;
 import org.olat.fileresource.types.WikiResource;
 import org.olat.group.BusinessGroupModule;
 import org.olat.ims.qti.fileresource.SurveyFileResource;
@@ -242,7 +243,8 @@ public class ReferencableEntriesSearchController extends BasicController {
 				ScormCPFileResource.TYPE_NAME,
 				SurveyFileResource.TYPE_NAME,
 				BlogFileResource.TYPE_NAME,
-				PodcastFileResource.TYPE_NAME
+				PodcastFileResource.TYPE_NAME,
+				VideoFileResource.TYPE_NAME
 		};
 		
 		if (Collections.indexOfSubList(Arrays.asList(importAllowed), limitTypeList) != -1) { return true; }
