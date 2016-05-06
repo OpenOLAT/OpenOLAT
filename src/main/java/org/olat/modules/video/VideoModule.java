@@ -48,6 +48,8 @@ public class VideoModule extends AbstractSpringModule {
 	private static final String VIDEO_ENABLED = "video.enabled";
 	private static final String VIDEOCOURSENODE_ENABLED = "video.coursenode.enabled";
 	private static final String VIDEOTRANSCODING_ENABLED = "video.transcoding.enabled";
+	private static final String VIDEOTRANSCODING_LOCAL = "video.transcoding.local";
+
 
 	@Value("${video.enabled:true}")
 	private boolean enabled;
@@ -56,6 +58,8 @@ public class VideoModule extends AbstractSpringModule {
 	// transcoding related configuration
 	@Value("${video.transcoding.enabled:false}")
 	private boolean transcodingEnabled;
+	@Value("${video.transcoding.local:true}")
+	private boolean transcodingLocal;
 	@Value("${video.transcoding.resolutions}")
 	private String transcodingResolutions;
 	@Value("${video.transcoding.taskset.cpuconfig}")
@@ -64,6 +68,7 @@ public class VideoModule extends AbstractSpringModule {
 	private String transcodingDir;
 	
 	private int[] transcodingResolutionsArr = new int[] { 1080,720,480,360 };
+
 
 	@Autowired
 	public VideoModule(CoordinatorManager coordinatorManager) {
@@ -104,11 +109,17 @@ public class VideoModule extends AbstractSpringModule {
 			transcodingEnabled = "true".equals(enabledTranscodingObj);
 		}
 
+		String localTranscodingObj = getStringPropertyValue(VIDEOTRANSCODING_LOCAL, true);
+		if(StringHelper.containsNonWhitespace(localTranscodingObj)) {
+			transcodingLocal = "true".equals(localTranscodingObj);
+		}
+
 		log.info("video.enabled=" + isEnabled());
 		log.info("video.coursenode.enabled=" + isCoursenodeEnabled());
 		log.info("video.transcoding.enabled=" + isTranscodingEnabled());
 		log.info("video.transcoding.resolutions=" + Arrays.toString(getTranscodingResolutions()));
 		log.info("video.transcoding.taskset.cpuconfig=" + getTranscodingTasksetConfig());
+		log.info("video.transcoding.local=" + isTranscodingLocal());
 	}
 
 	/**
@@ -120,6 +131,7 @@ public class VideoModule extends AbstractSpringModule {
 	 */
 	public int[] getTranscodingResolutions() {
 		return transcodingResolutionsArr;
+		//TODO: implement GUI for reading/Setting
 	}
 
 	/**
@@ -192,4 +204,15 @@ public class VideoModule extends AbstractSpringModule {
 		setStringProperty(VIDEOTRANSCODING_ENABLED, Boolean.toString(transcodingEnabled), true);
 		//TODO: check all video resources if there are missing versions
 	}
+
+	public boolean isTranscodingLocal() {		
+		return isTranscodingEnabled() && transcodingLocal;
+		//TODO: implement GUI for reading/Setting
+	}
+
+	public void setTranscoding(boolean transcodingLocal) {
+		this.transcodingLocal = transcodingLocal;
+		setStringProperty(VIDEOTRANSCODING_LOCAL, Boolean.toString(transcodingLocal), true);
+	}
+
 }

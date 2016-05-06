@@ -33,6 +33,7 @@ import org.springframework.stereotype.Service;
  * DAO implementation for manipulating VideoTranscoding objects
  * 
  * Initial date: 05.05.2016<br>
+ * 
  * @author gnaegi, gnaegi@frentix.com, http://www.frentix.com
  *
  */
@@ -43,13 +44,15 @@ public class VideoTranscodingDAO {
 	private DB dbInstance;
 
 	/**
-	 * Factory method to create and persist new video transcoding objects for a given video resource
+	 * Factory method to create and persist new video transcoding objects for a
+	 * given video resource
+	 * 
 	 * @param videoResource
 	 * @param resolution
 	 * @param format
 	 * @return
 	 */
-	public VideoTranscoding createVideoTranscoding(OLATResource videoResource, int resolution, String format) {
+	VideoTranscoding createVideoTranscoding(OLATResource videoResource, int resolution, String format) {
 		VideoTranscodingImpl videoTranscoding = new VideoTranscodingImpl();
 		videoTranscoding.setCreationDate(new Date());
 		videoTranscoding.setLastModified(videoTranscoding.getCreationDate());
@@ -60,30 +63,70 @@ public class VideoTranscodingDAO {
 		dbInstance.getCurrentEntityManager().persist(videoTranscoding);
 		return videoTranscoding;
 	}
-	
-	public List<VideoTranscoding> getVideoTranscodings(OLATResource videoResource) {
-		StringBuilder sb = new StringBuilder();
-		sb.append("select trans from videotranscoding as trans")
-		  .append(" inner join fetch trans.videoResource as res")
-		  .append(" where res.key=:resourceKey");
-		return dbInstance.getCurrentEntityManager()
-				.createQuery(sb.toString(), VideoTranscoding.class)
-				.setParameter("resourceKey", videoResource.getKey())
-				.getResultList();
-	}
 
-	public VideoTranscoding updateTranscoding(VideoTranscoding videoTranscoding) {
-		((VideoTranscodingImpl)videoTranscoding).setLastModified(new Date());
+	/**
+	 * Merge updated video transcoding, persist on DB
+	 * 
+	 * @param videoTranscoding
+	 * @return Updated transcoding object
+	 */
+	VideoTranscoding updateTranscoding(VideoTranscoding videoTranscoding) {
+		((VideoTranscodingImpl) videoTranscoding).setLastModified(new Date());
 		VideoTranscoding trans = dbInstance.getCurrentEntityManager().merge(videoTranscoding);
 		return trans;
 	}
 
-	public int deleteVideoTranscodings(OLATResource videoResource) {
+	/**
+	 * Delete all video transcoding objects for a given video resource
+	 * 
+	 * @param videoResource
+	 * @return
+	 */
+	int deleteVideoTranscodings(OLATResource videoResource) {
 		String deleteQuery = "delete from videotranscoding where fk_resource_id=:resourceKey";
-		return dbInstance.getCurrentEntityManager()
-				.createQuery(deleteQuery).setParameter("resourceKey", videoResource.getKey())
-				.executeUpdate();
+		return dbInstance.getCurrentEntityManager().createQuery(deleteQuery)
+				.setParameter("resourceKey", videoResource.getKey()).executeUpdate();
 	}
 
-	
+	/**
+	 * Delete a specifig video transcoding version
+	 * 
+	 * @param videoTranscoding
+	 */
+	void deleteVideoTranscoding(VideoTranscoding videoTranscoding) {
+		dbInstance.getCurrentEntityManager().remove(videoTranscoding);
+	}
+
+	/**
+	 * Get all video transcodings for a specific video resource, sorted by
+	 * resolution, highes resolution first
+	 * 
+	 * @param videoResource
+	 * @return
+	 */
+	List<VideoTranscoding> getVideoTranscodings(OLATResource videoResource) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select trans from videotranscoding as trans")
+			.append(" inner join fetch trans.videoResource as res")
+			.append(" where res.key=:resourceKey")
+			.append(" order by trans.resolution desc");
+		return dbInstance.getCurrentEntityManager().createQuery(sb.toString(), VideoTranscoding.class)
+				.setParameter("resourceKey", videoResource.getKey()).getResultList();
+	}
+
+	/**
+	 * Get all video transcodings which are waiting for transcoding or are
+	 * currently in transcoding in FIFO ordering
+	 * 
+	 * @return
+	 */
+	List<VideoTranscoding> getVideoTranscodingsPendingAndInProgress() {
+		StringBuilder sb = new StringBuilder();
+			sb.append("select trans from videotranscoding as trans")
+			.append(" inner join fetch trans.videoResource as res")
+			.append(" where trans.status != 100")
+			.append(" order by trans.creationDate asc, trans.id asc");
+		return dbInstance.getCurrentEntityManager().createQuery(sb.toString(), VideoTranscoding.class).getResultList();
+	}
+
 }

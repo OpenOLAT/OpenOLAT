@@ -72,6 +72,13 @@ public interface VideoManager {
 	 */
 	public abstract void startTranscodingProcess(OLATResource video);
 	
+	/**
+	 * Get all video transcodings for a specific video resource, sorted by
+	 * resolution, highes resolution first
+	 * 
+	 * @param video
+	 * @return
+	 */
 	public abstract List<VideoTranscoding> getVideoTranscodings(OLATResource video);
 
 	/**
@@ -176,5 +183,10 @@ public interface VideoManager {
 	 * @return true: success; false: failed
 	 */
 	public abstract boolean deleteVideoTranscodings(OLATResource videoResource);
+
+	/**
+	 * @return List of video transcodings which have not yet been done
+	 */
+	public abstract List<VideoTranscoding> getVideoTranscodingsPendingAndInProgress();
 
 }

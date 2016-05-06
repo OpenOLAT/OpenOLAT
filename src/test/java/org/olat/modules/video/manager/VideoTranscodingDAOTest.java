@@ -46,14 +46,34 @@ public class VideoTranscodingDAOTest extends OlatTestCase {
 	@Test
 	public void createVideoTranscoding() {
 		OLATResource resource = JunitTestHelper.createRandomResource();
+		// pending transcoding
 		VideoTranscoding vTranscoding = videoTranscodingDao.createVideoTranscoding(resource, 1080, "mp4");
 		Assert.assertNotNull(vTranscoding);
 		dbInstance.commitAndCloseSession();
-		
+
+		// done transcoding
+		VideoTranscoding vTranscoding2 = videoTranscodingDao.createVideoTranscoding(resource, 720, "mp4");
+		Assert.assertNotNull(vTranscoding2);
+		vTranscoding2.setStatus(VideoTranscoding.TRANSCODING_STATUS_DONE);
+		vTranscoding2.setTranscoder(VideoTranscoding.TRANSCODER_LOCAL);
+		vTranscoding2 = videoTranscodingDao.updateTranscoding(vTranscoding2);
+		Assert.assertNotNull(vTranscoding2);
+		Assert.assertTrue(vTranscoding2.getStatus() == 100);
+		dbInstance.commitAndCloseSession();
+
+		// check for transcodings of resource
 		List<VideoTranscoding> vTranscodingList = videoTranscodingDao.getVideoTranscodings(resource);
 		Assert.assertNotNull(vTranscodingList);
-		Assert.assertEquals(1, vTranscodingList.size());
+		Assert.assertEquals(2, vTranscodingList.size());
 		Assert.assertEquals(vTranscoding, vTranscodingList.get(0));
+		Assert.assertEquals(vTranscoding2, vTranscodingList.get(1));
+
+		// check for overall pending transcodings
+		List<VideoTranscoding> vTranscodingList2 = videoTranscodingDao.getVideoTranscodingsPendingAndInProgress();
+		Assert.assertNotNull(vTranscodingList2);
+		Assert.assertEquals(1, vTranscodingList2.size());
+		Assert.assertEquals(vTranscoding, vTranscodingList2.get(0));
+		
 	}
 
 }

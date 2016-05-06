@@ -28,7 +28,6 @@ import java.io.RandomAccessFile;
 import java.math.RoundingMode;
 import java.nio.channels.FileChannel;
 import java.text.DecimalFormat;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map.Entry;
@@ -42,7 +41,6 @@ import org.jcodec.api.FrameGrab;
 import org.jcodec.common.FileChannelWrapper;
 import org.olat.core.commons.modules.bc.vfs.OlatRootFolderImpl;
 import org.olat.core.commons.services.image.Size;
-import org.olat.core.commons.services.taskexecutor.TaskExecutorManager;
 import org.olat.core.commons.services.video.MovieService;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.logging.OLog;
@@ -70,6 +68,9 @@ import org.olat.repository.RepositoryEntryImportExport;
 import org.olat.repository.RepositoryEntryImportExport.RepositoryEntryImport;
 import org.olat.repository.RepositoryManager;
 import org.olat.resource.OLATResource;
+import org.quartz.JobDetail;
+import org.quartz.Scheduler;
+import org.quartz.SchedulerException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -95,9 +96,9 @@ public class VideoManagerImpl implements VideoManager {
 	@Autowired 
 	private RepositoryManager repositoryManager;
 	@Autowired
-	private TaskExecutorManager taskManager;
-	@Autowired
 	private VideoTranscodingDAO videoTranscodingDao;
+	@Autowired
+	private Scheduler scheduler;
 	
 	private static final OLog log = Tracing.createLoggerFor(VideoManagerImpl.class);
 
@@ -250,34 +251,57 @@ public class VideoManagerImpl implements VideoManager {
 	
 	@Override
 	public void startTranscodingProcess(OLATResource video) {
-		//TODO: check for existing version, add option to force rebuild of all versions
-		//TODO: GUI to admin console to manage transcoding resolutions
+		List<VideoTranscoding> existingTranscodings = getVideoTranscodings(video);
 		VideoMetadata videoMetadata = readVideoMetadataFile(video);
 		int height = videoMetadata.getHeight();
 		// 1) setup transcoding job for original file size
-		VideoTranscoding videoTranscoding = videoTranscodingDao.createVideoTranscoding(video, height, VideoTranscoding.FORMAT_MP4);
-		VideoTranscodingTask task = new VideoTranscodingTask(video, videoTranscoding);
-		taskManager.execute(task, null, video, null, new Date());		
+		createTranscodingIfNotCreatedAlready(video, height, VideoTranscoding.FORMAT_MP4, existingTranscodings);
 		// 2) setup transcoding jobs for all configured sizes below the original size
 		int[] resolutions = videoModule.getTranscodingResolutions();
 		for (int resolution : resolutions) {
 			if (height <= resolution) {
 				continue;
 			}
-			videoTranscoding = videoTranscodingDao.createVideoTranscoding(video, resolution, VideoTranscoding.FORMAT_MP4);
-			task = new VideoTranscodingTask(video, videoTranscoding);
-			taskManager.execute(task, null, video, null, new Date());		
+			createTranscodingIfNotCreatedAlready(video, resolution, VideoTranscoding.FORMAT_MP4, existingTranscodings);
 		}
-		// start transcoding immediately
-		taskManager.executeTaskToDo();
+		// 3) Start transcoding immediately, force job execution
+		if (videoModule.isTranscodingLocal()) {
+			try {
+				JobDetail detail = scheduler.getJobDetail("videoTranscodingJobDetail", Scheduler.DEFAULT_GROUP);
+				scheduler.triggerJob(detail.getName(), detail.getGroup());
+			} catch (SchedulerException e) {
+				log.error("Error while starting video transcoding job", e);
+			}			
+		}
 	}
 	
+	/**
+	 * Helper to check if a transcoding already exists and only create if not
+	 * @param video
+	 * @param resolution
+	 * @param format
+	 * @param existingTranscodings
+	 */
+	private void createTranscodingIfNotCreatedAlready(OLATResource video, int resolution, String format, List<VideoTranscoding> existingTranscodings) {
+		boolean found = false;
+		for (VideoTranscoding videoTranscoding : existingTranscodings) {
+			if (videoTranscoding.getResolution() == resolution) {
+				found = true;
+				break;
+			}
+		}
+		if (!found) {
+			videoTranscodingDao.createVideoTranscoding(video, resolution, format);
+		}		
+	}
+
 	
 	@Override
 	public List<VideoTranscoding> getVideoTranscodings(OLATResource video){
 		List<VideoTranscoding> videoTranscodings = videoTranscodingDao.getVideoTranscodings(video);
 		return videoTranscodings;
 	}
+	
 
 	@Override
 	public String getAspectRatio(int width, int height) {
@@ -433,8 +457,13 @@ public class VideoManagerImpl implements VideoManager {
 		VideoMetadata metaData = new VideoMetadataImpl();
 		// calculate video size
 		Size videoSize = movieService.getSize(targetFile, FILETYPE_MP4);
-		metaData.setWidth(videoSize.getWidth());
-		metaData.setHeight(videoSize.getHeight());
+		if (videoSize != null) {
+			metaData.setWidth(videoSize.getWidth());
+			metaData.setHeight(videoSize.getHeight());			
+		} else {
+			metaData.setWidth(600);
+			metaData.setHeight(800);						
+		}
 		// generate a poster image, use 20th frame as a default
 		VFSLeaf posterResource = VFSManager.resolveOrCreateLeafFromPath(masterContainer, FILENAME_POSTER_JPG);
 		getFrame(videoResource, 20, posterResource);
@@ -508,6 +537,11 @@ public class VideoManagerImpl implements VideoManager {
 		videoTranscodingDao.deleteVideoTranscodings(videoResource);
 		VFSStatus deleteStatus = getTranscodingContainer(videoResource).delete();
 		return (deleteStatus == VFSConstants.YES ? true : false);
+	}
+
+	@Override
+	public List<VideoTranscoding> getVideoTranscodingsPendingAndInProgress() {
+		return videoTranscodingDao.getVideoTranscodingsPendingAndInProgress();
 	}
 
 
