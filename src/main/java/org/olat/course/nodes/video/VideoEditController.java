@@ -152,8 +152,8 @@ public class VideoEditController  extends ActivateableTabbableDefaultController 
 
 		// Accessibility precondition
 		Condition accessCondition = videoNode.getPreConditionAccess();
-		accessibilityCondContr = new ConditionEditController(ureq, getWindowControl(),
-		accessCondition, AssessmentHelper.getAssessableNodes(course.getEditorTreeModel(), videoNode), euce);
+		accessibilityCondContr = new ConditionEditController(ureq, getWindowControl(), euce,
+		accessCondition, AssessmentHelper.getAssessableNodes(course.getEditorTreeModel(), videoNode));
 		listenTo(accessibilityCondContr);
 
 		main.setContent(videoConfigurationVc);
