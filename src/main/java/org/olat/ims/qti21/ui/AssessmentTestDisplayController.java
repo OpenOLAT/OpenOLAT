@@ -1091,6 +1091,7 @@ public class AssessmentTestDisplayController extends BasicController implements 
 			mainForm.setOnSubmitCallback("QtiWorksRendering.maySubmit();");
 
 			FormSubmit submit = uifactory.addFormSubmitButton("submit", formLayout);
+			submit.setElementCssClass("o_sel_assessment_item_submit");
 			qtiEl = new AssessmentTestFormItem("qtirun", submit);
 			qtiEl.setResolvedAssessmentTest(resolvedAssessmentTest);
 			formLayout.add("qtirun", qtiEl);
@@ -1102,7 +1103,9 @@ public class AssessmentTestDisplayController extends BasicController implements 
 			String endName = qtiEl.getComponent().hasMultipleTestParts()
 					? "assessment.test.end.testPart" : "assessment.test.end.test";
 			endTestPartButton = uifactory.addFormLink("endTest", endName, null, formLayout, Link.BUTTON);
+			endTestPartButton.setElementCssClass("o_sel_end_testpart");
 			closeTestButton = uifactory.addFormLink("closeTest", "assessment.test.close.test", null, formLayout, Link.BUTTON);
+			closeTestButton.setElementCssClass("o_sel_close_test");
 			if(deliveryOptions.isEnableCancel()) {
 				cancelTestButton = uifactory.addFormLink("cancelTest", "cancel.test", null, formLayout, Link.BUTTON);
 			}

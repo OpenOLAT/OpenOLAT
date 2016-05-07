@@ -40,6 +40,7 @@ import org.olat.selenium.page.LoginPage;
 import org.olat.selenium.page.NavigationPage;
 import org.olat.selenium.page.course.CourseEditorPageFragment;
 import org.olat.selenium.page.course.CoursePageFragment;
+import org.olat.selenium.page.qti.QTI21Page;
 import org.olat.test.ArquillianDeployments;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.rest.UserRestClient;
@@ -78,7 +79,7 @@ public class ImsQTI21Test {
 		authorLoginPage.loginAs(author.getLogin(), author.getPassword());
 		
 		//upload a test
-		String qtiTestTitle = "Simple QTI1.2 " + UUID.randomUUID();
+		String qtiTestTitle = "Simple QTI 2.1 " + UUID.randomUUID();
 		URL qtiTestUrl = JunitTestHelper.class.getResource("file_resources/simple_QTI_21_test.zip");
 		File qtiTestFile = new File(qtiTestUrl.toURI());
 		navBar
@@ -93,7 +94,6 @@ public class ImsQTI21Test {
 			.clickToolbarBack();
 		
 		String testNodeTitle = "QTI21Test-1";
-		String testTitle = "Test - " + UUID.randomUUID();
 		
 		//create a course element of type CP with the CP that we create above
 		CourseEditorPageFragment courseEditor = CoursePageFragment.getCourse(browser)
@@ -102,7 +102,7 @@ public class ImsQTI21Test {
 			.createNode("iqtest")
 			.nodeTitle(testNodeTitle)
 			.selectTabLearnContent()
-			.createQTI12Test(testTitle);
+			.chooseTest(qtiTestTitle);
 
 		//publish the course
 		courseEditor
@@ -120,6 +120,17 @@ public class ImsQTI21Test {
 		//check that the title of the start page of test is correct
 		WebElement testH2 = browser.findElement(By.cssSelector("div.o_titled_wrapper.o_course_run h2"));
 		Assert.assertEquals(testNodeTitle, testH2.getText().trim());
+		
+		QTI21Page qtiPage = QTI21Page
+				.getQTI12Page(browser);
+		qtiPage
+			.start()
+			.answerSingleChoice(1)
+			.saveAnswer()
+			.endTest()
+			.closeTest();
+		
+		
 	}
 
 }

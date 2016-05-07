@@ -66,6 +66,11 @@ public class AssessmentTestComponent extends AssessmentObjectComponent  {
 	public AssessmentTestFormItem getQtiItem() {
 		return qtiItem;
 	}
+	
+	@Override
+	public boolean isSilentlyDynamicalCmp() {
+		return true;
+	}
 
 	public boolean isRenderNavigation() {
 		return renderNavigation;

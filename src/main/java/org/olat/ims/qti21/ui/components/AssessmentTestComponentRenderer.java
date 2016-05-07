@@ -262,7 +262,7 @@ public class AssessmentTestComponentRenderer extends AssessmentObjectComponentRe
 		}
 		if(options.isReviewMode() && options.isSolutionMode()) {
 			String title = translator.translate("assessment.solution.hide");
-			renderControl(sb, component, title, "o_sel-solution_hide",
+			renderControl(sb, component, title, "o_sel_solution_hide",
 					new NameValuePair("cid", Event.reviewItem.name()), new NameValuePair("item", key));
 		}
 		sb.append("</div>");//end controls
