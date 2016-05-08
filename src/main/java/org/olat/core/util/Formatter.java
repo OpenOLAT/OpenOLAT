@@ -46,6 +46,7 @@ import java.util.StringTokenizer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.commons.lang.time.DurationFormatUtils;
 import org.olat.core.dispatcher.impl.StaticMediaDispatcher;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.helpers.Settings;
@@ -339,7 +340,22 @@ public class Formatter {
 		long s = (millis - hmins - m*1000*60)/1000;
 		return h + "h " + m + "m " + s + "s";
 	}
-	
+
+	/**
+	 * Formats a duration in millis to "XX:YY:ZZ". Removes the hours if zero
+	 * 
+	 * @param timecode in milliseconds
+	 * @return formatted timecode
+	 */
+	public static String formatTimecode(long timecode) {
+		String result =  DurationFormatUtils.formatDuration(timecode, "H:mm:ss", false);
+		if (result.startsWith("0:")) {
+			// remove empty hours
+			result = result.substring(2);
+		}
+		return result;
+	}
+
 	/**
 	 * Format the given bytes to human readable format
 	 * @param bytes the byte count

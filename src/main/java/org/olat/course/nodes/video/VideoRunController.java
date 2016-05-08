@@ -43,7 +43,9 @@ import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.video.ui.VideoDisplayController;
 import org.olat.modules.video.ui.VideoEvent;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryService;
 import org.olat.util.logging.activity.LoggingResourceable;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -60,7 +62,10 @@ public class VideoRunController extends BasicController {
 	
 	private VideoDisplayController videoDispCtr;
 	private VideoCourseNode videoNode;
-		
+
+	@Autowired
+	private RepositoryService repositoryService;
+
 	/**
 	 * single page run controller 
 	 * @param wControl
@@ -139,22 +144,32 @@ public class VideoRunController extends BasicController {
 
 
 		}
-		switch(config.getStringValue(VideoEditController.CONFIG_KEY_DESCRIPTION_SELECT,"none")){
-		case "resourceDescription":
-				videoDispCtr = new VideoDisplayController(ureq, getWindowControl(), videoNode.getReferencedRepositoryEntry(), config.getBooleanSafe(VideoEditController.CONFIG_KEY_AUTOPLAY), config.getBooleanSafe(VideoEditController.CONFIG_KEY_COMMENTS), config.getBooleanSafe(VideoEditController.CONFIG_KEY_RATING), videoNode.getIdent(), false, false, "");
-				break;
-		case "customDescription":
-				videoDispCtr = new VideoDisplayController(ureq, getWindowControl(), videoNode.getReferencedRepositoryEntry(), config.getBooleanSafe(VideoEditController.CONFIG_KEY_AUTOPLAY), config.getBooleanSafe(VideoEditController.CONFIG_KEY_COMMENTS), config.getBooleanSafe(VideoEditController.CONFIG_KEY_RATING), videoNode.getIdent(), true, false, config.getStringValue(VideoEditController.CONFIG_KEY_DESCRIPTION_CUSTOMTEXT));
-				break;
-		case "none":
-				videoDispCtr = new VideoDisplayController(ureq, getWindowControl(), videoNode.getReferencedRepositoryEntry(), config.getBooleanSafe(VideoEditController.CONFIG_KEY_AUTOPLAY), config.getBooleanSafe(VideoEditController.CONFIG_KEY_COMMENTS), config.getBooleanSafe(VideoEditController.CONFIG_KEY_RATING), videoNode.getIdent(), true, false, "");
-				break;
-		}
+		RepositoryEntry videoEntry = videoNode.getReferencedRepositoryEntry();
+		// configure the display controller according to config
+		boolean autoplay = config.getBooleanSafe(VideoEditController.CONFIG_KEY_AUTOPLAY);
+		boolean comments = config.getBooleanSafe(VideoEditController.CONFIG_KEY_COMMENTS);
+		boolean ratings = config.getBooleanSafe(VideoEditController.CONFIG_KEY_RATING);
+		String ident = videoNode.getIdent();
+		String customtext = config.getStringValue(VideoEditController.CONFIG_KEY_DESCRIPTION_CUSTOMTEXT);
 		
+		switch(config.getStringValue(VideoEditController.CONFIG_KEY_DESCRIPTION_SELECT,"none")) {
+			case "resourceDescription":
+					videoDispCtr = new VideoDisplayController(ureq, getWindowControl(), videoEntry, autoplay, comments, ratings, ident, false, false, "");
+					break;
+			case "customDescription":
+					videoDispCtr = new VideoDisplayController(ureq, getWindowControl(), videoEntry, autoplay, comments, ratings, ident, true, false, customtext);
+					break;
+			case "none":
+					videoDispCtr = new VideoDisplayController(ureq, getWindowControl(), videoEntry, autoplay, comments, ratings, ident, true, false, "");
+					break;
+		}		
 		listenTo(videoDispCtr);
 		
 		myContent.put("videoDisplay", videoDispCtr.getInitialComponent());
 		main.setContent(myContent);
+		
+		// Update launch counter
+		repositoryService.incrementLaunchCounter(videoEntry);
 	}
 	
 

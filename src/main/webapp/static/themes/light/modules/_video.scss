@@ -41,6 +41,52 @@
 	}
 }
 
+.o_video_listing {
+	margin-right: -10px;
+	
+	.o_video_entry {
+		position: relative;
+		display: inline-block;
+		height: 220px;			
+		vertical-align: top;
+		margin-right: 10px;
+	}
+	.o_video_poster {
+		width: 250px;
+		max-width: 100%;
+		height: 140px;	
+		border: 1px solid #eee;
+	}
+	.o_timecode {
+		position: absolute;
+		top: 0;
+		right: 0;
+		padding: 3px 4px;
+		background: #333;
+		color: #fff;
+		font-size: $font-size-small;
+		line-height: $font-size-small;
+	}
+	.o_meta {
+		padding: 2px;
+		font-size: ceil(($font-size-base * 0.75));
+		h5 {
+			font-size: $font-size-base;
+			margin-top: 0;
+			margin-bottom: 5px;
+		}
+	}	
+	.o_date {
+		margin-left: 10px;
+		display: inline-block;
+		&:before {
+			content: '\002022';
+			margin-right: 10px;
+			display: inline-block;
+		}	
+	}
+}
+
 .o_video_run {
 	.o_author {
 		margin-top: 0.5em;

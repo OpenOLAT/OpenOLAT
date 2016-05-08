@@ -111,6 +111,35 @@ public class MovieServiceImpl implements MovieService, ThumbnailSPI {
 	}
 
 	@Override
+	public long getDuration(VFSLeaf media, String suffix) {
+		File file = null;
+		if(media instanceof VFSCPNamedItem) {
+			media = ((VFSCPNamedItem)media).getDelegate();
+		}
+		if(media instanceof LocalFileImpl) {
+			file = ((LocalFileImpl)media).getBasefile();
+		}
+		if(file == null) {
+			return -1;
+		}
+
+		if(suffix.equals("mp4") || suffix.equals("m4v")) {
+			try(RandomAccessFile accessFile = new RandomAccessFile(file, "r")) {
+				FileChannel ch = accessFile.getChannel();
+				FileChannelWrapper in = new FileChannelWrapper(ch);
+				MP4Demuxer demuxer1 = new MP4Demuxer(in);
+				long duration = demuxer1.getMovie().getDuration();
+				return duration;
+			} catch (Exception | AssertionError e) {
+				log.error("Cannot extract duration of: " + media, e);
+			}
+		}
+
+		return -1;
+	}
+
+	
+	@Override
 	public FinalSize generateThumbnail(VFSLeaf file, VFSLeaf thumbnailFile, int maxWidth, int maxHeight, boolean fill)
 	throws CannotGenerateThumbnailException {
 		FinalSize size = null;
