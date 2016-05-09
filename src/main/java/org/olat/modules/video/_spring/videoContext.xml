@@ -51,6 +51,11 @@
 				<value>org.olat.admin.SystemAdminMainController</value>
 			</list>
 		</property>
+	</bean>	
+	
+	<bean id="olatsites_video" class="org.olat.modules.video.site.VideoSiteDef">
+	   <property name="order" value="6" />
+	   <property name="enabled" value="${video.site.enable}"/>
 	</bean>
-
+	
 </beans>
