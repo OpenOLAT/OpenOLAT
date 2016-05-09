@@ -218,15 +218,28 @@ public class FormJSHelper {
 	// Execute code within an anonymous function (closure) to not leak
 	// variables to global scope (OLAT-5755)
 	public static StringOutput appendFlexiFormDirty(StringOutput sb, Form form, String id) {
-		sb.append("<script type=\"text/javascript\">\n /* <![CDATA[ */ \n")
-		  .append("(function() { jQuery('#").append(id).append("').on('change keypress',{formId:\"").append(form.getDispatchFieldId()).append("\"},setFlexiFormDirtyByListener);")
-		  .append("})();\n /* ]]> */ \n</script>");
-		return sb;
+		return appendFlexiFormDirtyOn(sb, form, "change keypress", id);
 	}
 	
 	public static StringOutput appendFlexiFormDirtyForCheckbox(StringOutput sb, Form form, String formDispatchId) {
+		return appendFlexiFormDirtyOn(sb, form, "change mouseup", formDispatchId);
+	}
+	
+	public static StringOutput appendFlexiFormDirtyForClick(StringOutput sb, Form form, String formDispatchId) {
+		return appendFlexiFormDirtyOn(sb, form, "click", formDispatchId);
+	}
+	
+	/**
+	 * 
+	 * @param sb The output
+	 * @param form The form containing the button to be dirty
+	 * @param events A list of space separated javascript events
+	 * @param formDispatchId
+	 * @return
+	 */
+	public static StringOutput appendFlexiFormDirtyOn(StringOutput sb, Form form, String events, String formDispatchId) {
 		sb.append(" <script type=\"text/javascript\">\n /* <![CDATA[ */ \n")
-		  .append("(function() { jQuery('#").append(formDispatchId).append("').on('change mouseup', {formId:\"").append(form.getDispatchFieldId()).append("\"}, setFlexiFormDirtyByListener);")
+		  .append("(function() { jQuery('#").append(formDispatchId).append("').on('").append(events).append("', {formId:\"").append(form.getDispatchFieldId()).append("\"}, setFlexiFormDirtyByListener);")
 		  .append("})();\n /* ]]> */ \n</script>");
 		return sb;
 	}

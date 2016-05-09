@@ -23,9 +23,11 @@ import java.io.File;
 import java.net.URI;
 import java.nio.file.Path;
 
+import uk.ac.ed.ph.jqtiplus.node.item.interaction.Interaction;
 import uk.ac.ed.ph.jqtiplus.resolution.ResolvedAssessmentItem;
 import uk.ac.ed.ph.jqtiplus.resolution.ResolvedAssessmentTest;
 import uk.ac.ed.ph.jqtiplus.running.TestSessionController;
+import uk.ac.ed.ph.jqtiplus.state.ItemSessionState;
 
 /**
  * 
@@ -33,27 +35,35 @@ import uk.ac.ed.ph.jqtiplus.running.TestSessionController;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class AssessmentTestResultComponent extends AssessmentObjectComponent  {
+public class InteractionResultComponent extends AssessmentObjectComponent  {
 	
-	private static final AssessmentTestResultComponentRenderer VELOCITY_RENDERER = new AssessmentTestResultComponentRenderer();
+	private static final InteractionResultComponentRenderer VELOCITY_RENDERER = new InteractionResultComponentRenderer();
 	
-	private ResolvedAssessmentTest resolvedAssessmentTest;
 	
-	private boolean renderResults;
+	private final InteractionResultFormItem qtiItem;
+	
+	private final Interaction interaction;
 	private TestSessionController testSessionController;
-	private final AssessmentTestResultFormItem qtiItem;
+	private ResolvedAssessmentTest resolvedAssessmentTest;
+	private final ResolvedAssessmentItem resolvedAssessmentItem;
 	
-	public AssessmentTestResultComponent(String name, AssessmentTestResultFormItem qtiItem) {
+	private ItemSessionState itemSessionState;
+	private boolean showSolution;
+	
+	public InteractionResultComponent(String name, Interaction interaction,
+			ResolvedAssessmentItem resolvedAssessmentItem, InteractionResultFormItem qtiItem) {
 		super(name);
 		this.qtiItem = qtiItem;
+		this.interaction = interaction;
+		this.resolvedAssessmentItem = resolvedAssessmentItem;
 	}
 
-	public boolean isRenderResults() {
-		return renderResults;
+	public boolean isShowSolution() {
+		return showSolution;
 	}
 
-	public void setRenderResults(boolean renderResults) {
-		this.renderResults = renderResults;
+	public void setShowSolution(boolean showSolution) {
+		this.showSolution = showSolution;
 	}
 
 	public ResolvedAssessmentTest getResolvedAssessmentTest() {
@@ -71,9 +81,25 @@ public class AssessmentTestResultComponent extends AssessmentObjectComponent  {
 	public void setTestSessionController(TestSessionController testSessionController) {
 		this.testSessionController = testSessionController;
 	}
+	
+	public ItemSessionState getItemSessionState() {
+		return itemSessionState;
+	}
+
+	public void setItemSessionState(ItemSessionState itemSessionState) {
+		this.itemSessionState = itemSessionState;
+	}
+
+	public Interaction getInteraction() {
+		return interaction;
+	}
+	
+	public ResolvedAssessmentItem getResolvedAssessmentItem() {
+		return resolvedAssessmentItem;
+	}
 
 	@Override
-	public AssessmentTestResultFormItem getQtiItem() {
+	public InteractionResultFormItem getQtiItem() {
 		return qtiItem;
 	}
 	
@@ -94,7 +120,7 @@ public class AssessmentTestResultComponent extends AssessmentObjectComponent  {
 	}
 
 	@Override
-	public AssessmentTestResultComponentRenderer getHTMLRendererSingleton() {
+	public InteractionResultComponentRenderer getHTMLRendererSingleton() {
 		return VELOCITY_RENDERER;
 	}
 }

@@ -28,6 +28,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import org.olat.core.gui.components.form.flexible.impl.FormJSHelper;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.render.velocity.VelocityRenderDecorator;
@@ -94,7 +95,6 @@ public class AssessmentObjectVelocityRenderDecorator extends VelocityRenderDecor
 	private final StringOutput target;
 	private final Translator translator;
 	
-	private boolean solutionMode;
 	
 	private final AssessmentItem assessmentItem;
 	private final ItemSessionState itemSessionState;
@@ -114,6 +114,7 @@ public class AssessmentObjectVelocityRenderDecorator extends VelocityRenderDecor
 		this.itemSessionState = itemSessionState;
 		this.resolvedAssessmentItem = resolvedAssessmentItem;
 		this.assessmentItem = resolvedAssessmentItem.getRootNodeLookup().extractIfSuccessful();
+		
 	}
 
 	public boolean isSolutionMode() {
@@ -121,12 +122,27 @@ public class AssessmentObjectVelocityRenderDecorator extends VelocityRenderDecor
 	}
 	
 	public boolean isItemSessionOpen() {
-		return avc.isItemSessionOpen(itemSessionState, solutionMode);
+		return avc.isItemSessionOpen(itemSessionState, isSolutionMode());
 	}
 	
 	//isItemSessionEnded" as="xs:boolean" select="$itemSessionState/@endTime!='' or $solutionMode
 	public boolean isItemSessionEnded() {
-		return avc.isItemSessionEnded(itemSessionState, solutionMode);
+		return avc.isItemSessionEnded(itemSessionState, isSolutionMode());
+	}
+	
+	public String appendFlexiFormDirty(String id) {
+		FormJSHelper.appendFlexiFormDirty(target, avc.getQtiItem().getRootForm(), id);
+		return "";
+	}
+	
+	public String appendFlexiFormDirtyForCheckbox(String id) {
+		FormJSHelper.appendFlexiFormDirtyForCheckbox(target, avc.getQtiItem().getRootForm(), id);
+		return "";
+	}
+	
+	public String appendFlexiFormDirtyForClick(String id) {
+		FormJSHelper.appendFlexiFormDirtyForClick(target, avc.getQtiItem().getRootForm(), id);
+		return "";
 	}
 	
 	public String convertLink(String uri) {
@@ -489,7 +505,7 @@ public class AssessmentObjectVelocityRenderDecorator extends VelocityRenderDecor
 	}
 
 	public Value getResponseValue(Identifier identifier) {
-		return AssessmentRenderFunctions.getResponseValue(assessmentItem, itemSessionState, identifier, solutionMode);
+		return AssessmentRenderFunctions.getResponseValue(assessmentItem, itemSessionState, identifier, isSolutionMode());
 	}
 	
 	public ResponseDeclaration getResponseDeclaration(Identifier identifier) {

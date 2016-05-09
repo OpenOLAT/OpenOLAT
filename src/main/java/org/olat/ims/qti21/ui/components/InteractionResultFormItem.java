@@ -22,8 +22,11 @@ package org.olat.ims.qti21.ui.components;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 
+import uk.ac.ed.ph.jqtiplus.node.item.interaction.Interaction;
+import uk.ac.ed.ph.jqtiplus.resolution.ResolvedAssessmentItem;
 import uk.ac.ed.ph.jqtiplus.resolution.ResolvedAssessmentTest;
 import uk.ac.ed.ph.jqtiplus.running.TestSessionController;
+import uk.ac.ed.ph.jqtiplus.state.ItemSessionState;
 
 /**
  * 
@@ -31,13 +34,13 @@ import uk.ac.ed.ph.jqtiplus.running.TestSessionController;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class AssessmentTestResultFormItem extends AssessmentObjectFormItem {
+public class InteractionResultFormItem extends AssessmentObjectFormItem {
 	
-	private final AssessmentTestResultComponent component;
+	private final InteractionResultComponent component;
 	
-	public AssessmentTestResultFormItem(String name) {
+	public InteractionResultFormItem(String name, Interaction interaction, ResolvedAssessmentItem resolvedAssessmentItem) {
 		super(name, null);
-		component = new AssessmentTestResultComponent(name + "_cmp", this);
+		component = new InteractionResultComponent(name + "_cmp", interaction, resolvedAssessmentItem, this);
 	}
 	
 	public ResolvedAssessmentTest getResolvedAssessmentTest() {
@@ -56,8 +59,24 @@ public class AssessmentTestResultFormItem extends AssessmentObjectFormItem {
 		component.setTestSessionController(testSessionController);
 	}
 
+	public ItemSessionState getItemSessionState() {
+		return component.getItemSessionState();
+	}
+
+	public void setItemSessionState(ItemSessionState itemSessionState) {
+		component.setItemSessionState(itemSessionState);
+	}
+
+	public boolean isShowSolution() {
+		return component.isShowSolution();
+	}
+
+	public void setShowSolution(boolean showSolution) {
+		component.setShowSolution(showSolution);
+	}
+
 	@Override
-	public AssessmentTestResultComponent getComponent() {
+	public InteractionResultComponent getComponent() {
 		return component;
 	}
 	

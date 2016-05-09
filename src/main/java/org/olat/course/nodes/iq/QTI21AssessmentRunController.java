@@ -21,6 +21,7 @@ package org.olat.course.nodes.iq;
 
 import java.text.DateFormat;
 import java.util.Date;
+import java.util.List;
 
 import org.olat.core.commons.fullWebApp.LayoutMain3ColsController;
 import org.olat.core.gui.UserRequest;
@@ -88,6 +89,8 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 	private final IQTESTCourseNode courseNode;
 	private final RepositoryEntry testEntry;
 	private final QTI21DeliveryOptions deliveryOptions;
+	// The test is really assessment not a self test or a survey
+	private final boolean assessmentType = true;
 	
 	private AssessmentTestDisplayController displayCtrl;
 	private LayoutMain3ColsController displayContainerController;
@@ -109,15 +112,20 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 		mainVC = createVelocityContainer("assessment_run");
 		
 		deliveryOptions = getDeliveryOptions();
-		init();
+		init(ureq);
 		initAssessment(ureq);
 		putInitialPanel(mainVC);
 	}
 	
-	private void init() {
+	private void init(UserRequest ureq) {
 		startButton = LinkFactory.createButton("start", mainVC, this);
 		startButton.setElementCssClass("o_sel_start_qti21assessment");
 		startButton.setPrimary(true);
+		
+		if (assessmentType) {
+			checkChats(ureq);
+			singleUserEventCenter.registerFor(this, getIdentity(), InstantMessagingService.TOWER_EVENT_ORES);
+		}
 	}
 	
 	private void initAssessment(UserRequest ureq) {
@@ -143,7 +151,6 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 			mainVC.contextPut("comment", null);
 			mainVC.contextPut("attempts", 0);
 		} else {
-
 			Boolean passed = assessmentEntry.getPassed();
 			//block if test passed (and config set to check it)
 			Boolean blocked = Boolean.FALSE;
@@ -167,6 +174,20 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 		}
 						
 		exposeResults(ureq);
+	}
+	
+	private void checkChats (UserRequest ureq) {
+		List<?> allChats = null;
+		if (ureq != null) {
+			allChats = ureq.getUserSession().getChats();
+		}
+		if (allChats == null || allChats.size() == 0) {
+			startButton.setEnabled (true);
+			mainVC.contextPut("hasChatWindowOpen", false);
+		} else {
+			startButton.setEnabled (false);
+			mainVC.contextPut("hasChatWindowOpen", true);
+		}
 	}
 	
 	/**
@@ -202,18 +223,24 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 	
 	@Override
 	protected void doDispose() {
-		singleUserEventCenter.deregisterFor(this, assessmentInstanceOres);
-		singleUserEventCenter.deregisterFor(this, InstantMessagingService.TOWER_EVENT_ORES);
-		
-		if (!assessmentStopped) {		 
-			AssessmentEvent assessmentStoppedEvent = new AssessmentEvent(AssessmentEvent.TYPE.STOPPED, userSession);
-			singleUserEventCenter.fireEventToListenersOf(assessmentStoppedEvent, assessmentEventOres);
+		if (assessmentType) {
+			singleUserEventCenter.deregisterFor(this, assessmentInstanceOres);
+			singleUserEventCenter.deregisterFor(this, InstantMessagingService.TOWER_EVENT_ORES);
+			
+			if (!assessmentStopped) {		 
+				AssessmentEvent assessmentStoppedEvent = new AssessmentEvent(AssessmentEvent.TYPE.STOPPED, userSession);
+				singleUserEventCenter.fireEventToListenersOf(assessmentStoppedEvent, assessmentEventOres);
+			}
 		}
 	}
-
+	
 	@Override
 	public void event(Event event) {
-		//
+		if (assessmentType) {
+			if (event.getCommand().startsWith("ChatWindow")) {
+				checkChats(null);
+			}
+		}
 	}
 
 	@Override

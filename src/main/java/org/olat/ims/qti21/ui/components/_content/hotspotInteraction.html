@@ -23,6 +23,7 @@
 		#foreach($hotspotChoice in $interaction.getHotspotChoices())
             <!-- Match group, label -->
           	<area id="$hotspotChoice.identifier" shape="$hotspotChoice.shape" coords="$r.coordsToString($hotspotChoice.coords)" href="javascript:clickArea('$r.toString($hotspotChoice.identifier)')" data-maphilight=''></area>
+			$r.appendFlexiFormDirtyForClick("$hotspotChoice.identifier")
 		#end
 		</map>
 		<script type="text/javascript">
@@ -33,7 +34,7 @@
 					strokeWidth: 3
 				});
 			});
-			
+
 		#if($r.isNotNullValue($responseValue))
 			jQuery(function() {
 				highlighHotspotAreas('$r.toString($responseValue,",")');

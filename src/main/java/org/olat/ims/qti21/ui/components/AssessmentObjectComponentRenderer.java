@@ -67,6 +67,7 @@ import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.components.DefaultComponentRenderer;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormUIFactory;
+import org.olat.core.gui.components.form.flexible.impl.FormJSHelper;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.render.RenderResult;
 import org.olat.core.gui.render.Renderer;
@@ -772,7 +773,8 @@ public abstract class AssessmentObjectComponentRenderer extends DefaultComponent
 	protected void renderExtendedTextBox(AssessmentRenderer renderer, StringOutput sb, AssessmentObjectComponent component, AssessmentItem assessmentItem,
 			ItemSessionState itemSessionState, ExtendedTextInteraction interaction, String responseInputString, boolean allowCreate) {
 		
-		sb.append("<textarea name='qtiworks_response_").append(interaction.getResponseIdentifier().toString()).append("'");
+		String textareaId = "oo_" + interaction.getResponseIdentifier();
+		sb.append("<textarea id='").append(textareaId).append("' name='qtiworks_response_").append(interaction.getResponseIdentifier().toString()).append("'");
 		if(component.isItemSessionEnded(itemSessionState, renderer.isSolutionMode())) {
 			sb.append(" disabled");
 		}
@@ -806,6 +808,7 @@ public abstract class AssessmentObjectComponentRenderer extends DefaultComponent
 			sb.append(responseInputString);
 		}
 		sb.append("</textarea>");
+		FormJSHelper.appendFlexiFormDirty(sb, component.getQtiItem().getRootForm(), textareaId);
 	}
 	
 	protected abstract void renderPrintedVariable(AssessmentRenderer renderer, StringOutput sb,

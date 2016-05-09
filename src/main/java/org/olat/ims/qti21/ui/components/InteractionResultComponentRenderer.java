@@ -26,9 +26,10 @@ import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
 
+import uk.ac.ed.ph.jqtiplus.node.content.basic.Block;
 import uk.ac.ed.ph.jqtiplus.node.content.variable.PrintedVariable;
+import uk.ac.ed.ph.jqtiplus.node.item.interaction.Interaction;
 import uk.ac.ed.ph.jqtiplus.resolution.ResolvedAssessmentItem;
-import uk.ac.ed.ph.jqtiplus.running.TestSessionController;
 import uk.ac.ed.ph.jqtiplus.state.ItemSessionState;
 
 /**
@@ -37,27 +38,29 @@ import uk.ac.ed.ph.jqtiplus.state.ItemSessionState;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class AssessmentTestResultComponentRenderer extends AssessmentObjectComponentRenderer {
+public class InteractionResultComponentRenderer extends AssessmentObjectComponentRenderer {
 	
 	@Override
 	public void render(Renderer renderer, StringOutput sb, Component source, URLBuilder ubu,
 			Translator translator, RenderResult renderResult, String[] args) {
 
-		AssessmentTestResultComponent cmp = (AssessmentTestResultComponent)source;
-		TestSessionController testSessionController = cmp.getTestSessionController();
-
-		if(testSessionController != null && testSessionController.getTestSessionState().isEnded()) {
-			renderAssessmentTestResults();
-		}
-	}
-	
-	/**
-	 * Write the header
-	 */
-	protected void renderAssessmentTestResults() {
-		// name
-		// start / stop
+		InteractionResultComponent cmp = (InteractionResultComponent)source;
+		Interaction interaction = cmp.getInteraction();
+		ResolvedAssessmentItem resolvedAssessmentItem = cmp.getResolvedAssessmentItem();
 		
+		ItemSessionState itemSessionState = cmp.getItemSessionState();
+		AssessmentRenderer assessmentRenderer = new AssessmentRenderer(renderer);
+		
+		if(cmp.isShowSolution()) {
+			assessmentRenderer.setSolutionAllowed(true);
+			assessmentRenderer.setSolutionMode(true);
+		} else {
+			assessmentRenderer.setReviewMode(true);
+		}
+		
+		if(interaction instanceof Block) {
+			renderBlock(assessmentRenderer, sb, cmp, resolvedAssessmentItem, itemSessionState, (Block)interaction, ubu, translator);
+		}
 	}
 
 	@Override

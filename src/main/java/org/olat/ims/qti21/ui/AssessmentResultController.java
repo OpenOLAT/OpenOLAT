@@ -43,7 +43,7 @@ import org.olat.ims.qti21.QTI21Constants;
 import org.olat.ims.qti21.QTI21DeliveryOptions.ShowResultsOnFinish;
 import org.olat.ims.qti21.QTI21Service;
 import org.olat.ims.qti21.model.QTI21QuestionType;
-import org.olat.ims.qti21.ui.components.AssessmentTestResultFormItem;
+import org.olat.ims.qti21.ui.components.InteractionResultFormItem;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import uk.ac.ed.ph.jqtiplus.node.item.AssessmentItem;
@@ -76,8 +76,6 @@ import uk.ac.ed.ph.jqtiplus.xmlutils.locators.ResourceLocator;
  *
  */
 public class AssessmentResultController extends FormBasicController {
-	
-	private AssessmentTestResultFormItem qtiResultEl;
 
 	private final String mapperUri;
 	private final File fUnzippedDirRoot;
@@ -87,6 +85,8 @@ public class AssessmentResultController extends FormBasicController {
 	private AssessmentResult assessmentResult;
 	private final ResolvedAssessmentTest resolvedAssessmentTest;
 	private final UserShortDescription assessedIdentityInfosCtrl;
+	
+	private int count = 0;
 	
 	@Autowired
 	private QTI21Service qtiService;
@@ -114,15 +114,6 @@ public class AssessmentResultController extends FormBasicController {
 		ResourceLocator fileResourceLocator = new PathResourceLocator(fUnzippedDirRoot.toPath());
 		final ResourceLocator inputResourceLocator = 
         		ImsQTI21Resource.createResolvingResourceLocator(fileResourceLocator);
-
-		qtiResultEl = new AssessmentTestResultFormItem("qtiresults");
-		qtiResultEl.setVisible(false);
-		formLayout.add("qtiresults", qtiResultEl);
-		
-		qtiResultEl.setResourceLocator(inputResourceLocator);
-		qtiResultEl.setAssessmentObjectUri(qtiService.createAssessmentObjectUri(fUnzippedDirRoot));
-		qtiResultEl.setMapperUri(mapperUri);
-		formLayout.add("qtiResults", qtiResultEl);
 		
 		if(formLayout instanceof FormLayoutContainer) {
 			FormLayoutContainer layoutCont = (FormLayoutContainer)formLayout;
@@ -178,6 +169,30 @@ public class AssessmentResultController extends FormBasicController {
 								extractOutcomeVariable(itemResult.getItemVariables(), r);
 							}
 							itemResults.add(r);
+							
+							//loop interactions, show response and solution
+							/*
+							List<Interaction> interactions = assessmentItem.getItemBody().findInteractions();
+							for(Interaction interaction:interactions) {
+								String responseId = "responseItem" + count++;
+								InteractionResultFormItem responseFormItem = new InteractionResultFormItem(responseId, interaction, resolvedAssessmentItem);
+								layoutCont.add(responseId, responseFormItem);
+								responseFormItem.setItemSessionState(sectionState);
+								responseFormItem.setResourceLocator(inputResourceLocator);
+								responseFormItem.setAssessmentObjectUri(qtiService.createAssessmentObjectUri(fUnzippedDirRoot));
+								responseFormItem.setMapperUri(mapperUri);
+								
+								String solutionId = "solutionItem" + count++;
+								InteractionResultFormItem solutionFormItem = new InteractionResultFormItem(solutionId, interaction, resolvedAssessmentItem);
+								layoutCont.add(solutionId, solutionFormItem);
+								solutionFormItem.setShowSolution(true);
+								solutionFormItem.setItemSessionState(sectionState);
+								solutionFormItem.setResourceLocator(inputResourceLocator);
+								solutionFormItem.setAssessmentObjectUri(qtiService.createAssessmentObjectUri(fUnzippedDirRoot));
+								solutionFormItem.setMapperUri(mapperUri);
+								
+								r.getInteractionResults().add(new InteractionResults(responseFormItem, solutionFormItem));
+							}*/
 						}
 					}
 				}
@@ -225,6 +240,36 @@ public class AssessmentResultController extends FormBasicController {
 		//
 	}
 	
+	public class InteractionResults {
+		private InteractionResultFormItem responseFormItem;
+		private InteractionResultFormItem solutionFormItem;
+
+		public InteractionResults() {
+			//
+		}
+		
+		public InteractionResults(InteractionResultFormItem responseFormItem, InteractionResultFormItem solutionFormItem) {
+			this.responseFormItem = responseFormItem;
+			this.solutionFormItem = solutionFormItem;
+		}
+		
+		public InteractionResultFormItem getResponseFormItem() {
+			return responseFormItem;
+		}
+		
+		public void setResponseFormItem(InteractionResultFormItem responseFormItem) {
+			this.responseFormItem = responseFormItem;
+		}
+		
+		public InteractionResultFormItem getSolutionFormItem() {
+			return solutionFormItem;
+		}
+		
+		public void setSolutionFormItem(InteractionResultFormItem solutionFormItem) {
+			this.solutionFormItem = solutionFormItem;
+		}
+	}
+	
 	public class Results {
 		
 		private Date entryTime;
@@ -239,6 +284,8 @@ public class AssessmentResultController extends FormBasicController {
 		private boolean section;
 		private String title;
 		private String cssClass;
+		
+		private final List<InteractionResults> interactionResults = new ArrayList<>();
 		
 		public Results(boolean section, String cssClass) {
 			this.section = section;
@@ -323,6 +370,10 @@ public class AssessmentResultController extends FormBasicController {
 
 		public void setPass(Boolean pass) {
 			this.pass = pass;
+		}
+
+		public List<InteractionResults> getInteractionResults() {
+			return interactionResults;
 		}
 	}
 }

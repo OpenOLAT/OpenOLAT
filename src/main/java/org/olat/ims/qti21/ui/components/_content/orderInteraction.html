@@ -28,7 +28,7 @@
 		<h4>Source</h4>
 		<div class="source box ${orientation}">
 			#if($r.isItemSessionOpen())
-				<span class="info">Drag unused items from here...</span>
+				<span class="info">$r.translate("interaction.order.drag.msg")</span>
 			#end
 			<ul class="${orientation}">
 				#foreach($unselectedChoice in $unselectedVisibleChoices)
@@ -41,7 +41,7 @@
         <h4>Target</h4>
 		<div class="target box ${orientation}">
 			#if($r.isItemSessionOpen())
-				<span class="info">Drop and order your selected items here...</span>
+				<span class="info">$r.translate("interaction.order.drop.msg")</span>
 			#end
 			<ul class="${orientation}">
 				#foreach($respondedChoice in $respondedVisibleChoices)

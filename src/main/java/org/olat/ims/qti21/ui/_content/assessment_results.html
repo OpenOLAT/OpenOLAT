@@ -51,7 +51,6 @@
 </div>
 
 #foreach($itemResult in $itemResults)
-
 <div class="panel panel-default o_personal">
   	<div class="panel-heading">
  		<h5 class="panel-title"><i class="o_icon $itemResult.cssClass"> </i> $itemResult.title</h5>
@@ -99,6 +98,14 @@
 		#end
 	</tbody></table>
 </div>
-
-	
+	#foreach($itemInteraction in $itemResult.interactionResults)
+	<div class="row">
+		<div class="col-sm-6"><h5>Response</h5>
+			$r.render($itemInteraction.responseFormItem.name)
+		</div>
+		<div class="col-sm-6"><h5>Solution</h5>
+			$r.render($itemInteraction.solutionFormItem.name)
+		</div>
+	</div>
+	#end
 #end
