@@ -159,6 +159,9 @@ public class NavigationPage {
 		List<WebElement> openMoreLinks = browser.findElements(openMoreBy);
 		Assert.assertFalse(openMoreLinks.isEmpty());
 		openMoreLinks.get(0).click();
+		//wait the small transition
+		By openedMoreMenuby = By.cssSelector("#o_navbar_more ul.dropdown-menu.dropdown-menu-right");
+		OOGraphene.waitElement(openedMoreMenuby, 5, browser);
 	}
 	
 	public NavigationPage backToTheTop() {

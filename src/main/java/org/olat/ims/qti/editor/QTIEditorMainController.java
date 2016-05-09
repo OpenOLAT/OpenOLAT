@@ -31,7 +31,6 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
@@ -1290,18 +1289,17 @@ public class QTIEditorMainController extends MainLayoutBasicController implement
 				RepositoryEntry entry = repositoryManager.lookupRepositoryEntry(course, false);
 				if(entry != null) {//OO-1300
 					List<Identity> stakeHoldersIds = repositoryService.getMembers(entry, GroupRoles.owner.name());
-	
-					// add stakeholders as group
-					cl = new ContactList(courseTitle);
-					cl.addAllIdentites(stakeHoldersIds);
-					changeEmail.addEmailTo(cl);
-	
-					User user = stakeHoldersIds.get(0).getUser();
-					Locale loc = ureq.getLocale();
-					stakeHolders.append(user.getProperty(UserConstants.FIRSTNAME, loc)).append(" ").append(user.getProperty(UserConstants.LASTNAME, loc));
-					for (int i = 1; i < stakeHoldersIds.size(); i++) {
-						user = stakeHoldersIds.get(i).getUser();
-						stakeHolders.append(", ").append(user.getProperty(UserConstants.FIRSTNAME, loc)).append(" ").append(user.getProperty(UserConstants.LASTNAME, loc));
+					if(stakeHoldersIds != null && stakeHoldersIds.size() > 0) {
+						// add stakeholders as group
+						cl = new ContactList(courseTitle);
+						cl.addAllIdentites(stakeHoldersIds);
+						changeEmail.addEmailTo(cl);
+		
+						for (Identity stakeHoldersId:stakeHoldersIds) {
+							if(stakeHolders.length() > 0) stakeHolders.append(", ");
+							User user = stakeHoldersId.getUser();
+							stakeHolders.append(user.getProperty(UserConstants.FIRSTNAME, getLocale())).append(" ").append(user.getProperty(UserConstants.LASTNAME, getLocale()));
+						}
 					}
 				}
 
