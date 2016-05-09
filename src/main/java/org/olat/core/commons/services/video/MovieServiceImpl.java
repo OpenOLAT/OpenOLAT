@@ -30,6 +30,7 @@ import java.util.List;
 
 import org.jcodec.api.FrameGrab;
 import org.jcodec.common.FileChannelWrapper;
+import org.jcodec.containers.mp4.boxes.MovieBox;
 import org.jcodec.containers.mp4.demuxer.MP4Demuxer;
 import org.olat.core.commons.services.image.Size;
 import org.olat.core.commons.services.image.spi.ImageHelperImpl;
@@ -128,8 +129,14 @@ public class MovieServiceImpl implements MovieService, ThumbnailSPI {
 				FileChannel ch = accessFile.getChannel();
 				FileChannelWrapper in = new FileChannelWrapper(ch);
 				MP4Demuxer demuxer1 = new MP4Demuxer(in);
-				long duration = demuxer1.getMovie().getDuration();
-				return duration;
+				MovieBox movie = demuxer1.getMovie();
+				long duration = movie.getDuration();
+				int timescale = movie.getTimescale();
+				if (timescale < 1) {
+					timescale = 1;
+				}				
+				// Simple calculation. Ignore NTSC and other issues for now
+				return duration / timescale * 1000;
 			} catch (Exception | AssertionError e) {
 				log.error("Cannot extract duration of: " + media, e);
 			}
