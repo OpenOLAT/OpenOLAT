@@ -89,6 +89,7 @@ public class LoginPage {
 	}
 	
 	public void assertLoggedInByLastName(String lastName) {
+		OOGraphene.waitElement(usernameFooterBy, 5, browser);
 		WebElement username = browser.findElement(usernameFooterBy);
 		Assert.assertNotNull(username);
 		Assert.assertTrue(username.isDisplayed());
@@ -170,8 +171,10 @@ public class LoginPage {
 			
 			WebElement acknowledgeButton = browser.findElement(disclaimerButtonXPath);
 			Graphene.guardHttp(acknowledgeButton).click();
-			OOGraphene.waitElement(authXPath, browser);
 		}
+		
+		//wait until the content appears
+		OOGraphene.waitElement(authXPath, browser);
 		return this;
 	}
 	
