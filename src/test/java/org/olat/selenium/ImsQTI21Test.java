@@ -128,7 +128,8 @@ public class ImsQTI21Test {
 			.answerSingleChoice(1)
 			.saveAnswer()
 			.endTest()
-			.closeTest();
+			.closeTest()
+			.assertOnAttempts(1);
 		
 		
 	}

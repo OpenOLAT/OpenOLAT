@@ -83,6 +83,16 @@ public class QTI21Page {
 		WebElement startButton = browser.findElement(startBy);
 		startButton.click();
 		OOGraphene.waitBusy(browser);
+		By mainBy = By.cssSelector("div.qtiworks.o_assessmenttest");
+		OOGraphene.waitElement(mainBy, 5, browser);
+		return this;
+	}
+	
+	public QTI21Page assertOnAttempts(int numOfAttemtps) {
+		By attemptBy = By.xpath("//div[contains(@class,'o_course_run')]//table//tr[contains(@class,'o_attempts')]//td[text()[contains(.,'" + numOfAttemtps + "')]]");
+		OOGraphene.waitElement(attemptBy, 5, browser);
+		WebElement attemptEl = browser.findElement(attemptBy);
+		Assert.assertTrue(attemptEl.isDisplayed());
 		return this;
 	}
 	
@@ -109,7 +119,7 @@ public class QTI21Page {
 
 	//TODO still QTI 1.2
 	public QTI21Page answerMultipleChoice(int... selectPositions) {
-		By itemsBy = By.cssSelector("div.o_qti_item_choice_option input[type='checkbox']");
+		By itemsBy = By.cssSelector("div.choiceInteraction input[type='checkbox']");
 		List<WebElement> optionList = browser.findElements(itemsBy);
 		for(int selectPosition:selectPositions) {
 			Assert.assertTrue(optionList.size() > selectPosition);
@@ -167,7 +177,12 @@ public class QTI21Page {
 		By endBy = By.cssSelector("a.o_sel_close_test");
 		browser.findElement(endBy).click();
 		OOGraphene.waitBusy(browser);
-		//TODO qti confirm
+		
+		// confirm
+		By confirmButtonBy = By.cssSelector("div.modal-dialog div.modal-footer a");
+		List<WebElement> buttonsEl = browser.findElements(confirmButtonBy);
+		buttonsEl.get(0).click();
+		OOGraphene.waitBusy(browser);
 		return this;
 	}
 }
