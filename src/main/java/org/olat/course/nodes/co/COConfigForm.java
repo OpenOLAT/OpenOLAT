@@ -54,6 +54,7 @@ import org.olat.group.BusinessGroupService;
 import org.olat.group.BusinessGroupShort;
 import org.olat.group.area.BGArea;
 import org.olat.group.area.BGAreaManager;
+import org.olat.modules.IModuleConfiguration;
 import org.olat.modules.ModuleConfiguration;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -395,7 +396,7 @@ public class COConfigForm extends FormBasicController {
 		chooseGroupCoachesLink.setIconLeftCSS("o_icon o_icon-fw o_icon_group");
 		chooseGroupCoachesLink.setVisible(false);
 		chooseGroupCoachesLink.setLabel("form.message.group", null);
-		if(cev.getCourseGroupManager().hasBusinessGroups()){
+		if(!cev.getCourseGroupManager().hasBusinessGroups()){
 			chooseGroupCoachesLink.setI18nKey("groupCreate");
 		}
 		
@@ -420,7 +421,7 @@ public class COConfigForm extends FormBasicController {
 		chooseAreasCoachesLink.setIconLeftCSS("o_icon o_icon-fw o_icon_courseareas");
 		chooseAreasCoachesLink.setLabel("form.message.area", null);
 		chooseAreasCoachesLink.setElementCssClass("o_omit_margin");
-		if(cev.getCourseGroupManager().hasAreas()){
+		if(!cev.getCourseGroupManager().hasAreas()){
 			chooseAreasCoachesLink.setI18nKey("areaCreate");
 		}
 		
@@ -653,7 +654,7 @@ public class COConfigForm extends FormBasicController {
 				cmc.deactivate();
 				easyAreaParticipantsSelectionList.setValue(getAreaNames(areaChooseParticipants.getSelectedKeys()));
 				easyAreaParticipantsSelectionList.setUserObject(areaChooseParticipants.getSelectedKeys());
-				chooseAreasCoachesLink.setI18nKey("areaParticipantsChoose");
+				chooseAreasParticipantsLink.setI18nKey("areaParticipantsChoose");
 				flc.setDirty(true);
 			} else if (event == Event.CANCELLED_EVENT) {
 				cmc.deactivate();
