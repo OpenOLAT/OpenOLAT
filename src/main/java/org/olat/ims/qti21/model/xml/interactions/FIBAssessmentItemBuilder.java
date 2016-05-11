@@ -959,7 +959,7 @@ public class FIBAssessmentItemBuilder extends AssessmentItemBuilder {
 			this.alternatives = alternatives;
 		}
 		
-		public void addAlterantive(String alternative, double points) {
+		public void addAlternative(String alternative, double points) {
 			if(alternatives == null) {
 				alternatives = new ArrayList<>();
 			}

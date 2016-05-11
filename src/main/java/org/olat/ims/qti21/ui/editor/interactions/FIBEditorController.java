@@ -34,6 +34,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.ims.qti21.model.QTI21QuestionType;
@@ -152,8 +153,9 @@ public class FIBEditorController extends FormBasicController {
 			String cmd = event.getCommand();
 			if("gapentry".equals(cmd)) {
 				String responseIdentifier = ureq.getParameter("responseIdentifier");
+				String selectedText = ureq.getParameter("selectedText");
 				String type = ureq.getParameter("gapType");
-				doGapEntry(ureq, responseIdentifier, type);
+				doGapEntry(ureq, responseIdentifier, selectedText, type);
 			}
 		}
 		super.formInnerEvent(ureq, source, event);
@@ -175,15 +177,41 @@ public class FIBEditorController extends FormBasicController {
 		//
 	}
 
-	private void doGapEntry(UserRequest ureq, String responseIdentifier, String type) {
+	private void doGapEntry(UserRequest ureq, String responseIdentifier, String selectedText, String type) {
 		if(textEntrySettingsCtrl != null || numericalEntrySettingsCtrl != null) return;
 		
 		AbstractEntry interaction = itemBuilder.getEntry(responseIdentifier);
 		if(interaction == null) {
 			if("string".equalsIgnoreCase(type)) {
-				interaction = itemBuilder.createTextEntry(responseIdentifier);
+				TextEntry textInteraction = itemBuilder.createTextEntry(responseIdentifier);
+				if(StringHelper.containsNonWhitespace(selectedText)) {
+					String[] alternatives = selectedText.split(",");
+					for(String alternative:alternatives) {
+						if(StringHelper.containsNonWhitespace(alternative)) {
+							alternative = alternative.trim();
+							if(textInteraction.getSolution() == null) {
+								textInteraction.setSolution(alternative);
+							} else {
+								textInteraction.addAlternative(alternative, textInteraction.getScore());
+							}
+						}
+					}
+					if(alternatives.length > 0) {
+						textInteraction.setSolution(alternatives[0]);
+					}
+				}
+				interaction = textInteraction;
 			} else if("float".equalsIgnoreCase(type)) {
-				interaction = itemBuilder.createNumericalEntry(responseIdentifier);
+				NumericalEntry numericalInteraction = itemBuilder.createNumericalEntry(responseIdentifier);
+				if(StringHelper.containsNonWhitespace(selectedText)) {
+					try {
+						Double val = Double.parseDouble(selectedText.trim());
+						numericalInteraction.setSolution(val);
+					} catch (NumberFormatException e) {
+						//
+					}
+				}
+				interaction = numericalInteraction;
 			}
 		}
 		

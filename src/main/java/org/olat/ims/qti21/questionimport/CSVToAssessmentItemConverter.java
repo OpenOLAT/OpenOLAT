@@ -468,7 +468,7 @@ public class CSVToAssessmentItemConverter {
 		}
 		if(values.length > 1) {
 			for(int i=1; i<values.length; i++) {
-				textEntry.addAlterantive(values[i], score);
+				textEntry.addAlternative(values[i], score);
 			}
 		}
 	}

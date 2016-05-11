@@ -35,7 +35,7 @@
 		 */
 		init : function(ed, url) {
 			
-			var $ = ed.$;
+			var $ = ed.$, selection = ed.selection;
 			var cachedTrans, cachedCoreTrans;
 			var cachedHelp;
 			var lastSelectedGap;
@@ -72,11 +72,14 @@
 
 			function showDialog(e, gapType) {
 				var newEntry = false;
+				var newSelectedText = null;
 				var responseIdentifier;
 				if(typeof lastSelectedGap != 'undefined') {
 					responseIdentifier = jQuery(lastSelectedGap).attr('data-qti-gap-identifier')
 				} else {
 					var counter = 1;
+					newSelectedText = ed.selection.getContent({format: 'text'})
+					
 					tinymce.each(ed.dom.select("img[data-qti]"), function(node) {
 						var identifier = jQuery(node).attr('data-qti-gap-identifier');
 						if(identifier.lastIndexOf("RESPONSE_", 0) == 0) {
@@ -96,7 +99,7 @@
 				
 				var ffxhrevent = ed.getParam("ffxhrevent");
 				o_ffXHREvent(ffxhrevent.formNam, ffxhrevent.dispIdField, ffxhrevent.dispId, ffxhrevent.eventIdField, 2, false, false,
-						'cmd', 'gapentry', 'responseIdentifier', responseIdentifier, 'newEntry', newEntry, 'gapType', gapType);
+						'cmd', 'gapentry', 'responseIdentifier', responseIdentifier, 'newEntry', newEntry, 'selectedText', newSelectedText, 'gapType', gapType);
 			}
 
 			ed.addButton('olatqtifibtext', {
@@ -166,9 +169,18 @@
 
 			// Load Content CSS upon initialization
 			ed.on('init', function() {
-			     if (ed.settings.content_css !== false) {
-			    	 ed.dom.loadCSS(url + "/css/content.css");
-			     }
+				if (ed.settings.content_css !== false) {
+					ed.dom.loadCSS(url + "/css/content.css");
+				}
+				jQuery("img.textentryinteraction", ed.getBody()).each(function(index, el) {
+					var imgEl = el;
+					jQuery(imgEl).click(function() {
+						var ffxhrevent = ed.getParam("ffxhrevent");
+						var responseIdentifier = jQuery(imgEl).attr('data-qti-gap-identifier');
+						o_ffXHREvent(ffxhrevent.formNam, ffxhrevent.dispIdField, ffxhrevent.dispId, ffxhrevent.eventIdField, 2, false, false,
+							'cmd', 'gapentry', 'responseIdentifier', responseIdentifier);
+					});
+				});
 			});
 			
 			ed.on('preInit', function() {
