@@ -1,20 +1,15 @@
-#set($identifier = $r.toString($interaction.identifier))
-#set($responseIdentifier = $r.toString($interaction.responseIdentifier))
+#set($responseIdentifier = $r.responseUniqueId($interaction))
 #set($orderedSet1 = $r.getVisibleOrderedChoices($interaction,0))
 #set($orderedSet2 = $r.getVisibleOrderedChoices($interaction,1))
 
 <input name="qtiworks_presented_${responseIdentifier}" type="hidden" value="1"/>
 <div class="$localName">
 	#if($interaction.getPrompt())
-	<div class="prompt">
-		$r.renderPrompt($interaction.getPrompt())
-	</div>
+	<div class="prompt">$r.renderPrompt($interaction.getPrompt())</div>
 	#end
 	
 	#if($r.isInvalidResponse($interaction.responseIdentifier))
-	<div class="o_error badResponse">
-      Please complete this interaction as directed.
-    </div>
+	<div class="o_error badResponse">$r.translate("error.as.directed")</div>
 	#end
 
 	<table class="table">

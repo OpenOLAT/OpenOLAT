@@ -21,6 +21,7 @@ package org.olat.ims.qti21.ui.components;
 
 import org.olat.core.gui.UserRequest;
 
+import uk.ac.ed.ph.jqtiplus.node.item.interaction.Interaction;
 import uk.ac.ed.ph.jqtiplus.node.test.AssessmentTest;
 import uk.ac.ed.ph.jqtiplus.resolution.ResolvedAssessmentItem;
 import uk.ac.ed.ph.jqtiplus.resolution.ResolvedAssessmentTest;
@@ -80,7 +81,17 @@ public class AssessmentTreeComponent extends AssessmentObjectComponent {
 	public AssessmentTest getAssessmentTest() {
 		return getResolvedAssessmentTest().getRootNodeLookup().extractIfSuccessful();
 	}
-	
+
+	@Override
+	public String getResponseUniqueIdentifier(ItemSessionState itemSessionState, Interaction interaction) {
+		return null;
+	}
+
+	@Override
+	public Interaction getInteractionOfResponseUniqueIdentifier(String responseUniqueId) {
+		return null;
+	}
+
 	public boolean hasMultipleTestParts() {
 		AssessmentTest assessmentTest = getAssessmentTest();	
 		if(assessmentTest.getTestParts().size() > 1) {

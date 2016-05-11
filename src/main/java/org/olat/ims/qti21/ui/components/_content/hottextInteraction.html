@@ -1,5 +1,4 @@
-#set($identifier = $r.toString($interaction.identifier))
-#set($responseIdentifier = $r.toString($interaction.responseIdentifier))
+#set($responseIdentifier = $r.responseUniqueId($interaction))
 
 <input name="qtiworks_presented_${responseIdentifier}" type="hidden" value="1"/>
 <div class="$localName">

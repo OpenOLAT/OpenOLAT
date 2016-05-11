@@ -22,11 +22,14 @@ package org.olat.ims.qti21.ui.components;
 import java.io.File;
 import java.net.URI;
 import java.nio.file.Path;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.olat.ims.qti21.ui.components.AssessmentObjectComponentRenderer.RenderingRequest;
 
 import uk.ac.ed.ph.jqtiplus.node.item.AssessmentItem;
+import uk.ac.ed.ph.jqtiplus.node.item.interaction.Interaction;
 import uk.ac.ed.ph.jqtiplus.node.result.SessionStatus;
 import uk.ac.ed.ph.jqtiplus.node.test.AssessmentSection;
 import uk.ac.ed.ph.jqtiplus.node.test.AssessmentTest;
@@ -57,6 +60,7 @@ public class AssessmentTestComponent extends AssessmentObjectComponent  {
 	private boolean showTitles;
 	private boolean personalNotes;
 	private final AssessmentTestFormItem qtiItem;
+	private final Map<String,Interaction> responseIdentifiersMap = new HashMap<>();
 	
 	public AssessmentTestComponent(String name, AssessmentTestFormItem qtiItem) {
 		super(name);
@@ -102,6 +106,28 @@ public class AssessmentTestComponent extends AssessmentObjectComponent  {
 
 	public void setTestSessionController(TestSessionController testSessionController) {
 		this.testSessionController = testSessionController;
+	}
+	
+	@Override
+	public String getResponseUniqueIdentifier(ItemSessionState itemSessionState, Interaction interaction) {
+		TestPlanNodeKey tpnk = null;
+		for(Map.Entry<TestPlanNodeKey, ItemSessionState> entry:testSessionController.getTestSessionState().getItemSessionStates().entrySet()) {
+			if(entry.getValue() == itemSessionState) {
+				tpnk = entry.getKey();
+				break;
+			}
+		}
+		
+		String id = "oo" + (tpnk.toString().replace(":", "_")) + "_" + interaction.getResponseIdentifier().toString();
+		responseIdentifiersMap.put(id, interaction);
+		return id;
+	}
+	
+	
+
+	@Override
+	public Interaction getInteractionOfResponseUniqueIdentifier(String responseUniqueId) {
+		return responseIdentifiersMap.get(responseUniqueId);
 	}
 
 	public ResolvedAssessmentTest getResolvedAssessmentTest() {

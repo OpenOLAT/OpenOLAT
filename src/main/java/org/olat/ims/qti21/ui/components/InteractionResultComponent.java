@@ -81,7 +81,17 @@ public class InteractionResultComponent extends AssessmentObjectComponent  {
 	public void setTestSessionController(TestSessionController testSessionController) {
 		this.testSessionController = testSessionController;
 	}
-	
+
+	@Override
+	public String getResponseUniqueIdentifier(ItemSessionState state, Interaction i) {
+		return getDispatchID() + interaction.getResponseIdentifier().toString();
+	}
+
+	@Override
+	public Interaction getInteractionOfResponseUniqueIdentifier(String responseUniqueId) {
+		return null;
+	}
+
 	public ItemSessionState getItemSessionState() {
 		return itemSessionState;
 	}

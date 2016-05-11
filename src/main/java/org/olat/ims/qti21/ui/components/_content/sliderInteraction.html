@@ -1,5 +1,4 @@
-#set($identifier = $r.toString($interaction.identifier))
-#set($responseIdentifier = $r.toString($interaction.responseIdentifier))
+#set($responseIdentifier = $r.responseUniqueId($interaction))
 #set($orientation = $r.getOrientation($interaction.orientation))
 #set($value = $r.toString($r.getResponseValue($interaction.responseIdentifier)))
 #set($options = $r.getSliderOptions($interaction))
@@ -13,9 +12,7 @@
 	#end
 	
 	#if($r.isInvalidResponse($interaction.responseIdentifier))
-	<div class="o_error badResponse">
-		Please complete this interaction as directed.
-    </div>
+	<div class="o_error badResponse">$r.translate("error.as.directed")</div>
 	#end
 
 	<div class="sliderInteraction">

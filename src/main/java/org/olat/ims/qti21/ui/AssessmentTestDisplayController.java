@@ -82,6 +82,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import uk.ac.ed.ph.jqtiplus.JqtiPlus;
 import uk.ac.ed.ph.jqtiplus.exception.QtiCandidateStateException;
+import uk.ac.ed.ph.jqtiplus.node.item.interaction.Interaction;
 import uk.ac.ed.ph.jqtiplus.node.result.AbstractResult;
 import uk.ac.ed.ph.jqtiplus.node.result.AssessmentResult;
 import uk.ac.ed.ph.jqtiplus.node.result.ItemResult;
@@ -1158,6 +1159,12 @@ public class AssessmentTestDisplayController extends BasicController implements 
 			}
 			
 			updateStatusAndResults(ureq);
+		}
+
+		@Override
+		protected Identifier getResponseIdentifierFromUniqueId(String uniqueId) {
+			Interaction interaction = qtiEl.getInteractionOfResponseUniqueIdentifier(uniqueId);
+			return interaction == null ? null : interaction.getResponseIdentifier();
 		}
 
 		@Override

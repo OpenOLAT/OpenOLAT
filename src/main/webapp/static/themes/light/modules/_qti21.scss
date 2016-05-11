@@ -258,20 +258,6 @@ tr.choiceinteraction {
 		line-height: 1em;
 		text-align: left;
 		
-		a {
-			display: block;
-			float: left;
-			padding: 0;
-			margin: 2px 0;
-			height: 1em;
-			width: 18px;
-			background: url(../images/help.png) center no-repeat;
-		}
-		a:hover {
-			cursor: help;
-			background-color: transparent !important;
-		}
-		
 		input {
 			margin: 0;
 			padding: 0;
@@ -323,20 +309,16 @@ tr.choiceinteraction {
 		padding: 0.5em 0 0.5em 20px;
 	}
 
-	div.waiting {
-		background: url(../images/spinner.gif) no-repeat center left;
-	}
-
 	div.success {
-		background: url(../images/accept.png) no-repeat center left;
+		background: green;
 	}
 
 	div.failure {
-		background: url(../images/cancel.png) no-repeat center left;
+		background-color:gold;
 	}
 
 	div.error {
-		background: url(../images/exclamation.png) no-repeat center left;
+		background-color:red;
 	}
 
 	div.upConversionAjaxControlError {

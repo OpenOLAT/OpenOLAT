@@ -19,9 +19,14 @@
  */
 package org.olat.ims.qti21.ui.components;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import uk.ac.ed.ph.jqtiplus.node.item.AssessmentItem;
+import uk.ac.ed.ph.jqtiplus.node.item.interaction.Interaction;
 import uk.ac.ed.ph.jqtiplus.resolution.ResolvedAssessmentItem;
 import uk.ac.ed.ph.jqtiplus.running.ItemSessionController;
+import uk.ac.ed.ph.jqtiplus.state.ItemSessionState;
 
 /**
  * 
@@ -37,6 +42,7 @@ public class AssessmentItemComponent extends AssessmentObjectComponent {
 	private ResolvedAssessmentItem resolvedAssessmentItem;
 	
 	private final AssessmentItemFormItem qtiItem;
+	private final Map<String,Interaction> responseIdentifiersMap = new HashMap<>();
 	
 	public AssessmentItemComponent(String name, AssessmentItemFormItem qtiItem) {
 		super(name);
@@ -64,7 +70,18 @@ public class AssessmentItemComponent extends AssessmentObjectComponent {
 	public AssessmentItem getAssessmentItem() {
 		return resolvedAssessmentItem.getRootNodeLookup().extractIfSuccessful();
 	}
-	
+
+	@Override
+	public String getResponseUniqueIdentifier(ItemSessionState itemSessionState, Interaction interaction) {
+		String id = "oo" + interaction.getResponseIdentifier().toString();
+		responseIdentifiersMap.put(id, interaction);
+		return id;
+	}
+
+	@Override
+	public Interaction getInteractionOfResponseUniqueIdentifier(String responseUniqueId) {
+		return responseIdentifiersMap.get(responseUniqueId);
+	}
 
 	public ItemSessionController getItemSessionController() {
 		return itemSessionController;

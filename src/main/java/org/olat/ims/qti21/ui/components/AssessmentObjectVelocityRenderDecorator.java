@@ -114,7 +114,6 @@ public class AssessmentObjectVelocityRenderDecorator extends VelocityRenderDecor
 		this.itemSessionState = itemSessionState;
 		this.resolvedAssessmentItem = resolvedAssessmentItem;
 		this.assessmentItem = resolvedAssessmentItem.getRootNodeLookup().extractIfSuccessful();
-		
 	}
 
 	public boolean isSolutionMode() {
@@ -159,6 +158,14 @@ public class AssessmentObjectVelocityRenderDecorator extends VelocityRenderDecor
 	
 	public boolean isNotNullValue(Value value) {
 		return value != null && !value.isNull();
+	}
+	
+	/**
+	 * Generate a unique ID
+	 * @return
+	 */
+	public String responseUniqueId(Interaction interaction) {
+		return avc.getResponseUniqueIdentifier(itemSessionState, interaction);
 	}
 	
 	/**

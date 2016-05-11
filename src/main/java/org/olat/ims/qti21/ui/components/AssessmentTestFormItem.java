@@ -36,6 +36,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.FormSubmit;
 import org.olat.core.util.StringHelper;
 import org.olat.ims.qti21.ui.QTIWorksAssessmentTestEvent;
 
+import uk.ac.ed.ph.jqtiplus.node.item.interaction.Interaction;
 import uk.ac.ed.ph.jqtiplus.resolution.ResolvedAssessmentTest;
 import uk.ac.ed.ph.jqtiplus.running.TestSessionController;
 
@@ -97,6 +98,10 @@ public class AssessmentTestFormItem extends AssessmentObjectFormItem {
 
 	public void setTestSessionController(TestSessionController testSessionController) {
 		component.setTestSessionController(testSessionController);
+	}
+	
+	public Interaction getInteractionOfResponseUniqueIdentifier(String uniqueId) {
+		return component.getInteractionOfResponseUniqueIdentifier(uniqueId);
 	}
 
 	@Override

@@ -1,5 +1,4 @@
-#set($identifier = $r.toString($interaction.identifier))
-#set($responseIdentifier = $r.toString($interaction.responseIdentifier))
+#set($responseIdentifier = $r.responseUniqueId($interaction))
 #set($responseValue = $r.getResponseValue($interaction.responseIdentifier))
 
 <input name="qtiworks_uploadpresented_${responseIdentifier}" type="hidden" value="1"/>

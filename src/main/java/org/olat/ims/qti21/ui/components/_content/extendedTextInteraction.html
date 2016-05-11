@@ -1,5 +1,4 @@
-#set($identifier = $r.toString($interaction.identifier))
-#set($responseIdentifier = $r.toString($interaction.responseIdentifier))
+#set($responseIdentifier = $r.responseUniqueId($interaction))
 #set($responseDeclaration = $r.getResponseDeclaration($interaction.responseIdentifier))
 #set($minStrings = $r.getMinStrings($interaction))
 #set($maxStrings = $r.getMaxStrings($interaction))
@@ -7,20 +6,12 @@
 <input name="qtiworks_presented_${responseIdentifier}" type="hidden" value="1"/>
 <div class="$localName">
 	#if($interaction.getPrompt())
-	<div class="prompt">
-		$r.renderPrompt($interaction.getPrompt())
-	</div>
+	<div class="prompt">$r.renderPrompt($interaction.getPrompt())</div>
 	#end
 	
 	#if($r.isBadResponse($interaction.responseIdentifier))
 	<div class="badResponse">
-		// TODO: The message below isn't very suitable for list values
-		Your input must be a valid
-		#if($responseDeclaration.cardinality.toQtiString() == "record")
-          	'number'
-		#else
-			$responseDeclaration.baseType.toQtiString()!
-		#end
+		$r.translate("error.input.invalid", $r.translate("error.input.invalid.${responseDeclaration.cardinality.toQtiString()}"))
 	</div>
 	#end
       

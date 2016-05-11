@@ -1,28 +1,23 @@
-#set($identifier = $r.toString($interaction.identifier))
-#set($responseIdentifier = $r.toString($interaction.responseIdentifier))
-#set($appletContainerId = "qtiworks_id_appletContainer_" + $responseIdentifier)
+#set($responseIdentifier = $r.responseUniqueId($interaction))
+#set($containerId = "qtiworks_id_container_" + $responseIdentifier)
 #set($responseValue = $r.getResponseValue($interaction.responseIdentifier))
 #set($hotspotChoices = $r.getVisibleHotspotChoices($interaction))
 
 <input name="qtiworks_presented_${responseIdentifier}" type="hidden" value="1"/>
 <div class="$localName">
 	#if($interaction.getPrompt())
-	<div class="prompt">
-		$r.renderPrompt($interaction.getPrompt())
-	</div>
+	<div class="prompt">$r.renderPrompt($interaction.getPrompt())</div>
 	#end
 	
 	#if($r.isInvalidResponse($interaction.responseIdentifier))
-	<div class="o_error badResponse">
-      Please complete this interaction as directed.
-    </div>
+	<div class="o_error badResponse">$r.translate("error.as.directed")</div>
 	#end
 
-	<div id="${appletContainerId}_container" class="appletContainer" style="width:${interaction.object.width}px; height:${interaction.object.height}px; position:relative; background-image: url('${r.convertLinkFull($interaction.object.data)}') " data-openolat="">
-		<canvas id="${appletContainerId}_canvas_alt" width="${interaction.object.width}" height="${interaction.object.height}" style="position:absolute; top:0;left:0; opacity:1;"></canvas>
-		<canvas id="${appletContainerId}_canvas" width="${interaction.object.width}" height="${interaction.object.height}" style="position:absolute; top:0;left:0; "></canvas>
-		<img id="${appletContainerId}" width="${interaction.object.width}" height="${interaction.object.height}" src="${r.convertLinkFull($interaction.object.data)}" usemap="#${appletContainerId}_map" style="position:absolute; top:0; left:0; opacity:0;"></img>
-		<map name="${appletContainerId}_map">
+	<div id="${containerId}_container" style="width:${interaction.object.width}px; height:${interaction.object.height}px; position:relative; background-image: url('${r.convertLinkFull($interaction.object.data)}') " data-openolat="">
+		<canvas id="${containerId}_canvas_alt" width="${interaction.object.width}" height="${interaction.object.height}" style="position:absolute; top:0;left:0; opacity:1;"></canvas>
+		<canvas id="${containerId}_canvas" width="${interaction.object.width}" height="${interaction.object.height}" style="position:absolute; top:0;left:0; "></canvas>
+		<img id="${containerId}" width="${interaction.object.width}" height="${interaction.object.height}" src="${r.convertLinkFull($interaction.object.data)}" usemap="#${containerId}_map" style="position:absolute; top:0; left:0; opacity:0;"></img>
+		<map name="${containerId}_map">
 		#foreach($hotspotChoice in $hotspotChoices) 
 				<area id="${hotspotChoice.identifier}" shape="${hotspotChoice.shape.toLowerCase()}" coords="$r.coordsToString($hotspotChoice.coords)}" href="#" ></area>
 		#end
@@ -30,11 +25,11 @@
 		<script type="text/javascript">
 		#if($r.isNotNullValue($responseValue))
 			jQuery(function() {
-				graphicOrderDrawResponse('$appletContainerId','$r.toString($responseValue,",")');
+				graphicOrderDrawResponse('$containerId','$r.toString($responseValue,",")');
 			});
 		#else	
 			jQuery(function() {
-				graphicOrderItem('$appletContainerId', $hotspotChoices.size(),'$responseIdentifier');
+				graphicOrderItem('$containerId', $hotspotChoices.size(),'$responseIdentifier');
 			});
 		#end
 		</script>

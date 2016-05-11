@@ -335,7 +335,7 @@ public abstract class AssessmentObjectComponentRenderer extends DefaultComponent
 		
 		switch(inline.getQtiClassName()) {
 			case EndAttemptInteraction.QTI_CLASS_NAME: {
-				renderEndAttemptInteraction(renderer, sb, (EndAttemptInteraction)inline, component, ubu, translator);
+				renderEndAttemptInteraction(renderer, sb, (EndAttemptInteraction)inline, itemSessionState, component, ubu, translator);
 				break;
 			}
 			case InlineChoiceInteraction.QTI_CLASS_NAME:
@@ -348,7 +348,7 @@ public abstract class AssessmentObjectComponentRenderer extends DefaultComponent
 				break;
 			}
 			case Gap.QTI_CLASS_NAME: {
-				renderGap(sb, (Gap)inline);
+				renderGap(sb, (Gap)inline, itemSessionState, component);
 				break;
 			}
 			case PrintedVariable.QTI_CLASS_NAME: {
@@ -485,23 +485,24 @@ public abstract class AssessmentObjectComponentRenderer extends DefaultComponent
 	}
 	
 	private void renderEndAttemptInteraction(AssessmentRenderer renderer, StringOutput sb, EndAttemptInteraction interaction,
-			AssessmentObjectComponent component, URLBuilder ubu, Translator translator) {
+			ItemSessionState itemSessionState, AssessmentObjectComponent component, URLBuilder ubu, Translator translator) {
 		
-		sb.append("<input name=\"qtiworks_presented_").append(interaction.getResponseIdentifier().toString()).append("\" type=\"hidden\" value=\"1\"/>");
+		String responseUniqueId = component.getResponseUniqueIdentifier(itemSessionState, interaction);
+		sb.append("<input name=\"qtiworks_presented_").append(responseUniqueId).append("\" type=\"hidden\" value=\"1\"/>");
 
 		AssessmentObjectFormItem item = component.getQtiItem();
-		String id = "qtiworks_response_".concat(interaction.getResponseIdentifier().toString());
+		String id = "qtiworks_response_".concat(responseUniqueId);
 		
 		FormItem endAttemptButton = item.getFormComponent(id);
 		if(endAttemptButton == null) {
 			endAttemptButton = FormUIFactory.getInstance().addFormLink(id, id, interaction.getTitle(), null, null, Link.BUTTON | Link.NONTRANSLATED);
 			endAttemptButton.setTranslator(translator);
+			endAttemptButton.setUserObject(interaction);
 			if(item.getRootForm() != endAttemptButton.getRootForm()) {
 				endAttemptButton.setRootForm(item.getRootForm());
 			}
 			item.addFormItem(endAttemptButton);
 		}
-		
 		endAttemptButton.getComponent().getHTMLRendererSingleton()
 			.render(renderer.getRenderer(), sb, endAttemptButton.getComponent(), ubu, translator, new RenderResult(), null);
 	}
@@ -612,8 +613,7 @@ public abstract class AssessmentObjectComponentRenderer extends DefaultComponent
 	    </span>
 	  </xsl:template>
 	 */
-	private void renderGap(StringOutput sb, Gap gap) {
-		
+	private void renderGap(StringOutput sb, Gap gap, ItemSessionState itemSessionState, AssessmentObjectComponent component) {
 		GapMatchInteraction interaction = null;
 		for(QtiNode parentNode=gap.getParent(); parentNode.getParent() != null; parentNode = parentNode.getParent()) {
 			if(parentNode instanceof GapMatchInteraction) {
@@ -624,7 +624,8 @@ public abstract class AssessmentObjectComponentRenderer extends DefaultComponent
 		
 		if(interaction != null) {
 			List<Gap> gaps = QueryUtils.search(Gap.class, interaction.getBlockStatics());
-			sb.append("<span class='gap' id=\"qtiworks_id_").append(interaction.getResponseIdentifier().toString())
+			String responseUniqueId = component.getResponseUniqueIdentifier(itemSessionState, interaction);
+			sb.append("<span class='gap' id=\"qtiworks_id_").append(responseUniqueId)
 			  .append("_").append(gap.getIdentifier().toString()).append("\">");
 			sb.append("GAP ").append(gaps.indexOf(gap));
 			sb.append("</span>");
@@ -671,7 +672,8 @@ public abstract class AssessmentObjectComponentRenderer extends DefaultComponent
 			} else {
 				sb.append("checkbox");
 			}
-			sb.append("' name='qtiworks_response_").append(interaction.getResponseIdentifier().toString()).append("'")
+			String responseUniqueId = component.getResponseUniqueIdentifier(itemSessionState, interaction);
+			sb.append("' name='qtiworks_response_").append(responseUniqueId).append("'")
 			  .append(" value='").append(hottext.getIdentifier().toString()).append("'");
 			if(component.isItemSessionEnded(itemSessionState, renderer.isSolutionMode())) {
 				sb.append(" disabled");
@@ -773,8 +775,8 @@ public abstract class AssessmentObjectComponentRenderer extends DefaultComponent
 	protected void renderExtendedTextBox(AssessmentRenderer renderer, StringOutput sb, AssessmentObjectComponent component, AssessmentItem assessmentItem,
 			ItemSessionState itemSessionState, ExtendedTextInteraction interaction, String responseInputString, boolean allowCreate) {
 		
-		String textareaId = "oo_" + interaction.getResponseIdentifier();
-		sb.append("<textarea id='").append(textareaId).append("' name='qtiworks_response_").append(interaction.getResponseIdentifier().toString()).append("'");
+		String responseUniqueId = component.getResponseUniqueIdentifier(itemSessionState, interaction);
+		sb.append("<textarea id='").append(responseUniqueId).append("' name='qtiworks_response_").append(responseUniqueId).append("'");
 		if(component.isItemSessionEnded(itemSessionState, renderer.isSolutionMode())) {
 			sb.append(" disabled");
 		}
@@ -808,7 +810,7 @@ public abstract class AssessmentObjectComponentRenderer extends DefaultComponent
 			sb.append(responseInputString);
 		}
 		sb.append("</textarea>");
-		FormJSHelper.appendFlexiFormDirty(sb, component.getQtiItem().getRootForm(), textareaId);
+		FormJSHelper.appendFlexiFormDirty(sb, component.getQtiItem().getRootForm(), responseUniqueId);
 	}
 	
 	protected abstract void renderPrintedVariable(AssessmentRenderer renderer, StringOutput sb,

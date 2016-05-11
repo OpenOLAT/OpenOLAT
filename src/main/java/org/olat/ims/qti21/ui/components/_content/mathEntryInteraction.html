@@ -1,5 +1,4 @@
-#set($identifier = $r.toString($interaction.identifier))
-#set($responseIdentifier = $r.toString($interaction.responseIdentifier))
+#set($responseIdentifier = $r.responseUniqueId($interaction))
 #set($responseValue = $r.getResponseValue($interaction.responseIdentifier))
 #set($responseInput = $r.getResponseInput($interaction.responseIdentifier))
 #set($asciiMathInput = $r.extractSingleCardinalityResponseInput($responseInput))
@@ -8,10 +7,10 @@
 
 <input name="qtiworks_presented_${responseIdentifier}" type="hidden" value="1"/>
 
-<div class="mathEntryInteraction {$orientation}">
+<div class="mathEntryInteraction ${orientation}">
 	<div class="inputPanel">
-		<a href="{$webappContextPath}/rendering/mathEntryInteractionHelp.html" target="_blank" id="qtiworks_id_mathEntryHelp_${responseIdentifier}"></a>
-        ##TODO qti size="{if (exists(@ma:expectedLength)) then @ma:expectedLength else '10'}""
+		$r.contextHelpWithWrapper("Other#math_entry-interaction")
+		##TODO qti size="{if (exists(@ma:expectedLength)) then @ma:expectedLength else '10'}""
         <input id="qtiworks_id_mathEntryInput_${responseIdentifier}" name="qtiworks_response_${responseIdentifier}" type="text" size="10" #if($r.isItemSessionEnded()) disabled #end #if($asciiMathInput && !$asciiMathInput.isEmpty()) value="$asciiMathInput" #end />
 	</div>
 
@@ -26,12 +25,16 @@
 	jQuery(function() {
 		//because we use ajax to render the page
 		var math = document.getElementById("qtiworks_id_mathEntryPreview_${responseIdentifier}");
-		if(typeof MathJax === "undefined") {
+		if(typeof window.MathJax === "undefined") {
 			o_mathjax();
 		} else {
 			MathJax.Hub.Queue(["Typeset",MathJax.Hub,math]);
 		}
 	});
+	
+	UpConversionAjaxController.setUpConversionServiceUrl('$r.contextPath()/math/verifyAsciiMath');
+    UpConversionAjaxController.setDelay(300);
+	
 	QtiWorksRendering.registerReadyCallback(function() {
 		var inputControlId = 'qtiworks_id_mathEntryInput_$responseIdentifier';
 		var messageContainerId = 'qtiworks_id_mathEntryMessages_$responseIdentifier';

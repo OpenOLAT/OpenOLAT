@@ -1,5 +1,4 @@
-#set($identifier = $r.toString($interaction.identifier))
-#set($responseIdentifier = $r.toString($interaction.responseIdentifier))
+#set($responseIdentifier = $r.responseUniqueId($interaction))
 ## Filter out the choice identifiers that are visible and split into those which haven't been selected and those which have
 #set($orderChoices = $r.getRespondedVisibleChoices($interaction))
 #set($respondedVisibleChoices = $orderChoices.getRespondedVisibleChoices())
@@ -9,15 +8,11 @@
 <input name="qtiworks_presented_${responseIdentifier}" type="hidden" value="1" />
 <div class="$localName">
 	#if($interaction.getPrompt())
-	<div class="prompt">
-		$r.renderPrompt($interaction.getPrompt())
-	</div>
+	<div class="prompt">$r.renderPrompt($interaction.getPrompt())</div>
 	#end
 	
 	#if($r.isInvalidResponse($interaction.responseIdentifier))
-	<div class="o_error badResponse">
-      Please complete this interaction as directed.
-    </div>
+	<div class="o_error badResponse">$r.translate("error.as.directed")</div>
 	#end
 
 	<div id="qtiworks_response_${responseIdentifier}">
@@ -25,7 +20,7 @@
 		<div class="hiddenInputContainer"></div>
 
         <!-- Now generate selection widget -->
-		<h4>Source</h4>
+		<h4>$r.translate("interaction.order.source")</h4>
 		<div class="source box ${orientation}">
 			#if($r.isItemSessionOpen())
 				<span class="info">$r.translate("interaction.order.drag.msg")</span>
@@ -38,7 +33,7 @@
 				#end
 			</ul>
         </div>
-        <h4>Target</h4>
+        <h4>$r.translate("interaction.order.target")</h4>
 		<div class="target box ${orientation}">
 			#if($r.isItemSessionOpen())
 				<span class="info">$r.translate("interaction.order.drop.msg")</span>

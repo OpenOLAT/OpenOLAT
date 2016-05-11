@@ -1,25 +1,20 @@
-#set($identifier = $r.toString($interaction.identifier))
-#set($responseIdentifier = $r.toString($interaction.responseIdentifier))
-#set($appletContainerId = "qtiworks_id_appletContainer_" + $responseIdentifier)
+#set($responseIdentifier = $r.responseUniqueId($interaction))
+#set($containerId = "qtiworks_id_container_" + $responseIdentifier)
 #set($responseValue = $r.getResponseValue($interaction.responseIdentifier))
 #set($choices = $r.getVisibleAssociableChoices($interaction))
 
 <input name="qtiworks_presented_${responseIdentifier}" type="hidden" value="1"/>
 <div class="$localName">
 	#if($interaction.getPrompt())
-	<div class="prompt">
-		$r.renderPrompt($interaction.getPrompt())
-	</div>
+	<div class="prompt">$r.renderPrompt($interaction.getPrompt())</div>
 	#end
 	
 	#if($r.isInvalidResponse($interaction.responseIdentifier))
-	<div class="o_error badResponse">
-      Please complete this interaction as directed.
-    </div>
+	<div class="o_error badResponse">$r.translate("error.as.directed")</div>
 	#end
 
-	<div id="${appletContainerId}" class="appletContainer">
-		<div id="${appletContainerId}_items" style="padding:15px;">
+	<div id="${containerId}">
+		<div id="${containerId}_items" style="padding:15px;">
         	#foreach($choice in $choices)
             	<div id="${choice.identifier}" class="o_associate_item" style="width: 100px; float:left; margin-right:15px; border:2px solid grey;">
               		$r.renderFlowStatics($choice.getFlowStatics())
@@ -27,7 +22,7 @@
 			#end
 			<div style="clear:both; "></div>
 		</div>
-		<div id="${appletContainerId}_panel" style="max-width:500px;">
+		<div id="${containerId}_panel" style="max-width:500px;">
 			#set($maxChoices = $r.maxToList($interaction.maxAssociations))
 			#foreach($maxChoice in $maxChoices)
               	<div class="association" style="">
@@ -42,9 +37,9 @@
 		<script type="text/javascript">
 		jQuery(function() {
 		#if($r.isNotNullValue($responseValue))
-			associateDrawResponse('$appletContainerId','$r.toString($responseValue,",")');
+			associateDrawResponse('$containerId','$r.toString($responseValue,",")');
 		#else
-			associateItem('$appletContainerId', '$responseIdentifier');
+			associateItem('$containerId', '$responseIdentifier');
 		#end
 		});
 		</script>

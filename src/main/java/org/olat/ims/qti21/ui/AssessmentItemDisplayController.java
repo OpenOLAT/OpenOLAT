@@ -669,6 +669,11 @@ public class AssessmentItemDisplayController extends BasicController implements 
 		}
 		
 		@Override
+		protected Identifier getResponseIdentifierFromUniqueId(String uniqueId) {
+			return qtiEl.getInteractionOfResponseUniqueIdentifier(uniqueId).getResponseIdentifier();
+		}
+
+		@Override
 		protected void formOK(UserRequest ureq) {
 			processResponse(ureq, qtiEl.getSubmitButton());
 		}

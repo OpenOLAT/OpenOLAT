@@ -47,6 +47,9 @@ import org.olat.ims.qti21.ui.components.InteractionResultFormItem;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import uk.ac.ed.ph.jqtiplus.node.item.AssessmentItem;
+import uk.ac.ed.ph.jqtiplus.node.item.interaction.EndAttemptInteraction;
+import uk.ac.ed.ph.jqtiplus.node.item.interaction.Interaction;
+import uk.ac.ed.ph.jqtiplus.node.item.interaction.PositionObjectInteraction;
 import uk.ac.ed.ph.jqtiplus.node.result.AssessmentResult;
 import uk.ac.ed.ph.jqtiplus.node.result.ItemResult;
 import uk.ac.ed.ph.jqtiplus.node.result.ItemVariable;
@@ -171,13 +174,18 @@ public class AssessmentResultController extends FormBasicController {
 							itemResults.add(r);
 							
 							//loop interactions, show response and solution
-							/*
+							
 							List<Interaction> interactions = assessmentItem.getItemBody().findInteractions();
 							for(Interaction interaction:interactions) {
+								if(interaction instanceof PositionObjectInteraction || interaction instanceof EndAttemptInteraction) {
+									continue;
+								}
+								
 								String responseId = "responseItem" + count++;
 								InteractionResultFormItem responseFormItem = new InteractionResultFormItem(responseId, interaction, resolvedAssessmentItem);
 								layoutCont.add(responseId, responseFormItem);
 								responseFormItem.setItemSessionState(sectionState);
+								responseFormItem.setResolvedAssessmentTest(resolvedAssessmentTest);
 								responseFormItem.setResourceLocator(inputResourceLocator);
 								responseFormItem.setAssessmentObjectUri(qtiService.createAssessmentObjectUri(fUnzippedDirRoot));
 								responseFormItem.setMapperUri(mapperUri);
@@ -186,13 +194,14 @@ public class AssessmentResultController extends FormBasicController {
 								InteractionResultFormItem solutionFormItem = new InteractionResultFormItem(solutionId, interaction, resolvedAssessmentItem);
 								layoutCont.add(solutionId, solutionFormItem);
 								solutionFormItem.setShowSolution(true);
+								solutionFormItem.setResolvedAssessmentTest(resolvedAssessmentTest);
 								solutionFormItem.setItemSessionState(sectionState);
 								solutionFormItem.setResourceLocator(inputResourceLocator);
 								solutionFormItem.setAssessmentObjectUri(qtiService.createAssessmentObjectUri(fUnzippedDirRoot));
 								solutionFormItem.setMapperUri(mapperUri);
 								
 								r.getInteractionResults().add(new InteractionResults(responseFormItem, solutionFormItem));
-							}*/
+							}
 						}
 					}
 				}

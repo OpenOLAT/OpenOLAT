@@ -34,7 +34,6 @@
 				<value>org.olat.course.nodes.bc.BCWebService</value>
 				<value>org.olat.course.assessment.restapi.EfficiencyStatementWebService</value>
 				<value>org.olat.course.certificate.restapi.CertificationWebService</value>
-				<value>org.olat.ims.qti21.restapi.MathWebService</value>
 				<value>org.olat.modules.wiki.restapi.WikisWebService</value>
 				<value>org.olat.modules.fo.restapi.ForumImportWebService</value>
 				<value>org.olat.modules.fo.restapi.ForumCourseNodeWebService</value>

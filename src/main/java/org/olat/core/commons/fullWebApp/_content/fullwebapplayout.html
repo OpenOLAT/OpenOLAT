@@ -128,9 +128,6 @@ function o_mathjax(fct_success) {
 /* <![CDATA[ */ 
 	jQuery.noConflict();
 	
-	UpConversionAjaxController.setUpConversionServiceUrl('$r.contextPath()/restapi/math/verifyAsciiMath');
-    UpConversionAjaxController.setDelay(300);
-
 	## Initialize js translator factory with the js translator mapper path
 	jQuery(document).ooTranslator().initialize("$jsTranslationMapperPath");
 	o_info.oo_translator = jQuery(document).ooTranslator();

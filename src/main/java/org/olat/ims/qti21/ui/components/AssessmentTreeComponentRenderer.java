@@ -185,7 +185,7 @@ public class AssessmentTreeComponentRenderer extends AssessmentObjectComponentRe
 		if(event == null) {
 			sb.append("<span class='o_assessmentitem_nav_disabled'>");
 		} else {
-			sb.append("<a href='#' onclick=\"")
+			sb.append("<a href='javascript:;' onclick=\"")
 			  .append(FormJSHelper.getXHRFnCallFor(form, dispatchId, 1, true, true,
 					new NameValuePair("cid", event.name()), new NameValuePair("item", key)))
 			  .append(";\" class=''>");
@@ -213,7 +213,7 @@ public class AssessmentTreeComponentRenderer extends AssessmentObjectComponentRe
 		String dispatchId = component.getQtiItem().getFormDispatchId();
 		boolean mark = component.getCandidateSessionContext().isMarked(key);
 		
-		sb.append("<a href='#' onclick=\"")
+		sb.append("<a href='javascript:;' onclick=\"")
 		  .append(FormJSHelper.getXHRFnCallFor(form, dispatchId, 1, true, true,
 				new NameValuePair("cid", Event.mark.name()), new NameValuePair("item", key)))
 		  .append("; o_toggleMark(this); return false;\" class='o_assessmentitem_marks'><i class='o_icon ")

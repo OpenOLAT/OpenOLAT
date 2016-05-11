@@ -29,11 +29,13 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
+import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.MultipartFileInfos;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.StringHelper;
 
 import uk.ac.ed.ph.jqtiplus.exception.QtiParseException;
+import uk.ac.ed.ph.jqtiplus.node.item.interaction.EndAttemptInteraction;
 import uk.ac.ed.ph.jqtiplus.types.Identifier;
 import uk.ac.ed.ph.jqtiplus.types.StringResponseData;
 
@@ -53,7 +55,12 @@ public abstract class AbstractQtiWorksController extends FormBasicController {
 	protected void doDispose() {
 		//
 	}
-	
+
+	@Override
+	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
+		super.formInnerEvent(ureq, source, event);
+	}
+
 	protected String extractComment() {
         if (mainForm.getRequestParameter("qtiworks_comment_presented") == null) {
             /* No comment box given to candidate */
@@ -62,6 +69,8 @@ public abstract class AbstractQtiWorksController extends FormBasicController {
         String comment = mainForm.getRequestParameter("qtiworks_comment");
         return StringHelper.containsNonWhitespace(comment) ? comment : null;
     }
+	
+	protected abstract Identifier getResponseIdentifierFromUniqueId(String uniqueId);
 	
 	protected void processResponse(UserRequest ureq, FormItem source) {
 		Map<Identifier, StringResponseData> stringResponseMap = extractStringResponseData();
@@ -81,11 +90,18 @@ public abstract class AbstractQtiWorksController extends FormBasicController {
 				if(mainForm.getRequestParameterSet().contains(presentedFlag)) {
 					Identifier responseIdentifier;
 					try {
-						responseIdentifier = Identifier.parseString(responseIdentifierString);
+						responseIdentifier = getResponseIdentifierFromUniqueId(responseIdentifierString);
+						//Identifier.parseString(responseIdentifierString);
 					} catch (final QtiParseException e) {
 						throw new RuntimeException("Bad response identifier encoded in parameter " + cmd, e);
 					}
-					String[] responseValues = new String[]{ "submit" };
+					
+					String[] responseValues;
+					if(button.getUserObject() instanceof EndAttemptInteraction) {
+						responseValues = new String[]{ ((EndAttemptInteraction)button.getUserObject()).getTitle() };
+					} else {
+						responseValues = new String[]{ "submit" };
+					}
 			        StringResponseData stringResponseData = new StringResponseData(responseValues);
 					stringResponseMap.put(responseIdentifier, stringResponseData);
 				}
@@ -109,7 +125,8 @@ public abstract class AbstractQtiWorksController extends FormBasicController {
                 final String responseIdentifierString = name.substring("qtiworks_presented_".length());
                 final Identifier responseIdentifier;
                 try {
-                    responseIdentifier = Identifier.parseString(responseIdentifierString);
+                	responseIdentifier = getResponseIdentifierFromUniqueId(responseIdentifierString);
+                   // responseIdentifier = Identifier.parseString(responseIdentifierString);
                 }
                 catch (final QtiParseException e) {
                     //throw new BadResponseWebPayloadException("Bad response identifier encoded in parameter  " + name, e);
@@ -134,7 +151,8 @@ public abstract class AbstractQtiWorksController extends FormBasicController {
 				String responseIdentifierString = name.substring("qtiworks_uploadpresented_".length());
 				Identifier responseIdentifier;
 				try {
-					responseIdentifier = Identifier.parseString(responseIdentifierString);
+					responseIdentifier = getResponseIdentifierFromUniqueId(responseIdentifierString);
+					//responseIdentifier = Identifier.parseString(responseIdentifierString);
 				} catch (final QtiParseException e) {
 					throw new RuntimeException("Bad response identifier encoded in parameter " + name, e);
 				}

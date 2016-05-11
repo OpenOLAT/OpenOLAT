@@ -1,6 +1,5 @@
-#set($identifier = $r.toString($interaction.identifier))
-#set($responseIdentifier = $r.toString($interaction.responseIdentifier))
-#set($appletContainerId = "qtiworks_id_appletContainer_" + $responseIdentifier)
+#set($responseIdentifier = $r.responseUniqueId($interaction))
+#set($containerId = "qtiworks_id_container_" + $responseIdentifier)
 #set($responseValue = $r.getResponseValue($interaction.responseIdentifier))
 #set($hotspots = $r.getVisibleAssociableHotspots($interaction))
 #set($gapImgs = $r.getVisibleGapImgs($interaction))
@@ -8,20 +7,16 @@
 <input name="qtiworks_presented_${responseIdentifier}" type="hidden" value="1"/>
 <div class="$localName">
  	#if($interaction.getPrompt())
-	<div class="prompt">
-		$r.renderPrompt($interaction.getPrompt())
-	</div>
+	<div class="prompt">$r.renderPrompt($interaction.getPrompt())</div>
 	#end
 
 	#if($r.isInvalidResponse($interaction.responseIdentifier))
-	<div class="o_error badResponse">
-      Please complete this interaction as directed.
-    </div>
+	<div class="o_error badResponse">$r.translate("error.as.directed")</div>
 	#end
       
-	<div id="${appletContainerId}" class="appletContainer" style="position:relative;">
-		<img id="${appletContainerId}_img" width="${interaction.object.width}" height="${interaction.object.height}" src="${r.convertLinkFull($interaction.object.data)}" usemap="#${appletContainerId}_map"></img>
-		<map name="${appletContainerId}_map">
+	<div id="${containerId}" style="position:relative;">
+		<img id="${containerId}_img" width="${interaction.object.width}" height="${interaction.object.height}" src="${r.convertLinkFull($interaction.object.data)}" usemap="#${containerId}_map"></img>
+		<map name="${containerId}_map">
 		#foreach($hotspot in $hotspots)
 			<!-- @matchGroup, @matchMax -->
 			<area id="${hotspot.identifier}" shape="${r.shapeToString($hotspot.shape)}" coords="$r.coordsToString($hotspot.coords)" href="#" title="$hotspot.hotspotLabel" class="area-droppable"></area>
@@ -38,7 +33,7 @@
 		#if($r.isNotNullValue($responseValue))
 			graphicGapMatchDrawResponse('$r.toString($responseValue,","," ")');
 		#else
-			graphicGapMatchItem('$appletContainerId','$responseIdentifier');
+			graphicGapMatchItem('$containerId','$responseIdentifier');
 		#end
 	    });
       	</script>

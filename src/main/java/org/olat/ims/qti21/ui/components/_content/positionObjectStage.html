@@ -1,27 +1,24 @@
 #set($interactions = $positionObjectStage.getPositionObjectInteractions())
-#set($appletContainerId = "qtiworks_id_appletContainer_" + $interactions.get(0).getResponseIdentifier())
+#set($containerId = "qtiworks_id_container_" + $interactions.get(0).getResponseIdentifier())
+#set($responseIdentifier = $r.responseUniqueId($interactions.get(0)))
 
 #foreach($interaction in $interactions)
-	<input name="qtiworks_presented_${r.toString($interaction.responseIdentifier)}" type="hidden" value="1"/>
+	<input name="qtiworks_presented_${responseIdentifier}" type="hidden" value="1"/>
 #end
 <div class="$localName">
 	#foreach($interaction in $interactions)
 		#if($interaction.getPrompt())
-		<div class="prompt">
-			$r.renderPrompt($interaction.getPrompt())
-		</div>
+		<div class="prompt">$r.renderPrompt($interaction.getPrompt())</div>
 		#end
 	#end
 	#foreach($interaction in $interactions)
 		#if($r.isInvalidResponse($interaction.responseIdentifier))
-		<div class="o_error badResponse">
-      		Please complete this interaction as directed.
-		</div>
+		<div class="o_error badResponse">$r.translate("error.as.directed")</div>
 		#end
 	#end
 
-    <div id="${appletContainerId}" class="appletContainer" style="width:${positionObjectStage.object.width}px; position:relative; ">
-		<img id="${appletContainerId}_img" width="${positionObjectStage.object.width}" height="${positionObjectStage.object.height}" src="${r.convertLinkFull($positionObjectStage.object.data)}"></img>
+    <div id="${containerId}" class="appletContainer" style="width:${positionObjectStage.object.width}px; position:relative; ">
+		<img id="${containerId}_img" width="${positionObjectStage.object.width}" height="${positionObjectStage.object.height}" src="${r.convertLinkFull($positionObjectStage.object.data)}"></img>
 		<div class="items_container" style="width:${positionObjectStage.object.width}px; height:50px; background-color:#cccccc;">
 		#foreach($interaction in $interactions)
 			#set($maxChoices = $r.maxToList($interaction.maxChoices))
@@ -30,15 +27,15 @@
 	 		<script type="text/javascript">
 			jQuery(function() {
 			#if($r.isNotNullValue($responseValue))
-				positionObjectDrawResponse('$appletContainerId','$r.toString($interaction.responseIdentifier)','$r.toString($responseValue,":")');
+				positionObjectDrawResponse('$containerId','$responseIdentifier','$r.toString($responseValue,":")');
 			#else
-				positionObjectItem('$appletContainerId','$r.toString($interaction.responseIdentifier)');
+				positionObjectItem('$containerId','$responseIdentifier');
 			#end
 			});
 			</script> 
 			
 			#foreach($maxChoice in $maxChoices)
-            	<div class="o_item o_${interaction.responseIdentifier}" style="width:${interaction.object.width}px; height:${interaction.object.height}px; background-image:url('${r.convertLink($interaction.object.data)}');"> </div>
+            	<div class="o_item o_$responseIdentifier" style="width:${interaction.object.width}px; height:${interaction.object.height}px; background-image:url('${r.convertLink($interaction.object.data)}');"> </div>
             #end
 		#end
 		</div>

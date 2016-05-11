@@ -1,4 +1,4 @@
-#set($responseIdentifier = $r.toString($interaction.responseIdentifier))
+#set($responseIdentifier = $r.responseUniqueId($interaction))
 #set($choices = $r.getVisibleOrderedChoices($interaction))
 #set($responseValue = $r.getResponseValue($interaction.responseIdentifier))
 

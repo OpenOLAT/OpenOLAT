@@ -1,23 +1,18 @@
-#set($identifier = $r.toString($interaction.identifier))
-#set($responseIdentifier = $r.toString($interaction.responseIdentifier))
-#set($qtiContainerId = "qtiworks_id_appletContainer_" + $responseIdentifier)
+#set($responseIdentifier = $r.responseUniqueId($interaction))
+#set($qtiContainerId = "qtiworks_id_container_" + $responseIdentifier)
 #set($responseValue = $r.getResponseValue($interaction.responseIdentifier))
 
 <input name="qtiworks_presented_${responseIdentifier}" type="hidden" value="1"/>
 <div class="$localName">
 	#if($interaction.getPrompt())
-	<div class="prompt">
-		$r.renderPrompt($interaction.getPrompt())
-	</div>
+	<div class="prompt">$r.renderPrompt($interaction.getPrompt())</div>
 	#end
 
 	#if($r.isInvalidResponse($interaction.responseIdentifier))
-	<div class="o_error badResponse">
-      Please complete this interaction as directed.
-    </div>
+	<div class="o_error badResponse">$r.translate("error.as.directed")</div>
 	#end
 	
-	<div id="${qtiContainerId}" class="appletContainer v2">
+	<div id="${qtiContainerId}">
 		<img id="${qtiContainerId}_img" width="${interaction.object.width}" height="${interaction.object.height}" src="${r.convertLinkFull($interaction.object.data)}" usemap="#${qtiContainerId}_map"></img>
 		<map name="${qtiContainerId}_map">
 		#foreach($hotspotChoice in $interaction.getHotspotChoices())

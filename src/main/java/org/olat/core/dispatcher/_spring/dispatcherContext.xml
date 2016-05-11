@@ -46,6 +46,9 @@
 				<entry key="/error/">
 					<ref bean="errorMailBean" />
 				</entry>
+				<entry key="/math/">
+					<ref bean="mathwebbean" />
+				</entry>
 				<entry key="/podcast/">
 					<ref bean="podcastMediaBean" />
 				</entry>
@@ -207,6 +210,9 @@
 
 	<bean id="adminbean"
 		class="org.olat.admin.AdminModuleDispatcher" />
+		
+	<bean id="mathwebbean"
+		class="org.olat.ims.qti21.restapi.MathWebDispatcher" />
 
 	<!-- podcast media dispatcher -->
 	<bean id="podcastMediaBean" class="org.olat.modules.webFeed.dispatching.FeedMediaDispatcher" />

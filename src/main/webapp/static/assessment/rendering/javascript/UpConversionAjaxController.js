@@ -181,14 +181,14 @@ var UpConversionAjaxController = (function() {
                 case STATUS_WAITING_SERVER:
                     errorContainer.hide();
                     bracketedRenderingContainer.hide();
-                    statusContainer.attr('class', 'upConversionAjaxControlMessage waiting');
+                    statusContainer.attr('class', 'upConversionAjaxControlMessage o_icon o_icon_pending o_icon-spin');
                     this._showMessage(statusContainer, 'Verifying your input...');
                     statusContainer.show();
                     break;
 
                 case STATUS_SUCCESS:
                     errorContainer.hide();
-                    statusContainer.attr('class', 'upConversionAjaxControlMessage success');
+                    statusContainer.attr('class', 'upConversionAjaxControlMessage');
                     this._showMessage(statusContainer, 'I have interpreted your input as:');
                     this._showMathML(bracketedRenderingContainer, mathElementString);
                     statusContainer.show();
@@ -197,7 +197,7 @@ var UpConversionAjaxController = (function() {
 
                 case STATUS_PARSE_ERROR:
                     bracketedRenderingContainer.hide();
-                    statusContainer.attr('class', 'upConversionAjaxControlMessage failure');
+                    statusContainer.attr('class', 'upConversionAjaxControlMessage o_icon o_icon_warn');
                     this._showMessage(statusContainer, 'SnuggleTeX could not parse your input:');
                     this._showMessage(errorContainer, errorContent);
                     statusContainer.show();
@@ -207,7 +207,7 @@ var UpConversionAjaxController = (function() {
                 case STATUS_UPCONVERSION_FAILED:
                     errorContainer.hide();
                     bracketedRenderingContainer.hide();
-                    statusContainer.attr('class', 'upConversionAjaxControlMessage failure');
+                    statusContainer.attr('class', 'upConversionAjaxControlMessage o_icon o_icon_warn');
                     this._showMessage(statusContainer, 'Sorry, I could not make sense of your input');
                     this._showMessage(errorContainer, null);
                     statusContainer.show();
@@ -216,7 +216,7 @@ var UpConversionAjaxController = (function() {
                 case STATUS_UNKNOWN_ERROR:
                     errorContainer.hide();
                     bracketedRenderingContainer.hide();
-                    statusContainer.attr('class', 'upConversionAjaxControlMessage error');
+                    statusContainer.attr('class', 'upConversionAjaxControlMessage o_icon o_icon_warn');
                     this._showMessage(statusContainer, 'Unexpected error');
                     this._showMessage(errorContainer, null);
                     statusContainer.show();

@@ -177,8 +177,10 @@ public class AssessmentRenderFunctions {
         </xsl:for-each>
 			 */
 			ResponseDeclaration responseDeclaration = getResponseDeclaration(assessmentItem, identifier);
-			CorrectResponse variable = responseDeclaration.getCorrectResponse();
-			responseValue = variable.evaluate();
+			CorrectResponse correctResponse = responseDeclaration.getCorrectResponse();
+			if(correctResponse != null) {
+				responseValue = correctResponse.evaluate();
+			}
 		}
 		//<xsl:when test="$uncommittedResponseValues[@identifier=$identifier]">
 		else if(itemSessionState.getUncommittedResponseValue(identifier) != null) {

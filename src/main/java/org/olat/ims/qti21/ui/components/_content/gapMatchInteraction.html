@@ -1,4 +1,4 @@
-#set($responseIdentifier = $r.toString($interaction.responseIdentifier))
+#set($responseIdentifier = $r.responseUniqueId($interaction))
 #set($orderedVisibleGapTexts = $r.getVisibleOrderedChoices($interaction))
 #set($visibleGaps = $r.filterVisible($r.findGaps($interaction)))
 #set($responseValue = $r.getResponseValue($interaction.responseIdentifier))
@@ -6,18 +6,13 @@
 <input name="qtiworks_presented_${responseIdentifier}" type="hidden" value="1"/>  
 <div class="$localName">
 	#if($interaction.getPrompt())
-	<div class="prompt">
-		$r.renderPrompt($interaction.getPrompt())
-	</div>
+		<div class="prompt">$r.renderPrompt($interaction.getPrompt())</div>
 	#end
 	#if($r.isInvalidResponse($interaction.responseIdentifier))
-	<div class="o_error badResponse">
-      Please complete this interaction as directed.
-    </div>
+		<div class="o_error badResponse">$r.translate("error.as.directed")</div>
 	#end
-	
+
 	$r.renderBlockStatics($interaction.getBlockStatics())
-	
 	<table class="table small">
 		<thead>
 	        <tr>
