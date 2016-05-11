@@ -183,7 +183,7 @@ public class StatisticCourseNodesController extends BasicController implements A
 		removeAsListenerAndDispose(currentCtrl);
 		currentCtrl = null;
 		
-		WindowControl swControl = addToHistory(ureq, OresHelper.createOLATResourceableInstance(selectedNode.getIdent(), 0l), null);
+		WindowControl swControl = addToHistory(ureq, OresHelper.createOLATResourceableInstanceWithoutCheck(selectedNode.getIdent(), 0l), null);
 		if(selectedNode instanceof StatisticResourceNode) {
 			StatisticResourceNode node = (StatisticResourceNode)selectedNode;
 			currentCtrl = node.getResult().getController(ureq, swControl, stackPanel, node);

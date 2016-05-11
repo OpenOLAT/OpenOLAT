@@ -610,6 +610,7 @@ public class QTI21ServiceImpl implements QTI21Service, InitializingBean, Disposa
     @Override
 	public AssessmentResult getAssessmentResult(AssessmentTestSession candidateSession) {
     	File assessmentResultFile = getAssessmentResultFile(candidateSession);
+    	System.out.println(assessmentResultFile);
     	ResourceLocator fileResourceLocator = new PathResourceLocator(assessmentResultFile.getParentFile().toPath());
 		ResourceLocator inputResourceLocator = 
         		ImsQTI21Resource.createResolvingResourceLocator(fileResourceLocator);

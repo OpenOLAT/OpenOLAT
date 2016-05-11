@@ -29,8 +29,11 @@ import org.olat.core.gui.components.tree.TreeModel;
 import org.olat.core.gui.components.tree.TreeNode;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.generic.messages.MessageUIFactory;
+import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.util.CodeHelper;
+import org.olat.core.util.Util;
 import org.olat.core.util.nodes.INode;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.course.nodes.CourseNodeConfiguration;
@@ -89,14 +92,16 @@ public class QTIStatisticResourceResult implements StatisticResourceResult {
 		} else {
 			resolver = new ImsRepositoryResolver(qtiRepositoryEntry);
 			Document doc = resolver.getQTIDocument();
-			ParserManager parser = new ParserManager();
-			qtiDocument = (QTIDocument) parser.parse(doc);
-			if (courseNode instanceof IQSURVCourseNode) {
-				type = QTIType.survey;
-			} else if (courseNode instanceof IQTESTCourseNode) {
-				type = QTIType.test;
-			} else if (courseNode instanceof IQSELFCourseNode){
-				type = QTIType.self;
+			if(doc != null) {
+				ParserManager parser = new ParserManager();
+				qtiDocument = (QTIDocument) parser.parse(doc);
+				if (courseNode instanceof IQSURVCourseNode) {
+					type = QTIType.survey;
+				} else if (courseNode instanceof IQTESTCourseNode) {
+					type = QTIType.test;
+				} else if (courseNode instanceof IQSELFCourseNode){
+					type = QTIType.self;
+				}
 			}
 		}
 	}
@@ -184,7 +189,11 @@ public class QTIStatisticResourceResult implements StatisticResourceResult {
 	private Controller createAssessmentController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
 			boolean printMode) {
 		Controller ctrl;
-		if (type == QTIType.onyx){
+		if (type == null) {
+			Translator translator = Util.createPackageTranslator(QTI12AssessmentStatisticsController.class, ureq.getLocale());
+			String text = translator.translate("error.notfound.text");
+			ctrl = MessageUIFactory.createErrorMessage(ureq, wControl, null, text);
+		} else if (type == QTIType.onyx){
 			ctrl = new QTI21OnyxAssessmentStatisticsController(ureq, wControl, this, printMode);
 		} else {
 			ctrl = new QTI12AssessmentStatisticsController(ureq, wControl, stackPanel, this, printMode);
