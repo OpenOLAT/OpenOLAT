@@ -229,7 +229,7 @@ public class VideoEditController  extends ActivateableTabbableDefaultController 
 					videoConfigurationVc.contextPut("showPreviewButton", Boolean.TRUE);
 					String displayname = StringHelper.escapeHtml(repositoryEntry.getDisplayname());
 					previewLink = LinkFactory.createCustomLink("command.preview", "command.preview", displayname, Link.NONTRANSLATED, videoConfigurationVc, this);
-					previewLink.setCustomEnabledLinkCSS("o_preview");
+					previewLink.setIconLeftCSS("o_icon o_icon-fw o_icon_preview");
 					previewLink.setTitle(getTranslator().translate("command.preview"));
 					// fire event so the updated config is saved by the editormaincontroller
 					fireEvent(urequest, NodeEditController.NODECONFIG_CHANGED_EVENT);
