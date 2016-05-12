@@ -33,6 +33,7 @@ import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.render.velocity.VelocityRenderDecorator;
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.helpers.Settings;
 import org.olat.core.util.StringHelper;
 
 import uk.ac.ed.ph.jqtiplus.attribute.value.StringMultipleAttribute;
@@ -150,6 +151,11 @@ public class AssessmentObjectVelocityRenderDecorator extends VelocityRenderDecor
 	
 	public String convertLinkFull(String uri) {
 		return AssessmentRenderFunctions.convertLink(avc, resolvedAssessmentItem, uri);
+	}
+	
+	public String convertLinkAbsolut(String uri) {
+		String url = AssessmentRenderFunctions.convertLink(avc, resolvedAssessmentItem, uri);
+		return Settings.getServerContextPathURI().concat(url);
 	}
 	
 	public boolean isNullValue(Value value) {
