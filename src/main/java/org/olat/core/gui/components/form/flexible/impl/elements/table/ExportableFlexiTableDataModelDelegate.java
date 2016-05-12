@@ -37,8 +37,7 @@ import org.olat.core.gui.translator.Translator;
 public class ExportableFlexiTableDataModelDelegate  {
 	
 	public MediaResource export(FlexiTableComponent ftC, Translator translator) {
-		FlexiTableDataModel<?> dataModel = ftC.getFlexiTableElement().getTableDataModel();
-		List<FlexiColumnModel> columns = getColumnModels(dataModel);
+		List<FlexiColumnModel> columns = getColumnModels(ftC.getFlexiTableElement());
 		return export(ftC, columns, translator);
 	}
 	
@@ -47,13 +46,14 @@ public class ExportableFlexiTableDataModelDelegate  {
 		return exporter.export(ftC, columns, translator);
 	}
 	
-	protected List<FlexiColumnModel> getColumnModels(FlexiTableDataModel<?> delegate) {
-		FlexiTableColumnModel columnModel = delegate.getTableColumnModel();
+	private final List<FlexiColumnModel> getColumnModels(FlexiTableElementImpl tableEl) {
+		FlexiTableDataModel<?> dataModel = tableEl.getTableDataModel();
+		FlexiTableColumnModel columnModel = dataModel.getTableColumnModel();
 		int numOfColumns = columnModel.getColumnCount();
 		List<FlexiColumnModel> columns = new ArrayList<>(numOfColumns);
 		for(int i=0; i<numOfColumns; i++) {
 			FlexiColumnModel column = columnModel.getColumnModel(i);
-			if(column.isDefaultVisible() && column.isExportable()) {
+			if((column.isDefaultVisible() || tableEl.isColumnModelVisible(column)) && column.isExportable()) {
 				columns.add(column);
 			}
 		}
