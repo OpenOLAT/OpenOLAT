@@ -97,7 +97,6 @@ public class ScormEditController extends ActivateableTabbableDefaultController i
 	public static final String CONFIG_CUTVALUE = "cutvalue";
 	
 	public static final String CONFIG_DELIVERY_OPTIONS = "deliveryOptions";
-	//fxdiff FXOLAT-116: SCORM improvements
 	public final static String CONFIG_FULLWINDOW = "fullwindow";
 	public final static String CONFIG_CLOSE_ON_FINISH = "CLOSEONFINISH";
 	
@@ -202,7 +201,6 @@ public class ScormEditController extends ActivateableTabbableDefaultController i
 		boolean advanceScore = config.getBooleanSafe(CONFIG_ADVANCESCORE, true);
 		// </OLATCE-289>
 		int cutvalue = config.getIntegerSafe(CONFIG_CUTVALUE, 0);
-		//fxdiff FXOLAT-116: SCORM improvements
 		boolean fullWindow = config.getBooleanSafe(CONFIG_FULLWINDOW, true);
 		boolean closeOnFinish = config.getBooleanSafe(CONFIG_CLOSE_ON_FINISH, false);
 		
@@ -308,13 +306,11 @@ public class ScormEditController extends ActivateableTabbableDefaultController i
 				//save form-values to config
 				
 				config.setBooleanEntry(CONFIG_SHOWMENU, scorevarform.isShowMenu());
-				//fxdiff FXOLAT-322
 				config.setBooleanEntry(CONFIG_SKIPLAUNCHPAGE, scorevarform.isSkipLaunchPage());
 				config.setBooleanEntry(CONFIG_SHOWNAVBUTTONS, scorevarform.isShowNavButtons());
 				config.setBooleanEntry(CONFIG_ISASSESSABLE, scorevarform.isAssessable());
 				config.setStringValue(CONFIG_ASSESSABLE_TYPE, scorevarform.getAssessableType());
 				config.setIntValue(CONFIG_CUTVALUE, scorevarform.getCutValue());
-				//fxdiff FXOLAT-116: SCORM improvements
 				config.setBooleanEntry(CONFIG_FULLWINDOW, scorevarform.isFullWindow());
 				config.setBooleanEntry(CONFIG_CLOSE_ON_FINISH, scorevarform.isCloseOnFinish());
 				// <OLATCE-289>
@@ -408,17 +404,17 @@ public class ScormEditController extends ActivateableTabbableDefaultController i
 class VarForm extends FormBasicController {
 	private SelectionElement showMenuEl;
 	private SelectionElement showNavButtonsEl;
-	private SelectionElement fullWindowEl;//fxdiff FXOLAT-116: SCORM improvements
-	private SelectionElement closeOnFinishEl;//fxdiff FXOLAT-116: SCORM improvements
+	private SelectionElement fullWindowEl;
+	private SelectionElement closeOnFinishEl;
 	private SelectionElement isAssessableEl;
-	private SelectionElement skipLaunchPageEl; //fxdiff FXOLAT-322 : skip start-page / auto-launch
+	private SelectionElement skipLaunchPageEl;
 	private IntegerElement cutValueEl;
 	
 	private boolean showMenu, showNavButtons, skipLaunchPage;
 	private String assessableType;
 	private int cutValue;
-	private boolean fullWindow;//fxdiff FXOLAT-116: SCORM improvements
-	private boolean closeOnFinish;//fxdiff FXOLAT-116: SCORM improvements
+	private boolean fullWindow;
+	private boolean closeOnFinish;
 	private String[] assessableKeys, assessableValues;
 
 	// <OLATCE-289>
@@ -447,7 +443,6 @@ class VarForm extends FormBasicController {
 		this.showNavButtons = showNavButtons;
 		this.assessableType = assessableType;
 		this.cutValue = cutValue;
-		//fxdiff FXOLAT-116: SCORM improvements
 		this.fullWindow = fullWindow;
 		this.closeOnFinish = closeOnFinish;
 		
@@ -472,11 +467,11 @@ class VarForm extends FormBasicController {
 	public int getCutValue() {
 		return cutValueEl.getIntValue();
 	}
-	//fxdiff FXOLAT-116: SCORM improvements
+	
 	public boolean isFullWindow() {
 		return fullWindowEl.isMultiselect() && fullWindowEl.isSelected(0);
 	}
-	//fxdiff FXOLAT-116: SCORM improvements
+	
 	public boolean isCloseOnFinish() {
 		return closeOnFinishEl.isMultiselect() && closeOnFinishEl.isSelected(0);
 	}
@@ -508,8 +503,6 @@ class VarForm extends FormBasicController {
 		return null;
 	}
 	
-
-	
 	@Override
 	protected void formOK(UserRequest ureq) {
 		fireEvent (ureq, Event.DONE_EVENT);
@@ -518,7 +511,17 @@ class VarForm extends FormBasicController {
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
 		boolean allOk = true;
-
+		
+		cutValueEl.clearError();
+		if(cutValueEl.isVisible() && cutValueEl.isEnabled() && StringHelper.containsNonWhitespace(cutValueEl.getValue())) {
+			try {
+				Integer.parseInt(cutValueEl.getValue());
+			} catch (NumberFormatException e) {
+				cutValueEl.setErrorKey("cutvalue.validation", null);
+				allOk &= false;
+			}
+		}
+		
 		return allOk && super.validateFormLogic(ureq);
 	}
 
@@ -534,7 +537,6 @@ class VarForm extends FormBasicController {
 		
 		showNavButtonsEl = uifactory.addCheckboxesHorizontal("shownavbuttons", "shownavbuttons.label", formLayout, new String[]{"xx"}, new String[]{null});
 		showNavButtonsEl.select("xx", showNavButtons);
-		//fxdiff FXOLAT-116: SCORM improvements
 		fullWindowEl = uifactory.addCheckboxesHorizontal("fullwindow", "fullwindow.label", formLayout, new String[]{"fullwindow"}, new String[]{null});
 		fullWindowEl.select("fullwindow", fullWindow);
 		
