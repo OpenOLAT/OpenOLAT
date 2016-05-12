@@ -79,6 +79,7 @@ import org.olat.core.gui.translator.Translator;
 import org.olat.core.logging.OLATRuntimeException;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.CodeHelper;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.ims.qti21.QTI21Service;
@@ -672,8 +673,9 @@ public abstract class AssessmentObjectComponentRenderer extends DefaultComponent
 			} else {
 				sb.append("checkbox");
 			}
+			String guid = "oo_" + CodeHelper.getRAMUniqueID();
 			String responseUniqueId = component.getResponseUniqueIdentifier(itemSessionState, interaction);
-			sb.append("' name='qtiworks_response_").append(responseUniqueId).append("'")
+			sb.append("' id='").append(guid).append("' name='qtiworks_response_").append(responseUniqueId).append("'")
 			  .append(" value='").append(hottext.getIdentifier().toString()).append("'");
 			if(component.isItemSessionEnded(itemSessionState, renderer.isSolutionMode())) {
 				sb.append(" disabled");
@@ -684,6 +686,7 @@ public abstract class AssessmentObjectComponentRenderer extends DefaultComponent
 				sb.append(" checked");
 			}
 			sb.append(" />");
+			FormJSHelper.appendFlexiFormDirtyOn(sb, component.getQtiItem().getRootForm(), "change click", guid);
 			hottext.getInlineStatics().forEach((inline)
 					-> renderInline(renderer, sb, component, resolvedAssessmentItem, itemSessionState, inline, ubu, translator));
 			sb.append("</span>");

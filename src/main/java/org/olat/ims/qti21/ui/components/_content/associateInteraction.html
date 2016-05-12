@@ -39,7 +39,7 @@
 		#if($r.isNotNullValue($responseValue))
 			associateDrawResponse('$containerId','$r.toString($responseValue,",")');
 		#else
-			associateItem('$containerId', '$responseIdentifier');
+			associateItem('$containerId', '$responseIdentifier','$r.formDispatchFieldId');
 		#end
 		});
 		</script>

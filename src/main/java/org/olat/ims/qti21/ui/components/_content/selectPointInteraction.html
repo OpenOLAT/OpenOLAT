@@ -1,5 +1,5 @@
 #set($responseIdentifier = $r.responseUniqueId($interaction))
-#set($appletContainerId = "qtiworks_id_appletContainer_" + $responseIdentifier)
+#set($containerId = "qtiworks_id_container_" + $responseIdentifier)
 #set($responseValue = $r.getResponseValue($interaction.responseIdentifier))
 
 <input name="qtiworks_presented_${responseIdentifier}" type="hidden" value="1"/>
@@ -12,16 +12,16 @@
 	<div class="o_error badResponse">$r.translate("error.as.directed")</div>
 	#end
 	
-	<div id="${appletContainerId}" class="appletContainer" data-openolat="">
-		<canvas id="${appletContainerId}_canvas" width="${interaction.object.width}" height="${interaction.object.height}" style="background-image:url('${r.convertLink($interaction.object.data)}');"></canvas>
+	<div id="${containerId}" class="appletContainer" data-openolat="">
+		<canvas id="${containerId}_canvas" width="${interaction.object.width}" height="${interaction.object.height}" style="background-image:url('${r.convertLink($interaction.object.data)}');"></canvas>
 		<script type="text/javascript">
 		#if($r.isNotNullValue($responseValue))
 			jQuery(function() {
-				selectPointDrawResponse('$appletContainerId','$r.toString($responseValue,":")');
+				selectPointDrawResponse('$containerId','$r.toString($responseValue,":")');
 			});
 		#else
 			jQuery(function() {
-				selectPointItem('$appletContainerId',$interaction.maxChoices,'$responseIdentifier');	
+				selectPointItem('$containerId',$interaction.maxChoices,'$responseIdentifier','$r.formDispatchFieldId');	
 			});			
 		#end
       </script>

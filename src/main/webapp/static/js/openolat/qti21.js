@@ -19,7 +19,7 @@ function associateDrawResponse(containerId, responseValue) {
 	}
 }
 
-function associateItem(containerId, responseIdentifier) {
+function associateItem(containerId, responseIdentifier, formDispatchFieldId) {
 	jQuery("#" + containerId + "_items .o_associate_item").on('click', function(e, el) {
 		var itemEl = jQuery(this);
 		if(itemEl.hasClass('oo-choosed')) {
@@ -33,7 +33,7 @@ function associateItem(containerId, responseIdentifier) {
 			itemEl.css('border', '2px solid red');
 			itemEl.addClass('oo-selected');
 		}
-	});
+	}).on('click', {formId:formDispatchFieldId}, setFlexiFormDirtyByListener);
 	
 	jQuery("#" + containerId + "_panel .association_box").on('click', function(e, el) {
 		var box = jQuery(this);
@@ -46,7 +46,7 @@ function associateItem(containerId, responseIdentifier) {
 			box.css('border', '3px solid grey');
 			recalculateAssociations(containerId, responseIdentifier);
 		});
-	});
+	}).on('click', {formId:formDispatchFieldId}, setFlexiFormDirtyByListener);
 }
 
 function recalculateAssociations(containerId, responseIdentifier) {
@@ -78,7 +78,7 @@ function positionObjectDrawResponse(containerId, responseIdentifier, responseVal
 	}
 }
 
-function positionObjectItem(containerId, responseIdentifier) {
+function positionObjectItem(containerId, responseIdentifier, formDispatchFieldId) {
 	jQuery('#' + containerId + ' .items_container .o_item.o_' + responseIdentifier).each(function(index, el) {
 		jQuery(el).attr('id','object-item-' + index);
 	}).draggable({
@@ -108,6 +108,7 @@ function positionObjectItem(containerId, responseIdentifier) {
 			} else {
 				inputEl.val(cx + " " + cy);
 			}
+            setFlexiFormDirty(formDispatchFieldId);
 		}
 	});
 }
@@ -331,7 +332,7 @@ function selectPointDrawResponse(containerId, responseValue) {
 	}
 }
 
-function selectPointItem(containerId, maxChoices, responseIdentifier) {
+function selectPointItem(containerId, maxChoices, responseIdentifier, formDispatchFieldId) {
 	jQuery('#' + containerId + '_canvas').on("click", function(e, t) {
 		var r = 8;
 	
@@ -386,6 +387,8 @@ function selectPointItem(containerId, maxChoices, responseIdentifier) {
 				.attr('value', p.x + " " + p.y);
 			divContainer.append(inputElement);
 		}
+		
+        setFlexiFormDirty(formDispatchFieldId);
 	});
 }
 

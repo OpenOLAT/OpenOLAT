@@ -29,7 +29,7 @@
 			#if($r.isNotNullValue($responseValue))
 				positionObjectDrawResponse('$containerId','$responseIdentifier','$r.toString($responseValue,":")');
 			#else
-				positionObjectItem('$containerId','$responseIdentifier');
+				positionObjectItem('$containerId','$responseIdentifier','$r.formDispatchFieldId');
 			#end
 			});
 			</script> 

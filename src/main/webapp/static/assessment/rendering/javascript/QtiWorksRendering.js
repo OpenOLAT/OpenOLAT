@@ -33,8 +33,9 @@ var QtiWorksRendering = (function() {
     /************************************************************/
     /* sliderInteraction */
 
-    var SliderInteraction = function(responseIdentifier, configData) {
+    var SliderInteraction = function(responseIdentifier, formDispatchFieldId, configData) {
         this.responseIdentifier = responseIdentifier;
+        this.formDispatchFieldId = formDispatchFieldId;
         this.sliderQuery = jQuery('#qtiworks_id_slider_' + responseIdentifier);
         this.feedbackQuery = jQuery('#qtiworks_id_slidervalue_' + responseIdentifier);
         this.inputElementQuery = jQuery('input[name="qtiworks_response_' + responseIdentifier + '"]');
@@ -58,6 +59,7 @@ var QtiWorksRendering = (function() {
                 slide: function(event, ui) {
                     var value = interaction.isReversed ? -ui.value : ui.value;
                     interaction.setValue(value);
+                    setFlexiFormDirty(formDispatchFieldId);
                 }
             });
             this.reset();
@@ -212,8 +214,9 @@ var QtiWorksRendering = (function() {
     /************************************************************/
     /* gapMatchInteraction (NB: no JS validation of matchMin/required here) */
 
-    var GapMatchInteraction = function(responseIdentifier, gapChoiceData, gapData) {
+    var GapMatchInteraction = function(responseIdentifier, formDispatchFieldId, gapChoiceData, gapData) {
         this.responseIdentifier = responseIdentifier;
+        this.formDispatchFieldId = formDispatchFieldId;
         this.gapChoiceMap = {};
         this.gapMap = {};
         this.matched = [];
@@ -252,6 +255,7 @@ var QtiWorksRendering = (function() {
             var checkboxes = queryInputElements(this.responseIdentifier);
             checkboxes.bind('click', function() {
                 interaction.checkMatch(this);
+                setFlexiFormDirty(formDispatchFieldId);
             });
             this.recalculate();
             this.updateDisabledStates();
@@ -351,8 +355,9 @@ var QtiWorksRendering = (function() {
     /************************************************************/
     /* orderInteraction */
 
-    var OrderInteraction = function(responseIdentifier, initialSourceOrder, initialTargetOrder, minChoices, maxChoices) {
+    var OrderInteraction = function(responseIdentifier, formDispatchFieldId, initialSourceOrder, initialTargetOrder, minChoices, maxChoices) {
         this.responseIdentifier = responseIdentifier;
+        this.formDispatchFieldId = formDispatchFieldId;
         this.initialSourceOrder = initialSourceOrder;
         this.initialTargetOrder = initialTargetOrder;
         this.minChoices = minChoices;
@@ -411,11 +416,13 @@ var QtiWorksRendering = (function() {
             /* Add jQuery UI Sortable effect to sourceList */
             var listSelector = '#qtiworks_response_' + this.responseIdentifier + ' ul';
             this.sourceList.sortable({
-                connectWith: listSelector
+                connectWith: listSelector,
+                change: function() { setFlexiFormDirty(formDispatchFieldId); }
             });
             this.sourceList.disableSelection();
             this.targetList.sortable({
-                connectWith: listSelector
+                connectWith: listSelector,
+                change: function() { setFlexiFormDirty(formDispatchFieldId); }
             });
             this.targetList.disableSelection();
 
@@ -543,20 +550,20 @@ var QtiWorksRendering = (function() {
             return false;
         },
 
-        registerSliderInteraction: function(responseIdentifier, configData) {
-            new SliderInteraction(responseIdentifier, configData).init();
+        registerSliderInteraction: function(responseIdentifier, formDispatchFieldId, configData) {
+            new SliderInteraction(responseIdentifier, formDispatchFieldId, configData).init();
         },
 
-        registerOrderInteraction: function(responseIdentifier, initialSourceOrder, initialTargetOrder, minChoices, maxChoices) {
-            new OrderInteraction(responseIdentifier, initialSourceOrder, initialTargetOrder, minChoices, maxChoices).init();
+        registerOrderInteraction: function(responseIdentifier, formDispatchFieldId, initialSourceOrder, initialTargetOrder, minChoices, maxChoices) {
+            new OrderInteraction(responseIdentifier, formDispatchFieldId, initialSourceOrder, initialTargetOrder, minChoices, maxChoices).init();
         },
 
         registerMatchInteraction: function(responseIdentifier, maxAssociations, matchSet1, matchSet2) {
             new MatchInteraction(responseIdentifier, maxAssociations, matchSet1, matchSet2).init();
         },
 
-        registerGapMatchInteraction: function(responseIdentifier, gapChoiceData, gapData) {
-            new GapMatchInteraction(responseIdentifier, gapChoiceData, gapData).init();
+        registerGapMatchInteraction: function(responseIdentifier, formDispatchFieldId, gapChoiceData, gapData) {
+            new GapMatchInteraction(responseIdentifier, formDispatchFieldId, gapChoiceData, gapData).init();
         },
 
         registerAppletBasedInteractionContainer: function(containerId, responseIdentifiers) {

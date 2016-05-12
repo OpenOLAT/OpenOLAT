@@ -20,6 +20,7 @@
 		#foreach($hotspot in $hotspots)
 			<!-- @matchGroup, @matchMax -->
 			<area id="${hotspot.identifier}" shape="${r.shapeToString($hotspot.shape)}" coords="$r.coordsToString($hotspot.coords)" href="#" title="$hotspot.hotspotLabel" class="area-droppable"></area>
+			$r.appendFlexiFormDirtyForClick("$hotspot.identifier")
 		#end
 		</map>
 		<div class="gap_container" style="width:${interaction.object.width}px; height:50px; background-color:#cccccc;">

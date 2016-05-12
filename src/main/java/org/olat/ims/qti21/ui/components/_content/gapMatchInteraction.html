@@ -37,7 +37,7 @@
 		#end
 	</table>
 	<script type='text/javascript'>
-        QtiWorksRendering.registerGapMatchInteraction('$responseIdentifier',
+        QtiWorksRendering.registerGapMatchInteraction('$responseIdentifier', '$r.formDispatchFieldId',
         {#foreach($oGap in $orderedVisibleGapTexts) #if($foreach.count > 1),#end $oGap.identifier:$oGap.matchMax #end},
         {#foreach($vGap in $visibleGaps) #if($foreach.count > 1),#end $vGap.identifier:$vGap.required #end});
 	</script>

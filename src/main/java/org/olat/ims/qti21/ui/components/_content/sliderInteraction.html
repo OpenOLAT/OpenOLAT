@@ -30,7 +30,7 @@
 		<input type="hidden" name="qtiworks_response_${responseIdentifier}" value="$value"/>
         <script type="text/javascript">
           jQuery(document).ready(function() {
-            QtiWorksRendering.registerSliderInteraction('$responseIdentifier', {
+            QtiWorksRendering.registerSliderInteraction('$responseIdentifier','$r.formDispatchFieldId', {
               min: $options.min,
               max: $options.max,
               step: $options.step,

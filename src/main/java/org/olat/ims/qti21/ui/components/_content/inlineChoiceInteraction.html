@@ -10,7 +10,7 @@
     </span>
 	#end
       
-	<select name="qtiworks_response_${responseIdentifier}">
+	<select id="oo_${responseIdentifier}" name="qtiworks_response_${responseIdentifier}">
         <option value="" #if($r.isItemSessionEnded()) disabled #end>(Select)</option>
         #foreach($choice in $choices)
         	<option value="${choice.identifier}" #if($r.isItemSessionEnded()) disabled #end #if($r.valueContains($responseValue,$choice.identifier)) selected #end>
@@ -18,4 +18,5 @@
         	</option>
         #end
 	</select>
+	$r.appendFlexiFormDirty("oo_${responseIdentifier}")
 </span>

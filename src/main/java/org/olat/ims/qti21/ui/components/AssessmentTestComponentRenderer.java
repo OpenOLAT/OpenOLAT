@@ -226,6 +226,13 @@ public class AssessmentTestComponentRenderer extends AssessmentObjectComponentRe
 		
 		//controls
 		sb.append("<div class='o_button_group'>");
+		
+		//submit button
+		final ItemSessionState itemSessionState = component.getItemSessionState(itemRefNode.getKey());
+		if(component.isItemSessionOpen(itemSessionState, options.isSolutionMode())) {
+			Component submit = component.getQtiItem().getSubmitButton().getComponent();
+			submit.getHTMLRendererSingleton().render(renderer.getRenderer(), sb, submit, ubu, translator, new RenderResult(), null);
+		}
 		//advanceTestItemAllowed
 		if(options.isAdvanceTestItemAllowed()) {
 			String title = translator.translate("assessment.test.nextQuestion");
@@ -346,11 +353,11 @@ public class AssessmentTestComponentRenderer extends AssessmentObjectComponentRe
 		//comment
 		renderComment(renderer, sb, component, itemSessionState, translator);
 		
-		//submit button
-		if(component.isItemSessionOpen(itemSessionState, options.isSolutionMode())) {
+		//submit button -> moved with the other buttons
+		/*if(component.isItemSessionOpen(itemSessionState, options.isSolutionMode())) {
 			Component submit = component.getQtiItem().getSubmitButton().getComponent();
 			submit.getHTMLRendererSingleton().render(renderer.getRenderer(), sb, submit, ubu, translator, new RenderResult(), null);
-		}
+		}*/
 		//end body
 		sb.append("</div>");
 

@@ -1203,6 +1203,8 @@ public class AssessmentTestDisplayController extends BasicController implements 
 			}
 			super.formInnerEvent(ureq, source, event);
 			updateStatusAndResults(ureq);
+			mainForm.setDirtyMarking(false);
+			mainForm.forceSubmittedAndValid();
 		}
 		
 		@Override

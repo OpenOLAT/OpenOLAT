@@ -2,11 +2,9 @@
 #set($responseValue = $r.getResponseValue($interaction.responseIdentifier))
 
 <input name="qtiworks_uploadpresented_${responseIdentifier}" type="hidden" value="1"/>
-<div class="{local-name()}">
+<div class="$localName">
 	#if($interaction.getPrompt())
-	<div class="prompt">
-		$r.renderPrompt($interaction.getPrompt())
-	</div>
+	<div class="prompt">$r.renderPrompt($interaction.getPrompt())</div>
 	#end
 	
     #if($r.notEmpty($responseValue))
@@ -16,18 +14,20 @@
 		</div>
          #if($r.isItemSessionOpen())
               <div class="fileUploadInstruction">Upload New File</div>
-              <input type="file" name="qtiworks_uploadresponse_${responseIdentifier}"/>
+              <input id="oo_${responseIdentifier}" type="file" name="qtiworks_uploadresponse_${responseIdentifier}"/>
 		#else
-              <input type="file" name="qtiworks_uploadresponse_${responseIdentifier}" disabled="disabled"/>
+              <input id="oo_${responseIdentifier}" type="file" name="qtiworks_uploadresponse_${responseIdentifier}" disabled="disabled"/>
 		#end
 	#else
          ## Nothing uploaded yet
          #if($r.isItemSessionOpen())
               <div class="fileUploadInstruction">Upload File</div>
-              <input type="file" name="qtiworks_uploadresponse_${responseIdentifier}"/>
+              <input id="oo_${responseIdentifier}" type="file" name="qtiworks_uploadresponse_${responseIdentifier}"/>
 		#else
-              <input type="file" name="qtiworks_uploadresponse_${responseIdentifier}" disabled="disabled"/>
+              <input id="oo_${responseIdentifier}" type="file" name="qtiworks_uploadresponse_${responseIdentifier}" disabled="disabled"/>
 		#end
 	#end
+	
+	$r.appendFlexiFormDirty("oo_${responseIdentifier}")
 </div>
 

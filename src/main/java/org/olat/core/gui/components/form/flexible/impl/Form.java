@@ -815,6 +815,9 @@ public class Form extends LogDelegator {
 	public boolean isSubmittedAndValid(){
 		return isValidAndSubmitted;
 	}
+	public void forceSubmittedAndValid() {
+		isValidAndSubmitted = true;
+	}
 
 	/**
 	 * true if the form should not loose unsubmitted changes, if another link
