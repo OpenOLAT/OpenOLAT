@@ -136,6 +136,7 @@ public class VideoEditController  extends ActivateableTabbableDefaultController 
 				String displayname = StringHelper.escapeHtml(repositoryEntry.getDisplayname());
 				previewLink = LinkFactory.createCustomLink("command.preview", "command.preview", displayname, Link.NONTRANSLATED, videoConfigurationVc, this);
 				previewLink.setTitle(getTranslator().translate("command.preview"));
+				previewLink.setIconLeftCSS("o_icon o_icon-fw o_icon_preview");
 				previewLink.setEnabled(true);
 			}
 			videoConfigurationVc.contextPut("showOptions", Boolean.TRUE);
@@ -374,6 +375,14 @@ class VideoOptionsForm extends FormBasicController{
 		descriptionField = uifactory.addRichTextElementForStringDataMinimalistic("description", "", desc, -1, -1, formLayout, getWindowControl());
 		updateDescriptionField();
 		uifactory.addFormSubmitButton("submit", formLayout);
+		//init options-config
+		config.setBooleanEntry(VideoEditController.CONFIG_KEY_COMMENTS, videoComments.isSelected(0));
+		config.setBooleanEntry(VideoEditController.CONFIG_KEY_RATING, videoRating.isSelected(0));
+		config.setBooleanEntry(VideoEditController.CONFIG_KEY_AUTOPLAY, videoAutoplay.isSelected(0));
+		config.setStringValue(VideoEditController.CONFIG_KEY_DESCRIPTION_SELECT, description.getSelectedKey());
+		if(description.getSelectedKey() == "customDescription"){
+			config.setStringValue(VideoEditController.CONFIG_KEY_DESCRIPTION_CUSTOMTEXT, descriptionField.getValue());
+		}
 	}
 
 	//update visibility of the textfield for entering custom description
