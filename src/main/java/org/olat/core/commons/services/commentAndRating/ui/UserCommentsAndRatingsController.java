@@ -275,6 +275,8 @@ public class UserCommentsAndRatingsController extends BasicController implements
 				// notify other user who also have this component
 				UserCommentsCountChangedEvent changedEvent = new UserCommentsCountChangedEvent(this, oresSubPath);
 				CoordinatorManager.getInstance().getCoordinator().getEventBus().fireEventToListenersOf(changedEvent, USER_COMMENTS_AND_RATING_CHANNEL);
+			} else if (event == Event.CANCELLED_EVENT) {
+				fireEvent(ureq, event);
 			}
 		}
 	}
