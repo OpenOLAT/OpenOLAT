@@ -29,6 +29,7 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.tabbable.ActivateableTabbableDefaultController;
 import org.olat.course.editor.NodeEditController;
+import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.ModuleConfiguration;
 
 /**
@@ -43,14 +44,6 @@ import org.olat.modules.ModuleConfiguration;
  */
 public class MembersCourseNodeEditController extends ActivateableTabbableDefaultController implements ControllerEventListener {
 	public static final String PANE_TAB_MEMBERSCONFIG = "pane.tab.membersconfig";
-	//Config keys
-	public static final String CONFIG_KEY_SHOWOWNER = "showOwner";
-	public static final String CONFIG_KEY_SHOWCOACHES = "showCoaches";
-	public static final String CONFIG_KEY_SHOWPARTICIPANTS = "showParticpants";
-	
-	public static final String CONFIG_KEY_EMAIL_FUNCTION = "emailFunction";
-	public static final String EMAIL_FUNCTION_ALL = "all";
-	public static final String EMAIL_FUNCTION_COACH_ADMIN = "coachAndAdmin";
 
 	private static final String[] paneKeys = {PANE_TAB_MEMBERSCONFIG};
 
@@ -58,10 +51,10 @@ public class MembersCourseNodeEditController extends ActivateableTabbableDefault
 
 	private FormBasicController membersConfigForm;
 
-	public MembersCourseNodeEditController(ModuleConfiguration config, UserRequest ureq, WindowControl wControl) {
+	public MembersCourseNodeEditController(UserRequest ureq, WindowControl wControl, UserCourseEnvironment euce, ModuleConfiguration config) {
 		super(ureq,wControl);
 
-		membersConfigForm = new MembersConfigForm(ureq, getWindowControl(), config);
+		membersConfigForm = new MembersConfigForm(ureq, getWindowControl(), euce, config);
 		listenTo(membersConfigForm);
 	}
 	
@@ -88,7 +81,9 @@ public class MembersCourseNodeEditController extends ActivateableTabbableDefault
 
 	@Override
 	public void event(UserRequest urequest, Controller source, Event event) {
-		if(source == membersConfigForm){
+		super.event(urequest, source, event);
+		if(source == membersConfigForm && event == Event.DONE_EVENT) {
+			membersConfigForm.storeFormData(urequest);
 			fireEvent(urequest, NodeEditController.NODECONFIG_CHANGED_EVENT);
 		}
 	}
