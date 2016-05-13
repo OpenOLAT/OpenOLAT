@@ -20,6 +20,7 @@
 package org.olat.ims.qti21.ui;
 
 import java.io.File;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -54,6 +55,7 @@ import uk.ac.ed.ph.jqtiplus.node.result.AssessmentResult;
 import uk.ac.ed.ph.jqtiplus.node.result.ItemResult;
 import uk.ac.ed.ph.jqtiplus.node.result.ItemVariable;
 import uk.ac.ed.ph.jqtiplus.node.result.OutcomeVariable;
+import uk.ac.ed.ph.jqtiplus.node.result.SessionStatus;
 import uk.ac.ed.ph.jqtiplus.node.result.TestResult;
 import uk.ac.ed.ph.jqtiplus.node.test.AssessmentItemRef;
 import uk.ac.ed.ph.jqtiplus.resolution.ResolvedAssessmentItem;
@@ -81,11 +83,13 @@ import uk.ac.ed.ph.jqtiplus.xmlutils.locators.ResourceLocator;
 public class AssessmentResultController extends FormBasicController {
 
 	private final String mapperUri;
-	private final File fUnzippedDirRoot;
 	private final ShowResultsOnFinish resultsOnfinish;
 	
-	private TestSessionState testSessionState;
-	private AssessmentResult assessmentResult;
+	private final TestSessionState testSessionState;
+	private final AssessmentResult assessmentResult;
+
+	private final URI assessmentObjectUri;
+	private final ResourceLocator inputResourceLocator;
 	private final ResolvedAssessmentTest resolvedAssessmentTest;
 	private final UserShortDescription assessedIdentityInfosCtrl;
 	
@@ -98,8 +102,12 @@ public class AssessmentResultController extends FormBasicController {
 			AssessmentTestSession candidateSession, ShowResultsOnFinish resultsOnfinish, File fUnzippedDirRoot, String mapperUri) {
 		super(ureq, wControl, "assessment_results");
 		this.mapperUri = mapperUri;
-		this.fUnzippedDirRoot = fUnzippedDirRoot;
 		this.resultsOnfinish = resultsOnfinish;
+		
+		ResourceLocator fileResourceLocator = new PathResourceLocator(fUnzippedDirRoot.toPath());
+		inputResourceLocator = 
+        		ImsQTI21Resource.createResolvingResourceLocator(fileResourceLocator);
+		assessmentObjectUri = qtiService.createAssessmentObjectUri(fUnzippedDirRoot);
 		
 		assessedIdentityInfosCtrl = new UserShortDescription(ureq, getWindowControl(), assessedIdentity);
 		listenTo(assessedIdentityInfosCtrl);
@@ -114,10 +122,6 @@ public class AssessmentResultController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		ResourceLocator fileResourceLocator = new PathResourceLocator(fUnzippedDirRoot.toPath());
-		final ResourceLocator inputResourceLocator = 
-        		ImsQTI21Resource.createResolvingResourceLocator(fileResourceLocator);
-		
 		if(formLayout instanceof FormLayoutContainer) {
 			FormLayoutContainer layoutCont = (FormLayoutContainer)formLayout;
 			layoutCont.put("assessedIdentityInfos", assessedIdentityInfosCtrl.getInitialComponent());
@@ -130,83 +134,104 @@ public class AssessmentResultController extends FormBasicController {
 			if(testResult != null) {
 				extractOutcomeVariable(testResult.getItemVariables(), results);
 			}
-			
-			List<Results> itemResults = new ArrayList<>();
-			layoutCont.contextPut("itemResults", itemResults);
-			
+
 			if(resultsOnfinish == ShowResultsOnFinish.sections || resultsOnfinish == ShowResultsOnFinish.details) {
-				Map<Identifier, AssessmentItemRef> identifierToRefs = new HashMap<>();
-				for(AssessmentItemRef itemRef:resolvedAssessmentTest.getAssessmentItemRefs()) {
-					identifierToRefs.put(itemRef.getIdentifier(), itemRef);
-				}
+				initFormSections(layoutCont);
+			}
+		}
+	}
 	
-				TestPlan testPlan = testSessionState.getTestPlan();
-				List<TestPlanNode> nodes = testPlan.getTestPlanNodeList();
-				for(TestPlanNode node:nodes) {
-					TestPlanNodeKey testPlanNodeKey = node.getKey();
-					TestNodeType testNodeType = node.getTestNodeType();
-					if(testNodeType == TestNodeType.ASSESSMENT_SECTION) {
-						Results r = new Results(true, node.getSectionPartTitle(), "o_mi_qtisection");
-						AssessmentSectionSessionState sectionState = testSessionState.getAssessmentSectionSessionStates().get(testPlanNodeKey);
-						if(sectionState != null) {
-							r.setSessionState(sectionState);
-						}
-						itemResults.add(r);
-					} else if(testNodeType == TestNodeType.ASSESSMENT_ITEM_REF) {
-						if(resultsOnfinish == ShowResultsOnFinish.details) {
-							Identifier identifier = testPlanNodeKey.getIdentifier();
-							AssessmentItemRef itemRef = identifierToRefs.get(identifier);
-							ResolvedAssessmentItem resolvedAssessmentItem = resolvedAssessmentTest.getResolvedAssessmentItem(itemRef);
-							AssessmentItem assessmentItem = resolvedAssessmentItem.getRootNodeLookup().extractIfSuccessful();
-							QTI21QuestionType type = QTI21QuestionType.getType(assessmentItem);
-							Results r = new Results(false, type.getCssClass());
-							
-							ItemSessionState sectionState = testSessionState.getItemSessionStates().get(testPlanNodeKey);
-							if(sectionState != null) {
-								r.setSessionState(sectionState);
-							}
-							
-							ItemResult itemResult = assessmentResult.getItemResult(identifier.toString());
-							if(itemResult != null) {
-								r.setTitle(node.getSectionPartTitle());
-								extractOutcomeVariable(itemResult.getItemVariables(), r);
-							}
-							itemResults.add(r);
-							
-							//loop interactions, show response and solution
-							
-							List<Interaction> interactions = assessmentItem.getItemBody().findInteractions();
-							for(Interaction interaction:interactions) {
-								if(interaction instanceof PositionObjectInteraction || interaction instanceof EndAttemptInteraction) {
-									continue;
-								}
-								
-								String responseId = "responseItem" + count++;
-								InteractionResultFormItem responseFormItem = new InteractionResultFormItem(responseId, interaction, resolvedAssessmentItem);
-								layoutCont.add(responseId, responseFormItem);
-								responseFormItem.setItemSessionState(sectionState);
-								responseFormItem.setResolvedAssessmentTest(resolvedAssessmentTest);
-								responseFormItem.setResourceLocator(inputResourceLocator);
-								responseFormItem.setAssessmentObjectUri(qtiService.createAssessmentObjectUri(fUnzippedDirRoot));
-								responseFormItem.setMapperUri(mapperUri);
-								
-								String solutionId = "solutionItem" + count++;
-								InteractionResultFormItem solutionFormItem = new InteractionResultFormItem(solutionId, interaction, resolvedAssessmentItem);
-								layoutCont.add(solutionId, solutionFormItem);
-								solutionFormItem.setShowSolution(true);
-								solutionFormItem.setResolvedAssessmentTest(resolvedAssessmentTest);
-								solutionFormItem.setItemSessionState(sectionState);
-								solutionFormItem.setResourceLocator(inputResourceLocator);
-								solutionFormItem.setAssessmentObjectUri(qtiService.createAssessmentObjectUri(fUnzippedDirRoot));
-								solutionFormItem.setMapperUri(mapperUri);
-								
-								r.getInteractionResults().add(new InteractionResults(responseFormItem, solutionFormItem));
-							}
-						}
+	private void initFormSections(FormLayoutContainer layoutCont) {
+		List<Results> itemResults = new ArrayList<>();
+		layoutCont.contextPut("itemResults", itemResults);
+		
+		Map<Identifier, AssessmentItemRef> identifierToRefs = new HashMap<>();
+		for(AssessmentItemRef itemRef:resolvedAssessmentTest.getAssessmentItemRefs()) {
+			identifierToRefs.put(itemRef.getIdentifier(), itemRef);
+		}
+
+		TestPlan testPlan = testSessionState.getTestPlan();
+		List<TestPlanNode> nodes = testPlan.getTestPlanNodeList();
+		for(TestPlanNode node:nodes) {
+			TestPlanNodeKey testPlanNodeKey = node.getKey();
+			TestNodeType testNodeType = node.getTestNodeType();
+			if(testNodeType == TestNodeType.ASSESSMENT_SECTION) {
+				Results r = new Results(true, node.getSectionPartTitle(), "o_mi_qtisection");
+				AssessmentSectionSessionState sectionState = testSessionState.getAssessmentSectionSessionStates().get(testPlanNodeKey);
+				if(sectionState != null) {
+					r.setSessionState(sectionState);
+				}
+				itemResults.add(r);
+			} else if(testNodeType == TestNodeType.ASSESSMENT_ITEM_REF) {
+				if(resultsOnfinish == ShowResultsOnFinish.details) {
+					Results results = initFormItemResult(layoutCont, node, identifierToRefs);
+					if(results != null) {
+						itemResults.add(results);
 					}
 				}
 			}
 		}
+	}
+
+	private Results initFormItemResult(FormLayoutContainer layoutCont, TestPlanNode node, Map<Identifier, AssessmentItemRef> identifierToRefs) {
+		TestPlanNodeKey testPlanNodeKey = node.getKey();
+		Identifier identifier = testPlanNodeKey.getIdentifier();
+		AssessmentItemRef itemRef = identifierToRefs.get(identifier);
+		ResolvedAssessmentItem resolvedAssessmentItem = resolvedAssessmentTest.getResolvedAssessmentItem(itemRef);
+		AssessmentItem assessmentItem = resolvedAssessmentItem.getRootNodeLookup().extractIfSuccessful();
+		QTI21QuestionType type = QTI21QuestionType.getType(assessmentItem);
+		
+		Results r = new Results(false, type.getCssClass());
+		r.setTitle(node.getSectionPartTitle());
+		r.setSessionStatus(this.translate(""));
+		
+		ItemSessionState sessionState = testSessionState.getItemSessionStates().get(testPlanNodeKey);
+		if(sessionState != null) {
+			r.setSessionState(sessionState);
+			SessionStatus sessionStatus = sessionState.getSessionStatus();
+			if(sessionState != null) {
+				r.setSessionStatus(translate("results.session.status." + sessionStatus.toQtiString()));
+			}
+		}
+		
+		ItemResult itemResult = assessmentResult.getItemResult(identifier.toString());
+		if(itemResult != null) {
+			extractOutcomeVariable(itemResult.getItemVariables(), r);
+		}
+
+		//loop interactions, show response and solution
+		
+		List<Interaction> interactions = assessmentItem.getItemBody().findInteractions();
+		for(Interaction interaction:interactions) {
+			if(interaction instanceof PositionObjectInteraction || interaction instanceof EndAttemptInteraction) {
+				continue;
+			}
+			
+			//response
+			String responseId = "responseItem" + count++;
+			InteractionResultFormItem responseFormItem = new InteractionResultFormItem(responseId, interaction, resolvedAssessmentItem);
+			initInteractionResultFormItem(responseFormItem, sessionState);
+			layoutCont.add(responseId, responseFormItem);
+	
+			//solution
+			String solutionId = "solutionItem" + count++;
+			InteractionResultFormItem solutionFormItem = new InteractionResultFormItem(solutionId, interaction, resolvedAssessmentItem);
+			solutionFormItem.setShowSolution(true);
+			initInteractionResultFormItem(solutionFormItem, sessionState);
+			layoutCont.add(solutionId, solutionFormItem);
+			
+			r.getInteractionResults().add(new InteractionResults(responseFormItem, solutionFormItem));
+		}
+		return r;
+	}
+	
+	
+	private void initInteractionResultFormItem(InteractionResultFormItem responseFormItem, ItemSessionState sectionState) {
+		responseFormItem.setItemSessionState(sectionState);
+		responseFormItem.setResolvedAssessmentTest(resolvedAssessmentTest);
+		responseFormItem.setResourceLocator(inputResourceLocator);
+		responseFormItem.setAssessmentObjectUri(assessmentObjectUri);
+		responseFormItem.setMapperUri(mapperUri);
 	}
 	
 	private void extractOutcomeVariable(List<ItemVariable> itemVariables, Results results) {
@@ -294,6 +319,8 @@ public class AssessmentResultController extends FormBasicController {
 		private String title;
 		private String cssClass;
 		
+		private String sessionStatus;
+		
 		private final List<InteractionResults> interactionResults = new ArrayList<>();
 		
 		public Results(boolean section, String cssClass) {
@@ -379,6 +406,14 @@ public class AssessmentResultController extends FormBasicController {
 
 		public void setPass(Boolean pass) {
 			this.pass = pass;
+		}
+
+		public String getSessionStatus() {
+			return sessionStatus == null ? "" : sessionStatus;
+		}
+
+		public void setSessionStatus(String sessionStatus) {
+			this.sessionStatus = sessionStatus;
 		}
 
 		public List<InteractionResults> getInteractionResults() {

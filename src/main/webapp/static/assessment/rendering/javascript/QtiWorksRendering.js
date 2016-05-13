@@ -457,71 +457,6 @@ var QtiWorksRendering = (function() {
     };
 
     /************************************************************/
-    /* Interactions using Applets.
-     * (Recall that PositionObjectInteraction currently uses an applet for its stage,
-     * so this class needs to be able to associate a single applet with multiple interactions)
-     */
-
-    var AppletBasedInteractionContainer = function(containerId, responseIdentifiers) {
-        this.responseIdentifiers = responseIdentifiers;
-        this.divContainerQuery = jQuery('#' + containerId);
-        this.appletQuery = this.divContainerQuery.find('object[type="application/x-java-applet"]');
-        var interaction = this;
-
-        this.reset = function() {
-            this.appletQuery.each(function() {
-                /* (Annoyingly, the reset() function in some of the applets is called reSet()!) */
-                if (this.reset) {
-                    this.reset();
-                }
-                else if (this.reSet) {
-                    this.reSet();
-                }
-                interaction.setResponseData();
-            });
-        };
-
-        this.extractResponseData = function() {
-            this.appletQuery.each(function() {
-                for (i in interaction.responseIdentifiers) {
-                    var responseIdentifier = interaction.responseIdentifiers[i];
-                    /* (NB: The following code portion includes JS->Java calls) */
-                    var valuesVector = this.getValues(responseIdentifier);
-                    var values = [];
-                    if (valuesVector!=null) {
-                        var valuesEnum = valuesVector.elements();
-                        while (valuesEnum.hasMoreElements()) {
-                            values.push(valuesEnum.nextElement());
-                        }
-                    }
-                    /* (Back to JS only now) */
-                    interaction.setResponseData(responseIdentifier, values);
-                }
-            });
-        };
-
-        this.setResponseData = function(responseIdentifier, values) {
-            this.divContainerQuery.find('input').remove();
-            for (var i in values) {
-                var inputElement = jQuery('<input type="hidden">');
-                inputElement.attr('name', 'qtiworks_response_' + responseIdentifier);
-                inputElement.attr('value', values[i]);
-                this.divContainerQuery.append(inputElement);
-            }
-        };
-
-        this.init = function() {
-            registerSubmitCallback(function() {
-                interaction.extractResponseData();
-                return true;
-            });
-            registerResetCallback(function() {
-                interaction.reset();
-            });
-        };
-    };
-
-    /************************************************************/
     /* Public methods */
 
     return {
@@ -564,10 +499,6 @@ var QtiWorksRendering = (function() {
 
         registerGapMatchInteraction: function(responseIdentifier, formDispatchFieldId, gapChoiceData, gapData) {
             new GapMatchInteraction(responseIdentifier, formDispatchFieldId, gapChoiceData, gapData).init();
-        },
-
-        registerAppletBasedInteractionContainer: function(containerId, responseIdentifiers) {
-            new AppletBasedInteractionContainer(containerId, responseIdentifiers).init();
         },
 
         registerReadyCallback: function(callback) {

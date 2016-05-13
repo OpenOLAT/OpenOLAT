@@ -84,7 +84,7 @@ public class InteractionResultComponent extends AssessmentObjectComponent  {
 
 	@Override
 	public String getResponseUniqueIdentifier(ItemSessionState state, Interaction i) {
-		return getDispatchID() + interaction.getResponseIdentifier().toString();
+		return getDispatchID() + "_" + interaction.getResponseIdentifier().toString();
 	}
 
 	@Override
@@ -114,8 +114,8 @@ public class InteractionResultComponent extends AssessmentObjectComponent  {
 	}
 	
 	@Override
-	public String relativePathTo(ResolvedAssessmentItem resolvedAssessmentItem) {
-		URI itemUri = resolvedAssessmentItem.getItemLookup().getSystemId();
+	public String relativePathTo(ResolvedAssessmentItem rAssessmentItem) {
+		URI itemUri = rAssessmentItem.getItemLookup().getSystemId();
 		File itemFile = new File(itemUri);
 		URI testUri = resolvedAssessmentTest.getTestLookup().getSystemId();
 		File testFile = new File(testUri);

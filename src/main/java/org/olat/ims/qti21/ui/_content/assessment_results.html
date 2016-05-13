@@ -68,6 +68,11 @@
 			<th>$r.translate("results.duration")</th>
 			<td>$r.formatDurationInMillis($itemResult.duration)</td> 
 		</tr>
+		<tr class="o_score">
+			<th>$r.translate("results.session.status")</th>
+			<td>$itemResult.sessionStatus</td> 
+		</tr>
+		
 		#if(${itemResult.hasMaxScore()})
 		<tr class="o_score">
 			<th>$r.translate("score.max")</th>

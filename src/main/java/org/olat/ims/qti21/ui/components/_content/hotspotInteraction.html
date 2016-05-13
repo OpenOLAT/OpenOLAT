@@ -1,5 +1,5 @@
 #set($responseIdentifier = $r.responseUniqueId($interaction))
-#set($qtiContainerId = "qtiworks_id_container_" + $responseIdentifier)
+#set($qtiContainerId = "oc_" + $responseIdentifier)
 #set($responseValue = $r.getResponseValue($interaction.responseIdentifier))
 
 <input name="qtiworks_presented_${responseIdentifier}" type="hidden" value="1"/>
@@ -17,7 +17,7 @@
 		<map name="${qtiContainerId}_map">
 		#foreach($hotspotChoice in $interaction.getHotspotChoices())
             <!-- Match group, label -->
-          	<area id="$hotspotChoice.identifier" shape="$hotspotChoice.shape" coords="$r.coordsToString($hotspotChoice.coords)" href="javascript:clickArea('$r.toString($hotspotChoice.identifier)')" data-maphilight=''></area>
+          	<area id="ac_${responseIdentifier}_${hotspotChoice.identifier}" data-qti-id="${hotspotChoice.identifier}" shape="$hotspotChoice.shape" coords="$r.coordsToString($hotspotChoice.coords)" href="javascript:clickArea('ac_${responseIdentifier}_${hotspotChoice.identifier}')" data-maphilight=''></area>
 			$r.appendFlexiFormDirtyForClick("$hotspotChoice.identifier")
 		#end
 		</map>
@@ -32,7 +32,7 @@
 
 		#if($r.isNotNullValue($responseValue))
 			jQuery(function() {
-				highlighHotspotAreas('$r.toString($responseValue,",")');
+				highlighHotspotAreas('$r.toString($responseValue,",")','$responseIdentifier');
 			});
 			
 			function clickArea(spot) { };

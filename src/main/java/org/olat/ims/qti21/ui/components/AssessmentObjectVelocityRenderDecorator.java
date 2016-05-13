@@ -33,6 +33,7 @@ import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.render.velocity.VelocityRenderDecorator;
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.helpers.Settings;
 import org.olat.core.util.StringHelper;
 
 import uk.ac.ed.ph.jqtiplus.attribute.value.StringMultipleAttribute;
@@ -153,7 +154,9 @@ public class AssessmentObjectVelocityRenderDecorator extends VelocityRenderDecor
 	}
 	
 	public String convertLinkAbsolut(String uri) {
-		return AssessmentRenderFunctions.convertLink(avc, resolvedAssessmentItem, uri);
+		String url = AssessmentRenderFunctions.convertLink(avc, resolvedAssessmentItem, uri);
+		String path = Settings.getServerContextPathURI();
+		return path.concat(url);
 	}
 	
 	public String getFormDispatchFieldId() {
@@ -447,9 +450,11 @@ public class AssessmentObjectVelocityRenderDecorator extends VelocityRenderDecor
 		}
 
 		List<SimpleChoice> respondedVisibleChoices = new ArrayList<>();
-		for(SimpleChoice simpleChoice:visibleChoices) {
-			if(responseIdentifiers.contains(simpleChoice.getIdentifier().toString())) {
-				respondedVisibleChoices.add(simpleChoice);
+		for(String responseIdentifier:responseIdentifiers) {
+			for(SimpleChoice visibleChoice:visibleChoices) {
+				if(responseIdentifier.equals(visibleChoice.getIdentifier().toString())) {
+					respondedVisibleChoices.add(visibleChoice);
+				}
 			}
 		}
 		return new OrderChoices(respondedVisibleChoices, unselectedVisibleChoices);

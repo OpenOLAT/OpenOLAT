@@ -1,12 +1,12 @@
 
-function associateDrawResponse(containerId, responseValue) {
+function associateDrawResponse(containerId, responseValue, responseIdentifier) {
 	var associationPairs = responseValue.split(',');
 	var associationEls = jQuery('#' + containerId + '_panel .association');
 	for(var i=associationPairs.length; i-->0; ) {
 		var associationPair = associationPairs[i].split(' ');
 		var associationEl = jQuery(associationEls.get(i));
-		var association1 = jQuery('#' + associationPair[0]);
-		var association2 = jQuery('#' + associationPair[1]);
+		var association1 = jQuery('#ac_' + responseIdentifier + '_' + associationPair[0]);
+		var association2 = jQuery('#ac_' + responseIdentifier + '_' + associationPair[1]);
 		jQuery(association1).css('border','none');
 		jQuery(association2).css('border','none');
 		
@@ -56,8 +56,8 @@ function recalculateAssociations(containerId, responseIdentifier) {
 	jQuery("#" + containerId + "_panel .association").each(function(index, associationEl) {
 		var associations = jQuery(associationEl).find('.o_associate_item');
 		if(associations.length == 2) {
-			var id1 = jQuery(associations.get(0)).attr('id');
-			var id2 = jQuery(associations.get(1)).attr('id');			
+			var id1 = jQuery(associations.get(0)).data('qti-id');
+			var id2 = jQuery(associations.get(1)).data('qti-id');			
 			var inputElement = jQuery('<input type="hidden"/>')
 					.attr('name', 'qtiworks_response_' + responseIdentifier)
 					.attr('value', id1 + " " + id2);
@@ -114,14 +114,14 @@ function positionObjectItem(containerId, responseIdentifier, formDispatchFieldId
 }
 
 
-function graphicGapMatchDrawResponse(responseValue) {
+function graphicGapMatchDrawResponse(responseValue, responseIdentifier) {
 	var pairs = responseValue.split(',');
 	for(var i=pairs.length; i-->0; ) {
 		var ids = pairs[i].split(' ');
 		
-		var item1 = jQuery('#' + ids[0]);
-		var item2 = jQuery('#' + ids[1]);
-		
+		var item1 = jQuery('#ac_' + responseIdentifier + '_' + ids[0]);
+		var item2 = jQuery('#ac_' + responseIdentifier + '_' + ids[1]);
+
 		var gapitem, areaEl;
 		if(item1.hasClass('gap_item')) {
 			gapitem = item1;
@@ -168,8 +168,8 @@ function graphicGapMatchItem(containerId, responseIdentifier) {
 		jQuery(".gap_item.oo-selected").each(function(index, el){
 			var gapitem = jQuery(el);
 			var coords = toCoords(areaEl);
-			var areaId = areaEl.attr('id');
-			var gapitemId = gapitem.attr('id');
+			var areaId = areaEl.data('qti-id');
+			var gapitemId = gapitem.data('qti-id');
 			
 			gapitem.css('position','absolute');
 			gapitem.css('left', coords[0] + 'px');
@@ -189,7 +189,7 @@ function graphicGapMatchItem(containerId, responseIdentifier) {
 	});
 }
 
-function graphicAssociationDrawResponse(containerId, responseValue) {
+function graphicAssociationDrawResponse(containerId, responseValue, responseIdentifier) {
 	var canvas = document.getElementById(containerId + '_canvas');
 	var c = canvas.getContext('2d');
 	c.clearRect(0, 0, jQuery(canvas).width(), jQuery(canvas).height());
@@ -200,13 +200,13 @@ function graphicAssociationDrawResponse(containerId, responseValue) {
 		var pair = pairs[i].split(' ');
 		for(var j=pair.length; j-->0; ) {
 			if(0 > drawedSpots.indexOf(pair[j])) {
-				drawArea(c, pair[j]);
+				drawArea(c, 'ac_' + responseIdentifier + '_' + pair[j]);
 				drawedSpots.push(pair[j]);
 			}
 		}
 
-		var coords1 = toCoords(jQuery('#' + pair[1]));
-		var coords2 = toCoords(jQuery('#' + pair[0]));
+		var coords1 = toCoords(jQuery('#ac_' + responseIdentifier + '_' + pair[1]));
+		var coords2 = toCoords(jQuery('#ac_' + responseIdentifier + '_' + pair[0]));
 		
 		c.beginPath();
 		c.moveTo(coords1[0], coords1[1]);
@@ -227,7 +227,7 @@ function graphicAssociationItem(containerId, maxAssociations, responseIdentifier
 			jQuery("#" + containerId + "_container").data('openolat', data);
 		}
 
-		var areaId = jQuery(this).attr('id');
+		var areaId = jQuery(this).data('qti-id');
 		
 		if(data.currentSpot == '' || data.currentSpot == areaId) {
 			data.currentSpot = areaId;
@@ -254,13 +254,16 @@ function graphicAssociationItem(containerId, maxAssociations, responseIdentifier
 			var pair = data.listOfPairs[i];
 			for(var j=pair.length; j-->0; ) {
 				if(0 > drawedSpots.indexOf(pair[j])) {
-					drawArea(c, pair[j]);
+					drawArea(c, 'ac_' + responseIdentifier + '_' + pair[j]);
 					drawedSpots.push(pair[j]);
 				}
 			}
 			
-			var coords1 = toCoords(jQuery('#' + pair[1]));
-			var coords2 = toCoords(jQuery('#' + pair[0]));
+			var pair1El = jQuery('#ac_' + responseIdentifier + '_' + pair[1]);
+			var pair2El = jQuery('#ac_' + responseIdentifier + '_' + pair[0]);
+			
+			var coords1 = toCoords(pair1El);
+			var coords2 = toCoords(pair2El);
 			
 			c.beginPath();
 			c.moveTo(coords1[0], coords1[1]);
@@ -270,7 +273,7 @@ function graphicAssociationItem(containerId, maxAssociations, responseIdentifier
 			
 			var inputElement = jQuery('<input type="hidden"/>')
 				.attr('name', 'qtiworks_response_' + responseIdentifier)
-				.attr('value', pair[0] + " " + pair[1]);
+				.attr('value', pair2El.data('qti-id') + " " + pair1El.data('qti-id'));
 			divContainer.prepend(inputElement);
 		}
 	});
@@ -392,14 +395,14 @@ function selectPointItem(containerId, maxChoices, responseIdentifier, formDispat
 	});
 }
 
-function graphicOrderDrawResponse(containerId, responseValue) {
+function graphicOrderDrawResponse(containerId, responseValue, responseIdentifier) {
 	var canvas = document.getElementById(containerId + '_canvas');
 	var c = canvas.getContext('2d');
 	c.clearRect(0, 0, jQuery(canvas).width(), jQuery(canvas).height());
 	
 	var areaIds = responseValue.split(',');
 	for(var i=areaIds.length; i-->0; ) {
-		var areaEl = jQuery('#' + areaIds[i]);
+		var areaEl = jQuery('#ac_' + responseIdentifier + '_' + areaIds[i]);
 		var position = areaEl.attr('coords').split(',');
 		var cx = position[0];
 		var cy = position[1];
@@ -414,6 +417,7 @@ function graphicOrderItem(containerId, maxChoices, responseIdentifier) {
 		var r = 8;
 
 		var areaId = jQuery(this).attr('id');
+		var spotQtiId = jQuery(this).data('qti-id');
 		var position = jQuery(this).attr('coords').split(',');
 		var cx = position[0];
 		var cy = position[1];
@@ -441,7 +445,7 @@ function graphicOrderItem(containerId, maxChoices, responseIdentifier) {
 		} else if(data.listOfPoints.length >= maxChoices) {
 			return false;
 		} else {
-			data.listOfPoints.push({'x': cx, 'y': cy, 'areaId': areaId});
+			data.listOfPoints.push({'x': cx, 'y': cy, 'areaId': areaId, 'spotQtiId' : spotQtiId});
 		}
 
 		var canvas = document.getElementById(containerId + '_canvas');
@@ -458,17 +462,17 @@ function graphicOrderItem(containerId, maxChoices, responseIdentifier) {
 
 			var inputElement = jQuery('<input type="hidden"/>')
 				.attr('name', 'qtiworks_response_' + responseIdentifier)
-				.attr('value', p.areaId);
+				.attr('value', p.spotQtiId);
 			divContainer.prepend(inputElement);
 		}
 	});
 	
 }
 
-function highlighHotspotAreas(responseValue) {
+function highlighHotspotAreas(responseValue, responseIdentifier) {
 	var areaIds = responseValue.split(',');
 	for(i=areaIds.length; i-->0; ) {
-		var areaEl = jQuery('#' + areaIds[i])
+		var areaEl = jQuery('#ac_' + responseIdentifier + '_' + areaIds[i]);
 		var data = areaEl.data('maphilight') || {};
 		data.alwaysOn = true;
 		areaEl.data('maphilight', data).trigger('alwaysOn.maphilight');
@@ -476,7 +480,7 @@ function highlighHotspotAreas(responseValue) {
 }
 
 function clickHotspotArea(spot, containerId, responseIdentifier, maxChoices) {
-	var areaEl = jQuery('#' + spot)
+	var areaEl = jQuery('#' + containerId + ' #' + spot);
 	var data = areaEl.data('maphilight') || {};
 	if(!data.alwaysOn) {
 		var numOfChoices = maxChoices;
@@ -498,13 +502,13 @@ function clickHotspotArea(spot, containerId, responseIdentifier, maxChoices) {
 
 	var divContainer = jQuery('#' + containerId);
 	divContainer.find("input[type='hidden']").remove();
-	jQuery("area", "map[name='" +containerId + "_map']").each(function(index, el) {
+	jQuery("area", "map[name='" + containerId + "_map']").each(function(index, el) {
 		var cAreaEl = jQuery(el);
 		var cData = cAreaEl.data('maphilight') || {};
 		if(cData.alwaysOn) {
 			var inputElement = jQuery('<input type="hidden"/>')
 				.attr('name', 'qtiworks_response_' + responseIdentifier)
-				.attr('value', cAreaEl.attr('id'));
+				.attr('value', cAreaEl.data('qti-id'));
 			divContainer.append(inputElement);
 		}
 	});

@@ -19,20 +19,20 @@
 		<map name="${containerId}_map">
 		#foreach($hotspot in $hotspots)
 			<!-- @matchGroup, @matchMax -->
-			<area id="${hotspot.identifier}" shape="${r.shapeToString($hotspot.shape)}" coords="$r.coordsToString($hotspot.coords)" href="#" title="$hotspot.hotspotLabel" class="area-droppable"></area>
+			<area id="ac_${responseIdentifier}_${hotspot.identifier}" data-qti-id="${hotspot.identifier}" shape="${r.shapeToString($hotspot.shape)}" coords="$r.coordsToString($hotspot.coords)" href="#" title="$hotspot.hotspotLabel" class="area-droppable"></area>
 			$r.appendFlexiFormDirtyForClick("$hotspot.identifier")
 		#end
 		</map>
 		<div class="gap_container" style="width:${interaction.object.width}px; height:50px; background-color:#cccccc;">
 			#foreach($gapImg in $gapImgs)
 				<!-- @matchGroup, @matchMax, @label -->
-            	<div id="${gapImg.identifier}" class="gap_item" style="width:${gapImg.object.width}px; height:${gapImg.object.height}px; margin:5px; background-image:url('${r.convertLinkFull($gapImg.object.data)}');"> </div>
+            	<div id="ac_${responseIdentifier}_${gapImg.identifier}" data-qti-id="${gapImg.identifier}" class="gap_item" style="width:${gapImg.object.width}px; height:${gapImg.object.height}px; margin:5px; background-image:url('${r.convertLinkFull($gapImg.object.data)}');"> </div>
 			#end
 		</div>
 		<script type="text/javascript">
 		jQuery(function() {
 		#if($r.isNotNullValue($responseValue))
-			graphicGapMatchDrawResponse('$r.toString($responseValue,","," ")');
+			graphicGapMatchDrawResponse('$r.toString($responseValue,","," ")','$responseIdentifier');
 		#else
 			graphicGapMatchItem('$containerId','$responseIdentifier');
 		#end

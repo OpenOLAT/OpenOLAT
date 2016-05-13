@@ -16,7 +16,7 @@
 	<div id="${containerId}">
 		<div id="${containerId}_items" style="padding:15px;">
         	#foreach($choice in $choices)
-            	<div id="${choice.identifier}" class="o_associate_item" style="width: 100px; float:left; margin-right:15px; border:2px solid grey;">
+            	<div id="ac_${responseIdentifier}_${choice.identifier}" data-qti-id="${choice.identifier}" class="o_associate_item" style="width: 100px; float:left; margin-right:15px; border:2px solid grey;">
               		$r.renderFlowStatics($choice.getFlowStatics())
             	</div>
 			#end
@@ -37,9 +37,9 @@
 		<script type="text/javascript">
 		jQuery(function() {
 		#if($r.isNotNullValue($responseValue))
-			associateDrawResponse('$containerId','$r.toString($responseValue,",")');
+			associateDrawResponse('$containerId','$r.toString($responseValue,",")','$responseIdentifier');
 		#else
-			associateItem('$containerId', '$responseIdentifier','$r.formDispatchFieldId');
+			associateItem('$containerId','$responseIdentifier','$r.formDispatchFieldId');
 		#end
 		});
 		</script>

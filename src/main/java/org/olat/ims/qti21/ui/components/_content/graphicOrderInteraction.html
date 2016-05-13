@@ -19,14 +19,14 @@
 		<img id="${containerId}" width="${interaction.object.width}" height="${interaction.object.height}" src="${r.convertLinkFull($interaction.object.data)}" usemap="#${containerId}_map" style="position:absolute; top:0; left:0; opacity:0;"></img>
 		<map name="${containerId}_map">
 		#foreach($hotspotChoice in $hotspotChoices) 
-			<area id="${hotspotChoice.identifier}" shape="${hotspotChoice.shape.toLowerCase()}" coords="$r.coordsToString($hotspotChoice.coords)}" href="#" ></area>
-			$r.appendFlexiFormDirtyForClick("$hotspotChoice.identifier")
+			<area id="ac_${responseIdentifier}_${hotspotChoice.identifier}" data-qti-id="${hotspotChoice.identifier}" shape="${hotspotChoice.getShape().name().toLowerCase()}" coords="${r.coordsToString($hotspotChoice.coords)}" href="javascript:;" ></area>
+			$r.appendFlexiFormDirtyForClick("ac_${responseIdentifier}_${hotspotChoice.identifier}")
 		#end
 		</map>
 		<script type="text/javascript">
 		#if($r.isNotNullValue($responseValue))
 			jQuery(function() {
-				graphicOrderDrawResponse('$containerId','$r.toString($responseValue,",")');
+				graphicOrderDrawResponse('$containerId','$r.toString($responseValue,",")','$responseIdentifier');
 			});
 		#else	
 			jQuery(function() {

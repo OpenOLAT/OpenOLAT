@@ -686,7 +686,8 @@ public class VelocityRenderDecorator implements Closeable {
 	 * @param date the date
 	 * @return a String with the formatted date
 	 */
-	public String formatDate(Date date){
+	public String formatDate(Date date) {
+		if(date == null) return "";
 		Formatter f = Formatter.getInstance(renderer.getTranslator().getLocale());
 		return f.formatDate(date);
 	}
@@ -697,7 +698,8 @@ public class VelocityRenderDecorator implements Closeable {
 	 * @param date the date
 	 * @return a String with the formatted date
 	 */
-	public String formatDateLong(Date date){
+	public String formatDateLong(Date date) {
+		if(date == null) return "";
 		Formatter f = Formatter.getInstance(renderer.getTranslator().getLocale());
 		return f.formatDateLong(date);
 	}
@@ -708,7 +710,8 @@ public class VelocityRenderDecorator implements Closeable {
 	 * @param date the date
 	 * @return a String with the formatted date and time
 	 */
-	public String formatDateAndTime(Date date){
+	public String formatDateAndTime(Date date) {
+		if(date == null) return "";
 		Formatter f = Formatter.getInstance(renderer.getTranslator().getLocale());
 		return f.formatDateAndTime(date);
 	}
@@ -722,6 +725,7 @@ public class VelocityRenderDecorator implements Closeable {
 	 * @return a String with the formatted date and time
 	 */
 	public String formatDateAndTimeLong(Date date) {
+		if(date == null) return "";
 		Formatter f = Formatter.getInstance(renderer.getTranslator().getLocale());
 		return f.formatDateAndTimeLong(date);	}
 

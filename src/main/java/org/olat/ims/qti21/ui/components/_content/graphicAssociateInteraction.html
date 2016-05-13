@@ -20,7 +20,7 @@
 			<map name="${containerId}_map">
 			#foreach($hotspot in $hotspots)
 				<!-- @label, @matchGroup, @matchMax -->
-				<area id="${hotspot.identifier}" shape="${hotspot.shapetoLowerCase()}" coords="$r.coordsToString($hotspot.coords)" href="#" data-maphilight=''></area>
+				<area id="ac_${responseIdentifier}_${hotspot.identifier}" data-qti-id="${hotspot.identifier}" shape="${hotspot.getShape().name().toLowerCase()}" coords="$r.coordsToString($hotspot.coords)" href="#" data-maphilight=''></area>
 				$r.appendFlexiFormDirtyForClick("$hotspot.identifier")
           	#end
           	</map>
@@ -29,7 +29,7 @@
 		<script type="text/javascript">
 		jQuery(function() {
 		#if($r.isNotNullValue($responseValue))
-			graphicAssociationDrawResponse('$containerId','$r.toString($responseValue,",")');
+			graphicAssociationDrawResponse('$containerId','$r.toString($responseValue,",")','$responseIdentifier');
 		#else
 			graphicAssociationItem('$containerId',$interaction.maxAssociations,'$responseIdentifier');
 		#end
