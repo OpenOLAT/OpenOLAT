@@ -61,6 +61,7 @@ import org.olat.fileresource.types.ImsQTI21Resource;
 import org.olat.fileresource.types.ImsQTI21Resource.PathResourceLocator;
 import org.olat.ims.qti21.AssessmentItemSession;
 import org.olat.ims.qti21.AssessmentResponse;
+import org.olat.ims.qti21.AssessmentSessionAuditLogger;
 import org.olat.ims.qti21.AssessmentTestMarks;
 import org.olat.ims.qti21.AssessmentTestSession;
 import org.olat.ims.qti21.OutcomesListener;
@@ -69,10 +70,11 @@ import org.olat.ims.qti21.QTI21DeliveryOptions;
 import org.olat.ims.qti21.QTI21DeliveryOptions.ShowResultsOnFinish;
 import org.olat.ims.qti21.QTI21Service;
 import org.olat.ims.qti21.manager.ResponseFormater;
-import org.olat.ims.qti21.model.CandidateItemEventType;
-import org.olat.ims.qti21.model.CandidateTestEventType;
 import org.olat.ims.qti21.model.ResponseLegality;
-import org.olat.ims.qti21.model.jpa.CandidateEvent;
+import org.olat.ims.qti21.model.audit.CandidateEvent;
+import org.olat.ims.qti21.model.audit.CandidateExceptionReason;
+import org.olat.ims.qti21.model.audit.CandidateItemEventType;
+import org.olat.ims.qti21.model.audit.CandidateTestEventType;
 import org.olat.ims.qti21.ui.components.AssessmentTestFormItem;
 import org.olat.ims.qti21.ui.components.AssessmentTreeFormItem;
 import org.olat.modules.assessment.AssessmentEntry;
@@ -159,6 +161,7 @@ public class AssessmentTestDisplayController extends BasicController implements 
 	
 	private final boolean showCloseResults;
 	private OutcomesListener outcomesListener;
+	private AssessmentSessionAuditLogger candidateAuditLogger;
 
 	@Autowired
 	private QTI21Service qtiService;
@@ -208,11 +211,13 @@ public class AssessmentTestDisplayController extends BasicController implements 
 		}
 		if(lastSession == null) {
 			candidateSession = qtiService.createAssessmentTestSession(getIdentity(), assessmentEntry, entry, subIdent, testEntry, authorMode);
+			candidateAuditLogger = qtiService.getAssessmentSessionAuditLogger(candidateSession, authorMode);
 			testSessionController = enterSession(ureq);
 		} else {
 			candidateSession = lastSession;
-			lastEvent = new CandidateEvent();
-			lastEvent.setCandidateSession(candidateSession);
+			candidateAuditLogger = qtiService.getAssessmentSessionAuditLogger(candidateSession, authorMode);
+			
+			lastEvent = new CandidateEvent(candidateSession, testEntry, entry);
 			lastEvent.setTestEventType(CandidateTestEventType.ITEM_EVENT);
 			
 			testSessionController = resumeSession();
@@ -351,9 +356,9 @@ public class AssessmentTestDisplayController extends BasicController implements 
 			itemSessionController.suspendItemSession(new Date());
 			
 			NotificationRecorder notificationRecorder = new NotificationRecorder(NotificationLevel.INFO);
-			final CandidateEvent candidateEvent = qtiService.recordCandidateTestEvent(candidateSession,
-	                CandidateTestEventType.SUSPEND, null, testSessionState, notificationRecorder);
-	        //candidateAuditLogger.logCandidateEvent(candidateEvent);
+			final CandidateEvent candidateEvent = qtiService.recordCandidateTestEvent(candidateSession, testEntry, entry,
+	                CandidateTestEventType.SUSPEND, null, null, testSessionState, notificationRecorder);
+	        candidateAuditLogger.logCandidateEvent(candidateEvent);
 	        this.lastEvent = candidateEvent;
 			return true;
 		}
@@ -457,13 +462,28 @@ public class AssessmentTestDisplayController extends BasicController implements 
 	private void processSelectItem(UserRequest ureq, String key) {
 		TestPlanNodeKey nodeKey = TestPlanNodeKey.fromString(key);
 		Date requestTimestamp = ureq.getRequestTimestamp();
-        testSessionController.selectItemNonlinear(requestTimestamp, nodeKey);
+        TestPlanNode selectedNode = testSessionController.selectItemNonlinear(requestTimestamp, nodeKey);
+        
+        /* Record and log event */
+        TestPlanNodeKey selectedNodeKey = (selectedNode == null ? null : selectedNode.getKey());
+        NotificationRecorder notificationRecorder = new NotificationRecorder(NotificationLevel.INFO);
+        TestSessionState testSessionState = testSessionController.getTestSessionState();
+        CandidateEvent candidateEvent = qtiService.recordCandidateTestEvent(candidateSession, testEntry, entry,
+        		CandidateTestEventType.SELECT_MENU, null, selectedNodeKey, testSessionState, notificationRecorder);
+        candidateAuditLogger.logCandidateEvent(candidateEvent);
 	}
 	
 	private void processNextItem(UserRequest ureq) {
 		Date requestTimestamp = ureq.getRequestTimestamp();
         if(testSessionController.hasFollowingNonLinearItem()) {
-        	testSessionController.selectFollowingItemNonLinear(requestTimestamp);
+        	TestPlanNode selectedNode = testSessionController.selectFollowingItemNonLinear(requestTimestamp);
+        	
+        	TestPlanNodeKey selectedNodeKey = (selectedNode == null ? null : selectedNode.getKey());
+        	NotificationRecorder notificationRecorder = new NotificationRecorder(NotificationLevel.INFO);
+        	TestSessionState testSessionState = testSessionController.getTestSessionState();
+        	CandidateEvent candidateEvent = qtiService.recordCandidateTestEvent(candidateSession, testEntry, entry,
+            		CandidateTestEventType.NEXT_ITEM, null, selectedNodeKey, testSessionState, notificationRecorder);
+        	candidateAuditLogger.logCandidateEvent(candidateEvent);
         }
 	}
 	
@@ -479,14 +499,15 @@ public class AssessmentTestDisplayController extends BasicController implements 
         try {
             if (!testSessionController.mayReviewItem(itemKey)) {
             	logError("CANNOT_REVIEW_TEST_ITEM", null);
-               //candidateAuditLogger.logAndThrowCandidateException(candidateSession, CandidateExceptionReason.CANNOT_REVIEW_TEST_ITEM);
+            	candidateAuditLogger.logAndThrowCandidateException(candidateSession, CandidateExceptionReason.CANNOT_REVIEW_TEST_ITEM, null);
                 return;
             }
         } catch (final QtiCandidateStateException e) {
         	logError("CANNOT_REVIEW_TEST_ITEM", e);
-           // candidateAuditLogger.logAndThrowCandidateException(candidateSession, CandidateExceptionReason.CANNOT_REVIEW_TEST_ITEM);
+        	candidateAuditLogger.logAndThrowCandidateException(candidateSession, CandidateExceptionReason.CANNOT_REVIEW_TEST_ITEM, e);
             return;
         }  catch (final RuntimeException e) {
+        	candidateAuditLogger.logAndThrowCandidateException(candidateSession, CandidateExceptionReason.CANNOT_REVIEW_TEST_ITEM, e);
         	logError("CANNOT_REVIEW_TEST_ITEM", e);
             return;// handleExplosion(e, candidateSession);
         }
@@ -495,10 +516,10 @@ public class AssessmentTestDisplayController extends BasicController implements 
         computeAndRecordTestAssessmentResult(ureq, testSessionState, false);
 
         /* Record and log event */
-        final CandidateEvent candidateTestEvent = qtiService.recordCandidateTestEvent(candidateSession,
+        final CandidateEvent candidateTestEvent = qtiService.recordCandidateTestEvent(candidateSession, testEntry, entry,
                 CandidateTestEventType.REVIEW_ITEM, null, itemKey, testSessionState, notificationRecorder);
         this.lastEvent = candidateTestEvent;
-        //candidateAuditLogger.logCandidateEvent(candidateTestEvent);
+        candidateAuditLogger.logCandidateEvent(candidateTestEvent);
 	}
 
 	private void processItemSolution(UserRequest ureq, String key) {
@@ -511,17 +532,18 @@ public class AssessmentTestDisplayController extends BasicController implements 
         //assertSessionNotTerminated(candidateSession);
         try {
             if (!testSessionController.mayAccessItemSolution(itemKey)) {
-                //candidateAuditLogger.logAndThrowCandidateException(candidateSession, CandidateExceptionReason.CANNOT_SOLUTION_TEST_ITEM);
+                candidateAuditLogger.logAndThrowCandidateException(candidateSession, CandidateExceptionReason.CANNOT_SOLUTION_TEST_ITEM, null);
             	logError("CANNOT_SOLUTION_TEST_ITEM", null);
                 return;
             }
         }
         catch (final QtiCandidateStateException e) {
-            //candidateAuditLogger.logAndThrowCandidateException(candidateSession, CandidateExceptionReason.CANNOT_SOLUTION_TEST_ITEM);
+            candidateAuditLogger.logAndThrowCandidateException(candidateSession, CandidateExceptionReason.CANNOT_SOLUTION_TEST_ITEM, e);
             logError("CANNOT_SOLUTION_TEST_ITEM", e);
         	return;
         } catch (final RuntimeException e) {
-        	logError("Exploded", e);
+        	candidateAuditLogger.logAndThrowCandidateException(candidateSession, CandidateExceptionReason.CANNOT_SOLUTION_TEST_ITEM, e);
+            logError("Exploded", e);
             return;// handleExplosion(e, candidateSession);
         }
 
@@ -529,10 +551,10 @@ public class AssessmentTestDisplayController extends BasicController implements 
         computeAndRecordTestAssessmentResult(ureq, testSessionState, false);
 
         /* Record and log event */
-        CandidateEvent candidateTestEvent = qtiService.recordCandidateTestEvent(candidateSession,
+        CandidateEvent candidateTestEvent = qtiService.recordCandidateTestEvent(candidateSession, testEntry, entry,
                 CandidateTestEventType.SOLUTION_ITEM, null, itemKey, testSessionState, notificationRecorder);
         this.lastEvent = candidateTestEvent;
-        //candidateAuditLogger.logCandidateEvent(candidateTestEvent); 
+        candidateAuditLogger.logCandidateEvent(candidateTestEvent); 
 	}
 	
 	//public CandidateSession finishLinearItem(final CandidateSessionContext candidateSessionContext)
@@ -543,15 +565,18 @@ public class AssessmentTestDisplayController extends BasicController implements 
 		
 		try {
 			if (!testSessionController.mayAdvanceItemLinear()) {
+	            candidateAuditLogger.logAndThrowCandidateException(candidateSession, CandidateExceptionReason.CANNOT_FINISH_LINEAR_TEST_ITEM, null);
 				logError("CANNOT_FINISH_LINEAR_TEST_ITEM", null);
                 return;
             }
 		} catch (QtiCandidateStateException e) {
+            candidateAuditLogger.logAndThrowCandidateException(candidateSession, CandidateExceptionReason.CANNOT_FINISH_LINEAR_TEST_ITEM, e);
          	logError("CANNOT_FINISH_LINEAR_TEST_ITEM", e);
          	return;
 		} catch (RuntimeException e) {
+			candidateAuditLogger.logAndThrowCandidateException(candidateSession, CandidateExceptionReason.CANNOT_FINISH_LINEAR_TEST_ITEM, e);
          	logError("CANNOT_FINISH_LINEAR_TEST_ITEM", e);
-			 //return handleExplosion(e, candidateSession);
+			return;// handleExplosion(e, candidateSession);
 		}
 		 
 		// Update state
@@ -568,12 +593,12 @@ public class AssessmentTestDisplayController extends BasicController implements 
 	    	candidateSession = qtiService.finishTestSession(candidateSession, testSessionState, assessmentResult, requestTimestamp);
 	    }
 
-
 	    // Record and log event 
 	    final CandidateTestEventType eventType = nextItemNode!=null ? CandidateTestEventType.FINISH_ITEM : CandidateTestEventType.FINISH_FINAL_ITEM;
-	   	final CandidateEvent candidateTestEvent = qtiService.recordCandidateTestEvent(candidateSession,
-	                eventType, null, testSessionState, notificationRecorder);
+	   	final CandidateEvent candidateTestEvent = qtiService.recordCandidateTestEvent(candidateSession, testEntry, entry,
+	                eventType, null, null, testSessionState, notificationRecorder);
 	   	this.lastEvent = candidateTestEvent;
+	   	candidateAuditLogger.logCandidateEvent(candidateTestEvent);
 	}
 	
 	private void processTestPartNavigation(UserRequest ureq) {
@@ -673,9 +698,9 @@ public class AssessmentTestDisplayController extends BasicController implements 
         }
 
         /* Record resulting event */
-        final CandidateEvent candidateEvent = qtiService.recordCandidateTestEvent(candidateSession,
-                CandidateTestEventType.ITEM_EVENT, candidateItemEventType, testSessionState, notificationRecorder);
-        //candidateAuditLogger.logCandidateEvent(candidateEvent);
+        final CandidateEvent candidateEvent = qtiService.recordCandidateTestEvent(candidateSession, testEntry, entry,
+                CandidateTestEventType.ITEM_EVENT, candidateItemEventType, currentItemKey, testSessionState, notificationRecorder);
+        candidateAuditLogger.logCandidateEvent(candidateEvent, candidateResponseMap);
         this.lastEvent = candidateEvent;
 
         /* Record current result state */
@@ -749,9 +774,11 @@ public class AssessmentTestDisplayController extends BasicController implements 
         try {
             nextTestPart = testSessionController.enterNextAvailableTestPart(currentTimestamp);
         } catch (final QtiCandidateStateException e) {
+            candidateAuditLogger.logAndThrowCandidateException(candidateSession, CandidateExceptionReason.CANNOT_ADVANCE_TEST_PART, e);
             logError("CANNOT_ADVANCE_TEST_PART", e);
             return;
         } catch (final RuntimeException e) {
+            candidateAuditLogger.logAndThrowCandidateException(candidateSession, CandidateExceptionReason.CANNOT_ADVANCE_TEST_PART, e);
             logError("RuntimeException", e);
             return;// handleExplosion(e, candidateSession);
         }
@@ -784,9 +811,9 @@ public class AssessmentTestDisplayController extends BasicController implements 
         computeAndRecordTestAssessmentResult(ureq, testSessionState, terminated);
 
         /* Record and log event */
-        final CandidateEvent candidateTestEvent = qtiService.recordCandidateTestEvent(candidateSession,
+        final CandidateEvent candidateTestEvent = qtiService.recordCandidateTestEvent(candidateSession, testEntry, entry,
                eventType, testSessionState, notificationRecorder);
-        //candidateAuditLogger.logCandidateEvent(candidateTestEvent);
+        candidateAuditLogger.logCandidateEvent(candidateTestEvent);
         this.lastEvent = candidateTestEvent;
 
         if (terminated) {
@@ -802,15 +829,15 @@ public class AssessmentTestDisplayController extends BasicController implements 
         /* Make sure caller may do this */
         //assertSessionNotTerminated(candidateSession);
         if (testSessionState.getCurrentTestPartKey()==null || !testSessionState.getCurrentTestPartSessionState().isEnded()) {
-            // candidateAuditLogger.logAndThrowCandidateException(candidateSession, CandidateExceptionReason.CANNOT_REVIEW_TEST_PART);
+            candidateAuditLogger.logAndThrowCandidateException(candidateSession, CandidateExceptionReason.CANNOT_REVIEW_TEST_PART, null);
             logError("CANNOT_REVIEW_TEST_PART", null);
         	return;
         }
 
         /* Record and log event */
-        final CandidateEvent candidateTestEvent = qtiService.recordCandidateTestEvent(candidateSession,
+        final CandidateEvent candidateTestEvent = qtiService.recordCandidateTestEvent(candidateSession, testEntry, entry,
                 CandidateTestEventType.REVIEW_TEST_PART, null, null, testSessionState, notificationRecorder);
-        //candidateAuditLogger.logCandidateEvent(candidateTestEvent);
+        candidateAuditLogger.logCandidateEvent(candidateTestEvent);
         this.lastEvent = candidateTestEvent;
 	}
 	
@@ -826,10 +853,11 @@ public class AssessmentTestDisplayController extends BasicController implements 
         try {
             testSessionController.exitTest(currentTimestamp);
         } catch (final QtiCandidateStateException e) {
-            //candidateAuditLogger.logAndThrowCandidateException(candidateSession, CandidateExceptionReason.CANNOT_EXIT_TEST);
+            candidateAuditLogger.logAndThrowCandidateException(candidateSession, CandidateExceptionReason.CANNOT_EXIT_TEST, e);
         	logError("CANNOT_EXIT_TEST", null);
             return;
         } catch (final RuntimeException e) {
+            candidateAuditLogger.logAndThrowCandidateException(candidateSession, CandidateExceptionReason.CANNOT_EXIT_TEST, e);
         	logError("Exploded", null);
             return;// handleExplosion(e, candidateSession);
         }
@@ -842,9 +870,9 @@ public class AssessmentTestDisplayController extends BasicController implements 
         computeAndRecordTestAssessmentResult(ureq, testSessionState, true);
 
         /* Record and log event */
-        final CandidateEvent candidateTestEvent = qtiService.recordCandidateTestEvent(candidateSession,
+        final CandidateEvent candidateTestEvent = qtiService.recordCandidateTestEvent(candidateSession, testEntry, entry,
                 CandidateTestEventType.EXIT_TEST, testSessionState, notificationRecorder);
-        //candidateAuditLogger.logCandidateEvent(candidateTestEvent);
+        candidateAuditLogger.logCandidateEvent(candidateTestEvent);
         this.lastEvent = candidateTestEvent;
         
         doExitTest(ureq);
@@ -886,9 +914,9 @@ public class AssessmentTestDisplayController extends BasicController implements 
         }
         
         /* Record and log event */
-        final CandidateEvent candidateEvent = qtiService.recordCandidateTestEvent(candidateSession,
+        final CandidateEvent candidateEvent = qtiService.recordCandidateTestEvent(candidateSession, testEntry, entry,
                 CandidateTestEventType.ENTER_TEST, testSessionState, notificationRecorder);
-        //candidateAuditLogger.logCandidateEvent(candidateEvent);
+        candidateAuditLogger.logCandidateEvent(candidateEvent);
         this.lastEvent = candidateEvent;
         
         boolean ended = testSessionState.isEnded();
@@ -986,7 +1014,7 @@ public class AssessmentTestDisplayController extends BasicController implements 
 	
 	private AssessmentResult computeAndRecordTestAssessmentResult(UserRequest ureq, TestSessionState testSessionState, boolean submit) {
 		AssessmentResult assessmentResult = computeTestAssessmentResult(ureq, candidateSession);
-		qtiService.recordTestAssessmentResult(candidateSession, testSessionState, assessmentResult);
+		qtiService.recordTestAssessmentResult(candidateSession, testSessionState, assessmentResult, candidateAuditLogger);
 		processOutcomeVariables(assessmentResult.getTestResult(), submit);
 		return assessmentResult;
 	}
@@ -1055,7 +1083,7 @@ public class AssessmentTestDisplayController extends BasicController implements 
 	 * @return
 	 */
 	public int computeTemplateProcessingLimit() {
-		final Integer requestedLimit = null;// deliverySettings.getTemplateProcessingLimit();
+		final Integer requestedLimit = deliveryOptions.getTemplateProcessingLimit();
 		if (requestedLimit == null) {
 			/* Not specified, so use default */
 			return JqtiPlus.DEFAULT_TEMPLATE_PROCESSING_LIMIT;

@@ -31,8 +31,8 @@ import org.olat.core.logging.OLATRuntimeException;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.ims.qti21.AssessmentTestSession;
-import org.olat.ims.qti21.model.CandidateItemEventType;
-import org.olat.ims.qti21.model.jpa.CandidateEvent;
+import org.olat.ims.qti21.model.audit.CandidateEvent;
+import org.olat.ims.qti21.model.audit.CandidateItemEventType;
 import org.olat.ims.qti21.ui.CandidateSessionContext;
 
 import uk.ac.ed.ph.jqtiplus.node.content.variable.PrintedVariable;

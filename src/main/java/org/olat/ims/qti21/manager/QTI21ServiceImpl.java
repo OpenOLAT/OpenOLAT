@@ -59,6 +59,7 @@ import org.olat.fileresource.types.ImsQTI21Resource;
 import org.olat.fileresource.types.ImsQTI21Resource.PathResourceLocator;
 import org.olat.ims.qti21.AssessmentItemSession;
 import org.olat.ims.qti21.AssessmentResponse;
+import org.olat.ims.qti21.AssessmentSessionAuditLogger;
 import org.olat.ims.qti21.AssessmentTestMarks;
 import org.olat.ims.qti21.AssessmentTestSession;
 import org.olat.ims.qti21.QTI21Constants;
@@ -66,10 +67,12 @@ import org.olat.ims.qti21.QTI21ContentPackage;
 import org.olat.ims.qti21.QTI21DeliveryOptions;
 import org.olat.ims.qti21.QTI21Module;
 import org.olat.ims.qti21.QTI21Service;
-import org.olat.ims.qti21.model.CandidateItemEventType;
-import org.olat.ims.qti21.model.CandidateTestEventType;
+import org.olat.ims.qti21.manager.audit.AssessmentSessionAuditFileLog;
+import org.olat.ims.qti21.manager.audit.AssessmentSessionAuditOLog;
 import org.olat.ims.qti21.model.ResponseLegality;
-import org.olat.ims.qti21.model.jpa.CandidateEvent;
+import org.olat.ims.qti21.model.audit.CandidateEvent;
+import org.olat.ims.qti21.model.audit.CandidateItemEventType;
+import org.olat.ims.qti21.model.audit.CandidateTestEventType;
 import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
@@ -141,8 +144,6 @@ public class QTI21ServiceImpl implements QTI21Service, InitializingBean, Disposa
 	}
 	
 	@Autowired
-	private EventDAO eventDao;
-	@Autowired
 	private AssessmentTestSessionDAO testSessionDao;
 	@Autowired
 	private AssessmentItemSessionDAO itemSessionDao;
@@ -169,7 +170,7 @@ public class QTI21ServiceImpl implements QTI21Service, InitializingBean, Disposa
 		this.xsltStylesheetCache = xsltStylesheetCache;
 	}
 
-    @Override
+	@Override
 	public void afterPropertiesSet() throws Exception {
     	final List<JqtiExtensionPackage<?>> extensionPackages = new ArrayList<JqtiExtensionPackage<?>>();
 
@@ -345,6 +346,22 @@ public class QTI21ServiceImpl implements QTI21Service, InitializingBean, Disposa
 	}
 
 	@Override
+	public AssessmentSessionAuditLogger getAssessmentSessionAuditLogger(AssessmentTestSession session, boolean authorMode) {
+		if(authorMode) {
+			return new AssessmentSessionAuditOLog();
+		}
+		try {
+			File userStorage = testSessionDao.getSessionStorage(session);
+			File auditLog = new File(userStorage, "audit.log");
+			FileOutputStream outputStream = new FileOutputStream(auditLog);
+			return new AssessmentSessionAuditFileLog(outputStream);
+		} catch (IOException e) {
+			log.error("Cannot open the user specific log audit, fall back to OLog", e);
+			return new AssessmentSessionAuditOLog();
+		}
+	}
+
+	@Override
 	public AssessmentTestSession createAssessmentTestSession(Identity identity, AssessmentEntry assessmentEntry,
 			RepositoryEntry entry, String subIdent, RepositoryEntry testEntry, boolean authorMode) {
 		return testSessionDao.createAndPersistTestSession(testEntry, entry, subIdent, assessmentEntry, identity, authorMode);
@@ -443,11 +460,12 @@ public class QTI21ServiceImpl implements QTI21Service, InitializingBean, Disposa
 	}
 
 	@Override
-	public AssessmentTestSession recordTestAssessmentResult(AssessmentTestSession candidateSession, TestSessionState testSessionState, AssessmentResult assessmentResult) {
+	public AssessmentTestSession recordTestAssessmentResult(AssessmentTestSession candidateSession, TestSessionState testSessionState,
+			AssessmentResult assessmentResult, AssessmentSessionAuditLogger auditLogger) {
 		// First record full result XML to filesystem
         storeAssessmentResultFile(candidateSession, assessmentResult);
         // Then record test outcome variables to DB
-        recordOutcomeVariables(candidateSession, assessmentResult.getTestResult());
+        recordOutcomeVariables(candidateSession, assessmentResult.getTestResult(), auditLogger);
         // Set duration
         candidateSession.setDuration(testSessionState.getDurationAccumulated());
 
@@ -496,32 +514,44 @@ public class QTI21ServiceImpl implements QTI21Service, InitializingBean, Disposa
 		}
 	}
 	
-    private void recordOutcomeVariables(AssessmentTestSession candidateSession, AbstractResult resultNode) {
-        for (final ItemVariable itemVariable : resultNode.getItemVariables()) {
-            if (itemVariable instanceof OutcomeVariable) {
-                
-                OutcomeVariable outcomeVariable = (OutcomeVariable)itemVariable;
-            	Identifier identifier = outcomeVariable.getIdentifier();
-            	if(QtiConstants.VARIABLE_DURATION_IDENTIFIER.equals(identifier)) {
-            		log.audit(candidateSession.getKey() + " :: " + itemVariable.getIdentifier() + " - " + stringifyQtiValue(itemVariable.getComputedValue()));
-            	} else  if(QTI21Constants.SCORE_IDENTIFIER.equals(identifier)) {
-            		Value value = itemVariable.getComputedValue();
-            		if(value instanceof NumberValue) {
-            			double score = ((NumberValue)value).doubleValue();
-            			candidateSession.setScore(new BigDecimal(score));
-            			System.out.println("Score: " + score);
-            		}
-            	} else if(QTI21Constants.PASS_IDENTIFIER.equals(identifier)) {
-            		Value value = itemVariable.getComputedValue();
-            		if(value instanceof BooleanValue) {
-            			boolean pass = ((BooleanValue)value).booleanValue();
-            			candidateSession.setPassed(pass);
-            			System.out.println("Pass: " + pass);
-            		}
-            	}
-            }
-        }
-    }
+	private void recordOutcomeVariables(AssessmentTestSession candidateSession, AbstractResult resultNode, AssessmentSessionAuditLogger auditLogger) {
+		Map<Identifier,String> outcomes = new HashMap<>();
+		
+		for (final ItemVariable itemVariable : resultNode.getItemVariables()) {
+			if (itemVariable instanceof OutcomeVariable) {
+
+				OutcomeVariable outcomeVariable = (OutcomeVariable) itemVariable;
+				Identifier identifier = outcomeVariable.getIdentifier();
+				Value computedValue = itemVariable.getComputedValue();
+				
+				
+				if (QtiConstants.VARIABLE_DURATION_IDENTIFIER.equals(identifier)) {
+					log.audit(candidateSession.getKey() + " :: " + itemVariable.getIdentifier() + " - "
+							+ stringifyQtiValue(computedValue));
+				} else if (QTI21Constants.SCORE_IDENTIFIER.equals(identifier)) {
+					if (computedValue instanceof NumberValue) {
+						double score = ((NumberValue) computedValue).doubleValue();
+						candidateSession.setScore(new BigDecimal(score));
+					}
+				} else if (QTI21Constants.PASS_IDENTIFIER.equals(identifier)) {
+					if (computedValue instanceof BooleanValue) {
+						boolean pass = ((BooleanValue) computedValue).booleanValue();
+						candidateSession.setPassed(pass);
+					}
+				}
+				
+				try {
+					outcomes.put(identifier, stringifyQtiValue(computedValue));
+				} catch (Exception e) {
+					log.error("", e);
+				}
+			}
+		}
+		
+		if(auditLogger != null) {
+			auditLogger.logCandidateOutcomes(candidateSession, outcomes);
+		}
+	}
     
     private String stringifyQtiValue(final Value value) {
         if (qtiModule.isMathAssessExtensionEnabled() && GlueValueBinder.isMathsContentRecord(value)) {
@@ -557,24 +587,22 @@ public class QTI21ServiceImpl implements QTI21Service, InitializingBean, Disposa
     }
 
 	@Override
-	public CandidateEvent recordCandidateTestEvent(AssessmentTestSession candidateSession, CandidateTestEventType textEventType,
-			TestSessionState testSessionState, NotificationRecorder notificationRecorder) {
-		return recordCandidateTestEvent(candidateSession, textEventType, null, null, testSessionState, notificationRecorder);
+	public CandidateEvent recordCandidateTestEvent(AssessmentTestSession candidateSession, RepositoryEntryRef testEntry, RepositoryEntryRef entry,
+			CandidateTestEventType textEventType, TestSessionState testSessionState, NotificationRecorder notificationRecorder) {
+		return recordCandidateTestEvent(candidateSession, testEntry, entry, textEventType, null, null, testSessionState, notificationRecorder);
 	}
 
 	@Override
-	public CandidateEvent recordCandidateTestEvent(AssessmentTestSession candidateSession, CandidateTestEventType textEventType,
-			CandidateItemEventType itemEventType, TestSessionState testSessionState, NotificationRecorder notificationRecorder) {
-		CandidateEvent event = new CandidateEvent();
-		event.setCandidateSession(candidateSession);
+	public CandidateEvent recordCandidateTestEvent(AssessmentTestSession candidateSession, RepositoryEntryRef testEntry, RepositoryEntryRef entry,
+			CandidateTestEventType textEventType, CandidateItemEventType itemEventType,
+			TestPlanNodeKey itemKey, TestSessionState testSessionState, NotificationRecorder notificationRecorder) {
+		
+		CandidateEvent event = new CandidateEvent(candidateSession, testEntry, entry);
 		event.setTestEventType(textEventType);
-		return recordCandidateTestEvent(candidateSession, textEventType, itemEventType, null, testSessionState, notificationRecorder);
-	}
-
-	@Override
-	public CandidateEvent recordCandidateTestEvent(AssessmentTestSession candidateSession, CandidateTestEventType textEventType,
-			CandidateItemEventType itemEventType, TestPlanNodeKey itemKey, TestSessionState testSessionState, NotificationRecorder notificationRecorder) {
-		CandidateEvent event = eventDao.create(candidateSession, textEventType, itemEventType, itemKey);
+		event.setItemEventType(itemEventType);
+		if (itemKey != null) {
+            event.setTestItemKey(itemKey.toString());
+        }
 		storeTestSessionState(event, testSessionState);
 		return event;
 	}
@@ -596,21 +624,23 @@ public class QTI21ServiceImpl implements QTI21Service, InitializingBean, Disposa
     }
 	
     @Override
-	public CandidateEvent recordCandidateItemEvent(AssessmentTestSession candidateSession, CandidateItemEventType itemEventType,
-			ItemSessionState itemSessionState) {
-		return recordCandidateItemEvent(candidateSession, itemEventType, itemSessionState, null);
+	public CandidateEvent recordCandidateItemEvent(AssessmentTestSession candidateSession, RepositoryEntryRef testEntry, RepositoryEntryRef entry,
+			CandidateItemEventType itemEventType, ItemSessionState itemSessionState) {
+		return recordCandidateItemEvent(candidateSession, testEntry, entry, itemEventType, itemSessionState, null);
 	}
 		
 	@Override
-    public CandidateEvent recordCandidateItemEvent(AssessmentTestSession candidateSession, CandidateItemEventType itemEventType,
-    		ItemSessionState itemSessionState, NotificationRecorder notificationRecorder) {
-    	return eventDao.create(candidateSession, itemEventType);
+    public CandidateEvent recordCandidateItemEvent(AssessmentTestSession candidateSession, RepositoryEntryRef testEntry, RepositoryEntryRef entry,
+    		CandidateItemEventType itemEventType, ItemSessionState itemSessionState, NotificationRecorder notificationRecorder) {
+
+		CandidateEvent event = new CandidateEvent(candidateSession, testEntry, entry);
+        event.setItemEventType(itemEventType);
+    	return event;
     }
 	
     @Override
 	public AssessmentResult getAssessmentResult(AssessmentTestSession candidateSession) {
     	File assessmentResultFile = getAssessmentResultFile(candidateSession);
-    	System.out.println(assessmentResultFile);
     	ResourceLocator fileResourceLocator = new PathResourceLocator(assessmentResultFile.getParentFile().toPath());
 		ResourceLocator inputResourceLocator = 
         		ImsQTI21Resource.createResolvingResourceLocator(fileResourceLocator);

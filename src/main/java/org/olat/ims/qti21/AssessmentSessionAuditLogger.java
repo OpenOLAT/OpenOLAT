@@ -17,14 +17,32 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.ims.qti21.model;
+package org.olat.ims.qti21;
+
+import java.io.Closeable;
+import java.util.Map;
+
+import org.olat.ims.qti21.model.audit.CandidateEvent;
+import org.olat.ims.qti21.model.audit.CandidateExceptionReason;
+
+import uk.ac.ed.ph.jqtiplus.types.Identifier;
 
 /**
+ * This interface is base on the CandidateAuditLogger from
+ * QtiWorks
  * 
- * Initial date: 29.01.2016<br>
+ * Initial date: 12.05.2016<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class AssessmentFileSubmission {
+public interface AssessmentSessionAuditLogger extends Closeable {
+
+	public void logCandidateEvent(CandidateEvent candidateEvent);
+	
+	public void logCandidateEvent(CandidateEvent candidateEvent, Map<Identifier, AssessmentResponse> candidateResponseMap);
+	
+	public void logCandidateOutcomes(AssessmentTestSession candidateSession, Map<Identifier, String> outcomes);
+	
+	public void logAndThrowCandidateException(AssessmentTestSession session, CandidateExceptionReason reason, Exception ex);
 
 }

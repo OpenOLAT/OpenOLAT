@@ -150,6 +150,16 @@ public class InMemoryAssessmentTestSession implements AssessmentTestSession {
 	}
 
 	@Override
+	public RepositoryEntry getRepositoryEntry() {
+		return null;
+	}
+
+	@Override
+	public String getSubIdent() {
+		return null;
+	}
+
+	@Override
 	public int hashCode() {
 		return super.hashCode();
 	}

@@ -29,10 +29,10 @@ import java.util.Map;
 import org.olat.basesecurity.IdentityRef;
 import org.olat.core.gui.components.form.flexible.impl.MultipartFileInfos;
 import org.olat.core.id.Identity;
-import org.olat.ims.qti21.model.CandidateItemEventType;
-import org.olat.ims.qti21.model.CandidateTestEventType;
 import org.olat.ims.qti21.model.ResponseLegality;
-import org.olat.ims.qti21.model.jpa.CandidateEvent;
+import org.olat.ims.qti21.model.audit.CandidateEvent;
+import org.olat.ims.qti21.model.audit.CandidateItemEventType;
+import org.olat.ims.qti21.model.audit.CandidateTestEventType;
 import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
@@ -139,6 +139,14 @@ public interface QTI21Service {
 			RepositoryEntry entry, String subIdent, RepositoryEntry testEntry,
 			boolean authorMode);
 	
+	/**
+	 * Return the implementation of the log audit.
+	 * 
+	 * @param session
+	 * @return
+	 */
+	public AssessmentSessionAuditLogger getAssessmentSessionAuditLogger(AssessmentTestSession session, boolean authorMode);
+	
 	public AssessmentTestSession getResumableAssessmentTestSession(Identity identity, RepositoryEntry entry, String subIdent, RepositoryEntry testEntry);
 	
 	public AssessmentTestSession updateAssessmentTestSession(AssessmentTestSession session);
@@ -171,20 +179,19 @@ public interface QTI21Service {
 	public void recordTestAssessmentResponses(AssessmentItemSession assessmentItemSession, Collection<AssessmentResponse> responses);
 	
 
-	public AssessmentTestSession recordTestAssessmentResult(AssessmentTestSession candidateSession, TestSessionState testSessionState, AssessmentResult assessmentResult);
+	public AssessmentTestSession recordTestAssessmentResult(AssessmentTestSession candidateSession, TestSessionState testSessionState, AssessmentResult assessmentResult,
+			AssessmentSessionAuditLogger auditLogger);
 	
 	public AssessmentTestSession finishTestSession(AssessmentTestSession candidateSession, TestSessionState testSessionState, AssessmentResult assessmentResul, Date timestamp);
 	
 	public void cancelTestSession(AssessmentTestSession candidateSession, TestSessionState testSessionState);
 	
-	public CandidateEvent recordCandidateTestEvent(AssessmentTestSession candidateSession, CandidateTestEventType textEventType,
-			TestSessionState testSessionState, NotificationRecorder notificationRecorder);
+	public CandidateEvent recordCandidateTestEvent(AssessmentTestSession candidateSession, RepositoryEntryRef testEntry, RepositoryEntryRef entry,
+			CandidateTestEventType textEventType, TestSessionState testSessionState, NotificationRecorder notificationRecorder);
 
-	public CandidateEvent recordCandidateTestEvent(AssessmentTestSession candidateSession, CandidateTestEventType textEventType,
-			CandidateItemEventType itemEventType, TestSessionState testSessionState, NotificationRecorder notificationRecorder);
-
-	public CandidateEvent recordCandidateTestEvent(AssessmentTestSession candidateSession, CandidateTestEventType textEventType,
-			CandidateItemEventType itemEventType, TestPlanNodeKey itemKey, TestSessionState testSessionState, NotificationRecorder notificationRecorder);
+	public CandidateEvent recordCandidateTestEvent(AssessmentTestSession candidateSession, RepositoryEntryRef testEntry, RepositoryEntryRef entry,
+			CandidateTestEventType textEventType, CandidateItemEventType itemEventType,
+			TestPlanNodeKey itemKey, TestSessionState testSessionState, NotificationRecorder notificationRecorder);
 	
 	
 	public AssessmentResult getAssessmentResult(AssessmentTestSession candidateSession);
@@ -195,10 +202,10 @@ public interface QTI21Service {
 
 	public void recordItemAssessmentResult(AssessmentTestSession candidateSession, AssessmentResult assessmentResult);
 	
-	public CandidateEvent recordCandidateItemEvent(AssessmentTestSession candidateSession, CandidateItemEventType itemEventType,
-			ItemSessionState itemSessionState, NotificationRecorder notificationRecorder);
+	public CandidateEvent recordCandidateItemEvent(AssessmentTestSession candidateSession, RepositoryEntryRef testEntry, RepositoryEntryRef entry,
+			CandidateItemEventType itemEventType, ItemSessionState itemSessionState, NotificationRecorder notificationRecorder);
 	
-	public CandidateEvent recordCandidateItemEvent(AssessmentTestSession candidateSession,
+	public CandidateEvent recordCandidateItemEvent(AssessmentTestSession candidateSession, RepositoryEntryRef testEntry, RepositoryEntryRef entry,
             CandidateItemEventType itemEventType, ItemSessionState itemSessionState);
 	
 	/**

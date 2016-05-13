@@ -43,6 +43,8 @@ public class QTI21DeliveryOptions {
 	private boolean blockAfterSuccess;
 	private int maxAttempts;
 	
+	private Integer templateProcessingLimit;
+	
 	private ShowResultsOnFinish showResultsOnFinish;
 
 	public boolean isEnableCancel() {
@@ -115,6 +117,14 @@ public class QTI21DeliveryOptions {
 
 	public void setShowResultsOnFinish(ShowResultsOnFinish showResultsOnFinish) {
 		this.showResultsOnFinish = showResultsOnFinish;
+	}
+	
+	public Integer getTemplateProcessingLimit() {
+		return templateProcessingLimit;
+	}
+	
+	public void setTemplateProcessingLimit(Integer templateProcessingLimit) {
+		this.templateProcessingLimit = templateProcessingLimit;
 	}
 
 	public static final QTI21DeliveryOptions defaultSettings() {

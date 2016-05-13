@@ -31,7 +31,7 @@
  * QTItools is (c) 2008, University of Southampton.
  * MathAssessEngine is (c) 2010, University of Edinburgh.
  */
-package org.olat.ims.qti21.model;
+package org.olat.ims.qti21.model.audit;
 
 /**
  * Enumerates the item-specific events that can happen when delivering

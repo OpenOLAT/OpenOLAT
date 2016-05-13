@@ -31,7 +31,7 @@
  * QTItools is (c) 2008, University of Southampton.
  * MathAssessEngine is (c) 2010, University of Edinburgh.
  */
-package org.olat.ims.qti21.model;
+package org.olat.ims.qti21.model.audit;
 
 import uk.ac.ed.ph.jqtiplus.node.test.NavigationMode;
 import uk.ac.ed.ph.jqtiplus.node.test.TestPart;
@@ -81,6 +81,9 @@ public enum CandidateTestEventType {
 
     /** Selection of a particular item for interaction (in {@link NavigationMode#NONLINEAR}) */
     SELECT_ITEM,
+    
+    /** Selection of the next item for interaction */
+    NEXT_ITEM,
 
     /**
      * Finish interaction of item (in {@link NavigationMode#LINEAR}), moving to the next

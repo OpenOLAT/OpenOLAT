@@ -45,9 +45,9 @@ import org.olat.fileresource.types.ImsQTI21Resource;
 import org.olat.fileresource.types.ImsQTI21Resource.PathResourceLocator;
 import org.olat.ims.qti21.AssessmentTestSession;
 import org.olat.ims.qti21.QTI21Service;
-import org.olat.ims.qti21.model.CandidateItemEventType;
 import org.olat.ims.qti21.model.InMemoryAssessmentTestSession;
-import org.olat.ims.qti21.model.jpa.CandidateEvent;
+import org.olat.ims.qti21.model.audit.CandidateEvent;
+import org.olat.ims.qti21.model.audit.CandidateItemEventType;
 import org.olat.ims.qti21.ui.components.AssessmentItemFormItem;
 import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.repository.RepositoryEntry;
@@ -91,6 +91,7 @@ public class AssessmentItemDisplayController extends BasicController implements 
 	
 	private CandidateEvent lastEvent;
 	private Date currentRequestTimestamp;
+	private RepositoryEntry entry;
 	private AssessmentTestSession candidateSession;
 
 	@Autowired
@@ -288,7 +289,8 @@ public class AssessmentItemDisplayController extends BasicController implements 
         }
 
         /* Record and log entry event */
-        final CandidateEvent candidateEvent = qtiService.recordCandidateItemEvent(candidateSession, CandidateItemEventType.ENTER, itemSessionState, notificationRecorder);
+        final CandidateEvent candidateEvent = qtiService.recordCandidateItemEvent(candidateSession, null, entry,
+        		CandidateItemEventType.ENTER, itemSessionState, notificationRecorder);
         //candidateAuditLogger.logCandidateEvent(candidateEvent);
         lastEvent = candidateEvent;
 
@@ -451,7 +453,7 @@ public class AssessmentItemDisplayController extends BasicController implements 
 		final CandidateItemEventType eventType = allResponsesBound ?
 				(allResponsesValid ? CandidateItemEventType.ATTEMPT_VALID : CandidateItemEventType.RESPONSE_INVALID)
 				: CandidateItemEventType.RESPONSE_BAD;
-		final CandidateEvent candidateEvent = qtiService.recordCandidateItemEvent(candidateSession,
+		final CandidateEvent candidateEvent = qtiService.recordCandidateItemEvent(candidateSession, null, entry,
 	                eventType, itemSessionState, notificationRecorder);
 		//candidateAuditLogger.logCandidateEvent(candidateEvent);
 		lastEvent = candidateEvent;
@@ -536,7 +538,8 @@ public class AssessmentItemDisplayController extends BasicController implements 
         }
 
         /* Record and log event */
-        final CandidateEvent candidateEvent = qtiService.recordCandidateItemEvent(candidateSession, CandidateItemEventType.SOLUTION, itemSessionState);
+        final CandidateEvent candidateEvent = qtiService.recordCandidateItemEvent(candidateSession, null, entry,
+        		CandidateItemEventType.SOLUTION, itemSessionState);
         //candidateAuditLogger.logCandidateEvent(candidateEvent);
         lastEvent = candidateEvent;
 
@@ -583,7 +586,7 @@ public class AssessmentItemDisplayController extends BasicController implements 
         final AssessmentResult assessmentResult = computeAndRecordItemAssessmentResult(ureq);
 
         /* Record and log event */
-        final CandidateEvent candidateEvent = qtiService.recordCandidateItemEvent(candidateSession,
+        final CandidateEvent candidateEvent = qtiService.recordCandidateItemEvent(candidateSession, null, entry,
                 CandidateItemEventType.END, itemSessionState, notificationRecorder);
         //candidateAuditLogger.logCandidateEvent(candidateEvent);
         lastEvent = candidateEvent;
@@ -621,7 +624,7 @@ public class AssessmentItemDisplayController extends BasicController implements 
 	        candidateSession = qtiService.updateAssessmentTestSession(candidateSession);
 
 	        /* Record and log event */
-	        final CandidateEvent candidateEvent = qtiService.recordCandidateItemEvent(candidateSession,
+	        final CandidateEvent candidateEvent = qtiService.recordCandidateItemEvent(candidateSession, null, entry,
 	                CandidateItemEventType.EXIT, itemSessionState);
 	        lastEvent = candidateEvent;
 	        //candidateAuditLogger.logCandidateEvent(candidateEvent);

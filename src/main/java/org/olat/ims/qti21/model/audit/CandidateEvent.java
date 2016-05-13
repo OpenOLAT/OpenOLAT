@@ -17,13 +17,12 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.ims.qti21.model.jpa;
+package org.olat.ims.qti21.model.audit;
 
 import java.util.Date;
 
 import org.olat.ims.qti21.AssessmentTestSession;
-import org.olat.ims.qti21.model.CandidateItemEventType;
-import org.olat.ims.qti21.model.CandidateTestEventType;
+import org.olat.repository.RepositoryEntryRef;
 
 /**
  * 
@@ -36,13 +35,17 @@ public class CandidateEvent {
 	private Date timestamp;
     private String testItemKey;
 
-	private AssessmentTestSession candidateSession;
+    private final RepositoryEntryRef testEntry;
+    private final RepositoryEntryRef repositoryEntry;
+	private final AssessmentTestSession candidateSession;
 	
 	private CandidateTestEventType testEventType;
 	private CandidateItemEventType itemEventType;
 
-    public CandidateEvent() {
-    	//
+    public CandidateEvent(AssessmentTestSession candidateSession, RepositoryEntryRef testEntry, RepositoryEntryRef repositoryEntry) {
+    	this.candidateSession = candidateSession;
+    	this.testEntry = testEntry;
+    	this.repositoryEntry = repositoryEntry;
     }
 
 	public Date getTimestamp() {
@@ -77,12 +80,15 @@ public class CandidateEvent {
 		this.testItemKey = testItemKey;
 	}
 
+	public RepositoryEntryRef getTestEntry() {
+		return testEntry;
+	}
+
+	public RepositoryEntryRef getRepositoryEntry() {
+		return repositoryEntry;
+	}
+
 	public AssessmentTestSession getCandidateSession() {
 		return candidateSession;
 	}
-
-	public void setCandidateSession(AssessmentTestSession candidateSession) {
-		this.candidateSession = candidateSession;
-	}
-	
 }

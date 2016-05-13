@@ -73,5 +73,9 @@ public interface AssessmentTestSession extends CreateInfo, ModifiedInfo {
 	public AssessmentEntry getAssessmentEntry();
 	
 	public RepositoryEntry getTestEntry();
+	
+	public RepositoryEntry getRepositoryEntry();
+	
+	public String getSubIdent();
 
 }
