@@ -247,7 +247,20 @@ public class AssessmentTestSessionDAO {
 		return itemSessions + sessions + responses;
 	}
 	
-	public int deleteUserTestSessions(RepositoryEntryRef testEntry) {
+	/**
+	 * The method delete all bookmarks, responses, item sessions and test sessions
+	 * of all users which had used the specificed test ressource.
+	 * 
+	 * @param testEntry
+	 * @return
+	 */
+	public int deleteAllUserTestSessions(RepositoryEntryRef testEntry) {
+		String marksSb = "delete from qtiassessmentmarks marks where marks.testEntry.key=:testEntryKey";
+		int marks = dbInstance.getCurrentEntityManager()
+				.createQuery(marksSb)
+				.setParameter("testEntryKey", testEntry.getKey())
+				.executeUpdate();
+		
 		StringBuilder responseSb  = new StringBuilder();
 		responseSb.append("delete from qtiassessmentresponse response where")
 		  .append("  response.assessmentItemSession.key in (")
@@ -274,6 +287,6 @@ public class AssessmentTestSessionDAO {
 				.createQuery(q)
 				.setParameter("testEntryKey", testEntry.getKey())
 				.executeUpdate();
-		return itemSessions + sessions + responses;
+		return marks + itemSessions + sessions + responses;
 	}
 }
