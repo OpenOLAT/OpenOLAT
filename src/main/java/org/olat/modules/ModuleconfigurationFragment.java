@@ -164,7 +164,7 @@ public class ModuleconfigurationFragment implements IModuleConfiguration {
 		X val = null;
 		String name = key.name();
 		if(klass == Boolean.class) {			
-			Boolean b = (key.hasDefault() ? config.getBooleanSafe(key(name), (boolean)(key.getDefault())) : config.getBooleanEntry(key(name)));
+			Boolean b = (key.hasDefault() ? config.getBooleanSafe(key(name), (Boolean)(key.getDefault())) : config.getBooleanEntry(key(name)));
 			val = klass.cast(b);
 		} else if (klass == Float.class) {
 			Float f = config.getFloatEntry(key(name));
@@ -173,7 +173,7 @@ public class ModuleconfigurationFragment implements IModuleConfiguration {
 			if(!key.hasDefault()) {
 				throw new IllegalArgumentException("Integer keys MUST define a default value");
 			}
-			Integer i = config.getIntegerSafe(key(name), (int)key.getDefault());
+			Integer i = config.getIntegerSafe(key(name), (Integer)key.getDefault());
 			val = klass.cast(i);
 		} else if (klass == Date.class) {
 			Date d = config.getDateValue(key(name));
