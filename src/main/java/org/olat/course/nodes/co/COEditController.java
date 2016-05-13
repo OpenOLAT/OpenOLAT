@@ -40,6 +40,7 @@ import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.condition.Condition;
 import org.olat.course.condition.ConditionEditController;
 import org.olat.course.editor.NodeEditController;
+import org.olat.course.editor.formfragments.MembersSelectorFormFragment;
 import org.olat.course.nodes.COCourseNode;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.ModuleConfiguration;
@@ -65,29 +66,29 @@ public class COEditController extends ActivateableTabbableDefaultController impl
 	public static final String CONFIG_KEY_EMAILTOGROUPS = "emailToGroups";
 	
 	/** config key: to email addresses to be extracted from specified learn areas */
-	public static final String CONFIG_KEY_EMAILTOCOACHES_AREA = "emailToAreaCoaches";
+	public static final String CONFIG_KEY_EMAILTOCOACHES_AREA 			= "emailTo" + MembersSelectorFormFragment.CONFIG_KEY_COACHES_AREA;
 	/** config key: to email addresses to be extracted from specified learn areas */
-	public static final String CONFIG_KEY_EMAILTOCOACHES_AREA_IDS = "emailToAreaCoachesIds";
+	public static final String CONFIG_KEY_EMAILTOCOACHES_AREA_IDS 		= "emailTo" + MembersSelectorFormFragment.CONFIG_KEY_COACHES_AREA_IDS;
 	
 	/** config key: keys of the course participants list */
-	public static final String CONFIG_KEY_EMAILTOPARTICIPANTS_ALL = "emailToParticipantsAll";
+	public static final String CONFIG_KEY_EMAILTOPARTICIPANTS_ALL 		= "emailTo" + MembersSelectorFormFragment.CONFIG_KEY_PARTICIPANTS_ALL;
 	/** config key: keys of the group participants list */
-	public static final String CONFIG_KEY_EMAILTOPARTICIPANTS_GROUP_ID = "emailToGroupParticipantsIds";
+	public static final String CONFIG_KEY_EMAILTOPARTICIPANTS_GROUP_ID 	= "emailTo" + MembersSelectorFormFragment.CONFIG_KEY_PARTICIPANTS_GROUP_ID;
 	/** config key: email goes to group participants */
-	public static final String CONFIG_KEY_EMAILTOPARTICIPANTS_GROUP = "emailToGroupParticipants";
-	public static final String CONFIG_KEY_EMAILTOPARTICIPANTS_AREA_ID = "emailToAreaParticipantsIds";
+	public static final String CONFIG_KEY_EMAILTOPARTICIPANTS_GROUP 	= "emailTo" + MembersSelectorFormFragment.CONFIG_KEY_PARTICIPANTS_GROUP;
+	public static final String CONFIG_KEY_EMAILTOPARTICIPANTS_AREA_ID 	= "emailTo" + MembersSelectorFormFragment.CONFIG_KEY_PARTICIPANTS_AREA_ID;
 	/** config key: email goes to group participants */
-	public static final String CONFIG_KEY_EMAILTOPARTICIPANTS_AREA = "emailToAreaParticipants";
+	public static final String CONFIG_KEY_EMAILTOPARTICIPANTS_AREA 		= "emailTo" + MembersSelectorFormFragment.CONFIG_KEY_PARTICIPANTS_AREA;
 	/** config key: email goes to course participants */
-	public static final String CONFIG_KEY_EMAILTOPARTICIPANTS_COURSE = "emailToCourseParticipants";
+	public static final String CONFIG_KEY_EMAILTOPARTICIPANTS_COURSE 	= "emailTo" + MembersSelectorFormFragment.CONFIG_KEY_PARTICIPANTS_COURSE;
 	/** config key: email goes to group coaches */
-	public static final String CONFIG_KEY_EMAILTOCOACHES_GROUP = "emailToGroupCoaches";
+	public static final String CONFIG_KEY_EMAILTOCOACHES_GROUP 			= "emailTo" + MembersSelectorFormFragment.CONFIG_KEY_COACHES_GROUP;
 	/** config key: key of the group coaches list */
-	public static final String CONFIG_KEY_EMAILTOCOACHES_GROUP_ID = "emailToGroupCoachesIds";
+	public static final String CONFIG_KEY_EMAILTOCOACHES_GROUP_ID 		= "emailTo" + MembersSelectorFormFragment.CONFIG_KEY_COACHES_GROUP_ID;
 	/** config key: key of the course coaches list */
-	public static final String CONFIG_KEY_EMAILTOCOACHES_ALL = "emailtoCoachesAll";
+	public static final String CONFIG_KEY_EMAILTOCOACHES_ALL 			= "emailto" + MembersSelectorFormFragment.CONFIG_KEY_COACHES_ALL;
 	/** config key: email goes to course coaches */
-	public static final String CONFIG_KEY_EMAILTOCOACHES_COURSE = "emailToCourseCoaches";
+	public static final String CONFIG_KEY_EMAILTOCOACHES_COURSE 		= "emailTo" + MembersSelectorFormFragment.CONFIG_KEY_COACHES_COURSE;
 	/** config key: email goes to course owners */
 	public static final String CONFIG_KEY_EMAILTOOWNERS = "emailToOwners";
 	/** config key: email goes to email address */
@@ -162,19 +163,21 @@ public class COEditController extends ActivateableTabbableDefaultController impl
 			if (event == Event.CANCELLED_EVENT) {
 				return;
 			} else if (event == Event.DONE_EVENT) {
-				moduleConfiguration.set(CONFIG_KEY_EMAILTOCOACHES_GROUP, configForm.getEmailGroupCoaches());
-				moduleConfiguration.set(CONFIG_KEY_EMAILTOCOACHES_AREA, configForm.getEmailCoachesAreas());
-				moduleConfiguration.set(CONFIG_KEY_EMAILTOCOACHES_GROUP_ID, configForm.getEmailGroupCoachesIds());
-				moduleConfiguration.set(CONFIG_KEY_EMAILTOCOACHES_AREA_IDS, configForm.getEmailCoachesAreaIds());
-				moduleConfiguration.setBooleanEntry(CONFIG_KEY_EMAILTOCOACHES_ALL, configForm.sendToCoachesAll());
-				moduleConfiguration.setBooleanEntry(CONFIG_KEY_EMAILTOCOACHES_COURSE, configForm.sendToCoachesCourse());
+				this.configForm.storeFormData(ureq);
+
+//				moduleConfiguration.set(CONFIG_KEY_EMAILTOCOACHES_GROUP, configForm.getEmailGroupCoaches());
+//				moduleConfiguration.set(CONFIG_KEY_EMAILTOCOACHES_AREA, configForm.getEmailCoachesAreas());
+//				moduleConfiguration.set(CONFIG_KEY_EMAILTOCOACHES_GROUP_ID, configForm.getEmailGroupCoachesIds());
+//				moduleConfiguration.set(CONFIG_KEY_EMAILTOCOACHES_AREA_IDS, configForm.getEmailCoachesAreaIds());
+//				moduleConfiguration.setBooleanEntry(CONFIG_KEY_EMAILTOCOACHES_ALL, configForm.sendToCoachesAll());
+//				moduleConfiguration.setBooleanEntry(CONFIG_KEY_EMAILTOCOACHES_COURSE, configForm.sendToCoachesCourse());
 				
-				moduleConfiguration.set(CONFIG_KEY_EMAILTOPARTICIPANTS_GROUP, configForm.getEmailGroupParticipants());
-				moduleConfiguration.set(CONFIG_KEY_EMAILTOPARTICIPANTS_GROUP_ID, configForm.getEmailGroupParticipantsIds());
-				moduleConfiguration.set(CONFIG_KEY_EMAILTOPARTICIPANTS_AREA, configForm.getEmailParticipantsAreas());
-				moduleConfiguration.set(CONFIG_KEY_EMAILTOPARTICIPANTS_AREA_ID, configForm.getEmailParticipantsAreaIds());
-				moduleConfiguration.setBooleanEntry(CONFIG_KEY_EMAILTOPARTICIPANTS_COURSE, configForm.sendToParticipantsCourse());
-				moduleConfiguration.setBooleanEntry(CONFIG_KEY_EMAILTOPARTICIPANTS_ALL, configForm.sendToParticipantsAll());
+//				moduleConfiguration.set(CONFIG_KEY_EMAILTOPARTICIPANTS_GROUP, configForm.getEmailGroupParticipants());
+//				moduleConfiguration.set(CONFIG_KEY_EMAILTOPARTICIPANTS_GROUP_ID, configForm.getEmailGroupParticipantsIds());
+//				moduleConfiguration.set(CONFIG_KEY_EMAILTOPARTICIPANTS_AREA, configForm.getEmailParticipantsAreas());
+//				moduleConfiguration.set(CONFIG_KEY_EMAILTOPARTICIPANTS_AREA_ID, configForm.getEmailParticipantsAreaIds());
+//				moduleConfiguration.setBooleanEntry(CONFIG_KEY_EMAILTOPARTICIPANTS_COURSE, configForm.sendToParticipantsCourse());
+//				moduleConfiguration.setBooleanEntry(CONFIG_KEY_EMAILTOPARTICIPANTS_ALL, configForm.sendToParticipantsAll());
 				
 				moduleConfiguration.setBooleanEntry(CONFIG_KEY_EMAILTOOWNERS, configForm.sendToOwners());
 				moduleConfiguration.set(CONFIG_KEY_EMAILTOADRESSES, configForm.getEmailList());
