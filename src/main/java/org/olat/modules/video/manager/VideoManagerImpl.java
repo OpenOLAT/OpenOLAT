@@ -46,6 +46,7 @@ import org.olat.core.gui.translator.Translator;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
+import org.olat.core.util.Formatter;
 import org.olat.core.util.ZipUtil;
 import org.olat.core.util.vfs.LocalFileImpl;
 import org.olat.core.util.vfs.LocalFolderImpl;
@@ -463,6 +464,11 @@ public class VideoManagerImpl implements VideoManager {
 		} else {
 			metaData.setWidth(600);
 			metaData.setHeight(800);						
+		}
+		// calculate video duration
+		long duration = movieService.getDuration(targetFile, FILETYPE_MP4);
+		if (duration != -1) {
+			repoEntry.setExpenditureOfWork(Formatter.formatTimecode(duration));
 		}
 		// generate a poster image, use 20th frame as a default
 		VFSLeaf posterResource = VFSManager.resolveOrCreateLeafFromPath(masterContainer, FILENAME_POSTER_JPG);

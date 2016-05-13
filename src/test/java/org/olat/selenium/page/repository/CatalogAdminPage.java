@@ -58,15 +58,14 @@ public class CatalogAdminPage {
 	public CatalogAdminPage addCatalogNode(String title, String description) {
 		//click in toolbox
 		By addNodeBy = By.className("o_sel_catalog_add_category");
-		WebElement addNodeLink = browser.findElement(addNodeBy);
-		addNodeLink.click();
-		OOGraphene.waitingALittleBit();
+		browser.findElement(addNodeBy).click();
+		OOGraphene.waitBusy(browser);
+		OOGraphene.waitModalDialog(browser);
 		
 		//fill the form
 		By titleBy = By.cssSelector(".o_sel_catalog_add_category_popup input[type='text']");
 		OOGraphene.waitElement(titleBy, browser);
-		WebElement titleEl = browser.findElement(titleBy);
-		titleEl.sendKeys(title);
+		browser.findElement(titleBy).sendKeys(title);
 		
 		OOGraphene.tinymce(description, browser);
 		

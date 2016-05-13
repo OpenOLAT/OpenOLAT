@@ -30,6 +30,7 @@ import java.util.List;
 
 import org.jcodec.api.FrameGrab;
 import org.jcodec.common.FileChannelWrapper;
+import org.jcodec.containers.mp4.boxes.MovieBox;
 import org.jcodec.containers.mp4.demuxer.MP4Demuxer;
 import org.olat.core.commons.services.image.Size;
 import org.olat.core.commons.services.image.spi.ImageHelperImpl;
@@ -110,6 +111,41 @@ public class MovieServiceImpl implements MovieService, ThumbnailSPI {
 		return null;
 	}
 
+	@Override
+	public long getDuration(VFSLeaf media, String suffix) {
+		File file = null;
+		if(media instanceof VFSCPNamedItem) {
+			media = ((VFSCPNamedItem)media).getDelegate();
+		}
+		if(media instanceof LocalFileImpl) {
+			file = ((LocalFileImpl)media).getBasefile();
+		}
+		if(file == null) {
+			return -1;
+		}
+
+		if(suffix.equals("mp4") || suffix.equals("m4v")) {
+			try(RandomAccessFile accessFile = new RandomAccessFile(file, "r")) {
+				FileChannel ch = accessFile.getChannel();
+				FileChannelWrapper in = new FileChannelWrapper(ch);
+				MP4Demuxer demuxer1 = new MP4Demuxer(in);
+				MovieBox movie = demuxer1.getMovie();
+				long duration = movie.getDuration();
+				int timescale = movie.getTimescale();
+				if (timescale < 1) {
+					timescale = 1;
+				}				
+				// Simple calculation. Ignore NTSC and other issues for now
+				return duration / timescale * 1000;
+			} catch (Exception | AssertionError e) {
+				log.error("Cannot extract duration of: " + media, e);
+			}
+		}
+
+		return -1;
+	}
+
+	
 	@Override
 	public FinalSize generateThumbnail(VFSLeaf file, VFSLeaf thumbnailFile, int maxWidth, int maxHeight, boolean fill)
 	throws CannotGenerateThumbnailException {
