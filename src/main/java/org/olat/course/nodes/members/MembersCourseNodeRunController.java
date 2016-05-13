@@ -40,7 +40,7 @@ import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.link.Link;
-import org.olat.core.gui.control.CommandHandler;
+//import org.olat.core.gui.control.CommandHandler;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -401,17 +401,14 @@ public class MembersCourseNodeRunController extends FormBasicController {
 		cmc.activate();	
 	}
 	
-	@CommandHandler(cmd="chat")
+//	@CommandHandler(cmd="chat")
 	protected void doOpenChat(Member member, UserRequest ureq) {
 		Buddy buddy = imService.getBuddyById(member.getKey());
 		OpenInstantMessageEvent e = new OpenInstantMessageEvent(ureq, buddy);
 		ureq.getUserSession().getSingleUserEventCenter().fireEventToListenersOf(e, InstantMessagingService.TOWER_EVENT_ORES);
 	}
 
-//	Object uobject = link.getUserObject();
-//	if(uobject instanceof Member) {
-//		Member member = (Member)uobject;
-	@CommandHandler(cmd="mail")
+//	@CommandHandler(cmd="mail")
 	protected void doSendEmailToMember(UserRequest ureq, FormItem source, FormEvent event, Member member) {
 		doSendEmailToMember(member, ureq);
 	}
@@ -451,7 +448,7 @@ public class MembersCourseNodeRunController extends FormBasicController {
 		return translate("email.body.template", new String[]{courseName, courseLink.toString()});		
 	}
 	
-	@CommandHandler(cmd="id")
+//	@CommandHandler(cmd="id")
 	protected void doOpenHomePage(Member member, UserRequest ureq) {
 		String url = "[HomePage:" + member.getKey() + "]";
 		BusinessControl bc = BusinessControlFactory.getInstance().createFromString(url);
