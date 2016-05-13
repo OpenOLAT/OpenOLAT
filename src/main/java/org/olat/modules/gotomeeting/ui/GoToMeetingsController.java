@@ -98,7 +98,7 @@ public class GoToMeetingsController extends FormBasicController {
 		pastColumnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(MeetingsCols.end.i18nHeaderKey(), MeetingsCols.end.ordinal(), true, MeetingsCols.end.name()));
 		pastColumnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("select", translate("select"), "select-past"));
 
-		pastTableModel = new GoToMeetingTableModel(columnsModel);
+		pastTableModel = new GoToMeetingTableModel(pastColumnsModel);
 		pastTableEl = uifactory.addTableElement(getWindowControl(), "pastmeetings", pastTableModel, getTranslator(), formLayout);
 
 		FlexiTableSortOptions pastSortOptions = new FlexiTableSortOptions();

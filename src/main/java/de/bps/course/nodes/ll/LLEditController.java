@@ -74,9 +74,8 @@ public class LLEditController extends ActivateableTabbableDefaultController impl
 		editVc = createVelocityContainer("edit");
 
 		Condition accessCondition = courseNode.getPreConditionAccess();
-		accessibilityCondContr = new ConditionEditController(ureq, wControl,
-				accessCondition, AssessmentHelper.getAssessableNodes(course.getEditorTreeModel(), courseNode),
-				userCourseEnv);
+		accessibilityCondContr = new ConditionEditController(ureq, wControl, userCourseEnv,
+				accessCondition, AssessmentHelper.getAssessableNodes(course.getEditorTreeModel(), courseNode));
 		this.listenTo(accessibilityCondContr);
 
 		llFormContr = new LLEditForm(ureq, getWindowControl(), this.moduleConfiguration, course.getCourseEnvironment());

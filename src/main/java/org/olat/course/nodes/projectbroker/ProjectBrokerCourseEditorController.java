@@ -170,8 +170,8 @@ public class ProjectBrokerCourseEditorController extends ActivateableTabbableDef
 		// Access
 		accessabilityVC = this.createVelocityContainer("edit_condition");
 		// ProjectBroker precondition
-		projectBrokerConditionController = new ConditionEditController(ureq, getWindowControl(), node.getConditionProjectBroker(),
-				AssessmentHelper.getAssessableNodes(course.getEditorTreeModel(), node), euce);		
+		projectBrokerConditionController = new ConditionEditController(ureq, getWindowControl(), euce, node.getConditionProjectBroker(),
+				AssessmentHelper.getAssessableNodes(course.getEditorTreeModel(), node));		
 		this.listenTo(projectBrokerConditionController);
 		accessabilityVC.put("projectBrokerCondition", projectBrokerConditionController.getInitialComponent());
 

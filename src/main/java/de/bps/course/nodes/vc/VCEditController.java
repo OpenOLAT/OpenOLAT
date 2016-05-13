@@ -88,9 +88,8 @@ public class VCEditController extends ActivateableTabbableDefaultController impl
 		editVc = this.createVelocityContainer("edit");
 
 		Condition accessCondition = courseNode.getPreConditionAccess();
-		accessibilityCondContr = new ConditionEditController(ureq, wControl,
-				accessCondition, AssessmentHelper.getAssessableNodes(course.getEditorTreeModel(), courseNode),
-				userCourseEnv);
+		accessibilityCondContr = new ConditionEditController(ureq, wControl, userCourseEnv,
+				accessCondition, AssessmentHelper.getAssessableNodes(course.getEditorTreeModel(), courseNode));
 		listenTo(accessibilityCondContr);
 		
 		// show selection form when there is more than one registered virtual classroom provider

@@ -85,8 +85,8 @@ public class MSCourseNodeEditController extends ActivateableTabbableDefaultContr
 
 		// Accessibility precondition
 		Condition accessCondition = msNode.getPreConditionAccess();
-		accessibilityCondContr = new ConditionEditController(ureq, getWindowControl(), accessCondition,
-				AssessmentHelper.getAssessableNodes(editorModel, msNode), euce);		
+		accessibilityCondContr = new ConditionEditController(ureq, getWindowControl(), euce, accessCondition,
+				AssessmentHelper.getAssessableNodes(editorModel, msNode));		
 		this.listenTo(accessibilityCondContr);
 
 		modConfigController = new MSEditFormController(ureq, wControl, msNode.getModuleConfiguration());

@@ -78,7 +78,8 @@ public interface FormLink extends FormItem {
 	 * @param i18nKey
 	 */
 	public void setLinkTitle(String i18nKey);
-
+	public String getLinkTitleText();
+	
 	/**
 	 * @param true: set link to active state (only render issue); false set to not active (default)
 	 */

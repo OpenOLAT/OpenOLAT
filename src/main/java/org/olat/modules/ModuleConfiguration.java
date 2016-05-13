@@ -94,7 +94,7 @@ public class ModuleConfiguration implements Serializable {
 	}
 	
 	/**
-	 * Copy all entrys from the given module configuration into this module configuration.
+	 * Copy all entries from the given module configuration into this module configuration.
 	 * @param theConfig
 	 */
 	public void putAll(ModuleConfiguration theConfig) {

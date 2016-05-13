@@ -66,6 +66,9 @@ public class StringOutput extends Writer {
 		sb.append(val);
 		return this;
 	}
+	public StringOutput append(String format, Object...args) {
+		return appendFmt(format, args);
+	}
 	
 	/**
 	 * 
@@ -85,6 +88,21 @@ public class StringOutput extends Writer {
 			sb.append(valTrue);
 		} else {
 			sb.append(valFalse);
+		}
+		return this;
+	}
+	
+	public StringOutput ifCond(boolean cond) {
+		if (cond) return this;
+		return new StringOutput();
+	}
+	
+	public StringOutput appendFmt(String format, Object...params) {
+		if(params.length == 0) {
+			sb.append(format);
+		} else {
+			String v = String.format(format, params);
+			sb.append(v);
 		}
 		return this;
 	}

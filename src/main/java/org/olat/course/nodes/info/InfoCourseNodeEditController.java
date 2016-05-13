@@ -77,22 +77,22 @@ public class InfoCourseNodeEditController extends ActivateableTabbableDefaultCon
 		CourseEditorTreeModel editorModel = course.getEditorTreeModel();
 		// Accessibility precondition
 		Condition accessCondition = courseNode.getPreConditionAccess();
-		accessCondContr = new ConditionEditController(ureq, getWindowControl(), accessCondition,
-				AssessmentHelper.getAssessableNodes(editorModel, courseNode), euce);
+		accessCondContr = new ConditionEditController(ureq, getWindowControl(), euce, accessCondition,
+				AssessmentHelper.getAssessableNodes(editorModel, courseNode));
 		listenTo(accessCondContr);
 		editAccessVc.put("readerCondition", accessCondContr.getInitialComponent());
 
 		// read / write preconditions
 		Condition editCondition = courseNode.getPreConditionEdit();
-		editCondContr = new ConditionEditController(ureq, getWindowControl(), editCondition, AssessmentHelper
-				.getAssessableNodes(editorModel, courseNode), euce);
+		editCondContr = new ConditionEditController(ureq, getWindowControl(), euce, editCondition, AssessmentHelper
+				.getAssessableNodes(editorModel, courseNode));
 		listenTo(editCondContr);
 		editAccessVc.put("editCondition", editCondContr.getInitialComponent());
 		
 		// administration preconditions
 		Condition adminCondition = courseNode.getPreConditionAdmin();
-		adminCondContr = new ConditionEditController(ureq, getWindowControl(), adminCondition, AssessmentHelper
-				.getAssessableNodes(editorModel, courseNode), euce);
+		adminCondContr = new ConditionEditController(ureq, getWindowControl(), euce, adminCondition, AssessmentHelper
+				.getAssessableNodes(editorModel, courseNode));
 		listenTo(adminCondContr);
 		editAccessVc.put("adminCondition", adminCondContr.getInitialComponent());
 		

@@ -123,22 +123,22 @@ public abstract class FeedNodeEditController extends ActivateableTabbableDefault
 
 		// Moderator precondition
 		Condition moderatorCondition = node.getPreConditionModerator();
-		moderatroCtr = new ConditionEditController(ureq, getWindowControl(), moderatorCondition,
-				AssessmentHelper.getAssessableNodes(editorModel, node), uce);
+		moderatroCtr = new ConditionEditController(ureq, getWindowControl(), uce, moderatorCondition,
+				AssessmentHelper.getAssessableNodes(editorModel, node));
 		this.listenTo(moderatroCtr);
 		accessVC.put("moderatorCondition", moderatroCtr.getInitialComponent());
 
 		// Poster precondition
 		Condition posterCondition = node.getPreConditionPoster();
-		posterCtr = new ConditionEditController(ureq, getWindowControl(), posterCondition, AssessmentHelper
-				.getAssessableNodes(editorModel, node), uce);
+		posterCtr = new ConditionEditController(ureq, getWindowControl(), uce, posterCondition, AssessmentHelper
+				.getAssessableNodes(editorModel, node));
 		this.listenTo(posterCtr);
 		accessVC.put("posterCondition", posterCtr.getInitialComponent());
 
 		// Reader precondition
 		Condition readerCondition = node.getPreConditionReader();
-		readerCtr = new ConditionEditController(ureq, getWindowControl(), readerCondition, AssessmentHelper
-				.getAssessableNodes(editorModel, node), uce);
+		readerCtr = new ConditionEditController(ureq, getWindowControl(), uce, readerCondition, AssessmentHelper
+				.getAssessableNodes(editorModel, node));
 		this.listenTo(readerCtr);
 		accessVC.put("readerCondition", readerCtr.getInitialComponent());
 

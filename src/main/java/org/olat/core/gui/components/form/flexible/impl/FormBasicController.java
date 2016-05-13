@@ -25,6 +25,11 @@
 */ 
 package org.olat.core.gui.components.form.flexible.impl;
 
+import java.lang.ref.WeakReference;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.function.Consumer;
+
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -67,7 +72,7 @@ import org.olat.core.logging.activity.ThreadLocalUserActivityLoggerInstaller;
  * 
  * @author patrickb
  */
-public abstract class FormBasicController extends BasicController {
+public abstract class FormBasicController extends BasicController implements IFormFragmentContainer {
 
 	
 	public static final int LAYOUT_DEFAULT = 0;
@@ -345,9 +350,14 @@ public abstract class FormBasicController extends BasicController {
 	 * @param source
 	 * @param event
 	 */
-	@SuppressWarnings("unused")
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 	// overwrite if you want to listen to inner form elements events
+	}
+
+	@Override
+	protected void event(UserRequest ureq,Controller source, Event event) {
+		routeEventToFragments(ureq, source, event);
+		super.event(ureq, source, event);
 	}
 
 	/**
@@ -357,6 +367,7 @@ public abstract class FormBasicController extends BasicController {
 	 */
 	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
+		routeEventToFragments(ureq, source, event);
 		if (source == mainForm.getInitialComponent()) {
 			// general form events
 			if (event == org.olat.core.gui.components.form.Form.EVNT_VALIDATION_OK) {
@@ -611,7 +622,117 @@ public abstract class FormBasicController extends BasicController {
 						disposableFormItem.dispose();				
 					}
 				}
+				
+				forEachFragment(fragment -> {
+					// do nothing for now
+				});
 			}
 		}, getUserActivityLogger());
 	}
+	
+	// ------------------------------------------------------------------------
+	// IFormFragmentContainer implementation
+	
+	/**
+	 * A lifecycle method used to signal the controller that it should read the contents
+	 * of its configuration and apply it to its view. The idea is that the structure of a
+	 * form can be created separately from assigning contents to its fields.
+	 * <p>This is particularly useful when dealing with fragments which know how to 
+	 * load/store data from a given configuration themselves.
+	 * @param ureq
+	 */
+	public void readFormData(UserRequest ureq) {
+		// do nothing by default
+	}
+	
+	/**
+	 * A lifecycle used to signal the form controller that it should visit the view's
+	 * content and save all relevant data into its current configuration. 
+	 * <p>This is particularly useful when dealing with fragments which know how to 
+	 * load/store data from a given configuration themselves.
+	 * @param ureq
+	 */
+	public void storeFormData(UserRequest ureq) {
+		// do nothing by default
+	}
+
+	@Override
+	public IFormFragmentHost getFragmentHostInterface() {
+		// this is to document the missing method implementation in a subclass
+		throw new IllegalStateException("In order to host from fragments the controller must override getFragmentHostInterface(): " + this.getClass().getSimpleName() );
+	}
+	
+	private static class FragmentRef extends WeakReference<IFormFragment>{
+		public FragmentRef(IFormFragment referent) {
+			super(referent);
+		}
+	}	
+	private List<FragmentRef> fragments = new ArrayList<>();
+	@Override
+	public void setNeedsLayout() {
+		flc.setDirty(true);
+	}
+
+	@Override
+	public void registerFormFragment(IFormFragment fragment) {
+		fragments.add(new FragmentRef(fragment));
+	}
+	
+	@Override
+	public FormItemContainer formItemsContainer() {
+		return flc;
+	}
+
+	// Helpers
+	@Override
+	protected void fireEvent(UserRequest ureq, Event event) {
+		super.fireEvent(ureq, event);
+	}
+	
+	// Redefinition of a the super method to provide access with the same
+	// package (this is required for the Form Fragments)
+	@Override
+	protected Controller listenTo(Controller controller) {
+		return super.listenTo(controller);
+	}
+	
+	@Override
+	public void forEachFragment(Consumer<IFormFragment> handler) {
+		fragments.stream()
+			.filter(ref -> ref.get() != null)
+			.forEach(ref -> {
+				IFormFragment frag = ref.get();
+				if (frag != null) {					
+					handler.accept(frag);
+				}
+			});
+	}
+
+	protected boolean routeEventToFragments(UserRequest ureq, Component source, Event event) {
+		// implement shortcut?!
+		Boolean processed = 
+				fragments.stream()
+					.reduce(Boolean.FALSE
+							, (t, u) -> {
+								IFormFragment frag = u.get();
+								return frag == null ? Boolean.FALSE : frag.processEvent(ureq, source, event);
+							}, (t, u) -> t & u)
+					;
+		return processed;
+	}
+
+
+	protected boolean routeEventToFragments(UserRequest ureq, Controller source, Event event) {
+		// implement shortcut?!
+		Boolean processed = 
+			fragments.stream()
+				.reduce(Boolean.FALSE
+						, (t, u) -> {
+							IFormFragment frag = u.get();
+							return frag == null ? Boolean.FALSE : frag.processEvent(ureq, source, event);
+						}, (t, u) -> t & u)
+				;
+		return processed;
+	}
+	
 }

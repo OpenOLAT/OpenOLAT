@@ -35,6 +35,7 @@ import org.olat.core.gui.components.form.flexible.impl.FormItemImpl;
 import org.olat.core.gui.components.link.FormLinkFactory;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Event;
+import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.ValidationStatus;
 
@@ -191,6 +192,14 @@ public class FormLinkImpl extends FormItemImpl implements FormLink {
 	}
 
 	@Override
+	public void setTranslator(Translator translator) {
+		if(this.component != null) {
+			this.component.setTranslator(translator);
+		}
+		super.setTranslator(translator);
+	}
+
+	@Override
 	public void setElementCssClass(String elementCssClass) {
 		if(component != null) {
 			component.setElementCssClass(elementCssClass);
@@ -282,6 +291,20 @@ public class FormLinkImpl extends FormItemImpl implements FormLink {
 				component.setTitle(i18nKey);
 			}
 		}		
+	}
+
+	@Override
+	public String getLinkTitleText() {
+		String title = null;
+		if (component != null) {
+			title = component.getCustomDisplayText();
+			if (title == null && getTranslator() != null) {
+				if (StringHelper.containsNonWhitespace(component.getI18n())) {
+					title = getTranslator().translate(component.getI18n());
+				}
+			}
+		}
+		return title;
 	}
 
 	@Override

@@ -19,13 +19,6 @@
  */
 package org.olat.course.nodes.members;
 
-import static org.olat.course.nodes.members.MembersCourseNodeEditController.CONFIG_KEY_EMAIL_FUNCTION;
-import static org.olat.course.nodes.members.MembersCourseNodeEditController.CONFIG_KEY_SHOWCOACHES;
-import static org.olat.course.nodes.members.MembersCourseNodeEditController.CONFIG_KEY_SHOWOWNER;
-import static org.olat.course.nodes.members.MembersCourseNodeEditController.CONFIG_KEY_SHOWPARTICIPANTS;
-import static org.olat.course.nodes.members.MembersCourseNodeEditController.EMAIL_FUNCTION_ALL;
-import static org.olat.course.nodes.members.MembersCourseNodeEditController.EMAIL_FUNCTION_COACH_ADMIN;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -47,6 +40,7 @@ import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.link.Link;
+//import org.olat.core.gui.control.CommandHandler;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -64,13 +58,16 @@ import org.olat.core.util.mail.ContactMessage;
 import org.olat.core.util.session.UserSessionManager;
 import org.olat.course.groupsandrights.CourseGroupManager;
 import org.olat.course.nodes.CourseNodeFactory;
+import org.olat.course.nodes.MembersCourseNode;
 import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.course.run.userview.UserCourseEnvironment;
+import org.olat.group.BusinessGroupService;
 import org.olat.instantMessaging.InstantMessagingModule;
 import org.olat.instantMessaging.InstantMessagingService;
 import org.olat.instantMessaging.OpenInstantMessageEvent;
 import org.olat.instantMessaging.model.Buddy;
 import org.olat.instantMessaging.model.Presence;
+import org.olat.modules.IModuleConfiguration;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.co.ContactFormController;
 import org.olat.repository.RepositoryEntry;
@@ -103,8 +100,8 @@ public class MembersCourseNodeRunController extends FormBasicController {
 
 	private final boolean canEmail;
 	private final boolean showOwners;
-	private final boolean showCoaches;
-	private final boolean showParticipants;
+//	private final boolean showCoaches;
+//	private final boolean showParticipants;
 	private final boolean chatEnabled;
 
 	private MembersMailController mailCtrl;
@@ -126,49 +123,67 @@ public class MembersCourseNodeRunController extends FormBasicController {
 	private InstantMessagingService imService;
 	@Autowired
 	private UserSessionManager sessionManager;
+	@Autowired
+	private BusinessGroupService businessGroupService;	
 
+	final ModuleConfiguration config;
+	
 	public MembersCourseNodeRunController(UserRequest ureq, WindowControl wControl, UserCourseEnvironment userCourseEnv, ModuleConfiguration config) {
 		super(ureq, wControl, "members");
 
+		this.config = config;
+		
 		courseEnv = userCourseEnv.getCourseEnvironment();
 		avatarBaseURL = registerCacheableMapper(ureq, "avatars-members", new UserAvatarMapper(true));
 		portraitManager = DisplayPortraitManager.getInstance();
 
-		showOwners = config.getBooleanSafe(CONFIG_KEY_SHOWOWNER);
-		showCoaches = config.getBooleanSafe(CONFIG_KEY_SHOWCOACHES);
-		showParticipants = config.getBooleanSafe(CONFIG_KEY_SHOWPARTICIPANTS);
+		showOwners = config.getBooleanSafe(MembersCourseNode.CONFIG_KEY_SHOWOWNER);
+//		showCoaches = config.getBooleanSafe(CONFIG_KEY_SHOWCOACHES);
+//		showParticipants = config.getBooleanSafe(CONFIG_KEY_SHOWPARTICIPANTS);
 		chatEnabled = imModule.isEnabled() && imModule.isPrivateEnabled();
 		
 		MembersCourseNodeConfiguration nodeConfig = (MembersCourseNodeConfiguration)CourseNodeFactory.getInstance().getCourseNodeConfiguration("cmembers");
 		deduplicateList = nodeConfig.isDeduplicateList();
 		
-		String emailFct = config.getStringValue(CONFIG_KEY_EMAIL_FUNCTION, EMAIL_FUNCTION_COACH_ADMIN);
-		canEmail = EMAIL_FUNCTION_ALL.equals(emailFct) || userCourseEnv.isAdmin() || userCourseEnv.isCoach();
+		String emailFct = config.getStringValue(MembersCourseNode.CONFIG_KEY_EMAIL_FUNCTION, MembersCourseNode.EMAIL_FUNCTION_COACH_ADMIN);
+		canEmail = MembersCourseNode.EMAIL_FUNCTION_ALL.equals(emailFct) || userCourseEnv.isAdmin() || userCourseEnv.isCoach();
 
 		initForm(ureq);
 	}
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		
+		IModuleConfiguration membersFrag = IModuleConfiguration.fragment("members", config);
+		
 		List<Identity> owners;
 		if(showOwners) {
 			owners = getOwners();
 		} else {
 			owners = Collections.emptyList();
 		}
+
+		boolean showCoaches = false;
+		boolean showParticipants = false;
 		
 		List<Identity> coaches = new ArrayList<>();
-		if(showCoaches) {
+		if(membersFrag.anyTrue(MembersCourseNode.CONFIG_KEY_COACHES_ALL, MembersCourseNode.CONFIG_KEY_COACHES_COURSE)		
+				|| membersFrag.hasAnyOf(MembersCourseNode.CONFIG_KEY_COACHES_GROUP, MembersCourseNode.CONFIG_KEY_COACHES_AREA)) {
+			
 			CourseGroupManager cgm = courseEnv.getCourseGroupManager();
-			coaches.addAll(cgm.getCoachesFromBusinessGroups());
-			coaches.addAll(cgm.getCoaches());
+			addCoaches(membersFrag, cgm, coaches);
+			
+			showCoaches = true;
 		}
 		
 		List<Identity> participants = new ArrayList<>();
-		if(showParticipants) {
+		if(membersFrag.anyTrue(MembersCourseNode.CONFIG_KEY_PARTICIPANTS_ALL, MembersCourseNode.CONFIG_KEY_PARTICIPANTS_COURSE)
+				|| membersFrag.hasAnyOf(MembersCourseNode.CONFIG_KEY_PARTICIPANTS_GROUP, MembersCourseNode.CONFIG_KEY_PARTICIPANTS_AREA)) {
+			
 			CourseGroupManager cgm = courseEnv.getCourseGroupManager();
-			participants.addAll(cgm.getParticipantsFromBusinessGroups());
-			participants.addAll(cgm.getParticipants());
+			addParticipants(membersFrag, cgm, participants);
+			
+			showParticipants = true;
 		}
 
 		Comparator<Identity> idComparator = new IdentityComparator();
@@ -386,12 +401,17 @@ public class MembersCourseNodeRunController extends FormBasicController {
 		cmc.activate();	
 	}
 	
+//	@CommandHandler(cmd="chat")
 	protected void doOpenChat(Member member, UserRequest ureq) {
 		Buddy buddy = imService.getBuddyById(member.getKey());
 		OpenInstantMessageEvent e = new OpenInstantMessageEvent(ureq, buddy);
 		ureq.getUserSession().getSingleUserEventCenter().fireEventToListenersOf(e, InstantMessagingService.TOWER_EVENT_ORES);
 	}
 
+//	@CommandHandler(cmd="mail")
+	protected void doSendEmailToMember(UserRequest ureq, FormItem source, FormEvent event, Member member) {
+		doSendEmailToMember(member, ureq);
+	}
 	protected void doSendEmailToMember(Member member, UserRequest ureq) {
 		ContactList memberList = new ContactList(translate("members.to", new String[]{ member.getFullName(), courseEnv.getCourseTitle() }));
 		Identity identity = securityManager.loadIdentityByKey(member.getKey());
@@ -428,6 +448,7 @@ public class MembersCourseNodeRunController extends FormBasicController {
 		return translate("email.body.template", new String[]{courseName, courseLink.toString()});		
 	}
 	
+//	@CommandHandler(cmd="id")
 	protected void doOpenHomePage(Member member, UserRequest ureq) {
 		String url = "[HomePage:" + member.getKey() + "]";
 		BusinessControl bc = BusinessControlFactory.getInstance().createFromString(url);
@@ -458,4 +479,129 @@ public class MembersCourseNodeRunController extends FormBasicController {
 			return result;
 		}
 	}
+
+//	// -------------------
+//	private List<Identity> retrieveOwnersFromCourse(CourseGroupManager cgm){;
+//		List<Identity> ownerList = repositoryService.getMembers(cgm.getCourseEntry(), GroupRoles.owner.name());
+//		return ownerList;
+//	}
+	
+	// -------------------
+	private void addCoaches(IModuleConfiguration moduleConfiguration, CourseGroupManager cgm, List<Identity> list) {
+	
+		if(moduleConfiguration.has(MembersCourseNode.CONFIG_KEY_COACHES_GROUP)) {
+			String coachGroupNames = moduleConfiguration.val(MembersCourseNode.CONFIG_KEY_COACHES_GROUP);
+			List<Long> coachGroupKeys = moduleConfiguration.val(MembersCourseNode.CONFIG_KEY_COACHES_GROUP_ID);
+			if(coachGroupKeys == null && StringHelper.containsNonWhitespace(coachGroupNames)) {
+				coachGroupKeys = businessGroupService.toGroupKeys(coachGroupNames, cgm.getCourseEntry());
+			}
+			list.addAll(retrieveCoachesFromGroups(coachGroupKeys, cgm));
+		}
+
+		if(moduleConfiguration.has(MembersCourseNode.CONFIG_KEY_COACHES_AREA)) {
+			String coachAreaNames = moduleConfiguration.val(MembersCourseNode.CONFIG_KEY_COACHES_AREA);
+			List<Long> coachAreaKeys = moduleConfiguration.val(MembersCourseNode.CONFIG_KEY_COACHES_AREA_IDS);
+			if(coachAreaKeys == null && StringHelper.containsNonWhitespace(coachAreaNames)) {
+				coachAreaKeys = businessGroupService.toGroupKeys(coachAreaNames, cgm.getCourseEntry());
+			}
+			list.addAll(retrieveCoachesFromAreas(coachAreaKeys, cgm));
+		}
+		
+		if(moduleConfiguration.anyTrue(MembersCourseNode.CONFIG_KEY_COACHES_COURSE
+				, MembersCourseNode.CONFIG_KEY_COACHES_ALL)) {
+			list.addAll(retrieveCoachesFromCourse(cgm));
+		}
+		if(moduleConfiguration.anyTrue(MembersCourseNode.CONFIG_KEY_COACHES_ALL)) {
+			list.addAll(retrieveCoachesFromCourseGroups(cgm));
+		}
+	}
+	
+	private List<Identity> retrieveCoachesFromAreas(List<Long> areaKeys, CourseGroupManager cgm) {
+		List<Identity> coaches = cgm.getCoachesFromAreas(areaKeys);
+		Set<Identity> coachesWithoutDuplicates = new HashSet<Identity>(coaches);
+		coaches = new ArrayList<Identity>(coachesWithoutDuplicates);
+		return coaches;
+	}
+	
+	private List<Identity> retrieveCoachesFromGroups(List<Long> groupKeys, CourseGroupManager cgm) {
+		List<Identity> coaches = new ArrayList<Identity>(new HashSet<Identity>(cgm.getCoachesFromBusinessGroups(groupKeys)));
+		return coaches;
+	}
+	
+	private List<Identity> retrieveCoachesFromCourse(CourseGroupManager cgm) {
+		List<Identity> coaches = cgm.getCoaches();
+		return coaches;
+	}
+
+	private List<Identity> retrieveCoachesFromCourseGroups(CourseGroupManager cgm) {
+		Set<Identity> uniq = new HashSet<Identity>();
+		{
+			List<Identity> coaches = cgm.getCoachesFromAreas();
+			uniq.addAll(coaches);
+		}
+		{
+			List<Identity> coaches = cgm.getCoachesFromBusinessGroups();
+			uniq.addAll(coaches);
+		}
+		return new ArrayList<Identity>(uniq);
+	}
+	
+	// -------------------
+	private void addParticipants(IModuleConfiguration moduleConfiguration, CourseGroupManager cgm, List<Identity> list) {
+
+		if(moduleConfiguration.has(MembersCourseNode.CONFIG_KEY_PARTICIPANTS_GROUP)) {
+			String participantGroupNames = moduleConfiguration.val(MembersCourseNode.CONFIG_KEY_PARTICIPANTS_GROUP);
+			List<Long> participantGroupKeys = moduleConfiguration.val(MembersCourseNode.CONFIG_KEY_PARTICIPANTS_GROUP_ID);
+			if(participantGroupKeys == null && StringHelper.containsNonWhitespace(participantGroupNames)) {
+				participantGroupKeys = businessGroupService.toGroupKeys(participantGroupNames, cgm.getCourseEntry());
+			}
+			list.addAll(retrieveParticipantsFromGroups(participantGroupKeys, cgm));
+		}
+		
+		if(moduleConfiguration.has(MembersCourseNode.CONFIG_KEY_PARTICIPANTS_AREA)) {
+			String participantAreaNames = moduleConfiguration.val(MembersCourseNode.CONFIG_KEY_PARTICIPANTS_AREA);
+			List<Long> participantAreaKeys = moduleConfiguration.val(MembersCourseNode.CONFIG_KEY_PARTICIPANTS_AREA_ID);
+			if(participantAreaKeys == null && StringHelper.containsNonWhitespace(participantAreaNames)) {
+				participantAreaKeys = businessGroupService.toGroupKeys(participantAreaNames, cgm.getCourseEntry());
+			}
+			list.addAll(retrieveParticipantsFromAreas(participantAreaKeys, cgm));
+		}
+		
+		if(moduleConfiguration.anyTrue(MembersCourseNode.CONFIG_KEY_PARTICIPANTS_COURSE
+				, MembersCourseNode.CONFIG_KEY_PARTICIPANTS_ALL)) {
+			list.addAll(retrieveParticipantsFromCourse(cgm));
+		}
+		if(moduleConfiguration.anyTrue(MembersCourseNode.CONFIG_KEY_PARTICIPANTS_ALL)) {
+			list.addAll(retrieveParticipantsFromCourseGroups(cgm));
+		}
+	}
+	
+	private List<Identity> retrieveParticipantsFromAreas(List<Long> areaKeys, CourseGroupManager cgm) {
+		List<Identity> participiants = cgm.getParticipantsFromAreas(areaKeys);
+		return participiants;
+	}
+	
+	private List<Identity> retrieveParticipantsFromGroups(List<Long> groupKeys, CourseGroupManager cgm) {
+		List<Identity> participiants = cgm.getParticipantsFromBusinessGroups(groupKeys);
+		return participiants;
+	}
+	
+	private List<Identity> retrieveParticipantsFromCourse(CourseGroupManager cgm) {
+		List<Identity> participiants = cgm.getParticipants();
+		return participiants;
+	}
+	
+	private List<Identity> retrieveParticipantsFromCourseGroups(CourseGroupManager cgm) {
+		Set<Identity> uniq = new HashSet<Identity>();
+		{
+			List<Identity> participiants = cgm.getParticipantsFromAreas();
+			uniq.addAll(participiants);
+		}
+		{
+			List<Identity> participiants = cgm.getParticipantsFromBusinessGroups();
+			uniq.addAll(participiants);
+		}
+		return new ArrayList<Identity>(uniq);
+	}
+	
 }

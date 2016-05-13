@@ -107,8 +107,8 @@ public class LTIEditController extends ActivateableTabbableDefaultController imp
 		CourseEditorTreeModel editorModel = course.getEditorTreeModel();
 		//Accessibility precondition
 		Condition accessCondition = courseNode.getPreConditionAccess();
-		accessibilityCondContr = new ConditionEditController(ureq, getWindowControl(), accessCondition,
-				AssessmentHelper.getAssessableNodes(editorModel, ltCourseNode), euce);		
+		accessibilityCondContr = new ConditionEditController(ureq, getWindowControl(), euce, accessCondition,
+				AssessmentHelper.getAssessableNodes(editorModel, ltCourseNode));		
     this.listenTo(accessibilityCondContr);
 
 		// Enable preview button only if node configuration is valid

@@ -264,8 +264,8 @@ public class IQEditController extends ActivateableTabbableDefaultController impl
 		listenTo(configurationCtrl);
 
 		Condition accessCondition = courseNode.getPreConditionAccess();
-		accessibilityCondContr = new ConditionEditController(ureq, getWindowControl(), accessCondition,
-				AssessmentHelper.getAssessableNodes(course.getEditorTreeModel(), courseNode),euce);		
+		accessibilityCondContr = new ConditionEditController(ureq, getWindowControl(), euce, accessCondition,
+				AssessmentHelper.getAssessableNodes(course.getEditorTreeModel(), courseNode));		
 		listenTo(accessibilityCondContr);
 	}
 

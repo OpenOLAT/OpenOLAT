@@ -19,6 +19,7 @@
  */
 package org.olat.modules.gotomeeting.ui;
 
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
@@ -119,9 +120,16 @@ public class GoToMeetingController extends BasicController {
 		Date end = meeting.getEndDate();
 		Date now = new Date();
 		boolean canStart = (start.compareTo(now) <= 0 && end.compareTo(now) > 0);
+
+		Calendar cal = Calendar.getInstance();
+		cal.setTime(start);
+		cal.add(Calendar.MINUTE, -60);
+		Date startMinusOne = cal.getTime();
+		boolean canCoachStart = (startMinusOne.compareTo(now) <= 0 && end.compareTo(now) > 0);
+		
 		boolean ended = (end.compareTo(now) <= 0);
 		if(administrator || moderator) {
-			if(canStart) {
+			if(canCoachStart) {
 				startLink.setVisible(true);
 				registerLink.setVisible(false);
 			} else if(ended) {
