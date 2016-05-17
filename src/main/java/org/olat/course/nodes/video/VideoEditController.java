@@ -19,9 +19,6 @@
  */
 package org.olat.course.nodes.video;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -35,7 +32,6 @@ import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.panel.Panel;
-import org.olat.core.gui.components.stack.BreadcrumbPanel;
 import org.olat.core.gui.components.tabbedpane.TabbedPane;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
@@ -109,7 +105,7 @@ public class VideoEditController  extends ActivateableTabbableDefaultController 
 	private TabbedPane myTabbedPane;
 	private CloseableModalController cmc;
 
-	public VideoEditController(VideoCourseNode videoNode, UserRequest ureq, WindowControl wControl,  BreadcrumbPanel stackPanel,ICourse course, UserCourseEnvironment euce) {
+	public VideoEditController(VideoCourseNode videoNode, UserRequest ureq, WindowControl wControl, ICourse course, UserCourseEnvironment euce) {
 		super(ureq, wControl);
 		this.config = videoNode.getModuleConfiguration();
 		main = new Panel("videomain");
@@ -362,13 +358,11 @@ class VideoOptionsForm extends FormBasicController{
 		videoAutoplay = uifactory.addCheckboxesHorizontal("videoAutoplay", "video.config.autoplay", formLayout, new String[]{"xx"}, new String[]{null});
 		videoAutoplay.select("xx",autoplay);
 
-		Map<String, String> descriptionOptions = new HashMap<String, String>();
-		descriptionOptions.put("none" ,"none");//TODO: internationalize
-		descriptionOptions.put("resourceDescription", "Resource description");
-		descriptionOptions.put("customDescription", "custom description");
+		String[] descriptionkeys = new String[]{ "none", "resourceDescription", "customDescription" };
+		String[] descriptionValues = new String[]{ translate("description.none"), translate("description.resource"), translate("description.custom") };
 
 		//add textfield for custom description
-		description = uifactory.addDropdownSingleselect("video.config.description", formLayout, descriptionOptions.keySet().toArray(new String[3]), descriptionOptions.values().toArray(new String[3]), new String[3]);
+		description = uifactory.addDropdownSingleselect("video.config.description", formLayout, descriptionkeys, descriptionValues, null);
 		description.addActionListener(FormEvent.ONCHANGE);
 		description.select(config.getStringValue(VideoEditController.CONFIG_KEY_DESCRIPTION_SELECT,"none"), true);
 		String desc = repoEntry.getDescription();
@@ -385,22 +379,21 @@ class VideoOptionsForm extends FormBasicController{
 		}
 	}
 
-	//update visibility of the textfield for entering custom description
-	private void updateDescriptionField(){
-		switch(description.getSelected()){
-		case 2:
+	/**
+	 * Update visibility of the textfield for entering custom description
+	 */
+	private void updateDescriptionField() {
+		String selectDescOption = description.getSelectedKey();
+		if("none".equals(selectDescOption)) {
 			descriptionField.setVisible(false);
-			break;
-		case 1:
+		} else if("resourceDescription".equals(selectDescOption)) {
 			descriptionField.setVisible(true);
 			descriptionField.setValue(repoEntry.getDescription());
 			descriptionField.setEnabled(false);
-			break;
-		case 0:
+		} else if("customDescription".equals(selectDescOption)) {
 			descriptionField.setVisible(true);
 			descriptionField.setValue(config.getStringValue(VideoEditController.CONFIG_KEY_DESCRIPTION_CUSTOMTEXT, ""));
 			descriptionField.setEnabled(true);
-			break;
 		}
 	}
 
