@@ -24,15 +24,14 @@
 		#end
 		</map>
 		<script type="text/javascript">
-		#if($r.isNotNullValue($responseValue))
-			jQuery(function() {
-				graphicOrderDrawResponse('$containerId','$r.toString($responseValue,",")','$responseIdentifier');
+		jQuery(function() {
+			jQuery('#${containerId}').graphicOrderInteraction({
+				responseIdentifier: '$responseIdentifier',
+				formDispatchFieldId: '$r.formDispatchFieldId',
+				responseValue: '$r.toString($responseValue,",")',
+				maxChoices: $hotspotChoices.size()
 			});
-		#else	
-			jQuery(function() {
-				graphicOrderItem('$containerId', $hotspotChoices.size(),'$responseIdentifier');
-			});
-		#end
+		});
 		</script>
  	</div>
  </div>

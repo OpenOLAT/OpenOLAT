@@ -15,15 +15,14 @@
 	<div id="${containerId}" class="appletContainer" data-openolat="">
 		<canvas id="${containerId}_canvas" width="${interaction.object.width}" height="${interaction.object.height}" style="background-image:url('${r.convertLink($interaction.object.data)}');"></canvas>
 		<script type="text/javascript">
-		#if($r.isNotNullValue($responseValue))
-			jQuery(function() {
-				selectPointDrawResponse('$containerId','$r.toString($responseValue,":")');
+		jQuery(function() {
+			jQuery('#${containerId}').selectPointInteraction({
+				responseIdentifier: '$responseIdentifier',
+				formDispatchFieldId: '$r.formDispatchFieldId',
+				responseValue: '$r.toString($responseValue,",")',
+				maxChoices: $interaction.maxChoices
 			});
-		#else
-			jQuery(function() {
-				selectPointItem('$containerId',$interaction.maxChoices,'$responseIdentifier','$r.formDispatchFieldId');	
-			});			
-		#end
+		});
       </script>
 	</div>
 </div>

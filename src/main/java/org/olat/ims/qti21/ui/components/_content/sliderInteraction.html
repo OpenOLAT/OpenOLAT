@@ -15,7 +15,7 @@
 	<div class="o_error badResponse">$r.translate("error.as.directed")</div>
 	#end
 
-	<div class="sliderInteraction">
+	<div id="qti_slider_$responseIdentifier" class="sliderInteraction">
 		#if($orientation == "horizontal")
             <div class="sliderHorizontal">
               <div class="sliderWidget" id="qtiworks_id_slider_${responseIdentifier}"></div>
@@ -29,16 +29,18 @@
 		#end
 		<input type="hidden" name="qtiworks_response_${responseIdentifier}" value="$value"/>
         <script type="text/javascript">
-          jQuery(document).ready(function() {
-            QtiWorksRendering.registerSliderInteraction('$responseIdentifier','$r.formDispatchFieldId', {
-              min: $options.min,
-              max: $options.max,
-              step: $options.step,
-              orientation: '$orientation',
-              isReversed: $options.reverse,
-              isDiscrete: $options.discrete
-            });
-          });
+		jQuery(function() {
+			jQuery('#qti_slider_${responseIdentifier}').sliderInteraction({
+				responseIdentifier: '$responseIdentifier',
+				formDispatchFieldId: '$r.formDispatchFieldId',  
+				min: $options.min,
+				max: $options.max,
+				step: $options.step,
+				orientation: '$orientation',
+				isReversed: $options.reverse,
+				isDiscrete: $options.discrete
+			});
+		});
         </script>
 	</div>
 </div>

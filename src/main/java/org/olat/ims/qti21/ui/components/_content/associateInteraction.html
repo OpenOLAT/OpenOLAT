@@ -14,13 +14,12 @@
 	#end
 
 	<div id="${containerId}">
-		<div id="${containerId}_items" style="padding:15px;">
+		<div id="${containerId}_items" class="clearfix" style="padding:15px;">
         	#foreach($choice in $choices)
             	<div id="ac_${responseIdentifier}_${choice.identifier}" data-qti-id="${choice.identifier}" class="o_associate_item" style="width: 100px; float:left; margin-right:15px; border:2px solid grey;">
               		$r.renderFlowStatics($choice.getFlowStatics())
             	</div>
 			#end
-			<div style="clear:both; "></div>
 		</div>
 		<div id="${containerId}_panel" style="max-width:500px;">
 			#set($maxChoices = $r.maxToList($interaction.maxAssociations))
@@ -36,11 +35,11 @@
 		
 		<script type="text/javascript">
 		jQuery(function() {
-		#if($r.isNotNullValue($responseValue))
-			associateDrawResponse('$containerId','$r.toString($responseValue,",")','$responseIdentifier');
-		#else
-			associateItem('$containerId','$responseIdentifier','$r.formDispatchFieldId');
-		#end
+			jQuery('#${containerId}').associateInteraction({
+				responseIdentifier: '$responseIdentifier',
+				formDispatchFieldId: '$r.formDispatchFieldId',
+				responseValue: '$r.toString($responseValue,",")'
+			});
 		});
 		</script>
 	</div>

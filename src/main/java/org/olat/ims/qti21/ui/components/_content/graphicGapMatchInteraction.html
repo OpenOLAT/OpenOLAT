@@ -31,11 +31,11 @@
 		</div>
 		<script type="text/javascript">
 		jQuery(function() {
-		#if($r.isNotNullValue($responseValue))
-			graphicGapMatchDrawResponse('$r.toString($responseValue,","," ")','$responseIdentifier');
-		#else
-			graphicGapMatchItem('$containerId','$responseIdentifier');
-		#end
+			jQuery('#${containerId}').graphicGapInteraction({
+				responseIdentifier: '$responseIdentifier',
+				formDispatchFieldId: '$r.formDispatchFieldId',
+				responseValue: '$r.toString($responseValue,","," ")'
+			});
 	    });
       	</script>
 	</div>

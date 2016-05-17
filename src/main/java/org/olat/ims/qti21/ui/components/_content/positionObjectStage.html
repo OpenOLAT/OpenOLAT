@@ -26,11 +26,12 @@
 
 	 		<script type="text/javascript">
 			jQuery(function() {
-			#if($r.isNotNullValue($responseValue))
-				positionObjectDrawResponse('$containerId','$responseIdentifier','$r.toString($responseValue,":")');
-			#else
-				positionObjectItem('$containerId','$responseIdentifier','$r.formDispatchFieldId');
-			#end
+				jQuery('#${containerId}').positionObjectStage({
+					responseIdentifier: '$responseIdentifier',
+					formDispatchFieldId: '$r.formDispatchFieldId',
+					responseValue: '$r.toString($responseValue,":")',
+					maxChoices: $maxChoices
+				});
 			});
 			</script> 
 			
