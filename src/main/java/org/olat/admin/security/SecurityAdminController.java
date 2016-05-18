@@ -65,6 +65,8 @@ public class SecurityAdminController extends FormBasicController {
 		topFrameEl = uifactory.addCheckboxesHorizontal("sec.topframe", "sec.topframe", formLayout, keys, values);
 		topFrameEl.select("on", securityModule.isForceTopFrame());
 		topFrameEl.addActionListener(FormEvent.ONCHANGE);
+		topFrameEl.setEnabled(false);
+		topFrameEl.setExampleKey("sec.top.frame.explanation", null);
 		
 		// on: block wiki (more security); off: do not block wiki (less security)
 		wikiEl = uifactory.addCheckboxesHorizontal("sec.wiki", "sec.wiki", formLayout, keys, values);
