@@ -79,7 +79,7 @@ public class BaseSecurityModule extends AbstractOLATModule {
 	
 
 	private static final String USERINFOS_TUNNEL_CBB = "userInfosTunnelCourseBuildingBlock";
-	
+	/** The feature is enabled, always */
 	private static final String FORCE_TOP_FRAME = "forceTopFrame";
 	private static final String WIKI_ENABLED = "wiki";
 
@@ -498,7 +498,7 @@ public class BaseSecurityModule extends AbstractOLATModule {
 	}
 
 	public boolean isForceTopFrame() {
-		return "enabled".equals(forceTopFrame);
+		return true;//"enabled".equals(forceTopFrame);
 	}
 
 	public void setForceTopFrame(boolean enable) {
