@@ -1,0 +1,126 @@
+(function ($) {
+    $.fn.matchInteraction = function(options) {
+    	var settings = $.extend({
+    		responseIdentifier: null,
+    		formDispatchFieldId: null,
+    		maxAssociations: 1,
+    		leftData: {},
+    		rightData: {},
+    		leftMap: {},
+    		rightMap: {},
+    		matched: []
+        }, options );
+    	
+        for(var key in settings.leftData){
+        	settings.leftMap[key] = {
+                matchMax: settings.leftData[key],
+                matchCount: 0
+            };
+        }
+        for(var key in settings.rightData){
+        	settings.rightMap[key] = {
+                matchMax: settings.rightData[key],
+                matchCount: 0
+            };
+        }
+    	
+    	try {
+    		match(this, settings);
+    	} catch(e) {
+    		if(window.console) console.log(e);
+    	}
+        return this;
+    };
+    
+    function match($obj, settings) {
+        queryInputElements(settings.responseIdentifier).on('click', function() {
+            checkMatch(settings, this);
+        });
+        recalculate(settings);
+        updateDisabledStates(settings);
+    };
+    
+    function queryInputElements(responseIdentifier) {
+        return jQuery('input[name=qtiworks_response_' + responseIdentifier + ']');
+    };
+
+    function withCheckbox(settings, inputElement, callback) {
+        var directedPair = inputElement.value;
+        var splitPair = directedPair.split(" ");
+        var left = settings.leftMap[splitPair[0]];
+        var right = settings.rightMap[splitPair[1]];
+        callback(inputElement, directedPair, left, right);
+    };
+
+    function recalculate(settings) {
+    	settings.matchCount = 0;
+        settings.matched = {};
+        for(var key in settings.leftMap) {
+        	settings.leftMap[key].matchCount = 0;
+        }
+        for(var key in settings.rightMap) {
+        	settings.rightMap[key].matchCount = 0;
+        }
+
+        queryInputElements(settings.responseIdentifier).each(function() {
+            withCheckbox(settings, this, function(inputElement, directedPair, left, right) {
+                if (inputElement.checked) {
+                    settings.matchCount++;
+                    left.matchCount++;
+                    right.matchCount++;
+                    settings.matched[directedPair] = true;
+                }
+            });
+        });
+    };
+
+    function updateDisabledStates(settings) {
+        queryInputElements(settings.responseIdentifier).each(function() {
+            withCheckbox(settings, this, function(inputElement, directedPair, left, right) {
+                if (inputElement.checked) {
+                    inputElement.disabled = false;
+                }
+                else if ((settings.maxAssociations!=0 && settings.matchCount >= settings.maxAssociations)
+                        || (left.matchMax!=0 && left.matchCount >= left.matchMax)
+                        || (right.matchMax!=0 && right.matchCount >= right.matchMax)) {
+                    inputElement.disabled = true;
+                }
+                else {
+                    inputElement.disabled = false;
+                }
+            });
+        });
+    };
+
+    function checkMatch(settings, inputElement) {
+        withCheckbox(settings, inputElement, function(inputElement, directedPair, left, right) {
+            if (inputElement.checked){
+                var incremented = false;
+                if (left.matchMax != 0 && left.matchMax <= left.matchCount) {
+                    inputElement.checked = false;
+                }
+                else {
+                    left.matchCount++;
+                    settings.matchCount++;
+                    incremented = true;
+                }
+
+                if (right.matchMax != 0 && right.matchMax <= right.matchCount) {
+                    inputElement.checked = false;
+                }
+                else {
+                    right.matchCount++;
+                    if (!incremented) {
+                        settings.matchCount++;
+                    }
+                }
+            }
+            else {
+                settings.matchCount--;
+                left.matchCount--;
+                right.matchCount--;
+            }
+            updateDisabledStates(settings);
+        });
+    }
+}( jQuery ));

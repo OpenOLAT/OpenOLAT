@@ -78,6 +78,7 @@ import uk.ac.ed.ph.jqtiplus.value.BaseType;
 import uk.ac.ed.ph.jqtiplus.value.Cardinality;
 import uk.ac.ed.ph.jqtiplus.value.FileValue;
 import uk.ac.ed.ph.jqtiplus.value.ListValue;
+import uk.ac.ed.ph.jqtiplus.value.NullValue;
 import uk.ac.ed.ph.jqtiplus.value.Orientation;
 import uk.ac.ed.ph.jqtiplus.value.RecordValue;
 import uk.ac.ed.ph.jqtiplus.value.SingleValue;
@@ -607,6 +608,10 @@ public class AssessmentObjectVelocityRenderDecorator extends VelocityRenderDecor
 	}
 	
 	public String toString(Value value, String delimiter) {
+		return toString(value, delimiter, " ");
+	}
+	
+	public String toString(NullValue value, String delimiter) {
 		return toString(value, delimiter, " ");
 	}
 

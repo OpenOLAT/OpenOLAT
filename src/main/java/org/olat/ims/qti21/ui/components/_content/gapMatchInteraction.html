@@ -13,7 +13,7 @@
 	#end
 
 	$r.renderBlockStatics($interaction.getBlockStatics())
-	<table class="table small">
+	<table id="qti_container_${responseIdentifier}" class="table small">
 		<thead>
 	        <tr>
 				<th></th>
@@ -37,9 +37,14 @@
 		#end
 	</table>
 	<script type='text/javascript'>
-        QtiWorksRendering.registerGapMatchInteraction('$responseIdentifier', '$r.formDispatchFieldId',
-        {#foreach($oGap in $orderedVisibleGapTexts) #if($foreach.count > 1),#end $oGap.identifier:$oGap.matchMax #end},
-        {#foreach($vGap in $visibleGaps) #if($foreach.count > 1),#end $vGap.identifier:$vGap.required #end});
+	jQuery(function() {
+		jQuery('#qti_container_${responseIdentifier}').gapMatchInteraction({
+			responseIdentifier: '$responseIdentifier',
+			formDispatchFieldId: '$r.formDispatchFieldId',
+			gapChoiceData: {#foreach($oGap in $orderedVisibleGapTexts) #if($foreach.count > 1),#end $oGap.identifier:$oGap.matchMax #end},
+			gapData: {#foreach($vGap in $visibleGaps) #if($foreach.count > 1),#end $vGap.identifier:$vGap.required #end}
+		});
+	}); 
 	</script>
 </div>
   

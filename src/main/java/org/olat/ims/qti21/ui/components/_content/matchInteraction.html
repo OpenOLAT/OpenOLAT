@@ -11,8 +11,7 @@
 	#if($r.isInvalidResponse($interaction.responseIdentifier))
 	<div class="o_error badResponse">$r.translate("error.as.directed")</div>
 	#end
-
-	<table class="table">
+	<table id="qti_container_${responseIdentifier}" class="table">
 		<thead>
 			<tr>
 				<th/>
@@ -41,11 +40,15 @@
 	</table>
 	#if($r.isItemSessionOpen())
         <script type='text/javascript'>
-		QtiWorksRendering.registerMatchInteraction('$responseIdentifier', $interaction.maxAssociations,
-            {#foreach($choice1 in $orderedSet1) #if($foreach.count > 1),#end $choice1.identifier:$choice1.matchMax #end},
-            {#foreach($choice2 in $orderedSet2) #if($foreach.count > 1),#end $choice2.identifier:$choice2.matchMax #end}
-		);
+		jQuery(function() {
+			jQuery('#qti_container_${responseIdentifier}').matchInteraction({
+				responseIdentifier: '$responseIdentifier',
+				formDispatchFieldId: '$r.formDispatchFieldId',
+				maxAssociations: $interaction.maxAssociations,
+				leftData: {#foreach($choice1 in $orderedSet1) #if($foreach.count > 1),#end $choice1.identifier:$choice1.matchMax #end},
+				rightData: {#foreach($choice2 in $orderedSet2) #if($foreach.count > 1),#end $choice2.identifier:$choice2.matchMax #end}
+			});
+		});
         </script>
 	#end
 </div>
-

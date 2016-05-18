@@ -17,30 +17,27 @@
 		<map name="${qtiContainerId}_map">
 		#foreach($hotspotChoice in $interaction.getHotspotChoices())
             <!-- Match group, label -->
-          	<area id="ac_${responseIdentifier}_${hotspotChoice.identifier}" data-qti-id="${hotspotChoice.identifier}" shape="$hotspotChoice.shape" coords="$r.coordsToString($hotspotChoice.coords)" href="javascript:clickArea('ac_${responseIdentifier}_${hotspotChoice.identifier}')" data-maphilight=''></area>
+          	<area id="ac_${responseIdentifier}_${hotspotChoice.identifier}" data-qti-id="${hotspotChoice.identifier}" shape="$hotspotChoice.shape" coords="$r.coordsToString($hotspotChoice.coords)" href="javascript:;" data-maphilight=''></area>
 			$r.appendFlexiFormDirtyForClick("$hotspotChoice.identifier")
 		#end
 		</map>
 		<script type="text/javascript">
-			jQuery(function() {
-				jQuery('#${qtiContainerId}_img').maphilight({
-					fillColor: '888888',
-					strokeColor: '0000ff',
-					strokeWidth: 3
-				});
+		jQuery(function() {
+			jQuery('#${qtiContainerId}_img').maphilight({
+				fillColor: '888888',
+				strokeColor: '0000ff',
+				strokeWidth: 3
 			});
-
-		#if($r.isNotNullValue($responseValue))
-			jQuery(function() {
-				highlighHotspotAreas('$r.toString($responseValue,",")','$responseIdentifier');
+		});
+		
+		jQuery(function() {
+			jQuery('#${qtiContainerId}').hotspotInteraction({
+				responseIdentifier: '$responseIdentifier',
+				formDispatchFieldId: '$r.formDispatchFieldId',
+				maxChoices: $interaction.maxChoices,
+				responseValue: '$r.toString($responseValue,",")'
 			});
-			
-			function clickArea(spot) { };
-		#else
-			function clickArea(spot) {
-				clickHotspotArea(spot, '${qtiContainerId}','$responseIdentifier', $interaction.maxChoices)
-			};
-		#end
+		});
 		</script>
 	</div>
 </div>
