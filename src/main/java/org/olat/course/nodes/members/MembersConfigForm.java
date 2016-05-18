@@ -194,6 +194,7 @@ public class MembersConfigForm extends FormBasicController {
 			fireEvent(ureq, Event.CHANGED_EVENT);
 		}
 		
+		update();
 	}
 
 }
