@@ -22,6 +22,37 @@ ul.sessionControl {
 	background-color: white;
 }
 
+/* Graphic gap match */
+.o_gap_item {
+	padding:5px;
+	margin: 5px;
+	background-repeat:none;
+	background-position: center center;
+	
+	&.oo-choosed {
+		position: relative;
+    	left: auto;
+    	top: auto;
+    	padding: 3px;
+    	margin: 0;
+	}
+	
+	&.oo-selected {
+		border: 3px solid grey;
+	}
+}
+
+/* Position object */
+.items_container {
+	padding: 15px;
+	
+	.o_item {
+		float: left;
+	}
+}
+
+
+
 #o_qti_run_title, #o_qti_run_infos  {
 	 margin: 0 15px 0.5em 15px;
 }

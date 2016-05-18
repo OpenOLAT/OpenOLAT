@@ -42,7 +42,8 @@
 			responseIdentifier: '$responseIdentifier',
 			formDispatchFieldId: '$r.formDispatchFieldId',
 			gapChoiceData: {#foreach($oGap in $orderedVisibleGapTexts) #if($foreach.count > 1),#end $oGap.identifier:$oGap.matchMax #end},
-			gapData: {#foreach($vGap in $visibleGaps) #if($foreach.count > 1),#end $vGap.identifier:$vGap.required #end}
+			gapData: {#foreach($vGap in $visibleGaps) #if($foreach.count > 1),#end $vGap.identifier:$vGap.required #end},
+			opened: $isItemSessionOpen
 		});
 	}); 
 	</script>

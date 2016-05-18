@@ -3,14 +3,15 @@
     	var settings = $.extend({
     		responseIdentifier: null,
     		formDispatchFieldId: null,
-    		responseValue: null
+    		responseValue: null,
+    		opened: false
         }, options );
     	
     	try {
-    		if(settings.responseValue == "") {
-    			associateGaps(this, settings);
-    		} else {
-    			drawGaps(this, settings.responseValue, settings.responseIdentifier);
+    		if(!(typeof settings.responseValue === "undefined") && settings.responseValue.length > 0) {
+    			drawGaps(this, settings);
+    		}
+    		if(settings.opened) {
     			associateGaps(this, settings);
     		}
     	} catch(e) {
@@ -19,13 +20,16 @@
         return this;
     };
     
-    function drawGaps($obj, responseValue, responseIdentifier) {
-    	var pairs = responseValue.split(',');
+    function drawGaps($obj, settings) {
+    	var containerId = $obj.attr('id');
+    	var divContainer = jQuery('#' + containerId);
+    	
+    	var pairs = settings.responseValue.split(',');
     	for(var i=pairs.length; i-->0; ) {
     		var ids = pairs[i].split(' ');
     		
-    		var item1 = jQuery('#ac_' + responseIdentifier + '_' + ids[0]);
-    		var item2 = jQuery('#ac_' + responseIdentifier + '_' + ids[1]);
+    		var item1 = jQuery('#ac_' + settings.responseIdentifier + '_' + ids[0]);
+    		var item2 = jQuery('#ac_' + settings.responseIdentifier + '_' + ids[1]);
 
     		var gapitem, areaEl;
     		if(item1.hasClass('gap_item')) {
@@ -41,6 +45,11 @@
     		gapitem.css('left', coords[0] + 'px');
     		gapitem.css('top', coords[1] + 'px');
     		gapitem.addClass('oo-choosed');
+
+			var inputElement = jQuery('<input type="hidden"/>')
+				.attr('name', 'qtiworks_response_' + settings.responseIdentifier)
+				.attr('value', gapitem.data('qti-id') + " " + areaEl.data('qti-id'));
+			divContainer.prepend(inputElement);
     	}
     };
 
@@ -51,9 +60,9 @@
     		
     		if(gapitem.hasClass('oo-choosed')) {
     			gapitem.removeClass('oo-choosed');
-    			gapitem.css('position','relative');
-    			gapitem.css('left','auto');
-    			gapitem.css('top','auto');
+    			//gapitem.css('position','relative');
+    			//gapitem.css('left','auto');
+    			//gapitem.css('top','auto');
     			
     			var gapitemId = gapitem.attr('id');
     			//remove
@@ -64,7 +73,7 @@
     				}
     			});
     		} else {
-    			gapitem.css('border','3px solid black');
+    			//gapitem.css('border','3px solid grey');
     			gapitem.addClass('oo-selected');
     		}
     	});
@@ -93,5 +102,13 @@
     			divContainer.prepend(inputElement);
     		});
     	});
-    }  
+    };
+    
+    function toCoords(area) {
+    	var coords = area.attr('coords').split(',');
+    	for (i=coords.length; i-->0; ) {
+    		coords[i] = parseFloat(coords[i]);
+    	}
+    	return coords;
+    }
 }( jQuery ));

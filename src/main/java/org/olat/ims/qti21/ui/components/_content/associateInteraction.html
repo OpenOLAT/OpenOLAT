@@ -12,7 +12,6 @@
 	#if($r.isInvalidResponse($interaction.responseIdentifier))
 	<div class="o_error badResponse">$r.translate("error.as.directed")</div>
 	#end
-
 	<div id="${containerId}">
 		<div id="${containerId}_items" class="clearfix" style="padding:15px;">
         	#foreach($choice in $choices)
@@ -38,7 +37,8 @@
 			jQuery('#${containerId}').associateInteraction({
 				responseIdentifier: '$responseIdentifier',
 				formDispatchFieldId: '$r.formDispatchFieldId',
-				responseValue: '$r.toString($responseValue,",")'
+				responseValue: '$r.toString($responseValue,",")',
+				opened: $isItemSessionOpen
 			});
 		});
 		</script>

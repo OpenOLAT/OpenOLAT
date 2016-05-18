@@ -17,7 +17,7 @@
 		<map name="${qtiContainerId}_map">
 		#foreach($hotspotChoice in $interaction.getHotspotChoices())
             <!-- Match group, label -->
-          	<area id="ac_${responseIdentifier}_${hotspotChoice.identifier}" data-qti-id="${hotspotChoice.identifier}" shape="$hotspotChoice.shape" coords="$r.coordsToString($hotspotChoice.coords)" href="javascript:;" data-maphilight=''></area>
+          	<area id="ac_${responseIdentifier}_${hotspotChoice.identifier}" data-qti-id="${hotspotChoice.identifier}" shape="${r.shapeToString($hotspotChoice.shape)}" coords="$r.coordsToString($hotspotChoice.coords)" href="javascript:;" data-maphilight=''></area>
 			$r.appendFlexiFormDirtyForClick("$hotspotChoice.identifier")
 		#end
 		</map>
@@ -35,7 +35,8 @@
 				responseIdentifier: '$responseIdentifier',
 				formDispatchFieldId: '$r.formDispatchFieldId',
 				maxChoices: $interaction.maxChoices,
-				responseValue: '$r.toString($responseValue,",")'
+				responseValue: '$r.toString($responseValue,",")',
+				opened: $isItemSessionOpen
 			});
 		});
 		</script>

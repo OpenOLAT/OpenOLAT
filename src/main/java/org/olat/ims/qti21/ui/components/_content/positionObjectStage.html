@@ -17,9 +17,9 @@
 		#end
 	#end
 
-    <div id="${containerId}" class="appletContainer" style="width:${positionObjectStage.object.width}px; position:relative; ">
+    <div id="${containerId}" style="width:${positionObjectStage.object.width}px; position:relative; ">
 		<img id="${containerId}_img" width="${positionObjectStage.object.width}" height="${positionObjectStage.object.height}" src="${r.convertLinkFull($positionObjectStage.object.data)}"></img>
-		<div class="items_container" style="width:${positionObjectStage.object.width}px; height:50px; background-color:#cccccc;">
+		<div class="items_container" style="width:${positionObjectStage.object.width}px;" class="clearfix">
 		#foreach($interaction in $interactions)
 			#set($maxChoices = $r.maxToList($interaction.maxChoices))
 			#set($responseValue = $r.getResponseValue($interaction.responseIdentifier))
@@ -30,7 +30,8 @@
 					responseIdentifier: '$responseIdentifier',
 					formDispatchFieldId: '$r.formDispatchFieldId',
 					responseValue: '$r.toString($responseValue,":")',
-					maxChoices: $maxChoices
+					maxChoices: $maxChoices,
+					opened: $isItemSessionOpen
 				});
 			});
 			</script> 

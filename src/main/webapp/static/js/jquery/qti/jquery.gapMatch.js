@@ -5,9 +5,10 @@
     		formDispatchFieldId: null,
     		gapChoiceData: {},
     		gapData: {},
+    		opened: false,
     		gapChoiceMap: {},
     		gapMap: {},
-    		matched: null
+    		matched: {}
         }, options );
 
         for(var key in settings.gapChoiceData){
@@ -47,11 +48,12 @@
     };
 
     function gapMatch($obj, settings) {
-        var checkboxes = queryInputElements(settings.responseIdentifier);
-        checkboxes.on('click', function() {
-            checkMatch(settings, this);
-            setFlexiFormDirty(settings.formDispatchFieldId);
-        });
+        if(settings.opened) {
+        	queryInputElements(settings.responseIdentifier).on('click', function() {
+	            checkMatch(settings, this);
+	            setFlexiFormDirty(settings.formDispatchFieldId);
+	        });
+        }
         recalculate(settings);
         updateDisabledStates(settings);
     };
@@ -70,8 +72,8 @@
         	settings.gapMap[key].matchedGapChoice = null;
         }
 
-        queryInputElements(settings.responseIdentifier).each(function() {
-            withCheckbox(settings, this, function(inputElement, directedPair, gapChoice, gap) {
+        queryInputElements(settings.responseIdentifier).each(function(index, el) {
+            withCheckbox(settings, this, function(settings, inputElement, directedPair, gapChoice, gap) {
                 if (inputElement.checked) {
                     gapChoice.matchCount++;
                     gap.matched = true;
@@ -97,13 +99,13 @@
     function updateDisabledStates(settings) {
         queryInputElements(settings.responseIdentifier).each(function() {
             withCheckbox(settings, this, function(settings, inputElement, directedPair, gapChoice, gap) {
-            	if (inputElement.checked) {
+            	if(!settings.opened) {
+            		inputElement.disabled = true;
+            	} else if (inputElement.checked) {
                     inputElement.disabled = false;
-                }
-                else if (gap.matched || (gapChoice.matchMax!=0 && gapChoice.matchCount >= gapChoice.matchMax)) {
+                } else if (gap.matched || (gapChoice.matchMax!=0 && gapChoice.matchCount >= gapChoice.matchMax)) {
                     inputElement.disabled = true;
-                }
-                else {
+                } else {
                     inputElement.disabled = false;
                 }
             });

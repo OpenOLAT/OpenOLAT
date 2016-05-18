@@ -4,14 +4,20 @@
     		responseIdentifier: null,
     		formDispatchFieldId: null,
     		responseValue: null,
-    		maxChoices: 1
+    		maxChoices: 1,
+    		opened: false
         }, options );
     	
     	try {
-    		if(settings.responseValue == "") {
-    			selecObjects(this, settings);
-    		} else {
+        	var containerId = this.attr('id');
+    		jQuery('#' + containerId + ' .items_container .o_item.o_' + settings.responseIdentifier).each(function(index, el) {
+        		jQuery(el).attr('id','object-item-' + index);
+        	});
+    		
+    		if(!(typeof settings.responseValue === "undefined") && settings.responseValue.length > 0) {
     			drawObjects(this, settings);
+    		} 
+    		if(settings.opened) {
     			selecObjects(this, settings);
     		}
     	} catch(e) {
@@ -22,23 +28,35 @@
     
     function drawObjects( $obj, settings) {
     	var containerId = $obj.attr('id');
+    	var divContainer = jQuery('#' + containerId);
+    	
     	var positions = settings.responseValue.split(':');
     	var items = jQuery('#' + containerId + ' .items_container .o_item.o_' + settings.responseIdentifier);
     	for(var i=positions.length; i-->0; ) {
     		var pos = positions[i].split(' ');
-    		console.log(pos);
+    		var cx = pos[0];
+    		var cy = pos[1];
     		var item = jQuery(items.get(i));
+
     		item.css('position', 'absolute');
-    		item.css('top', pos[1] + 'px');
-    		item.css('left', pos[0] + 'px');
+    		item.css('top', cy + 'px');
+    		item.css('left', cx + 'px');
+
+			var itemId = item.attr('id');
+    		var inputId = 'in-' + itemId + '-' + settings.responseIdentifier;
+    		var inputElement = jQuery('<input type="hidden"/>')
+				.attr('id', inputId)
+				.attr('name', 'qtiworks_response_' + settings.responseIdentifier)
+				.attr('value', cx + " " + cy);
+    		divContainer.prepend(inputElement);
     	}
     };
 
     function selecObjects($obj, settings) {
     	var containerId = $obj.attr('id');
-    	jQuery('#' + containerId + ' .items_container .o_item.o_' + settings.responseIdentifier).each(function(index, el) {
-    		jQuery(el).attr('id','object-item-' + index);
-    	}).draggable({
+    	var divContainer = jQuery('#' + containerId);
+    	
+    	jQuery('#' + containerId + ' .items_container .o_item.o_' + settings.responseIdentifier).draggable({
     		containment: "#" + containerId,
     		scroll: false,
     		stop: function( event, ui ) {
@@ -54,8 +72,8 @@
     			
     			var itemId = jQuery(this).attr('id');
     			var inputId = 'in-' + itemId + '-' + settings.responseIdentifier;
-    			var divContainer = jQuery('#' + containerId);
-    			var inputEl = divContainer.find(inputId);
+    			
+    			var inputEl = divContainer.find('#' + inputId);
     			if(inputEl.length == 0) {
     				var inputElement = jQuery('<input type="hidden"/>')
     					.attr('id', inputId)

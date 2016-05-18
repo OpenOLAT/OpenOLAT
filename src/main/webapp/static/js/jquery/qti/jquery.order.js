@@ -6,8 +6,8 @@
     		initialSourceOrder: null,
     		initialTargetOrder: null,
     		responseValue: null,
-    		minChoices: 1,
-    		maxChoices: 1
+    		minChoices: null,
+    		maxChoices: null
         }, options );
     	
     	try {
@@ -29,17 +29,17 @@
         var listSelector = '#qtiworks_response_' + settings.responseIdentifier + ' ul';
         sourceList.sortable({
             connectWith: listSelector,
-            change: function() {
+            stop: function() {
             	_sorted(settings);
-            	setFlexiFormDirty(formDispatchFieldId);
+            	setFlexiFormDirty(settings.formDispatchFieldId);
             }
         });
         sourceList.disableSelection();
         targetList.sortable({
             connectWith: listSelector,
-            change: function() {
+            stop: function() {
             	_sorted(settings);
-            	setFlexiFormDirty(formDispatchFieldId);
+            	setFlexiFormDirty(settings.formDispatchFieldId);
             }
         });
         targetList.disableSelection();
@@ -52,12 +52,10 @@
     	var selectedCount = targetList.children('li').size();
         if (settings.minChoices != null && settings.maxChoices != null) {
             if (selectedCount < settings.minChoices || selectedCount > settings.maxChoices) {
-                if (minChoices!=maxChoices) {
+                if (settings.minChoices != settings.maxChoices) {
                     alert("You must select and order between " + settings.minChoices + " and " + settings.maxChoices + " items");
-                }
-                else {
-                    alert("You must select and order exactly " + settings.minChoices + " item"
-                        + (minChoices>1 ? "s" : ""));
+                } else {
+                    alert("You must select and order exactly " + settings.minChoices + " item" + (minChoices>1 ? "s" : ""));
                 }
                 targetBox.toggleClass('highlight', true);
                 return false;

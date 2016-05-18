@@ -4,15 +4,16 @@
     		responseIdentifier: null,
     		formDispatchFieldId: null,
     		responseValue: null,
-    		maxAssociations: 1
-        }, options );
+    		maxAssociations: 1,
+    		opened: false
+        }, options);
     	
     	try {
-    		if(settings.responseValue == "") {
-    			drawGAssociations(this, settings.responseValue, settings.responseIdentifier);
+    		if(!(typeof settings.responseValue === "undefined") && settings.responseValue.length > 0) {
+    			initAssociations(this, settings.responseValue, settings.responseIdentifier);
+    		}
+    		if(settings.opened) {
     			associateGraphics(this, settings.maxAssociations, settings.responseIdentifier);
-    		} else {
-    			drawGAssociations(this, settings.responseValue, settings.responseIdentifier);
     		}
     	} catch(e) {
     		if(window.console) console.log(e);
@@ -51,7 +52,7 @@
     		
     		var drawedSpots = [];
     		if(data.currentSpot != '') {
-    			drawArea(c, data.currentSpot);
+    			drawArea(c, 'ac_' + responseIdentifier + '_' + data.currentSpot);
     			drawedSpots.push(data.currentSpot);
     		}
 
@@ -84,39 +85,56 @@
     	});
     };
 
-    function drawGAssociations($obj, responseValue, responseIdentifier) {
+    function initAssociations($obj, responseValue, responseIdentifier) {
     	var containerId = $obj.attr('id');
+    	var divContainer = jQuery('#' + containerId + '_container');
+    	
     	var canvas = document.getElementById(containerId + '_canvas');
     	var c = canvas.getContext('2d');
     	c.clearRect(0, 0, jQuery(canvas).width(), jQuery(canvas).height());
     	
-    	if(!(typeof responseValue === "undefined") && responseValue.length > 0) {
-	    	var drawedSpots = [];
-	    	var pairs = responseValue.split(',');
-	    	for(var i=pairs.length; i-->0; ) {
-	    		var pair = pairs[i].split(' ');
-	    		for(var j=pair.length; j-->0; ) {
-	    			if(0 > drawedSpots.indexOf(pair[j])) {
-	    				drawArea(c, 'ac_' + responseIdentifier + '_' + pair[j]);
-	    				drawedSpots.push(pair[j]);
-	    			}
-	    		}
+    	var drawedSpots = [];
+    	var pairs = responseValue.split(',');
+    	for(var i=pairs.length; i-->0; ) {
+    		var pair = pairs[i].split(' ');
+    		for(var j=pair.length; j-->0; ) {
+    			if(0 > drawedSpots.indexOf(pair[j])) {
+    				drawArea(c, 'ac_' + responseIdentifier + '_' + pair[j]);
+    				drawedSpots.push(pair[j]);
+    			}
+    		}
+
+    		if(pair.length == 2) {
+    			var pair1El = jQuery('#ac_' + responseIdentifier + '_' + pair[1]);
+    			var pair2El = jQuery('#ac_' + responseIdentifier + '_' + pair[0]);
+    			
+	    		var coords1 = toCoords(pair1El);
+	    		var coords2 = toCoords(pair2El);
 	    		
-	    		if(pair.length == 2) {
-		    		var coords1 = toCoords(jQuery('#ac_' + responseIdentifier + '_' + pair[1]));
-		    		var coords2 = toCoords(jQuery('#ac_' + responseIdentifier + '_' + pair[0]));
-		    		
-		    		c.beginPath();
-		    		c.moveTo(coords1[0], coords1[1]);
-		    		c.lineTo(coords2[0], coords2[1]);
-		    		c.lineWidth = 3;
-		    		c.stroke();
-	    		}
-	    	}
+	    		c.beginPath();
+	    		c.moveTo(coords1[0], coords1[1]);
+	    		c.lineTo(coords2[0], coords2[1]);
+	    		c.lineWidth = 3;
+	    		c.stroke();
+	    		
+	    		var inputElement = jQuery('<input type="hidden"/>')
+					.attr('name', 'qtiworks_response_' + responseIdentifier)
+					.attr('value', pair2El.data('qti-id') + " " + pair1El.data('qti-id'));
+	    		divContainer.prepend(inputElement);
+    		}
     	}
     };
+
+    function drawArea(c, areaId) {
+    	jQuery('#' + areaId).each(function(index, el) {
+    		var areaEl = jQuery(el);
+    		var coords = toCoords(areaEl);
+        	var shape = areaEl.attr('shape');
+        	drawShape(c, shape, coords, 0, 0);
+    	})
+    };
     
-    function draw_shape(context, shape, coords, x_shift, y_shift) {
+    function drawShape(context, shape, coords, x_shift, y_shift) {
     	x_shift = x_shift || 0;
     	y_shift = y_shift || 0;
 
@@ -139,13 +157,6 @@
     		context.stroke();
     	context.fillStyle = 'green';
     		context.fill();
-    };
-
-    function drawArea(c, areaId) {
-    	var areaEl = jQuery('#' + areaId);
-    	var shape = areaEl.attr('shape');
-    	var coords = toCoords(areaEl);
-    	draw_shape(c, shape, coords, 0, 0);
     };
     
     function toCoords(area) {

@@ -4,14 +4,15 @@
     		responseIdentifier: null,
     		formDispatchFieldId: null,
     		responseValue: null,
-    		maxChoices: 1
+    		maxChoices: 1,
+    		opened: false
         }, options );
     	
     	try {
-    		if(settings.responseValue == "") {
-    			selecPointItems(this, settings);
-    		} else {
+    		if(!(typeof settings.responseValue === "undefined") && settings.responseValue.length > 0) {
     			drawPoints(this, settings);
+    		}
+    		if(settings.opened) {
     			selecPointItems(this, settings);
     		}
     	} catch(e) {
@@ -23,6 +24,7 @@
     function drawPoints( $obj, settings) {
     	var r = 8;
     	var containerId = $obj.attr('id');
+		var divContainer = jQuery('#' + containerId);
     	var points = settings.responseValue.split(':');
     	var canvas = document.getElementById(containerId + '_canvas');
     	var c = canvas.getContext('2d');
@@ -31,10 +33,18 @@
     		if(points[i].length == 0) continue;
     		
     		var p = points[i].split(' ');
+    		var x = p[0];
+    		var y = p[1];
+    		
     		c.beginPath();
-    		c.arc(p[0], p[1], r, 0, Math.PI * 2, false);
+    		c.arc(x, y, r, 0, Math.PI * 2, false);
     		c.stroke();
     		c.closePath();
+    		
+    		var inputElement = jQuery('<input type="hidden"/>')
+				.attr('name', 'qtiworks_response_' + settings.responseIdentifier)
+				.attr('value', x + " " + y);
+    		divContainer.append(inputElement);
     	}
     };
 

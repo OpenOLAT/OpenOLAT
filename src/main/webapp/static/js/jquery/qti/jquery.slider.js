@@ -10,8 +10,9 @@
     		orientation: null,
     		isReversed: false,
     		isDiscrete: false,
+    		opened: false,
     		initialValue: null
-        }, options );
+        }, options);
     	
     	try {
     		slide(this, settings);
@@ -29,6 +30,7 @@
     	sliderQuery.slider({
             value: initialValue,
             step: settings.step,
+            disabled: !settings.opened,
             orientation: settings.orientation,
             /* (To handle 'reverse', we simply negate and swap min/max when mapping to/from the slider itself) */
             min: settings.isReversed ? -settings.max : settings.min,

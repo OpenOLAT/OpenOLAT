@@ -4,15 +4,16 @@
     		responseIdentifier: null,
     		formDispatchFieldId: null,
     		responseValue: null,
-    		maxChoices: 1
+    		maxChoices: 1,
+    		opened: false
         }, options );
     	
     	try {
-    		if(settings.responseValue == "") {
+    		if(!(typeof settings.responseValue === "undefined") && settings.responseValue.length > 0) {
     			drawGraphicOrders(this, settings);
+    		}
+    		if(settings.opened) {
     			order(this, settings);
-    		} else {
-    			drawGraphicOrders(this, settings);
     		}
     	} catch(e) {
     		if(window.console) console.log(e);
@@ -22,6 +23,8 @@
     
     function drawGraphicOrders($obj, settings) {
     	var containerId = $obj.attr('id');
+		var divContainer = jQuery('#' + containerId + '_container');
+		
     	var canvas = document.getElementById(containerId + '_canvas');
     	var c = canvas.getContext('2d');
     	c.clearRect(0, 0, jQuery(canvas).width(), jQuery(canvas).height());
@@ -31,12 +34,19 @@
     		if(areaIds[i].length == 0) continue;
     		
     		var areaEl = jQuery('#ac_' + settings.responseIdentifier + '_' + areaIds[i]);
+    		var spotQtiId = areaEl.data('qti-id');
     		var position = areaEl.attr('coords').split(',');
     		var cx = position[0];
     		var cy = position[1];
     		
     		c.font = "16px Arial";
     		c.fillText("" + (i+1), cx, cy);
+    		
+    		//add input hidden
+    		var inputElement = jQuery('<input type="hidden"/>')
+				.attr('name', 'qtiworks_response_' + settings.responseIdentifier)
+				.attr('value', spotQtiId);
+    		divContainer.prepend(inputElement);
     	}
     };
     

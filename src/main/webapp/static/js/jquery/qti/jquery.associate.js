@@ -3,14 +3,15 @@
     	var settings = $.extend({
     		responseIdentifier: null,
     		formDispatchFieldId: null,
-    		responseValue: null
-        }, options );
+    		responseValue: null,
+    		opened: false
+        }, options);
     	
     	try {
-    		if(settings.responseValue == "") {
-    			associate(this, settings);
-    		} else {
+    		if(typeof settings.responseValue != "undefined" && settings.responseValue.length > 0) {
     			drawAssociations(this, settings);
+    		}
+    		if(settings.opened) {
     			associate(this, settings);
     		}
     	} catch(e) {
@@ -28,8 +29,8 @@
     		var associationEl = jQuery(associationEls.get(i));
     		var association1 = jQuery('#ac_' + settings.responseIdentifier + '_' + associationPair[0]);
     		var association2 = jQuery('#ac_' + settings.responseIdentifier + '_' + associationPair[1]);
-    		jQuery(association1).css('border','none');
-    		jQuery(association2).css('border','none');
+    		jQuery(association1).css('border','none').addClass('oo-choosed');
+    		jQuery(association2).css('border','none').addClass('oo-choosed');
     		
     		jQuery(associationEl.find('.association_box.left'))
     			.css('border','3px solid grey')
@@ -42,19 +43,15 @@
 
     associate = function($obj, settings) {
     	var containerId = $obj.attr('id');
-    	jQuery("#" + containerId + "_items .o_associate_item").on('click', function(e, el) {
+    	jQuery("#" + containerId + " .o_associate_item").on('click', function(e, el) {
     		var itemEl = jQuery(this);
     		if(itemEl.hasClass('oo-choosed')) {
-    			console.log('has choosed', containerId);
     			itemEl.removeClass('oo-choosed');
     			itemEl.parent('.association_box').each(function(index, el) {
     				jQuery(el).css('border', '3px dotted grey');
     			});
-    			console.log('has border');
     			itemEl.css('border', '2px solid grey');
-    			console.log(jQuery('#' + containerId +'_items'));
     			itemEl.appendTo(jQuery('#' + containerId +'_items'));
-    			console.log('has done');
     		} else {
     			itemEl.css('border', '2px solid red');
     			itemEl.addClass('oo-selected');

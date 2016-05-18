@@ -4,14 +4,15 @@
     		responseIdentifier: null,
     		formDispatchFieldId: null,
     		maxChoices: 1,
-    		responseValue: null
+    		responseValue: null,
+    		opened: false
         }, options );
     	
     	try {
-    		if(settings.responseValue == "") {
-    			hotspots(this, settings);
-    		} else {
-    			drawHotspotAreas(settings);
+    		if(!(typeof settings.responseValue === "undefined") && settings.responseValue.length > 0) {
+    			drawHotspotAreas(this, settings);
+    		} 
+    		if(settings.opened) {
     			hotspots(this, settings);
     		}
     	} catch(e) {
@@ -20,13 +21,21 @@
         return this;
     };
     
-    function drawHotspotAreas(settings) {
+    function drawHotspotAreas($obj, settings) {
+    	var containerId = $obj.attr('id');
+    	var divContainer = jQuery('#' + containerId);
+    	
     	var areaIds = settings.responseValue.split(',');
     	for(i=areaIds.length; i-->0; ) {
     		var areaEl = jQuery('#ac_' + settings.responseIdentifier + '_' + areaIds[i]);
     		var data = areaEl.data('maphilight') || {};
     		data.alwaysOn = true;
     		areaEl.data('maphilight', data).trigger('alwaysOn.maphilight');
+    		
+    		var inputElement = jQuery('<input type="hidden"/>')
+				.attr('name', 'qtiworks_response_' + settings.responseIdentifier)
+				.attr('value', areaEl.data('qti-id'));
+    		divContainer.append(inputElement);
     	}
     }
     
