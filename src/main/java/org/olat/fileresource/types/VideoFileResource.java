@@ -20,8 +20,12 @@
 package org.olat.fileresource.types;
 
 import java.io.File;
+import java.util.Date;
 
 import org.olat.core.CoreSpringFactory;
+import org.olat.core.commons.services.video.MovieService;
+import org.olat.core.util.Formatter;
+import org.olat.core.util.vfs.LocalFileImpl;
 import org.olat.modules.video.VideoManager;
 import org.olat.modules.video.VideoModule;
 
@@ -35,6 +39,7 @@ public class VideoFileResource extends FileResource {
 
 	private static VideoModule videomodule = CoreSpringFactory.getImpl(VideoModule.class);
 	private static VideoManager videoManager = CoreSpringFactory.getImpl(VideoManager.class);
+	private static MovieService movieService = CoreSpringFactory.getImpl(MovieService.class);
 
 	/**
 	 * Movie file resource identifier.
@@ -57,11 +62,12 @@ public class VideoFileResource extends FileResource {
 		if (!videomodule.isEnabled()) {
 			return;
 		}
-		fileName = fileName.toLowerCase();
-		if (fileName.endsWith(".mp4")|| fileName.endsWith(".mov")) {
-			// accept raw mp4 files
-			// accept also mov files as iOS saves mp4 movis as mov
+		// accept raw mp4 files
+		// accept also mov files as iOS saves mp4 movis as mov, but check if the file can be parsed as mp4 file
+		boolean isMP4 = movieService.isMP4(new LocalFileImpl(file), fileName);
+		if (isMP4) {			
 			eval.setValid(true);
+			eval.setDisplayname(fileName + " - " + Formatter.formatShortDateFilesystem(new Date()));
 		} else if (fileName.endsWith(".zip")) {
 			// check if zip contains an exported video resource
 			videoManager.validateVideoExportArchive(file, eval);
