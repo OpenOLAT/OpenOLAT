@@ -175,7 +175,7 @@ public class MovieServiceImpl implements MovieService, ThumbnailSPI {
 				FileChannelWrapper in = new FileChannelWrapper(ch);
 				MP4Demuxer demuxer1 = new MP4Demuxer(in);
 				String fourCC = demuxer1.getVideoTrack().getFourcc();
-				if (fourCCs.contains(fourCC)) {
+				if (fourCCs.contains(fourCC.toLowerCase())) {
 					return true;
 				} 
 				log.info("Movie file::" + fileName + " has correct suffix::" + suffix + " but fourCC::" + fourCC + " not in our list of supported codecs.");
