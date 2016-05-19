@@ -26,7 +26,6 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
@@ -34,6 +33,7 @@ import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 
+import org.hibernate.annotations.GenericGenerator;
 import org.olat.core.id.Persistable;
 import org.olat.ims.qti21.AssessmentItemSession;
 import org.olat.ims.qti21.AssessmentTestSession;
@@ -51,7 +51,8 @@ public class AssessmentItemSessionImpl implements AssessmentItemSession, Persist
 	private static final long serialVersionUID = 404608933232435117L;
 
 	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	@GeneratedValue(generator = "system-uuid")
+	@GenericGenerator(name = "system-uuid", strategy = "hilo")
 	@Column(name="id", nullable=false, unique=true, insertable=true, updatable=false)
 	private Long key;
 	
@@ -64,6 +65,11 @@ public class AssessmentItemSessionImpl implements AssessmentItemSession, Persist
 	
     @Column(name="q_itemidentifier", nullable=false, insertable=true, updatable=false)
     private String assessmentItemIdentifier;
+    
+    @Column(name="q_sectionidentifier", nullable=true, insertable=true, updatable=false)
+    private String sectionIdentifier;
+    @Column(name="q_testpartidentifier", nullable=true, insertable=true, updatable=false)
+    private String testPartIdentifier;
     
     @Column(name="q_duration", nullable=true, insertable=true, updatable=true)
     private Long duration;
@@ -86,6 +92,7 @@ public class AssessmentItemSessionImpl implements AssessmentItemSession, Persist
 		this.key = key;
 	}
 
+	@Override
 	public Date getCreationDate() {
 		return creationDate;
 	}
@@ -94,44 +101,69 @@ public class AssessmentItemSessionImpl implements AssessmentItemSession, Persist
 		this.creationDate = creationDate;
 	}
 
+	@Override
 	public Date getLastModified() {
 		return lastModified;
 	}
 
+	@Override
 	public void setLastModified(Date lastModified) {
 		this.lastModified = lastModified;
 	}
 
+	@Override
 	public Long getDuration() {
 		return duration;
 	}
 
+	@Override
 	public void setDuration(Long duration) {
 		this.duration = duration;
 	}
 
+	@Override
 	public Boolean getPassed() {
 		return passed;
 	}
 
+	@Override
 	public void setPassed(Boolean passed) {
 		this.passed = passed;
 	}
 
+	@Override
 	public BigDecimal getScore() {
 		return score;
 	}
 
+	@Override
 	public void setScore(BigDecimal score) {
 		this.score = score;
 	}
 
+	@Override
 	public String getAssessmentItemIdentifier() {
 		return assessmentItemIdentifier;
 	}
 
 	public void setAssessmentItemIdentifier(String assessmentItemIdentifier) {
 		this.assessmentItemIdentifier = assessmentItemIdentifier;
+	}
+
+	public String getSectionIdentifier() {
+		return sectionIdentifier;
+	}
+
+	public void setSectionIdentifier(String sectionIdentifier) {
+		this.sectionIdentifier = sectionIdentifier;
+	}
+
+	public String getTestPartIdentifier() {
+		return testPartIdentifier;
+	}
+
+	public void setTestPartIdentifier(String testPartIdentifier) {
+		this.testPartIdentifier = testPartIdentifier;
 	}
 
 	public AssessmentTestSession getAssessmentTestSession() {
@@ -163,5 +195,4 @@ public class AssessmentItemSessionImpl implements AssessmentItemSession, Persist
 	public boolean equalsByPersistableKey(Persistable persistable) {
 		return equals(persistable);
 	}
-	
 }

@@ -1069,7 +1069,7 @@ create table o_as_user_course_infos (
 );
 
 create table o_as_entry (
-   id bigserial,
+   id int8 not null,
    creationdate timestamp not null,
    lastmodified timestamp not null,
    a_attemtps int8 default null,
@@ -1323,7 +1323,7 @@ create table o_mapper (
 
 -- qti 2.1
 create table o_qti_assessmenttest_session (
-   id bigserial,
+   id int8 not null,
    creationdate timestamp not null,
    lastmodified timestamp not null,
    q_exploded bool default false,
@@ -1343,10 +1343,12 @@ create table o_qti_assessmenttest_session (
 );
 
 create table o_qti_assessmentitem_session (
-   id bigserial,
+   id int8 not null,
    creationdate timestamp not null,
    lastmodified timestamp not null,
    q_itemidentifier varchar(64) not null,
+   q_sectionidentifier varchar(64) default null,
+   q_testpartidentifier varchar(64) default null,
    q_duration int8,
    q_score decimal default null,
    q_passed bool default null,
@@ -1356,7 +1358,7 @@ create table o_qti_assessmentitem_session (
 );
 
 create table o_qti_assessment_response (
-   id bigserial,
+   id int8 not null,
    creationdate timestamp not null,
    lastmodified timestamp not null,
    q_responseidentifier varchar(64) not null,
@@ -1369,7 +1371,7 @@ create table o_qti_assessment_response (
 );
 
 create table o_qti_assessment_marks (
-   id bigserial,
+   id int8 not null,
    creationdate timestamp not null,
    lastmodified timestamp not null,
    q_marks text default null,
@@ -2258,7 +2260,7 @@ create index o_mapper_uuid_idx on o_mapper (mapper_uuid);
 alter table o_qti_assessmenttest_session add constraint qti_sess_to_repo_entry_idx foreign key (fk_entry) references o_repositoryentry (repositoryentry_id);
 create index idx_testess_to_repo_entry_idx on o_qti_assessmenttest_session (fk_entry);
 alter table o_qti_assessmenttest_session add constraint qti_sess_to_course_entry_idx foreign key (fk_reference_entry) references o_repositoryentry (repositoryentry_id);
-create index idx_qti_sess_to_course_entry_idx on o_qti_assessmenttest_session (fk_reference_entry);
+create index idx_qti_sess_to_centry_idx on o_qti_assessmenttest_session (fk_reference_entry);
 alter table o_qti_assessmenttest_session add constraint qti_sess_to_identity_idx foreign key (fk_identity) references o_bs_identity (id);
 create index idx_qti_sess_to_identity_idx on o_qti_assessmenttest_session (fk_identity);
 alter table o_qti_assessmenttest_session add constraint qti_sess_to_as_entry_idx foreign key (fk_assessment_entry) references o_as_entry (id);
@@ -2277,7 +2279,7 @@ create index idx_response_identifier_idx on o_qti_assessment_response (q_respons
 alter table o_qti_assessment_marks add constraint qti_marks_to_repo_entry_idx foreign key (fk_entry) references o_repositoryentry (repositoryentry_id);
 create index idx_marks_to_repo_entry_idx on o_qti_assessment_marks (fk_entry);
 alter table o_qti_assessment_marks add constraint qti_marks_to_course_entry_idx foreign key (fk_reference_entry) references o_repositoryentry (repositoryentry_id);
-create index idx_qti_marks_to_course_entry_idx on o_qti_assessment_marks (fk_reference_entry);
+create index idx_qti_marks_to_centry_idx on o_qti_assessment_marks (fk_reference_entry);
 alter table o_qti_assessment_marks add constraint qti_marks_to_identity_idx foreign key (fk_identity) references o_bs_identity (id);
 create index idx_qti_marks_to_identity_idx on o_qti_assessment_marks (fk_identity);
 

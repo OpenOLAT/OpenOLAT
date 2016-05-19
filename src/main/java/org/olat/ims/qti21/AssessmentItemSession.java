@@ -34,7 +34,22 @@ public interface AssessmentItemSession extends CreateInfo, ModifiedInfo {
 	
 	public Long getKey();
 	
+	/**
+	 * @return The identifier of the assessmentItemRef of the session
+	 */
 	public String getAssessmentItemIdentifier();
+	
+	/**
+	 * @return The identifier of the first section in the ancestors of
+	 * 		the assessmentItemRef of the session
+	 */
+	public String getSectionIdentifier();
+	
+	/**
+	 * @return The identifier of the testPart in the ancestors of the
+	 * 		assessmentItemRef of the session
+	 */
+	public String getTestPartIdentifier();
 	
 	public Boolean getPassed();
 

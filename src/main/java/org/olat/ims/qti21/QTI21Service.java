@@ -29,6 +29,7 @@ import java.util.Map;
 import org.olat.basesecurity.IdentityRef;
 import org.olat.core.gui.components.form.flexible.impl.MultipartFileInfos;
 import org.olat.core.id.Identity;
+import org.olat.ims.qti21.model.ParentPartItemRefs;
 import org.olat.ims.qti21.model.ResponseLegality;
 import org.olat.ims.qti21.model.audit.CandidateEvent;
 import org.olat.ims.qti21.model.audit.CandidateItemEventType;
@@ -169,7 +170,7 @@ public interface QTI21Service {
 	 */
 	public List<AssessmentTestSession> getAssessmentTestSessions(RepositoryEntryRef courseEntry, String subIdent, IdentityRef identity);
 	
-	public AssessmentItemSession getOrCreateAssessmentItemSession(AssessmentTestSession candidateSession, String assessmentItemIdentifier);
+	public AssessmentItemSession getOrCreateAssessmentItemSession(AssessmentTestSession candidateSession, ParentPartItemRefs parentParts, String assessmentItemIdentifier);
 	
 	public AssessmentResponse createAssessmentResponse(AssessmentTestSession candidateSession, AssessmentItemSession assessmentItemSession,
 			String responseIdentifier, ResponseLegality legality, ResponseDataType type);

@@ -25,6 +25,7 @@ import java.util.List;
 import org.olat.core.commons.persistence.DB;
 import org.olat.ims.qti21.AssessmentItemSession;
 import org.olat.ims.qti21.AssessmentTestSession;
+import org.olat.ims.qti21.model.ParentPartItemRefs;
 import org.olat.ims.qti21.model.jpa.AssessmentItemSessionImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -41,13 +42,17 @@ public class AssessmentItemSessionDAO {
 	@Autowired
 	private DB dbInstance;
 	
-	public AssessmentItemSession createAndPersistAssessmentItemSession(AssessmentTestSession assessmentTestSession, String assessmentItemIdentifier) {
+	public AssessmentItemSession createAndPersistAssessmentItemSession(AssessmentTestSession assessmentTestSession, ParentPartItemRefs parentParts, String assessmentItemIdentifier) {
 		AssessmentItemSessionImpl itemSession = new AssessmentItemSessionImpl();
 		Date now = new Date();
 		itemSession.setCreationDate(now);
 		itemSession.setLastModified(now);
 		itemSession.setAssessmentItemIdentifier(assessmentItemIdentifier);
 		itemSession.setAssessmentTestSession(assessmentTestSession);
+		if(parentParts != null) {
+			itemSession.setSectionIdentifier(parentParts.getSectionIdentifier());
+			itemSession.setTestPartIdentifier(parentParts.getTestPartIdentifier());
+		}
 		dbInstance.getCurrentEntityManager().persist(itemSession);
 		return itemSession;
 	}

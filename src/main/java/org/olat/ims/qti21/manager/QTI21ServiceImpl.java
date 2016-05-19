@@ -69,6 +69,7 @@ import org.olat.ims.qti21.QTI21Module;
 import org.olat.ims.qti21.QTI21Service;
 import org.olat.ims.qti21.manager.audit.AssessmentSessionAuditFileLog;
 import org.olat.ims.qti21.manager.audit.AssessmentSessionAuditOLog;
+import org.olat.ims.qti21.model.ParentPartItemRefs;
 import org.olat.ims.qti21.model.ResponseLegality;
 import org.olat.ims.qti21.model.audit.CandidateEvent;
 import org.olat.ims.qti21.model.audit.CandidateItemEventType;
@@ -426,10 +427,10 @@ public class QTI21ServiceImpl implements QTI21Service, InitializingBean, Disposa
 	}
 
 	@Override
-	public AssessmentItemSession getOrCreateAssessmentItemSession(AssessmentTestSession assessmentTestSession, String assessmentItemIdentifier) {
+	public AssessmentItemSession getOrCreateAssessmentItemSession(AssessmentTestSession assessmentTestSession, ParentPartItemRefs parentParts, String assessmentItemIdentifier) {
 		AssessmentItemSession itemSession = itemSessionDao.getAssessmentItemSession(assessmentTestSession, assessmentItemIdentifier);
 		if(itemSession == null) {
-			itemSession = itemSessionDao.createAndPersistAssessmentItemSession(assessmentTestSession, assessmentItemIdentifier);
+			itemSession = itemSessionDao.createAndPersistAssessmentItemSession(assessmentTestSession, parentParts, assessmentItemIdentifier);
 		}
 		return itemSession;
 	}

@@ -26,9 +26,8 @@ import org.junit.Test;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.ims.qti21.AssessmentItemSession;
-import org.olat.ims.qti21.AssessmentResponse;
 import org.olat.ims.qti21.AssessmentTestSession;
-import org.olat.ims.qti21.model.ResponseLegality;
+import org.olat.ims.qti21.model.ParentPartItemRefs;
 import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.assessment.AssessmentService;
 import org.olat.repository.RepositoryEntry;
@@ -36,20 +35,17 @@ import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import uk.ac.ed.ph.jqtiplus.types.ResponseData.ResponseDataType;
-
 /**
  * 
- * Initial date: 29.01.2016<br>
+ * Initial date: 18.05.2016<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class AssessmentResponseDAOTest extends OlatTestCase {
+public class AssessmentItemSessionDAOTest extends OlatTestCase {
 	
+
 	@Autowired
 	private DB dbInstance;
-	@Autowired
-	private AssessmentResponseDAO responseDao;
 	@Autowired
 	private AssessmentItemSessionDAO itemSessionDao;
 	@Autowired
@@ -58,7 +54,7 @@ public class AssessmentResponseDAOTest extends OlatTestCase {
 	private AssessmentService assessmentService;
 	
 	@Test
-	public void createResponse() {
+	public void createAndGetItemSession() {
 		// prepare a test and a user
 		RepositoryEntry testEntry = JunitTestHelper.createAndPersistRepositoryEntry();
 		Identity assessedIdentity = JunitTestHelper.createAndPersistIdentityAsRndUser("response-session-1");
@@ -66,17 +62,25 @@ public class AssessmentResponseDAOTest extends OlatTestCase {
 		dbInstance.commit();
 		
 		String itemIdentifier = UUID.randomUUID().toString();
-		String responseIdentifier = UUID.randomUUID().toString();
+		ParentPartItemRefs parentParts = new ParentPartItemRefs();
+		String sectionIdentifier = UUID.randomUUID().toString();
+		parentParts.setSectionIdentifier(sectionIdentifier);
+		String testPartIdentifier = UUID.randomUUID().toString();
+		parentParts.setTestPartIdentifier(testPartIdentifier);
 		
 		//make test, item and response
 		AssessmentTestSession testSession = testSessionDao.createAndPersistTestSession(testEntry, testEntry, "_", assessmentEntry, assessedIdentity, true);
 		Assert.assertNotNull(testSession);
-		AssessmentItemSession itemSession = itemSessionDao.createAndPersistAssessmentItemSession(testSession, null, itemIdentifier);
+		AssessmentItemSession itemSession = itemSessionDao.createAndPersistAssessmentItemSession(testSession, parentParts, itemIdentifier);
 		Assert.assertNotNull(itemSession);
-		AssessmentResponse response = responseDao.createAssessmentResponse(testSession, itemSession, responseIdentifier, ResponseLegality.VALID, ResponseDataType.FILE);
-		Assert.assertNotNull(response);
-		dbInstance.commit();
+		dbInstance.commitAndCloseSession();
+		
+		AssessmentItemSession reloadedItemSession = itemSessionDao.getAssessmentItemSession(testSession, itemIdentifier);
+		Assert.assertNotNull(reloadedItemSession);
+		Assert.assertNotNull(reloadedItemSession.getCreationDate());
+		Assert.assertNotNull(reloadedItemSession.getLastModified());
+		Assert.assertEquals(itemIdentifier, reloadedItemSession.getAssessmentItemIdentifier());
+		Assert.assertEquals(sectionIdentifier, reloadedItemSession.getSectionIdentifier());
+		Assert.assertEquals(testPartIdentifier, reloadedItemSession.getTestPartIdentifier());
 	}
-	
-
 }
