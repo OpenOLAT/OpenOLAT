@@ -31,7 +31,14 @@
 		</div>
 		<script type="text/javascript">
 		jQuery(function() {
+			var map = jQuery('#${containerId}_img').maphilight({
+				fillColor: '888888',
+				strokeColor: '0000ff',
+				strokeWidth: 3
+			});
+
 			jQuery('#${containerId}').graphicGapInteraction({
+				maphilight: map,
 				responseIdentifier: '$responseIdentifier',
 				formDispatchFieldId: '$r.formDispatchFieldId',
 				responseValue: '$r.toString($responseValue,","," ")',
