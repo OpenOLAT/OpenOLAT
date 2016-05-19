@@ -40,6 +40,7 @@ import org.olat.core.commons.services.thumbnail.ThumbnailSPI;
 import org.olat.core.commons.services.video.spi.FLVParser;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.FileUtils;
 import org.olat.core.util.WorkThreadInformations;
 import org.olat.core.util.vfs.LocalFileImpl;
 import org.olat.core.util.vfs.VFSLeaf;
@@ -58,11 +59,21 @@ public class MovieServiceImpl implements MovieService, ThumbnailSPI {
 	private static final OLog log = Tracing.createLoggerFor(MovieServiceImpl.class);
 
 	private static final List<String> extensions = new ArrayList<>();
+	private static final List<String> fourCCs = new ArrayList<>();
 	static {
+		// supported file extensions
 		extensions.add("mp4");
-		extensions.add("mov");
 		extensions.add("m4v");
+		extensions.add("mov");
+		// supported fourCC for H264 codec
+		fourCCs.add("avc1");
+		fourCCs.add("davc");
+		fourCCs.add("h264");
+		fourCCs.add("x264");
+		fourCCs.add("vssh");
 	}
+	
+	
 	
 	@Override
 	public List<String> getExtensions() {
@@ -82,7 +93,7 @@ public class MovieServiceImpl implements MovieService, ThumbnailSPI {
 			return null;
 		}
 
-		if(suffix.equals("mp4") || suffix.equals("m4v")) {
+		if(extensions.contains(suffix)) {
 			try(RandomAccessFile accessFile = new RandomAccessFile(file, "r")) {
 				FileChannel ch = accessFile.getChannel();
 				FileChannelWrapper in = new FileChannelWrapper(ch);
@@ -124,7 +135,7 @@ public class MovieServiceImpl implements MovieService, ThumbnailSPI {
 			return -1;
 		}
 
-		if(suffix.equals("mp4") || suffix.equals("m4v")) {
+		if(extensions.contains(suffix)) {
 			try(RandomAccessFile accessFile = new RandomAccessFile(file, "r")) {
 				FileChannel ch = accessFile.getChannel();
 				FileChannelWrapper in = new FileChannelWrapper(ch);
@@ -143,6 +154,36 @@ public class MovieServiceImpl implements MovieService, ThumbnailSPI {
 		}
 
 		return -1;
+	}
+
+	@Override
+	public boolean isMP4(VFSLeaf media, String fileName) {
+		File file = null;
+		if(media instanceof VFSCPNamedItem) {
+			media = ((VFSCPNamedItem)media).getDelegate();
+		}
+		if(media instanceof LocalFileImpl) {
+			file = ((LocalFileImpl)media).getBasefile();
+		}
+		if(file == null) {
+			return false;
+		}
+		String suffix = FileUtils.getFileSuffix(fileName);
+		if(extensions.contains(suffix)) {
+			try(RandomAccessFile accessFile = new RandomAccessFile(file, "r")) {
+				FileChannel ch = accessFile.getChannel();
+				FileChannelWrapper in = new FileChannelWrapper(ch);
+				MP4Demuxer demuxer1 = new MP4Demuxer(in);
+				String fourCC = demuxer1.getVideoTrack().getFourcc();
+				if (fourCCs.contains(fourCC.toLowerCase())) {
+					return true;
+				} 
+				log.info("Movie file::" + fileName + " has correct suffix::" + suffix + " but fourCC::" + fourCC + " not in our list of supported codecs.");
+			} catch (Exception | Error e) {
+				// anticipated exception, is not an mp4 file
+			}
+		}
+		return false;
 	}
 
 	

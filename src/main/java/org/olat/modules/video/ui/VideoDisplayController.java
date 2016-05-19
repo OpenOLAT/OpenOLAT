@@ -127,7 +127,9 @@ public class VideoDisplayController extends BasicController {
 			if ((showComments || showRating) && !ureq.getUserSession().getRoles().isGuestOnly()) {
 				CommentAndRatingSecurityCallback ratingSecCallback = new CommentAndRatingDefaultSecurityCallback(getIdentity(), false, false);
 				commentsAndRatingCtr = new UserCommentsAndRatingsController(ureq, getWindowControl(),entry.getOlatResource(), OresSubPath , ratingSecCallback,showComments, showRating, true);
-				commentsAndRatingCtr.expandComments(ureq);
+				if (showComments) {					
+					commentsAndRatingCtr.expandComments(ureq);
+				}
 				listenTo(commentsAndRatingCtr);				
 				mainVC.put("commentsAndRating", commentsAndRatingCtr.getInitialComponent());
 			}

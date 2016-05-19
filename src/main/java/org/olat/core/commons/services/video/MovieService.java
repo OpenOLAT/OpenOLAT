@@ -49,4 +49,12 @@ public interface MovieService {
 	 */
 	public long getDuration(VFSLeaf media, String suffix);
 
+	/**
+	 * Checks if a file is really an mp4 file we can handle
+	 * @param media
+	 * @param fileName
+	 * @return 
+	 */
+	public boolean isMP4(VFSLeaf media, String fileName);
+	
 }
