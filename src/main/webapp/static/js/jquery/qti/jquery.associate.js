@@ -56,6 +56,13 @@
     			itemEl.css('border', '2px solid red');
     			itemEl.addClass('oo-selected');
     		}
+    	}).draggable({
+    		containment: "#" + containerId,
+    		scroll: false,
+    		revert: "invalid",
+    		stop: function(event, ui) {
+    			jQuery(this).css({'left': '0px', 'top': '0px' });
+    		}
     	}).on('click', {formId: settings.formDispatchFieldId}, setFlexiFormDirtyByListener);
     	
     	jQuery("#" + containerId + "_panel .association_box").on('click', function(e, el) {
@@ -69,6 +76,18 @@
     			box.css('border', '3px solid grey');
     			recalculate(containerId, settings);
     		});
+    	}).droppable({
+    		drop: function(event, ui) {
+    			var itemEl = ui.draggable;
+    			var box = jQuery(this);
+    			itemEl
+					.css('border', 'none') 
+					.removeClass('oo-selected')
+					.addClass('oo-choosed');
+    			console.log(itemEl.data("uiDraggable"));
+    			box.append(itemEl);
+    			box.css('border', '3px solid grey');
+    		}
     	}).on('click', {formId: settings.formDispatchFieldId}, setFlexiFormDirtyByListener);
     };
     
