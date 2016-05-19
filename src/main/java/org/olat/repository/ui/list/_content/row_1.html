@@ -26,7 +26,7 @@
 		#if($row.lifecycle || $row.lifecycleSoftKey || $row.lifecycleLabel || $row.lifecycleStart || $row.lifecycleEnd || ($row.location  && !${row.location.isEmpty()}))
 			<div class="o_lifecycle #if ($row.isActive()) o_active #end">
 				#if($row.lifecycle || $row.lifecycleSoftKey || $row.lifecycleLabel || $row.lifecycleStart || $row.lifecycleEnd)
-					<div><i class="o_icon o_icon_lifecycle"> </i>
+					<div><i class="o_icon o_icon_lifecycle_date"> </i>
 					#if(($row.lifecycleSoftKey and !$row.lifecycleSoftKey.isEmpty()) || ($row.lifecycleLabel and !$row.lifecycleLabel.isEmpty()))
 						#if($row.lifecycleSoftKey and !$row.lifecycleSoftKey.isEmpty()) $r.escapeHtml($row.lifecycleSoftKey)
 						#else $r.escapeHtml($row.lifecycleLabel) #end
