@@ -32,6 +32,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -516,41 +517,42 @@ public class QTI21ServiceImpl implements QTI21Service, InitializingBean, Disposa
 	}
 	
 	private void recordOutcomeVariables(AssessmentTestSession candidateSession, AbstractResult resultNode, AssessmentSessionAuditLogger auditLogger) {
-		Map<Identifier,String> outcomes = new HashMap<>();
+		//preserve the order
+		Map<Identifier,String> outcomes = new LinkedHashMap<>();
 		
 		for (final ItemVariable itemVariable : resultNode.getItemVariables()) {
 			if (itemVariable instanceof OutcomeVariable) {
-
-				OutcomeVariable outcomeVariable = (OutcomeVariable) itemVariable;
-				Identifier identifier = outcomeVariable.getIdentifier();
-				Value computedValue = itemVariable.getComputedValue();
-				
-				
-				if (QtiConstants.VARIABLE_DURATION_IDENTIFIER.equals(identifier)) {
-					log.audit(candidateSession.getKey() + " :: " + itemVariable.getIdentifier() + " - "
-							+ stringifyQtiValue(computedValue));
-				} else if (QTI21Constants.SCORE_IDENTIFIER.equals(identifier)) {
-					if (computedValue instanceof NumberValue) {
-						double score = ((NumberValue) computedValue).doubleValue();
-						candidateSession.setScore(new BigDecimal(score));
-					}
-				} else if (QTI21Constants.PASS_IDENTIFIER.equals(identifier)) {
-					if (computedValue instanceof BooleanValue) {
-						boolean pass = ((BooleanValue) computedValue).booleanValue();
-						candidateSession.setPassed(pass);
-					}
-				}
-				
-				try {
-					outcomes.put(identifier, stringifyQtiValue(computedValue));
-				} catch (Exception e) {
-					log.error("", e);
-				}
+				recordOutcomeVariable(candidateSession, (OutcomeVariable)itemVariable, outcomes);
 			}
 		}
 		
 		if(auditLogger != null) {
 			auditLogger.logCandidateOutcomes(candidateSession, outcomes);
+		}
+	}
+	
+	private void recordOutcomeVariable(AssessmentTestSession candidateSession, OutcomeVariable outcomeVariable, Map<Identifier,String> outcomes) {
+		Identifier identifier = outcomeVariable.getIdentifier();
+		Value computedValue = outcomeVariable.getComputedValue();
+
+		if (QtiConstants.VARIABLE_DURATION_IDENTIFIER.equals(identifier)) {
+			log.audit(candidateSession.getKey() + " :: " + outcomeVariable.getIdentifier() + " - " + stringifyQtiValue(computedValue));
+		} else if (QTI21Constants.SCORE_IDENTIFIER.equals(identifier)) {
+			if (computedValue instanceof NumberValue) {
+				double score = ((NumberValue) computedValue).doubleValue();
+				candidateSession.setScore(new BigDecimal(score));
+			}
+		} else if (QTI21Constants.PASS_IDENTIFIER.equals(identifier)) {
+			if (computedValue instanceof BooleanValue) {
+				boolean pass = ((BooleanValue) computedValue).booleanValue();
+				candidateSession.setPassed(pass);
+			}
+		}
+		
+		try {
+			outcomes.put(identifier, stringifyQtiValue(computedValue));
+		} catch (Exception e) {
+			log.error("", e);
 		}
 	}
     
@@ -700,26 +702,21 @@ public class QTI21ServiceImpl implements QTI21Service, InitializingBean, Disposa
 
 	@Override
 	public void recordItemAssessmentResult(AssessmentTestSession candidateSession, AssessmentResult assessmentResult, AssessmentSessionAuditLogger auditLogger) {
-		//do nothing for the mmoment
-		List<ItemResult> itemResults = assessmentResult.getItemResults();
-		for(ItemResult itemResult:itemResults) {
+		//preserve the order
+		Map<Identifier,String> outcomes = new LinkedHashMap<>();
+
+		for (final ItemResult itemResult:assessmentResult.getItemResults()) {
 			for (final ItemVariable itemVariable : itemResult.getItemVariables()) {
 	            if (itemVariable instanceof OutcomeVariable) {
-	                
-	                OutcomeVariable outcomeVariable = (OutcomeVariable)itemVariable;
-	            	Identifier identifier = outcomeVariable.getIdentifier();
-	            	if(QtiConstants.VARIABLE_DURATION_IDENTIFIER.equals(identifier)) {
-	            		log.audit(candidateSession.getKey() + " :: " + itemVariable.getIdentifier() + " - " + stringifyQtiValue(itemVariable.getComputedValue()));
-	            	} else  if(QTI21Constants.SCORE_IDENTIFIER.equals(identifier)) {
-	            		Value value = itemVariable.getComputedValue();
-	            		if(value instanceof NumberValue) {
-	            			double score = ((NumberValue)value).doubleValue();
-	            			candidateSession.setScore(new BigDecimal(Double.toString(score)));
-	            			//System.out.println("Score: " + score);
-	            		}
-	            	}
+					if (itemVariable instanceof OutcomeVariable) {
+						recordOutcomeVariable(candidateSession, (OutcomeVariable)itemVariable, outcomes);
+					}
 	            }
-	        }
+			}
+		}
+		
+		if(auditLogger != null) {
+			auditLogger.logCandidateOutcomes(candidateSession, outcomes);
 		}
 	}
 

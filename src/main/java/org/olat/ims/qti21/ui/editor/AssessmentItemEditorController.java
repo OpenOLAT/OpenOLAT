@@ -41,7 +41,6 @@ import org.olat.ims.qti21.model.xml.interactions.HotspotAssessmentItemBuilder;
 import org.olat.ims.qti21.model.xml.interactions.KPrimAssessmentItemBuilder;
 import org.olat.ims.qti21.model.xml.interactions.MultipleChoiceAssessmentItemBuilder;
 import org.olat.ims.qti21.model.xml.interactions.SingleChoiceAssessmentItemBuilder;
-import org.olat.ims.qti21.ui.AssessmentItemDisplayController;
 import org.olat.ims.qti21.ui.editor.events.AssessmentItemEvent;
 import org.olat.ims.qti21.ui.editor.interactions.ChoiceScoreController;
 import org.olat.ims.qti21.ui.editor.interactions.EssayEditorController;
@@ -77,7 +76,7 @@ public class AssessmentItemEditorController extends BasicController {
 	
 	private final int displayTabPosition;
 	private MetadataEditorController metadataEditor;
-	private AssessmentItemDisplayController displayCtrl;
+	private AssessmentItemPreviewController displayCtrl;
 	private Controller itemEditor, scoreEditor, feedbackEditor;
 	
 	private final File itemFile;
@@ -114,7 +113,7 @@ public class AssessmentItemEditorController extends BasicController {
 
 		initItemEditor(ureq);
 		
-		displayCtrl = new AssessmentItemDisplayController(ureq, getWindowControl(), resolvedAssessmentItem, rootDirectory, itemFile);
+		displayCtrl = new AssessmentItemPreviewController(ureq, getWindowControl(), resolvedAssessmentItem, rootDirectory, itemFile);
 		listenTo(displayCtrl);
 		displayTabPosition = tabbedPane.addTab(translate("preview"), displayCtrl.getInitialComponent());
 		
@@ -143,8 +142,8 @@ public class AssessmentItemEditorController extends BasicController {
 		initItemEditor(ureq);
 		
 		AssessmentEntry assessmentEntry = assessmentService.getOrCreateAssessmentEntry(getIdentity(), testEntry, null, testEntry);
-		displayCtrl = new AssessmentItemDisplayController(ureq, getWindowControl(),
-				testEntry, assessmentEntry, true, resolvedAssessmentItem, itemRef, rootDirectory);
+		displayCtrl = new AssessmentItemPreviewController(ureq, getWindowControl(),
+				resolvedAssessmentItem, itemRef, testEntry, assessmentEntry, rootDirectory);
 		listenTo(displayCtrl);
 		displayTabPosition = tabbedPane.addTab(translate("preview"), displayCtrl);
 		
@@ -172,7 +171,7 @@ public class AssessmentItemEditorController extends BasicController {
 			case kprim: itemBuilder = initKPrimChoiceEditors(ureq, item); break;
 			case hotspot: itemBuilder = initHotspotEditors(ureq, item); break;
 			case essay: itemBuilder = initEssayEditors(ureq, item); break;
-			default: initItemCreatedByUnkownEditor(ureq); break;
+			default: initItemCreatedByUnkownEditor(ureq, item); break;
 		}
 		
 		if(metadataBuilder != null) {
@@ -182,8 +181,8 @@ public class AssessmentItemEditorController extends BasicController {
 		}
 	}
 	
-	private void initItemCreatedByUnkownEditor(UserRequest ureq) {
-		itemEditor = new UnkownItemEditorController(ureq, getWindowControl());
+	private void initItemCreatedByUnkownEditor(UserRequest ureq, AssessmentItem item) {
+		itemEditor = new UnkownItemEditorController(ureq, getWindowControl(), item);
 		listenTo(itemEditor);
 		tabbedPane.addTab(translate("form.unkown"), itemEditor);
 	}
@@ -293,10 +292,10 @@ public class AssessmentItemEditorController extends BasicController {
 			} else if(selectedCtrl == displayCtrl) {
 				if(testEntry != null) {
 					AssessmentEntry assessmentEntry = assessmentService.getOrCreateAssessmentEntry(getIdentity(), testEntry, null, testEntry);
-					displayCtrl = new AssessmentItemDisplayController(ureq, getWindowControl(),
-						testEntry, assessmentEntry, true, resolvedAssessmentItem, itemRef, rootDirectory);
+					displayCtrl = new AssessmentItemPreviewController(ureq, getWindowControl(),
+						resolvedAssessmentItem, itemRef, testEntry, assessmentEntry, rootDirectory);
 				} else {
-					displayCtrl = new AssessmentItemDisplayController(ureq, getWindowControl(), resolvedAssessmentItem, rootDirectory, itemFile);
+					displayCtrl = new AssessmentItemPreviewController(ureq, getWindowControl(), resolvedAssessmentItem, rootDirectory, itemFile);
 				}
 				
 				listenTo(displayCtrl);

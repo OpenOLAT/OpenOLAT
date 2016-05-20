@@ -223,7 +223,7 @@ public class QTI21QPoolServiceProvider implements QPoolSPI {
 
 	@Override
 	public Controller getPreviewController(UserRequest ureq, WindowControl wControl, QuestionItem item, boolean summary) {
-		return new QTI21PreviewController(ureq, wControl, item, summary);
+		return new QTI21PreviewController(ureq, wControl, item);
 	}
 
 	@Override

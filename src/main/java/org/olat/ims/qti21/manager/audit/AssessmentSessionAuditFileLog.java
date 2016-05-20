@@ -55,7 +55,7 @@ public class AssessmentSessionAuditFileLog implements AssessmentSessionAuditLogg
 
 	public AssessmentSessionAuditFileLog(OutputStream outputStream) throws IOException {
 		this.outputStream = outputStream;
-		debugLog = Settings.isDebuging() ? new AssessmentSessionAuditOLog() : new AssessmentSessionAuditDevNull();
+		debugLog = Settings.isDebuging() ? new AssessmentSessionAuditOLog() : new DefaultAssessmentSessionAuditLogger();
 		writer = new OutputStreamWriter(outputStream, "UTF-8");
 	}
 	

@@ -1,0 +1,22 @@
+$r.render("display")
+
+#if($responses && !${responses.isEmpty()})
+<div class="o_block_large clearfix">
+	<h4><i class="o_icon o_icon_dev o_icon-fw"> </i> $r.translate("debug.responses")</h4>
+	<table class="o_info small table table-hover"><tbody>
+	#foreach($response in $responses)
+		<tr><th>${response.identifier}</th><td>${response.stringuifiedValue}<td></td>
+	#end
+	</tbody></table>
+</div>
+#end
+#if($outcomes && !${outcomes.isEmpty()})
+<div class="o_block_large clearfix">
+	<h4><i class="o_icon o_icon_dev o_icon-fw"> </i> $r.translate("debug.outcomes")</h4>
+	<table class="o_info small table table-hover"><tbody>
+	#foreach($outcome in $outcomes)
+		<tr><th>${outcome.identifier}</th><td>${outcome.stringuifiedValue}<td></td>
+	#end
+	</tbody></table>
+</div>
+#end

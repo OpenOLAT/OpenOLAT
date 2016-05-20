@@ -31,36 +31,36 @@ import uk.ac.ed.ph.jqtiplus.types.Identifier;
 
 /**
  * 
- * Write the logs in a file in the user storage for this assessment test
+ * A default implementation which does nothing to inherit from.
  * 
- * Initial date: 12.05.2016<br>
+ * Initial date: 20.05.2016<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class AssessmentSessionAuditDevNull implements AssessmentSessionAuditLogger {
-
+public class DefaultAssessmentSessionAuditLogger implements AssessmentSessionAuditLogger {
+	
 	@Override
-	public final void logCandidateEvent(CandidateEvent candidateEvent) {
+	public void logCandidateEvent(CandidateEvent candidateEvent) {
 		//
 	}
 	
 	@Override
-	public final void logCandidateEvent(CandidateEvent candidateEvent, Map<Identifier, AssessmentResponse> candidateResponseMap) {
+	public void logCandidateEvent(CandidateEvent candidateEvent, Map<Identifier, AssessmentResponse> candidateResponseMap) {
 		//
 	}
 
 	@Override
-	public final void logCandidateOutcomes(AssessmentTestSession candidateSession, Map<Identifier, String> outcomes) {
+	public void logCandidateOutcomes(AssessmentTestSession candidateSession, Map<Identifier, String> outcomes) {
 		//
 	}
 
 	@Override
-	public final void logAndThrowCandidateException(AssessmentTestSession session, CandidateExceptionReason reason, Exception ex) {
+	public void logAndThrowCandidateException(AssessmentTestSession session, CandidateExceptionReason reason, Exception ex) {
 		//
 	}
 
 	@Override
-	public final void close() {
+	public void close() {
 		//
 	}
 }

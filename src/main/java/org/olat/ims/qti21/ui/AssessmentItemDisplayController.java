@@ -43,13 +43,15 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.fileresource.types.ImsQTI21Resource;
 import org.olat.fileresource.types.ImsQTI21Resource.PathResourceLocator;
+import org.olat.ims.qti21.AssessmentResponse;
 import org.olat.ims.qti21.AssessmentSessionAuditLogger;
 import org.olat.ims.qti21.AssessmentTestSession;
 import org.olat.ims.qti21.QTI21DeliveryOptions;
 import org.olat.ims.qti21.QTI21Service;
-import org.olat.ims.qti21.manager.audit.AssessmentSessionAuditDevNull;
 import org.olat.ims.qti21.model.InMemoryAssessmentTestSession;
+import org.olat.ims.qti21.model.audit.AssessmentResponseData;
 import org.olat.ims.qti21.model.audit.CandidateEvent;
+import org.olat.ims.qti21.model.audit.CandidateExceptionReason;
 import org.olat.ims.qti21.model.audit.CandidateItemEventType;
 import org.olat.ims.qti21.ui.components.AssessmentItemFormItem;
 import org.olat.modules.assessment.AssessmentEntry;
@@ -98,7 +100,7 @@ public class AssessmentItemDisplayController extends BasicController implements 
 	private RepositoryEntry entry;
 	private AssessmentTestSession candidateSession;
 	
-	private AssessmentSessionAuditLogger candidateAuditLogger = new AssessmentSessionAuditDevNull();
+	private final AssessmentSessionAuditLogger candidateAuditLogger;
 
 	@Autowired
 	private QTI21Service qtiService;
@@ -113,12 +115,13 @@ public class AssessmentItemDisplayController extends BasicController implements 
 	 * @param itemFileRef
 	 */
 	public AssessmentItemDisplayController(UserRequest ureq, WindowControl wControl, ResolvedAssessmentItem resolvedAssessmentItem,
-			File fUnzippedDirRoot, File itemFileRef) {
+			File fUnzippedDirRoot, File itemFileRef, AssessmentSessionAuditLogger candidateAuditLogger) {
 		super(ureq, wControl);
 		
 		this.itemFileRef = itemFileRef;
 		this.fUnzippedDirRoot = fUnzippedDirRoot;
 		this.resolvedAssessmentItem = resolvedAssessmentItem;
+		this.candidateAuditLogger = candidateAuditLogger;
 		deliveryOptions = QTI21DeliveryOptions.defaultSettings();
 		currentRequestTimestamp = ureq.getRequestTimestamp();
 		candidateSession = new InMemoryAssessmentTestSession();
@@ -136,12 +139,14 @@ public class AssessmentItemDisplayController extends BasicController implements 
 	}
 	
 	public AssessmentItemDisplayController(UserRequest ureq, WindowControl wControl,
-			ResolvedAssessmentItem resolvedAssessmentItem, AssessmentItemRef itemRef, File fUnzippedDirRoot) {
+			ResolvedAssessmentItem resolvedAssessmentItem, AssessmentItemRef itemRef, File fUnzippedDirRoot,
+			AssessmentSessionAuditLogger candidateAuditLogger) {
 		super(ureq, wControl);
 		
 		this.itemFileRef = new File(fUnzippedDirRoot, itemRef.getHref().toString());
 		this.fUnzippedDirRoot = fUnzippedDirRoot;
 		this.resolvedAssessmentItem = resolvedAssessmentItem;
+		this.candidateAuditLogger = candidateAuditLogger;
 		deliveryOptions = QTI21DeliveryOptions.defaultSettings();
 		currentRequestTimestamp = ureq.getRequestTimestamp();
 		candidateSession = new InMemoryAssessmentTestSession();
@@ -160,12 +165,14 @@ public class AssessmentItemDisplayController extends BasicController implements 
 	
 	public AssessmentItemDisplayController(UserRequest ureq, WindowControl wControl,
 			RepositoryEntry testEntry, AssessmentEntry assessmentEntry, boolean authorMode,
-			ResolvedAssessmentItem resolvedAssessmentItem, AssessmentItemRef itemRef, File fUnzippedDirRoot) {
+			ResolvedAssessmentItem resolvedAssessmentItem, AssessmentItemRef itemRef, File fUnzippedDirRoot,
+			AssessmentSessionAuditLogger candidateAuditLogger) {
 		super(ureq, wControl);
 		
 		this.itemFileRef = new File(fUnzippedDirRoot, itemRef.getHref().toString());
 		this.fUnzippedDirRoot = fUnzippedDirRoot;
 		this.resolvedAssessmentItem = resolvedAssessmentItem;
+		this.candidateAuditLogger = candidateAuditLogger;
 		deliveryOptions = QTI21DeliveryOptions.defaultSettings();
 		currentRequestTimestamp = ureq.getRequestTimestamp();
 		candidateSession = qtiService.createAssessmentTestSession(getIdentity(), assessmentEntry, testEntry, itemRef.getIdentifier().toString(), testEntry, authorMode);
@@ -300,7 +307,7 @@ public class AssessmentItemDisplayController extends BasicController implements 
         /* Record and log entry event */
         final CandidateEvent candidateEvent = qtiService.recordCandidateItemEvent(candidateSession, null, entry,
         		CandidateItemEventType.ENTER, itemSessionState, notificationRecorder);
-        //candidateAuditLogger.logCandidateEvent(candidateEvent);
+        candidateAuditLogger.logCandidateEvent(candidateEvent);
         lastEvent = candidateEvent;
 
         /* Record current result state */
@@ -355,42 +362,31 @@ public class AssessmentItemDisplayController extends BasicController implements 
 	
 	public void handleResponses(UserRequest ureq, Map<Identifier, StringResponseData> stringResponseMap,
 			Map<Identifier,MultipartFileInfos> fileResponseMap, String candidateComment) {
-		
-		//Assert.notNull(candidateSessionContext, "candidateSessionContext");
-		// assertSessionType(candidateSessionContext, AssessmentObjectType.ASSESSMENT_ITEM);
-		// final CandidateSession candidateSession = candidateSessionContext.getCandidateSession();
-		// assertSessionNotTerminated(candidateSession);
 
 		/* Retrieve current JQTI state and set up JQTI controller */
 		NotificationRecorder notificationRecorder = new NotificationRecorder(NotificationLevel.INFO);
-		//final ItemSessionController itemSessionController = this.candidateDataService.createItemSessionController(mostRecentEvent, notificationRecorder);
 		ItemSessionState itemSessionState = itemSessionController.getItemSessionState();
 
 		/* Make sure an attempt is allowed */
 		if (itemSessionState.isEnded()) {
-			//candidateAuditLogger.logAndThrowCandidateException(candidateSession, CandidateExceptionReason.RESPONSES_NOT_EXPECTED);
+			candidateAuditLogger.logAndThrowCandidateException(candidateSession, CandidateExceptionReason.RESPONSES_NOT_EXPECTED, null);
 			logError("RESPONSES_NOT_EXPECTED", null);
 			return;
 		}
-
-		/* Make sure candidate may comment (if set) */
-		/*
-		if (candidateComment != null && !itemDeliverySettings.isAllowCandidateComment()) {
-			candidateAuditLogger.logAndThrowCandidateException(candidateSession, CandidateExceptionReason.CANDIDATE_COMMENT_FORBIDDEN);
-			return null;
-		}
-		 */
 
 		/* Build response map in required format for JQTI+.
 		 * NB: The following doesn't test for duplicate keys in the two maps. I'm not sure
 		 * it's worth the effort.
 		 */
-		final Map<Identifier, ResponseData> responseDataMap = new HashMap<Identifier, ResponseData>();
+		final Map<Identifier, ResponseData> responseDataMap = new HashMap<>();
+		final Map<Identifier, AssessmentResponse> assessmentResponseDataMap = new HashMap<>();
+
 		if (stringResponseMap!=null) {
 			for (final Entry<Identifier, StringResponseData> stringResponseEntry : stringResponseMap.entrySet()) {
 				final Identifier identifier = stringResponseEntry.getKey();
 				final StringResponseData stringResponseData = stringResponseEntry.getValue();
 				responseDataMap.put(identifier, stringResponseData);
+				assessmentResponseDataMap.put(identifier, new AssessmentResponseData(identifier, stringResponseData));
 			}
 		}
 		
@@ -404,6 +400,7 @@ public class AssessmentItemDisplayController extends BasicController implements 
                 	File storedFile = qtiService.importFileSubmission(candidateSession, multipartFile);
                 	final FileResponseData fileResponseData = new FileResponseData(storedFile, multipartFile.getContentType(), multipartFile.getFileName());
                     responseDataMap.put(identifier, fileResponseData);
+    				assessmentResponseDataMap.put(identifier, new AssessmentResponseData(identifier, fileResponseData));
                     //fileSubmissionMap.put(identifier, fileSubmission);
                 }
             }
@@ -417,7 +414,7 @@ public class AssessmentItemDisplayController extends BasicController implements 
 			try {
 				itemSessionController.setCandidateComment(timestamp, candidateComment);
 			} catch (final QtiCandidateStateException e) {
-				//candidateAuditLogger.logAndThrowCandidateException(candidateSession, CandidateExceptionReason.CANDIDATE_COMMENT_FORBIDDEN);
+				candidateAuditLogger.logAndThrowCandidateException(candidateSession, CandidateExceptionReason.CANDIDATE_COMMENT_FORBIDDEN, e);
 				logError("CANDIDATE_COMMENT_FORBIDDEN", null);
 				return;
 			} catch (final RuntimeException e) {
@@ -435,7 +432,6 @@ public class AssessmentItemDisplayController extends BasicController implements 
 			final Set<Identifier> badResponseIdentifiers = itemSessionState.getUnboundResponseIdentifiers();
 			allResponsesBound = badResponseIdentifiers.isEmpty();
 
-
 			/* Now validate the responses according to any constraints specified by the interactions */
 			if (allResponsesBound) {
 				final Set<Identifier> invalidResponseIdentifiers = itemSessionState.getInvalidResponseIdentifiers();
@@ -450,7 +446,7 @@ public class AssessmentItemDisplayController extends BasicController implements 
 				itemSessionController.performResponseProcessing(timestamp);
 			}
 		} catch (final QtiCandidateStateException e) {
-	            //candidateAuditLogger.logAndThrowCandidateException(candidateSession, CandidateExceptionReason.RESPONSES_NOT_EXPECTED);
+	        candidateAuditLogger.logAndThrowCandidateException(candidateSession, CandidateExceptionReason.RESPONSES_NOT_EXPECTED, null);
 			logError("RESPONSES_NOT_EXPECTED", e);
 			return;
 		} catch (final RuntimeException e) {
@@ -464,7 +460,7 @@ public class AssessmentItemDisplayController extends BasicController implements 
 				: CandidateItemEventType.RESPONSE_BAD;
 		final CandidateEvent candidateEvent = qtiService.recordCandidateItemEvent(candidateSession, null, entry,
 	                eventType, itemSessionState, notificationRecorder);
-		//candidateAuditLogger.logCandidateEvent(candidateEvent);
+		candidateAuditLogger.logCandidateEvent(candidateEvent, assessmentResponseDataMap);
 		lastEvent = candidateEvent;
 
 		/* Record current result state, or finish session */
@@ -502,23 +498,17 @@ public class AssessmentItemDisplayController extends BasicController implements 
     }
     
     public void requestSolution(UserRequest ureq) {
-        //Assert.notNull(candidateSessionContext, "candidateSessionContext");
-        //assertSessionType(candidateSessionContext, AssessmentObjectType.ASSESSMENT_ITEM);
-        //final CandidateSession candidateSession = candidateSessionContext.getCandidateSession();
-        //assertSessionNotTerminated(candidateSession);
-
-        NotificationRecorder notificationRecorder = new NotificationRecorder(NotificationLevel.INFO);
         ItemSessionState itemSessionState = itemSessionController.getItemSessionState();
 
         /* Make sure caller may do this */
         boolean allowSolutionWhenOpen = true;//itemDeliverySettings.isAllowSolutionWhenOpen()
 
         if (!itemSessionState.isEnded()  && !allowSolutionWhenOpen) {
-            //candidateAuditLogger.logAndThrowCandidateException(candidateSession, CandidateExceptionReason.SOLUTION_WHEN_INTERACTING_FORBIDDEN);
+            candidateAuditLogger.logAndThrowCandidateException(candidateSession, CandidateExceptionReason.SOLUTION_WHEN_INTERACTING_FORBIDDEN, null);
         	logError("SOLUTION_WHEN_INTERACTING_FORBIDDEN", null);
             return;
         } else if (itemSessionState.isEnded() /* && !itemDeliverySettings.isAllowSoftResetWhenEnded() */) {
-            //candidateAuditLogger.logAndThrowCandidateException(candidateSession, CandidateExceptionReason.SOLUTION_WHEN_ENDED_FORBIDDEN);
+            candidateAuditLogger.logAndThrowCandidateException(candidateSession, CandidateExceptionReason.SOLUTION_WHEN_ENDED_FORBIDDEN, null);
         	logError("SOLUTION_WHEN_ENDED_FORBIDDEN", null);
             return;
         }
@@ -531,7 +521,7 @@ public class AssessmentItemDisplayController extends BasicController implements 
             try {
                 itemSessionController.endItem(timestamp);
             } catch (final QtiCandidateStateException e) {
-                //candidateAuditLogger.logAndThrowCandidateException(candidateSession, CandidateExceptionReason.SOLUTION_WHEN_ENDED_FORBIDDEN);
+                candidateAuditLogger.logAndThrowCandidateException(candidateSession, CandidateExceptionReason.SOLUTION_WHEN_ENDED_FORBIDDEN, null);
             	logError("SOLUTION_WHEN_ENDED_FORBIDDEN", e);
                 return;
             } catch (final RuntimeException e) {
@@ -549,18 +539,11 @@ public class AssessmentItemDisplayController extends BasicController implements 
         /* Record and log event */
         final CandidateEvent candidateEvent = qtiService.recordCandidateItemEvent(candidateSession, null, entry,
         		CandidateItemEventType.SOLUTION, itemSessionState);
-        //candidateAuditLogger.logCandidateEvent(candidateEvent);
+        candidateAuditLogger.logCandidateEvent(candidateEvent);
         lastEvent = candidateEvent;
-
-        //return candidateSession;
     }
     
 	public void endSession(UserRequest ureq) {
-		//Assert.notNull(candidateSessionContext, "candidateSessionContext");
-		//assertSessionType(candidateSessionContext, AssessmentObjectType.ASSESSMENT_ITEM);
-		//final CandidateSession candidateSession = candidateSessionContext.getCandidateSession();
-		//assertSessionNotTerminated(candidateSession);
-
         NotificationRecorder notificationRecorder = new NotificationRecorder(NotificationLevel.INFO);
         //final ItemSessionController itemSessionController = candidateDataService.createItemSessionController(mostRecentEvent, notificationRecorder);
         ItemSessionState itemSessionState = itemSessionController.getItemSessionState();
@@ -569,7 +552,7 @@ public class AssessmentItemDisplayController extends BasicController implements 
         
         if (itemSessionState.isEnded()) {
         	logError("END_SESSION_WHEN_ALREADY_ENDED", null);
-            //candidateAuditLogger.logAndThrowCandidateException(candidateSession, CandidateExceptionReason.END_SESSION_WHEN_ALREADY_ENDED);
+            candidateAuditLogger.logAndThrowCandidateException(candidateSession, CandidateExceptionReason.END_SESSION_WHEN_ALREADY_ENDED, null);
             return;
         } /* else if (!itemDeliverySettings.isAllowEnd()) {
             candidateAuditLogger.logAndThrowCandidateException(candidateSession, CandidateExceptionReason.END_SESSION_WHEN_INTERACTING_FORBIDDEN);
@@ -583,7 +566,7 @@ public class AssessmentItemDisplayController extends BasicController implements 
         } catch (QtiCandidateStateException e) {
         	String msg = itemSessionState.isEnded() ? "END_SESSION_WHEN_ALREADY_ENDED" : "END_SESSION_WHEN_INTERACTING_FORBIDDEN";
         	logError(msg, e);
-            //candidateAuditLogger.logAndThrowCandidateException(candidateSession, itemSessionState.isEnded() ? CandidateExceptionReason.END_SESSION_WHEN_ALREADY_ENDED : CandidateExceptionReason.END_SESSION_WHEN_INTERACTING_FORBIDDEN);
+            candidateAuditLogger.logAndThrowCandidateException(candidateSession, itemSessionState.isEnded() ? CandidateExceptionReason.END_SESSION_WHEN_ALREADY_ENDED : CandidateExceptionReason.END_SESSION_WHEN_INTERACTING_FORBIDDEN, null);
             return;
         }
         catch (final RuntimeException e) {
@@ -597,49 +580,39 @@ public class AssessmentItemDisplayController extends BasicController implements 
         /* Record and log event */
         final CandidateEvent candidateEvent = qtiService.recordCandidateItemEvent(candidateSession, null, entry,
                 CandidateItemEventType.END, itemSessionState, notificationRecorder);
-        //candidateAuditLogger.logCandidateEvent(candidateEvent);
+        candidateAuditLogger.logCandidateEvent(candidateEvent);
         lastEvent = candidateEvent;
 
         /* Close session */
         qtiService.finishItemSession(candidateSession, assessmentResult, timestamp);
-
-        //return candidateSession;
     }
 	
-	   public void exitSession(UserRequest ureq) {
-	        //Assert.notNull(candidateSessionContext, "candidateSessionContext");
-	        //assertSessionType(candidateSessionContext, AssessmentObjectType.ASSESSMENT_ITEM);
-	        //final CandidateSession candidateSession = candidateSessionContext.getCandidateSession();
-	        //assertSessionNotTerminated(candidateSession);
+	public void exitSession(UserRequest ureq) {
+		ItemSessionState itemSessionState = itemSessionController.getItemSessionState();
 
-	        NotificationRecorder notificationRecorder = new NotificationRecorder(NotificationLevel.INFO);
-	        ItemSessionState itemSessionState = itemSessionController.getItemSessionState();
-
-	        /* Are we terminating a session that hasn't already been ended? If so end the session and record final result. */
-	        final Date currentTimestamp = ureq.getRequestTimestamp();
-	        if (!itemSessionState.isEnded()) {
-	            try {
-	                itemSessionController.endItem(currentTimestamp);
-	            } catch (final RuntimeException e) {
-	            	logError("", e);
-	                return;// handleExplosion(e, candidateSession);
-	            }
-	            final AssessmentResult assessmentResult = computeAndRecordItemAssessmentResult(ureq);
-	            qtiService.finishItemSession(candidateSession, assessmentResult, currentTimestamp);
-	        }
-
-	        /* Update session entity */
-	        candidateSession.setTerminationTime(currentTimestamp);
-	        candidateSession = qtiService.updateAssessmentTestSession(candidateSession);
-
-	        /* Record and log event */
-	        final CandidateEvent candidateEvent = qtiService.recordCandidateItemEvent(candidateSession, null, entry,
-	                CandidateItemEventType.EXIT, itemSessionState);
-	        lastEvent = candidateEvent;
-	        //candidateAuditLogger.logCandidateEvent(candidateEvent);
-
-	        //return candidateSession;
-	    }
+		/* Are we terminating a session that hasn't already been ended? If so end the session and record final result. */
+		final Date currentTimestamp = ureq.getRequestTimestamp();
+		if (!itemSessionState.isEnded()) {
+		    try {
+		        itemSessionController.endItem(currentTimestamp);
+		    } catch (final RuntimeException e) {
+		    	logError("", e);
+		        return;// handleExplosion(e, candidateSession);
+		    }
+		    final AssessmentResult assessmentResult = computeAndRecordItemAssessmentResult(ureq);
+		    qtiService.finishItemSession(candidateSession, assessmentResult, currentTimestamp);
+		}
+		
+		/* Update session entity */
+		candidateSession.setTerminationTime(currentTimestamp);
+		candidateSession = qtiService.updateAssessmentTestSession(candidateSession);
+		
+		/* Record and log event */
+		final CandidateEvent candidateEvent = qtiService.recordCandidateItemEvent(candidateSession, null, entry,
+					CandidateItemEventType.EXIT, itemSessionState);
+		lastEvent = candidateEvent;
+		candidateAuditLogger.logCandidateEvent(candidateEvent);
+	}
 	
 	/**
 	 * QtiWorks manage the form tag itself.

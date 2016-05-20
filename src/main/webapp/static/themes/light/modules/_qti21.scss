@@ -26,7 +26,7 @@ ul.sessionControl {
 .o_gap_item {
 	padding:5px;
 	margin: 5px;
-	background-repeat:none;
+	background-repeat:no-repeat;
 	background-position: center center;
 	
 	&.oo-choosed {
@@ -55,6 +55,7 @@ ul.sessionControl {
 #o_qti_hotspots_edit {
 	min-height: 100px;
 	min-width: 400px;
+	background-repeat:no-repeat;
 }
 
 #o_qti_run_title, #o_qti_run_infos  {

@@ -36,6 +36,12 @@ import uk.ac.ed.ph.jqtiplus.resolution.ResolvedAssessmentItem;
 import uk.ac.ed.ph.jqtiplus.serialization.QtiSerializer;
 import uk.ac.ed.ph.jqtiplus.xmlutils.locators.ResourceLocator;
 
+/**
+ * 
+ * Initial date: 20.05.2016<br>
+ * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ *
+ */
 public class AssessmentItemBuilderTest {
 	
 	private final JqtiExtensionManager jqtiExtensionManager = new JqtiExtensionManager();

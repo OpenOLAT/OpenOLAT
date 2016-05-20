@@ -28,7 +28,9 @@ import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.ims.qti21.AssessmentSessionAuditLogger;
 import org.olat.ims.qti21.QTI21Service;
+import org.olat.ims.qti21.manager.audit.DefaultAssessmentSessionAuditLogger;
 import org.olat.ims.qti21.ui.AssessmentItemDisplayController;
 import org.olat.modules.qpool.QPoolService;
 import org.olat.modules.qpool.QuestionItem;
@@ -46,13 +48,14 @@ public class QTI21PreviewController extends BasicController {
 	private final VelocityContainer mainVC;
 	
 	private AssessmentItemDisplayController previewCtrl;
+	private AssessmentSessionAuditLogger candidateAuditLogger = new DefaultAssessmentSessionAuditLogger();
 	
 	@Autowired
 	private QTI21Service qtiService;
 	@Autowired
 	private QPoolService qpoolService;
 
-	public QTI21PreviewController(UserRequest ureq, WindowControl wControl, QuestionItem qitem, boolean summary) {
+	public QTI21PreviewController(UserRequest ureq, WindowControl wControl, QuestionItem qitem) {
 		super(ureq, wControl);
 
 		mainVC = createVelocityContainer("qti_preview");
@@ -67,7 +70,7 @@ public class QTI21PreviewController extends BasicController {
 			
 			ResolvedAssessmentItem resolvedAssessmentItem = qtiService
 					.loadAndResolveAssessmentItem(assessmentItemUri, resourceDirectory);
-			previewCtrl = new AssessmentItemDisplayController(ureq, wControl, resolvedAssessmentItem, resourceDirectory, itemFile);
+			previewCtrl = new AssessmentItemDisplayController(ureq, wControl, resolvedAssessmentItem, resourceDirectory, itemFile, candidateAuditLogger);
 			listenTo(previewCtrl);
 			mainVC.put("preview", previewCtrl.getInitialComponent());
 		}
