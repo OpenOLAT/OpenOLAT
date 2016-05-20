@@ -201,7 +201,7 @@ public interface QTI21Service {
 	public AssessmentTestSession finishItemSession(AssessmentTestSession candidateSession, AssessmentResult assessmentResul, Date timestamp);
 	
 
-	public void recordItemAssessmentResult(AssessmentTestSession candidateSession, AssessmentResult assessmentResult);
+	public void recordItemAssessmentResult(AssessmentTestSession candidateSession, AssessmentResult assessmentResult, AssessmentSessionAuditLogger candidateAuditLogger);
 	
 	public CandidateEvent recordCandidateItemEvent(AssessmentTestSession candidateSession, RepositoryEntryRef testEntry, RepositoryEntryRef entry,
 			CandidateItemEventType itemEventType, ItemSessionState itemSessionState, NotificationRecorder notificationRecorder);

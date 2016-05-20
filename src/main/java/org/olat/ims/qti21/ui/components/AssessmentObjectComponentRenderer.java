@@ -220,7 +220,7 @@ public abstract class AssessmentObjectComponentRenderer extends DefaultComponent
 				sb.append("<div class='modalFeedback o_info'>");
 				Attribute<?> title = modalFeedback.getAttributes().get("title");
 				if(title != null && title.getValue() != null) {
-					sb.append(title.getValue().toString());
+					sb.append("<h4>").append(title.getValue().toString()).append("</h4>");
 				}
 				
 				modalFeedback.getFlowStatics().forEach((flow)

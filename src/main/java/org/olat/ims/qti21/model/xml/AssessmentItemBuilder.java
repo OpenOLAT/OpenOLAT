@@ -233,8 +233,8 @@ public abstract class AssessmentItemBuilder {
 
 		buildItemBody();
 		buildResponseDeclaration();
-		buildModalFeedback(outcomeDeclarations, responseRules);
-		buildScores(outcomeDeclarations, responseRules);
+		buildModalFeedbacks(outcomeDeclarations, responseRules);
+		buildMinMaxScores(outcomeDeclarations, responseRules);
 		buildMainScoreRule(outcomeDeclarations, responseRules);
 	}
 	
@@ -248,7 +248,7 @@ public abstract class AssessmentItemBuilder {
 	
 	protected abstract void buildMainScoreRule(List<OutcomeDeclaration> outcomeDeclarations, List<ResponseRule> responseRules);
 	
-	protected void buildModalFeedback(List<OutcomeDeclaration> outcomeDeclarations, List<ResponseRule> responseRules) {
+	protected void buildModalFeedbacks(List<OutcomeDeclaration> outcomeDeclarations, List<ResponseRule> responseRules) {
 		//add feedbackbasic and feedbackmodal outcomes
 		if(correctFeedback != null || incorrectFeedback != null || emptyFeedback != null
 				|| additionalFeedbacks.size() > 0) {
@@ -264,37 +264,27 @@ public abstract class AssessmentItemBuilder {
 		modalFeedbacks.clear();
 		
 		if(correctFeedback != null) {
-			ModalFeedback correctModalFeedback = AssessmentItemFactory
-					.createModalFeedback(assessmentItem, correctFeedback.getIdentifier(),
-							correctFeedback.getTitle(), correctFeedback.getText());
-			modalFeedbacks.add(correctModalFeedback);
-			
-			ResponseCondition feedbackCondition = AssessmentItemFactory
-					.createModalFeedbackBasicRule(assessmentItem.getResponseProcessing(), correctFeedback.getIdentifier(), QTI21Constants.CORRECT);
-			responseRules.add(feedbackCondition);
+			appendModalFeedback(correctFeedback, QTI21Constants.CORRECT, modalFeedbacks, responseRules);
 		}
-		
-		if(emptyFeedback != null) {
-			ModalFeedback emptyModalFeedback = AssessmentItemFactory
-					.createModalFeedback(assessmentItem, emptyFeedback.getIdentifier(),
-							emptyFeedback.getTitle(), emptyFeedback.getText());
-			modalFeedbacks.add(emptyModalFeedback);
-			
-			ResponseCondition feedbackCondition = AssessmentItemFactory
-					.createModalFeedbackBasicRule(assessmentItem.getResponseProcessing(), emptyFeedback.getIdentifier(), QTI21Constants.EMPTY);
-			responseRules.add(feedbackCondition);
-		}
-		
 		if(incorrectFeedback != null) {
-			ModalFeedback incorrectModalFeedback = AssessmentItemFactory
-					.createModalFeedback(assessmentItem, incorrectFeedback.getIdentifier(),
-							incorrectFeedback.getTitle(), incorrectFeedback.getText());
-			modalFeedbacks.add(incorrectModalFeedback);
-			
-			ResponseCondition feedbackCondition = AssessmentItemFactory
-					.createModalFeedbackBasicRule(assessmentItem.getResponseProcessing(), incorrectFeedback.getIdentifier(), QTI21Constants.INCORRECT);
-			responseRules.add(feedbackCondition);
+			appendModalFeedback(incorrectFeedback, QTI21Constants.INCORRECT, modalFeedbacks, responseRules);
 		}
+		if(emptyFeedback != null) {
+			appendModalFeedback(emptyFeedback, QTI21Constants.EMPTY, modalFeedbacks, responseRules);
+		}
+	}
+	
+	protected void appendModalFeedback(ModalFeedbackBuilder feedbackBuilder, String inCorrect,
+			List<ModalFeedback> modalFeedbacks, List<ResponseRule> responseRules) {
+		
+		ModalFeedback emptyModalFeedback = AssessmentItemFactory
+				.createModalFeedback(assessmentItem, feedbackBuilder.getIdentifier(),
+						feedbackBuilder.getTitle(), feedbackBuilder.getText());
+		modalFeedbacks.add(emptyModalFeedback);
+		
+		ResponseCondition feedbackCondition = AssessmentItemFactory
+				.createModalFeedbackBasicRule(assessmentItem.getResponseProcessing(), feedbackBuilder.getIdentifier(), inCorrect);
+		responseRules.add(feedbackCondition);
 	}
 	
 	protected void ensureFeedbackBasicOutcomeDeclaration() {
@@ -314,7 +304,7 @@ public abstract class AssessmentItemBuilder {
 	 * @param outcomeDeclarations
 	 * @param responseRules
 	 */
-	protected void buildScores(List<OutcomeDeclaration> outcomeDeclarations, List<ResponseRule> responseRules) {
+	protected final void buildMinMaxScores(List<OutcomeDeclaration> outcomeDeclarations, List<ResponseRule> responseRules) {
 		if((getMinScoreBuilder() != null && getMinScoreBuilder().getScore() != null)
 				|| (getMaxScoreBuilder() != null && getMaxScoreBuilder().getScore() != null)) {
 			

@@ -758,7 +758,7 @@ public class AssessmentTestDisplayController extends BasicController implements 
 		long itemDuration = itemSessionState.getDurationAccumulated();
 		itemSession.setDuration(itemDuration);
 		ItemResult itemResult = assessmentResult.getItemResult(assessmentItemIdentifier);
-		processOutcomeVariables_bricolage(itemResult, itemSession);
+		collectOutcomeVariablesForItemSession(itemResult, itemSession);
         /* Persist CandidateResponse entities */
         qtiService.recordTestAssessmentResponses(itemSession, candidateResponseMap.values());
 
@@ -766,7 +766,7 @@ public class AssessmentTestDisplayController extends BasicController implements 
         candidateSession = qtiService.updateAssessmentTestSession(candidateSession);
 	}
 	
-	private void processOutcomeVariables_bricolage(ItemResult resultNode, AssessmentItemSession itemSession) {
+	private void collectOutcomeVariablesForItemSession(ItemResult resultNode, AssessmentItemSession itemSession) {
 		BigDecimal score = null;
 		Boolean pass = null;
 		

@@ -143,6 +143,12 @@ public class AssessmentItemFactory {
 		return assessmentItem;
 	}
 	
+	/**
+	 * Append the itemBody with an empty paragraph.
+	 * 
+	 * @param assessmentItem
+	 * @return
+	 */
 	public static ItemBody appendDefaultItemBody(AssessmentItem assessmentItem) {
 		NodeGroupList nodeGroups = assessmentItem.getNodeGroups();
 		//the single choice interaction
@@ -195,8 +201,8 @@ public class AssessmentItemFactory {
 		choice.setFixed(Boolean.FALSE);
 		choice.setShape(Shape.CIRCLE);
 		List<Integer> coords = new ArrayList<>();
+		coords.add(new Integer(55));
 		coords.add(new Integer(77));
-		coords.add(new Integer(115));
 		coords.add(new Integer(8));
 		choice.setCoords(coords);
 		hotspotInteraction.getHotspotChoices().add(choice);
@@ -542,6 +548,13 @@ public class AssessmentItemFactory {
 		return mapping;
 	}
 	
+	/**
+	 * Create an outcome declaration with SCORE as identifier, single and float
+	 * and 0 as default value.
+	 * 
+	 * @param assessmentItem
+	 * @return
+	 */
 	public static OutcomeDeclaration createOutcomeDeclarationForScore(AssessmentItem assessmentItem) {
 		OutcomeDeclaration scoreOutcomeDeclaration = new OutcomeDeclaration(assessmentItem);
 		scoreOutcomeDeclaration.setIdentifier(QTI21Constants.SCORE_IDENTIFIER);
@@ -559,9 +572,7 @@ public class AssessmentItemFactory {
 	/*
 	<outcomeDeclaration identifier="SCORE_RESPONSE_2" cardinality="single" baseType="float" view="testConstructor">
 		<defaultValue>
-			<value>
-				0
-			</value>
+			<value>0</value>
 		</defaultValue>
 	</outcomeDeclaration>
 	*/

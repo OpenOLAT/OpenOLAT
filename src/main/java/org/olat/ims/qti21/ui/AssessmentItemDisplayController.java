@@ -43,8 +43,11 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.fileresource.types.ImsQTI21Resource;
 import org.olat.fileresource.types.ImsQTI21Resource.PathResourceLocator;
+import org.olat.ims.qti21.AssessmentSessionAuditLogger;
 import org.olat.ims.qti21.AssessmentTestSession;
+import org.olat.ims.qti21.QTI21DeliveryOptions;
 import org.olat.ims.qti21.QTI21Service;
+import org.olat.ims.qti21.manager.audit.AssessmentSessionAuditDevNull;
 import org.olat.ims.qti21.model.InMemoryAssessmentTestSession;
 import org.olat.ims.qti21.model.audit.CandidateEvent;
 import org.olat.ims.qti21.model.audit.CandidateItemEventType;
@@ -87,12 +90,15 @@ public class AssessmentItemDisplayController extends BasicController implements 
 	private final String mapperUri;
 	private final File fUnzippedDirRoot;
 	private final File itemFileRef;
+	private final QTI21DeliveryOptions deliveryOptions;
 	private final ResolvedAssessmentItem resolvedAssessmentItem;
 	
 	private CandidateEvent lastEvent;
 	private Date currentRequestTimestamp;
 	private RepositoryEntry entry;
 	private AssessmentTestSession candidateSession;
+	
+	private AssessmentSessionAuditLogger candidateAuditLogger = new AssessmentSessionAuditDevNull();
 
 	@Autowired
 	private QTI21Service qtiService;
@@ -113,6 +119,7 @@ public class AssessmentItemDisplayController extends BasicController implements 
 		this.itemFileRef = itemFileRef;
 		this.fUnzippedDirRoot = fUnzippedDirRoot;
 		this.resolvedAssessmentItem = resolvedAssessmentItem;
+		deliveryOptions = QTI21DeliveryOptions.defaultSettings();
 		currentRequestTimestamp = ureq.getRequestTimestamp();
 		candidateSession = new InMemoryAssessmentTestSession();
 		mapperUri = registerCacheableMapper(null, UUID.randomUUID().toString(), new ResourcesMapper(itemFileRef.toURI()));
@@ -135,6 +142,7 @@ public class AssessmentItemDisplayController extends BasicController implements 
 		this.itemFileRef = new File(fUnzippedDirRoot, itemRef.getHref().toString());
 		this.fUnzippedDirRoot = fUnzippedDirRoot;
 		this.resolvedAssessmentItem = resolvedAssessmentItem;
+		deliveryOptions = QTI21DeliveryOptions.defaultSettings();
 		currentRequestTimestamp = ureq.getRequestTimestamp();
 		candidateSession = new InMemoryAssessmentTestSession();
 		mapperUri = registerCacheableMapper(null, UUID.randomUUID().toString(), new ResourcesMapper(itemFileRef.toURI()));
@@ -158,6 +166,7 @@ public class AssessmentItemDisplayController extends BasicController implements 
 		this.itemFileRef = new File(fUnzippedDirRoot, itemRef.getHref().toString());
 		this.fUnzippedDirRoot = fUnzippedDirRoot;
 		this.resolvedAssessmentItem = resolvedAssessmentItem;
+		deliveryOptions = QTI21DeliveryOptions.defaultSettings();
 		currentRequestTimestamp = ureq.getRequestTimestamp();
 		candidateSession = qtiService.createAssessmentTestSession(getIdentity(), assessmentEntry, testEntry, itemRef.getIdentifier().toString(), testEntry, authorMode);
 		mapperUri = registerCacheableMapper(null, UUID.randomUUID().toString(), new ResourcesMapper(itemFileRef.toURI()));
@@ -335,7 +344,7 @@ public class AssessmentItemDisplayController extends BasicController implements 
     }
     
 	public int computeTemplateProcessingLimit() {
-		final Integer requestedLimit = null;// deliverySettings.getTemplateProcessingLimit();
+		final Integer requestedLimit = deliveryOptions.getTemplateProcessingLimit();
 		if (requestedLimit == null) {
 			/* Not specified, so use default */
 			return JqtiPlus.DEFAULT_TEMPLATE_PROCESSING_LIMIT;
@@ -481,7 +490,7 @@ public class AssessmentItemDisplayController extends BasicController implements 
     
     public AssessmentResult computeAndRecordItemAssessmentResult(UserRequest ureq) {
         final AssessmentResult assessmentResult = computeItemAssessmentResult(ureq);
-        qtiService.recordItemAssessmentResult(candidateSession, assessmentResult);
+        qtiService.recordItemAssessmentResult(candidateSession, assessmentResult, candidateAuditLogger);
         return assessmentResult;
     }
     

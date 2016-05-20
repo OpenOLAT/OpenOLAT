@@ -699,7 +699,7 @@ public class QTI21ServiceImpl implements QTI21Service, InitializingBean, Disposa
 	}
 
 	@Override
-	public void recordItemAssessmentResult(AssessmentTestSession candidateSession, AssessmentResult assessmentResult) {
+	public void recordItemAssessmentResult(AssessmentTestSession candidateSession, AssessmentResult assessmentResult, AssessmentSessionAuditLogger auditLogger) {
 		//do nothing for the mmoment
 		List<ItemResult> itemResults = assessmentResult.getItemResults();
 		for(ItemResult itemResult:itemResults) {

@@ -540,11 +540,6 @@ public class FIBAssessmentItemBuilder extends AssessmentItemBuilder {
 	}
 
 	@Override
-	protected void buildScores(List<OutcomeDeclaration> outcomeDeclarations, List<ResponseRule> responseRules) {
-		super.buildScores(outcomeDeclarations, responseRules);
-	}
-
-	@Override
 	protected void buildMainScoreRule(List<OutcomeDeclaration> outcomeDeclarations, List<ResponseRule> responseRules) {
 		ensureFeedbackBasicOutcomeDeclaration();
 		if(scoreEvaluation == ScoreEvaluation.perAnswer) {

@@ -315,6 +315,9 @@ public class AssessmentTestFactory {
 		rubricBlock.setViews(Collections.singletonList(View.CANDIDATE));
 		section.getRubricBlocks().add(rubricBlock);
 		
+		ItemSessionControl itemSessionControl = new ItemSessionControl(section);
+		section.setItemSessionControl(itemSessionControl);
+		itemSessionControl.setMaxAttempts(0);
 		return section;
 	}
 	
