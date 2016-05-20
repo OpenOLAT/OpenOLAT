@@ -70,11 +70,11 @@
     			}
 
     			gapitem.removeClass('oo-choosed');
-    			var gapitemId = gapitem.attr('id');
+    			var gapitemIdentifier = gapitem.data('qti-id');
     			//remove
     			jQuery('#' + containerId).find("input[type='hidden']").each(function(index, el) {
     				var value = jQuery(el).val();
-    				if(value.indexOf(gapitemId + ' ') == 0) {
+    				if(value.indexOf(gapitemIdentifier + ' ') == 0) {
     					jQuery(el).remove();
     				}
     			});
