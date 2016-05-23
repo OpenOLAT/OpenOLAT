@@ -129,7 +129,12 @@ public class ProjectGroupManagerImpl implements ProjectGroupManager {
 				}
 				log.debug("createAndPersistBusinessGroup businessgroup=" + accountManagerGroup);			
 				
-				saveAccountManagerGroupKey(accountManagerGroup.getKey(), cpm, courseNode);
+				if (accountManagerGroupProperty != null) {
+					accountManagerGroupProperty.setLongValue(accountManagerGroup.getKey());
+					cpm.updateProperty(accountManagerGroupProperty);
+				} else {
+					saveAccountManagerGroupKey(accountManagerGroup.getKey(), cpm, courseNode);
+				}
 				log.debug("created account-manager default businessgroup=" + accountManagerGroup);
 			}
 		} catch (AssertException e) {
