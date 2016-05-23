@@ -1118,7 +1118,7 @@ public class BusinessGroupDAO {
 		if(params.isHeadless()) {
 			where = PersistenceHelper.appendAnd(sb, where);
 			sb.append(" bgi.baseGroup.key not in (select headMembership.group.key from bgroupmember as headMembership")
-			  .append("   where headMembership.role in ('coach','paticipant')")
+			  .append("   where headMembership.role in ('").append(GroupRoles.coach.name()).append("','").append(GroupRoles.participant.name()).append("')")
 			  .append(" )");
 		}
 	}
