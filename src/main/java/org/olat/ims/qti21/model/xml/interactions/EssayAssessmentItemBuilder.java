@@ -180,7 +180,7 @@ public class EssayAssessmentItemBuilder extends AssessmentItemBuilder {
 	}
 	
 	@Override
-	protected void buildResponseDeclaration() {
+	protected void buildResponseAndOutcomeDeclarations() {
 		ResponseDeclaration responseDeclaration =
 				createExtendedTextResponseDeclaration(assessmentItem, responseIdentifier);
 		assessmentItem.getResponseDeclarations().add(responseDeclaration);

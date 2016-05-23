@@ -227,7 +227,7 @@ public class ScoreAccountingHelper {
 
 					if (attemptsOk) {
 						Integer attempts = am.getNodeAttempts(acnode, identity);
-						int a = attempts.intValue();
+						int a = attempts == null ? 0 : attempts.intValue();
 						nodeColumnOk = true;
 						tabs.append("\t"); // tabulators for header1 after node title
 

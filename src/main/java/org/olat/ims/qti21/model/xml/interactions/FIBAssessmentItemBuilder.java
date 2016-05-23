@@ -466,7 +466,7 @@ public class FIBAssessmentItemBuilder extends AssessmentItemBuilder {
 	}
 
 	@Override
-	protected void buildResponseDeclaration() {
+	protected void buildResponseAndOutcomeDeclarations() {
 		List<ResponseDeclaration> responseDeclarations = assessmentItem.getResponseDeclarations();
 		
 		/*

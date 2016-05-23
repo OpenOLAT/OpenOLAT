@@ -42,6 +42,9 @@ import org.olat.ims.qti21.ui.editor.events.AssessmentItemEvent;
  */
 public class FeedbackEditorController extends FormBasicController {
 	
+	private TextElement hintTitleEl;
+	private RichTextElement hintTextEl;
+	
 	private TextElement feedbackCorrectTitleEl, feedbackIncorrectTitleEl, feedbackEmptyTitleEl;
 	private RichTextElement feedbackCorrectTextEl, feedbackIncorrectTextEl, feedbackEmptyTextEl;
 
@@ -62,6 +65,19 @@ public class FeedbackEditorController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+
+		ModalFeedbackBuilder hint = itemBuilder.getHint();
+		String hintTitle = hint == null ? "" : hint.getTitle();
+		hintTitleEl = uifactory.addTextElement("hintTitle", "form.imd.hint.title", -1, hintTitle, formLayout);
+		hintTitleEl.setUserObject(hint);
+		hintTitleEl.setEnabled(!restrictedEdit);
+		String hintText = hint == null ? "" : hint.getText();
+		hintTextEl = uifactory.addRichTextElementForStringDataCompact("hintText", "form.imd.hint.text", hintText, 8, -1, null,
+				formLayout, ureq.getUserSession(), getWindowControl());
+		hintTextEl.setEnabled(!restrictedEdit);
+		RichTextConfiguration hintConfig = hintTextEl.getEditorConfiguration();
+		hintConfig.setFileBrowserUploadRelPath("media");// set upload dir to the media dir
+		
 		//correct feedback
 		if(correct) {
 			ModalFeedbackBuilder correctFeedback = itemBuilder.getCorrectFeedback();
@@ -118,6 +134,19 @@ public class FeedbackEditorController extends FormBasicController {
 	@Override
 	protected void formOK(UserRequest ureq) {
 		if(restrictedEdit) return;
+		
+		String hintTitle = hintTitleEl.getValue();
+		String hintText = hintTextEl.getValue();
+		if(StringHelper.containsNonWhitespace(FilterFactory.getHtmlTagsFilter().filter(hintText))) {
+			ModalFeedbackBuilder hintBuilder = itemBuilder.getHint();
+			if(hintBuilder == null) {
+				hintBuilder = itemBuilder.createHint();
+			}
+			hintBuilder.setTitle(hintTitle);
+			hintBuilder.setText(hintText);
+		} else {
+			itemBuilder.removeHint();
+		}
 		
 		if(correct) {
 			String correctTitle = feedbackCorrectTitleEl.getValue();

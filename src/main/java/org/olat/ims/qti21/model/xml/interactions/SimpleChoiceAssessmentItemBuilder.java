@@ -216,7 +216,7 @@ public abstract class SimpleChoiceAssessmentItemBuilder extends ChoiceAssessment
 	}
 
 	@Override
-	protected void buildModalFeedbacks(List<OutcomeDeclaration> outcomeDeclarations, List<ResponseRule> responseRules) {
+	protected void buildModalFeedbacksAndHints(List<OutcomeDeclaration> outcomeDeclarations, List<ResponseRule> responseRules) {
 		if(correctFeedback != null || incorrectFeedback != null) {
 			/*
 			<responseCondition>
@@ -288,7 +288,7 @@ public abstract class SimpleChoiceAssessmentItemBuilder extends ChoiceAssessment
 			correctOutcomeValue.setExpression(correctValue);
 		}
 
-		super.buildModalFeedbacks(outcomeDeclarations, responseRules);
+		super.buildModalFeedbacksAndHints(outcomeDeclarations, responseRules);
 	}
 
 	public enum ScoreEvaluation {

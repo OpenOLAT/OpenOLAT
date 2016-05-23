@@ -28,17 +28,25 @@ import java.util.List;
 import org.olat.ims.qti21.QTI21Constants;
 import org.olat.ims.qti21.model.QTI21QuestionType;
 
+import uk.ac.ed.ph.jqtiplus.node.content.xhtml.text.P;
+import uk.ac.ed.ph.jqtiplus.node.expression.general.BaseValue;
+import uk.ac.ed.ph.jqtiplus.node.expression.general.Variable;
 import uk.ac.ed.ph.jqtiplus.node.item.AssessmentItem;
 import uk.ac.ed.ph.jqtiplus.node.item.ModalFeedback;
+import uk.ac.ed.ph.jqtiplus.node.item.interaction.EndAttemptInteraction;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.Interaction;
 import uk.ac.ed.ph.jqtiplus.node.item.response.declaration.ResponseDeclaration;
 import uk.ac.ed.ph.jqtiplus.node.item.response.processing.ResponseCondition;
+import uk.ac.ed.ph.jqtiplus.node.item.response.processing.ResponseIf;
 import uk.ac.ed.ph.jqtiplus.node.item.response.processing.ResponseProcessing;
 import uk.ac.ed.ph.jqtiplus.node.item.response.processing.ResponseRule;
+import uk.ac.ed.ph.jqtiplus.node.item.response.processing.SetOutcomeValue;
 import uk.ac.ed.ph.jqtiplus.node.outcome.declaration.OutcomeDeclaration;
 import uk.ac.ed.ph.jqtiplus.node.shared.declaration.DefaultValue;
 import uk.ac.ed.ph.jqtiplus.serialization.QtiSerializer;
+import uk.ac.ed.ph.jqtiplus.value.BaseType;
 import uk.ac.ed.ph.jqtiplus.value.FloatValue;
+import uk.ac.ed.ph.jqtiplus.value.IdentifierValue;
 import uk.ac.ed.ph.jqtiplus.value.Value;
 
 /**
@@ -58,6 +66,7 @@ public abstract class AssessmentItemBuilder {
 	private ScoreBuilder minScoreBuilder;
 	private ScoreBuilder maxScoreBuilder;
 
+	protected ModalFeedbackBuilder hint;
 	protected ModalFeedbackBuilder emptyFeedback;
 	protected ModalFeedbackBuilder correctFeedback;
 	protected ModalFeedbackBuilder incorrectFeedback;
@@ -121,6 +130,8 @@ public abstract class AssessmentItemBuilder {
 				incorrectFeedback = feedbackBuilder;
 			} else if(feedbackBuilder.isEmptyRule()) {
 				emptyFeedback = feedbackBuilder;
+			}  else if(feedbackBuilder.isHint()) {
+				hint = feedbackBuilder;
 			} else {
 				additionalFeedbacks.add(feedbackBuilder);
 			}
@@ -163,6 +174,19 @@ public abstract class AssessmentItemBuilder {
 		}
 	}
 	
+	public ModalFeedbackBuilder getHint() {
+		return hint;
+	}
+	
+	public ModalFeedbackBuilder createHint() {
+		hint = new ModalFeedbackBuilder(assessmentItem, null);
+		return hint;
+	}	
+	
+	public void removeHint() {
+		hint = null;
+	}
+	
 	public ModalFeedbackBuilder getCorrectFeedback() {
 		return correctFeedback;
 	}
@@ -184,6 +208,7 @@ public abstract class AssessmentItemBuilder {
 		emptyFeedback = new ModalFeedbackBuilder(assessmentItem, null);
 		return emptyFeedback;
 	}
+	
 	public void removeEmptyFeedback() {
 		emptyFeedback = null;
 	}
@@ -231,25 +256,99 @@ public abstract class AssessmentItemBuilder {
 		List<ResponseDeclaration> responseDeclarations = assessmentItem.getResponseDeclarations();
 		responseDeclarations.clear();
 
+		List<ModalFeedback> modalFeedbacks = assessmentItem.getModalFeedbacks();
+		modalFeedbacks.clear();
+
 		buildItemBody();
-		buildResponseDeclaration();
-		buildModalFeedbacks(outcomeDeclarations, responseRules);
+		buildResponseAndOutcomeDeclarations();
+		buildModalFeedbacksAndHints(outcomeDeclarations, responseRules);
 		buildMinMaxScores(outcomeDeclarations, responseRules);
 		buildMainScoreRule(outcomeDeclarations, responseRules);
+		buildHint(outcomeDeclarations, responseRules);
 	}
 	
-	protected void buildResponseDeclaration() {
-		//
-	}
+	protected abstract void buildItemBody();
 	
-	protected void buildItemBody() {
-		//
+	protected abstract void buildResponseAndOutcomeDeclarations();
+	
+	protected void ensureFeedbackBasicOutcomeDeclaration() {
+		OutcomeDeclaration feedbackBasicDeclaration = assessmentItem.getOutcomeDeclaration(QTI21Constants.FEEDBACKBASIC_IDENTIFIER);
+		if(feedbackBasicDeclaration == null) {
+			feedbackBasicDeclaration = AssessmentItemFactory
+					.createOutcomeDeclarationForFeedbackBasic(assessmentItem);
+			assessmentItem.getOutcomeDeclarations().add(feedbackBasicDeclaration);	
+		}
 	}
 	
 	protected abstract void buildMainScoreRule(List<OutcomeDeclaration> outcomeDeclarations, List<ResponseRule> responseRules);
 	
-	protected void buildModalFeedbacks(List<OutcomeDeclaration> outcomeDeclarations, List<ResponseRule> responseRules) {
-		//add feedbackbasic and feedbackmodal outcomes
+	/**
+	 * 
+	 * @param outcomeDeclarations
+	 * @param responseRules
+	 */
+	protected void buildHint(List<OutcomeDeclaration> outcomeDeclarations, List<ResponseRule> responseRules) {
+		if(hint == null) return;
+
+		//response declaration -> identifier=HINTREQUEST -> for the end attempt interaction
+		ResponseDeclaration hintResponseDeclaration = AssessmentItemFactory
+				.createHintRequestResponseDeclaration(assessmentItem);
+		assessmentItem.getResponseDeclarations().add(hintResponseDeclaration);
+		
+		//outcome declaration -> identifier=HINTFEEDBACKMODAL -> for processing and feedback
+		OutcomeDeclaration modalOutcomeDeclaration = AssessmentItemFactory
+				.createOutcomeDeclarationForHint(assessmentItem);
+		outcomeDeclarations.add(modalOutcomeDeclaration);
+		
+		//the body
+		P paragraph = new P(assessmentItem.getItemBody());
+		assessmentItem.getItemBody().getBlocks().add(paragraph);
+		
+		EndAttemptInteraction endAttemptInteraction = new EndAttemptInteraction(paragraph);
+		endAttemptInteraction.setResponseIdentifier(QTI21Constants.HINT_REQUEST_IDENTIFIER);
+		endAttemptInteraction.setTitle(hint.getTitle());
+		
+		paragraph.getInlines().add(endAttemptInteraction);
+		
+		//the feedback
+		ModalFeedback emptyModalFeedback = AssessmentItemFactory
+				.createModalFeedback(assessmentItem, QTI21Constants.HINT_FEEDBACKMODAL_IDENTIFIER, QTI21Constants.HINT_IDENTIFIER,
+						hint.getTitle(), hint.getText());
+		assessmentItem.getModalFeedbacks().add(emptyModalFeedback);
+
+		//the response processing
+		ResponseCondition rule = new ResponseCondition(assessmentItem.getResponseProcessing());
+		responseRules.add(0, rule);
+		
+		ResponseIf responseIf = new ResponseIf(rule);
+		rule.setResponseIf(responseIf);
+		/*
+		<responseIf>
+			<variable identifier="HINTREQUEST"/>
+			<setOutcomeValue identifier="FEEDBACK">
+				<baseValue baseType="identifier">HINT</baseValue>
+			</setOutcomeValue>
+  		</responseIf>
+		*/
+		Variable variable = new Variable(responseIf);
+		variable.setIdentifier(QTI21Constants.HINT_REQUEST_CLX_IDENTIFIER);
+		responseIf.getExpressions().add(variable);
+		
+		SetOutcomeValue hintVar = new SetOutcomeValue(responseIf);
+		hintVar.setIdentifier(QTI21Constants.HINT_FEEDBACKMODAL_IDENTIFIER);
+		BaseValue hintVal = new BaseValue(hintVar);
+		hintVal.setBaseTypeAttrValue(BaseType.IDENTIFIER);
+		hintVal.setSingleValue(new IdentifierValue(QTI21Constants.HINT));
+		hintVar.setExpression(hintVal);
+		responseIf.getResponseRules().add(hintVar);
+	}
+	
+	/**
+	 * Add feedbackbasic and feedbackmodal outcomes
+	 * @param outcomeDeclarations
+	 * @param responseRules
+	 */
+	protected void buildModalFeedbacksAndHints(List<OutcomeDeclaration> outcomeDeclarations, List<ResponseRule> responseRules) {
 		if(correctFeedback != null || incorrectFeedback != null || emptyFeedback != null
 				|| additionalFeedbacks.size() > 0) {
 			ensureFeedbackBasicOutcomeDeclaration();
@@ -257,20 +356,17 @@ public abstract class AssessmentItemBuilder {
 			OutcomeDeclaration modalOutcomeDeclaration = AssessmentItemFactory
 					.createOutcomeDeclarationForFeedbackModal(assessmentItem);
 			outcomeDeclarations.add(modalOutcomeDeclaration);
-		}
 
-		//add modal
-		List<ModalFeedback> modalFeedbacks = assessmentItem.getModalFeedbacks();
-		modalFeedbacks.clear();
-		
-		if(correctFeedback != null) {
-			appendModalFeedback(correctFeedback, QTI21Constants.CORRECT, modalFeedbacks, responseRules);
-		}
-		if(incorrectFeedback != null) {
-			appendModalFeedback(incorrectFeedback, QTI21Constants.INCORRECT, modalFeedbacks, responseRules);
-		}
-		if(emptyFeedback != null) {
-			appendModalFeedback(emptyFeedback, QTI21Constants.EMPTY, modalFeedbacks, responseRules);
+			List<ModalFeedback> modalFeedbacks = assessmentItem.getModalFeedbacks();
+			if(correctFeedback != null) {
+				appendModalFeedback(correctFeedback, QTI21Constants.CORRECT, modalFeedbacks, responseRules);
+			}
+			if(incorrectFeedback != null) {
+				appendModalFeedback(incorrectFeedback, QTI21Constants.INCORRECT, modalFeedbacks, responseRules);
+			}
+			if(emptyFeedback != null) {
+				appendModalFeedback(emptyFeedback, QTI21Constants.EMPTY, modalFeedbacks, responseRules);
+			}
 		}
 	}
 	
@@ -285,15 +381,6 @@ public abstract class AssessmentItemBuilder {
 		ResponseCondition feedbackCondition = AssessmentItemFactory
 				.createModalFeedbackBasicRule(assessmentItem.getResponseProcessing(), feedbackBuilder.getIdentifier(), inCorrect);
 		responseRules.add(feedbackCondition);
-	}
-	
-	protected void ensureFeedbackBasicOutcomeDeclaration() {
-		OutcomeDeclaration feedbackBasicDeclaration = assessmentItem.getOutcomeDeclaration(QTI21Constants.FEEDBACKBASIC_IDENTIFIER);
-		if(feedbackBasicDeclaration == null) {
-			feedbackBasicDeclaration = AssessmentItemFactory
-					.createOutcomeDeclarationForFeedbackBasic(assessmentItem);
-			assessmentItem.getOutcomeDeclarations().add(feedbackBasicDeclaration);	
-		}
 	}
 	
 	/**

@@ -55,6 +55,7 @@ import uk.ac.ed.ph.jqtiplus.node.expression.operator.IsNull;
 import uk.ac.ed.ph.jqtiplus.node.expression.operator.Lt;
 import uk.ac.ed.ph.jqtiplus.node.expression.operator.Match;
 import uk.ac.ed.ph.jqtiplus.node.expression.operator.Multiple;
+import uk.ac.ed.ph.jqtiplus.node.expression.operator.Not;
 import uk.ac.ed.ph.jqtiplus.node.expression.operator.Shape;
 import uk.ac.ed.ph.jqtiplus.node.expression.operator.Sum;
 import uk.ac.ed.ph.jqtiplus.node.item.AssessmentItem;
@@ -493,6 +494,15 @@ public class AssessmentItemFactory {
 		return responseDeclaration;
 	}
 	
+	//<responseDeclaration identifier="HINTREQUEST" cardinality="single" baseType="boolean"/>
+	public static ResponseDeclaration createHintRequestResponseDeclaration(AssessmentItem assessmentItem) {
+		ResponseDeclaration responseDeclaration = new ResponseDeclaration(assessmentItem);
+		responseDeclaration.setIdentifier(QTI21Constants.HINT_REQUEST_IDENTIFIER);
+		responseDeclaration.setCardinality(Cardinality.SINGLE);
+		responseDeclaration.setBaseType(BaseType.IDENTIFIER);
+		return responseDeclaration;
+	}
+	
 	public static SimpleChoice createSimpleChoice(ChoiceInteraction choiceInteraction, String text, String prefix) {
 		SimpleChoice newChoice = new SimpleChoice(choiceInteraction);
 		newChoice.setIdentifier(IdentifierGenerator.newAsIdentifier(prefix));
@@ -728,6 +738,15 @@ public class AssessmentItemFactory {
 		return feedbackOutcomeDeclaration;
 	}
 	
+	public static OutcomeDeclaration createOutcomeDeclarationForHint(AssessmentItem assessmentItem) {
+		OutcomeDeclaration feedbackOutcomeDeclaration = new OutcomeDeclaration(assessmentItem);
+		feedbackOutcomeDeclaration.setIdentifier(QTI21Constants.HINT_FEEDBACKMODAL_IDENTIFIER);
+		feedbackOutcomeDeclaration.setCardinality(Cardinality.SINGLE);
+		feedbackOutcomeDeclaration.setBaseType(BaseType.IDENTIFIER);
+
+		return feedbackOutcomeDeclaration;
+	}
+	
 	public static OutcomeDeclaration createOutcomeDeclarationForFeedbackModal(AssessmentItem assessmentItem) {
 		OutcomeDeclaration feedbackOutcomeDeclaration = new OutcomeDeclaration(assessmentItem);
 		feedbackOutcomeDeclaration.setIdentifier(QTI21Constants.FEEDBACKMODAL_IDENTIFIER);
@@ -770,6 +789,11 @@ public class AssessmentItemFactory {
 	}
 
 	public static ModalFeedback createModalFeedback(AssessmentItem assessmentItem, Identifier identifier, String title, String text) {
+		return createModalFeedback(assessmentItem, QTI21Constants.FEEDBACKMODAL_IDENTIFIER, identifier, title, text);
+	}
+	
+	public static ModalFeedback createModalFeedback(AssessmentItem assessmentItem, Identifier outcomeIdentifier, Identifier identifier, 
+			String title, String text) {
 		/*
 		<modalFeedback identifier="Feedback1041659806" outcomeIdentifier="FEEDBACKMODAL" showHide="show" title="Wrong answer">
 			<p>Feedback answer</p>
@@ -778,7 +802,7 @@ public class AssessmentItemFactory {
 		
 		ModalFeedback modalFeedback = new ModalFeedback(assessmentItem);
 		modalFeedback.setIdentifier(identifier);
-		modalFeedback.setOutcomeIdentifier(QTI21Constants.FEEDBACKMODAL_IDENTIFIER);
+		modalFeedback.setOutcomeIdentifier(outcomeIdentifier);
 		modalFeedback.setVisibilityMode(VisibilityMode.parseVisibilityMode("show"));
 		modalFeedback.getAttributes().getStringAttribute(ModalFeedback.ATTR_TITLE_NAME).setValue(title);
 		
@@ -822,7 +846,7 @@ public class AssessmentItemFactory {
 			
 			Match match = new Match(and);
 			and.getExpressions().add(match);
-			
+
 			BaseValue feedbackVal = new BaseValue(match);
 			feedbackVal.setBaseTypeAttrValue(BaseType.IDENTIFIER);
 			feedbackVal.setSingleValue(new IdentifierValue(inCorrect));
@@ -831,6 +855,23 @@ public class AssessmentItemFactory {
 			Variable variable = new Variable(match);
 			variable.setIdentifier(ComplexReferenceIdentifier.parseString(QTI21Constants.FEEDBACKBASIC));
 			match.getExpressions().add(variable);
+			
+			//not match the HINT
+			Not not = new Not(and);
+			and.getExpressions().add(not);
+			
+			Match notMatch = new Match(and);
+			not.getExpressions().add(notMatch);
+			
+			BaseValue hintVal = new BaseValue(notMatch);
+			hintVal.setBaseTypeAttrValue(BaseType.IDENTIFIER);
+			hintVal.setSingleValue(new IdentifierValue(QTI21Constants.HINT));
+			notMatch.getExpressions().add(hintVal);
+			
+			Variable hintVar = new Variable(notMatch);
+			hintVar.setIdentifier(QTI21Constants.HINT_REQUEST_CLX_IDENTIFIER);
+			notMatch.getExpressions().add(hintVar);
+			
 		}
 
 		{//outcome

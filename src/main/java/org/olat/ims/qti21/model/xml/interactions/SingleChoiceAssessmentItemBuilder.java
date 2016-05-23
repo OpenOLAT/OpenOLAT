@@ -112,15 +112,17 @@ public class SingleChoiceAssessmentItemBuilder extends SimpleChoiceAssessmentIte
 	public void extract() {
 		super.extract();
 		
-		List<ResponseDeclaration> responseDeclarations = assessmentItem.getResponseDeclarations();
-		if(responseDeclarations.size() == 1) {
-			CorrectResponse correctResponse = responseDeclarations.get(0).getCorrectResponse();
-			if(correctResponse != null) {
-				List<FieldValue> values = correctResponse.getFieldValues();
-				Value value = FieldValue.computeValue(Cardinality.SINGLE, values);
-				if(value instanceof IdentifierValue) {
-					IdentifierValue identifierValue = (IdentifierValue)value;
-					correctAnswer = identifierValue.identifierValue();
+		if(choiceInteraction != null) {
+			ResponseDeclaration responseDeclaration = assessmentItem.getResponseDeclaration(choiceInteraction.getResponseIdentifier());
+			if(responseDeclaration != null) {
+				CorrectResponse correctResponse = responseDeclaration.getCorrectResponse();
+				if(correctResponse != null) {
+					List<FieldValue> values = correctResponse.getFieldValues();
+					Value value = FieldValue.computeValue(Cardinality.SINGLE, values);
+					if(value instanceof IdentifierValue) {
+						IdentifierValue identifierValue = (IdentifierValue)value;
+						correctAnswer = identifierValue.identifierValue();
+					}
 				}
 			}
 		}
@@ -141,7 +143,7 @@ public class SingleChoiceAssessmentItemBuilder extends SimpleChoiceAssessmentIte
 	}
 
 	@Override
-	protected void buildResponseDeclaration() {
+	protected void buildResponseAndOutcomeDeclarations() {
 		ResponseDeclaration responseDeclaration = AssessmentItemFactory
 				.createSingleChoiceCorrectResponseDeclaration(assessmentItem, responseIdentifier, correctAnswer);
 		if(scoreEvaluation == ScoreEvaluation.perAnswer) {

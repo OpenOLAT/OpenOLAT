@@ -185,12 +185,35 @@ public class AssessmentEntryDAO {
 				.getResultList();
 	}
 	
-	public int deleteEntryForReferenceEntry(RepositoryEntry entry) {
+	/**
+	 * Delete all the entry where the specified repository entry is
+	 * referenced as a test.
+	 * 
+	 * @param entry
+	 * @return
+	 */
+	public int deleteEntryForReferenceEntry(RepositoryEntryRef entry) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("delete from assessmententry data where data.referenceEntry.key=:referenceKey");
 		return dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString())
 				.setParameter("referenceKey", entry.getKey())
+				.executeUpdate();
+	}
+	
+	/**
+	 * Delete all entries where the specified repository entry (typically
+	 * a course) is linked to them.
+	 * 
+	 * @param entry
+	 * @return
+	 */
+	public int deleteEntryForRepositoryEntry(RepositoryEntryRef entry) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("delete from assessmententry data where data.repositoryEntry.key=:entryKey");
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString())
+				.setParameter("entryKey", entry.getKey())
 				.executeUpdate();
 	}
 }

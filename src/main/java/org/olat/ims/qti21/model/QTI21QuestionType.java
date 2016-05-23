@@ -26,6 +26,7 @@ import org.olat.modules.qpool.QuestionType;
 
 import uk.ac.ed.ph.jqtiplus.node.item.AssessmentItem;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.ChoiceInteraction;
+import uk.ac.ed.ph.jqtiplus.node.item.interaction.EndAttemptInteraction;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.ExtendedTextInteraction;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.HotspotInteraction;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.Interaction;
@@ -120,7 +121,9 @@ public enum QTI21QuestionType {
 						fTextEntry = true;
 					} else if(interaction instanceof HotspotInteraction) {
 						fHotspot = true;
-					}  else {
+					} else if(interaction instanceof EndAttemptInteraction) {
+						//ignore
+					}   else {
 						fUnkown = true;
 					}	
 				}	
@@ -129,9 +132,9 @@ public enum QTI21QuestionType {
 			if(fUnkown) {
 				return QTI21QuestionType.unkown;
 			} else if(fChoice && !fMatch && !fTextEntry && !fEssay && !fHotspot && !fUnkown) {
-				return getTypeOfChoice(item);
+				return getTypeOfChoice(item, interactions);
 			} else if(!fChoice && fMatch && !fTextEntry && !fEssay && !fHotspot && !fUnkown) {
-				return getTypeOfMatch(item);
+				return getTypeOfMatch(item, interactions);
 			} else if(!fChoice && !fMatch && fTextEntry && !fEssay && !fHotspot && !fUnkown) {
 				return getTypeOfTextEntryInteraction(item);
 			} else if(!fChoice && !fMatch && !fTextEntry && fEssay && !fHotspot && !fUnkown) {
@@ -156,7 +159,7 @@ public enum QTI21QuestionType {
 					foundText++;
 				} else if(responseDeclaration.hasBaseType(BaseType.FLOAT)) {
 					foundNumerical++;
-				} else {
+				} else if(!responseDeclaration.getIdentifier().equals(QTI21Constants.HINT_REQUEST_IDENTIFIER)) {
 					foundUnkown++;
 				}
 			}
@@ -171,9 +174,10 @@ public enum QTI21QuestionType {
 		return QTI21QuestionType.unkown;
 	}
 	
-	private static final QTI21QuestionType getTypeOfMatch(AssessmentItem item) {
-		if(item.getResponseDeclarations().size() == 1) {
-			ResponseDeclaration responseDeclaration = item.getResponseDeclarations().get(0);
+	private static final QTI21QuestionType getTypeOfMatch(AssessmentItem item, List<Interaction> interactions) {
+		Interaction interaction = interactions.get(0);
+		if(item.getResponseDeclaration(interaction.getResponseIdentifier()) != null) {
+			ResponseDeclaration responseDeclaration = item.getResponseDeclaration(interaction.getResponseIdentifier());
 			String responseIdentifier = responseDeclaration.getIdentifier().toString();
 			Cardinality cardinalty = responseDeclaration.getCardinality();
 			if(cardinalty.isMultiple()) {
@@ -190,9 +194,10 @@ public enum QTI21QuestionType {
 		}
 	}
 	
-	private static final QTI21QuestionType getTypeOfChoice(AssessmentItem item) {
-		if(item.getResponseDeclarations().size() == 1) {
-			ResponseDeclaration responseDeclaration = item.getResponseDeclarations().get(0);
+	private static final QTI21QuestionType getTypeOfChoice(AssessmentItem item, List<Interaction> interactions) {
+		Interaction interaction = interactions.get(0);
+		if(item.getResponseDeclaration(interaction.getResponseIdentifier()) != null) {
+			ResponseDeclaration responseDeclaration = item.getResponseDeclaration(interaction.getResponseIdentifier());
 			Cardinality cardinalty = responseDeclaration.getCardinality();
 			if(cardinalty.isSingle()) {
 				return QTI21QuestionType.sc;

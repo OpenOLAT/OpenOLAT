@@ -218,7 +218,7 @@ public class KPrimAssessmentItemBuilder extends AssessmentItemBuilder {
 	}
 
 	@Override
-	protected void buildResponseDeclaration() {
+	protected void buildResponseAndOutcomeDeclarations() {
 		//need min. and max. score
 		double maxScore = getMaxScoreBuilder().getScore();
 		

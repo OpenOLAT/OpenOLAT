@@ -60,6 +60,7 @@ import org.olat.core.util.vfs.VFSManager;
 import org.olat.course.assessment.manager.AssessmentModeDAO;
 import org.olat.course.assessment.manager.UserCourseInformationsManager;
 import org.olat.course.certificate.CertificatesManager;
+import org.olat.modules.assessment.manager.AssessmentEntryDAO;
 import org.olat.modules.reminder.manager.ReminderDAO;
 import org.olat.repository.ErrorList;
 import org.olat.repository.RepositoryEntry;
@@ -137,6 +138,8 @@ public class RepositoryServiceImpl implements RepositoryService {
 	private PersistentTaskDAO persistentTaskDao;
 	@Autowired
 	private ReminderDAO reminderDao;
+	@Autowired
+	private AssessmentEntryDAO assessmentEntryDao;
 
 	@Autowired
 	private LifeFullIndexer lifeIndexer;
@@ -360,7 +363,9 @@ public class RepositoryServiceImpl implements RepositoryService {
 		// inform handler to do any cleanup work... handler must delete the
 		// referenced resourceable a swell.
 		handler.cleanupOnDelete(entry, resource);
+		dbInstance.commit();
 		
+		assessmentEntryDao.deleteEntryForRepositoryEntry(entry);
 		dbInstance.commit();
 
 		if(debug) log.debug("deleteRepositoryEntry after reload entry=" + entry);

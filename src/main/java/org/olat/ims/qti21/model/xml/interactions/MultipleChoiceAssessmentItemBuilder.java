@@ -163,7 +163,7 @@ public class MultipleChoiceAssessmentItemBuilder extends SimpleChoiceAssessmentI
 	}
 
 	@Override
-	protected void buildResponseDeclaration() {
+	protected void buildResponseAndOutcomeDeclarations() {
 		ResponseDeclaration responseDeclaration = AssessmentItemFactory
 				.createMultipleChoiceCorrectResponseDeclaration(assessmentItem, responseIdentifier, correctAnswers);
 		if(scoreEvaluation == ScoreEvaluation.perAnswer) {

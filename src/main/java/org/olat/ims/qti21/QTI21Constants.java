@@ -94,5 +94,25 @@ public class QTI21Constants {
 	public static final Identifier EMPTY_IDENTIFIER = Identifier.parseString(EMPTY);
 	
 	public static final IdentifierValue EMPTY_IDENTIFIER_VALUE = new IdentifierValue(EMPTY);
+	
+
+	public static final String HINT = "HINT";
+	
+	public static final Identifier HINT_IDENTIFIER  = Identifier.parseString(HINT);
+	
+	/** This is the variable identifer */
+	public static final String HINT_REQUEST = "HINTREQUEST";
+	
+	public static final Identifier HINT_REQUEST_IDENTIFIER = Identifier.parseString(HINT_REQUEST);
+	
+	public static final ComplexReferenceIdentifier HINT_REQUEST_CLX_IDENTIFIER = ComplexReferenceIdentifier.parseString(HINT_REQUEST);
+	
+	/** This is the outcome declaration identifier */
+	public static final String HINT_FEEDBACKMODAL = "HINTFEEDBACKMODAL";
+	
+	public static final Identifier HINT_FEEDBACKMODAL_IDENTIFIER = Identifier.parseString(HINT_FEEDBACKMODAL);
+	
+	public static final ComplexReferenceIdentifier HINT_FEEDBACKMODAL_CLX_IDENTIFIER = ComplexReferenceIdentifier.parseString(HINT_FEEDBACKMODAL);
+	
 
 }

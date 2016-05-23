@@ -305,7 +305,7 @@ public class HotspotAssessmentItemBuilder extends AssessmentItemBuilder {
 	}
 	
 	@Override
-	protected void buildResponseDeclaration() {
+	protected void buildResponseAndOutcomeDeclarations() {
 		ResponseDeclaration responseDeclaration = AssessmentItemFactory
 				.createHotspotCorrectResponseDeclaration(assessmentItem, responseIdentifier, correctAnswers);
 		if(scoreEvaluation == ScoreEvaluation.perAnswer) {
