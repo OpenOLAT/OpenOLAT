@@ -38,34 +38,32 @@
 			
 			## Callback to communicate with the server
 			success: function (mediaElement, domObject) {
-#*
-## does not work for now with autoplay
 
 				## listen to play events, fired when movie is finished
 		        mediaElement.addEventListener('play', function(e) {
 		        	if (!o_info.linkbusy) {
-		        		$r.openJavaScriptCommand("play"), 'currentTime', mediaElement.currentTime, 'src', mediaElement.src);
+		        		$r.openNoResponseJavaScriptCommand("play"), 'currentTime', mediaElement.currentTime, 'src', mediaElement.src);
 					}
 		        }, false);
 		        ## listen to pause events, fired when movie is paused by user
 		        mediaElement.addEventListener('pause', function(e) {
 		        	if (!o_info.linkbusy) {
-						$r.openJavaScriptCommand("pause"), 'currentTime', mediaElement.currentTime, 'src', mediaElement.src);
+						$r.openNoResponseJavaScriptCommand("pause"), 'currentTime', mediaElement.currentTime, 'src', mediaElement.src);
 					}
 		        }, false);
 		        ## listen to seeked events, fired when user uses the slider in the movie
 		        mediaElement.addEventListener('seeked', function(e) {
 		        	if (!o_info.linkbusy) {
-						$r.openJavaScriptCommand("seeked"), 'currentTime', mediaElement.currentTime, 'src', mediaElement.src);
+						$r.openNoResponseJavaScriptCommand("seeked"), 'currentTime', mediaElement.currentTime, 'src', mediaElement.src);
 					}
 		        }, false);
 		        ## listen to end events, fired when movie is finished
 		        mediaElement.addEventListener('ended', function(e) {
 		        	if (!o_info.linkbusy) {
-						$r.openJavaScriptCommand("ended"), 'currentTime', mediaElement.currentTime, 'src', mediaElement.src);
+						$r.openNoResponseJavaScriptCommand("ended"), 'currentTime', mediaElement.currentTime, 'src', mediaElement.src);
 					}
 		        }, false);
-*#
+
 				##
 		        ## Preselect the preferred source
 		        #if($useSourceChooser)

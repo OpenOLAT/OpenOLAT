@@ -193,6 +193,12 @@ public class VelocityRenderDecorator implements Closeable {
 		return "";
 	}
 	
+	public String openNoResponseJavaScriptCommand(String command) {
+		renderer.getUrlBuilder().openXHRNoResponseEvent(target, null,
+				new NameValuePair(VelocityContainer.COMMAND_ID, command));
+		return "";
+	}
+	
 	/**
 	 * 
 	 * @param command
