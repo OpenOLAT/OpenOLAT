@@ -229,7 +229,7 @@ public class AssessmentItemEditorController extends BasicController {
 		feedbackEditor = new FeedbackEditorController(ureq, getWindowControl(), kprimItemBuilder, false, true, true, restrictedEdit);
 		listenTo(feedbackEditor);
 		
-		tabbedPane.addTab(translate("form.choice"), itemEditor);
+		tabbedPane.addTab(translate("form.kprim"), itemEditor);
 		tabbedPane.addTab(translate("form.score"), scoreEditor);
 		tabbedPane.addTab(translate("form.feedback"), feedbackEditor);
 		return kprimItemBuilder;
@@ -245,7 +245,7 @@ public class AssessmentItemEditorController extends BasicController {
 		feedbackEditor = new FeedbackEditorController(ureq, getWindowControl(), kprimItemBuilder, false, true, true, restrictedEdit);
 		listenTo(feedbackEditor);
 		
-		tabbedPane.addTab(translate("form.choice"), itemEditor);
+		tabbedPane.addTab(translate("form.fib"), itemEditor);
 		tabbedPane.addTab(translate("form.score"), scoreEditor);
 		tabbedPane.addTab(translate("form.feedback"), feedbackEditor);
 		return kprimItemBuilder;
@@ -261,7 +261,7 @@ public class AssessmentItemEditorController extends BasicController {
 		feedbackEditor = new FeedbackEditorController(ureq, getWindowControl(), hotspotItemBuilder, false, true, true, restrictedEdit);
 		listenTo(feedbackEditor);
 		
-		tabbedPane.addTab(translate("form.choice"), itemEditor);
+		tabbedPane.addTab(translate("form.hotspot"), itemEditor);
 		tabbedPane.addTab(translate("form.score"), scoreEditor);
 		tabbedPane.addTab(translate("form.feedback"), feedbackEditor);
 		return hotspotItemBuilder;
@@ -277,7 +277,7 @@ public class AssessmentItemEditorController extends BasicController {
 		feedbackEditor = new FeedbackEditorController(ureq, getWindowControl(), essayItemBuilder, true, false, false, restrictedEdit);
 		listenTo(feedbackEditor);
 		
-		tabbedPane.addTab(translate("form.choice"), itemEditor);
+		tabbedPane.addTab(translate("form.essay"), itemEditor);
 		tabbedPane.addTab(translate("form.score"), scoreEditor);
 		tabbedPane.addTab(translate("form.feedback"), feedbackEditor);
 		return essayItemBuilder;

@@ -106,18 +106,6 @@ var QtiWorksRendering = (function() {
                 jQuery(obj).removeClass("badResponse");
                 return true;
             }
-        },
-
-        /* Used for <extendedTextInteraction/> */
-        addNewTextBox: function(inputElement) {
-            var input = jQuery(inputElement);
-            var newInput = input.clone(true);
-            input.removeAttr('onkeyup');
-            newInput.attr('value', '');
-
-            var br = jQuery("<br>");
-            input.after(br);
-            br.after(newInput);
         }
     };
 })();

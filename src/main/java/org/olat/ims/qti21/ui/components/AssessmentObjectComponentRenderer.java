@@ -701,13 +701,13 @@ public abstract class AssessmentObjectComponentRenderer extends DefaultComponent
 		Cardinality cardinality = responseDeclaration == null ? null : responseDeclaration.getCardinality();
 		if(cardinality != null && (cardinality.isRecord() || cardinality.isSingle())) {
 			String responseInputString = extractSingleCardinalityResponseInput(responseInput);
-			renderExtendedTextBox(renderer, sb, component, assessmentItem, itemSessionState, interaction, responseInputString, false);
+			renderExtendedTextBox(renderer, sb, component, assessmentItem, itemSessionState, interaction, responseInputString);
 		} else {
 			if(interaction.getMaxStrings() != null) {
 				int maxStrings = interaction.getMaxStrings().intValue();
 				for(int i=0; i<maxStrings; i++) {
 					String responseInputString = extractResponseInputAt(responseInput, i);
-					renderExtendedTextBox(renderer, sb, component, assessmentItem, itemSessionState, interaction, responseInputString, false);
+					renderExtendedTextBox(renderer, sb, component, assessmentItem, itemSessionState, interaction, responseInputString);
 				}	
 			} else {
 				// <xsl:with-param name="stringsCount" select="if (exists($responseValue)) then max(($minStrings, qw:get-cardinality-size($responseValue))) else $minStrings"/>
@@ -721,7 +721,7 @@ public abstract class AssessmentObjectComponentRenderer extends DefaultComponent
 				for(int i=0; i<stringCounts; i++) {
 					String responseInputString = extractResponseInputAt(responseInput, i);
 					renderExtendedTextBox(renderer, sb, component, assessmentItem, itemSessionState, interaction,
-							responseInputString, i == (stringCounts - 1));
+							responseInputString);
 				}
 			}
 		}
@@ -776,7 +776,7 @@ public abstract class AssessmentObjectComponentRenderer extends DefaultComponent
 	  </xsl:template>
 	*/
 	protected void renderExtendedTextBox(AssessmentRenderer renderer, StringOutput sb, AssessmentObjectComponent component, AssessmentItem assessmentItem,
-			ItemSessionState itemSessionState, ExtendedTextInteraction interaction, String responseInputString, boolean allowCreate) {
+			ItemSessionState itemSessionState, ExtendedTextInteraction interaction, String responseInputString) {
 		
 		String responseUniqueId = component.getResponseUniqueIdentifier(itemSessionState, interaction);
 		sb.append("<textarea id='").append(responseUniqueId).append("' name='qtiworks_response_").append(responseUniqueId).append("'");
@@ -788,20 +788,18 @@ public abstract class AssessmentObjectComponentRenderer extends DefaultComponent
 		}
 		if(isBadResponse(itemSessionState, interaction.getResponseIdentifier())
 				|| isInvalidResponse(itemSessionState, interaction.getResponseIdentifier())) {
-			sb.append(" class='badResponse'");
+			sb.append(" class='form-control badResponse'");
+		} else {
+			sb.append(" class='form-control'");
 		}
 		
-		int expectedLines = interaction.getExpectedLength() == null ? 6 : interaction.getExpectedLines().intValue();
+		int expectedLines = interaction.getExpectedLines() == null ? 6 : interaction.getExpectedLines().intValue();
 		sb.append(" rows='").append(expectedLines).append("'");
 		if(interaction.getExpectedLength() == null) {
 			sb.append(" cols='72'");
 		} else {
 			int cols = interaction.getExpectedLength().intValue() / expectedLines;
 			sb.append(" cols='").append(cols).append("'");
-		}
-		
-		if(allowCreate) {
-			sb.append(" onkeyup='QtiWorksRendering.addNewTextBox(this)'");
 		}
 		
 		ResponseDeclaration responseDeclaration = getResponseDeclaration(assessmentItem, interaction.getResponseIdentifier());

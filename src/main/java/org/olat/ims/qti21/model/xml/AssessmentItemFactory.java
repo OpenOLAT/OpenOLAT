@@ -718,7 +718,7 @@ public class AssessmentItemFactory {
 		DefaultValue feedbackDefaultVal = new DefaultValue(feedbackOutcomeDeclaration);
 		feedbackOutcomeDeclaration.setDefaultValue(feedbackDefaultVal);
 		
-		FieldValue feedbackDefaultFieldVal = new FieldValue(feedbackDefaultVal, new IdentifierValue("empty"));
+		FieldValue feedbackDefaultFieldVal = new FieldValue(feedbackDefaultVal, new IdentifierValue("none"));
 		feedbackDefaultVal.getFieldValues().add(feedbackDefaultFieldVal);
 		
 		List<View> views = new ArrayList<>();

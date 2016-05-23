@@ -47,7 +47,7 @@ public class EssayEditorController extends FormBasicController {
 	
 	private TextElement titleEl;
 	private TextElement placeholderEl;
-	private TextElement widthEl, heightEl, minWordsEl, maxWordsEl;
+	private TextElement lengthEl, heightEl, minWordsEl, maxWordsEl;
 	private RichTextElement textEl;
 
 	private final File itemFile;
@@ -86,8 +86,8 @@ public class EssayEditorController extends FormBasicController {
 		
 		//width (expectedLength), height (expectedLines)
 		String expectedLength = getValue(itemBuilder.getExpectedLength());
-		widthEl = uifactory.addTextElement("cols", "essay.columns", -1, expectedLength, formLayout);
-		widthEl.setEnabled(!restrictedEdit);
+		lengthEl = uifactory.addTextElement("cols", "essay.expectedLength", -1, expectedLength, formLayout);
+		lengthEl.setEnabled(!restrictedEdit);
 		String expectedLines = getValue(itemBuilder.getExpectedLines());
 		heightEl = uifactory.addTextElement("rows", "essay.rows", -1, expectedLines, formLayout);
 		heightEl.setEnabled(!restrictedEdit);
@@ -135,7 +135,7 @@ public class EssayEditorController extends FormBasicController {
 			allOk &= false;
 		}
 
-		allOk &= validateInteger(widthEl);
+		allOk &= validateInteger(lengthEl);
 		allOk &= validateInteger(heightEl);
 		allOk &= validateInteger(minWordsEl);
 		allOk &= validateInteger(maxWordsEl);
@@ -166,9 +166,9 @@ public class EssayEditorController extends FormBasicController {
 		
 		itemBuilder.setPlaceholder(placeholderEl.getValue());
 		if(!restrictedEdit) {
-			//width and height
-			itemBuilder.setExpectedLength(getValue(widthEl));
+			itemBuilder.setExpectedLength(getValue(lengthEl));
 			itemBuilder.setExpectedLines(getValue(heightEl));
+
 			//min. max. words
 			itemBuilder.setMinStrings(getValue(minWordsEl));
 			itemBuilder.setMaxStrings(getValue(maxWordsEl));
