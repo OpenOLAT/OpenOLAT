@@ -38,6 +38,7 @@ import org.olat.course.editor.formfragments.MembersSelectorFormFragment;
 import org.olat.course.nodes.info.InfoCourseNodeEditController;
 import org.olat.course.nodes.members.MembersCourseNodeEditController;
 import org.olat.course.nodes.members.MembersCourseNodeRunController;
+import org.olat.course.nodes.members.MembersPeekViewController;
 import org.olat.course.run.navigation.NodeRunConstructionResult;
 import org.olat.course.run.userview.NodeEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
@@ -145,7 +146,7 @@ public class MembersCourseNode extends AbstractAccessableCourseNode {
 
 	@Override
 	public Controller createPeekViewRunController(UserRequest ureq, WindowControl wControl, UserCourseEnvironment userCourseEnv, NodeEvaluation ne) {
-		return super.createPeekViewRunController(ureq, wControl, userCourseEnv, ne);
+		return new MembersPeekViewController(ureq, wControl, userCourseEnv, this.getModuleConfiguration());
 		
 		//TODO check if this is the desired 
 //		updateModuleConfigDefaults(false);

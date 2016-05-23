@@ -31,7 +31,6 @@ import java.util.Set;
 
 import org.olat.NewControllerFactory;
 import org.olat.basesecurity.BaseSecurity;
-import org.olat.basesecurity.GroupRoles;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -99,8 +98,6 @@ public class MembersCourseNodeRunController extends FormBasicController {
 
 	private final boolean canEmail;
 	private final boolean showOwners;
-//	private final boolean showCoaches;
-//	private final boolean showParticipants;
 	private final boolean chatEnabled;
 
 	private MembersMailController mailCtrl;
@@ -137,8 +134,6 @@ public class MembersCourseNodeRunController extends FormBasicController {
 		portraitManager = DisplayPortraitManager.getInstance();
 
 		showOwners = config.getBooleanSafe(MembersCourseNode.CONFIG_KEY_SHOWOWNER);
-//		showCoaches = config.getBooleanSafe(CONFIG_KEY_SHOWCOACHES);
-//		showParticipants = config.getBooleanSafe(CONFIG_KEY_SHOWPARTICIPANTS);
 		chatEnabled = imModule.isEnabled() && imModule.isPrivateEnabled();
 		
 		MembersCourseNodeConfiguration nodeConfig = (MembersCourseNodeConfiguration)CourseNodeFactory.getInstance().getCourseNodeConfiguration("cmembers");
@@ -157,7 +152,8 @@ public class MembersCourseNodeRunController extends FormBasicController {
 		
 		List<Identity> owners;
 		if(showOwners) {
-			owners = getOwners();
+			RepositoryEntry courseRepositoryEntry = courseEnv.getCourseGroupManager().getCourseEntry();
+			owners = MembersHelpers.getOwners(repositoryService, courseRepositoryEntry);
 		} else {
 			owners = Collections.emptyList();
 		}
@@ -170,7 +166,7 @@ public class MembersCourseNodeRunController extends FormBasicController {
 				|| membersFrag.hasAnyOf(MembersCourseNode.CONFIG_KEY_COACHES_GROUP, MembersCourseNode.CONFIG_KEY_COACHES_AREA)) {
 			
 			CourseGroupManager cgm = courseEnv.getCourseGroupManager();
-			addCoaches(membersFrag, cgm, coaches);
+			MembersHelpers.addCoaches(membersFrag, cgm, businessGroupService, coaches);
 			
 			showCoaches = true;
 		}
@@ -180,7 +176,7 @@ public class MembersCourseNodeRunController extends FormBasicController {
 				|| membersFrag.hasAnyOf(MembersCourseNode.CONFIG_KEY_PARTICIPANTS_GROUP, MembersCourseNode.CONFIG_KEY_PARTICIPANTS_AREA)) {
 			
 			CourseGroupManager cgm = courseEnv.getCourseGroupManager();
-			addParticipants(membersFrag, cgm, participants);
+			MembersHelpers.addParticipants(membersFrag, cgm, businessGroupService, participants);
 			
 			showParticipants = true;
 		}
@@ -209,11 +205,6 @@ public class MembersCourseNodeRunController extends FormBasicController {
 			layoutCont.contextPut("showParticipants", showParticipants);
 			layoutCont.contextPut("hasParticipants", new Boolean(!participantList.isEmpty()));
 		}
-	}
-	
-	private List<Identity> getOwners() {
-		RepositoryEntry courseRepositoryEntry = courseEnv.getCourseGroupManager().getCourseEntry();
-		return repositoryService.getMembers(courseRepositoryEntry, GroupRoles.owner.name());
 	}
 	
 	private List<Member> initFormMemberList(String name, List<Identity> ids, Set<Long> duplicateCatcher, FormItemContainer formLayout, boolean withEmail) {
@@ -476,128 +467,4 @@ public class MembersCourseNodeRunController extends FormBasicController {
 		}
 	}
 
-//	// -------------------
-//	private List<Identity> retrieveOwnersFromCourse(CourseGroupManager cgm){;
-//		List<Identity> ownerList = repositoryService.getMembers(cgm.getCourseEntry(), GroupRoles.owner.name());
-//		return ownerList;
-//	}
-	
-	// -------------------
-	private void addCoaches(IModuleConfiguration moduleConfiguration, CourseGroupManager cgm, List<Identity> list) {
-	
-		if(moduleConfiguration.has(MembersCourseNode.CONFIG_KEY_COACHES_GROUP)) {
-			String coachGroupNames = moduleConfiguration.val(MembersCourseNode.CONFIG_KEY_COACHES_GROUP);
-			List<Long> coachGroupKeys = moduleConfiguration.val(MembersCourseNode.CONFIG_KEY_COACHES_GROUP_ID);
-			if(coachGroupKeys == null && StringHelper.containsNonWhitespace(coachGroupNames)) {
-				coachGroupKeys = businessGroupService.toGroupKeys(coachGroupNames, cgm.getCourseEntry());
-			}
-			list.addAll(retrieveCoachesFromGroups(coachGroupKeys, cgm));
-		}
-
-		if(moduleConfiguration.has(MembersCourseNode.CONFIG_KEY_COACHES_AREA)) {
-			String coachAreaNames = moduleConfiguration.val(MembersCourseNode.CONFIG_KEY_COACHES_AREA);
-			List<Long> coachAreaKeys = moduleConfiguration.val(MembersCourseNode.CONFIG_KEY_COACHES_AREA_IDS);
-			if(coachAreaKeys == null && StringHelper.containsNonWhitespace(coachAreaNames)) {
-				coachAreaKeys = businessGroupService.toGroupKeys(coachAreaNames, cgm.getCourseEntry());
-			}
-			list.addAll(retrieveCoachesFromAreas(coachAreaKeys, cgm));
-		}
-		
-		if(moduleConfiguration.anyTrue(MembersCourseNode.CONFIG_KEY_COACHES_COURSE
-				, MembersCourseNode.CONFIG_KEY_COACHES_ALL)) {
-			list.addAll(retrieveCoachesFromCourse(cgm));
-		}
-		if(moduleConfiguration.anyTrue(MembersCourseNode.CONFIG_KEY_COACHES_ALL)) {
-			list.addAll(retrieveCoachesFromCourseGroups(cgm));
-		}
-	}
-	
-	private List<Identity> retrieveCoachesFromAreas(List<Long> areaKeys, CourseGroupManager cgm) {
-		List<Identity> coaches = cgm.getCoachesFromAreas(areaKeys);
-		Set<Identity> coachesWithoutDuplicates = new HashSet<Identity>(coaches);
-		coaches = new ArrayList<Identity>(coachesWithoutDuplicates);
-		return coaches;
-	}
-	
-	private List<Identity> retrieveCoachesFromGroups(List<Long> groupKeys, CourseGroupManager cgm) {
-		List<Identity> coaches = new ArrayList<Identity>(new HashSet<Identity>(cgm.getCoachesFromBusinessGroups(groupKeys)));
-		return coaches;
-	}
-	
-	private List<Identity> retrieveCoachesFromCourse(CourseGroupManager cgm) {
-		List<Identity> coaches = cgm.getCoaches();
-		return coaches;
-	}
-
-	private List<Identity> retrieveCoachesFromCourseGroups(CourseGroupManager cgm) {
-		Set<Identity> uniq = new HashSet<Identity>();
-		{
-			List<Identity> coaches = cgm.getCoachesFromAreas();
-			uniq.addAll(coaches);
-		}
-		{
-			List<Identity> coaches = cgm.getCoachesFromBusinessGroups();
-			uniq.addAll(coaches);
-		}
-		return new ArrayList<Identity>(uniq);
-	}
-	
-	// -------------------
-	private void addParticipants(IModuleConfiguration moduleConfiguration, CourseGroupManager cgm, List<Identity> list) {
-
-		if(moduleConfiguration.has(MembersCourseNode.CONFIG_KEY_PARTICIPANTS_GROUP)) {
-			String participantGroupNames = moduleConfiguration.val(MembersCourseNode.CONFIG_KEY_PARTICIPANTS_GROUP);
-			List<Long> participantGroupKeys = moduleConfiguration.val(MembersCourseNode.CONFIG_KEY_PARTICIPANTS_GROUP_ID);
-			if(participantGroupKeys == null && StringHelper.containsNonWhitespace(participantGroupNames)) {
-				participantGroupKeys = businessGroupService.toGroupKeys(participantGroupNames, cgm.getCourseEntry());
-			}
-			list.addAll(retrieveParticipantsFromGroups(participantGroupKeys, cgm));
-		}
-		
-		if(moduleConfiguration.has(MembersCourseNode.CONFIG_KEY_PARTICIPANTS_AREA)) {
-			String participantAreaNames = moduleConfiguration.val(MembersCourseNode.CONFIG_KEY_PARTICIPANTS_AREA);
-			List<Long> participantAreaKeys = moduleConfiguration.val(MembersCourseNode.CONFIG_KEY_PARTICIPANTS_AREA_ID);
-			if(participantAreaKeys == null && StringHelper.containsNonWhitespace(participantAreaNames)) {
-				participantAreaKeys = businessGroupService.toGroupKeys(participantAreaNames, cgm.getCourseEntry());
-			}
-			list.addAll(retrieveParticipantsFromAreas(participantAreaKeys, cgm));
-		}
-		
-		if(moduleConfiguration.anyTrue(MembersCourseNode.CONFIG_KEY_PARTICIPANTS_COURSE
-				, MembersCourseNode.CONFIG_KEY_PARTICIPANTS_ALL)) {
-			list.addAll(retrieveParticipantsFromCourse(cgm));
-		}
-		if(moduleConfiguration.anyTrue(MembersCourseNode.CONFIG_KEY_PARTICIPANTS_ALL)) {
-			list.addAll(retrieveParticipantsFromCourseGroups(cgm));
-		}
-	}
-	
-	private List<Identity> retrieveParticipantsFromAreas(List<Long> areaKeys, CourseGroupManager cgm) {
-		List<Identity> participiants = cgm.getParticipantsFromAreas(areaKeys);
-		return participiants;
-	}
-	
-	private List<Identity> retrieveParticipantsFromGroups(List<Long> groupKeys, CourseGroupManager cgm) {
-		List<Identity> participiants = cgm.getParticipantsFromBusinessGroups(groupKeys);
-		return participiants;
-	}
-	
-	private List<Identity> retrieveParticipantsFromCourse(CourseGroupManager cgm) {
-		List<Identity> participiants = cgm.getParticipants();
-		return participiants;
-	}
-	
-	private List<Identity> retrieveParticipantsFromCourseGroups(CourseGroupManager cgm) {
-		Set<Identity> uniq = new HashSet<Identity>();
-		{
-			List<Identity> participiants = cgm.getParticipantsFromAreas();
-			uniq.addAll(participiants);
-		}
-		{
-			List<Identity> participiants = cgm.getParticipantsFromBusinessGroups();
-			uniq.addAll(participiants);
-		}
-		return new ArrayList<Identity>(uniq);
-	}
-	
 }

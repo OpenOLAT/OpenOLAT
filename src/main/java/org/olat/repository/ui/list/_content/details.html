@@ -43,7 +43,7 @@
 					#end
 					#if($v.lifecycle || $v.lifecycle.softKey || $v.lifecycle.label || $row.lifecycle.start || $row.lifecycle.end)
 					<div title="$r.translateInAttribute("cif.dates")">
-						<i class="o_icon o_icon_lifecycle"> </i> 
+						<i class="o_icon o_icon_lifecycle_date"> </i> 
 						#if(!$v.lifecycle.privateCycle)
 							#if($v.lifecycle.softKey and !$v.lifecycle.softKey.isEmpty()) $r.escapeHtml($v.lifecycle.softKey)
 							#else $r.escapeHtml($v.lifecycle.label) #end

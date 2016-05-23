@@ -32,6 +32,7 @@ import org.olat.core.gui.components.dropdown.Dropdown.Spacer;
 import org.olat.core.gui.components.htmlheader.jscss.CustomCSS;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
+import org.olat.core.gui.components.stack.BreadcrumbedStackedPanel.BreadCrumb;
 import org.olat.core.gui.components.stack.PopEvent;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.components.stack.TooledStackedPanel.Align;
@@ -42,9 +43,6 @@ import org.olat.core.gui.control.controller.MainLayoutBasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.gui.control.generic.layout.MainLayoutController;
-import org.olat.core.gui.control.generic.wizard.Step;
-import org.olat.core.gui.control.generic.wizard.StepRunnerCallback;
-import org.olat.core.gui.control.generic.wizard.StepsMainRunController;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Roles;
@@ -79,8 +77,6 @@ import org.olat.repository.ui.author.ConfirmDeleteController;
 import org.olat.repository.ui.author.CopyRepositoryEntryController;
 import org.olat.repository.ui.author.RepositoryEditDescriptionController;
 import org.olat.repository.ui.author.RepositoryMembersController;
-import org.olat.repository.ui.author.wizard.CloseResourceCallback;
-import org.olat.repository.ui.author.wizard.Close_1_ExplanationStep;
 import org.olat.repository.ui.list.LeavingEvent;
 import org.olat.repository.ui.list.RepositoryEntryDetailsController;
 import org.olat.resource.OLATResource;
@@ -112,7 +108,6 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 	private CloseableModalController cmc;
 	protected Controller accessController;
 	private OrdersAdminController ordersCtlr;
-	private StepsMainRunController closeCtrl;
 	private CatalogSettingsController catalogCtlr;
 	private CopyRepositoryEntryController copyCtrl;
 	private ConfirmDeleteController confirmDeleteCtrl;
@@ -120,13 +115,14 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 	private RepositoryEntryDetailsController detailsCtrl;
 	private RepositoryMembersController membersEditController;
 	private RepositoryEditDescriptionController descriptionCtrl;
+	private RepositoryEntryLifeCycleChangeController lifeCycleChangeCtr;
 	
 	private Dropdown tools;
 	private Dropdown settings;
 	protected Link editLink, membersLink, ordersLink,
 				 editDescriptionLink, accessLink, catalogLink,
 				 detailsLink, bookmarkLink,
-				 copyLink, downloadLink, closeLink, deleteLink;
+				 copyLink, downloadLink, lifeCycleChangeLink, deleteLink;
 	
 	protected final boolean isOlatAdmin;
 	protected final boolean isGuestOnly;
@@ -385,9 +381,8 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 			}
 		}
 		
-		boolean canClose = OresHelper.isOfType(re.getOlatResource(), CourseModule.class)
-				&& !RepositoryEntryManagedFlag.isManaged(re, RepositoryEntryManagedFlag.close)
-				&& !RepositoryManager.getInstance().createRepositoryEntryStatus(re.getStatusCode()).isClosed();
+		boolean canClose = OresHelper.isOfType(re.getOlatResource(), CourseModule.class);
+		boolean closeManged = RepositoryEntryManagedFlag.isManaged(re, RepositoryEntryManagedFlag.close);
 		
 		if(reSecurity.isEntryAdmin()) {
 			boolean deleteManaged = RepositoryEntryManagedFlag.isManaged(re, RepositoryEntryManagedFlag.delete);
@@ -395,17 +390,24 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 				settingsDropdown.addComponent(new Spacer("close-delete"));
 			}
 
-			if(canClose) {
-				closeLink = LinkFactory.createToolLink("close", translate("details.close.ressoure"), this, "o_icon o_icon-fw o_icon_close_resource");
-				closeLink.setElementCssClass("o_sel_repo_close");
-				settingsDropdown.addComponent(closeLink);
-			}
-			if(!deleteManaged) {
-				String type = translate(handler.getSupportedType());
-				String deleteTitle = translate("details.delete.alt", new String[]{ type });
-				deleteLink = LinkFactory.createToolLink("delete", deleteTitle, this, "o_icon o_icon-fw o_icon_delete_item");
-				deleteLink.setElementCssClass("o_sel_repo_close");
-				settingsDropdown.addComponent(deleteLink);
+			if(canClose && (!closeManged || !deleteManaged)) {
+				// If a resource is closable (currently only course) and
+				// deletable (currently all resources) we offer those two
+				// actions in a separate page, unless both are managed
+				// operations. In that case we don't show anything at all.				
+				// If only one of the two actions are managed, we go to the
+				// separate page as well and show only the relevant action
+				// there.
+				lifeCycleChangeLink = LinkFactory.createToolLink("lifeCycleChange", translate("details.lifecycle.change"), this, "o_icon o_icon-fw o_icon_lifecycle");
+				settingsDropdown.addComponent(lifeCycleChangeLink);
+			} else {				
+				if(!deleteManaged) {
+					String type = translate(handler.getSupportedType());
+					String deleteTitle = translate("details.delete.alt", new String[]{ type });
+					deleteLink = LinkFactory.createToolLink("delete", deleteTitle, this, "o_icon o_icon-fw o_icon_delete_item");
+					deleteLink.setElementCssClass("o_sel_repo_close");
+					settingsDropdown.addComponent(deleteLink);
+				}
 			}
 		}
 	}
@@ -511,9 +513,9 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 			doCopy(ureq);
 		} else if(downloadLink == source) {
 			doDownload(ureq);
-		} else if(closeLink == source) {
-			doCloseResourceWizard(ureq);
-		} else if(deleteLink == source) {
+		} else if (lifeCycleChangeLink == source) {
+			doLifeCycleChange(ureq);
+		}  else if(deleteLink == source) {
 			doDelete(ureq);
 		} else if(source == toolbarPanel) {
 			if (event == Event.CLOSE_EVENT) {
@@ -568,15 +570,6 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 					doRun(ureq, reSecurity);
 				}
 			}
-		} else if(closeCtrl == source) {
-			if(event == Event.CANCELLED_EVENT || event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
-				getWindowControl().pop();
-				removeAsListenerAndDispose(closeCtrl);
-				closeCtrl = null;
-				if(event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
-					doCloseResource(ureq);
-				}
-			}
 		} else if(confirmDeleteCtrl == source) {
 			if(event == Event.CANCELLED_EVENT) {
 				cmc.deactivate();
@@ -588,6 +581,18 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 				cmc.deactivate();
 				doClose(ureq);
 				cleanUp();
+			}
+		} else if (lifeCycleChangeCtr == source) {
+			if (event == RepositoryEntryLifeCycleChangeController.deletedEvent) {
+				doClose(ureq);
+				cleanUp();				
+			} else if (event == RepositoryEntryLifeCycleChangeController.closedEvent) {
+				if(editLink != null) {
+					editLink.setVisible(false);
+				}
+				if(currentToolCtr == editorCtrl) {
+					toolbarPanel.popUpToRootController(ureq);
+				}
 			}
 		} else if(copyCtrl == source) {
 			cmc.deactivate();
@@ -605,8 +610,9 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 		return this;
 	}
 	
-	protected void cleanUp() {
+	protected void cleanUp() {		
 		removeAsListenerAndDispose(membersEditController);
+		removeAsListenerAndDispose(lifeCycleChangeCtr);
 		removeAsListenerAndDispose(confirmDeleteCtrl);
 		removeAsListenerAndDispose(accessController);
 		removeAsListenerAndDispose(descriptionCtrl);
@@ -614,11 +620,11 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 		removeAsListenerAndDispose(detailsCtrl);
 		removeAsListenerAndDispose(editorCtrl);
 		removeAsListenerAndDispose(ordersCtlr);
-		removeAsListenerAndDispose(closeCtrl);
 		removeAsListenerAndDispose(copyCtrl);
 		removeAsListenerAndDispose(cmc);
 		
 		membersEditController = null;
+		lifeCycleChangeCtr = null;
 		confirmDeleteCtrl = null;
 		accessController = null;
 		descriptionCtrl = null;
@@ -626,7 +632,6 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 		detailsCtrl = null;
 		editorCtrl = null;
 		ordersCtlr = null;
-		closeCtrl = null;
 		copyCtrl = null;
 		cmc = null;
 	}
@@ -862,29 +867,18 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 		}
 	}
 	
-	private void doCloseResourceWizard(UserRequest ureq) {
-		removeAsListenerAndDispose(closeCtrl);
-
-		Step start = new Close_1_ExplanationStep(ureq, re);
-		StepRunnerCallback finish = new CloseResourceCallback(re);
-		closeCtrl = new StepsMainRunController(ureq, getWindowControl(), start, finish, null,
-				translate("wizard.closecourse.title"), "o_sel_checklist_wizard");
-		listenTo(closeCtrl);
-		getWindowControl().pushAsModalDialog(closeCtrl.getInitialComponent());
-	}
-	
-	/**
-	 * Remove close and edit tools, if in edit mode, pop-up-to root
-	 * @param ureq
-	 */
-	private void doCloseResource(UserRequest ureq) {
-		loadRepositoryEntry();
-		closeLink.setVisible(false);
-		if(editLink != null) {
-			editLink.setVisible(false);
+	private void doLifeCycleChange(UserRequest ureq) {
+		List<Link> breadCrumbs = toolbarPanel.getBreadCrumbs();
+		BreadCrumb lastCrumb = null;
+		if (breadCrumbs.size() > 0) {
+			lastCrumb = (BreadCrumb) breadCrumbs.get(breadCrumbs.size()-1).getUserObject();
 		}
-		if(currentToolCtr == editorCtrl) {
-			toolbarPanel.popUpToRootController(ureq);
+		if (lastCrumb == null || lastCrumb.getController() != lifeCycleChangeCtr) {
+			// only create and add to stack if not already there
+			lifeCycleChangeCtr = new RepositoryEntryLifeCycleChangeController(ureq, getWindowControl(), re, reSecurity, handler);
+			listenTo(lifeCycleChangeCtr);
+			currentToolCtr = lifeCycleChangeCtr;
+			toolbarPanel.pushController(translate("details.lifecycle.change"), lifeCycleChangeCtr);
 		}
 	}
 	
