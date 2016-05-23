@@ -36,9 +36,17 @@
 			margin-bottom: 0.25em;
 		}
 	}
-		
+
+	.o_start_wrapper {
+		margin: 2em 0 -10px 0;
+		text-align: right;
+		.o_start_inner {
+			display: inline-block; 
+		}
+	}		
 	.o_start, .o_book {
-		margin: 2em 0;
+		max-width: 400px; 
+		display: inline-block; 
 	}
 	
 	.o_social {
@@ -62,6 +70,16 @@
 				float: none;
 				text-align: center;				
 			}
+		}
+		.o_start_wrapper {
+			text-align: center;
+			.o_start_inner {
+				display: block; 
+			}
+		}		
+		.o_start, .o_book {
+			max-width: 100%; 
+			display: block; 
 		}
     }	
     

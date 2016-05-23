@@ -23,6 +23,15 @@
 			$description
 		</div>
 		#end
+		
+		#if($r.available("start"))
+		<div class="o_start_wrapper o_clearfix">
+			<div class="o_start_inner">
+				$r.render("start")
+			</div>
+		</div>
+		#end
+		
 	</div>
 
 	## calculate is any metadata available. If not, render right column at center
@@ -30,11 +39,6 @@
 
 	<div class="row">
 		<div class="col-xs-12 #if($hasMetaData) col-sm-5 col-md-4 pull-right #end o_sidecolumn"><div class="row">		
-			<div class="col-sm-12 o_subcolumn">
-				#if($r.available("start"))
-					$r.render("start")
-				#end
-			</div>
 			<div class="#if($hasMetaData) col-xs-6 col-sm-12 #else col-sm-6 #end o_subcolumn">
 				<div class="o_overview">
 					<h3>$r.translate("details.overview")</h3>
