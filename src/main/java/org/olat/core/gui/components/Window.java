@@ -139,6 +139,12 @@ public class Window extends AbstractComponent {
 	 */
 	public static final Event ABOUT_TO_DISPATCH = new Event("about_to_dispatch");
 	
+	/** The parameter name for the case where the event doesn't need to trigger a response */
+	public static final String NO_RESPONSE_PARAMETER_MARKER = "no-response";
+
+	/** The parameter value for the case where the event doesn't need to trigger a response */
+	public static final String NO_RESPONSE_VALUE_MARKER = "oo-no-response";
+	
 	private String uriPrefix;
 	private ComponentCollection contentPane;
 	private String latestTimestamp;
@@ -335,6 +341,11 @@ public class Window extends AbstractComponent {
 							// this can happen e.g. on quick double-clicks, so that the dom-replacement-command never reaches the client.
 							if (isDebugLog) log.debug("no ajax dispatch: component not found (target=null)");
 							validForDispatching = false;
+							//check no response call
+							String noResponseMarker = ureq.getParameter("no-response");
+							if("oo-no-response".equals(noResponseMarker)) {
+								return;
+							}
 						}
 						
 						// 2.) collect dirty components (top-down, return from sub-path when first dirty node met)

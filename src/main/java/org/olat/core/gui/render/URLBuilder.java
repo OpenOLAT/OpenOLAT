@@ -32,6 +32,7 @@ import java.util.regex.Pattern;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.Window;
 import org.olat.core.gui.components.form.flexible.impl.NameValuePair;
 import org.olat.core.gui.control.winmgr.AJAXFlags;
 import org.olat.core.logging.AssertException;
@@ -197,6 +198,8 @@ public class URLBuilder {
 		}
 		sb.append("'");
 		commandParameters(sb, commands);
+		//no response marker
+		commandParameters(sb, new NameValuePair(Window.NO_RESPONSE_PARAMETER_MARKER, Window.NO_RESPONSE_VALUE_MARKER));
 		return sb;
 	}
 	

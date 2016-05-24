@@ -331,9 +331,14 @@ public class GTACoachController extends GTAAbstractController {
 		}
 		
 		if(revisions) {
-			UserCourseEnvironment assessedUserCourseEnv = getAssessedUserCourseEnvironment();
-			revisionDocumentsCtrl = new GTACoachRevisionAndCorrectionsController(ureq, getWindowControl(),
+			if(GTAType.individual.name().equals(config.getStringValue(GTACourseNode.GTASK_TYPE))) {
+				UserCourseEnvironment assessedUserCourseEnv = getAssessedUserCourseEnvironment();
+				revisionDocumentsCtrl = new GTACoachRevisionAndCorrectionsController(ureq, getWindowControl(),
 					courseEnv, assignedTask, gtaNode, assessedGroup, assessedIdentity, assessedUserCourseEnv);
+			} else {
+				revisionDocumentsCtrl = new GTACoachRevisionAndCorrectionsController(ureq, getWindowControl(),
+					courseEnv, assignedTask, gtaNode, assessedGroup, null, null);
+			}
 			listenTo(revisionDocumentsCtrl);
 			mainVC.put("revisionDocs", revisionDocumentsCtrl.getInitialComponent());
 		}

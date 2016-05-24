@@ -113,7 +113,9 @@ public class ChoiceItemController extends BasicController implements ControllerE
 			String sPosid = ureq.getParameter("posid");
 			int posid = 0;
 			if (sPosid != null) posid = Integer.parseInt(sPosid);
-			if (cmd.equals("up")) {
+			if(cmd == null) {
+				//ignore null cmd
+			} else if (cmd.equals("up")) {
 				if (posid > 0) {
 					List<Response> elements = item.getQuestion().getResponses();
 					Response obj = elements.remove(posid);
