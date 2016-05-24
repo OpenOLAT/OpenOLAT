@@ -132,6 +132,7 @@ public class GroupTaskPage {
 		List<WebElement> buttonsEl = browser.findElements(confirmButtonBy);
 		buttonsEl.get(0).click();
 		OOGraphene.waitBusy(browser);
+		OOGraphene.waitAndCloseBlueMessageWindow(browser);
 		return this;
 	}
 	

@@ -359,12 +359,12 @@
 			var that = this;
 			var box = $('#o_offcanvas_right');
 			box.show().transition({ x: -that.state.offCanvasWidth}, function() {
-				that.offcanvasTransitioning = false;
 				$('body').addClass('o_offcanvas_right_visible');	    	
 				// hide menu when clicking anywhere in content (timeout to pass the event in IE8/9 which hide the navbar)
 				var listener = $.proxy(that.hideRightOnClick, that);
 				setTimeout(function() {
 					$('html').on('click', listener);
+					that.offcanvasTransitioning = false;
 				}, 10);			
 			} );
 		}
@@ -382,9 +382,9 @@
 			var that = this;
 			var box = $('#o_offcanvas_right');
 			box.transition({ x: that.state.offCanvasWidth}, function() {
-				that.offcanvasTransitioning = false;
 				box.hide();
-				$('body').removeClass('o_offcanvas_right_visible');	    	
+				$('body').removeClass('o_offcanvas_right_visible');
+				that.offcanvasTransitioning = false;
 			} );
 		}
 	}

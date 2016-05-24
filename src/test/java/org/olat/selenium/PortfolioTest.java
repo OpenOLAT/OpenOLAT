@@ -74,8 +74,6 @@ public class PortfolioTest {
 	private URL deploymentUrl;
 	@Page
 	private NavigationPage navBar;
-	@Page
-	private UserToolsPage userTools;
 
 	/**
 	 * Create a course with a forum, publish it.
@@ -98,6 +96,7 @@ public class PortfolioTest {
 			.resume();
 		
 		//open the portfolio
+		UserToolsPage userTools = new UserToolsPage(browser);
 		PortfolioPage portfolio = userTools
 				.openUserToolsMenu()
 				.openPortfolio();
@@ -186,6 +185,7 @@ public class PortfolioTest {
 			.resume();
 		
 		//open the portfolio
+		UserToolsPage userTools = new UserToolsPage(browser);
 		PortfolioPage portfolio = userTools
 			.openUserToolsMenu()
 			.openPortfolio();
@@ -266,6 +266,7 @@ public class PortfolioTest {
 			.loginAs(author.getLogin(), author.getPassword())
 			.resume();
 		//open the portfolio
+		UserToolsPage userTools = new UserToolsPage(browser);
 		PortfolioPage portfolio = userTools
 				.openUserToolsMenu()
 				.openPortfolio();
@@ -364,6 +365,7 @@ public class PortfolioTest {
 			.resume();
 		
 		//open the portfolio
+		UserToolsPage userTools = new UserToolsPage(browser);
 		PortfolioPage portfolio = userTools
 				.openUserToolsMenu()
 				.openPortfolio();
@@ -430,6 +432,7 @@ public class PortfolioTest {
 			.resume();
 		
 		//open the portfolio
+		UserToolsPage userTools = new UserToolsPage(browser);
 		PortfolioPage portfolio = userTools
 				.openUserToolsMenu()
 				.openPortfolio();
@@ -495,6 +498,7 @@ public class PortfolioTest {
 			.resume();
 		
 		//open the portfolio
+		UserToolsPage userTools = new UserToolsPage(browser);
 		PortfolioPage portfolio = userTools
 				.openUserToolsMenu()
 				.openPortfolio();
@@ -574,6 +578,7 @@ public class PortfolioTest {
 			.resume();
 		
 		//open the portfolio
+		UserToolsPage userTools = new UserToolsPage(browser);
 		PortfolioPage portfolio = userTools
 				.openUserToolsMenu()
 				.openPortfolio();
@@ -654,6 +659,7 @@ public class PortfolioTest {
 			.resume();
 		
 		//open the portfolio
+		UserToolsPage userTools = new UserToolsPage(browser);
 		PortfolioPage portfolio = userTools
 				.openUserToolsMenu()
 				.openPortfolio();
@@ -728,6 +734,7 @@ public class PortfolioTest {
 			.resume();
 		
 		//open the portfolio
+		UserToolsPage userTools = new UserToolsPage(browser);
 		PortfolioPage portfolio = userTools
 				.openUserToolsMenu()
 				.openPortfolio();

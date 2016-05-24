@@ -43,11 +43,14 @@ public class CatalogPage {
 	}
 	
 	public CatalogPage selectCatalogEntry(String title) {
-		By titleBy = By.xpath("//div[contains(@class,'o_sublevel')]//div[contains(@class,'o_meta')]//h4[contains(@class,'o_title')]//a[span[text()[contains(.,'" + title + "')]]]");
+		By titleBy = By.xpath("//div[contains(@class,'o_sublevel')]//h4[contains(@class,'o_title')]/a/span[text()[contains(.,'" + title + "')]]");
 		List<WebElement> titleLinks = browser.findElements(titleBy);
 		Assert.assertFalse(titleLinks.isEmpty());
 		titleLinks.get(0).click();
 		OOGraphene.waitBusy(browser);
+		
+		By pageTitleBy = By.xpath("//h2[text()[contains(.,'" + title + "')]]");
+		OOGraphene.waitElement(pageTitleBy, 5, browser);
 		return this;
 	}
 	

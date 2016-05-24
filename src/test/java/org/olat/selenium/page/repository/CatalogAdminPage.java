@@ -85,16 +85,10 @@ public class CatalogAdminPage {
 	 * @return
 	 */
 	public CatalogAdminPage selectNode(String title) {
-		By nodeBy = By.cssSelector("div.o_meta > h4.o_title > a");
-		List<WebElement> nodes = browser.findElements(nodeBy);
-		WebElement selectedNode = null;
-		for(WebElement node:nodes) {
-			if(node.getText().contains(title)) {
-				selectedNode = node;
-			}
-		}
-		Assert.assertNotNull(selectedNode);
-		selectedNode.click();
+		By titleBy = By.xpath("//div[contains(@class,'o_meta')]//h4[contains(@class,'o_title')]/a/span[text()[contains(.,'" + title + "')]]");
+		List<WebElement> nodeLinks = browser.findElements(titleBy);
+		Assert.assertEquals(1, nodeLinks.size());
+		nodeLinks.get(0).click();
 		OOGraphene.waitBusy(browser);
 		return this;
 	}

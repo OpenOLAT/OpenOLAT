@@ -154,6 +154,7 @@ public class PortfolioPage {
 		WebElement createMapLink = browser.findElement(createMapBy);
 		Assert.assertTrue(createMapLink.isDisplayed());
 		createMapLink.click();
+		OOGraphene.waitBusy(browser);
 		
 		//create default map
 		By createDefaultMapBy = By.className("o_sel_create_default_map");

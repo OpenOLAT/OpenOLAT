@@ -30,6 +30,7 @@ import org.olat.basesecurity.Constants;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.services.notifications.NotificationsManager;
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.WindowManager;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
@@ -39,7 +40,6 @@ import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
-import org.olat.core.gui.control.WindowBackOffice;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Preferences;
@@ -104,12 +104,12 @@ public class PreferencesFormController extends FormBasicController {
 		// Maybe the user changed the font size
 		if (ureq.getIdentity().equalsByPersistableKey(tobeChangedIdentity)) {
 			int fontSize = Integer.parseInt(fontsize.getSelectedKey());
-			WindowBackOffice wbo = getWindowControl().getWindowBackOffice();
-			wbo.getWindowManager().setFontSize(fontSize);
-			// set window dirty to force full page refresh
-			wbo.getWindow().setDirty(true);
+			WindowManager wm = getWindowControl().getWindowBackOffice().getWindowManager();
+			if(fontSize != wm.getFontSize()) {
+				getWindowControl().getWindowBackOffice().getWindow().setDirty(true);
+			}
 		}
-		//fxdiff VCRP-16: intern mail system
+		
 		if(mailSystem != null && mailSystem.isOneSelected()) {
 			String val = mailSystem.isSelected(1) ? "true" : "false";
 			prefs.setReceiveRealMail(val);
@@ -275,12 +275,14 @@ public class PreferencesFormController extends FormBasicController {
 		uifactory.addFormCancelButton("cancel", buttonLayout, ureq, getWindowControl());
 	}
 
+	@Override
 	protected void formInnerEvent (UserRequest ureq, FormItem source, FormEvent event) {
 		if (source == fontsize && ureq.getIdentity().equalsByPersistableKey(tobeChangedIdentity)) {
 			int fontSize = Integer.parseInt(fontsize.getSelectedKey());
-			WindowBackOffice wbo = getWindowControl().getWindowBackOffice();
-			wbo.getWindowManager().setFontSize(fontSize);
-			wbo.getWindow().setDirty(true);
+			WindowManager wm = getWindowControl().getWindowBackOffice().getWindowManager();
+			if(fontSize != wm.getFontSize()) {
+				getWindowControl().getWindowBackOffice().getWindow().setDirty(true);
+			}
 		}
 	}
 	

@@ -27,7 +27,10 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.util.vfs.VFSContainer;
+import org.olat.modules.video.VideoManager;
 import org.olat.modules.video.manager.VideoMediaMapper;
+import org.olat.resource.OLATResource;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * peekviewcontroller of videomodule
@@ -37,10 +40,15 @@ import org.olat.modules.video.manager.VideoMediaMapper;
  */
 public class VideoPeekviewController  extends BasicController implements Controller{
 
-	public VideoPeekviewController(UserRequest ureq, WindowControl wControl,  VFSContainer posterFolder) {
+	@Autowired
+	private VideoManager videoManager;
+
+	public VideoPeekviewController(UserRequest ureq, WindowControl wControl,  OLATResource videoResource) {
 		super(ureq, wControl);
 		VelocityContainer peekviewVC = createVelocityContainer("peekview");
-		String mediaUrl = registerMapper(ureq, new VideoMediaMapper(posterFolder));
+		VFSContainer posterFolder = videoManager.getMasterContainer(videoResource);
+		String masterMapperId = "master-" + videoResource.getResourceableId();
+		String mediaUrl = registerCacheableMapper(ureq, masterMapperId, new VideoMediaMapper(posterFolder));
 		peekviewVC.contextPut("mediaUrl", mediaUrl);
 		peekviewVC.contextPut("nodeLink", posterFolder);
 		putInitialPanel(peekviewVC);

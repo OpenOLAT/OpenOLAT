@@ -46,7 +46,7 @@ div.o_callout_overlay {
 		text-align: left;
 		@include box-shadow(0px 1px 5px -1px rgba(0,0,0,.15));
 		
-		.o_icon_close {
+		.o_alert_close {
 			float: right;
 			color: $gray-light;
 			&:hover {

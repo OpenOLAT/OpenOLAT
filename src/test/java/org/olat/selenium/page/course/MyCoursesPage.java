@@ -92,17 +92,18 @@ public class MyCoursesPage {
 		return this;
 	}
 	
+	/**
+	 * Select a course (or a respository entry) in a
+	 * "My course" list.
+	 * 
+	 * @param title
+	 * @return
+	 */
 	public MyCoursesPage select(String title) {
-		By titleLinkBy = By.cssSelector("h4.o_title a");
-		WebElement linkToSelect = null;
-		List<WebElement> titleLinks = browser.findElements(titleLinkBy);
-		for(WebElement link :titleLinks) {
-			if(link.getText().contains(title)) {
-				linkToSelect = link;
-			}
-		}
-		Assert.assertNotNull("Course not found:" + title + " (" + titleLinks.size() + " courses listed)", linkToSelect);
-		linkToSelect.click();
+		By titleBy = By.xpath("//h4[contains(@class,'o_title')]/a[span[text()[contains(.,'" + title + "')]]]");
+		List<WebElement> titleLinks = browser.findElements(titleBy);
+		Assert.assertEquals(1, titleLinks.size());
+		titleLinks.get(0).click();
 		OOGraphene.waitBusy(browser);
 		return this;
 	}
@@ -131,9 +132,9 @@ public class MyCoursesPage {
 	}
 	
 	public MyCoursesPage selectCatalogEntry(String title) {
-		By titleBy = By.xpath("//div[contains(@class,'o_sublevel')]//div[contains(@class,'o_meta')]//h4[contains(@class,'o_title')]//a[span[text()[contains(.,'" + title + "')]]]");
+		By titleBy = By.xpath("//div[contains(@class,'o_sublevel')]//div[contains(@class,'o_meta')]//h4[contains(@class,'o_title')]/a/span[text()[contains(.,'" + title + "')]]");
 		List<WebElement> titleLinks = browser.findElements(titleBy);
-		Assert.assertFalse(titleLinks.isEmpty());
+		Assert.assertEquals(1, titleLinks.size());
 		titleLinks.get(0).click();
 		OOGraphene.waitBusy(browser);
 		return this;

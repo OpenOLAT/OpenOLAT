@@ -45,7 +45,6 @@ public class UserPreferencesPageFragment {
 	public static final By autoRadio = By.xpath("//div[contains(@class,'o_sel_home_settings_resume')]//input[@type='radio' and @value='auto']");
 	public static final By ondemandRadio = By.xpath("//div[contains(@class,'o_sel_home_settings_resume')]//input[@type='radio' and @value='ondemand']");
 	
-	public static final By saveSystemSettingsButton = By.xpath("//div[contains(@class,'o_sel_home_settings_gui_buttons')]//button[@type='button']");
 	public static final By saveSystemPrefsButton = By.xpath("//div[contains(@class,'o_sel_home_settings_prefs_buttons')]//button[@type='button']");
 	public static final By resetPrefsButton = By.xpath("//div[contains(@class,'o_sel_home_settings_reset_sysprefs_buttons')]//button[@type='button']");
 	
@@ -91,9 +90,10 @@ public class UserPreferencesPageFragment {
 		
 		radio.click();
 		
-		WebElement saveButton = browser.findElement(saveSystemSettingsButton);
-		saveButton.click();
+		By saveSystemSettingsButton = By.cssSelector("div.o_sel_home_settings_gui_buttons.form-inline button[type='button']");
+		browser.findElement(saveSystemSettingsButton).click();
 		OOGraphene.waitBusy(browser);
+		OOGraphene.waitScrollTop(browser);//wait scroll top
 		OOGraphene.waitAndCloseBlueMessageWindow(browser);
 		return this;
 	}
@@ -106,8 +106,11 @@ public class UserPreferencesPageFragment {
 	public UserPreferencesPageFragment setLandingPage(String businessPath) {
 		By landingPageBy = By.cssSelector("div.o_sel_home_settings_landing_page input[type='text']");
 		browser.findElement(landingPageBy).sendKeys(businessPath);
+		
+		By saveSystemSettingsButton = By.cssSelector("div.o_sel_home_settings_gui_buttons.form-inline button[type='button']");
 		browser.findElement(saveSystemSettingsButton).click();
 		OOGraphene.waitBusy(browser);
+		OOGraphene.waitScrollTop(browser);
 		OOGraphene.waitAndCloseBlueMessageWindow(browser);
 		return this;
 	}
@@ -120,6 +123,8 @@ public class UserPreferencesPageFragment {
 		WebElement saveButton = browser.findElement(saveSystemPrefsButton);
 		saveButton.click();
 		OOGraphene.waitBusy(browser);
+		OOGraphene.waitScrollTop(browser);
+		OOGraphene.waitAndCloseBlueMessageWindow(browser);
 		return this;
 	}
 	

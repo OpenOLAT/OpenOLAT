@@ -60,7 +60,10 @@ public class UserAdminPage {
 	}
 	
 	public UserAdminPage openSearchUser() {
+		//In case it stay in the way
+		OOGraphene.closeBlueMessageWindow(browser);
 		By createBy = By.cssSelector(".o_tree li.o_sel_useradmin_search>div>span.o_tree_link>a");
+		OOGraphene.waitElement(createBy, 5, browser);
 		browser.findElement(createBy).click();
 		OOGraphene.waitBusy(browser);
 		return this;
@@ -82,6 +85,7 @@ public class UserAdminPage {
 	 * @return
 	 */
 	public UserAdminPage searchUserToDelete(String username) {
+		OOGraphene.closeBlueMessageWindow(browser);
 		By createBy = By.cssSelector("fieldset.o_sel_user_search_form div.o_sel_user_search_username input[type='text']");
 		OOGraphene.waitElement(createBy, 5, browser);
 		browser.findElement(createBy).sendKeys(username);

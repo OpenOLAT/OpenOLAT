@@ -25,21 +25,19 @@ import org.openqa.selenium.WebDriver;
 import com.google.common.base.Predicate;
 
 /**
+ * Observe the boolean flag which is set at the beginning and 
+ * the end of the transition of the off canvas navigation bar.
  * 
- * Predicate which test if TinyMCE is fully loaded
- * 
- * Initial date: 07.07.2014<br>
+ * Initial date: 18.05.2016<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class TinyMCELoadedPredicate implements Predicate<WebDriver> {
+public class NavBarTransitionPredicate implements Predicate<WebDriver> {
 	
 	@Override
 	public boolean apply(WebDriver driver) {
-        Object active = ((JavascriptExecutor)driver)
-        		.executeScript("return top != null && top.tinymce != null && top.tinymce.activeEditor != null "
-        				+ " && top.tinymce.activeEditor.initialized && top.tinymce.editors[0].initialized "
-        				+ " && (top.tinymce.editors.length > 1 ? top.tinymce.editors[1].initialized : true);");
-        return Boolean.TRUE.equals(active);
+        Object busy = ((JavascriptExecutor)driver)
+        		.executeScript("return (window.OPOL.navbar.offcanvasTransitioning)");
+        return Boolean.FALSE.equals(busy);
     }
 }

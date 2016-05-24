@@ -159,8 +159,7 @@ public class LoginPage {
 		passwordInput.sendKeys(password);
 		
 		By loginBy = By.id("o_fiooolat_login_button");
-		WebElement loginButton = browser.findElement(loginBy);
-		Graphene.guardHttp(loginButton).click();
+		browser.findElement(loginBy).click();
 		OOGraphene.waitElement(authOrDisclaimerXPath, browser);
 		
 		//wipe out disclaimer
@@ -168,13 +167,11 @@ public class LoginPage {
 		if(disclaimer.size() > 0) {
 			//click the disclaimer
 			disclaimer.get(0).click();
-			
-			WebElement acknowledgeButton = browser.findElement(disclaimerButtonXPath);
-			Graphene.guardHttp(acknowledgeButton).click();
+			browser.findElement(disclaimerButtonXPath).click();
 		}
 		
 		//wait until the content appears
-		OOGraphene.waitElement(authXPath, browser);
+		OOGraphene.waitElement(authXPath, 10, browser);
 		return this;
 	}
 	
