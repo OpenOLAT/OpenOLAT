@@ -117,11 +117,13 @@ public class VideoDisplayController extends BasicController {
 			mainVC.contextPut("autoplay", autoplay);
 	
 			// Mapper for Video
-			String masterUrl = registerMapper(ureq, new VideoMediaMapper(videoManager.getMasterContainer(entry.getOlatResource())));
+			String masterMapperId = "master-" + entry.getOlatResource().getResourceableId();
+			String masterUrl = registerCacheableMapper(ureq, masterMapperId, new VideoMediaMapper(videoManager.getMasterContainer(entry.getOlatResource())));
 			mainVC.contextPut("masterUrl", masterUrl);
-			// mapper for versions specific because not in same base as the resource itself
+			// Mapper for versions specific because not in same base as the resource itself
+			String transcodingMapperId = "transcoding-" + entry.getOlatResource().getResourceableId();
 			VFSContainer transcodedContainer = videoManager.getTranscodingContainer(entry.getOlatResource());
-			String transcodedUrl = registerMapper(ureq, new VideoMediaMapper(transcodedContainer));
+			String transcodedUrl = registerCacheableMapper(ureq, transcodingMapperId, new VideoMediaMapper(transcodedContainer));
 			mainVC.contextPut("transcodedUrl", transcodedUrl);
 			
 			if ((showComments || showRating) && !ureq.getUserSession().getRoles().isGuestOnly()) {

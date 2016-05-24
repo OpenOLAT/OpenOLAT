@@ -154,9 +154,7 @@ public class VideoCourseNode extends AbstractAccessableCourseNode {
 	@Override
 	public Controller createPeekViewRunController(UserRequest ureq, WindowControl wControl, UserCourseEnvironment userCourseEnv,
 			NodeEvaluation ne) {
-		VideoManager videoManager = CoreSpringFactory.getImpl(VideoManager.class);
-		VFSContainer masterFolder = videoManager.getMasterContainer(getReferencedRepositoryEntry().getOlatResource());
-		Controller controller = new VideoPeekviewController(ureq, wControl, masterFolder);
+		Controller controller = new VideoPeekviewController(ureq, wControl, getReferencedRepositoryEntry().getOlatResource());
 		return controller;
 	}
 }
