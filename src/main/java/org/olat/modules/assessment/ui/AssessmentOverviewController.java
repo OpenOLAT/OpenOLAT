@@ -21,122 +21,128 @@ package org.olat.modules.assessment.ui;
 
 import java.util.List;
 
-import org.olat.core.commons.fullWebApp.LayoutMain3ColsController;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
-import org.olat.core.gui.components.panel.Panel;
-import org.olat.core.gui.components.stack.TooledStackedPanel;
-import org.olat.core.gui.components.tree.GenericTreeModel;
-import org.olat.core.gui.components.tree.GenericTreeNode;
-import org.olat.core.gui.components.tree.MenuTree;
-import org.olat.core.gui.components.tree.TreeModel;
+import org.olat.core.gui.components.link.Link;
+import org.olat.core.gui.components.link.LinkFactory;
+import org.olat.core.gui.components.velocity.VelocityContainer;
+import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.gui.control.controller.MainLayoutBasicController;
+import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.Util;
 import org.olat.course.assessment.AssessmentMainController;
+import org.olat.group.BusinessGroupService;
+import org.olat.group.model.SearchBusinessGroupParams;
 import org.olat.repository.RepositoryEntry;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
- * Initial date: 21.07.2015<br>
+ * Initial date: 24.05.2016<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class AssessmentOverviewController extends MainLayoutBasicController implements Activateable2 {
+public class AssessmentOverviewController extends BasicController implements Activateable2 {
+		
+	protected static final Event SELECT_USERS_EVENT = new Event("assessment-tool-select-users");
+	protected static final Event SELECT_GROUPS_EVENT = new Event("assessment-tool-select-groups");
+	protected static final Event SELECT_PASSED_EVENT = new Event("assessment-tool-select-passed");
+	protected static final Event SELECT_FAILED_EVENT = new Event("assessment-tool-select-failed");
 	
-	private MenuTree menuTree;
-	private final Panel mainPanel;
-	private TooledStackedPanel stackPanel;
-	
-	private RepositoryEntry entry;
-	private AssessmentToolSecurityCallback assessmentCallback;
-	
-	public AssessmentOverviewController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
-			RepositoryEntry entry, AssessmentToolSecurityCallback assessmentCallback) {
+	private final VelocityContainer mainVC;
+	private final AssessmentToReviewSmallController toReviewCtrl;
+	private final AssessmentStatisticsSmallController statisticsCtrl;
+
+	private Link assessedIdentitiesLink, assessedGroupsLink, passedLink, failedLink;
+
+	@Autowired
+	private BusinessGroupService businessGroupService;
+		
+	public AssessmentOverviewController(UserRequest ureq, WindowControl wControl,
+			RepositoryEntry testEntry, AssessmentToolSecurityCallback assessmentCallback) {
 		super(ureq, wControl);
 		setTranslator(Util.createPackageTranslator(AssessmentMainController.class, getLocale(), getTranslator()));
-		this.entry = entry;
-		this.stackPanel = stackPanel;
-		this.assessmentCallback = assessmentCallback;
-
-		mainPanel = new Panel("assessmentToolv2");
 		
-		// Navigation menu
-		menuTree = new MenuTree("menuTree");
-		TreeModel tm = buildTreeModel();
-		menuTree.setTreeModel(tm);
-		menuTree.setSelectedNodeId(tm.getRootNode().getIdent());
-		menuTree.addListener(this);
+		mainVC = createVelocityContainer("overview");
+		
+		toReviewCtrl = new AssessmentToReviewSmallController(ureq, getWindowControl(), testEntry, assessmentCallback);
+		listenTo(toReviewCtrl);
+		mainVC.put("toReview", toReviewCtrl.getInitialComponent());
+		
+		statisticsCtrl = new AssessmentStatisticsSmallController(ureq, getWindowControl(), testEntry, assessmentCallback);
+		listenTo(statisticsCtrl);
+		mainVC.put("statistics", statisticsCtrl.getInitialComponent());
+		
+		int numOfAssessedIdentities = statisticsCtrl.getNumOfAssessedIdentities();
+		assessedIdentitiesLink = LinkFactory.createLink("assessed.identities", "assessed.identities", getTranslator(), mainVC, this, Link.NONTRANSLATED);
+		assessedIdentitiesLink.setCustomDisplayText(translate("assessment.tool.numOfAssessedIdentities", new String[]{ Integer.toString(numOfAssessedIdentities) }));
+		assessedIdentitiesLink.setIconLeftCSS("o_icon o_icon_user");
+		
+		int numOfPassed = statisticsCtrl.getNumOfPassed();
+		passedLink = LinkFactory.createLink("passed.identities", "passed.identities", getTranslator(), mainVC, this, Link.NONTRANSLATED);
+		passedLink.setCustomDisplayText(translate("assessment.tool.numOfPassed", new String[]{ Integer.toString(numOfPassed) }));
+		passedLink.setIconLeftCSS("o_icon o_icon_user");
 
-		LayoutMain3ColsController columLayoutCtr = new LayoutMain3ColsController(ureq, getWindowControl(), menuTree, mainPanel, "course" + entry.getResourceableId());
-		listenTo(columLayoutCtr); // cleanup on dispose
-		putInitialPanel(columLayoutCtr.getInitialComponent());
-	}
-	
-	private TreeModel buildTreeModel() {
-		GenericTreeNode root, gtn;
+		int numOfFailed = statisticsCtrl.getNumOfFailed();
+		failedLink = LinkFactory.createLink("failed.identities", "failed.identities", getTranslator(), mainVC, this, Link.NONTRANSLATED);
+		failedLink.setCustomDisplayText(translate("assessment.tool.numOfFailed", new String[]{ Integer.toString(numOfFailed) }));
+		failedLink.setIconLeftCSS("o_icon o_icon_user");
+		
+		int numOfGroups = 0;
+		if(assessmentCallback.canAssessBusinessGoupMembers()) {
+			SearchBusinessGroupParams params = new SearchBusinessGroupParams();
+			if(assessmentCallback.isAdmin()) {
+				//all groups
+			} else {
+				params.setOwner(true);
+				params.setIdentity(getIdentity());
+			}
+			numOfGroups = businessGroupService.countBusinessGroups(params, testEntry);
+		}
+		
+		if(numOfGroups > 0) {
+			assessedGroupsLink = LinkFactory.createLink("assessed.groups", "assessed.groups", getTranslator(), mainVC, this, Link.NONTRANSLATED);
+			assessedGroupsLink.setCustomDisplayText(translate("assessment.tool.numOfAssessedGroups", new String[]{ Integer.toString(numOfGroups) }));
+			assessedGroupsLink.setIconLeftCSS("o_icon o_icon_group");
+		}
 
-		GenericTreeModel gtm = new GenericTreeModel();
-		root = new GenericTreeNode();
-		root.setTitle(translate("menu.index"));
-		root.setUserObject("index");
-		root.setAltText(translate("menu.index.alt"));
-		gtm.setRootNode(root);
-
-		gtn = new GenericTreeNode();
-		gtn.setTitle(translate("menu.userfocus"));
-		gtn.setUserObject("users");
-		gtn.setAltText(translate("menu.userfocus.alt"));
-		gtn.setCssClass("o_sel_assessment_tool_users");
-		root.addChild(gtn);
-
-		return gtm;
+		putInitialPanel(mainVC);
 	}
 
 	@Override
 	protected void doDispose() {
 		//
 	}
-	
+
 	@Override
 	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
 		//
 	}
 
 	@Override
-	protected void event(UserRequest ureq, Component source, Event event) {
-		if (source == menuTree) {
-			if (event.getCommand().equals(MenuTree.COMMAND_TREENODE_CLICKED)) {
-				Object uo = menuTree.getSelectedNode().getUserObject();
-				if("groups".equals(uo)) {
-					doSelectGroupView();
-				} else if("courseNodes".equals(uo)) {
-					doSelectCourseNodesView();
-				} else if("users".equals(uo)) {
-					doSelectUsersView(ureq);
-				}
+	protected void event(UserRequest ureq, Controller source, Event event) {
+		if(toReviewCtrl == source) {
+			if(event instanceof UserSelectionEvent) {
+				fireEvent(ureq, event);
 			}
 		}
-	}
-	
-	private void doSelectGroupView() {
-		
+		super.event(ureq, source, event);
 	}
 
-	private void doSelectCourseNodesView() {
-		
+	@Override
+	protected void event(UserRequest ureq, Component source, Event event) {
+		if(assessedIdentitiesLink == source) {
+			fireEvent(ureq, SELECT_USERS_EVENT);
+		} else if(assessedGroupsLink == source) {
+			fireEvent(ureq, SELECT_GROUPS_EVENT);
+		} else if(passedLink == source) {
+			fireEvent(ureq, SELECT_PASSED_EVENT);
+		} else if(failedLink == source) {
+			fireEvent(ureq, SELECT_FAILED_EVENT);
+		}
 	}
-	
-	private void doSelectUsersView(UserRequest ureq) {
-		AssessedIdentityListController listController = new AssessedIdentityListController(ureq, getWindowControl(), stackPanel,
-				entry, assessmentCallback);
-		listenTo(listController);
-		mainPanel.setContent(listController.getInitialComponent());
-	}
-	
-
 }

@@ -17,32 +17,37 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.course.assessment.ui.tool;
+package org.olat.modules.assessment.ui;
 
-import java.util.concurrent.ConcurrentMap;
+import java.util.List;
 
-import org.olat.course.certificate.CertificateLight;
+import org.olat.core.gui.control.Event;
 
 /**
  * 
- * 
- * 
- * Initial date: 04.12.2015<br>
+ * Initial date: 04.05.2016<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class CourseToolContainer {
-	
-	private ConcurrentMap<Long, CertificateLight> certificateMap;
+public class UserSelectionEvent extends Event {
 
-	public ConcurrentMap<Long, CertificateLight> getCertificateMap() {
-		return certificateMap;
+	private static final long serialVersionUID = -4842433236044263696L;
+	private static final String CMD = "select-user";
+	
+	private final Long identityKey;
+	private final List<String> courseNodeIdents;
+	
+	public UserSelectionEvent(Long identityKey, List<String> courseNodeIdents) {
+		super(CMD);
+		this.identityKey = identityKey;
+		this.courseNodeIdents = courseNodeIdents;
 	}
 
-	public void setCertificateMap(ConcurrentMap<Long, CertificateLight> certificateMap) {
-		this.certificateMap = certificateMap;
+	public Long getIdentityKey() {
+		return identityKey;
 	}
-	
-	
 
+	public List<String> getCourseNodeIdents() {
+		return courseNodeIdents;
+	}
 }

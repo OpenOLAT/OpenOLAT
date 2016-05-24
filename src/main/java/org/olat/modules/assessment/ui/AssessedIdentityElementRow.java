@@ -17,7 +17,7 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.course.assessment.ui.tool;
+package org.olat.modules.assessment.ui;
 
 import java.math.BigDecimal;
 import java.util.Date;
@@ -36,7 +36,7 @@ import org.olat.user.propertyhandlers.UserPropertyHandler;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class AssessedIdentityCourseElementRow extends UserPropertiesRow {
+public class AssessedIdentityElementRow extends UserPropertiesRow {
 	
 	private final Integer attempts;
 	private final BigDecimal score;
@@ -45,7 +45,7 @@ public class AssessedIdentityCourseElementRow extends UserPropertiesRow {
 	private final Date lastModified;
 	private final AssessmentEntryStatus status;
 	
-	public AssessedIdentityCourseElementRow(Identity identity, AssessmentEntry entry, List<UserPropertyHandler> userPropertyHandlers, Locale locale) {
+	public AssessedIdentityElementRow(Identity identity, AssessmentEntry entry, List<UserPropertyHandler> userPropertyHandlers, Locale locale) {
 		super(identity, userPropertyHandlers, locale);
 		if(entry != null) {
 			attempts = entry.getAttempts();

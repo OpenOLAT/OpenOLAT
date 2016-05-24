@@ -1,0 +1,47 @@
+<div class="panel panel-default">
+	<div class="panel-heading">
+		<h4 class="panel-title"><i class="o_icon o_icon_statistics_tool"> </i> $r.translate("statistics.small.overview")</h4>
+	</div>
+	<table class="table">
+		<tr>
+			<th>$r.translate("table.header.numOfAssessedIdentities")</th>
+			<td>$numOfAssessedIdentities</td>
+		</tr>
+		<tr>
+			<th>$r.translate("table.header.numOfInitialLaunch")</th>
+			<td>
+			#if($numOfInitialLaunch && $numOfInitialLaunch == 0)
+				<i class="o_icon o_green_led"> </i>
+			#elseif($numOfInitialLaunch && $numOfInitialLaunch == $numOfAssessedIdentities)
+				<i class="o_icon o_red_led"> </i>
+			#else
+				<i class="o_icon o_yellow_led"> </i>
+			#end
+			$numOfInitialLaunch</td>
+		</tr>
+		<tr>
+			<th>$r.translate("table.header.scoreAverage")</th>
+			<td>#if($scoreAverage && !$scoreAverage.isEmpty())$scoreAverage#end</td>
+		</tr>
+		<tr>
+			<th>$r.translate("table.header.numOfPassed")</th>
+			<td><div class="progress" title="">
+				#if($numOfPassed && $numOfPassed > 0)
+				<div class="progress-bar" role="progressbar" aria-valuenow="$numOfPassed" aria-valuemin="0" aria-valuemax="$numOfAssessedIdentities" style="width: ${percentPassed}%;">
+					<span class="sr-only">${percentPassed}%</span>
+				</div>
+				#end
+				
+				#if($numOfFailed && $numOfFailed > 0)
+				<div class="progress-bar progress-bar-warning" role="progressbar" aria-valuenow="$numOfFailed" aria-valuemin="0" aria-valuemax="$numOfAssessedIdentities" style="width: ${percentFailed}%;">
+					<span class="sr-only">${percentFailed}%</span>
+				</div>
+				#end
+			</div></td>
+		</tr>
+	</table>
+</div>
+
+
+
+

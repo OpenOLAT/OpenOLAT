@@ -41,8 +41,10 @@ import org.olat.core.util.resource.OresHelper;
 import org.olat.course.assessment.AssessmentMainController;
 import org.olat.course.assessment.EfficiencyStatementAssessmentController;
 import org.olat.course.assessment.bulk.BulkAssessmentOverviewController;
-import org.olat.course.assessment.ui.tool.event.UserSelectionEvent;
 import org.olat.modules.assessment.ui.AssessmentToolSecurityCallback;
+import org.olat.modules.assessment.ui.AssessedIdentityListState;
+import org.olat.modules.assessment.ui.AssessmentToolContainer;
+import org.olat.modules.assessment.ui.UserSelectionEvent;
 import org.olat.repository.RepositoryEntry;
 
 /**
@@ -59,7 +61,7 @@ public class AssessmentToolController extends MainLayoutBasicController implemen
 	
 	private Link usersLink, efficiencyStatementsLink, bulkAssessmentLink;
 	private final TooledStackedPanel stackPanel;
-	private final CourseToolContainer toolContainer;
+	private final AssessmentToolContainer toolContainer;
 	
 	private AssessmentCourseOverviewController overviewCtrl;
 	private AssessmentIdentitiesCourseTreeController currentCtl;
@@ -73,7 +75,7 @@ public class AssessmentToolController extends MainLayoutBasicController implemen
 		this.courseEntry = courseEntry;
 		this.stackPanel = stackPanel;
 		this.assessmentCallback = assessmentCallback;
-		toolContainer = new CourseToolContainer();
+		toolContainer = new AssessmentToolContainer();
 		
 		overviewCtrl = new AssessmentCourseOverviewController(ureq, getWindowControl(), courseEntry, assessmentCallback);
 		listenTo(overviewCtrl);

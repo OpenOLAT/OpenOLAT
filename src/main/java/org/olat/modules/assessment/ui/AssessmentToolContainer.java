@@ -17,40 +17,32 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.ims.qti21.ui;
+package org.olat.modules.assessment.ui;
 
-import org.olat.ims.qti21.OutcomesListener;
+import java.util.concurrent.ConcurrentMap;
+
+import org.olat.course.certificate.CertificateLight;
 
 /**
- * Hold the score and pass values in memory
  * 
  * 
- * Initial date: 20.05.2015<br>
+ * 
+ * Initial date: 04.12.2015<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class InMemoryOutcomesListener implements OutcomesListener {
+public class AssessmentToolContainer {
 	
-	private Float score;
-	private Boolean pass;
+	private ConcurrentMap<Long, CertificateLight> certificateMap;
 
-	public Float getScore() {
-		return score;
+	public ConcurrentMap<Long, CertificateLight> getCertificateMap() {
+		return certificateMap;
+	}
+
+	public void setCertificateMap(ConcurrentMap<Long, CertificateLight> certificateMap) {
+		this.certificateMap = certificateMap;
 	}
 	
-	public Boolean getPass() {
-		return pass;
-	}
+	
 
-	@Override
-	public void updateOutcomes(Float updatedScore, Boolean updatedPassed) {
-		score = updatedScore;
-		pass = updatedPassed;
-	}
-
-	@Override
-	public void submit(Float submittedScore, Boolean submittedPass, Long assessmentId) {
-		score = submittedScore;
-		pass = submittedPass;
-	}
 }

@@ -139,6 +139,41 @@ public class AssessmentEntryDAO {
 		return entries.isEmpty() ? null : entries.get(0);
 	}
 	
+	public AssessmentEntry loadAssessmentEntry(IdentityRef assessedIdentity, RepositoryEntryRef entry, String subIdent, RepositoryEntryRef referenceEntry) {
+		StringBuilder sb = new StringBuilder();
+		
+		sb.append("select data from assessmententry data");
+		if(referenceEntry != null) {
+			sb.append(" inner join data.referenceEntry referenceEntry");
+		}
+		
+		sb.append(" where data.repositoryEntry.key=:repositoryEntryKey and data.identity.key=:identityKey");
+		if(subIdent != null) {
+			sb.append(" and data.subIdent=:subIdent");
+		} else {
+			sb.append(" and data.subIdent is null");
+		}
+		
+		if(referenceEntry != null) {
+			sb.append(" and referenceEntry.key=:referenceEntryKey");
+		} else {
+			sb.append(" and data.referenceEntry is null");
+		}
+
+		TypedQuery<AssessmentEntry> query = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), AssessmentEntry.class)
+				.setParameter("repositoryEntryKey", entry.getKey())
+				.setParameter("identityKey", assessedIdentity.getKey());
+		if(subIdent != null) {
+			query.setParameter("subIdent", subIdent);
+		}
+		if(referenceEntry != null) {
+			query.setParameter("referenceEntryKey", referenceEntry.getKey());
+		}
+		List<AssessmentEntry> entries = query.getResultList();
+		return entries.isEmpty() ? null : entries.get(0);
+	}
+	
 	public AssessmentEntry updateAssessmentEntry(AssessmentEntry nodeAssessment) {
 		((AssessmentEntryImpl)nodeAssessment).setLastModified(new Date());
 		return dbInstance.getCurrentEntityManager().merge(nodeAssessment);

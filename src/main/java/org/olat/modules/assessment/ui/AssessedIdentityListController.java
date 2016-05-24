@@ -20,70 +20,79 @@
 package org.olat.modules.assessment.ui;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityModule;
-import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
-import org.olat.core.gui.components.form.flexible.elements.FormLink;
+import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
+import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableSearchEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
+import org.olat.core.gui.components.link.Link;
+import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
+import org.olat.core.gui.components.stack.TooledStackedPanel.Align;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.id.Identity;
+import org.olat.core.id.context.ContextEntry;
+import org.olat.core.id.context.StateEntry;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
-import org.olat.core.util.coordinate.CoordinatorManager;
-import org.olat.core.util.event.GenericEventListener;
-import org.olat.course.CourseFactory;
-import org.olat.course.ICourse;
-import org.olat.course.assessment.AssessedIdentitiesTableDataModel;
 import org.olat.course.assessment.AssessmentMainController;
 import org.olat.course.assessment.AssessmentToolManager;
-import org.olat.course.assessment.IdentityAssessmentEditController;
+import org.olat.course.assessment.bulk.PassedCellRenderer;
 import org.olat.course.assessment.model.SearchAssessedIdentityParams;
-import org.olat.course.certificate.CertificateEvent;
-import org.olat.course.certificate.CertificateLight;
-import org.olat.course.certificate.CertificatesManager;
-import org.olat.course.certificate.ui.DownloadCertificateCellRenderer;
+import org.olat.course.assessment.ui.tool.AssessedIdentityListProvider;
+import org.olat.course.assessment.ui.tool.AssessmentStatusCellRenderer;
+import org.olat.course.assessment.ui.tool.AssessmentToolConstants;
+import org.olat.group.BusinessGroup;
+import org.olat.modules.assessment.AssessmentEntry;
+import org.olat.modules.assessment.model.AssessmentEntryStatus;
+import org.olat.modules.assessment.ui.AssessedIdentityListTableModel.IdentityCourseElementCols;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.handlers.RepositoryHandler;
+import org.olat.repository.handlers.RepositoryHandlerFactory;
+import org.olat.repository.ui.RepositoyUIFactory;
 import org.olat.user.UserManager;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
- * Initial date: 21.07.2015<br>
+ * Initial date: 06.10.2015<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class AssessedIdentityListController extends FormBasicController implements GenericEventListener {
-	
-	public static final int USER_PROPS_OFFSET = 500;
-	public static final String usageIdentifyer = AssessedIdentitiesTableDataModel.usageIdentifyer;
+public class AssessedIdentityListController extends FormBasicController implements Activateable2 {
 
-	private FlexiTableElement tableEl;
-	private AssessedUserTableModel usersTableModel;
-	private final List<UserPropertyHandler> userPropertyHandlers;
-	private final TooledStackedPanel stackPanel;
-
-	private RepositoryEntry entry;
+	private final RepositoryEntry testEntry;
+	private final AssessableResource element;
 	private final boolean isAdministrativeUser;
+	private final List<UserPropertyHandler> userPropertyHandlers;
 	private final AssessmentToolSecurityCallback assessmentCallback;
+	
+	private Link nextLink, previousLink;
+	private FlexiTableElement tableEl;
+	private final TooledStackedPanel stackPanel;
+	private AssessedIdentityListTableModel usersTableModel;
+	
+	private AssessedIdentityController currentIdentityCtrl;
 	
 	@Autowired
 	private UserManager userManager;
@@ -92,194 +101,278 @@ public class AssessedIdentityListController extends FormBasicController implemen
 	@Autowired
 	private BaseSecurityModule securityModule;
 	@Autowired
-	private CertificatesManager certificatesManager;
-	@Autowired
 	private AssessmentToolManager assessmentToolManager;
-
+	@Autowired
+	private RepositoryHandlerFactory repositoryHandlerFactory;
 	
-	public AssessedIdentityListController(UserRequest ureq, WindowControl wControl,
-			TooledStackedPanel stackPanel, RepositoryEntry entry, AssessmentToolSecurityCallback assessmentCallback) {
-		super(ureq, wControl, "identities");
+	public AssessedIdentityListController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
+			RepositoryEntry testEntry, AssessableResource element,  AssessmentToolSecurityCallback assessmentCallback) {
+		super(ureq, wControl, "identity_element");
 		setTranslator(Util.createPackageTranslator(AssessmentMainController.class, getLocale(), getTranslator()));
 		setTranslator(userManager.getPropertyHandlerTranslator(getTranslator()));
-
+		
+		this.element = element;
+		this.testEntry = testEntry;
 		this.stackPanel = stackPanel;
-		this.entry = entry;
 		this.assessmentCallback = assessmentCallback;
+		
 		isAdministrativeUser = securityModule.isUserAllowedAdminProps(ureq.getUserSession().getRoles());
-		userPropertyHandlers = UserManager.getInstance().getUserPropertyHandlersFor(usageIdentifyer, isAdministrativeUser);
+		userPropertyHandlers = userManager.getUserPropertyHandlersFor(AssessmentToolConstants.usageIdentifyer, isAdministrativeUser);
 		
 		initForm(ureq);
-		updateModel();
-		
-		// Register for assessment changed events
-		CoordinatorManager.getInstance().getCoordinator().getEventBus()
-				.registerFor(this, getIdentity(), CertificatesManager.ORES_CERTIFICATE_EVENT);
 	}
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		if(formLayout instanceof FormLayoutContainer) {
+			FormLayoutContainer layoutCont = (FormLayoutContainer)formLayout;
+			layoutCont.contextPut("title", testEntry.getDisplayname());
+			RepositoryHandler handler = repositoryHandlerFactory.getRepositoryHandler(testEntry);
+			layoutCont.contextPut("cssClass", RepositoyUIFactory.getIconCssClass(handler.getSupportedType()));
+		}
+
 		//add the table
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(UserCols.username, "select"));
+		if(isAdministrativeUser) {
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(IdentityCourseElementCols.username, "select"));
+		}
 		
-		int colIndex = USER_PROPS_OFFSET;
+		int colIndex = AssessmentToolConstants.USER_PROPS_OFFSET;
 		for (int i = 0; i < userPropertyHandlers.size(); i++) {
 			UserPropertyHandler userPropertyHandler	= userPropertyHandlers.get(i);
-			boolean visible = UserManager.getInstance().isMandatoryUserProperty(usageIdentifyer , userPropertyHandler);
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(visible, userPropertyHandler.i18nColumnDescriptorLabelKey(), colIndex++, "select", false, null));
+			boolean visible = UserManager.getInstance().isMandatoryUserProperty(AssessmentToolConstants.usageIdentifyer , userPropertyHandler);
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(visible, userPropertyHandler.i18nColumnDescriptorLabelKey(), colIndex, "select", true, "userProp-" + colIndex));
+			colIndex++;
 		}
-		
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(UserCols.certificate, new DownloadCertificateCellRenderer()));
+			
+		if(element.hasAttemptsConfigured()) {
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(IdentityCourseElementCols.attempts, "select"));
+		}
+		if(element.hasScoreConfigured()) {
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(IdentityCourseElementCols.min, "select", new ScoreCellRenderer()));
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(IdentityCourseElementCols.max, "select", new ScoreCellRenderer()));
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(IdentityCourseElementCols.score, "select", new ScoreCellRenderer()));
+		}
+		if(element.hasPassedConfigured()) {
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(IdentityCourseElementCols.passed, new PassedCellRenderer()));
+		}
 
-		usersTableModel = new AssessedUserTableModel(columnsModel); 
-		tableEl = uifactory.addTableElement(getWindowControl(), "identities", usersTableModel, getTranslator(), formLayout);
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(IdentityCourseElementCols.assessmentStatus, new AssessmentStatusCellRenderer()));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(IdentityCourseElementCols.initialLaunchDate, "select"));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(IdentityCourseElementCols.lastScoreUpdate, "select"));
+		//columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(IdentityCourseElementCols.certificate, new DownloadCertificateCellRenderer()));
+
+		usersTableModel = new AssessedIdentityListTableModel(columnsModel, element);
+		usersTableModel.setCertificateMap(new ConcurrentHashMap<>());
+		tableEl = uifactory.addTableElement(getWindowControl(), "table", usersTableModel, 20, false, getTranslator(), formLayout);
 		tableEl.setExportEnabled(true);
-	}
-	
-	private void updateModel() {
-		SearchAssessedIdentityParams params = new SearchAssessedIdentityParams(entry, null, null, assessmentCallback);
-
-		List<Identity> assessedIdentities = assessmentToolManager.getAssessedIdentities(getIdentity(), params);
-		List<AssessedIdentityRow> rows = new ArrayList<>(assessedIdentities.size());
-		for(Identity assessedIdentity:assessedIdentities) {
-			rows.add(new AssessedIdentityRow(assessedIdentity, userPropertyHandlers, getLocale()));
-		}
-		usersTableModel.setObjects(rows);
+		tableEl.setSearchEnabled(new AssessedIdentityListProvider(getIdentity(), testEntry, testEntry, null, assessmentCallback), ureq.getUserSession());
 		
-		ConcurrentMap<Long, CertificateLight> certificates =  new ConcurrentHashMap<>();
-		List<CertificateLight> certificateList = certificatesManager.getLastCertificates(entry.getOlatResource());
-		for(CertificateLight certificate:certificateList) {
-			CertificateLight currentCertificate = certificates.get(certificate.getIdentityKey());
-			if(currentCertificate == null || currentCertificate.getCreationDate().before(certificate.getCreationDate())) {
-				certificates.put(certificate.getIdentityKey(), certificate);
+		List<FlexiTableFilter> filters = new ArrayList<>();
+		filters.add(new FlexiTableFilter(translate("filter.passed"), "passed"));
+		filters.add(new FlexiTableFilter(translate("filter.failed"), "failed"));
+		filters.add(new FlexiTableFilter(translate("filter.inProgress"), "inProgress"));
+		filters.add(new FlexiTableFilter(translate("filter.inReview"), "inReview"));
+		filters.add(new FlexiTableFilter(translate("filter.done"), "done"));
+		tableEl.setFilters("", filters);
+		
+		if(assessmentCallback.canAssessBusinessGoupMembers()) {
+			List<BusinessGroup> coachedGroups = assessmentCallback.getCoachedGroups(); 
+
+			if(coachedGroups.size() > 0) {
+				List<FlexiTableFilter> groupFilters = new ArrayList<>();
+				for(BusinessGroup coachedGroup:coachedGroups) {
+					groupFilters.add(new FlexiTableFilter(coachedGroup.getName(), coachedGroup.getKey().toString(), "o_icon o_icon_group"));
+				}
+				
+				tableEl.setExtendedFilterButton(translate("filter.groups"), groupFilters);
 			}
 		}
-		usersTableModel.setCertificates(certificates);
 	}
 	
-	private void updateCertificate(Long certificateKey) {
-		CertificateLight certificate = certificatesManager.getCertificateLightById(certificateKey);
-		usersTableModel.putCertificate(certificate);
-		tableEl.getComponent().setDirty(true);
+	private void updateModel(String searchString, List<FlexiTableFilter> filters, List<FlexiTableFilter> extendedFilters) {
+		SearchAssessedIdentityParams params = new SearchAssessedIdentityParams(testEntry, testEntry, null, assessmentCallback);
+		
+		List<AssessmentEntryStatus> assessmentStatus = null;
+		if(filters != null && filters.size() > 0) {
+			assessmentStatus = new ArrayList<>(filters.size());
+			for(FlexiTableFilter filter:filters) {
+				if("passed".equals(filter.getFilter())) {
+					params.setPassed(true);
+				} else if("failed".equals(filter.getFilter())) {
+					params.setFailed(true);
+				} else if(AssessmentEntryStatus.isValueOf(filter.getFilter())){
+					assessmentStatus.add(AssessmentEntryStatus.valueOf(filter.getFilter()));
+				}
+			}
+		}
+		params.setAssessmentStatus(assessmentStatus);
+		
+		List<Long> businessGroupKeys = null;
+		if(extendedFilters != null && extendedFilters.size() > 0) {
+			businessGroupKeys = new ArrayList<>(extendedFilters.size());
+			for(FlexiTableFilter extendedFilter:extendedFilters) {
+				if(StringHelper.isLong(extendedFilter.getFilter())) {
+					businessGroupKeys.add(Long.parseLong(extendedFilter.getFilter()));
+				}
+			}
+		}
+		params.setBusinessGroupKeys(businessGroupKeys);
+		params.setSearchString(searchString);
+		
+		List<Identity> assessedIdentities = assessmentToolManager.getAssessedIdentities(getIdentity(), params);
+		List<AssessmentEntry> assessmentEntries = assessmentToolManager.getAssessmentEntries(getIdentity(), params, null);
+		Map<Long,AssessmentEntry> entryMap = new HashMap<>();
+		assessmentEntries.forEach((entry) -> entryMap.put(entry.getIdentity().getKey(), entry));
+
+		List<AssessedIdentityElementRow> rows = new ArrayList<>(assessedIdentities.size());
+		for(Identity assessedIdentity:assessedIdentities) {
+			AssessmentEntry entry = entryMap.get(assessedIdentity.getKey());
+			rows.add(new AssessedIdentityElementRow(assessedIdentity, entry, userPropertyHandlers, getLocale()));
+		}
+
+		usersTableModel.setObjects(rows);
+		if(filters != null && filters.size() > 0) {
+			usersTableModel.filter(filters.get(0).getFilter());
+		}
+		tableEl.reloadData();
 	}
-	
 	@Override
 	protected void doDispose() {
 		//
 	}
-	
+
 	@Override
-	public void event(Event event) {
-		if(event instanceof CertificateEvent) {
-			CertificateEvent ce = (CertificateEvent)event;
-			if(entry.getOlatResource().getKey().equals(ce.getResourceKey())) {
-				updateCertificate(ce.getCertificateKey());
+	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
+		String filter = null;
+		if(state instanceof AssessedIdentityListState) {
+			AssessedIdentityListState listState = (AssessedIdentityListState)state;
+			if(StringHelper.containsNonWhitespace(listState.getFilter())) {
+				filter = listState.getFilter();
 			}
 		}
+
+		tableEl.setSelectedFilterKey(filter);
+		updateModel(null, tableEl.getSelectedFilters(), null);
+		
+		if(entries != null && entries.size() > 0) {
+			String resourceType = entries.get(0).getOLATResourceable().getResourceableTypeName();
+			if("Identity".equals(resourceType)) {
+				Long identityKey = entries.get(0).getOLATResourceable().getResourceableId();
+				for(int i=usersTableModel.getRowCount(); i--> 0; ) {
+					AssessedIdentityElementRow row = usersTableModel.getObject(i);
+					if(row.getIdentityKey().equals(identityKey)) {
+						doSelect(ureq, row);
+					}
+				}
+			}	
+		}
 	}
-	
+
 	@Override
 	protected void formOK(UserRequest ureq) {
 		//
 	}
 	
 	@Override
+	public void event(UserRequest ureq, Component source, Event event) {
+		if(previousLink == source) {
+			doPrevious(ureq);
+		} else if(nextLink == source) {
+			doNext(ureq);
+		}
+		super.event(ureq, source, event);
+	}
+
+	@Override
+	public void event(UserRequest ureq, Controller source, Event event) {
+		if(currentIdentityCtrl == source) {
+			if(event == Event.CHANGED_EVENT) {
+				updateModel(null, null, null);
+			} else if(event == Event.DONE_EVENT) {
+				updateModel(null, null, null);
+				stackPanel.popController(currentIdentityCtrl);
+			} else if(event == Event.CANCELLED_EVENT) {
+				stackPanel.popController(currentIdentityCtrl);
+			}
+		}
+		super.event(ureq, source, event);
+	}
+
+	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(tableEl == source) {
 			if(event instanceof SelectionEvent) {
 				SelectionEvent se = (SelectionEvent)event;
 				String cmd = se.getCommand();
-				AssessedIdentityRow selectedRow = usersTableModel.getObject(se.getIndex());
+				AssessedIdentityElementRow row = usersTableModel.getObject(se.getIndex());
 				if("select".equals(cmd)) {
-					doSelectUser(ureq, selectedRow);
+					doSelect(ureq, row);
 				}
-			}
-		} else if(source instanceof FormLink) {
-			FormLink link = (FormLink)source;
-			if("download-cert".equals(link.getCmd())) {
-				
+			} else if(event instanceof FlexiTableSearchEvent) {
+				FlexiTableSearchEvent ftse = (FlexiTableSearchEvent)event;
+				updateModel(ftse.getSearch(), ftse.getFilters(), ftse.getExtendedFilters());
 			}
 		}
+		
 		super.formInnerEvent(ureq, source, event);
 	}
 	
-	private void doSelectUser(UserRequest ureq, AssessedIdentityRow row) {
+	private void doNext(UserRequest ureq) {
+		stackPanel.popController(currentIdentityCtrl);
+		
+		Identity currentIdentity = currentIdentityCtrl.getAssessedIdentity();
+		int index = getIndexOf(currentIdentity);
+		if(index >= 0) {
+			int nextIndex = index + 1;//next
+			if(nextIndex >= 0 && nextIndex < usersTableModel.getRowCount()) {
+				doSelect(ureq, usersTableModel.getObject(nextIndex));
+			} else if(usersTableModel.getRowCount() > 0) {
+				doSelect(ureq, usersTableModel.getObject(0));
+			}
+		}
+	}
+	
+	private void doPrevious(UserRequest ureq) {
+		stackPanel.popController(currentIdentityCtrl);
+		
+		Identity currentIdentity = currentIdentityCtrl.getAssessedIdentity();
+		int index = getIndexOf(currentIdentity);
+		if(index >= 0) {
+			int previousIndex = index - 1;//next
+			if(previousIndex >= 0 && previousIndex < usersTableModel.getRowCount()) {
+				doSelect(ureq, usersTableModel.getObject(previousIndex));
+			} else if(usersTableModel.getRowCount() > 0) {
+				doSelect(ureq, usersTableModel.getObject(usersTableModel.getRowCount() - 1));
+			}
+		}
+	}
+	
+	private int getIndexOf(Identity identity) {
+		for(int i=usersTableModel.getRowCount(); i-->0; ) {
+			Long rowIdentityKey = usersTableModel.getObject(i).getIdentityKey();
+			if(rowIdentityKey.equals(identity.getKey())) {
+				return i;
+			}
+		}
+		return -1;
+	}
+	
+	private void doSelect(UserRequest ureq, AssessedIdentityElementRow row) {
+		removeAsListenerAndDispose(currentIdentityCtrl);
+		
 		Identity assessedIdentity = securityManager.loadIdentityByKey(row.getIdentityKey());
+		String fullName = userManager.getUserDisplayName(assessedIdentity);
+		currentIdentityCtrl = new AssessedIdentityRepositoryEntryController(ureq, getWindowControl(), stackPanel,
+				testEntry, assessedIdentity, element);
+		listenTo(currentIdentityCtrl);
+		stackPanel.pushController(fullName, currentIdentityCtrl);
 		
-		Controller userController;
-		if("CourseModule".equalsIgnoreCase(entry.getOlatResource().getResourceableTypeName())) {
-			ICourse course = CourseFactory.loadCourse(entry.getOlatResource());
-			userController = new IdentityAssessmentEditController(getWindowControl(), ureq,
-				stackPanel, assessedIdentity, course, true, false, true);
-			
-			listenTo(userController);
-			String fullname = userManager.getUserDisplayName(assessedIdentity);
-			stackPanel.pushController(fullname, userController);
-		} else {
-			getWindowControl().setWarning("Not implemented");
-		}
-	}
-
-	public static class AssessedUserTableModel extends DefaultFlexiTableDataModel<AssessedIdentityRow> implements SortableFlexiTableDataModel<AssessedIdentityRow> {
-
-		private ConcurrentMap<Long, CertificateLight> certificates;
-
-		public AssessedUserTableModel(FlexiTableColumnModel columnModel) {
-			super(columnModel);
-		}
-		
-		public void setCertificates(ConcurrentMap<Long, CertificateLight> certificates) {
-			this.certificates = certificates;
-		}
-		
-		public void putCertificate(CertificateLight certificate) {
-			if(certificates != null) {
-				certificates.put(certificate.getIdentityKey(), certificate);
-			}
-		}
-		
-		@Override
-		public void sort(SortKey sortKey) {
-			//
-		}
-		
-		@Override
-		public Object getValueAt(int row, int col) {
-			AssessedIdentityRow identityRow = getObject(row);
-			return getValueAt(identityRow, col);
-		}
-
-		@Override
-		public Object getValueAt(AssessedIdentityRow row, int col) {
-			if(col >= 0 && col < UserCols.values().length) {
-				switch(UserCols.values()[col]) {
-					case username: return row.getIdentityName();
-					case certificate: return certificates.get(row.getIdentityKey());
-				}
-			}
-			int propPos = col - USER_PROPS_OFFSET;
-			return row.getIdentityProp(propPos);
-		}
-
-		@Override
-		public DefaultFlexiTableDataModel<AssessedIdentityRow> createCopyWithEmptyList() {
-			return new AssessedUserTableModel(getTableColumnModel());
-		}
-	}
-
-	public enum UserCols implements FlexiColumnDef {
-		username("table.header.name"),
-		certificate("table.header.certificate");
-		
-		private final String i18nKey;
-		
-		private UserCols(String i18nKey) {
-			this.i18nKey = i18nKey;
-		}
-		
-		public String i18nHeaderKey() {
-			return i18nKey;
-		}
+		previousLink = LinkFactory.createToolLink("previouselement","", this, "o_icon_previous_toolbar");
+		previousLink.setTitle(translate("command.previous"));
+		stackPanel.addTool(previousLink, Align.rightEdge, false, "o_tool_previous");
+		nextLink = LinkFactory.createToolLink("nextelement","", this, "o_icon_next_toolbar");
+		nextLink.setTitle(translate("command.next"));
+		stackPanel.addTool(nextLink, Align.rightEdge, false, "o_tool_next");
 	}
 }

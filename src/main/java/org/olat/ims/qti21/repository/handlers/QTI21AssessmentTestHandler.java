@@ -77,7 +77,6 @@ import org.olat.ims.qti21.model.xml.ManifestBuilder;
 import org.olat.ims.qti21.model.xml.OnyxToQtiWorksHandler;
 import org.olat.ims.qti21.pool.QTI21QPoolServiceProvider;
 import org.olat.ims.qti21.ui.AssessmentTestDisplayController;
-import org.olat.ims.qti21.ui.InMemoryOutcomesListener;
 import org.olat.ims.qti21.ui.QTI21RuntimeController;
 import org.olat.ims.qti21.ui.editor.AssessmentTestComposerController;
 import org.olat.modules.assessment.manager.AssessmentEntryDAO;
@@ -338,10 +337,9 @@ public class QTI21AssessmentTestHandler extends FileHandler {
 					@Override
 					public Controller create(UserRequest uureq, WindowControl wwControl, TooledStackedPanel toolbarPanel,
 							RepositoryEntry entry, RepositoryEntrySecurity repoSecurity, AssessmentMode mode) {
-						InMemoryOutcomesListener listener = new InMemoryOutcomesListener();
 						QTI21DeliveryOptions options = qtiService.getDeliveryOptions(entry);
 						boolean authorMode = reSecurity.isEntryAdmin();
-						return new AssessmentTestDisplayController(uureq, wwControl, listener, entry, entry, null, options, false, authorMode);
+						return new AssessmentTestDisplayController(uureq, wwControl, null, entry, entry, null, options, false, authorMode);
 					}
 				});
 	}

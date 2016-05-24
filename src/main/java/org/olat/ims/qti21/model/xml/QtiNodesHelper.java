@@ -17,20 +17,33 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.course.assessment.ui.tool;
+package org.olat.ims.qti21.model.xml;
 
-import org.olat.core.gui.control.Controller;
-import org.olat.core.gui.control.generic.dtabs.Activateable2;
-import org.olat.core.id.Identity;
+import uk.ac.ed.ph.jqtiplus.node.outcome.declaration.OutcomeDeclaration;
+import uk.ac.ed.ph.jqtiplus.node.shared.declaration.DefaultValue;
+import uk.ac.ed.ph.jqtiplus.value.FloatValue;
+import uk.ac.ed.ph.jqtiplus.value.Value;
 
 /**
  * 
- * Initial date: 04.12.2015<br>
+ * Initial date: 24.05.2016<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public interface AssessedIdentityController extends Controller, Activateable2 {
-
-	public Identity getAssessedIdentity();
+public class QtiNodesHelper {
 	
+	public static Double getOutcomeDeclarationDefaultFloatValue(OutcomeDeclaration outcomeDeclaration) {
+		Double doubleValue = null;
+		if(outcomeDeclaration != null) {
+			DefaultValue defaultValue = outcomeDeclaration.getDefaultValue();
+			if(defaultValue != null) {
+				Value evaluatedValue = defaultValue.evaluate();
+				if(evaluatedValue instanceof FloatValue) {
+					doubleValue = new Double(((FloatValue)evaluatedValue).doubleValue());
+				}
+			}
+		}
+		return doubleValue;
+	}
+
 }

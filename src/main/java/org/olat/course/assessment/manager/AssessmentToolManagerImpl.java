@@ -171,7 +171,7 @@ public class AssessmentToolManagerImpl implements AssessmentToolManager {
 				stats.setParameter("identityKey", coach.getKey());
 			}
 			if(params.getReferenceEntry() != null) {
-				stats.setParameter("referenceKey", params.getReferenceEntry());
+				stats.setParameter("referenceKey", params.getReferenceEntry().getKey());
 			}
 			if(params.getSubIdent() != null) {
 				stats.setParameter("subIdent", params.getSubIdent());

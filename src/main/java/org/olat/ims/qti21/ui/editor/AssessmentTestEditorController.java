@@ -54,11 +54,11 @@ public class AssessmentTestEditorController extends BasicController {
 	private final AssessmentTestBuilder testBuilder;
 	
 	public AssessmentTestEditorController(UserRequest ureq, WindowControl wControl,
-			AssessmentTest assessmentTest, boolean restrictedEdit) {
+			AssessmentTestBuilder testBuilder, boolean restrictedEdit) {
 		super(ureq, wControl, Util.createPackageTranslator(AssessmentTestDisplayController.class, ureq.getLocale()));
-		this.assessmentTest = assessmentTest;
+		this.testBuilder = testBuilder;
+		this.assessmentTest = testBuilder.getAssessmentTest();
 		this.restrictedEdit = restrictedEdit;
-		testBuilder = new AssessmentTestBuilder(assessmentTest);
 		
 		mainVC = createVelocityContainer("assessment_test_editor");
 		mainVC.contextPut("restrictedEdit", restrictedEdit);

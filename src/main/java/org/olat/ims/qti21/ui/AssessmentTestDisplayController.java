@@ -155,7 +155,6 @@ public class AssessmentTestDisplayController extends BasicController implements 
 	private CandidateEvent lastEvent;
 	private Date currentRequestTimestamp;
 	private AssessmentTestSession candidateSession;
-	private AssessmentEntry assessmentEntry;
 	private ResolvedAssessmentTest resolvedAssessmentTest;
 	private AssessmentTestMarks marks;
 	
@@ -176,7 +175,7 @@ public class AssessmentTestDisplayController extends BasicController implements 
 	 * 
 	 * @param ureq
 	 * @param wControl
-	 * @param listener
+	 * @param listener If the listener is null, the controller will use the default listener which save the score and pass in assessment entry
 	 * @param testEntry
 	 * @param entry
 	 * @param subIdent
@@ -206,8 +205,12 @@ public class AssessmentTestDisplayController extends BasicController implements 
 		
 		currentRequestTimestamp = ureq.getRequestTimestamp();
 		
-		assessmentEntry = assessmentService.getOrCreateAssessmentEntry(getIdentity(), entry, subIdent, testEntry);
+		AssessmentEntry assessmentEntry = assessmentService.getOrCreateAssessmentEntry(getIdentity(), entry, subIdent, testEntry);
 		marks = qtiService.getMarks(getIdentity(), entry, subIdent, testEntry);
+		if(listener == null) {
+			boolean manualCorrections = qtiService.needManualCorrection(resolvedAssessmentTest);
+			outcomesListener = new AssessmentEntryOutcomesListener(assessmentEntry, manualCorrections, assessmentService);
+		}
 
 		AssessmentTestSession lastSession = null;
 		if(deliveryOptions.isEnableSuspend()) {

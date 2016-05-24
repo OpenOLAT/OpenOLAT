@@ -108,6 +108,13 @@ public interface QTI21Service {
 	public boolean persistAssessmentObject(File resourceFile, AssessmentObject assessmentObject);
 	
 	/**
+	 * 
+	 * @param resolvedAssessmentTest
+	 * @return
+	 */
+	public boolean needManualCorrection(ResolvedAssessmentTest resolvedAssessmentTest);
+	
+	/**
 	 * Remove all test sessions in author mode, e.g. after an assessment test
 	 * was changed.
 	 * 

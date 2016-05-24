@@ -19,6 +19,9 @@
  */
 package org.olat.ims.qti21.ui;
 
+import java.io.File;
+
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.dropdown.Dropdown;
@@ -33,15 +36,23 @@ import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.resource.OresHelper;
+import org.olat.fileresource.FileResourceManager;
+import org.olat.ims.qti21.QTI21Constants;
+import org.olat.ims.qti21.QTI21Service;
+import org.olat.ims.qti21.model.xml.QtiNodesHelper;
 import org.olat.ims.qti21.ui.editor.AssessmentTestComposerController;
 import org.olat.ims.qti21.ui.statistics.QTI21AssessmentTestStatisticsController;
-import org.olat.modules.assessment.ui.AssessmentOverviewController;
+import org.olat.modules.assessment.ui.AssessableResource;
+import org.olat.modules.assessment.ui.AssessmentToolController;
 import org.olat.modules.assessment.ui.AssessmentToolSecurityCallback;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryManagedFlag;
 import org.olat.repository.model.RepositoryEntrySecurity;
 import org.olat.repository.ui.RepositoryEntryRuntimeController;
 import org.olat.util.logging.activity.LoggingResourceable;
+
+import uk.ac.ed.ph.jqtiplus.node.test.AssessmentTest;
+import uk.ac.ed.ph.jqtiplus.resolution.ResolvedAssessmentTest;
 
 /**
  * 
@@ -54,7 +65,7 @@ public class QTI21RuntimeController extends RepositoryEntryRuntimeController  {
 	private Link assessmentLink, testStatisticLink, qtiOptionsLink;
 	
 	private QTI21DeliveryOptionsController optionsCtrl;
-	private AssessmentOverviewController assessmentToolCtrl;
+	private AssessmentToolController assessmentToolCtrl;
 	private QTI21AssessmentTestStatisticsController statsToolCtr;
 
 	public QTI21RuntimeController(UserRequest ureq, WindowControl wControl,
@@ -180,8 +191,9 @@ public class QTI21RuntimeController extends RepositoryEntryRuntimeController  {
 				= new AssessmentToolSecurityCallback(reSecurity.isEntryAdmin(), reSecurity.isEntryAdmin(),
 						reSecurity.isCourseCoach(), reSecurity.isGroupCoach(), null);
 
-			AssessmentOverviewController ctrl = new AssessmentOverviewController(ureq, swControl, toolbarPanel,
-					getRepositoryEntry(), secCallback);
+			AssessableResource el = getAssessableElement(getRepositoryEntry());
+			AssessmentToolController ctrl = new AssessmentToolController(ureq, swControl, toolbarPanel,
+					getRepositoryEntry(), el, secCallback);
 			listenTo(ctrl);
 			assessmentToolCtrl = pushController(ureq, "Statistics", ctrl);
 			currentToolCtr = assessmentToolCtrl;
@@ -189,5 +201,19 @@ public class QTI21RuntimeController extends RepositoryEntryRuntimeController  {
 			return assessmentToolCtrl;
 		}
 		return null;
+	}
+	
+	private AssessableResource getAssessableElement(RepositoryEntry testEntry) {
+		FileResourceManager frm = FileResourceManager.getInstance();
+		File fUnzippedDirRoot = frm.unzipFileResource(testEntry.getOlatResource());
+		QTI21Service qtiService = CoreSpringFactory.getImpl(QTI21Service.class);
+		ResolvedAssessmentTest resolvedAssessmentTest = qtiService.loadAndResolveAssessmentTest(fUnzippedDirRoot, false);
+		
+		AssessmentTest assessmentTest = resolvedAssessmentTest.getRootNodeLookup().extractIfSuccessful();
+		Double maxScore = QtiNodesHelper.getOutcomeDeclarationDefaultFloatValue(assessmentTest.getOutcomeDeclaration(QTI21Constants.MAXSCORE_IDENTIFIER));
+		Double minScore = QtiNodesHelper.getOutcomeDeclarationDefaultFloatValue(assessmentTest.getOutcomeDeclaration(QTI21Constants.MINSCORE_IDENTIFIER));
+		boolean hasScore = assessmentTest.getOutcomeDeclaration(QTI21Constants.SCORE_IDENTIFIER) != null;
+		boolean hasPassed = assessmentTest.getOutcomeDeclaration(QTI21Constants.PASS_IDENTIFIER) != null;
+		return new AssessableResource(hasScore, hasPassed, true, true, minScore, maxScore, null);
 	}
 }

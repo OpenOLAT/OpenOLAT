@@ -47,6 +47,7 @@ import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.GTACourseNode;
 import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.modules.assessment.ui.AssessmentToolSecurityCallback;
+import org.olat.modules.assessment.ui.AssessmentToolContainer;
 import org.olat.repository.RepositoryEntry;
 
 /**
@@ -60,14 +61,14 @@ public class AssessmentIdentitiesCourseTreeController extends BasicController im
 	private final MenuTree menuTree;
 	private final Panel mainPanel;
 	private final TooledStackedPanel stackPanel;
-	private final CourseToolContainer toolContainer;
+	private final AssessmentToolContainer toolContainer;
 	private Controller currentCtrl;
 	
 	private final RepositoryEntry courseEntry;
 	private AssessmentToolSecurityCallback assessmentCallback;
 	
 	public AssessmentIdentitiesCourseTreeController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
-			RepositoryEntry courseEntry, CourseToolContainer toolContainer, AssessmentToolSecurityCallback assessmentCallback) {
+			RepositoryEntry courseEntry, AssessmentToolContainer toolContainer, AssessmentToolSecurityCallback assessmentCallback) {
 		super(ureq, wControl);
 		this.courseEntry = courseEntry;
 		this.stackPanel = stackPanel;

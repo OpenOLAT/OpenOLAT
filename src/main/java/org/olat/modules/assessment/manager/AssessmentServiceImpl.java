@@ -29,6 +29,7 @@ import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.assessment.AssessmentService;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryRef;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -74,6 +75,14 @@ public class AssessmentServiceImpl implements AssessmentService {
 	public AssessmentEntry loadAssessmentEntry(Identity assessedIdentity, RepositoryEntry entry, String subIdent, String referenceSoftKey) {
 		if(assessedIdentity == null || entry == null) return null;
 		return assessmentEntryDao.loadAssessmentEntry(assessedIdentity, entry, subIdent, referenceSoftKey);
+	}
+	
+	
+
+	@Override
+	public AssessmentEntry loadAssessmentEntry(Identity assessedIdentity, RepositoryEntryRef entry, String subIdent, RepositoryEntryRef referenceEntry) {
+		if(assessedIdentity == null || entry == null || referenceEntry == null) return null;
+		return assessmentEntryDao.loadAssessmentEntry(assessedIdentity, entry, subIdent, referenceEntry);
 	}
 
 	@Override

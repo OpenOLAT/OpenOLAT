@@ -54,6 +54,7 @@ public class AssessmentTestBuilder {
 	private final AssessmentHtmlBuilder htmlBuilder;
 	
 	private Double cutValue;
+	private Double maxScore;
 	private OutcomeCondition cutValueRule;
 	
 	private boolean testScore = false;
@@ -167,6 +168,14 @@ public class AssessmentTestBuilder {
 		this.cutValue = cutValue;
 	}
 	
+	public Double getMaxScore() {
+		return maxScore;
+	}
+
+	public void setMaxScore(Double maxScore) {
+		this.maxScore = maxScore;
+	}
+
 	public TestFeedbackBuilder getPassedFeedback() {
 		return passedFeedback;
 	}
@@ -186,13 +195,11 @@ public class AssessmentTestBuilder {
 	}
 
 	public AssessmentTest build() {
-		Double maxScore = 1.0d;
-		
 		if(assessmentTest.getOutcomeProcessing() == null) {
 			assessmentTest.setOutcomeProcessing(new OutcomeProcessing(assessmentTest));
 		}
 		
-		buildScore(maxScore);
+		buildScore();
 		buildTestScore();
 		buildCutValue();
 		buildFeedback();
@@ -206,19 +213,27 @@ public class AssessmentTestBuilder {
 	
 
 	
-	private void buildScore(Double maxScore) {
+	private void buildScore() {
 		OutcomeDeclaration scoreDeclaration = assessmentTest.getOutcomeDeclaration(QTI21Constants.SCORE_IDENTIFIER);
 		if(scoreDeclaration == null) {
 			scoreDeclaration = AssessmentTestFactory.createOutcomeDeclaration(assessmentTest, QTI21Constants.SCORE_IDENTIFIER, 0.0d);
 			assessmentTest.getOutcomeDeclarations().add(0, scoreDeclaration);
 		}
 		
-		OutcomeDeclaration maxScoreDeclaration = assessmentTest.getOutcomeDeclaration(QTI21Constants.MAXSCORE_IDENTIFIER);
-		if(maxScoreDeclaration == null) {
-			maxScoreDeclaration = AssessmentTestFactory.createOutcomeDeclaration(assessmentTest, QTI21Constants.MAXSCORE_IDENTIFIER, 1.0d);
-			assessmentTest.getOutcomeDeclarations().add(0, maxScoreDeclaration);
-		} else {//update value
-			AssessmentTestFactory.updateDefaultValue(maxScoreDeclaration, maxScore);
+		if(maxScore != null) {
+			OutcomeDeclaration maxScoreDeclaration = assessmentTest.getOutcomeDeclaration(QTI21Constants.MAXSCORE_IDENTIFIER);
+			if(maxScoreDeclaration == null) {
+				maxScoreDeclaration = AssessmentTestFactory.createOutcomeDeclaration(assessmentTest, QTI21Constants.MAXSCORE_IDENTIFIER, maxScore);
+				assessmentTest.getOutcomeDeclarations().add(0, maxScoreDeclaration);
+			} else {//update value
+				AssessmentTestFactory.updateDefaultValue(maxScoreDeclaration, maxScore);
+			}
+		} else {
+			OutcomeDeclaration maxScoreDeclaration = assessmentTest.getOutcomeDeclaration(QTI21Constants.MAXSCORE_IDENTIFIER);
+			if(maxScoreDeclaration != null) {
+				assessmentTest.getOutcomeDeclarations().remove(maxScoreDeclaration);
+			}
+			
 		}
 	}
 	

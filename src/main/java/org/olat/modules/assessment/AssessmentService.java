@@ -25,6 +25,7 @@ import org.olat.core.id.Identity;
 import org.olat.group.BusinessGroup;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryRef;
 
 /**
  * 
@@ -70,6 +71,16 @@ public interface AssessmentService {
 	 * @return
 	 */
 	public AssessmentEntry loadAssessmentEntry(Identity assessedIdentity, RepositoryEntry entry, String subIdent, String referenceSoftKey);
+	
+	/**
+	 * 
+	 * @param assessedIdentity
+	 * @param entry
+	 * @param subIdent
+	 * @param referenceEntry
+	 * @return
+	 */
+	public AssessmentEntry loadAssessmentEntry(Identity assessedIdentity, RepositoryEntryRef entry, String subIdent, RepositoryEntryRef referenceEntry);
 	
 	public AssessmentEntry updateAssessmentEntry(AssessmentEntry entry);
 	

@@ -41,11 +41,11 @@ import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.assessment.AssessmentMainController;
 import org.olat.course.assessment.manager.AssessmentNotificationsHandler;
-import org.olat.course.assessment.ui.tool.event.UserSelectionEvent;
 import org.olat.course.certificate.CertificatesManager;
 import org.olat.group.BusinessGroupService;
 import org.olat.group.model.SearchBusinessGroupParams;
 import org.olat.modules.assessment.ui.AssessmentToolSecurityCallback;
+import org.olat.modules.assessment.ui.UserSelectionEvent;
 import org.olat.repository.RepositoryEntry;
 import org.springframework.beans.factory.annotation.Autowired;
 

@@ -74,7 +74,12 @@ import org.olat.course.nodes.CourseNodeFactory;
 import org.olat.group.BusinessGroup;
 import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
+import org.olat.modules.assessment.ui.AssessedIdentityController;
+import org.olat.modules.assessment.ui.AssessedIdentityElementRow;
+import org.olat.modules.assessment.ui.AssessedIdentityListState;
 import org.olat.modules.assessment.ui.AssessmentToolSecurityCallback;
+import org.olat.modules.assessment.ui.ScoreCellRenderer;
+import org.olat.modules.assessment.ui.AssessmentToolContainer;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryService;
 import org.olat.user.UserManager;
@@ -100,7 +105,7 @@ public class IdentityListCourseNodeController extends FormBasicController implem
 	private Link nextLink, previousLink;
 	private FlexiTableElement tableEl;
 	private final TooledStackedPanel stackPanel;
-	private final CourseToolContainer toolContainer;
+	private final AssessmentToolContainer toolContainer;
 	private IdentityListCourseNodeTableModel usersTableModel;
 	
 	private AssessedIdentityController currentIdentityCtrl;
@@ -119,7 +124,7 @@ public class IdentityListCourseNodeController extends FormBasicController implem
 	private AssessmentToolManager assessmentToolManager;
 	
 	public IdentityListCourseNodeController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
-			RepositoryEntry courseEntry, CourseNode courseNode, CourseToolContainer toolContainer,
+			RepositoryEntry courseEntry, CourseNode courseNode, AssessmentToolContainer toolContainer,
 			AssessmentToolSecurityCallback assessmentCallback) {
 		super(ureq, wControl, "identity_courseelement");
 		setTranslator(Util.createPackageTranslator(AssessmentMainController.class, getLocale(), getTranslator()));
@@ -255,10 +260,10 @@ public class IdentityListCourseNodeController extends FormBasicController implem
 		Map<Long,AssessmentEntry> entryMap = new HashMap<>();
 		assessmentEntries.forEach((entry) -> entryMap.put(entry.getIdentity().getKey(), entry));
 
-		List<AssessedIdentityCourseElementRow> rows = new ArrayList<>(assessedIdentities.size());
+		List<AssessedIdentityElementRow> rows = new ArrayList<>(assessedIdentities.size());
 		for(Identity assessedIdentity:assessedIdentities) {
 			AssessmentEntry entry = entryMap.get(assessedIdentity.getKey());
-			rows.add(new AssessedIdentityCourseElementRow(assessedIdentity, entry, userPropertyHandlers, getLocale()));
+			rows.add(new AssessedIdentityElementRow(assessedIdentity, entry, userPropertyHandlers, getLocale()));
 		}
 		
 		if(toolContainer.getCertificateMap() == null) {
@@ -370,7 +375,7 @@ public class IdentityListCourseNodeController extends FormBasicController implem
 			if("Identity".equals(resourceType)) {
 				Long identityKey = entries.get(0).getOLATResourceable().getResourceableId();
 				for(int i=usersTableModel.getRowCount(); i--> 0; ) {
-					AssessedIdentityCourseElementRow row = usersTableModel.getObject(i);
+					AssessedIdentityElementRow row = usersTableModel.getObject(i);
 					if(row.getIdentityKey().equals(identityKey)) {
 						doSelect(ureq, row);
 					}
@@ -415,7 +420,7 @@ public class IdentityListCourseNodeController extends FormBasicController implem
 			if(event instanceof SelectionEvent) {
 				SelectionEvent se = (SelectionEvent)event;
 				String cmd = se.getCommand();
-				AssessedIdentityCourseElementRow row = usersTableModel.getObject(se.getIndex());
+				AssessedIdentityElementRow row = usersTableModel.getObject(se.getIndex());
 				if("select".equals(cmd)) {
 					doSelect(ureq, row);
 				}
@@ -468,7 +473,7 @@ public class IdentityListCourseNodeController extends FormBasicController implem
 		return -1;
 	}
 	
-	private void doSelect(UserRequest ureq, AssessedIdentityCourseElementRow row) {
+	private void doSelect(UserRequest ureq, AssessedIdentityElementRow row) {
 		removeAsListenerAndDispose(currentIdentityCtrl);
 		
 		Identity assessedIdentity = securityManager.loadIdentityByKey(row.getIdentityKey());

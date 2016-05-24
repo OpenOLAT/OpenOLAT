@@ -70,9 +70,11 @@ import org.olat.ims.qti21.QTI21Service;
 import org.olat.ims.qti21.model.IdentifierGenerator;
 import org.olat.ims.qti21.model.QTI21QuestionType;
 import org.olat.ims.qti21.model.xml.AssessmentItemBuilder;
+import org.olat.ims.qti21.model.xml.AssessmentTestBuilder;
 import org.olat.ims.qti21.model.xml.AssessmentTestFactory;
 import org.olat.ims.qti21.model.xml.ManifestBuilder;
 import org.olat.ims.qti21.model.xml.ManifestMetadataBuilder;
+import org.olat.ims.qti21.model.xml.QtiNodesHelper;
 import org.olat.ims.qti21.model.xml.interactions.EssayAssessmentItemBuilder;
 import org.olat.ims.qti21.model.xml.interactions.FIBAssessmentItemBuilder;
 import org.olat.ims.qti21.model.xml.interactions.FIBAssessmentItemBuilder.EntryType;
@@ -147,6 +149,7 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 	private final RepositoryEntry testEntry;
 	private ManifestBuilder manifestBuilder;
 	private ResolvedAssessmentTest resolvedAssessmentTest;
+	private AssessmentTestBuilder assessmentTestBuilder;
 	
 	private final boolean survey = false;
 	private final boolean restrictedEdit;
@@ -289,6 +292,7 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 	private void updateTreeModel() {
 		resolvedAssessmentTest = qtiService.loadAndResolveAssessmentTest(unzippedDirRoot, true);
 		menuTree.setTreeModel(new AssessmentTestEditorAndComposerTreeModel(resolvedAssessmentTest));
+		assessmentTestBuilder = new AssessmentTestBuilder(resolvedAssessmentTest.getRootNodeLookup().extractIfSuccessful());
 	}
 	
 	public boolean hasChanges() {
@@ -340,6 +344,7 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 			AssessmentItemEvent aie = (AssessmentItemEvent)event;
 			if(AssessmentItemEvent.ASSESSMENT_ITEM_CHANGED.equals(aie.getCommand())) {
 				assessmentChanged = true;
+				doSaveAssessmentTest();
 				doUpdate(aie.getAssessmentItemRef().getIdentifier(), aie.getAssessmentItem().getTitle());
 				doSaveManifest();
 			} else if(AssessmentItemEvent.ASSESSMENT_ITEM_METADATA_CHANGED.equals(aie.getCommand())) {
@@ -793,9 +798,30 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 	
 	private void doSaveAssessmentTest() {
 		assessmentChanged = true;
+		recalculateMaxScoreAssessmentTest();
 		URI testURI = resolvedAssessmentTest.getTestLookup().getSystemId();
 		File testFile = new File(testURI);
 		qtiService.updateAssesmentObject(testFile, resolvedAssessmentTest);
+	}
+	
+	private void recalculateMaxScoreAssessmentTest() {
+		double sumMaxScore = 0.0d;
+		for(ResolvedAssessmentItem resolvedAssessmentItem:resolvedAssessmentTest.getResolvedAssessmentItemBySystemIdMap().values()) {
+			AssessmentItem assessmentItem = resolvedAssessmentItem.getRootNodeLookup().extractIfSuccessful();
+			if(assessmentItem != null) {
+				Double maxScore = QtiNodesHelper
+						.getOutcomeDeclarationDefaultFloatValue(assessmentItem.getOutcomeDeclaration(QTI21Constants.MAXSCORE_IDENTIFIER));
+				if(maxScore != null) {
+					sumMaxScore += maxScore;
+				}
+			}
+		}
+		
+		if(sumMaxScore > 0.0d) {
+			assessmentTestBuilder.setMaxScore(sumMaxScore);
+		} else {
+			assessmentTestBuilder.setMaxScore(null);
+		}
 	}
 	
 	private void doSaveManifest() {
@@ -832,7 +858,7 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 
 		Object uobject = selectedNode.getUserObject();
 		if(uobject instanceof AssessmentTest) {
-			currentEditorCtrl = new AssessmentTestEditorController(ureq, getWindowControl(), (AssessmentTest)uobject, restrictedEdit);
+			currentEditorCtrl = new AssessmentTestEditorController(ureq, getWindowControl(), assessmentTestBuilder, restrictedEdit);
 		} else if(uobject instanceof TestPart) {
 			currentEditorCtrl = new AssessmentTestPartEditorController(ureq, getWindowControl(), (TestPart)uobject, restrictedEdit);
 		} else if(uobject instanceof AssessmentSection) {

@@ -29,6 +29,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
+import org.olat.course.assessment.AssessmentHelper;
 import org.olat.ims.qti21.model.xml.AssessmentTestBuilder;
 import org.olat.ims.qti21.ui.AssessmentTestDisplayController;
 import org.olat.ims.qti21.ui.editor.events.AssessmentTestEvent;
@@ -78,7 +79,8 @@ public class AssessmentTestOptionsEditorController extends FormBasicController {
 		}
 		
 		//score
-		maxScoreEl = uifactory.addTextElement("max.score", "max.score", 8, "0.0", formLayout);
+		String maxScore = testBuilder.getMaxScore() == null ? "" : AssessmentHelper.getRoundedScore(testBuilder.getMaxScore());
+		maxScoreEl = uifactory.addTextElement("max.score", "max.score", 8, maxScore, formLayout);
 		maxScoreEl.setEnabled(false);
 		
 		Double cutValue = testBuilder.getCutValue();

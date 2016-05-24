@@ -17,7 +17,7 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.course.assessment.ui.tool;
+package org.olat.modules.assessment.ui;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -31,11 +31,9 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableModelDelegate;
 import org.olat.core.util.StringHelper;
+import org.olat.course.assessment.ui.tool.AssessmentToolConstants;
 import org.olat.course.certificate.CertificateLight;
-import org.olat.course.nodes.AssessableCourseNode;
-import org.olat.course.nodes.STCourseNode;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
-import org.olat.modules.assessment.ui.AssessedIdentityElementRow;
 
 /**
  * 
@@ -43,16 +41,16 @@ import org.olat.modules.assessment.ui.AssessedIdentityElementRow;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class IdentityListCourseNodeTableModel extends DefaultFlexiTableDataModel<AssessedIdentityElementRow>
+public class AssessedIdentityListTableModel extends DefaultFlexiTableDataModel<AssessedIdentityElementRow>
 	implements SortableFlexiTableDataModel<AssessedIdentityElementRow>, FilterableFlexiTableModel {
 
-	private final AssessableCourseNode courseNode;
+	private final AssessableResource element;
 	private List<AssessedIdentityElementRow> backups;
 	private ConcurrentMap<Long, CertificateLight> certificateMap;
 	
-	public IdentityListCourseNodeTableModel(FlexiTableColumnModel columnModel, AssessableCourseNode courseNode) {
+	public AssessedIdentityListTableModel(FlexiTableColumnModel columnModel, AssessableResource element) {
 		super(columnModel);
-		this.courseNode = courseNode;
+		this.element = element;
 	}
 	
 	public void setCertificateMap(ConcurrentMap<Long, CertificateLight> certificateMap) {
@@ -116,21 +114,26 @@ public class IdentityListCourseNodeTableModel extends DefaultFlexiTableDataModel
 				case attempts: return row.getAttempts();
 				case score: return row.getScore();
 				case min: {
-					if(!(courseNode instanceof STCourseNode) && courseNode.hasScoreConfigured()) {
-						return courseNode.getMinScoreConfiguration();
+					if(element.hasScoreConfigured()) {
+						return element.getMinScoreConfiguration();
 					}
 					return "";
 				}
 				case max: {
-					if(!(courseNode instanceof STCourseNode) && courseNode.hasScoreConfigured()) {
-						return courseNode.getMaxScoreConfiguration();
+					if(element.hasScoreConfigured()) {
+						return element.getMaxScoreConfiguration();
 					}
 					return "";
 				}
 				case status: return "";
 				case passed: return row.getPassed();
 				case assessmentStatus: return row.getAssessmentStatus();
-				case certificate: return certificateMap.get(row.getIdentityKey());
+				case certificate: {
+					if(certificateMap == null) {
+						return null;
+					}
+					return certificateMap.get(row.getIdentityKey());
+				}
 				case initialLaunchDate: return row.getCreationDate();
 				case lastScoreUpdate: return row.getLastModified();
 			}
@@ -141,7 +144,7 @@ public class IdentityListCourseNodeTableModel extends DefaultFlexiTableDataModel
 
 	@Override
 	public DefaultFlexiTableDataModel<AssessedIdentityElementRow> createCopyWithEmptyList() {
-		return new IdentityListCourseNodeTableModel(getTableColumnModel(), courseNode);
+		return new AssessedIdentityListTableModel(getTableColumnModel(), element);
 	}
 	
 	public enum IdentityCourseElementCols implements FlexiSortableColumnDef {

@@ -79,8 +79,8 @@ import org.olat.ims.qti.fileresource.TestFileResource;
 import org.olat.ims.qti.process.AssessmentInstance;
 import org.olat.ims.qti.process.QTIHelper;
 import org.olat.ims.qti21.QTI21DeliveryOptions;
-import org.olat.ims.qti21.QTI21Service;
 import org.olat.ims.qti21.QTI21DeliveryOptions.ShowResultsOnFinish;
+import org.olat.ims.qti21.QTI21Service;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.iq.IQManager;
 import org.olat.modules.iq.IQPreviewSecurityCallback;
@@ -95,17 +95,6 @@ import de.bps.onyx.plugin.OnyxModule;
 import de.bps.onyx.plugin.course.nodes.iq.IQEditForm;
 import de.bps.webservices.clients.onyxreporter.OnyxReporterConnector;
 import de.bps.webservices.clients.onyxreporter.OnyxReporterException;
-import uk.ac.ed.ph.jqtiplus.node.item.AssessmentItem;
-import uk.ac.ed.ph.jqtiplus.node.item.interaction.DrawingInteraction;
-import uk.ac.ed.ph.jqtiplus.node.item.interaction.ExtendedTextInteraction;
-import uk.ac.ed.ph.jqtiplus.node.item.interaction.Interaction;
-import uk.ac.ed.ph.jqtiplus.node.item.interaction.UploadInteraction;
-import uk.ac.ed.ph.jqtiplus.node.test.AssessmentItemRef;
-import uk.ac.ed.ph.jqtiplus.node.test.AssessmentSection;
-import uk.ac.ed.ph.jqtiplus.node.test.AssessmentTest;
-import uk.ac.ed.ph.jqtiplus.node.test.SectionPart;
-import uk.ac.ed.ph.jqtiplus.node.test.TestPart;
-import uk.ac.ed.ph.jqtiplus.resolution.ResolvedAssessmentItem;
 import uk.ac.ed.ph.jqtiplus.resolution.ResolvedAssessmentTest;
 
 /**
@@ -538,54 +527,7 @@ public class IQConfigurationController extends BasicController {
 		FileResourceManager frm = FileResourceManager.getInstance();
 		File fUnzippedDirRoot = frm.unzipFileResource(re.getOlatResource());
 		ResolvedAssessmentTest resolvedAssessmentTest = qti21service.loadAndResolveAssessmentTest(fUnzippedDirRoot, false);
-		AssessmentTest test = resolvedAssessmentTest.getTestLookup().getRootNodeHolder().getRootNode();
-		
-		boolean needManualCorrection = false; 
-		List<TestPart> parts = test.getChildAbstractParts();
-		for(TestPart part:parts) {
-			List<AssessmentSection> sections = part.getAssessmentSections();
-			for(AssessmentSection section:sections) {
-				if(needManualCorrectionQTI21(section, resolvedAssessmentTest)) {
-					needManualCorrection = true;
-					break;
-				}
-			}
-		}
-		return needManualCorrection;
-	}
-
-	private boolean needManualCorrectionQTI21(AssessmentSection section, ResolvedAssessmentTest resolvedAssessmentTest) {
-		for(SectionPart part: section.getSectionParts()) {
-			if(part instanceof AssessmentItemRef) {
-				if(needManualCorrectionQTI21((AssessmentItemRef)part, resolvedAssessmentTest)) {
-					return true;
-				}
-			} else if(part instanceof AssessmentSection) {
-				if(needManualCorrectionQTI21((AssessmentSection) part, resolvedAssessmentTest)) {
-					return true;
-				}
-			}
-		}
-		return false;
-	}
-	
-
-	private boolean needManualCorrectionQTI21(AssessmentItemRef itemRef, ResolvedAssessmentTest resolvedAssessmentTest) {
-		ResolvedAssessmentItem resolvedAssessmentItem = resolvedAssessmentTest.getResolvedAssessmentItem(itemRef);
-		if(resolvedAssessmentItem != null
-				&& resolvedAssessmentItem.getItemLookup() != null
-				&& resolvedAssessmentItem.getItemLookup().getRootNodeHolder() != null) {
-			AssessmentItem assessmentItem = resolvedAssessmentItem.getItemLookup().getRootNodeHolder().getRootNode();
-			List<Interaction> interactions = assessmentItem.getItemBody().findInteractions();
-			for(Interaction interaction:interactions) {
-				if(interaction instanceof UploadInteraction
-						|| interaction instanceof DrawingInteraction
-						|| interaction instanceof ExtendedTextInteraction) {
-					return true;
-				}
-			}
-		}
-		return false;
+		return qti21service.needManualCorrection(resolvedAssessmentTest);
 	}
 	
 	private boolean needManualCorrectionQTI12(RepositoryEntry re) {

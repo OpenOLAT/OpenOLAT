@@ -17,37 +17,20 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.course.assessment.ui.tool.event;
+package org.olat.modules.assessment.ui;
 
-import java.util.List;
-
-import org.olat.core.gui.control.Event;
+import org.olat.core.gui.control.Controller;
+import org.olat.core.gui.control.generic.dtabs.Activateable2;
+import org.olat.core.id.Identity;
 
 /**
  * 
- * Initial date: 04.05.2016<br>
+ * Initial date: 04.12.2015<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class UserSelectionEvent extends Event {
+public interface AssessedIdentityController extends Controller, Activateable2 {
 
-	private static final long serialVersionUID = -4842433236044263696L;
-	private static final String CMD = "select-user";
+	public Identity getAssessedIdentity();
 	
-	private final Long identityKey;
-	private final List<String> courseNodeIdents;
-	
-	public UserSelectionEvent(Long identityKey, List<String> courseNodeIdents) {
-		super(CMD);
-		this.identityKey = identityKey;
-		this.courseNodeIdents = courseNodeIdents;
-	}
-
-	public Long getIdentityKey() {
-		return identityKey;
-	}
-
-	public List<String> getCourseNodeIdents() {
-		return courseNodeIdents;
-	}
 }

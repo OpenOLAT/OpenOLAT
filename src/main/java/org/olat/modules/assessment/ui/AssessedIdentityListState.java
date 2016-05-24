@@ -17,7 +17,7 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.course.assessment.ui.tool;
+package org.olat.modules.assessment.ui;
 
 import org.olat.core.id.context.StateEntry;
 
@@ -31,6 +31,14 @@ public class AssessedIdentityListState implements StateEntry {
 
 	private static final long serialVersionUID = -6546620154750599626L;
 	private String filter;
+	
+	public AssessedIdentityListState() {
+		//
+	}
+	
+	public AssessedIdentityListState(String filter) {
+		this.filter = filter;
+	}
 
 	public String getFilter() {
 		return filter;
@@ -43,7 +51,7 @@ public class AssessedIdentityListState implements StateEntry {
 	@Override
 	public AssessedIdentityListState clone() {
 		AssessedIdentityListState clone = new AssessedIdentityListState();
-
+		clone.setFilter(getFilter());
 		return clone;
 	}
 }
