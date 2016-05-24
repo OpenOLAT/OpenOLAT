@@ -26,20 +26,26 @@ import com.google.common.base.Predicate;
 
 /**
  * 
- * Predicate which test if TinyMCE is fully loaded
+ * Observe the scrolling flag of the o_scrollToElement method.
  * 
- * Initial date: 07.07.2014<br>
+ * Initial date: 23.05.2016<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class TinyMCELoadedPredicate implements Predicate<WebDriver> {
+public class ScrollToPredicate implements Predicate<WebDriver> {
+	
+	private boolean started = false;
 	
 	@Override
 	public boolean apply(WebDriver driver) {
-        Object active = ((JavascriptExecutor)driver)
-        		.executeScript("return top != null && top.tinymce != null && top.tinymce.activeEditor != null "
-        				+ " && top.tinymce.activeEditor.initialized && top.tinymce.editors[0].initialized "
-        				+ " && (top.tinymce.editors.length > 1 ? top.tinymce.editors[1].initialized : true);");
-        return Boolean.TRUE.equals(active);
+        Object busy = ((JavascriptExecutor)driver)
+        		.executeScript("return (window.o_info.scrolling)");
+        if(started) {
+        	return Boolean.FALSE.equals(busy);
+        }
+        if(Boolean.TRUE.equals(busy)) {
+        	started = true; //start to scroll
+        }
+        return false;
     }
 }

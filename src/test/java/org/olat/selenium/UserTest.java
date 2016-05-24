@@ -84,8 +84,6 @@ public class UserTest {
 	private URL deploymentUrl;
 	
 	@Page
-	private UserToolsPage userTools;
-	@Page
 	private NavigationPage navBar;
 	
 	/**
@@ -110,6 +108,7 @@ public class UserTest {
 			.loginAs(user.getLogin(), user.getPassword());
 		
 		//set the preferences to resume automatically
+		UserToolsPage userTools = new UserToolsPage(browser);
 		userTools
 			.openUserToolsMenu()
 			.openMySettings()
@@ -160,6 +159,7 @@ public class UserTest {
 		loginPage.loginAs(user.getLogin(), user.getPassword());
 		
 		//set the preferences to resume automatically
+		UserToolsPage userTools = new UserToolsPage(browser);
 		userTools
 			.openUserToolsMenu()
 			.openMySettings()
@@ -205,6 +205,7 @@ public class UserTest {
 			.resume();
 		
 		//set the preferences to resume automatically
+		UserToolsPage userTools = new UserToolsPage(browser);
 		userTools
 			.openUserToolsMenu()
 			.openMySettings()
@@ -247,7 +248,8 @@ public class UserTest {
 		loginPage
 			.assertOnLoginPage()
 			.loginAs(user.getLogin(), user.getPassword());
-		
+
+		UserToolsPage userTools = new UserToolsPage(browser);
 		userTools
 				.openUserToolsMenu()
 				.openMySettings()
@@ -386,6 +388,7 @@ public class UserTest {
 			.resume();
 		
 		//set the languages preferences to german
+		UserToolsPage userTools = new UserToolsPage(browser);
 		userTools
 			.openUserToolsMenu()
 			.openMySettings()
@@ -443,7 +446,8 @@ public class UserTest {
 		loginPage
 			.loginAs(user.getLogin(), user.getPassword())
 			.resume();
-		
+
+		UserToolsPage userTools = new UserToolsPage(browser);
 		userTools
 			.openUserToolsMenu()
 			.openPassword();
@@ -476,7 +480,8 @@ public class UserTest {
 		loginPage
 			.loginAs(user.getLogin(), user.getPassword())
 			.resume();
-		
+
+		UserToolsPage userTools = new UserToolsPage(browser);
 		UserPreferencesPageFragment prefs = userTools
 			.openUserToolsMenu()
 			.openMySettings()

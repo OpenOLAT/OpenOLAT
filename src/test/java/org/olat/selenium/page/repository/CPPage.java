@@ -66,7 +66,7 @@ public class CPPage {
 	}
 	
 	public CPPage selectPage(String title) {
-		By pageBy = By.xpath("//a[@title='" + title + "']");
+		By pageBy = By.xpath("//a[@title='" + title + "']/i");
 		browser.findElement(pageBy).click();
 		OOGraphene.waitBusy(browser);
 		return this;

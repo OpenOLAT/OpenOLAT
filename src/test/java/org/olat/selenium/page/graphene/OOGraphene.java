@@ -45,8 +45,8 @@ import org.openqa.selenium.WebElement;
 public class OOGraphene {
 
 	private static final long poolingDuration = 25;
-	
-	private static final By closeBlueBoxButtonBy = By.cssSelector("div.o_alert_info div.o_sel_info_message i.o_icon.o_icon_close");
+
+	private static final By closeBlueBoxButtonBy = By.cssSelector("div.o_alert_info div.o_sel_info_message a.o_alert_close");
 	private static final By closeModalDialogButtonBy = By.cssSelector("div.modal-dialog div.modal-header button.close");
 	
 	public static void waitModalDialog(WebDriver browser) {
@@ -187,11 +187,22 @@ public class OOGraphene {
 		input.sendKeys(file.getAbsolutePath());
 	}
 	
+	public static final void waitScrollTop(WebDriver browser) {
+		try {
+			Graphene.waitModel(browser).ignoring(TimeoutException.class).pollingEvery(poolingDuration, TimeUnit.MILLISECONDS)
+				.until(new ScrollToPredicate());
+			waitingALittleBit();
+		} catch (Exception e) {
+			//e.printStackTrace();
+		}
+	}
+	
 	public static final void waitAndCloseBlueMessageWindow(WebDriver browser) {
 		try {
-			waitElement(closeBlueBoxButtonBy, 1, browser);
+			Graphene.waitModel(browser).withTimeout(5, TimeUnit.SECONDS)
+				.pollingEvery(poolingDuration, TimeUnit.MILLISECONDS).until().element(closeBlueBoxButtonBy).is().visible();
 		} catch (Exception e) {
-			e.printStackTrace();
+			//e.printStackTrace();
 		}
 		closeBlueMessageWindow(browser);
 	}
@@ -206,7 +217,7 @@ public class OOGraphene {
 					try {
 						clickCloseButton(browser, closeButton);
 					} catch(Exception e2) {
-						//
+						//e.printStackTrace();
 					}
 				}
 			}
@@ -252,13 +263,30 @@ public class OOGraphene {
 		}
 	}
 	
-	/*public static void closeOffCanvas(WebDriver browser) {
+	public static final void closeOffCanvas(WebDriver browser) {
 		By closeBy = By.cssSelector("a.o_offcanvas_close");
-		List<WebElement> closeButtons = browser.findElements(closeBy);
-		if(closeButtons.size() == 1 && closeButtons.get(0).isDisplayed()) {
-			closeButtons.get(0).click();
-			By bodyBy = By.xpath("//body[contains(@class,'o_offcanvas_right_visible')]");
-			OOGraphene.waitElementDisappears(bodyBy, 2, browser);
-		}	
-	}*/
+		WebElement closeButton = browser.findElement(closeBy);
+		if(closeButton.isDisplayed()) {
+			//timing issue if the close button is disappearing
+			waitNavBarTransition(browser);
+			if(closeButton.isDisplayed()) {
+				try {
+					closeButton.click();
+					waitNavBarTransition(browser);
+				} catch (Exception e) {
+					//e.printStackTrace();
+				}
+			}
+		}
+	}
+	
+	public static final void waitNavBarTransition(WebDriver browser) {
+		try {
+			Graphene.waitModel(browser).pollingEvery(poolingDuration, TimeUnit.MILLISECONDS)
+					.until(new NavBarTransitionPredicate());
+			waitingALittleBit();
+		} catch (Exception e) {
+			//e.printStackTrace();
+		}
+	}
 }

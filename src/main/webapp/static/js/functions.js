@@ -12,6 +12,7 @@ var o3c=new Array();//array holds flexi.form id's
 // o_info is a global object that contains global variables
 o_info.guibusy = false;
 o_info.linkbusy = false;
+o_info.scrolling = false;
 //debug flag for this file, to enable debugging to the olat.log set JavaScriptTracingController to level debug
 o_info.debug = true;
 
@@ -916,9 +917,12 @@ jQuery().ready(OPOL.adjustHeight);
 
 function o_scrollToElement(elem) {
 	try {
+		o_info.scrolling = true;
 		jQuery('html, body').animate({
 			scrollTop : jQuery(elem).offset().top
-		}, 333);
+		}, 333, function(e, el) {
+			o_info.scrolling = false;
+		});
 	} catch (e) {
 		//console.log(e);
 	}
@@ -1416,6 +1420,11 @@ function setFlexiFormDirty(formId){
 function o_ffRegisterSubmit(formId, submElmId){
 	jQuery('#'+formId).data('FlexiSubmit', submElmId);
 }
+
+function dismissInfoBox(uuid) {
+	javascript:jQuery('#' + uuid).remove();
+	return true;
+}
 /*
 * renders an info msg that slides from top into the window
 * and hides automatically
@@ -1424,7 +1433,7 @@ function showInfoBox(title, content){
 	// Factory method to create message box
 	var uuid = Math.floor(Math.random() * 0x10000 /* 65536 */).toString(16);
 	var info = '<div id="' + uuid
-	     + '" class="o_alert_info "><div class="alert alert-info clearfix o_sel_info_message"><i class="o_icon o_icon_close"></i><h3><i class="o_icon o_icon_info"></i> '
+	     + '" class="o_alert_info"><div class="alert alert-info clearfix o_sel_info_message"><a class="o_alert_close o_sel_info_close" href="javascript:;" onclick="dismissInfoBox(\'' + uuid + '\')"><i class="o_icon o_icon_close"> </i></a><h3><i class="o_icon o_icon_info"> </i> '
 		 + title + '</h3><p>' + content + '</p></div></div>';
     var msgCt = jQuery('#o_messages').prepend(info);
     // Hide message automatically based on content length
@@ -1438,6 +1447,7 @@ function showInfoBox(title, content){
     		});    	
     };
     // Show info box now
+    o_info.scrolling = true;
     jQuery('#' + uuid).show().transition({ top: 0 }, 333);
     // Visually remove message box immediately when user clicks on it
     jQuery('#' + uuid).click(function(e) {
@@ -1449,7 +1459,6 @@ function showInfoBox(title, content){
     title = null;
     content = null;
     msgCt = null;
-    time = null;
     
     setTimeout(function(){
 		try {
@@ -1457,7 +1466,7 @@ function showInfoBox(title, content){
 		} catch(e) {
 			//possible if the user has closed the window
 		}
-	}, 8000);
+	}, time);
 }
 /*
 * renders an message box which the user has to click away

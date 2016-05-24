@@ -50,7 +50,8 @@ public class CPEditorPage {
 	}
 	
 	public CPEditorPage selectPage(String title) {
-		By pageBy = By.xpath("//a[span[text()[contains(.,'" + title + "')]]]");
+		//The i is
+		By pageBy = By.xpath("//a[span[text()[contains(.,'" + title + "')]]]//i");
 		browser.findElement(pageBy).click();
 		OOGraphene.waitBusy(browser);
 		return this;
