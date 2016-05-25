@@ -48,9 +48,11 @@ public class RepositoryEntryRow implements RepositoryEntryRef {
 	private Long key;
 	private String externalId;
 	private String externalRef;
+	private Date creationDate;
 	private String name;
 	private String authors;
 	private String location;
+	private String expenditureOfWork;
 	private String thumbnailRelPath;
 	private String shortenedDescription;
 	private int access;
@@ -66,6 +68,7 @@ public class RepositoryEntryRow implements RepositoryEntryRef {
 	private Double averageRating;
 	private long numOfRatings;
 	private long numOfComments;
+	private long launchCounter;
 
 	private String lifecycleLabel;
 	private String lifecycleSoftKey;
@@ -89,6 +92,7 @@ public class RepositoryEntryRow implements RepositoryEntryRef {
 	
 	public RepositoryEntryRow(RepositoryEntryMyView entry) {
 		setKey(entry.getKey());
+		setCreationDate(entry.getCreationDate());
 		setExternalId(entry.getExternalId());
 		setExternalRef(entry.getExternalRef());
 		setDisplayName(entry.getDisplayname());
@@ -96,6 +100,8 @@ public class RepositoryEntryRow implements RepositoryEntryRef {
 		setOLATResourceable(OresHelper.clone(entry.getOlatResource()));
 		setAuthors(entry.getAuthors());
 		setLocation(entry.getLocation());
+		setExpenditureOfWork(entry.getExpenditureOfWork());
+		setLaunchCounter(entry.getLaunchCounter());
 		setIsMembersOnly(entry.isMembersOnly());
 		setAccess(entry.getAccess());
 		setStatusCode(entry.getStatusCode());
@@ -141,6 +147,14 @@ public class RepositoryEntryRow implements RepositoryEntryRef {
 		this.key = key;
 	}
 	
+	public Date getCreationDate() {
+		return creationDate;
+	}
+
+	public void setCreationDate(Date creationDate) {
+		this.creationDate = creationDate;
+	}
+
 	public boolean isClosed() {
 		return new RepositoryEntryStatus(statusCode).isClosed();
 	}
@@ -411,6 +425,22 @@ public class RepositoryEntryRow implements RepositoryEntryRef {
 
 	public void setLocation(String location) {
 		this.location = location;
+	}
+
+	public String getExpenditureOfWork() {
+		return expenditureOfWork;
+	}
+
+	public void setExpenditureOfWork(String expenditureOfWork) {
+		this.expenditureOfWork = expenditureOfWork;
+	}
+
+	public long getLaunchCounter() {
+		return launchCounter;
+	}
+
+	public void setLaunchCounter(long launchCounter) {
+		this.launchCounter = launchCounter;
 	}
 
 	public String getThumbnailRelPath() {

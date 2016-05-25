@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<web-app version="2.5"
-         xmlns="http://java.sun.com/xml/ns/javaee"
+<web-app xmlns="http://xmlns.jcp.org/xml/ns/javaee"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd"
+         xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee 
+            http://xmlns.jcp.org/xml/ns/javaee/web-app_3_1.xsd"
+         version="3.1"
          metadata-complete="true">
 
 	<!-- !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!   -->
@@ -34,9 +35,7 @@
     	<param-name>contextInitializerClasses</param-name>
     	<param-value>org.olat.core.CoreSpringInitializer</param-value>
 	</context-param>
-   
 
-	
 	<!-- 2. Filters -->
 	<filter>
 		<filter-name>OnyxHttpsFilter</filter-name>
@@ -187,48 +186,5 @@
 	<session-config>
 		<session-timeout>60</session-timeout>
     </session-config>
-    
-  
-	<!-- Additional MIME mappings -->
-	<mime-mapping>
-		<extension>ppt</extension>
-		<mime-type>application/vnd.ms-powerpoint</mime-type>
-	</mime-mapping>
-	<mime-mapping>
-		<extension>pps</extension>
-		<mime-type>application/vnd.ms-powerpoint</mime-type>
-	</mime-mapping>
-	<mime-mapping>
-		<extension>xls</extension>
-		<mime-type>application/vnd.ms-excel</mime-type>
-	</mime-mapping>
-	<mime-mapping>
-		<extension>xlt</extension>
-		<mime-type>application/vnd.ms-excel</mime-type>
-	</mime-mapping>
-	<mime-mapping>
-		<extension>xla</extension>
-		<mime-type>application/vnd.ms-excel</mime-type>
-	</mime-mapping>
-	<mime-mapping>
-		<extension>flv</extension>
-		<mime-type>video/x-flv</mime-type>
-	</mime-mapping>
-	<mime-mapping>
-		<extension>f4v</extension>
-		<mime-type>video/x-flv</mime-type>
-	</mime-mapping>
-	<mime-mapping>
-		<extension>aac</extension>
-		<mime-type>audio/x-aac</mime-type>
-	</mime-mapping>
-	<mime-mapping>
-		<extension>m4a</extension>
-		<mime-type>audio/x-m4a</mime-type>
-	</mime-mapping>
-	<mime-mapping>
-		<extension>m4v</extension>
-		<mime-type>video/x-m4v</mime-type>
-	</mime-mapping>
 
 </web-app>

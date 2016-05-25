@@ -66,7 +66,7 @@ public class VideoSite extends AbstractSiteInstance {
 	
 	@Override
 	protected Controller createController(UserRequest ureq, WindowControl wControl, SiteConfiguration config) {
-		OLATResourceable ores = OresHelper.createOLATResourceableInstance("Video", 0l);
+		OLATResourceable ores = OresHelper.createOLATResourceableInstance(VideoSite.class, 0l);
 		ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ores));
 		WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ureq, ores, new StateSite(this), wControl, true);
 		Controller videoSiteCtr = new VideoSiteController(ureq, bwControl);

@@ -67,10 +67,9 @@ public class VideoSiteController extends BasicController implements Activateable
 
 	@Override
 	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
-		if(entries == null || entries.isEmpty()) return;
-		// Delegate to root level controller
+		// delegate to video listing
 		if (videoListingCtr != null) {
-			videoListingCtr.activate(ureq, entries, state);
+			videoListingCtr.activate(ureq, entries, state);						
 		}
 	}
 

@@ -250,6 +250,8 @@ public class RepositoryEntryMyCourseQueries {
 			PersistenceHelper.appendFuzzyLike(sb, "v.description", "displaytext", dbInstance.getDbVendor());
 			sb.append(" or ");
 			PersistenceHelper.appendFuzzyLike(sb, "v.objectives", "displaytext", dbInstance.getDbVendor());
+			sb.append(" or ");
+			PersistenceHelper.appendFuzzyLike(sb, "v.authors", "displaytext", dbInstance.getDbVendor());
 			sb.append(")");
 		}
 		
@@ -528,6 +530,15 @@ public class RepositoryEntryMyCourseQueries {
 					break;
 				case rating:
 					sb.append(" order by v.statistics.rating ");
+					if(asc) {
+						sb.append(" asc nulls first");
+					} else {
+						sb.append(" desc nulls last");
+					}
+					sb.append(", lower(v.displayname) asc");
+					break;
+				case launchCounter:
+					sb.append(" order by v.statistics.launchCounter ");
 					if(asc) {
 						sb.append(" asc nulls first");
 					} else {

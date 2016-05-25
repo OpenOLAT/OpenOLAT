@@ -231,8 +231,10 @@ public class SelectboxSelectionImpl extends FormItemImpl implements SingleSelect
 
 	@Override
 	public void reset() {
-		//reset to originial value
-		select(original, originalSelect);
+		//reset to original value
+		if (original != null) {
+			select(original, originalSelect);
+		}
 		clearError();
 	}
 

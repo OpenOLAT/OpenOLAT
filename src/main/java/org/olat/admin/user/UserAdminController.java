@@ -165,6 +165,11 @@ public class UserAdminController extends BasicController implements Activateable
 		String entryPoint = entries.get(0).getOLATResourceable().getResourceableTypeName();
 		if("tab".equals(entryPoint)) {
 			userTabP.activate(ureq, entries, state);
+		} else if("table".equals(entryPoint)) {
+			if(entries.size() > 2) {
+				List<ContextEntry> subEntries = entries.subList(2, entries.size());
+				userTabP.activate(ureq, subEntries, state);
+			}
 		} else if (userTabP != null) {
 			userTabP.setSelectedPane(translate(entryPoint));
 		}

@@ -233,6 +233,7 @@ public class AuthoringEntryPublishController extends FormBasicController {
 		formLayout.add(userConfigLayout);
 		publishedForUsers = uifactory.addDropdownSingleselect("publishedForUsers", null, userConfigLayout, publishedKeys, publishedValues, null);
 		publishedForUsers.setEnabled(!managedAccess);
+		publishedForUsers.addActionListener(FormEvent.ONCHANGE);
 		uifactory.addSpacerElement("userSpacer", userConfigLayout, true);
 
 		if (!managedAccess || !managedSettings) {
@@ -263,32 +264,10 @@ public class AuthoringEntryPublishController extends FormBasicController {
 		} else if (entry.isMembersOnly()) {
 			publishedForUsers.select(MEMBERSONLY_KEY, true);
 			usersSwitch.select(YES_KEY, true);
+			authorsSwitch.setEnabled(false);
 		} else {
 			publishedForUsers.select(OAU_KEY, true);
 			usersSwitch.select(NO_KEY, true);
-			userConfigLayout.setVisible(false);
-		}		
-
-	}
-	private void applyFormBusinessRules() {
-		if (authorsSwitch.getSelectedKey().equals(YES_KEY)) {			
-			authorConfigLayout.setVisible(true);
-		} else {
-			// reset to default
-			canReference.select(YES_KEY, false); 
-			canCopy.select(YES_KEY, false); 
-			canDownload.select(YES_KEY, false);
-			authorConfigLayout.setVisible(false);
-		}
-		if (usersSwitch.getSelectedKey().equals(YES_KEY)) {			
-			userConfigLayout.setVisible(true);
-		} else {
-			// reset to default
-			publishedForUsers.select(OAU_KEY, false);
-			if (loginModule.isGuestLoginLinksEnabled()) {
-				publishedForUsers.select(OAUG_KEY, false);
-			}
-			publishedForUsers.select(OAU_KEY, true);
 			userConfigLayout.setVisible(false);
 		}
 	}
@@ -296,8 +275,33 @@ public class AuthoringEntryPublishController extends FormBasicController {
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		super.formInnerEvent(ureq, source, event);
-		// show and hide fields depending on selection
-		applyFormBusinessRules();
+		if (source == authorsSwitch) {
+			if (authorsSwitch.getSelectedKey().equals(YES_KEY)) {			
+				authorConfigLayout.setVisible(true);
+			} else {
+				authorConfigLayout.setVisible(false);
+				if (!publishedForUsers.getSelectedKey().equals(MEMBERSONLY_KEY)) {
+					usersSwitch.select(NO_KEY, false);
+					userConfigLayout.setVisible(false);
+				}
+			}
+		} else if (source == usersSwitch || source == publishedForUsers) {
+			if (usersSwitch.getSelectedKey().equals(YES_KEY)) {			
+				userConfigLayout.setVisible(true);
+				if (publishedForUsers.getSelectedKey().equals(MEMBERSONLY_KEY)) {
+					authorConfigLayout.setVisible(false);
+					authorsSwitch.select(NO_KEY, false);
+					authorsSwitch.setEnabled(false);
+				} else {
+					authorsSwitch.select(YES_KEY, false);
+					authorsSwitch.setEnabled(true);
+					authorConfigLayout.setVisible(true);
+				}
+			} else {
+				userConfigLayout.setVisible(false);
+				authorsSwitch.setEnabled(true);
+			}
+		}
 	}
 	
 	@Override

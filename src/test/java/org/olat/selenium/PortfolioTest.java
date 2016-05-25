@@ -42,7 +42,6 @@ import org.olat.selenium.page.NavigationPage;
 import org.olat.selenium.page.course.CourseEditorPageFragment;
 import org.olat.selenium.page.course.CoursePageFragment;
 import org.olat.selenium.page.forum.ForumPage;
-import org.olat.selenium.page.graphene.OOGraphene;
 import org.olat.selenium.page.portfolio.ArtefactWizardPage;
 import org.olat.selenium.page.portfolio.PortfolioPage;
 import org.olat.selenium.page.repository.AuthoringEnvPage;
@@ -806,14 +805,14 @@ public class PortfolioTest {
 		loginPage
 			.loginAs(author.getLogin(), author.getPassword())
 			.resume();
-		String courseTitle = "Course-With-Portfolio-" + UUID.randomUUID().toString();
+		String courseTitle = "Course-With-Portfolio-" + UUID.randomUUID();
 		navBar
 			.openAuthoringEnvironment()
 			.createCourse(courseTitle)
 			.clickToolbarBack();
 		
 		String portfolioNodeTitle = "Template-EP-1";
-		String portfolioTitle = "Template - EP - " + UUID.randomUUID().toString();
+		String portfolioTitle = "Template - EP - " + UUID.randomUUID();
 		
 		//create a course element of type CP with the CP that we create above
 		CourseEditorPageFragment courseEditor = CoursePageFragment.getCourse(browser)
@@ -833,9 +832,6 @@ public class PortfolioTest {
 			.selectFirstPageInEditor()
 			.setPage(pageTitle, "With a little description")
 			.createStructureElement(structureElementTitle, "Structure description");
-		
-		OOGraphene.waitAndCloseBlueMessageWindow(browser);
-		
 		//open course
 		navBar.openCourse(courseTitle);
 		

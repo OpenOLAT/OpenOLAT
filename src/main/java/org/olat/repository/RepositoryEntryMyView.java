@@ -19,6 +19,8 @@
  */
 package org.olat.repository;
 
+import java.util.Date;
+
 import org.olat.core.id.OLATResourceable;
 import org.olat.repository.model.RepositoryEntryLifecycle;
 import org.olat.resource.OLATResource;
@@ -41,6 +43,8 @@ public interface RepositoryEntryMyView extends OLATResourceable {
 	
 	public String getDescription();
 	
+	public Date getCreationDate();
+	
 	public int getAccess();
 	
 	public int getStatusCode();
@@ -48,6 +52,8 @@ public interface RepositoryEntryMyView extends OLATResourceable {
 	public String getAuthors();
 	
 	public String getLocation();
+	
+	public String getExpenditureOfWork();
 	
 	public boolean isMembersOnly();
 	
@@ -83,6 +89,8 @@ public interface RepositoryEntryMyView extends OLATResourceable {
 	public long getNumOfRatings();
 	
 	public long getNumOfComments();
+	
+	public long getLaunchCounter();
 	
 	/**
 	 * @return True if some offers are currently available

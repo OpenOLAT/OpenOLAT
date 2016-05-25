@@ -22,13 +22,16 @@ package org.olat.modules.video;
 import java.io.File;
 import java.util.Arrays;
 
+import org.olat.NewControllerFactory;
 import org.olat.core.configuration.AbstractSpringModule;
+import org.olat.core.id.context.SiteContextEntryControllerCreator;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.vfs.LocalFolderImpl;
 import org.olat.core.util.vfs.VFSContainer;
+import org.olat.modules.video.site.VideoSite;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -66,8 +69,11 @@ public class VideoModule extends AbstractSpringModule {
 	private String transcodingTasksetConfig;
 	@Value("${video.transcoding.dir}")
 	private String transcodingDir;
+	@Value("${video.transcoding.resolution.preferred}")
+	private String transcodingPreferredResolutionConf;
 	
 	private int[] transcodingResolutionsArr = new int[] { 1080,720,480,360 };
+	private Integer preferredDefaultResolution = new Integer(720);
 
 
 	@Autowired
@@ -87,6 +93,13 @@ public class VideoModule extends AbstractSpringModule {
 				transcodingResolutionsArr = resolutionInts;
 			} catch (NumberFormatException e) {
 				log.error("Cannot parse transcoding resolutions", e);
+			}
+		}
+		if(StringHelper.containsNonWhitespace(transcodingPreferredResolutionConf)) {
+			try {
+				preferredDefaultResolution = Integer.valueOf(transcodingPreferredResolutionConf);
+			} catch (NumberFormatException e) {
+				log.error("Cannot parse property video.transcoding.resolution.preferred::" + transcodingPreferredResolutionConf, e);
 			}
 		}
 		super.initDefaultProperties();
@@ -120,6 +133,11 @@ public class VideoModule extends AbstractSpringModule {
 		log.info("video.transcoding.resolutions=" + Arrays.toString(getTranscodingResolutions()));
 		log.info("video.transcoding.taskset.cpuconfig=" + getTranscodingTasksetConfig());
 		log.info("video.transcoding.local=" + isTranscodingLocal());
+
+		// Register video site for activation in top navigation
+		NewControllerFactory.getInstance().addContextEntryControllerCreator(VideoSite.class.getSimpleName(),
+				new SiteContextEntryControllerCreator(VideoSite.class));
+
 	}
 
 	/**
@@ -131,6 +149,15 @@ public class VideoModule extends AbstractSpringModule {
 	 */
 	public int[] getTranscodingResolutions() {
 		return transcodingResolutionsArr;
+		//TODO: implement GUI for reading/Setting
+	}
+	
+	/**
+	 * Use this resolution if the user has no own preferred resolution
+	 * @return
+	 */
+	public Integer getPreferredDefaultResolution() {
+		return preferredDefaultResolution;
 		//TODO: implement GUI for reading/Setting
 	}
 

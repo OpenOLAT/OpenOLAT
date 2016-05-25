@@ -328,7 +328,7 @@ public class UserAdminMainController extends MainLayoutBasicController implement
 			return contentCtr.getInitialComponent();
 		}
 		else if (uobject.equals("admingroup")) {
-			activatePaneInDetailView = "";
+			activatePaneInDetailView = null;
 			SecurityGroup[] secGroup = {securityManager.findSecurityGroupByName(Constants.GROUP_ADMIN)};
 			contentCtr = new UsermanagerUserSearchController(ureq, bwControl,secGroup, null, null, null, null, Identity.STATUS_VISIBLE_LIMIT, true);
 			addToHistory(ureq, bwControl);

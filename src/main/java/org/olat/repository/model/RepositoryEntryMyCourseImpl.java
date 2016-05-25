@@ -48,6 +48,7 @@ public class RepositoryEntryMyCourseImpl implements RepositoryEntryMyView, Creat
 	private final String description;
 	private final String authors;
 	private final String location;
+	private final String expenditureOfWork;
 	private final boolean membersOnly;
 	private final int access;
 	private final int statusCode;
@@ -65,6 +66,7 @@ public class RepositoryEntryMyCourseImpl implements RepositoryEntryMyView, Creat
 	private final Double averageRating;
 	private final long numOfRatings;
 	private final long numOfComments;
+	private final long launchCounter;
 
 	private final long offersAvailable;
 	
@@ -79,6 +81,7 @@ public class RepositoryEntryMyCourseImpl implements RepositoryEntryMyView, Creat
 		description = re.getDescription();
 		authors = re.getAuthors();
 		location = re.getLocation();
+		expenditureOfWork = re.getExpenditureOfWork();
 		membersOnly = re.isMembersOnly();
 		access = re.getAccess();
 		statusCode = re.getStatusCode();
@@ -94,10 +97,12 @@ public class RepositoryEntryMyCourseImpl implements RepositoryEntryMyView, Creat
 			averageRating = stats.getRating();
 			numOfRatings = stats.getNumOfRatings();
 			numOfComments = stats.getNumOfComments();
+			launchCounter = stats.getLaunchCounter();
 		} else {
 			averageRating = null;
 			numOfRatings = 0;
 			numOfComments = 0;
+			launchCounter = 0;
 		}
 		
 		this.offersAvailable = offersAvailable;
@@ -183,6 +188,16 @@ public class RepositoryEntryMyCourseImpl implements RepositoryEntryMyView, Creat
 	@Override
 	public String getLocation() {
 		return location;
+	}
+
+	@Override
+	public String getExpenditureOfWork() {
+		return expenditureOfWork;
+	}
+
+	@Override
+	public long getLaunchCounter() {
+		return launchCounter;
 	}
 
 	@Override
