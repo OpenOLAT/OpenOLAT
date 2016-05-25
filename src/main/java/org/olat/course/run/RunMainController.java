@@ -30,7 +30,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
-import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.fullWebApp.LayoutMain3ColsController;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -76,7 +75,6 @@ import org.olat.course.ICourse;
 import org.olat.course.assessment.AssessmentChangedEvent;
 import org.olat.course.assessment.AssessmentMode;
 import org.olat.course.assessment.AssessmentMode.Status;
-import org.olat.course.assessment.manager.UserCourseInformationsManager;
 import org.olat.course.config.CourseConfig;
 import org.olat.course.editor.PublishEvent;
 import org.olat.course.groupsandrights.CourseGroupManager;
@@ -205,9 +203,6 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 		navHandler = new NavigationHandler(uce, treeFilter, false);
 
 		updateTreeAndContent(ureq, currentCourseNode, null);
-		
-		//set the launch date after the evaluation
-		setLaunchDates();
 
 		if (courseRepositoryEntry != null && repositoryManager.createRepositoryEntryStatus(courseRepositoryEntry.getStatusCode()).isClosed()) {
 			wControl.setWarning(translate("course.closed"));
@@ -345,11 +340,6 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 		}
 		uce.setGroupMemberships(coachedGroups, participatedGroups, waitingLists);
 		needsRebuildAfterRunDone = true;
-	}
-	
-	private void setLaunchDates() {
-		UserCourseInformationsManager userCourseInfoMgr = CoreSpringFactory.getImpl(UserCourseInformationsManager.class);
-		userCourseInfoMgr.updateUserCourseInformations(uce.getCourseEnvironment().getCourseGroupManager().getCourseResource(), getIdentity());
 	}
 	
 	private CourseNode updateAfterChanges(CourseNode courseNode) {

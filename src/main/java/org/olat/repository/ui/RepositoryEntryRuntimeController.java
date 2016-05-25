@@ -21,6 +21,7 @@ package org.olat.repository.ui;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.olat.NewControllerFactory;
 import org.olat.core.commons.services.mark.Mark;
@@ -60,6 +61,7 @@ import org.olat.core.util.resource.OresHelper;
 import org.olat.course.CourseModule;
 import org.olat.course.assessment.AssessmentMode;
 import org.olat.course.assessment.AssessmentModeManager;
+import org.olat.course.assessment.manager.UserCourseInformationsManager;
 import org.olat.course.assessment.model.TransientAssessmentMode;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryManagedFlag;
@@ -140,6 +142,7 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 	private boolean assessmentLock;// by Assessment mode
 	private AssessmentMode assessmentMode;
 	private final RepositoryHandler handler;
+	private AtomicBoolean launchDateUpdated = new AtomicBoolean(false);
 	
 	private HistoryPoint launchedFromPoint;
 	
@@ -159,6 +162,8 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 	private RepositoryHandlerFactory handlerFactory;
 	@Autowired
 	private AssessmentModeManager assessmentModeMgr;
+	@Autowired
+	private UserCourseInformationsManager userCourseInfoMgr;
 	
 	public RepositoryEntryRuntimeController(UserRequest ureq, WindowControl wControl, RepositoryEntry re,
 			RepositoryEntrySecurity reSecurity, RuntimeControllerCreator runtimeControllerCreator) {
@@ -906,6 +911,9 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 			runtimeController = runtimeControllerCreator.create(ureq, getWindowControl(), toolbarPanel, re, reSecurity, assessmentMode);
 			listenTo(runtimeController);
 			toolbarPanel.rootController(re.getDisplayname(), runtimeController);
+			if(!launchDateUpdated.getAndSet(true)) {
+				userCourseInfoMgr.updateUserCourseInformations(re.getOlatResource(), getIdentity());
+			}
 		} else {
 			runtimeController = new AccessRefusedController(ureq, getWindowControl());
 			listenTo(runtimeController);
