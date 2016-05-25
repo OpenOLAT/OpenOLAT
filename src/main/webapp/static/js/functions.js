@@ -229,7 +229,18 @@ function o_init() {
 	try {
 		// all init-on-new-page calls here
 		//return opener window
-		o_getMainWin().o_afterserver();	
+		o_getMainWin().o_afterserver();
+		// initialize the business path and social media
+		if(window.location.href && window.location.href != null && window.location.href.indexOf('%3A') < 0) {
+			var url = window.location.href;
+			if(url != null && !(url.lastIndexOf("http", 0) === 0) && !(url.lastIndexOf("https", 0) === 0)) {
+				url = o_info.serverUri + url;
+			}
+			o_info.businessPath = url;
+			if(!(typeof o_shareActiveSocialUrl === "undefined")) {
+				o_shareActiveSocialUrl();	
+			}
+		}
 	} catch(e) {
 		if (o_info.debug) o_log("error in o_init: "+showerror(e));
 	}	
