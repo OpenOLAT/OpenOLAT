@@ -101,9 +101,9 @@ public class VideoEntryDataSource implements FlexiTableDataSourceDelegate<Reposi
 		}
 
 		if(StringHelper.containsNonWhitespace(query)) {
-			searchParams.setIdRefsAndTitle(query);
+			searchParams.setText(query);
 		} else {
-			searchParams.setIdRefsAndTitle(null);
+			searchParams.setText(null);
 		}
 		
 		List<RepositoryEntryMyView> views = repositoryService.searchMyView(searchParams, firstResult, maxResults);
