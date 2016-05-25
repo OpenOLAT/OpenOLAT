@@ -792,6 +792,7 @@ public class BusinessGroupDAO {
 		  .append(" inner join fetch bgi.resource as bgResource ")
 		  .append(" inner join bgi.baseGroup as bGroup ");
 		filterBusinessGroupToSearch(sb, params, false);
+		sb.append(" order by bgi.name");
 
 		TypedQuery<Object[]> objectsQuery = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), Object[].class);

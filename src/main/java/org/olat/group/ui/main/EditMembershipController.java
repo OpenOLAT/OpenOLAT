@@ -61,6 +61,7 @@ import org.olat.group.model.BusinessGroupMembershipChange;
 import org.olat.group.model.BusinessGroupQueryParams;
 import org.olat.group.model.BusinessGroupRow;
 import org.olat.group.model.StatisticsBusinessGroupRow;
+import org.olat.group.model.comparator.BusinessGroupRowComparator;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryManagedFlag;
 import org.olat.repository.RepositoryManager;
@@ -168,6 +169,9 @@ public class EditMembershipController extends FormBasicController {
 		}
 
 		List<StatisticsBusinessGroupRow> groups = businessGroupService.findBusinessGroupsStatistics(params);
+		if(groups.size() > 1) {
+			Collections.sort(groups, new BusinessGroupRowComparator(getLocale()));
+		}
 
 		boolean defaultMembership = false;
 		if(memberToLoad == null) {
