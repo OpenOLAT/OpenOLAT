@@ -20,6 +20,7 @@
 package org.olat.ims.qti21.ui.editor;
 
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
@@ -33,6 +34,7 @@ import org.olat.ims.qti21.ui.AssessmentTestDisplayController;
 
 import uk.ac.ed.ph.jqtiplus.node.test.AbstractPart;
 import uk.ac.ed.ph.jqtiplus.node.test.ItemSessionControl;
+import uk.ac.ed.ph.jqtiplus.node.test.TestPart;
 import uk.ac.ed.ph.jqtiplus.node.test.TimeLimits;
 
 /**
@@ -44,9 +46,10 @@ import uk.ac.ed.ph.jqtiplus.node.test.TimeLimits;
 public abstract class ItemSessionControlController extends FormBasicController {
 
 	private static final String[] yesnoKeys = new String[] { "y", "n" };
+	private static final String[] attemtpsKeys = new String[] { "y", "n", "inherit" };
 
-	private SingleSelection allowCommentEl, showSolutionEl;
 	private TextElement maxAttemptsEl, maxTimeEl;
+	private SingleSelection limitAttemptsEl, allowCommentEl, showSolutionEl;
 	
 	protected final boolean restrictedEdit;
 	private final AbstractPart part;
@@ -73,14 +76,30 @@ public abstract class ItemSessionControlController extends FormBasicController {
 
 		ItemSessionControl itemSessionControl = part.getItemSessionControl();//can be null
 		
-		String maxAttempts = "";
-		if(itemSessionControl != null && itemSessionControl.getMaxAttempts() != null && itemSessionControl.getMaxAttempts().intValue() > 0) {
-			maxAttempts = Integer.toString(itemSessionControl.getMaxAttempts());
+		Integer maxAttempts = null;
+		if(part.getItemSessionControl() != null) {
+			maxAttempts = part.getItemSessionControl().getMaxAttempts();
 		}
-		maxAttemptsEl = uifactory.addTextElement("attempts", "item.session.control.attempts", 4, maxAttempts, formLayout);
+		String[] aKeys = part instanceof TestPart ? yesnoKeys : attemtpsKeys;
+		String[] yesnoValues = new String[] { translate("yes"), translate("no") };
+		String[] attemptsValues = new String[] { translate("yes"), translate("no"), translate("inherit") };
+		String[] aValues = part instanceof TestPart ? yesnoValues : attemptsValues;
+		limitAttemptsEl = uifactory.addRadiosHorizontal("form.imd.limittries", formLayout, aKeys, aValues);
+		limitAttemptsEl.addActionListener(FormEvent.ONCLICK);
+		if(maxAttempts == null) {
+			limitAttemptsEl.select(attemtpsKeys[2], true);
+		} else if(maxAttempts.intValue() == 0) {
+			limitAttemptsEl.select(attemtpsKeys[1], true);
+		} else {
+			limitAttemptsEl.select(attemtpsKeys[0], true);
+		}
+		limitAttemptsEl.setEnabled(!restrictedEdit);
+		
+		String maxAttemptsStr = maxAttempts == null ? "" : maxAttempts.toString();
+		maxAttemptsEl = uifactory.addTextElement("attempts", "item.session.control.attempts", 4, maxAttemptsStr, formLayout);
+		maxAttemptsEl.setVisible(limitAttemptsEl.isSelected(0));
 		maxAttemptsEl.setEnabled(!restrictedEdit);
 		
-		String[] yesnoValues = new String[] { translate("yes"), translate("no") };
 		allowCommentEl = uifactory.addRadiosHorizontal("item.session.control.allow.comment", formLayout, yesnoKeys, yesnoValues);
 		allowCommentEl.addActionListener(FormEvent.ONCHANGE);
 		allowCommentEl.setEnabled(!restrictedEdit);
@@ -122,7 +141,8 @@ public abstract class ItemSessionControlController extends FormBasicController {
 		}
 		
 		maxAttemptsEl.clearError();
-		if(StringHelper.containsNonWhitespace(maxAttemptsEl.getValue())) {
+		if(limitAttemptsEl.isOneSelected() && limitAttemptsEl.isSelected(0) &&
+				StringHelper.containsNonWhitespace(maxAttemptsEl.getValue())) {
 			try {
 				int maxAttempts = Integer.parseInt(maxAttemptsEl.getValue());
 				if(maxAttempts < 0) {
@@ -151,6 +171,14 @@ public abstract class ItemSessionControlController extends FormBasicController {
 
 		return allOk & super.validateFormLogic(ureq);
 	}
+	
+	@Override
+	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
+		if(source == limitAttemptsEl) {
+			maxAttemptsEl.setVisible(limitAttemptsEl.isOneSelected() && limitAttemptsEl.isSelected(0));
+		}
+		super.formInnerEvent(ureq, source, event);
+	}
 
 	@Override
 	protected void formOK(UserRequest ureq) {
@@ -168,11 +196,14 @@ public abstract class ItemSessionControlController extends FormBasicController {
 			itemSessionControl.setShowSolution(Boolean.FALSE);
 		}
 		
-		if(StringHelper.containsNonWhitespace(maxAttemptsEl.getValue())) {
+		if(limitAttemptsEl.isSelected(0) && maxAttemptsEl != null && maxAttemptsEl.isVisible()
+				&& StringHelper.isLong(maxAttemptsEl.getValue())) {
 			int maxAttempts = Integer.parseInt(maxAttemptsEl.getValue());
 			checkNotNull(itemSessionControl).setMaxAttempts(new Integer(maxAttempts));
+		} else if(limitAttemptsEl.isSelected(1)) {
+			checkNotNull(itemSessionControl).setMaxAttempts(0);
 		} else if(itemSessionControl != null) {
-			itemSessionControl.setMaxAttempts(new Integer(0));
+			itemSessionControl.setMaxAttempts(null);
 		}
 		
 		TimeLimits timeLimits = part.getTimeLimits();

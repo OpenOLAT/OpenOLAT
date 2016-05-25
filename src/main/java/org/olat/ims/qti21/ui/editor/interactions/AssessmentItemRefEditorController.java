@@ -47,7 +47,7 @@ public abstract class AssessmentItemRefEditorController extends FormBasicControl
 	protected final boolean restrictedEdit;
 	private final AssessmentItemRef assessmentItemRef;
 
-	private static final String[] yesnoKeys = new String[] { "y", "n" };
+	private static final String[] attemtpsKeys = new String[] { "y", "n", "inherit" };
 	
 	public AssessmentItemRefEditorController(UserRequest ureq, WindowControl wControl,
 			AssessmentItemRef itemRef, boolean restrictedEdit) {
@@ -60,20 +60,24 @@ public abstract class AssessmentItemRefEditorController extends FormBasicControl
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		if(assessmentItemRef == null) return;
 		
-		String maxAttempts = "";
+		Integer maxAttempts = null;
 		if(assessmentItemRef.getItemSessionControl() != null) {
-			ItemSessionControl itemSessionControl = assessmentItemRef.getItemSessionControl();
-			if(itemSessionControl.getMaxAttempts() != null) {
-				maxAttempts = assessmentItemRef.getItemSessionControl().getMaxAttempts().toString();
-			}
+			maxAttempts = assessmentItemRef.getItemSessionControl().getMaxAttempts();
 		}
-		String[] yesnoValues = new String[] { translate("yes"), translate("no") };
-		limitAttemptsEl = uifactory.addRadiosHorizontal("form.imd.limittries", formLayout, yesnoKeys, yesnoValues);
+		String[] yesnoValues = new String[] { translate("yes"), translate("no"), translate("inherit") };
+		limitAttemptsEl = uifactory.addRadiosHorizontal("form.imd.limittries", formLayout, attemtpsKeys, yesnoValues);
 		limitAttemptsEl.addActionListener(FormEvent.ONCLICK);
-		limitAttemptsEl.select(maxAttempts.length() > 0 ? yesnoKeys[0] : yesnoKeys[1], true);
+		if(maxAttempts == null) {
+			limitAttemptsEl.select(attemtpsKeys[2], true);
+		} else if(maxAttempts.intValue() == 0) {
+			limitAttemptsEl.select(attemtpsKeys[1], true);
+		} else {
+			limitAttemptsEl.select(attemtpsKeys[0], true);
+		}
 		limitAttemptsEl.setEnabled(!restrictedEdit);
 		
-		maxAttemptsEl = uifactory.addTextElement("maxAttempts", null, 8, maxAttempts, formLayout);
+		String maxAttemptsStr = maxAttempts == null ? "" : maxAttempts.toString();
+		maxAttemptsEl = uifactory.addTextElement("maxAttempts", null, 8, maxAttemptsStr, formLayout);
 		maxAttemptsEl.setVisible(limitAttemptsEl.isSelected(0));
 		maxAttemptsEl.setEnabled(!restrictedEdit);
 	}
@@ -87,7 +91,7 @@ public abstract class AssessmentItemRefEditorController extends FormBasicControl
 	protected boolean validateFormLogic(UserRequest ureq) {
 		boolean allOk = true;
 		
-		if(maxAttemptsEl != null) {
+		if(limitAttemptsEl.isOneSelected() && limitAttemptsEl.isSelected(0) && maxAttemptsEl != null) {
 			maxAttemptsEl.clearError();
 			if(StringHelper.containsNonWhitespace(maxAttemptsEl.getValue())) {
 				try {
@@ -104,30 +108,34 @@ public abstract class AssessmentItemRefEditorController extends FormBasicControl
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(limitAttemptsEl == source) {
-			maxAttemptsEl.setVisible(limitAttemptsEl.isSelected(0));
+			maxAttemptsEl.setVisible(limitAttemptsEl.isOneSelected() && limitAttemptsEl.isSelected(0));
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
 
 	@Override
 	protected void formOK(UserRequest ureq) {
-		if(maxAttemptsEl != null && maxAttemptsEl.isVisible() && StringHelper.isLong(maxAttemptsEl.getValue())) {
-			ItemSessionControl itemSessionControl = assessmentItemRef.getItemSessionControl();
-			if(itemSessionControl == null) {
-				itemSessionControl = new ItemSessionControl(assessmentItemRef);
-				assessmentItemRef.setItemSessionControl(itemSessionControl);
-			}
-			
+		if(limitAttemptsEl.isOneSelected() && limitAttemptsEl.isSelected(0)
+				&& maxAttemptsEl != null && maxAttemptsEl.isVisible()
+				&& StringHelper.isLong(maxAttemptsEl.getValue())) {
 			try {
-				itemSessionControl.setMaxAttempts(new Integer(maxAttemptsEl.getValue()));
+				getOrCreateItemSessionControl().setMaxAttempts(new Integer(maxAttemptsEl.getValue()));
 			} catch(NumberFormatException e) {
 				//do nothing
 			}
+		} else if(limitAttemptsEl.isOneSelected() && limitAttemptsEl.isSelected(1)) {
+			getOrCreateItemSessionControl().setMaxAttempts(0);
 		} else {
-			ItemSessionControl itemSessionControl = assessmentItemRef.getItemSessionControl();
-			if(itemSessionControl != null) {
-				itemSessionControl.setMaxAttempts(null);
-			}
+			getOrCreateItemSessionControl().setMaxAttempts(null);
 		}
+	}
+	
+	protected final ItemSessionControl getOrCreateItemSessionControl() {
+		ItemSessionControl itemSessionControl = assessmentItemRef.getItemSessionControl();
+		if(itemSessionControl == null) {
+			itemSessionControl = new ItemSessionControl(assessmentItemRef);
+			assessmentItemRef.setItemSessionControl(itemSessionControl);
+		}
+		return itemSessionControl;
 	}
 }
