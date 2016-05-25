@@ -44,7 +44,7 @@
 		<property name="navigationKey" value="video" />
 		<property name="parentTreeNodeIdentifier" value="modulesParent" />
 		<property name="i18nActionKey" value="admin.menu.title"/>
-		<property name="i18nDescriptionKey" value="admin.menu.video.alt"/>
+		<property name="i18nDescriptionKey" value="admin.menu.title.alt"/>
 		<property name="translationPackage" value="org.olat.modules.video.ui"/>
 		<property name="extensionPoints">
 			<list>
