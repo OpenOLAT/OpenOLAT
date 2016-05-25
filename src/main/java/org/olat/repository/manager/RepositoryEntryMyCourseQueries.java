@@ -535,6 +535,15 @@ public class RepositoryEntryMyCourseQueries {
 					}
 					sb.append(", lower(v.displayname) asc");
 					break;
+				case launchCounter:
+					sb.append(" order by v.statistics.launchCounter ");
+					if(asc) {
+						sb.append(" asc nulls first");
+					} else {
+						sb.append(" desc nulls last");
+					}
+					sb.append(", lower(v.displayname) asc");
+					break;
 				case key:
 					sb.append(" order by v.key");
 					appendAsc(sb, asc);

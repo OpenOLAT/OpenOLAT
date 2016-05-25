@@ -139,7 +139,7 @@ public class VideoDisplayController extends BasicController {
 			}
 
 			// Finally load the video, transcoded versions and tracks
-			loadVideo(ureq, video);
+			loadVideo(video);
 		}
 	}
 
@@ -148,10 +148,10 @@ public class VideoDisplayController extends BasicController {
 	 * Reload the video, e.g. when new captions or transcoded versions are available
 	 * @param ureq
 	 */
-	protected void reloadVideo(UserRequest ureq) {
+	protected void reloadVideo() {
 		//load video as VFSLeaf
 		VFSLeaf video = videoManager.getMasterVideoFile(entry.getOlatResource());
-		loadVideo(ureq, video);
+		loadVideo(video);
 	}
 
 	/**
@@ -159,7 +159,7 @@ public class VideoDisplayController extends BasicController {
 	 * @param ureq
 	 * @param video
 	 */
-	private void loadVideo(UserRequest ureq, VFSLeaf video) {
+	private void loadVideo(VFSLeaf video) {
 		mainVC.contextPut("title", entry.getDisplayname());
 		String desc = (descriptionText   != null ? descriptionText : entry.getDescription());
 		mainVC.contextPut("description", (StringHelper.containsNonWhitespace(desc) ? desc : null));

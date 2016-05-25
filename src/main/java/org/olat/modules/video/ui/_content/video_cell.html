@@ -1,0 +1,21 @@
+#set($title=$r.escapeHtml($row.getDisplayName()))
+<a href="javascript:${f.ffXHREvent("select_row","$row.key")}" title="$title" class="o_video_poster" style="background-image: url('$imgUrl/$row.getKey()')">
+	#if ($row.getExpenditureOfWork())
+	<span class="o_timecode">$row.getExpenditureOfWork()</span>
+	#end
+</a>
+<div class="o_meta text-muted">
+	<h5><a href="javascript:${f.ffXHREvent("select_row","$row.key")}">$title</a></h5>
+	#if ($row.getAuthors())
+	<div class="o_author">
+		$r.translateWithPackage("org.olat.repository", "course.made.by") 
+		$r.escapeHtml($row.getAuthors())
+	</div>
+	#end
+	<div class="o_counter pull-left">
+		$r.translate("listing.viewing.counter", "${row.getLaunchCounter()}")
+	</div>
+	<div class="o_date">
+		$r.formatDate($row.getCreationDate())
+	</div>
+</div>

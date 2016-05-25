@@ -87,7 +87,14 @@ class FlexiTableCustomRenderer extends AbstractFlexiTableRenderer implements Com
 	@Override
 	protected void renderRow(Renderer renderer, StringOutput sb, FlexiTableComponent ftC, String rowIdPrefix,
 			int row, URLBuilder ubu, Translator translator, RenderResult renderResult) {
-		sb.append("<div class='o_table_row row'>");
+		sb.append("<div class='");
+		if(ftC.getFlexiTableElement().getRowCssDelegate() != null) {
+			String cssClass = ftC.getFlexiTableElement().getRowCssDelegate().getRowCssClass(row);
+			sb.append(cssClass);
+		} else {
+			sb.append("o_table_row row");
+		}
+		sb.append("'>");
 
 		FlexiTableElementImpl ftE = ftC.getFlexiTableElement();
 		VelocityContainer container = ftE.getRowRenderer();

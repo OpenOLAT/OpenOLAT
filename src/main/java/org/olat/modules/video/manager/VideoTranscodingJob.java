@@ -32,8 +32,6 @@ import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.commons.services.image.Size;
 import org.olat.core.commons.services.scheduler.JobWithDB;
 import org.olat.core.commons.services.video.MovieService;
-import org.olat.core.logging.OLog;
-import org.olat.core.logging.Tracing;
 import org.olat.core.util.vfs.LocalFileImpl;
 import org.olat.core.util.vfs.LocalFolderImpl;
 import org.olat.modules.video.VideoManager;
@@ -51,7 +49,6 @@ import org.quartz.StatefulJob;
  *
  */
 public class VideoTranscodingJob extends JobWithDB implements StatefulJob {
-	private static final OLog log = Tracing.createLoggerFor(VideoTranscodingJob.class);
 
 	/**
 	 * 

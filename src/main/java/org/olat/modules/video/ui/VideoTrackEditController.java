@@ -27,7 +27,6 @@ import org.olat.core.commons.modules.bc.FolderEvent;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
-import org.olat.core.gui.components.form.flexible.FormUIFactory;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
@@ -52,7 +51,6 @@ import org.springframework.beans.factory.annotation.Autowired;
  *
  */
 public class VideoTrackEditController extends FormBasicController {
-	protected FormUIFactory uifactory = FormUIFactory.getInstance();
 
 	private FlexiTableElement tableEl;
 	private VideoTracksTableModel tableModel;

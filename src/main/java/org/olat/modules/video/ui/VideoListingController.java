@@ -24,28 +24,47 @@ import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
 
+import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.dispatcher.mapper.Mapper;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
+import org.olat.core.gui.components.form.flexible.elements.FlexiTableSort;
+import org.olat.core.gui.components.form.flexible.elements.FlexiTableSortOptions;
+import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableComponentDelegate;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableRendererType;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableRowCssDelegate;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.components.velocity.VelocityContainer;
+import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.media.NotFoundMediaResource;
+import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.Util;
+import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSMediaResource;
 import org.olat.fileresource.types.VideoFileResource;
+import org.olat.modules.video.ui.VideoEntryDataModel.Cols;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
+import org.olat.repository.RepositoryModule;
 import org.olat.repository.RepositoryService;
+import org.olat.repository.model.SearchMyRepositoryEntryViewParams;
+import org.olat.repository.model.SearchMyRepositoryEntryViewParams.OrderBy;
 import org.olat.util.logging.activity.LoggingResourceable;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -57,55 +76,90 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author gnaegi, gnaegi@frentix.com, http://www.frentix.com
  *
  */
-public class VideoListingController extends BasicController implements Activateable2 {
+public class VideoListingController extends FormBasicController implements Activateable2, FlexiTableRowCssDelegate, FlexiTableComponentDelegate {
 
 	private final TooledStackedPanel toolbarPanel;
-	private final VelocityContainer listingVC;
-	
+
+	private final String imgUrl;
+	private FlexiTableElement tableEl;
+	private VideoEntryDataModel model;
+	private VideoEntryDataSource dataSource;
+	private SearchMyRepositoryEntryViewParams searchParams;
+
+	@Autowired
+	private RepositoryModule repositoryModule;
 	@Autowired
 	private RepositoryManager repositoryManager;
 	@Autowired
 	private RepositoryService repositoryService;
-	
-	
-	VideoListingController(UserRequest ureq, WindowControl wControl, TooledStackedPanel toolbarPanel) {		
-		super(ureq, wControl);
+
+	public VideoListingController(UserRequest ureq, WindowControl wControl, TooledStackedPanel toolbarPanel) {		
+		super(ureq, wControl, "video_listing");
+		this.setTranslator(Util.createPackageTranslator(RepositoryService.class, getLocale(), getTranslator()));
+		
 		this.toolbarPanel = toolbarPanel;
-		this.listingVC = createVelocityContainer("video_listing");
-		putInitialPanel(listingVC);
-		doInitVideosListing(ureq);
+		
+		searchParams = new SearchMyRepositoryEntryViewParams(getIdentity(), ureq.getUserSession().getRoles(), VideoFileResource.TYPE_NAME);
+		dataSource = new VideoEntryDataSource(searchParams);
+		imgUrl = registerMapper(ureq, new VideoMapper());
+
+		initForm(ureq);
+		tableEl.reloadData();
 	}
 
-	/**
-	 * Helper to implement the initialization of the datamodel and the view
-	 * @param ureq
-	 */
-	private void doInitVideosListing(UserRequest ureq) {
-		List<String> types = new ArrayList<String>();
-		types.add(VideoFileResource.TYPE_NAME);
-		//TODO: refactor to flexi table with custom renderer and search field, sort by views/name/date, paging etc. 
+	@Override
+	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Cols.key.i18nKey(), Cols.key.ordinal(), true, OrderBy.key.name()));
+
+		model = new VideoEntryDataModel(dataSource, columnsModel);
+		tableEl = uifactory.addTableElement(getWindowControl(), "table", model, 20, false, getTranslator(), formLayout);
+		tableEl.setAvailableRendererTypes(FlexiTableRendererType.custom);
+		tableEl.setRendererType(FlexiTableRendererType.custom);
+		tableEl.setSearchEnabled(true);
+		tableEl.setCustomizeColumns(false);
+		tableEl.setElementCssClass("o_video_listing");
+		tableEl.setEmtpyTableMessageKey("table.sEmptyTable");
+		tableEl.setPageSize(24);
+		VelocityContainer row = createVelocityContainer("video_cell");
+		row.contextPut("imgUrl", imgUrl);
+		row.setDomReplacementWrapperRequired(false); // sets its own DOM id in velocity container
+		tableEl.setRowRenderer(row, this);
+		tableEl.setRowCssDelegate(this);
+
+		initSorters(tableEl);
 		
-		List<RepositoryEntry> videoEntries = repositoryManager.queryByTypeLimitAccess(ureq.getIdentity(), types, ureq.getUserSession().getRoles());
-		listingVC.contextPut("videoEntries", videoEntries);		
-		
-		String imgUrl = registerMapper(ureq, new Mapper() {
-			@Override
-			public MediaResource handle(String relPath, HttpServletRequest request) {
-				if (StringHelper.containsNonWhitespace(relPath)) {
-					int start = relPath.lastIndexOf("/");
-					if (start != -1) {
-						relPath = relPath.substring(start+1);
-						long id = Long.parseLong(relPath);
-						RepositoryEntry videoResource = repositoryManager.lookupRepositoryEntry(id);
-						VFSLeaf imageFile = repositoryManager.getImage(videoResource);
-						MediaResource res = new VFSMediaResource(imageFile);
-						return res;
-					}
-				}
-				return new NotFoundMediaResource("Image for resource ID::" + relPath + " not found");
-			}
-		});
-		listingVC.contextPut("imgUrl", imgUrl);		
+		tableEl.setAndLoadPersistedPreferences(ureq, "video-list");
+	}
+	
+	private void initSorters(FlexiTableElement tableElement) {
+		List<FlexiTableSort> sorters = new ArrayList<>(8);
+		sorters.add(new FlexiTableSort(translate("orderby.automatic"), OrderBy.automatic.name()));
+		sorters.add(new FlexiTableSort(translate("orderby.title"), OrderBy.title.name()));
+		sorters.add(new FlexiTableSort(translate("orderby.author"), OrderBy.author.name()));
+		sorters.add(new FlexiTableSort(translate("orderby.creationDate"), OrderBy.creationDate.name()));
+		sorters.add(new FlexiTableSort(translate("orderby.launchCounter"), OrderBy.launchCounter.name()));
+		if(repositoryModule.isRatingEnabled()) {
+			sorters.add(new FlexiTableSort(translate("orderby.rating"), OrderBy.rating.name()));
+		}
+		FlexiTableSortOptions options = new FlexiTableSortOptions(sorters);
+		options.setDefaultOrderBy(new SortKey(OrderBy.creationDate.name(), false));
+		tableElement.setSortSettings(options);
+	}
+
+	@Override
+	public String getRowCssClass(int pos) {
+		return "o_video_entry";
+	}
+
+	@Override
+	public Iterable<Component> getComponents(int row, Object rowObject) {
+		return null;
+	}
+
+	@Override
+	protected void formOK(UserRequest ureq) {
+		//
 	}
 
 	/**
@@ -127,20 +181,23 @@ public class VideoListingController extends BasicController implements Activatea
 			WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ce, getWindowControl());
 			addToHistory(ureq, bwControl);			
 		}
-
 	}
 
 	@Override
-	protected void event(UserRequest ureq, Component source, Event event) {
-		if (source.equals(listingVC) && "view".equals(event.getCommand())) {
-			String id = ureq.getParameter("id");
-			if (StringHelper.isLong(id)) {
-				Long repoId = Long.valueOf(id);
-				doShowVideo(ureq, repoId);
+	public void event(UserRequest ureq, Component source, Event event) {
+		if(source == mainForm.getInitialComponent()) {
+			if("ONCLICK".equals(event.getCommand())) {
+				String rowKeyStr = ureq.getParameter("select_row");
+				if(StringHelper.isLong(rowKeyStr)) {
+					try {
+						doShowVideo(ureq, new Long(rowKeyStr));
+					} catch (NumberFormatException e) {
+						logWarn("Not a valid long: " + rowKeyStr, e);
+					}
+				}
 			}
 		}
 	}
-	
 
 	@Override
 	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
@@ -149,8 +206,7 @@ public class VideoListingController extends BasicController implements Activatea
 			toolbarPanel.popUpToRootController(ureq);
 		}
 		if(entries == null || entries.isEmpty()) {
-			// nothing to do, defautl video listing
-			return;
+			// nothing to do, default video listing
 		} else {
 			Long id = entries.get(0).getOLATResourceable().getResourceableId();
 			doShowVideo(ureq, id);			
@@ -161,5 +217,21 @@ public class VideoListingController extends BasicController implements Activatea
 	protected void doDispose() {
 		// controllers auto-disposed by basic controller
 	}
-
+	
+	public class VideoMapper implements Mapper {
+		@Override
+		public MediaResource handle(String relPath, HttpServletRequest request) {
+			if (StringHelper.containsNonWhitespace(relPath)) {
+				int start = relPath.lastIndexOf("/");
+				if (start != -1) {
+					relPath = relPath.substring(start+1);
+					long id = Long.parseLong(relPath);
+					OLATResourceable videoResource = OresHelper.createOLATResourceableInstance("RepositoryEntry", id);
+					VFSLeaf imageFile = repositoryManager.getImage(videoResource);
+					return new VFSMediaResource(imageFile);
+				}
+			}
+			return new NotFoundMediaResource("Image for resource ID::" + relPath + " not found");
+		}
+	}
 }

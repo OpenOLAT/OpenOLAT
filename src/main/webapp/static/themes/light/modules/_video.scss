@@ -46,7 +46,11 @@
 }
 
 .o_video_listing {
-	margin-right: -10px;
+	
+	.o_table_body.container-fluid {
+		padding-right: 0px;
+		padding-left: 0px;
+	}
 	
 	.o_video_entry {
 		position: relative;
