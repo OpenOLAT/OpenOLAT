@@ -51,7 +51,7 @@
 	.o_video_entry {
 		position: relative;
 		display: inline-block;
-		height: 220px;			
+		height: 230px;			
 		width: 250px;
 		vertical-align: top;
 		margin-right: 10px;
@@ -64,8 +64,8 @@
 	}
 	.o_timecode {
 		position: absolute;
-		top: 0;
-		right: 0;
+		bottom: 2px;
+		right: 3px;
 		padding: 3px 4px;
 		background: #333;
 		color: #fff;

@@ -35,8 +35,10 @@ import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.media.NotFoundMediaResource;
+import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
+import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSMediaResource;
@@ -44,6 +46,7 @@ import org.olat.fileresource.types.VideoFileResource;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
+import org.olat.util.logging.activity.LoggingResourceable;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -81,6 +84,7 @@ public class VideoListingController extends BasicController implements Activatea
 		List<String> types = new ArrayList<String>();
 		types.add(VideoFileResource.TYPE_NAME);
 		//TODO: refactor to flexi table with custom renderer and search field, sort by views/name/date, paging etc. 
+		
 		List<RepositoryEntry> videoEntries = repositoryManager.queryByTypeLimitAccess(ureq.getIdentity(), types, ureq.getUserSession().getRoles());
 		listingVC.contextPut("videoEntries", videoEntries);		
 		
@@ -104,28 +108,55 @@ public class VideoListingController extends BasicController implements Activatea
 		listingVC.contextPut("imgUrl", imgUrl);		
 	}
 
+	/**
+	 * Launch a single video and add to breadcrumb
+	 * @param ureq
+	 * @param id the video resource ID
+	 */
+	private void doShowVideo(UserRequest ureq, Long id) {
+		RepositoryEntry videoEntry = repositoryManager.lookupRepositoryEntry(id);
+		if (repositoryManager.isAllowed(ureq, videoEntry).canLaunch()) {
+			VideoDisplayController videoDisplayCtr = new VideoDisplayController(ureq, getWindowControl(), videoEntry, true, true, true, null, false, true, null);
+			listenTo(videoDisplayCtr);
+			toolbarPanel.pushController(videoEntry.getDisplayname(), videoDisplayCtr);
+			// Update launch counter
+			repositoryService.incrementLaunchCounter(videoEntry);
+			// Update business path and URL
+			ContextEntry ce = BusinessControlFactory.getInstance().createContextEntry(videoEntry);
+			ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ce.getOLATResourceable()));
+			WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ce, getWindowControl());
+			addToHistory(ureq, bwControl);			
+		}
+
+	}
+
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
 		if (source.equals(listingVC) && "view".equals(event.getCommand())) {
 			String id = ureq.getParameter("id");
 			if (StringHelper.isLong(id)) {
-				//TODO: unsecure, should be fixed by refactoring to table with custom renderer
-				long repoId = Long.parseLong(id);
-				RepositoryEntry videoEntry = repositoryManager.lookupRepositoryEntry(repoId);
-				VideoDisplayController videoDisplayCtr = new VideoDisplayController(ureq, getWindowControl(), videoEntry, true, true, true, null, false, true, null);
-				listenTo(videoDisplayCtr);
-				toolbarPanel.pushController(videoEntry.getDisplayname(), videoDisplayCtr);
-				// Update launch counter
-				repositoryService.incrementLaunchCounter(videoEntry);
+				Long repoId = Long.valueOf(id);
+				doShowVideo(ureq, repoId);
 			}
 		}
 	}
+	
 
 	@Override
 	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
-		//TODO: implement
+		// cleanup existing video
+		if (toolbarPanel.getBreadCrumbs().size() > 1) {
+			toolbarPanel.popUpToRootController(ureq);
+		}
+		if(entries == null || entries.isEmpty()) {
+			// nothing to do, defautl video listing
+			return;
+		} else {
+			Long id = entries.get(0).getOLATResourceable().getResourceableId();
+			doShowVideo(ureq, id);			
+		}
 	}
-
+	
 	@Override
 	protected void doDispose() {
 		// controllers auto-disposed by basic controller
