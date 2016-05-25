@@ -499,6 +499,7 @@ public class CourseEditorPageFragment {
 		modal.findElement(AuthoringEnvPage.displayNameInput).sendKeys(displayName);
 		modal.findElement(AuthoringEnvPage.createSubmit).click();
 		OOGraphene.waitBusy(browser);
+		OOGraphene.waitAndCloseBlueMessageWindow(browser);
 		return this;
 	}
 	
