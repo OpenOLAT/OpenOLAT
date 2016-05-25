@@ -379,7 +379,8 @@ public abstract class AssessmentItemBuilder {
 		modalFeedbacks.add(emptyModalFeedback);
 		
 		ResponseCondition feedbackCondition = AssessmentItemFactory
-				.createModalFeedbackBasicRule(assessmentItem.getResponseProcessing(), feedbackBuilder.getIdentifier(), inCorrect);
+				.createModalFeedbackBasicRule(assessmentItem.getResponseProcessing(),
+						feedbackBuilder.getIdentifier(), inCorrect, hint != null);
 		responseRules.add(feedbackCondition);
 	}
 	

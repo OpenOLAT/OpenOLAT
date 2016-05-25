@@ -55,7 +55,6 @@ import uk.ac.ed.ph.jqtiplus.node.expression.operator.IsNull;
 import uk.ac.ed.ph.jqtiplus.node.expression.operator.Lt;
 import uk.ac.ed.ph.jqtiplus.node.expression.operator.Match;
 import uk.ac.ed.ph.jqtiplus.node.expression.operator.Multiple;
-import uk.ac.ed.ph.jqtiplus.node.expression.operator.Not;
 import uk.ac.ed.ph.jqtiplus.node.expression.operator.Shape;
 import uk.ac.ed.ph.jqtiplus.node.expression.operator.Sum;
 import uk.ac.ed.ph.jqtiplus.node.item.AssessmentItem;
@@ -818,7 +817,8 @@ public class AssessmentItemFactory {
 		return modalFeedback;
 	}
 	
-	public static ResponseCondition createModalFeedbackBasicRule(ResponseProcessing responseProcessing, Identifier feedbackIdentifier, String inCorrect) {
+	public static ResponseCondition createModalFeedbackBasicRule(ResponseProcessing responseProcessing,
+			Identifier feedbackIdentifier, String inCorrect, boolean hint) {
 		ResponseCondition rule = new ResponseCondition(responseProcessing);
 		/*
 		<responseIf>
@@ -857,21 +857,14 @@ public class AssessmentItemFactory {
 			match.getExpressions().add(variable);
 			
 			//not match the HINT
-			Not not = new Not(and);
-			and.getExpressions().add(not);
-			
-			Match notMatch = new Match(and);
-			not.getExpressions().add(notMatch);
-			
-			BaseValue hintVal = new BaseValue(notMatch);
-			hintVal.setBaseTypeAttrValue(BaseType.IDENTIFIER);
-			hintVal.setSingleValue(new IdentifierValue(QTI21Constants.HINT));
-			notMatch.getExpressions().add(hintVal);
-			
-			Variable hintVar = new Variable(notMatch);
-			hintVar.setIdentifier(QTI21Constants.HINT_REQUEST_CLX_IDENTIFIER);
-			notMatch.getExpressions().add(hintVar);
-			
+			if(hint) {
+				IsNull isNull = new IsNull(and);
+				and.getExpressions().add(isNull);
+				
+				Variable hintVar = new Variable(isNull);
+				hintVar.setIdentifier(QTI21Constants.HINT_FEEDBACKMODAL_CLX_IDENTIFIER);
+				isNull.getExpressions().add(hintVar);
+			}
 		}
 
 		{//outcome
