@@ -433,6 +433,14 @@ public abstract class FormBasicController extends BasicController implements IFo
 			}
 		}
 	}
+	
+	public String getAndRemoveFormTitle() {
+		String title = (String)flc.contextGet("off_title");
+		if(title != null) {
+			flc.contextRemove("off_title");
+		}
+		return title;
+	}
 
 	/**
 	 * Set an optional form title that is rendered as a fieldset legend. If you

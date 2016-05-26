@@ -28,11 +28,11 @@ package org.olat.core.commons.modules.bc;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Iterator;
 import java.util.List;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.util.FileUtils;
+import org.olat.core.util.StringHelper;
 
 public class FileSelection {
 
@@ -86,12 +86,12 @@ public class FileSelection {
 	 * @return HTML Fragment.
 	 */
 	public String renderAsHtml() {
-		StringBuilder sb = new StringBuilder();
+		StringBuilder sb = new StringBuilder(255);
 		sb.append("<ul>");
-		for (Iterator<String> iter = files.iterator(); iter.hasNext();) {
-			sb.append("<li>");
-			sb.append(currentContainerRelPath + "/" + iter.next());
-			sb.append("</li>");
+		for (String filename:files) {
+			sb.append("<li>")
+			  .append(currentContainerRelPath).append("/").append(StringHelper.escapeHtml(filename))
+			  .append("</li>");
 		}
 		sb.append("</ul>");
 		return sb.toString();

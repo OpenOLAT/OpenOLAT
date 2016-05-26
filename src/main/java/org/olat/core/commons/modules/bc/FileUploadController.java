@@ -30,14 +30,12 @@ import static java.util.Arrays.asList;
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Set;
 import java.util.regex.Pattern;
 
-import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.modules.bc.commands.FolderCommandStatus;
 import org.olat.core.commons.modules.bc.meta.MetaInfo;
 import org.olat.core.commons.modules.bc.meta.MetaInfoFactory;
@@ -47,6 +45,7 @@ import org.olat.core.commons.modules.bc.version.VersionCommentController;
 import org.olat.core.commons.modules.bc.vfs.OlatRootFileImpl;
 import org.olat.core.commons.services.image.ImageService;
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FileElement;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
@@ -54,6 +53,7 @@ import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
+import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
@@ -78,6 +78,7 @@ import org.olat.core.util.vfs.VFSLockManager;
 import org.olat.core.util.vfs.VFSManager;
 import org.olat.core.util.vfs.version.Versionable;
 import org.olat.core.util.vfs.version.Versions;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * <h3>Description</h3>
@@ -113,12 +114,11 @@ public class FileUploadController extends FormBasicController {
 	private VersionCommentController unlockCtr;
 	private DialogBoxController overwriteDialog;
 	private DialogBoxController lockedFileDialog;
-	private VFSLeaf newFile = null;
-	private VFSItem existingVFSItem = null;
+	private VFSLeaf newFile;
+	private VFSItem existingVFSItem;
 	private long uploadLimitKB;
 	private long remainingQuotKB;
 	private Set<String> mimeTypes;
-	private FilesInfoMBean fileInfoMBean;
 	//
 	// Form elements
 	private FileElement fileEl;
@@ -139,9 +139,15 @@ public class FileUploadController extends FormBasicController {
 	
 	private static Pattern imageExtPattern = Pattern.compile("\\b.(jpg|jpeg|png)\\b");
 	private static final Pattern validSubPathPattern = Pattern.compile("[\\p{Alnum}-_\\./]*");		
-	
-	private final VFSLockManager vfsLockManager;
 
+	@Autowired
+	private ImageService imageHelper;
+	@Autowired
+	private FilesInfoMBean fileInfoMBean;
+	@Autowired
+	private VFSLockManager vfsLockManager;
+	@Autowired
+	private MetaInfoFactory metaInfoFactory;
 
 	private String subfolderPath;
 	private TextElement targetSubPath ;
@@ -176,17 +182,13 @@ public class FileUploadController extends FormBasicController {
 	public FileUploadController(WindowControl wControl, VFSContainer curContainer, UserRequest ureq, long upLimitKB, long remainingQuotKB,
 			Set<String> mimeTypesRestriction, boolean showTargetPath, boolean showMetadata, boolean resizeImg, boolean showCancel, boolean showTitle, String subfolderPath) {
 		super(ureq, wControl, "file_upload");
-		vfsLockManager = CoreSpringFactory.getImpl(VFSLockManager.class);
 		setVariables(curContainer, upLimitKB, remainingQuotKB, mimeTypesRestriction, showTargetPath, showMetadata, resizeImg, showCancel, showTitle, subfolderPath);
 		initForm(ureq);
 	}
 	
-	
-	
 	private void setVariables(VFSContainer curContainer, long upLimitKB, long remainingQuotKB, Set<String> mimeTypesRestriction, boolean showTargetPath,
 			boolean showMetadata, boolean resizeImg, boolean showCancel, boolean showTitle, String subfolderPath) {
 		this.currentContainer = curContainer;
-		this.fileInfoMBean = (FilesInfoMBean) CoreSpringFactory.getBean(FilesInfoMBean.class.getCanonicalName());
 		this.mimeTypes = mimeTypesRestriction;
 		this.showTitle = showTitle;
 		this.showTargetPath = showTargetPath;
@@ -239,8 +241,8 @@ public class FileUploadController extends FormBasicController {
 			}
 		}
 
-		
 		fileEl = uifactory.addFileElement(getWindowControl(), "fileEl", "ul.file", fileUpload);
+		fileEl.addActionListener(FormEvent.ONCHANGE);
 		
 		setMaxUploadSizeKB((uploadLimitKB < remainingQuotKB ? uploadLimitKB : remainingQuotKB));
 		fileEl.setMandatory(true, "NoFileChoosen");
@@ -296,161 +298,27 @@ public class FileUploadController extends FormBasicController {
 	}
 
 	@Override
+	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
+		if(fileEl == source) {
+			if(metaDataCtr != null) {
+				String filename = fileEl.getUploadFileName();
+				metaDataCtr.setFilename(filename);
+			}
+		}
+		super.formInnerEvent(ureq, source, event);
+	}
+
+	@Override
 	protected void formOK(UserRequest ureq) {
 		if(targetSubPath != null) setUploadRelPath(targetSubPath.getValue());
 		if ( fileEl.isUploadSuccess()) {
-			// check for available space
-			if (remainingQuotKB != -1) {
-				if (fileEl.getUploadFile().length() / 1024 > remainingQuotKB) {
-					fileEl.setErrorKey("QuotaExceeded", null);
-					fileEl.getUploadFile().delete();
-					return;
-				}				
-			}
-			String fileName = fileEl.getUploadFileName();
-			
-			File uploadedFile = fileEl.getUploadFile();
-			if(resizeImg && fileName != null && imageExtPattern.matcher(fileName.toLowerCase()).find()
-					&& resizeEl.isSelected(0)) {
-				String extension = FileUtils.getFileSuffix(fileName);
-				File imageScaled = new File(uploadedFile.getParentFile(), "scaled_" + uploadedFile.getName() + "." + extension);
-				ImageService imageHelper = CoreSpringFactory.getImpl(ImageService.class);
-				if(imageHelper.scaleImage(uploadedFile, extension, imageScaled, 1280, 1280, false) != null) {
-					//problem happen, special GIF's (see bug http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=6358674)
-					//don't try to scale if not all ok 
-					uploadedFile = imageScaled;
-				}
-			}
-			
-			// check if such a filename does already exist
-			existingVFSItem = uploadVFSContainer.resolve(fileName);
-			if (existingVFSItem == null) {
-				// save file and finish
-				newFile = uploadVFSContainer.createChildLeaf(fileName);
-				
-				boolean success = true;
-				if(newFile == null) {
-					// FXOLAT-409 somehow "createChildLeaf" did not succeed...
-					// if so, there is alread a error-msg in log (vfsContainer.createChildLeaf)
-					success = false;
-				} else {
-					try(InputStream in = new FileInputStream(uploadedFile);
-						OutputStream out = newFile.getOutputStream(false)) {
-						FileUtils.bcopy(in, out, "uploadTmpFileToDestFile");
-						uploadedFile.delete();
-					} catch (IOException e) {
-						success = false;
-					}
-				}
-				
-				if (success) {
-					String filePath = (uploadRelPath == null ? "" : uploadRelPath + "/") + newFile.getName();
-					finishSuccessfullUpload(filePath, newFile, ureq);
-					fileInfoMBean.logUpload(newFile.getSize());
-					fireEvent(ureq, Event.DONE_EVENT);										
-				} else {
-					showError("failed");
-					status = FolderCommandStatus.STATUS_FAILED;
-					fireEvent(ureq, Event.FAILED_EVENT);					
-				}
-			} else {
-				// file already exists... upload anyway with new filename and
-				// in the folder manager status.
-				// rename file and ask user what to do
-				if ( ! (existingVFSItem instanceof LocalImpl)) {
-					throw new AssertException("Can only LocalImpl VFS items, don't know what to do with file of type::" + existingVFSItem.getClass().getCanonicalName());
-				}
-
-				String renamedFilename = VFSManager.rename(uploadVFSContainer, existingVFSItem.getName());
-				newFile = uploadVFSContainer.createChildLeaf(renamedFilename);
-
-				// Copy content to tmp file
-				InputStream in = null;
-				BufferedOutputStream out = null;
-				boolean success = false;
-				try {
-					in = new FileInputStream(uploadedFile);
-					out = new BufferedOutputStream(newFile.getOutputStream(false));
-					if (in != null) {
-						success = FileUtils.copy(in, out);					
-					}
-					uploadedFile.delete();
-				} catch (FileNotFoundException e) {
-					success = false;
-				} finally {
-					FileUtils.closeSafely(in);
-					FileUtils.closeSafely(out);
-				}
-				
-				if (success) {
-					boolean locked = vfsLockManager.isLockedForMe(existingVFSItem, getIdentity(), ureq.getUserSession().getRoles());
-					if (locked) {
-						//the file is locked and cannot be overwritten
-						removeAsListenerAndDispose(lockedFileDialog);
-						lockedFileDialog = DialogBoxUIFactory.createGenericDialog(ureq, getWindowControl(), translate("ul.lockedFile.title"), translate("ul.lockedFile.text", new String[] {existingVFSItem.getName(), renamedFilename} ), asList(translate("ul.overwrite.threeoptions.rename", renamedFilename), translate("ul.overwrite.threeoptions.cancel")));
-						listenTo(lockedFileDialog);
-						
-						lockedFileDialog.activate();
-					}
-					else if (existingVFSItem instanceof Versionable && ((Versionable)existingVFSItem).getVersions().isVersioned()) {
-						Versionable versionable = (Versionable)existingVFSItem;
-						Versions versions = versionable.getVersions();
-						String relPath = null;
-						if(existingVFSItem instanceof OlatRootFileImpl) {
-							relPath = ((OlatRootFileImpl)existingVFSItem).getRelPath();
-						}
-						int maxNumOfRevisions = FolderConfig.versionsAllowed(relPath);
-						if(maxNumOfRevisions == 0) {
-							//it's possible if someone change the configuration
-							// let calling method decide what to do.
-							removeAsListenerAndDispose(overwriteDialog);
-							overwriteDialog = DialogBoxUIFactory.createGenericDialog(ureq, getWindowControl(), translate("ul.overwrite.threeoptions.title"), translate("ul.overwrite.threeoptions.text", new String[] {existingVFSItem.getName(), renamedFilename} ), asList(translate("ul.overwrite.threeoptions.overwrite"), translate("ul.overwrite.threeoptions.rename", renamedFilename), translate("ul.overwrite.threeoptions.cancel")));
-							listenTo(overwriteDialog);
-							
-							overwriteDialog.activate();
-							
-						} else if(versions.getRevisions().isEmpty() || maxNumOfRevisions < 0 || maxNumOfRevisions > versions.getRevisions().size()) {
-							// let calling method decide what to do.
-							removeAsListenerAndDispose(overwriteDialog);
-							overwriteDialog = DialogBoxUIFactory.createGenericDialog(ureq, getWindowControl(), translate("ul.overwrite.threeoptions.title"), translate("ul.versionoroverwrite", new String[] {existingVFSItem.getName(), renamedFilename} ), asList(translate("ul.overwrite.threeoptions.newVersion"), translate("ul.overwrite.threeoptions.rename", renamedFilename), translate("ul.overwrite.threeoptions.cancel")));
-							listenTo(overwriteDialog);
-							
-							overwriteDialog.activate();
-							
-						} else {
-						
-							String title = translate("ul.tooManyRevisions.title", new String[]{Integer.toString(maxNumOfRevisions), Integer.toString(versions.getRevisions().size())});
-							String description = translate("ul.tooManyRevisions.description", new String[]{Integer.toString(maxNumOfRevisions), Integer.toString(versions.getRevisions().size())});
-							
-							removeAsListenerAndDispose(revisionListCtr);
-							revisionListCtr = new RevisionListController(ureq, getWindowControl(), versionable, title, description, false);
-							listenTo(revisionListCtr);
-							
-							removeAsListenerAndDispose(revisionListDialogBox);
-							revisionListDialogBox = new CloseableModalController(getWindowControl(), translate("delete"), revisionListCtr.getInitialComponent());
-							listenTo(revisionListDialogBox);
-							
-							revisionListDialogBox.activate();
-						}
-					} else {
-						// let calling method decide what to do.
-						// for this, we put a list with "existing name" and "new name"
-						overwriteDialog = DialogBoxUIFactory.createGenericDialog(ureq, getWindowControl(), translate("ul.overwrite.threeoptions.title"), translate("ul.overwrite.threeoptions.text", new String[] {existingVFSItem.getName(), renamedFilename} ), asList(translate("ul.overwrite.threeoptions.overwrite"), translate("ul.overwrite.threeoptions.rename", renamedFilename), translate("ul.overwrite.threeoptions.cancel")));
-						listenTo(overwriteDialog);
-						overwriteDialog.activate();
-					}
-				} else {
-					showError("failed");
-					status = FolderCommandStatus.STATUS_FAILED;
-					fireEvent(ureq, Event.FAILED_EVENT);					
-				}
-			}
+			doUpload(ureq);
 		} else {
 			if (mainForm.getLastRequestError() == Form.REQUEST_ERROR_GENERAL ) {
 				showError("failed");				
 			} else if (mainForm.getLastRequestError() == Form.REQUEST_ERROR_FILE_EMPTY ) {
 				showError("failed");				
-			}else if (mainForm.getLastRequestError() == Form.REQUEST_ERROR_UPLOAD_LIMIT_EXCEEDED) {
+			} else if (mainForm.getLastRequestError() == Form.REQUEST_ERROR_UPLOAD_LIMIT_EXCEEDED) {
 				showError("QuotaExceeded");				
 			}
 			status = FolderCommandStatus.STATUS_FAILED;
@@ -473,120 +341,35 @@ public class FileUploadController extends FormBasicController {
 	@Override
 	public void event(UserRequest ureq, Controller source, Event event) {
 		if (source == overwriteDialog) {
-			
 			if (event instanceof ButtonClickedEvent) {
 				ButtonClickedEvent buttonClickedEvent = (ButtonClickedEvent) event;
 				if (buttonClickedEvent.getPosition() == 0) { //ok
-					if (existingVFSItem instanceof Versionable && ((Versionable)existingVFSItem).getVersions().isVersioned()) {
-						//new version
-						String relPath = null;
-						if(existingVFSItem instanceof OlatRootFileImpl) {
-							relPath = ((OlatRootFileImpl)existingVFSItem).getRelPath();
-						}
-						int maxNumOfRevisions = FolderConfig.versionsAllowed(relPath);
-						if(maxNumOfRevisions == 0) {
-							//someone play with the configuration
-							// Overwrite...
-							String fileName = existingVFSItem.getName();
-							existingVFSItem.delete();
-							newFile.rename(fileName);
-							
-							// ... and notify listeners.
-							finishUpload(ureq);
-						} else {
-							removeAsListenerAndDispose(commentVersionCtr);
-							removeAsListenerAndDispose(commentVersionDialogBox);
-							
-							boolean locked = vfsLockManager.isLocked(existingVFSItem);
-							commentVersionCtr = new VersionCommentController(ureq, getWindowControl(), locked, true);
-							listenTo(commentVersionCtr);
-							commentVersionDialogBox = new CloseableModalController(getWindowControl(), translate("save"), commentVersionCtr.getInitialComponent());
-							listenTo(commentVersionDialogBox);
-							commentVersionDialogBox.activate();
-						}
-					} else {
-						//if the file is locked, ask for unlocking it
-						if(vfsLockManager.isLocked(existingVFSItem)) {
-							removeAsListenerAndDispose(unlockCtr);
-							unlockCtr = new VersionCommentController(ureq,getWindowControl(), true, false);
-							listenTo(unlockCtr);
-							
-							removeAsListenerAndDispose(unlockDialogBox);
-							unlockDialogBox = new CloseableModalController(getWindowControl(), translate("ok"), unlockCtr.getInitialComponent());
-							listenTo(unlockDialogBox);
-							
-							unlockDialogBox.activate();
-							
-						} else {
-							// Overwrite...
-							String fileName = existingVFSItem.getName();
-							existingVFSItem.delete();
-							newFile.rename(fileName);
-							
-							// ... and notify listeners.
-							finishUpload(ureq);
-						}
-					}
+					doFinishOverwrite(ureq);
 				} else if (buttonClickedEvent.getPosition() == 1) { //not ok
 					// Upload renamed. Since we've already uploaded the file with a changed name, don't do anything much here...
-					this.fileOverwritten = true;
-
+					fileOverwritten = true;
 					// ... and notify listeners.
 					finishUpload(ureq);
 				} else if (buttonClickedEvent.getPosition() == 2) { // cancel
 					// Cancel. Remove the new file since it has already been uploaded. Note that we don't have to explicitly close the
 					// dialog box since it closes itself whenever something gets clicked.
-					newFile.deleteSilently();
-				} else {
-					throw new RuntimeException("Unknown button number " + buttonClickedEvent.getPosition());
+					doCancel(ureq);
 				}
 			}
 		} else if (source == lockedFileDialog) {
-
 			if (event instanceof ButtonClickedEvent) {
 				ButtonClickedEvent buttonClickedEvent = (ButtonClickedEvent) event;
-				switch(buttonClickedEvent.getPosition()) {
-					case 0: {
-						//upload the file with a new name
-						this.fileOverwritten = true;
-						// ... and notify listeners.
-						finishUpload(ureq);
-						break;
-					}
-					case 1: {//cancel
-						newFile.deleteSilently();
-						fireEvent(ureq, Event.CANCELLED_EVENT);
-						break;
-					}
-					default:
-						throw new RuntimeException("Unknown button number " + buttonClickedEvent.getPosition());
+				if(buttonClickedEvent.getPosition() == 0) {
+					//upload the file with a new name
+					fileOverwritten = true;
+					// ... and notify listeners.
+					finishUpload(ureq);
+				} else if(buttonClickedEvent.getPosition() == 1) {
+					doCancel(ureq);
 				}
 			}
 		} else if (source == commentVersionCtr) {
-			String comment = commentVersionCtr.getComment();
-			
-			Roles roles = ureq.getUserSession().getRoles();
-			boolean locked = vfsLockManager.isLocked(existingVFSItem);
-			if(locked && !commentVersionCtr.keepLocked()) {
-				vfsLockManager.unlock(existingVFSItem, getIdentity(), roles);
-			}
-			
-			commentVersionDialogBox.deactivate();
-			if(revisionListDialogBox != null) {
-				revisionListDialogBox.deactivate();
-			}
-			
-			//ok, new version of the file
-			Versionable existingVersionableItem = (Versionable)existingVFSItem;
-			boolean ok = existingVersionableItem.getVersions().addVersion(ureq.getIdentity(), comment, newFile.getInputStream());
-			if(ok) {
-				newFile.deleteSilently();
-				//what can i do if existingVFSItem is a container
-				if(existingVFSItem instanceof VFSLeaf) {
-					newFile = (VFSLeaf)existingVFSItem;
-				}
-			}
-			finishUpload(ureq);
+			doFinishComment(ureq);
 		} else if (source == unlockCtr) {
 			// Overwrite...
 			String fileName = existingVFSItem.getName();
@@ -597,7 +380,6 @@ public class FileUploadController extends FormBasicController {
 			
 			existingVFSItem.delete();
 			newFile.rename(fileName);
-
 			// ... and notify listeners.
 			finishUpload(ureq);
 			
@@ -606,58 +388,301 @@ public class FileUploadController extends FormBasicController {
 			revisionListCtr = null;
 			removeAsListenerAndDispose(revisionListDialogBox);
 			revisionListDialogBox = null;
-			
-			//remove the file
-			newFile.deleteSilently();
+			doCancel(ureq);
 		} else if (source == revisionListCtr) {
+			revisionListDialogBox.deactivate();
+			removeAsListenerAndDispose(revisionListDialogBox);
+			revisionListDialogBox = null;
+			
 			if(FolderCommandStatus.STATUS_CANCELED == revisionListCtr.getStatus()) {
-
-				revisionListDialogBox.deactivate();
-				removeAsListenerAndDispose(revisionListDialogBox);
-				revisionListDialogBox = null;
-
 				//don't want to delete revisions, clean the temporary file
-				if(newFile != null) {
-					newFile.deleteSilently();
+				doCancel(ureq);
+			} else if (existingVFSItem instanceof Versionable && ((Versionable)existingVFSItem).getVersions().isVersioned()) {
+				doFinishRevisionList(ureq);
+			}
+		}
+	}
+	
+	/**
+	 * Delete the uploaded file and send cancel event
+	 * @param ureq
+	 */
+	private void doCancel(UserRequest ureq) {
+		if(newFile != null) {
+			newFile.deleteSilently();
+		}
+		fireEvent(ureq, Event.CANCELLED_EVENT);
+	}
+	
+	private void doFinishOverwrite(UserRequest ureq) {
+		if (existingVFSItem instanceof Versionable && ((Versionable)existingVFSItem).getVersions().isVersioned()) {
+			//new version
+			int maxNumOfRevisions = getMaxNumOfRevisionsOfExistingVFSItem();
+			if(maxNumOfRevisions == 0) {
+				//someone play with the configuration
+				// Overwrite...
+				String fileName = existingVFSItem.getName();
+				existingVFSItem.delete();
+				newFile.rename(fileName);
+				
+				// ... and notify listeners.
+				finishUpload(ureq);
+			} else {
+				askForComment(ureq);
+			}
+		} else {
+			//if the file is locked, ask for unlocking it
+			if(vfsLockManager.isLocked(existingVFSItem)) {
+				askForUnlock(ureq);
+				
+			} else {
+				// Overwrite...
+				String fileName = existingVFSItem.getName();
+				existingVFSItem.delete();
+				newFile.rename(fileName);
+				
+				// ... and notify listeners.
+				finishUpload(ureq);
+			}
+		}
+	}
+	
+	private void doFinishComment(UserRequest ureq) {
+		String comment = commentVersionCtr.getComment();
+		
+		Roles roles = ureq.getUserSession().getRoles();
+		boolean locked = vfsLockManager.isLocked(existingVFSItem);
+		if(locked && !commentVersionCtr.keepLocked()) {
+			vfsLockManager.unlock(existingVFSItem, getIdentity(), roles);
+		}
+		
+		commentVersionDialogBox.deactivate();
+		if(revisionListDialogBox != null) {
+			revisionListDialogBox.deactivate();
+		}
+		
+		//ok, new version of the file
+		Versionable existingVersionableItem = (Versionable)existingVFSItem;
+		boolean ok = existingVersionableItem.getVersions().addVersion(ureq.getIdentity(), comment, newFile.getInputStream());
+		if(ok) {
+			newFile.deleteSilently();
+			//what can i do if existingVFSItem is a container
+			if(existingVFSItem instanceof VFSLeaf) {
+				newFile = (VFSLeaf)existingVFSItem;
+			}
+		}
+		finishUpload(ureq);
+	}
+	
+	private void doFinishRevisionList(UserRequest ureq) {
+		if(existingVFSItem.getParentContainer() != null) {
+			existingVFSItem = existingVFSItem.getParentContainer().resolve(existingVFSItem.getName());
+		}
+		
+		Versionable versionable = (Versionable)existingVFSItem;
+		Versions versions = versionable.getVersions();
+		int maxNumOfRevisions = getMaxNumOfRevisionsOfExistingVFSItem();
+		if(maxNumOfRevisions < 0 || maxNumOfRevisions > versions.getRevisions().size()) {
+			askForComment(ureq);
+		} else {
+			askToReduceRevisionList(ureq, versionable);
+		}
+	}
+	
+	private int getMaxNumOfRevisionsOfExistingVFSItem() {
+		String relPath = null;
+		if(existingVFSItem instanceof OlatRootFileImpl) {
+			relPath = ((OlatRootFileImpl)existingVFSItem).getRelPath();
+		}
+		return FolderConfig.versionsAllowed(relPath);
+	}
+	
+	private void askToReduceRevisionList(UserRequest ureq, Versionable versionable) {
+		removeAsListenerAndDispose(revisionListCtr);
+		removeAsListenerAndDispose(revisionListDialogBox);
+		
+		Versions versions = versionable.getVersions();
+		int maxNumOfRevisions = getMaxNumOfRevisionsOfExistingVFSItem();
+		String[] params = new String[]{ Integer.toString(maxNumOfRevisions), Integer.toString(versions.getRevisions().size()) };
+		String title = translate("ul.tooManyRevisions.title", params);
+		String description = translate("ul.tooManyRevisions.description", params);
+		
+		revisionListCtr = new RevisionListController(ureq, getWindowControl(), versionable, null, description, false);
+		listenTo(revisionListCtr);
+		
+		revisionListDialogBox = new CloseableModalController(getWindowControl(), translate("delete"), revisionListCtr.getInitialComponent(), true, title);
+		listenTo(revisionListDialogBox);
+		revisionListDialogBox.activate();
+	}
+	
+	private void askForUnlock(UserRequest ureq) {
+		removeAsListenerAndDispose(unlockCtr);
+		removeAsListenerAndDispose(unlockDialogBox);
+		
+		unlockCtr = new VersionCommentController(ureq,getWindowControl(), true, false);
+		listenTo(unlockCtr);
+		String title = unlockCtr.getAndRemoveFormTitle();
+		unlockDialogBox = new CloseableModalController(getWindowControl(), translate("ok"), unlockCtr.getInitialComponent(), true, title);
+		listenTo(unlockDialogBox);
+		unlockDialogBox.activate();
+	}
+	
+	private void askForComment(UserRequest ureq) {
+		removeAsListenerAndDispose(commentVersionCtr);
+		removeAsListenerAndDispose(commentVersionDialogBox);
+
+		boolean locked = vfsLockManager.isLocked(existingVFSItem);
+		commentVersionCtr = new VersionCommentController(ureq, getWindowControl(), locked, true);
+		listenTo(commentVersionCtr);
+		String title = commentVersionCtr.getAndRemoveFormTitle();
+		commentVersionDialogBox = new CloseableModalController(getWindowControl(), translate("save"), commentVersionCtr.getInitialComponent(), true, title);
+		listenTo(commentVersionDialogBox);
+		commentVersionDialogBox.activate();
+	}
+	
+	private void doUpload(UserRequest ureq) {
+		// check for available space
+		if (remainingQuotKB != -1 && (fileEl.getUploadFile().length() / 1024 > remainingQuotKB)) {
+			fileEl.setErrorKey("QuotaExceeded", null);
+			fileEl.getUploadFile().delete();
+			return;			
+		}
+		
+		String fileName = fileEl.getUploadFileName();
+		if(metaDataCtr != null && StringHelper.containsNonWhitespace(metaDataCtr.getFilename())) {
+			fileName = metaDataCtr.getFilename();
+		}
+		
+		File uploadedFile = fileEl.getUploadFile();
+		if(resizeImg && fileName != null && imageExtPattern.matcher(fileName.toLowerCase()).find()
+				&& resizeEl.isSelected(0)) {
+			String extension = FileUtils.getFileSuffix(fileName);
+			File imageScaled = new File(uploadedFile.getParentFile(), "scaled_" + uploadedFile.getName() + "." + extension);
+			if(imageHelper.scaleImage(uploadedFile, extension, imageScaled, 1280, 1280, false) != null) {
+				//problem happen, special GIF's (see bug http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=6358674)
+				//don't try to scale if not all ok 
+				uploadedFile = imageScaled;
+			}
+		}
+		
+		// check if such a filename does already exist
+		existingVFSItem = uploadVFSContainer.resolve(fileName);
+		if (existingVFSItem == null) {
+			uploadNewFile(ureq, uploadedFile, fileName);
+		} else {
+			// file already exists... upload anyway with new filename and
+			// in the folder manager status.
+			// rename file and ask user what to do
+			if ( ! (existingVFSItem instanceof LocalImpl)) {
+				throw new AssertException("Can only LocalImpl VFS items, don't know what to do with file of type::" + existingVFSItem.getClass().getCanonicalName());
+			}
+
+			String renamedFilename = VFSManager.rename(uploadVFSContainer, existingVFSItem.getName());
+			newFile = uploadVFSContainer.createChildLeaf(renamedFilename);
+
+			// Copy content to tmp file
+			boolean success = false;
+			try(InputStream in = new FileInputStream(uploadedFile);
+					BufferedOutputStream out = new BufferedOutputStream(newFile.getOutputStream(false)))  {
+				success = FileUtils.copy(in, out);					
+				uploadedFile.delete();
+			} catch (IOException e) {
+				success = false;
+			}
+			
+			if (success) {
+				boolean locked = vfsLockManager.isLockedForMe(existingVFSItem, getIdentity(), ureq.getUserSession().getRoles());
+				if (locked) {
+					//the file is locked and cannot be overwritten
+					lockedFileDialog(ureq, renamedFilename);
+				} else if (existingVFSItem instanceof Versionable && ((Versionable)existingVFSItem).getVersions().isVersioned()) {
+					uploadVersionedFile(ureq, renamedFilename);
+				} else {
+					askOverwriteOrRename(ureq, renamedFilename);
 				}
 			} else {
-				if (existingVFSItem instanceof Versionable && ((Versionable)existingVFSItem).getVersions().isVersioned()) {
-
-					revisionListDialogBox.deactivate();
-					removeAsListenerAndDispose(revisionListDialogBox);
-					revisionListDialogBox = null;
-					
-					if(existingVFSItem.getParentContainer() != null) {
-						existingVFSItem = existingVFSItem.getParentContainer().resolve(existingVFSItem.getName());
-					}
-					
-					Versionable versionable = (Versionable)existingVFSItem;
-					Versions versions = versionable.getVersions();
-					int maxNumOfRevisions = FolderConfig.versionsAllowed(null);
-					if(maxNumOfRevisions < 0 || maxNumOfRevisions > versions.getRevisions().size()) {
-						removeAsListenerAndDispose(commentVersionCtr);
-						removeAsListenerAndDispose(commentVersionDialogBox);
-
-						boolean locked = vfsLockManager.isLocked(existingVFSItem);
-						commentVersionCtr = new VersionCommentController(ureq,getWindowControl(), locked, true);
-						listenTo(commentVersionCtr);
-						commentVersionDialogBox = new CloseableModalController(getWindowControl(), translate("save"), commentVersionCtr.getInitialComponent());
-						listenTo(commentVersionDialogBox);
-						commentVersionDialogBox.activate();
-					} else {
-						
-						removeAsListenerAndDispose(revisionListCtr);
-						revisionListCtr = new RevisionListController(ureq,getWindowControl(),versionable, false);
-						listenTo(revisionListCtr);
-						
-						removeAsListenerAndDispose(revisionListDialogBox);
-						revisionListDialogBox = new CloseableModalController(getWindowControl(), translate("delete"), revisionListCtr.getInitialComponent());
-						listenTo(revisionListDialogBox);
-						
-						revisionListDialogBox.activate();
-					}
-				}
+				showError("failed");
+				status = FolderCommandStatus.STATUS_FAILED;
+				fireEvent(ureq, Event.FAILED_EVENT);					
 			}
+		}
+	}
+	
+	private void lockedFileDialog(UserRequest ureq, String renamedFilename) {
+		removeAsListenerAndDispose(lockedFileDialog);
+		String title = translate("ul.lockedFile.title");
+		String text = translate("ul.lockedFile.text", new String[] { existingVFSItem.getName(), renamedFilename} );
+		lockedFileDialog = DialogBoxUIFactory.createGenericDialog(ureq, getWindowControl(), title, text,
+				asList(translate("ul.overwrite.threeoptions.rename", renamedFilename), translate("ul.overwrite.threeoptions.cancel")));
+		listenTo(lockedFileDialog);
+		lockedFileDialog.activate();
+	}
+	
+	private void uploadVersionedFile(UserRequest ureq, String renamedFilename) {
+		Versionable versionable = (Versionable)existingVFSItem;
+		Versions versions = versionable.getVersions();
+		int maxNumOfRevisions = getMaxNumOfRevisionsOfExistingVFSItem();
+		if(maxNumOfRevisions == 0) {
+			//it's possible if someone change the configuration
+			// let calling method decide what to do.
+			askOverwriteOrRename(ureq, renamedFilename);
+		} else if(versions.getRevisions().isEmpty() || maxNumOfRevisions < 0 || maxNumOfRevisions > versions.getRevisions().size()) {
+			// let calling method decide what to do.
+			askNewVersionOrRename(ureq, renamedFilename);
+		} else {
+			//too many revisions
+			askToReduceRevisionList(ureq, versionable);
+		}
+	}
+	
+	private void askOverwriteOrRename(UserRequest ureq, String renamedFilename) {
+		removeAsListenerAndDispose(overwriteDialog);
+		// let calling method decide what to do.
+		// for this, we put a list with "existing name" and "new name"
+		overwriteDialog = DialogBoxUIFactory.createGenericDialog(ureq, getWindowControl(),
+				translate("ul.overwrite.threeoptions.title"), translate("ul.overwrite.threeoptions.text", new String[] {existingVFSItem.getName(), renamedFilename} ),
+				asList(translate("ul.overwrite.threeoptions.overwrite"), translate("ul.overwrite.threeoptions.rename", renamedFilename), translate("ul.overwrite.threeoptions.cancel")));
+		listenTo(overwriteDialog);
+		overwriteDialog.activate();
+	}
+	
+	private void askNewVersionOrRename(UserRequest ureq, String renamedFilename) {
+		removeAsListenerAndDispose(overwriteDialog);
+		overwriteDialog = DialogBoxUIFactory.createGenericDialog(ureq, getWindowControl(),
+				translate("ul.overwrite.threeoptions.title"), translate("ul.versionoroverwrite", new String[] {existingVFSItem.getName(), renamedFilename} ),
+				asList(translate("ul.overwrite.threeoptions.newVersion"), translate("ul.overwrite.threeoptions.rename", renamedFilename), translate("ul.overwrite.threeoptions.cancel")));
+		listenTo(overwriteDialog);
+		overwriteDialog.activate();
+	}
+	
+	private void uploadNewFile(UserRequest ureq, File uploadedFile, String filename) {
+		// save file and finish
+		newFile = uploadVFSContainer.createChildLeaf(filename);
+		
+		boolean success = true;
+		if(newFile == null) {
+			// FXOLAT-409 somehow "createChildLeaf" did not succeed...
+			// if so, there is alread a error-msg in log (vfsContainer.createChildLeaf)
+			success = false;
+		} else {
+			try(InputStream in = new FileInputStream(uploadedFile);
+				OutputStream out = newFile.getOutputStream(false)) {
+				FileUtils.bcopy(in, out, "uploadTmpFileToDestFile");
+				uploadedFile.delete();
+			} catch (IOException e) {
+				success = false;
+			}
+		}
+		
+		if (success) {
+			String filePath = (uploadRelPath == null ? "" : uploadRelPath + "/") + newFile.getName();
+			finishSuccessfullUpload(filePath, newFile, ureq);
+			fileInfoMBean.logUpload(newFile.getSize());
+			fireEvent(ureq, Event.DONE_EVENT);										
+		} else {
+			showError("failed");
+			status = FolderCommandStatus.STATUS_FAILED;
+			fireEvent(ureq, Event.FAILED_EVENT);					
 		}
 	}
 	
@@ -681,11 +706,11 @@ public class FileUploadController extends FormBasicController {
 		if (item instanceof OlatRootFileImpl) {
 			OlatRootFileImpl relPathItem = (OlatRootFileImpl) item;
 			// create meta data
-			MetaInfo meta = CoreSpringFactory.getImpl(MetaInfoFactory.class).createMetaInfoFor(relPathItem);
+			MetaInfo meta = metaInfoFactory.createMetaInfoFor(relPathItem);
 			if (metaDataCtr != null) {
 				meta = metaDataCtr.getMetaInfo(meta);
 			}
-			meta.setAuthor(ureq.getIdentity());
+			meta.setAuthor(getIdentity());
 			meta.clearThumbnails();//if overwrite an older file
 			meta.write();
 		}
@@ -836,27 +861,37 @@ public class FileUploadController extends FormBasicController {
 				targetSubPath.clearError();
 			}
 		}
-		
 		// Check file name
-		String fileName = fileEl.getUploadFileName();
-		if (!StringHelper.containsNonWhitespace(fileName)) {
-			fileEl.setErrorKey("NoFileChosen", null);
-			return false;
+		if(metaDataCtr != null && StringHelper.containsNonWhitespace(metaDataCtr.getFilename())) {
+			return validateFilename(metaDataCtr.getFilename(), metaDataCtr.getFilenameEl());
+		}
+		String filename = fileEl.getUploadFileName();
+		return validateFilename(filename, fileEl);
+	}
+	
+	private boolean validateFilename(String filename, FormItem itemEl) {
+		itemEl.clearError();
+		
+		
+		boolean allOk = true;
+		if (!StringHelper.containsNonWhitespace(filename)) {
+			itemEl.setErrorKey("NoFileChosen", null);
+			allOk &= false;
 		}
 
-		boolean isFilenameValid = FileUtils.validateFilename(fileName);		
+		boolean isFilenameValid = FileUtils.validateFilename(filename);		
 		if(!isFilenameValid) {
-			fileEl.setErrorKey("cfile.name.notvalid", null);
-			return false;
+			itemEl.setErrorKey("cfile.name.notvalid", null);
+			allOk &= false;
 		}
 		if (remainingQuotKB != -1 
 			&& fileEl.getUploadFile().length() / 1024 > remainingQuotKB) {
-			
 			fileEl.clearError();
 			String supportAddr = WebappHelper.getMailConfig("mailQuota");
 			getWindowControl().setError(translate("ULLimitExceeded", new String[] { Formatter.roundToString((uploadLimitKB+0f) / 1000, 1), supportAddr }));
-			return false;
+			allOk &= false;
 		}
-		return true;
+		
+		return allOk;
 	}
 }
