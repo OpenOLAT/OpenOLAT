@@ -87,7 +87,9 @@ public class GroupTaskToCoachPage {
 		By reviewBy = By.cssSelector("#o_step_review_content .o_sel_course_gta_reviewed");
 		browser.findElement(reviewBy).click();
 		OOGraphene.waitBusy(browser);
-		return confirm();
+		confirm();
+		OOGraphene.waitAndCloseBlueMessageWindow(browser);
+		return this;
 	}
 	
 	public GroupTaskToCoachPage needRevision() {
