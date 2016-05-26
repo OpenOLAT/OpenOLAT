@@ -48,6 +48,7 @@ import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.WebappHelper;
 import org.olat.core.util.vfs.Quota;
+import org.olat.core.util.vfs.VFSConstants;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
@@ -127,8 +128,7 @@ public class FileLinkChooserController extends BasicController {
 		VFSItemFilter customFilter = null;
 		VFSItemFilter dirFilter = new VFSItemExcludePrefixFilter(dirFilters);
 		if (suffixes != null) {
-			VFSItemFileTypeFilter typeFilter = new VFSItemFileTypeFilter(
-					suffixes);
+			VFSItemFileTypeFilter typeFilter = new VFSItemFileTypeFilter(suffixes);
 			typeFilter.setCompositeFilter(dirFilter);
 			customFilter = typeFilter;
 		} else {
@@ -144,7 +144,7 @@ public class FileLinkChooserController extends BasicController {
 		// convert file endings to mime types as needed by file upload controller
 		Set<String> mimeTypes = null;
 		if (suffixes != null) {
-			mimeTypes = new HashSet<String>();
+			mimeTypes = new HashSet<>();
 			for (String suffix : suffixes) {
 				String mimeType = WebappHelper.getMimeType("dummy." + suffix);
 				if (mimeType != null) {
@@ -152,27 +152,28 @@ public class FileLinkChooserController extends BasicController {
 				}
 			}
 		}
-		
-		long remainingSpace = Quota.UNLIMITED;
-		long uploadLimit = FolderConfig.getLimitULKB();
-		if( fileUploadBase.getLocalSecurityCallback() != null && fileUploadBase.getLocalSecurityCallback().getQuota() != null) {
-			Long space = fileUploadBase.getLocalSecurityCallback().getQuota().getRemainingSpace();
-			if(space != null) {
-				remainingSpace = space.longValue();
-			}
-			Long limit = fileUploadBase.getLocalSecurityCallback().getQuota().getUlLimitKB();
-			if(limit != null) {
-				uploadLimit = limit.longValue();
-			}
-		}
-		uploadCtr = new FileUploadController(wControl, fileUploadBase, ureq, uploadLimit, remainingSpace, mimeTypes,
-				true, false, true, true, false);
-		
-		listenTo(uploadCtr);
-		// set specific upload path
-		uploadCtr.setUploadRelPath(uploadRelPath);
 
-		mainVC.put("uploader", uploadCtr.getInitialComponent());
+		if(fileUploadBase.canWrite() == VFSConstants.YES) {
+			long remainingSpace = Quota.UNLIMITED;
+			long uploadLimit = FolderConfig.getLimitULKB();
+			if( fileUploadBase.getLocalSecurityCallback() != null && fileUploadBase.getLocalSecurityCallback().getQuota() != null) {
+				Long space = fileUploadBase.getLocalSecurityCallback().getQuota().getRemainingSpace();
+				if(space != null) {
+					remainingSpace = space.longValue();
+				}
+				Long limit = fileUploadBase.getLocalSecurityCallback().getQuota().getUlLimitKB();
+				if(limit != null) {
+					uploadLimit = limit.longValue();
+				}
+			}
+			
+			uploadCtr = new FileUploadController(wControl, fileUploadBase, ureq, uploadLimit, remainingSpace, mimeTypes,
+					true, false, true, true, false);
+			listenTo(uploadCtr);
+			// set specific upload path
+			uploadCtr.setUploadRelPath(uploadRelPath);
+			mainVC.put("uploader", uploadCtr.getInitialComponent());
+		}
 
 		putInitialPanel(mainVC);
 	}
@@ -264,7 +265,7 @@ public class FileLinkChooserController extends BasicController {
 			// no defined suffixes => all allowed
 			return true;
 		} else {
-			// check if siffix one of allowed suffixes
+			// check if suffix one of allowed suffixes
 			String suffix = getSuffix(filename);
 			for (String allowedSuffix : suffixes) {
 				if (allowedSuffix.equals(suffix)) {
@@ -282,12 +283,9 @@ public class FileLinkChooserController extends BasicController {
 			allowedSuffixes.append(allowedSuffix);
 		}
 		String suffix = getSuffix(fileName);
-		getWindowControl().setError(
-				getTranslator()
-						.translate(
-								"upload.error.incorrect.filetype",
-								new String[] { "." + suffix,
-										allowedSuffixes.toString() }));
+		getWindowControl().setError(getTranslator()
+				.translate("upload.error.incorrect.filetype",
+						new String[] { "." + suffix,allowedSuffixes.toString() }));
 	}
 
 	private String getSuffix(String filename) {
