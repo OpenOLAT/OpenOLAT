@@ -28,6 +28,7 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
+import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.SelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
@@ -69,6 +70,7 @@ import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryManagedFlag;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.controllers.ReferencableEntriesSearchController;
+import org.olat.repository.model.RepositoryEntrySecurity;
 import org.olat.resource.references.Reference;
 import org.olat.resource.references.ReferenceManager;
 import org.olat.util.logging.activity.LoggingResourceable;
@@ -92,10 +94,11 @@ public class CourseOptionsController extends FormBasicController {
 	private FormLink addGlossaryCommand, removeGlossaryCommand;
 	private StaticTextElement glossaryNameEl;
 	private FormLink saveButton;
-	private FormLayoutContainer saveCont, calendarCont, chatCont, glossaryCont;
+	private FormLayoutContainer saveCont, calendarCont, chatCont, glossaryCont, sharedFolderCont;
 	
 	private FormLink addFolderCommand, removeFolderCommand;
 	private StaticTextElement folderNameEl;
+	private MultipleSelectionElement folderReadOnlyEl;
 	
 	private final boolean editable;
 	private CourseConfig courseConfig;
@@ -160,10 +163,15 @@ public class CourseOptionsController extends FormBasicController {
 				folderNameEl.setValue(StringHelper.escapeHtml(repoEntry.getDisplayname()));
 				folderNameEl.setUserObject(repoEntry);
 				removeFolderCommand.setVisible(editable && !managedFolder);
+				
+				RepositoryEntrySecurity reSecurity = repositoryService.isAllowed(ureq, repoEntry);
+				folderReadOnlyEl.setVisible(true);
+				folderReadOnlyEl.setEnabled(reSecurity.isEntryAdmin());
 			}
 		} else if(editable && !managedFolder) {
 			removeFolderCommand.setVisible(false);
 			addFolderCommand.setVisible(true);
+			folderReadOnlyEl.setVisible(false);
 		}
 	}
 	
@@ -240,7 +248,7 @@ public class CourseOptionsController extends FormBasicController {
 		
 		//shared folder
 		boolean managedFolder = RepositoryEntryManagedFlag.isManaged(entry, RepositoryEntryManagedFlag.resourcefolder);
-		FormLayoutContainer sharedFolderCont = FormLayoutContainer.createDefaultFormLayout("sharedfolder", getTranslator());
+		sharedFolderCont = FormLayoutContainer.createDefaultFormLayout("sharedfolder", getTranslator());
 		sharedFolderCont.setRootForm(mainForm);
 		formLayout.add(sharedFolderCont);
 
@@ -248,9 +256,19 @@ public class CourseOptionsController extends FormBasicController {
 				translate("sf.notconfigured"), sharedFolderCont);
 		folderNameEl.setHelpText(translate("sf.resourcetitle.helptext"));
 		folderNameEl.setHelpUrlForManualPage("Course Settings#_detail_ressourcen");
-
+		
+		String[] readOnlyValues = new String[]{ translate("sf.resource.readonly") };
+		folderReadOnlyEl = uifactory.addCheckboxesHorizontal("sf.resource.readonly", sharedFolderCont, onKeys, readOnlyValues);
+		folderReadOnlyEl.addActionListener(FormEvent.ONCHANGE);
+		folderReadOnlyEl.setLabel(null, null);
+		folderReadOnlyEl.setEnabled(false);
+		if(courseConfig.isSharedFolderReadOnlyMount()) {
+			folderReadOnlyEl.select(onKeys[0], true);
+		}
+		
 		FormLayoutContainer buttons2Cont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		sharedFolderCont.add(buttons2Cont);
+		
 		removeFolderCommand = uifactory.addFormLink("sf.unselectsfresource", buttons2Cont, Link.BUTTON);
 		removeFolderCommand.setVisible(editable && !managedFolder);
 		addFolderCommand = uifactory.addFormLink("sf.changesfresource", buttons2Cont, Link.BUTTON);
@@ -284,7 +302,7 @@ public class CourseOptionsController extends FormBasicController {
 			cmc.deactivate();
 			if (event == ReferencableEntriesSearchController.EVENT_REPOSITORY_ENTRY_SELECTED) {
 				RepositoryEntry repoEntry = folderSearchCtr.getSelectedEntry();
-				doSelectSharedFolder(repoEntry);
+				doSelectSharedFolder(ureq, repoEntry);
 				setSaveButtonDirty();
 			}
 			cleanUp();
@@ -345,9 +363,9 @@ public class CourseOptionsController extends FormBasicController {
 			}
 			updateToolbar();
 			setSaveButtonDirty();
-		} else if (source instanceof SelectionElement) {
+		} else if (source instanceof SelectionElement || source == folderReadOnlyEl) {
 			setSaveButtonDirty();
-		} else if(saveButton == source) {
+		}  else if(saveButton == source) {
 			doSave(ureq);
 		}
 	}
@@ -456,8 +474,11 @@ public class CourseOptionsController extends FormBasicController {
 				|| (currentFolderSoftKey != null && !currentFolderSoftKey.equals(newFolderSoftKey));
 
 		courseConfig.setSharedFolderSoftkey(newFolderSoftKey);
-		
-		
+		if(folderReadOnlyEl.isEnabled()) {
+			courseConfig.setSharedFolderReadOnlyMount(folderReadOnlyEl.isAtLeastSelected(1));
+		} else {
+			courseConfig.setSharedFolderReadOnlyMount(true);
+		}
 
 		CourseFactory.setCourseConfig(course.getResourceableId(), courseConfig);
 		CourseFactory.closeCourseEditSession(course.getResourceableId(), true);
@@ -559,16 +580,23 @@ public class CourseOptionsController extends FormBasicController {
 		removeGlossaryCommand.setVisible(false);
 	}
 	
-	private void doSelectSharedFolder(RepositoryEntry repoEntry) {
+	private void doSelectSharedFolder(UserRequest ureq, RepositoryEntry repoEntry) {
 		folderNameEl.setValue(StringHelper.escapeHtml(repoEntry.getDisplayname()));
 		folderNameEl.setUserObject(repoEntry);
 		removeFolderCommand.setVisible(true);
+		
+		RepositoryEntrySecurity reSecurity = repositoryService.isAllowed(ureq, repoEntry);
+		folderReadOnlyEl.setVisible(true);
+		folderReadOnlyEl.setEnabled(reSecurity.isEntryAdmin());
+		folderReadOnlyEl.select(onKeys[0], true);
+		sharedFolderCont.setDirty(true);
 	}
 	
 	private void doRemoveSharedFolder() {			
 		folderNameEl.setValue(translate("sf.notconfigured"));
 		folderNameEl.setUserObject(null);
 		removeFolderCommand.setVisible(false);
+		folderReadOnlyEl.setVisible(false);
 	}
 
 }

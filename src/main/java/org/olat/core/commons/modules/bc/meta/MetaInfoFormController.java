@@ -56,6 +56,7 @@ import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSLockManager;
 import org.olat.core.util.vfs.lock.LockInfo;
 import org.olat.user.UserManager;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * This is the metadata flexiform controller with or without upload capability.
@@ -78,9 +79,13 @@ public class MetaInfoFormController extends FormBasicController {
 	private String resourceUrl;
 	
 	private final Roles roles;
-	private final UserManager userManager;
-	private final VFSLockManager vfsLockManager;
-	private final MetaInfoFactory metaInfoFactory;
+	
+	@Autowired
+	private UserManager userManager;
+	@Autowired
+	private VFSLockManager vfsLockManager;
+	@Autowired
+	private MetaInfoFactory metaInfoFactory;
 
 	/**
 	 * Use this controller for editing meta data of an existing file.
@@ -95,9 +100,6 @@ public class MetaInfoFormController extends FormBasicController {
 		this.resourceUrl = resourceUrl;
 		// load the metainfo
 		roles = ureq.getUserSession().getRoles();
-		userManager = CoreSpringFactory.getImpl(UserManager.class);
-		vfsLockManager = CoreSpringFactory.getImpl(VFSLockManager.class);
-		metaInfoFactory = CoreSpringFactory.getImpl(MetaInfoFactory.class);
 		initForm(ureq);
 	}
 
@@ -112,9 +114,6 @@ public class MetaInfoFormController extends FormBasicController {
 	public MetaInfoFormController(UserRequest ureq, WindowControl control, Form parentForm) {
 		super(ureq, control, FormBasicController.LAYOUT_DEFAULT, null, parentForm);
 		roles = ureq.getUserSession().getRoles();
-		userManager = CoreSpringFactory.getImpl(UserManager.class);
-		vfsLockManager = CoreSpringFactory.getImpl(VFSLockManager.class);
-		metaInfoFactory = CoreSpringFactory.getImpl(MetaInfoFactory.class);
 		isSubform = true;
 		initForm(ureq);
 	}
@@ -132,9 +131,6 @@ public class MetaInfoFormController extends FormBasicController {
 		isSubform = true;
 		this.item = vfsItem;
 		roles = ureq.getUserSession().getRoles();
-		userManager = CoreSpringFactory.getImpl(UserManager.class);
-		vfsLockManager = CoreSpringFactory.getImpl(VFSLockManager.class);
-		metaInfoFactory = CoreSpringFactory.getImpl(MetaInfoFactory.class);
 		initForm(ureq);
 	}
 	
@@ -189,21 +185,19 @@ public class MetaInfoFormController extends FormBasicController {
 			setFormTitle("mf.metadata.title");
 		}
 		setFormContextHelp("Folders#_metadata");
-
-		// filename
-		if (!isSubform) {
-			initialFilename = item.getName();
-			filename = uifactory.addTextElement("filename", "mf.filename", -1, item.getName(), formLayout);
-			filename.setEnabled(item.canRename() == VFSConstants.YES);
-			filename.setNotEmptyCheck("mf.error.empty");
-			filename.setMandatory(true);
-		}
 		
 		MetaInfo meta = item instanceof OlatRelPathImpl ? metaInfoFactory.createMetaInfoFor((OlatRelPathImpl)item) : null;
 
 		// title
 		String titleVal = (meta != null ? meta.getTitle() : null);
 		title = uifactory.addTextElement("title", "mf.title", -1, titleVal, formLayout);
+		
+		// filename
+		initialFilename = (item == null ? null : item.getName());
+		filename = uifactory.addTextElement("filename", "mf.filename", -1, initialFilename, formLayout);
+		filename.setEnabled(item == null || item.canRename() == VFSConstants.YES);
+		filename.setNotEmptyCheck("mf.error.empty");
+		filename.setMandatory(true);
 
 		// comment/description
 		String commentVal = (meta != null ? meta.getComment() : null);
@@ -403,6 +397,14 @@ public class MetaInfoFormController extends FormBasicController {
 	 */
 	public String getFilename() {
 		return filename.getValue();
+	}
+	
+	public TextElement getFilenameEl() {
+		return filename;
+	}
+	
+	public void setFilename(String name) {
+		filename.setValue(name);
 	}
 	
 	public MetaInfo getMetaInfo(MetaInfo meta) {

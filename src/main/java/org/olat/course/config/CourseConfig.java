@@ -126,6 +126,10 @@ public class CourseConfig implements Serializable, Cloneable {
 	 */
 	transient public static final String KEY_SHAREDFOLDER_SOFTKEY = "SHAREDFOLDER_SOFTKEY";
 	/**
+	 * 
+	 */
+	transient public static final String KEY_SHAREDFOLDER_READONLY = "SHAREDFOLDER_RO";
+	/**
 	 * current key set
 	 */
 	transient public final static String[] KEYS = { KEY_CHAT_ENABLED,	KEY_CSS_FILEREF, KEY_SHAREDFOLDER_SOFTKEY };
@@ -384,6 +388,15 @@ public class CourseConfig implements Serializable, Cloneable {
 	public boolean hasCustomSharedFolder() {
 		return !(VALUE_EMPTY_SHAREDFOLDER_SOFTKEY.equals(getSharedFolderSoftkey()));
 	}
+	
+	public boolean isSharedFolderReadOnlyMount() {
+		Object obj = configuration.get(KEY_SHAREDFOLDER_READONLY);
+		return (obj == null || !Boolean.FALSE.equals(obj));
+	}
+	
+	public void setSharedFolderReadOnlyMount(boolean mount) {
+		configuration.put(KEY_SHAREDFOLDER_READONLY, new Boolean(mount));
+	}
 
 	/**
 	 * @param b
@@ -537,6 +550,7 @@ public class CourseConfig implements Serializable, Cloneable {
 		clone.setEfficencyStatementIsEnabled(isEfficencyStatementEnabled());
 		clone.setGlossarySoftKey(getGlossarySoftKey());
 		clone.setSharedFolderSoftkey(getSharedFolderSoftkey());
+		clone.setSharedFolderReadOnlyMount(isSharedFolderReadOnlyMount());
 		clone.setAutomaticCertificationEnabled(isAutomaticCertificationEnabled());
 		clone.setManualCertificationEnabled(isManualCertificationEnabled());
 		clone.setCertificateTemplate(getCertificateTemplate());
@@ -556,11 +570,12 @@ public class CourseConfig implements Serializable, Cloneable {
 	public boolean equals(Object obj) {
 		try {
 			CourseConfig aCourseConfig = (CourseConfig) obj;
-			boolean sameCalendarSettings = aCourseConfig.isCalendarEnabled() == this.isCalendarEnabled();
-			boolean sameChatSettings = aCourseConfig.isChatEnabled() == this.isChatEnabled();
-			boolean sameCssLayout = aCourseConfig.getCssLayoutRef().equals(this.getCssLayoutRef());
-			boolean sameEfficiencyStatementSettings = aCourseConfig.isEfficencyStatementEnabled() == this.isEfficencyStatementEnabled();
-			boolean sameSharedFolderSettings = aCourseConfig.getSharedFolderSoftkey().equals(this.getSharedFolderSoftkey());
+			boolean sameCalendarSettings = aCourseConfig.isCalendarEnabled() == isCalendarEnabled();
+			boolean sameChatSettings = aCourseConfig.isChatEnabled() == isChatEnabled();
+			boolean sameCssLayout = aCourseConfig.getCssLayoutRef().equals(getCssLayoutRef());
+			boolean sameEfficiencyStatementSettings = aCourseConfig.isEfficencyStatementEnabled() == isEfficencyStatementEnabled();
+			boolean sameSharedFolderSettings = aCourseConfig.getSharedFolderSoftkey().equals(getSharedFolderSoftkey())
+					&& aCourseConfig.isSharedFolderReadOnlyMount() == isSharedFolderReadOnlyMount();
 
 			boolean sameGlossarySettings = false;
 			if (aCourseConfig.getGlossarySoftKey() != null && this.getGlossarySoftKey() != null) {

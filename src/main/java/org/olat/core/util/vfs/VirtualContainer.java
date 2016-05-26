@@ -27,7 +27,6 @@
 package org.olat.core.util.vfs;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 
 import org.olat.core.util.vfs.callbacks.VFSSecurityCallback;
@@ -58,16 +57,18 @@ public class VirtualContainer extends AbstractVirtualContainer {
 	}
 	
 	public List<VFSItem> getItems() {
-		return getItems(null);
+		return children;
 	}
 
 	public List<VFSItem> getItems(VFSItemFilter filter) {
-		if (filter == null) return children;
-		else {
-			List<VFSItem> filtered = new ArrayList<VFSItem>();
-			for (Iterator<VFSItem> iter = children.iterator(); iter.hasNext();) {
-				VFSItem vfsItem = iter.next();
-				if (filter.accept(vfsItem)) filtered.add(vfsItem);
+		if (filter == null) {
+			return children;
+		} else {
+			List<VFSItem> filtered = new ArrayList<VFSItem>(children.size());
+			for (VFSItem vfsItem : children) {
+				if (filter.accept(vfsItem)) {
+					filtered.add(vfsItem);
+				}
 			}
 			return filtered;
 		}

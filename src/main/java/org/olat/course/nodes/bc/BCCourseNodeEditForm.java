@@ -112,9 +112,9 @@ public class BCCourseNodeEditForm extends FormBasicController implements Control
 
 
 		}
-		if(node.isSharedFolder()){
-			sharedFolderInfo.setVisible(true);
-		}else{
+		if(node.isSharedFolder()) {
+			sharedFolderInfo.setVisible(course.getCourseConfig().isSharedFolderReadOnlyMount());
+		} else {
 			sharedFolderInfo.setVisible(false);
 		}
 
@@ -143,8 +143,8 @@ public class BCCourseNodeEditForm extends FormBasicController implements Control
 			}else{
 				sharedFolderWarning.setVisible(false);
 			}
-			if(node.isSharedFolder()){
-				sharedFolderInfo.setVisible(true);
+			if(node.isSharedFolder()) {
+				sharedFolderInfo.setVisible(course.getCourseConfig().isSharedFolderReadOnlyMount());
 			}else{
 				sharedFolderInfo.setVisible(false);
 			}

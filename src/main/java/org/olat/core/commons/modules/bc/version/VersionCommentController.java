@@ -60,7 +60,7 @@ public class VersionCommentController extends FormBasicController {
 		
 		initForm(ureq);
 	}
-	
+
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		if(comment && lock) {

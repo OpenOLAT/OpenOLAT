@@ -75,7 +75,7 @@ public class CmdUpload extends BasicController implements FolderCommand {
 	private String uploadFileName;
 	private VFSLeaf vfsNewFile;
 	private long quotaKB;
-	private int uploadLimitKB;
+	private long uploadLimitKB;
 	private boolean overwritten = false;
 	private FileUploadController fileUploadCtr;
 	private boolean cancelResetsForm;
@@ -93,13 +93,14 @@ public class CmdUpload extends BasicController implements FolderCommand {
 		this.showMetadata = showMetadata;
 	}
 
+	@Override
 	public Controller execute(FolderComponent fc, UserRequest ureq, WindowControl windowControl, Translator trans) {
 		return execute(fc, ureq, trans, false);
 	}
 
-	public Controller execute(FolderComponent fc, UserRequest ureq, Translator trans, boolean cancelResetsForm) {
+	public Controller execute(FolderComponent fc, UserRequest ureq, Translator trans, boolean cancelResetsButton) {
 		this.folderComponent = fc;
-		this.cancelResetsForm = cancelResetsForm;
+		this.cancelResetsForm = cancelResetsButton;
 		
 		setTranslator(trans);
 		currentContainer = folderComponent.getCurrentContainer();
@@ -130,21 +131,25 @@ public class CmdUpload extends BasicController implements FolderCommand {
 			}
 		}		
 		// set wether we have a quota on this folder
-		if (quotaKB == Quota.UNLIMITED) ubar.setIsNoMax(true);
-		else ubar.setMax(quotaKB / 1024);
+		if (quotaKB == Quota.UNLIMITED) {
+			ubar.setIsNoMax(true);
+		} else {
+			ubar.setMax(quotaKB / 1024);
+		}
 		// set default ulLimit if none is defined...
-		if (uploadLimitKB == Quota.UNLIMITED)
-			uploadLimitKB = (int) QuotaManager.getInstance().getDefaultQuotaDependingOnRole(ureq.getIdentity()).getUlLimitKB().longValue();
+		if (uploadLimitKB == Quota.UNLIMITED) {
+			uploadLimitKB = QuotaManager.getInstance().getDefaultQuotaDependingOnRole(ureq.getIdentity()).getUlLimitKB().longValue();
+		}
 		
 		// Add file upload form
-		int remainingQuotaKB = (int) quotaKB - (int) actualUsage;
-		if (quotaKB == Quota.UNLIMITED) remainingQuotaKB = (int) quotaKB;
+		long remainingQuotaKB =  quotaKB - actualUsage;
+		if (quotaKB == Quota.UNLIMITED) remainingQuotaKB = quotaKB;
 		else if (quotaKB - actualUsage < 0) remainingQuotaKB = 0;
-		else remainingQuotaKB = (int) quotaKB - (int) actualUsage;
+		else remainingQuotaKB = quotaKB - actualUsage;
+		
 		removeAsListenerAndDispose(fileUploadCtr);
-
 		fileUploadCtr = new FileUploadController(getWindowControl(), currentContainer, ureq, uploadLimitKB, remainingQuotaKB, null,
-				true, showMetadata, true, showCancel, true);
+				true, showMetadata, true, showCancel, false);
 		listenTo(fileUploadCtr);
 		mainVC.put("fileUploadCtr", fileUploadCtr.getInitialComponent());
 		mainVC.contextPut("showFieldset", Boolean.TRUE);
@@ -201,7 +206,7 @@ public class CmdUpload extends BasicController implements FolderCommand {
 	
 	@Override
 	public String getModalTitle() {
-		return translate("ul.quote");
+		return translate("ul");
 	}
 
 	public void event(UserRequest ureq, Component source, Event event) {

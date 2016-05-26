@@ -86,15 +86,16 @@ public class SharedFolderManager {
 
 	public OlatRootFolderImpl getSharedFolder(OLATResourceable res) {
 		OlatRootFolderImpl rootFolderImpl = (OlatRootFolderImpl)FileResourceManager.getInstance().getFileResourceRootImpl(res).resolve(SharedFolderManager.FOLDER_NAME);
-		if (rootFolderImpl == null) return null;
-		rootFolderImpl.setLocalSecurityCallback(new SharedFolderSecurityCallback(rootFolderImpl.getRelPath()));
+		if (rootFolderImpl != null) {
+			rootFolderImpl.setLocalSecurityCallback(new SharedFolderSecurityCallback(rootFolderImpl.getRelPath()));
+		}
 		return rootFolderImpl;
 	}
 
 	public MediaResource getAsMediaResource(OLATResourceable res) {
 		String exportFileName = res.getResourceableId() + ".zip";
 		File fExportZIP = new File(WebappHelper.getTmpDir() + "/" + exportFileName);
-		VFSContainer sharedFolder = SharedFolderManager.getInstance().getSharedFolder(res);
+		VFSContainer sharedFolder = getSharedFolder(res);
 		
 		//OLAT-5368: do intermediate commit to avoid transaction timeout
 		// discussion intermediatecommit vs increased transaction timeout:
