@@ -20,7 +20,6 @@
 package org.olat.course.nodes.gta.ui;
 
 import java.io.File;
-import java.util.ArrayList;
 import java.util.List;
 
 import org.olat.basesecurity.GroupRoles;
@@ -46,7 +45,6 @@ import org.olat.course.nodes.gta.Task;
 import org.olat.course.nodes.gta.TaskHelper;
 import org.olat.course.nodes.gta.TaskProcess;
 import org.olat.course.nodes.gta.model.TaskDefinition;
-import org.olat.course.nodes.gta.model.TaskDefinitionList;
 import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.group.BusinessGroup;
@@ -626,8 +624,7 @@ public class GTACoachController extends GTAAbstractController {
 		if(task == null) return null;
 		
 		TaskDefinition taskDef = null;
-		TaskDefinitionList tasks = (TaskDefinitionList)config.get(GTACourseNode.GTASK_TASKS);
-		List<TaskDefinition> availableTasks = new ArrayList<>(tasks.getTasks());
+		List<TaskDefinition> availableTasks = gtaManager.getTaskDefinitions(courseEnv, gtaNode);
 		for(TaskDefinition availableTask:availableTasks) {
 			if(availableTask.getFilename() != null && availableTask.getFilename().equals(task.getTaskName())) {
 				taskDef = availableTask;

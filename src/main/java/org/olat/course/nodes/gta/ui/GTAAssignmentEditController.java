@@ -19,60 +19,21 @@
  */
 package org.olat.course.nodes.gta.ui;
 
-import java.io.File;
-import java.util.ArrayList;
-import java.util.List;
-
-import org.olat.core.commons.editor.htmleditor.HTMLEditorController;
-import org.olat.core.commons.editor.htmleditor.WysiwygFactory;
-import org.olat.core.commons.services.notifications.NotificationsManager;
-import org.olat.core.commons.services.notifications.SubscriptionContext;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
-import org.olat.core.gui.components.form.flexible.elements.DownloadLink;
-import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
-import org.olat.core.gui.components.form.flexible.elements.FormLink;
+import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.RichTextElement;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
-import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.BooleanCellRenderer;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiCellRenderer;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableComponent;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiCellRenderer;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiColumnModel;
-import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
-import org.olat.core.gui.control.generic.modal.DialogBoxController;
-import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
-import org.olat.core.gui.render.Renderer;
-import org.olat.core.gui.render.StringOutput;
-import org.olat.core.gui.render.URLBuilder;
-import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.StringHelper;
-import org.olat.core.util.vfs.VFSContainer;
-import org.olat.core.util.vfs.VFSItem;
-import org.olat.core.util.vfs.VFSLeaf;
-import org.olat.core.util.vfs.VFSManager;
-import org.olat.course.editor.CourseEditorEnv;
 import org.olat.course.nodes.GTACourseNode;
-import org.olat.course.nodes.gta.GTAManager;
-import org.olat.course.nodes.gta.TaskList;
-import org.olat.course.nodes.gta.model.TaskDefinition;
-import org.olat.course.nodes.gta.model.TaskDefinitionList;
-import org.olat.course.nodes.gta.ui.TaskDefinitionTableModel.TDCols;
+import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.modules.ModuleConfiguration;
-import org.olat.repository.RepositoryEntry;
-import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -80,98 +41,43 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class GTAAssignmentEditController extends FormBasicController {
+public class GTAAssignmentEditController extends AbstractAssignmentEditController {
 	
 	private static final String[] typeKeys = new String[] { GTACourseNode.GTASK_ASSIGNEMENT_TYPE_MANUAL, GTACourseNode.GTASK_ASSIGNEMENT_TYPE_AUTO };
 	private static final String[] previewKeys = new String[] { "enabled", "disabled" };
 	private static final String[] samplingKeys = new String[] { GTACourseNode.GTASK_SAMPLING_UNIQUE, GTACourseNode.GTASK_SAMPLING_REUSE };
+	private static final String[] onKeys = new String[] { "on" };
 	
-	private FormLink addTaskLink, createTaskLink;
 	private RichTextElement textEl;
-	private FlexiTableElement taskDefTableEl;
-	private TaskDefinitionTableModel taskModel;
 	private SingleSelection typeEl, previewEl, samplingEl;
-	private WarningFlexiCellRenderer fileExistsRenderer;
-	
-	private CloseableModalController cmc;
-	private NewTaskController newTaskCtrl;
-	private DialogBoxController confirmDeleteCtrl;
-	private HTMLEditorController newTaskEditorCtrl;
-	private EditHTMLTaskController editTaskEditorCtrl;
-	private EditTaskController addTaskCtrl, editTaskCtrl;
-	
-	private final TaskDefinitionList taskList;
-	private final File tasksFolder;
-	private final VFSContainer tasksContainer;
-	private final GTACourseNode gtaNode;
-	private final ModuleConfiguration config;
-	private final CourseEditorEnv courseEditorEnv;
-	private final SubscriptionContext subscriptionContext;
-	
-	private int linkCounter = 0;
-	
-	@Autowired
-	private GTAManager gtaManager;
-	@Autowired
-	private NotificationsManager notificationsManager;
-	
+	private MultipleSelectionElement coachAllowedTasksEl;
+
 	public GTAAssignmentEditController(UserRequest ureq, WindowControl wControl,
-			GTACourseNode gtaNode, ModuleConfiguration config, CourseEditorEnv courseEditorEnv,
-			File tasksFolder, VFSContainer tasksContainer) {
-		super(ureq, wControl, LAYOUT_BAREBONE);
-		this.config = config;
-		this.gtaNode = gtaNode;
-		this.courseEditorEnv = courseEditorEnv;
-		
-		this.tasksFolder = tasksFolder;
-		this.tasksContainer = tasksContainer;
-		subscriptionContext = gtaManager.getSubscriptionContext(courseEditorEnv, gtaNode);
-		
-		if(config.get(GTACourseNode.GTASK_TASKS) == null) {
-			taskList = new TaskDefinitionList();
-			config.set(GTACourseNode.GTASK_TASKS, taskList);
-		} else {
-			taskList = (TaskDefinitionList)config.get(GTACourseNode.GTASK_TASKS);
-		}
-		
-		initForm(ureq);
+			GTACourseNode gtaNode, ModuleConfiguration config, CourseEnvironment courseEnv) {
+		super(ureq, wControl, gtaNode, config, courseEnv);
 	}
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		//tasks
-		String tasksPage = velocity_root + "/edit_task_list.html";
-		FormLayoutContainer tasksCont = FormLayoutContainer.createCustomFormLayout("tasks", getTranslator(), tasksPage);
-		tasksCont.setRootForm(mainForm);
-		formLayout.add(tasksCont);
+		super.initForm(formLayout, listener, ureq);
 		
-		addTaskLink = uifactory.addFormLink("add.task", tasksCont, Link.BUTTON);
-		addTaskLink.setElementCssClass("o_sel_course_gta_add_task");
-		addTaskLink.setIconLeftCSS("o_icon o_icon_upload");
-		createTaskLink = uifactory.addFormLink("create.task", tasksCont, Link.BUTTON);
-		createTaskLink.setElementCssClass("o_sel_course_gta_create_task");
-		createTaskLink.setIconLeftCSS("o_icon o_icon_edit");
-		
-		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TDCols.title.i18nKey(), TDCols.title.ordinal()));
-		fileExistsRenderer = new WarningFlexiCellRenderer();
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TDCols.file.i18nKey(), TDCols.file.ordinal(), fileExistsRenderer));
-		columnsModel.addFlexiColumnModel(new StaticFlexiColumnModel("table.header.edit", TDCols.edit.ordinal(), "edit",
-				new BooleanCellRenderer(
-						new StaticFlexiCellRenderer(translate("edit"), "edit"),
-						new StaticFlexiCellRenderer(translate("replace"), "edit"))));
-		columnsModel.addFlexiColumnModel(new StaticFlexiColumnModel("table.header.edit", translate("delete"), "delete"));
-		
-		taskModel = new TaskDefinitionTableModel(columnsModel);
-		taskDefTableEl = uifactory.addTableElement(getWindowControl(), "taskTable", taskModel, getTranslator(), tasksCont);
-		taskDefTableEl.setExportEnabled(true);
-		updateModel();
-		
+		//config
 		FormLayoutContainer configCont = FormLayoutContainer.createDefaultFormLayout("config", getTranslator());
 		configCont.setFormTitle(translate("assignment.config.title"));
 		configCont.setElementCssClass("o_sel_course_gta_task_config_form");
 		configCont.setRootForm(mainForm);
 		formLayout.add(configCont);
+		
+		//coach allowed to upload tasks
+		String[] onValues = new String[]{ "" };
+		coachAllowedTasksEl = uifactory.addCheckboxesVertical("coachTasks", "task.coack.allowed.uplaod", configCont, onKeys, onValues, 1);
+		coachAllowedTasksEl.addActionListener(FormEvent.ONCHANGE);
+		boolean coachUpload = config.getBooleanSafe(GTACourseNode.GTASK_COACH_ALLOWED_UPLOAD_TASKS, false);
+		if(coachUpload) {
+			coachAllowedTasksEl.select(onKeys[0], true);
+		}
+		
 		//task assignment configuration
 		String[] typeValues = new String[]{
 				translate("task.assignment.type.manual"),
@@ -223,138 +129,10 @@ public class GTAAssignmentEditController extends FormBasicController {
 		uifactory.addFormSubmitButton("save", buttonsCont);
 		uifactory.addFormCancelButton("cancel", buttonsCont, ureq, getWindowControl());
 	}
-	
-	private void updateModel() {
-		fileExistsRenderer.setFilenames(tasksFolder.list());
-		List<TaskDefinitionRow> rows = new ArrayList<>(taskList.getTasks().size());
-		for(TaskDefinition def:taskList.getTasks()) {
-			DownloadLink downloadLink = null;
-			VFSItem item = tasksContainer.resolve(def.getFilename());
-			if(item instanceof VFSLeaf) {
-				downloadLink = uifactory
-					.addDownloadLink("file_" + (++linkCounter), def.getFilename(), null, (VFSLeaf)item, taskDefTableEl);
-			}
-			rows.add(new TaskDefinitionRow(def, downloadLink));
-		}
-		taskModel.setObjects(rows);
-		taskDefTableEl.reset();
-	}
-	
-	@Override
-	protected void doDispose() {
-		//
-	}
-
-	@Override
-	protected void event(UserRequest ureq, Controller source, Event event) {
-		if(addTaskCtrl == source) {
-			if(event == Event.DONE_EVENT) {
-				TaskDefinition newTask = addTaskCtrl.getTask();
-				taskList.getTasks().add(newTask);
-				fireEvent(ureq, Event.DONE_EVENT);
-				updateModel();
-				notificationsManager.markPublisherNews(subscriptionContext, null, false);
-			}
-			cmc.deactivate();
-			cleanUp();
-			fireEvent(ureq, Event.DONE_EVENT);
-		} else if(editTaskCtrl == source) {
-			if(event == Event.DONE_EVENT) {
-				doFinishReplacementOfTask(editTaskCtrl.getFilenameToReplace(), editTaskCtrl.getTask());
-				updateModel();
-				fireEvent(ureq, Event.DONE_EVENT);
-				notificationsManager.markPublisherNews(subscriptionContext, null, false);
-			}
-			cmc.deactivate();
-			cleanUp();
-		} else if(newTaskCtrl == source) {
-			TaskDefinition newTask = newTaskCtrl.getTaskDefinition();
-			cmc.deactivate();
-			cleanUp();
-			
-			if(event == Event.DONE_EVENT) {
-				taskList.getTasks().add(newTask);
-				doCreateTaskEditor(ureq, newTask);
-				updateModel();
-			} 
-		} else if(newTaskEditorCtrl == source) {
-			if(event == Event.DONE_EVENT) {
-				updateModel();
-				fireEvent(ureq, Event.DONE_EVENT);
-				notificationsManager.markPublisherNews(subscriptionContext, null, false);
-			}
-			cmc.deactivate();
-			cleanUp();
-		} else if(editTaskEditorCtrl == source) {
-			if(event == Event.DONE_EVENT) {
-				updateModel();
-				fireEvent(ureq, Event.DONE_EVENT);
-				notificationsManager.markPublisherNews(subscriptionContext, null, false);
-			}
-			cmc.deactivate();
-			cleanUp();
-		} else if(confirmDeleteCtrl == source) {
-			if(DialogBoxUIFactory.isOkEvent(event) || DialogBoxUIFactory.isYesEvent(event)) {
-				TaskDefinition row = (TaskDefinition)confirmDeleteCtrl.getUserObject();
-				doDelete(ureq, row);
-				fireEvent(ureq, Event.DONE_EVENT);
-			}
-		} else if(cmc == source) {
-			cleanUp();
-		}
-		super.event(ureq, source, event);
-	}
-	
-	private void cleanUp() {
-		removeAsListenerAndDispose(editTaskCtrl);
-		removeAsListenerAndDispose(addTaskCtrl);
-		removeAsListenerAndDispose(cmc);
-		editTaskCtrl = null;
-		addTaskCtrl = null;
-		cmc = null;
-	}
-
-	@Override
-	protected boolean validateFormLogic(UserRequest ureq) {
-		boolean allOk = true;
-		allOk &= validateSingleSelection(typeEl);
-		allOk &= validateSingleSelection(previewEl);
-		allOk &= validateSingleSelection(samplingEl);
-		return allOk & super.validateFormLogic(ureq);
-	}
-	
-	private boolean validateSingleSelection(SingleSelection selectionEl) {
-		boolean allOk = true;
-		selectionEl.clearError();
-		if(!selectionEl.isOneSelected()) {
-			selectionEl.setErrorKey("form.mandatory.hover", null);
-			allOk &= false;
-		}
-		return allOk;
-	}
 
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if(addTaskLink == source) {
-			doAddTask(ureq);
-		} else if(createTaskLink == source) {
-			doCreateTask(ureq);
-		} else if(taskDefTableEl == source) {
-			if(event instanceof SelectionEvent) {
-				SelectionEvent se = (SelectionEvent)event;
-				TaskDefinitionRow row = taskModel.getObject(se.getIndex());
-				if("edit".equals(se.getCommand())) {
-					doEdit(ureq, row.getTaskDefinition());
-				} else if("delete".equals(se.getCommand())) {
-					RepositoryEntry entry = courseEditorEnv.getCourseGroupManager().getCourseEntry();
-					if(gtaManager.isTaskInProcess(entry, gtaNode, row.getTaskDefinition().getFilename())) {
-						doConfirmDelete(ureq, row.getTaskDefinition());
-					} else {
-						doDelete(ureq, row.getTaskDefinition());
-					}
-				}
-			}
-		} else if(typeEl == source) {
+		if(typeEl == source) {
 			boolean allowPreview = typeEl.isSelected(0);
 			previewEl.setVisible(allowPreview);
 		}
@@ -363,6 +141,9 @@ public class GTAAssignmentEditController extends FormBasicController {
 
 	@Override
 	protected void formOK(UserRequest ureq) {
+		boolean coachUploadAllowed = coachAllowedTasksEl.isAtLeastSelected(1);
+		config.setBooleanEntry(GTACourseNode.GTASK_COACH_ALLOWED_UPLOAD_TASKS, coachUploadAllowed);
+		
 		//assignment type
 		String type = typeEl.isSelected(0) ? GTACourseNode.GTASK_ASSIGNEMENT_TYPE_MANUAL : GTACourseNode.GTASK_ASSIGNEMENT_TYPE_AUTO;
 		config.setStringValue(GTACourseNode.GTASK_ASSIGNEMENT_TYPE, type);
@@ -385,139 +166,5 @@ public class GTAAssignmentEditController extends FormBasicController {
 		}
 		
 		fireEvent(ureq, Event.DONE_EVENT);
-	}
-	
-	private void doAddTask(UserRequest ureq) {
-		addTaskCtrl = new EditTaskController(ureq, getWindowControl(), tasksFolder);
-		listenTo(addTaskCtrl);
-
-		String title = translate("add.task");
-		cmc = new CloseableModalController(getWindowControl(), null, addTaskCtrl.getInitialComponent(), true, title, false);
-		listenTo(cmc);
-		cmc.activate();
-	}
-	
-	private void doEdit(UserRequest ureq, TaskDefinition taskDef) {
-		if(taskDef.getFilename().endsWith(".html")) {
-			doEditTaskEditor(ureq, taskDef);
-		} else {
-			doReplaceTask(ureq, taskDef);
-		}	
-	}
-	
-	private void doReplaceTask(UserRequest ureq, TaskDefinition taskDef) {
-		editTaskCtrl = new EditTaskController(ureq, getWindowControl(), taskDef, tasksFolder);
-		listenTo(editTaskCtrl);
-
-		String title = translate("edit.task");
-		cmc = new CloseableModalController(getWindowControl(), null, editTaskCtrl.getInitialComponent(), true, title, false);
-		listenTo(cmc);
-		cmc.activate();
-	}
-	
-	private void doFinishReplacementOfTask(String replacedFilename, TaskDefinition taskDef) {
-		RepositoryEntry re = courseEditorEnv.getCourseGroupManager().getCourseEntry();
-		TaskList list = gtaManager.getTaskList(re, gtaNode);
-		if(list != null) {
-			gtaManager.updateTaskName(list, replacedFilename, taskDef.getFilename());
-		}
-	}
-	
-	private void doCreateTask(UserRequest ureq) {
-		newTaskCtrl = new NewTaskController(ureq, getWindowControl(), tasksContainer);
-		listenTo(newTaskCtrl);
-		
-		cmc = new CloseableModalController(getWindowControl(), "close", newTaskCtrl.getInitialComponent());
-		listenTo(cmc);
-		cmc.activate();
-	}
-	
-	private void doCreateTaskEditor(UserRequest ureq, TaskDefinition taskDef) {
-		String documentName = taskDef.getFilename();
-		VFSItem item = tasksContainer.resolve(documentName);
-		if(item == null) {
-			tasksContainer.createChildLeaf(documentName);
-		} else {
-			documentName = VFSManager.rename(tasksContainer, documentName);
-			tasksContainer.createChildLeaf(documentName);
-		}
-
-		newTaskEditorCtrl = WysiwygFactory.createWysiwygController(ureq, getWindowControl(),
-				tasksContainer, documentName, "media", true, true);
-		newTaskEditorCtrl.getRichTextConfiguration().disableMedia();
-		newTaskEditorCtrl.getRichTextConfiguration().setAllowCustomMediaFactory(false);
-		newTaskEditorCtrl.setNewFile(true);
-		newTaskEditorCtrl.setUserObject(taskDef);
-		listenTo(newTaskEditorCtrl);
-		
-		cmc = new CloseableModalController(getWindowControl(), "close", newTaskEditorCtrl.getInitialComponent());
-		listenTo(cmc);
-		cmc.activate();
-	}
-	
-	private void doEditTaskEditor(UserRequest ureq, TaskDefinition taskDef) {
-		VFSItem htmlDocument = tasksContainer.resolve(taskDef.getFilename());
-		if(htmlDocument == null || !(htmlDocument instanceof VFSLeaf)) {
-			showError("error.missing.file");
-		} else {
-			editTaskEditorCtrl = new EditHTMLTaskController(ureq, getWindowControl(), taskDef, tasksContainer);
-			listenTo(editTaskEditorCtrl);
-			
-			cmc = new CloseableModalController(getWindowControl(), "close", editTaskEditorCtrl.getInitialComponent());
-			listenTo(cmc);
-			cmc.activate();
-		}
-	}
-	
-	private void doConfirmDelete(UserRequest ureq, TaskDefinition row) {
-		String title = translate("warning.tasks.in.process.delete.title");
-		String text = translate("warning.tasks.in.process.delete.text");
-		confirmDeleteCtrl = activateOkCancelDialog(ureq, title, text, confirmDeleteCtrl);
-		confirmDeleteCtrl.setUserObject(row);
-	}
-	
-	private void doDelete(UserRequest ureq, TaskDefinition taskDef) {
-		taskList.getTasks().remove(taskDef);
-		
-		VFSItem item = tasksContainer.resolve(taskDef.getFilename());
-		if(item != null) {
-			item.delete();
-		}
-		
-		updateModel();
-		fireEvent(ureq, Event.DONE_EVENT);
-	}
-	
-	private class WarningFlexiCellRenderer implements FlexiCellRenderer {
-		
-		private String[] tasks;
-
-		public void setFilenames(String[] tasks) {
-			this.tasks = tasks;
-		}
-
-		@Override
-		public void render(Renderer renderer, StringOutput target, Object cellValue, int row,
-				FlexiTableComponent source, URLBuilder ubu, Translator translator) {
-			
-			if(cellValue instanceof String) {
-				String filename = (String)cellValue;
-				boolean found = false;
-				
-				if(tasks != null && tasks.length > 0) {
-					for(String task:tasks) {
-						if(task.equals(filename)) {
-							found = true;
-							break;
-						}
-					}
-				}
-				
-				if(!found) {
-					target.append("<i class='o_icon o_icon_warn'> </i> ");
-				}
-				StringHelper.escapeHtml(target, filename);
-			}
-		}
 	}
 }

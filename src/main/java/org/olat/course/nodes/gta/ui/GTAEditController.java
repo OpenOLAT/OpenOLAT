@@ -19,8 +19,6 @@
  */
 package org.olat.course.nodes.gta.ui;
 
-import java.io.File;
-
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.tabbedpane.TabbedPane;
@@ -28,19 +26,17 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.tabbable.ActivateableTabbableDefaultController;
-import org.olat.core.util.vfs.VFSContainer;
 import org.olat.course.ICourse;
 import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.condition.Condition;
 import org.olat.course.condition.ConditionEditController;
 import org.olat.course.editor.NodeEditController;
 import org.olat.course.nodes.GTACourseNode;
-import org.olat.course.nodes.gta.GTAManager;
 import org.olat.course.nodes.ms.MSEditFormController;
+import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.course.tree.CourseEditorTreeModel;
 import org.olat.modules.ModuleConfiguration;
-import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -70,17 +66,10 @@ public class GTAEditController extends ActivateableTabbableDefaultController {
 	private ConditionEditController accessibilityCondCtrl;
 	private GTASampleSolutionsEditController solutionsCtrl;
 	
-	private final File tasksDir;
-	private final File solutionsDir;
-	private final VFSContainer tasksContainer;
-	private final VFSContainer solutionsContainer;
-	
 	private final GTACourseNode gtaNode;
 	private final ModuleConfiguration config;
 	private final UserCourseEnvironment euce;
-	
-	@Autowired
-	private GTAManager gtaManager;
+	private final CourseEnvironment courseEnv;
 	
 	public GTAEditController(UserRequest ureq, WindowControl wControl, GTACourseNode gtaNode,
 			ICourse course, UserCourseEnvironment euce) {
@@ -88,12 +77,8 @@ public class GTAEditController extends ActivateableTabbableDefaultController {
 		
 		this.euce = euce;
 		this.gtaNode = gtaNode;
+		courseEnv = course.getCourseEnvironment();
 		config = gtaNode.getModuleConfiguration();
-		
-		tasksDir = gtaManager.getTasksDirectory(course.getCourseEnvironment(), gtaNode);
-		tasksContainer = gtaManager.getTasksContainer(course.getCourseEnvironment(), gtaNode);
-		solutionsDir = gtaManager.getSolutionsDirectory(course.getCourseEnvironment(), gtaNode);
-		solutionsContainer = gtaManager.getSolutionsContainer(course.getCourseEnvironment(), gtaNode);
 
 		// Accessibility precondition
 		Condition accessCondition = gtaNode.getPreConditionAccess();
@@ -105,9 +90,7 @@ public class GTAEditController extends ActivateableTabbableDefaultController {
 		workflowCtrl = new GTAWorkflowEditController(ureq, getWindowControl(), gtaNode, euce.getCourseEditorEnv());
 		listenTo(workflowCtrl);
 		//assignment
-		assignmentCtrl = new GTAAssignmentEditController(ureq, getWindowControl(),
-				gtaNode, config, euce.getCourseEditorEnv(),
-				tasksDir, tasksContainer);
+		assignmentCtrl = new GTAAssignmentEditController(ureq, getWindowControl(), gtaNode, config, courseEnv);
 		listenTo(assignmentCtrl);
 		//submission
 		submissionCtrl = new GTASubmissionEditController(ureq, getWindowControl(), config);
@@ -116,8 +99,7 @@ public class GTAEditController extends ActivateableTabbableDefaultController {
 		manualAssessmentCtrl = new MSEditFormController(ureq, getWindowControl(), config);
 		listenTo(manualAssessmentCtrl);
 		//solutions
-		solutionsCtrl = new GTASampleSolutionsEditController(ureq, getWindowControl(), gtaNode, euce.getCourseEditorEnv(),
-				solutionsDir, solutionsContainer);
+		solutionsCtrl = new GTASampleSolutionsEditController(ureq, getWindowControl(), gtaNode, courseEnv);
 		listenTo(solutionsCtrl);
 	}
 	
@@ -183,9 +165,7 @@ public class GTAEditController extends ActivateableTabbableDefaultController {
 				fireEvent(ureq, NodeEditController.NODECONFIG_CHANGED_EVENT);
 			} else if(event == Event.CANCELLED_EVENT) {
 				removeAsListenerAndDispose(assignmentCtrl);
-				assignmentCtrl = new GTAAssignmentEditController(ureq, getWindowControl(),
-						gtaNode, config, euce.getCourseEditorEnv(),
-						tasksDir, tasksContainer);
+				assignmentCtrl = new GTAAssignmentEditController(ureq, getWindowControl(), gtaNode, config, courseEnv);
 				listenTo(assignmentCtrl);
 				myTabbedPane.replaceTab(assignmentPos, assignmentCtrl.getInitialComponent());
 			}

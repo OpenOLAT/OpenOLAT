@@ -20,6 +20,7 @@
 package org.olat.course.nodes.gta.manager;
 
 import java.io.File;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -46,7 +47,7 @@ import org.olat.core.logging.Tracing;
 import org.olat.core.util.io.SystemFilenameFilter;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSManager;
-import org.olat.course.editor.CourseEditorEnv;
+import org.olat.core.util.xml.XStreamHelper;
 import org.olat.course.nodes.GTACourseNode;
 import org.olat.course.nodes.gta.AssignmentResponse;
 import org.olat.course.nodes.gta.AssignmentResponse.Status;
@@ -57,6 +58,10 @@ import org.olat.course.nodes.gta.TaskLight;
 import org.olat.course.nodes.gta.TaskList;
 import org.olat.course.nodes.gta.TaskProcess;
 import org.olat.course.nodes.gta.model.Membership;
+import org.olat.course.nodes.gta.model.Solution;
+import org.olat.course.nodes.gta.model.SolutionList;
+import org.olat.course.nodes.gta.model.TaskDefinition;
+import org.olat.course.nodes.gta.model.TaskDefinitionList;
 import org.olat.course.nodes.gta.model.TaskImpl;
 import org.olat.course.nodes.gta.model.TaskListImpl;
 import org.olat.course.nodes.gta.ui.SubmitEvent;
@@ -72,8 +77,11 @@ import org.olat.modules.ModuleConfiguration;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
 import org.olat.repository.manager.RepositoryEntryRelationDAO;
+import org.olat.resource.OLATResource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import com.thoughtworks.xstream.XStream;
 
 /**
  * 
@@ -85,6 +93,8 @@ import org.springframework.stereotype.Service;
 public class GTAManagerImpl implements GTAManager, DeletableGroupData {
 	
 	private static final OLog log = Tracing.createLoggerFor(GTAManagerImpl.class);
+	
+	private static final XStream taskDefinitionsXstream = XStreamHelper.createXStreamInstance();
 	
 	@Autowired
 	private DB dbInstance;
@@ -121,6 +131,89 @@ public class GTAManagerImpl implements GTAManager, DeletableGroupData {
 	}
 
 	@Override
+	public List<TaskDefinition> getTaskDefinitions(CourseEnvironment courseEnv, GTACourseNode cNode) {
+		Path taskDefinitionsPath = Paths.get(FolderConfig.getCanonicalRoot(), courseEnv.getCourseBaseContainer().getRelPath(),
+				"gtasks", cNode.getIdent(), TASKS_DEFINITIONS);
+
+		List<TaskDefinition> taskDefinitions = new ArrayList<>();
+		if(Files.exists(taskDefinitionsPath)) {
+			TaskDefinitionList taskDefinitionsList = (TaskDefinitionList)taskDefinitionsXstream.fromXML(taskDefinitionsPath.toFile());
+			if(taskDefinitionsList != null && taskDefinitionsList.getTasks() != null) {
+				taskDefinitions.addAll(taskDefinitionsList.getTasks());
+			}
+		} else {
+			syncWithTaskList(courseEnv, cNode, new TaskListSynched() {
+				@Override
+				public void sync() {
+					ModuleConfiguration config = cNode.getModuleConfiguration();
+					TaskDefinitionList tasks = (TaskDefinitionList)config.get(GTACourseNode.GTASK_TASKS);
+					if(tasks != null) {
+						taskDefinitions.addAll(tasks.getTasks());
+					}
+					storeTaskDefinitions(taskDefinitions, courseEnv, cNode);
+				}
+			});
+		}
+		return	taskDefinitions;
+	}
+
+	@Override
+	public void addTaskDefinition(TaskDefinition newTask, CourseEnvironment courseEnv, GTACourseNode cNode) {
+		syncWithTaskList( courseEnv, cNode, new TaskListSynched() {
+			@Override
+			public void sync() {
+				List<TaskDefinition> taskDefinitions = getTaskDefinitions(courseEnv, cNode);
+				taskDefinitions.add(newTask);
+				storeTaskDefinitions(taskDefinitions, courseEnv, cNode);
+			}
+		});
+	}
+
+	@Override
+	public void removeTaskDefinition(TaskDefinition removedTask, CourseEnvironment courseEnv, GTACourseNode cNode) {
+		syncWithTaskList( courseEnv, cNode, new TaskListSynched() {
+			@Override
+			public void sync() {
+				List<TaskDefinition> taskDefinitions = getTaskDefinitions(courseEnv, cNode);
+				for(int i=taskDefinitions.size(); i-->0; ) {
+					if(taskDefinitions.get(i).getFilename().equals(removedTask.getFilename())) {
+						taskDefinitions.remove(i);
+						break;
+					}
+				}
+				storeTaskDefinitions(taskDefinitions, courseEnv, cNode);
+			}
+		});
+	}
+
+	@Override
+	public void updateTaskDefinition(String currentFilename, TaskDefinition task, CourseEnvironment courseEnv, GTACourseNode cNode) {
+		syncWithTaskList( courseEnv, cNode, new TaskListSynched() {
+			@Override
+			public void sync() {
+				String filename = currentFilename == null ? task.getFilename() : currentFilename;
+				List<TaskDefinition> taskDefinitions = getTaskDefinitions(courseEnv, cNode);
+				for(int i=taskDefinitions.size(); i-->0; ) {
+					if(taskDefinitions.get(i).getFilename().equals(filename)) {
+						taskDefinitions.set(i, task);
+						break;
+					}
+				}
+				storeTaskDefinitions(taskDefinitions, courseEnv, cNode);
+			}
+		});
+	}
+	
+	private void storeTaskDefinitions(List<TaskDefinition> taskDefinitions, CourseEnvironment courseEnv, GTACourseNode cNode) {
+		TaskDefinitionList list = new TaskDefinitionList();
+		list.setTasks(taskDefinitions);
+		
+		Path taskDefinitionsPath = Paths.get(FolderConfig.getCanonicalRoot(), courseEnv.getCourseBaseContainer().getRelPath(),
+				"gtasks", cNode.getIdent(), TASKS_DEFINITIONS);
+		XStreamHelper.writeObject(taskDefinitionsXstream, taskDefinitionsPath.toFile(), list);
+	}
+
+	@Override
 	public File getSolutionsDirectory(CourseEnvironment courseEnv, GTACourseNode cNode) {
 		Path path = Paths.get(FolderConfig.getCanonicalRoot(), courseEnv.getCourseBaseContainer().getRelPath(),
 				"gtasks", cNode.getIdent(), "solutions");
@@ -134,6 +227,100 @@ public class GTAManagerImpl implements GTAManager, DeletableGroupData {
 	@Override
 	public VFSContainer getSolutionsContainer(CourseEnvironment courseEnv, GTACourseNode cNode) {
 		return getContainer(courseEnv, "solutions", cNode);
+	}
+
+	@Override
+	public List<Solution> getSolutions(CourseEnvironment courseEnv, GTACourseNode cNode) {
+		Path solutionDefinitionsPath = Paths.get(FolderConfig.getCanonicalRoot(), courseEnv.getCourseBaseContainer().getRelPath(),
+				"gtasks", cNode.getIdent(), SOLUTIONS_DEFINITIONS);
+
+		List<Solution> solutionsDefinitions = new ArrayList<>();
+		if(Files.exists(solutionDefinitionsPath)) {
+			SolutionList solutionDefinitionsList = (SolutionList)taskDefinitionsXstream.fromXML(solutionDefinitionsPath.toFile());
+			if(solutionDefinitionsList != null && solutionDefinitionsList.getSolutions() != null) {
+				solutionsDefinitions.addAll(solutionDefinitionsList.getSolutions());
+			}
+		} else {
+			syncWithTaskList( courseEnv, cNode, new TaskListSynched() {
+				@Override
+				public void sync() {
+					ModuleConfiguration config = cNode.getModuleConfiguration();
+					SolutionList solutions = (SolutionList)config.get(GTACourseNode.GTASK_SOLUTIONS);
+					if(solutions != null && solutions.getSolutions() != null) {
+						solutionsDefinitions.addAll(solutions.getSolutions());
+					}
+					storeSolutions(solutionsDefinitions, courseEnv, cNode);
+				}
+			});
+		}
+		return solutionsDefinitions;
+	}
+
+	@Override
+	public void addSolution(Solution newSolution, CourseEnvironment courseEnv, GTACourseNode cNode) {
+		syncWithTaskList( courseEnv, cNode, new TaskListSynched() {
+			@Override
+			public void sync() {
+				List<Solution> solutions = getSolutions(courseEnv, cNode);
+				solutions.add(newSolution);
+				storeSolutions(solutions, courseEnv, cNode);
+			}
+		});
+	}
+
+	@Override
+	public void removeSolution(Solution removedSolution, CourseEnvironment courseEnv, GTACourseNode cNode) {
+		syncWithTaskList( courseEnv, cNode, new TaskListSynched() {
+			@Override
+			public void sync() {
+				List<Solution> solutions = getSolutions(courseEnv, cNode);
+				for(int i=solutions.size(); i-->0; ) {
+					if(solutions.get(i).getFilename().equals(removedSolution.getFilename())) {
+						solutions.remove(i);
+						break;
+					}
+				}
+				storeSolutions(solutions, courseEnv, cNode);
+			}
+		});
+	}
+	
+	@Override
+	public void updateSolution(String currentFilename, Solution solution, CourseEnvironment courseEnv, GTACourseNode cNode) {
+		syncWithTaskList( courseEnv, cNode, new TaskListSynched() {
+			@Override
+			public void sync() {
+				String filename = currentFilename == null ? solution.getFilename() : currentFilename;
+				List<Solution> solutions = getSolutions(courseEnv, cNode);
+				for(int i=solutions.size(); i-->0; ) {
+					if(solutions.get(i).getFilename().equals(filename)) {
+						solutions.set(i, solution);
+						break;
+					}
+				}
+				storeSolutions(solutions, courseEnv, cNode);
+			}
+		});
+	}
+	
+	private void storeSolutions(List<Solution> solutions, CourseEnvironment courseEnv, GTACourseNode cNode) {
+		SolutionList list = new SolutionList();
+		list.setSolutions(solutions);
+		
+		Path solutionsPath = Paths.get(FolderConfig.getCanonicalRoot(), courseEnv.getCourseBaseContainer().getRelPath(),
+				"gtasks", cNode.getIdent(), SOLUTIONS_DEFINITIONS);
+		XStreamHelper.writeObject(taskDefinitionsXstream, solutionsPath.toFile(), list);
+	}
+	
+	private void syncWithTaskList(CourseEnvironment courseEnv, GTACourseNode cNode, TaskListSynched synched) {
+		TaskList tasks = getTaskList(courseEnv.getCourseGroupManager().getCourseEntry(), cNode);
+		if(tasks != null) {
+			loadForUpdate(tasks);
+			synched.sync();
+			dbInstance.commit();
+		} else {
+			synched.sync();
+		}
 	}
 
 	@Override
@@ -296,8 +483,8 @@ public class GTAManagerImpl implements GTAManager, DeletableGroupData {
 	}
 
 	@Override
-	public SubscriptionContext getSubscriptionContext(CourseEditorEnv courseEnv, GTACourseNode cNode) {
-		Long courseResourceableId = courseEnv.getCourseGroupManager().getCourseResource().getResourceableId();
+	public SubscriptionContext getSubscriptionContext(OLATResource courseResource, GTACourseNode cNode) {
+		Long courseResourceableId = courseResource.getResourceableId();
 		return new SubscriptionContext("CourseModule", courseResourceableId, cNode.getIdent());
 	}
 
@@ -1000,5 +1187,11 @@ public class GTAManagerImpl implements GTAManager, DeletableGroupData {
 			courseEnv.getAuditManager()
 				.appendToUserNodeLog(cNode, actor, assessedIdentity, msg);
 		}
+	}
+	
+	private interface TaskListSynched {
+		
+		public void sync();
+		
 	}
 }
