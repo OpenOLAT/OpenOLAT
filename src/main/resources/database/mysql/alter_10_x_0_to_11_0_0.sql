@@ -1,5 +1,5 @@
 create table o_as_entry (
-   id bigint not null,
+   id bigint not null auto_increment,
    creationdate datetime not null,
    lastmodified datetime not null,
    a_attemtps bigint default null,
@@ -27,7 +27,7 @@ alter table o_as_entry add constraint as_entry_to_refentry_idx foreign key (fk_r
 create index idx_as_entry_to_id_idx on o_as_entry (a_assessment_id);
 
 create table o_qti_assessmenttest_session (
-   id bigint not null,
+   id bigint not null auto_increment,
    creationdate datetime not null,
    lastmodified datetime not null,
    q_exploded bit not null default 0,
@@ -53,7 +53,7 @@ alter table o_qti_assessmenttest_session add constraint qti_sess_to_identity_idx
 alter table o_qti_assessmenttest_session add constraint qti_sess_to_as_entry_idx foreign key (fk_assessment_entry) references o_as_entry (id);
 
 create table o_qti_assessmentitem_session (
-   id bigint not null,
+   id bigint not null auto_increment,
    creationdate datetime not null,
    lastmodified datetime not null,
    q_itemidentifier varchar(64) not null,
@@ -72,7 +72,7 @@ alter table o_qti_assessmentitem_session add constraint qti_itemsess_to_testsess
 create index idx_item_identifier_idx on o_qti_assessmentitem_session (q_itemidentifier);
 
 create table o_qti_assessment_response (
-   id bigint not null,
+   id bigint not null auto_increment,
    creationdate datetime not null,
    lastmodified datetime not null,
    q_responseidentifier varchar(64) not null,
@@ -90,7 +90,7 @@ alter table o_qti_assessment_response add constraint qti_resp_to_itemsession_idx
 create index idx_response_identifier_idx on o_qti_assessment_response (q_responseidentifier);
 
 create table o_qti_assessment_marks (
-   id bigint not null,
+   id bigint not null auto_increment,
    creationdate datetime not null,
    lastmodified datetime not null,
    q_marks mediumtext default null,

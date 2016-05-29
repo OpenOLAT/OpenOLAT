@@ -5,8 +5,17 @@
   <class name="org.olat.portfolio.model.notification.EPStructureElementNotification" table="o_ep_notifications_struct_v" mutable="false">
   	<!-- the default columns -->
     <id name="key" column="struct_id" type="long" unsaved-value="null">
-      <generator class="hilo"/>
-    </id>
+		<generator class="enhanced-sequence">
+			<param name="sequence_name">hibernate_unique_key</param>
+			<param name="force_table_use">true</param>
+			<param name="optimizer">legacy-hilo</param>
+			<param name="value_column">next_hi</param>
+			<param name="increment_size">32767</param>
+			<param name="initial_value">32767</param>
+		</generator>
+	</id>
+    
+    
 	<property name="type" column="struct_type" type="string"/>
 	<property name="title" column="struct_title" type="string"/>
 	<property name="rootKey" column="struct_root_id" type="long"/>
@@ -43,7 +52,14 @@
   <class name="org.olat.portfolio.model.notification.EPRatingNotification" table="o_ep_notifications_rating_v" mutable="false">
   	<!-- the default columns -->
 	<id name="key" column="rating_id" type="long" unsaved-value="null">
-      <generator class="hilo"/>
+		<generator class="enhanced-sequence">
+			<param name="sequence_name">hibernate_unique_key</param>
+			<param name="force_table_use">true</param>
+			<param name="optimizer">legacy-hilo</param>
+			<param name="value_column">next_hi</param>
+			<param name="increment_size">32767</param>
+			<param name="initial_value">32767</param>
+		</generator>
     </id>
 	<property name="creationDate" column="creation_date" type="timestamp" />
 	<property name="lastModified" column="last_modified" type="timestamp" />
@@ -59,7 +75,14 @@
   <class name="org.olat.portfolio.model.notification.EPCommentNotification" table="o_ep_notifications_comment_v" mutable="false">
   	<!-- the default columns -->
 	<id name="key" column="comment_id" type="long" unsaved-value="null">
-      <generator class="hilo"/>
+		<generator class="enhanced-sequence">
+			<param name="sequence_name">hibernate_unique_key</param>
+			<param name="force_table_use">true</param>
+			<param name="optimizer">legacy-hilo</param>
+			<param name="value_column">next_hi</param>
+			<param name="increment_size">32767</param>
+			<param name="initial_value">32767</param>
+		</generator>
     </id>
 	<property name="creationDate" column="creation_date" type="timestamp" />
 

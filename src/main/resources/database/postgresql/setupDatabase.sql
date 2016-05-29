@@ -1069,7 +1069,7 @@ create table o_as_user_course_infos (
 );
 
 create table o_as_entry (
-   id int8 not null,
+   id bigserial,
    creationdate timestamp not null,
    lastmodified timestamp not null,
    a_attemtps int8 default null,
@@ -1323,7 +1323,7 @@ create table o_mapper (
 
 -- qti 2.1
 create table o_qti_assessmenttest_session (
-   id int8 not null,
+   id bigserial,
    creationdate timestamp not null,
    lastmodified timestamp not null,
    q_exploded bool default false,
@@ -1343,7 +1343,7 @@ create table o_qti_assessmenttest_session (
 );
 
 create table o_qti_assessmentitem_session (
-   id int8 not null,
+   id bigserial,
    creationdate timestamp not null,
    lastmodified timestamp not null,
    q_itemidentifier varchar(64) not null,
@@ -1358,7 +1358,7 @@ create table o_qti_assessmentitem_session (
 );
 
 create table o_qti_assessment_response (
-   id int8 not null,
+   id bigserial,
    creationdate timestamp not null,
    lastmodified timestamp not null,
    q_responseidentifier varchar(64) not null,
@@ -1371,7 +1371,7 @@ create table o_qti_assessment_response (
 );
 
 create table o_qti_assessment_marks (
-   id int8 not null,
+   id bigserial,
    creationdate timestamp not null,
    lastmodified timestamp not null,
    q_marks text default null,

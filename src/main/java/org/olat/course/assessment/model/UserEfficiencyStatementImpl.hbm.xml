@@ -7,7 +7,14 @@
   <class name="org.olat.course.assessment.model.UserEfficiencyStatementImpl" table="o_as_eff_statement">
 
 	<id name="key" type="long" column="id"	unsaved-value="null">
-		<generator class="hilo"/>
+		<generator class="enhanced-sequence">
+			<param name="sequence_name">hibernate_unique_key</param>
+			<param name="force_table_use">true</param>
+			<param name="optimizer">legacy-hilo</param>
+			<param name="value_column">next_hi</param>
+			<param name="increment_size">32767</param>
+			<param name="initial_value">32767</param>
+		</generator>
 	</id>
 
 	<version name="version" access="field" column="version" type="int"/>
@@ -46,7 +53,14 @@
   <class name="org.olat.course.assessment.model.UserEfficiencyStatementStandalone" table="o_as_eff_statement">
 
 	<id name="key" type="long" column="id"	unsaved-value="null">
-		<generator class="hilo"/>
+		<generator class="enhanced-sequence">
+			<param name="sequence_name">hibernate_unique_key</param>
+			<param name="force_table_use">true</param>
+			<param name="optimizer">legacy-hilo</param>
+			<param name="value_column">next_hi</param>
+			<param name="increment_size">32767</param>
+			<param name="initial_value">32767</param>
+		</generator>
 	</id>
 
 	<version name="version" access="field" column="version" type="int"/>
@@ -77,7 +91,14 @@
   
   <class name="org.olat.course.assessment.model.UserEfficiencyStatementLight" table="o_as_eff_statement" mutable="false">
 	<id name="key" type="long" column="id"	unsaved-value="null">
-		<generator class="hilo"/>
+		<generator class="enhanced-sequence">
+			<param name="sequence_name">hibernate_unique_key</param>
+			<param name="force_table_use">true</param>
+			<param name="optimizer">legacy-hilo</param>
+			<param name="value_column">next_hi</param>
+			<param name="increment_size">32767</param>
+			<param name="initial_value">32767</param>
+		</generator>
 	</id>
 
 	<version name="version" access="field" column="version" type="int"/>

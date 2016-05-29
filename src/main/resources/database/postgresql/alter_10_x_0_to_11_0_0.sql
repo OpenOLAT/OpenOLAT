@@ -1,5 +1,5 @@
 create table o_as_entry (
-   id int8 not null,
+   id bigserial,
    creationdate timestamp not null,
    lastmodified timestamp not null,
    a_attemtps int8 default null,
@@ -31,7 +31,7 @@ create index idx_as_entry_to_id_idx on o_as_entry (a_assessment_id);
 
 
 create table o_qti_assessmenttest_session (
-   id int8 not null,
+   id bigserial,
    creationdate timestamp not null,
    lastmodified timestamp not null,
    q_exploded bool default false,
@@ -60,7 +60,7 @@ alter table o_qti_assessmenttest_session add constraint qti_sess_to_as_entry_idx
 create index idx_qti_sess_to_as_entry_idx on o_qti_assessmenttest_session (fk_assessment_entry);
 
 create table o_qti_assessmentitem_session (
-   id int8 not null,
+   id bigserial,
    creationdate timestamp not null,
    lastmodified timestamp not null,
    q_itemidentifier varchar(64) not null,
@@ -79,7 +79,7 @@ create index idx_itemsess_to_testsess_idx on o_qti_assessmentitem_session (fk_as
 create index idx_item_identifier_idx on o_qti_assessmentitem_session (q_itemidentifier);
 
 create table o_qti_assessment_response (
-   id int8 not null,
+   id bigserial,
    creationdate timestamp not null,
    lastmodified timestamp not null,
    q_responseidentifier varchar(64) not null,
@@ -98,7 +98,7 @@ create index idx_resp_to_itemsession_idx on o_qti_assessment_response (fk_assess
 create index idx_response_identifier_idx on o_qti_assessment_response (q_responseidentifier);
 
 create table o_qti_assessment_marks (
-   id int8 not null,
+   id bigserial,
    creationdate timestamp not null,
    lastmodified timestamp not null,
    q_marks text default null,

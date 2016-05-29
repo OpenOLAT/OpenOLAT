@@ -8,7 +8,14 @@
 		table="o_stat_homeorg">
 
 		<id name="key"                  column="id"          type="long" unsaved-value="null">
-			<generator class="hilo" />
+		<generator class="enhanced-sequence">
+			<param name="sequence_name">hibernate_unique_key</param>
+			<param name="force_table_use">true</param>
+			<param name="optimizer">legacy-hilo</param>
+			<param name="value_column">next_hi</param>
+			<param name="increment_size">32767</param>
+			<param name="initial_value">32767</param>
+		</generator>
 		</id>
 		<property name="businessPath"   column="businesspath"		type="string"	length="2048" not-null="true" />
 		<property name="resId"			column="resid"				type="long"		not-null="true"/>

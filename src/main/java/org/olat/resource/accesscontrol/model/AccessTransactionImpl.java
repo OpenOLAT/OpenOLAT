@@ -37,6 +37,7 @@ import javax.persistence.TemporalType;
 import javax.persistence.Version;
 
 import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.annotations.Parameter;
 import org.olat.core.id.Persistable;
 import org.olat.core.util.StringHelper;
 import org.olat.resource.accesscontrol.AccessTransaction;
@@ -53,7 +54,14 @@ public class AccessTransactionImpl implements Persistable, AccessTransaction {
 	
 	@Id
 	@GeneratedValue(generator = "system-uuid")
-	@GenericGenerator(name = "system-uuid", strategy = "hilo")
+	@GenericGenerator(name = "system-uuid", strategy = "enhanced-sequence", parameters={
+		@Parameter(name="sequence_name", value="hibernate_unique_key"),
+		@Parameter(name="force_table_use", value="true"),
+		@Parameter(name="optimizer", value="legacy-hilo"),
+		@Parameter(name="value_column", value="next_hi"),
+		@Parameter(name="increment_size", value="32767"),
+		@Parameter(name="initial_value", value="32767")
+	})
 	@Column(name="transaction_id", nullable=false, unique=true, insertable=true, updatable=false)
 	private Long key;
 	@Version

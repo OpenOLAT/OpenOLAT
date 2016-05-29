@@ -1102,7 +1102,7 @@ create table o_as_user_course_infos (
 );
 
 create table o_as_entry (
-   id number(20) not null,
+   id number(20) GENERATED ALWAYS AS IDENTITY,
    creationdate date not null,
    lastmodified date not null,
    a_attemtps number(20) default null,
@@ -1354,7 +1354,7 @@ create table o_mapper (
 );
 
 create table o_qti_assessmenttest_session (
-   id number(20) not null,
+   id number(20) GENERATED ALWAYS AS IDENTITY,
    creationdate date not null,
    lastmodified date not null,
    q_exploded number default 0 not null,
@@ -1374,7 +1374,7 @@ create table o_qti_assessmenttest_session (
 );
 
 create table o_qti_assessmentitem_session (
-   id number(20) not null,
+   id number(20) GENERATED ALWAYS AS IDENTITY,
    creationdate date not null,
    lastmodified date not null,
    q_itemidentifier varchar2(64 char) not null,
@@ -1389,7 +1389,7 @@ create table o_qti_assessmentitem_session (
 );
 
 create table o_qti_assessment_response (
-   id number(20) not null,
+   id number(20) GENERATED ALWAYS AS IDENTITY,
    creationdate date not null,
    lastmodified date not null,
    q_responseidentifier varchar2(64 char) not null,
@@ -1402,7 +1402,7 @@ create table o_qti_assessment_response (
 );
 
 create table o_qti_assessment_marks (
-   id number(20) not null,
+   id number(20) GENERATED ALWAYS AS IDENTITY,
    creationdate date not null,
    lastmodified date not null,
    q_marks clob default null,

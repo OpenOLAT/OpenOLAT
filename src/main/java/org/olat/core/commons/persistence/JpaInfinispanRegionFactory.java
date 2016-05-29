@@ -21,8 +21,8 @@ package org.olat.core.commons.persistence;
 
 import java.util.Properties;
 
+import org.hibernate.boot.spi.SessionFactoryOptions;
 import org.hibernate.cache.infinispan.InfinispanRegionFactory;
-import org.hibernate.cfg.Settings;
 import org.infinispan.transaction.lookup.DummyTransactionManagerLookup;
 
 /**
@@ -39,7 +39,7 @@ public class JpaInfinispanRegionFactory extends InfinispanRegionFactory {
 
 	@Override
 	protected org.infinispan.transaction.lookup.TransactionManagerLookup createTransactionManagerLookup(
-      Settings settings, Properties properties) {
+			SessionFactoryOptions settings, Properties properties) {
 		return new DummyTransactionManagerLookup();
 	}
 

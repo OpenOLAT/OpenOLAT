@@ -1071,7 +1071,7 @@ create table o_as_user_course_infos (
 );
 
 create table o_as_entry (
-   id bigint not null,
+   id bigint not null auto_increment,
    creationdate datetime not null,
    lastmodified datetime not null,
    a_attemtps bigint default null,
@@ -1324,7 +1324,7 @@ create table o_mapper (
 
 -- qti 2.1
 create table o_qti_assessmenttest_session (
-   id bigint not null,
+   id bigint not null auto_increment,
    creationdate datetime not null,
    lastmodified datetime not null,
    q_exploded bit not null default 0,
@@ -1344,7 +1344,7 @@ create table o_qti_assessmenttest_session (
 );
 
 create table o_qti_assessmentitem_session (
-   id bigint not null,
+   id bigint not null auto_increment,
    creationdate datetime not null,
    lastmodified datetime not null,
    q_itemidentifier varchar(64) not null,
@@ -1359,7 +1359,7 @@ create table o_qti_assessmentitem_session (
 );
 
 create table o_qti_assessment_response (
-   id bigint not null,
+   id bigint not null auto_increment,
    creationdate datetime not null,
    lastmodified datetime not null,
    q_responseidentifier varchar(64) not null,
@@ -1372,7 +1372,7 @@ create table o_qti_assessment_response (
 );
 
 create table o_qti_assessment_marks (
-   id bigint not null,
+   id bigint not null auto_increment,
    creationdate datetime not null,
    lastmodified datetime not null,
    q_marks mediumtext default null,

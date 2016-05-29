@@ -4,7 +4,14 @@
 	<class name="de.bps.olat.modules.cl.Checklist" table="o_checklist">
 	
 		<id name="key" column="checklist_id" type="long" unsaved-value="null">
-			<generator class="hilo"/>
+		<generator class="enhanced-sequence">
+			<param name="sequence_name">hibernate_unique_key</param>
+			<param name="force_table_use">true</param>
+			<param name="optimizer">legacy-hilo</param>
+			<param name="value_column">next_hi</param>
+			<param name="increment_size">32767</param>
+			<param name="initial_value">32767</param>
+		</generator>
 		</id>
 
 		<property  name="version" column="version" type="int" not-null="true" access="field"/>		
