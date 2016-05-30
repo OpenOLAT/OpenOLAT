@@ -1,0 +1,34 @@
+<div id="o_print_brand" class="clearfix">
+	<span class="o_navbar-brand"></span>
+</div>
+<h1>$r.translate("print.title")</h1>
+<h3>$courseTitle</h3>
+#if($r.available("owners"))
+	$r.render("owners")
+#end
+#if($r.available("coaches"))
+	$r.render("coaches")
+#end
+#if($r.available("participants"))
+	$r.render("participants")
+#end
+<div class="clearfix"> </div>
+<script type='text/javascript'>
+/* <![CDATA[ */
+	jQuery(function() {
+		var bgImg = jQuery("#o_print_brand .o_navbar-brand");
+		var imgUrl = bgImg.css("background-image");
+		if(!(typeof imgUrl === "undefined") && !(imgUrl == "none")) {
+			imgUrl = imgUrl.replace(/^url\(["']?/, '').replace(/["']?\)$/, '');
+			if(imgUrl.length > 12) {
+				jQuery("#o_print_brand").empty().append(jQuery('<img src="' + imgUrl + '" />'));
+			} else {
+				jQuery("#o_print_brand").empty();
+			}
+		} else {
+			jQuery("#o_print_brand").empty();
+		}
+	})
+	window.print();
+/* ]]> */
+</script>

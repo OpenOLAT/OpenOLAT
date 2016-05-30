@@ -24,7 +24,6 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.FormUIFactory;
 import org.olat.core.gui.control.Controller;
-import org.olat.core.gui.control.WindowControl;
 import org.olat.modules.IModuleConfiguration;
 
 /**
@@ -38,7 +37,7 @@ public abstract class BasicFormFragment implements IFormFragment {
 	protected IFormFragmentHost host;
 	protected IFormFragmentContainer container;
 	
-	public BasicFormFragment(WindowControl wControl) {
+	public BasicFormFragment() {
 		CoreSpringFactory.autowireObject(this);		
 	}
 	

@@ -31,7 +31,9 @@ import java.util.Set;
 
 import org.olat.NewControllerFactory;
 import org.olat.basesecurity.BaseSecurity;
+import org.olat.core.commons.fullWebApp.popup.BaseFullWebappPopupLayoutFactory;
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
@@ -39,14 +41,16 @@ import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.link.Link;
+import org.olat.core.gui.components.link.LinkFactory;
+import org.olat.core.gui.components.link.LinkPopupSettings;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.creator.ControllerCreator;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.helpers.Settings;
 import org.olat.core.id.Identity;
-import org.olat.core.id.User;
 import org.olat.core.id.UserConstants;
 import org.olat.core.id.context.BusinessControl;
 import org.olat.core.id.context.BusinessControlFactory;
@@ -73,6 +77,7 @@ import org.olat.repository.RepositoryService;
 import org.olat.user.DisplayPortraitManager;
 import org.olat.user.UserAvatarMapper;
 import org.olat.user.UserManager;
+import org.olat.user.propertyhandlers.UserPropertyHandler;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -85,11 +90,15 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
 public class MembersCourseNodeRunController extends FormBasicController {
+	
+	private final List<UserPropertyHandler> userPropertyHandlers;
+	public static final String USER_PROPS_ID = MembersCourseNodeRunController.class.getName();
 
 	private final CourseEnvironment courseEnv;
 	private final DisplayPortraitManager portraitManager;
 	private final String avatarBaseURL;
 	
+	private Link printLink;
 	private FormLink allEmailLink;
 	
 	private List<Member> ownerList;
@@ -122,13 +131,14 @@ public class MembersCourseNodeRunController extends FormBasicController {
 	@Autowired
 	private BusinessGroupService businessGroupService;	
 
-	final ModuleConfiguration config;
+	private final ModuleConfiguration config;
 	
 	public MembersCourseNodeRunController(UserRequest ureq, WindowControl wControl, UserCourseEnvironment userCourseEnv, ModuleConfiguration config) {
 		super(ureq, wControl, "members");
 
 		this.config = config;
-		
+		userPropertyHandlers = userManager.getUserPropertyHandlersFor(USER_PROPS_ID, false);
+
 		courseEnv = userCourseEnv.getCourseEnvironment();
 		avatarBaseURL = registerCacheableMapper(ureq, "avatars-members", new UserAvatarMapper(true));
 		portraitManager = DisplayPortraitManager.getInstance();
@@ -141,13 +151,19 @@ public class MembersCourseNodeRunController extends FormBasicController {
 		
 		String emailFct = config.getStringValue(MembersCourseNode.CONFIG_KEY_EMAIL_FUNCTION, MembersCourseNode.EMAIL_FUNCTION_COACH_ADMIN);
 		canEmail = MembersCourseNode.EMAIL_FUNCTION_ALL.equals(emailFct) || userCourseEnv.isAdmin() || userCourseEnv.isCoach();
-
+		
 		initForm(ureq);
 	}
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		
+		if(formLayout instanceof FormLayoutContainer) {
+			printLink = LinkFactory.createButton("print", ((FormLayoutContainer)formLayout).getFormItemComponent(), this);
+			printLink.setIconLeftCSS("o_icon o_icon_print o_icon-lg");
+			printLink.setPopup(new LinkPopupSettings(880, 500, "print-members"));
+			((FormLayoutContainer)formLayout).getFormItemComponent().put("print", printLink);
+		}
+
 		IModuleConfiguration membersFrag = IModuleConfiguration.fragment("members", config);
 		
 		List<Identity> owners;
@@ -303,9 +319,6 @@ public class MembersCourseNodeRunController extends FormBasicController {
 	}
 	
 	private Member createMember(Identity identity) {
-		User user = identity.getUser();
-		String firstname = user.getProperty(UserConstants.FIRSTNAME, null);
-		String lastname = user.getProperty(UserConstants.LASTNAME, null);
 		MediaResource rsrc = portraitManager.getSmallPortraitResource(identity.getName());
 		
 		String portraitCssClass = null;
@@ -318,7 +331,7 @@ public class MembersCourseNodeRunController extends FormBasicController {
 			portraitCssClass = DisplayPortraitManager.DUMMY_BIG_CSS_CLASS;
 		}
 		String fullname = userManager.getUserDisplayName(identity);
-		return new Member(identity.getKey(), firstname, lastname, fullname, rsrc != null, portraitCssClass);
+		return new Member(identity, fullname, userPropertyHandlers, getLocale(), rsrc != null, portraitCssClass);
 	}
 	
 	@Override
@@ -329,6 +342,16 @@ public class MembersCourseNodeRunController extends FormBasicController {
 	@Override
 	protected void formOK(UserRequest ureq) {
 		//
+	}
+	
+	
+
+	@Override
+	public void event(UserRequest ureq, Component source, Event event) {
+		if(source == printLink) {
+			doPrint(ureq);
+		}
+		super.event(ureq, source, event);
 	}
 
 	@Override
@@ -376,7 +399,7 @@ public class MembersCourseNodeRunController extends FormBasicController {
 		cmc = null;
 	}
 	
-	protected void doEmail(UserRequest ureq) {
+	private void doEmail(UserRequest ureq) {
 		if(mailCtrl != null || cmc != null) return;
 		removeAsListenerAndDispose(cmc);
 		removeAsListenerAndDispose(mailCtrl);
@@ -391,23 +414,20 @@ public class MembersCourseNodeRunController extends FormBasicController {
 		cmc.activate();	
 	}
 	
-	protected void doOpenChat(Member member, UserRequest ureq) {
+	private void doOpenChat(Member member, UserRequest ureq) {
 		Buddy buddy = imService.getBuddyById(member.getKey());
 		OpenInstantMessageEvent e = new OpenInstantMessageEvent(ureq, buddy);
 		ureq.getUserSession().getSingleUserEventCenter().fireEventToListenersOf(e, InstantMessagingService.TOWER_EVENT_ORES);
 	}
-
-	protected void doSendEmailToMember(UserRequest ureq, FormItem source, FormEvent event, Member member) {
-		doSendEmailToMember(member, ureq);
-	}
-	protected void doSendEmailToMember(Member member, UserRequest ureq) {
+	
+	private void doSendEmailToMember(Member member, UserRequest ureq) {
 		ContactList memberList = new ContactList(translate("members.to", new String[]{ member.getFullName(), courseEnv.getCourseTitle() }));
 		Identity identity = securityManager.loadIdentityByKey(member.getKey());
 		memberList.add(identity);
 		doSendEmailToMember(memberList, ureq);
 	}
 
-	protected void doSendEmailToMember(ContactList contactList, UserRequest ureq) {
+	private void doSendEmailToMember(ContactList contactList, UserRequest ureq) {
 		if (contactList.getEmailsAsStrings().size() > 0) {
 			removeAsListenerAndDispose(cmc);
 			removeAsListenerAndDispose(emailController);
@@ -436,11 +456,24 @@ public class MembersCourseNodeRunController extends FormBasicController {
 		return translate("email.body.template", new String[]{courseName, courseLink.toString()});		
 	}
 	
-	protected void doOpenHomePage(Member member, UserRequest ureq) {
+	private void doOpenHomePage(Member member, UserRequest ureq) {
 		String url = "[HomePage:" + member.getKey() + "]";
 		BusinessControl bc = BusinessControlFactory.getInstance().createFromString(url);
 		WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(bc, getWindowControl());
 		NewControllerFactory.getInstance().launch(ureq, bwControl);
+	}
+	
+	private void doPrint(UserRequest ureq) {
+		ControllerCreator printControllerCreator = new ControllerCreator() {
+			@Override
+			public Controller createController(UserRequest lureq, WindowControl lwControl) {
+				lwControl.getWindowBackOffice().getChiefController().addBodyCssClass("o_cmembers_print");
+				return new MembersPrintController(lureq, lwControl, courseEnv, avatarBaseURL, userPropertyHandlers,
+						ownerList, coachList, participantList);
+			}					
+		};
+		ControllerCreator layoutCtrlr = BaseFullWebappPopupLayoutFactory.createPrintPopupLayout(printControllerCreator);
+		openInNewBrowserWindow(ureq, layoutCtrlr);
 	}
 	
 	public static class IdentityComparator implements Comparator<Identity> {
@@ -466,5 +499,4 @@ public class MembersCourseNodeRunController extends FormBasicController {
 			return result;
 		}
 	}
-
 }

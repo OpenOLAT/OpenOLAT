@@ -32,15 +32,14 @@ import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
 import org.olat.core.gui.components.form.flexible.impl.BasicFormFragment;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
+import org.olat.core.gui.components.form.flexible.impl.IFormFragment;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
-import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.util.StringHelper;
 import org.olat.course.condition.AreaSelectionController;
 import org.olat.course.condition.GroupSelectionController;
 import org.olat.course.editor.CourseEditorEnv;
-import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.group.BusinessGroupService;
 import org.olat.group.BusinessGroupShort;
 import org.olat.group.area.BGArea;
@@ -72,7 +71,7 @@ public class MembersSelectorFormFragment extends BasicFormFragment {
 	public static final String CONFIG_KEY_PARTICIPANTS_ALL 		= "ParticipantsAll";
 	
 	
-	private CourseEditorEnv cev;
+	private final CourseEditorEnv cev;
 
 	// Coaches
 	private SelectionElement wantCoaches;
@@ -108,9 +107,8 @@ public class MembersSelectorFormFragment extends BasicFormFragment {
 	@Autowired
 	private BusinessGroupService businessGroupService;
 	
-	public MembersSelectorFormFragment(UserRequest ureq, WindowControl wControl, UserCourseEnvironment uce) {
-		super(wControl);
-		this.cev = uce.getCourseEditorEnv();
+	public MembersSelectorFormFragment(CourseEditorEnv cev) {
+		this.cev = cev;
 	}
 	
 	@Override

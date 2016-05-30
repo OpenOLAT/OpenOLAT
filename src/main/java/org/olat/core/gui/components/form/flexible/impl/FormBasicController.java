@@ -90,7 +90,9 @@ public abstract class FormBasicController extends BasicController implements IFo
 
 	protected StackedPanel initialPanel;
 
-	protected FormUIFactory uifactory = FormUIFactory.getInstance();
+	private List<FragmentRef> fragments;
+
+	protected final FormUIFactory uifactory = FormUIFactory.getInstance();
 	
 	public FormBasicController(UserRequest ureq, WindowControl wControl) {
 		this(ureq, wControl, (String)null);
@@ -674,8 +676,8 @@ public abstract class FormBasicController extends BasicController implements IFo
 		public FragmentRef(IFormFragment referent) {
 			super(referent);
 		}
-	}	
-	private List<FragmentRef> fragments = new ArrayList<>();
+	}
+	
 	@Override
 	public void setNeedsLayout() {
 		flc.setDirty(true);
@@ -683,6 +685,9 @@ public abstract class FormBasicController extends BasicController implements IFo
 
 	@Override
 	public void registerFormFragment(IFormFragment fragment) {
+		if(fragments == null) {
+			fragments = new ArrayList<>(5);
+		}
 		fragments.add(new FragmentRef(fragment));
 	}
 	
@@ -706,6 +711,8 @@ public abstract class FormBasicController extends BasicController implements IFo
 	
 	@Override
 	public void forEachFragment(Consumer<IFormFragment> handler) {
+		if(fragments == null) return;
+		
 		fragments.stream()
 			.filter(ref -> ref.get() != null)
 			.forEach(ref -> {
@@ -717,6 +724,8 @@ public abstract class FormBasicController extends BasicController implements IFo
 	}
 
 	protected boolean routeEventToFragments(UserRequest ureq, Component source, Event event) {
+		if(fragments == null) return false;
+		
 		// implement shortcut?!
 		Boolean processed = 
 				fragments.stream()
@@ -731,6 +740,8 @@ public abstract class FormBasicController extends BasicController implements IFo
 
 
 	protected boolean routeEventToFragments(UserRequest ureq, Controller source, Event event) {
+		if(fragments == null) return false;
+		
 		// implement shortcut?!
 		Boolean processed = 
 			fragments.stream()
