@@ -23,7 +23,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -468,8 +467,9 @@ public class MessageListController extends BasicController implements GenericEve
 	 * @param orderedList
 	 * @param startMessage
 	 */	
-	private void orderMessagesThreaded(List<MessageLight> messages, List<MessageLight> orderedList, MessageRef startMessage) {
+	private void orderMessagesThreaded(List<MessageLight> messages, List<MessageLight> orderedList, MessageLight startMessage) {
 		if (messages == null || orderedList == null || startMessage == null) return;
+		/*
 		Iterator<MessageLight> iterMsg = messages.iterator();
 		while (iterMsg.hasNext()) {
 			MessageLight msg = iterMsg.next();
@@ -483,6 +483,53 @@ public class MessageListController extends BasicController implements GenericEve
 			if ((msg.getParentKey() != null) && (msg.getParentKey().equals(startMessage.getKey()))) {
 				orderedList.add(msg);
 				orderMessagesThreaded(messages, orderedList, msg);
+			}
+		}
+		*/
+		
+		Map<Long, MessageNode> messagesMap = new HashMap<>();
+		if(startMessage != null) {
+			messagesMap.put(startMessage.getKey(), new MessageNode(startMessage));
+		}
+		for(MessageLight message:messages) {
+			if(message.getParentKey() != null) {
+				messagesMap.put(message.getKey(), new MessageNode(message));
+			}
+		}
+
+		List<MessageNode> roots = new ArrayList<>();
+		for(MessageLight message:messages) {
+			Long parentKey = message.getParentKey();
+			if(parentKey != null && messagesMap.containsKey(parentKey)) {
+				MessageNode parentMessage = messagesMap.get(parentKey);
+				MessageNode messageNode = messagesMap.get(message.getKey());
+				parentMessage.getChildren().add(messageNode);
+			} else {
+				MessageNode rootMessage = messagesMap.get(message.getKey());
+				roots.add(rootMessage);
+			}
+		}
+		
+		for(MessageNode root:roots) {
+			orderMessagesThreaded(root, orderedList);
+		}
+	}
+	
+	private void orderMessagesThreaded(MessageNode message, List<MessageLight> orderedList) {
+		if(message == null) {
+			return;
+		}
+		if(message.getMessage() != null) {
+			orderedList.add(message.getMessage());
+		}
+		List<MessageNode> children = message.getChildren();
+		if(children.size() > 0) {
+			if(children.size() > 1) {
+				Collections.sort(children);
+			}
+		
+			for(MessageNode child:children) {
+				orderMessagesThreaded(child, orderedList);
 			}
 		}
 	}
@@ -1278,6 +1325,28 @@ public class MessageListController extends BasicController implements GenericEve
 		userMessages,
 		userMessagesUnderPseudo,
 		guestMessages,
+	}
+	
+	private static class MessageNode implements Comparable<MessageNode> {
+		private final MessageLight message;
+		private final List<MessageNode> children = new ArrayList<>();
+		
+		private MessageNode(MessageLight message) {
+			this.message = message;
+		}
+		
+		public MessageLight getMessage() {
+			return message;
+		}
+		
+		public List<MessageNode> getChildren() {
+			return children;
+		}
+		
+		@Override
+		public int compareTo(MessageNode arg0) {
+			return message.getCreationDate().compareTo(arg0.getMessage().getCreationDate());
+		}
 	}
 	
 	private class AttachmentsMapper implements Mapper {
