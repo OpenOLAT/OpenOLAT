@@ -102,10 +102,14 @@ public class BCCourseNodeRunController extends DefaultController implements Acti
 				noFolder = true;
 				BCCourseNodeNoFolderForm noFolderForm = new BCCourseNodeNoFolderForm(ureq, getWindowControl());
 				setInitialComponent(noFolderForm.getInitialComponent());
-			}else if(item instanceof VFSContainer){
+			} else if(item instanceof VFSContainer){
 				target = new NamedContainerImpl(courseNode.getShortTitle(), (VFSContainer) item);
 			}
-			scallback = new FolderNodeReadOnlyCallback(nodefolderSubContext);
+			if(courseEnv.getCourseConfig().isSharedFolderReadOnlyMount()) {
+				scallback = new FolderNodeReadOnlyCallback(nodefolderSubContext);
+			} else {
+				scallback = new FolderNodeCallback(BCCourseNode.getNodeFolderContainer(courseNode, courseEnv).getRelPath(), ne, isOlatAdmin, isGuestOnly, nodefolderSubContext);
+			}
 		} else{
 			//create folder automatically if not found
 			String subPath = courseNode.getModuleConfiguration().getStringValue(BCCourseNodeEditController.CONFIG_SUBPATH);

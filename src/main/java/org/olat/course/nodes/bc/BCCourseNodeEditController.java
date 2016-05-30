@@ -50,6 +50,7 @@ import org.olat.course.ICourse;
 import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.condition.Condition;
 import org.olat.course.condition.ConditionEditController;
+import org.olat.course.config.CourseConfig;
 import org.olat.course.editor.NodeEditController;
 import org.olat.course.nodes.BCCourseNode;
 import org.olat.course.run.userview.UserCourseEnvironment;
@@ -106,7 +107,9 @@ public class BCCourseNodeEditController extends ActivateableTabbableDefaultContr
 						.getAssessableNodes(course.getEditorTreeModel(), bcNode));		
 		listenTo(uploaderCondContr);
 
-		if(bcNode.getModuleConfiguration().getStringValue(CONFIG_SUBPATH, "").startsWith("/_sharedfolder")){
+		CourseConfig courseConfig = course.getCourseConfig();
+		if(bcNode.getModuleConfiguration().getStringValue(CONFIG_SUBPATH, "").startsWith("/_sharedfolder")
+				&& courseConfig.isSharedFolderReadOnlyMount()) {
 			accessabiliryContent.contextPut("uploadable", false);
 		} else {
 			accessabiliryContent.contextPut("uploadable", true);
