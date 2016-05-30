@@ -1,7 +1,7 @@
 <div id="$r.getCId()" class="o_entry $coursenode.getType()">
 	<div class="o_shorttitle"><h4>$r.render("nodeLink")</h4></div>
 #if(!$accessible)
-	#if ($coursenode.getNoAccessExplanation())
+	#if ($coursenode.getNoAccessExplanation() && !($coursenode.getNoAccessExplanation().isEmpty()))
 	<div id="o_msg_info" class="panel panel-info o_block">
  		<div class="panel-heading">$r.translate("info.header")</div>
   		<div class="panel-body">$coursenode.getNoAccessExplanation()</div>
