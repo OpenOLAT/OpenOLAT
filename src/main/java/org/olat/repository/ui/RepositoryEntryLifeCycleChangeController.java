@@ -91,7 +91,7 @@ public class RepositoryEntryLifeCycleChangeController extends BasicController{
 		boolean closeManged = RepositoryEntryManagedFlag.isManaged(re, RepositoryEntryManagedFlag.close);
 		if (!isClosed && !closeManged) {
 			closeLink = LinkFactory.createButton("close", lifeCycleVC, this);
-			closeLink.setTitle("details.close.ressoure");
+			closeLink.setCustomDisplayText(translate("details.close.ressoure"));
 			closeLink.setIconLeftCSS("o_icon o_icon-fw o_icon_close_resource");
 			closeLink.setElementCssClass("o_sel_repo_close");
 		}
