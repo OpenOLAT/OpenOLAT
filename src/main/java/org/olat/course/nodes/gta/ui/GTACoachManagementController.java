@@ -27,6 +27,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.course.nodes.GTACourseNode;
 import org.olat.course.run.userview.UserCourseEnvironment;
+import org.olat.modules.ModuleConfiguration;
 
 /**
  * 
@@ -42,16 +43,20 @@ public class GTACoachManagementController extends BasicController {
 	public GTACoachManagementController(UserRequest ureq, WindowControl wControl, UserCourseEnvironment userCourseEnv, GTACourseNode gtaNode) {
 		super(ureq, wControl);
 
-		assignmentEditCtrl = new GTACoachAssignementEditController(ureq, wControl, gtaNode, userCourseEnv.getCourseEnvironment());
-		listenTo(assignmentEditCtrl);
-		
-		solutionEditCtrl = new GTASampleSolutionsEditController(ureq, wControl, gtaNode, userCourseEnv.getCourseEnvironment());
-		listenTo(solutionEditCtrl);
-		
+		ModuleConfiguration config = gtaNode.getModuleConfiguration();
 		VelocityContainer mainVC = createVelocityContainer("coach_management");
-		mainVC.put("tasks", assignmentEditCtrl.getInitialComponent());
-		mainVC.put("solutions", solutionEditCtrl.getInitialComponent());
-
+		
+		if(config.getBooleanSafe(GTACourseNode.GTASK_ASSIGNMENT)) {
+			assignmentEditCtrl = new GTACoachAssignementEditController(ureq, wControl, gtaNode, userCourseEnv.getCourseEnvironment());
+			listenTo(assignmentEditCtrl);
+			mainVC.put("tasks", assignmentEditCtrl.getInitialComponent());
+		}
+		
+		if(config.getBooleanSafe(GTACourseNode.GTASK_SAMPLE_SOLUTION)) {
+			solutionEditCtrl = new GTASampleSolutionsEditController(ureq, wControl, gtaNode, userCourseEnv.getCourseEnvironment());
+			listenTo(solutionEditCtrl);
+			mainVC.put("solutions", solutionEditCtrl.getInitialComponent());
+		}
 		putInitialPanel(mainVC);
 	}
 

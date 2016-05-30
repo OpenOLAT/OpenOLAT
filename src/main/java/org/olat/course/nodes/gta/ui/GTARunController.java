@@ -80,16 +80,14 @@ public class GTARunController extends BasicController {
 			segmentView.addSegment(runLink, true);
 			coachLink = LinkFactory.createLink("run.coach", mainVC, this);
 			segmentView.addSegment(coachLink, false);
-			if(userCourseEnv.isAdmin()
-					|| (userCourseEnv.isCoach() && config.getBooleanSafe(GTACourseNode.GTASK_COACH_ALLOWED_UPLOAD_TASKS, false))) {
+			if(isManagementTabAvalaible(config)) {
 				manageLink = LinkFactory.createLink("run.manage.coach", mainVC, this);
 				segmentView.addSegment(manageLink, false);
 			}
 			doOpenRun(ureq);
 			mainVC.put("segments", segmentView);
 			putInitialPanel(mainVC);
-		} else if(userCourseEnv.isAdmin()
-				|| (userCourseEnv.isCoach() && config.getBooleanSafe(GTACourseNode.GTASK_COACH_ALLOWED_UPLOAD_TASKS, false))) {
+		} else if(isManagementTabAvalaible(config)) {
 			mainVC = createVelocityContainer("run_segments");
 
 			segmentView = SegmentViewFactory.createSegmentView("segments", mainVC, this);
@@ -114,6 +112,12 @@ public class GTARunController extends BasicController {
 			listenTo(msgCtrl);
 			putInitialPanel(msgCtrl.getInitialComponent());
 		}
+	}
+	
+	private boolean isManagementTabAvalaible(ModuleConfiguration config) {
+		return (userCourseEnv.isAdmin()
+				|| (userCourseEnv.isCoach() && config.getBooleanSafe(GTACourseNode.GTASK_COACH_ALLOWED_UPLOAD_TASKS, false)))
+				&& (config.getBooleanSafe(GTACourseNode.GTASK_ASSIGNMENT) || config.getBooleanSafe(GTACourseNode.GTASK_SAMPLE_SOLUTION));
 	}
 
 	@Override
