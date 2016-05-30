@@ -33,7 +33,11 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.gui.control.generic.modal.DialogBoxController;
+import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.id.Identity;
+import org.olat.core.util.StringHelper;
+import org.olat.core.util.io.SystemFilenameFilter;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
@@ -61,9 +65,10 @@ public class GTAParticipantRevisionAndCorrectionsController extends BasicControl
 	
 	private Link submitRevisionButton;
 	private final VelocityContainer mainVC;
-	
-	private DirectoryController correctionsCtrl, revisionsCtrl;
+
+	private DialogBoxController confirmSubmitDialog;
 	private SubmitDocumentsController uploadRevisionsCtrl;
+	private DirectoryController correctionsCtrl, revisionsCtrl;
 	
 	private Task assignedTask;
 	private final boolean businessGroupTask;
@@ -210,16 +215,50 @@ public class GTAParticipantRevisionAndCorrectionsController extends BasicControl
 				Task aTask = uploadRevisionsCtrl.getAssignedTask();
 				gtaManager.log("Revision", (SubmitEvent)event, aTask, getIdentity(), getIdentity(), assessedGroup, courseEnv, gtaNode);				
 			}
+		} else if(confirmSubmitDialog == source) {
+			if(DialogBoxUIFactory.isOkEvent(event) || DialogBoxUIFactory.isYesEvent(event)) {
+				doSubmitRevisions();
+				fireEvent(ureq, Event.DONE_EVENT);
+			}
+			cleanUp();
 		}
 		super.event(ureq, source, event);
+	}
+	
+	private void cleanUp() {
+		removeAsListenerAndDispose(confirmSubmitDialog);
+		confirmSubmitDialog = null;
 	}
 
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
 		if(submitRevisionButton == source) {
-			doSubmitRevisions();
-			fireEvent(ureq, Event.DONE_EVENT);
+			doConfirmSubmit(ureq);
 		}
+	}
+	
+	private void doConfirmSubmit(UserRequest ureq) {
+		int iteration = assignedTask.getRevisionLoop();
+		String title = translate("run.submit.revision.button");
+		String text;
+		if(GTAType.group.name().equals(gtaNode.getModuleConfiguration().getStringValue(GTACourseNode.GTASK_TYPE))) {
+			File documentsDir = gtaManager.getRevisedDocumentsDirectory(courseEnv, gtaNode, iteration, assessedGroup);
+			File[] submittedDocuments = documentsDir.listFiles(new SystemFilenameFilter(true, false));
+			if(submittedDocuments.length == 0) {
+				text = "<div class='o_warning'>" + translate("run.submit.revision.confirm.warning.group", new String[]{ StringHelper.escapeHtml(assessedGroup.getName()) }) + "</div>";
+			} else {
+				text = translate("run.submit.revision.confirm.group", new String[]{ StringHelper.escapeHtml(assessedGroup.getName()) });
+			}
+		} else {
+			File documentsDir = gtaManager.getRevisedDocumentsDirectory(courseEnv, gtaNode, iteration, getIdentity());
+			File[] submittedDocuments = documentsDir.listFiles(new SystemFilenameFilter(true, false));
+			if(submittedDocuments.length == 0) {
+				text = "<div class='o_warning'>" + translate("run.submit.revision.confirm.warning") + "</div>";
+			} else {
+				text = translate("run.submit.revision.confirm");
+			}
+		}
+		confirmSubmitDialog = activateOkCancelDialog(ureq, title, text, confirmSubmitDialog);
 	}
 	
 	private void doSubmitRevisions() {
