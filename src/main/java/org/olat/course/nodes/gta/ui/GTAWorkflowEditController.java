@@ -391,14 +391,6 @@ public class GTAWorkflowEditController extends FormBasicController {
 			allOk &= false;
 		}
 		
-		typeEl.clearError();
-		if(typeEl.isSelected(0)) {
-			if(areaKeys.isEmpty() && groupKeys.isEmpty()) {
-				typeEl.setErrorKey("error.missing.group", null);
-				allOk &= false;
-			}
-		}
-		
 		boolean relativeDates = relativeDatesEl.isAtLeastSelected(1);
 		assignementDeadlineDaysEl.clearError();
 		if(relativeDates && taskAssignmentEl.isAtLeastSelected(1)) {
