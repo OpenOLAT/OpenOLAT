@@ -65,6 +65,7 @@ import org.olat.core.util.vfs.VFSManager;
 import org.olat.course.nodes.GTACourseNode;
 import org.olat.course.nodes.gta.GTAManager;
 import org.olat.course.nodes.gta.Task;
+import org.olat.course.nodes.gta.ui.events.SubmitEvent;
 import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.user.UserManager;
@@ -97,6 +98,8 @@ class SubmitDocumentsController extends FormBasicController {
 	private final ModuleConfiguration config;
 	private final SubscriptionContext subscriptionContext;
 	
+	private boolean open = true;
+	
 	@Autowired
 	private UserManager userManager;
 	@Autowired
@@ -122,12 +125,14 @@ class SubmitDocumentsController extends FormBasicController {
 	public Task getAssignedTask() {
 		return assignedTask;
 	}
-	
 
 	public boolean hasUploadDocuments() {
 		return (model.getRowCount() > 0);
 	}
-
+	
+	public void close() {
+		open = false;
+	}
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
@@ -294,11 +299,15 @@ class SubmitDocumentsController extends FormBasicController {
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(uploadDocButton == source) {
-			doOpenDocumentUpload(ureq);
+			if(checkOpen(ureq)) {
+				doOpenDocumentUpload(ureq);
+			}
 		} else if(createDocButton == source) {
-			doChooseFilename(ureq);
+			if(checkOpen(ureq)) {
+				doChooseFilename(ureq);
+			}
 		} else if(tableEl == source) {
-			if(event instanceof SelectionEvent) {
+			if(checkOpen(ureq) && event instanceof SelectionEvent) {
 				SelectionEvent se = (SelectionEvent)event;
 				SubmittedSolution row = model.getObject(se.getIndex());
 				if("delete".equals(se.getCommand())) {
@@ -314,6 +323,13 @@ class SubmitDocumentsController extends FormBasicController {
 			}
 		}
 		super.formInnerEvent(ureq, source, event);
+	}
+	
+	private boolean checkOpen(UserRequest ureq) {
+		if(open) return true;
+		showWarning("warning.tasks.submitted");
+		fireEvent(ureq, Event.DONE_EVENT);
+		return false;
 	}
 	
 	private void doView(UserRequest ureq, String filename) {

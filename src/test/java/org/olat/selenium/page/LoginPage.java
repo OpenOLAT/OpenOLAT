@@ -173,7 +173,7 @@ public class LoginPage {
 		
 		//wait until the content appears
 		By footerUserBy = By.cssSelector("#o_footer_user #o_username"); 
-		OOGraphene.waitElement(footerUserBy, 10, browser);
+		OOGraphene.waitElement(footerUserBy, 30, browser);
 		return this;
 	}
 	

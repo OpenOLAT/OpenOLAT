@@ -182,11 +182,11 @@ public class HTMLEditorController extends FormBasicController {
 		if (fileLeaf instanceof LocalFileImpl) {
 			// Cast to LocalFile necessary because the VFSItem is missing some
 			// ID mechanism that identifies an item within the system
-			OLATResourceable lockResourceable = OresHelper.createOLATResourceableTypeWithoutCheck(fileLeaf.toString());
+			OLATResourceable lockResourceable = createLockResourceable(fileLeaf);
 			// OLAT-5066: the use of "fileName" gives users the (false) impression that the file they wish to access
 			// is already locked by someone else. Since the lock token must be smaller than 50 characters we us an 
 			// MD5 hash of the absolute file path which will always be 32 characters long and virtually unique.
-			String lockToken = Encoder.md5hash(getFileDebuggingPath(bContainer, relFilePath));
+			String lockToken = createLockToken(bContainer, relFilePath);
 			lock = CoordinatorManager.getInstance().getCoordinator().getLocker().acquireLock(lockResourceable, getIdentity(), lockToken);
 			VelocityContainer vc = (VelocityContainer) flc.getComponent();
 			if (!lock.isSuccess()) {
@@ -467,6 +467,20 @@ public class HTMLEditorController extends FormBasicController {
 		htmlElement.setNewOriginalValue(content);
 		return true;
 	}
+	
+	protected static OLATResourceable createLockResourceable(VFSLeaf fileLeaf) {
+		return OresHelper.createOLATResourceableTypeWithoutCheck(fileLeaf.toString());
+	}
+	
+	/**
+	 * OLAT-5066: the use of "fileName" gives users the (false) impression that the file they wish to access
+	 * is already locked by someone else. Since the lock token must be smaller than 50 characters we us an 
+	 * MD5 hash of the absolute file path which will always be 32 characters long and virtually unique.
+	 * @return
+	 */
+	protected static String createLockToken(VFSContainer container, String relFilePath) {
+		return Encoder.md5hash(getFileDebuggingPath(container, relFilePath));
+	}
 
 	
 	/**
@@ -477,7 +491,7 @@ public class HTMLEditorController extends FormBasicController {
 	 * @param relPath
 	 * @return
 	 */
-	private String getFileDebuggingPath(VFSContainer root, String relPath) {
+	private static String getFileDebuggingPath(VFSContainer root, String relPath) {
 		String path = relPath;
 		VFSItem item = root.resolve(relPath);
 		if (item instanceof LocalFileImpl) {

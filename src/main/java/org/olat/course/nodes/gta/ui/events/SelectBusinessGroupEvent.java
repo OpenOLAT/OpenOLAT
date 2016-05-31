@@ -17,7 +17,7 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.course.nodes.gta.ui;
+package org.olat.course.nodes.gta.ui.events;
 
 import org.olat.core.gui.control.Event;
 import org.olat.group.BusinessGroup;

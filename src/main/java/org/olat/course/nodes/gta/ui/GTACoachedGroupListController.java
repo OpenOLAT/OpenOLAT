@@ -40,6 +40,7 @@ import org.olat.course.nodes.GTACourseNode;
 import org.olat.course.nodes.gta.GTAManager;
 import org.olat.course.nodes.gta.TaskLight;
 import org.olat.course.nodes.gta.ui.CoachGroupsTableModel.CGCols;
+import org.olat.course.nodes.gta.ui.events.SelectBusinessGroupEvent;
 import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.group.BusinessGroup;
 import org.olat.repository.RepositoryEntry;

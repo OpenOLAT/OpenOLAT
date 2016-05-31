@@ -150,6 +150,10 @@ public class LockTest extends OlatTestCase {
 		LockResult res3 = cl.acquireLock(ores, ident, "abc");
 		assertTrue(res3.isSuccess());
 		dbInstance.closeSession();
+		
+		// make sure it is not locked anymore
+		boolean lo3 = cl.isLocked(ores, "abc");
+		assertTrue(lo3);
 
 		// test the admin
 		List<LockEntry> entries = cl.adminOnlyGetLockEntries();

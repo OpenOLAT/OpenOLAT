@@ -66,6 +66,14 @@ public interface Locker {
 	 *         someone (returns true even if locked by "myself")
 	 */
 	public boolean isLocked(OLATResourceable ores, String locksubkey);
+	
+	/**
+	 * 
+	 * @param ores
+	 * @param locksubkey
+	 * @return The identity which lock the resource or null.
+	 */
+	public Identity getLockedBy(OLATResourceable ores, String locksubkey);
 		
 	
 	/**

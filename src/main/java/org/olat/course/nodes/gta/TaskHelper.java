@@ -24,8 +24,16 @@ import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.util.Locale;
 
+import org.olat.core.CoreSpringFactory;
+import org.olat.core.commons.editor.htmleditor.WysiwygFactory;
 import org.olat.core.gui.control.generic.iframe.DeliveryOptions;
+import org.olat.core.id.Identity;
+import org.olat.core.id.OLATResourceable;
+import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.io.SystemFileFilter;
+import org.olat.core.util.vfs.VFSContainer;
+import org.olat.core.util.vfs.VFSLeaf;
+import org.olat.user.UserManager;
 
 /**
  * 
@@ -88,6 +96,36 @@ public class TaskHelper {
 		return false;
 	}
 	
-	
+	public static String getDocumentsLocked(VFSContainer documentsContainer, File[] documents) {
+		StringBuilder sb = new StringBuilder();
+		
+		boolean locked = false;
+		for(File submittedDocument:documents) {
+			VFSLeaf fileLeaf = (VFSLeaf)documentsContainer.resolve(submittedDocument.getName());
+			OLATResourceable lockResourceable = WysiwygFactory.createLockResourceable(fileLeaf);
+			String lockTocken = WysiwygFactory.createLockToken(documentsContainer, submittedDocument.getName());
+			if(CoordinatorManager.getInstance().getCoordinator().getLocker()
+				.isLocked(lockResourceable, lockTocken)) {
+
+				locked |= true;
+				Identity lockedBy = CoordinatorManager.getInstance().getCoordinator()
+						.getLocker().getLockedBy(lockResourceable, lockTocken);
+				
+				String fullname = "???";
+				if(lockedBy != null) {
+					fullname = CoreSpringFactory.getImpl(UserManager.class).getUserDisplayName(lockedBy);
+				}
+				if(sb.length() > 0) {
+					sb.append(", ");
+				}
+				sb.append(fullname);
+			}
+		}
+		
+		if(locked) {
+			return sb.toString();
+		}
+		return null;
+	}
 
 }

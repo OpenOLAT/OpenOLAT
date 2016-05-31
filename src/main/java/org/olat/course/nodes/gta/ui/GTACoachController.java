@@ -37,6 +37,7 @@ import org.olat.core.gui.control.generic.closablewrapper.CloseableModalControlle
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.id.Identity;
+import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.mail.ContactList;
 import org.olat.core.util.mail.ContactMessage;
 import org.olat.core.util.vfs.VFSContainer;
@@ -46,6 +47,8 @@ import org.olat.course.nodes.gta.Task;
 import org.olat.course.nodes.gta.TaskHelper;
 import org.olat.course.nodes.gta.TaskProcess;
 import org.olat.course.nodes.gta.model.TaskDefinition;
+import org.olat.course.nodes.gta.ui.events.SubmitEvent;
+import org.olat.course.nodes.gta.ui.events.TaskMultiUserEvent;
 import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.group.BusinessGroup;
@@ -427,6 +430,11 @@ public class GTACoachController extends GTAAbstractController {
 	}
 
 	@Override
+	protected void processEvent(TaskMultiUserEvent event) {
+		//
+	}
+
+	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
 		if(reviewedButton == source) {
 			if(submitCorrectionsCtrl != null) {
@@ -599,6 +607,11 @@ public class GTACoachController extends GTAAbstractController {
 		TaskProcess review = gtaManager.nextStep(TaskProcess.submit, gtaNode);
 		task = gtaManager.updateTask(task, review);
 		showInfo("run.documents.successfully.submitted");
+		
+		TaskMultiUserEvent event = new TaskMultiUserEvent(TaskMultiUserEvent.SUMBIT_TASK,
+				assessedIdentity, assessedGroup, getIdentity());
+		CoordinatorManager.getInstance().getCoordinator().getEventBus()
+			.fireEventToListenersOf(event, taskListEventResource);
 		
 		gtaManager.log("Collect", "collect documents", task, getIdentity(), assessedIdentity, assessedGroup, courseEnv, gtaNode);
 		

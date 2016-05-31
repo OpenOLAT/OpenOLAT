@@ -29,7 +29,9 @@ package org.olat.core.commons.editor.htmleditor;
 import org.olat.core.commons.controllers.linkchooser.CustomLinkTreeModel;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.id.OLATResourceable;
 import org.olat.core.util.vfs.VFSContainer;
+import org.olat.core.util.vfs.VFSLeaf;
 
 /**
  * Description: The WYSIWYGFactory provides a full-fledged WYSIWYG HTML editor
@@ -156,5 +158,13 @@ public class WysiwygFactory {
 		fileContent.append(bodyMarkup);
 		fileContent.append(HTMLEditorController.CLOSE_BODY_HTML);
 		return fileContent.toString();
+	}
+	
+	public static OLATResourceable createLockResourceable(VFSLeaf fileLeaf) {
+		return HTMLEditorController.createLockResourceable(fileLeaf);
+	}
+	
+	public static String createLockToken(VFSContainer container, String relFilePath) {
+		return HTMLEditorController.createLockToken(container, relFilePath);
 	}
 }
