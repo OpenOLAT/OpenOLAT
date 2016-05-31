@@ -20,6 +20,7 @@
 package org.olat.course.nodes.gta.ui;
 
 import java.io.File;
+import java.util.Date;
 import java.util.List;
 
 import org.olat.basesecurity.GroupRoles;
@@ -72,10 +73,10 @@ public class GTACoachController extends GTAAbstractController {
 	private GTACoachedGroupGradingController groupGradingCtrl;
 	private GTACoachedParticipantGradingController participantGradingCtrl;
 	private GTACoachRevisionAndCorrectionsController revisionDocumentsCtrl;
-	private DialogBoxController confirmRevisionsCtrl, confirmReviewDocumentCtrl, confirmCollectCtrl;
+	private DialogBoxController confirmRevisionsCtrl, confirmReviewDocumentCtrl, confirmCollectCtrl, confirmBackToSubmissionCtrl;
 	private ContactFormController emailController;
 	private CloseableModalController cmc;
-	private Link emailLink, collectSubmissionsLink;
+	private Link emailLink, collectSubmissionsLink, backToSubmissionLink;
 	
 	
 	@Autowired
@@ -166,6 +167,9 @@ public class GTACoachController extends GTAAbstractController {
 		if(collectSubmissionsLink != null) {
 			mainVC.remove(collectSubmissionsLink);//clean up
 		}
+		if(backToSubmissionLink != null) {
+			mainVC.remove(backToSubmissionLink);
+		}
 		
 		//calculate state
 		boolean viewSubmittedDocument = false;
@@ -176,6 +180,9 @@ public class GTACoachController extends GTAAbstractController {
 				mainVC.contextPut("submitCssClass", "o_active");
 				collect(assignedTask);
 			} else {
+				if (assignedTask == null || assignedTask.getTaskStatus() == TaskProcess.review) {
+					backToSubmission(assignedTask);
+				}
 				mainVC.contextPut("submitCssClass", "o_done");
 				viewSubmittedDocument = true;
 			}	
@@ -183,6 +190,9 @@ public class GTACoachController extends GTAAbstractController {
 			mainVC.contextPut("submitCssClass", "o_active");
 			collect(assignedTask);
 		} else {
+			if (assignedTask == null || assignedTask.getTaskStatus() == TaskProcess.review) {
+				backToSubmission(assignedTask);
+			}
 			mainVC.contextPut("submitCssClass", "o_done");
 			viewSubmittedDocument = true;
 		}
@@ -208,6 +218,18 @@ public class GTACoachController extends GTAAbstractController {
 			}
 		}
 		return assignedTask;
+	}
+	
+	private void backToSubmission(Task assignedTask) {
+		if(config.getBooleanSafe(GTACourseNode.GTASK_SUBMIT)) {
+		
+			Date now = new Date();
+			DueDate dueDate = getSubmissionDueDate(assignedTask);
+			if(dueDate == null || dueDate.getDueDate() == null || now.before(dueDate.getDueDate())) {
+				backToSubmissionLink = LinkFactory.createButton("coach.back.to.submission", mainVC, this);
+				backToSubmissionLink.setUserObject(assignedTask);
+			}
+		}
 	}
 	
 	private void collect(Task assignedTask) {
@@ -420,6 +442,8 @@ public class GTACoachController extends GTAAbstractController {
 			doOpenMailForm(ureq);
 		} else if(collectSubmissionsLink == source) {
 			doConfirmCollectTask(ureq, (Task)collectSubmissionsLink.getUserObject());
+		} else if(backToSubmissionLink == source) {
+			doConfirmBackToSubmission(ureq, (Task)backToSubmissionLink.getUserObject());
 		}
 		super.event(ureq, source, event);
 	}
@@ -454,6 +478,11 @@ public class GTACoachController extends GTAAbstractController {
 			if(DialogBoxUIFactory.isOkEvent(event) || DialogBoxUIFactory.isYesEvent(event)) {
 				Task assignedTask = (Task)confirmCollectCtrl.getUserObject();
 				doCollectTask(ureq, assignedTask);
+			}
+		}  else if(confirmBackToSubmissionCtrl == source) {
+			if(DialogBoxUIFactory.isOkEvent(event) || DialogBoxUIFactory.isYesEvent(event)) {
+				Task assignedTask = (Task)confirmBackToSubmissionCtrl.getUserObject();
+				doBackToSubmission(ureq, assignedTask);
 			}
 		} else if(source == cmc) {
 			doCloseMailForm(false);
@@ -576,6 +605,34 @@ public class GTACoachController extends GTAAbstractController {
 		cleanUpProcess();
 		process(ureq);
 		doUpdateAttempts();
+	}
+	
+	private void doConfirmBackToSubmission(UserRequest ureq, Task assignedTask) {
+		String toName = null;
+		if (assessedGroup != null) {
+			toName = assessedGroup.getName();
+		} else if (assessedIdentity != null) {
+			toName = userManager.getUserDisplayName(assessedIdentity);			
+		}
+		
+		String title = translate("coach.back.to.submission.confirm.title");
+		String text = translate("coach.back.to.submission.confirm.text", new String[]{ toName });
+		text = "<div class='o_warning'>" + text + "</div>";
+		confirmBackToSubmissionCtrl = activateOkCancelDialog(ureq, title, text, confirmBackToSubmissionCtrl);
+		confirmBackToSubmissionCtrl.setUserObject(assignedTask);
+		listenTo(confirmBackToSubmissionCtrl);
+	}
+	
+	private void doBackToSubmission(UserRequest ureq, Task task) {
+		TaskProcess submit = gtaManager.previousStep(TaskProcess.review, gtaNode);//only submit allowed
+		if(submit == TaskProcess.submit) {
+			task = gtaManager.updateTask(task, submit);
+			
+			gtaManager.log("Back to submission", "revert status of task back to submission", task, getIdentity(), assessedIdentity, assessedGroup, courseEnv, gtaNode);
+			
+			cleanUpProcess();
+			process(ureq);
+		}
 	}
 	
 	private void doOpenMailForm(UserRequest ureq) {
