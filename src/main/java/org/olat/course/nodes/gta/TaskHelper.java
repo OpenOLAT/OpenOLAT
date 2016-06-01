@@ -96,8 +96,9 @@ public class TaskHelper {
 		return false;
 	}
 	
-	public static String getDocumentsLocked(VFSContainer documentsContainer, File[] documents) {
-		StringBuilder sb = new StringBuilder();
+	public static FilesLocked getDocumentsLocked(VFSContainer documentsContainer, File[] documents) {
+		StringBuilder by = new StringBuilder();
+		StringBuilder files = new StringBuilder();
 		
 		boolean locked = false;
 		for(File submittedDocument:documents) {
@@ -115,17 +116,44 @@ public class TaskHelper {
 				if(lockedBy != null) {
 					fullname = CoreSpringFactory.getImpl(UserManager.class).getUserDisplayName(lockedBy);
 				}
-				if(sb.length() > 0) {
-					sb.append(", ");
+				if(by.length() > 0) {
+					by.append(", ");
+					files.append(", ");
 				}
-				sb.append(fullname);
+				by.append(fullname);
+				files.append(submittedDocument.getName());
 			}
 		}
 		
 		if(locked) {
-			return sb.toString();
+			return new FilesLocked(by.toString(), files.toString());
 		}
 		return null;
 	}
+	
+	public static class FilesLocked {
+		private String lockedBy;
+		private String lockedFiles;
+		
+		public FilesLocked(String lockedBy, String lockedFiles) {
+			this.lockedBy = lockedBy;
+			this.lockedFiles = lockedFiles;
+		}
 
+		public String getLockedBy() {
+			return lockedBy;
+		}
+
+		public void setLockedBy(String lockedBy) {
+			this.lockedBy = lockedBy;
+		}
+
+		public String getLockedFiles() {
+			return lockedFiles;
+		}
+
+		public void setLockedFiles(String lockedFiles) {
+			this.lockedFiles = lockedFiles;
+		}
+	}
 }

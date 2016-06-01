@@ -50,6 +50,7 @@ import org.olat.course.nodes.gta.GTAManager;
 import org.olat.course.nodes.gta.GTAType;
 import org.olat.course.nodes.gta.Task;
 import org.olat.course.nodes.gta.TaskHelper;
+import org.olat.course.nodes.gta.TaskHelper.FilesLocked;
 import org.olat.course.nodes.gta.TaskProcess;
 import org.olat.course.nodes.gta.ui.events.SubmitEvent;
 import org.olat.course.nodes.gta.ui.events.TaskMultiUserEvent;
@@ -278,9 +279,9 @@ public class GTAParticipantRevisionAndCorrectionsController extends BasicControl
 			}
 		}
 		
-		String lockedBy = TaskHelper.getDocumentsLocked(documentsContainer, submittedDocuments);
+		FilesLocked lockedBy = TaskHelper.getDocumentsLocked(documentsContainer, submittedDocuments);
 		if(lockedBy != null) {
-			showWarning("warning.submit.documents.edited", lockedBy);
+			showWarning("warning.submit.documents.edited", new String[]{ lockedBy.getLockedBy(), lockedBy.getLockedFiles() });
 		} else {
 			confirmSubmitDialog = activateOkCancelDialog(ureq, title, text, confirmSubmitDialog);
 		}
