@@ -178,8 +178,20 @@
 	}
 }
 
-.o_cmembers_print #o_print_brand img {
-	float: right;
+.o_cmembers_print {
+	#o_print_brand img {
+		float: right;
+	}
+	
+	.o_cmember {
+		padding-left: 0px;
+		padding-right: 15px;
+		margin-bottom: 25px;
+		
+		.o_cmember_info_wrapper {
+			word-wrap:break-word;
+		}
+	}
 }
 
 .tag.label.label-info {

@@ -3,16 +3,9 @@
 </div>
 <h1>$r.translate("print.title")</h1>
 <h3>$courseTitle</h3>
-#if($r.available("owners"))
-	$r.render("owners")
+#if($r.available("members"))
+	$r.render("members")
 #end
-#if($r.available("coaches"))
-	$r.render("coaches")
-#end
-#if($r.available("participants"))
-	$r.render("participants")
-#end
-<div class="clearfix"> </div>
 <script type='text/javascript'>
 /* <![CDATA[ */
 	jQuery(function() {

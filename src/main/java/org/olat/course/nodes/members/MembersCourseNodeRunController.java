@@ -160,7 +160,7 @@ public class MembersCourseNodeRunController extends FormBasicController {
 		if(formLayout instanceof FormLayoutContainer) {
 			printLink = LinkFactory.createButton("print", ((FormLayoutContainer)formLayout).getFormItemComponent(), this);
 			printLink.setIconLeftCSS("o_icon o_icon_print o_icon-lg");
-			printLink.setPopup(new LinkPopupSettings(880, 500, "print-members"));
+			printLink.setPopup(new LinkPopupSettings(700, 500, "print-members"));
 			((FormLayoutContainer)formLayout).getFormItemComponent().put("print", printLink);
 		}
 
