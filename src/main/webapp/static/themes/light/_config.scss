@@ -433,6 +433,14 @@ $o-step-done-marker-color	: $brand-success !default;
 $o-step-meta-color			: $text-muted !default;
 $o-step-meta-size			: $font-size-small !default;
 
+/* Placeholder panels */
+$o-panel-placeholder-border-width	: 2px !default;
+$o-panel-placeholder-border-radius	: 10px !default;
+$o-panel-placeholder-color			: $brand-primary !default;
+$o-panel-placeholder-font-weight	: bold !default;
+$o-panel-placeholder-border-color	: lighten($o-panel-placeholder-color, 20%) !default;
+$o-panel-placeholder-padding		: 10px !default;
+
 /* other configurations */
 $o-portrait-radius				: 50% !default;
 $o-portrait-border				: none !default;

@@ -101,6 +101,52 @@
 	margin-bottom: 0;
 }
 
+/* Placeholder panel, used to indicate that there is something to be added */
+.panel-placeholder {
+	border-width: $o-panel-placeholder-border-width;
+	border-style: dashed;
+	border-color: $o-panel-placeholder-border-color;
+	border-radius: $o-panel-placeholder-border-radius;
+	
+	.panel-body {
+		padding: $o-panel-placeholder-padding; 
+		&:nth-child(n+2) {
+			border-top: none;
+		}	
+		h3:nth-child(1),
+		h4:nth-child(1),
+		h5:nth-child(1) {
+			margin-top: 0;
+		}
+				
+		.o_button_group {
+			margin-bottom: 0;
+		}
+	}
+	.panel-heading {
+		border-top-right-radius: ($o-panel-placeholder-border-radius - $o-panel-placeholder-border-width);
+		border-top-left-radius: ($o-panel-placeholder-border-radius - $o-panel-placeholder-border-width);
+		border-width: $o-panel-placeholder-border-width;
+		border-style: dashed;
+		border-color: $o-panel-placeholder-border-color;
+		border-top: none;
+		border-left: none;
+		border-right: none;
+		color: $o-panel-placeholder-color;
+		font-weight: $o-panel-placeholder-font-weight;
+	}
+	.panel-footer {
+		border-bottom-right-radius: ($o-panel-placeholder-border-radius - $o-panel-placeholder-border-width);
+		border-bottom-left-radius: ($o-panel-placeholder-border-radius - $o-panel-placeholder-border-width);
+		border-width: $o-panel-placeholder-border-width;
+		border-style: dashed;
+		border-color: $o-panel-placeholder-border-color;
+		border-bottom: none;
+		border-left: none;
+		border-right: none;
+	}
+}
+
 /* ---------------------------------------------------------- */
 /* general content styles for fonts, links and other elements */
 /* ---------------------------------------------------------- */

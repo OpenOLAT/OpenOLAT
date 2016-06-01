@@ -161,6 +161,10 @@ class SubmitDocumentsController extends FormBasicController {
 		model = new DocumentTableModel(columnsModel);
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", model, getTranslator(), formLayout);
 		formLayout.add("table", tableEl);
+		// configure table to be as slim as possible
+		tableEl.setCustomizeColumns(false);
+		tableEl.setNumOfRowsEnabled(false);
+		tableEl.setElementCssClass("o_table_no_margin");
 	}
 	
 	private void updateModel() {

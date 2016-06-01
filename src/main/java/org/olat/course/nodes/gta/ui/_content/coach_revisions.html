@@ -9,7 +9,12 @@
 	<p>$revisionMessage</p>
 #end
 #if($r.available("uploadCorrections"))
+	<h5>$r.translate("coach.feedback.documents.title")</h5>
+	<p>$r.translate("coach.feedback.documents.desc")</p>
 	$r.render("uploadCorrections")
+
+	<h5>$r.translate("coach.verdict.title")</h5>
+	<p>$r.translate("coach.verdict.desc")</p>
 	<div class="o_button_group">
 	#if($r.available("coach.submit.corrections.to.revision.button"))
 		$r.render("coach.submit.corrections.to.revision.button")
@@ -19,6 +24,8 @@
 	#end
 	</div>
 #else
+	<h5>$r.translate("coach.collect.confirm.title")</h5>
+	<p>$r.translate("coach.collect.confirm.desc")</p>
 	<div class="o_button_group">
 	#if($r.available("coach.collect.revisions"))
 		$r.render("coach.collect.revisions")

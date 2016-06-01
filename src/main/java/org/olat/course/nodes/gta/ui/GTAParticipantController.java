@@ -250,7 +250,7 @@ public class GTAParticipantController extends GTAAbstractController {
 		
 		submitButton = LinkFactory.createCustomLink("run.submit.button", "submit", "run.submit.button", Link.BUTTON, mainVC, this);
 		submitButton.setElementCssClass("o_sel_course_gta_submit_docs");
-		submitButton.setCustomEnabledLinkCSS("btn btn-primary");
+		submitButton.setCustomEnabledLinkCSS(submitDocCtrl.hasUploadDocuments() ? "btn btn-primary" : "btn btn-default");
 		submitButton.setIconLeftCSS("o_icon o_icon_submit");
 
 	}
@@ -667,6 +667,8 @@ public class GTAParticipantController extends GTAAbstractController {
 				cleanUpProcess();
 				process(ureq);
 			}
+			submitButton.setCustomEnabledLinkCSS(submitDocCtrl.hasUploadDocuments() ? "btn btn-primary" : "btn btn-default");
+
 		}
 		super.event(ureq, source, event);
 	}

@@ -64,12 +64,17 @@
 		#end
 		<div id="o_step_submit_content" class="o_content collapse #if($collapse_submit) in #end" aria-expanded="$collapse_submit">
 			#if($r.available("submitDocs"))
-				<p>$r.translate("run.submit.individual.description.${sumbitWay}")</p>
+				<div class="o_note">$r.translate("run.submit.individual.description.${sumbitWay}")</div>
+
+				<h5>$r.translate("submit.documents.title")</h5>
+				<p>$r.translate("submit.documents.desc")</p>
+				$r.render("submitDocs")
+				
+				<h5>$r.translate("submit.submit.title")</h5>
+				<p>$r.translate("submit.submit.desc")</p>
 				#if($groupWarning)
 					<div class="o_warning" role="alert">$r.translate("warning.group.submit", $r.escapeHtml($groupName))</div>
 				#end
-				$r.render("submitDocs")
-				
 				<div class="o_button_group">
 					$r.render("run.submit.button")
 				</div>
