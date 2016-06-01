@@ -107,6 +107,7 @@ public class ArtefactWizardPage {
 	 */
 	public ArtefactWizardPage tags(String... tags) {
 		By tagBy = By.cssSelector("div.o_sel_artefact_add_wizard div.bootstrap-tagsinput>input");
+		OOGraphene.waitElement(tagBy, 5, browser);
 		WebElement tagEl = browser.findElement(tagBy);
 		if(tags != null && tags.length > 0 && tags[0] != null) {
 			for(String tag:tags) {

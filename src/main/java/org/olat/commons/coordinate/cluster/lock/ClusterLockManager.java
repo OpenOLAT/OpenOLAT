@@ -65,6 +65,18 @@ public class ClusterLockManager {
 			return res.get(0);
 		}
 	}
+	
+	boolean isLocked(String asset) {
+		String sb = "select alock.key from org.olat.commons.coordinate.cluster.lock.LockImpl as alock where alock.asset=:asset";
+
+		List<Long> res = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Long.class)
+				.setParameter("asset", asset)
+				.setFirstResult(0)
+				.setMaxResults(1)
+				.getResultList();
+		return res != null && res.size() > 0 && res.get(0) != null && res.get(0).longValue() > 0;
+	}
 		
 	LockImpl createLockImpl(String asset, Identity owner) {
 		log.info("createLockImpl: "+asset+" by "+ owner);

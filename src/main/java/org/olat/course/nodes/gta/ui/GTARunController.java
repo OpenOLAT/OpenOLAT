@@ -36,6 +36,7 @@ import org.olat.course.nodes.GTACourseNode;
 import org.olat.course.nodes.gta.GTAManager;
 import org.olat.course.nodes.gta.model.Membership;
 import org.olat.course.run.userview.UserCourseEnvironment;
+import org.olat.modules.ModuleConfiguration;
 import org.olat.repository.RepositoryEntry;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -49,8 +50,9 @@ public class GTARunController extends BasicController {
 	
 	private GTAParticipantController runCtrl;
 	private GTACoachSelectionController coachCtrl;
+	private GTACoachManagementController manageCtrl;
 
-	private Link runLink, coachLink;
+	private Link runLink, coachLink, manageLink;
 	private VelocityContainer mainVC;
 	private SegmentViewComponent segmentView;
 	
@@ -66,6 +68,7 @@ public class GTARunController extends BasicController {
 		this.gtaNode = gtaNode;
 		this.userCourseEnv = userCourseEnv;
 		
+		ModuleConfiguration config = gtaNode.getModuleConfiguration();
 		RepositoryEntry entry = userCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
 		
 		Membership membership = gtaManager.getMembership(getIdentity(), entry, gtaNode);
@@ -77,8 +80,23 @@ public class GTARunController extends BasicController {
 			segmentView.addSegment(runLink, true);
 			coachLink = LinkFactory.createLink("run.coach", mainVC, this);
 			segmentView.addSegment(coachLink, false);
-			
+			if(isManagementTabAvalaible(config)) {
+				manageLink = LinkFactory.createLink("run.manage.coach", mainVC, this);
+				segmentView.addSegment(manageLink, false);
+			}
 			doOpenRun(ureq);
+			mainVC.put("segments", segmentView);
+			putInitialPanel(mainVC);
+		} else if(isManagementTabAvalaible(config)) {
+			mainVC = createVelocityContainer("run_segments");
+
+			segmentView = SegmentViewFactory.createSegmentView("segments", mainVC, this);
+			coachLink = LinkFactory.createLink("run.coach", mainVC, this);
+			segmentView.addSegment(coachLink, true);
+			manageLink = LinkFactory.createLink("run.manage.coach", mainVC, this);
+			segmentView.addSegment(manageLink, false);
+
+			doOpenCoach(ureq);
 			mainVC.put("segments", segmentView);
 			putInitialPanel(mainVC);
 		} else if(membership.isCoach() || userCourseEnv.isAdmin()) {
@@ -95,6 +113,12 @@ public class GTARunController extends BasicController {
 			putInitialPanel(msgCtrl.getInitialComponent());
 		}
 	}
+	
+	private boolean isManagementTabAvalaible(ModuleConfiguration config) {
+		return (userCourseEnv.isAdmin()
+				|| (userCourseEnv.isCoach() && config.getBooleanSafe(GTACourseNode.GTASK_COACH_ALLOWED_UPLOAD_TASKS, false)))
+				&& (config.getBooleanSafe(GTACourseNode.GTASK_ASSIGNMENT) || config.getBooleanSafe(GTACourseNode.GTASK_SAMPLE_SOLUTION));
+	}
 
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
@@ -107,6 +131,8 @@ public class GTARunController extends BasicController {
 					doOpenRun(ureq);
 				} else if (clickedLink == coachLink) {
 					doOpenCoach(ureq);
+				} else if(clickedLink == manageLink) {
+					doManage(ureq);
 				}
 			}
 		}
@@ -131,6 +157,13 @@ public class GTARunController extends BasicController {
 		mainVC.put("segmentCmp", coachCtrl.getInitialComponent());
 	}
 	
+	private void doManage(UserRequest ureq) {
+		if(manageCtrl == null) {
+			createManage(ureq);
+		}
+		mainVC.put("segmentCmp", manageCtrl.getInitialComponent());
+	}
+	
 	private GTAParticipantController createRun(UserRequest ureq) {
 		removeAsListenerAndDispose(runCtrl);
 		
@@ -145,5 +178,12 @@ public class GTARunController extends BasicController {
 		coachCtrl = new GTACoachSelectionController(ureq, getWindowControl(), userCourseEnv, gtaNode);
 		listenTo(coachCtrl);
 		return coachCtrl;
+	}
+	
+	private GTACoachManagementController createManage(UserRequest ureq) {
+		removeAsListenerAndDispose(manageCtrl);
+		manageCtrl = new GTACoachManagementController(ureq, getWindowControl(), userCourseEnv, gtaNode);
+		listenTo(manageCtrl);
+		return manageCtrl;
 	}
 }

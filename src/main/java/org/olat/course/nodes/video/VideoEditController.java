@@ -92,6 +92,7 @@ public class VideoEditController  extends ActivateableTabbableDefaultController 
 	private VelocityContainer videoConfigurationVc;
 
 	private ModuleConfiguration config;
+	private final VideoCourseNode videoNode;
 	private RepositoryEntry repositoryEntry;
 
 	private ReferencableEntriesSearchController searchController;
@@ -108,6 +109,8 @@ public class VideoEditController  extends ActivateableTabbableDefaultController 
 	public VideoEditController(VideoCourseNode videoNode, UserRequest ureq, WindowControl wControl, ICourse course, UserCourseEnvironment euce) {
 		super(ureq, wControl);
 		this.config = videoNode.getModuleConfiguration();
+		this.videoNode = videoNode;
+		
 		main = new Panel("videomain");
 
 		videoConfigurationVc = createVelocityContainer("edit");
@@ -187,8 +190,7 @@ public class VideoEditController  extends ActivateableTabbableDefaultController 
 			);
 			listenTo(cmc);
 			cmc.activate();
-		}
-		if(source == previewLink){
+		} else if(source == previewLink){
 			VideoDisplayController previewController = null;
 			switch(config.getStringValue(VideoEditController.CONFIG_KEY_DESCRIPTION_SELECT)){
 
@@ -214,6 +216,7 @@ public class VideoEditController  extends ActivateableTabbableDefaultController 
 	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest,
 	 *      org.olat.core.gui.control.Controller, org.olat.core.gui.control.Event)
 	 */
+	@Override
 	public void event(UserRequest urequest, Controller source, Event event) {
 		if (source == searchController) {
 			if (event == ReferencableEntriesSearchController.EVENT_REPOSITORY_ENTRY_SELECTED) {
@@ -235,6 +238,12 @@ public class VideoEditController  extends ActivateableTabbableDefaultController 
 					videoConfigurationVc.put("videoOptions", videoOptions.getInitialComponent());
 					listenTo(videoOptions);
 				}
+			}
+		} else if (source == accessibilityCondContr) {
+			if (event == Event.CHANGED_EVENT) {
+				Condition cond = accessibilityCondContr.getCondition();
+				videoNode.setPreConditionAccess(cond);
+				fireEvent(urequest, NodeEditController.NODECONFIG_CHANGED_EVENT);
 			}
 		}
 

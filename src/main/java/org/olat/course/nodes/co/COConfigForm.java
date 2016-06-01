@@ -119,15 +119,15 @@ public class COConfigForm extends FormBasicController {
 		this.config = config;
 //		this.cev = uce.getCourseEditorEnv();
 		
-		this.membersFragment = new MembersSelectorFormFragment(ureq, wControl, uce);
+		membersFragment = new MembersSelectorFormFragment(uce.getCourseEditorEnv());
 		registerFormFragment(membersFragment);	// register with parent for proper lifecycle handling
 		initForm(ureq);
-		this.validateFormLogic(ureq);
+		validateFormLogic(ureq);
 	}
 
 	@Override
 	public void storeFormData(UserRequest ureq) {
-		this.membersFragment.storeConfiguration(ureq, IModuleConfiguration.fragment("emailTo", "", config));
+		membersFragment.storeConfiguration(ureq, IModuleConfiguration.fragment("emailTo", "", config));
 	}
 
 	/**

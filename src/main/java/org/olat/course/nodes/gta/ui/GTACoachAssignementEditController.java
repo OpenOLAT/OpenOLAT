@@ -19,25 +19,27 @@
  */
 package org.olat.course.nodes.gta.ui;
 
-import org.olat.core.gui.control.Event;
+import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.control.WindowControl;
+import org.olat.course.nodes.GTACourseNode;
+import org.olat.course.run.environment.CourseEnvironment;
 
 /**
  * 
- * Initial date: 11.03.2015<br>
+ * Initial date: 27.05.2016<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class SelectIdentityEvent extends Event {
-
-	private static final long serialVersionUID = -6380404222959527487L;
-	private final Long identityKey;
+public class GTACoachAssignementEditController extends AbstractAssignmentEditController {
 	
-	public SelectIdentityEvent(Long identityKey) {
-		super("select-identity");
-		this.identityKey = identityKey;
+	public GTACoachAssignementEditController(UserRequest ureq, WindowControl wControl,
+			GTACourseNode gtaNode, CourseEnvironment courseEnv) {
+		super(ureq, wControl, gtaNode, null, courseEnv);
 	}
 
-	public Long getIdentityKey() {
-		return identityKey;
+	@Override
+	protected void formOK(UserRequest ureq) {
+		//
 	}
+
 }

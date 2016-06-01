@@ -44,9 +44,10 @@ import org.openqa.selenium.WebElement;
  */
 public class OOGraphene {
 
-	private static final long poolingDuration = 25;
+	private static final long poolingDuration = 25;//ms
+	private static final long waitTinyDuration = 15;//seconds
 
-	private static final By closeBlueBoxButtonBy = By.cssSelector("div.o_alert_info div.o_sel_info_message a.o_alert_close");
+	private static final By closeBlueBoxButtonBy = By.cssSelector("div.o_alert_info div.o_sel_info_message a.o_alert_close.o_sel_info_close i.o_icon_close");
 	private static final By closeModalDialogButtonBy = By.cssSelector("div.modal-dialog div.modal-header button.close");
 	
 	public static void waitModalDialog(WebDriver browser) {
@@ -84,7 +85,7 @@ public class OOGraphene {
 	// top.tinymce.get('o_fi1000000416').setContent('<p>Hacked</p>');
 	// <div id="o_fi1000000416_diw" class="o_richtext_mce"> <iframe id="o_fi1000000416_ifr">
 	public static final void tinymce(String content, WebDriver browser) {
-		Graphene.waitModel(browser).withTimeout(5, TimeUnit.SECONDS)
+		Graphene.waitModel(browser).withTimeout(waitTinyDuration, TimeUnit.SECONDS)
 			.pollingEvery(poolingDuration, TimeUnit.MILLISECONDS).until(new TinyMCELoadedPredicate());
 		((JavascriptExecutor)browser).executeScript("top.tinymce.activeEditor.setContent('" + content + "')");
 	}
@@ -219,21 +220,24 @@ public class OOGraphene {
 					} catch(Exception e2) {
 						//e.printStackTrace();
 					}
+				} catch(ElementNotVisibleException e1) {
+					try {
+						waitingALittleLonger();
+						clickCloseButton(browser, closeButton);
+					} catch(Exception e2) {
+						//e2.printStackTrace();
+					}
 				}
 			}
 		}
 	}
 	
 	private static final void clickCloseButton(WebDriver browser, WebElement closeButton) {
-		try {
-			closeButton.click();
-			Graphene.waitModel(browser)
-				.withTimeout(1000, TimeUnit.MILLISECONDS)
-				.pollingEvery(poolingDuration, TimeUnit.MILLISECONDS)
-				.until(new CloseAlertInfoPredicate());
-		} catch (ElementNotVisibleException e) {
-			//e.printStackTrace();
-		}
+		closeButton.click();
+		Graphene.waitModel(browser)
+			.withTimeout(1000, TimeUnit.MILLISECONDS)
+			.pollingEvery(poolingDuration, TimeUnit.MILLISECONDS)
+			.until(new CloseAlertInfoPredicate());
 	}
 	
 	public static final void closeModalDialogWindow(WebDriver browser) {

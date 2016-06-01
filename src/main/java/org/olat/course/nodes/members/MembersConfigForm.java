@@ -77,7 +77,7 @@ public class MembersConfigForm extends FormBasicController {
 			ModuleConfiguration config) {
 		super(ureq, wControl);
 		this.config = config;
-		this.membersFragment = new MembersSelectorFormFragment(ureq, wControl, euce);
+		membersFragment = new MembersSelectorFormFragment(euce.getCourseEditorEnv());
 		registerFormFragment(membersFragment);	// register with parent for proper lifecycle handling
 		initForm(ureq);
 		validateFormLogic(ureq);
@@ -177,21 +177,21 @@ public class MembersConfigForm extends FormBasicController {
 
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		/*boolean processed = */this.membersFragment.processFormEvent(ureq, source, event);
+		membersFragment.processFormEvent(ureq, source, event);
 		
 		if(showOwners == source) { // || showCoaches == source || showParticipants == source) {
 			config.setBooleanEntry(MembersCourseNode.CONFIG_KEY_SHOWOWNER, showOwners.isSelected(0));
 			update();
 			fireEvent(ureq, Event.CHANGED_EVENT);
-		} // else
-			
-		if(emailFunctionEl == source && emailFunctionEl.isOneSelected()) {
-			if(emailFunctionEl.isSelected(0)) {
-				config.setStringValue(MembersCourseNode.CONFIG_KEY_EMAIL_FUNCTION, MembersCourseNode.EMAIL_FUNCTION_ALL);
-			} else {
-				config.setStringValue(MembersCourseNode.CONFIG_KEY_EMAIL_FUNCTION, MembersCourseNode.EMAIL_FUNCTION_COACH_ADMIN);
+		} else if(emailFunctionEl == source) {
+			if(emailFunctionEl.isOneSelected()) {
+				if(emailFunctionEl.isSelected(0)) {
+					config.setStringValue(MembersCourseNode.CONFIG_KEY_EMAIL_FUNCTION, MembersCourseNode.EMAIL_FUNCTION_ALL);
+				} else {
+					config.setStringValue(MembersCourseNode.CONFIG_KEY_EMAIL_FUNCTION, MembersCourseNode.EMAIL_FUNCTION_COACH_ADMIN);
+				}
+				fireEvent(ureq, Event.CHANGED_EVENT);
 			}
-			fireEvent(ureq, Event.CHANGED_EVENT);
 		}
 		
 		update();

@@ -33,7 +33,13 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.gui.control.generic.modal.DialogBoxController;
+import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.id.Identity;
+import org.olat.core.id.OLATResourceable;
+import org.olat.core.util.StringHelper;
+import org.olat.core.util.coordinate.CoordinatorManager;
+import org.olat.core.util.io.SystemFilenameFilter;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
@@ -44,6 +50,8 @@ import org.olat.course.nodes.gta.GTAType;
 import org.olat.course.nodes.gta.Task;
 import org.olat.course.nodes.gta.TaskHelper;
 import org.olat.course.nodes.gta.TaskProcess;
+import org.olat.course.nodes.gta.ui.events.SubmitEvent;
+import org.olat.course.nodes.gta.ui.events.TaskMultiUserEvent;
 import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.group.BusinessGroup;
@@ -60,9 +68,10 @@ public class GTAParticipantRevisionAndCorrectionsController extends BasicControl
 	
 	private Link submitRevisionButton;
 	private final VelocityContainer mainVC;
-	
-	private DirectoryController correctionsCtrl, revisionsCtrl;
+
+	private DialogBoxController confirmSubmitDialog;
 	private SubmitDocumentsController uploadRevisionsCtrl;
+	private DirectoryController correctionsCtrl, revisionsCtrl;
 	
 	private Task assignedTask;
 	private final boolean businessGroupTask;
@@ -70,6 +79,7 @@ public class GTAParticipantRevisionAndCorrectionsController extends BasicControl
 	private final BusinessGroup assessedGroup;
 	private final CourseEnvironment courseEnv;
 	private final UserCourseEnvironment assessedUserCourseEnv;
+	private final OLATResourceable taskListEventResource;
 	
 	@Autowired
 	private GTAManager gtaManager;
@@ -78,14 +88,15 @@ public class GTAParticipantRevisionAndCorrectionsController extends BasicControl
 	
 	public GTAParticipantRevisionAndCorrectionsController(UserRequest ureq, WindowControl wControl,
 			UserCourseEnvironment assessedUserCourseEnv,Task assignedTask,
-			GTACourseNode gtaNode, BusinessGroup assessedGroup) {
+			GTACourseNode gtaNode, BusinessGroup assessedGroup, OLATResourceable taskListEventResource) {
 		super(ureq, wControl);
 		this.gtaNode = gtaNode;
 		courseEnv = assessedUserCourseEnv.getCourseEnvironment();
 		this.assessedUserCourseEnv = assessedUserCourseEnv;
 		this.assignedTask = assignedTask;
 		this.assessedGroup = assessedGroup;
-		this.businessGroupTask = GTAType.group.name().equals(gtaNode.getModuleConfiguration().getStringValue(GTACourseNode.GTASK_TYPE));
+		this.taskListEventResource = taskListEventResource;
+		businessGroupTask = GTAType.group.name().equals(gtaNode.getModuleConfiguration().getStringValue(GTACourseNode.GTASK_TYPE));
 		
 		mainVC = createVelocityContainer("participant_revisions");
 		putInitialPanel(mainVC);
@@ -99,6 +110,12 @@ public class GTAParticipantRevisionAndCorrectionsController extends BasicControl
 	@Override
 	protected void doDispose() {
 		//
+	}
+	
+	public void close() {
+		if(uploadRevisionsCtrl != null) {
+			uploadRevisionsCtrl.close();
+		}
 	}
 	
 	private void initRevisionProcess(UserRequest ureq) {
@@ -208,23 +225,74 @@ public class GTAParticipantRevisionAndCorrectionsController extends BasicControl
 			if(event instanceof SubmitEvent) {
 				Task aTask = uploadRevisionsCtrl.getAssignedTask();
 				gtaManager.log("Revision", (SubmitEvent)event, aTask, getIdentity(), getIdentity(), assessedGroup, courseEnv, gtaNode);				
+			} else if(event == Event.DONE_EVENT) {
+				fireEvent(ureq, Event.DONE_EVENT);
 			}
+		} else if(confirmSubmitDialog == source) {
+			if(DialogBoxUIFactory.isOkEvent(event) || DialogBoxUIFactory.isYesEvent(event)) {
+				doSubmitRevisions();
+				fireEvent(ureq, Event.DONE_EVENT);
+			}
+			cleanUp();
 		}
 		super.event(ureq, source, event);
+	}
+	
+	private void cleanUp() {
+		removeAsListenerAndDispose(confirmSubmitDialog);
+		confirmSubmitDialog = null;
 	}
 
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
 		if(submitRevisionButton == source) {
-			doSubmitRevisions();
-			fireEvent(ureq, Event.DONE_EVENT);
+			doConfirmSubmit(ureq);
+		}
+	}
+	
+	private void doConfirmSubmit(UserRequest ureq) {
+		int iteration = assignedTask.getRevisionLoop();
+		String title = translate("run.submit.revision.button");
+		String text;
+		File[] submittedDocuments;
+		VFSContainer documentsContainer;
+		if(GTAType.group.name().equals(gtaNode.getModuleConfiguration().getStringValue(GTACourseNode.GTASK_TYPE))) {
+			documentsContainer = gtaManager.getRevisedDocumentsContainer(courseEnv, gtaNode, iteration, assessedGroup);
+			File documentsDir = gtaManager.getRevisedDocumentsDirectory(courseEnv, gtaNode, iteration, assessedGroup);
+			submittedDocuments = documentsDir.listFiles(new SystemFilenameFilter(true, false));
+			if(submittedDocuments.length == 0) {
+				text = "<div class='o_warning'>" + translate("run.submit.revision.confirm.warning.group", new String[]{ StringHelper.escapeHtml(assessedGroup.getName()) }) + "</div>";
+			} else {
+				text = translate("run.submit.revision.confirm.group", new String[]{ StringHelper.escapeHtml(assessedGroup.getName()) });
+			}
+		} else {
+			documentsContainer = gtaManager.getRevisedDocumentsContainer(courseEnv, gtaNode, iteration, getIdentity());
+			File documentsDir = gtaManager.getRevisedDocumentsDirectory(courseEnv, gtaNode, iteration, getIdentity());
+			submittedDocuments = documentsDir.listFiles(new SystemFilenameFilter(true, false));
+			if(submittedDocuments.length == 0) {
+				text = "<div class='o_warning'>" + translate("run.submit.revision.confirm.warning") + "</div>";
+			} else {
+				text = translate("run.submit.revision.confirm");
+			}
+		}
+		
+		String lockedBy = TaskHelper.getDocumentsLocked(documentsContainer, submittedDocuments);
+		if(lockedBy != null) {
+			showWarning("warning.submit.documents.edited", lockedBy);
+		} else {
+			confirmSubmitDialog = activateOkCancelDialog(ureq, title, text, confirmSubmitDialog);
 		}
 	}
 	
 	private void doSubmitRevisions() {
 		assignedTask = gtaManager.updateTask(assignedTask, TaskProcess.correction, gtaNode);
 		gtaManager.log("Revision", "revision submitted", assignedTask, getIdentity(), getIdentity(), assessedGroup, courseEnv, gtaNode);
-
+		
+		TaskMultiUserEvent event = new TaskMultiUserEvent(TaskMultiUserEvent.SUBMIT_REVISION,
+				assessedGroup == null ? getIdentity() : null, assessedGroup, getIdentity());
+		CoordinatorManager.getInstance().getCoordinator().getEventBus()
+			.fireEventToListenersOf(event, taskListEventResource);
+	
 		if(businessGroupTask) {
 			List<Identity> identities = businessGroupService.getMembers(assessedGroup, GroupRoles.participant.name());
 			ICourse course = CourseFactory.loadCourse(courseEnv.getCourseResourceableId());

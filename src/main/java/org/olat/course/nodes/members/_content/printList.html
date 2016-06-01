@@ -1,0 +1,17 @@
+#foreach($member in $members)
+	<div class="o_cmember col-xs-3 col-sm-3 col-md-3">
+		<div class="clearfix">
+			<div class="o_portrait">
+				<img src="$avatarBaseURL/$member.getKey()/portrait.jpg">
+			</div>
+			<div class="o_cmember_info_wrapper">
+				<strong>$member.fullName</strong>
+				#foreach($userPropertyHandler in $userPropertyHandlers)
+					#if($userPropertyHandler.name != "firstName" && $userPropertyHandler.name != "lastName")
+						<br>${member.getIdentityProp($foreach.index)}
+					#end
+				#end
+			</div>
+		</div>
+	</div>
+#end

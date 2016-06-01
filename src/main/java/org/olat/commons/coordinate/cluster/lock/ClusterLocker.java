@@ -167,13 +167,20 @@ public class ClusterLocker implements Locker, GenericEventListener {
 		}
 	}
 	
-
+	@Override
 	public boolean isLocked(OLATResourceable ores, String locksubkey) {
 		final String asset = OresHelper.createStringRepresenting(ores, locksubkey);
-		LockImpl li = clusterLockManager.findLock(asset);
-		return (li != null);
+		return clusterLockManager.isLocked(asset);
 	}
 
+	@Override
+	public Identity getLockedBy(OLATResourceable ores, String locksubkey) {
+		final String asset = OresHelper.createStringRepresenting(ores, locksubkey);
+		LockImpl li = clusterLockManager.findLock(asset);
+		return li == null ? null : li.getOwner();
+	}
+
+	@Override
 	public void releaseLock(LockResult lockResult) {
 		// if the lock has not been acquired, then nothing is to be released -
 		// return silently to make cleaning up easier

@@ -76,7 +76,6 @@ import org.olat.course.nodes.gta.Task;
 import org.olat.course.nodes.gta.TaskHelper;
 import org.olat.course.nodes.gta.TaskList;
 import org.olat.course.nodes.gta.model.TaskDefinition;
-import org.olat.course.nodes.gta.model.TaskDefinitionList;
 import org.olat.course.nodes.gta.ui.BulkDownloadToolController;
 import org.olat.course.nodes.gta.ui.GTAAssessmentDetailsController;
 import org.olat.course.nodes.gta.ui.GTACoachedGroupListController;
@@ -118,6 +117,7 @@ public class GTACourseNode extends AbstractAccessableCourseNode implements Persi
 	public static final String GTASK_ASSIGNMENT_DEADLINE = "grouptask.assignment.deadline";
 	public static final String GTASK_ASSIGNMENT_DEADLINE_RELATIVE = "grouptask.assignment.deadline.relative";
 	public static final String GTASK_ASSIGNMENT_DEADLINE_RELATIVE_TO = "grouptask.assignment.deadline.relative.to";
+	public static final String GTASK_COACH_ALLOWED_UPLOAD_TASKS = "grouptask.coach.allowed.upload.tasks";
 	public static final String GTASK_SUBMIT = "grouptask.submit";
 	public static final String GTASK_SUBMIT_DEADLINE = "grouptask.submit.deadline";
 	public static final String GTASK_SUBMIT_DEADLINE_RELATIVE = "grouptask.submit.deadline.relative";
@@ -279,14 +279,22 @@ public class GTACourseNode extends AbstractAccessableCourseNode implements Persi
 			if(config.getBooleanSafe(GTACourseNode.GTASK_ASSIGNMENT)) {
 				File taskDirectory = gtaManager.getTasksDirectory(course.getCourseEnvironment(), this);
 				if(!TaskHelper.hasDocuments(taskDirectory)) {
-					addStatusErrorDescription("error.missing.tasks", GTAEditController.PANE_TAB_ASSIGNMENT, sdList);
-				} else {
-					TaskDefinitionList taskList = (TaskDefinitionList)config.get(GTACourseNode.GTASK_TASKS);
-					if(taskList == null || taskList.getTasks() == null || taskList.getTasks().isEmpty()) {
+					if(config.getBooleanSafe(GTACourseNode.GTASK_COACH_ALLOWED_UPLOAD_TASKS, false)) {
+						addStatusWarningDescription("error.missing.tasks", GTAEditController.PANE_TAB_ASSIGNMENT, sdList);
+					} else {
 						addStatusErrorDescription("error.missing.tasks", GTAEditController.PANE_TAB_ASSIGNMENT, sdList);
+					}
+				} else {
+					List<TaskDefinition> taskList = gtaManager.getTaskDefinitions(course.getCourseEnvironment(), this);
+					if(taskList == null || taskList.isEmpty()) {
+						if(config.getBooleanSafe(GTACourseNode.GTASK_COACH_ALLOWED_UPLOAD_TASKS, false)) {
+							addStatusWarningDescription("error.missing.tasks", GTAEditController.PANE_TAB_ASSIGNMENT, sdList);
+						} else {
+							addStatusErrorDescription("error.missing.tasks", GTAEditController.PANE_TAB_ASSIGNMENT, sdList);
+						}
 					} else {
 						String[] filenames = taskDirectory.list();
-						for(TaskDefinition taskDef: taskList.getTasks()) {
+						for(TaskDefinition taskDef: taskList) {
 							boolean found = false;
 							for(String filename:filenames) {
 								if(filename.equals(taskDef.getFilename())) {
@@ -307,7 +315,11 @@ public class GTACourseNode extends AbstractAccessableCourseNode implements Persi
 			if(config.getBooleanSafe(GTACourseNode.GTASK_SAMPLE_SOLUTION)) {
 				File solutionDirectory = gtaManager.getSolutionsDirectory(course.getCourseEnvironment(), this);
 				if(!TaskHelper.hasDocuments(solutionDirectory)) {
-					addStatusErrorDescription("error.missing.solutions", GTAEditController.PANE_TAB_SOLUTIONS, sdList);
+					if(config.getBooleanSafe(GTACourseNode.GTASK_COACH_ALLOWED_UPLOAD_TASKS, false)) {
+						addStatusWarningDescription("error.missing.solutions", GTAEditController.PANE_TAB_SOLUTIONS, sdList);
+					} else {
+						addStatusErrorDescription("error.missing.solutions", GTAEditController.PANE_TAB_SOLUTIONS, sdList);
+					}
 				}
 			}
 			
@@ -363,12 +375,24 @@ public class GTACourseNode extends AbstractAccessableCourseNode implements Persi
 		File taskDirectory = gtaManager.getTasksDirectory(course.getCourseEnvironment(), this);
 		fNodeExportDir.mkdirs();
 		FileUtils.copyDirContentsToDir(taskDirectory, tasksExportDir, false, "export task course node");
+
+		File taskDefinitions = new File(taskDirectory.getParentFile(), GTAManager.TASKS_DEFINITIONS);
+		if(taskDefinitions.exists()) {
+			File copyTaskDefinitions = new File(tasksExportDir.getParentFile(), GTAManager.TASKS_DEFINITIONS);
+			FileUtils.copyFileToFile(taskDefinitions, copyTaskDefinitions, false);
+		}
 		
 		//export the solutions
 		File fSolExportDir = new File(fNodeExportDir, "solutions");
 		File solutionsDirectory = gtaManager.getSolutionsDirectory(course.getCourseEnvironment(), this);
 		fSolExportDir.mkdirs();
 		FileUtils.copyDirContentsToDir(solutionsDirectory, fSolExportDir, false, "export task course node solutions");
+		
+		File solutionDefinitions = new File(solutionsDirectory.getParentFile(), GTAManager.SOLUTIONS_DEFINITIONS);
+		if(solutionDefinitions.exists()) {
+			File copySolutionDefinitions = new File(fSolExportDir.getParentFile(), GTAManager.SOLUTIONS_DEFINITIONS);
+			FileUtils.copyFileToFile(solutionDefinitions, copySolutionDefinitions, false);
+		}
 	}
 	
 	@Override
@@ -380,11 +404,23 @@ public class GTACourseNode extends AbstractAccessableCourseNode implements Persi
 		File tasksImportDir = new File(fNodeImportDir, "tasks");
 		File taskDirectory = gtaManager.getTasksDirectory(course.getCourseEnvironment(), this);
 		FileUtils.copyDirContentsToDir(tasksImportDir, taskDirectory, false, "import task course node");
+		
+		File taskDefinitions = new File(tasksImportDir.getParentFile(), GTAManager.TASKS_DEFINITIONS);
+		if(taskDefinitions.exists()) {
+			File copyTaskDefinitions = new File(taskDirectory.getParentFile(), GTAManager.TASKS_DEFINITIONS);
+			FileUtils.copyFileToFile(taskDefinitions, copyTaskDefinitions, false);
+		}
 	
 		//import solutions
 		File fSolImportDir = new File(fNodeImportDir, "solutions");
 		File solutionsDirectory = gtaManager.getSolutionsDirectory(course.getCourseEnvironment(), this);
 		FileUtils.copyDirContentsToDir(fSolImportDir, solutionsDirectory, false, "import task course node solutions");
+		
+		File solutionDefinitions = new File(fSolImportDir.getParentFile(), GTAManager.SOLUTIONS_DEFINITIONS);
+		if(solutionDefinitions.exists()) {
+			File copySolutionDefinitions = new File(solutionsDirectory.getParentFile(), GTAManager.SOLUTIONS_DEFINITIONS);
+			FileUtils.copyFileToFile(solutionDefinitions, copySolutionDefinitions, false);
+		}
 		
 		RepositoryEntry entry = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
 		gtaManager.createIfNotExists(entry, this);
@@ -399,11 +435,23 @@ public class GTACourseNode extends AbstractAccessableCourseNode implements Persi
 		File sourceTaskDirectory = gtaManager.getTasksDirectory(sourceCourse.getCourseEnvironment(), this);
 		File copyTaskDirectory = gtaManager.getTasksDirectory(course.getCourseEnvironment(), this);
 		FileUtils.copyDirContentsToDir(sourceTaskDirectory, copyTaskDirectory, false, "copy task course node");
-				
+		
+		File taskDefinitions = new File(sourceTaskDirectory.getParentFile(), GTAManager.TASKS_DEFINITIONS);
+		if(taskDefinitions.exists()) {
+			File copyTaskDefinitions = new File(copyTaskDirectory.getParentFile(), GTAManager.TASKS_DEFINITIONS);
+			FileUtils.copyFileToFile(taskDefinitions, copyTaskDefinitions, false);
+		}
+		
 		//copy solutions
 		File sourceSolutionsDirectory = gtaManager.getSolutionsDirectory(sourceCourse.getCourseEnvironment(), this);
 		File copySolutionsDirectory = gtaManager.getSolutionsDirectory(course.getCourseEnvironment(), this);
 		FileUtils.copyDirContentsToDir(sourceSolutionsDirectory, copySolutionsDirectory, false, "copy task course node solutions");
+
+		File solutionDefinitions = new File(sourceSolutionsDirectory.getParentFile(), GTAManager.SOLUTIONS_DEFINITIONS);
+		if(solutionDefinitions.exists()) {
+			File copySolutionDefinitions = new File(copySolutionsDirectory.getParentFile(), GTAManager.SOLUTIONS_DEFINITIONS);
+			FileUtils.copyFileToFile(solutionDefinitions, copySolutionDefinitions, false);
+		}
 		
 		RepositoryEntry entry = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
 		gtaManager.createIfNotExists(entry, this);
@@ -419,11 +467,23 @@ public class GTACourseNode extends AbstractAccessableCourseNode implements Persi
 		File copyTaskDirectory = gtaManager.getTasksDirectory(course.getCourseEnvironment(), cNode);
 		FileUtils.copyDirContentsToDir(taskDirectory, copyTaskDirectory, false, "copy task course node");
 		
+		File taskDefinitions = new File(taskDirectory.getParentFile(), GTAManager.TASKS_DEFINITIONS);
+		if(taskDefinitions.exists()) {
+			File copyTaskDefinitions = new File(copyTaskDirectory.getParentFile(), GTAManager.TASKS_DEFINITIONS);
+			FileUtils.copyFileToFile(taskDefinitions, copyTaskDefinitions, false);
+		}
+		
 		//copy solutions
 		File solutionsDirectory = gtaManager.getSolutionsDirectory(course.getCourseEnvironment(), this);
 		File copySolutionsDirectory = gtaManager.getSolutionsDirectory(course.getCourseEnvironment(), cNode);
 		FileUtils.copyDirContentsToDir(solutionsDirectory, copySolutionsDirectory, false, "copy task course node solutions");
 
+		File solutionDefinitions = new File(solutionsDirectory.getParentFile(), GTAManager.SOLUTIONS_DEFINITIONS);
+		if(solutionDefinitions.exists()) {
+			File copySolutionDefinitions = new File(copySolutionsDirectory.getParentFile(), GTAManager.SOLUTIONS_DEFINITIONS);
+			FileUtils.copyFileToFile(solutionDefinitions, copySolutionDefinitions, false);
+		}
+		
 		return cNode;
 	}
 

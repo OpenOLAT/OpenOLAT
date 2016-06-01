@@ -323,6 +323,29 @@
 						</property>
 					</bean>
 				</entry>
+				
+				<entry key="org.olat.course.nodes.members.MembersCourseNodeRunController">
+					<bean class="org.olat.user.propertyhandlers.UserPropertyUsageContext">
+						<property name="description" value="Print view in the members course element." />
+						<property name="propertyHandlers">
+							<list>
+								<ref bean="userPropertyFirstName" />
+								<ref bean="userPropertyLastName" />
+								<ref bean="userPropertyEmail" />
+							</list>
+						</property>
+						<property name="adminViewOnlyProperties">
+							<set></set>						
+						</property>
+						<property name="mandatoryProperties">
+							<set>
+								<ref bean="userPropertyFirstName" />
+								<ref bean="userPropertyLastName" />
+								<ref bean="userPropertyEmail" />
+							</set>
+						</property>
+					</bean>
+				</entry>
 
 				<entry key="org.olat.ims.qti.export.QTIExportFormatterCSVType1">
 					<bean class="org.olat.user.propertyhandlers.UserPropertyUsageContext">

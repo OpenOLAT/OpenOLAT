@@ -22,6 +22,7 @@ package org.olat.course.nodes.gotomeeting;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.tabbedpane.TabbedPane;
+import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.ControllerEventListener;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -87,6 +88,11 @@ public class GoToMeetingEditController extends ActivateableTabbableDefaultContro
 
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
+		//
+	}
+
+	@Override
+	protected void event(UserRequest ureq, Controller source, Event event) {
 		if (source == accessibilityCondContr) {
 			if (event == Event.CHANGED_EVENT) {
 				Condition cond = accessibilityCondContr.getCondition();

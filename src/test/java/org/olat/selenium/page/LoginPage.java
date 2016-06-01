@@ -47,7 +47,6 @@ public class LoginPage {
 	private static final String footerUserDivXPath = "//div[@id='o_footer_user']";
 	private static final String acknowledgeCheckboxXPath = "//input[@name='acknowledge_checkbox']";
 	
-	private static final By authXPath = By.xpath(footerUserDivXPath);
 	public static final By loginFormBy = By.cssSelector("div.o_login_form");
 	private static final By authOrDisclaimerXPath = By.xpath(footerUserDivXPath + "|" + acknowledgeCheckboxXPath);
 	private static final By disclaimerXPath = By.xpath(acknowledgeCheckboxXPath);
@@ -129,7 +128,9 @@ public class LoginPage {
 		By guestLinkBy = By.xpath("//a[contains(@href,'menu.guest')]");
 		WebElement guestLink = browser.findElement(guestLinkBy);
 		Graphene.guardHttp(guestLink).click();
-		OOGraphene.waitElement(authXPath, browser);
+
+		By footerUserDivBy = By.id("o_footer_user");
+		OOGraphene.waitElement(footerUserDivBy, browser);
 	}
 	
 	/**
@@ -171,7 +172,8 @@ public class LoginPage {
 		}
 		
 		//wait until the content appears
-		OOGraphene.waitElement(authXPath, 10, browser);
+		By footerUserBy = By.cssSelector("#o_footer_user #o_username"); 
+		OOGraphene.waitElement(footerUserBy, 30, browser);
 		return this;
 	}
 	

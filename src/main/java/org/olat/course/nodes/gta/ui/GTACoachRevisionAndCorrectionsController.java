@@ -47,6 +47,7 @@ import org.olat.course.nodes.gta.GTAType;
 import org.olat.course.nodes.gta.Task;
 import org.olat.course.nodes.gta.TaskHelper;
 import org.olat.course.nodes.gta.TaskProcess;
+import org.olat.course.nodes.gta.ui.events.SubmitEvent;
 import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.group.BusinessGroup;

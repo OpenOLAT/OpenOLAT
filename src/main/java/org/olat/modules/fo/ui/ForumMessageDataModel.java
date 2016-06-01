@@ -52,7 +52,7 @@ public class ForumMessageDataModel extends DefaultFlexiTableDataModel<MessageLig
 	public void sort(SortKey orderBy) {
 		if(orderBy != null) {
 			if("natural".equals(orderBy.getKey())) {
-				System.out.println();
+				//System.out.println();
 			} else {
 				List<MessageLightView> views = new ForumMessageDataModelSort(orderBy, this, null).sort();
 				super.setObjects(views);
@@ -71,7 +71,7 @@ public class ForumMessageDataModel extends DefaultFlexiTableDataModel<MessageLig
 		if(col >= 0 && col < ForumMessageCols.values().length) {
 			switch(ForumMessageCols.values()[col]) {
 				case type: return row.getStatusCode();
-				case thread: return row.getTitle();
+				case thread: return StringHelper.escapeHtml(row.getTitle());
 				case lastModified: return row.getLastModified();
 				default: return "ERROR";
 			}

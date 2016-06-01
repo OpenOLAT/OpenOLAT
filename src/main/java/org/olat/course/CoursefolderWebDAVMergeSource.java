@@ -74,20 +74,20 @@ class CoursefolderWebDAVMergeSource extends WebDAVMergeSource {
 		}
 		boolean prependReference = webDAVModule.isPrependCourseReferenceToTitle();
 		
-		Set<RepositoryEntry> duplicates = new HashSet<>();
+		UniqueNames container = new UniqueNames();
 		List<RepositoryEntry> editorEntries = repositoryManager.queryByOwner(getIdentity(), "CourseModule");
-		appendCourses(editorEntries, true, containers, useTerms, terms, noTermContainer, prependReference, duplicates);
+		appendCourses(editorEntries, true, containers, useTerms, terms, noTermContainer, prependReference, container);
 		
 		//add courses as participant and coaches
 		if(webDAVModule.isEnableLearnersParticipatingCourses()) {
 			List<RepositoryEntry> entries = repositoryManager.getLearningResourcesAsParticipantAndCoach(getIdentity(), "CourseModule");
-			appendCourses(entries, false, containers, useTerms, terms, noTermContainer, prependReference, duplicates);
+			appendCourses(entries, false, containers, useTerms, terms, noTermContainer, prependReference, container);
 		}
 		
 		//add bookmarked courses
 		if(webDAVModule.isEnableLearnersBookmarksCourse()) {
 			List<RepositoryEntry> bookmarkedEntries = repositoryManager.getLearningResourcesAsBookmark(getIdentity(), identityEnv.getRoles(), "CourseModule", 0, -1);
-			appendCourses(bookmarkedEntries, false, containers, useTerms, terms, noTermContainer, prependReference, duplicates);
+			appendCourses(bookmarkedEntries, false, containers, useTerms, terms, noTermContainer, prependReference, container);
 		}
 
 		if (useTerms) {
@@ -102,21 +102,19 @@ class CoursefolderWebDAVMergeSource extends WebDAVMergeSource {
 	
 	private void appendCourses(List<RepositoryEntry> courseEntries, boolean editor, List<VFSContainer> containers,
 			boolean useTerms, Map<String, VFSContainer> terms, VirtualContainer noTermContainer,
-			boolean prependReference, Set<RepositoryEntry> duplicates) {	
+			boolean prependReference, UniqueNames container) {	
 		
 		// Add all found repo entries to merge source
 		for (RepositoryEntry re:courseEntries) {
-			if(duplicates.contains(re)) {
+			if(container.isDuplicate(re)) {
 				continue;
 			}
-			duplicates.add(re);
 			
 			String displayName = re.getDisplayname();
 			if(prependReference && StringHelper.containsNonWhitespace(re.getExternalRef())) {
 				displayName = re.getExternalRef() + " " + displayName;
 			}
 			String courseTitle = RequestUtil.normalizeFilename(displayName);
-			NamedContainerImpl cfContainer = new CoursefolderWebDAVNamedContainer(courseTitle, re, editor ? null : identityEnv);
 			
 			if (useTerms) {
 				RepositoryEntryLifecycle lc = re.getLifecycle();
@@ -131,15 +129,73 @@ class CoursefolderWebDAVMergeSource extends WebDAVMergeSource {
 						terms.put(termSoftKey, termContainer);
 						addContainerToList(termContainer, containers);
 					}
+					
+					String name = container.getTermUniqueName(termSoftKey, courseTitle);
+					NamedContainerImpl cfContainer = new CoursefolderWebDAVNamedContainer(name, re, editor ? null : identityEnv);
 					termContainer.getItems().add(cfContainer);
 				} else {
 					// no semester term found, add to no-term folder
+					String name = container.getNoTermUniqueName(courseTitle);
+					NamedContainerImpl cfContainer = new CoursefolderWebDAVNamedContainer(name, re, editor ? null : identityEnv);
 					noTermContainer.getItems().add(cfContainer);
-				
 				}
 			} else {
-				addContainerToList(cfContainer, containers);				
+				String name = container.getContainersUniqueName(courseTitle);
+				NamedContainerImpl cfContainer = new CoursefolderWebDAVNamedContainer(name, re, editor ? null : identityEnv);
+				addContainerToList(cfContainer, containers);
 			}
 		}
+	}
+	
+	private static class UniqueNames {
+		
+		private final Set<RepositoryEntry> duplicates = new HashSet<>();
+		private final Set<String> containers = new HashSet<>();
+		private final Set<String> noTermContainer = new HashSet<>();
+		private final Map<String,Set<String>> termContainers = new HashMap<>();
+		
+		public boolean isDuplicate(RepositoryEntry re) {
+			boolean duplicate = duplicates.contains(re);
+			if(!duplicate) {
+				duplicates.add(re);
+			}
+			return duplicate;
+		}
+		
+		private String getTermUniqueName(String term, String courseTitle) {
+			String name = courseTitle;
+			if(termContainers.containsKey(term)) {
+				Set<String> termContainer = termContainers.get(term);
+				name = getUniqueName(courseTitle, termContainer);
+			} else {
+				Set<String> termContainer = new HashSet<>();
+				termContainer.add(courseTitle);
+				termContainers.put(term, termContainer);
+			}
+			return name;
+		}
+		
+		private String getNoTermUniqueName(String courseTitle) {
+			return getUniqueName(courseTitle, noTermContainer);
+		}
+		
+		private String getContainersUniqueName(String courseTitle) {
+			return getUniqueName(courseTitle, containers);
+		}
+		
+		private String getUniqueName(String name, Set<String> set) {
+			String uniqueName = name;
+			if(set.contains(name)) {
+				// attach a serial to the group name to avoid duplicate mount points...
+				int serial = 1;
+				while (set.contains(name + " " + serial) && serial < 255) {
+					serial++;
+				}
+				uniqueName = name + " " + serial;
+			}
+			set.add(uniqueName);
+			return uniqueName;
+		}
+		
 	}
 }

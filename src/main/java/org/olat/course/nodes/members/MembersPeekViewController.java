@@ -70,10 +70,10 @@ public class MembersPeekViewController extends BasicController {
 		courseEnv = userCourseEnv.getCourseEnvironment();
 		
 		readFormData(config);
-		initForm(ureq, userCourseEnv);
+		initForm(ureq);
 	}
 
-	private void initForm(UserRequest ureq, UserCourseEnvironment courseEnv) {
+	private void initForm(UserRequest ureq) {
 		
 		TableGuiConfiguration tableConfig = new TableGuiConfiguration();
 		tableConfig.setDisplayTableHeader(false);

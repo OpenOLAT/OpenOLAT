@@ -69,7 +69,7 @@ public class ThreadListDataModel extends DefaultFlexiTableDataModel<ForumThread>
 	public Object getValueAt(ForumThread row, int col) {
 		switch(ThreadListCols.values()[col]) {
 			case type: return row.getStatusCode();
-			case thread: return row.getTitle();
+			case thread: return StringHelper.escapeHtml(row.getTitle());
 			case creator: {
 				if(StringHelper.containsNonWhitespace(row.getPseudonym())) {
 					return row.getPseudonym();

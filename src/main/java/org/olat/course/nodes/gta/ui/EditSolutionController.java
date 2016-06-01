@@ -58,6 +58,7 @@ public class EditSolutionController extends FormBasicController {
 	private final Solution solution;
 	private final File solutionDir;
 	private final VFSContainer solutionContainer;
+	private final String filenameToReplace;
 	
 	public EditSolutionController(UserRequest ureq, WindowControl wControl,
 			File solutionDir, VFSContainer solutionContainer) {
@@ -74,6 +75,7 @@ public class EditSolutionController extends FormBasicController {
 		super(ureq, wControl);
 		this.replaceFile = replaceFile;
 		this.solution = solution;
+		this.filenameToReplace = solution != null ? solution.getFilename() : null;
 		this.solutionDir = solutionDir;
 		this.solutionContainer = solutionContainer;
 		initForm(ureq);
@@ -81,6 +83,10 @@ public class EditSolutionController extends FormBasicController {
 	
 	public Solution getSolution() {
 		return solution;
+	}
+	
+	public String getFilenameToReplace() {
+		return filenameToReplace;
 	}
 
 	@Override
