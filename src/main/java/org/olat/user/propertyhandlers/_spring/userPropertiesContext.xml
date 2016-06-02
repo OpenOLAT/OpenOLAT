@@ -855,6 +855,23 @@
 					</bean>
 				</entry>
 				
+				<entry key="org.olat.modules.coach.ui.UserListController">
+					<bean class="org.olat.user.propertyhandlers.UserPropertyUsageContext">
+						<property name="propertyHandlers">
+							<list>
+								<ref bean="userPropertyLastName" />
+								<ref bean="userPropertyFirstName" />
+							</list>
+						</property>		
+						<property name="mandatoryProperties">
+							<set>
+								<ref bean="userPropertyLastName" />
+								<ref bean="userPropertyFirstName" />
+							</set>
+						</property>				
+					</bean>
+				</entry>
+				
 				<entry key="org.olat.course.assessment.ui.tool.AssessmentToReviewSmallController">
 					<bean class="org.olat.user.propertyhandlers.UserPropertyUsageContext">
 						<property name="propertyHandlers">

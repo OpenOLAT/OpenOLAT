@@ -28,6 +28,7 @@ import org.olat.core.id.Identity;
 import org.olat.core.id.Persistable;
 import org.olat.core.id.Preferences;
 import org.olat.core.id.User;
+import org.olat.core.id.UserConstants;
 import org.olat.core.util.StringHelper;
 
 /**
@@ -150,6 +151,16 @@ public class UpdateIdentity implements Identity {
 		@Override
 		public Long getKey() {
 			return user.getKey();
+		}
+		
+		@Override
+		public String getFirstName() {
+			return updatedProperties.get(UserConstants.FIRSTNAME);
+		}
+
+		@Override
+		public String getLastName() {
+			return updatedProperties.get(UserConstants.LASTNAME);
 		}
 
 		@Override

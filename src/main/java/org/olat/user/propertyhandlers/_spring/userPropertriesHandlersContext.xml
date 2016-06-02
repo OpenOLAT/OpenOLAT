@@ -271,12 +271,12 @@
 		<property name="deletable" value="false" />
 	</bean>
 
-	<bean id="usertrackingLanguage" class="org.olat.user.propertyhandlers.Generic127CharTextPropertyHandler">
+	<bean id="usertrackingLanguage" class="org.olat.user.propertyhandlers.LanguagePropertyHandler">
 		<property name="name" value="language" />
 		<property name="group" value="olatattr" />
 		<property name="deletable" value="false" />
 	</bean>
-	<bean id="usertrackingWebDAV" class="org.olat.user.propertyhandlers.Generic127CharTextPropertyHandler">
+	<bean id="usertrackingWebDAV" class="org.olat.user.propertyhandlers.WebDAVPropertyHandler">
 		<property name="name" value="iswebdav" />
 		<property name="group" value="olatattr" />
 		<property name="deletable" value="false" />

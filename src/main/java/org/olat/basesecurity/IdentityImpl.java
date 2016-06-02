@@ -28,10 +28,25 @@ package org.olat.basesecurity;
 import java.io.Serializable;
 import java.util.Date;
 
-import org.olat.core.commons.persistence.PersistentObject;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.OneToOne;
+import javax.persistence.Table;
+import javax.persistence.Temporal;
+import javax.persistence.TemporalType;
+import javax.persistence.Version;
+
+import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.annotations.Parameter;
+import org.olat.core.id.CreateInfo;
 import org.olat.core.id.Identity;
+import org.olat.core.id.Persistable;
 import org.olat.core.id.User;
 import org.olat.core.logging.AssertException;
+import org.olat.user.UserImpl;
 
 
 /**
@@ -39,13 +54,45 @@ import org.olat.core.logging.AssertException;
  * 
  * @author Felix Jost
  */
-public class IdentityImpl extends PersistentObject implements Identity, IdentityRef, Serializable {
+@Entity
+@Table(name="o_bs_identity")
+public class IdentityImpl implements Identity, IdentityRef, CreateInfo, Persistable, Serializable {
 
 	private static final long serialVersionUID = 1762176135363569542L;
-	private String name;
-	private User user;
+	
+	@Id
+	@GeneratedValue(generator = "system-uuid")
+	@GenericGenerator(name = "system-uuid", strategy = "enhanced-sequence", parameters={
+		@Parameter(name="sequence_name", value="hibernate_unique_key"),
+		@Parameter(name="force_table_use", value="true"),
+		@Parameter(name="optimizer", value="legacy-hilo"),
+		@Parameter(name="value_column", value="next_hi"),
+		@Parameter(name="increment_size", value="32767"),
+		@Parameter(name="initial_value", value="32767")
+	})
+	@Column(name="id", nullable=false, unique=true, insertable=true, updatable=false)
+	private Long key;
+	
+	@Version
+	private int version = 0;
+
+	@Temporal(TemporalType.TIMESTAMP)
+	@Column(name="creationdate", nullable=false, insertable=true, updatable=false)
+	private Date creationDate;
+	@Temporal(TemporalType.TIMESTAMP)
+	@Column(name="lastlogin", nullable=false, insertable=true, updatable=true)
 	private Date lastLogin;
+	
+	@Column(name="name", nullable=true, insertable=true, updatable=false)
+	private String name;
+	@Column(name="external_id", nullable=true, insertable=true, updatable=true)
 	private String externalId;
+	
+	@OneToOne(targetEntity=UserImpl.class)
+	@JoinColumn (name="fk_user_id")
+	private User user;
+	
+	
 	/** status=[activ|deleted|permanent] */
 	private int status;
 	
@@ -66,6 +113,24 @@ public class IdentityImpl extends PersistentObject implements Identity, Identity
 		this.user = user;
 		status = Identity.STATUS_ACTIV;
 		this.setLastLogin(new Date());
+	}
+
+	@Override
+	public Long getKey() {
+		return key;
+	}
+	
+	public void setKey(Long key) {
+		this.key = key;
+	}
+	
+	@Override
+	public Date getCreationDate() {
+		return creationDate;
+	}
+
+	public void setCreationDate(Date creationDate) {
+		this.creationDate = creationDate;
 	}
 
 	/**
@@ -91,7 +156,17 @@ public class IdentityImpl extends PersistentObject implements Identity, Identity
 	public Date getLastLogin() {
 		return lastLogin;
 	}
+	
+	/**
+	 * Set new last login value
+	 * 
+	 * @param newLastLogin  The new last login date
+	 */
+	public void setLastLogin(Date newLastLogin) {
+		this.lastLogin = newLastLogin;
+	}
 
+	@Override
 	public String getExternalId() {
 		return externalId;
 	}
@@ -106,8 +181,9 @@ public class IdentityImpl extends PersistentObject implements Identity, Identity
 	 * @param name The name to set
 	 */
 	public void setName(String name) {
-		if (name.length() > NAME_MAXLENGTH)
+		if (name.length() > NAME_MAXLENGTH) {
 			throw new AssertException("field name of table o_bs_identity too long");
+		}
 		this.name = name;
 	}
 
@@ -116,32 +192,15 @@ public class IdentityImpl extends PersistentObject implements Identity, Identity
 	 * 
 	 * @param user The user to set
 	 */
-	@SuppressWarnings("unused")
-	private void setUser(User user) {
+	public void setUser(User user) {
 		this.user = user;
-	}
-
-	/**
-	 * for hibernate only.
-	 * 
-	 * @param newLastLogin  The new last login date
-	 */
-	private void setLastLogin(Date newLastLogin) {
-		this.lastLogin = newLastLogin;
-	}
-
-	/**
-	 * @see java.lang.Object#toString()
-	 */
-	@Override
-	public String toString() {
-		return "Identity[name=" + name + "], " + super.toString();
 	}
 
 	/**
 	 * Status can be [activ|deleted|permanent].
 	 * @return Returns the status.
 	 */
+	@Override
 	public Integer getStatus() {
 		return status;
 	}
@@ -150,22 +209,7 @@ public class IdentityImpl extends PersistentObject implements Identity, Identity
 	 * @param status The status to set.
 	 */
 	public void setStatus(Integer status) {
-		this.status = status;
-	}
-	
-	/**
-	 * Compares the usernames.
-	 * @see java.lang.Object#equals(java.lang.Object)
-	 */
-	@Override
-	public boolean equals(Object obj) {
-		if(this == obj)
-			return true;
-		if((obj == null) || (obj.getClass() != this.getClass()))
-			return false;
-		// object must be IdentityImpl at this point
-		IdentityImpl identity = (IdentityImpl)obj;
-		return this.getName().equals(identity.getName());
+		this.status = status == null ? 0 : status.intValue();
 	}
 
 	@Override
@@ -174,5 +218,34 @@ public class IdentityImpl extends PersistentObject implements Identity, Identity
 		hash = 31 * hash;
 		hash = 31 * hash + (null == this.getName() ? 0 : this.getName().hashCode());
 		return hash;
+	}
+	
+	/**
+	 * Compares the usernames.
+	 * @see java.lang.Object#equals(java.lang.Object)
+	 */
+	@Override
+	public boolean equals(Object obj) {
+		if(this == obj) {
+			return true;
+		}
+		if(obj instanceof IdentityImpl) {
+			IdentityImpl identity = (IdentityImpl)obj;
+			return getName().equals(identity.getName());
+		}
+		return false;
+	}
+
+	@Override
+	public boolean equalsByPersistableKey(Persistable persistable) {
+		return equals(persistable);
+	}
+	
+	/**
+	 * @see java.lang.Object#toString()
+	 */
+	@Override
+	public String toString() {
+		return "Identity[name=" + name + "], " + super.toString();
 	}
 }

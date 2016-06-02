@@ -26,6 +26,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Random;
 import java.util.UUID;
@@ -46,10 +47,13 @@ import org.olat.modules.coach.model.EfficiencyStatementEntry;
 import org.olat.modules.coach.model.GroupStatEntry;
 import org.olat.modules.coach.model.SearchCoachedIdentityParams;
 import org.olat.modules.coach.model.StudentStatEntry;
+import org.olat.modules.coach.ui.UserListController;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryService;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
+import org.olat.user.UserManager;
+import org.olat.user.propertyhandlers.UserPropertyHandler;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -79,8 +83,12 @@ public class CoachingLargeTest extends OlatTestCase {
 	private static Map<Identity,List<RepositoryEntry>> studentToCourseMap = new ConcurrentHashMap<Identity,List<RepositoryEntry>>();
 	private static Map<Long,List<Long>> coachToGroupCourseMap = new ConcurrentHashMap<Long,List<Long>>();
 	
+	private static List<UserPropertyHandler> userPropertyHandlers;
+	
 	@Autowired
 	private DB dbInstance;
+	@Autowired
+	private UserManager userManager;
 	@Autowired
 	private CoachingService coachingService;
 	@Autowired
@@ -93,6 +101,8 @@ public class CoachingLargeTest extends OlatTestCase {
 	@Before
 	public void setUp() throws Exception {
 		if(isInitialized) return;
+		
+		userPropertyHandlers = userManager.getUserPropertyHandlersFor(UserListController.usageIdentifyer, false);
 		
 		//author
 		author = JunitTestHelper.createAndPersistIdentityAsAuthor("author_" + UUID.randomUUID());
@@ -272,7 +282,7 @@ public class CoachingLargeTest extends OlatTestCase {
 	
 	@Test
 	public void getStudentsStatistics() {
-		List<StudentStatEntry> statEntries = coachingService.getStudentsStatistics(coach10);
+		List<StudentStatEntry> statEntries = coachingService.getStudentsStatistics(coach10, userPropertyHandlers);
 		Assert.assertNotNull(statEntries);
 	}
 	
@@ -314,7 +324,7 @@ public class CoachingLargeTest extends OlatTestCase {
 		List<Long> coachedCourses = coachToCourseMap.get(coach10.getKey());
 		Assert.assertNotNull(coachedCourses);
 
-		List<EfficiencyStatementEntry> statEntries = coachingService.getCourse(coach10, course10);
+		List<EfficiencyStatementEntry> statEntries = coachingService.getCourse(coach10, course10, userPropertyHandlers, Locale.ENGLISH);
 		Assert.assertNotNull(statEntries);
 		Assert.assertFalse(statEntries.isEmpty());
 		Assert.assertTrue(coachedCourses.contains(course10.getKey()));
@@ -346,12 +356,12 @@ public class CoachingLargeTest extends OlatTestCase {
 		SearchCoachedIdentityParams params = new SearchCoachedIdentityParams();
 		params.setLogin(student10.getName());
 		
-		List<StudentStatEntry> statEntries = coachingService.getUsersStatistics(params);
+		List<StudentStatEntry> statEntries = coachingService.getUsersStatistics(params, userPropertyHandlers);
 		Assert.assertNotNull(statEntries);
 		Assert.assertEquals(1, statEntries.size());
 		
 		StudentStatEntry statEntry = statEntries.get(0);
-		Assert.assertEquals(student10.getKey(), statEntry.getStudentKey());
+		Assert.assertEquals(student10.getKey(), statEntry.getIdentityKey());
 		Assert.assertEquals(studentToCourseMap.get(student10).size(), statEntry.getCountRepo());
 	}
 }

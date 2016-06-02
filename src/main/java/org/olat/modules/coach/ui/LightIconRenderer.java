@@ -19,6 +19,7 @@
  */
 package org.olat.modules.coach.ui;
 
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiCellRenderer;
 import org.olat.core.gui.components.table.IconCssCellRenderer;
 import org.olat.course.assessment.AssessmentHelper;
 import org.olat.modules.coach.ui.LightedValue.Light;
@@ -27,7 +28,7 @@ import org.olat.modules.coach.ui.LightedValue.Light;
  * 
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
-public class LightIconRenderer extends IconCssCellRenderer {
+public class LightIconRenderer extends IconCssCellRenderer implements FlexiCellRenderer {
 
 	@Override
 	protected String getCssClass(Object val) {

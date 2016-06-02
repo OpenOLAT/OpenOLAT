@@ -56,7 +56,7 @@ import org.olat.repository.RepositoryEntry;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class AssessmentIdentitiesCourseTreeController extends BasicController implements Activateable2 {
+public class AssessmentIdentityListCourseTreeController extends BasicController implements Activateable2 {
 	
 	private final MenuTree menuTree;
 	private final Panel mainPanel;
@@ -67,7 +67,7 @@ public class AssessmentIdentitiesCourseTreeController extends BasicController im
 	private final RepositoryEntry courseEntry;
 	private AssessmentToolSecurityCallback assessmentCallback;
 	
-	public AssessmentIdentitiesCourseTreeController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
+	public AssessmentIdentityListCourseTreeController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
 			RepositoryEntry courseEntry, AssessmentToolContainer toolContainer, AssessmentToolSecurityCallback assessmentCallback) {
 		super(ureq, wControl);
 		this.courseEntry = courseEntry;

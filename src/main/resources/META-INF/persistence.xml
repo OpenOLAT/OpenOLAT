@@ -13,7 +13,6 @@
 		<mapping-file>org/olat/ims/qti/QTIResult.hbm.xml</mapping-file>
 		<mapping-file>org/olat/ims/qti/QTIResultSet.hbm.xml</mapping-file>
 		<mapping-file>org/olat/note/NoteImpl.hbm.xml</mapping-file>
-		<mapping-file>org/olat/user/UserImpl.hbm.xml</mapping-file>
 		<mapping-file>org/olat/commons/lifecycle/LifeCycleEntry.hbm.xml</mapping-file>
 		<mapping-file>org/olat/commons/coordinate/cluster/lock/LockImpl.hbm.xml</mapping-file>
 		<mapping-file>org/olat/commons/info/model/InfoMessageImpl.hbm.xml</mapping-file>
@@ -76,6 +75,7 @@
 		<!-- End upgraders mapping -->
 		
 		
+		<class>org.olat.basesecurity.IdentityImpl</class>
 		<class>org.olat.basesecurity.IdentityShort</class>
 		<class>org.olat.basesecurity.model.GroupImpl</class>
 		<class>org.olat.basesecurity.model.GrantImpl</class>
@@ -174,10 +174,12 @@
 		<class>org.olat.ims.lti.model.LTIOutcomeImpl</class>
 		<class>org.olat.portfolio.model.InvitationImpl</class>
 		<class>org.olat.portfolio.model.structel.EPStructureElementToGroupRelation</class>
+		<class>org.olat.user.UserImpl</class>
 		<properties>
 			<property name="hibernate.generate_statistics" value="true"/>
 			<property name="hibernate.archive.autodetection" value=""/>
 			<property name="hibernate.max_fetch_depth" value="10"/>
+			<property name="hibernate.connection.release_mode" value="after_transaction"/>
 			<property name="hibernate.ejb.interceptor" value="org.olat.core.commons.persistence.AuditInterceptor"/>
 		</properties>
 	</persistence-unit>

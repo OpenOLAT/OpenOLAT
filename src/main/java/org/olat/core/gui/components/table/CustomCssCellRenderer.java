@@ -28,8 +28,12 @@ package org.olat.core.gui.components.table;
 import java.util.Locale;
 
 import org.apache.commons.lang.StringEscapeUtils;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiCellRenderer;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableComponent;
 import org.olat.core.gui.render.Renderer;
 import org.olat.core.gui.render.StringOutput;
+import org.olat.core.gui.render.URLBuilder;
+import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.StringHelper;
 
 /**
@@ -40,10 +44,19 @@ import org.olat.core.util.StringHelper;
  * Initial Date:  Nov 13, 2006 <br>
  * @author guido
  */
-public abstract class CustomCssCellRenderer implements CustomCellRenderer {
+public abstract class CustomCssCellRenderer implements CustomCellRenderer, FlexiCellRenderer {
 
 	@Override
-	public void render(final StringOutput sb, final Renderer renderer, final Object val, final Locale locale, final int alignment, final String action) {
+	public void render(Renderer renderer, StringOutput sb, Object val, int row, FlexiTableComponent source, URLBuilder ubu, Translator translator) {
+		render(sb, renderer, val);
+	}
+
+	@Override
+	public void render(StringOutput sb, Renderer renderer, Object val, Locale locale, int alignment, String action) {
+		render(sb, renderer, val);
+	}
+	
+	protected void render(StringOutput sb, Renderer renderer, Object val) {
 		if (renderer == null) {
 			// render for export
 			String value = getCellValue(val);

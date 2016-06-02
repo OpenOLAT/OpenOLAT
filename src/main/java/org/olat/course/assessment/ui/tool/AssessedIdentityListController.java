@@ -270,6 +270,7 @@ public class AssessedIdentityListController extends FormBasicController implemen
 			this.i18nKey = i18nKey;
 		}
 		
+		@Override
 		public String i18nHeaderKey() {
 			return i18nKey;
 		}

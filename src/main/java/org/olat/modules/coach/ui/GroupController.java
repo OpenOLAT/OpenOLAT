@@ -25,23 +25,25 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 import org.olat.NewControllerFactory;
+import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.form.flexible.FormItem;
+import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
+import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
+import org.olat.core.gui.components.form.flexible.impl.FormEvent;
+import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
-import org.olat.core.gui.components.table.BooleanColumnDescriptor;
-import org.olat.core.gui.components.table.ColumnDescriptor;
-import org.olat.core.gui.components.table.CustomRenderColumnDescriptor;
-import org.olat.core.gui.components.table.DefaultColumnDescriptor;
-import org.olat.core.gui.components.table.TableController;
-import org.olat.core.gui.components.table.TableEvent;
-import org.olat.core.gui.components.table.TableGuiConfiguration;
 import org.olat.core.gui.components.text.TextComponent;
-import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
@@ -65,6 +67,8 @@ import org.olat.modules.coach.model.GroupStatEntry;
 import org.olat.modules.coach.model.IdentityResourceKey;
 import org.olat.modules.coach.ui.EfficiencyStatementEntryTableDataModel.Columns;
 import org.olat.modules.coach.ui.ToolbarController.Position;
+import org.olat.user.UserManager;
+import org.olat.user.propertyhandlers.UserPropertyHandler;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -77,15 +81,14 @@ import org.springframework.beans.factory.annotation.Autowired;
  *
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
-public class GroupController extends BasicController implements Activateable2, GenericEventListener {
+public class GroupController extends FormBasicController implements Activateable2, GenericEventListener {
 	
 	private final Link backLink, next, previous;
 	private final Link nextGroup, previousGroup;
 	private final Link openGroup;
 	private final TextComponent detailsCmp, detailsGroupCmp;
-	private final TableController tableCtr;
-	private final VelocityContainer mainVC;
-	private final VelocityContainer groupDetailsVC;
+	
+	private FlexiTableElement tableEl;
 	private EfficiencyStatementEntryTableDataModel model;
 
 	private final ToolbarController toolbar;
@@ -95,6 +98,14 @@ public class GroupController extends BasicController implements Activateable2, G
 	
 	private final BusinessGroup group;
 	private final GroupStatEntry entry;
+
+	private final boolean isAdministrativeUser;
+	private final List<UserPropertyHandler> userPropertyHandlers;
+
+	@Autowired
+	private UserManager userManager;
+	@Autowired
+	private BaseSecurityModule securityModule;
 	@Autowired
 	private CoachingService coachingService;
 	@Autowired
@@ -103,33 +114,21 @@ public class GroupController extends BasicController implements Activateable2, G
 	private CertificatesManager certificatesManager;
 	
 	public GroupController(UserRequest ureq, WindowControl wControl, GroupStatEntry groupStatistic, int index, int numOfGroups) {
-		super(ureq, wControl);
+		super(ureq, wControl, "group_view");
+		setTranslator(userManager.getPropertyHandlerTranslator(getTranslator()));
+		isAdministrativeUser = securityModule.isUserAllowedAdminProps(ureq.getUserSession().getRoles());
+		userPropertyHandlers = userManager.getUserPropertyHandlersFor(UserListController.usageIdentifyer, isAdministrativeUser);
 		
 		this.entry = groupStatistic;
-
-		TableGuiConfiguration tableConfig = new TableGuiConfiguration();
-		tableConfig.setTableEmptyMessage(translate("error.no.found"));
-		tableConfig.setDownloadOffered(true);
-		tableConfig.setPreferencesOffered(true, "groupController");
-		
-		tableCtr = new TableController(tableConfig, ureq, getWindowControl(),  null, null, null, null, true, getTranslator());
-		tableCtr.addColumnDescriptor(new DefaultColumnDescriptor("student.name", Columns.studentName.ordinal(), "select", getLocale()));
-		tableCtr.addColumnDescriptor(new DefaultColumnDescriptor("table.header.course.name", Columns.repoName.ordinal(), "select", getLocale()));
-		tableCtr.addColumnDescriptor(new BooleanColumnDescriptor("table.header.passed", Columns.passed.ordinal(), translate("passed.true"), translate("passed.false")));
-		tableCtr.addColumnDescriptor(new CustomRenderColumnDescriptor("table.header.score", Columns.score.ordinal(),"select", getLocale(),
-				ColumnDescriptor.ALIGNMENT_RIGHT, new ScoreCellRenderer()));
-		tableCtr.addColumnDescriptor(new CustomRenderColumnDescriptor("table.header.certificate", Columns.certificate.ordinal(), null, getLocale(),
-				ColumnDescriptor.ALIGNMENT_LEFT, new DownloadCertificateCellRenderer()));
-		tableCtr.addColumnDescriptor(new DefaultColumnDescriptor("table.header.lastScoreDate", Columns.lastModification.ordinal(), "select", getLocale()));
-		listenTo(tableCtr);
-
 		group = groupManager.loadBusinessGroup(groupStatistic.getGroupKey());
+		
+		initForm(ureq);
+
 		List<EfficiencyStatementEntry> allGroup = loadModel();
-		
-		mainVC = createVelocityContainer("group_view");
-		
+
 		toolbar = new ToolbarController(ureq, wControl, getTranslator());
 		listenTo(toolbar);
+		flc.getFormItemComponent().put("toolbar", toolbar.getInitialComponent());
 		
 		backLink = toolbar.addToolbarLink("back", this, Position.left);
 		backLink.setIconLeftCSS("o_icon o_icon_back");
@@ -163,25 +162,51 @@ public class GroupController extends BasicController implements Activateable2, G
 		nextGroup.setCustomDisabledLinkCSS("navbar-text");
 		nextGroup.setEnabled(numOfGroups > 1);
 
-
-		groupDetailsVC = createVelocityContainer("group_details");
-		groupDetailsVC.contextPut("groupName", StringHelper.escapeHtml(group.getName()));
-		
-		openGroup = LinkFactory.createButton("open.group", groupDetailsVC, this);
+		openGroup = LinkFactory.createButton("open.group", flc.getFormItemComponent(), this);
 		openGroup.setIconLeftCSS("o_icon o_icon_group");
-		groupDetailsVC.put("open", openGroup);
-
-		mainVC.put("toolbar", toolbar.getInitialComponent());
-		mainVC.put("groupDetails", groupDetailsVC);
-		mainVC.put("groupsTable", tableCtr.getInitialComponent());
+		flc.getFormItemComponent().put("open", openGroup);
 
 		setDetailsToolbarVisible(false);
-		putInitialPanel(mainVC);
 
 		CoordinatorManager.getInstance().getCoordinator().getEventBus()
 			.registerFor(this, getIdentity(), CertificatesManager.ORES_CERTIFICATE_EVENT);
 	}
-	
+
+	@Override
+	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+
+		if(formLayout instanceof FormLayoutContainer) {
+			FormLayoutContainer layoutCont = (FormLayoutContainer)formLayout;
+			layoutCont.contextPut("groupName", StringHelper.escapeHtml(group.getName()));
+		}
+		
+		//add the table
+		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
+		if(isAdministrativeUser) {
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Columns.name, "select"));
+		}
+		
+		int colIndex = UserListController.USER_PROPS_OFFSET;
+		for (int i = 0; i < userPropertyHandlers.size(); i++) {
+			UserPropertyHandler userPropertyHandler	= userPropertyHandlers.get(i);
+			boolean visible = userManager.isMandatoryUserProperty(UserListController.usageIdentifyer , userPropertyHandler);
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(visible, userPropertyHandler.i18nColumnDescriptorLabelKey(), colIndex++, "select", false, null));
+		}
+		
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Columns.repoName));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Columns.passed));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Columns.certificate, new DownloadCertificateCellRenderer()));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Columns.score, new ScoreCellRenderer()));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Columns.lastModification));
+		
+		
+		model = new EfficiencyStatementEntryTableDataModel(columnsModel);
+		tableEl = uifactory.addTableElement(getWindowControl(), "table", model, 20, false, getTranslator(), formLayout);
+		tableEl.setExportEnabled(true);
+		tableEl.setEmtpyTableMessageKey("error.no.found");
+		tableEl.setAndLoadPersistedPreferences(ureq, "fGroupController");
+	}
+
 	@Override
 	protected void doDispose() {
 		CoordinatorManager.getInstance().getCoordinator().getEventBus()
@@ -209,7 +234,7 @@ public class GroupController extends BasicController implements Activateable2, G
 	}
 	
 	private List<EfficiencyStatementEntry> loadModel() {
-		List<EfficiencyStatementEntry> allGroup = coachingService.getGroup(group);
+		List<EfficiencyStatementEntry> allGroup = coachingService.getGroup(group, userPropertyHandlers, getLocale());
 		
 		List<CertificateLight> certificates = certificatesManager.getLastCertificates(group);
 		ConcurrentMap<IdentityResourceKey, CertificateLight> certificateMap = new ConcurrentHashMap<>();
@@ -217,8 +242,9 @@ public class GroupController extends BasicController implements Activateable2, G
 			IdentityResourceKey key = new IdentityResourceKey(certificate.getIdentityKey(), certificate.getOlatResourceKey());
 			certificateMap.put(key, certificate);
 		}
-		model = new EfficiencyStatementEntryTableDataModel(allGroup, certificateMap);
-		tableCtr.setTableDataModel(model);
+		model.setObjects(allGroup, certificateMap);
+		tableEl.reloadData();
+		tableEl.reset();
 		return allGroup;
 	}
 	
@@ -228,9 +254,29 @@ public class GroupController extends BasicController implements Activateable2, G
 			hasChanged = false;
 		}
 	}
+	
+	@Override
+	protected void formOK(UserRequest ureq) {
+		//
+	}
 
 	@Override
-	protected void event(UserRequest ureq, Component source, Event event) {
+	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
+		if(tableEl == source) {
+			if(event instanceof SelectionEvent) {
+				SelectionEvent se = (SelectionEvent)event;
+				String cmd = se.getCommand();
+				EfficiencyStatementEntry selectedRow = model.getObject(se.getIndex());
+				if("select".equals(cmd)) {
+					selectDetails(ureq, selectedRow);
+				}
+			}
+		} 
+		super.formInnerEvent(ureq, source, event);
+	}
+
+	@Override
+	public void event(UserRequest ureq, Component source, Event event) {
 		if (source == next) {
 			nextEntry(ureq);
 		} else if (source == previous) {
@@ -241,19 +287,12 @@ public class GroupController extends BasicController implements Activateable2, G
 		} else if(source == openGroup) {
 			openGroup(ureq);
 		}
+		super.event(ureq, source, event);
 	}
 
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
-		if(source == tableCtr) {
-			if(event instanceof TableEvent) {
-				TableEvent e = (TableEvent) event;
-				if("select".equals(e.getActionId())) {
-					EfficiencyStatementEntry row = (EfficiencyStatementEntry)tableCtr.getTableDataModel().getObject(e.getRowId());
-					selectDetails(ureq, row);
-				}
-			}
-		} else if (source == toolbar) {
+		if (source == toolbar) {
 			if("back".equals(event.getCommand())) {
 				reloadModel();
 				back(ureq);
@@ -283,9 +322,8 @@ public class GroupController extends BasicController implements Activateable2, G
 		OLATResourceable ores = ce.getOLATResourceable();
 		if("Identity".equals(ores.getResourceableTypeName())) {
 			Long identityKey = ores.getResourceableId();
-			for(int i=tableCtr.getRowCount(); i-->0; ) {
-				EfficiencyStatementEntry row = (EfficiencyStatementEntry)tableCtr.getTableDataModel().getObject(i);
-				if(identityKey.equals(row.getStudentKey())) {
+			for(EfficiencyStatementEntry row:model.getObjects()) {
+				if(identityKey.equals(row.getIdentityKey())) {
 					selectDetails(ureq, row);
 					statementCtrl.activate(ureq, entries.subList(1, entries.size()), ce.getTransientState());
 					break;
@@ -314,26 +352,26 @@ public class GroupController extends BasicController implements Activateable2, G
 	
 	private void previousEntry(UserRequest ureq) {
 		EfficiencyStatementEntry currentEntry = statementCtrl.getEntry();
-		int previousIndex = tableCtr.getIndexOfSortedObject(currentEntry) - 1;
-		if(previousIndex < 0 || previousIndex >= tableCtr.getRowCount()) {
-			previousIndex = tableCtr.getRowCount() - 1;
+		int previousIndex = model.getObjects().indexOf(currentEntry) - 1;
+		if(previousIndex < 0 || previousIndex >= model.getRowCount()) {
+			previousIndex = model.getRowCount() - 1;
 		}
-		EfficiencyStatementEntry previousEntry = (EfficiencyStatementEntry)tableCtr.getSortedObjectAt(previousIndex);
+		EfficiencyStatementEntry previousEntry = model.getObject(previousIndex);
 		selectDetails(ureq, previousEntry);
 	}
 	
 	private void nextEntry(UserRequest ureq) {
 		EfficiencyStatementEntry currentEntry = statementCtrl.getEntry();
-		int nextIndex = tableCtr.getIndexOfSortedObject(currentEntry) + 1;
-		if(nextIndex < 0 || nextIndex >= tableCtr.getRowCount()) {
+		int nextIndex = model.getObjects().indexOf(currentEntry) + 1;
+		if(nextIndex < 0 || nextIndex >= model.getRowCount()) {
 			nextIndex = 0;
 		}
-		EfficiencyStatementEntry nextEntry = (EfficiencyStatementEntry)tableCtr.getSortedObjectAt(nextIndex);
+		EfficiencyStatementEntry nextEntry = model.getObject(nextIndex);
 		selectDetails(ureq, nextEntry);
 	}
 	
 	private void removeDetails(UserRequest ureq) {
-		mainVC.remove(statementCtrl.getInitialComponent());	
+		flc.getFormItemComponent().remove(statementCtrl.getInitialComponent());	
 		removeAsListenerAndDispose(statementCtrl);
 		statementCtrl = null;
 		setDetailsToolbarVisible(false);
@@ -347,15 +385,16 @@ public class GroupController extends BasicController implements Activateable2, G
 			removeAsListenerAndDispose(statementCtrl);
 		}
 		
-		OLATResourceable ores = OresHelper.createOLATResourceableInstance(Identity.class, statementEntry.getStudentKey());
+		OLATResourceable ores = OresHelper.createOLATResourceableInstance(Identity.class, statementEntry.getIdentityKey());
 		WindowControl bwControl = addToHistory(ureq, ores, null);
 		statementCtrl = new EfficiencyStatementDetailsController(ureq, bwControl, statementEntry, selectAssessmentTool);
 		listenTo(statementCtrl);
-		mainVC.put("efficiencyDetails", statementCtrl.getInitialComponent());
+		flc.getFormItemComponent().put("efficiencyDetails", statementCtrl.getInitialComponent());
 		
-		int index = tableCtr.getIndexOfSortedObject(statementEntry) + 1;
+		int index = model.getObjects().indexOf(statementEntry) + 1;
 		String details = translate("students.details", new String[]{
-				StringHelper.escapeHtml(statementEntry.getStudentFullName()), String.valueOf(index), String.valueOf(tableCtr.getRowCount())
+				StringHelper.escapeHtml(statementEntry.getIdentityKey().toString()),//TODO user props
+				String.valueOf(index), String.valueOf(model.getRowCount())
 		});
 		detailsCmp.setText(details);
 		setDetailsToolbarVisible(true);
@@ -367,7 +406,7 @@ public class GroupController extends BasicController implements Activateable2, G
 		ces.add(BusinessControlFactory.getInstance().createContextEntry(ores));
 
 		BusinessControl bc = BusinessControlFactory.getInstance().createFromContextEntries(ces);
-	  WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(bc, getWindowControl());
+		WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(bc, getWindowControl());
 		NewControllerFactory.getInstance().launch(ureq, bwControl);
 	}
 }

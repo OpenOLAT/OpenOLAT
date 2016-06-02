@@ -21,16 +21,28 @@ package org.olat.modules.coach.ui;
 
 import java.util.Locale;
 
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiCellRenderer;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableComponent;
 import org.olat.core.gui.components.table.CustomCellRenderer;
 import org.olat.core.gui.render.Renderer;
 import org.olat.core.gui.render.StringOutput;
+import org.olat.core.gui.render.URLBuilder;
+import org.olat.core.gui.translator.Translator;
 import org.olat.course.assessment.AssessmentHelper;
 
 /**
  * 
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
-public class ScoreCellRenderer implements CustomCellRenderer {
+public class ScoreCellRenderer implements CustomCellRenderer, FlexiCellRenderer {
+
+	@Override
+	public void render(Renderer renderer, StringOutput target, Object cellValue, int row, FlexiTableComponent source, URLBuilder ubu, Translator translator) {
+		if(cellValue instanceof Float) {
+			String score = AssessmentHelper.getRoundedScore((Float)cellValue);
+			target.append(score);
+		} 
+	}
 
 	@Override
 	public void render(StringOutput sb, Renderer renderer, Object val, Locale locale, int alignment, String action) {

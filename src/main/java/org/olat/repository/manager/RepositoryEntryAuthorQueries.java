@@ -176,9 +176,9 @@ public class RepositoryEntryAuthorQueries {
 		         .append("    where rel.group.key=membership.group.key and membership.identity.key=identity.key and identity.user.key=user.key")
 		         .append("      and membership.role='").append(GroupRoles.owner.name()).append("'")
 		         .append("      and (");
-			PersistenceHelper.appendFuzzyLike(sb, "user.userProperties['firstName']", "author", dbInstance.getDbVendor());
+			PersistenceHelper.appendFuzzyLike(sb, "user.firstName", "author", dbInstance.getDbVendor());
 			sb.append(" or ");
-			PersistenceHelper.appendFuzzyLike(sb, "user.userProperties['lastName']", "author", dbInstance.getDbVendor());
+			PersistenceHelper.appendFuzzyLike(sb, "user.lastName", "author", dbInstance.getDbVendor());
 			sb.append(" or ");
 			PersistenceHelper.appendFuzzyLike(sb, "identity.name", "author", dbInstance.getDbVendor());
 			sb.append(" ))");

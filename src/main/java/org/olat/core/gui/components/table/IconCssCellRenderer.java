@@ -28,8 +28,12 @@ package org.olat.core.gui.components.table;
 import java.util.Locale;
 
 import org.apache.commons.lang.StringEscapeUtils;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiCellRenderer;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableComponent;
 import org.olat.core.gui.render.Renderer;
 import org.olat.core.gui.render.StringOutput;
+import org.olat.core.gui.render.URLBuilder;
+import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.StringHelper;
 
 /**
@@ -38,7 +42,30 @@ import org.olat.core.util.StringHelper;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public abstract class IconCssCellRenderer implements CustomCellRenderer {
+public abstract class IconCssCellRenderer implements CustomCellRenderer, FlexiCellRenderer {
+	
+	@Override
+	public void render(Renderer renderer, StringOutput target, Object cellValue, int row, FlexiTableComponent source, URLBuilder ubu, Translator translator) {
+		if (renderer == null) {
+			// render for export
+			String value = getCellValue(cellValue);
+			if (!StringHelper.containsNonWhitespace(value)) {
+				value = getHoverText(cellValue);
+			}
+			target.append(value);
+		} else {
+			target.append("<i class='").append(getCssClass(cellValue)).append("'> </i> <span");
+			String hoverText = getHoverText(cellValue);
+			if (StringHelper.containsNonWhitespace(hoverText)) {
+				target.append(" title=\"");
+				target.append(StringEscapeUtils.escapeHtml(hoverText));
+			}
+			target.append("\">");
+			target.append(getCellValue(cellValue));
+			target.append("</span>");			
+		}
+		
+	}
 
 	@Override
 	public void render(final StringOutput sb, final Renderer renderer, final Object val, final Locale locale, final int alignment, final String action) {

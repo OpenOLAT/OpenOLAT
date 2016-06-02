@@ -86,7 +86,7 @@ public class EfficiencyStatementDetailsController extends BasicController implem
 		this.statementEntry = statementEntry;
 
 		RepositoryEntry entry = statementEntry.getCourse();
-		assessedIdentity = securityManager.loadIdentityByKey(statementEntry.getStudentKey());
+		assessedIdentity = securityManager.loadIdentityByKey(statementEntry.getIdentityKey());//TODO user props
 		statementCtrl = createEfficiencyStatementController(ureq);
 		listenTo(statementCtrl);
 		

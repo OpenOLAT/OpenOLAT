@@ -32,6 +32,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -234,7 +235,12 @@ public class UserTest extends OlatTestCase {
 	@Test public void testUpdateNewUser() throws Exception {
 		UserManager um1 = UserManager.getInstance();
 		DB db = DBFactory.getInstance();
-		UserImpl u5 = new UserImpl("newuser", "newuser", "new@user.com");
+		UserImpl u5 = new UserImpl();
+		u5.setFirstName("newuser");
+		u5.setLastName("newuser");
+		u5.setEmail("new@user.com");
+		u5.setCreationDate(new Date());
+		u5.getPreferences().setFontsize("normal");
 		db.saveObject(u5);
 		u5.setProperty(UserConstants.EMAIL, "updated@email.com");
 		um1.updateUser(u5);
@@ -422,7 +428,7 @@ public class UserTest extends OlatTestCase {
 		slct.append("org.olat.user.UserImpl usr ");
 		slct.append("where ");
 		slct.append("identity.user = usr.key ");
-		slct.append("order by usr.userProperties['firstName'] desc");
+		slct.append("order by usr.firstName desc");
 		List<Identity> results = db.find(slct.toString());
 		Identity ident1 = results.get(0);
 		Identity ident2 = results.get(1);

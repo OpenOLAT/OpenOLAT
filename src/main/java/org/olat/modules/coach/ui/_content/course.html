@@ -2,8 +2,13 @@ $r.render("toolbar")
 #if($r.available("efficiencyDetails"))
 	$r.render("efficiencyDetails")
 #else
-	$r.render("courseDetails")
-	$r.render("courseTable")
+	<div class="o_eff_statement_details">
+		<h3><i class="o_icon o_CourseModule_icon"> </i> $courseName</h3>
+		#if($r.available("open"))
+			$r.render("open")
+		#end
+	</div>
+	$r.render("table")
 #end
 
 

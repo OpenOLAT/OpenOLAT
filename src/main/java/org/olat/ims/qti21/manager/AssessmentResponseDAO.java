@@ -24,7 +24,6 @@ import java.util.Date;
 import java.util.List;
 
 import org.olat.core.commons.persistence.DB;
-import org.olat.core.id.UserConstants;
 import org.olat.ims.qti21.AssessmentItemSession;
 import org.olat.ims.qti21.AssessmentResponse;
 import org.olat.ims.qti21.AssessmentTestSession;
@@ -127,7 +126,7 @@ public class AssessmentResponseDAO {
 		  .append("  and testSession.terminationTime is not null");
 
 		//need to be anonymized
-		sb.append(" order by usr.userProperties['").append(UserConstants.LASTNAME).append("'] , testSession.key, itemSession.key");
+		sb.append(" order by usr.lastName, testSession.key, itemSession.key");
 		
 		return dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), AssessmentResponse.class)

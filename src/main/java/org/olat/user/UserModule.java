@@ -236,7 +236,11 @@ public class UserModule extends AbstractOLATModule {
 		identity = securityManager.findIdentityByName(user.getUserName());
 		if (identity == null) {
 			// Create new user and subject
-			User newUser = new UserImpl(user.getFirstName(), user.getLastName(), user.getEmail());
+			UserImpl newUser = new UserImpl();
+			newUser.setFirstName(user.getFirstName());
+			newUser.setLastName(user.getLastName());
+			newUser.setEmail(user.getEmail());
+			
 			newUser.getPreferences().setLanguage(user.getLanguage());
 			newUser.getPreferences().setInformSessionTimeout(true);
 			

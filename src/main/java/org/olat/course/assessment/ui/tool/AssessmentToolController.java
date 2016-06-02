@@ -64,7 +64,7 @@ public class AssessmentToolController extends MainLayoutBasicController implemen
 	private final AssessmentToolContainer toolContainer;
 	
 	private AssessmentCourseOverviewController overviewCtrl;
-	private AssessmentIdentitiesCourseTreeController currentCtl;
+	private AssessmentIdentityListCourseTreeController currentCtl;
 	private BulkAssessmentOverviewController bulkAssessmentOverviewCtrl;
 	private EfficiencyStatementAssessmentController efficiencyStatementCtrl;
 	
@@ -167,11 +167,11 @@ public class AssessmentToolController extends MainLayoutBasicController implemen
 		stackPanel.pushController(translate("menu.efficiency.statment"), efficiencyStatementCtrl);
 	}
 
-	private AssessmentIdentitiesCourseTreeController doSelectUsersView(UserRequest ureq) {
+	private AssessmentIdentityListCourseTreeController doSelectUsersView(UserRequest ureq) {
 		OLATResourceable ores = OresHelper.createOLATResourceableInstance("Users", 0l);
 		WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ores, null, getWindowControl());
 		addToHistory(ureq, bwControl);
-		AssessmentIdentitiesCourseTreeController treeCtrl = new AssessmentIdentitiesCourseTreeController(ureq, bwControl, stackPanel,
+		AssessmentIdentityListCourseTreeController treeCtrl = new AssessmentIdentityListCourseTreeController(ureq, bwControl, stackPanel,
 				courseEntry, toolContainer, assessmentCallback);
 		listenTo(treeCtrl);
 		stackPanel.pushController(translate("users"), treeCtrl);
@@ -184,7 +184,7 @@ public class AssessmentToolController extends MainLayoutBasicController implemen
 		OLATResourceable ores = OresHelper.createOLATResourceableInstance("Passed", 0l);
 		WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ores, null, getWindowControl());
 		addToHistory(ureq, bwControl);
-		AssessmentIdentitiesCourseTreeController treeCtrl = new AssessmentIdentitiesCourseTreeController(ureq, bwControl, stackPanel,
+		AssessmentIdentityListCourseTreeController treeCtrl = new AssessmentIdentityListCourseTreeController(ureq, bwControl, stackPanel,
 				courseEntry, toolContainer, assessmentCallback);
 		listenTo(treeCtrl);
 		stackPanel.pushController(translate("users"), treeCtrl);
@@ -199,7 +199,7 @@ public class AssessmentToolController extends MainLayoutBasicController implemen
 		OLATResourceable ores = OresHelper.createOLATResourceableInstance("NotPassed", 0l);
 		WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ores, null, getWindowControl());
 		addToHistory(ureq, bwControl);
-		AssessmentIdentitiesCourseTreeController treeCtrl = new AssessmentIdentitiesCourseTreeController(ureq, bwControl, stackPanel,
+		AssessmentIdentityListCourseTreeController treeCtrl = new AssessmentIdentityListCourseTreeController(ureq, bwControl, stackPanel,
 				courseEntry, toolContainer, assessmentCallback);
 		listenTo(treeCtrl);
 		stackPanel.pushController(translate("users"), treeCtrl);

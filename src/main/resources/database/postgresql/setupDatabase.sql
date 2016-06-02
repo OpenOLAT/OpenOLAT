@@ -211,6 +211,88 @@ create table o_user (
    presencemessagespublic bool,
    informsessiontimeout bool not null,
    receiverealmail varchar(16),
+   u_firstname varchar(255),
+   u_lastname varchar(255),
+   u_email varchar(255),
+   u_birthday varchar(255),
+   u_graduation varchar(255),
+   u_gender varchar(255),
+   u_telprivate varchar(255),
+   u_telmobile varchar(255),
+   u_teloffice varchar(255),
+   u_skype varchar(255),
+   u_msn varchar(255),
+   u_xing varchar(255),
+   u_icq varchar(255),
+   u_homepage varchar(255),
+   u_street varchar(255),
+   u_extendedaddress varchar(255),
+   u_pobox varchar(255),
+   u_zipcode varchar(255),
+   u_region varchar(255),
+   u_city varchar(255),
+   u_country varchar(255),
+   u_countrycode varchar(255),
+   u_institutionalname varchar(255),
+   u_institutionaluseridentifier varchar(255),
+   u_institutionalemail varchar(255),
+   u_orgunit varchar(255),
+   u_studysubject varchar(255),
+   u_emchangekey varchar(255),
+   u_emaildisabled varchar(255),
+   u_typeofuser varchar(255),
+   u_socialsecuritynumber varchar(255),
+
+   u_rank varchar(255),
+   u_degree varchar(255),
+   u_position varchar(255),
+   u_userinterests varchar(255),
+   u_officestreet varchar(255),
+   u_extendedofficeaddress varchar(255),
+   u_officepobox varchar(255),
+   u_officezipcode varchar(255),
+   u_officecity varchar(255),
+   u_officecountry varchar(255),
+   u_officemobilephone varchar(255),
+   u_department varchar(255),
+   u_privateemail varchar(255),
+   u_employeenumber varchar(255),
+   u_organizationalunit varchar(255),
+
+   u_edupersonaffiliation varchar(255),
+   u_swissedupersonstaffcategory varchar(255),
+   u_swissedupersonhomeorg varchar(255),
+   u_swissedupersonstudylevel varchar(255),
+   u_swissedupersonhomeorgtype varchar(255),
+   u_swissedupersonstudybranch1 varchar(255),
+   u_swissedupersonstudybranch2 varchar(255),
+   u_swissedupersonstudybranch3 varchar(255),
+
+   u_genericselectionproperty varchar(255),
+   u_genericselectionproperty2 varchar(255),
+   u_genericselectionproperty3 varchar(255),
+   u_genericselectionproperty4 varchar(255),
+   u_genericselectionproperty5 varchar(255),
+   u_generictextproperty varchar(255),
+   u_generictextproperty2 varchar(255),
+   u_generictextproperty3 varchar(255),
+   u_generictextproperty4 varchar(255),
+   u_generictextproperty5 varchar(255),
+   u_genericuniquetextproperty varchar(255),
+   u_genericuniquetextproperty2 varchar(255),
+   u_genericuniquetextproperty3 varchar(255),
+   u_genericemailproperty1 varchar(255),
+   u_genericcheckboxproperty varchar(255),
+   u_genericcheckboxproperty2 varchar(255),
+   u_genericcheckboxproperty3 varchar(255),
+   u_genericcheckboxproperty4 varchar(255),
+   u_genericcheckboxproperty5 varchar(255),
+   u_genericyesnoproperty varchar(255),
+   u_genericyesnoproperty2 varchar(255),
+   u_genericyesnoproperty3 varchar(255),
+   u_genericyesnoproperty4 varchar(255),
+   u_genericyesnoproperty5 varchar(255),
+
    primary key (user_id)
 );
 create table o_userproperty (
@@ -1613,14 +1695,11 @@ create view o_bs_identity_short_v as (
       ident.lastlogin as id_lastlogin,
       ident.status as id_status,
       us.user_id as us_id,
-      p_firstname.propvalue as first_name,
-      p_lastname.propvalue as last_name,
-      p_email.propvalue as email
+      us.u_firstname as first_name,
+      us.u_lastname as last_name,
+      us.u_email as email
    from o_bs_identity as ident
    inner join o_user as us on (ident.fk_user_id = us.user_id)
-   left join o_userproperty as p_firstname on (us.user_id = p_firstname.fk_user_id and p_firstname.propName = 'firstName')
-   left join o_userproperty as p_lastname on (us.user_id = p_lastname.fk_user_id and p_lastname.propName = 'lastName')
-   left join o_userproperty as p_email on (us.user_id = p_email.fk_user_id and p_email.propName = 'email')
 );
 
 -- eportfolio views
@@ -1748,8 +1827,8 @@ create view o_gp_contactext_v as (
       bg_member.fk_identity_id as member_id,
       bg_member.g_role as membership_role,
       id_member.name as member_name,
-      first_member.propvalue as member_firstname,
-      last_member.propvalue as member_lastname,
+      us_member.u_firstname as member_firstname,
+      us_member.u_lastname as member_lastname,
       bg_me.fk_identity_id as me_id,
       bgroup.group_id as bg_id,
       bgroup.groupname as bg_name
@@ -1757,8 +1836,6 @@ create view o_gp_contactext_v as (
    inner join o_bs_group_member as bg_member on (bg_member.fk_group_id = bgroup.fk_group_id)
    inner join o_bs_identity as id_member on (bg_member.fk_identity_id = id_member.id)
    inner join o_user as us_member on (id_member.fk_user_id = us_member.user_id)
-   inner join o_userproperty as first_member on (first_member.fk_user_id = us_member.user_id and first_member.propname='firstName')
-   inner join o_userproperty as last_member on (last_member.fk_user_id = us_member.user_id and last_member.propname='lastName')
    inner join o_bs_group_member as bg_me on (bg_me.fk_group_id = bgroup.fk_group_id)
    where
       (bgroup.ownersintern=true and bg_member.g_role='coach')
@@ -1916,6 +1993,12 @@ create index idx_secgroup_creationdate_idx on o_bs_secgroup (creationdate);
 
 -- user
 create index usr_notification_interval_idx on o_user (notification_interval);
+create index idx_user_firstname_idx on o_user (u_firstname);
+create index idx_user_lastname_idx on o_user (u_lastname);
+create index idx_user_email_idx on o_user (u_email);
+create index idx_user_instname_idx on o_user (u_institutionalname);
+create index idx_user_instid_idx on o_user (u_institutionaluseridentifier);
+create index idx_user_instemail_idx on o_user (u_institutionalemail);
 create index idx_user_creationdate_idx on o_user (creationdate);
 
 alter table o_userproperty add constraint FK4B04D83FD1A80C95 foreign key (fk_user_id) references o_user;

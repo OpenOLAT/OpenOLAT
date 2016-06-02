@@ -23,7 +23,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.olat.NewControllerFactory;
-import org.olat.core.CoreSpringFactory;
+import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
@@ -59,11 +59,12 @@ import org.olat.course.assessment.UserEfficiencyStatement;
 import org.olat.modules.co.ContactFormController;
 import org.olat.modules.coach.CoachingService;
 import org.olat.modules.coach.model.EfficiencyStatementEntry;
+import org.olat.modules.coach.ui.ToolbarController.Position;
+import org.olat.modules.coach.ui.UserEfficiencyStatementTableDataModel.Columns;
 import org.olat.repository.RepositoryEntry;
 import org.olat.user.UserManager;
-
-import org.olat.modules.coach.ui.EfficiencyStatementEntryTableDataModel.Columns;
-import org.olat.modules.coach.ui.ToolbarController.Position;
+import org.olat.user.propertyhandlers.UserPropertyHandler;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -90,16 +91,23 @@ public class StudentOverviewController extends BasicController implements Activa
 	private EfficiencyStatementDetailsController statementCtrl;
 	
 	private final Identity student;
-	private final UserManager userManager;
-	private final CoachingService coachingService;
+	private final boolean isAdministrativeUser;
+	private final List<UserPropertyHandler> userPropertyHandlers;
+	
+	@Autowired
+	private UserManager userManager;
+	@Autowired
+	private CoachingService coachingService;
+	@Autowired
+	private BaseSecurityModule securityModule;
 	
 	public StudentOverviewController(UserRequest ureq, WindowControl wControl, Identity student) {
 		super(ureq, wControl);
 		
+		isAdministrativeUser = securityModule.isUserAllowedAdminProps(ureq.getUserSession().getRoles());
+		userPropertyHandlers = userManager.getUserPropertyHandlersFor(UserListController.usageIdentifyer, isAdministrativeUser);
+		
 		this.student = student;
-		coachingService = CoreSpringFactory.getImpl(CoachingService.class);
-		userManager = CoreSpringFactory.getImpl(UserManager.class);
-
 		TableGuiConfiguration tableConfig = new TableGuiConfiguration();
 		tableConfig.setTableEmptyMessage(translate("error.no.found"));
 		tableConfig.setDownloadOffered(true);
@@ -289,7 +297,7 @@ public class StudentOverviewController extends BasicController implements Activa
 			removeAsListenerAndDispose(statementCtrl);
 		}
 		
-		EfficiencyStatementEntry entry = coachingService.getEfficencyStatement(statement);
+		EfficiencyStatementEntry entry = coachingService.getEfficencyStatement(statement, userPropertyHandlers, getLocale());
 		
 		OLATResourceable ores = OresHelper.createOLATResourceableInstance(RepositoryEntry.class, statement.getCourseRepoKey());
 		WindowControl bwControl = addToHistory(ureq, ores, null);

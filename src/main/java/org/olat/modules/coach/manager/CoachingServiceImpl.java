@@ -21,10 +21,9 @@ package org.olat.modules.coach.manager;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
 
-import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.GroupRoles;
-import org.olat.basesecurity.IdentityShort;
 import org.olat.core.id.Identity;
 import org.olat.course.assessment.UserEfficiencyStatement;
 import org.olat.group.BusinessGroup;
@@ -36,6 +35,7 @@ import org.olat.modules.coach.model.GroupStatEntry;
 import org.olat.modules.coach.model.SearchCoachedIdentityParams;
 import org.olat.modules.coach.model.StudentStatEntry;
 import org.olat.repository.RepositoryEntry;
+import org.olat.user.propertyhandlers.UserPropertyHandler;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -54,10 +54,7 @@ public class CoachingServiceImpl implements CoachingService {
 	@Autowired
 	private CoachingDAO coachingDao;
 	@Autowired
-	private BaseSecurity securityManager;
-	@Autowired
 	private BusinessGroupService businessGroupService;
-	
 
 	@Override
 	public boolean isCoach(Identity coach) {
@@ -70,13 +67,13 @@ public class CoachingServiceImpl implements CoachingService {
 	}
 	
 	@Override
-	public List<StudentStatEntry> getUsersStatistics(SearchCoachedIdentityParams params) {
-		return coachingDao.getUsersStatisticsNative(params);
+	public List<StudentStatEntry> getUsersStatistics(SearchCoachedIdentityParams params, List<UserPropertyHandler> userPropertyHandlers) {
+		return coachingDao.getUsersStatisticsNative(params, userPropertyHandlers);
 	}
 
 	@Override
-	public List<StudentStatEntry> getStudentsStatistics(Identity coach) {
-		return coachingDao.getStudentsStatisticsNative(coach);
+	public List<StudentStatEntry> getStudentsStatistics(Identity coach, List<UserPropertyHandler> userPropertyHandlers) {
+		return coachingDao.getStudentsStatisticsNative(coach, userPropertyHandlers);
 	}
 
 	@Override
@@ -95,29 +92,27 @@ public class CoachingServiceImpl implements CoachingService {
 	}
 
 	@Override
-	public List<EfficiencyStatementEntry> getGroup(BusinessGroup group) {
+	public List<EfficiencyStatementEntry> getGroup(BusinessGroup group, List<UserPropertyHandler> userPropertyHandlers, Locale locale) {
 		List<Identity> students = businessGroupService.getMembers(group, GroupRoles.participant.name());
 		List<RepositoryEntry> courses = businessGroupService.findRepositoryEntries(Collections.singletonList(group), 0, -1);
-		return coachingDao.getEfficencyStatementEntriesAlt(students, courses);
+		return coachingDao.getEfficencyStatementEntries(students, courses, userPropertyHandlers, locale);
 	}
 
 	@Override
-	public List<EfficiencyStatementEntry> getCourse(Identity coach, RepositoryEntry entry) {
-		List<Long> studentKeys = coachingDao.getStudents(coach, entry);
-		List<IdentityShort> students = securityManager.findShortIdentitiesByKey(studentKeys);
-		return coachingDao.getEfficencyStatementEntries(students, Collections.singletonList(entry));
+	public List<EfficiencyStatementEntry> getCourse(Identity coach, RepositoryEntry entry, List<UserPropertyHandler> userPropertyHandlers, Locale locale) {
+		List<Identity> students = coachingDao.getStudents(coach, entry);
+		return coachingDao.getEfficencyStatementEntries(students, Collections.singletonList(entry), userPropertyHandlers, locale);
 	}
 
 	@Override
-	public EfficiencyStatementEntry getEfficencyStatement(UserEfficiencyStatement statement) {
-		return coachingDao.getEfficencyStatementEntry(statement);
+	public EfficiencyStatementEntry getEfficencyStatement(UserEfficiencyStatement statement, List<UserPropertyHandler> userPropertyHandlers, Locale locale) {
+		return coachingDao.getEfficencyStatementEntry(statement, userPropertyHandlers, locale);
 	}
 
 	@Override
-	public List<EfficiencyStatementEntry> getEfficencyStatements(Identity student, List<RepositoryEntry> courses) {
-		IdentityShort identity = securityManager.loadIdentityShortByKey(student.getKey());
-		List<IdentityShort> students = Collections.singletonList(identity);
-		return coachingDao.getEfficencyStatementEntries(students, courses);
+	public List<EfficiencyStatementEntry> getEfficencyStatements(Identity student, List<RepositoryEntry> courses, List<UserPropertyHandler> userPropertyHandlers, Locale locale) {
+		List<Identity> students = Collections.singletonList(student);
+		return coachingDao.getEfficencyStatementEntries(students, courses, userPropertyHandlers, locale);
 	}
 	
 	@Override

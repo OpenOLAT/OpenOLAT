@@ -25,6 +25,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 import org.olat.NewControllerFactory;
+import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
@@ -69,6 +70,7 @@ import org.olat.modules.coach.ui.EfficiencyStatementEntryTableDataModel.Columns;
 import org.olat.modules.coach.ui.ToolbarController.Position;
 import org.olat.repository.RepositoryEntry;
 import org.olat.user.UserManager;
+import org.olat.user.propertyhandlers.UserPropertyHandler;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -102,17 +104,26 @@ public class StudentCoursesController extends BasicController implements Activat
 	private final Identity student;
 	private final boolean fullAccess;
 	private final StudentStatEntry statEntry;
+
+	private final boolean isAdministrativeUser;
+	private final List<UserPropertyHandler> userPropertyHandlers;
+	
 	@Autowired
 	private UserManager userManager;
 	@Autowired
 	private CoachingService coachingService;
+	@Autowired
+	private BaseSecurityModule securityModule;
 	@Autowired
 	private CertificatesManager certificatesManager;
 	
 	public StudentCoursesController(UserRequest ureq, WindowControl wControl, StudentStatEntry statEntry,
 			Identity student, int index, int numOfStudents, boolean fullAccess) {
 		super(ureq, wControl);
-		
+		setTranslator(userManager.getPropertyHandlerTranslator(getTranslator()));
+		isAdministrativeUser = securityModule.isUserAllowedAdminProps(ureq.getUserSession().getRoles());
+		userPropertyHandlers = userManager.getUserPropertyHandlersFor(UserListController.usageIdentifyer, isAdministrativeUser);
+
 		this.student = student;
 		this.statEntry = statEntry;
 		this.fullAccess = fullAccess;
@@ -123,7 +134,7 @@ public class StudentCoursesController extends BasicController implements Activat
 		tableConfig.setPreferencesOffered(true, "studentCourseListController");
 		
 		tableCtr = new TableController(tableConfig, ureq, getWindowControl(), null, null, null, null, true, getTranslator());
-		tableCtr.addColumnDescriptor(false, new DefaultColumnDescriptor("student.name", Columns.studentName.ordinal(), "select", getLocale()));
+		tableCtr.addColumnDescriptor(false, new DefaultColumnDescriptor("student.name", Columns.name.ordinal(), "select", getLocale()));
 		tableCtr.addColumnDescriptor(new DefaultColumnDescriptor("table.header.course.name", Columns.repoName.ordinal(), "select", getLocale()));
 		tableCtr.addColumnDescriptor(new BooleanColumnDescriptor("table.header.passed", Columns.passed.ordinal(), translate("passed.true"), translate("passed.false")));
 		tableCtr.addColumnDescriptor(new CustomRenderColumnDescriptor("table.header.score", Columns.score.ordinal(), "select", getLocale(),
@@ -221,7 +232,7 @@ public class StudentCoursesController extends BasicController implements Activat
 	private List<EfficiencyStatementEntry> loadModel() {
 		List<RepositoryEntry> courses = fullAccess ? coachingService.getUserCourses(student)
 				: coachingService.getStudentsCourses(getIdentity(), student);
-		List<EfficiencyStatementEntry> statements = coachingService.getEfficencyStatements(student, courses);
+		List<EfficiencyStatementEntry> statements = coachingService.getEfficencyStatements(student, courses, userPropertyHandlers, getLocale());
 		
 		List<CertificateLight> certificates = certificatesManager.getLastCertificates(student);
 		ConcurrentMap<IdentityResourceKey, CertificateLight> certificateMap = new ConcurrentHashMap<>();
@@ -230,8 +241,8 @@ public class StudentCoursesController extends BasicController implements Activat
 			certificateMap.put(key, certificate);
 		}
 
-		model = new EfficiencyStatementEntryTableDataModel(statements, certificateMap);
-		tableCtr.setTableDataModel(model);
+		//model = new EfficiencyStatementEntryTableDataModel(statements, certificateMap);
+		//tableCtr.setTableDataModel(model);
 		return statements;
 	}
 	

@@ -91,8 +91,8 @@ public class MailManagerTest extends OlatTestCase {
 	@Test
 	public void testGetInbox() {
 		//send a mail
-		Identity fromId = JunitTestHelper.createAndPersistIdentityAsUser("mail-3-" + UUID.randomUUID().toString());
-		Identity toId = JunitTestHelper.createAndPersistIdentityAsUser("mail-4-" + UUID.randomUUID().toString());
+		Identity fromId = JunitTestHelper.createAndPersistIdentityAsRndUser("mail-3");
+		Identity toId = JunitTestHelper.createAndPersistIdentityAsRndUser("mail-4");
 		
 		MailBundle bundle = new MailBundle();
 		bundle.setFromId(fromId);

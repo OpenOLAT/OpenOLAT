@@ -19,11 +19,14 @@
  */
 package org.olat.modules.coach.model;
 
-import org.olat.basesecurity.IdentityShort;
+import java.util.List;
+import java.util.Locale;
+
 import org.olat.core.id.Identity;
-import org.olat.core.id.UserConstants;
 import org.olat.course.assessment.UserEfficiencyStatement;
 import org.olat.repository.RepositoryEntry;
+import org.olat.user.UserPropertiesRow;
+import org.olat.user.propertyhandlers.UserPropertyHandler;
 
 /**
  * 
@@ -34,49 +37,24 @@ import org.olat.repository.RepositoryEntry;
  *
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
-public class EfficiencyStatementEntry {
+public class EfficiencyStatementEntry extends UserPropertiesRow {
 	
-	private final Long studentKey;
-	private final String studentFullName;
 	private final RepositoryEntry course;
 	private final UserEfficiencyStatement efficencyStatement;
 	
-	public EfficiencyStatementEntry(IdentityShort student, RepositoryEntry course, UserEfficiencyStatement efficencyStatement) {
+	/*public EfficiencyStatementEntry(IdentityShort student, RepositoryEntry course, UserEfficiencyStatement efficencyStatement) {
 		this.course = course;
 		this.efficencyStatement = efficencyStatement;
-		this.studentKey = student.getKey();
-		this.studentFullName = getFullName(student);
-	}
+	}*/
 	
-	public EfficiencyStatementEntry(Identity student, RepositoryEntry course, UserEfficiencyStatement efficencyStatement) {
+	public EfficiencyStatementEntry(Identity student, RepositoryEntry course, UserEfficiencyStatement efficencyStatement,
+			List<UserPropertyHandler> userPropertyHandlers, Locale locale) {
+		super(student, userPropertyHandlers, locale);
+		
 		this.course = course;
 		this.efficencyStatement = efficencyStatement;
-		this.studentKey = student.getKey();
-		this.studentFullName = getFullName(student);
 	}
-	
-	private String getFullName(IdentityShort student) {
-		if(student == null) {
-			return "";
-		}
-		return student.getFirstName() + " " + student.getLastName();
-	}
-	
-	private String getFullName(Identity student) {
-		if(student == null) {
-			return "";
-		}
-		return student.getUser().getProperty(UserConstants.FIRSTNAME, null) + " " + student.getUser().getProperty(UserConstants.LASTNAME, null);
-	}
-	
-	public Long getStudentKey() {
-		return studentKey;
-	}
-	
-	public String getStudentFullName() {
-		return studentFullName;
-	}
-	
+
 	public String getCourseDisplayName() {
 		return null;
 	}

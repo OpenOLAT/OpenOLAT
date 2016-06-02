@@ -52,12 +52,14 @@ import org.olat.modules.coach.model.CourseStatEntry;
 import org.olat.modules.coach.model.GroupStatEntry;
 import org.olat.modules.coach.model.SearchCoachedIdentityParams;
 import org.olat.modules.coach.model.StudentStatEntry;
+import org.olat.modules.coach.ui.UserListController;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
 import org.olat.repository.RepositoryService;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
 import org.olat.user.UserManager;
+import org.olat.user.propertyhandlers.UserPropertyHandler;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -96,6 +98,8 @@ public class CoachingDAOTest extends OlatTestCase {
 	@Test
 	public void getStatistics_duplicateInGroups()
 	throws URISyntaxException {
+		List<UserPropertyHandler> userPropertyHandlers = userManager.getUserPropertyHandlersFor(UserListController.usageIdentifyer, false);
+		
 		URL courseWithForumsUrl = CoachingLargeTest.class.getResource("CoachingCourse.zip");
 		File courseWithForums = new File(courseWithForumsUrl.toURI());
 		String softKey = UUID.randomUUID().toString();
@@ -151,7 +155,7 @@ public class CoachingDAOTest extends OlatTestCase {
 
 		
 		//user native
-		List<StudentStatEntry> nativeUserStats = coachingDAO.getStudentsStatisticsNative(coach);
+		List<StudentStatEntry> nativeUserStats = coachingDAO.getStudentsStatisticsNative(coach, userPropertyHandlers);
 		Assert.assertNotNull(nativeUserStats);
 		Assert.assertEquals(2, nativeUserStats.size());
 		//participant1
@@ -278,9 +282,10 @@ public class CoachingDAOTest extends OlatTestCase {
 		Assert.assertEquals(1, entryRe3.getInitialLaunch());
 		Assert.assertEquals(2.0f, entryRe3.getAverageScore(), 0.0001);
 		
+		List<UserPropertyHandler> userPropertyHandlers = userManager.getUserPropertyHandlersFor(UserListController.usageIdentifyer, false);
 		
 		//user native
-		List<StudentStatEntry> nativeUserStats = coachingDAO.getStudentsStatisticsNative(coach);
+		List<StudentStatEntry> nativeUserStats = coachingDAO.getStudentsStatisticsNative(coach, userPropertyHandlers);
 		Assert.assertNotNull(nativeUserStats);
 		Assert.assertEquals(2, nativeUserStats.size());
 		//participant1
@@ -420,8 +425,9 @@ public class CoachingDAOTest extends OlatTestCase {
 		Assert.assertEquals(1, entryCourse2.getCountNotAttempted());
 		Assert.assertEquals(5.5f, entryCourse2.getAverageScore(), 0.0001f);
 		
+		List<UserPropertyHandler> userPropertyHandlers = userManager.getUserPropertyHandlersFor(UserListController.usageIdentifyer, false);
 		//user native
-		List<StudentStatEntry> nativeUserStats = coachingDAO.getStudentsStatisticsNative(coach);
+		List<StudentStatEntry> nativeUserStats = coachingDAO.getStudentsStatisticsNative(coach, userPropertyHandlers);
 		Assert.assertNotNull(nativeUserStats);
 	
 		Assert.assertEquals(4, nativeUserStats.size());
@@ -597,9 +603,9 @@ public class CoachingDAOTest extends OlatTestCase {
 		Assert.assertEquals(0, entryCourse3g.getCountNotAttempted());
 		Assert.assertEquals(3.25f, entryCourse3g.getAverageScore(), 0.0001f);
 	
-		
+		List<UserPropertyHandler> userPropertyHandlers = userManager.getUserPropertyHandlersFor(UserListController.usageIdentifyer, false);
 		//user native
-		List<StudentStatEntry> courseCoachUserStats = coachingDAO.getStudentsStatisticsNative(courseCoach);
+		List<StudentStatEntry> courseCoachUserStats = coachingDAO.getStudentsStatisticsNative(courseCoach, userPropertyHandlers);
 		Assert.assertNotNull(courseCoachUserStats);
 		Assert.assertEquals(2, courseCoachUserStats.size());
 		//participant3 is only in re 1
@@ -620,7 +626,7 @@ public class CoachingDAOTest extends OlatTestCase {
 		Assert.assertEquals(1, entryParticipant31.getCountRepo());
 		
 		//group coach
-		List<StudentStatEntry> groupCoachUserStats = coachingDAO.getStudentsStatisticsNative(groupCoach);
+		List<StudentStatEntry> groupCoachUserStats = coachingDAO.getStudentsStatisticsNative(groupCoach, userPropertyHandlers);
 		Assert.assertNotNull(groupCoachUserStats);
 		Assert.assertEquals(2, groupCoachUserStats.size());
 
@@ -703,9 +709,9 @@ public class CoachingDAOTest extends OlatTestCase {
 		Assert.assertEquals(4, entryCourse1.getCountNotAttempted());
 		Assert.assertNull(entryCourse1.getAverageScore());
 
-		
+		List<UserPropertyHandler> userPropertyHandlers = userManager.getUserPropertyHandlersFor(UserListController.usageIdentifyer, false);
 		//user native
-		List<StudentStatEntry> nativeUserStats = coachingDAO.getStudentsStatisticsNative(coach);
+		List<StudentStatEntry> nativeUserStats = coachingDAO.getStudentsStatisticsNative(coach, userPropertyHandlers);
 		Assert.assertNotNull(nativeUserStats);
 		Assert.assertEquals(4, nativeUserStats.size());
 		//participants have all the same statistics
@@ -754,9 +760,10 @@ public class CoachingDAOTest extends OlatTestCase {
 		List<CourseStatEntry> nativeCourseStats = coachingDAO.getCoursesStatisticsNative(coach);
 		Assert.assertNotNull(nativeCourseStats);
 		Assert.assertEquals(0, nativeCourseStats.size());
-
+		
+		List<UserPropertyHandler> userPropertyHandlers = userManager.getUserPropertyHandlersFor(UserListController.usageIdentifyer, false);
 		//user native
-		List<StudentStatEntry> nativeUserStats = coachingDAO.getStudentsStatisticsNative(coach);
+		List<StudentStatEntry> nativeUserStats = coachingDAO.getStudentsStatisticsNative(coach, userPropertyHandlers);
 		Assert.assertNotNull(nativeUserStats);
 		Assert.assertEquals(0, nativeUserStats.size());
 	}
@@ -803,13 +810,14 @@ public class CoachingDAOTest extends OlatTestCase {
 		partUser = userManager.updateUser(partUser);
 		dbInstance.commitAndCloseSession();
 		
+		List<UserPropertyHandler> userPropertyHandlers = userManager.getUserPropertyHandlersFor(UserListController.usageIdentifyer, false);
 		
 		//search by first name
 		SearchCoachedIdentityParams params = new SearchCoachedIdentityParams();
 		Map<String,String> props = new HashMap<>();
 		props.put(UserConstants.FIRSTNAME, "re");
 		params.setUserProperties(props);
-		List<StudentStatEntry> stats = coachingDAO.getUsersStatisticsNative(params);
+		List<StudentStatEntry> stats = coachingDAO.getUsersStatisticsNative(params, userPropertyHandlers);
 		Assert.assertNotNull(stats);
 		Assert.assertFalse(stats.isEmpty());
 		
@@ -826,7 +834,7 @@ public class CoachingDAOTest extends OlatTestCase {
 		//search by user name
 		SearchCoachedIdentityParams loginParams = new SearchCoachedIdentityParams();
 		loginParams.setLogin(participant.getName());
-		List<StudentStatEntry> loginStats = coachingDAO.getUsersStatisticsNative(loginParams);
+		List<StudentStatEntry> loginStats = coachingDAO.getUsersStatisticsNative(loginParams, userPropertyHandlers);
 		Assert.assertNotNull(loginStats);
 		Assert.assertEquals(1, loginStats.size());
 		
@@ -863,13 +871,13 @@ public class CoachingDAOTest extends OlatTestCase {
 		BusinessGroup group3 = businessGroupService.createBusinessGroup(coach, "Coaching-grp-1", "tg", null, null, false, false, re);
 		businessGroupRelationDao.addRole(participant3, group3, GroupRoles.participant.name());
 		dbInstance.commitAndCloseSession();
-		
-		List<Long> identityKeys = coachingDAO.getStudents(coach, re);
-		Assert.assertNotNull(identityKeys);
-		Assert.assertEquals(3, identityKeys.size());
-		Assert.assertTrue(identityKeys.contains(participant1.getKey()));
-		Assert.assertTrue(identityKeys.contains(participant2.getKey()));
-		Assert.assertTrue(identityKeys.contains(participant3.getKey()));
+
+		List<Identity> students = coachingDAO.getStudents(coach, re);
+		Assert.assertNotNull(students);
+		Assert.assertEquals(3, students.size());
+		Assert.assertTrue(students.contains(participant1));
+		Assert.assertTrue(students.contains(participant2));
+		Assert.assertTrue(students.contains(participant3));
 	}
 	
 	@Test
@@ -900,20 +908,20 @@ public class CoachingDAOTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		//owner
-		List<Long> ownerIdentityKeys = coachingDAO.getStudents(owner, re);
-		Assert.assertNotNull(ownerIdentityKeys);
-		Assert.assertEquals(4, ownerIdentityKeys.size());
-		Assert.assertTrue(ownerIdentityKeys.contains(participant1.getKey()));
-		Assert.assertTrue(ownerIdentityKeys.contains(participant2.getKey()));
-		Assert.assertTrue(ownerIdentityKeys.contains(participant3.getKey()));
-		Assert.assertTrue(ownerIdentityKeys.contains(participant4.getKey()));
+		List<Identity> ownerStudents = coachingDAO.getStudents(owner, re);
+		Assert.assertNotNull(ownerStudents);
+		Assert.assertEquals(4, ownerStudents.size());
+		Assert.assertTrue(ownerStudents.contains(participant1));
+		Assert.assertTrue(ownerStudents.contains(participant2));
+		Assert.assertTrue(ownerStudents.contains(participant3));
+		Assert.assertTrue(ownerStudents.contains(participant4));
 		
 		//groups coach
-		List<Long> coachedIdentityKeys = coachingDAO.getStudents(groupCoach, re);
-		Assert.assertEquals(3, coachedIdentityKeys.size());
-		Assert.assertTrue(coachedIdentityKeys.contains(participant2.getKey()));
-		Assert.assertTrue(coachedIdentityKeys.contains(participant3.getKey()));
-		Assert.assertTrue(coachedIdentityKeys.contains(participant4.getKey()));
+		List<Identity> coachedStudents = coachingDAO.getStudents(groupCoach, re);
+		Assert.assertEquals(3, coachedStudents.size());
+		Assert.assertTrue(coachedStudents.contains(participant2));
+		Assert.assertTrue(coachedStudents.contains(participant3));
+		Assert.assertTrue(coachedStudents.contains(participant4));
 	}
 
 	@Test
@@ -985,7 +993,7 @@ public class CoachingDAOTest extends OlatTestCase {
 	private StudentStatEntry getStudentStatEntry(IdentityRef identity, List<StudentStatEntry> entries) {
 		StudentStatEntry entry = null;
 		for(StudentStatEntry e:entries) {
-			if(e.getStudentKey().equals(identity.getKey())) {
+			if(e.getIdentityKey().equals(identity.getKey())) {
 				entry = e;
 			}
 		}
@@ -1019,6 +1027,8 @@ public class CoachingDAOTest extends OlatTestCase {
 	@Ignore
 	public void testExtern() {
 		Identity coach = securityManager.loadIdentityByKey(46268418l);
+		List<UserPropertyHandler> userPropertyHandlers = userManager.getUserPropertyHandlersFor(UserListController.usageIdentifyer, false);
+		
 		if(coach != null) {
 			long start = System.nanoTime();
 			coachingDAO.getCoursesStatisticsNative(coach);
@@ -1029,7 +1039,7 @@ public class CoachingDAOTest extends OlatTestCase {
 			CodeHelper.printNanoTime(start, "Groups");
 			
 			start = System.nanoTime();
-			coachingDAO.getStudentsStatisticsNative(coach);
+			coachingDAO.getStudentsStatisticsNative(coach, userPropertyHandlers);
 			CodeHelper.printNanoTime(start, "Students");
 		}
 	}

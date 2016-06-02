@@ -272,9 +272,11 @@ public class BusinessGroupRelationDAO {
 	
 	public List<Identity> getMembers(BusinessGroupRef group, String... roles) {
 		StringBuilder sb = new StringBuilder();
-		sb.append("select membership.identity from businessgroup as bgroup ")
+		sb.append("select ident from businessgroup as bgroup ")
 		  .append(" inner join bgroup.baseGroup as baseGroup")
 		  .append(" inner join baseGroup.members as membership")
+		  .append(" inner join membership.identity as ident")
+		  .append(" inner join fetch ident.user as identUser")
 		  .append(" where bgroup.key=:businessGroupKey and membership.role in (:roles)");
 		
 		List<String> roleList = GroupRoles.toList(roles);

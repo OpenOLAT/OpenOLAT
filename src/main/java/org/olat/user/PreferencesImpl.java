@@ -25,6 +25,9 @@
 
 package org.olat.user;
 
+import javax.persistence.Column;
+import javax.persistence.Embeddable;
+
 import org.olat.core.commons.services.notifications.NotificationsManager;
 import org.olat.core.id.Preferences;
 import org.olat.core.util.StringHelper;
@@ -39,15 +42,22 @@ import org.olat.core.util.i18n.I18nManager;
  *
  * @author guido
  */
+@Embeddable
 public class PreferencesImpl implements Preferences {
 
 	private static final long serialVersionUID = -8013230820111033911L;
-	
+
+	@Column(name="language", nullable=true, insertable=true, updatable=true)
 	private String language;
+	@Column(name="fontsize", nullable=true, insertable=true, updatable=true)
 	private String fontsize;
+	@Column(name="notification_interval", nullable=true, insertable=true, updatable=true)
 	private String notificationInterval;
-	private boolean informSessionTimeout;
+	@Column(name="informsessiontimeout", nullable=true, insertable=true, updatable=true)
+	private boolean informSessionTimeout = false;
+	@Column(name="receiverealmail", nullable=true, insertable=true, updatable=true)
 	private String receiveRealMail;
+	@Column(name="presencemessagespublic", nullable=true, insertable=true, updatable=true)
 	private boolean presenceMessagesPublic;
 	
 	/**

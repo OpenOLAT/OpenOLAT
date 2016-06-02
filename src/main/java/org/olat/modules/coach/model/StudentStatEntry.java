@@ -22,6 +22,8 @@ package org.olat.modules.coach.model;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.olat.user.UserPropertiesRow;
+
 
 /**
  * 
@@ -29,9 +31,8 @@ import java.util.Set;
  *  
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
-public class StudentStatEntry {
+public class StudentStatEntry extends UserPropertiesRow {
 	
-	private final Long studentKey;
 	private int countRepo = 0;
 	private int countPassed = 0;
 	private int countFailed = 0;
@@ -41,13 +42,8 @@ public class StudentStatEntry {
 	private Set<String> repoIds = new HashSet<>();
 	private Set<String> launchIds = new HashSet<>();
 	
-	
-	public StudentStatEntry(Long studentKey) {
-		this.studentKey = studentKey;
-	}
-
-	public Long getStudentKey() {
-		return studentKey;
+	public StudentStatEntry(Long identityKey, String identityName, String[] userProperties) {
+		super(identityKey, identityName, userProperties);
 	}
 	
 	public int getCountRepo() {

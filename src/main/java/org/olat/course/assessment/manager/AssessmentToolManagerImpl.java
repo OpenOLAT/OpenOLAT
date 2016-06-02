@@ -74,7 +74,7 @@ public class AssessmentToolManagerImpl implements AssessmentToolManager {
 		//retrive statistcis about efficicency statements
 		assessmentEntryStatistics(coach, params, entry);
 		
-		//retrieve statistcs in user course infos
+		//retrieve statistics in user course infos
 		userCourseInfosStatistics(coach, params, entry);
 
 		return entry;
@@ -206,14 +206,13 @@ public class AssessmentToolManagerImpl implements AssessmentToolManager {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select ");
 		if(Identity.class.equals(classResult)) {
-			sb.append("ident");
+			sb.append("ident").append(" from ").append(IdentityImpl.class.getName()).append(" as ident ")
+			  .append(" inner join fetch ident.user user ");
 		} else {
-			sb.append("count(ident.key)");
+			sb.append("count(ident.key)").append(" from ").append(IdentityImpl.class.getName()).append(" as ident ")
+			  .append(" inner join ident.user user ");
 		}
-		
-		sb.append(" from ").append(IdentityImpl.class.getName()).append(" as ident ")
-		  .append(" inner join ident.user user ")
-		  .append(" where ");
+		sb.append(" where ");
 		if(params.getBusinessGroupKeys() != null && params.getBusinessGroupKeys().size() > 0) {
 			sb.append(" ident.key in (select participant.identity.key from repoentrytogroup as rel, businessgroup bgi, bgroupmember as participant")
 	          .append("    where rel.entry.key=:repoEntryKey and rel.group=bgi.baseGroup and rel.group=participant.group and bgi.key in (:businessGroupKeys) ")
@@ -373,18 +372,14 @@ public class AssessmentToolManagerImpl implements AssessmentToolManager {
 						sb.append(" or ");
 					}
 					
-					sb.append(" exists (select prop").append(attribute).append(".value from userproperty prop").append(attribute).append(" where ")
-					  .append(" prop").append(attribute).append(".propertyId.userId=user.key and prop").append(attribute).append(".propertyId.name ='").append(attribute).append("'")
-					  .append(" and ");
 					if(dbVendor.equals("mysql")) {
-						sb.append(" prop").append(attribute).append(".value like :search").append(i).append(" ");
+						sb.append(" user.").append(attribute).append(" like :search").append(i).append(" ");
 					} else {
-						sb.append(" lower(prop").append(attribute).append(".value) like :search").append(i).append(" ");
+						sb.append(" lower(user.").append(attribute).append(") like :search").append(i).append(" ");
 					}
 					if(dbVendor.equals("oracle")) {
 						sb.append(" escape '\\'");
 					}
-					sb.append(")");
 				}
 			}
 			sb.append(")");

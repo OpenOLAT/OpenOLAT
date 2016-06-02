@@ -67,8 +67,9 @@ import org.apache.velocity.exception.MethodInvocationException;
 import org.apache.velocity.exception.ParseErrorException;
 import org.apache.velocity.exception.ResourceNotFoundException;
 import org.apache.velocity.runtime.RuntimeConstants;
+import org.olat.basesecurity.IdentityImpl;
+import org.olat.basesecurity.IdentityRef;
 import org.olat.core.commons.persistence.DB;
-import org.olat.core.commons.persistence.PersistentObject;
 import org.olat.core.commons.services.notifications.NotificationsManager;
 import org.olat.core.commons.services.notifications.Publisher;
 import org.olat.core.commons.services.notifications.PublisherData;
@@ -553,14 +554,14 @@ public class MailManagerImpl implements MailManager, InitializingBean  {
 	 * @return
 	 */
 	@Override
-	public List<DBMailLight> getInbox(Identity identity, Boolean unreadOnly, Boolean fetchRecipients, Date from, int firstResult, int maxResults) {
+	public List<DBMailLight> getInbox(IdentityRef identity, Boolean unreadOnly, Boolean fetchRecipients, Date from, int firstResult, int maxResults) {
 		StringBuilder sb = new StringBuilder();
 		String fetchOption = (fetchRecipients != null && fetchRecipients.booleanValue()) ? "fetch" : "";
 		sb.append("select mail from ").append(DBMailLightImpl.class.getName()).append(" mail")
-			.append(" inner join fetch ").append(" mail.from fromRecipient")
+		  .append(" inner join fetch ").append(" mail.from fromRecipient")
 		  .append(" inner join ").append(fetchOption).append(" mail.recipients recipient")
-			.append(" inner join ").append(fetchOption).append(" recipient.recipient recipientIdentity")
-			.append(" where recipientIdentity.key=:recipientKey and recipient.deleted=false");
+		  .append(" inner join ").append(fetchOption).append(" recipient.recipient recipientIdentity")
+		  .append(" where recipientIdentity.key=:recipientKey and recipient.deleted=false");
 		if(unreadOnly != null && unreadOnly.booleanValue()) {
 			sb.append(" and recipient.read=false");
 		}
@@ -974,7 +975,7 @@ public class MailManagerImpl implements MailManager, InitializingBean  {
 			DBMailRecipient recipientTo = null;
 			if(toId != null) {
 				recipientTo = new DBMailRecipient();
-				if(toId instanceof PersistentObject) {
+				if(toId instanceof IdentityImpl) {
 					recipientTo.setRecipient(toId);
 				} else {
 					to = toId.getUser().getProperty(UserConstants.EMAIL, null);
@@ -1005,7 +1006,7 @@ public class MailManagerImpl implements MailManager, InitializingBean  {
 			
 			if(cc != null) {
 				DBMailRecipient recipient = new DBMailRecipient();
-				if(cc instanceof PersistentObject) {
+				if(cc instanceof IdentityImpl) {
 					recipient.setRecipient(cc);
 				} else {
 					recipient.setEmailAddress(cc.getUser().getProperty(UserConstants.EMAIL, null));
@@ -1110,7 +1111,7 @@ public class MailManagerImpl implements MailManager, InitializingBean  {
 				
 				for(Identity identityEmail:contactList.getIdentiEmails().values()) {
 					DBMailRecipient recipient = new DBMailRecipient();
-					if(identityEmail instanceof PersistentObject) {
+					if(identityEmail instanceof IdentityImpl) {
 						recipient.setRecipient(identityEmail);
 					} else {
 						recipient.setEmailAddress(identityEmail.getUser().getProperty(UserConstants.EMAIL, null));

@@ -352,10 +352,12 @@ public interface BaseSecurity {
 	/**
 	 * @param identity
 	 * @param provider
-	 * @return Authentication for this identitity and provider or NULL if not
+	 * @return Authentication for this identity and provider or NULL if not
 	 *         found
 	 */
-	public Authentication findAuthentication(Identity identity, String provider);
+	public Authentication findAuthentication(IdentityRef identity, String provider);
+	
+	public String findAuthenticationName(IdentityRef identity, String provider);
 	
 	
 	/**

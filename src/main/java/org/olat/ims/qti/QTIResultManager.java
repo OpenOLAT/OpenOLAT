@@ -147,7 +147,7 @@ public class QTIResultManager implements UserDataDeletable {
 		
 		if(type == 1 || type == 2) {
 			 // 1 -> iqtest, 2 -> iqself
-		    sb.append(" order by usr.userProperties['").append(UserConstants.LASTNAME).append("'] , rset.assessmentID, res.itemIdent");
+		    sb.append(" order by usr.lastName, rset.assessmentID, res.itemIdent");
 		} else {
 			//3 -> iqsurv: the alphabetical assortment above could destroy the anonymization
 		    // if names and quantity of the persons is well-known

@@ -23,8 +23,6 @@ import java.util.Collections;
 import java.util.Locale;
 import java.util.Map;
 
-import org.olat.basesecurity.Authentication;
-import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.core.gui.components.form.ValidationError;
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -37,6 +35,7 @@ import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.util.StringHelper;
 import org.olat.user.AbstractUserPropertyHandler;
+import org.olat.user.UserImpl;
 
 /**
  * <h3>Description:</h3> The UserNameReadOnlyPropertyHandler allows displaying
@@ -73,34 +72,21 @@ public class UserNameReadOnlyPropertyHandler extends AbstractUserPropertyHandler
 	
 	@Override
 	public String getUserPropertyAsHTML(User user, Locale locale) {
-		BaseSecurity secMgr = BaseSecurityManager.getInstance();
-		BusinessControlFactory bcFactory = BusinessControlFactory.getInstance();
-		Identity identity = secMgr.findIdentityByUser(user);
-		if (identity != null) {
-			ContextEntry ce = bcFactory.createContextEntry(identity);
-			String homepage = bcFactory.getAsURIString(Collections.singletonList(ce), false);
-			return "<a href='" + homepage + "'>" + StringHelper.escapeHtml(getInternalValue(identity)) + "</a>";			
+		String val = getInternalValue(user);
+		if (val != null) {
+			Identity identity = ((UserImpl)user).getIdentity();
+			ContextEntry ce = BusinessControlFactory.getInstance().createContextEntry(identity);
+			String homepage = BusinessControlFactory.getInstance().getAsURIString(Collections.singletonList(ce), false);
+			return "<a href='" + homepage + "'>" + StringHelper.escapeHtml(val) + "</a>";			
 		}
 		return "";
 	}
 
 	@Override
 	protected String getInternalValue(User user) {
-		Identity identity = BaseSecurityManager.getInstance().findIdentityByUser(user);
-		return getInternalValue(identity);
-	}
-
-	/**
-	 * lookup username from authentication
-	 * @param identity
-	 * @return
-	 */
-	private String getInternalValue(Identity identity) {
-		if (identity != null) {
-			Authentication auth = BaseSecurityManager.getInstance().findAuthentication(identity, this.authProvider);
-			if (auth != null) {
-				return auth.getAuthusername();
-			}					
+		if (user instanceof UserImpl) {
+			Identity identity = ((UserImpl)user).getIdentity();
+			return BaseSecurityManager.getInstance().findAuthenticationName(identity, authProvider);					
 		}
 		return "";
 	}
@@ -138,6 +124,11 @@ public class UserNameReadOnlyPropertyHandler extends AbstractUserPropertyHandler
 	@Override
 	public String getStringValue(String displayValue, Locale locale) {
 		return displayValue;
+	}
+
+	@Override
+	protected void setInternalGetterSetter(String name) {
+		//
 	}
 
 	@Override

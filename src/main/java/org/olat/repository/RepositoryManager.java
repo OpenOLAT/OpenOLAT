@@ -899,7 +899,7 @@ public class RepositoryManager {
 			  .append(" inner join baseGroup.members as membership")
 			  .append(" inner join membership.identity as identity")
 			  .append(" inner join identity.user as user")
-			  .append(" where user.userProperties['institutionalName']=:institutionCourseManager")
+			  .append(" where user.institutionalName=:institutionCourseManager")
 			  .append(" and res.resName in (:restrictedType) and v.access = 1");
 			
 			List<RepositoryEntry> institutionalResults = dbInstance.getCurrentEntityManager()
@@ -1138,7 +1138,7 @@ public class RepositoryManager {
 			     .append(IdentityImpl.class.getName()).append(" as identity, ").append(UserImpl.class.getName()).append(" as user")
 		         .append("    where rel.entry=v and rel.group=baseGroup and membership.group=baseGroup and membership.identity=identity and identity.user=user")
 		         .append("      and membership.role='").append(GroupRoles.owner.name()).append("'")
-		         .append("      and (user.userProperties['firstName'] like :author or user.userProperties['lastName'] like :author or identity.name like :author)")
+		         .append("      and (user.firstName like :author or user.lastName like :author or identity.name like :author)")
 		         .append("  )");
 		}
 		// restrict on resource name
@@ -1324,7 +1324,7 @@ public class RepositoryManager {
 			query.append("v.access=1 and exists (select rel from repoentrytogroup as rel, bgroup as baseGroup, bgroupmember as membership, ")
 			     .append(IdentityImpl.class.getName()).append(" as identity, ").append(UserImpl.class.getName()).append(" as user")
 	             .append("    where rel.entry=v and rel.group=baseGroup and membership.group=baseGroup and membership.identity=identity and identity.user=user")
-	             .append("      and user.userProperties['institutionalName']=:institution and membership.role='").append(GroupRoles.owner.name()).append("'")
+	             .append("      and user.institutionalName=:institution and membership.role='").append(GroupRoles.owner.name()).append("'")
 	             .append(")))");
 			
 		} else if (params.isOnlyOwnedResources()) {
@@ -1361,9 +1361,9 @@ public class RepositoryManager {
 		         .append("    where rel.entry=v and rel.group=baseGroup and membership.group=baseGroup and membership.identity=identity and identity.user=user")
 		         .append("      and membership.role='").append(GroupRoles.owner.name()).append("'")
 		         .append("      and (");
-			PersistenceHelper.appendFuzzyLike(query, "user.userProperties['firstName']", "author", dbInstance.getDbVendor());
+			PersistenceHelper.appendFuzzyLike(query, "user.firstName", "author", dbInstance.getDbVendor());
 			query.append(" or ");
-			PersistenceHelper.appendFuzzyLike(query, "user.userProperties['lastName']", "author", dbInstance.getDbVendor());
+			PersistenceHelper.appendFuzzyLike(query, "user.lastName", "author", dbInstance.getDbVendor());
 			query.append(" or ");
 			PersistenceHelper.appendFuzzyLike(query, "identity.name", "author", dbInstance.getDbVendor());
 			query.append(" ))");
@@ -1844,7 +1844,7 @@ public class RepositoryManager {
 		  .append(" inner join baseGroup.members as membership")
 		  .append(" inner join membership.identity as identity")
 		  .append(" inner join identity.user as user")
-		  .append(" where v.key=:repoKey and user.userProperties['institutionalName']=:institutionCourseManager");
+		  .append(" where v.key=:repoKey and user.institutionalName=:institutionCourseManager");
 		
 		Number count = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), Number.class)

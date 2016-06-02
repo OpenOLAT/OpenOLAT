@@ -19,12 +19,14 @@
  */
 package org.olat.modules.coach.ui;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
-import org.olat.core.gui.components.table.TableDataModel;
+import org.olat.core.commons.persistence.SortKey;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiColumnDef;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
 import org.olat.course.assessment.UserEfficiencyStatement;
 import org.olat.course.certificate.CertificateLight;
 import org.olat.modules.coach.model.EfficiencyStatementEntry;
@@ -40,15 +42,12 @@ import org.olat.repository.RepositoryEntry;
  *
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
-public class EfficiencyStatementEntryTableDataModel implements TableDataModel<EfficiencyStatementEntry> {
+public class EfficiencyStatementEntryTableDataModel extends DefaultFlexiTableDataModel<EfficiencyStatementEntry> implements SortableFlexiTableDataModel<EfficiencyStatementEntry> {
 	
-	private List<EfficiencyStatementEntry> group;
 	private ConcurrentMap<IdentityResourceKey, CertificateLight> certificateMap;
 	
-	public EfficiencyStatementEntryTableDataModel(List<EfficiencyStatementEntry> group,
-			ConcurrentMap<IdentityResourceKey, CertificateLight> certificateMap) {
-		this.group = group;
-		this.certificateMap = certificateMap;
+	public EfficiencyStatementEntryTableDataModel(FlexiTableColumnModel columnModel) {
+		super(columnModel);
 	}
 	
 	public boolean contains(IdentityResourceKey key) {
@@ -63,98 +62,101 @@ public class EfficiencyStatementEntryTableDataModel implements TableDataModel<Ef
 	}
 
 	@Override
-	public int getColumnCount() {
-		return 6;
+	public void sort(SortKey sortKey) {
+		//
 	}
-
-	@Override
-	public int getRowCount() {
-		return group == null ? 0 : group.size();
-	}
-
 	@Override
 	public Object getValueAt(int row, int col) {
-		EfficiencyStatementEntry entry = group.get(row);
-		switch(Columns.getValueAt(col)) {
-			case studentName: {
-				return entry.getStudentFullName();
-			}
-			case repoName: {
-				RepositoryEntry re = entry.getCourse();
-				return re.getDisplayname();
-			}
-			case score: {
-				UserEfficiencyStatement s = entry.getUserEfficencyStatement();
-				return s == null ? null : s.getScore();
-			}
-			case passed: {
-				UserEfficiencyStatement s = entry.getUserEfficencyStatement();
-				return s == null ? null : s.getPassed();
-			}
-			case certificate: {
-				CertificateLight certificate = null;
-				if(certificateMap != null) {
-					IdentityResourceKey key = new IdentityResourceKey(entry.getStudentKey(), entry.getCourse().getOlatResource().getKey());
-					certificate = certificateMap.get(key);
-				}
-				return certificate;
-			}
-			case progress: {
-				UserEfficiencyStatement s = entry.getUserEfficencyStatement();
-				if(s == null || s.getTotalNodes() == null) {
-					ProgressValue val = new ProgressValue();
-					val.setTotal(100);
-					val.setGreen(0);
-					return val;
-				}
-				
-				ProgressValue val = new ProgressValue();
-				val.setTotal(s.getTotalNodes().intValue());
-				val.setGreen(s.getAttemptedNodes() == null ? 0 : s.getAttemptedNodes().intValue());
-				return val;
-			}
-			case lastModification: {
-				UserEfficiencyStatement s = entry.getUserEfficencyStatement();
-				return s == null ? null : s.getLastModified();
-			}
-		}
-		return null;
-	}
-
-	@Override
-	public EfficiencyStatementEntry getObject(int row) {
-		return group.get(row);
+		EfficiencyStatementEntry entry = getObject(row);
+		return getValueAt(entry, col);
 	}
 	
-	public int indexOf(EfficiencyStatementEntry obj) {
-		return group.indexOf(obj);
+	@Override
+	public Object getValueAt(EfficiencyStatementEntry entry, int col) {
+
+		if(col >= 0 && col < Columns.values().length) {
+			switch(Columns.getValueAt(col)) {
+				case name: return entry.getIdentityName();
+				case repoName: {
+					RepositoryEntry re = entry.getCourse();
+					return re.getDisplayname();
+				}
+				case score: {
+					UserEfficiencyStatement s = entry.getUserEfficencyStatement();
+					return s == null ? null : s.getScore();
+				}
+				case passed: {
+					UserEfficiencyStatement s = entry.getUserEfficencyStatement();
+					return s == null ? null : s.getPassed();
+				}
+				case certificate: {
+					CertificateLight certificate = null;
+					if(certificateMap != null) {
+						IdentityResourceKey key = new IdentityResourceKey(entry.getIdentityKey(), entry.getCourse().getOlatResource().getKey());
+						certificate = certificateMap.get(key);
+					}
+					return certificate;
+				}
+				case progress: {
+					UserEfficiencyStatement s = entry.getUserEfficencyStatement();
+					if(s == null || s.getTotalNodes() == null) {
+						ProgressValue val = new ProgressValue();
+						val.setTotal(100);
+						val.setGreen(0);
+						return val;
+					}
+					
+					ProgressValue val = new ProgressValue();
+					val.setTotal(s.getTotalNodes().intValue());
+					val.setGreen(s.getAttemptedNodes() == null ? 0 : s.getAttemptedNodes().intValue());
+					return val;
+				}
+				case lastModification: {
+					UserEfficiencyStatement s = entry.getUserEfficencyStatement();
+					return s == null ? null : s.getLastModified();
+				}
+			}
+		}
+		
+		int propPos = col - UserListController.USER_PROPS_OFFSET;
+		return entry.getIdentityProp(propPos);
 	}
 
-	@Override
-	public void setObjects(List<EfficiencyStatementEntry> objects) {
-		group = objects;
+	public void setObjects(List<EfficiencyStatementEntry> objects, ConcurrentMap<IdentityResourceKey, CertificateLight> certificates) {
+		setObjects(objects);
+		this.certificateMap = certificates;
 	}
 
 	@Override
 	public EfficiencyStatementEntryTableDataModel createCopyWithEmptyList() {
-		return new EfficiencyStatementEntryTableDataModel(new ArrayList<EfficiencyStatementEntry>(),
-				new ConcurrentHashMap<IdentityResourceKey, CertificateLight>());
+		return new EfficiencyStatementEntryTableDataModel(getTableColumnModel());
 	}
 	
-	public static enum Columns {
-		studentName,
-		repoName,
-		score,
-		passed,
-		certificate,
-		progress,
-		lastModification;
+	public static enum Columns implements FlexiColumnDef {
+		name("student.name"), 
+		repoName("table.header.course.name"),
+		score("table.header.score"),
+		passed("table.header.passed"),
+		certificate("table.header.certificate"),
+		progress("table.header.progress"),
+		lastModification("table.header.lastScoreDate");
+		
+		private final String i18nKey;
+		
+		private Columns(String i18nKey) {
+			this.i18nKey = i18nKey;
+		}
+		
+		@Override
+		public String i18nHeaderKey() {
+			return i18nKey;
+		}
 
 		public static Columns getValueAt(int ordinal) {
 			if(ordinal >= 0 && ordinal < values().length) {
 				return values()[ordinal];
 			}
-			return studentName;
+			return name;
 		}
 	}
 }

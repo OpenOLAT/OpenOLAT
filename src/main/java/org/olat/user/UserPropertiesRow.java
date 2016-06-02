@@ -39,6 +39,13 @@ public class UserPropertiesRow {
 	private final String identityName;
 	private final String[] identityProps;
 	
+
+	public UserPropertiesRow(Long identityKey, String identityName, String[] identityProps) {
+		this.identityKey = identityKey;
+		this.identityName = identityName;
+		this.identityProps = identityProps;
+	}
+	
 	public UserPropertiesRow(Identity identity, List<UserPropertyHandler> userPropertyHandlers, Locale locale) {
 		identityProps = new String[userPropertyHandlers.size()];
 		if(identity == null) {

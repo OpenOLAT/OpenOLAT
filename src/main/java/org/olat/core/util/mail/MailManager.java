@@ -27,6 +27,7 @@ import java.util.List;
 import javax.mail.Address;
 import javax.mail.internet.MimeMessage;
 
+import org.olat.basesecurity.IdentityRef;
 import org.olat.core.commons.services.notifications.PublisherData;
 import org.olat.core.commons.services.notifications.Subscriber;
 import org.olat.core.commons.services.notifications.SubscriptionContext;
@@ -128,7 +129,7 @@ public interface MailManager {
 	 * @param maxResults
 	 * @return
 	 */
-	public List<DBMailLight> getInbox(Identity identity, Boolean unreadOnly, Boolean fetchRecipients, Date from, int firstResult, int maxResults);
+	public List<DBMailLight> getInbox(IdentityRef identity, Boolean unreadOnly, Boolean fetchRecipients, Date from, int firstResult, int maxResults);
 	
 	/**
 	 * Forward an E-Mail from the OpenOLAt mail box to the real one

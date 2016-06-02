@@ -349,6 +349,11 @@ public class BreadcrumbedStackedPanel extends Panel implements StackedPanel, Bre
 		updateCloseLinkTitle();
 	}
 	
+	public void changeDisplayname(String diplayName) {
+		stack.get(stack.size() - 1).setCustomDisplayText(diplayName);
+		setDirty(true);
+	}
+	
 	protected BreadCrumb createCrumb(Controller controller) {
 		return new BreadCrumb(controller);
 	}

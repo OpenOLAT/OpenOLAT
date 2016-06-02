@@ -107,6 +107,16 @@ public class EMailIdentity implements Identity {
 		}
 
 		@Override
+		public String getFirstName() {
+			return data.get(UserConstants.FIRSTNAME);
+		}
+
+		@Override
+		public String getLastName() {
+			return data.get(UserConstants.LASTNAME);
+		}
+
+		@Override
 		public Date getLastModified() {
 			return null;
 		}

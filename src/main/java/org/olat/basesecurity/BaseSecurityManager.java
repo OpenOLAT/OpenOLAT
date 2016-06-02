@@ -937,7 +937,9 @@ public class BaseSecurityManager implements BaseSecurity {
 		if (identityName == null) throw new AssertException("findIdentitybyName: name was null");
 
 		StringBuilder sb = new StringBuilder();
-		sb.append("select ident from ").append(IdentityImpl.class.getName()).append(" as ident where ident.name=:username");
+		sb.append("select ident from ").append(IdentityImpl.class.getName()).append(" as ident")
+		  .append(" inner join fetch ident.user user")
+		  .append(" where ident.name=:username");
 		
 		List<Identity> identities = DBFactory.getInstance().getCurrentEntityManager()
 				.createQuery(sb.toString(), Identity.class)
@@ -976,8 +978,8 @@ public class BaseSecurityManager implements BaseSecurity {
 		
 		StringBuilder sb = new StringBuilder();
 		sb.append("select identity from ").append(IdentityImpl.class.getName()).append(" identity ")
-			.append(" inner join identity.user user ")
-			.append(" where user.userProperties['").append(UserConstants.INSTITUTIONALUSERIDENTIFIER).append("'] in (:idNumbers) ");
+			.append(" inner join fetch identity.user user ")
+			.append(" where user.").append(UserConstants.INSTITUTIONALUSERIDENTIFIER).append(" in (:idNumbers) ");
 
 		return dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), Identity.class)
@@ -990,7 +992,9 @@ public class BaseSecurityManager implements BaseSecurity {
 		if (identityNames == null || identityNames.isEmpty()) return Collections.emptyList();
 
 		StringBuilder sb = new StringBuilder();
-		sb.append("select ident from ").append(IdentityImpl.class.getName()).append(" as ident where ident.name in (:username)");
+		sb.append("select ident from ").append(IdentityImpl.class.getName()).append(" as ident")
+		  .append(" inner join fetch ident.user user")
+		  .append(" where ident.name in (:username)");
 		
 		List<Identity> identities = DBFactory.getInstance().getCurrentEntityManager()
 				.createQuery(sb.toString(), Identity.class)
@@ -1004,7 +1008,9 @@ public class BaseSecurityManager implements BaseSecurity {
 		if (user == null) return null;
 		
 		StringBuilder sb = new StringBuilder();
-		sb.append("select ident from ").append(IdentityImpl.class.getName()).append(" as ident where ident.user.key=:userKey");
+		sb.append("select ident from ").append(IdentityImpl.class.getName()).append(" as ident")
+		  .append(" inner join fetch ident.user user")
+		  .append(" where user.key=:userKey");
 		
 		List<Identity> identities = DBFactory.getInstance().getCurrentEntityManager()
 				.createQuery(sb.toString(), Identity.class)
@@ -1072,9 +1078,10 @@ public class BaseSecurityManager implements BaseSecurity {
 	public List<Identity> findIdentitiesWithoutBusinessGroup(Integer status) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select ident from ").append(IdentityImpl.class.getName()).append(" as ident ")
+		  .append(" inner join fetch ident.user user ")
 		  .append(" where not exists (")
 		  .append("   select bgroup from businessgroup bgroup, bgroupmember as me")
-		  .append("   where  me.group=bgroup.baseGroup and me.identity=ident")
+		  .append("   where  me.group.key=bgroup.baseGroup.key and me.identity.key=ident.key")
 		  .append(" )");
 		if (status != null) {
 			if (status.equals(Identity.STATUS_VISIBLE_LIMIT)) {
@@ -1100,10 +1107,20 @@ public class BaseSecurityManager implements BaseSecurity {
 	 * 
 	 * @see org.olat.basesecurity.Manager#loadIdentityByKey(java.lang.Long)
 	 */
+	@Override
 	public Identity loadIdentityByKey(Long identityKey) {
-		if (identityKey == null) throw new AssertException("findIdentitybyKey: key is null");
-		if(identityKey.equals(Long.valueOf(0))) return null;
-		return DBFactory.getInstance().loadObject(IdentityImpl.class, identityKey);
+		StringBuilder sb = new StringBuilder();
+		sb.append("select ident from ").append(Identity.class.getName()).append(" as ident")
+		  .append(" inner join fetch ident.user user")
+		  .append(" where ident.key=:key");
+		
+		List<Identity> identities = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Identity.class)
+				.setParameter("key", identityKey)
+				.setFirstResult(0)
+				.setMaxResults(1)
+				.getResultList();
+		return identities != null && identities.size() == 1 ? identities.get(0) : null;
 	}
 
 	@Override
@@ -1112,7 +1129,9 @@ public class BaseSecurityManager implements BaseSecurity {
 			return Collections.emptyList();
 		}
 		StringBuilder sb = new StringBuilder();
-		sb.append("select ident from ").append(Identity.class.getName()).append(" as ident where ident.key in (:keys)");
+		sb.append("select ident from ").append(Identity.class.getName()).append(" as ident")
+		  .append(" inner join fetch ident.user user")
+		  .append(" where ident.key in (:keys)");
 		
 		return dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), Identity.class)
@@ -1128,8 +1147,10 @@ public class BaseSecurityManager implements BaseSecurity {
 		if(strict) return loadIdentityByKey(identityKey);
 
 		StringBuilder sb = new StringBuilder();
-		sb.append("select ident from ").append(Identity.class.getName()).append(" as ident where ident.key=:identityKey");
-		
+		sb.append("select ident from ").append(Identity.class.getName()).append(" as ident")
+		  .append(" inner join fetch ident.user user")
+		  .append(" where ident.key=:identityKey");
+
 		List<Identity> identities = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), Identity.class)
 				.setParameter("identityKey", identityKey)
@@ -1305,7 +1326,7 @@ public class BaseSecurityManager implements BaseSecurity {
 	 * @see org.olat.basesecurity.Manager#findAuthentication(org.olat.core.id.Identity, java.lang.String)
 	 */
 	@Override
-	public Authentication findAuthentication(Identity identity, String provider) {
+	public Authentication findAuthentication(IdentityRef identity, String provider) {
 		if (identity==null) {
 			throw new IllegalArgumentException("identity must not be null");
 		}
@@ -1320,7 +1341,31 @@ public class BaseSecurityManager implements BaseSecurity {
 				.setParameter("provider", provider)
 				.getResultList();
 		if (results == null || results.size() == 0) return null;
-		if (results.size() > 1) throw new AssertException("Found more than one Authentication for a given subject and a given provider.");
+		if (results.size() > 1) {
+			throw new AssertException("Found more than one Authentication for a given subject and a given provider.");
+		}
+		return results.get(0);
+	}
+	
+	@Override
+	public String findAuthenticationName(IdentityRef identity, String provider) {
+		if (identity==null) {
+			throw new IllegalArgumentException("identity must not be null");
+		}
+		
+		StringBuilder sb = new StringBuilder();
+		sb.append("select auth.authusername from ").append(AuthenticationImpl.class.getName())
+		  .append(" as auth where auth.identity.key=:identityKey and auth.provider=:provider");
+		
+		List<String> results = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), String.class)
+				.setParameter("identityKey", identity.getKey())
+				.setParameter("provider", provider)
+				.getResultList();
+		if (results == null || results.size() == 0) return null;
+		if (results.size() > 1) {
+			throw new AssertException("Found more than one Authentication for a given subject and a given provider.");
+		}
 		return results.get(0);
 	}
 	
@@ -1601,19 +1646,14 @@ public class BaseSecurityManager implements BaseSecurity {
 					boolean needsOr = false;
 					for (String key : emailProperties.keySet()) {
 						if (needsOr) sb.append(" or ");
-						
-						sb.append(" exists (select prop").append(key).append(".value from userproperty prop").append(key).append(" where ")
-						  .append(" prop").append(key).append(".propertyId.userId=user.key and prop").append(key).append(".propertyId.name ='").append(key).append("'")
-						  .append(" and ");
 						if(dbVendor.equals("mysql")) {
-							sb.append(" prop").append(key).append(".value like :").append(key).append("_value ");
+							sb.append(" user.").append(key).append(" like :").append(key).append("_value ");
 						} else {
-							sb.append(" lower(prop").append(key).append(".value) like :").append(key).append("_value ");
+							sb.append(" lower(user.").append(key).append(") like :").append(key).append("_value ");
 						}
 						if(dbVendor.equals("oracle")) {
 							sb.append(" escape '\\'");
 						}
-						sb.append(")");
 						needsOr = true;
 					}
 					if (moreThanOne) sb.append(")");
@@ -1624,18 +1664,15 @@ public class BaseSecurityManager implements BaseSecurity {
 				// add other fields
 				for (String key : otherProperties.keySet()) {
 					needsUserPropertiesJoin = checkIntersectionInUserProperties(sb, needsUserPropertiesJoin, params.isUserPropertiesAsIntersectionSearch());
-					sb.append(" exists (select prop").append(key).append(".value from userproperty prop").append(key).append(" where ")
-					  .append(" prop").append(key).append(".propertyId.userId=user.key and prop").append(key).append(".propertyId.name ='").append(key).append("'")
-					  .append(" and ");
+					
 					if(dbVendor.equals("mysql")) {
-						sb.append(" prop").append(key).append(".value like :").append(key).append("_value ");
+						sb.append(" user.").append(key).append(" like :").append(key).append("_value ");
 					} else {
-						sb.append(" lower(prop").append(key).append(".value) like :").append(key).append("_value ");
+						sb.append(" lower(user.").append(key).append(") like :").append(key).append("_value ");
 					}
 					if(dbVendor.equals("oracle")) {
 						sb.append(" escape '\\'");
 					}
-					sb.append(")");
 					needsAnd = true;
 				}
 				// cleanup
