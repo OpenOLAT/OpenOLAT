@@ -24,11 +24,11 @@
 	#end
 	</div>
 #else
-	<h5>$r.translate("coach.collect.confirm.title")</h5>
-	<p>$r.translate("coach.collect.confirm.desc")</p>
-	<div class="o_button_group">
 	#if($r.available("coach.collect.revisions"))
-		$r.render("coach.collect.revisions")
+		<h5>$r.translate("coach.collect.confirm.title")</h5>
+		<p>$r.translate("coach.collect.confirm.desc")</p>
+		<div class="o_button_group">
+			$r.render("coach.collect.revisions")
+		</div>
 	#end
-	</div>
 #end

@@ -60,14 +60,18 @@
 			<br />
 			$r.translate("coach.waiting.submitted.documents.description")
 		#end
-		#if(($r.available("coach.collect.task") && $r.visible("coach.collect.task")) || ($r.available("coach.back.to.submission") && $r.visible("coach.back.to.submission")))
+		#if($r.available("coach.collect.task") && $r.visible("coach.collect.task"))
+			<h5>$r.translate("coach.collect.confirm.title")</h5>
+			<p>$r.translate("coach.collect.confirm.desc")</p>
 			<div class="o_button_group">
-			#if($r.available("coach.collect.task") && $r.visible("coach.collect.task"))
 				$r.render("coach.collect.task")
-			#end
-			#if($r.available("coach.back.to.submission") && $r.visible("coach.back.to.submission"))
+			</div>
+		#end
+		#if($r.available("coach.back.to.submission") && $r.visible("coach.back.to.submission"))
+			<h5>$r.translate("coach.back.to.submission.confirm.title")</h5>
+			<p>$r.translate("coach.back.to.submission.desc")</p>
+			<div class="o_button_group">
 				$r.render("coach.back.to.submission")
-			#end
 			</div>
 		#end
 		</div>
