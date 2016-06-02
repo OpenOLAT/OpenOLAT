@@ -183,6 +183,18 @@
 		float: right;
 	}
 	
+	.o_portrait {
+		width: 100px;
+		height:100px;
+		position:relative;
+		
+		img {
+			border-radius: 0px;
+			margin: auto;
+			display:block;
+		}
+	}
+	
 	.o_cmember {
 		padding-left: 0px;
 		padding-right: 15px;
