@@ -3,16 +3,9 @@
 </div>
 <h1>$r.translate("print.title")</h1>
 <h3>$courseTitle</h3>
-#if($r.available("owners"))
-	$r.render("owners")
+#if($r.available("members"))
+	$r.render("members")
 #end
-#if($r.available("coaches"))
-	$r.render("coaches")
-#end
-#if($r.available("participants"))
-	$r.render("participants")
-#end
-<div class="clearfix"> </div>
 <script type='text/javascript'>
 /* <![CDATA[ */
 	jQuery(function() {
@@ -28,6 +21,22 @@
 		} else {
 			jQuery("#o_print_brand").empty();
 		}
+		
+		jQuery(".o_cmembers_print .o_portrait img").each(function(index, el) {
+			//workaround caching of images
+			var imgEl = jQuery(el).get(0);
+			if(imgEl.height > 2) {
+				var margin = 100 - imgEl.height;
+				jQuery(el).css("margin-top", (margin / 2) + "px");
+			}
+			jQuery(el).load(function() {
+				var imgEl = jQuery(el).get(0);
+				var margin = 100 - imgEl.height;
+				if(margin > 2) {
+					jQuery(el).css("margin-top", (margin / 2) + "px");
+				}
+			});
+		});
 	})
 	window.print();
 /* ]]> */

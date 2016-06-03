@@ -19,6 +19,7 @@
  */
 package org.olat.course.nodes.members;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.olat.core.gui.UserRequest;
@@ -55,15 +56,18 @@ public class MembersPrintController extends BasicController {
 		mainVC.contextPut("courseTitle", courseEnv.getCourseTitle());
 		mainVC.contextPut("avatarBaseURL", avatarBaseURL);
 		mainVC.contextPut("userPropertyHandlers", userPropertyHandlers);
+		
+		List<Member> members = new ArrayList<>();
 		if(owners != null && owners.size() > 0) {
-			initFormMemberList("owners", owners);
+			members.addAll(owners);
 		}
 		if(coaches != null && coaches.size() > 0) {
-			initFormMemberList("coaches", coaches);
+			members.addAll(coaches);
 		}
 		if(participants != null && participants.size() > 0) {
-			initFormMemberList("participants", participants);
+			members.addAll(participants);
 		}
+		initFormMemberList("members", members);
 
 		MainPanel mainPanel = new MainPanel("membersPrintPanel");
 		mainPanel.setContent(mainVC);

@@ -38,6 +38,7 @@ import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.id.Identity;
 import org.olat.core.util.coordinate.CoordinatorManager;
+import org.olat.core.util.io.SystemFilenameFilter;
 import org.olat.core.util.mail.ContactList;
 import org.olat.core.util.mail.ContactMessage;
 import org.olat.core.util.vfs.VFSContainer;
@@ -45,6 +46,7 @@ import org.olat.course.nodes.GTACourseNode;
 import org.olat.course.nodes.gta.GTAType;
 import org.olat.course.nodes.gta.Task;
 import org.olat.course.nodes.gta.TaskHelper;
+import org.olat.course.nodes.gta.TaskHelper.FilesLocked;
 import org.olat.course.nodes.gta.TaskProcess;
 import org.olat.course.nodes.gta.model.TaskDefinition;
 import org.olat.course.nodes.gta.ui.events.SubmitEvent;
@@ -357,10 +359,10 @@ public class GTACoachController extends GTAAbstractController {
 			if(GTAType.individual.name().equals(config.getStringValue(GTACourseNode.GTASK_TYPE))) {
 				UserCourseEnvironment assessedUserCourseEnv = getAssessedUserCourseEnvironment();
 				revisionDocumentsCtrl = new GTACoachRevisionAndCorrectionsController(ureq, getWindowControl(),
-					courseEnv, assignedTask, gtaNode, assessedGroup, assessedIdentity, assessedUserCourseEnv);
+					courseEnv, assignedTask, gtaNode, assessedGroup, assessedIdentity, assessedUserCourseEnv, taskListEventResource);
 			} else {
 				revisionDocumentsCtrl = new GTACoachRevisionAndCorrectionsController(ureq, getWindowControl(),
-					courseEnv, assignedTask, gtaNode, assessedGroup, null, null);
+					courseEnv, assignedTask, gtaNode, assessedGroup, null, null, taskListEventResource);
 			}
 			listenTo(revisionDocumentsCtrl);
 			mainVC.put("revisionDocs", revisionDocumentsCtrl.getInitialComponent());
@@ -594,13 +596,30 @@ public class GTACoachController extends GTAAbstractController {
 		} else if (assessedIdentity != null) {
 			toName = userManager.getUserDisplayName(assessedIdentity);			
 		}
-		
-		String title = translate("coach.collect.confirm.title");
-		String text = translate("coach.collect.confirm.text", new String[]{ toName });
-		text = "<div class='o_warning'>" + text + "</div>";
-		confirmCollectCtrl = activateOkCancelDialog(ureq, title, text, confirmCollectCtrl);
-		confirmCollectCtrl.setUserObject(assignedTask);
-		listenTo(confirmCollectCtrl);
+
+		File[] submittedDocuments;
+		VFSContainer documentsContainer;
+		if(GTAType.group.name().equals(config.getStringValue(GTACourseNode.GTASK_TYPE))) {
+			documentsContainer = gtaManager.getSubmitContainer(courseEnv, gtaNode, assessedGroup);
+			File documentsDir = gtaManager.getSubmitDirectory(courseEnv, gtaNode, assessedGroup);
+			submittedDocuments = documentsDir.listFiles(new SystemFilenameFilter(true, false));
+		} else {
+			documentsContainer = gtaManager.getSubmitContainer(courseEnv, gtaNode, getIdentity());
+			File documentsDir = gtaManager.getSubmitDirectory(courseEnv, gtaNode, getIdentity());
+			submittedDocuments = documentsDir.listFiles(new SystemFilenameFilter(true, false));
+		}
+
+		FilesLocked lockedBy = TaskHelper.getDocumentsLocked(documentsContainer, submittedDocuments);
+		if(lockedBy != null) {
+			showWarning("warning.submit.documents.edited", new String[]{ lockedBy.getLockedBy(), lockedBy.getLockedFiles() });
+		} else {
+			String title = translate("coach.collect.confirm.title");
+			String text = translate("coach.collect.confirm.text", new String[]{ toName });
+			text = "<div class='o_warning'>" + text + "</div>";
+			confirmCollectCtrl = activateOkCancelDialog(ureq, title, text, confirmCollectCtrl);
+			confirmCollectCtrl.setUserObject(assignedTask);
+			listenTo(confirmCollectCtrl);
+		}
 	}
 	
 	private void doCollectTask(UserRequest ureq, Task task) {

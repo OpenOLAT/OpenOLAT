@@ -127,7 +127,7 @@ public class OpenBusinessGroupSearchController extends FormBasicController imple
 	protected boolean validateFormLogic(UserRequest ureq) {
 		boolean allOk = true;
 		if (isEmpty())	{
-			showWarning("cif.error.allempty", null);
+			showWarning("cif.error.allempty");
 			allOk &= false;
 		}
 		return allOk && super.validateFormLogic(ureq);

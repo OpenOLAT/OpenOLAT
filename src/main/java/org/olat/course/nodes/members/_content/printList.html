@@ -2,7 +2,15 @@
 	<div class="o_cmember col-xs-3 col-sm-3 col-md-3">
 		<div class="clearfix">
 			<div class="o_portrait">
-				<img src="$avatarBaseURL/$member.getKey()/portrait.jpg">
+				#if(${member.isPortraitAvailable()})
+					<img src="$avatarBaseURL/$member.getKey()/portrait.jpg">
+				#elseif(${member.getGender().equals("female")})
+					<img src='$r.staticLink("themes/light/images/portrait/dummy_female_big.png")'>
+				#elseif(${member.getGender().equals("male")})
+					<img src='$r.staticLink("themes/light/images/portrait/dummy_male_big.png")'>
+				#else
+					<img src='$r.staticLink("themes/light/images/portrait/anonymous.png")'>
+				#end
 			</div>
 			<div class="o_cmember_info_wrapper">
 				<strong>$member.fullName</strong>
@@ -14,4 +22,7 @@
 			</div>
 		</div>
 	</div>
+	#if($foreach.count % 4 == 0)
+		<div class="clearfix"> </div>
+	#end
 #end

@@ -207,7 +207,7 @@ public class AuthorSearchController extends FormBasicController implements Exten
 		if(!enabled) return true;
 		
 		if (displayName.isEmpty() && author.isEmpty() && description.isEmpty() && (id != null && id.isEmpty()))	{
-			showWarning("cif.error.allempty", null);
+			showWarning("cif.error.allempty");
 			return false;
 		}
 		return true;

@@ -37,6 +37,9 @@ import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.id.Identity;
+import org.olat.core.id.OLATResourceable;
+import org.olat.core.util.coordinate.CoordinatorManager;
+import org.olat.core.util.io.SystemFilenameFilter;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
@@ -46,8 +49,10 @@ import org.olat.course.nodes.gta.GTAManager;
 import org.olat.course.nodes.gta.GTAType;
 import org.olat.course.nodes.gta.Task;
 import org.olat.course.nodes.gta.TaskHelper;
+import org.olat.course.nodes.gta.TaskHelper.FilesLocked;
 import org.olat.course.nodes.gta.TaskProcess;
 import org.olat.course.nodes.gta.ui.events.SubmitEvent;
+import org.olat.course.nodes.gta.ui.events.TaskMultiUserEvent;
 import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.group.BusinessGroup;
@@ -76,6 +81,7 @@ public class GTACoachRevisionAndCorrectionsController extends BasicController {
 	private final Identity assessedIdentity;
 	private final BusinessGroup assessedGroup;
 	private final CourseEnvironment courseEnv;
+	private final OLATResourceable taskListEventResource;
 	private final UserCourseEnvironment assessedUserCourseEnv;
 	
 	@Autowired
@@ -87,7 +93,7 @@ public class GTACoachRevisionAndCorrectionsController extends BasicController {
 	
 	public GTACoachRevisionAndCorrectionsController(UserRequest ureq, WindowControl wControl, CourseEnvironment courseEnv,
 			Task assignedTask, GTACourseNode gtaNode, BusinessGroup assessedGroup,
-			Identity assessedIdentity, UserCourseEnvironment assessedUserCourseEnv) {
+			Identity assessedIdentity, UserCourseEnvironment assessedUserCourseEnv, OLATResourceable taskListEventResource) {
 		super(ureq, wControl);
 		this.gtaNode = gtaNode;
 		this.courseEnv = courseEnv;
@@ -95,6 +101,7 @@ public class GTACoachRevisionAndCorrectionsController extends BasicController {
 		this.assessedGroup = assessedGroup;
 		this.assessedIdentity = assessedIdentity;
 		this.assessedUserCourseEnv = assessedUserCourseEnv;
+		this.taskListEventResource = taskListEventResource;
 		this.businessGroupTask = GTAType.group.name().equals(gtaNode.getModuleConfiguration().getStringValue(GTACourseNode.GTASK_TYPE));
 		currentIteration = assignedTask.getRevisionLoop();
 		
@@ -311,11 +318,29 @@ public class GTACoachRevisionAndCorrectionsController extends BasicController {
 			toName = userManager.getUserDisplayName(assessedIdentity);			
 		}
 		
-		String title = translate("coach.collect.revisions.confirm.title");
-		String text = translate("coach.collect.revisions.confirm.text", new String[]{ toName });
-		text = "<div class='o_warning'>" + text + "</div>";
-		confirmCollectCtrl = activateOkCancelDialog(ureq, title, text, confirmCollectCtrl);
-		listenTo(confirmCollectCtrl);
+		File[] submittedDocuments;
+		VFSContainer documentsContainer;
+		int iteration = assignedTask.getRevisionLoop();
+		if(GTAType.group.name().equals(gtaNode.getModuleConfiguration().getStringValue(GTACourseNode.GTASK_TYPE))) {
+			documentsContainer = gtaManager.getRevisedDocumentsContainer(courseEnv, gtaNode, iteration, assessedGroup);
+			File documentsDir = gtaManager.getRevisedDocumentsDirectory(courseEnv, gtaNode, iteration, assessedGroup);
+			submittedDocuments = documentsDir.listFiles(new SystemFilenameFilter(true, false));
+		} else {
+			documentsContainer = gtaManager.getRevisedDocumentsContainer(courseEnv, gtaNode, iteration, getIdentity());
+			File documentsDir = gtaManager.getRevisedDocumentsDirectory(courseEnv, gtaNode, iteration, getIdentity());
+			submittedDocuments = documentsDir.listFiles(new SystemFilenameFilter(true, false));
+		}
+		
+		FilesLocked lockedBy = TaskHelper.getDocumentsLocked(documentsContainer, submittedDocuments);
+		if(lockedBy != null) {
+			showWarning("warning.submit.documents.edited", new String[]{ lockedBy.getLockedBy(), lockedBy.getLockedFiles() });
+		} else {
+			String title = translate("coach.collect.revisions.confirm.title");
+			String text = translate("coach.collect.revisions.confirm.text", new String[]{ toName });
+			text = "<div class='o_warning'>" + text + "</div>";
+			confirmCollectCtrl = activateOkCancelDialog(ureq, title, text, confirmCollectCtrl);
+			listenTo(confirmCollectCtrl);
+		}
 	}
 	
 	private void doCollect() {
@@ -332,6 +357,11 @@ public class GTACoachRevisionAndCorrectionsController extends BasicController {
 		} else {
 			gtaNode.incrementUserAttempts(assessedUserCourseEnv);
 		}
+		
+		TaskMultiUserEvent event = new TaskMultiUserEvent(TaskMultiUserEvent.SUBMIT_REVISION,
+				assessedGroup == null ? getIdentity() : null, assessedGroup, getIdentity());
+		CoordinatorManager.getInstance().getCoordinator().getEventBus()
+			.fireEventToListenersOf(event, taskListEventResource);
 	}
 	
 	private void doReturnToRevisions() {

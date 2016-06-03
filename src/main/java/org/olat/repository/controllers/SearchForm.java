@@ -113,7 +113,7 @@ public class SearchForm extends FormBasicController {
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
 		if (displayName.isEmpty() && author.isEmpty() && description.isEmpty() && (id != null && id.isEmpty())) {
-			showWarning("cif.error.allempty", null);
+			showWarning("cif.error.allempty");
 			return false;
 		}
 		return true;

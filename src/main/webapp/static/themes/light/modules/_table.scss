@@ -10,7 +10,11 @@
 				margin: 0;
 			}
 		}
+		&.o_table_no_margin .table {
+			margin: 0;
+		}
 	}
+	
 	&.o_table_edit table tbody {
 		border-top:solid $o-table-edit-border 4px;
 		background-color: $o-table-edit-bg;

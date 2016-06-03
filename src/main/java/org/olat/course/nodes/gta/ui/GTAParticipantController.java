@@ -56,6 +56,7 @@ import org.olat.course.nodes.gta.AssignmentResponse;
 import org.olat.course.nodes.gta.GTAType;
 import org.olat.course.nodes.gta.Task;
 import org.olat.course.nodes.gta.TaskHelper;
+import org.olat.course.nodes.gta.TaskHelper.FilesLocked;
 import org.olat.course.nodes.gta.TaskProcess;
 import org.olat.course.nodes.gta.model.TaskDefinition;
 import org.olat.course.nodes.gta.ui.events.SubmitEvent;
@@ -250,7 +251,7 @@ public class GTAParticipantController extends GTAAbstractController {
 		
 		submitButton = LinkFactory.createCustomLink("run.submit.button", "submit", "run.submit.button", Link.BUTTON, mainVC, this);
 		submitButton.setElementCssClass("o_sel_course_gta_submit_docs");
-		submitButton.setCustomEnabledLinkCSS("btn btn-primary");
+		submitButton.setCustomEnabledLinkCSS(submitDocCtrl.hasUploadDocuments() ? "btn btn-primary" : "btn btn-default");
 		submitButton.setIconLeftCSS("o_icon o_icon_submit");
 
 	}
@@ -301,9 +302,9 @@ public class GTAParticipantController extends GTAAbstractController {
 			}
 		}
 		
-		String lockedBy = TaskHelper.getDocumentsLocked(documentsContainer, submittedDocuments);
+		FilesLocked lockedBy = TaskHelper.getDocumentsLocked(documentsContainer, submittedDocuments);
 		if(lockedBy != null) {
-			showWarning("warning.submit.documents.edited", lockedBy);
+			showWarning("warning.submit.documents.edited", new String[]{ lockedBy.getLockedBy(), lockedBy.getLockedFiles() });
 		} else {
 			confirmSubmitDialog = activateOkCancelDialog(ureq, title, text, confirmSubmitDialog);
 			confirmSubmitDialog.setUserObject(task);
@@ -667,6 +668,8 @@ public class GTAParticipantController extends GTAAbstractController {
 				cleanUpProcess();
 				process(ureq);
 			}
+			submitButton.setCustomEnabledLinkCSS(submitDocCtrl.hasUploadDocuments() ? "btn btn-primary" : "btn btn-default");
+
 		}
 		super.event(ureq, source, event);
 	}

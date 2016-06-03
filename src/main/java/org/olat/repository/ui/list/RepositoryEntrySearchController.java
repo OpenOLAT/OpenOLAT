@@ -157,7 +157,7 @@ public class RepositoryEntrySearchController extends FormBasicController impleme
 		if(!enabled) return true;
 		
 		if (text.isEmpty() && author.isEmpty() && (id != null && id.isEmpty()))	{
-			showWarning("cif.error.allempty", null);
+			showWarning("cif.error.allempty");
 			return false;
 		}
 		return true;

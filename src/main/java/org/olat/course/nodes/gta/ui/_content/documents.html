@@ -1,18 +1,26 @@
-<div class="o_button_group o_button_group_right">
-#if($r.available("upload.document") && $r.available("open.editor"))
-	<div class="btn-group">
-		$r.render("upload.document")
-		$r.render("open.editor")
-	</div>
-#elseif($r.available("upload.document"))
-	$r.render("upload.document")
-#elseif($r.available("open.editor"))
-	$r.render("open.editor")
-#end
-</div>
 #if($maxDocsWarning && !$maxDocsWarning.isEmpty())
 	<div class="o_warning">$maxDocsWarning</div>
 #end
 #if($hasDocuments)
 	$r.render("table")
+#end
+
+#if($r.available("upload.document") || $r.available("open.editor"))
+<div class="panel panel-placeholder">
+	<div class="panel-body">
+		<h5>$r.translate("submission.add.title")</h5>
+		<div class="o_button_group">	
+		#if($r.available("upload.document") && $r.available("open.editor"))
+			<div class="btn-group">
+				$r.render("upload.document")
+				$r.render("open.editor")
+			</div>
+		#elseif($r.available("upload.document"))
+			$r.render("upload.document")
+		#elseif($r.available("open.editor"))
+			$r.render("open.editor")
+		#end
+		</div>
+	</div>
+</div>
 #end

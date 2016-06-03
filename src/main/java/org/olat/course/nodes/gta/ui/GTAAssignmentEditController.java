@@ -71,7 +71,7 @@ public class GTAAssignmentEditController extends AbstractAssignmentEditControlle
 		
 		//coach allowed to upload tasks
 		String[] onValues = new String[]{ "" };
-		coachAllowedTasksEl = uifactory.addCheckboxesVertical("coachTasks", "task.coack.allowed.uplaod", configCont, onKeys, onValues, 1);
+		coachAllowedTasksEl = uifactory.addCheckboxesVertical("coachTasks", "task.coach.allowed.upload", configCont, onKeys, onValues, 1);
 		coachAllowedTasksEl.addActionListener(FormEvent.ONCHANGE);
 		boolean coachUpload = config.getBooleanSafe(GTACourseNode.GTASK_COACH_ALLOWED_UPLOAD_TASKS, false);
 		if(coachUpload) {

@@ -812,10 +812,10 @@ public class RepositoryEntriesTest extends OlatJerseyTestCase {
 		conn.shutdown();
 		
 		//check
-		List<Identity> participatns = repositoryService.getMembers(re, GroupRoles.participant.name());
-		Assert.assertNotNull(participatns);
-		Assert.assertTrue(participatns.isEmpty());
-		Assert.assertFalse(participatns.contains(participant));
+		List<Identity> participants = repositoryService.getMembers(re, GroupRoles.participant.name());
+		Assert.assertNotNull(participants);
+		Assert.assertTrue(participants.isEmpty());
+		Assert.assertFalse(participants.contains(participant));
 	}
 
 	private List<RepositoryEntryVO> parseRepoArray(InputStream body) {

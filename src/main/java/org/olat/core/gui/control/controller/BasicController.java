@@ -502,6 +502,11 @@ public abstract class BasicController extends DefaultController {
 		getWindowControl().setWarning(
 				getTranslator().translate(key, new String[] { arg }));
 	}
+	
+	protected void showWarning(String key, String[] args) {
+		getWindowControl().setWarning(
+				getTranslator().translate(key, args));
+	}
 
 	/**
 	 * convenience method to send an error msg to the user. this will call

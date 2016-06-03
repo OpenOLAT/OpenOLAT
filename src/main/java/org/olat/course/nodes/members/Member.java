@@ -39,6 +39,7 @@ public class Member extends UserPropertiesRow {
 	private final String firstName;
 	private final String lastName;
 	private final String fullName;
+	private final String gender;
 	private final Long key;
 	private boolean portrait;
 	private String portraitCssClass;
@@ -50,8 +51,14 @@ public class Member extends UserPropertiesRow {
 	
 	public Member(Identity identity, String fullName,  List<UserPropertyHandler> userPropertyHandlers, Locale locale, boolean portrait, String portraitCssClass) {
 		super(identity, userPropertyHandlers, locale);
-		this.firstName = identity.getUser().getProperty(UserConstants.FIRSTNAME, locale);;
+		this.firstName = identity.getUser().getProperty(UserConstants.FIRSTNAME, locale);
 		this.lastName = identity.getUser().getProperty(UserConstants.LASTNAME, locale);
+		String genderEn = identity.getUser().getProperty(UserConstants.GENDER, Locale.ENGLISH);
+		if(genderEn != null) {
+			gender = genderEn.toLowerCase();
+		} else {
+			gender = "-";
+		}
 		this.fullName = fullName;
 		this.key = identity.getKey();
 		this.portrait = portrait;
@@ -64,6 +71,10 @@ public class Member extends UserPropertiesRow {
 
 	public String getLastName() {
 		return lastName;
+	}
+	
+	public String getGender() {
+		return gender;
 	}
 	
 	public String getPortraitCssClass() {
