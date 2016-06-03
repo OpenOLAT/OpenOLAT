@@ -125,13 +125,13 @@ public class IQRunController extends BasicController implements GenericEventList
 	private StackedPanel mainPanel;
 	
 	private boolean assessmentStopped = true; //default: true
-	private EventBus singleUserEventCenter;
-	private OLATResourceable assessmentEventOres;	
+		
 	private UserSession userSession;
+	private final EventBus singleUserEventCenter;
+	private final OLATResourceable assessmentEventOres = OresHelper.createOLATResourceableType(AssessmentEvent.class);
+	private final OLATResourceable assessmentInstanceOres = OresHelper.createOLATResourceableType(AssessmentInstance.class);
 	
-	private OLATResourceable assessmentInstanceOres;
-	
-	private RepositoryEntry referenceTestEntry; 
+	private final RepositoryEntry referenceTestEntry; 
 	
 	@Autowired
 	private IQManager iqManager;
@@ -159,8 +159,6 @@ public class IQRunController extends BasicController implements GenericEventList
 		this.courseNode = testCourseNode;
 		this.type = AssessmentInstance.QMD_ENTRY_TYPE_ASSESS;
 		this.singleUserEventCenter = ureq.getUserSession().getSingleUserEventCenter();
-		this.assessmentEventOres = OresHelper.createOLATResourceableType(AssessmentEvent.class);
-		this.assessmentInstanceOres = OresHelper.createOLATResourceableType(AssessmentInstance.class);
 		this.referenceTestEntry = testEntry;
 		
 		this.userSession = ureq.getUserSession();
@@ -249,6 +247,8 @@ public class IQRunController extends BasicController implements GenericEventList
 		this.userCourseEnv = userCourseEnv;
 		this.courseNode = selftestCourseNode;
 		this.type = AssessmentInstance.QMD_ENTRY_TYPE_SELF;
+		this.referenceTestEntry = selftestCourseNode.getReferencedRepositoryEntry();
+		this.singleUserEventCenter = ureq.getUserSession().getSingleUserEventCenter();
 		iqManager = CoreSpringFactory.getImpl(IQManager.class);
 
 		addLoggingResourceable(LoggingResourceable.wrap(courseNode));
@@ -289,7 +289,9 @@ public class IQRunController extends BasicController implements GenericEventList
 		this.secCallback = secCallback;
 		this.userCourseEnv = userCourseEnv;
 		this.courseNode = surveyCourseNode;
+		this.referenceTestEntry = surveyCourseNode.getReferencedRepositoryEntry();
 		this.type = AssessmentInstance.QMD_ENTRY_TYPE_SURVEY;
+		this.singleUserEventCenter = ureq.getUserSession().getSingleUserEventCenter();
 		iqManager = CoreSpringFactory.getImpl(IQManager.class);
 		
 		addLoggingResourceable(LoggingResourceable.wrap(courseNode));

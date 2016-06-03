@@ -62,6 +62,7 @@ import org.olat.core.util.nodes.INode;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.tree.TreeVisitor;
 import org.olat.core.util.tree.Visitor;
+import org.olat.course.CorruptedCourseException;
 import org.olat.course.CourseFactory;
 import org.olat.course.CourseModule;
 import org.olat.course.ICourse;
@@ -198,10 +199,14 @@ public class OLATUpgrade_11_0_0 extends OLATUpgrade {
 			do {
 				courses = repositoryManager.genericANDQueryWithRolesRestriction(params, counter, 50, true);
 				for(RepositoryEntry course:courses) {
-					convertUserEfficiencyStatemen(course);
+					try {
+						convertUserEfficiencyStatemen(course);
+					} catch (CorruptedCourseException e) {
+						log.error("Corrupted course: " + course.getKey(), e);
+					}
 				}
 				counter += courses.size();
-				log.audit("Efficiency statement data migration processed: " + courses.size() + ", total processed (" + counter + ")");
+				log.audit("Efficiency statement data migration processed: " + courses.size() + ", total courses processed (" + counter + ")");
 				dbInstance.commitAndCloseSession();
 			} while(courses.size() == BATCH_SIZE);
 			uhd.setBooleanDataValue(EFFICIENCY_STATEMENT_DATAS, allOk);
@@ -223,10 +228,14 @@ public class OLATUpgrade_11_0_0 extends OLATUpgrade {
 			do {
 				courses = repositoryManager.genericANDQueryWithRolesRestriction(params, counter, 50, true);
 				for(RepositoryEntry course:courses) {
-					allOk &= processCourseAssessmentData(course); 
+					try {
+						allOk &= processCourseAssessmentData(course);
+					} catch (CorruptedCourseException e) {
+						log.error("Corrupted course: " + course.getKey(), e);
+					}
 				}
 				counter += courses.size();
-				log.audit("Assessment data migration processed: " + courses.size() + ", total processed (" + counter + ")");
+				log.audit("Assessment data migration processed: " + courses.size() + ", total courses processed (" + counter + ")");
 				dbInstance.commitAndCloseSession();
 			} while(courses.size() == BATCH_SIZE);
 			uhd.setBooleanDataValue(ASSESSMENT_DATAS, allOk);
@@ -330,7 +339,8 @@ public class OLATUpgrade_11_0_0 extends OLATUpgrade {
 			@Override
 			public void visit(INode node) {
 				if(node instanceof AssessableCourseNode) {
-					processNonPropertiesStates(assessableIdentities, (AssessableCourseNode)node, course, courseEntry, nodeAssessmentMap);
+					processNonPropertiesStates(assessableIdentities, (AssessableCourseNode)node, course, courseEntry,
+							nodeAssessmentMap, curentNodeAssessmentMap);
 				}
 			}
 		}, rootNode, true).visitAll();
@@ -367,12 +377,13 @@ public class OLATUpgrade_11_0_0 extends OLATUpgrade {
 	}
 	
 	private void processNonPropertiesStates(List<Identity> assessableIdentities, AssessableCourseNode cNode,
-			ICourse course, RepositoryEntry courseEntry, Map<AssessmentDataKey,AssessmentEntryImpl> nodeAssessmentMap) {
+			ICourse course, RepositoryEntry courseEntry, Map<AssessmentDataKey,AssessmentEntryImpl> nodeAssessmentMap,
+			Map<AssessmentDataKey,AssessmentEntryImpl> curentNodeAssessmentMap) {
 		
 		if(cNode instanceof IQTESTCourseNode) {
-			processNonPropertiesIQTESTStates(assessableIdentities, (IQTESTCourseNode)cNode, course, courseEntry, nodeAssessmentMap);
+			processNonPropertiesIQTESTStates(assessableIdentities, (IQTESTCourseNode)cNode, course, courseEntry, nodeAssessmentMap, curentNodeAssessmentMap);
 		} else if(cNode instanceof TACourseNode) {
-			processNonPropertiesTAStates(assessableIdentities, (TACourseNode)cNode, course, courseEntry, nodeAssessmentMap);
+			processNonPropertiesTAStates(assessableIdentities, (TACourseNode)cNode, course, courseEntry, nodeAssessmentMap, curentNodeAssessmentMap);
 		}
 	}
 	
@@ -387,10 +398,14 @@ public class OLATUpgrade_11_0_0 extends OLATUpgrade {
 	 * @param nodeAssessmentMap
 	 */
 	private void processNonPropertiesTAStates(List<Identity> assessableIdentities, TACourseNode tNode,
-			ICourse course, RepositoryEntry courseEntry, Map<AssessmentDataKey,AssessmentEntryImpl> nodeAssessmentMap) {
+			ICourse course, RepositoryEntry courseEntry, Map<AssessmentDataKey,AssessmentEntryImpl> nodeAssessmentMap,
+			Map<AssessmentDataKey,AssessmentEntryImpl> curentNodeAssessmentMap) {
 		
 		for(Identity assessedIdentity:assessableIdentities) {	
 			AssessmentDataKey key = new AssessmentDataKey(assessedIdentity, course.getResourceableId(), tNode.getIdent());
+			if(curentNodeAssessmentMap.containsKey(key)) {
+				continue;
+			}
 			
 			AssessmentEntryImpl nodeAssessment;
 			if(!nodeAssessmentMap.containsKey(key)) {
@@ -422,12 +437,15 @@ public class OLATUpgrade_11_0_0 extends OLATUpgrade {
 	 * @param nodeAssessmentMap
 	 */
 	private void processNonPropertiesIQTESTStates(List<Identity> assessableIdentities, IQTESTCourseNode iqNode,
-			ICourse course, RepositoryEntry courseEntry, Map<AssessmentDataKey,AssessmentEntryImpl> nodeAssessmentMap) {
+			ICourse course, RepositoryEntry courseEntry, Map<AssessmentDataKey,AssessmentEntryImpl> nodeAssessmentMap,
+			Map<AssessmentDataKey,AssessmentEntryImpl> curentNodeAssessmentMap) {
 		
 		for(Identity assessedIdentity:assessableIdentities) {
 			if(iqTestPersisterExists(assessedIdentity, iqNode, course)) {
-				
 				AssessmentDataKey key = new AssessmentDataKey(assessedIdentity, course.getResourceableId(), iqNode.getIdent());
+				if(curentNodeAssessmentMap.containsKey(key)) {
+					continue;
+				}
 				
 				AssessmentEntryImpl nodeAssessment;
 				if(nodeAssessmentMap.containsKey(key)) {
@@ -707,31 +725,33 @@ public class OLATUpgrade_11_0_0 extends OLATUpgrade {
 		
 
 		CourseNode courseNode = course.getRunStructure().getNode(nodeIdent);
-		if(courseNode.needsReferenceToARepositoryEntry()) {
-			RepositoryEntry referenceEntry = courseNode.getReferencedRepositoryEntry();
-			entry.setReferenceEntry(referenceEntry);
-		}
-
-		if(courseNode instanceof GTACourseNode) {
-			processAssessmentPropertyForGTA(assessedIdentity, entry, (GTACourseNode)courseNode, courseEntry);
-		} else if(courseNode instanceof TACourseNode) {
-			processAssessmentPropertyForTA(assessedIdentity, entry, (TACourseNode)courseNode, course);
-		} else if(courseNode instanceof IQTESTCourseNode) {
-			processAssessmentPropertyForIQTEST(assessedIdentity, entry, (IQTESTCourseNode)courseNode, course);
-		} else if(courseNode instanceof PortfolioCourseNode) {
-			processAssessmentPropertyForPortfolio(assessedIdentity, entry, (PortfolioCourseNode)courseNode, course);
-		} else if(courseNode instanceof MSCourseNode) {
-			entry.setAssessmentStatus(AssessmentEntryStatus.inReview);
-		} else if(courseNode instanceof BasicLTICourseNode) {
-			processAssessmentPropertyForBasicLTI(assessedIdentity, entry, (BasicLTICourseNode)courseNode, course);
-		} else if(courseNode instanceof ScormCourseNode) {
-			String username = assessedIdentity.getName();
-			Map<Date, List<CmiData>> rawDatas = ScormAssessmentManager.getInstance()
-					.visitScoDatasMultiResults(username, course.getCourseEnvironment(), (ScormCourseNode)courseNode);
-			if(rawDatas.size() > 0) {
-				entry.setAssessmentStatus(AssessmentEntryStatus.inProgress);
-			} else {
-				entry.setAssessmentStatus(AssessmentEntryStatus.notStarted);
+		if(courseNode != null) {
+			if(courseNode.needsReferenceToARepositoryEntry()) {
+				RepositoryEntry referenceEntry = courseNode.getReferencedRepositoryEntry();
+				entry.setReferenceEntry(referenceEntry);
+			}
+	
+			if(courseNode instanceof GTACourseNode) {
+				processAssessmentPropertyForGTA(assessedIdentity, entry, (GTACourseNode)courseNode, courseEntry);
+			} else if(courseNode instanceof TACourseNode) {
+				processAssessmentPropertyForTA(assessedIdentity, entry, (TACourseNode)courseNode, course);
+			} else if(courseNode instanceof IQTESTCourseNode) {
+				processAssessmentPropertyForIQTEST(assessedIdentity, entry, (IQTESTCourseNode)courseNode, course);
+			} else if(courseNode instanceof PortfolioCourseNode) {
+				processAssessmentPropertyForPortfolio(assessedIdentity, entry, (PortfolioCourseNode)courseNode, course);
+			} else if(courseNode instanceof MSCourseNode) {
+				entry.setAssessmentStatus(AssessmentEntryStatus.inReview);
+			} else if(courseNode instanceof BasicLTICourseNode) {
+				processAssessmentPropertyForBasicLTI(assessedIdentity, entry, (BasicLTICourseNode)courseNode, course);
+			} else if(courseNode instanceof ScormCourseNode) {
+				String username = assessedIdentity.getName();
+				Map<Date, List<CmiData>> rawDatas = ScormAssessmentManager.getInstance()
+						.visitScoDatasMultiResults(username, course.getCourseEnvironment(), (ScormCourseNode)courseNode);
+				if(rawDatas.size() > 0) {
+					entry.setAssessmentStatus(AssessmentEntryStatus.inProgress);
+				} else {
+					entry.setAssessmentStatus(AssessmentEntryStatus.notStarted);
+				}
 			}
 		}
 		return entry;
@@ -759,14 +779,14 @@ public class OLATUpgrade_11_0_0 extends OLATUpgrade {
 		StringBuilder query = new StringBuilder();
 		query.append("select log from ").append(LoggingObject.class.getName()).append(" log")
 		     .append(" where log.userId=:userId and sourceclass='org.olat.course.run.navigation.NavigationHandler'")
-		     .append(" and parentResType='CourseModule' and parentResIs=:courseId")
+		     .append(" and parentResType='CourseModule' and parentResId=:courseId")
 		     .append(" and targetResId=:targetResId")
 		     .append(" and actionVerb='launch' and actionObject='node'");
 		
 		return dbInstance.getCurrentEntityManager()
-				.createQuery("", LoggingObject.class)
+				.createQuery(query.toString(), LoggingObject.class)
 				.setParameter("userId", user.getKey())
-				.setParameter("courseId", course.getResourceableId())
+				.setParameter("courseId", course.getResourceableId().toString())
 				.setParameter("targetResId", courseNode.getIdent())
 				.getResultList();
 	}
