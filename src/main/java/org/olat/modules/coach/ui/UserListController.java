@@ -44,7 +44,6 @@ import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.resource.OresHelper;
-import org.olat.course.assessment.ui.tool.AssessmentToolConstants;
 import org.olat.modules.coach.CoachingService;
 import org.olat.modules.coach.model.SearchCoachedIdentityParams;
 import org.olat.modules.coach.model.StudentStatEntry;
@@ -100,11 +99,11 @@ public class UserListController extends FormBasicController implements Activatea
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Columns.name, "select"));
 		}
 		
-		int colIndex = AssessmentToolConstants.USER_PROPS_OFFSET;
+		int colIndex = UserListController.USER_PROPS_OFFSET;
 		for (int i = 0; i < userPropertyHandlers.size(); i++) {
 			UserPropertyHandler userPropertyHandler	= userPropertyHandlers.get(i);
 			boolean visible = userManager.isMandatoryUserProperty(UserListController.usageIdentifyer , userPropertyHandler);
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(visible, userPropertyHandler.i18nColumnDescriptorLabelKey(), colIndex++, "select", false, null));
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(visible, userPropertyHandler.i18nColumnDescriptorLabelKey(), colIndex++, "select", true, null));
 		}
 		
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Columns.countCourse));

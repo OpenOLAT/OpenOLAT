@@ -19,11 +19,18 @@
  */
 package org.olat.modules.coach.ui;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiColumnDef;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableModelDelegate;
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
+import org.olat.core.util.StringHelper;
 import org.olat.modules.coach.model.StudentStatEntry;
 import org.olat.modules.coach.ui.LightedValue.Light;
 
@@ -36,16 +43,44 @@ import org.olat.modules.coach.ui.LightedValue.Light;
  *
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
-public class StudentsTableDataModel extends DefaultFlexiTableDataModel<StudentStatEntry> implements SortableFlexiTableDataModel<StudentStatEntry> {
+public class StudentsTableDataModel extends DefaultFlexiTableDataModel<StudentStatEntry>
+	implements SortableFlexiTableDataModel<StudentStatEntry> {
+	
+	private static final OLog log = Tracing.createLoggerFor(StudentsTableDataModel.class);
 
+	private List<StudentStatEntry> backupList;
 	
 	public StudentsTableDataModel(FlexiTableColumnModel columnModel) {
 		super(columnModel);
 	}
+	
+	public void search(final String searchString) {
+		if(StringHelper.containsNonWhitespace(searchString)) {
+			try {
+				List<StudentStatEntry> filteredList;
+				if(StringHelper.isLong(searchString)) {
+					Long identityKey = new Long(searchString);
+					filteredList = backupList.stream()
+						.filter(entry ->  entry.getIdentityKey().equals(identityKey))
+						.collect(Collectors.toList());
+				} else {
+					filteredList = backupList.stream()
+						.filter(entry -> StudentListProvider.contains(searchString, entry))
+						.collect(Collectors.toList());
+				}
+				super.setObjects(filteredList);
+			} catch (Exception e) {
+				log.error("", e);
+				super.setObjects(backupList);
+			}
+		} else {
+			super.setObjects(backupList);
+		}
+	}
 
 	@Override
-	public void sort(SortKey sortKey) {
-		//
+	public void sort(SortKey orderBy) {
+		super.setObjects(new SortableFlexiTableModelDelegate<>(orderBy, this, null).sort());
 	}
 
 	@Override
@@ -104,13 +139,19 @@ public class StudentsTableDataModel extends DefaultFlexiTableDataModel<StudentSt
 		int propPos = col - UserListController.USER_PROPS_OFFSET;
 		return student.getIdentityProp(propPos);
 	}
+	
+	@Override
+	public void setObjects(List<StudentStatEntry> objects) {
+		this.backupList = objects;
+		super.setObjects(objects);
+	}
 
 	@Override
 	public StudentsTableDataModel createCopyWithEmptyList() {
 		return new StudentsTableDataModel(getTableColumnModel());
 	}
 	
-	public static enum Columns implements FlexiColumnDef {
+	public static enum Columns implements FlexiSortableColumnDef {
 		name("student.name"),
 		countCourse("table.header.countCourses"),
 		initialLaunch("table.header.login"),
@@ -127,7 +168,17 @@ public class StudentsTableDataModel extends DefaultFlexiTableDataModel<StudentSt
 		public String i18nHeaderKey() {
 			return i18nKey;
 		}
-		
+
+		@Override
+		public boolean sortable() {
+			return true;
+		}
+
+		@Override
+		public String sortKey() {
+			return name();
+		}
+
 		public static Columns getValueAt(int ordinal) {
 			if(ordinal >= 0 && ordinal < values().length) {
 				return values()[ordinal];

@@ -32,6 +32,7 @@ import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableSearchEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
@@ -42,7 +43,6 @@ import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.resource.OresHelper;
-import org.olat.course.assessment.ui.tool.AssessmentToolConstants;
 import org.olat.modules.coach.CoachingService;
 import org.olat.modules.coach.model.StudentStatEntry;
 import org.olat.modules.coach.ui.StudentsTableDataModel.Columns;
@@ -99,11 +99,11 @@ public class StudentListController extends FormBasicController implements Activa
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Columns.name, "select"));
 		}
 		
-		int colIndex = AssessmentToolConstants.USER_PROPS_OFFSET;
+		int colIndex = UserListController.USER_PROPS_OFFSET;
 		for (int i = 0; i < userPropertyHandlers.size(); i++) {
 			UserPropertyHandler userPropertyHandler	= userPropertyHandlers.get(i);
 			boolean visible = userManager.isMandatoryUserProperty(UserListController.usageIdentifyer , userPropertyHandler);
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(visible, userPropertyHandler.i18nColumnDescriptorLabelKey(), colIndex++, "select", false, null));
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(visible, userPropertyHandler.i18nColumnDescriptorLabelKey(), colIndex++, "select", true, null));
 		}
 		
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Columns.countCourse));
@@ -115,6 +115,8 @@ public class StudentListController extends FormBasicController implements Activa
 		tableEl.setExportEnabled(true);
 		tableEl.setEmtpyTableMessageKey("error.no.found");
 		tableEl.setAndLoadPersistedPreferences(ureq, "fStudentListController");
+		tableEl.setSearchEnabled(new StudentListProvider(model, userManager), ureq.getUserSession());
+		
 	}
 	
 	@Override
@@ -137,6 +139,12 @@ public class StudentListController extends FormBasicController implements Activa
 				if("select".equals(cmd)) {
 					selectStudent(ureq, selectedRow);
 				}
+			} else if(event instanceof FlexiTableSearchEvent) {
+				FlexiTableSearchEvent ftse = (FlexiTableSearchEvent)event;
+				String searchString = ftse.getSearch();
+				model.search(searchString);
+				tableEl.reset();
+				tableEl.reloadData();
 			}
 		} 
 		super.formInnerEvent(ureq, source, event);

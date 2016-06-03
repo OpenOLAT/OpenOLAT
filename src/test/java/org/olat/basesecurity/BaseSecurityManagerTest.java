@@ -826,6 +826,18 @@ public class BaseSecurityManagerTest extends OlatTestCase {
 	}
 	
 	@Test
+	public void findAuthenticationName() {
+		Identity ident = JunitTestHelper.createAndPersistIdentityAsRndUser("auth-d-");
+		dbInstance.commitAndCloseSession();
+		
+		Authentication auth = securityManager.findAuthentication(ident, "OLAT");
+		Assert.assertNotNull(auth);
+		
+		String authName = securityManager.findAuthenticationName(ident, "OLAT");
+		Assert.assertNotNull(authName);
+	}
+	
+	@Test
 	public void updateToSaltedAuthentication() {
 		Identity ident = JunitTestHelper.createAndPersistIdentityAsUser("auth-c-" + UUID.randomUUID().toString());
 		dbInstance.commitAndCloseSession();

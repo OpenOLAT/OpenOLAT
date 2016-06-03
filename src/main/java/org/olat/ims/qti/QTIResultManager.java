@@ -37,7 +37,6 @@ import javax.persistence.TypedQuery;
 import org.olat.basesecurity.Group;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
-import org.olat.core.id.UserConstants;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.user.UserDataDeletable;

@@ -317,6 +317,11 @@ public class UserImpl implements Persistable, User {
 	public Identity getIdentity() {
 		return identity;
 	}
+	
+	public void setIdentity(Identity identity) {
+		this.identity = identity;
+	}
+	
 
 	public String getFirstName() {
 		return firstName;

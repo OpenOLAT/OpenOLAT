@@ -72,6 +72,7 @@ import org.olat.portfolio.manager.InvitationDAO;
 import org.olat.resource.OLATResource;
 import org.olat.resource.OLATResourceManager;
 import org.olat.user.ChangePasswordController;
+import org.olat.user.UserImpl;
 import org.olat.user.UserManager;
 
 /**
@@ -694,6 +695,7 @@ public class BaseSecurityManager implements BaseSecurity {
 	public Identity createAndPersistIdentity(String username, User user, String provider, String authusername, String credential) {
 		IdentityImpl iimpl = new IdentityImpl(username, user);
 		dbInstance.getCurrentEntityManager().persist(iimpl);
+		((UserImpl)user).setIdentity(iimpl);
 		if (provider != null) { 
 			createAndPersistAuthenticationIntern(iimpl, provider, authusername, credential, loginModule.getDefaultHashAlgorithm());
 		}
@@ -714,6 +716,7 @@ public class BaseSecurityManager implements BaseSecurity {
 		IdentityImpl iimpl = new IdentityImpl(username, user);
 		iimpl.setExternalId(externalId);
 		dbInstance.getCurrentEntityManager().persist(iimpl);
+		((UserImpl)user).setIdentity(iimpl);
 		if (provider != null) { 
 			createAndPersistAuthenticationIntern(iimpl, provider, authusername, null, null);
 		}
@@ -737,6 +740,7 @@ public class BaseSecurityManager implements BaseSecurity {
 		IdentityImpl iimpl = new IdentityImpl(username, user);
 		iimpl.setExternalId(externalId);
 		dbInstance.getCurrentEntityManager().persist(iimpl);
+		((UserImpl)user).setIdentity(iimpl);
 		if (provider != null) { 
 			createAndPersistAuthenticationIntern(iimpl, provider, authusername, credential, loginModule.getDefaultHashAlgorithm());
 		}

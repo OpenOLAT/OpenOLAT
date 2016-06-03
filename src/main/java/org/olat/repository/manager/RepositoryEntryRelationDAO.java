@@ -269,11 +269,13 @@ public class RepositoryEntryRelationDAO {
 	
 	public List<Identity> getIdentitiesWithRole(String role) {
 		StringBuilder sb = new StringBuilder();
-		sb.append("select distinct members.identity from ").append(RepositoryEntry.class.getName()).append(" as v")
+		sb.append("select distinct ident from ").append(RepositoryEntry.class.getName()).append(" as v")
 		  .append(" inner join v.groups as relGroup")
 		  .append(" inner join relGroup.group as baseGroup")
-		  .append(" inner join baseGroup.members as members")
-		  .append(" where members.role=:role");
+		  .append(" inner join baseGroup.members as memberships")
+		  .append(" inner join memberships.identity as ident")
+		  .append(" inner join fetch ident.user as identUser")
+		  .append(" where memberships.role=:role");
 
 		return dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), Identity.class)
@@ -382,13 +384,15 @@ public class RepositoryEntryRelationDAO {
 		}
 		
 		StringBuilder sb = new StringBuilder();
-		sb.append("select members.identity from ").append(RepositoryEntry.class.getName()).append(" as v")
+		sb.append("select ident from ").append(RepositoryEntry.class.getName()).append(" as v")
 		  .append(" inner join v.groups as relGroup").append(def)
 		  .append(" inner join relGroup.group as baseGroup")
-		  .append(" inner join baseGroup.members as members")
+		  .append(" inner join baseGroup.members as memberships")
+		  .append(" inner join memberships.identity as ident")
+		  .append(" inner join fetch ident.user as identUser")
 		  .append(" where v.key=:repoKey");
 		if(roleList.size() > 0) {
-				sb.append(" and members.role in (:roles)");
+				sb.append(" and memberships.role in (:roles)");
 		}
 			
 		TypedQuery<Identity> query = dbInstance.getCurrentEntityManager()

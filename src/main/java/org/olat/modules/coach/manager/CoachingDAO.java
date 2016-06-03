@@ -40,7 +40,6 @@ import org.olat.core.commons.persistence.PersistenceHelper;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
-import org.olat.core.util.CodeHelper;
 import org.olat.core.util.StringHelper;
 import org.olat.course.assessment.UserEfficiencyStatement;
 import org.olat.course.assessment.model.UserEfficiencyStatementLight;
@@ -620,9 +619,7 @@ public class CoachingDAO {
 	
 	protected List<StudentStatEntry> getStudentsStatisticsNative(Identity coach, List<UserPropertyHandler> userPropertyHandlers) {
 		Map<Long, StudentStatEntry> map = new HashMap<>();
-		long start = System.nanoTime();
 		boolean hasCoachedStudents = getStudentsStastisticInfosForCoach(coach, map, userPropertyHandlers);
-		CodeHelper.printNanoTime(start, "Coach stats infos");
 		boolean hasOwnedStudents = getStudentsStastisticInfosForOwner(coach, map, userPropertyHandlers);
 		if(hasOwnedStudents || hasCoachedStudents) {
 			for(StudentStatEntry entry:map.values()) {
@@ -631,7 +628,7 @@ public class CoachingDAO {
 				entry.setInitialLaunch(entry.getLaunchIds().size());
 				entry.setLaunchIds(null);
 			}
-			getStudentsStatisticStatement(coach, map);
+			getStudentsStatisticStatement(coach, hasCoachedStudents, hasOwnedStudents, map);
 			for(StudentStatEntry entry:map.values()) {
 				int notAttempted = entry.getCountRepo() - entry.getCountPassed() - entry.getCountFailed();
 				entry.setCountNotAttempted(notAttempted);
@@ -641,39 +638,6 @@ public class CoachingDAO {
 	}
 	
 	private boolean getStudentsStastisticInfosForCoach(IdentityRef coach, Map<Long, StudentStatEntry> map, List<UserPropertyHandler> userPropertyHandlers) {
-		/*
-		NativeQueryBuilder sb = new NativeQueryBuilder(1024, dbInstance);
-		sb.append("select")
-		  .append("  sg_participant.fk_identity_id as part_id,")
-		  .append("  ").appendToArray("sg_re.repositoryentry_id").append(" as re_ids,")
-		  .append("  ").appendToArray("pg_initial_launch.id").append(" as pg_ids")
-		  .append(" from o_repositoryentry sg_re")
-		  .append(" inner join o_olatresource sg_res on (sg_res.resource_id = sg_re.fk_olatresource and sg_res.resname = 'CourseModule') ")
-		  .append(" inner join o_re_to_group togroup on (togroup.fk_entry_id = sg_re.repositoryentry_id)")
-		  .append(" inner join o_bs_group_member sg_coach on (sg_coach.fk_group_id=togroup.fk_group_id and sg_coach.g_role = 'coach')")
-		  .append(" inner join o_bs_group_member sg_participant on (sg_participant.fk_group_id=sg_coach.fk_group_id and sg_participant.g_role='participant')")
-		  .append(" left join o_as_user_course_infos pg_initial_launch")
-		  .append("   on (pg_initial_launch.fk_resource_id = sg_re.fk_olatresource and pg_initial_launch.fk_identity = sg_participant.fk_identity_id)")
-		  .append(" where sg_coach.fk_identity_id=:coachKey and ( ")
-		  .append("   (sg_re.accesscode >= ").append(RepositoryEntry.ACC_USERS).append(" and sg_coach.g_role = 'coach') ")//BAR
-		  .append("   or ")
-		  .append("   (sg_re.accesscode = ").append(RepositoryEntry.ACC_OWNERS).append(" and sg_re.membersonly=").appendTrue().append(")) ")
-		  .append(" group by sg_participant.fk_identity_id");
-
-		List<?> rawList = dbInstance.getCurrentEntityManager()
-				.createNativeQuery(sb.toString())
-				.setParameter("coachKey", coach.getKey())
-				.getResultList();
-
-		for(Object rawObject:rawList) {
-			Object[] rawStat = (Object[])rawObject;
-			StudentStatEntry entry = new StudentStatEntry(((Number)rawStat[0]).longValue());
-			appendArrayToSet(rawStat[1], entry.getRepoIds());
-			appendArrayToSet(rawStat[2], entry.getLaunchIds());
-			map.put(entry.getStudentKey(), entry);
-		}
-		*/
-		
 		NativeQueryBuilder sb = new NativeQueryBuilder(1024, dbInstance);
 		sb.append("select")
 		  .append("  sg_participant_id.id as part_id,")
@@ -818,7 +782,7 @@ public class CoachingDAO {
 		}
 	}
 	
-	private boolean getStudentsStatisticStatement(IdentityRef coach, Map<Long,StudentStatEntry> stats) {
+	private boolean getStudentsStatisticStatement(IdentityRef coach, boolean hasCoached, boolean hasOwned, Map<Long,StudentStatEntry> stats) {
 		NativeQueryBuilder sb = new NativeQueryBuilder(1024, dbInstance);
 		sb.append("select ")
 		  .append(" fin_statement.fk_identity, ")
@@ -826,29 +790,40 @@ public class CoachingDAO {
 		  .append("  sum(case when fin_statement.passed=").appendTrue().append(" then 1 else 0 end) as num_of_passed, ")
 		  .append("  sum(case when fin_statement.passed=").appendFalse().append(" then 1 else 0 end) as num_of_failed ")
 		  .append(" from o_as_eff_statement fin_statement ")
-		  .append(" where fin_statement.id in ( select ")
-		  .append("   distinct sg_statement.id as st_id ")
-		  .append("  from o_repositoryentry sg_re ")
-		  .append("  inner join o_re_to_group togroup on (togroup.fk_entry_id = sg_re.repositoryentry_id) ")
-		  .append("  inner join o_bs_group_member sg_coach on (sg_coach.fk_group_id=togroup.fk_group_id and sg_coach.g_role = 'coach') ")
-		  .append("  inner join o_bs_group_member sg_participant on (sg_participant.fk_group_id=sg_coach.fk_group_id and sg_participant.g_role='participant') ")
-		  .append("  inner join o_as_eff_statement sg_statement ")
-		  .append("    on (sg_statement.fk_identity = sg_participant.fk_identity_id and sg_statement.fk_resource_id = sg_re.fk_olatresource) ")
-		  .append("  where sg_coach.fk_identity_id=:coachKey and ( ")
-		  .append("    (sg_re.accesscode>2 and sg_coach.g_role = 'coach') ")
-		  .append("    or ")
-		  .append("    (sg_re.accesscode=1 and sg_re.membersonly=").appendTrue().append(")) ")
-		  .append(" ) or fin_statement.id in ( select  ")
-		  .append("    distinct sg_statement.id as st_id ")
-		  .append("  from o_repositoryentry sg_re ")
-		  .append("  inner join o_re_to_group owngroup on (owngroup.fk_entry_id = sg_re.repositoryentry_id and owngroup.r_defgroup=").appendTrue().append(") ")
-		  .append("  inner join o_bs_group_member sg_owner on (sg_owner.fk_group_id=owngroup.fk_group_id and sg_owner.g_role = 'owner') ")
-		  .append("  inner join o_re_to_group togroup on (togroup.fk_entry_id = sg_re.repositoryentry_id) ")
-		  .append("  inner join o_bs_group_member sg_participant on (sg_participant.fk_group_id=togroup.fk_group_id and sg_participant.g_role='participant') ")
-		  .append("  inner join o_as_eff_statement sg_statement ")
-		  .append("    on (sg_statement.fk_identity = sg_participant.fk_identity_id and sg_statement.fk_resource_id = sg_re.fk_olatresource) ")
-		  .append("  where sg_owner.fk_identity_id=:coachKey and sg_re.accesscode>=").append(RepositoryEntry.ACC_OWNERS).append(") ")
-		  .append(" group by fin_statement.fk_identity");
+		  .append(" where ");
+		if(hasCoached) {
+			sb.append(" fin_statement.id in ( select ")
+			  .append("   distinct sg_statement.id as st_id ")
+			  .append("  from o_repositoryentry sg_re ")
+			  .append("  inner join o_re_to_group togroup on (togroup.fk_entry_id = sg_re.repositoryentry_id) ")
+			  .append("  inner join o_bs_group_member sg_coach on (sg_coach.fk_group_id=togroup.fk_group_id and sg_coach.g_role = 'coach') ")
+			  .append("  inner join o_bs_group_member sg_participant on (sg_participant.fk_group_id=sg_coach.fk_group_id and sg_participant.g_role='participant') ")
+			  .append("  inner join o_as_eff_statement sg_statement ")
+			  .append("    on (sg_statement.fk_identity = sg_participant.fk_identity_id and sg_statement.fk_resource_id = sg_re.fk_olatresource) ")
+			  .append("  where sg_coach.fk_identity_id=:coachKey and ( ")
+			  .append("    (sg_re.accesscode>2 and sg_coach.g_role = 'coach') ")
+			  .append("    or ")
+			  .append("    (sg_re.accesscode=1 and sg_re.membersonly=").appendTrue().append(")) ")
+			  .append(" )");
+		}
+		if(hasOwned) {
+			if(hasCoached) {
+				sb.append(" or ");
+			}
+		
+			sb.append("  fin_statement.id in ( select  ")
+			  .append("    distinct sg_statement.id as st_id ")
+			  .append("  from o_repositoryentry sg_re ")
+			  .append("  inner join o_re_to_group owngroup on (owngroup.fk_entry_id = sg_re.repositoryentry_id and owngroup.r_defgroup=").appendTrue().append(") ")
+			  .append("  inner join o_bs_group_member sg_owner on (sg_owner.fk_group_id=owngroup.fk_group_id and sg_owner.g_role = 'owner') ")
+			  .append("  inner join o_re_to_group togroup on (togroup.fk_entry_id = sg_re.repositoryentry_id) ")
+			  .append("  inner join o_bs_group_member sg_participant on (sg_participant.fk_group_id=togroup.fk_group_id and sg_participant.g_role='participant') ")
+			  .append("  inner join o_as_eff_statement sg_statement ")
+			  .append("    on (sg_statement.fk_identity = sg_participant.fk_identity_id and sg_statement.fk_resource_id = sg_re.fk_olatresource) ")
+			  .append("  where sg_owner.fk_identity_id=:coachKey and sg_re.accesscode>=").append(RepositoryEntry.ACC_OWNERS).append(") ");
+		  
+		}
+		sb.append(" group by fin_statement.fk_identity");
 
 		List<?> rawList = dbInstance.getCurrentEntityManager()
 				.createNativeQuery(sb.toString())
@@ -902,8 +877,8 @@ public class CoachingDAO {
 		  .append(" inner join o_bs_identity sg_participant_id on (sg_participant_id.id=sg_participant.fk_identity_id)")
 		  .append(" inner join o_user sg_participant_user on (sg_participant_user.user_id=sg_participant_id.fk_user_id)")
 		  .append(" left join o_as_user_course_infos pg_initial_launch ")
-		  .append("   on (pg_initial_launch.fk_resource_id = sg_re.fk_olatresource and pg_initial_launch.fk_identity = id_participant.id) ");
-		appendUsersStatisticsJoins(params, queryParams, sb)
+		  .append("   on (pg_initial_launch.fk_resource_id = sg_re.fk_olatresource and pg_initial_launch.fk_identity = id_participant.id) ")
+		  .append(" inner join o_user user_participant on (user_participant.user_id=id_participant.fk_user_id)")
 		  .append(" where sg_re.accesscode >= ").append(RepositoryEntry.ACC_OWNERS).append(" ");
 		appendUsersStatisticsSearchParams(params, queryParams, sb)
 		  .append(" group by sg_participant_id.id, sg_participant_user.user_id");
@@ -951,7 +926,7 @@ public class CoachingDAO {
 		  .append(" inner join o_bs_group_member sg_participant on (sg_participant.fk_group_id=togroup.fk_group_id and sg_participant.g_role='participant') ")
 		  .append(" inner join o_as_eff_statement sg_statement on (sg_statement.fk_identity = sg_participant.fk_identity_id and sg_statement.fk_resource_id = sg_re.fk_olatresource) ")
 		  .append(" inner join o_bs_identity id_participant on (sg_participant.fk_identity_id = id_participant.id) ");
-		appendUsersStatisticsJoins(params, queryParams, sb)
+		appendUsersStatisticsJoins(params, sb)
 		  .append(" where  sg_re.accesscode>0 ");
 		appendUsersStatisticsSearchParams(params, queryParams, sb)
 		  .append(") ")
@@ -980,7 +955,7 @@ public class CoachingDAO {
 	}
 	
 
-	private NativeQueryBuilder appendUsersStatisticsJoins(SearchCoachedIdentityParams params, Map<String,Object> queryParams, NativeQueryBuilder sb) {
+	private NativeQueryBuilder appendUsersStatisticsJoins(SearchCoachedIdentityParams params, NativeQueryBuilder sb) {
 		if(params != null && params.getUserProperties() != null && params.getUserProperties().size() > 0) {
 			sb.append(" inner join o_user user_participant on (user_participant.user_id=id_participant.fk_user_id)");
 		}
@@ -1040,6 +1015,43 @@ public class CoachingDAO {
 			}
 		}
 		return sb;
+	}
+	
+	public List<Identity> getStudents(Identity coach) {
+		StringBuilder sc = new StringBuilder();
+		sc.append("select participantIdent from repositoryentry as re")
+		  .append(" inner join re.groups as ownedRelGroup on ownedRelGroup.defaultGroup=true")
+		  .append(" inner join ownedRelGroup.group as ownedGroup")
+		  .append(" inner join ownedGroup.members as owner on owner.role='owner'")
+		  .append(" inner join re.groups as relGroup")
+		  .append(" inner join relGroup.group as baseGroup")
+		  .append(" inner join baseGroup.members as participant on participant.role='participant'")
+		  .append(" inner join participant.identity as participantIdent")
+		  .append(" inner join fetch participantIdent.user as participantUser")
+          .append(" where owner.identity.key=:coachKey and re.key=:repoKey");
+
+		List<Identity> identityKeys = dbInstance.getCurrentEntityManager()
+				.createQuery(sc.toString(), Identity.class)
+				.setParameter("coachKey", coach.getKey())
+				.getResultList();
+		
+		//owner see all participants
+		if(identityKeys.isEmpty()) {
+			StringBuilder sb = new StringBuilder();
+			sb.append("select participantIdent from repoentrytogroup as relGroup ")
+			  .append(" inner join relGroup.group as baseGroup")
+			  .append(" inner join baseGroup.members as coach on coach.role = 'coach'")
+			  .append(" inner join baseGroup.members as participant on participant.role='participant'")
+			  .append(" inner join participant.identity as participantIdent")
+			  .append(" inner join fetch participantIdent.user as participantUser")
+	          .append(" where coach.identity.key=:coachKey and relGroup.entry.key=:repoKey");
+	
+			identityKeys = dbInstance.getCurrentEntityManager()
+					.createQuery(sb.toString(), Identity.class)
+					.setParameter("coachKey", coach.getKey())
+					.getResultList();
+		}
+		return new ArrayList<>(new HashSet<>(identityKeys));
 	}
 	
 	public List<Identity> getStudents(Identity coach, RepositoryEntry entry) {

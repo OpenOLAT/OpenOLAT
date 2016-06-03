@@ -24,9 +24,10 @@ import java.util.concurrent.ConcurrentMap;
 
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiColumnDef;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableModelDelegate;
 import org.olat.course.assessment.UserEfficiencyStatement;
 import org.olat.course.certificate.CertificateLight;
 import org.olat.modules.coach.model.EfficiencyStatementEntry;
@@ -62,8 +63,8 @@ public class EfficiencyStatementEntryTableDataModel extends DefaultFlexiTableDat
 	}
 
 	@Override
-	public void sort(SortKey sortKey) {
-		//
+	public void sort(SortKey orderBy) {
+		setObjects(new SortableFlexiTableModelDelegate<>(orderBy, this, null).sort());
 	}
 	@Override
 	public Object getValueAt(int row, int col) {
@@ -132,7 +133,7 @@ public class EfficiencyStatementEntryTableDataModel extends DefaultFlexiTableDat
 		return new EfficiencyStatementEntryTableDataModel(getTableColumnModel());
 	}
 	
-	public static enum Columns implements FlexiColumnDef {
+	public static enum Columns implements FlexiSortableColumnDef {
 		name("student.name"), 
 		repoName("table.header.course.name"),
 		score("table.header.score"),
@@ -150,6 +151,16 @@ public class EfficiencyStatementEntryTableDataModel extends DefaultFlexiTableDat
 		@Override
 		public String i18nHeaderKey() {
 			return i18nKey;
+		}
+
+		@Override
+		public boolean sortable() {
+			return true;
+		}
+
+		@Override
+		public String sortKey() {
+			return name();
 		}
 
 		public static Columns getValueAt(int ordinal) {
