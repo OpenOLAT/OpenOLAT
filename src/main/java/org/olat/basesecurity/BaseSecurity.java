@@ -280,7 +280,7 @@ public interface BaseSecurity {
 
 	/**
 	 * @param username the username
-	 * @param user the unpresisted User
+	 * @param user The persisted user (mandatory)
 	 * @param provider the provider of the authentication ("OLAT" or "AAI"). If
 	 *          null, no authentication token is generated.
 	 * @param authusername the username used as authentication credential

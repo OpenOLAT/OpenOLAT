@@ -683,7 +683,7 @@ public class BaseSecurityManager implements BaseSecurity {
 
 	/**
 	 * @param username the username
-	 * @param user the presisted User
+	 * @param user The persisted user (mandatory)
 	 * @param authusername the username used as authentication credential
 	 *          (=username for provider "OLAT")
 	 * @param provider the provider of the authentication ("OLAT" or "AAI"). If null, no 

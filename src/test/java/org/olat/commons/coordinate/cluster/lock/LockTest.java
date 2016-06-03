@@ -35,7 +35,6 @@ import static org.junit.Assert.fail;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -54,6 +53,7 @@ import org.olat.core.util.coordinate.LockEntry;
 import org.olat.core.util.coordinate.LockResult;
 import org.olat.core.util.coordinate.Locker;
 import org.olat.core.util.resource.OresHelper;
+import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -95,7 +95,7 @@ public class LockTest extends OlatTestCase {
 		// some setup
 		List<Identity> identities = new ArrayList<Identity>();
 		for (int i = 0; i < MAX_COUNT + MAX_USERS_MORE; i++) {
-			Identity i1 = securityManager.createAndPersistIdentity("lock-" + UUID.randomUUID().toString(), null, null, null, null);
+			Identity i1 = JunitTestHelper.createAndPersistIdentityAsRndUser("lock-");
 			identities.add(i1);
 		}
 		dbInstance.closeSession();
@@ -176,7 +176,7 @@ public class LockTest extends OlatTestCase {
 
 	@Test
 	public void testSaveEvent() {
-		Identity identity = securityManager.createAndPersistIdentity("lock-save-event-" + UUID.randomUUID().toString(), null, null, null, null);
+		Identity identity = JunitTestHelper.createAndPersistIdentityAsRndUser("lock-save-event-");
 		dbInstance.closeSession();
 		log.info("Created identity=" + identity);
 		
