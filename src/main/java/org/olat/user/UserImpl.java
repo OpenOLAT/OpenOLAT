@@ -121,6 +121,8 @@ public class UserImpl implements Persistable, User {
 	private String socialSecurityNumber;
 	@Column(name="u_userinterests", nullable=true, insertable=true, updatable=true)
 	private String userInterests;
+	@Column(name="u_usersearchedinterests", nullable=true, insertable=true, updatable=true)
+	private String userSearchedInterests;
 	
 	@Column(name="u_telprivate", nullable=true, insertable=true, updatable=true)
 	private String telPrivate;

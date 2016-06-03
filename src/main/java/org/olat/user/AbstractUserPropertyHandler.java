@@ -152,7 +152,7 @@ public abstract class AbstractUserPropertyHandler implements UserPropertyHandler
 					value = null;
 				}
 			} catch (IllegalArgumentException | IllegalAccessException e) {
-				e.printStackTrace();
+				log.error("", e);
 			}
 			return value;
 		} else if (user != null) {
@@ -165,7 +165,7 @@ public abstract class AbstractUserPropertyHandler implements UserPropertyHandler
 	 * @param value The raw value in a 18n independent form
 	 */
 	protected void setInternalValue(User user, String value) {
-		if (user instanceof UserImpl) {
+		if (user instanceof UserImpl && getter != null) {
 			try {
 				// remove fields with null or empty value from o_userfield table (hibernate)
 				// sparse data storage
@@ -174,9 +174,11 @@ public abstract class AbstractUserPropertyHandler implements UserPropertyHandler
 				} else {
 					getter.set(user, value);
 				}
-			} catch (IllegalArgumentException |IllegalAccessException e) {
-				e.printStackTrace();
+			} catch (IllegalArgumentException | IllegalAccessException e) {
+				log.error("", e);
 			}
+		} else {
+			log.warn("Set read-only value: " + name,  null);
 		}
 	}
 

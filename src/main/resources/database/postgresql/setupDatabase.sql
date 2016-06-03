@@ -247,6 +247,7 @@ create table o_user (
    u_degree varchar(255),
    u_position varchar(255),
    u_userinterests varchar(255),
+   u_usersearchedinterests varchar(255),
    u_officestreet varchar(255),
    u_extendedofficeaddress varchar(255),
    u_officepobox varchar(255),
@@ -2001,8 +2002,6 @@ create index idx_user_instid_idx on o_user (u_institutionaluseridentifier);
 create index idx_user_instemail_idx on o_user (u_institutionalemail);
 create index idx_user_creationdate_idx on o_user (creationdate);
 
-alter table o_userproperty add constraint FK4B04D83FD1A80C95 foreign key (fk_user_id) references o_user;
-create index FK4B04D83FD1A80C95 on o_userproperty (fk_user_id);
 create index propvalue_idx on o_userproperty (propvalue);
 
 -- pub sub

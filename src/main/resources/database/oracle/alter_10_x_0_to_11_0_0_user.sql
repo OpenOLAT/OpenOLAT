@@ -34,6 +34,7 @@ alter table o_user add u_rank varchar2(255 char);
 alter table o_user add u_degree varchar2(255 char);
 alter table o_user add u_position varchar2(255 char);
 alter table o_user add u_userinterests varchar2(255 char);
+alter table o_user add u_usersearchedinterests varchar2(255 char);
 alter table o_user add u_officestreet varchar2(255 char);
 alter table o_user add u_extendedofficeaddress varchar2(255 char);
 alter table o_user add u_officepobox varchar2(255 char);
@@ -147,6 +148,7 @@ update o_user set u_rank=(select propvalue from o_userproperty where user_id=fk_
 update o_user set u_degree=(select propvalue from o_userproperty where user_id=fk_user_id and propname='degree') where u_degree is null;
 update o_user set u_position=(select propvalue from o_userproperty where user_id=fk_user_id and propname='position') where u_position is null;
 update o_user set u_userinterests=(select propvalue from o_userproperty where user_id=fk_user_id and propname='userInterests') where u_userinterests is null;
+update o_user set u_usersearchedinterests=(select propvalue from o_userproperty where user_id=fk_user_id and propname='userSearchedInterests') where u_usersearchedinterests is null;
 update o_user set u_officestreet=(select propvalue from o_userproperty where user_id=fk_user_id and propname='officeStreet') where u_officestreet is null;
 update o_user set u_extendedofficeaddress=(select propvalue from o_userproperty where user_id=fk_user_id and propname='extendedOfficeAddress') where u_extendedofficeaddress is null;
 update o_user set u_officepobox=(select propvalue from o_userproperty where user_id=fk_user_id and propname='officePoBox') where u_officepobox is null;
@@ -167,6 +169,7 @@ update o_user set u_swissedupersonstudybranch1=(select propvalue from o_userprop
 update o_user set u_swissedupersonstudybranch2=(select propvalue from o_userproperty where user_id=fk_user_id and propname='swissEduPersonStudyBranch2') where u_swissedupersonstudybranch2 is null;
 update o_user set u_swissedupersonstudybranch3=(select propvalue from o_userproperty where user_id=fk_user_id and propname='swissEduPersonStudyBranch3') where u_swissedupersonstudybranch3 is null;
 
+alter table o_userproperty drop constraint FK4B04D83FD1A80C95;
 
 drop view o_bs_identity_short_v;
 create view o_bs_identity_short_v as (

@@ -280,6 +280,7 @@ CREATE TABLE o_user (
    u_degree varchar2(255 char),
    u_position varchar2(255 char),
    u_userinterests varchar2(255 char),
+   u_usersearchedinterests varchar2(255 char),
    u_officestreet varchar2(255 char),
    u_extendedofficeaddress varchar2(255 char),
    u_officepobox varchar2(255 char),
@@ -2152,8 +2153,6 @@ create index idx_inv_to_group_group_ctx on o_bs_invitation (fk_group_id);
 -- user
 create index usr_notification_interval_idx on o_user (notification_interval);
 
-alter table o_userproperty add constraint FK4B04D83FD1A80C95 foreign key (fk_user_id) references o_user (user_id);
-create index FK4B04D83FD1A80C95 on o_userproperty (fk_user_id);
 create index propvalue_idx on o_userproperty (propvalue);
 
 -- pub sub

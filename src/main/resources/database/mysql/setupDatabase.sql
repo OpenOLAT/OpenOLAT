@@ -249,6 +249,7 @@ create table if not exists o_user (
    u_degree varchar(255),
    u_position varchar(255),
    u_userinterests varchar(255),
+   u_usersearchedinterests varchar(255),
    u_officestreet varchar(255),
    u_extendedofficeaddress varchar(255),
    u_officepobox varchar(255),
@@ -2083,9 +2084,6 @@ alter table o_bs_invitation add constraint inv_to_group_group_ctx foreign key (f
 
 -- user
 create index usr_notification_interval_idx on o_user (notification_interval);
-
-alter table o_userproperty add index FK4B04D83FD1A80C95 (fk_user_id), add constraint FK4B04D83FD1A80C95 foreign key (fk_user_id) references o_user (user_id);
-create index propvalue_idx on o_userproperty (propvalue);
 
 -- pub sub
 create index name_idx on o_noti_pub (resname, resid, subident);

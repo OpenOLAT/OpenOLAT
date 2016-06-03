@@ -23,7 +23,6 @@ import java.util.Date;
 import java.util.Locale;
 import java.util.Map;
 
-import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.core.gui.components.form.ValidationError;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -35,6 +34,7 @@ import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.user.AbstractUserPropertyHandler;
+import org.olat.user.UserImpl;
 
 /**
  * this class displays a static textElement. it always shows one of three dates:
@@ -73,10 +73,10 @@ public class DateDisplayPropertyHandler extends AbstractUserPropertyHandler {
 		if (DATE_TYPE_CR.equals(myName))
 			return user.getCreationDate();
 		if (DATE_TYPE_LL.equals(myName)) {
-			Identity id = BaseSecurityManager.getInstance().findIdentityByUser(user);
-			if (id != null)
+			Identity id = ((UserImpl)user).getIdentity();
+			if (id != null) {
 				return id.getLastLogin();
-
+			}
 			// huh, we didn't find this identity
 			log.warn("Couldn't find Identity for given User: " + user.getKey());
 			return new Date(0);
@@ -105,6 +105,11 @@ public class DateDisplayPropertyHandler extends AbstractUserPropertyHandler {
 			return String.valueOf(getDateValue(user).getTime());
 		}
 		return "";
+	}
+
+	@Override
+	protected void setInternalValue(User user, String value) {
+		//read-only
 	}
 
 	@Override

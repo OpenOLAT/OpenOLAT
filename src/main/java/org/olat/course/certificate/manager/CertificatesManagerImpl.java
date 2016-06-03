@@ -314,6 +314,8 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 	public CertificateImpl getCertificateById(Long key) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select cer from certificate cer")
+		  .append(" inner join fetch cer.identity ident")
+		  .append(" inner join fetch ident.user identUser")
 		  .append(" where cer.key=:certificateKey");
 		List<CertificateImpl> certificates = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), CertificateImpl.class)
@@ -896,7 +898,7 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 	
 	private void removeLastFlag(Identity identity, Long resourceKey) {
 		StringBuilder sb = new StringBuilder();
-		sb.append("update certificate  cer set cer.last=false")
+		sb.append("update certificate cer set cer.last=false")
 		  .append(" where cer.olatResource.key=:resourceKey and cer.identity.key=:identityKey");
 		
 		dbInstance.getCurrentEntityManager().createQuery(sb.toString())
