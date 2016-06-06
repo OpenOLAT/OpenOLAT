@@ -569,7 +569,7 @@ public class GTACourseNode extends AbstractAccessableCourseNode implements Asses
 				+ "_" + assessedIdentity.getKey();
 		
 		Task task = gtaManager.getTask(assessedIdentity, taskList);
-		if(task != null && config.getBooleanSafe(GTASK_ASSIGNMENT)) {
+		if(task != null && task.getTaskName() != null && config.getBooleanSafe(GTASK_ASSIGNMENT)) {
 			File taskDirectory = gtaManager.getTasksDirectory(course.getCourseEnvironment(), this);
 			File taskFile = new File(taskDirectory, task.getTaskName());
 			if(taskFile.exists()) {
@@ -614,7 +614,7 @@ public class GTACourseNode extends AbstractAccessableCourseNode implements Asses
 				+ "_" + businessGroup.getKey();
 		
 		Task task = gtaManager.getTask(businessGroup, taskList);
-		if(task != null && config.getBooleanSafe(GTASK_ASSIGNMENT)) {
+		if(task != null && task.getTaskName() != null && config.getBooleanSafe(GTASK_ASSIGNMENT)) {
 			File taskDirectory = gtaManager.getTasksDirectory(course.getCourseEnvironment(), this);
 			File taskFile = new File(taskDirectory, task.getTaskName());
 			if(taskFile.exists()) {
