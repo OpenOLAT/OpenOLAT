@@ -124,7 +124,7 @@ public class AssessmentToReviewSmallController extends FormBasicController {
 	}
 	
 	private void loadModel() {
-		SearchAssessedIdentityParams params = new SearchAssessedIdentityParams(testEntry, testEntry, null, assessmentCallback);
+		SearchAssessedIdentityParams params = new SearchAssessedIdentityParams(testEntry, null, testEntry, assessmentCallback);
 		List<AssessmentEntry> entries = assessmentToolManager.getAssessmentEntries(getIdentity(), params, AssessmentEntryStatus.inReview);
 		List<UserToReviewRow> rows = new ArrayList<>();
 		

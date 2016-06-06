@@ -29,11 +29,9 @@ import org.olat.basesecurity.IdentityShort;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.PersistenceHelper;
 import org.olat.core.id.Identity;
-import org.olat.core.logging.OLog;
-import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.course.assessment.AssessmentToolManager;
-import org.olat.course.assessment.model.CourseStatistics;
+import org.olat.course.assessment.model.AssessmentStatistics;
 import org.olat.course.assessment.model.SearchAssessedIdentityParams;
 import org.olat.course.assessment.model.UserCourseInfosImpl;
 import org.olat.modules.assessment.AssessmentEntry;
@@ -52,148 +50,130 @@ import org.springframework.stereotype.Service;
  */
 @Service
 public class AssessmentToolManagerImpl implements AssessmentToolManager {
-	
-	private static final OLog log = Tracing.createLoggerFor(AssessmentToolManagerImpl.class);
-	
+
 	@Autowired
 	private DB dbInstance;
-	
+
 	@Override
-	public CourseStatistics getStatistics(Identity coach, SearchAssessedIdentityParams params) {
-		CourseStatistics entry = new CourseStatistics();
-		
+	public int getNumberOfAssessedIndetities(Identity coach, SearchAssessedIdentityParams params) {
 		//count all possible participants for the coach permissions
 		TypedQuery<Long> countUsers = createAssessedIdentities(coach, params, Long.class);
 		int numOfAssessedIdentites = 0;
 		List<Long> numOfUsersList = countUsers.getResultList();
 		if(numOfUsersList.size() == 1) {
-			numOfAssessedIdentites = numOfUsersList.get(0) == null ? 0 : numOfUsersList.get(0).intValue();
+				numOfAssessedIdentites = numOfUsersList.get(0) == null ? 0 : numOfUsersList.get(0).intValue();
 		}
-		entry.setNumOfAssessedIdentities(numOfAssessedIdentites);
+		return numOfAssessedIdentites;
+	}
+	
+	@Override
+	public int getNumberOfInitialLaunches(Identity coach, SearchAssessedIdentityParams params) {
+		RepositoryEntry courseEntry = params.getEntry();
 
-		//retrive statistcis about efficicency statements
-		assessmentEntryStatistics(coach, params, entry);
+		StringBuilder sf = new StringBuilder();
+		sf.append("select count(infos.key), infos.resource.key from ").append(UserCourseInfosImpl.class.getName()).append(" as infos ")
+		  .append(" where infos.resource.key=:resourceKey and (infos.identity in");
+		if(params.isAdmin()) {
+			sf.append(" (select participant.identity from repoentrytogroup as rel, bgroupmember as participant")
+	          .append("    where rel.entry.key=:repoEntryKey and rel.group=participant.group")
+	          .append("      and participant.role='").append(GroupRoles.participant.name()).append("'")
+	          .append("  )");
+			if(params.isNonMembers()) {
+				sf.append(" or not exists (select membership.identity from repoentrytogroup as rel, bgroupmember as membership")
+		          .append("    where rel.entry.key=:repoEntryKey and rel.group=membership.group and membership.identity=infos.identity")
+		          .append("  )");
+			}
+		} else if(params.isBusinessGroupCoach() || params.isRepositoryEntryCoach()) {
+			sf.append(" (select participant.identity from repoentrytogroup as rel, bgroupmember as participant, bgroupmember as coach")
+	          .append("    where rel.entry.key=:repoEntryKey")
+	          .append("      and rel.group=coach.group and coach.role='").append(GroupRoles.coach.name()).append("' and coach.identity.key=:identityKey")
+	          .append("      and rel.group=participant.group and participant.role='").append(GroupRoles.participant.name()).append("'")
+	          .append("  )");
+		}
+		sf.append(" ) group by infos.resource.key");
+
+		TypedQuery<Object[]> infos = dbInstance.getCurrentEntityManager()
+			.createQuery(sf.toString(), Object[].class)
+			.setParameter("resourceKey", courseEntry.getOlatResource().getKey())
+			.setParameter("repoEntryKey", courseEntry.getKey());
+		if(!params.isAdmin()) {
+			infos.setParameter("identityKey", coach.getKey());
+		}
+
+		List<Object[]> results = infos.getResultList();
+		return results != null && results.size() > 0 && results.get(0)[0] instanceof Number
+				? ((Number)results.get(0)[0]).intValue(): 0;
+	}
+	
+	@Override
+	public AssessmentStatistics getStatistics(Identity coach, SearchAssessedIdentityParams params) {
+		RepositoryEntry courseEntry = params.getEntry();
+
+		StringBuilder sf = new StringBuilder();
+		sf.append("select avg(aentry.score) as scoreAverage, ")
+		  .append(" sum(case when aentry.passed=true then 1 else 0 end) as numOfPassed,")
+		  .append(" sum(case when aentry.passed=false then 1 else 0 end) as numOfFailed,")
+		  .append(" sum(case when aentry.passed is null then 1 else 0 end) as numOfNotAttempted,")
+		  .append(" sum(aentry.key) as numOfStatements,")
+		  .append(" v.key as repoKey")
+		  .append(" from assessmententry aentry ")
+		  .append(" inner join aentry.repositoryEntry v ")
+		  .append(" where v.key=:repoEntryKey and aentry.status is not null and not(aentry.status='").append(AssessmentEntryStatus.notStarted.name()).append("')");
+		if(params.getReferenceEntry() != null) {
+			sf.append(" and aentry.referenceEntry.key=:referenceKey");
+		}
+		if(params.getSubIdent() != null) {
+			sf.append(" and aentry.subIdent=:subIdent");
+		}
+		sf.append(" and (aentry.identity in");
+		if(params.isAdmin()) {
+			sf.append(" (select participant.identity from repoentrytogroup as rel, bgroupmember as participant")
+	          .append("    where rel.entry.key=:repoEntryKey and rel.group=participant.group")
+	          .append("      and participant.role='").append(GroupRoles.participant.name()).append("'")
+	          .append("  )");
+			if(params.isNonMembers()) {
+				sf.append(" or aentry.identity not in (select membership.identity from repoentrytogroup as rel, bgroupmember as membership")
+		          .append("    where rel.entry.key=:repoEntryKey and rel.group=membership.group and membership.identity=aentry.identity")
+		          .append(" )");
+			}
+		} else if(params.isBusinessGroupCoach() || params.isRepositoryEntryCoach()) {
+			sf.append(" (select participant.identity from repoentrytogroup as rel, bgroupmember as participant, bgroupmember as coach")
+	          .append("    where rel.entry.key=:repoEntryKey")
+	          .append("      and rel.group=coach.group and coach.role='").append(GroupRoles.coach.name()).append("' and coach.identity.key=:identityKey")
+	          .append("      and rel.group=participant.group and participant.role='").append(GroupRoles.participant.name()).append("'")
+	          .append("  )");
+		}
+		sf.append(" ) group by v.key");
+
+		TypedQuery<Object[]> stats = dbInstance.getCurrentEntityManager()
+			.createQuery(sf.toString(), Object[].class)
+			.setParameter("repoEntryKey", courseEntry.getKey());
+		if(!params.isAdmin()) {
+			stats.setParameter("identityKey", coach.getKey());
+		}
+		if(params.getReferenceEntry() != null) {
+			stats.setParameter("referenceKey", params.getReferenceEntry().getKey());
+		}
+		if(params.getSubIdent() != null) {
+			stats.setParameter("subIdent", params.getSubIdent());
+		}
 		
-		//retrieve statistics in user course infos
-		userCourseInfosStatistics(coach, params, entry);
 
-		return entry;
-	}
-	
-	private void userCourseInfosStatistics(Identity coach, SearchAssessedIdentityParams params, CourseStatistics entry) {
-		RepositoryEntry courseEntry = params.getEntry();
-		try {
-			StringBuilder sf = new StringBuilder();
-			sf.append("select count(infos.key), infos.resource.key from ").append(UserCourseInfosImpl.class.getName()).append(" as infos ")
-			  .append(" where infos.resource.key=:resourceKey and (infos.identity in");
-			if(params.isAdmin()) {
-				sf.append(" (select participant.identity from repoentrytogroup as rel, bgroupmember as participant")
-		          .append("    where rel.entry.key=:repoEntryKey and rel.group=participant.group")
-		          .append("      and participant.role='").append(GroupRoles.participant.name()).append("'")
-		          .append("  )");
-				if(params.isNonMembers()) {
-					sf.append(" or not exists (select membership.identity from repoentrytogroup as rel, bgroupmember as membership")
-			          .append("    where rel.entry.key=:repoEntryKey and rel.group=membership.group and membership.identity=infos.identity")
-			          .append("  )");
-				}
-			} else if(params.isBusinessGroupCoach() || params.isRepositoryEntryCoach()) {
-				sf.append(" (select participant.identity from repoentrytogroup as rel, bgroupmember as participant, bgroupmember as coach")
-		          .append("    where rel.entry.key=:repoEntryKey")
-		          .append("      and rel.group=coach.group and coach.role='").append(GroupRoles.coach.name()).append("' and coach.identity.key=:identityKey")
-		          .append("      and rel.group=participant.group and participant.role='").append(GroupRoles.participant.name()).append("'")
-		          .append("  )");
-			}
-			sf.append(" ) group by infos.resource.key");
-
-			TypedQuery<Object[]> infos = dbInstance.getCurrentEntityManager()
-				.createQuery(sf.toString(), Object[].class)
-				.setParameter("resourceKey", courseEntry.getOlatResource().getKey())
-				.setParameter("repoEntryKey", courseEntry.getKey());
-			if(!params.isAdmin()) {
-				infos.setParameter("identityKey", coach.getKey());
-			}
-
-			List<Object[]> results = infos.getResultList();
-			Long initalLaunch = null;
-			if(results != null && results.size() > 0) {
-				initalLaunch = (Long)results.get(0)[0];
-			}
-			entry.setInitialLaunch(initalLaunch == null ? 0 : initalLaunch.intValue());
-		} catch (Exception e) {
-			e.printStackTrace();
-			log.error("", e);
-		}
-	}
-	
-	private void assessmentEntryStatistics(Identity coach, SearchAssessedIdentityParams params, CourseStatistics entry) {
-		RepositoryEntry courseEntry = params.getEntry();
-		try {
-			StringBuilder sf = new StringBuilder();
-			sf.append("select avg(aentry.score) as scoreAverage, ")
-			  .append(" sum(case when aentry.passed=true then 1 else 0 end) as numOfPassed,")
-			  .append(" sum(case when aentry.passed=false then 1 else 0 end) as numOfFailed,")
-			  .append(" sum(case when aentry.passed is null then 1 else 0 end) as numOfNotAttempted,")
-			  .append(" sum(aentry.key) as numOfStatements,")
-			  .append(" v.key as repoKey")
-			  .append(" from assessmententry aentry ")
-			  .append(" inner join aentry.repositoryEntry v ")
-			  .append(" where v.key=:repoEntryKey and aentry.status is not null and not(aentry.status='").append(AssessmentEntryStatus.notStarted.name()).append("')");
-			if(params.getReferenceEntry() != null) {
-				sf.append(" and aentry.referenceEntry.key=:referenceKey");
-			}
-			if(params.getSubIdent() != null) {
-				sf.append(" and aentry.subIdent=:subIdent");
-			}
-			sf.append(" and (aentry.identity in");
-			if(params.isAdmin()) {
-				sf.append(" (select participant.identity from repoentrytogroup as rel, bgroupmember as participant")
-		          .append("    where rel.entry.key=:repoEntryKey and rel.group=participant.group")
-		          .append("      and participant.role='").append(GroupRoles.participant.name()).append("'")
-		          .append("  )");
-				if(params.isNonMembers()) {
-					sf.append(" or aentry.identity not in (select membership.identity from repoentrytogroup as rel, bgroupmember as membership")
-			          .append("    where rel.entry.key=:repoEntryKey and rel.group=membership.group and membership.identity=aentry.identity")
-			          .append(" )");
-				}
-			} else if(params.isBusinessGroupCoach() || params.isRepositoryEntryCoach()) {
-				sf.append(" (select participant.identity from repoentrytogroup as rel, bgroupmember as participant, bgroupmember as coach")
-		          .append("    where rel.entry.key=:repoEntryKey")
-		          .append("      and rel.group=coach.group and coach.role='").append(GroupRoles.coach.name()).append("' and coach.identity.key=:identityKey")
-		          .append("      and rel.group=participant.group and participant.role='").append(GroupRoles.participant.name()).append("'")
-		          .append("  )");
-			}
-			sf.append(" ) group by v.key");
-
-			TypedQuery<Object[]> stats = dbInstance.getCurrentEntityManager()
-				.createQuery(sf.toString(), Object[].class)
-				.setParameter("repoEntryKey", courseEntry.getKey());
-			if(!params.isAdmin()) {
-				stats.setParameter("identityKey", coach.getKey());
-			}
-			if(params.getReferenceEntry() != null) {
-				stats.setParameter("referenceKey", params.getReferenceEntry().getKey());
-			}
-			if(params.getSubIdent() != null) {
-				stats.setParameter("subIdent", params.getSubIdent());
-			}
+		AssessmentStatistics entry = new AssessmentStatistics();
+		List<Object[]> results = stats.getResultList();
+		if(results != null && results.size() > 0) {
+			Object[] result = results.get(0);
+			Double averageScore = (Double)result[0];
+			Long numOfPassed = (Long)result[1];
+			Long numOfFailed = (Long)result[2];
+			Long numOfNotAttempted = (Long)result[3];
 			
-			List<Object[]> results = stats.getResultList();
-			if(results != null && results.size() > 0) {
-				Object[] result = results.get(0);
-				Double averageScore = (Double)result[0];
-				Long numOfPassed = (Long)result[1];
-				Long numOfFailed = (Long)result[2];
-				Long numOfNotAttempted = (Long)result[3];
-				
-				entry.setAverageScore(averageScore);
-				entry.setCountPassed(numOfPassed == null ? 0 : numOfPassed.intValue());
-				entry.setCountFailed(numOfFailed == null ? 0 : numOfFailed.intValue());
-				entry.setCountNotAttempted(numOfNotAttempted == null ? 0 : numOfNotAttempted.intValue());
-			}
-		} catch (Exception e) {
-			e.printStackTrace();
-			log.error("", e);
+			entry.setAverageScore(averageScore);
+			entry.setCountPassed(numOfPassed == null ? 0 : numOfPassed.intValue());
+			entry.setCountFailed(numOfFailed == null ? 0 : numOfFailed.intValue());
+			entry.setCountNotAttempted(numOfNotAttempted == null ? 0 : numOfNotAttempted.intValue());
 		}
+		return entry;
 	}
 
 	@Override

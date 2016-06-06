@@ -49,7 +49,7 @@ public class SearchAssessedIdentityParams {
 	private String searchString;
 	private List<Long> businessGroupKeys;
 	
-	public SearchAssessedIdentityParams(RepositoryEntry entry, RepositoryEntry referenceEntry, String subIdent,
+	public SearchAssessedIdentityParams(RepositoryEntry entry, String subIdent, RepositoryEntry referenceEntry, 
 			AssessmentToolSecurityCallback secCallback) {
 		this.entry = entry;
 		this.referenceEntry = referenceEntry;

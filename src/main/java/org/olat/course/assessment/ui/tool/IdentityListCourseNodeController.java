@@ -226,7 +226,7 @@ public class IdentityListCourseNodeController extends FormBasicController implem
 	}
 	
 	private void updateModel(UserRequest ureq, String searchString, List<FlexiTableFilter> filters, List<FlexiTableFilter> extendedFilters) {
-		SearchAssessedIdentityParams params = new SearchAssessedIdentityParams(courseEntry, referenceEntry, courseNode.getIdent(), assessmentCallback);
+		SearchAssessedIdentityParams params = new SearchAssessedIdentityParams(courseEntry, courseNode.getIdent(), referenceEntry, assessmentCallback);
 		
 		List<AssessmentEntryStatus> assessmentStatus = null;
 		if(filters != null && filters.size() > 0) {
@@ -279,6 +279,7 @@ public class IdentityListCourseNodeController extends FormBasicController implem
 		if(filters != null && filters.size() > 0) {
 			usersTableModel.filter(filters.get(0).getFilter());
 		}
+		tableEl.reset();
 		tableEl.reloadData();
 
 		List<String> toolCmpNames = new ArrayList<>();

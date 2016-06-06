@@ -191,7 +191,7 @@ public class AssessedIdentityListController extends FormBasicController implemen
 	}
 	
 	private void updateModel(String searchString, List<FlexiTableFilter> filters, List<FlexiTableFilter> extendedFilters) {
-		SearchAssessedIdentityParams params = new SearchAssessedIdentityParams(testEntry, testEntry, null, assessmentCallback);
+		SearchAssessedIdentityParams params = new SearchAssessedIdentityParams(testEntry, null, testEntry, assessmentCallback);
 		
 		List<AssessmentEntryStatus> assessmentStatus = null;
 		if(filters != null && filters.size() > 0) {

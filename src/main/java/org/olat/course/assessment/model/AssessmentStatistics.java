@@ -25,22 +25,12 @@ package org.olat.course.assessment.model;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class CourseStatistics {
-	
-	private int numOfAssessedIdentities;
+public class AssessmentStatistics {
+
 	private int countPassed;
 	private int countFailed;
 	private int countNotAttempted;
 	private Double averageScore;
-	private int initialLaunch;
-	
-	public int getNumOfAssessedIdentities() {
-		return numOfAssessedIdentities;
-	}
-	
-	public void setNumOfAssessedIdentities(int numOfAssessedIdentities) {
-		this.numOfAssessedIdentities = numOfAssessedIdentities;
-	}
 	
 	public int getCountPassed() {
 		return countPassed;
@@ -72,13 +62,5 @@ public class CourseStatistics {
 	
 	public void setAverageScore(Double averageScore) {
 		this.averageScore = averageScore;
-	}
-	
-	public int getInitialLaunch() {
-		return initialLaunch;
-	}
-	
-	public void setInitialLaunch(int initialLaunch) {
-		this.initialLaunch = initialLaunch;
 	}
 }

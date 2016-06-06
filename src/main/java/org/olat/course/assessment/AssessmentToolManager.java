@@ -23,7 +23,7 @@ import java.util.List;
 
 import org.olat.basesecurity.IdentityShort;
 import org.olat.core.id.Identity;
-import org.olat.course.assessment.model.CourseStatistics;
+import org.olat.course.assessment.model.AssessmentStatistics;
 import org.olat.course.assessment.model.SearchAssessedIdentityParams;
 import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
@@ -38,7 +38,23 @@ import org.olat.modules.assessment.model.AssessmentEntryStatus;
  */
 public interface AssessmentToolManager {
 	
-	public CourseStatistics getStatistics(Identity coach, SearchAssessedIdentityParams params);
+	public AssessmentStatistics getStatistics(Identity coach, SearchAssessedIdentityParams params);
+	
+	/**
+	 * 
+	 * @param coach
+	 * @param params
+	 * @return
+	 */
+	public int getNumberOfAssessedIndetities(Identity coach, SearchAssessedIdentityParams params);
+	
+	/**
+	 * The number of user who launched the course / resource
+	 * @param coach
+	 * @param params
+	 * @return
+	 */
+	public int getNumberOfInitialLaunches(Identity coach, SearchAssessedIdentityParams params);
 	
 	public List<Identity> getAssessedIdentities(Identity coach, SearchAssessedIdentityParams params);
 	

@@ -73,7 +73,9 @@ public class AssessmentEntryDAO {
 		data.setRepositoryEntry(entry);
 		data.setSubIdent(subIdent);
 		data.setReferenceEntry(referenceEntry);
-		data.setScore(new BigDecimal(score));
+		if(score != null) {
+			data.setScore(new BigDecimal(score));
+		}
 		data.setPassed(passed);
 		dbInstance.getCurrentEntityManager().persist(data);
 		return data;

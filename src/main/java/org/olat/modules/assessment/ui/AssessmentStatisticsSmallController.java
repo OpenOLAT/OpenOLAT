@@ -27,7 +27,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.assessment.AssessmentToolManager;
-import org.olat.course.assessment.model.CourseStatistics;
+import org.olat.course.assessment.model.AssessmentStatistics;
 import org.olat.course.assessment.model.SearchAssessedIdentityParams;
 import org.olat.modules.assessment.ui.AssessmentToolSecurityCallback;
 import org.olat.repository.RepositoryEntry;
@@ -77,22 +77,23 @@ public class AssessmentStatisticsSmallController extends BasicController {
 	}
 	
 	public void updateStatistics() {
-		SearchAssessedIdentityParams params = new SearchAssessedIdentityParams(testEntry, testEntry, null, assessmentCallback);
-		CourseStatistics stats = assessmentToolManager.getStatistics(getIdentity(), params);
-		
-		numOfAssessedIdentities = stats.getNumOfAssessedIdentities();
+		SearchAssessedIdentityParams params = new SearchAssessedIdentityParams(testEntry, null, testEntry, assessmentCallback);
+		numOfAssessedIdentities = assessmentToolManager.getNumberOfAssessedIndetities(getIdentity(), params);
 		mainVC.contextPut("numOfAssessedIdentities", numOfAssessedIdentities);
+		
+		AssessmentStatistics stats = assessmentToolManager.getStatistics(getIdentity(), params);
 		mainVC.contextPut("scoreAverage", AssessmentHelper.getRoundedScore(stats.getAverageScore()));
 		numOfPassed = stats.getCountPassed();
 		mainVC.contextPut("numOfPassed", numOfPassed);
-		int percentPassed = Math.round(100.0f * ((float)stats.getCountPassed() / (float)stats.getNumOfAssessedIdentities()));
+		int percentPassed = Math.round(100.0f * (stats.getCountPassed() / numOfAssessedIdentities));
 		mainVC.contextPut("percentPassed", percentPassed);
 		numOfFailed = stats.getCountFailed();
 		mainVC.contextPut("numOfFailed", numOfFailed);
-		int percentFailed = Math.round(100.0f * ((float)stats.getCountFailed() / (float)stats.getNumOfAssessedIdentities()));
+		int percentFailed = Math.round(100.0f * (stats.getCountFailed() / numOfAssessedIdentities));
 		mainVC.contextPut("percentFailed", percentFailed);
 		
-		mainVC.contextPut("numOfInitialLaunch", stats.getInitialLaunch());
+		int numOfLaunches = assessmentToolManager.getNumberOfInitialLaunches(getIdentity(), params);
+		mainVC.contextPut("numOfInitialLaunch", numOfLaunches);
 	}
 
 	@Override
