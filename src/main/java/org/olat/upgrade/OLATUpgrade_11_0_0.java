@@ -747,7 +747,7 @@ public class OLATUpgrade_11_0_0 extends OLATUpgrade {
 				String username = assessedIdentity.getName();
 				Map<Date, List<CmiData>> rawDatas = ScormAssessmentManager.getInstance()
 						.visitScoDatasMultiResults(username, course.getCourseEnvironment(), (ScormCourseNode)courseNode);
-				if(rawDatas.size() > 0) {
+				if(rawDatas != null && rawDatas.size() > 0) {
 					entry.setAssessmentStatus(AssessmentEntryStatus.inProgress);
 				} else {
 					entry.setAssessmentStatus(AssessmentEntryStatus.notStarted);
