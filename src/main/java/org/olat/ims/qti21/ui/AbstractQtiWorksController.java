@@ -25,6 +25,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.commons.codec.binary.Base64;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
@@ -32,11 +33,13 @@ import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.MultipartFileInfos;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.StringHelper;
+import org.olat.ims.qti21.ui.ResponseInput.Base64Input;
+import org.olat.ims.qti21.ui.ResponseInput.FileInput;
+import org.olat.ims.qti21.ui.ResponseInput.StringInput;
 
 import uk.ac.ed.ph.jqtiplus.exception.QtiParseException;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.EndAttemptInteraction;
 import uk.ac.ed.ph.jqtiplus.types.Identifier;
-import uk.ac.ed.ph.jqtiplus.types.StringResponseData;
 
 /**
  * 
@@ -45,6 +48,8 @@ import uk.ac.ed.ph.jqtiplus.types.StringResponseData;
  *
  */
 public abstract class AbstractQtiWorksController extends FormBasicController {
+	
+	public static final String PNG_BASE64_PREFIX = "data:image/png;base64,";
 		
 	public AbstractQtiWorksController(UserRequest ureq, WindowControl wControl, String pageName) {
 		super(ureq, wControl, pageName);
@@ -67,8 +72,8 @@ public abstract class AbstractQtiWorksController extends FormBasicController {
 	protected abstract Identifier getResponseIdentifierFromUniqueId(String uniqueId);
 	
 	protected void processResponse(UserRequest ureq, FormItem source) {
-		Map<Identifier, StringResponseData> stringResponseMap = extractStringResponseData();
-		Map<Identifier, MultipartFileInfos> fileResponseMap;
+		Map<Identifier, ResponseInput> stringResponseMap = extractStringResponseData();
+		Map<Identifier, ResponseInput> fileResponseMap;
 		if(mainForm.isMultipartEnabled()) {
 			fileResponseMap = extractFileResponseData();
 		} else {
@@ -96,7 +101,7 @@ public abstract class AbstractQtiWorksController extends FormBasicController {
 					} else {
 						responseValues = new String[]{ "submit" };
 					}
-			        StringResponseData stringResponseData = new StringResponseData(responseValues);
+			        StringInput stringResponseData = new StringInput(responseValues);
 					stringResponseMap.put(responseIdentifier, stringResponseData);
 				}
 			}
@@ -107,11 +112,11 @@ public abstract class AbstractQtiWorksController extends FormBasicController {
 	}
 	
 	protected abstract void fireResponse(UserRequest ureq, FormItem source,
-			Map<Identifier, StringResponseData> stringResponseMap, Map<Identifier, MultipartFileInfos> fileResponseMap,
+			Map<Identifier, ResponseInput> stringResponseMap, Map<Identifier, ResponseInput> fileResponseMap,
 			String comment);
 		
-	protected Map<Identifier, StringResponseData> extractStringResponseData() {
-        final Map<Identifier, StringResponseData> responseMap = new HashMap<Identifier, StringResponseData>();
+	protected Map<Identifier, ResponseInput> extractStringResponseData() {
+        final Map<Identifier, ResponseInput> responseMap = new HashMap<>();
 
         final Set<String> parameterNames = mainForm.getRequestParameterSet();
         for (final String name : parameterNames) {
@@ -127,16 +132,27 @@ public abstract class AbstractQtiWorksController extends FormBasicController {
                 	throw new RuntimeException("Bad response identifier encoded in parameter  " + name, e);
                 }
                 
-                final String[] responseValues = mainForm.getRequestParameterValues("qtiworks_response_" + responseIdentifierString);
-                final StringResponseData stringResponseData = new StringResponseData(responseValues);
-                responseMap.put(responseIdentifier, stringResponseData);
+                String[] responseBase64Values = mainForm.getRequestParameterValues("qtiworks_response_64_" + responseIdentifierString);
+				if(responseBase64Values != null && responseBase64Values.length == 1) {
+					//only used from drawing interaction as image/png
+					String responseData = responseBase64Values[0];
+					if(responseData.startsWith(PNG_BASE64_PREFIX)) {
+	                	byte[] file = Base64.decodeBase64(responseData.substring(PNG_BASE64_PREFIX.length(), responseData.length()));
+	                	final Base64Input stringResponseData = new Base64Input("image/png", file);
+	                	responseMap.put(responseIdentifier, stringResponseData);
+					}
+				} else {
+					final String[] responseValues = mainForm.getRequestParameterValues("qtiworks_response_" + responseIdentifierString);
+                	final StringInput stringResponseData = new StringInput(responseValues);
+                	responseMap.put(responseIdentifier, stringResponseData);
+                }
             }
         }
         return responseMap;
     }
 	
-	protected Map<Identifier, MultipartFileInfos> extractFileResponseData() {
-		Map<Identifier, MultipartFileInfos> fileResponseMap = new HashMap<Identifier, MultipartFileInfos>();
+	protected Map<Identifier, ResponseInput> extractFileResponseData() {
+		Map<Identifier, ResponseInput> fileResponseMap = new HashMap<>();
 
 		Set<String> parameterNames = new HashSet<>(mainForm.getRequestMultipartFilesSet());
 		parameterNames.addAll(mainForm.getRequestParameterSet());
@@ -150,12 +166,13 @@ public abstract class AbstractQtiWorksController extends FormBasicController {
 				} catch (final QtiParseException e) {
 					throw new RuntimeException("Bad response identifier encoded in parameter " + name, e);
 				}
+
 				String multipartName = "qtiworks_uploadresponse_" + responseIdentifierString;
 				MultipartFileInfos multipartFile = mainForm.getRequestMultipartFileInfos(multipartName);
 				if (multipartFile == null) {
 					throw new RuntimeException("Expected to find multipart file with name " + multipartName);
 				}
-				fileResponseMap.put(responseIdentifier, multipartFile);
+				fileResponseMap.put(responseIdentifier, new FileInput(multipartFile));
 			}
 		}
 		return fileResponseMap;

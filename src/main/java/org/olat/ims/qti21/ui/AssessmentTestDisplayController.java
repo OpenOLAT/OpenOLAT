@@ -38,7 +38,6 @@ import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
-import org.olat.core.gui.components.form.flexible.impl.MultipartFileInfos;
 import org.olat.core.gui.components.form.flexible.impl.elements.FormSubmit;
 import org.olat.core.gui.components.htmlheader.jscss.JSAndCSSComponent;
 import org.olat.core.gui.components.link.Link;
@@ -76,6 +75,9 @@ import org.olat.ims.qti21.model.audit.CandidateEvent;
 import org.olat.ims.qti21.model.audit.CandidateExceptionReason;
 import org.olat.ims.qti21.model.audit.CandidateItemEventType;
 import org.olat.ims.qti21.model.audit.CandidateTestEventType;
+import org.olat.ims.qti21.ui.ResponseInput.Base64Input;
+import org.olat.ims.qti21.ui.ResponseInput.FileInput;
+import org.olat.ims.qti21.ui.ResponseInput.StringInput;
 import org.olat.ims.qti21.ui.components.AssessmentTestFormItem;
 import org.olat.ims.qti21.ui.components.AssessmentTreeFormItem;
 import org.olat.modules.assessment.AssessmentEntry;
@@ -661,18 +663,34 @@ public class AssessmentTestDisplayController extends BasicController implements 
     //        final Map<Identifier, StringResponseData> stringResponseMap,
     //        final Map<Identifier, MultipartFile> fileResponseMap,
     //        final String candidateComment)       
-	private void handleResponse(UserRequest ureq, Map<Identifier, StringResponseData> stringResponseMap,
-			Map<Identifier,MultipartFileInfos> fileResponseMap, String candidateComment) {
+	private void handleResponse(UserRequest ureq, Map<Identifier, ResponseInput> stringResponseMap,
+			Map<Identifier, ResponseInput> fileResponseMap, String candidateComment) {
 
 		NotificationRecorder notificationRecorder = new NotificationRecorder(NotificationLevel.INFO);
 		TestSessionState testSessionState = testSessionController.getTestSessionState();
 		
-		final Map<Identifier, ResponseData> responseDataMap = new HashMap<Identifier, ResponseData>();
+		final Map<Identifier,File> fileSubmissionMap = new HashMap<>();
+		final Map<Identifier, ResponseData> responseDataMap = new HashMap<>();
+		
 		if (stringResponseMap != null) {
-			for (final Entry<Identifier, StringResponseData> stringResponseEntry : stringResponseMap.entrySet()) {
-				final Identifier identifier = stringResponseEntry.getKey();
-				final StringResponseData stringResponseData = stringResponseEntry.getValue();
-				responseDataMap.put(identifier, stringResponseData);
+			for (final Entry<Identifier, ResponseInput> responseEntry : stringResponseMap.entrySet()) {
+				final Identifier identifier = responseEntry.getKey();
+				final ResponseInput responseData = responseEntry.getValue();
+				if(responseData instanceof StringInput) {
+					responseDataMap.put(identifier, new StringResponseData(((StringInput)responseData).getResponseData()));
+				} else if(responseData instanceof Base64Input) {
+					//only used from drawing interaction
+					Base64Input fileInput = (Base64Input)responseData;
+					String filename = "submitted_image.png";
+					File storedFile = qtiService.importFileSubmission(candidateSession, filename, fileInput.getResponseData());
+                    responseDataMap.put(identifier, new FileResponseData(storedFile, fileInput.getContentType(), storedFile.getName()));
+                    fileSubmissionMap.put(identifier, storedFile);
+				} else if(responseData instanceof FileInput) {
+					FileInput fileInput = (FileInput)responseData;
+					File storedFile = qtiService.importFileSubmission(candidateSession, fileInput.getMultipartFileInfos());
+                    responseDataMap.put(identifier, new FileResponseData(storedFile, fileInput.getContentType(), fileInput.getFileName()));
+                    fileSubmissionMap.put(identifier, storedFile);
+				}
             }
 		}
 		
@@ -682,13 +700,13 @@ public class AssessmentTestDisplayController extends BasicController implements 
 		String assessmentItemIdentifier = currentItemKey.getIdentifier().toString();
 		AssessmentItemSession itemSession = qtiService
 				.getOrCreateAssessmentItemSession(candidateSession, parentParts, assessmentItemIdentifier);
-		Map<Identifier,File> fileSubmissionMap = new HashMap<>();
+		
         if (fileResponseMap!=null) {
-            for (Entry<Identifier, MultipartFileInfos> fileResponseEntry : fileResponseMap.entrySet()) {
+            for (Entry<Identifier, ResponseInput> fileResponseEntry : fileResponseMap.entrySet()) {
                 Identifier identifier = fileResponseEntry.getKey();
-                MultipartFileInfos multipartFile = fileResponseEntry.getValue();
+                FileInput multipartFile = (FileInput)fileResponseEntry.getValue();
                 if (!multipartFile.isEmpty()) {
-                	File storedFile = qtiService.importFileSubmission(candidateSession, multipartFile);
+                	File storedFile = qtiService.importFileSubmission(candidateSession, multipartFile.getMultipartFileInfos());
                     responseDataMap.put(identifier, new FileResponseData(storedFile, multipartFile.getContentType(), multipartFile.getFileName()));
                     fileSubmissionMap.put(identifier, storedFile);
                 }
@@ -1295,7 +1313,7 @@ public class AssessmentTestDisplayController extends BasicController implements 
 
 		@Override
 		protected void fireResponse(UserRequest ureq, FormItem source,
-				Map<Identifier, StringResponseData> stringResponseMap, Map<Identifier, MultipartFileInfos> fileResponseMap,
+				Map<Identifier, ResponseInput> stringResponseMap, Map<Identifier, ResponseInput> fileResponseMap,
 				String comment) {
 			fireEvent(ureq, new QTIWorksAssessmentTestEvent(QTIWorksAssessmentTestEvent.Event.response, stringResponseMap, fileResponseMap, comment, source));
 		}

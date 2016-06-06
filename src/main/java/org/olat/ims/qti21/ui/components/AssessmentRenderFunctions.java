@@ -23,12 +23,22 @@ package org.olat.ims.qti21.ui.components;
 import static uk.ac.ed.ph.qtiworks.mathassess.MathAssessConstants.FIELD_PMATHML_IDENTIFIER;
 import static uk.ac.ed.ph.qtiworks.mathassess.MathAssessConstants.MATHS_CONTENT_RECORD_VARIABLE_IDENTIFIER;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.codec.binary.Base64;
+import org.jcodec.common.IOUtils;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.render.StringOutput;
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
+import org.olat.ims.qti21.AssessmentTestSession;
+import org.olat.ims.qti21.manager.AssessmentTestSessionDAO;
 
 import uk.ac.ed.ph.jqtiplus.attribute.Attribute;
 import uk.ac.ed.ph.jqtiplus.node.ForeignElement;
@@ -68,6 +78,8 @@ import uk.ac.ed.ph.jqtiplus.value.Value;
  *
  */
 public class AssessmentRenderFunctions {
+	
+	private static final OLog log = Tracing.createLoggerFor(AssessmentRenderFunctions.class);
 	
 	public static boolean exists(Value value) {
 		return value != null && !value.isNull();
@@ -151,6 +163,26 @@ public class AssessmentRenderFunctions {
 	public static final Value getOutcomeValue(ItemSessionState itemSessionState, String identifierAsString) {
 		Identifier identifier = Identifier.assumedLegal(identifierAsString);
 		return itemSessionState.getOutcomeValues().get(identifier);
+	}
+
+	public static String getResponseValueAsBase64(AssessmentItem assessmentItem, AssessmentTestSession candidateSession, ItemSessionState itemSessionState,
+			Identifier identifier, boolean solutionMode) {
+		Value val = getResponseValue(assessmentItem, itemSessionState, identifier, solutionMode);
+		
+		String encodedString = null;
+		if(val instanceof FileValue) {
+			FileValue fileValue = (FileValue)val;
+			File myStore = CoreSpringFactory.getImpl(AssessmentTestSessionDAO.class).getSessionStorage(candidateSession);
+	        File submissionDir = new File(myStore, "submissions");
+	        File submittedFile = new File(submissionDir, fileValue.getFileName());
+	        try(InputStream inStream = new FileInputStream(submittedFile)) {
+	        	 byte[] binaryData = IOUtils.toByteArray(inStream);
+	        	 encodedString = new String(Base64.encodeBase64(binaryData), "UTF8");
+	        } catch(Exception e) {
+	        	log.error("", e);
+	        }
+		}
+		return encodedString;
 	}
 	
 	public static Value getResponseValue(AssessmentItem assessmentItem, ItemSessionState itemSessionState, Identifier identifier, boolean solutionMode) {

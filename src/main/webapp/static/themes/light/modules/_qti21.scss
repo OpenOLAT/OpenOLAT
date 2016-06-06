@@ -22,6 +22,28 @@ ul.sessionControl {
 	background-color: white;
 }
 
+/* Drawing */
+#sketch {
+	position: relative;
+}
+
+#tmp_canvas {
+	position: absolute;
+	left: 0px; right: 0;
+	bottom: 0; top: 0;
+	cursor: crosshair;
+}
+	
+#colors {
+	.black .o_icon:before { color:#000000;  }
+	/* .white .o_icon:before { color:#FFFFFF; } */
+	.blue .o_icon:before { color:#0000FF;  } 
+	.green .o_icon:before { color:#008000;  } 
+	.yellow .o_icon:before { color:#FFFF00;  }
+	.red .o_icon:before { color:#FF0000;  } 
+	.purple .o_icon:before { color:#800080; }
+}
+
 /* Graphic gap match */
 .o_gap_item {
 	padding:5px;

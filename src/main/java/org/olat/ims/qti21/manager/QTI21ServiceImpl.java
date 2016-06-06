@@ -44,6 +44,7 @@ import javax.xml.transform.TransformerException;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 
+import org.apache.commons.io.IOUtils;
 import org.olat.basesecurity.IdentityRef;
 import org.olat.core.gui.components.form.flexible.impl.MultipartFileInfos;
 import org.olat.core.id.Identity;
@@ -778,6 +779,46 @@ public class QTI21ServiceImpl implements QTI21Service, InitializingBean, Disposa
 		
 		if(auditLogger != null) {
 			auditLogger.logCandidateOutcomes(candidateSession, outcomes);
+		}
+	}
+	
+	
+
+	@Override
+	public File importFileSubmission(AssessmentTestSession candidateSession, String filename, byte[] data) {
+		File myStore = testSessionDao.getSessionStorage(candidateSession);
+        File submissionDir = new File(myStore, "submissions");
+        if(!submissionDir.exists()) {
+        	submissionDir.mkdir();
+        }
+        
+        FileOutputStream out = null;
+        try {
+        	//add the date in the file
+        	String extension = FileUtils.getFileSuffix(filename);
+        	if(extension != null && extension.length() > 0) {
+        		filename = filename.substring(0, filename.length() - extension.length() - 1);
+        		extension = "." + extension;
+        	} else {
+        		extension = "";
+        	}
+        	String date = testSessionDao.formatDate(new Date());
+        	String datedFilename = filename + date + extension;
+        	//make sure we don't overwrite an existing file
+			File submittedFile = new File(submissionDir, datedFilename);
+			String renamedFile = FileUtils.rename(submittedFile);
+			if(!datedFilename.equals(renamedFile)) {
+				submittedFile = new File(submissionDir, datedFilename);
+			}
+			
+			out = new FileOutputStream(submittedFile);
+			out.write(data);
+			return submittedFile;
+		} catch (IOException e) {
+			log.error("", e);
+			return null;
+		} finally {
+			IOUtils.closeQuietly(out);
 		}
 	}
 

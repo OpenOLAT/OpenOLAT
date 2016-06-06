@@ -35,7 +35,6 @@ import org.olat.ims.qti21.ui.AssessmentTestDisplayController;
 import uk.ac.ed.ph.jqtiplus.node.test.AbstractPart;
 import uk.ac.ed.ph.jqtiplus.node.test.ItemSessionControl;
 import uk.ac.ed.ph.jqtiplus.node.test.TestPart;
-import uk.ac.ed.ph.jqtiplus.node.test.TimeLimits;
 
 /**
  * 
@@ -48,7 +47,7 @@ public abstract class ItemSessionControlController extends FormBasicController {
 	private static final String[] yesnoKeys = new String[] { "y", "n" };
 	private static final String[] attemtpsKeys = new String[] { "y", "n", "inherit" };
 
-	private TextElement maxAttemptsEl, maxTimeEl;
+	private TextElement maxAttemptsEl /*, maxTimeEl */;
 	private SingleSelection limitAttemptsEl, allowCommentEl, showSolutionEl;
 	
 	protected final boolean restrictedEdit;
@@ -63,8 +62,8 @@ public abstract class ItemSessionControlController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		/*
 		TimeLimits timeLimits = part.getTimeLimits();
-		
 		String timeMax = "";
 		if(timeLimits != null && timeLimits.getMaximumMillis() != null && timeLimits.getMaximumMillis().longValue() > 0) {
 			long maxInMinute = timeLimits.getMaximumMillis().longValue() / (60 * 1000);
@@ -73,6 +72,7 @@ public abstract class ItemSessionControlController extends FormBasicController {
 		maxTimeEl = uifactory.addTextElement("time.limit", "time.limit.max", 4, timeMax, formLayout);
 		maxTimeEl.setDisplaySize(4);
 		maxTimeEl.setEnabled(!restrictedEdit);
+		*/
 
 		ItemSessionControl itemSessionControl = part.getItemSessionControl();//can be null
 		
@@ -155,6 +155,7 @@ public abstract class ItemSessionControlController extends FormBasicController {
 			}
 		}
 		
+		/*
 		maxTimeEl.clearError();
 		if(StringHelper.containsNonWhitespace(maxTimeEl.getValue())) {
 			try {
@@ -168,6 +169,7 @@ public abstract class ItemSessionControlController extends FormBasicController {
 				allOk &= false;
 			}
 		}
+		*/
 
 		return allOk & super.validateFormLogic(ureq);
 	}
@@ -206,6 +208,7 @@ public abstract class ItemSessionControlController extends FormBasicController {
 			itemSessionControl.setMaxAttempts(null);
 		}
 		
+		/*
 		TimeLimits timeLimits = part.getTimeLimits();
 		if(StringHelper.containsNonWhitespace(maxTimeEl.getValue())) {
 			int valInMinute = Integer.parseInt(maxTimeEl.getValue());
@@ -213,6 +216,7 @@ public abstract class ItemSessionControlController extends FormBasicController {
 		} else if(timeLimits != null) {
 			timeLimits.setMaximum(null);
 		}
+		*/
 	}
 	
 	private ItemSessionControl checkNotNull(ItemSessionControl itemSessionControl) {
@@ -223,6 +227,7 @@ public abstract class ItemSessionControlController extends FormBasicController {
 		return itemSessionControl;
 	}
 	
+	/*
 	private TimeLimits checkNotNull(TimeLimits timeLimits) {
 		if(timeLimits == null) {
 			timeLimits = new TimeLimits(part);
@@ -230,5 +235,5 @@ public abstract class ItemSessionControlController extends FormBasicController {
 		}
 		return timeLimits;
 	}
-
+	*/
 }
