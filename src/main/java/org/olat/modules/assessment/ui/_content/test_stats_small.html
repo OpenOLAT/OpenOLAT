@@ -11,9 +11,9 @@
 			<th>$r.translate("table.header.numOfInitialLaunch")</th>
 			<td>
 			#if($numOfInitialLaunch && $numOfInitialLaunch == 0)
-				<i class="o_icon o_green_led"> </i>
-			#elseif($numOfInitialLaunch && $numOfInitialLaunch == $numOfAssessedIdentities)
 				<i class="o_icon o_red_led"> </i>
+			#elseif($numOfInitialLaunch && $numOfInitialLaunch == $numOfAssessedIdentities)
+				<i class="o_icon o_green_led"> </i>
 			#else
 				<i class="o_icon o_yellow_led"> </i>
 			#end

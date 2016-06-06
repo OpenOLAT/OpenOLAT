@@ -34,7 +34,6 @@ import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
-import org.olat.core.gui.components.form.flexible.impl.MultipartFileInfos;
 import org.olat.core.gui.components.form.flexible.impl.elements.FormSubmit;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
@@ -53,6 +52,9 @@ import org.olat.ims.qti21.model.audit.AssessmentResponseData;
 import org.olat.ims.qti21.model.audit.CandidateEvent;
 import org.olat.ims.qti21.model.audit.CandidateExceptionReason;
 import org.olat.ims.qti21.model.audit.CandidateItemEventType;
+import org.olat.ims.qti21.ui.ResponseInput.Base64Input;
+import org.olat.ims.qti21.ui.ResponseInput.FileInput;
+import org.olat.ims.qti21.ui.ResponseInput.StringInput;
 import org.olat.ims.qti21.ui.components.AssessmentItemFormItem;
 import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.repository.RepositoryEntry;
@@ -360,8 +362,8 @@ public class AssessmentItemDisplayController extends BasicController implements 
 		return requestedLimitIntValue > 0 ? requestedLimitIntValue : JqtiPlus.DEFAULT_TEMPLATE_PROCESSING_LIMIT;
 	}
 	
-	public void handleResponses(UserRequest ureq, Map<Identifier, StringResponseData> stringResponseMap,
-			Map<Identifier,MultipartFileInfos> fileResponseMap, String candidateComment) {
+	public void handleResponses(UserRequest ureq, Map<Identifier, ResponseInput> stringResponseMap,
+			Map<Identifier,ResponseInput> fileResponseMap, String candidateComment) {
 
 		/* Retrieve current JQTI state and set up JQTI controller */
 		NotificationRecorder notificationRecorder = new NotificationRecorder(NotificationLevel.INFO);
@@ -379,25 +381,30 @@ public class AssessmentItemDisplayController extends BasicController implements 
 		 * it's worth the effort.
 		 */
 		final Map<Identifier, ResponseData> responseDataMap = new HashMap<>();
+		//final Map<Identifier, CandidateFileSubmission> fileSubmissionMap = new HashMap<>();
 		final Map<Identifier, AssessmentResponse> assessmentResponseDataMap = new HashMap<>();
 
 		if (stringResponseMap!=null) {
-			for (final Entry<Identifier, StringResponseData> stringResponseEntry : stringResponseMap.entrySet()) {
-				final Identifier identifier = stringResponseEntry.getKey();
-				final StringResponseData stringResponseData = stringResponseEntry.getValue();
-				responseDataMap.put(identifier, stringResponseData);
-				assessmentResponseDataMap.put(identifier, new AssessmentResponseData(identifier, stringResponseData));
+			for (final Entry<Identifier, ResponseInput> stringResponseEntry : stringResponseMap.entrySet()) {
+				Identifier identifier = stringResponseEntry.getKey();
+				ResponseInput responseData = stringResponseEntry.getValue();
+				if(responseData instanceof StringInput) {
+					responseDataMap.put(identifier, new StringResponseData(((StringInput)responseData).getResponseData()));
+				} else if(responseData instanceof Base64Input) {
+					//TODO
+				} else if(responseData instanceof FileInput) {
+					
+				}
 			}
 		}
-		
-	       // final Map<Identifier, CandidateFileSubmission> fileSubmissionMap = new HashMap<Identifier, CandidateFileSubmission>();
+ 
         if (fileResponseMap!=null) {
-            for (final Entry<Identifier, MultipartFileInfos> fileResponseEntry : fileResponseMap.entrySet()) {
+            for (final Entry<Identifier, ResponseInput> fileResponseEntry : fileResponseMap.entrySet()) {
                 final Identifier identifier = fileResponseEntry.getKey();
-                final MultipartFileInfos multipartFile = fileResponseEntry.getValue();
+                final FileInput multipartFile = (FileInput)fileResponseEntry.getValue();
                 if (!multipartFile.isEmpty()) {
                     //final CandidateFileSubmission fileSubmission = candidateUploadService.importFileSubmission(candidateSession, multipartFile);
-                	File storedFile = qtiService.importFileSubmission(candidateSession, multipartFile);
+                	File storedFile = qtiService.importFileSubmission(candidateSession, multipartFile.getMultipartFileInfos());
                 	final FileResponseData fileResponseData = new FileResponseData(storedFile, multipartFile.getContentType(), multipartFile.getFileName());
                     responseDataMap.put(identifier, fileResponseData);
     				assessmentResponseDataMap.put(identifier, new AssessmentResponseData(identifier, fileResponseData));
@@ -678,7 +685,7 @@ public class AssessmentItemDisplayController extends BasicController implements 
 
 		@Override
 		protected void fireResponse(UserRequest ureq, FormItem source,
-				Map<Identifier, StringResponseData> stringResponseMap, Map<Identifier, MultipartFileInfos> fileResponseMap,
+				Map<Identifier, ResponseInput> stringResponseMap, Map<Identifier, ResponseInput> fileResponseMap,
 				String comment) {
 			fireEvent(ureq, new QTIWorksAssessmentItemEvent(QTIWorksAssessmentItemEvent.Event.response, stringResponseMap, fileResponseMap, comment, source));
 		}

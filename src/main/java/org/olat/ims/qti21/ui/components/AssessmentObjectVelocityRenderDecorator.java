@@ -35,6 +35,7 @@ import org.olat.core.gui.render.velocity.VelocityRenderDecorator;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.helpers.Settings;
 import org.olat.core.util.StringHelper;
+import org.olat.ims.qti21.AssessmentTestSession;
 
 import uk.ac.ed.ph.jqtiplus.attribute.value.StringMultipleAttribute;
 import uk.ac.ed.ph.jqtiplus.node.QtiNode;
@@ -527,6 +528,12 @@ public class AssessmentObjectVelocityRenderDecorator extends VelocityRenderDecor
 
 	public Value getResponseValue(Identifier identifier) {
 		return AssessmentRenderFunctions.getResponseValue(assessmentItem, itemSessionState, identifier, isSolutionMode());
+	}
+	
+	public String getResponseValueAsBase64(Identifier identifier) {
+		AssessmentTestSession assessmentTestSession = avc.getCandidateSessionContext().getCandidateSession();
+		return AssessmentRenderFunctions.getResponseValueAsBase64(assessmentItem, assessmentTestSession, itemSessionState, identifier, isSolutionMode());
+		
 	}
 	
 	public ResponseDeclaration getResponseDeclaration(Identifier identifier) {

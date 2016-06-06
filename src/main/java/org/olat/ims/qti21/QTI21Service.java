@@ -224,5 +224,7 @@ public interface QTI21Service {
 	 * @return
 	 */
 	public File importFileSubmission(AssessmentTestSession candidateSession, MultipartFileInfos multipartFile);
+	
+	public File importFileSubmission(AssessmentTestSession candidateSession, String filename, byte[] data);
 
 }

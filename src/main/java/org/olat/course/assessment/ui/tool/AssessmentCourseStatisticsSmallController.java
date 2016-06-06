@@ -82,7 +82,7 @@ public class AssessmentCourseStatisticsSmallController extends BasicController {
 		ICourse course = CourseFactory.loadCourse(courseEntry);
 		String rootNodeIdent = course.getRunStructure().getRootNode().getIdent();
 		
-		SearchAssessedIdentityParams params = new SearchAssessedIdentityParams(courseEntry, null /* rootNodeIdent */, null, assessmentCallback);
+		SearchAssessedIdentityParams params = new SearchAssessedIdentityParams(courseEntry, rootNodeIdent, null, assessmentCallback);
 		numOfAssessedIdentities = assessmentToolManager.getNumberOfAssessedIndetities(getIdentity(), params);
 		mainVC.contextPut("numOfAssessedIdentities", numOfAssessedIdentities);
 		

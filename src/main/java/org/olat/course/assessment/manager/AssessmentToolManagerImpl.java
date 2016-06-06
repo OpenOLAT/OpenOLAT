@@ -113,12 +113,12 @@ public class AssessmentToolManagerImpl implements AssessmentToolManager {
 		sf.append("select avg(aentry.score) as scoreAverage, ")
 		  .append(" sum(case when aentry.passed=true then 1 else 0 end) as numOfPassed,")
 		  .append(" sum(case when aentry.passed=false then 1 else 0 end) as numOfFailed,")
-		  .append(" sum(case when aentry.passed is null then 1 else 0 end) as numOfNotAttempted,")
+		  .append(" sum(case when (aentry.status is null or not(aentry.status='").append(AssessmentEntryStatus.notStarted.name()).append("') or aentry.passed is null) then 1 else 0 end) as numOfNotAttempted,")
 		  .append(" sum(aentry.key) as numOfStatements,")
 		  .append(" v.key as repoKey")
 		  .append(" from assessmententry aentry ")
 		  .append(" inner join aentry.repositoryEntry v ")
-		  .append(" where v.key=:repoEntryKey and aentry.status is not null and not(aentry.status='").append(AssessmentEntryStatus.notStarted.name()).append("')");
+		  .append(" where v.key=:repoEntryKey");
 		if(params.getReferenceEntry() != null) {
 			sf.append(" and aentry.referenceEntry.key=:referenceKey");
 		}
@@ -219,7 +219,7 @@ public class AssessmentToolManagerImpl implements AssessmentToolManager {
 		}
 		
 		Long identityKey = appendUserSearchByKey(sb, params.getSearchString());
-		String[] searchArr = appendUserSearchFull(sb, params.getSearchString());
+		String[] searchArr = appendUserSearchFull(sb, params.getSearchString(), identityKey == null);
 
 		TypedQuery<T> query = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), classResult)
@@ -334,7 +334,7 @@ public class AssessmentToolManagerImpl implements AssessmentToolManager {
 		return searchArr;
 	}
 	
-	private String[] appendUserSearchFull(StringBuilder sb, String search) {
+	private String[] appendUserSearchFull(StringBuilder sb, String search, boolean and) {
 		String[] searchArr = null;
 
 		if(StringHelper.containsNonWhitespace(search)) {
@@ -342,7 +342,11 @@ public class AssessmentToolManagerImpl implements AssessmentToolManager {
 			searchArr = search.split(" ");
 			String[] attributes = new String[]{ "firstName", "lastName", "email" };
 
-			sb.append(" and (");
+			if(and) {
+				sb.append(" and (");
+			} else {
+				sb.append(" or (");
+			}
 			boolean start = true;
 			for(int i=0; i<searchArr.length; i++) {
 				for(String attribute:attributes) {
