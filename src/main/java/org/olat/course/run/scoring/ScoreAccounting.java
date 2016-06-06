@@ -200,7 +200,11 @@ public class ScoreAccounting {
 						.createAssessmentEntry(cNode, assessedIdentity, se);
 					changes = true;
 				} else if(!same(se, entry)) {
-					entry.setScore(new BigDecimal(score));
+					if(score != null) {
+						entry.setScore(new BigDecimal(score));
+					} else {
+						entry.setScore(null);
+					}
 					entry.setPassed(passed);
 					entry = userCourseEnvironment.getCourseEnvironment().getAssessmentManager().updateAssessmentEntry(entry);
 					identToEntries.put(cNode.getIdent(), entry);

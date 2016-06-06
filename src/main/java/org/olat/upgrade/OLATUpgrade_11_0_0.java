@@ -256,7 +256,7 @@ public class OLATUpgrade_11_0_0 extends OLATUpgrade {
 			if(!identityKeys.contains(identity.getKey())) {
 				AssessmentEntry entry = createAssessmentEntry(identity, null, course, courseEntry, rootNode.getIdent());
 				if(statement.getScore() != null) {
-					entry.setScore(new BigDecimal(statement.getScore().floatValue()));
+					entry.setScore(new BigDecimal(statement.getScore()));
 				}
 				if(statement.getPassed() != null) {
 					entry.setPassed(statement.getPassed());
