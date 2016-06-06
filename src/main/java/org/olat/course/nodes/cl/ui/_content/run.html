@@ -153,7 +153,7 @@
 				#if($checkbox.description)
 					<div class="o_cl_desc">$r.xssScan($checkbox.description)</div>
 				#end
-				#if($checkbox.checkbox.filename)
+				#if(${checkbox.hasDownload()})
 					<div class="o_cl_file">$r.render($checkbox.downloadName)</div>
 				#end
 			</div>
