@@ -1352,15 +1352,17 @@ public class BaseFullWebappController extends BasicController implements DTabs, 
 			userToolsMenuCtrl.lock();
 		}
 		
-		for(int i=dtabsControllers.size(); i-->0; ) {
-			DTab tab = dtabs.get(i);
-			if(lockResource == null
-					|| !lockResource.getResourceableId().equals(tab.getOLATResourceable().getResourceableId())) {
-				removeDTab(null, tab);
-			} else if (lockResource != null
-					&& lockResource.getResourceableId().equals(tab.getOLATResourceable().getResourceableId())
-					&& lockStatus != LockStatus.locked) {
-				removeDTab(null, tab);
+		if(dtabsControllers != null) {
+			for(int i=dtabsControllers.size(); i-->0; ) {
+				DTab tab = dtabs.get(i);
+				if(lockResource == null
+						|| !lockResource.getResourceableId().equals(tab.getOLATResourceable().getResourceableId())) {
+					removeDTab(null, tab);
+				} else if (lockResource != null
+						&& lockResource.getResourceableId().equals(tab.getOLATResourceable().getResourceableId())
+						&& lockStatus != LockStatus.locked) {
+					removeDTab(null, tab);
+				}
 			}
 		}
 		navSitesVc.contextPut("visible", Boolean.FALSE);

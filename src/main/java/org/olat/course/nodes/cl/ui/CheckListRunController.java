@@ -356,6 +356,10 @@ public class CheckListRunController extends FormBasicController implements Contr
 			return checkboxEl.getName();
 		}
 		
+		public boolean hasDownload() {
+			return StringHelper.containsNonWhitespace(checkbox.getFilename()) && downloadLink != null;
+		}
+		
 		public String getDownloadName() {
 			return downloadLink.getComponent().getComponentName();
 		}

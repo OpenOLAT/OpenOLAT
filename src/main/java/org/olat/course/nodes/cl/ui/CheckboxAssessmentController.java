@@ -202,7 +202,7 @@ public class CheckboxAssessmentController extends FormBasicController {
 			TextElement pointEl = uifactory.addTextElement(name + "point", null, 5, pointVal, formLayout);
 			pointEl.setDisplaySize(5);
 			
-			MultipleSelectionElement checkEl = uifactory.addCheckboxesHorizontal(name + "check", formLayout, onKeys, onValues);
+			MultipleSelectionElement checkEl = uifactory.addCheckboxesHorizontal(name + "check", null, formLayout, onKeys, onValues);
 			checkEl.setDomReplacementWrapperRequired(false);
 			checkEl.addActionListener(FormEvent.ONCHANGE);
 			checkEl.setUserObject(row);
