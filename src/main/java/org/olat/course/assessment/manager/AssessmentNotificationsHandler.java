@@ -60,6 +60,7 @@ import org.olat.course.CourseModule;
 import org.olat.course.ICourse;
 import org.olat.course.Structure;
 import org.olat.course.assessment.AssessmentHelper;
+import org.olat.course.assessment.AssessmentManager;
 import org.olat.course.groupsandrights.CourseGroupManager;
 import org.olat.course.groupsandrights.CourseRights;
 import org.olat.course.nodes.AssessableCourseNode;
@@ -399,7 +400,7 @@ public class AssessmentNotificationsHandler implements NotificationsHandler {
 		try {
 			Long resId = subscriber.getPublisher().getResId();
 			String displayName = repositoryManager.lookupDisplayNameByOLATResourceableId(resId);
-			Translator trans = Util.createPackageTranslator(AssessmentNotificationsHandler.class, locale);
+			Translator trans = Util.createPackageTranslator(AssessmentManager.class, locale);
 			return trans.translate("notifications.title", new String[]{ displayName });
 		} catch (Exception e) {
 			log.error("Error while creating assessment notifications for subscriber: " + subscriber.getKey(), e);
