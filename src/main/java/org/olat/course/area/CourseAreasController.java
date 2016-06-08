@@ -24,6 +24,7 @@ import java.util.List;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.EscapeMode;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.panel.StackedPanel;
@@ -86,7 +87,9 @@ public class CourseAreasController extends MainLayoutBasicController {
 		listenTo(tableCtrl);
 		
 		tableCtrl.addColumnDescriptor(new DefaultColumnDescriptor("table.header.name", 0, null, getLocale()));
-		tableCtrl.addColumnDescriptor(new DefaultColumnDescriptor("table.header.description", 1, null, getLocale()));
+		DefaultColumnDescriptor descriptionColDesc = new DefaultColumnDescriptor("table.header.description", 1, null, getLocale());
+		descriptionColDesc.setEscapeHtml(EscapeMode.antisamy);
+		tableCtrl.addColumnDescriptor(descriptionColDesc);
 		tableCtrl.addColumnDescriptor(new StaticColumnDescriptor(TABLE_ACTION_EDIT, "action", translate("edit")));
 		tableCtrl.addColumnDescriptor(new StaticColumnDescriptor(TABLE_ACTION_DELETE, "action", translate("delete")));
 
