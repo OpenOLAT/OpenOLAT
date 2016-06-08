@@ -473,6 +473,12 @@ public class QTI12To21Converter {
 		String questionText = question.getQuestion().renderAsHtmlForEditor();
 		itemBuilder.setQuestion(questionText);
 		
+		String hintText = question.getHintText();
+		if(StringHelper.containsNonWhitespace(hintText)) {
+			ModalFeedbackBuilder hint = itemBuilder.createHint();
+			hint.setText(hintText);
+		}
+		
 		String feedbackMastery = QTIEditHelper.getFeedbackMasteryText(item);
 		if(StringHelper.containsNonWhitespace(feedbackMastery)) {
 			ModalFeedbackBuilder feedback = itemBuilder.createCorrectFeedback();
@@ -484,6 +490,7 @@ public class QTI12To21Converter {
 			ModalFeedbackBuilder feedback = itemBuilder.createIncorrectFeedback();
 			feedback.setText(feedbackFail);
 		}
+		
 	}
 
 	private void convertDuration(Duration duration, ControlObject<?> parent) {

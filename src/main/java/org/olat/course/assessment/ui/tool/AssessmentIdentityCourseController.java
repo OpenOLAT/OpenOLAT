@@ -74,6 +74,8 @@ public class AssessmentIdentityCourseController extends BasicController implemen
 	private CourseNodeSelectionController courseNodeChooserCtrl;
 	private CloseableCalloutWindowController courseNodeChooserCalloutCtrl;
 	
+	private CourseNode currentCourseNode;
+	
 	@Autowired
 	private BaseSecurity securityManager;
 	
@@ -182,6 +184,11 @@ public class AssessmentIdentityCourseController extends BasicController implemen
 		
 		courseNodeChooserCtrl = new CourseNodeSelectionController(ureq, getWindowControl(), courseEntry);
 		listenTo(courseNodeChooserCtrl);
+		if(currentCourseNode != null) {
+			courseNodeChooserCtrl.selectedCourseNode(currentCourseNode);
+		} else {
+			courseNodeChooserCtrl.selectedCourseNode(treeOverviewCtrl.getSelectedCourseNode());
+		}
 		
 		courseNodeChooserCalloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(),
 				courseNodeChooserCtrl.getInitialComponent(), courseNodeSelectionLink, "", true, "");
@@ -210,7 +217,8 @@ public class AssessmentIdentityCourseController extends BasicController implemen
 	private void doSelectCourseNode(UserRequest ureq, CourseNode courseNode) {
 		if(courseNode == null) {
 			return;
-		} 
+		}
+		currentCourseNode = courseNode;
 		stackPanel.popUpToController(this);
 		if(treeOverviewCtrl.isRoot(courseNode)) {
 			return;
@@ -241,7 +249,9 @@ public class AssessmentIdentityCourseController extends BasicController implemen
 		
 		nextLink = LinkFactory.createToolLink("nextelement", translate("next"), this, "o_icon_next");
 		nextLink.setTitle(translate("command.next"));
-		nextLink.setEnabled(index > 0 && index < numOfNodes);
+		CourseNode nextNode = treeOverviewCtrl.getNextNode(courseNode);
+		boolean hasNext = (nextNode != null && nextNode.getParent() != null);
+		nextLink.setEnabled(hasNext);
 		stackPanel.addTool(nextLink, Align.rightEdge, false);
 	}
 }

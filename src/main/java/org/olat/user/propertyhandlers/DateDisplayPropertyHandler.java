@@ -142,4 +142,9 @@ public class DateDisplayPropertyHandler extends AbstractUserPropertyHandler {
 	public String getStringValue(String displayValue, Locale locale) {
 		return displayValue;
 	}
+	
+	@Override
+	protected void setInternalGetterSetter(String name) {
+		//do nothing, artificial value
+	}
 }

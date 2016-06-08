@@ -82,6 +82,7 @@ import org.olat.core.logging.Tracing;
 import org.olat.core.util.CodeHelper;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
+import org.olat.ims.qti21.QTI21Module;
 import org.olat.ims.qti21.QTI21Service;
 import org.olat.ims.qti21.XmlUtilities;
 import org.xml.sax.InputSource;
@@ -594,6 +595,12 @@ public abstract class AssessmentObjectComponentRenderer extends DefaultComponent
 					interactionName += "_kprim";
 				}
 				break;
+			}
+			case "mathEntryInteraction": {
+				if(!CoreSpringFactory.getImpl(QTI21Module.class).isMathAssessExtensionEnabled()) {
+					interactionName = "mathEntryInteractionNotEnabled";
+					break;
+				}
 			}
 			default: interactionName = interaction.getQtiClassName(); break;
 		}
