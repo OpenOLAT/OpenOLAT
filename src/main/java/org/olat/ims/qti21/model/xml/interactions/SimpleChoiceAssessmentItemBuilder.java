@@ -53,6 +53,7 @@ import uk.ac.ed.ph.jqtiplus.serialization.QtiSerializer;
 import uk.ac.ed.ph.jqtiplus.types.Identifier;
 import uk.ac.ed.ph.jqtiplus.value.BaseType;
 import uk.ac.ed.ph.jqtiplus.value.IdentifierValue;
+import uk.ac.ed.ph.jqtiplus.value.Orientation;
 import uk.ac.ed.ph.jqtiplus.value.SingleValue;
 
 /**
@@ -65,6 +66,7 @@ public abstract class SimpleChoiceAssessmentItemBuilder extends ChoiceAssessment
 
 	protected boolean shuffle;
 	protected String question;
+	protected Orientation orientation;
 	protected List<SimpleChoice> choices;
 	protected Identifier responseIdentifier;
 	protected ScoreEvaluation scoreEvaluation;
@@ -124,6 +126,7 @@ public abstract class SimpleChoiceAssessmentItemBuilder extends ChoiceAssessment
 		choices = new ArrayList<>();
 		if(choiceInteraction != null) {
 			choices.addAll(choiceInteraction.getSimpleChoices());
+			orientation = choiceInteraction.getOrientation();
 		}
 	}
 	
@@ -139,6 +142,14 @@ public abstract class SimpleChoiceAssessmentItemBuilder extends ChoiceAssessment
 	
 	public void setShuffle(boolean shuffle) {
 		this.shuffle = shuffle;
+	}
+	
+	public Orientation getOrientation() {
+		return orientation;
+	}
+	
+	public void setOrientation(Orientation orientation) {
+		this.orientation = orientation;
 	}
 	
 	public ScoreEvaluation getScoreEvaluationMode() {

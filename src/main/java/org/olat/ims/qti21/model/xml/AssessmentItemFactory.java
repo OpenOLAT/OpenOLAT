@@ -93,6 +93,7 @@ import uk.ac.ed.ph.jqtiplus.value.DirectedPairValue;
 import uk.ac.ed.ph.jqtiplus.value.FloatValue;
 import uk.ac.ed.ph.jqtiplus.value.IdentifierValue;
 import uk.ac.ed.ph.jqtiplus.value.MultipleValue;
+import uk.ac.ed.ph.jqtiplus.value.Orientation;
 import uk.ac.ed.ph.jqtiplus.value.SingleValue;
 import uk.ac.ed.ph.jqtiplus.value.StringValue;
 import uk.ac.ed.ph.jqtiplus.value.Value;
@@ -759,10 +760,14 @@ public class AssessmentItemFactory {
 		return feedbackOutcomeDeclaration;
 	}
 	
-	public static ChoiceInteraction createSingleChoiceInteraction(AssessmentItem assessmentItem, Identifier responseDeclarationId) {
+	public static ChoiceInteraction createSingleChoiceInteraction(AssessmentItem assessmentItem, Identifier responseDeclarationId,
+			Orientation orientation) {
 		ChoiceInteraction choiceInteraction = new ChoiceInteraction(assessmentItem.getItemBody());
 		choiceInteraction.setMaxChoices(1);
 		choiceInteraction.setShuffle(true);
+		if(orientation != null) {
+			choiceInteraction.setOrientation(orientation);
+		}
 		choiceInteraction.setResponseIdentifier(responseDeclarationId);
 		
 		PromptGroup prompts = new PromptGroup(choiceInteraction);
@@ -773,10 +778,14 @@ public class AssessmentItemFactory {
 		return choiceInteraction;
 	}
 	
-	public static ChoiceInteraction createMultipleChoiceInteraction(AssessmentItem assessmentItem, Identifier responseDeclarationId) {
+	public static ChoiceInteraction createMultipleChoiceInteraction(AssessmentItem assessmentItem, Identifier responseDeclarationId,
+			Orientation orientation) {
 		ChoiceInteraction choiceInteraction = new ChoiceInteraction(assessmentItem.getItemBody());
 		choiceInteraction.setMaxChoices(0);
 		choiceInteraction.setShuffle(true);
+		if(orientation != null) {
+			choiceInteraction.setOrientation(orientation);
+		}
 		choiceInteraction.setResponseIdentifier(responseDeclarationId);
 		
 		PromptGroup prompts = new PromptGroup(choiceInteraction);

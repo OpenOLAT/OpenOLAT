@@ -297,6 +297,7 @@ ul.sessionControl {
 	margin: 1em 0;
 }
 
+/* Choice interaction */
 tr.choiceinteraction {
 	td.control {
 		padding: 0.5em;
@@ -307,6 +308,20 @@ tr.choiceinteraction {
 	}
 }
 
+.choiceInteraction div.o_qti_item_choice_option_flow  {
+	display: inline-block;
+	padding: .5em;
+	border: 1px solid transparent;
+	
+	label span {
+		font-weight: normal;
+	
+	}
+	
+	label span>p {
+		display: inline-block;
+	}
+}
 
 /* MathEntryInteraction styling for MathAssess */
 .o_assessmentitem .mathEntryInteraction {

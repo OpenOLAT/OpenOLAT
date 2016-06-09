@@ -50,6 +50,7 @@ import uk.ac.ed.ph.jqtiplus.node.content.xhtml.text.P;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.ChoiceInteraction;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.choice.SimpleChoice;
 import uk.ac.ed.ph.jqtiplus.types.Identifier;
+import uk.ac.ed.ph.jqtiplus.value.Orientation;
 
 /**
  * 
@@ -61,7 +62,7 @@ public class MultipleChoiceEditorController extends FormBasicController {
 
 	private TextElement titleEl;
 	private RichTextElement textEl;
-	private SingleSelection shuffleEl;
+	private SingleSelection shuffleEl, orientationEl;
 	private FormLayoutContainer answersCont;
 	private final List<SimpleChoiceWrapper> choiceWrappers = new ArrayList<>();
 	
@@ -74,6 +75,7 @@ public class MultipleChoiceEditorController extends FormBasicController {
 	private final MultipleChoiceAssessmentItemBuilder itemBuilder;
 	
 	private static final String[] yesnoKeys = new String[]{ "y", "n"};
+	private static final String[] layoutKeys = new String[]{ Orientation.VERTICAL.name(), Orientation.HORIZONTAL.name() };
 
 	public MultipleChoiceEditorController(UserRequest ureq, WindowControl wControl,
 			MultipleChoiceAssessmentItemBuilder itemBuilder,
@@ -115,6 +117,16 @@ public class MultipleChoiceEditorController extends FormBasicController {
 			shuffleEl.select("y", true);
 		} else {
 			shuffleEl.select("n", true);
+		}
+		
+		//layout
+		String[] layoutValues = new String[]{ translate("form.imd.layout.vertical"), translate("form.imd.layout.horizontal") };
+		orientationEl = uifactory.addRadiosHorizontal("layout", "form.imd.layout", metadata, layoutKeys, layoutValues);
+		orientationEl.setEnabled(!restrictedEdit);
+		if (itemBuilder.getOrientation() == null || Orientation.VERTICAL.equals(itemBuilder.getOrientation())) {
+			orientationEl.select(Orientation.VERTICAL.name(), true);
+		} else {
+			orientationEl.select(Orientation.HORIZONTAL.name(), true);
 		}
 
 		//responses
@@ -212,16 +224,20 @@ public class MultipleChoiceEditorController extends FormBasicController {
 		String questionText = textEl.getValue();
 		itemBuilder.setQuestion(questionText);
 		
-		//correct response
-		String[] correctAnswers = ureq.getHttpReq().getParameterValues("correct");
-		List<Identifier> correctAnswerList = new ArrayList<>();
-		for(String correctAnswer:correctAnswers) {
-			correctAnswerList.add(Identifier.parseString(correctAnswer));
+		if(!restrictedEdit) {
+			//correct response
+			String[] correctAnswers = ureq.getHttpReq().getParameterValues("correct");
+			List<Identifier> correctAnswerList = new ArrayList<>();
+			for(String correctAnswer:correctAnswers) {
+				correctAnswerList.add(Identifier.parseString(correctAnswer));
+			}
+			itemBuilder.setCorrectAnswers(correctAnswerList);
+			
+			//shuffle
+			itemBuilder.setShuffle(shuffleEl.isOneSelected() && shuffleEl.isSelected(0));
+			//orientation
+			itemBuilder.setOrientation(Orientation.valueOf(orientationEl.getSelectedKey()));
 		}
-		itemBuilder.setCorrectAnswers(correctAnswerList);
-		
-		//shuffle
-		itemBuilder.setShuffle(shuffleEl.isOneSelected() && shuffleEl.isSelected(0));
 		
 		//replace simple choices
 		List<SimpleChoice> choiceList = new ArrayList<>();

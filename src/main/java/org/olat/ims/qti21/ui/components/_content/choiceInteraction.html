@@ -18,7 +18,23 @@
 	#end
 	</div>
 #end
-      
+
+#set($visibleOrderedChoices = $r.getVisibleOrderedSimpleChoices($interaction))
+#if($r.getOrientation($interaction.orientation) == "horizontal")
+	#if($interaction.getPrompt())
+		<div class="prompt">$r.renderPrompt($interaction.getPrompt())</div>
+	#end
+
+	#foreach($simpleChoice in $visibleOrderedChoices)
+	<div class="form-group o_qti_item_choice_option_flow">
+		<div #if($r.isSingleChoice($interaction)) class="radio" #else class="check" #end ><label for="oo_$r.toString($simpleChoice.identifier)">
+			<input id="oo_$r.toString($simpleChoice.identifier)" name="qtiworks_response_${responseIdentifier}" value="$r.toString($simpleChoice.identifier)" #if($r.isSingleChoice($interaction)) type="radio" #else type="checkbox" #end #if($r.isItemSessionEnded()) disabled #end #if($r.valueContains($r.getResponseValue($interaction.responseIdentifier), $simpleChoice.identifier)) checked #end />
+			 $r.appendFlexiFormDirtyForCheckbox("oo_$r.toString($simpleChoice.identifier)")
+	 		<span>$r.renderFlowStatics($simpleChoice.getFlowStatics())</span></label>
+	 	</div>
+	 </div>
+	#end
+#else	
 	<table>
 		#if($interaction.getPrompt())
          <tr class="prompt">
@@ -36,7 +52,6 @@
 		</tr>
 		#end
 		
-		#set($visibleOrderedChoices = $r.getVisibleOrderedSimpleChoices($interaction))
 		#foreach($simpleChoice in $visibleOrderedChoices)
 			<tr class="choiceinteraction">
 				#if($r.classContains($interaction,"choiceright"))
@@ -52,4 +67,5 @@
 			</tr>
 		#end
 	</table>
+#end
 </div>

@@ -48,6 +48,7 @@ import org.olat.ims.qti21.ui.editor.events.AssessmentItemEvent;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.ChoiceInteraction;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.choice.SimpleChoice;
 import uk.ac.ed.ph.jqtiplus.types.Identifier;
+import uk.ac.ed.ph.jqtiplus.value.Orientation;
 
 /**
  * 
@@ -59,7 +60,7 @@ public class SingleChoiceEditorController extends FormBasicController {
 
 	private TextElement titleEl;
 	private RichTextElement textEl;
-	private SingleSelection shuffleEl;
+	private SingleSelection shuffleEl, orientationEl;
 	private FormLayoutContainer answersCont;
 	private final List<SimpleChoiceWrapper> choiceWrappers = new ArrayList<>();
 	
@@ -71,6 +72,7 @@ public class SingleChoiceEditorController extends FormBasicController {
 	private final SingleChoiceAssessmentItemBuilder itemBuilder;
 	
 	private static final String[] yesnoKeys = new String[]{ "y", "n"};
+	private static final String[] layoutKeys = new String[]{ Orientation.VERTICAL.name(), Orientation.HORIZONTAL.name() };
 
 	public SingleChoiceEditorController(UserRequest ureq, WindowControl wControl,
 			SingleChoiceAssessmentItemBuilder itemBuilder,
@@ -110,6 +112,16 @@ public class SingleChoiceEditorController extends FormBasicController {
 			shuffleEl.select("y", true);
 		} else {
 			shuffleEl.select("n", true);
+		}
+		
+		//layout
+		String[] layoutValues = new String[]{ translate("form.imd.layout.vertical"), translate("form.imd.layout.horizontal") };
+		orientationEl = uifactory.addRadiosHorizontal("layout", "form.imd.layout", metadata, layoutKeys, layoutValues);
+		orientationEl.setEnabled(!restrictedEdit);
+		if (itemBuilder.getOrientation() == null || Orientation.VERTICAL.equals(itemBuilder.getOrientation())) {
+			orientationEl.select(Orientation.VERTICAL.name(), true);
+		} else {
+			orientationEl.select(Orientation.HORIZONTAL.name(), true);
 		}
 
 		//responses
@@ -212,9 +224,10 @@ public class SingleChoiceEditorController extends FormBasicController {
 			String correctAnswer = ureq.getParameter("correct");
 			correctAnswerIdentifier = Identifier.parseString(correctAnswer);
 			itemBuilder.setCorrectAnswer(correctAnswerIdentifier);
-			
 			//shuffle
 			itemBuilder.setShuffle(shuffleEl.isOneSelected() && shuffleEl.isSelected(0));
+			//orientation
+			itemBuilder.setOrientation(Orientation.valueOf(orientationEl.getSelectedKey()));
 		}
 		
 		//replace simple choices
