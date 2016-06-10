@@ -39,6 +39,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.vfs.VFSContainer;
+import org.olat.ims.qti21.QTI21Constants;
 import org.olat.ims.qti21.model.QTI21QuestionType;
 import org.olat.ims.qti21.model.xml.AssessmentItemFactory;
 import org.olat.ims.qti21.model.xml.interactions.SingleChoiceAssessmentItemBuilder;
@@ -60,7 +61,7 @@ public class SingleChoiceEditorController extends FormBasicController {
 
 	private TextElement titleEl;
 	private RichTextElement textEl;
-	private SingleSelection shuffleEl, orientationEl;
+	private SingleSelection shuffleEl, orientationEl, alignmentEl;
 	private FormLayoutContainer answersCont;
 	private final List<SimpleChoiceWrapper> choiceWrappers = new ArrayList<>();
 	
@@ -72,6 +73,7 @@ public class SingleChoiceEditorController extends FormBasicController {
 	private final SingleChoiceAssessmentItemBuilder itemBuilder;
 	
 	private static final String[] yesnoKeys = new String[]{ "y", "n"};
+	private static final String[] alignmentKeys = new String[]{ "left", "right"};
 	private static final String[] layoutKeys = new String[]{ Orientation.VERTICAL.name(), Orientation.HORIZONTAL.name() };
 
 	public SingleChoiceEditorController(UserRequest ureq, WindowControl wControl,
@@ -122,6 +124,16 @@ public class SingleChoiceEditorController extends FormBasicController {
 			orientationEl.select(Orientation.VERTICAL.name(), true);
 		} else {
 			orientationEl.select(Orientation.HORIZONTAL.name(), true);
+		}
+		
+		//layout
+		String[] alignmentValues = new String[]{ translate("form.imd.alignment.left"), translate("form.imd.alignment.right") };
+		alignmentEl = uifactory.addRadiosHorizontal("alignment", "form.imd.alignment", metadata, alignmentKeys, alignmentValues);
+		alignmentEl.setEnabled(!restrictedEdit);
+		if (itemBuilder.hasClassAttr(QTI21Constants.CHOICE_ALIGN_RIGHT)) {
+			alignmentEl.select(alignmentKeys[1], true);
+		} else {
+			alignmentEl.select(alignmentKeys[0], true);
 		}
 
 		//responses
@@ -228,6 +240,12 @@ public class SingleChoiceEditorController extends FormBasicController {
 			itemBuilder.setShuffle(shuffleEl.isOneSelected() && shuffleEl.isSelected(0));
 			//orientation
 			itemBuilder.setOrientation(Orientation.valueOf(orientationEl.getSelectedKey()));
+			//alignment
+			if(alignmentEl.isOneSelected() && alignmentEl.isSelected(1)) {
+				itemBuilder.addClass(QTI21Constants.CHOICE_ALIGN_RIGHT);
+			} else {
+				itemBuilder.removeClass(QTI21Constants.CHOICE_ALIGN_RIGHT);
+			}
 		}
 		
 		//replace simple choices

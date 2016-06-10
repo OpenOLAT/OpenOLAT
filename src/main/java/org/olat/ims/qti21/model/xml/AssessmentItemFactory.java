@@ -761,7 +761,7 @@ public class AssessmentItemFactory {
 	}
 	
 	public static ChoiceInteraction createSingleChoiceInteraction(AssessmentItem assessmentItem, Identifier responseDeclarationId,
-			Orientation orientation) {
+			Orientation orientation, List<String> classAtrr) {
 		ChoiceInteraction choiceInteraction = new ChoiceInteraction(assessmentItem.getItemBody());
 		choiceInteraction.setMaxChoices(1);
 		choiceInteraction.setShuffle(true);
@@ -769,6 +769,9 @@ public class AssessmentItemFactory {
 			choiceInteraction.setOrientation(orientation);
 		}
 		choiceInteraction.setResponseIdentifier(responseDeclarationId);
+		if(classAtrr != null && classAtrr.size() > 0) {
+			choiceInteraction.setClassAttr(classAtrr);
+		}
 		
 		PromptGroup prompts = new PromptGroup(choiceInteraction);
 		choiceInteraction.getNodeGroups().add(prompts);
@@ -779,12 +782,15 @@ public class AssessmentItemFactory {
 	}
 	
 	public static ChoiceInteraction createMultipleChoiceInteraction(AssessmentItem assessmentItem, Identifier responseDeclarationId,
-			Orientation orientation) {
+			Orientation orientation, List<String> classAtrr) {
 		ChoiceInteraction choiceInteraction = new ChoiceInteraction(assessmentItem.getItemBody());
 		choiceInteraction.setMaxChoices(0);
 		choiceInteraction.setShuffle(true);
 		if(orientation != null) {
 			choiceInteraction.setOrientation(orientation);
+		}
+		if(classAtrr != null && classAtrr.size() > 0) {
+			choiceInteraction.setClassAttr(classAtrr);
 		}
 		choiceInteraction.setResponseIdentifier(responseDeclarationId);
 		

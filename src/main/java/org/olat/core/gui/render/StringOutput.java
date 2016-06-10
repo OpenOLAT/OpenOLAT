@@ -57,6 +57,10 @@ public class StringOutput extends Writer {
 	public StringOutput() {
 		sb = new StringBuilder();
 	}
+	
+	public char getLastChar() {
+		return sb.length() > 0 ? sb.charAt(sb.length() - 1) : 0;
+	}
 
 	/**
 	 * @param val

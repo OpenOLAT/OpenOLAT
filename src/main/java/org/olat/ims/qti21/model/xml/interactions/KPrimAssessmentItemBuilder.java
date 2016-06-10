@@ -27,6 +27,7 @@ import static org.olat.ims.qti21.model.xml.AssessmentItemFactory.appendMatchInte
 import static org.olat.ims.qti21.model.xml.AssessmentItemFactory.createKPrimResponseDeclaration;
 import static org.olat.ims.qti21.model.xml.AssessmentItemFactory.createResponseProcessing;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -80,6 +81,7 @@ public class KPrimAssessmentItemBuilder extends AssessmentItemBuilder {
 
 	private boolean shuffle;
 	private String question;
+	protected List<String> cssClass;
 	private Identifier responseIdentifier;
 	private MatchInteraction matchInteraction;
 	private Map<Identifier,Identifier> associations;
@@ -159,6 +161,7 @@ public class KPrimAssessmentItemBuilder extends AssessmentItemBuilder {
 				matchInteraction = (MatchInteraction)block;
 				responseIdentifier = matchInteraction.getResponseIdentifier();
 				shuffle = matchInteraction.getShuffle();
+				cssClass = matchInteraction.getClassAttr();
 				break;
 			} else {
 				qtiSerializer.serializeJqtiObject(block, new StreamResult(sb));
@@ -178,6 +181,25 @@ public class KPrimAssessmentItemBuilder extends AssessmentItemBuilder {
 	
 	public void setShuffle(boolean shuffle) {
 		this.shuffle = shuffle;
+	}
+	
+	public boolean hasClassAttr(String classAttr) {
+		return cssClass != null && cssClass.contains(classAttr);
+	}
+	
+	public void addClass(String classAttr) {
+		if(cssClass == null) {
+			cssClass = new ArrayList<>();
+		} 
+		if(!cssClass.contains(classAttr)) {
+			cssClass.add(classAttr);
+		}
+	}
+	
+	public void removeClass(String classAttr) {
+		if(cssClass != null) {
+			cssClass.remove(classAttr);
+		}
 	}
 
 	public boolean isCorrect(Identifier choiceId) {
@@ -243,6 +265,12 @@ public class KPrimAssessmentItemBuilder extends AssessmentItemBuilder {
 		getHtmlHelper().appendHtml(assessmentItem.getItemBody(), question);
 
 		matchInteraction.setShuffle(isShuffle());
+		if(cssClass == null || cssClass.isEmpty()) {
+			matchInteraction.setClassAttr(null);
+		} else {
+			matchInteraction.setClassAttr(cssClass);
+		}
+		
 		blocks.add(matchInteraction);
 	}
 

@@ -59,10 +59,11 @@ import uk.ac.ed.ph.jqtiplus.types.Identifier;
 public class KPrimEditorController extends FormBasicController {
 	
 	private static final String[] yesnoKeys = new String[]{ "y", "n"};
+	private static final String[] alignmentKeys = new String[]{ "left", "right"};
 	
 	private TextElement titleEl;
 	private RichTextElement textEl;
-	private SingleSelection shuffleEl;
+	private SingleSelection shuffleEl, alignmentEl;
 	private FormLayoutContainer answersCont;
 	private final List<KprimWrapper> choiceWrappers = new ArrayList<>();
 
@@ -111,6 +112,16 @@ public class KPrimEditorController extends FormBasicController {
 			shuffleEl.select("y", true);
 		} else {
 			shuffleEl.select("n", true);
+		}
+		
+		//layout
+		String[] alignmentValues = new String[]{ translate("form.imd.alignment.left"), translate("form.imd.alignment.right") };
+		alignmentEl = uifactory.addRadiosHorizontal("alignment", "form.imd.alignment", metadata, alignmentKeys, alignmentValues);
+		alignmentEl.setEnabled(!restrictedEdit);
+		if (itemBuilder.hasClassAttr(QTI21Constants.CHOICE_ALIGN_RIGHT)) {
+			alignmentEl.select(alignmentKeys[1], true);
+		} else {
+			alignmentEl.select(alignmentKeys[0], true);
 		}
 
 		//responses
@@ -178,6 +189,12 @@ public class KPrimEditorController extends FormBasicController {
 		//shuffle
 		if(!restrictedEdit) {
 			itemBuilder.setShuffle(shuffleEl.isOneSelected() && shuffleEl.isSelected(0));
+			//alignment
+			if(alignmentEl.isOneSelected() && alignmentEl.isSelected(1)) {
+				itemBuilder.addClass(QTI21Constants.CHOICE_ALIGN_RIGHT);
+			} else {
+				itemBuilder.removeClass(QTI21Constants.CHOICE_ALIGN_RIGHT);
+			}
 		}
 		
 		//update kprims

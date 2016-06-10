@@ -163,7 +163,7 @@ public class SingleChoiceAssessmentItemBuilder extends SimpleChoiceAssessmentIte
 		
 		//add interaction
 		ChoiceInteraction singleChoiceInteraction = AssessmentItemFactory
-				.createSingleChoiceInteraction(assessmentItem, responseIdentifier, orientation);
+				.createSingleChoiceInteraction(assessmentItem, responseIdentifier, orientation, cssClass);
 		singleChoiceInteraction.setShuffle(isShuffle());
 		blocks.add(singleChoiceInteraction);
 		List<SimpleChoice> choiceList = getSimpleChoices();

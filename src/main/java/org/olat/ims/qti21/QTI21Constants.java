@@ -37,6 +37,8 @@ public class QTI21Constants {
 	
 	public static final String QTI_21_FORMAT = "IMS QTI 2.1";
 	
+	public static final String CHOICE_ALIGN_RIGHT = "choiceright";
+	
 	public static final String SCORE = "SCORE";
 	
 	public static final Identifier SCORE_IDENTIFIER = Identifier.assumedLegal(SCORE);

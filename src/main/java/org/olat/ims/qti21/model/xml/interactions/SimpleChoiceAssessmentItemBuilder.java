@@ -63,9 +63,10 @@ import uk.ac.ed.ph.jqtiplus.value.SingleValue;
  *
  */
 public abstract class SimpleChoiceAssessmentItemBuilder extends ChoiceAssessmentItemBuilder {
-
+	
 	protected boolean shuffle;
 	protected String question;
+	protected List<String> cssClass;
 	protected Orientation orientation;
 	protected List<SimpleChoice> choices;
 	protected Identifier responseIdentifier;
@@ -127,6 +128,7 @@ public abstract class SimpleChoiceAssessmentItemBuilder extends ChoiceAssessment
 		if(choiceInteraction != null) {
 			choices.addAll(choiceInteraction.getSimpleChoices());
 			orientation = choiceInteraction.getOrientation();
+			cssClass = choiceInteraction.getClassAttr();
 		}
 	}
 	
@@ -150,6 +152,25 @@ public abstract class SimpleChoiceAssessmentItemBuilder extends ChoiceAssessment
 	
 	public void setOrientation(Orientation orientation) {
 		this.orientation = orientation;
+	}
+	
+	public boolean hasClassAttr(String classAttr) {
+		return cssClass != null && cssClass.contains(classAttr);
+	}
+	
+	public void addClass(String classAttr) {
+		if(cssClass == null) {
+			cssClass = new ArrayList<>();
+		} 
+		if(!cssClass.contains(classAttr)) {
+			cssClass.add(classAttr);
+		}
+	}
+	
+	public void removeClass(String classAttr) {
+		if(cssClass != null) {
+			cssClass.remove(classAttr);
+		}
 	}
 	
 	public ScoreEvaluation getScoreEvaluationMode() {

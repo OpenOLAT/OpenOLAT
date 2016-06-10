@@ -308,6 +308,10 @@ tr.choiceinteraction {
 	}
 }
 
+.choiceInteraction table {
+
+}
+
 .choiceInteraction div.o_qti_item_choice_option_flow  {
 	display: inline-block;
 	padding: .5em;
@@ -321,6 +325,17 @@ tr.choiceinteraction {
 	label span>p {
 		display: inline-block;
 	}
+}
+
+.choiceInteraction.choiceright table tr td.choiceInteraction {
+	background-color: #e7e7e7;
+	border-bottom: 3px solid white;
+}
+
+/* Match interaction */
+.matchInteraction.choiceright table tr td.o_qti_item_kprim_text {
+	background-color: #e7e7e7;
+	border-bottom: 3px solid white;
 }
 
 /* MathEntryInteraction styling for MathAssess */

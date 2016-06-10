@@ -39,6 +39,7 @@ import org.olat.ims.qti21.AssessmentTestSession;
 
 import uk.ac.ed.ph.jqtiplus.attribute.value.StringMultipleAttribute;
 import uk.ac.ed.ph.jqtiplus.node.QtiNode;
+import uk.ac.ed.ph.jqtiplus.node.content.BodyElement;
 import uk.ac.ed.ph.jqtiplus.node.content.basic.Block;
 import uk.ac.ed.ph.jqtiplus.node.content.basic.BlockStatic;
 import uk.ac.ed.ph.jqtiplus.node.content.basic.Flow;
@@ -538,6 +539,17 @@ public class AssessmentObjectVelocityRenderDecorator extends VelocityRenderDecor
 	
 	public ResponseDeclaration getResponseDeclaration(Identifier identifier) {
 		return AssessmentRenderFunctions.getResponseDeclaration(assessmentItem, identifier);
+	}
+	
+	public String renderClassAttr(BodyElement block) {
+		List<String> classAttr = block.getClassAttr();
+		if(classAttr != null && classAttr.size() > 0) {
+			for(String attr:classAttr) {
+				if(target.getLastChar() != ' ') target.append(" ");
+				target.append(attr);
+			}
+		}
+		return "";
 	}
 	
 	public String renderPrompt(Prompt prompt) {
