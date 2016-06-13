@@ -27,7 +27,8 @@ import java.util.HashSet;
 import java.util.Set;
 
 import org.cyberneko.html.parsers.SAXParser;
-import org.olat.core.logging.LogDelegator;
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
 import org.olat.core.util.filter.Filter;
 import org.olat.core.util.io.LimitedContentWriter;
 import org.olat.search.service.document.file.FileDocumentFactory;
@@ -45,7 +46,8 @@ import org.xml.sax.helpers.DefaultHandler;
  * Initial Date:  2 dec. 2009 <br>
  * @author srosse
  */
-public class NekoHTMLFilter extends LogDelegator implements Filter {
+public class NekoHTMLFilter implements Filter {
+	private static final OLog log = Tracing.createLoggerFor(NekoHTMLFilter.class);
 	
 	public static final Set<String> blockTags = new HashSet<String>();
 	static {
@@ -58,7 +60,9 @@ public class NekoHTMLFilter extends LogDelegator implements Filter {
 	}
 	
 	public String filter(String original, boolean pretty) {
-		if (original == null) return null;
+		if(original == null) return null;
+		if(original.isEmpty()) return "";
+		
 		try {
 			SAXParser parser = new SAXParser();
 			HTMLHandler contentHandler = new HTMLHandler((int)(original.length() * 0.66f), pretty);
@@ -66,13 +70,13 @@ public class NekoHTMLFilter extends LogDelegator implements Filter {
 			parser.parse(new InputSource(new StringReader(original)));
 			return contentHandler.toString();
 		} catch (SAXException e) {
-			logError("", e);
+			log.error("", e);
 			return null;
 		} catch (IOException e) {
-			logError("", e);
+			log.error("", e);
 			return null;
 		} catch (Exception e) {
-			logError("", e);
+			log.error("", e);
 			return null;
 		}
 	}
@@ -86,13 +90,13 @@ public class NekoHTMLFilter extends LogDelegator implements Filter {
 			parser.parse(new InputSource(in));
 			return contentHandler.getContent();
 		} catch (SAXException e) {
-			logError("", e);
+			log.error("", e);
 			return null;
 		} catch (IOException e) {
-			logError("", e);
+			log.error("", e);
 			return null;
 		} catch (Exception e) {
-			logError("", e);
+			log.error("", e);
 			return null;
 		}
 	}

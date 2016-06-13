@@ -23,8 +23,7 @@ import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.olat.core.util.filter.Filter;
 
 /**
  * Description:<br>
@@ -34,16 +33,17 @@ import org.junit.runners.JUnit4;
  * Initial Date:  14.07.2009 <br>
  * @author gnaegi
  */
-@RunWith(JUnit4.class)
 public class SimpleHTMLTagsFilterTest {
 
-	protected SimpleHTMLTagsFilter filter;
+	private Filter filter;
 
-	@Before public void setup() {
+	@Before
+	public void setup() {
 		filter = new SimpleHTMLTagsFilter();
 	}
 
-	@After public void tearDown() {
+	@After
+	public void tearDown() {
 		filter = null;
 	}
 
@@ -51,15 +51,17 @@ public class SimpleHTMLTagsFilterTest {
 		Assert.assertEquals(result, filter.filter(input));
 	}
 	
-	@Test public void testPlainText() {
+	@Test
+	public void testPlainText() {
 		t(null, null);
 		t("", "");
 		t("hello world", "hello world");
-		t("hello \n \t \r world", "hello \n \t \r world");
+		t("hello \n \t \r world", "hello \n \t \n world");
 		t("1+2=3", "1+2=3");
 	}
 	
-	@Test public void testSimpleTags() {
+	@Test
+	public void testSimpleTags() {
 		t("<b>hello</b> world", "hello world");
 		t("<b><i>hello</i></b> world", "hello world");
 		t("<b>h<i>ell</i>o</b> world", "hello world");
@@ -67,7 +69,8 @@ public class SimpleHTMLTagsFilterTest {
 		t("<a ref='#bla' \n title='gugus'>hello</b> world", "hello world");
 	}
 	
-	@Test public void testBRAndPReplacement() {
+	@Test
+	public void testBRAndPReplacement() {
 		t("<br>", " ");
 		t("<p>", " ");
 		t("<br >", " ");
@@ -78,7 +81,8 @@ public class SimpleHTMLTagsFilterTest {
 		t("<p />", " ");
 	}
 
-	@Test public void testTagsWithAttributes() {
+	@Test
+	public void testTagsWithAttributes() {
 		t("<font color='red'>hello</font> world", "hello world");
 		t("<font color=\"red\">hello</font> world", "hello world");
 		t("<a href=\"#top\" color='=>top'>go up</a>", "go up");
@@ -89,7 +93,8 @@ public class SimpleHTMLTagsFilterTest {
 
 	// Boundary test: this filter does NOT decode HTML entities. Use the
 	// NekoHTMLFilter if you need this feature!
-	@Test public void testTagsWithEntities() {
+	@Test
+	public void testTagsWithEntities() {
 		t("Gn&auml;gi", "Gn&auml;gi");
 		t("This is &copy; by frentix", "This is &copy; by frentix");
 	}
