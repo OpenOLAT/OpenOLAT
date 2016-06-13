@@ -1,0 +1,28 @@
+#if($row.firstPageOfSection)
+<h3>$r.escapeHtml($row.sectionLongTitle)</h3>
+<div class="o_portfolio_section_meta">
+	<div class="clearfix">
+		##status
+		
+		#if($r.notNull($row.sectionBeginDate))
+			<span><strong>$r.translate("begin.date"): </strong> $r.formatDate($row.sectionBeginDate)</span>
+		#end
+		#if($r.notNull($row.sectionEndDate))
+			<span><strong>$r.translate("end.date"): </strong> $r.formatDate($row.sectionEndDate)</span>
+		#end
+
+		##access
+	</div>
+	<div class="o_block_large">
+		<p>$r.xssScan($row.sectionDescription)</p>
+	</div>
+</div>
+#end
+<h4>$r.escapeHtml($row.title)</h4>
+<div class="o_portfolio_page_meta">
+	 $r.translate("meta.last.modified", $r.formatDateAndTime($row.lastModified))
+</div>
+<p>$r.xssScan($row.summary)</p>
+<div class="o_portfolio_page_links">
+	$r.render("$row.openFormItemName")
+</div>

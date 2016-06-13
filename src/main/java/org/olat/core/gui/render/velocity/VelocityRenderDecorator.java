@@ -686,6 +686,10 @@ public class VelocityRenderDecorator implements Closeable {
 		return !vc.getContext().containsKey(key);
 	}
 	
+	public boolean notNull(Object obj) {
+		return obj != null;
+	}
+	
 	/**
 	 * Formats the given date in a short format, e.g. 05.12.2015 or 12/05/2015
 	 * 

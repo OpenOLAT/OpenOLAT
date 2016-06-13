@@ -73,6 +73,7 @@ public class SimpleStackedPanel extends AbstractComponent implements StackedPane
 	/**
 	 * @return
 	 */
+	@Override
 	public Component getContent() {
 		return curContent;
 	}

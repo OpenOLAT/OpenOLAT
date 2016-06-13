@@ -146,6 +146,7 @@ public class RichTextConfiguration implements Disposable {
 	private boolean removeScriptHost = true;
 	private boolean statusBar = true;
 	private boolean allowCustomMediaFactory = true;
+	private boolean inline = false;
 	private CustomLinkTreeModel linkBrowserCustomTreeModel;	
 	// DOM ID of the flexi form element
 	private String domID;
@@ -370,8 +371,14 @@ public class RichTextConfiguration implements Disposable {
 	public void setAllowCustomMediaFactory(boolean allowCustomMediaFactory) {
 		this.allowCustomMediaFactory = allowCustomMediaFactory;
 	}
-	
 
+	public boolean isInline() {
+		return inline;
+	}
+
+	public void setInline(boolean inline) {
+		this.inline = inline;
+	}
 
 	public boolean isStatusBar() {
 		return statusBar;
@@ -871,6 +878,7 @@ public class RichTextConfiguration implements Disposable {
 		  .append("statusbar:true,\n")
 		  .append("relative_urls:").append(isRelativeUrls()).append(",\n")
 		  .append("remove_script_host:").append(isRemoveScriptHost()).append(",\n")
+		  .append("inline:").append(isInline()).append(",\n")
 		  .append("statusbar:").append(isStatusBar()).append(",\n")
 		  .append("menubar:").append(tinyConfig.hasMenu()).append(",\n");
  		

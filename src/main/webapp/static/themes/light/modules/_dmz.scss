@@ -107,7 +107,7 @@ body.o_dmz {
 		.o_infomessage_wrapper {
 			background: $o-login-infomessage-bg;
 			border: 1px solid $o-login-infomessage-border;
-			border-radius: $o-login-infomessage-radius; ;
+			border-radius: $o-login-infomessage-radius;
 			padding: $padding-base-vertical $padding-base-horizontal;
 			
 			.o_info, .o_warning, .o_note {

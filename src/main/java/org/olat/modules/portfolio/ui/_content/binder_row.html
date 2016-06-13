@@ -1,0 +1,9 @@
+#set($title=$r.escapeHtml($row.getTitle()))
+<div class="panel panel-default">
+	<div class="panel-heading">
+		<h4 class="panel-title">$r.escapeHtml($title)</h4>
+	</div>
+	<div class="panel-body">
+		Test $r.render($row.openFormItemName)
+	</div>
+</div>

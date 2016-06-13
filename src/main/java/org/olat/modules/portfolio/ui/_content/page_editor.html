@@ -1,0 +1,10 @@
+<h1>$pageTitle</h1>
+<div class="o_button_group o_button_group_left">
+$r.render("save") $r.render("add.html")
+</div>
+
+#foreach($fragment in $fragments)
+	$foreach.count <div class="">
+	$r.render($fragment.componentName)
+	</div>
+#end

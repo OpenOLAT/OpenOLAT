@@ -82,6 +82,15 @@ public class TooledStackedPanel extends BreadcrumbedStackedPanel implements Stac
 		addTool(toolComponent, null, false, null);
 	}
 	
+	/**
+	 * 
+	 * @param toolComponent
+	 * @param inherit The tool stay visible if other components are pushed.
+	 */
+	public void addTool(Component toolComponent, boolean inherit) {
+		addTool(toolComponent, null, inherit, null);
+	}
+	
 	public void addTool(Component toolComponent, Align align) {
 		addTool(toolComponent, align, false, null);
 	}

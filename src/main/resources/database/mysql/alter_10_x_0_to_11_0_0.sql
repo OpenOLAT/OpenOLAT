@@ -107,3 +107,119 @@ alter table o_qti_assessment_marks add constraint qti_marks_to_course_entry_idx 
 alter table o_qti_assessment_marks add constraint qti_marks_to_identity_idx foreign key (fk_identity) references o_bs_identity (id);
 
 
+-- portfolio
+create table o_pf_binder (
+   id bigint not null auto_increment,
+   creationdate datetime not null,
+   lastmodified datetime not null,
+   p_title varchar(255),
+   p_summary mediumtext,
+   p_status varchar(32),
+   fk_group_id bigint not null,
+   fk_course_entry_id bigint,
+   p_subident varchar(128),
+   fk_template_entry_id bigint,
+   primary key (id)
+);
+alter table o_pf_binder ENGINE = InnoDB;
+
+alter table o_pf_binder add constraint pf_binder_group_idx foreign key (fk_group_id) references o_bs_group (id);
+alter table o_pf_binder add constraint pf_binder_course_idx foreign key (fk_course_entry_id) references o_repositoryentry (repositoryentry_id);
+alter table o_pf_binder add constraint pf_binder_template_idx foreign key (fk_template_entry_id) references o_repositoryentry (repositoryentry_id);
+
+
+create table o_pf_section (
+   id bigint not null auto_increment,
+   creationdate datetime not null,
+   lastmodified datetime not null,
+   pos bigint default null,
+   p_title varchar(255),
+   p_description mediumtext,
+   p_status varchar(32),
+   p_begin datetime,
+   p_end datetime,
+   fk_group_id bigint not null,
+   fk_binder_id bigint not null,
+   fk_template_reference_id bigint,
+   primary key (id)
+);
+alter table o_pf_section ENGINE = InnoDB;
+
+alter table o_pf_section add constraint pf_section_group_idx foreign key (fk_group_id) references o_bs_group (id);
+alter table o_pf_section add constraint pf_section_binder_idx foreign key (fk_binder_id) references o_pf_binder (id);
+alter table o_pf_section add constraint pf_section_template_idx foreign key (fk_template_reference_id) references o_pf_section (id);
+
+
+create table o_pf_page (
+   id bigint not null auto_increment,
+   creationdate datetime not null,
+   lastmodified datetime not null,
+   pos bigint default null,
+   p_title varchar(255),
+   p_summary mediumtext,
+   p_status varchar(32),
+   p_version bigint default 0,
+   p_initial_publish_date datetime,
+   p_last_publish_date datetime,
+   fk_body_id bigint not null,
+   fk_group_id bigint not null,
+   fk_section_id bigint,
+   primary key (id)
+);
+alter table o_pf_page ENGINE = InnoDB;
+
+alter table o_pf_page add constraint pf_page_group_idx foreign key (fk_group_id) references o_bs_group (id);
+alter table o_pf_page add constraint pf_page_section_idx foreign key (fk_section_id) references o_pf_section (id);
+
+
+create table o_pf_page_body (
+   id bigint not null auto_increment,
+   creationdate datetime not null,
+   lastmodified datetime not null,
+   primary key (id)
+);
+alter table o_pf_page_body ENGINE = InnoDB;
+
+alter table o_pf_page add constraint pf_page_body_idx foreign key (fk_body_id) references o_pf_page_body (id);
+
+
+create table o_pf_page_part (
+   id bigint not null auto_increment,
+   creationdate datetime not null,
+   lastmodified datetime not null,
+   pos bigint default null,
+   dtype varchar(32),
+   p_content mediumtext,
+   fk_page_body_id bigint,
+   primary key (id)
+);
+alter table o_pf_page_part ENGINE = InnoDB;
+
+alter table o_pf_page_part add constraint pf_page_page_body_idx foreign key (fk_page_body_id) references o_pf_page_body (id);
+
+
+create table o_pf_category (
+   id bigint not null auto_increment,
+   creationdate datetime not null,
+   p_name varchar(32),
+   primary key (id)
+);
+alter table o_pf_category ENGINE = InnoDB;
+
+create index idx_category_name_idx on o_pf_category (p_name);
+
+
+create table o_pf_category_relation (
+   id bigint not null auto_increment,
+   creationdate datetime not null,
+   p_resname varchar(64) not null,
+   p_resid bigint not null,
+   fk_category_id bigint not null,
+   primary key (id)
+);
+alter table o_pf_category_relation ENGINE = InnoDB;
+
+alter table o_pf_category_relation add constraint pf_category_rel_cat_idx foreign key (fk_category_id) references o_pf_category (id);
+create index idx_category_rel_resid_idx on o_pf_category_relation (p_resid);
+
+

@@ -1,0 +1,31 @@
+
+div#o_main_toolbar.o_toolbar.o_portfolio {
+	margin-top: 0px;
+}
+
+.o_portfolio_listing {
+	
+	.o_table_body.container-fluid {
+		padding-right: 0px;
+		padding-left: 0px;
+	}
+	
+	.o_portfolio_entry {
+		position: relative;
+		display: inline-block;
+		height: 230px;			
+		width: 250px;
+		vertical-align: top;
+		margin-right: 10px;
+	}
+}
+
+.o_portfolio_toc ul>li>ul {
+	padding-left:1.5em;
+}
+
+.o_portfolio_page_links {
+	border: 1px solid #ccc;
+	background-color: #eee;
+	border-radius: $border-radius-base;
+}

@@ -104,7 +104,11 @@ class RichTextElementRenderer extends DefaultComponentRenderer {
 		StaticMediaDispatcher.renderStaticURI(baseUrl, "js/tinymce4/tinymce/tinymce.min.js", true);
 		
 		// Read write view
-		renderTextarea(sb, domID, teC);
+		if(config.isInline()) {
+			renderInlineEditor(sb, domID, teC);
+		} else {
+			renderTextarea(sb, domID, teC);
+		}
 		
 		Form form = te.getRootForm();
 		configurations.append("ffxhrevent: { formNam:\"").append(form.getFormName()).append("\", dispIdField:\"").append(form.getDispatchFieldId()).append("\",")
@@ -124,11 +128,52 @@ class RichTextElementRenderer extends DefaultComponentRenderer {
 		  .append("      });\n")
 		  .append("      ed.on('change', function(e) {\n")
 		  .append("        BTinyHelper.triggerOnChange('").append(domID).append("');\n")
-		  .append("      });\n") 
-		  .append("    },\n")
+		  .append("      });\n");
+		if(config.isInline()) {
+			sb.append("      ed.on('blur', function(e) {\n")
+			  .append("        o_ffXHREvent('").append(form.getFormName()).append("','").append(form.getDispatchFieldId()).append("','").append(teC.getFormDispatchId()).append("','").append(form.getEventFieldId()).append("', 2, false, false,'cmd','saveinlinedtiny','").append(domID).append("',ed.getContent());\n")
+	          .append("      });\n");
+		}
+		sb.append("    },\n")
 		  .append(configurations)
 		  .append("  });\n")
 		  .append("/* ]]> */</script>\n");
+	}
+	
+	private void renderInlineEditor(StringOutput sb, String domID, RichTextElementComponent teC) {
+		RichTextElementImpl te = teC.getRichTextElementImpl();
+		int cols = teC.getCols();
+		int rows = teC.getRows();
+		String value = te.getRawValue();
+		
+		System.out.println("Render: " + value);
+		
+		// Read write view
+		sb.append("<div id=\"");
+		sb.append(domID);
+		sb.append("\" name=\"");
+		sb.append(domID);
+		sb.append("\" ");
+		StringBuilder rawData = FormJSHelper.getRawJSFor(te.getRootForm(), domID, te.getAction());
+		sb.append(rawData.toString());
+		sb.append(" style=\"");
+		sb.append(" width:");
+		if (cols == -1) {
+			sb.append("100%;");
+		} else {
+			sb.append(cols);
+			sb.append("em;");
+		}
+		sb.append("height:");
+		if (rows == -1) {
+			sb.append("100%;");
+		} else {
+			sb.append(rows);
+			sb.append("em;");
+		}
+		sb.append("\" class=\"BGlossarIgnore\">");
+		sb.append(value);
+		sb.append("</div>");
 	}
 	
 	private void renderTextarea(StringOutput sb, String domID, RichTextElementComponent teC) {

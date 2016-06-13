@@ -144,7 +144,12 @@ public class RichTextElementImpl extends AbstractTextElement implements
 		String paramId = component.getFormDispatchId();
 		String cmd = getRootForm().getRequestParameter("cmd");
 		String submitValue = getRootForm().getRequestParameter(paramId);
-		if (submitValue != null) {
+		if("saveinlinedtiny".equals(cmd)) {
+			if(submitValue != null) {
+				setValue(submitValue);
+				getRootForm().fireFormEvent(ureq, new FormEvent(cmd, this, FormEvent.ONCLICK));
+			}
+		} else if (submitValue != null) {
 			setValue(submitValue);
 			// don't re-render component, value in GUI already correct
 			component.setDirty(false);

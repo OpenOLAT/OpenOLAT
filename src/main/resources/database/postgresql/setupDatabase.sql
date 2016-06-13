@@ -1465,6 +1465,88 @@ create table o_qti_assessment_marks (
    primary key (id)
 );
 
+-- portfolio
+create table o_pf_binder (
+   id bigserial,
+   creationdate timestamp not null,
+   lastmodified timestamp not null,
+   p_title varchar(255),
+   p_summary text,
+   p_status varchar(32),
+   fk_group_id int8 not null,
+   fk_course_entry_id int8,
+   p_subident varchar(128),
+   fk_template_entry_id int8,
+   primary key (id)
+);
+
+create table o_pf_section (
+   id bigserial,
+   creationdate timestamp not null,
+   lastmodified timestamp not null,
+   pos int8 default null,
+   p_title varchar(255),
+   p_description text,
+   p_status varchar(32),
+   p_begin timestamp,
+   p_end timestamp,
+   fk_group_id int8 not null,
+   fk_binder_id int8 not null,
+   fk_template_reference_id int8,
+   primary key (id)
+);
+
+create table o_pf_page (
+   id bigserial,
+   creationdate timestamp not null,
+   lastmodified timestamp not null,
+   pos int8 default null,
+   p_title varchar(255),
+   p_summary text,
+   p_status varchar(32),
+   p_version int8 default 0,
+   p_initial_publish_date timestamp,
+   p_last_publish_date timestamp,
+   fk_body_id int8 not null,
+   fk_group_id int8 not null,
+   fk_section_id int8,
+   primary key (id)
+);
+
+create table o_pf_page_body (
+   id bigserial,
+   creationdate timestamp not null,
+   lastmodified timestamp not null,
+   primary key (id)
+);
+
+create table o_pf_page_part (
+   id bigserial,
+   creationdate timestamp not null,
+   lastmodified timestamp not null,
+   pos int8 default null,
+   dtype varchar(32),
+   p_content text,
+   fk_page_body_id int8,
+   primary key (id)
+);
+
+create table o_pf_category (
+   id bigserial,
+   creationdate timestamp not null,
+   p_name varchar(32),
+   primary key (id)
+);
+
+create table o_pf_category_relation (
+   id bigserial,
+   creationdate timestamp not null,
+   p_resname varchar(64) not null,
+   p_resid bigint not null,
+   fk_category_id int8 not null,
+   primary key (id)
+);
+
 -- question item
 create table o_qp_pool (
    id int8 not null,
@@ -2364,6 +2446,38 @@ alter table o_qti_assessment_marks add constraint qti_marks_to_course_entry_idx 
 create index idx_qti_marks_to_centry_idx on o_qti_assessment_marks (fk_reference_entry);
 alter table o_qti_assessment_marks add constraint qti_marks_to_identity_idx foreign key (fk_identity) references o_bs_identity (id);
 create index idx_qti_marks_to_identity_idx on o_qti_assessment_marks (fk_identity);
+
+-- portfolio
+alter table o_pf_binder add constraint pf_binder_group_idx foreign key (fk_group_id) references o_bs_group (id);
+create index idx_pf_binder_group_idx on o_pf_binder (fk_group_id);
+alter table o_pf_binder add constraint pf_binder_course_idx foreign key (fk_course_entry_id) references o_repositoryentry (repositoryentry_id);
+create index idx_pf_binder_course_idx on o_pf_binder (fk_course_entry_id);
+alter table o_pf_binder add constraint pf_binder_template_idx foreign key (fk_template_entry_id) references o_repositoryentry (repositoryentry_id);
+create index idx_pf_binder_template_idx on o_pf_binder (fk_template_entry_id);
+
+alter table o_pf_section add constraint pf_section_group_idx foreign key (fk_group_id) references o_bs_group (id);
+create index idx_pf_section_group_idx on o_pf_section (fk_group_id);
+alter table o_pf_section add constraint pf_section_binder_idx foreign key (fk_binder_id) references o_pf_binder (id);
+create index idx_pf_section_binder_idx on o_pf_section (fk_binder_id);
+alter table o_pf_section add constraint pf_section_template_idx foreign key (fk_template_reference_id) references o_pf_section (id);
+create index idx_pf_section_template_idx on o_pf_section (fk_template_reference_id);
+
+alter table o_pf_page add constraint pf_page_group_idx foreign key (fk_group_id) references o_bs_group (id);
+create index idx_pf_page_group_idx on o_pf_page (fk_group_id);
+alter table o_pf_page add constraint pf_page_section_idx foreign key (fk_section_id) references o_pf_section (id);
+create index idx_pf_page_section_idx on o_pf_page (fk_section_id);
+
+alter table o_pf_page add constraint pf_page_body_idx foreign key (fk_body_id) references o_pf_page_body (id);
+create index idx_pf_page_body_idx on o_pf_page (fk_body_id);
+
+alter table o_pf_page_part add constraint pf_page_page_body_idx foreign key (fk_page_body_id) references o_pf_page_body (id);
+create index idx_pf_page_page_body_idx on o_pf_page_part (fk_page_body_id);
+
+create index idx_category_name_idx on o_pf_category (p_name);
+
+alter table o_pf_category_relation add constraint pf_category_rel_cat_idx foreign key (fk_category_id) references o_pf_category (id);
+create index idx_pf_category_rel_cat_idx on o_pf_category_relation (fk_category_id);
+create index idx_category_rel_resid_idx on o_pf_category_relation (p_resid);
 
 -- question pool
 alter table o_qp_pool add constraint idx_qp_pool_owner_grp_id foreign key (fk_ownergroup) references o_bs_secgroup(id);

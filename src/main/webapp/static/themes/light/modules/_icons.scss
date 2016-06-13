@@ -24,6 +24,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_accepted:before { content: $fa-var-thumbs-up;}
 .o_icon_accessibility:before { content: $fa-var-wheelchair; }
 .o_icon_actions:before { content: $fa-var-gears;}
+.o_icon_add_html:before { content: $fa-var-code; }
 .o_icon_archive_tool:before { content: $fa-var-download;}
 .o_icon_assessment_mode:before { content: $fa-var-pencil-square-o;}
 .o_icon_assessment_tool:before { content: $fa-var-trophy;}
@@ -149,6 +150,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_new:before { content: $fa-var-asterisk; color: $brand-success;}
 .o_icon_new_document:before { content: $fa-var-file-text; }
 .o_icon_new_folder:before { content: $fa-var-folder;}
+.o_icon_new_portfolio:before { content: $fa-var-pencil;}
 .o_icon_news:before { content: $fa-var-info-circle; }
 .o_icon_next:before { content: $fa-var-chevron-circle-right; }
 .o_icon_next_page:before { content: $fa-var-angle-double-right; }

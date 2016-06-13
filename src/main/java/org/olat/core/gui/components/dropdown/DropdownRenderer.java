@@ -79,6 +79,10 @@ public class DropdownRenderer extends DefaultComponentRenderer {
 		if(StringHelper.containsNonWhitespace(dropdown.getElementCssClass())) {
 			sb.append(" ").append(dropdown.getElementCssClass());
 		}
+		if(dropdown.getOrientation() == DropdownOrientation.right) {
+			sb.append(" dropdown-menu-right");
+		}
+		
 		sb.append("' role='menu'>");
 		
 		boolean wantSpacer = false;

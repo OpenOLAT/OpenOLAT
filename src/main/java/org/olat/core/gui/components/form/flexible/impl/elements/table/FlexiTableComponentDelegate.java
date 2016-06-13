@@ -30,5 +30,6 @@ import org.olat.core.gui.components.Component;
 public interface FlexiTableComponentDelegate {
 	
 	public Iterable<Component> getComponents(int row, Object rowObject);
+	
 
 }

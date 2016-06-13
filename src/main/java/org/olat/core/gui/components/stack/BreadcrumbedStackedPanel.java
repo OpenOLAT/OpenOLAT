@@ -201,7 +201,7 @@ public class BreadcrumbedStackedPanel extends Panel implements StackedPanel, Bre
 		BusinessControlFactory.getInstance().addToHistory(ureq, wControl);
 	}
 	
-	private Controller getLastController() {
+	public Controller getLastController() {
 		Controller controller = null;
 		if(stack.size() > 0) {
 			Link lastPath = stack.get(stack.size() - 1);

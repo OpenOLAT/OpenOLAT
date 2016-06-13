@@ -29,7 +29,7 @@
 		        <prop key="hibernate.connection.url">jdbc:mysql://${db.host}:${db.host.port}/${db.name}${db.url.options.mysql}</prop>
 		        <prop key="hibernate.connection.username">${db.user}</prop>
 		        <prop key="hibernate.connection.password">${db.pass}</prop>
-		        <prop key="hibernate.dialect">org.hibernate.dialect.MySQL5Dialect</prop>
+		        <prop key="hibernate.dialect">org.hibernate.dialect.MySQL5InnoDBDialect</prop>
 	        </props>            
 		</constructor-arg>
 		<property name="addMoreProperties" ref="hikariHibernateProperties" />
@@ -40,7 +40,7 @@
 			<props>
 		     	<!-- Using datasource of hibernate -->
 				<prop key="hibernate.connection.datasource">${db.jndi}</prop>
-		        <prop key="hibernate.dialect">org.hibernate.dialect.MySQL5Dialect</prop>
+		        <prop key="hibernate.dialect">org.hibernate.dialect.MySQL5InnoDBDialect</prop>
         	</props>            
 		</constructor-arg>
 		<property name="addMoreProperties" ref="hibernateProps" />
@@ -53,7 +53,7 @@
 				<prop key="hibernate.connection.url">jdbc:postgresql://${db.host}:${db.host.port}/${db.name}</prop>
 				<prop key="hibernate.connection.username">${db.user}</prop>
 				<prop key="hibernate.connection.password">${db.pass}</prop>
-		        <prop key="hibernate.dialect">org.hibernate.dialect.PostgreSQL9Dialect</prop>
+		        <prop key="hibernate.dialect">org.hibernate.dialect.PostgreSQL92Dialect</prop>
 	        </props>            
 		</constructor-arg>
 		<property name="addMoreProperties" ref="hikariHibernateProperties" />
@@ -64,7 +64,7 @@
 			<props>
 		     	<!-- Using datasource of hibernate -->
 				<prop key="hibernate.connection.datasource">${db.jndi}</prop>
-		        <prop key="hibernate.dialect">org.hibernate.dialect.PostgreSQL9Dialect</prop>
+		        <prop key="hibernate.dialect">org.hibernate.dialect.PostgreSQL92Dialect</prop>
         	</props>            
 		</constructor-arg>
 		<property name="addMoreProperties" ref="hibernateProps" />
@@ -77,7 +77,7 @@
 				<prop key="hibernate.connection.url">jdbc:oracle:thin:@${db.host}:${db.host.port}:${db.name}</prop>
 				<prop key="hibernate.connection.username">${db.user}</prop>
 				<prop key="hibernate.connection.password">${db.pass}</prop>
-				<prop key="hibernate.dialect">org.hibernate.dialect.Oracle10gDialect</prop>
+				<prop key="hibernate.dialect">org.hibernate.dialect.Oracle12cDialect</prop>
 				<prop key="hibernate.default_schema">${db.default.schema}</prop>
 	        </props>            
 		</constructor-arg>
@@ -89,7 +89,7 @@
 			<props>
 		     	<!-- Using datasource of hibernate -->
 				<prop key="hibernate.connection.datasource">${db.jndi}</prop>
-		        <prop key="hibernate.dialect">org.hibernate.dialect.Oracle10gDialect</prop>
+		        <prop key="hibernate.dialect">org.hibernate.dialect.Oracle12cDialect</prop>
         	</props>            
 		</constructor-arg>
 		<property name="addMoreProperties" ref="hibernateProps" />

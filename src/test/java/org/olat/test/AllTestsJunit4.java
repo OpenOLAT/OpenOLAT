@@ -154,6 +154,8 @@ import org.junit.runners.Suite;
 	org.olat.modules.gotomeeting.manager.GoToOrganizerDAOTest.class,
 	org.olat.modules.gotomeeting.manager.GoToRegistrantDAOTest.class,
 	org.olat.modules.gotomeeting.GoToTimezoneIDsTest.class,
+	org.olat.modules.portfolio.manager.BinderDAOTest.class,
+	org.olat.modules.portfolio.manager.PortfolioServiceTest.class,
 	org.olat.modules.reminder.ReminderModuleTest.class,
 	org.olat.modules.reminder.manager.ReminderDAOTest.class,
 	org.olat.modules.reminder.manager.ReminderRuleEngineTest.class,
