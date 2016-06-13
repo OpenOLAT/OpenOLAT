@@ -19,11 +19,20 @@
  */
 package org.olat.core.util.filter.impl;
 
-import java.util.regex.Pattern;
+import java.io.IOException;
+import java.io.StringReader;
 
+import org.cyberneko.html.parsers.SAXParser;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.filter.Filter;
+import org.olat.core.util.io.LimitedContentWriter;
+import org.olat.search.service.document.file.FileDocumentFactory;
+import org.xml.sax.Attributes;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
+import org.xml.sax.helpers.DefaultHandler;
 
 /**
  * Description:<br>
@@ -44,32 +53,86 @@ import org.olat.core.util.filter.Filter;
  */
 public class SimpleHTMLTagsFilter implements Filter {
 	private static final OLog log = Tracing.createLoggerFor(SimpleHTMLTagsFilter.class);
-	// match <p> <p/> <br> <br/>
-	private static final Pattern brAndPTagsPattern = Pattern.compile("<((br)|p|(BR)|P)( )*(/)?>");
-	// match </h1>..
-	private static final Pattern titleTagsPattern = Pattern.compile("</[hH][123456]>");
-	// match everything <....> 
-	private static final Pattern stripHTMLTagsPattern = Pattern.compile("<(!|/)?\\w+((\\s+[\\w-]+(\\s*(=\\s*)?(?:\".*?\"|'.*?'|[^'\">\\s]+))?)+\\s*|\\s*)/?>");
-	// match entities
- 	private static final Pattern htmlSpacePattern = Pattern.compile("&nbsp;");
-	
-	/**
-	 * @see org.olat.core.util.filter.Filter#filter(java.lang.String)
-	 */
+
+	@Override
 	public String filter(String original) {
+		if(original == null) return null;
+		if(original.isEmpty()) return "";
+		
 		try {
-			if (original == null) return null;
-			//some strange chars let to infinite loop in the regexp and need to be replaced
-			String  modified = original.replaceAll("\u00a0", " ");
-			modified = brAndPTagsPattern.matcher(modified).replaceAll(" ");
-			modified = titleTagsPattern.matcher(modified).replaceAll(" ");
-			if (log.isDebug()) log.debug("trying to remove all html tags from: "+modified); 
-			modified = stripHTMLTagsPattern.matcher(modified).replaceAll("");	
-			modified = htmlSpacePattern.matcher(modified).replaceAll(" ");	
-			return modified;			
-		} catch (Throwable e) {
-			log.error("Could not filter HTML tags. Using unfiltered string! Original string was::" + original, e);
-			return original;
+			SAXParser parser = new SAXParser();
+			HTMLHandler contentHandler = new HTMLHandler((int)original.length());
+			parser.setContentHandler(contentHandler);
+			parser.parse(new InputSource(new StringReader(original)));
+			String text = contentHandler.toString();
+			text = text.replace('\u00a0', ' ');
+			text = StringHelper.escapeHtml(text);
+			return text;
+		} catch (SAXException e) {
+			log.error("", e);
+			return null;
+		} catch (IOException e) {
+			log.error("", e);
+			return null;
+		} catch (Exception e) {
+			log.error("", e);
+			return null;
 		}
 	}
+	
+	private static class HTMLHandler extends DefaultHandler {
+		private boolean collect = true;
+		private boolean consumeBlanck = false;
+		private final LimitedContentWriter content;
+		
+		public HTMLHandler(int size) {
+			content = new LimitedContentWriter(size, FileDocumentFactory.getMaxFileSize());
+		}
+
+		@Override
+		public void startElement(String uri, String localName, String qName, Attributes attributes) {
+			String elem = localName.toLowerCase();
+			if("script".equals(elem)) {
+				collect = false;
+			// add a single whitespace before each block element but only if not there is not already a whitespace there
+			} else if("li".equals(elem)) {
+				content.append(" ");
+			} else if("br".equals(elem)) {
+				content.append(" ");
+			} else if(NekoHTMLFilter.blockTags.contains(elem) && content.length() > 0 && content.charAt(content.length() -1) != ' ' ) {
+				consumeBlanck = true;
+			}
+		}
+		
+		@Override
+		public void characters(char[] chars, int offset, int length) {
+			if(collect) {
+				if(consumeBlanck) {
+					if(content.length() > 0 && content.charAt(content.length() -1) != ' ' && length > 0 && chars[offset] != ' ') { 
+						content.append(' ');
+					}
+					consumeBlanck = false;
+				}
+				content.write(chars, offset, length);
+			}
+		}
+
+		@Override
+		public void endElement(String uri, String localName, String qName) {
+			String elem = localName.toLowerCase();
+			if("script".equals(elem)) {
+				collect = true;
+			} else if("li".equals(elem) || "p".equals(elem)) {
+				content.append(" ");
+			} else if(NekoHTMLFilter.blockTags.contains(elem) && content.length() > 0 && content.charAt(content.length() -1) != ' ' ) {
+				consumeBlanck = true;
+			}
+		}
+		
+		@Override
+		public String toString() {
+			return content.toString();
+		}
+	}
+
 }

@@ -97,7 +97,7 @@ public class FileDocumentFactory {
 	}
 	
 	public static int getMaxFileSize() {
-		return (int)searchModule.getMaxFileSize();
+		return searchModule == null ? 120000 : (int)searchModule.getMaxFileSize();
 	}
 	
 	public Document createDocument(SearchResourceContext leafResourceContext, VFSLeaf leaf)
