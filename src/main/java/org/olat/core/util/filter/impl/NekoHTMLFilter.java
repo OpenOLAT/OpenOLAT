@@ -47,7 +47,6 @@ import org.xml.sax.helpers.DefaultHandler;
  * @author srosse
  */
 public class NekoHTMLFilter implements Filter {
-	
 	private static final OLog log = Tracing.createLoggerFor(NekoHTMLFilter.class);
 	
 	public static final Set<String> blockTags = new HashSet<String>();
@@ -61,7 +60,9 @@ public class NekoHTMLFilter implements Filter {
 	}
 	
 	public String filter(String original, boolean pretty) {
-		if (original == null) return null;
+		if(original == null) return null;
+		if(original.isEmpty()) return "";
+		
 		try {
 			SAXParser parser = new SAXParser();
 			HTMLHandler contentHandler = new HTMLHandler((int)(original.length() * 0.66f), pretty);

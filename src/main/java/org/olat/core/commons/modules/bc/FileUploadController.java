@@ -892,8 +892,8 @@ public class FileUploadController extends FormBasicController {
 			itemEl.setErrorKey("cfile.name.notvalid", null);
 			allOk &= false;
 		}
-		if (remainingQuotKB != -1 
-			&& fileEl.getUploadFile().length() / 1024 > remainingQuotKB) {
+		if (remainingQuotKB != -1  && fileEl.getUploadFile() != null
+				&& fileEl.getUploadFile().length() / 1024 > remainingQuotKB) {
 			fileEl.clearError();
 			String supportAddr = WebappHelper.getMailConfig("mailQuota");
 			getWindowControl().setError(translate("ULLimitExceeded", new String[] { Formatter.roundToString((uploadLimitKB+0f) / 1000, 1), supportAddr }));

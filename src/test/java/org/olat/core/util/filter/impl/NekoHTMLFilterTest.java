@@ -54,6 +54,12 @@ public class NekoHTMLFilterTest{
 		Assert.assertEquals(result, filter.filter(input));
 	}
 	
+	@Test
+	public void escaping() {
+		String output = filter.filter("Test &auml; test");
+		System.out.println(output);
+	}
+	
 	@Test public void testPlainText() {
 		t(null, null);
 		t("", "");
