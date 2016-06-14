@@ -35,6 +35,7 @@ import org.olat.core.gui.control.generic.wizard.Step;
 import org.olat.core.gui.control.generic.wizard.StepRunnerCallback;
 import org.olat.core.gui.control.generic.wizard.StepsMainRunController;
 import org.olat.core.id.OLATResourceable;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.portfolio.EPArtefactHandler;
 import org.olat.portfolio.PortfolioModule;
@@ -204,7 +205,7 @@ public class ArtefactWizzardStepsController extends BasicController {
 		if (source == collectStepsCtrl) {
 			if (event == Event.CHANGED_EVENT) {
 				ePFMgr.updateArtefact(artefact);
-				showInfo("collect.success", artefact.getTitle());
+				showInfo("collect.success", StringHelper.escapeHtml(artefact.getTitle()));
 			} else {
 				// set back artefact-values
 				// artefact = ePFMgr.loadArtefact(artefact.getKey());

@@ -62,6 +62,7 @@ import org.olat.course.certificate.model.CertificateInfos;
 import org.olat.course.nodes.AssessableCourseNode;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.properties.CoursePropertyManager;
+import org.olat.course.run.scoring.ScoreAccounting;
 import org.olat.course.run.scoring.ScoreEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.properties.Property;
@@ -868,6 +869,7 @@ public class NewCachePersistingAssessmentManager extends BasicManager implements
 		// we could also sync on the assessedIdentity.
 		
 		Long attempts = CoordinatorManager.getInstance().getCoordinator().getSyncer().doInSync(createOLATResourceableForLocking(assessedIdentity), new SyncerCallback<Long>(){
+			@Override
 			public Long execute() {
 				Long attempts = null;
 				Float score = scoreEvaluation.getScore();
@@ -879,26 +881,36 @@ public class NewCachePersistingAssessmentManager extends BasicManager implements
 				if(incrementUserAttempts) {
 					attempts = incrementNodeAttemptsProperty(courseNode, assessedIdentity, cpm);
 				}
+				
+				boolean evaluated = false;
+				ScoreAccounting scoreAccounting = assessedUserCourseEnv.getScoreAccounting();
 				if(courseNode instanceof AssessableCourseNode) {
-					assessedUserCourseEnv.getScoreAccounting().scoreInfoChanged((AssessableCourseNode)courseNode, scoreEvaluation);
-				  // Update users efficiency statement
-				  EfficiencyStatementManager esm =	EfficiencyStatementManager.getInstance();
-				  esm.updateUserEfficiencyStatement(assessedUserCourseEnv);
+					evaluated = true;//scoreInfoChanged() == evaluateAll()
+					scoreAccounting.scoreInfoChanged((AssessableCourseNode)courseNode, scoreEvaluation);
+					// Update users efficiency statement
+					EfficiencyStatementManager.getInstance().updateUserEfficiencyStatement(assessedUserCourseEnv);
 				}
 				
-				if(passed != null && passed.booleanValue() && course.getCourseConfig().isAutomaticCertificationEnabled()) {
-					CertificatesManager certificatesManager = CoreSpringFactory.getImpl(CertificatesManager.class);
-					if(certificatesManager.isCertificationAllowed(assessedIdentity, courseEntry)) {
-						CertificateTemplate template = null;
-						Long templateId = course.getCourseConfig().getCertificateTemplate();
-						if(templateId != null) {
-							template = certificatesManager.getTemplateById(templateId);
+				if(course.getCourseConfig().isAutomaticCertificationEnabled()) {
+					CourseNode rootNode = assessedUserCourseEnv.getCourseEnvironment().getRunStructure().getRootNode();
+					if(!evaluated) {
+						scoreAccounting.evaluateAll();
+					}
+					
+					ScoreEvaluation rootEval = scoreAccounting.evalCourseNode((AssessableCourseNode)rootNode);
+					if(rootEval != null && rootEval.getPassed() != null && rootEval.getPassed().booleanValue()) {
+						CertificatesManager certificatesManager = CoreSpringFactory.getImpl(CertificatesManager.class);
+						if(certificatesManager.isCertificationAllowed(assessedIdentity, courseEntry)) {
+							CertificateTemplate template = null;
+							Long templateId = course.getCourseConfig().getCertificateTemplate();
+							if(templateId != null) {
+								template = certificatesManager.getTemplateById(templateId);
+							}
+							CertificateInfos certificateInfos = new CertificateInfos(assessedIdentity, rootEval.getScore(), rootEval.getPassed());
+							certificatesManager.generateCertificate(certificateInfos, courseEntry, template, true);
 						}
-						CertificateInfos certificateInfos = new CertificateInfos(assessedIdentity, score, passed);
-						certificatesManager.generateCertificate(certificateInfos, courseEntry, template, true);
 					}
 				}
-				
 				return attempts;
 			}});
 		

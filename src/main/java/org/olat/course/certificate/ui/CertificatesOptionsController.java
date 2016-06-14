@@ -144,6 +144,7 @@ public class CertificatesOptionsController extends FormBasicController {
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormTitle("options.certificates.title");
 		setFormTitleIconCss("o_icon o_icon_certificate");
+		setFormDescription("options.certificates.descr");
 		setFormContextHelp("Course Settings#_leistungsnachweis");
 		formLayout.setElementCssClass("o_sel_course_certificates");
 		
