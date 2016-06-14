@@ -103,7 +103,7 @@ public class NotificationSubscriptionAndNewsController extends BasicController i
 				// Lazy initialize the notification subscription controller when the
 				// user clicks the tab the first time
 				if (tabbedEvent.getNewComponent() == subscriptionPanel && subscriptionCtr == null) {
-					subscriptionCtr = NotificationUIFactory.createSubscriptionListingController(subscriberIdentity, ureq, getWindowControl());
+					subscriptionCtr = new NotificationSubscriptionController(ureq, getWindowControl(), subscriberIdentity, false);
 					listenTo(subscriptionCtr);
 					subscriptionPanel.setContent(subscriptionCtr.getInitialComponent());
 				}

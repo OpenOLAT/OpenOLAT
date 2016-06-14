@@ -305,7 +305,7 @@ public class CheckboxEditController extends FormBasicController {
 		} else {
 			ICourse course = CourseFactory.loadCourse(courseOres);
 			CourseEnvironment courseEnv = course.getCourseEnvironment();
-			container = checkboxManager.getFileContainer(courseEnv, courseNode, checkbox);
+			container = checkboxManager.getFileContainer(courseEnv, courseNode);
 		}
 		return container;
 	}

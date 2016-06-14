@@ -64,16 +64,18 @@ public class NotificationSubscriptionController extends BasicController {
 	private DialogBoxController delYesNoC;
 	private Identity subscriberIdentity;
 
-	public NotificationSubscriptionController(Identity subscriberIdentity, UserRequest ureq, WindowControl wControl) {
+	public NotificationSubscriptionController(UserRequest ureq, WindowControl wControl,
+			Identity subscriberIdentity, boolean adminColumns) {
 		// use home fallback for rss translations
 		super(ureq, wControl, Util.createPackageTranslator(HomeMainController.class, ureq.getLocale()));
 		this.subscriberIdentity = subscriberIdentity;
 		// Build the table that contains all the subscriptions
 		TableGuiConfiguration tableGuiPrefs = new TableGuiConfiguration();
 		tableGuiPrefs.setTableEmptyMessage(translate("subscriptions.no.subscriptions"));
+		tableGuiPrefs.setPreferencesOffered(true, "notifications-" + adminColumns);
 		subscriptionsTableCtr = new TableController(tableGuiPrefs, ureq, wControl, getTranslator());
 		subscriptionsTableModel = new NotificationSubscriptionTableDataModel(getTranslator());
-		subscriptionsTableModel.addTableColumns(subscriptionsTableCtr);
+		subscriptionsTableModel.addTableColumns(subscriptionsTableCtr, adminColumns);
 		updateSubscriptionsDataModel();
 		listenTo(subscriptionsTableCtr);
 		// Main view is a velocity container
