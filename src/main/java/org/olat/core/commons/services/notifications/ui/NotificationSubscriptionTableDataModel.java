@@ -54,10 +54,13 @@ class NotificationSubscriptionTableDataModel extends DefaultTableDataModel<Subsc
 	 * 
 	 * @param subscriptionsTableCtr
 	 */
-	void addTableColumns(TableController subscriptionsTableCtr) {
-		subscriptionsTableCtr.addColumnDescriptor(new DefaultColumnDescriptor("overview.column.type", 0, "launch", getLocale()));
-		subscriptionsTableCtr.addColumnDescriptor(new DefaultColumnDescriptor("overview.column.resname", 1, null, getLocale()));
-		subscriptionsTableCtr.addColumnDescriptor(new DefaultColumnDescriptor("overview.column.subidentifier", 2, null, getLocale()));
+	void addTableColumns(TableController subscriptionsTableCtr, boolean admin) {
+		subscriptionsTableCtr.addColumnDescriptor(false, new DefaultColumnDescriptor("overview.column.key", 0, "launch", getLocale()));
+		subscriptionsTableCtr.addColumnDescriptor(new DefaultColumnDescriptor("overview.column.type", 1, "launch", getLocale()));
+		subscriptionsTableCtr.addColumnDescriptor(new DefaultColumnDescriptor("overview.column.resname", 2, null, getLocale()));
+		subscriptionsTableCtr.addColumnDescriptor(new DefaultColumnDescriptor("overview.column.subidentifier", 3, null, getLocale()));
+		subscriptionsTableCtr.addColumnDescriptor(admin, new DefaultColumnDescriptor("overview.column.creationDate", 4, null, getLocale()));
+		subscriptionsTableCtr.addColumnDescriptor(admin, new DefaultColumnDescriptor("overview.column.lastEmail", 5, null, getLocale()));
 		subscriptionsTableCtr.addColumnDescriptor(new StaticColumnDescriptor("del", "overview.column.action", trans
 				.translate("overview.column.action.cellvalue")));
 	}
@@ -80,13 +83,14 @@ class NotificationSubscriptionTableDataModel extends DefaultTableDataModel<Subsc
 		Publisher pub = sub.getPublisher();
 		
 		switch (col) {
-			case 0:
+			case 0: return sub.getKey();
+			case 1:
 				String innerType = pub.getType();
 				return NewControllerFactory.translateResourceableTypeName(innerType, getLocale());
-			case 1:
+			case 2:
 				String containerType = pub.getResName();
 				return NewControllerFactory.translateResourceableTypeName(containerType, getLocale());
-			case 2:
+			case 3:
 				NotificationsHandler handler = NotificationsManager.getInstance().getNotificationsHandler(pub);
 				if(handler == null){
 					return "";
@@ -96,6 +100,8 @@ class NotificationSubscriptionTableDataModel extends DefaultTableDataModel<Subsc
 					return "";
 				}
 				return title;
+			case 4: return sub.getCreationDate();
+			case 5: return sub.getLatestEmailed();
 			default:
 				return "ERROR";
 		}

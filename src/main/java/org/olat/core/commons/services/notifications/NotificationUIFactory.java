@@ -29,7 +29,6 @@ import java.util.Date;
 import org.olat.NewControllerFactory;
 import org.olat.core.commons.services.notifications.ui.NotificationNewsController;
 import org.olat.core.commons.services.notifications.ui.NotificationSubscriptionAndNewsController;
-import org.olat.core.commons.services.notifications.ui.NotificationSubscriptionController;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.translator.Translator;
@@ -47,19 +46,6 @@ import org.olat.core.util.Util;
  * @author gnaegi
  */
 public class NotificationUIFactory {
-
-	/**
-	 * Create a controller that displays the subscriptions for a specific user
-	 * 
-	 * @param subscriberIdentity
-	 * @param ureq
-	 * @param windowControl
-	 * @return
-	 */
-	public static NotificationSubscriptionController createSubscriptionListingController(Identity subscriberIdentity, UserRequest ureq,
-			WindowControl windowControl) {
-		return new NotificationSubscriptionController(subscriberIdentity, ureq, windowControl);
-	}
 
 	/**
 	 * Create a controller that displays the users news from his subscriptions
