@@ -28,7 +28,6 @@ import org.olat.core.util.vfs.VFSContainer;
 import org.olat.course.nodes.CheckListCourseNode;
 import org.olat.course.nodes.cl.model.AssessmentBatch;
 import org.olat.course.nodes.cl.model.AssessmentData;
-import org.olat.course.nodes.cl.model.Checkbox;
 import org.olat.course.nodes.cl.model.CheckboxList;
 import org.olat.course.nodes.cl.model.DBCheck;
 import org.olat.course.nodes.cl.model.DBCheckbox;
@@ -96,7 +95,7 @@ public interface CheckboxManager {
 	 */
 	public List<AssessmentData> getAssessmentDatas(OLATResourceable ores, String resSubPath, RepositoryEntry re, List<BusinessGroup> groups);
 	
-	public VFSContainer getFileContainer(CourseEnvironment courseEnv, CheckListCourseNode cNode, Checkbox checkbox);
+	public VFSContainer getFileContainer(CourseEnvironment courseEnv, CheckListCourseNode cNode);
 	
-	public File getFileDirectory(CourseEnvironment courseEnv, CheckListCourseNode cNode, Checkbox checkbox);
+	public File getFileDirectory(CourseEnvironment courseEnv, CheckListCourseNode cNode);
 }

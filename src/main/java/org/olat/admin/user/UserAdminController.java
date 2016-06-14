@@ -37,7 +37,7 @@ import org.olat.basesecurity.Constants;
 import org.olat.basesecurity.SecurityGroup;
 import org.olat.core.commons.modules.bc.FolderConfig;
 import org.olat.core.commons.persistence.DBFactory;
-import org.olat.core.commons.services.notifications.NotificationUIFactory;
+import org.olat.core.commons.services.notifications.ui.NotificationSubscriptionController;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
@@ -329,7 +329,7 @@ public class UserAdminController extends BasicController implements Activateable
 
 		Boolean canSubscriptions = BaseSecurityModule.USERMANAGER_CAN_MODIFY_SUBSCRIPTIONS;
 		if (canSubscriptions.booleanValue() || isOlatAdmin) {
-			Controller subscriptionsCtr = NotificationUIFactory.createSubscriptionListingController(identity, ureq, getWindowControl());
+			Controller subscriptionsCtr = new NotificationSubscriptionController(ureq, getWindowControl(), identity, true);
 			listenTo(subscriptionsCtr); // auto-dispose
 			userTabP.addTab(translate(NLS_VIEW_SUBSCRIPTIONS), subscriptionsCtr.getInitialComponent());			
 		}

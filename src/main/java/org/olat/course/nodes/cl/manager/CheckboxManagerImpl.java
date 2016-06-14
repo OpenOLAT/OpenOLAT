@@ -510,14 +510,14 @@ public class CheckboxManagerImpl implements CheckboxManager {
 	}
 
 	@Override
-	public VFSContainer getFileContainer(CourseEnvironment courseEnv, CheckListCourseNode cNode, Checkbox checkbox) {
+	public VFSContainer getFileContainer(CourseEnvironment courseEnv, CheckListCourseNode cNode) {
 		String path = courseEnv.getCourseBaseContainer().getRelPath() + "/" + CheckListCourseNode.FOLDER_NAME + "/" + cNode.getIdent();
 		OlatRootFolderImpl rootFolder = new OlatRootFolderImpl(path, null);
 		return rootFolder; 
 	}
 
 	@Override
-	public File getFileDirectory(CourseEnvironment courseEnv, CheckListCourseNode cNode, Checkbox checkbox) {
+	public File getFileDirectory(CourseEnvironment courseEnv, CheckListCourseNode cNode) {
 		String path = courseEnv.getCourseBaseContainer().getRelPath() + "/" + CheckListCourseNode.FOLDER_NAME + "/" + cNode.getIdent();
 		File rootFolder = new File(FolderConfig.getCanonicalRoot(), path);
 		return rootFolder; 
