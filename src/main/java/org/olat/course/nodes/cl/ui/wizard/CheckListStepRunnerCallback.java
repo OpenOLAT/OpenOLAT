@@ -103,7 +103,7 @@ public class CheckListStepRunnerCallback implements StepRunnerCallback {
 					VFSContainer tmpContainer = new LocalFolderImpl(path);
 					VFSItem item = tmpContainer.resolve(templateBox.getFilename());
 					if(item instanceof VFSLeaf) {
-						VFSContainer container = checkboxManager.getFileContainer(courseEnv, checkNode, checkbox);
+						VFSContainer container = checkboxManager.getFileContainer(courseEnv, checkNode);
 						VFSManager.copyContent(tmpContainer, container);
 						tmpContainer.deleteSilently();
 					}

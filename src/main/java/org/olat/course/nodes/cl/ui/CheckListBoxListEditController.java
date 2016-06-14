@@ -148,7 +148,7 @@ public class CheckListBoxListEditController extends FormBasicController {
 		if(list != null && list.getList() != null) {
 			for(Checkbox checkbox:list.getList()) {
 				DownloadLink download = null;
-				VFSContainer container = checkboxManager.getFileContainer(courseEnv, courseNode, checkbox);
+				VFSContainer container = checkboxManager.getFileContainer(courseEnv, courseNode);
 				if(container != null) {
 					VFSItem item = container.resolve(checkbox.getFilename());
 					if(item instanceof VFSLeaf) {
