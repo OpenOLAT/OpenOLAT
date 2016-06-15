@@ -39,6 +39,8 @@ public interface ImageService {
 
 	public Size getSize(VFSLeaf image, String suffix);
 	
+	public Size getSize(File image, String suffix);
+	
 	public boolean cropImage(File image, File cropedImage, Crop cropSelection);
 
 	public Size scaleImage(File image, String extension, File scaledImage, int maxWidth, int maxHeight, boolean fill);

@@ -20,6 +20,8 @@
 package org.olat.core.commons.services.image.spi;
 
 import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Iterator;
@@ -49,6 +51,17 @@ public abstract class AbstractImageHelper implements ImageHelperSPI {
 
 	@Override
 	public Size getSize(VFSLeaf image, String suffix) {
+		Size size = null;
+		if(StringHelper.containsNonWhitespace(suffix)) {
+			size = getImageSize(image, suffix);
+		}
+		if(size == null) {
+			size = getImageSizeFallback(image);
+		}
+		return size;
+	}
+	
+	public Size getSize(File image, String suffix) {
 		Size size = null;
 		if(StringHelper.containsNonWhitespace(suffix)) {
 			size = getImageSize(image, suffix);
@@ -116,6 +129,52 @@ public abstract class AbstractImageHelper implements ImageHelperSPI {
 			log.error("No reader found for given format: " + suffix);
 		}
 		return result;
+	}
+	
+	private Size getImageSize(File media, String suffix) {
+		Size result = null;
+		Iterator<ImageReader> iter = ImageIO.getImageReadersBySuffix(suffix);
+		if (iter.hasNext()) {
+			ImageReader reader = iter.next();
+			try (InputStream mediaStream = new FileInputStream(media);
+				 ImageInputStream stream = new MemoryCacheImageInputStream(mediaStream)){
+				reader.setInput(stream);
+				int readerMinIndex = reader.getMinIndex();
+				int width = reader.getWidth(readerMinIndex);
+				int height = reader.getHeight(readerMinIndex);
+				result = new Size(width, height, 0, 0, false);
+
+			} catch (IOException e) {
+				log.error(e.getMessage());
+			} finally {
+				reader.dispose();
+			}
+		} else {
+			log.error("No reader found for given format: " + suffix);
+		}
+		return result;
+	}
+	
+	private Size getImageSizeFallback(File media) {
+		BufferedImage imageSrc = null;
+		try (InputStream fileStream = new FileInputStream(media)) {
+			imageSrc = ImageIO.read(fileStream);
+			if (imageSrc == null) {
+				// happens with faulty Java implementation, e.g. on MacOSX
+				return null;
+			}
+			double realWidth = imageSrc.getWidth();
+			double realHeight = imageSrc.getHeight();
+			return new Size((int)realWidth, (int)realHeight, 0, 0, false);
+		} catch (IOException e) {
+			// log error, don't do anything else
+			log.error("Problem while setting image size to fit for resource::" + media, e);
+			return null;
+		} finally {
+			if (imageSrc != null) {
+				imageSrc.flush();
+			}
+		}
 	}
 
 }

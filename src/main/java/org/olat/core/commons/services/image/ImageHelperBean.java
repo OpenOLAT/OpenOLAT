@@ -50,6 +50,11 @@ public class ImageHelperBean implements ImageService {
 	}
 
 	@Override
+	public Size getSize(File image, String suffix) {
+		return imageHelperServiceProvider.getSize(image, suffix);
+	}
+
+	@Override
 	public boolean cropImage(File image, File cropedImage, Crop cropSelection) {
 		return imageHelperServiceProvider.cropImage(image, cropedImage, cropSelection);
 	}
