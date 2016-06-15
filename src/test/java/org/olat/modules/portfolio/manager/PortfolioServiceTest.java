@@ -51,7 +51,7 @@ public class PortfolioServiceTest extends OlatTestCase {
 		String title = "My portfolio";
 		String summary = "My live";
 		
-		Binder binder = portfolioService.createNewBinder(title, summary, id);
+		Binder binder = portfolioService.createNewBinder(title, summary, null, id);
 		dbInstance.commitAndCloseSession();
 		Assert.assertNotNull(binder);
 		Assert.assertNotNull(binder.getKey());

@@ -77,6 +77,8 @@ public class PageImpl implements Persistable, ModifiedInfo, CreateInfo, Page {
 	private String summary;
 	@Column(name="p_status", nullable=true, insertable=true, updatable=true)
 	private String status;
+	@Column(name="p_image_path", nullable=true, insertable=true, updatable=true)
+	private String imagePath;
 	
 	@Column(name="p_version", nullable=true, insertable=true, updatable=true)
 	private int version;
@@ -144,6 +146,14 @@ public class PageImpl implements Persistable, ModifiedInfo, CreateInfo, Page {
 
 	public void setSummary(String summary) {
 		this.summary = summary;
+	}
+
+	public String getImagePath() {
+		return imagePath;
+	}
+
+	public void setImagePath(String imagePath) {
+		this.imagePath = imagePath;
 	}
 
 	public PageBody getBody() {

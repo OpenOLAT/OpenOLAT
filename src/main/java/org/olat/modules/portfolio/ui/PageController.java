@@ -24,10 +24,8 @@ import java.util.List;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
-import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
-import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
@@ -37,10 +35,14 @@ import org.olat.core.gui.components.stack.TooledStackedPanel.Align;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
+import org.olat.modules.portfolio.Binder;
 import org.olat.modules.portfolio.Page;
 import org.olat.modules.portfolio.PagePart;
 import org.olat.modules.portfolio.PortfolioService;
+import org.olat.modules.portfolio.Section;
 import org.olat.modules.portfolio.model.HTMLPart;
+import org.olat.modules.portfolio.ui.editor.PageEditorController;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -51,11 +53,13 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class PageController extends FormBasicController implements TooledController {
 
-	private Link editLink;
+	private Link editLink, editMetadataLink;
 	protected final TooledStackedPanel stackPanel;
 	private List<HTMLFragment> fragments = new ArrayList<>();
 	
+	private CloseableModalController cmc;
 	private PageEditorController editCtrl;
+	private PageMetadataEditController editMetadataCtrl;
 	
 	private Page page;
 	
@@ -76,6 +80,10 @@ public class PageController extends FormBasicController implements TooledControl
 		editLink = LinkFactory.createToolLink("edit.page", translate("edit.page"), this);
 		editLink.setIconLeftCSS("o_icon o_icon-lg o_icon_new_portfolio");
 		stackPanel.addTool(editLink, Align.left);
+		
+		editMetadataLink = LinkFactory.createToolLink("edit.page.metadata", translate("edit.page.metadata"), this);
+		editMetadataLink.setIconLeftCSS("o_icon o_icon-lg o_icon_new_portfolio");
+		stackPanel.addTool(editMetadataLink, Align.left);
 	}
 
 	@Override
@@ -87,6 +95,8 @@ public class PageController extends FormBasicController implements TooledControl
 	}
 	
 	private void loadModel() {
+		flc.getFormItemComponent().contextPut("pageTitle", page.getTitle());
+		
 		List<PagePart> parts = portfolioService.getPageParts(page);
 		List<HTMLFragment> newFragments = new ArrayList<>(parts.size());
 		for(PagePart part:parts) {
@@ -109,31 +119,59 @@ public class PageController extends FormBasicController implements TooledControl
 		if(editCtrl == source) {
 			stackPanel.popUpToController(this);
 			loadModel();
+		} else if(editMetadataCtrl == source) {
+			if(event == Event.DONE_EVENT) {
+				loadModel();
+			}
+			cmc.deactivate();
+			cleanUp();
+		} else if(cmc == source) {
+			cleanUp();
 		}
+		super.event(ureq, source, event);
+	}
+	
+	private void cleanUp() {
+		removeAsListenerAndDispose(editMetadataCtrl);
+		removeAsListenerAndDispose(cmc);
+		editMetadataCtrl = null;
+		cmc = null;
 	}
 
 	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
 		if(editLink == source) {
 			doEditPage(ureq);
+		} else if(editMetadataLink == source) {
+			doEditMetadata(ureq);
 		}
 		super.event(ureq, source, event);
 	}
 
 	@Override
-	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		super.formInnerEvent(ureq, source, event);
-	}
-
-	@Override
-	protected void propagateDirtinessToContainer(FormItem fiSrc, FormEvent fe) {
-		//ok -> set container dirty
-		super.propagateDirtinessToContainer(fiSrc, fe);
-	}
-
-	@Override
 	protected void formOK(UserRequest ureq) {
 		//
+	}
+	
+	private void doEditMetadata(UserRequest ureq) {
+		if(editMetadataCtrl != null) return;
+		
+		removeAsListenerAndDispose(editMetadataCtrl);
+		
+		Binder binder = null;
+		Section section = null;
+		if(page.getSection() != null) {
+			section = page.getSection();
+			binder = portfolioService.getBinderBySection(section);
+		}
+		
+		editMetadataCtrl = new PageMetadataEditController(ureq, getWindowControl(), binder, false, section, false, page);
+		listenTo(editMetadataCtrl);
+		
+		String title = translate("edit.page.metadata");
+		cmc = new CloseableModalController(getWindowControl(), null, editMetadataCtrl.getInitialComponent(), true, title, true);
+		listenTo(cmc);
+		cmc.activate();
 	}
 	
 	private void doEditPage(UserRequest ureq) {

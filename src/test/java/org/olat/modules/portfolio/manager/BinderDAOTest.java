@@ -49,7 +49,7 @@ public class BinderDAOTest extends OlatTestCase {
 		String title = "My portfolio";
 		String summary = "My live";
 		
-		BinderImpl binder = binderDao.createAndPersist(title, summary);
+		BinderImpl binder = binderDao.createAndPersist(title, summary, null);
 		dbInstance.commitAndCloseSession();
 		Assert.assertNotNull(binder);
 		Assert.assertNotNull(binder.getKey());
@@ -75,7 +75,7 @@ public class BinderDAOTest extends OlatTestCase {
 		String title = "Binder 2";
 		String summary = "Binder with one section.";
 		
-		BinderImpl binder = binderDao.createAndPersist(title, summary);
+		BinderImpl binder = binderDao.createAndPersist(title, summary, null);
 		
 		String sectionTitle = "First section";
 		String sectionDesc = "My first section.";
@@ -88,7 +88,7 @@ public class BinderDAOTest extends OlatTestCase {
 		String title = "Binder 2";
 		String summary = "Binder with one section.";
 		
-		Binder binder = binderDao.createAndPersist(title, summary);
+		Binder binder = binderDao.createAndPersist(title, summary, null);
 		dbInstance.commitAndCloseSession();
 		
 		String section1Title = "First section";

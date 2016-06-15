@@ -1117,6 +1117,27 @@
 					</bean>
 				</entry>
 				
+				<entry key="org.olat.modules.portfolio.ui.PortfolioHomeController">
+					<bean class="org.olat.user.propertyhandlers.UserPropertyUsageContext">
+						<property name="description" value="Properties used in the portfolio v2.0." />
+						<property name="propertyHandlers">
+							<list>
+								<ref bean="userPropertyFirstName" />
+								<ref bean="userPropertyLastName" />	
+							</list>
+						</property>	
+						<property name="mandatoryProperties">
+							<set>
+								<ref bean="userPropertyFirstName" />
+								<ref bean="userPropertyLastName" />
+							</set>
+						</property>
+						<property name="adminViewOnlyProperties">
+							<set></set>
+						</property>						
+					</bean>
+				</entry>
+				
 				<entry key="org.olat.modules.reminder.rule.UserPropertyRuleSPI">
 					<bean class="org.olat.user.propertyhandlers.UserPropertyUsageContext">
 						<property name="description" value="Properties used in the reminder rules." />

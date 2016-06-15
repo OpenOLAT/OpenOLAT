@@ -19,6 +19,7 @@
  */
 package org.olat.modules.portfolio;
 
+import java.io.File;
 import java.util.Date;
 import java.util.List;
 
@@ -33,7 +34,9 @@ import org.olat.core.id.Identity;
  */
 public interface PortfolioService {
 	
-	public Binder createNewBinder(String title, String summary, Identity owner);
+	public Binder createNewBinder(String title, String summary, String imagePath, Identity owner);
+	
+	public Binder updateBinder(Binder binder);
 	
 	/**
 	 * Add a new section at the end of the sections list of the specified binder.
@@ -52,6 +55,8 @@ public interface PortfolioService {
 	
 	public Binder getBinderByKey(Long portfolioKey);
 	
+	public Binder getBinderBySection(SectionRef section);
+	
 	/**
 	 * The list of owners of the binder.
 	 * @param binder
@@ -63,6 +68,12 @@ public interface PortfolioService {
 	public List<Category> getCategories(Binder binder);
 
 	public void updateCategories(Binder binder, List<String> categories);
+	
+	public File getPosterImage(Binder binder);
+	
+	public String addPosterImageForBinder(File file, String filename);
+	
+	public void removePosterImage(Binder binder);
 	
 	/**
 	 * Load the sections
@@ -99,7 +110,18 @@ public interface PortfolioService {
 	 * @param summary
 	 * @param section
 	 */
-	public Page appendNewPage(String title, String summary, SectionRef section);
+	public Page appendNewPage(String title, String summary, String imagePath, SectionRef section);
+	
+	public Page getPageByKey(Long key);
+	
+	public Page updatePage(Page page);
+	
+
+	public File getPosterImage(Page page);
+
+	public String addPosterImageForPage(File file, String filename);
+	
+	public void removePosterImage(Page page);
 	
 	/**
 	 * 

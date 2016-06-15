@@ -32,6 +32,7 @@ import org.olat.core.util.StringHelper;
 import org.olat.modules.portfolio.Binder;
 import org.olat.modules.portfolio.BinderRef;
 import org.olat.modules.portfolio.Section;
+import org.olat.modules.portfolio.SectionRef;
 import org.olat.modules.portfolio.model.BinderImpl;
 import org.olat.modules.portfolio.model.SectionImpl;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -51,15 +52,20 @@ public class BinderDAO {
 	@Autowired
 	private GroupDAO groupDao;
 	
-	public BinderImpl createAndPersist(String title, String summary) {
+	public BinderImpl createAndPersist(String title, String summary, String imagePath) {
 		BinderImpl binder = new BinderImpl();
 		binder.setCreationDate(new Date());
 		binder.setLastModified(binder.getCreationDate());
 		binder.setTitle(title);
 		binder.setSummary(summary);
+		binder.setImagePath(imagePath);
 		binder.setBaseGroup(groupDao.createGroup());
 		dbInstance.getCurrentEntityManager().persist(binder);
 		return binder;
+	}
+	
+	public Binder updateBinder(Binder binder) {
+		return dbInstance.getCurrentEntityManager().merge(binder);
 	}
 	
 	public List<Binder> searchOwnedBinders(Identity owner) {
@@ -85,6 +91,20 @@ public class BinderDAO {
 		List<Binder> binders = dbInstance.getCurrentEntityManager()
 			.createQuery(sb.toString(), Binder.class)
 			.setParameter("portfolioKey", key)
+			.getResultList();
+		return binders == null || binders.isEmpty() ? null : binders.get(0);
+	}
+	
+	public Binder loadBySection(SectionRef section) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select binder from pfsection as section")
+		  .append(" inner join section.binder as binder")
+		  .append(" inner join fetch binder.baseGroup as baseGroup")
+		  .append(" where section.key=:sectionKey");
+		
+		List<Binder> binders = dbInstance.getCurrentEntityManager()
+			.createQuery(sb.toString(), Binder.class)
+			.setParameter("sectionKey", section.getKey())
 			.getResultList();
 		return binders == null || binders.isEmpty() ? null : binders.get(0);
 	}

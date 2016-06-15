@@ -61,12 +61,13 @@ public class PageDAO {
 	 * @param body If the body is null, a new one is create.
 	 * @return
 	 */
-	public Page createAndPersist(String title, String summary, Section section, PageBody body) {
+	public Page createAndPersist(String title, String summary, String imagePath, Section section, PageBody body) {
 		PageImpl page = new PageImpl();
 		page.setCreationDate(new Date());
 		page.setLastModified(page.getCreationDate());
 		page.setTitle(title);
 		page.setSummary(summary);
+		page.setImagePath(imagePath);
 		page.setBaseGroup(groupDao.createGroup());
 		if(body == null) {
 			page.setBody(createAndPersistPageBody());
@@ -82,6 +83,10 @@ public class PageDAO {
 			dbInstance.getCurrentEntityManager().persist(page);
 		}
 		return page;
+	}
+	
+	public Page updatePage(Page page) {
+		return dbInstance.getCurrentEntityManager().merge(page);
 	}
 	
 	public PageBody createAndPersistPageBody() {

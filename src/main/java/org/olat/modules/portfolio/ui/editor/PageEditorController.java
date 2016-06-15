@@ -17,7 +17,7 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.portfolio.ui;
+package org.olat.modules.portfolio.ui.editor;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -36,10 +36,12 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.UserSession;
+import org.olat.core.util.Util;
 import org.olat.modules.portfolio.Page;
 import org.olat.modules.portfolio.PagePart;
 import org.olat.modules.portfolio.PortfolioService;
 import org.olat.modules.portfolio.model.HTMLPart;
+import org.olat.modules.portfolio.ui.PageController;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -62,6 +64,7 @@ public class PageEditorController extends FormBasicController {
 	public PageEditorController(UserRequest ureq, WindowControl wControl, Page page) {
 		super(ureq, wControl, "page_editor");
 		this.page = page;
+		setTranslator(Util.createPackageTranslator(PageController.class, getLocale(), getTranslator()));
 		
 		initForm(ureq);
 		loadModel(ureq);

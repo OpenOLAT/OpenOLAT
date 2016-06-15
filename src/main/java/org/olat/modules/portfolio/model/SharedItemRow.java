@@ -17,40 +17,54 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.portfolio;
+package org.olat.modules.portfolio.model;
 
 import java.util.Date;
+import java.util.List;
+import java.util.Locale;
 
-import org.olat.repository.RepositoryEntry;
+import org.olat.core.id.Identity;
+import org.olat.user.UserPropertiesRow;
+import org.olat.user.propertyhandlers.UserPropertyHandler;
 
 /**
  * 
- * Initial date: 07.06.2016<br>
+ * Initial date: 15.06.2016<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public interface Binder extends BinderRef {
+public class SharedItemRow extends UserPropertiesRow {
 	
-	public Date getCreationDate();
+	private String binder;
+	private String course;
+	private Date lastModified;
 	
-	public Date getLastModified();
-	
-	public String getTitle();
-	
-	public void setTitle(String title);
-	
-	public String getSummary();
-	
-	public void setSummary(String summary);
-	
-	public String getImagePath();
-	
-	public void setImagePath(String imagePath);
+	public SharedItemRow(Identity identity, List<UserPropertyHandler> userPropertyHandlers, Locale locale) {
+		super(identity, userPropertyHandlers, locale);
+		
+	}
 
-	public RepositoryEntry getCourseEntry();
-	
-	public String getSubIdent();
-	
-	public RepositoryEntry getTemplateEntry();
+	public String getBinder() {
+		return binder;
+	}
 
+	public void setBinder(String binder) {
+		this.binder = binder;
+	}
+
+	public String getCourse() {
+		return course;
+	}
+
+	public void setCourse(String course) {
+		this.course = course;
+	}
+
+	public Date getLastModified() {
+		return lastModified;
+	}
+
+	public void setLastModified(Date lastModified) {
+		this.lastModified = lastModified;
+	}
 }

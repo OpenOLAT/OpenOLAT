@@ -30,6 +30,7 @@ import org.olat.core.gui.components.stack.ButtonGroupComponent;
 import org.olat.core.gui.components.stack.PopEvent;
 import org.olat.core.gui.components.stack.TooledController;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
+import org.olat.core.gui.components.stack.TooledStackedPanel.Align;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -50,6 +51,7 @@ public class BinderController extends BasicController implements TooledControlle
 	private final Link overviewLink, entriesLink, publishLink;
 	private final ButtonGroupComponent segmentButtonsCmp;
 	private final TooledStackedPanel stackPanel;
+	private Link editBinderMetadataLink;
 	
 	private PublishController publishCtrl;
 	private TableOfContentController overviewCtrl;
@@ -79,6 +81,7 @@ public class BinderController extends BasicController implements TooledControlle
 	@Override
 	public void initTools() {
 		stackPanel.addTool(segmentButtonsCmp, true);
+		stackPanel.addTool(editBinderMetadataLink, Align.right);
 	}
 
 	@Override

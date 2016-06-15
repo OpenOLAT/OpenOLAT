@@ -17,43 +17,47 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.portfolio;
+package org.olat.modules.portfolio.model;
 
 import java.util.Date;
 
 /**
  * 
- * Initial date: 07.06.2016<br>
+ * Initial date: 15.06.2016<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public interface Page {
+public class MySharedItemRow {
 	
-	public Long getKey();
+	private String binder;
+	private String course;
+	private Date lastModified;
 	
-	public Date getCreationDate();
-	
-	public Date getLastModified();
-	
-	public String getTitle();
-	
-	public void setTitle(String title);
-	
-	public String getSummary();
-	
-	public void setSummary(String summary);
-	
-	public String getImagePath();
-	
-	public void setImagePath(String imagePath);
-	
-	/**
-	 * Lazily loaded.
-	 * 
-	 * @return
-	 */
-	public Section getSection();
-	
-	public PageBody getBody();
+	public MySharedItemRow() {
+		//
+	}
 
+	public String getBinder() {
+		return binder;
+	}
+
+	public void setBinder(String binder) {
+		this.binder = binder;
+	}
+
+	public String getCourse() {
+		return course;
+	}
+
+	public void setCourse(String course) {
+		this.course = course;
+	}
+
+	public Date getLastModified() {
+		return lastModified;
+	}
+
+	public void setLastModified(Date lastModified) {
+		this.lastModified = lastModified;
+	}
 }

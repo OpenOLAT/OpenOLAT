@@ -19,6 +19,7 @@
  */
 package org.olat.modules.portfolio.manager;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -30,6 +31,8 @@ import org.olat.basesecurity.IdentityRef;
 import org.olat.basesecurity.manager.GroupDAO;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
+import org.olat.core.util.FileUtils;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.modules.portfolio.Binder;
 import org.olat.modules.portfolio.BinderRef;
@@ -61,12 +64,19 @@ public class PortfolioServiceImpl implements PortfolioService {
 	private BinderDAO binderDao;
 	@Autowired
 	private CategoryDAO categoryDao;
+	@Autowired
+	private PortfolioFileStorage portfolioFileStorage;
 	
 	@Override
-	public Binder createNewBinder(String title, String summary, Identity owner) {
-		BinderImpl portfolio = binderDao.createAndPersist(title, summary);
+	public Binder createNewBinder(String title, String summary, String imagePath, Identity owner) {
+		BinderImpl portfolio = binderDao.createAndPersist(title, summary, imagePath);
 		groupDao.addMembership(portfolio.getBaseGroup(), owner, GroupRoles.owner.name());
 		return portfolio;
+	}
+
+	@Override
+	public Binder updateBinder(Binder binder) {
+		return binderDao.updateBinder(binder);
 	}
 
 	@Override
@@ -74,8 +84,6 @@ public class PortfolioServiceImpl implements PortfolioService {
 		Binder reloadedBinder = binderDao.loadByKey(binder.getKey());
 		binderDao.createSection(title, description, begin, end, reloadedBinder);
 	}
-	
-	
 
 	@Override
 	public Section updateSection(Section section) {
@@ -110,6 +118,11 @@ public class PortfolioServiceImpl implements PortfolioService {
 	@Override
 	public Binder getBinderByKey(Long portfolioKey) {
 		return binderDao.loadByKey(portfolioKey);
+	}
+
+	@Override
+	public Binder getBinderBySection(SectionRef section) {
+		return binderDao.loadBySection(section);
 	}
 
 	@Override
@@ -149,15 +162,93 @@ public class PortfolioServiceImpl implements PortfolioService {
 	}
 
 	@Override
+	public File getPosterImage(Binder binder) {
+		String imagePath = binder.getImagePath();
+		if(StringHelper.containsNonWhitespace(imagePath)) {
+			File bcroot = portfolioFileStorage.getRootDirectory();
+			return new File(bcroot, imagePath);
+		}
+		return null;
+	}
+
+	@Override
+	public String addPosterImageForBinder(File file, String filename) {
+		File dir = portfolioFileStorage.generateBinderSubDirectory();
+		File destinationFile = new File(dir, filename);
+		String renamedFile = FileUtils.rename(destinationFile);
+		if(renamedFile != null) {
+			destinationFile = new File(dir, renamedFile);
+		}
+		FileUtils.copyFileToFile(file, destinationFile, false);
+		return portfolioFileStorage.getRelativePath(destinationFile);
+	}
+
+	@Override
+	public void removePosterImage(Binder binder) {
+		String imagePath = binder.getImagePath();
+		if(StringHelper.containsNonWhitespace(imagePath)) {
+			File bcroot = portfolioFileStorage.getRootDirectory();
+			File file = new File(bcroot, imagePath);
+			if(file.exists()) {
+				file.delete();
+			}
+		}
+	}
+
+	@Override
 	public List<Page> searchOwnedPages(IdentityRef owner) {
 		List<Page> pages = pageDao.getOwnedPages(owner);
 		return pages;
 	}
 
 	@Override
-	public Page appendNewPage(String title, String summary, SectionRef section) {
+	public Page appendNewPage(String title, String summary, String imagePath, SectionRef section) {
 		Section reloadedSection = binderDao.loadSectionByKey(section.getKey());
-		return pageDao.createAndPersist(title, summary, reloadedSection, null);
+		return pageDao.createAndPersist(title, summary, null, reloadedSection, null);
+	}
+
+	@Override
+	public Page getPageByKey(Long key) {
+		return pageDao.loadByKey(key);
+	}
+
+	@Override
+	public Page updatePage(Page page) {
+		return pageDao.updatePage(page);
+	}
+
+	@Override
+	public File getPosterImage(Page page) {
+		String imagePath = page.getImagePath();
+		if(StringHelper.containsNonWhitespace(imagePath)) {
+			File bcroot = portfolioFileStorage.getRootDirectory();
+			return new File(bcroot, imagePath);
+		}
+		return null;
+	}
+
+	@Override
+	public String addPosterImageForPage(File file, String filename) {
+		File dir = portfolioFileStorage.generatePageSubDirectory();
+		File destinationFile = new File(dir, filename);
+		String renamedFile = FileUtils.rename(destinationFile);
+		if(renamedFile != null) {
+			destinationFile = new File(dir, renamedFile);
+		}
+		FileUtils.copyFileToFile(file, destinationFile, false);
+		return portfolioFileStorage.getRelativePath(destinationFile);
+	}
+
+	@Override
+	public void removePosterImage(Page page) {
+		String imagePath = page.getImagePath();
+		if(StringHelper.containsNonWhitespace(imagePath)) {
+			File bcroot = portfolioFileStorage.getRootDirectory();
+			File file = new File(bcroot, imagePath);
+			if(file.exists()) {
+				file.delete();
+			}
+		}
 	}
 
 	@Override

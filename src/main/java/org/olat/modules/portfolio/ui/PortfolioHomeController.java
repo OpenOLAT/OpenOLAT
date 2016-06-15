@@ -44,12 +44,15 @@ import org.olat.core.util.resource.OresHelper;
  */
 public class PortfolioHomeController extends BasicController implements Activateable2 {
 	
-	private Link myBindersLink, myEntriesLink;
+	private Link myBindersLink, myEntriesLink, mySharedItemsLink, sharedItemsLink, mediaCenterLink;
 	private final VelocityContainer mainVC;
 	private final TooledStackedPanel stackPanel;
 	
 	private MyPageListController myPageListCtrl;
+	private MediaCenterController mediaCenterCtrl;
+	private SharedItemsController sharedWithMeCtrl;
 	private BinderListController myPortfolioListCtrl;
+	private MySharedItemsController mySharedItemsCtrl;
 	
 	public PortfolioHomeController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel) {
 		super(ureq, wControl);
@@ -57,10 +60,19 @@ public class PortfolioHomeController extends BasicController implements Activate
 
 		mainVC = createVelocityContainer("home");
 		myBindersLink = LinkFactory.createLink("goto.my.binders", mainVC, this);
-		myBindersLink.setIconRightCSS("o_icon o_icon-lg o_icon_start");
+		myBindersLink.setIconRightCSS("o_icon o_icon_start");
 		
 		myEntriesLink = LinkFactory.createLink("goto.my.pages", mainVC, this);
-		myEntriesLink.setIconRightCSS("o_icon o_icon-lg o_icon_start");
+		myEntriesLink.setIconRightCSS("o_icon o_icon_start");
+		
+		mySharedItemsLink = LinkFactory.createLink("goto.my.shared.items", mainVC, this);
+		mySharedItemsLink.setIconRightCSS("o_icon o_icon_start");
+
+		sharedItemsLink = LinkFactory.createLink("goto.shared.with.me", mainVC, this);
+		sharedItemsLink.setIconRightCSS("o_icon o_icon_start");
+		
+		mediaCenterLink = LinkFactory.createLink("goto.media.center", mainVC, this);
+		mediaCenterLink.setIconRightCSS("o_icon o_icon_start");
 
 		putInitialPanel(mainVC);
 	}
@@ -76,6 +88,12 @@ public class PortfolioHomeController extends BasicController implements Activate
 			doOpenMyBinders(ureq);
 		} else if(myEntriesLink == source) {
 			doOpenMyPages(ureq);
+		} else if(mySharedItemsLink == source) {
+			doOpenMySharedItems(ureq);
+		} else if(sharedItemsLink == source) {
+			doOpenSharedWithMe(ureq);
+		} else if(mediaCenterLink == source) {
+			doOpenMediaCenter(ureq);
 		}
 	}
 	
@@ -88,6 +106,39 @@ public class PortfolioHomeController extends BasicController implements Activate
 			List<ContextEntry> subEntries = entries.subList(1, entries.size());
 			doOpenMyBinders(ureq).activate(ureq, subEntries, entries.get(0).getTransientState());
 		}
+	}
+	
+	private MediaCenterController doOpenMediaCenter(UserRequest ureq) {
+		removeAsListenerAndDispose(mediaCenterCtrl);
+		
+		OLATResourceable pagesOres = OresHelper.createOLATResourceableInstance("MediaCenter", 0l);
+		WindowControl swControl = addToHistory(ureq, pagesOres, null);
+		mediaCenterCtrl = new MediaCenterController(ureq, swControl, stackPanel);
+		listenTo(mediaCenterCtrl);
+		stackPanel.pushController(translate("media.center"), mediaCenterCtrl);
+		return mediaCenterCtrl;
+	}
+	
+	private SharedItemsController doOpenSharedWithMe(UserRequest ureq) {
+		removeAsListenerAndDispose(sharedWithMeCtrl);
+		
+		OLATResourceable pagesOres = OresHelper.createOLATResourceableInstance("SharedWithMe", 0l);
+		WindowControl swControl = addToHistory(ureq, pagesOres, null);
+		sharedWithMeCtrl = new SharedItemsController(ureq, swControl, stackPanel);
+		listenTo(sharedWithMeCtrl);
+		stackPanel.pushController(translate("shared.with.me"), sharedWithMeCtrl);
+		return sharedWithMeCtrl;
+	}
+	
+	private MySharedItemsController doOpenMySharedItems(UserRequest ureq) {
+		removeAsListenerAndDispose(mySharedItemsCtrl);
+		
+		OLATResourceable pagesOres = OresHelper.createOLATResourceableInstance("MySharedItems", 0l);
+		WindowControl swControl = addToHistory(ureq, pagesOres, null);
+		mySharedItemsCtrl = new MySharedItemsController(ureq, swControl, stackPanel);
+		listenTo(mySharedItemsCtrl);
+		stackPanel.pushController(translate("my.shared.items"), mySharedItemsCtrl);
+		return mySharedItemsCtrl;
 	}
 	
 	private MyPageListController doOpenMyPages(UserRequest ureq) {

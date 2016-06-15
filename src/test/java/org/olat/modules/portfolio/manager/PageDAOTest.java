@@ -51,12 +51,12 @@ public class PageDAOTest extends OlatTestCase {
 	
 	@Test
 	public void createBinderWithSectionAndPage() {
-		BinderImpl binder = binderDao.createAndPersist("Binder p1", "A binder with a page");
+		BinderImpl binder = binderDao.createAndPersist("Binder p1", "A binder with a page", null);
 		Section section = binderDao.createSection("Section", "First section", null, null, binder);
 		dbInstance.commitAndCloseSession();
 		
 		Section reloadedSection = binderDao.loadSectionByKey(section.getKey());
-		Page page = pageDao.createAndPersist("New page", "A brand new page.", reloadedSection, null);
+		Page page = pageDao.createAndPersist("New page", "A brand new page.", null, reloadedSection, null);
 		dbInstance.commitAndCloseSession();
 		Assert.assertNotNull(page);
 		Assert.assertNotNull(page.getKey());
@@ -68,13 +68,13 @@ public class PageDAOTest extends OlatTestCase {
 	
 	@Test
 	public void createBinderWithSectionAndPages() {
-		BinderImpl binder = binderDao.createAndPersist("Binder p1", "A binder with a page");
+		BinderImpl binder = binderDao.createAndPersist("Binder p1", "A binder with a page", null);
 		Section section = binderDao.createSection("Section", "First section", null, null, binder);
 		dbInstance.commitAndCloseSession();
 		
 		Section reloadedSection = binderDao.loadSectionByKey(section.getKey());
 		for(int i=0; i<5; i++) {
-			pageDao.createAndPersist("New page " + i, "A brand new page.", reloadedSection, null);
+			pageDao.createAndPersist("New page " + i, "A brand new page.", null, reloadedSection, null);
 		}
 		dbInstance.commitAndCloseSession();
 		
@@ -86,12 +86,12 @@ public class PageDAOTest extends OlatTestCase {
 	
 	@Test
 	public void createBinderWithSectionAndPageAndPart() {
-		BinderImpl binder = binderDao.createAndPersist("Binder p1", "A binder with a page");
+		BinderImpl binder = binderDao.createAndPersist("Binder p1", "A binder with a page", null);
 		Section section = binderDao.createSection("Section", "First section", null, null, binder);
 		dbInstance.commitAndCloseSession();
 		
 		Section reloadedSection = binderDao.loadSectionByKey(section.getKey());
-		Page page = pageDao.createAndPersist("Page 1", "A page with content.", reloadedSection, null);
+		Page page = pageDao.createAndPersist("Page 1", "A page with content.", null, reloadedSection, null);
 		dbInstance.commitAndCloseSession();
 		
 		HTMLPart htmlPart = new HTMLPart();

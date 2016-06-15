@@ -19,6 +19,7 @@
  */
 package org.olat.modules.portfolio.ui;
 
+import java.io.File;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -106,14 +107,17 @@ public class BinderMetadataEditController extends FormBasicController {
 		summaryEl.setPlaceholderKey("summary.placeholder", null);
 		
 		fileUpload = uifactory.addFileElement(getWindowControl(), "file", "fileupload",formLayout);			
-	
 		fileUpload.setPreview(ureq.getUserSession(), true);
 		fileUpload.addActionListener(FormEvent.ONCHANGE);
 		fileUpload.setDeleteEnabled(true);
-		fileUpload.setHelpText("background img of binder");
-		//fileUpload.setExampleKey("advanced_form.file", null);
 		fileUpload.limitToMimeType(imageMimeTypes, null, null);
 		fileUpload.setMaxUploadSizeKB(picUploadlimitKB, null, null);
+		if(binder != null) {
+			File posterImg = portfolioService.getPosterImage(binder);
+			if(posterImg != null) {
+				fileUpload.setInitialFile(posterImg);
+			}
+		}
 		
 		categoriesEl = uifactory.addTextBoxListElement("categories", "categories", "categories.hint", categories, formLayout, getTranslator());
 		categoriesEl.setElementCssClass("o_sel_ep_tagsinput");
@@ -121,7 +125,7 @@ public class BinderMetadataEditController extends FormBasicController {
 		//categoriesEl.setAutoCompleteContent(allUsersTags);
 		categoriesEl.setAllowDuplicates(false);
 		
-		//owners 		
+		// owners 		
 		StringBuilder sb = new StringBuilder();
 		if(binder == null || binder.getKey() == null) {
 			sb.append(userManager.getUserDisplayName(getIdentity()));
@@ -132,15 +136,38 @@ public class BinderMetadataEditController extends FormBasicController {
 				sb.append(userManager.getUserDisplayName(owner));
 			}
 		}
-		uifactory.addStaticTextElement("Author", "author", sb.toString(), formLayout);
-		uifactory.addStaticTextElement("Access", "access", "[private]", formLayout);
-		uifactory.addStaticTextElement("Template", "template", "[none]", formLayout);
-		uifactory.addStaticTextElement("Portfoliotask", "portfoliotask", "[none]", formLayout);
+		uifactory.addStaticTextElement("author", "author", sb.toString(), formLayout);
+		
+		// access
+		uifactory.addStaticTextElement("access", "access", "[private]", formLayout);
+		
+		// template name
+		String templateName;
+		if(binder.getTemplateEntry() != null) {
+			templateName = binder.getTemplateEntry().getDisplayname();
+		} else {
+			templateName = translate("template.none");
+		}
+		uifactory.addStaticTextElement("template", "template", templateName, formLayout);
+		
+		// portfolio task
+		String courseName;
+		if(binder.getCourseEntry() != null) {
+			courseName = binder.getCourseEntry().getDisplayname();
+		} else {
+			courseName = translate("portfoliotask.none");
+		}
+		uifactory.addStaticTextElement("portfolio-task", "portfoliotask", courseName, formLayout);
 
 		FormLayoutContainer buttonsCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		buttonsCont.setRootForm(mainForm);
 		formLayout.add(buttonsCont);
-		uifactory.addFormSubmitButton("create.binder", buttonsCont);
+		
+		if(binder != null && binder.getKey() != null) {
+			uifactory.addFormSubmitButton("save", buttonsCont);
+		} else {
+			uifactory.addFormSubmitButton("create.binder", buttonsCont);
+		}
 		uifactory.addFormCancelButton("cancel", buttonsCont, ureq, getWindowControl());
 	}
 	
@@ -165,11 +192,29 @@ public class BinderMetadataEditController extends FormBasicController {
 		if(binder == null) {
 			String title = titleEl.getValue();
 			String summary = summaryEl.getValue();
-			binder = portfolioService.createNewBinder(title, summary, getIdentity());
 			
-			List<String> updatedCategories = categoriesEl.getValueList();
-			portfolioService.updateCategories(binder, updatedCategories);
+			String imagePath = null;
+			if(fileUpload.getUploadFile() != null) {
+				imagePath = portfolioService.addPosterImageForBinder(fileUpload.getUploadFile(), fileUpload.getUploadFileName());
+			}
+			binder = portfolioService.createNewBinder(title, summary, imagePath, getIdentity());
+		} else {
+			binder = portfolioService.getBinderByKey(binder.getKey());
+			if(fileUpload.getUploadFile() != null) {
+				String imagePath = portfolioService.addPosterImageForBinder(fileUpload.getUploadFile(), fileUpload.getUploadFileName());
+				binder.setImagePath(imagePath);
+			} else if(fileUpload.getInitialFile() == null) {
+				binder.setImagePath(null);
+				portfolioService.removePosterImage(binder);
+			}
+			binder.setTitle(titleEl.getValue());
+			binder.setSummary(summaryEl.getValue());
+			binder = portfolioService.updateBinder(binder);
 		}
+		
+		List<String> updatedCategories = categoriesEl.getValueList();
+		portfolioService.updateCategories(binder, updatedCategories);
+		
 		fireEvent(ureq, Event.DONE_EVENT);
 	}
 
@@ -180,14 +225,18 @@ public class BinderMetadataEditController extends FormBasicController {
 
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		super.formInnerEvent(ureq, source, event);
 		if (fileUpload == source) {
 			if (event instanceof FileElementEvent) {
 				String cmd = event.getCommand();
 				if (FileElementEvent.DELETE.equals(cmd)) {
-					fileUpload.reset();
+					if(fileUpload.getUploadFile() != null) {
+						fileUpload.reset();
+					} else if(fileUpload.getInitialFile() != null) {
+						fileUpload.setInitialFile(null);
+					}
 				}
 			}
 		}
+		super.formInnerEvent(ureq, source, event);
 	}
 }

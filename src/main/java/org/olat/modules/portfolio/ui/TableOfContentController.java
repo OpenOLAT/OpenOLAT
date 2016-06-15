@@ -58,7 +58,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class TableOfContentController extends BasicController implements TooledController {
 	
-	private Link newSectionTool, newSectionButton, newEntryLink;
+	private Link newSectionTool, newSectionButton, newEntryLink, editBinderMetadataLink;
 	
 	private final VelocityContainer mainVC;
 	private final TooledStackedPanel stackPanel;
@@ -66,6 +66,7 @@ public class TableOfContentController extends BasicController implements TooledC
 	private CloseableModalController cmc;
 	private SectionEditController newSectionCtrl;
 	private SectionEditController editSectionCtrl;
+	private BinderMetadataEditController binderMetadataCtrl;
 	
 	private PageController pageCtrl;
 	private PageMetadataEditController newPageCtrl;
@@ -104,6 +105,10 @@ public class TableOfContentController extends BasicController implements TooledC
 	
 	@Override
 	public void initTools() {
+		editBinderMetadataLink = LinkFactory.createToolLink("edit.binder.metadata", translate("edit.binder.metadata"), this);
+		editBinderMetadataLink.setIconLeftCSS("o_icon o_icon-lg o_icon_new_portfolio");
+		stackPanel.addTool(editBinderMetadataLink, Align.left);
+		
 		newSectionTool = LinkFactory.createToolLink("new.section", translate("create.new.section"), this);
 		newSectionTool.setIconLeftCSS("o_icon o_icon-lg o_icon_new_portfolio");
 		stackPanel.addTool(newSectionTool, Align.right);
@@ -201,16 +206,24 @@ public class TableOfContentController extends BasicController implements TooledC
 			}
 			cmc.deactivate();
 			cleanUp();
+		} else if(binderMetadataCtrl == source) {
+			if(event == Event.DONE_EVENT) {
+				loadModel();
+			}
+			cmc.deactivate();
+			cleanUp();
 		} else if(cmc == source) {
 			cleanUp();
 		}
 	}
 	
 	private void cleanUp() {
+		removeAsListenerAndDispose(binderMetadataCtrl);
 		removeAsListenerAndDispose(editSectionCtrl);
 		removeAsListenerAndDispose(newSectionCtrl);
 		removeAsListenerAndDispose(newPageCtrl);
 		removeAsListenerAndDispose(cmc);
+		binderMetadataCtrl = null;
 		editSectionCtrl = null;
 		newSectionCtrl = null;
 		newPageCtrl = null;
@@ -223,6 +236,8 @@ public class TableOfContentController extends BasicController implements TooledC
 			doCreateNewSection(ureq);
 		} else if(newEntryLink == source) {
 			doCreateNewPage(ureq);
+		} else if(editBinderMetadataLink == source) {
+			doEditBinderMetadata(ureq);
 		} else if(source instanceof Link) {
 			Link link = (Link)source;
 			String cmd = link.getCommand();
@@ -292,6 +307,19 @@ public class TableOfContentController extends BasicController implements TooledC
 		cmc.activate();
 	}
 	
+	private void doEditBinderMetadata(UserRequest ureq) {
+		if(binderMetadataCtrl != null) return;
+		
+		Binder reloadedBinder = portfolioService.getBinderByKey(binder.getKey());
+		binderMetadataCtrl = new BinderMetadataEditController(ureq, getWindowControl(), reloadedBinder);
+		listenTo(binderMetadataCtrl);
+		
+		String title = translate("edit.binder.metadata");
+		cmc = new CloseableModalController(getWindowControl(), null, binderMetadataCtrl.getInitialComponent(), true, title, true);
+		listenTo(cmc);
+		cmc.activate();
+	}
+	
 	public static class SectionRow {
 		
 		private final Section section;
@@ -324,6 +352,5 @@ public class TableOfContentController extends BasicController implements TooledC
 		public String getSectionLinkName() {
 			return sectionLink.getComponentName();
 		}
-		
 	}
 }

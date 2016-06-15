@@ -19,6 +19,7 @@
  */
 package org.olat.modules.portfolio.ui;
 
+import java.io.File;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -69,7 +70,7 @@ public class PageMetadataEditController extends FormBasicController {
 	
 	private Page page;
 	private Binder currentBinder;
-	private SectionRef currentSection;
+	private Section currentSection;
 	
 	private final boolean chooseBinder;
 	private final boolean chooseSection;
@@ -79,8 +80,24 @@ public class PageMetadataEditController extends FormBasicController {
 	
 	public PageMetadataEditController(UserRequest ureq, WindowControl wControl,
 			Binder currentBinder, boolean chooseBinder,
-			SectionRef currentSection, boolean chooseSection) {
+			Section currentSection, boolean chooseSection) {
 		super(ureq, wControl);
+		
+		this.currentBinder = currentBinder;
+		this.currentSection = currentSection;
+		
+		this.chooseBinder = chooseBinder;
+		this.chooseSection = chooseSection;
+		
+		initForm(ureq);
+	}
+	
+	public PageMetadataEditController(UserRequest ureq, WindowControl wControl,
+			Binder currentBinder, boolean chooseBinder,
+			Section currentSection, boolean chooseSection, Page page) {
+		super(ureq, wControl);
+
+		this.page = page;
 		
 		this.currentBinder = currentBinder;
 		this.currentSection = currentSection;
@@ -112,10 +129,14 @@ public class PageMetadataEditController extends FormBasicController {
 		fileUpload.addActionListener(FormEvent.ONCHANGE);
 		fileUpload.setDeleteEnabled(true);
 		fileUpload.setHelpText("background img of binder");
-		//fileUpload.setExampleKey("advanced_form.file", null);
 		fileUpload.limitToMimeType(imageMimeTypes, null, null);
 		fileUpload.setMaxUploadSizeKB(picUploadlimitKB, null, null);
-
+		if(page != null) {
+			File posterImg = portfolioService.getPosterImage(page);
+			if(posterImg != null) {
+				fileUpload.setInitialFile(posterImg);
+			}
+		}
 		
 		//list of binder
 		if(chooseBinder) {
@@ -124,6 +145,7 @@ public class PageMetadataEditController extends FormBasicController {
 			String[] theKeys = new String[] { currentBinder.getKey().toString() };
 			String[] theValues = new String[]{ StringHelper.escapeHtml(currentBinder.getTitle()) };
 			bindersEl = uifactory.addDropdownSingleselect("binders", "page.binders", formLayout, theKeys, theValues, null);
+			bindersEl.setEnabled(false);
 		}
 		
 		//list of sections
@@ -154,13 +176,20 @@ public class PageMetadataEditController extends FormBasicController {
 				}
 			}	
 		} else {
-			
+			String[] theKeys = new String[] { currentSection.getKey().toString() };
+			String[] theValues = new String[]{ StringHelper.escapeHtml(currentSection.getTitle()) };
+			sectionsEl = uifactory.addDropdownSingleselect("sections", "page.sections", formLayout, theKeys, theValues, null);
+			sectionsEl.setEnabled(false);
 		}
 
 		FormLayoutContainer buttonsCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		buttonsCont.setRootForm(mainForm);
 		formLayout.add(buttonsCont);
-		uifactory.addFormSubmitButton("create.page", buttonsCont);
+		if(page != null && page.getKey() != null) {
+			uifactory.addFormSubmitButton("save", buttonsCont);
+		} else {
+			uifactory.addFormSubmitButton("create.page", buttonsCont);
+		}
 		uifactory.addFormCancelButton("cancel", buttonsCont, ureq, getWindowControl());
 	}
 
@@ -173,15 +202,34 @@ public class PageMetadataEditController extends FormBasicController {
 
 	@Override
 	protected void formOK(UserRequest ureq) {
-		String title = titleEl.getValue();
-		String summary = summaryEl.getValue();
-		
-		SectionRef selectSection = null;
-		if(sectionsEl.isOneSelected() && sectionsEl.isEnabled()) {
-			String selectedKey = sectionsEl.getSelectedKey();
-			selectSection = new SectionKeyRef(new Long(selectedKey));
+		if(page == null) {
+			String title = titleEl.getValue();
+			String summary = summaryEl.getValue();
+			SectionRef selectSection = null;
+			if(sectionsEl.isOneSelected() && sectionsEl.isEnabled()) {
+				String selectedKey = sectionsEl.getSelectedKey();
+				selectSection = new SectionKeyRef(new Long(selectedKey));
+			}
+			String imagePath = null;
+			if(fileUpload.getUploadFile() != null) {
+				imagePath = portfolioService.addPosterImageForPage(fileUpload.getUploadFile(), fileUpload.getUploadFileName());
+			}
+			portfolioService.appendNewPage(title, summary, imagePath, selectSection);
+		} else {
+			page.setTitle(titleEl.getValue());
+			page.setSummary(summaryEl.getValue());
+
+			if(fileUpload.getUploadFile() != null) {
+				String imagePath = portfolioService.addPosterImageForPage(fileUpload.getUploadFile(), fileUpload.getUploadFileName());
+				page.setImagePath(imagePath);
+			} else if(fileUpload.getInitialFile() == null) {
+				page.setImagePath(null);
+				portfolioService.removePosterImage(page);
+			}
+			
+			page = portfolioService.updatePage(page);
 		}
-		portfolioService.appendNewPage(title, summary, selectSection);
+		
 		fireEvent(ureq, Event.DONE_EVENT);
 	}
 
@@ -197,7 +245,11 @@ public class PageMetadataEditController extends FormBasicController {
 			if (event instanceof FileElementEvent) {
 				String cmd = event.getCommand();
 				if (FileElementEvent.DELETE.equals(cmd)) {
-					fileUpload.reset();
+					if(fileUpload.getUploadFile() != null) {
+						fileUpload.reset();
+					} else if(fileUpload.getInitialFile() != null) {
+						fileUpload.setInitialFile(null);
+					}
 				}
 			}
 		}

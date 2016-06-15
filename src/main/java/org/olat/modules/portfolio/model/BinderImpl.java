@@ -37,7 +37,6 @@ import javax.persistence.OrderColumn;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
-import javax.persistence.Transient;
 
 import org.olat.basesecurity.Group;
 import org.olat.basesecurity.model.GroupImpl;
@@ -78,9 +77,8 @@ public class BinderImpl implements Persistable, ModifiedInfo, CreateInfo, Binder
 	private String summary;
 	@Column(name="p_status", nullable=true, insertable=true, updatable=true)
 	private String status;
-	
-	@Transient
-	private String image;
+	@Column(name="p_image_path", nullable=true, insertable=true, updatable=true)
+	private String imagePath;
 
 	@ManyToOne(targetEntity=GroupImpl.class,fetch=FetchType.LAZY,optional=false)
 	@JoinColumn(name="fk_group_id", nullable=false, insertable=true, updatable=false)
@@ -126,6 +124,7 @@ public class BinderImpl implements Persistable, ModifiedInfo, CreateInfo, Binder
 		lastModified = date;
 	}
 
+	@Override
 	public String getTitle() {
 		return title;
 	}
@@ -134,12 +133,45 @@ public class BinderImpl implements Persistable, ModifiedInfo, CreateInfo, Binder
 		this.title = title;
 	}
 
+	@Override
 	public String getSummary() {
 		return summary;
 	}
 
 	public void setSummary(String summary) {
 		this.summary = summary;
+	}
+
+	public String getImagePath() {
+		return imagePath;
+	}
+
+	public void setImagePath(String imagePath) {
+		this.imagePath = imagePath;
+	}
+
+	public RepositoryEntry getCourseEntry() {
+		return courseEntry;
+	}
+
+	public void setCourseEntry(RepositoryEntry courseEntry) {
+		this.courseEntry = courseEntry;
+	}
+
+	public String getSubIdent() {
+		return subIdent;
+	}
+
+	public void setSubIdent(String subIdent) {
+		this.subIdent = subIdent;
+	}
+
+	public RepositoryEntry getTemplateEntry() {
+		return templateEntry;
+	}
+
+	public void setTemplateEntry(RepositoryEntry templateEntry) {
+		this.templateEntry = templateEntry;
 	}
 
 	public List<Section> getSections() {
