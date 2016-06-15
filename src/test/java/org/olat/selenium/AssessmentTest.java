@@ -148,7 +148,7 @@ public class AssessmentTest {
 			.selectWithTitle(testNodeTitle);
 		
 		//check that the title of the start page of test is correct
-		WebElement testH2 = browser.findElement(By.cssSelector("div.o_titled_wrapper.o_course_run h2"));
+		WebElement testH2 = browser.findElement(By.cssSelector("div.o_course_run h2"));
 		Assert.assertEquals(testNodeTitle, testH2.getText().trim());
 		
 		//start the test
@@ -245,7 +245,7 @@ public class AssessmentTest {
 			.selectWithTitle(testNodeTitle);
 		
 		//check that the title of the start page of test is correct
-		WebElement testH2 = browser.findElement(By.cssSelector("div.o_titled_wrapper.o_course_run h2"));
+		WebElement testH2 = browser.findElement(By.cssSelector("div.o_course_run h2"));
 		Assert.assertEquals(testNodeTitle, testH2.getText().trim());
 		
 		//add Ryomou as a course member
@@ -407,7 +407,7 @@ public class AssessmentTest {
 			.clickTree()
 			.selectWithTitle(scormNodeTitle);
 		
-		By scormH2By = By.cssSelector("div.o_titled_wrapper.o_course_run h2");
+		By scormH2By = By.cssSelector("div.o_course_run h2");
 		WebElement scormH2 = ryomouBrowser.findElement(scormH2By);
 		Assert.assertEquals(scormNodeTitle, scormH2.getText().trim());
 		
@@ -509,7 +509,7 @@ public class AssessmentTest {
 		OOGraphene.closeBlueMessageWindow(browser);
 		
 		//check that the title of the start page of test is correct
-		WebElement testH2 = browser.findElement(By.cssSelector("div.o_titled_wrapper.o_course_run h2"));
+		WebElement testH2 = browser.findElement(By.cssSelector("div.o_course_run h2"));
 		Assert.assertEquals(testNodeTitle, testH2.getText().trim());
 		
 		//add Ryomou and Kanu as a course member

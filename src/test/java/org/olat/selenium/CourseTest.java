@@ -748,7 +748,7 @@ public class CourseTest {
 			.selectWithTitle(testNodeTitle);
 		
 		//check that the title of the start page of test is correct
-		WebElement testH2 = browser.findElement(By.cssSelector("div.o_titled_wrapper.o_course_run h2"));
+		WebElement testH2 = browser.findElement(By.cssSelector("div.o_course_run h2"));
 		Assert.assertEquals(testNodeTitle, testH2.getText().trim());
 	}
 	
@@ -1047,7 +1047,7 @@ public class CourseTest {
 			.select(courseTitle)//go to the details page
 			.start();
 		
-		By courseTitleBy = By.cssSelector(".o_course_run h2");
+		By courseTitleBy = By.cssSelector("div.o_course_run h2");
 		WebElement courseTitleEl = userBrowser.findElement(courseTitleBy);
 		Assert.assertTrue(courseTitleEl.getText().contains(courseTitle));
 	}
