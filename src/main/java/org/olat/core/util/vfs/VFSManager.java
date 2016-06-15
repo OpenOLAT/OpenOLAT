@@ -29,6 +29,7 @@ package org.olat.core.util.vfs;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -756,6 +757,21 @@ public class VFSManager {
 			return FileUtils.copyDirContentsToDir(localSourceFile, localTargetFile, false, "VFScopyDir");
 		}
 		return false;
+	}
+	
+	/**
+	 * Copy the content of the file in the target leaf.
+	 * @param source A file
+	 * @param target The target leaf
+	 * @return
+	 */
+	public static boolean copyContent(File source, VFSLeaf target) {
+		try(InputStream inStream = new FileInputStream(source)) {
+			return copyContent(inStream, target, true);
+		} catch(IOException ex) {
+			log.error("", ex);
+			return false;
+		}
 	}
 	
 	/**

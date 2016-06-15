@@ -172,7 +172,9 @@ public class GTACoachedParticipantListController extends GTACoachedListControlle
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("select", translate("select"), "select"));
 		tableModel = new CoachParticipantsTableModel(userPropertyHandlers, getLocale(), columnsModel);
 
-		tableEl = uifactory.addTableElement(getWindowControl(), "entries", tableModel, getTranslator(), formLayout);
+		tableEl = uifactory.addTableElement(getWindowControl(), "entries", tableModel, 10, false, getTranslator(), formLayout);
+		tableEl.setShowAllRowsEnabled(true);
+		tableEl.setAndLoadPersistedPreferences(ureq, "gta-coached-participants");
 	}
 	
 	protected void updateModel() {
