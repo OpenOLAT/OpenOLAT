@@ -88,7 +88,9 @@ public class GTACoachedGroupListController extends GTACoachedListController {
 		columnsModel.addFlexiColumnModel(new StaticFlexiColumnModel("select", translate("select"), "select"));
 		tableModel = new CoachGroupsTableModel(columnsModel);
 
-		tableEl = uifactory.addTableElement(getWindowControl(), "entries", tableModel, getTranslator(), formLayout);
+		tableEl = uifactory.addTableElement(getWindowControl(), "entries", tableModel, 10, false, getTranslator(), formLayout);
+		tableEl.setShowAllRowsEnabled(true);
+		tableEl.setAndLoadPersistedPreferences(ureq, "gta-coached-groups");
 	}
 	
 	protected void updateModel() {
