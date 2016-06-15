@@ -206,6 +206,10 @@ public class RepositoryManager {
 			currentImage.delete();
 		}
 		
+		if(newImageFile == null || !newImageFile.exists() || newImageFile.getSize() <= 0) {
+			return false;
+		}
+		
 		String targetExtension = ".png";
 		String extension = FileUtils.getFileSuffix(newImageFile.getName());
 		if("jpg".equalsIgnoreCase(extension) || "jpeg".equalsIgnoreCase(extension)) {
