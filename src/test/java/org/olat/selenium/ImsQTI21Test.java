@@ -118,7 +118,7 @@ public class ImsQTI21Test {
 			.selectWithTitle(testNodeTitle);
 		
 		//check that the title of the start page of test is correct
-		WebElement testH2 = browser.findElement(By.cssSelector("div.o_titled_wrapper.o_course_run h2"));
+		WebElement testH2 = browser.findElement(By.cssSelector("div.o_course_run h2"));
 		Assert.assertEquals(testNodeTitle, testH2.getText().trim());
 		
 		QTI21Page qtiPage = QTI21Page
