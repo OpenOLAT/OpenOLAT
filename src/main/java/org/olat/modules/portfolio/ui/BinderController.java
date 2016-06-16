@@ -39,6 +39,7 @@ import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.modules.portfolio.Binder;
+import org.olat.modules.portfolio.BinderSecurityCallback;
 
 /**
  * 
@@ -58,11 +59,14 @@ public class BinderController extends BasicController implements TooledControlle
 	private BinderPageListController entriesCtrl;
 	
 	private Binder binder;
+	private final BinderSecurityCallback secCallback;
 
-	public BinderController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel, Binder binder) {
+	public BinderController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
+			BinderSecurityCallback secCallback, Binder binder) {
 		super(ureq, wControl);
 		this.binder = binder;
 		this.stackPanel = stackPanel;
+		this.secCallback = secCallback;
 		
 		segmentButtonsCmp = new ButtonGroupComponent("segments");
 		overviewLink = LinkFactory.createLink("portfolio.overview", getTranslator(), this);
@@ -145,7 +149,7 @@ public class BinderController extends BasicController implements TooledControlle
 	}
 	
 	private void doOpenPublish(UserRequest ureq) {
-		publishCtrl = new PublishController(ureq, getWindowControl(), binder);
+		publishCtrl = new PublishController(ureq, getWindowControl(), stackPanel, secCallback, binder);
 		listenTo(publishCtrl);
 		
 		stackPanel.popUpToController(this);

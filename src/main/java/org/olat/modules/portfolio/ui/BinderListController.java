@@ -53,6 +53,8 @@ import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.modules.portfolio.Binder;
+import org.olat.modules.portfolio.BinderSecurityCallback;
+import org.olat.modules.portfolio.BinderSecurityCallbackImpl;
 import org.olat.modules.portfolio.PortfolioService;
 import org.olat.modules.portfolio.ui.BindersDataModel.PortfolioCols;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -229,7 +231,8 @@ public class BinderListController extends FormBasicController
 			
 			OLATResourceable binderOres = OresHelper.createOLATResourceableInstance("Binder", binderKey);
 			WindowControl swControl = addToHistory(ureq, binderOres, null);
-			binderCtrl = new BinderController(ureq, swControl, stackPanel, binder);
+			BinderSecurityCallback secCallback = new BinderSecurityCallbackImpl(true);
+			binderCtrl = new BinderController(ureq, swControl, stackPanel, secCallback, binder);
 			String displayName = StringHelper.escapeHtml(binder.getTitle());
 			stackPanel.pushController(displayName, binderCtrl);
 			return binderCtrl;
