@@ -518,24 +518,14 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 			ICourse course = CourseFactory.loadCourse(entry);
 			CourseConfig config = course.getCourseEnvironment().getCourseConfig();
 			if(config.isRecertificationEnabled()) {
-				int time = config.getRecertificationTimelapse();
-				RecertificationTimeUnit timeUnit = config.getRecertificationTimelapseUnit();
 				Certificate certificate =  getLastCertificate(identity, entry.getOlatResource().getKey());
 				if(certificate == null) {
 					allowed = true;
 				} else {
-					Date date = certificate.getCreationDate();
 					Calendar cal = Calendar.getInstance();
 					Date now = cal.getTime();
-					cal.setTime(date);
-					switch(timeUnit) {
-						case day: cal.add(Calendar.DATE, time); break;
-						case week: cal.add(Calendar.DATE, time * 7); break;
-						case month: cal.add(Calendar.MONTH, time); break;
-						case year: cal.add(Calendar.YEAR, time); break;
-					}
-					Date nextCertification = cal.getTime();
-					allowed = nextCertification.before(now);
+					Date nextCertificationDate = getDateNextRecertification(certificate, config);
+					allowed = (nextCertificationDate != null ? nextCertificationDate.before(now) : false);
 				}
 			} else {
 				allowed = !hasCertificate(identity, entry.getOlatResource().getKey());
@@ -545,6 +535,34 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 		}
 		return allowed;
 	}
+	
+	@Override
+	public Date getDateNextRecertification(Certificate certificate, RepositoryEntry entry) {
+		ICourse course = CourseFactory.loadCourse(entry);
+		CourseConfig config = course.getCourseEnvironment().getCourseConfig();
+		return getDateNextRecertification(certificate, config);
+	}
+
+	private Date getDateNextRecertification(Certificate certificate, CourseConfig config) {
+		if(config.isRecertificationEnabled() && certificate != null) {
+			int time = config.getRecertificationTimelapse();
+			RecertificationTimeUnit timeUnit = config.getRecertificationTimelapseUnit();
+			Date date = certificate.getCreationDate();
+			Calendar cal = Calendar.getInstance();
+			cal.setTime(date);
+			switch(timeUnit) {
+				case day: cal.add(Calendar.DATE, time); break;
+				case week: cal.add(Calendar.DATE, time * 7); break;
+				case month: cal.add(Calendar.MONTH, time); break;
+				case year: cal.add(Calendar.YEAR, time); break;
+			}
+			Date nextCertification = cal.getTime();
+			return nextCertification;
+		} else {
+			return null;
+		}		
+	}
+
 	
 	@Override
 	public void deleteCertificate(Certificate certificate) {
@@ -678,15 +696,15 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 		File dirFile = new File(WebappHelper.getTmpDir(), UUID.randomUUID().toString());	
 		if(template == null) {
 			CertificatePDFFormWorker worker = new CertificatePDFFormWorker(identity, entry, 2.0f, true,
-					new Date(), new Date(), locale, userManager, this);
+					new Date(), new Date(), new Date(), locale, userManager, this);
 			certificateFile = worker.fill(null, dirFile, "Certificate.pdf");
 		} else if(template.getPath().toLowerCase().endsWith("pdf")) {
 			CertificatePDFFormWorker worker = new CertificatePDFFormWorker(identity, entry, 2.0f, true,
-					new Date(), new Date(), locale, userManager, this);
+					new Date(), new Date(), new Date(), locale, userManager, this);
 			certificateFile = worker.fill(template, dirFile, "Certificate.pdf");
 		} else {
 			CertificatePhantomWorker worker = new CertificatePhantomWorker(identity, entry, 2.0f, true,
-					new Date(), new Date(), locale, userManager, this);
+					new Date(), new Date(),new Date(),  locale, userManager, this);
 			certificateFile = worker.fill(template, dirFile, "Certificate.pdf");
 		}
 		return certificateFile;
@@ -815,6 +833,7 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 		Boolean passed = workUnit.getPassed();
 		Date dateCertification = certificate.getCreationDate();
 		Date dateFirstCertification = getDateFirstCertification(identity, resource.getKey());
+		Date dateNextRecertification = getDateNextRecertification(certificate, entry);
 		
 		File certificateFile;
 		StringBuilder sb = new StringBuilder();
@@ -825,7 +844,7 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 		String filename = FileUtils.normalizeFilename(sb.toString()) + ".pdf";
 		if(template == null || template.getPath().toLowerCase().endsWith("pdf")) {
 			CertificatePDFFormWorker worker = new CertificatePDFFormWorker(identity, entry, score, passed,
-					dateCertification, dateFirstCertification, locale, userManager, this);
+					dateCertification, dateFirstCertification, dateNextRecertification, locale, userManager, this);
 			certificateFile = worker.fill(template, dirFile, filename);
 			if(certificateFile == null) {
 				certificate.setStatus(CertificateStatus.error);
@@ -834,7 +853,7 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 			}
 		} else {
 			CertificatePhantomWorker worker = new CertificatePhantomWorker(identity, entry, score, passed,
-					dateCertification, dateFirstCertification, locale, userManager, this);
+					dateCertification, dateFirstCertification, dateNextRecertification, locale, userManager, this);
 			certificateFile = worker.fill(template, dirFile, filename);
 			if(certificateFile == null) {
 				certificate.setStatus(CertificateStatus.error);

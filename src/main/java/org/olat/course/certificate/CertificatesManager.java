@@ -148,6 +148,14 @@ public interface CertificatesManager {
 	
 	public boolean isCertificationAllowed(Identity identity, RepositoryEntry entry);
 	
+	/**
+	 * Get the next re-certification date or NULL if no recertification possible
+	 * @param certificate An exiting certificate
+	 * @param entry The repository entry of the course
+	 * @return Date representing the next possible recertification date or NULL if no recertification possible at this time
+	 */
+	public Date getDateNextRecertification(Certificate certificate, RepositoryEntry entry);
+	
 	public File previewCertificate(CertificateTemplate template, RepositoryEntry entry, Locale locale);
 
 	public Certificate uploadCertificate(Identity identity, Date creationDate, OLATResource resource, File certificateFile);

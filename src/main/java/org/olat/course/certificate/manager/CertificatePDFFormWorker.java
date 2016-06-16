@@ -68,6 +68,7 @@ public class CertificatePDFFormWorker {
 
 	private Date dateCertification;
 	private Date dateFirstCertification;
+	private Date dateNextRecertification;
 
 	private final Locale locale;
 	private final UserManager userManager;
@@ -75,7 +76,7 @@ public class CertificatePDFFormWorker {
 
 	public CertificatePDFFormWorker(Identity identity, RepositoryEntry entry,
 			Float score, Boolean passed, Date dateCertification,
-			Date dateFirstCertification, Locale locale,
+			Date dateFirstCertification, Date dateNextRecertification, Locale locale,
 			UserManager userManager, CertificatesManagerImpl certificatesManager) {
 		this.entry = entry;
 		this.score = score;
@@ -84,6 +85,7 @@ public class CertificatePDFFormWorker {
 		this.identity = identity;
 		this.dateCertification = dateCertification;
 		this.dateFirstCertification = dateFirstCertification;
+		this.dateNextRecertification = dateNextRecertification;
 		this.userManager = userManager;
 		this.certificatesManager = certificatesManager;
 	}
@@ -201,10 +203,11 @@ public class CertificatePDFFormWorker {
 		if(dateCertification == null) {
 			fillField("dateCertification", "", acroForm);
 		} else {
-			String formattedDateCertification= format.formatDate(dateCertification);
+			String formattedDateCertification = format.formatDate(dateCertification);
 			fillField("dateCertification", formattedDateCertification, acroForm);
-			String formattedDateCertificationLong= format.formatDateLong(dateCertification);
-			fillField("dateCertificationLong", formattedDateCertificationLong, acroForm);		}
+			String formattedDateCertificationLong = format.formatDateLong(dateCertification);
+			fillField("dateCertificationLong", formattedDateCertificationLong, acroForm);		
+		}
 		
 		if(dateFirstCertification == null) {
 			fillField("dateFirstCertification", "", acroForm);
@@ -212,7 +215,18 @@ public class CertificatePDFFormWorker {
 			String formattedDateFirstCertification = format.formatDate(dateFirstCertification);
 			fillField("dateFirstCertification", formattedDateFirstCertification, acroForm);
 			String formattedDateFirstCertificationLong = format.formatDate(dateFirstCertification);
-			fillField("dateFirstCertificationLong", formattedDateFirstCertificationLong, acroForm);		}
+			fillField("dateFirstCertificationLong", formattedDateFirstCertificationLong, acroForm);		
+		}
+		
+		if(dateNextRecertification == null) {
+			fillField("dateNextRecertification", "", acroForm);
+		} else {
+			String formattedDateNextRecertification = format.formatDate(dateNextRecertification);
+			fillField("dateNextRecertification", formattedDateNextRecertification, acroForm);
+			String formattedDateNextRecertificationLong = format.formatDateLong(dateNextRecertification);
+			fillField("dateNextRecertificationLong", formattedDateNextRecertificationLong, acroForm);
+		}		
+
 	}
 	
 	private void fillAssessmentInfos(PDAcroForm acroForm) throws IOException {
