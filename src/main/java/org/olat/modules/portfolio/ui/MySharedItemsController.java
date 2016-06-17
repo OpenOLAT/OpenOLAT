@@ -146,7 +146,7 @@ public class MySharedItemsController extends FormBasicController {
 			
 			OLATResourceable binderOres = OresHelper.createOLATResourceableInstance("Binder", binder.getKey());
 			WindowControl swControl = addToHistory(ureq, binderOres, null);
-			BinderSecurityCallback secCallback = new BinderSecurityCallbackImpl(true);
+			BinderSecurityCallback secCallback = new BinderSecurityCallbackImpl(true, binder.getTemplate() == null);
 			binderCtrl = new BinderController(ureq, swControl, stackPanel, secCallback, binder);
 			String displayName = StringHelper.escapeHtml(binder.getTitle());
 			stackPanel.pushController(displayName, binderCtrl);

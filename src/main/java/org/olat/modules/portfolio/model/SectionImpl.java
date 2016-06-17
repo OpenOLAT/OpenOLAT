@@ -197,6 +197,14 @@ public class SectionImpl implements Persistable, ModifiedInfo, CreateInfo, Secti
 		this.binder = binder;
 	}
 
+	public Section getTemplateReference() {
+		return templateReference;
+	}
+
+	public void setTemplateReference(Section templateReference) {
+		this.templateReference = templateReference;
+	}
+
 	@Override
 	public List<Page> getPages() {
 		if(pages == null) {

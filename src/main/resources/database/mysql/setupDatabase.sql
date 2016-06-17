@@ -1589,13 +1589,17 @@ create table o_pf_binder (
    creationdate datetime not null,
    lastmodified datetime not null,
    p_title varchar(255),
-   p_summary mediumtext,
    p_status varchar(32),
+   p_copy_date datetime,
+   p_return_date datetime,
+   p_deadline datetime,
+   p_summary mediumtext,
    p_image_path varchar(255),
+   fk_olatresource_id bigint,
    fk_group_id bigint not null,
    fk_course_entry_id bigint,
    p_subident varchar(128),
-   fk_template_entry_id bigint,
+   fk_template_id bigint,
    primary key (id)
 );
 
@@ -2454,9 +2458,10 @@ alter table o_qti_assessment_marks add constraint qti_marks_to_course_entry_idx 
 alter table o_qti_assessment_marks add constraint qti_marks_to_identity_idx foreign key (fk_identity) references o_bs_identity (id);
 
 -- portfolio
+alter table o_pf_binder add constraint pf_binder_resource_idx foreign key (fk_olatresource_id) references o_olatresource (resource_id);
 alter table o_pf_binder add constraint pf_binder_group_idx foreign key (fk_group_id) references o_bs_group (id);
 alter table o_pf_binder add constraint pf_binder_course_idx foreign key (fk_course_entry_id) references o_repositoryentry (repositoryentry_id);
-alter table o_pf_binder add constraint pf_binder_template_idx foreign key (fk_template_entry_id) references o_repositoryentry (repositoryentry_id);
+alter table o_pf_binder add constraint pf_binder_template_idx foreign key (fk_template_id) references o_pf_binder (id);
 
 alter table o_pf_section add constraint pf_section_group_idx foreign key (fk_group_id) references o_bs_group (id);
 alter table o_pf_section add constraint pf_section_binder_idx foreign key (fk_binder_id) references o_pf_binder (id);

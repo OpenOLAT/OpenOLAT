@@ -118,7 +118,8 @@ public class PortfolioCourseNodeEditController extends ActivateableTabbableDefau
 	 * @return boolean
 	 */
 	public static boolean isModuleConfigValid(ModuleConfiguration moduleConfiguration) {
-		return (moduleConfiguration.get(PortfolioCourseNodeConfiguration.MAP_KEY) != null);
+		return (moduleConfiguration.get(PortfolioCourseNodeConfiguration.MAP_KEY) != null)
+				|| (moduleConfiguration.get(PortfolioCourseNodeConfiguration.REPO_SOFT_KEY) != null);
 	}
 	
 	@Override
@@ -190,6 +191,12 @@ public class PortfolioCourseNodeEditController extends ActivateableTabbableDefau
 	
 	public static void setReference(RepositoryEntry repoEntry, PortfolioStructure map, ModuleConfiguration moduleConfig) {
 		moduleConfig.set(PortfolioCourseNodeConfiguration.MAP_KEY, map.getKey());
+		if(repoEntry != null && repoEntry.getSoftkey() != null) {
+			moduleConfig.set(PortfolioCourseNodeConfiguration.REPO_SOFT_KEY, repoEntry.getSoftkey());
+		}
+	}
+	
+	public static void setReference(RepositoryEntry repoEntry, ModuleConfiguration moduleConfig) {
 		if(repoEntry != null && repoEntry.getSoftkey() != null) {
 			moduleConfig.set(PortfolioCourseNodeConfiguration.REPO_SOFT_KEY, repoEntry.getSoftkey());
 		}

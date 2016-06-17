@@ -31,6 +31,7 @@ import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.stack.BreadcrumbPanel;
+import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -43,6 +44,12 @@ import org.olat.course.ICourse;
 import org.olat.course.nodes.CourseNodeFactory;
 import org.olat.course.nodes.PortfolioCourseNode;
 import org.olat.modules.ModuleConfiguration;
+import org.olat.modules.portfolio.Binder;
+import org.olat.modules.portfolio.BinderSecurityCallback;
+import org.olat.modules.portfolio.BinderSecurityCallbackImpl;
+import org.olat.modules.portfolio.PortfolioService;
+import org.olat.modules.portfolio.handler.BinderTemplateResource;
+import org.olat.modules.portfolio.ui.BinderController;
 import org.olat.portfolio.EPSecurityCallback;
 import org.olat.portfolio.EPSecurityCallbackImpl;
 import org.olat.portfolio.EPTemplateMapResource;
@@ -64,13 +71,11 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
 public class PortfolioConfigForm extends FormBasicController {
-	@Autowired
-	private EPFrontendManager ePFMgr;
-	@Autowired
-	private EPStructureManager eSTMgr;
+
 	private final ModuleConfiguration config;
 
 	private boolean inUse;
+	private Binder binder;
 	private PortfolioStructureMap map;
 	private RepositoryEntry mapEntry;
 	
@@ -89,6 +94,13 @@ public class PortfolioConfigForm extends FormBasicController {
 	private final PortfolioCourseNode courseNode;
 	private final BreadcrumbPanel stackPanel;
 	
+	@Autowired
+	private EPFrontendManager ePFMgr;
+	@Autowired
+	private EPStructureManager eSTMgr;
+	@Autowired
+	private PortfolioService portfolioService;
+	
 	public PortfolioConfigForm(UserRequest ureq, WindowControl wControl, BreadcrumbPanel stackPanel,
 			ICourse course, PortfolioCourseNode courseNode) {
 		super(ureq, wControl);
@@ -98,11 +110,21 @@ public class PortfolioConfigForm extends FormBasicController {
 		
 		mapEntry = courseNode.getReferencedRepositoryEntry();
 		if(mapEntry != null) {
-			map = (PortfolioStructureMap) ePFMgr.loadPortfolioStructure(mapEntry.getOlatResource());
-			Long courseResId = course.getResourceableId();
-			OLATResourceable courseOres = OresHelper.createOLATResourceableInstance(CourseModule.class, courseResId);
-			if (map != null) {
-				inUse = ePFMgr.isTemplateInUse(map, courseOres, courseNode.getIdent(), null);
+			if(BinderTemplateResource.TYPE_NAME.equals(mapEntry.getOlatResource().getResourceableTypeName())) {
+				binder = portfolioService.getBinderByResource(mapEntry.getOlatResource());
+				
+				RepositoryEntry courseEntry = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
+				if (map != null) {
+					inUse = portfolioService.isTemplateInUse(binder, courseEntry, courseNode.getIdent());
+				}
+			} else {
+			
+				map = (PortfolioStructureMap) ePFMgr.loadPortfolioStructure(mapEntry.getOlatResource());
+				Long courseResId = course.getResourceableId();
+				OLATResourceable courseOres = OresHelper.createOLATResourceableInstance(CourseModule.class, courseResId);
+				if (map != null) {
+					inUse = ePFMgr.isTemplateInUse(map, courseOres, courseNode.getIdent(), null);
+				}
 			}
 		}
 		
@@ -113,9 +135,7 @@ public class PortfolioConfigForm extends FormBasicController {
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormTitle("pane.tab.portfolio_config.title");
 
-		String name = map == null
-				? translate("error.noreference.short", courseNode.getShortTitle())
-				: StringHelper.escapeHtml(map.getTitle());
+		String name = getName();
 		mapNameElement = uifactory.addStaticTextElement("map-name", "selected.map", name, formLayout);
 		mapNameElement.setVisible(map == null);
 		
@@ -139,17 +159,19 @@ public class PortfolioConfigForm extends FormBasicController {
 			editMapLink = uifactory.addFormLink("edit.map", buttonGroupLayout, Link.BUTTON);
 			editMapLink.setElementCssClass("o_sel_edit_map");
 			
-			chooseMapLink.setVisible(map == null);
+			chooseMapLink.setVisible(map == null && binder == null);
 			chooseMapLink.setEnabled(!inUse);
-			changeMapLink.setVisible(map != null);
+			changeMapLink.setVisible(map != null || binder != null);
 			changeMapLink.setEnabled(!inUse);
-			editMapLink.setVisible(map != null);
+			editMapLink.setVisible(map != null || binder != null);
 		}
 	}
 	
 	protected ModuleConfiguration getUpdatedConfig() {
 		if(map != null) {
 			PortfolioCourseNodeEditController.setReference(mapEntry, map, config);
+		} else if(binder != null) {
+			PortfolioCourseNodeEditController.setReference(mapEntry, config);
 		}
 		return config;
 	}
@@ -175,33 +197,11 @@ public class PortfolioConfigForm extends FormBasicController {
 			return;
 		}
 		if (source == changeMapLink || source == chooseMapLink) {
-			removeAsListenerAndDispose(searchController);
-			searchController = new ReferencableEntriesSearchController(getWindowControl(), ureq, new String[]{EPTemplateMapResource.TYPE_NAME}, translate("select.map2"),
-					false, true, false, false);			
-			listenTo(searchController);
-			removeAsListenerAndDispose(cmc);
-			cmc = new CloseableModalController(getWindowControl(), translate("close"), searchController.getInitialComponent(), true, translate("select.map"));
-			listenTo(cmc);
-			if (isDirty) {
-				showWarning("form.dirty");
-				return;
-			}
-			cmc.activate();
+			doChangeTemplate(ureq);
 		} else if (source == editMapLink) {
 			CourseNodeFactory.getInstance().launchReferencedRepoEntryEditor(ureq, getWindowControl(), courseNode);
 		} else if (source == previewMapLink) {
-			EPSecurityCallback secCallback = new EPSecurityCallbackImpl(false, true);
-
-			if(previewCtr != null) {
-				removeAsListenerAndDispose(previewCtr);
-				removeAsListenerAndDispose(columnLayoutCtr);
-			}
-			previewCtr = EPUIFactory.createPortfolioStructureMapPreviewController(ureq, getWindowControl(), map, secCallback);
-			listenTo(previewCtr);
-			LayoutMain3ColsController ctr = new LayoutMain3ColsController(ureq, getWindowControl(), previewCtr);
-			columnLayoutCtr = ctr;
-			stackPanel.pushController(translate("preview.map"), columnLayoutCtr);
-			listenTo(columnLayoutCtr);
+			doPreview(ureq);
 		}
 	}
 	
@@ -215,29 +215,88 @@ public class PortfolioConfigForm extends FormBasicController {
 			cmc.deactivate();
 			if (event == ReferencableEntriesSearchController.EVENT_REPOSITORY_ENTRY_SELECTED) { 
 				// search controller done
-				mapEntry = searchController.getSelectedEntry();
-				if (mapEntry != null) {
-					map = (PortfolioStructureMap)eSTMgr.loadPortfolioStructure(mapEntry.getOlatResource());
-					fireEvent(ureq, Event.DONE_EVENT);
-				}
-				String name = map == null
-						? translate("error.noreference.short", courseNode.getShortTitle())
-						: StringHelper.escapeHtml(map.getTitle());
-				mapNameElement.setValue(name);
-				mapNameElement.setVisible(map == null);
-				
-				previewMapLink.setVisible(map != null);
-				((Link)previewMapLink.getComponent()).setCustomDisplayText(name);
-				((Link)previewMapLink.getComponent()).setDirty(true);
-				
-				chooseMapLink.setVisible(map == null);
-				changeMapLink.setVisible(map != null);
-				editMapLink.setVisible(map != null);
-				
-				mapNameElement.setVisible(map == null);
-				
-				flc.setDirty(true);
+				RepositoryEntry entry = searchController.getSelectedEntry();
+				doSelectTemplate(entry);
+				fireEvent(ureq, Event.DONE_EVENT);
 			}
 		}
+	}
+	
+	private void doChangeTemplate(UserRequest ureq) {
+		if(searchController != null) return;
+		if (isDirty) {
+			showWarning("form.dirty");
+			return;
+		}
+		
+		removeAsListenerAndDispose(searchController);
+		removeAsListenerAndDispose(cmc);
+		
+		searchController = new ReferencableEntriesSearchController(getWindowControl(), ureq,
+				new String[]{ EPTemplateMapResource.TYPE_NAME, BinderTemplateResource.TYPE_NAME},
+				translate("select.map2"), false, true, false, false);			
+		listenTo(searchController);
+		
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), searchController.getInitialComponent(), true, translate("select.map"));
+		listenTo(cmc);
+		cmc.activate();
+	}
+	
+	private void doPreview(UserRequest ureq) {
+		removeAsListenerAndDispose(previewCtr);
+		removeAsListenerAndDispose(columnLayoutCtr);
+		
+		if(map != null) {
+			EPSecurityCallback secCallback = new EPSecurityCallbackImpl(false, true);
+			previewCtr = EPUIFactory.createPortfolioStructureMapPreviewController(ureq, getWindowControl(), map, secCallback);
+		} else if(binder != null && stackPanel instanceof TooledStackedPanel) {
+			BinderSecurityCallback secCallback = new BinderSecurityCallbackImpl(false, false);
+			previewCtr = new BinderController(ureq, getWindowControl(), (TooledStackedPanel)stackPanel, secCallback, binder);
+		} else {
+			return;
+		}
+		
+		listenTo(previewCtr);
+		columnLayoutCtr = new LayoutMain3ColsController(ureq, getWindowControl(), previewCtr);
+		stackPanel.pushController(translate("preview.map"), columnLayoutCtr);
+		listenTo(columnLayoutCtr);
+	}
+	
+	private void doSelectTemplate(RepositoryEntry entry) {
+		this.mapEntry = entry;
+		
+		if (mapEntry != null) {
+			if(BinderTemplateResource.TYPE_NAME.equals(mapEntry.getOlatResource().getResourceableTypeName())) {
+				binder = portfolioService.getBinderByResource(mapEntry.getOlatResource());
+				map = null;
+			} else {
+				map = (PortfolioStructureMap)eSTMgr.loadPortfolioStructure(mapEntry.getOlatResource());
+				binder = null;
+			}
+		}
+		String name = getName();
+		mapNameElement.setValue(name);
+		mapNameElement.setVisible(map == null && binder == null);
+		
+		previewMapLink.setVisible(map != null || binder != null);
+		((Link)previewMapLink.getComponent()).setCustomDisplayText(name);
+		((Link)previewMapLink.getComponent()).setDirty(true);
+		
+		chooseMapLink.setVisible(map == null && binder == null);
+		changeMapLink.setVisible(map != null || binder != null);
+		editMapLink.setVisible(map != null || binder != null);
+		
+		mapNameElement.setVisible(map == null && binder == null);
+		flc.setDirty(true);
+	}
+	
+	private String getName() {
+		String name = translate("error.noreference.short", courseNode.getShortTitle());
+		if(map != null) {
+			name = StringHelper.escapeHtml(map.getTitle());
+		} else if(binder != null) {
+			name = StringHelper.escapeHtml(binder.getTitle());
+		}
+		return name;
 	}
 }

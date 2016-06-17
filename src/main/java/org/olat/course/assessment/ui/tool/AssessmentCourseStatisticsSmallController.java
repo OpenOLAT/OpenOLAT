@@ -90,11 +90,13 @@ public class AssessmentCourseStatisticsSmallController extends BasicController {
 		mainVC.contextPut("scoreAverage", AssessmentHelper.getRoundedScore(stats.getAverageScore()));
 		numOfPassed = stats.getCountPassed();
 		mainVC.contextPut("numOfPassed", numOfPassed);
-		int percentPassed = Math.round(100.0f * (stats.getCountPassed() / numOfAssessedIdentities));
+		int percentPassed = numOfAssessedIdentities == 0 ? 0 :
+				Math.round(100.0f * (stats.getCountPassed() / numOfAssessedIdentities));
 		mainVC.contextPut("percentPassed", percentPassed);
 		numOfFailed = stats.getCountFailed();
 		mainVC.contextPut("numOfFailed", numOfFailed);
-		int percentFailed = Math.round(100.0f * (stats.getCountFailed() / numOfAssessedIdentities));
+		int percentFailed = numOfAssessedIdentities == 0 ? 0 :
+				Math.round(100.0f * (stats.getCountFailed() / numOfAssessedIdentities));
 		mainVC.contextPut("percentFailed", percentFailed);
 		
 		int numOfLaunches = assessmentToolManager.getNumberOfInitialLaunches(getIdentity(), params);

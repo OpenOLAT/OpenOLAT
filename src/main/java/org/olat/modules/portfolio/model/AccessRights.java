@@ -20,6 +20,7 @@
 package org.olat.modules.portfolio.model;
 
 import org.olat.core.id.Identity;
+import org.olat.modules.portfolio.PortfolioElement;
 import org.olat.modules.portfolio.PortfolioElementType;
 import org.olat.modules.portfolio.PortfolioRoles;
 
@@ -71,6 +72,19 @@ public class AccessRights {
 			return PortfolioElementType.binder;
 		}
 		return null;
+	}
+	
+	public boolean matchElement(PortfolioElement element) {
+		if(element.getType() == getType()) {
+			if(element.getType() == PortfolioElementType.page) {
+				return pageKey != null && pageKey.equals(element.getKey());
+			} else if(element.getType() == PortfolioElementType.section) {
+				return sectionKey != null && sectionKey.equals(element.getKey());
+			} else if(element.getType() == PortfolioElementType.binder) {
+				return binderKey != null && binderKey.equals(element.getKey());
+			}
+		}
+		return false;
 	}
 	
 	public Identity getIdentity() {

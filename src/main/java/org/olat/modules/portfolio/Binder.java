@@ -21,6 +21,7 @@ package org.olat.modules.portfolio;
 
 import java.util.Date;
 
+import org.olat.core.id.OLATResourceable;
 import org.olat.repository.RepositoryEntry;
 
 /**
@@ -29,9 +30,17 @@ import org.olat.repository.RepositoryEntry;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public interface Binder extends BinderRef, PortfolioElement {
+public interface Binder extends BinderRef, PortfolioElement, OLATResourceable {
 	
 	public Date getLastModified();
+	
+	public Date getCopyDate();
+	
+	public Date getReturnDate();
+	
+	public Date getDeadLine();
+	
+	public void setDeadLine(Date deadLine);
 	
 	public void setTitle(String title);
 	
@@ -47,6 +56,6 @@ public interface Binder extends BinderRef, PortfolioElement {
 	
 	public String getSubIdent();
 	
-	public RepositoryEntry getTemplateEntry();
+	public Binder getTemplate();
 
 }

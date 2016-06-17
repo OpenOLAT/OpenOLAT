@@ -48,6 +48,8 @@ import org.olat.modules.portfolio.Binder;
 import org.olat.modules.portfolio.PortfolioElementType;
 import org.olat.modules.portfolio.Section;
 import org.olat.repository.RepositoryEntry;
+import org.olat.resource.OLATResource;
+import org.olat.resource.OLATResourceImpl;
 
 /**
  * 
@@ -72,6 +74,13 @@ public class BinderImpl implements Persistable, ModifiedInfo, CreateInfo, Binder
 	@Temporal(TemporalType.TIMESTAMP)
 	@Column(name="lastmodified", nullable=false, insertable=true, updatable=true)
 	private Date lastModified;
+	
+	@Column(name="p_copy_date", nullable=true, insertable=true, updatable=true)
+	private Date copyDate;
+	@Column(name="p_return_date", nullable=true, insertable=true, updatable=true)
+	private Date returnDate;
+	@Column(name="p_deadline", nullable=true, insertable=true, updatable=true)
+	private Date deadLine;
 
 	@Column(name="p_title", nullable=true, insertable=true, updatable=true)
 	private String title;
@@ -86,15 +95,19 @@ public class BinderImpl implements Persistable, ModifiedInfo, CreateInfo, Binder
 	@JoinColumn(name="fk_group_id", nullable=false, insertable=true, updatable=false)
 	private Group baseGroup;
 	
+	@ManyToOne(targetEntity=OLATResourceImpl.class,fetch=FetchType.LAZY,optional=true)
+	@JoinColumn(name="fk_olatresource_id", nullable=true, insertable=true, updatable=false)
+	private OLATResource olatResource;
+	
 	@ManyToOne(targetEntity=RepositoryEntry.class,fetch=FetchType.LAZY,optional=true)
 	@JoinColumn(name="fk_course_entry_id", nullable=true, insertable=true, updatable=false)
 	private RepositoryEntry courseEntry;
     @Column(name="p_subident", nullable=true, insertable=true, updatable=false)
 	private String subIdent;
 	
-	@ManyToOne(targetEntity=RepositoryEntry.class,fetch=FetchType.LAZY,optional=true)
-	@JoinColumn(name="fk_template_entry_id", nullable=true, insertable=true, updatable=false)
-	private RepositoryEntry templateEntry;
+	@ManyToOne(targetEntity=BinderImpl.class,fetch=FetchType.LAZY,optional=true)
+	@JoinColumn(name="fk_template_id", nullable=true, insertable=true, updatable=false)
+	private Binder template;
 	
 	@OneToMany(targetEntity=SectionImpl.class, mappedBy="binder", fetch=FetchType.LAZY,
 			orphanRemoval=true, cascade={CascadeType.REMOVE})
@@ -125,7 +138,44 @@ public class BinderImpl implements Persistable, ModifiedInfo, CreateInfo, Binder
 	public void setLastModified(Date date) {
 		lastModified = date;
 	}
-	
+
+	@Override
+	public Date getCopyDate() {
+		return copyDate;
+	}
+
+	public void setCopyDate(Date copyDate) {
+		this.copyDate = copyDate;
+	}
+
+	@Override
+	public Date getReturnDate() {
+		return returnDate;
+	}
+
+	public void setReturnDate(Date returnDate) {
+		this.returnDate = returnDate;
+	}
+
+	@Override
+	public Date getDeadLine() {
+		return deadLine;
+	}
+
+	public void setDeadLine(Date deadLine) {
+		this.deadLine = deadLine;
+	}
+
+	@Override
+	public String getResourceableTypeName() {
+		return olatResource == null ? "Binder" : olatResource.getResourceableTypeName();
+	}
+
+	@Override
+	public Long getResourceableId() {
+		return olatResource == null ? getKey() : olatResource.getResourceableId();
+	}
+
 	@Override
 	@Transient
 	public PortfolioElementType getType() {
@@ -137,6 +187,7 @@ public class BinderImpl implements Persistable, ModifiedInfo, CreateInfo, Binder
 		return title;
 	}
 
+	@Override
 	public void setTitle(String title) {
 		this.title = title;
 	}
@@ -150,12 +201,22 @@ public class BinderImpl implements Persistable, ModifiedInfo, CreateInfo, Binder
 		this.summary = summary;
 	}
 
+	@Override
 	public String getImagePath() {
 		return imagePath;
 	}
 
+	@Override
 	public void setImagePath(String imagePath) {
 		this.imagePath = imagePath;
+	}
+
+	public OLATResource getOlatResource() {
+		return olatResource;
+	}
+
+	public void setOlatResource(OLATResource olatResource) {
+		this.olatResource = olatResource;
 	}
 
 	public RepositoryEntry getCourseEntry() {
@@ -166,6 +227,7 @@ public class BinderImpl implements Persistable, ModifiedInfo, CreateInfo, Binder
 		this.courseEntry = courseEntry;
 	}
 
+	@Override
 	public String getSubIdent() {
 		return subIdent;
 	}
@@ -174,12 +236,13 @@ public class BinderImpl implements Persistable, ModifiedInfo, CreateInfo, Binder
 		this.subIdent = subIdent;
 	}
 
-	public RepositoryEntry getTemplateEntry() {
-		return templateEntry;
+	@Override
+	public Binder getTemplate() {
+		return template;
 	}
 
-	public void setTemplateEntry(RepositoryEntry templateEntry) {
-		this.templateEntry = templateEntry;
+	public void setTemplate(Binder template) {
+		this.template = template;
 	}
 
 	public List<Section> getSections() {
@@ -193,6 +256,7 @@ public class BinderImpl implements Persistable, ModifiedInfo, CreateInfo, Binder
 		this.sections = sections;
 	}
 
+	@Override
 	public Group getBaseGroup() {
 		return baseGroup;
 	}

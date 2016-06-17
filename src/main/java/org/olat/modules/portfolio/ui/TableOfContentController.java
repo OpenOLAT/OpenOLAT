@@ -113,14 +113,16 @@ public class TableOfContentController extends BasicController implements TooledC
 			stackPanel.addTool(editBinderMetadataLink, Align.left);
 		}
 		
-		if(secCallback.canEditBinder()) {
+		if(secCallback.canEditSection()) {
 			newSectionTool = LinkFactory.createToolLink("new.section", translate("create.new.section"), this);
 			newSectionTool.setIconLeftCSS("o_icon o_icon-lg o_icon_new_portfolio");
 			stackPanel.addTool(newSectionTool, Align.right);
 		
 			newSectionButton = LinkFactory.createButton("create.new.section", mainVC, this);
 			newSectionButton.setCustomEnabledLinkCSS("btn btn-primary");
-			
+		}
+		
+		if(secCallback.canEditBinder()) {
 			newEntryLink = LinkFactory.createToolLink("new.page", translate("create.new.page"), this);
 			newEntryLink.setIconLeftCSS("o_icon o_icon-lg o_icon_new_portfolio");
 			stackPanel.addTool(newEntryLink, Align.right);

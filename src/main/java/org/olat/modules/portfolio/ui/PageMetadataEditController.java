@@ -20,10 +20,8 @@
 package org.olat.modules.portfolio.ui;
 
 import java.io.File;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import org.olat.core.gui.UserRequest;
@@ -76,10 +74,6 @@ public class PageMetadataEditController extends FormBasicController {
 	
 	private final boolean chooseBinder;
 	private final boolean chooseSection;
-	private final boolean allowFloatingEntry;
-	
-	
-	private boolean floatingEntry = false;
 	
 	@Autowired
 	private PortfolioService portfolioService;
@@ -94,8 +88,6 @@ public class PageMetadataEditController extends FormBasicController {
 		
 		this.chooseBinder = chooseBinder;
 		this.chooseSection = chooseSection;
-		this.allowFloatingEntry = false;
-		
 		initForm(ureq);
 	}
 	
@@ -111,7 +103,6 @@ public class PageMetadataEditController extends FormBasicController {
 		
 		this.chooseBinder = chooseBinder;
 		this.chooseSection = chooseSection;
-		this.allowFloatingEntry = false;
 		
 		initForm(ureq);
 	}

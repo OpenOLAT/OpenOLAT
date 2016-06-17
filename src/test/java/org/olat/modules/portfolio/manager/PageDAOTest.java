@@ -51,7 +51,7 @@ public class PageDAOTest extends OlatTestCase {
 	
 	@Test
 	public void createBinderWithSectionAndPage() {
-		BinderImpl binder = binderDao.createAndPersist("Binder p1", "A binder with a page", null);
+		BinderImpl binder = binderDao.createAndPersist("Binder p1", "A binder with a page", null, null);
 		Section section = binderDao.createSection("Section", "First section", null, null, binder);
 		dbInstance.commitAndCloseSession();
 		
@@ -68,7 +68,7 @@ public class PageDAOTest extends OlatTestCase {
 	
 	@Test
 	public void createBinderWithSectionAndPages() {
-		BinderImpl binder = binderDao.createAndPersist("Binder p1", "A binder with a page", null);
+		BinderImpl binder = binderDao.createAndPersist("Binder p1", "A binder with a page", null, null);
 		Section section = binderDao.createSection("Section", "First section", null, null, binder);
 		dbInstance.commitAndCloseSession();
 		
@@ -86,7 +86,7 @@ public class PageDAOTest extends OlatTestCase {
 	
 	@Test
 	public void createBinderWithSectionAndPageAndPart() {
-		BinderImpl binder = binderDao.createAndPersist("Binder p1", "A binder with a page", null);
+		BinderImpl binder = binderDao.createAndPersist("Binder p1", "A binder with a page", null, null);
 		Section section = binderDao.createSection("Section", "First section", null, null, binder);
 		dbInstance.commitAndCloseSession();
 		

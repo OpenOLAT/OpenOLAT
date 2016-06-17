@@ -143,8 +143,8 @@ public class BinderMetadataEditController extends FormBasicController {
 		
 		// template name
 		String templateName;
-		if(binder != null && binder.getTemplateEntry() != null) {
-			templateName = binder.getTemplateEntry().getDisplayname();
+		if(binder != null && binder.getTemplate() != null) {
+			templateName = binder.getTemplate().getTitle();
 		} else {
 			templateName = translate("template.none");
 		}

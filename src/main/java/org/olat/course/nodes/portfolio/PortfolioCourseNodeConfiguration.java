@@ -30,6 +30,7 @@ import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.CourseNodeConfiguration;
 import org.olat.course.nodes.CourseNodeGroup;
 import org.olat.course.nodes.PortfolioCourseNode;
+import org.olat.modules.portfolio.PortfolioV2Module;
 import org.olat.portfolio.PortfolioModule;
 
 /**
@@ -92,6 +93,6 @@ public class PortfolioCourseNodeConfiguration extends AbstractCourseNodeConfigur
 	 */
 	@Override
 	public boolean isEnabled() {
-		return CoreSpringFactory.getImpl(PortfolioModule.class).isEnabled();
+		return CoreSpringFactory.getImpl(PortfolioModule.class).isEnabled() || CoreSpringFactory.getImpl(PortfolioV2Module.class).isEnabled();
 	}
 }

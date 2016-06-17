@@ -150,7 +150,7 @@ public class PortfolioHomeController extends BasicController implements Activate
 		OLATResourceable pagesOres = OresHelper.createOLATResourceableInstance("MyPages", 0l);
 		WindowControl swControl = addToHistory(ureq, pagesOres, null);
 		//owners of all pages
-		BinderSecurityCallback secCallback = new BinderSecurityCallbackImpl(true);
+		BinderSecurityCallback secCallback = new BinderSecurityCallbackImpl(true, false);
 		myPageListCtrl = new MyPageListController(ureq, swControl, stackPanel, secCallback);
 		listenTo(myPageListCtrl);
 		stackPanel.pushController(translate("my.portfolio.pages.breadcrump"), myPageListCtrl);

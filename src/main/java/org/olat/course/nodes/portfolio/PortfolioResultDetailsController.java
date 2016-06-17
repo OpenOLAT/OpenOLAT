@@ -24,7 +24,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.fullWebApp.LayoutMain3ColsBackController;
 import org.olat.core.commons.fullWebApp.LayoutMain3ColsController;
 import org.olat.core.gui.UserRequest;
@@ -37,6 +36,7 @@ import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.stack.BreadcrumbPanel;
+import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -44,10 +44,18 @@ import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowC
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.util.Formatter;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.course.CourseModule;
 import org.olat.course.nodes.PortfolioCourseNode;
 import org.olat.course.run.userview.UserCourseEnvironment;
+import org.olat.modules.portfolio.Binder;
+import org.olat.modules.portfolio.BinderSecurityCallback;
+import org.olat.modules.portfolio.BinderSecurityCallbackImpl;
+import org.olat.modules.portfolio.PortfolioService;
+import org.olat.modules.portfolio.handler.BinderTemplateResource;
+import org.olat.modules.portfolio.model.AccessRights;
+import org.olat.modules.portfolio.ui.BinderController;
 import org.olat.portfolio.EPSecurityCallback;
 import org.olat.portfolio.EPSecurityCallbackImpl;
 import org.olat.portfolio.EPUIFactory;
@@ -55,6 +63,7 @@ import org.olat.portfolio.manager.EPFrontendManager;
 import org.olat.portfolio.model.structel.EPStructuredMap;
 import org.olat.portfolio.model.structel.PortfolioStructureMap;
 import org.olat.repository.RepositoryEntry;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -66,30 +75,45 @@ import org.olat.repository.RepositoryEntry;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
 public class PortfolioResultDetailsController extends FormBasicController {
-	private final EPFrontendManager ePFMgr;
+
 	private Identity assessedIdentity;
-	private PortfolioStructureMap template;
+	
+	private PortfolioStructureMap templateMap;
 	private List<PortfolioStructureMap> maps;
+	private Binder templateBinder;
+	private List<Binder> binders;
+	
 	private Map<PortfolioStructureMap, MapElements> mapToElements = new HashMap<PortfolioStructureMap, MapElements>();
+	private Map<Binder, MapElements> binderToElements = new HashMap<Binder, MapElements>();
 	
 	private DeadlineController deadlineCtr;
 	private CloseableCalloutWindowController deadlineCalloutCtr;
 	private final BreadcrumbPanel stackPanel;
+	
+	@Autowired
+	private EPFrontendManager ePFMgr;
+	@Autowired
+	private PortfolioService portfolioService;
 	
 	public PortfolioResultDetailsController(UserRequest ureq, WindowControl wControl, BreadcrumbPanel stackPanel, PortfolioCourseNode courseNode,
 			UserCourseEnvironment userCourseEnv) {
 		super(ureq, wControl);
 
 		this.stackPanel = stackPanel;
-		ePFMgr = (EPFrontendManager) CoreSpringFactory.getBean("epFrontendManager");
 		assessedIdentity = userCourseEnv.getIdentityEnvironment().getIdentity();
 		
 		RepositoryEntry mapEntry = courseNode.getReferencedRepositoryEntry();
 		if(mapEntry != null) {
-			template = (PortfolioStructureMap)ePFMgr.loadPortfolioStructure(mapEntry.getOlatResource());
-			Long courseResId = userCourseEnv.getCourseEnvironment().getCourseResourceableId();
-			OLATResourceable courseOres = OresHelper.createOLATResourceableInstance(CourseModule.class, courseResId);
-			maps = ePFMgr.loadPortfolioStructureMaps(assessedIdentity, courseOres, courseNode.getIdent(), null);
+			if(BinderTemplateResource.TYPE_NAME.equals(mapEntry.getOlatResource().getResourceableTypeName())) {
+				templateBinder = portfolioService.getBinderByResource(mapEntry.getOlatResource());
+				RepositoryEntry courseEntry = userCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
+				binders = portfolioService.getBinders(assessedIdentity, courseEntry, courseNode.getIdent());
+			} else {
+				templateMap = (PortfolioStructureMap)ePFMgr.loadPortfolioStructure(mapEntry.getOlatResource());
+				Long courseResId = userCourseEnv.getCourseEnvironment().getCourseResourceableId();
+				OLATResourceable courseOres = OresHelper.createOLATResourceableInstance(CourseModule.class, courseResId);
+				maps = ePFMgr.loadPortfolioStructureMaps(assessedIdentity, courseOres, courseNode.getIdent(), null);
+			}
 		}
 
 		initForm(ureq);
@@ -97,58 +121,115 @@ public class PortfolioResultDetailsController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		if(maps == null || maps.isEmpty()) {
+		if((maps == null || maps.isEmpty()) && (binders == null || binders.isEmpty())) {
 			uifactory.addStaticTextElement("no.map", "", formLayout);
-		} else {
-			Formatter formatter = Formatter.getInstance(getLocale());
-			
-			int count = 0;
-			for(PortfolioStructureMap map:maps) {
-				MapElements mapElements = new MapElements();
-				if(map instanceof EPStructuredMap) {
-					EPStructuredMap structuredMap = (EPStructuredMap)map;
-					
-					if(maps.size() > 1 || !structuredMap.getStructuredMapSource().equals(template)) {
-						String templateTitle = structuredMap.getStructuredMapSource().getTitle();
-						uifactory.addStaticTextElement("map.template." + count, "map.template", templateTitle, formLayout);
-					}
-					
-					String copyDate = "";
-					if(structuredMap.getCopyDate() != null) {
-						copyDate = formatter.formatDateAndTime(structuredMap.getCopyDate());
-					}
-					uifactory.addStaticTextElement("map.copyDate." + count, "map.copyDate", copyDate, formLayout);
-					
-					String returnDate = "";
-					if(structuredMap.getReturnDate() != null) {
-						returnDate = formatter.formatDateAndTime(structuredMap.getReturnDate());
-					}
-					uifactory.addStaticTextElement("map.returnDate." + count, "map.returnDate", returnDate, formLayout);
-					
-					String deadLine = "";
-					if(structuredMap.getDeadLine() != null) {
-						deadLine = formatter.formatDateAndTime(structuredMap.getDeadLine());
-					}
-					mapElements.deadlineEl = uifactory.addStaticTextElement("map.deadline." + count, "map.deadline", deadLine, formLayout);
+		} else if(maps != null && maps.size() > 0) {
+			initMapsForm(formLayout);
+		} else if(binders != null && binders.size() > 0) {
+			initBindersForm(formLayout);
+		}
+	}
+	
+	protected void initMapsForm(FormItemContainer formLayout) {
+		Formatter formatter = Formatter.getInstance(getLocale());
+		
+		int count = 0;
+		for(PortfolioStructureMap map:maps) {
+			MapElements mapElements = new MapElements();
+			if(map instanceof EPStructuredMap) {
+				EPStructuredMap structuredMap = (EPStructuredMap)map;
+				
+				if(maps.size() > 1 || !structuredMap.getStructuredMapSource().equals(templateMap)) {
+					String templateTitle = structuredMap.getStructuredMapSource().getTitle();
+					uifactory.addStaticTextElement("map.template." + count, "map.template", templateTitle, formLayout);
 				}
 				
-				FormLayoutContainer buttonsCont = FormLayoutContainer.createButtonLayout("buttons." + count, getTranslator());
-				buttonsCont.setRootForm(mainForm);
-				formLayout.add(buttonsCont);
-				if(map instanceof EPStructuredMap) {
-					mapElements.changeDeadlineLink = uifactory.addFormLink("map.deadline.change." + count, "map.deadline.change", null, buttonsCont, Link.BUTTON);
-					mapElements.changeDeadlineLink.setUserObject(map);
+				String copyDate = "";
+				if(structuredMap.getCopyDate() != null) {
+					copyDate = formatter.formatDateAndTime(structuredMap.getCopyDate());
 				}
-				mapElements.openMapLink = uifactory.addFormLink("open.map." + count, "open.map", null, buttonsCont, Link.BUTTON);
-				mapElements.openMapLink.setUserObject(map);
+				uifactory.addStaticTextElement("map.copyDate." + count, "map.copyDate", copyDate, formLayout);
 				
-				count++;
-				if(count != maps.size()) {
-					uifactory.addSpacerElement("spacer-" + count, formLayout, false);
+				String returnDate = "";
+				if(structuredMap.getReturnDate() != null) {
+					returnDate = formatter.formatDateAndTime(structuredMap.getReturnDate());
 				}
+				uifactory.addStaticTextElement("map.returnDate." + count, "map.returnDate", returnDate, formLayout);
 				
-				mapToElements.put(map, mapElements);
+				String deadLine = "";
+				if(structuredMap.getDeadLine() != null) {
+					deadLine = formatter.formatDateAndTime(structuredMap.getDeadLine());
+				}
+				mapElements.deadlineEl = uifactory.addStaticTextElement("map.deadline." + count, "map.deadline", deadLine, formLayout);
 			}
+			
+			FormLayoutContainer buttonsCont = FormLayoutContainer.createButtonLayout("buttons." + count, getTranslator());
+			buttonsCont.setRootForm(mainForm);
+			formLayout.add(buttonsCont);
+			if(map instanceof EPStructuredMap) {
+				mapElements.changeDeadlineLink = uifactory.addFormLink("map.deadline.change." + count, "map.deadline.change", null, buttonsCont, Link.BUTTON);
+				mapElements.changeDeadlineLink.setUserObject(map);
+			}
+			mapElements.openMapLink = uifactory.addFormLink("open.map." + count, "open.map", null, buttonsCont, Link.BUTTON);
+			mapElements.openMapLink.setUserObject(map);
+			
+			count++;
+			if(count != maps.size()) {
+				uifactory.addSpacerElement("spacer-" + count, formLayout, false);
+			}
+			
+			mapToElements.put(map, mapElements);
+		}
+	}
+	
+	protected void initBindersForm(FormItemContainer formLayout) {
+		Formatter formatter = Formatter.getInstance(getLocale());
+		
+		int count = 0;
+		for(Binder binder:binders) {
+			MapElements mapElements = new MapElements();
+	
+			if(binders.size() > 1 || !binder.getTemplate().equals(templateBinder)) {
+				String templateTitle = binder.getTemplate().getTitle();
+				uifactory.addStaticTextElement("map.template." + count, "map.template", templateTitle, formLayout);
+			}
+			
+			String copyDate = "";
+			if(binder.getCopyDate() != null) {
+				copyDate = formatter.formatDateAndTime(binder.getCopyDate());
+			}
+			uifactory.addStaticTextElement("map.copyDate." + count, "map.copyDate", copyDate, formLayout);
+			
+			String returnDate = "";
+			if(binder.getReturnDate() != null) {
+				returnDate = formatter.formatDateAndTime(binder.getReturnDate());
+			}
+			uifactory.addStaticTextElement("map.returnDate." + count, "map.returnDate", returnDate, formLayout);
+			
+			String deadLine = "";
+			if(binder.getDeadLine() != null) {
+				deadLine = formatter.formatDateAndTime(binder.getDeadLine());
+			}
+			mapElements.deadlineEl = uifactory.addStaticTextElement("map.deadline." + count, "map.deadline", deadLine, formLayout);
+
+			
+			FormLayoutContainer buttonsCont = FormLayoutContainer.createButtonLayout("buttons." + count, getTranslator());
+			buttonsCont.setRootForm(mainForm);
+			formLayout.add(buttonsCont);
+
+			mapElements.changeDeadlineLink = uifactory
+					.addFormLink("map.binder.change." + count, "map.binder.change", "map.deadline.change", null, buttonsCont, Link.BUTTON);
+			mapElements.changeDeadlineLink.setUserObject(binder);
+
+			mapElements.openMapLink = uifactory.addFormLink("open.binder." + count, "open.binder", "open.map", null, buttonsCont, Link.BUTTON);
+			mapElements.openMapLink.setUserObject(binder);
+			
+			count++;
+			if(count != binders.size()) {
+				uifactory.addSpacerElement("spacer-" + count, formLayout, false);
+			}
+			
+			binderToElements.put(binder, mapElements);
 		}
 	}
 	
@@ -166,7 +247,8 @@ public class PortfolioResultDetailsController extends FormBasicController {
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(source instanceof FormLink) {
 			FormLink link = (FormLink)source;
-			if(link.getName().startsWith("map.deadline.change")) {
+			String cmd = link.getCmd();
+			if("map.deadline.change".equals(cmd)) {
 				if (deadlineCalloutCtr == null) {
 					EPStructuredMap map = (EPStructuredMap)link.getUserObject();
 					popupDeadlineBox(ureq, map);
@@ -174,8 +256,19 @@ public class PortfolioResultDetailsController extends FormBasicController {
 					// close on second click
 					closeDeadlineBox();
 				}
+			} else if("map.binder.change".equals(cmd)) {
+				if (deadlineCalloutCtr == null) {
+					Binder map = (Binder)link.getUserObject();
+					popupDeadlineBox(ureq, map);
+				} else {
+					// close on second click
+					closeDeadlineBox();
+				}
 			} else if(link.getName().startsWith("open.map")) {
 				PortfolioStructureMap map = (PortfolioStructureMap)link.getUserObject();
+				doOpenMap(ureq, map);
+			} else if(link.getName().startsWith("open.binder")) {
+				Binder map = (Binder)link.getUserObject();
 				doOpenMap(ureq, map);
 			}
 		} 
@@ -195,6 +288,17 @@ public class PortfolioResultDetailsController extends FormBasicController {
 		}
 	}
 	
+	private void doOpenMap(UserRequest ureq, Binder binder) {
+		if(stackPanel instanceof TooledStackedPanel) {
+			List<AccessRights> rights = portfolioService.getAccessRights(binder, getIdentity());
+			BinderSecurityCallback secCallback = new BinderSecurityCallbackImpl(rights);
+			BinderController binderCtrl = new BinderController(ureq, getWindowControl(), (TooledStackedPanel)stackPanel, secCallback, binder);
+			String displayName = StringHelper.escapeHtml(binder.getTitle());
+			stackPanel.pushController(displayName, binderCtrl);
+			binderCtrl.activate(ureq, null, null);
+		}
+	}
+	
 	/**
 	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest,
 	 *      org.olat.core.gui.control.Controller, org.olat.core.gui.control.Event)
@@ -206,12 +310,21 @@ public class PortfolioResultDetailsController extends FormBasicController {
 			deadlineCalloutCtr = null;
 		} else if (source == deadlineCtr) {
 			String deadLine = "";
-			EPStructuredMap structuredMap = deadlineCtr.getMap();
-			if(structuredMap.getDeadLine() != null) {
-				Formatter formatter = Formatter.getInstance(getLocale());
-				deadLine = formatter.formatDateAndTime(structuredMap.getDeadLine());
+			if(deadlineCtr.getMap() != null) {
+				EPStructuredMap structuredMap = deadlineCtr.getMap();
+				if(structuredMap.getDeadLine() != null) {
+					Formatter formatter = Formatter.getInstance(getLocale());
+					deadLine = formatter.formatDateAndTime(structuredMap.getDeadLine());
+				}
+				mapToElements.get(structuredMap).deadlineEl.setValue(deadLine);
+			} else if(deadlineCtr.getBinder() != null) {
+				Binder binder = deadlineCtr.getBinder();
+				if(binder.getDeadLine() != null) {
+					Formatter formatter = Formatter.getInstance(getLocale());
+					deadLine = formatter.formatDateAndTime(binder.getDeadLine());
+				}
+				binderToElements.get(binder).deadlineEl.setValue(deadLine);
 			}
-			mapToElements.get(structuredMap).deadlineEl.setValue(deadLine);
 			closeDeadlineBox();
 		}
 	}
@@ -234,6 +347,21 @@ public class PortfolioResultDetailsController extends FormBasicController {
 		deadlineCalloutCtr.activate();
 	}
 
+	private void popupDeadlineBox(UserRequest ureq, Binder binder) {
+		String title = translate("map.deadline.change");
+		
+		removeAsListenerAndDispose(deadlineCtr);
+		deadlineCtr = new DeadlineController(ureq, getWindowControl(), binder);
+		listenTo(deadlineCtr);
+
+		removeAsListenerAndDispose(deadlineCalloutCtr);
+		FormLink changeDeadlineLink = binderToElements.get(binder).changeDeadlineLink;
+		deadlineCalloutCtr = new CloseableCalloutWindowController(ureq, getWindowControl(), deadlineCtr.getInitialComponent(),
+				changeDeadlineLink, title, true, "o_ep_deadline_callout");
+		listenTo(deadlineCalloutCtr);
+		deadlineCalloutCtr.activate();
+	}
+	
 	private void closeDeadlineBox() {
 		if (deadlineCalloutCtr != null){
 			deadlineCalloutCtr.deactivate();

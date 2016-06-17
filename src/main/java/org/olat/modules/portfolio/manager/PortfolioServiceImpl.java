@@ -24,16 +24,19 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 import org.olat.basesecurity.Group;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.IdentityRef;
 import org.olat.basesecurity.manager.GroupDAO;
+import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.Util;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.modules.portfolio.Binder;
 import org.olat.modules.portfolio.BinderRef;
@@ -46,9 +49,15 @@ import org.olat.modules.portfolio.PortfolioRoles;
 import org.olat.modules.portfolio.PortfolioService;
 import org.olat.modules.portfolio.Section;
 import org.olat.modules.portfolio.SectionRef;
+import org.olat.modules.portfolio.handler.BinderTemplateResource;
 import org.olat.modules.portfolio.model.AccessRightChange;
 import org.olat.modules.portfolio.model.AccessRights;
 import org.olat.modules.portfolio.model.BinderImpl;
+import org.olat.modules.portfolio.ui.PortfolioHomeController;
+import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryRef;
+import org.olat.resource.OLATResource;
+import org.olat.resource.OLATResourceManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -72,15 +81,34 @@ public class PortfolioServiceImpl implements PortfolioService {
 	@Autowired
 	private SharedByMeQueries sharedByMeQueries;
 	@Autowired
+	private OLATResourceManager resourceManager;
+	@Autowired
 	private SharedWithMeQueries sharedWithMeQueries;
 	@Autowired
 	private PortfolioFileStorage portfolioFileStorage;
 	
 	@Override
 	public Binder createNewBinder(String title, String summary, String imagePath, Identity owner) {
-		BinderImpl portfolio = binderDao.createAndPersist(title, summary, imagePath);
+		BinderImpl portfolio = binderDao.createAndPersist(title, summary, imagePath, null);
 		groupDao.addMembership(portfolio.getBaseGroup(), owner, GroupRoles.owner.name());
 		return portfolio;
+	}
+
+	@Override
+	public OLATResource createBinderTemplateResource() {
+		OLATResource resource = resourceManager.createOLATResourceInstance(BinderTemplateResource.TYPE_NAME);
+		return resource;
+	}
+
+	@Override
+	public void createAndPersistBinderTemplate(Identity owner, RepositoryEntry entry, Locale locale) {
+		BinderImpl binder = binderDao.createAndPersist(entry.getDisplayname(), entry.getDescription(), null, entry);
+		groupDao.addMembership(binder.getBaseGroup(), owner, GroupRoles.owner.name());
+		//add section
+		Translator pt = Util.createPackageTranslator(PortfolioHomeController.class, locale);
+		String sectionTitle = pt.translate("new.section.title");
+		String sectionDescription = pt.translate("new.section.desc");
+		binderDao.createSection(sectionTitle, sectionDescription, null, null, binder);
 	}
 
 	@Override
@@ -140,8 +168,36 @@ public class PortfolioServiceImpl implements PortfolioService {
 	}
 
 	@Override
+	public Binder getBinderByResource(OLATResource resource) {
+		return binderDao.loadByResource(resource);
+	}
+
+	@Override
 	public Binder getBinderBySection(SectionRef section) {
 		return binderDao.loadBySection(section);
+	}
+	
+	@Override
+	public boolean isTemplateInUse(Binder binder, RepositoryEntry courseEntry, String subIdent) {
+		return binderDao.isTemplateInUse(binder, courseEntry, subIdent);
+	}
+
+	@Override
+	public Binder getBinder(Identity owner, BinderRef templateBinder, RepositoryEntryRef courseEntry, String subIdent) {
+		return binderDao.getBinder(owner, templateBinder, courseEntry, subIdent);
+	}
+
+	@Override
+	public List<Binder> getBinders(Identity owner, RepositoryEntryRef courseEntry, String subIdent) {
+		return binderDao.getBinders(owner, courseEntry, subIdent);
+	}
+
+	@Override
+	public Binder assignBinder(Identity owner, BinderRef templateBinder, RepositoryEntry courseEntry, String subIdent, Date deadline) {
+		BinderImpl reloadedTemplate = (BinderImpl)binderDao.loadByKey(templateBinder.getKey());
+		BinderImpl binder = binderDao.createCopy(reloadedTemplate, courseEntry, subIdent);
+		groupDao.addMembership(binder.getBaseGroup(), owner, GroupRoles.owner.name());
+		return binder;
 	}
 
 	@Override

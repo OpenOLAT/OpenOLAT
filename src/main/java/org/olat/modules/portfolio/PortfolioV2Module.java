@@ -23,6 +23,8 @@ import org.olat.core.configuration.AbstractSpringModule;
 import org.olat.core.configuration.ConfigOnOff;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.coordinate.CoordinatorManager;
+import org.olat.modules.portfolio.handler.BinderTemplateHandler;
+import org.olat.repository.handlers.RepositoryHandlerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -53,6 +55,8 @@ public class PortfolioV2Module extends AbstractSpringModule implements ConfigOnO
 		if(StringHelper.containsNonWhitespace(enabledObj)) {
 			enabled = "true".equals(enabledObj);
 		}
+		
+		RepositoryHandlerFactory.registerHandler(new BinderTemplateHandler(), 10);
 	}
 
 	@Override
@@ -66,9 +70,8 @@ public class PortfolioV2Module extends AbstractSpringModule implements ConfigOnO
 	}
 	
 	public void setEnabled(boolean enabled) {
-		if(this.enabled != enabled) {
-			setStringProperty(PORTFOLIO_ENABLED, Boolean.toString(enabled), true);
-		}
+		this.enabled = enabled;
+		setStringProperty(PORTFOLIO_ENABLED, Boolean.toString(enabled), true);
 	}
 
 }

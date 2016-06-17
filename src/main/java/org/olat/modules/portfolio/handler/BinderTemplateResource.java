@@ -17,39 +17,33 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.portfolio;
+package org.olat.modules.portfolio.handler;
+
+import java.io.File;
+
+import org.olat.fileresource.types.FileResource;
 
 /**
  * 
- * Initial date: 15.06.2016<br>
+ * Description:<br>
+ * Olat cannot import something else than files
+ * <P>
+ * Initial Date:  12 oct. 2010 <br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
- *
  */
-public interface BinderSecurityCallback {
+public class BinderTemplateResource extends FileResource  {
 	
-	/**
-	 * Can edit the edit the content of this binder inclusive sections
-	 * and pages.
-	 * @return
-	 */
-	public boolean canEditBinder();
-	
-	/**
-	 * Can edit the edit the meta-data in this binder inclusive meta-data
-	 * of sections and pages.
-	 * @return
-	 */
-	public boolean canEditMetadataBinder();
-	
-	public boolean canEditSection();
-	
-	public boolean canEditAccessRights(PortfolioElement element);
-	
-	public boolean canViewElement(PortfolioElement element);
-	
-	public boolean canComment(PortfolioElement element);
-	
-	public boolean canReview(PortfolioElement element);
- 
+	public static final String TYPE_NAME = "BinderTemplate";
 
+	/**
+	 * @param f
+	 * @return True if is of type.
+	 */
+	public static boolean validate(File f) {
+		if(f.isDirectory()) {
+			//unzip directory
+			return new File(f, "map.xml").exists();
+		}
+		return f.getName().toLowerCase().endsWith("map.xml"); 
+	}
 }

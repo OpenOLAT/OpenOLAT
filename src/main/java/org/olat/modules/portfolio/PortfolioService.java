@@ -22,11 +22,15 @@ package org.olat.modules.portfolio;
 import java.io.File;
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 import org.olat.basesecurity.IdentityRef;
 import org.olat.core.id.Identity;
 import org.olat.modules.portfolio.model.AccessRightChange;
 import org.olat.modules.portfolio.model.AccessRights;
+import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryRef;
+import org.olat.resource.OLATResource;
 
 /**
  * 
@@ -37,6 +41,10 @@ import org.olat.modules.portfolio.model.AccessRights;
 public interface PortfolioService {
 	
 	public Binder createNewBinder(String title, String summary, String imagePath, Identity owner);
+	
+	public OLATResource createBinderTemplateResource();
+	
+	public void createAndPersistBinderTemplate(Identity owner, RepositoryEntry entry, Locale locale);
 	
 	public Binder updateBinder(Binder binder);
 	
@@ -74,7 +82,27 @@ public interface PortfolioService {
 	
 	public Binder getBinderByKey(Long portfolioKey);
 	
+	public Binder getBinderByResource(OLATResource resource);
+	
 	public Binder getBinderBySection(SectionRef section);
+	
+	/**
+	 * It will search against all parameters. If course and subIdent are null, it will
+	 * search binders with these values set to null.
+	 * 
+	 * @param owner
+	 * @param templateBinder
+	 * @param courseEntry
+	 * @param subIdent
+	 * @return
+	 */
+	public Binder getBinder(Identity owner, BinderRef templateBinder, RepositoryEntryRef courseEntry, String subIdent);
+	
+	public List<Binder> getBinders(Identity owner, RepositoryEntryRef courseEntry, String subIdent);
+	
+	public boolean isTemplateInUse(Binder binder, RepositoryEntry courseEntry, String subIdent);
+	
+	public Binder assignBinder(Identity owner, BinderRef templateBinder, RepositoryEntry courseEntry, String subIdent, Date deadline);
 	
 	/**
 	 * The list of owners of the binder.

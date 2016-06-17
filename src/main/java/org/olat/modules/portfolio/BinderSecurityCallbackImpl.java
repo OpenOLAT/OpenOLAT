@@ -33,15 +33,18 @@ import org.olat.modules.portfolio.model.AccessRights;
 public class BinderSecurityCallbackImpl implements BinderSecurityCallback {
 	
 	private final boolean owner;
+	private final boolean newSectionAllowed;
 	private final List<AccessRights> rights;
 	
-	public BinderSecurityCallbackImpl(boolean owner) {
+	public BinderSecurityCallbackImpl(boolean owner, boolean newSectionAllowed) {
 		this.owner = owner;
+		this.newSectionAllowed = newSectionAllowed;
 		this.rights = Collections.emptyList();
 	}
 	
 	public BinderSecurityCallbackImpl(List<AccessRights> rights) {
 		this.owner = false;
+		this.newSectionAllowed = false;
 		this.rights = rights;
 	}
 	
@@ -56,27 +59,51 @@ public class BinderSecurityCallbackImpl implements BinderSecurityCallback {
 	}
 
 	@Override
+	public boolean canEditSection() {
+		return owner && newSectionAllowed;
+	}
+
+	@Override
 	public boolean canEditAccessRights(PortfolioElement element) {
 		return owner;
 	}
-	
-	
 
 	@Override
 	public boolean canViewElement(PortfolioElement element) {
 		if(owner) return true;
+		
+		//need to be recursive, if page -> section too -> binder too???
+		if(rights != null) {
+			for(AccessRights right:rights) {
+				if(right.matchElement(element)) {
+					return true;
+				}
+			}
+		}
 		return false;
 	}
 
 	@Override
 	public boolean canComment(PortfolioElement element) {
+		if(rights != null) {
+			for(AccessRights right:rights) {
+				if(right.matchElement(element) && PortfolioRoles.reviewer.equals(right.getRole())) {
+					return true;
+				}
+			}
+		}
 		return true;
 	}
 
 	@Override
 	public boolean canReview(PortfolioElement element) {
-		
-		
+		if(rights != null) {
+			for(AccessRights right:rights) {
+				if(right.matchElement(element) && PortfolioRoles.reviewer.equals(right.getRole())) {
+					return true;
+				}
+			}
+		}
 		return false;
 	}
 }

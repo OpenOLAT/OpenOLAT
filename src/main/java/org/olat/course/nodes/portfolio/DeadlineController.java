@@ -23,7 +23,6 @@ package org.olat.course.nodes.portfolio;
 import java.util.Calendar;
 import java.util.Date;
 
-import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.DateChooser;
@@ -32,9 +31,12 @@ import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.modules.portfolio.Binder;
+import org.olat.modules.portfolio.PortfolioService;
 import org.olat.portfolio.manager.EPFrontendManager;
 import org.olat.portfolio.model.structel.EPStructuredMap;
 import org.olat.portfolio.model.structel.StructureStatusEnum;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -48,15 +50,24 @@ import org.olat.portfolio.model.structel.StructureStatusEnum;
 public class DeadlineController extends FormBasicController {
 	
 	private DateChooser deadlineChooser;
+	
+	private Binder binder;
 	private EPStructuredMap map;
-	private final EPFrontendManager ePFMgr;
+	
+	@Autowired
+	private EPFrontendManager ePFMgr;
+	@Autowired
+	private PortfolioService portfolioService;
 	
 	public DeadlineController(UserRequest ureq, WindowControl wControl, EPStructuredMap map) {
 		super(ureq, wControl);
 		this.map = map;
-
-		ePFMgr = (EPFrontendManager) CoreSpringFactory.getBean("epFrontendManager");
-		
+		initForm(ureq);
+	}
+	
+	public DeadlineController(UserRequest ureq, WindowControl wControl, Binder binder) {
+		super(ureq, wControl);
+		this.binder = binder;
 		initForm(ureq);
 	}
 
@@ -66,13 +77,15 @@ public class DeadlineController extends FormBasicController {
 		setFormDescription("map.deadline.change.description");
 		
 		deadlineChooser = uifactory.addDateChooser("map.deadline", null, formLayout);
-		if(map.getDeadLine() == null) {
+		if((map != null && map.getDeadLine() == null) || (binder != null && binder.getDeadLine() == null)) {
 			Calendar cal = Calendar.getInstance();
 			cal.setTime(new Date());
 			cal.add(Calendar.DATE, 7);
 			deadlineChooser.setDate(cal.getTime());
-		} else {
+		} else if(map != null) {
 			deadlineChooser.setDate(map.getDeadLine());
+		} else if(binder != null) {
+			deadlineChooser.setDate(binder.getDeadLine());
 		}
 		deadlineChooser.setValidDateCheck("map.deadline.invalid");
 		
@@ -91,10 +104,17 @@ public class DeadlineController extends FormBasicController {
 	@Override
 	protected void formOK(UserRequest ureq) {
 		Date newDeadLine = deadlineChooser.getDate();
-		map = (EPStructuredMap) ePFMgr.reloadPortfolioStructure(map); // OLAT-6335: refresh map in case it was changed meanwhile
-		map.setDeadLine(newDeadLine);
-		map.setStatus(StructureStatusEnum.OPEN);
-		ePFMgr.savePortfolioStructure(map);
+		// OLAT-6335: refresh map in case it was changed meanwhile
+		if(map != null) {
+			map = (EPStructuredMap) ePFMgr.reloadPortfolioStructure(map); 
+			map.setDeadLine(newDeadLine);
+			map.setStatus(StructureStatusEnum.OPEN);
+			ePFMgr.savePortfolioStructure(map);
+		} else if(binder != null) {
+			binder = portfolioService.getBinderByKey(binder.getKey());
+			binder.setDeadLine(newDeadLine);
+			binder = portfolioService.updateBinder(binder);
+		}
 		fireEvent(ureq, Event.CHANGED_EVENT);
 	}
 
@@ -106,18 +126,24 @@ public class DeadlineController extends FormBasicController {
 	public EPStructuredMap getMap() {
 		return map;
 	}
+	
+	public Binder getBinder() {
+		return binder;
+	}
 
 	/**
 	 * @see org.olat.core.gui.components.form.flexible.impl.FormBasicController#validateFormLogic(org.olat.core.gui.UserRequest)
 	 */
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
-		if (super.validateFormLogic(ureq)) {
-			Date newDeadLine = deadlineChooser.getDate();
-			if (newDeadLine != null && newDeadLine.before(new Date())) {
-				deadlineChooser.setErrorKey("map.deadline.invalid.before", null);
-				return false;
-			} else return true;
-		} else return false;
+		boolean allOk = true;
+		
+		Date newDeadLine = deadlineChooser.getDate();
+		if (newDeadLine != null && newDeadLine.before(new Date())) {
+			deadlineChooser.setErrorKey("map.deadline.invalid.before", null);
+			allOk &= false;
+		}
+		
+		return allOk & super.validateFormLogic(ureq);
 	}
 }

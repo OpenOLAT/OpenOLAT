@@ -41,6 +41,9 @@ import org.olat.modules.portfolio.SectionRef;
 import org.olat.modules.portfolio.model.AccessRights;
 import org.olat.modules.portfolio.model.BinderImpl;
 import org.olat.modules.portfolio.model.SectionImpl;
+import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryRef;
+import org.olat.resource.OLATResource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -58,7 +61,7 @@ public class BinderDAO {
 	@Autowired
 	private GroupDAO groupDao;
 	
-	public BinderImpl createAndPersist(String title, String summary, String imagePath) {
+	public BinderImpl createAndPersist(String title, String summary, String imagePath, RepositoryEntry entry) {
 		BinderImpl binder = new BinderImpl();
 		binder.setCreationDate(new Date());
 		binder.setLastModified(binder.getCreationDate());
@@ -66,7 +69,48 @@ public class BinderDAO {
 		binder.setSummary(summary);
 		binder.setImagePath(imagePath);
 		binder.setBaseGroup(groupDao.createGroup());
+		if(entry != null) {
+			binder.setOlatResource(entry.getOlatResource());
+		}
 		dbInstance.getCurrentEntityManager().persist(binder);
+		return binder;
+	}
+	
+	public BinderImpl createCopy(BinderImpl template, RepositoryEntry courseEntry, String subIdent) {
+		BinderImpl binder = new BinderImpl();
+		binder.setCreationDate(new Date());
+		binder.setLastModified(binder.getCreationDate());
+		binder.setTitle(template.getTitle());
+		binder.setSummary(template.getSummary());
+		binder.setImagePath(template.getImagePath());
+		binder.setBaseGroup(groupDao.createGroup());
+		binder.setTemplate(template);
+		binder.setCopyDate(binder.getCreationDate());
+		if(courseEntry != null) {
+			binder.setCourseEntry(courseEntry);
+		}
+		if(StringHelper.containsNonWhitespace(subIdent)) {
+			binder.setSubIdent(subIdent);
+		}
+		dbInstance.getCurrentEntityManager().persist(binder);
+		binder.getSections().size();
+		
+		for(Section templateSection:template.getSections()) {
+			SectionImpl section = new SectionImpl();
+			section.setCreationDate(new Date());
+			section.setLastModified(section.getCreationDate());
+			section.setBaseGroup(groupDao.createGroup());
+			section.setTitle(templateSection.getTitle());
+			section.setDescription(templateSection.getDescription());
+			section.setBeginDate(templateSection.getBeginDate());
+			section.setEndDate(templateSection.getEndDate());
+			section.setBinder(binder);
+			section.setTemplateReference(templateSection);
+			binder.getSections().add(section);
+			dbInstance.getCurrentEntityManager().persist(section);
+		}
+		
+		dbInstance.getCurrentEntityManager().merge(binder);
 		return binder;
 	}
 	
@@ -101,6 +145,20 @@ public class BinderDAO {
 		return binders == null || binders.isEmpty() ? null : binders.get(0);
 	}
 	
+	public Binder loadByResource(OLATResource resource) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select binder from pfbinder as binder")
+		  .append(" inner join fetch binder.baseGroup as baseGroup")
+		  .append(" inner join fetch binder.olatResource as olatResource")
+		  .append(" where olatResource.key=:resourceKey");
+		
+		List<Binder> binders = dbInstance.getCurrentEntityManager()
+			.createQuery(sb.toString(), Binder.class)
+			.setParameter("resourceKey", resource.getKey())
+			.getResultList();
+		return binders == null || binders.isEmpty() ? null : binders.get(0);
+	}
+	
 	public Binder loadBySection(SectionRef section) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select binder from pfsection as section")
@@ -113,6 +171,84 @@ public class BinderDAO {
 			.setParameter("sectionKey", section.getKey())
 			.getResultList();
 		return binders == null || binders.isEmpty() ? null : binders.get(0);
+	}
+	
+	public boolean isTemplateInUse(BinderRef template, RepositoryEntryRef courseEntry, String subIdent) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select binder.key from pfbinder as binder")
+		  .append(" where binder.template.key=:templateKey");
+		if(courseEntry != null) {
+			sb.append(" and binder.courseEntry.key=:courseEntryKey");
+		}
+		if(StringHelper.containsNonWhitespace(subIdent)) {
+			sb.append(" and binder.subIdent=:subIdent");
+		}
+		
+		TypedQuery<Long> binderKeyQuery = dbInstance.getCurrentEntityManager()
+			.createQuery(sb.toString(), Long.class)
+			.setParameter("templateKey", template.getKey());
+		if(courseEntry != null) {
+			binderKeyQuery.setParameter("courseEntryKey", courseEntry.getKey());
+		}
+		if(StringHelper.containsNonWhitespace(subIdent)) {
+			binderKeyQuery.setParameter("subIdent", subIdent);
+		}
+		
+		List<Long> binderKeys = binderKeyQuery.setFirstResult(0)
+			.setMaxResults(1)
+			.getResultList();
+		return binderKeys != null && binderKeys.size() > 0 && binderKeys.get(0) != null && binderKeys.get(0).longValue() >= 0;
+	}
+	
+	public Binder getBinder(Identity owner, BinderRef template, RepositoryEntryRef courseEntry, String subIdent) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select binder from pfbinder as binder")
+		  .append(" inner join binder.baseGroup as baseGroup")
+		  .append(" inner join baseGroup.members as membership on (membership.identity.key=:identityKey and membership.role='").append(PortfolioRoles.owner.name()).append("')")
+		  .append(" where binder.template.key=:templateKey");
+		if(courseEntry != null) {
+			sb.append(" and binder.courseEntry.key=:courseEntryKey");
+		} else {
+			sb.append(" and binder.courseEntry.key is null");
+		}
+		
+		if(StringHelper.containsNonWhitespace(subIdent)) {
+			sb.append(" and binder.subIdent=:subIdent");
+		} else {
+			sb.append(" and binder.subIdent is null");
+		}
+		
+		TypedQuery<Binder> binderKeyQuery = dbInstance.getCurrentEntityManager()
+			.createQuery(sb.toString(), Binder.class)
+			.setParameter("templateKey", template.getKey())
+			.setParameter("identityKey", owner.getKey());
+		if(courseEntry != null) {
+			binderKeyQuery.setParameter("courseEntryKey", courseEntry.getKey());
+		}
+		if(StringHelper.containsNonWhitespace(subIdent)) {
+			binderKeyQuery.setParameter("subIdent", subIdent);
+		}
+		
+		List<Binder> binders = binderKeyQuery.setFirstResult(0)
+			.setMaxResults(1)
+			.getResultList();
+		return binders != null && binders.size() > 0 && binders.get(0) != null ? binders.get(0) : null;
+	}
+	
+	public List<Binder> getBinders(Identity owner, RepositoryEntryRef courseEntry, String subIdent) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select binder from pfbinder as binder")
+		  .append(" inner join binder.baseGroup as baseGroup")
+		  .append(" inner join baseGroup.members as membership on (membership.identity.key=:identityKey and membership.role='").append(PortfolioRoles.owner.name()).append("')")
+		  .append(" where  binder.courseEntry.key=:courseEntryKey and binder.subIdent=:subIdent");
+
+		List<Binder> binders = dbInstance.getCurrentEntityManager()
+			.createQuery(sb.toString(), Binder.class)
+			.setParameter("identityKey", owner.getKey())
+			.setParameter("courseEntryKey", courseEntry.getKey())
+			.setParameter("subIdent", subIdent)
+			.getResultList();
+		return binders;
 	}
 	
 	public Group getGroup(BinderRef binder) {

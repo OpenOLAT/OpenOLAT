@@ -19,6 +19,7 @@
  */
 package org.olat.modules.portfolio.manager;
 
+import java.util.Date;
 import java.util.List;
 
 import org.junit.Assert;
@@ -31,6 +32,7 @@ import org.olat.modules.portfolio.PortfolioRoles;
 import org.olat.modules.portfolio.PortfolioService;
 import org.olat.modules.portfolio.Section;
 import org.olat.modules.portfolio.model.AccessRights;
+import org.olat.modules.portfolio.model.SectionImpl;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -159,8 +161,47 @@ public class PortfolioServiceTest extends OlatTestCase {
 		List<AccessRights> rights = portfolioService.getAccessRights(binder, identity);
 		Assert.assertNotNull(rights);
 		Assert.assertEquals(2, rights.size());
-		
-		
 	}
 	
+	@Test
+	public void assignTemplate() {
+		Identity owner = JunitTestHelper.createAndPersistIdentityAsRndUser("port-u-7");
+		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("port-u-8");
+		
+		//create a template
+		String title = "Template binder";
+		String summary = "Binder used as a template";
+		Binder template = portfolioService.createNewBinder(title, summary, null, owner);
+		dbInstance.commit();
+		for(int i=0; i<4; i++) {
+			portfolioService.appendNewSection("Section " + i, "Section " + i, null, null, template);
+			dbInstance.commit();
+		}
+		dbInstance.commitAndCloseSession();
+		List<Section> templateSections = portfolioService.getSections(template);
+		Assert.assertNotNull(templateSections);
+		Assert.assertEquals(4, templateSections.size());
+		
+		
+		//user copy the template
+		Binder binder = portfolioService.assignBinder(id, template, null, null, new Date());
+		dbInstance.commitAndCloseSession();
+		Assert.assertNotNull(binder);
+		Assert.assertNotNull(binder.getKey());
+		Assert.assertNotNull(binder.getCopyDate());
+		Assert.assertNotNull(template.getTitle(), binder.getTitle());
+		
+		List<Section> reloadedSections = portfolioService.getSections(binder);
+		Assert.assertNotNull(reloadedSections);
+		Assert.assertEquals(4, reloadedSections.size());
+		Assert.assertEquals(templateSections.get(0).getTitle(), reloadedSections.get(0).getTitle());
+		Assert.assertEquals("Section 1", reloadedSections.get(1).getTitle());
+		Assert.assertEquals(templateSections.get(2).getTitle(), reloadedSections.get(2).getTitle());
+		Assert.assertEquals("Section 3", reloadedSections.get(3).getTitle());
+		
+		Assert.assertEquals(templateSections.get(0), ((SectionImpl)reloadedSections.get(0)).getTemplateReference());
+		Assert.assertEquals(templateSections.get(1), ((SectionImpl)reloadedSections.get(1)).getTemplateReference());
+		Assert.assertEquals(templateSections.get(2), ((SectionImpl)reloadedSections.get(2)).getTemplateReference());
+		Assert.assertEquals(templateSections.get(3), ((SectionImpl)reloadedSections.get(3)).getTemplateReference());
+	}
 }
