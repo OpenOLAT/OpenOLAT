@@ -116,7 +116,7 @@ public class PortfolioServiceTest extends OlatTestCase {
 		// load right
 		List<AccessRights> rights = portfolioService.getAccessRights(binder);
 		Assert.assertNotNull(rights);
-		Assert.assertEquals(3, rights.size());
+		Assert.assertEquals(4, rights.size());
 		
 		boolean foundOwner = false;
 		boolean foundCoach = false;
