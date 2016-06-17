@@ -437,7 +437,7 @@ public class LDAPLoginManagerImpl implements LDAPLoginManager, GenericEventListe
 				.getOlatPropertyToLdapAttribute(LDAPConstants.LDAP_USER_IDENTIFYER)));
 		String email = getAttributeValue(userAttributes.get(syncConfiguration.getOlatPropertyToLdapAttribute(UserConstants.EMAIL)));
 		// Lookup user
-		if (securityManager.findIdentityByName(uid) != null) {
+		if (securityManager.findIdentityByNameCaseInsensitive(uid) != null) {
 			log.error("Can't create user with username='" + uid + "', this username does already exist in OLAT database", null);
 			return null;
 		}
@@ -587,8 +587,9 @@ public class LDAPLoginManagerImpl implements LDAPLoginManager, GenericEventListe
 	 *         otherwise (if user exists but not managed by LDAP, error Object is
 	 *         modified)
 	 */
+	@Override
 	public Identity findIdentyByLdapAuthentication(String uid, LDAPError errors) {
-		Identity identity = securityManager.findIdentityByName(uid);
+		Identity identity = securityManager.findIdentityByNameCaseInsensitive(uid);
 		if (identity == null) {
 			return null;
 		} else {

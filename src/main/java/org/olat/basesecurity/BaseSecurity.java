@@ -157,6 +157,8 @@ public interface BaseSecurity {
 	 */
 	public Identity findIdentityByName(String identityName);
 	
+	public Identity findIdentityByNameCaseInsensitive(String identityName);
+	
 	public List<Identity> findIdentitiesByName(Collection<String> identityName);
 
 	/**
