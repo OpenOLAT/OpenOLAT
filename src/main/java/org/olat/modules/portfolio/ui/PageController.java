@@ -173,7 +173,7 @@ public class PageController extends FormBasicController implements TooledControl
 			binder = portfolioService.getBinderBySection(section);
 		}
 		
-		editMetadataCtrl = new PageMetadataEditController(ureq, getWindowControl(), binder, false, section, false, page);
+		editMetadataCtrl = new PageMetadataEditController(ureq, getWindowControl(), binder, true, section, true, page);
 		listenTo(editMetadataCtrl);
 		
 		String title = translate("edit.page.metadata");

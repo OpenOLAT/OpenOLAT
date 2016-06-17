@@ -282,9 +282,11 @@ public class PortfolioServiceImpl implements PortfolioService {
 	}
 
 	@Override
-	public Page appendNewPage(String title, String summary, String imagePath, SectionRef section) {
-		Section reloadedSection = binderDao.loadSectionByKey(section.getKey());
-		return pageDao.createAndPersist(title, summary, null, reloadedSection, null);
+	public Page appendNewPage(Identity owner, String title, String summary, String imagePath, SectionRef section) {
+		Section reloadedSection = section == null ? null : binderDao.loadSectionByKey(section.getKey());
+		Page page = pageDao.createAndPersist(title, summary, null, reloadedSection, null);
+		groupDao.addMembership(page.getBaseGroup(), owner, PortfolioRoles.owner.name());
+		return page;
 	}
 
 	@Override

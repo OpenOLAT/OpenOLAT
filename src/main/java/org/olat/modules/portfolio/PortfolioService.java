@@ -137,7 +137,7 @@ public interface PortfolioService {
 	 * @param summary
 	 * @param section
 	 */
-	public Page appendNewPage(String title, String summary, String imagePath, SectionRef section);
+	public Page appendNewPage(Identity owner, String title, String summary, String imagePath, SectionRef section);
 	
 	public Page getPageByKey(Long key);
 	

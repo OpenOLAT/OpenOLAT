@@ -100,7 +100,7 @@ public class PageImpl implements Persistable, ModifiedInfo, CreateInfo, Page {
 	@JoinColumn(name="fk_group_id", nullable=false, insertable=true, updatable=false)
 	private Group baseGroup;
 	
-	@ManyToOne(targetEntity=SectionImpl.class,fetch=FetchType.LAZY,optional=false)
+	@ManyToOne(targetEntity=SectionImpl.class,fetch=FetchType.LAZY,optional=true)
 	@JoinColumn(name="fk_section_id", nullable=true, insertable=true, updatable=true)
 	private Section section;
 	

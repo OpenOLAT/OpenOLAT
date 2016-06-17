@@ -1,4 +1,4 @@
-#if($row.firstPageOfSection)
+#if(${row.isSection()} && $row.firstPageOfSection)
 <h3>$r.escapeHtml($row.sectionLongTitle)</h3>
 <div class="o_portfolio_section_meta">
 	<div class="clearfix">

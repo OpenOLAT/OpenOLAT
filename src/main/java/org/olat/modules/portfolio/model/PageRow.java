@@ -70,8 +70,16 @@ public class PageRow {
 	public String getSectionTitle() {
 		return section.getTitle();
 	}
+	public boolean isSection () {
+		if(section == null){
+			return false;
+		}
+		return true;
+		
+	}
 	
 	public String getSectionLongTitle() {
+		
 		long pos = section.getPos();
 		return (pos+1) + ". " + section.getTitle();
 	}

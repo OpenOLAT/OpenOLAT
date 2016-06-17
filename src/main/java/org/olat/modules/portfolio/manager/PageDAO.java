@@ -142,18 +142,19 @@ public class PageDAO {
 	public List<Page> getOwnedPages(IdentityRef owner) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select page from pfpage as page")
-		  .append(" inner join page.section as section")
-		  .append(" inner join section.binder as binder")
 		  .append(" inner join fetch page.body as body")
+		  .append(" left join page.section as section")
+		  .append(" left join section.binder as binder")
 		  .append(" where exists (select pageMember from bgroupmember as pageMember")
 		  .append("     inner join pageMember.identity as ident on (ident.key=:ownerKey and pageMember.role='").append(GroupRoles.owner.name()).append("')")
-		  .append("  	where pageMember.group.key=binder.baseGroup.key or pageMember.group.key=page.baseGroup.key")
+		  .append("  	where pageMember.group.key=page.baseGroup.key or pageMember.group.key=binder.baseGroup.key or pageMember.group.key=page.baseGroup.key")
 		  .append(" )");
 		
-		return dbInstance.getCurrentEntityManager()
+		List<Page> pages = dbInstance.getCurrentEntityManager()
 			.createQuery(sb.toString(), Page.class)
 			.setParameter("ownerKey", owner.getKey())
 			.getResultList();
+		return pages;
 	}
 	
 	public Page loadByKey(Long key) {
