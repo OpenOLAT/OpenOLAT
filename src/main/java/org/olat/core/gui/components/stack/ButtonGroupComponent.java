@@ -69,6 +69,10 @@ public class ButtonGroupComponent extends AbstractComponent implements Component
 	public Link getSelectedButton() {
 		return selectedButton;
 	}
+	
+	public void setSelectedButton(Link button) {
+		selectedButton = button;
+	}
 
 	@Override
 	public Component getComponent(String name) {

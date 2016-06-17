@@ -17,36 +17,45 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.portfolio;
+package org.olat.modules.portfolio.model;
 
-import java.util.Date;
-
-import org.olat.repository.RepositoryEntry;
+import org.olat.core.id.Identity;
+import org.olat.modules.portfolio.PortfolioElement;
+import org.olat.modules.portfolio.PortfolioRoles;
 
 /**
  * 
- * Initial date: 07.06.2016<br>
+ * Initial date: 16.06.2016<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public interface Binder extends BinderRef, PortfolioElement {
+public class AccessRightChange {
 	
-	public Date getLastModified();
+	private final PortfolioRoles role;
+	private final PortfolioElement element;
+	private final Identity identity;
+	private final boolean add;
 	
-	public void setTitle(String title);
+	public AccessRightChange(PortfolioRoles role, PortfolioElement element, Identity identity, boolean add) {
+		this.role = role;
+		this.element = element;
+		this.identity = identity;
+		this.add = add;
+	}
 	
-	public String getSummary();
+	public PortfolioRoles getRole() {
+		return role;
+	}
 	
-	public void setSummary(String summary);
+	public PortfolioElement getElement() {
+		return element;
+	}
 	
-	public String getImagePath();
+	public Identity getIdentity() {
+		return identity;
+	}
 	
-	public void setImagePath(String imagePath);
-
-	public RepositoryEntry getCourseEntry();
-	
-	public String getSubIdent();
-	
-	public RepositoryEntry getTemplateEntry();
-
+	public boolean isAdd() {
+		return add;
+	}
 }

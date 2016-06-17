@@ -32,6 +32,7 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.modules.portfolio.Binder;
+import org.olat.modules.portfolio.BinderSecurityCallback;
 import org.olat.modules.portfolio.Page;
 
 /**
@@ -48,8 +49,9 @@ public class BinderPageListController extends AbstractPageListController  {
 
 	private final Binder binder;
 	
-	public BinderPageListController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel, Binder binder) {
-		super(ureq, wControl, stackPanel, "pages");
+	public BinderPageListController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
+			BinderSecurityCallback secCallback, Binder binder) {
+		super(ureq, wControl, stackPanel, secCallback, "pages");
 		this.binder = binder;
 		
 		initForm(ureq);
@@ -58,9 +60,11 @@ public class BinderPageListController extends AbstractPageListController  {
 	
 	@Override
 	public void initTools() {
-		newEntryLink = LinkFactory.createToolLink("new.page", translate("create.new.page"), this);
-		newEntryLink.setIconLeftCSS("o_icon o_icon-lg o_icon_new_portfolio");
-		stackPanel.addTool(newEntryLink, Align.right);
+		if(secCallback.canEditBinder()) {
+			newEntryLink = LinkFactory.createToolLink("new.page", translate("create.new.page"), this);
+			newEntryLink.setIconLeftCSS("o_icon o_icon-lg o_icon_new_portfolio");
+			stackPanel.addTool(newEntryLink, Align.right);
+		}
 	}
 
 	@Override

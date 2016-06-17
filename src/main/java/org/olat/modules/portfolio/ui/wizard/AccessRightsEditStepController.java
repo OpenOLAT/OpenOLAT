@@ -19,6 +19,8 @@
  */
 package org.olat.modules.portfolio.ui.wizard;
 
+import java.util.List;
+
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.impl.Form;
@@ -27,7 +29,9 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.wizard.StepFormBasicController;
 import org.olat.core.gui.control.generic.wizard.StepsEvent;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
+import org.olat.core.id.Identity;
 import org.olat.modules.portfolio.Binder;
+import org.olat.modules.portfolio.model.AccessRightChange;
 import org.olat.modules.portfolio.ui.AccessRightsEditController;
 
 /**
@@ -37,17 +41,20 @@ import org.olat.modules.portfolio.ui.AccessRightsEditController;
  *
  */
 public class AccessRightsEditStepController extends StepFormBasicController {
-	
-	private final Binder binder;
+
+	private final AccessRightsContext rightsContext;
 	private final AccessRightsEditController accessRightsCtrl;
 	
 	public AccessRightsEditStepController(UserRequest ureq, WindowControl wControl, Binder binder, Form form, StepsRunContext runContext) {
 		super(ureq, wControl, form, runContext, LAYOUT_CUSTOM, "access_rights_step");
-		this.binder = binder;
-		
-		accessRightsCtrl = new AccessRightsEditController(ureq, getWindowControl(), binder);
+
+		rightsContext = (AccessRightsContext)runContext.get("rightsContext");
+		Identity selectedIdentity = null;
+		if(rightsContext.getIdentities() != null && rightsContext.getIdentities().size() == 1) {
+			selectedIdentity = rightsContext.getIdentities().get(0);
+		}
+		accessRightsCtrl = new AccessRightsEditController(ureq, getWindowControl(), form, binder, selectedIdentity);
 		listenTo(accessRightsCtrl);
-		
 		initForm(ureq);
 	}
 
@@ -63,6 +70,8 @@ public class AccessRightsEditStepController extends StepFormBasicController {
 
 	@Override
 	protected void formOK(UserRequest ureq) {
+		List<AccessRightChange> accessRightChanges = accessRightsCtrl.getChanges();
+		rightsContext.setAccessRightChanges(accessRightChanges);
 		fireEvent(ureq, StepsEvent.ACTIVATE_NEXT);
 	}
 }

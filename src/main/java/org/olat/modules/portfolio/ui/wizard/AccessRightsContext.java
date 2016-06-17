@@ -17,36 +17,37 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.portfolio;
+package org.olat.modules.portfolio.ui.wizard;
 
-import java.util.Date;
+import java.util.List;
 
-import org.olat.repository.RepositoryEntry;
+import org.olat.core.id.Identity;
+import org.olat.modules.portfolio.model.AccessRightChange;
 
 /**
  * 
- * Initial date: 07.06.2016<br>
+ * Initial date: 16.06.2016<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public interface Binder extends BinderRef, PortfolioElement {
+public class AccessRightsContext {
 	
-	public Date getLastModified();
-	
-	public void setTitle(String title);
-	
-	public String getSummary();
-	
-	public void setSummary(String summary);
-	
-	public String getImagePath();
-	
-	public void setImagePath(String imagePath);
+	private List<Identity> identities;
+	private List<AccessRightChange> accessRightChanges;
 
-	public RepositoryEntry getCourseEntry();
-	
-	public String getSubIdent();
-	
-	public RepositoryEntry getTemplateEntry();
+	public List<Identity> getIdentities() {
+		return identities;
+	}
 
+	public void setIdentities(List<Identity> identities) {
+		this.identities = identities;
+	}
+
+	public List<AccessRightChange> getAccessRightChanges() {
+		return accessRightChanges;
+	}
+
+	public void setAccessRightChanges(List<AccessRightChange> accessRightChanges) {
+		this.accessRightChanges = accessRightChanges;
+	}
 }

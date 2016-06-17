@@ -5,7 +5,9 @@
 	#foreach($section in $sections)
 		<li><div class="o_header_with_buttons">
 				<h4>${foreach.count}. $r.render($section.sectionLinkName)</h4>
-				<div id="sect_$foreach.count" class="o_button_group o_button_group_right dropdown">$r.render($section.editDropdownName)</div>
+				#if(${section.hasEditDropdown()})
+					<div id="sect_$foreach.count" class="o_button_group o_button_group_right dropdown">$r.render($section.editDropdownName)</div>
+				#end
 			</div>
 	
 			#if(${section.getPages().size()} > 0)
@@ -17,8 +19,9 @@
 			#end
 		</li>
 	#end
-		
 	</ul>
+	
+	#if($r.available("create.new.section"))
 	<div class="panel panel-placeholder o_block_large">
 		<div class="panel-body">
 			<h5>$r.translate("create.new.section.title")</h5>
@@ -28,4 +31,5 @@
 			</div>
 		</div>
 	</div>
+	#end
 </div>

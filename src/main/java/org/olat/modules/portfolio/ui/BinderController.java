@@ -133,19 +133,21 @@ public class BinderController extends BasicController implements TooledControlle
 	}
 	
 	private void doOpenEntries(UserRequest ureq) {
-		entriesCtrl = new BinderPageListController(ureq, getWindowControl(), stackPanel, binder);
+		entriesCtrl = new BinderPageListController(ureq, getWindowControl(), stackPanel, secCallback, binder);
 		listenTo(entriesCtrl);
 
 		stackPanel.popUpToController(this);
 		stackPanel.pushController(translate("portfolio.entries"), entriesCtrl);
+		segmentButtonsCmp.setSelectedButton(entriesLink);
 	}
 	
 	private void doOpenOverview(UserRequest ureq) {
-		overviewCtrl = new TableOfContentController(ureq, getWindowControl(), stackPanel, binder);
+		overviewCtrl = new TableOfContentController(ureq, getWindowControl(), stackPanel, secCallback, binder);
 		listenTo(overviewCtrl);
 
 		stackPanel.popUpToController(this);
 		stackPanel.pushController(translate("portfolio.overview"), overviewCtrl);
+		segmentButtonsCmp.setSelectedButton(overviewLink);
 	}
 	
 	private void doOpenPublish(UserRequest ureq) {
@@ -154,5 +156,6 @@ public class BinderController extends BasicController implements TooledControlle
 		
 		stackPanel.popUpToController(this);
 		stackPanel.pushController(translate("portfolio.publish"), publishCtrl);
+		segmentButtonsCmp.setSelectedButton(publishLink);
 	}
 }

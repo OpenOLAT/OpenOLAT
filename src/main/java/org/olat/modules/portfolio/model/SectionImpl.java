@@ -37,6 +37,7 @@ import javax.persistence.OrderColumn;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
+import javax.persistence.Transient;
 
 import org.olat.basesecurity.Group;
 import org.olat.basesecurity.model.GroupImpl;
@@ -45,6 +46,7 @@ import org.olat.core.id.ModifiedInfo;
 import org.olat.core.id.Persistable;
 import org.olat.modules.portfolio.Binder;
 import org.olat.modules.portfolio.Page;
+import org.olat.modules.portfolio.PortfolioElementType;
 import org.olat.modules.portfolio.Section;
 
 /**
@@ -127,6 +129,10 @@ public class SectionImpl implements Persistable, ModifiedInfo, CreateInfo, Secti
 		return creationDate;
 	}
 
+	public void setCreationDate(Date creationDate) {
+		this.creationDate = creationDate;
+	}
+	
 	@Override
 	public Date getLastModified() {
 		return lastModified;
@@ -136,9 +142,11 @@ public class SectionImpl implements Persistable, ModifiedInfo, CreateInfo, Secti
 	public void setLastModified(Date date) {
 		lastModified = date;
 	}
-
-	public void setCreationDate(Date creationDate) {
-		this.creationDate = creationDate;
+	
+	@Override
+	@Transient
+	public PortfolioElementType getType() {
+		return PortfolioElementType.section;
 	}
 	
 	public String getTitle() {

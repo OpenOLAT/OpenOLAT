@@ -25,6 +25,8 @@ import java.util.List;
 
 import org.olat.basesecurity.IdentityRef;
 import org.olat.core.id.Identity;
+import org.olat.modules.portfolio.model.AccessRightChange;
+import org.olat.modules.portfolio.model.AccessRights;
 
 /**
  * 
@@ -53,6 +55,23 @@ public interface PortfolioService {
 	
 	public List<Binder> searchOwnedBinders(Identity owner);
 	
+	/**
+	 * Search all binders which are shared with the specified member.
+	 * 
+	 * @param member
+	 * @return
+	 */
+	public List<Binder> searchSharedBindersWith(Identity member);
+	
+	/**
+	 * Search all the binders which the specified identity shared
+	 * with some people.
+	 * 
+	 * @param identity
+	 * @return
+	 */
+	public List<Binder> searchSharedBindersBy(Identity owner);
+	
 	public Binder getBinderByKey(Long portfolioKey);
 	
 	public Binder getBinderBySection(SectionRef section);
@@ -64,6 +83,14 @@ public interface PortfolioService {
 	 * @return
 	 */
 	public List<Identity> getMembers(BinderRef binder, String... roles);
+	
+	public List<AccessRights> getAccessRights(Binder binder);
+	
+	public List<AccessRights> getAccessRights(Binder binder, Identity identity);
+	
+	public void addAccessRights(PortfolioElement element, Identity identity, PortfolioRoles role);
+	
+	public void changeAccessRights(List<Identity> identities, List<AccessRightChange> changes);
 	
 	public List<Category> getCategories(Binder binder);
 

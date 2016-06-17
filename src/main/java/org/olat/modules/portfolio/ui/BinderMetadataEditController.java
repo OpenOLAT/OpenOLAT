@@ -143,7 +143,7 @@ public class BinderMetadataEditController extends FormBasicController {
 		
 		// template name
 		String templateName;
-		if(binder.getTemplateEntry() != null) {
+		if(binder != null && binder.getTemplateEntry() != null) {
 			templateName = binder.getTemplateEntry().getDisplayname();
 		} else {
 			templateName = translate("template.none");
@@ -152,7 +152,7 @@ public class BinderMetadataEditController extends FormBasicController {
 		
 		// portfolio task
 		String courseName;
-		if(binder.getCourseEntry() != null) {
+		if(binder != null && binder.getCourseEntry() != null) {
 			courseName = binder.getCourseEntry().getDisplayname();
 		} else {
 			courseName = translate("portfoliotask.none");

@@ -48,6 +48,7 @@ import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.StringHelper;
+import org.olat.modules.portfolio.BinderSecurityCallback;
 import org.olat.modules.portfolio.Page;
 import org.olat.modules.portfolio.PortfolioService;
 import org.olat.modules.portfolio.Section;
@@ -73,13 +74,16 @@ implements Activateable2, TooledController, FlexiTableComponentDelegate, FlexiTa
 	private PageMetadataEditController newPageCtrl;
 	
 	private int counter;
+	protected final BinderSecurityCallback secCallback;
 	
 	@Autowired
 	protected PortfolioService portfolioService;
 	
-	public AbstractPageListController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel, String vTemplate) {
+	public AbstractPageListController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
+			BinderSecurityCallback secCallback, String vTemplate) {
 		super(ureq, wControl, vTemplate);
 		this.stackPanel = stackPanel;
+		this.secCallback = secCallback;
 	}
 	
 	@Override
@@ -207,7 +211,7 @@ implements Activateable2, TooledController, FlexiTableComponentDelegate, FlexiTa
 	}
 	
 	private void doOpenPage(UserRequest ureq, Page page) {
-		pageCtrl = new PageController(ureq, getWindowControl(), stackPanel, page);
+		pageCtrl = new PageController(ureq, getWindowControl(), stackPanel, secCallback, page);
 		listenTo(pageCtrl);
 		
 		String displayName = StringHelper.escapeHtml(page.getTitle());

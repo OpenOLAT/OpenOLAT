@@ -21,32 +21,24 @@ package org.olat.modules.portfolio;
 
 import java.util.Date;
 
-import org.olat.repository.RepositoryEntry;
+import org.olat.basesecurity.Group;
 
 /**
  * 
- * Initial date: 07.06.2016<br>
+ * Initial date: 16.06.2016<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public interface Binder extends BinderRef, PortfolioElement {
+public interface PortfolioElement {
 	
-	public Date getLastModified();
+	public Long getKey();
 	
-	public void setTitle(String title);
+	public Date getCreationDate();
 	
-	public String getSummary();
+	public String getTitle();
 	
-	public void setSummary(String summary);
+	public Group getBaseGroup();
 	
-	public String getImagePath();
-	
-	public void setImagePath(String imagePath);
-
-	public RepositoryEntry getCourseEntry();
-	
-	public String getSubIdent();
-	
-	public RepositoryEntry getTemplateEntry();
+	public PortfolioElementType getType();
 
 }

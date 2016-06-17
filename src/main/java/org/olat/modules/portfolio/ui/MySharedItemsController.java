@@ -23,16 +23,25 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
+import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.generic.dtabs.Activateable2;
+import org.olat.core.id.OLATResourceable;
+import org.olat.core.util.StringHelper;
+import org.olat.core.util.resource.OresHelper;
 import org.olat.modules.portfolio.Binder;
+import org.olat.modules.portfolio.BinderSecurityCallback;
+import org.olat.modules.portfolio.BinderSecurityCallbackImpl;
 import org.olat.modules.portfolio.PortfolioService;
 import org.olat.modules.portfolio.model.MySharedItemRow;
 import org.olat.modules.portfolio.ui.MySharedItemsDataModel.MySharedItemCols;
@@ -49,6 +58,8 @@ public class MySharedItemsController extends FormBasicController {
 	private FlexiTableElement tableEl;
 	private MySharedItemsDataModel model;
 	private final TooledStackedPanel stackPanel;
+
+	private BinderController binderCtrl;
 	
 	@Autowired
 	private PortfolioService portfolioService;
@@ -86,11 +97,12 @@ public class MySharedItemsController extends FormBasicController {
 	}
 	
 	private void loadModel() {
-		List<Binder> portfolios = portfolioService.searchOwnedBinders(getIdentity());
+		List<Binder> portfolios = portfolioService.searchSharedBindersBy(getIdentity());
 		List<MySharedItemRow> rows = new ArrayList<>(portfolios.size());
 		for(Binder binder:portfolios) {
 			MySharedItemRow row = new MySharedItemRow();
 			row.setBinder(binder.getTitle());
+			row.setBinderKey(binder.getKey());
 			row.setLastModified(binder.getLastModified());//TODO max()
 			row.setCourse("TODO");
 			rows.add(row);
@@ -99,16 +111,46 @@ public class MySharedItemsController extends FormBasicController {
 		tableEl.reset();
 		tableEl.reloadData();
 	}
+	
+	@Override
+	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
+		if(tableEl == source) {
+			if(event instanceof SelectionEvent) {
+				SelectionEvent se = (SelectionEvent)event;
+				String cmd = se.getCommand();
+				MySharedItemRow row = model.getObject(se.getIndex());
+				if("select".equals(cmd)) {
+					Activateable2 activateable = doSelectBinder(ureq, row);
+					if(activateable != null) {
+						activateable.activate(ureq, null, null);
+					}
+				}
+			}
+			
+		}
+		super.formInnerEvent(ureq, source, event);
+	}
 
 	@Override
 	protected void formOK(UserRequest ureq) {
 		//
 	}
 
-
-
-
-	
-	
-
+	private BinderController doSelectBinder(UserRequest ureq, MySharedItemRow row) {
+		Binder binder = portfolioService.getBinderByKey(row.getBinderKey());
+		if(binder == null) {
+			showWarning("warning.portfolio.not.found");
+			return null;
+		} else {
+			removeAsListenerAndDispose(binderCtrl);
+			
+			OLATResourceable binderOres = OresHelper.createOLATResourceableInstance("Binder", binder.getKey());
+			WindowControl swControl = addToHistory(ureq, binderOres, null);
+			BinderSecurityCallback secCallback = new BinderSecurityCallbackImpl(true);
+			binderCtrl = new BinderController(ureq, swControl, stackPanel, secCallback, binder);
+			String displayName = StringHelper.escapeHtml(binder.getTitle());
+			stackPanel.pushController(displayName, binderCtrl);
+			return binderCtrl;
+		}
+	}
 }

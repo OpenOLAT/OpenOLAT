@@ -37,6 +37,7 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.modules.portfolio.Binder;
+import org.olat.modules.portfolio.BinderSecurityCallback;
 import org.olat.modules.portfolio.Page;
 import org.olat.modules.portfolio.PagePart;
 import org.olat.modules.portfolio.PortfolioService;
@@ -62,14 +63,17 @@ public class PageController extends FormBasicController implements TooledControl
 	private PageMetadataEditController editMetadataCtrl;
 	
 	private Page page;
+	private final BinderSecurityCallback secCallback;
 	
 	@Autowired
 	private PortfolioService portfolioService;
 	
-	public PageController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel, Page page) {
+	public PageController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
+			BinderSecurityCallback secCallback, Page page) {
 		super(ureq, wControl, "page_content");
 		this.page = page;
 		this.stackPanel = stackPanel;
+		this.secCallback = secCallback;
 		
 		initForm(ureq);
 		loadModel();
@@ -77,13 +81,17 @@ public class PageController extends FormBasicController implements TooledControl
 
 	@Override
 	public void initTools() {
-		editLink = LinkFactory.createToolLink("edit.page", translate("edit.page"), this);
-		editLink.setIconLeftCSS("o_icon o_icon-lg o_icon_new_portfolio");
-		stackPanel.addTool(editLink, Align.left);
+		if(secCallback.canEditBinder()) {
+			editLink = LinkFactory.createToolLink("edit.page", translate("edit.page"), this);
+			editLink.setIconLeftCSS("o_icon o_icon-lg o_icon_new_portfolio");
+			stackPanel.addTool(editLink, Align.left);
+		}
 		
-		editMetadataLink = LinkFactory.createToolLink("edit.page.metadata", translate("edit.page.metadata"), this);
-		editMetadataLink.setIconLeftCSS("o_icon o_icon-lg o_icon_new_portfolio");
-		stackPanel.addTool(editMetadataLink, Align.left);
+		if(secCallback.canEditMetadataBinder()) {
+			editMetadataLink = LinkFactory.createToolLink("edit.page.metadata", translate("edit.page.metadata"), this);
+			editMetadataLink.setIconLeftCSS("o_icon o_icon-lg o_icon_new_portfolio");
+			stackPanel.addTool(editMetadataLink, Align.left);
+		}
 	}
 
 	@Override

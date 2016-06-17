@@ -35,6 +35,8 @@ import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.resource.OresHelper;
+import org.olat.modules.portfolio.BinderSecurityCallback;
+import org.olat.modules.portfolio.BinderSecurityCallbackImpl;
 
 /**
  * 
@@ -57,6 +59,7 @@ public class PortfolioHomeController extends BasicController implements Activate
 	public PortfolioHomeController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel) {
 		super(ureq, wControl);
 		this.stackPanel = stackPanel;
+		stackPanel.setToolbarEnabled(true);
 
 		mainVC = createVelocityContainer("home");
 		myBindersLink = LinkFactory.createLink("goto.my.binders", mainVC, this);
@@ -146,7 +149,9 @@ public class PortfolioHomeController extends BasicController implements Activate
 		
 		OLATResourceable pagesOres = OresHelper.createOLATResourceableInstance("MyPages", 0l);
 		WindowControl swControl = addToHistory(ureq, pagesOres, null);
-		myPageListCtrl = new MyPageListController(ureq, swControl, stackPanel);
+		//owners of all pages
+		BinderSecurityCallback secCallback = new BinderSecurityCallbackImpl(true);
+		myPageListCtrl = new MyPageListController(ureq, swControl, stackPanel, secCallback);
 		listenTo(myPageListCtrl);
 		stackPanel.pushController(translate("my.portfolio.pages.breadcrump"), myPageListCtrl);
 		return myPageListCtrl;

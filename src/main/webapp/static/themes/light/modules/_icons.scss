@@ -211,6 +211,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_reply_with_quote:before { content: $fa-var-reply-all; }
 .o_icon_response_feedback:before { content: $fa-var-refresh; }
 .o_icon_review:before { content: $fa-var-eye;}
+.o_icon_reviewer:before { content: $fa-var-user-md;}
 .o_icon_rss:before { content: $fa-var-rss;}
 .o_icon_rss_unsubscribe:before { content: $fa-var-rss; color: #996633;}
 .o_icon_save:before { content: $fa-var-save;}

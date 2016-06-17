@@ -49,6 +49,9 @@ public class AddMember_1_ChooseMemberStep extends BasicStep {
 
 	@Override
 	public StepFormController getStepController(UserRequest ureq, WindowControl wControl, StepsRunContext runContext, Form form) {
+		if(!runContext.containsKey("rightsContext")) {
+			runContext.put("rightsContext", new AccessRightsContext());
+		}
 		MemberSearchController controller = new MemberSearchController(ureq, wControl, form, runContext);
 		return controller;
 	}

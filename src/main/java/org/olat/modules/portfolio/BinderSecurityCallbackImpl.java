@@ -19,6 +19,11 @@
  */
 package org.olat.modules.portfolio;
 
+import java.util.Collections;
+import java.util.List;
+
+import org.olat.modules.portfolio.model.AccessRights;
+
 /**
  * 
  * Initial date: 15.06.2016<br>
@@ -28,9 +33,16 @@ package org.olat.modules.portfolio;
 public class BinderSecurityCallbackImpl implements BinderSecurityCallback {
 	
 	private final boolean owner;
+	private final List<AccessRights> rights;
 	
 	public BinderSecurityCallbackImpl(boolean owner) {
 		this.owner = owner;
+		this.rights = Collections.emptyList();
+	}
+	
+	public BinderSecurityCallbackImpl(List<AccessRights> rights) {
+		this.owner = false;
+		this.rights = rights;
 	}
 	
 	@Override
@@ -42,6 +54,29 @@ public class BinderSecurityCallbackImpl implements BinderSecurityCallback {
 	public boolean canEditMetadataBinder() {
 		return owner;
 	}
- 
 
+	@Override
+	public boolean canEditAccessRights(PortfolioElement element) {
+		return owner;
+	}
+	
+	
+
+	@Override
+	public boolean canViewElement(PortfolioElement element) {
+		if(owner) return true;
+		return false;
+	}
+
+	@Override
+	public boolean canComment(PortfolioElement element) {
+		return true;
+	}
+
+	@Override
+	public boolean canReview(PortfolioElement element) {
+		
+		
+		return false;
+	}
 }

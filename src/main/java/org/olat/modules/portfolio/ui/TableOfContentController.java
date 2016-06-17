@@ -43,6 +43,7 @@ import org.olat.core.gui.control.generic.closablewrapper.CloseableModalControlle
 import org.olat.core.id.Identity;
 import org.olat.core.util.StringHelper;
 import org.olat.modules.portfolio.Binder;
+import org.olat.modules.portfolio.BinderSecurityCallback;
 import org.olat.modules.portfolio.Page;
 import org.olat.modules.portfolio.PortfolioService;
 import org.olat.modules.portfolio.Section;
@@ -75,6 +76,7 @@ public class TableOfContentController extends BasicController implements TooledC
 	private int counter = 0;
 	private Binder binder;
 	private final List<Identity> owners;
+	private final BinderSecurityCallback secCallback;
 	
 	@Autowired
 	private UserManager userManager;
@@ -82,10 +84,11 @@ public class TableOfContentController extends BasicController implements TooledC
 	private PortfolioService portfolioService;
 
 	public TableOfContentController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
-			Binder binder) {
+			BinderSecurityCallback secCallback, Binder binder) {
 		super(ureq, wControl);
 		this.binder = binder;
 		this.stackPanel = stackPanel;
+		this.secCallback = secCallback;
 		
 		mainVC = createVelocityContainer("table_of_contents");
 		mainVC.contextPut("binderTitle", StringHelper.escapeHtml(binder.getTitle()));
@@ -98,27 +101,30 @@ public class TableOfContentController extends BasicController implements TooledC
 		}
 		mainVC.contextPut("owners", ownerSb.toString());
 		
-		
 		putInitialPanel(mainVC);
 		loadModel();
 	}
 	
 	@Override
 	public void initTools() {
-		editBinderMetadataLink = LinkFactory.createToolLink("edit.binder.metadata", translate("edit.binder.metadata"), this);
-		editBinderMetadataLink.setIconLeftCSS("o_icon o_icon-lg o_icon_new_portfolio");
-		stackPanel.addTool(editBinderMetadataLink, Align.left);
+		if(secCallback.canEditMetadataBinder()) {
+			editBinderMetadataLink = LinkFactory.createToolLink("edit.binder.metadata", translate("edit.binder.metadata"), this);
+			editBinderMetadataLink.setIconLeftCSS("o_icon o_icon-lg o_icon_new_portfolio");
+			stackPanel.addTool(editBinderMetadataLink, Align.left);
+		}
 		
-		newSectionTool = LinkFactory.createToolLink("new.section", translate("create.new.section"), this);
-		newSectionTool.setIconLeftCSS("o_icon o_icon-lg o_icon_new_portfolio");
-		stackPanel.addTool(newSectionTool, Align.right);
+		if(secCallback.canEditBinder()) {
+			newSectionTool = LinkFactory.createToolLink("new.section", translate("create.new.section"), this);
+			newSectionTool.setIconLeftCSS("o_icon o_icon-lg o_icon_new_portfolio");
+			stackPanel.addTool(newSectionTool, Align.right);
 		
-		newSectionButton = LinkFactory.createButton("create.new.section", mainVC, this);
-		newSectionButton.setCustomEnabledLinkCSS("btn btn-primary");
-		
-		newEntryLink = LinkFactory.createToolLink("new.page", translate("create.new.page"), this);
-		newEntryLink.setIconLeftCSS("o_icon o_icon-lg o_icon_new_portfolio");
-		stackPanel.addTool(newEntryLink, Align.right);
+			newSectionButton = LinkFactory.createButton("create.new.section", mainVC, this);
+			newSectionButton.setCustomEnabledLinkCSS("btn btn-primary");
+			
+			newEntryLink = LinkFactory.createToolLink("new.page", translate("create.new.page"), this);
+			newEntryLink.setIconLeftCSS("o_icon o_icon-lg o_icon_new_portfolio");
+			stackPanel.addTool(newEntryLink, Align.right);
+		}
 	}
 	
 	protected void loadModel() {
@@ -146,24 +152,30 @@ public class TableOfContentController extends BasicController implements TooledC
 	private SectionRow forgeSectionRow(Section section) {
 		String sectionId = "section" + (++counter);
 		String title = StringHelper.escapeHtml(section.getTitle());
+		
 		Link sectionLink = LinkFactory.createCustomLink(sectionId, "open_section", title, Link.LINK | Link.NONTRANSLATED, mainVC, this);
-		Dropdown editDropdown = new Dropdown(sectionId.concat("_down"), null, false, getTranslator());
-		editDropdown.setTranslatedLabel("");
-		editDropdown.setOrientation(DropdownOrientation.right);
-		editDropdown.setIconCSS("o_icon o_icon_actions");
-		mainVC.put(editDropdown.getComponentName(), editDropdown);
-		
-		Link editSectionLink = LinkFactory.createLink(sectionId.concat("_edit"), "section.edit", "edit_section", mainVC, this);
-		editSectionLink.setIconLeftCSS("o_icon o_icon_edit");
-		editDropdown.addComponent(editSectionLink);
-		Link deleteSectionLink = LinkFactory.createLink(sectionId.concat("_delete"), "section.delete", "delete_section", mainVC, this);
-		deleteSectionLink.setIconLeftCSS("o_icon o_icon_delete_item");
-		editDropdown.addComponent(deleteSectionLink);
-		
-		SectionRow sectionRow = new SectionRow(section, sectionLink, editDropdown);
+		SectionRow sectionRow = new SectionRow(section, sectionLink);
 		sectionLink.setUserObject(sectionRow);
-		editSectionLink.setUserObject(sectionRow);
-		deleteSectionLink.setUserObject(sectionRow);
+		
+		if(secCallback.canEditBinder()) {
+			Dropdown editDropdown = new Dropdown(sectionId.concat("_down"), null, false, getTranslator());
+			editDropdown.setTranslatedLabel("");
+			editDropdown.setOrientation(DropdownOrientation.right);
+			editDropdown.setIconCSS("o_icon o_icon_actions");
+			mainVC.put(editDropdown.getComponentName(), editDropdown);
+		
+			Link editSectionLink = LinkFactory.createLink(sectionId.concat("_edit"), "section.edit", "edit_section", mainVC, this);
+			editSectionLink.setIconLeftCSS("o_icon o_icon_edit");
+			editDropdown.addComponent(editSectionLink);
+			Link deleteSectionLink = LinkFactory.createLink(sectionId.concat("_delete"), "section.delete", "delete_section", mainVC, this);
+			deleteSectionLink.setIconLeftCSS("o_icon o_icon_delete_item");
+			editDropdown.addComponent(deleteSectionLink);
+			
+			sectionRow.setEditDropdown(editDropdown);
+			editSectionLink.setUserObject(sectionRow);
+			deleteSectionLink.setUserObject(sectionRow);
+		}
+		
 		return sectionRow;
 	}
 	
@@ -257,7 +269,7 @@ public class TableOfContentController extends BasicController implements TooledC
 	private void doOpenSection(UserRequest ureq, Section section) {
 		removeAsListenerAndDispose(sectionPagesCtrl);
 		
-		sectionPagesCtrl = new SectionPageListController(ureq, getWindowControl(), stackPanel, binder, section);
+		sectionPagesCtrl = new SectionPageListController(ureq, getWindowControl(), stackPanel, secCallback, binder, section);
 		listenTo(sectionPagesCtrl);
 		stackPanel.pushController(StringHelper.escapeHtml(section.getTitle()), sectionPagesCtrl);
 	}
@@ -290,7 +302,7 @@ public class TableOfContentController extends BasicController implements TooledC
 	private void doOpenPage(UserRequest ureq, Page page) {
 		removeAsListenerAndDispose(pageCtrl);
 		
-		pageCtrl = new PageController(ureq, getWindowControl(), stackPanel, page);
+		pageCtrl = new PageController(ureq, getWindowControl(), stackPanel, secCallback, page);
 		listenTo(pageCtrl);
 		stackPanel.pushController(StringHelper.escapeHtml(page.getTitle()), pageCtrl);
 	}
@@ -324,15 +336,14 @@ public class TableOfContentController extends BasicController implements TooledC
 		
 		private final Section section;
 		private final Link sectionLink;
-		private final Dropdown editDropdown;
+		private Dropdown editDropdown;
 		private final List<PageRow> pages = new ArrayList<>();
 		
-		public SectionRow(Section section, Link sectionLink, Dropdown editDropdown) {
+		public SectionRow(Section section, Link sectionLink) {
 			this.section = section;
 			this.sectionLink = sectionLink;
-			this.editDropdown = editDropdown;
 		}
-		
+
 		public String getTitle() {
 			return section.getTitle();
 		}
@@ -344,9 +355,17 @@ public class TableOfContentController extends BasicController implements TooledC
 		public List<PageRow> getPages() {
 			return pages;
 		}
+
+		public void setEditDropdown(Dropdown editDropdown) {
+			this.editDropdown = editDropdown;
+		}
+		
+		public boolean hasEditDropdown() {
+			return editDropdown != null;
+		}
 		
 		public String getEditDropdownName() {
-			return editDropdown.getComponentName();
+			return editDropdown == null ? null : editDropdown.getComponentName();
 		}
 		
 		public String getSectionLinkName() {

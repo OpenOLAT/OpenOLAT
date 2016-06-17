@@ -27,15 +27,9 @@ import java.util.Date;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public interface Page {
-	
-	public Long getKey();
-	
-	public Date getCreationDate();
+public interface Page extends PortfolioElement {
 	
 	public Date getLastModified();
-	
-	public String getTitle();
 	
 	public void setTitle(String title);
 	

@@ -31,6 +31,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
+import org.olat.modules.portfolio.BinderSecurityCallback;
 import org.olat.modules.portfolio.Page;
 
 /**
@@ -46,8 +47,9 @@ public class MyPageListController extends AbstractPageListController {
 	private CloseableModalController cmc;
 	private PageMetadataEditController newPageCtrl;
 
-	public MyPageListController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel) {
-		super(ureq, wControl, stackPanel, "pages");
+	public MyPageListController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
+			BinderSecurityCallback secCallback) {
+		super(ureq, wControl, stackPanel, secCallback, "pages");
 
 		initForm(ureq);
 		loadModel();

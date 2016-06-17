@@ -25,18 +25,28 @@ import java.util.List;
 import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
+import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.id.Identity;
+import org.olat.core.id.OLATResourceable;
+import org.olat.core.util.StringHelper;
+import org.olat.core.util.resource.OresHelper;
 import org.olat.modules.portfolio.Binder;
+import org.olat.modules.portfolio.BinderSecurityCallback;
+import org.olat.modules.portfolio.BinderSecurityCallbackImpl;
 import org.olat.modules.portfolio.PortfolioService;
+import org.olat.modules.portfolio.model.AccessRights;
 import org.olat.modules.portfolio.model.SharedItemRow;
 import org.olat.modules.portfolio.ui.SharedItemsDataModel.ShareItemCols;
 import org.olat.user.UserManager;
@@ -60,6 +70,8 @@ public class SharedItemsController extends FormBasicController {
 	private final TooledStackedPanel stackPanel;
 	private final boolean isAdministrativeUser;
 	private final List<UserPropertyHandler> userPropertyHandlers;
+	
+	private BinderController binderCtrl;
 	
 	@Autowired
 	private UserManager userManager;
@@ -97,12 +109,13 @@ public class SharedItemsController extends FormBasicController {
 	}
 	
 	private void loadModel() {
-		List<Binder> portfolios = portfolioService.searchOwnedBinders(getIdentity());
+		List<Binder> portfolios = portfolioService.searchSharedBindersWith(getIdentity());
 		List<SharedItemRow> rows = new ArrayList<>(portfolios.size());
 		for(Binder binder:portfolios) {
 			List<Identity> owners = portfolioService.getMembers(binder, GroupRoles.owner.name());
 			SharedItemRow row = new SharedItemRow(owners.get(0), userPropertyHandlers, getLocale());
 			row.setBinder(binder.getTitle());
+			row.setBinderKey(binder.getKey());
 			row.setLastModified(binder.getLastModified());//TODO max()
 			row.setCourse("TODO");
 			rows.add(row);
@@ -116,16 +129,47 @@ public class SharedItemsController extends FormBasicController {
 	protected void doDispose() {
 		//
 	}
+	
+	@Override
+	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
+		if(tableEl == source) {
+			if(event instanceof SelectionEvent) {
+				SelectionEvent se = (SelectionEvent)event;
+				String cmd = se.getCommand();
+				SharedItemRow row = model.getObject(se.getIndex());
+				if("select".equals(cmd)) {
+					Activateable2 activeateable = doSelectBinder(ureq, row);
+					if(activeateable != null) {
+						activeateable.activate(ureq, null, null);
+					}
+				}
+			}
+			
+		}
+		super.formInnerEvent(ureq, source, event);
+	}
 
 	@Override
 	protected void formOK(UserRequest ureq) {
 		//
 	}
 
-
-
-
-	
-	
-
+	private BinderController doSelectBinder(UserRequest ureq, SharedItemRow row) {
+		Binder binder = portfolioService.getBinderByKey(row.getBinderKey());
+		if(binder == null) {
+			showWarning("warning.portfolio.not.found");
+			return null;
+		} else {
+			removeAsListenerAndDispose(binderCtrl);
+			
+			OLATResourceable binderOres = OresHelper.createOLATResourceableInstance("Binder", binder.getKey());
+			WindowControl swControl = addToHistory(ureq, binderOres, null);
+			List<AccessRights> rights = portfolioService.getAccessRights(binder, getIdentity());
+			BinderSecurityCallback secCallback = new BinderSecurityCallbackImpl(rights);
+			binderCtrl = new BinderController(ureq, swControl, stackPanel, secCallback, binder);
+			String displayName = StringHelper.escapeHtml(binder.getTitle());
+			stackPanel.pushController(displayName, binderCtrl);
+			return binderCtrl;
+		}
+	}
 }

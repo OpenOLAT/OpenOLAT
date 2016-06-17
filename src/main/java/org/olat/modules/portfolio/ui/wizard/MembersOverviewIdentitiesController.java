@@ -134,8 +134,8 @@ public class MembersOverviewIdentitiesController extends StepFormBasicController
 	
 	private void loadModel(List<String> keys) {
 		oks = new ArrayList<Identity>();
-		List<String> isanonymous = new ArrayList<String>();
-		notfounds = new ArrayList<String>();
+		List<String> isanonymous = new ArrayList<>();
+		notfounds = new ArrayList<>();
 
 		SecurityGroup anonymousSecGroup = securityManager.findSecurityGroupByName(Constants.GROUP_ANONYMOUS);
 		for (String identityKey : keys) {
@@ -218,7 +218,8 @@ public class MembersOverviewIdentitiesController extends StepFormBasicController
 
 	@Override
 	protected void formOK(UserRequest ureq) {
-		addToRunContext("members", oks);
+		AccessRightsContext rightsContext = (AccessRightsContext)getFromRunContext("rightsContext");
+		rightsContext.setIdentities(oks);
 		fireEvent(ureq, StepsEvent.ACTIVATE_NEXT);
 	}
 

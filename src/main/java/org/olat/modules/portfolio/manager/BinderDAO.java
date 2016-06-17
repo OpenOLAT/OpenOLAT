@@ -24,15 +24,21 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
+import javax.persistence.TypedQuery;
+
+import org.olat.basesecurity.Group;
 import org.olat.basesecurity.GroupRoles;
+import org.olat.basesecurity.IdentityRef;
 import org.olat.basesecurity.manager.GroupDAO;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.core.util.StringHelper;
 import org.olat.modules.portfolio.Binder;
 import org.olat.modules.portfolio.BinderRef;
+import org.olat.modules.portfolio.PortfolioRoles;
 import org.olat.modules.portfolio.Section;
 import org.olat.modules.portfolio.SectionRef;
+import org.olat.modules.portfolio.model.AccessRights;
 import org.olat.modules.portfolio.model.BinderImpl;
 import org.olat.modules.portfolio.model.SectionImpl;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -109,6 +115,28 @@ public class BinderDAO {
 		return binders == null || binders.isEmpty() ? null : binders.get(0);
 	}
 	
+	public Group getGroup(BinderRef binder) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select baseGroup from pfbinder as binder ")
+		  .append(" inner join binder.baseGroup as baseGroup")
+		  .append(" where binder.key=:binderKey");
+
+		return dbInstance.getCurrentEntityManager().createQuery(sb.toString(), Group.class)
+				.setParameter("binderKey", binder.getKey())
+				.getSingleResult();
+	}
+	
+	public Group getGroup(SectionRef binder) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select baseGroup from pfsection as section ")
+		  .append(" inner join section.baseGroup as baseGroup")
+		  .append(" where section.key=:sectionKey");
+
+		return dbInstance.getCurrentEntityManager().createQuery(sb.toString(), Group.class)
+				.setParameter("sectionKey", binder.getKey())
+				.getSingleResult();
+	}
+	
 	public List<Identity> getMembers(BinderRef binder, String... roles)  {
 		if(binder == null || roles == null || roles.length == 0 || roles[0] == null) {
 			return Collections.emptyList();
@@ -135,6 +163,130 @@ public class BinderDAO {
 			.setParameter("roles", roleList)
 			.getResultList();
 	}
+	
+	public List<AccessRights> getBinderAccesRights(BinderRef binder, IdentityRef identity)  {
+		if(binder == null) {
+			return Collections.emptyList();
+		}
+
+		StringBuilder sb = new StringBuilder();
+		sb.append("select membership.role, membership.identity from pfbinder as binder")
+		  .append(" inner join binder.baseGroup as baseGroup")
+		  .append(" inner join baseGroup.members as membership");
+		if(identity != null) {
+			sb.append(" on (membership.identity.key =:identityKey)");
+		}
+		sb.append(" inner join membership.identity as ident")
+		  .append(" inner join fetch ident.user as identUser")
+		  .append(" where binder.key=:binderKey");
+
+		TypedQuery<Object[]> query = dbInstance.getCurrentEntityManager()
+			.createQuery(sb.toString(), Object[].class)
+			.setParameter("binderKey", binder.getKey());
+		if(identity != null) {
+			query.setParameter("identityKey", identity.getKey());
+		}
+		
+		List<Object[]> objects = query.getResultList();
+		List<AccessRights> rightList = new ArrayList<>(objects.size());
+		for(Object[] object:objects) {
+			String role = (String)object[0];
+			Identity member = (Identity)object[1];
+			
+			AccessRights rights = new AccessRights();
+			rights.setRole(PortfolioRoles.valueOf(role));
+			rights.setBinderKey(binder.getKey());
+			rights.setIdentity(member);
+			rightList.add(rights);
+		}
+		return rightList;
+	}
+	
+	public List<AccessRights> getSectionAccesRights(BinderRef binder, IdentityRef identity)  {
+		if(binder == null) {
+			return Collections.emptyList();
+		}
+
+		StringBuilder sb = new StringBuilder();
+		sb.append("select section.key, membership.role, membership.identity from pfbinder as binder")
+		  .append(" inner join binder.sections as section")
+		  .append(" inner join section.baseGroup as baseGroup")
+		  .append(" inner join baseGroup.members as membership");
+		if(identity != null) {
+			sb.append(" on (membership.identity.key =:identityKey)");
+		}
+		sb.append(" inner join membership.identity as ident")
+		  .append(" inner join fetch ident.user as identUser")
+		  .append(" where binder.key=:binderKey");
+
+		TypedQuery<Object[]> query = dbInstance.getCurrentEntityManager()
+			.createQuery(sb.toString(), Object[].class)
+			.setParameter("binderKey", binder.getKey());
+		if(identity != null) {
+			query.setParameter("identityKey", identity.getKey());
+		}
+		
+		List<Object[]> objects = query.getResultList();
+		List<AccessRights> rightList = new ArrayList<>(objects.size());
+		for(Object[] object:objects) {
+			Long sectionKey = (Long)object[0];
+			String role = (String)object[1];
+			Identity member = (Identity)object[2];
+			
+			AccessRights rights = new AccessRights();
+			rights.setRole(PortfolioRoles.valueOf(role));
+			rights.setBinderKey(binder.getKey());
+			rights.setSectionKey(sectionKey);
+			rights.setIdentity(member);
+			rightList.add(rights);
+		}
+		return rightList;
+	}
+	
+	public List<AccessRights> getPageAccesRights(BinderRef binder, IdentityRef identity)  {
+		if(binder == null) {
+			return Collections.emptyList();
+		}
+
+		StringBuilder sb = new StringBuilder();
+		sb.append("select section.key, page.key, membership.role, membership.identity from pfbinder as binder")
+		  .append(" inner join binder.sections as section")
+		  .append(" inner join section.pages as page")
+		  .append(" inner join page.baseGroup as baseGroup")
+		  .append(" inner join baseGroup.members as membership");
+		if(identity != null) {
+			sb.append(" on (membership.identity.key =:identityKey)");
+		}
+		sb.append(" inner join membership.identity as ident")
+		  .append(" inner join fetch ident.user as identUser")
+		  .append(" where binder.key=:binderKey");
+
+		TypedQuery<Object[]> query = dbInstance.getCurrentEntityManager()
+			.createQuery(sb.toString(), Object[].class)
+			.setParameter("binderKey", binder.getKey());
+		if(identity != null) {
+			query.setParameter("identityKey", identity.getKey());
+		}
+		
+		List<Object[]> objects = query.getResultList();
+		List<AccessRights> rightList = new ArrayList<>(objects.size());
+		for(Object[] object:objects) {
+			Long sectionKey = (Long)object[0];
+			Long pageKey = (Long)object[1];
+			String role = (String)object[2];
+			Identity member = (Identity)object[3];
+			
+			AccessRights rights = new AccessRights();
+			rights.setRole(PortfolioRoles.valueOf(role));
+			rights.setBinderKey(binder.getKey());
+			rights.setSectionKey(sectionKey);
+			rights.setPageKey(pageKey);
+			rights.setIdentity(member);
+			rightList.add(rights);
+		}
+		return rightList;
+	}
+
 	
 	/**
 	 * Add a section to a binder. The binder must be a fresh reload one

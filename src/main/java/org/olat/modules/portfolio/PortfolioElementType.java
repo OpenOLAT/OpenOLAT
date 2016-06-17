@@ -19,34 +19,18 @@
  */
 package org.olat.modules.portfolio;
 
-import java.util.Date;
-
-import org.olat.repository.RepositoryEntry;
-
 /**
+ * To recognize the different type of elements in the portfolio
+ * without cast or without the object itself.
  * 
- * Initial date: 07.06.2016<br>
+ * Initial date: 16.06.2016<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public interface Binder extends BinderRef, PortfolioElement {
+public enum PortfolioElementType {
 	
-	public Date getLastModified();
-	
-	public void setTitle(String title);
-	
-	public String getSummary();
-	
-	public void setSummary(String summary);
-	
-	public String getImagePath();
-	
-	public void setImagePath(String imagePath);
-
-	public RepositoryEntry getCourseEntry();
-	
-	public String getSubIdent();
-	
-	public RepositoryEntry getTemplateEntry();
+	binder,
+	section,
+	page
 
 }

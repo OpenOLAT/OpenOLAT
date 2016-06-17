@@ -22,6 +22,7 @@ package org.olat.modules.portfolio.manager;
 import java.util.Date;
 import java.util.List;
 
+import org.olat.basesecurity.Group;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.IdentityRef;
 import org.olat.basesecurity.manager.GroupDAO;
@@ -95,6 +96,17 @@ public class PageDAO {
 		body.setLastModified(body.getCreationDate());
 		dbInstance.getCurrentEntityManager().persist(body);
 		return body;
+	}
+	
+	public Group getGroup(Page page) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select baseGroup from pfpage as page ")
+		  .append(" inner join page.baseGroup as baseGroup")
+		  .append(" where page.key=:pageKey");
+
+		return dbInstance.getCurrentEntityManager().createQuery(sb.toString(), Group.class)
+				.setParameter("pageKey", page.getKey())
+				.getSingleResult();
 	}
 	
 	public List<Page> getPages(BinderRef binder) {

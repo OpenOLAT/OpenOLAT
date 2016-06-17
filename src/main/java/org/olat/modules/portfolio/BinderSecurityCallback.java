@@ -27,9 +27,27 @@ package org.olat.modules.portfolio;
  */
 public interface BinderSecurityCallback {
 	
+	/**
+	 * Can edit the edit the content of this binder inclusive sections
+	 * and pages.
+	 * @return
+	 */
 	public boolean canEditBinder();
 	
+	/**
+	 * Can edit the edit the meta-data in this binder inclusive meta-data
+	 * of sections and pages.
+	 * @return
+	 */
 	public boolean canEditMetadataBinder();
+	
+	public boolean canEditAccessRights(PortfolioElement element);
+	
+	public boolean canViewElement(PortfolioElement element);
+	
+	public boolean canComment(PortfolioElement element);
+	
+	public boolean canReview(PortfolioElement element);
  
 
 }

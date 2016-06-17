@@ -26,6 +26,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.olat.basesecurity.Group;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.IdentityRef;
 import org.olat.basesecurity.manager.GroupDAO;
@@ -40,9 +41,13 @@ import org.olat.modules.portfolio.Category;
 import org.olat.modules.portfolio.Page;
 import org.olat.modules.portfolio.PageBody;
 import org.olat.modules.portfolio.PagePart;
+import org.olat.modules.portfolio.PortfolioElement;
+import org.olat.modules.portfolio.PortfolioRoles;
 import org.olat.modules.portfolio.PortfolioService;
 import org.olat.modules.portfolio.Section;
 import org.olat.modules.portfolio.SectionRef;
+import org.olat.modules.portfolio.model.AccessRightChange;
+import org.olat.modules.portfolio.model.AccessRights;
 import org.olat.modules.portfolio.model.BinderImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -64,6 +69,10 @@ public class PortfolioServiceImpl implements PortfolioService {
 	private BinderDAO binderDao;
 	@Autowired
 	private CategoryDAO categoryDao;
+	@Autowired
+	private SharedByMeQueries sharedByMeQueries;
+	@Autowired
+	private SharedWithMeQueries sharedWithMeQueries;
 	@Autowired
 	private PortfolioFileStorage portfolioFileStorage;
 	
@@ -116,6 +125,16 @@ public class PortfolioServiceImpl implements PortfolioService {
 	}
 	
 	@Override
+	public List<Binder> searchSharedBindersBy(Identity owner) {
+		return sharedByMeQueries.searchSharedBinders(owner);
+	}
+
+	@Override
+	public List<Binder> searchSharedBindersWith(Identity member) {
+		return sharedWithMeQueries.searchSharedBinders(member);
+	}
+	
+	@Override
 	public Binder getBinderByKey(Long portfolioKey) {
 		return binderDao.loadByKey(portfolioKey);
 	}
@@ -128,6 +147,67 @@ public class PortfolioServiceImpl implements PortfolioService {
 	@Override
 	public List<Identity> getMembers(BinderRef binder, String... roles) {
 		return binderDao.getMembers(binder, roles);
+	}
+
+	@Override
+	public List<AccessRights> getAccessRights(Binder binder) {
+		List<AccessRights> rights = binderDao.getBinderAccesRights(binder, null);
+		List<AccessRights> sectionRights = binderDao.getSectionAccesRights(binder, null);
+		rights.addAll(sectionRights);
+		List<AccessRights> pageRights = binderDao.getPageAccesRights(binder, null);
+		rights.addAll(pageRights);
+		return rights;
+	}
+	
+	@Override
+	public List<AccessRights> getAccessRights(Binder binder, Identity identity) {
+		List<AccessRights> rights = binderDao.getBinderAccesRights(binder, identity);
+		List<AccessRights> sectionRights = binderDao.getSectionAccesRights(binder, identity);
+		rights.addAll(sectionRights);
+		List<AccessRights> pageRights = binderDao.getPageAccesRights(binder, identity);
+		rights.addAll(pageRights);
+		return rights;
+	}
+
+	@Override
+	public void addAccessRights(PortfolioElement element, Identity identity, PortfolioRoles role) {
+		Group baseGroup = element.getBaseGroup();
+		if(!groupDao.hasRole(baseGroup, identity, role.name())) {
+			groupDao.addMembership(baseGroup, identity, role.name());
+		}
+	}
+	
+	@Override
+	public void changeAccessRights(List<Identity> identities, List<AccessRightChange> changes) {
+		for(Identity identity:identities) {
+			for(AccessRightChange change:changes) {
+				Group baseGroup = change.getElement().getBaseGroup();
+				if(change.isAdd()) {
+					if(!groupDao.hasRole(baseGroup, identity, change.getRole().name())) {
+						Group group = getGroup(change.getElement());
+						groupDao.addMembership(group, identity, change.getRole().name());
+					}
+				} else {
+					if(groupDao.hasRole(baseGroup, identity, change.getRole().name())) {
+						Group group = getGroup(change.getElement());
+						groupDao.removeMembership(group, identity, change.getRole().name());
+					}
+				}
+			}
+		}
+	}
+	
+	private Group getGroup(PortfolioElement element) {
+		if(element instanceof Page) {
+			return pageDao.getGroup((Page)element);
+		}
+		if(element instanceof SectionRef) {
+			return binderDao.getGroup((SectionRef)element);
+		}
+		if(element instanceof BinderRef) {
+			return binderDao.getGroup((BinderRef)element);
+		}
+		return null;
 	}
 
 	@Override

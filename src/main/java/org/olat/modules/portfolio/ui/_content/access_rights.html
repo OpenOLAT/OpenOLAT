@@ -1,1 +1,38 @@
-<h1>Access rights</h1>
+<div class="o_portfolio_rights">
+	<table class="table">
+		<thead><tr>
+			<th>$r.translate("access.rights.element")</th>
+			<th>$r.translate("access.rights.coach")</th>
+			<th>$r.translate("access.rights.reviewer")</th>
+			<th>$r.translate("access.rights.date")</th>
+		</tr></thead>
+		<tbody>
+			<tr class="o_portfolio_binder">
+				<td>$r.escapeHtml(${binderRow.title})</td>
+				<td>$r.render(${binderRow.coachComponentName})</td>
+				<td>$r.render(${binderRow.reviewerComponentName})</td>
+				<td></td>
+			</tr>
+			#foreach($sectionRow in $binderRow.sections)
+			<tr class="o_portfolio_section">
+				<td>${foreach.count}. $r.escapeHtml(${sectionRow.title})</td>
+				<td>$r.render(${sectionRow.coachComponentName})</td>
+				<td>$r.render(${sectionRow.reviewerComponentName})</td>
+				<td></td>
+			</tr>
+				#foreach($pageRow in $sectionRow.pages)
+				<tr class="o_portfolio_page">
+					<td>$r.escapeHtml(${pageRow.title})</td>
+					<td>$r.render(${pageRow.coachComponentName})</td>
+					<td>$r.render(${pageRow.reviewerComponentName})</td>
+					<td></td>
+				</tr>
+				#end
+			#end
+		</tbody>
+	</table>
+</div>
+
+#if($r.available("buttons"))
+	<div class="o_button_group">$r.render("buttons")</div>
+#end

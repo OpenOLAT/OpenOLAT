@@ -29,12 +29,21 @@ import java.util.Date;
  */
 public class MySharedItemRow {
 	
+	private Long binderKey;
 	private String binder;
 	private String course;
 	private Date lastModified;
 	
 	public MySharedItemRow() {
 		//
+	}
+	
+	public Long getBinderKey() {
+		return binderKey;
+	}
+	
+	public void setBinderKey(Long binderKey) {
+		this.binderKey = binderKey;
 	}
 
 	public String getBinder() {

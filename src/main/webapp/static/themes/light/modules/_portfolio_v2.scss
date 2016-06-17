@@ -29,3 +29,31 @@ div#o_main_toolbar.o_toolbar.o_portfolio {
 	background-color: #eee;
 	border-radius: $border-radius-base;
 }
+
+.o_portfolio_rights table {
+	.o_portfolio_section td:first-child {
+		padding-left: 1.5em;
+	}
+	
+	.o_portfolio_page td:first-child {
+		padding-left: 2.5em;
+	}
+}
+
+.o_portfolio_publication {
+	table {
+		padding-bottom: 10px;
+	
+		td {
+			padding: 5px 5px 5px 0;
+		}
+	}
+	
+	ul table.o_portfolio_ac {
+		margin-left: 2em;
+	}
+	
+	ul ul {
+		margin-left: 2em;
+	}
+}

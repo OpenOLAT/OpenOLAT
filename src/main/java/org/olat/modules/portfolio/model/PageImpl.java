@@ -32,6 +32,7 @@ import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
+import javax.persistence.Transient;
 
 import org.olat.basesecurity.Group;
 import org.olat.basesecurity.model.GroupImpl;
@@ -40,6 +41,7 @@ import org.olat.core.id.ModifiedInfo;
 import org.olat.core.id.Persistable;
 import org.olat.modules.portfolio.Page;
 import org.olat.modules.portfolio.PageBody;
+import org.olat.modules.portfolio.PortfolioElementType;
 import org.olat.modules.portfolio.Section;
 
 /**
@@ -128,6 +130,12 @@ public class PageImpl implements Persistable, ModifiedInfo, CreateInfo, Page {
 	@Override
 	public void setLastModified(Date date) {
 		this.lastModified = date;
+	}
+	
+	@Override
+	@Transient
+	public PortfolioElementType getType() {
+		return PortfolioElementType.page;
 	}
 		
 	@Override

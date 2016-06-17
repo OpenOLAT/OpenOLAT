@@ -1,4 +1,54 @@
-<div class="o_portfolio_pub">
+<div class="o_portfolio_publication">
 	<h2>$r.translate("publish.status.title", $binderTitle)</h2>
+	#if(${binderRow.getAccessRights().isEmpty()})
+		<table><tbody>
+		#foreach($binderRights in $binderRow.accessRights)
+			<tr>
+				<td><i class="$binderRights.cssClass"> </i> $r.escapeHtml($binderRights.fullName)</td>
+				<td>$binderRights.explanation</td>
+				<td>#if(${binderRights.hasEditLink()}) $r.render($binderRights.editLinkComponentName) #end</td>
+			</tr>
+		#end
+		</tbody></table>
+	#end
 
+	<ul class="list-unstyled">
+	#foreach($section in $binderRow.children)
+		<li><h4>${foreach.count}. $r.escapeHtml($section.title)</h4>
+		
+			#if(!${section.getAccessRights().isEmpty()})
+				<table class="o_portfolio_ac"><tbody>
+				#foreach($sectionRights in $section.accessRights)
+					<tr>
+						<td><i class="$sectionRights.cssClass"> </i> $r.escapeHtml($sectionRights.fullName)</td>
+						<td>$sectionRights.explanation</td>
+						<td>#if(${sectionRights.hasEditLink()}) $r.render($sectionRights.editLinkComponentName) #end</td>
+					</tr>
+				#end
+				</tbody></table>
+			#end
+
+			#if(${section.getChildren().size()} > 0)
+			<ul class="list-unstyled">
+				#foreach($page in $section.children)
+					<li><h5>$r.escapeHtml($page.title)</h5></li>
+					
+					#if(!${page.getAccessRights().isEmpty()})
+						<table><tbody>
+						#foreach($pageRights in $page.accessRights)
+							<tr>
+								<td><i class="$pageRights.cssClass"> </i> $r.escapeHtml($pageRights.fullName)</td>
+								<td>$pageRights.explanation</td>
+								<td>#if(${pageRights.hasEditLink()}) $r.render($pageRights.editLinkComponentName) #end</td>
+							</tr>
+						#end
+						</tbody></table>
+					#end
+					
+				#end
+			</ul>
+			#end
+		</li>
+	#end
+	</ul>
 </div>

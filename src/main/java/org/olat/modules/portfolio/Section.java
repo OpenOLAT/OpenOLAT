@@ -28,9 +28,7 @@ import java.util.List;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public interface Section extends SectionRef {
-	
-	public String getTitle();
+public interface Section extends SectionRef, PortfolioElement {
 	
 	/**
 	 * This value is generated

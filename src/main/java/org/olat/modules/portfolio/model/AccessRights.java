@@ -20,6 +20,7 @@
 package org.olat.modules.portfolio.model;
 
 import org.olat.core.id.Identity;
+import org.olat.modules.portfolio.PortfolioElementType;
 import org.olat.modules.portfolio.PortfolioRoles;
 
 /**
@@ -59,6 +60,17 @@ public class AccessRights {
 	
 	public void setPageKey(Long pageKey) {
 		this.pageKey = pageKey;
+	}
+	
+	public PortfolioElementType getType() {
+		if(pageKey != null) {
+			return PortfolioElementType.page;
+		} else if(sectionKey != null) {
+			return PortfolioElementType.section;
+		} else if(binderKey != null) {
+			return PortfolioElementType.binder;
+		}
+		return null;
 	}
 	
 	public Identity getIdentity() {

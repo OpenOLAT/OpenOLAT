@@ -37,6 +37,7 @@ import javax.persistence.OrderColumn;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
+import javax.persistence.Transient;
 
 import org.olat.basesecurity.Group;
 import org.olat.basesecurity.model.GroupImpl;
@@ -44,6 +45,7 @@ import org.olat.core.id.CreateInfo;
 import org.olat.core.id.ModifiedInfo;
 import org.olat.core.id.Persistable;
 import org.olat.modules.portfolio.Binder;
+import org.olat.modules.portfolio.PortfolioElementType;
 import org.olat.modules.portfolio.Section;
 import org.olat.repository.RepositoryEntry;
 
@@ -122,6 +124,12 @@ public class BinderImpl implements Persistable, ModifiedInfo, CreateInfo, Binder
 	@Override
 	public void setLastModified(Date date) {
 		lastModified = date;
+	}
+	
+	@Override
+	@Transient
+	public PortfolioElementType getType() {
+		return PortfolioElementType.binder;
 	}
 
 	@Override
