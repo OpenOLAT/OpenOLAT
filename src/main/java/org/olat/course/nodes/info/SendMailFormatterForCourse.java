@@ -73,6 +73,21 @@ public class SendMailFormatterForCourse implements MailFormatter {
 		String author =	msg.getAuthor().getUser().getProperty(UserConstants.FIRSTNAME, null) + " " + msg.getAuthor().getUser().getProperty(UserConstants.LASTNAME, null);
 		String date = DateFormat.getDateInstance(DateFormat.MEDIUM, translator.getLocale()).format(msg.getCreationDate());
 		String link =	Settings.getServerContextPathURI() + "/url/" + busPath;
-		return translator.translate("mail.body", new String[]{courseTitle, author, date, msg.getMessage(), link});
+		
+		StringBuilder sb = new StringBuilder();
+		sb.append("<div style='background: #FAFAFA; border: 1px solid #eee; border-radius: 5px; padding: 0 0.5em 0.5em 0.5em; margin: 1em 0 1em 0;' class='o_m_h'>");		
+		sb.append("<h3>").append(translator.translate("mail.body.title", new String[]{courseTitle})).append("</h3>");
+		sb.append("<div style='font-size: 90%; color: #888' class='o_m_a'>").append(translator.translate("mail.body.from", new String[]{author, date})).append("</div>");
+		sb.append("</div>");
+		
+		sb.append("<div style='background: #FAFAFA; padding: 5px 5px; margin: 10px 0;' class='o_m_c'>");		
+		sb.append(msg.getMessage());
+		sb.append("<div style='margin: 2em 0 1em 0;' class='o_m_m'>").append("<a href='").append(link).append("'>");		
+		sb.append(translator.translate("mail.body.more"));		
+		sb.append(" &raquo;</a></div>");
+		
+		sb.append("</div>");
+		
+		return sb.toString();
 	}
 }

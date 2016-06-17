@@ -161,8 +161,8 @@ public class NotificationNewsController extends BasicController implements
 			for (Subscriber subscriber : subsInfoMap.keySet()) {
 				subsList.add(subscriber);
 				SubscriptionItem item = man.createSubscriptionItem(subscriber,
-						getLocale(), SubscriptionInfo.MIME_PLAIN,
-						SubscriptionInfo.MIME_PLAIN, compareDate);
+						getLocale(), SubscriptionInfo.MIME_HTML,
+						SubscriptionInfo.MIME_HTML, compareDate);
 				if (item != null) {
 					infoList.add(item);
 				}
