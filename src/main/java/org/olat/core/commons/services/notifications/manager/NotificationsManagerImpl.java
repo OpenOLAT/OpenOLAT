@@ -401,7 +401,7 @@ public class NotificationsManagerImpl extends NotificationsManager implements Us
 					//no notification older than a month
 					latestEmail = defaultCompareDate;
 				}
-				subsitem = createSubscriptionItem(sub, locale, SubscriptionInfo.MIME_PLAIN, SubscriptionInfo.MIME_PLAIN, latestEmail);
+				subsitem = createSubscriptionItem(sub, locale, SubscriptionInfo.MIME_HTML, SubscriptionInfo.MIME_HTML, latestEmail);
 			}	else if(latestEmail != null && latestEmail.after(compareDate)) {
 				//already send an email within the user's settings interval
 				//veto = true;
@@ -498,7 +498,7 @@ public class NotificationsManagerImpl extends NotificationsManager implements Us
 	
 	@Override
 	public boolean sendMailToUserAndUpdateSubscriber(Identity curIdent, List<SubscriptionItem> items, Translator translator, List<Subscriber> subscribersToUpdate) {
-		boolean sentOk = sendEmail(curIdent, translator.translate("rss.title", new String[] { NotificationHelper.getFormatedName(curIdent) }), items);
+		boolean sentOk = sendEmail(curIdent, translator, items);
 		// save latest email sent date for the subscription just emailed
 		// do this only if the mail was successfully sent
 		if (sentOk) {
@@ -529,28 +529,55 @@ public class NotificationsManagerImpl extends NotificationsManager implements Us
 		}
 	}
 	
-	private boolean sendEmail(Identity to, String title, List<SubscriptionItem> subItems) {
-		StringBuilder plaintext = new StringBuilder();
+	private boolean sendEmail(Identity to, Translator translator, List<SubscriptionItem> subItems) {
+		String title = translator.translate("rss.title", new String[] { NotificationHelper.getFormatedName(to) });
+		StringBuilder htmlText = new StringBuilder();
+		htmlText.append("<style>");
+		htmlText.append(".o_m_sub h4 {margin: 0 0 10px 0;}");
+		htmlText.append(".o_m_sub ul {padding: 0 0 5px 20px; margin: 0;}");
+		htmlText.append(".o_m_sub ul li {padding: 0; margin: 1px 0;}");
+		htmlText.append(".o_m_go {padding: 5px 0 0 0}");
+		htmlText.append(".o_date {font-size: 90%; color: #888}");		
+		htmlText.append("</style>");
+		
 		for (Iterator<SubscriptionItem> it_subs = subItems.iterator(); it_subs.hasNext();) {
 			SubscriptionItem subitem = it_subs.next();
-			plaintext.append(subitem.getTitle());
-			if(StringHelper.containsNonWhitespace(subitem.getLink())) {
-				plaintext.append("\n");
-				plaintext.append(subitem.getLink());
+			// o_m_wrap class for overriding styles in master mail template		
+			htmlText.append("<div class='o_m_wrap'>");	 
+			// add background here for gmail as they ignore classes. 
+			htmlText.append("<div class='o_m_sub' style='background: #FAFAFA; padding: 5px 5px; margin: 10px 0;'>");			
+			// 1: title
+			htmlText.append(subitem.getTitle());				
+			htmlText.append("\n");
+			// 2: content
+			String desc = subitem.getDescription();
+			if(StringHelper.containsNonWhitespace(desc)) {
+				htmlText.append(desc);
 			}
-			plaintext.append("\n");
-			if(StringHelper.containsNonWhitespace(subitem.getDescription())) {
-				plaintext.append(subitem.getDescription());
+			// 3: goto-link
+			String link = subitem.getLink();
+			if(StringHelper.containsNonWhitespace(link)) {
+				htmlText.append("<div class='o_m_go'><a href=\"").append(link).append("\">");
+				SubscriptionInfo subscriptionInfo = subitem.getSubsInfo();
+				if (subscriptionInfo != null) {
+					String innerType = subscriptionInfo.getType();
+					String typeName = NewControllerFactory.translateResourceableTypeName(innerType, translator.getLocale());
+					String open = translator.translate("resource.open", new String[] { typeName });
+					htmlText.append(open);
+					htmlText.append(" &raquo;</a></div>");
+				}
 			}
-			plaintext.append("\n\n");
+
+			htmlText.append("\n");
+			htmlText.append("</div></div>");
 		}
 
 		MailerResult result = null;
 		try {
 			MailBundle bundle = new MailBundle();
 			bundle.setToId(to);
-			bundle.setContent(title, plaintext.toString());
-			result = CoreSpringFactory.getImpl(MailManager.class).sendExternMessage(bundle, null, false);
+			bundle.setContent(title, htmlText.toString());
+			result = CoreSpringFactory.getImpl(MailManager.class).sendExternMessage(bundle, null, true);
 		} catch (Exception e) {
 			// FXOLAT-294 :: sending the mail will throw nullpointer exception if To-Identity has no
 			// valid email-address!, catch it...
@@ -1140,7 +1167,9 @@ public class NotificationsManagerImpl extends NotificationsManager implements Us
 		}
 		
 		String description = subsInfo.getSpecificInfo(mimeTypeContent, locale);
-		return new SubscriptionItem(title, itemLink, description);
+		SubscriptionItem subscriptionItem =  new SubscriptionItem(title, itemLink, description);
+		subscriptionItem.setSubsInfo(subsInfo);
+		return subscriptionItem;
 	}
 	
 	/**
@@ -1152,19 +1181,16 @@ public class NotificationsManagerImpl extends NotificationsManager implements Us
 	 */
 	private String getFormatedTitle(SubscriptionInfo subsInfo, Subscriber subscriber, Locale locale, String mimeType){
 		Publisher pub = subscriber.getPublisher();
-		String innerType = pub.getType();
-		String typeName = NewControllerFactory.translateResourceableTypeName(innerType, locale);
 		StringBuilder titleSb = new StringBuilder();
-		titleSb.append(typeName);
 		
 		String title = subsInfo.getTitle(mimeType);
 		if (StringHelper.containsNonWhitespace(title)) {
-			titleSb.append(": ").append(title);
+			titleSb.append(title);
 		} else {
 			NotificationsHandler notifHandler = getNotificationsHandler(pub);
 			String titleInfo = notifHandler.createTitleInfo(subscriber, locale);
 			if (StringHelper.containsNonWhitespace(titleInfo)) {
-				titleSb.append(": ").append(titleInfo);
+				titleSb.append(titleInfo);
 			}
 		}
 		
