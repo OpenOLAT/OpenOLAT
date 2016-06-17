@@ -68,6 +68,7 @@ public class CertificatePhantomWorker {
 
 	private Date dateCertification;
 	private Date dateFirstCertification;
+	private Date dateNextRecertification;
 
 	private final Locale locale;
 	private final UserManager userManager;
@@ -75,7 +76,7 @@ public class CertificatePhantomWorker {
 
 	public CertificatePhantomWorker(Identity identity, RepositoryEntry entry,
 			Float score, Boolean passed, Date dateCertification,
-			Date dateFirstCertification, Locale locale,
+			Date dateFirstCertification, Date nextRecertificationDate, Locale locale,
 			UserManager userManager, CertificatesManagerImpl certificatesManager) {
 		this.entry = entry;
 		this.score = score;
@@ -84,6 +85,7 @@ public class CertificatePhantomWorker {
 		this.identity = identity;
 		this.dateCertification = dateCertification;
 		this.dateFirstCertification = dateFirstCertification;
+		this.dateNextRecertification = nextRecertificationDate;
 		this.userManager = userManager;
 		this.certificatesManager = certificatesManager;
 	}
@@ -215,9 +217,9 @@ public class CertificatePhantomWorker {
 		if(dateCertification == null) {
 			context.put("dateCertification", "");
 		} else {
-			String formattedDateCertification= format.formatDate(dateCertification);
+			String formattedDateCertification = format.formatDate(dateCertification);
 			context.put("dateCertification", formattedDateCertification);
-			String formattedDateCertificationLong= format.formatDateLong(dateCertification);
+			String formattedDateCertificationLong = format.formatDateLong(dateCertification);
 			context.put("dateCertificationLong", formattedDateCertificationLong);
 			context.put("dateCertificationRaw", dateCertification);
 		}
@@ -231,6 +233,16 @@ public class CertificatePhantomWorker {
 			context.put("dateFirstCertificationLong", formattedDateFirstCertificationLong);
 			context.put("dateFirstCertificationRaw", dateFirstCertification);
 		}
+
+		if(dateNextRecertification == null) {
+			context.put("dateNextRecertification", "");
+		} else {
+			String formattedDateNextRecertification = format.formatDate(dateNextRecertification);
+			context.put("dateNextRecertification", formattedDateNextRecertification);
+			String formattedDateNextRecertificationLong = format.formatDateLong(dateNextRecertification);
+			context.put("dateNextRecertificationLong", formattedDateNextRecertificationLong);
+			context.put("dateNextRecertificationRaw", dateNextRecertification);
+		}		
 	}
 	
 	private void fillAssessmentInfos(VelocityContext context) {

@@ -606,8 +606,8 @@ public abstract class AbstractMemberListController extends FormBasicController i
 	protected void doLeave(List<Identity> members, boolean sendMail) {
 		MailPackage mailing = new MailPackage(sendMail);
 		if(repoEntry != null) {
-			repositoryManager.removeMembers(getIdentity(), members, repoEntry, mailing);
 			businessGroupService.removeMembers(getIdentity(), members, repoEntry.getOlatResource(), mailing);
+			repositoryManager.removeMembers(getIdentity(), members, repoEntry, mailing);
 		} else {
 			businessGroupService.removeMembers(getIdentity(), members, businessGroup.getResource(), mailing);
 		}

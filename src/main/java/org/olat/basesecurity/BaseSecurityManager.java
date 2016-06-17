@@ -955,6 +955,20 @@ public class BaseSecurityManager implements BaseSecurity {
 		}
 		return identities.get(0);
 	}
+	
+	@Override
+	public Identity findIdentityByNameCaseInsensitive(String identityName) {
+		if (identityName == null) throw new AssertException("findIdentitybyName: name was null");
+
+		StringBuilder sb = new StringBuilder();
+		sb.append("select ident from ").append(IdentityImpl.class.getName()).append(" as ident where lower(ident.name)=:username");
+		
+		List<Identity> identities = DBFactory.getInstance().getCurrentEntityManager()
+				.createQuery(sb.toString(), Identity.class)
+				.setParameter("username", identityName.toLowerCase())
+				.getResultList();
+		return identities == null || identities.isEmpty() ? null : identities.get(0);
+	}
 
 	/**
 	 * Custom search operation by BiWa
