@@ -25,6 +25,7 @@
 
 package org.olat.modules.fo.manager;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -39,6 +40,7 @@ import javax.persistence.TemporalType;
 import javax.persistence.TypedQuery;
 
 import org.olat.basesecurity.IdentityRef;
+import org.olat.core.commons.modules.bc.FolderConfig;
 import org.olat.core.commons.modules.bc.vfs.OlatRootFolderImpl;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.services.mark.MarkingService;
@@ -809,6 +811,15 @@ public class ForumManager {
 		return null;
 	}
 	
+	public File getMessageDirectory(Long forumKey, Long messageKey, boolean create) {
+		File forumDir = getForumDirectory(forumKey);
+		File messageDir = new File(forumDir, messageKey.toString());
+		if(create && !messageDir.exists()) {
+			messageDir.mkdirs();
+		}
+		return messageDir;
+	}
+	
 	private void moveMessageContainer(Long fromForumKey, Long fromMessageKey, Long toForumKey, Long toMessageKey) {
 		// copy message container
 		VFSContainer toMessageContainer = getMessageContainer(toForumKey, toMessageKey);
@@ -838,6 +849,15 @@ public class ForumManager {
 		}
 		log.error("The following forum container is not a directory: " + forumContainer);
 		return null;
+	}
+	
+	public File getForumDirectory(Long forumKey) {
+		File forumsDir = new File(FolderConfig.getCanonicalRoot(), "forum");
+		File forumDir = new File(forumsDir,forumKey.toString());
+		if(!forumDir.exists()) {
+			forumDir.mkdirs();
+		}
+		return forumDir;
 	}
 	
 	/**

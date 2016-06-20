@@ -17,27 +17,41 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.portfolio.ui;
+package org.olat.modules.portfolio.model;
 
-import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.control.WindowControl;
-import org.olat.repository.RepositoryEntry;
-import org.olat.repository.model.RepositoryEntrySecurity;
-import org.olat.repository.ui.RepositoryEntryRuntimeController;
+import org.olat.core.gui.components.form.flexible.elements.FormLink;
+import org.olat.modules.portfolio.Media;
 
 /**
  * 
- * Initial date: 17.06.2016<br>
+ * Initial date: 20.06.2016<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class BinderRuntimeController extends RepositoryEntryRuntimeController {
+public class MediaRow {
 	
-	public BinderRuntimeController(UserRequest ureq, WindowControl wControl, RepositoryEntry re,
-			RepositoryEntrySecurity reSecurity, RuntimeControllerCreator runtimeControllerCreator) {
-		super(ureq, wControl, re, reSecurity, runtimeControllerCreator);
+	private Media media;
+
+	private FormLink openFormLink;
+	
+	public MediaRow(Media media) {
+		this.media = media;
 	}
 	
+	public Long getKey() {
+		return media.getKey();
+	}
 	
+	public String getTitle() {
+		return media.getTitle();
+	}
+	
+	public FormLink getOpenFormItem() {
+		return openFormLink;
+	}
+	
+	public String getOpenFormItemName() {
+		return openFormLink == null ? null : openFormLink.getComponent().getComponentName();
+	}
 
 }

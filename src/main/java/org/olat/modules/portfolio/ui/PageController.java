@@ -32,17 +32,22 @@ import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.stack.TooledController;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.components.stack.TooledStackedPanel.Align;
+import org.olat.core.gui.components.text.TextComponent;
+import org.olat.core.gui.components.text.TextFactory;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
+import org.olat.core.util.CodeHelper;
 import org.olat.modules.portfolio.Binder;
 import org.olat.modules.portfolio.BinderSecurityCallback;
+import org.olat.modules.portfolio.MediaHandler;
 import org.olat.modules.portfolio.Page;
 import org.olat.modules.portfolio.PagePart;
 import org.olat.modules.portfolio.PortfolioService;
 import org.olat.modules.portfolio.Section;
 import org.olat.modules.portfolio.model.HTMLPart;
+import org.olat.modules.portfolio.model.MediaPart;
 import org.olat.modules.portfolio.ui.editor.PageEditorController;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -56,12 +61,13 @@ public class PageController extends FormBasicController implements TooledControl
 
 	private Link editLink, editMetadataLink;
 	protected final TooledStackedPanel stackPanel;
-	private List<HTMLFragment> fragments = new ArrayList<>();
+	private List<FragmentWrapper> fragments = new ArrayList<>();
 	
 	private CloseableModalController cmc;
 	private PageEditorController editCtrl;
 	private PageMetadataEditController editMetadataCtrl;
 	
+	private int counter;
 	private Page page;
 	private final BinderSecurityCallback secCallback;
 	
@@ -76,7 +82,7 @@ public class PageController extends FormBasicController implements TooledControl
 		this.secCallback = secCallback;
 		
 		initForm(ureq);
-		loadModel();
+		loadModel(ureq);
 	}
 
 	@Override
@@ -102,15 +108,17 @@ public class PageController extends FormBasicController implements TooledControl
 		}
 	}
 	
-	private void loadModel() {
+	private void loadModel(UserRequest ureq) {
 		flc.getFormItemComponent().contextPut("pageTitle", page.getTitle());
 		
 		List<PagePart> parts = portfolioService.getPageParts(page);
-		List<HTMLFragment> newFragments = new ArrayList<>(parts.size());
+		List<FragmentWrapper> newFragments = new ArrayList<>(parts.size());
 		for(PagePart part:parts) {
-			HTMLFragment fragment = createFragment(part);
+			Fragment fragment = createFragment(ureq, part);
 			if(fragment != null) {
-				newFragments.add(fragment);
+				String cmpId = "cpt-" + (++counter);
+				newFragments.add(new FragmentWrapper(cmpId, fragment.getContent()));
+				flc.getFormItemComponent().put(cmpId, fragment.getContent());
 			}
 		}
 		fragments = newFragments;
@@ -126,10 +134,10 @@ public class PageController extends FormBasicController implements TooledControl
 	public void event(UserRequest ureq, Controller source, Event event) {
 		if(editCtrl == source) {
 			stackPanel.popUpToController(this);
-			loadModel();
+			loadModel(ureq);
 		} else if(editMetadataCtrl == source) {
 			if(event == Event.DONE_EVENT) {
-				loadModel();
+				loadModel(ureq);
 			}
 			cmc.deactivate();
 			cleanUp();
@@ -191,34 +199,82 @@ public class PageController extends FormBasicController implements TooledControl
 		stackPanel.pushController("Edit", editCtrl);
 	}
 	
-	private HTMLFragment createFragment(PagePart part) {
+	private Fragment createFragment(UserRequest ureq, PagePart part) {
 		if(part instanceof HTMLPart) {
 			HTMLPart htmlPart = (HTMLPart)part;
 			HTMLFragment editorFragment = new HTMLFragment(htmlPart);
 			return editorFragment;
+		} else if(part instanceof MediaPart) {
+			MediaPart htmlPart = (MediaPart)part;
+			MediaFragment editorFragment = new MediaFragment(htmlPart, ureq);
+			return editorFragment;
 		}
 		return null;
-		
 	}
 	
-	public static class HTMLFragment {
+	public class MediaFragment implements Fragment {
 		
-		private PagePart part;
+		private final PagePart part;
+		private Controller controller;
 		
-		public HTMLFragment(HTMLPart part) {
+		public MediaFragment(MediaPart part, UserRequest ureq) {
 			this.part = part;
+			MediaHandler handler = portfolioService.getMediaHandler(part.getMedia().getType());
+			controller = handler.getMediaController(ureq, getWindowControl(), part.getMedia());
 		}
 		
-		public String getContent() {
-			return part.getContent();
+		@Override
+		public Component getContent() {
+			return controller.getInitialComponent();
 		}
 
 		public PagePart getPart() {
 			return part;
 		}
+	}
+	
+	public static class HTMLFragment implements Fragment {
 		
-		public void setPart(PagePart part) {
+		private final PagePart part;
+		private TextComponent component;
+		
+		public HTMLFragment(HTMLPart part) {
 			this.part = part;
+			component = TextFactory.createTextComponentFromString("cmp" + CodeHelper.getRAMUniqueID(), part.getContent(), null, false, null);
+		}
+
+		@Override
+		public Component getContent() {
+			return component;
+		}
+
+		public PagePart getPart() {
+			return part;
+		}
+	}
+	
+	public interface Fragment {
+		
+		public Component getContent();
+		
+	}
+	
+	public static final class FragmentWrapper {
+		
+		private final String componentName;
+		private final Component component;
+		
+		public FragmentWrapper(String componentName, Component component) {
+			this.componentName = componentName;
+			this.component = component;
+		}
+		
+		public String getComponentName() {
+			return componentName;
+		}
+		
+		public Component getComponent() {
+			return component;
 		}
 	}
 }

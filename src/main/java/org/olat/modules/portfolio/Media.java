@@ -17,13 +17,11 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.portfolio.ui;
+package org.olat.modules.portfolio;
 
-import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.control.WindowControl;
-import org.olat.repository.RepositoryEntry;
-import org.olat.repository.model.RepositoryEntrySecurity;
-import org.olat.repository.ui.RepositoryEntryRuntimeController;
+import java.util.Date;
+
+import org.olat.core.id.Identity;
 
 /**
  * 
@@ -31,13 +29,26 @@ import org.olat.repository.ui.RepositoryEntryRuntimeController;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class BinderRuntimeController extends RepositoryEntryRuntimeController {
+public interface Media {
 	
-	public BinderRuntimeController(UserRequest ureq, WindowControl wControl, RepositoryEntry re,
-			RepositoryEntrySecurity reSecurity, RuntimeControllerCreator runtimeControllerCreator) {
-		super(ureq, wControl, re, reSecurity, runtimeControllerCreator);
-	}
+	public Long getKey();
 	
+	public Date getCreationDate();
 	
+	public Date getCollectionDate();
+	
+	public String getStoragePath();
+	
+	public String getType();
+	
+	public String getTitle();
+	
+	public String getDescription();
+	
+	public String getContent();
+	
+	public String getBusinessPath();
+	
+	public Identity getAuthor();
 
 }

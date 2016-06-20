@@ -100,7 +100,14 @@ public interface PortfolioService {
 	
 	public List<Binder> getBinders(Identity owner, RepositoryEntryRef courseEntry, String subIdent);
 	
-	public boolean isTemplateInUse(Binder binder, RepositoryEntry courseEntry, String subIdent);
+	/**
+	 * Check if this template is used, has some copies.
+	 * @param template
+	 * @param courseEntry
+	 * @param subIdent
+	 * @return
+	 */
+	public boolean isTemplateInUse(Binder template, RepositoryEntry courseEntry, String subIdent);
 	
 	public Binder assignBinder(Identity owner, BinderRef templateBinder, RepositoryEntry courseEntry, String subIdent, Date deadline);
 	
@@ -200,5 +207,14 @@ public interface PortfolioService {
 	 * @return
 	 */
 	public PagePart updatePart(PagePart part);
+	
+	public MediaHandler getMediaHandler(String type);
+	
+	public Media getMediaByKey(Long key);
+	
+	public List<Media> searchOwnedMedias(IdentityRef author);
+	
+	public void updateCategories(Media media, List<String> categories);
+	
 
 }

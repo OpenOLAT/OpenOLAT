@@ -17,27 +17,27 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.portfolio.ui;
+package org.olat.modules.portfolio;
 
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.repository.RepositoryEntry;
-import org.olat.repository.model.RepositoryEntrySecurity;
-import org.olat.repository.ui.RepositoryEntryRuntimeController;
+import org.olat.core.id.Identity;
 
 /**
  * 
- * Initial date: 17.06.2016<br>
+ * Initial date: 20.06.2016<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class BinderRuntimeController extends RepositoryEntryRuntimeController {
+public interface MediaHandler {
 	
-	public BinderRuntimeController(UserRequest ureq, WindowControl wControl, RepositoryEntry re,
-			RepositoryEntrySecurity reSecurity, RuntimeControllerCreator runtimeControllerCreator) {
-		super(ureq, wControl, re, reSecurity, runtimeControllerCreator);
-	}
+	public String getType();
 	
+	public String getIconCssClass();
 	
+	public Media createMedia(String title, String description, Object mediaObject, String businessPath, Identity author);
+	
+	public Controller getMediaController(UserRequest ureq, WindowControl wControl, Media media);
 
 }

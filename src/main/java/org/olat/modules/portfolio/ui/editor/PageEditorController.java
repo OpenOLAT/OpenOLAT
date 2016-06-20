@@ -34,14 +34,19 @@ import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.util.StringHelper;
-import org.olat.core.util.UserSession;
 import org.olat.core.util.Util;
+import org.olat.modules.portfolio.Media;
+import org.olat.modules.portfolio.MediaHandler;
 import org.olat.modules.portfolio.Page;
 import org.olat.modules.portfolio.PagePart;
 import org.olat.modules.portfolio.PortfolioService;
 import org.olat.modules.portfolio.model.HTMLPart;
+import org.olat.modules.portfolio.model.MediaPart;
+import org.olat.modules.portfolio.ui.MediaCenterController;
 import org.olat.modules.portfolio.ui.PageController;
+import org.olat.modules.portfolio.ui.event.MediaSelectionEvent;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -52,9 +57,12 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class PageEditorController extends FormBasicController {
 
-	private FormLink addHtmlLink;
-	private List<HTMLEditorFragment> fragments = new ArrayList<>();
+	private FormLink addHtmlLink, addMediaLink;
+	private List<EditorFragment> fragments = new ArrayList<>();
 
+	private CloseableModalController cmc;
+	private MediaCenterController mediaListCtrl;
+	
 	private Page page;
 	private int counter = 0;
 	
@@ -74,6 +82,9 @@ public class PageEditorController extends FormBasicController {
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		addHtmlLink = uifactory.addFormLink("add.html", "add.html", "add.html", null, formLayout, Link.BUTTON);
 		addHtmlLink.setIconLeftCSS("o_icon o_icon_add_html");
+		
+		addMediaLink = uifactory.addFormLink("add.media", "add.media", "add.media", null, formLayout, Link.BUTTON);
+		addMediaLink.setIconLeftCSS("o_icon o_icon_portfolio");
 			
 		uifactory.addFormSubmitButton("save", formLayout);
 
@@ -84,11 +95,10 @@ public class PageEditorController extends FormBasicController {
 	}
 	
 	private void loadModel(UserRequest ureq) {
-		UserSession usess = ureq.getUserSession();
 		List<PagePart> parts = portfolioService.getPageParts(page);
-		List<HTMLEditorFragment> newFragments = new ArrayList<>(parts.size());
+		List<EditorFragment> newFragments = new ArrayList<>(parts.size());
 		for(PagePart part:parts) {
-			HTMLEditorFragment fragment = createFragment(part, usess);
+			EditorFragment fragment = createFragment(ureq, part);
 			if(fragment != null) {
 				newFragments.add(fragment);
 			}
@@ -106,6 +116,8 @@ public class PageEditorController extends FormBasicController {
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(addHtmlLink == source) {
 			doAddHTMLFragment(ureq);
+		} else if(addMediaLink == source) {
+			doOpenMediaBrowser(ureq);
 		} else if(source.getUserObject() instanceof HTMLEditorFragment) {
 			HTMLEditorFragment fragment = (HTMLEditorFragment)source.getUserObject();
 			if(fragment.getFormItem() == source) {
@@ -127,19 +139,67 @@ public class PageEditorController extends FormBasicController {
 
 	@Override
 	protected void formOK(UserRequest ureq) {
-		for(HTMLEditorFragment fragment:fragments) {
-			String htmlVal = fragment.getFormItem().getValue();
-			String currentHtmlVal = fragment.getPart().getContent();
-			
-			if((currentHtmlVal == null && StringHelper.containsNonWhitespace(htmlVal))
-					|| (htmlVal == null && StringHelper.containsNonWhitespace(currentHtmlVal))
-					|| (currentHtmlVal != null && !currentHtmlVal.equals(htmlVal))) {
-				PagePart part = fragment.getPart();
-				part.setContent(htmlVal);
-				fragment.setPart(portfolioService.updatePart(part));
+		for(EditorFragment fragment:fragments) {
+			if(fragment instanceof HTMLEditorFragment) {
+				HTMLEditorFragment htmlFragment = (HTMLEditorFragment)fragment;
+				String htmlVal = htmlFragment.getFormItem().getValue();
+				String currentHtmlVal = fragment.getPart().getContent();
+				
+				if((currentHtmlVal == null && StringHelper.containsNonWhitespace(htmlVal))
+						|| (htmlVal == null && StringHelper.containsNonWhitespace(currentHtmlVal))
+						|| (currentHtmlVal != null && !currentHtmlVal.equals(htmlVal))) {
+					PagePart part = fragment.getPart();
+					part.setContent(htmlVal);
+					htmlFragment.setPart(portfolioService.updatePart(part));
+				}
 			}
 		}
 		fireEvent(ureq, Event.DONE_EVENT);
+	}
+	
+	@Override
+	protected void event(UserRequest ureq, Controller source, Event event) {
+		if(mediaListCtrl == source) {
+			if(event instanceof MediaSelectionEvent) {
+				MediaSelectionEvent mse = (MediaSelectionEvent)event;
+				if(mse.getMedia() != null) {
+					doAddMedia(ureq, mse.getMedia());
+				}
+			}
+			cmc.deactivate();
+			cleanUp();
+		} else if(cmc == source) {
+			cleanUp();
+		}
+		super.event(ureq, source, event);
+	}
+	
+	private void cleanUp() {
+		removeAsListenerAndDispose(mediaListCtrl);
+		removeAsListenerAndDispose(cmc);
+		mediaListCtrl = null;
+		cmc = null;
+	}
+
+	private void doOpenMediaBrowser(UserRequest ureq) {
+		if(mediaListCtrl != null) return;
+		
+		mediaListCtrl = new MediaCenterController(ureq, getWindowControl());
+		listenTo(mediaListCtrl);
+		
+		String title = translate("add.media");
+		cmc = new CloseableModalController(getWindowControl(), null, mediaListCtrl.getInitialComponent(), true, title, true);
+		listenTo(cmc);
+		cmc.activate();
+	}
+	
+	private void doAddMedia(UserRequest ureq, Media media) {
+		MediaPart part = new MediaPart();
+		part.setMedia(media);
+		part = portfolioService.appendNewPagePart(page, part);
+		EditorFragment fragment = createFragment(ureq, part);
+		fragments.add(fragment);
+		flc.setDirty(true);
 	}
 	
 	private void doAddHTMLFragment(UserRequest ureq) {
@@ -147,28 +207,36 @@ public class PageEditorController extends FormBasicController {
 		HTMLPart htmlPart = new HTMLPart();
 		htmlPart.setContent(content);
 		htmlPart = portfolioService.appendNewPagePart(page, htmlPart);
-		HTMLEditorFragment fragment = createFragment(htmlPart, ureq.getUserSession());
+		EditorFragment fragment = createFragment(ureq, htmlPart);
 		fragments.add(fragment);
 		flc.setDirty(true);
 	}
 	
-	private HTMLEditorFragment createFragment(PagePart part, UserSession usess) {
+	private EditorFragment createFragment(UserRequest ureq, PagePart part) {
 		if(part instanceof HTMLPart) {
 			HTMLPart htmlPart = (HTMLPart)part;
 			HTMLEditorFragment editorFragment = new HTMLEditorFragment(htmlPart);
 			
 			String cmpId = "html-" + (++counter);
 			String content = htmlPart.getContent();
-			RichTextElement htmlItem = uifactory.addRichTextElementForStringDataCompact(cmpId, null, content, 25, 80, null, flc, usess, getWindowControl());
+			RichTextElement htmlItem = uifactory.addRichTextElementForStringDataCompact(cmpId, null, content, 25, 80, null, flc, ureq.getUserSession(), getWindowControl());
 			//htmlItem.getEditorConfiguration().setInline(true);
 			editorFragment.setFormItem(htmlItem);
 			return editorFragment;
+		} else if (part instanceof MediaPart) {
+			MediaPart mediaPart = (MediaPart)part;
+			MediaHandler handler = portfolioService.getMediaHandler(mediaPart.getMedia().getType());
+			String cmpId = "media-" + (++counter);
+			Controller mediaCtrl = handler.getMediaController(ureq, getWindowControl(), mediaPart.getMedia());
+			MediaEditorFragment fragment = new MediaEditorFragment(mediaPart, cmpId, mediaCtrl);
+			flc.getFormItemComponent().put(cmpId, mediaCtrl.getInitialComponent());
+			return fragment;
 		}
 		return null;
 		
 	}
 	
-	public static class HTMLEditorFragment {
+	public static class HTMLEditorFragment implements EditorFragment {
 		
 		private PagePart part;
 		private RichTextElement formItem;
@@ -177,6 +245,7 @@ public class PageEditorController extends FormBasicController {
 			this.part = part;
 		}
 
+		@Override
 		public PagePart getPart() {
 			return part;
 		}
@@ -193,9 +262,46 @@ public class PageEditorController extends FormBasicController {
 			this.formItem = formItem;
 			formItem.setUserObject(this);
 		}
-		
+
+		@Override
 		public String getComponentName() {
 			return formItem.getComponent().getComponentName();
 		}
+	}
+	
+	public static class MediaEditorFragment implements EditorFragment {
+		
+		private PagePart part;
+		private String cmpName;
+		private Controller controller;
+		
+		public MediaEditorFragment(MediaPart part, String cmpName, Controller controller) {
+			this.part = part;
+			this.cmpName = cmpName;
+			this.controller = controller;
+		}
+
+		@Override
+		public PagePart getPart() {
+			return part;
+		}
+		
+		public void setPart(PagePart part) {
+			this.part = part;
+		}
+
+		@Override
+		public String getComponentName() {
+			return cmpName;
+		}
+	}
+	
+	public interface EditorFragment {
+		
+		public PagePart getPart();
+		
+		public void setPart(PagePart part);
+		
+		public String getComponentName();
 	}
 }

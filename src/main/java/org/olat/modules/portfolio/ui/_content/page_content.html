@@ -1,4 +1,4 @@
 <h1>$pageTitle</h1>
 #foreach($fragment in $fragments)
-	<div class="">$fragment.content</div>
+	<div class="">$r.render($fragment.componentName)</div>
 #end

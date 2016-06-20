@@ -17,13 +17,15 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.portfolio.ui;
+package org.olat.modules.portfolio.model;
 
-import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.control.WindowControl;
-import org.olat.repository.RepositoryEntry;
-import org.olat.repository.model.RepositoryEntrySecurity;
-import org.olat.repository.ui.RepositoryEntryRuntimeController;
+import javax.persistence.DiscriminatorColumn;
+import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+
+import org.olat.modules.portfolio.Media;
 
 /**
  * 
@@ -31,11 +33,22 @@ import org.olat.repository.ui.RepositoryEntryRuntimeController;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class BinderRuntimeController extends RepositoryEntryRuntimeController {
+@Entity(name="pfmediapart")
+@DiscriminatorColumn
+public class MediaPart extends AbstractPart {
+
+	private static final long serialVersionUID = -5902348088983758191L;
 	
-	public BinderRuntimeController(UserRequest ureq, WindowControl wControl, RepositoryEntry re,
-			RepositoryEntrySecurity reSecurity, RuntimeControllerCreator runtimeControllerCreator) {
-		super(ureq, wControl, re, reSecurity, runtimeControllerCreator);
+	@ManyToOne(targetEntity=MediaImpl.class,fetch=FetchType.LAZY,optional=false)
+	@JoinColumn(name="fk_media_id", nullable=false, insertable=true, updatable=false)
+	private Media media;
+
+	public Media getMedia() {
+		return media;
+	}
+
+	public void setMedia(Media media) {
+		this.media = media;
 	}
 	
 	

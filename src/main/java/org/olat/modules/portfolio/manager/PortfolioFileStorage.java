@@ -24,6 +24,7 @@ import java.nio.file.Path;
 import java.util.UUID;
 
 import org.olat.core.commons.modules.bc.FolderConfig;
+import org.olat.modules.portfolio.Media;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.stereotype.Service;
 
@@ -37,7 +38,7 @@ import org.springframework.stereotype.Service;
 public class PortfolioFileStorage implements InitializingBean {
 	
 	private File rootDirectory, bcrootDirectory;
-	private File pagesPostersDirectory, binderPostersDirectory;
+	private File pagesPostersDirectory, binderPostersDirectory, mediaDirectory;
 	
 	@Override
 	public void afterPropertiesSet() {
@@ -50,13 +51,14 @@ public class PortfolioFileStorage implements InitializingBean {
 		File postersDirectory = new File(rootDirectory, "posters");
 		binderPostersDirectory = new File(postersDirectory, "binders");
 		pagesPostersDirectory = new File(postersDirectory, "pages");
+		mediaDirectory = new File(rootDirectory, "artefacts");
 	}
 	
 	protected File getRootDirectory() {
 		return bcrootDirectory;
 	}
 	
-	protected String getRelativePath(File file) {
+	public String getRelativePath(File file) {
 		Path relPath = bcrootDirectory.toPath().relativize(file.toPath());
 		return relPath.toString();
 	}
@@ -75,6 +77,21 @@ public class PortfolioFileStorage implements InitializingBean {
 		String cleanUuid = UUID.randomUUID().toString().replace("-", "");
 		String firstToken = cleanUuid.substring(0, 2).toLowerCase();
 		File dir = new File(pagesPostersDirectory, firstToken);
+		if(!dir.exists()) {
+			dir.mkdirs();
+		}
+		return dir;
+	}
+	
+	public File generateMediaSubDirectory(Media media) {
+		File subDirectory = generateMediaSubDirectory();
+		return new File(subDirectory, media.getKey().toString());
+	}
+	
+	protected File generateMediaSubDirectory() {
+		String cleanUuid = UUID.randomUUID().toString().replace("-", "");
+		String firstToken = cleanUuid.substring(0, 2).toLowerCase();
+		File dir = new File(mediaDirectory, firstToken);
 		if(!dir.exists()) {
 			dir.mkdirs();
 		}

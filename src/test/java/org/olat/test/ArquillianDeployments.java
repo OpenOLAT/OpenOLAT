@@ -26,7 +26,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringWriter;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 
 import org.jboss.shrinkwrap.api.ArchivePath;
@@ -47,13 +49,15 @@ public class ArquillianDeployments {
 	public static final String TEST_RSRC = "src/test/resources";
 	public static final String LIB_DIR   = "target/openolat-lms-11.0-SNAPSHOT/WEB-INF/lib";
 
-	
 	public static WebArchive createDeployment() {
-		return createDeployment("openolat.war");
+		return createDeployment("openolat.war", new HashMap<String,String>());
 	}
-		
+	
+	public static WebArchive createDeployment(Map<String,String> overrideProperties) {
+		return createDeployment("openolat.war", overrideProperties);
+	}	
 
-	public static WebArchive createDeployment(String name) {
+	public static WebArchive createDeployment(String name, Map<String,String> overrideProperties) {
 		WebArchive archive = ShrinkWrap.create(WebArchive.class, name);
 
 		addClasses(archive);
@@ -62,12 +66,12 @@ public class ArquillianDeployments {
 		addResourceRecursive(new File(MAIN_JAVA), null, new JavaResourcesFilter(), archive);
 		addResourceRecursive(new File(MAIN_RSRC), null, new AllFileFilter(), archive);
 		addWebResourceRecursive(new File(WEBAPP), "static", new StaticFileFilter(), archive);
-		addOlatLocalProperties(archive);
+		addOlatLocalProperties(archive, overrideProperties);
 		archive.setWebXML(new File(WEBINF_TOMCAT, "web.xml"));
 		return archive;
 	}
 	
-	public static WebArchive addOlatLocalProperties(WebArchive archive) {
+	public static WebArchive addOlatLocalProperties(WebArchive archive, Map<String,String> overrideProperties) {
 		String profile = System.getProperty("profile");
 		if(profile == null || profile.isEmpty()) {
 			profile = "mysql";
@@ -88,6 +92,10 @@ public class ArquillianDeployments {
 				String value = properties.getProperty(name);
 				String replacedValue = helper.replacePlaceholders(value, new PropertyPlaceholderResolver(properties));
 				updatedProperties.setProperty(name, replacedValue);
+			}
+			
+			for(Map.Entry<String, String> entryToOverride:overrideProperties.entrySet()) {
+				updatedProperties.setProperty(entryToOverride.getKey(), entryToOverride.getValue());
 			}
 			
 			StringWriter writer = new StringWriter();

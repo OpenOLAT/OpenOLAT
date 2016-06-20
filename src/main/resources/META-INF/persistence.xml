@@ -160,7 +160,9 @@
 		<class>org.olat.modules.portfolio.model.PageImpl</class>
 		<class>org.olat.modules.portfolio.model.PageBodyImpl</class>
 		<class>org.olat.modules.portfolio.model.AbstractPart</class>
+		<class>org.olat.modules.portfolio.model.MediaImpl</class>
 		<class>org.olat.modules.portfolio.model.HTMLPart</class>
+		<class>org.olat.modules.portfolio.model.MediaPart</class>
 		<class>org.olat.modules.portfolio.model.CategoryImpl</class>
 		<class>org.olat.modules.portfolio.model.CategoryToElementImpl</class>
 		<class>org.olat.modules.qpool.model.PoolImpl</class>

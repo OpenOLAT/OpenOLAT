@@ -23,6 +23,8 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.UUID;
 
 import org.jboss.arquillian.container.test.api.Deployment;
@@ -58,13 +60,22 @@ import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.firefox.FirefoxDriver;
 
-
+/**
+ * 
+ * Suite of test for the e-Portfolio version 1.0
+ * 
+ * Initial date: 20.06.2016<br>
+ * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ *
+ */
 @RunWith(Arquillian.class)
 public class PortfolioTest {
 	
 	@Deployment(testable = false)
 	public static WebArchive createDeployment() {
-		return ArquillianDeployments.createDeployment();
+		Map<String,String> propertyPortfolioV1 = new HashMap<>();
+		propertyPortfolioV1.put("portfoliov2.enabled", "false");
+		return ArquillianDeployments.createDeployment(propertyPortfolioV1);
 	}
 
 	@Drone

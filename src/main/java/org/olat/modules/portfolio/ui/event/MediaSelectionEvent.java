@@ -17,27 +17,28 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.portfolio.ui;
+package org.olat.modules.portfolio.ui.event;
 
-import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.control.WindowControl;
-import org.olat.repository.RepositoryEntry;
-import org.olat.repository.model.RepositoryEntrySecurity;
-import org.olat.repository.ui.RepositoryEntryRuntimeController;
+import org.olat.core.gui.control.Event;
+import org.olat.modules.portfolio.Media;
 
 /**
  * 
- * Initial date: 17.06.2016<br>
+ * Initial date: 20.06.2016<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class BinderRuntimeController extends RepositoryEntryRuntimeController {
-	
-	public BinderRuntimeController(UserRequest ureq, WindowControl wControl, RepositoryEntry re,
-			RepositoryEntrySecurity reSecurity, RuntimeControllerCreator runtimeControllerCreator) {
-		super(ureq, wControl, re, reSecurity, runtimeControllerCreator);
-	}
-	
-	
+public class MediaSelectionEvent extends Event {
 
+	private static final long serialVersionUID = -7111363042350387554L;
+	private Media media;
+	
+	public MediaSelectionEvent(Media media) {
+		super("pf-media-select");
+		this.media = media;
+	}
+
+	public Media getMedia() {
+		return media;
+	}
 }

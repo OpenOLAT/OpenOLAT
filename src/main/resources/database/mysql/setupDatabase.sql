@@ -1603,7 +1603,6 @@ create table o_pf_binder (
    primary key (id)
 );
 
-
 create table o_pf_section (
    id bigint not null auto_increment,
    creationdate datetime not null,
@@ -1619,7 +1618,6 @@ create table o_pf_section (
    fk_template_reference_id bigint,
    primary key (id)
 );
-
 
 create table o_pf_page (
    id bigint not null auto_increment,
@@ -1646,6 +1644,20 @@ create table o_pf_page_body (
    primary key (id)
 );
 
+create table o_pf_media (
+   id bigint not null auto_increment,
+   creationdate datetime not null,
+   p_collection_date datetime not null,
+   p_type varchar(64) not null,
+   p_storage_path varchar(255),
+   p_title varchar(255) not null,
+   p_description mediumtext,
+   p_content mediumtext,
+   p_signature bigint not null default 0,
+   p_business_path varchar(255) not null,
+   fk_author_id bigint not null,
+   primary key (id)
+);
 
 create table o_pf_page_part (
    id bigint not null auto_increment,
@@ -1654,10 +1666,10 @@ create table o_pf_page_part (
    pos bigint default null,
    dtype varchar(32),
    p_content mediumtext,
+   fk_media_id bigint,
    fk_page_body_id bigint,
    primary key (id)
 );
-
 
 create table o_pf_category (
    id bigint not null auto_increment,
@@ -1665,8 +1677,6 @@ create table o_pf_category (
    p_name varchar(32),
    primary key (id)
 );
-
-
 
 create table o_pf_category_relation (
    id bigint not null auto_increment,
@@ -1677,11 +1687,7 @@ create table o_pf_category_relation (
    primary key (id)
 );
 
-
-
-
-
-
+-- lti
 create table o_lti_outcome (
    id bigint not null,
    creationdate datetime not null,
@@ -2105,6 +2111,7 @@ alter table o_goto_registrant ENGINE = InnoDB;
 alter table o_vid_transcoding ENGINE = InnoDB;
 alter table o_pf_category_relation ENGINE = InnoDB;
 alter table o_pf_category ENGINE = InnoDB;
+alter table o_pf_media ENGINE = InnoDB;
 alter table o_pf_page_part ENGINE = InnoDB;
 alter table o_pf_section ENGINE = InnoDB;
 alter table o_pf_page_body ENGINE = InnoDB;
@@ -2472,7 +2479,11 @@ alter table o_pf_page add constraint pf_page_section_idx foreign key (fk_section
 
 alter table o_pf_page add constraint pf_page_body_idx foreign key (fk_body_id) references o_pf_page_body (id);
 
+alter table o_pf_media add constraint pf_media_author_idx foreign key (fk_author_id) references o_bs_identity (id);
+create index idx_category_rel_resid_idx on o_pf_media (p_business_path);
+
 alter table o_pf_page_part add constraint pf_page_page_body_idx foreign key (fk_page_body_id) references o_pf_page_body (id);
+alter table o_pf_page_part add constraint pf_page_media_idx foreign key (fk_media_id) references o_pf_media (id);
 
 create index idx_category_name_idx on o_pf_category (p_name);
 

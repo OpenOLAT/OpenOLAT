@@ -474,7 +474,8 @@ public class BinderDAO {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select section from pfsection as section")
 		  .append(" inner join fetch section.baseGroup as baseGroup")
-		  .append(" where section.binder.key=:binderKey");
+		  .append(" where section.binder.key=:binderKey")
+		  .append(" order by section.pos");
 		
 		return dbInstance.getCurrentEntityManager()
 			.createQuery(sb.toString(), Section.class)

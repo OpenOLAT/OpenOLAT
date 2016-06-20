@@ -41,6 +41,8 @@ import org.olat.core.util.resource.OresHelper;
 import org.olat.modules.portfolio.Binder;
 import org.olat.modules.portfolio.BinderRef;
 import org.olat.modules.portfolio.Category;
+import org.olat.modules.portfolio.Media;
+import org.olat.modules.portfolio.MediaHandler;
 import org.olat.modules.portfolio.Page;
 import org.olat.modules.portfolio.PageBody;
 import org.olat.modules.portfolio.PagePart;
@@ -75,6 +77,8 @@ public class PortfolioServiceImpl implements PortfolioService {
 	@Autowired
 	private GroupDAO groupDao;
 	@Autowired
+	private MediaDAO mediaDao;
+	@Autowired
 	private BinderDAO binderDao;
 	@Autowired
 	private CategoryDAO categoryDao;
@@ -86,6 +90,9 @@ public class PortfolioServiceImpl implements PortfolioService {
 	private SharedWithMeQueries sharedWithMeQueries;
 	@Autowired
 	private PortfolioFileStorage portfolioFileStorage;
+	
+	@Autowired
+	private List<MediaHandler> mediaHandlers;
 	
 	@Override
 	public Binder createNewBinder(String title, String summary, String imagePath, Identity owner) {
@@ -275,7 +282,11 @@ public class PortfolioServiceImpl implements PortfolioService {
 	@Override
 	public void updateCategories(Binder binder, List<String> categories) {
 		OLATResourceable ores = OresHelper.createOLATResourceableInstance(Binder.class, binder.getKey());
-		List<Category> currentCategories = categoryDao.getCategories(ores);
+		updateCategories(ores, categories);
+	}
+
+	private void updateCategories(OLATResourceable oresource, List<String> categories) {
+		List<Category> currentCategories = categoryDao.getCategories(oresource);
 		Map<String,Category> currentCategoryMap = new HashMap<>();
 		for(Category category:currentCategories) {
 			currentCategoryMap.put(category.getName(), category);
@@ -285,14 +296,14 @@ public class PortfolioServiceImpl implements PortfolioService {
 		for(String newCategory:newCategories) {
 			if(!currentCategoryMap.containsKey(newCategory)) {
 				Category category = categoryDao.createAndPersistCategory(newCategory);
-				categoryDao.appendRelation(ores, category);
+				categoryDao.appendRelation(oresource, category);
 			}
 		}
 		
 		for(Category currentCategory:currentCategories) {
 			String name = currentCategory.getName();
 			if(!newCategories.contains(name)) {
-				categoryDao.removeRelation(ores, currentCategory);
+				categoryDao.removeRelation(oresource, currentCategory);
 			}
 		}
 	}
@@ -405,8 +416,33 @@ public class PortfolioServiceImpl implements PortfolioService {
 	public PagePart updatePart(PagePart part) {
 		return pageDao.merge(part);
 	}
-	
-	
-	
-	
+
+	@Override
+	public MediaHandler getMediaHandler(String type) {
+		if(this.mediaHandlers != null) {
+			for(MediaHandler handler:mediaHandlers) {
+				if(type.equals(handler.getType())) {
+					return handler;
+				}
+			}
+		}
+		return null;
+	}
+
+	@Override
+	public void updateCategories(Media media, List<String> categories) {
+		OLATResourceable ores = OresHelper.createOLATResourceableInstance(Media.class, media.getKey());
+		updateCategories(ores, categories);
+	}
+
+	@Override
+	public List<Media> searchOwnedMedias(IdentityRef author) {
+		return mediaDao.loadByAuthor(author);
+	}
+
+	@Override
+	public Media getMediaByKey(Long key) {
+		return mediaDao.loadByKey(key);
+	}
+
 }
