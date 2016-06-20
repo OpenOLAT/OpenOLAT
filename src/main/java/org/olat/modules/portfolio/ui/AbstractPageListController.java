@@ -20,7 +20,10 @@
 package org.olat.modules.portfolio.ui;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -53,6 +56,7 @@ import org.olat.modules.portfolio.Page;
 import org.olat.modules.portfolio.PortfolioService;
 import org.olat.modules.portfolio.Section;
 import org.olat.modules.portfolio.model.PageRow;
+import org.olat.modules.portfolio.model.SectionImpl;
 import org.olat.modules.portfolio.ui.BindersDataModel.PortfolioCols;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -133,10 +137,30 @@ implements Activateable2, TooledController, FlexiTableComponentDelegate, FlexiTa
 	
 	protected void loadModel(List<Page> pages) {
 		List<PageRow> rows = new ArrayList<>(pages.size());
+		Map<Section, List<Page>> sortMap = new HashMap<>();
+		for (Page page : pages) {
+			if (sortMap.containsKey(page.getSection())) {
+				sortMap.get(page.getSection()).add(page);
+			} else if (page.getSection() == null) {
+				ArrayList<Page> pageList = new ArrayList<>();
+				pageList.add(page);
+				sortMap.put(new SectionImpl(), pageList);
+			} else {
+				ArrayList<Page> pageList = new ArrayList<>();
+				pageList.add(page);
+				sortMap.put(page.getSection(), pageList);
+			}
+		}		
+		List<Page> pax = new ArrayList<>();
+		
+		for (List<Page> p : sortMap.values()){
+			pax.addAll(p);
+		}
 		Section section = null;
-		for(Page page:pages) {
+		for (Page page : pax) {
+
 			boolean first = false;
-			if(section == null || !section.equals(page.getSection())) {
+			if (section == null || !section.equals(page.getSection())) {
 				first = true;
 				section = page.getSection();
 			}
@@ -149,7 +173,6 @@ implements Activateable2, TooledController, FlexiTableComponentDelegate, FlexiTa
 	
 	protected PageRow forgeRow(Page page, boolean firstOfSection) {
 		PageRow row = new PageRow(page, page.getSection(), firstOfSection);
-		
 		String openLinkId = "open_" + (++counter);
 		FormLink openLink = uifactory.addFormLink(openLinkId, "open.full", "open.full.page", null, flc, Link.BUTTON);
 		openLink.setIconRightCSS("o_icon o_icon_start");
@@ -216,5 +239,13 @@ implements Activateable2, TooledController, FlexiTableComponentDelegate, FlexiTa
 		
 		String displayName = StringHelper.escapeHtml(page.getTitle());
 		stackPanel.pushController(displayName, pageCtrl);
+	}
+
+	private void view(Object... args) {
+		StringBuilder sb = new StringBuilder();
+		for (Object s : args) {
+			sb.append(" %20s");
+		}
+		System.out.println(String.format(sb.toString(), args));
 	}
 }

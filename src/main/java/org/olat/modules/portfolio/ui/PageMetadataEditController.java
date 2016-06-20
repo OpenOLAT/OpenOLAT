@@ -127,7 +127,7 @@ public class PageMetadataEditController extends FormBasicController {
 		fileUpload.setPreview(ureq.getUserSession(), true);
 		fileUpload.addActionListener(FormEvent.ONCHANGE);
 		fileUpload.setDeleteEnabled(true);
-		fileUpload.setHelpText("background img of binder");
+		fileUpload.setHelpText("page.title");
 		fileUpload.limitToMimeType(imageMimeTypes, null, null);
 		fileUpload.setMaxUploadSizeKB(picUploadlimitKB, null, null);
 		if(page != null) {
@@ -243,7 +243,7 @@ public class PageMetadataEditController extends FormBasicController {
 			String title = titleEl.getValue();
 			String summary = summaryEl.getValue();
 			SectionRef selectSection = null;
-			if (sectionsEl.isOneSelected() && sectionsEl.isEnabled() && sectionsEl.isVisible()) {
+			if (sectionsEl!=null && sectionsEl.isOneSelected() && sectionsEl.isEnabled() && sectionsEl.isVisible()) {
 				String selectedKey = sectionsEl.getSelectedKey();
 				selectSection = new SectionKeyRef(new Long(selectedKey));
 			}
@@ -252,7 +252,7 @@ public class PageMetadataEditController extends FormBasicController {
 				imagePath = portfolioService.addPosterImageForPage(fileUpload.getUploadFile(),
 						fileUpload.getUploadFileName());
 			}
-			portfolioService.appendNewPage(getIdentity(), title, summary, imagePath, selectSection);
+			if (sectionsEl!=null)portfolioService.appendNewPage(getIdentity(), title, summary, imagePath, selectSection);
 		} else {
 			page.setTitle(titleEl.getValue());
 			page.setSummary(summaryEl.getValue());
