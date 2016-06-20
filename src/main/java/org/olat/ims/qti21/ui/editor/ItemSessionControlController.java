@@ -75,7 +75,6 @@ public abstract class ItemSessionControlController extends FormBasicController {
 		*/
 
 		ItemSessionControl itemSessionControl = part.getItemSessionControl();//can be null
-		
 		Integer maxAttempts = null;
 		if(part.getItemSessionControl() != null) {
 			maxAttempts = part.getItemSessionControl().getMaxAttempts();
@@ -86,17 +85,22 @@ public abstract class ItemSessionControlController extends FormBasicController {
 		String[] aValues = part instanceof TestPart ? yesnoValues : attemptsValues;
 		limitAttemptsEl = uifactory.addRadiosHorizontal("form.imd.limittries", formLayout, aKeys, aValues);
 		limitAttemptsEl.addActionListener(FormEvent.ONCLICK);
+
+		String maxAttemptsStr = maxAttempts == null ? "" : maxAttempts.toString();
+		maxAttemptsEl = uifactory.addTextElement("attempts", "item.session.control.attempts", 4, maxAttemptsStr, formLayout);
 		if(maxAttempts == null) {
-			limitAttemptsEl.select(attemtpsKeys[2], true);
+			if(aKeys.length == 2) {
+				limitAttemptsEl.select(attemtpsKeys[0], true);
+				maxAttemptsEl.setValue("1");
+			} else {
+				limitAttemptsEl.select(attemtpsKeys[2], true);
+			}
 		} else if(maxAttempts.intValue() == 0) {
 			limitAttemptsEl.select(attemtpsKeys[1], true);
 		} else {
 			limitAttemptsEl.select(attemtpsKeys[0], true);
 		}
 		limitAttemptsEl.setEnabled(!restrictedEdit);
-		
-		String maxAttemptsStr = maxAttempts == null ? "" : maxAttempts.toString();
-		maxAttemptsEl = uifactory.addTextElement("attempts", "item.session.control.attempts", 4, maxAttemptsStr, formLayout);
 		maxAttemptsEl.setVisible(limitAttemptsEl.isSelected(0));
 		maxAttemptsEl.setEnabled(!restrictedEdit);
 		
