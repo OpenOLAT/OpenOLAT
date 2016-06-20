@@ -1,4 +1,10 @@
-<h1>$pageTitle</h1>
+<h1>$r.escapeHtml($pageTitle)</h1>
 #foreach($fragment in $fragments)
 	<div class="">$r.render($fragment.componentName)</div>
+#end
+
+#if($r.available("comments"))
+<div class="clearfix">
+	$r.render("comments")
+</div>
 #end

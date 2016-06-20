@@ -22,11 +22,11 @@ package org.olat.modules.portfolio.ui;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.olat.core.commons.services.commentAndRating.CommentAndRatingDefaultSecurityCallback;
+import org.olat.core.commons.services.commentAndRating.CommentAndRatingSecurityCallback;
+import org.olat.core.commons.services.commentAndRating.ui.UserCommentsAndRatingsController;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
-import org.olat.core.gui.components.form.flexible.FormItemContainer;
-import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
-import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.stack.TooledController;
@@ -34,11 +34,15 @@ import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.components.stack.TooledStackedPanel.Align;
 import org.olat.core.gui.components.text.TextComponent;
 import org.olat.core.gui.components.text.TextFactory;
+import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
+import org.olat.core.id.OLATResourceable;
 import org.olat.core.util.CodeHelper;
+import org.olat.core.util.resource.OresHelper;
 import org.olat.modules.portfolio.Binder;
 import org.olat.modules.portfolio.BinderSecurityCallback;
 import org.olat.modules.portfolio.MediaHandler;
@@ -57,8 +61,9 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class PageController extends FormBasicController implements TooledController {
+public class PageController extends BasicController implements TooledController {
 
+	private VelocityContainer mainVC;
 	private Link editLink, editMetadataLink;
 	protected final TooledStackedPanel stackPanel;
 	private List<FragmentWrapper> fragments = new ArrayList<>();
@@ -66,6 +71,7 @@ public class PageController extends FormBasicController implements TooledControl
 	private CloseableModalController cmc;
 	private PageEditorController editCtrl;
 	private PageMetadataEditController editMetadataCtrl;
+	private UserCommentsAndRatingsController commentsCtrl;
 	
 	private int counter;
 	private Page page;
@@ -76,13 +82,24 @@ public class PageController extends FormBasicController implements TooledControl
 	
 	public PageController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
 			BinderSecurityCallback secCallback, Page page) {
-		super(ureq, wControl, "page_content");
+		super(ureq, wControl);
 		this.page = page;
 		this.stackPanel = stackPanel;
 		this.secCallback = secCallback;
 		
-		initForm(ureq);
+		mainVC = createVelocityContainer("page_content");
+		mainVC.contextPut("pageTitle", page.getTitle());
+
 		loadModel(ureq);
+		
+		if(secCallback.canComment(page)) {
+			CommentAndRatingSecurityCallback commentSecCallback = new CommentAndRatingDefaultSecurityCallback(getIdentity(), false, false);
+			OLATResourceable ores = OresHelper.createOLATResourceableInstance(Page.class, page.getKey());
+			commentsCtrl = new UserCommentsAndRatingsController(ureq, getWindowControl(), ores, null, commentSecCallback, true, false, true);
+			listenTo(commentsCtrl);
+			mainVC.put("comments", commentsCtrl.getInitialComponent());
+		}
+		putInitialPanel(mainVC);
 	}
 
 	@Override
@@ -99,17 +116,9 @@ public class PageController extends FormBasicController implements TooledControl
 			stackPanel.addTool(editMetadataLink, Align.left);
 		}
 	}
-
-	@Override
-	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		if(formLayout instanceof FormLayoutContainer) {
-			FormLayoutContainer layoutCont = (FormLayoutContainer)formLayout;
-			layoutCont.getFormItemComponent().contextPut("pageTitle", page.getTitle());
-		}
-	}
 	
 	private void loadModel(UserRequest ureq) {
-		flc.getFormItemComponent().contextPut("pageTitle", page.getTitle());
+		mainVC.contextPut("pageTitle", page.getTitle());
 		
 		List<PagePart> parts = portfolioService.getPageParts(page);
 		List<FragmentWrapper> newFragments = new ArrayList<>(parts.size());
@@ -118,11 +127,11 @@ public class PageController extends FormBasicController implements TooledControl
 			if(fragment != null) {
 				String cmpId = "cpt-" + (++counter);
 				newFragments.add(new FragmentWrapper(cmpId, fragment.getContent()));
-				flc.getFormItemComponent().put(cmpId, fragment.getContent());
+				mainVC.put(cmpId, fragment.getContent());
 			}
 		}
 		fragments = newFragments;
-		flc.getFormItemComponent().contextPut("fragments", fragments);
+		mainVC.contextPut("fragments", fragments);
 	}
 	
 	@Override
@@ -161,12 +170,6 @@ public class PageController extends FormBasicController implements TooledControl
 		} else if(editMetadataLink == source) {
 			doEditMetadata(ureq);
 		}
-		super.event(ureq, source, event);
-	}
-
-	@Override
-	protected void formOK(UserRequest ureq) {
-		//
 	}
 	
 	private void doEditMetadata(UserRequest ureq) {
