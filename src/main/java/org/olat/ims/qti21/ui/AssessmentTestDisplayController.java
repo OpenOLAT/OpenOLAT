@@ -998,11 +998,10 @@ public class AssessmentTestDisplayController extends BasicController implements 
             qtiService.finishTestSession(candidateSession, testSessionState, assessmentResult, timestamp);
         } else {
         	TestPart currentTestPart = testSessionController.getCurrentTestPart();
-        	if(currentTestPart.getNavigationMode() == NavigationMode.NONLINEAR) {
+        	if(currentTestPart != null && currentTestPart.getNavigationMode() == NavigationMode.NONLINEAR) {
         		//go to the first assessment item
         		if(testSessionController.hasFollowingNonLinearItem()) {
         			testSessionController.selectFollowingItemNonLinear(currentRequestTimestamp);
-        			//
         		}
         	}
         }
@@ -1328,6 +1327,7 @@ public class AssessmentTestDisplayController extends BasicController implements 
 			TestSessionState testSessionState = testSessionController.getTestSessionState();
 			CandidateSessionContext candidateSessionContext = AssessmentTestDisplayController.this;
 			if(!candidateSessionContext.isTerminated() && !testSessionState.isExited()
+					&& testSessionState.getCurrentTestPartKey() != null
 					&& testSessionController.mayEndCurrentTestPart()) {
 				final TestPlanNodeKey currentTestPartKey = testSessionState.getCurrentTestPartKey();
 				final TestPartSessionState currentTestPartSessionState = testSessionState.getTestPartSessionStates().get(currentTestPartKey);
@@ -1348,6 +1348,7 @@ public class AssessmentTestDisplayController extends BasicController implements 
 			TestSessionState testSessionState = testSessionController.getTestSessionState();
 			CandidateSessionContext candidateSessionContext = AssessmentTestDisplayController.this;
 			if(!candidateSessionContext.isTerminated() && !testSessionState.isExited()
+					&& testSessionState.getCurrentTestPartKey() != null
 					&& testSessionController.mayEndCurrentTestPart()) {
 				final TestPlanNodeKey currentTestPartKey = testSessionState.getCurrentTestPartKey();
 				final TestPartSessionState currentTestPartSessionState = testSessionState.getTestPartSessionStates().get(currentTestPartKey);
@@ -1561,6 +1562,7 @@ public class AssessmentTestDisplayController extends BasicController implements 
 			TestSessionState testSessionState = testSessionController.getTestSessionState();
 			CandidateSessionContext candidateSessionContext = AssessmentTestDisplayController.this;
 			return !candidateSessionContext.isTerminated() && !testSessionState.isExited()
+					&& testSessionState.getCurrentTestPartKey() != null
 					&& testSessionController.mayEndCurrentTestPart();
 		}
 		
@@ -1568,6 +1570,7 @@ public class AssessmentTestDisplayController extends BasicController implements 
 			TestSessionState testSessionState = testSessionController.getTestSessionState();
 			CandidateSessionContext candidateSessionContext = AssessmentTestDisplayController.this;
 			if(!candidateSessionContext.isTerminated() && !testSessionState.isExited()
+					&& testSessionState.getCurrentTestPartKey() != null
 					&& testSessionController.mayEndCurrentTestPart()) {
 				final TestPlanNodeKey currentTestPartKey = testSessionState.getCurrentTestPartKey();
 				final TestPartSessionState currentTestPartSessionState = testSessionState.getTestPartSessionStates().get(currentTestPartKey);

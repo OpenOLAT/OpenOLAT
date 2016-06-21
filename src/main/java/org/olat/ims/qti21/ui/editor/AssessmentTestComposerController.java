@@ -129,7 +129,7 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 	
 	private MenuTree menuTree;
 	private Dropdown exportItemTools, addItemTools, changeItemTools;
-	private Link newSectionLink, newSingleChoiceLink, newMultipleChoiceLink, newKPrimLink,
+	private Link newTestPartLink, newSectionLink, newSingleChoiceLink, newMultipleChoiceLink, newKPrimLink,
 		newFIBLink, newNumericalLink, newHotspotLink, newEssayLink;
 	private Link importFromPoolLink, importFromTableLink, exportToPoolLink;
 	private Link deleteLink, copyLink;
@@ -207,7 +207,6 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 		updateTreeModel();
 		manifestBuilder = ManifestBuilder.read(new File(unzippedDirRoot, "imsmanifest.xml"));
 		
-		
 		//add elements
 		addItemTools = new Dropdown("editTools", "new.elements", false, getTranslator());
 		addItemTools.setIconCSS("o_icon o_icon-fw o_icon_add");
@@ -216,6 +215,12 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 		newSectionLink = LinkFactory.createToolLink("new.section", translate("new.section"), this, "o_mi_qtisection");
 		newSectionLink.setDomReplacementWrapperRequired(false);
 		addItemTools.addComponent(newSectionLink);
+		
+		newTestPartLink = LinkFactory.createToolLink("new.testpart", translate("new.testpart"), this, "o_qtiassessment_icon");
+		newTestPartLink.setDomReplacementWrapperRequired(false);
+		addItemTools.addComponent(newTestPartLink);
+
+		addItemTools.addComponent(new Dropdown.Spacer("sep-struct"));
 		
 		//items
 		newSingleChoiceLink = LinkFactory.createToolLink("new.sc", translate("new.sc"), this, "o_mi_qtisc");
@@ -403,6 +408,8 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 			}
 		} else if(newSectionLink == source) {
 			doNewSection(ureq, menuTree.getSelectedNode());
+		} else if(newTestPartLink == source) {
+			doNewTestPart(ureq);		
 		} else if(newSingleChoiceLink == source) {
 			doNewAssessmentItem(ureq, menuTree.getSelectedNode(), new SingleChoiceAssessmentItemBuilder(qtiService.qtiSerializer()));
 		} else if(newMultipleChoiceLink == source) {
@@ -704,6 +711,21 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 			return doOpenFirstItem((TreeNode)node.getChildAt(0));
 		}
 		return null;
+	}
+	
+	private void doNewTestPart(UserRequest ureq) {
+		TestPart testPart = AssessmentTestFactory.createTestPart(assessmentTestBuilder.getAssessmentTest());
+		
+		//save the test
+		doSaveAssessmentTest();
+		//reload the test
+		updateTreeModel();
+		
+		TreeNode newTestPartNode = menuTree.getTreeModel().getNodeById(testPart.getIdentifier().toString());
+		menuTree.setSelectedNode(newTestPartNode);
+		menuTree.open(newTestPartNode);
+
+		partEditorFactory(ureq, newTestPartNode);
 	}
 	
 	private void doNewSection(UserRequest ureq, TreeNode selectedNode) {

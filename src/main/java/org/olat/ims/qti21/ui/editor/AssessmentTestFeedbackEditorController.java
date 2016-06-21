@@ -25,6 +25,7 @@ import org.olat.core.gui.components.form.flexible.elements.RichTextElement;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.form.flexible.impl.elements.FormSubmit;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.StringHelper;
@@ -41,6 +42,7 @@ import org.olat.ims.qti21.ui.editor.events.AssessmentTestEvent;
  */
 public class AssessmentTestFeedbackEditorController extends FormBasicController {
 	
+	private FormSubmit saveButton;
 	private TextElement feedbackPassedTitleEl, feedbackFailedTitleEl;
 	private RichTextElement feedbackPassedTextEl, feedbackFailedTextEl;
 
@@ -57,6 +59,11 @@ public class AssessmentTestFeedbackEditorController extends FormBasicController 
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		boolean hasCutValue = testBuilder.getCutValue() != null;
+		if(!hasCutValue) {
+			setFormWarning("warning.feedback.cutvalue");
+		}
+		
 		//correct feedback
 		TestFeedbackBuilder passedFeedback = testBuilder.getPassedFeedback();
 		String passedTitle = passedFeedback == null ? "" : passedFeedback.getTitle();
@@ -85,7 +92,18 @@ public class AssessmentTestFeedbackEditorController extends FormBasicController 
 		FormLayoutContainer buttonsContainer = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		buttonsContainer.setRootForm(mainForm);
 		formLayout.add(buttonsContainer);
-		uifactory.addFormSubmitButton("submit", buttonsContainer);
+		saveButton = uifactory.addFormSubmitButton("submit", buttonsContainer);
+		
+		sync();//check the cut value
+	}
+	
+	public void sync() {
+		boolean hasCutValue = testBuilder.getCutValue() != null;
+		saveButton.setVisible(hasCutValue);
+		feedbackPassedTitleEl.setVisible(hasCutValue);
+		feedbackPassedTextEl.setVisible(hasCutValue);
+		feedbackFailedTitleEl.setVisible(hasCutValue);
+		feedbackFailedTextEl.setVisible(hasCutValue);
 	}
 
 	@Override

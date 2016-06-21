@@ -105,13 +105,16 @@ public class AssessmentTreeComponentRenderer extends AssessmentObjectComponentRe
 	
 	private void renderNavigation(AssessmentRenderer renderer, StringOutput sb,
 			AssessmentTreeComponent component, URLBuilder ubu, Translator translator, RenderingRequest options) {
-		sb.append("<div id='o_qti_menu' class='qtiworks o_assessmenttest o_testpartnavigation'>")
+		sb.append("<div id='o_qti_menu' class='qtiworks o_assessmenttest o_testpartnavigation'>");
 		//part, sections and item refs
-		  .append("<ul class='o_testpartnavigation list-unstyled'>");
-		component.getCurrentTestPartNode().getChildren().forEach((node)
+		TestPlanNode currentTestPartNode = component.getCurrentTestPartNode();
+		if(currentTestPartNode != null) {
+			sb.append("<ul class='o_testpartnavigation list-unstyled'>");
+			currentTestPartNode.getChildren().forEach((node)
 				-> renderNavigation(renderer, sb, component, node, ubu, translator, options));
-		sb.append("</ul>")
-		 .append("</div>");
+			sb.append("</ul>");
+		}
+		sb.append("</div>");
 	}
 	
 	private void renderNavigation(AssessmentRenderer renderer, StringOutput sb, AssessmentTreeComponent component, TestPlanNode node,

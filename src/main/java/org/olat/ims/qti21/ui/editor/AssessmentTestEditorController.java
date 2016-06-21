@@ -101,6 +101,9 @@ public class AssessmentTestEditorController extends BasicController {
 		if(optionsCtrl == source || feedbackCtrl == source) {
 			if(AssessmentTestEvent.ASSESSMENT_TEST_CHANGED_EVENT.equals(event)) {
 				testBuilder.build();
+				if(optionsCtrl == source) {
+					feedbackCtrl.sync();
+				}
 				fireEvent(ureq, event);
 			}
 		}

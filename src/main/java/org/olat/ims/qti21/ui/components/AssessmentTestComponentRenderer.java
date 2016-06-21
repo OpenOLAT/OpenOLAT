@@ -614,7 +614,8 @@ public class AssessmentTestComponentRenderer extends AssessmentObjectComponentRe
 			
 			// test controls
 			TestSessionController testSessionController = component.getTestSessionController();
-			boolean allowedToEndTestPart = testSessionController.mayEndCurrentTestPart();
+			boolean allowedToEndTestPart = testSessionController.getTestSessionState().getCurrentTestPartKey() != null
+					&& testSessionController.mayEndCurrentTestPart();
 			
 			sb.append("<div class='o_button_group'>");
 			sb.append("<button type='button' onclick=\"");

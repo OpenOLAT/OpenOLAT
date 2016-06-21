@@ -103,7 +103,7 @@ public class AssessmentTreeComponent extends AssessmentObjectComponent {
 	public TestPlanNode getCurrentTestPartNode() {
 		TestSessionState sessionState = getTestSessionController().getTestSessionState();
 		TestPlanNodeKey testPlanNodeKey = sessionState.getCurrentTestPartKey();
-		return sessionState.getTestPlan().getNode(testPlanNodeKey);
+		return testPlanNodeKey == null ? null : sessionState.getTestPlan().getNode(testPlanNodeKey);
 	}
 	
 	public ItemSessionState getItemSessionState(TestPlanNodeKey nodeKey) {
