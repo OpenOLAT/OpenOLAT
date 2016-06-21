@@ -21,12 +21,17 @@ package org.olat.modules.portfolio.handler;
 
 import java.io.File;
 
+import org.olat.core.commons.modules.bc.meta.MetaInfo;
+import org.olat.core.commons.modules.bc.meta.tagged.MetaTagged;
+import org.olat.core.commons.modules.bc.vfs.OlatRootFolderImpl;
 import org.olat.core.commons.services.image.Size;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Identity;
 import org.olat.core.util.FileUtils;
+import org.olat.core.util.StringHelper;
+import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.modules.portfolio.Media;
 import org.olat.modules.portfolio.manager.MediaDAO;
@@ -63,8 +68,23 @@ public class FileHandler extends AbstractMediaHandler {
 
 	@Override
 	public VFSLeaf getThumbnail(Media media, Size size) {
+		String storagePath = media.getStoragePath();
+		String content = media.getContent();
+
+		VFSLeaf thumbnail = null;
+		if(StringHelper.containsNonWhitespace(storagePath)) {
+			OlatRootFolderImpl storageContainer = new OlatRootFolderImpl("/" + storagePath, null);
+			VFSItem item = storageContainer.resolve(content);
+			if(item instanceof VFSLeaf) {
+				VFSLeaf leaf = (VFSLeaf)item;
+				if(leaf instanceof MetaTagged) {
+					MetaInfo metaInfo = ((MetaTagged)leaf).getMetaInfo();
+					thumbnail = metaInfo.getThumbnail(size.getHeight(), size.getWidth(), true);
+				}
+			}
+		}
 		
-		return null;
+		return thumbnail;
 	}
 
 	@Override

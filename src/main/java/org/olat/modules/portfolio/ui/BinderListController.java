@@ -31,7 +31,6 @@ import org.olat.core.commons.services.image.Size;
 import org.olat.core.dispatcher.mapper.Mapper;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
-import org.olat.core.gui.components.dropdown.DropdownItem;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
@@ -53,6 +52,7 @@ import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.gui.media.MediaResource;
@@ -67,8 +67,12 @@ import org.olat.modules.portfolio.Binder;
 import org.olat.modules.portfolio.BinderSecurityCallback;
 import org.olat.modules.portfolio.BinderSecurityCallbackImpl;
 import org.olat.modules.portfolio.PortfolioService;
+import org.olat.modules.portfolio.handler.BinderTemplateResource;
 import org.olat.modules.portfolio.model.BinderRow;
 import org.olat.modules.portfolio.ui.BindersDataModel.PortfolioCols;
+import org.olat.modules.portfolio.ui.event.NewBinderEvent;
+import org.olat.repository.RepositoryEntry;
+import org.olat.repository.controllers.ReferencableEntriesSearchController;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -89,12 +93,15 @@ public class BinderListController extends FormBasicController
 	private FlexiTableElement tableEl;
 	private BindersDataModel model;
 	private final TooledStackedPanel stackPanel;
-	private DropdownItem createDropdown;
-	private FormLink createBinderLink, createBinderFromTemplateLink, createBinderFromCourseLink;
+	private FormLink newBinderDropdown;
 	
 	private CloseableModalController cmc;
 	private BinderController binderCtrl;
 	private BinderMetadataEditController newBinderCtrl;
+	private ReferencableEntriesSearchController searchTemplateCtrl;
+	
+	private NewBinderCalloutController chooseNewBinderTypeCtrl;
+	private CloseableCalloutWindowController newBinderCalloutCtrl;
 	
 	@Autowired
 	private PortfolioService portfolioService;
@@ -132,17 +139,10 @@ public class BinderListController extends FormBasicController
 		mapperThumbnailUrl = registerCacheableMapper(ureq, "binder-list", new ImageMapper(model));
 		row.contextPut("mapperThumbnailUrl", mapperThumbnailUrl);
 		
-		createDropdown = new DropdownItem("create.binders", "create.new.binder", getTranslator());
-		createDropdown.setButton(true);
-		createBinderLink = uifactory.addFormLink("create.empty.binder", formLayout);
-		createBinderFromTemplateLink = uifactory.addFormLink("create.empty.binder.from.template", formLayout);
-		createBinderFromCourseLink = uifactory.addFormLink("create.empty.binder.from.course", formLayout);
+		newBinderDropdown = uifactory.addFormLink("create.binders", "create.new.binder", null, formLayout, Link.BUTTON);
+		newBinderDropdown.setIconRightCSS("o_icon o_icon_caret");
 		
-		createDropdown.addElement(createBinderLink);
-		createDropdown.addElement(createBinderFromTemplateLink);
-		createDropdown.addElement(createBinderFromCourseLink);
-		
-		row.put("createDropdown", createDropdown.getComponent());
+		row.put("createDropdown", newBinderDropdown.getComponent());
 	}
 
 	@Override
@@ -155,7 +155,6 @@ public class BinderListController extends FormBasicController
 		newBinderLink = LinkFactory.createToolLink("create.new.binder", translate("create.new.binder"), this);
 		newBinderLink.setIconLeftCSS("o_icon o_icon-lg o_icon_new_portfolio");
 		stackPanel.addTool(newBinderLink, Align.right);
-		stackPanel.setToolbarEnabled(true);
 	}
 
 	@Override
@@ -217,6 +216,28 @@ public class BinderListController extends FormBasicController
 			}
 			cmc.deactivate();
 			cleanUp();
+		} else if(chooseNewBinderTypeCtrl == source) {
+			newBinderCalloutCtrl.deactivate();
+			cleanUp();
+			if(event instanceof NewBinderEvent) {
+				String cmd = event.getCommand();
+				if(NewBinderEvent.NEW_EMPTY.equals(cmd)) {
+					doNewBinder(ureq);
+				} else if(NewBinderEvent.NEW_EMPTY_FROM_TEMPLATE.equals(cmd)) {
+					doNewBinderFromTemplate(ureq);
+				} else if(NewBinderEvent.NEW_EMPTY_FROM_COURSE.equals(cmd)) {
+					doNewBinderFromCourse();
+				}
+			}
+		} else if(searchTemplateCtrl == source) {
+			if(event == ReferencableEntriesSearchController.EVENT_REPOSITORY_ENTRY_SELECTED) {
+				RepositoryEntry repoEntry = searchTemplateCtrl.getSelectedEntry();
+				doCreateBinderFromTemplate(ureq, repoEntry);
+			}
+			cmc.deactivate();
+			cleanUp();
+		} else if(newBinderCalloutCtrl == source) {
+			cleanUp();
 		} else if(cmc == source) {
 			cleanUp();
 		}
@@ -224,20 +245,22 @@ public class BinderListController extends FormBasicController
 	}
 	
 	private void cleanUp() {
+		removeAsListenerAndDispose(chooseNewBinderTypeCtrl);
+		removeAsListenerAndDispose(newBinderCalloutCtrl);
+		removeAsListenerAndDispose(searchTemplateCtrl);
 		removeAsListenerAndDispose(newBinderCtrl);
 		removeAsListenerAndDispose(cmc);
+		chooseNewBinderTypeCtrl = null;
+		newBinderCalloutCtrl = null;
+		searchTemplateCtrl = null;
 		newBinderCtrl = null;
 		cmc = null;
 	}
 
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if(createBinderLink == source) {
-			doNewBinder(ureq);
-		} else if(createBinderFromTemplateLink == source) {
-			
-		} else if(createBinderFromCourseLink == source) {
-			
+		if(newBinderDropdown == source) {
+			doNewBinderCallout(ureq);
 		} else if(source instanceof FormLink) {
 			FormLink link = (FormLink)source;
 			String cmd = link.getCmd();
@@ -260,13 +283,17 @@ public class BinderListController extends FormBasicController
 	
 	private BinderController doOpenBinder(UserRequest ureq, Long binderKey) {
 		Binder binder = portfolioService.getBinderByKey(binderKey);
+		return doOpenBinder(ureq, binder);
+	}
+	
+	private BinderController doOpenBinder(UserRequest ureq, Binder binder) {
 		if(binder == null) {
 			showWarning("warning.portfolio.not.found");
 			return null;
 		} else {
 			removeAsListenerAndDispose(binderCtrl);
 			
-			OLATResourceable binderOres = OresHelper.createOLATResourceableInstance("Binder", binderKey);
+			OLATResourceable binderOres = OresHelper.createOLATResourceableInstance("Binder", binder.getKey());
 			WindowControl swControl = addToHistory(ureq, binderOres, null);
 			BinderSecurityCallback secCallback = new BinderSecurityCallbackImpl(true, binder.getTemplate() == null);
 			binderCtrl = new BinderController(ureq, swControl, stackPanel, secCallback, binder);
@@ -274,6 +301,18 @@ public class BinderListController extends FormBasicController
 			stackPanel.pushController(displayName, binderCtrl);
 			return binderCtrl;
 		}
+	}
+	
+	private void doNewBinderCallout(UserRequest ureq) {
+		if(chooseNewBinderTypeCtrl != null) return;
+		
+		chooseNewBinderTypeCtrl = new NewBinderCalloutController(ureq, getWindowControl());
+		listenTo(chooseNewBinderTypeCtrl);
+
+		newBinderCalloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(),
+				chooseNewBinderTypeCtrl.getInitialComponent(), newBinderDropdown.getFormDispatchId(), "", true, "");
+		listenTo(newBinderCalloutCtrl);
+		newBinderCalloutCtrl.activate();
 	}
 
 	private void doNewBinder(UserRequest ureq) {
@@ -287,7 +326,32 @@ public class BinderListController extends FormBasicController
 		listenTo(cmc);
 		cmc.activate();
 	}
+
+	private void doNewBinderFromTemplate(UserRequest ureq) {
+		if(searchTemplateCtrl != null) return;
+
+		String title = translate("create.empty.binder.from.template");
+		String commandLabel = translate("create.binder.selectTemplate");
+		removeAsListenerAndDispose(searchTemplateCtrl);
+		searchTemplateCtrl = new ReferencableEntriesSearchController(getWindowControl(), ureq,
+				new String[]{ BinderTemplateResource.TYPE_NAME }, commandLabel, false, false, false, false);			
+		listenTo(searchTemplateCtrl);
+			
+		cmc = new CloseableModalController(getWindowControl(), title, searchTemplateCtrl.getInitialComponent(), true, title);
+		listenTo(cmc);
+		cmc.activate();
+	}
 	
+	private void doCreateBinderFromTemplate(UserRequest ureq, RepositoryEntry entry) {
+		Binder templateBinder = portfolioService.getBinderByResource(entry.getOlatResource());
+		Binder newBinder = portfolioService.assignBinder(getIdentity(), templateBinder, null, null, null);
+		doOpenBinder(ureq, newBinder).activate(ureq, null, null);
+	}
+	
+	private void doNewBinderFromCourse() {
+		showWarning("not.implemented");
+	}
+
 	public static class ImageMapper implements Mapper {
 		
 		private final BindersDataModel binderModel;

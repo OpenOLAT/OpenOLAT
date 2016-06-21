@@ -48,7 +48,7 @@ public class PortfolioPersonalToolController extends BasicController implements 
 		super(ureq, wControl);
 		
 		stackPanel = new TooledStackedPanel("portfolioStackPanel", getTranslator(), this);
-		stackPanel.setToolbarEnabled(false);
+		stackPanel.setToolbarAutoEnabled(true);
 		stackPanel.setShowCloseLink(true, true);
 		stackPanel.setInvisibleCrumb(0);
 		putInitialPanel(stackPanel);

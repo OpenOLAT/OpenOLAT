@@ -41,9 +41,11 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableRendererType;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
+import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
+import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.gui.media.MediaResource;
@@ -74,6 +76,7 @@ public class MediaCenterController extends FormBasicController implements Activa
 	private FlexiTableElement tableEl;
 	private String mapperThumbnailUrl;
 	
+	private int counter = 0;
 	private final boolean select;
 	private final TooledStackedPanel stackPanel;
 	
@@ -137,7 +140,9 @@ public class MediaCenterController extends FormBasicController implements Activa
 		for(Media media:medias) {
 			MediaHandler handler = portfolioService.getMediaHandler(media.getType());
 			VFSLeaf thumbnail = handler.getThumbnail(media, THUMBNAIL_SIZE);
-			MediaRow row = new MediaRow(media, thumbnail);
+			FormLink openLink =  uifactory.addFormLink("select_" + (++counter), "select", media.getTitle(), null, null, Link.NONTRANSLATED);
+			MediaRow row = new MediaRow(media, thumbnail, openLink);
+			openLink.setUserObject(row);
 			rows.add(row);
 		}
 		model.setObjects(rows);
@@ -171,7 +176,7 @@ public class MediaCenterController extends FormBasicController implements Activa
 		} else if(source instanceof FormLink) {
 			FormLink link = (FormLink)source;
 			String cmd = link.getCmd();
-			if("open".equals(cmd)) {
+			if("select".equals(cmd)) {
 				MediaRow row = (MediaRow)link.getUserObject();
 				Activateable2 activateable = doOpenMedia(ureq, row.getKey());
 				if(activateable != null) {
@@ -180,6 +185,29 @@ public class MediaCenterController extends FormBasicController implements Activa
 			}
 		}
 		super.formInnerEvent(ureq, source, event);
+	}
+
+	@Override
+	public void event(UserRequest ureq, Component source, Event event) {
+		 if(source == mainForm.getInitialComponent()) {
+			if("ONCLICK".equals(event.getCommand())) {
+				String rowKeyStr = ureq.getParameter("img_select");
+				if(StringHelper.isLong(rowKeyStr)) {
+					try {
+						Long rowKey = new Long(rowKeyStr);
+						List<MediaRow> rows = model.getObjects();
+						for(MediaRow row:rows) {
+							if(row != null && row.getKey().equals(rowKey)) {
+								doOpenMedia(ureq, rowKey);
+							}
+						}
+					} catch (NumberFormatException e) {
+						logWarn("Not a valid long: " + rowKeyStr, e);
+					}
+				}
+			}
+		}
+		super.event(ureq, source, event);
 	}
 
 	@Override

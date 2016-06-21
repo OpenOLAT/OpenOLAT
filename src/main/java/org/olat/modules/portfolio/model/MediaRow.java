@@ -36,9 +36,10 @@ public class MediaRow {
 	private VFSLeaf thumbnail;
 	private FormLink openFormLink;
 	
-	public MediaRow(Media media, VFSLeaf thumbnail) {
+	public MediaRow(Media media, VFSLeaf thumbnail, FormLink openFormLink) {
 		this.media = media;
 		this.thumbnail = thumbnail;
+		this.openFormLink = openFormLink;
 	}
 	
 	public Long getKey() {

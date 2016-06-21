@@ -91,7 +91,6 @@ public class TableOfContentController extends BasicController implements TooledC
 		this.secCallback = secCallback;
 		
 		mainVC = createVelocityContainer("table_of_contents");
-		mainVC.contextPut("binderTitle", StringHelper.escapeHtml(binder.getTitle()));
 		
 		owners = portfolioService.getMembers(binder, GroupRoles.owner.name());
 		StringBuilder ownerSb = new StringBuilder();
@@ -130,6 +129,8 @@ public class TableOfContentController extends BasicController implements TooledC
 	}
 	
 	protected void loadModel() {
+		mainVC.contextPut("binderTitle", StringHelper.escapeHtml(binder.getTitle()));
+		
 		List<SectionRow> sectionList = new ArrayList<>();
 		Map<Long,SectionRow> sectionMap = new HashMap<>();
 		
@@ -222,6 +223,7 @@ public class TableOfContentController extends BasicController implements TooledC
 			cleanUp();
 		} else if(binderMetadataCtrl == source) {
 			if(event == Event.DONE_EVENT) {
+				binder = binderMetadataCtrl.getBinder();
 				loadModel();
 			}
 			cmc.deactivate();
