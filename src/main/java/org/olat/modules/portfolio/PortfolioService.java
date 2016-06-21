@@ -26,8 +26,10 @@ import java.util.Locale;
 
 import org.olat.basesecurity.IdentityRef;
 import org.olat.core.id.Identity;
+import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.modules.portfolio.model.AccessRightChange;
 import org.olat.modules.portfolio.model.AccessRights;
+import org.olat.modules.portfolio.model.BinderRow;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
 import org.olat.resource.OLATResource;
@@ -61,7 +63,10 @@ public interface PortfolioService {
 	
 	public Section updateSection(Section section);
 	
-	public List<Binder> searchOwnedBinders(Identity owner);
+
+	public List<Binder> getOwnedBinders(IdentityRef owner);
+	
+	public List<BinderRow> searchOwnedBinders(IdentityRef owner);
 	
 	/**
 	 * Search all binders which are shared with the specified member.
@@ -131,7 +136,9 @@ public interface PortfolioService {
 
 	public void updateCategories(Binder binder, List<String> categories);
 	
-	public File getPosterImage(Binder binder);
+	public File getPosterImageFile(BinderRef binder);
+	
+	public VFSLeaf getPosterImageLeaf(BinderRef binder);
 	
 	public String addPosterImageForBinder(File file, String filename);
 	

@@ -199,6 +199,7 @@ public class PageDAO {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select part from pfpagepart as part")
 		  .append(" inner join fetch part.body as body")
+		  .append(" left join fetch part.media as media")
 		  .append(" where body.key=:bodyKey");
 		
 		return dbInstance.getCurrentEntityManager()

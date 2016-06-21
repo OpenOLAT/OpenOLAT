@@ -40,6 +40,7 @@ import org.olat.modules.portfolio.Section;
 import org.olat.modules.portfolio.SectionRef;
 import org.olat.modules.portfolio.model.AccessRights;
 import org.olat.modules.portfolio.model.BinderImpl;
+import org.olat.modules.portfolio.model.BinderRow;
 import org.olat.modules.portfolio.model.SectionImpl;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
@@ -118,7 +119,7 @@ public class BinderDAO {
 		return dbInstance.getCurrentEntityManager().merge(binder);
 	}
 	
-	public List<Binder> searchOwnedBinders(Identity owner) {
+	public List<Binder> getOwnedBinders(IdentityRef owner) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select binder from pfbinder as binder")
 		  .append(" inner join fetch binder.baseGroup as baseGroup")
@@ -130,6 +131,45 @@ public class BinderDAO {
 			.setParameter("identityKey", owner.getKey())
 			.setParameter("role", GroupRoles.owner.name())
 			.getResultList();
+	}
+	
+	public List<BinderRow> searchOwnedBinders(IdentityRef owner) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select binder.key, binder.title, binder.imagePath, binder.lastModified, binder.status,")
+		  .append(" (select count(section.key) from pfsection as section")
+		  .append("   where section.binder.key=binder.key")
+		  .append(" ) as numOfSections,")
+		  .append(" (select count(page.key) from pfpage as page, pfsection as pageSection")
+		  .append("   where pageSection.binder.key=binder.key and page.section.key=pageSection.key")
+		  .append(" ) as numOfPages,")
+		  .append(" (select count(comment.key) from usercomment as comment, pfpage as page, pfsection as pageSection")
+		  .append("   where pageSection.binder.key=binder.key and page.section.key=pageSection.key and comment.resId=page.key and comment.resName='Page'")
+		  .append(" ) as numOfComments")
+		  .append(" from pfbinder as binder")
+		  .append(" inner join binder.baseGroup as baseGroup")
+		  .append(" inner join baseGroup.members as membership")
+		  .append(" where membership.identity.key=:identityKey and membership.role=:role");
+		
+		List<Object[]> objects = dbInstance.getCurrentEntityManager()
+			.createQuery(sb.toString(), Object[].class)
+			.setParameter("identityKey", owner.getKey())
+			.setParameter("role", GroupRoles.owner.name())
+			.getResultList();
+		
+		List<BinderRow> rows = new ArrayList<>(objects.size());
+		for(Object[] object:objects) {
+			int pos = 0;
+			Long key = (Long)object[pos++];
+			String title = (String)object[pos++];
+			String imagePath = (String)object[pos++];
+			Date lastModified = (Date)object[pos++];
+			String status = (String)object[pos++];
+			int numOfSections = ((Number)object[pos++]).intValue();
+			int numOfPages = ((Number)object[pos++]).intValue();
+			int numOfComments = ((Number)object[pos++]).intValue();
+			rows.add(new BinderRow(key, title, imagePath, lastModified, numOfSections, numOfPages, status, numOfComments));
+		}
+		return rows;
 	}
 	
 	public Binder loadByKey(Long key) {

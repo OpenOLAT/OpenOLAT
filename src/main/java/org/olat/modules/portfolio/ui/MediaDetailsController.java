@@ -67,7 +67,7 @@ public class MediaDetailsController extends FormBasicController implements Activ
 			FormLayoutContainer layoutCont = (FormLayoutContainer)formLayout;
 			layoutCont.contextPut("title", StringHelper.escapeHtml(media.getTitle()));
 			layoutCont.contextPut("description", StringHelper.xssScan(media.getDescription()));
-			layoutCont.contextPut("iconCssClass", handler.getIconCssClass());
+			layoutCont.contextPut("iconCssClass", handler.getIconCssClass(media));
 			
 			mediaCtrl = handler.getMediaController(ureq, getWindowControl(), media);
 			if(mediaCtrl != null) {

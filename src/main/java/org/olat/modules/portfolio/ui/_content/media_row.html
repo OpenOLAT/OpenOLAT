@@ -1,1 +1,6 @@
-Hello
+<div class="o_visual"><a $r.hrefAndOnclick("img_select",false,false,"node","${row.key}")>
+	<span class="o_visual_not_available" #if(${row.isThumbnailAvailable()}) style="background-image:url('$mapperThumbnailUrl/${row.key}/${row.thumbnailName}');" #end></span>
+</a></div>
+<div class="o_meta">
+	<h4 class="o_title">$row.title</h4>
+</div>

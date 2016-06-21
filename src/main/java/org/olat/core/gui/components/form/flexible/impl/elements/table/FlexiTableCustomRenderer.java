@@ -56,7 +56,15 @@ class FlexiTableCustomRenderer extends AbstractFlexiTableRenderer implements Com
 			  .append(translator.translate(ftE.getEmtpyTableMessageKey()))
 			  .append("</div>");
 		} else {
-			sb.append("<div class=\"o_table_wrapper o_table_flexi")
+			//render wrapper
+			String wrapperCss = null;
+			if(ftE.getCssDelegate() != null) {
+				wrapperCss = ftE.getCssDelegate().getWrapperCssClass(FlexiTableRendererType.custom);
+			}
+			if(!StringHelper.containsNonWhitespace(wrapperCss)) {
+				wrapperCss = "o_table_wrapper o_table_flexi";
+			}
+			sb.append("<div class=\"").append(wrapperCss)
 			  .append(" o_table_edit", ftE.isEditMode());
 			String css = ftE.getElementCssClass();
 			if (css != null) {
@@ -65,7 +73,14 @@ class FlexiTableCustomRenderer extends AbstractFlexiTableRenderer implements Com
 			sb.append(" o_rendertype_custom\">");
 			
 			//render body
-			sb.append("<div class='o_table_body container-fluid'>");
+			String tableCss = null;
+			if(ftE.getCssDelegate() != null) {
+				tableCss = ftE.getCssDelegate().getTableCssClass(FlexiTableRendererType.custom);
+			}
+			if(!StringHelper.containsNonWhitespace(tableCss)) {
+				tableCss = "o_table_body container-fluid";
+			}
+			sb.append("<div class='").append(tableCss).append("'>");
 			renderBody(renderer, sb, ftC, ubu, translator, renderResult);
 			sb.append("</div>");
 	
@@ -88,8 +103,8 @@ class FlexiTableCustomRenderer extends AbstractFlexiTableRenderer implements Com
 	protected void renderRow(Renderer renderer, StringOutput sb, FlexiTableComponent ftC, String rowIdPrefix,
 			int row, URLBuilder ubu, Translator translator, RenderResult renderResult) {
 		sb.append("<div class='");
-		if(ftC.getFlexiTableElement().getRowCssDelegate() != null) {
-			String cssClass = ftC.getFlexiTableElement().getRowCssDelegate().getRowCssClass(row);
+		if(ftC.getFlexiTableElement().getCssDelegate() != null) {
+			String cssClass = ftC.getFlexiTableElement().getCssDelegate().getRowCssClass(FlexiTableRendererType.custom, row);
 			sb.append(cssClass);
 		} else {
 			sb.append("o_table_row row");

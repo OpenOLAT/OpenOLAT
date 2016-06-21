@@ -1,9 +1,29 @@
-#set($title=$r.escapeHtml($row.getTitle()))
-<div class="panel panel-default">
-	<div class="panel-heading">
-		<h4 class="panel-title">$r.escapeHtml($title)</h4>
+#if($row.newBinder)
+	<div class="panel panel-placeholder">
+		<div class="panel-heading">
+			<h4 class="panel-title">$r.translate("create.new.binder.title")</h4>
+		</div>
+		<div class="panel-body">
+			<p>$r.translate("create.new.binder.descr")</p>
+			$r.render("createDropdown")
+		</div>
 	</div>
-	<div class="panel-body">
-		Test $r.render($row.openFormItemName)
+#else
+
+	#set($title=$r.escapeHtml($row.getTitle()))
+	<div class="panel panel-default" #if($row.background) style="background-image:url('$mapperThumbnailUrl/$row.key/${row.imageName}');" #end>
+		<div class="panel-heading">
+			<h4 class="panel-title">$r.escapeHtml($title)</h4>
+		</div>
+		<div class="panel-body">
+			<ul>
+				<li>$r.translate("binder.last.update"): $r.formatDateAndTime($row.lastUpdate)</li>
+				<li>$r.translate("binder.num.sections.pages", $row.numOfSectionsAndPages)</li>
+				<li>$r.translate("binder.status")</li>
+				<li>$r.translate("binder.num.comments", $row.numOfComments)</li>
+			</ul>
+	
+			$r.render($row.openFormItemName)
+		</div>
 	</div>
-</div>
+#end

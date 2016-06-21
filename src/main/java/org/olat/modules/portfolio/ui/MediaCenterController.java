@@ -22,6 +22,10 @@ package org.olat.modules.portfolio.ui;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.servlet.http.HttpServletRequest;
+
+import org.olat.core.commons.services.image.Size;
+import org.olat.core.dispatcher.mapper.Mapper;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -31,19 +35,25 @@ import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableCssDelegate;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableComponentDelegate;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableRendererType;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableRowCssDelegate;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
+import org.olat.core.gui.media.MediaResource;
+import org.olat.core.id.context.ContextEntry;
+import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.vfs.VFSLeaf;
+import org.olat.core.util.vfs.VFSMediaResource;
 import org.olat.modules.portfolio.Media;
+import org.olat.modules.portfolio.MediaHandler;
 import org.olat.modules.portfolio.PortfolioService;
 import org.olat.modules.portfolio.model.MediaRow;
 import org.olat.modules.portfolio.ui.BindersDataModel.PortfolioCols;
@@ -56,10 +66,13 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class MediaCenterController extends FormBasicController implements FlexiTableComponentDelegate, FlexiTableRowCssDelegate {
+public class MediaCenterController extends FormBasicController implements Activateable2, FlexiTableComponentDelegate {
+	
+	private static final Size THUMBNAIL_SIZE = new Size(180, 180, false);
 	
 	private MediaDataModel model;
 	private FlexiTableElement tableEl;
+	private String mapperThumbnailUrl;
 	
 	private final boolean select;
 	private final TooledStackedPanel stackPanel;
@@ -100,19 +113,16 @@ public class MediaCenterController extends FormBasicController implements FlexiT
 		tableEl.setRendererType(FlexiTableRendererType.custom);
 		tableEl.setSearchEnabled(true);
 		tableEl.setCustomizeColumns(true);
-		tableEl.setElementCssClass("o_binder_page_listing");
 		tableEl.setEmtpyTableMessageKey("table.sEmptyTable");
 		tableEl.setPageSize(24);
 		VelocityContainer row = createVelocityContainer("media_row");
 		row.setDomReplacementWrapperRequired(false); // sets its own DOM id in velocity container
 		tableEl.setRowRenderer(row, this);
-		tableEl.setRowCssDelegate(this);
+		tableEl.setCssDelegate(new MediaCssDelegate());
 		tableEl.setAndLoadPersistedPreferences(ureq, "media-list");
-	}
-	
-	@Override
-	public String getRowCssClass(int pos) {
-		return null;
+		
+		mapperThumbnailUrl = this.registerCacheableMapper(ureq, "media-thumbnail", new ThumbnailMapper(model));
+		row.contextPut("mapperThumbnailUrl", mapperThumbnailUrl);
 	}
 
 	@Override
@@ -123,8 +133,11 @@ public class MediaCenterController extends FormBasicController implements FlexiT
 	private void loadModel() {
 		List<Media> medias = portfolioService.searchOwnedMedias(getIdentity());
 		List<MediaRow> rows = new ArrayList<>(medias.size());
+		
 		for(Media media:medias) {
-			MediaRow row = new MediaRow(media);
+			MediaHandler handler = portfolioService.getMediaHandler(media.getType());
+			VFSLeaf thumbnail = handler.getThumbnail(media, THUMBNAIL_SIZE);
+			MediaRow row = new MediaRow(media, thumbnail);
 			rows.add(row);
 		}
 		model.setObjects(rows);
@@ -132,6 +145,11 @@ public class MediaCenterController extends FormBasicController implements FlexiT
 
 	@Override
 	protected void doDispose() {
+		//
+	}
+
+	@Override
+	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
 		//
 	}
 
@@ -183,5 +201,51 @@ public class MediaCenterController extends FormBasicController implements FlexiT
 		String displayName = StringHelper.escapeHtml(media.getTitle());
 		stackPanel.pushController(displayName, detailsCtrl);
 		return detailsCtrl;
+	}
+	
+	private static class MediaCssDelegate extends DefaultFlexiTableCssDelegate {
+
+		@Override
+		public String getTableCssClass(FlexiTableRendererType type) {
+			return "o_portfolio_medias clearfix";
+		}
+
+		@Override
+		public String getRowCssClass(FlexiTableRendererType type, int pos) {
+			return "o_portfolio_media";
+		}
+	}
+	
+	private static class ThumbnailMapper implements Mapper {
+		
+		private final MediaDataModel binderModel;
+		
+		public ThumbnailMapper(MediaDataModel model) {
+			this.binderModel = model;
+		}
+
+		@Override
+		public MediaResource handle(String relPath, HttpServletRequest request) {
+			MediaResource mr = null;
+			
+			String row = relPath;
+			if(row.startsWith("/")) {
+				row = row.substring(1, row.length());
+			}
+			int index = row.indexOf("/");
+			if(index > 0) {
+				row = row.substring(0, index);
+				Long key = new Long(row); 
+				List<MediaRow> rows = binderModel.getObjects();
+				for(MediaRow prow:rows) {
+					if(key.equals(prow.getKey())) {
+						VFSLeaf thumbnail = prow.getThumbnail();
+						mr = new VFSMediaResource(thumbnail);
+					}
+				}
+			}
+			
+			return mr;
+		}
 	}
 }

@@ -35,8 +35,6 @@ import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Roles;
 import org.olat.core.logging.AssertException;
-import org.olat.core.logging.OLog;
-import org.olat.core.logging.Tracing;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.coordinate.LockResult;
 import org.olat.core.util.vfs.VFSContainer;
@@ -71,7 +69,6 @@ import org.olat.resource.OLATResource;
  */
 // Loads of parameters are unused
 public class BinderTemplateHandler implements RepositoryHandler {
-	private static final OLog log = Tracing.createLoggerFor(BinderTemplateHandler.class);
 	
 	@Override
 	public boolean isCreate() {

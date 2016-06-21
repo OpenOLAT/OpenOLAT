@@ -1,10 +1,11 @@
 <h1>$pageTitle</h1>
 <div class="o_button_group o_button_group_left">
-$r.render("save") $r.render("add.html") $r.render("add.media")
+	$r.render("save")
+	<div class="btn-group">$r.render("add.html") $r.render("add.media") $r.render("add.file") $r.render("add.image")</div>
 </div>
 
 #foreach($fragment in $fragments)
-	$foreach.count <div class="">
+	<div class="o_block_large">
 	$r.render($fragment.componentName)
 	</div>
 #end

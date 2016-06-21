@@ -36,7 +36,7 @@ import org.olat.user.propertyhandlers.UserPropertyHandler;
 public class SharedItemRow extends UserPropertiesRow {
 	
 	private Long binderKey;
-	private String binder;
+	private String binderTitle;
 	private String course;
 	private Date lastModified;
 	
@@ -53,19 +53,19 @@ public class SharedItemRow extends UserPropertiesRow {
 		this.binderKey = binderKey;
 	}
 
-	public String getBinder() {
-		return binder;
+	public String getBinderTitle() {
+		return binderTitle;
 	}
 
-	public void setBinder(String binder) {
-		this.binder = binder;
+	public void setBinderTitle(String binder) {
+		this.binderTitle = binder;
 	}
 
-	public String getCourse() {
+	public String getCourseDisplayName() {
 		return course;
 	}
 
-	public void setCourse(String course) {
+	public void setCourseDisplayName(String course) {
 		this.course = course;
 	}
 

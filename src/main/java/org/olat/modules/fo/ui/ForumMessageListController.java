@@ -38,10 +38,11 @@ import org.olat.core.gui.components.form.flexible.elements.FlexiTableSortOptions
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableCssDelegate;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableRowCssDelegate;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableRendererType;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.TextFlexiCellRenderer;
@@ -65,7 +66,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class ForumMessageListController extends FormBasicController implements FlexiTableRowCssDelegate {
+public class ForumMessageListController extends FormBasicController {
 	
 	protected static final String USER_PROPS_ID = ForumUserListController.class.getCanonicalName();
 	
@@ -116,12 +117,6 @@ public class ForumMessageListController extends FormBasicController implements F
 
 	public void setSelectView(MessageView selectView) {
 		this.selectView = selectView;
-	}
-
-	@Override
-	public String getRowCssClass(int pos) {
-		MessageLightView row = dataModel.getObject(pos);
-		return row != null && selectView != null && row.getKey().equals(selectView.getKey()) ? "o_row_selected" : null;
 	}
 
 	public void loadAllMessages() {
@@ -203,7 +198,7 @@ public class ForumMessageListController extends FormBasicController implements F
 
 		dataModel = new ForumMessageDataModel(columnsModel, getTranslator());
 		tableEl = uifactory.addTableElement(getWindowControl(), "messages", dataModel, getTranslator(), formLayout);
-		tableEl.setRowCssDelegate(this);
+		tableEl.setCssDelegate(new MessageCssDelegate());
 		
 		FlexiTableSortOptions sortOptions = new FlexiTableSortOptions();
 		sortOptions.setFromColumnModel(false);
@@ -268,6 +263,14 @@ public class ForumMessageListController extends FormBasicController implements F
 				mn.addChild(childNode);
 				addChildren(messages, childNode);
 			}
+		}
+	}
+	
+	private class MessageCssDelegate extends DefaultFlexiTableCssDelegate {
+		@Override
+		public String getRowCssClass(FlexiTableRendererType type, int pos) {
+			MessageLightView row = dataModel.getObject(pos);
+			return row != null && selectView != null && row.getKey().equals(selectView.getKey()) ? "o_row_selected" : null;
 		}
 	}
 	

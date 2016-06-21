@@ -20,10 +20,18 @@
 package org.olat.modules.portfolio.ui;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
+import javax.servlet.http.HttpServletRequest;
+
+import org.olat.core.commons.modules.bc.meta.MetaInfo;
+import org.olat.core.commons.modules.bc.meta.tagged.MetaTagged;
+import org.olat.core.commons.services.image.Size;
+import org.olat.core.dispatcher.mapper.Mapper;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.dropdown.DropdownItem;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
@@ -31,11 +39,11 @@ import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableCssDelegate;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableComponentDelegate;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableRendererType;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableRowCssDelegate;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.stack.TooledController;
@@ -47,15 +55,19 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
+import org.olat.core.gui.media.MediaResource;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.resource.OresHelper;
+import org.olat.core.util.vfs.VFSLeaf;
+import org.olat.core.util.vfs.VFSMediaResource;
 import org.olat.modules.portfolio.Binder;
 import org.olat.modules.portfolio.BinderSecurityCallback;
 import org.olat.modules.portfolio.BinderSecurityCallbackImpl;
 import org.olat.modules.portfolio.PortfolioService;
+import org.olat.modules.portfolio.model.BinderRow;
 import org.olat.modules.portfolio.ui.BindersDataModel.PortfolioCols;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -66,14 +78,19 @@ import org.springframework.beans.factory.annotation.Autowired;
  *
  */
 public class BinderListController extends FormBasicController
-	implements Activateable2, TooledController, FlexiTableComponentDelegate, FlexiTableRowCssDelegate {
+	implements Activateable2, TooledController, FlexiTableComponentDelegate {
+	
+	private static final Size BACKGROUND_SIZE = new Size(400, 230, false);
 	
 	private int counter = 1;
 	private Link newBinderLink;
+	private String mapperThumbnailUrl;
 	
 	private FlexiTableElement tableEl;
 	private BindersDataModel model;
 	private final TooledStackedPanel stackPanel;
+	private DropdownItem createDropdown;
+	private FormLink createBinderLink, createBinderFromTemplateLink, createBinderFromCourseLink;
 	
 	private CloseableModalController cmc;
 	private BinderController binderCtrl;
@@ -104,17 +121,28 @@ public class BinderListController extends FormBasicController
 		tableEl.setCustomizeColumns(false);
 		tableEl.setElementCssClass("o_portfolio_listing");
 		tableEl.setEmtpyTableMessageKey("table.sEmptyTable");
+		tableEl.setNumOfRowsEnabled(false);
 		tableEl.setPageSize(24);
 		VelocityContainer row = createVelocityContainer("binder_row");
 		row.setDomReplacementWrapperRequired(false); // sets its own DOM id in velocity container
 		tableEl.setRowRenderer(row, this);
-		tableEl.setRowCssDelegate(this);
+		tableEl.setCssDelegate(new BinderCssDelegate());
 		tableEl.setAndLoadPersistedPreferences(ureq, "portfolio-list");
-	}
-
-	@Override
-	public String getRowCssClass(int pos) {
-		return "o_portfolio_entry";
+		
+		mapperThumbnailUrl = registerCacheableMapper(ureq, "binder-list", new ImageMapper(model));
+		row.contextPut("mapperThumbnailUrl", mapperThumbnailUrl);
+		
+		createDropdown = new DropdownItem("create.binders", "create.new.binder", getTranslator());
+		createDropdown.setButton(true);
+		createBinderLink = uifactory.addFormLink("create.empty.binder", formLayout);
+		createBinderFromTemplateLink = uifactory.addFormLink("create.empty.binder.from.template", formLayout);
+		createBinderFromCourseLink = uifactory.addFormLink("create.empty.binder.from.course", formLayout);
+		
+		createDropdown.addElement(createBinderLink);
+		createDropdown.addElement(createBinderFromTemplateLink);
+		createDropdown.addElement(createBinderFromCourseLink);
+		
+		row.put("createDropdown", createDropdown.getComponent());
 	}
 
 	@Override
@@ -136,21 +164,24 @@ public class BinderListController extends FormBasicController
 	}
 	
 	private void loadModel() {
-		List<Binder> portfolios = portfolioService.searchOwnedBinders(getIdentity());
-		List<PortfolioRow> rows = new ArrayList<>(portfolios.size());
-		for(Binder portfolio:portfolios) {
-			PortfolioRow row = forgePortfolioRow(portfolio);
+		List<BinderRow> binderRows = portfolioService.searchOwnedBinders(getIdentity());
+		List<BinderWrapper> rows = new ArrayList<>(binderRows.size());
+		for(BinderRow binderRow:binderRows) {
+			BinderWrapper row = forgePortfolioRow(binderRow);
 			rows.add(row);
 		}
+		rows.add(new BinderWrapper());
 		model.setObjects(rows);
 		tableEl.reset();
 		tableEl.reloadData();
 	}
 	
-	private PortfolioRow forgePortfolioRow(Binder portfolio) {
+	private BinderWrapper forgePortfolioRow(BinderRow binderRow) {
 		String openLinkId = "open_" + (++counter);
 		FormLink openLink = uifactory.addFormLink(openLinkId, "open", "open", null, flc, Link.LINK);
-		PortfolioRow row = new PortfolioRow(portfolio, openLink);
+		openLink.setIconRightCSS("o_icon o_icon_start");
+		VFSLeaf image = portfolioService.getPosterImageLeaf(binderRow);
+		BinderWrapper row = new BinderWrapper(binderRow, image, openLink);
 		openLink.setUserObject(row);
 		return row;
 	}
@@ -201,11 +232,17 @@ public class BinderListController extends FormBasicController
 
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if(source instanceof FormLink) {
+		if(createBinderLink == source) {
+			doNewBinder(ureq);
+		} else if(createBinderFromTemplateLink == source) {
+			
+		} else if(createBinderFromCourseLink == source) {
+			
+		} else if(source instanceof FormLink) {
 			FormLink link = (FormLink)source;
 			String cmd = link.getCmd();
 			if("open".equals(cmd)) {
-				PortfolioRow row = (PortfolioRow)link.getUserObject();
+				BinderWrapper row = (BinderWrapper)link.getUserObject();
 				Activateable2 activateable = doOpenBinder(ureq, row.getKey());
 				if(activateable != null) {
 					activateable.activate(ureq, null, null);
@@ -251,33 +288,119 @@ public class BinderListController extends FormBasicController
 		cmc.activate();
 	}
 	
-	public static class PortfolioRow {
+	public static class ImageMapper implements Mapper {
 		
-		private final Long key;
-		private final String title;
+		private final BindersDataModel binderModel;
+		
+		public ImageMapper(BindersDataModel model) {
+			this.binderModel = model;
+		}
+
+		@Override
+		public MediaResource handle(String relPath, HttpServletRequest request) {
+			String row = relPath;
+			if(row.startsWith("/")) {
+				row = row.substring(1, row.length());
+			}
+			int index = row.indexOf("/");
+			if(index > 0) {
+				row = row.substring(0, index);
+				Long key = new Long(row); 
+				List<BinderWrapper> rows = binderModel.getObjects();
+				for(BinderWrapper prow:rows) {
+					if(key.equals(prow.getKey())) {
+						VFSLeaf image = prow.getBackgroundImage();
+						if(image instanceof MetaTagged) {
+							MetaInfo info = ((MetaTagged)image).getMetaInfo();
+							VFSLeaf thumbnail = info.getThumbnail(BACKGROUND_SIZE.getWidth(), BACKGROUND_SIZE.getHeight(), true);
+							if(thumbnail != null) {
+								image = thumbnail;
+							}
+						}
+						return new VFSMediaResource(image);
+					}
+				}
+			}
+			
+			return null;
+		}
+	}
+	
+	public class BinderWrapper {
+		
+		private final BinderRow binderRow;
+		private final VFSLeaf image;
 		private final FormLink openLink;
+		private final boolean newBinder;
 		
-		public PortfolioRow(Binder binder, FormLink openLink) {
-			key = binder.getKey();
-			title = binder.getTitle();
+		public BinderWrapper() {
+			binderRow = null;
+			image = null;
+			openLink = null;
+			newBinder = true;
+		}
+		
+		public BinderWrapper(BinderRow binderRow, VFSLeaf image, FormLink openLink) {
+			this.binderRow = binderRow;
+			this.image = image;
 			this.openLink = openLink;
+			newBinder = false;
+		}
+		
+		public boolean isNewBinder() {
+			return newBinder;
 		}
 		
 		public Long getKey() {
-			return key;
+			return binderRow == null ? null : binderRow.getKey();
 		}
 
 		public String getTitle() {
-			return title;
+			return binderRow == null ? null : binderRow.getTitle();
 		}
-
+		
+		public Date getLastUpdate() {
+			return binderRow == null ? null : binderRow.getLastModified();
+		}
+		
+		public String[] getNumOfSectionsAndPages() {
+			return new String[]{
+					Integer.toString(binderRow.getNumOfSections()),
+					Integer.toString(binderRow.getNumOfPages())
+				};
+		}
+		
+		public String[] getNumOfComments() {
+			return new String[]{
+					Integer.toString(binderRow.getNumOfComments())
+				};
+		}
 
 		public FormLink getOpenLink() {
 			return openLink;
 		}
 		
+		public boolean isBackground() {
+			return image != null;
+		}
+		
+		public VFSLeaf getBackgroundImage() {
+			return image;
+		}
+		
+		public String getImageName() {
+			return image == null ? null : image.getName();
+		}
+		
 		public String getOpenFormItemName() {
 			return openLink == null ? null : openLink.getComponent().getComponentName();
+		}
+	}
+	
+	private static class BinderCssDelegate extends DefaultFlexiTableCssDelegate {
+		@Override
+		public String getRowCssClass(FlexiTableRendererType type, int pos) {
+			return "o_portfolio_entry";
 		}
 	}
 }

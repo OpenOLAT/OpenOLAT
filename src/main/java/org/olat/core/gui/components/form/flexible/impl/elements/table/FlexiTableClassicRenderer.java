@@ -142,8 +142,8 @@ class FlexiTableClassicRenderer extends AbstractFlexiTableRenderer implements Co
 		// use alternating css class
 		int numOfColumns = 0;
 		target.append("<tr id='").append(rowIdPrefix).append(row).append("'");
-		if(ftE.getRowCssDelegate() != null) {
-			String cssClass = ftE.getRowCssDelegate().getRowCssClass(row);
+		if(ftE.getCssDelegate() != null) {
+			String cssClass = ftE.getCssDelegate().getRowCssClass(FlexiTableRendererType.classic, row);
 			if(StringHelper.containsNonWhitespace(cssClass)) {
 				target.append(" class='").append(cssClass).append("'");
 			}

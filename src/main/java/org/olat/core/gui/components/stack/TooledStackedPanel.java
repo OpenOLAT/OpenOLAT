@@ -40,7 +40,8 @@ import org.olat.core.gui.translator.Translator;
 public class TooledStackedPanel extends BreadcrumbedStackedPanel implements StackedPanel, BreadcrumbPanel, ComponentEventListener {
 	
 	private static final ComponentRenderer RENDERER = new TooledStackedPanelRenderer();
-	boolean toolbarEnabled = true;
+	private boolean toolbarEnabled = true;
+	private boolean toolbarAutoEnabled = false;
 	
 	public TooledStackedPanel(String name, Translator translator, ComponentEventListener listener) {
 		this(name, translator, listener, null);
@@ -178,6 +179,23 @@ public class TooledStackedPanel extends BreadcrumbedStackedPanel implements Stac
 	 */
 	public boolean isToolbarEnabled() {
 		return toolbarEnabled;
+	}
+	
+	public boolean isToolbarAutoEnabled() {
+		return toolbarAutoEnabled;
+	}
+	
+	/**
+	 * By default, the toolbar is always enabled. Using this method, and setting the
+	 * parameter to true, the toolbar will only appear if there is a tool.
+	 * 
+	 * @param enable
+	 */
+	public void setToolbarAutoEnabled(boolean enable) {
+		toolbarAutoEnabled = enable;
+		if(enable) {
+			toolbarEnabled = false;
+		}
 	}
 
 	

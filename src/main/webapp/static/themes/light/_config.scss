@@ -327,7 +327,14 @@ $o-course-node-error			: $state-danger-text !default;
 $o-course-node-deleted			: $badge-bg !default;
 
 
-
+/* Portfolio v2 */
+$o-portfolio-media-browser-space			: $padding-large-vertical * 2 !default;
+$o-portfolio-media-browser-space-sm			: $padding-large-vertical !default;
+$o-portfolio-media-browser-space-xs			: $padding-xs-vertical !default;
+$o-portfolio-media-browser-rowelem-width-md : 180px !default;
+$o-portfolio-media-browser-rowelem-width-sm : 80px !default;
+$o-portfolio-media-browser-border 			: $brand-primary !default;
+$o-portfolio-media-browser-meta-title-color	: $brand-primary !default;
 
 /* Chat and other floating window */
 $o-dialog-window-bg				: #fefefe !default;

@@ -3,6 +3,12 @@ div#o_main_toolbar.o_toolbar.o_portfolio {
 	margin-top: 0px;
 }
 
+
+.o_section_lead {
+	@extend .jumbotron;
+	margin-bottom: 10px;
+}
+
 .o_portfolio_listing {
 	
 	.o_table_body.container-fluid {
@@ -14,9 +20,19 @@ div#o_main_toolbar.o_toolbar.o_portfolio {
 		position: relative;
 		display: inline-block;
 		height: 230px;			
-		width: 250px;
+		width: 400px;
 		vertical-align: top;
 		margin-right: 10px;
+		
+		ul {
+			padding-left: 2em;
+		}
+		
+		div.panel.panel-default {
+			background-repeat:no-repeat;
+			background-position:50% 50%;		
+			background-size: contain;
+		}
 	}
 }
 
@@ -55,5 +71,98 @@ div#o_main_toolbar.o_toolbar.o_portfolio {
 	
 	ul ul {
 		margin-left: 2em;
+	}
+}
+
+.o_portfolio_media_browser {
+
+	.o_portfolio_medias {
+		position: relative;
+		margin-bottom: $o-portfolio-media-browser-space;
+		margin-top: $o-portfolio-media-browser-space;
+		@include clearfix();
+		
+		.o_portfolio_media {
+			position: relative;
+			float: left; 
+			margin: 0 $o-portfolio-media-browser-space $o-portfolio-media-browser-space 0;
+			width: $o-portfolio-media-browser-rowelem-width-md;	
+
+			&:last-child {
+				margin-right: 0;			
+			}
+						
+			.o_visual {
+				border: 1px solid $o-portfolio-media-browser-border;
+				position: relative;
+				height: $o-portfolio-media-browser-rowelem-width-md;
+			
+				span.o_visual_not_available {
+					width:100%;
+					height:100%;
+					display:block;
+				}
+			}	
+			.o_meta {
+				position: absolute;
+				left: 0;
+				bottom: 0;
+				width: 100%;
+
+				border: 1px solid $o-portfolio-media-browser-border;
+				border-top: 0;
+				background-color: rgba(255,255,255,0.8);
+				
+				.o_title {
+					margin: 0; /* box moves down otherwhise, replaced with padding */
+					text-align: center;
+					line-height: 2em;
+					height: 2em;
+					width: 100%;
+
+					overflow: hidden;
+					/* overflow via JS OPOL.Ellipsis */
+					a {
+						@extend %o_undecorated;
+						display: block;
+						color: $o-portfolio-media-browser-meta-title-color;
+						&:hover {
+						    color: darken($o-portfolio-media-browser-meta-title-color, 10%);
+						}
+						
+						//override o_icon styles, hide the icon
+						font-family: inherit;
+						font-weight: inherit;
+						>i {
+							display:none;
+						}
+					}
+				}
+			}
+
+			@media (min-width: $screen-sm-min) and (max-width: $screen-sm-max) { 
+				width: $o-portfolio-media-browser-rowelem-width-sm;	
+				margin: 0 $o-portfolio-media-browser-space-sm $o-portfolio-media-browser-space-sm 0;
+	
+				.o_visual {
+					height: $o-portfolio-media-browser-rowelem-width-sm;	
+				}	
+				.o_title {
+					font-size: 90%;
+				}
+			}
+			@media (max-width: $screen-xs-max) { 
+				width: $o-portfolio-media-browser-rowelem-width-sm;	
+				margin: 0 $o-portfolio-media-browser-space-xs $o-portfolio-media-browser-space-xs 0;
+				
+				.o_visual {
+					height: $o-portfolio-media-browser-rowelem-width-sm;	
+					width: $o-portfolio-media-browser-rowelem-width-sm;	
+				}	
+				.o_title {
+					font-size: 90%;
+				}
+			}	
+		}
 	}
 }

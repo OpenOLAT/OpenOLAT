@@ -31,6 +31,7 @@ import org.olat.basesecurity.Group;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.IdentityRef;
 import org.olat.basesecurity.manager.GroupDAO;
+import org.olat.core.commons.modules.bc.vfs.OlatRootFileImpl;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
@@ -38,6 +39,7 @@ import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.resource.OresHelper;
+import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.modules.portfolio.Binder;
 import org.olat.modules.portfolio.BinderRef;
 import org.olat.modules.portfolio.Category;
@@ -55,6 +57,7 @@ import org.olat.modules.portfolio.handler.BinderTemplateResource;
 import org.olat.modules.portfolio.model.AccessRightChange;
 import org.olat.modules.portfolio.model.AccessRights;
 import org.olat.modules.portfolio.model.BinderImpl;
+import org.olat.modules.portfolio.model.BinderRow;
 import org.olat.modules.portfolio.ui.PortfolioHomeController;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
@@ -155,7 +158,12 @@ public class PortfolioServiceImpl implements PortfolioService {
 	}
 
 	@Override
-	public List<Binder> searchOwnedBinders(Identity owner) {
+	public List<Binder> getOwnedBinders(IdentityRef owner) {
+		return binderDao.getOwnedBinders(owner);
+	}
+
+	@Override
+	public List<BinderRow> searchOwnedBinders(IdentityRef owner) {
 		return binderDao.searchOwnedBinders(owner);
 	}
 	
@@ -309,11 +317,23 @@ public class PortfolioServiceImpl implements PortfolioService {
 	}
 
 	@Override
-	public File getPosterImage(Binder binder) {
+	public File getPosterImageFile(BinderRef binder) {
 		String imagePath = binder.getImagePath();
 		if(StringHelper.containsNonWhitespace(imagePath)) {
 			File bcroot = portfolioFileStorage.getRootDirectory();
 			return new File(bcroot, imagePath);
+		}
+		return null;
+	}
+	
+	@Override
+	public VFSLeaf getPosterImageLeaf(BinderRef binder) {
+		String imagePath = binder.getImagePath();
+		if(StringHelper.containsNonWhitespace(imagePath)) {
+			OlatRootFileImpl leaf = new OlatRootFileImpl("/" + imagePath, null);
+			if(leaf.exists()) {
+				return leaf;
+			}
 		}
 		return null;
 	}

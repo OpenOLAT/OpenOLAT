@@ -40,6 +40,8 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
+import org.olat.core.id.context.ContextEntry;
+import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.modules.portfolio.Binder;
@@ -59,7 +61,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class SharedItemsController extends FormBasicController {
+public class SharedItemsController extends FormBasicController implements Activateable2 {
 	
 	protected static final String USER_PROPS_ID = PortfolioHomeController.class.getCanonicalName();
 	
@@ -83,6 +85,7 @@ public class SharedItemsController extends FormBasicController {
 	public SharedItemsController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel) {
 		super(ureq, wControl, "shared");
 		this.stackPanel = stackPanel;
+		setTranslator(userManager.getPropertyHandlerTranslator(getTranslator()));
 		
 		isAdministrativeUser = securityModule.isUserAllowedAdminProps(ureq.getUserSession().getRoles());
 		userPropertyHandlers = userManager.getUserPropertyHandlersFor(USER_PROPS_ID, isAdministrativeUser);
@@ -94,6 +97,22 @@ public class SharedItemsController extends FormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
+
+		if(isAdministrativeUser) {
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ShareItemCols.username));
+		}
+		// followed by the users fields
+		int colPos = USER_PROPS_OFFSET;
+		for (int i = 0; i < userPropertyHandlers.size(); i++) {
+			UserPropertyHandler userPropertyHandler	= userPropertyHandlers.get(i);
+
+			String propName = userPropertyHandler.getName();
+			boolean visible = userManager.isMandatoryUserProperty(USER_PROPS_ID , userPropertyHandler);
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(visible, userPropertyHandler.i18nColumnDescriptorLabelKey(), colPos, true, propName));
+			colPos++;
+		}
+		
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ShareItemCols.binderKey, "select"));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ShareItemCols.binderName, "select"));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ShareItemCols.courseName, "select"));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ShareItemCols.lastModified));
@@ -113,12 +132,16 @@ public class SharedItemsController extends FormBasicController {
 		List<SharedItemRow> rows = new ArrayList<>(portfolios.size());
 		for(Binder binder:portfolios) {
 			List<Identity> owners = portfolioService.getMembers(binder, GroupRoles.owner.name());
-			SharedItemRow row = new SharedItemRow(owners.get(0), userPropertyHandlers, getLocale());
-			row.setBinder(binder.getTitle());
-			row.setBinderKey(binder.getKey());
-			row.setLastModified(binder.getLastModified());//TODO max()
-			row.setCourse("TODO");
-			rows.add(row);
+			for(Identity owner:owners) {
+				SharedItemRow row = new SharedItemRow(owner, userPropertyHandlers, getLocale());
+				row.setBinderTitle(binder.getTitle());
+				row.setBinderKey(binder.getKey());
+				row.setLastModified(binder.getLastModified());//TODO max()
+				if(binder.getCourseEntry() != null) {
+					row.setCourseDisplayName(binder.getCourseEntry().getDisplayname());
+				}
+				rows.add(row);
+			}
 		}
 		model.setObjects(rows);
 		tableEl.reset();
@@ -130,6 +153,11 @@ public class SharedItemsController extends FormBasicController {
 		//
 	}
 	
+	@Override
+	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
+		//
+	}
+
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(tableEl == source) {

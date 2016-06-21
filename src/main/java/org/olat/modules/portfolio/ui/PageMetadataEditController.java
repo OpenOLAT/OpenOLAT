@@ -139,7 +139,7 @@ public class PageMetadataEditController extends FormBasicController {
 		
 		// list of binder
 		if (chooseBinder) {
-			List<Binder> binders = portfolioService.searchOwnedBinders(getIdentity());
+			List<Binder> binders = portfolioService.getOwnedBinders(getIdentity());
 
 			String[] theKeys = new String[binders.size()+1];
 			String[] theValues = new String[binders.size()+1];
@@ -296,9 +296,14 @@ public class PageMetadataEditController extends FormBasicController {
 				sectionsEl.setVisible(false);
 				currentBinder = null;
 			} else {
-				currentBinder = portfolioService.searchOwnedBinders(getIdentity()).get(bindersEl.getSelected());
-				sectionsEl.setVisible(true);
-				retrieveSections(flc, false);
+				try {
+					String selectedKey = bindersEl.getSelectedKey();
+					currentBinder = portfolioService.getBinderByKey(new Long(selectedKey));
+					sectionsEl.setVisible(true);
+					retrieveSections(flc, false);
+				} catch(NumberFormatException e) {
+					logError("", e);
+				}
 			}
 		}
 	}

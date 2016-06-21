@@ -84,6 +84,10 @@
 				background-color: $o-toolbar-link-active-bg;
 			}
 	    }
+	    a.btn-primary {
+	    	color: #fff;
+	    }
+	    
 	    .dropdown-menu {
 			a {
 				// override rule from above

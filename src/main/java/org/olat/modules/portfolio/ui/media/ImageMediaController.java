@@ -17,14 +17,18 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.portfolio;
+package org.olat.modules.portfolio.ui.media;
 
-import org.olat.core.commons.services.image.Size;
+import java.io.File;
+
+import org.olat.core.commons.modules.bc.FolderConfig;
 import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.control.Controller;
+import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.image.ImageComponent;
+import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.id.Identity;
-import org.olat.core.util.vfs.VFSLeaf;
+import org.olat.core.gui.control.controller.BasicController;
+import org.olat.modules.portfolio.Media;
 
 /**
  * 
@@ -32,16 +36,27 @@ import org.olat.core.util.vfs.VFSLeaf;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public interface MediaHandler {
+public class ImageMediaController extends BasicController {
 	
-	public String getType();
-	
-	public String getIconCssClass(Media media);
-	
-	public VFSLeaf getThumbnail(Media media, Size size);
-	
-	public Media createMedia(String title, String description, Object mediaObject, String businessPath, Identity author);
-	
-	public Controller getMediaController(UserRequest ureq, WindowControl wControl, Media media);
+	public ImageMediaController(UserRequest ureq, WindowControl wControl, Media media) {
+		super(ureq, wControl);
+		
+		File mediaDir = new File(FolderConfig.getCanonicalRoot(), media.getStoragePath());
+		File mediaFile = new File(mediaDir, media.getContent());
+		ImageComponent imageCmp = new ImageComponent(ureq.getUserSession(), "image");
+		imageCmp.setMedia(mediaFile);
+		
+		putInitialPanel(imageCmp);
+	}
 
+
+	@Override
+	protected void event(UserRequest ureq, Component source, Event event) {
+		//
+	}
+
+	@Override
+	protected void doDispose() {
+		//
+	}
 }

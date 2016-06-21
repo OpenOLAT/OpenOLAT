@@ -47,6 +47,8 @@ import org.olat.modules.portfolio.model.MediaPart;
 import org.olat.modules.portfolio.ui.MediaCenterController;
 import org.olat.modules.portfolio.ui.PageController;
 import org.olat.modules.portfolio.ui.event.MediaSelectionEvent;
+import org.olat.modules.portfolio.ui.media.CollectFileMediaController;
+import org.olat.modules.portfolio.ui.media.CollectImageMediaController;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -57,11 +59,13 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class PageEditorController extends FormBasicController {
 
-	private FormLink addHtmlLink, addMediaLink;
+	private FormLink addHtmlLink, addMediaLink, addFileLink, addImageLink;
 	private List<EditorFragment> fragments = new ArrayList<>();
 
 	private CloseableModalController cmc;
 	private MediaCenterController mediaListCtrl;
+	private CollectFileMediaController fileUploadCtrl;
+	private CollectImageMediaController imageUploadCtrl;
 	
 	private Page page;
 	private int counter = 0;
@@ -82,9 +86,15 @@ public class PageEditorController extends FormBasicController {
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		addHtmlLink = uifactory.addFormLink("add.html", "add.html", "add.html", null, formLayout, Link.BUTTON);
 		addHtmlLink.setIconLeftCSS("o_icon o_icon_add_html");
-		
+
 		addMediaLink = uifactory.addFormLink("add.media", "add.media", "add.media", null, formLayout, Link.BUTTON);
 		addMediaLink.setIconLeftCSS("o_icon o_icon_portfolio");
+		
+		addFileLink = uifactory.addFormLink("add.file", "add.file", "add.file", null, formLayout, Link.BUTTON);
+		addFileLink.setIconLeftCSS("o_icon o_icon_portfolio");
+		
+		addImageLink = uifactory.addFormLink("add.image", "add.image", "add.image", null, formLayout, Link.BUTTON);
+		addImageLink.setIconLeftCSS("o_icon o_icon_portfolio");
 			
 		uifactory.addFormSubmitButton("save", formLayout);
 
@@ -118,6 +128,10 @@ public class PageEditorController extends FormBasicController {
 			doAddHTMLFragment(ureq);
 		} else if(addMediaLink == source) {
 			doOpenMediaBrowser(ureq);
+		} else if(addImageLink == source) {
+			doAddImageMedia(ureq);
+		} else if(addFileLink == source) {
+			doAddFileMedia(ureq);
 		} else if(source.getUserObject() instanceof HTMLEditorFragment) {
 			HTMLEditorFragment fragment = (HTMLEditorFragment)source.getUserObject();
 			if(fragment.getFormItem() == source) {
@@ -165,6 +179,25 @@ public class PageEditorController extends FormBasicController {
 				if(mse.getMedia() != null) {
 					doAddMedia(ureq, mse.getMedia());
 				}
+				loadModel(ureq);
+			}
+			cmc.deactivate();
+			cleanUp();
+		} else if(fileUploadCtrl == source) {
+			if(event == Event.DONE_EVENT) {
+				if(fileUploadCtrl.getMediaReference() != null) {
+					doAddMedia(ureq, fileUploadCtrl.getMediaReference());
+				}
+				loadModel(ureq);
+			}
+			cmc.deactivate();
+			cleanUp();
+		} else if(imageUploadCtrl == source) {
+			if(event == Event.DONE_EVENT) {
+				if(imageUploadCtrl.getMediaReference() != null) {
+					doAddMedia(ureq, imageUploadCtrl.getMediaReference());
+				}
+				loadModel(ureq);
 			}
 			cmc.deactivate();
 			cleanUp();
@@ -175,10 +208,38 @@ public class PageEditorController extends FormBasicController {
 	}
 	
 	private void cleanUp() {
+		removeAsListenerAndDispose(imageUploadCtrl);
+		removeAsListenerAndDispose(fileUploadCtrl);
 		removeAsListenerAndDispose(mediaListCtrl);
 		removeAsListenerAndDispose(cmc);
+		imageUploadCtrl = null;
+		fileUploadCtrl = null;
 		mediaListCtrl = null;
 		cmc = null;
+	}
+	
+	private void doAddFileMedia(UserRequest ureq) {
+		if(fileUploadCtrl != null) return;
+		
+		fileUploadCtrl = new CollectFileMediaController(ureq, getWindowControl());
+		listenTo(fileUploadCtrl);
+		
+		String title = translate("add.media");
+		cmc = new CloseableModalController(getWindowControl(), null, fileUploadCtrl.getInitialComponent(), true, title, true);
+		listenTo(cmc);
+		cmc.activate();
+	}
+	
+	private void doAddImageMedia(UserRequest ureq) {
+		if(imageUploadCtrl != null) return;
+		
+		imageUploadCtrl = new CollectImageMediaController(ureq, getWindowControl());
+		listenTo(imageUploadCtrl);
+		
+		String title = translate("add.image");
+		cmc = new CloseableModalController(getWindowControl(), null, imageUploadCtrl.getInitialComponent(), true, title, true);
+		listenTo(cmc);
+		cmc.activate();
 	}
 
 	private void doOpenMediaBrowser(UserRequest ureq) {
@@ -219,7 +280,7 @@ public class PageEditorController extends FormBasicController {
 			
 			String cmpId = "html-" + (++counter);
 			String content = htmlPart.getContent();
-			RichTextElement htmlItem = uifactory.addRichTextElementForStringDataCompact(cmpId, null, content, 25, 80, null, flc, ureq.getUserSession(), getWindowControl());
+			RichTextElement htmlItem = uifactory.addRichTextElementForStringDataCompact(cmpId, null, content, 8, 80, null, flc, ureq.getUserSession(), getWindowControl());
 			//htmlItem.getEditorConfiguration().setInline(true);
 			editorFragment.setFormItem(htmlItem);
 			return editorFragment;
@@ -293,6 +354,10 @@ public class PageEditorController extends FormBasicController {
 		@Override
 		public String getComponentName() {
 			return cmpName;
+		}
+		
+		public Controller getController() {
+			return controller;
 		}
 	}
 	

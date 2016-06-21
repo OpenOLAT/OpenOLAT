@@ -17,18 +17,29 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.portfolio;
+package org.olat.core.gui.components.form.flexible.impl.elements.table;
 
 /**
+ * Implementation which always return null, mean to be sub classed.
  * 
- * Initial date: 08.06.2016<br>
+ * Initial date: 21.06.2016<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public interface BinderRef {
-	
-	public Long getKey();
-	
-	public String getImagePath();
+public class DefaultFlexiTableCssDelegate implements FlexiTableCssDelegate {
 
+	@Override
+	public String getWrapperCssClass(FlexiTableRendererType type) {
+		return null;
+	}
+
+	@Override
+	public String getTableCssClass(FlexiTableRendererType type) {
+		return null;
+	}
+
+	@Override
+	public String getRowCssClass(FlexiTableRendererType type, int pos) {
+		return null;
+	}
 }

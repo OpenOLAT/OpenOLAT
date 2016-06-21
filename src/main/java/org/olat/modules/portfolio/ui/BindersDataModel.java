@@ -22,7 +22,7 @@ package org.olat.modules.portfolio.ui;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
-import org.olat.modules.portfolio.ui.BinderListController.PortfolioRow;
+import org.olat.modules.portfolio.ui.BinderListController.BinderWrapper;
 
 /**
  * 
@@ -30,7 +30,7 @@ import org.olat.modules.portfolio.ui.BinderListController.PortfolioRow;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class BindersDataModel extends DefaultFlexiTableDataModel<PortfolioRow> {
+public class BindersDataModel extends DefaultFlexiTableDataModel<BinderWrapper> {
 
 	public BindersDataModel(FlexiTableColumnModel columnModel) {
 		super(columnModel);
@@ -38,7 +38,7 @@ public class BindersDataModel extends DefaultFlexiTableDataModel<PortfolioRow> {
 
 	@Override
 	public Object getValueAt(int row, int col) {
-		PortfolioRow portfolio = getObject(row);
+		BinderWrapper portfolio = getObject(row);
 		switch(PortfolioCols.values()[col]) {
 			case key: return portfolio.getKey();
 			case title: return portfolio.getTitle();
@@ -48,7 +48,7 @@ public class BindersDataModel extends DefaultFlexiTableDataModel<PortfolioRow> {
 	}
 	
 	@Override
-	public DefaultFlexiTableDataModel<PortfolioRow> createCopyWithEmptyList() {
+	public DefaultFlexiTableDataModel<BinderWrapper> createCopyWithEmptyList() {
 		return new BindersDataModel(getTableColumnModel());
 	}
 	

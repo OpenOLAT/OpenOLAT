@@ -79,37 +79,41 @@ public class TooledStackedPanelRenderer extends DefaultComponentRenderer {
 				sb.append("</ol></div>"); // o_breadcrumb
 			}
 			
-			if (panel.isToolbarEnabled()) {
-				sb.append("<div class='o_tools_container'><div class='container-fluid'>");
-				
+			if (panel.isToolbarAutoEnabled() || panel.isToolbarEnabled()) {
 				List<Tool> leftTools = getTools(tools, Align.left);
-				if(leftTools.size() > 0) {
-					sb.append("<ul class='o_tools o_tools_left list-inline'>");
-					renderTools(leftTools, renderer, sb, args);
-					sb.append("</ul>");
-				}
-				
 				List<Tool> rightEdgeTools = getTools(tools, Align.rightEdge);
-				if(rightEdgeTools.size() > 0) {
-					sb.append("<ul class='o_tools o_tools_right_edge list-inline'>");
-					renderTools(rightEdgeTools, renderer, sb, args);
-					sb.append("</ul>");
-				}
-				
 				List<Tool> rightTools = getTools(tools, Align.right);
-				if(rightTools.size() > 0) {
-					sb.append("<ul class='o_tools o_tools_right list-inline'>");
-					renderTools(rightTools, renderer, sb, args);
-					sb.append("</ul>");
-				}
-	
 				List<Tool> notAlignedTools = getTools(tools, null);
-				if(notAlignedTools.size() > 0) {
-					sb.append("<ul class='o_tools o_tools_center list-inline'>");
-					renderTools(notAlignedTools, renderer, sb, args);
-					sb.append("</ul>");
+				
+				if(panel.isToolbarEnabled() || (panel.isToolbarAutoEnabled()
+						&& (leftTools.size() > 0 || rightTools.size() > 0 || rightTools.size() > 0 || notAlignedTools.size() > 0))) {
+					sb.append("<div class='o_tools_container'><div class='container-fluid'>");
+					
+					if(leftTools.size() > 0) {
+						sb.append("<ul class='o_tools o_tools_left list-inline'>");
+						renderTools(leftTools, renderer, sb, args);
+						sb.append("</ul>");
+					}
+					
+					if(rightEdgeTools.size() > 0) {
+						sb.append("<ul class='o_tools o_tools_right_edge list-inline'>");
+						renderTools(rightEdgeTools, renderer, sb, args);
+						sb.append("</ul>");
+					}
+					
+					if(rightTools.size() > 0) {
+						sb.append("<ul class='o_tools o_tools_right list-inline'>");
+						renderTools(rightTools, renderer, sb, args);
+						sb.append("</ul>");
+					}
+		
+					if(notAlignedTools.size() > 0) {
+						sb.append("<ul class='o_tools o_tools_center list-inline'>");
+						renderTools(notAlignedTools, renderer, sb, args);
+						sb.append("</ul>");
+					}
+					sb.append("</div></div>"); // container-fluid, o_tools_container
 				}
-				sb.append("</div></div>"); // container-fluid, o_tools_container
 			}
 			sb.append("</div>"); // o_toolbar
 		}

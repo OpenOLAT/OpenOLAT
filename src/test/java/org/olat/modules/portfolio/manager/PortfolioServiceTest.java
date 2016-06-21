@@ -32,6 +32,7 @@ import org.olat.modules.portfolio.PortfolioRoles;
 import org.olat.modules.portfolio.PortfolioService;
 import org.olat.modules.portfolio.Section;
 import org.olat.modules.portfolio.model.AccessRights;
+import org.olat.modules.portfolio.model.BinderRow;
 import org.olat.modules.portfolio.model.SectionImpl;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
@@ -66,7 +67,7 @@ public class PortfolioServiceTest extends OlatTestCase {
 		Assert.assertEquals(title, binder.getTitle());
 		Assert.assertEquals(summary, binder.getSummary());
 		
-		List<Binder> ownedBinders = portfolioService.searchOwnedBinders(id);
+		List<Binder> ownedBinders = portfolioService.getOwnedBinders(id);
 		Assert.assertNotNull(ownedBinders);
 		Assert.assertEquals(1, ownedBinders.size());
 		Binder ownedBinder = ownedBinders.get(0);
@@ -203,5 +204,32 @@ public class PortfolioServiceTest extends OlatTestCase {
 		Assert.assertEquals(templateSections.get(1), ((SectionImpl)reloadedSections.get(1)).getTemplateReference());
 		Assert.assertEquals(templateSections.get(2), ((SectionImpl)reloadedSections.get(2)).getTemplateReference());
 		Assert.assertEquals(templateSections.get(3), ((SectionImpl)reloadedSections.get(3)).getTemplateReference());
+	}
+	
+	@Test
+	public void searchOwnedBinders() {
+		Identity owner = JunitTestHelper.createAndPersistIdentityAsRndUser("binder-owner-");
+		Binder binder = portfolioService.createNewBinder("Binder 2", "Binder with one section.", null, owner);
+		dbInstance.commitAndCloseSession();
+		portfolioService.appendNewSection("First section", "My first section.", null, null, binder);
+		dbInstance.commitAndCloseSession();
+		portfolioService.appendNewSection("Second section", "My second section.", null, null, binder);
+		dbInstance.commitAndCloseSession();
+		
+		List<Section> sections = portfolioService.getSections(binder);
+		for(int i=0; i<2; i++) {
+			Section section = sections.get(1);
+			portfolioService.appendNewPage(owner, "Page-1-" + i, "", null, section);
+			portfolioService.appendNewPage(owner, "Page-2-" + i, "", null, section);
+		}
+
+		List<BinderRow> rows = portfolioService.searchOwnedBinders(owner);
+		Assert.assertNotNull(rows);
+		Assert.assertEquals(1, rows.size());
+		
+		BinderRow myBinder = rows.get(0);
+		Assert.assertEquals(2, myBinder.getNumOfSections());
+		Assert.assertEquals(4, myBinder.getNumOfPages());
+		
 	}
 }

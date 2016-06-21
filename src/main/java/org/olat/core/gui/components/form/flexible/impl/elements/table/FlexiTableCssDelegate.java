@@ -25,8 +25,12 @@ package org.olat.core.gui.components.form.flexible.impl.elements.table;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public interface FlexiTableRowCssDelegate {
+public interface FlexiTableCssDelegate {
 	
-	public String getRowCssClass(int pos);
+	public String getWrapperCssClass(FlexiTableRendererType type);
+	
+	public String getTableCssClass(FlexiTableRendererType type);
+	
+	public String getRowCssClass(FlexiTableRendererType type, int pos);
 
 }

@@ -113,7 +113,7 @@ public class BinderMetadataEditController extends FormBasicController {
 		fileUpload.limitToMimeType(imageMimeTypes, null, null);
 		fileUpload.setMaxUploadSizeKB(picUploadlimitKB, null, null);
 		if(binder != null) {
-			File posterImg = portfolioService.getPosterImage(binder);
+			File posterImg = portfolioService.getPosterImageFile(binder);
 			if(posterImg != null) {
 				fileUpload.setInitialFile(posterImg);
 			}

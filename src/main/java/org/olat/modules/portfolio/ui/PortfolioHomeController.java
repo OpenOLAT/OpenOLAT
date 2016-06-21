@@ -59,7 +59,7 @@ public class PortfolioHomeController extends BasicController implements Activate
 	public PortfolioHomeController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel) {
 		super(ureq, wControl);
 		this.stackPanel = stackPanel;
-		stackPanel.setToolbarEnabled(true);
+		stackPanel.setToolbarAutoEnabled(true);
 
 		mainVC = createVelocityContainer("home");
 		myBindersLink = LinkFactory.createLink("goto.my.binders", mainVC, this);
@@ -103,11 +103,19 @@ public class PortfolioHomeController extends BasicController implements Activate
 	@Override
 	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
 		if(entries == null || entries.isEmpty()) return;
-		
+
+		List<ContextEntry> subEntries = entries.subList(1, entries.size());
 		String resName = entries.get(0).getOLATResourceable().getResourceableTypeName();
 		if("MyBinders".equalsIgnoreCase(resName)) {
-			List<ContextEntry> subEntries = entries.subList(1, entries.size());
 			doOpenMyBinders(ureq).activate(ureq, subEntries, entries.get(0).getTransientState());
+		} else if("MediaCenter".equalsIgnoreCase(resName)) {
+			doOpenMediaCenter(ureq).activate(ureq, subEntries, entries.get(0).getTransientState());
+		} else if("SharedWithMe".equalsIgnoreCase(resName)) {
+			doOpenSharedWithMe(ureq).activate(ureq, subEntries, entries.get(0).getTransientState());
+		} else if("MySharedItems".equalsIgnoreCase(resName)) {
+			doOpenMySharedItems(ureq).activate(ureq, subEntries, entries.get(0).getTransientState());
+		} else if("MyPages".equalsIgnoreCase(resName)) {
+			doOpenMyPages(ureq).activate(ureq, subEntries, entries.get(0).getTransientState());
 		}
 	}
 	

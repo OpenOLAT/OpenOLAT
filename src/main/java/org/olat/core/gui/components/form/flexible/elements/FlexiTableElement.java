@@ -36,7 +36,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiColum
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableComponent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableComponentDelegate;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableRendererType;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableRowCssDelegate;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableCssDelegate;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.generic.ajax.autocompletion.ListProvider;
 import org.olat.core.util.UserSession;
@@ -130,9 +130,9 @@ public interface FlexiTableElement extends FormItem {
 	 */
 	public void setWrapperSelector(String wrapperSelector);
 	
-	public FlexiTableRowCssDelegate getRowCssDelegate();
+	public FlexiTableCssDelegate getCssDelegate();
 
-	public void setRowCssDelegate(FlexiTableRowCssDelegate rowCssDelegate);
+	public void setCssDelegate(FlexiTableCssDelegate rowCssDelegate);
 	
 	/**
 	 * 

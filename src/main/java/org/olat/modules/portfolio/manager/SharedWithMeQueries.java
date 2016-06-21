@@ -45,6 +45,7 @@ public class SharedWithMeQueries {
 		sb.append("select binder from pfbinder as binder")
 		  .append(" inner join binder.baseGroup as baseGroup")
 		  .append(" inner join baseGroup.members as membership")
+		  .append(" left join fetch binder.courseEntry as courseEntry")
 		  .append(" where (membership.identity.key=:identityKey and membership.role in ('").append(PortfolioRoles.coach.name()).append("','").append(PortfolioRoles.reviewer.name()).append("'))")
 		  .append(" or exists (select section.key from pfsection as section")
 		  .append("   inner join section.baseGroup as sectionGroup")

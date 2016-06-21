@@ -17,7 +17,7 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.fo.portfolio;
+package org.olat.modules.portfolio.handler;
 
 import java.io.File;
 
@@ -27,16 +27,11 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Identity;
 import org.olat.core.util.FileUtils;
-import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.vfs.VFSLeaf;
-import org.olat.modules.fo.Forum;
-import org.olat.modules.fo.Message;
-import org.olat.modules.fo.MessageLight;
-import org.olat.modules.fo.manager.ForumManager;
 import org.olat.modules.portfolio.Media;
-import org.olat.modules.portfolio.handler.AbstractMediaHandler;
 import org.olat.modules.portfolio.manager.MediaDAO;
 import org.olat.modules.portfolio.manager.PortfolioFileStorage;
+import org.olat.modules.portfolio.ui.media.FileMediaController;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -47,64 +42,48 @@ import org.springframework.stereotype.Service;
  *
  */
 @Service
-public class ForumMediaHandler extends AbstractMediaHandler {
+public class FileHandler extends AbstractMediaHandler {
 	
-	public static final String FORUM_HANDLER = OresHelper.calculateTypeName(Forum.class);
+	public static final String FILE_TYPE = "bc";
 	
+
 	@Autowired
 	private MediaDAO mediaDao;
 	@Autowired
-	private ForumManager forumManager;
-	@Autowired
 	private PortfolioFileStorage fileStorage;
 	
-	public ForumMediaHandler() {
-		super(FORUM_HANDLER);
+	public FileHandler() {
+		super(FILE_TYPE);
 	}
 
 	@Override
 	public String getIconCssClass(Media media) {
-		return "o_fo_icon";
+		return null;
 	}
 
 	@Override
 	public VFSLeaf getThumbnail(Media media, Size size) {
+		
 		return null;
 	}
 
 	@Override
 	public Media createMedia(String title, String description, Object mediaObject, String businessPath, Identity author) {
-		Message message = null;
-		if(mediaObject instanceof Message) {
-			message = (Message)mediaObject;
-		} else if(mediaObject instanceof MessageLight) {
-			MessageLight messageLight = (MessageLight)mediaObject;
-			message = forumManager.loadMessage(messageLight.getKey());
-		}
-		
-		String content = message.getBody();
-		Media media = mediaDao.createMedia(title, description, content, FORUM_HANDLER, businessPath, 70, author);
-		
-		File messageDir = forumManager.getMessageDirectory(message.getForum().getKey(), message.getKey(), false);
-		if (messageDir != null && messageDir.exists()) {
-			File[] attachments = messageDir.listFiles();
-			if (attachments.length > 0) {
-				File mediaDir = fileStorage.generateMediaSubDirectory(media);
-				for(File attachment:attachments) {
-					FileUtils.copyFileToDir(attachment, mediaDir, "Forum media");
-				}
-				String storagePath = fileStorage.getRelativePath(mediaDir);
-				media = mediaDao.updateStoragePath(media, storagePath);
-			}
-		}
+		return null;
+	}
 
+	public Media createMedia(String title, String description, File file, String filename, String businessPath, Identity author) {
+		Media media = mediaDao.createMedia(title, description, filename, FILE_TYPE, businessPath, 60, author);
+		File mediaDir = fileStorage.generateMediaSubDirectory(media);
+		File mediaFile = new File(mediaDir, filename);
+		FileUtils.copyFileToFile(file, mediaFile, false);
+		String storagePath = fileStorage.getRelativePath(mediaDir);
+		mediaDao.updateStoragePath(media, storagePath);
 		return media;
 	}
 
 	@Override
 	public Controller getMediaController(UserRequest ureq, WindowControl wControl, Media media) {
-		return new ForumMessageMediaController(ureq, wControl, media);
+		return new FileMediaController(ureq, wControl, media);
 	}
-	
-	
 }

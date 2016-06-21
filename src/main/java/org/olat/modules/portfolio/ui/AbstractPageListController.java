@@ -21,7 +21,6 @@ package org.olat.modules.portfolio.ui;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 
@@ -34,11 +33,11 @@ import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableCssDelegate;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableComponentDelegate;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableRendererType;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableRowCssDelegate;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.stack.TooledController;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
@@ -67,7 +66,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  *
  */
 public abstract class AbstractPageListController extends FormBasicController
-implements Activateable2, TooledController, FlexiTableComponentDelegate, FlexiTableRowCssDelegate {
+implements Activateable2, TooledController, FlexiTableComponentDelegate {
 	
 	protected FlexiTableElement tableEl;
 	protected PageListDataModel model;
@@ -114,18 +113,13 @@ implements Activateable2, TooledController, FlexiTableComponentDelegate, FlexiTa
 		VelocityContainer row = createVelocityContainer("page_row");
 		row.setDomReplacementWrapperRequired(false); // sets its own DOM id in velocity container
 		tableEl.setRowRenderer(row, this);
-		tableEl.setRowCssDelegate(this);
+		tableEl.setCssDelegate(new DefaultFlexiTableCssDelegate());
 		tableEl.setAndLoadPersistedPreferences(ureq, "page-list");
 	}
 	
 	@Override
 	public void initTools() {
 		//
-	}
-	
-	@Override
-	public String getRowCssClass(int pos) {
-		return null;
 	}
 	
 	@Override
@@ -239,13 +233,5 @@ implements Activateable2, TooledController, FlexiTableComponentDelegate, FlexiTa
 		
 		String displayName = StringHelper.escapeHtml(page.getTitle());
 		stackPanel.pushController(displayName, pageCtrl);
-	}
-
-	private void view(Object... args) {
-		StringBuilder sb = new StringBuilder();
-		for (Object s : args) {
-			sb.append(" %20s");
-		}
-		System.out.println(String.format(sb.toString(), args));
 	}
 }

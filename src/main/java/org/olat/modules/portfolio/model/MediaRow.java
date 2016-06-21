@@ -20,6 +20,7 @@
 package org.olat.modules.portfolio.model;
 
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
+import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.modules.portfolio.Media;
 
 /**
@@ -32,10 +33,12 @@ public class MediaRow {
 	
 	private Media media;
 
+	private VFSLeaf thumbnail;
 	private FormLink openFormLink;
 	
-	public MediaRow(Media media) {
+	public MediaRow(Media media, VFSLeaf thumbnail) {
 		this.media = media;
+		this.thumbnail = thumbnail;
 	}
 	
 	public Long getKey() {
@@ -52,6 +55,18 @@ public class MediaRow {
 	
 	public String getOpenFormItemName() {
 		return openFormLink == null ? null : openFormLink.getComponent().getComponentName();
+	}
+	
+	public boolean isThumbnailAvailable() {
+		return thumbnail != null;
+	}
+	
+	public VFSLeaf getThumbnail() {
+		return thumbnail;
+	}
+	
+	public String getThumbnailName() {
+		return thumbnail == null ? null : thumbnail.getName();
 	}
 
 }
