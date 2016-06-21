@@ -155,12 +155,16 @@ public class PageMetadataEditController extends FormBasicController {
 			bindersEl = uifactory.addDropdownSingleselect("binders", "page.binders", formLayout, theKeys, theValues, null);
 			bindersEl.addActionListener(FormEvent.ONCHANGE);
 			
-			if (currentBinder == null) {
-				currentBinder = binders.get(0);
+			if (binders.size() == 0) {
+				bindersEl.setVisible(false);				
 			} else {
-				for (String key : theKeys) {
-					if (key.equals(currentBinder.getKey().toString()))
-						bindersEl.select(key, true);
+				if (currentBinder == null) {
+					currentBinder = binders.get(0);					
+				} else {
+					for (String key : theKeys) {
+						if (key.equals(currentBinder.getKey().toString()))
+							bindersEl.select(key, true);
+					}
 				}
 			}
 		} else {
@@ -194,11 +198,20 @@ public class PageMetadataEditController extends FormBasicController {
 	}
 	
 	protected void retrieveSections(FormItemContainer formLayout, boolean updateBox) {
+		// case 1: there are no binders to choose from
+		if (currentBinder == null) {
+			sectionsEl = uifactory.addDropdownSingleselect("sections", "page.sections", formLayout, new String[] { "" },
+					new String[] { "" }, null);
+			sectionsEl.setVisible(false);
+			return;
+		}
+		// case 2: there is at least one binder, but no sections
 		List<Section> sections = portfolioService.getSections(currentBinder);
 		if (sections.isEmpty()) {
 			sectionsEl.setKeysAndValues(new String[]{ "" }, new String[]{ "" }, null);
 			sectionsEl.setEnabled(false);
 		} else {
+			// case 3: standard case: we have a binder and sections
 			int numOfSections = sections.size();
 			String selectedKey = null;
 			String[] theKeys = new String[numOfSections];
