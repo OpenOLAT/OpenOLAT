@@ -168,8 +168,9 @@ implements Activateable2, TooledController, FlexiTableComponentDelegate {
 	protected PageRow forgeRow(Page page, boolean firstOfSection) {
 		PageRow row = new PageRow(page, page.getSection(), firstOfSection);
 		String openLinkId = "open_" + (++counter);
-		FormLink openLink = uifactory.addFormLink(openLinkId, "open.full", "open.full.page", null, flc, Link.BUTTON);
+		FormLink openLink = uifactory.addFormLink(openLinkId, "open.full", "open.full.page", null, flc, Link.BUTTON_SMALL);
 		openLink.setIconRightCSS("o_icon o_icon_start");
+		openLink.setPrimary(true);
 		row.setOpenFormLink(openLink);
 		openLink.setUserObject(row);
 		return row;

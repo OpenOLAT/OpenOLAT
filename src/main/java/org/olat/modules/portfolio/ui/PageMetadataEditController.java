@@ -208,8 +208,9 @@ public class PageMetadataEditController extends FormBasicController {
 		// case 2: there is at least one binder, but no sections
 		List<Section> sections = portfolioService.getSections(currentBinder);
 		if (sections.isEmpty()) {
-			sectionsEl.setKeysAndValues(new String[]{ "" }, new String[]{ "" }, null);
-			sectionsEl.setEnabled(false);
+			sectionsEl = uifactory.addDropdownSingleselect("sections", "page.sections", formLayout, new String[] { "" },
+					new String[] { "" }, null);
+			sectionsEl.setVisible(false);
 		} else {
 			// case 3: standard case: we have a binder and sections
 			int numOfSections = sections.size();

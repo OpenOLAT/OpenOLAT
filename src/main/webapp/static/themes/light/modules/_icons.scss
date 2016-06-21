@@ -138,6 +138,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_manual:before { content: $fa-var-book; cursor: help;}
 .o_icon_mail:before { content: $fa-var-envelope-o; }
 .o_icon_math:before { content: "\u03A3"; }
+.o_icon_mediacenter:before { content: $fa-var-picture-o; }
 .o_icon_membersmanagement:before { content: $fa-var-users;}
 .o_icon_menuhandel:before { content: $fa-var-bars;}
 .o_icon_message:before { content: $fa-var-envelope;}
@@ -170,6 +171,17 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_password:before { content: $fa-var-lock;}
 .o_icon_pending:before { content: $fa-var-spinner; }
 .o_icon_phone:before { content: $fa-var-phone;}
+
+.o_icon_portfolio_binder:before { content: $fa-var-folder-open-o; }
+.o_icon_portfolio_entry:before { content: $fa-var-quote-left; }
+.o_icon_portfolio_entry_draft:before { content: $fa-var-circle; color: $brand-warning}
+.o_icon_portfolio_entry_published:before { content: $fa-var-circle; color: $brand-primary}
+.o_icon_portfolio_entry_revision:before { content: $fa-var-circle; color: $brand-info;}
+.o_icon_portfolio_entry_closed:before { content: $fa-var-circle; color: $brand-success;}
+.o_icon_portfolio_entry_deleted:before { content: $fa-var-trash; color: #000;}
+.o_icon_portfolio_my_shares:before { content: $fa-var-share-alt; }
+.o_icon_portfolio_shared_with_me:before { content: $fa-var-share-alt-square; }
+
 .o_icon_post:before { content: $fa-var-comment-o; }
 .o_icon_preview:before { content: $fa-var-eye;}
 .o_icon_previous:before { content: $fa-var-chevron-circle-left; }

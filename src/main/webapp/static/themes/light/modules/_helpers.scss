@@ -101,6 +101,17 @@
 	margin-bottom: 0;
 }
 
+.panel-imagebg {
+	&.panel-default>.panel-heading {
+		background-color: rgba(255, 255, 255, 0.5);
+		border-bottom: transparent;
+	}
+	.panel-body span {
+		padding: 2px;
+		background-color: rgba(255, 255, 255, 0.8);
+	}	
+}
+
 /* Placeholder panel, used to indicate that there is something to be added */
 .panel-placeholder {
 	border-width: $o-panel-placeholder-border-width;
