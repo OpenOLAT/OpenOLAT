@@ -30,8 +30,8 @@ import java.util.Date;
 public class MySharedItemRow {
 	
 	private Long binderKey;
-	private String binder;
-	private String course;
+	private String binderTitle;
+	private String courseDisplayName;
 	private Date lastModified;
 	
 	public MySharedItemRow() {
@@ -46,20 +46,20 @@ public class MySharedItemRow {
 		this.binderKey = binderKey;
 	}
 
-	public String getBinder() {
-		return binder;
+	public String getBinderTitle() {
+		return binderTitle;
 	}
 
-	public void setBinder(String binder) {
-		this.binder = binder;
+	public void setBinderTitle(String binderTitle) {
+		this.binderTitle = binderTitle;
 	}
 
-	public String getCourse() {
-		return course;
+	public String getCourseDisplayName() {
+		return courseDisplayName;
 	}
 
-	public void setCourse(String course) {
-		this.course = course;
+	public void setCourseDisplayName(String courseDisplayName) {
+		this.courseDisplayName = courseDisplayName;
 	}
 
 	public Date getLastModified() {

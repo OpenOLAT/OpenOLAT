@@ -84,6 +84,7 @@ public class MySharedItemsController extends FormBasicController implements Acti
 		setFormTitle("my.shared.items");
 		
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, MySharedItemCols.binderKey, "select"));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(MySharedItemCols.binderName, "select"));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(MySharedItemCols.courseName, "select"));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(MySharedItemCols.lastModified));
@@ -103,10 +104,12 @@ public class MySharedItemsController extends FormBasicController implements Acti
 		List<MySharedItemRow> rows = new ArrayList<>(portfolios.size());
 		for(Binder binder:portfolios) {
 			MySharedItemRow row = new MySharedItemRow();
-			row.setBinder(binder.getTitle());
 			row.setBinderKey(binder.getKey());
+			row.setBinderTitle(binder.getTitle());
 			row.setLastModified(binder.getLastModified());//TODO max()
-			row.setCourse("TODO");
+			if(binder.getCourseEntry() != null) {
+				row.setCourseDisplayName(binder.getCourseEntry().getDisplayname());
+			}
 			rows.add(row);
 		}
 		model.setObjects(rows);

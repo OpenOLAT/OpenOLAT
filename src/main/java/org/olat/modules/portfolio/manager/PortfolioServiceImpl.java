@@ -58,6 +58,7 @@ import org.olat.modules.portfolio.model.AccessRightChange;
 import org.olat.modules.portfolio.model.AccessRights;
 import org.olat.modules.portfolio.model.BinderImpl;
 import org.olat.modules.portfolio.model.BinderRow;
+import org.olat.modules.portfolio.model.PageImpl;
 import org.olat.modules.portfolio.ui.PortfolioHomeController;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
@@ -134,7 +135,7 @@ public class PortfolioServiceImpl implements PortfolioService {
 
 	@Override
 	public Section updateSection(Section section) {
-		return binderDao.merge(section);
+		return binderDao.updateSection(section);
 	}
 
 	@Override
@@ -382,8 +383,27 @@ public class PortfolioServiceImpl implements PortfolioService {
 	}
 
 	@Override
-	public Page updatePage(Page page) {
-		return pageDao.updatePage(page);
+	public Page updatePage(Page page, SectionRef newParentSection) {
+		Page updatedPage;
+		if(newParentSection == null) {
+			updatedPage = pageDao.updatePage(page);
+		} else {
+			Section currentSection = null;
+			if(page.getSection() != null) {
+				currentSection = binderDao.loadSectionByKey(page.getSection().getKey());
+				currentSection.getPages().remove(page);
+			}
+			
+			Section newParent = binderDao.loadSectionByKey(newParentSection.getKey());
+			((PageImpl)page).setSection(newParent);
+			newParent.getPages().add(page);
+			updatedPage = pageDao.updatePage(page);
+			if(currentSection != null) {
+				binderDao.updateSection(currentSection);
+			}
+			binderDao.updateSection(newParent);
+		}
+		return updatedPage;
 	}
 
 	@Override

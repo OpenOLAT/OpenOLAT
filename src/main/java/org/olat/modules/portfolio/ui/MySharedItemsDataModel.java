@@ -40,8 +40,9 @@ public class MySharedItemsDataModel extends DefaultFlexiTableDataModel<MySharedI
 	public Object getValueAt(int row, int col) {
 		MySharedItemRow itemRow = getObject(row);
 		switch(MySharedItemCols.values()[col]) {
-			case binderName: return itemRow.getBinder();
-			case courseName: return itemRow.getCourse();
+			case binderKey: return itemRow.getBinderKey();
+			case binderName: return itemRow.getBinderTitle();
+			case courseName: return itemRow.getCourseDisplayName();
 			case lastModified: return itemRow.getLastModified();
 		}
 		return null;
@@ -53,8 +54,9 @@ public class MySharedItemsDataModel extends DefaultFlexiTableDataModel<MySharedI
 	}
 
 	public enum MySharedItemCols implements FlexiSortableColumnDef {
-		binderName("table.header.key"),
-		courseName("table.header.title"),
+		binderKey("table.header.key"),
+		binderName("table.header.title"),
+		courseName("table.header.course"),
 		lastModified("table.header.open");
 		
 		private final String i18nKey;

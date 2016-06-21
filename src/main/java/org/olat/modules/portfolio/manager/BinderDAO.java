@@ -493,7 +493,7 @@ public class BinderDAO {
 		return section;
 	}
 	
-	public Section merge(Section section) {
+	public Section updateSection(Section section) {
 		return dbInstance.getCurrentEntityManager().merge(section);
 	}
 	

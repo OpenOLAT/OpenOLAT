@@ -183,7 +183,13 @@ public interface PortfolioService {
 	
 	public Page getPageByKey(Long key);
 	
-	public Page updatePage(Page page);
+	/**
+	 * Update the metadata of a page.
+	 * @param page
+	 * @param newParentSection The new parent (optional)
+	 * @return
+	 */
+	public Page updatePage(Page page, SectionRef newParentSection);
 	
 
 	public File getPosterImage(Page page);

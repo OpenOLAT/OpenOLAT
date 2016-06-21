@@ -194,10 +194,10 @@ public class PageMetadataEditController extends FormBasicController {
 	}
 	
 	protected void retrieveSections(FormItemContainer formLayout, boolean updateBox) {
-		
 		List<Section> sections = portfolioService.getSections(currentBinder);
 		if (sections.isEmpty()) {
-			// wrong
+			sectionsEl.setKeysAndValues(new String[]{ "" }, new String[]{ "" }, null);
+			sectionsEl.setEnabled(false);
 		} else {
 			int numOfSections = sections.size();
 			String selectedKey = null;
@@ -217,6 +217,7 @@ public class PageMetadataEditController extends FormBasicController {
 						theValues, null);
 			} else {
 				sectionsEl.setKeysAndValues(theKeys, theValues, null);
+				sectionsEl.setEnabled(true);
 			}
 			
 			if (selectedKey != null) {
@@ -224,35 +225,40 @@ public class PageMetadataEditController extends FormBasicController {
 			}
 		}
 	}
-	
-	protected void updateSections (){
-		
-	}
 
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
 		boolean allOk = true;
+		
+		titleEl.clearError();
+		if(!StringHelper.containsNonWhitespace(titleEl.getValue())) {
+			titleEl.setErrorKey("form.legende.mandatory", null);
+			allOk &= false;
+		}
+		
+		if(sectionsEl != null && sectionsEl.isEnabled() && sectionsEl.isVisible()) {
+			sectionsEl.clearError();
+			if(!sectionsEl.isOneSelected() || !StringHelper.containsNonWhitespace(sectionsEl.getSelectedKey())) {
+				sectionsEl.setErrorKey("form.legende.mandatory", null);
+				allOk &= false;
+			}
+		}
 		
 		return allOk & super.validateFormLogic(ureq);
 	}
 
 	@Override
 	protected void formOK(UserRequest ureq) {
-
 		if (page == null) {
 			String title = titleEl.getValue();
 			String summary = summaryEl.getValue();
-			SectionRef selectSection = null;
-			if (sectionsEl!=null && sectionsEl.isOneSelected() && sectionsEl.isEnabled() && sectionsEl.isVisible()) {
-				String selectedKey = sectionsEl.getSelectedKey();
-				selectSection = new SectionKeyRef(new Long(selectedKey));
-			}
+			SectionRef selectSection = getSelectedSection();
 			String imagePath = null;
 			if (fileUpload.getUploadFile() != null) {
 				imagePath = portfolioService.addPosterImageForPage(fileUpload.getUploadFile(),
 						fileUpload.getUploadFileName());
 			}
-			if (sectionsEl!=null)portfolioService.appendNewPage(getIdentity(), title, summary, imagePath, selectSection);
+			portfolioService.appendNewPage(getIdentity(), title, summary, imagePath, selectSection);
 		} else {
 			page.setTitle(titleEl.getValue());
 			page.setSummary(summaryEl.getValue());
@@ -266,10 +272,25 @@ public class PageMetadataEditController extends FormBasicController {
 				portfolioService.removePosterImage(page);
 			}
 
-			page = portfolioService.updatePage(page);
+			SectionRef selectSection = getSelectedSection();
+			SectionRef newParent = null;
+			if((page.getSection() == null && selectSection != null) ||
+					(page.getSection() != null && selectSection != null && !page.getSection().getKey().equals(selectSection.getKey()))) {
+				newParent = selectSection;
+			}
+			page = portfolioService.updatePage(page, newParent);
 		}
 
 		fireEvent(ureq, Event.DONE_EVENT);
+	}
+	
+	private SectionRef getSelectedSection() {
+		SectionRef selectSection = null;
+		if (sectionsEl != null && sectionsEl.isOneSelected() && sectionsEl.isEnabled() && sectionsEl.isVisible()) {
+			String selectedKey = sectionsEl.getSelectedKey();
+			selectSection = new SectionKeyRef(new Long(selectedKey));
+		}
+		return selectSection;
 	}
 
 	@Override
