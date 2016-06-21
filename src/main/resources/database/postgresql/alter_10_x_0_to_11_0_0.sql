@@ -192,6 +192,24 @@ create index idx_pf_page_group_idx on o_pf_page (fk_group_id);
 alter table o_pf_page add constraint pf_page_section_idx foreign key (fk_section_id) references o_pf_section (id);
 create index idx_pf_page_section_idx on o_pf_page (fk_section_id);
 
+create table o_pf_media (
+   id bigserial,
+   creationdate timestamp not null,
+   p_collection_date timestamp not null,
+   p_type varchar(64) not null,
+   p_storage_path varchar(255),
+   p_title varchar(255) not null,
+   p_description text,
+   p_content text,
+   p_signature int8 not null default 0,
+   p_business_path varchar(255) not null,
+   fk_author_id int8 not null,
+   primary key (id)
+);
+
+alter table o_pf_media add constraint pf_media_author_idx foreign key (fk_author_id) references o_bs_identity (id);
+create index idx_pf_media_author_idx on o_pf_media (fk_author_id);
+create index idx_media_storage_path_idx on o_pf_media (p_business_path);
 
 create table o_pf_page_body (
    id bigserial,
@@ -220,25 +238,6 @@ alter table o_pf_page_part add constraint pf_page_page_body_idx foreign key (fk_
 create index idx_pf_page_page_body_idx on o_pf_page_part (fk_page_body_id);
 alter table o_pf_page_part add constraint pf_page_media_idx foreign key (fk_media_id) references o_pf_media (id);
 create index idx_pf_page_media_idx on o_pf_page_part (fk_media_id);
-
-create table o_pf_media (
-   id bigserial,
-   creationdate timestamp not null,
-   p_collection_date timestamp not null,
-   p_type varchar(64) not null,
-   p_storage_path varchar(255),
-   p_title varchar(255) not null,
-   p_description text,
-   p_content text,
-   p_signature int8 not null default 0,
-   p_business_path varchar(255) not null,
-   fk_author_id int8 not null,
-   primary key (id)
-);
-
-alter table o_pf_media add constraint pf_media_author_idx foreign key (fk_author_id) references o_bs_identity (id);
-create index idx_pf_media_author_idx on o_pf_media (fk_author_id);
-create index idx_media_storage_path_idx on o_pf_media (p_business_path);
 
 
 create table o_pf_category (
