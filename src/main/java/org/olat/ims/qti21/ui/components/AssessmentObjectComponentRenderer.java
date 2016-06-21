@@ -1156,9 +1156,12 @@ public abstract class AssessmentObjectComponentRenderer extends DefaultComponent
             final NavigationMode navigationMode = currentTestPart.getNavigationMode();
           
             boolean nextItemAllowed = navigationMode == NavigationMode.NONLINEAR;
-            boolean advanceTestItemAllowed = navigationMode == NavigationMode.LINEAR && testSessionController.mayAdvanceItemLinear();
+            boolean advanceTestItemAllowed = navigationMode == NavigationMode.LINEAR
+            		&& testSessionController.getTestSessionState().getCurrentItemKey() != null//mayAdvanceItemLinear assert on the current selected item
+            		&& testSessionController.mayAdvanceItemLinear();
             boolean testPartNavigationAllowed = navigationMode == NavigationMode.NONLINEAR;
-            boolean endTestPartAllowed = navigationMode == NavigationMode.LINEAR && testSessionController.mayEndCurrentTestPart();
+            boolean endTestPartAllowed = navigationMode == NavigationMode.LINEAR
+            		&& testSessionController.mayEndCurrentTestPart();
 
             return new RenderingRequest(false, false, testPartNavigationAllowed, advanceTestItemAllowed, nextItemAllowed, endTestPartAllowed);
     	}

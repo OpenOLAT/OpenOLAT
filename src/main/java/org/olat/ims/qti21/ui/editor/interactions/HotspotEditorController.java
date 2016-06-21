@@ -140,10 +140,21 @@ public class HotspotEditorController extends FormBasicController {
 				formLayout, ureq.getUserSession(), getWindowControl());
 		textEl.addActionListener(FormEvent.ONCLICK);
 		
+		initialBackgroundImage = getCurrentBackground();
+		backgroundEl = uifactory.addFileElement(getWindowControl(), "form.imd.background", "form.imd.background", formLayout);
+		backgroundEl.setEnabled(!restrictedEdit);
+		if(initialBackgroundImage != null) {
+			backgroundEl.setInitialFile(initialBackgroundImage);
+		}
+		backgroundEl.addActionListener(FormEvent.ONCHANGE);
+		backgroundEl.setDeleteEnabled(true);
+		backgroundEl.limitToMimeType(mimeTypes, null, null);
+
 		//responses
 		String page = velocity_root + "/hotspots.html";
 		hotspotsCont = FormLayoutContainer.createCustomFormLayout("answers", getTranslator(), page);
 		hotspotsCont.getFormItemComponent().addListener(this);
+		hotspotsCont.setLabel("new.spots", null);
 		hotspotsCont.setRootForm(mainForm);
 		hotspotsCont.contextPut("mapperUri", backgroundMapperUri);
 		hotspotsCont.contextPut("restrictedEdit", restrictedEdit);
@@ -157,24 +168,15 @@ public class HotspotEditorController extends FormBasicController {
 		newRectButton = uifactory.addFormLink("new.rectangle", "new.rectangle", null, hotspotsCont, Link.BUTTON);
 		newRectButton.setIconLeftCSS("o_icon o_icon-lg o_icon_rectangle");
 		newRectButton.setVisible(!restrictedEdit);
+		
+		updateBackground();
 
 		String[] emptyKeys = new String[0];
 		correctHotspotsEl = uifactory.addCheckboxesHorizontal("form.imd.correct.spots", formLayout, emptyKeys, emptyKeys);
 		correctHotspotsEl.setEnabled(!restrictedEdit);
 		correctHotspotsEl.addActionListener(FormEvent.ONCHANGE);
 		rebuildWrappersAndCorrectSelection();
-		
-		initialBackgroundImage = getCurrentBackground();
-		backgroundEl = uifactory.addFileElement(getWindowControl(), "form.imd.background", "form.imd.background", formLayout);
-		backgroundEl.setEnabled(!restrictedEdit);
-		if(initialBackgroundImage != null) {
-			backgroundEl.setInitialFile(initialBackgroundImage);
-		}
-		backgroundEl.addActionListener(FormEvent.ONCHANGE);
-		backgroundEl.setDeleteEnabled(true);
-		backgroundEl.limitToMimeType(mimeTypes, null, null);
-		updateBackground();
-		
+
 		// Submit Button
 		FormLayoutContainer buttonsContainer = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		buttonsContainer.setRootForm(mainForm);

@@ -109,7 +109,8 @@ public class FIBAssessmentItemBuilder extends AssessmentItemBuilder {
 	}
 	
 	private static AssessmentItem createAssessmentItem(EntryType type) {
-		AssessmentItem assessmentItem = AssessmentItemFactory.createAssessmentItem(QTI21QuestionType.fib, "FIB");
+		String title = (type == EntryType.text) ? "Gap text" : "Numerical input";
+		AssessmentItem assessmentItem = AssessmentItemFactory.createAssessmentItem(QTI21QuestionType.fib, title);
 		
 		//define the response
 		Identifier responseDeclarationId = Identifier.assumedLegal("RESPONSE_1");

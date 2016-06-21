@@ -233,8 +233,8 @@ public class AssessmentTestComponentRenderer extends AssessmentObjectComponentRe
 			Component submit = component.getQtiItem().getSubmitButton().getComponent();
 			submit.getHTMLRendererSingleton().render(renderer.getRenderer(), sb, submit, ubu, translator, new RenderResult(), null);
 		}
-		//advanceTestItemAllowed
-		if(options.isAdvanceTestItemAllowed()) {
+		//advanceTestItemAllowed /* && testSessionState.getCurrentItemKey() != null && testSessionController.mayAdvanceItemLinear() */
+		if(options.isAdvanceTestItemAllowed() ) {//TODO need to find if there is a next question
 			String title = translator.translate("assessment.test.nextQuestion");
 			renderControl(sb, component, title, "o_sel_next_question", new NameValuePair("cid", Event.finishItem.name()));
 		}
