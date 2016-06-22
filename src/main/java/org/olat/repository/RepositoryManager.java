@@ -445,6 +445,28 @@ public class RepositoryManager {
 		return displaynames.get(0);
 	}
 	
+    /**
+     * Check if (and which) external IDs already exist.
+     * @param a collection of external IDs to check if already existing
+     * @return a list of already existing external IDs (or an emtpy list).
+     */
+    public List<String> lookupExistingExternalIds(Collection<String> externalIds) {
+            if (externalIds == null || externalIds.isEmpty()) {
+                    return Collections.emptyList();
+            }
+
+            StringBuilder query = new StringBuilder();
+            query.append("select v.externalId from ").append(RepositoryEntry.class.getName()).append(" as v ")
+                    .append("where v.externalId in (:externalIds)");
+
+            List<String> existingExternalIds =
+                    dbInstance.getCurrentEntityManager().createQuery(query.toString(), String.class)
+                    .setParameter("externalIds", externalIds)
+                    .getResultList();
+
+            return existingExternalIds;
+    }
+
 	/**
 	 * Load a list of repository entry without all the security groups ...
 	 * @param resources
