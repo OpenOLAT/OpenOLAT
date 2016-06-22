@@ -169,7 +169,10 @@ public class MediaCenterController extends FormBasicController implements Activa
 					if(select) {
 						doSelect(ureq, row.getKey());
 					} else {
-						doOpenMedia(ureq, row.getKey());
+						Activateable2 activateable = doOpenMedia(ureq, row.getKey());
+						if(activateable != null) {
+							activateable.activate(ureq, null, null);
+						}
 					}
 				}
 			}
@@ -178,9 +181,13 @@ public class MediaCenterController extends FormBasicController implements Activa
 			String cmd = link.getCmd();
 			if("select".equals(cmd)) {
 				MediaRow row = (MediaRow)link.getUserObject();
-				Activateable2 activateable = doOpenMedia(ureq, row.getKey());
-				if(activateable != null) {
-					activateable.activate(ureq, null, null);
+				if(select) {
+					doSelect(ureq, row.getKey());
+				} else {
+					Activateable2 activateable = doOpenMedia(ureq, row.getKey());
+					if(activateable != null) {
+						activateable.activate(ureq, null, null);
+					}
 				}
 			}
 		}
