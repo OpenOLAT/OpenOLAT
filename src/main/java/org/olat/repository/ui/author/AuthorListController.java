@@ -134,7 +134,7 @@ public class AuthorListController extends FormBasicController implements Activat
 	private StepsMainRunController closeCtrl;
 	private ConfirmDeleteController confirmDeleteCtrl;
 	private ImportRepositoryEntryController importCtrl;
-	private CreateRepositoryEntryController createCtrl;
+	private CreateEntryController createCtrl;
 	private CloseableCalloutWindowController toolsCalloutCtrl;
 	
 	private boolean hasAuthorRight;
@@ -594,7 +594,7 @@ public class AuthorListController extends FormBasicController implements Activat
 		if(createCtrl != null) return;
 
 		removeAsListenerAndDispose(createCtrl);
-		createCtrl = new CreateRepositoryEntryController(ureq, getWindowControl(), handler);
+		createCtrl = handler.createCreateRepositoryEntryController(ureq, getWindowControl());
 		listenTo(createCtrl);
 		removeAsListenerAndDispose(cmc);
 		

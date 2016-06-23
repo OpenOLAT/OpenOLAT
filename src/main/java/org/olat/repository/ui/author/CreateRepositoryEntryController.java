@@ -52,7 +52,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class CreateRepositoryEntryController extends FormBasicController {
+public class CreateRepositoryEntryController extends FormBasicController implements CreateEntryController {
 	
 	public static final Event CREATION_WIZARD = new Event("start_wizard");
 	
@@ -74,10 +74,12 @@ public class CreateRepositoryEntryController extends FormBasicController {
 		initForm(ureq);
 	}
 
+	@Override
 	public RepositoryHandler getHandler() {
 		return handler;
 	}
 
+	@Override
 	public RepositoryEntry getAddedEntry() {
 		return addedEntry;
 	}
@@ -86,6 +88,7 @@ public class CreateRepositoryEntryController extends FormBasicController {
 		return userObject;
 	}
 
+	@Override
 	public void setCreateObject(Object userObject) {
 		this.userObject = userObject;
 	}

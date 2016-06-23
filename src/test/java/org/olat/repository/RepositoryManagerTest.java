@@ -30,6 +30,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashSet;
@@ -203,6 +204,25 @@ public class RepositoryManagerTest extends OlatTestCase {
 		OLATResource resource = repositoryManager.lookupRepositoryEntryResource(re.getKey());
 		Assert.assertNotNull(resource);
 		Assert.assertEquals(re.getOlatResource(), resource);
+	}
+	
+	@Test
+	public void lookupExistingExternalIds() {
+		RepositoryEntry re = JunitTestHelper.createAndPersistRepositoryEntry();
+		String externalId = UUID.randomUUID().toString();
+		re.setExternalId(externalId);
+		repositoryService.update(re);
+		dbInstance.commitAndCloseSession();
+		
+		//load
+		String nonExistentExternalId = UUID.randomUUID().toString();
+		List<String> externalIds = new ArrayList<>();
+		externalIds.add(externalId);
+		externalIds.add(nonExistentExternalId);
+		List<String> existentExternalIds = repositoryManager.lookupExistingExternalIds(externalIds);
+		Assert.assertNotNull(existentExternalIds);
+		Assert.assertTrue(existentExternalIds.contains(externalId));
+		Assert.assertFalse(existentExternalIds.contains(nonExistentExternalId));
 	}
 	
 	@Test

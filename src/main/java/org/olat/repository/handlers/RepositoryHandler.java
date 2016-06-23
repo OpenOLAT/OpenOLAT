@@ -44,6 +44,8 @@ import org.olat.fileresource.types.ResourceEvaluation;
 import org.olat.repository.ErrorList;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.model.RepositoryEntrySecurity;
+import org.olat.repository.ui.author.CreateEntryController;
+import org.olat.repository.ui.author.CreateRepositoryEntryController;
 
 
 /**
@@ -159,6 +161,16 @@ public interface RepositoryHandler {
 	 * @return Controller that guides trough the creation workflow via wizard.
 	 */
 	public StepsMainRunController createWizardController(OLATResourceable res, UserRequest ureq, WindowControl wControl);
+	
+	/**
+	 * Called if a user wants to open the create repository entry dialog for a Resourceable
+	 * @param ureq
+	 * @param wControl
+	 * @return Controller able to create resourceable.
+	 */
+	default CreateEntryController createCreateRepositoryEntryController(UserRequest ureq, WindowControl wControl) {
+		return new CreateRepositoryEntryController(ureq, wControl, this);
+	}
 	
 	/**
 	 * Called if a user downloads a Resourceable that this handler can handle.
