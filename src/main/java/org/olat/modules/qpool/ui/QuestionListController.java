@@ -88,7 +88,7 @@ import org.olat.repository.controllers.ReferencableEntriesSearchController;
 import org.olat.repository.controllers.RepositorySearchController.Can;
 import org.olat.repository.handlers.RepositoryHandler;
 import org.olat.repository.handlers.RepositoryHandlerFactory;
-import org.olat.repository.ui.author.CreateRepositoryEntryController;
+import org.olat.repository.ui.author.CreateEntryController;
 import org.olat.search.service.indexer.LifeFullIndexer;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -126,7 +126,7 @@ public class QuestionListController extends AbstractItemListController implement
 	private ImportController importItemCtrl;
 	private CollectionTargetController listTargetCtrl;
 	private ShareTargetController shareTargetCtrl;
-	private CreateRepositoryEntryController addController;
+	private CreateEntryController addController;
 	private QuestionItemDetailsController currentDetailsCtrl;
 	private LayoutMain3ColsController currentMainDetailsCtrl;
 	private MetadataBulkChangeController bulkChangeCtrl;
@@ -760,7 +760,7 @@ public class QuestionListController extends AbstractItemListController implement
 		
 		String type = TestFileResource.TYPE_NAME;
 		RepositoryHandler handler = repositoryHandlerFactory.getRepositoryHandler(type);
-		addController = new CreateRepositoryEntryController(ureq, getWindowControl(), handler);
+		addController = handler.createCreateRepositoryEntryController(ureq, getWindowControl());
 		addController.setCreateObject(new QItemList(items));
 		listenTo(addController);
 		cmc = new CloseableModalController(getWindowControl(), translate("close"), addController.getInitialComponent());

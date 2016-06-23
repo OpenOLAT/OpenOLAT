@@ -61,7 +61,7 @@ import org.olat.repository.controllers.RepositorySearchController.Can;
 import org.olat.repository.handlers.RepositoryHandler;
 import org.olat.repository.handlers.RepositoryHandlerFactory;
 import org.olat.repository.ui.RepositoryTableModel;
-import org.olat.repository.ui.author.CreateRepositoryEntryController;
+import org.olat.repository.ui.author.CreateEntryController;
 import org.olat.repository.ui.author.ImportRepositoryEntryController;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -95,7 +95,7 @@ public class ReferencableEntriesSearchController extends BasicController {
 	private Component createRessourceCmp;
 	private List<Link> createRessourceButtons;
 	
-	private CreateRepositoryEntryController createController;
+	private CreateEntryController createController;
 	private ImportRepositoryEntryController importController;
 	private CloseableModalController cmc;
 	
@@ -315,7 +315,7 @@ public class ReferencableEntriesSearchController extends BasicController {
 			removeAsListenerAndDispose(cmc);
 			removeAsListenerAndDispose(createController);
 			RepositoryHandler handler = (RepositoryHandler)((Link)source).getUserObject();
-			createController = new CreateRepositoryEntryController(ureq, getWindowControl(), handler);
+			createController = handler.createCreateRepositoryEntryController(ureq, getWindowControl());
 			listenTo(createController);
 			
 			String title = translate(handler.getCreateLabelI18nKey());
