@@ -34,6 +34,7 @@ import org.olat.core.util.StringHelper;
 public class AutoCompleterMapper implements Mapper {
 	private static final String PARAM_QUERY = "term";
 	protected static final String PARAM_KEY = "key";
+	protected static final String PARAM_VALUE = "val";
 	
 	private final String noResults;
 	private final boolean showDisplayKey;

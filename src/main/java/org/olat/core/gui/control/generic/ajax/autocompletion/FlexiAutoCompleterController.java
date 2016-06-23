@@ -63,6 +63,7 @@ import org.olat.core.gui.control.WindowControl;
 public class FlexiAutoCompleterController extends FormBasicController {
 
 	protected static final String COMMAND_SELECT = "select";
+	protected static final String COMMAND_CHANGE = "change";
 	protected static final String JSNAME_INPUTFIELD = "o_autocomplete_input";
 	protected static final String JSNAME_DATASTORE = "autocompleterDatastore";
 	protected static final String JSNAME_COMBOBOX = "autocompleterCombobox";
@@ -155,6 +156,7 @@ public class FlexiAutoCompleterController extends FormBasicController {
 		layoutCont.contextPut("inputWidth", Integer.valueOf(inputWidth));
 		layoutCont.contextPut("minChars", Integer.valueOf(minChars));
 		layoutCont.contextPut("flexi", Boolean.TRUE);
+		layoutCont.contextPut("inputValue", "");
 		layoutCont.getComponent().addListener(this);
 
 		// Create a mapper for the server responses for a given input
@@ -179,17 +181,16 @@ public class FlexiAutoCompleterController extends FormBasicController {
 	 */
 	public void event(UserRequest ureq, Component source, Event event) {
 		if (source == flc.getComponent()) {
+			String value = getSearchValue(ureq);
+			flc.contextPut("inputValue", value);			
 			if (event.getCommand().equals(COMMAND_SELECT)) {
 				doSelect(ureq);
-			}
-		} else if(source == mainForm.getInitialComponent()) {
-			if(allowNewValues) {
-				String searchValue = getSearchValue(ureq);
-				List<String> selectedEntries = new ArrayList<String>();
-				selectedEntries.add(searchValue);
-				fireEvent(ureq, new EntriesChosenEvent(selectedEntries));	
-			} else {
-				super.event(ureq, source, event);
+			} else if (event.getCommand().equals(COMMAND_CHANGE)) {
+				if(allowNewValues) {
+					fireEvent(ureq, new NewValueChosenEvent(value));	
+				} else {
+					super.event(ureq, source, event);
+				}				
 			}
 		} else {
 			super.event(ureq, source, event);

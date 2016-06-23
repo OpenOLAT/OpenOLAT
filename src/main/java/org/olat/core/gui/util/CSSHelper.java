@@ -42,6 +42,8 @@ public class CSSHelper {
 	public static final String CSS_CLASS_INFO = "o_icon_info";
 	public static final String CSS_CLASS_NEW = "o_icon_new";
 
+	public static final String CSS_CLASS_DISABLED = "o_disabled";
+
 	/**
 	 * Get the icon css class for a file based on the file ending (e.g. hello.pdf)
 	 * 

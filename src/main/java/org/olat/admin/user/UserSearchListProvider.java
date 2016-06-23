@@ -29,7 +29,6 @@ import org.olat.basesecurity.IdentityShort;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.control.generic.ajax.autocompletion.ListProvider;
 import org.olat.core.gui.control.generic.ajax.autocompletion.ListReceiver;
-import org.olat.core.gui.util.CSSHelper;
 import org.olat.core.id.UserConstants;
 import org.olat.user.UserManager;
 
@@ -52,7 +51,7 @@ public class UserSearchListProvider implements ListProvider {
 	
 	@Override
 	public void getResult(String searchValue, ListReceiver receiver) {
-		Map<String, String> userProperties = new HashMap<String, String>();
+		Map<String, String> userProperties = new HashMap<>();
 		// We can only search in mandatory User-Properties due to problems
 		// with hibernate query with join and not existing rows
 		userProperties.put(UserConstants.FIRSTNAME, searchValue);
@@ -70,7 +69,7 @@ public class UserSearchListProvider implements ListProvider {
 			String key = ident.getKey().toString();
 			String displayKey = ident.getName();
 			String displayText = userManager.getUserDisplayName(ident);
-			receiver.addEntry(key, displayKey, displayText, CSSHelper.CSS_CLASS_USER);
+			receiver.addEntry(key, displayKey, displayText, null);
 		}					
 		if(hasMore){
 			receiver.addEntry(".....",".....");

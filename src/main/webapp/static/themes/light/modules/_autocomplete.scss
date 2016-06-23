@@ -2,7 +2,7 @@
 	width: $o-autocomplete-width;
 }
 
-.tt-dropdown-menu {
+.tt-menu {
   	width: $o-autocomplete-width;
   	margin-top: $padding-base-vertical;
   	padding: 0 0 0;
@@ -21,11 +21,15 @@
   	line-height: $o-autocomplete-line-height;
 }
 
-.tt-suggestion.tt-cursor {
+.tt-suggestion.tt-cursor, .tt-suggestion:hover  {
   	color: $o-autocomplete-suggestion-color;
   	background-color: $o-autocomplete-suggestion-bg-color;
 }
 
 .tt-suggestion p {
   	margin: 0;
+}
+
+.tt-menu div.o_icon_error:before {
+	content:'';
 }
