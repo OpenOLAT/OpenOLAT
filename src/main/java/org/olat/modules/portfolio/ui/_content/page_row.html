@@ -14,21 +14,21 @@
 	
 			##access
 		</div>
-		<div class="o_section_lead">
+		<div class="o_section_lead o_block_large_bottom">
 			<p>$r.xssScan($row.sectionDescription)</p>
 		</div>
 	</div>
 </div>
 #end
-<div class="o_portfolio_page">
+<div class="o_portfolio_page o_block_large_bottom">
 	<h4>
 		<i class="o_icon o_icon_portfolio_entry_draft o_icon-fw"> </i>
 		$r.escapeHtml($row.title)
 	</h4>
-	<div class="o_portfolio_page_meta">
+	<div class="o_portfolio_page_meta text-muted o_small">
 		 $r.translate("meta.last.modified", $r.formatDateAndTime($row.lastModified))
 	</div>
-	<div class="o_portfolio_page_summary">
+	<div class="o_portfolio_page_summary o_block">
 		$r.xssScan($row.summary)
 	</div>
 	<div class="o_portfolio_page_links">

@@ -6,7 +6,6 @@ div#o_main_toolbar.o_toolbar.o_portfolio {
 
 .o_section_lead {
 	@extend .jumbotron;
-	margin-bottom: 10px;
 }
 
 .o_portfolio_listing {
@@ -27,12 +26,6 @@ div#o_main_toolbar.o_toolbar.o_portfolio {
 		ul {
 			padding-left: 2em;
 		}
-		
-		div.panel.panel-default {
-			background-repeat:no-repeat;
-			background-position:50% 50%;		
-			background-size: contain;
-		}
 	}
 	
 	.panel-imagebg .panel-body ul {
@@ -46,16 +39,6 @@ div#o_main_toolbar.o_toolbar.o_portfolio {
 }
 
 .o_binder_page_listing {
-	.o_portfolio_page {
-		@extend %o_block_large_bottom;
-	}
-	.o_portfolio_page_meta {
-		color: $text-muted;
-		@extend %o_small;
-	}
-	.o_portfolio_page_summary {
-		@extend %o_block;
-	}
 	.o_portfolio_page_links {
 		background-color: #f8f8f8;
 		border-radius: $border-radius-base;

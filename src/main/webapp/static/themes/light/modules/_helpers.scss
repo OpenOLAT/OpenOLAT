@@ -102,6 +102,10 @@
 }
 
 .panel-imagebg {
+	background-repeat:no-repeat;
+	background-position: center;
+	background-size: cover;
+
 	&.panel-default>.panel-heading {
 		background-color: rgba(255, 255, 255, 0.5);
 		border-bottom: transparent;
