@@ -67,7 +67,10 @@
 	}
 	
 	th {
-		color: $o-table-header-color;
+		a, a:hover {
+			color: $o-table-header-color;
+			text-decoration: none;
+		}
 	}
 }
 

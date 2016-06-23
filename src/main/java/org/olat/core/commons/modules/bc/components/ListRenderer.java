@@ -120,25 +120,28 @@ public class ListRenderer {
 		}
 
 		boolean canVersion = FolderConfig.versionsEnabled(fc.getCurrentContainer());
-		
+		String sortOrder = fc.getCurrentSortOrder();
+		boolean sortAsc = fc.isCurrentSortAsc();
+		String sortCss = (sortAsc ? "o_orderby_asc" : "o_orderby_desc");
+				
 		sb.append("<table class=\"table table-condensed table-striped table-hover o_bc_table\">")
-		  .append("<thead><tr><th><a ");
+		  .append("<thead><tr><th><a class='o_orderby ").append(sortCss,FolderComponent.SORT_NAME.equals(sortOrder)).append("' ");
 		ubu.buildHrefAndOnclick(sb, null, iframePostEnabled, false, false, new NameValuePair(PARAM_SORTID, FolderComponent.SORT_NAME))
 		   .append(">").append(translator.translate("header.Name")).append("</a>")
-		   .append("</th><th><a ");
+		   .append("</th><th><a class='o_orderby ").append(sortCss,FolderComponent.SORT_SIZE.equals(sortOrder)).append("' ");
 		ubu.buildHrefAndOnclick(sb, null, iframePostEnabled, false, false, new NameValuePair(PARAM_SORTID, FolderComponent.SORT_SIZE))
 		   .append(">").append(translator.translate("header.Size")).append("</a>")
-		   .append("</th><th><a ");	
+		   .append("</th><th><a class='o_orderby ").append(sortCss,FolderComponent.SORT_DATE.equals(sortOrder)).append("' ");	
 		ubu.buildHrefAndOnclick(sb, null, iframePostEnabled, false, false, new NameValuePair(PARAM_SORTID, FolderComponent.SORT_DATE))
 		   .append(">").append(translator.translate("header.Modified")).append("</a>");
 
 		if(canVersion) {
-			sb.append("</th><th><a ");		
+			sb.append("</th><th><a class='o_orderby ").append(sortCss,FolderComponent.SORT_REV.equals(sortOrder)).append("' ");		
 			ubu.buildHrefAndOnclick(sb, null, iframePostEnabled, false, false, new NameValuePair(PARAM_SORTID, FolderComponent.SORT_REV))																																					// file size column
 			   .append("><i class=\"o_icon o_icon_version  o_icon-lg\"></i></a>");
 		}
 
-		sb.append("</th><th><a ");
+		sb.append("</th><th><a class='o_orderby ").append(sortCss,FolderComponent.SORT_LOCK.equals(sortOrder)).append("' ");
 		ubu.buildHrefAndOnclick(sb, null, iframePostEnabled, false, false, new NameValuePair(PARAM_SORTID, FolderComponent.SORT_LOCK))
 		   .append("><i class=\"o_icon o_icon_locked  o_icon-lg\"></i></a>")
 		// meta data column

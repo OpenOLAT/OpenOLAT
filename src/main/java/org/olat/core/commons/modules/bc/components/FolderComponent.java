@@ -85,6 +85,7 @@ public class FolderComponent extends AbstractComponent {
 	private VFSContainer rootContainer;
 	private VFSContainer currentContainer;
 	private String currentContainerPath;
+	private String currentSortOrder;
 	// need to know our children in advance in order to be able to identify them later...
 	private List<VFSItem> currentContainerChildren;
 	private final Collator collator;
@@ -205,6 +206,7 @@ public class FolderComponent extends AbstractComponent {
 	 * @param col The column to sort
 	 */
 	private void sort(String col) {
+		currentSortOrder = col;
 		if (col.equals(SORT_NAME)) {																										// sort after file name?
 			comparator = new Comparator<VFSItem>() {
 				public int compare(VFSItem o1, VFSItem o2) {
@@ -323,6 +325,20 @@ public class FolderComponent extends AbstractComponent {
 	 */
 	public List<VFSItem> getCurrentContainerChildren() {
 		return currentContainerChildren;
+	}
+	
+	/**
+	 * @return the sort order, one of the SORT_* static variables
+	 */
+	public String getCurrentSortOrder() {
+		return currentSortOrder;
+	}
+	
+	/**
+	 * @return true: sorted ascending; false: sorted descending
+	 */
+	public boolean isCurrentSortAsc() {
+		return sortAsc;
 	}
 	
 	public void updateChildren() {
