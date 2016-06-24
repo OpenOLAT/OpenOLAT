@@ -290,11 +290,12 @@ public class FolderRunController extends BasicController implements Activateable
 		}
 		
 		
+		boolean isGuest = ureq.getUserSession().getRoles().isGuestOnly();
 		folderComponent = new FolderComponent(ureq, "foldercomp", rootContainer, filter, customLinkTreeModel, externContainerForCopy);
-		folderComponent.setCanMail(ureq.getUserSession().getRoles().isGuestOnly() ? false : canMail); // guests can never send mail
+		folderComponent.setCanMail(isGuest ? false : canMail); // guests can never send mail
 		folderComponent.addListener(this);
 		folderContainer.put("foldercomp", folderComponent);
-		if (displayWebDAVLink) {
+		if (displayWebDAVLink && !isGuest) {
 			WebDAVModule webDAVModule = CoreSpringFactory.getImpl(WebDAVModule.class);
 			if (webDAVModule.isEnabled() && webDAVModule.isLinkEnabled() && displayWebDAVLink) {
 				folderContainer.contextPut("webdavhttp", FolderManager.getWebDAVHttp());
