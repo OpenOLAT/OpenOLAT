@@ -1,7 +1,7 @@
 <div class="clearfix">
 <h4>$label</h4>
 #foreach($member in $members)
-	<div class="o_cmember col-xs-3 col-sm-3 col-md-3">
+	<div class="o_cmember o_print_break_avoid col-xs-3 col-sm-3 col-md-3">
 		<div class="clearfix">
 			<div class="o_portrait">
 				#if(${member.isPortraitAvailable()})
@@ -18,8 +18,12 @@
 				<strong>$member.fullName</strong>
 				#foreach($userPropertyHandler in $userPropertyHandlers)
 					#if($userPropertyHandler.name != "firstName" && $userPropertyHandler.name != "lastName")
-						<br>${member.getIdentityProp($foreach.index)}
+						#set ($prop=${member.getIdentityProp($foreach.index)})
+						#if($prop != "")
+						<br />$prop
+						#end
 					#end
+					
 				#end
 			</div>
 		</div>
