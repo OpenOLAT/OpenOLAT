@@ -104,7 +104,7 @@ public class PageController extends BasicController implements TooledController 
 
 	@Override
 	public void initTools() {
-		if(secCallback.canEditBinder()) {
+		if(secCallback.canEditPage(page)) {
 			editLink = LinkFactory.createToolLink("edit.page", translate("edit.page"), this);
 			editLink.setIconLeftCSS("o_icon o_icon-lg o_icon_new_portfolio");
 			stackPanel.addTool(editLink, Align.left);

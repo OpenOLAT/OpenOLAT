@@ -19,7 +19,6 @@
  */
 package org.olat.modules.portfolio.model;
 
-import javax.persistence.DiscriminatorColumn;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.JoinColumn;
@@ -34,7 +33,6 @@ import org.olat.modules.portfolio.Media;
  *
  */
 @Entity(name="pfmediapart")
-@DiscriminatorColumn
 public class MediaPart extends AbstractPart {
 
 	private static final long serialVersionUID = -5902348088983758191L;

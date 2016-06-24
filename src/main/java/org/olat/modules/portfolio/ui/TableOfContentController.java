@@ -42,12 +42,15 @@ import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.id.Identity;
 import org.olat.core.util.StringHelper;
+import org.olat.modules.portfolio.AssessmentSection;
 import org.olat.modules.portfolio.Binder;
 import org.olat.modules.portfolio.BinderSecurityCallback;
 import org.olat.modules.portfolio.Page;
 import org.olat.modules.portfolio.PortfolioService;
 import org.olat.modules.portfolio.Section;
+import org.olat.modules.portfolio.SectionStatus;
 import org.olat.modules.portfolio.model.PageRow;
+import org.olat.modules.portfolio.ui.renderer.PortfolioRendererHelper;
 import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -112,7 +115,7 @@ public class TableOfContentController extends BasicController implements TooledC
 			stackPanel.addTool(editBinderMetadataLink, Align.left);
 		}
 		
-		if(secCallback.canEditSection()) {
+		if(secCallback.canAddSection()) {
 			newSectionTool = LinkFactory.createToolLink("new.section", translate("create.new.section"), this);
 			newSectionTool.setIconLeftCSS("o_icon o_icon-lg o_icon_new_portfolio");
 			stackPanel.addTool(newSectionTool, Align.right);
@@ -121,7 +124,7 @@ public class TableOfContentController extends BasicController implements TooledC
 			newSectionButton.setCustomEnabledLinkCSS("btn btn-primary");
 		}
 		
-		if(secCallback.canEditBinder()) {
+		if(secCallback.canAddPage()) {
 			newEntryLink = LinkFactory.createToolLink("new.page", translate("create.new.page"), this);
 			newEntryLink.setIconLeftCSS("o_icon o_icon-lg o_icon_new_portfolio");
 			stackPanel.addTool(newEntryLink, Align.right);
@@ -134,9 +137,15 @@ public class TableOfContentController extends BasicController implements TooledC
 		List<SectionRow> sectionList = new ArrayList<>();
 		Map<Long,SectionRow> sectionMap = new HashMap<>();
 		
+		List<AssessmentSection> assessmentSections = portfolioService.getAssessmentSections(binder, getIdentity());
+		Map<Section,AssessmentSection> sectionToAssessmentSectionMap = new HashMap<>();
+		for(AssessmentSection assessmentSection:assessmentSections) {
+			sectionToAssessmentSectionMap.put(assessmentSection.getSection(), assessmentSection);
+		}
+
 		List<Section> sections = portfolioService.getSections(binder);
 		for(Section section:sections) {
-			SectionRow sectionRow = forgeSectionRow(section);
+			SectionRow sectionRow = forgeSectionRow(section, sectionToAssessmentSectionMap.get(section));
 			sectionList.add(sectionRow);
 			sectionMap.put(section.getKey(), sectionRow);	
 		}
@@ -152,15 +161,15 @@ public class TableOfContentController extends BasicController implements TooledC
 		mainVC.contextPut("sections", sectionList);
 	}
 	
-	private SectionRow forgeSectionRow(Section section) {
+	private SectionRow forgeSectionRow(Section section, AssessmentSection assessmentSection) {
 		String sectionId = "section" + (++counter);
 		String title = StringHelper.escapeHtml(section.getTitle());
 		
 		Link sectionLink = LinkFactory.createCustomLink(sectionId, "open_section", title, Link.LINK | Link.NONTRANSLATED, mainVC, this);
-		SectionRow sectionRow = new SectionRow(section, sectionLink);
+		SectionRow sectionRow = new SectionRow(section, sectionLink, assessmentSection);
 		sectionLink.setUserObject(sectionRow);
 		
-		if(secCallback.canEditBinder()) {
+		if(secCallback.canEditSection()) {
 			Dropdown editDropdown = new Dropdown(sectionId.concat("_down"), null, false, getTranslator());
 			editDropdown.setTranslatedLabel("");
 			editDropdown.setOrientation(DropdownOrientation.right);
@@ -183,7 +192,7 @@ public class TableOfContentController extends BasicController implements TooledC
 	}
 	
 	private PageRow forgePageRow(Page page, SectionRow sectionRow) {
-		PageRow pageRow = new PageRow(page, sectionRow.getSection(), false);
+		PageRow pageRow = new PageRow(page, sectionRow.getSection(), null, false);
 		
 		String pageId = "page" + (++counter);
 		String title = StringHelper.escapeHtml(page.getTitle());
@@ -336,20 +345,36 @@ public class TableOfContentController extends BasicController implements TooledC
 		cmc.activate();
 	}
 	
-	public static class SectionRow {
+	public class SectionRow {
 		
 		private final Section section;
 		private final Link sectionLink;
 		private Dropdown editDropdown;
 		private final List<PageRow> pages = new ArrayList<>();
 		
-		public SectionRow(Section section, Link sectionLink) {
+		private AssessmentSection assessmentSection;
+		
+		public SectionRow(Section section, Link sectionLink, AssessmentSection assessmentSection) {
 			this.section = section;
 			this.sectionLink = sectionLink;
+			this.assessmentSection = assessmentSection;
 		}
 
 		public String getTitle() {
 			return section.getTitle();
+		}
+		
+		public String getCssClassStatus() {
+			return section.getSectionStatus() == null
+					? SectionStatus.notStarted.cssClass() : section.getSectionStatus().cssClass();
+		}
+		
+		/**
+		 * It use the same format as the cell renderer.
+		 * @return
+		 */
+		public String getFormatedResult() {
+			return PortfolioRendererHelper.getFormattedResult(assessmentSection, getTranslator());
 		}
 		
 		public Section getSection() {

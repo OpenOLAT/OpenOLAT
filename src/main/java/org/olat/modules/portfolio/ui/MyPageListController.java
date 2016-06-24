@@ -19,6 +19,7 @@
  */
 package org.olat.modules.portfolio.ui;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.olat.core.gui.UserRequest;
@@ -33,6 +34,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.modules.portfolio.BinderSecurityCallback;
 import org.olat.modules.portfolio.Page;
+import org.olat.modules.portfolio.model.PageRow;
 
 /**
  * 
@@ -49,7 +51,7 @@ public class MyPageListController extends AbstractPageListController {
 
 	public MyPageListController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
 			BinderSecurityCallback secCallback) {
-		super(ureq, wControl, stackPanel, secCallback, "pages");
+		super(ureq, wControl, stackPanel, secCallback, "pages", false);
 
 		initForm(ureq);
 		loadModel();
@@ -65,7 +67,13 @@ public class MyPageListController extends AbstractPageListController {
 	@Override
 	protected void loadModel() {
 		List<Page> pages = portfolioService.searchOwnedPages(getIdentity());
-		loadModel(pages);
+		List<PageRow> rows = new ArrayList<>(pages.size());
+		for (Page page : pages) {
+			rows.add(forgeRow(page, null, false));
+		}
+		model.setObjects(rows);
+		tableEl.reset();
+		tableEl.reloadData();
 	}
 
 	@Override

@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Locale;
 
 import org.olat.core.id.Identity;
+import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.user.UserPropertiesRow;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
 
@@ -36,13 +37,13 @@ import org.olat.user.propertyhandlers.UserPropertyHandler;
 public class SharedItemRow extends UserPropertiesRow {
 	
 	private Long binderKey;
-	private String binderTitle;
-	private String course;
 	private Date lastModified;
+	private String binderTitle;
+	private String entryDisplayName;
+	private AssessmentEntry assessmentEntry;
 	
 	public SharedItemRow(Identity identity, List<UserPropertyHandler> userPropertyHandlers, Locale locale) {
 		super(identity, userPropertyHandlers, locale);
-		
 	}
 	
 	public Long getBinderKey() {
@@ -61,12 +62,12 @@ public class SharedItemRow extends UserPropertiesRow {
 		this.binderTitle = binder;
 	}
 
-	public String getCourseDisplayName() {
-		return course;
+	public String getEntryDisplayName() {
+		return entryDisplayName;
 	}
 
-	public void setCourseDisplayName(String course) {
-		this.course = course;
+	public void setEntryDisplayName(String course) {
+		this.entryDisplayName = course;
 	}
 
 	public Date getLastModified() {
@@ -75,5 +76,13 @@ public class SharedItemRow extends UserPropertiesRow {
 
 	public void setLastModified(Date lastModified) {
 		this.lastModified = lastModified;
+	}
+
+	public AssessmentEntry getAssessmentEntry() {
+		return assessmentEntry;
+	}
+
+	public void setAssessmentEntry(AssessmentEntry assessmentEntry) {
+		this.assessmentEntry = assessmentEntry;
 	}
 }

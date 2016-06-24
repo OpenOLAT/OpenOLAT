@@ -21,6 +21,7 @@ package org.olat.modules.portfolio.manager;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -34,6 +35,10 @@ import org.olat.modules.portfolio.Section;
 import org.olat.modules.portfolio.model.AccessRights;
 import org.olat.modules.portfolio.model.BinderRow;
 import org.olat.modules.portfolio.model.SectionImpl;
+import org.olat.modules.portfolio.model.SynchedBinder;
+import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryService;
+import org.olat.resource.OLATResource;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -51,6 +56,8 @@ public class PortfolioServiceTest extends OlatTestCase {
 	private DB dbInstance;
 	@Autowired
 	private PortfolioService portfolioService;
+	@Autowired
+	private RepositoryService repositoryService;
 	
 	@Test
 	public void createNewOwnedPorfolio() {
@@ -164,6 +171,33 @@ public class PortfolioServiceTest extends OlatTestCase {
 		Assert.assertEquals(2, rights.size());
 	}
 	
+	
+	@Test
+	public void searchOwnedBinders() {
+		Identity owner = JunitTestHelper.createAndPersistIdentityAsRndUser("binder-owner-");
+		Binder binder = portfolioService.createNewBinder("Binder 2", "Binder with one section.", null, owner);
+		dbInstance.commitAndCloseSession();
+		portfolioService.appendNewSection("First section", "My first section.", null, null, binder);
+		dbInstance.commitAndCloseSession();
+		portfolioService.appendNewSection("Second section", "My second section.", null, null, binder);
+		dbInstance.commitAndCloseSession();
+		
+		List<Section> sections = portfolioService.getSections(binder);
+		for(int i=0; i<2; i++) {
+			Section section = sections.get(1);
+			portfolioService.appendNewPage(owner, "Page-1-" + i, "", null, section);
+			portfolioService.appendNewPage(owner, "Page-2-" + i, "", null, section);
+		}
+
+		List<BinderRow> rows = portfolioService.searchOwnedBinders(owner);
+		Assert.assertNotNull(rows);
+		Assert.assertEquals(1, rows.size());
+		
+		BinderRow myBinder = rows.get(0);
+		Assert.assertEquals(2, myBinder.getNumOfSections());
+		Assert.assertEquals(4, myBinder.getNumOfPages());
+	}
+	
 	@Test
 	public void assignTemplate() {
 		Identity owner = JunitTestHelper.createAndPersistIdentityAsRndUser("port-u-7");
@@ -205,31 +239,69 @@ public class PortfolioServiceTest extends OlatTestCase {
 		Assert.assertEquals(templateSections.get(2), ((SectionImpl)reloadedSections.get(2)).getTemplateReference());
 		Assert.assertEquals(templateSections.get(3), ((SectionImpl)reloadedSections.get(3)).getTemplateReference());
 	}
-	
-	@Test
-	public void searchOwnedBinders() {
-		Identity owner = JunitTestHelper.createAndPersistIdentityAsRndUser("binder-owner-");
-		Binder binder = portfolioService.createNewBinder("Binder 2", "Binder with one section.", null, owner);
-		dbInstance.commitAndCloseSession();
-		portfolioService.appendNewSection("First section", "My first section.", null, null, binder);
-		dbInstance.commitAndCloseSession();
-		portfolioService.appendNewSection("Second section", "My second section.", null, null, binder);
-		dbInstance.commitAndCloseSession();
-		
-		List<Section> sections = portfolioService.getSections(binder);
-		for(int i=0; i<2; i++) {
-			Section section = sections.get(1);
-			portfolioService.appendNewPage(owner, "Page-1-" + i, "", null, section);
-			portfolioService.appendNewPage(owner, "Page-2-" + i, "", null, section);
-		}
 
-		List<BinderRow> rows = portfolioService.searchOwnedBinders(owner);
-		Assert.assertNotNull(rows);
-		Assert.assertEquals(1, rows.size());
+	@Test
+	public void isTemplateInUse() {
+		Identity owner = JunitTestHelper.createAndPersistIdentityAsRndUser("port-u-9");
+		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("port-u-10");
+		RepositoryEntry templateEntry = createTemplate(owner, "Template", "TE");
+		dbInstance.commitAndCloseSession();
+
+		//assign a template
+		Binder templateBinder = portfolioService.getBinderByResource(templateEntry.getOlatResource());
+		Binder template = portfolioService.assignBinder(id, templateBinder, templateEntry, null, null);
+		dbInstance.commit();
+		Assert.assertNotNull(template);
+
+		boolean inUse = portfolioService.isTemplateInUse(templateBinder, templateEntry, null);
+		Assert.assertTrue(inUse);
+	}
+
+	@Test
+	public void syncBinder() {
+		Identity owner = JunitTestHelper.createAndPersistIdentityAsRndUser("port-u-10");
+		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("port-u-11");
+		RepositoryEntry templateEntry = createTemplate(owner, "Template", "TE");
+		dbInstance.commitAndCloseSession();
+
+		//make 2 sections
+		Binder templateBinder = portfolioService.getBinderByResource(templateEntry.getOlatResource());
+		//add 2 sections
+		for(int i=0; i<2; i++) {
+			portfolioService.appendNewSection("Section " + i, "Section " + i, null, null, templateBinder);
+			dbInstance.commit();
+		}
 		
-		BinderRow myBinder = rows.get(0);
-		Assert.assertEquals(2, myBinder.getNumOfSections());
-		Assert.assertEquals(4, myBinder.getNumOfPages());
+		List<Section> templateSections = portfolioService.getSections(templateBinder);
+		Assert.assertNotNull(templateSections);
+		Assert.assertEquals(3, templateSections.size());
 		
+		//user get a the binder from the template
+		Binder binder = portfolioService.assignBinder(id, templateBinder, templateEntry, "ac-234", new Date());
+		dbInstance.commit();
+		Assert.assertNotNull(binder);
+		boolean inUse = portfolioService.isTemplateInUse(templateBinder, templateEntry, "ac-234");
+		Assert.assertTrue(inUse);
+		
+		//update the template with 2 more sections
+		for(int i=2; i<4; i++) {
+			portfolioService.appendNewSection("Section " + i, "Section " + i, null, null, templateBinder);
+			dbInstance.commit();
+		}
+		
+		SynchedBinder synchedBinder = portfolioService.loadAndSyncBinder(binder);
+		Assert.assertNotNull(synchedBinder);
+		dbInstance.commit();
+		Assert.assertTrue(synchedBinder.isChanged());
+		Assert.assertEquals(binder, synchedBinder.getBinder());
+		List<Section> synchedSections = portfolioService.getSections(synchedBinder.getBinder());
+		Assert.assertEquals(5, synchedSections.size());
+	}
+	
+	private RepositoryEntry createTemplate(Identity initialAuthor, String displayname, String description) {
+		OLATResource resource = portfolioService.createBinderTemplateResource();
+		RepositoryEntry re = repositoryService.create(initialAuthor, null, "", displayname, description, resource, RepositoryEntry.ACC_OWNERS);
+		portfolioService.createAndPersistBinderTemplate(initialAuthor, re, Locale.ENGLISH);
+		return re;
 	}
 }

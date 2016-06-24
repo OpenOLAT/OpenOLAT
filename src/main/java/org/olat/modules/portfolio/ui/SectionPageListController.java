@@ -19,11 +19,11 @@
  */
 package org.olat.modules.portfolio.ui;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
-import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
@@ -32,10 +32,12 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
+import org.olat.modules.portfolio.AssessmentSection;
 import org.olat.modules.portfolio.Binder;
 import org.olat.modules.portfolio.BinderSecurityCallback;
 import org.olat.modules.portfolio.Page;
 import org.olat.modules.portfolio.Section;
+import org.olat.modules.portfolio.model.PageRow;
 
 /**
  * 
@@ -54,7 +56,7 @@ public class SectionPageListController extends AbstractPageListController  {
 	
 	public SectionPageListController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
 			BinderSecurityCallback secCallback, Binder binder, Section section) {
-		super(ureq, wControl, stackPanel, secCallback, "pages");
+		super(ureq, wControl, stackPanel, secCallback, "pages", true);
 		this.binder = binder;
 		this.section = section;
 		
@@ -64,7 +66,7 @@ public class SectionPageListController extends AbstractPageListController  {
 	
 	@Override
 	public void initTools() {
-		if(secCallback.canEditBinder()) {
+		if(secCallback.canAddPage()) {
 			newEntryLink = LinkFactory.createToolLink("new.page", translate("create.new.page"), this);
 			newEntryLink.setIconLeftCSS("o_icon o_icon-lg o_icon_new_portfolio");
 			stackPanel.addTool(newEntryLink, Align.right);
@@ -72,14 +74,25 @@ public class SectionPageListController extends AbstractPageListController  {
 	}
 
 	@Override
-	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		super.initForm(formLayout, listener, ureq);
-	}
-
-	@Override
 	protected void loadModel() {
+		AssessmentSection assessmentSection = null;
+		List<AssessmentSection> assessmentSections = portfolioService.getAssessmentSections(binder, getIdentity());
+		for(AssessmentSection aSection:assessmentSections) {
+			if(aSection.getSection().equals(section)) {
+				assessmentSection = aSection;
+			}
+		}
+		
 		List<Page> pages = portfolioService.getPages(section);
-		loadModel(pages);
+		List<PageRow> rows = new ArrayList<>();
+		boolean first = true;
+		for (Page page : pages) {
+			rows.add(forgeRow(page, assessmentSection, first));
+			first = false;
+		}
+		model.setObjects(rows);
+		tableEl.reset();
+		tableEl.reloadData();
 	}
 	
 	@Override

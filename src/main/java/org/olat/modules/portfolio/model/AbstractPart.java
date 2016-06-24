@@ -22,6 +22,7 @@ package org.olat.modules.portfolio.model;
 import java.util.Date;
 
 import javax.persistence.Column;
+import javax.persistence.DiscriminatorColumn;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
@@ -48,6 +49,7 @@ import org.olat.modules.portfolio.PagePart;
  */
 @Entity(name="pfpagepart")
 @Table(name="o_pf_page_part")
+@DiscriminatorColumn
 public class AbstractPart implements Persistable, ModifiedInfo, CreateInfo, PagePart {
 
 	private static final long serialVersionUID = -3352479924240874583L;

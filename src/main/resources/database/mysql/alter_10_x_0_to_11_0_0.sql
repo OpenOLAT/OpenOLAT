@@ -121,7 +121,7 @@ create table o_pf_binder (
    p_image_path varchar(255),
    fk_olatresource_id bigint,
    fk_group_id bigint not null,
-   fk_course_entry_id bigint,
+   fk_entry_id bigint,
    p_subident varchar(128),
    fk_template_id bigint,
    primary key (id)
@@ -130,7 +130,7 @@ alter table o_pf_binder ENGINE = InnoDB;
 
 alter table o_pf_binder add constraint pf_binder_resource_idx foreign key (fk_olatresource_id) references o_olatresource (resource_id);
 alter table o_pf_binder add constraint pf_binder_group_idx foreign key (fk_group_id) references o_bs_group (id);
-alter table o_pf_binder add constraint pf_binder_course_idx foreign key (fk_course_entry_id) references o_repositoryentry (repositoryentry_id);
+alter table o_pf_binder add constraint pf_binder_course_idx foreign key (fk_entry_id) references o_repositoryentry (repositoryentry_id);
 alter table o_pf_binder add constraint pf_binder_template_idx foreign key (fk_template_id) references o_pf_binder (id);
 
 
@@ -250,5 +250,22 @@ alter table o_pf_category_relation ENGINE = InnoDB;
 
 alter table o_pf_category_relation add constraint pf_category_rel_cat_idx foreign key (fk_category_id) references o_pf_category (id);
 create index idx_category_rel_resid_idx on o_pf_category_relation (p_resid);
+
+
+create table o_pf_assessment_section (
+   id bigint not null auto_increment,
+   creationdate datetime not null,
+   lastmodified datetime not null,
+   p_score float(65,30) default null,
+   p_passed bit default null,
+   p_comment mediumtext,
+   fk_section_id bigint not null,
+   fk_identity_id bigint not null,
+   primary key (id)
+);
+alter table o_pf_assessment_section ENGINE = InnoDB;
+
+alter table o_pf_assessment_section add constraint pf_asection_section_idx foreign key (fk_section_id) references o_pf_section (id);
+alter table o_pf_assessment_section add constraint pf_asection_ident_idx foreign key (fk_identity_id) references o_bs_identity (id);
 
 

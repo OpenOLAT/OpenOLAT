@@ -19,9 +19,14 @@
  */
 package org.olat.modules.portfolio.ui;
 
+import java.util.List;
+
+import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
+import org.olat.modules.portfolio.Section;
 import org.olat.modules.portfolio.model.PageRow;
 
 /**
@@ -30,19 +35,56 @@ import org.olat.modules.portfolio.model.PageRow;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class PageListDataModel extends DefaultFlexiTableDataModel<PageRow> {
+public class PageListDataModel extends DefaultFlexiTableDataModel<PageRow>
+	implements SortableFlexiTableDataModel<PageRow>{
 	
 	public PageListDataModel(FlexiTableColumnModel columnModel) {
 		super(columnModel);
+	}
+	
+	@Override
+	public void sort(SortKey orderBy) {
+		PageListSortableDataModelDelegate sorter = new PageListSortableDataModelDelegate(orderBy, this, null);
+		List<PageRow> rows = sorter.sort();
+		
+		Section section = null;
+		for(PageRow row:rows) {
+			if(section == null || !section.equals(row.getSection())) {
+				row.setFirstPageOfSection(true);
+				section = row.getSection();
+			} else {
+				row.setFirstPageOfSection(false);
+			}
+		}
+		
+		super.setObjects(rows);
 	}
 
 	@Override
 	public Object getValueAt(int row, int col) {
 		PageRow page = getObject(row);
+		return getValueAt(page, col);
+	}
+	
+	@Override
+	public Object getValueAt(PageRow page, int col) {
 		switch(PageCols.values()[col]) {
 			case key: return page.getKey();
 			case title: return page.getTitle();
+			case date: {
+				if(page.getPage() != null) {
+					return page.getPage().getCreationDate();
+				}
+				if(page.getSection() != null) {
+					if(page.getSectionBeginDate() != null) {
+						return page.getSection().getBeginDate();
+					}
+					return page.getSection().getCreationDate();
+				}
+				return null;
+			}
 			case open: return page.getOpenFormItem();
+			case newEntry: return page.getNewEntryLink();
 		}
 		return null;
 	}
@@ -55,7 +97,9 @@ public class PageListDataModel extends DefaultFlexiTableDataModel<PageRow> {
 	public enum PageCols implements FlexiSortableColumnDef {
 		key("table.header.key"),
 		title("table.header.title"),
-		open("table.header.open");
+		date("table.header.date"),
+		open("table.header.open"),
+		newEntry("action");
 		
 		private final String i18nKey;
 		

@@ -43,7 +43,7 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.modules.portfolio.Binder;
 import org.olat.modules.portfolio.BinderSecurityCallback;
-import org.olat.modules.portfolio.BinderSecurityCallbackImpl;
+import org.olat.modules.portfolio.BinderSecurityCallbackFactory;
 import org.olat.modules.portfolio.PortfolioService;
 import org.olat.modules.portfolio.model.MySharedItemRow;
 import org.olat.modules.portfolio.ui.MySharedItemsDataModel.MySharedItemCols;
@@ -107,8 +107,8 @@ public class MySharedItemsController extends FormBasicController implements Acti
 			row.setBinderKey(binder.getKey());
 			row.setBinderTitle(binder.getTitle());
 			row.setLastModified(binder.getLastModified());//TODO max()
-			if(binder.getCourseEntry() != null) {
-				row.setCourseDisplayName(binder.getCourseEntry().getDisplayname());
+			if(binder.getEntry() != null) {
+				row.setCourseDisplayName(binder.getEntry().getDisplayname());
 			}
 			rows.add(row);
 		}
@@ -156,7 +156,7 @@ public class MySharedItemsController extends FormBasicController implements Acti
 			
 			OLATResourceable binderOres = OresHelper.createOLATResourceableInstance("Binder", binder.getKey());
 			WindowControl swControl = addToHistory(ureq, binderOres, null);
-			BinderSecurityCallback secCallback = new BinderSecurityCallbackImpl(true, binder.getTemplate() == null);
+			BinderSecurityCallback secCallback = BinderSecurityCallbackFactory.getCallbackForOwnedBinder(binder);
 			binderCtrl = new BinderController(ureq, swControl, stackPanel, secCallback, binder);
 			String displayName = StringHelper.escapeHtml(binder.getTitle());
 			stackPanel.pushController(displayName, binderCtrl);

@@ -49,6 +49,7 @@ import org.olat.modules.portfolio.BinderSecurityCallback;
  */
 public class BinderController extends BasicController implements TooledController, Activateable2 {
 	
+	private Link assessmentLink;
 	private final Link overviewLink, entriesLink, publishLink;
 	private final ButtonGroupComponent segmentButtonsCmp;
 	private final TooledStackedPanel stackPanel;
@@ -57,6 +58,7 @@ public class BinderController extends BasicController implements TooledControlle
 	private PublishController publishCtrl;
 	private TableOfContentController overviewCtrl;
 	private BinderPageListController entriesCtrl;
+	private BinderAssessmentController assessmentCtrl;
 	
 	private Binder binder;
 	private final BinderSecurityCallback secCallback;
@@ -75,10 +77,12 @@ public class BinderController extends BasicController implements TooledControlle
 		segmentButtonsCmp.addButton(entriesLink, false);
 		publishLink = LinkFactory.createLink("portfolio.publish", getTranslator(), this);
 		segmentButtonsCmp.addButton(publishLink, false);
-		
+		if(binder.getEntry() != null) {
+			assessmentLink = LinkFactory.createLink("portfolio.assessment", getTranslator(), this);
+			segmentButtonsCmp.addButton(assessmentLink, false);
+		}
 		
 		stackPanel.addListener(this);
-
 		putInitialPanel(new Panel("portfolioSegments"));
 	}
 
@@ -123,6 +127,8 @@ public class BinderController extends BasicController implements TooledControlle
 			doOpenEntries(ureq);
 		} else if(publishLink == source) {
 			doOpenPublish(ureq);
+		} else if(assessmentLink == source) {
+			doOpenAssessment(ureq);
 		} else if(stackPanel == source) {
 			if(event instanceof PopEvent) {
 				if(stackPanel.getLastController() == this) {
@@ -157,5 +163,14 @@ public class BinderController extends BasicController implements TooledControlle
 		stackPanel.popUpToController(this);
 		stackPanel.pushController(translate("portfolio.publish"), publishCtrl);
 		segmentButtonsCmp.setSelectedButton(publishLink);
+	}
+	
+	private void doOpenAssessment(UserRequest ureq) {
+		assessmentCtrl = new BinderAssessmentController(ureq, getWindowControl(), secCallback, binder);
+		listenTo(assessmentCtrl);
+		
+		stackPanel.popUpToController(this);
+		stackPanel.pushController(translate("portfolio.assessment"), assessmentCtrl);
+		segmentButtonsCmp.setSelectedButton(assessmentLink);
 	}
 }

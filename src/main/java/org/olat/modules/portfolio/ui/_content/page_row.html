@@ -3,26 +3,43 @@
 	<h3>$r.escapeHtml($row.sectionLongTitle)</h3>
 	<div class="o_portfolio_section_meta">
 		<div class="clearfix">
-			##status
-			
+			<span><strong>$r.translate("section.status"): </strong> $r.translate(${row.getSectionStatusI18nKey()})</span>
+
 			#if($r.notNull($row.sectionBeginDate))
 				<span><strong>$r.translate("begin.date"): </strong> $r.formatDate($row.sectionBeginDate)</span>
 			#end
 			#if($r.notNull($row.sectionEndDate))
 				<span><strong>$r.translate("end.date"): </strong> $r.formatDate($row.sectionEndDate)</span>
 			#end
-	
-			##access
+			
+			#if(${row.hasScore()})
+				<span><strong>$r.translate("section.score"): </strong> $row.score</span>
+			#end
 		</div>
 		<div class="o_section_lead o_block_large_bottom">
 			<p>$r.xssScan($row.sectionDescription)</p>
 		</div>
 	</div>
+	
+	#if(${row.hasNewEntryLink()})
+	<div class="panel panel-placeholder">
+		<div class="panel-heading">
+			<h4 class="panel-title">$r.translate("create.new.page.tite")</h4>
+		</div>
+		<div class="panel-body">
+			<p>$r.translate("create.new.page.descr")</p>
+			<div class="o_button_group">
+				$r.render($row.getNewEntryLinkName())
+			</div>
+		</div>
+	</div>
+	#end
 </div>
 #end
+#if(${row.isPage()})
 <div class="o_portfolio_page o_block_large_bottom">
 	<h4>
-		<i class="o_icon o_icon_portfolio_entry_draft o_icon-fw"> </i>
+		<i class="o_icon ${row.getCssClassStatus()} o_icon-fw"> </i>
 		$r.escapeHtml($row.title)
 	</h4>
 	<div class="o_portfolio_page_meta text-muted o_small">
@@ -35,3 +52,4 @@
 		$r.render("$row.openFormItemName")
 	</div>
 </div>
+#end

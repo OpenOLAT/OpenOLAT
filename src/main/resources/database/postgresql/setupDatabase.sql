@@ -1479,7 +1479,7 @@ create table o_pf_binder (
    p_image_path varchar(255),
    fk_olatresource_id int8,
    fk_group_id int8 not null,
-   fk_course_entry_id int8,
+   fk_entry_id int8,
    p_subident varchar(128),
    fk_template_id int8,
    primary key (id)
@@ -1566,6 +1566,18 @@ create table o_pf_category_relation (
    p_resname varchar(64) not null,
    p_resid bigint not null,
    fk_category_id int8 not null,
+   primary key (id)
+);
+
+create table o_pf_assessment_section (
+   id bigserial,
+   creationdate timestamp not null,
+   lastmodified timestamp not null,
+   p_score decimal default null,
+   p_passed bool default null,
+   p_comment text,
+   fk_section_id int8 not null,
+   fk_identity_id int8 not null,
    primary key (id)
 );
 
@@ -2474,8 +2486,8 @@ alter table o_pf_binder add constraint pf_binder_resource_idx foreign key (fk_ol
 create index idx_pf_binder_resource_idx on o_pf_binder (fk_olatresource_id);
 alter table o_pf_binder add constraint pf_binder_group_idx foreign key (fk_group_id) references o_bs_group (id);
 create index idx_pf_binder_group_idx on o_pf_binder (fk_group_id);
-alter table o_pf_binder add constraint pf_binder_course_idx foreign key (fk_course_entry_id) references o_repositoryentry (repositoryentry_id);
-create index idx_pf_binder_course_idx on o_pf_binder (fk_course_entry_id);
+alter table o_pf_binder add constraint pf_binder_course_idx foreign key (fk_entry_id) references o_repositoryentry (repositoryentry_id);
+create index idx_pf_binder_course_idx on o_pf_binder (fk_entry_id);
 alter table o_pf_binder add constraint pf_binder_template_idx foreign key (fk_template_id) references o_pf_binder (id);
 create index idx_pf_binder_template_idx on o_pf_binder (fk_template_id);
 
@@ -2508,6 +2520,11 @@ create index idx_category_name_idx on o_pf_category (p_name);
 alter table o_pf_category_relation add constraint pf_category_rel_cat_idx foreign key (fk_category_id) references o_pf_category (id);
 create index idx_pf_category_rel_cat_idx on o_pf_category_relation (fk_category_id);
 create index idx_category_rel_resid_idx on o_pf_category_relation (p_resid);
+
+alter table o_pf_assessment_section add constraint pf_asection_section_idx foreign key (fk_section_id) references o_pf_section (id);
+create index idx_pf_asection_section_idx on o_pf_assessment_section (fk_section_id);
+alter table o_pf_assessment_section add constraint pf_asection_ident_idx foreign key (fk_identity_id) references o_bs_identity (id);
+create index idx_pf_asection_ident_idx on o_pf_assessment_section (fk_identity_id);
 
 -- question pool
 alter table o_qp_pool add constraint idx_qp_pool_owner_grp_id foreign key (fk_ownergroup) references o_bs_secgroup(id);

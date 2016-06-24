@@ -36,7 +36,7 @@ import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.modules.portfolio.BinderSecurityCallback;
-import org.olat.modules.portfolio.BinderSecurityCallbackImpl;
+import org.olat.modules.portfolio.BinderSecurityCallbackFactory;
 
 /**
  * 
@@ -158,7 +158,7 @@ public class PortfolioHomeController extends BasicController implements Activate
 		OLATResourceable pagesOres = OresHelper.createOLATResourceableInstance("MyPages", 0l);
 		WindowControl swControl = addToHistory(ureq, pagesOres, null);
 		//owners of all pages
-		BinderSecurityCallback secCallback = new BinderSecurityCallbackImpl(true, false);
+		BinderSecurityCallback secCallback = BinderSecurityCallbackFactory.getCallbackForMyPageList();
 		myPageListCtrl = new MyPageListController(ureq, swControl, stackPanel, secCallback);
 		listenTo(myPageListCtrl);
 		stackPanel.pushController(translate("my.portfolio.pages.breadcrump"), myPageListCtrl);

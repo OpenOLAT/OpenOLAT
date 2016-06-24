@@ -182,7 +182,7 @@ public class JunitTestHelper {
 		return createAndPersistRepositoryEntry(initialAuthor, r, membersOnly);
 	}
 	
-	private static final RepositoryEntry createAndPersistRepositoryEntry(String initialAuthor, OLATResource r, boolean membersOnly) {
+	public static final RepositoryEntry createAndPersistRepositoryEntry(String initialAuthor, OLATResource r, boolean membersOnly) {
 		RepositoryService repositoryService = CoreSpringFactory.getImpl(RepositoryService.class);
 		RepositoryEntry re = repositoryService.create(initialAuthor, "Lernen mit OLAT", r.getResourceableTypeName(), null, r);
 		if(membersOnly) {

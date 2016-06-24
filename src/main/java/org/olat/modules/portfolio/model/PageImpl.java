@@ -39,8 +39,10 @@ import org.olat.basesecurity.model.GroupImpl;
 import org.olat.core.id.CreateInfo;
 import org.olat.core.id.ModifiedInfo;
 import org.olat.core.id.Persistable;
+import org.olat.core.util.StringHelper;
 import org.olat.modules.portfolio.Page;
 import org.olat.modules.portfolio.PageBody;
+import org.olat.modules.portfolio.PageStatus;
 import org.olat.modules.portfolio.PortfolioElementType;
 import org.olat.modules.portfolio.Section;
 
@@ -137,7 +139,29 @@ public class PageImpl implements Persistable, ModifiedInfo, CreateInfo, Page {
 	public PortfolioElementType getType() {
 		return PortfolioElementType.page;
 	}
+
+	@Override
+	@Transient
+	public PageStatus getPageStatus() {
+		return StringHelper.containsNonWhitespace(status) ? PageStatus.valueOf(status) : null;
+	}
+	
+	public void setPageStatus(PageStatus pageStatus) {
+		if(pageStatus == null) {
+			status = null;
+		} else {
+			status = pageStatus.name();
+		}
+	}
 		
+	public String getStatus() {
+		return status;
+	}
+
+	public void setStatus(String status) {
+		this.status = status;
+	}
+
 	@Override
 	public String getTitle() {
 		return title;

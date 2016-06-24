@@ -64,11 +64,14 @@ import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSMediaResource;
 import org.olat.modules.portfolio.Binder;
+import org.olat.modules.portfolio.BinderRef;
 import org.olat.modules.portfolio.BinderSecurityCallback;
-import org.olat.modules.portfolio.BinderSecurityCallbackImpl;
+import org.olat.modules.portfolio.BinderSecurityCallbackFactory;
 import org.olat.modules.portfolio.PortfolioService;
 import org.olat.modules.portfolio.handler.BinderTemplateResource;
+import org.olat.modules.portfolio.model.BinderRefImpl;
 import org.olat.modules.portfolio.model.BinderRow;
+import org.olat.modules.portfolio.model.SynchedBinder;
 import org.olat.modules.portfolio.ui.BindersDataModel.PortfolioCols;
 import org.olat.modules.portfolio.ui.event.NewBinderEvent;
 import org.olat.repository.RepositoryEntry;
@@ -76,6 +79,7 @@ import org.olat.repository.controllers.ReferencableEntriesSearchController;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
+ * This is the list of the binders owned by the user.
  * 
  * Initial date: 07.06.2016<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
@@ -192,7 +196,7 @@ public class BinderListController extends FormBasicController
 		String resName = entries.get(0).getOLATResourceable().getResourceableTypeName();
 		if("Binder".equalsIgnoreCase(resName)) {
 			Long portfolioKey = entries.get(0).getOLATResourceable().getResourceableId();
-			Activateable2 activateable = doOpenBinder(ureq, portfolioKey);
+			Activateable2 activateable = doOpenBinder(ureq, new BinderRefImpl(portfolioKey));
 			if(activateable != null) {
 				List<ContextEntry> subEntries = entries.subList(1, entries.size());
 				activateable.activate(ureq, subEntries, entries.get(0).getTransientState());
@@ -266,7 +270,7 @@ public class BinderListController extends FormBasicController
 			String cmd = link.getCmd();
 			if("open".equals(cmd)) {
 				BinderWrapper row = (BinderWrapper)link.getUserObject();
-				Activateable2 activateable = doOpenBinder(ureq, row.getKey());
+				Activateable2 activateable = doOpenBinder(ureq, row);
 				if(activateable != null) {
 					activateable.activate(ureq, null, null);
 				}
@@ -281,9 +285,12 @@ public class BinderListController extends FormBasicController
 		//
 	}
 	
-	private BinderController doOpenBinder(UserRequest ureq, Long binderKey) {
-		Binder binder = portfolioService.getBinderByKey(binderKey);
-		return doOpenBinder(ureq, binder);
+	private BinderController doOpenBinder(UserRequest ureq, BinderRef row) {
+		SynchedBinder binder = portfolioService.loadAndSyncBinder(row);
+		if(binder.isChanged()) {
+			showInfo("warning.binder.synched");
+		}
+		return doOpenBinder(ureq, binder.getBinder());
 	}
 	
 	private BinderController doOpenBinder(UserRequest ureq, Binder binder) {
@@ -295,7 +302,7 @@ public class BinderListController extends FormBasicController
 			
 			OLATResourceable binderOres = OresHelper.createOLATResourceableInstance("Binder", binder.getKey());
 			WindowControl swControl = addToHistory(ureq, binderOres, null);
-			BinderSecurityCallback secCallback = new BinderSecurityCallbackImpl(true, binder.getTemplate() == null);
+			BinderSecurityCallback secCallback = BinderSecurityCallbackFactory.getCallbackForOwnedBinder(binder);
 			binderCtrl = new BinderController(ureq, swControl, stackPanel, secCallback, binder);
 			String displayName = StringHelper.escapeHtml(binder.getTitle());
 			stackPanel.pushController(displayName, binderCtrl);
@@ -390,7 +397,7 @@ public class BinderListController extends FormBasicController
 		}
 	}
 	
-	public class BinderWrapper {
+	public class BinderWrapper implements BinderRef {
 		
 		private final BinderRow binderRow;
 		private final VFSLeaf image;
@@ -414,7 +421,7 @@ public class BinderListController extends FormBasicController
 		public boolean isNewBinder() {
 			return newBinder;
 		}
-		
+
 		public Long getKey() {
 			return binderRow == null ? null : binderRow.getKey();
 		}

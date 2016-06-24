@@ -100,8 +100,8 @@ public class BinderImpl implements Persistable, ModifiedInfo, CreateInfo, Binder
 	private OLATResource olatResource;
 	
 	@ManyToOne(targetEntity=RepositoryEntry.class,fetch=FetchType.LAZY,optional=true)
-	@JoinColumn(name="fk_course_entry_id", nullable=true, insertable=true, updatable=false)
-	private RepositoryEntry courseEntry;
+	@JoinColumn(name="fk_entry_id", nullable=true, insertable=true, updatable=false)
+	private RepositoryEntry entry;
     @Column(name="p_subident", nullable=true, insertable=true, updatable=false)
 	private String subIdent;
 	
@@ -219,12 +219,13 @@ public class BinderImpl implements Persistable, ModifiedInfo, CreateInfo, Binder
 		this.olatResource = olatResource;
 	}
 
-	public RepositoryEntry getCourseEntry() {
-		return courseEntry;
+	@Override
+	public RepositoryEntry getEntry() {
+		return entry;
 	}
 
-	public void setCourseEntry(RepositoryEntry courseEntry) {
-		this.courseEntry = courseEntry;
+	public void setEntry(RepositoryEntry entry) {
+		this.entry = entry;
 	}
 
 	@Override

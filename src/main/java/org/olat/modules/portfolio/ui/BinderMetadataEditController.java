@@ -152,8 +152,8 @@ public class BinderMetadataEditController extends FormBasicController {
 		
 		// portfolio task
 		String courseName;
-		if(binder != null && binder.getCourseEntry() != null) {
-			courseName = binder.getCourseEntry().getDisplayname();
+		if(binder != null && binder.getEntry() != null) {
+			courseName = binder.getEntry().getDisplayname();
 		} else {
 			courseName = translate("portfoliotask.none");
 		}

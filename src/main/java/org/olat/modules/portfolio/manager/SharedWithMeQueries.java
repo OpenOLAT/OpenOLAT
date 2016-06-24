@@ -19,12 +19,15 @@
  */
 package org.olat.modules.portfolio.manager;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
+import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.portfolio.Binder;
 import org.olat.modules.portfolio.PortfolioRoles;
+import org.olat.modules.portfolio.model.AssessedBinder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -40,12 +43,16 @@ public class SharedWithMeQueries {
 	@Autowired
 	private DB dbInstance;
 	
-	public List<Binder> searchSharedBinders(Identity member) {
-		StringBuilder sb = new StringBuilder();
-		sb.append("select binder from pfbinder as binder")
-		  .append(" inner join binder.baseGroup as baseGroup")
+	public List<AssessedBinder> searchSharedBinders(Identity member) {
+		StringBuilder sc = new StringBuilder();
+		sc.append("select owner, binder, aEntry from pfbinder as binder")
+		  .append(" inner join fetch binder.baseGroup as baseGroup")
 		  .append(" inner join baseGroup.members as membership")
-		  .append(" left join fetch binder.courseEntry as courseEntry")
+		  .append(" inner join baseGroup.members as ownership")
+		  .append(" inner join ownership.identity as owner")
+		  .append(" inner join fetch owner.user as owneruser")
+		  .append(" left join fetch binder.entry as entry")//entry -> assessment entry -> owner
+		  .append(" left join fetch assessmententry as aEntry on (aEntry.identity.key=owner.key and aEntry.repositoryEntry.key=entry.key)")
 		  .append(" where (membership.identity.key=:identityKey and membership.role in ('").append(PortfolioRoles.coach.name()).append("','").append(PortfolioRoles.reviewer.name()).append("'))")
 		  .append(" or exists (select section.key from pfsection as section")
 		  .append("   inner join section.baseGroup as sectionGroup")
@@ -59,10 +66,17 @@ public class SharedWithMeQueries {
 		  .append("   where pageSection.binder.key=binder.key")
 		  .append(" )");
 		
-		return dbInstance.getCurrentEntityManager()
-			.createQuery(sb.toString(), Binder.class)
-			.setParameter("identityKey", member.getKey())
-			.getResultList();
+		List<Object[]> objects = dbInstance.getCurrentEntityManager()
+				.createQuery(sc.toString(), Object[].class)
+				.setParameter("identityKey", member.getKey())
+				.getResultList();
+		List<AssessedBinder> assessedBinders = new ArrayList<>(objects.size());
+		for(Object[] object:objects) {
+			Identity owner = (Identity)object[0];
+			Binder binder = (Binder)object[1];
+			AssessmentEntry entry = (AssessmentEntry)object[2];
+			assessedBinders.add(new AssessedBinder(owner, binder, entry));
+		}
+		return assessedBinders;
 	}
-
 }

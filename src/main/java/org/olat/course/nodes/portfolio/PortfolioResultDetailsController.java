@@ -51,7 +51,7 @@ import org.olat.course.nodes.PortfolioCourseNode;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.portfolio.Binder;
 import org.olat.modules.portfolio.BinderSecurityCallback;
-import org.olat.modules.portfolio.BinderSecurityCallbackImpl;
+import org.olat.modules.portfolio.BinderSecurityCallbackFactory;
 import org.olat.modules.portfolio.PortfolioService;
 import org.olat.modules.portfolio.handler.BinderTemplateResource;
 import org.olat.modules.portfolio.model.AccessRights;
@@ -291,7 +291,7 @@ public class PortfolioResultDetailsController extends FormBasicController {
 	private void doOpenMap(UserRequest ureq, Binder binder) {
 		if(stackPanel instanceof TooledStackedPanel) {
 			List<AccessRights> rights = portfolioService.getAccessRights(binder, getIdentity());
-			BinderSecurityCallback secCallback = new BinderSecurityCallbackImpl(rights);
+			BinderSecurityCallback secCallback = BinderSecurityCallbackFactory.getCallbackForCoach(binder, rights);
 			BinderController binderCtrl = new BinderController(ureq, getWindowControl(), (TooledStackedPanel)stackPanel, secCallback, binder);
 			String displayName = StringHelper.escapeHtml(binder.getTitle());
 			stackPanel.pushController(displayName, binderCtrl);

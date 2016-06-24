@@ -31,6 +31,8 @@ public interface Page extends PortfolioElement {
 	
 	public Date getLastModified();
 	
+	public PageStatus getPageStatus();
+	
 	public void setTitle(String title);
 	
 	public String getSummary();

@@ -30,7 +30,7 @@ import org.olat.repository.RepositoryEntry;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public interface Binder extends BinderRef, PortfolioElement, OLATResourceable {
+public interface Binder extends BinderLight, PortfolioElement, OLATResourceable {
 	
 	public Date getLastModified();
 	
@@ -48,11 +48,19 @@ public interface Binder extends BinderRef, PortfolioElement, OLATResourceable {
 	
 	public void setSummary(String summary);
 	
+	@Override
 	public String getImagePath();
 	
 	public void setImagePath(String imagePath);
 
-	public RepositoryEntry getCourseEntry();
+	/**
+	 * The repository entry which is used as base for the assessment. It can
+	 * be the course or perhaps the template if the binder is not
+	 * linked to a course.
+	 * 
+	 * @return
+	 */
+	public RepositoryEntry getEntry();
 	
 	public String getSubIdent();
 	

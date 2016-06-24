@@ -23,7 +23,6 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFle
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.modules.portfolio.model.MediaRow;
-import org.olat.modules.portfolio.ui.PageListDataModel.PageCols;
 
 /**
  * 
@@ -40,7 +39,7 @@ public class MediaDataModel  extends DefaultFlexiTableDataModel<MediaRow>  {
 	@Override
 	public Object getValueAt(int row, int col) {
 		MediaRow page = getObject(row);
-		switch(PageCols.values()[col]) {
+		switch(MediaCols.values()[col]) {
 			case key: return page.getKey();
 			case title: return page.getTitle();
 			case open: return page.getOpenFormItem();

@@ -20,7 +20,9 @@
 package org.olat.modules.portfolio.ui;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -42,11 +44,15 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableRendererType;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.components.link.Link;
+import org.olat.core.gui.components.link.LinkFactory;
+import org.olat.core.gui.components.stack.TooledController;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
+import org.olat.core.gui.components.stack.TooledStackedPanel.Align;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.id.context.ContextEntry;
@@ -60,6 +66,8 @@ import org.olat.modules.portfolio.PortfolioService;
 import org.olat.modules.portfolio.model.MediaRow;
 import org.olat.modules.portfolio.ui.BindersDataModel.PortfolioCols;
 import org.olat.modules.portfolio.ui.event.MediaSelectionEvent;
+import org.olat.modules.portfolio.ui.media.CollectFileMediaController;
+import org.olat.modules.portfolio.ui.media.CollectImageMediaController;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -68,19 +76,24 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class MediaCenterController extends FormBasicController implements Activateable2, FlexiTableComponentDelegate {
+public class MediaCenterController extends FormBasicController
+	implements Activateable2, FlexiTableComponentDelegate, TooledController {
 	
 	private static final Size THUMBNAIL_SIZE = new Size(180, 180, false);
 	
 	private MediaDataModel model;
 	private FlexiTableElement tableEl;
 	private String mapperThumbnailUrl;
+	private Link addFileLink, addImageLink;
 	
 	private int counter = 0;
 	private final boolean select;
 	private final TooledStackedPanel stackPanel;
-	
+
+	private CloseableModalController cmc;
 	private MediaDetailsController detailsCtrl;
+	private CollectFileMediaController fileUploadCtrl;
+	private CollectImageMediaController imageUploadCtrl;
 	
 	@Autowired
 	private PortfolioService portfolioService;
@@ -101,6 +114,17 @@ public class MediaCenterController extends FormBasicController implements Activa
 		 
 		initForm(ureq);
 		loadModel();
+	}
+	
+	@Override
+	public void initTools() {
+		addFileLink = LinkFactory.createToolLink("add.file", translate("add.file"), this);
+		addFileLink.setIconLeftCSS("o_icon o_icon-lg o_icon_new_portfolio");
+		stackPanel.addTool(addFileLink, Align.left);
+		
+		addImageLink = LinkFactory.createToolLink("add.image", translate("add.image"), this);
+		addImageLink.setIconLeftCSS("o_icon o_icon-lg o_icon_new_portfolio");
+		stackPanel.addTool(addImageLink, Align.left);
 	}
 
 	@Override
@@ -134,16 +158,25 @@ public class MediaCenterController extends FormBasicController implements Activa
 	}
 	
 	private void loadModel() {
+		List<MediaRow> currentRows = model.getObjects();
+		Map<Long,MediaRow> currentMap = new HashMap<>();
+		for(MediaRow row:currentRows) {
+			currentMap.put(row.getKey(), row);
+		}
+		
 		List<Media> medias = portfolioService.searchOwnedMedias(getIdentity());
 		List<MediaRow> rows = new ArrayList<>(medias.size());
-		
 		for(Media media:medias) {
-			MediaHandler handler = portfolioService.getMediaHandler(media.getType());
-			VFSLeaf thumbnail = handler.getThumbnail(media, THUMBNAIL_SIZE);
-			FormLink openLink =  uifactory.addFormLink("select_" + (++counter), "select", media.getTitle(), null, null, Link.NONTRANSLATED);
-			MediaRow row = new MediaRow(media, thumbnail, openLink);
-			openLink.setUserObject(row);
-			rows.add(row);
+			if(currentMap.containsKey(media.getKey())) {
+				rows.add(currentMap.get(media.getKey()));
+			} else {
+				MediaHandler handler = portfolioService.getMediaHandler(media.getType());
+				VFSLeaf thumbnail = handler.getThumbnail(media, THUMBNAIL_SIZE);
+				FormLink openLink =  uifactory.addFormLink("select_" + (++counter), "select", media.getTitle(), null, null, Link.NONTRANSLATED);
+				MediaRow row = new MediaRow(media, thumbnail, openLink);
+				openLink.setUserObject(row);
+				rows.add(row);
+			}
 		}
 		model.setObjects(rows);
 	}
@@ -195,8 +228,43 @@ public class MediaCenterController extends FormBasicController implements Activa
 	}
 
 	@Override
+	public void event(UserRequest ureq, Controller source, Event event) {
+		if(imageUploadCtrl == source) {
+			if(event == Event.DONE_EVENT) {
+				loadModel();
+				tableEl.reloadData();
+			}
+			cmc.deactivate();
+			cleanUp();
+		} else if(fileUploadCtrl == source) {
+			if(event == Event.DONE_EVENT) {
+				loadModel();
+				tableEl.reloadData();
+			}
+			cmc.deactivate();
+			cleanUp();
+		} else if(cmc == source) {
+			cleanUp();
+		}
+		super.event(ureq, source, event);
+	}
+	
+	private void cleanUp() {
+		removeAsListenerAndDispose(imageUploadCtrl);
+		removeAsListenerAndDispose(fileUploadCtrl);
+		removeAsListenerAndDispose(cmc);
+		imageUploadCtrl = null;
+		fileUploadCtrl = null;
+		cmc = null;
+	}
+
+	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
-		 if(source == mainForm.getInitialComponent()) {
+		if(addImageLink == source) {
+			doAddImageMedia(ureq);
+		} else if(addFileLink == source) {
+			doAddFileMedia(ureq);
+		} else if(source == mainForm.getInitialComponent()) {
 			if("ONCLICK".equals(event.getCommand())) {
 				String rowKeyStr = ureq.getParameter("img_select");
 				if(StringHelper.isLong(rowKeyStr)) {
@@ -222,6 +290,29 @@ public class MediaCenterController extends FormBasicController implements Activa
 		//
 	}
 	
+	private void doAddFileMedia(UserRequest ureq) {
+		if(fileUploadCtrl != null) return;
+		
+		fileUploadCtrl = new CollectFileMediaController(ureq, getWindowControl());
+		listenTo(fileUploadCtrl);
+		
+		String title = translate("add.media");
+		cmc = new CloseableModalController(getWindowControl(), null, fileUploadCtrl.getInitialComponent(), true, title, true);
+		listenTo(cmc);
+		cmc.activate();
+	}
+	
+	private void doAddImageMedia(UserRequest ureq) {
+		if(imageUploadCtrl != null) return;
+		
+		imageUploadCtrl = new CollectImageMediaController(ureq, getWindowControl());
+		listenTo(imageUploadCtrl);
+		
+		String title = translate("add.image");
+		cmc = new CloseableModalController(getWindowControl(), null, imageUploadCtrl.getInitialComponent(), true, title, true);
+		listenTo(cmc);
+		cmc.activate();
+	}
 
 	private void doSelect(UserRequest ureq, Long mediaKey) {
 		Media media = portfolioService.getMediaByKey(mediaKey);

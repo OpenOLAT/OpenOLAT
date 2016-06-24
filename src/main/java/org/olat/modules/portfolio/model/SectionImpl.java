@@ -44,10 +44,12 @@ import org.olat.basesecurity.model.GroupImpl;
 import org.olat.core.id.CreateInfo;
 import org.olat.core.id.ModifiedInfo;
 import org.olat.core.id.Persistable;
+import org.olat.core.util.StringHelper;
 import org.olat.modules.portfolio.Binder;
 import org.olat.modules.portfolio.Page;
 import org.olat.modules.portfolio.PortfolioElementType;
 import org.olat.modules.portfolio.Section;
+import org.olat.modules.portfolio.SectionStatus;
 
 /**
  * 
@@ -148,21 +150,47 @@ public class SectionImpl implements Persistable, ModifiedInfo, CreateInfo, Secti
 	public PortfolioElementType getType() {
 		return PortfolioElementType.section;
 	}
-	
+
+	@Override
 	public String getTitle() {
 		return title;
 	}
 
+	@Override
 	public void setTitle(String title) {
 		this.title = title;
 	}
 
+	@Override
 	public String getDescription() {
 		return description;
 	}
 
+	@Override
 	public void setDescription(String description) {
 		this.description = description;
+	}
+
+	@Override
+	@Transient
+	public SectionStatus getSectionStatus() {
+		return StringHelper.containsNonWhitespace(status) ? SectionStatus.valueOf(status) : null;
+	}
+	
+	public void setSectionStatus(SectionStatus sectionStatus) {
+		if(sectionStatus == null) {
+			status = null;
+		} else {
+			status = sectionStatus.name();
+		}
+	}
+
+	public String getStatus() {
+		return status;
+	}
+
+	public void setStatus(String status) {
+		this.status = status;
 	}
 
 	public Date getBeginDate() {

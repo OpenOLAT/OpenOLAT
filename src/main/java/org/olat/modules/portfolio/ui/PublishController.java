@@ -43,15 +43,19 @@ import org.olat.core.gui.control.generic.wizard.StepRunnerCallback;
 import org.olat.core.gui.control.generic.wizard.StepsMainRunController;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
 import org.olat.core.id.Identity;
+import org.olat.modules.portfolio.AssessmentSection;
 import org.olat.modules.portfolio.Binder;
 import org.olat.modules.portfolio.BinderSecurityCallback;
 import org.olat.modules.portfolio.Page;
 import org.olat.modules.portfolio.PortfolioElement;
+import org.olat.modules.portfolio.PortfolioElementType;
 import org.olat.modules.portfolio.PortfolioRoles;
 import org.olat.modules.portfolio.PortfolioService;
 import org.olat.modules.portfolio.Section;
+import org.olat.modules.portfolio.SectionStatus;
 import org.olat.modules.portfolio.model.AccessRightChange;
 import org.olat.modules.portfolio.model.AccessRights;
+import org.olat.modules.portfolio.ui.renderer.PortfolioRendererHelper;
 import org.olat.modules.portfolio.ui.wizard.AccessRightsContext;
 import org.olat.modules.portfolio.ui.wizard.AddMember_1_ChooseMemberStep;
 import org.olat.user.UserManager;
@@ -93,7 +97,7 @@ public class PublishController extends BasicController implements TooledControll
 		mainVC = createVelocityContainer("publish");
 		mainVC.contextPut("binderTitle", binder.getTitle());
 		
-		binderRow = new PortfolioElementRow(binder);
+		binderRow = new PortfolioElementRow(binder, null);
 		mainVC.contextPut("binderRow", binderRow);
 		putInitialPanel(mainVC);
 		reloadData();
@@ -128,12 +132,18 @@ public class PublishController extends BasicController implements TooledControll
 				binderRow.getAccessRights().add(new AccessRightsRow(binder, right, editLink));
 			}
 		}
+		
+		List<AssessmentSection> assessmentSections = portfolioService.getAssessmentSections(binder, getIdentity());
+		Map<Section,AssessmentSection> sectionToAssessmentSectionMap = new HashMap<>();
+		for(AssessmentSection assessmentSection:assessmentSections) {
+			sectionToAssessmentSectionMap.put(assessmentSection.getSection(), assessmentSection);
+		}
 
 		//sections
 		List<Section> sections = portfolioService.getSections(binder);
 		Map<Long,PortfolioElementRow> sectionMap = new HashMap<>();
 		for(Section section:sections) {
-			PortfolioElementRow sectionRow = new PortfolioElementRow(section);
+			PortfolioElementRow sectionRow = new PortfolioElementRow(section, sectionToAssessmentSectionMap.get(section));
 			binderRow.getChildren().add(sectionRow);
 			sectionMap.put(section.getKey(), sectionRow);	
 
@@ -155,7 +165,7 @@ public class PublishController extends BasicController implements TooledControll
 			Section section = page.getSection();
 			PortfolioElementRow sectionRow = sectionMap.get(section.getKey());
 			
-			PortfolioElementRow pageRow = new PortfolioElementRow(page);
+			PortfolioElementRow pageRow = new PortfolioElementRow(page, null);
 			sectionRow.getChildren().add(pageRow);
 
 			boolean canEditPageAccessRights = secCallback.canEditAccessRights(page);
@@ -320,18 +330,37 @@ public class PublishController extends BasicController implements TooledControll
 		}
 	}
 
-	public static class PortfolioElementRow {
+	public class PortfolioElementRow {
 		
 		private final PortfolioElement element;
 		private List<PortfolioElementRow> children;
 		private List<AccessRightsRow> accessRights = new ArrayList<>();
 		
-		public PortfolioElementRow(PortfolioElement element) {
+		private final AssessmentSection assessmentSection;
+		
+		public PortfolioElementRow(PortfolioElement element, AssessmentSection assessmentSection) {
 			this.element = element;
+			this.assessmentSection = assessmentSection;
 		}
 		
 		public String getTitle() {
 			return element.getTitle();
+		}
+		
+		public String getCssClassStatus() {
+			if(element.getType() == PortfolioElementType.section) {
+				Section section = (Section)element;
+				return section.getSectionStatus() == null
+					? SectionStatus.notStarted.cssClass() : section.getSectionStatus().cssClass();
+			}
+			return "";
+		}
+		
+		public String getFormattedScore() {
+			if(element.getType() == PortfolioElementType.section) {
+				return PortfolioRendererHelper.getFormattedResult(assessmentSection, getTranslator());
+			}
+			return "";
 		}
 		
 		public List<AccessRightsRow> getAccessRights() {

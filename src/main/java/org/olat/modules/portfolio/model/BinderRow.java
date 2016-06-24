@@ -21,7 +21,7 @@ package org.olat.modules.portfolio.model;
 
 import java.util.Date;
 
-import org.olat.modules.portfolio.BinderRef;
+import org.olat.modules.portfolio.BinderLight;
 
 /**
  * 
@@ -29,7 +29,7 @@ import org.olat.modules.portfolio.BinderRef;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class BinderRow implements BinderRef {
+public class BinderRow implements BinderLight {
 	
 	private final Long key;
 	private final String title;

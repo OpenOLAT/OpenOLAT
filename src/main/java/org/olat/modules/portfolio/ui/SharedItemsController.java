@@ -23,7 +23,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.olat.basesecurity.BaseSecurityModule;
-import org.olat.basesecurity.GroupRoles;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -38,7 +37,6 @@ import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
-import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
@@ -46,11 +44,13 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.modules.portfolio.Binder;
 import org.olat.modules.portfolio.BinderSecurityCallback;
-import org.olat.modules.portfolio.BinderSecurityCallbackImpl;
+import org.olat.modules.portfolio.BinderSecurityCallbackFactory;
 import org.olat.modules.portfolio.PortfolioService;
 import org.olat.modules.portfolio.model.AccessRights;
+import org.olat.modules.portfolio.model.AssessedBinder;
 import org.olat.modules.portfolio.model.SharedItemRow;
 import org.olat.modules.portfolio.ui.SharedItemsDataModel.ShareItemCols;
+import org.olat.modules.portfolio.ui.renderer.AssessmentEntryCellRenderer;
 import org.olat.user.UserManager;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -115,6 +115,8 @@ public class SharedItemsController extends FormBasicController implements Activa
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ShareItemCols.binderKey, "select"));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ShareItemCols.binderName, "select"));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ShareItemCols.courseName, "select"));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ShareItemCols.grading,
+				new AssessmentEntryCellRenderer(getTranslator())));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ShareItemCols.lastModified));
 	
 		model = new SharedItemsDataModel(columnsModel);
@@ -128,20 +130,19 @@ public class SharedItemsController extends FormBasicController implements Activa
 	}
 	
 	private void loadModel() {
-		List<Binder> portfolios = portfolioService.searchSharedBindersWith(getIdentity());
-		List<SharedItemRow> rows = new ArrayList<>(portfolios.size());
-		for(Binder binder:portfolios) {
-			List<Identity> owners = portfolioService.getMembers(binder, GroupRoles.owner.name());
-			for(Identity owner:owners) {
-				SharedItemRow row = new SharedItemRow(owner, userPropertyHandlers, getLocale());
-				row.setBinderTitle(binder.getTitle());
-				row.setBinderKey(binder.getKey());
-				row.setLastModified(binder.getLastModified());//TODO max()
-				if(binder.getCourseEntry() != null) {
-					row.setCourseDisplayName(binder.getCourseEntry().getDisplayname());
-				}
-				rows.add(row);
+		List<AssessedBinder> assessedBinders = portfolioService.searchSharedBindersWith(getIdentity());
+		List<SharedItemRow> rows = new ArrayList<>(assessedBinders.size());
+		for(AssessedBinder assessedBinder:assessedBinders) {
+			SharedItemRow row = new SharedItemRow(assessedBinder.getAssessedIdentity(), userPropertyHandlers, getLocale());
+			row.setBinderTitle(assessedBinder.getBinder().getTitle());
+			row.setBinderKey(assessedBinder.getBinder().getKey());
+			row.setLastModified(assessedBinder.getBinder().getLastModified());//TODO max()
+			if(assessedBinder.getBinder().getEntry() != null) {
+				row.setEntryDisplayName(assessedBinder.getBinder().getEntry().getDisplayname());
 			}
+			row.setAssessmentEntry(assessedBinder.getAssessmentEntry());
+			rows.add(row);
+
 		}
 		model.setObjects(rows);
 		tableEl.reset();
@@ -193,7 +194,7 @@ public class SharedItemsController extends FormBasicController implements Activa
 			OLATResourceable binderOres = OresHelper.createOLATResourceableInstance("Binder", binder.getKey());
 			WindowControl swControl = addToHistory(ureq, binderOres, null);
 			List<AccessRights> rights = portfolioService.getAccessRights(binder, getIdentity());
-			BinderSecurityCallback secCallback = new BinderSecurityCallbackImpl(rights);
+			BinderSecurityCallback secCallback = BinderSecurityCallbackFactory.getCallbackForCoach(binder, rights);
 			binderCtrl = new BinderController(ureq, swControl, stackPanel, secCallback, binder);
 			String displayName = StringHelper.escapeHtml(binder.getTitle());
 			stackPanel.pushController(displayName, binderCtrl);

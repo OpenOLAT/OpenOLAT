@@ -29,7 +29,10 @@ import org.olat.core.id.Identity;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.modules.portfolio.model.AccessRightChange;
 import org.olat.modules.portfolio.model.AccessRights;
+import org.olat.modules.portfolio.model.AssessedBinder;
+import org.olat.modules.portfolio.model.AssessmentSectionChange;
 import org.olat.modules.portfolio.model.BinderRow;
+import org.olat.modules.portfolio.model.SynchedBinder;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
 import org.olat.resource.OLATResource;
@@ -66,6 +69,11 @@ public interface PortfolioService {
 
 	public List<Binder> getOwnedBinders(IdentityRef owner);
 	
+	/**
+	 * Return the list of binder owned by the specified user (but not the templates)
+	 * @param owner
+	 * @return
+	 */
 	public List<BinderRow> searchOwnedBinders(IdentityRef owner);
 	
 	/**
@@ -74,7 +82,7 @@ public interface PortfolioService {
 	 * @param member
 	 * @return
 	 */
-	public List<Binder> searchSharedBindersWith(Identity member);
+	public List<AssessedBinder> searchSharedBindersWith(Identity coach);
 	
 	/**
 	 * Search all the binders which the specified identity shared
@@ -114,7 +122,9 @@ public interface PortfolioService {
 	 */
 	public boolean isTemplateInUse(Binder template, RepositoryEntry courseEntry, String subIdent);
 	
-	public Binder assignBinder(Identity owner, BinderRef templateBinder, RepositoryEntry courseEntry, String subIdent, Date deadline);
+	public Binder assignBinder(Identity owner, BinderRef templateBinder, RepositoryEntry entry, String subIdent, Date deadline);
+	
+	public SynchedBinder loadAndSyncBinder(BinderRef binder);
 	
 	/**
 	 * The list of owners of the binder.
@@ -136,9 +146,9 @@ public interface PortfolioService {
 
 	public void updateCategories(Binder binder, List<String> categories);
 	
-	public File getPosterImageFile(BinderRef binder);
+	public File getPosterImageFile(BinderLight binder);
 	
-	public VFSLeaf getPosterImageLeaf(BinderRef binder);
+	public VFSLeaf getPosterImageLeaf(BinderLight binder);
 	
 	public String addPosterImageForBinder(File file, String filename);
 	
@@ -228,6 +238,24 @@ public interface PortfolioService {
 	public List<Media> searchOwnedMedias(IdentityRef author);
 	
 	public void updateCategories(Media media, List<String> categories);
+	
+	
+	/**
+	 * Close the section
+	 * @param section
+	 * @param coach
+	 */
+	public Section changeSectionStatus(Section section, SectionStatus status, Identity coach);
+	
+	/**
+	 * 
+	 * @param binder
+	 * @param coach
+	 * @return
+	 */
+	public List<AssessmentSection> getAssessmentSections(BinderRef binder, Identity coach);
+	
+	public void updateAssessmentSections(BinderRef binder, List<AssessmentSectionChange> changes, Identity coachingIdentity);
 	
 
 }

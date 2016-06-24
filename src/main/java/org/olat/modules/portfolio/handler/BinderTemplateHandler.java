@@ -44,7 +44,7 @@ import org.olat.fileresource.FileResourceManager;
 import org.olat.fileresource.types.ResourceEvaluation;
 import org.olat.modules.portfolio.Binder;
 import org.olat.modules.portfolio.BinderSecurityCallback;
-import org.olat.modules.portfolio.BinderSecurityCallbackImpl;
+import org.olat.modules.portfolio.BinderSecurityCallbackFactory;
 import org.olat.modules.portfolio.PortfolioService;
 import org.olat.modules.portfolio.PortfolioV2Module;
 import org.olat.modules.portfolio.ui.BinderController;
@@ -163,7 +163,7 @@ public class BinderTemplateHandler implements RepositoryHandler {
 					Binder binder = portfolioService.getBinderByResource(entry.getOlatResource());
 					CoreSpringFactory.getImpl(UserCourseInformationsManager.class)
 						.updateUserCourseInformations(entry.getOlatResource(), uureq.getIdentity());
-					BinderSecurityCallback secCallback = new BinderSecurityCallbackImpl(reSecurity.isEntryAdmin(), reSecurity.isEntryAdmin());
+					BinderSecurityCallback secCallback = BinderSecurityCallbackFactory.getCallbackForTemplate(reSecurity);
 					return new BinderController(uureq, wwControl, toolbarPanel, secCallback, binder);
 				}
 			});

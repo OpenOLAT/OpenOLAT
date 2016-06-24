@@ -50,6 +50,16 @@ public interface Section extends SectionRef, PortfolioElement {
 	
 	public void setEndDate(Date date);
 	
+	public SectionStatus getSectionStatus();
+	
+	/**
+	 * Return the section of the template used to create this section or null.
+	 * The section is lazily loaded.
+	 * 
+	 * @return
+	 */
+	public Section getTemplateReference();
+	
 	/**
 	 * Return the list of entries / pages of the section. They are lazily loaded.
 	 * @return

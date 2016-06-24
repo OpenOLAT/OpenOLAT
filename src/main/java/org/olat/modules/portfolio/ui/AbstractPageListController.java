@@ -19,10 +19,7 @@
  */
 package org.olat.modules.portfolio.ui;
 
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -50,13 +47,13 @@ import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.StringHelper;
+import org.olat.modules.portfolio.AssessmentSection;
 import org.olat.modules.portfolio.BinderSecurityCallback;
 import org.olat.modules.portfolio.Page;
 import org.olat.modules.portfolio.PortfolioService;
 import org.olat.modules.portfolio.Section;
 import org.olat.modules.portfolio.model.PageRow;
-import org.olat.modules.portfolio.model.SectionImpl;
-import org.olat.modules.portfolio.ui.BindersDataModel.PortfolioCols;
+import org.olat.modules.portfolio.ui.PageListDataModel.PageCols;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -76,17 +73,19 @@ implements Activateable2, TooledController, FlexiTableComponentDelegate {
 	private CloseableModalController cmc;
 	private PageMetadataEditController newPageCtrl;
 	
-	private int counter;
+	protected int counter;
+	protected final boolean withSections;
 	protected final BinderSecurityCallback secCallback;
 	
 	@Autowired
 	protected PortfolioService portfolioService;
 	
 	public AbstractPageListController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
-			BinderSecurityCallback secCallback, String vTemplate) {
+			BinderSecurityCallback secCallback, String vTemplate, boolean withSections) {
 		super(ureq, wControl, vTemplate);
 		this.stackPanel = stackPanel;
 		this.secCallback = secCallback;
+		this.withSections = withSections;
 	}
 	
 	@Override
@@ -97,9 +96,11 @@ implements Activateable2, TooledController, FlexiTableComponentDelegate {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, PortfolioCols.key, "select"));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(PortfolioCols.title, "select"));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(PortfolioCols.open));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, PageCols.key, "select"));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(PageCols.title, "select"));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(PageCols.date, "select"));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(PageCols.open));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, PageCols.newEntry, "select"));
 	
 		model = new PageListDataModel(columnsModel);
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", model, 20, false, getTranslator(), formLayout);
@@ -129,44 +130,19 @@ implements Activateable2, TooledController, FlexiTableComponentDelegate {
 	
 	protected abstract void loadModel();
 	
-	protected void loadModel(List<Page> pages) {
-		List<PageRow> rows = new ArrayList<>(pages.size());
-		Map<Section, List<Page>> sortMap = new HashMap<>();
-		for (Page page : pages) {
-			if (sortMap.containsKey(page.getSection())) {
-				sortMap.get(page.getSection()).add(page);
-			} else if (page.getSection() == null) {
-				ArrayList<Page> pageList = new ArrayList<>();
-				pageList.add(page);
-				sortMap.put(new SectionImpl(), pageList);
-			} else {
-				ArrayList<Page> pageList = new ArrayList<>();
-				pageList.add(page);
-				sortMap.put(page.getSection(), pageList);
-			}
-		}		
-		List<Page> pax = new ArrayList<>();
-		
-		for (List<Page> p : sortMap.values()){
-			pax.addAll(p);
-		}
-		Section section = null;
-		for (Page page : pax) {
-
-			boolean first = false;
-			if (section == null || !section.equals(page.getSection())) {
-				first = true;
-				section = page.getSection();
-			}
-			rows.add(forgeRow(page, first));
-		}
-		model.setObjects(rows);
-		tableEl.reset();
-		tableEl.reloadData();
+	protected PageRow forgeRow(Page page, AssessmentSection assessmentSection, boolean firstOfSection) {
+		PageRow row = new PageRow(page, page.getSection(), assessmentSection, firstOfSection);
+		String openLinkId = "open_" + (++counter);
+		FormLink openLink = uifactory.addFormLink(openLinkId, "open.full", "open.full.page", null, flc, Link.BUTTON_SMALL);
+		openLink.setIconRightCSS("o_icon o_icon_start");
+		openLink.setPrimary(true);
+		row.setOpenFormLink(openLink);
+		openLink.setUserObject(row);
+		return row;
 	}
 	
-	protected PageRow forgeRow(Page page, boolean firstOfSection) {
-		PageRow row = new PageRow(page, page.getSection(), firstOfSection);
+	protected PageRow forgeRow(Section section, AssessmentSection assessmentSection, boolean firstOfSection) {
+		PageRow row = new PageRow(null, section, assessmentSection, firstOfSection);
 		String openLinkId = "open_" + (++counter);
 		FormLink openLink = uifactory.addFormLink(openLinkId, "open.full", "open.full.page", null, flc, Link.BUTTON_SMALL);
 		openLink.setIconRightCSS("o_icon o_icon_start");

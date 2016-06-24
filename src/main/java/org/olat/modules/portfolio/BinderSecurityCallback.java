@@ -41,7 +41,13 @@ public interface BinderSecurityCallback {
 	 */
 	public boolean canEditMetadataBinder();
 	
+	public boolean canAddSection();
+	
 	public boolean canEditSection();
+	
+	public boolean canAddPage();
+	
+	public boolean canEditPage(Page page);
 	
 	public boolean canEditAccessRights(PortfolioElement element);
 	
@@ -50,6 +56,10 @@ public interface BinderSecurityCallback {
 	public boolean canComment(PortfolioElement element);
 	
 	public boolean canReview(PortfolioElement element);
+	
+	public boolean canBinderAssessment();
+	
+	public boolean canAssess(Section section);
  
 
 }

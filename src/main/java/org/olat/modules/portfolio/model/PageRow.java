@@ -23,8 +23,12 @@ import java.util.Date;
 
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.link.Link;
+import org.olat.course.assessment.AssessmentHelper;
+import org.olat.modules.portfolio.AssessmentSection;
 import org.olat.modules.portfolio.Page;
+import org.olat.modules.portfolio.PageStatus;
 import org.olat.modules.portfolio.Section;
+import org.olat.modules.portfolio.SectionStatus;
 
 /**
  * 
@@ -36,19 +40,26 @@ public class PageRow {
 	
 	private final Page page;
 	private final Section section;
-	private final boolean firstPageOfSection;
+	private boolean firstPageOfSection;
+	private final AssessmentSection assessmentSection;
 	
 	private Link openLink;
 	private FormLink openFormLink;
+	private FormLink newEntryLink;
 	
-	public PageRow(Page page, Section section, boolean firstPageOfSection) {
+	public PageRow(Page page, Section section, AssessmentSection assessmentSection, boolean firstPageOfSection) {
 		this.page = page;
 		this.section = section;
+		this.assessmentSection = assessmentSection;
 		this.firstPageOfSection = firstPageOfSection;
 	}
 	
+	public boolean isPage() {
+		return page != null;
+	}
+	
 	public Long getKey() {
-		return page.getKey();
+		return page == null ? null : page.getKey();
 	}
 	
 	public Page getPage() {
@@ -56,7 +67,7 @@ public class PageRow {
 	}
 	
 	public String getTitle() {
-		return page.getTitle();
+		return page == null ? null : page.getTitle();
 	}
 	
 	public String getSummary() {
@@ -67,19 +78,34 @@ public class PageRow {
 		return page.getLastModified();
 	}
 	
+	public String getCssClassStatus() {
+		return page.getPageStatus() == null
+				? PageStatus.draft.cssClass() : page.getPageStatus().cssClass();
+	}
+	
+	public Section getSection() {
+		return section;
+	}
+	
 	public String getSectionTitle() {
 		return section.getTitle();
 	}
+	
 	public boolean isSection () {
 		if(section == null){
 			return false;
 		}
 		return true;
-		
+	}
+	
+	public String getSectionStatusI18nKey() {
+		if(section == null || section.getSectionStatus() == null) {
+			return SectionStatus.notStarted.i18nKey();
+		}
+		return section.getSectionStatus().i18nKey();
 	}
 	
 	public String getSectionLongTitle() {
-		
 		long pos = section.getPos();
 		return (pos+1) + ". " + section.getTitle();
 	}
@@ -98,6 +124,37 @@ public class PageRow {
 
 	public boolean isFirstPageOfSection() {
 		return firstPageOfSection;
+	}
+	
+	public void setFirstPageOfSection(boolean firstPageOfSection) {
+		this.firstPageOfSection = firstPageOfSection;
+	}
+	
+	public boolean hasScore() {
+		return assessmentSection != null && assessmentSection.getScore() != null;
+	}
+	
+	public String getScore() {
+		if(assessmentSection != null && assessmentSection.getScore() != null) {
+			return AssessmentHelper.getRoundedScore(assessmentSection.getScore());
+		}
+		return "";
+	}
+	
+	public boolean hasNewEntryLink() {
+		return newEntryLink != null;
+	}
+	
+	public FormLink getNewEntryLink() {
+		return newEntryLink;
+	}
+	
+	public void setNewEntryLink(FormLink newEntryLink) {
+		this.newEntryLink = newEntryLink;
+	}
+	
+	public String getNewEntryLinkName() {
+		return newEntryLink == null ? null : newEntryLink.getComponent().getComponentName();
 	}
 	
 	public FormLink getOpenFormItem() {

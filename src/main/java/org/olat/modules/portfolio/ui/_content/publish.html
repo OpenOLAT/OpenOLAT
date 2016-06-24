@@ -1,6 +1,6 @@
 <div class="o_portfolio_publication">
 	<h2>$r.translate("publish.status.title", $binderTitle)</h2>
-	#if(${binderRow.getAccessRights().isEmpty()})
+	#if(!${binderRow.getAccessRights().isEmpty()})
 		<table><tbody>
 		#foreach($binderRights in $binderRow.accessRights)
 			<tr>
@@ -14,7 +14,7 @@
 
 	<ul class="list-unstyled">
 	#foreach($section in $binderRow.children)
-		<li><h4>${foreach.count}. $r.escapeHtml($section.title)</h4>
+		<li><h4>${foreach.count}. $r.escapeHtml($section.title) <small><i class="o_icon $section.cssClassStatus"> </i> ${section.getFormattedScore()}</small></h4> 
 		
 			#if(!${section.getAccessRights().isEmpty()})
 				<table class="o_portfolio_ac"><tbody>

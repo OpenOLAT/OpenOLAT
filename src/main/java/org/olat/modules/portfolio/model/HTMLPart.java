@@ -19,7 +19,6 @@
  */
 package org.olat.modules.portfolio.model;
 
-import javax.persistence.DiscriminatorColumn;
 import javax.persistence.Entity;
 
 /**
@@ -29,7 +28,6 @@ import javax.persistence.Entity;
  *
  */
 @Entity(name="pfhtmlpart")
-@DiscriminatorColumn
 public class HTMLPart extends AbstractPart {
 
 	/**

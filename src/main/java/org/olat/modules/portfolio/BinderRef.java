@@ -28,7 +28,5 @@ package org.olat.modules.portfolio;
 public interface BinderRef {
 	
 	public Long getKey();
-	
-	public String getImagePath();
 
 }
