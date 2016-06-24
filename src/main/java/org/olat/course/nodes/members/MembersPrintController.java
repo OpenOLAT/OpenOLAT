@@ -19,7 +19,6 @@
  */
 package org.olat.course.nodes.members;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import org.olat.core.gui.UserRequest;
@@ -57,25 +56,24 @@ public class MembersPrintController extends BasicController {
 		mainVC.contextPut("avatarBaseURL", avatarBaseURL);
 		mainVC.contextPut("userPropertyHandlers", userPropertyHandlers);
 		
-		List<Member> members = new ArrayList<>();
 		if(owners != null && owners.size() > 0) {
-			members.addAll(owners);
+			initFormMemberList("owners", translate("members.owners"), owners);
 		}
 		if(coaches != null && coaches.size() > 0) {
-			members.addAll(coaches);
+			initFormMemberList("coaches", translate("members.coaches"), coaches);
 		}
 		if(participants != null && participants.size() > 0) {
-			members.addAll(participants);
+			initFormMemberList("participants", translate("members.participants"), participants);
 		}
-		initFormMemberList("members", members);
 
 		MainPanel mainPanel = new MainPanel("membersPrintPanel");
 		mainPanel.setContent(mainVC);
 		putInitialPanel(mainPanel);
 	}
 	
-	private void initFormMemberList(String name, List<Member> members) {
+	private void initFormMemberList(String name, String label, List<Member> members) {
 		VelocityContainer listVC = createVelocityContainer("printList");
+		listVC.contextPut("label", label);
 		listVC.contextPut("avatarBaseURL", avatarBaseURL);
 		listVC.contextPut("members", members);
 		listVC.contextPut("userPropertyHandlers", userPropertyHandlers);

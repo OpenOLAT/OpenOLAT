@@ -3,8 +3,14 @@
 </div>
 <h1>$r.translate("print.title")</h1>
 <h3>$courseTitle</h3>
-#if($r.available("members"))
-	$r.render("members")
+#if($r.available("owners"))
+	$r.render("owners")
+#end
+#if($r.available("coaches"))
+	$r.render("coaches")
+#end
+#if($r.available("participants"))
+	$r.render("participants")
 #end
 <script type='text/javascript'>
 /* <![CDATA[ */

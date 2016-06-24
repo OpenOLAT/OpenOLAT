@@ -574,16 +574,17 @@ public class UserSessionManager implements GenericEventListener {
 	 * @param sessionTimeoutInSec
 	 */
 	public void setGlobalSessionTimeout(int sessionTimeoutInSec) {
-		authUserSessions.forEach(session -> {
+		UserSession[] currentSessions = authUserSessions.toArray(new UserSession[0]);
+		for(int i=currentSessions.length; i-->0; ) {
 			try{
-				SessionInfo sessionInfo = session.getSessionInfo();
+				SessionInfo sessionInfo = currentSessions[i].getSessionInfo();
 				if(sessionInfo != null && sessionInfo.getSession() != null) {
 					sessionInfo.getSession().setMaxInactiveInterval(sessionTimeoutInSec);
 				}
 			} catch(Throwable th){
 				log.error("error setting sesssionTimeout", th);
 			}
-		});
+		}
 	}
 	
 	/**

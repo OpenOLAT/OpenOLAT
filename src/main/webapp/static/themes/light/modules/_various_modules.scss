@@ -143,6 +143,7 @@ ul.o_dropdown {
 	.o_thumbnail{
 		width:200px; 
 		height:200px;
+		display: inline-block; /* render centered if title larger than image */
 		background-color: #fff;
 		margin: 0 -5px; /* remove ugly border */
 	}
