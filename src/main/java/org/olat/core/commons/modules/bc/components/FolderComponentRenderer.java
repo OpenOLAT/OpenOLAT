@@ -107,7 +107,7 @@ public class FolderComponentRenderer extends DefaultComponentRenderer {
 				break;
 			}
 		}
-		
+
 		String formName = "folder" + CodeHelper.getRAMUniqueID();
 		target.append("<form  method=\"post\" id=\"").append(formName).append("\" action=\"");
 		ubu.buildURI(target, new String[] { VelocityContainer.COMMAND_ID }, new String[] {FolderRunController.FORM_ACTION }, iframePostEnabled ? AJAXFlags.MODE_TOBGIFRAME : AJAXFlags.MODE_NORMAL);
