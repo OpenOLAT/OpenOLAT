@@ -112,11 +112,6 @@ public class BinderSecurityCallbackFactory {
 		}
 
 		@Override
-		public boolean canBinderAssessment() {
-			return false;
-		}
-
-		@Override
 		public boolean canAssess(Section section) {
 			return false;
 		}
@@ -230,11 +225,6 @@ public class BinderSecurityCallbackFactory {
 				}
 			}
 			return false;
-		}
-
-		@Override
-		public boolean canBinderAssessment() {
-			return hasEntry;
 		}
 	}
 }

@@ -32,6 +32,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
+import org.olat.modules.portfolio.BinderConfiguration;
 import org.olat.modules.portfolio.BinderSecurityCallback;
 import org.olat.modules.portfolio.Page;
 import org.olat.modules.portfolio.model.PageRow;
@@ -51,7 +52,7 @@ public class MyPageListController extends AbstractPageListController {
 
 	public MyPageListController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
 			BinderSecurityCallback secCallback) {
-		super(ureq, wControl, stackPanel, secCallback, "pages", false);
+		super(ureq, wControl, stackPanel, secCallback, BinderConfiguration.createMyPagesConfig(), "pages", false);
 
 		initForm(ureq);
 		loadModel();

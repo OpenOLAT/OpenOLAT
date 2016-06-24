@@ -45,6 +45,7 @@ import org.olat.core.gui.control.generic.wizard.StepsRunContext;
 import org.olat.core.id.Identity;
 import org.olat.modules.portfolio.AssessmentSection;
 import org.olat.modules.portfolio.Binder;
+import org.olat.modules.portfolio.BinderConfiguration;
 import org.olat.modules.portfolio.BinderSecurityCallback;
 import org.olat.modules.portfolio.Page;
 import org.olat.modules.portfolio.PortfolioElement;
@@ -80,6 +81,7 @@ public class PublishController extends BasicController implements TooledControll
 	private int counter;
 	private Binder binder;
 	private PortfolioElementRow binderRow;
+	private final BinderConfiguration config;
 	private final BinderSecurityCallback secCallback;
 	
 	@Autowired
@@ -88,9 +90,10 @@ public class PublishController extends BasicController implements TooledControll
 	private PortfolioService portfolioService;
 	
 	public PublishController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
-			BinderSecurityCallback secCallback, Binder binder) {
+			BinderSecurityCallback secCallback, Binder binder, BinderConfiguration config) {
 		super(ureq, wControl);
 		this.binder = binder;
+		this.config = config;
 		this.secCallback = secCallback;
 		this.stackPanel = stackPanel;
 		
@@ -343,6 +346,11 @@ public class PublishController extends BasicController implements TooledControll
 			this.assessmentSection = assessmentSection;
 		}
 		
+		public boolean isAssessable() {
+			return config.isAssessable();
+		}
+		
+		
 		public String getTitle() {
 			return element.getTitle();
 		}
@@ -356,7 +364,7 @@ public class PublishController extends BasicController implements TooledControll
 			return "";
 		}
 		
-		public String getFormattedScore() {
+		public String getFormattedResult() {
 			if(element.getType() == PortfolioElementType.section) {
 				return PortfolioRendererHelper.getFormattedResult(assessmentSection, getTranslator());
 			}

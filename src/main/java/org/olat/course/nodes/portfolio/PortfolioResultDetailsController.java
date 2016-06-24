@@ -50,6 +50,7 @@ import org.olat.course.CourseModule;
 import org.olat.course.nodes.PortfolioCourseNode;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.portfolio.Binder;
+import org.olat.modules.portfolio.BinderConfiguration;
 import org.olat.modules.portfolio.BinderSecurityCallback;
 import org.olat.modules.portfolio.BinderSecurityCallbackFactory;
 import org.olat.modules.portfolio.PortfolioService;
@@ -292,7 +293,8 @@ public class PortfolioResultDetailsController extends FormBasicController {
 		if(stackPanel instanceof TooledStackedPanel) {
 			List<AccessRights> rights = portfolioService.getAccessRights(binder, getIdentity());
 			BinderSecurityCallback secCallback = BinderSecurityCallbackFactory.getCallbackForCoach(binder, rights);
-			BinderController binderCtrl = new BinderController(ureq, getWindowControl(), (TooledStackedPanel)stackPanel, secCallback, binder);
+			BinderConfiguration config = BinderConfiguration.createConfig(binder);
+			BinderController binderCtrl = new BinderController(ureq, getWindowControl(), (TooledStackedPanel)stackPanel, secCallback, binder, config);
 			String displayName = StringHelper.escapeHtml(binder.getTitle());
 			stackPanel.pushController(displayName, binderCtrl);
 			binderCtrl.activate(ureq, null, null);

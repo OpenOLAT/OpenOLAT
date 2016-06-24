@@ -4,7 +4,7 @@
 	<ul class="list-unstyled">
 	#foreach($section in $sections)
 		<li><div class="o_header_with_buttons">
-				<h4>${foreach.count}. $r.render($section.sectionLinkName) </h4> <i class="o_icon $section.cssClassStatus"> </i> ${section.getFormatedResult()}
+				<h4>${foreach.count}. $r.render($section.sectionLinkName) </h4> <i class="o_icon $section.cssClassStatus"> </i>#if(${section.isAssessable()}) ${section.getFormattedResult()} #end
 				#if(${section.hasEditDropdown()})
 					<div id="sect_$foreach.count" class="o_button_group o_button_group_right dropdown">$r.render($section.editDropdownName)</div>
 				#end

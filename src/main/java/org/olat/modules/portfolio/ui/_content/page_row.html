@@ -12,7 +12,7 @@
 				<span><strong>$r.translate("end.date"): </strong> $r.formatDate($row.sectionEndDate)</span>
 			#end
 			
-			#if(${row.hasScore()})
+			#if($row.assessable && ${row.hasScore()})
 				<span><strong>$r.translate("section.score"): </strong> $row.score</span>
 			#end
 		</div>

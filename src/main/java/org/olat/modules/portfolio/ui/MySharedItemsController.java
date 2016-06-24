@@ -42,6 +42,7 @@ import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.modules.portfolio.Binder;
+import org.olat.modules.portfolio.BinderConfiguration;
 import org.olat.modules.portfolio.BinderSecurityCallback;
 import org.olat.modules.portfolio.BinderSecurityCallbackFactory;
 import org.olat.modules.portfolio.PortfolioService;
@@ -157,7 +158,8 @@ public class MySharedItemsController extends FormBasicController implements Acti
 			OLATResourceable binderOres = OresHelper.createOLATResourceableInstance("Binder", binder.getKey());
 			WindowControl swControl = addToHistory(ureq, binderOres, null);
 			BinderSecurityCallback secCallback = BinderSecurityCallbackFactory.getCallbackForOwnedBinder(binder);
-			binderCtrl = new BinderController(ureq, swControl, stackPanel, secCallback, binder);
+			BinderConfiguration config = BinderConfiguration.createConfig(binder);
+			binderCtrl = new BinderController(ureq, swControl, stackPanel, secCallback, binder, config);
 			String displayName = StringHelper.escapeHtml(binder.getTitle());
 			stackPanel.pushController(displayName, binderCtrl);
 			return binderCtrl;

@@ -45,6 +45,7 @@ import org.olat.course.nodes.CourseNodeFactory;
 import org.olat.course.nodes.PortfolioCourseNode;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.portfolio.Binder;
+import org.olat.modules.portfolio.BinderConfiguration;
 import org.olat.modules.portfolio.BinderSecurityCallback;
 import org.olat.modules.portfolio.BinderSecurityCallbackFactory;
 import org.olat.modules.portfolio.PortfolioService;
@@ -251,7 +252,8 @@ public class PortfolioConfigForm extends FormBasicController {
 			previewCtr = EPUIFactory.createPortfolioStructureMapPreviewController(ureq, getWindowControl(), map, secCallback);
 		} else if(binder != null && stackPanel instanceof TooledStackedPanel) {
 			BinderSecurityCallback secCallback = BinderSecurityCallbackFactory.getReadOnlyCallback();
-			previewCtr = new BinderController(ureq, getWindowControl(), (TooledStackedPanel)stackPanel, secCallback, binder);
+			BinderConfiguration bConfig = BinderConfiguration.createTemplateConfig();
+			previewCtr = new BinderController(ureq, getWindowControl(), (TooledStackedPanel)stackPanel, secCallback, binder, bConfig);
 		} else {
 			return;
 		}

@@ -44,6 +44,7 @@ import org.olat.core.id.Identity;
 import org.olat.core.util.StringHelper;
 import org.olat.modules.portfolio.AssessmentSection;
 import org.olat.modules.portfolio.Binder;
+import org.olat.modules.portfolio.BinderConfiguration;
 import org.olat.modules.portfolio.BinderSecurityCallback;
 import org.olat.modules.portfolio.Page;
 import org.olat.modules.portfolio.PortfolioService;
@@ -79,6 +80,7 @@ public class TableOfContentController extends BasicController implements TooledC
 	private int counter = 0;
 	private Binder binder;
 	private final List<Identity> owners;
+	private final BinderConfiguration config;
 	private final BinderSecurityCallback secCallback;
 	
 	@Autowired
@@ -87,9 +89,10 @@ public class TableOfContentController extends BasicController implements TooledC
 	private PortfolioService portfolioService;
 
 	public TableOfContentController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
-			BinderSecurityCallback secCallback, Binder binder) {
+			BinderSecurityCallback secCallback, Binder binder, BinderConfiguration config) {
 		super(ureq, wControl);
 		this.binder = binder;
+		this.config = config;
 		this.stackPanel = stackPanel;
 		this.secCallback = secCallback;
 		
@@ -192,7 +195,7 @@ public class TableOfContentController extends BasicController implements TooledC
 	}
 	
 	private PageRow forgePageRow(Page page, SectionRow sectionRow) {
-		PageRow pageRow = new PageRow(page, sectionRow.getSection(), null, false);
+		PageRow pageRow = new PageRow(page, sectionRow.getSection(), null, false, config.isAssessable());
 		
 		String pageId = "page" + (++counter);
 		String title = StringHelper.escapeHtml(page.getTitle());
@@ -282,7 +285,7 @@ public class TableOfContentController extends BasicController implements TooledC
 	private void doOpenSection(UserRequest ureq, Section section) {
 		removeAsListenerAndDispose(sectionPagesCtrl);
 		
-		sectionPagesCtrl = new SectionPageListController(ureq, getWindowControl(), stackPanel, secCallback, binder, section);
+		sectionPagesCtrl = new SectionPageListController(ureq, getWindowControl(), stackPanel, secCallback, binder, config, section);
 		listenTo(sectionPagesCtrl);
 		stackPanel.pushController(StringHelper.escapeHtml(section.getTitle()), sectionPagesCtrl);
 	}
@@ -369,12 +372,19 @@ public class TableOfContentController extends BasicController implements TooledC
 					? SectionStatus.notStarted.cssClass() : section.getSectionStatus().cssClass();
 		}
 		
+		public boolean isAssessable() {
+			return config.isAssessable();
+		}
+		
 		/**
 		 * It use the same format as the cell renderer.
 		 * @return
 		 */
-		public String getFormatedResult() {
-			return PortfolioRendererHelper.getFormattedResult(assessmentSection, getTranslator());
+		public String getFormattedResult() {
+			if(config.isAssessable()) {
+				return PortfolioRendererHelper.getFormattedResult(assessmentSection, getTranslator());
+			}
+			return "";
 		}
 		
 		public Section getSection() {

@@ -48,6 +48,7 @@ import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.StringHelper;
 import org.olat.modules.portfolio.AssessmentSection;
+import org.olat.modules.portfolio.BinderConfiguration;
 import org.olat.modules.portfolio.BinderSecurityCallback;
 import org.olat.modules.portfolio.Page;
 import org.olat.modules.portfolio.PortfolioService;
@@ -75,14 +76,16 @@ implements Activateable2, TooledController, FlexiTableComponentDelegate {
 	
 	protected int counter;
 	protected final boolean withSections;
+	protected final BinderConfiguration config;
 	protected final BinderSecurityCallback secCallback;
 	
 	@Autowired
 	protected PortfolioService portfolioService;
 	
 	public AbstractPageListController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
-			BinderSecurityCallback secCallback, String vTemplate, boolean withSections) {
+			BinderSecurityCallback secCallback, BinderConfiguration config, String vTemplate, boolean withSections) {
 		super(ureq, wControl, vTemplate);
+		this.config = config;
 		this.stackPanel = stackPanel;
 		this.secCallback = secCallback;
 		this.withSections = withSections;
@@ -131,7 +134,7 @@ implements Activateable2, TooledController, FlexiTableComponentDelegate {
 	protected abstract void loadModel();
 	
 	protected PageRow forgeRow(Page page, AssessmentSection assessmentSection, boolean firstOfSection) {
-		PageRow row = new PageRow(page, page.getSection(), assessmentSection, firstOfSection);
+		PageRow row = new PageRow(page, page.getSection(), assessmentSection, firstOfSection, config.isAssessable());
 		String openLinkId = "open_" + (++counter);
 		FormLink openLink = uifactory.addFormLink(openLinkId, "open.full", "open.full.page", null, flc, Link.BUTTON_SMALL);
 		openLink.setIconRightCSS("o_icon o_icon_start");
@@ -142,7 +145,7 @@ implements Activateable2, TooledController, FlexiTableComponentDelegate {
 	}
 	
 	protected PageRow forgeRow(Section section, AssessmentSection assessmentSection, boolean firstOfSection) {
-		PageRow row = new PageRow(null, section, assessmentSection, firstOfSection);
+		PageRow row = new PageRow(null, section, assessmentSection, firstOfSection, config.isAssessable());
 		String openLinkId = "open_" + (++counter);
 		FormLink openLink = uifactory.addFormLink(openLinkId, "open.full", "open.full.page", null, flc, Link.BUTTON_SMALL);
 		openLink.setIconRightCSS("o_icon o_icon_start");

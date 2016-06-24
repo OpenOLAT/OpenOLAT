@@ -40,6 +40,7 @@ public class PageRow {
 	
 	private final Page page;
 	private final Section section;
+	private final boolean assessable;
 	private boolean firstPageOfSection;
 	private final AssessmentSection assessmentSection;
 	
@@ -47,9 +48,11 @@ public class PageRow {
 	private FormLink openFormLink;
 	private FormLink newEntryLink;
 	
-	public PageRow(Page page, Section section, AssessmentSection assessmentSection, boolean firstPageOfSection) {
+	public PageRow(Page page, Section section, AssessmentSection assessmentSection,
+			boolean firstPageOfSection, boolean assessable) {
 		this.page = page;
 		this.section = section;
+		this.assessable = assessable;
 		this.assessmentSection = assessmentSection;
 		this.firstPageOfSection = firstPageOfSection;
 	}
@@ -130,8 +133,12 @@ public class PageRow {
 		this.firstPageOfSection = firstPageOfSection;
 	}
 	
+	public boolean isAssessable() {
+		return assessable;
+	}
+	
 	public boolean hasScore() {
-		return assessmentSection != null && assessmentSection.getScore() != null;
+		return assessable && assessmentSection != null && assessmentSection.getScore() != null;
 	}
 	
 	public String getScore() {

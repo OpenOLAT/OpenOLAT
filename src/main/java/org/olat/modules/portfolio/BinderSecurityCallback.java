@@ -57,8 +57,6 @@ public interface BinderSecurityCallback {
 	
 	public boolean canReview(PortfolioElement element);
 	
-	public boolean canBinderAssessment();
-	
 	public boolean canAssess(Section section);
  
 

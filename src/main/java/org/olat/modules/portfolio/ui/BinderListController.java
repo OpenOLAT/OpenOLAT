@@ -64,6 +64,7 @@ import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSMediaResource;
 import org.olat.modules.portfolio.Binder;
+import org.olat.modules.portfolio.BinderConfiguration;
 import org.olat.modules.portfolio.BinderRef;
 import org.olat.modules.portfolio.BinderSecurityCallback;
 import org.olat.modules.portfolio.BinderSecurityCallbackFactory;
@@ -303,7 +304,8 @@ public class BinderListController extends FormBasicController
 			OLATResourceable binderOres = OresHelper.createOLATResourceableInstance("Binder", binder.getKey());
 			WindowControl swControl = addToHistory(ureq, binderOres, null);
 			BinderSecurityCallback secCallback = BinderSecurityCallbackFactory.getCallbackForOwnedBinder(binder);
-			binderCtrl = new BinderController(ureq, swControl, stackPanel, secCallback, binder);
+			BinderConfiguration config = BinderConfiguration.createConfig(binder);
+			binderCtrl = new BinderController(ureq, swControl, stackPanel, secCallback, binder, config);
 			String displayName = StringHelper.escapeHtml(binder.getTitle());
 			stackPanel.pushController(displayName, binderCtrl);
 			return binderCtrl;

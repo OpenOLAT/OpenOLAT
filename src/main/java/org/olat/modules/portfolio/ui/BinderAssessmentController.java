@@ -47,6 +47,7 @@ import org.olat.course.assessment.AssessmentHelper;
 import org.olat.modules.assessment.ui.ScoreCellRenderer;
 import org.olat.modules.portfolio.AssessmentSection;
 import org.olat.modules.portfolio.Binder;
+import org.olat.modules.portfolio.BinderConfiguration;
 import org.olat.modules.portfolio.BinderSecurityCallback;
 import org.olat.modules.portfolio.Page;
 import org.olat.modules.portfolio.PortfolioRoles;
@@ -76,19 +77,19 @@ public class BinderAssessmentController extends FormBasicController {
 	private FlexiTableElement tableEl;
 	private BinderAssessmentDataModel model;
 	
-	private final boolean withScore, withPassed;
+	private boolean withScore;
+	private boolean withPassed;
 	
 	@Autowired
 	private PortfolioService portfolioService;
 	
 	public BinderAssessmentController(UserRequest ureq, WindowControl wControl,
-			BinderSecurityCallback secCallback, Binder binder) {
+			BinderSecurityCallback secCallback, Binder binder, BinderConfiguration config) {
 		super(ureq, wControl, "section_assessment");
 		this.binder = binder;
 		this.secCallback = secCallback;
-		this.withPassed = true;
-		this.withScore = true;
-		
+		this.withPassed = config.isWithPassed();
+		this.withScore = config.isWithScore();
 		initForm(ureq);
 		loadModel();
 	}
@@ -98,10 +99,13 @@ public class BinderAssessmentController extends FormBasicController {
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(AssessmentSectionCols.sectionName));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(AssessmentSectionCols.numOfPages));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(AssessmentSectionCols.passed, new PassedCellRenderer()));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(AssessmentSectionCols.score, new ScoreCellRenderer()));
+		if(withPassed) {
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(AssessmentSectionCols.passed, new PassedCellRenderer()));
+		}
+		if(withScore) {
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(AssessmentSectionCols.score, new ScoreCellRenderer()));
+		}
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(AssessmentSectionCols.changeStatus));
-		
 		
 		model = new BinderAssessmentDataModel(columnsModel);
 		tableEl = uifactory.addTableElement(getWindowControl(), "section-list", model, getTranslator(), formLayout);

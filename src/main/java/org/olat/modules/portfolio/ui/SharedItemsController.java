@@ -43,6 +43,7 @@ import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.modules.portfolio.Binder;
+import org.olat.modules.portfolio.BinderConfiguration;
 import org.olat.modules.portfolio.BinderSecurityCallback;
 import org.olat.modules.portfolio.BinderSecurityCallbackFactory;
 import org.olat.modules.portfolio.PortfolioService;
@@ -195,7 +196,8 @@ public class SharedItemsController extends FormBasicController implements Activa
 			WindowControl swControl = addToHistory(ureq, binderOres, null);
 			List<AccessRights> rights = portfolioService.getAccessRights(binder, getIdentity());
 			BinderSecurityCallback secCallback = BinderSecurityCallbackFactory.getCallbackForCoach(binder, rights);
-			binderCtrl = new BinderController(ureq, swControl, stackPanel, secCallback, binder);
+			BinderConfiguration config = BinderConfiguration.createConfig(binder);
+			binderCtrl = new BinderController(ureq, swControl, stackPanel, secCallback, binder, config);
 			String displayName = StringHelper.escapeHtml(binder.getTitle());
 			stackPanel.pushController(displayName, binderCtrl);
 			return binderCtrl;

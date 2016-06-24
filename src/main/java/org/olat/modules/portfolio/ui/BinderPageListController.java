@@ -42,6 +42,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.modules.portfolio.AssessmentSection;
 import org.olat.modules.portfolio.Binder;
+import org.olat.modules.portfolio.BinderConfiguration;
 import org.olat.modules.portfolio.BinderSecurityCallback;
 import org.olat.modules.portfolio.Page;
 import org.olat.modules.portfolio.Section;
@@ -64,8 +65,8 @@ public class BinderPageListController extends AbstractPageListController  {
 	private final Binder binder;
 	
 	public BinderPageListController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
-			BinderSecurityCallback secCallback, Binder binder) {
-		super(ureq, wControl, stackPanel, secCallback, "pages", true);
+			BinderSecurityCallback secCallback, Binder binder, BinderConfiguration config) {
+		super(ureq, wControl, stackPanel, secCallback, config, "pages", true);
 		this.binder = binder;
 		
 		initForm(ureq);
