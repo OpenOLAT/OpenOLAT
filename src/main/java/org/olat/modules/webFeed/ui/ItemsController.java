@@ -61,15 +61,20 @@ import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.CodeHelper;
 import org.olat.core.util.coordinate.LockResult;
 import org.olat.core.util.vfs.VFSContainer;
+import org.olat.modules.portfolio.PortfolioV2Module;
+import org.olat.modules.portfolio.ui.component.MediaCollectorComponent;
 import org.olat.modules.webFeed.FeedSecurityCallback;
 import org.olat.modules.webFeed.FeedViewHelper;
 import org.olat.modules.webFeed.managers.FeedManager;
 import org.olat.modules.webFeed.models.Feed;
 import org.olat.modules.webFeed.models.Item;
 import org.olat.modules.webFeed.models.ItemPublishDateComparator;
+import org.olat.modules.webFeed.portfolio.BlogEntryMedia;
+import org.olat.modules.webFeed.portfolio.BlogEntryMediaHandler;
 import org.olat.portfolio.EPUIFactory;
 import org.olat.user.UserManager;
 import org.olat.util.logging.activity.LoggingResourceable;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * This class is responsible for dealing with items. For internal podcasts,
@@ -108,7 +113,12 @@ public class ItemsController extends BasicController implements Activateable2 {
 	public static Event HANDLE_NEW_EXTERNAL_FEED_DIALOG_EVENT = new Event("cmd.handle.new.external.feed.dialog");
 	public static Event FEED_INFO_IS_DIRTY_EVENT = new Event("cmd.feed.info.is.dirty");
 	
-	private final UserManager userManager;
+	@Autowired
+	private UserManager userManager;
+	@Autowired
+	private PortfolioV2Module portfolioModule;
+	@Autowired
+	private BlogEntryMediaHandler blogMediaHandler;
 
 	/**
 	 * default constructor, with full FeedItemDisplayConfig
@@ -140,7 +150,6 @@ public class ItemsController extends BasicController implements Activateable2 {
 			final FeedSecurityCallback callback, final VelocityContainer vcRightColumn, FeedItemDisplayConfig displayConfig) {
 		super(ureq, wControl);
 		
-		userManager = CoreSpringFactory.getImpl(UserManager.class);
 		if (displayConfig == null) {
 			displayConfig = new FeedItemDisplayConfig(true, true, true);
 		}
@@ -226,7 +235,7 @@ public class ItemsController extends BasicController implements Activateable2 {
 			addItemButton.setElementCssClass("o_sel_feed_item_new");
 			if (items != null) {
 				for (Item item : items) {
-					createButtonsForItem(ureq, item);
+					createButtonsForItem(ureq, feed, item);
 				}
 			}
 		} else if (feed.isUndefined()) {
@@ -341,7 +350,7 @@ public class ItemsController extends BasicController implements Activateable2 {
 	/**
 	 * @param item
 	 */
-	private void createButtonsForItem(UserRequest ureq, Item item) {
+	private void createButtonsForItem(UserRequest ureq, Feed feed, Item item) {
 		boolean author = getIdentity().getKey().equals(item.getAuthorKey());
 		boolean edit = callback.mayEditItems() || author;
 		boolean delete = callback.mayDeleteItems() || author;
@@ -362,10 +371,18 @@ public class ItemsController extends BasicController implements Activateable2 {
 		if(feedResource.isInternal() && getIdentity().getKey() != null && getIdentity().getKey().equals(item.getAuthorKey())) {
 			String businessPath = BusinessControlFactory.getInstance().getAsString(getWindowControl().getBusinessControl());
 			businessPath += "[item=" + item.getGuid() + ":0]";
-			Controller artefactCtrl = EPUIFactory.createArtefactCollectWizzardController(ureq, getWindowControl(), feedResource, businessPath);
-			if(artefactCtrl != null) {
-				artefactLinks.put(item, artefactCtrl);
-				vcItems.put("feed.artefact.item.".concat(guid), artefactCtrl.getInitialComponent());
+			
+			if(portfolioModule.isEnabled()) {
+				String name = "feed.artefact.item.".concat(guid);
+				BlogEntryMedia media = new BlogEntryMedia(feed, item);
+				MediaCollectorComponent collectorCmp = new MediaCollectorComponent(name, getWindowControl(), media, blogMediaHandler, businessPath);
+				vcItems.put(name, collectorCmp);
+			} else {
+				Controller artefactCtrl = EPUIFactory.createArtefactCollectWizzardController(ureq, getWindowControl(), feedResource, businessPath);
+				if(artefactCtrl != null) {
+					artefactLinks.put(item, artefactCtrl);
+					vcItems.put("feed.artefact.item.".concat(guid), artefactCtrl.getInitialComponent());
+				}
 			}
 		}
 		
@@ -619,7 +636,7 @@ public class ItemsController extends BasicController implements Activateable2 {
 							}
 							
 							if(feed != null) {
-								createButtonsForItem(ureq, currentItem);
+								createButtonsForItem(ureq, feed, currentItem);
 								createItemLink(currentItem);
 								// Add date component
 								String guid = currentItem.getGuid();

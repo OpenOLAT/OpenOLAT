@@ -112,7 +112,7 @@ public class BinderPageListController extends AbstractPageListController  {
 			}
 			PageRow pageRow = forgeRow(page, sectionToAssessmentSectionMap.get(section), first);
 			rows.add(pageRow);
-			if(section != null
+			if(secCallback.canAddPage() && section != null
 					&& section.getSectionStatus() != SectionStatus.closed
 					&& section.getSectionStatus() != SectionStatus.submitted) {
 				FormLink newEntryButton = uifactory.addFormLink("new.entry." + (++counter), "new.entry", "create.new.page", null, flc, Link.BUTTON);
@@ -125,7 +125,7 @@ public class BinderPageListController extends AbstractPageListController  {
 		for(Section section:sections) {
 			PageRow pageRow = forgeRow(section, sectionToAssessmentSectionMap.get(section), true);
 			rows.add(pageRow);
-			if(section != null
+			if(secCallback.canAddPage() && section != null
 					&& section.getSectionStatus() != SectionStatus.closed
 					&& section.getSectionStatus() != SectionStatus.submitted) {
 				FormLink newEntryButton = uifactory.addFormLink("new.entry." + (++counter), "new.entry", "create.new.page", null, flc, Link.BUTTON);

@@ -96,6 +96,8 @@ import org.olat.modules.fo.Forum;
 import org.olat.modules.fo.ForumCallback;
 import org.olat.modules.fo.manager.ForumManager;
 import org.olat.modules.fo.ui.ForumController;
+import org.olat.modules.portfolio.PortfolioV2Module;
+import org.olat.modules.portfolio.ui.component.MediaCollectorComponent;
 import org.olat.modules.wiki.gui.components.wikiToHtml.ErrorEvent;
 import org.olat.modules.wiki.gui.components.wikiToHtml.FilterUtil;
 import org.olat.modules.wiki.gui.components.wikiToHtml.RequestImageEvent;
@@ -104,12 +106,14 @@ import org.olat.modules.wiki.gui.components.wikiToHtml.RequestNewPageEvent;
 import org.olat.modules.wiki.gui.components.wikiToHtml.RequestPageEvent;
 import org.olat.modules.wiki.gui.components.wikiToHtml.WikiMarkupComponent;
 import org.olat.modules.wiki.portfolio.WikiArtefact;
+import org.olat.modules.wiki.portfolio.WikiMediaHandler;
 import org.olat.modules.wiki.versioning.ChangeInfo;
 import org.olat.modules.wiki.versioning.HistoryTableDateModel;
 import org.olat.portfolio.EPUIFactory;
 import org.olat.search.SearchServiceUIFactory;
 import org.olat.search.SearchServiceUIFactory.DisplayOption;
 import org.olat.util.logging.activity.LoggingResourceable;
+import org.springframework.beans.factory.annotation.Autowired;
 
 
 
@@ -154,6 +158,7 @@ public class WikiMainController extends BasicController implements CloneableCont
 	private Controller searchCtrl;
 	private WikiArticleSearchForm createArticleForm;
 	private CloseableCalloutWindowController calloutCtrl;
+	private CloseableModalController cmc;
 	private StackedPanel mainPanel;
 
 	private Dropdown wikiMenuDropdown, navigationDropdown, breadcrumpDropdown;
@@ -175,8 +180,10 @@ public class WikiMainController extends BasicController implements CloneableCont
 	
 //	indicates if user is already on image-detail-view-page (OLAT-6233)
 	private boolean isImageDetailView = false;
-	
-	private CloseableModalController cmc;
+	@Autowired
+	private WikiMediaHandler wikiMediaHandler;
+	@Autowired
+	private PortfolioV2Module portfolioModule;
 	
 	public WikiMainController(UserRequest ureq, WindowControl wControl, OLATResourceable ores,
 			WikiSecurityCallback securityCallback, String initialPageName) {
@@ -1157,12 +1164,17 @@ public class WikiMainController extends BasicController implements CloneableCont
 			String subPath = page.getPageName();
 			String businessPath = getWindowControl().getBusinessControl().getAsString();
 			businessPath += "[page=" + subPath + ":0]";
-			
 			OLATResourceable wikiRes = OresHelper.createOLATResourceableInstance(WikiArtefact.ARTEFACT_TYPE, ores.getResourceableId());
-			Controller ePFCollCtrl = EPUIFactory.createArtefactCollectWizzardController(ureq, getWindowControl(), wikiRes, businessPath);
-			if (ePFCollCtrl != null) {
-				navigationContent.put("portfolio-link", ePFCollCtrl.getInitialComponent());
-			}			
+			
+			if(portfolioModule.isEnabled()) {
+				MediaCollectorComponent collectorCmp = new MediaCollectorComponent("portfolio-link", getWindowControl(), page, wikiMediaHandler, businessPath);
+				navigationContent.put("portfolio-link", collectorCmp);
+			} else {
+				Controller ePFCollCtrl = EPUIFactory.createArtefactCollectWizzardController(ureq, getWindowControl(), wikiRes, businessPath);
+				if (ePFCollCtrl != null) {
+					navigationContent.put("portfolio-link", ePFCollCtrl.getInitialComponent());
+				}
+			}
 		} else {
 			clearPortfolioLink();
 		}

@@ -1,0 +1,27 @@
+<div class="o_feed"><div class="o_post">
+	<div class="o_block_with_datecomp clearfix">
+		<div class="o_head o_block_large clearfix">
+			#if($r.available("dateComp"))
+				$r.render("dateComp")
+			#end
+			<h3 class="o_title">$r.escapeHtml($item.getTitle())</h3>
+			<div class="o_meta">				
+			#set ( $info = $helper.getInfo($item) )
+			#if ( $info )
+				$info
+				#if($helper.isModified($item)), 
+					<div class="text-warning">$r.escapeHtml($helper.getModifierInfo($item))</div>
+				#end
+			#end
+			</div>
+		</div>
+		<div class="o_content o_user_content_block">
+			$!helper.getItemDescriptionForBrowser($item)
+			#if ($item.getContent() && $item.getContent() != "")
+				<div class="o_block_large_top">
+				$!helper.getItemContentForBrowser($item)
+				</div>
+			#end
+		</div>
+	</div>
+</div></div>

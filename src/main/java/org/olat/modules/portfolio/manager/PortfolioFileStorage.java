@@ -24,6 +24,8 @@ import java.nio.file.Path;
 import java.util.UUID;
 
 import org.olat.core.commons.modules.bc.FolderConfig;
+import org.olat.core.commons.modules.bc.vfs.OlatRootFolderImpl;
+import org.olat.core.util.vfs.VFSContainer;
 import org.olat.modules.portfolio.Media;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.stereotype.Service;
@@ -81,6 +83,10 @@ public class PortfolioFileStorage implements InitializingBean {
 			dir.mkdirs();
 		}
 		return dir;
+	}
+	
+	public VFSContainer getMediaContainer(Media media) {
+		return new OlatRootFolderImpl("/" + media.getStoragePath(), null);
 	}
 	
 	public File generateMediaSubDirectory(Media media) {

@@ -46,6 +46,7 @@ import org.olat.core.gui.components.stack.BreadcrumbPanelAware;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.gui.render.Renderer;
@@ -64,11 +65,14 @@ import org.olat.course.assessment.bulk.PassedCellRenderer;
 import org.olat.course.assessment.manager.EfficiencyStatementManager;
 import org.olat.course.assessment.model.UserEfficiencyStatementLight;
 import org.olat.course.assessment.portfolio.EfficiencyStatementArtefact;
+import org.olat.course.assessment.portfolio.EfficiencyStatementMediaHandler;
 import org.olat.course.certificate.CertificateEvent;
 import org.olat.course.certificate.CertificateLight;
 import org.olat.course.certificate.CertificatesManager;
 import org.olat.course.certificate.ui.CertificateAndEfficiencyStatementListModel.CertificateAndEfficiencyStatement;
 import org.olat.course.certificate.ui.CertificateAndEfficiencyStatementListModel.Cols;
+import org.olat.modules.portfolio.PortfolioV2Module;
+import org.olat.modules.portfolio.ui.wizard.CollectArtefactController;
 import org.olat.portfolio.EPArtefactHandler;
 import org.olat.portfolio.PortfolioModule;
 import org.olat.portfolio.model.artefacts.AbstractArtefact;
@@ -91,12 +95,15 @@ public class CertificateAndEfficiencyStatementListController extends FormBasicCo
 	private static final String CMD_LAUNCH_COURSE = "cmd.launch.course";
 	private static final String CMD_DELETE = "cmd.delete";
 	private static final String CMD_ARTEFACT = "cmd.artefact";
+	private static final String CMD_MEDIA = "cmd.MEDIA";
 	
 	private FlexiTableElement tableEl;
 	private BreadcrumbPanel stackPanel;
 	private FormLink coachingToolButton;
 	private CertificateAndEfficiencyStatementListModel tableModel;
 
+	private CloseableModalController cmc;
+	private CollectArtefactController collectorCtrl;
 	private DialogBoxController confirmDeleteCtr;
 	private ArtefactWizzardStepsController ePFCollCtrl;
 	
@@ -108,11 +115,15 @@ public class CertificateAndEfficiencyStatementListController extends FormBasicCo
 	@Autowired
 	private PortfolioModule portfolioModule;
 	@Autowired
+	private PortfolioV2Module portfolioV2Module;
+	@Autowired
 	private RepositoryManager repositoryManager;
 	@Autowired
 	private RepositoryService repositoryService;
 	@Autowired
 	private CertificatesManager certificatesManager;
+	@Autowired
+	private EfficiencyStatementMediaHandler mediaHandler;
 	
 	public CertificateAndEfficiencyStatementListController(UserRequest ureq, WindowControl wControl) {
 		this(ureq, wControl, ureq.getUserSession().getIdentity(), false);
@@ -188,12 +199,18 @@ public class CertificateAndEfficiencyStatementListController extends FormBasicCo
 		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel("table.header.delete",
 				translate("table.action.delete"), CMD_DELETE));
 		
-		//delete
-		EPArtefactHandler<?> artHandler = portfolioModule.getArtefactHandler(EfficiencyStatementArtefact.ARTEFACT_TYPE);
-		if(portfolioModule.isEnabled() && artHandler != null && artHandler.isEnabled() && assessedIdentity.equals(getIdentity())) {
+		//artefact
+		if(portfolioV2Module.isEnabled()) {
 			tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel("table.header.artefact",
-					Cols.efficiencyStatement.ordinal(), CMD_ARTEFACT,
-					new StaticFlexiCellRenderer(CMD_ARTEFACT, new AsArtefactCellRenderer())));
+					Cols.efficiencyStatement.ordinal(), CMD_MEDIA,
+					new StaticFlexiCellRenderer(CMD_MEDIA, new AsArtefactCellRenderer())));
+		} else {
+			EPArtefactHandler<?> artHandler = portfolioModule.getArtefactHandler(EfficiencyStatementArtefact.ARTEFACT_TYPE);
+			if(portfolioModule.isEnabled() && artHandler != null && artHandler.isEnabled() && assessedIdentity.equals(getIdentity())) {
+				tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel("table.header.artefact",
+						Cols.efficiencyStatement.ordinal(), CMD_ARTEFACT,
+						new StaticFlexiCellRenderer(CMD_ARTEFACT, new AsArtefactCellRenderer())));
+			}
 		}
 		
 		tableModel = new CertificateAndEfficiencyStatementListModel(tableColumnModel, getLocale());
@@ -260,6 +277,8 @@ public class CertificateAndEfficiencyStatementListController extends FormBasicCo
 					doShowStatement(ureq, statement);
 				} else if(CMD_ARTEFACT.equals(cmd)) {
 					doCollectArtefact(ureq, statement.getDisplayName(), statement.getEfficiencyStatementKey());
+				} else if(CMD_MEDIA.equals(cmd)) {
+					doCollectMedia(ureq, statement.getDisplayName(), statement.getEfficiencyStatementKey());
 				}
 			}
 		} else if(coachingToolButton == source) {
@@ -275,7 +294,19 @@ public class CertificateAndEfficiencyStatementListController extends FormBasicCo
 				CertificateAndEfficiencyStatement statement = (CertificateAndEfficiencyStatement)confirmDeleteCtr.getUserObject();
 				doDelete(statement.getEfficiencyStatementKey());
 			}
+		} else if(collectorCtrl == source) {
+			cmc.deactivate();
+			cleanUp();
+		} else if(cmc == source) {
+			cleanUp();
 		}
+	}
+	
+	private void cleanUp() {
+		removeAsListenerAndDispose(collectorCtrl);
+		removeAsListenerAndDispose(cmc);
+		collectorCtrl = null;
+		cmc = null;
 	}
 	
 	private void doShowStatement(UserRequest ureq, CertificateAndEfficiencyStatement statement) {
@@ -342,6 +373,17 @@ public class CertificateAndEfficiencyStatementListController extends FormBasicCo
 			ePFCollCtrl = new ArtefactWizzardStepsController(ureq, getWindowControl(), artefact, (VFSContainer)null);
 			listenTo(ePFCollCtrl);
 		}
+	}
+
+	private void doCollectMedia(UserRequest ureq, String title, Long efficiencyStatementKey) {
+		EfficiencyStatement fullStatement = esm.getUserEfficiencyStatementByKey(efficiencyStatementKey);
+		
+		collectorCtrl = new CollectArtefactController(ureq, getWindowControl(), fullStatement, mediaHandler, "");
+		listenTo(this);
+		
+		cmc = new CloseableModalController(getWindowControl(), null, collectorCtrl.getInitialComponent(), true, title, true);
+		cmc.addControllerListener(this);
+		cmc.activate();
 	}
 
 	public class AsArtefactCellRenderer implements FlexiCellRenderer {

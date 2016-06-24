@@ -64,12 +64,15 @@ import org.olat.course.assessment.IdentityAssessmentOverviewController;
 import org.olat.course.assessment.manager.EfficiencyStatementManager;
 import org.olat.course.assessment.model.AssessmentNodeData;
 import org.olat.course.assessment.portfolio.EfficiencyStatementArtefact;
+import org.olat.course.assessment.portfolio.EfficiencyStatementMediaHandler;
 import org.olat.course.certificate.Certificate;
 import org.olat.course.certificate.CertificatesManager;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
 import org.olat.group.model.SearchBusinessGroupParams;
 import org.olat.modules.co.ContactFormController;
+import org.olat.modules.portfolio.PortfolioV2Module;
+import org.olat.modules.portfolio.ui.component.MediaCollectorComponent;
 import org.olat.portfolio.EPArtefactHandler;
 import org.olat.portfolio.PortfolioModule;
 import org.olat.portfolio.model.artefacts.AbstractArtefact;
@@ -110,6 +113,10 @@ public class CertificateAndEfficiencyStatementController extends BasicController
 	private CertificateController certificateCtrl;
 	private IdentityAssessmentOverviewController courseDetailsCtrl;
 	
+	@Autowired
+	private EfficiencyStatementMediaHandler mediaHandler;
+	@Autowired
+	private PortfolioV2Module portfolioV2Module;
 	@Autowired
 	private PortfolioModule portfolioModule;
 	@Autowired
@@ -188,10 +195,17 @@ public class CertificateAndEfficiencyStatementController extends BasicController
 		}
 		
 		if(efficiencyStatement != null && statementOwner.equals(ureq.getIdentity())) {
-			EPArtefactHandler<?> artHandler = portfolioModule.getArtefactHandler(EfficiencyStatementArtefact.ARTEFACT_TYPE);
-			if(portfolioModule.isEnabled() && artHandler != null && artHandler.isEnabled()) {
-				collectArtefactLink = LinkFactory.createCustomLink("collectArtefactLink", "collectartefact", "", Link.NONTRANSLATED, mainVC, this);
-				collectArtefactLink.setIconLeftCSS("o_icon o_icon-lg o_icon_eportfolio_add");
+			if(portfolioV2Module.isEnabled()) {
+				String businessPath = "[RepositoryEntry:" + efficiencyStatement.getCourseRepoEntryKey() + "]";
+				MediaCollectorComponent collectorCmp = new MediaCollectorComponent("collectArtefactLink", getWindowControl(), efficiencyStatement,
+						mediaHandler, businessPath);
+				mainVC.put("collectArtefactLink", collectorCmp);
+			} else {
+				EPArtefactHandler<?> artHandler = portfolioModule.getArtefactHandler(EfficiencyStatementArtefact.ARTEFACT_TYPE);
+				if(portfolioModule.isEnabled() && artHandler != null && artHandler.isEnabled()) {
+					collectArtefactLink = LinkFactory.createCustomLink("collectArtefactLink", "collectartefact", "", Link.NONTRANSLATED, mainVC, this);
+					collectArtefactLink.setIconLeftCSS("o_icon o_icon-lg o_icon_eportfolio_add");
+				}
 			}
 		}
 
@@ -207,6 +221,13 @@ public class CertificateAndEfficiencyStatementController extends BasicController
 	@Override
 	protected void doDispose() {
 		//
+	}
+	
+	public void disableMediaCollector() {
+		Component component = mainVC.getComponent("collectArtefactLink");
+		if(component != null) {
+			mainVC.remove(component);
+		}
 	}
 
 	private void populateAssessedIdentityInfos(UserRequest ureq, RepositoryEntry courseRepo, BusinessGroup group, boolean links) { 
