@@ -12,6 +12,7 @@
 		Configure the users properties, forms and tables 
 	-->
 	<bean id="org.olat.user.UserPropertiesConfig" class="org.olat.user.propertyhandlers.UserPropertiesConfigImpl" init-method="init">
+		<property name="maxNumOfInterests" value="${user.interests.max.number:5}" />
 		<property name="userPropertyHandlers">
 			<list>
 				<ref bean="userPropertyUserName" />

@@ -69,7 +69,8 @@ public class UserPropertiesConfigImpl implements UserPropertiesConfig, Initializ
 		}
 		LogModule.setUserProperties(userProperties);
 	}
-	
+
+	@Override
 	public int getMaxNumOfInterests() {
 		return maxNumOfInterests;
 	}
