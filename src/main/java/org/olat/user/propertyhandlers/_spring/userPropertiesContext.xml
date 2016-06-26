@@ -43,6 +43,60 @@
 				<ref bean="userPropertyInstitutionalEmail" />
 				<ref bean="userPropertyOrgUnit" />
 				<ref bean="userPropertyStudySubject" />
+				<ref bean="userPropertyGenericYear" />
+				<ref bean="userPropertyTypeOfUser" />
+				<ref bean="userPropertySocialSecurityNumber" />
+				
+				<!-- fxdiff: FXOLAT-239 these are from BAKS (moved from application.xml) -->
+				<ref bean="userPropertyRank" />
+			  	<ref bean="userPropertyDegree" />
+				<ref bean="userPropertyPosition" />
+				<ref bean="userPropertyUserInterests" />
+				<ref bean="userPropertyUserSearchedInterests" />
+				<ref bean="userPropertyDepartment" />
+				<ref bean="userPropertyOfficeStreet" />
+				<ref bean="userPropertyExtendedOfficeAddress" />
+				<ref bean="userPropertyOfficeZipCode" />
+				<ref bean="userPropertyOfficeCity" />
+				<ref bean="userPropertyOfficeCountry" />
+				<ref bean="userPropertyOfficeMobilePhone" />        
+				
+				
+				<!-- fxdiff: FXOLAT-31 additional generic properties-->
+				<ref bean="userPropertyGenericText" />
+				<ref bean="userPropertyGenericText2" />
+				<ref bean="userPropertyGenericText3" />
+				<ref bean="userPropertyGenericText4" />
+				<ref bean="userPropertyGenericText5" />
+
+				<ref bean="userPropertyGenericUniqueText" />
+				<ref bean="userPropertyGenericUniqueText2" />
+				<ref bean="userPropertyGenericUniqueText3" />
+				
+				<ref bean="userPropertyGenericEmail" />
+				
+				<!--  OO-98 additional yesNo properties -->
+				<ref bean="userPropertyGenericYesNo" />
+				<ref bean="userPropertyGenericYesNo2" />
+				<ref bean="userPropertyGenericYesNo3" />
+				<ref bean="userPropertyGenericYesNo4" />
+				<ref bean="userPropertyGenericYesNo5" />
+				<!--  discouraged for homeprofile, use yesnoproperties, see OO-98 -->
+				<ref bean="userPropertyGenericCheckbox" />
+				<ref bean="userPropertyGenericCheckbox2" />
+				<ref bean="userPropertyGenericCheckbox3" />
+				<ref bean="userPropertyGenericCheckbox4" />
+				<ref bean="userPropertyGenericCheckbox5" />
+				
+				<ref bean="userPropertyGenericSelect" />
+				<ref bean="userPropertyGenericSelect2" />
+				<ref bean="userPropertyGenericSelect3" />
+				<ref bean="userPropertyGenericSelect4" />
+				<ref bean="userPropertyGenericSelect5" />
+				
+				<ref bean="userPropertyCreationDateDisplay" />
+				<ref bean="userPropertylastLoginDateDisplay" />
+			
 				<!-- example
 				<ref bean="userPropertyAttrEduPersonAffiliation" />
 				<ref bean="userPropertyAttrSwissEduPersonStudyLevel" />

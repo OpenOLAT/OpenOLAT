@@ -58,6 +58,8 @@ public class UserPropertiesConfigImpl implements UserPropertiesConfig, Initializ
 	private List<UserPropertyHandler> userPropertyHandlers;
 	private Map<String, UserPropertyUsageContext> userPropertyUsageContexts;
 
+	private int maxNumOfInterests;
+
 	@Override
 	public void init() {
 		List<UserPropertyHandler> userPropHandlers = getUserPropertyHandlersFor(USER_PROPERTY_LOG_CONFIGURATION, false);
@@ -68,6 +70,18 @@ public class UserPropertiesConfigImpl implements UserPropertiesConfig, Initializ
 		LogModule.setUserProperties(userProperties);
 	}
 	
+	public int getMaxNumOfInterests() {
+		return maxNumOfInterests;
+	}
+
+	/**
+	 * [used by Spring]
+	 * @param maxNumOfInterests
+	 */
+	public void setMaxNumOfInterests(int maxNumOfInterests) {
+		this.maxNumOfInterests = maxNumOfInterests;
+	}
+
 	/**
 	 * Spring setter
 	 * @param userPropertyUsageContexts

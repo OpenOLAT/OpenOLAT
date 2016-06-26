@@ -1,0 +1,42 @@
+
+$r.translate("gsphc.moderadio") $r.render("moderadio")
+
+<fieldset>
+	<legend>Options</legend>
+	<table>
+		<tbody>
+			#foreach( $item in $optionfields ) 
+			#set($te = "optfield." + $item) 
+			#set($tl = "optfield.trs." + $item)
+			#set($tlbl = "optfield.trslbl." + $item)
+			#set($rm = "optfield.rmv." + $item)
+			<tr>
+				<td>
+				
+				
+				#if($f.hasError($item))
+				<div class="b_form_element_wrapper b_form_error b_clearfix">		
+				#else
+				<div class="b_form_element_wrapper b_clearfix">
+				#end
+				
+				$r.render($te)
+				
+				#if($f.hasError($item))
+						 $r.render("${item}_ERROR")
+				#end
+				</div>
+				</td>
+				<td>
+				#if($r.available($tlbl))
+					$r.render($tlbl) 
+				#end
+				</td>
+				<td>$r.render($tl)</td>
+				<td>$r.render($rm)</td>
+			</tr>
+			#end
+		</tbody>
+	</table>
+	$r.render("gsphc.addoption")
+</fieldset>

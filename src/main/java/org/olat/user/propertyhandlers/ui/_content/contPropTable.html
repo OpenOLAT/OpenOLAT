@@ -1,0 +1,41 @@
+<h5>$ctxname</h5>
+<div class="o_desc">$ctxdescr</div>
+<div style="margin-bottom:12px">$r.translate("upc.active") : $activePropCount</div>
+<table class="table table-condensed table-striped table-hover">
+	<thead>
+		<tr>
+			<th class="b_first_child" style="width:20px;"></th>
+			<th>$r.translate("upc.name")</th>
+			<th>$r.translate("upc.defaulttranslation")</th>
+			<th>$r.translate("upc.include")</th>
+			<th>$r.translate("upc.mandatory")</th>
+		    <th>$r.translate("upc.adminonly")</th>
+		    <th class="b_last_child">$r.translate("upc.userreadonly")</th>
+		</tr>
+	</thead>
+	<tbody>
+	#foreach( $handler in $rows ) 
+		#set($name = $handler.getName())
+		#set($cbxmandatory= "mandatory." + $name)
+		#set($cbxadminonly = "adminonly." + $name)
+		#set($cbxuserreadonly = "userreadonly." + $name)
+		#set($moveU = "moveU." + $name)
+		#set($moveD = "moveD." + $name)
+		#set($include = "include." + $name)
+		#set($translation = "trans." + $name)
+		<tr>
+			<td>
+				#if($r.available($moveU))
+				$r.render($moveU) $r.render($moveD)
+				#end
+			</td>  
+			<td>$name</td>
+			<td>$r.render($translation)</td>
+			<td>$r.render($include)</td>
+			<td>$r.render($cbxmandatory)</td>
+			<td>$r.render($cbxadminonly)</td>
+			<td>$r.render($cbxuserreadonly)</td>
+		</tr>
+	#end  
+	</tbody>
+</table>

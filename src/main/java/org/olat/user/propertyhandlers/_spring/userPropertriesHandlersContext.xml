@@ -40,6 +40,15 @@
 		<property name="deletable" value="true" />
 	</bean>
 	
+	<bean id="userPropertyGenericYear" class="org.olat.user.propertyhandlers.YearPropertyHandler">
+		<property name="name" value="graduation" />
+		<property name="group" value="person" />
+		<property name="deletable" value="true" />
+		<property name="HandlerConfigFactory" >
+			<ref bean="UsrPropHandlerCfgFactory" />
+		</property>
+	</bean>
+	
 	<bean id="userPropertyGender" class="org.olat.user.propertyhandlers.GenderPropertyHandler">
 		<property name="name" value="gender" />
 		<property name="group" value="person" />
@@ -197,6 +206,251 @@
 	</bean>
 	
 
+
+	<!-- fxdiff: FXOLAT-31 additional generic properties-->
+	<bean id="userPropertyGenericSelect" class="org.olat.user.propertyhandlers.GenericSelectionPropertyHandler" depends-on="UsrPropHandlerCfgFactory" >
+		<property name="name" value="genericSelectionProperty" />
+		<property name="group" value="person" />
+		<property name="deletable" value="true" />
+		<property name="HandlerConfigFactory" >
+			<ref bean="UsrPropHandlerCfgFactory" />
+		</property>
+	</bean>
+	<bean id="userPropertyGenericSelect2" class="org.olat.user.propertyhandlers.GenericSelectionPropertyHandler" depends-on="UsrPropHandlerCfgFactory" >
+		<property name="name" value="genericSelectionProperty2" />
+		<property name="group" value="person" />
+		<property name="deletable" value="true" />
+		<property name="HandlerConfigFactory" >
+			<ref bean="UsrPropHandlerCfgFactory" />
+		</property>
+	</bean>
+	<bean id="userPropertyGenericSelect3" class="org.olat.user.propertyhandlers.GenericSelectionPropertyHandler" depends-on="UsrPropHandlerCfgFactory" >
+		<property name="name" value="genericSelectionProperty3" />
+		<property name="group" value="person" />
+		<property name="deletable" value="true" />
+		<property name="HandlerConfigFactory" >
+			<ref bean="UsrPropHandlerCfgFactory" />
+		</property>
+	</bean>
+	<bean id="userPropertyGenericSelect4" class="org.olat.user.propertyhandlers.GenericSelectionPropertyHandler" depends-on="UsrPropHandlerCfgFactory" >
+		<property name="name" value="genericSelectionProperty4" />
+		<property name="group" value="person" />
+		<property name="deletable" value="true" />
+		<property name="HandlerConfigFactory" >
+			<ref bean="UsrPropHandlerCfgFactory" />
+		</property>
+	</bean>
+	<bean id="userPropertyGenericSelect5" class="org.olat.user.propertyhandlers.GenericSelectionPropertyHandler" depends-on="UsrPropHandlerCfgFactory" >
+		<property name="name" value="genericSelectionProperty5" />
+		<property name="group" value="person" />
+		<property name="deletable" value="true" />
+		<property name="HandlerConfigFactory" >
+			<ref bean="UsrPropHandlerCfgFactory" />
+		</property>
+	</bean>
+	
+	
+	<bean id="userPropertyGenericText" class="org.olat.user.propertyhandlers.Generic127CharTextPropertyHandler">
+		<property name="name" value="genericTextProperty" />
+		<property name="group" value="person" />
+		<property name="deletable" value="true" />
+	</bean>
+	<bean id="userPropertyGenericText2" class="org.olat.user.propertyhandlers.Generic127CharTextPropertyHandler">
+		<property name="name" value="genericTextProperty2" />
+		<property name="group" value="person" />
+		<property name="deletable" value="true" />
+	</bean>
+	<bean id="userPropertyGenericText3" class="org.olat.user.propertyhandlers.Generic127CharTextPropertyHandler">
+		<property name="name" value="genericTextProperty3" />
+		<property name="group" value="person" />
+		<property name="deletable" value="true" />
+	</bean>
+	<bean id="userPropertyGenericText4" class="org.olat.user.propertyhandlers.Generic127CharTextPropertyHandler">
+		<property name="name" value="genericTextProperty4" />
+		<property name="group" value="person" />
+		<property name="deletable" value="true" />
+	</bean>
+	<bean id="userPropertyGenericText5" class="org.olat.user.propertyhandlers.Generic127CharTextPropertyHandler">
+		<property name="name" value="genericTextProperty5" />
+		<property name="group" value="person" />
+		<property name="deletable" value="true" />
+	</bean>
+
+	<bean id="userPropertyGenericUniqueText" class="org.olat.user.propertyhandlers.GenericUnique127CharTextPropertyHandler">
+		<property name="name" value="genericUniqueTextProperty" />
+		<property name="group" value="person" />
+		<property name="deletable" value="true" />
+	</bean>
+	<bean id="userPropertyGenericUniqueText2" class="org.olat.user.propertyhandlers.GenericUnique127CharTextPropertyHandler">
+		<property name="name" value="genericUniqueTextProperty2" />
+		<property name="group" value="person" />
+		<property name="deletable" value="true" />
+	</bean>
+	<bean id="userPropertyGenericUniqueText3" class="org.olat.user.propertyhandlers.GenericUnique127CharTextPropertyHandler">
+		<property name="name" value="genericUniqueTextProperty3" />
+		<property name="group" value="person" />
+		<property name="deletable" value="true" />
+	</bean>
+	
+	<bean id="userPropertyGenericEmail" class="org.olat.user.propertyhandlers.EmailProperty">
+		<property name="name" value="genericEmailProperty1" />
+		<property name="group" value="person" />
+		<property name="deletable" value="true" />
+	</bean>
+	
+	<bean id="userPropertyGenericCheckbox" class="de.bps.olat.user.propertyhandlers.GenericCheckboxPropertyHandler">
+		<property name="name" value="genericCheckboxProperty" />
+		<property name="group" value="person" />
+		<property name="deletable" value="true" />
+	</bean>
+	<bean id="userPropertyGenericCheckbox2" class="de.bps.olat.user.propertyhandlers.GenericCheckboxPropertyHandler">
+		<property name="name" value="genericCheckboxProperty2" />
+		<property name="group" value="person" />
+		<property name="deletable" value="true" />
+	</bean>
+	<bean id="userPropertyGenericCheckbox3" class="de.bps.olat.user.propertyhandlers.GenericCheckboxPropertyHandler">
+		<property name="name" value="genericCheckboxProperty3" />
+		<property name="group" value="person" />
+		<property name="deletable" value="true" />
+	</bean>
+	<bean id="userPropertyGenericCheckbox4" class="de.bps.olat.user.propertyhandlers.GenericCheckboxPropertyHandler">
+		<property name="name" value="genericCheckboxProperty4" />
+		<property name="group" value="person" />
+		<property name="deletable" value="true" />
+	</bean>
+	<bean id="userPropertyGenericCheckbox5" class="de.bps.olat.user.propertyhandlers.GenericCheckboxPropertyHandler">
+		<property name="name" value="genericCheckboxProperty5" />
+		<property name="group" value="person" />
+		<property name="deletable" value="true" />
+	</bean>
+	
+	<bean id="userPropertyCreationDateDisplay" class="org.olat.user.propertyhandlers.DateDisplayPropertyHandler">
+		<property name="name" value="creationDateDisplayProperty" />
+		<property name="group" value="person" />
+		<property name="deletable" value="true" />
+	</bean>
+
+	<bean id="userPropertylastLoginDateDisplay" class="org.olat.user.propertyhandlers.DateDisplayPropertyHandler">
+		<property name="name" value="lastloginDateDisplayProperty" />
+		<property name="group" value="person" />
+		<property name="deletable" value="true" />
+	</bean>
+	
+	<bean id="userPropertyGenericYesNo" class="org.olat.user.propertyhandlers.GenericYesNoPropertyHandler">
+		<property name="name" value="genericYesNoProperty" />
+		<property name="group" value="person" />
+		<property name="deletable" value="true" />
+	</bean>
+	<bean id="userPropertyGenericYesNo2" class="org.olat.user.propertyhandlers.GenericYesNoPropertyHandler">
+		<property name="name" value="genericYesNoProperty2" />
+		<property name="group" value="person" />
+		<property name="deletable" value="true" />
+	</bean>
+	<bean id="userPropertyGenericYesNo3" class="org.olat.user.propertyhandlers.GenericYesNoPropertyHandler">
+		<property name="name" value="genericYesNoProperty3" />
+		<property name="group" value="person" />
+		<property name="deletable" value="true" />
+	</bean>
+	<bean id="userPropertyGenericYesNo4" class="org.olat.user.propertyhandlers.GenericYesNoPropertyHandler">
+		<property name="name" value="genericYesNoProperty4" />
+		<property name="group" value="person" />
+		<property name="deletable" value="true" />
+	</bean>
+	<bean id="userPropertyGenericYesNo5" class="org.olat.user.propertyhandlers.GenericYesNoPropertyHandler">
+		<property name="name" value="genericYesNoProperty5" />
+		<property name="group" value="person" />
+		<property name="deletable" value="true" />
+	</bean>
+	
+	
+	
+	<!--  fxdiff: FXOLAT-239 the following properties were moved from baks-config (application.xml) -->
+	
+	<bean id="userPropertyRank" class="org.olat.user.propertyhandlers.Generic127CharTextPropertyHandler">
+    <property name="name" value="rank" />
+    <property name="group" value="account" />
+  	<property name="deletable" value="false" />
+  </bean>
+  
+	<bean id="userPropertyDegree" class="org.olat.user.propertyhandlers.Generic127CharTextPropertyHandler">
+    <property name="name" value="degree" />
+    <property name="group" value="account" />
+    <property name="deletable" value="false" />
+	</bean>
+	
+	<bean id="userPropertyPosition" class="org.olat.user.propertyhandlers.Generic127CharTextPropertyHandler">
+	  <property name="name" value="position" />
+	  <property name="group" value="account" />
+	  <property name="deletable" value="true" />
+	</bean>
+	
+	<bean id="userPropertyUserInterests" class="org.olat.user.propertyhandlers.UserInterestsPropertyHandler">
+		<property name="name" value="userInterests" />
+		<property name="group" value="account" />
+		<property name="deletable" value="true" />
+	</bean>
+	
+	<bean id="userPropertyUserSearchedInterests" class="org.olat.user.propertyhandlers.UserInterestsPropertyHandler">
+		<property name="name" value="userSearchedInterests" />
+		<property name="group" value="account" />
+		<property name="deletable" value="true" />
+	</bean>
+	
+	<bean id="userPropertyOfficeStreet" class="org.olat.user.propertyhandlers.Generic127CharTextPropertyHandler">
+	  <property name="name" value="officeStreet" />
+	  <property name="group" value="officeaddress" />
+	  <property name="deletable" value="true" />
+	</bean>
+	
+	<bean id="userPropertyExtendedOfficeAddress" class="org.olat.user.propertyhandlers.Generic127CharTextPropertyHandler">
+	  <property name="name" value="extendedOfficeAddress" />
+	  <property name="group" value="officeaddress" />
+	  <property name="deletable" value="true" />
+	</bean>
+	
+	<bean id="userPropertyOfficePoBox" class="org.olat.user.propertyhandlers.Generic127CharTextPropertyHandler">
+	    <property name="name" value="officePoBox" />
+	    <property name="group" value="officeaddress" />
+	    <property name="deletable" value="true" />
+	</bean>
+	
+	<bean id="userPropertyOfficeZipCode" class="org.olat.user.propertyhandlers.Generic127CharTextPropertyHandler">
+	    <property name="name" value="officeZipCode" />
+	    <property name="group" value="officeaddress" />
+	    <property name="deletable" value="true" />
+	</bean>
+	
+	<bean id="userPropertyOfficeCity" class="org.olat.user.propertyhandlers.Generic127CharTextPropertyHandler">
+	    <property name="name" value="officeCity" />
+	    <property name="group" value="officeaddress" />
+	    <property name="deletable" value="true" />
+	</bean>
+	
+	<bean id="userPropertyOfficeCountry" class="org.olat.user.propertyhandlers.Generic127CharTextPropertyHandler">
+	    <property name="name" value="officeCountry" />
+	    <property name="group" value="officeaddress" />
+	    <property name="deletable" value="true" />
+	</bean>
+	
+	<bean id="userPropertyOfficeMobilePhone" class="org.olat.user.propertyhandlers.PhonePropertyHandler">
+	    <property name="name" value="officeMobilePhone" />
+	    <property name="group" value="officeaddress" />
+	    <property name="deletable" value="true" />
+	</bean>
+	
+	<bean id="userPropertyDepartment" class="org.olat.user.propertyhandlers.Generic127CharTextPropertyHandler">
+	    <property name="name" value="department" />
+	    <property name="group" value="officeaddress" />
+	    <property name="deletable" value="true" />
+	</bean>
+	
+	<bean id="userPropertyPrivateEmail" class="org.olat.user.propertyhandlers.EmailProperty">
+		<property name="name" value="privateEmail" />
+		<property name="group" value="private" />
+		<property name="deletable" value="true" />
+	</bean>
+	
+	
 	<!--
 		define the properties for matching IdentityEnvironment user attributes to LoggingObject.setUserPropertiesXX. Those can be used for the usertracking context.
 		As an example serves the Shibboleth Attributes set during ShibbolethDispatcher.execute(..).
@@ -280,6 +534,33 @@
 		<property name="name" value="iswebdav" />
 		<property name="group" value="olatattr" />
 		<property name="deletable" value="false" />
+	</bean>
+	
+		<!-- fxdiff:  FXOLAT-239    UserPropertyConfigHandler Configuration -->
+	<bean name="propertyHandlerControllerMap" class="java.util.HashMap" scope="prototype" >
+	    <constructor-arg>
+	        <map key-type="java.lang.String" value-type="java.lang.String">
+			<!-- here you can specify all handlers which provide additional configuration and which controller-class provides the config-GUI -->
+				<entry key="org.olat.user.propertyhandlers.GenericSelectionPropertyHandler">
+					<bean class="org.olat.core.gui.control.creator.AutoCreator"
+						scope="prototype">
+						<property name="className" value="org.olat.user.propertyhandlers.GenericSelectionPropertyHandlerController" />
+					</bean>
+				</entry>
+				<entry key="org.olat.user.propertyhandlers.UserInterestsPropertyHandler">
+					<bean class="org.olat.core.gui.control.creator.AutoCreator"
+						scope="prototype">
+						<property name="className" value="org.olat.user.propertyhandlers.UserInterestsPropertyHandlerController" />
+					</bean>
+				</entry>
+				<entry key="org.olat.user.propertyhandlers.YearPropertyHandler">
+					<bean class="org.olat.core.gui.control.creator.AutoCreator"
+						scope="prototype">
+						<property name="className" value="org.olat.user.propertyhandlers.YearPropertyHandlerController" />
+					</bean>
+				</entry>
+			</map>
+		</constructor-arg>
 	</bean>
 
 </beans>

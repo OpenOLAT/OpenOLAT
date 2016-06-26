@@ -86,8 +86,8 @@ public class Generic127CharTextPropertyHandler extends AbstractUserPropertyHandl
 		tElem = FormUIFactory.getInstance().addTextElement(getName(), i18nFormElementLabelKey(), 127, getInternalValue(user), formItemContainer);
 		tElem.setItemValidatorProvider(new ItemValidatorProvider() {
 			@Override
-			public boolean isValidValue(String value, ValidationError validationError, Locale locale) {
-				return Generic127CharTextPropertyHandler.this.isValidValue(user, value, validationError, locale);
+			public boolean isValidValue(String value, ValidationError validationError, Locale llocale) {
+				return Generic127CharTextPropertyHandler.this.isValidValue(user, value, validationError, llocale);
 			}
 		});
 		tElem.setLabel(i18nFormElementLabelKey(), null);

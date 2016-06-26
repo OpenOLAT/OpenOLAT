@@ -106,4 +106,5 @@ public interface UserPropertiesConfig {
 	public List<UserPropertyHandler> getAllUserPropertyHandlers();
 
 	
+	public int getMaxNumOfInterests();
 }

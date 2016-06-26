@@ -124,8 +124,8 @@ public class DatePropertyHandler extends AbstractUserPropertyHandler {
 		dateElem = FormUIFactory.getInstance().addDateChooser(getName(), i18nFormElementLabelKey(), val, formItemContainer);
 		dateElem.setItemValidatorProvider(new ItemValidatorProvider() {
 			@Override
-			public boolean isValidValue(String value,ValidationError validationError, Locale locale) {
-				return DatePropertyHandler.this.isValidValue(user, value, validationError, locale);
+			public boolean isValidValue(String value,ValidationError validationError, Locale llocale) {
+				return DatePropertyHandler.this.isValidValue(user, value, validationError, llocale);
 			}
 		});
 		UserManager um = UserManager.getInstance();

@@ -297,5 +297,25 @@
 		<property name="keepUserLoginAfterDeletion" value="${keepUserLoginAfterDeletion}" />
 		<property name="keepUserEmailAfterDeletion" value="${keepUserEmailAfterDeletion}" />
 	</bean>
+	
+	<!--  user properties admin-gui -->
+	<bean class="org.olat.core.extensions.action.GenericActionExtension" init-method="initExtensionPoints">
+		<property name="actionController">
+			<bean class="org.olat.core.gui.control.creator.AutoCreator" scope="prototype">
+				<property name="className" value="org.olat.user.propertyhandlers.ui.UsrPropCfgController"/>
+			</bean>
+		</property>
+		<property name="navigationKey" value="userproperties" />
+		<property name="translationPackage" value="org.olat.admin" />
+		<property name="i18nActionKey" value="menu.userproperties"/>
+		<property name="i18nDescriptionKey" value="menu.userproperties.alt"/>
+		<property name="extensionPoints">
+			<list>	
+				<value>org.olat.admin.SystemAdminMainController</value>		
+			</list>
+		</property>
+		<property name="parentTreeNodeIdentifier" value="sysAdminMenueNodeCustomizing" />
+		<property name="order" value="7411" />
+	</bean>	
 
 </beans>
