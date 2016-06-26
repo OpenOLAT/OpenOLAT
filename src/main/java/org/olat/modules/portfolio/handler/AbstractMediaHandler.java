@@ -20,6 +20,7 @@
 package org.olat.modules.portfolio.handler;
 
 import org.olat.modules.portfolio.MediaHandler;
+import org.olat.modules.portfolio.MediaInformations;
 
 /**
  * 
@@ -40,5 +41,29 @@ public abstract class AbstractMediaHandler implements MediaHandler {
 		return type;
 	}
 	
+	public final class Informations implements MediaInformations {
+		
+		private final String title;
+		private final String description;
+		
+		public Informations(String title, String description) {
+			this.title = title;
+			this.description = description;
+		}
+		
+		@Override
+		public String getType() {
+			return AbstractMediaHandler.this.getType();
+		}
 
+		@Override
+		public String getTitle() {
+			return title;
+		}
+
+		@Override
+		public String getDescription() {
+			return description;
+		}
+	}
 }

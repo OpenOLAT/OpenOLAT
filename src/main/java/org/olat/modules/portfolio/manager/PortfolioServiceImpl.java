@@ -61,6 +61,7 @@ import org.olat.modules.portfolio.BinderRef;
 import org.olat.modules.portfolio.Category;
 import org.olat.modules.portfolio.Media;
 import org.olat.modules.portfolio.MediaHandler;
+import org.olat.modules.portfolio.MediaLight;
 import org.olat.modules.portfolio.Page;
 import org.olat.modules.portfolio.PageBody;
 import org.olat.modules.portfolio.PagePart;
@@ -517,7 +518,7 @@ public class PortfolioServiceImpl implements PortfolioService {
 	}
 
 	@Override
-	public List<Media> searchOwnedMedias(IdentityRef author) {
+	public List<MediaLight> searchOwnedMedias(IdentityRef author) {
 		return mediaDao.loadByAuthor(author);
 	}
 

@@ -17,29 +17,21 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.course.assessment.portfolio;
+package org.olat.modules.portfolio.handler;
 
 import org.olat.core.commons.services.image.Size;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Identity;
-import org.olat.core.logging.OLog;
-import org.olat.core.logging.Tracing;
-import org.olat.core.util.StringHelper;
 import org.olat.core.util.vfs.VFSLeaf;
-import org.olat.core.util.xml.XStreamHelper;
-import org.olat.course.assessment.EfficiencyStatement;
-import org.olat.course.certificate.ui.CertificateAndEfficiencyStatementController;
 import org.olat.modules.portfolio.Media;
 import org.olat.modules.portfolio.MediaInformations;
 import org.olat.modules.portfolio.MediaLight;
-import org.olat.modules.portfolio.handler.AbstractMediaHandler;
 import org.olat.modules.portfolio.manager.MediaDAO;
+import org.olat.modules.portfolio.ui.media.TextMediaController;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
-import com.thoughtworks.xstream.XStream;
 
 /**
  * 
@@ -48,63 +40,42 @@ import com.thoughtworks.xstream.XStream;
  *
  */
 @Service
-public class EfficiencyStatementMediaHandler extends AbstractMediaHandler {
+public class TextHandler extends AbstractMediaHandler {
 	
-	private static final OLog log = Tracing.createLoggerFor(EfficiencyStatementMediaHandler.class);
-	private static final XStream myXStream = XStreamHelper.createXStreamInstance();
-	
-	public static final String EFF_MEDIA = "EfficiencyStatement";
+	public static final String TEXT_MEDIA = "text";
 	
 	@Autowired
 	private MediaDAO mediaDao;
-	
-	public EfficiencyStatementMediaHandler() {
-		super(EFF_MEDIA);
+
+	public TextHandler() {
+		super(TEXT_MEDIA);
 	}
 
 	@Override
 	public String getIconCssClass(MediaLight media) {
-		return "o_icon_certificate";
+		return "o_filetype_txt";
 	}
 
 	@Override
 	public VFSLeaf getThumbnail(MediaLight media, Size size) {
 		return null;
 	}
-
+	
 	@Override
 	public MediaInformations getInformations(Object mediaObject) {
-		String title = null;
-		if (mediaObject instanceof EfficiencyStatement) {
-			title = ((EfficiencyStatement)mediaObject).getCourseTitle();
-		}
-		return new Informations(title, null);
+		return new Informations(null, null);
 	}
 
 	@Override
 	public Media createMedia(String title, String description, Object mediaObject, String businessPath, Identity author) {
-		Media media = null;
-		if (mediaObject instanceof EfficiencyStatement) {
-			EfficiencyStatement statement = (EfficiencyStatement) mediaObject;
-			String xml = myXStream.toXML(statement); 
-			media = mediaDao.createMedia(title, description, xml, EFF_MEDIA, businessPath, 90, author);
-		}
+		Media media = mediaDao.createMedia(title, description, (String)mediaObject, TEXT_MEDIA, businessPath, 60, author);
 		return media;
 	}
 
 	@Override
 	public Controller getMediaController(UserRequest ureq, WindowControl wControl, Media media) {
-		String statementXml = media.getContent();
-		EfficiencyStatement statement = null;
-		if(StringHelper.containsNonWhitespace(statementXml)) {
-			try {
-				statement = (EfficiencyStatement)myXStream.fromXML(statementXml);
-			} catch (Exception e) {
-				log.error("Cannot load efficiency statement from artefact", e);
-			}
-		}
-		CertificateAndEfficiencyStatementController ctrl =  new CertificateAndEfficiencyStatementController(wControl, ureq, statement);
-		ctrl.disableMediaCollector();
-		return ctrl;
+		return new TextMediaController(ureq, wControl, media);
 	}
+	
+	
 }

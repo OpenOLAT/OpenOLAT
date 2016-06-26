@@ -34,6 +34,8 @@ import org.olat.modules.fo.Message;
 import org.olat.modules.fo.MessageLight;
 import org.olat.modules.fo.manager.ForumManager;
 import org.olat.modules.portfolio.Media;
+import org.olat.modules.portfolio.MediaInformations;
+import org.olat.modules.portfolio.MediaLight;
 import org.olat.modules.portfolio.handler.AbstractMediaHandler;
 import org.olat.modules.portfolio.manager.MediaDAO;
 import org.olat.modules.portfolio.manager.PortfolioFileStorage;
@@ -63,13 +65,23 @@ public class ForumMediaHandler extends AbstractMediaHandler {
 	}
 
 	@Override
-	public String getIconCssClass(Media media) {
+	public String getIconCssClass(MediaLight media) {
 		return "o_fo_icon";
 	}
 
 	@Override
-	public VFSLeaf getThumbnail(Media media, Size size) {
+	public VFSLeaf getThumbnail(MediaLight media, Size size) {
 		return null;
+	}
+	
+	@Override
+	public MediaInformations getInformations(Object mediaObject) {
+		String title = null;
+		if(mediaObject instanceof MessageLight) {
+			MessageLight messageLight = (MessageLight)mediaObject;
+			title = messageLight.getTitle();
+		}
+		return new Informations(title, null);
 	}
 
 	@Override
@@ -94,7 +106,7 @@ public class ForumMediaHandler extends AbstractMediaHandler {
 					FileUtils.copyFileToDir(attachment, mediaDir, "Forum media");
 				}
 				String storagePath = fileStorage.getRelativePath(mediaDir);
-				media = mediaDao.updateStoragePath(media, storagePath);
+				media = mediaDao.updateStoragePath(media, storagePath, null);
 			}
 		}
 

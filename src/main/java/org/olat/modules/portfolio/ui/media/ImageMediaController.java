@@ -42,7 +42,7 @@ public class ImageMediaController extends BasicController {
 		super(ureq, wControl);
 		
 		File mediaDir = new File(FolderConfig.getCanonicalRoot(), media.getStoragePath());
-		File mediaFile = new File(mediaDir, media.getContent());
+		File mediaFile = new File(mediaDir, media.getRootFilename());
 		ImageComponent imageCmp = new ImageComponent(ureq.getUserSession(), "image");
 		imageCmp.setMedia(mediaFile);
 		

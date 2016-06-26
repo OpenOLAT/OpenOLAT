@@ -62,12 +62,14 @@ import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSMediaResource;
 import org.olat.modules.portfolio.Media;
 import org.olat.modules.portfolio.MediaHandler;
+import org.olat.modules.portfolio.MediaLight;
 import org.olat.modules.portfolio.PortfolioService;
 import org.olat.modules.portfolio.model.MediaRow;
 import org.olat.modules.portfolio.ui.BindersDataModel.PortfolioCols;
 import org.olat.modules.portfolio.ui.event.MediaSelectionEvent;
 import org.olat.modules.portfolio.ui.media.CollectFileMediaController;
 import org.olat.modules.portfolio.ui.media.CollectImageMediaController;
+import org.olat.modules.portfolio.ui.media.CollectTextMediaController;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -84,7 +86,7 @@ public class MediaCenterController extends FormBasicController
 	private MediaDataModel model;
 	private FlexiTableElement tableEl;
 	private String mapperThumbnailUrl;
-	private Link addFileLink, addImageLink;
+	private Link addFileLink, addImageLink, addTextLink;
 	
 	private int counter = 0;
 	private final boolean select;
@@ -93,6 +95,7 @@ public class MediaCenterController extends FormBasicController
 	private CloseableModalController cmc;
 	private MediaDetailsController detailsCtrl;
 	private CollectFileMediaController fileUploadCtrl;
+	private CollectTextMediaController textUploadCtrl;
 	private CollectImageMediaController imageUploadCtrl;
 	
 	@Autowired
@@ -125,6 +128,10 @@ public class MediaCenterController extends FormBasicController
 		addImageLink = LinkFactory.createToolLink("add.image", translate("add.image"), this);
 		addImageLink.setIconLeftCSS("o_icon o_icon-lg o_icon_new_portfolio");
 		stackPanel.addTool(addImageLink, Align.left);
+		
+		addTextLink = LinkFactory.createToolLink("add.text", translate("add.text"), this);
+		addTextLink.setIconLeftCSS("o_icon o_icon-lg o_icon_new_portfolio");
+		stackPanel.addTool(addTextLink, Align.left);	
 	}
 
 	@Override
@@ -148,7 +155,7 @@ public class MediaCenterController extends FormBasicController
 		tableEl.setCssDelegate(new MediaCssDelegate());
 		tableEl.setAndLoadPersistedPreferences(ureq, "media-list");
 		
-		mapperThumbnailUrl = this.registerCacheableMapper(ureq, "media-thumbnail", new ThumbnailMapper(model));
+		mapperThumbnailUrl = registerCacheableMapper(ureq, "media-thumbnail", new ThumbnailMapper(model));
 		row.contextPut("mapperThumbnailUrl", mapperThumbnailUrl);
 	}
 
@@ -164,9 +171,9 @@ public class MediaCenterController extends FormBasicController
 			currentMap.put(row.getKey(), row);
 		}
 		
-		List<Media> medias = portfolioService.searchOwnedMedias(getIdentity());
+		List<MediaLight> medias = portfolioService.searchOwnedMedias(getIdentity());
 		List<MediaRow> rows = new ArrayList<>(medias.size());
-		for(Media media:medias) {
+		for(MediaLight media:medias) {
 			if(currentMap.containsKey(media.getKey())) {
 				rows.add(currentMap.get(media.getKey()));
 			} else {
@@ -243,6 +250,13 @@ public class MediaCenterController extends FormBasicController
 			}
 			cmc.deactivate();
 			cleanUp();
+		} else if(textUploadCtrl == source) {
+			if(event == Event.DONE_EVENT) {
+				loadModel();
+				tableEl.reloadData();
+			}
+			cmc.deactivate();
+			cleanUp();
 		} else if(cmc == source) {
 			cleanUp();
 		}
@@ -252,9 +266,11 @@ public class MediaCenterController extends FormBasicController
 	private void cleanUp() {
 		removeAsListenerAndDispose(imageUploadCtrl);
 		removeAsListenerAndDispose(fileUploadCtrl);
+		removeAsListenerAndDispose(textUploadCtrl);
 		removeAsListenerAndDispose(cmc);
 		imageUploadCtrl = null;
 		fileUploadCtrl = null;
+		textUploadCtrl = null;
 		cmc = null;
 	}
 
@@ -264,6 +280,8 @@ public class MediaCenterController extends FormBasicController
 			doAddImageMedia(ureq);
 		} else if(addFileLink == source) {
 			doAddFileMedia(ureq);
+		} else if(addTextLink == source) {
+			doAddTextMedia(ureq);
 		} else if(source == mainForm.getInitialComponent()) {
 			if("ONCLICK".equals(event.getCommand())) {
 				String rowKeyStr = ureq.getParameter("img_select");
@@ -310,6 +328,18 @@ public class MediaCenterController extends FormBasicController
 		
 		String title = translate("add.image");
 		cmc = new CloseableModalController(getWindowControl(), null, imageUploadCtrl.getInitialComponent(), true, title, true);
+		listenTo(cmc);
+		cmc.activate();
+	}
+	
+	private void doAddTextMedia(UserRequest ureq) {
+		if(textUploadCtrl != null) return;
+		
+		textUploadCtrl = new CollectTextMediaController(ureq, getWindowControl());
+		listenTo(textUploadCtrl);
+		
+		String title = translate("add.text");
+		cmc = new CloseableModalController(getWindowControl(), null, textUploadCtrl.getInitialComponent(), true, title, true);
 		listenTo(cmc);
 		cmc.activate();
 	}

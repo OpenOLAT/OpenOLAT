@@ -19,35 +19,36 @@
  */
 package org.olat.modules.portfolio;
 
-import org.olat.core.commons.services.image.Size;
-import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.control.Controller;
-import org.olat.core.gui.control.WindowControl;
-import org.olat.core.id.Identity;
-import org.olat.core.util.vfs.VFSLeaf;
+import java.util.Date;
 
 /**
+ * The media without the content
  * 
- * Initial date: 20.06.2016<br>
+ * Initial date: 24.06.2016<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public interface MediaHandler {
+public interface MediaLight extends MediaInformations {
 	
+	public Long getKey();
+	
+	public Date getCreationDate();
+	
+	public Date getCollectionDate();
+	
+	public String getStoragePath();
+	
+	public String getRootFilename();
+	
+	@Override
 	public String getType();
+
+	@Override
+	public String getTitle();
+
+	@Override
+	public String getDescription();
 	
-	public String getIconCssClass(MediaLight media);
-	
-	public VFSLeaf getThumbnail(MediaLight media, Size size);
-	
-	/**
-	 * Return some informations to prefill the media/artefact creation form.
-	 * @param mediaObject
-	 */
-	public MediaInformations getInformations(Object mediaObject);
-	
-	public Media createMedia(String title, String description, Object mediaObject, String businessPath, Identity author);
-	
-	public Controller getMediaController(UserRequest ureq, WindowControl wControl, Media media);
+	public String getBusinessPath();
 
 }

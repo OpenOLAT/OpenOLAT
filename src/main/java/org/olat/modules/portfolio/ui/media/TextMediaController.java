@@ -17,37 +17,40 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.portfolio;
+package org.olat.modules.portfolio.ui.media;
 
-import org.olat.core.commons.services.image.Size;
 import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.control.Controller;
+import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.text.TextComponent;
+import org.olat.core.gui.components.text.TextFactory;
+import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.id.Identity;
-import org.olat.core.util.vfs.VFSLeaf;
+import org.olat.core.gui.control.controller.BasicController;
+import org.olat.modules.portfolio.Media;
 
 /**
  * 
- * Initial date: 20.06.2016<br>
+ * Initial date: 24.06.2016<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public interface MediaHandler {
+public class TextMediaController extends BasicController {
 	
-	public String getType();
-	
-	public String getIconCssClass(MediaLight media);
-	
-	public VFSLeaf getThumbnail(MediaLight media, Size size);
-	
-	/**
-	 * Return some informations to prefill the media/artefact creation form.
-	 * @param mediaObject
-	 */
-	public MediaInformations getInformations(Object mediaObject);
-	
-	public Media createMedia(String title, String description, Object mediaObject, String businessPath, Identity author);
-	
-	public Controller getMediaController(UserRequest ureq, WindowControl wControl, Media media);
+	public TextMediaController(UserRequest ureq, WindowControl wControl, Media media) {
+		super(ureq, wControl);
 
+		TextComponent cmp = TextFactory.createTextComponentFromString("text", media.getContent(), null, false, null);
+		putInitialPanel(cmp);
+	}
+
+
+	@Override
+	protected void event(UserRequest ureq, Component source, Event event) {
+		//
+	}
+
+	@Override
+	protected void doDispose() {
+		//
+	}
 }

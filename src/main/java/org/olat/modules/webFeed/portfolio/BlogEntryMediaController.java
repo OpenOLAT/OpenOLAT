@@ -22,7 +22,6 @@ package org.olat.modules.webFeed.portfolio;
 
 import java.io.InputStream;
 
-import org.olat.core.commons.modules.bc.vfs.OlatRootFolderImpl;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.date.DateComponentFactory;
@@ -39,7 +38,9 @@ import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.xml.XStreamHelper;
 import org.olat.modules.portfolio.Media;
+import org.olat.modules.portfolio.manager.PortfolioFileStorage;
 import org.olat.modules.webFeed.models.Item;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import com.thoughtworks.xstream.XStream;
 
@@ -59,12 +60,15 @@ public class BlogEntryMediaController extends BasicController {
 		xstream.alias("item", Item.class);
 	}
 	
+	@Autowired
+	private PortfolioFileStorage fileStorage;
+	
 	public BlogEntryMediaController(UserRequest ureq, WindowControl wControl, Media media, boolean readOnlyMode) {
 		super(ureq, wControl);
 		VelocityContainer mainVC = createVelocityContainer("media_post");
 		if (StringHelper.containsNonWhitespace(media.getStoragePath())) {
-			VFSContainer container = new OlatRootFolderImpl("/" + media.getStoragePath(), null);
-			VFSItem item = container.resolve(BlogArtefact.BLOG_FILE_NAME);
+			VFSContainer container = fileStorage.getMediaContainer(media);
+			VFSItem item = container.resolve(media.getRootFilename());
 			if(item instanceof VFSLeaf) {
 				VFSLeaf itemLeaf = (VFSLeaf)item;
 				try(InputStream in = itemLeaf.getInputStream()) {

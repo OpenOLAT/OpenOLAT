@@ -49,6 +49,7 @@ import org.olat.util.logging.activity.LoggingResourceable;
 public class HomeMainController extends MainLayoutBasicController implements Activateable2 {
 
 	private BreadcrumbedStackedPanel stackPanel;
+	private Controller currentCtr;
 	private LayoutMain3ColsController contentCtr;
 
 	public HomeMainController(UserRequest ureq, WindowControl wControl) {
@@ -68,6 +69,8 @@ public class HomeMainController extends MainLayoutBasicController implements Act
 	protected void event(UserRequest ureq, Component source, Event event) {
 		//
 	}
+	
+	private String currentNavKey;
 
 	@Override
 	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
@@ -83,23 +86,30 @@ public class HomeMainController extends MainLayoutBasicController implements Act
 			}
 		}
 		
-		GenericActionExtension gAE = ExtManager.getInstance()
-				.getActionExtensioByNavigationKey(HomeMainController.class.getName(), navKey);
-		if (gAE != null) {
-			stackPanel.popUpToRootController(ureq);
-
-			Controller innerContentCtr = createController(gAE, ureq);
-			contentCtr = new LayoutMain3ColsController(ureq, getWindowControl(), innerContentCtr);
-			listenTo(contentCtr);
-			if (entries.size() >= 1) {
-				entries = entries.subList(1, entries.size());
+		if(navKey.equals(currentNavKey) && currentCtr != null) {
+			if (currentCtr instanceof Activateable2) {
+				((Activateable2) currentCtr).activate(ureq, entries, entry.getTransientState());
 			}
-			if (innerContentCtr instanceof Activateable2) {
-				((Activateable2) innerContentCtr).activate(ureq, entries, entry.getTransientState());
+		} else {
+			GenericActionExtension gAE = ExtManager.getInstance()
+					.getActionExtensioByNavigationKey(HomeMainController.class.getName(), navKey);
+			if (gAE != null) {
+				currentNavKey = navKey;
+				stackPanel.popUpToRootController(ureq);
+	
+				currentCtr = createController(gAE, ureq);
+				contentCtr = new LayoutMain3ColsController(ureq, getWindowControl(), currentCtr);
+				listenTo(contentCtr);
+				if (entries.size() >= 1) {
+					entries = entries.subList(1, entries.size());
+				}
+				if (currentCtr instanceof Activateable2) {
+					((Activateable2) currentCtr).activate(ureq, entries, entry.getTransientState());
+				}
+				
+				String actionText = gAE.getActionText(getLocale());
+				stackPanel.rootController(actionText, contentCtr);
 			}
-			
-			String actionText = gAE.getActionText(getLocale());
-			stackPanel.rootController(actionText, contentCtr);
 		}
 	}
 	

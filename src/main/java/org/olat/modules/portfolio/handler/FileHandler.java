@@ -23,17 +23,20 @@ import java.io.File;
 
 import org.olat.core.commons.modules.bc.meta.MetaInfo;
 import org.olat.core.commons.modules.bc.meta.tagged.MetaTagged;
-import org.olat.core.commons.modules.bc.vfs.OlatRootFolderImpl;
 import org.olat.core.commons.services.image.Size;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.util.CSSHelper;
 import org.olat.core.id.Identity;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.modules.portfolio.Media;
+import org.olat.modules.portfolio.MediaInformations;
+import org.olat.modules.portfolio.MediaLight;
 import org.olat.modules.portfolio.manager.MediaDAO;
 import org.olat.modules.portfolio.manager.PortfolioFileStorage;
 import org.olat.modules.portfolio.ui.media.FileMediaController;
@@ -51,7 +54,6 @@ public class FileHandler extends AbstractMediaHandler {
 	
 	public static final String FILE_TYPE = "bc";
 	
-
 	@Autowired
 	private MediaDAO mediaDao;
 	@Autowired
@@ -62,19 +64,22 @@ public class FileHandler extends AbstractMediaHandler {
 	}
 
 	@Override
-	public String getIconCssClass(Media media) {
-		return null;
+	public String getIconCssClass(MediaLight media) {
+		String filename = media.getRootFilename();
+		if (filename != null){
+			return CSSHelper.createFiletypeIconCssClassFor(filename);
+		}
+		return "o_filetype_file";
 	}
 
 	@Override
-	public VFSLeaf getThumbnail(Media media, Size size) {
+	public VFSLeaf getThumbnail(MediaLight media, Size size) {
 		String storagePath = media.getStoragePath();
-		String content = media.getContent();
 
 		VFSLeaf thumbnail = null;
 		if(StringHelper.containsNonWhitespace(storagePath)) {
-			OlatRootFolderImpl storageContainer = new OlatRootFolderImpl("/" + storagePath, null);
-			VFSItem item = storageContainer.resolve(content);
+			VFSContainer storageContainer = fileStorage.getMediaContainer(media);
+			VFSItem item = storageContainer.resolve(media.getRootFilename());
 			if(item instanceof VFSLeaf) {
 				VFSLeaf leaf = (VFSLeaf)item;
 				if(leaf instanceof MetaTagged) {
@@ -85,6 +90,18 @@ public class FileHandler extends AbstractMediaHandler {
 		}
 		
 		return thumbnail;
+	}
+	
+	@Override
+	public MediaInformations getInformations(Object mediaObject) {
+		String title = null;
+		String description = null;
+		if (mediaObject instanceof MetaTagged) {
+			MetaInfo meta = ((MetaTagged)mediaObject).getMetaInfo();
+			title = meta.getTitle();
+			description = meta.getComment();
+		}
+		return new Informations(title, description);
 	}
 
 	@Override
@@ -98,7 +115,7 @@ public class FileHandler extends AbstractMediaHandler {
 		File mediaFile = new File(mediaDir, filename);
 		FileUtils.copyFileToFile(file, mediaFile, false);
 		String storagePath = fileStorage.getRelativePath(mediaDir);
-		mediaDao.updateStoragePath(media, storagePath);
+		mediaDao.updateStoragePath(media, storagePath, filename);
 		return media;
 	}
 

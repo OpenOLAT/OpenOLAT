@@ -1650,6 +1650,7 @@ create table o_pf_media (
    p_collection_date datetime not null,
    p_type varchar(64) not null,
    p_storage_path varchar(255),
+   p_root_filename varchar(255),
    p_title varchar(255) not null,
    p_description mediumtext,
    p_content mediumtext,

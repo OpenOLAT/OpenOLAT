@@ -1,4 +1,7 @@
 <h2><i class="o_icon o_icon-lg $iconCssClass"> </i> $title</h2>
+#if($description && !${description.isEmpty()})
+	<div class="o_info">$description</div>
+#end
 <div class="">
 $r.render("media")
 </div>

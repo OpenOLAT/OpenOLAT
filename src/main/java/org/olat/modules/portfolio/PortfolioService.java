@@ -235,7 +235,7 @@ public interface PortfolioService {
 	
 	public Media getMediaByKey(Long key);
 	
-	public List<Media> searchOwnedMedias(IdentityRef author);
+	public List<MediaLight> searchOwnedMedias(IdentityRef author);
 	
 	public void updateCategories(Media media, List<String> categories);
 	

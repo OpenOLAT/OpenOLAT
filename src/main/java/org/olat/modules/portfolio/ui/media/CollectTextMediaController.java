@@ -17,7 +17,7 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.portfolio.ui.wizard;
+package org.olat.modules.portfolio.ui.media;
 
 import java.util.Date;
 import java.util.HashMap;
@@ -35,69 +35,68 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.util.Formatter;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.modules.portfolio.Media;
-import org.olat.modules.portfolio.MediaHandler;
-import org.olat.modules.portfolio.MediaInformations;
 import org.olat.modules.portfolio.PortfolioService;
+import org.olat.modules.portfolio.handler.TextHandler;
 import org.olat.modules.portfolio.ui.PortfolioHomeController;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
- * Initial date: 20.06.2016<br>
+ * Initial date: 24.06.2016<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class CollectArtefactController extends FormBasicController {
+public class CollectTextMediaController extends FormBasicController {
 	
 	private TextElement titleEl;
-	private TextElement descriptionEl;
+	private TextElement descriptionEl, textEl;
 	private TextBoxListElement categoriesEl;
 
 	private Media mediaReference;
-	private final Object mediaObject;
-	private final MediaHandler handler;
 	private Map<String,String> categories = new HashMap<>();
 	
 	private final String businessPath;
-	private final MediaInformations prefillInfos;
 	
+	@Autowired
+	private TextHandler fileHandler;
 	@Autowired
 	private PortfolioService portfolioService;
 
-	public CollectArtefactController(UserRequest ureq, WindowControl wControl, Object mediaObject, MediaHandler handler, String businessPath) {
+	public CollectTextMediaController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
 		setTranslator(Util.createPackageTranslator(PortfolioHomeController.class, getLocale(), getTranslator()));
-		this.handler = handler;
-		this.mediaObject = mediaObject; 
-		this.businessPath = businessPath;
-		
-		prefillInfos = handler.getInformations(mediaObject);
+		businessPath = "[Binder:0]";
 		
 		initForm(ureq);
+	}
+	
+	public Media getMediaReference() {
+		return mediaReference;
 	}
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		String title = prefillInfos == null ? "" : prefillInfos.getTitle();
-		titleEl = uifactory.addTextElement("artefact.title", "artefact.title", 255, title, formLayout);
+		titleEl = uifactory.addTextElement("artefact.title", "artefact.title", 255, "", formLayout);
 		titleEl.setMandatory(true);
 		
-		String descr = prefillInfos == null ? "" : prefillInfos.getDescription();
-		descriptionEl = uifactory.addRichTextElementForStringData("artefact.descr", "artefact.descr", descr, 8, 6, false, null, null, formLayout, ureq.getUserSession(), getWindowControl());
+		descriptionEl = uifactory.addRichTextElementForStringData("artefact.descr", "artefact.descr", "", 6, 6, false, null, null, formLayout, ureq.getUserSession(), getWindowControl());
+		
+		textEl = uifactory.addRichTextElementForStringData("artefact.text", "artefact.text", "", 10, 6, false, null, null, formLayout, ureq.getUserSession(), getWindowControl());
 		
 		categoriesEl = uifactory.addTextBoxListElement("categories", "categories", "categories.hint", categories, formLayout, getTranslator());
 		categoriesEl.setElementCssClass("o_sel_ep_tagsinput");
 		categoriesEl.setAllowDuplicates(false);
 		
-		String source = handler.getType();
-		uifactory.addStaticTextElement("artefact.source", "artefact.source", source, formLayout);
 		String date = Formatter.getInstance(getLocale()).formatDate(new Date());
 		uifactory.addStaticTextElement("artefact.collect.date", "artefact.collect.date", date, formLayout);
 
-		String link = BusinessControlFactory.getInstance().getURLFromBusinessPathString(businessPath);
-		uifactory.addStaticTextElement("artefact.collect.link", "artefact.collect.link", link, formLayout);
+		if(StringHelper.containsNonWhitespace(businessPath)) {
+			String link = BusinessControlFactory.getInstance().getURLFromBusinessPathString(businessPath);
+			uifactory.addStaticTextElement("artefact.collect.link", "artefact.collect.link", link, formLayout);
+		}
 		
 		FormLayoutContainer buttonsCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		formLayout.add(buttonsCont);
@@ -122,9 +121,10 @@ public class CollectArtefactController extends FormBasicController {
 		if(mediaReference == null) {
 			String title = titleEl.getValue();
 			String description = descriptionEl.getValue();
-			mediaReference = handler.createMedia(title, description, mediaObject, businessPath, getIdentity());
+			String content = textEl.getValue();
+			mediaReference = fileHandler.createMedia(title, description, content, businessPath, getIdentity());
 		} else {
-			//TODO
+			//TODO can we update an artefact?
 		}
 
 		List<String> updatedCategories = categoriesEl.getValueList();

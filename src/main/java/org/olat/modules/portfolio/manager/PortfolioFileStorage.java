@@ -27,6 +27,7 @@ import org.olat.core.commons.modules.bc.FolderConfig;
 import org.olat.core.commons.modules.bc.vfs.OlatRootFolderImpl;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.modules.portfolio.Media;
+import org.olat.modules.portfolio.MediaLight;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.stereotype.Service;
 
@@ -85,7 +86,7 @@ public class PortfolioFileStorage implements InitializingBean {
 		return dir;
 	}
 	
-	public VFSContainer getMediaContainer(Media media) {
+	public VFSContainer getMediaContainer(MediaLight media) {
 		return new OlatRootFolderImpl("/" + media.getStoragePath(), null);
 	}
 	

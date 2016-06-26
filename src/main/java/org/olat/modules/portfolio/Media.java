@@ -29,24 +29,35 @@ import org.olat.core.id.Identity;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public interface Media {
-	
+public interface Media extends MediaLight {
+
+	@Override
 	public Long getKey();
-	
+
+	@Override
 	public Date getCreationDate();
-	
+
+	@Override
 	public Date getCollectionDate();
-	
+
+	@Override
 	public String getStoragePath();
-	
+
+	@Override
+	public String getRootFilename();
+
+	@Override
 	public String getType();
-	
+
+	@Override
 	public String getTitle();
-	
+
+	@Override
 	public String getDescription();
 	
 	public String getContent();
 	
+	@Override
 	public String getBusinessPath();
 	
 	public Identity getAuthor();

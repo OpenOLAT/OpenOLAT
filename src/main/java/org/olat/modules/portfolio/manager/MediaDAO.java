@@ -26,6 +26,7 @@ import org.olat.basesecurity.IdentityRef;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.modules.portfolio.Media;
+import org.olat.modules.portfolio.MediaLight;
 import org.olat.modules.portfolio.model.MediaImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -59,8 +60,9 @@ public class MediaDAO {
 		return media;
 	}
 	
-	public Media updateStoragePath(Media media, String storagePath) {
+	public Media updateStoragePath(Media media, String storagePath, String rootFilename) {
 		((MediaImpl)media).setStoragePath(storagePath);
+		((MediaImpl)media).setRootFilename(rootFilename);
 		return dbInstance.getCurrentEntityManager().merge(media);
 	}
 	
@@ -77,14 +79,14 @@ public class MediaDAO {
 		return medias == null || medias.isEmpty() ? null : medias.get(0);
 	}
 	
-	public List<Media> loadByAuthor(IdentityRef author) {
+	public List<MediaLight> loadByAuthor(IdentityRef author) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select media from pfmedia as media")
 		  .append(" inner join fetch media.author as author")
 		  .append(" where author.key=:authorKey");
 		
-		List<Media> medias = dbInstance.getCurrentEntityManager()
-				.createQuery(sb.toString(), Media.class)
+		List<MediaLight> medias = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), MediaLight.class)
 				.setParameter("authorKey", author.getKey())
 				.getResultList();
 		return medias;

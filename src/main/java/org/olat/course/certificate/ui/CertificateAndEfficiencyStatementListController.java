@@ -376,10 +376,11 @@ public class CertificateAndEfficiencyStatementListController extends FormBasicCo
 	}
 
 	private void doCollectMedia(UserRequest ureq, String title, Long efficiencyStatementKey) {
-		EfficiencyStatement fullStatement = esm.getUserEfficiencyStatementByKey(efficiencyStatementKey);
+		if(collectorCtrl != null) return;
 		
+		EfficiencyStatement fullStatement = esm.getUserEfficiencyStatementByKey(efficiencyStatementKey);
 		collectorCtrl = new CollectArtefactController(ureq, getWindowControl(), fullStatement, mediaHandler, "");
-		listenTo(this);
+		listenTo(collectorCtrl);
 		
 		cmc = new CloseableModalController(getWindowControl(), null, collectorCtrl.getInitialComponent(), true, title, true);
 		cmc.addControllerListener(this);

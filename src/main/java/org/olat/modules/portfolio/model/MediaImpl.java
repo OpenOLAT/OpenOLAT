@@ -65,8 +65,11 @@ public class MediaImpl implements Persistable, CreateInfo, Media  {
 	private Date collectionDate;
 	@Column(name="p_type", nullable=false, insertable=true, updatable=false)
 	private String type;
+	
 	@Column(name="p_storage_path", nullable=true, insertable=true, updatable=true)
 	private String storagePath;
+	@Column(name="p_root_filename", nullable=true, insertable=true, updatable=true)
+	private String rootFilename;
 
 	@Column(name="p_title", nullable=false, insertable=true, updatable=true)
 	private String title;
@@ -110,6 +113,7 @@ public class MediaImpl implements Persistable, CreateInfo, Media  {
 		this.collectionDate = collectionDate;
 	}
 
+	@Override
 	public String getType() {
 		return type;
 	}
@@ -118,12 +122,22 @@ public class MediaImpl implements Persistable, CreateInfo, Media  {
 		this.type = type;
 	}
 
+	@Override
 	public String getStoragePath() {
 		return storagePath;
 	}
 
 	public void setStoragePath(String storagePath) {
 		this.storagePath = storagePath;
+	}
+
+	@Override
+	public String getRootFilename() {
+		return rootFilename;
+	}
+
+	public void setRootFilename(String rootFilename) {
+		this.rootFilename = rootFilename;
 	}
 
 	@Override

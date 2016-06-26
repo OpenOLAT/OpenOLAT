@@ -21,7 +21,7 @@ package org.olat.modules.portfolio.model;
 
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.util.vfs.VFSLeaf;
-import org.olat.modules.portfolio.Media;
+import org.olat.modules.portfolio.MediaLight;
 
 /**
  * 
@@ -31,12 +31,12 @@ import org.olat.modules.portfolio.Media;
  */
 public class MediaRow {
 	
-	private Media media;
+	private MediaLight media;
 
 	private VFSLeaf thumbnail;
 	private FormLink openFormLink;
 	
-	public MediaRow(Media media, VFSLeaf thumbnail, FormLink openFormLink) {
+	public MediaRow(MediaLight media, VFSLeaf thumbnail, FormLink openFormLink) {
 		this.media = media;
 		this.thumbnail = thumbnail;
 		this.openFormLink = openFormLink;

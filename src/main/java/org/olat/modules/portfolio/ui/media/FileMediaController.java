@@ -19,7 +19,6 @@
  */
 package org.olat.modules.portfolio.ui.media;
 
-import org.olat.core.commons.modules.bc.vfs.OlatRootFolderImpl;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.download.DownloadComponent;
@@ -32,7 +31,9 @@ import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.modules.portfolio.Media;
+import org.olat.modules.portfolio.manager.PortfolioFileStorage;
 import org.olat.modules.portfolio.ui.PortfolioHomeController;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -42,6 +43,9 @@ import org.olat.modules.portfolio.ui.PortfolioHomeController;
  */
 public class FileMediaController extends BasicController {
 
+	@Autowired
+	private PortfolioFileStorage fileStorage;
+	
 	public FileMediaController(UserRequest ureq, WindowControl wControl, Media media) {
 		super(ureq, wControl);
 		setTranslator(Util.createPackageTranslator(PortfolioHomeController.class, getLocale(), getTranslator()));
@@ -49,8 +53,8 @@ public class FileMediaController extends BasicController {
 		VelocityContainer mainVC = createVelocityContainer("media_file");
 		mainVC.contextPut("filename", media.getContent());
 
-		VFSContainer container = new OlatRootFolderImpl("/" + media.getStoragePath(), null);
-		VFSItem item = container.resolve(media.getContent());
+		VFSContainer container = fileStorage.getMediaContainer(media);
+		VFSItem item = container.resolve(media.getRootFilename());
 		if(item instanceof VFSLeaf) {
 			DownloadComponent downloadCmp = new DownloadComponent("download", (VFSLeaf)item);
 			mainVC.put("download", downloadCmp);
