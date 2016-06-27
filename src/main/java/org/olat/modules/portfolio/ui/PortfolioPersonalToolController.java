@@ -32,6 +32,7 @@ import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.resource.OresHelper;
+import org.olat.home.ReusableHomeController;
 
 /**
  * 
@@ -39,7 +40,7 @@ import org.olat.core.util.resource.OresHelper;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class PortfolioPersonalToolController extends BasicController implements Activateable2 {
+public class PortfolioPersonalToolController extends BasicController implements Activateable2, ReusableHomeController {
 
 	private final TooledStackedPanel stackPanel;
 	private final PortfolioHomeController overviewCtrl;

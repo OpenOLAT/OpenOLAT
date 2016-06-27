@@ -32,8 +32,15 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.vfs.VFSItem;
+import org.olat.modules.portfolio.MediaHandler;
+import org.olat.modules.portfolio.PortfolioService;
+import org.olat.modules.portfolio.PortfolioV2Module;
+import org.olat.modules.portfolio.handler.FileHandler;
+import org.olat.modules.portfolio.handler.ImageHandler;
+import org.olat.modules.portfolio.ui.wizard.CollectArtefactController;
 import org.olat.portfolio.EPArtefactHandler;
 import org.olat.portfolio.PortfolioModule;
 import org.olat.portfolio.model.artefacts.AbstractArtefact;
@@ -54,11 +61,14 @@ public class CmdAddToEPortfolioImpl extends BasicController implements CmdAddToE
 	private int status;
 	private VFSItem currentItem;
 	private PortfolioModule portfolioModule;
+	private PortfolioV2Module portfolioV2Module;
+	
 	private Controller collectStepsCtrl;
 
 	public CmdAddToEPortfolioImpl(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
-		portfolioModule = (PortfolioModule) CoreSpringFactory.getBean("portfolioModule");
+		portfolioModule = CoreSpringFactory.getImpl(PortfolioModule.class);
+		portfolioV2Module = CoreSpringFactory.getImpl(PortfolioV2Module.class);
 	}
 
 	/**
@@ -84,14 +94,36 @@ public class CmdAddToEPortfolioImpl extends BasicController implements CmdAddToE
 			currentItem = folderComponent.getCurrentContainerChildren().get(Integer.parseInt(pos));
 			status = FolderCommandHelper.sanityCheck2(wControl, folderComponent, currentItem);
 		}
-		if (status == FolderCommandStatus.STATUS_FAILED) { return null; }
+		if (status == FolderCommandStatus.STATUS_FAILED) {
+			return null;
+		}
+		
+		if(portfolioV2Module.isEnabled()) {
+			PortfolioService portfolioService = CoreSpringFactory.getImpl(PortfolioService.class);
+			
+			MediaHandler handler = null;
+			
+			String extension = FileUtils.getFileSuffix(currentItem.getName());
+			if(StringHelper.containsNonWhitespace(extension)) {
+				if("jpg".equalsIgnoreCase(extension) || "jpeg".equalsIgnoreCase(extension)
+						|| "png".equalsIgnoreCase(extension) || "gif".equalsIgnoreCase(extension)) {
+					handler = portfolioService.getMediaHandler(ImageHandler.IMAGE_TYPE);
+				}
+				//TODO video
+			}
+			
+			if(handler == null) {
+				handler = portfolioService.getMediaHandler(FileHandler.FILE_TYPE);
+			}
+			collectStepsCtrl = new CollectArtefactController(ureq, wControl, currentItem, handler, "");
+		} else {
+			EPArtefactHandler<?> artHandler = portfolioModule.getArtefactHandler(FileArtefact.FILE_ARTEFACT_TYPE);
+			AbstractArtefact artefact = artHandler.createArtefact();
+			artHandler.prefillArtefactAccordingToSource(artefact, currentItem);
+			artefact.setAuthor(getIdentity());
 
-		EPArtefactHandler<?> artHandler = portfolioModule.getArtefactHandler(FileArtefact.FILE_ARTEFACT_TYPE);
-		AbstractArtefact artefact = artHandler.createArtefact();
-		artHandler.prefillArtefactAccordingToSource(artefact, currentItem);
-		artefact.setAuthor(getIdentity());
-
-		collectStepsCtrl = new ArtefactWizzardStepsController(ureq, wControl, artefact, currentItem.getParentContainer());
+			collectStepsCtrl = new ArtefactWizzardStepsController(ureq, wControl, artefact, currentItem.getParentContainer());
+		}
 
 		return collectStepsCtrl;
 	}

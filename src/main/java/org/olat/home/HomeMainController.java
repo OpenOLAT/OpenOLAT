@@ -86,7 +86,7 @@ public class HomeMainController extends MainLayoutBasicController implements Act
 			}
 		}
 		
-		if(navKey.equals(currentNavKey) && currentCtr != null) {
+		if(navKey.equals(currentNavKey) && currentCtr instanceof ReusableHomeController) {
 			if (currentCtr instanceof Activateable2) {
 				((Activateable2) currentCtr).activate(ureq, entries, entry.getTransientState());
 			}
