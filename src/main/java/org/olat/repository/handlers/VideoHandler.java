@@ -122,7 +122,9 @@ public class VideoHandler extends FileHandler {
 				displayname, description, resource, RepositoryEntry.ACC_OWNERS);
 		DBFactory.getInstance().commit();		
 		
-
+		if(fileName == null) {
+			fileName = file.getName();
+		}
 		fileName = fileName.toLowerCase();
 		VFSLeaf importFile = new LocalFileImpl(file);
 		VideoManager videoManager = CoreSpringFactory.getImpl(VideoManager.class);
