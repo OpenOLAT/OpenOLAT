@@ -82,7 +82,8 @@ public class WebDAVAuthManager implements AuthenticationSPI {
 					Identity identity = olatAuth.getIdentity();
 					return identity;
 				} else {
-					log.error("Verity doesn't equals response");
+					// don't log as error, happens all the time with certain clients, e.g. Microsoft-WebDAV-MiniRedir
+					log.debug("Verity::" + verity + " doesn't equals response::" + response);
 				}
 			}
 		}
