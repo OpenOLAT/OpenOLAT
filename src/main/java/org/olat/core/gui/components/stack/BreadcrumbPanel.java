@@ -37,14 +37,23 @@ public interface BreadcrumbPanel extends StackedPanel {
 	public void rootController(String displayName, Controller controller);
 	
 	/**
+	 * @return The first controller of the stack.
+	 */
+	public Controller getRootController();
+	
+	/**
 	 * Dissmiss all controllers but the root
 	 */
 	public void popUpToRootController(UserRequest ureq);
 	
 	public void pushController(String displayName, Controller controller);
 	
-	
-	public void popUpToController(Controller controller);
+	/**
+	 * 
+	 * @param controller
+	 * @return true if the controller has been found
+	 */
+	public boolean popUpToController(Controller controller);
 	
 	/**
 	 * Remove and dispose the specified controller and all

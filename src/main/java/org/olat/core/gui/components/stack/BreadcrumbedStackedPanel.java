@@ -201,6 +201,16 @@ public class BreadcrumbedStackedPanel extends Panel implements StackedPanel, Bre
 		BusinessControlFactory.getInstance().addToHistory(ureq, wControl);
 	}
 	
+	public Controller getRootController() {
+		Controller controller = null;
+		if(stack.size() > 0) {
+			Link lastPath = stack.get(0);
+			BreadCrumb crumb = (BreadCrumb)lastPath.getUserObject();
+			controller = crumb.getController();
+		}
+		return controller;
+	}
+	
 	public Controller getLastController() {
 		Controller controller = null;
 		if(stack.size() > 0) {
@@ -221,7 +231,7 @@ public class BreadcrumbedStackedPanel extends Panel implements StackedPanel, Bre
 	}
 
 	@Override
-	public void popUpToController(Controller controller) {
+	public boolean popUpToController(Controller controller) {
 		int index = getIndex(controller);
 		if(index > 0 && index < stack.size() - 1) {
 			BreadCrumb popedCrumb = null;
@@ -235,10 +245,10 @@ public class BreadcrumbedStackedPanel extends Panel implements StackedPanel, Bre
 			BreadCrumb crumb  = (BreadCrumb)currentLink.getUserObject();
 			setContent(crumb.getController());
 			updateCloseLinkTitle();
+			return true;
 		}
+		return false;
 	}
-	
-	
 
 	@Override
 	public void popController(Controller controller) {

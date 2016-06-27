@@ -26,6 +26,7 @@ import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.panel.SimpleStackedPanel;
+import org.olat.core.gui.components.panel.StackedPanel;
 import org.olat.core.gui.components.stack.ButtonGroupComponent;
 import org.olat.core.gui.components.stack.PopEvent;
 import org.olat.core.gui.components.stack.TooledController;
@@ -55,6 +56,7 @@ public class BinderController extends BasicController implements TooledControlle
 	private final ButtonGroupComponent segmentButtonsCmp;
 	private final TooledStackedPanel stackPanel;
 	private Link editBinderMetadataLink;
+	private StackedPanel mainPanel;
 	
 	private PublishController publishCtrl;
 	private TableOfContentController overviewCtrl;
@@ -86,7 +88,11 @@ public class BinderController extends BasicController implements TooledControlle
 		}
 		
 		stackPanel.addListener(this);
-		putInitialPanel(new SimpleStackedPanel("portfolioSegments"));
+		mainPanel = putInitialPanel(new SimpleStackedPanel("portfolioSegments"));
+		
+		overviewCtrl = new TableOfContentController(ureq, getWindowControl(), stackPanel, secCallback, binder, config);
+		listenTo(overviewCtrl);
+		mainPanel.setContent(overviewCtrl.getInitialComponent());
 	}
 
 	@Override
@@ -103,7 +109,7 @@ public class BinderController extends BasicController implements TooledControlle
 	@Override
 	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
 		if(entries == null || entries.isEmpty()) {
-			doOpenOverview(ureq);
+			//
 		}
 	}
 
@@ -141,29 +147,34 @@ public class BinderController extends BasicController implements TooledControlle
 		}
 	}
 	
+	private void popUpToBinderController(UserRequest ureq) {
+		if(stackPanel.getRootController() == this) {
+			stackPanel.popUpToRootController(ureq);
+		} else {
+			stackPanel.popUpToController(this);
+		}
+	}
+	
 	private void doOpenEntries(UserRequest ureq) {
 		entriesCtrl = new BinderPageListController(ureq, getWindowControl(), stackPanel, secCallback, binder, config);
 		listenTo(entriesCtrl);
 
-		stackPanel.popUpToController(this);
+		popUpToBinderController(ureq);
 		stackPanel.pushController(translate("portfolio.entries"), entriesCtrl);
 		segmentButtonsCmp.setSelectedButton(entriesLink);
 	}
 	
 	private void doOpenOverview(UserRequest ureq) {
-		overviewCtrl = new TableOfContentController(ureq, getWindowControl(), stackPanel, secCallback, binder, config);
-		listenTo(overviewCtrl);
-
-		stackPanel.popUpToController(this);
-		stackPanel.pushController(translate("portfolio.overview"), overviewCtrl);
+		popUpToBinderController(ureq);
 		segmentButtonsCmp.setSelectedButton(overviewLink);
+		mainPanel.setContent(overviewCtrl.getInitialComponent());
 	}
 	
 	private void doOpenPublish(UserRequest ureq) {
 		publishCtrl = new PublishController(ureq, getWindowControl(), stackPanel, secCallback, binder, config);
 		listenTo(publishCtrl);
-		
-		stackPanel.popUpToController(this);
+
+		popUpToBinderController(ureq);
 		stackPanel.pushController(translate("portfolio.publish"), publishCtrl);
 		segmentButtonsCmp.setSelectedButton(publishLink);
 	}
@@ -171,8 +182,8 @@ public class BinderController extends BasicController implements TooledControlle
 	private void doOpenAssessment(UserRequest ureq) {
 		assessmentCtrl = new BinderAssessmentController(ureq, getWindowControl(), secCallback, binder, config);
 		listenTo(assessmentCtrl);
-		
-		stackPanel.popUpToController(this);
+
+		popUpToBinderController(ureq);
 		stackPanel.pushController(translate("portfolio.assessment"), assessmentCtrl);
 		segmentButtonsCmp.setSelectedButton(assessmentLink);
 	}
