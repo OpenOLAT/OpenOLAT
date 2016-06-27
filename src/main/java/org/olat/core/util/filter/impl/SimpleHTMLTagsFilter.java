@@ -61,7 +61,7 @@ public class SimpleHTMLTagsFilter implements Filter {
 		
 		try {
 			SAXParser parser = new SAXParser();
-			HTMLHandler contentHandler = new HTMLHandler((int)original.length());
+			HTMLHandler contentHandler = new HTMLHandler(original.length());
 			parser.setContentHandler(contentHandler);
 			parser.parse(new InputSource(new StringReader(original)));
 			String text = contentHandler.toString();
