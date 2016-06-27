@@ -36,6 +36,7 @@ import org.olat.modules.portfolio.MediaInformations;
 import org.olat.modules.portfolio.MediaLight;
 import org.olat.modules.portfolio.handler.AbstractMediaHandler;
 import org.olat.modules.portfolio.manager.MediaDAO;
+import org.olat.portfolio.model.artefacts.AbstractArtefact;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -90,6 +91,18 @@ public class EfficiencyStatementMediaHandler extends AbstractMediaHandler {
 			media = mediaDao.createMedia(title, description, xml, EFF_MEDIA, businessPath, 90, author);
 		}
 		return media;
+	}
+
+	@Override
+	public Media createMedia(AbstractArtefact artefact) {
+		String title = artefact.getTitle();
+		String description = artefact.getDescription();
+		String xml = artefact.getFulltextContent();
+		String businessPath = artefact.getBusinessPath();
+		if(businessPath == null) {
+			businessPath = "[PortfolioV2:0][MediaCenter:0]";
+		}
+		return mediaDao.createMedia(title, description, xml, EFF_MEDIA, businessPath, artefact.getSignature(), artefact.getAuthor());
 	}
 
 	@Override

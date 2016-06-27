@@ -20,6 +20,7 @@
 package org.olat.modules.fo.portfolio;
 
 import java.io.File;
+import java.util.List;
 
 import org.olat.core.commons.services.image.Size;
 import org.olat.core.gui.UserRequest;
@@ -28,7 +29,11 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Identity;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.resource.OresHelper;
+import org.olat.core.util.vfs.VFSContainer;
+import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
+import org.olat.core.util.vfs.VFSManager;
+import org.olat.core.util.vfs.restapi.SystemItemFilter;
 import org.olat.modules.fo.Forum;
 import org.olat.modules.fo.Message;
 import org.olat.modules.fo.MessageLight;
@@ -39,6 +44,8 @@ import org.olat.modules.portfolio.MediaLight;
 import org.olat.modules.portfolio.handler.AbstractMediaHandler;
 import org.olat.modules.portfolio.manager.MediaDAO;
 import org.olat.modules.portfolio.manager.PortfolioFileStorage;
+import org.olat.portfolio.manager.EPFrontendManager;
+import org.olat.portfolio.model.artefacts.AbstractArtefact;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -59,6 +66,8 @@ public class ForumMediaHandler extends AbstractMediaHandler {
 	private ForumManager forumManager;
 	@Autowired
 	private PortfolioFileStorage fileStorage;
+	@Autowired
+	private EPFrontendManager oldPortfolioManager;
 	
 	public ForumMediaHandler() {
 		super(FORUM_HANDLER);
@@ -114,9 +123,31 @@ public class ForumMediaHandler extends AbstractMediaHandler {
 	}
 
 	@Override
+	public Media createMedia(AbstractArtefact artefact) {
+		VFSContainer artefactFolder = oldPortfolioManager.getArtefactContainer(artefact);
+
+		String businessPath = artefact.getBusinessPath();
+		if(businessPath == null) {
+			businessPath = "[PortfolioV2:0][MediaCenter:0]";
+		}
+		Media media = mediaDao.createMedia(artefact.getTitle(), artefact.getDescription(), null, FORUM_HANDLER,
+				businessPath, artefact.getSignature(), artefact.getAuthor());
+		
+		List<VFSItem> items = artefactFolder.getItems(new SystemItemFilter());
+		if(items.size() > 0) {
+			File mediaDir = fileStorage.generateMediaSubDirectory(media);
+			String storagePath = fileStorage.getRelativePath(mediaDir);
+			mediaDao.updateStoragePath(media, storagePath, null);
+			VFSContainer mediaContainer = fileStorage.getMediaContainer(media);
+			VFSManager.copyContent(artefactFolder, mediaContainer);
+		}
+		
+		return media;
+	}
+
+	@Override
 	public Controller getMediaController(UserRequest ureq, WindowControl wControl, Media media) {
 		return new ForumMessageMediaController(ureq, wControl, media);
 	}
-	
 	
 }

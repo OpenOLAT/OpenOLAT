@@ -32,6 +32,7 @@ import org.olat.modules.portfolio.MediaLight;
 import org.olat.modules.portfolio.handler.AbstractMediaHandler;
 import org.olat.modules.portfolio.manager.MediaDAO;
 import org.olat.modules.wiki.WikiPage;
+import org.olat.portfolio.model.artefacts.AbstractArtefact;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -81,6 +82,18 @@ public class WikiMediaHandler extends AbstractMediaHandler {
 			content = page.getContent();
 		}
 		return mediaDao.createMedia(title, description, content, WIKI_HANDLER, businessPath, 70, author);
+	}
+
+	@Override
+	public Media createMedia(AbstractArtefact artefact) {
+		String title = artefact.getTitle();
+		String description = artefact.getDescription();
+		String content = artefact.getFulltextContent();
+		String businessPath = artefact.getBusinessPath();
+		if(businessPath == null) {
+			businessPath = "[PortfolioV2:0][MediaCenter:0]";
+		}
+		return mediaDao.createMedia(title, description, content, WIKI_HANDLER, businessPath, artefact.getSignature(), artefact.getAuthor());
 	}
 
 	@Override

@@ -49,6 +49,8 @@ public interface BinderSecurityCallback {
 	
 	public boolean canEditPage(Page page);
 	
+	public boolean canPublish(Page page);
+	
 	public boolean canEditAccessRights(PortfolioElement element);
 	
 	public boolean canViewElement(PortfolioElement element);

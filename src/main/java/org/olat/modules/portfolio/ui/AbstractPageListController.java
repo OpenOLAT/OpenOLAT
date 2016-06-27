@@ -161,13 +161,13 @@ implements Activateable2, TooledController, FlexiTableComponentDelegate {
 	}
 	
 	@Override
-	public void event(UserRequest ureq, Component source, Event event) {
-		super.event(ureq, source, event);
-	}
-	
-	@Override
 	public void event(UserRequest ureq, Controller source, Event event) {
-		if(newPageCtrl == source) {
+		if(pageCtrl == source) {
+			if(event == Event.CHANGED_EVENT) {
+				loadModel();
+				fireEvent(ureq, Event.CHANGED_EVENT);
+			}
+		} else if(newPageCtrl == source) {
 			if(event == Event.DONE_EVENT) {
 				loadModel();
 				fireEvent(ureq, Event.CHANGED_EVENT);

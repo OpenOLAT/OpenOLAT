@@ -34,23 +34,23 @@ import org.olat.repository.model.RepositoryEntrySecurity;
 public class BinderSecurityCallbackFactory {
 	
 	public static final BinderSecurityCallback getCallbackForOwnedBinder(Binder binder) {
-		return new BinderSecurityCallbackImpl(true, binder.getTemplate() != null, binder.getEntry() != null);
+		return new BinderSecurityCallbackImpl(true, binder.getTemplate() != null);
 	}
 	
 	public static final BinderSecurityCallback getCallbackForMyPageList() {
-		return new BinderSecurityCallbackImpl(true, false, false);
+		return new BinderSecurityCallbackImpl(true, false);
 	}
 	
 	public static final BinderSecurityCallback getReadOnlyCallback() {
-		return new BinderSecurityCallbackImpl(false, false, false);
+		return new BinderSecurityCallbackImpl(false, false);
 	}
 	
 	public static final BinderSecurityCallback getCallbackForTemplate(RepositoryEntrySecurity security) {
 		return new BinderSecurityCallbackForTemplate(security.isEntryAdmin());
 	}
 	
-	public static final BinderSecurityCallback getCallbackForCoach(Binder binder, List<AccessRights> rights) {
-		return new BinderSecurityCallbackImpl(rights, binder.getTemplate() != null, binder.getEntry() != null);
+	public static final BinderSecurityCallback getCallbackForCoach(List<AccessRights> rights) {
+		return new BinderSecurityCallbackImpl(rights);
 	}
 	
 	private static class BinderSecurityCallbackForTemplate implements BinderSecurityCallback {
@@ -92,6 +92,11 @@ public class BinderSecurityCallbackFactory {
 		}
 
 		@Override
+		public boolean canPublish(Page page) {
+			return false;
+		}
+
+		@Override
 		public boolean canEditAccessRights(PortfolioElement element) {
 			return false;
 		}
@@ -120,23 +125,17 @@ public class BinderSecurityCallbackFactory {
 	private static class BinderSecurityCallbackImpl implements BinderSecurityCallback {
 		
 		private final boolean owner;
-		private final boolean hasEntry;
-		private final boolean hasTemplate;
 		private final boolean newSectionAllowed;
 		private final List<AccessRights> rights;
 		
-		public BinderSecurityCallbackImpl(boolean owner, boolean hasTemplate, boolean hasEntry) {
+		public BinderSecurityCallbackImpl(boolean owner, boolean hasTemplate) {
 			this.owner = owner;
-			this.hasEntry = hasEntry;
-			this.hasTemplate = hasTemplate;
 			this.newSectionAllowed = !hasTemplate;
 			this.rights = Collections.emptyList();
 		}
 		
-		public BinderSecurityCallbackImpl(List<AccessRights> rights, boolean hasTemplate, boolean hasEntry) {
+		public BinderSecurityCallbackImpl(List<AccessRights> rights) {
 			this.owner = false;
-			this.hasEntry = hasEntry;
-			this.hasTemplate = hasTemplate;
 			this.newSectionAllowed = false;
 			this.rights = rights;
 		}
@@ -169,6 +168,11 @@ public class BinderSecurityCallbackFactory {
 		@Override
 		public boolean canEditPage(Page page) {
 			return owner && (page.getPageStatus() == null || page.getPageStatus() != PageStatus.closed);
+		}
+
+		@Override
+		public boolean canPublish(Page page) {
+			return owner && (page.getPageStatus() == null || page.getPageStatus() == PageStatus.draft || page.getPageStatus() == PageStatus.inRevision);
 		}
 
 		@Override

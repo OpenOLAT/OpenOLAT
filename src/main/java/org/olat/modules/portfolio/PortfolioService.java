@@ -239,6 +239,13 @@ public interface PortfolioService {
 	
 	public void updateCategories(Media media, List<String> categories);
 	
+	/**
+	 * Change the status of the page.
+	 * @param page
+	 * @param status
+	 * @return
+	 */
+	public Page changePageStatus(Page page, PageStatus status);
 	
 	/**
 	 * Close the section

@@ -528,6 +528,13 @@ public class PortfolioServiceImpl implements PortfolioService {
 	}
 
 	@Override
+	public Page changePageStatus(Page page, PageStatus status) {
+		Page reloadedPage = pageDao.loadByKey(page.getKey());
+		((PageImpl)reloadedPage).setPageStatus(status);
+		return pageDao.updatePage(reloadedPage);
+	}
+
+	@Override
 	public Section changeSectionStatus(Section section, SectionStatus status, Identity coach) {
 		PageStatus newPageStatus;
 		if(status == SectionStatus.closed) {

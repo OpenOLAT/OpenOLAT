@@ -40,6 +40,7 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
+import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.util.CodeHelper;
 import org.olat.core.util.resource.OresHelper;
@@ -48,6 +49,7 @@ import org.olat.modules.portfolio.BinderSecurityCallback;
 import org.olat.modules.portfolio.MediaHandler;
 import org.olat.modules.portfolio.Page;
 import org.olat.modules.portfolio.PagePart;
+import org.olat.modules.portfolio.PageStatus;
 import org.olat.modules.portfolio.PortfolioService;
 import org.olat.modules.portfolio.Section;
 import org.olat.modules.portfolio.model.HTMLPart;
@@ -64,12 +66,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class PageController extends BasicController implements TooledController {
 
 	private VelocityContainer mainVC;
-	private Link editLink, editMetadataLink;
+	private Link editLink, editMetadataLink, publishButton;
 	protected final TooledStackedPanel stackPanel;
 	private List<FragmentWrapper> fragments = new ArrayList<>();
 	
 	private CloseableModalController cmc;
 	private PageEditorController editCtrl;
+	private DialogBoxController confirmPublishCtrl;
 	private PageMetadataEditController editMetadataCtrl;
 	private UserCommentsAndRatingsController commentsCtrl;
 	
@@ -91,6 +94,10 @@ public class PageController extends BasicController implements TooledController 
 		mainVC.contextPut("pageTitle", page.getTitle());
 
 		loadModel(ureq);
+		
+		if(secCallback.canPublish(page)) {
+			publishButton = LinkFactory.createButton("publish", mainVC, this);
+		}
 		
 		if(secCallback.canComment(page)) {
 			CommentAndRatingSecurityCallback commentSecCallback = new CommentAndRatingDefaultSecurityCallback(getIdentity(), false, false);
@@ -150,6 +157,8 @@ public class PageController extends BasicController implements TooledController 
 			}
 			cmc.deactivate();
 			cleanUp();
+		} else if(confirmPublishCtrl == source) {
+			doPublish(ureq);
 		} else if(cmc == source) {
 			cleanUp();
 		}
@@ -169,7 +178,21 @@ public class PageController extends BasicController implements TooledController 
 			doEditPage(ureq);
 		} else if(editMetadataLink == source) {
 			doEditMetadata(ureq);
+		} else if(publishButton == source) {
+			doConfirmPublish(ureq);
 		}
+	}
+	
+	private void doConfirmPublish(UserRequest ureq) {
+		String title = translate("publish.confirm.title");
+		String text = translate("publish.confirm.descr", new String[]{ page.getTitle() });
+		confirmPublishCtrl = activateYesNoDialog(ureq, title, text, confirmPublishCtrl);
+	}
+	
+	private void doPublish(UserRequest ureq) {
+		page = portfolioService.changePageStatus(page, PageStatus.published);
+		publishButton.setVisible(false);
+		fireEvent(ureq, Event.CHANGED_EVENT);
 	}
 	
 	private void doEditMetadata(UserRequest ureq) {

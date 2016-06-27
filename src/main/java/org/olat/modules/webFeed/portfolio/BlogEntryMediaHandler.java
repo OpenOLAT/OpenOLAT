@@ -39,6 +39,8 @@ import org.olat.modules.portfolio.manager.PortfolioFileStorage;
 import org.olat.modules.webFeed.managers.FeedManager;
 import org.olat.modules.webFeed.models.Feed;
 import org.olat.modules.webFeed.models.Item;
+import org.olat.portfolio.manager.EPFrontendManager;
+import org.olat.portfolio.model.artefacts.AbstractArtefact;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -59,6 +61,8 @@ public class BlogEntryMediaHandler extends AbstractMediaHandler {
 	private FeedManager feedManager;
 	@Autowired
 	private PortfolioFileStorage fileStorage;
+	@Autowired
+	private EPFrontendManager oldPortfolioManager;
 	
 	public BlogEntryMediaHandler() {
 		super(BLOG_ENTRY_HANDLER);
@@ -94,6 +98,30 @@ public class BlogEntryMediaHandler extends AbstractMediaHandler {
 		VFSContainer mediaContainer = fileStorage.getMediaContainer(media);
 		VFSContainer itemContainer = feedManager.getItemContainer(item, feed);
 		VFSManager.copyContent(itemContainer, mediaContainer);
+
+		return media;
+	}
+
+	/**
+	 * Copy the item.xml and eventuel some attached medias.
+	 */
+	@Override
+	public Media createMedia(AbstractArtefact artefact) {
+		VFSContainer artefactFolder = oldPortfolioManager.getArtefactContainer(artefact);
+		String businessPath = artefact.getBusinessPath();
+		if(businessPath == null) {
+			businessPath = "[PortfolioV2:0][MediaCenter:0]";
+		}
+
+		String filename = null;
+		Media media = mediaDao.createMedia(artefact.getTitle(), artefact.getDescription(), filename, BLOG_ENTRY_HANDLER,
+				businessPath, artefact.getSignature(), artefact.getAuthor());
+		
+		File mediaDir = fileStorage.generateMediaSubDirectory(media);
+		String storagePath = fileStorage.getRelativePath(mediaDir);
+		mediaDao.updateStoragePath(media, storagePath, BlogArtefact.BLOG_FILE_NAME);
+		VFSContainer mediaContainer = fileStorage.getMediaContainer(media);
+		VFSManager.copyContent(artefactFolder, mediaContainer);
 
 		return media;
 	}

@@ -195,7 +195,7 @@ public class SharedItemsController extends FormBasicController implements Activa
 			OLATResourceable binderOres = OresHelper.createOLATResourceableInstance("Binder", binder.getKey());
 			WindowControl swControl = addToHistory(ureq, binderOres, null);
 			List<AccessRights> rights = portfolioService.getAccessRights(binder, getIdentity());
-			BinderSecurityCallback secCallback = BinderSecurityCallbackFactory.getCallbackForCoach(binder, rights);
+			BinderSecurityCallback secCallback = BinderSecurityCallbackFactory.getCallbackForCoach(rights);
 			BinderConfiguration config = BinderConfiguration.createConfig(binder);
 			binderCtrl = new BinderController(ureq, swControl, stackPanel, secCallback, binder, config);
 			String displayName = StringHelper.escapeHtml(binder.getTitle());

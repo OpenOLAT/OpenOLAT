@@ -30,6 +30,7 @@ import org.olat.modules.portfolio.MediaInformations;
 import org.olat.modules.portfolio.MediaLight;
 import org.olat.modules.portfolio.manager.MediaDAO;
 import org.olat.modules.portfolio.ui.media.TextMediaController;
+import org.olat.portfolio.model.artefacts.AbstractArtefact;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -70,6 +71,18 @@ public class TextHandler extends AbstractMediaHandler {
 	public Media createMedia(String title, String description, Object mediaObject, String businessPath, Identity author) {
 		Media media = mediaDao.createMedia(title, description, (String)mediaObject, TEXT_MEDIA, businessPath, 60, author);
 		return media;
+	}
+
+	@Override
+	public Media createMedia(AbstractArtefact artefact) {
+		String title = artefact.getTitle();
+		String description = artefact.getDescription();
+		String content = artefact.getFulltextContent();
+		String businessPath = artefact.getBusinessPath();
+		if(businessPath == null) {
+			businessPath = "[PortfolioV2:0][MediaCenter:0]";
+		}
+		return mediaDao.createMedia(title, description, content, TEXT_MEDIA, businessPath, artefact.getSignature(), artefact.getAuthor());
 	}
 
 	@Override

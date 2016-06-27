@@ -40,6 +40,7 @@ import org.olat.modules.portfolio.MediaLight;
 import org.olat.modules.portfolio.manager.MediaDAO;
 import org.olat.modules.portfolio.manager.PortfolioFileStorage;
 import org.olat.modules.portfolio.ui.media.ImageMediaController;
+import org.olat.portfolio.model.artefacts.AbstractArtefact;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -117,6 +118,11 @@ public class ImageHandler extends AbstractMediaHandler {
 		String storagePath = fileStorage.getRelativePath(mediaDir);
 		mediaDao.updateStoragePath(media, storagePath, filename);
 		return media;
+	}
+
+	@Override
+	public Media createMedia(AbstractArtefact artefact) {
+		return null;//no specific image document in old portfolio
 	}
 
 	@Override

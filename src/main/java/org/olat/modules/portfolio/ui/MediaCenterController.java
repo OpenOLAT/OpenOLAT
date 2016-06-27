@@ -70,6 +70,9 @@ import org.olat.modules.portfolio.ui.event.MediaSelectionEvent;
 import org.olat.modules.portfolio.ui.media.CollectFileMediaController;
 import org.olat.modules.portfolio.ui.media.CollectImageMediaController;
 import org.olat.modules.portfolio.ui.media.CollectTextMediaController;
+import org.olat.portfolio.model.artefacts.AbstractArtefact;
+import org.olat.portfolio.ui.EPArtefactPoolRunController;
+import org.olat.portfolio.ui.artefacts.view.EPArtefactChoosenEvent;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -86,7 +89,7 @@ public class MediaCenterController extends FormBasicController
 	private MediaDataModel model;
 	private FlexiTableElement tableEl;
 	private String mapperThumbnailUrl;
-	private Link addFileLink, addImageLink, addTextLink;
+	private Link addFileLink, addImageLink, addTextLink, importArtefactV1Link;
 	
 	private int counter = 0;
 	private final boolean select;
@@ -97,6 +100,7 @@ public class MediaCenterController extends FormBasicController
 	private CollectFileMediaController fileUploadCtrl;
 	private CollectTextMediaController textUploadCtrl;
 	private CollectImageMediaController imageUploadCtrl;
+	private EPArtefactPoolRunController importArtefactv1Ctrl;
 	
 	@Autowired
 	private PortfolioService portfolioService;
@@ -131,7 +135,11 @@ public class MediaCenterController extends FormBasicController
 		
 		addTextLink = LinkFactory.createToolLink("add.text", translate("add.text"), this);
 		addTextLink.setIconLeftCSS("o_icon o_icon-lg o_icon_new_portfolio");
-		stackPanel.addTool(addTextLink, Align.left);	
+		stackPanel.addTool(addTextLink, Align.left);
+		
+		importArtefactV1Link = LinkFactory.createToolLink("import.artefactV1", translate("import.artefactV1"), this);
+		importArtefactV1Link.setIconLeftCSS("o_icon o_icon-lg o_icon_new_portfolio");
+		stackPanel.addTool(importArtefactV1Link, Align.left);
 	}
 
 	@Override
@@ -257,17 +265,29 @@ public class MediaCenterController extends FormBasicController
 			}
 			cmc.deactivate();
 			cleanUp();
+		} else if(importArtefactv1Ctrl == source) {
+			if(event instanceof EPArtefactChoosenEvent) {
+				EPArtefactChoosenEvent cEvent = (EPArtefactChoosenEvent)event;
+				doImportArtefactV1(cEvent.getArtefact());
+				loadModel();
+				tableEl.reloadData();
+			}
+			cmc.deactivate();
+			cleanUp();
 		} else if(cmc == source) {
+
 			cleanUp();
 		}
 		super.event(ureq, source, event);
 	}
 	
 	private void cleanUp() {
+		removeAsListenerAndDispose(importArtefactv1Ctrl);
 		removeAsListenerAndDispose(imageUploadCtrl);
 		removeAsListenerAndDispose(fileUploadCtrl);
 		removeAsListenerAndDispose(textUploadCtrl);
 		removeAsListenerAndDispose(cmc);
+		importArtefactv1Ctrl = null;
 		imageUploadCtrl = null;
 		fileUploadCtrl = null;
 		textUploadCtrl = null;
@@ -282,6 +302,8 @@ public class MediaCenterController extends FormBasicController
 			doAddFileMedia(ureq);
 		} else if(addTextLink == source) {
 			doAddTextMedia(ureq);
+		} else if(importArtefactV1Link == source) {
+			doChooseArtefactV1(ureq);
 		} else if(source == mainForm.getInitialComponent()) {
 			if("ONCLICK".equals(event.getCommand())) {
 				String rowKeyStr = ureq.getParameter("img_select");
@@ -342,6 +364,25 @@ public class MediaCenterController extends FormBasicController
 		cmc = new CloseableModalController(getWindowControl(), null, textUploadCtrl.getInitialComponent(), true, title, true);
 		listenTo(cmc);
 		cmc.activate();
+	}
+	
+	private void doChooseArtefactV1(UserRequest ureq) {
+		if(importArtefactv1Ctrl != null) return;
+		
+		importArtefactv1Ctrl = new EPArtefactPoolRunController(ureq, this.getWindowControl(), true);
+		listenTo(importArtefactv1Ctrl);
+		
+		String title = translate("import.artefactV1");
+		cmc = new CloseableModalController(getWindowControl(), null, importArtefactv1Ctrl.getInitialComponent(), true, title, true);
+		listenTo(cmc);
+		cmc.activate();
+	}
+	
+	private void doImportArtefactV1(AbstractArtefact oldArtefact) {
+		MediaHandler handler = portfolioService.getMediaHandler(oldArtefact.getResourceableTypeName());
+		if(handler != null) {
+			handler.createMedia(oldArtefact);
+		}
 	}
 
 	private void doSelect(UserRequest ureq, Long mediaKey) {
