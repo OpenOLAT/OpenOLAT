@@ -114,6 +114,8 @@ public class RepositoryEditDescriptionController extends FormBasicController {
 	private RepositoryManager repositoryManager;
 	@Autowired
 	private RepositoryEntryLifecycleDAO lifecycleDao;
+	@Autowired
+	private RepositoryHandlerFactory repositoryHandlerFactory;
 
 	/**
 	 * Create a repository add controller that adds the given resourceable.
@@ -198,7 +200,7 @@ public class RepositoryEditDescriptionController extends FormBasicController {
 		location = uifactory.addTextElement("cif.location", "cif.location", 255, repositoryEntry.getLocation(), descCont);
 		location.setEnabled(!RepositoryEntryManagedFlag.isManaged(repositoryEntry, RepositoryEntryManagedFlag.location));
 		
-		RepositoryHandler handler = RepositoryHandlerFactory.getInstance().getRepositoryHandler(repositoryEntry);
+		RepositoryHandler handler = repositoryHandlerFactory.getRepositoryHandler(repositoryEntry);
 		mediaContainer = handler.getMediaContainer(repositoryEntry);
 		if(mediaContainer != null && mediaContainer.getName().equals("media")) {
 			mediaContainer = mediaContainer.getParentContainer();

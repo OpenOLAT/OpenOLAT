@@ -182,6 +182,11 @@ public class ImsCPHandler extends FileHandler {
 	public EditionSupport supportsEdit(OLATResourceable resource) {
 		return EditionSupport.yes;
 	}
+	
+	@Override
+	public boolean supportsAssessmentDetails() {
+		return false;
+	}
 
 	@Override
 	public StepsMainRunController createWizardController(OLATResourceable res, UserRequest ureq, WindowControl wControl) {
@@ -228,6 +233,11 @@ public class ImsCPHandler extends FileHandler {
 		cpRoot.setLocalSecurityCallback(secCallback);
 
 		return new CPEditMainController(ureq, wControl, toolbar, cpRoot, re.getOlatResource());
+	}
+	
+	@Override
+	public Controller createAssessmentDetailsController(RepositoryEntry re, UserRequest ureq, WindowControl wControl, TooledStackedPanel toolbar, Identity assessedIdentity) {
+		return null;
 	}
 	
 	protected String getDeletedFilePrefix() {

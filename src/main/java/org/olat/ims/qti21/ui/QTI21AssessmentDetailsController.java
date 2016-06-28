@@ -17,9 +17,10 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.course.nodes.iq;
+package org.olat.ims.qti21.ui;
 
 import java.io.File;
+import java.net.URI;
 import java.util.List;
 
 import org.olat.core.gui.UserRequest;
@@ -39,20 +40,17 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.id.Identity;
-import org.olat.course.nodes.IQTESTCourseNode;
-import org.olat.course.nodes.iq.QTI21TestSessionTableModel.TSCols;
-import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.fileresource.FileResourceManager;
 import org.olat.ims.qti21.AssessmentTestSession;
 import org.olat.ims.qti21.QTI21DeliveryOptions.ShowResultsOnFinish;
 import org.olat.ims.qti21.QTI21Service;
-import org.olat.ims.qti21.ui.AssessmentResultController;
+import org.olat.ims.qti21.ui.QTI21TestSessionTableModel.TSCols;
 import org.olat.repository.RepositoryEntry;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
- * Initial date: 19.05.2015<br>
+ * Initial date: 28.06.2016<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
@@ -62,23 +60,23 @@ public class QTI21AssessmentDetailsController extends FormBasicController {
 	private QTI21TestSessionTableModel tableModel;
 	
 	private Identity assessedIdentity;
-	private RepositoryEntry courseEntry;
-	private IQTESTCourseNode courseNode;
+	private RepositoryEntry entry;
+	private final String subIdent;
 	
 	private CloseableModalController cmc;
 	private AssessmentResultController resultCtrl;
 	
 	@Autowired
-	private QTI21Service qtiService;
+	protected QTI21Service qtiService;
 	
 	public QTI21AssessmentDetailsController(UserRequest ureq, WindowControl wControl,
-			UserCourseEnvironment userCourseEnvironment, IQTESTCourseNode courseNode) {
+			RepositoryEntry assessableEntry, String subIdent, Identity assessedIdentity) {
 		super(ureq, wControl, "assessment_details");
 		
-		this.courseNode = courseNode;
-		assessedIdentity = userCourseEnvironment.getIdentityEnvironment().getIdentity();
-		courseEntry = userCourseEnvironment.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
-		
+		entry = assessableEntry;
+		this.subIdent = subIdent;
+		this.assessedIdentity = assessedIdentity;
+
 		initForm(ureq);
 		updateModel();
 	}
@@ -99,8 +97,8 @@ public class QTI21AssessmentDetailsController extends FormBasicController {
 		//
 	}
 	
-	private void updateModel() {
-		List<AssessmentTestSession> sessions = qtiService.getAssessmentTestSessions(courseEntry, courseNode.getIdent(), assessedIdentity);
+	protected void updateModel() {
+		List<AssessmentTestSession> sessions = qtiService.getAssessmentTestSessions(entry, subIdent, assessedIdentity);
 		tableModel.setObjects(sessions);
 		tableEl.reset();
 	}
@@ -141,13 +139,15 @@ public class QTI21AssessmentDetailsController extends FormBasicController {
 		//
 	}
 
-	private void doOpenResult(UserRequest ureq, AssessmentTestSession row) {
+	private void doOpenResult(UserRequest ureq, AssessmentTestSession session) {
 		if(resultCtrl != null) return;
-		
-		String mapperUri = null;//TODO qti
+
 		FileResourceManager frm = FileResourceManager.getInstance();
-		File fUnzippedDirRoot = frm.unzipFileResource(row.getTestEntry().getOlatResource());
-		resultCtrl = new AssessmentResultController(ureq, getWindowControl(), assessedIdentity, row,
+		File fUnzippedDirRoot = frm.unzipFileResource(session.getTestEntry().getOlatResource());
+		URI assessmentObjectUri = qtiService.createAssessmentObjectUri(fUnzippedDirRoot);
+		String mapperUri = registerCacheableMapper(null, "QTI21Resources::" + session.getTestEntry().getKey(), new ResourcesMapper(assessmentObjectUri));
+		
+		resultCtrl = new AssessmentResultController(ureq, getWindowControl(), assessedIdentity, session,
 				ShowResultsOnFinish.details, fUnzippedDirRoot, mapperUri);
 		listenTo(resultCtrl);
 		cmc = new CloseableModalController(getWindowControl(), "close", resultCtrl.getInitialComponent(),

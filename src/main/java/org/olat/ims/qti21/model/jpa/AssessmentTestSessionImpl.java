@@ -30,8 +30,6 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
-import javax.persistence.NamedQueries;
-import javax.persistence.NamedQuery;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
@@ -54,10 +52,6 @@ import org.olat.repository.RepositoryEntry;
  */
 @Entity(name="qtiassessmenttestsession")
 @Table(name="o_qti_assessmenttest_session")
-@NamedQueries({
-	@NamedQuery(name="loadTestSessionsByUserAndRepositoryEntryAndSubIdent", query="select session from qtiassessmenttestsession session left join fetch session.testEntry testEntry left join fetch testEntry.olatResource testResource where session.repositoryEntry.key=:repositoryEntryKey and session.identity.key=:identityKey and session.subIdent=:subIdent")
-	
-})
 public class AssessmentTestSessionImpl implements AssessmentTestSession, Persistable {
 
 	private static final long serialVersionUID = -6069133323360142500L;

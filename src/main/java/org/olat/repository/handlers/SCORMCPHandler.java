@@ -156,6 +156,11 @@ public class SCORMCPHandler extends FileHandler {
 	public EditionSupport supportsEdit(OLATResourceable resource) {
 		return EditionSupport.no;
 	}
+	
+	@Override
+	public boolean supportsAssessmentDetails() {
+		return false;
+	}
 
 	@Override
 	public StepsMainRunController createWizardController(OLATResourceable res, UserRequest ureq, WindowControl wControl) {
@@ -182,6 +187,11 @@ public class SCORMCPHandler extends FileHandler {
 					return realController;
 				}
 			});
+	}
+	
+	@Override
+	public Controller createAssessmentDetailsController(RepositoryEntry re, UserRequest ureq, WindowControl wControl, TooledStackedPanel toolbar, Identity assessedIdentity) {
+		return null;
 	}
 
 	@Override

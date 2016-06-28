@@ -156,6 +156,11 @@ public class GlossaryHandler implements RepositoryHandler {
 	}
 	
 	@Override
+	public boolean supportsAssessmentDetails() {
+		return false;
+	}
+	
+	@Override
 	public VFSContainer getMediaContainer(RepositoryEntry repoEntry) {
 		return FileResourceManager.getInstance()
 				.getFileResourceMedia(repoEntry.getOlatResource());
@@ -200,6 +205,11 @@ public class GlossaryHandler implements RepositoryHandler {
 					return new GlossaryMainController(wwControl, uureq, glossaryFolder, entry.getOlatResource(), secCallback, false);	
 				}
 			});
+	}
+	
+	@Override
+	public Controller createAssessmentDetailsController(RepositoryEntry re, UserRequest ureq, WindowControl wControl, TooledStackedPanel toolbar, Identity assessedIdentity) {
+		return null;
 	}
 
 	@Override

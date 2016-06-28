@@ -162,6 +162,11 @@ public class PortfolioHandler implements RepositoryHandler {
 	}
 	
 	@Override
+	public boolean supportsAssessmentDetails() {
+		return false;
+	}
+	
+	@Override
 	public VFSContainer getMediaContainer(RepositoryEntry repoEntry) {
 		return FileResourceManager.getInstance()
 				.getFileResourceMedia(repoEntry.getOlatResource());
@@ -215,7 +220,7 @@ public class PortfolioHandler implements RepositoryHandler {
 	}
 
 	@Override
-	public Controller createEditorController(RepositoryEntry re, UserRequest ureq, WindowControl control, TooledStackedPanel toolbar) {
+	public Controller createEditorController(RepositoryEntry re, UserRequest ureq, WindowControl wControl, TooledStackedPanel toolbar) {
 		return null;
 	}
 
@@ -235,6 +240,12 @@ public class PortfolioHandler implements RepositoryHandler {
 					return new EPMapViewController(uureq, wwControl, map, false, false, secCallback);
 				}
 			});
+	}
+
+	@Override
+	public Controller createAssessmentDetailsController(RepositoryEntry re, UserRequest ureq, WindowControl wControl,
+			TooledStackedPanel toolbar, Identity assessedIdentity) {
+		return null;
 	}
 
 	@Override

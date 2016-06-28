@@ -48,6 +48,7 @@ public class AssessedIdentityLargeInfosController extends BasicController {
 
 		portraitCtr = new DisplayPortraitController(ureq, getWindowControl(), assessedIdentity, true, true);
 		mainVC.put("portrait", portraitCtr.getInitialComponent());
+
 		userShortDescrCtr = new UserShortDescription(ureq, getWindowControl(), assessedIdentity);
 		mainVC.put("userShortDescription", userShortDescrCtr.getInitialComponent());
 		

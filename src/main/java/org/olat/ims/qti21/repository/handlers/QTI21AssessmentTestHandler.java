@@ -77,6 +77,7 @@ import org.olat.ims.qti21.model.xml.ManifestBuilder;
 import org.olat.ims.qti21.model.xml.OnyxToQtiWorksHandler;
 import org.olat.ims.qti21.pool.QTI21QPoolServiceProvider;
 import org.olat.ims.qti21.ui.AssessmentTestDisplayController;
+import org.olat.ims.qti21.ui.QTI21AssessmentDetailsController;
 import org.olat.ims.qti21.ui.QTI21RuntimeController;
 import org.olat.ims.qti21.ui.editor.AssessmentTestComposerController;
 import org.olat.modules.assessment.manager.AssessmentEntryDAO;
@@ -328,6 +329,11 @@ public class QTI21AssessmentTestHandler extends FileHandler {
 	public EditionSupport supportsEdit(OLATResourceable resource) {
 		return EditionSupport.yes;
 	}
+	
+	@Override
+	public boolean supportsAssessmentDetails() {
+		return true;
+	}
 
 	@Override
 	public MainLayoutController createLaunchController(RepositoryEntry re, RepositoryEntrySecurity reSecurity,
@@ -348,6 +354,12 @@ public class QTI21AssessmentTestHandler extends FileHandler {
 	public Controller createEditorController(RepositoryEntry re, UserRequest ureq, WindowControl wControl, TooledStackedPanel toolbar) {
 		AssessmentTestComposerController editorCtrl = new AssessmentTestComposerController(ureq, wControl, toolbar, re);
 		return editorCtrl;
+	}
+
+	@Override
+	public Controller createAssessmentDetailsController(RepositoryEntry re, UserRequest ureq, WindowControl wControl,
+			TooledStackedPanel toolbar, Identity assessedIdentity) {
+		return new QTI21AssessmentDetailsController(ureq, wControl, re, null, assessedIdentity);
 	}
 
 	@Override

@@ -141,6 +141,11 @@ public class SharedFolderHandler implements RepositoryHandler {
 	public EditionSupport supportsEdit(OLATResourceable resource) {
 		return EditionSupport.embedded;
 	}
+	
+	@Override
+	public boolean supportsAssessmentDetails() {
+		return false;
+	}
 
 	/**
 	 * @see org.olat.repository.handlers.RepositoryHandler#getCreateWizardController(org.olat.core.id.OLATResourceable, org.olat.core.gui.UserRequest, org.olat.core.gui.control.WindowControl)
@@ -192,6 +197,11 @@ public class SharedFolderHandler implements RepositoryHandler {
 			});
 		
 		return runtime;
+	}
+	
+	@Override
+	public Controller createAssessmentDetailsController(RepositoryEntry re, UserRequest ureq, WindowControl wControl, TooledStackedPanel toolbar, Identity assessedIdentity) {
+		return null;
 	}
 
 	/**

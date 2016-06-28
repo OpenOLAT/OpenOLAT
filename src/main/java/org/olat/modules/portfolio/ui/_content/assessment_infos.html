@@ -1,0 +1,48 @@
+#if ($hasPassedField)
+
+<div class="panel panel-default o_personal">
+  	<div class="panel-heading">
+ 			<h4 class="panel-title">$r.translate("score.title")</h4>
+ 		</div>
+	<table class="table">
+	<tbody>
+
+		
+		#if ($hasPassedField)
+		<tr class="o_state #if ($hasPassedValue && $passed) o_passed #elseif($hasPassedValue && !$passed) o_failed #else o_unknown #end">
+			<th>$r.translate("passed.yourpassed")</th>
+			<td>
+			#if($hasPassedValue && $passed)	
+				<i class="o_icon o_icon_passed"></i> $r.translate("map.passed")
+			#elseif($hasPassedValue && !$passed)		
+				<i class="o_icon o_icon_failed"></i> $r.translate("map.not.passed")
+			#else
+				<div class="o_noinfo">$r.translate("map.not.rated.yet")</div>
+			#end
+			</td>
+		</tr>
+		#end
+	</tbody>
+	</table>
+</div>
+#end
+	
+#if ($comment && !$comment.isEmpty())
+<div class="panel panel-default o_comment">
+  	<div class="panel-heading" data-toggle="collapse" data-target="#collapseComment">
+  		<h4 class="panel-title">
+  			<i id="collapseCommentToggler" class="o_icon o_icon-fw o_icon_close_togglebox"> </i> $r.translate("map.comment")</h4>
+  	</div>
+	<div id="collapseComment" class="panel-collapse collapse in"><div class="panel-body">$comment</div></div>
+</div>
+<script type="text/javascript">
+	/* <![CDATA[ */
+		jQuery('#collapseComment').on('hide.bs.collapse', function () {
+				jQuery('#collapseCommentToggler').removeClass('o_icon_close_togglebox').addClass('o_icon_open_togglebox');
+		})
+		jQuery('#collapseComment').on('show.bs.collapse', function () {
+				jQuery('#collapseCommentToggler').removeClass('o_icon_open_togglebox').addClass('o_icon_close_togglebox');
+		})
+	/* ]]> */
+</script>
+#end

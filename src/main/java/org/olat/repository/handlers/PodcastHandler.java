@@ -175,6 +175,11 @@ public class PodcastHandler implements RepositoryHandler {
 				}
 		});
 	}
+	
+	@Override
+	public Controller createAssessmentDetailsController(RepositoryEntry re, UserRequest ureq, WindowControl wControl, TooledStackedPanel toolbar, Identity assessedIdentity) {
+		return null;
+	}
 
 	@Override
 	public String getSupportedType() {
@@ -207,6 +212,11 @@ public class PodcastHandler implements RepositoryHandler {
 	@Override
 	public EditionSupport supportsEdit(OLATResourceable resource) {
 		return EditionSupport.embedded;
+	}
+	
+	@Override
+	public boolean supportsAssessmentDetails() {
+		return false;
 	}
 
 	@Override

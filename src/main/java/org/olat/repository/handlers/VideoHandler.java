@@ -41,8 +41,6 @@ import org.olat.core.gui.media.NotFoundMediaResource;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.logging.AssertException;
-import org.olat.core.logging.OLog;
-import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.coordinate.LockResult;
@@ -74,8 +72,6 @@ import org.olat.resource.OLATResourceManager;
  *
  */
 public class VideoHandler extends FileHandler {
-
-	private static final OLog log = Tracing.createLoggerFor(VideoHandler.class);
 	
 	@Override
 	public boolean isCreate() {
@@ -166,6 +162,11 @@ public class VideoHandler extends FileHandler {
 	public EditionSupport supportsEdit(OLATResourceable resource) {
 		return EditionSupport.no;
 	}
+	
+	@Override
+	public boolean supportsAssessmentDetails() {
+		return false;
+	}
 
 	@Override
 	public StepsMainRunController createWizardController(OLATResourceable res, UserRequest ureq, WindowControl wControl) {
@@ -186,6 +187,11 @@ public class VideoHandler extends FileHandler {
 	@Override
 	public Controller createEditorController(RepositoryEntry re, UserRequest ureq, WindowControl wControl, TooledStackedPanel toolbar) {
 		throw new AssertException("a web document is not editable!!! res-id:"+re.getResourceableId());
+	}
+	
+	@Override
+	public Controller createAssessmentDetailsController(RepositoryEntry re, UserRequest ureq, WindowControl wControl, TooledStackedPanel toolbar, Identity assessedIdentity) {
+		return null;
 	}
 
 	protected String getDeletedFilePrefix() {

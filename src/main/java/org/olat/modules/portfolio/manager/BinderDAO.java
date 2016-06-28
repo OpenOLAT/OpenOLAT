@@ -342,15 +342,21 @@ public class BinderDAO {
 		sb.append("select binder from pfbinder as binder")
 		  .append(" inner join binder.baseGroup as baseGroup")
 		  .append(" inner join baseGroup.members as membership on (membership.identity.key=:identityKey and membership.role='").append(PortfolioRoles.owner.name()).append("')")
-		  .append(" where  binder.entry.key=:entryKey and binder.subIdent=:subIdent");
+		  .append(" where  binder.entry.key=:entryKey and ");
+		if(StringHelper.containsNonWhitespace(subIdent)) {
+			sb.append("binder.subIdent=:subIdent");
+		} else {
+			sb.append("binder.subIdent is null");
+		}
 
-		List<Binder> binders = dbInstance.getCurrentEntityManager()
+		TypedQuery<Binder> binders = dbInstance.getCurrentEntityManager()
 			.createQuery(sb.toString(), Binder.class)
 			.setParameter("identityKey", owner.getKey())
-			.setParameter("entryKey", entry.getKey())
-			.setParameter("subIdent", subIdent)
-			.getResultList();
-		return binders;
+			.setParameter("entryKey", entry.getKey());
+		if(StringHelper.containsNonWhitespace(subIdent)) {
+			binders.setParameter("subIdent", subIdent);
+		}
+		return binders.getResultList();
 	}
 	
 	public Group getGroup(BinderRef binder) {

@@ -198,7 +198,7 @@ public class AuthorListController extends FormBasicController implements Activat
 				RepositoryHandler handler = orderedHandler.getHandler();
 				
 				if(handler != null && handler.isCreate()) {
-					// for each 10-group, crate a separator
+					// for each 10-group, create a separator
 					int group = orderedHandler.getOrder() / 10;
 					if (group > lastGroup) {
 						createDropdown.addComponent(new Spacer("spacer" + orderedHandler.getOrder()));

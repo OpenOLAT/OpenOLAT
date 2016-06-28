@@ -60,7 +60,6 @@ import org.olat.course.nodes.iq.CourseIQSecurityCallback;
 import org.olat.course.nodes.iq.IQEditController;
 import org.olat.course.nodes.iq.IQPreviewController;
 import org.olat.course.nodes.iq.IQRunController;
-import org.olat.course.nodes.iq.QTI21AssessmentDetailsController;
 import org.olat.course.nodes.iq.QTI21AssessmentRunController;
 import org.olat.course.properties.CoursePropertyManager;
 import org.olat.course.run.environment.CourseEnvironment;
@@ -87,6 +86,7 @@ import org.olat.ims.qti.statistics.QTIType;
 import org.olat.ims.qti.statistics.ui.QTI12PullTestsToolController;
 import org.olat.ims.qti.statistics.ui.QTI12StatisticsToolController;
 import org.olat.ims.qti21.model.QTI21StatisticSearchParams;
+import org.olat.ims.qti21.ui.QTI21AssessmentDetailsController;
 import org.olat.ims.qti21.ui.statistics.QTI21StatisticResourceResult;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.assessment.AssessmentEntry;
@@ -682,7 +682,8 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements Pe
 			Identity assessedIdentity = userCourseEnvironment.getIdentityEnvironment().getIdentity();
 			
 			if(ImsQTI21Resource.TYPE_NAME.equals(resource.getResourceableTypeName())) {
-				detailsCtrl = new QTI21AssessmentDetailsController(ureq, wControl, userCourseEnvironment, this);
+				RepositoryEntry courseEntry = userCourseEnvironment.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
+				detailsCtrl = new QTI21AssessmentDetailsController(ureq, wControl, courseEntry, getIdent() ,assessedIdentity);
 			} else if(OnyxModule.isOnyxTest(ref.getOlatResource())) {
 				detailsCtrl =  new QTIResultDetailsController(courseResourceableId, getIdent(), assessedIdentity, ref, AssessmentInstance.QMD_ENTRY_TYPE_ASSESS, ureq, wControl);
 			} else {

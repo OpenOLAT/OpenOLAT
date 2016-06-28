@@ -111,6 +111,13 @@ public interface PortfolioService {
 	 */
 	public Binder getBinder(Identity owner, BinderRef templateBinder, RepositoryEntryRef courseEntry, String subIdent);
 	
+	/**
+	 * 
+	 * @param owner
+	 * @param courseEntry
+	 * @param subIdent If the subIdent is null, it will be search with subIdent is null!
+	 * @return
+	 */
 	public List<Binder> getBinders(Identity owner, RepositoryEntryRef courseEntry, String subIdent);
 	
 	/**

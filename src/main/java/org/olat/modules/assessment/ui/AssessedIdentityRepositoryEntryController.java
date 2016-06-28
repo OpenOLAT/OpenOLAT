@@ -35,6 +35,9 @@ import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.course.assessment.ui.tool.AssessedIdentityLargeInfosController;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.handlers.RepositoryHandler;
+import org.olat.repository.handlers.RepositoryHandlerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -49,12 +52,16 @@ public class AssessedIdentityRepositoryEntryController extends BasicController i
 	private final TooledStackedPanel stackPanel;
 	private final VelocityContainer identityAssessmentVC;
 	private Link nextLink, previousLink;
-	
+
+	private Controller detailsCtrl;
 	private AssessmentForm currentNodeCtrl;
 	private AssessedIdentityLargeInfosController infosController;
+
+	@Autowired
+	private RepositoryHandlerFactory repositoryHandlerFactory;
 	
 	public AssessedIdentityRepositoryEntryController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
-			RepositoryEntry testEntry, Identity assessedIdentity, AssessableResource element) {
+			RepositoryEntry assessableEntry, Identity assessedIdentity, AssessableResource element) {
 		super(ureq, wControl);
 		
 		this.stackPanel = stackPanel;
@@ -67,7 +74,15 @@ public class AssessedIdentityRepositoryEntryController extends BasicController i
 		listenTo(infosController);
 		identityAssessmentVC.put("identityInfos", infosController.getInitialComponent());
 		
-		currentNodeCtrl = new AssessmentForm(ureq, getWindowControl(), assessedIdentity, testEntry, element, false);
+		RepositoryHandler handler = repositoryHandlerFactory.getRepositoryHandler(assessableEntry);
+		if(handler.supportsAssessmentDetails()) {
+			detailsCtrl = handler.createAssessmentDetailsController(assessableEntry, ureq, getWindowControl(), stackPanel, assessedIdentity);
+			listenTo(detailsCtrl);
+			identityAssessmentVC.put("details", detailsCtrl.getInitialComponent());
+			
+		}
+		
+		currentNodeCtrl = new AssessmentForm(ureq, getWindowControl(), assessedIdentity, assessableEntry, element, false);
 		listenTo(currentNodeCtrl);
 		identityAssessmentVC.put("assessmentForm", currentNodeCtrl.getInitialComponent());
 		
