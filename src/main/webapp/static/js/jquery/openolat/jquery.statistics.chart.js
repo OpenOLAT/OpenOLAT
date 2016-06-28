@@ -494,17 +494,22 @@
     	var values = settings.values;
     	var minTime = d3.min(values, function(d) { return d; });
     	var maxTime = d3.max(values, function(d) { return d; });
+
+    	var ref = new Date(2012, 0, 1, 0, 0),
+    	  formatCount = d3.format(',.f');
     	
     	var timeFormat = '%M:%S';
+    	var formatMinutes;
     	if(maxTime < 10) {
-    		timeFormat += ':%L';
+    		var formatTime = d3.time.format('%M:%S:%L'),
+    		formatMinutes = function(d) { return formatTime(new Date(ref.getTime() + (d * 1000))); };
+    	} else if(maxTime < 3600) {
+    		var formatTime = d3.time.format('%M:%S'),
+    		formatMinutes = function(d) { return formatTime(new Date(ref.getTime() + (d * 1000))); };
+    	} else {
+    		formatMinutes = function(d) { return Math.round( d / 60 ); }
     	}
-    	
-    	var ref = new Date(2012, 0, 1, 0, 0),
-    	  formatCount = d3.format(',.f'),
-    	  formatTime = d3.time.format(timeFormat),
-    	  formatMinutes = function(d) { return formatTime(new Date(ref.getTime() + (d * 1000))); };
-    	
+    	  
     	var margin = {top: 10, right: 60, bottom: 40, left: 60},
     	  width = placeholderwidth - margin.left - margin.right,
     	  height = placeholderheight - margin.top - margin.bottom;

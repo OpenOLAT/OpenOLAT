@@ -195,7 +195,7 @@ public class RepositoryEditDescriptionController extends FormBasicController {
 		
 		language = uifactory.addTextElement("cif.mainLanguage", "cif.mainLanguage", 16, repositoryEntry.getMainLanguage(), descCont);
 		
-		location = uifactory.addTextElement("cif.location", "cif.location", 16, repositoryEntry.getLocation(), descCont);
+		location = uifactory.addTextElement("cif.location", "cif.location", 255, repositoryEntry.getLocation(), descCont);
 		location.setEnabled(!RepositoryEntryManagedFlag.isManaged(repositoryEntry, RepositoryEntryManagedFlag.location));
 		
 		RepositoryHandler handler = RepositoryHandlerFactory.getInstance().getRepositoryHandler(repositoryEntry);

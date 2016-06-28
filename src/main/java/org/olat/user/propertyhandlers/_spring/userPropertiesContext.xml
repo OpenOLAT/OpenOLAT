@@ -387,6 +387,7 @@
 								<ref bean="userPropertyFirstName" />
 								<ref bean="userPropertyLastName" />
 								<ref bean="userPropertyEmail" />
+								
 							</list>
 						</property>
 						<property name="adminViewOnlyProperties">
