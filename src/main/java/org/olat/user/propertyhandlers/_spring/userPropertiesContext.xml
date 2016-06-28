@@ -332,12 +332,6 @@
 								<ref bean="userPropertyFirstName" />
 								<ref bean="userPropertyLastName" />
 								<ref bean="userPropertyEmail" />
-								<ref bean="userPropertyTelMobile" />
-								<ref bean="userPropertyStreet" />
-								<ref bean="userPropertyExtendedAddress" />
-								<ref bean="userPropertyZipCode" />
-								<ref bean="userPropertyCity" />
-								<ref bean="userPropertyInstitutionalName" />
 								
 							</list>
 						</property>
