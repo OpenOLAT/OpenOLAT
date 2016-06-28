@@ -16,11 +16,22 @@
 			</div>
 			<div class="o_cmember_info_wrapper">
 				<strong>$member.fullName</strong>
+				#set ($skipNextBR=false)
 				#foreach($userPropertyHandler in $userPropertyHandlers)
 					#if($userPropertyHandler.name != "firstName" && $userPropertyHandler.name != "lastName")
-						#set ($prop=${member.getIdentityProp($foreach.index)})
-						#if($prop != "")
-						<br />$prop
+						#set ($prop=$!{member.getIdentityProp($foreach.index)})			
+						## $prop can contain value of last iteration because when null the value is not assigend to $prop - check again									
+						#if(${member.getIdentityProp($foreach.index)} && $prop != "")
+							#if(!$skipNextBR)
+								<br />
+							#end
+							$prop
+						#end
+						## Skip line break after zip code for standard address formatting
+						#if($userPropertyHandler.name == "zipCode")
+							#set ($skipNextBR=true)
+						#else
+							#set ($skipNextBR=false)
 						#end
 					#end
 					
