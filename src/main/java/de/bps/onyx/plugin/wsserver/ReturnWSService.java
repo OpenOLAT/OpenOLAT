@@ -32,6 +32,7 @@ import javax.jws.WebParam;
 import javax.jws.WebService;
 import javax.jws.soap.SOAPBinding;
 
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.id.Identity;
 import org.olat.core.id.IdentityEnvironment;
@@ -42,6 +43,7 @@ import org.olat.core.util.WebappHelper;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.assessment.AssessmentManager;
+import org.olat.course.assessment.manager.AssessmentNotificationsHandler;
 import org.olat.course.assessment.manager.CourseAssessmentManagerImpl;
 import org.olat.course.nodes.AssessableCourseNode;
 import org.olat.course.nodes.CourseNode;
@@ -217,6 +219,7 @@ public class ReturnWSService {
 										qtiResultSet.getAssessmentID());
 								am.saveScoreEvaluation((AssessableCourseNode)courseNode, null, assessedIdentity, scoreEvaluation, userCourseEnvironment, false);
 
+								CoreSpringFactory.getImpl(AssessmentNotificationsHandler.class).markPublisherNews(assessedIdentity, resourceId);
 							}
 						} else {
 							if (log.isDebug()) {
