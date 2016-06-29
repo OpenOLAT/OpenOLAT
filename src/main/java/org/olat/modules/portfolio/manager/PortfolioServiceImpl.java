@@ -111,6 +111,8 @@ public class PortfolioServiceImpl implements PortfolioService {
 	@Autowired
 	private BinderDAO binderDao;
 	@Autowired
+	private CommentDAO commentDao;
+	@Autowired
 	private CategoryDAO categoryDao;
 	@Autowired
 	private SharedByMeQueries sharedByMeQueries;
@@ -387,6 +389,21 @@ public class PortfolioServiceImpl implements PortfolioService {
 				categoryDao.removeRelation(oresource, currentCategory);
 			}
 		}
+	}
+
+	@Override
+	public Map<Long,Long> getNumberOfComments(BinderRef binder) {
+		return commentDao.getNumberOfComments(binder);
+	}
+	
+	@Override
+	public Map<Long,Long> getNumberOfComments(SectionRef section) {
+		return commentDao.getNumberOfComments(section);
+	}
+	
+	@Override
+	public Map<Long,Long> getNumberOfCommentsOnOwnedPage(IdentityRef owner) {
+		return commentDao.getNumberOfCommentsOnOwnedPage(owner);
 	}
 
 	@Override

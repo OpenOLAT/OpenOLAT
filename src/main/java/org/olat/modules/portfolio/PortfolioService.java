@@ -23,6 +23,7 @@ import java.io.File;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 
 import org.olat.basesecurity.IdentityRef;
 import org.olat.core.id.Identity;
@@ -187,6 +188,27 @@ public interface PortfolioService {
 	
 
 	public void updateCategories(PortfolioElement element, List<String> categories);
+	
+	/**
+	 * 
+	 * @param binder The binder holding the pages
+	 * @return The map where the key is the page key and the value the number of comments for this page.
+	 */
+	public Map<Long,Long> getNumberOfComments(BinderRef binder);
+	
+	/**
+	 * 
+	 * @param section The section holding the pages
+	 * @return The map where the key is the page key and the value the number of comments for this page.
+	 */
+	public Map<Long,Long> getNumberOfComments(SectionRef section);
+	
+	/**
+	 * 
+	 * @param owner The owner of the pages or the binder holding the pages
+	 * @return The map where the key is the page key and the value the number of comments for this page.
+	 */
+	public Map<Long,Long> getNumberOfCommentsOnOwnedPage(IdentityRef owner);
 	
 	public File getPosterImageFile(BinderLight binder);
 	

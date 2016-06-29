@@ -72,6 +72,8 @@ public class MyPageListController extends AbstractPageListController {
 
 	@Override
 	protected void loadModel() {
+		Map<Long,Long> numberOfCommentsMap = portfolioService.getNumberOfCommentsOnOwnedPage(getIdentity());
+		
 		List<CategoryToElement> categorizedElements = portfolioService.getCategorizedOwnedPages(getIdentity());
 		Map<OLATResourceable,List<Category>> categorizedElementMap = new HashMap<>();
 		for(CategoryToElement categorizedElement:categorizedElements) {
@@ -86,7 +88,7 @@ public class MyPageListController extends AbstractPageListController {
 		List<Page> pages = portfolioService.searchOwnedPages(getIdentity());
 		List<PageRow> rows = new ArrayList<>(pages.size());
 		for (Page page : pages) {
-			rows.add(forgeRow(page, null, false, categorizedElementMap));
+			rows.add(forgeRow(page, null, false, categorizedElementMap, numberOfCommentsMap));
 		}
 		model.setObjects(rows);
 		tableEl.reset();

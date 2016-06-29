@@ -113,6 +113,8 @@ public class BinderPageListController extends AbstractPageListController  {
 			categories.add(categorizedElement.getCategory());
 		}
 		
+		Map<Long,Long> numberOfCommentsMap = portfolioService.getNumberOfComments(binder);
+		
 		List<AssessmentSection> assessmentSections = portfolioService.getAssessmentSections(binder, getIdentity());
 		Map<Section,AssessmentSection> sectionToAssessmentSectionMap = new HashMap<>();
 		for(AssessmentSection assessmentSection:assessmentSections) {
@@ -127,7 +129,8 @@ public class BinderPageListController extends AbstractPageListController  {
 			if (sections.remove(section)) {
 				first = true;
 			}
-			PageRow pageRow = forgeRow(page, sectionToAssessmentSectionMap.get(section), first, categorizedElementMap);
+			PageRow pageRow = forgeRow(page, sectionToAssessmentSectionMap.get(section), first,
+					categorizedElementMap, numberOfCommentsMap);
 			rows.add(pageRow);
 			if(secCallback.canAddPage() && section != null
 					&& section.getSectionStatus() != SectionStatus.closed

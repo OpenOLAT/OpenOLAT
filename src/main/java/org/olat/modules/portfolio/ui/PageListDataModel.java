@@ -85,6 +85,7 @@ public class PageListDataModel extends DefaultFlexiTableDataModel<PageRow>
 			}
 			case open: return page.getOpenFormItem();
 			case newEntry: return page.getNewEntryLink();
+			case comment: return page.getCommentFormLink();
 		}
 		return null;
 	}
@@ -99,7 +100,8 @@ public class PageListDataModel extends DefaultFlexiTableDataModel<PageRow>
 		title("table.header.title"),
 		date("table.header.date"),
 		open("table.header.open"),
-		newEntry("action");
+		newEntry("action"),
+		comment("comment");
 		
 		private final String i18nKey;
 		

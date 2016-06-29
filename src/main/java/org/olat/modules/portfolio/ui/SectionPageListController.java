@@ -96,6 +96,8 @@ public class SectionPageListController extends AbstractPageListController  {
 			sectionAggregatedCategories.add(categorizedElement.getCategory().getName());
 		}
 		
+		Map<Long,Long> numOfCommentsMap = portfolioService.getNumberOfComments(section);
+		
 		AssessmentSection assessmentSection = null;
 		List<AssessmentSection> assessmentSections = portfolioService.getAssessmentSections(binder, getIdentity());
 		for(AssessmentSection aSection:assessmentSections) {
@@ -108,7 +110,7 @@ public class SectionPageListController extends AbstractPageListController  {
 		List<PageRow> rows = new ArrayList<>();
 		boolean first = true;
 		for (Page page : pages) {
-			PageRow row = forgeRow(page, assessmentSection, first, categorizedElementMap);
+			PageRow row = forgeRow(page, assessmentSection, first, categorizedElementMap, numOfCommentsMap);
 			row.setSectionCategories(sectionAggregatedCategories);
 			rows.add(row);
 			first = false;

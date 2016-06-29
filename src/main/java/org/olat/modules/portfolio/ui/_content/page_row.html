@@ -76,6 +76,10 @@
 	</div>
 	<div class="o_portfolio_page_links">
 		$r.render("$row.openFormItemName")
+		
+		#if($r.available($row.commentFormItemName))
+			$r.render("$row.commentFormItemName")
+		#end
 	</div>
 </div>
 #end

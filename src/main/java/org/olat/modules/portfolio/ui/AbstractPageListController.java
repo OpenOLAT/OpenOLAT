@@ -23,6 +23,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import org.olat.core.commons.services.commentAndRating.CommentAndRatingDefaultSecurityCallback;
+import org.olat.core.commons.services.commentAndRating.CommentAndRatingSecurityCallback;
+import org.olat.core.commons.services.commentAndRating.ui.UserCommentsController;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -77,7 +80,7 @@ implements Activateable2, TooledController, FlexiTableComponentDelegate {
 	
 	private PageController pageCtrl;
 	private CloseableModalController cmc;
-	private PageMetadataEditController newPageCtrl;
+	private UserCommentsController commentsCtrl;
 	
 	protected int counter;
 	protected final boolean withSections;
@@ -109,6 +112,7 @@ implements Activateable2, TooledController, FlexiTableComponentDelegate {
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(PageCols.date, "select"));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(PageCols.open));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, PageCols.newEntry, "select"));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, PageCols.comment, "select"));
 	
 		model = new PageListDataModel(columnsModel);
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", model, 20, false, getTranslator(), formLayout);
@@ -139,7 +143,7 @@ implements Activateable2, TooledController, FlexiTableComponentDelegate {
 	protected abstract void loadModel();
 	
 	protected PageRow forgeRow(Page page, AssessmentSection assessmentSection, boolean firstOfSection,
-			Map<OLATResourceable,List<Category>> categorizedElementMap) {
+			Map<OLATResourceable,List<Category>> categorizedElementMap, Map<Long,Long> numberOfCommentsMap) {
 
 		PageRow row = new PageRow(page, page.getSection(), assessmentSection, firstOfSection, config.isAssessable());
 		String openLinkId = "open_" + (++counter);
@@ -149,6 +153,34 @@ implements Activateable2, TooledController, FlexiTableComponentDelegate {
 		row.setOpenFormLink(openLink);
 		openLink.setUserObject(row);
 		addCategoriesToRow(row, categorizedElementMap);
+		
+		if(numberOfCommentsMap != null) {
+			Long numOfComments = numberOfCommentsMap.get(page.getKey());
+			if(numOfComments != null) {
+				row.setNumOfComments(numOfComments.longValue());
+			} else {
+				row.setNumOfComments(0);
+			}
+		} else {
+			row.setNumOfComments(0);
+		}
+		
+		if(secCallback.canComment(page)) {
+			String commentLinkId = "comment_" + (++counter);
+			
+			String title;
+			if(row.getNumOfComments() == 1) {
+				title = translate("comment.one");
+			} else if(row.getNumOfComments() > 1) {
+				title = translate("comment.several", new String[]{ Long.toString(row.getNumOfComments()) });
+			} else {
+				title = translate("comment.zero");
+			}
+			FormLink commentLink = uifactory.addFormLink(commentLinkId, "comment", title, null, flc, Link.LINK | Link.NONTRANSLATED);
+			commentLink.setCustomEnabledLinkCSS("btn btn-sm o_portfolio_comment");
+			commentLink.setUserObject(row);
+			row.setCommentFormLink(commentLink);
+		}
 		return row;
 	}
 	
@@ -201,8 +233,8 @@ implements Activateable2, TooledController, FlexiTableComponentDelegate {
 				loadModel();
 				fireEvent(ureq, Event.CHANGED_EVENT);
 			}
-		} else if(newPageCtrl == source) {
-			if(event == Event.DONE_EVENT) {
+		} else if(commentsCtrl == source) {
+			if(event == Event.CHANGED_EVENT || "comment_count_changed".equals(event.getCommand())) {
 				loadModel();
 				fireEvent(ureq, Event.CHANGED_EVENT);
 			}
@@ -215,9 +247,9 @@ implements Activateable2, TooledController, FlexiTableComponentDelegate {
 	}
 	
 	private void cleanUp() {
-		removeAsListenerAndDispose(newPageCtrl);
+		removeAsListenerAndDispose(commentsCtrl);
 		removeAsListenerAndDispose(cmc);
-		newPageCtrl = null;
+		commentsCtrl = null;
 		cmc = null;
 	}
 	
@@ -231,6 +263,9 @@ implements Activateable2, TooledController, FlexiTableComponentDelegate {
 			if("open.full".equals(cmd)) {
 				PageRow row = (PageRow)link.getUserObject();
 				doOpenPage(ureq, row.getPage());
+			} else if("comment".equals(cmd)) {
+				PageRow row = (PageRow)link.getUserObject();
+				doComment(ureq, row.getPage());
 			}
 		}
 		super.formInnerEvent(ureq, source, event);
@@ -239,6 +274,18 @@ implements Activateable2, TooledController, FlexiTableComponentDelegate {
 	@Override
 	protected void formOK(UserRequest ureq) {
 		//
+	}
+	
+	private void doComment(UserRequest ureq, Page page) {
+		CommentAndRatingSecurityCallback commentSecCallback = new CommentAndRatingDefaultSecurityCallback(getIdentity(), false, false);
+		OLATResourceable ores = OresHelper.createOLATResourceableInstance(Page.class, page.getKey());
+		commentsCtrl = new UserCommentsController(ureq, getWindowControl(), ores, null, commentSecCallback);
+		listenTo(commentsCtrl);
+		
+		String title = translate("comment.title");
+		cmc = new CloseableModalController(getWindowControl(), null, commentsCtrl.getInitialComponent(), true, title, true);
+		listenTo(cmc);
+		cmc.activate();
 	}
 	
 	private void doOpenPage(UserRequest ureq, Page page) {

@@ -52,6 +52,10 @@ public class PageRow {
 	private FormLink openFormLink;
 	private FormLink newEntryLink;
 	
+	private long numOfComments;
+	private Link commentLink;
+	private FormLink commentFormLink;
+	
 	public PageRow(Page page, Section section, AssessmentSection assessmentSection,
 			boolean firstPageOfSection, boolean assessable) {
 		this.page = page;
@@ -219,6 +223,40 @@ public class PageRow {
 	public void setOpenLink(Link openLink) {
 		this.openLink = openLink;
 	}
+
+	public long getNumOfComments() {
+		return numOfComments;
+	}
+
+	public void setNumOfComments(long numOfComments) {
+		this.numOfComments = numOfComments;
+	}
+	
+	public boolean hasCommentLink() {
+		return commentLink != null || commentFormLink != null;
+	}
+
+	public Link getCommentLink() {
+		return commentLink;
+	}
+
+	public void setCommentLink(Link commentLink) {
+		this.commentLink = commentLink;
+	}
+	
+	public String getCommentFormItemName() {
+		return commentFormLink == null ? null : commentFormLink.getComponent().getComponentName();
+	}
+
+	public FormLink getCommentFormLink() {
+		return commentFormLink;
+	}
+
+	public void setCommentFormLink(FormLink commentFormLink) {
+		this.commentFormLink = commentFormLink;
+	}
+	
+	
 
 
 }
