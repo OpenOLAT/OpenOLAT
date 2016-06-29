@@ -41,6 +41,7 @@ import org.olat.core.util.FileUtils;
 import org.olat.core.util.WebappHelper;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
+import org.olat.course.assessment.AssessmentNotificationsHandler;
 import org.olat.course.assessment.NewCachePersistingAssessmentManager;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.properties.CoursePropertyManager;
@@ -216,6 +217,8 @@ public class ReturnWSService {
 								ScoreEvaluation scoreEvaluation = new ScoreEvaluation(qtiResultSet.getScore(), qtiResultSet.getIsPassed(), qtiResultSet.getFullyAssessed(),
 										qtiResultSet.getAssessmentID());
 								am.syncAndsaveScoreEvaluation(courseNode, assessedIdentity, assessedIdentity, scoreEvaluation, false, userCourseEnvironment, cpm);
+
+								AssessmentNotificationsHandler.getInstance().markPublisherNews(assessedIdentity, resourceId);
 							}
 						} else {
 							if (log.isDebug()) {
