@@ -1,3 +1,9 @@
+#if($r.available("userShortDescription"))
+<div class="o_user_infos">
+	<div class="o_user_portrait">$r.render("portrait")</div>
+	<div class="o_user_infos_inner">$r.render("userShortDescription")</div>
+</div>
+#end
 <div class="o_portfolio_rights">
 	<table class="table">
 		<thead><tr>

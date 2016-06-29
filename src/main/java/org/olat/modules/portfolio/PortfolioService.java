@@ -160,6 +160,8 @@ public interface PortfolioService {
 	
 	public void changeAccessRights(List<Identity> identities, List<AccessRightChange> changes);
 	
+	public void removeAccessRights(Binder binder, Identity identity);
+	
 	public List<Category> getCategories(PortfolioElement element);
 	
 	/**

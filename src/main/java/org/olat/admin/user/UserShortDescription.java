@@ -28,7 +28,6 @@ package org.olat.admin.user;
 import java.util.List;
 
 import org.olat.basesecurity.BaseSecurityModule;
-import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.velocity.VelocityContainer;
@@ -39,6 +38,7 @@ import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
 import org.olat.user.UserManager;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -51,23 +51,25 @@ import org.olat.user.propertyhandlers.UserPropertyHandler;
  */
 public class UserShortDescription extends BasicController {
 	
-	private VelocityContainer velocityContainer;
 	private static final String usageIdentifyer = UserShortDescription.class.getCanonicalName();
-	private List<UserPropertyHandler> userPropertyHandlers;
-	
+
+	@Autowired
+	private UserManager userManager;
+	@Autowired
+	private BaseSecurityModule securityModule;
 
 	public UserShortDescription(UserRequest ureq, WindowControl wControl, Identity identity) {
 		super(ureq, wControl);
 		
 		String usernameLabel = translate("table.user.login");
 		//use the PropertyHandlerTranslator for the velocityContainer
-		setTranslator(UserManager.getInstance().getPropertyHandlerTranslator(getTranslator()));
-		velocityContainer = createVelocityContainer("userShortDescription");
+		setTranslator(userManager.getPropertyHandlerTranslator(getTranslator()));
+		VelocityContainer velocityContainer = createVelocityContainer("userShortDescription");
 				
 		Roles roles = ureq.getUserSession().getRoles();
-		boolean isAdministrativeUser = CoreSpringFactory.getImpl(BaseSecurityModule.class).isUserAllowedAdminProps(roles);
+		boolean isAdministrativeUser = securityModule.isUserAllowedAdminProps(roles);
 		//(roles.isAuthor() || roles.isGroupManager() || roles.isUserManager() || roles.isOLATAdmin());		
-		userPropertyHandlers = UserManager.getInstance().getUserPropertyHandlersFor(usageIdentifyer, isAdministrativeUser);
+		List<UserPropertyHandler> userPropertyHandlers = userManager.getUserPropertyHandlersFor(usageIdentifyer, isAdministrativeUser);
 		velocityContainer.contextPut("userPropertyHandlers", userPropertyHandlers);
 		velocityContainer.contextPut("user", identity.getUser());			
 		velocityContainer.contextPut("identityKey", identity.getKey());			

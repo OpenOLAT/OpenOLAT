@@ -68,6 +68,7 @@ import org.olat.modules.portfolio.PageBody;
 import org.olat.modules.portfolio.PagePart;
 import org.olat.modules.portfolio.PageStatus;
 import org.olat.modules.portfolio.PortfolioElement;
+import org.olat.modules.portfolio.PortfolioElementType;
 import org.olat.modules.portfolio.PortfolioRoles;
 import org.olat.modules.portfolio.PortfolioService;
 import org.olat.modules.portfolio.Section;
@@ -319,6 +320,27 @@ public class PortfolioServiceImpl implements PortfolioService {
 		}
 	}
 	
+	@Override
+	public void removeAccessRights(Binder binder, Identity identity) {
+		List<AccessRights> rights = getAccessRights(binder, identity);
+		for(AccessRights right:rights) {
+			Group baseGroup;
+			if(right.getType() == PortfolioElementType.binder) {
+				baseGroup = binderDao.loadByKey(right.getBinderKey()).getBaseGroup();
+			} else if(right.getType() == PortfolioElementType.section) {
+				baseGroup = binderDao.loadSectionByKey(right.getSectionKey()).getBaseGroup();
+			} else if(right.getType() == PortfolioElementType.page) {
+				baseGroup = pageDao.loadByKey(right.getPageKey()).getBaseGroup();
+			} else {
+				continue;
+			}
+			
+			if(groupDao.hasRole(baseGroup, identity, right.getRole().name())) {
+				groupDao.removeMembership(baseGroup, identity, right.getRole().name());
+			}
+		}
+	}
+
 	private Group getGroup(PortfolioElement element) {
 		if(element instanceof Page) {
 			return pageDao.getGroup((Page)element);

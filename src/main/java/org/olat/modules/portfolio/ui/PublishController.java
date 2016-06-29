@@ -66,6 +66,7 @@ import org.olat.modules.portfolio.Section;
 import org.olat.modules.portfolio.SectionStatus;
 import org.olat.modules.portfolio.model.AccessRightChange;
 import org.olat.modules.portfolio.model.AccessRights;
+import org.olat.modules.portfolio.ui.event.AccessRightsEvent;
 import org.olat.modules.portfolio.ui.renderer.PortfolioRendererHelper;
 import org.olat.modules.portfolio.ui.wizard.AccessRightsContext;
 import org.olat.modules.portfolio.ui.wizard.AddMember_1_ChooseMemberStep;
@@ -251,6 +252,9 @@ public class PublishController extends BasicController implements TooledControll
 				List<AccessRightChange> changes = editAccessRightsCtrl.getChanges();
 				List<Identity> identities = Collections.singletonList(editAccessRightsCtrl.getMember());
 				portfolioService.changeAccessRights(identities, changes);
+				reloadData();
+			} else if(AccessRightsEvent.REMOVE_ALL_RIGHTS.equals(event.getCommand())) {
+				portfolioService.removeAccessRights(binder, editAccessRightsCtrl.getMember());
 				reloadData();
 			}
 			cmc.deactivate();

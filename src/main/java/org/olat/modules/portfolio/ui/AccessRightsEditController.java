@@ -24,12 +24,17 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.olat.admin.user.UserShortDescription;
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
+import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -42,6 +47,8 @@ import org.olat.modules.portfolio.PortfolioService;
 import org.olat.modules.portfolio.Section;
 import org.olat.modules.portfolio.model.AccessRightChange;
 import org.olat.modules.portfolio.model.AccessRights;
+import org.olat.modules.portfolio.ui.event.AccessRightsEvent;
+import org.olat.user.DisplayPortraitController;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -54,6 +61,8 @@ public class AccessRightsEditController extends FormBasicController {
 	
 	private static final String[] theKeys = new String[]{ "xx" };
 	private static final String[] theValues = new String[]{ "" };
+	
+	private FormLink removeLink;
 	
 	private int counter;
 	private final Binder binder;
@@ -93,6 +102,17 @@ public class AccessRightsEditController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		if(member != null && formLayout instanceof FormLayoutContainer) {
+			FormLayoutContainer layoutCont = (FormLayoutContainer)formLayout;
+
+			Controller portraitCtr = new DisplayPortraitController(ureq, getWindowControl(), member, true, true);
+			layoutCont.getFormItemComponent().put("portrait", portraitCtr.getInitialComponent());
+			listenTo(portraitCtr);
+			Controller userShortDescrCtr = new UserShortDescription(ureq, getWindowControl(), member);
+			layoutCont.getFormItemComponent().put("userShortDescription", userShortDescrCtr.getInitialComponent());
+			listenTo(userShortDescrCtr);
+		}
+		
 		//binder
 		MultipleSelectionElement coachEl = uifactory.addCheckboxesHorizontal("access-" + (counter++), null, formLayout, theKeys, theValues);
 		MultipleSelectionElement reviewerEl = uifactory.addCheckboxesHorizontal("access-" + (counter++), null, formLayout, theKeys, theValues);
@@ -132,6 +152,7 @@ public class AccessRightsEditController extends FormBasicController {
 			buttonsCont.setRootForm(mainForm);
 			formLayout.add("buttons", buttonsCont);
 			uifactory.addFormCancelButton("cancel", buttonsCont, ureq, getWindowControl());
+			removeLink = uifactory.addFormLink("remove", buttonsCont, Link.BUTTON);
 			if(canEdit) {
 				uifactory.addFormSubmitButton("save", buttonsCont);
 			}
@@ -175,6 +196,14 @@ public class AccessRightsEditController extends FormBasicController {
 		}
 	}
 	
+	@Override
+	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
+		if(removeLink == source) {
+			fireEvent(ureq, new AccessRightsEvent(AccessRightsEvent.REMOVE_ALL_RIGHTS));
+		}
+		super.formInnerEvent(ureq, source, event);
+	}
+
 	@Override
 	protected void formCancelled(UserRequest ureq) {
 		if(hasButtons) {
