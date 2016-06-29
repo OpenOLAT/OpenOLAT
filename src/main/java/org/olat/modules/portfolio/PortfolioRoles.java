@@ -28,7 +28,8 @@ package org.olat.modules.portfolio;
 public enum PortfolioRoles {
 	
 	owner,//same as GroupRoles.owner
-	coach,
+	coach,//same as GroupRoles.coach
 	reviewer,
+	invitee,//same as GroupRoles.invitee
 
 }

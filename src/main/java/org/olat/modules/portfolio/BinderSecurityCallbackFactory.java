@@ -53,7 +53,19 @@ public class BinderSecurityCallbackFactory {
 		return new BinderSecurityCallbackImpl(rights);
 	}
 	
-	private static class BinderSecurityCallbackForTemplate implements BinderSecurityCallback {
+	public static final BinderSecurityCallback getCallbackForInvitation() {
+		return new BinderSecurityCallbackForInvitation();
+	}
+
+
+	private static class BinderSecurityCallbackForInvitation extends DefaultBinderSecurityCallback {
+		@Override
+		public boolean canComment(PortfolioElement element) {
+			return true;
+		}
+	}
+	
+	private static class BinderSecurityCallbackForTemplate extends DefaultBinderSecurityCallback {
 		
 		private final boolean admin;
 		
@@ -79,46 +91,6 @@ public class BinderSecurityCallbackFactory {
 		@Override
 		public boolean canEditSection() {
 			return admin;
-		}
-
-		@Override
-		public boolean canAddPage() {
-			return false;
-		}
-
-		@Override
-		public boolean canEditPage(Page page) {
-			return false;
-		}
-
-		@Override
-		public boolean canPublish(Page page) {
-			return false;
-		}
-
-		@Override
-		public boolean canEditAccessRights(PortfolioElement element) {
-			return false;
-		}
-
-		@Override
-		public boolean canViewElement(PortfolioElement element) {
-			return false;
-		}
-
-		@Override
-		public boolean canComment(PortfolioElement element) {
-			return false;
-		}
-
-		@Override
-		public boolean canReview(PortfolioElement element) {
-			return false;
-		}
-
-		@Override
-		public boolean canAssess(Section section) {
-			return false;
 		}
 	}
 	
@@ -228,6 +200,69 @@ public class BinderSecurityCallbackFactory {
 					}
 				}
 			}
+			return false;
+		}
+	}
+	
+	private static class DefaultBinderSecurityCallback implements BinderSecurityCallback {
+
+		@Override
+		public boolean canEditBinder() {
+			return false;
+		}
+
+		@Override
+		public boolean canEditMetadataBinder() {
+			return false;
+		}
+
+		@Override
+		public boolean canAddSection() {
+			return false;
+		}
+
+		@Override
+		public boolean canEditSection() {
+			return false;
+		}
+
+		@Override
+		public boolean canAddPage() {
+			return false;
+		}
+
+		@Override
+		public boolean canEditPage(Page page) {
+			return false;
+		}
+
+		@Override
+		public boolean canPublish(Page page) {
+			return false;
+		}
+
+		@Override
+		public boolean canEditAccessRights(PortfolioElement element) {
+			return false;
+		}
+
+		@Override
+		public boolean canViewElement(PortfolioElement element) {
+			return false;
+		}
+
+		@Override
+		public boolean canComment(PortfolioElement element) {
+			return false;
+		}
+
+		@Override
+		public boolean canReview(PortfolioElement element) {
+			return false;
+		}
+
+		@Override
+		public boolean canAssess(Section section) {
 			return false;
 		}
 	}

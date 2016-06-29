@@ -19,16 +19,27 @@
  */
 package org.olat.modules.portfolio.ui.wizard;
 
+import org.apache.velocity.VelocityContext;
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.form.flexible.elements.SelectionElement;
+import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.Form;
+import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.wizard.StepFormBasicController;
 import org.olat.core.gui.control.generic.wizard.StepsEvent;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
+import org.olat.core.helpers.Settings;
+import org.olat.core.id.Identity;
+import org.olat.core.util.Util;
 import org.olat.core.util.mail.MailTemplate;
 import org.olat.modules.portfolio.Binder;
+import org.olat.modules.portfolio.ui.PortfolioHomeController;
+import org.olat.user.UserManager;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -38,19 +49,52 @@ import org.olat.modules.portfolio.Binder;
  */
 public class MemberMailController extends StepFormBasicController {
 	
+	private TextElement subjectEl;
+	private TextElement bodyEl;
+	private SelectionElement sendMailEl;
+	
 	private MailTemplate mailTemplate;
-	private final Binder binder;
+	
+	@Autowired
+	private UserManager userManager;
 
 	public MemberMailController(UserRequest ureq, WindowControl wControl, Binder binder,
 			Form rootForm, StepsRunContext runContext) {
-		super(ureq, wControl, rootForm, runContext, LAYOUT_CUSTOM, "mail_template");
-		this.binder = binder;
+		super(ureq, wControl, rootForm, runContext, LAYOUT_DEFAULT, null);
+		setTranslator(Util.createPackageTranslator(PortfolioHomeController.class, getLocale(), getTranslator()));
+		
+		mailTemplate = (MailTemplate)runContext.get("maiTemplate");
+		if(mailTemplate == null) {
+			String subject = translate("invitation.mail.subject");
+			String sender = userManager.getUserDisplayName(getIdentity());
+			String busLink = Settings.getServerContextPathURI() + "/url/HomeSite/0/PortfolioV2/0/SharedWithMe/0/Binder/" + binder.getKey();
+			String body = translate("invitation.mail.body", new String[]{ busLink, sender});
+			
+			mailTemplate = new MailTemplate(subject, body, null) {
+				@Override
+				public void putVariablesInMailContext(VelocityContext vContext, Identity recipient) {
+					//
+				}
+			};
+		}
+
 		initForm (ureq);
 	}
 	
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		//formLayout.add("template", mailTemplateForm.getInitialFormItem());
+		sendMailEl = uifactory.addCheckboxesVertical("sendmail", "", formLayout, new String[]{"xx"}, new String[]{translate("mail.sendMail")}, 1);
+		sendMailEl.select("xx", true);
+		sendMailEl.addActionListener(FormEvent.ONCLICK);
+
+		subjectEl = uifactory.addTextElement("subjectElem", "mail.subject", 128, mailTemplate.getSubjectTemplate(), formLayout);
+		subjectEl.setDisplaySize(60);
+		subjectEl.setMandatory(true);
+	
+		bodyEl = uifactory.addTextAreaElement("bodyElem", "mail.body", -1, 15, 60, true, mailTemplate.getBodyTemplate(), formLayout);
+		bodyEl.setHelpText(translate("mailtemplateform.body.hover"));
+		bodyEl.setHelpUrlForManualPage("E-Mail");
+		bodyEl.setMandatory(true);
 	}
 	
 	@Override
@@ -65,15 +109,24 @@ public class MemberMailController extends StepFormBasicController {
 	}
 
 	@Override
+	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
+		if(sendMailEl == source) {
+			boolean sm = sendMailEl.isSelected(0);
+			subjectEl.setVisible(sm);
+			bodyEl.setVisible(sm);
+		}
+		super.formInnerEvent(ureq, source, event);
+	}
+
+	@Override
 	protected void formOK(UserRequest ureq) {
-		/*if(mailTemplateForm.sendMailSwitchEnabled()) {
-			if(!mailTemplateForm.isDefaultTemplate()) {
-				mailTemplateForm.updateTemplateFromForm(mailTemplate);
-			}
+		if(sendMailEl.isSelected(0)) {
+			mailTemplate.setSubjectTemplate(subjectEl.getValue());
+			mailTemplate.setBodyTemplate(bodyEl.getValue());
 			addToRunContext("mailTemplate", mailTemplate);
 		} else {
 			addToRunContext("mailTemplate", null);
-		}*/
+		}
 		fireEvent (ureq, StepsEvent.ACTIVATE_NEXT);
 	}
 }

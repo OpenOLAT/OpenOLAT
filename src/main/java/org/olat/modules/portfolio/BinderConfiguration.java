@@ -68,6 +68,10 @@ public class BinderConfiguration {
 		return new BinderConfiguration(false, false, false);
 	}
 	
+	public static BinderConfiguration createInvitationConfig() {
+		return new BinderConfiguration(false, false, false);
+	}
+	
 	public static BinderConfiguration createMyPagesConfig() {
 		return new BinderConfiguration(false, false, false);
 	}

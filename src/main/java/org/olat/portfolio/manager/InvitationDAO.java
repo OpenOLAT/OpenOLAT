@@ -66,6 +66,12 @@ public class InvitationDAO {
 	@Autowired
 	private BaseSecurity securityManager;
 	
+	public Invitation createInvitation() {
+		InvitationImpl invitation = new InvitationImpl();
+		invitation.setToken(UUID.randomUUID().toString());
+		return invitation;
+	}
+	
 	/**
 	 * Create and persist an invitation with its security group and security token.
 	 * @return
@@ -93,6 +99,20 @@ public class InvitationDAO {
 		return invitee;
 	}
 	
+	public Identity createIdentityAndPersistInvitation(Invitation invitation, Group group, Locale locale) {
+		group = groupDao.loadGroup(group.getKey());
+		((InvitationImpl)invitation).setCreationDate(new Date());
+		((InvitationImpl)invitation).setBaseGroup(group);
+		dbInstance.getCurrentEntityManager().persist(invitation);
+
+		String tempUsername = UUID.randomUUID().toString();
+		User user = userManager.createAndPersistUser(invitation.getFirstName(), invitation.getLastName(), invitation.getMail());
+		user.getPreferences().setLanguage(locale.toString());
+		Identity invitee = securityManager.createAndPersistIdentity(tempUsername, user, null, null, null);
+		groupDao.addMembership(group, invitee, GroupRoles.invitee.name());
+		return invitee;
+	}
+	
 	/**
 	 * Is the invitation linked to any valid policies
 	 * @param token
@@ -100,6 +120,21 @@ public class InvitationDAO {
 	 * @return
 	 */
 	public boolean hasInvitations(String token, Date atDate) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select invitation.key from binvitation as invitation")
+		  .append(" inner join invitation.baseGroup as baseGroup")
+	      .append(" where invitation.token=:token and ")
+	      .append(" (exists (select relation.key from structuretogroup as relation ")
+	      .append("  where relation.group.key=baseGroup.key");
+		if(atDate != null) {
+			sb.append(" and (relation.validFrom is null or relation.validFrom<=:date)")
+			  .append(" and (relation.validTo is null or relation.validTo>=:date)");
+		}
+	    sb.append(" ) or exists(select binder from pfbinder as binder")
+	      .append("   where binder.baseGroup.key=baseGroup.key")
+	      .append("))");
+
+		/*
 		StringBuilder sb = new StringBuilder();
 		sb.append("select count(relation) from structuretogroup as relation ")
 		  .append(" inner join relation.group as baseGroup")
@@ -111,16 +146,20 @@ public class InvitationDAO {
 			sb.append(" and (relation.validFrom is null or relation.validFrom<=:date)")
 			  .append(" and (relation.validTo is null or relation.validTo>=:date)");
 		}
+		*/
 
-		TypedQuery<Number> query = dbInstance.getCurrentEntityManager()
-				.createQuery(sb.toString(), Number.class)
+		TypedQuery<Long> query = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Long.class)
 				.setParameter("token", token);
 		if(atDate != null) {
 		  	query.setParameter("date", atDate);
 		}
 		  
-		Number counter = query.getSingleResult();
-	    return counter == null ? false : counter.intValue() > 0;
+		List<Long> keys = query
+				.setFirstResult(0)
+				.setMaxResults(1)
+				.getResultList();
+	    return keys == null || keys.isEmpty() || keys.get(0) == null ? false : keys.get(0).intValue() > 0;
 	}
 	
 	/**

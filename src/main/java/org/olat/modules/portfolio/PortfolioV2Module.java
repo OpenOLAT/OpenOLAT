@@ -19,6 +19,7 @@
  */
 package org.olat.modules.portfolio;
 
+import org.olat.NewControllerFactory;
 import org.olat.core.configuration.AbstractSpringModule;
 import org.olat.core.configuration.ConfigOnOff;
 import org.olat.core.util.StringHelper;
@@ -56,7 +57,8 @@ public class PortfolioV2Module extends AbstractSpringModule implements ConfigOnO
 			enabled = "true".equals(enabledObj);
 		}
 		
-		RepositoryHandlerFactory.registerHandler(new BinderTemplateHandler(), 10);
+		RepositoryHandlerFactory.registerHandler(new BinderTemplateHandler(), 40);
+		NewControllerFactory.getInstance().addContextEntryControllerCreator("BinderInvitation", new BinderInvitationContextEntryControllerCreator());	
 	}
 
 	@Override

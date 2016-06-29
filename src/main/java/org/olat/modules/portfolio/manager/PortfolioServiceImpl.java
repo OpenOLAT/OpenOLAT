@@ -264,6 +264,11 @@ public class PortfolioServiceImpl implements PortfolioService {
 	}
 
 	@Override
+	public boolean isBinderVisible(Identity identity, Binder binder) {
+		return true;
+	}
+
+	@Override
 	public List<AccessRights> getAccessRights(Binder binder) {
 		List<AccessRights> rights = binderDao.getBinderAccesRights(binder, null);
 		List<AccessRights> sectionRights = binderDao.getSectionAccesRights(binder, null);

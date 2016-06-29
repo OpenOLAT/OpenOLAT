@@ -180,7 +180,7 @@ public class EPShareListController extends FormBasicController {
 						SecurityGroup allUsers = securityManager.findSecurityGroupByName(Constants.GROUP_OLATUSERS);
 						Identity currentIdentity = userManager.findIdentityByEmail(mail);
 						if (currentIdentity != null && securityManager.isIdentityInSecurityGroup(currentIdentity, allUsers)) {
-							mailEl.setErrorKey("map.share.with.mail.error.olatUser", new String[] { mail });
+							mailEl.setErrorKey("error.invitation.mail.used", new String[] { mail });
 							allOk &= false;
 						}
 					} else {

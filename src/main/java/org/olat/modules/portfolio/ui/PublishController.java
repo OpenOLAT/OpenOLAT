@@ -27,6 +27,8 @@ import java.util.Map;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.dropdown.Dropdown;
+import org.olat.core.gui.components.dropdown.DropdownOrientation;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.stack.TooledController;
@@ -43,6 +45,14 @@ import org.olat.core.gui.control.generic.wizard.StepRunnerCallback;
 import org.olat.core.gui.control.generic.wizard.StepsMainRunController;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
 import org.olat.core.id.Identity;
+import org.olat.core.util.WebappHelper;
+import org.olat.core.util.mail.ContactList;
+import org.olat.core.util.mail.MailBundle;
+import org.olat.core.util.mail.MailContext;
+import org.olat.core.util.mail.MailContextImpl;
+import org.olat.core.util.mail.MailManager;
+import org.olat.core.util.mail.MailTemplate;
+import org.olat.core.util.mail.MailerResult;
 import org.olat.modules.portfolio.AssessmentSection;
 import org.olat.modules.portfolio.Binder;
 import org.olat.modules.portfolio.BinderConfiguration;
@@ -70,11 +80,13 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class PublishController extends BasicController implements TooledController {
 	
-	private Link addAccessRightsLink;
+	private Dropdown accessDropdown;
+	private Link addAccessRightsLink, addInvitationLink;
 	private final VelocityContainer mainVC;
 	private final TooledStackedPanel stackPanel;
 
 	private CloseableModalController cmc;
+	private AddInvitationRightsController addInvitationCtrl;
 	private AccessRightsEditController editAccessRightsCtrl;
 	private StepsMainRunController addMembersWizard;
 	
@@ -84,6 +96,8 @@ public class PublishController extends BasicController implements TooledControll
 	private final BinderConfiguration config;
 	private final BinderSecurityCallback secCallback;
 	
+	@Autowired
+	private MailManager mailManager;
 	@Autowired
 	private UserManager userManager;
 	@Autowired
@@ -109,9 +123,19 @@ public class PublishController extends BasicController implements TooledControll
 	@Override
 	public void initTools() {
 		if(secCallback.canEditAccessRights(binder)) {
+			accessDropdown = new Dropdown("access.rights", "access.rights", false, getTranslator());
+			accessDropdown.setIconCSS("o_icon o_icon-fw o_icon_new_portfolio");
+			accessDropdown.setOrientation(DropdownOrientation.right);
+			
 			addAccessRightsLink = LinkFactory.createToolLink("add.member", translate("add.member"), this);
 			addAccessRightsLink.setIconLeftCSS("o_icon o_icon-lg o_icon_new_portfolio");
-			stackPanel.addTool(addAccessRightsLink, Align.right);
+			accessDropdown.addComponent(addAccessRightsLink);
+			
+			addInvitationLink = LinkFactory.createToolLink("add.invitation", translate("add.invitation"), this);
+			addInvitationLink.setIconLeftCSS("o_icon o_icon-lg o_icon_new_portfolio");
+			accessDropdown.addComponent(addInvitationLink);
+			
+			stackPanel.addTool(accessDropdown, Align.right);
 		}
 	}
 
@@ -129,7 +153,9 @@ public class PublishController extends BasicController implements TooledControll
 		for(AccessRights right:rights) {
 			if(right.getSectionKey() == null && right.getPageKey() == null) {
 				Link editLink = null;
-				if(canEditBinderAccessRights && !PortfolioRoles.owner.equals(right.getRole())) {
+				if(canEditBinderAccessRights
+						&& !PortfolioRoles.owner.equals(right.getRole())
+						&&!PortfolioRoles.invitee.equals(right.getRole())) {
 					editLink = LinkFactory.createLink("edit_" + (counter++), "edit", "edit_access", mainVC, this);
 				}
 				binderRow.getAccessRights().add(new AccessRightsRow(binder, right, editLink));
@@ -182,12 +208,16 @@ public class PublishController extends BasicController implements TooledControll
 				}
 			}
 		}
+		
+		mainVC.setDirty(true);
 	}
 
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
 		if(addAccessRightsLink == source) {
 			doAddAccessRights(ureq);
+		} else if(addInvitationLink == source) {
+			doAddInvitation(ureq);
 		} else if(source instanceof Link) {
 			Link link = (Link)source;
 			String cmd = link.getCommand();
@@ -201,6 +231,14 @@ public class PublishController extends BasicController implements TooledControll
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if (addMembersWizard == source) {
+			if(event == Event.CANCELLED_EVENT || event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
+				getWindowControl().pop();
+				if(event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
+					reloadData();
+				}
+				cleanUp();
+			}
+		} else if(addInvitationCtrl == source) {
 			if(event == Event.CANCELLED_EVENT || event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
 				getWindowControl().pop();
 				if(event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
@@ -225,11 +263,25 @@ public class PublishController extends BasicController implements TooledControll
 	
 	private void cleanUp() {
 		removeAsListenerAndDispose(editAccessRightsCtrl);
+		removeAsListenerAndDispose(addInvitationCtrl);
 		removeAsListenerAndDispose(addMembersWizard);
 		removeAsListenerAndDispose(cmc);
 		editAccessRightsCtrl = null;
+		addInvitationCtrl = null;
 		addMembersWizard = null;
 		cmc = null;
+	}
+	
+	private void doAddInvitation(UserRequest ureq) {
+		if(addInvitationCtrl != null) return;
+		
+		addInvitationCtrl = new AddInvitationRightsController(ureq, getWindowControl(), binder);
+		listenTo(addInvitationCtrl);
+		
+		String title = translate("add.invitation");
+		cmc = new CloseableModalController(getWindowControl(), null, addInvitationCtrl.getInitialComponent(), true, title, true);
+		listenTo(cmc);
+		cmc.activate();
 	}
 	
 	private void doEditAccessRights(UserRequest ureq, PortfolioElement element, Identity member) {
@@ -253,7 +305,8 @@ public class PublishController extends BasicController implements TooledControll
 			@Override
 			public Step execute(UserRequest uureq, WindowControl wControl, StepsRunContext runContext) {
 				AccessRightsContext rightsContext = (AccessRightsContext)runContext.get("rightsContext");
-				addMembers(rightsContext);
+				MailTemplate mailTemplate = (MailTemplate)runContext.get("mailTemplate");
+				addMembers(rightsContext, mailTemplate);
 				return StepsMainRunController.DONE_MODIFIED;
 			}
 		};
@@ -265,11 +318,39 @@ public class PublishController extends BasicController implements TooledControll
 		
 	}
 	
-	private void addMembers(AccessRightsContext rightsContext) {
+	private void addMembers(AccessRightsContext rightsContext, MailTemplate mailTemplate) {
 		List<Identity> identities = rightsContext.getIdentities();
 		List<AccessRightChange> changes = rightsContext.getAccessRightChanges();
 		portfolioService.changeAccessRights(identities, changes);
+		
+		if(mailTemplate != null) {
+			sendInvitation(identities, mailTemplate);
+		}
 		reloadData();
+	}
+	
+	private void sendInvitation(List<Identity> identities, MailTemplate mailTemplate) {
+		ContactList contactList = new ContactList("Invitation");
+		contactList.addAllIdentites(identities);
+
+		boolean success = false;
+		try {
+			MailContext context = new MailContextImpl(binder, null, getWindowControl().getBusinessControl().getAsString()); 
+			MailBundle bundle = new MailBundle();
+			bundle.setContext(context);
+			bundle.setFrom(WebappHelper.getMailConfig("mailReplyTo"));
+			bundle.setContactList(contactList);
+			bundle.setContent(mailTemplate.getSubjectTemplate(), mailTemplate.getBodyTemplate());
+			MailerResult result = mailManager.sendMessage(bundle);
+			success = result.isSuccessful();
+		} catch (Exception e) {
+			logError("Error on sending invitation mail to contactlist, invalid address.", e);
+		}
+		if (success) {
+			showInfo("invitation.mail.success");
+		}	else {
+			showError("invitation.mail.failure");			
+		}
 	}
 	
 	public class AccessRightsRow {
@@ -328,6 +409,8 @@ public class PublishController extends BasicController implements TooledControll
 				explanation = translate("access.rights.coach.long");
 			} else if(PortfolioRoles.reviewer.equals(rights.getRole())) {
 				explanation = translate("access.rights.reviewer.long");
+			} else if(PortfolioRoles.invitee.equals(rights.getRole())) {
+				explanation = translate("access.rights.invitee.long");
 			}
 			return explanation;
 		}

@@ -85,6 +85,14 @@ public interface PortfolioService {
 	public List<AssessedBinder> searchSharedBindersWith(Identity coach);
 	
 	/**
+	 * 
+	 * @param identity
+	 * @param binder
+	 * @return
+	 */
+	public boolean isBinderVisible(Identity identity, Binder binder);
+	
+	/**
 	 * Search all the binders which the specified identity shared
 	 * with some people.
 	 * 
