@@ -40,6 +40,7 @@ import org.olat.modules.portfolio.BinderSecurityCallback;
 import org.olat.modules.portfolio.Category;
 import org.olat.modules.portfolio.CategoryToElement;
 import org.olat.modules.portfolio.Page;
+import org.olat.modules.portfolio.Section;
 import org.olat.modules.portfolio.model.PageRow;
 
 /**
@@ -88,7 +89,15 @@ public class MyPageListController extends AbstractPageListController {
 		List<Page> pages = portfolioService.searchOwnedPages(getIdentity());
 		List<PageRow> rows = new ArrayList<>(pages.size());
 		for (Page page : pages) {
-			rows.add(forgeRow(page, null, false, categorizedElementMap, numberOfCommentsMap));
+			PageRow row = forgeRow(page, null, false, categorizedElementMap, numberOfCommentsMap);
+			rows.add(row);
+			if(page.getSection() != null) {
+				Section section = page.getSection();
+				row.setMetaSectionTitle(section.getTitle());
+				if(section.getBinder() != null) {
+					row.setMetaBinderTitle(section.getBinder().getTitle());
+				}
+			}
 		}
 		model.setObjects(rows);
 		tableEl.reset();

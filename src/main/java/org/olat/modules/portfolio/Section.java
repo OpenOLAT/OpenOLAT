@@ -65,5 +65,12 @@ public interface Section extends SectionRef, PortfolioElement {
 	 * @return
 	 */
 	public List<Page> getPages();
+	
+	/**
+	 * The binder is lazily loaded.
+	 * 
+	 * @return
+	 */
+	public Binder getBinder();
 
 }

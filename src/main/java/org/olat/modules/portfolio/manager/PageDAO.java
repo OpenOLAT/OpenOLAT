@@ -143,8 +143,8 @@ public class PageDAO {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select page from pfpage as page")
 		  .append(" inner join fetch page.body as body")
-		  .append(" left join page.section as section")
-		  .append(" left join section.binder as binder")
+		  .append(" left join fetch page.section as section")
+		  .append(" left join fetch section.binder as binder")
 		  .append(" where exists (select pageMember from bgroupmember as pageMember")
 		  .append("     inner join pageMember.identity as ident on (ident.key=:ownerKey and pageMember.role='").append(GroupRoles.owner.name()).append("')")
 		  .append("  	where pageMember.group.key=page.baseGroup.key or pageMember.group.key=binder.baseGroup.key")

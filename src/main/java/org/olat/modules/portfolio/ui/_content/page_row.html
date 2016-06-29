@@ -71,6 +71,12 @@
 	<span class="o_portfolio_page_meta text-muted o_small">
 		 $r.translate("meta.last.modified", $r.formatDateAndTime($row.lastModified))
 	</span>
+	#if(${row.hasMetaBinderAndSectionTitle()})
+	<div class="o_portfolio_page_meta text-muted o_small">
+		 $r.translate("meta.binder.section.titles", ${row.getMetaBinderAndSectionTitles()})
+	</div>
+	#end
+	
 	<div class="o_portfolio_page_summary o_block">
 		$r.xssScan($row.summary)
 	</div>

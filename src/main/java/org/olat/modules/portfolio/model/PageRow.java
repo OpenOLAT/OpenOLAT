@@ -24,6 +24,7 @@ import java.util.Date;
 
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.link.Link;
+import org.olat.core.util.StringHelper;
 import org.olat.course.assessment.AssessmentHelper;
 import org.olat.modules.portfolio.AssessmentSection;
 import org.olat.modules.portfolio.Page;
@@ -55,6 +56,9 @@ public class PageRow {
 	private long numOfComments;
 	private Link commentLink;
 	private FormLink commentFormLink;
+	
+	private String metaSectionTitle;
+	private String metaBinderTitle;
 	
 	public PageRow(Page page, Section section, AssessmentSection assessmentSection,
 			boolean firstPageOfSection, boolean assessable) {
@@ -256,7 +260,19 @@ public class PageRow {
 		this.commentFormLink = commentFormLink;
 	}
 	
+	public boolean hasMetaBinderAndSectionTitle() {
+		return StringHelper.containsNonWhitespace(metaSectionTitle) || StringHelper.containsNonWhitespace(metaBinderTitle);
+	}
+
+	public String[] getMetaBinderAndSectionTitles() {
+		return new String[]{ metaSectionTitle, metaBinderTitle };
+	}
+
+	public void setMetaSectionTitle(String metaSectionTitle) {
+		this.metaSectionTitle = metaSectionTitle;
+	}
 	
-
-
+	public void setMetaBinderTitle(String metaBinderTitle) {
+		this.metaBinderTitle = metaBinderTitle;
+	}
 }
