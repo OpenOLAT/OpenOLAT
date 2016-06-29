@@ -1211,6 +1211,7 @@ public class AssessmentTestDisplayController extends BasicController implements 
 			}
 			
 			closeResultsButton = uifactory.addFormLink("closeResults", "assessment.test.close.results", null, formLayout, Link.BUTTON);
+			closeResultsButton.setElementCssClass("o_sel_close_results");
 			closeResultsButton.setVisible(false);
 
 			ResourceLocator fileResourceLocator = new PathResourceLocator(fUnzippedDirRoot.toPath());

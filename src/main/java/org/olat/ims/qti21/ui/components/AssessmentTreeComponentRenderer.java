@@ -191,7 +191,7 @@ public class AssessmentTreeComponentRenderer extends AssessmentObjectComponentRe
 			sb.append("<a href='javascript:;' onclick=\"")
 			  .append(FormJSHelper.getXHRFnCallFor(form, dispatchId, 1, true, true,
 					new NameValuePair("cid", event.name()), new NameValuePair("item", key)))
-			  .append(";\" class=''>");
+			  .append(";\" class='o_sel_assessmentitem'>");
 		}
 		sb.append("<span class='questionTitle'>").append(itemNode.getSectionPartTitle()).append("</span>");
 
