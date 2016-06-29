@@ -19,6 +19,18 @@
 		<div class="o_section_lead o_block_large_bottom">
 			<p>$r.xssScan($row.sectionDescription)</p>
 		</div>
+		
+		#if(${row.hasSectionCategories()})
+		<div class="o_block_large_bottom">
+			<div class="o_portfolio_page_meta text-muted o_small">
+				$r.translate("meta.section.categories") <i class="o_icon o_icon_tags"> </i>
+			 	#foreach($category in $row.sectionCategories)
+			 		#if(${foreach.count} > 1), #end
+			 		$category
+			 	#end
+			</div>
+		</div>
+		#end
 	</div>
 	
 	#if(${row.hasNewEntryLink()})
@@ -42,9 +54,23 @@
 		<i class="o_icon ${row.getCssClassStatus()} o_icon-fw"> </i>
 		$r.escapeHtml($row.title)
 	</h4>
-	<div class="o_portfolio_page_meta text-muted o_small">
+	#if(${row.hasLastPublicationDate()})
+	<span class="o_portfolio_page_meta text-muted o_small">
+		 $r.translate("meta.last.publication", $r.formatDateAndTime($row.lastPublicationDate))
+	</span>
+	#end
+	#if(${row.hasPageCategories()})
+	<span class="o_portfolio_page_meta text-muted o_small">
+		 $r.translate("meta.categories") <i class="o_icon o_icon_tags"> </i>
+		 #foreach($category in $row.pageCategories)
+		 	#if(${foreach.count} > 1), #end
+		 	$category
+		 #end
+	</span>
+	#end
+	<span class="o_portfolio_page_meta text-muted o_small">
 		 $r.translate("meta.last.modified", $r.formatDateAndTime($row.lastModified))
-	</div>
+	</span>
 	<div class="o_portfolio_page_summary o_block">
 		$r.xssScan($row.summary)
 	</div>

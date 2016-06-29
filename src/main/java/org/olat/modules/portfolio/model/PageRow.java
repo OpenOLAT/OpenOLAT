@@ -19,6 +19,7 @@
  */
 package org.olat.modules.portfolio.model;
 
+import java.util.Collection;
 import java.util.Date;
 
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
@@ -43,6 +44,9 @@ public class PageRow {
 	private final boolean assessable;
 	private boolean firstPageOfSection;
 	private final AssessmentSection assessmentSection;
+	
+	private Collection<String> pageCategories;
+	private Collection<String> sectionCategories;
 	
 	private Link openLink;
 	private FormLink openFormLink;
@@ -79,6 +83,14 @@ public class PageRow {
 	
 	public Date getLastModified() {
 		return page.getLastModified();
+	}
+	
+	public boolean hasLastPublicationDate() {
+		return page != null && page.getLastPublicationDate() != null;
+	}
+	
+	public Date getLastPublicationDate() {
+		return page.getLastPublicationDate();
 	}
 	
 	public String getCssClassStatus() {
@@ -133,6 +145,30 @@ public class PageRow {
 		this.firstPageOfSection = firstPageOfSection;
 	}
 	
+	public boolean hasPageCategories() {
+		return pageCategories != null && pageCategories.size() > 0;
+	}
+	
+	public Collection<String> getPageCategories() {
+		return pageCategories;
+	}
+
+	public void setPageCategories(Collection<String> pageCategories) {
+		this.pageCategories = pageCategories;
+	}
+	
+	public boolean hasSectionCategories() {
+		return sectionCategories != null && sectionCategories.size() > 0;
+	}
+
+	public Collection<String> getSectionCategories() {
+		return sectionCategories;
+	}
+
+	public void setSectionCategories(Collection<String> sectionCategories) {
+		this.sectionCategories = sectionCategories;
+	}
+
 	public boolean isAssessable() {
 		return assessable;
 	}

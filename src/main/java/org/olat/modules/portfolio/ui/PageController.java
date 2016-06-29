@@ -154,6 +154,7 @@ public class PageController extends BasicController implements TooledController 
 		} else if(editMetadataCtrl == source) {
 			if(event == Event.DONE_EVENT) {
 				loadModel(ureq);
+				fireEvent(ureq, Event.CHANGED_EVENT);
 			}
 			cmc.deactivate();
 			cleanUp();

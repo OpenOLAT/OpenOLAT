@@ -22,9 +22,14 @@ package org.olat.modules.portfolio.manager;
 import java.util.Date;
 import java.util.List;
 
+import org.olat.basesecurity.GroupRoles;
+import org.olat.basesecurity.IdentityRef;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.OLATResourceable;
+import org.olat.modules.portfolio.BinderRef;
 import org.olat.modules.portfolio.Category;
+import org.olat.modules.portfolio.CategoryToElement;
+import org.olat.modules.portfolio.SectionRef;
 import org.olat.modules.portfolio.model.CategoryImpl;
 import org.olat.modules.portfolio.model.CategoryToElementImpl;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -85,6 +90,54 @@ public class CategoryDAO {
 			.createQuery(sb.toString(), Category.class)
 			.setParameter("resName", ores.getResourceableTypeName())
 			.setParameter("resId", ores.getResourceableId())
+			.getResultList();
+	}
+	
+	public List<CategoryToElement> getCategorizedSectionsAndPages(BinderRef binder) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select rel from pfcategoryrelation as rel")
+		  .append(" inner join fetch rel.category as category")
+		  .append(" where exists (select binder from pfbinder as binder")
+		  .append("   inner join binder.sections as section")
+		  .append("   inner join section.pages as page")
+		  .append("   where binder.key=:binderKey")
+		  .append("   and ((rel.resId=page.key and rel.resName='Page') or (rel.resId=section.key and rel.resName='Section'))")
+		  .append(" )");
+		return dbInstance.getCurrentEntityManager()
+			.createQuery(sb.toString(), CategoryToElement.class)
+			.setParameter("binderKey", binder.getKey())
+			.getResultList();
+	}
+	
+	public List<CategoryToElement> getCategorizedSectionAndPages(SectionRef section) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select rel from pfcategoryrelation as rel")
+		  .append(" inner join fetch rel.category as category")
+		  .append(" where exists (select section from pfsection as section")
+		  .append("   inner join section.pages as page")
+		  .append("   where section.key=:sectionKey")
+		  .append("   and ((rel.resId=page.key and rel.resName='Page') or (rel.resId=section.key and rel.resName='Section'))")
+		  .append(" )");
+		return dbInstance.getCurrentEntityManager()
+			.createQuery(sb.toString(), CategoryToElement.class)
+			.setParameter("sectionKey", section.getKey())
+			.getResultList();
+	}
+	
+	public List<CategoryToElement> getCategorizedOwnedPages(IdentityRef identity) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select rel from pfcategoryrelation as rel")
+		  .append(" inner join fetch rel.category as category")
+		  .append(" inner join pfpage as page on (rel.resId=page.key and rel.resName='Page')")
+		  .append(" left join pfsection as section on (section.key = page.section.key)")
+		  .append(" left join pfbinder as binder on (binder.key=section.binder.key)")
+		  .append(" where exists (select pageMember from bgroupmember as pageMember")
+		  .append("   inner join pageMember.identity as ident on (ident.key=:ownerKey and pageMember.role='").append(GroupRoles.owner.name()).append("')")
+		  .append("   where pageMember.group.key=page.baseGroup.key or pageMember.group.key=binder.baseGroup.key")
+		  .append(" )");
+		return dbInstance.getCurrentEntityManager()
+			.createQuery(sb.toString(), CategoryToElement.class)
+			.setParameter("ownerKey", identity.getKey())
 			.getResultList();
 	}
 

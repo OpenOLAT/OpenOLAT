@@ -19,7 +19,9 @@
  */
 package org.olat.modules.portfolio.ui;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -44,12 +46,15 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
+import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.resource.OresHelper;
 import org.olat.modules.portfolio.AssessmentSection;
 import org.olat.modules.portfolio.BinderConfiguration;
 import org.olat.modules.portfolio.BinderSecurityCallback;
+import org.olat.modules.portfolio.Category;
 import org.olat.modules.portfolio.Page;
 import org.olat.modules.portfolio.PortfolioService;
 import org.olat.modules.portfolio.Section;
@@ -133,7 +138,9 @@ implements Activateable2, TooledController, FlexiTableComponentDelegate {
 	
 	protected abstract void loadModel();
 	
-	protected PageRow forgeRow(Page page, AssessmentSection assessmentSection, boolean firstOfSection) {
+	protected PageRow forgeRow(Page page, AssessmentSection assessmentSection, boolean firstOfSection,
+			Map<OLATResourceable,List<Category>> categorizedElementMap) {
+
 		PageRow row = new PageRow(page, page.getSection(), assessmentSection, firstOfSection, config.isAssessable());
 		String openLinkId = "open_" + (++counter);
 		FormLink openLink = uifactory.addFormLink(openLinkId, "open.full", "open.full.page", null, flc, Link.BUTTON_SMALL);
@@ -141,10 +148,13 @@ implements Activateable2, TooledController, FlexiTableComponentDelegate {
 		openLink.setPrimary(true);
 		row.setOpenFormLink(openLink);
 		openLink.setUserObject(row);
+		addCategoriesToRow(row, categorizedElementMap);
 		return row;
 	}
 	
-	protected PageRow forgeRow(Section section, AssessmentSection assessmentSection, boolean firstOfSection) {
+	protected PageRow forgeRow(Section section, AssessmentSection assessmentSection, boolean firstOfSection,
+			Map<OLATResourceable,List<Category>> categorizedElementMap) {
+		
 		PageRow row = new PageRow(null, section, assessmentSection, firstOfSection, config.isAssessable());
 		String openLinkId = "open_" + (++counter);
 		FormLink openLink = uifactory.addFormLink(openLinkId, "open.full", "open.full.page", null, flc, Link.BUTTON_SMALL);
@@ -152,8 +162,32 @@ implements Activateable2, TooledController, FlexiTableComponentDelegate {
 		openLink.setPrimary(true);
 		row.setOpenFormLink(openLink);
 		openLink.setUserObject(row);
+		addCategoriesToRow(row, categorizedElementMap);
 		return row;
 	}
+	
+	private void addCategoriesToRow(PageRow row, Map<OLATResourceable,List<Category>> categorizedElementMap) {
+		if(categorizedElementMap != null) {
+			if(row.getPage() != null) {
+				OLATResourceable ores = OresHelper.createOLATResourceableInstance(Page.class, row.getPage().getKey());
+				row.setPageCategories(getCategories(ores, categorizedElementMap));
+			}
+		}
+	}
+	
+	private List<String> getCategories(OLATResourceable ores, Map<OLATResourceable,List<Category>> categorizedElementMap) {
+		List<String> strings = null;
+		List<Category> categories = categorizedElementMap.get(ores);
+		if(categories != null && categories.size() > 0) {
+			strings = new ArrayList<>(categories.size());
+			for(Category category:categories) {
+				strings.add(category.getName());
+			}
+		}
+		return strings;
+	}
+	
+	
 	
 	@Override
 	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {

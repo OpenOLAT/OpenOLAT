@@ -69,7 +69,7 @@ public class PageImpl implements Persistable, ModifiedInfo, CreateInfo, Page {
 	@Temporal(TemporalType.TIMESTAMP)
 	@Column(name="lastmodified", nullable=false, insertable=true, updatable=true)
 	private Date lastModified;
-	
+
 	/** Only used for order by */
 	@GeneratedValue
 	@Column(name="pos")
@@ -160,6 +160,24 @@ public class PageImpl implements Persistable, ModifiedInfo, CreateInfo, Page {
 
 	public void setStatus(String status) {
 		this.status = status;
+	}
+	
+	@Override
+	public Date getInitialPublicationDate() {
+		return initialPublicationDate;
+	}
+
+	public void setInitialPublicationDate(Date initialPublicationDate) {
+		this.initialPublicationDate = initialPublicationDate;
+	}
+
+	@Override
+	public Date getLastPublicationDate() {
+		return lastPublicationDate;
+	}
+
+	public void setLastPublicationDate(Date lastPublicationDate) {
+		this.lastPublicationDate = lastPublicationDate;
 	}
 
 	@Override

@@ -19,27 +19,18 @@
  */
 package org.olat.modules.portfolio;
 
-import java.util.Date;
-
-import org.olat.basesecurity.Group;
+import org.olat.core.id.OLATResourceable;
 
 /**
  * 
- * Initial date: 16.06.2016<br>
+ * Initial date: 29.06.2016<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public interface PortfolioElement {
+public interface CategoryToElement {
 	
-	public Long getKey();
+	public Category getCategory();
 	
-	public Date getCreationDate();
-	
-	public String getTitle();
-	
-	public Group getBaseGroup();
-	
-	public PortfolioElementType getType();
-	
+	public OLATResourceable getCategorizedResource();
 
 }

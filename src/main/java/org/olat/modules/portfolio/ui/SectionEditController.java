@@ -129,6 +129,7 @@ public class SectionEditController extends FormBasicController {
 			reloadedSection.setEndDate(endDateEl.getDate());
 			section = portfolioService.updateSection(reloadedSection);
 		}
+		
 		fireEvent(ureq, Event.DONE_EVENT);
 	}
 

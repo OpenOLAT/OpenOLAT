@@ -59,6 +59,7 @@ import org.olat.modules.portfolio.Binder;
 import org.olat.modules.portfolio.BinderLight;
 import org.olat.modules.portfolio.BinderRef;
 import org.olat.modules.portfolio.Category;
+import org.olat.modules.portfolio.CategoryToElement;
 import org.olat.modules.portfolio.Media;
 import org.olat.modules.portfolio.MediaHandler;
 import org.olat.modules.portfolio.MediaLight;
@@ -330,15 +331,39 @@ public class PortfolioServiceImpl implements PortfolioService {
 	}
 
 	@Override
-	public List<Category> getCategories(Binder binder) {
-		OLATResourceable ores = OresHelper.createOLATResourceableInstance(Binder.class, binder.getKey());
+	public List<Category> getCategories(PortfolioElement element) {
+		OLATResourceable ores = getOLATResoucreable(element);
 		return categoryDao.getCategories(ores);
 	}
 
 	@Override
-	public void updateCategories(Binder binder, List<String> categories) {
-		OLATResourceable ores = OresHelper.createOLATResourceableInstance(Binder.class, binder.getKey());
+	public List<CategoryToElement> getCategorizedSectionsAndPages(BinderRef binder) {
+		return categoryDao.getCategorizedSectionsAndPages(binder);
+	}
+
+	@Override
+	public List<CategoryToElement> getCategorizedSectionAndPages(SectionRef section) {
+		return categoryDao.getCategorizedSectionAndPages(section);
+	}
+
+	@Override
+	public List<CategoryToElement> getCategorizedOwnedPages(IdentityRef owner) {
+		return categoryDao.getCategorizedOwnedPages(owner);
+	}
+
+	@Override
+	public void updateCategories(PortfolioElement element, List<String> categories) {
+		OLATResourceable ores = getOLATResoucreable(element);
 		updateCategories(ores, categories);
+	}
+	
+	private OLATResourceable getOLATResoucreable(PortfolioElement element) {
+		switch(element.getType()) {
+			case binder: return OresHelper.createOLATResourceableInstance(Binder.class, element.getKey());
+			case section: return OresHelper.createOLATResourceableInstance(Section.class, element.getKey());
+			case page: return OresHelper.createOLATResourceableInstance(Page.class, element.getKey());
+			default: return null;
+		}
 	}
 
 	private void updateCategories(OLATResourceable oresource, List<String> categories) {
@@ -536,6 +561,13 @@ public class PortfolioServiceImpl implements PortfolioService {
 	public Page changePageStatus(Page page, PageStatus status) {
 		Page reloadedPage = pageDao.loadByKey(page.getKey());
 		((PageImpl)reloadedPage).setPageStatus(status);
+		if(status == PageStatus.published) {
+			Date now = new Date();
+			if(reloadedPage.getInitialPublicationDate() == null) {
+				((PageImpl)reloadedPage).setInitialPublicationDate(now);
+			}
+			((PageImpl)reloadedPage).setLastPublicationDate(now);
+		}
 		return pageDao.updatePage(reloadedPage);
 	}
 

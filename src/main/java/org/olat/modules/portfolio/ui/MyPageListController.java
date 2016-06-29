@@ -20,7 +20,9 @@
 package org.olat.modules.portfolio.ui;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -32,8 +34,11 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
+import org.olat.core.id.OLATResourceable;
 import org.olat.modules.portfolio.BinderConfiguration;
 import org.olat.modules.portfolio.BinderSecurityCallback;
+import org.olat.modules.portfolio.Category;
+import org.olat.modules.portfolio.CategoryToElement;
 import org.olat.modules.portfolio.Page;
 import org.olat.modules.portfolio.model.PageRow;
 
@@ -67,10 +72,21 @@ public class MyPageListController extends AbstractPageListController {
 
 	@Override
 	protected void loadModel() {
+		List<CategoryToElement> categorizedElements = portfolioService.getCategorizedOwnedPages(getIdentity());
+		Map<OLATResourceable,List<Category>> categorizedElementMap = new HashMap<>();
+		for(CategoryToElement categorizedElement:categorizedElements) {
+			List<Category> categories = categorizedElementMap.get(categorizedElement.getCategorizedResource());
+			if(categories == null) {
+				categories = new ArrayList<>();
+				categorizedElementMap.put(categorizedElement.getCategorizedResource(), categories);
+			}
+			categories.add(categorizedElement.getCategory());
+		}
+		
 		List<Page> pages = portfolioService.searchOwnedPages(getIdentity());
 		List<PageRow> rows = new ArrayList<>(pages.size());
 		for (Page page : pages) {
-			rows.add(forgeRow(page, null, false));
+			rows.add(forgeRow(page, null, false, categorizedElementMap));
 		}
 		model.setObjects(rows);
 		tableEl.reset();

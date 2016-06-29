@@ -130,6 +130,7 @@ public interface PortfolioService {
 	
 	/**
 	 * Check if this template is used, has some copies.
+	 * 
 	 * @param template
 	 * @param courseEntry
 	 * @param subIdent
@@ -143,6 +144,7 @@ public interface PortfolioService {
 	
 	/**
 	 * The list of owners of the binder.
+	 * 
 	 * @param binder
 	 * @param roles At least a role need to be specified
 	 * @return
@@ -157,9 +159,34 @@ public interface PortfolioService {
 	
 	public void changeAccessRights(List<Identity> identities, List<AccessRightChange> changes);
 	
-	public List<Category> getCategories(Binder binder);
+	public List<Category> getCategories(PortfolioElement element);
+	
+	/**
+	 * Get the categories of the sections and pages under the specified binder.
+	 * 
+	 * @param binder
+	 * @return
+	 */
+	public List<CategoryToElement> getCategorizedSectionsAndPages(BinderRef binder);
+	
+	/**
+	 * Get the categories of the section and the pages under the specified section.
+	 * 
+	 * @param section
+	 * @return
+	 */
+	public List<CategoryToElement> getCategorizedSectionAndPages(SectionRef section);
 
-	public void updateCategories(Binder binder, List<String> categories);
+	/**
+	 * Get the categories of the pages that the specified user owned.
+	 * 
+	 * @param owner
+	 * @return
+	 */
+	public List<CategoryToElement> getCategorizedOwnedPages(IdentityRef owner);
+	
+
+	public void updateCategories(PortfolioElement element, List<String> categories);
 	
 	public File getPosterImageFile(BinderLight binder);
 	

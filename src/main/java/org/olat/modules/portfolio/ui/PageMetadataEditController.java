@@ -20,8 +20,10 @@
 package org.olat.modules.portfolio.ui;
 
 import java.io.File;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.olat.core.gui.UserRequest;
@@ -29,6 +31,7 @@ import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FileElement;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
+import org.olat.core.gui.components.form.flexible.elements.TextBoxListElement;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
@@ -39,6 +42,7 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.StringHelper;
 import org.olat.modules.portfolio.Binder;
+import org.olat.modules.portfolio.Category;
 import org.olat.modules.portfolio.Page;
 import org.olat.modules.portfolio.PortfolioService;
 import org.olat.modules.portfolio.Section;
@@ -64,6 +68,7 @@ public class PageMetadataEditController extends FormBasicController {
 	
 	private TextElement titleEl, summaryEl;
 	private SingleSelection bindersEl, sectionsEl;
+	private TextBoxListElement categoriesEl;
 	
 	private FileElement fileUpload;
 	private static final int picUploadlimitKB = 5120;
@@ -74,6 +79,9 @@ public class PageMetadataEditController extends FormBasicController {
 	
 	private final boolean chooseBinder;
 	private final boolean chooseSection;
+
+	private Map<String,String> categories = new HashMap<>();
+	private Map<String,Category> categoriesMap = new HashMap<>();
 	
 	@Autowired
 	private PortfolioService portfolioService;
@@ -103,6 +111,14 @@ public class PageMetadataEditController extends FormBasicController {
 		
 		this.chooseBinder = chooseBinder;
 		this.chooseSection = chooseSection;
+		
+		if(page != null) {
+			List<Category> tags = portfolioService.getCategories(page);
+			for(Category tag:tags) {
+				categories.put(tag.getName(), tag.getName());
+				categoriesMap.put(tag.getName(), tag);
+			}
+		}
 		
 		initForm(ureq);
 	}
@@ -175,6 +191,10 @@ public class PageMetadataEditController extends FormBasicController {
 			bindersEl = uifactory.addDropdownSingleselect("binders", "page.binders", formLayout, theKeys, theValues, null);
 			bindersEl.setEnabled(false);
 		}
+
+		categoriesEl = uifactory.addTextBoxListElement("categories", "categories", "categories.hint", categories, formLayout, getTranslator());
+		categoriesEl.setElementCssClass("o_sel_ep_tagsinput");
+		categoriesEl.setAllowDuplicates(false);
 
 		//list of sections
 		if(chooseSection) {
@@ -272,7 +292,7 @@ public class PageMetadataEditController extends FormBasicController {
 				imagePath = portfolioService.addPosterImageForPage(fileUpload.getUploadFile(),
 						fileUpload.getUploadFileName());
 			}
-			portfolioService.appendNewPage(getIdentity(), title, summary, imagePath, selectSection);
+			page = portfolioService.appendNewPage(getIdentity(), title, summary, imagePath, selectSection);
 		} else {
 			page.setTitle(titleEl.getValue());
 			page.setSummary(summaryEl.getValue());
@@ -294,6 +314,9 @@ public class PageMetadataEditController extends FormBasicController {
 			}
 			page = portfolioService.updatePage(page, newParent);
 		}
+		
+		List<String> updatedCategories = categoriesEl.getValueList();
+		portfolioService.updateCategories(page, updatedCategories);
 
 		fireEvent(ureq, Event.DONE_EVENT);
 	}

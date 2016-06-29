@@ -195,6 +195,11 @@ public class BinderDAO {
 			.getResultList();
 	}
 	
+	/**
+	 * The same type of query is user for the categories
+	 * @param owner
+	 * @return
+	 */
 	public List<BinderRow> searchOwnedBinders(IdentityRef owner) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select binder.key, binder.title, binder.imagePath, binder.lastModified, binder.status,")

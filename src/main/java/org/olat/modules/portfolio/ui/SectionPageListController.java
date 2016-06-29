@@ -20,7 +20,11 @@
 package org.olat.modules.portfolio.ui;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -32,10 +36,13 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
+import org.olat.core.id.OLATResourceable;
 import org.olat.modules.portfolio.AssessmentSection;
 import org.olat.modules.portfolio.Binder;
 import org.olat.modules.portfolio.BinderConfiguration;
 import org.olat.modules.portfolio.BinderSecurityCallback;
+import org.olat.modules.portfolio.Category;
+import org.olat.modules.portfolio.CategoryToElement;
 import org.olat.modules.portfolio.Page;
 import org.olat.modules.portfolio.Section;
 import org.olat.modules.portfolio.model.PageRow;
@@ -76,6 +83,19 @@ public class SectionPageListController extends AbstractPageListController  {
 
 	@Override
 	protected void loadModel() {
+		List<CategoryToElement> categorizedElements = portfolioService.getCategorizedSectionAndPages(section);
+		Map<OLATResourceable,List<Category>> categorizedElementMap = new HashMap<>();
+		Set<String> sectionAggregatedCategories = new HashSet<>();
+		for(CategoryToElement categorizedElement:categorizedElements) {
+			List<Category> categories = categorizedElementMap.get(categorizedElement.getCategorizedResource());
+			if(categories == null) {
+				categories = new ArrayList<>();
+				categorizedElementMap.put(categorizedElement.getCategorizedResource(), categories);
+			}
+			categories.add(categorizedElement.getCategory());
+			sectionAggregatedCategories.add(categorizedElement.getCategory().getName());
+		}
+		
 		AssessmentSection assessmentSection = null;
 		List<AssessmentSection> assessmentSections = portfolioService.getAssessmentSections(binder, getIdentity());
 		for(AssessmentSection aSection:assessmentSections) {
@@ -88,7 +108,9 @@ public class SectionPageListController extends AbstractPageListController  {
 		List<PageRow> rows = new ArrayList<>();
 		boolean first = true;
 		for (Page page : pages) {
-			rows.add(forgeRow(page, assessmentSection, first));
+			PageRow row = forgeRow(page, assessmentSection, first, categorizedElementMap);
+			row.setSectionCategories(sectionAggregatedCategories);
+			rows.add(row);
 			first = false;
 		}
 		model.setObjects(rows);

@@ -32,10 +32,14 @@ import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
+import javax.persistence.Transient;
 
 import org.olat.core.id.CreateInfo;
+import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Persistable;
+import org.olat.core.util.resource.OresHelper;
 import org.olat.modules.portfolio.Category;
+import org.olat.modules.portfolio.CategoryToElement;
 
 /**
  * 
@@ -47,7 +51,7 @@ import org.olat.modules.portfolio.Category;
  */
 @Entity(name="pfcategoryrelation")
 @Table(name="o_pf_category_relation")
-public class CategoryToElementImpl implements Persistable, CreateInfo {
+public class CategoryToElementImpl implements CategoryToElement, Persistable, CreateInfo {
 
 	private static final long serialVersionUID = -5196328449832113662L;
 
@@ -104,12 +108,19 @@ public class CategoryToElementImpl implements Persistable, CreateInfo {
 		this.resId = resId;
 	}
 
+	@Override
 	public Category getCategory() {
 		return category;
 	}
 
 	public void setCategory(Category category) {
 		this.category = category;
+	}
+	
+	@Override
+	@Transient
+	public OLATResourceable getCategorizedResource() {
+		return OresHelper.createOLATResourceableInstance(resName, resId);
 	}
 
 	@Override
