@@ -282,7 +282,7 @@ public class COConfigForm extends FormBasicController {
 		//message body
 		String mB = (String) config.get(COEditController.CONFIG_KEY_MBODY_DEFAULT);
 		String mBody = (mB != null) ? mB : "";
-		teArElBody = uifactory.addTextAreaElement("mBody", "message.body", 10000, 8, 60, true, mBody, formLayout);
+		teArElBody = uifactory.addRichTextElementForStringDataMinimalistic("mBody", "message.body", mBody, 8, 60, formLayout, getWindowControl());
 		
 		subm = uifactory.addFormSubmitButton("save", formLayout);
 		
