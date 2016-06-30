@@ -99,8 +99,30 @@ public class MovieServiceImpl implements MovieService, ThumbnailSPI {
 				FileChannelWrapper in = new FileChannelWrapper(ch);
 				MP4Demuxer demuxer1 = new MP4Demuxer(in);
 				org.jcodec.common.model.Size size = demuxer1.getMovie().getDisplaySize();
+				// Case 1: standard case, get dimension from movie
 				int w = size.getWidth();
 				int h = size.getHeight();
+				// Case 2: landscape movie from iOS: width and height is negative, no dunny why
+				if (w < 0 && h < 0) {
+					w = 0 - w;
+					h = 0 - h;
+				}
+				if (w == 0) {
+					// Case 3: portrait movie from iOS: movie dimensions are not set, but there 
+					// something in the track box.
+					try {
+						// This code is the way it is just because I don't know
+						// how to safely read the rotation/portrait/landscape
+						// flag of the movie. Those mp4 guys are really
+						// secretive folks, did not find any documentation about
+						// this. Best guess.
+						org.jcodec.common.model.Size size2 = demuxer1.getVideoTrack().getBox().getCodedSize();
+						w = size2.getHeight();
+						h = size2.getWidth();					
+					} catch(Exception e) {
+						log.debug("can not get size from box " + e.getMessage());
+					}
+				}
 				return new Size(w, h, false);
 			} catch (Exception | AssertionError e) {
 				log.error("Cannot extract size of: " + media, e);
