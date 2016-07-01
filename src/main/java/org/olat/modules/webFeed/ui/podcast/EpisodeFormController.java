@@ -22,6 +22,8 @@ package org.olat.modules.webFeed.ui.podcast;
 import java.io.File;
 import java.util.Date;
 
+import org.olat.core.commons.services.image.Size;
+import org.olat.core.commons.services.video.MovieService;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -42,12 +44,15 @@ import org.olat.core.util.FileUtils;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.WebappHelper;
+import org.olat.core.util.vfs.LocalFileImpl;
 import org.olat.core.util.vfs.Quota;
 import org.olat.core.util.vfs.VFSContainer;
+import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.callbacks.FullAccessWithQuotaCallback;
 import org.olat.modules.webFeed.managers.FeedManager;
 import org.olat.modules.webFeed.models.Feed;
 import org.olat.modules.webFeed.models.Item;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * Provides a form for editing episode data (title, description, file ...)
@@ -75,6 +80,9 @@ public class EpisodeFormController extends FormBasicController {
 	private FileElement file;
 	private FormLink cancelButton;
 
+	@Autowired
+	private MovieService movieService;
+	
 	/**
 	 * @param ureq
 	 * @param control
@@ -151,14 +159,40 @@ public class EpisodeFormController extends FormBasicController {
 
 			file.clearError();
 			if (file.isUploadSuccess()) {
-				String newFilename = file.getUploadFileName();
-				boolean isValidFileType = newFilename.toLowerCase().matches(MIME_TYPES_ALLOWED);
+				String newFilename = file.getUploadFileName().toLowerCase();
+				VFSLeaf movie = new LocalFileImpl(file.getUploadFile());
+				// remove spaces
+				newFilename = newFilename.replaceAll(" ", "_");
+				file.setUploadFileName(newFilename);
+				
+				if (newFilename.endsWith("mov") || newFilename.endsWith("m4v")) {
+					// Check if it actually is a mp4 file, if so rename file to
+					// mp4 to make later processes work smoothly. MOV is used 
+					// when uploading a video from an iOS device.
+					if (movieService.isMP4(movie, newFilename)) {
+						newFilename = newFilename.substring(0, newFilename.length() - 3) + "mp4";
+						file.setUploadFileName(newFilename);
+					}
+					
+				}
+				boolean isValidFileType = newFilename.matches(MIME_TYPES_ALLOWED);
 				boolean isFilenameValid = validateFilename(newFilename);
 				if (!isValidFileType || !isFilenameValid) {
 					if(!isValidFileType) {
 						file.setErrorKey("feed.form.file.type.error", null);
 					} else if (!isFilenameValid) {
 						file.setErrorKey("podcastfile.name.notvalid", null);
+					}
+				} else {
+					// try to autodetect width and height for movies, prefill for user if possible
+					Size size = movieService.getSize(movie, FileUtils.getFileSuffix(newFilename));
+					if (size != null) {
+						if (size.getWidth() > 1) {
+							widthEl.setValue(size.getWidth() + "");
+						}
+						if (size.getHeight() > 1) {
+							heightEl.setValue(size.getHeight() + "");
+						}
 					}
 				}
 			}
