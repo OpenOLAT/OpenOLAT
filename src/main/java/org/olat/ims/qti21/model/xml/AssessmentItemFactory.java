@@ -20,6 +20,7 @@
 package org.olat.ims.qti21.model.xml;
 
 import static org.olat.ims.qti21.QTI21Constants.MAXSCORE_CLX_IDENTIFIER;
+import static org.olat.ims.qti21.QTI21Constants.MAXSCORE_IDENTIFIER;
 import static org.olat.ims.qti21.QTI21Constants.MINSCORE_CLX_IDENTIFIER;
 import static org.olat.ims.qti21.QTI21Constants.SCORE_CLX_IDENTIFIER;
 import static org.olat.ims.qti21.QTI21Constants.SCORE_IDENTIFIER;
@@ -1044,5 +1045,20 @@ public class AssessmentItemFactory {
 				correctAnswers.add(identifierValue.identifierValue());
 			}
 		}
+	}
+	
+	public static Double extractMaxScore(AssessmentItem assessmentItem) {
+		Double maxScore = null;
+		OutcomeDeclaration outcomeDeclaration = assessmentItem.getOutcomeDeclaration(MAXSCORE_IDENTIFIER);
+		if(outcomeDeclaration != null) {
+			DefaultValue defaultValue = outcomeDeclaration.getDefaultValue();
+			if(defaultValue != null) {
+				Value maxScoreValue = defaultValue.evaluate();
+				if(maxScoreValue instanceof FloatValue) {
+					maxScore = new Double(((FloatValue)maxScoreValue).doubleValue());
+				}
+			}
+		}
+		return maxScore;
 	}
 }

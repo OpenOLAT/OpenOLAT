@@ -164,9 +164,12 @@ public class CorrectResponsesUtil {
 	 * @return
 	 */
 	public static final List<Identifier> getCorrectIdentifierResponses(AssessmentItem assessmentItem, Interaction interaction) {
+		return getCorrectIdentifierResponses(assessmentItem, interaction.getResponseIdentifier());
+	}
+	
+	public static final List<Identifier> getCorrectIdentifierResponses(AssessmentItem assessmentItem, Identifier responseIdentifier) {
 		List<Identifier> correctAnswers = new ArrayList<>(5);
-		
-		ResponseDeclaration responseDeclaration = assessmentItem.getResponseDeclaration(interaction.getResponseIdentifier());
+		ResponseDeclaration responseDeclaration = assessmentItem.getResponseDeclaration(responseIdentifier);
 		if(responseDeclaration != null && responseDeclaration.getCorrectResponse() != null) {
 			CorrectResponse correctResponse = responseDeclaration.getCorrectResponse();
 			if(correctResponse.getCardinality().isOneOf(Cardinality.SINGLE)) {

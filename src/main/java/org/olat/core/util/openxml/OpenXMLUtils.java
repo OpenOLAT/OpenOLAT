@@ -136,7 +136,7 @@ public class OpenXMLUtils {
 			DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
 			// Turn on validation, and turn on namespaces
 			factory.setValidating(true);
-			factory.setNamespaceAware(true);
+			factory.setNamespaceAware(false);
 			DocumentBuilder builder = factory.newDocumentBuilder();
 			Document doc = builder.newDocument();
 			return doc;

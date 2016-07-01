@@ -102,7 +102,7 @@ public class AssessmentTestBuilder {
 		}
 	}
 	
-	private Double extractCutValue(OutcomeIf outcomeIf) {
+	public static Double extractCutValue(OutcomeIf outcomeIf) {
 		if(outcomeIf != null && outcomeIf.getExpressions().size() > 0) {
 			Expression gte = outcomeIf.getExpressions().get(0);
 			if(gte.getExpressions().size() > 1) {
@@ -118,7 +118,7 @@ public class AssessmentTestBuilder {
 		return null;
 	}
 	
-	private boolean findSetOutcomeValue(OutcomeConditionChild outcomeConditionChild, Identifier identifier) {
+	public static boolean findSetOutcomeValue(OutcomeConditionChild outcomeConditionChild, Identifier identifier) {
 		if(outcomeConditionChild == null
 				|| outcomeConditionChild.getOutcomeRules() == null
 				|| outcomeConditionChild.getOutcomeRules().isEmpty()) return false;

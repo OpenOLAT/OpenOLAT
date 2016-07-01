@@ -167,11 +167,12 @@ public class AssessmentItemDisplayController extends BasicController implements 
 	
 	public AssessmentItemDisplayController(UserRequest ureq, WindowControl wControl,
 			RepositoryEntry testEntry, AssessmentEntry assessmentEntry, boolean authorMode,
-			ResolvedAssessmentItem resolvedAssessmentItem, AssessmentItemRef itemRef, File fUnzippedDirRoot,
+			ResolvedAssessmentItem resolvedAssessmentItem, AssessmentItemRef itemRef,
+			File fUnzippedDirRoot, File itemFile,
 			AssessmentSessionAuditLogger candidateAuditLogger) {
 		super(ureq, wControl);
 		
-		this.itemFileRef = new File(fUnzippedDirRoot, itemRef.getHref().toString());
+		this.itemFileRef = itemFile;
 		this.fUnzippedDirRoot = fUnzippedDirRoot;
 		this.resolvedAssessmentItem = resolvedAssessmentItem;
 		this.candidateAuditLogger = candidateAuditLogger;

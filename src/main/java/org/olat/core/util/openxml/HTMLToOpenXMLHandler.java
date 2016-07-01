@@ -19,6 +19,7 @@
  */
 package org.olat.core.util.openxml;
 
+import java.io.File;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -54,24 +55,32 @@ public class HTMLToOpenXMLHandler extends DefaultHandler {
 	private StringBuilder textBuffer;
 	private Spacing startSpacing;
 	
-	private final OpenXMLDocument factory;
+	protected final OpenXMLDocument factory;
 	
-	private List<Node> content = new ArrayList<Node>();
-	private Deque<StyleStatus> styleStack = new ArrayDeque<StyleStatus>();
+	protected List<Node> content = new ArrayList<Node>();
+	protected Deque<StyleStatus> styleStack = new ArrayDeque<StyleStatus>();
 	
-	private Table currentTable;
-	private Element currentParagraph;
-	private ListParagraph currentListParagraph;
-	private boolean pNeedNewParagraph = true;
+	protected Table currentTable;
+	protected Element currentParagraph;
+	protected ListParagraph currentListParagraph;
+	protected boolean pNeedNewParagraph = true;
+	
+	public HTMLToOpenXMLHandler(OpenXMLDocument document) {
+		this.factory = document;
+	}
 	
 	public HTMLToOpenXMLHandler(OpenXMLDocument document, Element paragraph) {
-		this.factory = document;
+		this(document);
 		this.currentParagraph = paragraph;
 	}
 	
 	public HTMLToOpenXMLHandler(OpenXMLDocument document, Spacing spacing) {
-		this.factory = document;
+		this(document);
 		this.startSpacing = spacing;
+	}
+	
+	public void setInitialParagraph(Element paragraph) {
+		this.currentParagraph = paragraph;
 	}
 	
 	/**
@@ -80,7 +89,7 @@ public class HTMLToOpenXMLHandler extends DefaultHandler {
 	 * @param create
 	 * @return
 	 */
-	private Element getCurrentParagraph(boolean create) {
+	protected Element getCurrentParagraph(boolean create) {
 		if(create || currentParagraph == null) {
 			//flush the text
 			if(textBuffer != null) {
@@ -97,7 +106,7 @@ public class HTMLToOpenXMLHandler extends DefaultHandler {
 		return currentParagraph;
 	}
 	
-	private Element appendParagraph(Spacing spacing) {
+	protected Element appendParagraph(Spacing spacing) {
 		//flush the text
 		if(textBuffer != null) {
 			flushText();
@@ -110,7 +119,7 @@ public class HTMLToOpenXMLHandler extends DefaultHandler {
 		return currentParagraph;
 	}
 	
-	private Element getCurrentListParagraph(boolean create) {
+	protected Element getCurrentListParagraph(boolean create) {
 		if(create || currentParagraph == null) {
 			//flush the text
 			if(textBuffer != null) {
@@ -122,14 +131,14 @@ public class HTMLToOpenXMLHandler extends DefaultHandler {
 		return currentParagraph;
 	}
 	
-	private void closeParagraph() {
+	protected void closeParagraph() {
 		flushText();
 		currentParagraph = addContent(currentParagraph);
 		textBuffer = null;
 		latex = false;
 	}
 	
-	private Element addContent(Node element) {
+	protected Element addContent(Node element) {
 		if(element == null) return null;
 		
 		if(currentTable != null) {
@@ -140,7 +149,7 @@ public class HTMLToOpenXMLHandler extends DefaultHandler {
 		return null;
 	}
 	
-	private void flushText() {
+	protected void flushText() {
 		if(textBuffer == null) return;
 		
 		if(latex) {
@@ -171,7 +180,7 @@ public class HTMLToOpenXMLHandler extends DefaultHandler {
 	 * Get or create a run on the current paragraph
 	 * @return
 	 */
-	private Element getCurrentRun() {
+	protected Element getCurrentRun() {
 		Element paragraphEl;
 		if(currentParagraph == null) {
 			Indent indent = getCurrentIndent();
@@ -191,7 +200,7 @@ public class HTMLToOpenXMLHandler extends DefaultHandler {
 		return (Element)paragraphEl.appendChild(factory.createRunEl(null, runStyle));
 	}
 
-	private Style[] setTextPreferences(String cssStyles) {
+	protected Style[] setTextPreferences(String cssStyles) {
 		if(cssStyles == null) {
 			return setTextPreferences();
 		} else {
@@ -207,19 +216,19 @@ public class HTMLToOpenXMLHandler extends DefaultHandler {
 	/**
 	 * Create a new run with preferences
 	 */
-	private Style[] setTextPreferences(Style... styles) {
+	protected Style[] setTextPreferences(Style... styles) {
 		Node runPrefs = getRunForTextPreferences();
 		factory.createRunPrefsEl(runPrefs, styles);
 		return styles;
 	}
 	
-	private Style[] unsetTextPreferences(Style... styles) {
+	protected Style[] unsetTextPreferences(Style... styles) {
 		Node runPrefs = getRunForTextPreferences();
 		factory.createRunReversePrefsEl(runPrefs, styles);
 		return styles;
 	}
 	
-	private Node getRunForTextPreferences() {
+	protected Node getRunForTextPreferences() {
 		Element paragraphEl = getCurrentParagraph(false);
 		
 		Node runPrefs = null;
@@ -305,7 +314,7 @@ public class HTMLToOpenXMLHandler extends DefaultHandler {
 		return null;
 	}
 	
-	private void setImage(String path) {
+	protected void setImage(String path) {
 		Element imgEl = factory.createImageEl(path);
 		if(imgEl != null) {
 			PredefinedStyle style = getCurrentPredefinedStyle();
@@ -313,6 +322,42 @@ public class HTMLToOpenXMLHandler extends DefaultHandler {
 			Element paragrapheEl = getCurrentParagraph(false);
 			paragrapheEl.appendChild(runEl);
 		}
+	}
+	
+	protected void setImage(File file) {
+		Element imgEl = factory.createImageEl(file);
+		if(imgEl != null) {
+			PredefinedStyle style = getCurrentPredefinedStyle();
+			Element runEl = factory.createRunEl(Collections.singletonList(imgEl), style);
+			Element paragrapheEl = getCurrentParagraph(false);
+			paragrapheEl.appendChild(runEl);
+		}
+	}
+	
+	protected void startTable() {
+		closeParagraph();
+		currentTable = new Table();
+	}
+	
+	protected void startCurrentTableRow() {
+		currentTable.addRowEl();
+	}
+	
+	protected void closeCurrentTableRow() {
+		if(currentTable != null) {
+			currentTable.closeRow();
+		}
+		textBuffer = null;
+		latex = false;
+		currentParagraph = null;
+	}
+	
+	protected void endTable() {
+		if(currentTable != null) {
+			content.add(currentTable.getTableEl());
+		}
+		currentTable = null;
+		currentParagraph = null;
 	}
 
 	@Override
@@ -346,10 +391,9 @@ public class HTMLToOpenXMLHandler extends DefaultHandler {
 			String path = attributes.getValue("src");
 			setImage(path);
 		} else if("table".equalsIgnoreCase(tag)) {
-			closeParagraph();
-			currentTable = new Table();
+			startTable();
 		} else if("tr".equals(tag)) {
-			currentTable.addRowEl();
+			startCurrentTableRow();
 		} else if("td".equals(tag) || "th".equals(tag)) {
 			int colspan = OpenXMLUtils.getSpanAttribute("colspan", attributes);
 			int rowspan = OpenXMLUtils.getSpanAttribute("rowspan", attributes);
@@ -407,21 +451,12 @@ public class HTMLToOpenXMLHandler extends DefaultHandler {
 			unsetTextPreferences(Style.bold);
 			popStyle(tag);
 		}  else if("table".equals(tag)) {
-			if(currentTable != null) {
-				content.add(currentTable.getTableEl());
-			}
-			currentTable = null;
-			currentParagraph = null;
+			endTable();
 		} else if("td".equals(tag) || "th".equals(tag)) {
 			flushText();
 			currentParagraph = addContent(currentParagraph);
 		} else if("tr".equals(tag)) {
-			if(currentTable != null) {
-				currentTable.closeRow();
-			}
-			textBuffer = null;
-			latex = false;
-			currentParagraph = null;
+			closeCurrentTableRow();
 		} else if("ul".equals(tag) || "ol".equals(tag)) {
 			closeParagraph();
 			currentListParagraph = null;
@@ -444,7 +479,7 @@ public class HTMLToOpenXMLHandler extends DefaultHandler {
 		}
 	}
 	
-	private static class StyleStatus {
+	public static class StyleStatus {
 		private final String tag;
 		private final Style[] styles;
 		private final boolean quote;
@@ -472,7 +507,7 @@ public class HTMLToOpenXMLHandler extends DefaultHandler {
 		}
 	}
 	
-	private class Table {
+	public class Table {
 		private final Element tableEl;
 		
 		private int nextCol;
@@ -535,6 +570,13 @@ public class HTMLToOpenXMLHandler extends DefaultHandler {
 				rowSpans[nextCol] = new Span(colSpan, rowSpan);
 			}
 
+			nextCol += (colSpan <= 1 ? 1 : colSpan);
+			return currentRowEl.appendChild(currentCellEl);
+		}
+		
+		public Node addCellEl(Element cellEl, int colSpan) {
+			nextCol += closeCell(nextCol);
+			currentCellEl = cellEl;
 			nextCol += (colSpan <= 1 ? 1 : colSpan);
 			return currentRowEl.appendChild(currentCellEl);
 		}

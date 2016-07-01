@@ -285,6 +285,17 @@ public class OpenXMLDocument {
 		getCursor().appendChild(paragraphEl);
 	}
 	
+	public Element createFillInBlanck(int length) {
+		Element runEl = createRunEl(null);
+		runEl.appendChild(createRunPrefsEl(Style.underline));
+
+		int tabLength = length / 5;
+		for(int i=tabLength; i-->0; ) {
+			runEl.appendChild(document.createElement("w:tab"));
+		}
+		return runEl;
+	}
+	
 /*
 <w:p w:rsidR="00F528BA" w:rsidRPr="00245F75" w:rsidRDefault="00F528BA" w:rsidP="00245F75">
 	<w:pPr>
@@ -296,16 +307,21 @@ public class OpenXMLDocument {
  */
 	public void appendFillInBlanckWholeLine(int rows) {
 		for(int i=rows+1; i-->0; ) {
-			Element paragraphEl = createParagraphEl();
-			Node pargraphPrefs = paragraphEl.appendChild(document.createElement("w:pPr"));
-			Node pargraphBottomPrefs = pargraphPrefs.appendChild(document.createElement("w:pBdr"));
-			Element bottomEl = (Element)pargraphBottomPrefs.appendChild(document.createElement("w:between"));
-			bottomEl.setAttribute("w:val", "single");
-			bottomEl.setAttribute("w:sz", "4");
-			bottomEl.setAttribute("w:space", "1");
-			bottomEl.setAttribute("w:color", "auto");
+			Element paragraphEl = createFillInBlanckWholeLine();
 			getCursor().appendChild(paragraphEl);
 		}
+	}
+	
+	public Element createFillInBlanckWholeLine() {
+		Element paragraphEl = createParagraphEl();
+		Node pargraphPrefs = paragraphEl.appendChild(document.createElement("w:pPr"));
+		Node pargraphBottomPrefs = pargraphPrefs.appendChild(document.createElement("w:pBdr"));
+		Element bottomEl = (Element)pargraphBottomPrefs.appendChild(document.createElement("w:between"));
+		bottomEl.setAttribute("w:val", "single");
+		bottomEl.setAttribute("w:sz", "4");
+		bottomEl.setAttribute("w:space", "1");
+		bottomEl.setAttribute("w:color", "auto");
+		return paragraphEl;
 	}
 	
 	public void appendText(String text, boolean newParagraph, Style... textStyles) {
@@ -404,6 +420,21 @@ public class OpenXMLDocument {
 			SAXParser parser = new SAXParser();
 			Element paragraphEl = getParagraphToAppendTo(newParagraph);
 			parser.setContentHandler(new HTMLToOpenXMLHandler(this, paragraphEl));
+			parser.parse(new InputSource(new StringReader(html)));
+		} catch (SAXException e) {
+			log.error("", e);
+		} catch (IOException e) {
+			log.error("", e);
+		}
+	}
+	
+	public void appendHtmlText(String html, boolean newParagraph, HTMLToOpenXMLHandler handler) {
+		if(!StringHelper.containsNonWhitespace(html)) return;
+		try {
+			SAXParser parser = new SAXParser();
+			Element paragraphEl = getParagraphToAppendTo(newParagraph);
+			handler.setInitialParagraph(paragraphEl);
+			parser.setContentHandler(handler);
 			parser.parse(new InputSource(new StringReader(html)));
 		} catch (SAXException e) {
 			log.error("", e);

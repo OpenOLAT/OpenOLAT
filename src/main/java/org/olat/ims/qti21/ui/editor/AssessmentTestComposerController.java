@@ -27,6 +27,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Date;
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.olat.core.commons.fullWebApp.LayoutMain3ColsController;
@@ -58,6 +59,7 @@ import org.olat.core.gui.control.generic.wizard.Step;
 import org.olat.core.gui.control.generic.wizard.StepRunnerCallback;
 import org.olat.core.gui.control.generic.wizard.StepsMainRunController;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
+import org.olat.core.gui.media.MediaResource;
 import org.olat.core.helpers.Settings;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.Util;
@@ -67,6 +69,7 @@ import org.olat.core.util.vfs.VFSContainer;
 import org.olat.fileresource.FileResourceManager;
 import org.olat.ims.qti21.QTI21Constants;
 import org.olat.ims.qti21.QTI21Service;
+import org.olat.ims.qti21.manager.openxml.QTI21WordExport;
 import org.olat.ims.qti21.model.IdentifierGenerator;
 import org.olat.ims.qti21.model.QTI21QuestionType;
 import org.olat.ims.qti21.model.xml.AssessmentItemBuilder;
@@ -131,7 +134,7 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 	private Dropdown exportItemTools, addItemTools, changeItemTools;
 	private Link newTestPartLink, newSectionLink, newSingleChoiceLink, newMultipleChoiceLink, newKPrimLink,
 		newFIBLink, newNumericalLink, newHotspotLink, newEssayLink;
-	private Link importFromPoolLink, importFromTableLink, exportToPoolLink;
+	private Link importFromPoolLink, importFromTableLink, exportToPoolLink, exportToDocxLink;
 	private Link deleteLink, copyLink;
 	private final TooledStackedPanel toolbar;
 	private VelocityContainer mainVC;
@@ -157,6 +160,7 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 	
 	private LockResult lockEntry;
 	private LockResult activeSessionLock;
+	private CountDownLatch exportLatch;
 	
 	@Autowired
 	private QTI21Service qtiService;
@@ -265,6 +269,11 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 		exportToPoolLink.setIconLeftCSS("o_icon o_icon_table o_icon-fw");
 		exportToPoolLink.setDomReplacementWrapperRequired(false);
 		exportItemTools.addComponent(exportToPoolLink);
+		
+		exportToDocxLink = LinkFactory.createToolLink("export.pool", translate("tools.export.docx"), this, "o_mi_docx_export");
+		exportToDocxLink.setIconLeftCSS("o_icon o_icon_download o_icon-fw");
+		exportToDocxLink.setDomReplacementWrapperRequired(false);
+		exportItemTools.addComponent(exportToDocxLink);
 
 		//changes
 		changeItemTools = new Dropdown("changeTools", "change.elements", false, getTranslator());
@@ -430,6 +439,8 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 			doImportTable(ureq);
 		} else if(exportToPoolLink == source) {
 			doExportPool();
+		} else if(exportToDocxLink == source) {
+			doExportDocx(ureq);
 		} else if(deleteLink == source) {
 			doConfirmDelete(ureq);
 		} else if(copyLink == source) {
@@ -588,6 +599,12 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 
 		qti21QPoolServiceProvider
 				.importAssessmentItemRef(getIdentity(), itemRef, assessmentItem, metadata, unzippedDirRoot, getLocale());
+	}
+	
+	private void doExportDocx(UserRequest ureq) {
+		exportLatch = new CountDownLatch(1);
+		MediaResource mr = new QTI21WordExport(resolvedAssessmentTest, unzippedContRoot, getLocale(), "UTF-8", exportLatch);
+		ureq.getDispatchResult().setResultingMediaResource(mr);
 	}
 	
 	private void doImportTable(UserRequest ureq) {

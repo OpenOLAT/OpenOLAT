@@ -143,7 +143,7 @@ public class AssessmentItemEditorController extends BasicController {
 		
 		AssessmentEntry assessmentEntry = assessmentService.getOrCreateAssessmentEntry(getIdentity(), testEntry, null, testEntry);
 		displayCtrl = new AssessmentItemPreviewController(ureq, getWindowControl(),
-				resolvedAssessmentItem, itemRef, testEntry, assessmentEntry, rootDirectory);
+				resolvedAssessmentItem, itemRef, testEntry, assessmentEntry, rootDirectory, itemFile);
 		listenTo(displayCtrl);
 		displayTabPosition = tabbedPane.addTab(translate("preview"), displayCtrl);
 		
@@ -293,7 +293,7 @@ public class AssessmentItemEditorController extends BasicController {
 				if(testEntry != null) {
 					AssessmentEntry assessmentEntry = assessmentService.getOrCreateAssessmentEntry(getIdentity(), testEntry, null, testEntry);
 					displayCtrl = new AssessmentItemPreviewController(ureq, getWindowControl(),
-						resolvedAssessmentItem, itemRef, testEntry, assessmentEntry, rootDirectory);
+						resolvedAssessmentItem, itemRef, testEntry, assessmentEntry, rootDirectory, itemFile);
 				} else {
 					displayCtrl = new AssessmentItemPreviewController(ureq, getWindowControl(), resolvedAssessmentItem, rootDirectory, itemFile);
 				}

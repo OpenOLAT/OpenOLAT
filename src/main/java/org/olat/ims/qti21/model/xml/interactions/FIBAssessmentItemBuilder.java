@@ -323,7 +323,7 @@ public class FIBAssessmentItemBuilder extends AssessmentItemBuilder {
 	 * @param countAlternatives
 	 * @param mappedScore
 	 */
-	private void extractTextEntrySettingsFromResponseDeclaration(TextEntry textEntry, ResponseDeclaration responseDeclaration,
+	public static void extractTextEntrySettingsFromResponseDeclaration(TextEntry textEntry, ResponseDeclaration responseDeclaration,
 			AtomicInteger countAlternatives, DoubleAdder mappedScore) {
 
 		String solution = null;

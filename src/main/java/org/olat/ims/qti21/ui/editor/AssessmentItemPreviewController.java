@@ -84,11 +84,12 @@ public class AssessmentItemPreviewController extends BasicController {
 	public AssessmentItemPreviewController(UserRequest ureq, WindowControl wControl,
 			ResolvedAssessmentItem resolvedAssessmentItem, AssessmentItemRef itemRef,
 			RepositoryEntry testEntry, AssessmentEntry assessmentEntry,
-			File rootDirectory) {
+			File rootDirectory, File itemFile) {
 		this(ureq, wControl);
 
 		displayCtrl = new AssessmentItemDisplayController(ureq, getWindowControl(),
-				testEntry, assessmentEntry, true, resolvedAssessmentItem, itemRef, rootDirectory, candidateAuditLogger);
+				testEntry, assessmentEntry, true, resolvedAssessmentItem, itemRef,
+				rootDirectory, itemFile, candidateAuditLogger);
 		listenTo(displayCtrl);
 		mainVC.put("display", displayCtrl.getInitialComponent());
 	}
