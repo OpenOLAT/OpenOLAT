@@ -39,6 +39,7 @@ import org.olat.core.configuration.AbstractConfigOnOff;
 public abstract class AbstractCourseNodeConfiguration extends AbstractConfigOnOff implements CourseNodeConfiguration {
 	
 	private int order = 0;
+	private boolean configDeprecated = false;
 
 	private List<String> alternatives;
 	
@@ -55,9 +56,13 @@ public abstract class AbstractCourseNodeConfiguration extends AbstractConfigOnOf
 		return order;
 	}
 
+	public void setDeprecated(boolean configDeprecated) {
+		this.configDeprecated = configDeprecated;
+	}
+
 	@Override
 	public boolean isDeprecated() {
-		return false;
+		return configDeprecated;
 	}
 
 	@Override
