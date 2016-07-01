@@ -151,7 +151,7 @@
 	<bean id="userPropertyInstitutionalUserIdentifier" class="org.olat.user.propertyhandlers.Generic127CharTextPropertyHandler">
 		<property name="name" value="institutionalUserIdentifier" />
 		<property name="group" value="institute" />
-		<property name="deletable" value="false" />
+		<property name="deletable" value="true" />
 	</bean>
 	
 	<bean id="userPropertyInstitutionalEmail" class="org.olat.user.propertyhandlers.EmailProperty">
