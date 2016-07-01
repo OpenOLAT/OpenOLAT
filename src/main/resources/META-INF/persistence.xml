@@ -154,7 +154,6 @@
 		<class>org.olat.modules.qpool.model.BusinessGroupToItemView</class>
 		<class>org.olat.modules.qpool.model.ResourceShareImpl</class>
 		<class>org.olat.modules.qpool.model.TaxonomyLevelImpl</class>
-		<class>org.olat.modules.qpool.model.ResourceShareImpl</class>
 		<class>org.olat.modules.qpool.model.ItemCollectionImpl</class>
 		<class>org.olat.modules.qpool.model.CollectionToItem</class>
 		<class>org.olat.modules.qpool.model.QEducationalContext</class>
