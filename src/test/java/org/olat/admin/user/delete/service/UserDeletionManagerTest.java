@@ -44,6 +44,7 @@ import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.id.Identity;
 import org.olat.core.id.User;
 import org.olat.core.id.UserConstants;
+import org.olat.core.util.StringHelper;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
 import org.olat.portfolio.manager.EPFrontendManager;
@@ -131,8 +132,10 @@ public class UserDeletionManagerTest extends OlatTestCase {
 		Assert.assertFalse(isMember);
 		
 		User deletedUser = deletedIdentity.getUser();
-		Assert.assertEquals("", deletedUser.getProperty(UserConstants.INSTITUTIONALNAME, null));
-		Assert.assertEquals("", deletedUser.getProperty(UserConstants.INSTITUTIONALUSERIDENTIFIER, null));
+		String institutionalName = deletedUser.getProperty(UserConstants.INSTITUTIONALNAME, null);
+		Assert.assertFalse(StringHelper.containsNonWhitespace(institutionalName));
+		String institutionalId = deletedUser.getProperty(UserConstants.INSTITUTIONALUSERIDENTIFIER, null);
+		Assert.assertFalse(StringHelper.containsNonWhitespace(institutionalId));
 	}
 
 	@Test
