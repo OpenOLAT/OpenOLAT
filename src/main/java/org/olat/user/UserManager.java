@@ -199,7 +199,7 @@ public abstract class UserManager extends BasicManager {
 	 * Delete all user-properties which are deletable.
 	 * @param user
 	 */
-	public abstract void deleteUserProperties(User user);
+	public abstract User deleteUserProperties(User user, boolean keepUserEmail);
 
 	public List<UserPropertyHandler> getUserPropertyHandlersFor(String usageIdentifyer, boolean isAdministrativeUser) {
 		return userPropertiesConfig.getUserPropertyHandlersFor(usageIdentifyer, isAdministrativeUser);

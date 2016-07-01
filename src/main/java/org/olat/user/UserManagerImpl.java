@@ -431,7 +431,7 @@ public class UserManagerImpl extends UserManager {
 	 * @param user
 	 */
 	@Override
-	public void deleteUserProperties(User user) {
+	public User deleteUserProperties(User user, boolean keepUserEmail) {
 		// prevent stale objects, reload first
 		user = loadUserByKey(user.getKey());
 		// loop over user fields and remove them form the database if they are
@@ -439,13 +439,15 @@ public class UserManagerImpl extends UserManager {
 		List<UserPropertyHandler> propertyHandlers = userPropertiesConfig.getAllUserPropertyHandlers();
 		for (UserPropertyHandler propertyHandler : propertyHandlers) {
 			String fieldName = propertyHandler.getName();
-			if (propertyHandler.isDeletable()) {
+			if (propertyHandler.isDeletable()
+					&& !(keepUserEmail && UserConstants.EMAIL.equals(propertyHandler.getName()))) {
 				user.setProperty(fieldName, null);
 			}		
 		}
 		// persist changes
-		updateUser(user);
+		User updatedUser = updateUser(user);
 		if(isLogDebugEnabled()) logDebug("Delete all user-attributtes for user=" + user);
+		return updatedUser;
 	}
 
 	@Override

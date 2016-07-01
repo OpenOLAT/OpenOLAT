@@ -464,6 +464,12 @@ public class FileElementImpl extends FormItemImpl
 	public String getUploadFileName() {
 		return uploadFilename;
 	}
+	
+	@Override
+	public void setUploadFileName(String uploadFileName) {
+		this.uploadFilename = uploadFileName;
+		this.uploadMimeType = WebappHelper.getMimeType(uploadFilename);
+	}
 
 	/**
 	 * @see org.olat.core.gui.components.form.flexible.elements.FileElement#getUploadMimeType()

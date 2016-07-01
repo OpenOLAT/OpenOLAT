@@ -31,15 +31,19 @@ import static org.junit.Assert.assertTrue;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.UUID;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
 import org.junit.Assert;
 import org.junit.Test;
 import org.olat.basesecurity.BaseSecurity;
+import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.id.Identity;
+import org.olat.core.id.User;
+import org.olat.core.id.UserConstants;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
 import org.olat.portfolio.manager.EPFrontendManager;
@@ -50,6 +54,7 @@ import org.olat.portfolio.model.structel.PortfolioStructure;
 import org.olat.portfolio.model.structel.PortfolioStructureMap;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
+import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -61,6 +66,8 @@ public class UserDeletionManagerTest extends OlatTestCase {
 	
 	@Autowired
 	private DB dbInstance;
+	@Autowired
+	private UserManager userManager;
 	@Autowired
 	private BaseSecurity securityManager;
 	@Autowired
@@ -74,8 +81,14 @@ public class UserDeletionManagerTest extends OlatTestCase {
 	
 	@Test
 	public void testDeleteIdentity() {
-		Identity identity = JunitTestHelper.createAndPersistIdentityAsUser("anIdentityToDelete");
-		dbInstance.commit();
+		String username = "id-to-del-" + UUID.randomUUID();
+		User user = userManager.createUser("first" + username, "last" + username, username + "@frentix.com");
+		user.setProperty(UserConstants.COUNTRY, "");
+		user.setProperty(UserConstants.CITY, "Basel");
+		user.setProperty(UserConstants.INSTITUTIONALNAME, "Del-23");
+		user.setProperty(UserConstants.INSTITUTIONALUSERIDENTIFIER, "Del-24");
+		Identity identity = securityManager.createAndPersistIdentityAndUser(username, null, user, BaseSecurityModule.getDefaultAuthProviderIdentifier(), username, "secret");
+		dbInstance.commitAndCloseSession();
 		// add some stuff
 		
 		//a default map
@@ -116,6 +129,10 @@ public class UserDeletionManagerTest extends OlatTestCase {
 		//check membership of group
 		boolean isMember = businessGroupService.isIdentityInBusinessGroup(deletedIdentity, group);
 		Assert.assertFalse(isMember);
+		
+		User deletedUser = deletedIdentity.getUser();
+		Assert.assertEquals("", deletedUser.getProperty(UserConstants.INSTITUTIONALNAME, null));
+		Assert.assertEquals("", deletedUser.getProperty(UserConstants.INSTITUTIONALUSERIDENTIFIER, null));
 	}
 
 	@Test

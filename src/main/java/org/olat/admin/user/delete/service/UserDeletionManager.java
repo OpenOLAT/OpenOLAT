@@ -297,8 +297,6 @@ public class UserDeletionManager extends BasicManager {
 			logInfo("UserDataDeletable-Loop element=" + element);
 			element.deleteUserData(identity, newName);
 		}
-		logInfo("deleteUserProperties user=" + identity.getUser());
-		UserManager.getInstance().deleteUserProperties(identity.getUser());
 		// Delete all authentications for certain identity
 		List<Authentication> authentications = securityManager.getAuthentications(identity);
 		for (Iterator<Authentication> iter = authentications.iterator(); iter.hasNext();) {
@@ -344,8 +342,12 @@ public class UserDeletionManager extends BasicManager {
 			}
 		}
 		
+		logInfo("deleteUserProperties user=" + identity.getUser());
+		UserManager.getInstance().deleteUserProperties(identity.getUser(), keepUserEmailAfterDeletion);
+		DBFactory.getInstance().commit();
+		identity = securityManager.loadIdentityByKey(identity.getKey());
 		//keep email only -> change login-name
-		if (!keepUserLoginAfterDeletion){
+		if (!keepUserEmailAfterDeletion) {
 			identity = securityManager.saveIdentityName(identity, newName, null);
 		}
 		
