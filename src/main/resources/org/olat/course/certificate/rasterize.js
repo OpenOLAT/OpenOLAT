@@ -42,6 +42,28 @@ if (system.args.length < 3 || system.args.length > 5) {
             console.log('Unable to load the address!');
             phantom.exit(1);
         } else {
+        	// Check if QR code must be rendered
+        	var hasQRCode =  page.evaluate(function() {
+	        	return (document.querySelectorAll('.o_qrcode').length > 0);
+   			});
+   	     	// If so, load library and create code
+   			if (hasQRCode && page.injectJs('qrcode.min.js')) {
+            	page.evaluate(function() {
+            		var qrcodes = document.querySelectorAll('.o_qrcode');
+            		var i;
+					for (i = 0; i < qrcodes.length; i++) {
+    					var qrcode = qrcodes[i];
+    					var val = qrcode.textContent;
+    					// remove url from container
+            			while (qrcode.firstChild) {
+					    	qrcode.removeChild(qrcode.firstChild);
+						}
+						// and replace it with QR-Code
+        				new QRCode(qrcode, val);
+					}
+            	});
+        	}
+        	// Finally render as PDF
             window.setTimeout(function () {
                 page.render(output);
                 phantom.exit();

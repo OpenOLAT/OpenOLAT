@@ -69,15 +69,16 @@ public class CertificatePDFFormWorker {
 	private Date dateCertification;
 	private Date dateFirstCertification;
 	private Date dateNextRecertification;
+	private final String certificateURL;
 
 	private final Locale locale;
 	private final UserManager userManager;
 	private final CertificatesManagerImpl certificatesManager;
 
 	public CertificatePDFFormWorker(Identity identity, RepositoryEntry entry,
-			Float score, Boolean passed, Date dateCertification,
-			Date dateFirstCertification, Date dateNextRecertification, Locale locale,
-			UserManager userManager, CertificatesManagerImpl certificatesManager) {
+			Float score, Boolean passed, Date dateCertification, Date dateFirstCertification,
+			Date dateNextRecertification, String certificateURL, Locale locale, UserManager userManager,
+			CertificatesManagerImpl certificatesManager) {
 		this.entry = entry;
 		this.score = score;
 		this.locale = locale;
@@ -86,6 +87,7 @@ public class CertificatePDFFormWorker {
 		this.dateCertification = dateCertification;
 		this.dateFirstCertification = dateFirstCertification;
 		this.dateNextRecertification = dateNextRecertification;
+		this.certificateURL = certificateURL;
 		this.userManager = userManager;
 		this.certificatesManager = certificatesManager;
 	}
@@ -114,6 +116,7 @@ public class CertificatePDFFormWorker {
 				fillRepositoryEntry(acroForm);
 				fillCertificationInfos(acroForm);
 				fillAssessmentInfos(acroForm);
+				fillMetaInfos(acroForm);
 			}
 			if(!destinationDir.exists()) {
 				destinationDir.mkdirs();
@@ -236,6 +239,12 @@ public class CertificatePDFFormWorker {
 		String status = (passed != null && passed.booleanValue()) ? "Passed" : "Failed";
 		fillField("status", status, acroForm);
 	}
+	
+	
+	private void fillMetaInfos(PDAcroForm acroForm) throws IOException {
+		fillField("certificateVerificationUrl", certificateURL, acroForm);
+	}
+
 
 	private void fillField(String fieldName, String value, PDAcroForm acroForm)
 			throws IOException {

@@ -61,6 +61,7 @@ import org.olat.core.commons.services.notifications.NotificationsManager;
 import org.olat.core.commons.services.notifications.PublisherData;
 import org.olat.core.commons.services.notifications.SubscriptionContext;
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.helpers.Settings;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
 import org.olat.core.id.UserConstants;
@@ -192,9 +193,15 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 		//deploy script
 		try(InputStream inRasteriez = CertificatesManager.class.getResourceAsStream("rasterize.js")) {
 			Path rasterizePath = getRasterizePath();
-			Files.copy(inRasteriez, rasterizePath, StandardCopyOption.REPLACE_EXISTING);
+			Files.copy(inRasteriez, rasterizePath, StandardCopyOption.REPLACE_EXISTING);	
 		} catch(Exception e) {
-			log.error("", e);
+			log.error("Can not read rasterize.js library for PhantomJS PDF generation", e);
+		}
+		try(InputStream inQRCodeLib = CertificatesManager.class.getResourceAsStream("qrcode.min.js")) {
+			Path qrCodeLibPath = getQRCodeLibPath();
+			Files.copy(inQRCodeLib, qrCodeLibPath, StandardCopyOption.REPLACE_EXISTING);	
+		} catch(Exception e) {
+			log.error("Can not read qrcode.min.js for QR Code PDF generation", e);
 		}
 		
 		//start the queues
@@ -695,18 +702,22 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 		Identity identity = getPreviewIdentity();
 		
 		File certificateFile;
-		File dirFile = new File(WebappHelper.getTmpDir(), UUID.randomUUID().toString());	
+		File dirFile = new File(WebappHelper.getTmpDir(), UUID.randomUUID().toString());
+		StringBuilder sb = new StringBuilder();
+		sb.append(Settings.getServerContextPathURI()).append("/certificate/")
+		  .append(UUID.randomUUID()).append("/preview.pdf");
+		 String certUrl = sb.toString();
 		if(template == null) {
 			CertificatePDFFormWorker worker = new CertificatePDFFormWorker(identity, entry, 2.0f, true,
-					new Date(), new Date(), new Date(), locale, userManager, this);
+					new Date(), new Date(), new Date(), certUrl, locale, userManager, this);
 			certificateFile = worker.fill(null, dirFile, "Certificate.pdf");
 		} else if(template.getPath().toLowerCase().endsWith("pdf")) {
 			CertificatePDFFormWorker worker = new CertificatePDFFormWorker(identity, entry, 2.0f, true,
-					new Date(), new Date(), new Date(), locale, userManager, this);
+					new Date(), new Date(), new Date(), certUrl, locale, userManager, this);
 			certificateFile = worker.fill(template, dirFile, "Certificate.pdf");
 		} else {
 			CertificatePhantomWorker worker = new CertificatePhantomWorker(identity, entry, 2.0f, true,
-					new Date(), new Date(),new Date(),  locale, userManager, this);
+					new Date(), new Date(),new Date(),  certUrl, locale, userManager, this);
 			certificateFile = worker.fill(template, dirFile, "Certificate.pdf");
 		}
 		return certificateFile;
@@ -838,15 +849,24 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 		Date dateNextRecertification = getDateNextRecertification(certificate, entry);
 		
 		File certificateFile;
+		// File name with user name
 		StringBuilder sb = new StringBuilder();
 		sb.append(identity.getUser().getProperty(UserConstants.LASTNAME, locale)).append("_")
 		  .append(identity.getUser().getProperty(UserConstants.FIRSTNAME, locale)).append("_")
 		  .append(entry.getDisplayname()).append("_")
 		  .append(Formatter.formatShortDateFilesystem(dateCertification));
 		String filename = FileUtils.normalizeFilename(sb.toString()) + ".pdf";
+		// External URL to certificate. See also DownloadCertificateCellRenderer.getUrl();
+		sb = new StringBuilder();
+		sb.append(Settings.getServerContextPathURI()).append("/certificate/")
+		  .append(certificate.getUuid()).append("/")
+		  .append(filename);
+		String certUrl = sb.toString();
+		
 		if(template == null || template.getPath().toLowerCase().endsWith("pdf")) {
 			CertificatePDFFormWorker worker = new CertificatePDFFormWorker(identity, entry, score, passed,
-					dateCertification, dateFirstCertification, dateNextRecertification, locale, userManager, this);
+					dateCertification, dateFirstCertification, dateNextRecertification, certUrl, locale,
+					userManager, this);
 			certificateFile = worker.fill(template, dirFile, filename);
 			if(certificateFile == null) {
 				certificate.setStatus(CertificateStatus.error);
@@ -855,7 +875,8 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 			}
 		} else {
 			CertificatePhantomWorker worker = new CertificatePhantomWorker(identity, entry, score, passed,
-					dateCertification, dateFirstCertification, dateNextRecertification, locale, userManager, this);
+					dateCertification, dateFirstCertification, dateNextRecertification, certUrl, locale,
+					userManager, this);
 			certificateFile = worker.fill(template, dirFile, filename);
 			if(certificateFile == null) {
 				certificate.setStatus(CertificateStatus.error);
@@ -1103,6 +1124,12 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 		Path path = Paths.get(FolderConfig.getCanonicalRoot(), "certificates", "rasterize.js");
 		return path;
 	}
+	
+	public Path getQRCodeLibPath() {
+		Path path = Paths.get(FolderConfig.getCanonicalRoot(), "certificates", "qrcode.min.js");
+		return path;
+	}
+	
 	
 	public VFSContainer getCertificateRootContainer() {
 		return new OlatRootFolderImpl(File.separator + "certificates" + File.separator + "users", null);

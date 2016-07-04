@@ -65,6 +65,7 @@ public class CertificatePhantomWorker {
 	private final Boolean passed;
 	private final Identity identity;
 	private final RepositoryEntry entry;
+	private final String certificateURL;
 
 	private Date dateCertification;
 	private Date dateFirstCertification;
@@ -76,7 +77,7 @@ public class CertificatePhantomWorker {
 
 	public CertificatePhantomWorker(Identity identity, RepositoryEntry entry,
 			Float score, Boolean passed, Date dateCertification,
-			Date dateFirstCertification, Date nextRecertificationDate, Locale locale,
+			Date dateFirstCertification, Date nextRecertificationDate, String certificateURL, Locale locale,
 			UserManager userManager, CertificatesManagerImpl certificatesManager) {
 		this.entry = entry;
 		this.score = score;
@@ -86,6 +87,7 @@ public class CertificatePhantomWorker {
 		this.dateCertification = dateCertification;
 		this.dateFirstCertification = dateFirstCertification;
 		this.dateNextRecertification = nextRecertificationDate;
+		this.certificateURL = certificateURL;
 		this.userManager = userManager;
 		this.certificatesManager = certificatesManager;
 	}
@@ -145,6 +147,7 @@ public class CertificatePhantomWorker {
 		fillRepositoryEntry(context);
 		fillCertificationInfos(context);
 		fillAssessmentInfos(context);
+		fillMetaInfos(context);
 		return context;
 	}
 	
@@ -251,6 +254,10 @@ public class CertificatePhantomWorker {
 
 		String status = (passed != null && passed.booleanValue()) ? "Passed" : "Failed";
 		context.put("status", status);
+	}
+	
+	private void fillMetaInfos(VelocityContext context) {
+		context.put("certificateVerificationUrl", certificateURL);
 	}
 	
 	public static boolean checkPhantomJSAvailabilty() {
