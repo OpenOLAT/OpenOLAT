@@ -162,7 +162,7 @@ var QRCode;
 		
 		if (/android/i.test(sAgent)) { // android
 			android = true;
-			aMat = sAgent.toString().match(/android ([0-9]\.[0-9])/i);
+			var aMat = sAgent.toString().match(/android ([0-9]\.[0-9])/i);
 			
 			if (aMat && aMat[1]) {
 				android = parseFloat(aMat[1]);
@@ -199,12 +199,13 @@ var QRCode;
 			svg.setAttributeNS("http://www.w3.org/2000/xmlns/", "xmlns:xlink", "http://www.w3.org/1999/xlink");
 			_el.appendChild(svg);
 
+			svg.appendChild(makeSVG("rect", {"fill": _htOption.colorLight, "width": "100%", "height": "100%"}));
 			svg.appendChild(makeSVG("rect", {"fill": _htOption.colorDark, "width": "1", "height": "1", "id": "template"}));
 
 			for (var row = 0; row < nCount; row++) {
 				for (var col = 0; col < nCount; col++) {
 					if (oQRCode.isDark(row, col)) {
-						var child = makeSVG("use", {"x": String(row), "y": String(col)});
+						var child = makeSVG("use", {"x": String(col), "y": String(row)});
 						child.setAttributeNS("http://www.w3.org/1999/xlink", "href", "#template")
 						svg.appendChild(child);
 					}
@@ -318,7 +319,7 @@ var QRCode;
                     self._bSupportDataURI = false;
 
                     if (self._fFail) {
-                        _fFail.call(self);
+                        self._fFail.call(self);
                     }
                 };
                 var fOnSuccess = function() {
@@ -556,6 +557,10 @@ var QRCode;
 		
 		if (typeof el == "string") {
 			el = document.getElementById(el);
+		}
+
+		if (this._htOption.useSVG) {
+			Drawing = svgDrawer;
 		}
 		
 		this._android = _getAndroid();
