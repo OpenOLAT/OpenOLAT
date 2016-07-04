@@ -189,6 +189,7 @@ public class PageDAO {
 		aPart.setCreationDate(new Date());
 		aPart.setLastModified(aPart.getCreationDate());
 		aPart.setBody(body);
+		body.getParts().size();
 		body.getParts().add(aPart);
 		dbInstance.getCurrentEntityManager().persist(aPart);
 		dbInstance.getCurrentEntityManager().merge(body);
