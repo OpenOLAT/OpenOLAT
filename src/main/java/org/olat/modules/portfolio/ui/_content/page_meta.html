@@ -1,0 +1,32 @@
+<div class="o_header_with_buttons">
+	<h1>$r.escapeHtml($pageTitle)</h1>
+	#if($r.available("publish"))
+	<div class="o_button_group o_button_group_right">
+		$r.render("publish")
+	</div>
+	#end
+</div>
+<div class="o_portfolio_page_meta">
+	<div class="clearfix">
+		#if(${hasLastPublicationDate})
+		<span class="o_portfolio_page_meta text-muted o_small">
+			 $r.translate("meta.last.publication", $r.formatDateAndTime($lastPublicationDate))
+		</span>
+		#end
+		#if($pageCategories && !${pageCategories.isEmpty()})
+		<span class="o_portfolio_page_meta text-muted o_small">
+			 $r.translate("meta.categories") <i class="o_icon o_icon_tags"> </i>
+			 #foreach($category in $pageCategories)
+			 	#if(${foreach.count} > 1), #end
+			 	$category
+			 #end
+		</span>
+		#end
+		<span class="o_portfolio_page_meta text-muted o_small">
+			 $r.translate("meta.last.modified", $r.formatDateAndTime($lastModified))
+		</span>
+	</div>
+	<div class="o_page_lead o_block_large_bottom">
+		<p>$r.xssScan($pageSummary)</p>
+	</div>
+</div>

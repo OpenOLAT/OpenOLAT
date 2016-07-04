@@ -20,36 +20,24 @@
 package org.olat.modules.portfolio.ui.editor;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.components.form.flexible.FormItem;
-import org.olat.core.gui.components.form.flexible.FormItemContainer;
-import org.olat.core.gui.components.form.flexible.elements.FormLink;
-import org.olat.core.gui.components.form.flexible.elements.RichTextElement;
-import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
-import org.olat.core.gui.components.form.flexible.impl.FormEvent;
-import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
+import org.olat.core.gui.components.link.LinkFactory;
+import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
-import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
-import org.olat.modules.portfolio.Media;
-import org.olat.modules.portfolio.MediaHandler;
-import org.olat.modules.portfolio.Page;
 import org.olat.modules.portfolio.PagePart;
-import org.olat.modules.portfolio.PortfolioService;
-import org.olat.modules.portfolio.model.HTMLPart;
-import org.olat.modules.portfolio.model.MediaPart;
-import org.olat.modules.portfolio.ui.MediaCenterController;
 import org.olat.modules.portfolio.ui.PageController;
-import org.olat.modules.portfolio.ui.event.MediaSelectionEvent;
-import org.olat.modules.portfolio.ui.media.CollectFileMediaController;
-import org.olat.modules.portfolio.ui.media.CollectImageMediaController;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.olat.modules.portfolio.ui.editor.event.ChangePartEvent;
 
 /**
  * 
@@ -57,64 +45,56 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class PageEditorController extends FormBasicController {
+public class PageEditorController extends BasicController {
 
-	private FormLink addHtmlLink, addMediaLink, addFileLink, addImageLink;
-	private List<EditorFragment> fragments = new ArrayList<>();
-
+	private final VelocityContainer mainVC;
+	
 	private CloseableModalController cmc;
-	private MediaCenterController mediaListCtrl;
-	private CollectFileMediaController fileUploadCtrl;
-	private CollectImageMediaController imageUploadCtrl;
+	private PageElementAddController addCtrl;
 	
-	private Page page;
-	private int counter = 0;
-	
-	@Autowired
-	private PortfolioService portfolioService;
-	
-	public PageEditorController(UserRequest ureq, WindowControl wControl, Page page) {
-		super(ureq, wControl, "page_editor");
-		this.page = page;
+	private int counter;
+	private PageEditorProvider provider;
+	private List<EditorFragment> fragments = new ArrayList<>();
+	private Map<String,PageElementHandler> handlerMap = new HashMap<>();
+
+	public PageEditorController(UserRequest ureq, WindowControl wControl, PageEditorProvider provider) {
+		super(ureq, wControl);
+		this.provider = provider;
 		setTranslator(Util.createPackageTranslator(PageController.class, getLocale(), getTranslator()));
 		
-		initForm(ureq);
-		loadModel(ureq);
-	}
-
-	@Override
-	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		addHtmlLink = uifactory.addFormLink("add.html", "add.html", "add.html", null, formLayout, Link.BUTTON);
-		addHtmlLink.setIconLeftCSS("o_icon o_icon_add_html");
-
-		addMediaLink = uifactory.addFormLink("add.media", "add.media", "add.media", null, formLayout, Link.BUTTON);
-		addMediaLink.setIconLeftCSS("o_icon o_icon_portfolio");
-		
-		addFileLink = uifactory.addFormLink("add.file", "add.file", "add.file", null, formLayout, Link.BUTTON);
-		addFileLink.setIconLeftCSS("o_icon o_icon_portfolio");
-		
-		addImageLink = uifactory.addFormLink("add.image", "add.image", "add.image", null, formLayout, Link.BUTTON);
-		addImageLink.setIconLeftCSS("o_icon o_icon_portfolio");
-			
-		uifactory.addFormSubmitButton("save", formLayout);
-
-		if(formLayout instanceof FormLayoutContainer) {
-			FormLayoutContainer layoutCont = (FormLayoutContainer)formLayout;
-			layoutCont.getFormItemComponent().contextPut("pageTitle", page.getTitle());
+		mainVC = createVelocityContainer("page_editor");
+		for(PageElementHandler handler:provider.getAvailableHandlers()) {
+			handlerMap.put(handler.getType(), handler);
 		}
+
+		List<String> addElements = new ArrayList<>();
+		for(PageElementHandler handler:provider.getCreateHandlers()) {
+			if(handler instanceof InteractiveAddPageElementHandler || handler instanceof SimpleAddPageElementHandler) {
+				String id = "add." + handler.getType();
+				Link addLink = LinkFactory.createLink(id, id, "add", mainVC, this);
+				addLink.setIconLeftCSS("o_icon o_icon-lg " + handler.getIconCssClass());
+				addLink.setUserObject(handler);
+				mainVC.put(id, addLink);
+				addElements.add(id);
+			}
+		}
+		
+		mainVC.contextPut("addElementLinks", addElements);
+		loadModel(ureq);
+		putInitialPanel(mainVC);
 	}
-	
+
 	private void loadModel(UserRequest ureq) {
-		List<PagePart> parts = portfolioService.getPageParts(page);
-		List<EditorFragment> newFragments = new ArrayList<>(parts.size());
-		for(PagePart part:parts) {
-			EditorFragment fragment = createFragment(ureq, part);
+		List<? extends PageElement> elements = provider.getElements();
+		List<EditorFragment> newFragments = new ArrayList<>(elements.size());
+		for(PageElement element:elements) {
+			EditorFragment fragment = createFragment(ureq, element);
 			if(fragment != null) {
 				newFragments.add(fragment);
 			}
 		}
 		fragments = newFragments;
-		flc.getFormItemComponent().contextPut("fragments", newFragments);
+		mainVC.contextPut("fragments", newFragments);
 	}
 	
 	@Override
@@ -123,250 +103,142 @@ public class PageEditorController extends FormBasicController {
 	}
 	
 	@Override
-	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if(addHtmlLink == source) {
-			doAddHTMLFragment(ureq);
-		} else if(addMediaLink == source) {
-			doOpenMediaBrowser(ureq);
-		} else if(addImageLink == source) {
-			doAddImageMedia(ureq);
-		} else if(addFileLink == source) {
-			doAddFileMedia(ureq);
-		} else if(source.getUserObject() instanceof HTMLEditorFragment) {
-			HTMLEditorFragment fragment = (HTMLEditorFragment)source.getUserObject();
-			if(fragment.getFormItem() == source) {
-				String htmlVal = fragment.getFormItem().getValue();
-				PagePart part = fragment.getPart();
-				part.setContent(htmlVal);
-				fragment.setPart(portfolioService.updatePart(part));
-				flc.setDirty(true);	
-			}
-		}
-		super.formInnerEvent(ureq, source, event);
-	}
-
-	@Override
-	protected void propagateDirtinessToContainer(FormItem fiSrc, FormEvent fe) {
-		//ok -> set container dirty
-		super.propagateDirtinessToContainer(fiSrc, fe);
-	}
-
-	@Override
-	protected void formOK(UserRequest ureq) {
-		for(EditorFragment fragment:fragments) {
-			if(fragment instanceof HTMLEditorFragment) {
-				HTMLEditorFragment htmlFragment = (HTMLEditorFragment)fragment;
-				String htmlVal = htmlFragment.getFormItem().getValue();
-				String currentHtmlVal = fragment.getPart().getContent();
-				
-				if((currentHtmlVal == null && StringHelper.containsNonWhitespace(htmlVal))
-						|| (htmlVal == null && StringHelper.containsNonWhitespace(currentHtmlVal))
-						|| (currentHtmlVal != null && !currentHtmlVal.equals(htmlVal))) {
-					PagePart part = fragment.getPart();
-					part.setContent(htmlVal);
-					htmlFragment.setPart(portfolioService.updatePart(part));
-				}
-			}
-		}
-		fireEvent(ureq, Event.DONE_EVENT);
-	}
-	
-	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
-		if(mediaListCtrl == source) {
-			if(event instanceof MediaSelectionEvent) {
-				MediaSelectionEvent mse = (MediaSelectionEvent)event;
-				if(mse.getMedia() != null) {
-					doAddMedia(ureq, mse.getMedia());
-				}
-				loadModel(ureq);
-			}
-			cmc.deactivate();
-			cleanUp();
-		} else if(fileUploadCtrl == source) {
-			if(event == Event.DONE_EVENT) {
-				if(fileUploadCtrl.getMediaReference() != null) {
-					doAddMedia(ureq, fileUploadCtrl.getMediaReference());
-				}
-				loadModel(ureq);
-			}
-			cmc.deactivate();
-			cleanUp();
-		} else if(imageUploadCtrl == source) {
-			if(event == Event.DONE_EVENT) {
-				if(imageUploadCtrl.getMediaReference() != null) {
-					doAddMedia(ureq, imageUploadCtrl.getMediaReference());
-				}
-				loadModel(ureq);
+		if(addCtrl == source) {
+			if(event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
+				PageElement element = addCtrl.getPageElement();
+				doAddPageElement(ureq, element);
 			}
 			cmc.deactivate();
 			cleanUp();
 		} else if(cmc == source) {
 			cleanUp();
+		} else if(isEditorPartController(source)) {
+			EditorFragment fragment = getEditorFragment(source);
+			if(event instanceof ChangePartEvent) {
+				ChangePartEvent changeEvent = (ChangePartEvent)event;
+				PagePart part = changeEvent.getPagePart();
+				fragment.setPageElement(part);
+				mainVC.setDirty(true);
+				fireEvent(ureq, Event.CHANGED_EVENT);
+			}	
 		}
 		super.event(ureq, source, event);
 	}
 	
-	private void cleanUp() {
-		removeAsListenerAndDispose(imageUploadCtrl);
-		removeAsListenerAndDispose(fileUploadCtrl);
-		removeAsListenerAndDispose(mediaListCtrl);
-		removeAsListenerAndDispose(cmc);
-		imageUploadCtrl = null;
-		fileUploadCtrl = null;
-		mediaListCtrl = null;
-		cmc = null;
+	private boolean isEditorPartController(Controller source) {
+		for(EditorFragment fragment:fragments) {
+			if(fragment.getEditorPart() == source) {
+				return true;
+			}
+		}
+		return false;
 	}
 	
-	private void doAddFileMedia(UserRequest ureq) {
-		if(fileUploadCtrl != null) return;
-		
-		fileUploadCtrl = new CollectFileMediaController(ureq, getWindowControl());
-		listenTo(fileUploadCtrl);
-		
-		String title = translate("add.media");
-		cmc = new CloseableModalController(getWindowControl(), null, fileUploadCtrl.getInitialComponent(), true, title, true);
-		listenTo(cmc);
-		cmc.activate();
-	}
-	
-	private void doAddImageMedia(UserRequest ureq) {
-		if(imageUploadCtrl != null) return;
-		
-		imageUploadCtrl = new CollectImageMediaController(ureq, getWindowControl());
-		listenTo(imageUploadCtrl);
-		
-		String title = translate("add.image");
-		cmc = new CloseableModalController(getWindowControl(), null, imageUploadCtrl.getInitialComponent(), true, title, true);
-		listenTo(cmc);
-		cmc.activate();
-	}
-
-	private void doOpenMediaBrowser(UserRequest ureq) {
-		if(mediaListCtrl != null) return;
-		
-		mediaListCtrl = new MediaCenterController(ureq, getWindowControl());
-		listenTo(mediaListCtrl);
-		
-		String title = translate("add.media");
-		cmc = new CloseableModalController(getWindowControl(), null, mediaListCtrl.getInitialComponent(), true, title, true);
-		listenTo(cmc);
-		cmc.activate();
-	}
-	
-	private void doAddMedia(UserRequest ureq, Media media) {
-		MediaPart part = new MediaPart();
-		part.setMedia(media);
-		part = portfolioService.appendNewPagePart(page, part);
-		EditorFragment fragment = createFragment(ureq, part);
-		fragments.add(fragment);
-		flc.setDirty(true);
-	}
-	
-	private void doAddHTMLFragment(UserRequest ureq) {
-		String content = "<p>Hello world</p>";
-		HTMLPart htmlPart = new HTMLPart();
-		htmlPart.setContent(content);
-		htmlPart = portfolioService.appendNewPagePart(page, htmlPart);
-		EditorFragment fragment = createFragment(ureq, htmlPart);
-		fragments.add(fragment);
-		flc.setDirty(true);
-	}
-	
-	private EditorFragment createFragment(UserRequest ureq, PagePart part) {
-		if(part instanceof HTMLPart) {
-			HTMLPart htmlPart = (HTMLPart)part;
-			HTMLEditorFragment editorFragment = new HTMLEditorFragment(htmlPart);
-			
-			String cmpId = "html-" + (++counter);
-			String content = htmlPart.getContent();
-			RichTextElement htmlItem = uifactory.addRichTextElementForStringDataCompact(cmpId, null, content, 8, 80, null, flc, ureq.getUserSession(), getWindowControl());
-			//htmlItem.getEditorConfiguration().setInline(true);
-			editorFragment.setFormItem(htmlItem);
-			return editorFragment;
-		} else if (part instanceof MediaPart) {
-			MediaPart mediaPart = (MediaPart)part;
-			MediaHandler handler = portfolioService.getMediaHandler(mediaPart.getMedia().getType());
-			String cmpId = "media-" + (++counter);
-			Controller mediaCtrl = handler.getMediaController(ureq, getWindowControl(), mediaPart.getMedia());
-			MediaEditorFragment fragment = new MediaEditorFragment(mediaPart, cmpId, mediaCtrl);
-			flc.getFormItemComponent().put(cmpId, mediaCtrl.getInitialComponent());
-			return fragment;
+	private EditorFragment getEditorFragment(Controller source) {
+		for(EditorFragment fragment:fragments) {
+			if(fragment.getEditorPart() == source) {
+				return fragment;
+			}
 		}
 		return null;
-		
 	}
 	
-	public static class HTMLEditorFragment implements EditorFragment {
+	private void cleanUp() {
+		removeAsListenerAndDispose(addCtrl);
+		removeAsListenerAndDispose(cmc);
+		addCtrl = null;
+		cmc = null;
+	}
+
+	@Override
+	protected void event(UserRequest ureq, Component source, Event event) {
+		if(source instanceof Link) {
+			Link link = (Link)source;
+			String cmd = link.getCommand();
+			if("add".equals(cmd)) {
+				PageElementHandler handler = (PageElementHandler)link.getUserObject();
+				doAddElement(ureq, handler);
+			}
+		}
+	}
+	
+	private void doAddElement(UserRequest ureq, PageElementHandler handler) {
+		if(addCtrl != null) return;
 		
-		private PagePart part;
-		private RichTextElement formItem;
+		if(handler instanceof InteractiveAddPageElementHandler) {
+			InteractiveAddPageElementHandler interactiveHandler = (InteractiveAddPageElementHandler)handler;
+			addCtrl = interactiveHandler.getAddPageElementController(ureq, getWindowControl());
+			if(addCtrl == null) {
+				showWarning("not.implement");
+			} else {
+				listenTo(addCtrl);
+				String title = translate("add." + handler.getType());
+				cmc = new CloseableModalController(getWindowControl(), null, addCtrl.getInitialComponent(), true, title, true);
+				listenTo(cmc);
+				cmc.activate();
+			}
+		} else if(handler instanceof SimpleAddPageElementHandler) {
+			SimpleAddPageElementHandler simpleHandler = (SimpleAddPageElementHandler)handler;
+			doAddPageElement(ureq, simpleHandler.createPageElement());
+		}
+	}
+	
+	private void doAddPageElement(UserRequest ureq, PageElement element) {
+		PageElement pageElement = provider.appendPageElement(element);
+		EditorFragment fragment = createFragment(ureq, pageElement);
+		fragments.add(fragment);
+		mainVC.setDirty(true);
+		fireEvent(ureq, Event.CHANGED_EVENT);
+	}
+	
+	private EditorFragment createFragment(UserRequest ureq, PageElement element) {
+		PageElementHandler handler = handlerMap.get(element.getType());
+		if(handler == null) {
+			logError("Cannot find an handler of type: " + element.getType(), null);
+		}
+		Controller editorPart = handler.getEditor(ureq, getWindowControl(), element);
+		listenTo(editorPart);
+		String cmpId = "frag-" + (++counter);
+		EditorFragment fragment = new EditorFragment(element, handler, cmpId, editorPart);
+		mainVC.put(cmpId, editorPart.getInitialComponent());
+		return fragment;
+	}
+	
+	public static class EditorFragment  {
 		
-		public HTMLEditorFragment(HTMLPart part) {
-			this.part = part;
+		private PageElement element;
+		private final PageElementHandler handler;
+
+		private final String cmpId;
+		private Controller editorPart;
+		
+		public EditorFragment(PageElement element, PageElementHandler handler, String cmpId, Controller editorPart) {
+			this.element = element;
+			this.handler = handler;
+			this.cmpId = cmpId;
+			this.editorPart = editorPart;
 		}
 
-		@Override
-		public PagePart getPart() {
-			return part;
+		public PageElement getPageElement() {
+			return element;
 		}
 		
-		public void setPart(PagePart part) {
-			this.part = part;
+		public void setPageElement(PageElement element) {
+			this.element = element;
 		}
 
-		public RichTextElement getFormItem() {
-			return formItem;
-		}
-
-		public void setFormItem(RichTextElement formItem) {
-			this.formItem = formItem;
-			formItem.setUserObject(this);
-		}
-
-		@Override
 		public String getComponentName() {
-			return formItem.getComponent().getComponentName();
+			return cmpId;
+		}
+		
+		public Controller getEditorPart() {
+			return editorPart;
+		}
+		
+		public PageElementHandler getHandler() {
+			return handler;
 		}
 	}
-	
-	public static class MediaEditorFragment implements EditorFragment {
-		
-		private PagePart part;
-		private String cmpName;
-		private Controller controller;
-		
-		public MediaEditorFragment(MediaPart part, String cmpName, Controller controller) {
-			this.part = part;
-			this.cmpName = cmpName;
-			this.controller = controller;
-		}
 
-		@Override
-		public PagePart getPart() {
-			return part;
-		}
-		
-		public void setPart(PagePart part) {
-			this.part = part;
-		}
-
-		@Override
-		public String getComponentName() {
-			return cmpName;
-		}
-		
-		public Controller getController() {
-			return controller;
-		}
-	}
-	
-	public interface EditorFragment {
-		
-		public PagePart getPart();
-		
-		public void setPart(PagePart part);
-		
-		public String getComponentName();
-	}
 }

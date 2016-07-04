@@ -55,7 +55,7 @@ public class WikiMediaHandler extends AbstractMediaHandler {
 	}
 
 	@Override
-	public String getIconCssClass(MediaLight media) {
+	public String getIconCssClass() {
 		return "o_wiki_icon";
 	}
 

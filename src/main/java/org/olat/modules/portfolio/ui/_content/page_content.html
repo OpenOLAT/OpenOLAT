@@ -1,11 +1,4 @@
-<div class="o_header_with_buttons">
-	<h1>$r.escapeHtml($pageTitle)</h1>
-	#if($r.available("publish"))
-	<div class="o_button_group o_button_group_right">
-		$r.render("publish")
-	</div>
-	#end
-</div>
+$r.render("meta")
 
 #foreach($fragment in $fragments)
 	<div class="">$r.render($fragment.componentName)</div>

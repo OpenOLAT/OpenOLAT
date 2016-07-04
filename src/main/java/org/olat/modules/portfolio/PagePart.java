@@ -19,17 +19,17 @@
  */
 package org.olat.modules.portfolio;
 
+import org.olat.modules.portfolio.ui.editor.PageElement;
+
 /**
  * 
  * Initial date: 09.06.2016<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public interface PagePart {
+public interface PagePart extends PageElement {
 	
 	public Long getKey();
-	
-	public String getType();
 	
 	public String getContent();
 	

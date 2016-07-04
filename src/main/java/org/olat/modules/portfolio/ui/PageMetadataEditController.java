@@ -153,6 +153,10 @@ public class PageMetadataEditController extends FormBasicController {
 			}
 		}
 		
+		categoriesEl = uifactory.addTextBoxListElement("categories", "categories", "categories.hint", categories, formLayout, getTranslator());
+		categoriesEl.setElementCssClass("o_sel_ep_tagsinput");
+		categoriesEl.setAllowDuplicates(false);
+		
 		// list of binder
 		if (chooseBinder) {
 			List<Binder> binders = portfolioService.getOwnedBinders(getIdentity());
@@ -191,10 +195,6 @@ public class PageMetadataEditController extends FormBasicController {
 			bindersEl = uifactory.addDropdownSingleselect("binders", "page.binders", formLayout, theKeys, theValues, null);
 			bindersEl.setEnabled(false);
 		}
-
-		categoriesEl = uifactory.addTextBoxListElement("categories", "categories", "categories.hint", categories, formLayout, getTranslator());
-		categoriesEl.setElementCssClass("o_sel_ep_tagsinput");
-		categoriesEl.setAllowDuplicates(false);
 
 		//list of sections
 		if(chooseSection) {

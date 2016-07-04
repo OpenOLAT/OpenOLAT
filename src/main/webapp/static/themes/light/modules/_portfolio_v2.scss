@@ -4,7 +4,7 @@ div#o_main_toolbar.o_toolbar.o_portfolio {
 }
 
 
-.o_section_lead {
+.o_section_lead, .o_page_lead {
 	@extend .jumbotron;
 }
 
@@ -35,6 +35,12 @@ div#o_main_toolbar.o_toolbar.o_portfolio {
 		li {
 			padding: 2px;
 		}
+	}
+}
+
+.o_portfolio_page_editor {
+	.o_toolbar {
+		border:none;
 	}
 }
 

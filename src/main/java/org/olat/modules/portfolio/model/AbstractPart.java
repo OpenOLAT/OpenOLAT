@@ -65,6 +65,11 @@ public class AbstractPart implements Persistable, ModifiedInfo, CreateInfo, Page
 	@Temporal(TemporalType.TIMESTAMP)
 	@Column(name="lastmodified", nullable=false, insertable=true, updatable=true)
 	private Date lastModified;
+	
+	/** Only used for order by */
+	@GeneratedValue
+	@Column(name="pos")
+	private long pos;
 
 	@Column(name="p_content", nullable=true, insertable=true, updatable=true)
 	private String content;

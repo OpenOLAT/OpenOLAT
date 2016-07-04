@@ -43,7 +43,10 @@ import org.olat.core.util.Util;
 import org.olat.modules.portfolio.Media;
 import org.olat.modules.portfolio.PortfolioService;
 import org.olat.modules.portfolio.handler.ImageHandler;
+import org.olat.modules.portfolio.model.MediaPart;
 import org.olat.modules.portfolio.ui.PortfolioHomeController;
+import org.olat.modules.portfolio.ui.editor.PageElement;
+import org.olat.modules.portfolio.ui.editor.PageElementAddController;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -52,7 +55,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class CollectImageMediaController extends FormBasicController {
+public class CollectImageMediaController extends FormBasicController implements PageElementAddController {
 	
 	private FileElement fileEl;
 	private TextElement titleEl;
@@ -79,6 +82,13 @@ public class CollectImageMediaController extends FormBasicController {
 	
 	public Media getMediaReference() {
 		return mediaReference;
+	}
+
+	@Override
+	public PageElement getPageElement() {
+		MediaPart part = new MediaPart();
+		part.setMedia(mediaReference);
+		return part;
 	}
 
 	@Override
@@ -123,6 +133,12 @@ public class CollectImageMediaController extends FormBasicController {
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
 		boolean allOk = true;
+		
+		fileEl.clearError();
+		if(fileEl.getUploadFile() == null || fileEl.getUploadSize() < 1) {
+			fileEl.setErrorKey("form.legende.mandatory", null);
+			allOk &= false;
+		}
 
 		return allOk & super.validateFormLogic(ureq);
 	}

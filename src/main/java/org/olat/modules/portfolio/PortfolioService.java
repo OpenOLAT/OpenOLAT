@@ -299,6 +299,8 @@ public interface PortfolioService {
 	
 	public MediaHandler getMediaHandler(String type);
 	
+	public List<MediaHandler> getMediaHandlers();
+	
 	public Media getMediaByKey(Long key);
 	
 	public List<MediaLight> searchOwnedMedias(IdentityRef author);

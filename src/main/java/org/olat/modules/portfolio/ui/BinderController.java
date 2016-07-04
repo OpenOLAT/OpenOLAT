@@ -99,6 +99,10 @@ public class BinderController extends BasicController implements TooledControlle
 	public void initTools() {
 		stackPanel.addTool(segmentButtonsCmp, true);
 		stackPanel.addTool(editBinderMetadataLink, Align.right);
+		
+		if(segmentButtonsCmp.getSelectedButton() == overviewLink) {
+			overviewCtrl.initTools();
+		}
 	}
 	
 	protected void setSegmentButtonsVisible(boolean enabled) {

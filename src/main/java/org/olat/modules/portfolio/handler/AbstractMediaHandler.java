@@ -19,8 +19,17 @@
  */
 package org.olat.modules.portfolio.handler;
 
+import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.Component;
+import org.olat.core.gui.control.Controller;
+import org.olat.core.gui.control.WindowControl;
+import org.olat.modules.portfolio.Media;
 import org.olat.modules.portfolio.MediaHandler;
 import org.olat.modules.portfolio.MediaInformations;
+import org.olat.modules.portfolio.MediaLight;
+import org.olat.modules.portfolio.model.MediaPart;
+import org.olat.modules.portfolio.ui.editor.PageElement;
+import org.olat.modules.portfolio.ui.editor.PageElementHandler;
 
 /**
  * 
@@ -28,7 +37,7 @@ import org.olat.modules.portfolio.MediaInformations;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public abstract class AbstractMediaHandler implements MediaHandler {
+public abstract class AbstractMediaHandler implements MediaHandler, PageElementHandler {
 	
 	private final String type;
 	
@@ -41,6 +50,35 @@ public abstract class AbstractMediaHandler implements MediaHandler {
 		return type;
 	}
 	
+	@Override
+	public String getIconCssClass(MediaLight media) {
+		return getIconCssClass();
+	}
+
+	@Override
+	public Component getContent(UserRequest ureq, WindowControl wControl, PageElement element) {
+		if(element instanceof Media) {
+			return getMediaController(ureq, wControl, (Media)element).getInitialComponent();
+		}
+		if(element instanceof MediaPart) {
+			MediaPart mediaPart = (MediaPart)element;
+			return getMediaController(ureq, wControl, mediaPart.getMedia()).getInitialComponent();
+		}
+		return null;
+	}
+
+	@Override
+	public Controller getEditor(UserRequest ureq, WindowControl wControl, PageElement element) {
+		if(element instanceof Media) {
+			return getMediaController(ureq, wControl, (Media)element);
+		}
+		if(element instanceof MediaPart) {
+			MediaPart mediaPart = (MediaPart)element;
+			return getMediaController(ureq, wControl, mediaPart.getMedia());
+		}
+		return null;
+	}
+
 	public final class Informations implements MediaInformations {
 		
 		private final String title;

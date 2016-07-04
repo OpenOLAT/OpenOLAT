@@ -69,7 +69,7 @@ public class BlogEntryMediaHandler extends AbstractMediaHandler {
 	}
 
 	@Override
-	public String getIconCssClass(MediaLight media) {
+	public String getIconCssClass() {
 		return "o_blog_icon";
 	}
 

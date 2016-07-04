@@ -30,6 +30,9 @@ import org.olat.modules.portfolio.Media;
 import org.olat.modules.portfolio.MediaInformations;
 import org.olat.modules.portfolio.MediaLight;
 import org.olat.modules.portfolio.manager.MediaDAO;
+import org.olat.modules.portfolio.ui.editor.InteractiveAddPageElementHandler;
+import org.olat.modules.portfolio.ui.editor.PageElementAddController;
+import org.olat.modules.portfolio.ui.media.CollectTextMediaController;
 import org.olat.modules.portfolio.ui.media.TextMediaController;
 import org.olat.portfolio.manager.EPFrontendManager;
 import org.olat.portfolio.model.artefacts.AbstractArtefact;
@@ -43,7 +46,7 @@ import org.springframework.stereotype.Service;
  *
  */
 @Service
-public class TextHandler extends AbstractMediaHandler {
+public class TextHandler extends AbstractMediaHandler implements InteractiveAddPageElementHandler {
 	
 	public static final String TEXT_MEDIA = "text";
 	
@@ -57,7 +60,7 @@ public class TextHandler extends AbstractMediaHandler {
 	}
 
 	@Override
-	public String getIconCssClass(MediaLight media) {
+	public String getIconCssClass() {
 		return "o_filetype_txt";
 	}
 
@@ -97,6 +100,9 @@ public class TextHandler extends AbstractMediaHandler {
 	public Controller getMediaController(UserRequest ureq, WindowControl wControl, Media media) {
 		return new TextMediaController(ureq, wControl, media);
 	}
-	
-	
+
+	@Override
+	public PageElementAddController getAddPageElementController(UserRequest ureq, WindowControl wControl) {
+		return new CollectTextMediaController(ureq, wControl);
+	}
 }

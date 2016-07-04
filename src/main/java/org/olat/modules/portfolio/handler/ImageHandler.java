@@ -39,6 +39,9 @@ import org.olat.modules.portfolio.MediaInformations;
 import org.olat.modules.portfolio.MediaLight;
 import org.olat.modules.portfolio.manager.MediaDAO;
 import org.olat.modules.portfolio.manager.PortfolioFileStorage;
+import org.olat.modules.portfolio.ui.editor.InteractiveAddPageElementHandler;
+import org.olat.modules.portfolio.ui.editor.PageElementAddController;
+import org.olat.modules.portfolio.ui.media.CollectImageMediaController;
 import org.olat.modules.portfolio.ui.media.ImageMediaController;
 import org.olat.portfolio.model.artefacts.AbstractArtefact;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -51,7 +54,7 @@ import org.springframework.stereotype.Service;
  *
  */
 @Service
-public class ImageHandler extends AbstractMediaHandler {
+public class ImageHandler extends AbstractMediaHandler implements InteractiveAddPageElementHandler {
 	
 	public static final String IMAGE_TYPE = "image";
 
@@ -62,6 +65,11 @@ public class ImageHandler extends AbstractMediaHandler {
 	
 	public ImageHandler() {
 		super(IMAGE_TYPE);
+	}
+	
+	@Override
+	public String getIconCssClass() {
+		return "o_filetype_jpg";
 	}
 
 	@Override
@@ -128,5 +136,10 @@ public class ImageHandler extends AbstractMediaHandler {
 	@Override
 	public Controller getMediaController(UserRequest ureq, WindowControl wControl, Media media) {
 		return new ImageMediaController(ureq, wControl, media);
+	}
+
+	@Override
+	public PageElementAddController getAddPageElementController(UserRequest ureq, WindowControl wControl) {
+		return new CollectImageMediaController(ureq, wControl);
 	}
 }

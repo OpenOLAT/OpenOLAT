@@ -29,6 +29,7 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
+import org.olat.core.gui.components.stack.PopEvent;
 import org.olat.core.gui.components.stack.TooledController;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.components.stack.TooledStackedPanel.Align;
@@ -54,7 +55,7 @@ import org.olat.modules.portfolio.PortfolioService;
 import org.olat.modules.portfolio.Section;
 import org.olat.modules.portfolio.model.HTMLPart;
 import org.olat.modules.portfolio.model.MediaPart;
-import org.olat.modules.portfolio.ui.editor.PageEditorController;
+import org.olat.modules.portfolio.ui.event.PublishEvent;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -66,18 +67,20 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class PageController extends BasicController implements TooledController {
 
 	private VelocityContainer mainVC;
-	private Link editLink, editMetadataLink, publishButton;
+	private Link editLink, editMetadataLink;
 	protected final TooledStackedPanel stackPanel;
 	private List<FragmentWrapper> fragments = new ArrayList<>();
 	
 	private CloseableModalController cmc;
-	private PageEditorController editCtrl;
+	private PageMetadataController pageMetaCtrl;
+	private PageEditController editCtrl;
 	private DialogBoxController confirmPublishCtrl;
 	private PageMetadataEditController editMetadataCtrl;
 	private UserCommentsAndRatingsController commentsCtrl;
 	
 	private int counter;
 	private Page page;
+	private boolean dirtyMarker = false;
 	private final BinderSecurityCallback secCallback;
 	
 	@Autowired
@@ -92,13 +95,11 @@ public class PageController extends BasicController implements TooledController 
 		
 		mainVC = createVelocityContainer("page_content");
 		mainVC.contextPut("pageTitle", page.getTitle());
-
+		
+		loadMeta(ureq);
 		loadModel(ureq);
-		
-		if(secCallback.canPublish(page)) {
-			publishButton = LinkFactory.createButton("publish", mainVC, this);
-		}
-		
+		stackPanel.addListener(this);
+
 		if(secCallback.canComment(page)) {
 			CommentAndRatingSecurityCallback commentSecCallback = new CommentAndRatingDefaultSecurityCallback(getIdentity(), false, false);
 			OLATResourceable ores = OresHelper.createOLATResourceableInstance(Page.class, page.getKey());
@@ -139,6 +140,16 @@ public class PageController extends BasicController implements TooledController 
 		}
 		fragments = newFragments;
 		mainVC.contextPut("fragments", fragments);
+		dirtyMarker = false;
+	}
+	
+	private void loadMeta(UserRequest ureq) {
+		removeAsListenerAndDispose(pageMetaCtrl);
+		
+		mainVC.contextPut("pageTitle", page.getTitle());
+		pageMetaCtrl = new PageMetadataController(ureq, getWindowControl(), secCallback, page);
+		listenTo(pageMetaCtrl);
+		mainVC.put("meta", pageMetaCtrl.getInitialComponent());
 	}
 	
 	@Override
@@ -149,15 +160,25 @@ public class PageController extends BasicController implements TooledController 
 	@Override
 	public void event(UserRequest ureq, Controller source, Event event) {
 		if(editCtrl == source) {
-			stackPanel.popUpToController(this);
-			loadModel(ureq);
+			if(event == Event.CHANGED_EVENT) {
+				dirtyMarker = true;
+			} else if(event instanceof PublishEvent) {
+				doConfirmPublish(ureq);
+			} else {
+				stackPanel.popUpToController(this);
+				loadModel(ureq);
+			}
 		} else if(editMetadataCtrl == source) {
 			if(event == Event.DONE_EVENT) {
-				loadModel(ureq);
+				loadMeta(ureq);
 				fireEvent(ureq, Event.CHANGED_EVENT);
 			}
 			cmc.deactivate();
 			cleanUp();
+		} else if(pageMetaCtrl == source) {
+			if(event instanceof PublishEvent) {
+				doConfirmPublish(ureq);
+			}
 		} else if(confirmPublishCtrl == source) {
 			doPublish(ureq);
 		} else if(cmc == source) {
@@ -179,8 +200,13 @@ public class PageController extends BasicController implements TooledController 
 			doEditPage(ureq);
 		} else if(editMetadataLink == source) {
 			doEditMetadata(ureq);
-		} else if(publishButton == source) {
-			doConfirmPublish(ureq);
+		} else if(stackPanel == source) {
+			if(event instanceof PopEvent) {
+				PopEvent pe = (PopEvent)event;
+				if(pe.getController() == editCtrl && dirtyMarker) {
+					loadModel(ureq);
+				}
+			}
 		}
 	}
 	
@@ -192,7 +218,8 @@ public class PageController extends BasicController implements TooledController 
 	
 	private void doPublish(UserRequest ureq) {
 		page = portfolioService.changePageStatus(page, PageStatus.published);
-		publishButton.setVisible(false);
+		stackPanel.popUpToController(this);
+		loadMeta(ureq);
 		fireEvent(ureq, Event.CHANGED_EVENT);
 	}
 	
@@ -219,8 +246,8 @@ public class PageController extends BasicController implements TooledController 
 	
 	private void doEditPage(UserRequest ureq) {
 		removeAsListenerAndDispose(editCtrl);
-		
-		editCtrl = new PageEditorController(ureq, getWindowControl(), page);
+
+		editCtrl = new PageEditController(ureq, getWindowControl(), secCallback, page);
 		listenTo(editCtrl);
 		
 		stackPanel.pushController("Edit", editCtrl);
@@ -241,11 +268,9 @@ public class PageController extends BasicController implements TooledController 
 	
 	public class MediaFragment implements Fragment {
 		
-		private final PagePart part;
 		private Controller controller;
 		
 		public MediaFragment(MediaPart part, UserRequest ureq) {
-			this.part = part;
 			MediaHandler handler = portfolioService.getMediaHandler(part.getMedia().getType());
 			controller = handler.getMediaController(ureq, getWindowControl(), part.getMedia());
 		}
@@ -255,28 +280,19 @@ public class PageController extends BasicController implements TooledController 
 			return controller.getInitialComponent();
 		}
 
-		public PagePart getPart() {
-			return part;
-		}
 	}
 	
 	public static class HTMLFragment implements Fragment {
 		
-		private final PagePart part;
-		private TextComponent component;
+		private final TextComponent component;
 		
 		public HTMLFragment(HTMLPart part) {
-			this.part = part;
 			component = TextFactory.createTextComponentFromString("cmp" + CodeHelper.getRAMUniqueID(), part.getContent(), null, false, null);
 		}
 
 		@Override
 		public Component getContent() {
 			return component;
-		}
-
-		public PagePart getPart() {
-			return part;
 		}
 	}
 	

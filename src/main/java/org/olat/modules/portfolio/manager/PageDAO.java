@@ -200,7 +200,8 @@ public class PageDAO {
 		sb.append("select part from pfpagepart as part")
 		  .append(" inner join fetch part.body as body")
 		  .append(" left join fetch part.media as media")
-		  .append(" where body.key=:bodyKey");
+		  .append(" where body.key=:bodyKey")
+		  .append(" order by pos");
 		
 		return dbInstance.getCurrentEntityManager()
 			.createQuery(sb.toString(), PagePart.class)

@@ -17,43 +17,16 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.portfolio.model;
-
-import javax.persistence.Entity;
-import javax.persistence.FetchType;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
-import javax.persistence.Transient;
-
-import org.olat.modules.portfolio.Media;
+package org.olat.modules.portfolio.ui.editor;
 
 /**
  * 
- * Initial date: 17.06.2016<br>
+ * Initial date: 04.07.2016<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-@Entity(name="pfmediapart")
-public class MediaPart extends AbstractPart {
-
-	private static final long serialVersionUID = -5902348088983758191L;
+public interface SimpleAddPageElementHandler {
 	
-	@ManyToOne(targetEntity=MediaImpl.class,fetch=FetchType.LAZY,optional=false)
-	@JoinColumn(name="fk_media_id", nullable=false, insertable=true, updatable=false)
-	private Media media;
-
-	public Media getMedia() {
-		return media;
-	}
-
-	public void setMedia(Media media) {
-		this.media = media;
-	}
-	
-	@Override
-	@Transient
-	public String getType() {
-		return media.getType();
-	}
+	public PageElement createPageElement();
 
 }

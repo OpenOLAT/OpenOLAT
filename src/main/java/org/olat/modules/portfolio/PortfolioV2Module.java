@@ -47,7 +47,6 @@ public class PortfolioV2Module extends AbstractSpringModule implements ConfigOnO
 	@Autowired
 	public PortfolioV2Module(CoordinatorManager coordinatorManager) {
 		super(coordinatorManager);
-		
 	}
 
 	@Override

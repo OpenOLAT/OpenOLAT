@@ -20,6 +20,7 @@
 package org.olat.modules.portfolio.model;
 
 import javax.persistence.Entity;
+import javax.persistence.Transient;
 
 /**
  * 
@@ -35,4 +36,10 @@ public class HTMLPart extends AbstractPart {
 	 */
 	private static final long serialVersionUID = 7060103983145628108L;
 
+	@Override
+	@Transient
+	public String getType() {
+		return "htmlraw";
+	}
+	
 }

@@ -166,12 +166,12 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_open_togglebox:before { content: $fa-var-caret-right;}
 .o_icon_openolat:before, %o_icon_openolat { content:"\E600"; font-family: openolat; font-size: 10px; }
 .o_icon_options:before { content: $fa-var-toggle-on; }
+.o_icon_others:before { content: $fa-var-star; }
 .o_icon_pageing:before { content: $fa-var-ellipsis-h;}
 .o_icon_passed:before { content: $fa-var-check-circle;}
 .o_icon_password:before { content: $fa-var-lock;}
 .o_icon_pending:before { content: $fa-var-spinner; }
-.o_icon_phone:before { content: $fa-var-phone;}
-
+.o_icon_phone:before { content: $fa-var-phone; }
 .o_icon_portfolio_binder:before { content: $fa-var-folder-open-o; }
 .o_icon_portfolio_entry:before { content: $fa-var-quote-left; }
 .o_icon_portfolio_entry_draft:before { content: $fa-var-circle; color: $brand-warning}

@@ -74,7 +74,7 @@ public class ForumMediaHandler extends AbstractMediaHandler {
 	}
 
 	@Override
-	public String getIconCssClass(MediaLight media) {
+	public String getIconCssClass() {
 		return "o_fo_icon";
 	}
 

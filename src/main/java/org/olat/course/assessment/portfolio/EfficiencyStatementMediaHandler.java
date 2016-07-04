@@ -64,7 +64,7 @@ public class EfficiencyStatementMediaHandler extends AbstractMediaHandler {
 	}
 
 	@Override
-	public String getIconCssClass(MediaLight media) {
+	public String getIconCssClass() {
 		return "o_icon_certificate";
 	}
 

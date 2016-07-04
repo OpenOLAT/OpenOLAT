@@ -570,7 +570,7 @@ public class PortfolioServiceImpl implements PortfolioService {
 
 	@Override
 	public MediaHandler getMediaHandler(String type) {
-		if(this.mediaHandlers != null) {
+		if(mediaHandlers != null) {
 			for(MediaHandler handler:mediaHandlers) {
 				if(type.equals(handler.getType())) {
 					return handler;
@@ -578,6 +578,11 @@ public class PortfolioServiceImpl implements PortfolioService {
 			}
 		}
 		return null;
+	}
+
+	@Override
+	public List<MediaHandler> getMediaHandlers() {
+		return new ArrayList<>(mediaHandlers);
 	}
 
 	@Override
