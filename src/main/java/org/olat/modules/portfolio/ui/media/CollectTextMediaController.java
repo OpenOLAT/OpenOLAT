@@ -42,6 +42,7 @@ import org.olat.modules.portfolio.PortfolioService;
 import org.olat.modules.portfolio.handler.TextHandler;
 import org.olat.modules.portfolio.model.MediaPart;
 import org.olat.modules.portfolio.ui.PortfolioHomeController;
+import org.olat.modules.portfolio.ui.editor.AddElementInfos;
 import org.olat.modules.portfolio.ui.editor.PageElement;
 import org.olat.modules.portfolio.ui.editor.PageElementAddController;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -62,6 +63,7 @@ public class CollectTextMediaController extends FormBasicController implements P
 	private Map<String,String> categories = new HashMap<>();
 	
 	private final String businessPath;
+	private AddElementInfos userObject;
 	
 	@Autowired
 	private TextHandler fileHandler;
@@ -78,6 +80,16 @@ public class CollectTextMediaController extends FormBasicController implements P
 	
 	public Media getMediaReference() {
 		return mediaReference;
+	}
+	
+	@Autowired
+	public AddElementInfos getUserObject() {
+		return userObject;
+	}
+
+	@Autowired
+	public void setUserObject(AddElementInfos userObject) {
+		this.userObject = userObject;
 	}
 
 	@Override

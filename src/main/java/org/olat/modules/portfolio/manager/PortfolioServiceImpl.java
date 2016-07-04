@@ -559,6 +559,31 @@ public class PortfolioServiceImpl implements PortfolioService {
 	}
 
 	@Override
+	@SuppressWarnings("unchecked")
+	public <U extends PagePart> U appendNewPagePartAt(Page page, U part, int index) {
+		PageBody body = pageDao.loadPageBodyByKey(page.getBody().getKey());
+		return (U)pageDao.persistPart(body, part, index);
+	}
+
+	@Override
+	public void removePagePart(Page page, PagePart part) {
+		PageBody body = pageDao.loadPageBodyByKey(page.getBody().getKey());
+		pageDao.removePart(body, part);
+	}
+
+	@Override
+	public void moveUpPagePart(Page page, PagePart part) {
+		PageBody body = pageDao.loadPageBodyByKey(page.getBody().getKey());
+		pageDao.moveUpPart(body, part);
+	}
+
+	@Override
+	public void moveDownPagePart(Page page, PagePart part) {
+		PageBody body = pageDao.loadPageBodyByKey(page.getBody().getKey());
+		pageDao.moveDownPart(body, part);
+	}
+
+	@Override
 	public List<PagePart> getPageParts(Page page) {
 		return pageDao.getParts(page.getBody());
 	}

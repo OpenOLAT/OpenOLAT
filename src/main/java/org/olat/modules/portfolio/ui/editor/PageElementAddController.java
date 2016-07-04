@@ -30,5 +30,9 @@ import org.olat.core.gui.control.Controller;
 public interface PageElementAddController extends Controller {
 	
 	public PageElement getPageElement();
+	
+	public void setUserObject(AddElementInfos uobject);
+	
+	public AddElementInfos getUserObject();
 
 }

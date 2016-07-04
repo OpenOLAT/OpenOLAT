@@ -42,6 +42,34 @@ div#o_main_toolbar.o_toolbar.o_portfolio {
 	.o_toolbar {
 		border:none;
 	}
+	
+	.o_page_fragment_edit  {
+		.o_page_part {
+			border-top: $o-panel-placeholder-border-width solid $o-panel-placeholder-border-color;
+			border-bottom: $o-panel-placeholder-border-width solid $o-panel-placeholder-border-color;
+		}
+
+		.o_sel_add_element_above {
+			float:left;
+			padding: 5px 5px 0 5px;
+			border-left: $o-panel-placeholder-border-width dashed $o-panel-placeholder-border-color;
+			border-top: $o-panel-placeholder-border-width dashed $o-panel-placeholder-border-color;
+			border-right: $o-panel-placeholder-border-width dashed $o-panel-placeholder-border-color;
+			border-radius: $o-panel-placeholder-border-radius $o-panel-placeholder-border-radius 0 0;
+		}
+		
+		.o_page_others_above {
+			float:right;
+		}		
+		
+		.o_sel_add_element_below {
+			padding: 0 5px 5px 5px;
+			border-left: $o-panel-placeholder-border-width dashed $o-panel-placeholder-border-color;
+			border-bottom: $o-panel-placeholder-border-width dashed $o-panel-placeholder-border-color;
+			border-right: $o-panel-placeholder-border-width dashed $o-panel-placeholder-border-color;
+			border-radius: 0 0 $o-panel-placeholder-border-radius $o-panel-placeholder-border-radius;
+		}
+	}
 }
 
 .o_binder_page_listing {

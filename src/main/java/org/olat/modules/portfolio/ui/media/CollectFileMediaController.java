@@ -45,6 +45,7 @@ import org.olat.modules.portfolio.PortfolioService;
 import org.olat.modules.portfolio.handler.FileHandler;
 import org.olat.modules.portfolio.model.MediaPart;
 import org.olat.modules.portfolio.ui.PortfolioHomeController;
+import org.olat.modules.portfolio.ui.editor.AddElementInfos;
 import org.olat.modules.portfolio.ui.editor.PageElement;
 import org.olat.modules.portfolio.ui.editor.PageElementAddController;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -66,6 +67,7 @@ public class CollectFileMediaController extends FormBasicController implements P
 	private Map<String,String> categories = new HashMap<>();
 	
 	private final String businessPath;
+	private AddElementInfos userObject;
 	
 	@Autowired
 	private FileHandler fileHandler;
@@ -84,6 +86,16 @@ public class CollectFileMediaController extends FormBasicController implements P
 		return mediaReference;
 	}
 	
+	@Override
+	public AddElementInfos getUserObject() {
+		return userObject;
+	}
+
+	@Override
+	public void setUserObject(AddElementInfos userObject) {
+		this.userObject = userObject;
+	}
+
 	@Override
 	public PageElement getPageElement() {
 		MediaPart part = new MediaPart();

@@ -284,6 +284,21 @@ public interface PortfolioService {
 	public <U extends PagePart> U appendNewPagePart(Page page, U part);
 	
 	/**
+	 * 
+	 * @param page
+	 * @param part
+	 * @param index
+	 * @return
+	 */
+	public <U extends PagePart> U appendNewPagePartAt(Page page, U part, int index);
+	
+	public void removePagePart(Page page, PagePart part);
+	
+	public void moveUpPagePart(Page page, PagePart part);
+	
+	public void moveDownPagePart(Page page, PagePart part);
+	
+	/**
 	 * The list of page fragments
 	 * @param page
 	 * @return

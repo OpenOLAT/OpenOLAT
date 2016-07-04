@@ -1,8 +1,29 @@
 <div class="o_portfolio_page_editor">
 	#foreach($fragment in $fragments)
-		<div class="o_block_large">
-		$r.render($fragment.componentName)
-		</div>
+		#if($fragment.editMode)
+			<div class="o_block o_page_fragment_edit">
+				<div class="o_page_tools_above clearfix">
+					<div class="o_page_add_above">
+						$r.render("$fragment.addElementAboveLinkName")
+					</div>
+					<div class="o_page_others_above">
+						$r.render("$fragment.moveUpLinkName")
+						$r.render("$fragment.moveDownLinkName")
+						$r.render("$fragment.deleteLinkName")
+					</div>
+				</div>
+				<div class="o_page_part" data-oo-page-fragment="$fragment.componentName">
+				$r.render($fragment.componentName)
+				</div>
+				<div class="o_page_add_below">
+				$r.render("$fragment.addElementBelowLinkName")
+				</div>
+			</div>
+		#else
+			<div class="o_page_part o_block_large" data-oo-page-fragment="$fragment.componentName">
+				$r.render($fragment.componentName)
+			</div>
+		#end
 	#end
 	
 	<div class="panel panel-placeholder">
@@ -21,3 +42,16 @@
 		</div>
 	</div>
 </div>
+
+<script type="text/javascript">
+/* <![CDATA[ */
+jQuery(function() {
+	jQuery(".o_page_part").each(function(index, el) {
+		var element = jQuery(el);
+		element.on('click', function(e) {
+			$r.openJavaScriptCommand("edit_fragment"),'fragment',jQuery(element).data('oo-page-fragment'));
+		});
+	});
+});
+/* ]]> */
+</script>

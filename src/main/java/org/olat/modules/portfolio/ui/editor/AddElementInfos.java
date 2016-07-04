@@ -19,7 +19,7 @@
  */
 package org.olat.modules.portfolio.ui.editor;
 
-import java.util.List;
+import org.olat.modules.portfolio.ui.editor.PageEditorController.EditorFragment;
 
 /**
  * 
@@ -27,23 +27,27 @@ import java.util.List;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public interface PageEditorProvider {
-	
-	public List<? extends PageElement> getElements();
-	
+public class AddElementInfos {
 
-	public List<PageElementHandler> getCreateHandlers();
+	private final PageElementTarget target;
+	private final PageElementHandler handler;
+	private final EditorFragment referenceFragment;
 	
-	public List<PageElementHandler> getAvailableHandlers();
-	
-	public PageElement appendPageElement(PageElement element);
-	
-	public PageElement appendPageElementAt(PageElement element, int index);
-	
-	public void removePageElement(PageElement element);
+	public AddElementInfos(EditorFragment referenceFragment, PageElementHandler handler, PageElementTarget target) {
+		this.target = target;
+		this.handler = handler;
+		this.referenceFragment = referenceFragment;
+	}
 
-	public void moveUpPageElement(PageElement element);
-	
-	public void moveDownPageElement(PageElement element);
-	
+	public PageElementTarget getTarget() {
+		return target;
+	}
+
+	public PageElementHandler getHandler() {
+		return handler;
+	}
+
+	public EditorFragment getReferenceFragment() {
+		return referenceFragment;
+	}
 }

@@ -196,6 +196,47 @@ public class PageDAO {
 		return aPart;
 	}
 	
+	public PagePart persistPart(PageBody body, PagePart part, int index) {
+		AbstractPart aPart = (AbstractPart)part;
+		aPart.setCreationDate(new Date());
+		aPart.setLastModified(aPart.getCreationDate());
+		aPart.setBody(body);
+		body.getParts().size();
+		body.getParts().add(index, aPart);
+		dbInstance.getCurrentEntityManager().persist(aPart);
+		dbInstance.getCurrentEntityManager().merge(body);
+		return aPart;
+	}
+	
+	public void removePart(PageBody body, PagePart part) {
+		PagePart aPart = dbInstance.getCurrentEntityManager()
+				.getReference(part.getClass(), part.getKey());
+		body.getParts().size();
+		body.getParts().remove(aPart);
+		dbInstance.getCurrentEntityManager().remove(aPart);
+		dbInstance.getCurrentEntityManager().merge(body);
+	}
+	
+	public void moveUpPart(PageBody body, PagePart part) {
+		body.getParts().size();
+		int index = body.getParts().indexOf(part);
+		if(index > 0) {
+			PagePart reloadedPart = body.getParts().remove(index);
+			body.getParts().add(index - 1, reloadedPart);
+			dbInstance.getCurrentEntityManager().merge(body);
+		}
+	}
+	
+	public void moveDownPart(PageBody body, PagePart part) {
+		body.getParts().size();
+		int index = body.getParts().indexOf(part);
+		if(index + 1 < body.getParts().size()) {
+			PagePart reloadedPart = body.getParts().remove(index);
+			body.getParts().add(index + 1, reloadedPart);
+			dbInstance.getCurrentEntityManager().merge(body);
+		}
+	}
+	
 	public List<PagePart> getParts(PageBody body) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select part from pfpagepart as part")

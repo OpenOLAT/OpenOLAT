@@ -36,6 +36,7 @@ import org.olat.modules.portfolio.Page;
 import org.olat.modules.portfolio.PagePart;
 import org.olat.modules.portfolio.PortfolioService;
 import org.olat.modules.portfolio.model.MediaPart;
+import org.olat.modules.portfolio.ui.editor.AddElementInfos;
 import org.olat.modules.portfolio.ui.editor.HTMLRawPageElementHandler;
 import org.olat.modules.portfolio.ui.editor.InteractiveAddPageElementHandler;
 import org.olat.modules.portfolio.ui.editor.PageEditorController;
@@ -142,7 +143,37 @@ public class PageEditController extends BasicController {
 				part = portfolioService.appendNewPagePart(page, (PagePart)element);
 			}
 			return part;
-		}	
+		}
+
+		@Override
+		public PageElement appendPageElementAt(PageElement element, int index) {
+			PagePart part = null;
+			if(element instanceof PagePart) {
+				part = portfolioService.appendNewPagePartAt(page, (PagePart)element, index);
+			}
+			return part;
+		}
+
+		@Override
+		public void removePageElement(PageElement element) {
+			if(element instanceof PagePart) {
+				portfolioService.removePagePart(page, (PagePart)element);
+			}
+		}
+
+		@Override
+		public void moveUpPageElement(PageElement element) {
+			if(element instanceof PagePart) {
+				portfolioService.moveUpPagePart(page, (PagePart)element);
+			}
+		}
+
+		@Override
+		public void moveDownPageElement(PageElement element) {
+			if(element instanceof PagePart) {
+				portfolioService.moveDownPagePart(page, (PagePart)element);
+			}
+		}
 	}
 	
 	private static class OtherArtefactsHandler implements PageElementHandler, InteractiveAddPageElementHandler {
@@ -176,6 +207,7 @@ public class PageEditController extends BasicController {
 	private static class OtherArtfectsChooserController extends BasicController implements PageElementAddController {
 		
 		private MediaPart mediaPart;
+		private AddElementInfos userObject;
 		private final MediaCenterController mediaListCtrl;
 		
 		public OtherArtfectsChooserController(UserRequest ureq, WindowControl wControl) {
@@ -188,6 +220,16 @@ public class PageEditController extends BasicController {
 		@Override
 		public PageElement getPageElement() {
 			return mediaPart;
+		}
+
+		@Autowired
+		public AddElementInfos getUserObject() {
+			return userObject;
+		}
+
+		@Autowired
+		public void setUserObject(AddElementInfos userObject) {
+			this.userObject = userObject;
 		}
 
 		@Override

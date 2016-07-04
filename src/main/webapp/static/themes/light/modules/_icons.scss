@@ -95,6 +95,8 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_edit:before { content: $fa-var-edit;}
 .o_icon_edit_file:before { content: $fa-var-edit;}
 .o_icon_edit_metadata:before { content: $fa-var-gear;}
+.o_icon_element_after:before { content: $fa-var-arrow-down; }
+.o_icon_element_before:before { content: $fa-var-arrow-up; }
 .o_icon_enabled:before { content: $fa-var-circle; } 
 .o_icon_enlarge:before { content: $fa-var-search-plus;}
 .o_icon_eportfolio_add:before { content: $fa-var-puzzle-piece;}
