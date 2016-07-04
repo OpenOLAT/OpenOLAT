@@ -23,6 +23,7 @@ import java.util.Date;
 import java.util.Locale;
 import java.util.Map;
 
+import org.olat.admin.user.imp.TransientIdentity;
 import org.olat.core.gui.components.form.ValidationError;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -73,9 +74,14 @@ public class DateDisplayPropertyHandler extends AbstractUserPropertyHandler {
 		if (DATE_TYPE_CR.equals(myName))
 			return user.getCreationDate();
 		if (DATE_TYPE_LL.equals(myName)) {
-			Identity id = ((UserImpl)user).getIdentity();
-			if (id != null) {
-				return id.getLastLogin();
+			if (user instanceof UserImpl) {
+				Identity id = ((UserImpl)user).getIdentity();
+				if (id != null) {
+					return id.getLastLogin();
+				}				
+			} else if (user instanceof TransientIdentity) {
+				// anticipated, some kind of preview screen
+				return new Date(0);
 			}
 			// huh, we didn't find this identity
 			log.warn("Couldn't find Identity for given User: " + user.getKey());
