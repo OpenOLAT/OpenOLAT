@@ -73,7 +73,7 @@ public class TableOfContentController extends BasicController implements TooledC
 	private SectionEditController editSectionCtrl;
 	private BinderMetadataEditController binderMetadataCtrl;
 	
-	private PageController pageCtrl;
+	private PageRunController pageCtrl;
 	private PageMetadataEditController newPageCtrl;
 	private SectionPageListController sectionPagesCtrl;
 	
@@ -318,7 +318,7 @@ public class TableOfContentController extends BasicController implements TooledC
 	private void doOpenPage(UserRequest ureq, Page page) {
 		removeAsListenerAndDispose(pageCtrl);
 		
-		pageCtrl = new PageController(ureq, getWindowControl(), stackPanel, secCallback, page);
+		pageCtrl = new PageRunController(ureq, getWindowControl(), stackPanel, secCallback, page);
 		listenTo(pageCtrl);
 		stackPanel.pushController(StringHelper.escapeHtml(page.getTitle()), pageCtrl);
 	}

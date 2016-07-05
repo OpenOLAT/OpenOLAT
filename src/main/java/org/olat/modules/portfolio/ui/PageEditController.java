@@ -37,14 +37,16 @@ import org.olat.modules.portfolio.PagePart;
 import org.olat.modules.portfolio.PortfolioService;
 import org.olat.modules.portfolio.model.MediaPart;
 import org.olat.modules.portfolio.ui.editor.AddElementInfos;
-import org.olat.modules.portfolio.ui.editor.HTMLRawPageElementHandler;
 import org.olat.modules.portfolio.ui.editor.InteractiveAddPageElementHandler;
 import org.olat.modules.portfolio.ui.editor.PageEditorController;
 import org.olat.modules.portfolio.ui.editor.PageEditorProvider;
 import org.olat.modules.portfolio.ui.editor.PageElement;
 import org.olat.modules.portfolio.ui.editor.PageElementAddController;
+import org.olat.modules.portfolio.ui.editor.PageElementEditorController;
 import org.olat.modules.portfolio.ui.editor.PageElementHandler;
 import org.olat.modules.portfolio.ui.editor.SimpleAddPageElementHandler;
+import org.olat.modules.portfolio.ui.editor.handler.HTMLRawPageElementHandler;
+import org.olat.modules.portfolio.ui.editor.handler.TitlePageElementHandler;
 import org.olat.modules.portfolio.ui.event.MediaSelectionEvent;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -102,6 +104,16 @@ public class PageEditController extends BasicController {
 		private final List<PageElementHandler> creationHandlers = new ArrayList<>();
 		
 		public PortfolioPageEditorProvider() {
+			//handler for title
+			TitlePageElementHandler titleRawHandler = new TitlePageElementHandler();
+			handlers.add(titleRawHandler);
+			creationHandlers.add(titleRawHandler);
+			//handler for HTML code
+			HTMLRawPageElementHandler htlmRawHandler = new HTMLRawPageElementHandler();
+			handlers.add(htlmRawHandler);
+			creationHandlers.add(htlmRawHandler);
+			
+			
 			List<MediaHandler> mediaHandlers = portfolioService.getMediaHandlers();
 			for(MediaHandler mediaHandler:mediaHandlers) {
 				if(mediaHandler instanceof PageElementHandler) {
@@ -115,10 +127,6 @@ public class PageEditController extends BasicController {
 			
 			//add the hook to pick media from the media center
 			creationHandlers.add(new OtherArtefactsHandler());
-			//handler for HTML code
-			HTMLRawPageElementHandler htlmRawHandler = new HTMLRawPageElementHandler();
-			handlers.add(htlmRawHandler);
-			creationHandlers.add(htlmRawHandler);
 		}
 
 		@Override
@@ -194,7 +202,7 @@ public class PageEditController extends BasicController {
 		}
 
 		@Override
-		public Controller getEditor(UserRequest ureq, WindowControl wControl, PageElement element) {
+		public PageElementEditorController getEditor(UserRequest ureq, WindowControl wControl, PageElement element) {
 			return null;
 		}
 		

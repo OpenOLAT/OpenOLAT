@@ -129,7 +129,7 @@ class RichTextElementRenderer extends DefaultComponentRenderer {
 		  .append("      ed.on('change', function(e) {\n")
 		  .append("        BTinyHelper.triggerOnChange('").append(domID).append("');\n")
 		  .append("      });\n");
-		if(config.isInline()) {
+		if(config.isInline() || config.isSendOnBlur()) {
 			sb.append("      ed.on('blur', function(e) {\n")
 			  .append("        o_ffXHREvent('").append(form.getFormName()).append("','").append(form.getDispatchFieldId()).append("','").append(teC.getFormDispatchId()).append("','").append(form.getEventFieldId()).append("', 2, false, false,'cmd','saveinlinedtiny','").append(domID).append("',ed.getContent());\n")
 	          .append("      });\n");
@@ -145,8 +145,6 @@ class RichTextElementRenderer extends DefaultComponentRenderer {
 		int cols = teC.getCols();
 		int rows = teC.getRows();
 		String value = te.getRawValue();
-		
-		System.out.println("Render: " + value);
 		
 		// Read write view
 		sb.append("<div id=\"");

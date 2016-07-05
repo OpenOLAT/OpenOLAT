@@ -27,23 +27,10 @@ import java.util.List;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public interface PageEditorProvider extends PageProvider {
+public interface PageProvider {
 	
 	public List<? extends PageElement> getElements();
-	
 
-	public List<PageElementHandler> getCreateHandlers();
-	
 	public List<PageElementHandler> getAvailableHandlers();
-	
-	public PageElement appendPageElement(PageElement element);
-	
-	public PageElement appendPageElementAt(PageElement element, int index);
-	
-	public void removePageElement(PageElement element);
 
-	public void moveUpPageElement(PageElement element);
-	
-	public void moveDownPageElement(PageElement element);
-	
 }

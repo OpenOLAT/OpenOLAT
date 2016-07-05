@@ -1,9 +1,5 @@
 $r.render("meta")
-
-#foreach($fragment in $fragments)
-	<div class="">$r.render($fragment.componentName)</div>
-#end
-
+$r.render("page")
 #if($r.available("comments"))
 <div class="clearfix">
 	$r.render("comments")

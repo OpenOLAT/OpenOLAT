@@ -153,6 +153,10 @@ public class TinyConfig {
 				.disableFeature("olatmovieviewer");
 	}
 	
+	public TinyConfig disableMenuAndMenuBar() {
+		return new TinyConfig(plugins, new String[0], null);
+	}
+	
 	/**
 	 * Remove media + olatmovie
 	 * @return

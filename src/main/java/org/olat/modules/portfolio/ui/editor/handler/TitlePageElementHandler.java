@@ -17,53 +17,60 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.portfolio.ui.editor;
+package org.olat.modules.portfolio.ui.editor.handler;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
-import org.olat.core.gui.control.Controller;
+import org.olat.core.gui.components.text.TextFactory;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.modules.portfolio.model.HTMLPart;
+import org.olat.core.util.CodeHelper;
+import org.olat.modules.portfolio.model.TitlePart;
+import org.olat.modules.portfolio.ui.editor.PageElement;
+import org.olat.modules.portfolio.ui.editor.PageElementEditorController;
+import org.olat.modules.portfolio.ui.editor.PageElementHandler;
+import org.olat.modules.portfolio.ui.editor.SimpleAddPageElementHandler;
+import org.olat.modules.portfolio.ui.editor.TitleEditorController;
 
 /**
  * 
- * Initial date: 01.07.2016<br>
+ * Initial date: 04.07.2016<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class HTMLRawPageElementHandler implements PageElementHandler, SimpleAddPageElementHandler {
+public class TitlePageElementHandler implements PageElementHandler, SimpleAddPageElementHandler {
 
 	@Override
 	public String getType() {
-		return "htmlraw";
+		return "htitle";
 	}
 
 	@Override
 	public String getIconCssClass() {
-		return "o_filetype_file";
+		return "o_icon_title";
 	}
 
 	@Override
 	public Component getContent(UserRequest ureq, WindowControl wControl, PageElement element) {
-		if(element instanceof HTMLPart) {
-			return new HTMLRawEditorController(ureq, wControl, (HTMLPart)element).getInitialComponent();
+		String content = "";
+		if(element instanceof TitlePart) {
+			content = ((TitlePart)element).getContent();
 		}
-		return null;
+		return TextFactory.createTextComponentFromString("titleCmp" + CodeHelper.getRAMUniqueID(), content, null, false, null);
 	}
 
 	@Override
-	public Controller getEditor(UserRequest ureq, WindowControl wControl, PageElement element) {
-		if(element instanceof HTMLPart) {
-			return new HTMLRawEditorController(ureq, wControl, (HTMLPart)element);
+	public PageElementEditorController getEditor(UserRequest ureq, WindowControl wControl, PageElement element) {
+		if(element instanceof TitlePart) {
+			return new TitleEditorController(ureq, wControl, (TitlePart)element);
 		}
 		return null;
 	}
 
 	@Override
 	public PageElement createPageElement() {
-		String content = "<p>Hello world</p>";
-		HTMLPart htmlPart = new HTMLPart();
-		htmlPart.setContent(content);
-		return htmlPart;
+		String content = "<h1>Hello world</h1>";
+		TitlePart part = new TitlePart();
+		part.setContent(content);
+		return part;
 	}
 }

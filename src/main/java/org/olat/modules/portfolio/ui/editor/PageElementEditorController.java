@@ -19,7 +19,7 @@
  */
 package org.olat.modules.portfolio.ui.editor;
 
-import java.util.List;
+import org.olat.core.gui.control.Controller;
 
 /**
  * 
@@ -27,23 +27,19 @@ import java.util.List;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public interface PageEditorProvider extends PageProvider {
+public interface PageElementEditorController extends Controller {
 	
-	public List<? extends PageElement> getElements();
 	
+	/**
+	 *
+	 * @return True if the table is in editing mode
+	 */
+	public boolean isEditMode();
 
-	public List<PageElementHandler> getCreateHandlers();
-	
-	public List<PageElementHandler> getAvailableHandlers();
-	
-	public PageElement appendPageElement(PageElement element);
-	
-	public PageElement appendPageElementAt(PageElement element, int index);
-	
-	public void removePageElement(PageElement element);
+	/**
+	 * Set a visual change but do not change anything on the model
+	 * @param editMode
+	 */
+	public void setEditMode(boolean editMode);
 
-	public void moveUpPageElement(PageElement element);
-	
-	public void moveDownPageElement(PageElement element);
-	
 }

@@ -17,33 +17,29 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.portfolio.ui.editor;
+package org.olat.modules.portfolio.model;
 
-import java.util.List;
+import javax.persistence.Entity;
+import javax.persistence.Transient;
 
 /**
  * 
- * Initial date: 04.07.2016<br>
+ * Initial date: 09.06.2016<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public interface PageEditorProvider extends PageProvider {
-	
-	public List<? extends PageElement> getElements();
-	
+@Entity(name="pftitlepart")
+public class TitlePart extends AbstractPart {
 
-	public List<PageElementHandler> getCreateHandlers();
-	
-	public List<PageElementHandler> getAvailableHandlers();
-	
-	public PageElement appendPageElement(PageElement element);
-	
-	public PageElement appendPageElementAt(PageElement element, int index);
-	
-	public void removePageElement(PageElement element);
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 7060103983145628108L;
 
-	public void moveUpPageElement(PageElement element);
-	
-	public void moveDownPageElement(PageElement element);
+	@Override
+	@Transient
+	public String getType() {
+		return "htitle";
+	}
 	
 }

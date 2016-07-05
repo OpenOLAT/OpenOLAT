@@ -37,7 +37,7 @@ import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowC
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.util.Util;
 import org.olat.modules.portfolio.PagePart;
-import org.olat.modules.portfolio.ui.PageController;
+import org.olat.modules.portfolio.ui.PageRunController;
 import org.olat.modules.portfolio.ui.editor.event.AddElementEvent;
 import org.olat.modules.portfolio.ui.editor.event.ChangePartEvent;
 
@@ -64,7 +64,7 @@ public class PageEditorController extends BasicController {
 	public PageEditorController(UserRequest ureq, WindowControl wControl, PageEditorProvider provider) {
 		super(ureq, wControl);
 		this.provider = provider;
-		setTranslator(Util.createPackageTranslator(PageController.class, getLocale(), getTranslator()));
+		setTranslator(Util.createPackageTranslator(PageRunController.class, getLocale(), getTranslator()));
 		
 		mainVC = createVelocityContainer("page_editor");
 		for(PageElementHandler handler:provider.getAvailableHandlers()) {
@@ -133,7 +133,6 @@ public class PageEditorController extends BasicController {
 				ChangePartEvent changeEvent = (ChangePartEvent)event;
 				PagePart part = changeEvent.getPagePart();
 				fragment.setPageElement(part);
-				mainVC.setDirty(true);
 				fireEvent(ureq, Event.CHANGED_EVENT);
 			}	
 		}
@@ -209,51 +208,41 @@ public class PageEditorController extends BasicController {
 	
 	private void doEditElement(EditorFragment fragment) {
 		for(EditorFragment eFragment:fragments) {
-			eFragment.setEditMode(eFragment == fragment);
+			eFragment.setEditMode(eFragment.equals(fragment));
 		}
-		if(fragment.getAddElementAboveLink() == null) {
-			String calloutId = "add.dd." + (++counter);
-			Link addLink = LinkFactory.createLink(calloutId, "add.element.above", "add.element.above", mainVC, this);
-			addLink.setIconLeftCSS("o_icon o_icon-sm o_icon_element_before");
-			addLink.setElementCssClass("o_sel_add_element_above");
-			addLink.setUserObject(fragment);
-			fragment.setAddElementAboveLink(addLink);
-		}
-		if(fragment.getAddElementBelowLink() == null) {
-			String calloutId = "add.dd." + (++counter);
-			Link addLink = LinkFactory.createLink(calloutId, "add.element.below", "add.element.below", mainVC, this);
-			addLink.setIconLeftCSS("o_icon o_icon-sm o_icon_element_after");
-			addLink.setElementCssClass("o_sel_add_element_below");
-			addLink.setUserObject(fragment);
-			fragment.setAddElementBelowLink(addLink);
-		}
-		if(fragment.getDeleteLink() == null) {
-			String linkId = "del.dd." + (++counter);
-			Link deleteLink = LinkFactory.createLink(linkId, "delete", "delete.element", mainVC, this);
-			deleteLink.setIconLeftCSS("o_icon o_icon-sm o_icon_delete_item");
-			deleteLink.setElementCssClass("o_sel_delete_element");
-			deleteLink.setUserObject(fragment);
-			fragment.setDeleteLink(deleteLink);
-		}
-		if(fragment.getMoveUpLink() == null) {
-			String linkId = "up.dd." + (++counter);
-			Link moveUpLink = LinkFactory.createLink(linkId, "move.up", "move.up.element", mainVC, this);
-			moveUpLink.setIconLeftCSS("o_icon o_icon-sm o_icon_move_up");
-			moveUpLink.setElementCssClass("o_sel_move_up_element");
-			moveUpLink.setUserObject(fragment);
-			fragment.setMoveUpLink(moveUpLink);
-		}
-		fragment.getMoveUpLink().setEnabled(fragments.indexOf(fragment) > 0);
-		
-		if(fragment.getMoveDownLink() == null) {
-			String linkId = "down.dd." + (++counter);
-			Link moveDownLink = LinkFactory.createLink(linkId, "move.down", "move.down.element", mainVC, this);
-			moveDownLink.setIconLeftCSS("o_icon o_icon-sm o_icon_move_down");
-			moveDownLink.setElementCssClass("o_sel_move_down_element");
-			moveDownLink.setUserObject(fragment);
-			fragment.setMoveDownLink(moveDownLink);
-		}
-		fragment.getMoveDownLink().setEnabled(fragments.indexOf(fragment) < (fragments.size() - 1));
+		//The link must every time created as new
+
+		Link addAboveLink = LinkFactory.createLink("add.element.above", "add.element.above", getTranslator(), mainVC, this, Link.LINK);
+		addAboveLink.setIconLeftCSS("o_icon o_icon-sm o_icon_element_before");
+		addAboveLink.setElementCssClass("o_sel_add_element_above");
+		addAboveLink.setUserObject(fragment);
+		fragment.setAddElementAboveLink(addAboveLink);
+
+		Link addBelowLink = LinkFactory.createLink("add.element.below", "add.element.below", getTranslator(), mainVC, this, Link.LINK);
+		addBelowLink.setIconLeftCSS("o_icon o_icon-sm o_icon_element_after");
+		addBelowLink.setElementCssClass("o_sel_add_element_below");
+		addBelowLink.setUserObject(fragment);
+		fragment.setAddElementBelowLink(addBelowLink);
+
+		Link deleteLink = LinkFactory.createLink("delete", "delete.element", getTranslator(), mainVC, this, Link.LINK);
+		deleteLink.setIconLeftCSS("o_icon o_icon-sm o_icon_delete_item");
+		deleteLink.setElementCssClass("o_sel_delete_element");
+		deleteLink.setUserObject(fragment);
+		fragment.setDeleteLink(deleteLink);
+
+		Link moveUpLink = LinkFactory.createLink("move.up", "move.up.element", getTranslator(), mainVC, this, Link.LINK);
+		moveUpLink.setIconLeftCSS("o_icon o_icon-sm o_icon_move_up");
+		moveUpLink.setElementCssClass("o_sel_move_up_element");
+		moveUpLink.setUserObject(fragment);
+		moveUpLink.setEnabled(fragments.indexOf(fragment) > 0);
+		fragment.setMoveUpLink(moveUpLink);
+		 
+		Link moveDownLink = LinkFactory.createLink("move.down", "move.down.element", getTranslator(), mainVC, this, Link.LINK);
+		moveDownLink.setIconLeftCSS("o_icon o_icon-sm o_icon_move_down");
+		moveDownLink.setElementCssClass("o_sel_move_down_element");
+		moveDownLink.setUserObject(fragment);
+		moveDownLink.setEnabled(fragments.indexOf(fragment) < (fragments.size() - 1));
+		fragment.setMoveDownLink(moveDownLink);
 		
 		mainVC.setDirty(true);
 	}
@@ -389,6 +378,13 @@ public class PageEditorController extends BasicController {
 
 		public void setEditMode(boolean editMode) {
 			this.editMode = editMode;
+			if(editorPart instanceof PageElementEditorController) {
+				((PageElementEditorController)editorPart).setEditMode(editMode);
+			}
+		}
+		
+		public String getCmpId() {
+			return cmpId;
 		}
 
 		public PageElement getPageElement() {
@@ -470,6 +466,22 @@ public class PageEditorController extends BasicController {
 		public PageElementHandler getHandler() {
 			return handler;
 		}
-	}
 
+		@Override
+		public int hashCode() {
+			return element.hashCode();
+		}
+
+		@Override
+		public boolean equals(Object obj) {
+			if(this == obj) {
+				return true;
+			}
+			if(obj instanceof EditorFragment) {
+				EditorFragment eFragment = (EditorFragment)obj;
+				return element != null && element.equals(eFragment.getPageElement());
+			}
+			return false;
+		}
+	}
 }

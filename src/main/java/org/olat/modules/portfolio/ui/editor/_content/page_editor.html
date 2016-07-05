@@ -12,7 +12,7 @@
 						$r.render("$fragment.deleteLinkName")
 					</div>
 				</div>
-				<div class="o_page_part" data-oo-page-fragment="$fragment.componentName">
+				<div class="o_page_part o_page_edit" data-oo-page-fragment="$fragment.componentName">
 				$r.render($fragment.componentName)
 				</div>
 				<div class="o_page_add_below">
@@ -47,9 +47,11 @@
 /* <![CDATA[ */
 jQuery(function() {
 	jQuery(".o_page_part").each(function(index, el) {
-		var element = jQuery(el);
-		element.on('click', function(e) {
-			$r.openJavaScriptCommand("edit_fragment"),'fragment',jQuery(element).data('oo-page-fragment'));
+		jQuery(el).on('click', function(e) {
+			var element = jQuery(el);
+			if(element.parents('.o_page_fragment_edit').length == 0) {
+				$r.openJavaScriptCommand("edit_fragment"),'fragment', element.data('oo-page-fragment'));
+			}
 		});
 	});
 });

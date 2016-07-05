@@ -310,7 +310,7 @@ public interface PortfolioService {
 	 * @param part
 	 * @return
 	 */
-	public PagePart updatePart(PagePart part);
+	public <U extends PagePart> U updatePart(U part);
 	
 	public MediaHandler getMediaHandler(String type);
 	

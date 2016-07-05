@@ -183,7 +183,6 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_portfolio_entry_deleted:before { content: $fa-var-trash; color: #000;}
 .o_icon_portfolio_my_shares:before { content: $fa-var-share-alt; }
 .o_icon_portfolio_shared_with_me:before { content: $fa-var-share-alt-square; }
-
 .o_icon_post:before { content: $fa-var-comment-o; }
 .o_icon_preview:before { content: $fa-var-eye;}
 .o_icon_previous:before { content: $fa-var-chevron-circle-left; }
@@ -261,6 +260,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_table_large:before { content: $fa-var-th-large; }
 .o_icon_tags:before { content: $fa-var-tags; }
 .o_icon_timelimit:before { content: $fa-var-bomb; }
+.o_icon_title:before { content: $fa-var-bold; }
 .o_icon_toggle:before { content: $fa-var-circle; }
 .o_icon_to_read:before { content: $fa-var-circle; }
 .o_icon_tool:before { content: $fa-var-gear; }

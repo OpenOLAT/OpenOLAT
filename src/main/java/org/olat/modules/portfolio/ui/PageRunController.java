@@ -33,8 +33,6 @@ import org.olat.core.gui.components.stack.PopEvent;
 import org.olat.core.gui.components.stack.TooledController;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.components.stack.TooledStackedPanel.Align;
-import org.olat.core.gui.components.text.TextComponent;
-import org.olat.core.gui.components.text.TextFactory;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
@@ -43,18 +41,20 @@ import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.id.OLATResourceable;
-import org.olat.core.util.CodeHelper;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.modules.portfolio.Binder;
 import org.olat.modules.portfolio.BinderSecurityCallback;
 import org.olat.modules.portfolio.MediaHandler;
 import org.olat.modules.portfolio.Page;
-import org.olat.modules.portfolio.PagePart;
 import org.olat.modules.portfolio.PageStatus;
 import org.olat.modules.portfolio.PortfolioService;
 import org.olat.modules.portfolio.Section;
-import org.olat.modules.portfolio.model.HTMLPart;
-import org.olat.modules.portfolio.model.MediaPart;
+import org.olat.modules.portfolio.ui.editor.PageController;
+import org.olat.modules.portfolio.ui.editor.PageElement;
+import org.olat.modules.portfolio.ui.editor.PageElementHandler;
+import org.olat.modules.portfolio.ui.editor.PageProvider;
+import org.olat.modules.portfolio.ui.editor.handler.HTMLRawPageElementHandler;
+import org.olat.modules.portfolio.ui.editor.handler.TitlePageElementHandler;
 import org.olat.modules.portfolio.ui.event.PublishEvent;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -64,21 +64,20 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class PageController extends BasicController implements TooledController {
+public class PageRunController extends BasicController implements TooledController {
 
 	private VelocityContainer mainVC;
 	private Link editLink, editMetadataLink;
 	protected final TooledStackedPanel stackPanel;
-	private List<FragmentWrapper> fragments = new ArrayList<>();
 	
 	private CloseableModalController cmc;
 	private PageMetadataController pageMetaCtrl;
-	private PageEditController editCtrl;
+	private PageController pageCtrl;
+	private PageEditController pageEditCtrl;
 	private DialogBoxController confirmPublishCtrl;
 	private PageMetadataEditController editMetadataCtrl;
 	private UserCommentsAndRatingsController commentsCtrl;
 	
-	private int counter;
 	private Page page;
 	private boolean dirtyMarker = false;
 	private final BinderSecurityCallback secCallback;
@@ -86,7 +85,7 @@ public class PageController extends BasicController implements TooledController 
 	@Autowired
 	private PortfolioService portfolioService;
 	
-	public PageController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
+	public PageRunController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
 			BinderSecurityCallback secCallback, Page page) {
 		super(ureq, wControl);
 		this.page = page;
@@ -95,8 +94,11 @@ public class PageController extends BasicController implements TooledController 
 		
 		mainVC = createVelocityContainer("page_content");
 		mainVC.contextPut("pageTitle", page.getTitle());
-		
 		loadMeta(ureq);
+		
+		pageCtrl = new PageController(ureq, getWindowControl(), new PortfolioPageProvider());
+		listenTo(pageCtrl);
+		mainVC.put("page", pageCtrl.getInitialComponent());
 		loadModel(ureq);
 		stackPanel.addListener(this);
 
@@ -127,19 +129,7 @@ public class PageController extends BasicController implements TooledController 
 	
 	private void loadModel(UserRequest ureq) {
 		mainVC.contextPut("pageTitle", page.getTitle());
-		
-		List<PagePart> parts = portfolioService.getPageParts(page);
-		List<FragmentWrapper> newFragments = new ArrayList<>(parts.size());
-		for(PagePart part:parts) {
-			Fragment fragment = createFragment(ureq, part);
-			if(fragment != null) {
-				String cmpId = "cpt-" + (++counter);
-				newFragments.add(new FragmentWrapper(cmpId, fragment.getContent()));
-				mainVC.put(cmpId, fragment.getContent());
-			}
-		}
-		fragments = newFragments;
-		mainVC.contextPut("fragments", fragments);
+		pageCtrl.loadElements(ureq);
 		dirtyMarker = false;
 	}
 	
@@ -159,7 +149,7 @@ public class PageController extends BasicController implements TooledController 
 	
 	@Override
 	public void event(UserRequest ureq, Controller source, Event event) {
-		if(editCtrl == source) {
+		if(pageEditCtrl == source) {
 			if(event == Event.CHANGED_EVENT) {
 				dirtyMarker = true;
 			} else if(event instanceof PublishEvent) {
@@ -203,7 +193,7 @@ public class PageController extends BasicController implements TooledController 
 		} else if(stackPanel == source) {
 			if(event instanceof PopEvent) {
 				PopEvent pe = (PopEvent)event;
-				if(pe.getController() == editCtrl && dirtyMarker) {
+				if(pe.getController() == pageEditCtrl && dirtyMarker) {
 					loadModel(ureq);
 				}
 			}
@@ -245,79 +235,44 @@ public class PageController extends BasicController implements TooledController 
 	}
 	
 	private void doEditPage(UserRequest ureq) {
-		removeAsListenerAndDispose(editCtrl);
+		removeAsListenerAndDispose(pageEditCtrl);
 
-		editCtrl = new PageEditController(ureq, getWindowControl(), secCallback, page);
-		listenTo(editCtrl);
+		pageEditCtrl = new PageEditController(ureq, getWindowControl(), secCallback, page);
+		listenTo(pageEditCtrl);
 		
-		stackPanel.pushController("Edit", editCtrl);
+		stackPanel.pushController("Edit", pageEditCtrl);
 	}
-	
-	private Fragment createFragment(UserRequest ureq, PagePart part) {
-		if(part instanceof HTMLPart) {
-			HTMLPart htmlPart = (HTMLPart)part;
-			HTMLFragment editorFragment = new HTMLFragment(htmlPart);
-			return editorFragment;
-		} else if(part instanceof MediaPart) {
-			MediaPart htmlPart = (MediaPart)part;
-			MediaFragment editorFragment = new MediaFragment(htmlPart, ureq);
-			return editorFragment;
-		}
-		return null;
-	}
-	
-	public class MediaFragment implements Fragment {
-		
-		private Controller controller;
-		
-		public MediaFragment(MediaPart part, UserRequest ureq) {
-			MediaHandler handler = portfolioService.getMediaHandler(part.getMedia().getType());
-			controller = handler.getMediaController(ureq, getWindowControl(), part.getMedia());
-		}
-		
-		@Override
-		public Component getContent() {
-			return controller.getInitialComponent();
-		}
 
-	}
-	
-	public static class HTMLFragment implements Fragment {
+	private class PortfolioPageProvider implements PageProvider {
 		
-		private final TextComponent component;
+		private final List<PageElementHandler> handlers = new ArrayList<>();
 		
-		public HTMLFragment(HTMLPart part) {
-			component = TextFactory.createTextComponentFromString("cmp" + CodeHelper.getRAMUniqueID(), part.getContent(), null, false, null);
+		public PortfolioPageProvider() {
+			//handler for title
+			TitlePageElementHandler titleRawHandler = new TitlePageElementHandler();
+			handlers.add(titleRawHandler);
+			//handler for HTML code
+			HTMLRawPageElementHandler htlmRawHandler = new HTMLRawPageElementHandler();
+			handlers.add(htlmRawHandler);
+			
+			
+			List<MediaHandler> mediaHandlers = portfolioService.getMediaHandlers();
+			for(MediaHandler mediaHandler:mediaHandlers) {
+				if(mediaHandler instanceof PageElementHandler) {
+					handlers.add((PageElementHandler)mediaHandler);
+				}
+			}
+
 		}
 
 		@Override
-		public Component getContent() {
-			return component;
+		public List<? extends PageElement> getElements() {
+			return portfolioService.getPageParts(page);
 		}
-	}
-	
-	public interface Fragment {
-		
-		public Component getContent();
-		
-	}
-	
-	public static final class FragmentWrapper {
-		
-		private final String componentName;
-		private final Component component;
-		
-		public FragmentWrapper(String componentName, Component component) {
-			this.componentName = componentName;
-			this.component = component;
-		}
-		
-		public String getComponentName() {
-			return componentName;
-		}
-		
-		public Component getComponent() {
-			return component;
+
+		@Override
+		public List<PageElementHandler> getAvailableHandlers() {
+			return handlers;
 		}
 	}
 }

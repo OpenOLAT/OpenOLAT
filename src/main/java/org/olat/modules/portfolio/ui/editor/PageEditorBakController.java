@@ -45,7 +45,7 @@ import org.olat.modules.portfolio.PortfolioService;
 import org.olat.modules.portfolio.model.HTMLPart;
 import org.olat.modules.portfolio.model.MediaPart;
 import org.olat.modules.portfolio.ui.MediaCenterController;
-import org.olat.modules.portfolio.ui.PageController;
+import org.olat.modules.portfolio.ui.PageRunController;
 import org.olat.modules.portfolio.ui.event.MediaSelectionEvent;
 import org.olat.modules.portfolio.ui.media.CollectFileMediaController;
 import org.olat.modules.portfolio.ui.media.CollectImageMediaController;
@@ -76,7 +76,7 @@ public class PageEditorBakController extends FormBasicController {
 	public PageEditorBakController(UserRequest ureq, WindowControl wControl, Page page) {
 		super(ureq, wControl, "page_editor_bak");
 		this.page = page;
-		setTranslator(Util.createPackageTranslator(PageController.class, getLocale(), getTranslator()));
+		setTranslator(Util.createPackageTranslator(PageRunController.class, getLocale(), getTranslator()));
 		
 		initForm(ureq);
 		loadModel(ureq);

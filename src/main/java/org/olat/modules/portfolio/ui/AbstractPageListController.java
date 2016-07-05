@@ -78,7 +78,7 @@ implements Activateable2, TooledController, FlexiTableComponentDelegate {
 	protected PageListDataModel model;
 	protected final TooledStackedPanel stackPanel;
 	
-	private PageController pageCtrl;
+	private PageRunController pageCtrl;
 	private CloseableModalController cmc;
 	private UserCommentsController commentsCtrl;
 	
@@ -289,7 +289,7 @@ implements Activateable2, TooledController, FlexiTableComponentDelegate {
 	}
 	
 	private void doOpenPage(UserRequest ureq, Page page) {
-		pageCtrl = new PageController(ureq, getWindowControl(), stackPanel, secCallback, page);
+		pageCtrl = new PageRunController(ureq, getWindowControl(), stackPanel, secCallback, page);
 		listenTo(pageCtrl);
 		
 		String displayName = StringHelper.escapeHtml(page.getTitle());

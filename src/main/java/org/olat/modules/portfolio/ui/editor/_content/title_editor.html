@@ -1,0 +1,10 @@
+#if($editMode)
+	<div class="clearfix">
+	#foreach($headingFormatLinkName in $headingFormatLinkNames)
+		$r.render($headingFormatLinkName)
+	#end
+	</div>
+	$r.render("$cmpId")
+#else
+	$r.render("${cmpId}_static")
+#end

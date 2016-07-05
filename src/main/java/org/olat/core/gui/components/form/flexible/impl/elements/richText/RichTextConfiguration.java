@@ -147,6 +147,7 @@ public class RichTextConfiguration implements Disposable {
 	private boolean statusBar = true;
 	private boolean allowCustomMediaFactory = true;
 	private boolean inline = false;
+	private boolean sendOnBlur;
 	private CustomLinkTreeModel linkBrowserCustomTreeModel;	
 	// DOM ID of the flexi form element
 	private String domID;
@@ -380,6 +381,18 @@ public class RichTextConfiguration implements Disposable {
 		this.inline = inline;
 	}
 
+	public boolean isSendOnBlur() {
+		return sendOnBlur;
+	}
+
+	/**
+	 * Send the content of the rich text element on blur event.
+	 * @param sendOnBlur
+	 */
+	public void setSendOnBlur(boolean sendOnBlur) {
+		this.sendOnBlur = sendOnBlur;
+	}
+
 	public boolean isStatusBar() {
 		return statusBar;
 	}
@@ -488,8 +501,12 @@ public class RichTextConfiguration implements Disposable {
 		tinyConfig = tinyConfig.disableMathEditor();
 	}
 	
-	public void disableImageAnMovie() {
+	public void disableImageAndMovie() {
 		tinyConfig = tinyConfig.disableImageAndMedia();
+	}
+	
+	public void disableMenuAndMenuBar() {
+		tinyConfig = tinyConfig.disableMenuAndMenuBar();
 	}
 
 	/**
@@ -915,6 +932,8 @@ public class RichTextConfiguration implements Disposable {
  		
 		if (tinyConfig.getTool1() != null) {
 			tinyMenuSb.append("toolbar1: '").append(tinyConfig.getTool1()).append("',\n");
+		} else {
+			tinyMenuSb.append("toolbar:false,\n");
 		}
 		
 		if(tinyConfig.hasMenu()) {
@@ -926,6 +945,8 @@ public class RichTextConfiguration implements Disposable {
 				tinyMenuSb.append(menuItem);
 			}
 			tinyMenuSb.append("\n},\n");
+		} else {
+			tinyMenuSb.append("menu:{},\n");
 		}
 		
 		for (Map.Entry<String, String> entry : copyValues.entrySet()) {
