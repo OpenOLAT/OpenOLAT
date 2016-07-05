@@ -23,7 +23,6 @@ import java.util.Collections;
 import java.util.Locale;
 import java.util.Map;
 
-import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.core.gui.components.form.ValidationError;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -47,16 +46,7 @@ import org.olat.user.UserImpl;
  * @author gnaegi, http://www.frentix.com
  */
 public class UserNameReadOnlyPropertyHandler extends AbstractUserPropertyHandler {
-	private String authProvider;
 	
-	/**
-	 * Spring setter for the authentication provider
-	 * @param authProvider
-	 */
-	public void setAuthProvider(String authProvider) {
-		this.authProvider = authProvider;
-	}
-
 	@Override
 	public FormItem addFormItem(Locale locale, User user,
 			String usageIdentifyer, boolean isAdministrativeUser,
@@ -86,7 +76,7 @@ public class UserNameReadOnlyPropertyHandler extends AbstractUserPropertyHandler
 	protected String getInternalValue(User user) {
 		if (user instanceof UserImpl) {
 			Identity identity = ((UserImpl)user).getIdentity();
-			return BaseSecurityManager.getInstance().findAuthenticationName(identity, authProvider);					
+			return identity.getName();					
 		}
 		return "";
 	}

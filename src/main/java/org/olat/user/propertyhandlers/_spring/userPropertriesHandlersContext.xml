@@ -13,7 +13,6 @@
 		<property name="name" value="userName" />
 		<property name="group" value="account" />
 		<property name="deletable" value="false" />
-		<property name="authProvider" value="OLAT" /> <!--  could also be ldap, shibboleth, webdav, cal etc -->
 	</bean>
 
 	<bean id="userPropertyFirstName" class="org.olat.user.propertyhandlers.Generic127CharTextPropertyHandler">
