@@ -19,6 +19,7 @@
  */
 package org.olat.core.gui.components.form.flexible.impl.elements.table;
 
+import java.util.Arrays;
 import java.util.List;
 
 import org.olat.core.gui.components.Component;
@@ -370,7 +371,7 @@ public abstract class AbstractFlexiTableRenderer extends DefaultComponentRendere
 		FlexiTableDataModel<?> dataModel = ftE.getTableDataModel();
 		int rows = dataModel.getRowCount();
 
-		if (rows > 20) {
+		if (rows > ftE.getDefaultPageSize()) {
 			renderPageSize(sb, ftC, translator);
 		}
 
@@ -418,6 +419,11 @@ public abstract class AbstractFlexiTableRenderer extends DefaultComponentRendere
 	      .append("<ul class='dropdown-menu' role='menu'>");
 		
 		int[] sizes = new int[]{ 20, 50, 100, 250 };
+		int defaultPageSize = ftE.getDefaultPageSize();
+		if (Arrays.binarySearch(sizes, defaultPageSize) < 0) {
+			sizes = new int[]{ 20, 50, 100, 250, defaultPageSize };
+			Arrays.sort(sizes);
+		}
 		for(int size:sizes) {
 			sb.append("<li><a href=\"javascript:")
 			  .append(FormJSHelper.getXHRFnCallFor(theForm, dispatchId, 1, true, true,
