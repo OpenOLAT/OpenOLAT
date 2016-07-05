@@ -856,11 +856,10 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 		  .append(entry.getDisplayname()).append("_")
 		  .append(Formatter.formatShortDateFilesystem(dateCertification));
 		String filename = FileUtils.normalizeFilename(sb.toString()) + ".pdf";
-		// External URL to certificate. See also DownloadCertificateCellRenderer.getUrl();
+		// External URL to certificate as short as possible for QR-Code
 		sb = new StringBuilder();
 		sb.append(Settings.getServerContextPathURI()).append("/certificate/")
-		  .append(certificate.getUuid()).append("/")
-		  .append(filename);
+		  .append(certificate.getUuid()).append("/certificate.pdf");
 		String certUrl = sb.toString();
 		
 		if(template == null || template.getPath().toLowerCase().endsWith("pdf")) {
