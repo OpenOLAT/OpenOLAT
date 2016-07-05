@@ -38,5 +38,30 @@ public class IFrameDeliveryMapperTest {
 		
 		String encoding2 = mapper.guessEncoding("<meta http-equiv='Content-Type' content='text/html; charset=UTF-8'>");
 		Assert.assertEquals("UTF-8", encoding2);
+
+		// capital / lowercase mixed
+		String encoding3 = mapper.guessEncoding("<meta http-equiv=\"Content-type\" content=\"text/html; charset=utf-8\">");
+		Assert.assertEquals("utf-8", encoding3);
+
+		// short charset rules often used in html5 apps
+		String encoding4 = mapper.guessEncoding("<meta charset=\"utf-8\">");
+		Assert.assertEquals("utf-8", encoding4);
+
+		String encoding5 = mapper.guessEncoding("<meta charset='utf-8'>");
+		Assert.assertEquals("utf-8", encoding5);
+
+		String encoding6 = mapper.guessEncoding("<meta charset=utf-8>");
+		Assert.assertEquals("utf-8", encoding6);
+
+		String encoding7 = mapper.guessEncoding("<meta charset=utf-8/>");
+		Assert.assertEquals("utf-8", encoding7);
+
+		String encoding8 = mapper.guessEncoding("<meta charset=utf-8 />");
+		Assert.assertEquals("utf-8", encoding8);
+
+		// wrong stuff
+		String encoding9 = mapper.guessEncoding("<meta gugus='asdf'><dings charset='utf-8' />");
+		Assert.assertNull(encoding9);
+		
 	}
 }
