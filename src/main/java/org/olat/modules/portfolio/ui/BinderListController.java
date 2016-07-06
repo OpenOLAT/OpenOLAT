@@ -52,6 +52,7 @@ import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.generic.closablewrapper.CalloutSettings;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
@@ -319,7 +320,8 @@ public class BinderListController extends FormBasicController
 		listenTo(chooseNewBinderTypeCtrl);
 
 		newBinderCalloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(),
-				chooseNewBinderTypeCtrl.getInitialComponent(), newBinderDropdown.getFormDispatchId(), "", true, "");
+				chooseNewBinderTypeCtrl.getInitialComponent(), newBinderDropdown.getFormDispatchId(),
+				"", true, "", new CalloutSettings(false));
 		listenTo(newBinderCalloutCtrl);
 		newBinderCalloutCtrl.activate();
 	}

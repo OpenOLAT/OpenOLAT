@@ -47,6 +47,7 @@ import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.control.WindowBackOffice;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.generic.closablewrapper.CalloutSettings;
 import org.olat.core.gui.control.generic.dtabs.DTabs;
 import org.olat.core.gui.control.info.WindowControlInfo;
 import org.olat.core.gui.translator.Translator;
@@ -326,7 +327,7 @@ public class EnrollmentManagerConcurrentTest extends OlatTestCase implements Win
 	public void pushToMainArea(Component comp){}
 	public void pushAsModalDialog(Component comp){}
 	@Override
-	public void pushAsCallout(Component comp, String targetId){}
+	public void pushAsCallout(Component comp, String targetId, CalloutSettings settings){}
 	public void pop(){}
 	public void setInfo(String string){}
 	public void setError(String string){}

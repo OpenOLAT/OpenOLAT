@@ -86,12 +86,12 @@ public class CollectImageMediaController extends FormBasicController implements 
 		return mediaReference;
 	}
 
-	@Autowired
+	@Override
 	public AddElementInfos getUserObject() {
 		return userObject;
 	}
 
-	@Autowired
+	@Override
 	public void setUserObject(AddElementInfos userObject) {
 		this.userObject = userObject;
 	}

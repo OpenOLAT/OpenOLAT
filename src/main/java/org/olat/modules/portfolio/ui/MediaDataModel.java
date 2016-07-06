@@ -19,9 +19,20 @@
  */
 package org.olat.modules.portfolio.ui;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Locale;
+
+import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FilterableFlexiTableModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableModelDelegate;
+import org.olat.core.util.StringHelper;
 import org.olat.modules.portfolio.model.MediaRow;
 
 /**
@@ -30,31 +41,76 @@ import org.olat.modules.portfolio.model.MediaRow;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class MediaDataModel  extends DefaultFlexiTableDataModel<MediaRow>  {
+public class MediaDataModel extends DefaultFlexiTableDataModel<MediaRow>
+	implements SortableFlexiTableDataModel<MediaRow>, FilterableFlexiTableModel {
 	
-	public MediaDataModel(FlexiTableColumnModel columnsModel) {
+	private final Locale locale;
+	private List<MediaRow> backups;
+	
+	public MediaDataModel(FlexiTableColumnModel columnsModel, Locale locale) {
 		super(columnsModel);
+		this.locale = locale;
+	}
+
+	@Override
+	public void filter(String key) {
+		if(StringHelper.containsNonWhitespace(key) && !"showall".equals(key)) {
+			List<MediaRow> filteredRows = new ArrayList<>();
+			for(MediaRow row:backups) {
+				if(key.equals(row.getType())) {
+					filteredRows.add(row);
+				}
+			}
+			super.setObjects(filteredRows);
+		} else {
+			super.setObjects(backups);
+		}
+	}
+
+	@Override
+	public void sort(SortKey orderBy) {
+		if(orderBy != null) {
+			List<MediaRow> views = new MediaDataModelSorterDelegate(orderBy, this, locale).sort();
+			super.setObjects(views);
+		}
 	}
 
 	@Override
 	public Object getValueAt(int row, int col) {
-		MediaRow page = getObject(row);
+		MediaRow media = getObject(row);
+		return getValueAt(media, col);
+	}
+
+	@Override
+	public Object getValueAt(MediaRow media, int col) {
 		switch(MediaCols.values()[col]) {
-			case key: return page.getKey();
-			case title: return page.getTitle();
-			case open: return page.getOpenFormItem();
+			case key: return media.getKey();
+			case title: return media.getTitle();
+			case collectionDate: return media.getCollectionDate();
+			case type: return media;
+			case open: return media.getOpenFormItem();
 		}
 		return null;
 	}
 	
+	
+	
+		@Override
+	public void setObjects(List<MediaRow> objects) {
+		backups = objects;
+		super.setObjects(objects);
+	}
+
 		@Override
 	public DefaultFlexiTableDataModel<MediaRow> createCopyWithEmptyList() {
-		return new MediaDataModel(getTableColumnModel());
+		return new MediaDataModel(getTableColumnModel(), locale);
 	}
 		
 	public enum MediaCols implements FlexiSortableColumnDef {
 		key("table.header.key"),
 		title("table.header.title"),
+		collectionDate("table.header.collection.date"),
+		type("table.header.type"),
 		open("table.header.open");
 
 		private final String i18nKey;
@@ -76,6 +132,39 @@ public class MediaDataModel  extends DefaultFlexiTableDataModel<MediaRow>  {
 		@Override
 		public String sortKey() {
 			return name();
+		}
+	}
+	
+	public static class MediaDataModelSorterDelegate extends SortableFlexiTableModelDelegate<MediaRow> {
+		
+		public MediaDataModelSorterDelegate(SortKey orderBy, MediaDataModel model, Locale locale) {
+			super(orderBy, model, locale);
+		}
+
+		@Override
+		protected void sort(List<MediaRow> rows) {
+			int columnIndex = getColumnIndex();
+			MediaCols column = MediaCols.values()[columnIndex];
+			switch(column) {
+				case type: Collections.sort(rows, new TypeComparator()); break;
+				default: {
+					super.sort(rows);
+				}
+			}
+		}
+		
+		private class TypeComparator implements Comparator<MediaRow> {
+			@Override
+			public int compare(MediaRow t1, MediaRow t2) {
+				String r1 = t1.getType();
+				String r2 = t2.getType();
+				
+				int compare = compareString(r1, r2);
+				if(compare == 0) {
+					compare = compareString(t1.getTitle(), t2.getTitle());
+				}
+				return compare;
+			}
 		}
 	}
 }

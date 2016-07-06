@@ -1,11 +1,14 @@
 <div class="o_eportfolio o_artefacts">
-	#if (!$artefactChooseMode)
+
+	#if(!$artefactChooseMode && $r.available("addArtefactCtrl"))
 		<div class="o_ep_add_artefact pull-right">
 			$r.render("addArtefactCtrl")
 		</div><br /><br />
 	#else
 		$r.translate("choose.artefact.intro")
-		<p>$r.render("addArtefactCtrl")</p>
+		#if($r.available("addArtefactCtrl"))
+			<p>$r.render("addArtefactCtrl")</p>
+		#end
 	#end
 	
 	<div class="o_ep_content">

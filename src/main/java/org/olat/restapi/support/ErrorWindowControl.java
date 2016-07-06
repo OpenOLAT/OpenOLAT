@@ -22,6 +22,7 @@ package org.olat.restapi.support;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.control.WindowBackOffice;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.generic.closablewrapper.CalloutSettings;
 import org.olat.core.gui.control.info.WindowControlInfo;
 import org.olat.core.id.context.BusinessControl;
 
@@ -50,7 +51,7 @@ public class ErrorWindowControl implements WindowControl {
 	public void pushAsModalDialog(Component comp) {/* */}
 	
 	@Override
-	public void pushAsCallout(Component comp, String targetId) {/* */}
+	public void pushAsCallout(Component comp, String targetId, CalloutSettings settings) {/* */}
 
 	@Override
 	public void pop() {/* */}

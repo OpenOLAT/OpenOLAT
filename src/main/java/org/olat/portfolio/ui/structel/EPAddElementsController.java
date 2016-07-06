@@ -196,7 +196,7 @@ public class EPAddElementsController extends BasicController {
 
 	private void popUpAddArtefactBox(UserRequest ureq) {
 		if (artefactPoolCtrl == null) {
-			artefactPoolCtrl = new EPArtefactPoolRunController(ureq, getWindowControl(), true);
+			artefactPoolCtrl = new EPArtefactPoolRunController(ureq, getWindowControl(), true, true);
 			listenTo(artefactPoolCtrl);
 		}
 		artefactBox = new CloseableModalController(getWindowControl(),"close",artefactPoolCtrl.getInitialComponent(),true, translate("choose.artefact.title"));

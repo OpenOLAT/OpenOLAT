@@ -23,6 +23,7 @@ import org.olat.core.gui.components.Component;
 import org.olat.core.gui.control.WindowBackOffice;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.WindowControlInfoImpl;
+import org.olat.core.gui.control.generic.closablewrapper.CalloutSettings;
 import org.olat.core.gui.control.info.WindowControlInfo;
 import org.olat.core.id.context.BusinessControl;
 import org.olat.core.id.context.BusinessControlFactory;
@@ -61,8 +62,8 @@ class BaseFullWebappWindowControl implements WindowControl {
 	}
 
 	@Override
-	public void pushAsCallout(Component comp, String targetId) {
-		webappCtrl.getCurrentGuiStack().pushCallout(comp, targetId);
+	public void pushAsCallout(Component comp, String targetId, CalloutSettings settings) {
+		webappCtrl.getCurrentGuiStack().pushCallout(comp, targetId, settings);
 	}
 
 	/**

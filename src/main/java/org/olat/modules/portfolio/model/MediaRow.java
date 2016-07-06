@@ -19,6 +19,8 @@
  */
 package org.olat.modules.portfolio.model;
 
+import java.util.Date;
+
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.modules.portfolio.MediaLight;
@@ -29,7 +31,7 @@ import org.olat.modules.portfolio.MediaLight;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class MediaRow {
+public class MediaRow implements MediaLight {
 	
 	private MediaLight media;
 
@@ -42,14 +44,51 @@ public class MediaRow {
 		this.openFormLink = openFormLink;
 	}
 	
+	@Override
 	public Long getKey() {
 		return media.getKey();
 	}
 	
+	@Override
+	public Date getCreationDate() {
+		return media.getCreationDate();
+	}
+
+	@Override
 	public String getTitle() {
 		return media.getTitle();
 	}
-	
+
+	@Override
+	public Date getCollectionDate() {
+		return media.getCollectionDate();
+	}
+
+	@Override
+	public String getType() {
+		return media.getType();
+	}
+
+	@Override
+	public String getStoragePath() {
+		return media.getStoragePath();
+	}
+
+	@Override
+	public String getRootFilename() {
+		return media.getRootFilename();
+	}
+
+	@Override
+	public String getDescription() {
+		return media.getDescription();
+	}
+
+	@Override
+	public String getBusinessPath() {
+		return media.getBusinessPath();
+	}
+
 	public FormLink getOpenFormItem() {
 		return openFormLink;
 	}

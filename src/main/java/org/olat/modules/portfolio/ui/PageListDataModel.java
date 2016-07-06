@@ -36,7 +36,7 @@ import org.olat.modules.portfolio.model.PageRow;
  *
  */
 public class PageListDataModel extends DefaultFlexiTableDataModel<PageRow>
-	implements SortableFlexiTableDataModel<PageRow>{
+	implements SortableFlexiTableDataModel<PageRow> {
 	
 	public PageListDataModel(FlexiTableColumnModel columnModel) {
 		super(columnModel);

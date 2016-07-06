@@ -33,6 +33,8 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.gui.control.generic.closablewrapper.CalloutSettings;
+import org.olat.core.gui.control.generic.closablewrapper.CalloutSettings.CalloutOrientation;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.util.Util;
@@ -251,10 +253,15 @@ public class PageEditorController extends BasicController {
 		addElementsCtrl = new AddElementsController(ureq, getWindowControl(), provider, referenceFragment, target);
 		listenTo(addElementsCtrl);
 		
-		// data-placement="top"
-
+		CalloutSettings calloutSettings;
+		if(target == PageElementTarget.above) {
+			calloutSettings = new CalloutSettings(true, CalloutOrientation.top);
+		} else {
+			calloutSettings = new CalloutSettings(false);
+		}
 		addCalloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(),
-				addElementsCtrl.getInitialComponent(), link.getDispatchID(), "", true, "");
+				addElementsCtrl.getInitialComponent(), link.getDispatchID(),
+				"", true, "", calloutSettings);
 		listenTo(addCalloutCtrl);
 		addCalloutCtrl.activate();
 	}

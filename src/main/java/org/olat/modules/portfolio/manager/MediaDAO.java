@@ -19,12 +19,18 @@
  */
 package org.olat.modules.portfolio.manager;
 
+import static org.olat.core.commons.persistence.PersistenceHelper.appendFuzzyLike;
+import static org.olat.core.commons.persistence.PersistenceHelper.makeFuzzyQueryString;
+
 import java.util.Date;
 import java.util.List;
+
+import javax.persistence.TypedQuery;
 
 import org.olat.basesecurity.IdentityRef;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
+import org.olat.core.util.StringHelper;
 import org.olat.modules.portfolio.Media;
 import org.olat.modules.portfolio.MediaLight;
 import org.olat.modules.portfolio.model.MediaImpl;
@@ -79,17 +85,27 @@ public class MediaDAO {
 		return medias == null || medias.isEmpty() ? null : medias.get(0);
 	}
 	
-	public List<MediaLight> loadByAuthor(IdentityRef author) {
+	public List<MediaLight> searchByAuthor(IdentityRef author, String searchString) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select media from pfmedia as media")
 		  .append(" inner join fetch media.author as author")
 		  .append(" where author.key=:authorKey");
+		if(StringHelper.containsNonWhitespace(searchString)) {
+			searchString = makeFuzzyQueryString(searchString);
+			sb.append(" and (");
+			appendFuzzyLike(sb, "media.title", "searchString", dbInstance.getDbVendor());
+			sb.append(" or ");
+			appendFuzzyLike(sb, "media.description", "searchString", dbInstance.getDbVendor());
+			sb.append(")");
+		}
 		
-		List<MediaLight> medias = dbInstance.getCurrentEntityManager()
+		TypedQuery<MediaLight> query = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), MediaLight.class)
-				.setParameter("authorKey", author.getKey())
-				.getResultList();
-		return medias;
+				.setParameter("authorKey", author.getKey());
+		if(StringHelper.containsNonWhitespace(searchString)) {
+			query.setParameter("searchString", searchString.toLowerCase());
+		}
+		return query.getResultList();
 	}
 
 }

@@ -1,6 +1,7 @@
 <div id="callout_$r.getCId()" class="popover in bottom" style="z-index:$zindexarea;">
-	<div class="arrow"></div>
+	#if($arrow && $orientation == "bottom")<div class="arrow"></div>#end
 	<div class="popover-content">$r.render("cont")</div>
+	#if($arrow && $orientation == "bottom")<div class="arrow"></div>#end
 </div>
 <div id="callout_overlay_$r.getCId()" class="o_callout_overlay" style="z-index:$zindexoverlay;"></div>
 <script type="text/javascript">
@@ -14,35 +15,70 @@ jQuery(function() {
 			callout.css('display','block').css('z-index', o_info.zseed + 105);
 			jQuery('#callout_overlay_$r.getCId()').css('z-index', o_info.zseed + 103);
 			
+			var orientation = '${orientation}';
+			var arrow = $arrow;
 			var docWidth = jQuery(document).width();
-			if(targetOffset.left >= 0 && callout.width() > 50 && targetOffset.left <= (callout.width() / 2)) {
-				## left edge case: show at left border
-				## add 15px for button size
-				## add 10px for a bit space at left side
-				callout.offset({
-					top: (targetOffset.top + targetEl.height() + 15) ,
-					left: '10px'
-				});
-				var percent = (targetOffset.left + targetEl.width()/2 + 15 + 10/2) / callout.width() * 100; 
-				callout.find('.arrow').css({'left' : percent + '%'});
+			if(orientation == 'top') {
+				if(targetOffset.left >= 0 && callout.width() > 50 && targetOffset.left <= (callout.width() / 2)) {
+					## left edge case: show at left border
+					## add 15px for button size
+					## add 10px for a bit space at left side
+					callout.offset({
+						top: (targetOffset.top - targetEl.height() - 25) ,
+						left: '10px'
+					});
+					var percent = (targetOffset.left + targetEl.width()/2 + 15 + 10/2) / callout.width() * 100; 
+					callout.find('.arrow').css({'left' : percent + '%'});
+					
+				} else if(targetOffset.left >= 0 && callout.width() > 50 && ((targetOffset.left + (callout.width() / 2)) >= docWidth)) {
+					## right edge case: show at right border
+					## add 15px for button size
+					## add 10px for a bit space at right side
+					callout.offset({
+						top: (targetOffset.top - targetEl.height() - 25) ,
+						left: (docWidth - callout.width() - 10)
+					});
+					var percent = (1 - ((docWidth - targetOffset.left - targetEl.width()/2 - 15 - 10/2 ) / callout.width() )) * 100; 
+					callout.find('.arrow').css({'left' : percent + '%'});
+	
+				} else {
+					## standard case: show centered below element
+					callout.offset({
+						top: (targetOffset.top - targetEl.height() - 25),
+						left: (targetOffset.left + targetEl.width()) - callout.width()/2 
+					});
+				}
 				
-			} else if(targetOffset.left >= 0 && callout.width() > 50 && ((targetOffset.left + (callout.width() / 2)) >= docWidth)) {
-				## right edge case: show at right border
-				## add 15px for button size
-				## add 10px for a bit space at right side
-				callout.offset({
-					top: (targetOffset.top + targetEl.height() + 15) ,
-					left: (docWidth - callout.width() - 10)
-				});
-				var percent = (1 - ((docWidth - targetOffset.left - targetEl.width()/2 - 15 - 10/2 ) / callout.width() )) * 100; 
-				callout.find('.arrow').css({'left' : percent + '%'});
-
 			} else {
-				## standard case: show centered below element
-				callout.offset({
-					top: (targetOffset.top + targetEl.height() + 25),
-					left: (targetOffset.left + targetEl.width()) - callout.width()/2 
-				});
+				if(targetOffset.left >= 0 && callout.width() > 50 && targetOffset.left <= (callout.width() / 2)) {
+					## left edge case: show at left border
+					## add 15px for button size
+					## add 10px for a bit space at left side
+					callout.offset({
+						top: (targetOffset.top + targetEl.height() +  15) ,
+						left: '10px'
+					});
+					var percent = (targetOffset.left + targetEl.width()/2 + 15 + 10/2) / callout.width() * 100; 
+					callout.find('.arrow').css({'left' : percent + '%'});
+					
+				} else if(targetOffset.left >= 0 && callout.width() > 50 && ((targetOffset.left + (callout.width() / 2)) >= docWidth)) {
+					## right edge case: show at right border
+					## add 15px for button size
+					## add 10px for a bit space at right side
+					callout.offset({
+						top: (targetOffset.top + targetEl.height() + 15) ,
+						left: (docWidth - callout.width() - 10)
+					});
+					var percent = (1 - ((docWidth - targetOffset.left - targetEl.width()/2 - 15 - 10/2 ) / callout.width() )) * 100; 
+					callout.find('.arrow').css({'left' : percent + '%'});
+	
+				} else {
+					## standard case: show centered below element
+					callout.offset({
+						top: (targetOffset.top + targetEl.height() + (arrow ? 25 : 15)),
+						left: (targetOffset.left + targetEl.width()) - callout.width()/2 
+					});
+				}
 			}
 		}
 	});

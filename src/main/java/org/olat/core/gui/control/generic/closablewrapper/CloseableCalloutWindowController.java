@@ -61,6 +61,7 @@ import org.olat.core.logging.OLATRuntimeException;
 public class CloseableCalloutWindowController extends BasicController {
 	public static final Event CLOSE_WINDOW_EVENT = new Event("CLOSE_WINDOW_EVENT");
 
+	private final CalloutSettings settings;
 	private VelocityContainer calloutVC;
 	private CloseableModalController cmc;
 
@@ -92,8 +93,14 @@ public class CloseableCalloutWindowController extends BasicController {
 	 */
 	public CloseableCalloutWindowController(UserRequest ureq, WindowControl wControl, Component calloutWindowContent,
 			String targetDomID, String title, boolean closable, String cssClasses) {
+		this(ureq, wControl, calloutWindowContent, targetDomID, title, closable, cssClasses, new CalloutSettings());
+	}
+	
+	public CloseableCalloutWindowController(UserRequest ureq, WindowControl wControl, Component calloutWindowContent,
+			String targetDomID, String title, boolean closable, String cssClasses, CalloutSettings settings) {
 		super(ureq, wControl);
-
+		
+		this.settings = settings;
 		boolean ajax = getWindowControl().getWindowBackOffice().getWindowManager().isAjaxEnabled();
 		if (ajax) {
 			final Panel guiMsgPlace = new Panel("guimessage_place");
@@ -158,8 +165,7 @@ public class CloseableCalloutWindowController extends BasicController {
 	 * render the content of this controller your self with the
 	 * getInitialComponent() method.
 	 * 
-	 * @param ureq
-	 *            The user request
+	 * @param ureq The user request
 	 * @param wControl
 	 *            The window control
 	 * @param calloutWindowContent
@@ -174,6 +180,32 @@ public class CloseableCalloutWindowController extends BasicController {
 			FormLink targetFormLink, String title, boolean closable, String cssClasses) {
 		this(ureq, wControl, calloutWindowContent, "o_fi"
 				+ targetFormLink.getComponent().getDispatchID(), title, closable, cssClasses);
+	}
+	
+	/**
+	 * Constructor for a closable callout window controller. After calling the
+	 * constructor, the callout window will be visible immediately, there is no
+	 * need to activate the window. In contrast to the modal dialogs you have to
+	 * render the content of this controller your self with the
+	 * getInitialComponent() method.
+	 * 
+	 * @param ureq
+	 * 				The user request
+	 * @param wControl
+	 * 				The window control
+	 * @param calloutWindowContent
+	 * 				The component that should be displayed in the callout window
+	 * @param targetFormLink
+	 * @param title
+	 * @param closable
+	 * @param cssClasses
+	 * @param settings
+	 */
+	public CloseableCalloutWindowController(UserRequest ureq,
+			WindowControl wControl, Component calloutWindowContent,
+			FormLink targetFormLink, String title, boolean closable, String cssClasses, CalloutSettings settings) {
+		this(ureq, wControl, calloutWindowContent, "o_fi"
+				+ targetFormLink.getComponent().getDispatchID(), title, closable, cssClasses, settings);
 	}
 	
 	public String getDOMTarget() {
@@ -281,7 +313,7 @@ public class CloseableCalloutWindowController extends BasicController {
 			cmc.activate();
 		} else {
 			// push to modal stack
-			getWindowControl().pushAsCallout(calloutVC, getDOMTarget());
+			getWindowControl().pushAsCallout(calloutVC, getDOMTarget(), settings);
 		}
 	}
 

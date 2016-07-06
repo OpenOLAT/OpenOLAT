@@ -212,7 +212,8 @@ public class AssessedIdentityListController extends FormBasicController implemen
 		stackPanel.pushController(fullname, userController);
 	}
 
-	public static class AssessedUserTableModel extends DefaultFlexiTableDataModel<AssessedIdentityRow> implements SortableFlexiTableDataModel<AssessedIdentityRow> {
+	public static class AssessedUserTableModel extends DefaultFlexiTableDataModel<AssessedIdentityRow>
+		implements SortableFlexiTableDataModel<AssessedIdentityRow> {
 
 		private ConcurrentMap<Long, CertificateLight> certificates;
 

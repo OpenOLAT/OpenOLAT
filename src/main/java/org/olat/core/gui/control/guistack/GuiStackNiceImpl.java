@@ -30,10 +30,12 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.panel.LayeredPanel;
 import org.olat.core.gui.components.panel.Panel;
-import org.olat.core.gui.components.panel.StackedPanel;
 import org.olat.core.gui.components.panel.SimpleStackedPanel;
+import org.olat.core.gui.components.panel.StackedPanel;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.WindowBackOffice;
+import org.olat.core.gui.control.generic.closablewrapper.CalloutSettings;
+import org.olat.core.gui.control.generic.closablewrapper.CalloutSettings.CalloutOrientation;
 import org.olat.core.gui.control.util.ZIndexWrapper;
 import org.olat.core.gui.render.ValidationResult;
 import org.olat.core.util.Util;
@@ -126,7 +128,7 @@ public class GuiStackNiceImpl implements GuiStack {
 	
 	
 	@Override
-	public void pushCallout(Component content, String targetId) {
+	public void pushCallout(Component content, String targetId, CalloutSettings settings) {
 		// wrap the component into a modal foreground dialog with alpha-blended-background
 		final Panel guiMsgPlace = new Panel("guimsgplace_for_callout");
 		VelocityContainer inset = new VelocityContainer("inset", VELOCITY_ROOT + "/callout.html", null, null) {
@@ -146,7 +148,13 @@ public class GuiStackNiceImpl implements GuiStack {
 		inset.contextPut("zindexshim", zindex);
 		inset.contextPut("zindexarea", zindex+5);
 		inset.contextPut("zindexextwindows", zindex+50);
-
+		if(settings != null) {
+			inset.contextPut("arrow", settings.isArrow());
+			inset.contextPut("orientation", settings.getOrientation().name());
+		} else {
+			inset.contextPut("arrow", Boolean.TRUE);
+			inset.contextPut("orientation", CalloutOrientation.bottom.name());
+		}
 		modalPanel.pushContent(inset);
 		modalLayers++;
 	}

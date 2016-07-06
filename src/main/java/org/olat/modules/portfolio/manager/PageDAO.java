@@ -19,6 +19,8 @@
  */
 package org.olat.modules.portfolio.manager;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
@@ -27,6 +29,8 @@ import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.IdentityRef;
 import org.olat.basesecurity.manager.GroupDAO;
 import org.olat.core.commons.persistence.DB;
+import org.olat.core.id.Identity;
+import org.olat.core.util.StringHelper;
 import org.olat.modules.portfolio.BinderRef;
 import org.olat.modules.portfolio.Page;
 import org.olat.modules.portfolio.PageBody;
@@ -155,6 +159,33 @@ public class PageDAO {
 			.setParameter("ownerKey", owner.getKey())
 			.getResultList();
 		return pages;
+	}
+	
+	public List<Identity> getMembers(Page page, String... roles)  {
+		if(page == null || roles == null || roles.length == 0 || roles[0] == null) {
+			return Collections.emptyList();
+		}
+
+		StringBuilder sb = new StringBuilder();
+		sb.append("select membership.identity from pfpage as page")
+		  .append(" inner join page.baseGroup as baseGroup")
+		  .append(" inner join baseGroup.members as membership")
+		  .append(" inner join membership.identity as ident")
+		  .append(" inner join fetch ident.user as identUser")
+		  .append(" where page.key=:pageKey and membership.role in (:roles)");
+		
+		List<String> roleList = new ArrayList<>(roles.length);
+		for(String role:roles) {
+			if(StringHelper.containsNonWhitespace(role)) {
+				roleList.add(role);
+			}
+		}
+		
+		return dbInstance.getCurrentEntityManager()
+			.createQuery(sb.toString(), Identity.class)
+			.setParameter("pageKey", page.getKey())
+			.setParameter("roles", roleList)
+			.getResultList();
 	}
 	
 	public Page loadByKey(Long key) {

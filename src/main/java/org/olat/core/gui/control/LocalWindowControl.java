@@ -27,6 +27,7 @@
 package org.olat.core.gui.control;
 
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.control.generic.closablewrapper.CalloutSettings;
 import org.olat.core.gui.control.info.WindowControlInfo;
 import org.olat.core.id.context.BusinessControl;
 import org.olat.core.logging.OLog;
@@ -71,8 +72,8 @@ public class LocalWindowControl implements WindowControl {
 	}
 
 	@Override
-	public void pushAsCallout(Component comp, String targetId) {
-		origWControl.pushAsCallout(comp, targetId);
+	public void pushAsCallout(Component comp, String targetId, CalloutSettings settings) {
+		origWControl.pushAsCallout(comp, targetId, settings);
 		localHeight++;
 	}
 

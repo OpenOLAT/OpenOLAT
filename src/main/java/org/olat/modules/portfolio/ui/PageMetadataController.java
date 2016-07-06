@@ -21,8 +21,11 @@ package org.olat.modules.portfolio.ui;
 
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
+import org.olat.basesecurity.GroupRoles;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
@@ -31,11 +34,13 @@ import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.id.Identity;
 import org.olat.modules.portfolio.BinderSecurityCallback;
 import org.olat.modules.portfolio.Category;
 import org.olat.modules.portfolio.Page;
 import org.olat.modules.portfolio.PortfolioService;
 import org.olat.modules.portfolio.ui.event.PublishEvent;
+import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -49,6 +54,8 @@ public class PageMetadataController extends BasicController {
 	private Link publishButton;
 	
 	@Autowired
+	private UserManager userManager;
+	@Autowired
 	private PortfolioService portfolioService;
 	
 	public PageMetadataController(UserRequest ureq, WindowControl wControl, BinderSecurityCallback secCallback, Page page) {
@@ -59,6 +66,18 @@ public class PageMetadataController extends BasicController {
 			publishButton = LinkFactory.createButton("publish", mainVC, this);
 		}
 		
+		Set<Identity> owners = new HashSet<>();
+		if(page.getSection() != null && page.getSection().getBinder() != null) {
+			owners.addAll(portfolioService.getMembers(page.getSection().getBinder(), GroupRoles.owner.name()));
+		}
+		owners.addAll(portfolioService.getMembers(page, GroupRoles.owner.name()));
+		
+		StringBuilder ownerSb = new StringBuilder();
+		for(Identity owner:owners) {
+			if(ownerSb.length() > 0) ownerSb.append(", ");
+			ownerSb.append(userManager.getUserDisplayName(owner));
+		}
+		mainVC.contextPut("owners", ownerSb.toString());
 		mainVC.contextPut("pageTitle", page.getTitle());
 		mainVC.contextPut("pageSummary", page.getSummary());
 		mainVC.contextPut("status", page.getPageStatus());

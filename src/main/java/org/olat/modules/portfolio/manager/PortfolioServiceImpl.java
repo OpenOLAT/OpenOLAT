@@ -268,6 +268,11 @@ public class PortfolioServiceImpl implements PortfolioService {
 	}
 
 	@Override
+	public List<Identity> getMembers(Page page, String... roles) {
+		return pageDao.getMembers(page, roles);
+	}
+
+	@Override
 	public boolean isBinderVisible(Identity identity, Binder binder) {
 		return true;
 	}
@@ -589,8 +594,9 @@ public class PortfolioServiceImpl implements PortfolioService {
 	}
 
 	@Override
-	public PagePart updatePart(PagePart part) {
-		return pageDao.merge(part);
+	@SuppressWarnings("unchecked")
+	public <U extends PagePart> U updatePart(U part) {
+		return (U)pageDao.merge(part);
 	}
 
 	@Override
@@ -617,8 +623,8 @@ public class PortfolioServiceImpl implements PortfolioService {
 	}
 
 	@Override
-	public List<MediaLight> searchOwnedMedias(IdentityRef author) {
-		return mediaDao.loadByAuthor(author);
+	public List<MediaLight> searchOwnedMedias(IdentityRef author, String searchString) {
+		return mediaDao.searchByAuthor(author, searchString);
 	}
 
 	@Override

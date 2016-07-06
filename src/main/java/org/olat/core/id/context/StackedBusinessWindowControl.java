@@ -31,6 +31,7 @@ package org.olat.core.id.context;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.control.WindowBackOffice;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.generic.closablewrapper.CalloutSettings;
 import org.olat.core.gui.control.info.WindowControlInfo;
 
 /**
@@ -73,8 +74,8 @@ public class StackedBusinessWindowControl implements WindowControl {
 	}
 
 	@Override
-	public void pushAsCallout(Component comp, String targetId) {
-		origWControl.pushAsCallout(comp, targetId);
+	public void pushAsCallout(Component comp, String targetId, CalloutSettings settings) {
+		origWControl.pushAsCallout(comp, targetId, settings);
 	}
 
 	public void pushToMainArea(Component comp) {

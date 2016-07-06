@@ -72,6 +72,7 @@ public class EPArtefactPoolRunController extends BasicController implements Acti
 	private EPFilterSettings filterSettings = new EPFilterSettings();
 	private EPAddArtefactController addArtefactCtrl;
 	private boolean artefactChooseMode;
+	private boolean canAddArtefacts;
 	private SegmentViewComponent segmentView;
 	private Link artefactsLink, browseLink, searchLink;
 	private Controller filterSelectCtrl;
@@ -89,11 +90,12 @@ public class EPArtefactPoolRunController extends BasicController implements Acti
 	private PortfolioStructure preSelectedStruct;
 
 	public EPArtefactPoolRunController(UserRequest ureq, WindowControl wControl) {
-		this(ureq, wControl, false);
+		this(ureq, wControl, false, true);
 	}
 	
-	public EPArtefactPoolRunController(UserRequest ureq, WindowControl wControl, boolean artefactChooseMode) {
+	public EPArtefactPoolRunController(UserRequest ureq, WindowControl wControl, boolean artefactChooseMode, boolean canAddArtefacts) {
 		super(ureq, wControl);
+		this.canAddArtefacts = canAddArtefacts;
 		this.artefactChooseMode = artefactChooseMode;
 		Component viewComp = new Panel("empty");
 		Component filterPanel = new Panel("filter");
@@ -136,9 +138,11 @@ public class EPArtefactPoolRunController extends BasicController implements Acti
 		searchLink = LinkFactory.createLink("viewTab.search", vC, this);
 		segmentView.addSegment(searchLink, false);
 		
-		addArtefactCtrl = new EPAddArtefactController(ureq, getWindowControl());
-		listenTo(addArtefactCtrl);
-		vC.put("addArtefactCtrl", addArtefactCtrl.getInitialComponent());
+		if(canAddArtefacts) {
+			addArtefactCtrl = new EPAddArtefactController(ureq, getWindowControl());
+			listenTo(addArtefactCtrl);
+			vC.put("addArtefactCtrl", addArtefactCtrl.getInitialComponent());
+		}
 	}
 	
 	/**

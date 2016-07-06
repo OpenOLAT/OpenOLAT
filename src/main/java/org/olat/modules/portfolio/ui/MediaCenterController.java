@@ -20,12 +20,13 @@
 package org.olat.modules.portfolio.ui;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import javax.servlet.http.HttpServletRequest;
 
+import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.commons.services.image.Size;
 import org.olat.core.dispatcher.mapper.Mapper;
 import org.olat.core.gui.UserRequest;
@@ -33,6 +34,9 @@ import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
+import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
+import org.olat.core.gui.components.form.flexible.elements.FlexiTableSort;
+import org.olat.core.gui.components.form.flexible.elements.FlexiTableSortOptions;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
@@ -42,6 +46,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableComponentDelegate;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableRendererType;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableSearchEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
@@ -65,14 +70,16 @@ import org.olat.modules.portfolio.MediaHandler;
 import org.olat.modules.portfolio.MediaLight;
 import org.olat.modules.portfolio.PortfolioService;
 import org.olat.modules.portfolio.model.MediaRow;
-import org.olat.modules.portfolio.ui.BindersDataModel.PortfolioCols;
+import org.olat.modules.portfolio.ui.MediaDataModel.MediaCols;
 import org.olat.modules.portfolio.ui.event.MediaSelectionEvent;
 import org.olat.modules.portfolio.ui.media.CollectFileMediaController;
 import org.olat.modules.portfolio.ui.media.CollectImageMediaController;
 import org.olat.modules.portfolio.ui.media.CollectTextMediaController;
+import org.olat.modules.portfolio.ui.renderer.MediaTypeCellRenderer;
 import org.olat.portfolio.model.artefacts.AbstractArtefact;
 import org.olat.portfolio.ui.EPArtefactPoolRunController;
 import org.olat.portfolio.ui.artefacts.view.EPArtefactChoosenEvent;
+import org.olat.repository.model.SearchMyRepositoryEntryViewParams.OrderBy;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -111,7 +118,7 @@ public class MediaCenterController extends FormBasicController
 		this.select = true;
 		 
 		initForm(ureq);
-		loadModel();
+		loadModel(null);
 	}
 	
 	public MediaCenterController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel) {
@@ -120,7 +127,7 @@ public class MediaCenterController extends FormBasicController
 		this.select = false;
 		 
 		initForm(ureq);
-		loadModel();
+		loadModel(null);
 	}
 	
 	@Override
@@ -145,11 +152,17 @@ public class MediaCenterController extends FormBasicController
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, PortfolioCols.key, "select"));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(PortfolioCols.title, "select"));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(PortfolioCols.open));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, MediaCols.key, "select"));
+
+		Map<String, MediaHandler> handlersMap = portfolioService.getMediaHandlers()
+				.stream().collect(Collectors.toMap (h -> h.getType(), h -> h));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(MediaCols.type,
+				new MediaTypeCellRenderer(handlersMap)));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(MediaCols.title, "select"));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(MediaCols.collectionDate, "select"));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(MediaCols.open));
 	
-		model = new MediaDataModel(columnsModel);
+		model = new MediaDataModel(columnsModel, getLocale());
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", model, 20, false, getTranslator(), formLayout);
 		tableEl.setAvailableRendererTypes(FlexiTableRendererType.custom, FlexiTableRendererType.classic);
 		tableEl.setRendererType(FlexiTableRendererType.custom);
@@ -162,9 +175,35 @@ public class MediaCenterController extends FormBasicController
 		tableEl.setRowRenderer(row, this);
 		tableEl.setCssDelegate(new MediaCssDelegate());
 		tableEl.setAndLoadPersistedPreferences(ureq, "media-list");
+		initSorters(tableEl);
+		initFilters(tableEl);
 		
 		mapperThumbnailUrl = registerCacheableMapper(ureq, "media-thumbnail", new ThumbnailMapper(model));
 		row.contextPut("mapperThumbnailUrl", mapperThumbnailUrl);
+	}
+	
+	private void initSorters(FlexiTableElement tableElement) {
+		List<FlexiTableSort> sorters = new ArrayList<>(14);
+		sorters.add(new FlexiTableSort(translate(MediaCols.key.i18nHeaderKey()), MediaCols.key.name()));
+		sorters.add(new FlexiTableSort(translate(MediaCols.type.i18nHeaderKey()), MediaCols.type.name()));
+		sorters.add(new FlexiTableSort(translate(MediaCols.title.i18nHeaderKey()), MediaCols.title.name()));
+		sorters.add(new FlexiTableSort(translate(MediaCols.collectionDate.i18nHeaderKey()), MediaCols.collectionDate.name()));
+		sorters.add(FlexiTableSort.SPACER);
+
+		FlexiTableSortOptions options = new FlexiTableSortOptions(sorters);
+		options.setDefaultOrderBy(new SortKey(OrderBy.title.name(), true));
+		tableElement.setSortSettings(options);
+	}
+	
+	private void initFilters(FlexiTableElement tableElement) {
+		List<FlexiTableFilter> filters = new ArrayList<>(16);
+		filters.add(new FlexiTableFilter(translate("filter.show.all"), "showall"));
+		filters.add(FlexiTableFilter.SPACER);
+		List<MediaHandler> handlers = portfolioService.getMediaHandlers();
+		for(MediaHandler handler:handlers) {
+			filters.add(new FlexiTableFilter(translate("artefact." + handler.getType()), handler.getType()));
+		}
+		tableElement.setFilters(null, filters);
 	}
 
 	@Override
@@ -172,14 +211,11 @@ public class MediaCenterController extends FormBasicController
 		return null;
 	}
 	
-	private void loadModel() {
-		List<MediaRow> currentRows = model.getObjects();
-		Map<Long,MediaRow> currentMap = new HashMap<>();
-		for(MediaRow row:currentRows) {
-			currentMap.put(row.getKey(), row);
-		}
-		
-		List<MediaLight> medias = portfolioService.searchOwnedMedias(getIdentity());
+	private void loadModel(String searchString) {
+		Map<Long,MediaRow> currentMap = model.getObjects()
+				.stream().collect(Collectors.toMap(r -> r.getKey(), r -> r));
+
+		List<MediaLight> medias = portfolioService.searchOwnedMedias(getIdentity(), searchString);
 		List<MediaRow> rows = new ArrayList<>(medias.size());
 		for(MediaLight media:medias) {
 			if(currentMap.containsKey(media.getKey())) {
@@ -194,6 +230,7 @@ public class MediaCenterController extends FormBasicController
 			}
 		}
 		model.setObjects(rows);
+		model.filter(tableEl.getSelectedFilterKey());
 	}
 
 	@Override
@@ -223,6 +260,9 @@ public class MediaCenterController extends FormBasicController
 						}
 					}
 				}
+			} else if(event instanceof FlexiTableSearchEvent) {
+				FlexiTableSearchEvent se = (FlexiTableSearchEvent)event;
+				loadModel(se.getSearch());
 			}
 		} else if(source instanceof FormLink) {
 			FormLink link = (FormLink)source;
@@ -246,21 +286,21 @@ public class MediaCenterController extends FormBasicController
 	public void event(UserRequest ureq, Controller source, Event event) {
 		if(imageUploadCtrl == source) {
 			if(event == Event.DONE_EVENT) {
-				loadModel();
+				loadModel(null);
 				tableEl.reloadData();
 			}
 			cmc.deactivate();
 			cleanUp();
 		} else if(fileUploadCtrl == source) {
 			if(event == Event.DONE_EVENT) {
-				loadModel();
+				loadModel(null);
 				tableEl.reloadData();
 			}
 			cmc.deactivate();
 			cleanUp();
 		} else if(textUploadCtrl == source) {
 			if(event == Event.DONE_EVENT) {
-				loadModel();
+				loadModel(null);
 				tableEl.reloadData();
 			}
 			cmc.deactivate();
@@ -269,7 +309,7 @@ public class MediaCenterController extends FormBasicController
 			if(event instanceof EPArtefactChoosenEvent) {
 				EPArtefactChoosenEvent cEvent = (EPArtefactChoosenEvent)event;
 				doImportArtefactV1(cEvent.getArtefact());
-				loadModel();
+				loadModel(null);
 				tableEl.reloadData();
 			}
 			cmc.deactivate();
@@ -369,7 +409,7 @@ public class MediaCenterController extends FormBasicController
 	private void doChooseArtefactV1(UserRequest ureq) {
 		if(importArtefactv1Ctrl != null) return;
 		
-		importArtefactv1Ctrl = new EPArtefactPoolRunController(ureq, this.getWindowControl(), true);
+		importArtefactv1Ctrl = new EPArtefactPoolRunController(ureq, this.getWindowControl(), true, false);
 		listenTo(importArtefactv1Ctrl);
 		
 		String title = translate("import.artefactV1");

@@ -152,6 +152,15 @@ public interface PortfolioService {
 	 */
 	public List<Identity> getMembers(BinderRef binder, String... roles);
 	
+	/**
+	 * The list of owners of the page and only of the specified page.
+	 * 
+	 * @param page
+	 * @param roles At least a role need to be specified
+	 * @return
+	 */
+	public List<Identity> getMembers(Page page, String... roles);
+	
 	public List<AccessRights> getAccessRights(Binder binder);
 	
 	public List<AccessRights> getAccessRights(Binder binder, Identity identity);
@@ -318,7 +327,7 @@ public interface PortfolioService {
 	
 	public Media getMediaByKey(Long key);
 	
-	public List<MediaLight> searchOwnedMedias(IdentityRef author);
+	public List<MediaLight> searchOwnedMedias(IdentityRef author, String searchString);
 	
 	public void updateCategories(Media media, List<String> categories);
 	

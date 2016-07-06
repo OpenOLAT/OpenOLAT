@@ -27,6 +27,7 @@ package org.olat.core.gui.control.guistack;
 
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.panel.StackedPanel;
+import org.olat.core.gui.control.generic.closablewrapper.CalloutSettings;
 
 /**
  * Description:<br>
@@ -49,7 +50,7 @@ public interface GuiStack {
 	 * @param content The component to push as callout window
 	 * @param targetId The target element
 	 */
-	public void pushCallout(Component content, String targetId);
+	public void pushCallout(Component content, String targetId, CalloutSettings settings);
 
 	/**
 	 * @see org.olat.core.gui.control.GuiStackHandle#pushContent(org.olat.core.gui.components.Component)
