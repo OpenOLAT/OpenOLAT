@@ -55,7 +55,7 @@ public class IFrameDeliveryMapper implements Mapper {
 	private static final String DEFAULT_CONTENT_TYPE = "text/html";
 	private static final String XHTML_EXTENSION = "xhtml";
 	private static final String XHTML_CONTENT_TYPE = "application/xhtml+xml";
-	private static final Pattern PATTERN_ENCTYPE = Pattern.compile("<meta.*charset=([^\"\']*)[\"\']", Pattern.CASE_INSENSITIVE);
+	private static final Pattern PATTERN_ENCTYPE = Pattern.compile("<meta[^>]*charset=[\"\']?([A-Za-z0-9.:\\-_]*)", Pattern.CASE_INSENSITIVE);
 	private static final Pattern PATTERN_XML_ENCTYPE = Pattern.compile("<\\?xml.*encoding=[\"\']([^\"\']*)[\"\']", Pattern.CASE_INSENSITIVE);
 	private static final Pattern PATTERN_CONTTYPE = Pattern.compile("<meta.*content-type\"?\\s*content\\s*=\\s*[\"]?+(.+?)([\"]?+\\s*/>)", Pattern.CASE_INSENSITIVE);
 	private static final Pattern PATTERN_DOCTYPE = Pattern.compile("<!DOCTYPE\\s*html\\s*PUBLIC\\s*[\"\']\\s*-//W3C//DTD\\s*(.+?)(//EN)", Pattern.CASE_INSENSITIVE);
@@ -516,7 +516,7 @@ public class IFrameDeliveryMapper implements Mapper {
 			// use found char set
 			String htmlcharset = m.group(1);
 			//if longer than 50 the regexp did fail
-			if (htmlcharset.length() < 50 ) {
+			if (htmlcharset.length() < 50 && htmlcharset.length() != 0) {
 				return htmlcharset;
 			}
 		}
