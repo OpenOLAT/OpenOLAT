@@ -1,35 +1,48 @@
-<div class="o_portfolio_toc">
-	<h2>$r.translate("table.of.contents", $binderTitle) <small>$r.translate("binder.by",$owners)</small></h2>
-	
-	<ul class="list-unstyled">
-	#foreach($section in $sections)
-		<li><div class="o_header_with_buttons">
-				<h4>${foreach.count}. $r.render($section.sectionLinkName) </h4> <i class="o_icon $section.cssClassStatus"> </i>#if(${section.isAssessable()}) ${section.getFormattedResult()} #end
-				#if(${section.hasEditDropdown()})
-					<div id="sect_$foreach.count" class="o_button_group o_button_group_right dropdown">$r.render($section.editDropdownName)</div>
-				#end
-			</div>
-	
-			#if(${section.getPages().size()} > 0)
-			<ul class="list-unstyled">
-				#foreach($page in $section.pages)
-					<li>$r.render($page.openLinkName)</li>
-				#end
-			</ul>
+<div class="o_portfolio_content">
+	<div class="o_portfolio_toc #if($timelineSwitch) o_portfolio_toc_withtimeline #end">
+		<div class="o_header_with_buttons">
+			<h2>$r.translate("table.of.contents", $binderTitle) <small>$r.translate("binder.by",$owners)</small></h2>
+			#if(!$timelineSwitch && $r.available("timeline.switch.off"))
+				<div class="o_button_group">$r.render("timeline.switch.off")</div>
 			#end
-		</li>
-	#end
-	</ul>
-	
-	#if($r.available("create.new.section"))
-	<div class="panel panel-placeholder o_block_large">
-		<div class="panel-body">
-			<h5>$r.translate("create.new.section.title")</h5>
-			<p>$r.translate("create.new.section.text")</p>
-			<div class="o_button_group">
-				$r.render("create.new.section")
+		</div>
+		
+		<ul class="list-unstyled">
+		#foreach($section in $sections)
+			<li><div class="o_header_with_buttons">
+					<h4>${foreach.count}. $r.render($section.sectionLinkName) </h4> <i class="o_icon $section.cssClassStatus"> </i>#if(${section.isAssessable()}) ${section.getFormattedResult()} #end
+					#if(${section.hasEditDropdown()})
+						<div id="sect_$foreach.count" class="o_button_group o_button_group_right dropdown">$r.render($section.editDropdownName)</div>
+					#end
+				</div>
+		
+				#if(${section.getPages().size()} > 0)
+				<ul class="list-unstyled">
+					#foreach($page in $section.pages)
+						<li>$r.render($page.openLinkName)</li>
+					#end
+				</ul>
+				#end
+			</li>
+		#end
+		</ul>
+		
+		#if($r.available("create.new.section"))
+		<div class="panel panel-placeholder o_block_large">
+			<div class="panel-body">
+				<h5>$r.translate("create.new.section.title")</h5>
+				<p>$r.translate("create.new.section.text")</p>
+				<div class="o_button_group">
+					$r.render("create.new.section")
+				</div>
 			</div>
 		</div>
+		#end
+	</div>
+	#if($timelineSwitch)
+	<div class="o_portfolio_timeline">
+		<div class="pull-right">$r.render("timeline.switch.on")</div>
+		<div id="o_portfolio_toc_timeline">$r.render("timeline")</div>
 	</div>
 	#end
 </div>

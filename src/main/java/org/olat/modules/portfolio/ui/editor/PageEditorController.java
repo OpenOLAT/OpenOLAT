@@ -250,6 +250,8 @@ public class PageEditorController extends BasicController {
 	private void openAddElementCallout(UserRequest ureq, Link link, EditorFragment referenceFragment, PageElementTarget target) {
 		addElementsCtrl = new AddElementsController(ureq, getWindowControl(), provider, referenceFragment, target);
 		listenTo(addElementsCtrl);
+		
+		// data-placement="top"
 
 		addCalloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(),
 				addElementsCtrl.getInitialComponent(), link.getDispatchID(), "", true, "");

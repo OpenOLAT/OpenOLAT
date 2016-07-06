@@ -38,6 +38,45 @@ div#o_main_toolbar.o_toolbar.o_portfolio {
 	}
 }
 
+.o_portfolio_timeline {
+
+	.axis path,
+	.axis line {
+		fill: none;
+		stroke: #000;
+		shape-rendering: crispEdges;
+	}
+	.x.axis line, .x.axis path {
+		display:none;
+	}
+	
+	path.o_timeline_curve {
+		fill: none;
+		stroke: #ccc;
+		shape-rendering: crispEdges;
+	}
+	
+	.y.axis .tick line, .y.axis path.domain {
+		stroke: #ddd;
+	}
+
+	.dot.o_pf_status_draft {
+		fill: $o-portfolio-entry-draft-color;
+	}
+	.dot.o_pf_status_published {
+		fill: $o-portfolio-entry-published-color;
+	}
+	.dot.o_pf_status_inrevision {
+		fill: $o-portfolio-entry-inrevision-color;
+	}
+	.dot.o_pf_status_closed {
+		fill: $o-portfolio-entry-closed-color;
+	}
+	.dot.o_pf_status_deleted {
+		fill: $o-portfolio-entry-deleted-color;
+	}
+}
+
 .o_portfolio_page_editor {
 	.o_toolbar {
 		border:none;
@@ -89,6 +128,18 @@ div#o_main_toolbar.o_toolbar.o_portfolio {
 
 .o_portfolio_toc ul>li>ul {
 	padding-left:1.5em;
+}
+
+.o_portfolio_content {
+	.o_portfolio_toc.o_portfolio_toc_withtimeline {
+		width: 70%;
+		float:left;
+	}
+	
+	.o_portfolio_timeline {
+		width: 29%;
+		float:right;
+	}
 }
 
 

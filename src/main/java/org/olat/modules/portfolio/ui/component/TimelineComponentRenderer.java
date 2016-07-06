@@ -21,8 +21,6 @@ package org.olat.modules.portfolio.ui.component;
 
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.DefaultComponentRenderer;
-import org.olat.core.gui.components.form.flexible.impl.NameValuePair;
-import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.render.RenderResult;
 import org.olat.core.gui.render.Renderer;
 import org.olat.core.gui.render.StringOutput;
@@ -31,21 +29,37 @@ import org.olat.core.gui.translator.Translator;
 
 /**
  * 
- * Initial date: 17.06.2016<br>
+ * Initial date: 05.07.2016<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class MediaCollectorComponentRenderer extends DefaultComponentRenderer {
+public class TimelineComponentRenderer extends DefaultComponentRenderer {
 
 	@Override
 	public void render(Renderer renderer, StringOutput sb, Component source, URLBuilder ubu, Translator translator,
 			RenderResult renderResult, String[] args) {
-		MediaCollectorComponent cmp = (MediaCollectorComponent)source;
-		sb.append("<a class='o_portfolio_collector' ");
-		if(cmp.getItem() == null) {
-			ubu.buildHrefAndOnclick(sb, null, true, false, true,
-					new NameValuePair(VelocityContainer.COMMAND_ID, "pfcollect"));
+		
+		TimelineComponent cmp = (TimelineComponent)source;
+		sb.append("<div id='timeline'></div>");
+		sb.append("<script type='text/javascript'>\n")
+		  .append("/* <![CDATA[ */ \n")
+		  .append("jQuery(function() {\n");
+		
+		sb.append("	jQuery('#timeline').timeline({")
+		  .append("    parentContainerId: '").append(cmp.getContainerId()).append("',\n")
+		  .append("    values: [\n");
+		if(cmp.getPoints() != null && cmp.getPoints().size() > 0) {
+			int numOfPoints = cmp.getPoints().size();
+			for(int i=0; i<numOfPoints; i++) {
+				TimelinePoint point = cmp.getPoints().get(i);
+				if(i > 0) sb.append(",");
+				sb.append("{ id:'").append(point.getId()).append("', time:").append(point.getDate().getTime()).append(", status:'").append(point.getStatus()).append("'}");
+			}
 		}
-		sb.append("><i class='o_icon o_icon-lg o_icon_eportfolio_add'> </i></a>");
+		sb.append("    ]")
+		  .append("  });");
+		sb.append("});\n")
+		  .append("/* ]]> */\n")
+		  .append("</script>");	
 	}
 }

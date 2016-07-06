@@ -51,6 +51,8 @@ import org.olat.modules.portfolio.PortfolioService;
 import org.olat.modules.portfolio.Section;
 import org.olat.modules.portfolio.SectionStatus;
 import org.olat.modules.portfolio.model.PageRow;
+import org.olat.modules.portfolio.ui.component.TimelineComponent;
+import org.olat.modules.portfolio.ui.component.TimelinePoint;
 import org.olat.modules.portfolio.ui.renderer.PortfolioRendererHelper;
 import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -67,6 +69,8 @@ public class TableOfContentController extends BasicController implements TooledC
 	
 	private final VelocityContainer mainVC;
 	private final TooledStackedPanel stackPanel;
+	private final TimelineComponent timelineCmp;
+	private final Link timelineSwitchOnButton, timelineSwitchOffButton;
 	
 	private CloseableModalController cmc;
 	private SectionEditController newSectionCtrl;
@@ -98,6 +102,17 @@ public class TableOfContentController extends BasicController implements TooledC
 		
 		mainVC = createVelocityContainer("table_of_contents");
 		
+		timelineCmp = new TimelineComponent("timeline");
+		timelineCmp.setContainerId("o_portfolio_toc_timeline");
+		mainVC.put("timeline", timelineCmp);
+		
+		timelineSwitchOnButton = LinkFactory.createButtonSmall("timeline.switch.on", mainVC, this);
+		timelineSwitchOnButton.setIconLeftCSS("o_icon o_icon-sm o_icon_toggle_on");
+		
+		timelineSwitchOffButton = LinkFactory.createButtonSmall("timeline.switch.off", mainVC, this);
+		timelineSwitchOffButton.setIconLeftCSS("o_icon o_icon-sm o_icon_toggle_off");
+		doSwitchTimelineOn();
+		
 		owners = portfolioService.getMembers(binder, GroupRoles.owner.name());
 		StringBuilder ownerSb = new StringBuilder();
 		for(Identity owner:owners) {
@@ -105,7 +120,7 @@ public class TableOfContentController extends BasicController implements TooledC
 			ownerSb.append(userManager.getUserDisplayName(owner));
 		}
 		mainVC.contextPut("owners", ownerSb.toString());
-		
+
 		putInitialPanel(mainVC);
 		loadModel();
 	}
@@ -154,13 +169,17 @@ public class TableOfContentController extends BasicController implements TooledC
 		}
 
 		List<Page> pages = portfolioService.getPages(binder);
+		List<TimelinePoint> points = new ArrayList<>(pages.size());
 		for(Page page:pages) {
 			Section section = page.getSection();
 			SectionRow sectionRow = sectionMap.get(section.getKey());
 			PageRow pageRow = forgePageRow(page, sectionRow);
 			sectionRow.getPages().add(pageRow);
+			
+			String s = page.getPageStatus() == null ? "draft" : page.getPageStatus().name();
+			points.add(new TimelinePoint(page.getKey().toString(), page.getLastModified(), s));
 		}
-		
+		timelineCmp.setPoints(points);
 		mainVC.contextPut("sections", sectionList);
 	}
 	
@@ -266,6 +285,10 @@ public class TableOfContentController extends BasicController implements TooledC
 			doCreateNewPage(ureq);
 		} else if(editBinderMetadataLink == source) {
 			doEditBinderMetadata(ureq);
+		} else if(timelineSwitchOnButton == source) {
+			doSwitchTimelineOff();
+		} else if(timelineSwitchOffButton == source) {
+			doSwitchTimelineOn();
 		} else if(source instanceof Link) {
 			Link link = (Link)source;
 			String cmd = link.getCommand();
@@ -280,6 +303,18 @@ public class TableOfContentController extends BasicController implements TooledC
 				doOpenPage(ureq, row.getPage());
 			}
 		}
+	}
+	
+	private void doSwitchTimelineOn() {
+		timelineSwitchOnButton.setVisible(true);
+		timelineSwitchOffButton.setVisible(false);
+		mainVC.contextPut("timelineSwitch", Boolean.TRUE);
+	}
+	
+	private void doSwitchTimelineOff() {
+		timelineSwitchOnButton.setVisible(false);
+		timelineSwitchOffButton.setVisible(true);
+		mainVC.contextPut("timelineSwitch", Boolean.FALSE);
 	}
 	
 	private void doOpenSection(UserRequest ureq, Section section) {

@@ -335,6 +335,11 @@ $o-portfolio-media-browser-rowelem-width-md : 180px !default;
 $o-portfolio-media-browser-rowelem-width-sm : 80px !default;
 $o-portfolio-media-browser-border 			: $brand-primary !default;
 $o-portfolio-media-browser-meta-title-color	: $brand-primary !default;
+$o-portfolio-entry-draft-color				: $brand-warning;
+$o-portfolio-entry-published-color			: $brand-primary;
+$o-portfolio-entry-inrevision-color			: $brand-info;
+$o-portfolio-entry-closed-color				: $brand-success;
+$o-portfolio-entry-deleted-color			: #000;
 
 /* Chat and other floating window */
 $o-dialog-window-bg				: #fefefe !default;

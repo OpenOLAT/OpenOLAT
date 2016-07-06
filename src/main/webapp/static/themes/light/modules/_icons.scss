@@ -176,11 +176,11 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_phone:before { content: $fa-var-phone; }
 .o_icon_portfolio_binder:before { content: $fa-var-folder-open-o; }
 .o_icon_portfolio_entry:before { content: $fa-var-quote-left; }
-.o_icon_portfolio_entry_draft:before { content: $fa-var-circle; color: $brand-warning}
-.o_icon_portfolio_entry_published:before { content: $fa-var-circle; color: $brand-primary}
-.o_icon_portfolio_entry_revision:before { content: $fa-var-circle; color: $brand-info;}
-.o_icon_portfolio_entry_closed:before { content: $fa-var-circle; color: $brand-success;}
-.o_icon_portfolio_entry_deleted:before { content: $fa-var-trash; color: #000;}
+.o_icon_portfolio_entry_draft:before { content: $fa-var-circle; color: $o-portfolio-entry-draft-color; }
+.o_icon_portfolio_entry_published:before { content: $fa-var-circle; color: $o-portfolio-entry-published-color; }
+.o_icon_portfolio_entry_revision:before { content: $fa-var-circle; color: $o-portfolio-entry-inrevision-color; }
+.o_icon_portfolio_entry_closed:before { content: $fa-var-circle; color: $o-portfolio-entry-closed-color; }
+.o_icon_portfolio_entry_deleted:before { content: $fa-var-trash; color: $o-portfolio-entry-deleted-color; }
 .o_icon_portfolio_my_shares:before { content: $fa-var-share-alt; }
 .o_icon_portfolio_shared_with_me:before { content: $fa-var-share-alt-square; }
 .o_icon_post:before { content: $fa-var-comment-o; }
@@ -262,6 +262,8 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_timelimit:before { content: $fa-var-bomb; }
 .o_icon_title:before { content: $fa-var-bold; }
 .o_icon_toggle:before { content: $fa-var-circle; }
+.o_icon_toggle_on:before { content: $fa-var-toggle-on; }
+.o_icon_toggle_off:before { content: $fa-var-toggle-off; }
 .o_icon_to_read:before { content: $fa-var-circle; }
 .o_icon_tool:before { content: $fa-var-gear; }
 .o_icon_tools:before { content: $fa-var-wrench; }

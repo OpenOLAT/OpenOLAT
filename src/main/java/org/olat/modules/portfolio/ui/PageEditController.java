@@ -184,7 +184,7 @@ public class PageEditController extends BasicController {
 		}
 	}
 	
-	private static class OtherArtefactsHandler implements PageElementHandler, InteractiveAddPageElementHandler {
+	public static class OtherArtefactsHandler implements PageElementHandler, InteractiveAddPageElementHandler {
 
 		@Override
 		public String getType() {
@@ -212,7 +212,7 @@ public class PageEditController extends BasicController {
 		}
 	}
 	
-	private static class OtherArtfectsChooserController extends BasicController implements PageElementAddController {
+	public static class OtherArtfectsChooserController extends BasicController implements PageElementAddController {
 		
 		private MediaPart mediaPart;
 		private AddElementInfos userObject;
