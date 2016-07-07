@@ -19,7 +19,9 @@
  */
 package de.bps.olat.user;
 
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.WindowControl;
@@ -103,9 +105,13 @@ public class ChangeEMailExecuteController extends ChangeEMailController implemen
 		XStream xml = new XStream();
 		@SuppressWarnings("unchecked")
 		HashMap<String, String> mails = (HashMap<String, String>) xml.fromXML(tempKey.getEmailAddress());
-		Identity ident = UserManager.getInstance().findIdentityByEmail(mails.get("currentEMail"));
-		if (ident != null) {
+		
+		String currentMail = mails.get("currentEMail");
+		List<Identity> identities = UserManager.getInstance()
+				.findIdentitiesByEmail(Collections.singletonList(currentMail));
+		if (identities != null && identities.size() == 1) {
 			// change mail address
+			Identity ident = identities.get(0);
 			ident.getUser().setProperty("email", mails.get("changedEMail"));
 			// if old mail address closed then set the new mail address
 			// unclosed
@@ -119,6 +125,9 @@ public class ChangeEMailExecuteController extends ChangeEMailController implemen
 			// remove keys
 			ident.getUser().setProperty("emchangeKey", null);
 			userRequest.getUserSession().removeEntryFromNonClearedStore(ChangeEMailController.CHANGE_EMAIL_ENTRY);
+		} else {
+			// error message
+			wControl.setWarning(pT.translate("error.change.email.unexpected", new String[] { mails.get("currentEMail"), mails.get("changedEMail") }));
 		}
 		// delete registration key
 		rm.deleteTemporaryKeyWithId(tempKey.getRegistrationKey());

@@ -241,6 +241,7 @@ public class UsermanagerUserSearchController extends BasicController implements 
 		userListVC.contextPut("showBackButton", Boolean.FALSE);
 		userListVC.contextPut("showTitle", Boolean.TRUE);
 
+		this.identitiesList = identitiesList;
 		initUserListCtr(ureq, identitiesList, status);
 		userListVC.put("userlist", tableCtr.getInitialComponent());
 		userListVC.contextPut("emptyList", (identitiesList.size() == 0 ? Boolean.TRUE : Boolean.FALSE));
@@ -343,6 +344,31 @@ public class UsermanagerUserSearchController extends BasicController implements 
 		userListVC.put("userlist", tableCtr.getInitialComponent());
 	}
 
+	/**
+	 * Add the given identities to the list of identities in the table model 
+	 * and reinitialize the table controller
+	 * 
+	 * @param ureq
+	 * @param tobeAddedIdentities
+	 */
+	public void addIdentitiesToSearchResult(UserRequest ureq, List<Identity> tobeAddedIdentities) {
+		for (Identity toBeAdded : tobeAddedIdentities) {
+			boolean found = false;
+			for (Identity original : identitiesList) {
+				if (original.getKey().equals(toBeAdded.getKey())) {
+					found = true;
+					break;
+				}
+			}
+			if (!found) {
+				identitiesList.add(toBeAdded);
+			}
+		}
+		initUserListCtr(ureq, identitiesList, null);
+		userListVC.put("userlist", tableCtr.getInitialComponent());		
+	}
+
+	
 	/**
 	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest,
 	 *      org.olat.core.gui.components.Component,

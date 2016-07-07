@@ -78,7 +78,8 @@ public class IsUserFunction extends AbstractFunction {
 		if(ident == null || ident.getName() == null) {
 			return ConditionInterpreter.INT_FALSE;
 		}
-		return ident.getName().equals(userName) ? ConditionInterpreter.INT_TRUE: ConditionInterpreter.INT_FALSE;
+		// compare using lowercase as done in login process
+		return ident.getName().toLowerCase().equals(userName.toLowerCase()) ? ConditionInterpreter.INT_TRUE: ConditionInterpreter.INT_FALSE;
 	}
 
 	@Override
