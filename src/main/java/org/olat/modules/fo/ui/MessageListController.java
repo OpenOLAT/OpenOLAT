@@ -871,6 +871,10 @@ public class MessageListController extends BasicController implements GenericEve
 		if (foCallback.mayReplyMessage()) {
 			Message newMessage = forumManager.createMessage(forum, getIdentity(), guestOnly);
 			Message parentMessage = forumManager.getMessageById(parent.getKey());
+			if(parentMessage == null) {
+				handleEditError(ureq);
+				return;
+			}
 			
 			String reString = "";
 			if(parent != null && parent.isThreadTop()) {
