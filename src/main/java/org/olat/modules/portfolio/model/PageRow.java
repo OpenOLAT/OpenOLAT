@@ -132,6 +132,13 @@ public class PageRow {
 		return section.getSectionStatus().i18nKey();
 	}
 	
+	public String getSectionCssClassStatus() {
+		if(section == null) {
+			return null;
+		}
+		return section.getSectionStatus() == null ? SectionStatus.notStarted.cssClass() : section.getSectionStatus().cssClass();
+	}
+	
 	public String getSectionLongTitle() {
 		long pos = section.getPos();
 		return (pos+1) + ". " + section.getTitle();

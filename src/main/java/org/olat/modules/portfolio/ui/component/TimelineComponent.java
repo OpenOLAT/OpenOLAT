@@ -19,6 +19,7 @@
  */
 package org.olat.modules.portfolio.ui.component;
 
+import java.util.Date;
 import java.util.List;
 
 import org.olat.core.gui.UserRequest;
@@ -26,6 +27,7 @@ import org.olat.core.gui.components.ComponentRenderer;
 import org.olat.core.gui.components.form.flexible.impl.FormBaseComponentImpl;
 import org.olat.core.gui.render.ValidationResult;
 import org.olat.core.helpers.Settings;
+import org.olat.core.util.StringHelper;
 
 /**
  * 
@@ -37,6 +39,7 @@ public class TimelineComponent extends FormBaseComponentImpl {
 	
 	private static final TimelineComponentRenderer RENDERER = new TimelineComponentRenderer();
 
+	private Date startTime, endTime;
 	private String containerId;
 	private List<TimelinePoint> points;
 	
@@ -61,6 +64,42 @@ public class TimelineComponent extends FormBaseComponentImpl {
 		setDirty(true);
 	}
 	
+	public Date getStartTime() {
+		return startTime;
+	}
+
+	public void setStartTime(Date startTime) {
+		this.startTime = startTime;
+	}
+
+	public Date getEndTime() {
+		return endTime;
+	}
+
+	public void setEndTime(Date endTime) {
+		this.endTime = endTime;
+	}
+
+	@Override
+	protected void doDispatchRequest(UserRequest ureq) {
+		String slideCmd = ureq.getParameter("slide");
+		if(StringHelper.containsNonWhitespace(slideCmd)) {
+			if("up".equals(slideCmd)) {
+				slideUp();
+			} else if("down".equals(slideCmd)) {
+				slideDown();
+			}
+		}
+	}
+	
+	private void slideUp() {
+		
+	}
+	
+	private void slideDown() {
+		
+	}
+
 	@Override
 	public void validate(UserRequest ureq, ValidationResult vr) {
 		super.validate(ureq, vr);

@@ -20,6 +20,7 @@
 package org.olat.modules.portfolio.ui;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -104,6 +105,7 @@ public class TableOfContentController extends BasicController implements TooledC
 		
 		timelineCmp = new TimelineComponent("timeline");
 		timelineCmp.setContainerId("o_portfolio_toc_timeline");
+		initTimeline();
 		mainVC.put("timeline", timelineCmp);
 		
 		timelineSwitchOnButton = LinkFactory.createButtonSmall("timeline.switch.on", mainVC, this);
@@ -123,6 +125,18 @@ public class TableOfContentController extends BasicController implements TooledC
 
 		putInitialPanel(mainVC);
 		loadModel();
+	}
+	
+	private void initTimeline() {
+		Calendar cal = Calendar.getInstance();
+		cal.set(Calendar.MILLISECOND, 0);
+		cal.set(Calendar.SECOND, 0);
+		cal.set(Calendar.MINUTE, 0);
+		cal.set(Calendar.HOUR_OF_DAY, 0);
+		cal.add(Calendar.DATE, 1);
+		timelineCmp.setEndTime(cal.getTime());
+		cal.add(Calendar.YEAR, -2);
+		timelineCmp.setStartTime(cal.getTime());
 	}
 	
 	@Override
@@ -353,7 +367,8 @@ public class TableOfContentController extends BasicController implements TooledC
 	private void doOpenPage(UserRequest ureq, Page page) {
 		removeAsListenerAndDispose(pageCtrl);
 		
-		pageCtrl = new PageRunController(ureq, getWindowControl(), stackPanel, secCallback, page);
+		Page reloadedPage = portfolioService.getPageByKey(page.getKey());
+		pageCtrl = new PageRunController(ureq, getWindowControl(), stackPanel, secCallback, reloadedPage);
 		listenTo(pageCtrl);
 		stackPanel.pushController(StringHelper.escapeHtml(page.getTitle()), pageCtrl);
 	}

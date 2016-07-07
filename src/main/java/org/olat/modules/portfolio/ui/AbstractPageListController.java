@@ -294,11 +294,11 @@ implements Activateable2, TooledController, FlexiTableComponentDelegate {
 	}
 	
 	private void doOpenPage(UserRequest ureq, Page row) {
-		Page page = portfolioService.getPageByKey(row.getKey());
-		pageCtrl = new PageRunController(ureq, getWindowControl(), stackPanel, secCallback, page);
+		Page reloadedPage = portfolioService.getPageByKey(row.getKey());
+		pageCtrl = new PageRunController(ureq, getWindowControl(), stackPanel, secCallback, reloadedPage);
 		listenTo(pageCtrl);
 		
-		String displayName = StringHelper.escapeHtml(page.getTitle());
+		String displayName = StringHelper.escapeHtml(reloadedPage.getTitle());
 		stackPanel.pushController(displayName, pageCtrl);
 	}
 }

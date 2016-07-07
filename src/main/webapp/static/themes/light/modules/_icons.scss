@@ -237,6 +237,8 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_show_less:before { content: $fa-var-toggle-up; }
 .o_icon_show_send:before { content: $fa-var-paper-plane-o; }
 .o_icon_sign_out:before { content: $fa-var-sign-out; }
+.o_icon_slide_down:before { content: $fa-var-chevron-down; }
+.o_icon_slide_up:before { content: $fa-var-chevron-up; }
 .o_icon_spacer:before { content: $fa-var-arrows-h; }
 .o_icon_split:before { content: $fa-var-unlink;}
 .o_icon_sort:before { content: $fa-var-sort;}

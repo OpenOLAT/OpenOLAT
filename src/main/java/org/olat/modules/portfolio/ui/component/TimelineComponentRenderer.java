@@ -38,7 +38,7 @@ public class TimelineComponentRenderer extends DefaultComponentRenderer {
 	@Override
 	public void render(Renderer renderer, StringOutput sb, Component source, URLBuilder ubu, Translator translator,
 			RenderResult renderResult, String[] args) {
-		
+
 		TimelineComponent cmp = (TimelineComponent)source;
 		sb.append("<div id='timeline'></div>");
 		sb.append("<script type='text/javascript'>\n")
@@ -46,8 +46,12 @@ public class TimelineComponentRenderer extends DefaultComponentRenderer {
 		  .append("jQuery(function() {\n");
 		
 		sb.append("	jQuery('#timeline').timeline({")
-		  .append("    parentContainerId: '").append(cmp.getContainerId()).append("',\n")
-		  .append("    values: [\n");
+		  .append("   parentContainerId: '").append(cmp.getContainerId()).append("',\n");
+		if(cmp.getStartTime() != null && cmp.getEndTime() != null) {
+			sb.append(" startTime: ").append(cmp.getStartTime().getTime()).append(",\n")
+			  .append(" endTime: ").append(cmp.getEndTime().getTime()).append(",\n");
+		}
+		sb.append("   values: [\n");
 		if(cmp.getPoints() != null && cmp.getPoints().size() > 0) {
 			int numOfPoints = cmp.getPoints().size();
 			for(int i=0; i<numOfPoints; i++) {

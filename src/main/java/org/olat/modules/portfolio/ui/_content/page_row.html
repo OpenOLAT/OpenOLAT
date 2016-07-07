@@ -1,6 +1,6 @@
 #if(${row.isSection()} && $row.firstPageOfSection)
 <div class="o_portfolio_section">
-	<h3>$r.escapeHtml($row.sectionLongTitle)</h3>
+	<h3>$r.escapeHtml($row.sectionLongTitle) <small><i class="o_icon $row.sectionCssClassStatus"> </i></small></h3>
 	<div class="o_portfolio_section_meta">
 		<div class="clearfix">
 			<span><strong>$r.translate("section.status"): </strong> $r.translate(${row.getSectionStatusI18nKey()})</span>
