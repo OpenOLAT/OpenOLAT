@@ -39,6 +39,7 @@ public class SharedItemRow extends UserPropertiesRow {
 	private Long binderKey;
 	private Date lastModified;
 	private String binderTitle;
+	private int numOfOpenSections;
 	private String entryDisplayName;
 	private AssessmentEntry assessmentEntry;
 	
@@ -85,4 +86,14 @@ public class SharedItemRow extends UserPropertiesRow {
 	public void setAssessmentEntry(AssessmentEntry assessmentEntry) {
 		this.assessmentEntry = assessmentEntry;
 	}
+
+	public int getNumOfOpenSections() {
+		return numOfOpenSections;
+	}
+
+	public void setNumOfOpenSections(int numOfOpenSections) {
+		this.numOfOpenSections = numOfOpenSections;
+	}
+	
+	
 }

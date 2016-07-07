@@ -83,6 +83,8 @@ public class PageListDataModel extends DefaultFlexiTableDataModel<PageRow>
 				}
 				return null;
 			}
+			case publicationDate: return page.getLastPublicationDate();
+			case status: return page.getPageStatus();
 			case open: return page.getOpenFormItem();
 			case newEntry: return page.getNewEntryLink();
 			case comment: return page.getCommentFormLink();
@@ -98,10 +100,12 @@ public class PageListDataModel extends DefaultFlexiTableDataModel<PageRow>
 	public enum PageCols implements FlexiSortableColumnDef {
 		key("table.header.key"),
 		title("table.header.title"),
+		status("table.header.status"),
 		date("table.header.date"),
+		publicationDate("table.header.publication.date"),
 		open("table.header.open"),
 		newEntry("action"),
-		comment("comment");
+		comment("comment.title");
 		
 		private final String i18nKey;
 		

@@ -43,6 +43,7 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.id.OLATResourceable;
+import org.olat.core.util.StringHelper;
 import org.olat.modules.portfolio.AssessmentSection;
 import org.olat.modules.portfolio.Binder;
 import org.olat.modules.portfolio.BinderConfiguration;
@@ -75,7 +76,7 @@ public class BinderPageListController extends AbstractPageListController  {
 		this.binder = binder;
 		
 		initForm(ureq);
-		loadModel();
+		loadModel(null);
 	}
 
 	@Override
@@ -98,7 +99,7 @@ public class BinderPageListController extends AbstractPageListController  {
 	}
 
 	@Override
-	protected void loadModel() {
+	protected void loadModel(String searchString) {
 		List<Section> sections = portfolioService.getSections(binder);
 		
 		List<CategoryToElement> categorizedElements = portfolioService.getCategorizedSectionsAndPages(binder);
@@ -121,7 +122,7 @@ public class BinderPageListController extends AbstractPageListController  {
 			sectionToAssessmentSectionMap.put(assessmentSection.getSection(), assessmentSection);
 		}
 
-		List<Page> pages = portfolioService.getPages(binder);
+		List<Page> pages = portfolioService.getPages(binder, searchString);
 		List<PageRow> rows = new ArrayList<>(pages.size());
 		for (Page page : pages) {
 			boolean first = false;
@@ -156,16 +157,18 @@ public class BinderPageListController extends AbstractPageListController  {
 		}
 		
 		//sections without pages
-		for(Section section:sections) {
-			PageRow pageRow = forgeRow(section, sectionToAssessmentSectionMap.get(section), true, categorizedElementMap);
-			rows.add(pageRow);
-			if(secCallback.canAddPage() && section != null
-					&& section.getSectionStatus() != SectionStatus.closed
-					&& section.getSectionStatus() != SectionStatus.submitted) {
-				FormLink newEntryButton = uifactory.addFormLink("new.entry." + (++counter), "new.entry", "create.new.page", null, flc, Link.BUTTON);
-				newEntryButton.setCustomEnabledLinkCSS("btn btn-primary");
-				newEntryButton.setUserObject(pageRow);
-				pageRow.setNewEntryLink(newEntryButton);
+		if(!StringHelper.containsNonWhitespace(searchString)) {
+			for(Section section:sections) {
+				PageRow pageRow = forgeRow(section, sectionToAssessmentSectionMap.get(section), true, categorizedElementMap);
+				rows.add(pageRow);
+				if(secCallback.canAddPage() && section != null
+						&& section.getSectionStatus() != SectionStatus.closed
+						&& section.getSectionStatus() != SectionStatus.submitted) {
+					FormLink newEntryButton = uifactory.addFormLink("new.entry." + (++counter), "new.entry", "create.new.page", null, flc, Link.BUTTON);
+					newEntryButton.setCustomEnabledLinkCSS("btn btn-primary");
+					newEntryButton.setUserObject(pageRow);
+					pageRow.setNewEntryLink(newEntryButton);
+				}
 			}
 		}
 		
@@ -198,7 +201,7 @@ public class BinderPageListController extends AbstractPageListController  {
 	public void event(UserRequest ureq, Controller source, Event event) {
 		if(newPageCtrl == source) {
 			if(event == Event.DONE_EVENT) {
-				loadModel();
+				loadModel(null);
 				fireEvent(ureq, Event.CHANGED_EVENT);
 			}
 			cmc.deactivate();

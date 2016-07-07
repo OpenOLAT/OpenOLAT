@@ -117,7 +117,7 @@ public class PortfolioServiceTest extends OlatTestCase {
 		portfolioService.addAccessRights(section, coach, PortfolioRoles.coach);
 		
 		dbInstance.commit();
-		List<Page> pages = portfolioService.getPages(section);
+		List<Page> pages = portfolioService.getPages(section, null);
 		Page page = pages.get(0);
 		portfolioService.addAccessRights(page, reviewer, PortfolioRoles.reviewer);
 
@@ -161,7 +161,7 @@ public class PortfolioServiceTest extends OlatTestCase {
 		portfolioService.addAccessRights(section, identity, PortfolioRoles.coach);
 		
 		dbInstance.commit();
-		List<Page> pages = portfolioService.getPages(section);
+		List<Page> pages = portfolioService.getPages(section, null);
 		Page page = pages.get(0);
 		portfolioService.addAccessRights(page, identity, PortfolioRoles.reviewer);
 

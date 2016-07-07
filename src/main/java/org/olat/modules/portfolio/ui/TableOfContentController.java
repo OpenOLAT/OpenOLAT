@@ -168,7 +168,7 @@ public class TableOfContentController extends BasicController implements TooledC
 			sectionMap.put(section.getKey(), sectionRow);	
 		}
 
-		List<Page> pages = portfolioService.getPages(binder);
+		List<Page> pages = portfolioService.getPages(binder, null);
 		List<TimelinePoint> points = new ArrayList<>(pages.size());
 		for(Page page:pages) {
 			Section section = page.getSection();

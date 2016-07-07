@@ -31,6 +31,7 @@ import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableSearchEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.control.Controller;
@@ -72,7 +73,7 @@ public class MySharedItemsController extends FormBasicController implements Acti
 		this.stackPanel = stackPanel;
 		
 		initForm(ureq);
-		loadModel();
+		loadModel(null);
 	}
 	
 	@Override
@@ -89,8 +90,9 @@ public class MySharedItemsController extends FormBasicController implements Acti
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(MySharedItemCols.binderName, "select"));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(MySharedItemCols.courseName, "select"));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(MySharedItemCols.lastModified));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("select", translate("select"), "select"));
 	
-		model = new MySharedItemsDataModel(columnsModel);
+		model = new MySharedItemsDataModel(columnsModel, getLocale());
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", model, 20, false, getTranslator(), formLayout);
 		tableEl.setSearchEnabled(true);
 		tableEl.setCustomizeColumns(true);
@@ -100,8 +102,8 @@ public class MySharedItemsController extends FormBasicController implements Acti
 		tableEl.setAndLoadPersistedPreferences(ureq, "my-shared-items");
 	}
 	
-	private void loadModel() {
-		List<Binder> portfolios = portfolioService.searchSharedBindersBy(getIdentity());
+	private void loadModel(String searchString) {
+		List<Binder> portfolios = portfolioService.searchSharedBindersBy(getIdentity(), searchString);
 		List<MySharedItemRow> rows = new ArrayList<>(portfolios.size());
 		for(Binder binder:portfolios) {
 			MySharedItemRow row = new MySharedItemRow();
@@ -136,8 +138,10 @@ public class MySharedItemsController extends FormBasicController implements Acti
 						activateable.activate(ureq, null, null);
 					}
 				}
+			} else if(event instanceof FlexiTableSearchEvent) {
+				FlexiTableSearchEvent se = (FlexiTableSearchEvent)event;
+				loadModel(se.getSearch());
 			}
-			
 		}
 		super.formInnerEvent(ureq, source, event);
 	}

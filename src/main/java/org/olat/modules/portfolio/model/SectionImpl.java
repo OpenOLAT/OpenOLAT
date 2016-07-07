@@ -84,7 +84,7 @@ public class SectionImpl implements Persistable, ModifiedInfo, CreateInfo, Secti
 	private String title;
 	@Column(name="p_description", nullable=true, insertable=true, updatable=true)
 	private String description;
-	@Column(name="p_status", nullable=true, insertable=true, updatable=true)
+	@Column(name="p_status", nullable=false, insertable=true, updatable=true)
 	private String status;
 	
 	@Temporal(TemporalType.TIMESTAMP)
@@ -111,6 +111,10 @@ public class SectionImpl implements Persistable, ModifiedInfo, CreateInfo, Secti
 	@ManyToOne(targetEntity=SectionImpl.class,fetch=FetchType.LAZY,optional=true)
 	@JoinColumn(name="fk_template_reference_id", nullable=true, insertable=true, updatable=false)
 	private Section templateReference;
+	
+	public SectionImpl() {
+		//
+	}
 	
 	@Override
 	public Long getKey() {

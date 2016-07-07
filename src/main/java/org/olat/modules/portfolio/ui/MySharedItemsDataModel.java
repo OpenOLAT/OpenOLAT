@@ -19,9 +19,15 @@
  */
 package org.olat.modules.portfolio.ui;
 
+import java.util.List;
+import java.util.Locale;
+
+import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableModelDelegate;
 import org.olat.modules.portfolio.model.MySharedItemRow;
 
 /**
@@ -30,15 +36,32 @@ import org.olat.modules.portfolio.model.MySharedItemRow;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class MySharedItemsDataModel extends DefaultFlexiTableDataModel<MySharedItemRow> {
+public class MySharedItemsDataModel extends DefaultFlexiTableDataModel<MySharedItemRow>
+	implements SortableFlexiTableDataModel<MySharedItemRow> {
 	
-	public MySharedItemsDataModel(FlexiTableColumnModel columnModel) {
+	private final Locale locale;
+	
+	public MySharedItemsDataModel(FlexiTableColumnModel columnModel, Locale locale) {
 		super(columnModel);
+		this.locale = locale;
+	}
+
+	@Override
+	public void sort(SortKey orderBy) {
+		if(orderBy != null) {
+			List<MySharedItemRow> views = new MySharedItemsSorterDelegate(orderBy, this, locale).sort();
+			super.setObjects(views);
+		}
 	}
 
 	@Override
 	public Object getValueAt(int row, int col) {
 		MySharedItemRow itemRow = getObject(row);
+		return getValueAt(itemRow, col);
+	}
+	
+	@Override
+	public Object getValueAt(MySharedItemRow itemRow, int col) {
 		switch(MySharedItemCols.values()[col]) {
 			case binderKey: return itemRow.getBinderKey();
 			case binderName: return itemRow.getBinderTitle();
@@ -50,7 +73,7 @@ public class MySharedItemsDataModel extends DefaultFlexiTableDataModel<MySharedI
 	
 	@Override
 	public MySharedItemsDataModel createCopyWithEmptyList() {
-		return new MySharedItemsDataModel(getTableColumnModel());
+		return new MySharedItemsDataModel(getTableColumnModel(), locale);
 	}
 
 	public enum MySharedItemCols implements FlexiSortableColumnDef {
@@ -79,5 +102,13 @@ public class MySharedItemsDataModel extends DefaultFlexiTableDataModel<MySharedI
 		public String sortKey() {
 			return name();
 		}
+	}
+	
+	public static class MySharedItemsSorterDelegate extends SortableFlexiTableModelDelegate<MySharedItemRow> {
+		
+		public MySharedItemsSorterDelegate(SortKey orderBy, MySharedItemsDataModel model, Locale locale) {
+			super(orderBy, model, locale);
+		}
+		
 	}
 }

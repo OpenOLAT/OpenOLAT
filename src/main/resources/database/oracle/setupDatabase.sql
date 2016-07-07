@@ -1495,6 +1495,123 @@ create table o_qti_assessment_marks (
    primary key (id)
 );
 
+-- portfolio
+create table o_pf_binder (
+   id number(20) GENERATED ALWAYS AS IDENTITY,
+   creationdate date not null,
+   lastmodified date not null,
+   p_title varchar2(255 char),
+   p_status varchar2(32 char),
+   p_copy_date date,
+   p_return_date date,
+   p_deadline date,
+   p_summary CLOB,
+   p_image_path varchar2(255 char),
+   fk_olatresource_id number(20),
+   fk_group_id number(20) not null,
+   fk_entry_id number(20),
+   p_subident varchar2(128 char),
+   fk_template_id number(20),
+   primary key (id)
+);
+
+create table o_pf_section (
+   id number(20) GENERATED ALWAYS AS IDENTITY,
+   creationdate date not null,
+   lastmodified date not null,
+   pos number(20) default null,
+   p_title varchar2(255 char),
+   p_description varchar2(4000 char),
+   p_status varchar2(32 char) default 'notStarted' not null,
+   p_begin date,
+   p_end date,
+   fk_group_id number(20) not null,
+   fk_binder_id number(20) not null,
+   fk_template_reference_id number(20),
+   primary key (id)
+);
+
+create table o_pf_page (
+   id number(20) GENERATED ALWAYS AS IDENTITY,
+   creationdate date not null,
+   lastmodified date not null,
+   pos number(20) default null,
+   p_title varchar2(255 char),
+   p_summary varchar2(4000 char),
+   p_status varchar2(32 char),
+   p_image_path varchar2(255 char),
+   p_version number(20) default 0,
+   p_initial_publish_date date,
+   p_last_publish_date date,
+   fk_body_id number(20) not null,
+   fk_group_id number(20) not null,
+   fk_section_id number(20),
+   primary key (id)
+);
+
+create table o_pf_media (
+   id number(20) GENERATED ALWAYS AS IDENTITY,
+   creationdate date not null,
+   p_collection_date date not null,
+   p_type varchar2(64 char) not null,
+   p_storage_path varchar2(255 char),
+   p_root_filename varchar2(255 char),
+   p_title varchar(255) not null,
+   p_description varchar2(4000 char),
+   p_content CLOB,
+   p_signature number(20) default 0 not null,
+   p_business_path varchar2(255 char) not null,
+   fk_author_id number(20) not null,
+   primary key (id)
+);
+
+create table o_pf_page_body (
+   id number(20) GENERATED ALWAYS AS IDENTITY,
+   creationdate date not null,
+   lastmodified date not null,
+   primary key (id)
+);
+
+create table o_pf_page_part (
+   id number(20) GENERATED ALWAYS AS IDENTITY,
+   creationdate date not null,
+   lastmodified date not null,
+   pos number(20) default null,
+   dtype varchar2(32 char),
+   p_content CLOB,
+   fk_media_id number(20),
+   fk_page_body_id number(20),
+   primary key (id)
+);
+
+create table o_pf_category (
+   id number(20) GENERATED ALWAYS AS IDENTITY,
+   creationdate date not null,
+   p_name varchar2(32 char),
+   primary key (id)
+);
+
+create table o_pf_category_relation (
+   id number(20) GENERATED ALWAYS AS IDENTITY,
+   creationdate date not null,
+   p_resname varchar2(64 char) not null,
+   p_resid number(20) not null,
+   fk_category_id number(20) not null,
+   primary key (id)
+);
+
+create table o_pf_assessment_section (
+   id number(20) GENERATED ALWAYS AS IDENTITY,
+   creationdate date not null,
+   lastmodified date not null,
+   p_score decimal default null,
+   p_passed number default null,
+   p_comment CLOB,
+   fk_section_id number(20) not null,
+   fk_identity_id number(20) not null,
+   primary key (id)
+);
+
 create table o_qp_pool (
    id number(20) not null,
    creationdate date not null,
@@ -2510,6 +2627,51 @@ alter table o_qti_assessment_marks add constraint qti_marks_to_course_entry_idx 
 create index idx_qti_marks_to_centry_idx on o_qti_assessment_marks (fk_reference_entry);
 alter table o_qti_assessment_marks add constraint qti_marks_to_identity_idx foreign key (fk_identity) references o_bs_identity (id);
 create index idx_qti_marks_to_identity_idx on o_qti_assessment_marks (fk_identity);
+
+-- portfolio
+alter table o_pf_binder add constraint pf_binder_resource_idx foreign key (fk_olatresource_id) references o_olatresource (resource_id);
+create index idx_pf_binder_resource_idx on o_pf_binder (fk_olatresource_id);
+alter table o_pf_binder add constraint pf_binder_group_idx foreign key (fk_group_id) references o_bs_group (id);
+create index idx_pf_binder_group_idx on o_pf_binder (fk_group_id);
+alter table o_pf_binder add constraint pf_binder_course_idx foreign key (fk_entry_id) references o_repositoryentry (repositoryentry_id);
+create index idx_pf_binder_course_idx on o_pf_binder (fk_entry_id);
+alter table o_pf_binder add constraint pf_binder_template_idx foreign key (fk_template_id) references o_pf_binder (id);
+create index idx_pf_binder_template_idx on o_pf_binder (fk_template_id);
+
+alter table o_pf_section add constraint pf_section_group_idx foreign key (fk_group_id) references o_bs_group (id);
+create index idx_pf_section_group_idx on o_pf_section (fk_group_id);
+alter table o_pf_section add constraint pf_section_binder_idx foreign key (fk_binder_id) references o_pf_binder (id);
+create index idx_pf_section_binder_idx on o_pf_section (fk_binder_id);
+alter table o_pf_section add constraint pf_section_template_idx foreign key (fk_template_reference_id) references o_pf_section (id);
+create index idx_pf_section_template_idx on o_pf_section (fk_template_reference_id);
+
+alter table o_pf_page add constraint pf_page_group_idx foreign key (fk_group_id) references o_bs_group (id);
+create index idx_pf_page_group_idx on o_pf_page (fk_group_id);
+alter table o_pf_page add constraint pf_page_section_idx foreign key (fk_section_id) references o_pf_section (id);
+create index idx_pf_page_section_idx on o_pf_page (fk_section_id);
+
+alter table o_pf_media add constraint pf_media_author_idx foreign key (fk_author_id) references o_bs_identity (id);
+create index idx_pf_media_author_idx on o_pf_media (fk_author_id);
+create index idx_media_storage_path_idx on o_pf_media (p_business_path);
+
+alter table o_pf_page add constraint pf_page_body_idx foreign key (fk_body_id) references o_pf_page_body (id);
+create index idx_pf_page_body_idx on o_pf_page (fk_body_id);
+
+alter table o_pf_page_part add constraint pf_page_page_body_idx foreign key (fk_page_body_id) references o_pf_page_body (id);
+create index idx_pf_page_page_body_idx on o_pf_page_part (fk_page_body_id);
+alter table o_pf_page_part add constraint pf_page_media_idx foreign key (fk_media_id) references o_pf_media (id);
+create index idx_pf_page_media_idx on o_pf_page_part (fk_media_id);
+
+create index idx_category_name_idx on o_pf_category (p_name);
+
+alter table o_pf_category_relation add constraint pf_category_rel_cat_idx foreign key (fk_category_id) references o_pf_category (id);
+create index idx_pf_category_rel_cat_idx on o_pf_category_relation (fk_category_id);
+create index idx_category_rel_resid_idx on o_pf_category_relation (p_resid);
+
+alter table o_pf_assessment_section add constraint pf_asection_section_idx foreign key (fk_section_id) references o_pf_section (id);
+create index idx_pf_asection_section_idx on o_pf_assessment_section (fk_section_id);
+alter table o_pf_assessment_section add constraint pf_asection_ident_idx foreign key (fk_identity_id) references o_bs_identity (id);
+create index idx_pf_asection_ident_idx on o_pf_assessment_section (fk_identity_id);
 
 -- question pool
 alter table o_qp_pool add constraint idx_qp_pool_owner_grp_id foreign key (fk_ownergroup) references o_bs_secgroup(id);

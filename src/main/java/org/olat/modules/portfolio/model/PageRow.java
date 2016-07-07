@@ -97,8 +97,12 @@ public class PageRow {
 		return page != null && page.getLastPublicationDate() != null;
 	}
 	
+	public PageStatus getPageStatus() {
+		return page == null ? null : page.getPageStatus();
+	}
+	
 	public Date getLastPublicationDate() {
-		return page.getLastPublicationDate();
+		return page == null ? null : page.getLastPublicationDate();
 	}
 	
 	public String getCssClassStatus() {

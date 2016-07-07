@@ -1610,7 +1610,7 @@ create table o_pf_section (
    pos bigint default null,
    p_title varchar(255),
    p_description mediumtext,
-   p_status varchar(32),
+   p_status varchar(32) not null default 'notStarted',
    p_begin datetime,
    p_end datetime,
    fk_group_id bigint not null,

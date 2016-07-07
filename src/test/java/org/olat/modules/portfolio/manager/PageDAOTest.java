@@ -78,7 +78,7 @@ public class PageDAOTest extends OlatTestCase {
 		}
 		dbInstance.commitAndCloseSession();
 		
-		List<Page> pages = pageDao.getPages(binder);
+		List<Page> pages = pageDao.getPages(binder, null);
 		Assert.assertNotNull(pages);
 		Assert.assertEquals(5, pages.size());
 

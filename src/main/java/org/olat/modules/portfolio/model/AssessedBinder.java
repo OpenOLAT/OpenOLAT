@@ -31,25 +31,32 @@ import org.olat.modules.portfolio.Binder;
  */
 public class AssessedBinder {
 	
-	private final Identity assessedIdentity;
 	private final Binder binder;
+	private final int numOfOpenSections;
+	private final Identity assessedIdentity;
 	private final AssessmentEntry assessmentEntry;
 	
-	public AssessedBinder(Identity assessedIdentity, Binder binder, AssessmentEntry assessmentEntry) {
-		this.assessedIdentity = assessedIdentity;
+	public AssessedBinder(Identity assessedIdentity, Binder binder,
+			AssessmentEntry assessmentEntry, int numOfOpenSections) {
 		this.binder = binder;
 		this.assessmentEntry = assessmentEntry;
-	}
-
-	public Identity getAssessedIdentity() {
-		return assessedIdentity;
+		this.assessedIdentity = assessedIdentity;
+		this.numOfOpenSections = numOfOpenSections;
 	}
 
 	public Binder getBinder() {
 		return binder;
 	}
 
+	public Identity getAssessedIdentity() {
+		return assessedIdentity;
+	}
+
 	public AssessmentEntry getAssessmentEntry() {
 		return assessmentEntry;
+	}
+
+	public int getNumOfOpenSections() {
+		return numOfOpenSections;
 	}
 }

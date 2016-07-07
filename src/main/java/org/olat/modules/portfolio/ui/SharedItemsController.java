@@ -32,6 +32,7 @@ import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableSearchEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.control.Controller;
@@ -92,7 +93,7 @@ public class SharedItemsController extends FormBasicController implements Activa
 		userPropertyHandlers = userManager.getUserPropertyHandlersFor(USER_PROPS_ID, isAdministrativeUser);
 
 		initForm(ureq);
-		loadModel();
+		loadModel(null);
 	}
 	
 	@Override
@@ -116,11 +117,12 @@ public class SharedItemsController extends FormBasicController implements Activa
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ShareItemCols.binderKey, "select"));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ShareItemCols.binderName, "select"));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ShareItemCols.courseName, "select"));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ShareItemCols.openSections, "select"));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ShareItemCols.grading,
 				new AssessmentEntryCellRenderer(getTranslator())));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ShareItemCols.lastModified));
 	
-		model = new SharedItemsDataModel(columnsModel);
+		model = new SharedItemsDataModel(columnsModel, getLocale());
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", model, 20, false, getTranslator(), formLayout);
 		tableEl.setSearchEnabled(true);
 		tableEl.setCustomizeColumns(true);
@@ -130,8 +132,8 @@ public class SharedItemsController extends FormBasicController implements Activa
 		tableEl.setAndLoadPersistedPreferences(ureq, "shared-items");
 	}
 	
-	private void loadModel() {
-		List<AssessedBinder> assessedBinders = portfolioService.searchSharedBindersWith(getIdentity());
+	private void loadModel(String searchString) {
+		List<AssessedBinder> assessedBinders = portfolioService.searchSharedBindersWith(getIdentity(), searchString);
 		List<SharedItemRow> rows = new ArrayList<>(assessedBinders.size());
 		for(AssessedBinder assessedBinder:assessedBinders) {
 			SharedItemRow row = new SharedItemRow(assessedBinder.getAssessedIdentity(), userPropertyHandlers, getLocale());
@@ -142,6 +144,7 @@ public class SharedItemsController extends FormBasicController implements Activa
 				row.setEntryDisplayName(assessedBinder.getBinder().getEntry().getDisplayname());
 			}
 			row.setAssessmentEntry(assessedBinder.getAssessmentEntry());
+			row.setNumOfOpenSections(assessedBinder.getNumOfOpenSections());
 			rows.add(row);
 
 		}
@@ -173,8 +176,10 @@ public class SharedItemsController extends FormBasicController implements Activa
 						activeateable.activate(ureq, null, null);
 					}
 				}
+			} else if(event instanceof FlexiTableSearchEvent) {
+				FlexiTableSearchEvent se = (FlexiTableSearchEvent)event;
+				loadModel(se.getSearch());
 			}
-			
 		}
 		super.formInnerEvent(ureq, source, event);
 	}

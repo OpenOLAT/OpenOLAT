@@ -40,6 +40,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableComponentDelegate;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableRendererType;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableSearchEvent;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.stack.TooledController;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
@@ -63,6 +64,7 @@ import org.olat.modules.portfolio.PortfolioService;
 import org.olat.modules.portfolio.Section;
 import org.olat.modules.portfolio.model.PageRow;
 import org.olat.modules.portfolio.ui.PageListDataModel.PageCols;
+import org.olat.modules.portfolio.ui.renderer.StatusCellRenderer;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -110,9 +112,11 @@ implements Activateable2, TooledController, FlexiTableComponentDelegate {
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, PageCols.key, "select"));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(PageCols.title, "select"));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(PageCols.date, "select"));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(PageCols.open));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, PageCols.newEntry, "select"));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, PageCols.comment, "select"));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(PageCols.status, new StatusCellRenderer()));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(PageCols.publicationDate, "select"));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, PageCols.open, null));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, PageCols.newEntry, null));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, PageCols.comment, null));
 	
 		model = new PageListDataModel(columnsModel);
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", model, 20, false, getTranslator(), formLayout);
@@ -140,7 +144,7 @@ implements Activateable2, TooledController, FlexiTableComponentDelegate {
 		return null;
 	}
 	
-	protected abstract void loadModel();
+	protected abstract void loadModel(String searchString);
 	
 	protected PageRow forgeRow(Page page, AssessmentSection assessmentSection, boolean firstOfSection,
 			Map<OLATResourceable,List<Category>> categorizedElementMap, Map<Long,Long> numberOfCommentsMap) {
@@ -219,8 +223,6 @@ implements Activateable2, TooledController, FlexiTableComponentDelegate {
 		return strings;
 	}
 	
-	
-	
 	@Override
 	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
 		//
@@ -230,12 +232,12 @@ implements Activateable2, TooledController, FlexiTableComponentDelegate {
 	public void event(UserRequest ureq, Controller source, Event event) {
 		if(pageCtrl == source) {
 			if(event == Event.CHANGED_EVENT) {
-				loadModel();
+				loadModel(null);
 				fireEvent(ureq, Event.CHANGED_EVENT);
 			}
 		} else if(commentsCtrl == source) {
 			if(event == Event.CHANGED_EVENT || "comment_count_changed".equals(event.getCommand())) {
-				loadModel();
+				loadModel(null);
 				fireEvent(ureq, Event.CHANGED_EVENT);
 			}
 			cmc.deactivate();
@@ -256,7 +258,10 @@ implements Activateable2, TooledController, FlexiTableComponentDelegate {
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(tableEl == source) {
-			
+			if(event instanceof FlexiTableSearchEvent) {
+				FlexiTableSearchEvent se = (FlexiTableSearchEvent)event;
+				loadModel(se.getSearch());
+			}
 		} else if(source instanceof FormLink) {
 			FormLink link = (FormLink)source;
 			String cmd = link.getCmd();
@@ -288,7 +293,8 @@ implements Activateable2, TooledController, FlexiTableComponentDelegate {
 		cmc.activate();
 	}
 	
-	private void doOpenPage(UserRequest ureq, Page page) {
+	private void doOpenPage(UserRequest ureq, Page row) {
+		Page page = portfolioService.getPageByKey(row.getKey());
 		pageCtrl = new PageRunController(ureq, getWindowControl(), stackPanel, secCallback, page);
 		listenTo(pageCtrl);
 		

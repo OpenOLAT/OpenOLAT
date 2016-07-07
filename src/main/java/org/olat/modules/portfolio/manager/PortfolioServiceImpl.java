@@ -184,13 +184,13 @@ public class PortfolioServiceImpl implements PortfolioService {
 	}
 
 	@Override
-	public List<Page> getPages(BinderRef binder) {
-		return pageDao.getPages(binder);
+	public List<Page> getPages(BinderRef binder, String searchString) {
+		return pageDao.getPages(binder, searchString);
 	}
 
 	@Override
-	public List<Page> getPages(SectionRef section) {
-		return pageDao.getPages(section);
+	public List<Page> getPages(SectionRef section, String searchString) {
+		return pageDao.getPages(section, searchString);
 	}
 
 	@Override
@@ -204,13 +204,13 @@ public class PortfolioServiceImpl implements PortfolioService {
 	}
 	
 	@Override
-	public List<Binder> searchSharedBindersBy(Identity owner) {
-		return sharedByMeQueries.searchSharedBinders(owner);
+	public List<Binder> searchSharedBindersBy(Identity owner, String searchString) {
+		return sharedByMeQueries.searchSharedBinders(owner, searchString);
 	}
 
 	@Override
-	public List<AssessedBinder> searchSharedBindersWith(Identity coach) {
-		return sharedWithMeQueries.searchSharedBinders(coach);
+	public List<AssessedBinder> searchSharedBindersWith(Identity coach, String searchString) {
+		return sharedWithMeQueries.searchSharedBinders(coach, searchString);
 	}
 	
 	@Override
@@ -480,8 +480,8 @@ public class PortfolioServiceImpl implements PortfolioService {
 	}
 
 	@Override
-	public List<Page> searchOwnedPages(IdentityRef owner) {
-		List<Page> pages = pageDao.getOwnedPages(owner);
+	public List<Page> searchOwnedPages(IdentityRef owner, String searchString) {
+		List<Page> pages = pageDao.getOwnedPages(owner, searchString);
 		return pages;
 	}
 

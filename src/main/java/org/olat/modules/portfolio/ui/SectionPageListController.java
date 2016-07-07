@@ -69,7 +69,7 @@ public class SectionPageListController extends AbstractPageListController  {
 		this.section = section;
 		
 		initForm(ureq);
-		loadModel();
+		loadModel(null);
 	}
 	
 	@Override
@@ -82,7 +82,7 @@ public class SectionPageListController extends AbstractPageListController  {
 	}
 
 	@Override
-	protected void loadModel() {
+	protected void loadModel(String searchString) {
 		List<CategoryToElement> categorizedElements = portfolioService.getCategorizedSectionAndPages(section);
 		Map<OLATResourceable,List<Category>> categorizedElementMap = new HashMap<>();
 		Set<String> sectionAggregatedCategories = new HashSet<>();
@@ -106,7 +106,7 @@ public class SectionPageListController extends AbstractPageListController  {
 			}
 		}
 		
-		List<Page> pages = portfolioService.getPages(section);
+		List<Page> pages = portfolioService.getPages(section, searchString);
 		List<PageRow> rows = new ArrayList<>();
 		boolean first = true;
 		for (Page page : pages) {
@@ -132,7 +132,7 @@ public class SectionPageListController extends AbstractPageListController  {
 	public void event(UserRequest ureq, Controller source, Event event) {
 		if(newPageCtrl == source) {
 			if(event == Event.DONE_EVENT) {
-				loadModel();
+				loadModel(null);
 				fireEvent(ureq, Event.CHANGED_EVENT);
 			}
 			cmc.deactivate();

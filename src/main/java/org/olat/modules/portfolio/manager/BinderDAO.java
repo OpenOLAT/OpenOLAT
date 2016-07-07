@@ -41,6 +41,7 @@ import org.olat.modules.portfolio.BinderRef;
 import org.olat.modules.portfolio.PortfolioRoles;
 import org.olat.modules.portfolio.Section;
 import org.olat.modules.portfolio.SectionRef;
+import org.olat.modules.portfolio.SectionStatus;
 import org.olat.modules.portfolio.model.AccessRights;
 import org.olat.modules.portfolio.model.BinderImpl;
 import org.olat.modules.portfolio.model.BinderRow;
@@ -172,6 +173,7 @@ public class BinderDAO {
 		section.setDescription(templateSection.getDescription());
 		section.setBeginDate(templateSection.getBeginDate());
 		section.setEndDate(templateSection.getEndDate());
+		section.setStatus(SectionStatus.notStarted.name());
 		section.setBinder(binder);
 		section.setTemplateReference(templateSection);
 		return section;
@@ -557,6 +559,7 @@ public class BinderDAO {
 		section.setDescription(description);
 		section.setBeginDate(begin);
 		section.setEndDate(end);
+		section.setStatus(SectionStatus.notStarted.name());
 		//force load of the list
 		((BinderImpl)binder).getSections().size();
 		section.setBinder(binder);

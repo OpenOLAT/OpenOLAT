@@ -153,7 +153,7 @@ create table o_pf_section (
    pos int8 default null,
    p_title varchar(255),
    p_description text,
-   p_status varchar(32),
+   p_status varchar(32) not null default 'notStarted',
    p_begin timestamp,
    p_end timestamp,
    fk_group_id int8 not null,
@@ -255,7 +255,7 @@ create table o_pf_category_relation (
    id bigserial,
    creationdate timestamp not null,
    p_resname varchar(64) not null,
-   p_resid bigint not null,
+   p_resid int8 not null,
    fk_category_id int8 not null,
    primary key (id)
 );

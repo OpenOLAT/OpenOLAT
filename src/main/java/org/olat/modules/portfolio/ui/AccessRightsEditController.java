@@ -130,7 +130,7 @@ public class AccessRightsEditController extends FormBasicController {
 		}
 		
 		//pages
-		List<Page> pages = portfolioService.getPages(binder);
+		List<Page> pages = portfolioService.getPages(binder, null);
 		for(Page page:pages) {
 			Section section = page.getSection();
 			SectionAccessRightsRow sectionRow = sectionMap.get(section.getKey());

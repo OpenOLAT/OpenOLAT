@@ -29,8 +29,10 @@ import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableModelDelegate;
 import org.olat.modules.portfolio.Page;
+import org.olat.modules.portfolio.PageStatus;
 import org.olat.modules.portfolio.Section;
 import org.olat.modules.portfolio.model.PageRow;
+import org.olat.modules.portfolio.ui.PageListDataModel.PageCols;
 
 /**
  * 
@@ -46,7 +48,35 @@ public class PageListSortableDataModelDelegate extends SortableFlexiTableModelDe
 
 	@Override
 	protected void sort(List<PageRow> rows) {
-		Collections.sort(rows, new ClassicComparator());
+		int columnIndex = getColumnIndex();
+		PageCols column = PageCols.values()[columnIndex];
+		switch(column) {
+			case status: Collections.sort(rows, new StatusComparator()); break;
+			default: Collections.sort(rows, new ClassicComparator());
+		}
+	}
+	
+	private class StatusComparator implements Comparator<PageRow> {
+		@Override
+		public int compare(PageRow t1, PageRow t2) {
+			PageStatus s1 = t1.getPageStatus();
+			PageStatus s2 = t2.getPageStatus();
+			if(s1 == null && s2 != null) {
+				return -1;
+			}
+			if(s1 != null && s2 == null) {
+				return 1;
+			}
+			
+			int compare = 0;
+			if(s1 != null && s2 != null) {
+				compare = Integer.compare(s1.ordinal(), s2.ordinal());
+			}
+			if(compare == 0) {
+				compare = compareString(t1.getTitle(), t2.getTitle());
+			}
+			return compare;
+		}
 	}
 
 	private class ClassicComparator implements Comparator<PageRow> {

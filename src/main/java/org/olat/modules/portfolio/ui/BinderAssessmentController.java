@@ -136,7 +136,7 @@ public class BinderAssessmentController extends FormBasicController {
 			rows.add(row);
 		}
 
-		List<Page> pages = portfolioService.getPages(binder);
+		List<Page> pages = portfolioService.getPages(binder, null);
 		for(Page page:pages) {
 			AssessmentSectionWrapper row = sectionToRows.get(page.getSection());
 			if(row != null) {

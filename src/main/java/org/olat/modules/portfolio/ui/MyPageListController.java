@@ -61,7 +61,7 @@ public class MyPageListController extends AbstractPageListController {
 		super(ureq, wControl, stackPanel, secCallback, BinderConfiguration.createMyPagesConfig(), "pages", false);
 
 		initForm(ureq);
-		loadModel();
+		loadModel(null);
 	}
 
 	@Override
@@ -72,7 +72,7 @@ public class MyPageListController extends AbstractPageListController {
 	}
 
 	@Override
-	protected void loadModel() {
+	protected void loadModel(String searchString) {
 		Map<Long,Long> numberOfCommentsMap = portfolioService.getNumberOfCommentsOnOwnedPage(getIdentity());
 		
 		List<CategoryToElement> categorizedElements = portfolioService.getCategorizedOwnedPages(getIdentity());
@@ -86,7 +86,7 @@ public class MyPageListController extends AbstractPageListController {
 			categories.add(categorizedElement.getCategory());
 		}
 		
-		List<Page> pages = portfolioService.searchOwnedPages(getIdentity());
+		List<Page> pages = portfolioService.searchOwnedPages(getIdentity(), searchString);
 		List<PageRow> rows = new ArrayList<>(pages.size());
 		for (Page page : pages) {
 			PageRow row = forgeRow(page, null, false, categorizedElementMap, numberOfCommentsMap);
@@ -116,7 +116,7 @@ public class MyPageListController extends AbstractPageListController {
 	public void event(UserRequest ureq, Controller source, Event event) {
 		if(newPageCtrl == source) {
 			if(event == Event.DONE_EVENT) {
-				loadModel();
+				loadModel(null);
 				fireEvent(ureq, Event.CHANGED_EVENT);
 			}
 			cmc.deactivate();

@@ -19,9 +19,15 @@
  */
 package org.olat.modules.portfolio.ui;
 
+import java.util.List;
+import java.util.Locale;
+
+import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableModelDelegate;
 import org.olat.modules.portfolio.model.SharedItemRow;
 
 /**
@@ -30,21 +36,39 @@ import org.olat.modules.portfolio.model.SharedItemRow;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class SharedItemsDataModel extends DefaultFlexiTableDataModel<SharedItemRow> {
+public class SharedItemsDataModel extends DefaultFlexiTableDataModel<SharedItemRow>
+	implements SortableFlexiTableDataModel<SharedItemRow> {
 	
-	public SharedItemsDataModel(FlexiTableColumnModel columnModel) {
+	private final Locale locale;
+	
+	public SharedItemsDataModel(FlexiTableColumnModel columnModel, Locale locale) {
 		super(columnModel);
+		this.locale = locale;
+	}
+
+	@Override
+	public void sort(SortKey orderBy) {
+		if(orderBy != null) {
+			List<SharedItemRow> views = new SharedItemsSorterDelegate(orderBy, this, locale).sort();
+			super.setObjects(views);
+		}
 	}
 
 	@Override
 	public Object getValueAt(int row, int col) {
 		SharedItemRow itemRow = getObject(row);
+		return getValueAt(itemRow, col);
+	}	
+	
+	@Override
+	public Object getValueAt(SharedItemRow itemRow, int col) {
 		if(col >= 0 && col < ShareItemCols.values().length) {
 			switch(ShareItemCols.values()[col]) {
 				case username: return itemRow.getIdentityName();
 				case binderKey: return itemRow.getBinderKey();
 				case binderName: return itemRow.getBinderTitle();
 				case courseName: return itemRow.getEntryDisplayName();
+				case openSections: return itemRow.getNumOfOpenSections();
 				case grading: return itemRow.getAssessmentEntry();
 				case lastModified: return itemRow.getLastModified();
 			}
@@ -56,7 +80,7 @@ public class SharedItemsDataModel extends DefaultFlexiTableDataModel<SharedItemR
 	
 	@Override
 	public SharedItemsDataModel createCopyWithEmptyList() {
-		return new SharedItemsDataModel(getTableColumnModel());
+		return new SharedItemsDataModel(getTableColumnModel(), locale);
 	}
 
 	public enum ShareItemCols implements FlexiSortableColumnDef {
@@ -64,6 +88,7 @@ public class SharedItemsDataModel extends DefaultFlexiTableDataModel<SharedItemR
 		binderKey("table.header.key"),
 		binderName("table.header.title"),
 		courseName("table.header.course"),
+		openSections("table.header.open.sections"),
 		grading("table.header.grading"),
 		lastModified("table.header.lastUpdate");
 		
@@ -86,6 +111,14 @@ public class SharedItemsDataModel extends DefaultFlexiTableDataModel<SharedItemR
 		@Override
 		public String sortKey() {
 			return name();
+		}
+	}
+	
+	
+	public static class SharedItemsSorterDelegate extends SortableFlexiTableModelDelegate<SharedItemRow> {
+		
+		public SharedItemsSorterDelegate(SortKey orderBy, SharedItemsDataModel model, Locale locale) {
+			super(orderBy, model, locale);
 		}
 	}
 }

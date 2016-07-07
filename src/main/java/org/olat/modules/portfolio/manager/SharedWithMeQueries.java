@@ -19,14 +19,21 @@
  */
 package org.olat.modules.portfolio.manager;
 
+import static org.olat.core.commons.persistence.PersistenceHelper.appendFuzzyLike;
+import static org.olat.core.commons.persistence.PersistenceHelper.makeFuzzyQueryString;
+
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.persistence.TypedQuery;
+
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
+import org.olat.core.util.StringHelper;
 import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.portfolio.Binder;
 import org.olat.modules.portfolio.PortfolioRoles;
+import org.olat.modules.portfolio.SectionStatus;
 import org.olat.modules.portfolio.model.AssessedBinder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -43,9 +50,13 @@ public class SharedWithMeQueries {
 	@Autowired
 	private DB dbInstance;
 	
-	public List<AssessedBinder> searchSharedBinders(Identity member) {
-		StringBuilder sc = new StringBuilder();
-		sc.append("select owner, binder, aEntry from pfbinder as binder")
+	public List<AssessedBinder> searchSharedBinders(Identity member, String searchString) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select owner, binder, aEntry")
+		  .append(" ,(select count(section.key) from pfsection as section ")
+		  .append("   where section.binder.key=binder.key and section.status in ('").append(SectionStatus.inProgress.name()).append("','").append(SectionStatus.submitted.name()).append("','").append(SectionStatus.notStarted.name()).append("')")
+		  .append(" ) as numOfOpenSections")
+		  .append(" from pfbinder as binder")
 		  .append(" inner join fetch binder.baseGroup as baseGroup")
 		  .append(" inner join baseGroup.members as membership")
 		  .append(" inner join baseGroup.members as ownership")
@@ -53,7 +64,7 @@ public class SharedWithMeQueries {
 		  .append(" inner join fetch owner.user as owneruser")
 		  .append(" left join fetch binder.entry as entry")//entry -> assessment entry -> owner
 		  .append(" left join fetch assessmententry as aEntry on (aEntry.identity.key=owner.key and aEntry.repositoryEntry.key=entry.key)")
-		  .append(" where (membership.identity.key=:identityKey and membership.role in ('").append(PortfolioRoles.coach.name()).append("','").append(PortfolioRoles.reviewer.name()).append("'))")
+		  .append(" where ((membership.identity.key=:identityKey and membership.role in ('").append(PortfolioRoles.coach.name()).append("','").append(PortfolioRoles.reviewer.name()).append("'))")
 		  .append(" or exists (select section.key from pfsection as section")
 		  .append("   inner join section.baseGroup as sectionGroup")
 		  .append("   inner join sectionGroup.members as sectionMembership on (sectionMembership.identity.key=:identityKey and sectionMembership.role in ('").append(PortfolioRoles.coach.name()).append("','").append(PortfolioRoles.reviewer.name()).append("'))")
@@ -64,18 +75,42 @@ public class SharedWithMeQueries {
 		  .append("   inner join page.section as pageSection")
 		  .append("   inner join pageGroup.members as pageMembership on (pageMembership.identity.key=:identityKey and pageMembership.role in ('").append(PortfolioRoles.coach.name()).append("','").append(PortfolioRoles.reviewer.name()).append("'))")
 		  .append("   where pageSection.binder.key=binder.key")
-		  .append(" )");
+		  .append(" ))");
+		if(StringHelper.containsNonWhitespace(searchString)) {
+			searchString = makeFuzzyQueryString(searchString);
+			sb.append(" and (");
+			appendFuzzyLike(sb, "binder.title", "searchString", dbInstance.getDbVendor());
+			sb.append(" or ");
+			appendFuzzyLike(sb, "binder.summary", "searchString", dbInstance.getDbVendor());
+			sb.append(" or ");
+			appendFuzzyLike(sb, "owner.name", "searchString", dbInstance.getDbVendor());
+			sb.append(" or ");
+			appendFuzzyLike(sb, "owneruser.lastName", "searchString", dbInstance.getDbVendor());
+			sb.append(" or ");
+			appendFuzzyLike(sb, "owneruser.firstName", "searchString", dbInstance.getDbVendor());
+			sb.append(" or ");
+			appendFuzzyLike(sb, "entry.displayname", "searchString", dbInstance.getDbVendor());
+			sb.append(")");
+		}
 		
-		List<Object[]> objects = dbInstance.getCurrentEntityManager()
-				.createQuery(sc.toString(), Object[].class)
-				.setParameter("identityKey", member.getKey())
-				.getResultList();
+		TypedQuery<Object[]> query = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Object[].class)
+				.setParameter("identityKey", member.getKey());
+		if(StringHelper.containsNonWhitespace(searchString)) {
+			query.setParameter("searchString", searchString.toLowerCase());
+		}
+		
+		List<Object[]> objects = query.getResultList();
 		List<AssessedBinder> assessedBinders = new ArrayList<>(objects.size());
 		for(Object[] object:objects) {
 			Identity owner = (Identity)object[0];
 			Binder binder = (Binder)object[1];
 			AssessmentEntry entry = (AssessmentEntry)object[2];
-			assessedBinders.add(new AssessedBinder(owner, binder, entry));
+			int numOfSections = 0;
+			if(object[3] != null) {
+				numOfSections = ((Number)object[3]).intValue();
+			}
+			assessedBinders.add(new AssessedBinder(owner, binder, entry, numOfSections));
 		}
 		return assessedBinders;
 	}

@@ -19,10 +19,15 @@
  */
 package org.olat.modules.portfolio.manager;
 
+import static org.olat.core.commons.persistence.PersistenceHelper.appendFuzzyLike;
+import static org.olat.core.commons.persistence.PersistenceHelper.makeFuzzyQueryString;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
+
+import javax.persistence.TypedQuery;
 
 import org.olat.basesecurity.Group;
 import org.olat.basesecurity.GroupRoles;
@@ -113,37 +118,59 @@ public class PageDAO {
 				.getSingleResult();
 	}
 	
-	public List<Page> getPages(BinderRef binder) {
+	public List<Page> getPages(BinderRef binder, String searchString) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select page from pfpage as page")
 		  .append(" inner join fetch page.baseGroup as baseGroup")
 		  .append(" inner join fetch page.section as section")
 		  .append(" inner join fetch page.body as body")
-		  .append(" where section.binder.key=:binderKey")
-		  .append(" order by section.pos, page.pos");
+		  .append(" where section.binder.key=:binderKey");
+		if(StringHelper.containsNonWhitespace(searchString)) {
+			searchString = makeFuzzyQueryString(searchString);
+			sb.append(" and (");
+			appendFuzzyLike(sb, "page.title", "searchString", dbInstance.getDbVendor());
+			sb.append(" or ");
+			appendFuzzyLike(sb, "page.summary", "searchString", dbInstance.getDbVendor());
+			sb.append(")");
+		}
+		sb.append(" order by section.pos, page.pos");
 		
-		return dbInstance.getCurrentEntityManager()
+		TypedQuery<Page> query = dbInstance.getCurrentEntityManager()
 			.createQuery(sb.toString(), Page.class)
-			.setParameter("binderKey", binder.getKey())
-			.getResultList();
+			.setParameter("binderKey", binder.getKey());
+		if(StringHelper.containsNonWhitespace(searchString)) {
+			query.setParameter("searchString", searchString.toLowerCase());
+		}
+		return query.getResultList();
 	}
 	
-	public List<Page> getPages(SectionRef binder) {
+	public List<Page> getPages(SectionRef binder, String searchString) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select page from pfpage as page")
 		  .append(" inner join fetch page.baseGroup as baseGroup")
 		  .append(" inner join fetch page.section as section")
 		  .append(" inner join fetch page.body as body")
-		  .append(" where section.key=:sectionKey")
-		  .append(" order by page.pos");
+		  .append(" where section.key=:sectionKey");
+		if(StringHelper.containsNonWhitespace(searchString)) {
+			searchString = makeFuzzyQueryString(searchString);
+			sb.append(" and (");
+			appendFuzzyLike(sb, "page.title", "searchString", dbInstance.getDbVendor());
+			sb.append(" or ");
+			appendFuzzyLike(sb, "page.summary", "searchString", dbInstance.getDbVendor());
+			sb.append(")");
+		}
+		sb.append(" order by page.pos");
 		
-		return dbInstance.getCurrentEntityManager()
+		TypedQuery<Page> query = dbInstance.getCurrentEntityManager()
 			.createQuery(sb.toString(), Page.class)
-			.setParameter("sectionKey", binder.getKey())
-			.getResultList();
+			.setParameter("sectionKey", binder.getKey());
+		if(StringHelper.containsNonWhitespace(searchString)) {
+			query.setParameter("searchString", searchString.toLowerCase());
+		}
+		return query.getResultList();
 	}
 	
-	public List<Page> getOwnedPages(IdentityRef owner) {
+	public List<Page> getOwnedPages(IdentityRef owner, String searchString) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select page from pfpage as page")
 		  .append(" inner join fetch page.body as body")
@@ -153,12 +180,22 @@ public class PageDAO {
 		  .append("     inner join pageMember.identity as ident on (ident.key=:ownerKey and pageMember.role='").append(GroupRoles.owner.name()).append("')")
 		  .append("  	where pageMember.group.key=page.baseGroup.key or pageMember.group.key=binder.baseGroup.key")
 		  .append(" )");
+		if(StringHelper.containsNonWhitespace(searchString)) {
+			searchString = makeFuzzyQueryString(searchString);
+			sb.append(" and (");
+			appendFuzzyLike(sb, "page.title", "searchString", dbInstance.getDbVendor());
+			sb.append(" or ");
+			appendFuzzyLike(sb, "page.summary", "searchString", dbInstance.getDbVendor());
+			sb.append(")");
+		}
 		
-		List<Page> pages = dbInstance.getCurrentEntityManager()
+		TypedQuery<Page> query = dbInstance.getCurrentEntityManager()
 			.createQuery(sb.toString(), Page.class)
-			.setParameter("ownerKey", owner.getKey())
-			.getResultList();
-		return pages;
+			.setParameter("ownerKey", owner.getKey());
+		if(StringHelper.containsNonWhitespace(searchString)) {
+			query.setParameter("searchString", searchString.toLowerCase());
+		}
+		return query.getResultList();
 	}
 	
 	public List<Identity> getMembers(Page page, String... roles)  {
@@ -192,8 +229,9 @@ public class PageDAO {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select page from pfpage as page")
 		  .append(" inner join fetch page.baseGroup as baseGroup")
-		  .append(" inner join fetch page.section as section")
-		  .append(" inner join fetch page.body as body")
+		  .append(" left join fetch page.section as section")
+		  .append(" left join fetch section.binder as binder")
+		  .append(" left join fetch page.body as body")
 		  .append(" where page.key=:pageKey");
 		
 		List<Page> pages = dbInstance.getCurrentEntityManager()

@@ -59,9 +59,9 @@ public class BinderController extends BasicController implements TooledControlle
 	private StackedPanel mainPanel;
 	
 	private PublishController publishCtrl;
-	private TableOfContentController overviewCtrl;
 	private BinderPageListController entriesCtrl;
 	private BinderAssessmentController assessmentCtrl;
+	private final TableOfContentController overviewCtrl;
 	
 	private Binder binder;
 	private final BinderConfiguration config;
@@ -75,6 +75,9 @@ public class BinderController extends BasicController implements TooledControlle
 		this.stackPanel = stackPanel;
 		this.secCallback = secCallback;
 		
+		overviewCtrl = new TableOfContentController(ureq, getWindowControl(), stackPanel, secCallback, binder, config);
+		listenTo(overviewCtrl);
+		
 		segmentButtonsCmp = new ButtonGroupComponent("segments");
 		overviewLink = LinkFactory.createLink("portfolio.overview", getTranslator(), this);
 		segmentButtonsCmp.addButton(overviewLink, true);
@@ -87,12 +90,9 @@ public class BinderController extends BasicController implements TooledControlle
 			segmentButtonsCmp.addButton(assessmentLink, false);
 		}
 		
-		stackPanel.addListener(this);
 		mainPanel = putInitialPanel(new SimpleStackedPanel("portfolioSegments"));
-		
-		overviewCtrl = new TableOfContentController(ureq, getWindowControl(), stackPanel, secCallback, binder, config);
-		listenTo(overviewCtrl);
 		mainPanel.setContent(overviewCtrl.getInitialComponent());
+		stackPanel.addListener(this);
 	}
 
 	@Override
@@ -127,8 +127,7 @@ public class BinderController extends BasicController implements TooledControlle
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if(entriesCtrl == source) {
 			if(event == Event.CHANGED_EVENT) {
-				removeAsListenerAndDispose(overviewCtrl);
-				overviewCtrl = null;
+				overviewCtrl.loadModel();
 			}
 		} else if(overviewCtrl == source) {
 			if(event == Event.CHANGED_EVENT) {

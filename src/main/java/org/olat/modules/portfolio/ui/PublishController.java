@@ -190,7 +190,7 @@ public class PublishController extends BasicController implements TooledControll
 		}
 		
 		//pages
-		List<Page> pages = portfolioService.getPages(binder);
+		List<Page> pages = portfolioService.getPages(binder, null);
 		for(Page page:pages) {
 			Section section = page.getSection();
 			PortfolioElementRow sectionRow = sectionMap.get(section.getKey());

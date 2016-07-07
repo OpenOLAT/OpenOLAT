@@ -83,7 +83,7 @@ public interface PortfolioService {
 	 * @param member
 	 * @return
 	 */
-	public List<AssessedBinder> searchSharedBindersWith(Identity coach);
+	public List<AssessedBinder> searchSharedBindersWith(Identity coach, String searchString);
 	
 	/**
 	 * 
@@ -100,7 +100,7 @@ public interface PortfolioService {
 	 * @param identity
 	 * @return
 	 */
-	public List<Binder> searchSharedBindersBy(Identity owner);
+	public List<Binder> searchSharedBindersBy(Identity owner, String searchString);
 	
 	public Binder getBinderByKey(Long portfolioKey);
 	
@@ -247,16 +247,16 @@ public interface PortfolioService {
 	 * @param binder
 	 * @return the list of pages of the specified binder.
 	 */
-	public List<Page> getPages(BinderRef binder);
+	public List<Page> getPages(BinderRef binder, String searchString);
 	
 	/**
 	 * 
 	 * @param section
 	 * @return
 	 */
-	public List<Page> getPages(SectionRef section);
+	public List<Page> getPages(SectionRef section, String searchString);
 	
-	public List<Page> searchOwnedPages(IdentityRef owner);
+	public List<Page> searchOwnedPages(IdentityRef owner, String searchString);
 	
 	/**
 	 * 
