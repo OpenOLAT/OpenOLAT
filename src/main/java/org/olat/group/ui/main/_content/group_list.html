@@ -25,8 +25,14 @@ $r.render("table")
 </div>
 
 #if($r.available("create.group"))
-	<div class="clearfix">
-		<div class="o_info">$r.translate("create.group.description")</div>
-		$r.render("create.group")
+	<div class="clearfix o_block_large">
+		<div class="panel panel-placeholder">
+			<div class="panel-body">
+				<p>$r.translate("create.group.description")</p>
+				<div class="o_button_group">
+					$r.render("create.group")
+				</div>
+			</div>
+		</div>
 	</div>
 #end
