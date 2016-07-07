@@ -40,7 +40,6 @@ import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.basesecurity.Constants;
 import org.olat.basesecurity.GroupRoles;
-import org.olat.basesecurity.PermissionOnResourceable;
 import org.olat.basesecurity.SecurityGroup;
 import org.olat.basesecurity.events.SingleIdentityChosenEvent;
 import org.olat.core.commons.fullWebApp.LayoutMain3ColsController;
@@ -346,8 +345,8 @@ public class UserAdminMainController extends MainLayoutBasicController implement
 		else if (uobject.equals("coauthors")) {
 			activatePaneInDetailView = "edit.uroles";
 			// special case: use user search controller and search for all users that have author rights
-			PermissionOnResourceable[] permissions = {new PermissionOnResourceable(Constants.PERMISSION_HASROLE, Constants.ORESOURCE_AUTHOR)};
-			UsermanagerUserSearchController myCtr = new UsermanagerUserSearchController(ureq, bwControl,null, permissions, null, null, null, Identity.STATUS_VISIBLE_LIMIT, true);
+			List<Identity> resourceOwners = repositoryService.getIdentitiesWithRole(GroupRoles.owner.name());
+			UsermanagerUserSearchController myCtr = new UsermanagerUserSearchController(ureq, bwControl, resourceOwners, Identity.STATUS_VISIBLE_LIMIT, true);
 			addToHistory(ureq, bwControl);
 			// now subtract users that are in the author group to get the co-authors
 			SecurityGroup[] secGroup = {securityManager.findSecurityGroupByName(Constants.GROUP_AUTHORS)};
@@ -359,8 +358,22 @@ public class UserAdminMainController extends MainLayoutBasicController implement
 		}
 		else if (uobject.equals("resourceowners")) {
 			activatePaneInDetailView = "edit.uroles";
-			PermissionOnResourceable[] permissions = {new PermissionOnResourceable(Constants.PERMISSION_HASROLE, Constants.ORESOURCE_AUTHOR)};
-			contentCtr = new UsermanagerUserSearchController(ureq, bwControl,null, permissions, null, null, null, Identity.STATUS_VISIBLE_LIMIT, true);
+			// First get all resource owners (co-authors) ...
+			List<Identity> resourceOwners = repositoryService.getIdentitiesWithRole(GroupRoles.owner.name());
+			UsermanagerUserSearchController myCtr = new UsermanagerUserSearchController(ureq, bwControl, resourceOwners, Identity.STATUS_VISIBLE_LIMIT, true);
+			// ... now add users that are in the author group but don't own a resource yet
+			SecurityGroup[] secGroup = {securityManager.findSecurityGroupByName(Constants.GROUP_AUTHORS)};
+			List<Identity> identitiesFromAuthorGroup = securityManager.getVisibleIdentitiesByPowerSearch(null, null, true, secGroup , null, null, null, null);
+			myCtr.addIdentitiesToSearchResult(ureq, identitiesFromAuthorGroup);
+			contentCtr = myCtr;
+			addToHistory(ureq, bwControl);
+			listenTo(contentCtr);
+			return contentCtr.getInitialComponent();
+		}
+		else if (uobject.equals("courseparticipants")) {
+			activatePaneInDetailView = "edit.courses";
+			List<Identity> resourceOwners = repositoryService.getIdentitiesWithRole(GroupRoles.participant.name());
+			contentCtr = new UsermanagerUserSearchController(ureq, bwControl, resourceOwners, Identity.STATUS_VISIBLE_LIMIT, true);
 			addToHistory(ureq, bwControl);
 			listenTo(contentCtr);
 			return contentCtr.getInitialComponent();
@@ -639,22 +652,29 @@ public class UserAdminMainController extends MainLayoutBasicController implement
 			gtnChild.setUserObject("resourceowners");
 			gtnChild.setAltText(translator.translate("menu.resourceowners.alt"));
 			gtn3.addChild(gtnChild);
+
 		}
 
+		gtnChild = new GenericTreeNode();		
+		gtnChild.setTitle(translator.translate("menu.coursecoach"));
+		gtnChild.setUserObject("coursecoach");
+		gtnChild.setAltText(translator.translate("menu.coursecoach.alt"));
+		gtn3.addChild(gtnChild);
+
+		gtnChild = new GenericTreeNode();		
+		gtnChild.setTitle(translator.translate("menu.courseparticipants"));
+		gtnChild.setUserObject("courseparticipants");
+		gtnChild.setAltText(translator.translate("menu.courseparticipants.alt"));
+		gtn3.addChild(gtnChild);
+
 		Boolean canGroupmanagers = BaseSecurityModule.USERMANAGER_CAN_MANAGE_GROUPMANAGERS;
-		if (canGroupmanagers.booleanValue() || isOlatAdmin) {
+		if (canGroupmanagers.booleanValue() || isOlatAdmin) {			
 			gtnChild = new GenericTreeNode();		
 			gtnChild.setTitle(translator.translate("menu.groupmanagergroup"));
 			gtnChild.setUserObject("groupmanagergroup");
 			gtnChild.setAltText(translator.translate("menu.groupmanagergroup.alt"));
 			gtn3.addChild(gtnChild);
-			
-			gtnChild = new GenericTreeNode();		
-			gtnChild.setTitle(translator.translate("menu.coursecoach"));
-			gtnChild.setUserObject("coursecoach");
-			gtnChild.setAltText(translator.translate("menu.coursecoach.alt"));
-			gtn3.addChild(gtnChild);
-			
+
 			gtnChild = new GenericTreeNode();		
 			gtnChild.setTitle(translator.translate("menu.groupcoach"));
 			gtnChild.setUserObject("groupcoach");
