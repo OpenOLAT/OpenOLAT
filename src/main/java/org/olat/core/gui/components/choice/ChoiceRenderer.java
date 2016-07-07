@@ -69,7 +69,7 @@ public class ChoiceRenderer extends DefaultComponentRenderer {
 		if (choice.getElementCssClass() != null) {
 			target.append(" class=\"").append(choice.getElementCssClass()).append("\"");
 		}
-		target.append("><input type=\"hidden\" name=\"multi_action_identifier\" value=\"\" />");
+		target.append("><input type='hidden' id='o_mai_").append(id).append("' name='multi_action_identifier' value='' />");
 
 		target.append("<table class=\"o_choice\">");
 		int rows = model.getRowCount();
