@@ -651,7 +651,15 @@ public abstract class AbstractBusinessGroupListController extends FormBasicContr
 			return;
 		}
 		
-		List<BusinessGroup> groups = toBusinessGroups(ureq, items, false);
+		List<BusinessGroup> groups = toBusinessGroups(ureq, items, true);
+		if(groups.isEmpty()) {
+			showWarning("msg.alleastone.editable.group");
+			return;
+		}
+		if(items.size() != groups.size()) {
+			showWarning("msg.only.editable.group");
+			return;
+		}
 		
 		boolean enableCoursesCopy = businessGroupService.hasResources(groups);
 		boolean enableAreasCopy = areaManager.countBGAreasOfBusinessGroups(groups) > 0;
@@ -717,7 +725,13 @@ public abstract class AbstractBusinessGroupListController extends FormBasicContr
 		if(groups.isEmpty()) {
 			showWarning("msg.alleastone.editable.group");
 			return;
-		} else if(CollaborationToolsFactory.getInstance().getAvailableTools() == null) {
+		}
+		if(selectedItems.size() != groups.size()) {
+			showWarning("msg.only.editable.group");
+			return;
+		}
+		
+		if(CollaborationToolsFactory.getInstance().getAvailableTools() == null) {
 			//init the available tools
 			CollaborationToolsFactory.getInstance().getOrCreateCollaborationTools(groups.get(0));
 		}
@@ -797,7 +811,15 @@ public abstract class AbstractBusinessGroupListController extends FormBasicContr
 			return;
 		}
 		
-		List<BusinessGroup> groups = toBusinessGroups(ureq, selectedItems, false);
+		List<BusinessGroup> groups = toBusinessGroups(ureq, selectedItems, true);
+		if(groups.isEmpty()) {
+			showWarning("msg.alleastone.editable.group");
+			return;
+		}
+		if(selectedItems.size() != groups.size()) {
+			showWarning("msg.only.editable.group");
+			return;
+		}
 
 		Step start = new BGEmailSelectReceiversStep(ureq, groups);
 		StepRunnerCallback finish = new StepRunnerCallback() {
@@ -829,6 +851,10 @@ public abstract class AbstractBusinessGroupListController extends FormBasicContr
 		List<BusinessGroup> groups = toBusinessGroups(ureq, selectedItems, true);
 		if(groups.isEmpty()) {
 			showWarning("msg.alleastone.editable.group");
+			return;
+		}
+		if(selectedItems.size() != groups.size()) {
+			showWarning("msg.only.editable.group");
 			return;
 		}
 		
@@ -943,8 +969,12 @@ public abstract class AbstractBusinessGroupListController extends FormBasicContr
 		}
 
 		final List<BusinessGroup> groups = toBusinessGroups(ureq, selectedItems, true);
-		if(groups.isEmpty()) {
-			showWarning("msg.alleastone.editable.group");
+		if(groups.size() < 2) {
+			showWarning("msg.alleasttwo.editable.group");
+			return;
+		}
+		if(selectedItems.size() != groups.size()) {
+			showWarning("msg.only.editable.group");
 			return;
 		}
 		
@@ -988,6 +1018,10 @@ public abstract class AbstractBusinessGroupListController extends FormBasicContr
 		List<BusinessGroup> groups = toBusinessGroups(ureq, selectedItems, true);
 		if(groups.isEmpty()) {
 			showWarning("msg.alleastone.editable.group");
+			return;
+		}
+		if(selectedItems.size() != groups.size()) {
+			showWarning("msg.only.editable.group");
 			return;
 		}
 		
