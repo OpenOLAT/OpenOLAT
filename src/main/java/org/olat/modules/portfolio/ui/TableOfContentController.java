@@ -191,7 +191,7 @@ public class TableOfContentController extends BasicController implements TooledC
 			sectionRow.getPages().add(pageRow);
 			
 			String s = page.getPageStatus() == null ? "draft" : page.getPageStatus().name();
-			points.add(new TimelinePoint(page.getKey().toString(), page.getLastModified(), s));
+			points.add(new TimelinePoint(page.getKey().toString(), page.getTitle(), page.getCreationDate(), s));
 		}
 		timelineCmp.setPoints(points);
 		mainVC.contextPut("sections", sectionList);

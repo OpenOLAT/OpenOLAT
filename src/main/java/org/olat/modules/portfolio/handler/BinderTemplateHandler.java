@@ -19,7 +19,9 @@
  */
 package org.olat.modules.portfolio.handler;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
+import java.io.IOException;
 import java.util.Locale;
 
 import org.olat.core.CoreSpringFactory;
@@ -31,10 +33,13 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.layout.MainLayoutController;
 import org.olat.core.gui.control.generic.wizard.StepsMainRunController;
 import org.olat.core.gui.media.MediaResource;
+import org.olat.core.gui.media.StreamedMediaResource;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Roles;
 import org.olat.core.logging.AssertException;
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.coordinate.LockResult;
 import org.olat.core.util.vfs.VFSContainer;
@@ -54,6 +59,7 @@ import org.olat.modules.portfolio.ui.BinderRuntimeController;
 import org.olat.modules.portfolio.ui.PortfolioAssessmentDetailsController;
 import org.olat.repository.ErrorList;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.handlers.EditionSupport;
 import org.olat.repository.handlers.RepositoryHandler;
@@ -72,6 +78,8 @@ import org.olat.resource.OLATResource;
  */
 // Loads of parameters are unused
 public class BinderTemplateHandler implements RepositoryHandler {
+	
+	private static final OLog log = Tracing.createLoggerFor(BinderTemplateHandler.class);
 	
 	@Override
 	public boolean isCreate() {
@@ -117,7 +125,7 @@ public class BinderTemplateHandler implements RepositoryHandler {
 
 	@Override
 	public boolean supportsDownload() {
-		return false;
+		return true;
 	}
 
 	@Override
@@ -152,7 +160,17 @@ public class BinderTemplateHandler implements RepositoryHandler {
 	 */
 	@Override
 	public MediaResource getAsMediaResource(OLATResourceable res, boolean backwardsCompatible) {
-		return null;
+		RepositoryEntry re = RepositoryManager.getInstance().lookupRepositoryEntry(res, true);
+		PortfolioService portfolioService = CoreSpringFactory.getImpl(PortfolioService.class);
+		Binder template = portfolioService.getBinderByResource(re.getOlatResource());
+		
+		try {
+			byte[] bytes = BinderXStream.toBytes(template);
+			return new StreamedMediaResource(new ByteArrayInputStream(bytes), "binder.zip", "application/zip", new Long(bytes.length), null);
+		} catch (IOException e) {
+			log.error("", e);
+			return null;
+		}
 	}
 
 	@Override

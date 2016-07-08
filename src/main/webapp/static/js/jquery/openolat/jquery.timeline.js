@@ -4,6 +4,9 @@
     		parentContainerId:'',
     		startTime: null,
     		endTime: null,
+    		dateFormat: '%d.%m.%y',
+    		dateLabel: 'Date',
+    		status: { draft: "Draft", published: "Published", inRevision: "In revision", closed: "Closed", deleted: "Deleted"},
             values: []
         }, options );
     	
@@ -30,7 +33,7 @@
 	var lineGenerator, lineX, lineY, curveX, curveY;
 	var formatDates;
 	var startTime, endTime;
-	var data;
+	var data, statusTranslations;
 
 	createGraph = function($obj, settings) {
 		this.parentContainer = jQuery('#' + settings.parentContainerId);
@@ -45,12 +48,13 @@
 		data = settings.values;
 		endTime = settings.endTime;
 		startTime = settings.startTime;
+		statusTranslations = settings.status;
 	
 		margin = {top: 10, right: 60, bottom: 40, left: 80};
   	  	width = placeholderwidth - margin.left - margin.right;
   	  	height = placeholderheight - margin.top - margin.bottom;
   	  	
-  	  	var formatDate = d3.time.format('%d.%m.%y');
+  	  	var formatDate = d3.time.format(settings.dateFormat);
     	formatDates = function(d) { return formatDate(new Date(d)); };
     	
     	x = d3.scale.linear()
@@ -119,8 +123,8 @@
 		y.domain([startTime, endTime]);
 
 		drawAxis();
-		drawDots();
 		//drawCurve();
+		drawDots();
 	}
 	
 	drawAxis = function() {
@@ -137,9 +141,23 @@
 		   	.attr("cy", function(d) { return y(d.time); });
 	}
 	
+	translateAlong = function translateAlong(path) {
+		var l = path.getTotalLength();
+		return function(i) {
+			return function(t) {
+				var p = path.getPointAtLength(t * l);
+				return "translate(" + p.x + "," + p.y + ")";//Move marker
+			}
+		}
+	}
+	
+	var lineData = [];
+	var linePath;
+	
 	drawCurve = function() {
-		var lineData = [];
-		for(var i=0; i<(maxCurveY*20); i++) {
+
+		var numOfData = lineData.length;
+		for(var i=numOfData; i<numOfData + (maxCurveY*20); i++) {
 			lineData.push({y: (i == 0 ? 0 : i / 20.0)});
 		}
 		  
@@ -147,6 +165,8 @@
 		   .data([lineData])
 		   .attr("d", lineGenerator)
 		   .attr("class", "o_timeline_curve");
+		   
+
 	}
   
 	timelineItems = function($obj, settings) {
@@ -169,12 +189,11 @@
 		   .style("text-anchor", "end")
 		   .text("Date");
 
-		var lineData = [];
 		for(var i=0; i<(maxCurveY*20); i++) {
 			lineData.push({y: (i == 0 ? 0 : i / 20.0)});
 		}
 		  
-		var linePath = svg.append("path")
+		linePath = svg.append("path")
 		   .data([lineData])
 		   .attr("d", lineGenerator)
 		   .attr("class", "o_timeline_curve");
@@ -188,8 +207,25 @@
 		   .append("circle")
 		   .attr("class", function(d) { return "dot o_pf_status_" + d.status; })
 		   .attr("r", 10)
+		   .attr("id", idKey)
 		   .attr("cx", function(d) { return lineX(curvedX(curveY(d.time))); })
 		   .attr("cy", function(d) { return y(d.time); });
+		   
+		jQuery("g .dot").tooltip({
+					html: true,
+					container:'body',
+					title: function() {
+						var id = jQuery(this).attr('id');
+						var row;
+						for(var i=data.length; i-->0; ) {
+							if(id == data[i].id) {
+								row = data[i];
+							}
+						}
+						var translatedStatus = statusTranslations[row.status];
+						return '<p>' + row.title + '<br>Status: ' + translatedStatus + '</p>';
+					}
+			});
 		dots.exit();
 	}
 	

@@ -19,14 +19,17 @@
  */
 package org.olat.modules.portfolio.ui.component;
 
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.ComponentRenderer;
 import org.olat.core.gui.components.form.flexible.impl.FormBaseComponentImpl;
 import org.olat.core.gui.render.ValidationResult;
 import org.olat.core.helpers.Settings;
+import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 
 /**
@@ -78,6 +81,19 @@ public class TimelineComponent extends FormBaseComponentImpl {
 
 	public void setEndTime(Date endTime) {
 		this.endTime = endTime;
+	}
+	
+	public String getD3DateFormat(Locale locale) {
+		Calendar cal = Calendar.getInstance();
+		cal.set( 1999, Calendar.MARCH, 1, 0, 0, 0 );
+		String formattedDate = Formatter.getInstance(locale).formatDate(cal.getTime());
+		formattedDate = formattedDate.replace("1999", "%y");
+		formattedDate = formattedDate.replace("99", "%y");
+		formattedDate = formattedDate.replace("03", "%m");
+		formattedDate = formattedDate.replace("3", "%m");
+		formattedDate = formattedDate.replace("01", "%d");
+		formattedDate = formattedDate.replace("1", "%d");
+		return formattedDate;
 	}
 
 	@Override

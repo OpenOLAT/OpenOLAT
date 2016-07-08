@@ -31,16 +31,22 @@ public class TimelinePoint {
 	
 	private final Date date;
 	private final String id;
+	private final String title;
 	private final String status;
 
-	public TimelinePoint(String id, Date date, String status) {
+	public TimelinePoint(String id, String title, Date date, String status) {
 		this.id = id;
 		this.date = date;
+		this.title = title;
 		this.status = status;
 	}
 	
 	public String getId() {
 		return id;
+	}
+	
+	public String getTitle() {
+		return title;
 	}
 
 	public Date getDate() {

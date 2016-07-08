@@ -19,6 +19,7 @@
  */
 package org.olat.modules.portfolio.ui.component;
 
+import org.json.JSONObject;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.DefaultComponentRenderer;
 import org.olat.core.gui.render.RenderResult;
@@ -40,6 +41,7 @@ public class TimelineComponentRenderer extends DefaultComponentRenderer {
 			RenderResult renderResult, String[] args) {
 
 		TimelineComponent cmp = (TimelineComponent)source;
+		//Translator translator = cmp.getTranslator();
 		sb.append("<div id='timeline'></div>");
 		sb.append("<script type='text/javascript'>\n")
 		  .append("/* <![CDATA[ */ \n")
@@ -51,16 +53,30 @@ public class TimelineComponentRenderer extends DefaultComponentRenderer {
 			sb.append(" startTime: ").append(cmp.getStartTime().getTime()).append(",\n")
 			  .append(" endTime: ").append(cmp.getEndTime().getTime()).append(",\n");
 		}
-		sb.append("   values: [\n");
+		//status translations
+		sb.append("   status: { draft: '").append(translator.translate("status.draft"))
+		  .append("', published: '").append(translator.translate("status.published"))
+		  .append("', inRevision: '").append(translator.translate("status.in.revision"))
+		  .append("', closed: '").append(translator.translate("status.closed"))
+		  .append("', deleted: '").append(translator.translate("status.deleted"))
+		  .append("'},\n");
+		//date format
+		String dateFormat = cmp.getD3DateFormat(translator.getLocale());
+		sb.append("  dateFormat: '").append(dateFormat).append("',\n");
+		//values
+		sb.append("   values: [");
 		if(cmp.getPoints() != null && cmp.getPoints().size() > 0) {
 			int numOfPoints = cmp.getPoints().size();
 			for(int i=0; i<numOfPoints; i++) {
 				TimelinePoint point = cmp.getPoints().get(i);
 				if(i > 0) sb.append(",");
-				sb.append("{ id:'").append(point.getId()).append("', time:").append(point.getDate().getTime()).append(", status:'").append(point.getStatus()).append("'}");
+				sb.append("{ id:\"").append(point.getId()).append("\"")
+				  .append(", \"title\":").append(JSONObject.quote(point.getTitle()))
+				  .append(", \"time\":").append(point.getDate().getTime()).append("")
+				  .append(", \"status\":\"").append(point.getStatus()).append("\"}");
 			}
 		}
-		sb.append("    ]")
+		sb.append("]")
 		  .append("  });");
 		sb.append("});\n")
 		  .append("/* ]]> */\n")
