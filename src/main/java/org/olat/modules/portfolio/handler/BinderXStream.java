@@ -1,12 +1,14 @@
 package org.olat.modules.portfolio.handler;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.util.zip.ZipEntry;
+import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.zip.ZipOutputStream;
 
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.io.ShieldOutputStream;
 import org.olat.core.util.xml.XStreamHelper;
 import org.olat.modules.portfolio.Binder;
 
@@ -24,21 +26,29 @@ public class BinderXStream {
 	private static final XStream myStream = XStreamHelper.createXStreamInstanceForDBObjects();
 	
 	
-	public static final byte[] toBytes(Binder binder)
-	throws IOException {
-		try(ByteArrayOutputStream out = new ByteArrayOutputStream();
-				ZipOutputStream zipOut = new ZipOutputStream(out);) {
-			//prepare a zip
-			
-			zipOut.putNextEntry(new ZipEntry("binder.xml"));
-			myStream.toXML(binder, zipOut);
-			zipOut.closeEntry();
-			zipOut.close();
-
-			return out.toByteArray();
-		} catch (IOException e) {
-			log.error("Cannot export this map: " + binder, e);
+	
+	public static final Binder copy(Binder binder) {
+		String stringuified = myStream.toXML(binder);
+		Binder copiedBinder = (Binder)myStream.fromXML(stringuified);
+		return copiedBinder;
+	}
+	
+	public static final Binder fromPath(Path path)
+	throws IOException {	
+		try(InputStream inStream = Files.newInputStream(path)) {
+			return (Binder)myStream.fromXML(inStream);
+		} catch (Exception e) {
+			log.error("Cannot import this map: " + path, e);
 			return null;
+		}
+	}
+	
+	public static final void toStream(Binder binder, ZipOutputStream zout)
+	throws IOException {
+		try {
+			myStream.toXML(binder, new ShieldOutputStream(zout));
+		} catch (Exception e) {
+			log.error("Cannot export this map: " + binder, e);
 		}
 	}
 

@@ -197,6 +197,26 @@ public class BinderDAO {
 			.getResultList();
 	}
 	
+	public void detachBinderTemplate() {
+		//unlink entry
+		//unlink template
+	}
+	
+	public int deleteBinderTemplate(Binder binder) {
+		String sectionQ = "delete from pfsection section where section.binder.key=:binderKey";
+		int sections = dbInstance.getCurrentEntityManager()
+				.createQuery(sectionQ)
+				.setParameter("binderKey", binder.getKey())
+				.executeUpdate();
+
+		String binderQ = "delete from pfbinder binder where binder.key=:binderKey";
+		int binders = dbInstance.getCurrentEntityManager()
+				.createQuery(binderQ)
+				.setParameter("binderKey", binder.getKey())
+				.executeUpdate();
+		return sections + binders;
+	}
+	
 	/**
 	 * The same type of query is user for the categories
 	 * @param owner

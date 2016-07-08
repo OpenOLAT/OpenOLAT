@@ -20,8 +20,20 @@
 package org.olat.modules.portfolio.handler;
 
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.FileVisitResult;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.SimpleFileVisitor;
+import java.nio.file.attribute.BasicFileAttributes;
 
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
+import org.olat.core.util.PathUtils;
 import org.olat.fileresource.types.FileResource;
+import org.olat.fileresource.types.ResourceEvaluation;
+import org.olat.repository.RepositoryEntryImportExport;
+import org.olat.repository.RepositoryEntryImportExport.RepositoryEntryImport;
 
 /**
  * 
@@ -33,7 +45,10 @@ import org.olat.fileresource.types.FileResource;
  */
 public class BinderTemplateResource extends FileResource  {
 	
+	private static final OLog log = Tracing.createLoggerFor(BinderTemplateResource.class);
+	
 	public static final String TYPE_NAME = "BinderTemplate";
+	public static final String BINDER_XML = "binder.xml";
 
 	/**
 	 * @param f
@@ -42,8 +57,53 @@ public class BinderTemplateResource extends FileResource  {
 	public static boolean validate(File f) {
 		if(f.isDirectory()) {
 			//unzip directory
-			return new File(f, "map.xml").exists();
+			return new File(f, BINDER_XML).exists();
 		}
-		return f.getName().toLowerCase().endsWith("map.xml"); 
+		return f.getName().toLowerCase().endsWith(BINDER_XML); 
+	}
+	
+	public static ResourceEvaluation evaluate(File file, String filename) {
+		ResourceEvaluation eval = new ResourceEvaluation();
+		try {
+			BinderFileFilter visitor = new BinderFileFilter();
+			Path fPath = PathUtils.visit(file, filename, visitor);
+			
+			if(visitor.isValid()) {
+				eval.setValid(true);
+				Path repoXml = fPath.resolve(RepositoryEntryImportExport.PROPERTIES_FILE);
+				if(Files.exists(repoXml)) {
+					RepositoryEntryImport re = RepositoryEntryImportExport.getConfiguration(repoXml);
+					if(re != null) {
+						eval.setDisplayname(re.getDisplayname());
+						eval.setDescription(re.getDescription());
+					}
+				}
+			} else {
+				eval.setValid(false);
+			}
+		} catch (IOException e) {
+			log.error("", e);
+			eval.setValid(false);
+		}
+		return eval;
+	}
+	
+	private static class BinderFileFilter extends SimpleFileVisitor<Path> {
+		private boolean binderFile;
+
+		@Override
+		public FileVisitResult visitFile(Path file, BasicFileAttributes attrs)
+		throws IOException {
+
+			String filename = file.getFileName().toString();
+			if(BINDER_XML.equals(filename)) {
+				binderFile = true;
+			}
+			return binderFile ? FileVisitResult.TERMINATE : FileVisitResult.CONTINUE;
+		}
+		
+		public boolean isValid() {
+			return binderFile;
+		}
 	}
 }

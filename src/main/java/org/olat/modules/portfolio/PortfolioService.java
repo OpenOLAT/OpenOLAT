@@ -54,6 +54,12 @@ public interface PortfolioService {
 	
 	public Binder updateBinder(Binder binder);
 	
+	public Binder copyBinder(Binder transientBinder, RepositoryEntry templateEntry);
+	
+	public Binder importBinder(Binder transientBinder, RepositoryEntry templateEntry, File image);
+	
+	public boolean deleteBinderTemplate(Binder binder, RepositoryEntry templateEntry);
+	
 	/**
 	 * Add a new section at the end of the sections list of the specified binder.
 	 * 

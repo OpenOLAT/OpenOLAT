@@ -34,6 +34,8 @@ import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
 import javax.servlet.http.HttpServletResponse;
 
@@ -46,6 +48,7 @@ import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.io.HttpServletResponseOutputStream;
+import org.olat.core.util.io.ShieldOutputStream;
 import org.olat.core.util.vfs.LocalFileImpl;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSLeaf;
@@ -152,6 +155,39 @@ public class RepositoryEntryImportExport {
 		} finally {
 			FileUtils.closeSafely(fOut);
 		}
+	}
+	
+	public void exportDoExportProperties(ZipOutputStream zout) throws IOException {
+		RepositoryEntryImport imp = new RepositoryEntryImport(re);
+		RepositoryManager rm = RepositoryManager.getInstance();
+		VFSLeaf image = rm.getImage(re);
+		if(image != null) {
+			imp.setImageName(image.getName());
+			zout.putNextEntry(new ZipEntry(image.getName()));
+			try(InputStream inImage=image.getInputStream()) {
+				FileUtils.copy(inImage, new ShieldOutputStream(zout));
+			} catch(Exception e) {
+				log.error("", e);
+			}
+			zout.closeEntry();
+		}
+
+		RepositoryService repositoryService = CoreSpringFactory.getImpl(RepositoryService.class);
+		VFSLeaf movie = repositoryService.getIntroductionMovie(re);
+		if(movie != null) {
+			imp.setMovieName(movie.getName());
+			zout.putNextEntry(new ZipEntry(movie.getName()));
+			try(InputStream inMovie=movie.getInputStream()) {
+				FileUtils.copy(inMovie, new ShieldOutputStream(zout));
+			} catch(Exception e) {
+				log.error("", e);
+			}
+			zout.closeEntry();
+		}
+		
+		zout.putNextEntry(new ZipEntry(PROPERTIES_FILE));
+		getXStream().toXML(imp, new ShieldOutputStream(zout));
+		zout.closeEntry();
 	}
 
 	/**

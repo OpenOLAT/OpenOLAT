@@ -163,6 +163,45 @@ public class PortfolioServiceImpl implements PortfolioService {
 	}
 
 	@Override
+	public Binder copyBinder(Binder transientBinder, RepositoryEntry entry) {
+		String imagePath = null;
+		if(StringHelper.containsNonWhitespace(transientBinder.getImagePath())) {
+			File bcroot = portfolioFileStorage.getRootDirectory();
+			File image = new File(bcroot, transientBinder.getImagePath());
+			if(image.exists()) {
+				imagePath = addPosterImageForBinder(image, image.getName());
+			}
+		}
+		return internalCopyTransientBinder(transientBinder, entry, imagePath);
+	}
+
+	@Override
+	public Binder importBinder(Binder transientBinder, RepositoryEntry templateEntry, File image) {
+		String imagePath = null;
+		if(StringHelper.containsNonWhitespace(transientBinder.getImagePath())) {
+			imagePath = addPosterImageForBinder(image, image.getName());
+		}
+		return internalCopyTransientBinder(transientBinder, templateEntry, imagePath);
+	}
+	
+	private Binder internalCopyTransientBinder(Binder transientBinder, RepositoryEntry entry, String imagePath) {
+		Binder binder = binderDao.createAndPersist(transientBinder.getTitle(), transientBinder.getSummary(), imagePath, entry);
+		//copy sections
+		for(Section transientSection:((BinderImpl)transientBinder).getSections()) {
+			binderDao.createSection(transientSection.getTitle(), transientSection.getDescription(),
+					transientSection.getBeginDate(), transientSection.getEndDate(), binder);
+		}
+		return binder;
+	}
+
+	@Override
+	public boolean deleteBinderTemplate(Binder binder, RepositoryEntry templateEntry) {
+		binderDao.detachBinderTemplate();
+		int deletedRows = binderDao.deleteBinderTemplate(binder);
+		return deletedRows > 0;
+	}
+
+	@Override
 	public void appendNewSection(String title, String description, Date begin, Date end, BinderRef binder) {
 		Binder reloadedBinder = binderDao.loadByKey(binder.getKey());
 		binderDao.createSection(title, description, begin, end, reloadedBinder);
@@ -458,6 +497,9 @@ public class PortfolioServiceImpl implements PortfolioService {
 	@Override
 	public String addPosterImageForBinder(File file, String filename) {
 		File dir = portfolioFileStorage.generateBinderSubDirectory();
+		if(!StringHelper.containsNonWhitespace(filename)) {
+			filename = file.getName();
+		}
 		File destinationFile = new File(dir, filename);
 		String renamedFile = FileUtils.rename(destinationFile);
 		if(renamedFile != null) {

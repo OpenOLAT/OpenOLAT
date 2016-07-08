@@ -19,12 +19,12 @@
  */
 package org.olat.modules.portfolio.handler;
 
-import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.util.Locale;
 
 import org.olat.core.CoreSpringFactory;
+import org.olat.core.commons.modules.bc.vfs.OlatRootFolderImpl;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
@@ -33,19 +33,23 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.layout.MainLayoutController;
 import org.olat.core.gui.control.generic.wizard.StepsMainRunController;
 import org.olat.core.gui.media.MediaResource;
-import org.olat.core.gui.media.StreamedMediaResource;
+import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Roles;
 import org.olat.core.logging.AssertException;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.FileUtils;
+import org.olat.core.util.StringHelper;
+import org.olat.core.util.Util;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.coordinate.LockResult;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.course.assessment.AssessmentMode;
 import org.olat.course.assessment.manager.UserCourseInformationsManager;
 import org.olat.fileresource.FileResourceManager;
+import org.olat.fileresource.types.FileResource;
 import org.olat.fileresource.types.ResourceEvaluation;
 import org.olat.modules.portfolio.Binder;
 import org.olat.modules.portfolio.BinderConfiguration;
@@ -57,8 +61,10 @@ import org.olat.modules.portfolio.ui.BinderController;
 import org.olat.modules.portfolio.ui.BinderPickerController;
 import org.olat.modules.portfolio.ui.BinderRuntimeController;
 import org.olat.modules.portfolio.ui.PortfolioAssessmentDetailsController;
+import org.olat.modules.portfolio.ui.PortfolioHomeController;
 import org.olat.repository.ErrorList;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryImportExport;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.handlers.EditionSupport;
@@ -66,6 +72,7 @@ import org.olat.repository.handlers.RepositoryHandler;
 import org.olat.repository.model.RepositoryEntrySecurity;
 import org.olat.repository.ui.RepositoryEntryRuntimeController.RuntimeControllerCreator;
 import org.olat.resource.OLATResource;
+import org.olat.resource.references.ReferenceManager;
 
 /**
  * 
@@ -80,7 +87,7 @@ import org.olat.resource.OLATResource;
 public class BinderTemplateHandler implements RepositoryHandler {
 	
 	private static final OLog log = Tracing.createLoggerFor(BinderTemplateHandler.class);
-	
+
 	@Override
 	public boolean isCreate() {
 		return CoreSpringFactory.getImpl(PortfolioV2Module.class).isEnabled();
@@ -109,18 +116,56 @@ public class BinderTemplateHandler implements RepositoryHandler {
 
 	@Override
 	public ResourceEvaluation acceptImport(File file, String filename) {
-		return new ResourceEvaluation(false);
+		return BinderTemplateResource.evaluate(file, filename);
 	}
 	
 	@Override
 	public RepositoryEntry importResource(Identity initialAuthor, String initialAuthorAlt, String displayname, String description,
 			boolean withReferences, Locale locale, File file, String filename) {
-		return null;
+		
+		RepositoryService repositoryService = CoreSpringFactory.getImpl(RepositoryService.class);
+		PortfolioService portfolioService = CoreSpringFactory.getImpl(PortfolioService.class);
+		try {
+			//create resource
+			OLATResource resource = portfolioService.createBinderTemplateResource();
+			OlatRootFolderImpl fResourceRootContainer = FileResourceManager.getInstance().getFileResourceRootImpl(resource);
+			File fResourceFileroot = fResourceRootContainer.getBasefile();
+			File zipRoot = new File(fResourceFileroot, FileResourceManager.ZIPDIR);
+			FileResource.copyResource(file, filename, zipRoot);
+
+			//create repository entry
+			RepositoryEntry re = repositoryService.create(initialAuthor, initialAuthorAlt, "", displayname, description, resource, RepositoryEntry.ACC_OWNERS);
+			
+			//import binder
+			File binderFile = new File(zipRoot, BinderTemplateResource.BINDER_XML);
+			Binder transientBinder = BinderXStream.fromPath(binderFile.toPath());
+			
+			File posterImage = null;
+			if(StringHelper.containsNonWhitespace(transientBinder.getImagePath())) {
+				posterImage = new File(zipRoot, transientBinder.getImagePath());
+			}
+			portfolioService.importBinder(transientBinder, re, posterImage);
+
+			RepositoryEntryImportExport rei = new RepositoryEntryImportExport(re, zipRoot);
+			if(rei.anyExportedPropertiesAvailable()) {
+				re = rei.importContent(re, fResourceRootContainer.createChildContainer("media"));
+			}
+			//delete the imported files
+			FileUtils.deleteDirsAndFiles(zipRoot, true, true);
+			return re;
+		} catch (IOException e) {
+			log.error("", e);
+			return null;
+		}
 	}
 	
 	@Override
 	public RepositoryEntry copy(Identity author, RepositoryEntry source, RepositoryEntry target) {
-		return null;
+		PortfolioService portfolioService = CoreSpringFactory.getImpl(PortfolioService.class);
+		Binder templateSource = portfolioService.getBinderByResource(source.getOlatResource());
+		Binder transientCopy = BinderXStream.copy(templateSource);
+		portfolioService.copyBinder(transientCopy, target);
+		return target;
 	}
 
 	@Override
@@ -146,12 +191,32 @@ public class BinderTemplateHandler implements RepositoryHandler {
 
 	@Override
 	public boolean readyToDelete(RepositoryEntry entry, Identity identity, Roles roles, Locale locale, ErrorList errors) {
-		return false;
+		PortfolioService portfolioService = CoreSpringFactory.getImpl(PortfolioService.class);
+		Binder template = portfolioService.getBinderByResource(entry.getOlatResource());
+		if(portfolioService.isTemplateInUse(template, null, null)) {
+			Translator translator = Util.createPackageTranslator(PortfolioHomeController.class, locale);
+			errors.setError(translator.translate("warning.template.in.use",
+					new String[] { template.getTitle(), entry.getDisplayname() }));
+			return false;
+		}
+		
+		String referencesSummary = CoreSpringFactory.getImpl(ReferenceManager.class)
+				.getReferencesToSummary(entry.getOlatResource(), locale);
+		if (referencesSummary != null) {
+			Translator translator = Util.createPackageTranslator(RepositoryManager.class, locale);
+			errors.setError(translator.translate("details.delete.error.references",
+					new String[] { referencesSummary, entry.getDisplayname() }));
+			return false;
+		}
+		
+		return true;
 	}
 
 	@Override
 	public boolean cleanupOnDelete(RepositoryEntry entry, OLATResourceable res) {
-		return false;
+		PortfolioService portfolioService = CoreSpringFactory.getImpl(PortfolioService.class);
+		Binder template = portfolioService.getBinderByResource(entry.getOlatResource());
+		return portfolioService.deleteBinderTemplate(template, entry);
 	}
 
 	/**
@@ -160,17 +225,10 @@ public class BinderTemplateHandler implements RepositoryHandler {
 	 */
 	@Override
 	public MediaResource getAsMediaResource(OLATResourceable res, boolean backwardsCompatible) {
-		RepositoryEntry re = RepositoryManager.getInstance().lookupRepositoryEntry(res, true);
-		PortfolioService portfolioService = CoreSpringFactory.getImpl(PortfolioService.class);
-		Binder template = portfolioService.getBinderByResource(re.getOlatResource());
-		
-		try {
-			byte[] bytes = BinderXStream.toBytes(template);
-			return new StreamedMediaResource(new ByteArrayInputStream(bytes), "binder.zip", "application/zip", new Long(bytes.length), null);
-		} catch (IOException e) {
-			log.error("", e);
-			return null;
-		}
+		RepositoryEntry templateEntry = RepositoryManager.getInstance().lookupRepositoryEntry(res, true);
+		Binder template = CoreSpringFactory.getImpl(PortfolioService.class)
+				.getBinderByResource(templateEntry.getOlatResource());
+		return new BinderTemplateMediaResource(template, templateEntry);
 	}
 
 	@Override
