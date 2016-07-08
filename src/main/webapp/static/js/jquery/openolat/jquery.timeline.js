@@ -109,64 +109,44 @@
 	slideUp = function() {
 		endTime = endTime + (365 * 24 * 60 * 60 * 1000);
 		startTime = startTime + (365 * 24 * 60 * 60 * 1000);
-		updateTimeline();
+		updateTimeline(true);
 	}
 	
 	slideDown = function() {
 		endTime = endTime - (365 * 24 * 60 * 60 * 1000);
 		startTime = startTime - (365 * 24 * 60 * 60 * 1000);
-		updateTimeline();
+		updateTimeline(false);
 	}
 	
-	updateTimeline = function() {
+	updateTimeline = function(up) {
 		curveY.domain([startTime, endTime]);
 		y.domain([startTime, endTime]);
 
 		drawAxis();
-		//drawCurve();
-		drawDots();
+		drawDots(up);
 	}
 	
 	drawAxis = function() {
   		svg.select('.y').call(yAxis);
 	}
 	
-	drawDots = function() {	
+	drawDots = function(up) {	
 		var dots = svg.selectAll('.dot')
 			.data(data, idKey);
 		
 		dots
 			.transition()
-			.attr("cx", function(d) { return lineX(curvedX(curveY(d.time))); })
+			.duration(1000)
+			.ease("linear")
+			.attrTween("cx", function(d) {
+				return function(t) {
+					var delta = (1.0 - t) *  (365 * 24 * 60 * 60 * 1000);
+					var time = up ? (d.time + delta) : (d.time - delta);
+					return lineX(curvedX(curveY(time)));
+				};
+			})
+			//.attr("cx", function(d) { return lineX(curvedX(curveY(d.time))); })
 		   	.attr("cy", function(d) { return y(d.time); });
-	}
-	
-	translateAlong = function translateAlong(path) {
-		var l = path.getTotalLength();
-		return function(i) {
-			return function(t) {
-				var p = path.getPointAtLength(t * l);
-				return "translate(" + p.x + "," + p.y + ")";//Move marker
-			}
-		}
-	}
-	
-	var lineData = [];
-	var linePath;
-	
-	drawCurve = function() {
-
-		var numOfData = lineData.length;
-		for(var i=numOfData; i<numOfData + (maxCurveY*20); i++) {
-			lineData.push({y: (i == 0 ? 0 : i / 20.0)});
-		}
-		  
-		var linePath = svg.append("path")
-		   .data([lineData])
-		   .attr("d", lineGenerator)
-		   .attr("class", "o_timeline_curve");
-		   
-
 	}
   
 	timelineItems = function($obj, settings) {
@@ -188,12 +168,13 @@
 		   .attr("dx", "-.71em")
 		   .style("text-anchor", "end")
 		   .text("Date");
-
+		   
+		var lineData = [];
 		for(var i=0; i<(maxCurveY*20); i++) {
 			lineData.push({y: (i == 0 ? 0 : i / 20.0)});
 		}
 		  
-		linePath = svg.append("path")
+		var linePath = svg.append("path")
 		   .data([lineData])
 		   .attr("d", lineGenerator)
 		   .attr("class", "o_timeline_curve");
