@@ -119,7 +119,10 @@ public class CmdEditMeta extends BasicController implements FolderCommand {
 	private String getResourceURL(WindowControl wControl) {
 		String path = "path=" + folderComponent.getCurrentContainerPath();
 		if(currentItem != null) {
-			path += "/" + currentItem.getName();
+			if(path.charAt(path.length() - 1) != '/') {
+				path += currentItem.getName();
+			}
+			path += currentItem.getName();
 		}
 		OLATResourceable ores = OresHelper.createOLATResourceableTypeWithoutCheck(path);
 		WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ores, null, wControl);

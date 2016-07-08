@@ -57,6 +57,7 @@ public class VFSMediaResource implements MediaResource {
 		return true;
 	}
 
+	@Override
 	public String getContentType() {
 		String mimeType;
 		if(downloadable) {
@@ -87,24 +88,28 @@ public class VFSMediaResource implements MediaResource {
 		return mimeType;
 	}
 
+	@Override
 	public Long getSize() {
 		long size = vfsLeaf.getSize();
 		return (size == VFSConstants.UNDEFINED) ? null : new Long(size);
 	}
 
+	@Override
 	public InputStream getInputStream() {
 		filesInfoMBean.logDownload(getSize());
 		return vfsLeaf.getInputStream();
 	}
 
+	@Override
 	public Long getLastModified() {
-		long size = vfsLeaf.getLastModified();
-		return (size == VFSConstants.UNDEFINED) ? null : new Long(size);
+		long lastModified = vfsLeaf.getLastModified();
+		return (lastModified == VFSConstants.UNDEFINED) ? null : new Long(lastModified);
 	}
 
 	/**
 	 * @see org.olat.core.gui.media.MediaResource#prepare(javax.servlet.http.HttpServletResponse)
 	 */
+	@Override
 	public void prepare(HttpServletResponse hres) {
 		String filename = StringHelper.urlEncodeUTF8(vfsLeaf.getName());
 		if (unknownMimeType) {
@@ -114,6 +119,7 @@ public class VFSMediaResource implements MediaResource {
 		}
 	}
 
+	@Override
 	public void release() {
 	// nothing to do here
 	}
