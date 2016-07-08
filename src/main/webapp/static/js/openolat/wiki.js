@@ -9,7 +9,7 @@ if (clientPC.indexOf('opera') != -1) {
 	var is_opera_seven = (window.opera && document.childNodes);
 }
 
-function changeAnchorTargets(id) {
+function changeAnchorTargets(id, hostUrl) {
 	jQuery('a', jQuery('#' + id)).each(function(index, el) {
 		var anchor = jQuery(el);
 		var openInNewWindow = false;
@@ -28,7 +28,9 @@ function changeAnchorTargets(id) {
 		//open media links in new window, but only if file exists
 		if (anchor.attr("title")) {
 			var href = anchor.attr("href");
-			if (!anchor.attr("class") && anchor.attr("title").indexOf("Media:") != -1) { //normal media link file found
+			if(href.indexOf(hostUrl) == 0) {
+				openInNewWindow = false;
+			} else if (!anchor.attr("class") && anchor.attr("title").indexOf("Media:") != -1) { //normal media link file found
 				openInNewWindow = true;
 				//modify link to non ajax mode as opening in new window with ajax mode on fails
 				if (href.indexOf(":1/") != -1) {

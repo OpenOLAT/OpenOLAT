@@ -40,6 +40,7 @@ import org.olat.core.gui.render.Renderer;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.helpers.Settings;
 import org.olat.core.logging.OLATRuntimeException;
 import org.olat.core.util.Formatter;
 
@@ -112,7 +113,8 @@ public class WikiMarkupRenderer extends DefaultComponentRenderer {
 		sb.append("</div>");
 		//set targets of media, image and external links to target "_blank" 
 		sb.append("<script type=\"text/javascript\">/* <![CDATA[ */ ");
-		sb.append("changeAnchorTargets('").append(uniqueId).append("');");
+		String instanceUrl = Settings.getServerContextPathURI();
+		sb.append("changeAnchorTargets('").append(uniqueId).append("','").append(instanceUrl).append("');");
 		sb.append("/* ]]> */</script>");
 	}
 }
