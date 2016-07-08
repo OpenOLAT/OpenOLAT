@@ -710,9 +710,17 @@ public class WikiMainController extends BasicController implements CloneableCont
 
 
 	private void deliverMediaFile(UserRequest ureq, String command) {
-		VFSLeaf leaf = (VFSLeaf)WikiManager.getInstance().getMediaFolder(ores).resolve(command);
-		if(leaf == null) showError("wiki.error.file.not.found");
-		else ureq.getDispatchResult().setResultingMediaResource(new VFSMediaResource(leaf));
+		VFSItem item = WikiManager.getInstance().getMediaFolder(ores).resolve(command);
+		if(item == null) {
+			//try to replace blanck with _
+			item = WikiManager.getInstance().getMediaFolder(ores).resolve(command.replace(" ", "_"));
+		}
+		if(item instanceof VFSLeaf) {
+			ureq.getDispatchResult()
+				.setResultingMediaResource(new VFSMediaResource((VFSLeaf)item));
+		} else {
+			showError("wiki.error.file.not.found");
+		}
 	}
 
 

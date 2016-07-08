@@ -40,9 +40,9 @@ function changeAnchorTargets(id, hostUrl) {
 					anchor.prop('onclick', null).off('click');
 				}
 			} else if (anchor.attr("class") == "edit" && anchor.attr("title").indexOf("Media:") != -1) { //media file not found
-				href = href.substr(0, href.indexOf("Edit:topic"));
-				href = href+"Upload";
-				anchor.attr("href", href);
+				var startHref = href.substr(0, href.indexOf("Special:Edit:topic="));
+				var endHref = href.substr(href.indexOf("Special:Edit:topic=") + "Special:Edit:topic=".length);
+				anchor.attr("href", startHref + "Media:" + endHref);
 			}
 		}
 		if (openInNewWindow) {
