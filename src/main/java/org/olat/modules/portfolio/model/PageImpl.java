@@ -42,6 +42,7 @@ import org.olat.core.id.Persistable;
 import org.olat.core.util.StringHelper;
 import org.olat.modules.portfolio.Page;
 import org.olat.modules.portfolio.PageBody;
+import org.olat.modules.portfolio.PageImageAlign;
 import org.olat.modules.portfolio.PageStatus;
 import org.olat.modules.portfolio.PortfolioElementType;
 import org.olat.modules.portfolio.Section;
@@ -83,6 +84,8 @@ public class PageImpl implements Persistable, ModifiedInfo, CreateInfo, Page {
 	private String status;
 	@Column(name="p_image_path", nullable=true, insertable=true, updatable=true)
 	private String imagePath;
+	@Column(name="p_image_align", nullable=true, insertable=true, updatable=true)
+	private String imageAlign;
 	
 	@Column(name="p_version", nullable=true, insertable=true, updatable=true)
 	private int version;
@@ -185,6 +188,7 @@ public class PageImpl implements Persistable, ModifiedInfo, CreateInfo, Page {
 		return title;
 	}
 
+	@Override
 	public void setTitle(String title) {
 		this.title = title;
 	}
@@ -194,18 +198,45 @@ public class PageImpl implements Persistable, ModifiedInfo, CreateInfo, Page {
 		return summary;
 	}
 
+	@Override
 	public void setSummary(String summary) {
 		this.summary = summary;
 	}
 
+	@Override
 	public String getImagePath() {
 		return imagePath;
 	}
 
+	@Override
 	public void setImagePath(String imagePath) {
 		this.imagePath = imagePath;
 	}
 
+	public String getImageAlign() {
+		return imageAlign;
+	}
+
+	public void setImageAlign(String imageAlign) {
+		this.imageAlign = imageAlign;
+	}
+
+	@Override
+	@Transient
+	public PageImageAlign getImageAlignment() {
+		return StringHelper.containsNonWhitespace(imageAlign) ? PageImageAlign.valueOf(imageAlign) : null;
+	}
+
+	@Override
+	public void setImageAlignment(PageImageAlign align) {
+		if(align == null) {
+			imageAlign = null;
+		} else {
+			imageAlign = align.name();
+		}
+	}
+
+	@Override
 	public PageBody getBody() {
 		return body;
 	}
@@ -214,6 +245,7 @@ public class PageImpl implements Persistable, ModifiedInfo, CreateInfo, Page {
 		this.body = body;
 	}
 
+	@Override
 	public Group getBaseGroup() {
 		return baseGroup;
 	}
@@ -222,6 +254,7 @@ public class PageImpl implements Persistable, ModifiedInfo, CreateInfo, Page {
 		this.baseGroup = baseGroup;
 	}
 
+	@Override
 	public Section getSection() {
 		return section;
 	}

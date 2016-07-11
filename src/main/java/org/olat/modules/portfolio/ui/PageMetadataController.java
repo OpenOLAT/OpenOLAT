@@ -19,29 +19,39 @@
  */
 package org.olat.modules.portfolio.ui;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import javax.servlet.http.HttpServletRequest;
+
 import org.olat.basesecurity.GroupRoles;
+import org.olat.core.dispatcher.mapper.Mapper;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.image.ImageComponent;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.gui.media.FileMediaResource;
+import org.olat.core.gui.media.MediaResource;
 import org.olat.core.id.Identity;
+import org.olat.core.util.StringHelper;
 import org.olat.modules.portfolio.BinderSecurityCallback;
 import org.olat.modules.portfolio.Category;
 import org.olat.modules.portfolio.Page;
+import org.olat.modules.portfolio.PageImageAlign;
 import org.olat.modules.portfolio.PortfolioService;
 import org.olat.modules.portfolio.ui.event.PublishEvent;
 import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
+
 
 /**
  * 
@@ -51,7 +61,12 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class PageMetadataController extends BasicController {
 	
+	public static final int PICTURE_WIDTH = 570;
+	public static final int PICTURE_HEIGHT = (PICTURE_WIDTH / 3) * 2;
+	
 	private Link publishButton;
+	private ImageComponent imageCmp;
+	private String mapperThumbnailUrl;
 	
 	@Autowired
 	private UserManager userManager;
@@ -98,6 +113,24 @@ public class PageMetadataController extends BasicController {
 		mainVC.contextPut("pageCategories", categoryNames);
 		
 		mainVC.contextPut("lastModified", page.getLastModified());
+		
+		if(StringHelper.containsNonWhitespace(page.getImagePath())) {
+			File posterImage = portfolioService.getPosterImage(page);
+			if(page.getImageAlignment() == PageImageAlign.background) {
+				mapperThumbnailUrl = registerCacheableMapper(ureq, "page-meta", new PageImageMapper(posterImage));
+				mainVC.contextPut("mapperThumbnailUrl", mapperThumbnailUrl);
+				mainVC.contextPut("imageAlign", PageImageAlign.background.name());
+				mainVC.contextPut("imageName", posterImage.getName());
+			} else {
+				imageCmp = new ImageComponent(ureq.getUserSession(), "poster");
+				imageCmp.setMaxWithAndHeightToFitWithin(PICTURE_WIDTH, PICTURE_HEIGHT);
+				imageCmp.setMedia(posterImage);
+				mainVC.put("poster", imageCmp);
+				mainVC.contextPut("imageAlign", page.getImageAlignment() == null ? PageImageAlign.right.name() : page.getImageAlignment().name());
+			}
+		} else {
+			mainVC.contextPut("imageAlign", "none");
+		}
 
 		putInitialPanel(mainVC);
 	}
@@ -111,6 +144,20 @@ public class PageMetadataController extends BasicController {
 	protected void event(UserRequest ureq, Component source, Event event) {
 		if(publishButton == source) {
 			fireEvent(ureq, new PublishEvent());
+		}
+	}
+	
+	public class PageImageMapper implements Mapper {
+		
+		private final File posterImage;
+		
+		public PageImageMapper(File posterImage) {
+			this.posterImage = posterImage;
+		}
+
+		@Override
+		public MediaResource handle(String relPath, HttpServletRequest request) {
+			return new FileMediaResource(posterImage);
 		}
 	}
 }

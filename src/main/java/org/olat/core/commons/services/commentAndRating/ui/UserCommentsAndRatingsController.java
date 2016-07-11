@@ -162,6 +162,11 @@ public class UserCommentsAndRatingsController extends BasicController implements
 			updateCommentCountView();			
 		}
 	}
+	
+	public void expandCommentsAt(UserRequest ureq, Long commentId) {
+		expandComments(ureq);
+		commentsCtr.scrollTo(commentId);
+	}
 
 	/**
 	 * Method to manually collapse the comments view
@@ -291,7 +296,7 @@ public class UserCommentsAndRatingsController extends BasicController implements
 	 * 
 	 * @param userObject
 	 */
-	public void addUserObject(Object userObject) {
+	public void setUserObject(Object userObject) {
 		this.userObject = userObject;
 	}
 	

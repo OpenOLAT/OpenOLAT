@@ -113,7 +113,7 @@ public class PortfolioServiceTest extends OlatTestCase {
 		dbInstance.commit();
 		List<Section> sections = portfolioService.getSections(binder);
 		Section section = sections.get(0);
-		portfolioService.appendNewPage(owner, "Reviewed page", "", null, section);
+		portfolioService.appendNewPage(owner, "Reviewed page", "", null, null, section);
 		portfolioService.addAccessRights(section, coach, PortfolioRoles.coach);
 		
 		dbInstance.commit();
@@ -157,7 +157,7 @@ public class PortfolioServiceTest extends OlatTestCase {
 		dbInstance.commit();
 		List<Section> sections = portfolioService.getSections(binder);
 		Section section = sections.get(0);
-		portfolioService.appendNewPage(owner, "Reviewed page", "", null, section);
+		portfolioService.appendNewPage(owner, "Reviewed page", "", null, null, section);
 		portfolioService.addAccessRights(section, identity, PortfolioRoles.coach);
 		
 		dbInstance.commit();
@@ -185,8 +185,8 @@ public class PortfolioServiceTest extends OlatTestCase {
 		List<Section> sections = portfolioService.getSections(binder);
 		for(int i=0; i<2; i++) {
 			Section section = sections.get(1);
-			portfolioService.appendNewPage(owner, "Page-1-" + i, "", null, section);
-			portfolioService.appendNewPage(owner, "Page-2-" + i, "", null, section);
+			portfolioService.appendNewPage(owner, "Page-1-" + i, "", null, null, section);
+			portfolioService.appendNewPage(owner, "Page-2-" + i, "", null, null, section);
 		}
 
 		List<BinderRow> rows = portfolioService.searchOwnedBinders(owner);

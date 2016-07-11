@@ -44,6 +44,7 @@ import org.olat.core.util.StringHelper;
 import org.olat.modules.portfolio.Binder;
 import org.olat.modules.portfolio.Category;
 import org.olat.modules.portfolio.Page;
+import org.olat.modules.portfolio.PageImageAlign;
 import org.olat.modules.portfolio.PortfolioService;
 import org.olat.modules.portfolio.Section;
 import org.olat.modules.portfolio.SectionRef;
@@ -66,11 +67,14 @@ public class PageMetadataEditController extends FormBasicController {
 		imageMimeTypes.add("image/png");
 	}
 	
+	private static final String[] alignKeys = new String[]{ PageImageAlign.background.name(), PageImageAlign.right.name() };
+	
 	private TextElement titleEl, summaryEl;
 	private SingleSelection bindersEl, sectionsEl;
 	private TextBoxListElement categoriesEl;
 	
-	private FileElement fileUpload;
+	private FileElement imageUpload;
+	private SingleSelection imageAlignEl;
 	private static final int picUploadlimitKB = 5120;
 	
 	private Page page;
@@ -122,6 +126,10 @@ public class PageMetadataEditController extends FormBasicController {
 		
 		initForm(ureq);
 	}
+	
+	public Page getPage() {
+		return page;
+	}
 
 	@Override
 	protected void doDispose() {
@@ -138,18 +146,31 @@ public class PageMetadataEditController extends FormBasicController {
 		summaryEl = uifactory.addTextAreaElement("summary", "page.summary", 4096, 4, 60, false, summary, formLayout);
 		summaryEl.setPlaceholderKey("summary.placeholder", null);
 		
-		fileUpload = uifactory.addFileElement(getWindowControl(), "file", "fileupload",formLayout);			
+		imageUpload = uifactory.addFileElement(getWindowControl(), "file", "fileupload",formLayout);			
 		
-		fileUpload.setPreview(ureq.getUserSession(), true);
-		fileUpload.addActionListener(FormEvent.ONCHANGE);
-		fileUpload.setDeleteEnabled(true);
-		fileUpload.setHelpText("page.title");
-		fileUpload.limitToMimeType(imageMimeTypes, null, null);
-		fileUpload.setMaxUploadSizeKB(picUploadlimitKB, null, null);
+		imageUpload.setPreview(ureq.getUserSession(), true);
+		imageUpload.addActionListener(FormEvent.ONCHANGE);
+		imageUpload.setDeleteEnabled(true);
+		imageUpload.setHelpText("page.title");
+		imageUpload.limitToMimeType(imageMimeTypes, null, null);
+		imageUpload.setMaxUploadSizeKB(picUploadlimitKB, null, null);
 		if(page != null) {
 			File posterImg = portfolioService.getPosterImage(page);
 			if(posterImg != null) {
-				fileUpload.setInitialFile(posterImg);
+				imageUpload.setInitialFile(posterImg);
+			}
+		}
+		
+		String[] alignValues = new String[]{ translate("image.align.background"), translate("image.align.right") };
+		imageAlignEl = uifactory.addDropdownSingleselect("image.align", null, formLayout, alignKeys, alignValues, null);
+		PageImageAlign alignment = page == null ? null : page.getImageAlignment();
+		if(alignment == null) {
+			imageAlignEl.select(alignKeys[0], true);
+		} else {
+			for(int i=alignKeys.length; i-->0; ) {
+				if(alignKeys[i].equals(alignment.name())) {
+					imageAlignEl.select(alignKeys[i], true);
+				}
 			}
 		}
 		
@@ -288,20 +309,24 @@ public class PageMetadataEditController extends FormBasicController {
 			String summary = summaryEl.getValue();
 			SectionRef selectSection = getSelectedSection();
 			String imagePath = null;
-			if (fileUpload.getUploadFile() != null) {
-				imagePath = portfolioService.addPosterImageForPage(fileUpload.getUploadFile(),
-						fileUpload.getUploadFileName());
+			if (imageUpload.getUploadFile() != null) {
+				imagePath = portfolioService.addPosterImageForPage(imageUpload.getUploadFile(),
+						imageUpload.getUploadFileName());
 			}
-			page = portfolioService.appendNewPage(getIdentity(), title, summary, imagePath, selectSection);
+			PageImageAlign align = null;
+			if(imageAlignEl.isOneSelected()) {
+				align = PageImageAlign.valueOf(imageAlignEl.getSelectedKey());
+			}
+			page = portfolioService.appendNewPage(getIdentity(), title, summary, imagePath, align, selectSection);
 		} else {
 			page.setTitle(titleEl.getValue());
 			page.setSummary(summaryEl.getValue());
 
-			if (fileUpload.getUploadFile() != null) {
-				String imagePath = portfolioService.addPosterImageForPage(fileUpload.getUploadFile(),
-						fileUpload.getUploadFileName());
+			if (imageUpload.getUploadFile() != null) {
+				String imagePath = portfolioService.addPosterImageForPage(imageUpload.getUploadFile(),
+						imageUpload.getUploadFileName());
 				page.setImagePath(imagePath);
-			} else if (fileUpload.getInitialFile() == null) {
+			} else if (imageUpload.getInitialFile() == null) {
 				page.setImagePath(null);
 				portfolioService.removePosterImage(page);
 			}
@@ -311,6 +336,9 @@ public class PageMetadataEditController extends FormBasicController {
 			if((page.getSection() == null && selectSection != null) ||
 					(page.getSection() != null && selectSection != null && !page.getSection().getKey().equals(selectSection.getKey()))) {
 				newParent = selectSection;
+			}
+			if(imageAlignEl.isOneSelected()) {
+				page.setImageAlignment(PageImageAlign.valueOf(imageAlignEl.getSelectedKey()));
 			}
 			page = portfolioService.updatePage(page, newParent);
 		}
@@ -338,14 +366,14 @@ public class PageMetadataEditController extends FormBasicController {
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		super.formInnerEvent(ureq, source, event);
-		if (fileUpload == source) {
+		if (imageUpload == source) {
 			if (event instanceof FileElementEvent) {
 				String cmd = event.getCommand();
 				if (FileElementEvent.DELETE.equals(cmd)) {
-					if(fileUpload.getUploadFile() != null) {
-						fileUpload.reset();
-					} else if(fileUpload.getInitialFile() != null) {
-						fileUpload.setInitialFile(null);
+					if(imageUpload.getUploadFile() != null) {
+						imageUpload.reset();
+					} else if(imageUpload.getInitialFile() != null) {
+						imageUpload.setInitialFile(null);
 					}
 				}
 			}

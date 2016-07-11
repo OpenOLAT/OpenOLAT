@@ -267,7 +267,7 @@ implements Activateable2, TooledController, FlexiTableComponentDelegate {
 			String cmd = link.getCmd();
 			if("open.full".equals(cmd)) {
 				PageRow row = (PageRow)link.getUserObject();
-				doOpenPage(ureq, row.getPage());
+				doOpenPage(ureq, row);
 			} else if("comment".equals(cmd)) {
 				PageRow row = (PageRow)link.getUserObject();
 				doComment(ureq, row.getPage());
@@ -293,8 +293,12 @@ implements Activateable2, TooledController, FlexiTableComponentDelegate {
 		cmc.activate();
 	}
 	
-	private void doOpenPage(UserRequest ureq, Page row) {
+	protected void doOpenPage(UserRequest ureq, PageRow row) {
 		Page reloadedPage = portfolioService.getPageByKey(row.getKey());
+		doOpenPage(ureq, reloadedPage);
+	}
+	
+	protected void doOpenPage(UserRequest ureq, Page reloadedPage) {
 		pageCtrl = new PageRunController(ureq, getWindowControl(), stackPanel, secCallback, reloadedPage);
 		listenTo(pageCtrl);
 		

@@ -117,6 +117,7 @@ public class MyPageListController extends AbstractPageListController {
 		if(newPageCtrl == source) {
 			if(event == Event.DONE_EVENT) {
 				loadModel(null);
+				doOpenPage(ureq, newPageCtrl.getPage());
 				fireEvent(ureq, Event.CHANGED_EVENT);
 			}
 			cmc.deactivate();
@@ -134,7 +135,7 @@ public class MyPageListController extends AbstractPageListController {
 		cmc = null;
 	}
 	
-	private void doCreateNewPage(UserRequest ureq) {
+	protected void doCreateNewPage(UserRequest ureq) {
 		if(newPageCtrl != null) return;
 		
 		newPageCtrl = new PageMetadataEditController(ureq, getWindowControl(), null, true, null, true);

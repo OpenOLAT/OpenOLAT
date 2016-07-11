@@ -39,8 +39,11 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
+import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.id.OLATResourceable;
+import org.olat.core.id.context.ContextEntry;
+import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.modules.portfolio.Binder;
 import org.olat.modules.portfolio.BinderSecurityCallback;
@@ -64,7 +67,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class PageRunController extends BasicController implements TooledController {
+public class PageRunController extends BasicController implements TooledController, Activateable2  {
 
 	private VelocityContainer mainVC;
 	private Link editLink, editMetadataLink;
@@ -147,6 +150,17 @@ public class PageRunController extends BasicController implements TooledControll
 		//
 	}
 	
+	@Override
+	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
+		if(entries == null || entries.isEmpty()) return;
+		
+		String resName = entries.get(0).getOLATResourceable().getResourceableTypeName();
+		if("Comment".equalsIgnoreCase(resName)) {
+			Long commentId = entries.get(0).getOLATResourceable().getResourceableId();
+			commentsCtrl.expandCommentsAt(ureq, commentId);
+		}
+	}
+
 	@Override
 	public void event(UserRequest ureq, Controller source, Event event) {
 		if(pageEditCtrl == source) {

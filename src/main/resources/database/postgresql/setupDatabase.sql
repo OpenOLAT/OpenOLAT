@@ -1510,6 +1510,7 @@ create table o_pf_page (
    p_summary text,
    p_status varchar(32),
    p_image_path varchar(255),
+   p_image_align varchar(32),
    p_version int8 default 0,
    p_initial_publish_date timestamp,
    p_last_publish_date timestamp,

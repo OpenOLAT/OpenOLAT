@@ -34,6 +34,7 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.id.OLATResourceable;
+import org.olat.core.util.ConsumableBoolean;
 import org.olat.core.util.Formatter;
 
 /**
@@ -90,7 +91,7 @@ public class UserCommentsController extends BasicController {
 		userCommentsVC.contextPut("formatter", Formatter.getInstance(getLocale()));
 		userCommentsVC.contextPut("securityCallback", securityCallback);
 		// Add comments
-		commentControllers = new ArrayList<Controller>();
+		commentControllers = new ArrayList<>();
 		userCommentsVC.contextPut("commentControllers", commentControllers);
 		// Init datamodel and controllers
 		commentsCount = commentAndRatingService.countComments(ores, resSubPath);
@@ -116,6 +117,11 @@ public class UserCommentsController extends BasicController {
 	
 	public int getNumOfComments() {
 		return commentControllers == null ? 0 : commentControllers.size();
+	}
+	
+	public void scrollTo(Long commentId) {
+		userCommentsVC.contextPut("goToComment", new ConsumableBoolean(true));
+		userCommentsVC.contextPut("goToCommentId", commentId);
 	}
 
 	/**

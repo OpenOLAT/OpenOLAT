@@ -181,7 +181,11 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_portfolio_entry_revision:before { content: $fa-var-circle; color: $o-portfolio-entry-inrevision-color; }
 .o_icon_portfolio_entry_closed:before { content: $fa-var-circle; color: $o-portfolio-entry-closed-color; }
 .o_icon_portfolio_entry_deleted:before { content: $fa-var-trash; color: $o-portfolio-entry-deleted-color; }
+.o_icon_portfolio_history:before { content: $fa-var-clock-o;}
 .o_icon_portfolio_my_shares:before { content: $fa-var-share-alt; }
+.o_icon_portfolio_quick_links:before { content: $fa-var-share; }
+.o_icon_portfolio_page:before { content: $fa-var-file-o; }
+.o_icon_portfolio_section:before { content: $fa-var-navicon; }
 .o_icon_portfolio_shared_with_me:before { content: $fa-var-share-alt-square; }
 .o_icon_post:before { content: $fa-var-comment-o; }
 .o_icon_preview:before { content: $fa-var-eye;}

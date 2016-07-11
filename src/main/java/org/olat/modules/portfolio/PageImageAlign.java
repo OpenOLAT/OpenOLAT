@@ -17,45 +17,17 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.portfolio.model;
-
-import org.olat.modules.portfolio.BinderRef;
+package org.olat.modules.portfolio;
 
 /**
  * 
- * Only an holder of the primary key which implements the BinderRef interface.
- * 
- * Initial date: 22.06.2016<br>
+ * Initial date: 11.07.2016<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class BinderRefImpl implements BinderRef {
-
-	private final Long key;
+public enum PageImageAlign {
 	
-	public BinderRefImpl(Long key) {
-		this.key = key;
-	}
+	background,
+	right
 
-	@Override
-	public Long getKey() {
-		return key;
-	}
-	
-	@Override
-	public int hashCode() {
-		return key == null ? 836578 : key.hashCode();
-	}
-
-	@Override
-	public boolean equals(Object obj) {
-		if(this == obj) {
-			return true;
-		}
-		if(obj instanceof BinderRefImpl) {
-			BinderRefImpl binder = (BinderRefImpl)obj;
-			return key != null && key.equals(binder.getKey());
-		}
-		return false;
-	}
 }

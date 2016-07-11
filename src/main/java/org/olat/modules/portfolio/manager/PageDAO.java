@@ -39,6 +39,7 @@ import org.olat.core.util.StringHelper;
 import org.olat.modules.portfolio.BinderRef;
 import org.olat.modules.portfolio.Page;
 import org.olat.modules.portfolio.PageBody;
+import org.olat.modules.portfolio.PageImageAlign;
 import org.olat.modules.portfolio.PagePart;
 import org.olat.modules.portfolio.Section;
 import org.olat.modules.portfolio.SectionRef;
@@ -71,13 +72,14 @@ public class PageDAO {
 	 * @param body If the body is null, a new one is create.
 	 * @return
 	 */
-	public Page createAndPersist(String title, String summary, String imagePath, Section section, PageBody body) {
+	public Page createAndPersist(String title, String summary, String imagePath, PageImageAlign align, Section section, PageBody body) {
 		PageImpl page = new PageImpl();
 		page.setCreationDate(new Date());
 		page.setLastModified(page.getCreationDate());
 		page.setTitle(title);
 		page.setSummary(summary);
 		page.setImagePath(imagePath);
+		page.setImageAlignment(align);
 		page.setBaseGroup(groupDao.createGroup());
 		if(body == null) {
 			page.setBody(createAndPersistPageBody());
@@ -96,6 +98,7 @@ public class PageDAO {
 	}
 	
 	public Page updatePage(Page page) {
+		((PageImpl)page).setLastModified(new Date());
 		return dbInstance.getCurrentEntityManager().merge(page);
 	}
 	
@@ -251,6 +254,28 @@ public class PageDAO {
 			.setParameter("bodyKey", key)
 			.getResultList();
 		return bodies == null || bodies.isEmpty() ? null : bodies.get(0);
+	}
+	
+	public Page getLastPage(Identity owner, boolean mandatoryBinder) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select page from pfpage as page")
+		  .append(" inner join fetch page.baseGroup as baseGroup")
+		  .append(" ").append(mandatoryBinder ? "inner" : "left").append(" join fetch page.section as section")
+		  .append(" ").append(mandatoryBinder ? "inner" : "left").append(" join fetch section.binder as binder")
+		  .append(" left join fetch page.body as body")
+		  .append(" where exists (select pageMember from bgroupmember as pageMember")
+		  .append("     inner join pageMember.identity as ident on (ident.key=:ownerKey and pageMember.role='").append(GroupRoles.owner.name()).append("')")
+		  .append("  	where pageMember.group.key=page.baseGroup.key or pageMember.group.key=binder.baseGroup.key")
+		  .append(" )")
+		  .append(" order by page.lastModified desc");
+		
+		List<Page> pages = dbInstance.getCurrentEntityManager()
+			.createQuery(sb.toString(), Page.class)
+			.setParameter("ownerKey", owner.getKey())
+			.setFirstResult(0)
+			.setMaxResults(1)
+			.getResultList();
+		return pages == null || pages.isEmpty() ? null : pages.get(0);
 	}
 	
 	public PagePart persistPart(PageBody body, PagePart part) {

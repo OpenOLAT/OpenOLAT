@@ -180,6 +180,7 @@ public class BinderDAO {
 	}
 	
 	public Binder updateBinder(Binder binder) {
+		((BinderImpl)binder).setLastModified(new Date());
 		return dbInstance.getCurrentEntityManager().merge(binder);
 	}
 	
@@ -408,6 +409,34 @@ public class BinderDAO {
 				.getSingleResult();
 	}
 	
+	public boolean isMember(BinderRef binder, IdentityRef member, String... roles)  {
+		if(binder == null || roles == null || roles.length == 0 || roles[0] == null) {
+			return false;
+		}
+
+		StringBuilder sb = new StringBuilder();
+		sb.append("select count(membership.key) from pfbinder as binder")
+		  .append(" inner join binder.baseGroup as baseGroup")
+		  .append(" inner join baseGroup.members as membership")
+		  .append(" inner join membership.identity as ident")
+		  .append(" where binder.key=:binderKey and membership.identity.key=:identityKey and membership.role in (:roles)");
+		
+		List<String> roleList = new ArrayList<>(roles.length);
+		for(String role:roles) {
+			if(StringHelper.containsNonWhitespace(role)) {
+				roleList.add(role);
+			}
+		}
+		
+		List<Number> counts = dbInstance.getCurrentEntityManager()
+			.createQuery(sb.toString(), Number.class)
+			.setParameter("binderKey", binder.getKey())
+			.setParameter("identityKey", member.getKey())
+			.setParameter("roles", roleList)
+			.getResultList();
+		return counts == null || counts.isEmpty() || counts.get(0) == null ? false : counts.get(0).longValue() > 0;
+	}
+	
 	public List<Identity> getMembers(BinderRef binder, String... roles)  {
 		if(binder == null || roles == null || roles.length == 0 || roles[0] == null) {
 			return Collections.emptyList();
@@ -590,6 +619,7 @@ public class BinderDAO {
 	}
 	
 	public Section updateSection(Section section) {
+		((SectionImpl)section).setLastModified(new Date());
 		return dbInstance.getCurrentEntityManager().merge(section);
 	}
 	

@@ -56,7 +56,7 @@ public class PageDAOTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		Section reloadedSection = binderDao.loadSectionByKey(section.getKey());
-		Page page = pageDao.createAndPersist("New page", "A brand new page.", null, reloadedSection, null);
+		Page page = pageDao.createAndPersist("New page", "A brand new page.", null, null, reloadedSection, null);
 		dbInstance.commitAndCloseSession();
 		Assert.assertNotNull(page);
 		Assert.assertNotNull(page.getKey());
@@ -74,7 +74,7 @@ public class PageDAOTest extends OlatTestCase {
 		
 		Section reloadedSection = binderDao.loadSectionByKey(section.getKey());
 		for(int i=0; i<5; i++) {
-			pageDao.createAndPersist("New page " + i, "A brand new page.", null, reloadedSection, null);
+			pageDao.createAndPersist("New page " + i, "A brand new page.", null, null, reloadedSection, null);
 		}
 		dbInstance.commitAndCloseSession();
 		
@@ -91,7 +91,7 @@ public class PageDAOTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		Section reloadedSection = binderDao.loadSectionByKey(section.getKey());
-		Page page = pageDao.createAndPersist("Page 1", "A page with content.", null, reloadedSection, null);
+		Page page = pageDao.createAndPersist("Page 1", "A page with content.", null, null, reloadedSection, null);
 		dbInstance.commitAndCloseSession();
 		
 		HTMLPart htmlPart = new HTMLPart();

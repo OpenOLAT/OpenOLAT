@@ -1628,6 +1628,7 @@ create table o_pf_page (
    p_summary mediumtext,
    p_status varchar(32),
    p_image_path varchar(255),
+   p_image_align varchar(32),
    p_version bigint default 0,
    p_initial_publish_date datetime,
    p_last_publish_date datetime,

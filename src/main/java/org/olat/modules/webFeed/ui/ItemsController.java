@@ -283,7 +283,7 @@ public class ItemsController extends BasicController implements Activateable2 {
 			boolean anonym = ureq.getUserSession().getRoles().isGuestOnly();
 			CommentAndRatingSecurityCallback secCallback = new CommentAndRatingDefaultSecurityCallback(getIdentity(), callback.mayEditMetadata(), anonym);
 			UserCommentsAndRatingsController commentsAndRatingCtr = new UserCommentsAndRatingsController(ureq, getWindowControl(), feed, item.getGuid(), secCallback, true, true, false);
-			commentsAndRatingCtr.addUserObject(item);
+			commentsAndRatingCtr.setUserObject(item);
 			listenTo(commentsAndRatingCtr);
 			commentsLinks.put(item, commentsAndRatingCtr);
 			String guid = item.getGuid();

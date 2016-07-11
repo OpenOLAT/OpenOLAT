@@ -41,7 +41,10 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
+import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.id.Identity;
+import org.olat.core.id.context.ContextEntry;
+import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.StringHelper;
 import org.olat.modules.portfolio.AssessmentSection;
 import org.olat.modules.portfolio.Binder;
@@ -52,6 +55,7 @@ import org.olat.modules.portfolio.PortfolioService;
 import org.olat.modules.portfolio.Section;
 import org.olat.modules.portfolio.SectionStatus;
 import org.olat.modules.portfolio.model.PageRow;
+import org.olat.modules.portfolio.model.SectionRefImpl;
 import org.olat.modules.portfolio.ui.component.TimelineComponent;
 import org.olat.modules.portfolio.ui.component.TimelinePoint;
 import org.olat.modules.portfolio.ui.renderer.PortfolioRendererHelper;
@@ -64,7 +68,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class TableOfContentController extends BasicController implements TooledController {
+public class TableOfContentController extends BasicController implements TooledController, Activateable2 {
 	
 	private Link newSectionTool, newSectionButton, newEntryLink, editBinderMetadataLink;
 	
@@ -243,6 +247,26 @@ public class TableOfContentController extends BasicController implements TooledC
 	protected void doDispose() {
 		//
 	}
+	
+	@Override
+	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
+		if(entries == null || entries.isEmpty()) {
+			return;
+		}
+		
+		String resName = entries.get(0).getOLATResourceable().getResourceableTypeName();
+		if("Page".equalsIgnoreCase(resName)) {
+			Long pageKey = entries.get(0).getOLATResourceable().getResourceableId();
+			Activateable2 activateable = doOpenPage(ureq, portfolioService.getPageByKey(pageKey));
+			if(activateable != null) {
+				List<ContextEntry> subEntries = entries.subList(1, entries.size());
+				activateable.activate(ureq, subEntries, entries.get(0).getTransientState());
+			}
+		} else if("Section".equalsIgnoreCase(resName)) {
+			Long sectionKey = entries.get(0).getOLATResourceable().getResourceableId();
+			doOpenSection(ureq, portfolioService.getSection(new SectionRefImpl(sectionKey)));
+		}
+	}
 
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
@@ -364,13 +388,14 @@ public class TableOfContentController extends BasicController implements TooledC
 		cmc.activate();
 	}
 	
-	private void doOpenPage(UserRequest ureq, Page page) {
+	private PageRunController doOpenPage(UserRequest ureq, Page page) {
 		removeAsListenerAndDispose(pageCtrl);
 		
 		Page reloadedPage = portfolioService.getPageByKey(page.getKey());
 		pageCtrl = new PageRunController(ureq, getWindowControl(), stackPanel, secCallback, reloadedPage);
 		listenTo(pageCtrl);
 		stackPanel.pushController(StringHelper.escapeHtml(page.getTitle()), pageCtrl);
+		return pageCtrl;
 	}
 	
 	private void doCreateNewPage(UserRequest ureq) {

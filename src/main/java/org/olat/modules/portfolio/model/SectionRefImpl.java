@@ -19,21 +19,20 @@
  */
 package org.olat.modules.portfolio.model;
 
-import org.olat.modules.portfolio.BinderRef;
+import org.olat.modules.portfolio.SectionRef;
 
 /**
+ * Transient implementation of the SectionRef interface.
  * 
- * Only an holder of the primary key which implements the BinderRef interface.
- * 
- * Initial date: 22.06.2016<br>
+ * Initial date: 11.07.2016<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class BinderRefImpl implements BinderRef {
-
+public class SectionRefImpl implements SectionRef {
+	
 	private final Long key;
 	
-	public BinderRefImpl(Long key) {
+	public SectionRefImpl(Long key) {
 		this.key = key;
 	}
 
@@ -44,17 +43,17 @@ public class BinderRefImpl implements BinderRef {
 	
 	@Override
 	public int hashCode() {
-		return key == null ? 836578 : key.hashCode();
+		return key == null ? -7659236 : key.hashCode();
 	}
 
 	@Override
 	public boolean equals(Object obj) {
-		if(this == obj) {
+		if(obj == this) {
 			return true;
 		}
-		if(obj instanceof BinderRefImpl) {
-			BinderRefImpl binder = (BinderRefImpl)obj;
-			return key != null && key.equals(binder.getKey());
+		if(obj instanceof SectionRefImpl) {
+			SectionRefImpl section = (SectionRefImpl)obj;
+			return key != null && key.equals(section.getKey());
 		}
 		return false;
 	}

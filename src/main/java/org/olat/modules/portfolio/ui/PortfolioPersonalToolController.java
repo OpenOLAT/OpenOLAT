@@ -69,6 +69,13 @@ public class PortfolioPersonalToolController extends BasicController implements 
 
 	@Override
 	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
+		if(entries.size() > 0) {
+			String resName = entries.get(0).getOLATResourceable().getResourceableTypeName();
+			if("Portfolio".equalsIgnoreCase(resName) || "PortfolioV2".equalsIgnoreCase(resName)) {
+				entries = entries.subList(1, entries.size());
+			}
+		}
+		
 		if(overviewCtrl != null) {
 			overviewCtrl.activate(ureq, entries, state);
 		}

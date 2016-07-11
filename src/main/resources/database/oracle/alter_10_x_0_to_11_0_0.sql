@@ -178,6 +178,7 @@ create table o_pf_page (
    p_summary varchar2(4000 char),
    p_status varchar2(32 char),
    p_image_path varchar2(255 char),
+   p_image_align varchar2(32 char),
    p_version number(20) default 0,
    p_initial_publish_date date,
    p_last_publish_date date,

@@ -160,7 +160,29 @@ public class SharedItemsController extends FormBasicController implements Activa
 	
 	@Override
 	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
-		//
+		if(entries.isEmpty()) return;
+
+		Long resId = entries.get(0).getOLATResourceable().getResourceableId();
+		String resName = entries.get(0).getOLATResourceable().getResourceableTypeName();
+		if("Binder".equalsIgnoreCase(resName)) {
+			
+			SharedItemRow activatedRow = null;
+			List<SharedItemRow> rows = model.getObjects();
+			for(SharedItemRow row:rows) {
+				if(row.getBinderKey().equals(resId)) {
+					activatedRow = row;
+					break;
+				}
+			}
+			
+			if(activatedRow != null) {
+				Activateable2 activeateable = doSelectBinder(ureq, activatedRow);
+				if(activeateable != null) {
+					List<ContextEntry> subEntries = entries.subList(1, entries.size());
+					activeateable.activate(ureq, subEntries, entries.get(0).getTransientState());
+				}
+			}
+		}
 	}
 
 	@Override

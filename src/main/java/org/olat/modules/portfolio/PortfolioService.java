@@ -90,6 +90,14 @@ public interface PortfolioService {
 	 * @return
 	 */
 	public List<AssessedBinder> searchSharedBindersWith(Identity coach, String searchString);
+
+	/**
+	 * 
+	 * @param identity
+	 * @param binder
+	 * @return
+	 */
+	public boolean isMember(BinderRef binder, IdentityRef identity, String... roles);
 	
 	/**
 	 * 
@@ -270,9 +278,11 @@ public interface PortfolioService {
 	 * @param summary
 	 * @param section
 	 */
-	public Page appendNewPage(Identity owner, String title, String summary, String imagePath, SectionRef section);
+	public Page appendNewPage(Identity owner, String title, String summary, String imagePath, PageImageAlign align, SectionRef section);
 	
 	public Page getPageByKey(Long key);
+	
+	public Page getLastPage(Identity owner, boolean binderMandatory);
 	
 	/**
 	 * Update the metadata of a page.

@@ -65,6 +65,7 @@ import org.olat.modules.portfolio.MediaHandler;
 import org.olat.modules.portfolio.MediaLight;
 import org.olat.modules.portfolio.Page;
 import org.olat.modules.portfolio.PageBody;
+import org.olat.modules.portfolio.PageImageAlign;
 import org.olat.modules.portfolio.PagePart;
 import org.olat.modules.portfolio.PageStatus;
 import org.olat.modules.portfolio.PortfolioElement;
@@ -302,6 +303,11 @@ public class PortfolioServiceImpl implements PortfolioService {
 	}
 
 	@Override
+	public boolean isMember(BinderRef binder, IdentityRef identity, String... roles) {
+		return binderDao.isMember(binder, identity, roles);
+	}
+
+	@Override
 	public List<Identity> getMembers(BinderRef binder, String... roles) {
 		return binderDao.getMembers(binder, roles);
 	}
@@ -528,9 +534,9 @@ public class PortfolioServiceImpl implements PortfolioService {
 	}
 
 	@Override
-	public Page appendNewPage(Identity owner, String title, String summary, String imagePath, SectionRef section) {
+	public Page appendNewPage(Identity owner, String title, String summary, String imagePath, PageImageAlign align, SectionRef section) {
 		Section reloadedSection = section == null ? null : binderDao.loadSectionByKey(section.getKey());
-		Page page = pageDao.createAndPersist(title, summary, null, reloadedSection, null);
+		Page page = pageDao.createAndPersist(title, summary, imagePath, align, reloadedSection, null);
 		groupDao.addMembership(page.getBaseGroup(), owner, PortfolioRoles.owner.name());
 		return page;
 	}
@@ -538,6 +544,11 @@ public class PortfolioServiceImpl implements PortfolioService {
 	@Override
 	public Page getPageByKey(Long key) {
 		return pageDao.loadByKey(key);
+	}
+
+	@Override
+	public Page getLastPage(Identity owner, boolean mandatoryBinder) {
+		return pageDao.getLastPage(owner, mandatoryBinder);
 	}
 
 	@Override

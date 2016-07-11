@@ -47,6 +47,11 @@ public interface Page extends PortfolioElement {
 	
 	public void setImagePath(String imagePath);
 	
+	public PageImageAlign getImageAlignment();
+	
+	public void setImageAlignment(PageImageAlign align);
+	
+	
 	/**
 	 * Lazily loaded.
 	 * 
