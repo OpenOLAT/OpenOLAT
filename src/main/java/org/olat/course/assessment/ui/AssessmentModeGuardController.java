@@ -172,15 +172,20 @@ public class AssessmentModeGuardController extends BasicController implements Ge
 		if(mode.getIpList() != null) {
 			boolean ipInRange = assessmentModeMgr.isIpAllowed(mode.getIpList(), address);
 			if(!ipInRange) {
+				sb.append("<h4><i class='o_icon o_icon_warn o_icon-fw'>&nbsp;</i>");
 				sb.append(translate("error.ip.range"));
+				sb.append("</h4>");
+				sb.append(translate("error.ip.range.desc", address));
 			}
 			allowed &= ipInRange;
 		}
 		if(mode.getSafeExamBrowserKey() != null) {
 			boolean safeExamCheck = assessmentModeMgr.isSafelyAllowed(ureq.getHttpReq(), mode.getSafeExamBrowserKey());
 			if(!safeExamCheck) {
-				if(sb.length() > 0) sb.append("<br />");
+				sb.append("<h4><i class='o_icon o_icon_warn o_icon-fw'>&nbsp;</i>");
 				sb.append(translate("error.safe.exam"));
+				sb.append("</h4>");
+				sb.append(translate("error.safe.exam.desc"));
 			}
 			allowed &= safeExamCheck;
 		}
