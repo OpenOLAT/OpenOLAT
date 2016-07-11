@@ -55,7 +55,11 @@ public class MultiSelectionTreeImpl extends MultipleSelectionElementImpl impleme
 		super(name);
 		this.selectableFilter = selectableFilter;
 		this.treemodel = treemodel;
-		
+		initKeyValuePairsFromTreeModel();
+		component = new SelectionTreeComponent(name, this, treemodel, selectableFilter);
+	}
+
+	private void initKeyValuePairsFromTreeModel() {
 		List<TreeNode> flatModel = new ArrayList<TreeNode>();
 		TreeHelper.makeTreeFlat(treemodel.getRootNode(), flatModel);
 		keys = new String[flatModel.size()];
@@ -67,7 +71,6 @@ public class MultiSelectionTreeImpl extends MultipleSelectionElementImpl impleme
 			values[i] = treeNode.getTitle();
 			i++;
 		}
-		component = new SelectionTreeComponent(name, this, treemodel, selectableFilter);
 	}
 
 	@Override
@@ -105,6 +108,7 @@ public class MultiSelectionTreeImpl extends MultipleSelectionElementImpl impleme
 	@Override
 	public void reset() {
 		super.reset();
+		initKeyValuePairsFromTreeModel();
 		initSelectionElements();
 		component.setDirty(true);
 	}
