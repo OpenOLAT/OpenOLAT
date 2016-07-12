@@ -31,9 +31,6 @@ import javax.persistence.Transient;
 @Entity(name="pftitlepart")
 public class TitlePart extends AbstractPart {
 
-	/**
-	 * 
-	 */
 	private static final long serialVersionUID = 7060103983145628108L;
 
 	@Override

@@ -17,37 +17,26 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
+package org.olat.modules.portfolio.model;
 
-package org.olat.core.gui.components.form.flexible.impl.elements;
-
-import org.olat.core.gui.components.ComponentRenderer;
-import org.olat.core.gui.components.form.flexible.impl.FormBaseComponentImpl;
+import javax.persistence.Entity;
+import javax.persistence.Transient;
 
 /**
- * Implements the component for an HTML horizontal bar (&lt;HR&gt;) element.
  * 
- * @author twuersch
+ * Initial date: 12.07.2016<br>
+ * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ *
  */
-public class SpacerElementComponent extends FormBaseComponentImpl {
-	
-	private static final ComponentRenderer RENDERER = new SpacerElementRenderer();
-	
-	private String spacerCssClass;
-	
-	public SpacerElementComponent(String name) {
-		super(name);
-	}
+@Entity(name="pfseparatorpart")
+public class SpacerPart extends AbstractPart {
 
-	public String getSpacerCssClass() {
-		return spacerCssClass;
-	}
-
-	public void setSpacerCssClass(String spacerCssClass) {
-		this.spacerCssClass = spacerCssClass;
-	}
+	private static final long serialVersionUID = 7060103983145628108L;
 
 	@Override
-	public ComponentRenderer getHTMLRendererSingleton() {
-		return RENDERER;
+	@Transient
+	public String getType() {
+		return "hr";
 	}
+	
 }

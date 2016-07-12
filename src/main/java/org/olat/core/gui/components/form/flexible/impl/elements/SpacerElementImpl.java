@@ -35,14 +35,14 @@ import org.olat.core.util.ValidationStatus;
  * 
  */
 public class SpacerElementImpl extends FormItemImpl implements SpacerElement {
-	private String spacerCssClass;
-
+	
+	private final SpacerElementComponent component;
+	
 	public SpacerElementImpl(String name) {
 		super(name);
-		this.component = new SpacerElementComponent(this);
+		component = new SpacerElementComponent(name);
 	}
 
-	private SpacerElementComponent component;
 
 	@Override
 	public void evalFormRequest(UserRequest ureq) {
@@ -63,7 +63,6 @@ public class SpacerElementImpl extends FormItemImpl implements SpacerElement {
 	@Override
 	protected void rootFormAvailable() {
 		// Not available for this element.
-
 	}
 
 	@Override
@@ -74,15 +73,16 @@ public class SpacerElementImpl extends FormItemImpl implements SpacerElement {
 	/**
 	 * @see org.olat.core.gui.components.form.flexible.elements.SpacerElement#setSpacerCssClass(java.lang.String)
 	 */
+	@Override
 	public void setSpacerCssClass(String spacerCssClass) {
-		this.spacerCssClass = spacerCssClass;
+		component.setSpacerCssClass(spacerCssClass);
 	}
 
 	/**
 	 * @see org.olat.core.gui.components.form.flexible.elements.SpacerElement#getSpacerCssClass()
 	 */
+	@Override
 	public String getSpacerCssClass() {
-		return spacerCssClass;
+		return component.getSpacerCssClass();
 	}
-
 }

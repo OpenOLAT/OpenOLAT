@@ -91,7 +91,7 @@ public class HistoryController extends FormBasicController {
 	
 	protected void updateChangeLog() {
 		Date date = dateChooser.getDate();
-		List<SubscriptionListItem> items = notificationsHandler.getAllItems(binder, getIdentity(), date, getLocale());
+		List<SubscriptionListItem> items = notificationsHandler.getAllItems(binder, date, getLocale());
 		Formatter formatter = Formatter.getInstance(getLocale());
 		
 		List<SubscriptionListItemWrapper> wrappers = new ArrayList<>(items.size());
@@ -158,5 +158,4 @@ public class HistoryController extends FormBasicController {
 			return cssClass;
 		}
 	}
-
 }

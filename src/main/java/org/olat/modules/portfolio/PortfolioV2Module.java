@@ -57,7 +57,10 @@ public class PortfolioV2Module extends AbstractSpringModule implements ConfigOnO
 		}
 		
 		RepositoryHandlerFactory.registerHandler(new BinderTemplateHandler(), 40);
-		NewControllerFactory.getInstance().addContextEntryControllerCreator("BinderInvitation", new BinderInvitationContextEntryControllerCreator());	
+		NewControllerFactory.getInstance().addContextEntryControllerCreator("BinderInvitation",
+				new BinderInvitationContextEntryControllerCreator());	
+		NewControllerFactory.getInstance().addContextEntryControllerCreator("Binder",
+				new BinderContextEntryControllerCreator());	
 	}
 
 	@Override

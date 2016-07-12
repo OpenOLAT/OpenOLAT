@@ -76,7 +76,7 @@ public class PortfolioNotificationsHandler implements NotificationsHandler {
 		Binder binder = binderDao.loadByKey(publisher.getResId());
 		if (isInkoveValid(binder, compareDate, publisher)) {
 			si = new SubscriptionInfo(subscriber.getKey(), publisher.getType(), getTitleItemForBinder(binder), null);
-			List<SubscriptionListItem> allItems = getAllItems(binder, subscriber.getIdentity(), compareDate, locale);
+			List<SubscriptionListItem> allItems = getAllItems(binder, compareDate, locale);
 			for (SubscriptionListItem item : allItems) {
 				si.addSubscriptionListItem(item);
 			}
@@ -104,8 +104,8 @@ public class PortfolioNotificationsHandler implements NotificationsHandler {
 		return TYPE_NAME;
 	}
 	
-	public List<SubscriptionListItem> getAllItems(Binder binder, Identity identity, Date compareDate, Locale locale) {
-		String rootBusinessPath = "[HomeSite:" + identity.getKey() + "][PortfolioV2:2][Binder:" + binder.getKey() + "]";
+	public List<SubscriptionListItem> getAllItems(Binder binder, Date compareDate, Locale locale) {
+		String rootBusinessPath = "[Binder:" + binder.getKey() + "]";
 		Translator translator = Util.createPackageTranslator(PortfolioHomeController.class, locale);
 		
 		List<SubscriptionListItem> items = new ArrayList<>();

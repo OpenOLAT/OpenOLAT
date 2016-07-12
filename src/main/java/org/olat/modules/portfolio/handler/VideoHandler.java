@@ -47,36 +47,37 @@ import org.olat.modules.portfolio.model.MediaPart;
 import org.olat.modules.portfolio.ui.editor.InteractiveAddPageElementHandler;
 import org.olat.modules.portfolio.ui.editor.PageElement;
 import org.olat.modules.portfolio.ui.editor.PageElementAddController;
-import org.olat.modules.portfolio.ui.media.CollectImageMediaController;
-import org.olat.modules.portfolio.ui.media.ImageMediaController;
+import org.olat.modules.portfolio.ui.media.CollectVideoMediaController;
+import org.olat.modules.portfolio.ui.media.VideoMediaController;
 import org.olat.portfolio.model.artefacts.AbstractArtefact;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 /**
  * 
- * Initial date: 20.06.2016<br>
+ * Initial date: 11.07.2016<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
 @Service
-public class ImageHandler extends AbstractMediaHandler implements InteractiveAddPageElementHandler {
+public class VideoHandler extends AbstractMediaHandler implements InteractiveAddPageElementHandler {
 	
-	public static final String IMAGE_TYPE = "image";
-	private final AtomicInteger idGenerator = new AtomicInteger();
+	public static final String VIDEO_TYPE = "video";
+	
+	private AtomicInteger idGenerator = new AtomicInteger();
 
 	@Autowired
 	private MediaDAO mediaDao;
 	@Autowired
 	private PortfolioFileStorage fileStorage;
 	
-	public ImageHandler() {
-		super(IMAGE_TYPE);
+	public VideoHandler() {
+		super(VIDEO_TYPE);
 	}
 	
 	@Override
 	public String getIconCssClass() {
-		return "o_filetype_jpg";
+		return "o_filetype_video";
 	}
 
 	@Override
@@ -85,7 +86,7 @@ public class ImageHandler extends AbstractMediaHandler implements InteractiveAdd
 		if (filename != null){
 			return CSSHelper.createFiletypeIconCssClassFor(filename);
 		}
-		return "o_filetype_jpg";
+		return "o_filetype_video";
 	}
 
 	@Override
@@ -126,7 +127,7 @@ public class ImageHandler extends AbstractMediaHandler implements InteractiveAdd
 	}
 	
 	public Media createMedia(String title, String description, File file, String filename, String businessPath, Identity author) {
-		Media media = mediaDao.createMedia(title, description, filename, IMAGE_TYPE, businessPath, 60, author);
+		Media media = mediaDao.createMedia(title, description, filename, VIDEO_TYPE, businessPath, 60, author);
 		File mediaDir = fileStorage.generateMediaSubDirectory(media);
 		File mediaFile = new File(mediaDir, filename);
 		FileUtils.copyFileToFile(file, mediaFile, false);
@@ -155,18 +156,18 @@ public class ImageHandler extends AbstractMediaHandler implements InteractiveAdd
 	private ImageComponent getContent(UserRequest ureq, Media media) {
 		File mediaDir = new File(FolderConfig.getCanonicalRoot(), media.getStoragePath());
 		File mediaFile = new File(mediaDir, media.getRootFilename());
-		ImageComponent imageCmp = new ImageComponent(ureq.getUserSession(), "image_" + idGenerator.incrementAndGet());
+		ImageComponent imageCmp = new ImageComponent(ureq.getUserSession(), "video_" + idGenerator.incrementAndGet());
 		imageCmp.setMedia(mediaFile);
 		return imageCmp;
 	}
 
 	@Override
 	public Controller getMediaController(UserRequest ureq, WindowControl wControl, Media media) {
-		return new ImageMediaController(ureq, wControl, media);
+		return new VideoMediaController(ureq, wControl, media);
 	}
 
 	@Override
 	public PageElementAddController getAddPageElementController(UserRequest ureq, WindowControl wControl) {
-		return new CollectImageMediaController(ureq, wControl);
+		return new CollectVideoMediaController(ureq, wControl);
 	}
 }

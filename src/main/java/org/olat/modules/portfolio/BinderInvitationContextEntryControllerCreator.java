@@ -83,7 +83,7 @@ public class BinderInvitationContextEntryControllerCreator extends DefaultContex
 		}
 		
 		final PortfolioService portfolioService = CoreSpringFactory.getImpl(PortfolioService.class);
-		boolean visible = portfolioService.isBinderVisible(ureq.getIdentity(), binder);
+		boolean visible = portfolioService.isMember(binder, ureq.getIdentity(), PortfolioRoles.invitee.name());
 		return visible;
 	}
 	

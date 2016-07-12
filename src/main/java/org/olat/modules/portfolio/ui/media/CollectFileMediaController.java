@@ -77,8 +77,7 @@ public class CollectFileMediaController extends FormBasicController implements P
 	public CollectFileMediaController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
 		setTranslator(Util.createPackageTranslator(PortfolioHomeController.class, getLocale(), getTranslator()));
-		businessPath = "[Binder:0]";
-		
+		businessPath = "[HomeSite:" + getIdentity().getKey() + "][PortfolioV2:0][MediaCenter:0]";
 		initForm(ureq);
 	}
 	

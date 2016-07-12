@@ -21,11 +21,9 @@
 package org.olat.core.gui.components.form.flexible.impl.elements;
 
 import org.olat.core.gui.components.Component;
-import org.olat.core.gui.components.ComponentRenderer;
-import org.olat.core.gui.components.form.flexible.elements.SpacerElement;
+import org.olat.core.gui.components.DefaultComponentRenderer;
 import org.olat.core.gui.render.RenderResult;
 import org.olat.core.gui.render.Renderer;
-import org.olat.core.gui.render.RenderingState;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
@@ -36,7 +34,7 @@ import org.olat.core.gui.translator.Translator;
  * @author twuersch
  * 
  */
-public class SpacerElementRenderer implements ComponentRenderer {
+public class SpacerElementRenderer extends DefaultComponentRenderer {
 
 	/**
 	 * @see org.olat.core.gui.components.ComponentRenderer#render(org.olat.core.gui.render.Renderer,
@@ -46,12 +44,12 @@ public class SpacerElementRenderer implements ComponentRenderer {
 	 *      org.olat.core.gui.translator.Translator,
 	 *      org.olat.core.gui.render.RenderResult, java.lang.String[])
 	 */
+	@Override
 	public void render(Renderer renderer, StringOutput sb, Component source,
 			URLBuilder ubu, Translator translator, RenderResult renderResult,
 			String[] args) {
 
-		SpacerElementComponent comp = (SpacerElementComponent) source;
-		SpacerElement spacer = comp.getSpacerElement();
+		SpacerElementComponent cmp = (SpacerElementComponent) source;
 		
 		sb.append("<hr class=\"o_spacer ");
 		// add layout css if available
@@ -59,40 +57,10 @@ public class SpacerElementRenderer implements ComponentRenderer {
 			sb.append(args[0]);			
 		}
 		// add no-line css if necessary
-		String customCSS = spacer.getSpacerCssClass();
+		String customCSS = cmp.getSpacerCssClass();
 		if (customCSS != null) {
-			sb.append(" ");
-			sb.append(customCSS);
+			sb.append(" ").append(customCSS);
 		}
 		sb.append("\" />");
-
 	}
-
-	/**
-	 * @see org.olat.core.gui.components.ComponentRenderer#renderBodyOnLoadJSFunctionCall(org.olat.core.gui.render.Renderer,
-	 *      org.olat.core.gui.render.StringOutput,
-	 *      org.olat.core.gui.components.Component,
-	 *      org.olat.core.gui.render.RenderingState)
-	 */
-	public void renderBodyOnLoadJSFunctionCall(Renderer renderer,
-			StringOutput sb, Component source, RenderingState rstate) {
-		// Nothing to do here.
-
-	}
-
-	/**
-	 * @see org.olat.core.gui.components.ComponentRenderer#renderHeaderIncludes(org.olat.core.gui.render.Renderer,
-	 *      org.olat.core.gui.render.StringOutput,
-	 *      org.olat.core.gui.components.Component,
-	 *      org.olat.core.gui.render.URLBuilder,
-	 *      org.olat.core.gui.translator.Translator,
-	 *      org.olat.core.gui.render.RenderingState)
-	 */
-	public void renderHeaderIncludes(Renderer renderer, StringOutput sb,
-			Component source, URLBuilder ubu, Translator translator,
-			RenderingState rstate) {
-		// Nothing to do here.
-
-	}
-
 }

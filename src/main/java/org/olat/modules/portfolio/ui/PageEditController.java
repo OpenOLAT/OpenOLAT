@@ -46,6 +46,7 @@ import org.olat.modules.portfolio.ui.editor.PageElementEditorController;
 import org.olat.modules.portfolio.ui.editor.PageElementHandler;
 import org.olat.modules.portfolio.ui.editor.SimpleAddPageElementHandler;
 import org.olat.modules.portfolio.ui.editor.handler.HTMLRawPageElementHandler;
+import org.olat.modules.portfolio.ui.editor.handler.SpacerElementHandler;
 import org.olat.modules.portfolio.ui.editor.handler.TitlePageElementHandler;
 import org.olat.modules.portfolio.ui.event.MediaSelectionEvent;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -112,6 +113,10 @@ public class PageEditController extends BasicController {
 			HTMLRawPageElementHandler htlmRawHandler = new HTMLRawPageElementHandler();
 			handlers.add(htlmRawHandler);
 			creationHandlers.add(htlmRawHandler);
+			//handler for HR code
+			SpacerElementHandler hrHandler = new SpacerElementHandler();
+			handlers.add(hrHandler);
+			creationHandlers.add(hrHandler);
 			
 			
 			List<MediaHandler> mediaHandlers = portfolioService.getMediaHandlers();

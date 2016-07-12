@@ -75,6 +75,7 @@ import org.olat.modules.portfolio.ui.event.MediaSelectionEvent;
 import org.olat.modules.portfolio.ui.media.CollectFileMediaController;
 import org.olat.modules.portfolio.ui.media.CollectImageMediaController;
 import org.olat.modules.portfolio.ui.media.CollectTextMediaController;
+import org.olat.modules.portfolio.ui.media.CollectVideoMediaController;
 import org.olat.modules.portfolio.ui.renderer.MediaTypeCellRenderer;
 import org.olat.portfolio.model.artefacts.AbstractArtefact;
 import org.olat.portfolio.ui.EPArtefactPoolRunController;
@@ -96,7 +97,7 @@ public class MediaCenterController extends FormBasicController
 	private MediaDataModel model;
 	private FlexiTableElement tableEl;
 	private String mapperThumbnailUrl;
-	private Link addFileLink, addImageLink, addTextLink, importArtefactV1Link;
+	private Link addFileLink, addImageLink, addVideoLink, addTextLink, importArtefactV1Link;
 	
 	private int counter = 0;
 	private final boolean select;
@@ -107,6 +108,7 @@ public class MediaCenterController extends FormBasicController
 	private CollectFileMediaController fileUploadCtrl;
 	private CollectTextMediaController textUploadCtrl;
 	private CollectImageMediaController imageUploadCtrl;
+	private CollectVideoMediaController videoUploadCtrl;
 	private EPArtefactPoolRunController importArtefactv1Ctrl;
 	
 	@Autowired
@@ -139,6 +141,10 @@ public class MediaCenterController extends FormBasicController
 		addImageLink = LinkFactory.createToolLink("add.image", translate("add.image"), this);
 		addImageLink.setIconLeftCSS("o_icon o_icon-lg o_icon_new_portfolio");
 		stackPanel.addTool(addImageLink, Align.left);
+		
+		addVideoLink = LinkFactory.createToolLink("add.video", translate("add.video"), this);
+		addVideoLink.setIconLeftCSS("o_icon o_icon-lg o_icon_new_portfolio");
+		stackPanel.addTool(addVideoLink, Align.left);
 		
 		addTextLink = LinkFactory.createToolLink("add.text", translate("add.text"), this);
 		addTextLink.setIconLeftCSS("o_icon o_icon-lg o_icon_new_portfolio");
@@ -305,6 +311,13 @@ public class MediaCenterController extends FormBasicController
 			}
 			cmc.deactivate();
 			cleanUp();
+		} else if(videoUploadCtrl == source) {
+			if(event == Event.DONE_EVENT) {
+				loadModel(null);
+				tableEl.reloadData();
+			}
+			cmc.deactivate();
+			cleanUp();
 		} else if(importArtefactv1Ctrl == source) {
 			if(event instanceof EPArtefactChoosenEvent) {
 				EPArtefactChoosenEvent cEvent = (EPArtefactChoosenEvent)event;
@@ -323,11 +336,13 @@ public class MediaCenterController extends FormBasicController
 	
 	private void cleanUp() {
 		removeAsListenerAndDispose(importArtefactv1Ctrl);
+		removeAsListenerAndDispose(videoUploadCtrl);
 		removeAsListenerAndDispose(imageUploadCtrl);
 		removeAsListenerAndDispose(fileUploadCtrl);
 		removeAsListenerAndDispose(textUploadCtrl);
 		removeAsListenerAndDispose(cmc);
 		importArtefactv1Ctrl = null;
+		videoUploadCtrl = null;
 		imageUploadCtrl = null;
 		fileUploadCtrl = null;
 		textUploadCtrl = null;
@@ -338,6 +353,8 @@ public class MediaCenterController extends FormBasicController
 	public void event(UserRequest ureq, Component source, Event event) {
 		if(addImageLink == source) {
 			doAddImageMedia(ureq);
+		} else if(addVideoLink == source) {
+			doAddVideoMedia(ureq);
 		} else if(addFileLink == source) {
 			doAddFileMedia(ureq);
 		} else if(addTextLink == source) {
@@ -390,6 +407,18 @@ public class MediaCenterController extends FormBasicController
 		
 		String title = translate("add.image");
 		cmc = new CloseableModalController(getWindowControl(), null, imageUploadCtrl.getInitialComponent(), true, title, true);
+		listenTo(cmc);
+		cmc.activate();
+	}
+	
+	private void doAddVideoMedia(UserRequest ureq) {
+		if(videoUploadCtrl != null) return;
+		
+		videoUploadCtrl = new CollectVideoMediaController(ureq, getWindowControl());
+		listenTo(videoUploadCtrl);
+		
+		String title = translate("add.video");
+		cmc = new CloseableModalController(getWindowControl(), null, videoUploadCtrl.getInitialComponent(), true, title, true);
 		listenTo(cmc);
 		cmc.activate();
 	}

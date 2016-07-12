@@ -52,11 +52,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
- * Initial date: 20.06.2016<br>
+ * Initial date: 11.07.2016<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class CollectImageMediaController extends FormBasicController implements PageElementAddController {
+public class CollectVideoMediaController extends FormBasicController implements PageElementAddController {
 	
 	private FileElement fileEl;
 	private TextElement titleEl;
@@ -74,7 +74,7 @@ public class CollectImageMediaController extends FormBasicController implements 
 	@Autowired
 	private PortfolioService portfolioService;
 
-	public CollectImageMediaController(UserRequest ureq, WindowControl wControl) {
+	public CollectVideoMediaController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
 		setTranslator(Util.createPackageTranslator(PortfolioHomeController.class, getLocale(), getTranslator()));
 		businessPath = "[HomeSite:" + getIdentity().getKey() + "][PortfolioV2:0][MediaCenter:0]";
@@ -111,7 +111,7 @@ public class CollectImageMediaController extends FormBasicController implements 
 		
 		fileEl = uifactory.addFileElement(getWindowControl(), "artefact.file", "artefact.file", formLayout);
 		fileEl.addActionListener(FormEvent.ONCHANGE);
-		fileEl.setMaxUploadSizeKB(10000, null, null);
+		fileEl.setMaxUploadSizeKB(250000, null, null);
 		fileEl.setPreview(ureq.getUserSession(), true);
 		fileEl.setDeleteEnabled(true);
 		

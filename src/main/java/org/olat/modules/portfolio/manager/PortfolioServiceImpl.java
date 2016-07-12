@@ -318,8 +318,10 @@ public class PortfolioServiceImpl implements PortfolioService {
 	}
 
 	@Override
-	public boolean isBinderVisible(Identity identity, Binder binder) {
-		return true;
+	public boolean isBinderVisible(IdentityRef identity, BinderRef binder) {
+		return binderDao.isMember(binder, identity,
+				PortfolioRoles.owner.name(), PortfolioRoles.coach.name(),
+				PortfolioRoles.reviewer.name(), PortfolioRoles.invitee.name());
 	}
 
 	@Override

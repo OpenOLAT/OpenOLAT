@@ -105,7 +105,7 @@ public interface PortfolioService {
 	 * @param binder
 	 * @return
 	 */
-	public boolean isBinderVisible(Identity identity, Binder binder);
+	public boolean isBinderVisible(IdentityRef identity, BinderRef binder);
 	
 	/**
 	 * Search all the binders which the specified identity shared

@@ -23,14 +23,14 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
-import org.olat.core.gui.components.text.TextFactory;
+import org.olat.core.gui.components.form.flexible.impl.elements.SpacerElementComponent;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.modules.portfolio.model.TitlePart;
+import org.olat.modules.portfolio.model.SpacerPart;
 import org.olat.modules.portfolio.ui.editor.PageElement;
 import org.olat.modules.portfolio.ui.editor.PageElementEditorController;
 import org.olat.modules.portfolio.ui.editor.PageElementHandler;
 import org.olat.modules.portfolio.ui.editor.SimpleAddPageElementHandler;
-import org.olat.modules.portfolio.ui.editor.TitleEditorController;
+import org.olat.modules.portfolio.ui.editor.SpacerEditorController;
 
 /**
  * 
@@ -38,41 +38,40 @@ import org.olat.modules.portfolio.ui.editor.TitleEditorController;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class TitlePageElementHandler implements PageElementHandler, SimpleAddPageElementHandler {
-
-	private static final AtomicInteger idGenerator = new AtomicInteger();
+public class SpacerElementHandler implements PageElementHandler, SimpleAddPageElementHandler {
 	
+	private static final AtomicInteger idGenerator = new AtomicInteger();
+
 	@Override
 	public String getType() {
-		return "htitle";
+		return "hr";
 	}
 
 	@Override
 	public String getIconCssClass() {
-		return "o_icon_title";
+		return "o_icon_spacer";
 	}
 
 	@Override
 	public Component getContent(UserRequest ureq, WindowControl wControl, PageElement element) {
-		String content = "";
-		if(element instanceof TitlePart) {
-			content = ((TitlePart)element).getContent();
+		if(element instanceof SpacerPart) {
+			return new SpacerElementComponent("spacer_" + idGenerator.incrementAndGet());
 		}
-		return TextFactory.createTextComponentFromString("title_" + idGenerator.incrementAndGet(), content, null, false, null);
+		return null;
 	}
 
 	@Override
 	public PageElementEditorController getEditor(UserRequest ureq, WindowControl wControl, PageElement element) {
-		if(element instanceof TitlePart) {
-			return new TitleEditorController(ureq, wControl, (TitlePart)element);
+		if(element instanceof SpacerPart) {
+			return new SpacerEditorController(ureq, wControl, (SpacerPart)element);
 		}
 		return null;
 	}
 
 	@Override
 	public PageElement createPageElement() {
-		String content = "<h1>Hello world</h1>";
-		TitlePart part = new TitlePart();
+		String content = "<hr/>";
+		SpacerPart part = new SpacerPart();
 		part.setContent(content);
 		return part;
 	}
