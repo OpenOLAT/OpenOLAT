@@ -81,13 +81,12 @@ public class CoursePageFragment {
 	}
 	
 	public CoursePageFragment assertOnTitle(String displayName) {
-		List<WebElement> titleList = browser.findElements(By.tagName("h2"));
-		Assert.assertNotNull(titleList);
-		Assert.assertEquals(1, titleList.size());
+		By titleBy = By.xpath("//h2[text()[contains(.,'" + displayName + "')]]");
+		OOGraphene.waitElement(titleBy, 5, browser);
 		
-		WebElement title = titleList.get(0);
-		Assert.assertTrue(title.isDisplayed());
-		Assert.assertTrue(title.getText().contains(displayName));
+		WebElement titleEl = browser.findElement(titleBy);
+		Assert.assertNotNull(titleEl);
+		Assert.assertTrue(titleEl.isDisplayed());
 		return this;
 	}
 	

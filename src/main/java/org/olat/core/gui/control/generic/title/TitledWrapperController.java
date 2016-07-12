@@ -104,7 +104,7 @@ public class TitledWrapperController extends BasicController
 			theVelocityContainer.put(COMPONENT_NAME, controller.getInitialComponent());				
 		}
 		
-		this.wrapperCss = wrapperCss;
+		this.wrapperCss = (wrapperCss == null ? "" : wrapperCss);
 		this.titleInfo = titleInfo;
 
 		// set title info variables
@@ -114,7 +114,7 @@ public class TitledWrapperController extends BasicController
 		theVelocityContainer.contextPut(TITLE_SIZE, titleInfo.getTitleSize());			
 		theVelocityContainer.contextPut(USE_SEPARATOR, Boolean.valueOf(titleInfo.isSeparatorEnabled()));			
 		theVelocityContainer.contextPut(ICON_CSS, titleInfo.getIconCssClass());
-		theVelocityContainer.contextPut(WRAPPER_CSS, wrapperCss);
+		theVelocityContainer.contextPut(WRAPPER_CSS, this.wrapperCss);
 		
 		//set the description if any
 		if (StringHelper.containsNonWhitespace(titleInfo.getDescription())) {
