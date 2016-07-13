@@ -118,17 +118,23 @@ implements Activateable2, TooledController, FlexiTableComponentDelegate {
 	
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		timelineSwitchOnButton = uifactory.addFormLink("timeline.switch.on", formLayout, Link.BUTTON_SMALL);
-		timelineSwitchOnButton.setIconLeftCSS("o_icon o_icon-sm o_icon_toggle_on");
-		
-		timelineSwitchOffButton = uifactory.addFormLink("timeline.switch.off", formLayout, Link.BUTTON_SMALL); 
-		timelineSwitchOffButton.setIconLeftCSS("o_icon o_icon-sm o_icon_toggle_off");
-		doSwitchTimelineOn();
-		
 		timelineEl = new TimelineElement("timeline");
 		timelineEl.setContainerId("o_portfolio_entries_timeline");
 		formLayout.add("timeline", timelineEl);
 		initTimeline();
+		
+		if(config.isTimeline()) {
+			timelineSwitchOnButton = uifactory.addFormLink("timeline.switch.on", formLayout, Link.BUTTON_SMALL);
+			timelineSwitchOnButton.setIconLeftCSS("o_icon o_icon-sm o_icon_toggle_on");
+			timelineSwitchOnButton.setElementCssClass("o_sel_timeline_on");
+			
+			timelineSwitchOffButton = uifactory.addFormLink("timeline.switch.off", formLayout, Link.BUTTON_SMALL); 
+			timelineSwitchOffButton.setIconLeftCSS("o_icon o_icon-sm o_icon_toggle_off");
+			timelineSwitchOffButton.setElementCssClass("o_sel_timeline_off");
+			doSwitchTimelineOn();
+		} else {
+			flc.contextPut("timelineSwitch", Boolean.FALSE);
+		}
 		
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, PageCols.key, "select"));

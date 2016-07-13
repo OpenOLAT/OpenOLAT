@@ -275,7 +275,14 @@
 		float: right;
 	}
 	.o_tools_center {
-		// default
+		float:both;
+		width: 50%;
+    	margin-left: auto;
+    	margin-right: auto;
+	}
+	
+	.o_tools_segments {
+    	margin: 0 auto -1.1em auto;
 	}
 	
 	@media (max-width: $screen-sm-max) { 
@@ -283,9 +290,15 @@
 			margin-top: $o-toolbar-tools-margin-top-sm;
 			margin-bottom: $o-toolbar-tools-margin-bottom-sm;
 		}
+		.o_tools.o_tools_segments {
+    		margin: 0 auto -1.1em auto;
+		}
 		.o_tool span {
 			max-width: 10em;
 			@include text-overflow();	
+		}
+		.o_tools_segments .o_tool span {
+			display: block;
 		}
 		.o_tool, .o_text, .o_tool_dropdown {
 			margin: 0 5px;	
@@ -299,6 +312,9 @@
 				top: 0;
 				vertical-align: top;
 			}
+		}
+		.o_tools.o_tools_segments {
+			margin: 0 auto -1.1em auto;
 		}
 		.o_tools_center {
 			float: left;

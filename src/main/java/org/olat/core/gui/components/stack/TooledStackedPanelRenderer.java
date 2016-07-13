@@ -83,10 +83,11 @@ public class TooledStackedPanelRenderer extends DefaultComponentRenderer {
 				List<Tool> leftTools = getTools(tools, Align.left);
 				List<Tool> rightEdgeTools = getTools(tools, Align.rightEdge);
 				List<Tool> rightTools = getTools(tools, Align.right);
+				List<Tool> segmentsTools = getTools(tools, Align.segment);
 				List<Tool> notAlignedTools = getTools(tools, null);
 				
 				if(panel.isToolbarEnabled() || (panel.isToolbarAutoEnabled()
-						&& (leftTools.size() > 0 || rightTools.size() > 0 || rightTools.size() > 0 || notAlignedTools.size() > 0))) {
+						&& (leftTools.size() > 0 || rightTools.size() > 0 || rightTools.size() > 0 || notAlignedTools.size() > 0 || segmentsTools.size() > 0))) {
 					sb.append("<div class='o_tools_container'><div class='container-fluid'>");
 					
 					if(leftTools.size() > 0) {
@@ -100,19 +101,26 @@ public class TooledStackedPanelRenderer extends DefaultComponentRenderer {
 						renderTools(rightEdgeTools, renderer, sb, args);
 						sb.append("</ul>");
 					}
-					
+
 					if(rightTools.size() > 0) {
 						sb.append("<ul class='o_tools o_tools_right list-inline'>");
 						renderTools(rightTools, renderer, sb, args);
 						sb.append("</ul>");
 					}
-		
+
 					if(notAlignedTools.size() > 0) {
 						sb.append("<ul class='o_tools o_tools_center list-inline'>");
 						renderTools(notAlignedTools, renderer, sb, args);
 						sb.append("</ul>");
 					}
-					sb.append("</div></div>"); // container-fluid, o_tools_container
+					sb.append("</div>"); // container-fluid,
+					
+					if(segmentsTools.size() > 0) {
+						sb.append("<ul class='o_tools o_tools_segments list-inline'>");
+						renderTools(segmentsTools, renderer, sb, args);
+						sb.append("</ul>");
+					}
+					sb.append("</div>"); 
 				}
 			}
 			sb.append("</div>"); // o_toolbar

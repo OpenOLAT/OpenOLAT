@@ -74,8 +74,8 @@ public class TableOfContentController extends BasicController implements TooledC
 	
 	private final VelocityContainer mainVC;
 	private final TooledStackedPanel stackPanel;
-	private final TimelineComponent timelineCmp;
-	private final Link timelineSwitchOnButton, timelineSwitchOffButton;
+	private TimelineComponent timelineCmp;
+	private Link timelineSwitchOnButton, timelineSwitchOffButton;
 	
 	private CloseableModalController cmc;
 	private SectionEditController newSectionCtrl;
@@ -107,17 +107,23 @@ public class TableOfContentController extends BasicController implements TooledC
 		
 		mainVC = createVelocityContainer("table_of_contents");
 		
-		timelineCmp = new TimelineComponent("timeline");
-		timelineCmp.setContainerId("o_portfolio_toc_timeline");
-		initTimeline();
-		mainVC.put("timeline", timelineCmp);
-		
-		timelineSwitchOnButton = LinkFactory.createButtonSmall("timeline.switch.on", mainVC, this);
-		timelineSwitchOnButton.setIconLeftCSS("o_icon o_icon-sm o_icon_toggle_on");
-		
-		timelineSwitchOffButton = LinkFactory.createButtonSmall("timeline.switch.off", mainVC, this);
-		timelineSwitchOffButton.setIconLeftCSS("o_icon o_icon-sm o_icon_toggle_off");
-		doSwitchTimelineOn();
+		if(config.isTimeline()) {
+			timelineCmp = new TimelineComponent("timeline");
+			timelineCmp.setContainerId("o_portfolio_toc_timeline");
+			initTimeline();
+			mainVC.put("timeline", timelineCmp);
+			
+			timelineSwitchOnButton = LinkFactory.createButtonSmall("timeline.switch.on", mainVC, this);
+			timelineSwitchOnButton.setIconLeftCSS("o_icon o_icon-sm o_icon_toggle_on");
+			timelineSwitchOnButton.setElementCssClass("o_sel_timeline_on");
+			
+			timelineSwitchOffButton = LinkFactory.createButtonSmall("timeline.switch.off", mainVC, this);
+			timelineSwitchOffButton.setIconLeftCSS("o_icon o_icon-sm o_icon_toggle_off");
+			timelineSwitchOffButton.setElementCssClass("o_sel_timeline_off");
+			doSwitchTimelineOn();
+		} else {
+			mainVC.contextPut("timelineSwitch", Boolean.FALSE);
+		}
 		
 		owners = portfolioService.getMembers(binder, PortfolioRoles.owner.name());
 		StringBuilder ownerSb = new StringBuilder();
@@ -197,7 +203,9 @@ public class TableOfContentController extends BasicController implements TooledC
 			String s = page.getPageStatus() == null ? "draft" : page.getPageStatus().name();
 			points.add(new TimelinePoint(page.getKey().toString(), page.getTitle(), page.getCreationDate(), s));
 		}
-		timelineCmp.setPoints(points);
+		if(timelineCmp != null) {
+			timelineCmp.setPoints(points);
+		}
 		mainVC.contextPut("sections", sectionList);
 	}
 	

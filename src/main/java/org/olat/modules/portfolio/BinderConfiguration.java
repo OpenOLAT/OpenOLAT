@@ -36,11 +36,13 @@ public class BinderConfiguration {
 	private final boolean withScore;
 	private final boolean withPassed;
 	private final boolean assessable;
+	private final boolean timeline;
 	
-	public BinderConfiguration(boolean assessable, boolean withScore, boolean withPassed) {
+	public BinderConfiguration(boolean assessable, boolean withScore, boolean withPassed, boolean timeline) {
 		this.assessable = assessable;
 		this.withScore = withScore;
 		this.withPassed = withPassed;
+		this.timeline = timeline;
 	}
 	
 	public boolean isAssessable() {
@@ -55,6 +57,10 @@ public class BinderConfiguration {
 		return withPassed;
 	}
 	
+	public boolean isTimeline() {
+		return timeline;
+	}
+	
 	@Override
 	public String toString() {
 		StringBuilder sb = new StringBuilder();
@@ -65,15 +71,15 @@ public class BinderConfiguration {
 	}
 	
 	public static BinderConfiguration createTemplateConfig() {
-		return new BinderConfiguration(false, false, false);
+		return new BinderConfiguration(false, false, false, false);
 	}
 	
 	public static BinderConfiguration createInvitationConfig() {
-		return new BinderConfiguration(false, false, false);
+		return new BinderConfiguration(false, false, false, true);
 	}
 	
 	public static BinderConfiguration createMyPagesConfig() {
-		return new BinderConfiguration(false, false, false);
+		return new BinderConfiguration(false, false, false, true);
 	}
 
 	public static BinderConfiguration createConfig(Binder binder) {
@@ -102,6 +108,6 @@ public class BinderConfiguration {
 		} else {
 			withPassed = withScore = assessable = false;
 		}
-		return new BinderConfiguration(assessable, withScore, withPassed);
+		return new BinderConfiguration(assessable, withScore, withPassed, true);
 	}
 }

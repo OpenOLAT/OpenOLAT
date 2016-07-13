@@ -88,6 +88,15 @@ public class TooledStackedPanel extends BreadcrumbedStackedPanel implements Stac
 	 * @param toolComponent
 	 * @param inherit The tool stay visible if other components are pushed.
 	 */
+	public void addTool(ButtonGroupComponent toolComponent, boolean inherit) {
+		addTool(toolComponent, Align.segment, inherit, null);
+	}
+	
+	/**
+	 * 
+	 * @param toolComponent
+	 * @param inherit The tool stay visible if other components are pushed.
+	 */
 	public void addTool(Component toolComponent, boolean inherit) {
 		addTool(toolComponent, null, inherit, null);
 	}
@@ -253,7 +262,8 @@ public class TooledStackedPanel extends BreadcrumbedStackedPanel implements Stac
 	public enum Align {
 		left,
 		right,
-		rightEdge
+		rightEdge,
+		segment
 	}
 	
 }

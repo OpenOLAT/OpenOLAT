@@ -196,6 +196,22 @@ div#o_main_toolbar.o_toolbar.o_portfolio {
 	}
 }
 
+@media (max-width: $screen-xs-max) { 
+	.o_portfolio_toc.o_portfolio_withtimeline, .o_portfolio_entries.o_portfolio_withtimeline {
+		width: 100%;
+		float:none;
+	}
+	
+	.o_sel_timeline_off, .o_sel_timeline_on, .o_portfolio_timeline {
+		display:none;
+	}
+	
+	.o_portfolio_content .o_portfolio_toc.o_portfolio_withtimeline {
+		width: 100%;
+		float:none;
+	}
+}
+
 .o_portfolio_media_browser {
 
 	.o_portfolio_medias {
