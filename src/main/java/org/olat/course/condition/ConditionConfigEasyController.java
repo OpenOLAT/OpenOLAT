@@ -61,6 +61,7 @@ import org.olat.core.util.event.EventBus;
 import org.olat.core.util.event.GenericEventListener;
 import org.olat.core.util.event.MultiUserEvent;
 import org.olat.core.util.resource.OresHelper;
+import org.olat.course.assessment.AssessmentModule;
 import org.olat.course.condition.interpreter.ConditionDateFormatter;
 import org.olat.course.editor.CourseEditorEnv;
 import org.olat.course.nodes.CourseNode;
@@ -142,6 +143,8 @@ public class ConditionConfigEasyController extends FormBasicController implement
 	private ShibbolethModule shibbolethModule;
 	@Autowired
 	private BusinessGroupService businessGroupService;
+	@Autowired
+	private AssessmentModule assessmentModule;
 	
 	private boolean managedGroup;
 	
@@ -1122,6 +1125,7 @@ public class ConditionConfigEasyController extends FormBasicController implement
 		assessmentMode = uifactory.addCheckboxesHorizontal("assessmentMode", null, formLayout, new String[] { "ison" }, new String[] { translate("form.easy.assessmentMode") });
 		assessmentMode.select("ison", validatedCondition.isAssessmentMode());
 		assessmentMode.addActionListener(FormEvent.ONCLICK);
+		assessmentMode.setVisible(assessmentModule.isAssessmentModeEnabled());
 	}
 
 	/**

@@ -348,10 +348,14 @@ public class Formatter {
 	 * @return formatted timecode
 	 */
 	public static String formatTimecode(long timecode) {
-		String result =  DurationFormatUtils.formatDuration(timecode, "H:mm:ss", false);
+		String result =  DurationFormatUtils.formatDuration(timecode, "H:mm:ss", true);
 		if (result.startsWith("0:")) {
 			// remove empty hours
 			result = result.substring(2);
+		}
+		if (result.startsWith("0")) {
+			// remove zero from from 10x minutes (02:23 -> 2:23, 00:14 -> 0:14)
+			result = result.substring(1);
 		}
 		return result;
 	}

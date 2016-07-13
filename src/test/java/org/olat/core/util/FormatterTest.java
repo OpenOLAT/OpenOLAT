@@ -22,6 +22,7 @@ package org.olat.core.util;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.Locale;
+
 import org.apache.commons.lang.StringEscapeUtils;
 import org.junit.Assert;
 import org.junit.Test;
@@ -117,4 +118,20 @@ public class FormatterTest {
 	}
 
 
+	@Test
+	public void testFormatTimecode() {
+		Assert.assertEquals("0:00", Formatter.formatTimecode(0l));
+		Assert.assertEquals("0:01", Formatter.formatTimecode(1000l));
+		Assert.assertEquals("0:10", Formatter.formatTimecode(10000l));
+		Assert.assertEquals("1:10", Formatter.formatTimecode(70000l));
+		Assert.assertEquals("9:59", Formatter.formatTimecode(599000l));
+		Assert.assertEquals("13:45", Formatter.formatTimecode(825000l));
+		Assert.assertEquals("1:01:01", Formatter.formatTimecode(3661000l));
+		Assert.assertEquals("4:03:45", Formatter.formatTimecode(14625000l));
+		Assert.assertEquals("4:23:45", Formatter.formatTimecode(15825000l));
+		Assert.assertEquals("32:23:45", Formatter.formatTimecode(116625000l));
+		Assert.assertEquals("532:23:45", Formatter.formatTimecode(1916625000l));
+	}
+	
+	
 }

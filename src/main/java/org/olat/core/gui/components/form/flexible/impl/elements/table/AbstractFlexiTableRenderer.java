@@ -473,7 +473,7 @@ public abstract class AbstractFlexiTableRenderer extends DefaultComponentRendere
 			  .append(FormJSHelper.getXHRFnCallFor(theForm, ftC.getFormDispatchId(), 1, true, true,
 					  new NameValuePair("page", Integer.toString(page + 1)))); 
 		}
-		sb.append("\">").append("&raquo;").append("</li></a>");
+		sb.append("\">").append("&raquo;").append("</a></li>");
 	}
 	
 	private void renderPageNumberLinks(StringOutput sb, FlexiTableComponent ftC, int page, int maxPage) {
