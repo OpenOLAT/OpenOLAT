@@ -41,7 +41,7 @@ import org.olat.modules.portfolio.Category;
 import org.olat.modules.portfolio.CategoryToElement;
 import org.olat.modules.portfolio.Page;
 import org.olat.modules.portfolio.Section;
-import org.olat.modules.portfolio.model.PageRow;
+import org.olat.modules.portfolio.ui.model.PageRow;
 
 /**
  * 
@@ -86,10 +86,12 @@ public class MyPageListController extends AbstractPageListController {
 			categories.add(categorizedElement.getCategory());
 		}
 		
+		//TODO portfolioService.searchOwnedAssignments(getIdentity());
+		
 		List<Page> pages = portfolioService.searchOwnedPages(getIdentity(), searchString);
 		List<PageRow> rows = new ArrayList<>(pages.size());
 		for (Page page : pages) {
-			PageRow row = forgeRow(page, null, false, categorizedElementMap, numberOfCommentsMap);
+			PageRow row = forgeRow(page, null, null, false, categorizedElementMap, numberOfCommentsMap);
 			rows.add(row);
 			if(page.getSection() != null) {
 				Section section = page.getSection();

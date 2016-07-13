@@ -19,49 +19,46 @@
  */
 package org.olat.modules.portfolio;
 
+import java.util.Date;
+
+import org.olat.core.id.Identity;
+
 /**
  * 
- * Initial date: 15.06.2016<br>
+ * Initial date: 12.07.2016<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public interface BinderSecurityCallback {
+public interface Assignment {
 	
-	/**
-	 * Can edit the edit the content of this binder inclusive sections
-	 * and pages.
-	 * @return
-	 */
-	public boolean canEditBinder();
+	public Long getKey();
 	
-	/**
-	 * Can edit the edit the meta-data in this binder inclusive meta-data
-	 * of sections and pages.
-	 * @return
-	 */
-	public boolean canEditMetadataBinder();
+	public Date getCreationDate();
 	
-	public boolean canAddSection();
-	
-	public boolean canEditSection();
-	
-	public boolean canAddAssignment();
-	
-	public boolean canAddPage();
-	
-	public boolean canEditPage(Page page);
-	
-	public boolean canPublish(Page page);
-	
-	public boolean canEditAccessRights(PortfolioElement element);
-	
-	public boolean canViewElement(PortfolioElement element);
-	
-	public boolean canComment(PortfolioElement element);
-	
-	public boolean canReview(PortfolioElement element);
-	
-	public boolean canAssess(Section section);
- 
+	public Date getLastModified();
 
+	public String getTitle();
+	
+	public String getSummary();
+	
+	public String getContent();
+	
+	public AssignmentStatus getAssignmentStatus();
+	
+	public void setAssignmentStatus(AssignmentStatus status);
+	
+	public AssignmentType getAssignmentType();
+	
+	public Page getPage();
+	
+	public Identity getAssignee();
+	
+	/**
+	 * The section is lazily loaded.
+	 * 
+	 * @return
+	 */
+	public Section getSection();
+	
+	public Assignment getTemplateReference();
 }

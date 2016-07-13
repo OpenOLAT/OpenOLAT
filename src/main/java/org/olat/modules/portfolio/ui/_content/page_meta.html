@@ -39,5 +39,27 @@
 		</div>
 		#end
 	</div>
+	#foreach($assignment in $assignments)
+		<div class="o_page_assignment o_togglebox_wrapper o_block">
+			<a href="#page_assignment_${assignment.key}" data-toggle="collapse" data-target="#page_assignment_${assignment.key}" class="o_opener" onclick="jQuery(this).toggleClass('o_in'); return false;">
+				<i class="o_icon o_icon-fw o_icon-lg"></i> 
+				$r.translate("meta.page.assignment") $r.translate("meta.page.assignment.type"): $r.translate("assignment.type.${assignment.type}")
+			</a>
+			<div id="page_assignment_${assignment.key}" class="collapse">
+				<div class="o_togglebox_content clearfix">	
+					#if($assignment.summary && $assignment.summary.length() > 0)
+					<div class="o_desc o_user_content_block">
+						$r.xssScan($assignment.summary)
+					</div>
+					#end
+					#if($assignment.content && $assignment.content.length() > 0)
+					<div class="o_desc o_user_content_block">
+						$r.xssScan($assignment.content)
+					</div>
+					#end
+				</div>
+	    	</div>
+		</div>
+	#end
 </div>
 </div>

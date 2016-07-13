@@ -55,6 +55,9 @@ import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.assessment.AssessmentService;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
 import org.olat.modules.portfolio.AssessmentSection;
+import org.olat.modules.portfolio.Assignment;
+import org.olat.modules.portfolio.AssignmentStatus;
+import org.olat.modules.portfolio.AssignmentType;
 import org.olat.modules.portfolio.Binder;
 import org.olat.modules.portfolio.BinderLight;
 import org.olat.modules.portfolio.BinderRef;
@@ -116,6 +119,8 @@ public class PortfolioServiceImpl implements PortfolioService {
 	private CommentDAO commentDao;
 	@Autowired
 	private CategoryDAO categoryDao;
+	@Autowired
+	private AssignmentDAO assignmentDao;
 	@Autowired
 	private SharedByMeQueries sharedByMeQueries;
 	@Autowired
@@ -200,6 +205,40 @@ public class PortfolioServiceImpl implements PortfolioService {
 		binderDao.detachBinderTemplate();
 		int deletedRows = binderDao.deleteBinderTemplate(binder);
 		return deletedRows > 0;
+	}
+
+	@Override
+	public Assignment addAssignment(String title, String summary, String content, AssignmentType type,
+			Section section) {
+		return assignmentDao.createAssignment(title, summary, content, type, AssignmentStatus.template, section);
+	}
+
+	@Override
+	
+	public List<Assignment> getAssignments(PortfolioElement element) {
+		if(element.getType() == PortfolioElementType.binder) {
+			return assignmentDao.loadAssignments((BinderRef)element);
+		}
+		if(element.getType() == PortfolioElementType.section) {
+			return assignmentDao.loadAssignments((SectionRef)element);
+		}
+		if(element.getType() == PortfolioElementType.page) {
+			return assignmentDao.loadAssignments((Page)element);
+		}
+		return null;
+	}
+
+	@Override
+	public Assignment startAssignment(Assignment assignment, Identity author) {
+		Assignment reloadedAssignment = assignmentDao.loadAssignmentByKey(assignment.getKey());
+		if(reloadedAssignment.getAssignmentType() == AssignmentType.essay) {
+			if(reloadedAssignment.getPage() == null) {
+				Section section = reloadedAssignment.getSection();
+				Page page = appendNewPage(author, reloadedAssignment.getTitle(), reloadedAssignment.getSummary(), null, null, section);
+				reloadedAssignment = assignmentDao.startEssayAssignment(reloadedAssignment, page, author);
+			}
+		}
+		return reloadedAssignment;
 	}
 
 	@Override

@@ -17,10 +17,11 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.portfolio.model;
+package org.olat.modules.portfolio.ui.model;
 
 import java.util.Collection;
 import java.util.Date;
+import java.util.List;
 
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.link.Link;
@@ -48,10 +49,10 @@ public class PageRow {
 	
 	private Collection<String> pageCategories;
 	private Collection<String> sectionCategories;
+	private List<AssignmentPageRow> assignments;
 	
 	private Link openLink;
-	private FormLink openFormLink;
-	private FormLink newEntryLink;
+	private FormLink openFormLink, newEntryLink, newAssignmentLink;
 	
 	private long numOfComments;
 	private Link commentLink;
@@ -219,6 +220,22 @@ public class PageRow {
 		return newEntryLink == null ? null : newEntryLink.getComponent().getComponentName();
 	}
 	
+	public boolean hasNewAssignmentLink() {
+		return newAssignmentLink != null;
+	}
+	
+	public FormLink getNewAssignmentLink() {
+		return newAssignmentLink;
+	}
+	
+	public void setNewAssignmentLink(FormLink newAssignmentLink) {
+		this.newAssignmentLink = newAssignmentLink;
+	}
+	
+	public String getNewAssignmentLinkName() {
+		return newAssignmentLink == null ? null : newAssignmentLink.getComponent().getComponentName();
+	}
+	
 	public FormLink getOpenFormItem() {
 		return openFormLink;
 	}
@@ -285,5 +302,17 @@ public class PageRow {
 	
 	public void setMetaBinderTitle(String metaBinderTitle) {
 		this.metaBinderTitle = metaBinderTitle;
+	}
+	
+	public boolean hasAssignments() {
+		return assignments != null && assignments.size() > 0;
+	}
+
+	public List<AssignmentPageRow> getAssignments() {
+		return assignments;
+	}
+
+	public void setAssignments(List<AssignmentPageRow> assignments) {
+		this.assignments = assignments;
 	}
 }

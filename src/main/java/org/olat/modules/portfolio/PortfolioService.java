@@ -61,6 +61,29 @@ public interface PortfolioService {
 	public boolean deleteBinderTemplate(Binder binder, RepositoryEntry templateEntry);
 	
 	/**
+	 * Add an assignment to a section.
+	 * 
+	 * @param title
+	 * @param summary
+	 * @param content
+	 * @param type The type is mandatory
+	 * @param section The section is mandatory
+	 * @return
+	 */
+	public Assignment addAssignment(String title, String summary, String content, AssignmentType type, Section section);
+	
+	public List<Assignment> getAssignments(PortfolioElement binder);
+	
+	
+	/**
+	 * 
+	 * @param assignment
+	 * @param author
+	 * @return
+	 */
+	public Assignment startAssignment(Assignment assignment, Identity author);
+	
+	/**
 	 * Add a new section at the end of the sections list of the specified binder.
 	 * 
 	 * @param title

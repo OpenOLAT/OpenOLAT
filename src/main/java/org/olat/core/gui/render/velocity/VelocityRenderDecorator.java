@@ -632,6 +632,14 @@ public class VelocityRenderDecorator implements Closeable {
 		return sb;
 	}
 	
+	public boolean isNull(Object obj) {
+		return obj == null;
+	}
+	
+	public boolean isNotNull(Object obj) {
+		return obj != null;
+	}
+	
 	/**
 	 * @param componentName
 	 * @return true if the component with name componentName is a child of the current container. Used to "if" the render 

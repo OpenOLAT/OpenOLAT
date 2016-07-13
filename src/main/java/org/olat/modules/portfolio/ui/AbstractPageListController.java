@@ -56,14 +56,18 @@ import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.modules.portfolio.AssessmentSection;
+import org.olat.modules.portfolio.Assignment;
+import org.olat.modules.portfolio.AssignmentStatus;
+import org.olat.modules.portfolio.AssignmentType;
 import org.olat.modules.portfolio.BinderConfiguration;
 import org.olat.modules.portfolio.BinderSecurityCallback;
 import org.olat.modules.portfolio.Category;
 import org.olat.modules.portfolio.Page;
 import org.olat.modules.portfolio.PortfolioService;
 import org.olat.modules.portfolio.Section;
-import org.olat.modules.portfolio.model.PageRow;
 import org.olat.modules.portfolio.ui.PageListDataModel.PageCols;
+import org.olat.modules.portfolio.ui.model.AssignmentPageRow;
+import org.olat.modules.portfolio.ui.model.PageRow;
 import org.olat.modules.portfolio.ui.renderer.StatusCellRenderer;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -83,6 +87,7 @@ implements Activateable2, TooledController, FlexiTableComponentDelegate {
 	private PageRunController pageCtrl;
 	private CloseableModalController cmc;
 	private UserCommentsController commentsCtrl;
+	private AssignmentEditController editAssignmentCtrl;
 	
 	protected int counter;
 	protected final boolean withSections;
@@ -116,6 +121,7 @@ implements Activateable2, TooledController, FlexiTableComponentDelegate {
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(PageCols.publicationDate, "select"));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, PageCols.open, null));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, PageCols.newEntry, null));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, PageCols.newAssignment, null));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, PageCols.comment, null));
 	
 		model = new PageListDataModel(columnsModel);
@@ -141,12 +147,22 @@ implements Activateable2, TooledController, FlexiTableComponentDelegate {
 	
 	@Override
 	public Iterable<Component> getComponents(int row, Object rowObject) {
-		return null;
+		PageRow pageRow = model.getObject(row);
+		List<Component> components = new ArrayList<>(4);
+		if(pageRow.hasAssignments()) {
+			for(AssignmentPageRow assignmentRow:pageRow.getAssignments()) {
+				if(assignmentRow.getEditLink() != null) {
+					components.add(assignmentRow.getEditLink().getComponent());
+				}
+			}	
+		}
+		return components;
 	}
 	
 	protected abstract void loadModel(String searchString);
 	
-	protected PageRow forgeRow(Page page, AssessmentSection assessmentSection, boolean firstOfSection,
+	protected PageRow forgeRow(Page page, AssessmentSection assessmentSection, List<Assignment> assignments,
+			boolean firstOfSection,
 			Map<OLATResourceable,List<Category>> categorizedElementMap, Map<Long,Long> numberOfCommentsMap) {
 
 		PageRow row = new PageRow(page, page.getSection(), assessmentSection, firstOfSection, config.isAssessable());
@@ -156,6 +172,7 @@ implements Activateable2, TooledController, FlexiTableComponentDelegate {
 		openLink.setPrimary(true);
 		row.setOpenFormLink(openLink);
 		openLink.setUserObject(row);
+		addAssignmentsToRow(row, assignments);
 		addCategoriesToRow(row, categorizedElementMap);
 		
 		if(numberOfCommentsMap != null) {
@@ -188,7 +205,8 @@ implements Activateable2, TooledController, FlexiTableComponentDelegate {
 		return row;
 	}
 	
-	protected PageRow forgeRow(Section section, AssessmentSection assessmentSection, boolean firstOfSection,
+	protected PageRow forgeRow(Section section, AssessmentSection assessmentSection, List<Assignment> assignments,
+			boolean firstOfSection,
 			Map<OLATResourceable,List<Category>> categorizedElementMap) {
 		
 		PageRow row = new PageRow(null, section, assessmentSection, firstOfSection, config.isAssessable());
@@ -198,8 +216,39 @@ implements Activateable2, TooledController, FlexiTableComponentDelegate {
 		openLink.setPrimary(true);
 		row.setOpenFormLink(openLink);
 		openLink.setUserObject(row);
+		addAssignmentsToRow(row, assignments);
 		addCategoriesToRow(row, categorizedElementMap);
 		return row;
+	}
+	
+	private void addAssignmentsToRow(PageRow row, List<Assignment> assignments) {
+		if(assignments != null && assignments.size() > 0) {
+			List<AssignmentPageRow> assignmentRows = new ArrayList<>();
+			for(Assignment assignment:assignments) {
+				AssignmentPageRow assignmentRow = new AssignmentPageRow(assignment);
+				
+				if(secCallback.canAddAssignment()) {
+					if(assignment.getTemplateReference() == null) {
+						FormLink editLink = uifactory.addFormLink("edit_assign_" + (++counter), "edit.assignment", "edit", null, flc, Link.LINK);
+						editLink.setUserObject(assignmentRow);
+						assignmentRow.setEditLink(editLink);
+					}
+				} else {
+					if(assignment.getAssignmentStatus() == AssignmentStatus.notStarted) {
+						FormLink startLink = uifactory.addFormLink("create_assign_" + (++counter), "start.assignment", "create.start.assignment", null, flc, Link.LINK);
+						startLink.setUserObject(assignmentRow);
+						assignmentRow.setEditLink(startLink);
+					} else {
+						FormLink openLink = uifactory.addFormLink("open_assign_" + (++counter), "open.assignment", "open", null, flc, Link.LINK);
+						openLink.setUserObject(assignmentRow);
+						assignmentRow.setEditLink(openLink);
+					}
+				}
+				
+				assignmentRows.add(assignmentRow);
+			}
+			row.setAssignments(assignmentRows);
+		}
 	}
 	
 	private void addCategoriesToRow(PageRow row, Map<OLATResourceable,List<Category>> categorizedElementMap) {
@@ -227,7 +276,7 @@ implements Activateable2, TooledController, FlexiTableComponentDelegate {
 	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
 		//
 	}
-	
+
 	@Override
 	public void event(UserRequest ureq, Controller source, Event event) {
 		if(pageCtrl == source) {
@@ -242,6 +291,13 @@ implements Activateable2, TooledController, FlexiTableComponentDelegate {
 			}
 			cmc.deactivate();
 			cleanUp();
+		} else if(editAssignmentCtrl == source) {
+			if(event == Event.CHANGED_EVENT || event == Event.DONE_EVENT) {
+				loadModel(null);
+				fireEvent(ureq, Event.CHANGED_EVENT);
+			}
+			cmc.deactivate();
+			cleanUp();
 		} else if(cmc == source) {
 			cleanUp();
 		}
@@ -249,8 +305,10 @@ implements Activateable2, TooledController, FlexiTableComponentDelegate {
 	}
 	
 	private void cleanUp() {
+		removeAsListenerAndDispose(editAssignmentCtrl);
 		removeAsListenerAndDispose(commentsCtrl);
 		removeAsListenerAndDispose(cmc);
+		editAssignmentCtrl = null;
 		commentsCtrl = null;
 		cmc = null;
 	}
@@ -271,6 +329,15 @@ implements Activateable2, TooledController, FlexiTableComponentDelegate {
 			} else if("comment".equals(cmd)) {
 				PageRow row = (PageRow)link.getUserObject();
 				doComment(ureq, row.getPage());
+			} else if("edit.assignment".equals(cmd)) {
+				AssignmentPageRow row = (AssignmentPageRow)link.getUserObject();
+				doEditAssignment(ureq, row);
+			} else if("start.assignment".equals(cmd)) {
+				AssignmentPageRow row = (AssignmentPageRow)link.getUserObject();
+				doStartAssignment(ureq, row);
+			} else if("open.assignment".equals(cmd)) {
+				AssignmentPageRow row = (AssignmentPageRow)link.getUserObject();
+				doOpenAssignment(ureq, row);
 			}
 		}
 		super.formInnerEvent(ureq, source, event);
@@ -279,6 +346,37 @@ implements Activateable2, TooledController, FlexiTableComponentDelegate {
 	@Override
 	protected void formOK(UserRequest ureq) {
 		//
+	}
+	
+	private void doStartAssignment(UserRequest ureq, AssignmentPageRow row) {
+		Assignment assignment = row.getAssignment();
+		Assignment startedAssigment = portfolioService.startAssignment(assignment, getIdentity());
+		row.setAssignment(startedAssigment);
+		doOpenPage(ureq, startedAssigment.getPage());
+	}
+	
+	private void doOpenAssignment(UserRequest ureq, AssignmentPageRow row) {
+		Assignment assignment = row.getAssignment();
+		if(assignment.getAssignmentType() == AssignmentType.essay) {
+			Page page = assignment.getPage();
+			Page reloadedPage = portfolioService.getPageByKey(page.getKey());
+			doOpenPage(ureq, reloadedPage);
+		} else {
+			showWarning("not.implemented");
+		}
+	}
+	
+	private void doEditAssignment(UserRequest ureq, AssignmentPageRow row) {
+		if(editAssignmentCtrl != null) return;
+		
+		Assignment assignment = row.getAssignment();
+		editAssignmentCtrl = new AssignmentEditController(ureq, getWindowControl(), assignment);
+		listenTo(editAssignmentCtrl);
+		
+		String title = translate("edit.assignment");
+		cmc = new CloseableModalController(getWindowControl(), null, editAssignmentCtrl.getInitialComponent(), true, title, true);
+		listenTo(cmc);
+		cmc.activate();
 	}
 	
 	private void doComment(UserRequest ureq, Page page) {

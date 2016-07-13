@@ -36,6 +36,8 @@ import org.olat.basesecurity.manager.GroupDAO;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.core.util.StringHelper;
+import org.olat.modules.portfolio.Assignment;
+import org.olat.modules.portfolio.AssignmentStatus;
 import org.olat.modules.portfolio.Binder;
 import org.olat.modules.portfolio.BinderRef;
 import org.olat.modules.portfolio.PortfolioRoles;
@@ -65,6 +67,8 @@ public class BinderDAO {
 	private DB dbInstance;
 	@Autowired
 	private GroupDAO groupDao;
+	@Autowired
+	private AssignmentDAO assignmentDao;
 	
 	public BinderImpl createAndPersist(String title, String summary, String imagePath, RepositoryEntry entry) {
 		BinderImpl binder = new BinderImpl();
@@ -129,11 +133,13 @@ public class BinderDAO {
 				Section currentSection = templateToSectionsMap.remove(templateSection);
 				if(currentSection != null) {
 					currentSections.add(currentSection);
+					syncAssignments(templateSection, currentSection);
 				} else {
 					Section section = createInternalSection(binder, templateSection);
 					currentSections.add(section);
 					dbInstance.getCurrentEntityManager().persist(section);
-				}	
+					syncAssignments(templateSection, section);
+				}
 			}
 			
 			for(Section leadingSection:templateToSectionsMap.values()) {
@@ -147,8 +153,26 @@ public class BinderDAO {
 		return binder;
 	}
 	
+	private void syncAssignments(Section templateSection, Section currentSection) {
+		List<Assignment> templateAssignments = new ArrayList<>(assignmentDao.loadAssignments(templateSection));
+		
+		List<Assignment> currentAssignments = assignmentDao.loadAssignments(currentSection);
+		for(Assignment currentAssignment:currentAssignments) {
+			Assignment refAssignment = currentAssignment.getTemplateReference();
+			if(!templateAssignments.remove(refAssignment)) {
+				currentAssignment.setAssignmentStatus(AssignmentStatus.deleted);
+			} else {
+				//TODO sync summary
+			}
+		}
+		
+		for(Assignment templateAssignment:templateAssignments) {
+			assignmentDao.createAssignment(templateAssignment, AssignmentStatus.notStarted, currentSection);
+		}
+	}
+	
 	private boolean needUpdate(List<Section> templateSections, List<Section> currentSections) {
-		boolean same = true;
+		/*boolean same = true;
 		if(templateSections.size() == currentSections.size()) {
 			for(int i=templateSections.size(); i-->0; ) {
 				Section templateSection = templateSections.get(i);
@@ -160,8 +184,8 @@ public class BinderDAO {
 			}
 		} else {
 			same &= false;
-		}
-		return !same;
+		}*/
+		return true;
 	}
 	
 	private Section createInternalSection(Binder binder, Section templateSection) {

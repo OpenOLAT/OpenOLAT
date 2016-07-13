@@ -284,4 +284,40 @@ alter table o_pf_assessment_section add constraint pf_asection_ident_idx foreign
 create index idx_pf_asection_ident_idx on o_pf_assessment_section (fk_identity_id);
 
 
+create table o_pf_assignment (
+   id bigserial,
+   creationdate timestamp not null,
+   lastmodified timestamp not null,
+   p_status varchar(32) default null,
+   p_type varchar(32) not null,
+   p_version int8 not null default 0,
+   p_title varchar(255) default null,
+   p_summary text,
+   p_content text,
+   fk_section_id int8 not null,
+   fk_template_reference_id int8,
+   fk_page_id int8,
+   fk_assignee_id int8,
+   primary key (id)
+);
+
+alter table o_pf_assignment add constraint pf_assign_section_idx foreign key (fk_section_id) references o_pf_section (id);
+create index idx_pf_assign_section_idx on o_pf_assignment (fk_section_id);
+alter table o_pf_assignment add constraint pf_assign_ref_assign_idx foreign key (fk_template_reference_id) references o_pf_assignment (id);
+create index idx_pf_assign_ref_assign_idx on o_pf_assignment (fk_section_id);
+alter table o_pf_assignment add constraint pf_assign_page_idx foreign key (fk_page_id) references o_pf_page (id);
+create index idx_pf_assign_page_idx on o_pf_assignment (fk_page_id);
+alter table o_pf_assignment add constraint pf_assign_assignee_idx foreign key (fk_assignee_id) references o_bs_identity (id);
+create index idx_pf_assign_assignee_idx on o_pf_assignment (fk_assignee_id);
+
+
+
+
+
+
+
+
+
+
+
 

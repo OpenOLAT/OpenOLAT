@@ -31,8 +31,8 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFl
 import org.olat.modules.portfolio.Page;
 import org.olat.modules.portfolio.PageStatus;
 import org.olat.modules.portfolio.Section;
-import org.olat.modules.portfolio.model.PageRow;
 import org.olat.modules.portfolio.ui.PageListDataModel.PageCols;
+import org.olat.modules.portfolio.ui.model.PageRow;
 
 /**
  * 

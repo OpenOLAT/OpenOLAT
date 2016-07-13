@@ -271,3 +271,28 @@ alter table o_pf_assessment_section add constraint pf_asection_section_idx forei
 alter table o_pf_assessment_section add constraint pf_asection_ident_idx foreign key (fk_identity_id) references o_bs_identity (id);
 
 
+create table o_pf_assignment (
+   id bigint not null auto_increment,
+   creationdate datetime not null,
+   lastmodified datetime not null,
+   p_status varchar(32) default null,
+   p_type varchar(32) not null,
+   p_version bigint not null default 0,
+   p_title varchar(255) default null,
+   p_summary mediumtext,
+   p_content mediumtext,
+   fk_section_id bigint not null,
+   fk_template_reference_id bigint,
+   fk_page_id bigint,
+   fk_assignee_id bigint,
+   primary key (id)
+);
+alter table o_pf_assignment ENGINE = InnoDB;
+
+alter table o_pf_assignment add constraint pf_assign_section_idx foreign key (fk_section_id) references o_pf_section (id);
+alter table o_pf_assignment add constraint pf_assign_ref_assign_idx foreign key (fk_template_reference_id) references o_pf_assignment (id);
+alter table o_pf_assignment add constraint pf_assign_page_idx foreign key (fk_page_id) references o_pf_page (id);
+alter table o_pf_assignment add constraint pf_assign_assignee_idx foreign key (fk_assignee_id) references o_bs_identity (id);
+
+
+

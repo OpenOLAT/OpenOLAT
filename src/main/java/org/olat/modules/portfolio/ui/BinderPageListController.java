@@ -25,6 +25,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.UserRequest;
@@ -45,6 +46,7 @@ import org.olat.core.gui.control.generic.closablewrapper.CloseableModalControlle
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.util.StringHelper;
 import org.olat.modules.portfolio.AssessmentSection;
+import org.olat.modules.portfolio.Assignment;
 import org.olat.modules.portfolio.Binder;
 import org.olat.modules.portfolio.BinderConfiguration;
 import org.olat.modules.portfolio.BinderSecurityCallback;
@@ -53,8 +55,8 @@ import org.olat.modules.portfolio.CategoryToElement;
 import org.olat.modules.portfolio.Page;
 import org.olat.modules.portfolio.Section;
 import org.olat.modules.portfolio.SectionStatus;
-import org.olat.modules.portfolio.model.PageRow;
 import org.olat.modules.portfolio.ui.PageListDataModel.PageCols;
+import org.olat.modules.portfolio.ui.model.PageRow;
 
 /**
  * 
@@ -67,6 +69,7 @@ public class BinderPageListController extends AbstractPageListController  {
 	private Link newEntryLink;
 	private CloseableModalController cmc;
 	private PageMetadataEditController newPageCtrl;
+	private AssignmentEditController newAssignmentCtrl;
 
 	private final Binder binder;
 	
@@ -114,12 +117,26 @@ public class BinderPageListController extends AbstractPageListController  {
 			categories.add(categorizedElement.getCategory());
 		}
 		
+		//comments
 		Map<Long,Long> numberOfCommentsMap = portfolioService.getNumberOfComments(binder);
 		
+		//assessment sections
 		List<AssessmentSection> assessmentSections = portfolioService.getAssessmentSections(binder, getIdentity());
-		Map<Section,AssessmentSection> sectionToAssessmentSectionMap = new HashMap<>();
-		for(AssessmentSection assessmentSection:assessmentSections) {
-			sectionToAssessmentSectionMap.put(assessmentSection.getSection(), assessmentSection);
+		Map<Section,AssessmentSection> sectionToAssessmentSectionMap = assessmentSections.stream()
+				.collect(Collectors.toMap(as -> as.getSection(), as -> as));
+		
+		//assignments
+		List<Assignment> assignments = portfolioService.getAssignments(binder);
+		Map<Section,List<Assignment>> sectionToAssignmentMap = new HashMap<>();
+		for(Assignment assignment:assignments) {
+			List<Assignment> assignmentList;
+			if(sectionToAssignmentMap.containsKey(assignment.getSection())) {
+				assignmentList = sectionToAssignmentMap.get(assignment.getSection());
+			} else {
+				assignmentList = new ArrayList<>();
+				sectionToAssignmentMap.put(assignment.getSection(), assignmentList);
+			}
+			assignmentList.add(assignment);
 		}
 
 		List<Page> pages = portfolioService.getPages(binder, searchString);
@@ -130,8 +147,8 @@ public class BinderPageListController extends AbstractPageListController  {
 			if (sections.remove(section)) {
 				first = true;
 			}
-			PageRow pageRow = forgeRow(page, sectionToAssessmentSectionMap.get(section), first,
-					categorizedElementMap, numberOfCommentsMap);
+			PageRow pageRow = forgeRow(page, sectionToAssessmentSectionMap.get(section), sectionToAssignmentMap.get(section),
+					first, categorizedElementMap, numberOfCommentsMap);
 			rows.add(pageRow);
 			if(secCallback.canAddPage() && section != null
 					&& section.getSectionStatus() != SectionStatus.closed
@@ -140,6 +157,13 @@ public class BinderPageListController extends AbstractPageListController  {
 				newEntryButton.setCustomEnabledLinkCSS("btn btn-primary");
 				newEntryButton.setUserObject(pageRow);
 				pageRow.setNewEntryLink(newEntryButton);
+			}
+			
+			if(secCallback.canAddAssignment() && section != null) {
+				FormLink newAssignmentButton = uifactory.addFormLink("new.assignment." + (++counter), "new.assignment", "create.new.assignment", null, flc, Link.BUTTON);
+				newAssignmentButton.setCustomEnabledLinkCSS("btn btn-primary");
+				newAssignmentButton.setUserObject(pageRow);
+				pageRow.setNewAssignmentLink(newAssignmentButton);
 			}
 			
 			if(section != null) {
@@ -159,7 +183,8 @@ public class BinderPageListController extends AbstractPageListController  {
 		//sections without pages
 		if(!StringHelper.containsNonWhitespace(searchString)) {
 			for(Section section:sections) {
-				PageRow pageRow = forgeRow(section, sectionToAssessmentSectionMap.get(section), true, categorizedElementMap);
+				PageRow pageRow = forgeRow(section, sectionToAssessmentSectionMap.get(section), sectionToAssignmentMap.get(section),
+						true, categorizedElementMap);
 				rows.add(pageRow);
 				if(secCallback.canAddPage() && section != null
 						&& section.getSectionStatus() != SectionStatus.closed
@@ -168,6 +193,13 @@ public class BinderPageListController extends AbstractPageListController  {
 					newEntryButton.setCustomEnabledLinkCSS("btn btn-primary");
 					newEntryButton.setUserObject(pageRow);
 					pageRow.setNewEntryLink(newEntryButton);
+				}
+				
+				if(secCallback.canAddAssignment() && section != null) {
+					FormLink newAssignmentButton = uifactory.addFormLink("new.assignment." + (++counter), "new.assignment", "create.new.assignment", null, flc, Link.BUTTON);
+					newAssignmentButton.setCustomEnabledLinkCSS("btn btn-primary");
+					newAssignmentButton.setUserObject(pageRow);
+					pageRow.setNewAssignmentLink(newAssignmentButton);
 				}
 			}
 		}
@@ -184,6 +216,9 @@ public class BinderPageListController extends AbstractPageListController  {
 			if("new.entry".equals(cmd)) {
 				PageRow row = (PageRow)link.getUserObject();
 				doCreateNewPage(ureq, row.getSection());
+			} else if("new.assignment".equals(cmd)) {
+				PageRow row = (PageRow)link.getUserObject();
+				doCreateNewAssignment(ureq, row.getSection());
 			}
 		}
 		super.formInnerEvent(ureq, source, event);
@@ -199,7 +234,7 @@ public class BinderPageListController extends AbstractPageListController  {
 	
 	@Override
 	public void event(UserRequest ureq, Controller source, Event event) {
-		if(newPageCtrl == source) {
+		if(newPageCtrl == source || newAssignmentCtrl == source) {
 			if(event == Event.DONE_EVENT) {
 				loadModel(null);
 				fireEvent(ureq, Event.CHANGED_EVENT);
@@ -213,8 +248,10 @@ public class BinderPageListController extends AbstractPageListController  {
 	}
 	
 	private void cleanUp() {
+		removeAsListenerAndDispose(newAssignmentCtrl);
 		removeAsListenerAndDispose(newPageCtrl);
 		removeAsListenerAndDispose(cmc);
+		newAssignmentCtrl = null;
 		newPageCtrl = null;
 		cmc = null;
 	}
@@ -227,6 +264,18 @@ public class BinderPageListController extends AbstractPageListController  {
 		
 		String title = translate("create.new.page");
 		cmc = new CloseableModalController(getWindowControl(), null, newPageCtrl.getInitialComponent(), true, title, true);
+		listenTo(cmc);
+		cmc.activate();
+	}
+	
+	private void doCreateNewAssignment(UserRequest ureq, Section section) {
+		if(newAssignmentCtrl != null) return;
+		
+		newAssignmentCtrl = new AssignmentEditController(ureq, getWindowControl(), section);
+		listenTo(newAssignmentCtrl);
+		
+		String title = translate("create.new.assignment");
+		cmc = new CloseableModalController(getWindowControl(), null, newAssignmentCtrl.getInitialComponent(), true, title, true);
 		listenTo(cmc);
 		cmc.activate();
 	}

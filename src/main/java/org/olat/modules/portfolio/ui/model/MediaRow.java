@@ -17,7 +17,7 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.portfolio.model;
+package org.olat.modules.portfolio.ui.model;
 
 import java.util.Date;
 

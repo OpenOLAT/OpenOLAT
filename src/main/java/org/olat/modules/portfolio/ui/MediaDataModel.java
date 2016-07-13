@@ -33,7 +33,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableModelDelegate;
 import org.olat.core.util.StringHelper;
-import org.olat.modules.portfolio.model.MediaRow;
+import org.olat.modules.portfolio.ui.model.MediaRow;
 
 /**
  * 

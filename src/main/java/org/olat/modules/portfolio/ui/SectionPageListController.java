@@ -38,6 +38,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.id.OLATResourceable;
 import org.olat.modules.portfolio.AssessmentSection;
+import org.olat.modules.portfolio.Assignment;
 import org.olat.modules.portfolio.Binder;
 import org.olat.modules.portfolio.BinderConfiguration;
 import org.olat.modules.portfolio.BinderSecurityCallback;
@@ -45,7 +46,7 @@ import org.olat.modules.portfolio.Category;
 import org.olat.modules.portfolio.CategoryToElement;
 import org.olat.modules.portfolio.Page;
 import org.olat.modules.portfolio.Section;
-import org.olat.modules.portfolio.model.PageRow;
+import org.olat.modules.portfolio.ui.model.PageRow;
 
 /**
  * 
@@ -106,11 +107,13 @@ public class SectionPageListController extends AbstractPageListController  {
 			}
 		}
 		
+		List<Assignment> assignments = portfolioService.getAssignments(section);
+		
 		List<Page> pages = portfolioService.getPages(section, searchString);
 		List<PageRow> rows = new ArrayList<>();
 		boolean first = true;
 		for (Page page : pages) {
-			PageRow row = forgeRow(page, assessmentSection, first, categorizedElementMap, numOfCommentsMap);
+			PageRow row = forgeRow(page, assessmentSection, assignments, first, categorizedElementMap, numOfCommentsMap);
 			row.setSectionCategories(sectionAggregatedCategories);
 			rows.add(row);
 			first = false;

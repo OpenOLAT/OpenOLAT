@@ -28,7 +28,7 @@ import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
 import org.olat.modules.portfolio.MediaHandler;
-import org.olat.modules.portfolio.model.MediaRow;
+import org.olat.modules.portfolio.ui.model.MediaRow;
 
 /**
  * 

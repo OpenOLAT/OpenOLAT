@@ -92,6 +92,11 @@ public class BinderSecurityCallbackFactory {
 		public boolean canEditSection() {
 			return admin;
 		}
+
+		@Override
+		public boolean canAddAssignment() {
+			return admin;
+		}
 	}
 	
 	private static class BinderSecurityCallbackImpl implements BinderSecurityCallback {
@@ -131,7 +136,12 @@ public class BinderSecurityCallbackFactory {
 		public boolean canEditSection() {
 			return owner && newSectionAllowed;
 		}
-		
+
+		@Override
+		public boolean canAddAssignment() {
+			return false;
+		}
+
 		@Override
 		public boolean canAddPage() {
 			return owner;
@@ -223,6 +233,11 @@ public class BinderSecurityCallbackFactory {
 
 		@Override
 		public boolean canEditSection() {
+			return false;
+		}
+
+		@Override
+		public boolean canAddAssignment() {
 			return false;
 		}
 

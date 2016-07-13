@@ -43,6 +43,7 @@ import org.olat.core.gui.media.FileMediaResource;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.id.Identity;
 import org.olat.core.util.StringHelper;
+import org.olat.modules.portfolio.Assignment;
 import org.olat.modules.portfolio.BinderSecurityCallback;
 import org.olat.modules.portfolio.Category;
 import org.olat.modules.portfolio.Page;
@@ -131,6 +132,9 @@ public class PageMetadataController extends BasicController {
 		} else {
 			mainVC.contextPut("imageAlign", "none");
 		}
+		
+		List<Assignment> assignments = portfolioService.getAssignments(page);
+		mainVC.contextPut("assignments", assignments);
 
 		putInitialPanel(mainVC);
 	}
