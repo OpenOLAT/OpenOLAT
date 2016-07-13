@@ -83,6 +83,10 @@
 			font-size: $font-size-base;
 			margin-top: 0;
 			margin-bottom: 5px;
+			max-width: 100%;
+			white-space: nowrap;
+			overflow: hidden;
+			text-overflow: ellipsis;
 		}
 	}	
 	.o_date {
