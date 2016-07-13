@@ -22,13 +22,13 @@ package org.olat.modules.portfolio.manager;
 import java.util.Date;
 import java.util.List;
 
-import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.IdentityRef;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.OLATResourceable;
 import org.olat.modules.portfolio.BinderRef;
 import org.olat.modules.portfolio.Category;
 import org.olat.modules.portfolio.CategoryToElement;
+import org.olat.modules.portfolio.PortfolioRoles;
 import org.olat.modules.portfolio.SectionRef;
 import org.olat.modules.portfolio.model.CategoryImpl;
 import org.olat.modules.portfolio.model.CategoryToElementImpl;
@@ -132,7 +132,7 @@ public class CategoryDAO {
 		  .append(" left join pfsection as section on (section.key = page.section.key)")
 		  .append(" left join pfbinder as binder on (binder.key=section.binder.key)")
 		  .append(" where exists (select pageMember from bgroupmember as pageMember")
-		  .append("   inner join pageMember.identity as ident on (ident.key=:ownerKey and pageMember.role='").append(GroupRoles.owner.name()).append("')")
+		  .append("   inner join pageMember.identity as ident on (ident.key=:ownerKey and pageMember.role='").append(PortfolioRoles.owner.name()).append("')")
 		  .append("   where pageMember.group.key=page.baseGroup.key or pageMember.group.key=binder.baseGroup.key")
 		  .append(" )");
 		return dbInstance.getCurrentEntityManager()

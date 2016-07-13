@@ -22,6 +22,7 @@ package org.olat.modules.portfolio.manager;
 import java.util.Date;
 import java.util.List;
 
+import org.olat.basesecurity.IdentityRef;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.modules.portfolio.Assignment;
@@ -29,6 +30,7 @@ import org.olat.modules.portfolio.AssignmentStatus;
 import org.olat.modules.portfolio.AssignmentType;
 import org.olat.modules.portfolio.BinderRef;
 import org.olat.modules.portfolio.Page;
+import org.olat.modules.portfolio.PortfolioRoles;
 import org.olat.modules.portfolio.Section;
 import org.olat.modules.portfolio.SectionRef;
 import org.olat.modules.portfolio.model.AssignmentImpl;
@@ -136,5 +138,24 @@ public class AssignmentDAO {
 				.createQuery(sb.toString(), Assignment.class)
 				.setParameter("pageKey", page.getKey())
 				.getResultList();
+	}
+	
+	public List<Assignment> getOwnedAssignments(IdentityRef assignee) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select assignment from pfpage as page")
+		  .append(" inner join page.body as body")
+		  .append(" inner join page.section as section")
+		  .append(" inner join section.binder as binder")
+		  .append(" inner join pfassignment assignment on (section.key = assignment.section.key)")
+		  .append(" where assignment.assignee.key is null or assignment.assignee.key=:assigneeKey")
+		  .append(" and exists (select pageMember from bgroupmember as pageMember")
+		  .append("     inner join pageMember.identity as ident on (ident.key=:assigneeKey and pageMember.role='").append(PortfolioRoles.owner.name()).append("')")
+		  .append("  	where pageMember.group.key=page.baseGroup.key or pageMember.group.key=binder.baseGroup.key")
+		  .append(" )");
+
+		return dbInstance.getCurrentEntityManager()
+			.createQuery(sb.toString(), Assignment.class)
+			.setParameter("assigneeKey", assignee.getKey())
+			.getResultList();
 	}
 }

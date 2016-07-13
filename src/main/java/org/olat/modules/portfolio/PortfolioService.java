@@ -74,6 +74,8 @@ public interface PortfolioService {
 	
 	public List<Assignment> getAssignments(PortfolioElement binder);
 	
+	public List<Assignment> searchOwnedAssignments(IdentityRef assignee);
+	
 	
 	/**
 	 * 

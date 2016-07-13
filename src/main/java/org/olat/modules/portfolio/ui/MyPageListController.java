@@ -35,12 +35,14 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.id.OLATResourceable;
+import org.olat.modules.portfolio.Assignment;
 import org.olat.modules.portfolio.BinderConfiguration;
 import org.olat.modules.portfolio.BinderSecurityCallback;
 import org.olat.modules.portfolio.Category;
 import org.olat.modules.portfolio.CategoryToElement;
 import org.olat.modules.portfolio.Page;
 import org.olat.modules.portfolio.Section;
+import org.olat.modules.portfolio.ui.component.TimelinePoint;
 import org.olat.modules.portfolio.ui.model.PageRow;
 
 /**
@@ -58,7 +60,7 @@ public class MyPageListController extends AbstractPageListController {
 
 	public MyPageListController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
 			BinderSecurityCallback secCallback) {
-		super(ureq, wControl, stackPanel, secCallback, BinderConfiguration.createMyPagesConfig(), "pages", false);
+		super(ureq, wControl, stackPanel, secCallback, BinderConfiguration.createMyPagesConfig(), "my_pages", false);
 
 		initForm(ureq);
 		loadModel(null);
@@ -86,12 +88,27 @@ public class MyPageListController extends AbstractPageListController {
 			categories.add(categorizedElement.getCategory());
 		}
 		
-		//TODO portfolioService.searchOwnedAssignments(getIdentity());
+		List<Assignment> assignments = portfolioService.searchOwnedAssignments(getIdentity());
+		Map<Page,List<Assignment>> pageToAssignments = new HashMap<>();
+		for(Assignment assignment:assignments) {
+			Page page = assignment.getPage();
+			List<Assignment> assignmentList;
+			if(pageToAssignments.containsKey(page)) {
+				assignmentList = pageToAssignments.get(page);
+			} else {
+				assignmentList = new ArrayList<>();
+				pageToAssignments.put(page, assignmentList);
+			}
+			assignmentList.add(assignment);
+		}
+		
 		
 		List<Page> pages = portfolioService.searchOwnedPages(getIdentity(), searchString);
 		List<PageRow> rows = new ArrayList<>(pages.size());
+		List<TimelinePoint> points = new ArrayList<>(pages.size());
 		for (Page page : pages) {
-			PageRow row = forgeRow(page, null, null, false, categorizedElementMap, numberOfCommentsMap);
+			List<Assignment> pageAssignmentList = pageToAssignments.get(page);
+			PageRow row = forgeRow(page, null, pageAssignmentList, false, categorizedElementMap, numberOfCommentsMap);
 			rows.add(row);
 			if(page.getSection() != null) {
 				Section section = page.getSection();
@@ -100,7 +117,12 @@ public class MyPageListController extends AbstractPageListController {
 					row.setMetaBinderTitle(section.getBinder().getTitle());
 				}
 			}
+
+			String s = page.getPageStatus() == null ? "draft" : page.getPageStatus().name();
+			points.add(new TimelinePoint(page.getKey().toString(), page.getTitle(), page.getCreationDate(), s));
 		}
+		
+		timelineEl.setPoints(points);
 		model.setObjects(rows);
 		tableEl.reset();
 		tableEl.reloadData();

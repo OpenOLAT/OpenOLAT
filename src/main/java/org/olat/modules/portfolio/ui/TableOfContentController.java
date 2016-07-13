@@ -25,7 +25,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.olat.basesecurity.GroupRoles;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.dropdown.Dropdown;
@@ -51,6 +50,7 @@ import org.olat.modules.portfolio.Binder;
 import org.olat.modules.portfolio.BinderConfiguration;
 import org.olat.modules.portfolio.BinderSecurityCallback;
 import org.olat.modules.portfolio.Page;
+import org.olat.modules.portfolio.PortfolioRoles;
 import org.olat.modules.portfolio.PortfolioService;
 import org.olat.modules.portfolio.Section;
 import org.olat.modules.portfolio.SectionStatus;
@@ -119,7 +119,7 @@ public class TableOfContentController extends BasicController implements TooledC
 		timelineSwitchOffButton.setIconLeftCSS("o_icon o_icon-sm o_icon_toggle_off");
 		doSwitchTimelineOn();
 		
-		owners = portfolioService.getMembers(binder, GroupRoles.owner.name());
+		owners = portfolioService.getMembers(binder, PortfolioRoles.owner.name());
 		StringBuilder ownerSb = new StringBuilder();
 		for(Identity owner:owners) {
 			if(ownerSb.length() > 0) ownerSb.append(", ");

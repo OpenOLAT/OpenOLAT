@@ -35,6 +35,7 @@ import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableSortOptions;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
+import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
@@ -43,6 +44,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
+import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.util.StringHelper;
 import org.olat.modules.portfolio.AssessmentSection;
@@ -53,10 +55,14 @@ import org.olat.modules.portfolio.BinderSecurityCallback;
 import org.olat.modules.portfolio.Category;
 import org.olat.modules.portfolio.CategoryToElement;
 import org.olat.modules.portfolio.Page;
+import org.olat.modules.portfolio.PortfolioRoles;
 import org.olat.modules.portfolio.Section;
 import org.olat.modules.portfolio.SectionStatus;
 import org.olat.modules.portfolio.ui.PageListDataModel.PageCols;
+import org.olat.modules.portfolio.ui.component.TimelinePoint;
 import org.olat.modules.portfolio.ui.model.PageRow;
+import org.olat.user.UserManager;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -67,16 +73,22 @@ import org.olat.modules.portfolio.ui.model.PageRow;
 public class BinderPageListController extends AbstractPageListController  {
 	
 	private Link newEntryLink;
+	
 	private CloseableModalController cmc;
 	private PageMetadataEditController newPageCtrl;
 	private AssignmentEditController newAssignmentCtrl;
 
 	private final Binder binder;
+	private final List<Identity> owners;
+	
+	@Autowired
+	private UserManager userManager;
 	
 	public BinderPageListController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
 			BinderSecurityCallback secCallback, Binder binder, BinderConfiguration config) {
-		super(ureq, wControl, stackPanel, secCallback, config, "pages", true);
+		super(ureq, wControl, stackPanel, secCallback, config, "binder_pages", true);
 		this.binder = binder;
+		owners = portfolioService.getMembers(binder, PortfolioRoles.owner.name());
 		
 		initForm(ureq);
 		loadModel(null);
@@ -95,6 +107,17 @@ public class BinderPageListController extends AbstractPageListController  {
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		super.initForm(formLayout, listener, ureq);
 		
+		if(formLayout instanceof FormLayoutContainer) {
+			FormLayoutContainer layoutCont = (FormLayoutContainer)formLayout;
+			StringBuilder ownerSb = new StringBuilder();
+			for(Identity owner:owners) {
+				if(ownerSb.length() > 0) ownerSb.append(", ");
+				ownerSb.append(userManager.getUserDisplayName(owner));
+			}
+			layoutCont.contextPut("owners", ownerSb.toString());
+			layoutCont.contextPut("binderTitle", StringHelper.escapeHtml(binder.getTitle()));
+		}
+
 		FlexiTableSortOptions options = new FlexiTableSortOptions();
 		options.setFromColumnModel(false);
 		options.setDefaultOrderBy(new SortKey(PageCols.date.name(), false));
@@ -141,6 +164,7 @@ public class BinderPageListController extends AbstractPageListController  {
 
 		List<Page> pages = portfolioService.getPages(binder, searchString);
 		List<PageRow> rows = new ArrayList<>(pages.size());
+		List<TimelinePoint> points = new ArrayList<>(pages.size());
 		for (Page page : pages) {
 			boolean first = false;
 			Section section = page.getSection();
@@ -178,6 +202,10 @@ public class BinderPageListController extends AbstractPageListController  {
 				
 				pageRow.setSectionCategories(categories);
 			}
+			
+
+			String s = page.getPageStatus() == null ? "draft" : page.getPageStatus().name();
+			points.add(new TimelinePoint(page.getKey().toString(), page.getTitle(), page.getCreationDate(), s));
 		}
 		
 		//sections without pages
@@ -203,7 +231,8 @@ public class BinderPageListController extends AbstractPageListController  {
 				}
 			}
 		}
-		
+
+		timelineEl.setPoints(points);
 		model.setObjects(rows);
 		tableEl.reloadData();
 	}

@@ -30,7 +30,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import javax.persistence.TypedQuery;
 
 import org.olat.basesecurity.Group;
-import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.IdentityRef;
 import org.olat.basesecurity.manager.GroupDAO;
 import org.olat.core.commons.persistence.DB;
@@ -218,7 +217,7 @@ public class BinderDAO {
 		return dbInstance.getCurrentEntityManager()
 			.createQuery(sb.toString(), Binder.class)
 			.setParameter("identityKey", owner.getKey())
-			.setParameter("role", GroupRoles.owner.name())
+			.setParameter("role", PortfolioRoles.owner.name())
 			.getResultList();
 	}
 	
@@ -267,7 +266,7 @@ public class BinderDAO {
 		List<Object[]> objects = dbInstance.getCurrentEntityManager()
 			.createQuery(sb.toString(), Object[].class)
 			.setParameter("identityKey", owner.getKey())
-			.setParameter("role", GroupRoles.owner.name())
+			.setParameter("role", PortfolioRoles.owner.name())
 			.getResultList();
 		
 		List<BinderRow> rows = new ArrayList<>(objects.size());

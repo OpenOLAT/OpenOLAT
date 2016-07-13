@@ -20,6 +20,7 @@
 package org.olat.modules.portfolio.ui;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.List;
 import java.util.Map;
 
@@ -66,6 +67,7 @@ import org.olat.modules.portfolio.Page;
 import org.olat.modules.portfolio.PortfolioService;
 import org.olat.modules.portfolio.Section;
 import org.olat.modules.portfolio.ui.PageListDataModel.PageCols;
+import org.olat.modules.portfolio.ui.component.TimelineElement;
 import org.olat.modules.portfolio.ui.model.AssignmentPageRow;
 import org.olat.modules.portfolio.ui.model.PageRow;
 import org.olat.modules.portfolio.ui.renderer.StatusCellRenderer;
@@ -79,6 +81,9 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public abstract class AbstractPageListController extends FormBasicController
 implements Activateable2, TooledController, FlexiTableComponentDelegate {
+
+	protected TimelineElement timelineEl;
+	private FormLink timelineSwitchOnButton, timelineSwitchOffButton;
 	
 	protected FlexiTableElement tableEl;
 	protected PageListDataModel model;
@@ -113,6 +118,18 @@ implements Activateable2, TooledController, FlexiTableComponentDelegate {
 	
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		timelineSwitchOnButton = uifactory.addFormLink("timeline.switch.on", formLayout, Link.BUTTON_SMALL);
+		timelineSwitchOnButton.setIconLeftCSS("o_icon o_icon-sm o_icon_toggle_on");
+		
+		timelineSwitchOffButton = uifactory.addFormLink("timeline.switch.off", formLayout, Link.BUTTON_SMALL); 
+		timelineSwitchOffButton.setIconLeftCSS("o_icon o_icon-sm o_icon_toggle_off");
+		doSwitchTimelineOn();
+		
+		timelineEl = new TimelineElement("timeline");
+		timelineEl.setContainerId("o_portfolio_entries_timeline");
+		formLayout.add("timeline", timelineEl);
+		initTimeline();
+		
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, PageCols.key, "select"));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(PageCols.title, "select"));
@@ -143,6 +160,18 @@ implements Activateable2, TooledController, FlexiTableComponentDelegate {
 	@Override
 	public void initTools() {
 		//
+	}
+	
+	private void initTimeline() {
+		Calendar cal = Calendar.getInstance();
+		cal.set(Calendar.MILLISECOND, 0);
+		cal.set(Calendar.SECOND, 0);
+		cal.set(Calendar.MINUTE, 0);
+		cal.set(Calendar.HOUR_OF_DAY, 0);
+		cal.add(Calendar.DATE, 1);
+		timelineEl.setEndTime(cal.getTime());
+		cal.add(Calendar.YEAR, -2);
+		timelineEl.setStartTime(cal.getTime());
 	}
 	
 	@Override
@@ -320,6 +349,10 @@ implements Activateable2, TooledController, FlexiTableComponentDelegate {
 				FlexiTableSearchEvent se = (FlexiTableSearchEvent)event;
 				loadModel(se.getSearch());
 			}
+		} else if(timelineSwitchOnButton == source) {
+			doSwitchTimelineOff();
+		} else if(timelineSwitchOffButton == source) {
+			doSwitchTimelineOn();
 		} else if(source instanceof FormLink) {
 			FormLink link = (FormLink)source;
 			String cmd = link.getCmd();
@@ -346,6 +379,18 @@ implements Activateable2, TooledController, FlexiTableComponentDelegate {
 	@Override
 	protected void formOK(UserRequest ureq) {
 		//
+	}
+	
+	private void doSwitchTimelineOn() {
+		timelineSwitchOnButton.setVisible(true);
+		timelineSwitchOffButton.setVisible(false);
+		flc.contextPut("timelineSwitch", Boolean.TRUE);
+	}
+	
+	private void doSwitchTimelineOff() {
+		timelineSwitchOnButton.setVisible(false);
+		timelineSwitchOffButton.setVisible(true);
+		flc.contextPut("timelineSwitch", Boolean.FALSE);
 	}
 	
 	private void doStartAssignment(UserRequest ureq, AssignmentPageRow row) {

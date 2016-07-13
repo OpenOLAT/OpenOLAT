@@ -28,6 +28,8 @@ import java.util.Set;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
@@ -37,6 +39,7 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.id.OLATResourceable;
+import org.olat.core.util.StringHelper;
 import org.olat.modules.portfolio.AssessmentSection;
 import org.olat.modules.portfolio.Assignment;
 import org.olat.modules.portfolio.Binder;
@@ -46,6 +49,7 @@ import org.olat.modules.portfolio.Category;
 import org.olat.modules.portfolio.CategoryToElement;
 import org.olat.modules.portfolio.Page;
 import org.olat.modules.portfolio.Section;
+import org.olat.modules.portfolio.ui.component.TimelinePoint;
 import org.olat.modules.portfolio.ui.model.PageRow;
 
 /**
@@ -65,7 +69,7 @@ public class SectionPageListController extends AbstractPageListController  {
 	
 	public SectionPageListController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
 			BinderSecurityCallback secCallback, Binder binder, BinderConfiguration config, Section section) {
-		super(ureq, wControl, stackPanel, secCallback, config, "pages", true);
+		super(ureq, wControl, stackPanel, secCallback, config, "section_pages", true);
 		this.binder = binder;
 		this.section = section;
 		
@@ -79,6 +83,17 @@ public class SectionPageListController extends AbstractPageListController  {
 			newEntryLink = LinkFactory.createToolLink("new.page", translate("create.new.page"), this);
 			newEntryLink.setIconLeftCSS("o_icon o_icon-lg o_icon_new_portfolio");
 			stackPanel.addTool(newEntryLink, Align.right);
+		}
+	}
+
+	@Override
+	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		super.initForm(formLayout, listener, ureq);
+		
+		if(formLayout instanceof FormLayoutContainer) {
+			FormLayoutContainer layoutCont = (FormLayoutContainer)formLayout;
+			layoutCont.contextPut("sectionTitle", section.getTitle());
+			layoutCont.contextPut("binderTitle", StringHelper.escapeHtml(binder.getTitle()));
 		}
 	}
 
@@ -110,14 +125,20 @@ public class SectionPageListController extends AbstractPageListController  {
 		List<Assignment> assignments = portfolioService.getAssignments(section);
 		
 		List<Page> pages = portfolioService.getPages(section, searchString);
-		List<PageRow> rows = new ArrayList<>();
+		List<PageRow> rows = new ArrayList<>(pages.size());
+		List<TimelinePoint> points = new ArrayList<>(pages.size());
 		boolean first = true;
 		for (Page page : pages) {
 			PageRow row = forgeRow(page, assessmentSection, assignments, first, categorizedElementMap, numOfCommentsMap);
 			row.setSectionCategories(sectionAggregatedCategories);
 			rows.add(row);
 			first = false;
+			
+			String s = page.getPageStatus() == null ? "draft" : page.getPageStatus().name();
+			points.add(new TimelinePoint(page.getKey().toString(), page.getTitle(), page.getCreationDate(), s));
 		}
+		
+		timelineEl.setPoints(points);
 		model.setObjects(rows);
 		tableEl.reset();
 		tableEl.reloadData();

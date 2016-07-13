@@ -76,10 +76,10 @@ public class TimelineComponentRenderer extends DefaultComponentRenderer {
 				  .append(", \"status\":\"").append(point.getStatus()).append("\"}");
 			}
 		}
-		sb.append("]")
-		  .append("  });");
+		sb.append("]\n")
+		  .append("  });\n");
 		sb.append("});\n")
 		  .append("/* ]]> */\n")
-		  .append("</script>");	
+		  .append("</script>\n");	
 	}
 }

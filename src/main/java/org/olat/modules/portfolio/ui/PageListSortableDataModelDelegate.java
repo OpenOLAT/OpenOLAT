@@ -108,6 +108,16 @@ public class PageListSortableDataModelDelegate extends SortableFlexiTableModelDe
 		}
 		
 		private int compare(Section s1, Section s2) {
+			if(s1 == null && s2 == null) {
+				return 0;
+			}
+			if(s1 == null && s2 != null) {
+				return -1;
+			}
+			if(s1 != null && s2 == null) {
+				return 1;
+			}
+			
 			Date b1 = s1.getBeginDate();
 			if(b1 == null) {
 				b1 = s1.getCreationDate();

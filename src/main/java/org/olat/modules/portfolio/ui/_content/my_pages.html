@@ -1,0 +1,19 @@
+<div class="o_portfolio_content clearfix">
+	<div class="o_header_with_buttons">
+		<h2>$r.translate("my.entries")</h2>
+		<div class="o_button_group">
+			$r.render("timeline.switch.off")
+			$r.render("timeline.switch.on")
+		</div>
+	</div>
+	
+	<div class="o_portfolio_entries #if($timelineSwitch) o_portfolio_withtimeline #end">
+	$r.render("table")
+	</div>
+	
+	#if($timelineSwitch)
+	<div class="o_portfolio_timeline">
+		<div id="o_portfolio_entries_timeline">$r.render("timeline")</div>
+	</div>
+	#end
+</div>

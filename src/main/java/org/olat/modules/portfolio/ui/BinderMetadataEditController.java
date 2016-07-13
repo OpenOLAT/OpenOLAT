@@ -26,7 +26,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.olat.basesecurity.GroupRoles;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -43,6 +42,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Identity;
 import org.olat.modules.portfolio.Binder;
 import org.olat.modules.portfolio.Category;
+import org.olat.modules.portfolio.PortfolioRoles;
 import org.olat.modules.portfolio.PortfolioService;
 import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -130,7 +130,7 @@ public class BinderMetadataEditController extends FormBasicController {
 		if(binder == null || binder.getKey() == null) {
 			sb.append(userManager.getUserDisplayName(getIdentity()));
 		} else {
-			List<Identity> owners = portfolioService.getMembers(binder, GroupRoles.owner.name());
+			List<Identity> owners = portfolioService.getMembers(binder, PortfolioRoles.owner.name());
 			for(Identity owner:owners) {
 				if(sb.length() > 0) sb.append(", ");
 				sb.append(userManager.getUserDisplayName(owner));

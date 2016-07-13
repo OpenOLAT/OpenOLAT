@@ -23,10 +23,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.IdentityRef;
 import org.olat.core.commons.persistence.DB;
 import org.olat.modules.portfolio.BinderRef;
+import org.olat.modules.portfolio.PortfolioRoles;
 import org.olat.modules.portfolio.SectionRef;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -83,7 +83,7 @@ public class CommentDAO {
 		  .append(" left join pfsection as section on (section.key = page.section.key)")
 		  .append(" left join pfbinder as binder on (binder.key=section.binder.key)")
 		  .append(" where exists (select pageMember from bgroupmember as pageMember")
-		  .append("   inner join pageMember.identity as ident on (ident.key=:ownerKey and pageMember.role='").append(GroupRoles.owner.name()).append("')")
+		  .append("   inner join pageMember.identity as ident on (ident.key=:ownerKey and pageMember.role='").append(PortfolioRoles.owner.name()).append("')")
 		  .append("   where pageMember.group.key=page.baseGroup.key or pageMember.group.key=binder.baseGroup.key")
 		  .append(" )")
 		  .append(" group by ucomment.resId");

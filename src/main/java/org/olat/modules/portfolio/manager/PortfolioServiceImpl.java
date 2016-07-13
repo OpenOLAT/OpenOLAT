@@ -32,7 +32,6 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.olat.basesecurity.Group;
-import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.IdentityRef;
 import org.olat.basesecurity.manager.GroupDAO;
 import org.olat.core.commons.modules.bc.vfs.OlatRootFileImpl;
@@ -142,7 +141,7 @@ public class PortfolioServiceImpl implements PortfolioService {
 	@Override
 	public Binder createNewBinder(String title, String summary, String imagePath, Identity owner) {
 		BinderImpl portfolio = binderDao.createAndPersist(title, summary, imagePath, null);
-		groupDao.addMembership(portfolio.getBaseGroup(), owner, GroupRoles.owner.name());
+		groupDao.addMembership(portfolio.getBaseGroup(), owner, PortfolioRoles.owner.name());
 		return portfolio;
 	}
 
@@ -155,7 +154,7 @@ public class PortfolioServiceImpl implements PortfolioService {
 	@Override
 	public void createAndPersistBinderTemplate(Identity owner, RepositoryEntry entry, Locale locale) {
 		BinderImpl binder = binderDao.createAndPersist(entry.getDisplayname(), entry.getDescription(), null, entry);
-		groupDao.addMembership(binder.getBaseGroup(), owner, GroupRoles.owner.name());
+		groupDao.addMembership(binder.getBaseGroup(), owner, PortfolioRoles.owner.name());
 		//add section
 		Translator pt = Util.createPackageTranslator(PortfolioHomeController.class, locale);
 		String sectionTitle = pt.translate("new.section.title");
@@ -226,6 +225,11 @@ public class PortfolioServiceImpl implements PortfolioService {
 			return assignmentDao.loadAssignments((Page)element);
 		}
 		return null;
+	}
+
+	@Override
+	public List<Assignment> searchOwnedAssignments(IdentityRef assignee) {
+		return assignmentDao.getOwnedAssignments(assignee);
 	}
 
 	@Override
@@ -326,7 +330,7 @@ public class PortfolioServiceImpl implements PortfolioService {
 	public Binder assignBinder(Identity owner, BinderRef templateBinder, RepositoryEntry entry, String subIdent, Date deadline) {
 		BinderImpl reloadedTemplate = (BinderImpl)binderDao.loadByKey(templateBinder.getKey());
 		BinderImpl binder = binderDao.createCopy(reloadedTemplate, entry, subIdent);
-		groupDao.addMembership(binder.getBaseGroup(), owner, GroupRoles.owner.name());
+		groupDao.addMembership(binder.getBaseGroup(), owner, PortfolioRoles.owner.name());
 		return binder;
 	}
 

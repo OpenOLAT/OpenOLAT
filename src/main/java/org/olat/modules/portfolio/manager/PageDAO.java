@@ -30,7 +30,6 @@ import java.util.List;
 import javax.persistence.TypedQuery;
 
 import org.olat.basesecurity.Group;
-import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.IdentityRef;
 import org.olat.basesecurity.manager.GroupDAO;
 import org.olat.core.commons.persistence.DB;
@@ -41,6 +40,7 @@ import org.olat.modules.portfolio.Page;
 import org.olat.modules.portfolio.PageBody;
 import org.olat.modules.portfolio.PageImageAlign;
 import org.olat.modules.portfolio.PagePart;
+import org.olat.modules.portfolio.PortfolioRoles;
 import org.olat.modules.portfolio.Section;
 import org.olat.modules.portfolio.SectionRef;
 import org.olat.modules.portfolio.model.AbstractPart;
@@ -180,7 +180,7 @@ public class PageDAO {
 		  .append(" left join fetch page.section as section")
 		  .append(" left join fetch section.binder as binder")
 		  .append(" where exists (select pageMember from bgroupmember as pageMember")
-		  .append("     inner join pageMember.identity as ident on (ident.key=:ownerKey and pageMember.role='").append(GroupRoles.owner.name()).append("')")
+		  .append("     inner join pageMember.identity as ident on (ident.key=:ownerKey and pageMember.role='").append(PortfolioRoles.owner.name()).append("')")
 		  .append("  	where pageMember.group.key=page.baseGroup.key or pageMember.group.key=binder.baseGroup.key")
 		  .append(" )");
 		if(StringHelper.containsNonWhitespace(searchString)) {
@@ -264,7 +264,7 @@ public class PageDAO {
 		  .append(" ").append(mandatoryBinder ? "inner" : "left").append(" join fetch section.binder as binder")
 		  .append(" left join fetch page.body as body")
 		  .append(" where exists (select pageMember from bgroupmember as pageMember")
-		  .append("     inner join pageMember.identity as ident on (ident.key=:ownerKey and pageMember.role='").append(GroupRoles.owner.name()).append("')")
+		  .append("     inner join pageMember.identity as ident on (ident.key=:ownerKey and pageMember.role='").append(PortfolioRoles.owner.name()).append("')")
 		  .append("  	where pageMember.group.key=page.baseGroup.key or pageMember.group.key=binder.baseGroup.key")
 		  .append(" )")
 		  .append(" order by page.lastModified desc");

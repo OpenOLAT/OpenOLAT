@@ -149,6 +149,19 @@ div#o_main_toolbar.o_toolbar.o_portfolio {
 	}
 }
 
+.o_portfolio_content {
+	.o_portfolio_toc.o_portfolio_withtimeline, .o_portfolio_entries.o_portfolio_withtimeline {
+		width: 70%;
+		float:left;
+	}
+	
+	.o_portfolio_timeline {
+		width: 29%;
+		float:right;
+	}
+}
+
+
 .o_portfolio_page_meta_wrapper {
 	background-position: left top;
 	background-repeat: no-repeat;

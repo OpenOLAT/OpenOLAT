@@ -28,7 +28,6 @@ import java.util.Set;
 
 import javax.servlet.http.HttpServletRequest;
 
-import org.olat.basesecurity.GroupRoles;
 import org.olat.core.dispatcher.mapper.Mapper;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -48,6 +47,7 @@ import org.olat.modules.portfolio.BinderSecurityCallback;
 import org.olat.modules.portfolio.Category;
 import org.olat.modules.portfolio.Page;
 import org.olat.modules.portfolio.PageImageAlign;
+import org.olat.modules.portfolio.PortfolioRoles;
 import org.olat.modules.portfolio.PortfolioService;
 import org.olat.modules.portfolio.ui.event.PublishEvent;
 import org.olat.user.UserManager;
@@ -84,9 +84,9 @@ public class PageMetadataController extends BasicController {
 		
 		Set<Identity> owners = new HashSet<>();
 		if(page.getSection() != null && page.getSection().getBinder() != null) {
-			owners.addAll(portfolioService.getMembers(page.getSection().getBinder(), GroupRoles.owner.name()));
+			owners.addAll(portfolioService.getMembers(page.getSection().getBinder(), PortfolioRoles.owner.name()));
 		}
-		owners.addAll(portfolioService.getMembers(page, GroupRoles.owner.name()));
+		owners.addAll(portfolioService.getMembers(page, PortfolioRoles.owner.name()));
 		
 		StringBuilder ownerSb = new StringBuilder();
 		for(Identity owner:owners) {

@@ -11,11 +11,11 @@
         }, options );
     	
     	
-    		createButtons(this, settings);
-    		createGraph(this, settings);
+    	createButtons(this, settings);
+    	createGraph(this, settings);
     		
-    		timelineItems(this, settings);
-    		addHandlers(this, settings);
+    	timelineItems(this, settings);
+    	addHandlers(this, settings);
     	
         return this;
 	};
@@ -36,6 +36,7 @@
 	var data, statusTranslations;
 
 	createGraph = function($obj, settings) {
+		
 		this.parentContainer = jQuery('#' + settings.parentContainerId);
     	var placeholderwidth = parentContainer.width();
 		$obj.width(placeholderwidth);
@@ -66,8 +67,8 @@
 	  		.ticks(0)
 	  		.orient('bottom');
 	  		
-	  	var minTime = settings.startTime == null ? d3.min(values, function(d) { return d.time; }) : settings.startTime;
-    	var maxTime = settings.endTime == null ? d3.max(values, function(d) { return d.time; }) : settings.endTime;
+	  	var minTime = settings.startTime == null ? d3.min(data, function(d) { return d.time; }) : settings.startTime;
+    	var maxTime = settings.endTime == null ? d3.max(data, function(d) { return d.time; }) : settings.endTime;
     	
     	y = d3.scale.linear()
   	  		.domain([minTime, maxTime])
