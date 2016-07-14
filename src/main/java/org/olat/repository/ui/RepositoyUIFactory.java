@@ -37,6 +37,7 @@ import org.olat.core.util.Util;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryShort;
 import org.olat.repository.RepositoryManager;
+import org.olat.repository.RepositoryModule;
 
 /**
  * Description:<br>
@@ -88,7 +89,7 @@ public class RepositoyUIFactory {
 			@Override
 			public void init(UserRequest uureq) {
 				Panel empty = new Panel("empty");			
-				setTranslator(Util.createPackageTranslator(this.getClass(), uureq.getLocale())); 
+				setTranslator(Util.createPackageTranslator(RepositoryModule.class, uureq.getLocale())); 
 				MessageController contentCtr = MessageUIFactory.createInfoMessage(uureq, getWindowControl(), translate("security.disabled.title"), translate("security.disabled.info"));
 				listenTo(contentCtr); // auto dispose later
 				Component resComp = contentCtr.getInitialComponent();
