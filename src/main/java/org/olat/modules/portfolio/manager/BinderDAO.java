@@ -117,38 +117,35 @@ public class BinderDAO {
 		List<Section> templateSections = template.getSections();
 		List<Section> currentSections = binder.getSections();
 		
-		if(needUpdate(templateSections, currentSections)) {
-			Map<Section,Section> templateToSectionsMap = new HashMap<>();
-			for(Section currentSection:currentSections) {
-				Section templateRef = currentSection.getTemplateReference();
-				if(templateRef != null) {
-					templateToSectionsMap.put(templateRef, currentSection);
-				}
+		Map<Section,Section> templateToSectionsMap = new HashMap<>();
+		for(Section currentSection:currentSections) {
+			Section templateRef = currentSection.getTemplateReference();
+			if(templateRef != null) {
+				templateToSectionsMap.put(templateRef, currentSection);
 			}
-			
-			currentSections.clear();
-			for(int i=0; i<templateSections.size(); i++) {
-				Section templateSection = templateSections.get(i);
-				Section currentSection = templateToSectionsMap.remove(templateSection);
-				if(currentSection != null) {
-					currentSections.add(currentSection);
-					syncAssignments(templateSection, currentSection);
-				} else {
-					Section section = createInternalSection(binder, templateSection);
-					currentSections.add(section);
-					dbInstance.getCurrentEntityManager().persist(section);
-					syncAssignments(templateSection, section);
-				}
-			}
-			
-			for(Section leadingSection:templateToSectionsMap.values()) {
-				currentSections.add(leadingSection);
-			}
-	
-			binder = dbInstance.getCurrentEntityManager().merge(binder);
-			changes.set(true);
 		}
 		
+		currentSections.clear();
+		for(int i=0; i<templateSections.size(); i++) {
+			Section templateSection = templateSections.get(i);
+			Section currentSection = templateToSectionsMap.remove(templateSection);
+			if(currentSection != null) {
+				currentSections.add(currentSection);
+				syncAssignments(templateSection, currentSection);
+			} else {
+				Section section = createInternalSection(binder, templateSection);
+				currentSections.add(section);
+				dbInstance.getCurrentEntityManager().persist(section);
+				syncAssignments(templateSection, section);
+			}
+		}
+		
+		for(Section leadingSection:templateToSectionsMap.values()) {
+			currentSections.add(leadingSection);
+		}
+
+		binder = dbInstance.getCurrentEntityManager().merge(binder);
+		changes.set(true);
 		return binder;
 	}
 	
@@ -168,23 +165,6 @@ public class BinderDAO {
 		for(Assignment templateAssignment:templateAssignments) {
 			assignmentDao.createAssignment(templateAssignment, AssignmentStatus.notStarted, currentSection);
 		}
-	}
-	
-	private boolean needUpdate(List<Section> templateSections, List<Section> currentSections) {
-		/*boolean same = true;
-		if(templateSections.size() == currentSections.size()) {
-			for(int i=templateSections.size(); i-->0; ) {
-				Section templateSection = templateSections.get(i);
-				Section currentSection = currentSections.get(i);
-				
-				if(!templateSection.equals(currentSection.getTemplateReference())) {
-					same &= false;
-				}
-			}
-		} else {
-			same &= false;
-		}*/
-		return true;
 	}
 	
 	private Section createInternalSection(Binder binder, Section templateSection) {

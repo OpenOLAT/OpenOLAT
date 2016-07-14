@@ -53,8 +53,20 @@ public class BinderSecurityCallbackFactory {
 		return new BinderSecurityCallbackImpl(rights);
 	}
 	
+	/**
+	 * Invitee can only comment binders
+	 * @return
+	 */
 	public static final BinderSecurityCallback getCallbackForInvitation() {
 		return new BinderSecurityCallbackForInvitation();
+	}
+	
+	/**
+	 * If you can see the business group, you can edit and view the binder.
+	 * @return
+	 */
+	public static final BinderSecurityCallback getCallbackForBusinessGroup() {
+		return new BinderSecurityCallbackImpl(true, false);
 	}
 
 

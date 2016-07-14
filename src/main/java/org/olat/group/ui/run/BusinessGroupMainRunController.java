@@ -243,9 +243,9 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 		assessmentEventOres = OresHelper.createOLATResourceableType(AssessmentEvent.class);
 		nodeIdPrefix = "bgmr".concat(Long.toString(CodeHelper.getRAMUniqueID()));
 		
-		toolbarPanel = new TooledStackedPanel("courseStackPanel", getTranslator(), this);
+		toolbarPanel = new TooledStackedPanel("groupStackPanel", getTranslator(), this);
 		toolbarPanel.setInvisibleCrumb(0); // show root (course) level
-		toolbarPanel.setToolbarEnabled(false);
+		toolbarPanel.setToolbarAutoEnabled(true);
 		toolbarPanel.setShowCloseLink(true, true);
 
 		UserSession session = ureq.getUserSession();
@@ -778,9 +778,10 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 		addToHistory(ureq, bwControl);
 		
 		CollaborationTools collabTools = CollaborationToolsFactory.getInstance().getOrCreateCollaborationTools(businessGroup);
-		Controller collaborationToolCtr = collabTools.createPortfolioController(ureq, bwControl, businessGroup);
+		Controller collaborationToolCtr = collabTools.createPortfolioController(ureq, bwControl, toolbarPanel, businessGroup);
 		listenTo(collaborationToolCtr);
-		mainPanel.setContent(collaborationToolCtr.getInitialComponent());
+		toolbarPanel.popUpToRootController(ureq);
+		toolbarPanel.pushController("Portfolio", collaborationToolCtr);
 		return (Activateable2)collaborationToolCtr;
 	}
 	

@@ -77,6 +77,10 @@ public class BinderConfiguration {
 		return sb.toString() + super.toString();
 	}
 	
+	public static BinderConfiguration createBusinessGroupConfig() {
+		return new BinderConfiguration(false, false, false, true, false);
+	}
+	
 	public static BinderConfiguration createTemplateConfig() {
 		return new BinderConfiguration(false, false, false, false, false);
 	}
