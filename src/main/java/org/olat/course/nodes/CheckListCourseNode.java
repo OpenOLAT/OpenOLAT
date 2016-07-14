@@ -629,8 +629,10 @@ public class CheckListCourseNode extends AbstractAccessableCourseNode implements
 		CheckListCourseNode cNode = (CheckListCourseNode)super.createInstanceForCopy(isNewTitle, course, author);
 		CheckboxManager checkboxManager = CoreSpringFactory.getImpl(CheckboxManager.class);
 		CheckboxList list = (CheckboxList)cNode.getModuleConfiguration().get(CONFIG_KEY_CHECKBOX);
-		for(Checkbox checkbox:list.getList()) {
-			checkbox.setCheckboxId(UUID.randomUUID().toString());
+		if (list!=null) {
+			for(Checkbox checkbox:list.getList()) {
+				checkbox.setCheckboxId(UUID.randomUUID().toString());
+			}
 		}
 		// the ident of the course node is the same
 		File sourceDir = checkboxManager.getFileDirectory(course.getCourseEnvironment(), this);
