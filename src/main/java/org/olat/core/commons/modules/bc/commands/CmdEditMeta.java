@@ -120,7 +120,7 @@ public class CmdEditMeta extends BasicController implements FolderCommand {
 		String path = "path=" + folderComponent.getCurrentContainerPath();
 		if(currentItem != null) {
 			if(path.charAt(path.length() - 1) != '/') {
-				path += currentItem.getName();
+				path += "/";
 			}
 			path += currentItem.getName();
 		}
