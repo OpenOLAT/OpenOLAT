@@ -122,7 +122,27 @@ public class MySharedItemsController extends FormBasicController implements Acti
 	
 	@Override
 	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
-		//
+		if(entries == null || entries.isEmpty()) return;
+		
+		String resName = entries.get(0).getOLATResourceable().getResourceableTypeName();
+		if("Binder".equalsIgnoreCase(resName)) {
+			Long resId = entries.get(0).getOLATResourceable().getResourceableId();
+			MySharedItemRow activatedRow = null;
+			for(MySharedItemRow row:model.getObjects()) {
+				if(row.getBinderKey().equals(resId)) {
+					activatedRow = row;
+					break;
+				}
+			}
+			
+			if(activatedRow != null) {
+				Activateable2 activeateable = doSelectBinder(ureq, activatedRow);
+				if(activeateable != null) {
+					List<ContextEntry> subEntries = entries.subList(1, entries.size());
+					activeateable.activate(ureq, subEntries, entries.get(0).getTransientState());
+				}
+			}
+		}
 	}
 
 	@Override

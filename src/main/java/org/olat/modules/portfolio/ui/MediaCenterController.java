@@ -60,9 +60,11 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.gui.media.MediaResource;
+import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSMediaResource;
 import org.olat.modules.portfolio.Media;
@@ -246,7 +248,17 @@ public class MediaCenterController extends FormBasicController
 
 	@Override
 	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
-		//
+		if(entries == null || entries.isEmpty()) return;
+		
+		String resName = entries.get(0).getOLATResourceable().getResourceableTypeName();
+		if("Media".equalsIgnoreCase(resName)) {
+			Long resId = entries.get(0).getOLATResourceable().getResourceableId();
+			for(MediaRow row:model.getObjects()) {
+				if(row.getKey().equals(resId)) {
+					doOpenMedia(ureq, resId);
+				}
+			}
+		}
 	}
 
 	@Override
@@ -460,8 +472,12 @@ public class MediaCenterController extends FormBasicController
 	}
 	
 	private Activateable2 doOpenMedia(UserRequest ureq, Long mediaKey) {
+		stackPanel.popUpToController(this);
+		
+		OLATResourceable bindersOres = OresHelper.createOLATResourceableInstance("Media", mediaKey);
+		WindowControl swControl = addToHistory(ureq, bindersOres, null);
 		Media media = portfolioService.getMediaByKey(mediaKey);
-		detailsCtrl = new MediaDetailsController(ureq, getWindowControl(), media);
+		detailsCtrl = new MediaDetailsController(ureq, swControl, media);
 		listenTo(detailsCtrl);
 		
 		String displayName = StringHelper.escapeHtml(media.getTitle());

@@ -285,6 +285,10 @@
     	margin: 0 auto -1.1em auto;
 	}
 	
+	.o_tools_segments.o_tools_segments_alone {
+		margin-top: 1.5em;
+	}
+	
 	@media (max-width: $screen-sm-max) { 
 		.o_tools {
 			margin-top: $o-toolbar-tools-margin-top-sm;

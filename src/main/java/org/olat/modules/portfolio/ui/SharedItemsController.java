@@ -165,7 +165,6 @@ public class SharedItemsController extends FormBasicController implements Activa
 		Long resId = entries.get(0).getOLATResourceable().getResourceableId();
 		String resName = entries.get(0).getOLATResourceable().getResourceableTypeName();
 		if("Binder".equalsIgnoreCase(resName)) {
-			
 			SharedItemRow activatedRow = null;
 			List<SharedItemRow> rows = model.getObjects();
 			for(SharedItemRow row:rows) {

@@ -309,7 +309,18 @@ implements Activateable2, TooledController, FlexiTableComponentDelegate {
 	
 	@Override
 	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
-		//
+		if(entries == null || entries.isEmpty()) return;
+		
+		String resName = entries.get(0).getOLATResourceable().getResourceableTypeName();
+		if("Page".equalsIgnoreCase(resName) || "Entry".equalsIgnoreCase(resName)) {
+			Long resId = entries.get(0).getOLATResourceable().getResourceableId();
+			for(PageRow row :model.getObjects()) {
+				if(row.getKey().equals(resId)) {
+					doOpenPage(ureq, row);
+					break;
+				}
+			}
+		}
 	}
 
 	@Override
@@ -448,7 +459,9 @@ implements Activateable2, TooledController, FlexiTableComponentDelegate {
 	}
 	
 	protected void doOpenPage(UserRequest ureq, Page reloadedPage) {
-		pageCtrl = new PageRunController(ureq, getWindowControl(), stackPanel, secCallback, reloadedPage);
+		OLATResourceable pageOres = OresHelper.createOLATResourceableInstance("Entry", reloadedPage.getKey());
+		WindowControl swControl = addToHistory(ureq, pageOres, null);
+		pageCtrl = new PageRunController(ureq, swControl, stackPanel, secCallback, reloadedPage);
 		listenTo(pageCtrl);
 		
 		String displayName = StringHelper.escapeHtml(reloadedPage.getTitle());

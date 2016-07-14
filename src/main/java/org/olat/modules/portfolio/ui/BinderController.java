@@ -37,8 +37,10 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
+import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
+import org.olat.core.util.resource.OresHelper;
 import org.olat.modules.portfolio.Binder;
 import org.olat.modules.portfolio.BinderConfiguration;
 import org.olat.modules.portfolio.BinderSecurityCallback;
@@ -51,8 +53,8 @@ import org.olat.modules.portfolio.BinderSecurityCallback;
  */
 public class BinderController extends BasicController implements TooledController, Activateable2 {
 	
-	private Link assessmentLink;
-	private final Link overviewLink, entriesLink, publishLink, historyLink;
+	private Link assessmentLink, publishLink;
+	private final Link overviewLink, entriesLink, historyLink;
 	private final ButtonGroupComponent segmentButtonsCmp;
 	private final TooledStackedPanel stackPanel;
 	private Link editBinderMetadataLink;
@@ -86,8 +88,10 @@ public class BinderController extends BasicController implements TooledControlle
 		segmentButtonsCmp.addButton(entriesLink, false);
 		historyLink = LinkFactory.createLink("portfolio.history", getTranslator(), this);
 		segmentButtonsCmp.addButton(historyLink, false);
-		publishLink = LinkFactory.createLink("portfolio.publish", getTranslator(), this);
-		segmentButtonsCmp.addButton(publishLink, false);
+		if(config.isShareable()) {
+			publishLink = LinkFactory.createLink("portfolio.publish", getTranslator(), this);
+			segmentButtonsCmp.addButton(publishLink, false);
+		}
 		if(config.isAssessable()) {
 			assessmentLink = LinkFactory.createLink("portfolio.assessment", getTranslator(), this);
 			segmentButtonsCmp.addButton(assessmentLink, false);
@@ -126,8 +130,21 @@ public class BinderController extends BasicController implements TooledControlle
 		}
 		
 		String resName = entries.get(0).getOLATResourceable().getResourceableTypeName();
-		if("Page".equalsIgnoreCase(resName) || "Section".equalsIgnoreCase(resName)) {
+		if("Page".equalsIgnoreCase(resName) || "Entry".equalsIgnoreCase(resName) || "Section".equalsIgnoreCase(resName)) {
 			doOpenOverview(ureq).activate(ureq, entries, state);
+		} else if("Entries".equalsIgnoreCase(resName)) {
+			List<ContextEntry> subEntries = entries.subList(1, entries.size());
+			doOpenEntries(ureq).activate(ureq, subEntries, entries.get(0).getTransientState());
+		} else if("Publish".equalsIgnoreCase(resName)) {
+			if(config.isShareable()) {
+				doOpenPublish(ureq);
+			}
+		} else if("Assessment".equalsIgnoreCase(resName)) {
+			if(config.isAssessable()) {
+				doOpenAssessment(ureq);
+			}
+		} else if("History".equalsIgnoreCase(resName)) {
+			doOpenHistory(ureq);
 		}
 	}
 
@@ -174,15 +191,6 @@ public class BinderController extends BasicController implements TooledControlle
 		}
 	}
 	
-	private void doOpenEntries(UserRequest ureq) {
-		entriesCtrl = new BinderPageListController(ureq, getWindowControl(), stackPanel, secCallback, binder, config);
-		listenTo(entriesCtrl);
-
-		popUpToBinderController(ureq);
-		stackPanel.pushController(translate("portfolio.entries"), entriesCtrl);
-		segmentButtonsCmp.setSelectedButton(entriesLink);
-	}
-	
 	private TableOfContentController doOpenOverview(UserRequest ureq) {
 		popUpToBinderController(ureq);
 		segmentButtonsCmp.setSelectedButton(overviewLink);
@@ -190,30 +198,51 @@ public class BinderController extends BasicController implements TooledControlle
 		return overviewCtrl;
 	}
 	
-	private void doOpenPublish(UserRequest ureq) {
-		publishCtrl = new PublishController(ureq, getWindowControl(), stackPanel, secCallback, binder, config);
+	private BinderPageListController doOpenEntries(UserRequest ureq) {
+		OLATResourceable bindersOres = OresHelper.createOLATResourceableInstance("Entries", 0l);
+		WindowControl swControl = addToHistory(ureq, bindersOres, null);
+		entriesCtrl = new BinderPageListController(ureq, swControl, stackPanel, secCallback, binder, config);
+		listenTo(entriesCtrl);
+
+		popUpToBinderController(ureq);
+		stackPanel.pushController(translate("portfolio.entries"), entriesCtrl);
+		segmentButtonsCmp.setSelectedButton(entriesLink);
+		return entriesCtrl;
+	}
+	
+	private PublishController doOpenPublish(UserRequest ureq) {
+		OLATResourceable bindersOres = OresHelper.createOLATResourceableInstance("Publish", 0l);
+		WindowControl swControl = addToHistory(ureq, bindersOres, null);
+		publishCtrl = new PublishController(ureq, swControl, stackPanel, secCallback, binder, config);
 		listenTo(publishCtrl);
 
 		popUpToBinderController(ureq);
 		stackPanel.pushController(translate("portfolio.publish"), publishCtrl);
 		segmentButtonsCmp.setSelectedButton(publishLink);
+		return publishCtrl;
 	}
 	
-	private void doOpenAssessment(UserRequest ureq) {
-		assessmentCtrl = new BinderAssessmentController(ureq, getWindowControl(), secCallback, binder, config);
+	private BinderAssessmentController doOpenAssessment(UserRequest ureq) {
+		OLATResourceable bindersOres = OresHelper.createOLATResourceableInstance("Assessment", 0l);
+		WindowControl swControl = addToHistory(ureq, bindersOres, null);
+		assessmentCtrl = new BinderAssessmentController(ureq, swControl, secCallback, binder, config);
 		listenTo(assessmentCtrl);
 
 		popUpToBinderController(ureq);
 		stackPanel.pushController(translate("portfolio.assessment"), assessmentCtrl);
 		segmentButtonsCmp.setSelectedButton(assessmentLink);
+		return assessmentCtrl;
 	}
 	
-	private void doOpenHistory(UserRequest ureq) {
-		historyCtrl = new HistoryController(ureq, getWindowControl(), binder);
+	private HistoryController doOpenHistory(UserRequest ureq) {
+		OLATResourceable bindersOres = OresHelper.createOLATResourceableInstance("History", 0l);
+		WindowControl swControl = addToHistory(ureq, bindersOres, null);
+		historyCtrl = new HistoryController(ureq, swControl, binder);
 		listenTo(historyCtrl);
 		
 		popUpToBinderController(ureq);
 		stackPanel.pushController(translate("portfolio.history"), historyCtrl);
 		segmentButtonsCmp.setSelectedButton(historyLink);
+		return historyCtrl;
 	}
 }

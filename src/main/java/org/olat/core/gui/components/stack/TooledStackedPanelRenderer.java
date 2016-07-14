@@ -116,7 +116,10 @@ public class TooledStackedPanelRenderer extends DefaultComponentRenderer {
 					sb.append("</div>"); // container-fluid,
 					
 					if(segmentsTools.size() > 0) {
-						sb.append("<ul class='o_tools o_tools_segments list-inline'>");
+						boolean segmentAlone = leftTools.isEmpty() && rightTools.isEmpty()
+								&& rightTools.isEmpty() && notAlignedTools.isEmpty();
+						sb.append("<ul class='o_tools o_tools_segments list-inline")
+						  .append(" o_tools_segments_alone", segmentAlone).append("'>");
 						renderTools(segmentsTools, renderer, sb, args);
 						sb.append("</ul>");
 					}

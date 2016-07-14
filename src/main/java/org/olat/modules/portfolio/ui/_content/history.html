@@ -1,9 +1,13 @@
-<div class="o_portfolio_history">
-	#if ($r.available("subscription"))
-	<div class="pull-right">$r.render("subscription")</div>
-	#end
-	
-	<h2><i class="o_icon o_icon_portfolio_history"> </i> $r.translate('portfolio.history')</h2>
+<div class="o_portfolio_history clearfix">
+	<div class="o_header_with_buttons">
+		<h2><i class="o_icon o_icon_portfolio_history"> </i> $r.translate('portfolio.history')</h2>
+		#if($r.available("subscription"))
+		<div class="o_button_group">
+			$r.render("subscription")
+		</div>
+		#end
+	</div>
+
 	<div class="o_notifications_news_datechooser o_block_large row">
 		<div class="col-xs-12 col-sm-6">
 			<fieldset class="o_form form-horizontal" role="form">

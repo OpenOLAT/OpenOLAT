@@ -158,6 +158,7 @@ public class PortfolioHomeController extends BasicController implements Activate
 	
 	private MediaCenterController doOpenMediaCenter(UserRequest ureq) {
 		removeAsListenerAndDispose(mediaCenterCtrl);
+		stackPanel.popUpToRootController(ureq);
 		
 		OLATResourceable pagesOres = OresHelper.createOLATResourceableInstance("MediaCenter", 0l);
 		WindowControl swControl = addToHistory(ureq, pagesOres, null);
@@ -181,6 +182,7 @@ public class PortfolioHomeController extends BasicController implements Activate
 	
 	private MySharedItemsController doOpenMySharedItems(UserRequest ureq) {
 		removeAsListenerAndDispose(mySharedItemsCtrl);
+		stackPanel.popUpToRootController(ureq);
 		
 		OLATResourceable pagesOres = OresHelper.createOLATResourceableInstance("MySharedItems", 0l);
 		WindowControl swControl = addToHistory(ureq, pagesOres, null);
@@ -192,6 +194,7 @@ public class PortfolioHomeController extends BasicController implements Activate
 	
 	private MyPageListController doOpenMyPages(UserRequest ureq) {
 		removeAsListenerAndDispose(myPageListCtrl);
+		stackPanel.popUpToRootController(ureq);
 		
 		OLATResourceable pagesOres = OresHelper.createOLATResourceableInstance("MyPages", 0l);
 		WindowControl swControl = addToHistory(ureq, pagesOres, null);

@@ -42,9 +42,11 @@ import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.id.Identity;
+import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.resource.OresHelper;
 import org.olat.modules.portfolio.AssessmentSection;
 import org.olat.modules.portfolio.Binder;
 import org.olat.modules.portfolio.BinderConfiguration;
@@ -263,7 +265,7 @@ public class TableOfContentController extends BasicController implements TooledC
 		}
 		
 		String resName = entries.get(0).getOLATResourceable().getResourceableTypeName();
-		if("Page".equalsIgnoreCase(resName)) {
+		if("Page".equalsIgnoreCase(resName) || "Entry".equalsIgnoreCase(resName)) {
 			Long pageKey = entries.get(0).getOLATResourceable().getResourceableId();
 			Activateable2 activateable = doOpenPage(ureq, portfolioService.getPageByKey(pageKey));
 			if(activateable != null) {
@@ -398,9 +400,11 @@ public class TableOfContentController extends BasicController implements TooledC
 	
 	private PageRunController doOpenPage(UserRequest ureq, Page page) {
 		removeAsListenerAndDispose(pageCtrl);
-		
+
+		OLATResourceable pageOres = OresHelper.createOLATResourceableInstance("Entry", binder.getKey());
+		WindowControl swControl = addToHistory(ureq, pageOres, null);
 		Page reloadedPage = portfolioService.getPageByKey(page.getKey());
-		pageCtrl = new PageRunController(ureq, getWindowControl(), stackPanel, secCallback, reloadedPage);
+		pageCtrl = new PageRunController(ureq, swControl, stackPanel, secCallback, reloadedPage);
 		listenTo(pageCtrl);
 		stackPanel.pushController(StringHelper.escapeHtml(page.getTitle()), pageCtrl);
 		return pageCtrl;
