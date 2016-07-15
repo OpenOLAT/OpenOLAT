@@ -267,14 +267,20 @@ public class TableOfContentController extends BasicController implements TooledC
 		String resName = entries.get(0).getOLATResourceable().getResourceableTypeName();
 		if("Page".equalsIgnoreCase(resName) || "Entry".equalsIgnoreCase(resName)) {
 			Long pageKey = entries.get(0).getOLATResourceable().getResourceableId();
-			Activateable2 activateable = doOpenPage(ureq, portfolioService.getPageByKey(pageKey));
-			if(activateable != null) {
-				List<ContextEntry> subEntries = entries.subList(1, entries.size());
-				activateable.activate(ureq, subEntries, entries.get(0).getTransientState());
+			Page page = portfolioService.getPageByKey(pageKey);
+			if(page != null && page.getSection() != null && binder.equals(page.getSection().getBinder())) {
+				Activateable2 activateable = doOpenPage(ureq, page);
+				if(activateable != null) {
+					List<ContextEntry> subEntries = entries.subList(1, entries.size());
+					activateable.activate(ureq, subEntries, entries.get(0).getTransientState());
+				}
 			}
 		} else if("Section".equalsIgnoreCase(resName)) {
 			Long sectionKey = entries.get(0).getOLATResourceable().getResourceableId();
-			doOpenSection(ureq, portfolioService.getSection(new SectionRefImpl(sectionKey)));
+			Section section = portfolioService.getSection(new SectionRefImpl(sectionKey));
+			if(section != null && binder.equals(section.getBinder())) {
+				doOpenSection(ureq, section);
+			}
 		}
 	}
 
@@ -401,7 +407,7 @@ public class TableOfContentController extends BasicController implements TooledC
 	private PageRunController doOpenPage(UserRequest ureq, Page page) {
 		removeAsListenerAndDispose(pageCtrl);
 
-		OLATResourceable pageOres = OresHelper.createOLATResourceableInstance("Entry", binder.getKey());
+		OLATResourceable pageOres = OresHelper.createOLATResourceableInstance("Entry", page.getKey());
 		WindowControl swControl = addToHistory(ureq, pageOres, null);
 		Page reloadedPage = portfolioService.getPageByKey(page.getKey());
 		pageCtrl = new PageRunController(ureq, swControl, stackPanel, secCallback, reloadedPage);

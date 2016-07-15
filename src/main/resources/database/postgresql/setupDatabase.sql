@@ -1534,6 +1534,8 @@ create table o_pf_page_part (
    pos int8 default null,
    dtype varchar(32),
    p_content text,
+   p_flow varchar(32),
+   p_layout_options varchar(2000),
    fk_media_id int8,
    fk_page_body_id int8,
    primary key (id)

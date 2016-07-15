@@ -80,15 +80,13 @@ public class TitleEditorController extends FormBasicController implements PageEl
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		
 		List<String> headingFormatLinkNames = new ArrayList<>();
 		for(int i=1; i<=6; i++) {
 			FormLink headingFormatLink = uifactory.addFormLink("h" + i, "h" + i, "h" + i, null, formLayout, Link.LINK);
 			headingFormatLinkNames.add(headingFormatLink.getComponent().getComponentName());
 		}
 		flc.getFormItemComponent().contextPut("headingFormatLinkNames", headingFormatLinkNames);
-		
-		
+
 		String cmpId = "title-" + CodeHelper.getRAMUniqueID() + "h";
 		String content = titlePart.getContent();
 		titleItem = uifactory.addRichTextElementForStringDataCompact(cmpId, null, content, 8, 80, null, formLayout, ureq.getUserSession(), getWindowControl());

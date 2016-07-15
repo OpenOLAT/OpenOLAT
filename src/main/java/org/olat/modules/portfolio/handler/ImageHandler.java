@@ -164,6 +164,11 @@ public class ImageHandler extends AbstractMediaHandler implements InteractiveAdd
 	public Controller getMediaController(UserRequest ureq, WindowControl wControl, Media media) {
 		return new ImageMediaController(ureq, wControl, media);
 	}
+/*
+	@Override
+	public Controller getEditor(UserRequest ureq, WindowControl wControl, PageElement element) {
+		return new ImageMediaEditorController(ureq, wControl, (MediaPart)element);
+	}*/
 
 	@Override
 	public PageElementAddController getAddPageElementController(UserRequest ureq, WindowControl wControl) {

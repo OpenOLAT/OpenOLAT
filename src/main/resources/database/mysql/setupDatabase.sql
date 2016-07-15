@@ -1668,6 +1668,8 @@ create table o_pf_page_part (
    pos bigint default null,
    dtype varchar(32),
    p_content mediumtext,
+   p_flow varchar(32),
+   p_layout_options varchar(2000),
    fk_media_id bigint,
    fk_page_body_id bigint,
    primary key (id)

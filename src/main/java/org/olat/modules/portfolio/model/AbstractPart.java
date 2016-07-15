@@ -38,8 +38,10 @@ import javax.persistence.Transient;
 import org.olat.core.id.CreateInfo;
 import org.olat.core.id.ModifiedInfo;
 import org.olat.core.id.Persistable;
+import org.olat.core.util.StringHelper;
 import org.olat.modules.portfolio.PageBody;
 import org.olat.modules.portfolio.PagePart;
+import org.olat.modules.portfolio.ui.editor.Flow;
 
 /**
  * 
@@ -73,6 +75,10 @@ public class AbstractPart implements Persistable, ModifiedInfo, CreateInfo, Page
 
 	@Column(name="p_content", nullable=true, insertable=true, updatable=true)
 	private String content;
+	@Column(name="p_flow", nullable=true, insertable=true, updatable=true)
+	private String flow;
+	@Column(name="p_layout_options", nullable=true, insertable=true, updatable=true)
+	private String layoutOptions;
 	
 	@ManyToOne(targetEntity=PageBodyImpl.class,fetch=FetchType.LAZY,optional=true)
 	@JoinColumn(name="fk_page_body_id", nullable=true, insertable=true, updatable=true)
@@ -120,6 +126,38 @@ public class AbstractPart implements Persistable, ModifiedInfo, CreateInfo, Page
 	@Override
 	public void setContent(String content) {
 		this.content = content;
+	}
+
+	public String getFlow() {
+		return flow;
+	}
+
+	public void setFlow(String flow) {
+		this.flow = flow;
+	}
+
+	@Override
+	public String getLayoutOptions() {
+		return layoutOptions;
+	}
+
+	@Override
+	public void setLayoutOptions(String options) {
+		layoutOptions = options;
+	}
+
+	@Override
+	public Flow getPartFlow() {
+		return StringHelper.containsNonWhitespace(flow) ? Flow.valueOf(flow) : null;
+	}
+
+	@Override
+	public void setPartFlow(Flow flow) {
+		if(flow == null) {
+			this.flow = null;
+		} else {
+			this.flow = flow.name();
+		}
 	}
 
 	public PageBody getBody() {

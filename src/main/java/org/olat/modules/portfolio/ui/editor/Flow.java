@@ -17,31 +17,16 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.portfolio;
-
-import org.olat.modules.portfolio.ui.editor.Flow;
-import org.olat.modules.portfolio.ui.editor.PageElement;
+package org.olat.modules.portfolio.ui.editor;
 
 /**
  * 
- * Initial date: 09.06.2016<br>
+ * Initial date: 15.07.2016<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public interface PagePart extends PageElement {
-	
-	public Long getKey();
-	
-	public String getContent();
-	
-	public void setContent(String content);
-	
-	public String getLayoutOptions();
-	
-	public void setLayoutOptions(String options);
-	
-	public Flow getPartFlow();
-	
-	public void setPartFlow(Flow flow);
+public enum Flow {
+	block,//like a div
+	inline//like a span
 
 }

@@ -40,6 +40,7 @@ import org.apache.commons.lang.StringEscapeUtils;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.services.help.HelpModule;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.impl.NameValuePair;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.winmgr.AJAXFlags;
@@ -365,8 +366,30 @@ public class VelocityRenderDecorator implements Closeable {
 	public StringOutput render(String componentName) {
 		return doRender(componentName, null);
 	}
+	
+	/**
+	 * Convenience method, render by component name.
+	 * 
+	 * @param component
+	 * @return
+	 */
+	public StringOutput render(Component component) {
+		if(component == null) return new StringOutput(1);
+		return doRender(component.getComponentName(), null);
+	}
 
+	/**
+	 * Convenience method, render by component name.
+	 * 
+	 * @param component
+	 * @return
+	 */
+	public StringOutput render(FormItem item) {
+		if(item == null) return new StringOutput(1);
+		return doRender(item.getComponent().getComponentName(), null);
+	}
 
+	
 	/**
 	 * Create a link wrapped with some markup to render a nice help button. The
 	 * link points to the corresponding page in the manual.

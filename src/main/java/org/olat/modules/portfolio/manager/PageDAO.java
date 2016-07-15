@@ -295,8 +295,12 @@ public class PageDAO {
 		aPart.setCreationDate(new Date());
 		aPart.setLastModified(aPart.getCreationDate());
 		aPart.setBody(body);
-		body.getParts().size();
-		body.getParts().add(index, aPart);
+		int size = body.getParts().size();
+		if(index < size && index >= 0) {
+			body.getParts().add(index, aPart);
+		} else {
+			body.getParts().add(aPart);
+		}
 		dbInstance.getCurrentEntityManager().persist(aPart);
 		dbInstance.getCurrentEntityManager().merge(body);
 		return aPart;
@@ -337,7 +341,7 @@ public class PageDAO {
 		  .append(" inner join fetch part.body as body")
 		  .append(" left join fetch part.media as media")
 		  .append(" where body.key=:bodyKey")
-		  .append(" order by pos");
+		  .append(" order by part.pos");
 		
 		return dbInstance.getCurrentEntityManager()
 			.createQuery(sb.toString(), PagePart.class)

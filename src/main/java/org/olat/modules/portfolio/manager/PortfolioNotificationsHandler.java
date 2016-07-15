@@ -22,11 +22,14 @@ package org.olat.modules.portfolio.manager;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Set;
 
+import org.apache.commons.lang3.time.DateUtils;
 import org.olat.basesecurity.IdentityNames;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.services.notifications.NotificationsHandler;
@@ -115,22 +118,34 @@ public class PortfolioNotificationsHandler implements NotificationsHandler {
 		return items;
 	}
 	
+	/**
+	 * Query the changes in the binder from the section to the page part.
+	 * 
+	 * 
+	 * @param binder
+	 * @param compareDate
+	 * @param rootBusinessPath
+	 * @param translator
+	 * @return
+	 */
 	public List<SubscriptionListItem> getPageNotifications(Binder binder, Date compareDate,
 			String rootBusinessPath, Translator translator) {
 		
 		StringBuilder sb = new StringBuilder();
 		sb.append("select")
-		  .append(" page.key as pageKey,")
-		  .append(" page.title as pageTitle,")
-		  .append(" page.creationDate as pageCreationDate,")
-		  .append(" page.lastModified as pageLastModified,")
-		  .append(" section.key as sectionKey,")
-		  .append(" section.title as sectionTitle,")
-		  .append(" section.creationDate as sectionCreationDate,")
-		  .append(" section.lastModified as sectionLastModified")
+		  .append("  page.key as pageKey,")
+		  .append("  page.title as pageTitle,")
+		  .append("  page.creationDate as pageCreationDate,")
+		  .append("  page.lastModified as pageLastModified,")
+		  .append("  section.key as sectionKey,")
+		  .append("  section.title as sectionTitle,")
+		  .append("  section.creationDate as sectionCreationDate,")
+		  .append("  section.lastModified as sectionLastModified,")
+		  .append("  pagepart.lastModified as pagepartLastModified")
 		  .append(" from pfpage as page")
 		  .append(" inner join page.section as section")
 		  .append(" inner join section.binder as binder")
+		  .append(" left join pfpagepart as pagepart on (pagepart.body.key = page.body.key)")
 		  .append(" where binder.key=:binderKey and ")
 		  .append(" (page.lastModified>=:compareDate or section.lastModified>=:compareDate)");
 		
@@ -139,8 +154,11 @@ public class PortfolioNotificationsHandler implements NotificationsHandler {
 				.setParameter("binderKey", binder.getKey())
 				.setParameter("compareDate", compareDate)
 				.getResultList();
-			
+
 		Set<Long> uniqueSectionKeys = new HashSet<>();
+		Map<Long,SubscriptionListItem> uniquePartKeys = new HashMap<>();
+		Map<Long,SubscriptionListItem> uniqueCreatePageKeys = new HashMap<>();
+		
 		List<SubscriptionListItem> items = new ArrayList<>(objects.size());
 		for (Object[] object : objects) {
 			//page
@@ -153,40 +171,95 @@ public class PortfolioNotificationsHandler implements NotificationsHandler {
 			String sectionTitle = (String)object[5];
 			Date sectionCreationDate = (Date)object[6];
 			Date sectionLastModified = (Date)object[7];
+			//page part
+			Date partLastModified = (Date)object[8];
 			
-			if(pageLastModified.compareTo(compareDate) >= 0) {
-				String title;
-				if(pageCreationDate.equals(pageLastModified)) {
-					title = translator.translate("notifications.new.page", new String[]{ pageTitle });
-				} else {
-					title = translator.translate("notifications.modified.page", new String[]{ pageTitle });
+			// page created
+			if(pageCreationDate.equals(pageLastModified) && pageCreationDate.compareTo(compareDate) >= 0) {
+				if(uniqueCreatePageKeys.containsKey(pageKey)) {
+					SubscriptionListItem item = pageCreateItem(pageKey, pageTitle,
+							pageCreationDate, rootBusinessPath, translator);
+					uniqueCreatePageKeys.put(pageKey, item);
 				}
+			}
+
+			if(uniquePartKeys.containsKey(pageKey)) {
+				SubscriptionListItem item = uniquePartKeys.get(pageKey);
+				SubscriptionListItem potentitalItem = pageModifiedItem( pageKey, pageTitle,
+							pageLastModified, partLastModified, rootBusinessPath, translator);
+				if(item.getDate().before(potentitalItem.getDate())) {
+					uniquePartKeys.put(pageKey, potentitalItem);
+				}
+			} else if(pageLastModified.compareTo(compareDate) >= 0
+						|| (partLastModified != null && partLastModified.compareTo(compareDate) >= 0)) {
+				SubscriptionListItem item = pageModifiedItem( pageKey, pageTitle,
+						 pageLastModified, partLastModified, rootBusinessPath, translator);
 				
-				String bPath = rootBusinessPath + "[Page:" + pageKey + "]";
-				String linkUrl = BusinessControlFactory.getInstance().getURLFromBusinessPathString(bPath);
-				SubscriptionListItem item = new SubscriptionListItem(title, linkUrl, bPath, pageLastModified, "o_icon_portfolio_page");
-				item.setUserObject(pageKey);
-				items.add(item);
+				boolean overlapCreate = false;
+				if(uniqueCreatePageKeys.containsKey(pageKey)) {
+					SubscriptionListItem createItem = uniqueCreatePageKeys.get(pageKey);
+					overlapCreate = DateUtils.isSameDay(item.getDate(), createItem.getDate());
+				}
+				if(!overlapCreate) {
+					uniquePartKeys.put(pageKey, item);
+				}
 			}
 			
 			if(!uniqueSectionKeys.contains(sectionKey) && sectionLastModified.compareTo(compareDate) >= 0) {
-				String title;
-				if(sectionCreationDate.equals(sectionLastModified)) {
-					title = translator.translate("notifications.new.section", new String[]{ sectionTitle });
-				} else {
-					title = translator.translate("notifications.modified.section", new String[]{ sectionTitle });
-				}
-				
-				String bPath = rootBusinessPath + "[Section:" + sectionKey + "]";
-				String linkUrl = BusinessControlFactory.getInstance().getURLFromBusinessPathString(bPath);
-				SubscriptionListItem item = new SubscriptionListItem(title, linkUrl, bPath, sectionLastModified, "o_icon_portfolio_section");
-				item.setUserObject(sectionKey);
+				SubscriptionListItem item = sectionCreateItem(sectionKey, sectionTitle,
+						sectionCreationDate, sectionLastModified, rootBusinessPath, translator);
 				items.add(item);
-
 			}
 			uniqueSectionKeys.add(sectionKey);
 		}
+		items.addAll(uniquePartKeys.values());
+		items.addAll(uniqueCreatePageKeys.values());
 		return items;
+	}
+	
+	private SubscriptionListItem sectionCreateItem(Long sectionKey, String sectionTitle,
+			Date sectionCreationDate, Date sectionLastModified, String rootBusinessPath, Translator translator) {
+		String title;
+		if(sectionCreationDate.equals(sectionLastModified)) {
+			title = translator.translate("notifications.new.section", new String[]{ sectionTitle });
+		} else {
+			title = translator.translate("notifications.modified.section", new String[]{ sectionTitle });
+		}
+		
+		String bPath = rootBusinessPath + "[Section:" + sectionKey + "]";
+		String linkUrl = BusinessControlFactory.getInstance().getURLFromBusinessPathString(bPath);
+		SubscriptionListItem item = new SubscriptionListItem(title, linkUrl, bPath, sectionLastModified, "o_icon_portfolio_section");
+		item.setUserObject(sectionKey);
+		return item;
+	}
+	
+	private SubscriptionListItem pageCreateItem(Long pageKey, String pageTitle,
+			Date pageCreationDate, String rootBusinessPath, Translator translator) {
+		String title = translator.translate("notifications.new.page", new String[]{ pageTitle });
+		String bPath = rootBusinessPath + "[Page:" + pageKey + "]";
+		String linkUrl = BusinessControlFactory.getInstance().getURLFromBusinessPathString(bPath);
+		SubscriptionListItem item = new SubscriptionListItem(title, linkUrl, bPath, pageCreationDate, "o_icon_portfolio_page");
+		item.setUserObject(pageKey);
+		return item;
+	}
+
+	private SubscriptionListItem pageModifiedItem(Long pageKey, String pageTitle,
+			Date pageLastModified, Date partLastModified,
+			String rootBusinessPath, Translator translator) {
+
+		String title = translator.translate("notifications.modified.page", new String[]{ pageTitle });
+		Date date;
+		if(partLastModified != null && partLastModified.compareTo(pageLastModified) > 0) {
+			date = partLastModified;
+		} else {
+			date = pageLastModified;
+		}
+
+		String bPath = rootBusinessPath + "[Page:" + pageKey + "]";
+		String linkUrl = BusinessControlFactory.getInstance().getURLFromBusinessPathString(bPath);
+		SubscriptionListItem item = new SubscriptionListItem(title, linkUrl, bPath, date, "o_icon_portfolio_page");
+		item.setUserObject(pageKey);
+		return item;
 	}
 	
 	

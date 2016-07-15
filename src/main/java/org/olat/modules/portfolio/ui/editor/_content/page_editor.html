@@ -4,19 +4,21 @@
 			<div class="o_block o_page_fragment_edit">
 				<div class="o_page_tools_above clearfix">
 					<div class="o_page_add_above">
-						$r.render("$fragment.addElementAboveLinkName")
+						$r.render($fragment.addElementAboveLink)
 					</div>
 					<div class="o_page_others_above">
-						$r.render("$fragment.moveUpLinkName")
-						$r.render("$fragment.moveDownLinkName")
-						$r.render("$fragment.deleteLinkName")
+						<span><i class="o_icon $fragment.typeCssClass"> </i> $r.translate($fragment.type)</span>
+						$r.render($fragment.saveLink)
+						$r.render($fragment.moveUpLink)
+						$r.render($fragment.moveDownLink)
+						$r.render($fragment.deleteLink)
 					</div>
 				</div>
 				<div class="o_page_part o_page_edit" data-oo-page-fragment="$fragment.componentName">
 				$r.render($fragment.componentName)
 				</div>
 				<div class="o_page_add_below">
-				$r.render("$fragment.addElementBelowLinkName")
+				$r.render($fragment.addElementBelowLink)
 				</div>
 			</div>
 		#else
