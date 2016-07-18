@@ -39,6 +39,7 @@ import org.olat.basesecurity.manager.GroupDAO;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.core.id.User;
+import org.olat.core.id.UserConstants;
 import org.olat.portfolio.model.InvitationImpl;
 import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -86,7 +87,19 @@ public class InvitationDAO {
 		return invitation;
 	}
 	
-	public Invitation update(Invitation invitation) {
+	public Invitation update(Invitation invitation, String firstName, String lastName, String email) {
+		List<Identity> identities = groupDao.getMembers(invitation.getBaseGroup(), GroupRoles.invitee.name());
+		for(Identity identity:identities) {
+			if(email.equals(identity.getUser().getProperty(UserConstants.EMAIL, null))) {
+				identity.getUser().setProperty(UserConstants.FIRSTNAME, firstName);
+				identity.getUser().setProperty(UserConstants.LASTNAME, lastName);
+				identity.getUser().setProperty(UserConstants.EMAIL, email);
+			}
+		}
+		
+		invitation.setFirstName(firstName);
+		invitation.setLastName(lastName);
+		invitation.setMail(email);
 		return dbInstance.getCurrentEntityManager().merge(invitation);
 	}
 	
@@ -181,6 +194,23 @@ public class InvitationDAO {
 		return invitations.get(0);
 	}
 	
+	public Invitation findInvitation(Group group, IdentityRef identity) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select invitation from binvitation as invitation ")
+		  .append(" inner join fetch invitation.baseGroup bGroup")
+		  .append(" inner join bGroup.members as members")
+		  .append(" where bGroup.key=:groupKey and members.identity.key=:inviteeKey and members.role=:role");
+
+		List<Invitation> invitations = dbInstance.getCurrentEntityManager()
+				  .createQuery(sb.toString(), Invitation.class)
+				  .setParameter("groupKey", group.getKey())
+				  .setParameter("inviteeKey", identity.getKey())
+				  .setParameter("role", GroupRoles.invitee.name())
+				  .getResultList();
+		if(invitations.isEmpty()) return null;
+		return invitations.get(0);
+	}
+	
 	/**
 	 * Find an invitation by its security token
 	 * @param token
@@ -237,9 +267,11 @@ public class InvitationDAO {
 	 * @param invitation
 	 */
 	public void deleteInvitation(Invitation invitation) {
-		//fxdiff: FXOLAT-251: nothing persisted, nothing to delete
 		if(invitation == null || invitation.getKey() == null) return;
-		dbInstance.getCurrentEntityManager().remove(invitation);
+		
+		Invitation refInvitation = dbInstance.getCurrentEntityManager()
+			.getReference(InvitationImpl.class, invitation.getKey());
+		dbInstance.getCurrentEntityManager().remove(refInvitation);
 	}
 	
 	/**

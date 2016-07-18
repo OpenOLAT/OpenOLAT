@@ -24,18 +24,17 @@
 			<div class="o_portfolio_page_meta text-muted o_small">
 				$r.translate("meta.section.assignments")<br />
 			 	#foreach($assignment in $row.assignments)
-			 	<i class="o_icon o_icon_assignment"> </i> $r.translate("assignment") ${foreach.count}: $assignment.title
-			 	#if($r.isNotNull($assignment.editLink))
-			 		$r.render($assignment.editLink.component.componentName)
-			 	#elseif($r.isNotNull($assignment.openLink))
-			 	
-			 	#elseif($r.isNotNull($assignment.createLink))
-			 	
-			 	#end<br />
+				 	<i class="o_icon o_icon_assignment"> </i> $r.translate("assignment") ${foreach.count}: $assignment.title
+				 	#if($r.isNotNull($assignment.editLink))
+				 		$r.render($assignment.editLink.component.componentName)
+				 	#elseif($r.isNotNull($assignment.openLink))
+				 	
+				 	#elseif($r.isNotNull($assignment.createLink))
+				 	
+				 	#end<br />
 			 	#end
 			</div>
 		</div>
-		
 		#end
 		
 		#if(${row.hasSectionCategories()})
@@ -118,6 +117,19 @@
 		#if($r.available($row.commentFormItemName))
 			$r.render("$row.commentFormItemName")
 		#end
+	</div>
+</div>
+#end
+#if($r.isNotNull($row.newFloatingEntryLink))
+<div class="panel panel-placeholder">
+	<div class="panel-heading">
+		<h4 class="panel-title">$r.translate("create.new.page.title")</h4>
+	</div>
+	<div class="panel-body">
+		<p>$r.translate("create.new.page.descr")</p>
+		<div class="o_button_group">
+			$r.render($row.newFloatingEntryLink)
+		</div>
 	</div>
 </div>
 #end

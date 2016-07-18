@@ -25,6 +25,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
@@ -1067,7 +1068,8 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 	}
 	
 	private void doDeleteAssessmentSection(AssessmentSection assessmentSection) {
-		for(SectionPart part:assessmentSection.getSectionParts()) {
+		List<SectionPart> parts = new ArrayList<>(assessmentSection.getSectionParts());
+		for(SectionPart part:parts) {
 			if(part instanceof AssessmentItemRef) {
 				doDeleteAssessmentItemRef((AssessmentItemRef)part);
 			} else if(part instanceof AssessmentSection) {

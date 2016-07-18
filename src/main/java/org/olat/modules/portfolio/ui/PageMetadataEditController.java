@@ -178,55 +178,14 @@ public class PageMetadataEditController extends FormBasicController {
 		categoriesEl.setElementCssClass("o_sel_ep_tagsinput");
 		categoriesEl.setAllowDuplicates(false);
 		
-		// list of binder
-		if (chooseBinder) {
-			List<Binder> binders = portfolioService.getOwnedBinders(getIdentity());
-
-			String[] theKeys = new String[binders.size()+1];
-			String[] theValues = new String[binders.size()+1];
-
-			for (int i = 0; i < binders.size(); ++i) {
-				theKeys[i] = binders.get(i).getKey().toString();
-				theValues[i] = StringHelper.escapeHtml(binders.get(i).getTitle());
-			} 
-			
-			theKeys[binders.size()] = "none";
-			theValues[binders.size()] = "none";
-
-			bindersEl = uifactory.addDropdownSingleselect("binders", "page.binders", formLayout, theKeys, theValues, null);
-			bindersEl.addActionListener(FormEvent.ONCHANGE);
-			
-			if (binders.size() == 0) {
-				bindersEl.setVisible(false);				
-			} else {
-				if (currentBinder == null) {
-					currentBinder = binders.get(0);					
-				} else {
-					for (String key : theKeys) {
-						if (key.equals(currentBinder.getKey().toString()))
-							bindersEl.select(key, true);
-					}
-				}
-			}
-		} else {
-			
-			String[] theKeys = new String[] { currentBinder.getKey().toString() };
-			String[] theValues = new String[] { StringHelper.escapeHtml(currentBinder.getTitle()) };
-
-			bindersEl = uifactory.addDropdownSingleselect("binders", "page.binders", formLayout, theKeys, theValues, null);
-			bindersEl.setEnabled(false);
-		}
-
-		//list of sections
-		if(chooseSection) {
-			retrieveSections(formLayout, true);
-		} else {// currently never used
-			String[] theKeys = new String[] { currentSection.getKey().toString() };
-			String[] theValues = new String[]{ StringHelper.escapeHtml(currentSection.getTitle()) };
-			sectionsEl = uifactory.addDropdownSingleselect("sections", "page.sections", formLayout, theKeys, theValues, null);
-			sectionsEl.setEnabled(false);
-		}
-
+		bindersEl = uifactory.addDropdownSingleselect("binders", "page.binders", formLayout, new String[] { "" }, new String[] { "" }, null);
+		
+		sectionsEl = uifactory.addDropdownSingleselect("sections", "page.sections", formLayout, new String[] { "" }, new String[] { "" }, null);
+		sectionsEl.setVisible(false);
+		
+		initBinderSelection();
+		updateSections();
+		
 		FormLayoutContainer buttonsCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		buttonsCont.setRootForm(mainForm);
 		formLayout.add(buttonsCont);
@@ -238,46 +197,90 @@ public class PageMetadataEditController extends FormBasicController {
 		uifactory.addFormCancelButton("cancel", buttonsCont, ureq, getWindowControl());
 	}
 	
-	protected void retrieveSections(FormItemContainer formLayout, boolean updateBox) {
-		// case 1: there are no binders to choose from
-		if (currentBinder == null) {
-			sectionsEl = uifactory.addDropdownSingleselect("sections", "page.sections", formLayout, new String[] { "" },
-					new String[] { "" }, null);
-			sectionsEl.setVisible(false);
-			return;
-		}
-		// case 2: there is at least one binder, but no sections
-		List<Section> sections = portfolioService.getSections(currentBinder);
-		if (sections.isEmpty()) {
-			sectionsEl = uifactory.addDropdownSingleselect("sections", "page.sections", formLayout, new String[] { "" },
-					new String[] { "" }, null);
-			sectionsEl.setVisible(false);
-		} else {
-			// case 3: standard case: we have a binder and sections
-			int numOfSections = sections.size();
-			String selectedKey = null;
-			String[] theKeys = new String[numOfSections];
-			String[] theValues = new String[numOfSections];
-			for (int i = 0; i < numOfSections; i++) {
-				Long sectionKey = sections.get(i).getKey();
-				theKeys[i] = sectionKey.toString();
-				theValues[i] = (i + 1) + ". " + StringHelper.escapeHtml(sections.get(i).getTitle());
-				if (currentSection != null && currentSection.getKey().equals(sectionKey)) {
-					selectedKey = theKeys[i];
+	protected void initBinderSelection() {
+		if (chooseBinder) {
+			List<Binder> binders = portfolioService.getOwnedBinders(getIdentity());
+
+			String[] theKeys = new String[binders.size()+1];
+			String[] theValues = new String[binders.size()+1];
+			theKeys[0] = "none";
+			theValues[0] = translate("binder.none");
+			for (int i = 0; i < binders.size(); ++i) {
+				Binder binder = binders.get(i);
+				theKeys[i+1] = binder.getKey().toString();
+				theValues[i+1] = StringHelper.escapeHtml(binder.getTitle());
+			} 
+			
+			bindersEl.setKeysAndValues(theKeys, theValues, null);
+			bindersEl.addActionListener(FormEvent.ONCHANGE);
+			bindersEl.reset();
+			
+
+			String selectedBinder = theKeys[0];
+			if (currentBinder != null) {
+				selectedBinder = currentBinder.toString();					
+			}
+			
+			for (String key : theKeys) {
+				if (key.equals(selectedBinder)) {
+					bindersEl.select(key, true);
 				}
 			}
-			
-			if (updateBox) {
-				sectionsEl = uifactory.addDropdownSingleselect("sections", "page.sections", formLayout, theKeys,
-						theValues, null);
+		} else {
+			String[] theKeys = new String[] { currentBinder.getKey().toString() };
+			String[] theValues = new String[] { StringHelper.escapeHtml(currentBinder.getTitle()) };
+			bindersEl.setKeysAndValues(theKeys, theValues, null);
+			bindersEl.setEnabled(false);
+			bindersEl.reset();
+			bindersEl.select(theKeys[0], true);
+		}
+	}
+	
+	protected void updateSections() {
+		if(chooseSection) {
+			String selectedBinderKey =  bindersEl.isOneSelected() ? bindersEl.getSelectedKey() : null;
+			if(selectedBinderKey == null || "none".equals(selectedBinderKey)) {
+				sectionsEl.setKeysAndValues(new String[] { "" }, new String[] { "" }, null);
+				sectionsEl.reset();
+				sectionsEl.setVisible(false);
+				
 			} else {
-				sectionsEl.setKeysAndValues(theKeys, theValues, null);
-				sectionsEl.setEnabled(true);
+				List<Section> sections = portfolioService.getSections(currentBinder);
+				if(sections.isEmpty()) {
+					sectionsEl.setKeysAndValues(new String[] { "" }, new String[] { "" }, null);
+					sectionsEl.reset();
+					sectionsEl.setVisible(false);
+				} else {
+					String selectedKey = null;
+					int numOfSections = sections.size();
+					String[] theKeys = new String[numOfSections];
+					String[] theValues = new String[numOfSections];
+					for (int i = 0; i < numOfSections; i++) {
+						Long sectionKey = sections.get(i).getKey();
+						theKeys[i] = sectionKey.toString();
+						theValues[i] = (i + 1) + ". " + StringHelper.escapeHtml(sections.get(i).getTitle());
+						if (currentSection != null && currentSection.getKey().equals(sectionKey)) {
+							selectedKey = theKeys[i];
+						}
+					}
+					
+					sectionsEl.setKeysAndValues(theKeys, theValues, null);
+					sectionsEl.reset();
+					sectionsEl.setEnabled(true);
+					sectionsEl.setVisible(true);
+					
+					if (selectedKey != null) {
+						sectionsEl.select(selectedKey, true);
+					}
+				}
 			}
-			
-			if (selectedKey != null) {
-				sectionsEl.select(selectedKey, true);
-			}
+		} else {// currently never used
+			String[] theKeys = new String[] { currentSection.getKey().toString() };
+			String[] theValues = new String[]{ StringHelper.escapeHtml(currentSection.getTitle()) };
+			sectionsEl.setKeysAndValues(theKeys, theValues, null);
+			sectionsEl.select(theKeys[0], true);
+			sectionsEl.setEnabled(false);
+			sectionsEl.setVisible(true);
 		}
 	}
 
@@ -386,7 +389,7 @@ public class PageMetadataEditController extends FormBasicController {
 					String selectedKey = bindersEl.getSelectedKey();
 					currentBinder = portfolioService.getBinderByKey(new Long(selectedKey));
 					sectionsEl.setVisible(true);
-					retrieveSections(flc, false);
+					updateSections();
 				} catch(NumberFormatException e) {
 					logError("", e);
 				}

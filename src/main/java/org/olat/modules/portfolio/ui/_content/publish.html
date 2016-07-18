@@ -6,7 +6,7 @@
 			<tr>
 				<td><i class="$binderRights.cssClass"> </i> $r.escapeHtml($binderRights.fullName)</td>
 				<td>$binderRights.explanation</td>
-				<td>#if(${binderRights.hasEditLink()}) $r.render($binderRights.editLinkComponentName) #end</td>
+				<td>#if($r.isNotNull($binderRights.editLink)) $r.render($binderRights.editLink) #end</td>
 			</tr>
 		#end
 		</tbody></table>
@@ -22,7 +22,7 @@
 					<tr>
 						<td><i class="$sectionRights.cssClass"> </i> $r.escapeHtml($sectionRights.fullName)</td>
 						<td>$sectionRights.explanation</td>
-						<td>#if(${sectionRights.hasEditLink()}) $r.render($sectionRights.editLinkComponentName) #end</td>
+						<td>#if($r.isNotNull($sectionRights.editLink)) $r.render($sectionRights.editLink) #end</td>
 					</tr>
 				#end
 				</tbody></table>
@@ -39,7 +39,7 @@
 							<tr>
 								<td><i class="$pageRights.cssClass"> </i> $r.escapeHtml($pageRights.fullName)</td>
 								<td>$pageRights.explanation</td>
-								<td>#if(${pageRights.hasEditLink()}) $r.render($pageRights.editLinkComponentName) #end</td>
+								<td>#if($r.isNotNull($pageRights.editLink)) $r.render($pageRights.editLink) #end</td>
 							</tr>
 						#end
 						</tbody></table>

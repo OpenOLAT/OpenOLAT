@@ -52,7 +52,7 @@ public class PageRow {
 	private List<AssignmentPageRow> assignments;
 	
 	private Link openLink;
-	private FormLink openFormLink, newEntryLink, newAssignmentLink;
+	private FormLink openFormLink, newFloatingEntryLink, newEntryLink, newAssignmentLink;
 	
 	private long numOfComments;
 	private Link commentLink;
@@ -220,6 +220,14 @@ public class PageRow {
 		return newEntryLink == null ? null : newEntryLink.getComponent().getComponentName();
 	}
 	
+	public FormLink getNewFloatingEntryLink() {
+		return newFloatingEntryLink;
+	}
+
+	public void setNewFloatingEntryLink(FormLink newFloatingEntryLink) {
+		this.newFloatingEntryLink = newFloatingEntryLink;
+	}
+
 	public boolean hasNewAssignmentLink() {
 		return newAssignmentLink != null;
 	}

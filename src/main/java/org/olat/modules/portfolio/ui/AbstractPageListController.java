@@ -176,12 +176,12 @@ implements Activateable2, TooledController, FlexiTableComponentDelegate {
 		cal.set(Calendar.HOUR_OF_DAY, 0);
 		cal.add(Calendar.DATE, 1);
 		timelineEl.setEndTime(cal.getTime());
-		cal.add(Calendar.YEAR, -2);
+		cal.add(Calendar.YEAR, -1);
 		timelineEl.setStartTime(cal.getTime());
 	}
 	
 	@Override
-	public Iterable<Component> getComponents(int row, Object rowObject) {
+	public final Iterable<Component> getComponents(int row, Object rowObject) {
 		PageRow pageRow = model.getObject(row);
 		List<Component> components = new ArrayList<>(4);
 		if(pageRow.hasAssignments()) {
@@ -190,6 +190,9 @@ implements Activateable2, TooledController, FlexiTableComponentDelegate {
 					components.add(assignmentRow.getEditLink().getComponent());
 				}
 			}	
+		}
+		if(pageRow.getNewFloatingEntryLink() != null) {
+			components.add(pageRow.getNewFloatingEntryLink().getComponent());
 		}
 		return components;
 	}
@@ -314,9 +317,21 @@ implements Activateable2, TooledController, FlexiTableComponentDelegate {
 		String resName = entries.get(0).getOLATResourceable().getResourceableTypeName();
 		if("Page".equalsIgnoreCase(resName) || "Entry".equalsIgnoreCase(resName)) {
 			Long resId = entries.get(0).getOLATResourceable().getResourceableId();
+			PageRow activatedRow = null;
 			for(PageRow row :model.getObjects()) {
 				if(row.getKey().equals(resId)) {
-					doOpenPage(ureq, row);
+					activatedRow = row;
+					break;
+				}
+			}
+			if(activatedRow != null) {
+				doOpenPage(ureq, activatedRow);
+			}
+		} else if("Section".equalsIgnoreCase(resName)) {
+			Long resId = entries.get(0).getOLATResourceable().getResourceableId();
+			for(PageRow row :model.getObjects()) {
+				if(row.getSection() != null && row.getSection().getKey().equals(resId)) {
+					//doOpenPage(ureq, row);
 					break;
 				}
 			}

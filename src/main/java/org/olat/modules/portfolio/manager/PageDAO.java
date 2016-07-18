@@ -191,6 +191,7 @@ public class PageDAO {
 			appendFuzzyLike(sb, "page.summary", "searchString", dbInstance.getDbVendor());
 			sb.append(")");
 		}
+		sb.append(" order by page.creationDate desc");
 		
 		TypedQuery<Page> query = dbInstance.getCurrentEntityManager()
 			.createQuery(sb.toString(), Page.class)

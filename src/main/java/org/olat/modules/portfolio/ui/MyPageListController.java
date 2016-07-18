@@ -26,6 +26,9 @@ import java.util.Map;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.form.flexible.FormItem;
+import org.olat.core.gui.components.form.flexible.elements.FormLink;
+import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
@@ -122,10 +125,29 @@ public class MyPageListController extends AbstractPageListController {
 			points.add(new TimelinePoint(page.getKey().toString(), page.getTitle(), page.getCreationDate(), s));
 		}
 		
+		PageRow createRow = new PageRow(null, null, null, false, false);
+		FormLink newEntryButton = uifactory.addFormLink("new.entry." + (++counter), "new.entry", "create.new.page", null, flc, Link.BUTTON);
+		newEntryButton.setCustomEnabledLinkCSS("btn btn-primary");
+		newEntryButton.setUserObject(createRow);
+		createRow.setNewFloatingEntryLink(newEntryButton);
+		rows.add(createRow);
+		
 		timelineEl.setPoints(points);
 		model.setObjects(rows);
 		tableEl.reset();
 		tableEl.reloadData();
+	}
+
+	@Override
+	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
+		if(source instanceof FormLink) {
+			FormLink link = (FormLink)source;
+			String cmd = link.getCmd();
+			if("new.entry".equals(cmd)) {
+				doCreateNewPage(ureq);
+			}
+		}
+		super.formInnerEvent(ureq, source, event);
 	}
 
 	@Override

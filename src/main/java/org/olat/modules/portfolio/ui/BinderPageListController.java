@@ -46,6 +46,8 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
+import org.olat.core.id.context.ContextEntry;
+import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.StringHelper;
 import org.olat.modules.portfolio.AssessmentSection;
 import org.olat.modules.portfolio.Assignment;
@@ -77,6 +79,7 @@ public class BinderPageListController extends AbstractPageListController  {
 	private CloseableModalController cmc;
 	private PageMetadataEditController newPageCtrl;
 	private AssignmentEditController newAssignmentCtrl;
+	private SectionPageListController sectionPagesCtrl;
 
 	private final Binder binder;
 	private final List<Identity> owners;
@@ -262,6 +265,30 @@ public class BinderPageListController extends AbstractPageListController  {
 	}
 	
 	@Override
+	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
+		super.activate(ureq, entries, state);
+		
+		if(entries == null || entries.isEmpty()) return;
+		
+		String resName = entries.get(0).getOLATResourceable().getResourceableTypeName();
+		if("Section".equalsIgnoreCase(resName)) {
+			Long resId = entries.get(0).getOLATResourceable().getResourceableId();
+			
+			PageRow activatedRow = null;
+			for(PageRow row :model.getObjects()) {
+				if(row.getSection() != null && row.getSection().getKey().equals(resId)) {
+					activatedRow = row;
+					break;
+				}
+			}
+			
+			if(activatedRow != null) {
+				doOpenSection(ureq, activatedRow);
+			}
+		}
+	}
+	
+	@Override
 	public void event(UserRequest ureq, Controller source, Event event) {
 		if(newPageCtrl == source || newAssignmentCtrl == source) {
 			if(event == Event.DONE_EVENT) {
@@ -283,6 +310,16 @@ public class BinderPageListController extends AbstractPageListController  {
 		newAssignmentCtrl = null;
 		newPageCtrl = null;
 		cmc = null;
+	}
+	
+	protected void doOpenSection(UserRequest ureq, PageRow row) {
+		removeAsListenerAndDispose(sectionPagesCtrl);
+		if(row.getSection() == null) return;
+		
+		Section section = portfolioService.getSection(row.getSection());
+		sectionPagesCtrl = new SectionPageListController(ureq, getWindowControl(), stackPanel, secCallback, binder, config, section);
+		listenTo(sectionPagesCtrl);
+		stackPanel.pushController(StringHelper.escapeHtml(section.getTitle()), sectionPagesCtrl);
 	}
 	
 	private void doCreateNewPage(UserRequest ureq, Section preSelectedSection) {

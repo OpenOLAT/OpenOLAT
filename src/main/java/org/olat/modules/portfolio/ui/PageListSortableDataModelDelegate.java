@@ -83,6 +83,14 @@ public class PageListSortableDataModelDelegate extends SortableFlexiTableModelDe
 		
 		@Override
 		public int compare(PageRow r1, PageRow r2) {
+			if(r1.getNewFloatingEntryLink() != null) {
+				return 1;
+			}
+			if(r2.getNewFloatingEntryLink() != null) {
+				return -1;
+			}
+			
+			
 			Section s1 = r1.getSection();
 			Section s2 = r2.getSection();
 			if(s1 == null && s2 != null) {

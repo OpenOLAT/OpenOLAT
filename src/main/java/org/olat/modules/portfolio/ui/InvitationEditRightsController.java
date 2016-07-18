@@ -24,11 +24,15 @@ import org.olat.basesecurity.Constants;
 import org.olat.basesecurity.Invitation;
 import org.olat.basesecurity.SecurityGroup;
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
+import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -45,6 +49,7 @@ import org.olat.core.util.mail.MailHelper;
 import org.olat.core.util.mail.MailManager;
 import org.olat.core.util.mail.MailerResult;
 import org.olat.modules.portfolio.Binder;
+import org.olat.modules.portfolio.PortfolioService;
 import org.olat.portfolio.manager.InvitationDAO;
 import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -55,11 +60,13 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class AddInvitationRightsController extends FormBasicController {
+public class InvitationEditRightsController extends FormBasicController {
 	
+	private FormLink removeLink;
 	private TextElement firstNameEl, lastNameEl, mailEl;
 	
 	private Binder binder;
+	private Identity invitee;
 	private Invitation invitation;
 	
 	@Autowired
@@ -70,12 +77,21 @@ public class AddInvitationRightsController extends FormBasicController {
 	private InvitationDAO invitationDao;
 	@Autowired
 	private BaseSecurity securityManager;
+	@Autowired
+	private PortfolioService portfolioService;
 	
-	public AddInvitationRightsController(UserRequest ureq, WindowControl wControl, Binder binder) {
+	public InvitationEditRightsController(UserRequest ureq, WindowControl wControl, Binder binder) {
 		super(ureq, wControl);
 		this.binder = binder;
 		invitation = invitationDao.createInvitation();
-		
+		initForm(ureq);
+	}
+	
+	public InvitationEditRightsController(UserRequest ureq, WindowControl wControl, Binder binder, Identity invitee) {
+		super(ureq, wControl);
+		this.binder = binder;
+		this.invitee = invitee;
+		invitation = invitationDao.findInvitation(binder.getBaseGroup(), invitee);
 		initForm(ureq);
 	}
 
@@ -107,6 +123,9 @@ public class AddInvitationRightsController extends FormBasicController {
 		formLayout.add(buttonsCont);
 		buttonsCont.setRootForm(mainForm);
 		uifactory.addFormCancelButton("cancel", buttonsCont, ureq, getWindowControl());
+		if(invitation.getKey() != null) {
+			removeLink = uifactory.addFormLink("remove", buttonsCont, Link.BUTTON);
+		}
 		uifactory.addFormSubmitButton("save", buttonsCont);
 	}
 	
@@ -148,16 +167,17 @@ public class AddInvitationRightsController extends FormBasicController {
 
 	@Override
 	protected void formOK(UserRequest ureq) {
-		invitation.setFirstName(firstNameEl.getValue());
-		invitation.setLastName(lastNameEl.getValue());
-		invitation.setMail(mailEl.getValue());
+		
 		
 		if(invitation.getKey() == null) {
-			Identity invitee = invitationDao.createIdentityAndPersistInvitation(invitation, binder.getBaseGroup(), getLocale());
-			sendInvitation(invitee);
+			invitation.setFirstName(firstNameEl.getValue());
+			invitation.setLastName(lastNameEl.getValue());
+			invitation.setMail(mailEl.getValue());
+			invitee = invitationDao.createIdentityAndPersistInvitation(invitation, binder.getBaseGroup(), getLocale());
+			sendInvitation();
 			fireEvent(ureq, Event.DONE_EVENT);
 		} else {
-			invitationDao.update(invitation);
+			invitationDao.update(invitation, firstNameEl.getValue(), lastNameEl.getValue(), mailEl.getValue());
 			fireEvent(ureq, Event.CHANGED_EVENT);
 		}
 	}
@@ -167,7 +187,21 @@ public class AddInvitationRightsController extends FormBasicController {
 		fireEvent(ureq, Event.CANCELLED_EVENT);
 	}
 	
-	private void sendInvitation(Identity invitee) {
+	@Override
+	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
+		if(removeLink == source) {
+			doRemoveInvitation();
+			fireEvent(ureq, Event.DONE_EVENT);
+		}
+		super.formInnerEvent(ureq, source, event);
+	}
+	
+	private void doRemoveInvitation() {
+		portfolioService.removeAccessRights(binder, invitee);
+		invitationDao.deleteInvitation(invitation);
+	}
+
+	private void sendInvitation() {
 		String inviteeEmail = invitee.getUser().getProperty(UserConstants.EMAIL, getLocale());
 		ContactList contactList = new ContactList(inviteeEmail);
 		contactList.add(inviteeEmail);

@@ -34,6 +34,7 @@
 	var formatDates;
 	var startTime, endTime;
 	var data, statusTranslations;
+	var slideDelta = (183 * 24 * 60 * 60 * 1000);//six month in milliseconds
 
 	createGraph = function($obj, settings) {
 		
@@ -107,15 +108,17 @@
 		});
 	}
 	
+	
+	
 	slideUp = function() {
-		endTime = endTime + (365 * 24 * 60 * 60 * 1000);
-		startTime = startTime + (365 * 24 * 60 * 60 * 1000);
+		endTime = endTime + slideDelta;
+		startTime = startTime + slideDelta;
 		updateTimeline(true);
 	}
 	
 	slideDown = function() {
-		endTime = endTime - (365 * 24 * 60 * 60 * 1000);
-		startTime = startTime - (365 * 24 * 60 * 60 * 1000);
+		endTime = endTime - slideDelta;
+		startTime = startTime - slideDelta;
 		updateTimeline(false);
 	}
 	
@@ -141,7 +144,7 @@
 			.ease("linear")
 			.attrTween("cx", function(d) {
 				return function(t) {
-					var delta = (1.0 - t) *  (365 * 24 * 60 * 60 * 1000);
+					var delta = (1.0 - t) * slideDelta;
 					var time = up ? (d.time + delta) : (d.time - delta);
 					return lineX(curvedX(curveY(time)));
 				};

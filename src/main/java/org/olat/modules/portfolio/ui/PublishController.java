@@ -87,7 +87,7 @@ public class PublishController extends BasicController implements TooledControll
 	private final TooledStackedPanel stackPanel;
 
 	private CloseableModalController cmc;
-	private AddInvitationRightsController addInvitationCtrl;
+	private InvitationEditRightsController addInvitationCtrl;
 	private AccessRightsEditController editAccessRightsCtrl;
 	private StepsMainRunController addMembersWizard;
 	
@@ -154,10 +154,9 @@ public class PublishController extends BasicController implements TooledControll
 		for(AccessRights right:rights) {
 			if(right.getSectionKey() == null && right.getPageKey() == null) {
 				Link editLink = null;
-				if(canEditBinderAccessRights
-						&& !PortfolioRoles.owner.equals(right.getRole())
-						&&!PortfolioRoles.invitee.equals(right.getRole())) {
-					editLink = LinkFactory.createLink("edit_" + (counter++), "edit", "edit_access", mainVC, this);
+				if(canEditBinderAccessRights && !PortfolioRoles.owner.equals(right.getRole())) {
+					String id = "edit_" + (counter++);
+					editLink = LinkFactory.createLink(id, id, "edit_access", "edit", getTranslator(), mainVC, this, Link.LINK);
 				}
 				binderRow.getAccessRights().add(new AccessRightsRow(binder, right, editLink));
 			}
@@ -182,7 +181,8 @@ public class PublishController extends BasicController implements TooledControll
 				if(section.getKey().equals(right.getSectionKey()) && right.getPageKey() == null) {
 					Link editLink = null;
 					if(canEditSectionAccessRights && !PortfolioRoles.owner.equals(right.getRole())) {
-						editLink = LinkFactory.createLink("edit_" + (counter++), "edit", "edit_access", mainVC, this);
+						String id = "edit_" + (counter++);
+						editLink = LinkFactory.createLink(id, id, "edit_access", "edit", getTranslator(), mainVC, this, Link.LINK);
 					}
 					sectionRow.getAccessRights().add(new AccessRightsRow(section, right, editLink));
 				}
@@ -203,7 +203,8 @@ public class PublishController extends BasicController implements TooledControll
 				if(page.getKey().equals(right.getPageKey())) {
 					Link editLink = null;
 					if(canEditPageAccessRights && !PortfolioRoles.owner.equals(right.getRole())) {
-						editLink = LinkFactory.createLink("edit_" + (counter++), "edit", "edit_access", mainVC, this);
+						String id = "edit_" + (counter++);
+						editLink = LinkFactory.createLink(id, id, "edit_access", "edit", getTranslator(), mainVC, this, Link.LINK);
 					}
 					pageRow.getAccessRights().add(new AccessRightsRow(page, right, editLink));
 				}
@@ -224,7 +225,11 @@ public class PublishController extends BasicController implements TooledControll
 			String cmd = link.getCommand();
 			if("edit_access".equals(cmd)) {
 				AccessRightsRow row = (AccessRightsRow)link.getUserObject();
-				doEditAccessRights(ureq, row.getElement(), row.getIdentity());
+				if(PortfolioRoles.invitee.name().equals(row.getRole())) {
+					doEditInvitation(ureq, row.getIdentity());
+				} else {
+					doEditAccessRights(ureq, row.getElement(), row.getIdentity());
+				}
 			}
 		}
 	}
@@ -279,7 +284,7 @@ public class PublishController extends BasicController implements TooledControll
 	private void doAddInvitation(UserRequest ureq) {
 		if(addInvitationCtrl != null) return;
 		
-		addInvitationCtrl = new AddInvitationRightsController(ureq, getWindowControl(), binder);
+		addInvitationCtrl = new InvitationEditRightsController(ureq, getWindowControl(), binder);
 		listenTo(addInvitationCtrl);
 		
 		String title = translate("add.invitation");
@@ -288,15 +293,15 @@ public class PublishController extends BasicController implements TooledControll
 		cmc.activate();
 	}
 	
-	private void doEditAccessRights(UserRequest ureq, PortfolioElement element, Identity member) {
-		if(editAccessRightsCtrl != null) return;
+	private void doEditInvitation(UserRequest ureq, Identity invitee) {
+		if(addInvitationCtrl != null) return;
+
 		
-		boolean canEdit = secCallback.canEditAccessRights(element);
-		editAccessRightsCtrl = new AccessRightsEditController(ureq, getWindowControl(), binder, member, canEdit);
-		listenTo(editAccessRightsCtrl);
+		addInvitationCtrl = new InvitationEditRightsController(ureq, getWindowControl(), binder, invitee);
+		listenTo(addInvitationCtrl);
 		
-		String title = translate("edit.access.rights");
-		cmc = new CloseableModalController(getWindowControl(), null, editAccessRightsCtrl.getInitialComponent(), true, title, true);
+		String title = translate("add.invitation");
+		cmc = new CloseableModalController(getWindowControl(), null, addInvitationCtrl.getInitialComponent(), true, title, true);
 		listenTo(cmc);
 		cmc.activate();
 	}
@@ -320,6 +325,19 @@ public class PublishController extends BasicController implements TooledControll
 		listenTo(addMembersWizard);
 		getWindowControl().pushAsModalDialog(addMembersWizard.getInitialComponent());
 		
+	}
+	
+	private void doEditAccessRights(UserRequest ureq, PortfolioElement element, Identity member) {
+		if(editAccessRightsCtrl != null) return;
+		
+		boolean canEdit = secCallback.canEditAccessRights(element);
+		editAccessRightsCtrl = new AccessRightsEditController(ureq, getWindowControl(), binder, member, canEdit);
+		listenTo(editAccessRightsCtrl);
+		
+		String title = translate("edit.access.rights");
+		cmc = new CloseableModalController(getWindowControl(), null, editAccessRightsCtrl.getInitialComponent(), true, title, true);
+		listenTo(cmc);
+		cmc.activate();
 	}
 	
 	private void addMembers(AccessRightsContext rightsContext, MailTemplate mailTemplate) {
@@ -396,13 +414,9 @@ public class PublishController extends BasicController implements TooledControll
 			}
 			return "o_icon o_icon_user";
 		}
-		
-		public boolean hasEditLink() {
-			return editLink != null;
-		}
-		
-		public String getEditLinkComponentName() {
-			return editLink == null ? null : editLink.getComponentName();
+
+		public Link getEditLink() {
+			return editLink;
 		}
 		
 		public String getExplanation() {

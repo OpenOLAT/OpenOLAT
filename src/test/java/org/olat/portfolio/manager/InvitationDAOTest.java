@@ -107,11 +107,8 @@ public class InvitationDAOTest extends OlatTestCase {
 	public void createAndUpdateInvitation() {
 		Invitation invitation = invitationDao.createAndPersistInvitation();
 		dbInstance.commit();
-		
-		invitation.setFirstName("Kanu");
-		invitation.setLastName("Unchou");
-		invitation.setMail("kanu.unchou@frentix.com");
-		Invitation updatedInvitation = invitationDao.update(invitation);
+
+		Invitation updatedInvitation = invitationDao.update(invitation, "Kanu", "Unchou", "kanu.unchou@frentix.com");
 		dbInstance.commit();
 		
 		Assert.assertEquals("Kanu", updatedInvitation.getFirstName());

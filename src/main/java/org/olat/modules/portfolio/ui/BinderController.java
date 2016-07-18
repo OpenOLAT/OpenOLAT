@@ -19,6 +19,7 @@
  */
 package org.olat.modules.portfolio.ui;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.olat.core.gui.UserRequest;
@@ -38,12 +39,14 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.id.OLATResourceable;
+import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.modules.portfolio.Binder;
 import org.olat.modules.portfolio.BinderConfiguration;
 import org.olat.modules.portfolio.BinderSecurityCallback;
+import org.olat.modules.portfolio.ui.event.SectionSelectionEvent;
 
 /**
  * 
@@ -122,10 +125,13 @@ public class BinderController extends BasicController implements TooledControlle
 	protected void doDispose() {
 		//
 	}
+	
+	
 
 	@Override
 	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
 		if(entries == null || entries.isEmpty()) {
+			doOpenEntries(ureq);
 			return;
 		}
 		
@@ -158,6 +164,11 @@ public class BinderController extends BasicController implements TooledControlle
 			if(event == Event.CHANGED_EVENT) {
 				removeAsListenerAndDispose(entriesCtrl);
 				entriesCtrl = null;
+			} else if(event instanceof SectionSelectionEvent) {
+				SectionSelectionEvent sse = (SectionSelectionEvent)event;
+				List<ContextEntry> entries = new ArrayList<>();
+				entries.add(BusinessControlFactory.getInstance().createContextEntry(OresHelper.createOLATResourceableInstance("Section", sse.getSection().getKey())));
+				doOpenEntries(ureq).activate(ureq, entries, null);
 			}
 		}
 	}

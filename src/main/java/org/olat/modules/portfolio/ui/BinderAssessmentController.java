@@ -76,6 +76,7 @@ public class BinderAssessmentController extends FormBasicController {
 	private int counter = 0;
 	private FlexiTableElement tableEl;
 	private BinderAssessmentDataModel model;
+	private FormLayoutContainer buttonsCont;
 	
 	private boolean withScore;
 	private boolean withPassed;
@@ -112,8 +113,9 @@ public class BinderAssessmentController extends FormBasicController {
 		tableEl.setCustomizeColumns(true);
 		tableEl.setEditMode(true);
 		tableEl.setAndLoadPersistedPreferences(ureq, "section-assessment");
+		
 
-		FormLayoutContainer buttonsCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
+		buttonsCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		formLayout.add(buttonsCont);
 		uifactory.addFormSubmitButton("save", buttonsCont);
 		uifactory.addFormCancelButton("cancel", buttonsCont, ureq, getWindowControl());
@@ -144,13 +146,16 @@ public class BinderAssessmentController extends FormBasicController {
 			}
 		}
 		
+		boolean allowedToAssess = false;
 		for(AssessmentSectionWrapper row:rows) {
 			boolean canAssess = secCallback.canAssess(row.getSection());
 			if(canAssess) {
 				forgeAssessmentSection(row);
+				allowedToAssess = true;
 			}
 		}
 		
+		buttonsCont.setVisible(allowedToAssess);
 		model.setObjects(rows);
 		tableEl.reset();
 		tableEl.reloadData();

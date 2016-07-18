@@ -219,6 +219,7 @@ public class BinderListController extends FormBasicController
 		if(newBinderCtrl == source) {
 			if(event == Event.DONE_EVENT) {
 				loadModel();
+				doOpenBinder(ureq, newBinderCtrl.getBinder()).activate(ureq, null, null);
 			}
 			cmc.deactivate();
 			cleanUp();

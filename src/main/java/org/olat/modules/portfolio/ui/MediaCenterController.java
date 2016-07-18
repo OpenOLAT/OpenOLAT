@@ -73,6 +73,7 @@ import org.olat.modules.portfolio.MediaLight;
 import org.olat.modules.portfolio.PortfolioService;
 import org.olat.modules.portfolio.ui.MediaDataModel.MediaCols;
 import org.olat.modules.portfolio.ui.event.MediaSelectionEvent;
+import org.olat.modules.portfolio.ui.media.CollectCitationMediaController;
 import org.olat.modules.portfolio.ui.media.CollectFileMediaController;
 import org.olat.modules.portfolio.ui.media.CollectImageMediaController;
 import org.olat.modules.portfolio.ui.media.CollectTextMediaController;
@@ -99,7 +100,7 @@ public class MediaCenterController extends FormBasicController
 	private MediaDataModel model;
 	private FlexiTableElement tableEl;
 	private String mapperThumbnailUrl;
-	private Link addFileLink, addImageLink, addVideoLink, addTextLink, importArtefactV1Link;
+	private Link addFileLink, addImageLink, addVideoLink, addTextLink, addCitationLink, importArtefactV1Link;
 	
 	private int counter = 0;
 	private final boolean select;
@@ -112,6 +113,7 @@ public class MediaCenterController extends FormBasicController
 	private CollectImageMediaController imageUploadCtrl;
 	private CollectVideoMediaController videoUploadCtrl;
 	private EPArtefactPoolRunController importArtefactv1Ctrl;
+	private CollectCitationMediaController citationUploadCtrl;
 	
 	@Autowired
 	private PortfolioService portfolioService;
@@ -151,6 +153,10 @@ public class MediaCenterController extends FormBasicController
 		addTextLink = LinkFactory.createToolLink("add.text", translate("add.text"), this);
 		addTextLink.setIconLeftCSS("o_icon o_icon-lg o_icon_new_portfolio");
 		stackPanel.addTool(addTextLink, Align.left);
+		
+		addCitationLink = LinkFactory.createToolLink("add.citation", translate("add.citation"), this);
+		addCitationLink.setIconLeftCSS("o_icon o_icon-lg o_icon_new_portfolio");
+		stackPanel.addTool(addCitationLink, Align.left);
 		
 		importArtefactV1Link = LinkFactory.createToolLink("import.artefactV1", translate("import.artefactV1"), this);
 		importArtefactV1Link.setIconLeftCSS("o_icon o_icon-lg o_icon_new_portfolio");
@@ -316,7 +322,7 @@ public class MediaCenterController extends FormBasicController
 			}
 			cmc.deactivate();
 			cleanUp();
-		} else if(textUploadCtrl == source) {
+		} else if(textUploadCtrl == source || citationUploadCtrl == source) {
 			if(event == Event.DONE_EVENT) {
 				loadModel(null);
 				tableEl.reloadData();
@@ -348,12 +354,14 @@ public class MediaCenterController extends FormBasicController
 	
 	private void cleanUp() {
 		removeAsListenerAndDispose(importArtefactv1Ctrl);
+		removeAsListenerAndDispose(citationUploadCtrl);
 		removeAsListenerAndDispose(videoUploadCtrl);
 		removeAsListenerAndDispose(imageUploadCtrl);
 		removeAsListenerAndDispose(fileUploadCtrl);
 		removeAsListenerAndDispose(textUploadCtrl);
 		removeAsListenerAndDispose(cmc);
 		importArtefactv1Ctrl = null;
+		citationUploadCtrl = null;
 		videoUploadCtrl = null;
 		imageUploadCtrl = null;
 		fileUploadCtrl = null;
@@ -371,6 +379,8 @@ public class MediaCenterController extends FormBasicController
 			doAddFileMedia(ureq);
 		} else if(addTextLink == source) {
 			doAddTextMedia(ureq);
+		} else if(addCitationLink == source) {
+			doAddCitationMedia(ureq);
 		} else if(importArtefactV1Link == source) {
 			doChooseArtefactV1(ureq);
 		} else if(source == mainForm.getInitialComponent()) {
@@ -443,6 +453,18 @@ public class MediaCenterController extends FormBasicController
 		
 		String title = translate("add.text");
 		cmc = new CloseableModalController(getWindowControl(), null, textUploadCtrl.getInitialComponent(), true, title, true);
+		listenTo(cmc);
+		cmc.activate();
+	}
+	
+	private void doAddCitationMedia(UserRequest ureq) {
+		if(citationUploadCtrl != null) return;
+		
+		citationUploadCtrl = new CollectCitationMediaController(ureq, getWindowControl());
+		listenTo(citationUploadCtrl);
+		
+		String title = translate("add.citation");
+		cmc = new CloseableModalController(getWindowControl(), null, citationUploadCtrl.getInitialComponent(), true, title, true);
 		listenTo(cmc);
 		cmc.activate();
 	}

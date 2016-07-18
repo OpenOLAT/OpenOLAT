@@ -177,7 +177,7 @@ public class SectionPageListController extends AbstractPageListController  {
 	private void doCreateNewPage(UserRequest ureq) {
 		if(newPageCtrl != null) return;
 		
-		newPageCtrl = new PageMetadataEditController(ureq, getWindowControl(), binder, false, null, true);
+		newPageCtrl = new PageMetadataEditController(ureq, getWindowControl(), binder, false, section, true);
 		listenTo(newPageCtrl);
 		
 		String title = translate("create.new.page");
