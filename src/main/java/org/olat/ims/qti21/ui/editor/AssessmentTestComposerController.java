@@ -730,8 +730,15 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 		return null;
 	}
 	
+	/**
+	 * Create a new test part and a section. Test part need a section,
+	 * section ref as children, it's mandatory.
+	 * 
+	 * @param ureq
+	 */
 	private void doNewTestPart(UserRequest ureq) {
 		TestPart testPart = AssessmentTestFactory.createTestPart(assessmentTestBuilder.getAssessmentTest());
+		AssessmentTestFactory.appendAssessmentSection(testPart);
 		
 		//save the test
 		doSaveAssessmentTest();
@@ -830,7 +837,9 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 			return (TreeNode)node.getParent();
 		}
 		if(node.getUserObject() instanceof TestPart) {
-			return (TreeNode)node.getChildAt(0);
+			if(node.getChildCount() > 0) {
+				return (TreeNode)node.getChildAt(0);
+			}
 		}
 		return null;
 	}
