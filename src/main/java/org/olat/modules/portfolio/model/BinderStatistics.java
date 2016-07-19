@@ -24,12 +24,13 @@ import java.util.Date;
 import org.olat.modules.portfolio.BinderLight;
 
 /**
+ * Some binder infos and statistics
  * 
  * Initial date: 21.06.2016<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class BinderRow implements BinderLight {
+public class BinderStatistics implements BinderLight {
 	
 	private final Long key;
 	private final String title;
@@ -40,7 +41,7 @@ public class BinderRow implements BinderLight {
 	private final String status;
 	private final int numOfComments;
 	
-	public BinderRow(Long key, String title, String imagePath, Date lastModified, int numOfSections, int numOfPages, String status, int numOfComments) {
+	public BinderStatistics(Long key, String title, String imagePath, Date lastModified, int numOfSections, int numOfPages, String status, int numOfComments) {
 		this.key = key;
 		this.title = title;
 		this.imagePath = imagePath;

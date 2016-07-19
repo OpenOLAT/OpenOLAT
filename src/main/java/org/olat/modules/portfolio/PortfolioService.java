@@ -32,7 +32,7 @@ import org.olat.modules.portfolio.model.AccessRightChange;
 import org.olat.modules.portfolio.model.AccessRights;
 import org.olat.modules.portfolio.model.AssessedBinder;
 import org.olat.modules.portfolio.model.AssessmentSectionChange;
-import org.olat.modules.portfolio.model.BinderRow;
+import org.olat.modules.portfolio.model.BinderStatistics;
 import org.olat.modules.portfolio.model.SynchedBinder;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
@@ -106,7 +106,17 @@ public interface PortfolioService {
 	 * @param owner
 	 * @return
 	 */
-	public List<BinderRow> searchOwnedBinders(IdentityRef owner);
+	public List<BinderStatistics> searchOwnedBinders(IdentityRef owner);
+	
+	/**
+	 * Return the list of binder owned by the specified user
+	 * and issued from a template in a course, subIdent and entry
+	 * are mandatory fields of the binders.
+	 * 
+	 * @param owner
+	 * @return
+	 */
+	public List<Binder> searchOwnedBindersFromCourseTemplate(IdentityRef owner);
 	
 	/**
 	 * Search all binders which are shared with the specified member.
@@ -140,6 +150,9 @@ public interface PortfolioService {
 	 * @return
 	 */
 	public List<Binder> searchSharedBindersBy(Identity owner, String searchString);
+	
+	public List<RepositoryEntry> searchCourseWithBinderTemplates(Identity participant);
+	
 	
 	public Binder getBinderByKey(Long portfolioKey);
 	

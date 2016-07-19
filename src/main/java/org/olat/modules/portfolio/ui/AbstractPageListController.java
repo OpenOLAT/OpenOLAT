@@ -68,7 +68,7 @@ import org.olat.modules.portfolio.PortfolioService;
 import org.olat.modules.portfolio.Section;
 import org.olat.modules.portfolio.ui.PageListDataModel.PageCols;
 import org.olat.modules.portfolio.ui.component.TimelineElement;
-import org.olat.modules.portfolio.ui.model.AssignmentPageRow;
+import org.olat.modules.portfolio.ui.model.PageAssignmentRow;
 import org.olat.modules.portfolio.ui.model.PageRow;
 import org.olat.modules.portfolio.ui.renderer.StatusCellRenderer;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -185,9 +185,15 @@ implements Activateable2, TooledController, FlexiTableComponentDelegate {
 		PageRow pageRow = model.getObject(row);
 		List<Component> components = new ArrayList<>(4);
 		if(pageRow.hasAssignments()) {
-			for(AssignmentPageRow assignmentRow:pageRow.getAssignments()) {
+			for(PageAssignmentRow assignmentRow:pageRow.getAssignments()) {
 				if(assignmentRow.getEditLink() != null) {
 					components.add(assignmentRow.getEditLink().getComponent());
+				}
+				if(assignmentRow.getOpenLink() != null) {
+					components.add(assignmentRow.getOpenLink().getComponent());
+				}
+				if(assignmentRow.getStartLink() != null) {
+					components.add(assignmentRow.getStartLink().getComponent());
 				}
 			}	
 		}
@@ -261,25 +267,26 @@ implements Activateable2, TooledController, FlexiTableComponentDelegate {
 	
 	private void addAssignmentsToRow(PageRow row, List<Assignment> assignments) {
 		if(assignments != null && assignments.size() > 0) {
-			List<AssignmentPageRow> assignmentRows = new ArrayList<>();
+			List<PageAssignmentRow> assignmentRows = new ArrayList<>();
 			for(Assignment assignment:assignments) {
-				AssignmentPageRow assignmentRow = new AssignmentPageRow(assignment);
+				PageAssignmentRow assignmentRow = new PageAssignmentRow(assignment);
 				
 				if(secCallback.canAddAssignment()) {
 					if(assignment.getTemplateReference() == null) {
-						FormLink editLink = uifactory.addFormLink("edit_assign_" + (++counter), "edit.assignment", "edit", null, flc, Link.LINK);
+						FormLink editLink = uifactory.addFormLink("edit_assign_" + (++counter), "edit.assignment", "edit", null, flc, Link.BUTTON);
 						editLink.setUserObject(assignmentRow);
 						assignmentRow.setEditLink(editLink);
 					}
 				} else {
 					if(assignment.getAssignmentStatus() == AssignmentStatus.notStarted) {
-						FormLink startLink = uifactory.addFormLink("create_assign_" + (++counter), "start.assignment", "create.start.assignment", null, flc, Link.LINK);
+						FormLink startLink = uifactory.addFormLink("create_assign_" + (++counter), "start.assignment", "create.start.assignment", null, flc, Link.BUTTON);
 						startLink.setUserObject(assignmentRow);
-						assignmentRow.setEditLink(startLink);
+						startLink.setPrimary(true);
+						assignmentRow.setStartLink(startLink);
 					} else {
-						FormLink openLink = uifactory.addFormLink("open_assign_" + (++counter), "open.assignment", "open", null, flc, Link.LINK);
+						FormLink openLink = uifactory.addFormLink("open_assign_" + (++counter), "open.assignment", "open", null, flc, Link.BUTTON);
 						openLink.setUserObject(assignmentRow);
-						assignmentRow.setEditLink(openLink);
+						assignmentRow.setOpenLink(openLink);
 					}
 				}
 				
@@ -395,13 +402,13 @@ implements Activateable2, TooledController, FlexiTableComponentDelegate {
 				PageRow row = (PageRow)link.getUserObject();
 				doComment(ureq, row.getPage());
 			} else if("edit.assignment".equals(cmd)) {
-				AssignmentPageRow row = (AssignmentPageRow)link.getUserObject();
+				PageAssignmentRow row = (PageAssignmentRow)link.getUserObject();
 				doEditAssignment(ureq, row);
 			} else if("start.assignment".equals(cmd)) {
-				AssignmentPageRow row = (AssignmentPageRow)link.getUserObject();
+				PageAssignmentRow row = (PageAssignmentRow)link.getUserObject();
 				doStartAssignment(ureq, row);
 			} else if("open.assignment".equals(cmd)) {
-				AssignmentPageRow row = (AssignmentPageRow)link.getUserObject();
+				PageAssignmentRow row = (PageAssignmentRow)link.getUserObject();
 				doOpenAssignment(ureq, row);
 			}
 		}
@@ -425,14 +432,14 @@ implements Activateable2, TooledController, FlexiTableComponentDelegate {
 		flc.contextPut("timelineSwitch", Boolean.FALSE);
 	}
 	
-	private void doStartAssignment(UserRequest ureq, AssignmentPageRow row) {
+	private void doStartAssignment(UserRequest ureq, PageAssignmentRow row) {
 		Assignment assignment = row.getAssignment();
 		Assignment startedAssigment = portfolioService.startAssignment(assignment, getIdentity());
 		row.setAssignment(startedAssigment);
 		doOpenPage(ureq, startedAssigment.getPage());
 	}
 	
-	private void doOpenAssignment(UserRequest ureq, AssignmentPageRow row) {
+	private void doOpenAssignment(UserRequest ureq, PageAssignmentRow row) {
 		Assignment assignment = row.getAssignment();
 		if(assignment.getAssignmentType() == AssignmentType.essay) {
 			Page page = assignment.getPage();
@@ -443,7 +450,7 @@ implements Activateable2, TooledController, FlexiTableComponentDelegate {
 		}
 	}
 	
-	private void doEditAssignment(UserRequest ureq, AssignmentPageRow row) {
+	private void doEditAssignment(UserRequest ureq, PageAssignmentRow row) {
 		if(editAssignmentCtrl != null) return;
 		
 		Assignment assignment = row.getAssignment();

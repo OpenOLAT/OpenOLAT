@@ -19,47 +19,63 @@
  */
 package org.olat.modules.portfolio.ui;
 
+import java.util.List;
+
+import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
-import org.olat.modules.portfolio.ui.model.BinderRow;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableModelDelegate;
+import org.olat.modules.portfolio.ui.model.CourseTemplateRow;
 
 /**
  * 
- * Initial date: 07.06.2016<br>
+ * Initial date: 08.06.2016<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class BindersDataModel extends DefaultFlexiTableDataModel<BinderRow> {
-
-	public BindersDataModel(FlexiTableColumnModel columnModel) {
+public class CourseTemplateSearchDataModel extends DefaultFlexiTableDataModel<CourseTemplateRow>
+	implements SortableFlexiTableDataModel<CourseTemplateRow> {
+	
+	public CourseTemplateSearchDataModel(FlexiTableColumnModel columnModel) {
 		super(columnModel);
+	}
+	
+	@Override
+	public void sort(SortKey orderBy) {
+		SortableFlexiTableModelDelegate<CourseTemplateRow> sorter = new SortableFlexiTableModelDelegate<>(orderBy, this, null);
+		List<CourseTemplateRow> rows = sorter.sort();
+		super.setObjects(rows);
 	}
 
 	@Override
 	public Object getValueAt(int row, int col) {
-		BinderRow portfolio = getObject(row);
-		switch(PortfolioCols.values()[col]) {
-			case key: return portfolio.getKey();
-			case title: return portfolio.getTitle();
-			case open: return portfolio.getOpenLink();
+		CourseTemplateRow page = getObject(row);
+		return getValueAt(page, col);
+	}
+	
+	@Override
+	public Object getValueAt(CourseTemplateRow page, int col) {
+		switch(CTCols.values()[col]) {
+			case course: return page.getCourseTitle();
+			case courseNode: return page.getCourseNodeTitle();
 		}
 		return null;
 	}
 	
 	@Override
-	public DefaultFlexiTableDataModel<BinderRow> createCopyWithEmptyList() {
-		return new BindersDataModel(getTableColumnModel());
+	public DefaultFlexiTableDataModel<CourseTemplateRow> createCopyWithEmptyList() {
+		return new CourseTemplateSearchDataModel(getTableColumnModel());
 	}
-	
-	public enum PortfolioCols implements FlexiSortableColumnDef {
-		key("table.header.key"),
-		title("table.header.title"),
-		open("table.header.open");
+
+	public enum CTCols implements FlexiSortableColumnDef {
+		course("table.header.course"),
+		courseNode("table.header.course.node");
 		
 		private final String i18nKey;
 		
-		private PortfolioCols(String i18nKey) {
+		private CTCols(String i18nKey) {
 			this.i18nKey = i18nKey;
 		}
 		

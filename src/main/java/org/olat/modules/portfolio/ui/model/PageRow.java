@@ -49,7 +49,7 @@ public class PageRow {
 	
 	private Collection<String> pageCategories;
 	private Collection<String> sectionCategories;
-	private List<AssignmentPageRow> assignments;
+	private List<PageAssignmentRow> assignments;
 	
 	private Link openLink;
 	private FormLink openFormLink, newFloatingEntryLink, newEntryLink, newAssignmentLink;
@@ -227,22 +227,6 @@ public class PageRow {
 	public void setNewFloatingEntryLink(FormLink newFloatingEntryLink) {
 		this.newFloatingEntryLink = newFloatingEntryLink;
 	}
-
-	public boolean hasNewAssignmentLink() {
-		return newAssignmentLink != null;
-	}
-	
-	public FormLink getNewAssignmentLink() {
-		return newAssignmentLink;
-	}
-	
-	public void setNewAssignmentLink(FormLink newAssignmentLink) {
-		this.newAssignmentLink = newAssignmentLink;
-	}
-	
-	public String getNewAssignmentLinkName() {
-		return newAssignmentLink == null ? null : newAssignmentLink.getComponent().getComponentName();
-	}
 	
 	public FormLink getOpenFormItem() {
 		return openFormLink;
@@ -316,11 +300,21 @@ public class PageRow {
 		return assignments != null && assignments.size() > 0;
 	}
 
-	public List<AssignmentPageRow> getAssignments() {
+	public List<PageAssignmentRow> getAssignments() {
 		return assignments;
 	}
 
-	public void setAssignments(List<AssignmentPageRow> assignments) {
+	public void setAssignments(List<PageAssignmentRow> assignments) {
 		this.assignments = assignments;
 	}
+	
+	public FormLink getNewAssignmentLink() {
+		return newAssignmentLink;
+	}
+	
+	public void setNewAssignmentLink(FormLink newAssignmentLink) {
+		this.newAssignmentLink = newAssignmentLink;
+	}
+	
+
 }

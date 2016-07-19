@@ -21,6 +21,8 @@
 package org.olat.course.nodes;
 
 import java.io.File;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
@@ -35,6 +37,9 @@ import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
 import org.olat.core.logging.OLATRuntimeException;
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.ValidationStatus;
 import org.olat.course.ICourse;
@@ -47,6 +52,7 @@ import org.olat.course.editor.NodeEditController;
 import org.olat.course.editor.StatusDescription;
 import org.olat.course.export.CourseEnvironmentMapper;
 import org.olat.course.nodes.portfolio.PortfolioCourseNodeConfiguration;
+import org.olat.course.nodes.portfolio.PortfolioCourseNodeConfiguration.DeadlineType;
 import org.olat.course.nodes.portfolio.PortfolioCourseNodeEditController;
 import org.olat.course.nodes.portfolio.PortfolioCourseNodeRunController;
 import org.olat.course.nodes.portfolio.PortfolioResultDetailsController;
@@ -79,6 +85,7 @@ import org.olat.repository.handlers.RepositoryHandlerFactory;
  */
 public class PortfolioCourseNode extends AbstractAccessableCourseNode implements PersistentAssessableCourseNode {
 	
+	private static final OLog log = Tracing.createLoggerFor(PortfolioCourseNode.class);
 	private static final int CURRENT_CONFIG_VERSION = 2;
 	
 	public static final String EDIT_CONDITION_ID = "editportfolio";
@@ -206,6 +213,47 @@ public class PortfolioCourseNode extends AbstractAccessableCourseNode implements
 	@Override
 	public boolean needsReferenceToARepositoryEntry() {
 		return true;
+	}
+	
+	public Date getDeadline() {
+		ModuleConfiguration config = getModuleConfiguration();
+		String type = (String)config.get(PortfolioCourseNodeConfiguration.DEADLINE_TYPE);
+		if(StringHelper.containsNonWhitespace(type)) {
+			switch(DeadlineType.valueOf(type)) {
+				case none: return null;
+				case absolut: 
+					Date date = (Date)config.get(PortfolioCourseNodeConfiguration.DEADLINE_DATE);
+					return date;
+				case relative:
+					Calendar cal = Calendar.getInstance();
+					cal.setTime(new Date());
+					boolean applied = applyRelativeToDate(cal, PortfolioCourseNodeConfiguration.DEADLINE_MONTH, Calendar.MONTH, 1);
+					applied |= applyRelativeToDate(cal, PortfolioCourseNodeConfiguration.DEADLINE_WEEK, Calendar.DATE, 7);
+					applied |= applyRelativeToDate(cal, PortfolioCourseNodeConfiguration.DEADLINE_DAY, Calendar.DATE, 1);
+					if(applied) {
+						return cal.getTime();
+					}
+					return null;
+				default: return null;
+			}
+		}
+		return null;
+	}
+	
+	private boolean applyRelativeToDate(Calendar cal, String time, int calTime, int factor) {
+		String t = (String)getModuleConfiguration().get(time);
+		if(StringHelper.containsNonWhitespace(t)) {
+			int timeToApply;
+			try {
+				timeToApply = Integer.parseInt(t) * factor;
+			} catch (NumberFormatException e) {
+				log.warn("Not a number: " + t, e);
+				return false;
+			}
+			cal.add(calTime, timeToApply);
+			return true;
+		}
+		return false;
 	}
 	
 	@Override

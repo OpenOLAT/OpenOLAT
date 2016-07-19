@@ -30,6 +30,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import javax.persistence.TypedQuery;
 
 import org.olat.basesecurity.Group;
+import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.IdentityRef;
 import org.olat.basesecurity.manager.GroupDAO;
 import org.olat.core.commons.persistence.DB;
@@ -45,7 +46,7 @@ import org.olat.modules.portfolio.SectionRef;
 import org.olat.modules.portfolio.SectionStatus;
 import org.olat.modules.portfolio.model.AccessRights;
 import org.olat.modules.portfolio.model.BinderImpl;
-import org.olat.modules.portfolio.model.BinderRow;
+import org.olat.modules.portfolio.model.BinderStatistics;
 import org.olat.modules.portfolio.model.SectionImpl;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
@@ -201,6 +202,22 @@ public class BinderDAO {
 			.getResultList();
 	}
 	
+	public List<Binder> getOwnedBinderFromCourseTemplate(IdentityRef owner) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select binder from pfbinder as binder")
+		  .append(" inner join fetch binder.baseGroup as baseGroup")
+		  .append(" inner join fetch binder.entry as entry")
+		  .append(" inner join baseGroup.members as membership")
+		  .append(" where membership.identity.key=:identityKey and membership.role=:role")
+		  .append(" and binder.subIdent is not null and entry.key is not null");
+		
+		return dbInstance.getCurrentEntityManager()
+			.createQuery(sb.toString(), Binder.class)
+			.setParameter("identityKey", owner.getKey())
+			.setParameter("role", PortfolioRoles.owner.name())
+			.getResultList();
+	}
+	
 	public void detachBinderTemplate() {
 		//unlink entry
 		//unlink template
@@ -226,7 +243,7 @@ public class BinderDAO {
 	 * @param owner
 	 * @return
 	 */
-	public List<BinderRow> searchOwnedBinders(IdentityRef owner) {
+	public List<BinderStatistics> searchOwnedBinders(IdentityRef owner) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select binder.key, binder.title, binder.imagePath, binder.lastModified, binder.status,")
 		  .append(" (select count(section.key) from pfsection as section")
@@ -249,7 +266,7 @@ public class BinderDAO {
 			.setParameter("role", PortfolioRoles.owner.name())
 			.getResultList();
 		
-		List<BinderRow> rows = new ArrayList<>(objects.size());
+		List<BinderStatistics> rows = new ArrayList<>(objects.size());
 		for(Object[] object:objects) {
 			int pos = 0;
 			Long key = (Long)object[pos++];
@@ -260,7 +277,7 @@ public class BinderDAO {
 			int numOfSections = ((Number)object[pos++]).intValue();
 			int numOfPages = ((Number)object[pos++]).intValue();
 			int numOfComments = ((Number)object[pos++]).intValue();
-			rows.add(new BinderRow(key, title, imagePath, lastModified, numOfSections, numOfPages, status, numOfComments));
+			rows.add(new BinderStatistics(key, title, imagePath, lastModified, numOfSections, numOfPages, status, numOfComments));
 		}
 		return rows;
 	}
@@ -650,5 +667,34 @@ public class BinderDAO {
 			.createQuery(sb.toString(), Section.class)
 			.setParameter("binderKey", binder.getKey())
 			.getResultList();
+	}
+	
+	/**
+	 * Return only the course where the user is participant and 
+	 * have a reference to a binder template.
+	 * 
+	 * @param participant
+	 * @return
+	 */
+	public List<RepositoryEntry> searchCourseTemplates(IdentityRef participant) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select v from ").append(RepositoryEntry.class.getName()).append(" as v ")
+		  .append(" inner join fetch v.groups as relGroup")
+		  .append(" inner join relGroup.group as baseGroup")
+		  .append(" inner join baseGroup.members as membership on (membership.identity.key=:identityKey and membership.role='").append(GroupRoles.participant.name()).append("')")
+		  .append(" inner join fetch v.olatResource as ores")
+		  .append(" inner join fetch v.statistics as statistics")
+		  .append(" left join fetch v.lifecycle as lifecycle")
+		  .append(" where (v.access >= ").append(RepositoryEntry.ACC_USERS).append(" or ")
+		  .append("  (v.access=").append(RepositoryEntry.ACC_OWNERS).append(" and v.membersOnly=true))")
+		  .append(" and exists (select ref.key from references as ref ")
+		  .append("   inner join ref.target as targetOres")
+		  .append("   where ref.source.key=ores.key and targetOres.resName='BinderTemplate'")
+		  .append(" )");
+		
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), RepositoryEntry.class)
+				.setParameter("identityKey", participant.getKey())
+				.getResultList();
 	}
 }

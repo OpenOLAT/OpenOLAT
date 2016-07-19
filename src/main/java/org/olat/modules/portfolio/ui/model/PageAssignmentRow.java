@@ -28,18 +28,22 @@ import org.olat.modules.portfolio.Assignment;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class AssignmentPageRow {
+public class PageAssignmentRow {
 	
 	private Assignment assignment;
 	
 	private FormLink editLink, openLink, startLink;
 	
-	public AssignmentPageRow(Assignment assignment) {
+	public PageAssignmentRow(Assignment assignment) {
 		this.assignment = assignment;
 	}
 	
 	public String getTitle() {
 		return assignment.getTitle();
+	}
+	
+	public String getSummary() {
+		return assignment.getSummary();
 	}
 	
 	public Assignment getAssignment() {

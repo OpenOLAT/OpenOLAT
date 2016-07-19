@@ -9,11 +9,9 @@
 		</div>
 	</div>
 #else
-
-	#set($title=$r.escapeHtml($row.getTitle()))
 	<div class="panel panel-default #if($row.background) panel-imagebg" style="background-image:url('$mapperThumbnailUrl/$row.key/${row.imageName}');" #else " #end>
 		<div class="panel-heading">
-			<h4 class="panel-title">$r.escapeHtml($title)</h4>
+			<h4 class="panel-title">$r.escapeHtml($row.title)</h4>
 		</div>
 		<div class="panel-body">
 			<ul>
@@ -22,10 +20,7 @@
 				<li><span>$r.translate("binder.status")</span></li>
 				<li><span>$r.translate("binder.num.comments", $row.numOfComments)</span></li>
 			</ul>
-
-			<div class="pull-right">
-				$r.render($row.openFormItemName)
-			</div>	
+			<div class="pull-right">$r.render($row.openLink)</div>	
 		</div>
 	</div>
 #end

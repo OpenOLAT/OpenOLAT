@@ -60,10 +60,12 @@ import org.olat.core.gui.media.MediaResource;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
+import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSMediaResource;
+import org.olat.course.nodes.PortfolioCourseNode;
 import org.olat.modules.portfolio.Binder;
 import org.olat.modules.portfolio.BinderConfiguration;
 import org.olat.modules.portfolio.BinderRef;
@@ -72,12 +74,16 @@ import org.olat.modules.portfolio.BinderSecurityCallbackFactory;
 import org.olat.modules.portfolio.PortfolioService;
 import org.olat.modules.portfolio.handler.BinderTemplateResource;
 import org.olat.modules.portfolio.model.BinderRefImpl;
-import org.olat.modules.portfolio.model.BinderRow;
+import org.olat.modules.portfolio.model.BinderStatistics;
 import org.olat.modules.portfolio.model.SynchedBinder;
 import org.olat.modules.portfolio.ui.BindersDataModel.PortfolioCols;
 import org.olat.modules.portfolio.ui.event.NewBinderEvent;
+import org.olat.modules.portfolio.ui.model.BinderRow;
+import org.olat.modules.portfolio.ui.model.CourseTemplateRow;
+import org.olat.portfolio.EPLoggingAction;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.controllers.ReferencableEntriesSearchController;
+import org.olat.util.logging.activity.LoggingResourceable;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -105,6 +111,7 @@ public class BinderListController extends FormBasicController
 	private BinderController binderCtrl;
 	private BinderMetadataEditController newBinderCtrl;
 	private ReferencableEntriesSearchController searchTemplateCtrl;
+	private CourseTemplateSearchController searchCourseTemplateCtrl;
 	
 	private NewBinderCalloutController chooseNewBinderTypeCtrl;
 	private CloseableCalloutWindowController newBinderCalloutCtrl;
@@ -169,24 +176,23 @@ public class BinderListController extends FormBasicController
 	}
 	
 	private void loadModel() {
-		List<BinderRow> binderRows = portfolioService.searchOwnedBinders(getIdentity());
-		List<BinderWrapper> rows = new ArrayList<>(binderRows.size());
-		for(BinderRow binderRow:binderRows) {
-			BinderWrapper row = forgePortfolioRow(binderRow);
-			rows.add(row);
+		List<BinderStatistics> binderRows = portfolioService.searchOwnedBinders(getIdentity());
+		List<BinderRow> rows = new ArrayList<>(binderRows.size());
+		for(BinderStatistics binderRow:binderRows) {
+			rows.add(forgePortfolioRow(binderRow));
 		}
-		rows.add(new BinderWrapper());
+		rows.add(new BinderRow());
 		model.setObjects(rows);
 		tableEl.reset();
 		tableEl.reloadData();
 	}
 	
-	private BinderWrapper forgePortfolioRow(BinderRow binderRow) {
+	private BinderRow forgePortfolioRow(BinderStatistics binderRow) {
 		String openLinkId = "open_" + (++counter);
 		FormLink openLink = uifactory.addFormLink(openLinkId, "open", "open", null, flc, Link.LINK);
 		openLink.setIconRightCSS("o_icon o_icon_start");
 		VFSLeaf image = portfolioService.getPosterImageLeaf(binderRow);
-		BinderWrapper row = new BinderWrapper(binderRow, image, openLink);
+		BinderRow row = new BinderRow(binderRow, image, openLink);
 		openLink.setUserObject(row);
 		return row;
 	}
@@ -233,13 +239,20 @@ public class BinderListController extends FormBasicController
 				} else if(NewBinderEvent.NEW_EMPTY_FROM_TEMPLATE.equals(cmd)) {
 					doNewBinderFromTemplate(ureq);
 				} else if(NewBinderEvent.NEW_EMPTY_FROM_COURSE.equals(cmd)) {
-					doNewBinderFromCourse();
+					doNewBinderFromCourse(ureq);
 				}
 			}
 		} else if(searchTemplateCtrl == source) {
 			if(event == ReferencableEntriesSearchController.EVENT_REPOSITORY_ENTRY_SELECTED) {
 				RepositoryEntry repoEntry = searchTemplateCtrl.getSelectedEntry();
 				doCreateBinderFromTemplate(ureq, repoEntry);
+			}
+			cmc.deactivate();
+			cleanUp();
+		} else if(searchCourseTemplateCtrl == source) {
+			if(event == ReferencableEntriesSearchController.EVENT_REPOSITORY_ENTRY_SELECTED) {
+				CourseTemplateRow templateRow = searchCourseTemplateCtrl.getSelectedEntry();
+				doCreateBinderFromCourseTemplate(ureq, templateRow);
 			}
 			cmc.deactivate();
 			cleanUp();
@@ -272,7 +285,7 @@ public class BinderListController extends FormBasicController
 			FormLink link = (FormLink)source;
 			String cmd = link.getCmd();
 			if("open".equals(cmd)) {
-				BinderWrapper row = (BinderWrapper)link.getUserObject();
+				BinderRow row = (BinderRow)link.getUserObject();
 				Activateable2 activateable = doOpenBinder(ureq, row);
 				if(activateable != null) {
 					activateable.activate(ureq, null, null);
@@ -360,8 +373,37 @@ public class BinderListController extends FormBasicController
 		doOpenBinder(ureq, newBinder).activate(ureq, null, null);
 	}
 	
-	private void doNewBinderFromCourse() {
-		showWarning("not.implemented");
+	private void doNewBinderFromCourse(UserRequest ureq) {
+		if(searchCourseTemplateCtrl != null) return;
+
+		removeAsListenerAndDispose(searchCourseTemplateCtrl);
+		searchCourseTemplateCtrl = new CourseTemplateSearchController(ureq, getWindowControl());			
+		listenTo(searchCourseTemplateCtrl);
+
+		String title = translate("create.empty.binder.from.template");
+		cmc = new CloseableModalController(getWindowControl(), title, searchCourseTemplateCtrl.getInitialComponent(), true, title);
+		listenTo(cmc);
+		cmc.activate();
+	}
+	
+	private void doCreateBinderFromCourseTemplate(UserRequest ureq, CourseTemplateRow row) {
+		RepositoryEntry courseEntry = row.getCourseEntry();
+		RepositoryEntry templateEntry = row.getTemplateEntry();
+		PortfolioCourseNode courseNode = row.getCourseNode();
+		Binder templateBinder = portfolioService.getBinderByResource(templateEntry.getOlatResource());
+		
+		
+		Binder copyBinder = portfolioService.getBinder(getIdentity(), templateBinder, courseEntry, courseNode.getIdent());
+		if(copyBinder == null) {
+			Date deadline = courseNode.getDeadline();
+			copyBinder = portfolioService.assignBinder(getIdentity(), templateBinder, courseEntry, courseNode.getIdent(), deadline);
+			if(copyBinder != null) {
+				showInfo("map.copied", StringHelper.escapeHtml(templateBinder.getTitle()));
+				ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapPortfolioOres(copyBinder));
+				ThreadLocalUserActivityLogger.log(EPLoggingAction.EPORTFOLIO_TASK_STARTED, getClass());
+			}
+		}
+		doOpenBinder(ureq, copyBinder).activate(ureq, null, null);
 	}
 
 	public static class ImageMapper implements Mapper {
@@ -382,8 +424,8 @@ public class BinderListController extends FormBasicController
 			if(index > 0) {
 				row = row.substring(0, index);
 				Long key = new Long(row); 
-				List<BinderWrapper> rows = binderModel.getObjects();
-				for(BinderWrapper prow:rows) {
+				List<BinderRow> rows = binderModel.getObjects();
+				for(BinderRow prow:rows) {
 					if(key.equals(prow.getKey())) {
 						VFSLeaf image = prow.getBackgroundImage();
 						if(image instanceof MetaTagged) {
@@ -399,77 +441,6 @@ public class BinderListController extends FormBasicController
 			}
 			
 			return null;
-		}
-	}
-	
-	public class BinderWrapper implements BinderRef {
-		
-		private final BinderRow binderRow;
-		private final VFSLeaf image;
-		private final FormLink openLink;
-		private final boolean newBinder;
-		
-		public BinderWrapper() {
-			binderRow = null;
-			image = null;
-			openLink = null;
-			newBinder = true;
-		}
-		
-		public BinderWrapper(BinderRow binderRow, VFSLeaf image, FormLink openLink) {
-			this.binderRow = binderRow;
-			this.image = image;
-			this.openLink = openLink;
-			newBinder = false;
-		}
-		
-		public boolean isNewBinder() {
-			return newBinder;
-		}
-
-		public Long getKey() {
-			return binderRow == null ? null : binderRow.getKey();
-		}
-
-		public String getTitle() {
-			return binderRow == null ? null : binderRow.getTitle();
-		}
-		
-		public Date getLastUpdate() {
-			return binderRow == null ? null : binderRow.getLastModified();
-		}
-		
-		public String[] getNumOfSectionsAndPages() {
-			return new String[]{
-					Integer.toString(binderRow.getNumOfSections()),
-					Integer.toString(binderRow.getNumOfPages())
-				};
-		}
-		
-		public String[] getNumOfComments() {
-			return new String[]{
-					Integer.toString(binderRow.getNumOfComments())
-				};
-		}
-
-		public FormLink getOpenLink() {
-			return openLink;
-		}
-		
-		public boolean isBackground() {
-			return image != null;
-		}
-		
-		public VFSLeaf getBackgroundImage() {
-			return image;
-		}
-		
-		public String getImageName() {
-			return image == null ? null : image.getName();
-		}
-		
-		public String getOpenFormItemName() {
-			return openLink == null ? null : openLink.getComponent().getComponentName();
 		}
 	}
 	

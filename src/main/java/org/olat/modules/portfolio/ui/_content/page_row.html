@@ -19,24 +19,6 @@
 		<div class="o_section_lead o_block_large_bottom">
 			<p>$r.xssScan($row.sectionDescription)</p>
 		</div>
-		#if(${row.hasAssignments()})
-		<div class="o_block_large_bottom">
-			<div class="o_portfolio_page_meta text-muted o_small">
-				$r.translate("meta.section.assignments")<br />
-			 	#foreach($assignment in $row.assignments)
-				 	<i class="o_icon o_icon_assignment"> </i> $r.translate("assignment") ${foreach.count}: $assignment.title
-				 	#if($r.isNotNull($assignment.editLink))
-				 		$r.render($assignment.editLink.component.componentName)
-				 	#elseif($r.isNotNull($assignment.openLink))
-				 	
-				 	#elseif($r.isNotNull($assignment.createLink))
-				 	
-				 	#end<br />
-			 	#end
-			</div>
-		</div>
-		#end
-		
 		#if(${row.hasSectionCategories()})
 		<div class="o_block_large_bottom">
 			<div class="o_portfolio_page_meta text-muted o_small">
@@ -63,7 +45,7 @@
 		</div>
 	</div>
 	#end
-	#if(${row.hasNewAssignmentLink()})
+	#if($r.isNotNull($row.newAssignmentLink))
 	<div class="panel panel-placeholder">
 		<div class="panel-heading">
 			<h4 class="panel-title">$r.translate("create.new.assignment.title")</h4>
@@ -71,12 +53,32 @@
 		<div class="panel-body">
 			<p>$r.translate("create.new.assignment.descr")</p>
 			<div class="o_button_group">
-				$r.render($row.getNewAssignmentLinkName())
+				$r.render($row.newAssignmentLink)
 			</div>
 		</div>
 	</div>
 	#end
-	
+	#if(${row.hasAssignments()})
+	<div class="panel panel-placeholder o_portfolio_assignments">
+		#foreach($assignment in $row.assignments)
+		<div class="panel-heading">
+			<h4 class="panel-title"><i class="o_icon o_icon_assignment"> </i> $r.translate("assignment") ${foreach.count}: $assignment.title</h4>
+		</div>
+		<div class="panel-body">
+			$r.xssScan($assignment.summary)
+			<div class="o_button_group">
+			#if($r.isNotNull($assignment.editLink))
+		 		$r.render($assignment.editLink)
+		 	#elseif($r.isNotNull($assignment.openLink))
+		 		$r.render($assignment.openLink)
+		 	#elseif($r.isNotNull($assignment.createLink))
+		 		$r.render($assignment.createLink)
+		 	#end
+			</div>
+		</div>
+		#end
+	</div>
+	#end
 </div>
 #end
 #if(${row.isPage()})

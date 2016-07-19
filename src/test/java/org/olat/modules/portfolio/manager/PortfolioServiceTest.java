@@ -33,7 +33,7 @@ import org.olat.modules.portfolio.PortfolioRoles;
 import org.olat.modules.portfolio.PortfolioService;
 import org.olat.modules.portfolio.Section;
 import org.olat.modules.portfolio.model.AccessRights;
-import org.olat.modules.portfolio.model.BinderRow;
+import org.olat.modules.portfolio.model.BinderStatistics;
 import org.olat.modules.portfolio.model.SectionImpl;
 import org.olat.modules.portfolio.model.SynchedBinder;
 import org.olat.repository.RepositoryEntry;
@@ -189,11 +189,11 @@ public class PortfolioServiceTest extends OlatTestCase {
 			portfolioService.appendNewPage(owner, "Page-2-" + i, "", null, null, section);
 		}
 
-		List<BinderRow> rows = portfolioService.searchOwnedBinders(owner);
+		List<BinderStatistics> rows = portfolioService.searchOwnedBinders(owner);
 		Assert.assertNotNull(rows);
 		Assert.assertEquals(1, rows.size());
 		
-		BinderRow myBinder = rows.get(0);
+		BinderStatistics myBinder = rows.get(0);
 		Assert.assertEquals(2, myBinder.getNumOfSections());
 		Assert.assertEquals(4, myBinder.getNumOfPages());
 	}

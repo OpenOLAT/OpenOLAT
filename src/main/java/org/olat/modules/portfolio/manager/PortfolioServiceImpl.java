@@ -84,7 +84,7 @@ import org.olat.modules.portfolio.model.AssessedBinder;
 import org.olat.modules.portfolio.model.AssessmentSectionChange;
 import org.olat.modules.portfolio.model.AssessmentSectionImpl;
 import org.olat.modules.portfolio.model.BinderImpl;
-import org.olat.modules.portfolio.model.BinderRow;
+import org.olat.modules.portfolio.model.BinderStatistics;
 import org.olat.modules.portfolio.model.PageImpl;
 import org.olat.modules.portfolio.model.SectionImpl;
 import org.olat.modules.portfolio.model.SynchedBinder;
@@ -286,10 +286,15 @@ public class PortfolioServiceImpl implements PortfolioService {
 	}
 
 	@Override
-	public List<BinderRow> searchOwnedBinders(IdentityRef owner) {
+	public List<BinderStatistics> searchOwnedBinders(IdentityRef owner) {
 		return binderDao.searchOwnedBinders(owner);
 	}
 	
+	@Override
+	public List<Binder> searchOwnedBindersFromCourseTemplate(IdentityRef owner) {
+		return binderDao.getOwnedBinderFromCourseTemplate(owner);
+	}
+
 	@Override
 	public List<Binder> searchSharedBindersBy(Identity owner, String searchString) {
 		return sharedByMeQueries.searchSharedBinders(owner, searchString);
@@ -300,6 +305,11 @@ public class PortfolioServiceImpl implements PortfolioService {
 		return sharedWithMeQueries.searchSharedBinders(coach, searchString);
 	}
 	
+	@Override
+	public List<RepositoryEntry> searchCourseWithBinderTemplates(Identity participant) {
+		return binderDao.searchCourseTemplates(participant);
+	}
+
 	@Override
 	public Binder getBinderByKey(Long portfolioKey) {
 		return binderDao.loadByKey(portfolioKey);

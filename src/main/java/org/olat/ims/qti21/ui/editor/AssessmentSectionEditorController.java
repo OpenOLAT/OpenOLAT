@@ -171,7 +171,7 @@ public class AssessmentSectionEditorController extends ItemSessionControlControl
 			String rubric = rubricEl.getValue();
 			if(htmlBuilder.containsSomething(rubric)) {
 				RubricBlock rubricBlock = (RubricBlock)rubricEl.getUserObject();
-				if(rubricBlock != null) {
+				if(rubricBlock == null) {
 					rubricBlock = new RubricBlock(section);
 					rubricBlock.setViews(Collections.singletonList(View.CANDIDATE));
 				}

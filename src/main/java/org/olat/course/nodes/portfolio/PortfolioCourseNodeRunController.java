@@ -20,7 +20,6 @@
 
 package org.olat.course.nodes.portfolio;
 
-import java.util.Calendar;
 import java.util.Date;
 
 import org.olat.NewControllerFactory;
@@ -337,15 +336,16 @@ public class PortfolioCourseNodeRunController extends FormBasicController {
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(source == newMapLink) {
 			RepositoryEntry courseEntry = userCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
+			Date deadline = courseNode.getDeadline();
 			if(templateMap != null) {
-				copyMap = ePFMgr.assignStructuredMapToUser(getIdentity(), templateMap, courseEntry, courseNode.getIdent(), null, getDeadline());
+				copyMap = ePFMgr.assignStructuredMapToUser(getIdentity(), templateMap, courseEntry, courseNode.getIdent(), null, deadline);
 				if(copyMap != null) {
 					showInfo("map.copied", StringHelper.escapeHtml(templateMap.getTitle()));
 					ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapPortfolioOres(copyMap));
 					ThreadLocalUserActivityLogger.log(EPLoggingAction.EPORTFOLIO_TASK_STARTED, getClass());
 				}
 			} else if(templateBinder != null) {
-				copyBinder = portfolioService.assignBinder(getIdentity(), templateBinder, courseEntry, courseNode.getIdent(), getDeadline());
+				copyBinder = portfolioService.assignBinder(getIdentity(), templateBinder, courseEntry, courseNode.getIdent(), deadline);
 				if(copyBinder != null) {
 					showInfo("map.copied", StringHelper.escapeHtml(templateBinder.getTitle()));
 					ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapPortfolioOres(copyBinder));
@@ -367,45 +367,5 @@ public class PortfolioCourseNodeRunController extends FormBasicController {
 			WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(bc, getWindowControl());
 			NewControllerFactory.getInstance().launch(ureq, bwControl);
 		}
-	}
-	
-	private Date getDeadline() {
-		String type = (String)config.get(PortfolioCourseNodeConfiguration.DEADLINE_TYPE);
-		if(StringHelper.containsNonWhitespace(type)) {
-			switch(DeadlineType.valueOf(type)) {
-				case none: return null;
-				case absolut: 
-					Date date = (Date)config.get(PortfolioCourseNodeConfiguration.DEADLINE_DATE);
-					return date;
-				case relative:
-					Calendar cal = Calendar.getInstance();
-					cal.setTime(new Date());
-					boolean applied = applyRelativeToDate(cal, PortfolioCourseNodeConfiguration.DEADLINE_MONTH, Calendar.MONTH, 1);
-					applied |= applyRelativeToDate(cal, PortfolioCourseNodeConfiguration.DEADLINE_WEEK, Calendar.DATE, 7);
-					applied |= applyRelativeToDate(cal, PortfolioCourseNodeConfiguration.DEADLINE_DAY, Calendar.DATE, 1);
-					if(applied) {
-						return cal.getTime();
-					}
-					return null;
-				default: return null;
-			}
-		}
-		return null;
-	}
-	
-	private boolean applyRelativeToDate(Calendar cal, String time, int calTime, int factor) {
-		String t = (String)config.get(time);
-		if(StringHelper.containsNonWhitespace(t)) {
-			int timeToApply;
-			try {
-				timeToApply = Integer.parseInt(t) * factor;
-			} catch (NumberFormatException e) {
-				logWarn("Not a number: " + t, e);
-				return false;
-			}
-			cal.add(calTime, timeToApply);
-			return true;
-		}
-		return false;
 	}
 }
