@@ -60,6 +60,13 @@ public class OAuthLoginModule extends AbstractSpringModule {
 	private String adfsApiKey;
 	private String adfsOAuth2Endpoint;
 	
+	private boolean openIdConnectIFEnabled;
+	private boolean openIdConnectIFRootEnabled;
+	private String openIdConnectIFApiKey;
+	private String openIdConnectIFApiSecret;
+	private String openIdConnectIFIssuer;
+	private String openIdConnectIFAuthorizationEndPoint;
+
 	
 	@Autowired
 	private List<OAuthSPI> oauthSPIs;
@@ -115,6 +122,15 @@ public class OAuthLoginModule extends AbstractSpringModule {
 		adfsRootEnabled = "true".equals(adfsRootEnabledObj);
 		adfsApiKey = getStringPropertyValue("adfsApiKey", false);
 		adfsOAuth2Endpoint = getStringPropertyValue("adfsOAuth2Endpoint", false);
+		
+		String openIdConnectIFEnabledObj = getStringPropertyValue("openIdConnectIFEnabled", true);
+		openIdConnectIFEnabled = "true".equals(openIdConnectIFEnabledObj);
+		String openIdConnectIFRootEnabledObj = getStringPropertyValue("openIdConnectIFRootEnabled", true);
+		openIdConnectIFRootEnabled = "true".equals(openIdConnectIFRootEnabledObj);
+		openIdConnectIFApiKey = getStringPropertyValue("openIdConnectIFApiKey", false);
+		openIdConnectIFApiSecret = getStringPropertyValue("openIdConnectIFApiSecret", false);
+		openIdConnectIFIssuer = getStringPropertyValue("openIdConnectIFIssuer", false);
+		openIdConnectIFAuthorizationEndPoint = getStringPropertyValue("openIdConnectIFAuthorizationEndPoint", false);
 	}
 	
 	public List<OAuthSPI> getAllSPIs() {
@@ -310,4 +326,59 @@ public class OAuthLoginModule extends AbstractSpringModule {
 		this.adfsOAuth2Endpoint = adfsOAuth2Endpoint;
 		setStringProperty("adfsOAuth2Endpoint", adfsOAuth2Endpoint, true);
 	}
+
+	public boolean isOpenIdConnectIFEnabled() {
+		return openIdConnectIFEnabled;
+	}
+
+	public void setOpenIdConnectIFEnabled(boolean openIdConnectIFEnabled) {
+		this.openIdConnectIFEnabled = openIdConnectIFEnabled;
+		setStringProperty("openIdConnectIFEnabled", openIdConnectIFEnabled ? "true" : "false", true);
+	}
+
+	public boolean isOpenIdConnectIFRootEnabled() {
+		return openIdConnectIFRootEnabled;
+	}
+
+	public void setOpenIdConnectIFRootEnabled(boolean openIdConnectIFRootEnabled) {
+		this.openIdConnectIFRootEnabled = openIdConnectIFRootEnabled;
+		setStringProperty("openIdConnectIFRootEnabled", openIdConnectIFRootEnabled ? "true" : "false", true);
+	}
+
+	public String getOpenIdConnectIFApiKey() {
+		return openIdConnectIFApiKey;
+	}
+
+	public void setOpenIdConnectIFApiKey(String openIdConnectIFApiKey) {
+		this.openIdConnectIFApiKey = openIdConnectIFApiKey;
+		setStringProperty("openIdConnectIFApiKey", openIdConnectIFApiKey, true);
+	}
+
+	public String getOpenIdConnectIFApiSecret() {
+		return openIdConnectIFApiSecret;
+	}
+
+	public void setOpenIdConnectIFApiSecret(String openIdConnectIFApiSecret) {
+		this.openIdConnectIFApiSecret = openIdConnectIFApiSecret;
+		setStringProperty("openIdConnectIFApiSecret", openIdConnectIFApiSecret, true);
+	}
+
+	public String getOpenIdConnectIFIssuer() {
+		return openIdConnectIFIssuer;
+	}
+
+	public void setOpenIdConnectIFIssuer(String openIdConnectIFIssuer) {
+		this.openIdConnectIFIssuer = openIdConnectIFIssuer;
+		setStringProperty("openIdConnectIFIssuer", openIdConnectIFIssuer, true);
+	}
+
+	public String getOpenIdConnectIFAuthorizationEndPoint() {
+		return openIdConnectIFAuthorizationEndPoint;
+	}
+
+	public void setOpenIdConnectIFAuthorizationEndPoint(String openIdConnectIFAuthorizationEndPoint) {
+		this.openIdConnectIFAuthorizationEndPoint = openIdConnectIFAuthorizationEndPoint;
+		setStringProperty("openIdConnectIFAuthorizationEndPoint", openIdConnectIFAuthorizationEndPoint, true);
+	}
+	
 }

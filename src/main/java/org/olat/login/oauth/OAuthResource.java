@@ -20,6 +20,8 @@
 package org.olat.login.oauth;
 
 import java.io.InputStream;
+import java.net.URL;
+import java.net.URLDecoder;
 
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
@@ -97,7 +99,7 @@ public class OAuthResource implements MediaResource {
 				builder.scope(scope);
 			}
 
-			String callbackUrl = Settings.getServerContextPathURI() + "/oauthcallback";
+			String callbackUrl = Settings.getServerContextPathURI() + OAuthConstants.CALLBACK_PATH;
 			OAuthService service = builder
 					.callback(callbackUrl)
 					.build(); //Now build the call
@@ -107,12 +109,33 @@ public class OAuthResource implements MediaResource {
 			
 			if("2.0".equals(service.getVersion())) {
 				String redirectUrl = service.getAuthorizationUrl(null);
+				saveStateAndNonce(httpSession, redirectUrl);
 				httpResponse.sendRedirect(redirectUrl);
 			} else {
 				Token token = service.getRequestToken();
 				httpSession.setAttribute(OAuthConstants.REQUEST_TOKEN, token);
 				String redirectUrl = service.getAuthorizationUrl(token);
 				httpResponse.sendRedirect(redirectUrl);
+			}
+		} catch (Exception e) {
+			log.error("", e);
+		}
+	}
+	
+	private static void saveStateAndNonce(HttpSession httpSession, String redirectUrl) {
+		try {
+			URL url = new URL(redirectUrl);
+			final String[] pairs = url.getQuery().split("&");
+			for (String pair : pairs) {
+				final int idx = pair.indexOf("=");
+				final String key = idx > 0 ? URLDecoder.decode(pair.substring(0, idx), "UTF-8") : pair;
+			    final String value = idx > 0 && pair.length() > idx + 1 ? URLDecoder.decode(pair.substring(idx + 1), "UTF-8") : null;
+			    
+			    if(key.equals("nonce")) {
+			    	httpSession.setAttribute(OAuthConstants.OAUTH_NONCE, value);
+			    } else if(key.endsWith("state")) {
+			    	httpSession.setAttribute(OAuthConstants.OAUTH_STATE, value);
+			    }
 			}
 		} catch (Exception e) {
 			log.error("", e);

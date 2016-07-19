@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="$r.getLanguageCode()">
+<head>
+	<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+	<meta http-equiv="Content-type" content="text/html; charset=utf-8" />
+	<link rel="icon" href="${theme.getBaseURI()}favicon.ico" type="image/x-icon" /> 
+	<link rel="shortcut icon" href="${theme.getBaseURI()}favicon.ico" type="image/x-icon" /> 
+	<link id="o_theme_css" href="${theme.getBaseURI()}theme.css" rel="stylesheet" type="text/css" />
+	<title>OpenID Connect</title>
+<!--[if lt IE 9]>
+	<script type="text/javascript" src='$r.staticLink("js/jquery/jquery-1.9.1.min.js")'></script>
+<![endif]-->
+<!--[if gte IE 9]><!-->
+	<script type="text/javascript" src='$r.staticLink("js/jquery/jquery-2.1.3.min.js")'></script>
+<!--<![endif]-->
+<script type="text/javascript">
+/* <![CDATA[ */
+jQuery(function() {      
+	// First, parse the query string
+	var params = {}, postBody = location.hash.substring(1),
+	    regex = /([^&=]+)=([^&]*)/g, m;
+	while (m = regex.exec(postBody)) {
+		var key = decodeURIComponent(m[1]);
+		var val = decodeURIComponent(m[2]);
+		jQuery('#' + key).val(val);
+	}
+	document.forms['openid_connect_form'].submit();
+});
+/* ]]> */
+	</script>
+</head>
+<body>
+<form id="openid_connect_form" name="openid_connect_form" action="$callbackUrl">
+	<input id="id_token" type="hidden" name="id_token" value=""/>
+	<input id="access_token" type="hidden" name="access_token" value=""/>
+	<input id="state" type="hidden" name="state" value=""/>
+	<input id="session_state" type="hidden" name="session_state" value=""/>
+</form>
+
+	<div id="o_header_wrapper"> 
+		<div id="o_header_container"> 
+			<div id="o_logo"></div>
+			<div id="o_right_logo"></div>
+		</div>
+	</div>
+	<div id="o_main_wrapper">
+		<div id="o_main_container">
+			<div id="o_main" class="row o_loginscreen">
+				<div id="o_main_center" class="split-pane" style="min-height: 655px; width:480px; margin:100px auto;">
+					<div id="o_main_center_content" class="clearfix">
+						<a id="o_content"></a> 
+						<div id="o_main_center_content_inner">
+## START MESSAGE AREA	
+<center>
+	<div class="o_important">$r.translate("openidconnectif.wait.message")</div>
+</center>		
+## END ERROR AREA	
+						</div>			
+					</div>
+				</div>	
+			</div>
+		</div>
+	</div>
+</body></html>

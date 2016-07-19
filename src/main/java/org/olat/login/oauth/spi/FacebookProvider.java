@@ -60,6 +60,11 @@ public class FacebookProvider implements OAuthSPI {
 	public boolean isRootEnabled() {
 		return false;
 	}
+	
+	@Override
+	public boolean isImplicitWorkflow() {
+		return false;
+	}
 
 	@Override
 	public Class<? extends Api> getScribeProvider() {
