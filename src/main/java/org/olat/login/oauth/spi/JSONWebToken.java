@@ -64,4 +64,14 @@ public class JSONWebToken {
 		JSONObject jsonPayload = new JSONObject(payload);
 		return new JSONWebToken(header, payload, jsonPayload);
 	}
+	
+	public static JSONWebToken parse(String accessToken) throws JSONException {
+		int firstIndex = accessToken.indexOf('.');
+		int secondIndex = accessToken.indexOf('.', firstIndex + 1);
+		
+		String header = StringHelper.decodeBase64(accessToken.substring(0, firstIndex));
+		String payload = StringHelper.decodeBase64(accessToken.substring(firstIndex, secondIndex));
+		JSONObject jsonPayload = new JSONObject(payload);
+		return new JSONWebToken(header, payload, jsonPayload);
+	}
 }

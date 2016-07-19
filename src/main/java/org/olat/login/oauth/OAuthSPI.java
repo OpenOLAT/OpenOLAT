@@ -53,6 +53,8 @@ public interface OAuthSPI extends ConfigOnOff {
 	
 	public String[] getScopes();
 	
+	public boolean isImplicitWorkflow();
+	
 	public OAuthUser getUser(OAuthService service, Token accessToken);
 
 }

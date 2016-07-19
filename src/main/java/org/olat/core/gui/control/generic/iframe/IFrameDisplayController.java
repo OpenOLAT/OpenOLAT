@@ -332,7 +332,20 @@ public class IFrameDisplayController extends BasicController implements GenericE
 		if(!allowDownload || !StringHelper.containsNonWhitespace(uri)) {
 			return false;
 		}
+		// remove any URL parameters
 		String uriLc = uri.toLowerCase();
+		int qmarkPos = uriLc.indexOf("?");
+		if (qmarkPos != -1) {
+			// e.g. index.html?olatraw=true
+			uriLc = uriLc.substring(0, qmarkPos);
+		}
+		// remove any anchor references
+		int hTagPos = uri.indexOf("#");
+		if (hTagPos != -1) {
+			// e.g. index.html#checkThisOut
+			uriLc = uriLc.substring(0, hTagPos);
+		}
+		// HTML pages are rendered inline, everything else is regarded as "downloadable"
 		if(uriLc.endsWith(".html") || uriLc.endsWith(".htm") || uriLc.endsWith(".xhtml")) {
 			return false;
 		}
