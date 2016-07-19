@@ -171,15 +171,9 @@ public class VideoRunController extends BasicController {
 		// Update launch counter
 		repositoryService.incrementLaunchCounter(videoEntry);
 	}
-	
 
-	
 	public NodeRunConstructionResult createNodeRunConstructionResult(UserRequest ureq) {
-		NodeRunConstructionResult ncr;
-
-			Controller ctrl = TitledWrapperHelper.getWrapper(ureq, getWindowControl(), this, videoNode, "o_cp_icon");
-			ncr = new NodeRunConstructionResult(ctrl);
-		
-		return ncr;
+		Controller ctrl = TitledWrapperHelper.getWrapper(ureq, getWindowControl(), this, videoNode, "o_icon_video");
+		return new NodeRunConstructionResult(ctrl);
 	}
 }
