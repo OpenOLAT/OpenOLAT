@@ -476,7 +476,7 @@ public class RepositoryEntryMyCourseQueries {
 			switch(orderBy) {
 				case automatic://! the sorting is reverse
 					if(asc) {
-						sb.append(" order by recentLaunch desc nulls last, lifecycle.validFrom desc nulls last, marks asc nulls last, lower(v.displayname) asc ");
+						sb.append(" order by recentLaunch desc nulls last, lifecycle.validFrom desc nulls last, marks desc nulls last, lower(v.displayname) asc ");
 					} else {
 						sb.append(" order by recentLaunch asc nulls last, lifecycle.validFrom asc nulls last, marks asc nulls last, lower(v.displayname) desc ");
 					}
