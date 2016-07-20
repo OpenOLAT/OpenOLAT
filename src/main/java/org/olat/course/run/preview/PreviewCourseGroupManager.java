@@ -27,8 +27,11 @@ package org.olat.course.run.preview;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
+import org.olat.basesecurity.GroupRoles;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.AssertException;
 import org.olat.core.manager.BasicManager;
@@ -36,8 +39,11 @@ import org.olat.course.export.CourseEnvironmentMapper;
 import org.olat.course.groupsandrights.CourseGroupManager;
 import org.olat.course.groupsandrights.CourseRights;
 import org.olat.group.BusinessGroup;
+import org.olat.group.BusinessGroupService;
 import org.olat.group.area.BGArea;
+import org.olat.group.area.BGAreaManager;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryService;
 import org.olat.resource.OLATResource;
 
 /**
@@ -52,6 +58,10 @@ final class PreviewCourseGroupManager extends BasicManager implements CourseGrou
 	private RepositoryEntry courseResource;
 	private boolean isCoach, isCourseAdmin;
 	
+	private final BGAreaManager areaManager;
+	private final RepositoryService repositoryService;
+	private final BusinessGroupService businessGroupService;
+	
 	/**
 	 * @param groups
 	 * @param areas
@@ -65,6 +75,10 @@ final class PreviewCourseGroupManager extends BasicManager implements CourseGrou
 		this.areas = areas;
 		this.isCourseAdmin = isCourseAdmin;
 		this.isCoach = isCoach;
+
+		areaManager = CoreSpringFactory.getImpl(BGAreaManager.class);
+		repositoryService = CoreSpringFactory.getImpl(RepositoryService.class);
+		businessGroupService = CoreSpringFactory.getImpl(BusinessGroupService.class);
 	}
 
 	@Override
@@ -90,7 +104,7 @@ final class PreviewCourseGroupManager extends BasicManager implements CourseGrou
 		if (courseRight.equals(CourseRights.RIGHT_COURSEEDITOR)) {
 			return false;
 		}
-		throw new AssertException("unsupported");
+		return false;
 	}
 
 	@Override
@@ -189,7 +203,7 @@ final class PreviewCourseGroupManager extends BasicManager implements CourseGrou
 	 */
 	@Override
 	public List<BusinessGroup> getOwnedBusinessGroups(Identity identity) {
-		throw new AssertException("unsupported");
+		return new ArrayList<>(1);
 	}
 
 	/**
@@ -197,7 +211,7 @@ final class PreviewCourseGroupManager extends BasicManager implements CourseGrou
 	 */
 	@Override
 	public List<BusinessGroup> getParticipatingBusinessGroups(Identity identity) {
-		throw new AssertException("unsupported");
+		return new ArrayList<>(1);
 	}
 	
 	@Override
@@ -218,7 +232,7 @@ final class PreviewCourseGroupManager extends BasicManager implements CourseGrou
 	 */
 	@Override
 	public void deleteCourseGroupmanagement() {
-		throw new AssertException("unsupported");
+		//do nothing in preview
 	}
 
 	/**
@@ -226,7 +240,12 @@ final class PreviewCourseGroupManager extends BasicManager implements CourseGrou
 	 */
 	@Override
 	public List<Integer> getNumberOfMembersFromGroups(List<BusinessGroup> groupList) {
-		throw new AssertException("unsupported");
+		List<Integer> members = new ArrayList<Integer>();
+		for (BusinessGroup group:groups) {
+			int numbMembers = businessGroupService.countMembers(group, GroupRoles.participant.name());
+			members.add(new Integer(numbMembers));
+		}
+		return members;
 	}
 
 	/**
@@ -234,7 +253,16 @@ final class PreviewCourseGroupManager extends BasicManager implements CourseGrou
 	 */
 	@Override
 	public List<String> getUniqueBusinessGroupNames() {
-		throw new AssertException("unsupported");
+		List<String> names = new ArrayList<>();
+		if(groups != null) {
+			for (BusinessGroup group:groups) {
+				if (!names.contains(group.getName())) {
+					names.add(group.getName().trim());
+				}
+			}
+			Collections.sort(names);
+		}
+		return names;
 	}
 
 	/**
@@ -242,57 +270,72 @@ final class PreviewCourseGroupManager extends BasicManager implements CourseGrou
 	 */
 	@Override
 	public List<String> getUniqueAreaNames() {
-		throw new AssertException("unsupported");
+		List<String> areaNames = new ArrayList<>();
+		if(areas != null) {
+			for (BGArea area:areas) {
+				if (!areaNames.contains(area.getName())) {
+					areaNames.add(area.getName().trim());
+				}
+			}
+			Collections.sort(areaNames);
+		}
+		return areaNames;
 	}
 
 	@Override
 	public List<Identity> getCoachesFromBusinessGroups() {
-		throw new AssertException("unsupported");
+		return businessGroupService.getMembers(groups, GroupRoles.coach.name());
 	}
 
 	@Override
 	public List<Identity> getCoachesFromAreas() {
-		throw new AssertException("unsupported");
+		List<BusinessGroup> groups = areaManager.findBusinessGroupsOfAreas(areas);
+		return businessGroupService.getMembers(groups, GroupRoles.coach.name());
 	}
 
 	@Override
 	public List<Identity> getParticipantsFromBusinessGroups() {
-		throw new AssertException("unsupported");
+		return businessGroupService.getMembers(groups, GroupRoles.participant.name());
 	}
 
 	@Override
 	public List<Identity> getCoachesFromBusinessGroups(List<Long> groupKeys) {
-		throw new AssertException("unsupported");
+		List<BusinessGroup> bgs = businessGroupService.loadBusinessGroups(groupKeys);
+		return businessGroupService.getMembers(bgs, GroupRoles.coach.name());
 	}
 
 	@Override
 	public List<Identity> getCoachesFromAreas(List<Long> areaKeys) {
-		throw new AssertException("unsupported");
+		List<BGArea> areas = areaManager.loadAreas(areaKeys);
+		List<BusinessGroup> groups = areaManager.findBusinessGroupsOfAreas(areas);
+		return businessGroupService.getMembers(groups, GroupRoles.coach.name());
 	}
 
 	@Override
 	public List<Identity> getParticipantsFromBusinessGroups(List<Long> groupKeys) {
-		throw new AssertException("unsupported");
+		return businessGroupService.getMembers(groups, GroupRoles.participant.name());
 	}
 
 	@Override
 	public List<Identity> getParticipantsFromAreas(List<Long> areaKeys) {
-		throw new AssertException("unsupported");
+		List<BGArea> areas = areaManager.loadAreas(areaKeys);
+		List<BusinessGroup> groups = areaManager.findBusinessGroupsOfAreas(areas);
+		return businessGroupService.getMembers(groups, GroupRoles.participant.name());
 	}
 
 	@Override
 	public List<Identity> getParticipantsFromAreas() {
-		throw new AssertException("unsupported");
+		return businessGroupService.getMembers(groups, GroupRoles.participant.name());
 	}
 	
 	@Override
 	public List<Identity> getCoaches() {
-		throw new AssertException("unsupported");
+		return repositoryService.getMembers(getCourseEntry(), GroupRoles.coach.name());
 	}
 
 	@Override
 	public List<Identity> getParticipants() {
-		throw new AssertException("unsupported");
+		return repositoryService.getMembers(getCourseEntry(), GroupRoles.participant.name());
 	}
 
 	@Override
@@ -318,6 +361,6 @@ final class PreviewCourseGroupManager extends BasicManager implements CourseGrou
 
 	@Override
 	public List<BusinessGroup> getWaitingListGroups(Identity identity) {
-		throw new AssertException("unsupported");
+		return new ArrayList<>(1);
 	}
 }
