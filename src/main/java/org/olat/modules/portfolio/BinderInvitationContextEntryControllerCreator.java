@@ -29,6 +29,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.ContextEntryControllerCreator;
 import org.olat.core.id.context.DefaultContextEntryControllerCreator;
+import org.olat.modules.portfolio.model.AccessRights;
 import org.olat.modules.portfolio.ui.PortfolioInvitationController;
 
 /**
@@ -54,7 +55,9 @@ public class BinderInvitationContextEntryControllerCreator extends DefaultContex
 		
 		Binder binder = getBinderFromContext(ces.get(0));
 		BinderConfiguration config = BinderConfiguration.createInvitationConfig();
-		BinderSecurityCallback secCallback = BinderSecurityCallbackFactory.getCallbackForInvitation();
+		List<AccessRights> rights = CoreSpringFactory.getImpl(PortfolioService.class)
+				.getAccessRights(binder, ureq.getIdentity());
+		BinderSecurityCallback secCallback = BinderSecurityCallbackFactory.getCallbackForInvitation(rights);
 		Controller binderCtrl = new PortfolioInvitationController(ureq, wControl, secCallback,  binder, config);
 		
 		LayoutMain3ColsController layoutCtr = new LayoutMain3ColsController(ureq, wControl, binderCtrl);

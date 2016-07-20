@@ -20,9 +20,11 @@
 package org.olat.modules.portfolio.model;
 
 import org.olat.core.id.Identity;
+import org.olat.modules.portfolio.Page;
 import org.olat.modules.portfolio.PortfolioElement;
 import org.olat.modules.portfolio.PortfolioElementType;
 import org.olat.modules.portfolio.PortfolioRoles;
+import org.olat.modules.portfolio.Section;
 
 /**
  * 
@@ -74,15 +76,35 @@ public class AccessRights {
 		return null;
 	}
 	
-	public boolean matchElement(PortfolioElement element) {
-		if(element.getType() == getType()) {
-			if(element.getType() == PortfolioElementType.page) {
-				return pageKey != null && pageKey.equals(element.getKey());
-			} else if(element.getType() == PortfolioElementType.section) {
-				return sectionKey != null && sectionKey.equals(element.getKey());
-			} else if(element.getType() == PortfolioElementType.binder) {
-				return binderKey != null && binderKey.equals(element.getKey());
+	/**
+	 * 
+	 * @param element
+	 * @return
+	 */
+	public boolean matchElementAndAncestors(PortfolioElement element) {
+		if(element == null) {
+			return false;
+		}
+		if(element.getType() == PortfolioElementType.page) {
+			if(PortfolioElementType.page == getType() && pageKey != null && pageKey.equals(element.getKey())) {
+				return true;
 			}
+			element = ((Page)element).getSection();
+		}
+		if(element == null) {
+			return false;
+		}
+		if(element.getType() == PortfolioElementType.section) {
+			if(PortfolioElementType.section == getType() && sectionKey != null && sectionKey.equals(element.getKey())) {
+				return true;
+			}
+			element = ((Section)element).getBinder();
+		}
+		if(element == null) {
+			return false;
+		}
+		if(element.getType() == getType() && element.getType() == PortfolioElementType.binder) {
+			return binderKey != null && binderKey.equals(element.getKey());
 		}
 		return false;
 	}

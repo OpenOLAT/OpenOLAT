@@ -153,6 +153,10 @@ public class PublishController extends BasicController implements TooledControll
 		boolean canEditBinderAccessRights = secCallback.canEditAccessRights(binder);
 		for(AccessRights right:rights) {
 			if(right.getSectionKey() == null && right.getPageKey() == null) {
+				if(PortfolioRoles.invitee.equals(right.getRole())) {
+					continue;//only access
+				}
+				
 				Link editLink = null;
 				if(canEditBinderAccessRights && !PortfolioRoles.owner.equals(right.getRole())) {
 					String id = "edit_" + (counter++);
@@ -225,7 +229,8 @@ public class PublishController extends BasicController implements TooledControll
 			String cmd = link.getCommand();
 			if("edit_access".equals(cmd)) {
 				AccessRightsRow row = (AccessRightsRow)link.getUserObject();
-				if(PortfolioRoles.invitee.name().equals(row.getRole())) {
+				if(PortfolioRoles.invitee.name().equals(row.getRole())
+						|| PortfolioRoles.readInvitee.name().equals(row.getRole())) {
 					doEditInvitation(ureq, row.getIdentity());
 				} else {
 					doEditAccessRights(ureq, row.getElement(), row.getIdentity());
@@ -427,7 +432,7 @@ public class PublishController extends BasicController implements TooledControll
 				explanation = translate("access.rights.coach.long");
 			} else if(PortfolioRoles.reviewer.equals(rights.getRole())) {
 				explanation = translate("access.rights.reviewer.long");
-			} else if(PortfolioRoles.invitee.equals(rights.getRole())) {
+			} else if(PortfolioRoles.readInvitee.equals(rights.getRole())) {
 				explanation = translate("access.rights.invitee.long");
 			}
 			return explanation;

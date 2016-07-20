@@ -57,8 +57,8 @@ public class BinderSecurityCallbackFactory {
 	 * Invitee can only comment binders
 	 * @return
 	 */
-	public static final BinderSecurityCallback getCallbackForInvitation() {
-		return new BinderSecurityCallbackForInvitation();
+	public static final BinderSecurityCallback getCallbackForInvitation(List<AccessRights> rights) {
+		return new BinderSecurityCallbackForInvitation(rights);
 	}
 	
 	/**
@@ -69,11 +69,44 @@ public class BinderSecurityCallbackFactory {
 		return new BinderSecurityCallbackImpl(true, false);
 	}
 
-
+	/**
+	 * Can only view / comment the pages, the sections they are allowed
+	 * to view or the whole binder.
+	 * 
+	 * Initial date: 20.07.2016<br>
+	 * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+	 *
+	 */
 	private static class BinderSecurityCallbackForInvitation extends DefaultBinderSecurityCallback {
+		
+		private final List<AccessRights> rights;
+		
+		public BinderSecurityCallbackForInvitation(List<AccessRights> rights) {
+			this.rights = rights;
+		}
+		
 		@Override
 		public boolean canComment(PortfolioElement element) {
-			return true;
+			if(rights != null) {
+				for(AccessRights right:rights) {
+					if(right.getRole() == PortfolioRoles.readInvitee && right.matchElementAndAncestors(element)) {
+						return true;
+					}
+				}
+			}
+			return false;
+		}
+
+		@Override
+		public boolean canViewElement(PortfolioElement element) {
+			if(rights != null) {
+				for(AccessRights right:rights) {
+					if(right.getRole() == PortfolioRoles.readInvitee && right.matchElementAndAncestors(element)) {
+						return true;
+					}
+				}
+			}
+			return false;
 		}
 	}
 	
@@ -175,13 +208,30 @@ public class BinderSecurityCallbackFactory {
 		}
 
 		@Override
+		public boolean canViewEmptySection(Section section) {
+			if(owner) return true;
+			
+			//need to be recursive, if page -> section too -> binder too???
+			if(rights != null) {
+				for(AccessRights right:rights) {
+					if(PortfolioRoles.coach.equals(right.getRole())
+							&& right.matchElementAndAncestors(section)) {
+						return true;
+					}
+				}
+			}
+			return false;
+		}
+
+		@Override
 		public boolean canViewElement(PortfolioElement element) {
 			if(owner) return true;
 			
 			//need to be recursive, if page -> section too -> binder too???
 			if(rights != null) {
 				for(AccessRights right:rights) {
-					if(right.matchElement(element)) {
+					if((PortfolioRoles.reviewer.equals(right.getRole()) || PortfolioRoles.coach.equals(right.getRole()))
+							&& right.matchElementAndAncestors(element)) {
 						return true;
 					}
 				}
@@ -191,9 +241,12 @@ public class BinderSecurityCallbackFactory {
 
 		@Override
 		public boolean canComment(PortfolioElement element) {
+			if(owner) return true;
+			
 			if(rights != null) {
 				for(AccessRights right:rights) {
-					if(right.matchElement(element) && PortfolioRoles.reviewer.equals(right.getRole())) {
+					if((PortfolioRoles.reviewer.equals(right.getRole()) || PortfolioRoles.coach.equals(right.getRole()))
+							&& right.matchElementAndAncestors(element)) {
 						return true;
 					}
 				}
@@ -205,7 +258,7 @@ public class BinderSecurityCallbackFactory {
 		public boolean canReview(PortfolioElement element) {
 			if(rights != null) {
 				for(AccessRights right:rights) {
-					if(right.matchElement(element) && PortfolioRoles.reviewer.equals(right.getRole())) {
+					if(PortfolioRoles.reviewer.equals(right.getRole()) && right.matchElementAndAncestors(element)) {
 						return true;
 					}
 				}
@@ -217,7 +270,7 @@ public class BinderSecurityCallbackFactory {
 		public boolean canAssess(Section section) {
 			if(rights != null) {
 				for(AccessRights right:rights) {
-					if(right.matchElement(section) && PortfolioRoles.coach.equals(right.getRole())) {
+					if(PortfolioRoles.coach.equals(right.getRole()) && right.matchElementAndAncestors(section)) {
 						return true;
 					}
 				}
@@ -275,6 +328,11 @@ public class BinderSecurityCallbackFactory {
 
 		@Override
 		public boolean canViewElement(PortfolioElement element) {
+			return false;
+		}
+
+		@Override
+		public boolean canViewEmptySection(Section section) {
 			return false;
 		}
 

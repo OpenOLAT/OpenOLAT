@@ -30,6 +30,7 @@ public enum PortfolioRoles {
 	owner,//same as GroupRoles.owner
 	coach,//same as GroupRoles.coach
 	reviewer,
-	invitee,//same as GroupRoles.invitee
+	invitee,//same as GroupRoles.invitee, give the rights to access a binder but not view pages and sections
+	readInvitee
 
 }

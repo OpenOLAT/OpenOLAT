@@ -177,11 +177,16 @@ public class BinderPageListController extends AbstractPageListController  {
 		List<Page> pages = portfolioService.getPages(binder, searchString);
 		List<PageRow> rows = new ArrayList<>(pages.size());
 		for (Page page : pages) {
+			if(!secCallback.canViewElement(page)) {
+				continue;
+			}
+			
 			boolean first = false;
 			Section section = page.getSection();
 			if (sections.remove(section)) {
 				first = true;
 			}
+			
 			PageRow pageRow = forgeRow(page, sectionToAssessmentSectionMap.get(section), sectionToAssignmentMap.get(section),
 					first, categorizedElementMap, numberOfCommentsMap);
 			rows.add(pageRow);
@@ -213,9 +218,6 @@ public class BinderPageListController extends AbstractPageListController  {
 				
 				pageRow.setSectionCategories(categories);
 			}
-			
-
-			
 		}
 		
 		//sections without pages
@@ -375,9 +377,10 @@ public class BinderPageListController extends AbstractPageListController  {
 			nextSectionLink.setEnabled(false);
 		}
 		
-		previousSectionLink.setVisible(true);
-		nextSectionLink.setVisible(true);
-		showAllSectionsLink.setVisible(true);
+		boolean visible = currentSections.size() > 1;
+		previousSectionLink.setVisible(visible);
+		nextSectionLink.setVisible(visible);
+		showAllSectionsLink.setVisible(visible);
 	}
 	
 	private void doCreateNewPage(UserRequest ureq, Section preSelectedSection) {

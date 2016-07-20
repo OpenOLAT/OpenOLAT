@@ -156,15 +156,17 @@ public class TableOfContentController extends BasicController implements TooledC
 		for(Section section:sections) {
 			SectionRow sectionRow = forgeSectionRow(section, sectionToAssessmentSectionMap.get(section));
 			sectionList.add(sectionRow);
-			sectionMap.put(section.getKey(), sectionRow);	
+			sectionMap.put(section.getKey(), sectionRow);
 		}
 
 		List<Page> pages = portfolioService.getPages(binder, null);
 		for(Page page:pages) {
-			Section section = page.getSection();
-			SectionRow sectionRow = sectionMap.get(section.getKey());
-			PageRow pageRow = forgePageRow(page, sectionRow);
-			sectionRow.getPages().add(pageRow);
+			if(secCallback.canViewElement(page)) {
+				Section section = page.getSection();
+				SectionRow sectionRow = sectionMap.get(section.getKey());
+				PageRow pageRow = forgePageRow(page, sectionRow);
+				sectionRow.getPages().add(pageRow);
+			}
 		}
 		mainVC.contextPut("sections", sectionList);
 	}
