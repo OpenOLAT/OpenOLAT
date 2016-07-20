@@ -94,6 +94,10 @@ public class PageRow {
 		return page.getLastModified();
 	}
 	
+	public Date getCreationDate() {
+		return page.getCreationDate();
+	}
+	
 	public boolean hasLastPublicationDate() {
 		return page != null && page.getLastPublicationDate() != null;
 	}

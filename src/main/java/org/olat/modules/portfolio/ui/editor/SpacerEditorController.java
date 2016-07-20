@@ -22,13 +22,11 @@ package org.olat.modules.portfolio.ui.editor;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
-import org.olat.core.gui.components.form.flexible.elements.SpacerElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.CodeHelper;
-import org.olat.modules.portfolio.model.SpacerPart;
 
 /**
  * 
@@ -38,15 +36,11 @@ import org.olat.modules.portfolio.model.SpacerPart;
  */
 public class SpacerEditorController extends FormBasicController implements PageElementEditorController {
 	
-	private SpacerElement staticItem;
-	
-	private SpacerPart spacerPart;
 	private boolean editMode = false;
 
-	public SpacerEditorController(UserRequest ureq, WindowControl wControl, SpacerPart spacerPart) {
+	public SpacerEditorController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl, "spacer_editor");
-		this.spacerPart = spacerPart;
-		
+
 		initForm(ureq);
 		setEditMode(editMode);
 	}
@@ -65,7 +59,7 @@ public class SpacerEditorController extends FormBasicController implements PageE
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		String cmpId = "spacer-" + CodeHelper.getRAMUniqueID() + "hr";
-		staticItem = uifactory.addSpacerElement(cmpId + "_static", formLayout, false);
+		uifactory.addSpacerElement(cmpId + "_static", formLayout, false);
 		flc.getFormItemComponent().contextPut("cmpId", cmpId);
 	}
 

@@ -75,11 +75,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class BinderPageListController extends AbstractPageListController  {
 	
 	private Link newEntryLink;
+	private FormLink previousSectionLink, nextSectionLink, showAllSectionsLink;
 	
 	private CloseableModalController cmc;
 	private PageMetadataEditController newPageCtrl;
 	private AssignmentEditController newAssignmentCtrl;
-	private SectionPageListController sectionPagesCtrl;
 
 	private final Binder binder;
 	private final List<Identity> owners;
@@ -125,6 +125,15 @@ public class BinderPageListController extends AbstractPageListController  {
 		options.setFromColumnModel(false);
 		options.setDefaultOrderBy(new SortKey(PageCols.date.name(), false));
 		tableEl.setSortSettings(options);
+		
+		previousSectionLink = uifactory.addFormLink("section.paging.previous", formLayout, Link.BUTTON | Link.NONTRANSLATED);
+		previousSectionLink.setVisible(false);
+		previousSectionLink.setIconLeftCSS("o_icon o_icon_move_left");
+		nextSectionLink = uifactory.addFormLink("section.paging.next", formLayout, Link.BUTTON | Link.NONTRANSLATED);
+		nextSectionLink.setVisible(false);
+		nextSectionLink.setIconRightCSS("o_icon o_icon_move_right");
+		showAllSectionsLink = uifactory.addFormLink("section.paging.all", formLayout, Link.BUTTON);
+		showAllSectionsLink.setVisible(false);
 	}
 
 	@Override
@@ -167,7 +176,6 @@ public class BinderPageListController extends AbstractPageListController  {
 
 		List<Page> pages = portfolioService.getPages(binder, searchString);
 		List<PageRow> rows = new ArrayList<>(pages.size());
-		List<TimelinePoint> points = new ArrayList<>(pages.size());
 		for (Page page : pages) {
 			boolean first = false;
 			Section section = page.getSection();
@@ -207,8 +215,7 @@ public class BinderPageListController extends AbstractPageListController  {
 			}
 			
 
-			String s = page.getPageStatus() == null ? "draft" : page.getPageStatus().name();
-			points.add(new TimelinePoint(page.getKey().toString(), page.getTitle(), page.getCreationDate(), s));
+			
 		}
 		
 		//sections without pages
@@ -235,14 +242,34 @@ public class BinderPageListController extends AbstractPageListController  {
 			}
 		}
 
-		timelineEl.setPoints(points);
 		model.setObjects(rows);
 		tableEl.reloadData();
+		updateTimeline();
+	}
+	
+	private void updateTimeline() {
+		List<PageRow> pages = model.getObjects();
+		List<TimelinePoint> points = new ArrayList<>(pages.size());
+		for(PageRow page:pages) {
+			if(page.isPage()) {
+				String s = page.getPageStatus() == null ? "draft" : page.getPageStatus().name();
+				points.add(new TimelinePoint(page.getKey().toString(), page.getTitle(), page.getCreationDate(), s));
+			}
+		}
+		timelineEl.setPoints(points);
 	}
 
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if(source instanceof FormLink) {
+		if(previousSectionLink == source) {
+			Section previousSection = (Section)previousSectionLink.getUserObject();
+			doFilterSection(previousSection);
+		} else if(nextSectionLink == source) {
+			Section nextSection = (Section)nextSectionLink.getUserObject();
+			doFilterSection(nextSection);
+		} else if(showAllSectionsLink == source) {
+			doShowAll();
+		} else if(source instanceof FormLink) {
 			FormLink link = (FormLink)source;
 			String cmd = link.getCmd();
 			if("new.entry".equals(cmd)) {
@@ -283,7 +310,7 @@ public class BinderPageListController extends AbstractPageListController  {
 			}
 			
 			if(activatedRow != null) {
-				doOpenSection(ureq, activatedRow);
+				doFilterSection(activatedRow.getSection());
 			}
 		}
 	}
@@ -312,14 +339,45 @@ public class BinderPageListController extends AbstractPageListController  {
 		cmc = null;
 	}
 	
-	protected void doOpenSection(UserRequest ureq, PageRow row) {
-		removeAsListenerAndDispose(sectionPagesCtrl);
-		if(row.getSection() == null) return;
+	private void doShowAll() {
+		model.filter(null);
+		tableEl.reloadData();
+		updateTimeline();
 		
-		Section section = portfolioService.getSection(row.getSection());
-		sectionPagesCtrl = new SectionPageListController(ureq, getWindowControl(), stackPanel, secCallback, binder, config, section);
-		listenTo(sectionPagesCtrl);
-		stackPanel.pushController(StringHelper.escapeHtml(section.getTitle()), sectionPagesCtrl);
+		previousSectionLink.setVisible(false);
+		nextSectionLink.setVisible(false);
+		showAllSectionsLink.setVisible(false);
+	}
+	
+	protected void doFilterSection(Section section) {
+		List<Section> currentSections = model.filter(section);
+		tableEl.reloadData();
+		updateTimeline();
+		
+		int index = currentSections.indexOf(section);
+
+		previousSectionLink.setEnabled(index > 0);
+		if(index > 0) {
+			String previousTitle = currentSections.get(index - 1).getTitle();
+			previousSectionLink.setI18nKey(translate("section.paging.with.title", new String[]{ previousTitle }));
+			previousSectionLink.setUserObject(currentSections.get(index - 1));
+		} else {
+			previousSectionLink.setI18nKey(translate("section.paging.previous"));
+		}
+		
+		if(index >= 0 && index + 1 < currentSections.size()) {
+			String nextTitle = currentSections.get(index + 1).getTitle();
+			nextSectionLink.setI18nKey(translate("section.paging.with.title", new String[]{ nextTitle }));
+			nextSectionLink.setEnabled(true);
+			nextSectionLink.setUserObject(currentSections.get(index + 1));
+		} else {
+			nextSectionLink.setI18nKey(translate("section.paging.next"));
+			nextSectionLink.setEnabled(false);
+		}
+		
+		previousSectionLink.setVisible(true);
+		nextSectionLink.setVisible(true);
+		showAllSectionsLink.setVisible(true);
 	}
 	
 	private void doCreateNewPage(UserRequest ureq, Section preSelectedSection) {

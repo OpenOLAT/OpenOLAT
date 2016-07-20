@@ -63,7 +63,7 @@ public class SpacerElementHandler implements PageElementHandler, SimpleAddPageEl
 	@Override
 	public PageElementEditorController getEditor(UserRequest ureq, WindowControl wControl, PageElement element) {
 		if(element instanceof SpacerPart) {
-			return new SpacerEditorController(ureq, wControl, (SpacerPart)element);
+			return new SpacerEditorController(ureq, wControl);
 		}
 		return null;
 	}

@@ -11,7 +11,23 @@
 	</div>
 	
 	<div class="o_portfolio_entries #if($timelineSwitch) o_portfolio_withtimeline #end">
-	$r.render("table")
+		$r.render("table")
+		<div class="o_button_group">
+			<div class="btn-group">
+			#if($r.visible("section.paging.previous"))
+				$r.render("section.paging.previous")
+			#end
+			#if($r.visible("section.paging.one"))
+				$r.render("section.paging.one")
+			#end
+			#if($r.visible("section.paging.all"))
+				$r.render("section.paging.all")
+			#end
+			#if($r.visible("section.paging.next"))
+				$r.render("section.paging.next")
+			#end
+			</div>
+		</div>
 	</div>
 	
 	#if($timelineSwitch)

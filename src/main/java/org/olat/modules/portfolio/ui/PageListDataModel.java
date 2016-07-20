@@ -19,7 +19,10 @@
  */
 package org.olat.modules.portfolio.ui;
 
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
@@ -37,6 +40,8 @@ import org.olat.modules.portfolio.ui.model.PageRow;
  */
 public class PageListDataModel extends DefaultFlexiTableDataModel<PageRow>
 	implements SortableFlexiTableDataModel<PageRow> {
+	
+	private List<PageRow> backup;
 	
 	public PageListDataModel(FlexiTableColumnModel columnModel) {
 		super(columnModel);
@@ -58,6 +63,39 @@ public class PageListDataModel extends DefaultFlexiTableDataModel<PageRow>
 		}
 		
 		super.setObjects(rows);
+	}
+	
+	public List<Section> filter(Section section) {
+		if(section == null) {
+			super.setObjects(backup);
+			return null;
+		} else if(backup == null) {
+			return new ArrayList<>();
+		}
+		
+		Set<Section> sectionSet = new HashSet<>();
+		List<Section> sectionList = new ArrayList<>();
+		List<PageRow> sectionRows = new ArrayList<>();
+		for(PageRow row:backup) {
+			if(row.getSection() != null) {
+				if(!sectionSet.contains(row.getSection())) {
+					sectionSet.add(row.getSection());
+					sectionList.add(row.getSection());
+				}
+				
+				if(section.equals(row.getSection())) {
+					sectionRows.add(row);
+				}
+			}
+		}
+		super.setObjects(sectionRows);
+		return sectionList;
+	}
+
+	@Override
+	public void setObjects(List<PageRow> objects) {
+		backup = objects;
+		super.setObjects(objects);
 	}
 
 	@Override
