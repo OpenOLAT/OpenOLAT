@@ -208,9 +208,9 @@ public class ListRenderer {
 		} else {
 			pathAndName = currentContainerPath;
 			if (pathAndName.length() > 0 && !pathAndName.endsWith("/")) {
-				pathAndName = pathAndName + "/";
+				pathAndName += "/";
 			}
-			pathAndName = pathAndName + name;
+			pathAndName += (name.replace("+", "%2B"));
 		}
 				
 		// tr begin
