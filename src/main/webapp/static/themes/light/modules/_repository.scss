@@ -23,8 +23,11 @@
 			}
 		}		
 		
-		h1 i {
-			display: none;
+		h1 {
+			font-size: $o-coursesite-meta-title-font-size;
+			i {
+				display: none;
+			}
 		}
 	}
 	
