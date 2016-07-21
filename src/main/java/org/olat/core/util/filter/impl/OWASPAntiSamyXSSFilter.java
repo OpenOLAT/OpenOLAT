@@ -151,10 +151,10 @@ public class OWASPAntiSamyXSSFilter implements Filter {
             log.error("XSS Filter policy error", e);
             printOriginStackTrace();
         } 
-        String output = null; 
+        String output; 
         try {
             output = cr.getCleanHTML();
-        } catch (Error e){
+        } catch (Exception | Error e){
             output = "";
             log.error("Error getting cleaned HTML from string::" + original, e);
         }
