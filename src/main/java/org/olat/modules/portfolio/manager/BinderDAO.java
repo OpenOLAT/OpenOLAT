@@ -45,6 +45,7 @@ import org.olat.modules.portfolio.Section;
 import org.olat.modules.portfolio.SectionRef;
 import org.olat.modules.portfolio.SectionStatus;
 import org.olat.modules.portfolio.model.AccessRights;
+import org.olat.modules.portfolio.model.AssignmentImpl;
 import org.olat.modules.portfolio.model.BinderImpl;
 import org.olat.modules.portfolio.model.BinderStatistics;
 import org.olat.modules.portfolio.model.SectionImpl;
@@ -159,7 +160,13 @@ public class BinderDAO {
 			if(!templateAssignments.remove(refAssignment)) {
 				currentAssignment.setAssignmentStatus(AssignmentStatus.deleted);
 			} else {
-				//TODO sync summary
+				AssignmentImpl currentImpl = (AssignmentImpl)currentAssignment;
+				currentImpl.setTitle(refAssignment.getTitle());
+				currentImpl.setSummary(refAssignment.getSummary());
+				currentImpl.setContent(refAssignment.getContent());
+				currentImpl.setStorage(refAssignment.getStorage());
+				currentImpl.setType(refAssignment.getAssignmentType().name());
+				currentAssignment = dbInstance.getCurrentEntityManager().merge(currentImpl);
 			}
 		}
 		

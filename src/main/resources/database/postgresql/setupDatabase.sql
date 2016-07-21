@@ -1595,6 +1595,7 @@ create table o_pf_assignment (
    p_title varchar(255) default null,
    p_summary text,
    p_content text,
+   p_storage varchar(255) default null,
    fk_section_id int8 not null,
    fk_template_reference_id int8,
    fk_page_id int8,

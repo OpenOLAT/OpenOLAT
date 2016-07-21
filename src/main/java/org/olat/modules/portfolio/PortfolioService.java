@@ -60,7 +60,7 @@ public interface PortfolioService {
 	
 	public boolean deleteBinderTemplate(Binder binder, RepositoryEntry templateEntry);
 	
-	/**
+	/**S
 	 * Add an assignment to a section.
 	 * 
 	 * @param title
@@ -71,6 +71,8 @@ public interface PortfolioService {
 	 * @return
 	 */
 	public Assignment addAssignment(String title, String summary, String content, AssignmentType type, Section section);
+	
+	public Assignment updateAssignment(Assignment assignment, String title, String summary, String content, AssignmentType type);
 	
 	public List<Assignment> getAssignments(PortfolioElement binder);
 	

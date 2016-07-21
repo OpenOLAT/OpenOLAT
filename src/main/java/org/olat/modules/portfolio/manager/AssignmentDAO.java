@@ -50,13 +50,14 @@ public class AssignmentDAO {
 	private DB dbInstance;
 	
 	public Assignment createAssignment(String title, String summary, String content,
-			AssignmentType type, AssignmentStatus status, Section section) {
+			String storage, AssignmentType type, AssignmentStatus status, Section section) {
 		AssignmentImpl assignment = new AssignmentImpl();
 		assignment.setCreationDate(new Date());
 		assignment.setLastModified(assignment.getCreationDate());
 		assignment.setTitle(title);
 		assignment.setSummary(summary);
 		assignment.setContent(content);
+		assignment.setStorage(storage);
 		assignment.setSection(section);
 		assignment.setType(type.name());
 		assignment.setStatus(status.name());
@@ -79,6 +80,11 @@ public class AssignmentDAO {
 		
 		dbInstance.getCurrentEntityManager().persist(assignment);
 		return assignment;
+	}
+	
+	public Assignment updateAssignment(Assignment assignment) {
+		((AssignmentImpl)assignment).setLastModified(new Date());
+		return dbInstance.getCurrentEntityManager().merge(assignment);
 	}
 	
 	public Assignment startEssayAssignment(Assignment assigment, Page page, Identity assignee) {

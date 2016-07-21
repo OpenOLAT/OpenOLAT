@@ -192,8 +192,8 @@ implements Activateable2, TooledController, FlexiTableComponentDelegate {
 				if(assignmentRow.getOpenLink() != null) {
 					components.add(assignmentRow.getOpenLink().getComponent());
 				}
-				if(assignmentRow.getStartLink() != null) {
-					components.add(assignmentRow.getStartLink().getComponent());
+				if(assignmentRow.getCreateLink() != null) {
+					components.add(assignmentRow.getCreateLink().getComponent());
 				}
 			}	
 		}
@@ -282,7 +282,7 @@ implements Activateable2, TooledController, FlexiTableComponentDelegate {
 						FormLink startLink = uifactory.addFormLink("create_assign_" + (++counter), "start.assignment", "create.start.assignment", null, flc, Link.BUTTON);
 						startLink.setUserObject(assignmentRow);
 						startLink.setPrimary(true);
-						assignmentRow.setStartLink(startLink);
+						assignmentRow.setCreateLink(startLink);
 					} else {
 						FormLink openLink = uifactory.addFormLink("open_assign_" + (++counter), "open.assignment", "open", null, flc, Link.BUTTON);
 						openLink.setUserObject(assignmentRow);
@@ -326,7 +326,7 @@ implements Activateable2, TooledController, FlexiTableComponentDelegate {
 			Long resId = entries.get(0).getOLATResourceable().getResourceableId();
 			PageRow activatedRow = null;
 			for(PageRow row :model.getObjects()) {
-				if(row.getKey().equals(resId)) {
+				if(row.getKey() != null && row.getKey().equals(resId)) {
 					activatedRow = row;
 					break;
 				}
@@ -437,11 +437,13 @@ implements Activateable2, TooledController, FlexiTableComponentDelegate {
 		Assignment startedAssigment = portfolioService.startAssignment(assignment, getIdentity());
 		row.setAssignment(startedAssigment);
 		doOpenPage(ureq, startedAssigment.getPage());
+		loadModel(null);//TODO only update the links
 	}
 	
 	private void doOpenAssignment(UserRequest ureq, PageAssignmentRow row) {
 		Assignment assignment = row.getAssignment();
-		if(assignment.getAssignmentType() == AssignmentType.essay) {
+		if(assignment.getAssignmentType() == AssignmentType.essay
+				|| assignment.getAssignmentType() == AssignmentType.document) {
 			Page page = assignment.getPage();
 			Page reloadedPage = portfolioService.getPageByKey(page.getKey());
 			doOpenPage(ureq, reloadedPage);

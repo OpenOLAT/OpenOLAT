@@ -21,6 +21,7 @@ package org.olat.modules.portfolio.ui;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
@@ -43,13 +44,16 @@ import org.olat.core.gui.media.MediaResource;
 import org.olat.core.id.Identity;
 import org.olat.core.util.StringHelper;
 import org.olat.modules.portfolio.Assignment;
+import org.olat.modules.portfolio.AssignmentType;
 import org.olat.modules.portfolio.BinderSecurityCallback;
 import org.olat.modules.portfolio.Category;
 import org.olat.modules.portfolio.Page;
 import org.olat.modules.portfolio.PageImageAlign;
 import org.olat.modules.portfolio.PortfolioRoles;
 import org.olat.modules.portfolio.PortfolioService;
+import org.olat.modules.portfolio.manager.PortfolioFileStorage;
 import org.olat.modules.portfolio.ui.event.PublishEvent;
+import org.olat.modules.portfolio.ui.model.UserAssignmentInfos;
 import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -68,20 +72,34 @@ public class PageMetadataController extends BasicController {
 	private Link publishButton;
 	private ImageComponent imageCmp;
 	private String mapperThumbnailUrl;
+	private VelocityContainer mainVC;
+	
+	private final Page page;
+	private final List<Assignment> assignments;
 	
 	@Autowired
 	private UserManager userManager;
 	@Autowired
 	private PortfolioService portfolioService;
+	@Autowired
+	private PortfolioFileStorage fileStorage;
 	
 	public PageMetadataController(UserRequest ureq, WindowControl wControl, BinderSecurityCallback secCallback, Page page) {
 		super(ureq, wControl);
+		this.page = page;
+		assignments = portfolioService.getAssignments(page);
 
-		VelocityContainer mainVC = createVelocityContainer("page_meta");
+		mainVC = createVelocityContainer("page_meta");
 		if(secCallback.canPublish(page)) {
 			publishButton = LinkFactory.createButton("publish", mainVC, this);
 		}
 		
+		initMetadata(ureq);
+		initAssignments(ureq);
+		putInitialPanel(mainVC);
+	}
+	
+	private void initMetadata(UserRequest ureq) {
 		Set<Identity> owners = new HashSet<>();
 		if(page.getSection() != null && page.getSection().getBinder() != null) {
 			owners.addAll(portfolioService.getMembers(page.getSection().getBinder(), PortfolioRoles.owner.name()));
@@ -132,11 +150,33 @@ public class PageMetadataController extends BasicController {
 		} else {
 			mainVC.contextPut("imageAlign", "none");
 		}
+	}
+	
+	private void initAssignments(UserRequest ureq) {
+		boolean needMapper = false;
 		
-		List<Assignment> assignments = portfolioService.getAssignments(page);
-		mainVC.contextPut("assignments", assignments);
-
-		putInitialPanel(mainVC);
+		List<UserAssignmentInfos> assignmentInfos = new ArrayList<>(assignments.size());
+		for(Assignment assignment:assignments) {
+			List<File> documents = null;
+			if(assignment.getAssignmentType() == AssignmentType.document) {
+				File storage = fileStorage.getAssignmentDirectory(assignment);
+				if(storage != null) {
+					documents = Arrays.<File>asList(storage.listFiles());
+					if(documents.size() > 0) {
+						needMapper = true;
+					}
+				}
+			}
+			UserAssignmentInfos infos = new UserAssignmentInfos(assignment, documents);
+			assignmentInfos.add(infos);
+		}
+		
+		mainVC.contextPut("assignments", assignmentInfos);
+		if(needMapper) {
+			String mapperUri = registerCacheableMapper(ureq, "assigment-" + page.getKey(), new DocumentMapper());
+			mainVC.contextPut("mapperUri", mapperUri);
+		}
+		
 	}
 	
 	@Override
@@ -148,6 +188,40 @@ public class PageMetadataController extends BasicController {
 	protected void event(UserRequest ureq, Component source, Event event) {
 		if(publishButton == source) {
 			fireEvent(ureq, new PublishEvent());
+		}
+	}
+	
+	public class DocumentMapper implements Mapper {
+		
+		@Override
+		public MediaResource handle(String relPath, HttpServletRequest request) {
+			if(relPath.startsWith("/")) {
+				relPath = relPath.substring(1, relPath.length());
+			}
+			int index = relPath.indexOf("/");
+			if(index > 0) {
+				String assignmentKey = relPath.substring(0, index);
+				
+				int indexName = relPath.indexOf("/");
+				if(indexName > 0) {
+					String filename = relPath.substring(indexName + 1);
+					
+					File storage = null;
+					for(Assignment assignment:assignments) {
+						if(assignmentKey.equals(assignment.getKey().toString())) {
+							storage = fileStorage.getAssignmentDirectory(assignment);
+						}
+					}
+					
+					File[] documents = storage.listFiles();
+					for(File document:documents) {
+						if(filename.equalsIgnoreCase(document.getName())) {
+							return new FileMediaResource(document);
+						}
+					}
+				}
+			}
+			return null;
 		}
 	}
 	

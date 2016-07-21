@@ -83,6 +83,7 @@ import org.olat.modules.portfolio.model.AccessRights;
 import org.olat.modules.portfolio.model.AssessedBinder;
 import org.olat.modules.portfolio.model.AssessmentSectionChange;
 import org.olat.modules.portfolio.model.AssessmentSectionImpl;
+import org.olat.modules.portfolio.model.AssignmentImpl;
 import org.olat.modules.portfolio.model.BinderImpl;
 import org.olat.modules.portfolio.model.BinderStatistics;
 import org.olat.modules.portfolio.model.PageImpl;
@@ -213,11 +214,33 @@ public class PortfolioServiceImpl implements PortfolioService {
 	@Override
 	public Assignment addAssignment(String title, String summary, String content, AssignmentType type,
 			Section section) {
-		return assignmentDao.createAssignment(title, summary, content, type, AssignmentStatus.template, section);
+		String storage = null;
+		if(type == AssignmentType.document) {
+			File newStorage = portfolioFileStorage.generateAssignmentSubDirectory();
+			storage = portfolioFileStorage.getRelativePath(newStorage);
+		}
+		return assignmentDao.createAssignment(title, summary, content, storage, type, AssignmentStatus.template, section);
 	}
 
 	@Override
-	
+	public Assignment updateAssignment(Assignment assignment, String title, String summary, String content, AssignmentType type) {
+		if(assignment.getAssignmentType() == AssignmentType.document && type != AssignmentType.document) {
+			//remove storage
+		} else if(type == AssignmentType.document && !StringHelper.containsNonWhitespace(assignment.getStorage())) {
+			File newStorage = portfolioFileStorage.generateAssignmentSubDirectory();
+			String newRelativeStorage = portfolioFileStorage.getRelativePath(newStorage);
+			((AssignmentImpl)assignment).setStorage(newRelativeStorage);
+		}
+		
+		AssignmentImpl impl = (AssignmentImpl)assignment;
+		impl.setTitle(title);
+		impl.setSummary(summary);
+		impl.setContent(content);
+		impl.setType(type.name());
+		return assignmentDao.updateAssignment(assignment);
+	}
+
+	@Override
 	public List<Assignment> getAssignments(PortfolioElement element) {
 		if(element.getType() == PortfolioElementType.binder) {
 			return assignmentDao.loadAssignments((BinderRef)element);
@@ -240,6 +263,12 @@ public class PortfolioServiceImpl implements PortfolioService {
 	public Assignment startAssignment(Assignment assignment, Identity author) {
 		Assignment reloadedAssignment = assignmentDao.loadAssignmentByKey(assignment.getKey());
 		if(reloadedAssignment.getAssignmentType() == AssignmentType.essay) {
+			if(reloadedAssignment.getPage() == null) {
+				Section section = reloadedAssignment.getSection();
+				Page page = appendNewPage(author, reloadedAssignment.getTitle(), reloadedAssignment.getSummary(), null, null, section);
+				reloadedAssignment = assignmentDao.startEssayAssignment(reloadedAssignment, page, author);
+			}
+		} else if(reloadedAssignment.getAssignmentType() == AssignmentType.document) {
 			if(reloadedAssignment.getPage() == null) {
 				Section section = reloadedAssignment.getSection();
 				Page page = appendNewPage(author, reloadedAssignment.getTitle(), reloadedAssignment.getSummary(), null, null, section);

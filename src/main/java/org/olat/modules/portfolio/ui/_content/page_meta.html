@@ -57,6 +57,23 @@
 						$r.xssScan($assignment.content)
 					</div>
 					#end
+					
+					#if($assignment.documents && $assignment.documents.size() > 0)
+						<ul class="list-inline">
+						#foreach($document in $assignment.documents)
+							#set($fname = $document.getName())
+							<li class="o_attachment">
+								<a href="$mapperUri/${assignment.key}/$fname" target="_blank">
+									<div class="o_filename">$r.escapeHtml($fname)</div>
+									<div class="o_size">
+										<i class="o_icon o_icon-fw $r.getFiletypeIconCss($fname)"> </i>
+										 $r.formatBytes($document.length())
+									</div>
+								</a>		
+							</li>
+						#end 
+						</ul>
+					#end
 				</div>
 	    	</div>
 		</div>

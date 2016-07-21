@@ -1713,6 +1713,7 @@ create table o_pf_assignment (
    p_title varchar(255) default null,
    p_summary mediumtext,
    p_content mediumtext,
+   p_storage varchar(255) default null,
    fk_section_id bigint not null,
    fk_template_reference_id bigint,
    fk_page_id bigint,

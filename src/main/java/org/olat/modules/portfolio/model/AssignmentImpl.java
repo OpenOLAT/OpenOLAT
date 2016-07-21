@@ -84,6 +84,9 @@ public class AssignmentImpl implements Persistable, ModifiedInfo, CreateInfo, As
 	@Column(name="p_content", nullable=true, insertable=true, updatable=true)
 	private String content;
 	
+	@Column(name="p_storage", nullable=true, insertable=true, updatable=true)
+	private String storage;
+	
 	@ManyToOne(targetEntity=SectionImpl.class,fetch=FetchType.LAZY,optional=false)
 	@JoinColumn(name="fk_section_id", nullable=false, insertable=true, updatable=false)
 	private Section section;
@@ -197,6 +200,14 @@ public class AssignmentImpl implements Persistable, ModifiedInfo, CreateInfo, As
 
 	public void setContent(String content) {
 		this.content = content;
+	}
+
+	public String getStorage() {
+		return storage;
+	}
+
+	public void setStorage(String storage) {
+		this.storage = storage;
 	}
 
 	@Override

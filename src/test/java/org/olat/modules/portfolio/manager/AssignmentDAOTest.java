@@ -61,7 +61,7 @@ public class AssignmentDAOTest extends OlatTestCase {
 		//create assignment
 		List<Section> sections = portfolioService.getSections(binder);
 		Assignment assignment = assignmentDao.createAssignment("Difficult", "Very difficult", "The difficult content",
-				AssignmentType.essay, AssignmentStatus.template, sections.get(0));
+				null, AssignmentType.essay, AssignmentStatus.template, sections.get(0));
 		dbInstance.commitAndCloseSession();
 		Assert.assertNotNull(assignment);
 		Assert.assertNotNull(assignment.getKey());

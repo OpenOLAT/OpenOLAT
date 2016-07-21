@@ -21,11 +21,15 @@ package org.olat.modules.portfolio.manager;
 
 import java.io.File;
 import java.nio.file.Path;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.UUID;
 
 import org.olat.core.commons.modules.bc.FolderConfig;
 import org.olat.core.commons.modules.bc.vfs.OlatRootFolderImpl;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.vfs.VFSContainer;
+import org.olat.modules.portfolio.Assignment;
 import org.olat.modules.portfolio.Media;
 import org.olat.modules.portfolio.MediaLight;
 import org.springframework.beans.factory.InitializingBean;
@@ -41,7 +45,7 @@ import org.springframework.stereotype.Service;
 public class PortfolioFileStorage implements InitializingBean {
 	
 	private File rootDirectory, bcrootDirectory;
-	private File pagesPostersDirectory, binderPostersDirectory, mediaDirectory;
+	private File pagesPostersDirectory, binderPostersDirectory, mediaDirectory, assignmentDirectory;
 	
 	@Override
 	public void afterPropertiesSet() {
@@ -55,6 +59,7 @@ public class PortfolioFileStorage implements InitializingBean {
 		binderPostersDirectory = new File(postersDirectory, "binders");
 		pagesPostersDirectory = new File(postersDirectory, "pages");
 		mediaDirectory = new File(rootDirectory, "artefacts");
+		assignmentDirectory = new File(rootDirectory, "assignments");
 	}
 	
 	protected File getRootDirectory() {
@@ -84,6 +89,58 @@ public class PortfolioFileStorage implements InitializingBean {
 			dir.mkdirs();
 		}
 		return dir;
+	}
+	
+	/**
+	 * Assignment have a directory for them alone.
+	 * 
+	 * @return
+	 */
+	public File generateAssignmentSubDirectory() {
+		String cleanUuid = UUID.randomUUID().toString().replace("-", "");
+		String firstToken = cleanUuid.substring(0, 2).toLowerCase();
+		File parentDir = new File(assignmentDirectory, firstToken);
+		File dir = new File(parentDir, "001");
+		if(!dir.exists()) {
+			dir.mkdirs();
+		} else {
+			String[] children = parentDir.list();
+			Set<String> names = new HashSet<>();
+			for(String child:children) {
+				names.add(child);
+			}
+			
+			for(int i=1; i<1000; i++) {
+				String potentielName = Integer.toString(i);
+				if(potentielName.length() == 1) {
+					potentielName = "00" + potentielName;
+				} else if(potentielName.length() == 2) {
+					potentielName = "0" + potentielName;
+				}
+
+				if(!names.contains(potentielName)) {
+					dir = new File(parentDir, potentielName);
+					dir.mkdirs();
+					break;
+				}
+			}
+		}
+		return dir;
+	}
+	
+	public VFSContainer getAssignmentContainer(Assignment assignment) {
+		if(assignment == null || assignment.getKey() == null
+				|| !StringHelper.containsNonWhitespace(assignment.getStorage())) {
+			return null;
+		}
+		return new OlatRootFolderImpl("/" + assignment.getStorage(), null);
+	}
+	
+	public File getAssignmentDirectory(Assignment assignment) {
+		if(StringHelper.containsNonWhitespace(assignment.getStorage())) {
+			return new File(bcrootDirectory, assignment.getStorage());
+		}
+		return null;
 	}
 	
 	public VFSContainer getMediaContainer(MediaLight media) {

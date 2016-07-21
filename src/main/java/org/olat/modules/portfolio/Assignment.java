@@ -47,6 +47,8 @@ public interface Assignment {
 	
 	public void setAssignmentStatus(AssignmentStatus status);
 	
+	public String getStorage();
+	
 	public AssignmentType getAssignmentType();
 	
 	public Page getPage();

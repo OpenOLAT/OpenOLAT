@@ -17,19 +17,46 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.portfolio;
+package org.olat.modules.portfolio.ui.model;
+
+import java.io.File;
+import java.util.List;
+
+import org.olat.modules.portfolio.Assignment;
 
 /**
  * 
- * Initial date: 12.07.2016<br>
+ * Initial date: 20.07.2016<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public enum AssignmentType {
+public class UserAssignmentInfos {
 	
-	essay,
-	document,
-	slider,
-	matrix
+	private final Assignment assignment;
+	private final List<File> documents;
+	
+	public UserAssignmentInfos(Assignment assignment, List<File> documents) {
+		this.assignment = assignment;
+		this.documents = documents;
+	}
+	
+	public Long getKey() {
+		return assignment.getKey();
+	}
+	
+	public String getType() {
+		return assignment.getAssignmentType().name();
+	}
+	
+	public String getSummary() {
+		return assignment.getSummary();
+	}
+	
+	public String getContent() {
+		return assignment.getContent();
+	}
 
+	public List<File> getDocuments() {
+		return documents;
+	}
 }
