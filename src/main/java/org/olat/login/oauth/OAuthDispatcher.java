@@ -236,7 +236,13 @@ public class OAuthDispatcher implements Dispatcher {
 	}
 	
 	private void error(UserRequest ureq, String message) {
-		ChiefController msgcc = new MessageWindowController(ureq, message);
+		StringBuilder sb = new StringBuilder();
+		sb.append("<h4><i class='o_icon o_icon-fw o_icon_error'> </i>");
+		sb.append(translate(ureq, "error.title"));
+		sb.append("</h4><p>");
+		sb.append(message);
+		sb.append("</p>");
+		ChiefController msgcc = new MessageWindowController(ureq, sb.toString());
 		msgcc.getWindow().dispatchRequest(ureq, true);
 	}
 	

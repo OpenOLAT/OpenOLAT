@@ -115,3 +115,11 @@
 	}
 }
 
+/* special wrapper for MessageWindowController */
+body.o_message #o_main_center_content_inner {
+	min-height: 150px; 
+	max-width: 500px;
+	padding: 15px;
+	margin:60px auto;
+}
+
