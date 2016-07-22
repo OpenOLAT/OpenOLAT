@@ -300,6 +300,7 @@ $o-coursesite-catalog-space-xs 	: $padding-xs-vertical !default;
 $o-coursesite-catalog-border 	: $brand-primary !default;
 $o-coursesite-meta-title-color	: $brand-primary !default;
 $o-coursesite-meta-author-color	: $state-success-text !default;
+$o-coursesite-meta-title-font-size	: ceil(($font-size-base * 2.6)) !default; /* same as h1 default size: 36px */
 $o-coursesite-start-color		: $btn-primary-color !default;
 $o-coursesite-start-bg			: $btn-primary-bg !default;
 $o-coursesite-start-border		: darken($o-coursesite-start-bg, 5%) !default;

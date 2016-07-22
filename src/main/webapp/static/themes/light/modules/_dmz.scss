@@ -212,7 +212,11 @@ body.o_dmz {
 		}
 		
 		.btn-default.o_sel_auth_adfs {
-			@include button-variant(#fff, #1a1a1a, darken(#1a1a1a, 5%));
+			@include button-variant(#fff, $brand-primary, darken($brand-primary, 5%));
+		}
+		
+		.btn-default.o_sel_auth_OpenIDConnect {
+			@include button-variant(#fff, $brand-primary, darken($brand-primary, 5%));
 		}
 	}
 }

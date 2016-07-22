@@ -48,10 +48,12 @@ import org.olat.core.util.WebappHelper;
 
 /**
  * 
- * Displays a simple message to the user
+ * Displays a simple error message to the user and a link to the loginpage. The
+ * message is also logged to the log file
  * 
  * <P>
- * Initial Date:  05.11.2007 <br>
+ * Initial Date: 05.11.2007 <br>
+ * 
  * @author Lavinia Dumitrescu
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
@@ -80,7 +82,7 @@ public class MessageWindowController extends DefaultChiefController {
 		msg.contextPut("enforceTopFrame", new Boolean(securityModule.isForceTopFrame()));
 		msg.contextPut("buildversion", Settings.getVersion());
 		msg.contextPut("detailedmessage", message);					
-		if(supportEmail == null) {
+		if(supportEmail != null) {
 			msg.contextPut("supportEmail", supportEmail);
 		}
 
