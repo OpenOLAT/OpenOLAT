@@ -186,6 +186,21 @@ final class PreviewCourseGroupManager extends BasicManager implements CourseGrou
 	}
 
 	@Override
+	public boolean isIdentityAnyCourseCoach(Identity identity) {
+		return isCoach;
+	}
+
+	@Override
+	public boolean isIdentityAnyCourseAdministrator(Identity identity) {
+		return isCourseAdmin;
+	}
+
+	@Override
+	public boolean isIdentityAnyCourseParticipant(Identity identity) {
+		return false;
+	}
+
+	@Override
 	public boolean hasBusinessGroups() {
 		return groups != null && groups.size() > 0;
 	}

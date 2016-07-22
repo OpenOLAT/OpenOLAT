@@ -448,6 +448,11 @@ public class RepositoryServiceImpl implements RepositoryService {
 	}
 
 	@Override
+	public boolean hasRole(Identity identity, boolean followBusinessGroups, String... roles) {
+		return reToGroupDao.hasRole(identity, followBusinessGroups, roles);
+	}
+
+	@Override
 	public boolean isParticipantAllowedToLeave(RepositoryEntry re) {
 		boolean allowed = false;
 		RepositoryEntryAllowToLeaveOptions setting = re.getAllowToLeaveOption();

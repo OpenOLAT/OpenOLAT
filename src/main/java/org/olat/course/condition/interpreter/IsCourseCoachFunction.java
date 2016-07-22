@@ -50,6 +50,7 @@ public class IsCourseCoachFunction extends AbstractFunction {
 	/**
 	 * @see com.neemsoft.jmep.FunctionCB#call(java.lang.Object[])
 	 */
+	@Override
 	public Object call(Object[] inStack) {
 		/*
 		 * expression check only if cev != null
@@ -59,9 +60,15 @@ public class IsCourseCoachFunction extends AbstractFunction {
 			// return a valid value to continue with condition evaluation test
 			return defaultValue();
 		}
-
-		//CourseGroupManager cgm = getUserCourseEnv().getCourseEnvironment().getCourseGroupManager();
-		boolean isCourseCoach = this.getUserCourseEnv().isCoach();// cgm.isIdentityCourseCoach(ident);
+		boolean isCourseCoach;
+		if(inStack != null && inStack.length > 0
+				&& inStack[0] instanceof String
+				&& AnyCourseVariable.name.equalsIgnoreCase((String)inStack[0])) {
+			//administrator of any course
+			isCourseCoach = getUserCourseEnv().isCoachOfAnyCourse();
+		} else {
+			isCourseCoach = getUserCourseEnv().isCoach();
+		}
 		if (log.isDebug()) {
 			Identity ident = getUserCourseEnv().getIdentityEnvironment().getIdentity();
 			log.debug("identity "+ident.getName()+", coursecoach:"+isCourseCoach+", in course "+getUserCourseEnv().getCourseEnvironment().getCourseResourceableId());
@@ -69,6 +76,7 @@ public class IsCourseCoachFunction extends AbstractFunction {
 		return isCourseCoach ? ConditionInterpreter.INT_TRUE: ConditionInterpreter.INT_FALSE;
 	}
 
+	@Override
 	protected Object defaultValue() {
 		return ConditionInterpreter.INT_TRUE;
 	}

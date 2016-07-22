@@ -290,6 +290,21 @@ public class PersistingCourseGroupManager extends BasicManager implements Course
 		// shortcut here...
 		return repositoryService.hasRole(identity, getCourseEntry(), GroupRoles.owner.name());
 	}
+	
+	@Override
+	public boolean isIdentityAnyCourseAdministrator(Identity identity) {
+		return repositoryService.hasRole(identity, false, GroupRoles.owner.name());
+	}
+
+	@Override
+	public boolean isIdentityAnyCourseCoach(Identity identity) {
+		return repositoryService.hasRole(identity, true, GroupRoles.coach.name());
+	}
+
+	@Override
+	public boolean isIdentityAnyCourseParticipant(Identity identity) {
+		return repositoryService.hasRole(identity, true, GroupRoles.participant.name());
+	}
 
 	@Override
 	public void deleteCourseGroupmanagement() {
