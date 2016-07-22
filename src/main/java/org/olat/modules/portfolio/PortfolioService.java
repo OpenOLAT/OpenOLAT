@@ -313,6 +313,14 @@ public interface PortfolioService {
 	public List<Page> searchOwnedPages(IdentityRef owner, String searchString);
 	
 	/**
+	 * List the pages of the specified user in deleted mode.
+	 * 
+	 * @param owner
+	 * @return
+	 */
+	public List<Page> searchDeletedPages(IdentityRef owner, String searchString);
+	
+	/**
 	 * 
 	 * @param title
 	 * @param summary

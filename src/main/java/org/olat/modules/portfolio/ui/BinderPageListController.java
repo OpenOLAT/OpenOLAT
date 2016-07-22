@@ -74,10 +74,11 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class BinderPageListController extends AbstractPageListController  {
 	
-	private Link newEntryLink;
+	private Link newSectionLink, newEntryLink;
 	private FormLink previousSectionLink, nextSectionLink, showAllSectionsLink;
 	
 	private CloseableModalController cmc;
+	private SectionEditController newSectionCtrl;
 	private PageMetadataEditController newPageCtrl;
 	private AssignmentEditController newAssignmentCtrl;
 
@@ -103,6 +104,12 @@ public class BinderPageListController extends AbstractPageListController  {
 			newEntryLink = LinkFactory.createToolLink("new.page", translate("create.new.page"), this);
 			newEntryLink.setIconLeftCSS("o_icon o_icon-lg o_icon_new_portfolio");
 			stackPanel.addTool(newEntryLink, Align.right);
+		}
+		
+		if(secCallback.canAddSection()) {
+			newSectionLink = LinkFactory.createToolLink("new.section", translate("create.new.section"), this);
+			newSectionLink.setIconLeftCSS("o_icon o_icon-lg o_icon_new_portfolio");
+			stackPanel.addTool(newSectionLink, Align.right);
 		}
 	}
 
@@ -289,7 +296,9 @@ public class BinderPageListController extends AbstractPageListController  {
 	public void event(UserRequest ureq, Component source, Event event) {
 		if(newEntryLink == source) {
 			doCreateNewPage(ureq, null);
-		}
+		} else if(newSectionLink == source) {
+			doCreateNewSection(ureq);
+		} 
 		super.event(ureq, source, event);
 	}
 	
@@ -319,7 +328,7 @@ public class BinderPageListController extends AbstractPageListController  {
 	
 	@Override
 	public void event(UserRequest ureq, Controller source, Event event) {
-		if(newPageCtrl == source || newAssignmentCtrl == source) {
+		if(newSectionCtrl == source || newPageCtrl == source || newAssignmentCtrl == source) {
 			if(event == Event.DONE_EVENT) {
 				loadModel(null);
 				fireEvent(ureq, Event.CHANGED_EVENT);
@@ -334,9 +343,11 @@ public class BinderPageListController extends AbstractPageListController  {
 	
 	private void cleanUp() {
 		removeAsListenerAndDispose(newAssignmentCtrl);
+		removeAsListenerAndDispose(newSectionCtrl);
 		removeAsListenerAndDispose(newPageCtrl);
 		removeAsListenerAndDispose(cmc);
 		newAssignmentCtrl = null;
+		newSectionCtrl = null;
 		newPageCtrl = null;
 		cmc = null;
 	}
@@ -381,6 +392,18 @@ public class BinderPageListController extends AbstractPageListController  {
 		previousSectionLink.setVisible(visible);
 		nextSectionLink.setVisible(visible);
 		showAllSectionsLink.setVisible(visible);
+	}
+	
+	private void doCreateNewSection(UserRequest ureq) {
+		if(newSectionCtrl != null) return;
+		
+		newSectionCtrl = new SectionEditController(ureq, getWindowControl(), binder);
+		listenTo(newSectionCtrl);
+		
+		String title = translate("create.new.section");
+		cmc = new CloseableModalController(getWindowControl(), null, newSectionCtrl.getInitialComponent(), true, title, true);
+		listenTo(cmc);
+		cmc.activate();
 	}
 	
 	private void doCreateNewPage(UserRequest ureq, Section preSelectedSection) {

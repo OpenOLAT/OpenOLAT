@@ -65,6 +65,7 @@ public class PortfolioHomeController extends BasicController implements Activate
 	private SharedItemsController sharedWithMeCtrl;
 	private BinderListController myPortfolioListCtrl;
 	private MySharedItemsController mySharedItemsCtrl;
+	private DeletedPageListController deletedItemsCtrl;
 	
 	@Autowired
 	private PortfolioService portfolioService;
@@ -126,7 +127,7 @@ public class PortfolioHomeController extends BasicController implements Activate
 		} else if(editLastUsedBinderLink == source) {
 			doOpenLastEditedBindersEntry(ureq);
 		} else if(goToTrashLink == source) {
-			showWarning("not.implemented");
+			doDeletedPages(ureq);
 		}
 	}
 	
@@ -246,6 +247,16 @@ public class PortfolioHomeController extends BasicController implements Activate
 			BinderListController ctrl = doOpenMyBinders(ureq);
 			ctrl.activate(ureq, entries, null);
 		}
+	}
+	
+	private DeletedPageListController doDeletedPages(UserRequest ureq) {
+		OLATResourceable bindersOres = OresHelper.createOLATResourceableInstance("Trash", 0l);
+		WindowControl swControl = addToHistory(ureq, bindersOres, null);
+		BinderSecurityCallback secCallback = BinderSecurityCallbackFactory.getCallbackForMyPageList();
+		deletedItemsCtrl = new DeletedPageListController(ureq, swControl, stackPanel, secCallback);
+		listenTo(deletedItemsCtrl);
+		stackPanel.pushController(translate("deleted.pages.breadcrump"), deletedItemsCtrl);
+		return deletedItemsCtrl;
 	}
 
 	private void doNewEntry(UserRequest ureq) {

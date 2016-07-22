@@ -54,7 +54,6 @@ import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
-import org.olat.core.util.StringHelper;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.modules.portfolio.AssessmentSection;
 import org.olat.modules.portfolio.Assignment;
@@ -142,9 +141,6 @@ implements Activateable2, TooledController, FlexiTableComponentDelegate {
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(PageCols.date, "select"));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(PageCols.status, new StatusCellRenderer()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(PageCols.publicationDate, "select"));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, PageCols.open, null));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, PageCols.newEntry, null));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, PageCols.newAssignment, null));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, PageCols.comment, null));
 	
 		model = new PageListDataModel(columnsModel);
@@ -197,8 +193,17 @@ implements Activateable2, TooledController, FlexiTableComponentDelegate {
 				}
 			}	
 		}
+		if(pageRow.getNewEntryLink() != null) {
+			components.add(pageRow.getNewEntryLink().getComponent());
+		}
 		if(pageRow.getNewFloatingEntryLink() != null) {
 			components.add(pageRow.getNewFloatingEntryLink().getComponent());
+		}
+		if(pageRow.getNewAssignmentLink() != null) {
+			components.add(pageRow.getNewAssignmentLink().getComponent());
+		}
+		if(pageRow.getOpenFormItem() != null) {
+			components.add(pageRow.getOpenFormItem().getComponent());
 		}
 		return components;
 	}
@@ -488,7 +493,6 @@ implements Activateable2, TooledController, FlexiTableComponentDelegate {
 		pageCtrl = new PageRunController(ureq, swControl, stackPanel, secCallback, reloadedPage);
 		listenTo(pageCtrl);
 		
-		String displayName = StringHelper.escapeHtml(reloadedPage.getTitle());
-		stackPanel.pushController(displayName, pageCtrl);
+		stackPanel.pushController(reloadedPage.getTitle(), pageCtrl);
 	}
 }

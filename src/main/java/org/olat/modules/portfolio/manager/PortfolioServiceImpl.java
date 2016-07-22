@@ -620,6 +620,14 @@ public class PortfolioServiceImpl implements PortfolioService {
 		List<Page> pages = pageDao.getOwnedPages(owner, searchString);
 		return pages;
 	}
+	
+	
+
+	@Override
+	public List<Page> searchDeletedPages(IdentityRef owner, String searchString) {
+		List<Page> pages = pageDao.getDeletedPages(owner, searchString);
+		return pages;
+	}
 
 	@Override
 	public Page appendNewPage(Identity owner, String title, String summary, String imagePath, PageImageAlign align, SectionRef section) {

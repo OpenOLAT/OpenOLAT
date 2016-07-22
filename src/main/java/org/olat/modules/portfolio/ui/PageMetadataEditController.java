@@ -258,7 +258,7 @@ public class PageMetadataEditController extends FormBasicController {
 					for (int i = 0; i < numOfSections; i++) {
 						Long sectionKey = sections.get(i).getKey();
 						theKeys[i] = sectionKey.toString();
-						theValues[i] = (i + 1) + ". " + StringHelper.escapeHtml(sections.get(i).getTitle());
+						theValues[i] = (i + 1) + ". " + sections.get(i).getTitle();
 						if (currentSection != null && currentSection.getKey().equals(sectionKey)) {
 							selectedKey = theKeys[i];
 						}

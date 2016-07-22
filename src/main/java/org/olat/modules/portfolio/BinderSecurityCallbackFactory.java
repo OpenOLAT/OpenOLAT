@@ -41,6 +41,14 @@ public class BinderSecurityCallbackFactory {
 		return new BinderSecurityCallbackImpl(true, false);
 	}
 	
+	/**
+	 * The callback for the deleted pages doens't allow anything.
+	 * @return
+	 */
+	public static final BinderSecurityCallback getCallbackForDeletedPages() {
+		return new BinderSecurityCallbackForDeletedPages();
+	}
+	
 	public static final BinderSecurityCallback getReadOnlyCallback() {
 		return new BinderSecurityCallbackImpl(false, false);
 	}
@@ -67,6 +75,11 @@ public class BinderSecurityCallbackFactory {
 	 */
 	public static final BinderSecurityCallback getCallbackForBusinessGroup() {
 		return new BinderSecurityCallbackImpl(true, false);
+	}
+
+	
+	private static class BinderSecurityCallbackForDeletedPages extends DefaultBinderSecurityCallback {
+		//all false;	
 	}
 
 	/**

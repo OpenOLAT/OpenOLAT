@@ -108,7 +108,13 @@ public class PageListDataModel extends DefaultFlexiTableDataModel<PageRow>
 	public Object getValueAt(PageRow page, int col) {
 		switch(PageCols.values()[col]) {
 			case key: return page.getKey();
-			case title: return page.getTitle();
+			case title: {
+				String title = page.getTitle();
+				if(title == null && page.getSection() != null) {
+					title = page.getSection().getTitle();
+				}
+				return title;
+			}
 			case date: {
 				if(page.getPage() != null) {
 					return page.getPage().getCreationDate();
@@ -123,9 +129,6 @@ public class PageListDataModel extends DefaultFlexiTableDataModel<PageRow>
 			}
 			case publicationDate: return page.getLastPublicationDate();
 			case status: return page.getPageStatus();
-			case open: return page.getOpenFormItem();
-			case newEntry: return page.getNewEntryLink();
-			case newAssignment: return page.getNewAssignmentLink();
 			case comment: return page.getCommentFormLink();
 		}
 		return null;
@@ -142,9 +145,6 @@ public class PageListDataModel extends DefaultFlexiTableDataModel<PageRow>
 		status("table.header.status"),
 		date("table.header.date"),
 		publicationDate("table.header.publication.date"),
-		open("table.header.open"),
-		newEntry("action"),
-		newAssignment("action"),
 		comment("comment.title");
 		
 		private final String i18nKey;

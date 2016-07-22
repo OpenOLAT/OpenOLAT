@@ -92,6 +92,10 @@ public class BinderConfiguration {
 	public static BinderConfiguration createMyPagesConfig() {
 		return new BinderConfiguration(false, false, false, true, true);
 	}
+	
+	public static BinderConfiguration createDeletedPagesConfig() {
+		return new BinderConfiguration(false, false, false, false, false);
+	}
 
 	public static BinderConfiguration createConfig(Binder binder) {
 		boolean withScore = false;

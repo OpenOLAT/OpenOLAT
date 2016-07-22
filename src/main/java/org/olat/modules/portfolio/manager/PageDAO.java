@@ -40,6 +40,7 @@ import org.olat.modules.portfolio.Page;
 import org.olat.modules.portfolio.PageBody;
 import org.olat.modules.portfolio.PageImageAlign;
 import org.olat.modules.portfolio.PagePart;
+import org.olat.modules.portfolio.PageStatus;
 import org.olat.modules.portfolio.PortfolioRoles;
 import org.olat.modules.portfolio.Section;
 import org.olat.modules.portfolio.SectionRef;
@@ -183,6 +184,33 @@ public class PageDAO {
 		  .append("     inner join pageMember.identity as ident on (ident.key=:ownerKey and pageMember.role='").append(PortfolioRoles.owner.name()).append("')")
 		  .append("  	where pageMember.group.key=page.baseGroup.key or pageMember.group.key=binder.baseGroup.key")
 		  .append(" )");
+		if(StringHelper.containsNonWhitespace(searchString)) {
+			searchString = makeFuzzyQueryString(searchString);
+			sb.append(" and (");
+			appendFuzzyLike(sb, "page.title", "searchString", dbInstance.getDbVendor());
+			sb.append(" or ");
+			appendFuzzyLike(sb, "page.summary", "searchString", dbInstance.getDbVendor());
+			sb.append(")");
+		}
+		sb.append(" order by page.creationDate desc");
+		
+		TypedQuery<Page> query = dbInstance.getCurrentEntityManager()
+			.createQuery(sb.toString(), Page.class)
+			.setParameter("ownerKey", owner.getKey());
+		if(StringHelper.containsNonWhitespace(searchString)) {
+			query.setParameter("searchString", searchString.toLowerCase());
+		}
+		return query.getResultList();
+	}
+	
+	public List<Page> getDeletedPages(IdentityRef owner, String searchString) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select page from pfpage as page")
+		  .append(" inner join fetch page.body as body")
+		  .append(" inner join fetch page.baseGroup as bGroup")
+		  .append(" inner join bGroup.members as membership")
+		  .append(" where membership.identity.key=:ownerKey and membership.role='").append(PortfolioRoles.owner.name()).append("'")
+		  .append(" and page.section.key is null and page.status='").append(PageStatus.deleted.name()).append("'");
 		if(StringHelper.containsNonWhitespace(searchString)) {
 			searchString = makeFuzzyQueryString(searchString);
 			sb.append(" and (");

@@ -35,6 +35,7 @@
 	var startTime, endTime;
 	var data, statusTranslations;
 	var slideDelta = (183 * 24 * 60 * 60 * 1000);//six month in milliseconds
+	var sliding = false;
 
 	createGraph = function($obj, settings) {
 		
@@ -108,26 +109,34 @@
 		});
 	}
 	
-	
-	
 	slideUp = function() {
+		if(sliding) return;
+		
+		sliding = true;
 		endTime = endTime + slideDelta;
 		startTime = startTime + slideDelta;
 		updateTimeline(true);
 	}
 	
 	slideDown = function() {
+		if(sliding) return;
+		
+		sliding = true;
 		endTime = endTime - slideDelta;
 		startTime = startTime - slideDelta;
 		updateTimeline(false);
 	}
 	
 	updateTimeline = function(up) {
-		curveY.domain([startTime, endTime]);
-		y.domain([startTime, endTime]);
+		try {
+			curveY.domain([startTime, endTime]);
+			y.domain([startTime, endTime]);
 
-		drawAxis();
-		drawDots(up);
+			drawAxis();
+			drawDots(up);
+		} catch(e) {
+			if(window.console) console.log(e);
+		}
 	}
 	
 	drawAxis = function() {
@@ -150,7 +159,10 @@
 				};
 			})
 			//.attr("cx", function(d) { return lineX(curvedX(curveY(d.time))); })
-		   	.attr("cy", function(d) { return y(d.time); });
+		   	.attr("cy", function(d) { return y(d.time); })
+		   	.each("end", function() {
+		   		sliding = false;
+		   	});
 	}
   
 	timelineItems = function($obj, settings) {
@@ -190,9 +202,12 @@
 		dots.enter()
 		   .append('g')
 		   .append("circle")
-		   .attr("class", function(d) { return "dot o_pf_status_" + d.status; })
-		   .attr("r", 10)
+		   .attr("r", function(d) { return (7 + Math.floor(Math.random() * 5)); })
+		   //.append("ellipse")
+		   //.attr("rx", function(d) { return (7 + Math.floor(Math.random() * 5)); })
+		   //.attr("ry", function(d) { return (7 + Math.floor(Math.random() * 5)); })
 		   .attr("id", idKey)
+		   .attr("class", function(d) { return "dot o_pf_status_" + d.status; })
 		   .attr("cx", function(d) { return lineX(curvedX(curveY(d.time))); })
 		   .attr("cy", function(d) { return y(d.time); });
 		   

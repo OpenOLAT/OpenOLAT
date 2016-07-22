@@ -133,6 +133,14 @@ public class BinderDAO {
 			Section currentSection = templateToSectionsMap.remove(templateSection);
 			if(currentSection != null) {
 				currentSections.add(currentSection);
+				
+				//sync meta-data of section
+				currentSection.setTitle(templateSection.getTitle());
+				currentSection.setDescription(templateSection.getDescription());
+				currentSection.setBeginDate(templateSection.getBeginDate());
+				currentSection.setEndDate(templateSection.getEndDate());
+				currentSection = dbInstance.getCurrentEntityManager().merge(currentSection);
+				
 				syncAssignments(templateSection, currentSection);
 			} else {
 				Section section = createInternalSection(binder, templateSection);

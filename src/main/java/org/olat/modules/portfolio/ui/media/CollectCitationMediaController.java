@@ -130,8 +130,8 @@ public class CollectCitationMediaController extends FormBasicController implemen
 		categoriesEl.setElementCssClass("o_sel_ep_tagsinput");
 		categoriesEl.setAllowDuplicates(false);
 		
-		initMetadataForm(formLayout, listener, ureq);
-		initCitationForm(formLayout, listener, ureq);
+		initMetadataForm(formLayout);
+		initCitationForm(formLayout);
 		
 		String date = Formatter.getInstance(getLocale()).formatDate(new Date());
 		uifactory.addStaticTextElement("artefact.collect.date", "artefact.collect.date", date, formLayout);
@@ -152,7 +152,7 @@ public class CollectCitationMediaController extends FormBasicController implemen
 	private TextElement urlEl, sourceEl, languageEl;
 	
 	
-	protected void initMetadataForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+	protected void initMetadataForm(FormItemContainer formLayout) {
 		String creators = (mediaReference != null ? mediaReference.getCreators() : null);
 		creatorsEl = uifactory.addTextElement("creator", "mf.creator", -1, creators, formLayout);
 		
@@ -176,7 +176,7 @@ public class CollectCitationMediaController extends FormBasicController implemen
 	
 	private TextElement editionEl, volumeEl, seriesEl, publicationTitleEl, issueEl, pagesEl, institutionEl;
 
-	protected void initCitationForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+	protected void initCitationForm(FormItemContainer formLayout) {
 		
 		String[] typeKeys = new String[CitationSourceType.values().length];
 		String[] typeValues = new String[CitationSourceType.values().length];

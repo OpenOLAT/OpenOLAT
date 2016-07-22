@@ -32,7 +32,7 @@ import org.olat.modules.portfolio.manager.MediaDAO;
 import org.olat.modules.portfolio.ui.editor.InteractiveAddPageElementHandler;
 import org.olat.modules.portfolio.ui.editor.PageElementAddController;
 import org.olat.modules.portfolio.ui.media.CitationMediaController;
-import org.olat.modules.portfolio.ui.media.CollectTextMediaController;
+import org.olat.modules.portfolio.ui.media.CollectCitationMediaController;
 import org.olat.portfolio.model.artefacts.AbstractArtefact;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -88,6 +88,6 @@ public class CitationHandler extends AbstractMediaHandler implements Interactive
 
 	@Override
 	public PageElementAddController getAddPageElementController(UserRequest ureq, WindowControl wControl) {
-		return new CollectTextMediaController(ureq, wControl);
+		return new CollectCitationMediaController(ureq, wControl);
 	}
 }
