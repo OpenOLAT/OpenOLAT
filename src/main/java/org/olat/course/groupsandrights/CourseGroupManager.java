@@ -131,6 +131,31 @@ public interface CourseGroupManager {
 	 */
 	public boolean isIdentityCourseParticipant(Identity identity);
 	
+	
+	/**
+	 * Checks if user is coach in any course.
+	 * 
+	 * @param identity
+	 * @return true if user is coach
+	 */
+	public boolean isIdentityAnyCourseCoach(Identity identity);
+
+	/**
+	 * Checks if user is course administrator in any course.
+	 * 
+	 * @param identity
+	 * @return boolean
+	 */
+	public boolean isIdentityAnyCourseAdministrator(Identity identity);
+	
+	/**
+	 * Checks if user is participant in any course.
+	 * 
+	 * @param identity
+	 * @return boolean
+	 */
+	public boolean isIdentityAnyCourseParticipant(Identity identity);
+	
 	/**
 	 * @return True if there are some business groups linked to this resource
 	 */

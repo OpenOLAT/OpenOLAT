@@ -128,6 +128,44 @@ public class RepositoryEntryRelationDAO {
 		return count == null ? false : count.intValue() > 0;
 	}
 	
+	/**
+	 * Has the specified roles in the repository
+	 * 
+	 * @param identity The identity
+	 * @param followBusinessGroups If the query must includes the business groups or not.
+	 * @param roles The roles to query
+	 * @return
+	 */
+	public boolean hasRole(IdentityRef identity, boolean followBusinessGroups, String... roles) {
+		if(identity == null) return false;
+		List<String> roleList = GroupRoles.toList(roles);
+
+		StringBuilder sb = new StringBuilder();
+		sb.append("select membership.key from ").append(RepositoryEntry.class.getName()).append(" as v")
+		  .append(" inner join v.groups as relGroup ");
+		if(!followBusinessGroups) {
+			sb.append(" on relGroup.defaultGroup=true");
+		}
+		sb.append(" inner join relGroup.group as baseGroup")
+		  .append(" inner join baseGroup.members as membership")
+		  .append(" where membership.identity.key=:identityKey");
+		if(roleList.size() > 0) {
+			sb.append(" and membership.role in (:roles)");
+		}
+		
+		TypedQuery<Long> query = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Long.class)
+				.setFirstResult(0)
+				.setMaxResults(1)
+				.setParameter("identityKey", identity.getKey());
+		if(roleList.size() > 0) {
+			query.setParameter("roles", roleList);
+		}
+		
+		List<Long> first = query.getResultList();
+		return first != null && first.size() > 0 && first.get(0) != null && first.get(0).longValue() >= 0l;
+	}
+	
 	public void addRole(Identity identity, RepositoryEntryRef re, String role) {
 		Group group = getDefaultGroup(re);
 		groupDao.addMembership(group, identity, role);

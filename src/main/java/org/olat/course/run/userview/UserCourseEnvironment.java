@@ -61,14 +61,45 @@ public interface UserCourseEnvironment {
 	
 	public ScoreAccounting getScoreAccounting();
 	
-
+	/**
+	 * Is admin of the course, as administrator in OpenOLAT, resource manager
+	 * or owner of the course.
+	 * @return
+	 */
 	public boolean isAdmin();
 	
+	/**
+	 * Is a coach of the course, within the course as in relation of a group.
+	 * @return
+	 */
 	public boolean isCoach();
 
+	/**
+	 * Is a participant of the course, within the course as in relation of a group.
+	 * @return
+	 */
 	public boolean isParticipant();
 	
 	public boolean isIdentityInCourseGroup(Long groupKey);
+	
+	/**
+	 * Is administrator of some courses (as owner, OpenOLAT administrator or institutional resource manager).
+	 * @return
+	 */
+	public boolean isAdminOfAnyCourse();
+	
+	/**
+	 * Is coach of some course.
+	 * @return
+	 */
+	public boolean isCoachOfAnyCourse();
+
+	/**
+	 * Is participant of some course.
+	 * @return
+	 */
+	public boolean isParticipantOfAnyCourse();
+	
 	
 	public RepositoryEntryLifecycle getLifecycle();
 	

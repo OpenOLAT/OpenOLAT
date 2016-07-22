@@ -63,9 +63,8 @@ public class UserCourseEnvironmentImpl implements UserCourseEnvironment {
 	
 	private final WindowControl windowControl;
 	
-	private Boolean coach;
-	private Boolean admin;
-	private Boolean participant;
+	private Boolean admin, coach, participant;
+	private Boolean adminAnyCourse, coachAnyCourse, participantAnyCourse;
 	
 	private Boolean certification;
 	
@@ -167,6 +166,44 @@ public class UserCourseEnvironmentImpl implements UserCourseEnvironment {
 		boolean partLazy = cgm.isIdentityCourseParticipant(identityEnvironment.getIdentity());
 		participant = new Boolean(partLazy);
 		return partLazy;
+	}
+
+	@Override
+	public boolean isAdminOfAnyCourse() {
+		if(adminAnyCourse != null) {
+			return adminAnyCourse.booleanValue();
+		}
+
+		CourseGroupManager cgm = courseEnvironment.getCourseGroupManager();
+		boolean adminLazy = identityEnvironment.getRoles().isOLATAdmin()
+				|| identityEnvironment.getRoles().isInstitutionalResourceManager()
+				|| cgm.isIdentityAnyCourseAdministrator(identityEnvironment.getIdentity());
+		adminAnyCourse = new Boolean(adminLazy);
+		return adminLazy;
+	}
+
+	@Override
+	public boolean isCoachOfAnyCourse() {
+		if(coachAnyCourse != null) {
+			return coachAnyCourse.booleanValue();
+		}
+
+		CourseGroupManager cgm = courseEnvironment.getCourseGroupManager();
+		boolean coachLazy = cgm.isIdentityAnyCourseCoach(identityEnvironment.getIdentity());
+		coachAnyCourse = new Boolean(coachLazy);
+		return coachLazy;
+	}
+
+	@Override
+	public boolean isParticipantOfAnyCourse() {
+		if(participantAnyCourse != null) {
+			return participantAnyCourse.booleanValue();
+		}
+
+		CourseGroupManager cgm = courseEnvironment.getCourseGroupManager();
+		boolean participantLazy = cgm.isIdentityAnyCourseParticipant(identityEnvironment.getIdentity());
+		participantAnyCourse = new Boolean(participantLazy);
+		return participantLazy;
 	}
 
 	@Override
