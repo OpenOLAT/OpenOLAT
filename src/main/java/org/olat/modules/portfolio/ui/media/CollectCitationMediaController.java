@@ -24,11 +24,15 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.olat.core.commons.modules.bc.meta.MetaInfoController;
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.TextBoxListElement;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
+import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
@@ -37,9 +41,12 @@ import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
+import org.olat.modules.portfolio.CitationSourceType;
 import org.olat.modules.portfolio.Media;
 import org.olat.modules.portfolio.PortfolioService;
 import org.olat.modules.portfolio.handler.CitationHandler;
+import org.olat.modules.portfolio.manager.CitationXStream;
+import org.olat.modules.portfolio.model.CitationXml;
 import org.olat.modules.portfolio.model.MediaPart;
 import org.olat.modules.portfolio.ui.PortfolioHomeController;
 import org.olat.modules.portfolio.ui.editor.AddElementInfos;
@@ -48,6 +55,15 @@ import org.olat.modules.portfolio.ui.editor.PageElementAddController;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
+ * 
+ * itemType
+ * creators, edition, volume, series
+ * 
+ * webpage: authorString, title, url<br>
+ * book: authorString, title, volume, series, edition, place, publisher, date, url<br>
+ * journalArticle: authorString, title, publicationTitle, issue, date, pages, url<br>
+ * report: title, place, institution, date, url
+ * film: authorString, title, date, url
  * 
  * Initial date: 18.07.2016<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
@@ -58,7 +74,8 @@ public class CollectCitationMediaController extends FormBasicController implemen
 	private TextElement titleEl;
 	private TextElement descriptionEl, textEl;
 	private TextBoxListElement categoriesEl;
-
+	
+	private CitationXml citation;
 	private Media mediaReference;
 	private Map<String,String> categories = new HashMap<>();
 	
@@ -73,8 +90,10 @@ public class CollectCitationMediaController extends FormBasicController implemen
 	public CollectCitationMediaController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
 		setTranslator(Util.createPackageTranslator(PortfolioHomeController.class, getLocale(), getTranslator()));
+		setTranslator(Util.createPackageTranslator(MetaInfoController.class, getLocale(), getTranslator()));
 		businessPath = "[HomeSite:" + getIdentity().getKey() + "][PortfolioV2:0][MediaCenter:0]";
 		initForm(ureq);
+		updateCitationFieldsVisibility();
 	}
 	
 	public Media getMediaReference() {
@@ -111,6 +130,9 @@ public class CollectCitationMediaController extends FormBasicController implemen
 		categoriesEl.setElementCssClass("o_sel_ep_tagsinput");
 		categoriesEl.setAllowDuplicates(false);
 		
+		initMetadataForm(formLayout, listener, ureq);
+		initCitationForm(formLayout, listener, ureq);
+		
 		String date = Formatter.getInstance(getLocale()).formatDate(new Date());
 		uifactory.addStaticTextElement("artefact.collect.date", "artefact.collect.date", date, formLayout);
 
@@ -123,6 +145,91 @@ public class CollectCitationMediaController extends FormBasicController implemen
 		formLayout.add(buttonsCont);
 		uifactory.addFormSubmitButton("save", "save", buttonsCont);
 		uifactory.addFormCancelButton("cancel", buttonsCont, ureq, getWindowControl());
+	}
+	
+	private TextElement creatorsEl, placeEl, publisherEl;
+	//date
+	private TextElement urlEl, sourceEl, languageEl;
+	
+	
+	protected void initMetadataForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		String creators = (mediaReference != null ? mediaReference.getCreators() : null);
+		creatorsEl = uifactory.addTextElement("creator", "mf.creator", -1, creators, formLayout);
+		
+		String place = (mediaReference != null ? mediaReference.getPlace() : null);
+		placeEl = uifactory.addTextElement("place", "mf.city", -1, place, formLayout);
+
+		String publisherVal = (mediaReference != null ? mediaReference.getPublisher() : null);
+		publisherEl = uifactory.addTextElement("publisher", "mf.publisher", -1, publisherVal, formLayout);
+
+		String url = (mediaReference != null ? mediaReference.getUrl() : null);
+		urlEl = uifactory.addTextElement("url", "mf.url", -1, url, formLayout);
+
+		String source = (mediaReference != null ? mediaReference.getSource() : null);
+		sourceEl = uifactory.addTextElement("source", "mf.source", -1, source, formLayout);
+
+		String language = (mediaReference != null ? mediaReference.getLanguage() : null);
+		languageEl = uifactory.addTextElement("language", "mf.language", -1, language, formLayout);
+	}
+	
+	private SingleSelection sourceTypeEl;
+	
+	private TextElement editionEl, volumeEl, seriesEl, publicationTitleEl, issueEl, pagesEl, institutionEl;
+
+	protected void initCitationForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		
+		String[] typeKeys = new String[CitationSourceType.values().length];
+		String[] typeValues = new String[CitationSourceType.values().length];
+		int i = 0;
+		for(CitationSourceType type : CitationSourceType.values()) {
+			typeKeys[i] = type.name();
+			typeValues[i++] = translate("mf.sourceType." + type.name());
+		}
+		
+		sourceTypeEl = uifactory.addDropdownSingleselect("mf.sourceType", formLayout, typeKeys, typeValues, null);
+		sourceTypeEl.addActionListener(FormEvent.ONCHANGE);
+		String sourceType = (citation != null && citation.getItemType() != null
+				? citation.getItemType().name() : CitationSourceType.book.name());
+		for(String typeKey:typeKeys) {
+			if(typeKey.equals(sourceType)) {
+				sourceTypeEl.select(typeKey, true);
+			}
+		}
+		
+		String edition = (citation != null ? citation.getEdition() : null);
+		editionEl = uifactory.addTextElement("edition", "mf.edition", -1, edition, formLayout);
+		String volume = (citation != null ? citation.getVolume() : null);
+		volumeEl = uifactory.addTextElement("volume", "mf.volume", -1, volume, formLayout);
+		String series = (citation != null ? citation.getSeries() : null);
+		seriesEl = uifactory.addTextElement("series", "mf.series", -1, series, formLayout);
+		
+		String publicationTitle = (citation != null ? citation.getPublicationTitle() : null);
+		publicationTitleEl = uifactory.addTextElement("publicationTitle", "mf.publicationTitle", -1, publicationTitle, formLayout);
+		String issue = (citation != null ? citation.getIssue() : null);
+		issueEl = uifactory.addTextElement("issue", "mf.issue", -1, issue, formLayout);
+		String pages = (citation != null ? citation.getPages() : null);
+		pagesEl = uifactory.addTextElement("pages", "mf.pages", -1, pages, formLayout);
+
+		String institution = (citation != null ? citation.getInstitution() : null);
+		institutionEl = uifactory.addTextElement("institution", "mf.institution", -1, institution, formLayout);
+	}
+	
+	/**
+	 * webpage: authorString, title, url<br>
+ * book: authorString, title, volume, series, edition, place, publisher, date, url<br>
+ * journalArticle: authorString, title, publicationTitle, issue, date, pages, url<br>
+ * report: title, place, institution, date, url
+ * film: authorString, title, date, url
+	 */
+	private void updateCitationFieldsVisibility() {
+		CitationSourceType sourceType = CitationSourceType.valueOf(sourceTypeEl.getSelectedKey());
+		editionEl.setVisible(sourceType == CitationSourceType.book);
+		volumeEl.setVisible(sourceType == CitationSourceType.book);
+		seriesEl.setVisible(sourceType == CitationSourceType.book);
+		publicationTitleEl.setVisible(sourceType == CitationSourceType.journalArticle);
+		issueEl.setVisible(sourceType == CitationSourceType.journalArticle);
+		pagesEl.setVisible(sourceType == CitationSourceType.journalArticle);
+		institutionEl.setVisible(sourceType == CitationSourceType.report);
 	}
 	
 	@Override
@@ -138,6 +245,14 @@ public class CollectCitationMediaController extends FormBasicController implemen
 	}
 
 	@Override
+	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
+		if(source == sourceTypeEl) {
+			updateCitationFieldsVisibility();
+		}
+		super.formInnerEvent(ureq, source, event);
+	}
+
+	@Override
 	protected void formOK(UserRequest ureq) {
 		if(mediaReference == null) {
 			String title = titleEl.getValue();
@@ -147,6 +262,28 @@ public class CollectCitationMediaController extends FormBasicController implemen
 		} else {
 			//TODO can we update an artefact?
 		}
+
+		citation = new CitationXml();
+		citation.setEdition(editionEl.getValue());
+		citation.setInstitution(institutionEl.getValue());
+		citation.setIssue(issueEl.getValue());
+		CitationSourceType sourceType = CitationSourceType.valueOf(sourceTypeEl.getSelectedKey());
+		citation.setItemType(sourceType);
+		citation.setPages(pagesEl.getValue());
+		citation.setPublicationTitle(publicationTitleEl.getValue());
+		citation.setSeries(seriesEl.getValue());
+		citation.setVolume(volumeEl.getValue());
+		mediaReference.setMetadataXml(CitationXStream.get().toXML(citation));
+		
+		// dublin core
+		mediaReference.setCreators(creatorsEl.getValue());
+		mediaReference.setPlace(placeEl.getValue());
+		mediaReference.setPublisher(publisherEl.getValue());
+		mediaReference.setUrl(urlEl.getValue());
+		mediaReference.setSource(sourceEl.getValue());
+		mediaReference.setLanguage(languageEl.getValue());
+
+		mediaReference = portfolioService.updateMedia(mediaReference);
 
 		List<String> updatedCategories = categoriesEl.getValueList();
 		portfolioService.updateCategories(mediaReference, updatedCategories);

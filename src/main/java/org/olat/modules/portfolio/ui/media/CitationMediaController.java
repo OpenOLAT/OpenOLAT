@@ -25,7 +25,11 @@ import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.util.StringHelper;
+import org.olat.modules.portfolio.Citation;
 import org.olat.modules.portfolio.Media;
+import org.olat.modules.portfolio.manager.CitationXStream;
+import org.olat.modules.portfolio.ui.component.CitationComponent;
 
 /**
  * 
@@ -42,6 +46,15 @@ public class CitationMediaController extends BasicController {
 		mainVC.contextPut("author", "[author]");
 		mainVC.contextPut("citation", media.getContent());
 		putInitialPanel(mainVC);
+		
+		String citationXml = media.getMetadataXml();
+		if(StringHelper.containsNonWhitespace(citationXml)) {
+			Citation citation = (Citation)CitationXStream.get().fromXML(citationXml);
+			CitationComponent cmp = new CitationComponent("cit");
+			cmp.setCitation(citation);
+			cmp.setDublinCoreMetadata(media);
+			mainVC.put("cit", cmp);	
+		}
 	}
 
 	@Override

@@ -385,6 +385,8 @@ public interface PortfolioService {
 	
 	public List<MediaLight> searchOwnedMedias(IdentityRef author, String searchString);
 	
+	public Media updateMedia(Media media);
+	
 	public void updateCategories(Media media, List<String> categories);
 	
 	/**

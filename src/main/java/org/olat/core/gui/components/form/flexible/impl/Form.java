@@ -54,7 +54,6 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.logging.AssertException;
-import org.olat.core.logging.LogDelegator;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.ArrayHelper;
@@ -140,7 +139,7 @@ import org.olat.core.util.component.FormComponentVisitor;
  * 
  * @author patrickb
  */
-public class Form extends LogDelegator {
+public class Form {
 	
 	private static final OLog log = Tracing.createLoggerFor(Form.class);
 	//
@@ -292,7 +291,7 @@ public class Form extends LogDelegator {
 					}
 					fbc+=(i.getClass().getName());
 				}
-				logWarn("OLAT-5061: Could not determine request source in FlexiForm >"+formName+"<. Check >"+fbc+"<", null);
+				log.warn("OLAT-5061: Could not determine request source in FlexiForm >"+formName+"<. Check >"+fbc+"<", null);
 				
 				// TODO: what now? 
 				// Assuming the same as "implicitFormSubmit" for now.

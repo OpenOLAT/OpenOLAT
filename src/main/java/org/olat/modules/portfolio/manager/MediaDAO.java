@@ -72,6 +72,10 @@ public class MediaDAO {
 		return dbInstance.getCurrentEntityManager().merge(media);
 	}
 	
+	public Media update(Media media) {
+		return dbInstance.getCurrentEntityManager().merge(media);
+	}
+	
 	public Media loadByKey(Long key) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select media from pfmedia as media")

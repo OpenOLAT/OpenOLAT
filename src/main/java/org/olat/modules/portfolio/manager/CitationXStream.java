@@ -17,53 +17,28 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.portfolio;
+package org.olat.modules.portfolio.manager;
 
-import java.util.Date;
+import org.olat.core.util.xml.XStreamHelper;
 
-import org.olat.core.id.Identity;
+import com.thoughtworks.xstream.XStream;
 
 /**
+ * For XStream
  * 
- * Initial date: 17.06.2016<br>
+ * Initial date: 21.07.2016<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public interface Media extends MediaLight, DublinCoreMetadata {
+public class CitationXStream {
 
-	@Override
-	public Long getKey();
-
-	@Override
-	public Date getCreationDate();
-
-	@Override
-	public Date getCollectionDate();
-
-	@Override
-	public String getStoragePath();
-
-	@Override
-	public String getRootFilename();
-
-	@Override
-	public String getType();
-
-	@Override
-	public String getTitle();
-
-	@Override
-	public String getDescription();
+	private static final XStream xstream = XStreamHelper.createXStreamInstance();
+	static {
+		xstream.alias("citation", org.olat.modules.portfolio.model.CitationXml.class);
+		xstream.aliasType("citation", org.olat.modules.portfolio.model.CitationXml.class);
+	}
 	
-	public String getContent();
-	
-	@Override
-	public String getBusinessPath();
-	
-	public Identity getAuthor();
-	
-	public String getMetadataXml();
-
-	public void setMetadataXml(String medadata);
-
+	public static final XStream get() {
+		return xstream;
+	}
 }

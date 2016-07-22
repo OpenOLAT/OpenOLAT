@@ -203,6 +203,14 @@ create table o_pf_media (
    p_content mediumtext,
    p_signature bigint not null default 0,
    p_business_path varchar(255) not null,
+   p_creators varchar(1024) default null,
+   p_place varchar(255) default null,
+   p_publisher varchar(255) default null,
+   p_date varchar(32) default null,
+   p_url varchar(1024) default null,
+   p_source varchar(1024) default null,
+   p_language varchar(32) default null,
+   p_metadata_xml mediumtext,
    fk_author_id bigint not null,
    primary key (id)
 );

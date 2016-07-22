@@ -1,4 +1,8 @@
-<div class="o_quote_wrapper">
+<div class="o_cit">
+	#if($r.available("cit"))
+		$r.render("cit")
+	#else
 	<div class="o_quote_author">$author</div>
+	#end
 	<blockquote class="o_quote">$r.xssScan($citation)</blockquote>
 </div>

@@ -1,0 +1,126 @@
+.o_cit {
+	position: relative;
+	margin: $o-forum-quote-padding 0;
+	
+	.o_quote_author { 
+		color: $o-forum-quote-author-color;
+		font-size: $o-forum-quote-font-size; 
+		&:before { 
+			@include o-make-icon(); 
+			content: $fa-var-quote-right; 
+			font-size: ceil(($font-size-base * 1.5));
+			padding-right: 0.5em;
+		}
+	}
+	
+	blockquote.o_quote { 
+		color: $o-forum-quote-color; 
+		font-size: $o-forum-quote-font-size; 
+		margin-top: $padding-base-vertical; 
+		padding: 0 $padding-base-horizontal;
+	}
+	
+	
+	.title,
+	.url,
+	.authors,
+	.pages,
+	.date,
+	.dateAdded,
+	.place,
+	.institution,
+	.issue,
+	.publisher,
+	.publicationTitle,
+	.edition,
+	.series,
+	.volume {
+		margin-right :0.5em;
+	}
+
+	.title{
+		font-style: italic;
+	}
+	.publicationTitle {
+		color: black;
+	}
+
+	.links {
+		padding-left: 2em;
+	} 
+	
+	.notes {
+		padding-left: 2em;
+		color:grey;
+	}
+	.note {
+		font-style: italic;
+	}
+	.note p:first-child {
+		margin-top: 0;	
+	}
+	.note p:first-child {
+		margin-bottom: 0;	
+	}
+
+	/* Web style formatting */
+	.listing.web .item {
+		padding-left: 0; 
+		text-indent:0;
+	}
+
+	.listing.web .title {
+		display: block;
+		font-weight: bold;
+		font-style: normal;
+	}
+	.listing.web .publicationTitle {
+		display: block;
+		font-style: italic;
+	}
+	.listing.web .url {
+		display: block;
+	}
+	.listing.web .links {
+		padding-left: 0;
+	} 
+	.listing.web .notes {
+		padding-left: 0;
+	}
+
+	/* Section below the generated item listing with static infos */
+	.general-info {
+		border-top: 1px solid #eee;
+		padding-top: 30px;
+		margin-top: 30px;	
+	}
+	
+	.copyright {
+		display: none;
+	}
+}
+
+/* Print styles */
+@media print {
+	.cit {	
+		background-image: none;
+		padding-top: 0;
+		max-width: 100%;
+		
+		#styles,
+		#refreshContainer {
+			display: none;
+		}
+		
+		#general-info a:after{
+			content:" (" attr(href) ") ";
+			font-size:0.8em;
+			font-weight:normal;
+		}
+		
+		#copyright {
+			display: block;
+			margin-top: 30px;
+		}
+	}
+}

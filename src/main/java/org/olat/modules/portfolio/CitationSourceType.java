@@ -19,51 +19,18 @@
  */
 package org.olat.modules.portfolio;
 
-import java.util.Date;
-
-import org.olat.core.id.Identity;
-
 /**
  * 
- * Initial date: 17.06.2016<br>
+ * Initial date: 21.07.2016<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public interface Media extends MediaLight, DublinCoreMetadata {
-
-	@Override
-	public Long getKey();
-
-	@Override
-	public Date getCreationDate();
-
-	@Override
-	public Date getCollectionDate();
-
-	@Override
-	public String getStoragePath();
-
-	@Override
-	public String getRootFilename();
-
-	@Override
-	public String getType();
-
-	@Override
-	public String getTitle();
-
-	@Override
-	public String getDescription();
+public enum CitationSourceType {
 	
-	public String getContent();
-	
-	@Override
-	public String getBusinessPath();
-	
-	public Identity getAuthor();
-	
-	public String getMetadataXml();
-
-	public void setMetadataXml(String medadata);
+	webpage,
+	book,
+	journalArticle,
+	report,
+	film
 
 }

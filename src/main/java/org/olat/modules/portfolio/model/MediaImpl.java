@@ -85,6 +85,25 @@ public class MediaImpl implements Persistable, CreateInfo, Media  {
 	@ManyToOne(targetEntity=IdentityImpl.class,fetch=FetchType.LAZY,optional=false)
 	@JoinColumn(name="fk_author_id", nullable=false, insertable=true, updatable=false)
 	private Identity author;
+	
+	//Dublin core
+	@Column(name="p_creators", nullable=true, insertable=true, updatable=true)
+	private String creators;// Dublin core
+	@Column(name="p_place", nullable=true, insertable=true, updatable=true)
+	private String place; // Zot + City of MetaInfo
+	@Column(name="p_publisher", nullable=true, insertable=true, updatable=true)
+	private String publisher;// Zot + Dublin core
+	@Column(name="p_date", nullable=true, insertable=true, updatable=true)
+	private String date;// Zot + Dublin core
+	@Column(name="p_url", nullable=true, insertable=true, updatable=true)
+	private String url;// Zot + Dublin core
+	@Column(name="p_source", nullable=true, insertable=true, updatable=true)
+	private String source;// Dublin core
+	@Column(name="p_language", nullable=true, insertable=true, updatable=true)
+	private String language;// Dublin core
+	
+	@Column(name="p_metadata_xml", nullable=true, insertable=true, updatable=true)
+	private String metadataXml;// Dublin core
 
 	@Override
 	public Long getKey() {
@@ -181,6 +200,84 @@ public class MediaImpl implements Persistable, CreateInfo, Media  {
 
 	public void setBusinessPath(String businessPath) {
 		this.businessPath = businessPath;
+	}
+
+	@Override
+	public String getCreators() {
+		return creators;
+	}
+
+	@Override
+	public void setCreators(String creators) {
+		this.creators = creators;
+	}
+
+	@Override
+	public String getPlace() {
+		return place;
+	}
+
+	@Override
+	public void setPlace(String place) {
+		this.place = place;
+	}
+
+	@Override
+	public String getPublisher() {
+		return publisher;
+	}
+
+	@Override
+	public void setPublisher(String publisher) {
+		this.publisher = publisher;
+	}
+
+	@Override
+	public String getDate() {
+		return date;
+	}
+
+	@Override
+	public void setDate(String date) {
+		this.date = date;
+	}
+
+	@Override
+	public String getUrl() {
+		return url;
+	}
+
+	@Override
+	public void setUrl(String url) {
+		this.url = url;
+	}
+
+	@Override
+	public String getSource() {
+		return source;
+	}
+
+	@Override
+	public void setSource(String source) {
+		this.source = source;
+	}
+
+	@Override
+	public String getLanguage() {
+		return language;
+	}
+
+	@Override
+	public void setLanguage(String language) {
+		this.language = language;
+	}
+
+	public String getMetadataXml() {
+		return metadataXml;
+	}
+
+	public void setMetadataXml(String metadataXml) {
+		this.metadataXml = metadataXml;
 	}
 
 	@Override
