@@ -23,6 +23,7 @@ import java.util.List;
 
 import org.jboss.arquillian.drone.api.annotation.Drone;
 import org.junit.Assert;
+import org.olat.core.gui.render.URLBuilder;
 import org.olat.selenium.page.graphene.OOGraphene;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
@@ -75,7 +76,9 @@ public class FolderPage {
 	}
 	
 	public FolderPage assertOnDirectory(String name) {
-		String escapedName = name;//TODO xhr .replace(" ", "%20");
+		// encode name same was as in UI
+		URLBuilder urlBuilder = new URLBuilder("", "", "");
+		String escapedName = urlBuilder.encodeUrl(name);
 		By directoryBy = By.xpath("//table[contains(@class,'o_bc_table')]//a[contains(@onclick,'" + escapedName + "')]");
 		List<WebElement> directoryEls = browser.findElements(directoryBy);
 		Assert.assertFalse(directoryEls.isEmpty());

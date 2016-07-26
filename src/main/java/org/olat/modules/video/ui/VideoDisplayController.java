@@ -189,6 +189,9 @@ public class VideoDisplayController extends BasicController {
 			mainVC.contextPut("displayTitles", displayTitles);
 			mainVC.contextPut("useSourceChooser", Boolean.valueOf(readyToPlayVideos.size() > 1));
 			mainVC.contextPut(GUIPREF_KEY_PREFERRED_RESOLUTION, preferredAvailableResolution);
+			// Check for null-value posters
+			VFSLeaf poster = videoManager.getPosterframe(entry.getOlatResource());
+			mainVC.contextPut("usePoster", Boolean.valueOf(poster != null && poster.getSize() > 0));
 			
 			// Load the track from config
 			HashMap<String, String> trackfiles = new HashMap<String, String>();
