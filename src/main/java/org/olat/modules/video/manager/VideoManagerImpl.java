@@ -198,6 +198,7 @@ public class VideoManagerImpl implements VideoManager {
 
 			return true;
 		} catch (Exception e) {
+			log.error("Could not get frame::" + frameNumber + " for video::" + videoFile.getAbsolutePath(), e);
 			return false;
 		} 
 	}
