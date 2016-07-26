@@ -227,7 +227,7 @@ public class AssessmentObjectVelocityRenderDecorator extends VelocityRenderDecor
 	
 	public String getOrientation(Orientation orientation) {
 		if(orientation == null) {
-			return Orientation.VERTICAL.name();
+			return Orientation.VERTICAL.toQtiString();
 		}
 		return orientation.toQtiString();
 	}
