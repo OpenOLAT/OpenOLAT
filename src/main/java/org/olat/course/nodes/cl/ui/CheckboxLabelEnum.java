@@ -27,11 +27,14 @@ package org.olat.course.nodes.cl.ui;
  */
 public enum CheckboxLabelEnum {
 	
-	done("label.done"),
-	inWork("label.inWork"),
-	presented("label.presented"),
+	achieved("label.achieved"),
 	controlled("label.controlled"),
-	present("label.present");
+	done("label.done"),
+	fulfilled("label.fulfilled"),
+	inWork("label.inWork"),
+	passed("label.passed"),
+	present("label.present"),
+	presented("label.presented");
 	
 	private final String i18nKey;
 	
