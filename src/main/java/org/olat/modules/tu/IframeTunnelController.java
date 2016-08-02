@@ -38,6 +38,7 @@ import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.clone.CloneableController;
 import org.olat.core.gui.control.generic.iframe.IFrameDisplayController;
 import org.olat.core.id.Identity;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.httpclient.HttpClientFactory;
 import org.olat.course.nodes.tu.TUConfigForm;
@@ -88,11 +89,12 @@ public class IframeTunnelController extends BasicController implements Cloneable
 			// query string is available since config version 2
 			firstQueryString = (String) config.get(TUConfigForm.CONFIGKEY_QUERY);
 		}
+		String ref = config.getStringValue(TUConfigForm.CONFIGKEY_REF);
 
 		boolean usetunnel= config.getBooleanSafe(TUConfigForm.CONFIG_TUNNEL);
 		myContent = createVelocityContainer("iframe_index");			
 		if (!usetunnel) { // display content directly
-			String rawurl = TUConfigForm.getFullURL(proto, host, port, startUri, firstQueryString).toString();
+			String rawurl = TUConfigForm.getFullURL(proto, host, port, startUri, firstQueryString, ref).toString();
 			myContent.contextPut("url", rawurl);
 		} else { // tunnel
 			Identity ident = ureq.getIdentity();
@@ -102,7 +104,10 @@ public class IframeTunnelController extends BasicController implements Cloneable
 			String amapPath = registerMapper(ureq, mapper);
 			String alluri = amapPath + startUri;
 			if (firstQueryString != null) {
-				alluri+="?"+firstQueryString;
+				alluri += "?" + firstQueryString;
+			}
+			if (StringHelper.containsNonWhitespace(ref)) {
+				alluri += "#" + ref;
 			}
 			myContent.contextPut("url", alluri);
 		}
