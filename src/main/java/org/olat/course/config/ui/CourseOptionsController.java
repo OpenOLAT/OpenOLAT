@@ -372,7 +372,9 @@ public class CourseOptionsController extends FormBasicController {
 	
 	private void updateToolbar() {
 		boolean enabled = toolbarEl.isSelected(0);
-		calendarCont.setVisible(enabled);
+		if(calendarCont != null) {
+			calendarCont.setVisible(enabled);
+		}
 		chatCont.setVisible(enabled);
 		glossaryCont.setVisible(enabled);
 	}
