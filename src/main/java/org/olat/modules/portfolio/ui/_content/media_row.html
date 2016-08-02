@@ -1,4 +1,4 @@
-<div class="o_visual"><a href="javascript:${f.ffXHREvent("img_select","$row.key")}">
+<div class="o_visual #if($r.isNotNull($row.iconCssClass) && !${row.iconCssClass.isEmpty()} && !${row.isThumbnailAvailable()}) o_icon $row.iconCssClass #end"><a href="javascript:${f.ffXHREvent("img_select","$row.key")}">
 	<span class="o_visual_not_available" #if(${row.isThumbnailAvailable()}) style="background-image:url('$mapperThumbnailUrl/${row.key}/${row.thumbnailName}');" #end></span>
 </a></div>
 <div class="o_meta">

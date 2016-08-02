@@ -63,6 +63,11 @@ public class TextHandler extends AbstractMediaHandler implements InteractiveAddP
 	public String getIconCssClass() {
 		return "o_filetype_txt";
 	}
+	
+	@Override
+	public boolean acceptMimeType(String mimeType) {
+		return false;
+	}
 
 	@Override
 	public VFSLeaf getThumbnail(MediaLight media, Size size) {

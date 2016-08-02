@@ -58,6 +58,11 @@ public class WikiMediaHandler extends AbstractMediaHandler {
 	public String getIconCssClass() {
 		return "o_wiki_icon";
 	}
+	
+	@Override
+	public boolean acceptMimeType(String mimeType) {
+		return false;
+	}
 
 	@Override
 	public VFSLeaf getThumbnail(MediaLight media, Size size) {

@@ -252,7 +252,18 @@ div#o_main_toolbar.o_toolbar.o_portfolio {
 					height:100%;
 					display:block;
 				}
-			}	
+			}
+			.o_visual.o_icon span.o_visual_not_available {
+				background-image: none;
+			}
+			
+			.o_visual.o_icon {
+				font-size: 6em;
+				text-align: center;
+				color: $gray-lighter;
+				line-height: $o-portfolio-media-browser-rowelem-line-height-md ;
+			}
+				
 			.o_meta {
 				position: absolute;
 				left: 0;
@@ -297,6 +308,11 @@ div#o_main_toolbar.o_toolbar.o_portfolio {
 				.o_visual {
 					height: $o-portfolio-media-browser-rowelem-width-sm;	
 				}	
+				.o_visual.o_icon {
+					font-size: 2.5em;
+					line-height: $o-portfolio-media-browser-rowelem-line-height-sm;
+				}
+				
 				.o_title {
 					font-size: 90%;
 				}
@@ -308,6 +324,10 @@ div#o_main_toolbar.o_toolbar.o_portfolio {
 				.o_visual {
 					height: $o-portfolio-media-browser-rowelem-width-sm;	
 					width: $o-portfolio-media-browser-rowelem-width-sm;	
+				}
+				.o_visual.o_icon {
+					font-size: 2.5em;
+					line-height: $o-portfolio-media-browser-rowelem-line-height-sm;
 				}	
 				.o_title {
 					font-size: 90%;

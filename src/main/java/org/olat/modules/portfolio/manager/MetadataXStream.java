@@ -30,7 +30,7 @@ import com.thoughtworks.xstream.XStream;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class CitationXStream {
+public class MetadataXStream {
 
 	private static final XStream xstream = XStreamHelper.createXStreamInstance();
 	static {

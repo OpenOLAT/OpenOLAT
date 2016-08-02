@@ -27,7 +27,8 @@ package org.olat.modules.portfolio;
  */
 public interface BinderLight extends BinderRef {
 	
-
+	public String getTitle();
+	
 	public String getImagePath();
 
 }

@@ -20,6 +20,8 @@
 package org.olat.modules.portfolio.handler;
 
 import java.io.File;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.olat.core.commons.modules.bc.FolderConfig;
@@ -48,6 +50,7 @@ import org.olat.modules.portfolio.ui.editor.InteractiveAddPageElementHandler;
 import org.olat.modules.portfolio.ui.editor.PageElement;
 import org.olat.modules.portfolio.ui.editor.PageElementAddController;
 import org.olat.modules.portfolio.ui.media.CollectVideoMediaController;
+import org.olat.modules.portfolio.ui.media.UploadMedia;
 import org.olat.modules.portfolio.ui.media.VideoMediaController;
 import org.olat.portfolio.model.artefacts.AbstractArtefact;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -63,6 +66,10 @@ import org.springframework.stereotype.Service;
 public class VideoHandler extends AbstractMediaHandler implements InteractiveAddPageElementHandler {
 	
 	public static final String VIDEO_TYPE = "video";
+	public static final Set<String> mimeTypes = new HashSet<>();
+	static {
+		mimeTypes.add("video/mp4");
+	}
 	
 	private AtomicInteger idGenerator = new AtomicInteger();
 
@@ -78,6 +85,11 @@ public class VideoHandler extends AbstractMediaHandler implements InteractiveAdd
 	@Override
 	public String getIconCssClass() {
 		return "o_filetype_video";
+	}
+
+	@Override
+	public boolean acceptMimeType(String mimeType) {
+		return mimeTypes.contains(mimeType);
 	}
 
 	@Override
@@ -123,7 +135,8 @@ public class VideoHandler extends AbstractMediaHandler implements InteractiveAdd
 
 	@Override
 	public Media createMedia(String title, String description, Object mediaObject, String businessPath, Identity author) {
-		return null;
+		UploadMedia mObject = (UploadMedia)mediaObject;
+		return createMedia(title, description, mObject.getFile(), mObject.getFilename(), businessPath, author);
 	}
 	
 	public Media createMedia(String title, String description, File file, String filename, String businessPath, Identity author) {

@@ -77,6 +77,11 @@ public class ForumMediaHandler extends AbstractMediaHandler {
 	public String getIconCssClass() {
 		return "o_fo_icon";
 	}
+	
+	@Override
+	public boolean acceptMimeType(String mimeType) {
+		return false;
+	}
 
 	@Override
 	public VFSLeaf getThumbnail(MediaLight media, Size size) {

@@ -65,6 +65,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_checkbox_checked:before { content: $fa-var-check-square;  }
 .o_icon_circle:before { content: $fa-var-circle-thin; }
 .o_icon_circle_color:before { content: $fa-var-circle; }
+.o_icon_citation:before { content: $fa-var-commenting-o; }
 .o_icon_cleanup:before { content: $fa-var-ambulance;}
 .o_icon_clear_all:before { content: $fa-var-trash-o;}
 .o_icon_close:before { content: $fa-var-times;}
@@ -108,6 +109,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_export:before { content: $fa-var-share-square-o;}
 .o_icon_external_link:before { content: $fa-var-external-link } 
 .o_icon_failed:before { content: $fa-var-times-circle;}
+.o_icon_files:before { content: $fa-var-files-o;}
 .o_icon_filter:before { content: $fa-var-filter;}
 .o_icon_graduate:before { content: $fa-var-graduation-cap; }
 .o_icon_group:before, .o_BusinessGroup_icon:before { content: $fa-var-users; }
@@ -387,6 +389,8 @@ $fa-css-prefix: "o_icon" !default;
 /* notification icons */
 .o_forum_message_icon:before { content: $fa-var-comment-o; }
 .o_calendar_icon:before { content: $fa-var-calendar; }
+
+/* portfolio icons */
 
 /* forum course element */
 .o_forum_status_thread_icon:before { content: $fa-var-comments-o; }

@@ -37,6 +37,8 @@ public interface MediaHandler {
 	
 	public String getType();
 	
+	public boolean acceptMimeType(String mimeType);
+	
 	public String getIconCssClass(MediaLight media);
 	
 	public VFSLeaf getThumbnail(MediaLight media, Size size);

@@ -33,13 +33,15 @@ import org.olat.modules.portfolio.MediaLight;
  */
 public class MediaRow implements MediaLight {
 	
-	private MediaLight media;
+	private final MediaLight media;
 
-	private VFSLeaf thumbnail;
-	private FormLink openFormLink;
+	private final String cssClass;
+	private final VFSLeaf thumbnail;
+	private final FormLink openFormLink;
 	
-	public MediaRow(MediaLight media, VFSLeaf thumbnail, FormLink openFormLink) {
+	public MediaRow(MediaLight media, VFSLeaf thumbnail, FormLink openFormLink, String cssClass) {
 		this.media = media;
+		this.cssClass = cssClass;
 		this.thumbnail = thumbnail;
 		this.openFormLink = openFormLink;
 	}
@@ -67,6 +69,10 @@ public class MediaRow implements MediaLight {
 	@Override
 	public String getType() {
 		return media.getType();
+	}
+
+	public String getIconCssClass() {
+		return cssClass;
 	}
 
 	@Override

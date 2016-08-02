@@ -44,6 +44,7 @@ import org.olat.modules.portfolio.ui.editor.InteractiveAddPageElementHandler;
 import org.olat.modules.portfolio.ui.editor.PageElementAddController;
 import org.olat.modules.portfolio.ui.media.CollectFileMediaController;
 import org.olat.modules.portfolio.ui.media.FileMediaController;
+import org.olat.modules.portfolio.ui.media.UploadMedia;
 import org.olat.portfolio.manager.EPFrontendManager;
 import org.olat.portfolio.model.artefacts.AbstractArtefact;
 import org.olat.portfolio.model.artefacts.FileArtefact;
@@ -60,6 +61,7 @@ import org.springframework.stereotype.Service;
 public class FileHandler extends AbstractMediaHandler implements InteractiveAddPageElementHandler {
 	
 	public static final String FILE_TYPE = "bc";
+
 	
 	@Autowired
 	private MediaDAO mediaDao;
@@ -75,6 +77,13 @@ public class FileHandler extends AbstractMediaHandler implements InteractiveAddP
 	@Override
 	public String getIconCssClass() {
 		return "o_filetype_file";
+	}
+
+	@Override
+	public boolean acceptMimeType(String mimeType) {
+		return StringHelper.containsNonWhitespace(mimeType)
+				&& !ImageHandler.mimeTypes.contains(mimeType)
+				&& !VideoHandler.mimeTypes.contains(mimeType);
 	}
 
 	@Override
@@ -120,7 +129,8 @@ public class FileHandler extends AbstractMediaHandler implements InteractiveAddP
 
 	@Override
 	public Media createMedia(String title, String description, Object mediaObject, String businessPath, Identity author) {
-		return null;
+		UploadMedia mObject = (UploadMedia)mediaObject;
+		return createMedia(title, description, mObject.getFile(), mObject.getFilename(), businessPath, author);
 	}
 
 	public Media createMedia(String title, String description, File file, String filename, String businessPath, Identity author) {

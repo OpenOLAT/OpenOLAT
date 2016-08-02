@@ -74,6 +74,11 @@ public class BlogEntryMediaHandler extends AbstractMediaHandler {
 	}
 
 	@Override
+	public boolean acceptMimeType(String mimeType) {
+		return false;
+	}
+
+	@Override
 	public VFSLeaf getThumbnail(MediaLight media, Size size) {
 		return null;
 	}

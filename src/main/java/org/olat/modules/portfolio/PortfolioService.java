@@ -397,6 +397,10 @@ public interface PortfolioService {
 	
 	public void updateCategories(Media media, List<String> categories);
 	
+	public List<Category> getCategories(Media media);
+	
+	public List<BinderLight> getUsedInBinders(MediaLight media);
+	
 	/**
 	 * Change the status of the page.
 	 * @param page

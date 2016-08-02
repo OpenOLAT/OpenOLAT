@@ -45,7 +45,7 @@ import org.olat.modules.portfolio.CitationSourceType;
 import org.olat.modules.portfolio.Media;
 import org.olat.modules.portfolio.PortfolioService;
 import org.olat.modules.portfolio.handler.CitationHandler;
-import org.olat.modules.portfolio.manager.CitationXStream;
+import org.olat.modules.portfolio.manager.MetadataXStream;
 import org.olat.modules.portfolio.model.CitationXml;
 import org.olat.modules.portfolio.model.MediaPart;
 import org.olat.modules.portfolio.ui.PortfolioHomeController;
@@ -273,7 +273,7 @@ public class CollectCitationMediaController extends FormBasicController implemen
 		citation.setPublicationTitle(publicationTitleEl.getValue());
 		citation.setSeries(seriesEl.getValue());
 		citation.setVolume(volumeEl.getValue());
-		mediaReference.setMetadataXml(CitationXStream.get().toXML(citation));
+		mediaReference.setMetadataXml(MetadataXStream.get().toXML(citation));
 		
 		// dublin core
 		mediaReference.setCreators(creatorsEl.getValue());

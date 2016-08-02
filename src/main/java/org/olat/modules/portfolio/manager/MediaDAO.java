@@ -31,6 +31,7 @@ import org.olat.basesecurity.IdentityRef;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.core.util.StringHelper;
+import org.olat.modules.portfolio.BinderLight;
 import org.olat.modules.portfolio.Media;
 import org.olat.modules.portfolio.MediaLight;
 import org.olat.modules.portfolio.model.MediaImpl;
@@ -110,6 +111,21 @@ public class MediaDAO {
 			query.setParameter("searchString", searchString.toLowerCase());
 		}
 		return query.getResultList();
+	}
+	
+	public List<BinderLight> usedInBinders(MediaLight media) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select binder from pfbinder as binder")
+		  .append(" inner join binder.sections as section")
+		  .append(" inner join section.pages as page")
+		  .append(" inner join page.body as pageBody")
+		  .append(" inner join pageBody.parts as bodyPart")
+		  .append(" where bodyPart.media.key=:mediaKey");
+		
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), BinderLight.class)
+				.setParameter("mediaKey", media.getKey())
+				.getResultList();
 	}
 
 }

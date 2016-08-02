@@ -663,6 +663,22 @@ public class VelocityRenderDecorator implements Closeable {
 		return obj != null;
 	}
 	
+	public boolean isNotEmpty(Object obj) {
+		boolean notEmpty;
+		if(obj == null) {
+			notEmpty = false;
+		} else if(obj instanceof String) {
+			notEmpty = StringHelper.containsNonWhitespace((String)obj);
+		} else if(obj instanceof Collection) {
+			notEmpty = !((Collection<?>)obj).isEmpty();
+		} else if(obj instanceof Map) {
+			notEmpty = !((Map<?,?>)obj).isEmpty();
+		} else {
+			notEmpty = true;
+		}
+		return notEmpty;
+	}
+	
 	/**
 	 * @param componentName
 	 * @return true if the component with name componentName is a child of the current container. Used to "if" the render 

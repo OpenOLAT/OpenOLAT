@@ -777,6 +777,12 @@ public class PortfolioServiceImpl implements PortfolioService {
 	}
 
 	@Override
+	public List<Category> getCategories(Media media) {
+		OLATResourceable ores = OresHelper.createOLATResourceableInstance(Media.class, media.getKey());
+		return categoryDao.getCategories(ores);
+	}
+
+	@Override
 	public List<MediaLight> searchOwnedMedias(IdentityRef author, String searchString) {
 		return mediaDao.searchByAuthor(author, searchString);
 	}
@@ -784,6 +790,11 @@ public class PortfolioServiceImpl implements PortfolioService {
 	@Override
 	public Media getMediaByKey(Long key) {
 		return mediaDao.loadByKey(key);
+	}
+
+	@Override
+	public List<BinderLight> getUsedInBinders(MediaLight media) {
+		return mediaDao.usedInBinders(media);
 	}
 
 	@Override
