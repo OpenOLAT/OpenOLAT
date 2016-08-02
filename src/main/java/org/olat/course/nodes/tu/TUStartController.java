@@ -33,6 +33,7 @@ import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.util.StringHelper;
 import org.olat.modules.ModuleConfiguration;
 
 public class TUStartController extends BasicController {
@@ -46,10 +47,10 @@ public class TUStartController extends BasicController {
 		
 		URL url = null;
 		try {
-			url = new URL((String)  config.get(TUConfigForm.CONFIGKEY_PROTO), 
-										(String)  config.get(TUConfigForm.CONFIGKEY_HOST),
-									 ((Integer) config.get(TUConfigForm.CONFIGKEY_PORT)).intValue(),
-										(String)  config.get(TUConfigForm.CONFIGKEY_URI));
+			url = new URL((String)config.get(TUConfigForm.CONFIGKEY_PROTO), 
+							(String)config.get(TUConfigForm.CONFIGKEY_HOST),
+							((Integer)config.get(TUConfigForm.CONFIGKEY_PORT)).intValue(),
+							(String) config.get(TUConfigForm.CONFIGKEY_URI));
 		} catch (MalformedURLException e) {
 			// this should not happen since the url was already validated in edit mode
 			runVC.contextPut("url", "");
@@ -60,8 +61,11 @@ public class TUStartController extends BasicController {
 			// since the url only includes the path, but not the query (?...), append it here, if any
 			String query = (String)config.get(TUConfigForm.CONFIGKEY_QUERY);
 			if (query != null) {
-				sb.append("?");
-				sb.append(query);
+				sb.append("?").append(query);
+			}
+			String ref = (String)config.get(TUConfigForm.CONFIGKEY_REF);
+			if (StringHelper.containsNonWhitespace(ref)) {
+				sb.append("#").append(ref);
 			}
 			runVC.contextPut("url", sb.toString());
 		}

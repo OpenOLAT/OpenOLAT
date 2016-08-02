@@ -558,7 +558,7 @@ public class CourseConfig implements Serializable, Cloneable {
 		clone.setRecertificationTimelapse(getRecertificationTimelapse());
 		clone.setRecertificationTimelapseUnit(getRecertificationTimelapseUnit());
 		clone.setMenuEnabled(isMenuEnabled());
-		clone.setToolbarEnabled(isMenuEnabled());
+		clone.setToolbarEnabled(isToolbarEnabled());
 		return clone;
 	}
 

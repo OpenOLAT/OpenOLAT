@@ -342,7 +342,7 @@ public class RepositoryEditDescriptionController extends FormBasicController {
 		movieUpload.setMaxUploadSizeKB(movieUploadlimitKB, null, null);
 		movieUpload.setPreview(ureq.getUserSession(), true);
 		movieUpload.addActionListener(FormEvent.ONCHANGE);
-		movieUpload.setDeleteEnabled(movie != null && !managed);
+		movieUpload.setDeleteEnabled(!managed);
 		if(movie instanceof LocalFileImpl) {
 			movieUpload.setPreview(ureq.getUserSession(), true);
 			movieUpload.setInitialFile(((LocalFileImpl)movie).getBasefile());

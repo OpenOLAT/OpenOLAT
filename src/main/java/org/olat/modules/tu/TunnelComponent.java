@@ -80,6 +80,7 @@ public class TunnelComponent extends AbstractComponent implements AsyncMediaResp
 	private boolean firstCall = true;
 	
 	private String startUri;
+	private String ref;
 
 	/**
 	 * @param name
@@ -98,6 +99,7 @@ public class TunnelComponent extends AbstractComponent implements AsyncMediaResp
 		port = (Integer) config.get(TUConfigForm.CONFIGKEY_PORT);
 		
 		startUri = (String) config.get(TUConfigForm.CONFIGKEY_URI);
+		ref = (String)config.get(TUConfigForm.CONFIGKEY_REF);
 		if(configVersion==2) {
 			//query string is available since config version 2
 			query = (String) config.get(TUConfigForm.CONFIGKEY_QUERY);

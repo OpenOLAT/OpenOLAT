@@ -305,7 +305,7 @@ function b_changeLinkTargets() {
 			if ((href.indexOf("/url/") != -1 || href.indexOf("/auth/") != -1) && 
 					(
 						href.indexOf("/repo/go?rid=") != -1 
-						|| href.indexOf("/RepositoryEntry/") != -1 
+						|| href.indexOf("/RepositoryEntry/") != -1 
 						|| href.indexOf("/BusinessGroup/") != -1 
 						|| href.indexOf("Site/") != -1
 						|| href.indexOf("/CatalogEntry/") != -1										
