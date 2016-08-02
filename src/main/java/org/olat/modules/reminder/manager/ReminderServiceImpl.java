@@ -116,7 +116,7 @@ public class ReminderServiceImpl implements ReminderService {
 		if(StringHelper.containsNonWhitespace(configuration)) {
 			ReminderRules rules = toRules(configuration);
 			for(ReminderRule rule:rules.getRules()) {
-				if(ReminderRuleEngine.DATE_RULE_TYPE.equals(rule.getType()) && rule instanceof ReminderRuleImpl) {
+				if(rule instanceof ReminderRuleImpl && ReminderRuleEngine.DATE_RULE_TYPE.equals(rule.getType())) {
 					ReminderRuleImpl r = (ReminderRuleImpl)rule;
 					if(DateRuleSPI.AFTER.equals(r.getOperator()) && StringHelper.containsNonWhitespace(r.getRightOperand())) {
 						try {
