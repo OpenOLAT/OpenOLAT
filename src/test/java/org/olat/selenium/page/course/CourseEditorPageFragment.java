@@ -26,7 +26,6 @@ import org.jboss.arquillian.graphene.Graphene;
 import org.junit.Assert;
 import org.olat.selenium.page.graphene.OOGraphene;
 import org.olat.selenium.page.portfolio.PortfolioPage;
-import org.olat.selenium.page.repository.AuthoringEnvPage;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
@@ -495,9 +494,11 @@ public class CourseEditorPageFragment {
 	}
 	
 	private CourseEditorPageFragment fillCreateForm(String displayName) {
-		WebElement modal = browser.findElement(By.cssSelector("div.modal.o_sel_author_create_popup"));
-		modal.findElement(AuthoringEnvPage.displayNameInput).sendKeys(displayName);
-		modal.findElement(AuthoringEnvPage.createSubmit).click();
+		OOGraphene.waitModalDialog(browser);
+		By inputBy = By.cssSelector("div.modal.o_sel_author_create_popup div.o_sel_author_displayname input");
+		browser.findElement(inputBy).sendKeys(displayName);
+		By submitBy = By.cssSelector("div.modal.o_sel_author_create_popup .o_sel_author_create_submit");
+		browser.findElement(submitBy).click();
 		OOGraphene.waitBusy(browser);
 		OOGraphene.waitAndCloseBlueMessageWindow(browser);
 		return this;
