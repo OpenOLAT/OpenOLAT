@@ -28,7 +28,6 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
-import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
@@ -117,21 +116,10 @@ public class PortfolioAssessmentDetailsController extends FormBasicController {
 				returnDate = formatter.formatDateAndTime(binder.getReturnDate());
 			}
 			uifactory.addStaticTextElement("map.returnDate." + count, "map.returnDate", returnDate, formLayout);
-			
-			String deadLine = "";
-			if(binder.getDeadLine() != null) {
-				deadLine = formatter.formatDateAndTime(binder.getDeadLine());
-			}
-			mapElements.deadlineEl = uifactory.addStaticTextElement("map.deadline." + count, "map.deadline", deadLine, formLayout);
 
-			
 			FormLayoutContainer buttonsCont = FormLayoutContainer.createButtonLayout("buttons." + count, getTranslator());
 			buttonsCont.setRootForm(mainForm);
 			formLayout.add(buttonsCont);
-
-			mapElements.changeDeadlineLink = uifactory
-					.addFormLink("map.binder.change." + count, "map.binder.change", "map.deadline.change", null, buttonsCont, Link.BUTTON);
-			mapElements.changeDeadlineLink.setUserObject(binder);
 
 			mapElements.openMapLink = uifactory.addFormLink("open.binder." + count, "open.binder", "open.map", null, buttonsCont, Link.BUTTON);
 			mapElements.openMapLink.setUserObject(binder);
@@ -159,16 +147,7 @@ public class PortfolioAssessmentDetailsController extends FormBasicController {
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(source instanceof FormLink) {
 			FormLink link = (FormLink)source;
-			String cmd = link.getCmd();
-			if("map.binder.change".equals(cmd)) {
-				if (deadlineCalloutCtr == null) {
-					Binder map = (Binder)link.getUserObject();
-					//popupDeadlineBox(ureq, map);
-				} else {
-					// close on second click
-					closeDeadlineBox();
-				}
-			} else if(link.getName().startsWith("open.binder")) {
+			if(link.getName().startsWith("open.binder")) {
 				Binder map = (Binder)link.getUserObject();
 				doOpenMap(ureq, map);
 			}
@@ -179,7 +158,7 @@ public class PortfolioAssessmentDetailsController extends FormBasicController {
 	private void doOpenMap(UserRequest ureq, Binder binder) {
 		if(stackPanel instanceof TooledStackedPanel) {
 			List<AccessRights> rights = portfolioService.getAccessRights(binder, getIdentity());
-			BinderSecurityCallback secCallback = BinderSecurityCallbackFactory.getCallbackForCoach(rights);
+			BinderSecurityCallback secCallback = BinderSecurityCallbackFactory.getCallbackForCoach(binder, rights);
 			BinderConfiguration config = BinderConfiguration.createConfig(binder);
 			BinderController binderCtrl = new BinderController(ureq, getWindowControl(), (TooledStackedPanel)stackPanel, secCallback, binder, config);
 			String displayName = StringHelper.escapeHtml(binder.getTitle());
@@ -210,9 +189,15 @@ public class PortfolioAssessmentDetailsController extends FormBasicController {
 		}
 	}
 	
-	private static class MapElements {
+	public static class MapElements {
 		private FormLink openMapLink;
-		private FormLink changeDeadlineLink;
-		private StaticTextElement deadlineEl;
+		
+		public FormLink getOpenMapLink() {
+			return openMapLink;
+		}
+		
+		public void setOpenMapLink(FormLink openMapLink) {
+			this.openMapLink = openMapLink;
+		}
 	}
 }

@@ -47,13 +47,30 @@ public interface BinderSecurityCallback {
 	
 	public boolean canSectionBeginAndEnd();
 	
-	public boolean canAddAssignment();
 	
 	public boolean canAddPage();
 	
 	public boolean canEditPage(Page page);
 	
 	public boolean canPublish(Page page);
+	
+	public boolean canRevision(Page page);
+	
+	public boolean canClose(Page page);
+	
+	public boolean canReopen(Page page);
+	
+	/**
+	 * 
+	 * @return true if the user can instantiate and begin to fill a page from the assignment
+	 */
+	public boolean canInstantiateAssignment();
+	
+	/**
+	 * 
+	 * @return true if the user can create a new assignment (limited to the template).
+	 */
+	public boolean canNewAssignment();
 	
 	public boolean canEditAccessRights(PortfolioElement element);
 	

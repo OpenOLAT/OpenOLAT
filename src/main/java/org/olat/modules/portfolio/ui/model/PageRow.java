@@ -98,10 +98,6 @@ public class PageRow {
 		return page.getCreationDate();
 	}
 	
-	public boolean hasLastPublicationDate() {
-		return page != null && page.getLastPublicationDate() != null;
-	}
-	
 	public PageStatus getPageStatus() {
 		return page == null ? null : page.getPageStatus();
 	}
@@ -124,7 +120,7 @@ public class PageRow {
 	}
 	
 	public boolean isSection () {
-		if(section == null){
+		if(section == null) {
 			return false;
 		}
 		return true;
@@ -169,10 +165,6 @@ public class PageRow {
 		this.firstPageOfSection = firstPageOfSection;
 	}
 	
-	public boolean hasPageCategories() {
-		return pageCategories != null && pageCategories.size() > 0;
-	}
-	
 	public Collection<String> getPageCategories() {
 		return pageCategories;
 	}
@@ -181,10 +173,6 @@ public class PageRow {
 		this.pageCategories = pageCategories;
 	}
 	
-	public boolean hasSectionCategories() {
-		return sectionCategories != null && sectionCategories.size() > 0;
-	}
-
 	public Collection<String> getSectionCategories() {
 		return sectionCategories;
 	}
@@ -208,20 +196,12 @@ public class PageRow {
 		return "";
 	}
 	
-	public boolean hasNewEntryLink() {
-		return newEntryLink != null;
-	}
-	
 	public FormLink getNewEntryLink() {
 		return newEntryLink;
 	}
 	
 	public void setNewEntryLink(FormLink newEntryLink) {
 		this.newEntryLink = newEntryLink;
-	}
-	
-	public String getNewEntryLinkName() {
-		return newEntryLink == null ? null : newEntryLink.getComponent().getComponentName();
 	}
 	
 	public FormLink getNewFloatingEntryLink() {
@@ -235,17 +215,13 @@ public class PageRow {
 	public FormLink getOpenFormItem() {
 		return openFormLink;
 	}
-	
-	public String getOpenFormItemName() {
-		return openFormLink == null ? null : openFormLink.getComponent().getComponentName();
-	}
 
 	public void setOpenFormLink(FormLink openFormLink) {
 		this.openFormLink = openFormLink;
 	}
 	
-	public String getOpenLinkName() {
-		return openLink == null ? null : openLink.getComponentName();
+	public Link getOpenLink() {
+		return openLink;
 	}
 	
 	public void setOpenLink(Link openLink) {
@@ -259,10 +235,6 @@ public class PageRow {
 	public void setNumOfComments(long numOfComments) {
 		this.numOfComments = numOfComments;
 	}
-	
-	public boolean hasCommentLink() {
-		return commentLink != null || commentFormLink != null;
-	}
 
 	public Link getCommentLink() {
 		return commentLink;
@@ -270,10 +242,6 @@ public class PageRow {
 
 	public void setCommentLink(Link commentLink) {
 		this.commentLink = commentLink;
-	}
-	
-	public String getCommentFormItemName() {
-		return commentFormLink == null ? null : commentFormLink.getComponent().getComponentName();
 	}
 
 	public FormLink getCommentFormLink() {
@@ -300,10 +268,6 @@ public class PageRow {
 		this.metaBinderTitle = metaBinderTitle;
 	}
 	
-	public boolean hasAssignments() {
-		return assignments != null && assignments.size() > 0;
-	}
-
 	public List<PageAssignmentRow> getAssignments() {
 		return assignments;
 	}
@@ -319,6 +283,4 @@ public class PageRow {
 	public void setNewAssignmentLink(FormLink newAssignmentLink) {
 		this.newAssignmentLink = newAssignmentLink;
 	}
-	
-
 }

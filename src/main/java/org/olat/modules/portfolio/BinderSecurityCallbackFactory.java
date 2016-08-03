@@ -57,8 +57,8 @@ public class BinderSecurityCallbackFactory {
 		return new BinderSecurityCallbackForTemplate(security.isEntryAdmin());
 	}
 	
-	public static final BinderSecurityCallback getCallbackForCoach(List<AccessRights> rights) {
-		return new BinderSecurityCallbackImpl(rights);
+	public static final BinderSecurityCallback getCallbackForCoach(Binder binder, List<AccessRights> rights) {
+		return new BinderSecurityCallbackImpl(rights, binder.getTemplate() != null);
 	}
 	
 	/**
@@ -157,26 +157,29 @@ public class BinderSecurityCallbackFactory {
 		}
 
 		@Override
-		public boolean canAddAssignment() {
+		public boolean canNewAssignment() {
 			return admin;
 		}
 	}
 	
 	private static class BinderSecurityCallbackImpl implements BinderSecurityCallback {
 		
+		/**
+		 * The binder is linked to a template.
+		 */
+		private final boolean task;
 		private final boolean owner;
-		private final boolean newSectionAllowed;
 		private final List<AccessRights> rights;
 		
-		public BinderSecurityCallbackImpl(boolean owner, boolean hasTemplate) {
+		public BinderSecurityCallbackImpl(boolean owner, boolean task) {
+			this.task = task;
 			this.owner = owner;
-			this.newSectionAllowed = !hasTemplate;
 			this.rights = Collections.emptyList();
 		}
 		
-		public BinderSecurityCallbackImpl(List<AccessRights> rights) {
+		public BinderSecurityCallbackImpl(List<AccessRights> rights, boolean task) {
 			this.owner = false;
-			this.newSectionAllowed = false;
+			this.task = task;
 			this.rights = rights;
 		}
 		
@@ -192,12 +195,12 @@ public class BinderSecurityCallbackFactory {
 
 		@Override
 		public boolean canAddSection() {
-			return owner && newSectionAllowed;
+			return owner && !task;
 		}
 
 		@Override
 		public boolean canEditSection() {
-			return owner && newSectionAllowed;
+			return owner && !task;
 		}
 
 		@Override
@@ -206,8 +209,13 @@ public class BinderSecurityCallbackFactory {
 		}
 
 		@Override
-		public boolean canAddAssignment() {
+		public boolean canNewAssignment() {
 			return false;
+		}
+
+		@Override
+		public boolean canInstantiateAssignment() {
+			return owner;
 		}
 
 		@Override
@@ -215,14 +223,75 @@ public class BinderSecurityCallbackFactory {
 			return owner;
 		}
 
+		/**
+		 * The owner can only edit the page in task which are in draft or in revision.
+		 * Free binder, without task are editable until the page is closed.
+		 */
 		@Override
 		public boolean canEditPage(Page page) {
-			return owner && (page.getPageStatus() == null || page.getPageStatus() != PageStatus.closed);
+			return owner &&
+					(
+							(task && (page.getPageStatus() == null || page.getPageStatus() == PageStatus.draft || page.getPageStatus() == PageStatus.inRevision))
+							||
+							(!task && !PageStatus.isClosed(page))
+					);
 		}
 
 		@Override
 		public boolean canPublish(Page page) {
 			return owner && (page.getPageStatus() == null || page.getPageStatus() == PageStatus.draft || page.getPageStatus() == PageStatus.inRevision);
+		}
+
+		@Override
+		public boolean canRevision(Page page) {
+			if(owner) return false;
+			
+			if(rights != null && page.getPageStatus() == PageStatus.published) {
+				for(AccessRights right:rights) {
+					if(PortfolioRoles.coach.equals(right.getRole())
+							&& right.matchElementAndAncestors(page)) {
+						return true;
+					}
+				}
+			}
+			
+			return false;
+		}
+
+		@Override
+		public boolean canClose(Page page) {
+			if(owner) {
+				return !task && !PageStatus.isClosed(page);
+			}
+			
+			if(rights != null && (page.getPageStatus() == PageStatus.published || page.getPageStatus() == PageStatus.inRevision)) {
+				for(AccessRights right:rights) {
+					if(PortfolioRoles.coach.equals(right.getRole())
+							&& right.matchElementAndAncestors(page)) {
+						return true;
+					}
+				}
+			}
+			
+			return false;
+		}
+
+		@Override
+		public boolean canReopen(Page page) {
+			if(owner) {
+				return !task && PageStatus.isClosed(page);
+			}
+			
+			if(rights != null && PageStatus.isClosed(page)) {
+				for(AccessRights right:rights) {
+					if(PortfolioRoles.coach.equals(right.getRole())
+							&& right.matchElementAndAncestors(page)) {
+						return true;
+					}
+				}
+			}
+			
+			return false;
 		}
 
 		@Override
@@ -248,7 +317,16 @@ public class BinderSecurityCallbackFactory {
 
 		@Override
 		public boolean canViewElement(PortfolioElement element) {
-			if(owner) return true;
+			if(owner) {
+				return true;
+			}
+			
+			if(element instanceof Page) {
+				Page page = (Page)element;
+				if(page.getPageStatus() == null || page.getPageStatus() == PageStatus.draft) {
+					return owner;
+				}
+			}
 			
 			//need to be recursive, if page -> section too -> binder too???
 			if(rights != null) {
@@ -330,7 +408,12 @@ public class BinderSecurityCallbackFactory {
 		}
 
 		@Override
-		public boolean canAddAssignment() {
+		public boolean canNewAssignment() {
+			return false;
+		}
+
+		@Override
+		public boolean canInstantiateAssignment() {
 			return false;
 		}
 
@@ -346,6 +429,21 @@ public class BinderSecurityCallbackFactory {
 
 		@Override
 		public boolean canPublish(Page page) {
+			return false;
+		}
+
+		@Override
+		public boolean canRevision(Page page) {
+			return false;
+		}
+
+		@Override
+		public boolean canClose(Page page) {
+			return false;
+		}
+
+		@Override
+		public boolean canReopen(Page page) {
 			return false;
 		}
 

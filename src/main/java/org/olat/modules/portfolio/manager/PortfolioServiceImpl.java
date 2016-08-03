@@ -799,6 +799,7 @@ public class PortfolioServiceImpl implements PortfolioService {
 
 	@Override
 	public Page changePageStatus(Page page, PageStatus status) {
+		PageStatus currentStatus = page.getPageStatus();
 		Page reloadedPage = pageDao.loadByKey(page.getKey());
 		((PageImpl)reloadedPage).setPageStatus(status);
 		if(status == PageStatus.published) {
@@ -807,6 +808,14 @@ public class PortfolioServiceImpl implements PortfolioService {
 				((PageImpl)reloadedPage).setInitialPublicationDate(now);
 			}
 			((PageImpl)reloadedPage).setLastPublicationDate(now);
+			
+			if(currentStatus == PageStatus.closed) {
+				Section section = reloadedPage.getSection();
+				if(section != null && section.getSectionStatus() == SectionStatus.closed) {
+					((SectionImpl)section).setSectionStatus(SectionStatus.inProgress);
+					binderDao.updateSection(section);
+				}
+			}
 		}
 		return pageDao.updatePage(reloadedPage);
 	}

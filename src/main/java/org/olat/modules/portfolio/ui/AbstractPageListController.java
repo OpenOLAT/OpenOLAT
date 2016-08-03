@@ -180,7 +180,7 @@ implements Activateable2, TooledController, FlexiTableComponentDelegate {
 	public final Iterable<Component> getComponents(int row, Object rowObject) {
 		PageRow pageRow = model.getObject(row);
 		List<Component> components = new ArrayList<>(4);
-		if(pageRow.hasAssignments()) {
+		if(pageRow.getAssignments() != null && pageRow.getAssignments().size() > 0) {
 			for(PageAssignmentRow assignmentRow:pageRow.getAssignments()) {
 				if(assignmentRow.getEditLink() != null) {
 					components.add(assignmentRow.getEditLink().getComponent());
@@ -270,19 +270,24 @@ implements Activateable2, TooledController, FlexiTableComponentDelegate {
 		return row;
 	}
 	
+	/**
+	 * the assignments are synchronized with the binder.
+	 * @param row
+	 * @param assignments
+	 */
 	private void addAssignmentsToRow(PageRow row, List<Assignment> assignments) {
 		if(assignments != null && assignments.size() > 0) {
 			List<PageAssignmentRow> assignmentRows = new ArrayList<>();
 			for(Assignment assignment:assignments) {
 				PageAssignmentRow assignmentRow = new PageAssignmentRow(assignment);
 				
-				if(secCallback.canAddAssignment()) {
-					if(assignment.getTemplateReference() == null) {
-						FormLink editLink = uifactory.addFormLink("edit_assign_" + (++counter), "edit.assignment", "edit", null, flc, Link.BUTTON);
-						editLink.setUserObject(assignmentRow);
-						assignmentRow.setEditLink(editLink);
+				if(assignment.getPage() != null) {
+					if(secCallback.canViewElement(assignment.getPage())) {
+						FormLink openLink = uifactory.addFormLink("open_assign_" + (++counter), "open.assignment", "open", null, flc, Link.BUTTON);
+						openLink.setUserObject(assignmentRow);
+						assignmentRow.setOpenLink(openLink);
 					}
-				} else {
+				} else if(secCallback.canInstantiateAssignment()) {
 					if(assignment.getAssignmentStatus() == AssignmentStatus.notStarted) {
 						FormLink startLink = uifactory.addFormLink("create_assign_" + (++counter), "start.assignment", "create.start.assignment", null, flc, Link.BUTTON);
 						startLink.setUserObject(assignmentRow);
@@ -293,8 +298,13 @@ implements Activateable2, TooledController, FlexiTableComponentDelegate {
 						openLink.setUserObject(assignmentRow);
 						assignmentRow.setOpenLink(openLink);
 					}
+				} else if(secCallback.canNewAssignment()) {
+					if(assignment.getTemplateReference() == null) {
+						FormLink editLink = uifactory.addFormLink("edit_assign_" + (++counter), "edit.assignment", "edit", null, flc, Link.BUTTON);
+						editLink.setUserObject(assignmentRow);
+						assignmentRow.setEditLink(editLink);
+					}
 				}
-				
 				assignmentRows.add(assignmentRow);
 			}
 			row.setAssignments(assignmentRows);

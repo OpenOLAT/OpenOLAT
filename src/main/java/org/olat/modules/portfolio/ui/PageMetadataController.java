@@ -22,7 +22,6 @@ package org.olat.modules.portfolio.ui;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -49,10 +48,14 @@ import org.olat.modules.portfolio.BinderSecurityCallback;
 import org.olat.modules.portfolio.Category;
 import org.olat.modules.portfolio.Page;
 import org.olat.modules.portfolio.PageImageAlign;
+import org.olat.modules.portfolio.PageStatus;
 import org.olat.modules.portfolio.PortfolioRoles;
 import org.olat.modules.portfolio.PortfolioService;
 import org.olat.modules.portfolio.manager.PortfolioFileStorage;
+import org.olat.modules.portfolio.ui.event.ClosePageEvent;
 import org.olat.modules.portfolio.ui.event.PublishEvent;
+import org.olat.modules.portfolio.ui.event.ReopenPageEvent;
+import org.olat.modules.portfolio.ui.event.RevisionEvent;
 import org.olat.modules.portfolio.ui.model.UserAssignmentInfos;
 import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -69,13 +72,14 @@ public class PageMetadataController extends BasicController {
 	public static final int PICTURE_WIDTH = 570;
 	public static final int PICTURE_HEIGHT = (PICTURE_WIDTH / 3) * 2;
 	
-	private Link publishButton;
+	private Link publishButton, revisionButton, closeButton, reopenButton;
 	private ImageComponent imageCmp;
 	private String mapperThumbnailUrl;
 	private VelocityContainer mainVC;
 	
 	private final Page page;
 	private final List<Assignment> assignments;
+	private final BinderSecurityCallback secCallback;
 	
 	@Autowired
 	private UserManager userManager;
@@ -87,15 +91,14 @@ public class PageMetadataController extends BasicController {
 	public PageMetadataController(UserRequest ureq, WindowControl wControl, BinderSecurityCallback secCallback, Page page) {
 		super(ureq, wControl);
 		this.page = page;
+		this.secCallback = secCallback;
 		assignments = portfolioService.getAssignments(page);
 
 		mainVC = createVelocityContainer("page_meta");
-		if(secCallback.canPublish(page)) {
-			publishButton = LinkFactory.createButton("publish", mainVC, this);
-		}
 		
 		initMetadata(ureq);
 		initAssignments(ureq);
+		initStatus();
 		putInitialPanel(mainVC);
 	}
 	
@@ -115,22 +118,14 @@ public class PageMetadataController extends BasicController {
 		mainVC.contextPut("pageTitle", page.getTitle());
 		mainVC.contextPut("pageSummary", page.getSummary());
 		mainVC.contextPut("status", page.getPageStatus());
-		
-		Date lastPublication = page.getLastPublicationDate();
-		if(lastPublication == null) {
-			mainVC.contextPut("hasLastPublicationDate", Boolean.FALSE);
-		} else {
-			mainVC.contextPut("hasLastPublicationDate", Boolean.TRUE);
-			mainVC.contextPut("lastPublicationDate", lastPublication);
-		}
-		
+		mainVC.contextPut("lastPublicationDate", page.getLastPublicationDate());
+
 		List<Category> categories = portfolioService.getCategories(page);
 		List<String> categoryNames = new ArrayList<>(categories.size());
 		for(Category category:categories) {
 			categoryNames.add(category.getName());
 		}
 		mainVC.contextPut("pageCategories", categoryNames);
-		
 		mainVC.contextPut("lastModified", page.getLastModified());
 		
 		if(StringHelper.containsNonWhitespace(page.getImagePath())) {
@@ -176,7 +171,32 @@ public class PageMetadataController extends BasicController {
 			String mapperUri = registerCacheableMapper(ureq, "assigment-" + page.getKey(), new DocumentMapper());
 			mainVC.contextPut("mapperUri", mapperUri);
 		}
-		
+	}
+
+	private void initStatus() {
+		if(page.getSection() != null && page.getSection().getBinder() != null) {
+			mainVC.contextPut("statusEnabled", Boolean.TRUE);
+			
+			PageStatus pageStatus = page.getPageStatus();
+			if(pageStatus == null) {
+				pageStatus = PageStatus.draft;
+			}
+			String status = translate("status." + pageStatus.name());
+			mainVC.contextPut("pageStatus", status);
+			
+			if(secCallback.canPublish(page)) {
+				publishButton = LinkFactory.createButton("publish", mainVC, this);
+			}
+			if(secCallback.canRevision(page)) {
+				revisionButton = LinkFactory.createButton("revision.page", mainVC, this);
+			}
+			if(secCallback.canClose(page)) {
+				closeButton = LinkFactory.createButton("close.page", mainVC, this);
+			}
+			if(secCallback.canReopen(page)) {
+				reopenButton = LinkFactory.createButton("reopen.page", mainVC, this);
+			}
+		}
 	}
 	
 	@Override
@@ -188,6 +208,12 @@ public class PageMetadataController extends BasicController {
 	protected void event(UserRequest ureq, Component source, Event event) {
 		if(publishButton == source) {
 			fireEvent(ureq, new PublishEvent());
+		} else if(revisionButton == source) {
+			fireEvent(ureq, new RevisionEvent());
+		} else if(closeButton == source) {
+			fireEvent(ureq, new ClosePageEvent());
+		} else if(reopenButton == source) {
+			fireEvent(ureq, new ReopenPageEvent());
 		}
 	}
 	

@@ -99,10 +99,6 @@ public class MediaRow implements MediaLight {
 		return openFormLink;
 	}
 	
-	public String getOpenFormItemName() {
-		return openFormLink == null ? null : openFormLink.getComponent().getComponentName();
-	}
-	
 	public boolean isThumbnailAvailable() {
 		return thumbnail != null;
 	}

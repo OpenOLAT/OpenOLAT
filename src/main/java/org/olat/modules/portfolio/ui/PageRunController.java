@@ -41,6 +41,7 @@ import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
+import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
@@ -59,7 +60,10 @@ import org.olat.modules.portfolio.ui.editor.PageProvider;
 import org.olat.modules.portfolio.ui.editor.handler.HTMLRawPageElementHandler;
 import org.olat.modules.portfolio.ui.editor.handler.SpacerElementHandler;
 import org.olat.modules.portfolio.ui.editor.handler.TitlePageElementHandler;
+import org.olat.modules.portfolio.ui.event.ClosePageEvent;
 import org.olat.modules.portfolio.ui.event.PublishEvent;
+import org.olat.modules.portfolio.ui.event.ReopenPageEvent;
+import org.olat.modules.portfolio.ui.event.RevisionEvent;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -78,7 +82,7 @@ public class PageRunController extends BasicController implements TooledControll
 	private PageMetadataController pageMetaCtrl;
 	private PageController pageCtrl;
 	private PageEditController pageEditCtrl;
-	private DialogBoxController confirmPublishCtrl;
+	private DialogBoxController confirmPublishCtrl, confirmRevisionCtrl, confirmCloseCtrl, confirmReopenCtrl;
 	private PageMetadataEditController editMetadataCtrl;
 	private UserCommentsAndRatingsController commentsCtrl;
 	
@@ -183,9 +187,29 @@ public class PageRunController extends BasicController implements TooledControll
 		} else if(pageMetaCtrl == source) {
 			if(event instanceof PublishEvent) {
 				doConfirmPublish(ureq);
-			}
+			} else if(event instanceof RevisionEvent) {
+				doConfirmRevision(ureq);
+			} else if(event instanceof ClosePageEvent) {
+				doConfirmClose(ureq);
+			} else if(event instanceof ReopenPageEvent) {
+				doConfirmReopen(ureq);
+			}	
 		} else if(confirmPublishCtrl == source) {
-			doPublish(ureq);
+			if(DialogBoxUIFactory.isYesEvent(event)) {
+				doPublish(ureq);
+			}
+		} else if(confirmRevisionCtrl == source) {
+			if(DialogBoxUIFactory.isYesEvent(event)) {
+				doRevision(ureq);
+			}
+		} else if(confirmCloseCtrl == source) {
+			if(DialogBoxUIFactory.isYesEvent(event)) {
+				doClose(ureq);
+			}
+		} else if(confirmReopenCtrl == source) {
+			if(DialogBoxUIFactory.isYesEvent(event)) {
+				doReopen(ureq);
+			}
 		} else if(cmc == source) {
 			cleanUp();
 		}
@@ -222,6 +246,45 @@ public class PageRunController extends BasicController implements TooledControll
 	}
 	
 	private void doPublish(UserRequest ureq) {
+		page = portfolioService.changePageStatus(page, PageStatus.published);
+		stackPanel.popUpToController(this);
+		loadMeta(ureq);
+		fireEvent(ureq, Event.CHANGED_EVENT);
+	}
+	
+	private void doConfirmRevision(UserRequest ureq) {
+		String title = translate("revision.confirm.title");
+		String text = translate("revision.confirm.descr", new String[]{ page.getTitle() });
+		confirmRevisionCtrl = activateYesNoDialog(ureq, title, text, confirmRevisionCtrl);
+	}
+	
+	private void doRevision(UserRequest ureq) {
+		page = portfolioService.changePageStatus(page, PageStatus.inRevision);
+		stackPanel.popUpToController(this);
+		loadMeta(ureq);
+		fireEvent(ureq, Event.CHANGED_EVENT);
+	}
+	
+	private void doConfirmClose(UserRequest ureq) {
+		String title = translate("close.confirm.title");
+		String text = translate("close.confirm.descr", new String[]{ page.getTitle() });
+		confirmCloseCtrl = activateYesNoDialog(ureq, title, text, confirmCloseCtrl);
+	}
+	
+	private void doClose(UserRequest ureq) {
+		page = portfolioService.changePageStatus(page, PageStatus.closed);
+		stackPanel.popUpToController(this);
+		loadMeta(ureq);
+		fireEvent(ureq, Event.CHANGED_EVENT);
+	}
+	
+	private void doConfirmReopen(UserRequest ureq) {
+		String title = translate("reopen.confirm.title");
+		String text = translate("reopen.confirm.descr", new String[]{ page.getTitle() });
+		confirmReopenCtrl = activateYesNoDialog(ureq, title, text, confirmReopenCtrl);
+	}
+	
+	private void doReopen(UserRequest ureq) {
 		page = portfolioService.changePageStatus(page, PageStatus.published);
 		stackPanel.popUpToController(this);
 		loadMeta(ureq);

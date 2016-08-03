@@ -1,15 +1,10 @@
 <div class="o_portfolio_page_meta_wrapper" #if($imageAlign == "background") style="background-image: url('$mapperThumbnailUrl/${imageName}');" #end>
 <div class="o_header_with_buttons">
 	<h2>$r.escapeHtml($pageTitle) <small>$r.translate("binder.by",$owners)</small></h2>
-	#if($r.available("publish"))
-	<div class="o_button_group o_button_group_right">
-		$r.render("publish")
-	</div>
-	#end
 </div>
 <div class="o_portfolio_page_meta">
 	<div class="clearfix">
-		#if(${hasLastPublicationDate})
+		#if($r.isNotNull($lastPublicationDate))
 		<span class="o_portfolio_page_meta text-muted o_small">
 			 $r.translate("meta.last.publication", $r.formatDateAndTime($lastPublicationDate))
 		</span>
@@ -77,6 +72,24 @@
 				</div>
 	    	</div>
 		</div>
+	#end
+	#if($statusEnabled)
+	<div class="o_block">
+		$r.translate("page.status"): $pageStatus
+		
+		#if($r.available("publish"))
+			$r.render("publish")
+		#end
+		#if($r.available("revision.page"))
+			$r.render("revision.page")
+		#end
+		#if($r.available("close.page"))
+			$r.render("close.page")
+		#end
+		#if($r.available("reopen.page"))
+			$r.render("reopen.page")
+		#end
+	</div>
 	#end
 </div>
 </div>

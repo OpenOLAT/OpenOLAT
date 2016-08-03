@@ -274,7 +274,7 @@ public class PortfolioResultDetailsController extends FormBasicController {
 		if(stackPanel instanceof TooledStackedPanel) {
 			binder = portfolioService.getBinderByKey(binder.getKey());
 			List<AccessRights> rights = portfolioService.getAccessRights(binder, getIdentity());
-			BinderSecurityCallback secCallback = BinderSecurityCallbackFactory.getCallbackForCoach(rights);
+			BinderSecurityCallback secCallback = BinderSecurityCallbackFactory.getCallbackForCoach(binder, rights);
 			BinderConfiguration config = BinderConfiguration.createConfig(binder);
 			BinderController binderCtrl = new BinderController(ureq, getWindowControl(), (TooledStackedPanel)stackPanel, secCallback, binder, config);
 			String displayName = StringHelper.escapeHtml(binder.getTitle());

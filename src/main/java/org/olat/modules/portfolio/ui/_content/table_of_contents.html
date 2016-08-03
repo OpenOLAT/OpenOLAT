@@ -15,7 +15,7 @@
 				#if(${section.getPages().size()} > 0)
 				<ul class="list-unstyled">
 					#foreach($page in $section.pages)
-						<li>$r.render($page.openLinkName)</li>
+						<li>$r.render($page.openLink)</li>
 					#end
 				</ul>
 				#end

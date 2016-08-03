@@ -19,7 +19,10 @@
  */
 package org.olat.modules.portfolio;
 
+import java.util.Date;
+
 /**
+ * Define the status for a page / entry. And some utilitiy methods.
  * 
  * Initial date: 23.06.2016<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
@@ -52,5 +55,18 @@ public enum PageStatus {
 		}
 		return false;
 	}
-
+	
+	public static boolean isClosed(Page page) {
+		if(page.getPageStatus() == PageStatus.closed) {
+			return true;
+		}
+		if(page.getSection() != null) {
+			Section section = page.getSection();
+			Date now = new Date();
+			if(section.getEndDate() != null && section.getEndDate().compareTo(now) < 0) {
+				return true;
+			}
+		}
+		return false;
+	}
 }

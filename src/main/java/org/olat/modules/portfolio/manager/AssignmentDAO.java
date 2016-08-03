@@ -113,6 +113,7 @@ public class AssignmentDAO {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select assignment from pfassignment as assignment")
 		  .append(" inner join fetch assignment.section as section")
+		  .append(" left join fetch assignment.page as page")
 		  .append(" where section.binder.key=:binderKey");
 		
 		return dbInstance.getCurrentEntityManager()
@@ -125,6 +126,7 @@ public class AssignmentDAO {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select assignment from pfassignment as assignment")
 		  .append(" inner join fetch assignment.section as section")
+		  .append(" left join fetch assignment.page as page")
 		  .append(" where section.key=:sectionKey");
 		
 		return dbInstance.getCurrentEntityManager()
