@@ -88,6 +88,7 @@ public class CPRunController extends BasicController implements ControllerEventL
 	private ControllerEventListener treeNodeClickListener;
 	private String nodecmd;
 	private String selNodeId;
+	private boolean preview;
 	private OLATResourceable courseResource;
 
 	
@@ -102,7 +103,8 @@ public class CPRunController extends BasicController implements ControllerEventL
 	 * @param wControl
 	 * @param cpNode
 	 */
-	public CPRunController(ModuleConfiguration config, UserRequest ureq, WindowControl wControl, CPCourseNode cpNode, String nodecmd, OLATResourceable course) {
+	public CPRunController(ModuleConfiguration config, UserRequest ureq, WindowControl wControl, CPCourseNode cpNode, String nodecmd,
+			OLATResourceable course, boolean preview) {
 		super(ureq, wControl);
 		this.nodecmd = nodecmd;
 		this.courseResource = OresHelper.clone(course);
@@ -110,6 +112,7 @@ public class CPRunController extends BasicController implements ControllerEventL
 		if (!CPEditController.isModuleConfigValid(config)) throw new AssertException("cprun controller had an invalid module config:"	+ config.toString());
 		this.config = config;
 		this.cpNode = cpNode;
+		this.preview = preview;
 		addLoggingResourceable(LoggingResourceable.wrap(cpNode));
 
 		// jump to either the forum or the folder if the business-launch-path says so.
@@ -205,7 +208,7 @@ public class CPRunController extends BasicController implements ControllerEventL
 		}
 		boolean showNavigation = !config.getBooleanSafe(NodeEditController.CONFIG_COMPONENT_MENU);
 		cpDispC = CPUIFactory.getInstance().createContentOnlyCPDisplayController(ureq, getWindowControl(), new LocalFolderImpl(cpRoot),
-				activateFirstPage, showNavigation, deliveryOptions, nodecmd, courseResource, cpNode.getIdent());
+				activateFirstPage, showNavigation, deliveryOptions, nodecmd, courseResource, cpNode.getIdent(), preview);
 		cpDispC.setContentEncoding(deliveryOptions.getContentEncoding());
 		cpDispC.setJSEncoding(deliveryOptions.getJavascriptEncoding());
 		cpDispC.addControllerListener(this);

@@ -147,7 +147,7 @@ public class CoursePageFragment {
 	 */
 	public CoursePageFragment openToolsMenu() {
 		browser.findElement(toolsMenuCaret).click();
-		OOGraphene.waitElement(toolsMenu, browser);
+		OOGraphene.waitElement(toolsMenu, 5, browser);
 		return this;
 	}
 	

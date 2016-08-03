@@ -110,7 +110,8 @@ public class CPDisplayController extends BasicController implements Activateable
 	 * of the CP elements must be different but predictable
 	 */
 	public CPDisplayController(UserRequest ureq, WindowControl wControl, VFSContainer rootContainer, boolean showMenu, boolean showNavigation,
-			boolean activateFirstPage, boolean showPrint, DeliveryOptions deliveryOptions, String initialUri, OLATResourceable ores, String identPrefix) {
+			boolean activateFirstPage, boolean showPrint, DeliveryOptions deliveryOptions, String initialUri, OLATResourceable ores,
+			String identPrefix, boolean randomizeMapper) {
 		super(ureq, wControl);
 		this.rootContainer = rootContainer;
 
@@ -125,7 +126,7 @@ public class CPDisplayController extends BasicController implements Activateable
 			listenTo(searchCtrl);
 		}
 		
-		cpContentCtr = new IFrameDisplayController(ureq, getWindowControl(),rootContainer, null, ores, deliveryOptions, false, false);
+		cpContentCtr = new IFrameDisplayController(ureq, getWindowControl(),rootContainer, null, ores, deliveryOptions, false, randomizeMapper);
 		cpContentCtr.setAllowDownload(true);
 		listenTo(cpContentCtr);
 		myContent.put("cpContent", cpContentCtr.getInitialComponent());

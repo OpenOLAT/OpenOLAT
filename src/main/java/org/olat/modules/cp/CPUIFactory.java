@@ -72,8 +72,10 @@ public class CPUIFactory {
 	 * @return a CPDisplayController
 	 */
 	public CPDisplayController createContentOnlyCPDisplayController(UserRequest ureq, WindowControl wControl, VFSContainer rootContainer,
-			boolean activateFirstPage, boolean showNavigation, DeliveryOptions deliveryOptions, String initialUri, OLATResourceable ores, String identPrefix) {
-		return new CPDisplayController(ureq, wControl, rootContainer, false, showNavigation, activateFirstPage, true, deliveryOptions, initialUri, ores, identPrefix);		
+			boolean activateFirstPage, boolean showNavigation, DeliveryOptions deliveryOptions,
+			String initialUri, OLATResourceable ores, String identPrefix, boolean preview) {
+		return new CPDisplayController(ureq, wControl, rootContainer, false, showNavigation, activateFirstPage, true, deliveryOptions,
+				initialUri, ores, identPrefix, preview);		
 	}
 	
 	/**
@@ -91,7 +93,7 @@ public class CPUIFactory {
 	 */
 	public MainLayout3ColumnsController createMainLayoutController(UserRequest ureq, WindowControl wControl, VFSContainer rootContainer,
 			boolean showMenu, DeliveryOptions deliveryOptions) {
-		CPDisplayController cpCtr = new CPDisplayController(ureq, wControl, rootContainer, showMenu, true, true, true, deliveryOptions, null, null, "");
+		CPDisplayController cpCtr = new CPDisplayController(ureq, wControl, rootContainer, showMenu, true, true, true, deliveryOptions, null, null, "", false);
 		MainLayout3ColumnsController layoutCtr = new LayoutMain3ColsController(ureq, wControl, cpCtr.getMenuComponent(), cpCtr.getInitialComponent(), rootContainer.getName());
 		layoutCtr.addDisposableChildController(cpCtr); // cascade disposing requests
 		return layoutCtr;
@@ -112,7 +114,7 @@ public class CPUIFactory {
 	 */
 	public LayoutMain3ColsPreviewController createMainLayoutPreviewController(UserRequest ureq, WindowControl wControl, VFSContainer rootContainer,
 			boolean showMenu, DeliveryOptions deliveryOptions) {
-		CPDisplayController cpCtr = new CPDisplayController(ureq, wControl, rootContainer, showMenu, true, true, true, deliveryOptions, null, null, "");		
+		CPDisplayController cpCtr = new CPDisplayController(ureq, wControl, rootContainer, showMenu, true, true, true, deliveryOptions, null, null, "", false);		
 		LayoutMain3ColsPreviewController layoutCtr = new LayoutMain3ColsPreviewController(ureq, wControl, cpCtr.getMenuComponent(), cpCtr.getInitialComponent(), rootContainer.getName());
 		layoutCtr.addDisposableChildController(cpCtr); // cascade disposing requests
 		return layoutCtr;
@@ -133,7 +135,7 @@ public class CPUIFactory {
 	 */
 	public LayoutMain3ColsController createMainLayoutPreviewController_v2(UserRequest ureq, WindowControl wControl, VFSContainer rootContainer,
 			boolean showMenu, DeliveryOptions deliveryOptions) {
-		CPDisplayController cpCtr = new CPDisplayController(ureq, wControl, rootContainer, showMenu, true, true, true, deliveryOptions, null, null, "");		
+		CPDisplayController cpCtr = new CPDisplayController(ureq, wControl, rootContainer, showMenu, true, true, true, deliveryOptions, null, null, "", false);		
 		LayoutMain3ColsController layoutCtr = new LayoutMain3ColsController(ureq, wControl, cpCtr.getMenuComponent(), cpCtr.getInitialComponent(), rootContainer.getName());
 		layoutCtr.addDisposableChildController(cpCtr); // cascade disposing requests
 		layoutCtr.addCssClassToMain("o_preview");
