@@ -115,6 +115,11 @@ public class FileHandler extends AbstractMediaHandler implements InteractiveAddP
 		return thumbnail;
 	}
 	
+	public VFSItem getItem(Media media) {
+		VFSContainer storageContainer = fileStorage.getMediaContainer(media);
+		return storageContainer.resolve(media.getRootFilename());
+	}
+	
 	@Override
 	public MediaInformations getInformations(Object mediaObject) {
 		String title = null;
@@ -174,6 +179,11 @@ public class FileHandler extends AbstractMediaHandler implements InteractiveAddP
 	@Override
 	public Controller getMediaController(UserRequest ureq, WindowControl wControl, Media media) {
 		return new FileMediaController(ureq, wControl, media);
+	}
+
+	@Override
+	public Controller getEditMediaController(UserRequest ureq, WindowControl wControl, Media media) {
+		return new CollectFileMediaController(ureq, wControl, media);
 	}
 
 	@Override

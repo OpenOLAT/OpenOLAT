@@ -120,6 +120,11 @@ public class VideoHandler extends AbstractMediaHandler implements InteractiveAdd
 		
 		return thumbnail;
 	}
+	
+	public VFSItem getVideoItem(Media media) {
+		VFSContainer storageContainer = fileStorage.getMediaContainer(media);
+		return storageContainer.resolve(media.getRootFilename());
+	}
 
 	@Override
 	public MediaInformations getInformations(Object mediaObject) {
@@ -177,6 +182,11 @@ public class VideoHandler extends AbstractMediaHandler implements InteractiveAdd
 	@Override
 	public Controller getMediaController(UserRequest ureq, WindowControl wControl, Media media) {
 		return new VideoMediaController(ureq, wControl, media);
+	}
+	
+	@Override
+	public Controller getEditMediaController(UserRequest ureq, WindowControl wControl, Media media) {
+		return new CollectVideoMediaController(ureq, wControl, media);
 	}
 
 	@Override

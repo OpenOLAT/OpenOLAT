@@ -44,6 +44,7 @@ import org.olat.modules.portfolio.MediaLight;
 import org.olat.modules.portfolio.handler.AbstractMediaHandler;
 import org.olat.modules.portfolio.manager.MediaDAO;
 import org.olat.modules.portfolio.manager.PortfolioFileStorage;
+import org.olat.modules.portfolio.ui.media.StandardEditMediaController;
 import org.olat.portfolio.manager.EPFrontendManager;
 import org.olat.portfolio.model.artefacts.AbstractArtefact;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -154,5 +155,9 @@ public class ForumMediaHandler extends AbstractMediaHandler {
 	public Controller getMediaController(UserRequest ureq, WindowControl wControl, Media media) {
 		return new ForumMessageMediaController(ureq, wControl, media);
 	}
-	
+
+	@Override
+	public Controller getEditMediaController(UserRequest ureq, WindowControl wControl, Media media) {
+		return new StandardEditMediaController(ureq, wControl, media);
+	}
 }

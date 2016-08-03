@@ -92,6 +92,11 @@ public class CitationHandler extends AbstractMediaHandler implements Interactive
 	}
 
 	@Override
+	public Controller getEditMediaController(UserRequest ureq, WindowControl wControl, Media media) {
+		return new CollectCitationMediaController(ureq, wControl, media);
+	}
+
+	@Override
 	public PageElementAddController getAddPageElementController(UserRequest ureq, WindowControl wControl) {
 		return new CollectCitationMediaController(ureq, wControl);
 	}

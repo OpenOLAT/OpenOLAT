@@ -107,6 +107,11 @@ public class TextHandler extends AbstractMediaHandler implements InteractiveAddP
 	}
 
 	@Override
+	public Controller getEditMediaController(UserRequest ureq, WindowControl wControl, Media media) {
+		return new CollectTextMediaController(ureq, wControl, media);
+	}
+
+	@Override
 	public PageElementAddController getAddPageElementController(UserRequest ureq, WindowControl wControl) {
 		return new CollectTextMediaController(ureq, wControl);
 	}

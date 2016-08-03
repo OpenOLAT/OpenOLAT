@@ -125,8 +125,6 @@ public class BinderController extends BasicController implements TooledControlle
 	protected void doDispose() {
 		//
 	}
-	
-	
 
 	@Override
 	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {

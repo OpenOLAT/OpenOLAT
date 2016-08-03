@@ -440,7 +440,7 @@ public class MediaCenterController extends FormBasicController
 		OLATResourceable bindersOres = OresHelper.createOLATResourceableInstance("Media", mediaKey);
 		WindowControl swControl = addToHistory(ureq, bindersOres, null);
 		Media media = portfolioService.getMediaByKey(mediaKey);
-		detailsCtrl = new MediaDetailsController(ureq, swControl, media);
+		detailsCtrl = new MediaDetailsController(ureq, swControl, stackPanel, media);
 		listenTo(detailsCtrl);
 		
 		String displayName = StringHelper.escapeHtml(media.getTitle());

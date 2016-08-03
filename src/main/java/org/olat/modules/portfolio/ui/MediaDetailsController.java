@@ -26,6 +26,7 @@ import java.util.stream.Collectors;
 
 import org.olat.NewControllerFactory;
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
@@ -34,8 +35,14 @@ import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.link.Link;
+import org.olat.core.gui.components.link.LinkFactory;
+import org.olat.core.gui.components.stack.TooledController;
+import org.olat.core.gui.components.stack.TooledStackedPanel;
+import org.olat.core.gui.components.stack.TooledStackedPanel.Align;
 import org.olat.core.gui.control.Controller;
+import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
@@ -56,25 +63,41 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class MediaDetailsController extends FormBasicController implements Activateable2 {
+public class MediaDetailsController extends FormBasicController implements Activateable2, TooledController {
+
+	private Link editLink;
+	private final TooledStackedPanel stackPanel;
+
+	private Controller mediaCtrl;
+	private Controller mediaEditCtrl;
+	private CloseableModalController cmc;
 	
 	private int counter;
 	private Media media;
-	private MediaHandler handler;
-	
-	private Controller mediaCtrl;
+	private final MediaHandler handler;
+	private final List<BinderLight> usedInList;
 	
 	@Autowired
 	private UserManager userManager;
 	@Autowired
 	private PortfolioService portfolioService;
 	
-	public MediaDetailsController(UserRequest ureq, WindowControl wControl, Media media) {
+	public MediaDetailsController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel, Media media) {
 		super(ureq, wControl, "media_details");
 		this.media = media;
+		this.stackPanel = stackPanel;
 		handler = portfolioService.getMediaHandler(media.getType());
-		
+		usedInList = portfolioService.getUsedInBinders(media);
 		initForm(ureq);
+	}
+
+	@Override
+	public void initTools() {
+		if(usedInList == null || usedInList.isEmpty()) {
+			editLink = LinkFactory.createToolLink("edit", translate("edit"), this);
+			editLink.setIconLeftCSS("o_icon o_icon-lg o_icon_edit");
+			stackPanel.addTool(editLink, Align.left);
+		}
 	}
 
 	@Override
@@ -114,7 +137,7 @@ public class MediaDetailsController extends FormBasicController implements Activ
 				categoriesEl.setEnabled(false);
 			}
 			
-			List<BinderLight> usedInList = portfolioService.getUsedInBinders(media);
+			
 			List<FormLink> binderLinks = new ArrayList<>(usedInList.size());
 			for(BinderLight binder:usedInList) {
 				FormLink link = uifactory.addFormLink("binder_" + (++counter), binder.getTitle(), null, layoutCont, Link.LINK | Link.NONTRANSLATED);
@@ -123,6 +146,10 @@ public class MediaDetailsController extends FormBasicController implements Activ
 			}
 			layoutCont.contextPut("binderLinks", binderLinks);
 		}
+	}
+	
+	private void reload(UserRequest ureq) {
+		initForm(flc, this, ureq);
 	}
 
 	@Override
@@ -141,6 +168,36 @@ public class MediaDetailsController extends FormBasicController implements Activ
 	}
 
 	@Override
+	public void event(UserRequest ureq, Component source, Event event) {
+		if(editLink == source) {
+			doEdit(ureq);
+		}
+		super.event(ureq, source, event);
+	}
+
+	@Override
+	protected void event(UserRequest ureq, Controller source, Event event) {
+		if(mediaEditCtrl == source) {
+			if(event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
+				reload(ureq);
+				fireEvent(ureq, Event.CHANGED_EVENT);
+			}
+			cmc.deactivate();
+			cleanUp();
+		} else if(cmc == source) {
+			cleanUp();
+		}
+		super.event(ureq, source, event);
+	}
+	
+	private void cleanUp() {
+		removeAsListenerAndDispose(mediaEditCtrl);
+		removeAsListenerAndDispose(cmc);
+		mediaEditCtrl = null;
+		cmc = null;
+	}
+
+	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(source instanceof FormLink) {
 			FormLink link = (FormLink)source;
@@ -151,5 +208,17 @@ public class MediaDetailsController extends FormBasicController implements Activ
 			}
 		}
 		super.formInnerEvent(ureq, source, event);
+	}
+	
+	private void doEdit(UserRequest ureq) {
+		if(mediaEditCtrl != null) return;
+		
+		mediaEditCtrl = handler.getEditMediaController(ureq, getWindowControl(), media);
+		listenTo(mediaEditCtrl);
+		
+		String title = translate("edit");
+		cmc = new CloseableModalController(getWindowControl(), null, mediaEditCtrl.getInitialComponent(), true, title, true);
+		listenTo(cmc);
+		cmc.activate();
 	}
 }

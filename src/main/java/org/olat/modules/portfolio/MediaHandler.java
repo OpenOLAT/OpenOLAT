@@ -54,5 +54,7 @@ public interface MediaHandler {
 	public Media createMedia(AbstractArtefact artefact);
 	
 	public Controller getMediaController(UserRequest ureq, WindowControl wControl, Media media);
+	
+	public Controller getEditMediaController(UserRequest ureq, WindowControl wControl, Media media);
 
 }

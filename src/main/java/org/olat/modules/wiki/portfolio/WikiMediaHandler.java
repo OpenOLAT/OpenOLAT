@@ -31,6 +31,7 @@ import org.olat.modules.portfolio.MediaInformations;
 import org.olat.modules.portfolio.MediaLight;
 import org.olat.modules.portfolio.handler.AbstractMediaHandler;
 import org.olat.modules.portfolio.manager.MediaDAO;
+import org.olat.modules.portfolio.ui.media.StandardEditMediaController;
 import org.olat.modules.wiki.WikiPage;
 import org.olat.portfolio.model.artefacts.AbstractArtefact;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -104,5 +105,10 @@ public class WikiMediaHandler extends AbstractMediaHandler {
 	@Override
 	public Controller getMediaController(UserRequest ureq, WindowControl wControl, Media media) {
 		return new WikiPageMediaController(ureq, wControl, media);
+	}
+
+	@Override
+	public Controller getEditMediaController(UserRequest ureq, WindowControl wControl, Media media) {
+		return new StandardEditMediaController(ureq, wControl, media);
 	}
 }

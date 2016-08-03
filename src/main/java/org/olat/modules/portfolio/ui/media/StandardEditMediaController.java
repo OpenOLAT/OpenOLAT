@@ -40,45 +40,29 @@ import org.olat.core.util.Util;
 import org.olat.modules.portfolio.Category;
 import org.olat.modules.portfolio.Media;
 import org.olat.modules.portfolio.PortfolioService;
-import org.olat.modules.portfolio.handler.TextHandler;
-import org.olat.modules.portfolio.model.MediaPart;
 import org.olat.modules.portfolio.ui.PortfolioHomeController;
-import org.olat.modules.portfolio.ui.editor.AddElementInfos;
-import org.olat.modules.portfolio.ui.editor.PageElement;
-import org.olat.modules.portfolio.ui.editor.PageElementAddController;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
- * Initial date: 24.06.2016<br>
+ * Initial date: 03.08.2016<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class CollectTextMediaController extends FormBasicController implements PageElementAddController {
+public class StandardEditMediaController extends FormBasicController {
 	
 	private TextElement titleEl;
-	private TextElement descriptionEl, textEl;
+	private TextElement descriptionEl;
 	private TextBoxListElement categoriesEl;
 
 	private Media mediaReference;
+	private final String businessPath;
 	private Map<String,String> categories = new HashMap<>();
 	
-	private final String businessPath;
-	private AddElementInfos userObject;
-	
-	@Autowired
-	private TextHandler fileHandler;
 	@Autowired
 	private PortfolioService portfolioService;
-
-	public CollectTextMediaController(UserRequest ureq, WindowControl wControl) {
-		super(ureq, wControl);
-		setTranslator(Util.createPackageTranslator(PortfolioHomeController.class, getLocale(), getTranslator()));
-		businessPath = "[HomeSite:" + getIdentity().getKey() + "][PortfolioV2:0][MediaCenter:0]";
-		initForm(ureq);
-	}
 	
-	public CollectTextMediaController(UserRequest ureq, WindowControl wControl, Media media) {
+	public StandardEditMediaController(UserRequest ureq, WindowControl wControl, Media media) {
 		super(ureq, wControl);
 		setTranslator(Util.createPackageTranslator(PortfolioHomeController.class, getLocale(), getTranslator()));
 		businessPath = media.getBusinessPath();
@@ -91,27 +75,6 @@ public class CollectTextMediaController extends FormBasicController implements P
 		
 		initForm(ureq);
 	}
-	
-	public Media getMediaReference() {
-		return mediaReference;
-	}
-	
-	@Override
-	public AddElementInfos getUserObject() {
-		return userObject;
-	}
-
-	@Override
-	public void setUserObject(AddElementInfos userObject) {
-		this.userObject = userObject;
-	}
-
-	@Override
-	public PageElement getPageElement() {
-		MediaPart part = new MediaPart();
-		part.setMedia(mediaReference);
-		return part;
-	}
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
@@ -120,11 +83,8 @@ public class CollectTextMediaController extends FormBasicController implements P
 		titleEl.setMandatory(true);
 		
 		String desc = mediaReference == null ? null : mediaReference.getDescription();
-		descriptionEl = uifactory.addRichTextElementForStringData("artefact.descr", "artefact.descr", desc, 6, 6, false, null, null, formLayout, ureq.getUserSession(), getWindowControl());
-		
-		String content = mediaReference == null ? null : mediaReference.getContent();
-		textEl = uifactory.addRichTextElementForStringData("artefact.text", "artefact.text", content, 10, 6, false, null, null, formLayout, ureq.getUserSession(), getWindowControl());
-		
+		descriptionEl = uifactory.addRichTextElementForStringData("artefact.descr", "artefact.descr", desc, 8, 6, false, null, null, formLayout, ureq.getUserSession(), getWindowControl());
+
 		categoriesEl = uifactory.addTextBoxListElement("categories", "categories", "categories.hint", categories, formLayout, getTranslator());
 		categoriesEl.setElementCssClass("o_sel_ep_tagsinput");
 		categoriesEl.setAllowDuplicates(false);
@@ -150,32 +110,17 @@ public class CollectTextMediaController extends FormBasicController implements P
 	}
 	
 	@Override
-	protected boolean validateFormLogic(UserRequest ureq) {
-		boolean allOk = true;
-
-		return allOk & super.validateFormLogic(ureq);
-	}
-
-	@Override
 	protected void formOK(UserRequest ureq) {
-		if(mediaReference == null) {
-			String title = titleEl.getValue();
-			String description = descriptionEl.getValue();
-			String content = textEl.getValue();
-			mediaReference = fileHandler.createMedia(title, description, content, businessPath, getIdentity());
-		} else {
-			mediaReference.setTitle(titleEl.getValue());
-			mediaReference.setDescription(descriptionEl.getValue());
-			mediaReference.setContent(textEl.getValue());
-			mediaReference = portfolioService.updateMedia(mediaReference);
-		}
+		mediaReference.setTitle(titleEl.getValue());
+		mediaReference.setDescription(descriptionEl.getValue());
+		mediaReference = portfolioService.updateMedia(mediaReference);
 
 		List<String> updatedCategories = categoriesEl.getValueList();
 		portfolioService.updateCategories(mediaReference, updatedCategories);
 		
 		fireEvent(ureq, Event.DONE_EVENT);
 	}
-	
+
 	@Override
 	protected void formCancelled(UserRequest ureq) {
 		fireEvent(ureq, Event.CANCELLED_EVENT);

@@ -122,6 +122,11 @@ public class ImageHandler extends AbstractMediaHandler implements InteractiveAdd
 		
 		return thumbnail;
 	}
+	
+	public VFSItem getImage(Media media) {
+		VFSContainer storageContainer = fileStorage.getMediaContainer(media);
+		return storageContainer.resolve(media.getRootFilename());
+	}
 
 	@Override
 	public MediaInformations getInformations(Object mediaObject) {
@@ -180,11 +185,18 @@ public class ImageHandler extends AbstractMediaHandler implements InteractiveAdd
 	public Controller getMediaController(UserRequest ureq, WindowControl wControl, Media media) {
 		return new ImageMediaController(ureq, wControl, media);
 	}
+	
+	
 /*
 	@Override
 	public Controller getEditor(UserRequest ureq, WindowControl wControl, PageElement element) {
 		return new ImageMediaEditorController(ureq, wControl, (MediaPart)element);
 	}*/
+
+	@Override
+	public Controller getEditMediaController(UserRequest ureq, WindowControl wControl, Media media) {
+		return new CollectImageMediaController(ureq, wControl, media);
+	}
 
 	@Override
 	public PageElementAddController getAddPageElementController(UserRequest ureq, WindowControl wControl) {

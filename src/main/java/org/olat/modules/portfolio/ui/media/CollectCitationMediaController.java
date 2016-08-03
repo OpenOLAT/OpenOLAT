@@ -41,6 +41,7 @@ import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
+import org.olat.modules.portfolio.Category;
 import org.olat.modules.portfolio.CitationSourceType;
 import org.olat.modules.portfolio.Media;
 import org.olat.modules.portfolio.PortfolioService;
@@ -75,6 +76,11 @@ public class CollectCitationMediaController extends FormBasicController implemen
 	private TextElement descriptionEl, textEl;
 	private TextBoxListElement categoriesEl;
 	
+	private SingleSelection sourceTypeEl;
+	private TextElement urlEl, sourceEl, languageEl;
+	private TextElement creatorsEl, placeEl, publisherEl;
+	private TextElement editionEl, volumeEl, seriesEl, publicationTitleEl, issueEl, pagesEl, institutionEl;
+	
 	private CitationXml citation;
 	private Media mediaReference;
 	private Map<String,String> categories = new HashMap<>();
@@ -92,6 +98,21 @@ public class CollectCitationMediaController extends FormBasicController implemen
 		setTranslator(Util.createPackageTranslator(PortfolioHomeController.class, getLocale(), getTranslator()));
 		setTranslator(Util.createPackageTranslator(MetaInfoController.class, getLocale(), getTranslator()));
 		businessPath = "[HomeSite:" + getIdentity().getKey() + "][PortfolioV2:0][MediaCenter:0]";
+		initForm(ureq);
+		updateCitationFieldsVisibility();
+	}
+	
+	public CollectCitationMediaController(UserRequest ureq, WindowControl wControl, Media media) {
+		super(ureq, wControl);
+		setTranslator(Util.createPackageTranslator(PortfolioHomeController.class, getLocale(), getTranslator()));
+		setTranslator(Util.createPackageTranslator(MetaInfoController.class, getLocale(), getTranslator()));
+		businessPath = media.getBusinessPath();
+		mediaReference = media;
+		
+		List<Category> categoryList = portfolioService.getCategories(media);
+		for(Category category:categoryList) {
+			categories.put(category.getName(), category.getName());
+		}
 		initForm(ureq);
 		updateCitationFieldsVisibility();
 	}
@@ -119,12 +140,15 @@ public class CollectCitationMediaController extends FormBasicController implemen
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		titleEl = uifactory.addTextElement("artefact.title", "artefact.title", 255, "", formLayout);
+		String title = mediaReference == null ? null : mediaReference.getTitle();
+		titleEl = uifactory.addTextElement("artefact.title", "artefact.title", 255, title, formLayout);
 		titleEl.setMandatory(true);
 		
-		descriptionEl = uifactory.addRichTextElementForStringData("artefact.descr", "artefact.descr", "", 6, 6, false, null, null, formLayout, ureq.getUserSession(), getWindowControl());
+		String desc = mediaReference == null ? null : mediaReference.getDescription();
+		descriptionEl = uifactory.addRichTextElementForStringData("artefact.descr", "artefact.descr", desc, 6, 6, false, null, null, formLayout, ureq.getUserSession(), getWindowControl());
 		
-		textEl = uifactory.addRichTextElementForStringData("citation", "citation", "", 10, 6, false, null, null, formLayout, ureq.getUserSession(), getWindowControl());
+		String text = mediaReference == null ? null : mediaReference.getContent();
+		textEl = uifactory.addRichTextElementForStringData("citation", "citation", text, 10, 6, false, null, null, formLayout, ureq.getUserSession(), getWindowControl());
 		
 		categoriesEl = uifactory.addTextBoxListElement("categories", "categories", "categories.hint", categories, formLayout, getTranslator());
 		categoriesEl.setElementCssClass("o_sel_ep_tagsinput");
@@ -133,7 +157,8 @@ public class CollectCitationMediaController extends FormBasicController implemen
 		initMetadataForm(formLayout);
 		initCitationForm(formLayout);
 		
-		String date = Formatter.getInstance(getLocale()).formatDate(new Date());
+		Date collectDate = mediaReference == null ? new Date() : mediaReference.getCollectionDate();
+		String date = Formatter.getInstance(getLocale()).formatDate(collectDate);
 		uifactory.addStaticTextElement("artefact.collect.date", "artefact.collect.date", date, formLayout);
 
 		if(StringHelper.containsNonWhitespace(businessPath)) {
@@ -146,12 +171,7 @@ public class CollectCitationMediaController extends FormBasicController implemen
 		uifactory.addFormSubmitButton("save", "save", buttonsCont);
 		uifactory.addFormCancelButton("cancel", buttonsCont, ureq, getWindowControl());
 	}
-	
-	private TextElement creatorsEl, placeEl, publisherEl;
-	//date
-	private TextElement urlEl, sourceEl, languageEl;
-	
-	
+
 	protected void initMetadataForm(FormItemContainer formLayout) {
 		String creators = (mediaReference != null ? mediaReference.getCreators() : null);
 		creatorsEl = uifactory.addTextElement("creator", "mf.creator", -1, creators, formLayout);
@@ -171,10 +191,6 @@ public class CollectCitationMediaController extends FormBasicController implemen
 		String language = (mediaReference != null ? mediaReference.getLanguage() : null);
 		languageEl = uifactory.addTextElement("language", "mf.language", -1, language, formLayout);
 	}
-	
-	private SingleSelection sourceTypeEl;
-	
-	private TextElement editionEl, volumeEl, seriesEl, publicationTitleEl, issueEl, pagesEl, institutionEl;
 
 	protected void initCitationForm(FormItemContainer formLayout) {
 		

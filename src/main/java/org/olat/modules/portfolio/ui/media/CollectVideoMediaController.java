@@ -40,9 +40,12 @@ import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
+import org.olat.core.util.vfs.JavaIOItem;
+import org.olat.core.util.vfs.VFSItem;
+import org.olat.modules.portfolio.Category;
 import org.olat.modules.portfolio.Media;
 import org.olat.modules.portfolio.PortfolioService;
-import org.olat.modules.portfolio.handler.ImageHandler;
+import org.olat.modules.portfolio.handler.VideoHandler;
 import org.olat.modules.portfolio.model.MediaPart;
 import org.olat.modules.portfolio.ui.PortfolioHomeController;
 import org.olat.modules.portfolio.ui.editor.AddElementInfos;
@@ -70,7 +73,7 @@ public class CollectVideoMediaController extends FormBasicController implements 
 	private AddElementInfos userObject;
 	
 	@Autowired
-	private ImageHandler fileHandler;
+	private VideoHandler fileHandler;
 	@Autowired
 	private PortfolioService portfolioService;
 
@@ -78,6 +81,20 @@ public class CollectVideoMediaController extends FormBasicController implements 
 		super(ureq, wControl);
 		setTranslator(Util.createPackageTranslator(PortfolioHomeController.class, getLocale(), getTranslator()));
 		businessPath = "[HomeSite:" + getIdentity().getKey() + "][PortfolioV2:0][MediaCenter:0]";
+		initForm(ureq);
+	}
+	
+	public CollectVideoMediaController(UserRequest ureq, WindowControl wControl, Media media) {
+		super(ureq, wControl);
+		setTranslator(Util.createPackageTranslator(PortfolioHomeController.class, getLocale(), getTranslator()));
+		businessPath = media.getBusinessPath();
+		mediaReference = media;
+		
+		List<Category> categoryList = portfolioService.getCategories(media);
+		for(Category category:categoryList) {
+			categories.put(category.getName(), category.getName());
+		}
+		
 		initForm(ureq);
 	}
 	
@@ -104,25 +121,33 @@ public class CollectVideoMediaController extends FormBasicController implements 
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		titleEl = uifactory.addTextElement("artefact.title", "artefact.title", 255, "", formLayout);
+		String title = mediaReference == null ? null : mediaReference.getTitle();
+		titleEl = uifactory.addTextElement("artefact.title", "artefact.title", 255, title, formLayout);
 		titleEl.setMandatory(true);
 		
-		descriptionEl = uifactory.addRichTextElementForStringData("artefact.descr", "artefact.descr", "", 8, 6, false, null, null, formLayout, ureq.getUserSession(), getWindowControl());
+		String desc = mediaReference == null ? null : mediaReference.getDescription();
+		descriptionEl = uifactory.addRichTextElementForStringData("artefact.descr", "artefact.descr", desc, 8, 6, false, null, null, formLayout, ureq.getUserSession(), getWindowControl());
 		
 		fileEl = uifactory.addFileElement(getWindowControl(), "artefact.file", "artefact.file", formLayout);
 		fileEl.addActionListener(FormEvent.ONCHANGE);
 		fileEl.setMaxUploadSizeKB(250000, null, null);
 		fileEl.setPreview(ureq.getUserSession(), true);
 		fileEl.setDeleteEnabled(true);
+		if(mediaReference != null) {
+			fileEl.setEnabled(false);
+			
+			VFSItem item = fileHandler.getVideoItem(mediaReference);
+			if(item instanceof JavaIOItem) {
+				fileEl.setInitialFile(((JavaIOItem)item).getBasefile());
+			}
+		}
 		
 		categoriesEl = uifactory.addTextBoxListElement("categories", "categories", "categories.hint", categories, formLayout, getTranslator());
 		categoriesEl.setElementCssClass("o_sel_ep_tagsinput");
 		categoriesEl.setAllowDuplicates(false);
 		
-		//String source = "Forum";
-		//uifactory.addStaticTextElement("artefact.source", "artefact.source", source, formLayout);
-		
-		String date = Formatter.getInstance(getLocale()).formatDate(new Date());
+		Date collectDate = mediaReference == null ? new Date() : mediaReference.getCollectionDate();
+		String date = Formatter.getInstance(getLocale()).formatDate(collectDate);
 		uifactory.addStaticTextElement("artefact.collect.date", "artefact.collect.date", date, formLayout);
 
 		if(StringHelper.containsNonWhitespace(businessPath)) {
@@ -146,7 +171,7 @@ public class CollectVideoMediaController extends FormBasicController implements 
 		boolean allOk = true;
 		
 		fileEl.clearError();
-		if(fileEl.getUploadFile() == null || fileEl.getUploadSize() < 1) {
+		if(fileEl.getInitialFile() == null && (fileEl.getUploadFile() == null || fileEl.getUploadSize() < 1)) {
 			fileEl.setErrorKey("form.legende.mandatory", null);
 			allOk &= false;
 		}
@@ -163,7 +188,9 @@ public class CollectVideoMediaController extends FormBasicController implements 
 			String uploadedFilename = fileEl.getUploadFileName();
 			mediaReference = fileHandler.createMedia(title, description, uploadedFile, uploadedFilename, businessPath, getIdentity());
 		} else {
-			//TODO can we update an artefact?
+			mediaReference.setTitle(titleEl.getValue());
+			mediaReference.setDescription(descriptionEl.getValue());
+			mediaReference = portfolioService.updateMedia(mediaReference);
 		}
 
 		List<String> updatedCategories = categoriesEl.getValueList();

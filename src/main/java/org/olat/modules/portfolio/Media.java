@@ -51,11 +51,17 @@ public interface Media extends MediaLight, DublinCoreMetadata {
 
 	@Override
 	public String getTitle();
+	
+	public void setTitle(String title);
 
 	@Override
 	public String getDescription();
 	
+	public void setDescription(String description);
+	
 	public String getContent();
+	
+	public void setContent(String content);
 	
 	@Override
 	public String getBusinessPath();
