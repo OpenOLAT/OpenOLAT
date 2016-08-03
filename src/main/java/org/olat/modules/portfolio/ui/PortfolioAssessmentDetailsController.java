@@ -163,7 +163,7 @@ public class PortfolioAssessmentDetailsController extends FormBasicController {
 			if("map.binder.change".equals(cmd)) {
 				if (deadlineCalloutCtr == null) {
 					Binder map = (Binder)link.getUserObject();
-					popupDeadlineBox(ureq, map);
+					//popupDeadlineBox(ureq, map);
 				} else {
 					// close on second click
 					closeDeadlineBox();
@@ -198,32 +198,8 @@ public class PortfolioAssessmentDetailsController extends FormBasicController {
 			removeAsListenerAndDispose(deadlineCalloutCtr);
 			deadlineCalloutCtr = null;
 		} else if (source == deadlineCtr) {
-			String deadLine = "";
-			if(deadlineCtr.getBinder() != null) {
-				Binder binder = deadlineCtr.getBinder();
-				if(binder.getDeadLine() != null) {
-					Formatter formatter = Formatter.getInstance(getLocale());
-					deadLine = formatter.formatDateAndTime(binder.getDeadLine());
-				}
-				binderToElements.get(binder).deadlineEl.setValue(deadLine);
-			}
 			closeDeadlineBox();
 		}
-	}
-
-	private void popupDeadlineBox(UserRequest ureq, Binder binder) {
-		String title = translate("map.deadline.change");
-		
-		removeAsListenerAndDispose(deadlineCtr);
-		deadlineCtr = new DeadlineController(ureq, getWindowControl(), binder);
-		listenTo(deadlineCtr);
-
-		removeAsListenerAndDispose(deadlineCalloutCtr);
-		FormLink changeDeadlineLink = binderToElements.get(binder).changeDeadlineLink;
-		deadlineCalloutCtr = new CloseableCalloutWindowController(ureq, getWindowControl(), deadlineCtr.getInitialComponent(),
-				changeDeadlineLink, title, true, "o_ep_deadline_callout");
-		listenTo(deadlineCalloutCtr);
-		deadlineCalloutCtr.activate();
 	}
 	
 	private void closeDeadlineBox() {

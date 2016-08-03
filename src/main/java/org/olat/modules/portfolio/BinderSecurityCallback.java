@@ -45,6 +45,8 @@ public interface BinderSecurityCallback {
 	
 	public boolean canEditSection();
 	
+	public boolean canSectionBeginAndEnd();
+	
 	public boolean canAddAssignment();
 	
 	public boolean canAddPage();

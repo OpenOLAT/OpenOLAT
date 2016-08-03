@@ -150,6 +150,11 @@ public class BinderSecurityCallbackFactory {
 		public boolean canEditSection() {
 			return admin;
 		}
+		
+		@Override
+		public boolean canSectionBeginAndEnd() {
+			return true;
+		}
 
 		@Override
 		public boolean canAddAssignment() {
@@ -193,6 +198,11 @@ public class BinderSecurityCallbackFactory {
 		@Override
 		public boolean canEditSection() {
 			return owner && newSectionAllowed;
+		}
+
+		@Override
+		public boolean canSectionBeginAndEnd() {
+			return false;
 		}
 
 		@Override
@@ -311,6 +321,11 @@ public class BinderSecurityCallbackFactory {
 
 		@Override
 		public boolean canEditSection() {
+			return false;
+		}
+
+		@Override
+		public boolean canSectionBeginAndEnd() {
 			return false;
 		}
 

@@ -322,7 +322,7 @@ public class TableOfContentController extends BasicController implements TooledC
 	private void doEditSection(UserRequest ureq, SectionRow sectionRow) {
 		if(editSectionCtrl != null) return;
 		
-		editSectionCtrl = new SectionEditController(ureq, getWindowControl(), sectionRow.getSection());
+		editSectionCtrl = new SectionEditController(ureq, getWindowControl(), sectionRow.getSection(), secCallback);
 		editSectionCtrl.setUserObject(sectionRow);
 		listenTo(editSectionCtrl);
 		
@@ -335,7 +335,7 @@ public class TableOfContentController extends BasicController implements TooledC
 	private void doCreateNewSection(UserRequest ureq) {
 		if(newSectionCtrl != null) return;
 		
-		newSectionCtrl = new SectionEditController(ureq, getWindowControl(), binder);
+		newSectionCtrl = new SectionEditController(ureq, getWindowControl(), binder, secCallback);
 		listenTo(newSectionCtrl);
 		
 		String title = translate("create.new.section");

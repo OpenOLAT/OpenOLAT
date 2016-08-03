@@ -140,6 +140,9 @@ public class PortfolioCourseNodeEditController extends ActivateableTabbableDefau
 				configForm.getUpdatedConfig();
 				configForm.setDirtyFromOtherForm(false);
 				fireEvent(ureq, NodeEditController.NODECONFIG_CHANGED_EVENT);
+				textForm.loadMapOrBinder();
+				textForm.updateUI();
+				configContent.setDirty(true);
 			} else if (event == Event.CHANGED_EVENT) {
 				// disable modification in other forms!
 				configForm.setDirtyFromOtherForm(true);

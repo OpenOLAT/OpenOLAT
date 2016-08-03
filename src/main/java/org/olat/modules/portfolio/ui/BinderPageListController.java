@@ -397,7 +397,7 @@ public class BinderPageListController extends AbstractPageListController  {
 	private void doCreateNewSection(UserRequest ureq) {
 		if(newSectionCtrl != null) return;
 		
-		newSectionCtrl = new SectionEditController(ureq, getWindowControl(), binder);
+		newSectionCtrl = new SectionEditController(ureq, getWindowControl(), binder, secCallback);
 		listenTo(newSectionCtrl);
 		
 		String title = translate("create.new.section");

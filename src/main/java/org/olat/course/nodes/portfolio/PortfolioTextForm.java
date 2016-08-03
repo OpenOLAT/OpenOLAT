@@ -23,13 +23,13 @@ package org.olat.course.nodes.portfolio;
 import java.util.Arrays;
 import java.util.Date;
 
-import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.DateChooser;
 import org.olat.core.gui.components.form.flexible.elements.RichTextElement;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
+import org.olat.core.gui.components.form.flexible.elements.SpacerElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
@@ -45,9 +45,13 @@ import org.olat.course.ICourse;
 import org.olat.course.nodes.PortfolioCourseNode;
 import org.olat.course.nodes.portfolio.PortfolioCourseNodeConfiguration.DeadlineType;
 import org.olat.modules.ModuleConfiguration;
+import org.olat.modules.portfolio.Binder;
+import org.olat.modules.portfolio.PortfolioService;
+import org.olat.modules.portfolio.handler.BinderTemplateResource;
 import org.olat.portfolio.manager.EPFrontendManager;
 import org.olat.portfolio.model.structel.PortfolioStructureMap;
 import org.olat.repository.RepositoryEntry;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -59,44 +63,65 @@ import org.olat.repository.RepositoryEntry;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
 public class PortfolioTextForm extends FormBasicController {
-	private final ModuleConfiguration config;
 	
-	private SingleSelection deadlineMonth;
-	private SingleSelection deadlineWeek;
-	private SingleSelection deadlineDay;
+	private SingleSelection deadlineType, deadlineMonth, deadlineWeek, deadlineDay;
 	private DateChooser deadlineChooser;
 	private FormLayoutContainer deadlineLayout;
-	private SingleSelection deadlineType;
-	
+	private SpacerElement spacerEl;
 	private RichTextElement textEl;
 
 	private boolean inUse;
-
+	private boolean withDeadline;
 	private boolean warningShown;
+
+	private final ModuleConfiguration config;
+	private final PortfolioCourseNode courseNode;
+	private final RepositoryEntry courseEntry;
+	
+	@Autowired
+	private EPFrontendManager ePFMgr;
+	@Autowired
+	private PortfolioService portfolioService;
 	
 	public PortfolioTextForm(UserRequest ureq, WindowControl wControl, ICourse course, PortfolioCourseNode courseNode) {
 		super(ureq, wControl);
-		this.config = courseNode.getModuleConfiguration();		
-		
+		this.courseNode = courseNode;
+		config = courseNode.getModuleConfiguration();	
+		courseEntry = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
+		initForm(ureq);
+	}
+	
+	protected void loadMapOrBinder() {
 		RepositoryEntry  mapEntry = courseNode.getReferencedRepositoryEntry();
 		if(mapEntry != null) {
-			EPFrontendManager ePFMgr = (EPFrontendManager) CoreSpringFactory.getBean("epFrontendManager");
-			PortfolioStructureMap template = (PortfolioStructureMap) ePFMgr.loadPortfolioStructure(mapEntry.getOlatResource());
-			Long courseResId = course.getResourceableId();
-			OLATResourceable courseOres = OresHelper.createOLATResourceableInstance(CourseModule.class, courseResId);
-			if (template != null) {
-				inUse = ePFMgr.isTemplateInUse(template, courseOres, courseNode.getIdent(), null);
+			if(BinderTemplateResource.TYPE_NAME.equals(mapEntry.getOlatResource().getResourceableTypeName())) {
+				Binder binder = portfolioService.getBinderByResource(mapEntry.getOlatResource());
+				if (binder != null) {
+					inUse = portfolioService.isTemplateInUse(binder, courseEntry, courseNode.getIdent());
+				}
+				withDeadline = false;
+			} else {
+				PortfolioStructureMap template = (PortfolioStructureMap)ePFMgr.loadPortfolioStructure(mapEntry.getOlatResource());
+				Long courseResId = courseEntry.getOlatResource().getResourceableId();
+				OLATResourceable courseOres = OresHelper
+						.createOLATResourceableInstance(CourseModule.class, courseResId);
+				if (template != null) {
+					inUse = ePFMgr.isTemplateInUse(template, courseOres, courseNode.getIdent(), null);
+				}
+				withDeadline = true;
 			}
+		} else {
+			withDeadline = true;
 		}
-		
-		initForm(ureq);
 	}
 	
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormTitle("pane.tab.portfolio_config.explanation");
 
-		String[] absolutKeys = new String[]{DeadlineType.none.name(), DeadlineType.absolut.name(), DeadlineType.relative.name()};
+		String[] absolutKeys = new String[] {
+				DeadlineType.none.name(), DeadlineType.absolut.name(), DeadlineType.relative.name()
+		};
 		String[] absolutValues = new String[] {
 				translate("map.deadline." + absolutKeys[0]), translate("map.deadline." + absolutKeys[1]), translate("map.deadline." + absolutKeys[2])
 		};
@@ -147,10 +172,10 @@ public class PortfolioTextForm extends FormBasicController {
 		select(deadlineDay, PortfolioCourseNodeConfiguration.DEADLINE_DAY, dayKeys);
 		formLayout.add(deadlineLayout);
 
+		spacerEl = uifactory.addSpacerElement("spacer-1", formLayout, false);
+
 		updateUI();
 		
-		uifactory.addSpacerElement("spacer-1", formLayout, false);
-	
 		Object nodeText = config.get(PortfolioCourseNodeConfiguration.NODE_TEXT);
 		String text = nodeText instanceof String ? (String)nodeText : "";
 		textEl = uifactory.addRichTextElementForStringDataMinimalistic("text", "explanation.text", text, 10, -1, formLayout, getWindowControl());
@@ -248,7 +273,15 @@ public class PortfolioTextForm extends FormBasicController {
 	}
 	
 	protected void updateUI() {
-		if(deadlineType.isOneSelected()) {
+		if(!withDeadline) {
+			deadlineType.setVisible(false);
+			deadlineLayout.setVisible(false);
+			deadlineChooser.setVisible(false);
+			spacerEl.setVisible(false);
+		} else if(deadlineType.isOneSelected()) {
+			spacerEl.setVisible(true);
+			deadlineType.setVisible(true);
+			
 			if(deadlineType.getSelected() == 0) {
 				deadlineLayout.setVisible(false);
 				deadlineChooser.setVisible(false);
@@ -272,10 +305,10 @@ public class PortfolioTextForm extends FormBasicController {
 			if (newDeadLine != null && newDeadLine.before(new Date())) {
 				deadlineChooser.setErrorKey("map.deadline.invalid.before", null);
 				return false;
-			} else return true;
+			} else {
+				return true;
+			}
 		}
 		return super.validateFormLogic(ureq);
 	}
-	
-	
 }

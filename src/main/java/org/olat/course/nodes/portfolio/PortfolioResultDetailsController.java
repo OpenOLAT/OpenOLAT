@@ -207,20 +207,9 @@ public class PortfolioResultDetailsController extends FormBasicController {
 			}
 			uifactory.addStaticTextElement("map.returnDate." + count, "map.returnDate", returnDate, formLayout);
 			
-			String deadLine = "";
-			if(binder.getDeadLine() != null) {
-				deadLine = formatter.formatDateAndTime(binder.getDeadLine());
-			}
-			mapElements.deadlineEl = uifactory.addStaticTextElement("map.deadline." + count, "map.deadline", deadLine, formLayout);
-
-			
 			FormLayoutContainer buttonsCont = FormLayoutContainer.createButtonLayout("buttons." + count, getTranslator());
 			buttonsCont.setRootForm(mainForm);
 			formLayout.add(buttonsCont);
-
-			mapElements.changeDeadlineLink = uifactory
-					.addFormLink("map.binder.change." + count, "map.binder.change", "map.deadline.change", null, buttonsCont, Link.BUTTON);
-			mapElements.changeDeadlineLink.setUserObject(binder);
 
 			mapElements.openMapLink = uifactory.addFormLink("open.binder." + count, "open.binder", "open.map", null, buttonsCont, Link.BUTTON);
 			mapElements.openMapLink.setUserObject(binder);
@@ -249,17 +238,9 @@ public class PortfolioResultDetailsController extends FormBasicController {
 		if(source instanceof FormLink) {
 			FormLink link = (FormLink)source;
 			String cmd = link.getCmd();
-			if("map.deadline.change".equals(cmd)) {
+			if(cmd != null && cmd.startsWith("map.deadline.change")) {
 				if (deadlineCalloutCtr == null) {
 					EPStructuredMap map = (EPStructuredMap)link.getUserObject();
-					popupDeadlineBox(ureq, map);
-				} else {
-					// close on second click
-					closeDeadlineBox();
-				}
-			} else if("map.binder.change".equals(cmd)) {
-				if (deadlineCalloutCtr == null) {
-					Binder map = (Binder)link.getUserObject();
 					popupDeadlineBox(ureq, map);
 				} else {
 					// close on second click
@@ -291,6 +272,7 @@ public class PortfolioResultDetailsController extends FormBasicController {
 	
 	private void doOpenMap(UserRequest ureq, Binder binder) {
 		if(stackPanel instanceof TooledStackedPanel) {
+			binder = portfolioService.getBinderByKey(binder.getKey());
 			List<AccessRights> rights = portfolioService.getAccessRights(binder, getIdentity());
 			BinderSecurityCallback secCallback = BinderSecurityCallbackFactory.getCallbackForCoach(rights);
 			BinderConfiguration config = BinderConfiguration.createConfig(binder);
@@ -319,13 +301,6 @@ public class PortfolioResultDetailsController extends FormBasicController {
 					deadLine = formatter.formatDateAndTime(structuredMap.getDeadLine());
 				}
 				mapToElements.get(structuredMap).deadlineEl.setValue(deadLine);
-			} else if(deadlineCtr.getBinder() != null) {
-				Binder binder = deadlineCtr.getBinder();
-				if(binder.getDeadLine() != null) {
-					Formatter formatter = Formatter.getInstance(getLocale());
-					deadLine = formatter.formatDateAndTime(binder.getDeadLine());
-				}
-				binderToElements.get(binder).deadlineEl.setValue(deadLine);
 			}
 			closeDeadlineBox();
 		}
@@ -343,21 +318,6 @@ public class PortfolioResultDetailsController extends FormBasicController {
 
 		removeAsListenerAndDispose(deadlineCalloutCtr);
 		FormLink changeDeadlineLink = mapToElements.get(map).changeDeadlineLink;
-		deadlineCalloutCtr = new CloseableCalloutWindowController(ureq, getWindowControl(), deadlineCtr.getInitialComponent(),
-				changeDeadlineLink, title, true, "o_ep_deadline_callout");
-		listenTo(deadlineCalloutCtr);
-		deadlineCalloutCtr.activate();
-	}
-
-	private void popupDeadlineBox(UserRequest ureq, Binder binder) {
-		String title = translate("map.deadline.change");
-		
-		removeAsListenerAndDispose(deadlineCtr);
-		deadlineCtr = new DeadlineController(ureq, getWindowControl(), binder);
-		listenTo(deadlineCtr);
-
-		removeAsListenerAndDispose(deadlineCalloutCtr);
-		FormLink changeDeadlineLink = binderToElements.get(binder).changeDeadlineLink;
 		deadlineCalloutCtr = new CloseableCalloutWindowController(ureq, getWindowControl(), deadlineCtr.getInitialComponent(),
 				changeDeadlineLink, title, true, "o_ep_deadline_callout");
 		listenTo(deadlineCalloutCtr);

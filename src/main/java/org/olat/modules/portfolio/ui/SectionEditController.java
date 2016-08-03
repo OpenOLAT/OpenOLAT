@@ -31,6 +31,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.modules.portfolio.BinderRef;
+import org.olat.modules.portfolio.BinderSecurityCallback;
 import org.olat.modules.portfolio.PortfolioService;
 import org.olat.modules.portfolio.Section;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -49,19 +50,24 @@ public class SectionEditController extends FormBasicController {
 	private BinderRef binder;
 	private Section section;
 	private Object userObject;
+	private BinderSecurityCallback secCallback;
 	
 	@Autowired
 	private PortfolioService portfolioService;
 	
-	public SectionEditController(UserRequest ureq, WindowControl wControl, BinderRef binder) {
+	public SectionEditController(UserRequest ureq, WindowControl wControl,
+			BinderRef binder, BinderSecurityCallback secCallback) {
 		super(ureq, wControl);
 		this.binder = binder;
+		this.secCallback = secCallback;
 		initForm(ureq);
 	}
 	
-	public SectionEditController(UserRequest ureq, WindowControl wControl, Section section) {
+	public SectionEditController(UserRequest ureq, WindowControl wControl,
+			Section section, BinderSecurityCallback secCallback) {
 		super(ureq, wControl);
 		this.section = section;
+		this.secCallback = secCallback;
 		initForm(ureq);
 	}
 	
@@ -89,9 +95,11 @@ public class SectionEditController extends FormBasicController {
 		
 		Date begin = section == null ? null : section.getBeginDate();
 		beginDateEl = uifactory.addDateChooser("begin.date", "begin.date", begin, formLayout);
+		beginDateEl.setVisible(secCallback.canSectionBeginAndEnd());
 		
 		Date end = section == null ? null : section.getEndDate();
 		endDateEl = uifactory.addDateChooser("end.date", "end.date", end, formLayout);
+		endDateEl.setVisible(secCallback.canSectionBeginAndEnd());
 
 		FormLayoutContainer buttonsCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		buttonsCont.setRootForm(mainForm);

@@ -113,9 +113,8 @@ public class PortfolioConfigForm extends FormBasicController {
 		if(mapEntry != null) {
 			if(BinderTemplateResource.TYPE_NAME.equals(mapEntry.getOlatResource().getResourceableTypeName())) {
 				binder = portfolioService.getBinderByResource(mapEntry.getOlatResource());
-				
 				RepositoryEntry courseEntry = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
-				if (map != null) {
+				if (binder != null) {
 					inUse = portfolioService.isTemplateInUse(binder, courseEntry, courseNode.getIdent());
 				}
 			} else {
@@ -220,7 +219,15 @@ public class PortfolioConfigForm extends FormBasicController {
 				doSelectTemplate(entry);
 				fireEvent(ureq, Event.DONE_EVENT);
 			}
+			cleanUp();
 		}
+	}
+	
+	private void cleanUp() {
+		removeAsListenerAndDispose(searchController);
+		removeAsListenerAndDispose(cmc);
+		searchController = null;
+		cmc = null;
 	}
 	
 	private void doChangeTemplate(UserRequest ureq) {

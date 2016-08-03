@@ -31,8 +31,6 @@ import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.modules.portfolio.Binder;
-import org.olat.modules.portfolio.PortfolioService;
 import org.olat.portfolio.manager.EPFrontendManager;
 import org.olat.portfolio.model.structel.EPStructuredMap;
 import org.olat.portfolio.model.structel.StructureStatusEnum;
@@ -51,23 +49,14 @@ public class DeadlineController extends FormBasicController {
 	
 	private DateChooser deadlineChooser;
 	
-	private Binder binder;
 	private EPStructuredMap map;
 	
 	@Autowired
 	private EPFrontendManager ePFMgr;
-	@Autowired
-	private PortfolioService portfolioService;
 	
 	public DeadlineController(UserRequest ureq, WindowControl wControl, EPStructuredMap map) {
 		super(ureq, wControl);
 		this.map = map;
-		initForm(ureq);
-	}
-	
-	public DeadlineController(UserRequest ureq, WindowControl wControl, Binder binder) {
-		super(ureq, wControl);
-		this.binder = binder;
 		initForm(ureq);
 	}
 
@@ -77,15 +66,13 @@ public class DeadlineController extends FormBasicController {
 		setFormDescription("map.deadline.change.description");
 		
 		deadlineChooser = uifactory.addDateChooser("map.deadline", null, formLayout);
-		if((map != null && map.getDeadLine() == null) || (binder != null && binder.getDeadLine() == null)) {
+		if((map != null && map.getDeadLine() == null)) {
 			Calendar cal = Calendar.getInstance();
 			cal.setTime(new Date());
 			cal.add(Calendar.DATE, 7);
 			deadlineChooser.setDate(cal.getTime());
 		} else if(map != null) {
 			deadlineChooser.setDate(map.getDeadLine());
-		} else if(binder != null) {
-			deadlineChooser.setDate(binder.getDeadLine());
 		}
 		deadlineChooser.setValidDateCheck("map.deadline.invalid");
 		
@@ -110,10 +97,6 @@ public class DeadlineController extends FormBasicController {
 			map.setDeadLine(newDeadLine);
 			map.setStatus(StructureStatusEnum.OPEN);
 			ePFMgr.savePortfolioStructure(map);
-		} else if(binder != null) {
-			binder = portfolioService.getBinderByKey(binder.getKey());
-			binder.setDeadLine(newDeadLine);
-			binder = portfolioService.updateBinder(binder);
 		}
 		fireEvent(ureq, Event.CHANGED_EVENT);
 	}
@@ -125,10 +108,6 @@ public class DeadlineController extends FormBasicController {
 	
 	public EPStructuredMap getMap() {
 		return map;
-	}
-	
-	public Binder getBinder() {
-		return binder;
 	}
 
 	/**
