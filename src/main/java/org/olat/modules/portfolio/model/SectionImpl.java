@@ -93,6 +93,8 @@ public class SectionImpl implements Persistable, ModifiedInfo, CreateInfo, Secti
 	@Temporal(TemporalType.TIMESTAMP)
 	@Column(name="p_end", nullable=true, insertable=true, updatable=true)
 	private Date endDate;
+	@Column(name="p_override_begin_end", nullable=true, insertable=true, updatable=true)
+	private boolean overrideBeginEndDates;
 
 	@ManyToOne(targetEntity=GroupImpl.class,fetch=FetchType.LAZY,optional=false)
 	@JoinColumn(name="fk_group_id", nullable=false, insertable=true, updatable=false)
@@ -197,22 +199,35 @@ public class SectionImpl implements Persistable, ModifiedInfo, CreateInfo, Secti
 		this.status = status;
 	}
 
+	@Override
 	public Date getBeginDate() {
 		return beginDate;
 	}
 
+	@Override
 	public void setBeginDate(Date beginDate) {
 		this.beginDate = beginDate;
 	}
 
+	@Override
 	public Date getEndDate() {
 		return endDate;
 	}
 
+	@Override
 	public void setEndDate(Date endDate) {
 		this.endDate = endDate;
 	}
 
+	public boolean isOverrideBeginEndDates() {
+		return overrideBeginEndDates;
+	}
+
+	public void setOverrideBeginEndDates(boolean overrideBeginEndDates) {
+		this.overrideBeginEndDates = overrideBeginEndDates;
+	}
+
+	@Override
 	public Group getBaseGroup() {
 		return baseGroup;
 	}
@@ -221,6 +236,7 @@ public class SectionImpl implements Persistable, ModifiedInfo, CreateInfo, Secti
 		this.baseGroup = baseGroup;
 	}
 
+	@Override
 	public Binder getBinder() {
 		return binder;
 	}
@@ -229,6 +245,7 @@ public class SectionImpl implements Persistable, ModifiedInfo, CreateInfo, Secti
 		this.binder = binder;
 	}
 
+	@Override
 	public Section getTemplateReference() {
 		return templateReference;
 	}

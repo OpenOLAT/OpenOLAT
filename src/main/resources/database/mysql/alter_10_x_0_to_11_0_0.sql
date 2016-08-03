@@ -144,6 +144,7 @@ create table o_pf_section (
    p_status varchar(32) not null default 'notStarted',
    p_begin datetime,
    p_end datetime,
+   p_override_begin_end bit default 0,
    fk_group_id bigint not null,
    fk_binder_id bigint not null,
    fk_template_reference_id bigint,

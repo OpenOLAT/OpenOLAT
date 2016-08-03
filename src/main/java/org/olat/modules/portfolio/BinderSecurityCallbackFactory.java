@@ -204,6 +204,19 @@ public class BinderSecurityCallbackFactory {
 		}
 
 		@Override
+		public boolean canCloseSection(Section section) {
+			if(task && rights != null) {
+				for(AccessRights right:rights) {
+					if(PortfolioRoles.coach.equals(right.getRole())
+							&& right.matchElementAndAncestors(section)) {
+						return true;
+					}
+				}
+			}
+			return false;
+		}
+
+		@Override
 		public boolean canSectionBeginAndEnd() {
 			return false;
 		}
@@ -219,8 +232,16 @@ public class BinderSecurityCallbackFactory {
 		}
 
 		@Override
-		public boolean canAddPage() {
-			return owner;
+		public boolean canAddPage(Section section) {
+			if(section == null) {
+				return owner;
+			}
+			if(owner) {
+				return section != null
+						&& !SectionStatus.isClosed(section)
+						&& section.getSectionStatus() != SectionStatus.submitted;
+			}
+			return false;
 		}
 
 		/**
@@ -403,6 +424,11 @@ public class BinderSecurityCallbackFactory {
 		}
 
 		@Override
+		public boolean canCloseSection(Section section) {
+			return false;
+		}
+
+		@Override
 		public boolean canSectionBeginAndEnd() {
 			return false;
 		}
@@ -418,7 +444,7 @@ public class BinderSecurityCallbackFactory {
 		}
 
 		@Override
-		public boolean canAddPage() {
+		public boolean canAddPage(Section section) {
 			return false;
 		}
 

@@ -54,6 +54,8 @@ public class PageRow {
 	private Link openLink;
 	private FormLink openFormLink, newFloatingEntryLink, newEntryLink, newAssignmentLink;
 	
+	private FormLink closeSectionLink, reopenSectionLink;
+	
 	private long numOfComments;
 	private Link commentLink;
 	private FormLink commentFormLink;
@@ -282,5 +284,21 @@ public class PageRow {
 	
 	public void setNewAssignmentLink(FormLink newAssignmentLink) {
 		this.newAssignmentLink = newAssignmentLink;
+	}
+
+	public FormLink getCloseSectionLink() {
+		return closeSectionLink;
+	}
+
+	public void setCloseSectionLink(FormLink closeSectionLink) {
+		this.closeSectionLink = closeSectionLink;
+	}
+
+	public FormLink getReopenSectionLink() {
+		return reopenSectionLink;
+	}
+
+	public void setReopenSectionLink(FormLink reopenSectionLink) {
+		this.reopenSectionLink = reopenSectionLink;
 	}
 }

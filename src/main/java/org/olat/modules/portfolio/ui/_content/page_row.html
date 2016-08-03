@@ -3,8 +3,6 @@
 	<h3>$r.escapeHtml($row.sectionLongTitle) <small><i class="o_icon $row.sectionCssClassStatus"> </i></small></h3>
 	<div class="o_portfolio_section_meta">
 		<div class="clearfix">
-			<span><strong>$r.translate("section.status"): </strong> $r.translate(${row.getSectionStatusI18nKey()})</span>
-
 			#if($r.notNull($row.sectionBeginDate))
 				<span><strong>$r.translate("begin.date"): </strong> $r.formatDate($row.sectionBeginDate)</span>
 			#end
@@ -30,6 +28,17 @@
 			</div>
 		</div>
 		#end
+		
+		<div class="o_portfolio_status_block o_block">
+			<span><strong>$r.translate("section.status"): </strong> $r.translate(${row.getSectionStatusI18nKey()})</span>
+
+			#if($r.isNotNull($row.closeSectionLink))
+				$r.render($row.closeSectionLink)
+			#end
+			#if($r.isNotNull($row.reopenSectionLink))
+				$r.render($row.reopenSectionLink)
+			#end
+		</div>
 	</div>
 	
 	#if($r.isNotNull($row.newEntryLink))

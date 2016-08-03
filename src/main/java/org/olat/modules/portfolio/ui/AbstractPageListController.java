@@ -51,6 +51,8 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
+import org.olat.core.gui.control.generic.modal.DialogBoxController;
+import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
@@ -65,6 +67,7 @@ import org.olat.modules.portfolio.Category;
 import org.olat.modules.portfolio.Page;
 import org.olat.modules.portfolio.PortfolioService;
 import org.olat.modules.portfolio.Section;
+import org.olat.modules.portfolio.SectionStatus;
 import org.olat.modules.portfolio.ui.PageListDataModel.PageCols;
 import org.olat.modules.portfolio.ui.component.TimelineElement;
 import org.olat.modules.portfolio.ui.model.PageAssignmentRow;
@@ -92,6 +95,7 @@ implements Activateable2, TooledController, FlexiTableComponentDelegate {
 	private CloseableModalController cmc;
 	private UserCommentsController commentsCtrl;
 	private AssignmentEditController editAssignmentCtrl;
+	private DialogBoxController confirmCloseSectionCtrl, confirmReopenSectionCtrl;
 	
 	protected int counter;
 	protected final boolean withSections;
@@ -205,6 +209,12 @@ implements Activateable2, TooledController, FlexiTableComponentDelegate {
 		if(pageRow.getOpenFormItem() != null) {
 			components.add(pageRow.getOpenFormItem().getComponent());
 		}
+		if(pageRow.getReopenSectionLink() != null) {
+			components.add(pageRow.getReopenSectionLink().getComponent());
+		}
+		if(pageRow.getCloseSectionLink() != null) {
+			components.add(pageRow.getCloseSectionLink().getComponent());
+		}
 		return components;
 	}
 	
@@ -214,7 +224,8 @@ implements Activateable2, TooledController, FlexiTableComponentDelegate {
 			boolean firstOfSection,
 			Map<OLATResourceable,List<Category>> categorizedElementMap, Map<Long,Long> numberOfCommentsMap) {
 
-		PageRow row = new PageRow(page, page.getSection(), assessmentSection, firstOfSection, config.isAssessable());
+		Section section = page.getSection();
+		PageRow row = new PageRow(page, section, assessmentSection, firstOfSection, config.isAssessable());
 		String openLinkId = "open_" + (++counter);
 		FormLink openLink = uifactory.addFormLink(openLinkId, "open.full", "open.full.page", null, flc, Link.BUTTON_SMALL);
 		openLink.setIconRightCSS("o_icon o_icon_start");
@@ -235,9 +246,19 @@ implements Activateable2, TooledController, FlexiTableComponentDelegate {
 			row.setNumOfComments(0);
 		}
 		
+		if(secCallback.canCloseSection(section)) {
+			if(SectionStatus.isClosed(section)) {
+				FormLink reopenLink = uifactory.addFormLink("ropens_" + (++counter), "reopen.section", "reopen.section", null, flc, Link.BUTTON_SMALL);
+				reopenLink.setUserObject(row);
+				row.setReopenSectionLink(reopenLink);
+			} else {
+				FormLink closeLink = uifactory.addFormLink("closes_" + (++counter), "close.section", "close.section", null, flc, Link.BUTTON_SMALL);
+				closeLink.setUserObject(row);
+				row.setCloseSectionLink(closeLink);
+			}
+		}
+		
 		if(secCallback.canComment(page)) {
-			String commentLinkId = "comment_" + (++counter);
-			
 			String title;
 			if(row.getNumOfComments() == 1) {
 				title = translate("comment.one");
@@ -246,7 +267,7 @@ implements Activateable2, TooledController, FlexiTableComponentDelegate {
 			} else {
 				title = translate("comment.zero");
 			}
-			FormLink commentLink = uifactory.addFormLink(commentLinkId, "comment", title, null, flc, Link.LINK | Link.NONTRANSLATED);
+			FormLink commentLink = uifactory.addFormLink("com_" + (++counter), "comment", title, null, flc, Link.LINK | Link.NONTRANSLATED);
 			commentLink.setCustomEnabledLinkCSS("btn btn-sm o_portfolio_comment");
 			commentLink.setUserObject(row);
 			row.setCommentFormLink(commentLink);
@@ -381,6 +402,16 @@ implements Activateable2, TooledController, FlexiTableComponentDelegate {
 			}
 			cmc.deactivate();
 			cleanUp();
+		} else if(confirmCloseSectionCtrl == source) {
+			if(DialogBoxUIFactory.isYesEvent(event)) {
+				PageRow row = (PageRow)confirmCloseSectionCtrl.getUserObject();
+				doClose(ureq, row);
+			}
+		} else if(confirmReopenSectionCtrl == source) {
+			if(DialogBoxUIFactory.isYesEvent(event)) {
+				PageRow row = (PageRow)confirmReopenSectionCtrl.getUserObject();
+				doReopen(ureq, row);
+			}	
 		} else if(cmc == source) {
 			cleanUp();
 		}
@@ -416,6 +447,12 @@ implements Activateable2, TooledController, FlexiTableComponentDelegate {
 			} else if("comment".equals(cmd)) {
 				PageRow row = (PageRow)link.getUserObject();
 				doComment(ureq, row.getPage());
+			} else if("close.section".equals(cmd)) {
+				PageRow row = (PageRow)link.getUserObject();
+				doConfirmCloseSection(ureq, row);
+			} else if("reopen.section".equals(cmd)) {
+				PageRow row = (PageRow)link.getUserObject();
+				doConfirmReopenSection(ureq, row);
 			} else if("edit.assignment".equals(cmd)) {
 				PageAssignmentRow row = (PageAssignmentRow)link.getUserObject();
 				doEditAssignment(ureq, row);
@@ -433,6 +470,34 @@ implements Activateable2, TooledController, FlexiTableComponentDelegate {
 	@Override
 	protected void formOK(UserRequest ureq) {
 		//
+	}
+	
+	private void doConfirmCloseSection(UserRequest ureq, PageRow row) {
+		String title = translate("close.section.confirm.title");
+		String text = translate("close.section.confirm.descr", new String[]{ row.getSectionTitle() });
+		confirmCloseSectionCtrl = activateYesNoDialog(ureq, title, text, confirmCloseSectionCtrl);
+		confirmCloseSectionCtrl.setUserObject(row);
+	}
+	
+	private void doClose(UserRequest ureq, PageRow row) {
+		Section section = row.getSection();
+		section = portfolioService.changeSectionStatus(section, SectionStatus.closed, getIdentity());
+		loadModel(null);
+		fireEvent(ureq, Event.CHANGED_EVENT);
+	}
+	
+	private void doConfirmReopenSection(UserRequest ureq, PageRow row) {
+		String title = translate("reopen.section.confirm.title");
+		String text = translate("reopen.section.confirm.descr", new String[]{ row.getSectionTitle() });
+		confirmReopenSectionCtrl = activateYesNoDialog(ureq, title, text, confirmReopenSectionCtrl);
+		confirmReopenSectionCtrl.setUserObject(row);
+	}
+	
+	private void doReopen(UserRequest ureq, PageRow row) {
+		Section section = row.getSection();
+		section = portfolioService.changeSectionStatus(section, SectionStatus.inProgress, getIdentity());
+		loadModel(null);
+		fireEvent(ureq, Event.CHANGED_EVENT);
 	}
 	
 	private void doSwitchTimelineOn() {

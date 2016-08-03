@@ -164,8 +164,8 @@ public class BinderAssessmentController extends FormBasicController {
 	private void forgeAssessmentSection(AssessmentSectionWrapper row) {
 		AssessmentSection assessmentSection = row.getAssessmentSection();
 
-		SectionStatus status = row.getSection().getSectionStatus();
-		if(status != SectionStatus.closed) {
+		Section section = row.getSection();
+		if(!SectionStatus.isClosed(section)) {
 			//score
 			String pointVal = null;
 			if(assessmentSection != null && assessmentSection.getScore() != null) {
@@ -186,7 +186,7 @@ public class BinderAssessmentController extends FormBasicController {
 			row.setPassedEl(passedEl);
 		}
 
-		if(status == SectionStatus.closed) {
+		if(SectionStatus.isClosed(section)) {
 			FormLink reopenButton = uifactory.addFormLink("reopen" + (++counter), "reopen", "reopen", null, flc, Link.BUTTON);
 			reopenButton.setUserObject(row);
 			row.setButton(reopenButton);
@@ -227,8 +227,8 @@ public class BinderAssessmentController extends FormBasicController {
 		
 		List<AssessmentSectionChange> changes = new ArrayList<>();
 		for(AssessmentSectionWrapper row:rows) {
-			boolean canAssess = secCallback.canAssess(row.getSection());
-			if(canAssess) {
+			Section section = row.getSection();
+			if(secCallback.canAssess(section) && !SectionStatus.isClosed(section)) {
 				BigDecimal score = null;
 				if(withScore) {
 					String value = row.getScoreEl().getValue();

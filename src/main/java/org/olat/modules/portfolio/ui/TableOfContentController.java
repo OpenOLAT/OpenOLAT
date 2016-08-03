@@ -40,6 +40,8 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
+import org.olat.core.gui.control.generic.modal.DialogBoxController;
+import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.ContextEntry;
@@ -78,7 +80,9 @@ public class TableOfContentController extends BasicController implements TooledC
 	private CloseableModalController cmc;
 	private SectionEditController newSectionCtrl;
 	private SectionEditController editSectionCtrl;
+	private SectionDatesEditController editSectionDatesCtrl;
 	private BinderMetadataEditController binderMetadataCtrl;
+	private DialogBoxController confirmCloseSectionCtrl, confirmReopenSectionCtrl;
 	
 	private PageRunController pageCtrl;
 	private PageMetadataEditController newPageCtrl;
@@ -133,7 +137,7 @@ public class TableOfContentController extends BasicController implements TooledC
 			newSectionButton.setCustomEnabledLinkCSS("btn btn-primary");
 		}
 		
-		if(secCallback.canAddPage()) {
+		if(secCallback.canAddPage(null)) {
 			newEntryLink = LinkFactory.createToolLink("new.page", translate("create.new.page"), this);
 			newEntryLink.setIconLeftCSS("o_icon o_icon-lg o_icon_new_portfolio");
 			stackPanel.addTool(newEntryLink, Align.right);
@@ -179,13 +183,30 @@ public class TableOfContentController extends BasicController implements TooledC
 		SectionRow sectionRow = new SectionRow(section, sectionLink, assessmentSection);
 		sectionLink.setUserObject(sectionRow);
 		
-		if(secCallback.canEditSection()) {
-			Dropdown editDropdown = new Dropdown(sectionId.concat("_down"), null, false, getTranslator());
-			editDropdown.setTranslatedLabel("");
-			editDropdown.setOrientation(DropdownOrientation.right);
-			editDropdown.setIconCSS("o_icon o_icon_actions");
-			mainVC.put(editDropdown.getComponentName(), editDropdown);
+		Dropdown editDropdown = new Dropdown(sectionId.concat("_down"), null, false, getTranslator());
+		editDropdown.setTranslatedLabel("");
+		editDropdown.setOrientation(DropdownOrientation.right);
+		editDropdown.setIconCSS("o_icon o_icon_actions");
 		
+		if(secCallback.canCloseSection(section)) {
+			if(SectionStatus.isClosed(section)) {
+				Link reopenLink = LinkFactory.createLink(sectionId.concat("_ropens"), "reopen.section", "reopen.section", mainVC, this);
+				reopenLink.setUserObject(sectionRow);
+				editDropdown.addComponent(reopenLink);
+			} else {
+				Link closeLink = LinkFactory.createLink(sectionId.concat("_closes"), "close.section", "close.section", mainVC, this);
+				closeLink.setUserObject(sectionRow);
+				editDropdown.addComponent(closeLink);
+			}
+			
+			if(section.getEndDate() != null) {
+				Link overrideDatesLink = LinkFactory.createLink(sectionId.concat("_overd"), "override.dates.section", "override.dates.section", mainVC, this);
+				overrideDatesLink.setUserObject(sectionRow);
+				editDropdown.addComponent(overrideDatesLink);
+			}
+		}
+		
+		if(secCallback.canEditSection()) {
 			Link editSectionLink = LinkFactory.createLink(sectionId.concat("_edit"), "section.edit", "edit_section", mainVC, this);
 			editSectionLink.setIconLeftCSS("o_icon o_icon_edit");
 			editDropdown.addComponent(editSectionLink);
@@ -193,9 +214,13 @@ public class TableOfContentController extends BasicController implements TooledC
 			deleteSectionLink.setIconLeftCSS("o_icon o_icon_delete_item");
 			editDropdown.addComponent(deleteSectionLink);
 			
-			sectionRow.setEditDropdown(editDropdown);
 			editSectionLink.setUserObject(sectionRow);
 			deleteSectionLink.setUserObject(sectionRow);
+		}
+		
+		if(editDropdown.getComponents().iterator().hasNext()) {
+			mainVC.put(editDropdown.getComponentName(), editDropdown);
+			sectionRow.setEditDropdown(editDropdown);
 		}
 		
 		return sectionRow;
@@ -246,23 +271,11 @@ public class TableOfContentController extends BasicController implements TooledC
 
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
-		if(newSectionCtrl == source) {
+		if(newSectionCtrl == source || editSectionCtrl == source 
+				|| editSectionDatesCtrl == source || newPageCtrl == source) {
 			if(event == Event.DONE_EVENT) {
 				loadModel();
 				fireEvent(ureq, Event.CHANGED_EVENT);
-			}
-			cmc.deactivate();
-			cleanUp();
-		} else if(editSectionCtrl == source) {
-			if(event == Event.DONE_EVENT) {
-				loadModel();
-				fireEvent(ureq, Event.CHANGED_EVENT);
-			}
-			cmc.deactivate();
-			cleanUp();
-		} else if(newPageCtrl == source) {
-			if(event == Event.DONE_EVENT) {
-				loadModel();
 			}
 			cmc.deactivate();
 			cleanUp();
@@ -273,17 +286,33 @@ public class TableOfContentController extends BasicController implements TooledC
 			}
 			cmc.deactivate();
 			cleanUp();
+		} else if(confirmCloseSectionCtrl == source) {
+			if(DialogBoxUIFactory.isYesEvent(event)) {
+				SectionRow row = (SectionRow)confirmCloseSectionCtrl.getUserObject();
+				doClose(row);
+				loadModel();
+				fireEvent(ureq, Event.CHANGED_EVENT);
+			}
+		} else if(confirmReopenSectionCtrl == source) {
+			if(DialogBoxUIFactory.isYesEvent(event)) {
+				SectionRow row = (SectionRow)confirmReopenSectionCtrl.getUserObject();
+				doReopen(row);
+				loadModel();
+				fireEvent(ureq, Event.CHANGED_EVENT);
+			}	
 		} else if(cmc == source) {
 			cleanUp();
 		}
 	}
 	
 	private void cleanUp() {
+		removeAsListenerAndDispose(editSectionDatesCtrl);
 		removeAsListenerAndDispose(binderMetadataCtrl);
 		removeAsListenerAndDispose(editSectionCtrl);
 		removeAsListenerAndDispose(newSectionCtrl);
 		removeAsListenerAndDispose(newPageCtrl);
 		removeAsListenerAndDispose(cmc);
+		editSectionDatesCtrl = null;
 		binderMetadataCtrl = null;
 		editSectionCtrl = null;
 		newSectionCtrl = null;
@@ -311,6 +340,15 @@ public class TableOfContentController extends BasicController implements TooledC
 			} else if("open_page".equals(cmd)) {
 				PageRow row = (PageRow)link.getUserObject();
 				doOpenPage(ureq, row.getPage());
+			} else if("reopen.section".equals(cmd)) {
+				SectionRow row = (SectionRow)link.getUserObject();
+				doConfirmReopenSection(ureq, row);
+			} else if("close.section".equals(cmd)) {
+				SectionRow row = (SectionRow)link.getUserObject();
+				doConfirmCloseSection(ureq, row);
+			} else if("override.dates.section".equals(cmd)) {
+				SectionRow row = (SectionRow)link.getUserObject();
+				doOverrideDatesSection(ureq, row);
 			}
 		}
 	}
@@ -379,6 +417,43 @@ public class TableOfContentController extends BasicController implements TooledC
 		cmc = new CloseableModalController(getWindowControl(), null, binderMetadataCtrl.getInitialComponent(), true, title, true);
 		listenTo(cmc);
 		cmc.activate();
+	}
+	
+	private void doOverrideDatesSection(UserRequest ureq, SectionRow sectionRow) {
+		if(editSectionDatesCtrl != null) return;
+		
+		editSectionDatesCtrl = new SectionDatesEditController(ureq, getWindowControl(), sectionRow.getSection(), secCallback);
+		editSectionDatesCtrl.setUserObject(sectionRow);
+		listenTo(editSectionDatesCtrl);
+		
+		String title = translate("override.dates.section");
+		cmc = new CloseableModalController(getWindowControl(), null, editSectionDatesCtrl.getInitialComponent(), true, title, true);
+		listenTo(cmc);
+		cmc.activate();
+	}
+	
+	private void doConfirmCloseSection(UserRequest ureq, SectionRow row) {
+		String title = translate("close.section.confirm.title");
+		String text = translate("close.section.confirm.descr", new String[]{ row.getTitle() });
+		confirmCloseSectionCtrl = activateYesNoDialog(ureq, title, text, confirmCloseSectionCtrl);
+		confirmCloseSectionCtrl.setUserObject(row);
+	}
+	
+	private void doClose(SectionRow row) {
+		Section section = row.getSection();
+		section = portfolioService.changeSectionStatus(section, SectionStatus.closed, getIdentity());
+	}
+	
+	private void doConfirmReopenSection(UserRequest ureq, SectionRow row) {
+		String title = translate("reopen.section.confirm.title");
+		String text = translate("reopen.section.confirm.descr", new String[]{ row.getTitle() });
+		confirmReopenSectionCtrl = activateYesNoDialog(ureq, title, text, confirmReopenSectionCtrl);
+		confirmReopenSectionCtrl.setUserObject(row);
+	}
+	
+	private void doReopen(SectionRow row) {
+		Section section = row.getSection();
+		section = portfolioService.changeSectionStatus(section, SectionStatus.inProgress, getIdentity());
 	}
 	
 	public class SectionRow {

@@ -156,6 +156,7 @@ create table o_pf_section (
    p_status varchar2(32 char) default 'notStarted' not null,
    p_begin date,
    p_end date,
+   p_override_begin_end number default 0,
    fk_group_id number(20) not null,
    fk_binder_id number(20) not null,
    fk_template_reference_id number(20),

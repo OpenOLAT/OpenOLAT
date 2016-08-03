@@ -50,6 +50,10 @@ public interface Section extends SectionRef, PortfolioElement {
 	
 	public void setEndDate(Date date);
 	
+	public boolean isOverrideBeginEndDates();
+	
+	public void setOverrideBeginEndDates(boolean override);
+	
 	public SectionStatus getSectionStatus();
 	
 	/**

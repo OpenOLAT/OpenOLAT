@@ -19,6 +19,8 @@
  */
 package org.olat.modules.portfolio;
 
+import java.util.Date;
+
 /**
  * 
  * Initial date: 23.06.2016<br>
@@ -54,6 +56,18 @@ public enum SectionStatus {
 			if(val.equals(value.name())) {
 				return true;
 			}
+		}
+		return false;
+	}
+	
+	public static boolean isClosed(Section section) {
+		if(section.getSectionStatus() == SectionStatus.closed) {
+			return true;
+		}
+
+		Date now = new Date();
+		if(section.getEndDate() != null && section.getEndDate().compareTo(now) < 0) {
+			return true;
 		}
 		return false;
 	}

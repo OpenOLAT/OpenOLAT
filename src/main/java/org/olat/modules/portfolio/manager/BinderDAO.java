@@ -137,8 +137,10 @@ public class BinderDAO {
 				//sync meta-data of section
 				currentSection.setTitle(templateSection.getTitle());
 				currentSection.setDescription(templateSection.getDescription());
-				currentSection.setBeginDate(templateSection.getBeginDate());
-				currentSection.setEndDate(templateSection.getEndDate());
+				if(!currentSection.isOverrideBeginEndDates()) {
+					currentSection.setBeginDate(templateSection.getBeginDate());
+					currentSection.setEndDate(templateSection.getEndDate());
+				}
 				currentSection = dbInstance.getCurrentEntityManager().merge(currentSection);
 				
 				syncAssignments(templateSection, currentSection);
@@ -192,6 +194,7 @@ public class BinderDAO {
 		section.setDescription(templateSection.getDescription());
 		section.setBeginDate(templateSection.getBeginDate());
 		section.setEndDate(templateSection.getEndDate());
+		section.setOverrideBeginEndDates(false);
 		section.setStatus(SectionStatus.notStarted.name());
 		section.setBinder(binder);
 		section.setTemplateReference(templateSection);
@@ -643,6 +646,7 @@ public class BinderDAO {
 		section.setDescription(description);
 		section.setBeginDate(begin);
 		section.setEndDate(end);
+		section.setOverrideBeginEndDates(false);
 		section.setStatus(SectionStatus.notStarted.name());
 		//force load of the list
 		((BinderImpl)binder).getSections().size();

@@ -59,7 +59,6 @@ import org.olat.modules.portfolio.CategoryToElement;
 import org.olat.modules.portfolio.Page;
 import org.olat.modules.portfolio.PortfolioRoles;
 import org.olat.modules.portfolio.Section;
-import org.olat.modules.portfolio.SectionStatus;
 import org.olat.modules.portfolio.ui.PageListDataModel.PageCols;
 import org.olat.modules.portfolio.ui.component.TimelinePoint;
 import org.olat.modules.portfolio.ui.model.PageRow;
@@ -100,7 +99,7 @@ public class BinderPageListController extends AbstractPageListController  {
 
 	@Override
 	public void initTools() {
-		if(secCallback.canAddPage()) {
+		if(secCallback.canAddPage(null)) {
 			newEntryLink = LinkFactory.createToolLink("new.page", translate("create.new.page"), this);
 			newEntryLink.setIconLeftCSS("o_icon o_icon-lg o_icon_new_portfolio");
 			stackPanel.addTool(newEntryLink, Align.right);
@@ -197,9 +196,7 @@ public class BinderPageListController extends AbstractPageListController  {
 			PageRow pageRow = forgeRow(page, sectionToAssessmentSectionMap.get(section), sectionToAssignmentMap.get(section),
 					first, categorizedElementMap, numberOfCommentsMap);
 			rows.add(pageRow);
-			if(secCallback.canAddPage() && section != null
-					&& section.getSectionStatus() != SectionStatus.closed
-					&& section.getSectionStatus() != SectionStatus.submitted) {
+			if(secCallback.canAddPage(section)) {
 				FormLink newEntryButton = uifactory.addFormLink("new.entry." + (++counter), "new.entry", "create.new.page", null, flc, Link.BUTTON);
 				newEntryButton.setCustomEnabledLinkCSS("btn btn-primary");
 				newEntryButton.setUserObject(pageRow);
@@ -233,9 +230,7 @@ public class BinderPageListController extends AbstractPageListController  {
 				PageRow pageRow = forgeRow(section, sectionToAssessmentSectionMap.get(section), sectionToAssignmentMap.get(section),
 						true, categorizedElementMap);
 				rows.add(pageRow);
-				if(secCallback.canAddPage() && section != null
-						&& section.getSectionStatus() != SectionStatus.closed
-						&& section.getSectionStatus() != SectionStatus.submitted) {
+				if(secCallback.canAddPage(section)) {
 					FormLink newEntryButton = uifactory.addFormLink("new.entry." + (++counter), "new.entry", "create.new.page", null, flc, Link.BUTTON);
 					newEntryButton.setCustomEnabledLinkCSS("btn btn-primary");
 					newEntryButton.setUserObject(pageRow);
