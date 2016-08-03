@@ -36,8 +36,6 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.badge.Badge.Level;
 import org.olat.core.gui.components.dropdown.Dropdown;
-import org.olat.core.gui.components.htmlheader.HtmlHeaderComponent;
-import org.olat.core.gui.components.htmlheader.jscss.CustomCSS;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.panel.MainPanel;
@@ -92,8 +90,6 @@ import org.olat.course.CourseFactory;
 import org.olat.course.DisposedCourseRestartController;
 import org.olat.course.ICourse;
 import org.olat.course.assessment.AssessmentModeManager;
-import org.olat.course.config.CourseConfig;
-import org.olat.course.config.ui.courselayout.CourseLayoutHelper;
 import org.olat.course.editor.PublishStepCatalog.CategoryLabel;
 import org.olat.course.groupsandrights.CourseGroupManager;
 import org.olat.course.nodes.CourseNode;
@@ -174,7 +170,6 @@ public class EditorMainController extends MainLayoutBasicController implements G
 	
 	private LockResult lockEntry;
 	
-	private HtmlHeaderComponent hc;
 	private EditorUserCourseEnvironmentImpl euce;
 	
 	private Dropdown nodeTools;
@@ -246,9 +241,6 @@ public class EditorMainController extends MainLayoutBasicController implements G
 				setDisposedMsgController(disposedRestartController);
 				
 				undelButton = LinkFactory.createButton("undeletenode.button", main, this);
-				
-				// set the custom course css
-				enableCustomCss(ureq);
 	
 				menuTree = new MenuTree("luTree");
 				menuTree.setExpandSelectedNode(false);
@@ -1218,6 +1210,7 @@ public class EditorMainController extends MainLayoutBasicController implements G
 	/**
 	 * @see org.olat.core.util.event.GenericEventListener#event(org.olat.core.gui.control.Event)
 	 */
+	@Override
 	public void event(Event event) {
 	  try {
 			if (event instanceof OLATResourceableJustBeforeDeletedEvent) {
@@ -1236,31 +1229,8 @@ public class EditorMainController extends MainLayoutBasicController implements G
 			}
 		} catch (RuntimeException e) {
 			log.warn(RELEASE_LOCK_AT_CATCH_EXCEPTION+" [in event(Event)]", e);			
-			this.dispose();
+			dispose();
 			throw e;
 		}
 	}
-
-	/**
-	 * @param ureq
-	 * @param course
-	 */
-	private void enableCustomCss(UserRequest ureq) {
-		/*
-		 * add also the choosen courselayout css if any
-		 */
-		final ICourse course = CourseFactory.getCourseEditSession(ores.getResourceableId());
-		CourseConfig cc = course.getCourseEnvironment().getCourseConfig();
-		if (cc.hasCustomCourseCSS()) {
-			CustomCSS localCustomCSS = CourseLayoutHelper.getCustomCSS(ureq.getUserSession(), course.getCourseEnvironment());
-			if (localCustomCSS != null) {
-				String fulluri = localCustomCSS.getCSSURL();			
-				// path
-				hc = new HtmlHeaderComponent("custom-css", null, "<link rel=\"StyleSheet\" href=\"" + fulluri
-						+ "\" type=\"text/css\" media=\"screen\"/>");
-				main.put("css-inset2", hc);
-			}
-		}
-	}
-
 }
