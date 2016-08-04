@@ -246,6 +246,7 @@ div#o_main_toolbar.o_toolbar.o_portfolio {
 				border: 1px solid $o-portfolio-media-browser-border;
 				position: relative;
 				height: $o-portfolio-media-browser-rowelem-width-md;
+				width: $o-portfolio-media-browser-rowelem-width-md;
 			
 				span.o_visual_not_available {
 					width:100%;
@@ -306,7 +307,8 @@ div#o_main_toolbar.o_toolbar.o_portfolio {
 				margin: 0 $o-portfolio-media-browser-space-sm $o-portfolio-media-browser-space-sm 0;
 	
 				.o_visual {
-					height: $o-portfolio-media-browser-rowelem-width-sm;	
+					height: $o-portfolio-media-browser-rowelem-width-sm;
+					width: $o-portfolio-media-browser-rowelem-width-sm;	
 				}	
 				.o_visual.o_icon {
 					font-size: 2.5em;

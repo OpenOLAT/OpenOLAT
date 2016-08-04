@@ -19,6 +19,7 @@
  */
 package org.olat.modules.portfolio.manager;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -31,6 +32,7 @@ import org.olat.modules.portfolio.CategoryToElement;
 import org.olat.modules.portfolio.PortfolioRoles;
 import org.olat.modules.portfolio.SectionRef;
 import org.olat.modules.portfolio.model.CategoryImpl;
+import org.olat.modules.portfolio.model.CategoryStatistics;
 import org.olat.modules.portfolio.model.CategoryToElementImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -140,5 +142,26 @@ public class CategoryDAO {
 			.setParameter("ownerKey", identity.getKey())
 			.getResultList();
 	}
-
+	
+	public List<CategoryStatistics> getMediaCategoriesStatistics(IdentityRef owner) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select category.name, count(media.key) from pfcategoryrelation as rel")
+		  .append(" inner join rel.category as category")
+		  .append(" inner join pfmedia as media on (rel.resId=media.key and rel.resName='Media')")
+		  .append(" where media.author.key=:identityKey")
+		  .append(" group by category.name");
+		
+		List<Object[]> objects = dbInstance.getCurrentEntityManager()
+			.createQuery(sb.toString(), Object[].class)
+			.setParameter("identityKey", owner.getKey())
+			.getResultList();
+		
+		List<CategoryStatistics> stats = new ArrayList<>(objects.size());
+		for(Object[] object:objects) {
+			String name = (String)object[0];
+			int count = object[1] == null ? 0 : ((Number)object[1]).intValue();
+			stats.add(new CategoryStatistics(name, count));
+		}
+		return stats;
+	}
 }

@@ -33,6 +33,7 @@ import org.olat.modules.portfolio.model.AccessRights;
 import org.olat.modules.portfolio.model.AssessedBinder;
 import org.olat.modules.portfolio.model.AssessmentSectionChange;
 import org.olat.modules.portfolio.model.BinderStatistics;
+import org.olat.modules.portfolio.model.CategoryStatistics;
 import org.olat.modules.portfolio.model.SynchedBinder;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
@@ -391,13 +392,20 @@ public interface PortfolioService {
 	
 	public Media getMediaByKey(Long key);
 	
-	public List<MediaLight> searchOwnedMedias(IdentityRef author, String searchString);
+	public List<MediaLight> searchOwnedMedias(IdentityRef author, String searchString, List<String> tagNames);
 	
 	public Media updateMedia(Media media);
 	
 	public void updateCategories(Media media, List<String> categories);
 	
 	public List<Category> getCategories(Media media);
+	
+	/**
+	 * 
+	 * @param owner
+	 * @return
+	 */
+	public List<CategoryStatistics> getMediaCategories(IdentityRef owner);
 	
 	public List<BinderLight> getUsedInBinders(MediaLight media);
 	

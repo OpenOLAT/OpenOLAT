@@ -1247,6 +1247,14 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 	}
 	
 	@Override
+	public String getQuickSearchString() {
+		if(searchFieldEl != null && searchFieldEl.isEnabled() && searchFieldEl.isVisible()){
+			return searchFieldEl.getValue();
+		}
+		return null;
+	}
+
+	@Override
 	public void quickSearch(UserRequest ureq, String search) {
 		if(searchFieldEl == null || !searchFieldEl.isEnabled() || !searchFieldEl.isVisible()){
 			return;//this a default behavior which can occur without the search configured

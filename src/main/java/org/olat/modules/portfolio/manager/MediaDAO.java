@@ -90,7 +90,7 @@ public class MediaDAO {
 		return medias == null || medias.isEmpty() ? null : medias.get(0);
 	}
 	
-	public List<MediaLight> searchByAuthor(IdentityRef author, String searchString) {
+	public List<MediaLight> searchByAuthor(IdentityRef author, String searchString, List<String> tagNames) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select media from pfmedia as media")
 		  .append(" inner join fetch media.author as author")
@@ -103,12 +103,21 @@ public class MediaDAO {
 			appendFuzzyLike(sb, "media.description", "searchString", dbInstance.getDbVendor());
 			sb.append(")");
 		}
+		if(tagNames != null && tagNames.size() > 0) {
+			sb.append(" and exists(select rel.key from pfcategoryrelation as rel")
+			  .append("  inner join rel.category as category")
+			  .append("  where category.name in (:tagNames) and rel.resId=media.key and rel.resName='Media'")
+			  .append(" )");
+		}
 		
 		TypedQuery<MediaLight> query = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), MediaLight.class)
 				.setParameter("authorKey", author.getKey());
 		if(StringHelper.containsNonWhitespace(searchString)) {
 			query.setParameter("searchString", searchString.toLowerCase());
+		}
+		if(tagNames != null && tagNames.size() > 0) {
+			query.setParameter("tagNames", tagNames);
 		}
 		return query.getResultList();
 	}

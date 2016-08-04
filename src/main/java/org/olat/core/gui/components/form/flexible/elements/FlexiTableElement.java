@@ -343,6 +343,13 @@ public interface FlexiTableElement extends FormItem {
 	
 	public void setPage(int page);
 	
+	/**
+	 *Return the value of the quick search field if it is
+	 * visible and enabled.
+	 * @return
+	 */
+	public String getQuickSearchString();
+	
 	public void quickSearch(UserRequest ureq, String search);
 	
 	public void sort(String sortKey, boolean asc);

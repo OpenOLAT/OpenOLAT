@@ -57,6 +57,9 @@ import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.gui.control.generic.closablewrapper.CalloutSettings;
+import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.gui.media.MediaResource;
@@ -71,6 +74,7 @@ import org.olat.modules.portfolio.Media;
 import org.olat.modules.portfolio.MediaHandler;
 import org.olat.modules.portfolio.MediaLight;
 import org.olat.modules.portfolio.PortfolioService;
+import org.olat.modules.portfolio.model.CategoryStatistics;
 import org.olat.modules.portfolio.ui.MediaDataModel.MediaCols;
 import org.olat.modules.portfolio.ui.event.MediaSelectionEvent;
 import org.olat.modules.portfolio.ui.media.CollectCitationMediaController;
@@ -95,12 +99,14 @@ public class MediaCenterController extends FormBasicController
 	private static final Size THUMBNAIL_SIZE = new Size(180, 180, false);
 	
 	private MediaDataModel model;
+	private FormLink newMediaCallout;
 	private FlexiTableElement tableEl;
 	private String mapperThumbnailUrl;
 	private Link addMediaLink, addTextLink, addCitationLink, importArtefactV1Link;
 	
 	private int counter = 0;
 	private final boolean select;
+	private List<FormLink> tagLinks;
 	private final TooledStackedPanel stackPanel;
 
 	private CloseableModalController cmc;
@@ -109,6 +115,9 @@ public class MediaCenterController extends FormBasicController
 	private CollectTextMediaController textUploadCtrl;
 	private EPArtefactPoolRunController importArtefactv1Ctrl;
 	private CollectCitationMediaController citationUploadCtrl;
+
+	private NewMediasController newMediasCtrl;
+	private CloseableCalloutWindowController newMediasCalloutCtrl;
 	
 	@Autowired
 	private PortfolioService portfolioService;
@@ -119,7 +128,7 @@ public class MediaCenterController extends FormBasicController
 		this.select = true;
 		 
 		initForm(ureq);
-		loadModel(null);
+		loadModel();
 	}
 	
 	public MediaCenterController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel) {
@@ -128,7 +137,7 @@ public class MediaCenterController extends FormBasicController
 		this.select = false;
 		 
 		initForm(ureq);
-		loadModel(null);
+		loadModel();
 	}
 	
 	@Override
@@ -152,6 +161,10 @@ public class MediaCenterController extends FormBasicController
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		if(select) {
+			newMediaCallout = uifactory.addFormLink("new.medias", formLayout, Link.BUTTON);
+		}
+		
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, MediaCols.key, "select"));
 
@@ -212,11 +225,13 @@ public class MediaCenterController extends FormBasicController
 		return null;
 	}
 	
-	private void loadModel(String searchString) {
+	private void loadModel() {
+		String searchString = tableEl.getQuickSearchString();
+		List<String> tagNames = getSelectedTagNames();
 		Map<Long,MediaRow> currentMap = model.getObjects()
 				.stream().collect(Collectors.toMap(r -> r.getKey(), r -> r));
 
-		List<MediaLight> medias = portfolioService.searchOwnedMedias(getIdentity(), searchString);
+		List<MediaLight> medias = portfolioService.searchOwnedMedias(getIdentity(), searchString, tagNames);
 		List<MediaRow> rows = new ArrayList<>(medias.size());
 		for(MediaLight media:medias) {
 			if(currentMap.containsKey(media.getKey())) {
@@ -232,6 +247,23 @@ public class MediaCenterController extends FormBasicController
 		}
 		model.setObjects(rows);
 		model.filter(tableEl.getSelectedFilterKey());
+		
+		List<CategoryStatistics> categoryStats = portfolioService.getMediaCategories(getIdentity());
+		List<FormLink> newTagLinks = new ArrayList<>(categoryStats.size());
+		for(CategoryStatistics categoryStat:categoryStats) {
+			FormLink tagLink =  uifactory.addFormLink("tag_" + (++counter), "tag", categoryStat.getName(), null, null, Link.NONTRANSLATED);
+			CategoryState state = new CategoryState(categoryStat, tagNames.contains(categoryStat.getName()));
+			tagLink.setUserObject(state);
+			if(state.isSelected()) {
+				tagLink.setCustomEnabledLinkCSS("tag label label-info o_disabled");
+			} else {
+				tagLink.setCustomEnabledLinkCSS("tag label label-info");
+			}
+			flc.add(tagLink);
+			newTagLinks.add(tagLink);
+		}
+		flc.contextPut("tagLinks", newTagLinks);
+		tagLinks = newTagLinks;
 	}
 
 	@Override
@@ -272,9 +304,10 @@ public class MediaCenterController extends FormBasicController
 					}
 				}
 			} else if(event instanceof FlexiTableSearchEvent) {
-				FlexiTableSearchEvent se = (FlexiTableSearchEvent)event;
-				loadModel(se.getSearch());
+				loadModel();
 			}
+		} else if(newMediaCallout == source) {
+			doOpenNewMediaCallout(ureq, newMediaCallout);
 		} else if(source instanceof FormLink) {
 			FormLink link = (FormLink)source;
 			String cmd = link.getCmd();
@@ -288,6 +321,8 @@ public class MediaCenterController extends FormBasicController
 						activateable.activate(ureq, null, null);
 					}
 				}
+			} else if("tag".equals(cmd)) {
+				doToggleCategory(link);
 			}
 		}
 		super.formInnerEvent(ureq, source, event);
@@ -295,31 +330,48 @@ public class MediaCenterController extends FormBasicController
 
 	@Override
 	public void event(UserRequest ureq, Controller source, Event event) {
-		if(mediaUploadCtrl == source) {
+		if(mediaUploadCtrl == source || textUploadCtrl == source || citationUploadCtrl == source) {
 			if(event == Event.DONE_EVENT) {
-				loadModel(null);
+				loadModel();
 				tableEl.reloadData();
 			}
 			cmc.deactivate();
 			cleanUp();
-		} else if(textUploadCtrl == source || citationUploadCtrl == source) {
-			if(event == Event.DONE_EVENT) {
-				loadModel(null);
-				tableEl.reloadData();
+			
+			if(select || event == Event.DONE_EVENT) {
+				if(mediaUploadCtrl == source) {
+					doSelect(ureq, mediaUploadCtrl.getMediaReference().getKey());
+				} else if(textUploadCtrl == source) {
+					doSelect(ureq, textUploadCtrl.getMediaReference().getKey());
+				} else if(citationUploadCtrl == source) {
+					doSelect(ureq, citationUploadCtrl.getMediaReference().getKey());
+				}
 			}
-			cmc.deactivate();
-			cleanUp();
 		} else if(importArtefactv1Ctrl == source) {
+			Media media = null;
 			if(event instanceof EPArtefactChoosenEvent) {
 				EPArtefactChoosenEvent cEvent = (EPArtefactChoosenEvent)event;
-				doImportArtefactV1(cEvent.getArtefact());
-				loadModel(null);
+				media = doImportArtefactV1(cEvent.getArtefact());
+				loadModel();
 				tableEl.reloadData();
 			}
 			cmc.deactivate();
 			cleanUp();
+			if(select || media != null) {
+				doSelect(ureq, media.getKey());
+			}
+		} else if(newMediasCtrl == source) {
+			newMediasCalloutCtrl.deactivate();
+			if("add.file".equals(event.getCommand())) {
+				doAddMedia(ureq);
+			} else if("add.text".equals(event.getCommand())) {
+				doAddTextMedia(ureq);
+			} else if("add.citation".equals(event.getCommand())) {
+				doAddCitationMedia(ureq);
+			} else if("import.artefactV1".equals(event.getCommand())) {
+				doChooseArtefactV1(ureq);
+			}
 		} else if(cmc == source) {
-
 			cleanUp();
 		}
 		super.event(ureq, source, event);
@@ -422,16 +474,50 @@ public class MediaCenterController extends FormBasicController
 		cmc.activate();
 	}
 	
-	private void doImportArtefactV1(AbstractArtefact oldArtefact) {
+	private Media doImportArtefactV1(AbstractArtefact oldArtefact) {
+		Media media = null;
 		MediaHandler handler = portfolioService.getMediaHandler(oldArtefact.getResourceableTypeName());
 		if(handler != null) {
-			handler.createMedia(oldArtefact);
+			media = handler.createMedia(oldArtefact);
 		}
+		return media;
 	}
 
 	private void doSelect(UserRequest ureq, Long mediaKey) {
 		Media media = portfolioService.getMediaByKey(mediaKey);
 		fireEvent(ureq, new MediaSelectionEvent(media));
+	}
+	
+	private void doToggleCategory(FormLink tagLink) {
+		CategoryState state = (CategoryState)tagLink.getUserObject();
+		state.setSelected(!state.isSelected());
+		loadModel();
+	}
+	
+	private List<String> getSelectedTagNames() {
+		List<String> tagNames = new ArrayList<>();
+		if(tagLinks != null && tagLinks.size() > 0) {
+			for(FormLink tagLink:tagLinks) {
+				CategoryState state = (CategoryState)tagLink.getUserObject();
+				if(state.isSelected()) {
+					tagNames.add(state.getName());
+				}
+			}
+		}
+		return tagNames;
+	}
+	
+	private void doOpenNewMediaCallout(UserRequest ureq, FormLink link) {
+		removeAsListenerAndDispose(newMediasCtrl);
+		removeAsListenerAndDispose(newMediasCalloutCtrl);
+
+		newMediasCtrl = new NewMediasController(ureq, getWindowControl());
+		listenTo(newMediasCtrl);
+
+		newMediasCalloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(),
+				newMediasCtrl.getInitialComponent(), link.getFormDispatchId(), "", true, "", new CalloutSettings(false));
+		listenTo(newMediasCalloutCtrl);
+		newMediasCalloutCtrl.activate();
 	}
 	
 	private Activateable2 doOpenMedia(UserRequest ureq, Long mediaKey) {
@@ -491,6 +577,67 @@ public class MediaCenterController extends FormBasicController
 			}
 			
 			return mr;
+		}
+	}
+
+	private static class CategoryState {
+		
+		private boolean selected;
+		private final CategoryStatistics category;
+		
+		public CategoryState(CategoryStatistics category, boolean selected) {
+			this.category = category;
+			this.selected = selected;
+		}
+
+		public boolean isSelected() {
+			return selected;
+		}
+
+		public void setSelected(boolean selected) {
+			this.selected = selected;
+		}
+
+		public String getName() {
+			return category.getName();
+		}
+	}
+	
+	private static class NewMediasController extends BasicController {
+
+		private final Link addMediaLink, addTextLink, addCitationLink, importArtefactV1Link;
+		
+		public NewMediasController(UserRequest ureq, WindowControl wControl) {
+			super(ureq, wControl);
+			
+			VelocityContainer mainVc = createVelocityContainer("new_medias");
+			
+			addMediaLink = LinkFactory.createLink("add.file", "add.file", getTranslator(), mainVc, this, Link.LINK);
+			addMediaLink.setIconLeftCSS("o_icon o_icon_files");
+
+			addTextLink = LinkFactory.createLink("add.text", "add.text", getTranslator(), mainVc, this, Link.LINK);
+			addTextLink.setIconLeftCSS("o_icon o_filetype_txt");
+			
+			addCitationLink = LinkFactory.createLink("add.citation", "add.citation", getTranslator(), mainVc, this, Link.LINK);
+			addCitationLink.setIconLeftCSS("o_icon o_icon_citation");
+			
+			importArtefactV1Link = LinkFactory.createLink("import.artefactV1", "import.artefactV1", getTranslator(), mainVc, this, Link.LINK);
+			importArtefactV1Link.setIconLeftCSS("o_icon o_icon_import");
+
+			putInitialPanel(mainVc);
+		}
+
+		@Override
+		protected void event(UserRequest ureq, Component source, Event event) {
+			if(source instanceof Link) {
+				Link link = (Link)source;
+				fireEvent(ureq, new Event(link.getCommand()));
+			}
+		}
+
+		@Override
+		protected void doDispose() {
+			//
 		}
 	}
 }

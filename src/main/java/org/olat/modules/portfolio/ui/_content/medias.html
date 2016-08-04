@@ -1,3 +1,12 @@
-<div class="o_portfolio_media_browser">
-$r.render("table")
+#if($r.isNotEmpty($tagLinks) && $r.available("new.medias"))
+<div class="o_block clearfix">
+	<div class="pull-left">
+	<i class="o_icon o_icon_tags"> </i>
+	#foreach($tagLink in $tagLinks)
+		$r.render($tagLink)
+	#end
+	</div>
+	<div class="pull-right">$r.render("new.medias")</div>
 </div>
+#end
+<div class="o_portfolio_media_browser">$r.render("table")</div>
