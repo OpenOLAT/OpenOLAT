@@ -125,7 +125,7 @@ tinymce.addI18n('nl',{
 "Target": "Doel",
 "The URL you entered seems to be an email address. Do you want to add the required mailto: prefix?": "De ingegeven URL lijkt op een e-mailadres. Wil je er \"mailto:\" aan toevoegen?",
 "Insert\/edit link": "Hyperlink invoegen\/bewerken",
-"Insert\/edit media element": "Video invoegen\/bewerken",
+"Insert\/edit video": "Video invoegen\/bewerken",
 "Poster": "Poster",
 "Alternative source": "Alternatieve bron",
 "Paste your embed code below:": "Plak u in te sluiten code hieronder:",

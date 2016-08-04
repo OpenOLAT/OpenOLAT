@@ -125,7 +125,7 @@ tinymce.addI18n('cs',{
 "Target": "C\u00edl",
 "The URL you entered seems to be an email address. Do you want to add the required mailto: prefix?": "Zadan\u00e9 URL vypad\u00e1 jako e-mailov\u00e1 adresa. Chcete doplnit povinn\u00fd prefix mailto:?",
 "Insert\/edit link": "Vlo\u017eit \/ upravit odkaz",
-"Insert\/edit media element": "Vlo\u017eit \/ upravit video",
+"Insert\/edit video": "Vlo\u017eit \/ upravit video",
 "Poster": "N\u00e1hled",
 "Alternative source": "Alternativn\u00ed zdroj",
 "Paste your embed code below:": "Vlo\u017ete k\u00f3d pro vlo\u017een\u00ed n\u00ed\u017ee:",

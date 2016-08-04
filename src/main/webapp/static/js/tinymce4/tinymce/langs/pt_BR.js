@@ -125,7 +125,7 @@ tinymce.addI18n('pt_BR',{
 "Target": "Alvo",
 "The URL you entered seems to be an email address. Do you want to add the required mailto: prefix?": "The URL you entered seems to be an email address. Do you want to add the required mailto: prefix?",
 "Insert\/edit link": "Inserir\/editar link",
-"Insert\/edit media element": "Inserir\/editar v\u00eddeo",
+"Insert\/edit video": "Inserir\/editar v\u00eddeo",
 "Poster": "Autor",
 "Alternative source": "Fonte alternativa",
 "Paste your embed code below:": "Insira o c\u00f3digo de incorpora\u00e7\u00e3o abaixo:",
