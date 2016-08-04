@@ -29,6 +29,7 @@ import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.CodeHelper;
+import org.olat.core.util.Formatter;
 import org.olat.modules.portfolio.PortfolioService;
 import org.olat.modules.portfolio.model.HTMLPart;
 import org.olat.modules.portfolio.ui.editor.event.ChangePartEvent;
@@ -79,7 +80,8 @@ public class HTMLRawEditorController extends FormBasicController implements Page
 		htmlItem.getEditorConfiguration().setSendOnBlur(true);
 		htmlItem.getEditorConfiguration().disableImageAndMovie();
 		
-		staticItem = uifactory.addStaticTextElement(cmpId + "_static", content, formLayout);
+		String formattedContent = Formatter.formatLatexFormulas(content);
+		staticItem = uifactory.addStaticTextElement(cmpId + "_static", formattedContent, formLayout);
 	}
 
 	@Override
@@ -104,7 +106,9 @@ public class HTMLRawEditorController extends FormBasicController implements Page
 		String content = htmlItem.getValue();
 		htmlPart.setContent(content);
 		htmlPart = portfolioService.updatePart(htmlPart);
-		staticItem.setValue(content);
+
+		String formattedContent = Formatter.formatLatexFormulas(content);
+		staticItem.setValue(formattedContent);
 		fireEvent(ureq, new ChangePartEvent(htmlPart));
 	}
 

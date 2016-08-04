@@ -24,6 +24,7 @@ import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.text.TextFactory;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.CodeHelper;
+import org.olat.core.util.Formatter;
 import org.olat.modules.portfolio.model.HTMLPart;
 import org.olat.modules.portfolio.ui.editor.HTMLRawEditorController;
 import org.olat.modules.portfolio.ui.editor.PageElement;
@@ -54,6 +55,7 @@ public class HTMLRawPageElementHandler implements PageElementHandler, SimpleAddP
 		String content = "";
 		if(element instanceof HTMLPart) {
 			content = ((HTMLPart)element).getContent();
+			content = Formatter.formatLatexFormulas(content);
 		}
 		return TextFactory.createTextComponentFromString("htmlRawCmp" + CodeHelper.getRAMUniqueID(), content, null, false, null);
 	}

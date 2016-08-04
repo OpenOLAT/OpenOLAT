@@ -46,9 +46,7 @@ import org.olat.modules.portfolio.MediaLight;
 import org.olat.modules.portfolio.manager.MediaDAO;
 import org.olat.modules.portfolio.manager.PortfolioFileStorage;
 import org.olat.modules.portfolio.model.MediaPart;
-import org.olat.modules.portfolio.ui.editor.InteractiveAddPageElementHandler;
 import org.olat.modules.portfolio.ui.editor.PageElement;
-import org.olat.modules.portfolio.ui.editor.PageElementAddController;
 import org.olat.modules.portfolio.ui.media.CollectVideoMediaController;
 import org.olat.modules.portfolio.ui.media.UploadMedia;
 import org.olat.modules.portfolio.ui.media.VideoMediaController;
@@ -63,7 +61,7 @@ import org.springframework.stereotype.Service;
  *
  */
 @Service
-public class VideoHandler extends AbstractMediaHandler implements InteractiveAddPageElementHandler {
+public class VideoHandler extends AbstractMediaHandler {
 	
 	public static final String VIDEO_TYPE = "video";
 	public static final Set<String> mimeTypes = new HashSet<>();
@@ -189,8 +187,8 @@ public class VideoHandler extends AbstractMediaHandler implements InteractiveAdd
 		return new CollectVideoMediaController(ureq, wControl, media);
 	}
 
-	@Override
+	/*@Override
 	public PageElementAddController getAddPageElementController(UserRequest ureq, WindowControl wControl) {
 		return new CollectVideoMediaController(ureq, wControl);
-	}
+	}*/
 }

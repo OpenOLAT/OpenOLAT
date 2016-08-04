@@ -29,7 +29,6 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
-import org.olat.core.gui.components.stack.PopEvent;
 import org.olat.core.gui.components.stack.TooledController;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.components.stack.TooledStackedPanel.Align;
@@ -48,19 +47,30 @@ import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.modules.portfolio.Binder;
 import org.olat.modules.portfolio.BinderSecurityCallback;
+import org.olat.modules.portfolio.Media;
 import org.olat.modules.portfolio.MediaHandler;
 import org.olat.modules.portfolio.Page;
+import org.olat.modules.portfolio.PagePart;
 import org.olat.modules.portfolio.PageStatus;
 import org.olat.modules.portfolio.PortfolioService;
 import org.olat.modules.portfolio.Section;
+import org.olat.modules.portfolio.model.MediaPart;
+import org.olat.modules.portfolio.ui.editor.AddElementInfos;
+import org.olat.modules.portfolio.ui.editor.InteractiveAddPageElementHandler;
 import org.olat.modules.portfolio.ui.editor.PageController;
+import org.olat.modules.portfolio.ui.editor.PageEditorController;
+import org.olat.modules.portfolio.ui.editor.PageEditorProvider;
 import org.olat.modules.portfolio.ui.editor.PageElement;
+import org.olat.modules.portfolio.ui.editor.PageElementAddController;
+import org.olat.modules.portfolio.ui.editor.PageElementEditorController;
 import org.olat.modules.portfolio.ui.editor.PageElementHandler;
 import org.olat.modules.portfolio.ui.editor.PageProvider;
+import org.olat.modules.portfolio.ui.editor.SimpleAddPageElementHandler;
 import org.olat.modules.portfolio.ui.editor.handler.HTMLRawPageElementHandler;
 import org.olat.modules.portfolio.ui.editor.handler.SpacerElementHandler;
 import org.olat.modules.portfolio.ui.editor.handler.TitlePageElementHandler;
 import org.olat.modules.portfolio.ui.event.ClosePageEvent;
+import org.olat.modules.portfolio.ui.event.MediaSelectionEvent;
 import org.olat.modules.portfolio.ui.event.PublishEvent;
 import org.olat.modules.portfolio.ui.event.ReopenPageEvent;
 import org.olat.modules.portfolio.ui.event.RevisionEvent;
@@ -81,7 +91,7 @@ public class PageRunController extends BasicController implements TooledControll
 	private CloseableModalController cmc;
 	private PageMetadataController pageMetaCtrl;
 	private PageController pageCtrl;
-	private PageEditController pageEditCtrl;
+	private PageEditorController pageEditCtrl;
 	private DialogBoxController confirmPublishCtrl, confirmRevisionCtrl, confirmCloseCtrl, confirmReopenCtrl;
 	private PageMetadataEditController editMetadataCtrl;
 	private UserCommentsAndRatingsController commentsCtrl;
@@ -124,13 +134,13 @@ public class PageRunController extends BasicController implements TooledControll
 	public void initTools() {
 		if(secCallback.canEditPage(page)) {
 			editLink = LinkFactory.createToolLink("edit.page", translate("edit.page"), this);
-			editLink.setIconLeftCSS("o_icon o_icon-lg o_icon_new_portfolio");
+			editLink.setIconLeftCSS("o_icon o_icon-lg o_icon_edit");
 			stackPanel.addTool(editLink, Align.left);
 		}
 		
 		if(secCallback.canEditMetadataBinder()) {
 			editMetadataLink = LinkFactory.createToolLink("edit.page.metadata", translate("edit.page.metadata"), this);
-			editMetadataLink.setIconLeftCSS("o_icon o_icon-lg o_icon_new_portfolio");
+			editMetadataLink.setIconLeftCSS("o_icon o_icon-lg o_icon_edit_metadata");
 			stackPanel.addTool(editMetadataLink, Align.left);
 		}
 	}
@@ -173,9 +183,6 @@ public class PageRunController extends BasicController implements TooledControll
 				dirtyMarker = true;
 			} else if(event instanceof PublishEvent) {
 				doConfirmPublish(ureq);
-			} else {
-				stackPanel.popUpToController(this);
-				loadModel(ureq);
 			}
 		} else if(editMetadataCtrl == source) {
 			if(event == Event.DONE_EVENT) {
@@ -229,13 +236,6 @@ public class PageRunController extends BasicController implements TooledControll
 			doEditPage(ureq);
 		} else if(editMetadataLink == source) {
 			doEditMetadata(ureq);
-		} else if(stackPanel == source) {
-			if(event instanceof PopEvent) {
-				PopEvent pe = (PopEvent)event;
-				if(pe.getController() == pageEditCtrl && dirtyMarker) {
-					loadModel(ureq);
-				}
-			}
 		}
 	}
 	
@@ -314,11 +314,24 @@ public class PageRunController extends BasicController implements TooledControll
 	
 	private void doEditPage(UserRequest ureq) {
 		removeAsListenerAndDispose(pageEditCtrl);
-
-		pageEditCtrl = new PageEditController(ureq, getWindowControl(), secCallback, page);
-		listenTo(pageEditCtrl);
-		
-		stackPanel.pushController("Edit", pageEditCtrl);
+		if(Boolean.TRUE.equals(editLink.getUserObject())) {
+			if(dirtyMarker) {
+				loadModel(ureq);
+			}
+			mainVC.put("page", pageCtrl.getInitialComponent());
+			
+			editLink.setCustomDisplayText(translate("edit"));
+			editLink.setIconLeftCSS("o_icon o_icon-lg o_icon_edit");
+			editLink.setUserObject(Boolean.FALSE);
+		} else {
+			pageEditCtrl = new PageEditorController(ureq, getWindowControl(), new PortfolioPageEditorProvider());
+			listenTo(pageEditCtrl);
+			mainVC.put("page", pageEditCtrl.getInitialComponent());
+			
+			editLink.setCustomDisplayText(translate("save"));
+			editLink.setIconLeftCSS("o_icon o_icon-lg o_icon_save");
+			editLink.setUserObject(Boolean.TRUE);
+		}
 	}
 
 	private class PortfolioPageProvider implements PageProvider {
@@ -352,6 +365,180 @@ public class PageRunController extends BasicController implements TooledControll
 		@Override
 		public List<PageElementHandler> getAvailableHandlers() {
 			return handlers;
+		}
+	}
+
+	private class PortfolioPageEditorProvider implements PageEditorProvider {
+		
+		private final List<PageElementHandler> handlers = new ArrayList<>();
+		private final List<PageElementHandler> creationHandlers = new ArrayList<>();
+		
+		public PortfolioPageEditorProvider() {
+			//handler for title
+			TitlePageElementHandler titleRawHandler = new TitlePageElementHandler();
+			handlers.add(titleRawHandler);
+			creationHandlers.add(titleRawHandler);
+			//handler for HTML code
+			HTMLRawPageElementHandler htlmRawHandler = new HTMLRawPageElementHandler();
+			handlers.add(htlmRawHandler);
+			creationHandlers.add(htlmRawHandler);
+			//handler for HR code
+			SpacerElementHandler hrHandler = new SpacerElementHandler();
+			handlers.add(hrHandler);
+			creationHandlers.add(hrHandler);
+			
+			
+			List<MediaHandler> mediaHandlers = portfolioService.getMediaHandlers();
+			for(MediaHandler mediaHandler:mediaHandlers) {
+				if(mediaHandler instanceof PageElementHandler) {
+					handlers.add((PageElementHandler)mediaHandler);
+					if(mediaHandler instanceof InteractiveAddPageElementHandler
+							|| mediaHandler instanceof SimpleAddPageElementHandler) {
+						creationHandlers.add((PageElementHandler)mediaHandler);
+					}
+				}
+			}
+			
+			//add the hook to pick media from the media center
+			creationHandlers.add(new OtherArtefactsHandler());
+		}
+
+		@Override
+		public List<? extends PageElement> getElements() {
+			return portfolioService.getPageParts(page);
+		}
+
+		@Override
+		public List<PageElementHandler> getCreateHandlers() {
+			return creationHandlers;
+		}
+
+		@Override
+		public List<PageElementHandler> getAvailableHandlers() {
+			return handlers;
+		}
+
+		@Override
+		public PageElement appendPageElement(PageElement element) {
+			PagePart part = null;
+			if(element instanceof PagePart) {
+				part = portfolioService.appendNewPagePart(page, (PagePart)element);
+			}
+			return part;
+		}
+
+		@Override
+		public PageElement appendPageElementAt(PageElement element, int index) {
+			PagePart part = null;
+			if(element instanceof PagePart) {
+				part = portfolioService.appendNewPagePartAt(page, (PagePart)element, index);
+			}
+			return part;
+		}
+
+		@Override
+		public void removePageElement(PageElement element) {
+			if(element instanceof PagePart) {
+				portfolioService.removePagePart(page, (PagePart)element);
+			}
+		}
+
+		@Override
+		public void moveUpPageElement(PageElement element) {
+			if(element instanceof PagePart) {
+				portfolioService.moveUpPagePart(page, (PagePart)element);
+			}
+		}
+
+		@Override
+		public void moveDownPageElement(PageElement element) {
+			if(element instanceof PagePart) {
+				portfolioService.moveDownPagePart(page, (PagePart)element);
+			}
+		}
+	}
+	
+	public static class OtherArtefactsHandler implements PageElementHandler, InteractiveAddPageElementHandler {
+
+		@Override
+		public String getType() {
+			return "others";
+		}
+
+		@Override
+		public String getIconCssClass() {
+			return "o_icon_others";
+		}
+
+		@Override
+		public Component getContent(UserRequest ureq, WindowControl wControl, PageElement element) {
+			return null;
+		}
+
+		@Override
+		public PageElementEditorController getEditor(UserRequest ureq, WindowControl wControl, PageElement element) {
+			return null;
+		}
+		
+		@Override
+		public PageElementAddController getAddPageElementController(UserRequest ureq, WindowControl wControl) {
+			return new OtherArtfectsChooserController(ureq, wControl);
+		}
+	}
+	
+	public static class OtherArtfectsChooserController extends BasicController implements PageElementAddController {
+		
+		private MediaPart mediaPart;
+		private AddElementInfos userObject;
+		private final MediaCenterController mediaListCtrl;
+		
+		public OtherArtfectsChooserController(UserRequest ureq, WindowControl wControl) {
+			super(ureq, wControl);
+			mediaListCtrl = new MediaCenterController(ureq, getWindowControl());
+			listenTo(mediaListCtrl);
+			putInitialPanel(mediaListCtrl.getInitialComponent());
+		}
+
+		@Override
+		public PageElement getPageElement() {
+			return mediaPart;
+		}
+
+		@Override
+		public AddElementInfos getUserObject() {
+			return userObject;
+		}
+
+		@Override
+		public void setUserObject(AddElementInfos userObject) {
+			this.userObject = userObject;
+		}
+
+		@Override
+		protected void event(UserRequest ureq, Component source, Event event) {
+			//
+		}
+		
+		@Override
+		protected void event(UserRequest ureq, Controller source, Event event) {
+			if(event instanceof MediaSelectionEvent) {
+				MediaSelectionEvent mse = (MediaSelectionEvent)event;
+				if(mse.getMedia() != null) {
+					doAddMedia(mse.getMedia());
+					fireEvent(ureq, Event.DONE_EVENT);
+				}
+			}
+			super.event(ureq, source, event);
+		}
+		
+		private void doAddMedia(Media media) {
+			mediaPart = new MediaPart();
+			mediaPart.setMedia(media);
+		}
+
+		@Override
+		protected void doDispose() {
+			//
 		}
 	}
 }

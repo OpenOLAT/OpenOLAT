@@ -29,7 +29,6 @@ import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.modules.portfolio.BinderSecurityCallback;
 import org.olat.modules.portfolio.PortfolioService;
 import org.olat.modules.portfolio.Section;
 import org.olat.modules.portfolio.SectionStatus;
@@ -47,16 +46,13 @@ public class SectionDatesEditController extends FormBasicController {
 	
 	private Section section;
 	private Object userObject;
-	private BinderSecurityCallback secCallback;
 	
 	@Autowired
 	private PortfolioService portfolioService;
 	
-	public SectionDatesEditController(UserRequest ureq, WindowControl wControl,
-			Section section, BinderSecurityCallback secCallback) {
+	public SectionDatesEditController(UserRequest ureq, WindowControl wControl, Section section) {
 		super(ureq, wControl);
 		this.section = section;
-		this.secCallback = secCallback;
 		initForm(ureq);
 	}
 	

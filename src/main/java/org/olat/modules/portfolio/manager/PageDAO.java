@@ -350,14 +350,16 @@ public class PageDAO {
 		if(index > 0) {
 			PagePart reloadedPart = body.getParts().remove(index);
 			body.getParts().add(index - 1, reloadedPart);
-			dbInstance.getCurrentEntityManager().merge(body);
+		} else {
+			body.getParts().add(0, part);
 		}
+		dbInstance.getCurrentEntityManager().merge(body);
 	}
 	
 	public void moveDownPart(PageBody body, PagePart part) {
 		body.getParts().size();
 		int index = body.getParts().indexOf(part);
-		if(index + 1 < body.getParts().size()) {
+		if(index >= 0 && index + 1 < body.getParts().size()) {
 			PagePart reloadedPart = body.getParts().remove(index);
 			body.getParts().add(index + 1, reloadedPart);
 			dbInstance.getCurrentEntityManager().merge(body);

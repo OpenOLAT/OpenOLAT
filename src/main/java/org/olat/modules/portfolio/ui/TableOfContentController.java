@@ -422,7 +422,7 @@ public class TableOfContentController extends BasicController implements TooledC
 	private void doOverrideDatesSection(UserRequest ureq, SectionRow sectionRow) {
 		if(editSectionDatesCtrl != null) return;
 		
-		editSectionDatesCtrl = new SectionDatesEditController(ureq, getWindowControl(), sectionRow.getSection(), secCallback);
+		editSectionDatesCtrl = new SectionDatesEditController(ureq, getWindowControl(), sectionRow.getSection());
 		editSectionDatesCtrl.setUserObject(sectionRow);
 		listenTo(editSectionDatesCtrl);
 		
