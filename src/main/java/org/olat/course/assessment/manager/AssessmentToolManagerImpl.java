@@ -33,7 +33,6 @@ import org.olat.core.util.StringHelper;
 import org.olat.course.assessment.AssessmentToolManager;
 import org.olat.course.assessment.model.AssessmentStatistics;
 import org.olat.course.assessment.model.SearchAssessedIdentityParams;
-import org.olat.course.assessment.model.UserCourseInfosImpl;
 import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
 import org.olat.repository.RepositoryEntry;
@@ -55,7 +54,7 @@ public class AssessmentToolManagerImpl implements AssessmentToolManager {
 	private DB dbInstance;
 
 	@Override
-	public int getNumberOfAssessedIndetities(Identity coach, SearchAssessedIdentityParams params) {
+	public int getNumberOfAssessedIdentities(Identity coach, SearchAssessedIdentityParams params) {
 		//count all possible participants for the coach permissions
 		TypedQuery<Long> countUsers = createAssessedIdentities(coach, params, Long.class);
 		int numOfAssessedIdentites = 0;
@@ -65,14 +64,69 @@ public class AssessmentToolManagerImpl implements AssessmentToolManager {
 		}
 		return numOfAssessedIdentites;
 	}
-	
+
+
+	@Override
+	public int getNumberOfParticipants(Identity coach, SearchAssessedIdentityParams params) {
+		RepositoryEntry courseEntry = params.getEntry();
+		
+		int numOfParticipants = 0;
+		if(params.isAdmin()) {
+			StringBuilder sb = new StringBuilder();
+			sb.append("select count(participant.identity.key) from repoentrytogroup as rel")
+	          .append("  inner join rel.group as bGroup")
+	          .append("  inner join bGroup.members as participant on (participant.role='").append(GroupRoles.participant.name()).append("')")
+	          .append("  where rel.entry.key=:repoEntryKey)");
+			
+			List<Number> count = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Number.class)
+				.setParameter("repoEntryKey", courseEntry.getKey())
+				.getResultList();
+			numOfParticipants = count == null || count.isEmpty() || count.get(0) == null ? 0 : count.get(0).intValue();
+			
+			//count the users which login but are not members of the course
+			if(params.isNonMembers()) {
+				StringBuilder sc = new StringBuilder();
+				sc.append("select count(infos.key) from usercourseinfos as infos ")
+				  .append(" inner join infos.resource as infosResource on (infosResource.key=:resourceKey)")
+				  .append(" where not exists (select membership.identity from repoentrytogroup as rel, bgroupmember as membership")
+		          .append("   where rel.entry.key=:repoEntryKey and rel.group.key=membership.group.key and membership.identity.key=infos.identity.key")
+		          .append("  )");
+				
+				List<Number> countAlt = dbInstance.getCurrentEntityManager()
+					.createQuery(sc.toString(), Number.class)
+					.setParameter("repoEntryKey", courseEntry.getKey())
+					.setParameter("resourceKey", courseEntry.getOlatResource().getKey())
+					.getResultList();
+				numOfParticipants += countAlt == null || countAlt.isEmpty() || countAlt.get(0) == null ? 0 : countAlt.get(0).intValue();
+			}
+			
+		} else if(params.isBusinessGroupCoach() || params.isRepositoryEntryCoach()) {
+			StringBuilder sb = new StringBuilder();
+			sb.append("select count(participant.identity.key) from repoentrytogroup as rel")
+	          .append("  inner join rel.group as bGroup")
+	          .append("  inner join bGroup.members as coach on (coach.identity.key=:identityKey and coach.role='").append(GroupRoles.coach.name()).append("')")
+	          .append("  inner join bGroup.members as participant on (participant.role='").append(GroupRoles.participant.name()).append("')")
+	          .append("  where rel.entry.key=:repoEntryKey)");
+			
+			List<Number> count = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Number.class)
+				.setParameter("identityKey", coach.getKey())
+				.setParameter("repoEntryKey", courseEntry.getKey())
+				.getResultList();
+			numOfParticipants = count == null || count.isEmpty() || count.get(0) == null ? 0 : count.get(0).intValue();
+		}
+		return numOfParticipants;
+	}
+
 	@Override
 	public int getNumberOfInitialLaunches(Identity coach, SearchAssessedIdentityParams params) {
 		RepositoryEntry courseEntry = params.getEntry();
 
 		StringBuilder sf = new StringBuilder();
-		sf.append("select count(infos.key), infos.resource.key from ").append(UserCourseInfosImpl.class.getName()).append(" as infos ")
-		  .append(" where infos.resource.key=:resourceKey and (infos.identity in");
+		sf.append("select count(infos.key), infosResource.key from usercourseinfos as infos ")
+		  .append(" inner join infos.resource as infosResource on (infosResource.key=:resourceKey)")
+		  .append(" where (infos.identity in");
 		if(params.isAdmin()) {
 			sf.append(" (select participant.identity from repoentrytogroup as rel, bgroupmember as participant")
 	          .append("    where rel.entry.key=:repoEntryKey and rel.group=participant.group")
@@ -80,17 +134,17 @@ public class AssessmentToolManagerImpl implements AssessmentToolManager {
 	          .append("  )");
 			if(params.isNonMembers()) {
 				sf.append(" or not exists (select membership.identity from repoentrytogroup as rel, bgroupmember as membership")
-		          .append("    where rel.entry.key=:repoEntryKey and rel.group=membership.group and membership.identity=infos.identity")
+		          .append("    where rel.entry.key=:repoEntryKey and rel.group.key=membership.group.key and membership.identity.key=infos.identity.key")
 		          .append("  )");
 			}
 		} else if(params.isBusinessGroupCoach() || params.isRepositoryEntryCoach()) {
 			sf.append(" (select participant.identity from repoentrytogroup as rel, bgroupmember as participant, bgroupmember as coach")
 	          .append("    where rel.entry.key=:repoEntryKey")
-	          .append("      and rel.group=coach.group and coach.role='").append(GroupRoles.coach.name()).append("' and coach.identity.key=:identityKey")
-	          .append("      and rel.group=participant.group and participant.role='").append(GroupRoles.participant.name()).append("'")
+	          .append("      and rel.group.key=coach.group.key and coach.role='").append(GroupRoles.coach.name()).append("' and coach.identity.key=:identityKey")
+	          .append("      and rel.group.key=participant.group.key and participant.role='").append(GroupRoles.participant.name()).append("'")
 	          .append("  )");
 		}
-		sf.append(" ) group by infos.resource.key");
+		sf.append(" ) group by infosResource.key");
 
 		TypedQuery<Object[]> infos = dbInstance.getCurrentEntityManager()
 			.createQuery(sf.toString(), Object[].class)

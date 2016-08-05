@@ -24,7 +24,7 @@
 	<div id="o_qti_run_infos" class="panel panel-default"><div class="panel-body">
 		#if (!$qtiWorksStatus.isSurvey() && $displayScoreProgress && $qtiWorksStatus.score)
 		<div id="o_qti_scoreinfo">
-			<div id="o_qti_run_scoreinfo" class="col-sm-3">
+			<div id="o_qti_run_scoreinfo" class="col-md-2 col-sm-3">
 			#if ($qtiWorksStatus.hasMaxScore())
 	    		#if ($qtiWorksStatus.maxScore == "-1.0")
 	  				$r.translate("question.progress.score"): $qtiWorksStatus.score / $r.translate("question.progress.noMaxScore")
@@ -35,16 +35,16 @@
 				$r.translate("question.progress.score"): $qtiWorksStatus.score
 			#end
 	  		</div>
-			<div id="o_qti_run_scoreprogress" class="col-sm-3">$r.render("scoreProgress", "nl")</div>
+			<div id="o_qti_run_scoreprogress" class="col-md-4 col-sm-3">$r.render("scoreProgress", "nl")</div>
 		</div>
 		#end
 		
 		#if ($displayQuestionProgress)
-		<div id="o_qti_questioninfo" class="row">
-			<div id="o_qti_run_questioninfo" class="col-sm-3">
+		<div id="o_qti_questioninfo">
+			<div id="o_qti_run_questioninfo" class="col-md-2 col-sm-3">
 				 $r.translate("question.progress.answered"): $qtiWorksStatus.numberOfAnsweredQuestions / $qtiWorksStatus.numberOfQuestions
 			</div>
-			<div id="o_qti_run_questionprogress" class="col-sm-3">$r.render("questionProgress", "nl")</div>
+			<div id="o_qti_run_questionprogress" class="col-md-4 col-sm-3">$r.render("questionProgress", "nl")</div>
 		</div>
 		#end
 	</div></div>

@@ -21,7 +21,6 @@ package org.olat.selenium.page.course;
 
 import java.util.List;
 
-import org.jboss.arquillian.drone.api.annotation.Drone;
 import org.junit.Assert;
 import org.olat.selenium.page.graphene.OOGraphene;
 import org.olat.user.restapi.UserVO;
@@ -37,19 +36,14 @@ import org.openqa.selenium.WebElement;
  */
 public class AssessmentToolPage {
 	
-	@Drone
-	private WebDriver browser;
-	
-	public AssessmentToolPage() {
-		//
-	}
+	private final WebDriver browser;
 	
 	public AssessmentToolPage(WebDriver browser) {
 		this.browser = browser;
 	}
 	
 	public AssessmentToolPage users() {
-		By usersBy = By.cssSelector("li.o_sel_assessment_tool_users a");
+		By usersBy = By.cssSelector("a.o_sel_assessment_tool_assessed_users");
 		WebElement usersLink = browser.findElement(usersBy);
 		usersLink.click();
 		OOGraphene.waitBusy(browser);
@@ -57,7 +51,7 @@ public class AssessmentToolPage {
 	}
 	
 	public AssessmentToolPage assertOnUsers(UserVO user) {
-		By usersCellsBy = By.cssSelector("div.o_table_layout table tr td.text-left");
+		By usersCellsBy = By.cssSelector("div.o_table_flexi table tr td.text-left");
 		List<WebElement> usersCellsList = browser.findElements(usersCellsBy);
 		Assert.assertFalse(usersCellsList.isEmpty());
 		
@@ -76,7 +70,7 @@ public class AssessmentToolPage {
 	 * @return
 	 */
 	public AssessmentToolPage selectUser(UserVO user) {
-		By userLinksBy = By.xpath("//div[contains(@class,'o_table_layout')]//table//tr//td//a[text()[contains(.,'" + user.getFirstName() + "')]]");
+		By userLinksBy = By.xpath("//div[contains(@class,'o_table_flexi')]//table//tr//td//a[text()[contains(.,'" + user.getFirstName() + "')]]");
 		WebElement userLink = browser.findElement(userLinksBy);
 		userLink.click();
 		OOGraphene.waitBusy(browser);
@@ -124,14 +118,14 @@ public class AssessmentToolPage {
 		By scoreBy = By.cssSelector(".o_sel_assessment_form_score input[type='text']");
 		browser.findElement(scoreBy).sendKeys(Float.toString(score));
 		
-		By saveBy = By.cssSelector(".o_sel_assessment_form button.btn.btn-primary");
+		By saveBy = By.cssSelector("a.btn.o_sel_assessment_form_save_and_close");
 		browser.findElement(saveBy).click();
 		OOGraphene.waitBusy(browser);
 		return this;
 	}
 	
 	public AssessmentToolPage assertPassed(UserVO user) {
-		By userInfosBy = By.cssSelector("div.panel li.list-group-item");
+		By userInfosBy = By.cssSelector("div.o_user_infos div.o_user_infos_inner table tr td");
 		List<WebElement> userInfoList = browser.findElements(userInfosBy);
 		Assert.assertFalse(userInfoList.isEmpty());
 		boolean foundFirstName = false;
@@ -140,7 +134,7 @@ public class AssessmentToolPage {
 		}
 		Assert.assertTrue(foundFirstName);
 		
-		By passedBy = By.cssSelector("div.o_table_layout table tr td.text-left span.o_state.o_passed");
+		By passedBy = By.cssSelector("div.o_table_wrapper table tr td.text-left span.o_state.o_passed");
 		List<WebElement> passedEl = browser.findElements(passedBy);
 		Assert.assertFalse(passedEl.isEmpty());
 		Assert.assertTrue(passedEl.get(0).isDisplayed());
@@ -168,7 +162,7 @@ public class AssessmentToolPage {
 	}
 	
 	public BulkAssessmentPage bulk() {
-		By bulkBy = By.cssSelector("li.o_sel_assessment_tool_bulk a");
+		By bulkBy = By.cssSelector("li.o_tool a.o_sel_assessment_tool_bulk");
 		browser.findElement(bulkBy).click();
 		OOGraphene.waitBusy(browser);
 		
@@ -178,4 +172,16 @@ public class AssessmentToolPage {
 		return new BulkAssessmentPage(browser);
 	}
 	
+	/**
+	 * Click back to the course
+	 * 
+	 * @return
+	 */
+	public CoursePageFragment clickToolbarRootCrumb() {
+		OOGraphene.closeBlueMessageWindow(browser);
+		By toolbarBackBy = By.xpath("//li[contains(@class,'o_breadcrumb_back')]/following-sibling::li/a");
+		browser.findElement(toolbarBackBy).click();
+		OOGraphene.waitBusy(browser);
+		return new CoursePageFragment(browser);
+	}
 }

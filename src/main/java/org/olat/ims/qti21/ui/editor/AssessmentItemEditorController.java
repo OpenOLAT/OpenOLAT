@@ -175,9 +175,9 @@ public class AssessmentItemEditorController extends BasicController {
 		}
 		
 		if(metadataBuilder != null) {
-			metadataEditor = new MetadataEditorController(ureq, getWindowControl(), metadataBuilder);
-			listenTo(metadataEditor);
-			tabbedPane.addTab(translate("form.metadata"), metadataEditor);
+			//metadataEditor = new MetadataEditorController(ureq, getWindowControl(), metadataBuilder);
+			//listenTo(metadataEditor);
+			//tabbedPane.addTab(translate("form.metadata"), metadataEditor);
 		}
 	}
 	

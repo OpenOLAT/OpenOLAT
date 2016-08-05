@@ -54,8 +54,8 @@ import org.olat.ims.qti21.QTI21Constants;
 import org.olat.ims.qti21.manager.CorrectResponsesUtil;
 import org.olat.ims.qti21.model.QTI21QuestionType;
 import org.olat.ims.qti21.model.xml.AssessmentHtmlBuilder;
-import org.olat.ims.qti21.model.xml.AssessmentItemFactory;
 import org.olat.ims.qti21.model.xml.AssessmentTestBuilder;
+import org.olat.ims.qti21.model.xml.QtiNodesExtractor;
 import org.olat.ims.qti21.model.xml.interactions.FIBAssessmentItemBuilder;
 import org.olat.ims.qti21.model.xml.interactions.FIBAssessmentItemBuilder.NumericalEntry;
 import org.olat.ims.qti21.model.xml.interactions.FIBAssessmentItemBuilder.TextEntry;
@@ -294,7 +294,7 @@ public class QTI21WordExport implements MediaResource {
 			default: typeDescription = null; break;
 		}
 		
-		Double maxScore = AssessmentItemFactory.extractMaxScore(item);
+		Double maxScore = QtiNodesExtractor.extractMaxScore(item);
 		
 		if(StringHelper.containsNonWhitespace(typeDescription) || maxScore != null) {
 			if(StringHelper.containsNonWhitespace(typeDescription)) {

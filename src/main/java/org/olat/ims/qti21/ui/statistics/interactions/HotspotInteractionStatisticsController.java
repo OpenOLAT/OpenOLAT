@@ -19,6 +19,8 @@
  */
 package org.olat.ims.qti21.ui.statistics.interactions;
 
+import static org.olat.ims.qti21.model.xml.QtiNodesExtractor.extractIdentifiersFromCorrectResponse;
+
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -46,7 +48,6 @@ import org.olat.ims.qti.statistics.ui.ResponseInfos;
 import org.olat.ims.qti.statistics.ui.Series;
 import org.olat.ims.qti21.QTI21StatisticsManager;
 import org.olat.ims.qti21.model.statistics.HotspotChoiceStatistics;
-import org.olat.ims.qti21.model.xml.AssessmentItemFactory;
 import org.olat.ims.qti21.ui.statistics.QTI21AssessmentItemStatisticsController;
 import org.olat.ims.qti21.ui.statistics.QTI21StatisticResourceResult;
 import org.olat.ims.qti21.ui.statistics.SeriesFactory;
@@ -151,7 +152,7 @@ public class HotspotInteractionStatisticsController extends BasicController {
 		List<Identifier> correctAnswers = new ArrayList<>();
 		ResponseDeclaration responseDeclaration = assessmentItem.getResponseDeclaration(interaction.getResponseIdentifier());
 		if(responseDeclaration != null && responseDeclaration.getCorrectResponse() != null) {
-			AssessmentItemFactory.extractIdentifiersFromCorrectResponse(responseDeclaration.getCorrectResponse(), correctAnswers);
+			extractIdentifiersFromCorrectResponse(responseDeclaration.getCorrectResponse(), correctAnswers);
 		}
 		return correctAnswers;
 	}

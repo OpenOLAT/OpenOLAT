@@ -150,7 +150,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 
 	//tools
 	private Link folderLink,
-		assessmentLink, assessment_v2_Link, archiverLink,
+		assessmentLink,  assessment_v2_Link, archiverLink,
 		courseStatisticLink, surveyStatisticLink, testStatisticLink,
 		areaLink, dbLink,
 		//settings
@@ -431,11 +431,11 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 				tools.addComponent(membersLink);
 			}
 			if (reSecurity.isEntryAdmin() || reSecurity.isCourseCoach() || reSecurity.isGroupCoach() || hasCourseRight(CourseRights.RIGHT_ASSESSMENT)) {
-				assessmentLink = LinkFactory.createToolLink("assessment",translate("command.openassessment"), this, "o_icon_assessment_tool");
-				assessmentLink.setElementCssClass("o_sel_course_assessment_tool");
-				tools.addComponent(assessmentLink);
 				
-				assessment_v2_Link = LinkFactory.createToolLink("assessment", translate("command.openassessment") + " v2", this, "o_icon_assessment_tool");
+				assessmentLink = LinkFactory.createToolLink("assessment", "<del>" + translate("command.openassessment") + "</del>", this, "o_icon_assessment_tool");
+				tools.addComponent(assessmentLink);
+
+				assessment_v2_Link = LinkFactory.createToolLink("assessment", translate("command.openassessment"), this, "o_icon_assessment_tool");
 				assessment_v2_Link.setElementCssClass("o_sel_course_assessment_tool");
 				tools.addComponent(assessment_v2_Link);
 				

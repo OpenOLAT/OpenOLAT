@@ -78,7 +78,7 @@ import org.olat.ims.qti21.model.xml.AssessmentTestBuilder;
 import org.olat.ims.qti21.model.xml.AssessmentTestFactory;
 import org.olat.ims.qti21.model.xml.ManifestBuilder;
 import org.olat.ims.qti21.model.xml.ManifestMetadataBuilder;
-import org.olat.ims.qti21.model.xml.QtiNodesHelper;
+import org.olat.ims.qti21.model.xml.QtiNodesExtractor;
 import org.olat.ims.qti21.model.xml.interactions.EssayAssessmentItemBuilder;
 import org.olat.ims.qti21.model.xml.interactions.FIBAssessmentItemBuilder;
 import org.olat.ims.qti21.model.xml.interactions.FIBAssessmentItemBuilder.EntryType;
@@ -858,8 +858,7 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 		for(ResolvedAssessmentItem resolvedAssessmentItem:resolvedAssessmentTest.getResolvedAssessmentItemBySystemIdMap().values()) {
 			AssessmentItem assessmentItem = resolvedAssessmentItem.getRootNodeLookup().extractIfSuccessful();
 			if(assessmentItem != null) {
-				Double maxScore = QtiNodesHelper
-						.getOutcomeDeclarationDefaultFloatValue(assessmentItem.getOutcomeDeclaration(QTI21Constants.MAXSCORE_IDENTIFIER));
+				Double maxScore = QtiNodesExtractor.extractMaxScore(assessmentItem);
 				if(maxScore != null) {
 					sumMaxScore += maxScore;
 				}

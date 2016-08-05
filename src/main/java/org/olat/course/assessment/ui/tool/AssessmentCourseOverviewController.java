@@ -19,8 +19,6 @@
  */
 package org.olat.course.assessment.ui.tool;
 
-import java.util.List;
-
 import org.olat.core.commons.services.notifications.PublisherData;
 import org.olat.core.commons.services.notifications.SubscriptionContext;
 import org.olat.core.commons.services.notifications.ui.ContextualSubscriptionController;
@@ -33,9 +31,6 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
-import org.olat.core.gui.control.generic.dtabs.Activateable2;
-import org.olat.core.id.context.ContextEntry;
-import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.Util;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
@@ -55,7 +50,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class AssessmentCourseOverviewController extends BasicController implements Activateable2 {
+public class AssessmentCourseOverviewController extends BasicController {
 	
 	protected static final Event SELECT_USERS_EVENT = new Event("assessment-tool-select-users");
 	protected static final Event SELECT_GROUPS_EVENT = new Event("assessment-tool-select-groups");
@@ -119,6 +114,7 @@ public class AssessmentCourseOverviewController extends BasicController implemen
 		int numOfAssessedIdentities = statisticsCtrl.getNumOfAssessedIdentities();
 		assessedIdentitiesLink = LinkFactory.createLink("assessed.identities", "assessed.identities", getTranslator(), mainVC, this, Link.NONTRANSLATED);
 		assessedIdentitiesLink.setCustomDisplayText(translate("assessment.tool.numOfAssessedIdentities", new String[]{ Integer.toString(numOfAssessedIdentities) }));
+		assessedIdentitiesLink.setElementCssClass("o_sel_assessment_tool_assessed_users");
 		assessedIdentitiesLink.setIconLeftCSS("o_icon o_icon_user");
 		
 		int numOfPassed = statisticsCtrl.getNumOfPassed();
@@ -154,11 +150,6 @@ public class AssessmentCourseOverviewController extends BasicController implemen
 
 	@Override
 	protected void doDispose() {
-		//
-	}
-
-	@Override
-	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
 		//
 	}
 

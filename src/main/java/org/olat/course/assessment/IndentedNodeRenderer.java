@@ -90,9 +90,9 @@ public class IndentedNodeRenderer implements CustomCellRenderer, FlexiCellRender
 		
 		sb.append("<i class=\"o_icon ").append(cssClass).append("\"> </i> <span");
 		if (altText != null) {
-			sb.append(" title= \"").append(StringHelper.escapeHtml(altText));
+			sb.append(" title= \"").append(StringHelper.escapeHtml(altText)).append("\"");
 		}
-		sb.append("\">").append(StringHelper.escapeHtml(title)).append("</span>");
+		sb.append(">").append(StringHelper.escapeHtml(title)).append("</span>");
 	}
 	
 	private void appendIndent(StringOutput sb, int indent) {

@@ -56,6 +56,10 @@ public class ProgressBarItem extends FormItemImpl {
 		component.setActual(actual);
 	}
 
+	public void setWidthInPercent(boolean widthInPercent) {
+		component.setWidthInPercent(widthInPercent);
+	}
+
 	@Override
 	protected void rootFormAvailable() {
 		//

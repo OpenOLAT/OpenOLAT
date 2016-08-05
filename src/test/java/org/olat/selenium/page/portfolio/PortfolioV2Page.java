@@ -37,5 +37,15 @@ public class PortfolioV2Page {
 	public PortfolioV2Page(WebDriver browser) {
 		this.browser = browser;
 	}
+	
+	/*
+	  .openEditor()
+	 .selectMapInEditor()
+			.selectFirstPageInEditor()
+			.setPage(pageTitle, "With a little description")
+			.createStructureElement(structureElementTitle, "Structure description")
+			.closeEditor()
+			.assertStructure(structureElementTitle);
+	 */
 
 }

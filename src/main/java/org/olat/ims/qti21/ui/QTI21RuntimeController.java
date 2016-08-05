@@ -39,7 +39,7 @@ import org.olat.core.util.resource.OresHelper;
 import org.olat.fileresource.FileResourceManager;
 import org.olat.ims.qti21.QTI21Constants;
 import org.olat.ims.qti21.QTI21Service;
-import org.olat.ims.qti21.model.xml.QtiNodesHelper;
+import org.olat.ims.qti21.model.xml.QtiNodesExtractor;
 import org.olat.ims.qti21.ui.editor.AssessmentTestComposerController;
 import org.olat.ims.qti21.ui.statistics.QTI21AssessmentTestStatisticsController;
 import org.olat.modules.assessment.ui.AssessableResource;
@@ -210,8 +210,8 @@ public class QTI21RuntimeController extends RepositoryEntryRuntimeController  {
 		ResolvedAssessmentTest resolvedAssessmentTest = qtiService.loadAndResolveAssessmentTest(fUnzippedDirRoot, false);
 		
 		AssessmentTest assessmentTest = resolvedAssessmentTest.getRootNodeLookup().extractIfSuccessful();
-		Double maxScore = QtiNodesHelper.getOutcomeDeclarationDefaultFloatValue(assessmentTest.getOutcomeDeclaration(QTI21Constants.MAXSCORE_IDENTIFIER));
-		Double minScore = QtiNodesHelper.getOutcomeDeclarationDefaultFloatValue(assessmentTest.getOutcomeDeclaration(QTI21Constants.MINSCORE_IDENTIFIER));
+		Double maxScore = QtiNodesExtractor.extractMaxScore(assessmentTest);
+		Double minScore = QtiNodesExtractor.extractMinScore(assessmentTest);
 		boolean hasScore = assessmentTest.getOutcomeDeclaration(QTI21Constants.SCORE_IDENTIFIER) != null;
 		boolean hasPassed = assessmentTest.getOutcomeDeclaration(QTI21Constants.PASS_IDENTIFIER) != null;
 		return new AssessableResource(hasScore, hasPassed, true, true, minScore, maxScore, null);

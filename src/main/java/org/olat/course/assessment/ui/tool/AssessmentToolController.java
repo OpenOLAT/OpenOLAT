@@ -103,8 +103,12 @@ public class AssessmentToolController extends MainLayoutBasicController implemen
 	
 	@Override
 	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
-		if(entries == null || entries.size() == 0) {
-			//
+		if(entries == null || entries.size() == 0) return;
+		
+		String resName = entries.get(0).getOLATResourceable().getResourceableTypeName();
+		if("Users".equalsIgnoreCase(resName)) {
+			List<ContextEntry> subEntries = entries.subList(1, entries.size());
+			doSelectUsersView(ureq).activate(ureq, subEntries, entries.get(0).getTransientState());
 		}
 	}
 

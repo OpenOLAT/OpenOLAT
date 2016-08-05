@@ -1245,12 +1245,14 @@ public class AssessmentTestDisplayController extends BasicController implements 
 				layoutCont.contextPut("displayQuestionProgress", deliveryOptions.isDisplayQuestionProgress());
 				
 				if(deliveryOptions.isDisplayScoreProgress()) {
-					scoreProgress = uifactory.addProgressBar("scoreProgress", null, 250, 0, 0, "", formLayout);
+					scoreProgress = uifactory.addProgressBar("scoreProgress", null, 100, 0, 0, "", formLayout);
+					scoreProgress.setWidthInPercent(true);
 					formLayout.add("", scoreProgress);
 				}
 				
 				if(deliveryOptions.isDisplayQuestionProgress()) {
-					questionProgress = uifactory.addProgressBar("questionProgress", null, 250, 0, 0, "", formLayout);
+					questionProgress = uifactory.addProgressBar("questionProgress", null, 100, 0, 0, "", formLayout);
+					questionProgress.setWidthInPercent(true);
 					formLayout.add("questionProgress", questionProgress);
 				}
 			}

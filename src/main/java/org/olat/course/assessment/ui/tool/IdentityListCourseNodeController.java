@@ -53,10 +53,12 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.id.Identity;
+import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
+import org.olat.core.util.resource.OresHelper;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.assessment.AssessmentMainController;
@@ -77,9 +79,9 @@ import org.olat.modules.assessment.model.AssessmentEntryStatus;
 import org.olat.modules.assessment.ui.AssessedIdentityController;
 import org.olat.modules.assessment.ui.AssessedIdentityElementRow;
 import org.olat.modules.assessment.ui.AssessedIdentityListState;
+import org.olat.modules.assessment.ui.AssessmentToolContainer;
 import org.olat.modules.assessment.ui.AssessmentToolSecurityCallback;
 import org.olat.modules.assessment.ui.ScoreCellRenderer;
-import org.olat.modules.assessment.ui.AssessmentToolContainer;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryService;
 import org.olat.user.UserManager;
@@ -316,6 +318,7 @@ public class IdentityListCourseNodeController extends FormBasicController implem
 	private void updateModel(UserRequest ureq, Identity assessedIdentity) {
 		updateModel(ureq, null, null, null);
 	}
+	
 	/*
 	private boolean accept(AssessmentEntry entry, SearchAssessedIdentityParams params) {
 		boolean ok = true;
@@ -479,9 +482,11 @@ public class IdentityListCourseNodeController extends FormBasicController implem
 		
 		Identity assessedIdentity = securityManager.loadIdentityByKey(row.getIdentityKey());
 		String fullName = userManager.getUserDisplayName(assessedIdentity);
-		
+
+		OLATResourceable ores = OresHelper.createOLATResourceableInstance("Identity", assessedIdentity.getKey());
+		WindowControl bwControl = addToHistory(ureq, ores, null);
 		if(courseNode.getParent() == null) {
-			currentIdentityCtrl = new AssessmentIdentityCourseController(ureq, getWindowControl(), stackPanel,
+			currentIdentityCtrl = new AssessmentIdentityCourseController(ureq, bwControl, stackPanel,
 					courseEntry, assessedIdentity);
 		} else {
 			currentIdentityCtrl = new AssessmentIdentityCourseNodeController(ureq, getWindowControl(), stackPanel,

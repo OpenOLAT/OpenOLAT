@@ -20,7 +20,6 @@
 package org.olat.ims.qti21.model.xml;
 
 import static org.olat.ims.qti21.QTI21Constants.MAXSCORE_CLX_IDENTIFIER;
-import static org.olat.ims.qti21.QTI21Constants.MAXSCORE_IDENTIFIER;
 import static org.olat.ims.qti21.QTI21Constants.MINSCORE_CLX_IDENTIFIER;
 import static org.olat.ims.qti21.QTI21Constants.SCORE_CLX_IDENTIFIER;
 import static org.olat.ims.qti21.QTI21Constants.SCORE_IDENTIFIER;
@@ -81,7 +80,6 @@ import uk.ac.ed.ph.jqtiplus.node.item.response.processing.ResponseProcessing;
 import uk.ac.ed.ph.jqtiplus.node.item.response.processing.ResponseRule;
 import uk.ac.ed.ph.jqtiplus.node.item.response.processing.SetOutcomeValue;
 import uk.ac.ed.ph.jqtiplus.node.outcome.declaration.OutcomeDeclaration;
-import uk.ac.ed.ph.jqtiplus.node.shared.BaseTypeAndCardinality;
 import uk.ac.ed.ph.jqtiplus.node.shared.FieldValue;
 import uk.ac.ed.ph.jqtiplus.node.shared.declaration.DefaultValue;
 import uk.ac.ed.ph.jqtiplus.node.test.View;
@@ -93,11 +91,8 @@ import uk.ac.ed.ph.jqtiplus.value.Cardinality;
 import uk.ac.ed.ph.jqtiplus.value.DirectedPairValue;
 import uk.ac.ed.ph.jqtiplus.value.FloatValue;
 import uk.ac.ed.ph.jqtiplus.value.IdentifierValue;
-import uk.ac.ed.ph.jqtiplus.value.MultipleValue;
 import uk.ac.ed.ph.jqtiplus.value.Orientation;
-import uk.ac.ed.ph.jqtiplus.value.SingleValue;
 import uk.ac.ed.ph.jqtiplus.value.StringValue;
-import uk.ac.ed.ph.jqtiplus.value.Value;
 
 /**
  * 
@@ -1024,41 +1019,7 @@ public class AssessmentItemFactory {
 		return list;
 	}
 	
-	public static void extractIdentifiersFromCorrectResponse(CorrectResponse correctResponse, List<Identifier> correctAnswers) {
-		BaseTypeAndCardinality responseDeclaration = correctResponse.getParent();
-		if(responseDeclaration.hasCardinality(Cardinality.MULTIPLE)) {
-			Value value = FieldValue.computeValue(Cardinality.MULTIPLE, correctResponse.getFieldValues());
-			if(value instanceof MultipleValue) {
-				MultipleValue multiValue = (MultipleValue)value;
-				for(SingleValue sValue:multiValue.getAll()) {
-					if(sValue instanceof IdentifierValue) {
-						IdentifierValue identifierValue = (IdentifierValue)sValue;
-						Identifier correctAnswer = identifierValue.identifierValue();
-						correctAnswers.add(correctAnswer);
-					}
-				}
-			}
-		} else if(responseDeclaration.hasCardinality(Cardinality.SINGLE)) {
-			Value value = FieldValue.computeValue(Cardinality.SINGLE, correctResponse.getFieldValues());
-			if(value instanceof IdentifierValue) {
-				IdentifierValue identifierValue = (IdentifierValue)value;
-				correctAnswers.add(identifierValue.identifierValue());
-			}
-		}
-	}
+
 	
-	public static Double extractMaxScore(AssessmentItem assessmentItem) {
-		Double maxScore = null;
-		OutcomeDeclaration outcomeDeclaration = assessmentItem.getOutcomeDeclaration(MAXSCORE_IDENTIFIER);
-		if(outcomeDeclaration != null) {
-			DefaultValue defaultValue = outcomeDeclaration.getDefaultValue();
-			if(defaultValue != null) {
-				Value maxScoreValue = defaultValue.evaluate();
-				if(maxScoreValue instanceof FloatValue) {
-					maxScore = new Double(((FloatValue)maxScoreValue).doubleValue());
-				}
-			}
-		}
-		return maxScore;
-	}
+
 }

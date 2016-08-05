@@ -151,8 +151,10 @@ public class AssessmentIdentityCourseController extends BasicController implemen
 			if(event == Event.DONE_EVENT) {
 				treeOverviewCtrl.doIdentityAssessmentOverview(ureq);
 				stackPanel.popController(currentNodeCtrl);
+				fireEvent(ureq, Event.CHANGED_EVENT);
 			} else if(event == Event.CHANGED_EVENT) {
 				treeOverviewCtrl.doIdentityAssessmentOverview(ureq);
+				fireEvent(ureq, Event.CHANGED_EVENT);
 			} else if(event == Event.CANCELLED_EVENT) {
 				stackPanel.popController(currentNodeCtrl);
 			}

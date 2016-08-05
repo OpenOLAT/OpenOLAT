@@ -51,6 +51,7 @@ import org.olat.selenium.page.core.AdministrationPage;
 import org.olat.selenium.page.core.BookingPage;
 import org.olat.selenium.page.core.MenuTreePageFragment;
 import org.olat.selenium.page.course.AssessmentCEConfigurationPage;
+import org.olat.selenium.page.course.AssessmentToolPage;
 import org.olat.selenium.page.course.CourseEditorPageFragment;
 import org.olat.selenium.page.course.CoursePageFragment;
 import org.olat.selenium.page.course.CourseWizardPage;
@@ -1813,9 +1814,10 @@ public class CourseTest {
 			.assertTitleNotExists(infoTitle.substring(0, 20));
 		
 		//author set assessment to passed
-		members
+		AssessmentToolPage assessmentTool = members
 			.clickToolbarBack()
-			.assessmentTool()
+			.assessmentTool();
+		assessmentTool
 			.users()
 			.assertOnUsers(rei)
 			.selectUser(rei)
@@ -1832,8 +1834,8 @@ public class CourseTest {
 			.assertWithTitle(infoTitle.substring(0, 20));
 		
 		//author can see all
-		members
-			.clickToolbarBack()
+		assessmentTool
+			.clickToolbarRootCrumb()
 			.clickTree()
 			.assertWithTitle(bcTitle.substring(0, 20))
 			.assertWithTitle(msTitle.substring(0, 20))

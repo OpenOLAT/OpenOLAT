@@ -41,6 +41,7 @@ public class ProgressBar extends AbstractComponent {
 	private static final int DEFAULT_WIDTH = 200;
 
 	private int width = DEFAULT_WIDTH;
+	private boolean widthInPercent = false;
 	private float actual;
 	private float max;
 	private boolean isNoMax = false;
@@ -73,8 +74,9 @@ public class ProgressBar extends AbstractComponent {
 	/**
 	 * @see org.olat.core.gui.components.Component#dispatchRequest(org.olat.core.gui.UserRequest)
 	 */
+	@Override
 	protected void doDispatchRequest(UserRequest ureq) {
-	//
+		//
 	}
 
 	/**
@@ -112,64 +114,60 @@ public class ProgressBar extends AbstractComponent {
 	 * @param string
 	 */
 	public void setUnitLabel(String string) {
-		// FIXME:fj:a remove all those unnecessary setters, put them in the
-		// constructor
 		setDirty(true);
 		unitLabel = string;
 	}
 
 	/**
+	 * @return
+	 */
+	public int getWidth() {
+		return width;
+	}
+
+	/**
 	 * @param i
 	 */
-	public void setWidth(int i) {
-		width = i;
+	public void setWidth(int width) {
+		this.width = width;
+	}
+
+	public boolean isWidthInPercent() {
+		width = 100;
+		return widthInPercent;
+	}
+
+	public void setWidthInPercent(boolean widthInPercent) {
+		this.widthInPercent = widthInPercent;
 	}
 
 	/**
 	 * @return
 	 */
-	float getActual() {
+	public float getActual() {
 		return actual;
 	}
 	
-	String getInfo() {
+	public String getInfo() {
 		return info;
 	}
 
 	/**
 	 * @return
 	 */
-	float getMax() {
+	public float getMax() {
 		return max;
 	}
 
-	boolean getIsNoMax() {
+	public boolean getIsNoMax() {
 		return isNoMax;
 	}
 
 	/**
 	 * @return
 	 */
-	String getUnitLabel() {
+	public String getUnitLabel() {
 		return unitLabel;
-	}
-
-	/**
-	 * @return
-	 */
-	int getWidth() {
-		return width;
-	}
-
-	/**
-	 * @see org.olat.core.gui.components.Component#getExtendedDebugInfo()
-	 */
-	public String getExtendedDebugInfo() {
-		return "just a bar";
-	}
-
-	public ComponentRenderer getHTMLRendererSingleton() {
-		return RENDERER;
 	}
 
 	/**
@@ -186,4 +184,8 @@ public class ProgressBar extends AbstractComponent {
 		this.percentagesEnabled = percentagesEnabled;
 	}
 
+	@Override
+	public ComponentRenderer getHTMLRendererSingleton() {
+		return RENDERER;
+	}
 }

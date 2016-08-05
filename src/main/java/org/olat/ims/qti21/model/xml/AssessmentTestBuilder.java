@@ -71,8 +71,13 @@ public class AssessmentTestBuilder {
 	}
 	
 	private void extract() {
+		extractMaxScore();
 		extractRules();
 		extractFeedbacks();
+	}
+	
+	private void extractMaxScore() {
+		maxScore = QtiNodesExtractor.extractMaxScore(assessmentTest);
 	}
 	
 	private void extractRules() {

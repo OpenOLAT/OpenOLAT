@@ -38,10 +38,12 @@ import org.olat.core.id.Identity;
 import org.olat.core.id.IdentityEnvironment;
 import org.olat.core.id.Roles;
 import org.olat.core.util.Formatter;
+import org.olat.core.util.Util;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.event.GenericEventListener;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
+import org.olat.course.assessment.AssessmentMainController;
 import org.olat.course.certificate.Certificate;
 import org.olat.course.certificate.CertificateEvent;
 import org.olat.course.certificate.CertificateTemplate;
@@ -56,6 +58,7 @@ import org.olat.course.run.scoring.ScoreEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.course.run.userview.UserCourseEnvironmentImpl;
 import org.olat.repository.RepositoryEntry;
+import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -80,6 +83,8 @@ public class IdentityCertificatesController extends BasicController implements G
 	private final Formatter formatter;
 	
 	@Autowired
+	private UserManager userManager;
+	@Autowired
 	private BaseSecurity securityManager;
 	@Autowired
 	private CertificatesManager certificatesManager;
@@ -87,6 +92,7 @@ public class IdentityCertificatesController extends BasicController implements G
 	public IdentityCertificatesController(UserRequest ureq, WindowControl wControl,
 			RepositoryEntry courseEntry, Identity assessedIdentity) {
 		super(ureq, wControl);
+		setTranslator(Util.createPackageTranslator(AssessmentMainController.class, getLocale(), getTranslator()));
 
 		this.courseEntry = courseEntry;
 		this.assessedIdentity = assessedIdentity;
@@ -196,7 +202,8 @@ public class IdentityCertificatesController extends BasicController implements G
 			doGenerateCertificate(ureq);
 		} else {
 			String title = translate("confirm.certificate.title");
-			String text = translate("confirm.certificate.text");
+			String fullName = userManager.getUserDisplayName(assessedIdentity);
+			String text = translate("confirm.certificate.description", new String[] { fullName });
 			confirmCertificateCtrl = activateYesNoDialog(ureq, title, text, confirmCertificateCtrl);
 		}
 	}

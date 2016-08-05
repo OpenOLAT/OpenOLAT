@@ -135,7 +135,7 @@ public class GroupPage {
 	
 	public ContactPage openContact() {
 		openMenuItem(contactTool);
-		OOGraphene.waitElement(By.cssSelector("fieldset.o_sel_contact_form"), 2, browser);
+		OOGraphene.waitElement(By.cssSelector("fieldset.o_sel_contact_form"), 5, browser);
 		return new ContactPage(browser);
 	}
 	
@@ -146,31 +146,31 @@ public class GroupPage {
 	
 	public GroupPage openNews() {
 		openMenuItem(newsTool);
-		OOGraphene.waitElement(By.id("o_msg_info"), 2, browser);
+		OOGraphene.waitElement(By.id("o_msg_info"), 5, browser);
 		return this;
 	}
 	
 	public FolderPage openFolder() {
 		openMenuItem(folderTool);
-		OOGraphene.waitElement(FolderPage.folderBy, 2, browser);
+		OOGraphene.waitElement(FolderPage.folderBy, 5, browser);
 		return new FolderPage(browser);
 	}
 	
 	public ForumPage openForum() {
 		openMenuItem(forumTool);
-		OOGraphene.waitElement(ForumPage.threadTableBy, 2, browser);
+		OOGraphene.waitElement(ForumPage.threadTableBy, 5, browser);
 		return ForumPage.getGroupForumPage(browser);
 	}
 	
 	public WikiPage openWiki() {
 		openMenuItem(wikiTool);
-		OOGraphene.waitElement(WikiPage.wikiWrapperBy, 2, browser);
+		OOGraphene.waitElement(WikiPage.wikiWrapperBy, 5, browser);
 		return WikiPage.getGroupWiki(browser);
 	}
 	
 	public PortfolioV2Page openPortfolio() {
 		openMenuItem(portfolioTool);
-		OOGraphene.waitElement(PortfolioV2Page.tocBy, 2, browser);
+		OOGraphene.waitElement(PortfolioV2Page.tocBy, 5, browser);
 		return new PortfolioV2Page(browser);
 	}
 	
@@ -203,21 +203,21 @@ public class GroupPage {
 			By showOwnersBy = By.cssSelector(".o_sel_group_show_owners input[type='checkbox']");
 			browser.findElement(showOwnersBy).click();
 			OOGraphene.waitBusy(browser);
-			OOGraphene.waitElement(memberMenuItem, 2, browser);
+			OOGraphene.waitElement(memberMenuItem, 5, browser);
 		}
 		
 		if(participants) {
 			By showParticipants = By.cssSelector(".o_sel_group_show_participants input[type='checkbox']");
 			browser.findElement(showParticipants).click();
 			OOGraphene.waitBusy(browser);
-			OOGraphene.waitElement(memberMenuItem, 2, browser);
+			OOGraphene.waitElement(memberMenuItem, 5, browser);
 		}
 		
 		if(waitingList) {
 			By showWaitingListBy = By.cssSelector(".o_sel_group_show_waiting_list input[type='checkbox']");
 			browser.findElement(showWaitingListBy).click();
 			OOGraphene.waitBusy(browser);
-			OOGraphene.waitElement(memberMenuItem, 2, browser);
+			OOGraphene.waitElement(memberMenuItem, 5, browser);
 		}
 		return this;
 	}

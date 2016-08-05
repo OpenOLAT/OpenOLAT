@@ -141,7 +141,9 @@ public class AssessmentForm extends FormBasicController {
 
 	public boolean isScoreDirty() {
 		if (!hasScore) return false;
-		if (scoreValue == null) return !score.getValue().equals("");
+		if (scoreValue == null) {
+			return StringHelper.containsNonWhitespace(score.getValue());
+		}
 		return parseFloat(score) != scoreValue.floatValue();
 	}
 	
@@ -232,38 +234,34 @@ public class AssessmentForm extends FormBasicController {
 	}
 	
 	protected void doUpdateAssessmentData() {
-		ScoreEvaluation scoreEval = null;
-		Float newScore = null;
-		Boolean newPassed = null;
+		Float updatedScore = null;
+		Boolean updatedPassed = null;
 		
 		if (isHasAttempts() && isAttemptsDirty()) {
 			assessableCourseNode.updateUserAttempts(new Integer(getAttempts()), assessedUserCourseEnv, getIdentity());
 		}
 
-		if (isHasScore() && isScoreDirty()) {
-			newScore = getScore();
-			// Update properties in db later... see
-			// courseNode.updateUserSocreAndPassed...
+		if (isHasScore()) {
+			if(isScoreDirty()) {
+				updatedScore = getScore();
+			} else {
+				updatedScore = scoreValue;
+			}
 		}
 		
 		if (isHasPassed()) {
 			if (getCut() != null && getScore() != null) {
-				newPassed = getScore() >= getCut().floatValue()
-				          ? Boolean.TRUE : Boolean.FALSE;
+				updatedPassed = updatedScore.floatValue() >= getCut().floatValue() ? Boolean.TRUE : Boolean.FALSE;
 			} else {
-        //"passed" info was changed or not 
+				//"passed" info was changed or not 
 				String selectedKeyString = getPassed().getSelectedKey();
 				if("true".equalsIgnoreCase(selectedKeyString) || "false".equalsIgnoreCase(selectedKeyString)) {
-					newPassed = Boolean.valueOf(selectedKeyString);
-				}
-				else {
-          // "undefined" was choosen
-					newPassed = null;
-				}				
+					updatedPassed = Boolean.valueOf(selectedKeyString);
+				}			
 			}
 		}
 		// Update score,passed properties in db
-		scoreEval = new ScoreEvaluation(newScore, newPassed);
+		ScoreEvaluation scoreEval = new ScoreEvaluation(updatedScore, updatedPassed);
 		assessableCourseNode.updateUserScoreEvaluation(scoreEval, assessedUserCourseEnv, getIdentity(), false);
 
 		if (isHasComment() && isUserCommentDirty()) {

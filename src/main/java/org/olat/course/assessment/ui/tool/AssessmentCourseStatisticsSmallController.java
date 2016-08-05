@@ -50,6 +50,7 @@ public class AssessmentCourseStatisticsSmallController extends BasicController {
 	
 	private int numOfPassed;
 	private int numOfFailed;
+	private int numOfParticipants;
 	private int numOfAssessedIdentities;
 	
 	@Autowired
@@ -78,25 +79,32 @@ public class AssessmentCourseStatisticsSmallController extends BasicController {
 		return numOfAssessedIdentities;
 	}
 	
+	public int getNumOfParticipants() {
+		return numOfParticipants;
+	}
+	
 	public void updateStatistics() {
 		ICourse course = CourseFactory.loadCourse(courseEntry);
 		String rootNodeIdent = course.getRunStructure().getRootNode().getIdent();
 		
 		SearchAssessedIdentityParams params = new SearchAssessedIdentityParams(courseEntry, rootNodeIdent, null, assessmentCallback);
-		numOfAssessedIdentities = assessmentToolManager.getNumberOfAssessedIndetities(getIdentity(), params);
+		numOfAssessedIdentities = assessmentToolManager.getNumberOfAssessedIdentities(getIdentity(), params);
 		mainVC.contextPut("numOfAssessedIdentities", numOfAssessedIdentities);
+		
+		numOfParticipants = assessmentToolManager.getNumberOfParticipants(getIdentity(), params);
+		mainVC.contextPut("numOfParticipants", numOfParticipants);
 		
 		AssessmentStatistics stats = assessmentToolManager.getStatistics(getIdentity(), params);
 		mainVC.contextPut("scoreAverage", AssessmentHelper.getRoundedScore(stats.getAverageScore()));
 		numOfPassed = stats.getCountPassed();
 		mainVC.contextPut("numOfPassed", numOfPassed);
-		int percentPassed = numOfAssessedIdentities == 0 ? 0 :
-				Math.round(100.0f * (stats.getCountPassed() / numOfAssessedIdentities));
+		int percentPassed = numOfParticipants == 0 ? 0 :
+				Math.round(100.0f * (stats.getCountPassed() / numOfParticipants));
 		mainVC.contextPut("percentPassed", percentPassed);
 		numOfFailed = stats.getCountFailed();
 		mainVC.contextPut("numOfFailed", numOfFailed);
-		int percentFailed = numOfAssessedIdentities == 0 ? 0 :
-				Math.round(100.0f * (stats.getCountFailed() / numOfAssessedIdentities));
+		int percentFailed = numOfParticipants == 0 ? 0 :
+				Math.round(100.0f * (stats.getCountFailed() / numOfParticipants));
 		mainVC.contextPut("percentFailed", percentFailed);
 		
 		int numOfLaunches = assessmentToolManager.getNumberOfInitialLaunches(getIdentity(), params);

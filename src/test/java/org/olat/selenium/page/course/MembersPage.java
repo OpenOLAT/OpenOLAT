@@ -42,7 +42,7 @@ import org.openqa.selenium.WebElement;
  */
 public class MembersPage {
 
-	private WebDriver browser;
+	private final WebDriver browser;
 	
 	public MembersPage(WebDriver browser) {
 		this.browser = browser;

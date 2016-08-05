@@ -25,7 +25,7 @@ import static org.olat.ims.qti21.model.xml.AssessmentItemFactory.appendDefaultOu
 import static org.olat.ims.qti21.model.xml.AssessmentItemFactory.appendHotspotInteraction;
 import static org.olat.ims.qti21.model.xml.AssessmentItemFactory.createHotspotEntryResponseDeclarationSingle;
 import static org.olat.ims.qti21.model.xml.AssessmentItemFactory.createResponseProcessing;
-import static org.olat.ims.qti21.model.xml.AssessmentItemFactory.extractIdentifiersFromCorrectResponse;
+import static org.olat.ims.qti21.model.xml.QtiNodesExtractor.extractIdentifiersFromCorrectResponse;
 
 import java.util.ArrayList;
 import java.util.HashMap;

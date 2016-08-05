@@ -59,11 +59,6 @@ public class AssessmentTestFeedbackEditorController extends FormBasicController 
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		boolean hasCutValue = testBuilder.getCutValue() != null;
-		if(!hasCutValue) {
-			setFormWarning("warning.feedback.cutvalue");
-		}
-		
 		//correct feedback
 		TestFeedbackBuilder passedFeedback = testBuilder.getPassedFeedback();
 		String passedTitle = passedFeedback == null ? "" : passedFeedback.getTitle();
@@ -104,6 +99,12 @@ public class AssessmentTestFeedbackEditorController extends FormBasicController 
 		feedbackPassedTextEl.setVisible(hasCutValue);
 		feedbackFailedTitleEl.setVisible(hasCutValue);
 		feedbackFailedTextEl.setVisible(hasCutValue);
+		
+		if(hasCutValue) {
+			setFormWarning(null);
+		} else {
+			setFormWarning("warning.feedback.cutvalue");
+		}
 	}
 
 	@Override

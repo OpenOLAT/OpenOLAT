@@ -88,6 +88,7 @@ import org.olat.ims.qti.statistics.ui.QTI12StatisticsToolController;
 import org.olat.ims.qti21.model.QTI21StatisticSearchParams;
 import org.olat.ims.qti21.ui.QTI21AssessmentDetailsController;
 import org.olat.ims.qti21.ui.statistics.QTI21StatisticResourceResult;
+import org.olat.ims.qti21.ui.statistics.QTI21StatisticsToolController;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.iq.IQSecurityCallback;
@@ -200,12 +201,29 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements Pe
 	public List<Controller> createAssessmentTools(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
 			CourseEnvironment courseEnv, AssessmentToolOptions options) {
 		List<Controller> tools = new ArrayList<>();
-		tools.add(new QTI12StatisticsToolController(ureq, wControl, stackPanel, courseEnv, options, this));
-		if(options.getGroup() == null && options.getIdentities() != null && options.getIdentities().size() > 0) {
-			for(Identity assessedIdentity:options.getIdentities()) {
-				if(isTestRunning(assessedIdentity, courseEnv)) {
-					tools.add(new QTI12PullTestsToolController(ureq, wControl, courseEnv, options, this));
-					break;
+		
+		RepositoryEntry qtiTestEntry = getReferencedRepositoryEntry();
+		if(ImsQTI21Resource.TYPE_NAME.equals(qtiTestEntry.getOlatResource().getResourceableTypeName())) {
+			tools.add(new QTI21StatisticsToolController(ureq, wControl, stackPanel, courseEnv, options, this));
+			
+			
+			/*if(options.getGroup() == null && options.getIdentities() != null && options.getIdentities().size() > 0) {
+				for(Identity assessedIdentity:options.getIdentities()) {
+					if(isTestRunning(assessedIdentity, courseEnv)) {
+						tools.add(new QTI12PullTestsToolController(ureq, wControl, courseEnv, options, this));
+						break;
+					}
+				}
+			}*/
+			
+		} else {
+			tools.add(new QTI12StatisticsToolController(ureq, wControl, stackPanel, courseEnv, options, this));
+			if(options.getGroup() == null && options.getIdentities() != null && options.getIdentities().size() > 0) {
+				for(Identity assessedIdentity:options.getIdentities()) {
+					if(isTestRunning(assessedIdentity, courseEnv)) {
+						tools.add(new QTI12PullTestsToolController(ureq, wControl, courseEnv, options, this));
+						break;
+					}
 				}
 			}
 		}
