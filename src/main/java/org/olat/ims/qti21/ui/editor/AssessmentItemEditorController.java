@@ -256,7 +256,7 @@ public class AssessmentItemEditorController extends BasicController {
 		itemEditor = new HotspotEditorController(ureq, getWindowControl(), hotspotItemBuilder,
 				rootDirectory, rootContainer, itemFile, restrictedEdit);
 		listenTo(itemEditor);
-		scoreEditor = new HotspotChoiceScoreController(ureq, getWindowControl(), hotspotItemBuilder, itemRef, restrictedEdit);
+		scoreEditor = new HotspotChoiceScoreController(ureq, getWindowControl(), hotspotItemBuilder, itemRef, itemFile, restrictedEdit);
 		listenTo(scoreEditor);
 		feedbackEditor = new FeedbackEditorController(ureq, getWindowControl(), hotspotItemBuilder, false, true, true, restrictedEdit);
 		listenTo(feedbackEditor);

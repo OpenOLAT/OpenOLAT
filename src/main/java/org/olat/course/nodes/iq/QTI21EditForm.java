@@ -50,7 +50,7 @@ public class QTI21EditForm extends FormBasicController {
 
 	private SelectionElement fullWindowEl;
 	private SingleSelection correctionModeEl;
-	private MultipleSelectionElement showTitlesEl;
+	private MultipleSelectionElement showTitlesEl, showMenuEl;
 	private MultipleSelectionElement personalNotesEl;
 	private MultipleSelectionElement enableCancelEl, enableSuspendEl;
 	private MultipleSelectionElement limitAttemptsEl, blockAfterSuccessEl;
@@ -121,13 +121,19 @@ public class QTI21EditForm extends FormBasicController {
 		fullWindowEl = uifactory.addCheckboxesHorizontal("fullwindow", "qti.form.fullwindow", formLayout, new String[]{"x"}, new String[]{""});
 		fullWindowEl.select("x", fullWindow);
 
-		boolean showTitles = modConfig.getBooleanSafe(IQEditController.CONFIG_KEY_QUESTIONTITLE, deliveryOptions.isDisplayQuestionProgress());
+		boolean showTitles = modConfig.getBooleanSafe(IQEditController.CONFIG_KEY_QUESTIONTITLE, deliveryOptions.isShowTitles());
 		showTitlesEl = uifactory.addCheckboxesHorizontal("showTitles", "qti.form.questiontitle", formLayout, onKeys, onValues);
 		if(showTitles) {
 			showTitlesEl.select(onKeys[0], true);
 		}
-
-		boolean personalNotes = modConfig.getBooleanSafe(IQEditController.CONFIG_KEY_MEMO, deliveryOptions.isDisplayQuestionProgress());
+		
+		boolean showMenu = modConfig.getBooleanSafe(IQEditController.CONFIG_KEY_ENABLEMENU, deliveryOptions.isShowMenu());
+		showMenuEl = uifactory.addCheckboxesHorizontal("showmenu", "qti.form.menuenable", formLayout, onKeys, onValues);
+		if(showMenu) {
+			showMenuEl.select(onKeys[0], true);
+		}
+		
+		boolean personalNotes = modConfig.getBooleanSafe(IQEditController.CONFIG_KEY_MEMO, deliveryOptions.isPersonalNotes());
 		personalNotesEl = uifactory.addCheckboxesHorizontal("personalNotes", "qti.form.auto.memofield", formLayout, onKeys, onValues);
 		if(personalNotes) {
 			personalNotesEl.select(onKeys[0], true);
@@ -218,6 +224,8 @@ public class QTI21EditForm extends FormBasicController {
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(limitAttemptsEl == source) {
 			maxAttemptsEl.setVisible(limitAttemptsEl.isAtLeastSelected(1));
+		} else if(showResultsOnFinishEl == source) {
+			typeShowResultsOnFinishEl.setVisible(showResultsOnFinishEl.isAtLeastSelected(1));
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
@@ -235,6 +243,7 @@ public class QTI21EditForm extends FormBasicController {
 			modConfig.setIntValue(IQEditController.CONFIG_KEY_ATTEMPTS, 0);
 		}
 		modConfig.setBooleanEntry(IQEditController.CONFIG_KEY_BLOCK_AFTER_SUCCESS, blockAfterSuccessEl.isSelected(0));
+		modConfig.setBooleanEntry(IQEditController.CONFIG_KEY_ENABLEMENU, showMenuEl.isSelected(0));
 		modConfig.setBooleanEntry(IQEditController.CONFIG_KEY_QUESTIONTITLE, showTitlesEl.isSelected(0));
 		modConfig.setBooleanEntry(IQEditController.CONFIG_KEY_MEMO, personalNotesEl.isSelected(0));
 		modConfig.setBooleanEntry(IQEditController.CONFIG_KEY_ENABLECANCEL, enableCancelEl.isSelected(0));

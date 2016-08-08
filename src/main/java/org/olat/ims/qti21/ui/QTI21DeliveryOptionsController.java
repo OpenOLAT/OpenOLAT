@@ -54,17 +54,16 @@ public class QTI21DeliveryOptionsController extends FormBasicController implemen
 	private static final String[] onKeys = new String[]{ "on" };
 	private static final String[] onValues = new String[]{ "" };
 
-	private MultipleSelectionElement showTitlesEl;
+	private MultipleSelectionElement showTitlesEl, showMenuEl;
 	private MultipleSelectionElement personalNotesEl;
 	private MultipleSelectionElement enableCancelEl, enableSuspendEl;
 	private MultipleSelectionElement limitAttemptsEl, blockAfterSuccessEl;
 	private MultipleSelectionElement displayQuestionProgressEl, displayScoreProgressEl;
 	private MultipleSelectionElement showResultsOnFinishEl;
 	private SingleSelection typeShowResultsOnFinishEl;
-	
-	
 	private TextElement maxAttemptsEl;
 	
+	private boolean changes;
 	private final RepositoryEntry testEntry;
 	private final QTI21DeliveryOptions deliveryOptions;
 	
@@ -101,6 +100,11 @@ public class QTI21DeliveryOptionsController extends FormBasicController implemen
 		showTitlesEl = uifactory.addCheckboxesHorizontal("showTitles", "qti.form.questiontitle", formLayout, onKeys, onValues);
 		if(deliveryOptions.isShowTitles()) {
 			showTitlesEl.select(onKeys[0], true);
+		}
+		
+		showMenuEl = uifactory.addCheckboxesHorizontal("showMenu", "qti.form.menudisplay", formLayout, onKeys, onValues);
+		if(deliveryOptions.isShowMenu()) {
+			showMenuEl.select(onKeys[0], true);
 		}
 		
 		personalNotesEl = uifactory.addCheckboxesHorizontal("personalNotes", "qti.form.auto.memofield", formLayout, onKeys, onValues);
@@ -163,6 +167,10 @@ public class QTI21DeliveryOptionsController extends FormBasicController implemen
 	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
 		//
 	}
+	
+	public boolean hasChanges() {
+		return changes;
+	}
 
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
@@ -205,6 +213,7 @@ public class QTI21DeliveryOptionsController extends FormBasicController implemen
 			deliveryOptions.setMaxAttempts(0);
 		}
 		deliveryOptions.setBlockAfterSuccess(blockAfterSuccessEl.isAtLeastSelected(1));
+		deliveryOptions.setShowMenu(showMenuEl.isAtLeastSelected(1));
 		deliveryOptions.setShowTitles(showTitlesEl.isAtLeastSelected(1));
 		deliveryOptions.setPersonalNotes(personalNotesEl.isAtLeastSelected(1));
 		deliveryOptions.setEnableCancel(enableCancelEl.isAtLeastSelected(1));
@@ -222,6 +231,7 @@ public class QTI21DeliveryOptionsController extends FormBasicController implemen
 			deliveryOptions.setShowResultsOnFinish(ShowResultsOnFinish.none);
 		}
 		qtiService.setDeliveryOptions(testEntry, deliveryOptions);
+		changes = true;
 		fireEvent(ureq, Event.DONE_EVENT);
 	}
 }

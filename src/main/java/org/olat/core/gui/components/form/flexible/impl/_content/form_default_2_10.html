@@ -1,0 +1,50 @@
+## for odd reason bootstrap calls vertial horizontal
+<fieldset #if(!$!f.domReplacementWrapperRequired) id="$r.getCId()" #end class="o_form form-horizontal #if ($off_css_class) $off_css_class #end $f.getContainerCssClass()" role="form">
+#if ($off_title) 
+	<legend>		
+		#if ($off_chelp_url) 
+			$r.contextHelpWithWrapper("$off_chelp_url")
+		#end		
+		#if ($off_icon)
+			<i class="$off_icon"> </i>
+		#end
+		$!off_title
+	</legend> 
+#elseif ($off_chelp_url) 
+	<div class="clearfix">$r.contextHelpWithWrapper("$off_chelp_url")</div>
+#end
+
+#if ($off_desc || $off_warn || $off_info)
+	<div class="row"><div class="col-sm-offset-2 col-sm-10">
+		#if ($off_desc) <div class="o_desc">$off_desc</div> #end
+		#if ($off_warn) <div class="o_warning">$off_warn</div> #end
+		#if ($off_info) <div class="o_info">$off_info</div> #end
+	</div></div>
+#end
+
+#foreach ($item in $formitemnames)
+	#if ($f.isVisible($item))
+	<div class="form-group $f.getElementCssClass($item) #if($f.hasError($item)) has-feedback has-error #end clearfix">
+		#if ($f.hasLabel($item) && $r.visible("${item}_LABEL"))
+			$r.render("${item}_LABEL", "$f.getItemId($item)", "col-sm-2")
+		#end
+		<div class='col-sm-10 #if (!$f.hasLabel($item) || !$r.visible("${item}_LABEL")) col-sm-offset-2 #end'>
+			$r.render(${item}, "form")
+			#if($f.hasError($item))
+				<span class="o_icon o_icon_error form-control-feedback"></span>
+			#end
+		</div>
+		#if($f.hasExample($item))
+			<div class="o_form_example help-block col-sm-offset-2 col-sm-10">
+				$r.render("${item}_EXAMPLE")
+			</div>
+		#end
+		#if($f.hasError($item))
+			<div class="col-sm-offset-2 col-sm-10">
+				$r.render("${item}_ERROR")
+			</div>
+		#end
+	</div>
+	#end
+#end
+</fieldset>

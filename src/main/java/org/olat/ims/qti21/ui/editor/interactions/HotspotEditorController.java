@@ -31,11 +31,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import javax.servlet.http.HttpServletRequest;
-
 import org.olat.core.commons.services.image.ImageService;
 import org.olat.core.commons.services.image.Size;
-import org.olat.core.dispatcher.mapper.Mapper;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -54,17 +51,13 @@ import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.gui.media.MediaResource;
-import org.olat.core.gui.media.NotFoundMediaResource;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.WebappHelper;
 import org.olat.core.util.vfs.LocalFileImpl;
 import org.olat.core.util.vfs.VFSContainer;
-import org.olat.core.util.vfs.VFSMediaResource;
 import org.olat.ims.qti21.model.IdentifierGenerator;
 import org.olat.ims.qti21.model.QTI21QuestionType;
-import org.olat.ims.qti21.model.xml.AssessmentItemFactory;
 import org.olat.ims.qti21.model.xml.interactions.HotspotAssessmentItemBuilder;
 import org.olat.ims.qti21.ui.editor.AssessmentTestEditorController;
 import org.olat.ims.qti21.ui.editor.events.AssessmentItemEvent;
@@ -82,7 +75,7 @@ import uk.ac.ed.ph.jqtiplus.types.Identifier;
  */
 public class HotspotEditorController extends FormBasicController {
 	
-	private static final Set<String> mimeTypes = new HashSet<String>();
+	private static final Set<String> mimeTypes = new HashSet<>();
 	static {
 		mimeTypes.add("image/gif");
 		mimeTypes.add("image/jpg");
@@ -116,7 +109,7 @@ public class HotspotEditorController extends FormBasicController {
 	
 	public HotspotEditorController(UserRequest ureq, WindowControl wControl, HotspotAssessmentItemBuilder itemBuilder,
 			File rootDirectory, VFSContainer rootContainer, File itemFile, boolean restrictedEdit) {
-		super(ureq, wControl);
+		super(ureq, wControl, LAYOUT_DEFAULT_2_10);
 		setTranslator(Util.createPackageTranslator(AssessmentTestEditorController.class, getLocale()));
 		this.itemFile = itemFile;
 		this.itemBuilder = itemBuilder;
@@ -308,7 +301,7 @@ public class HotspotEditorController extends FormBasicController {
 			HotspotChoice choice = choices.get(i);
 			keys[i] = choice.getIdentifier().toString();
 			values[i] = Integer.toString(i + 1) + ".";
-			choiceWrappers.add(new HotspotWrapper(choice));
+			choiceWrappers.add(new HotspotWrapper(choice, itemBuilder));
 		}
 		correctHotspotsEl.setKeysAndValues(keys, values);
 		for(int i=0; i<choices.size(); i++) {
@@ -410,72 +403,6 @@ public class HotspotEditorController extends FormBasicController {
 					spot.setCoords(value);
 				}
 			}
-		}
-	}
-
-	public class HotspotWrapper {
-
-		private final HotspotChoice choice;
-		
-		public HotspotWrapper(HotspotChoice choice) {
-			this.choice = choice;
-		}
-		
-		public HotspotChoice getChoice() {
-			return choice;
-		}
-		
-		public boolean isCorrect() {
-			return itemBuilder.isCorrect(choice);
-		}
-
-		public String getIdentifier() {
-			return choice.getIdentifier().toString();
-		}
-
-		public String getShape() {
-			return choice.getShape().toQtiString();
-		}
-		
-		public void setShape(String shape) {
-			if("circle".equals(shape)) {
-				choice.setShape(Shape.CIRCLE);
-			} else if("rect".equals(shape)) {
-				choice.setShape(Shape.RECT);
-			} else if("poly".equals(shape)) {
-				choice.setShape(Shape.POLY);
-			}
-		}
-
-		public String getCoords() {
-			return AssessmentItemFactory.coordsString(choice.getCoords());
-		}
-
-		public void setCoords(String coords) {
-			List<Integer> coordList = AssessmentItemFactory.coordsList(coords);
-			choice.setCoords(coordList);
-		}
-	}
-	
-	private static class BackgroundMapper implements Mapper {
-		
-		private final File itemFile;
-		
-		public BackgroundMapper(File itemFile) {
-			this.itemFile = itemFile;
-		}
-
-		@Override
-		public MediaResource handle(String relPath, HttpServletRequest request) {
-			if(StringHelper.containsNonWhitespace(relPath)) {
-				if(relPath.startsWith("/")) {
-					relPath = relPath.substring(1);
-				}
-				
-				File backgroundFile = new File(itemFile.getParentFile(), relPath);
-				return new VFSMediaResource(new LocalFileImpl(backgroundFile));
-			}
-			return new NotFoundMediaResource(relPath);
 		}
 	}
 }

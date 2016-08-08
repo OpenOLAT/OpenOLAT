@@ -43,7 +43,7 @@ import org.olat.core.util.Util;
  * @author Felix Jost
  */
 public class VelocityContainer extends Container implements VelocityComponent {
-	private static final ComponentRenderer RENDERER = new VelocityContainerRenderer(null);
+	private static final ComponentRenderer RENDERER = new VelocityContainerRenderer();
 	
 	/**
 	 * Comment for <code>COMMAND_ID</code>

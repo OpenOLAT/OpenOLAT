@@ -19,12 +19,20 @@
  */
 package org.olat.ims.qti21.ui.editor.interactions;
 
+import java.io.File;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
+import javax.servlet.http.HttpServletRequest;
+
+import org.olat.core.commons.services.image.ImageService;
+import org.olat.core.commons.services.image.Size;
+import org.olat.core.dispatcher.mapper.Mapper;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -34,10 +42,14 @@ import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.media.MediaResource;
+import org.olat.core.gui.media.NotFoundMediaResource;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.filter.FilterFactory;
+import org.olat.core.util.vfs.LocalFileImpl;
+import org.olat.core.util.vfs.VFSMediaResource;
 import org.olat.ims.qti21.model.xml.AssessmentItemBuilder;
 import org.olat.ims.qti21.model.xml.ScoreBuilder;
 import org.olat.ims.qti21.model.xml.interactions.HotspotAssessmentItemBuilder;
@@ -45,6 +57,7 @@ import org.olat.ims.qti21.model.xml.interactions.SimpleChoiceAssessmentItemBuild
 import org.olat.ims.qti21.ui.editor.AssessmentTestEditorController;
 import org.olat.ims.qti21.ui.editor.SyncAssessmentItem;
 import org.olat.ims.qti21.ui.editor.events.AssessmentItemEvent;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.graphic.HotspotChoice;
 import uk.ac.ed.ph.jqtiplus.node.test.AssessmentItemRef;
@@ -71,12 +84,19 @@ public class HotspotChoiceScoreController extends AssessmentItemRefEditorControl
 	private HotspotAssessmentItemBuilder itemBuilder;
 	
 	private int counter = 0;
+	private final File itemFile;
+	private final String backgroundMapperUri;
+
+	@Autowired
+	private ImageService imageService;
 	
-	public HotspotChoiceScoreController(UserRequest ureq, WindowControl wControl,
-			HotspotAssessmentItemBuilder itemBuilder, AssessmentItemRef itemRef, boolean restrictedEdit) {
+	public HotspotChoiceScoreController(UserRequest ureq, WindowControl wControl, HotspotAssessmentItemBuilder itemBuilder,
+			AssessmentItemRef itemRef, File itemFile, boolean restrictedEdit) {
 		super(ureq, wControl, itemRef, restrictedEdit);
 		setTranslator(Util.createPackageTranslator(AssessmentTestEditorController.class, getLocale()));
+		this.itemFile = itemFile;
 		this.itemBuilder = itemBuilder;
+		backgroundMapperUri = registerMapper(ureq, new BackgroundMapper(itemFile));
 		initForm(ureq);
 	}
 
@@ -116,7 +136,10 @@ public class HotspotChoiceScoreController extends AssessmentItemRefEditorControl
 			wrappers.add(wrapper);
 		}
 		scoreCont.contextPut("choices", wrappers);
+		scoreCont.contextPut("mapperUri", backgroundMapperUri);
 		scoreCont.setVisible(assessmentModeEl.isSelected(1));
+		
+		updateBackground();
 
 		// Submit Button
 		FormLayoutContainer buttonsContainer = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
@@ -143,7 +166,53 @@ public class HotspotChoiceScoreController extends AssessmentItemRefEditorControl
 					wrapperIt.remove();
 				}
 			}
+			
+			updateBackground();
 		}
+	}
+
+	protected void updateBackground() {
+		File backgroundImage = null;
+		if(StringHelper.containsNonWhitespace(itemBuilder.getBackground())) {
+			File itemDirectory = itemFile.getParentFile();
+			Path backgroundPath = itemDirectory.toPath().resolve(itemBuilder.getBackground());
+			if(Files.exists(backgroundPath)) {
+				backgroundImage = backgroundPath.toFile();
+			}
+		}
+		
+		if(backgroundImage != null) {
+			String filename = backgroundImage.getName();
+			Size size = imageService.getSize(new LocalFileImpl(backgroundImage), null);
+			scoreCont.contextPut("filename", filename);
+			if(size != null) {
+				if(size.getHeight() > 0) {
+					scoreCont.contextPut("height", Integer.toString(size.getHeight()));
+				} else {
+					scoreCont.contextRemove("height");
+				}
+				if(size.getWidth() > 0) {
+					scoreCont.contextPut("width", Integer.toString(size.getWidth()));
+				} else {
+					scoreCont.contextRemove("width");
+				}
+			}
+		} else {
+			scoreCont.contextRemove("filename");
+		}
+
+		List<HotspotWrapper> choiceWrappers = new ArrayList<>();
+		List<HotspotChoice> choices = itemBuilder.getHotspotChoices();
+		String[] keys = new String[choices.size()];
+		String[] values = new String[choices.size()];
+		for(int i=0; i<choices.size(); i++) {
+			HotspotChoice choice = choices.get(i);
+			keys[i] = choice.getIdentifier().toString();
+			values[i] = Integer.toString(i + 1) + ".";
+			choiceWrappers.add(new HotspotWrapper(choice, itemBuilder));
+		}
+
+		scoreCont.contextPut("hotspots", choiceWrappers);
 	}
 	
 	private HotspotChoiceWrapper createHotspotChoiceWrapper(HotspotChoice choice) {
@@ -283,6 +352,28 @@ public class HotspotChoiceScoreController extends AssessmentItemRefEditorControl
 		
 		public HotspotChoice getChoice() {
 			return choice;
+		}
+	}
+	
+	private static class BackgroundMapper implements Mapper {
+		
+		private final File itemFile;
+		
+		public BackgroundMapper(File itemFile) {
+			this.itemFile = itemFile;
+		}
+
+		@Override
+		public MediaResource handle(String relPath, HttpServletRequest request) {
+			if(StringHelper.containsNonWhitespace(relPath)) {
+				if(relPath.startsWith("/")) {
+					relPath = relPath.substring(1);
+				}
+				
+				File backgroundFile = new File(itemFile.getParentFile(), relPath);
+				return new VFSMediaResource(new LocalFileImpl(backgroundFile));
+			}
+			return new NotFoundMediaResource(relPath);
 		}
 	}
 }

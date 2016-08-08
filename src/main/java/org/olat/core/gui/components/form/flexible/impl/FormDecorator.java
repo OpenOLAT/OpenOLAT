@@ -28,6 +28,7 @@ package org.olat.core.gui.components.form.flexible.impl;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.SpacerElement;
+import org.olat.core.gui.render.StringOutput;
 import org.olat.core.util.StringHelper;
 
 /**
@@ -144,6 +145,24 @@ public class FormDecorator {
 		Form theForm = container.getRootForm();
 		String elementId = "o_fi" + container.getComponent().getDispatchID();
 		return FormJSHelper.getXHRFnCallFor(theForm, elementId, 1, true, true, new NameValuePair(key, value));
+	}
+	
+	public String appendFlexiFormDirty(String id) {
+		StringOutput sb = new StringOutput(256);
+		FormJSHelper.appendFlexiFormDirty(sb, container.getRootForm(), id);
+		return sb.toString();
+	}
+	
+	public String appendFlexiFormDirtyForCheckbox(String id) {
+		StringOutput sb = new StringOutput(256);
+		FormJSHelper.appendFlexiFormDirtyForCheckbox(sb, container.getRootForm(), id);
+		return sb.toString();
+	}
+	
+	public String appendFlexiFormDirtyForClick(String id) {
+		StringOutput sb = new StringOutput(256);
+		FormJSHelper.appendFlexiFormDirtyForClick(sb, container.getRootForm(), id);
+		return sb.toString();
 	}
 	
 	public String getContainerCssClass() {

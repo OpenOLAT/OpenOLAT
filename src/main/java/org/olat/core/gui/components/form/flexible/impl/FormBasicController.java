@@ -82,7 +82,8 @@ public abstract class FormBasicController extends BasicController implements IFo
 	public static final int LAYOUT_BAREBONE = 4;
 	public static final int LAYOUT_PANEL = 5;
 	public static final int LAYOUT_DEFAULT_6_6 = 6;
-	public static final int LAYOUT_DEFAULT_9_3 = 6;
+	public static final int LAYOUT_DEFAULT_9_3 = 7;
+	public static final int LAYOUT_DEFAULT_2_10 = 8;
 
 	protected FormLayoutContainer flc;
 
@@ -174,6 +175,10 @@ public abstract class FormBasicController extends BasicController implements IFo
 			// init with panel layout
 			flc = FormLayoutContainer.createDefaultFormLayout_9_3("ffo_default_9_3", getTranslator());		
 			mainForm = Form.create(mainFormId, "ffo_main_default_9_3", flc, this);
+		} else if (layout == LAYOUT_DEFAULT_2_10) {
+			// init with panel layout
+			flc = FormLayoutContainer.createDefaultFormLayout_2_10("ffo_default_2_10", getTranslator());		
+			mainForm = Form.create(mainFormId, "ffo_main_default_2_10", flc, this);
 		} else if (layout == LAYOUT_CUSTOM) {
 			throw new AssertException("Use another constructor to work with a custom layout!");
 
@@ -210,6 +215,10 @@ public abstract class FormBasicController extends BasicController implements IFo
 		} else if (layout == LAYOUT_DEFAULT_9_3) {
 			// init with default layout
 			flc = FormLayoutContainer.createDefaultFormLayout_9_3("ffo_panel", getTranslator());
+		
+		}  else if (layout == LAYOUT_DEFAULT_2_10) {
+			// init with default layout
+			flc = FormLayoutContainer.createDefaultFormLayout_2_10("ffo_panel", getTranslator());
 		
 		} else if (layout == LAYOUT_CUSTOM && customLayoutPageName != null) {
 			// init with provided layout

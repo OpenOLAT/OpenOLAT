@@ -46,22 +46,13 @@ import org.olat.core.gui.translator.Translator;
  */
 public class VelocityContainerRenderer implements ComponentRenderer {
 
-	private final String theme;
-
-	/**
-	 * @param theme if null, then pages will be searched under the path defined by the page, e.g. /_theme/index.html instead of /index.html (an underscore is added)
-	 */
-	public VelocityContainerRenderer(String theme) {
-		super();
-		this.theme = theme;
-	}
-
 	/**
 	 * @see org.olat.core.gui.render.ui.ComponentRenderer#render(org.olat.core.gui.render.Renderer,
 	 *      org.olat.core.gui.render.StringOutput, org.olat.core.gui.components.Component,
 	 *      org.olat.core.gui.render.URLBuilder, org.olat.core.gui.translator.Translator,
 	 *      org.olat.core.gui.render.RenderResult, java.lang.String[])
 	 */
+	@Override
 	public void render(Renderer renderer, StringOutput target, Component source, URLBuilder ubu, Translator translator,
 			RenderResult renderResult, String[] args) {
 		VelocityContainer vc = (VelocityContainer) source;
@@ -74,7 +65,7 @@ public class VelocityContainerRenderer implements ComponentRenderer {
 		VelocityRenderDecorator vrdec = new VelocityRenderDecorator(fr, vc, target);			
 		ctx.put("r", vrdec);
 		VelocityHelper vh = VelocityHelper.getInstance();
-		vh.mergeContent(pagePath, ctx, target, theme);
+		vh.mergeContent(pagePath, ctx, target, null);
 		//free the decorator
 		ctx.remove("r");
 		IOUtils.closeQuietly(vrdec);
@@ -92,6 +83,7 @@ public class VelocityContainerRenderer implements ComponentRenderer {
 	 *      org.olat.core.gui.render.StringOutput, org.olat.core.gui.components.Component,
 	 *      org.olat.core.gui.render.URLBuilder, org.olat.core.gui.translator.Translator)
 	 */
+	@Override
 	public void renderHeaderIncludes(Renderer renderer, StringOutput sb, Component source, URLBuilder ubu, Translator translator, RenderingState rstate) {
 		VelocityContainer vc = (VelocityContainer) source;
 		// the velocity container itself needs no headerincludes, but ask the
@@ -105,6 +97,7 @@ public class VelocityContainerRenderer implements ComponentRenderer {
 	 * @see org.olat.core.gui.render.ui.ComponentRenderer#renderBodyOnLoadJSFunctionCall(org.olat.core.gui.render.Renderer,
 	 *      org.olat.core.gui.render.StringOutput, org.olat.core.gui.components.Component)
 	 */
+	@Override
 	public void renderBodyOnLoadJSFunctionCall(Renderer renderer, StringOutput sb, Component source, RenderingState rstate) {
 		VelocityContainer vc = (VelocityContainer) source;
 		// the velocity container itself needs no headerincludes, but ask the

@@ -21,7 +21,6 @@ package org.olat.ims.qti21.ui;
 
 import java.io.File;
 
-import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.dropdown.Dropdown;
@@ -50,6 +49,7 @@ import org.olat.repository.RepositoryEntryManagedFlag;
 import org.olat.repository.model.RepositoryEntrySecurity;
 import org.olat.repository.ui.RepositoryEntryRuntimeController;
 import org.olat.util.logging.activity.LoggingResourceable;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import uk.ac.ed.ph.jqtiplus.node.test.AssessmentTest;
 import uk.ac.ed.ph.jqtiplus.resolution.ResolvedAssessmentTest;
@@ -67,6 +67,9 @@ public class QTI21RuntimeController extends RepositoryEntryRuntimeController  {
 	private QTI21DeliveryOptionsController optionsCtrl;
 	private AssessmentToolController assessmentToolCtrl;
 	private QTI21AssessmentTestStatisticsController statsToolCtr;
+
+	@Autowired
+	private QTI21Service qtiService;
 
 	public QTI21RuntimeController(UserRequest ureq, WindowControl wControl,
 			RepositoryEntry re, RepositoryEntrySecurity reSecurity, RuntimeControllerCreator runtimeControllerCreator) {
@@ -135,6 +138,11 @@ public class QTI21RuntimeController extends RepositoryEntryRuntimeController  {
 					if(composerCtrl.hasChanges()) {
 						doReloadRuntimeController(ureq);
 					}
+				} else if (popedCtrl instanceof QTI21DeliveryOptionsController) {
+					QTI21DeliveryOptionsController optCtrl = (QTI21DeliveryOptionsController)popedCtrl;
+					if(optCtrl.hasChanges()) {
+						doReloadRuntimeController(ureq);
+					}
 				}
 			}
 		}
@@ -143,6 +151,9 @@ public class QTI21RuntimeController extends RepositoryEntryRuntimeController  {
 	
 	private void doReloadRuntimeController(UserRequest ureq) {
 		disposeRuntimeController();
+		if(reSecurity.isEntryAdmin()) {
+			qtiService.deleteAuthorAssessmentTestSession(getRepositoryEntry());
+		}
 		launchContent(ureq, reSecurity);
 		if(toolbarPanel.getTools().isEmpty()) {
 			initToolbar();
@@ -206,7 +217,6 @@ public class QTI21RuntimeController extends RepositoryEntryRuntimeController  {
 	private AssessableResource getAssessableElement(RepositoryEntry testEntry) {
 		FileResourceManager frm = FileResourceManager.getInstance();
 		File fUnzippedDirRoot = frm.unzipFileResource(testEntry.getOlatResource());
-		QTI21Service qtiService = CoreSpringFactory.getImpl(QTI21Service.class);
 		ResolvedAssessmentTest resolvedAssessmentTest = qtiService.loadAndResolveAssessmentTest(fUnzippedDirRoot, false);
 		
 		AssessmentTest assessmentTest = resolvedAssessmentTest.getRootNodeLookup().extractIfSuccessful();

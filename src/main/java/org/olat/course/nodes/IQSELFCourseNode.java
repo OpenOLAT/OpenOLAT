@@ -50,10 +50,12 @@ import org.olat.course.editor.StatusDescription;
 import org.olat.course.nodes.iq.CourseIQSecurityCallback;
 import org.olat.course.nodes.iq.IQEditController;
 import org.olat.course.nodes.iq.IQRunController;
+import org.olat.course.nodes.iq.QTI21AssessmentRunController;
 import org.olat.course.run.navigation.NodeRunConstructionResult;
 import org.olat.course.run.scoring.ScoreEvaluation;
 import org.olat.course.run.userview.NodeEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
+import org.olat.fileresource.types.ImsQTI21Resource;
 import org.olat.ims.qti.QTIResultManager;
 import org.olat.ims.qti.QTIResultSet;
 import org.olat.ims.qti.export.QTIExportFormatter;
@@ -121,8 +123,13 @@ public class IQSELFCourseNode extends AbstractAccessableCourseNode implements Se
 		if (onyx) {
 			runController = new OnyxRunController(userCourseEnv, config, ureq, wControl, this);
 		} else {
-			IQSecurityCallback sec = new CourseIQSecurityCallback(this, am, ureq.getIdentity());
-			runController = new IQRunController(userCourseEnv, getModuleConfiguration(), sec, ureq, wControl, this);
+			RepositoryEntry testEntry = getReferencedRepositoryEntry();
+			if(ImsQTI21Resource.TYPE_NAME.equals(testEntry.getOlatResource().getResourceableTypeName())) {
+				runController = new QTI21AssessmentRunController(ureq, wControl, userCourseEnv, this);
+			} else {
+				IQSecurityCallback sec = new CourseIQSecurityCallback(this, am, ureq.getIdentity());
+				runController = new IQRunController(userCourseEnv, getModuleConfiguration(), sec, ureq, wControl, this);
+			}
 		}
 		
 		Controller ctrl = TitledWrapperHelper.getWrapper(ureq, wControl, runController, this, "o_iqself_icon");
@@ -158,9 +165,8 @@ public class IQSELFCourseNode extends AbstractAccessableCourseNode implements Se
 		if (!isValid) {
 			String shortKey = "error.self.undefined.short";
 			String longKey = "error.self.undefined.long";
-			String[] params = new String[] { this.getShortTitle() };
-			String translPackage = Util.getPackageName(IQEditController.class);
-			sd = new StatusDescription(StatusDescription.ERROR, shortKey, longKey, params, translPackage);
+			String[] params = new String[] { getShortTitle() };
+			sd = new StatusDescription(StatusDescription.ERROR, shortKey, longKey, params, PACKAGE_IQ);
 			sd.setDescriptionForUnit(getIdent());
 			// set which pane is affected by error
 			sd.setActivateableViewIdentifier(IQEditController.PANE_TAB_IQCONFIG_SELF);
@@ -176,8 +182,7 @@ public class IQSELFCourseNode extends AbstractAccessableCourseNode implements Se
 		oneClickStatusCache = null;
 		// only here we know which translator to take for translating condition
 		// error messages
-		String translatorStr = Util.getPackageName(IQEditController.class);
-		List<StatusDescription> sds = isConfigValidWithTranslator(cev, translatorStr, getConditionExpressions());
+		List<StatusDescription> sds = isConfigValidWithTranslator(cev, PACKAGE_IQ, getConditionExpressions());
 		oneClickStatusCache = StatusDescriptionHelper.sort(sds);
 		return oneClickStatusCache;
 	}

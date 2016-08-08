@@ -612,10 +612,7 @@ public class AssessmentTestDisplayController extends BasicController implements 
 	
 	private void processTestPartNavigation(UserRequest ureq) {
 		final Date requestTimestamp = ureq.getRequestTimestamp();
-        TestPlanNode nextNode = testSessionController.selectItemNonlinear(requestTimestamp, null);
-        if(nextNode == null) {
-        	System.out.println();
-        }
+        testSessionController.selectItemNonlinear(requestTimestamp, null);
 	}
 	
 	private ParentPartItemRefs getParentSection(TestPlanNodeKey itemKey) {
@@ -826,10 +823,28 @@ public class AssessmentTestDisplayController extends BasicController implements 
         testSessionController.endCurrentTestPart(requestTimestamp);
 	}
 	
+	/**
+	 * In the case of a multi-part test, the entry to the first part
+	 * must not be confirmed.
+	 * @param ureq
+	 */
 	private void confirmAdvanceTestPart(UserRequest ureq) {
-		String title = translate("confirm.advance.testpart.title");
-		String text = translate("confirm.advance.testpart.text");
-		advanceTestPartDialog = activateOkCancelDialog(ureq, title, text, advanceTestPartDialog);
+		TestPlanNode nextTestPart = testSessionController.findNextEnterableTestPart();
+
+		if(nextTestPart == null) {
+			String title = translate("confirm.close.test.title");
+			String text = translate("confirm.close.test.text");
+			advanceTestPartDialog = activateOkCancelDialog(ureq, title, text, advanceTestPartDialog);
+		} else {
+			TestPart currentTestPart = testSessionController.getCurrentTestPart();
+			if(currentTestPart == null) {
+				processAdvanceTestPart(ureq);
+			} else {
+				String title = translate("confirm.advance.testpart.title");
+				String text = translate("confirm.advance.testpart.text");
+				advanceTestPartDialog = activateOkCancelDialog(ureq, title, text, advanceTestPartDialog);
+			}
+		}
 	}
 	
 	private void processAdvanceTestPart(UserRequest ureq) {
@@ -1193,8 +1208,11 @@ public class AssessmentTestDisplayController extends BasicController implements 
 			qtiEl.setResolvedAssessmentTest(resolvedAssessmentTest);
 			formLayout.add("qtirun", qtiEl);
 			
+			boolean showMenuTree = deliveryOptions.isShowMenu();
+			
 			qtiTreeEl = new AssessmentTreeFormItem("qtitree", qtiEl.getComponent(), submit);
 			qtiTreeEl.setResolvedAssessmentTest(resolvedAssessmentTest);
+			qtiTreeEl.setVisible(showMenuTree);
 			formLayout.add("qtitree", qtiTreeEl);
 			
 			String endName = qtiEl.getComponent().hasMultipleTestParts()
@@ -1222,7 +1240,7 @@ public class AssessmentTestDisplayController extends BasicController implements 
 			qtiEl.setAssessmentObjectUri(qtiService.createAssessmentObjectUri(fUnzippedDirRoot));
 			qtiEl.setCandidateSessionContext(AssessmentTestDisplayController.this);
 			qtiEl.setMapperUri(mapperUri);
-			qtiEl.setRenderNavigation(false);
+			qtiEl.setRenderNavigation(!showMenuTree);
 			qtiEl.setPersonalNotes(deliveryOptions.isPersonalNotes());
 			qtiEl.setShowTitles(deliveryOptions.isShowTitles());
 			
@@ -1394,21 +1412,17 @@ public class AssessmentTestDisplayController extends BasicController implements 
 				flc.add("qtiResults", resultCtrl.getInitialFormItem());
 				resultsVisible = true;
 			}
+			
+			if(testSessionController.findNextEnterableTestPart() == null) {
+				closeTestButton.setI18nKey("assessment.test.close.test");
+			} else {
+				closeTestButton.setI18nKey("assessment.test.close.testpart");
+			}
+			
 			closeResultsButton.setVisible(resultsVisible && showCloseResults);
 			updateQtiWorksStatus();
 			return resultsVisible;
 		}
-		
-		/*private void updateButtons() {
-			TestSessionState testSessionState = testSessionController.getTestSessionState();
-			CandidateSessionContext candidateSessionContext = AssessmentTestDisplayController.this;
-			boolean enabled = !candidateSessionContext.isTerminated() && !testSessionState.isExited()
-					&& testSessionController.mayEndCurrentTestPart();
-			
-			//endTestPartButton.setEnabled(enabled);
-			
-			//closeTestButton.setEnabled(enabled);
-		}*/
 		
 		private void updateQtiWorksStatus() {
 			if(deliveryOptions.isDisplayQuestionProgress() || deliveryOptions.isDisplayScoreProgress()) {

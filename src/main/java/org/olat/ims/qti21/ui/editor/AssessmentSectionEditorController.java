@@ -50,8 +50,7 @@ import uk.ac.ed.ph.jqtiplus.node.test.View;
 public class AssessmentSectionEditorController extends ItemSessionControlController {
 
 	private TextElement titleEl;
-	private TextElement randomSelectedEl;
-	private SingleSelection shuffleEl, visibleEl;
+	private SingleSelection shuffleEl, visibleEl, randomSelectedEl;
 	private List<RichTextElement> rubricEls = new ArrayList<>();
 	
 	private final AssessmentSection section;
@@ -103,12 +102,31 @@ public class AssessmentSectionEditorController extends ItemSessionControlControl
 			shuffleEl.select("n", true);
 		}
 		shuffleEl.setEnabled(!restrictedEdit);
+
 		
-		String num = section.getSelection() != null ? Integer.toString(section.getSelection().getSelect()) : "";
-		randomSelectedEl = uifactory.addTextElement("selectionPre", "form.section.selection_pre", 255, num, formLayout);
+		int numOfItems = getNumOfQuestions(section);
+		String[] theKeys = new String[numOfItems + 1];
+		String[] theValues = new String[numOfItems + 1];
+		theKeys[0] = "0";
+		theValues[0] = translate("form.section.selection_all");
+		for(int i=0; i<numOfItems; i++) {
+			theKeys[i+1] = Integer.toString(i+1);
+			theValues[i+1] = Integer.toString(i+1);
+		}
+		
+		randomSelectedEl = uifactory.addDropdownSingleselect("form.section.selection_pre", formLayout, theKeys, theValues, null);
 		randomSelectedEl.setHelpText(translate("form.section.selection_pre.hover"));
 		randomSelectedEl.setEnabled(!restrictedEdit);
 		
+		int currentNum = section.getSelection() != null ? section.getSelection().getSelect() : 0;
+		if(currentNum <= numOfItems) {
+			randomSelectedEl.select(theKeys[currentNum], true);
+		} else if(currentNum > numOfItems) {
+			randomSelectedEl.select(theKeys[numOfItems], true);
+		} else {
+			randomSelectedEl.select(theKeys[0], true);
+		}
+
 		//visible
 		visibleEl = uifactory.addRadiosHorizontal("visible", "form.section.visible", formLayout, yesnoKeys, yesnoValues);
 		visibleEl.setEnabled(!restrictedEdit);
@@ -121,6 +139,15 @@ public class AssessmentSectionEditorController extends ItemSessionControlControl
 		FormLayoutContainer buttonsCont = FormLayoutContainer.createButtonLayout("butons", getTranslator());
 		formLayout.add(buttonsCont);
 		uifactory.addFormSubmitButton("save", "save", buttonsCont);
+	}
+	
+	/**
+	 * The sub-sections count for 1, always. 
+	 * @param assessmentSection
+	 * @return
+	 */
+	private int getNumOfQuestions(AssessmentSection assessmentSection) {
+		return assessmentSection.getSectionParts().size();
 	}
 	
 	public String getTitle() {
@@ -143,18 +170,9 @@ public class AssessmentSectionEditorController extends ItemSessionControlControl
 		}
 		
 		randomSelectedEl.clearError();
-		if(StringHelper.containsNonWhitespace(randomSelectedEl.getValue())) {
-			if(StringHelper.isLong(randomSelectedEl.getValue())) {
-				try {
-					Integer.parseInt(randomSelectedEl.getValue());
-				} catch (Exception e) {
-					randomSelectedEl.setErrorKey("form.error.nointeger", null);
-					allOk &= false;
-				}
-			} else {
-				randomSelectedEl.setErrorKey("form.error.nointeger", null);
-				allOk &= false;
-			}
+		if(!randomSelectedEl.isOneSelected()) {
+			randomSelectedEl.setErrorKey("form.legende.mandatory", null);
+			allOk &= false;
 		}
 
 		return allOk & super.validateFormLogic(ureq);
@@ -196,10 +214,10 @@ public class AssessmentSectionEditorController extends ItemSessionControlControl
 		
 		//number of selected questions
 		Integer randomSelection = null;
-		if(StringHelper.containsNonWhitespace(randomSelectedEl.getValue())) {
-			randomSelection = new Integer(randomSelectedEl.getValue());
+		if(StringHelper.containsNonWhitespace(randomSelectedEl.getSelectedKey())) {
+			randomSelection = new Integer(randomSelectedEl.getSelectedKey());
 		}
-		if(randomSelection == null) {
+		if(randomSelection == null || randomSelection.intValue() < 1) {
 			section.setSelection(null);
 		} else {
 			if(section.getSelection() == null) {

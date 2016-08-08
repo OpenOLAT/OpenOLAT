@@ -164,7 +164,7 @@ public class IQ12EditForm extends FormBasicController {
 	protected void formOK(UserRequest ureq) {
 		modConfig.set(IQEditController.CONFIG_KEY_DISPLAYMENU, new Boolean(isDisplayMenu()));
 		modConfig.set(IQEditController.CONFIG_FULLWINDOW, new Boolean(isFullWindow()));
-		if(correctionModeEl.isOneSelected()) {
+		if(correctionModeEl != null &&correctionModeEl.isOneSelected()) {
 			modConfig.setStringValue(IQEditController.CONFIG_CORRECTION_MODE, correctionModeEl.getSelectedKey());
 		}
 		
@@ -234,21 +234,22 @@ public class IQ12EditForm extends FormBasicController {
 			blockAfterSuccess.select("xx", false);
 			blockAfterSuccess.setVisible(false);
 		}
-		
-		correctionModeEl = uifactory.addRadiosVertical("correction.mode", "correction.mode", formLayout, correctionModeKeys, correctionModeValues);
-		String mode = modConfig.getStringValue(IQEditController.CONFIG_CORRECTION_MODE);
-		boolean selected = false;
-		for(String correctionModeKey:correctionModeKeys) {
-			if(correctionModeKey.equals(mode)) {
-				correctionModeEl.select(correctionModeKey, true);
-				selected = true;
+		if (isAssessment) {
+			correctionModeEl = uifactory.addRadiosVertical("correction.mode", "correction.mode", formLayout, correctionModeKeys, correctionModeValues);
+			String mode = modConfig.getStringValue(IQEditController.CONFIG_CORRECTION_MODE);
+			boolean selected = false;
+			for(String correctionModeKey:correctionModeKeys) {
+				if(correctionModeKey.equals(mode)) {
+					correctionModeEl.select(correctionModeKey, true);
+					selected = true;
+				}
 			}
-		}
-		if(!selected) {
-			if(hasEssay) {
-				correctionModeEl.select(correctionModeKeys[1], true);
-			} else {
-				correctionModeEl.select(correctionModeKeys[0], true);
+			if(!selected) {
+				if(hasEssay) {
+					correctionModeEl.select(correctionModeKeys[1], true);
+				} else {
+					correctionModeEl.select(correctionModeKeys[0], true);
+				}
 			}
 		}
 		

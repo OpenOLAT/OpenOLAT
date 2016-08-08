@@ -36,9 +36,11 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.ims.qti21.model.xml.AssessmentItemBuilder;
 import org.olat.ims.qti21.model.xml.ScoreBuilder;
-import org.olat.ims.qti21.model.xml.interactions.SimpleChoiceAssessmentItemBuilder.ScoreEvaluation;
 import org.olat.ims.qti21.model.xml.interactions.FIBAssessmentItemBuilder;
 import org.olat.ims.qti21.model.xml.interactions.FIBAssessmentItemBuilder.AbstractEntry;
+import org.olat.ims.qti21.model.xml.interactions.FIBAssessmentItemBuilder.NumericalEntry;
+import org.olat.ims.qti21.model.xml.interactions.FIBAssessmentItemBuilder.TextEntry;
+import org.olat.ims.qti21.model.xml.interactions.SimpleChoiceAssessmentItemBuilder.ScoreEvaluation;
 import org.olat.ims.qti21.ui.editor.AssessmentTestEditorController;
 import org.olat.ims.qti21.ui.editor.SyncAssessmentItem;
 import org.olat.ims.qti21.ui.editor.events.AssessmentItemEvent;
@@ -239,10 +241,13 @@ public class FIBScoreController extends AssessmentItemRefEditorController implem
 			this.entry = entry;
 			this.pointsEl = pointsEl;
 			pointsEl.setUserObject(this);
-			if(entry != null) {
-				summary = entry.getResponseIdentifier().toString();
+			if(entry instanceof TextEntry) {
+				summary = ((TextEntry)entry).getSolution();
+			} else if(entry instanceof NumericalEntry) {
+				Double solution = ((NumericalEntry)entry).getSolution();
+				summary = solution == null ? "???" : solution.toString();
 			} else {
-				summary = "";
+				summary = "???";
 			}
 		}
 		

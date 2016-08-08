@@ -205,17 +205,7 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements Pe
 		RepositoryEntry qtiTestEntry = getReferencedRepositoryEntry();
 		if(ImsQTI21Resource.TYPE_NAME.equals(qtiTestEntry.getOlatResource().getResourceableTypeName())) {
 			tools.add(new QTI21StatisticsToolController(ureq, wControl, stackPanel, courseEnv, options, this));
-			
-			
-			/*if(options.getGroup() == null && options.getIdentities() != null && options.getIdentities().size() > 0) {
-				for(Identity assessedIdentity:options.getIdentities()) {
-					if(isTestRunning(assessedIdentity, courseEnv)) {
-						tools.add(new QTI12PullTestsToolController(ureq, wControl, courseEnv, options, this));
-						break;
-					}
-				}
-			}*/
-			
+			//TODO qti implements the pull tests
 		} else {
 			tools.add(new QTI12StatisticsToolController(ureq, wControl, stackPanel, courseEnv, options, this));
 			if(options.getGroup() == null && options.getIdentities() != null && options.getIdentities().size() > 0) {

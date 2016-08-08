@@ -1,19 +1,27 @@
-<fieldset class="o_form">
-
+<fieldset class="o_form form-horizontal">
 <div class="form-group #if($f.hasError($item)) has-feedback has-error #end clearfix">
-	<div class="col-sm-1"><strong>$r.translate("form.imd.correct.kprim")</strong></div>
+	<div class="col-sm-1 col-md-offset-1"><strong>$r.translate("form.imd.correct.kprim")</strong></div>
 	<div class="col-sm-1"><strong>$r.translate("form.imd.wrong.kprim")</strong></div>
 	<div class="col-sm-9"><strong>$r.translate("answers")</strong></div>
-	<div class="col-sm-1"><strong></strong></div>
 </div>
 
 #foreach($choice in $choices)
 <div class="form-group #if($f.hasError($item)) has-feedback has-error #end clearfix">
 	<div class="col-sm-1">
-		<input type="radio" name="${choice.getIdentifierString()}" value="correct" #if($restrictedEdit) disabled #end #if(${choice.isCorrect()}) checked #end/>
+		#if($r.available(${choice.getUp().getComponent().getComponentName()}) && $r.visible(${choice.getUp().getComponent().getComponentName()}))
+			<div>$r.render(${choice.getUp().getComponent().getComponentName()})</div>
+		#end
+		#if($r.available(${choice.getDown().getComponent().getComponentName()}) && $r.visible(${choice.getDown().getComponent().getComponentName()}))
+			<div>$r.render(${choice.getDown().getComponent().getComponentName()})</div>
+		#end
 	</div>
 	<div class="col-sm-1">
-		<input type="radio" name="${choice.getIdentifierString()}" value="wrong" #if($restrictedEdit) disabled #end #if(!${choice.isCorrect()}) checked #end/>
+		<input type="radio" id="oo_correct-${foreach.count}" name="${choice.getIdentifierString()}" value="correct" #if($restrictedEdit) disabled #end #if(${choice.isCorrect()}) checked #end/>
+		$f.appendFlexiFormDirtyForCheckbox("oo_correct-${foreach.count}")
+	</div>
+	<div class="col-sm-1">
+		<input type="radio" id="oo_wrong-${foreach.count}" name="${choice.getIdentifierString()}" value="wrong" #if($restrictedEdit) disabled #end #if(!${choice.isCorrect()}) checked #end/>
+		$f.appendFlexiFormDirtyForCheckbox("oo_wrong-${foreach.count}")
 	</div>
 	<div class="col-sm-9">
 		$r.render(${choice.getAnswer().getComponent().getComponentName()})
@@ -21,17 +29,8 @@
 			<span class="o_icon o_icon_error form-control-feedback"></span>
 		#end
 	</div>
-	<div class="col-sm-1">
-		#if($r.available(${choice.getUp().getComponent().getComponentName()}) && $r.visible(${choice.getUp().getComponent().getComponentName()}))
-			$r.render(${choice.getUp().getComponent().getComponentName()})
-		#end
-		#if($r.available(${choice.getDown().getComponent().getComponentName()}) && $r.visible(${choice.getDown().getComponent().getComponentName()}))
-			$r.render(${choice.getDown().getComponent().getComponentName()})
-		#end
-	</div>
-
 	#if($f.hasError($item))
-		<div class="col-sm-offset-2 col-sm-8">
+		<div class="col-sm-offset-2 col-sm-10">
 			$r.render("${item}_ERROR")
 		</div>
 	#end

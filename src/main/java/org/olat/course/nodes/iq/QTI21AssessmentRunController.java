@@ -48,7 +48,9 @@ import org.olat.course.DisposedCourseRestartController;
 import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.auditing.UserNodeAuditManager;
 import org.olat.course.nodes.CourseNode;
+import org.olat.course.nodes.IQSELFCourseNode;
 import org.olat.course.nodes.IQTESTCourseNode;
+import org.olat.course.nodes.QTICourseNode;
 import org.olat.course.run.scoring.ScoreEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.ims.qti.process.AssessmentInstance;
@@ -86,7 +88,7 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 	private final UserSession userSession;
 	private final ModuleConfiguration config;
 	private final UserCourseEnvironment userCourseEnv;
-	private final IQTESTCourseNode courseNode;
+	private final QTICourseNode courseNode;
 	private final RepositoryEntry testEntry;
 	private final QTI21DeliveryOptions deliveryOptions;
 	// The test is really assessment not a self test or a survey
@@ -99,7 +101,7 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 	private QTI21Service qtiService;
 	
 	public QTI21AssessmentRunController(UserRequest ureq, WindowControl wControl,
-			UserCourseEnvironment userCourseEnv, IQTESTCourseNode courseNode) {
+			UserCourseEnvironment userCourseEnv, QTICourseNode courseNode) {
 		super(ureq, wControl, Util.createPackageTranslator(CourseNode.class, ureq.getLocale()));
 		setTranslator(Util.createPackageTranslator(AssessmentTestDisplayController.class, getLocale(), getTranslator()));
 		
@@ -110,6 +112,13 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 		testEntry = courseNode.getReferencedRepositoryEntry();
 		singleUserEventCenter = ureq.getUserSession().getSingleUserEventCenter();
 		mainVC = createVelocityContainer("assessment_run");
+		
+		if(courseNode instanceof IQTESTCourseNode) {
+			mainVC.contextPut("type", "test");
+		} else if(courseNode instanceof IQSELFCourseNode) {
+			mainVC.contextPut("type", "self");
+		}
+		
 		
 		deliveryOptions = getDeliveryOptions();
 		init(ureq);
@@ -141,36 +150,39 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 			mainVC.contextPut("attemptsConfig", Boolean.FALSE);
 		}
 	    // user data
-	    
-		AssessmentEntry assessmentEntry = courseNode.getUserAssessmentEntry(userCourseEnv);
-		if(assessmentEntry == null) {
-			mainVC.contextPut("blockAfterSuccess", Boolean.FALSE);
-			mainVC.contextPut("score", null);
-			mainVC.contextPut("hasPassedValue", Boolean.FALSE);
-			mainVC.contextPut("passed", Boolean.FALSE);
-			mainVC.contextPut("comment", null);
-			mainVC.contextPut("attempts", 0);
-		} else {
-			Boolean passed = assessmentEntry.getPassed();
-			//block if test passed (and config set to check it)
-			Boolean blocked = Boolean.FALSE;
-			boolean blockAfterSuccess = config.getBooleanSafe(IQEditController.CONFIG_KEY_BLOCK_AFTER_SUCCESS);
-			if(blockAfterSuccess && passed != null && passed.booleanValue()) {
-				blocked = Boolean.TRUE;
+		
+		if(courseNode instanceof IQTESTCourseNode) {
+			IQTESTCourseNode testCourseNode = (IQTESTCourseNode)courseNode;
+			AssessmentEntry assessmentEntry = testCourseNode.getUserAssessmentEntry(userCourseEnv);
+			if(assessmentEntry == null) {
+				mainVC.contextPut("blockAfterSuccess", Boolean.FALSE);
+				mainVC.contextPut("score", null);
+				mainVC.contextPut("hasPassedValue", Boolean.FALSE);
+				mainVC.contextPut("passed", Boolean.FALSE);
+				mainVC.contextPut("comment", null);
+				mainVC.contextPut("attempts", 0);
+			} else {
+				Boolean passed = assessmentEntry.getPassed();
+				//block if test passed (and config set to check it)
+				Boolean blocked = Boolean.FALSE;
+				boolean blockAfterSuccess = config.getBooleanSafe(IQEditController.CONFIG_KEY_BLOCK_AFTER_SUCCESS);
+				if(blockAfterSuccess && passed != null && passed.booleanValue()) {
+					blocked = Boolean.TRUE;
+				}
+				mainVC.contextPut("blockAfterSuccess", blocked);
+				
+				Identity identity = userCourseEnv.getIdentityEnvironment().getIdentity();
+				mainVC.contextPut("score", AssessmentHelper.getRoundedScore(assessmentEntry.getScore()));
+				mainVC.contextPut("hasPassedValue", (passed == null ? Boolean.FALSE : Boolean.TRUE));
+				mainVC.contextPut("passed", passed);
+				StringBuilder comment = Formatter.stripTabsAndReturns(testCourseNode.getUserUserComment(userCourseEnv));
+				mainVC.contextPut("comment", StringHelper.xssScan(comment));
+				Integer attempts = assessmentEntry.getAttempts();
+				mainVC.contextPut("attempts", attempts == null ? new Integer(0) : attempts);
+	
+				UserNodeAuditManager am = userCourseEnv.getCourseEnvironment().getAuditManager();
+				mainVC.contextPut("log", am.getUserNodeLog(courseNode, identity));
 			}
-			mainVC.contextPut("blockAfterSuccess", blocked);
-			
-			Identity identity = userCourseEnv.getIdentityEnvironment().getIdentity();
-			mainVC.contextPut("score", AssessmentHelper.getRoundedScore(assessmentEntry.getScore()));
-			mainVC.contextPut("hasPassedValue", (passed == null ? Boolean.FALSE : Boolean.TRUE));
-			mainVC.contextPut("passed", passed);
-			StringBuilder comment = Formatter.stripTabsAndReturns(courseNode.getUserUserComment(userCourseEnv));
-			mainVC.contextPut("comment", StringHelper.xssScan(comment));
-			Integer attempts = assessmentEntry.getAttempts();
-			mainVC.contextPut("attempts", attempts == null ? new Integer(0) : attempts);
-
-			UserNodeAuditManager am = userCourseEnv.getCourseEnvironment().getAuditManager();
-			mainVC.contextPut("log", am.getUserNodeLog(courseNode, identity));
 		}
 						
 		exposeResults(ureq);
@@ -320,7 +332,7 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 		QTI21DeliveryOptions testOptions = qtiService.getDeliveryOptions(testEntry);
 		QTI21DeliveryOptions finalOptions = testOptions.clone();
 		finalOptions.setMaxAttempts(config.getIntegerSafe(IQEditController.CONFIG_KEY_ATTEMPTS, testOptions.getMaxAttempts()));
-		finalOptions.setBlockAfterSuccess(config.getBooleanSafe(IQEditController.CONFIG_KEY_QUESTIONTITLE, testOptions.isBlockAfterSuccess()));
+		finalOptions.setBlockAfterSuccess(config.getBooleanSafe(IQEditController.CONFIG_KEY_BLOCK_AFTER_SUCCESS, testOptions.isBlockAfterSuccess()));
 		finalOptions.setShowTitles(config.getBooleanSafe(IQEditController.CONFIG_KEY_QUESTIONTITLE, testOptions.isShowTitles()));
 		finalOptions.setPersonalNotes(config.getBooleanSafe(IQEditController.CONFIG_KEY_MEMO, testOptions.isPersonalNotes()));
 		finalOptions.setEnableCancel(config.getBooleanSafe(IQEditController.CONFIG_KEY_ENABLECANCEL, testOptions.isEnableCancel()));
@@ -364,13 +376,17 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 
 	@Override
 	public void submit(Float score, Boolean pass, Long assessmentId) {
-		AssessmentEntryStatus assessmentStatus;
-		if(IQEditController.CORRECTION_MANUAL.equals(courseNode.getModuleConfiguration().getStringValue(IQEditController.CONFIG_CORRECTION_MODE))) {
-			assessmentStatus = AssessmentEntryStatus.inReview;
-		} else {
-			assessmentStatus = AssessmentEntryStatus.done;
+		if(courseNode instanceof IQTESTCourseNode) {
+			AssessmentEntryStatus assessmentStatus;
+			if(IQEditController.CORRECTION_MANUAL.equals(courseNode.getModuleConfiguration().getStringValue(IQEditController.CONFIG_CORRECTION_MODE))) {
+				assessmentStatus = AssessmentEntryStatus.inReview;
+			} else {
+				assessmentStatus = AssessmentEntryStatus.done;
+			}
+			ScoreEvaluation sceval = new ScoreEvaluation(score, pass, assessmentStatus, Boolean.TRUE, assessmentId);
+			((IQTESTCourseNode)courseNode).updateUserScoreEvaluation(sceval, userCourseEnv, getIdentity(), true);
+		} else if(courseNode instanceof IQSELFCourseNode) {
+			((IQSELFCourseNode)courseNode).incrementUserAttempts(userCourseEnv);
 		}
-		ScoreEvaluation sceval = new ScoreEvaluation(score, pass, assessmentStatus, Boolean.TRUE, assessmentId);
-		courseNode.updateUserScoreEvaluation(sceval, userCourseEnv, getIdentity(), true);
 	}
 }
