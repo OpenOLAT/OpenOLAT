@@ -103,7 +103,8 @@ public class ForumMediaHandler extends AbstractMediaHandler {
 	public Media createMedia(String title, String description, Object mediaObject, String businessPath, Identity author) {
 		Message message = null;
 		if(mediaObject instanceof Message) {
-			message = (Message)mediaObject;
+			message = (Message)mediaObject;//reload the message
+			message = forumManager.loadMessage(message.getKey());
 		} else if(mediaObject instanceof MessageLight) {
 			MessageLight messageLight = (MessageLight)mediaObject;
 			message = forumManager.loadMessage(messageLight.getKey());
