@@ -97,6 +97,12 @@ public class QTI21Constants {
 	
 	public static final IdentifierValue EMPTY_IDENTIFIER_VALUE = new IdentifierValue(EMPTY);
 	
+	public static final String ANSWERED = "answered";
+	
+	public static final Identifier ANSWERED_IDENTIFIER = Identifier.parseString(ANSWERED);
+	
+	public static final IdentifierValue ANSWERED_IDENTIFIER_VALUE = new IdentifierValue(ANSWERED);
+	
 
 	public static final String HINT = "HINT";
 	

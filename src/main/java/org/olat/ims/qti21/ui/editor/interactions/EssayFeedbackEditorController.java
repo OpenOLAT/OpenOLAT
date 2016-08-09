@@ -17,7 +17,7 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.ims.qti21.ui.editor;
+package org.olat.ims.qti21.ui.editor.interactions;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -29,31 +29,35 @@ import org.olat.core.gui.components.form.flexible.impl.elements.richText.RichTex
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.Util;
 import org.olat.core.util.filter.FilterFactory;
-import org.olat.ims.qti21.model.xml.AssessmentItemBuilder;
 import org.olat.ims.qti21.model.xml.ModalFeedbackBuilder;
+import org.olat.ims.qti21.model.xml.interactions.EssayAssessmentItemBuilder;
+import org.olat.ims.qti21.ui.editor.FeedbackEditorController;
 import org.olat.ims.qti21.ui.editor.events.AssessmentItemEvent;
 
 /**
  * 
- * Initial date: 09.12.2015<br>
+ * Initial date: 09.08.2016<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class FeedbackEditorController extends FormBasicController {
+public class EssayFeedbackEditorController extends FormBasicController {
 	
 	private TextElement hintTitleEl;
 	private RichTextElement hintTextEl;
 	
-	private TextElement feedbackCorrectTitleEl, feedbackIncorrectTitleEl;
-	private RichTextElement feedbackCorrectTextEl, feedbackIncorrectTextEl;
+	private TextElement feedbackTitleEl, feedbackEmptyTitleEl;
+	private RichTextElement feedbackTextEl, feedbackEmptyTextEl;
 
 	private final boolean restrictedEdit;
-	private final AssessmentItemBuilder itemBuilder;
+	private final EssayAssessmentItemBuilder itemBuilder;
 	
-	public FeedbackEditorController(UserRequest ureq, WindowControl wControl, AssessmentItemBuilder itemBuilder,
+	public EssayFeedbackEditorController(UserRequest ureq, WindowControl wControl, EssayAssessmentItemBuilder itemBuilder,
 			boolean restrictedEdit) {
 		super(ureq, wControl);
+		setTranslator(Util.createPackageTranslator(FeedbackEditorController.class, getLocale(), getTranslator()));
+		
 		this.itemBuilder = itemBuilder;
 		this.restrictedEdit = restrictedEdit;
 		initForm(ureq);
@@ -75,32 +79,30 @@ public class FeedbackEditorController extends FormBasicController {
 		RichTextConfiguration hintConfig = hintTextEl.getEditorConfiguration();
 		hintConfig.setFileBrowserUploadRelPath("media");// set upload dir to the media dir
 		
-		//correct feedback
-		ModalFeedbackBuilder correctFeedback = itemBuilder.getCorrectFeedback();
-		String correctTitle = correctFeedback == null ? "" : correctFeedback.getTitle();
-		feedbackCorrectTitleEl = uifactory.addTextElement("correctTitle", "form.imd.correct.title", -1, correctTitle, formLayout);
-		feedbackCorrectTitleEl.setUserObject(correctFeedback);
-		feedbackCorrectTitleEl.setEnabled(!restrictedEdit);
-		String correctText = correctFeedback == null ? "" : correctFeedback.getText();
-		feedbackCorrectTextEl = uifactory.addRichTextElementForStringDataCompact("correctText", "form.imd.correct.text", correctText, 8, -1, null,
+		//feedback if response
+		ModalFeedbackBuilder answeredFeedback = itemBuilder.getAnsweredFeedback();
+		String correctTitle = answeredFeedback == null ? "" : answeredFeedback.getTitle();
+		feedbackTitleEl = uifactory.addTextElement("answeredTitle", "form.imd.answered.title", -1, correctTitle, formLayout);
+		feedbackTitleEl.setUserObject(answeredFeedback);
+		feedbackTitleEl.setEnabled(!restrictedEdit);
+		String correctText = answeredFeedback == null ? "" : answeredFeedback.getText();
+		feedbackTextEl = uifactory.addRichTextElementForStringDataCompact("answeredText", "form.imd.answered.text", correctText, 8, -1, null,
 				formLayout, ureq.getUserSession(), getWindowControl());
-		feedbackCorrectTextEl.setEnabled(!restrictedEdit);
-		RichTextConfiguration richTextConfig = feedbackCorrectTextEl.getEditorConfiguration();
+		feedbackTextEl.setEnabled(!restrictedEdit);
+		RichTextConfiguration richTextConfig = feedbackTextEl.getEditorConfiguration();
 		richTextConfig.setFileBrowserUploadRelPath("media");// set upload dir to the media dir
-
-		//incorrect feedback
-		ModalFeedbackBuilder incorrectFeedback = itemBuilder.getIncorrectFeedback();
-		String incorrectTitle = incorrectFeedback == null ? "" : incorrectFeedback.getTitle();
-		feedbackIncorrectTitleEl = uifactory.addTextElement("incorrectTitle", "form.imd.incorrect.title", -1, incorrectTitle, formLayout);
-		feedbackIncorrectTitleEl.setUserObject(incorrectFeedback);
-		feedbackIncorrectTitleEl.setEnabled(!restrictedEdit);
-		String incorrectText = incorrectFeedback == null ? "" : incorrectFeedback.getText();
-		feedbackIncorrectTextEl = uifactory.addRichTextElementForStringDataCompact("incorrectText", "form.imd.incorrect.text", incorrectText, 8, -1, null,
+		
+		ModalFeedbackBuilder emptyFeedback = itemBuilder.getEmptyFeedback();
+		String emptyTitle = emptyFeedback == null ? "" : emptyFeedback.getTitle();
+		feedbackEmptyTitleEl = uifactory.addTextElement("emptyTitle", "form.imd.empty.title", -1, emptyTitle, formLayout);
+		feedbackEmptyTitleEl.setUserObject(emptyFeedback);
+		feedbackEmptyTitleEl.setEnabled(!restrictedEdit);
+		String emptyText = emptyFeedback == null ? "" : emptyFeedback.getText();
+		feedbackEmptyTextEl = uifactory.addRichTextElementForStringDataCompact("emptyText", "form.imd.empty.text", emptyText, 8, -1, null,
 				formLayout, ureq.getUserSession(), getWindowControl());
-		feedbackIncorrectTextEl.setEnabled(!restrictedEdit);
-		RichTextConfiguration richTextConfig2 = feedbackIncorrectTextEl.getEditorConfiguration();
-		richTextConfig2.setFileBrowserUploadRelPath("media");// set upload dir to the media dir
-
+		feedbackEmptyTextEl.setEnabled(!restrictedEdit);
+		RichTextConfiguration emptyTextConfig = feedbackEmptyTextEl.getEditorConfiguration();
+		emptyTextConfig.setFileBrowserUploadRelPath("media");// set upload dir to the media dir
 	
 		// Submit Button
 		if(!restrictedEdit) {
@@ -128,35 +130,36 @@ public class FeedbackEditorController extends FormBasicController {
 			itemBuilder.removeHint();
 		}
 		
-		String correctTitle = feedbackCorrectTitleEl.getValue();
-		String correctText = feedbackCorrectTextEl.getValue();
+		String correctTitle = feedbackTitleEl.getValue();
+		String correctText = feedbackTextEl.getValue();
 		if(StringHelper.containsNonWhitespace(FilterFactory.getHtmlTagsFilter().filter(correctText))) {
-			ModalFeedbackBuilder correctBuilder = itemBuilder.getCorrectFeedback();
+			ModalFeedbackBuilder correctBuilder = itemBuilder.getAnsweredFeedback();
 			if(correctBuilder == null) {
-				correctBuilder = itemBuilder.createCorrectFeedback();
+				correctBuilder = itemBuilder.createAnsweredFeedback();
 			}
 			correctBuilder.setTitle(correctTitle);
 			correctBuilder.setText(correctText);
 		} else {
-			itemBuilder.removeCorrectFeedback();
+			itemBuilder.removeAnsweredFeedback();
 		}
 
-		String incorrectTitle = feedbackIncorrectTitleEl.getValue();
-		String incorrectText = feedbackIncorrectTextEl.getValue();
-		if(StringHelper.containsNonWhitespace(FilterFactory.getHtmlTagsFilter().filter(incorrectText))) {
-			ModalFeedbackBuilder incorrectBuilder = itemBuilder.getIncorrectFeedback();
-			if(incorrectBuilder == null) {
-				incorrectBuilder = itemBuilder.createIncorrectFeedback();
+		String emptyTitle = feedbackEmptyTitleEl.getValue();
+		String emptyText = feedbackEmptyTextEl.getValue();
+		if(StringHelper.containsNonWhitespace(FilterFactory.getHtmlTagsFilter().filter(emptyText))) {
+			ModalFeedbackBuilder emptyBuilder = itemBuilder.getEmptyFeedback();
+			if(emptyBuilder == null) {
+				emptyBuilder = itemBuilder.createEmptyFeedback();
 			}
-			incorrectBuilder.setTitle(incorrectTitle);
-			incorrectBuilder.setText(incorrectText);
+			emptyBuilder.setTitle(emptyTitle);
+			emptyBuilder.setText(emptyText);
 		} else {
-			itemBuilder.removeIncorrectFeedback();
+			itemBuilder.removeEmptyFeedback();
 		}
 
 		fireEvent(ureq, new AssessmentItemEvent(AssessmentItemEvent.ASSESSMENT_ITEM_CHANGED, itemBuilder.getAssessmentItem()));
 	}
 	
+
 	@Override
 	protected void doDispose() {
 		//

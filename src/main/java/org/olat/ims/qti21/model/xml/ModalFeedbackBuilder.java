@@ -89,6 +89,11 @@ public class ModalFeedbackBuilder {
 		return findFeedbackRule(feedbackRule, QTI21Constants.EMPTY_IDENTIFIER);
 	}
 	
+	public boolean isAnsweredRule() {
+		ResponseRule feedbackRule = findFeedbackRule(modalFeedback.getIdentifier());
+		return findFeedbackRule(feedbackRule, QTI21Constants.ANSWERED_IDENTIFIER);
+	}
+	
 	public boolean isHint() {
 		return modalFeedback.getIdentifier().equals(QTI21Constants.HINT_IDENTIFIER)
 				&& modalFeedback.getOutcomeIdentifier().equals(QTI21Constants.HINT_FEEDBACKMODAL_IDENTIFIER);

@@ -67,7 +67,7 @@ public abstract class AssessmentItemBuilder {
 	private ScoreBuilder maxScoreBuilder;
 
 	protected ModalFeedbackBuilder hint;
-	protected ModalFeedbackBuilder emptyFeedback;
+	protected ModalFeedbackBuilder emptyFeedback, answeredFeedback;
 	protected ModalFeedbackBuilder correctFeedback;
 	protected ModalFeedbackBuilder incorrectFeedback;
 	private List<ModalFeedbackBuilder> additionalFeedbacks = new ArrayList<>();
@@ -130,7 +130,9 @@ public abstract class AssessmentItemBuilder {
 				incorrectFeedback = feedbackBuilder;
 			} else if(feedbackBuilder.isEmptyRule()) {
 				emptyFeedback = feedbackBuilder;
-			}  else if(feedbackBuilder.isHint()) {
+			} else if(feedbackBuilder.isAnsweredRule()) {
+				answeredFeedback = feedbackBuilder;
+			} else if(feedbackBuilder.isHint()) {
 				hint = feedbackBuilder;
 			} else {
 				additionalFeedbacks.add(feedbackBuilder);
@@ -211,6 +213,19 @@ public abstract class AssessmentItemBuilder {
 	
 	public void removeEmptyFeedback() {
 		emptyFeedback = null;
+	}
+	
+	public ModalFeedbackBuilder getAnsweredFeedback() {
+		return answeredFeedback;
+	}
+	
+	public ModalFeedbackBuilder createAnsweredFeedback() {
+		answeredFeedback = new ModalFeedbackBuilder(assessmentItem, null);
+		return answeredFeedback;
+	}
+	
+	public void removeAnsweredFeedback() {
+		answeredFeedback = null;
 	}
 	
 	public ModalFeedbackBuilder getIncorrectFeedback() {
@@ -349,7 +364,7 @@ public abstract class AssessmentItemBuilder {
 	 * @param responseRules
 	 */
 	protected void buildModalFeedbacksAndHints(List<OutcomeDeclaration> outcomeDeclarations, List<ResponseRule> responseRules) {
-		if(correctFeedback != null || incorrectFeedback != null || emptyFeedback != null
+		if(correctFeedback != null || incorrectFeedback != null || emptyFeedback != null || answeredFeedback != null
 				|| additionalFeedbacks.size() > 0) {
 			ensureFeedbackBasicOutcomeDeclaration();
 			
@@ -366,6 +381,9 @@ public abstract class AssessmentItemBuilder {
 			}
 			if(emptyFeedback != null) {
 				appendModalFeedback(emptyFeedback, QTI21Constants.EMPTY, modalFeedbacks, responseRules);
+			}
+			if(answeredFeedback != null) {
+				appendModalFeedback(answeredFeedback, QTI21Constants.ANSWERED, modalFeedbacks, responseRules);
 			}
 		}
 	}

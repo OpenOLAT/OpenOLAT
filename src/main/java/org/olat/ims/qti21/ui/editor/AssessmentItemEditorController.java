@@ -44,6 +44,7 @@ import org.olat.ims.qti21.model.xml.interactions.SingleChoiceAssessmentItemBuild
 import org.olat.ims.qti21.ui.editor.events.AssessmentItemEvent;
 import org.olat.ims.qti21.ui.editor.interactions.ChoiceScoreController;
 import org.olat.ims.qti21.ui.editor.interactions.EssayEditorController;
+import org.olat.ims.qti21.ui.editor.interactions.EssayFeedbackEditorController;
 import org.olat.ims.qti21.ui.editor.interactions.FIBEditorController;
 import org.olat.ims.qti21.ui.editor.interactions.FIBScoreController;
 import org.olat.ims.qti21.ui.editor.interactions.HotspotChoiceScoreController;
@@ -195,7 +196,7 @@ public class AssessmentItemEditorController extends BasicController {
 		scoreEditor = new ChoiceScoreController(ureq, getWindowControl(), scItemBuilder, itemRef, restrictedEdit,
 				"Test and Questionnaire Editor in Detail#details_testeditor_fragetypen_sc");
 		listenTo(scoreEditor);
-		feedbackEditor = new FeedbackEditorController(ureq, getWindowControl(), scItemBuilder, false, true, true, restrictedEdit);
+		feedbackEditor = new FeedbackEditorController(ureq, getWindowControl(), scItemBuilder, restrictedEdit);
 		listenTo(feedbackEditor);
 		
 		tabbedPane.addTab(translate("form.choice"), itemEditor);
@@ -212,7 +213,7 @@ public class AssessmentItemEditorController extends BasicController {
 		scoreEditor = new ChoiceScoreController(ureq, getWindowControl(), mcItemBuilder, itemRef, restrictedEdit,
 				"Test and Questionnaire Editor in Detail#details_testeditor_fragetypen_mc");
 		listenTo(scoreEditor);
-		feedbackEditor = new FeedbackEditorController(ureq, getWindowControl(), mcItemBuilder, false, true, true, restrictedEdit);
+		feedbackEditor = new FeedbackEditorController(ureq, getWindowControl(), mcItemBuilder, restrictedEdit);
 		listenTo(feedbackEditor);
 		
 		tabbedPane.addTab(translate("form.choice"), itemEditor);
@@ -229,7 +230,7 @@ public class AssessmentItemEditorController extends BasicController {
 		scoreEditor = new MinimalScoreController(ureq, getWindowControl(), kprimItemBuilder, itemRef, restrictedEdit,
 				"Test and Questionnaire Editor in Detail#details_testeditor_fragetypen_kprim");
 		listenTo(scoreEditor);
-		feedbackEditor = new FeedbackEditorController(ureq, getWindowControl(), kprimItemBuilder, false, true, true, restrictedEdit);
+		feedbackEditor = new FeedbackEditorController(ureq, getWindowControl(), kprimItemBuilder, restrictedEdit);
 		listenTo(feedbackEditor);
 		
 		tabbedPane.addTab(translate("form.kprim"), itemEditor);
@@ -245,7 +246,7 @@ public class AssessmentItemEditorController extends BasicController {
 		listenTo(itemEditor);
 		scoreEditor = new FIBScoreController(ureq, getWindowControl(), kprimItemBuilder, itemRef, restrictedEdit);
 		listenTo(scoreEditor);
-		feedbackEditor = new FeedbackEditorController(ureq, getWindowControl(), kprimItemBuilder, false, true, true, restrictedEdit);
+		feedbackEditor = new FeedbackEditorController(ureq, getWindowControl(), kprimItemBuilder, restrictedEdit);
 		listenTo(feedbackEditor);
 		
 		tabbedPane.addTab(translate("form.fib"), itemEditor);
@@ -261,7 +262,7 @@ public class AssessmentItemEditorController extends BasicController {
 		listenTo(itemEditor);
 		scoreEditor = new HotspotChoiceScoreController(ureq, getWindowControl(), hotspotItemBuilder, itemRef, itemFile, restrictedEdit);
 		listenTo(scoreEditor);
-		feedbackEditor = new FeedbackEditorController(ureq, getWindowControl(), hotspotItemBuilder, false, true, true, restrictedEdit);
+		feedbackEditor = new FeedbackEditorController(ureq, getWindowControl(), hotspotItemBuilder, restrictedEdit);
 		listenTo(feedbackEditor);
 		
 		tabbedPane.addTab(translate("form.hotspot"), itemEditor);
@@ -278,7 +279,7 @@ public class AssessmentItemEditorController extends BasicController {
 		scoreEditor = new MinimalScoreController(ureq, getWindowControl(), essayItemBuilder, itemRef, restrictedEdit,
 				"Test and Questionnaire Editor in Detail#details_testeditor_fragetypen_ft");
 		listenTo(scoreEditor);
-		feedbackEditor = new FeedbackEditorController(ureq, getWindowControl(), essayItemBuilder, true, false, false, restrictedEdit);
+		feedbackEditor = new EssayFeedbackEditorController(ureq, getWindowControl(), essayItemBuilder, restrictedEdit);
 		listenTo(feedbackEditor);
 		
 		tabbedPane.addTab(translate("form.essay"), itemEditor);

@@ -127,7 +127,7 @@ public class AssessmentTestSessionDAO {
 		if(entry != null) {
 			sb.append(" and session.repositoryEntry.key=:courseEntryKey");
 		} else {
-			sb.append(" and session.repositoryEntry.key is null");
+			sb.append(" and session.repositoryEntry.key=:testEntryKey");
 		}
 		
 		if(subIdent != null) {

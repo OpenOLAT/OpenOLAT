@@ -41,10 +41,12 @@ import uk.ac.ed.ph.jqtiplus.node.content.basic.Block;
 import uk.ac.ed.ph.jqtiplus.node.expression.general.BaseValue;
 import uk.ac.ed.ph.jqtiplus.node.expression.general.Variable;
 import uk.ac.ed.ph.jqtiplus.node.expression.operator.IsNull;
+import uk.ac.ed.ph.jqtiplus.node.expression.operator.Not;
 import uk.ac.ed.ph.jqtiplus.node.item.AssessmentItem;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.ExtendedTextInteraction;
 import uk.ac.ed.ph.jqtiplus.node.item.response.declaration.ResponseDeclaration;
 import uk.ac.ed.ph.jqtiplus.node.item.response.processing.ResponseCondition;
+import uk.ac.ed.ph.jqtiplus.node.item.response.processing.ResponseElseIf;
 import uk.ac.ed.ph.jqtiplus.node.item.response.processing.ResponseIf;
 import uk.ac.ed.ph.jqtiplus.node.item.response.processing.ResponseProcessing;
 import uk.ac.ed.ph.jqtiplus.node.item.response.processing.ResponseRule;
@@ -233,14 +235,37 @@ public class EssayAssessmentItemBuilder extends AssessmentItemBuilder {
 			variable.setIdentifier(ComplexReferenceIdentifier.parseString(responseIdentifier.toString()));
 			isNull.getExpressions().add(variable);
 			
-			SetOutcomeValue incorrectOutcomeValue = new SetOutcomeValue(responseIf);
-			incorrectOutcomeValue.setIdentifier(QTI21Constants.FEEDBACKBASIC_IDENTIFIER);
-			responseIf.getResponseRules().add(incorrectOutcomeValue);
+			SetOutcomeValue feedbackOutcomeValue = new SetOutcomeValue(responseIf);
+			feedbackOutcomeValue.setIdentifier(QTI21Constants.FEEDBACKBASIC_IDENTIFIER);
+			responseIf.getResponseRules().add(feedbackOutcomeValue);
 			
-			BaseValue incorrectValue = new BaseValue(incorrectOutcomeValue);
+			BaseValue incorrectValue = new BaseValue(feedbackOutcomeValue);
 			incorrectValue.setBaseTypeAttrValue(BaseType.IDENTIFIER);
 			incorrectValue.setSingleValue(QTI21Constants.EMPTY_IDENTIFIER_VALUE);
-			incorrectOutcomeValue.setExpression(incorrectValue);
+			feedbackOutcomeValue.setExpression(incorrectValue);
+		}
+		
+		ResponseElseIf responseElseIf = new ResponseElseIf(rule);
+		rule.getResponseElseIfs().add(responseElseIf);
+		
+		{
+			Not not = new Not(responseElseIf);
+			responseElseIf.getExpressions().add(not);
+			IsNull isNull = new IsNull(responseIf);
+			not.getExpressions().add(isNull);
+
+			Variable variable = new Variable(isNull);
+			variable.setIdentifier(ComplexReferenceIdentifier.parseString(responseIdentifier.toString()));
+			isNull.getExpressions().add(variable);
+			
+			SetOutcomeValue feedbackOutcomeValue = new SetOutcomeValue(responseIf);
+			feedbackOutcomeValue.setIdentifier(QTI21Constants.FEEDBACKBASIC_IDENTIFIER);
+			responseElseIf.getResponseRules().add(feedbackOutcomeValue);
+			
+			BaseValue answeredValue = new BaseValue(feedbackOutcomeValue);
+			answeredValue.setBaseTypeAttrValue(BaseType.IDENTIFIER);
+			answeredValue.setSingleValue(QTI21Constants.ANSWERED_IDENTIFIER_VALUE);
+			feedbackOutcomeValue.setExpression(answeredValue);
 		}
 	}
 
