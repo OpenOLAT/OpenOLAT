@@ -110,6 +110,7 @@ public class IdentityListCourseNodeController extends FormBasicController implem
 	private final AssessmentToolContainer toolContainer;
 	private IdentityListCourseNodeTableModel usersTableModel;
 	
+	private List<Controller> toolsCtrl;
 	private AssessedIdentityController currentIdentityCtrl;
 	
 	@Autowired
@@ -289,6 +290,7 @@ public class IdentityListCourseNodeController extends FormBasicController implem
 			AssessableCourseNode acn = (AssessableCourseNode)courseNode;
 			ICourse course = CourseFactory.loadCourse(courseEntry);
 			AssessmentToolOptions options = new AssessmentToolOptions();
+			options.setAdmin(assessmentCallback.isAdmin());
 			if(group == null) {
 				options.setIdentities(assessedIdentities);
 				fillAlternativeToAssessableIdentityList(options);
@@ -310,7 +312,7 @@ public class IdentityListCourseNodeController extends FormBasicController implem
 					}
 				}
 			}
-			
+			toolsCtrl = tools;
 		}
 		flc.contextPut("toolCmpNames", toolCmpNames);
 	}
@@ -413,6 +415,10 @@ public class IdentityListCourseNodeController extends FormBasicController implem
 				stackPanel.popController(currentIdentityCtrl);
 			} else if(event == Event.CANCELLED_EVENT) {
 				stackPanel.popController(currentIdentityCtrl);
+			}
+		} else if(toolsCtrl != null && toolsCtrl.contains(source)) {
+			if(event == Event.CHANGED_EVENT) {
+				updateModel(ureq, null, null, null);
 			}
 		}
 		super.event(ureq, source, event);

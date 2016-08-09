@@ -183,7 +183,7 @@ public class AssessmentResultController extends FormBasicController {
 		
 		Results r = new Results(false, type.getCssClass());
 		r.setTitle(node.getSectionPartTitle());
-		r.setSessionStatus(this.translate(""));
+		r.setSessionStatus("");//init
 		
 		ItemSessionState sessionState = testSessionState.getItemSessionStates().get(testPlanNodeKey);
 		if(sessionState != null) {

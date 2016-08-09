@@ -854,6 +854,8 @@ public class FIBAssessmentItemBuilder extends AssessmentItemBuilder {
 		public void setScore(Double score) {
 			this.score = score;
 		}
+		
+		public abstract boolean match(String response);
 	}
 	
 	public static class NumericalEntry extends AbstractEntry {
@@ -902,6 +904,19 @@ public class FIBAssessmentItemBuilder extends AssessmentItemBuilder {
 
 		public void setToleranceMode(ToleranceMode toleranceMode) {
 			this.toleranceMode = toleranceMode;
+		}
+
+		@Override
+		public boolean match(String response) {
+			try {
+				double firstNumber = Double.parseDouble(response);
+				return toleranceMode.isEqual(firstNumber, solution,
+						lowerTolerance, upperTolerance,
+				        true, true);
+			} catch (Exception e) {
+				log.error("", e);
+				return false;
+			}
 		}
 	}
 	
@@ -1000,6 +1015,37 @@ public class FIBAssessmentItemBuilder extends AssessmentItemBuilder {
 					textEntryAlternativeIt.remove();
 				}
 			}
+		}
+		
+		/**
+		 * Quick method to find if a string match the correct responses of
+		 * the text entry.
+		 * 
+		 * @param response
+		 * @return
+		 */
+		public boolean match(String response) {
+			if(match(response, solution)) {
+				return true;
+			}
+			
+			for(TextEntryAlternative textEntryAlternative:alternatives) {
+				if(match(response, textEntryAlternative.getAlternative())) {
+					return true;
+				}
+			}
+			return false;
+		}
+
+		private boolean match(String response, String alternative) {
+			if(caseSensitive) {
+				if(alternative.equals(response)) {
+					return true;
+				}
+			} else if(alternative.equalsIgnoreCase(response)) {
+				return true;
+			}
+			return false;
 		}
 	}
 	

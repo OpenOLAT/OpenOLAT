@@ -115,6 +115,16 @@ public interface QTI21Service {
 	public boolean needManualCorrection(ResolvedAssessmentTest resolvedAssessmentTest);
 	
 	/**
+	 * 
+	 * @param identities
+	 * @param testEntry
+	 * @param entry
+	 * @param subIdent
+	 * @return
+	 */
+	public boolean deleteAssessmentTestSession(List<Identity> identities, RepositoryEntryRef testEntry, RepositoryEntryRef entry, String subIdent);
+	
+	/**
 	 * Remove all test sessions in author mode, e.g. after an assessment test
 	 * was changed.
 	 * 

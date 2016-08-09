@@ -33,10 +33,23 @@ import org.olat.group.BusinessGroup;
  */
 public class AssessmentToolOptions {
 	
+	private boolean admin;
 	private BusinessGroup group;
 	private List<Identity> identities;
 	private AlternativeToIdentities alternativeToIdentities;
 	
+	public AssessmentToolOptions() {
+		//
+	}
+	
+	public boolean isAdmin() {
+		return admin;
+	}
+
+	public void setAdmin(boolean admin) {
+		this.admin = admin;
+	}
+
 	public BusinessGroup getGroup() {
 		return group;
 	}

@@ -24,19 +24,26 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.DoubleAdder;
 
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
+import org.olat.ims.qti21.model.xml.interactions.FIBAssessmentItemBuilder;
+import org.olat.ims.qti21.model.xml.interactions.FIBAssessmentItemBuilder.AbstractEntry;
+import org.olat.ims.qti21.model.xml.interactions.FIBAssessmentItemBuilder.NumericalEntry;
+import org.olat.ims.qti21.model.xml.interactions.FIBAssessmentItemBuilder.TextEntry;
 
 import uk.ac.ed.ph.jqtiplus.node.item.AssessmentItem;
 import uk.ac.ed.ph.jqtiplus.node.item.CorrectResponse;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.ChoiceInteraction;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.Interaction;
-import uk.ac.ed.ph.jqtiplus.node.item.response.declaration.MapEntry;
+import uk.ac.ed.ph.jqtiplus.node.item.interaction.TextEntryInteraction;
 import uk.ac.ed.ph.jqtiplus.node.item.response.declaration.ResponseDeclaration;
 import uk.ac.ed.ph.jqtiplus.node.shared.FieldValue;
 import uk.ac.ed.ph.jqtiplus.types.Identifier;
+import uk.ac.ed.ph.jqtiplus.value.BaseType;
 import uk.ac.ed.ph.jqtiplus.value.Cardinality;
 import uk.ac.ed.ph.jqtiplus.value.DirectedPairValue;
 import uk.ac.ed.ph.jqtiplus.value.IdentifierValue;
@@ -46,7 +53,6 @@ import uk.ac.ed.ph.jqtiplus.value.OrderedValue;
 import uk.ac.ed.ph.jqtiplus.value.PairValue;
 import uk.ac.ed.ph.jqtiplus.value.PointValue;
 import uk.ac.ed.ph.jqtiplus.value.SingleValue;
-import uk.ac.ed.ph.jqtiplus.value.StringValue;
 import uk.ac.ed.ph.jqtiplus.value.Value;
 
 /**
@@ -323,53 +329,17 @@ public class CorrectResponsesUtil {
 		return correctAnswers;
 	}
 	
-	public static final TextEntry getCorrectTextResponses(AssessmentItem assessmentItem, Interaction interaction) {
+	public static final AbstractEntry getCorrectTextResponses(AssessmentItem assessmentItem, TextEntryInteraction interaction) {
 		ResponseDeclaration responseDeclaration = assessmentItem.getResponseDeclaration(interaction.getResponseIdentifier());
-		
-		boolean caseSensitive = true;
-		List<String> alternatives = new ArrayList<>();
-		List<MapEntry> mapEntries = responseDeclaration.getMapping().getMapEntries();
-		for(MapEntry mapEntry:mapEntries) {
-			SingleValue mapKey = mapEntry.getMapKey();
-			if(mapKey instanceof StringValue) {
-				String value = ((StringValue)mapKey).stringValue();
-				alternatives.add(value);
-			}
-			
-			caseSensitive &= mapEntry.getCaseSensitive();
+		if(responseDeclaration.hasBaseType(BaseType.STRING) && responseDeclaration.hasCardinality(Cardinality.SINGLE)) {
+			TextEntry textEntry = new TextEntry(interaction);
+			FIBAssessmentItemBuilder.extractTextEntrySettingsFromResponseDeclaration(textEntry, responseDeclaration, new AtomicInteger(), new DoubleAdder());
+			return textEntry;
+		} else if(responseDeclaration.hasBaseType(BaseType.FLOAT) && responseDeclaration.hasCardinality(Cardinality.SINGLE)) {
+			NumericalEntry numericalEntry = new NumericalEntry(interaction);
+			FIBAssessmentItemBuilder.extractNumericalEntrySettings(assessmentItem, numericalEntry, responseDeclaration, new AtomicInteger(), new DoubleAdder());
+			return numericalEntry;
 		}
-		return new TextEntry(alternatives, caseSensitive);
-	}
-	
-	public static class TextEntry {
-		
-		private boolean caseSensitive;
-		private List<String> alternatives;
-		
-		public TextEntry(List<String> alternatives, boolean caseSensitive) {
-			this.alternatives = alternatives;
-			this.caseSensitive = caseSensitive;
-		}
-		
-		public boolean isCaseSensitive() {
-			return caseSensitive;
-		}
-
-		public List<String> getAlternatives() {
-			return alternatives;
-		}
-		
-		public boolean isCorrect(String response) {
-			for(String alternative:alternatives) {
-				if(caseSensitive) {
-					if(alternative.equals(response)) {
-						return true;
-					}
-				} else if(alternative.equalsIgnoreCase(response)) {
-					return true;
-				}
-			}
-			return false;
-		}
+		return null;
 	}
 }

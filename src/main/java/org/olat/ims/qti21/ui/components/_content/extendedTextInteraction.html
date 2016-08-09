@@ -14,7 +14,6 @@
 		$r.translate("error.input.invalid", $r.translate("error.input.invalid.${responseDeclaration.cardinality.toQtiString()}"))
 	</div>
 	#end
-      
 	#if($r.isInvalidResponse($interaction.responseIdentifier))
 		<div class="o_error badResponse">
 		## This will happen if either a pattern is wrong or the wrong number of choices were made

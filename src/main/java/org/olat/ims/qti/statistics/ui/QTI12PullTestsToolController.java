@@ -127,7 +127,7 @@ public class QTI12PullTestsToolController extends BasicController implements Act
 		int count = 0;
 		StringBuilder fullnames = new StringBuilder(256);
 		for(Identity assessedIdentity:assessedIdentities) {
-			if(courseNode.isTestRunning(assessedIdentity, courseEnv)) {
+			if(courseNode.isQTI12TestRunning(assessedIdentity, courseEnv)) {
 				if(fullnames.length() > 0) fullnames.append(", ");
 				String name = userManager.getUserDisplayName(assessedIdentity);
 				if(StringHelper.containsNonWhitespace(name)) {
@@ -153,7 +153,7 @@ public class QTI12PullTestsToolController extends BasicController implements Act
 	private void doRetrieveTests() {
 		ICourse course = CourseFactory.loadCourse(courseEnv.getCourseResourceableId());
 		for(Identity assessedIdentity:assessedIdentities) {
-			if(courseNode.isTestRunning(assessedIdentity, courseEnv)) {
+			if(courseNode.isQTI12TestRunning(assessedIdentity, courseEnv)) {
 				IQRetrievedEvent retrieveEvent = new IQRetrievedEvent(assessedIdentity, courseEnv.getCourseResourceableId(), courseNode.getIdent());
 				CoordinatorManager.getInstance().getCoordinator().getEventBus().fireEventToListenersOf(retrieveEvent, retrieveEvent);
 				retrieveTest(assessedIdentity, course);

@@ -32,9 +32,11 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
@@ -77,6 +79,7 @@ import org.olat.ims.qti21.model.audit.CandidateEvent;
 import org.olat.ims.qti21.model.audit.CandidateItemEventType;
 import org.olat.ims.qti21.model.audit.CandidateTestEventType;
 import org.olat.modules.assessment.AssessmentEntry;
+import org.olat.modules.assessment.manager.AssessmentEntryDAO;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
 import org.springframework.beans.factory.DisposableBean;
@@ -164,6 +167,8 @@ public class QTI21ServiceImpl implements QTI21Service, InitializingBean, Disposa
 	private AssessmentResponseDAO testResponseDao;
 	@Autowired
 	private AssessmentTestMarksDAO testMarksDao;
+	@Autowired
+	private AssessmentEntryDAO assessmentEntryDao;
 	@Autowired
 	private QTI21Module qtiModule;
 	@Autowired
@@ -396,6 +401,27 @@ public class QTI21ServiceImpl implements QTI21Service, InitializingBean, Disposa
 				return null;
 			}
 		});
+	}
+	
+	@Override
+	public boolean deleteAssessmentTestSession(List<Identity> identities, RepositoryEntryRef testEntry, RepositoryEntryRef entry, String subIdent) {
+		Set<AssessmentEntry> entries = new HashSet<>();
+		for(Identity identity:identities) {
+			List<AssessmentTestSession> sessions = testSessionDao.getTestSessions(testEntry, entry, subIdent, identity);
+			for(AssessmentTestSession session:sessions) {
+				if(session.getAssessmentEntry() != null) {
+					entries.add(session.getAssessmentEntry());
+				}
+				File fileStorage = testSessionDao.getSessionStorage(session);
+				testSessionDao.deleteTestSession(session);
+				FileUtils.deleteDirsAndFiles(fileStorage, true, true);
+			}
+		}
+		
+		for(AssessmentEntry assessmentEntry:entries) {
+			assessmentEntryDao.resetAssessmentEntry(assessmentEntry);
+		}
+		return true;
 	}
 
 	@Override

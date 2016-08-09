@@ -814,7 +814,13 @@ public abstract class AssessmentObjectComponentRenderer extends DefaultComponent
 		if(StringHelper.containsNonWhitespace(checkJavascript)) {
 			sb.append(" onchange=\"").append(checkJavascript).append("\">");
 		}
-		if(StringHelper.containsNonWhitespace(responseInputString)) {
+		
+		if(renderer.isSolutionMode()) {
+			String placeholder = interaction.getPlaceholderText();
+			if(StringHelper.containsNonWhitespace(placeholder)) {
+				sb.append(placeholder);
+			}
+		} else if( StringHelper.containsNonWhitespace(responseInputString)) {
 			sb.append(responseInputString);
 		}
 		sb.append("</textarea>");

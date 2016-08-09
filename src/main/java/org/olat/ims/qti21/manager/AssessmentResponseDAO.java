@@ -23,7 +23,10 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 
+import javax.persistence.TypedQuery;
+
 import org.olat.core.commons.persistence.DB;
+import org.olat.core.util.StringHelper;
 import org.olat.ims.qti21.AssessmentItemSession;
 import org.olat.ims.qti21.AssessmentResponse;
 import org.olat.ims.qti21.AssessmentTestSession;
@@ -120,20 +123,27 @@ public class AssessmentResponseDAO {
 		  .append(" inner join fetch testSession.assessmentEntry assessmentEntry")
 		  .append(" inner join assessmentEntry.identity as ident")
 		  .append(" inner join ident.user as usr")
-		  .append(" where testSession.repositoryEntry.key=:repoEntryKey")
-		  .append("  and testSession.testEntry.key=:testEntryKey")
-		  .append("  and testSession.subIdent=:subIdent")
+		  .append(" where testSession.testEntry.key=:testEntryKey")
 		  .append("  and testSession.terminationTime is not null");
+		if(courseEntry != null) {
+			sb.append(" and testSession.repositoryEntry.key=:repoEntryKey");
+		}
+		if(StringHelper.containsNonWhitespace(subIdent)) {
+			sb.append(" and testSession.subIdent=:subIdent");
+		}
 
 		//need to be anonymized
 		sb.append(" order by usr.lastName, testSession.key, itemSession.key");
 		
-		return dbInstance.getCurrentEntityManager()
+		TypedQuery<AssessmentResponse> query = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), AssessmentResponse.class)
-				.setParameter("repoEntryKey", courseEntry.getKey())
-				.setParameter("testEntryKey", testEntry.getKey())
-				.setParameter("subIdent", subIdent)
-				.getResultList();
+				.setParameter("testEntryKey", testEntry.getKey());
+		if(courseEntry != null) {
+			query.setParameter("repoEntryKey", courseEntry.getKey());
+		}
+		if(StringHelper.containsNonWhitespace(subIdent)) {
+			query.setParameter("subIdent", subIdent);
+		}
+		return query.getResultList();
 	}
-
 }

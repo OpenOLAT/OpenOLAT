@@ -390,6 +390,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 			initTools(toolsDropdown, course, uce);
 			initSettingsTools(settingsDropdown);
 			initEditionTools(settingsDropdown);
+			initDeleteTools(settingsDropdown, true);
 		}
 		initToolsMyCourse(course, uce);
 		initGeneralTools(course);
@@ -546,7 +547,40 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 			}
 		}
 	}
-	
+
+	@Override
+	protected void initDeleteTools(Dropdown settingsDropdown, boolean needSpacer) {
+		RepositoryEntry re = getRepositoryEntry();
+		boolean closeManged = RepositoryEntryManagedFlag.isManaged(re, RepositoryEntryManagedFlag.close);
+		
+		if(reSecurity.isEntryAdmin()) {
+			boolean deleteManaged = RepositoryEntryManagedFlag.isManaged(re, RepositoryEntryManagedFlag.delete);
+			if(settingsDropdown.size() > 0 && !deleteManaged) {
+				settingsDropdown.addComponent(new Spacer("close-delete"));
+			}
+
+			if(!closeManged || !deleteManaged) {
+				// If a resource is closable (currently only course) and
+				// deletable (currently all resources) we offer those two
+				// actions in a separate page, unless both are managed
+				// operations. In that case we don't show anything at all.				
+				// If only one of the two actions are managed, we go to the
+				// separate page as well and show only the relevant action
+				// there.
+				lifeCycleChangeLink = LinkFactory.createToolLink("lifeCycleChange", translate("details.lifecycle.change"), this, "o_icon o_icon-fw o_icon_lifecycle");
+				settingsDropdown.addComponent(lifeCycleChangeLink);
+			} else {				
+				if(!deleteManaged) {
+					String type = translate(handler.getSupportedType());
+					String deleteTitle = translate("details.delete.alt", new String[]{ type });
+					deleteLink = LinkFactory.createToolLink("delete", deleteTitle, this, "o_icon o_icon-fw o_icon_delete_item");
+					deleteLink.setElementCssClass("o_sel_repo_close");
+					settingsDropdown.addComponent(deleteLink);
+				}
+			}
+		}
+	}
+
 	private void initToolsMyCourse(ICourse course, UserCourseEnvironmentImpl uce) {
 		boolean assessmentLock = isAssessmentLock();
 

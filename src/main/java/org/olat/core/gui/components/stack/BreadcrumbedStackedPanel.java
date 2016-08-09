@@ -201,6 +201,11 @@ public class BreadcrumbedStackedPanel extends Panel implements StackedPanel, Bre
 		BusinessControlFactory.getInstance().addToHistory(ureq, wControl);
 	}
 	
+	public int size() {
+		return stack == null ? 0 : stack.size();
+	}
+	
+	@Override
 	public Controller getRootController() {
 		Controller controller = null;
 		if(stack.size() > 0) {

@@ -29,7 +29,7 @@ import org.olat.course.nodes.CourseNodeFactory;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class StatisticResourceNode  extends GenericTreeNode {
+public class StatisticResourceNode extends GenericTreeNode {
 	private static final long serialVersionUID = -1528483744004133623L;
 	private final CourseNode courseNode;
 	private final StatisticResourceResult result;

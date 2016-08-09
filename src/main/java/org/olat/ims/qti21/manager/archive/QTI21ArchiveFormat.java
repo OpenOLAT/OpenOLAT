@@ -20,6 +20,7 @@
 package org.olat.ims.qti21.manager.archive;
 
 import java.io.File;
+import java.io.IOException;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -28,7 +29,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
+import org.apache.commons.io.IOUtils;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.translator.Translator;
@@ -40,6 +44,7 @@ import org.olat.core.logging.Tracing;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
+import org.olat.core.util.io.ShieldOutputStream;
 import org.olat.core.util.openxml.OpenXMLWorkbook;
 import org.olat.core.util.openxml.OpenXMLWorkbookResource;
 import org.olat.core.util.openxml.OpenXMLWorksheet;
@@ -59,7 +64,6 @@ import org.olat.ims.qti21.manager.QTI21ServiceImpl;
 import org.olat.ims.qti21.manager.archive.interactions.AssociateInteractionArchive;
 import org.olat.ims.qti21.manager.archive.interactions.ChoiceInteractionArchive;
 import org.olat.ims.qti21.manager.archive.interactions.DefaultInteractionArchive;
-import org.olat.ims.qti21.manager.archive.interactions.NoOutputInteractionArchive;
 import org.olat.ims.qti21.manager.archive.interactions.ExtendedTextInteractionArchive;
 import org.olat.ims.qti21.manager.archive.interactions.GapMatchInteractionArchive;
 import org.olat.ims.qti21.manager.archive.interactions.GraphicAssociateInteractionArchive;
@@ -71,6 +75,7 @@ import org.olat.ims.qti21.manager.archive.interactions.InlineChoiceInteractionAr
 import org.olat.ims.qti21.manager.archive.interactions.InteractionArchive;
 import org.olat.ims.qti21.manager.archive.interactions.MatchInteractionArchive;
 import org.olat.ims.qti21.manager.archive.interactions.MediaInteractionArchive;
+import org.olat.ims.qti21.manager.archive.interactions.NoOutputInteractionArchive;
 import org.olat.ims.qti21.manager.archive.interactions.OrderInteractionArchive;
 import org.olat.ims.qti21.manager.archive.interactions.PositionObjectInteractionArchive;
 import org.olat.ims.qti21.manager.archive.interactions.SelectPointInteractionArchive;
@@ -173,9 +178,55 @@ public class QTI21ArchiveFormat {
 	public boolean hasResults(RepositoryEntry courseEntry, String subIdent, RepositoryEntry testEntry) {
 		return responseDao.hasResponses(courseEntry, subIdent, testEntry);
 	}
+
+	public void export(RepositoryEntry courseEntry, String subIdent, RepositoryEntry testEntry, ZipOutputStream exportStream) {
+		FileResourceManager frm = FileResourceManager.getInstance();
+		File unzippedDirRoot = frm.unzipFileResource(testEntry.getOlatResource());
+		resolvedAssessmentTest = qtiService.loadAndResolveAssessmentTest(unzippedDirRoot, false);
+		
+		CourseNode courseNode = CourseFactory.loadCourse(courseEntry).getRunStructure().getNode(subIdent);
+		String label = courseNode.getType() + "_"
+				+ StringHelper.transformDisplayNameToFileSystemName(courseNode.getShortName())
+				+ "_" + Formatter.formatDatetimeFilesystemSave(new Date(System.currentTimeMillis()))
+				+ ".xlsx";
+		
+		export(courseEntry, subIdent, testEntry, label, exportStream);
+	}
+	
+	public void export(RepositoryEntry testEntry, ZipOutputStream exportStream) {
+		FileResourceManager frm = FileResourceManager.getInstance();
+		File unzippedDirRoot = frm.unzipFileResource(testEntry.getOlatResource());
+		resolvedAssessmentTest = qtiService.loadAndResolveAssessmentTest(unzippedDirRoot, false);
+		
+		String archiveName = "qti21test_"
+				+ StringHelper.transformDisplayNameToFileSystemName(testEntry.getDisplayname())
+				+ "_" + Formatter.formatDatetimeFilesystemSave(new Date(System.currentTimeMillis())) + ".xlsx";
+		export(null, null, testEntry, archiveName, exportStream);
+	}
+	
+	private void export(RepositoryEntry courseEntry, String subIdent, RepositoryEntry testEntry, String filename, ZipOutputStream exportStream) {
+		//content
+		final List<AssessmentResponse> responses = responseDao.getResponse(courseEntry, subIdent, testEntry);
+		try {
+			exportStream.putNextEntry(new ZipEntry(filename));
+			OpenXMLWorkbook workbook = new OpenXMLWorkbook(new ShieldOutputStream(exportStream), 1);
+			
+			//headers
+			OpenXMLWorksheet exportSheet = workbook.nextWorksheet();
+			exportSheet.setHeaderRows(2);
+			writeHeaders_1(exportSheet, workbook);
+			writeHeaders_2(exportSheet, workbook);
+			writeData(responses, exportSheet, workbook);
+			
+			IOUtils.closeQuietly(workbook);
+
+			exportStream.closeEntry();
+		} catch (IOException e) {
+			log.error("", e);
+		}
+	}
 	
 	public MediaResource export(RepositoryEntry courseEntry, String subIdent, RepositoryEntry testEntry) {
-		
 		FileResourceManager frm = FileResourceManager.getInstance();
 		File unzippedDirRoot = frm.unzipFileResource(testEntry.getOlatResource());
 		resolvedAssessmentTest = qtiService.loadAndResolveAssessmentTest(unzippedDirRoot, false);

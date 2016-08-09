@@ -43,6 +43,7 @@ import org.olat.ims.qti.statistics.QTIType;
 import org.olat.ims.qti.statistics.model.StatisticAssessment;
 import org.olat.ims.qti21.QTI21Service;
 import org.olat.ims.qti21.QTI21StatisticsManager;
+import org.olat.ims.qti21.model.QTI21QuestionType;
 import org.olat.ims.qti21.model.QTI21StatisticSearchParams;
 import org.olat.repository.RepositoryEntry;
 
@@ -76,6 +77,10 @@ public class QTI21StatisticResourceResult implements StatisticResourceResult {
 	private final QTI21Service qtiService;
 	private final QTI21StatisticsManager qtiStatisticsManager;
 
+	public QTI21StatisticResourceResult(RepositoryEntry testEntry, QTI21StatisticSearchParams searchParams) {
+		this(testEntry, null, null, searchParams);
+	}
+	
 	public QTI21StatisticResourceResult(RepositoryEntry testEntry, RepositoryEntry courseEntry,
 			QTICourseNode courseNode, QTI21StatisticSearchParams searchParams) {
 		
@@ -119,7 +124,39 @@ public class QTI21StatisticResourceResult implements StatisticResourceResult {
 		URI itemUri = resolvedAssessmentTest.getSystemIdByItemRefMap().get(itemRef);
 		return new File(itemUri);
 	}
+	
+	/**
+	 * Return the tree model for a test learn resource.
+	 * 
+	 * @return
+	 */
+	public TreeModel getTreeModel() {
+		GenericTreeModel treeModel = new GenericTreeModel();
+		GenericTreeNode rootTreeNode = new GenericTreeNode();
+		treeModel.setRootNode(rootTreeNode);
+		
+		FileResourceManager frm = FileResourceManager.getInstance();
+		File unzippedDirRoot = frm.unzipFileResource(testEntry.getOlatResource());
+		resolvedAssessmentTest = qtiService.loadAndResolveAssessmentTest(unzippedDirRoot, false);
+		AssessmentTest test = resolvedAssessmentTest.getTestLookup().getRootNodeHolder().getRootNode();
+		
+		rootTreeNode.setTitle(test.getTitle());
+		rootTreeNode.setUserObject(test);
+		rootTreeNode.setIconCssClass("o_icon o_icon-lg o_qtiassessment_icon");
+		
+		//list all test parts
+		List<TestPart> parts = test.getChildAbstractParts();
+		int counter = 0;
+		for(TestPart part:parts) {
+			buildRecursively(part, ++counter, rootTreeNode);
+		}
+		return treeModel;
+	}
 
+	/**
+	 * Return the tree model for a course and a specific test.
+	 * 
+	 */
 	@Override
 	public TreeModel getSubTreeModel() {
 		GenericTreeModel subTreeModel = new GenericTreeModel();
@@ -191,7 +228,13 @@ public class QTI21StatisticResourceResult implements StatisticResourceResult {
 		if(ex == null) {
 			AssessmentItem assessmentItem = resolvedAssessmentItem.getItemLookup().getRootNodeHolder().getRootNode();
 			itemNode.setTitle(assessmentItem.getTitle());
-			itemNode.setIconCssClass("o_icon o_mi_qtisc");
+			
+			QTI21QuestionType type = QTI21QuestionType.getType(assessmentItem);
+			if(type != null) {
+				itemNode.setIconCssClass("o_icon ".concat(type.getCssClass()));
+			} else {
+				itemNode.setIconCssClass("o_icon o_mi_qtiunkown");
+			}
 			itemNode.setUserObject(itemRef);
 			parentNode.addChild(itemNode);
 		}
@@ -201,40 +244,52 @@ public class QTI21StatisticResourceResult implements StatisticResourceResult {
 
 	@Override
 	public Controller getController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel, TreeNode selectedNode) {
-		return getController(ureq, wControl, stackPanel, selectedNode, false);
+		return getController(ureq, wControl, selectedNode, false);
 	}
 	
-	public Controller getController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
+	public Controller getController(UserRequest ureq, WindowControl wControl,
 			TreeNode selectedNode, boolean printMode) {	
 		if(selectedNode instanceof StatisticResourceNode) {
-			return createAssessmentController(ureq, wControl, stackPanel, printMode);
+			return createAssessmentController(ureq, wControl, printMode);
 		} else {
 			Object uobject = selectedNode.getUserObject();
+			
 			if(uobject instanceof AssessmentItemRef) {
 				TreeNode parentNode = (TreeNode)selectedNode.getParent();
 				String sectionTitle = parentNode.getTitle();
-				return createAssessmentItemController(ureq, wControl, stackPanel,
+				return createAssessmentItemController(ureq, wControl,
 						(AssessmentItemRef)uobject, sectionTitle, printMode);
+			} else if(uobject instanceof AssessmentTest) {
+				return createAssessmentController(ureq, wControl, printMode);
 			}
 		}
 		return null;
 	}
 	
-	private Controller createAssessmentController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
+	private Controller createAssessmentController(UserRequest ureq, WindowControl wControl,
 			boolean printMode) {
-		Controller ctrl = new QTI21AssessmentTestStatisticsController(ureq, wControl, this, printMode);
-		CourseNodeConfiguration cnConfig = CourseNodeFactory.getInstance()
-				.getCourseNodeConfigurationEvenForDisabledBB(courseNode.getType());
-		String iconCssClass = cnConfig.getIconCSSClass();
-		return TitledWrapperHelper.getWrapper(ureq, wControl, ctrl, courseNode, iconCssClass);
+		Controller ctrl;
+		if(courseNode == null) {
+			ctrl = new QTI21AssessmentTestStatisticsController(ureq, wControl, testEntry, printMode);
+		} else {
+			ctrl = new QTI21AssessmentTestStatisticsController(ureq, wControl, this, printMode);
+			CourseNodeConfiguration cnConfig = CourseNodeFactory.getInstance()
+					.getCourseNodeConfigurationEvenForDisabledBB(courseNode.getType());
+			String iconCssClass = cnConfig.getIconCSSClass();
+			ctrl = TitledWrapperHelper.getWrapper(ureq, wControl, ctrl, courseNode, iconCssClass);
+		}
+		return ctrl;
 	}
 	
-	private Controller createAssessmentItemController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
+	private Controller createAssessmentItemController(UserRequest ureq, WindowControl wControl,
 			AssessmentItemRef assessmentItemRef, String sectionTitle, boolean printMode) {
 		ResolvedAssessmentItem resolvedAssessmentItem = resolvedAssessmentTest.getResolvedAssessmentItem(assessmentItemRef);
 		AssessmentItem assessmentItem = resolvedAssessmentItem.getItemLookup().getRootNodeHolder().getRootNode();
 		Controller ctrl = new QTI21AssessmentItemStatisticsController(ureq, wControl, assessmentItemRef, assessmentItem, sectionTitle, this, printMode);
 		String iconCssClass = "o_mi_qtisc";
-		return TitledWrapperHelper.getWrapper(ureq, wControl, ctrl, courseNode, iconCssClass);
+		if(courseNode != null) {
+			ctrl = TitledWrapperHelper.getWrapper(ureq, wControl, ctrl, courseNode, iconCssClass);
+		}
+		return ctrl;
 	}
 }

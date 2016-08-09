@@ -141,7 +141,7 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 	private LockResult lockResult;
 	private boolean assessmentLock;// by Assessment mode
 	private AssessmentMode assessmentMode;
-	private final RepositoryHandler handler;
+	protected final RepositoryHandler handler;
 	private AtomicBoolean launchDateUpdated = new AtomicBoolean(false);
 	
 	private HistoryPoint launchedFromPoint;
@@ -155,7 +155,7 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 	@Autowired
 	protected RepositoryModule repositoryModule;
 	@Autowired
-	private RepositoryService repositoryService;
+	protected RepositoryService repositoryService;
 	@Autowired
 	protected RepositoryManager repositoryManager;
 	@Autowired
@@ -299,6 +299,7 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 		initRuntimeTools(toolsDropdown);
 		initSettingsTools(settingsDropdown);
 		initEditionTools(settingsDropdown);
+		initDeleteTools(settingsDropdown, true);
 
 		detailsLink = LinkFactory.createToolLink("details", translate("details.header"), this, "o_sel_repo_details");
 		detailsLink.setIconLeftCSS("o_icon o_icon-fw o_icon_details");
@@ -385,34 +386,21 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 				settingsDropdown.addComponent(downloadLink);
 			}
 		}
-		
-		boolean canClose = OresHelper.isOfType(re.getOlatResource(), CourseModule.class);
-		boolean closeManged = RepositoryEntryManagedFlag.isManaged(re, RepositoryEntryManagedFlag.close);
-		
+	}
+	
+	protected void initDeleteTools(Dropdown settingsDropdown, boolean needSpacer) {
 		if(reSecurity.isEntryAdmin()) {
 			boolean deleteManaged = RepositoryEntryManagedFlag.isManaged(re, RepositoryEntryManagedFlag.delete);
-			if(settingsDropdown.size() > 0 && (canClose || !deleteManaged)) {
+			if(needSpacer && settingsDropdown.size() > 0 && !deleteManaged) {
 				settingsDropdown.addComponent(new Spacer("close-delete"));
 			}
-
-			if(canClose && (!closeManged || !deleteManaged)) {
-				// If a resource is closable (currently only course) and
-				// deletable (currently all resources) we offer those two
-				// actions in a separate page, unless both are managed
-				// operations. In that case we don't show anything at all.				
-				// If only one of the two actions are managed, we go to the
-				// separate page as well and show only the relevant action
-				// there.
-				lifeCycleChangeLink = LinkFactory.createToolLink("lifeCycleChange", translate("details.lifecycle.change"), this, "o_icon o_icon-fw o_icon_lifecycle");
-				settingsDropdown.addComponent(lifeCycleChangeLink);
-			} else {				
-				if(!deleteManaged) {
-					String type = translate(handler.getSupportedType());
-					String deleteTitle = translate("details.delete.alt", new String[]{ type });
-					deleteLink = LinkFactory.createToolLink("delete", deleteTitle, this, "o_icon o_icon-fw o_icon_delete_item");
-					deleteLink.setElementCssClass("o_sel_repo_close");
-					settingsDropdown.addComponent(deleteLink);
-				}
+	
+			if(!deleteManaged) {
+				String type = translate(handler.getSupportedType());
+				String deleteTitle = translate("details.delete.alt", new String[]{ type });
+				deleteLink = LinkFactory.createToolLink("delete", deleteTitle, this, "o_icon o_icon-fw o_icon_delete_item");
+				deleteLink.setElementCssClass("o_sel_repo_close");
+				settingsDropdown.addComponent(deleteLink);
 			}
 		}
 	}
@@ -904,7 +892,7 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 	
 	protected void launchContent(UserRequest ureq, RepositoryEntrySecurity security) {
 		if(corrupted) {
-			runtimeController = new CorruptedCourseController(ureq, this.getWindowControl());
+			runtimeController = new CorruptedCourseController(ureq, getWindowControl());
 			listenTo(runtimeController);
 			toolbarPanel.rootController(re.getDisplayname(), runtimeController);
 		} else if(security.canLaunch()) {

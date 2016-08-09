@@ -27,6 +27,7 @@ import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
 
 import uk.ac.ed.ph.jqtiplus.node.content.basic.Block;
+import uk.ac.ed.ph.jqtiplus.node.content.basic.Flow;
 import uk.ac.ed.ph.jqtiplus.node.content.variable.PrintedVariable;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.Interaction;
 import uk.ac.ed.ph.jqtiplus.resolution.ResolvedAssessmentItem;
@@ -60,6 +61,8 @@ public class InteractionResultComponentRenderer extends AssessmentObjectComponen
 		
 		if(interaction instanceof Block) {
 			renderBlock(assessmentRenderer, sb, cmp, resolvedAssessmentItem, itemSessionState, (Block)interaction, ubu, translator);
+		} else if(interaction instanceof Flow) {
+			renderFlow(assessmentRenderer, sb, cmp, resolvedAssessmentItem, itemSessionState, (Flow)interaction, ubu, translator);
 		}
 	}
 

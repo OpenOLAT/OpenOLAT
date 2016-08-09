@@ -117,6 +117,39 @@ public class AssessmentTestSessionDAO {
 		return lastSessions == null || lastSessions.isEmpty() ? null : lastSessions.get(0);
 	}
 	
+	public List<AssessmentTestSession> getTestSessions(RepositoryEntryRef testEntry,
+			RepositoryEntryRef entry, String subIdent, IdentityRef identity) {
+		
+		StringBuilder sb = new StringBuilder();
+		sb.append("select session from qtiassessmenttestsession session")
+		  .append(" left join fetch session.assessmentEntry asEntry")
+		  .append(" where session.testEntry.key=:testEntryKey and session.identity.key=:identityKey");
+		if(entry != null) {
+			sb.append(" and session.repositoryEntry.key=:courseEntryKey");
+		} else {
+			sb.append(" and session.repositoryEntry.key is null");
+		}
+		
+		if(subIdent != null) {
+			sb.append(" and session.subIdent=:courseSubIdent");
+		} else {
+			sb.append(" and session.subIdent is null");
+		}
+		
+		TypedQuery<AssessmentTestSession> query = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), AssessmentTestSession.class)
+				.setParameter("testEntryKey", testEntry.getKey())
+				.setParameter("identityKey", identity.getKey());
+		if(entry != null) {
+			query.setParameter("courseEntryKey", entry.getKey());
+		}
+		if(subIdent != null) {
+			query.setParameter("courseSubIdent", subIdent);
+		}
+		
+		return query.getResultList();
+	}
+	
 	/**
 	 * Create a folder for a session in bcroot.
 	 * 

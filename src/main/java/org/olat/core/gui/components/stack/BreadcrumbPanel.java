@@ -29,6 +29,8 @@ import org.olat.core.gui.control.Controller;
  */
 public interface BreadcrumbPanel extends StackedPanel {
 	
+	public int size();
+	
 	/**
 	 * Dismiss all controller and replace the root
 	 * @param displayName

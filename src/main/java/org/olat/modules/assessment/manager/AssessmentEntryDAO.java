@@ -31,6 +31,7 @@ import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.assessment.model.AssessmentEntryImpl;
+import org.olat.modules.assessment.model.AssessmentEntryStatus;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -174,6 +175,16 @@ public class AssessmentEntryDAO {
 		}
 		List<AssessmentEntry> entries = query.getResultList();
 		return entries.isEmpty() ? null : entries.get(0);
+	}
+	
+	public AssessmentEntry resetAssessmentEntry(AssessmentEntry nodeAssessment) {
+		nodeAssessment.setScore(null);
+		nodeAssessment.setPassed(null);
+		nodeAssessment.setAttempts(0);
+		nodeAssessment.setCompletion(null);
+		nodeAssessment.setAssessmentStatus(AssessmentEntryStatus.notStarted);
+		((AssessmentEntryImpl)nodeAssessment).setLastModified(new Date());
+		return dbInstance.getCurrentEntityManager().merge(nodeAssessment);
 	}
 	
 	public AssessmentEntry updateAssessmentEntry(AssessmentEntry nodeAssessment) {

@@ -1413,7 +1413,7 @@ public class AssessmentTestDisplayController extends BasicController implements 
 				resultsVisible = true;
 			}
 			
-			if(testSessionController.findNextEnterableTestPart() == null) {
+			if(testSessionController.getTestSessionState().isEnded() || testSessionController.findNextEnterableTestPart() == null) {
 				closeTestButton.setI18nKey("assessment.test.close.test");
 			} else {
 				closeTestButton.setI18nKey("assessment.test.close.testpart");

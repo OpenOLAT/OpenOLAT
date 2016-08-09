@@ -2,12 +2,13 @@
 #set($isBadResponse = $r.isBadResponse($interaction.responseIdentifier))
 #set($isInvalidResponse = $r.isInvalidResponse($interaction.responseIdentifier))
 #set($responseDeclaration = $r.getResponseDeclaration($interaction.responseIdentifier))
-#set($responseInput = $r.getResponseInput($interaction.responseIdentifier))
-#set($responseInputString = $r.extractSingleCardinalityResponseInput($responseInput))    
+#set($responseInput = $r.getResponseValue($interaction.responseIdentifier))
+#set($responseInputString = $r.toString($responseInput))
+
 #set($checkJavaScript = $r.checkJavaScript($responseDeclaration,$interaction.patternmask))
 <input name="qtiworks_presented_${responseIdentifier}" type="hidden" value="1"/>
 <span class="$localName">
-	<input id="od_${responseIdentifier}" type="text" name="qtiworks_response_${responseIdentifier}" #if($responseInputString && !$responseInputString.isEmpty()) value="$responseInputString" #else value="" #end $r.placeholder($interaction) #if($r.isItemSessionEnded()) disabled #end #if($isBadResponse) class='badResponse' #end #if($interaction.expectedLength) size='$interaction.expectedLength' #end #if($checks && $checks.size() > 0) onchange='$checkJavaScript' #end autocomplete="off"/>
+	<input id="od_${responseIdentifier}" type="text" name="qtiworks_response_${responseIdentifier}" #if($responseInputString && !$responseInputString.isEmpty()) value="$responseInputString" #else value="" #end #if(!$r.isItemSessionEnded()) $r.placeholder($interaction) #end #if($r.isItemSessionEnded()) disabled #end #if($isBadResponse) class='badResponse' #end #if($interaction.expectedLength) size='$interaction.expectedLength' #end #if($checks && $checks.size() > 0) onchange='$checkJavaScript' #end autocomplete="off"/>
 	#if($isBadResponse)
         <span class="badResponse">
         	You must enter a valid

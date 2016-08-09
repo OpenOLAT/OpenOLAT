@@ -229,7 +229,9 @@ public class AssessmentRenderFunctions {
 	}
 	
 	public static ResponseData getResponseInput(ItemSessionState itemSessionState, Identifier identifier) {
-		return itemSessionState.getRawResponseDataMap().get(identifier);
+		ResponseData responseInput =  itemSessionState.getRawResponseDataMap().get(identifier);
+		
+		return responseInput;
 	}
 	
 	public static String extractSingleCardinalityResponseInput(ResponseData data) {

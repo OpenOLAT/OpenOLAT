@@ -37,6 +37,7 @@ import org.olat.core.util.StringHelper;
 import org.olat.ims.qti.statistics.QTIType;
 import org.olat.ims.qti.statistics.model.StatisticsItem;
 import org.olat.ims.qti21.QTI21StatisticsManager;
+import org.olat.ims.qti21.model.QTI21QuestionType;
 import org.olat.ims.qti21.model.QTI21StatisticSearchParams;
 import org.olat.ims.qti21.ui.statistics.interactions.ChoiceInteractionStatisticsController;
 import org.olat.ims.qti21.ui.statistics.interactions.HotspotInteractionStatisticsController;
@@ -89,8 +90,15 @@ public class QTI21AssessmentItemStatisticsController extends BasicController {
 		if(StringHelper.containsNonWhitespace(sectionTitle)) {
 			mainVC.contextPut("sectionTitle", sectionTitle);
 		}
-		mainVC.contextPut("numOfParticipants", resourceResult.getQTIStatisticAssessment().getNumOfParticipants());
+		mainVC.contextPut("numOfParticipants", numOfParticipants);
 		mainVC.contextPut("printMode", new Boolean(printMode));
+		
+		QTI21QuestionType type = QTI21QuestionType.getType(item);
+		if(type != null) {
+			mainVC.contextPut("itemCss", type.getCssClass());
+		} else {
+			mainVC.contextPut("itemCss", "o_mi_qtiunkown");
+		}
 		
 		StatisticsItem itemStats = initItemStatistics();
 		List<String> interactionIds = initInteractionControllers(ureq, itemStats);

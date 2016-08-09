@@ -551,16 +551,16 @@ public class AssessmentTestComponentRenderer extends AssessmentObjectComponentRe
 			  .append(itemNode.getSectionPartTitle()).append("</span>");
 
 			if(!reviewable) {
-				sb.append("<span class='itemStatus reviewNotAllowed'>").append(translator.translate("assessment.item.status.reviewNot")).append("</span>");
+				sb.append("<span class='o_assessmentitem_status reviewNotAllowed'>").append(translator.translate("assessment.item.status.reviewNot")).append("</span>");
 			} else if(itemSessionState.getUnboundResponseIdentifiers().size() > 0
 					|| itemSessionState.getInvalidResponseIdentifiers().size() > 0) {
-				sb.append("<span class='itemStatus reviewInvalid'>").append(translator.translate("assessment.item.status.reviewInvalidAnswer")).append("</span>");
+				sb.append("<span class='o_assessmentitem_status reviewInvalid'>").append(translator.translate("assessment.item.status.reviewInvalidAnswer")).append("</span>");
 			} else if(itemSessionState.isResponded()) {
-				sb.append("<span class='itemStatus review'>").append(translator.translate("assessment.item.status.review")).append("</span>");
+				sb.append("<span class='o_assessmentitem_status review'>").append(translator.translate("assessment.item.status.review")).append("</span>");
 			} else if(itemSessionState.getEntryTime() != null) {
-				sb.append("<span class='itemStatus reviewNotAnswered'>").append(translator.translate("assessment.item.status.reviewNotAnswered")).append("</span>");
+				sb.append("<span class='o_assessmentitem_status reviewNotAnswered'>").append(translator.translate("assessment.item.status.reviewNotAnswered")).append("</span>");
 			} else {
-				sb.append("<span class='itemStatus reviewNotSeen'>").append(translator.translate("assessment.item.status.reviewNotSeen")).append("</span>");
+				sb.append("<span class='o_assessmentitem_status reviewNotSeen'>").append(translator.translate("assessment.item.status.reviewNotSeen")).append("</span>");
 			}
 			
 			sb.append("</button></li>");
@@ -606,7 +606,7 @@ public class AssessmentTestComponentRenderer extends AssessmentObjectComponentRe
 			boolean multiPartTest = component.hasMultipleTestParts();
 			String title = multiPartTest ?
 					translator.translate("assessment.test.nav.title.multiPartTestMenu") : translator.translate("assessment.test.nav.title.questionMenu");
-			sb.append("<h1>").append(title).append(" Question Menu</h1>");
+			sb.append("<h3>").append(title).append("</h3>");
 			
 			//part, sections and item refs
 			sb.append("<ul class='o_testpartnavigation list-unstyled'>");
@@ -651,7 +651,7 @@ public class AssessmentTestComponentRenderer extends AssessmentObjectComponentRe
 	private void renderNavigationAssessmentSection(AssessmentRenderer renderer, StringOutput sb, AssessmentTestComponent component, TestPlanNode sectionNode,
 			URLBuilder ubu, Translator translator) {
 		sb.append("<li class='o_assessmentsection o_qti_menu_item'>")
-		  .append("<header><h2>").append(sectionNode.getSectionPartTitle()).append("</h2>");
+		  .append("<header><h4>").append(sectionNode.getSectionPartTitle()).append("</h4>");
 		renderAssessmentSectionRubrickBlock(renderer, sb, component, sectionNode, ubu, translator);
 
 		sb.append("</header><ul class='o_testpartnavigation_inner list-unstyled'>");
@@ -686,16 +686,16 @@ public class AssessmentTestComponentRenderer extends AssessmentObjectComponentRe
 		
 		ItemSessionState itemSessionState = component.getItemSessionState(itemNode.getKey());
 		if(itemSessionState.getEndTime() != null) {
-			sb.append("<span class='itemStatus ended'>Finished</span>");
+			sb.append("<span class='o_assessmentitem_status ended'>Finished</span>");
 		} else if(itemSessionState.getUnboundResponseIdentifiers().size() > 0
 				|| itemSessionState.getInvalidResponseIdentifiers().size() > 0) {
-			sb.append("<span class='itemStatus invalid'>Needs Attention</span>");
+			sb.append("<span class='o_assessmentitem_status invalid'>Needs Attention</span>");
 		} else if(itemSessionState.isResponded() || itemSessionState.hasUncommittedResponseValues()) {
-			sb.append("<span class='itemStatus answered'>Answered</span>");
+			sb.append("<span class='o_assessmentitem_status answered'>Answered</span>");
 		} else if(itemSessionState.getEntryTime() != null) {
-			sb.append("<span class='itemStatus notAnswered'>Not Answered</span>");
+			sb.append("<span class='o_assessmentitem_status notAnswered'>Not Answered</span>");
 		} else {
-			sb.append("<span class='itemStatus notPresented'>").append(translator.translate("assessment.item.status.notSeen")).append("</span>");
+			sb.append("<span class='o_assessmentitem_status notPresented'>").append(translator.translate("assessment.item.status.notSeen")).append("</span>");
 		}
 		
 		sb.append("</button>");

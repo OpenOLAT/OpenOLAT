@@ -69,7 +69,7 @@ public class ProgressBarRenderer extends DefaultComponentRenderer {
 			.append("%", "px", ubar.isWidthInPercent())
 			.append(";\"><div class='progress-bar' style=\"width:")
 			.append(Math.round(percent * ubar.getWidth() / 100))
-			.append("px\" title=\"")
+			.append("%", "px", ubar.isWidthInPercent()).append("\" title=\"")
 			.append(Math.round(percent))
 			.append("%\">");
 		if (renderLabels) {

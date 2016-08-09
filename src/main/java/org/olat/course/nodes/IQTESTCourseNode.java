@@ -85,8 +85,10 @@ import org.olat.ims.qti.statistics.QTIStatisticSearchParams;
 import org.olat.ims.qti.statistics.QTIType;
 import org.olat.ims.qti.statistics.ui.QTI12PullTestsToolController;
 import org.olat.ims.qti.statistics.ui.QTI12StatisticsToolController;
+import org.olat.ims.qti21.manager.archive.QTI21ArchiveFormat;
 import org.olat.ims.qti21.model.QTI21StatisticSearchParams;
 import org.olat.ims.qti21.ui.QTI21AssessmentDetailsController;
+import org.olat.ims.qti21.ui.QTI21ResetToolController;
 import org.olat.ims.qti21.ui.statistics.QTI21StatisticResourceResult;
 import org.olat.ims.qti21.ui.statistics.QTI21StatisticsToolController;
 import org.olat.modules.ModuleConfiguration;
@@ -205,12 +207,14 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements Pe
 		RepositoryEntry qtiTestEntry = getReferencedRepositoryEntry();
 		if(ImsQTI21Resource.TYPE_NAME.equals(qtiTestEntry.getOlatResource().getResourceableTypeName())) {
 			tools.add(new QTI21StatisticsToolController(ureq, wControl, stackPanel, courseEnv, options, this));
-			//TODO qti implements the pull tests
+			if(options.isAdmin()) {
+				tools.add(new QTI21ResetToolController(ureq, wControl, courseEnv, options, this));
+			}
 		} else {
 			tools.add(new QTI12StatisticsToolController(ureq, wControl, stackPanel, courseEnv, options, this));
 			if(options.getGroup() == null && options.getIdentities() != null && options.getIdentities().size() > 0) {
 				for(Identity assessedIdentity:options.getIdentities()) {
-					if(isTestRunning(assessedIdentity, courseEnv)) {
+					if(isQTI12TestRunning(assessedIdentity, courseEnv)) {
 						tools.add(new QTI12PullTestsToolController(ureq, wControl, courseEnv, options, this));
 						break;
 					}
@@ -220,7 +224,7 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements Pe
 		return tools;
 	}
 	
-	public boolean isTestRunning(Identity assessedIdentity, CourseEnvironment courseEnv) {
+	public boolean isQTI12TestRunning(Identity assessedIdentity, CourseEnvironment courseEnv) {
 		String resourcePath = courseEnv.getCourseResourceableId() + File.separator + getIdent();
 		FilePersister qtiPersister = new FilePersister(assessedIdentity, resourcePath);
 		return qtiPersister.exists();
@@ -585,6 +589,11 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements Pe
 					OnyxExportManager.getInstance().exportResults(results, exportStream, this);
 				}
 				return true;
+			} else if(ImsQTI21Resource.TYPE_NAME.equals(re.getOlatResource().getResourceableTypeName())) {
+				QTI21ArchiveFormat qaf = new QTI21ArchiveFormat(locale);
+				RepositoryEntry courseEntry = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
+				qaf.export(courseEntry, getIdent(), re, exportStream);
+				return true;	
 			} else {
 				String shortTitle = getShortTitle();
 				QTIExportManager qem = QTIExportManager.getInstance();

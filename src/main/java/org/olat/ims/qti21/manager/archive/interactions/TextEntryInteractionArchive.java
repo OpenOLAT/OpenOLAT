@@ -24,7 +24,7 @@ import org.olat.core.util.openxml.OpenXMLWorkbook;
 import org.olat.core.util.openxml.OpenXMLWorksheet.Row;
 import org.olat.ims.qti21.AssessmentResponse;
 import org.olat.ims.qti21.manager.CorrectResponsesUtil;
-import org.olat.ims.qti21.manager.CorrectResponsesUtil.TextEntry;
+import org.olat.ims.qti21.model.xml.interactions.FIBAssessmentItemBuilder.AbstractEntry;
 
 import uk.ac.ed.ph.jqtiplus.node.item.AssessmentItem;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.Interaction;
@@ -52,10 +52,10 @@ public class TextEntryInteractionArchive extends DefaultInteractionArchive {
 		String stringuifiedResponses = response == null ? null : response.getStringuifiedResponse();
 		if(StringHelper.containsNonWhitespace(stringuifiedResponses)) {
 			TextEntryInteraction textEntryInteraction = (TextEntryInteraction)interaction;
-			TextEntry correctAnswers = CorrectResponsesUtil.getCorrectTextResponses(item, textEntryInteraction);
+			AbstractEntry correctAnswers = CorrectResponsesUtil.getCorrectTextResponses(item, textEntryInteraction);
 			stringuifiedResponses = CorrectResponsesUtil.stripResponse(stringuifiedResponses);
-			
-			boolean correct = correctAnswers.isCorrect(stringuifiedResponses);
+
+			boolean correct = correctAnswers.match(stringuifiedResponses);
 			if(correct) {
 				dataRow.addCell(col++, stringuifiedResponses, workbook.getStyles().getCorrectStyle());
 			} else {
