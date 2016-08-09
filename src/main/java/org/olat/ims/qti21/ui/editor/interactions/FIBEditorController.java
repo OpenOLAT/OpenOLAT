@@ -70,7 +70,7 @@ public class FIBEditorController extends FormBasicController {
 	public FIBEditorController(UserRequest ureq, WindowControl wControl,
 			QTI21QuestionType preferredType, FIBAssessmentItemBuilder itemBuilder,
 			File rootDirectory, VFSContainer rootContainer, File itemFile, boolean restrictedEdit) {
-		super(ureq, wControl);
+		super(ureq, wControl, LAYOUT_DEFAULT_2_10);
 		setTranslator(Util.createPackageTranslator(AssessmentTestEditorController.class, getLocale()));
 		this.itemFile = itemFile;
 		this.itemBuilder = itemBuilder;
@@ -83,6 +83,8 @@ public class FIBEditorController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		setFormContextHelp("Test and Questionnaire Editor in Detail#details_testeditor_fragetypen_fib");
+		
 		titleEl = uifactory.addTextElement("title", "form.imd.title", -1, itemBuilder.getTitle(), formLayout);
 		titleEl.setMandatory(true);
 		

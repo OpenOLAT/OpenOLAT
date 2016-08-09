@@ -59,6 +59,8 @@ public class AssessmentTestFeedbackEditorController extends FormBasicController 
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		setFormContextHelp("Test and Questionnaire Editor in Detail#details_testeditor_feedback");
+		
 		//correct feedback
 		TestFeedbackBuilder passedFeedback = testBuilder.getPassedFeedback();
 		String passedTitle = passedFeedback == null ? "" : passedFeedback.getTitle();

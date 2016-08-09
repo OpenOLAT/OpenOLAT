@@ -70,17 +70,21 @@ public class ChoiceScoreController extends AssessmentItemRefEditorController imp
 	private final SimpleChoiceAssessmentItemBuilder itemBuilder;
 	
 	private int counter = 0;
+	private final String contextHelpUrl;
 	
 	public ChoiceScoreController(UserRequest ureq, WindowControl wControl,
-			SimpleChoiceAssessmentItemBuilder itemBuilder, AssessmentItemRef itemRef, boolean restrictedEdit) {
+			SimpleChoiceAssessmentItemBuilder itemBuilder, AssessmentItemRef itemRef, boolean restrictedEdit,
+			String contextHelpUrl) {
 		super(ureq, wControl, itemRef, restrictedEdit);
 		setTranslator(Util.createPackageTranslator(AssessmentTestEditorController.class, getLocale()));
 		this.itemBuilder = itemBuilder;
+		this.contextHelpUrl = contextHelpUrl;
 		initForm(ureq);
 	}
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		setFormContextHelp(contextHelpUrl);
 		super.initForm(formLayout, listener, ureq);
 		
 		minScoreEl = uifactory.addTextElement("min.score", "min.score", 8, "0.0", formLayout);

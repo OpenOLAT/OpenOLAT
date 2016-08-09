@@ -46,16 +46,20 @@ public class MinimalScoreController extends AssessmentItemRefEditorController {
 	private TextElement maxScoreEl;
 	
 	private AssessmentItemBuilder itemBuilder;
+	private final String contextHelpUrl;
 	
 	public MinimalScoreController(UserRequest ureq, WindowControl wControl,
-			AssessmentItemBuilder itemBuilder, AssessmentItemRef itemRef, boolean restrictedEdit) {
+			AssessmentItemBuilder itemBuilder, AssessmentItemRef itemRef, boolean restrictedEdit,
+			String contextHelpUrl) {
 		super(ureq, wControl, itemRef, restrictedEdit);
 		this.itemBuilder = itemBuilder;
+		this.contextHelpUrl = contextHelpUrl;
 		initForm(ureq);
 	}
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		setFormContextHelp(contextHelpUrl);
 		super.initForm(formLayout, listener, ureq);
 		minScoreEl = uifactory.addTextElement("min.score", "min.score", 8, "0.0", formLayout);
 		minScoreEl.setEnabled(false);

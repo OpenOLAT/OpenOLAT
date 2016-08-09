@@ -70,6 +70,7 @@ public class AssessmentSectionEditorController extends ItemSessionControlControl
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormTitle("assessment.section.config");
+		setFormContextHelp("Test and Questionnaire Editor in Detail#details_testeditor_test_konf");
 		
 		String title = section.getTitle();
 		titleEl = uifactory.addTextElement("title", "form.metadata.title", 255, title, formLayout);

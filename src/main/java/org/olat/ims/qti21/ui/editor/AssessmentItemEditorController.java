@@ -192,7 +192,8 @@ public class AssessmentItemEditorController extends BasicController {
 		itemEditor = new SingleChoiceEditorController(ureq, getWindowControl(), scItemBuilder,
 				rootDirectory, rootContainer, itemFile, restrictedEdit);
 		listenTo(itemEditor);
-		scoreEditor = new ChoiceScoreController(ureq, getWindowControl(), scItemBuilder, itemRef, restrictedEdit);
+		scoreEditor = new ChoiceScoreController(ureq, getWindowControl(), scItemBuilder, itemRef, restrictedEdit,
+				"Test and Questionnaire Editor in Detail#details_testeditor_fragetypen_sc");
 		listenTo(scoreEditor);
 		feedbackEditor = new FeedbackEditorController(ureq, getWindowControl(), scItemBuilder, false, true, true, restrictedEdit);
 		listenTo(feedbackEditor);
@@ -208,7 +209,8 @@ public class AssessmentItemEditorController extends BasicController {
 		itemEditor = new MultipleChoiceEditorController(ureq, getWindowControl(), mcItemBuilder,
 				rootDirectory, rootContainer, itemFile, restrictedEdit);
 		listenTo(itemEditor);
-		scoreEditor = new ChoiceScoreController(ureq, getWindowControl(), mcItemBuilder, itemRef, restrictedEdit);
+		scoreEditor = new ChoiceScoreController(ureq, getWindowControl(), mcItemBuilder, itemRef, restrictedEdit,
+				"Test and Questionnaire Editor in Detail#details_testeditor_fragetypen_mc");
 		listenTo(scoreEditor);
 		feedbackEditor = new FeedbackEditorController(ureq, getWindowControl(), mcItemBuilder, false, true, true, restrictedEdit);
 		listenTo(feedbackEditor);
@@ -224,7 +226,8 @@ public class AssessmentItemEditorController extends BasicController {
 		itemEditor = new KPrimEditorController(ureq, getWindowControl(), kprimItemBuilder,
 				rootDirectory, rootContainer, itemFile, restrictedEdit);
 		listenTo(itemEditor);
-		scoreEditor = new MinimalScoreController(ureq, getWindowControl(), kprimItemBuilder, itemRef, restrictedEdit);
+		scoreEditor = new MinimalScoreController(ureq, getWindowControl(), kprimItemBuilder, itemRef, restrictedEdit,
+				"Test and Questionnaire Editor in Detail#details_testeditor_fragetypen_kprim");
 		listenTo(scoreEditor);
 		feedbackEditor = new FeedbackEditorController(ureq, getWindowControl(), kprimItemBuilder, false, true, true, restrictedEdit);
 		listenTo(feedbackEditor);
@@ -272,7 +275,8 @@ public class AssessmentItemEditorController extends BasicController {
 		itemEditor = new EssayEditorController(ureq, getWindowControl(), essayItemBuilder,
 				rootDirectory, rootContainer, itemFile, restrictedEdit);
 		listenTo(itemEditor);
-		scoreEditor = new MinimalScoreController(ureq, getWindowControl(), essayItemBuilder, itemRef, restrictedEdit);
+		scoreEditor = new MinimalScoreController(ureq, getWindowControl(), essayItemBuilder, itemRef, restrictedEdit,
+				"Test and Questionnaire Editor in Detail#details_testeditor_fragetypen_ft");
 		listenTo(scoreEditor);
 		feedbackEditor = new FeedbackEditorController(ureq, getWindowControl(), essayItemBuilder, true, false, false, restrictedEdit);
 		listenTo(feedbackEditor);
