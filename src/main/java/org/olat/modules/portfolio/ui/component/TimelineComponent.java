@@ -30,7 +30,6 @@ import org.olat.core.gui.components.form.flexible.impl.FormBaseComponentImpl;
 import org.olat.core.gui.render.ValidationResult;
 import org.olat.core.helpers.Settings;
 import org.olat.core.util.Formatter;
-import org.olat.core.util.StringHelper;
 
 /**
  * 
@@ -97,35 +96,16 @@ public class TimelineComponent extends FormBaseComponentImpl {
 	}
 
 	@Override
-	protected void doDispatchRequest(UserRequest ureq) {
-		String slideCmd = ureq.getParameter("slide");
-		if(StringHelper.containsNonWhitespace(slideCmd)) {
-			if("up".equals(slideCmd)) {
-				slideUp();
-			} else if("down".equals(slideCmd)) {
-				slideDown();
-			}
-		}
-	}
-	
-	private void slideUp() {
-		
-	}
-	
-	private void slideDown() {
-		
-	}
-
-	@Override
 	public void validate(UserRequest ureq, ValidationResult vr) {
 		super.validate(ureq, vr);
 		
 		if(Settings.isDebuging()) {
 			vr.getJsAndCSSAdder().addRequiredStaticJsFile("js/d3/d3.js");
+			vr.getJsAndCSSAdder().addRequiredStaticJsFile("js/jquery/openolat/jquery.timeline.js");
 		} else {
 			vr.getJsAndCSSAdder().addRequiredStaticJsFile("js/d3/d3.min.js");
+			vr.getJsAndCSSAdder().addRequiredStaticJsFile("js/jquery/openolat/jquery.timeline.min.js");
 		}
-		vr.getJsAndCSSAdder().addRequiredStaticJsFile("js/jquery/openolat/jquery.timeline.js");
 	}
 
 	@Override

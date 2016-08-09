@@ -13,7 +13,7 @@
 	
 	#if($timelineSwitch)
 	<div class="o_portfolio_timeline">
-		<div id="o_portfolio_entries_timeline">$r.render("timeline")</div>
+		<div id='o_portfolio_entries_timeline_${r.getComponent("timeline").getDispatchID()}'>$r.render("timeline")</div>
 	</div>
 	#end
 </div>

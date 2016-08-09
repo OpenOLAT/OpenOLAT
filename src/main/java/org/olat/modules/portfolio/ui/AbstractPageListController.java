@@ -122,7 +122,7 @@ implements Activateable2, TooledController, FlexiTableComponentDelegate {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		timelineEl = new TimelineElement("timeline");
-		timelineEl.setContainerId("o_portfolio_entries_timeline");
+		timelineEl.setContainerId("o_portfolio_entries_timeline_" + timelineEl.getComponent().getDispatchID());
 		formLayout.add("timeline", timelineEl);
 		initTimeline();
 		

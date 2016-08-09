@@ -1,31 +1,26 @@
 (function ($) {
    $.fn.timeline = function(options) {
-    	var settings = $.extend({
-    		parentContainerId:'',
-    		startTime: null,
-    		endTime: null,
-    		dateFormat: '%d.%m.%y',
-    		dateLabel: 'Date',
-    		status: { draft: "Draft", published: "Published", inRevision: "In revision", closed: "Closed", deleted: "Deleted"},
-            values: []
-        }, options );
-    	
-    	
-    	createButtons(this, settings);
-    	createGraph(this, settings);
-    		
-    	timelineItems(this, settings);
-    	addHandlers(this, settings);
-    	
+        var settings = this.data("data-oo-timeline");
+    	if(typeof timeline === "undefined") {
+	    	settings = $.extend({
+	    		parentContainerId:'',
+	    		startTime: null,
+	    		endTime: null,
+	    		dateFormat: '%d.%m.%y',
+	    		dateLabel: 'Date',
+	    		status: { draft: "Draft", published: "Published", inRevision: "In revision", closed: "Closed", deleted: "Deleted"},
+	            values: []
+	        }, options );
+	    	
+    		this.data("data-oo-timeline", settings);
+    		createButtons(this, settings);
+    		createGraph(this, settings);
+    		timelineItems(this, settings);
+    		addHandlers(this, settings);
+    	}
         return this;
 	};
-	
-	createButtons = function($obj, settings) {
-		var parentContainer = jQuery('#' + settings.parentContainerId);
-		parentContainer.prepend( "<div class='o_timeline_up'><a href='javascript:;' onclick=''><i class='o_icon o_icon-lg o_icon o_icon_slide_up'> </i></a></div>" );
-		parentContainer.append("<div class='o_timeline_down'><a href='javascript:;' onclick=''><i class='o_icon o_icon-lg o_icon o_icon_slide_down'> </i></a></div>")
-	}
-	
+
 	var svg;
 	var maxCurveY = 10;
 	var x, y, xAxis, yAxis;
@@ -36,6 +31,13 @@
 	var data, statusTranslations;
 	var slideDelta = (183 * 24 * 60 * 60 * 1000);//six month in milliseconds
 	var sliding = false;
+	
+	createButtons = function($obj, settings) {
+		sliding = false;
+		var parentContainer = jQuery('#' + settings.parentContainerId);
+		parentContainer.prepend( "<div class='o_timeline_up'><a href='javascript:;' onclick=''><i class='o_icon o_icon-lg o_icon o_icon_slide_up'> </i></a></div>" );
+		parentContainer.append("<div class='o_timeline_down'><a href='javascript:;' onclick=''><i class='o_icon o_icon-lg o_icon o_icon_slide_down'> </i></a></div>")
+	}
 
 	createGraph = function($obj, settings) {
 		

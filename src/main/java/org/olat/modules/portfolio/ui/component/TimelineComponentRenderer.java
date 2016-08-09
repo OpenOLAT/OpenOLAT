@@ -41,13 +41,12 @@ public class TimelineComponentRenderer extends DefaultComponentRenderer {
 			RenderResult renderResult, String[] args) {
 
 		TimelineComponent cmp = (TimelineComponent)source;
-		//Translator translator = cmp.getTranslator();
-		sb.append("<div id='timeline'></div>");
+		String dispatchId = cmp.getDispatchID();
+		sb.append("<div id='timeline_").append(dispatchId).append("'></div>");
 		sb.append("<script type='text/javascript'>\n")
 		  .append("/* <![CDATA[ */ \n")
-		  .append("jQuery(function() {\n");
-		
-		sb.append("	jQuery('#timeline').timeline({")
+		  .append("jQuery(function() {\n")
+		  .append("	jQuery('#timeline_").append(dispatchId).append("').timeline({")
 		  .append("   parentContainerId: '").append(cmp.getContainerId()).append("',\n");
 		if(cmp.getStartTime() != null && cmp.getEndTime() != null) {
 			sb.append(" startTime: ").append(cmp.getStartTime().getTime()).append(",\n")

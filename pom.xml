@@ -259,6 +259,13 @@
 												<include>${basedir}/target/jquery/jquery/openolat/jquery.statistics.chart.min.js</include>
 											</includes>
 										</aggregation>
+										<aggregation>
+											<output>${basedir}/src/main/webapp/static/js/jquery/openolat/jquery.timeline.min.js</output>
+											<removeIncluded>false</removeIncluded>
+											<includes>
+												<include>${basedir}/target/jquery/jquery/openolat/jquery.timeline.min.js</include>
+											</includes>
+										</aggregation>
 									</aggregations>
 								</configuration>
 							</execution>
