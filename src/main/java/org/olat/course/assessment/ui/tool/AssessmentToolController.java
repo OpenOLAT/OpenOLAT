@@ -63,8 +63,9 @@ public class AssessmentToolController extends MainLayoutBasicController implemen
 	private final TooledStackedPanel stackPanel;
 	private final AssessmentToolContainer toolContainer;
 	
+	private AssessedBusinessGroupListController groupsCtrl;
 	private AssessmentCourseOverviewController overviewCtrl;
-	private AssessmentIdentityListCourseTreeController currentCtl;
+	private AssessmentIdentityListCourseTreeController currentCtrl;
 	private BulkAssessmentOverviewController bulkAssessmentOverviewCtrl;
 	private EfficiencyStatementAssessmentController efficiencyStatementCtrl;
 	
@@ -109,6 +110,9 @@ public class AssessmentToolController extends MainLayoutBasicController implemen
 		if("Users".equalsIgnoreCase(resName)) {
 			List<ContextEntry> subEntries = entries.subList(1, entries.size());
 			doSelectUsersView(ureq).activate(ureq, subEntries, entries.get(0).getTransientState());
+		} else if("BusinessGroups".equalsIgnoreCase(resName) || "Groups".equalsIgnoreCase(resName)) {
+			List<ContextEntry> subEntries = entries.subList(1, entries.size());
+			doSelectGroupsView(ureq).activate(ureq, subEntries, entries.get(0).getTransientState());
 		}
 	}
 
@@ -131,6 +135,8 @@ public class AssessmentToolController extends MainLayoutBasicController implemen
 		if(overviewCtrl == source) {
 			if(event == AssessmentCourseOverviewController.SELECT_USERS_EVENT) {
 				doSelectUsersView(ureq);
+			} else if(event == AssessmentCourseOverviewController.SELECT_GROUPS_EVENT) {
+				doSelectGroupsView(ureq);
 			} else if(event == AssessmentCourseOverviewController.SELECT_PASSED_EVENT) {
 				doSelectPassedView(ureq);
 			} else if(event == AssessmentCourseOverviewController.SELECT_FAILED_EVENT) {
@@ -154,9 +160,9 @@ public class AssessmentToolController extends MainLayoutBasicController implemen
 	
 	private void cleanUp() {
 		removeAsListenerAndDispose(bulkAssessmentOverviewCtrl);
-		removeAsListenerAndDispose(currentCtl);
+		removeAsListenerAndDispose(currentCtrl);
 		bulkAssessmentOverviewCtrl = null;
-		currentCtl = null;
+		currentCtrl = null;
 	}
 	
 	private void doBulkAssessmentView(UserRequest ureq) {
@@ -170,16 +176,28 @@ public class AssessmentToolController extends MainLayoutBasicController implemen
 		listenTo(efficiencyStatementCtrl);
 		stackPanel.pushController(translate("menu.efficiency.statment"), efficiencyStatementCtrl);
 	}
+	
+
+	private AssessedBusinessGroupListController doSelectGroupsView(UserRequest ureq) {
+		OLATResourceable ores = OresHelper.createOLATResourceableInstance("BusinessGroups", 0l);
+		WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ores, null, getWindowControl());
+		addToHistory(ureq, bwControl);
+		groupsCtrl = new AssessedBusinessGroupListController(ureq, bwControl, stackPanel, courseEntry, toolContainer, assessmentCallback);
+		listenTo(groupsCtrl);
+		stackPanel.pushController(translate("groups"), groupsCtrl);
+		groupsCtrl.activate(ureq, null, null);
+		return groupsCtrl;
+	}
 
 	private AssessmentIdentityListCourseTreeController doSelectUsersView(UserRequest ureq) {
 		OLATResourceable ores = OresHelper.createOLATResourceableInstance("Users", 0l);
 		WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ores, null, getWindowControl());
 		addToHistory(ureq, bwControl);
 		AssessmentIdentityListCourseTreeController treeCtrl = new AssessmentIdentityListCourseTreeController(ureq, bwControl, stackPanel,
-				courseEntry, toolContainer, assessmentCallback);
+				courseEntry, null, toolContainer, assessmentCallback);
 		listenTo(treeCtrl);
 		stackPanel.pushController(translate("users"), treeCtrl);
-		currentCtl = treeCtrl;
+		currentCtrl = treeCtrl;
 		treeCtrl.activate(ureq, null, null);
 		return treeCtrl;
 	}
@@ -189,10 +207,10 @@ public class AssessmentToolController extends MainLayoutBasicController implemen
 		WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ores, null, getWindowControl());
 		addToHistory(ureq, bwControl);
 		AssessmentIdentityListCourseTreeController treeCtrl = new AssessmentIdentityListCourseTreeController(ureq, bwControl, stackPanel,
-				courseEntry, toolContainer, assessmentCallback);
+				courseEntry, null, toolContainer, assessmentCallback);
 		listenTo(treeCtrl);
 		stackPanel.pushController(translate("users"), treeCtrl);
-		currentCtl = treeCtrl;
+		currentCtrl = treeCtrl;
 		
 		AssessedIdentityListState state = new AssessedIdentityListState();
 		state.setFilter("passed");
@@ -204,10 +222,10 @@ public class AssessmentToolController extends MainLayoutBasicController implemen
 		WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ores, null, getWindowControl());
 		addToHistory(ureq, bwControl);
 		AssessmentIdentityListCourseTreeController treeCtrl = new AssessmentIdentityListCourseTreeController(ureq, bwControl, stackPanel,
-				courseEntry, toolContainer, assessmentCallback);
+				courseEntry, null, toolContainer, assessmentCallback);
 		listenTo(treeCtrl);
 		stackPanel.pushController(translate("users"), treeCtrl);
-		currentCtl = treeCtrl;
+		currentCtrl = treeCtrl;
 		
 		AssessedIdentityListState state = new AssessedIdentityListState();
 		state.setFilter("failed");

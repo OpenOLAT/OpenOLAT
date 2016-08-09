@@ -19,6 +19,7 @@
  */
 package org.olat.course.assessment.ui.tool;
 
+import java.util.Collections;
 import java.util.List;
 
 import org.olat.core.commons.fullWebApp.LayoutMain3ColsController;
@@ -46,8 +47,9 @@ import org.olat.course.nodes.AssessableCourseNode;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.GTACourseNode;
 import org.olat.course.run.environment.CourseEnvironment;
-import org.olat.modules.assessment.ui.AssessmentToolSecurityCallback;
+import org.olat.group.BusinessGroup;
 import org.olat.modules.assessment.ui.AssessmentToolContainer;
+import org.olat.modules.assessment.ui.AssessmentToolSecurityCallback;
 import org.olat.repository.RepositoryEntry;
 
 /**
@@ -65,15 +67,17 @@ public class AssessmentIdentityListCourseTreeController extends BasicController 
 	private Controller currentCtrl;
 	
 	private final RepositoryEntry courseEntry;
+	private final BusinessGroup businessGroup;
 	private AssessmentToolSecurityCallback assessmentCallback;
 	
 	public AssessmentIdentityListCourseTreeController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
-			RepositoryEntry courseEntry, AssessmentToolContainer toolContainer, AssessmentToolSecurityCallback assessmentCallback) {
+			RepositoryEntry courseEntry, BusinessGroup businessGroup, AssessmentToolContainer toolContainer, AssessmentToolSecurityCallback assessmentCallback) {
 		super(ureq, wControl);
 		this.courseEntry = courseEntry;
 		this.stackPanel = stackPanel;
 		this.toolContainer = toolContainer;
 		this.assessmentCallback = assessmentCallback;
+		this.businessGroup = businessGroup;
 
 		ICourse course = CourseFactory.loadCourse(courseEntry);
 		
@@ -145,11 +149,19 @@ public class AssessmentIdentityListCourseTreeController extends BasicController 
 		if(courseNode instanceof AssessableCourseNode && ((AssessableCourseNode)courseNode).isAssessedBusinessGroups()) {
 			if(courseNode instanceof GTACourseNode) {
 				CourseEnvironment courseEnv = CourseFactory.loadCourse(courseEntry).getCourseEnvironment();
+				
+				List<BusinessGroup> coachedGroups;
+				if(businessGroup != null) {
+					coachedGroups = Collections.singletonList(businessGroup);
+				} else {
+					coachedGroups = assessmentCallback.getCoachedGroups();
+				}
 				currentCtrl = ((GTACourseNode)courseNode).getCoachedGroupListController(ureq, getWindowControl(), stackPanel,
-						courseEnv, assessmentCallback.isAdmin(), assessmentCallback.getCoachedGroups());
+						courseEnv, assessmentCallback.isAdmin(), coachedGroups);
 			}
 		} else {
-			currentCtrl = new IdentityListCourseNodeController(ureq, bwControl, stackPanel, courseEntry, courseNode, toolContainer, assessmentCallback);
+			currentCtrl = new IdentityListCourseNodeController(ureq, bwControl, stackPanel,
+					courseEntry, businessGroup, courseNode, toolContainer, assessmentCallback);
 		}
 		listenTo(currentCtrl);
 		mainPanel.setContent(currentCtrl.getInitialComponent());

@@ -20,6 +20,7 @@
 package org.olat.course.assessment.ui.tool;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -127,13 +128,13 @@ public class IdentityListCourseNodeController extends FormBasicController implem
 	private AssessmentToolManager assessmentToolManager;
 	
 	public IdentityListCourseNodeController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
-			RepositoryEntry courseEntry, CourseNode courseNode, AssessmentToolContainer toolContainer,
+			RepositoryEntry courseEntry, BusinessGroup group, CourseNode courseNode, AssessmentToolContainer toolContainer,
 			AssessmentToolSecurityCallback assessmentCallback) {
 		super(ureq, wControl, "identity_courseelement");
 		setTranslator(Util.createPackageTranslator(AssessmentMainController.class, getLocale(), getTranslator()));
 		setTranslator(userManager.getPropertyHandlerTranslator(getTranslator()));
 		
-		this.group = null;
+		this.group = group;
 		this.courseNode = courseNode;
 		this.stackPanel = stackPanel;
 		this.courseEntry = courseEntry;
@@ -208,8 +209,8 @@ public class IdentityListCourseNodeController extends FormBasicController implem
 		filters.add(new FlexiTableFilter(translate("filter.done"), "done"));
 		tableEl.setFilters("", filters);
 		
-		if(assessmentCallback.canAssessBusinessGoupMembers()) {
-			List<BusinessGroup> coachedGroups = null;;
+		if(assessmentCallback.canAssessBusinessGoupMembers() && group == null) {
+			List<BusinessGroup> coachedGroups = null;
 			if(assessmentCallback.isAdmin()) {
 				ICourse course = CourseFactory.loadCourse(courseEntry);
 				coachedGroups = course.getCourseEnvironment().getCourseGroupManager().getAllBusinessGroups();
@@ -247,7 +248,9 @@ public class IdentityListCourseNodeController extends FormBasicController implem
 		params.setAssessmentStatus(assessmentStatus);
 		
 		List<Long> businessGroupKeys = null;
-		if(extendedFilters != null && extendedFilters.size() > 0) {
+		if(group != null) {
+			businessGroupKeys = Collections.singletonList(group.getKey());
+		} else if(extendedFilters != null && extendedFilters.size() > 0) {
 			businessGroupKeys = new ArrayList<>(extendedFilters.size());
 			for(FlexiTableFilter extendedFilter:extendedFilters) {
 				if(StringHelper.isLong(extendedFilter.getFilter())) {
