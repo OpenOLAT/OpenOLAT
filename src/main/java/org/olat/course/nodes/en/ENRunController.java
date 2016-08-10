@@ -133,13 +133,13 @@ public class ENRunController extends BasicController implements GenericEventList
 
 		// Get groupnames from configuration
 		enrollableGroupKeys = moduleConfig.getList(ENCourseNode.CONFIG_GROUP_IDS, Long.class);
-		if(enrollableGroupKeys == null) {
+		if(enrollableGroupKeys == null || enrollableGroupKeys.isEmpty()) {
 			String groupNamesConfig = (String)moduleConfig.get(ENCourseNode.CONFIG_GROUPNAME);
 			enrollableGroupKeys = businessGroupService.toGroupKeys(groupNamesConfig, courseGroupManager.getCourseEntry());
 		}
 
 		enrollableAreaKeys = moduleConfig.getList(ENCourseNode.CONFIG_AREA_IDS, Long.class);
-		if(enrollableAreaKeys == null) {
+		if(enrollableAreaKeys == null || enrollableAreaKeys.isEmpty()) {
 			String areaInitVal = (String) moduleConfig.get(ENCourseNode.CONFIG_AREANAME);
 			enrollableAreaKeys = areaManager.toAreaKeys(areaInitVal, courseGroupManager.getCourseResource());
 		}
