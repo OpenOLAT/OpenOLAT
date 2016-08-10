@@ -176,7 +176,7 @@ public class ENCourseNode extends AbstractAccessableCourseNode {
 			// FIXME: refine statusdescriptions
 			String shortKey = "error.nogroupdefined.short";
 			String longKey = "error.nogroupdefined.long";
-			String[] params = new String[] { this.getShortTitle() };
+			String[] params = new String[] { getShortTitle() };
 			String translPackage = Util.getPackageName(ENEditController.class);
 			sd = new StatusDescription(StatusDescription.ERROR, shortKey, longKey, params, translPackage);
 			sd.setDescriptionForUnit(getIdent());
@@ -247,7 +247,7 @@ public class ENCourseNode extends AbstractAccessableCourseNode {
 				for (int i = 0; i < areas.length; i++) {
 					String trimmed = areas[i] != null ?
 							FilterFactory.getHtmlTagsFilter().filter(areas[i]).trim() : areas[i];
-					if (!trimmed.equals("") && !cev.existsGroup(trimmed)) {
+					if (!trimmed.equals("") && !cev.existsArea(trimmed)) {
 						missingNames.add(trimmed);
 					}
 				}
@@ -391,9 +391,8 @@ public class ENCourseNode extends AbstractAccessableCourseNode {
 	public void postImportCopy(CourseEnvironmentMapper envMapper) {
 		ModuleConfiguration mc = getModuleConfiguration();
 		String groupNames = (String)mc.get(ENCourseNode.CONFIG_GROUPNAME);
-		@SuppressWarnings("unchecked")
-		List<Long> groupKeys = (List<Long>) mc.get(ENCourseNode.CONFIG_GROUP_IDS);
-		if(groupKeys == null) {
+		List<Long> groupKeys = mc.getList(ENCourseNode.CONFIG_GROUP_IDS, Long.class);
+		if(groupKeys == null || groupKeys.isEmpty()) {
 			groupKeys = envMapper.toGroupKeyFromOriginalNames(groupNames);
 		} else {
 			groupKeys = envMapper.toGroupKeyFromOriginalKeys(groupKeys);
@@ -401,12 +400,11 @@ public class ENCourseNode extends AbstractAccessableCourseNode {
 		mc.set(ENCourseNode.CONFIG_GROUP_IDS, groupKeys);
 	
 		String areaNames = (String)mc.get(ENCourseNode.CONFIG_AREANAME);
-		@SuppressWarnings("unchecked")
-		List<Long> areaKeys = (List<Long>) mc.get(ENCourseNode.CONFIG_AREA_IDS);
-		if(areaKeys == null) {
-			areaKeys = envMapper.toGroupKeyFromOriginalNames(areaNames);
+		List<Long> areaKeys =  mc.getList(ENCourseNode.CONFIG_AREA_IDS, Long.class);
+		if(areaKeys == null || areaKeys.isEmpty()) {
+			areaKeys = envMapper.toAreaKeyFromOriginalNames(areaNames);
 		} else {
-			areaKeys = envMapper.toAreaKeyFromOriginalKeys(groupKeys);
+			areaKeys = envMapper.toAreaKeyFromOriginalKeys(areaKeys);
 		}
 		mc.set(ENCourseNode.CONFIG_AREA_IDS, areaKeys);
 	}
@@ -416,16 +414,14 @@ public class ENCourseNode extends AbstractAccessableCourseNode {
 		super.postExport(envMapper, backwardsCompatible);
 
 		ModuleConfiguration mc = getModuleConfiguration();
-		@SuppressWarnings("unchecked")
-		List<Long> groupKeys = (List<Long>) mc.get(ENCourseNode.CONFIG_GROUP_IDS);
+		List<Long> groupKeys = mc.getList(ENCourseNode.CONFIG_GROUP_IDS, Long.class);
 		if(groupKeys != null) {
 			String groupNames = envMapper.toGroupNames(groupKeys);
 			mc.set(ENCourseNode.CONFIG_GROUPNAME, groupNames);
 		}
 
-		@SuppressWarnings("unchecked")
-		List<Long> areaKeys = (List<Long>) mc.get(ENCourseNode.CONFIG_AREA_IDS);
-		if(areaKeys != null ) {
+		List<Long> areaKeys = mc.getList(ENCourseNode.CONFIG_AREA_IDS, Long.class);
+		if(areaKeys != null) {
 			String areaNames = envMapper.toAreaNames(areaKeys);
 			mc.set(ENCourseNode.CONFIG_AREANAME, areaNames);
 		}

@@ -186,7 +186,7 @@ class ENEditGroupAreaFormController extends FormBasicController implements Gener
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		// groups
 		List<Long> groupKeys = moduleConfig.getList(ENCourseNode.CONFIG_GROUP_IDS, Long.class);
-		if(groupKeys == null) {
+		if(groupKeys == null || groupKeys.isEmpty()) {
 			String groupNames = (String) moduleConfig.get(ENCourseNode.CONFIG_GROUPNAME);
 			if(StringHelper.containsNonWhitespace(groupNames)) {
 				groupKeys = businessGroupService.toGroupKeys(groupNames, cev.getCourseGroupManager().getCourseEntry());
@@ -214,7 +214,7 @@ class ENEditGroupAreaFormController extends FormBasicController implements Gener
 
 		@SuppressWarnings("unchecked")
 		List<Long> areaKeys = (List<Long>)moduleConfig.get(ENCourseNode.CONFIG_AREA_IDS);
-		if(areaKeys == null) {
+		if(areaKeys == null || areaKeys.isEmpty()) {
 			String areaNames = (String) moduleConfig.get(ENCourseNode.CONFIG_AREANAME);
 			areaKeys = areaManager.toAreaKeys(areaNames, cev.getCourseGroupManager().getCourseResource());
 		}
