@@ -247,7 +247,7 @@ public class ENCourseNode extends AbstractAccessableCourseNode {
 				for (int i = 0; i < areas.length; i++) {
 					String trimmed = areas[i] != null ?
 							FilterFactory.getHtmlTagsFilter().filter(areas[i]).trim() : areas[i];
-					if (!trimmed.equals("") && !cev.existsGroup(trimmed)) {
+					if (!trimmed.equals("") && !cev.existsArea(trimmed)) {
 						missingNames.add(trimmed);
 					}
 				}
@@ -404,7 +404,7 @@ public class ENCourseNode extends AbstractAccessableCourseNode {
 		@SuppressWarnings("unchecked")
 		List<Long> areaKeys = (List<Long>) mc.get(ENCourseNode.CONFIG_AREA_IDS);
 		if(areaKeys == null) {
-			areaKeys = envMapper.toGroupKeyFromOriginalNames(areaNames);
+			areaKeys = envMapper.toAreaKeyFromOriginalNames(areaNames);
 		} else {
 			areaKeys = envMapper.toAreaKeyFromOriginalKeys(groupKeys);
 		}
