@@ -30,6 +30,8 @@ import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.segmentedview.SegmentViewComponent;
 import org.olat.core.gui.components.segmentedview.SegmentViewEvent;
 import org.olat.core.gui.components.segmentedview.SegmentViewFactory;
+import org.olat.core.gui.components.stack.TooledController;
+import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
@@ -39,6 +41,7 @@ import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.id.Identity;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
+import org.olat.core.util.StringHelper;
 import org.olat.course.CorruptedCourseException;
 import org.olat.course.assessment.EfficiencyStatement;
 import org.olat.course.assessment.UserEfficiencyStatement;
@@ -59,11 +62,16 @@ import org.springframework.beans.factory.annotation.Autowired;
  *
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
-public class EfficiencyStatementDetailsController extends BasicController implements Activateable2 {
+public class EfficiencyStatementDetailsController extends BasicController implements Activateable2, TooledController {
 	
+	private TooledStackedPanel stackPanel;
 	private final VelocityContainer mainVC;
 	private SegmentViewComponent segmentView;
 	private Link assessmentLink,  efficiencyStatementLink;
+
+	private String details;
+	private int entryIndex,  numOfEntries;
+	private Link previousLink, detailsCmp, nextLink;
 	
 	private boolean hasChanged;
 	private EfficiencyStatementEntry statementEntry;
@@ -72,20 +80,30 @@ public class EfficiencyStatementDetailsController extends BasicController implem
 	
 	private final Identity assessedIdentity;
 	
+
 	@Autowired
 	private BaseSecurity securityManager;
 	@Autowired
 	private EfficiencyStatementManager efficiencyStatementManager;
-	
-	public EfficiencyStatementDetailsController(UserRequest ureq, WindowControl wControl,
-			EfficiencyStatementEntry statementEntry, boolean selectAssessmentTool) {
-		super(ureq, wControl);
 
-		mainVC = createVelocityContainer("efficiency_details");
+	public EfficiencyStatementDetailsController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
+			EfficiencyStatementEntry statementEntry, Identity assessedIdentity, String details, int entryIndex, int numOfEntries, boolean selectAssessmentTool) {
+		super(ureq, wControl);
+		
+		this.details = details;
+		this.entryIndex = entryIndex;
+		this.stackPanel = stackPanel;
+		this.numOfEntries = numOfEntries;
 		this.statementEntry = statementEntry;
+		
+		mainVC = createVelocityContainer("efficiency_details");
 
 		RepositoryEntry entry = statementEntry.getCourse();
-		assessedIdentity = securityManager.loadIdentityByKey(statementEntry.getIdentityKey());//TODO user props
+		if(assessedIdentity == null) {
+			this.assessedIdentity = securityManager.loadIdentityByKey(statementEntry.getIdentityKey());
+		} else {
+			this.assessedIdentity = assessedIdentity;
+		}
 		statementCtrl = createEfficiencyStatementController(ureq);
 		listenTo(statementCtrl);
 		
@@ -93,7 +111,7 @@ public class EfficiencyStatementDetailsController extends BasicController implem
 			mainVC.put("segmentCmp", statementCtrl.getInitialComponent());
 		} else {
 			try {
-				assessmentCtrl = new AssessmentIdentityCourseController(ureq, wControl, null, entry, assessedIdentity);
+				assessmentCtrl = new AssessmentIdentityCourseController(ureq, wControl, stackPanel, entry, assessedIdentity);
 				listenTo(assessmentCtrl);
 				
 				segmentView = SegmentViewFactory.createSegmentView("segments", mainVC, this);
@@ -115,7 +133,25 @@ public class EfficiencyStatementDetailsController extends BasicController implem
 
 		putInitialPanel(mainVC);
 	}
-	
+
+	@Override
+	public void initTools() {
+		previousLink = LinkFactory.createToolLink("previous", translate("previous"), this);
+		previousLink.setIconLeftCSS("o_icon o_icon_previous");
+		previousLink.setEnabled(entryIndex > 0);
+		stackPanel.addTool(previousLink);
+
+		detailsCmp = LinkFactory.createToolLink("details.course", StringHelper.escapeHtml(details), this);
+		detailsCmp.setIconLeftCSS("o_icon o_icon_user");
+		stackPanel.addTool(detailsCmp);
+
+		nextLink = LinkFactory.createToolLink("next", translate("next"), this);
+		nextLink.setIconLeftCSS("o_icon o_icon_next");
+		nextLink.setEnabled(entryIndex < numOfEntries);
+		stackPanel.addTool(nextLink);
+		stackPanel.addListener(this);
+	}
+
 	public EfficiencyStatementEntry getEntry() {
 		return statementEntry;
 	}
@@ -126,7 +162,7 @@ public class EfficiencyStatementDetailsController extends BasicController implem
 	
 	@Override
 	protected void doDispose() {
-		//
+		stackPanel.removeListener(this);
 	}
 	
 	@Override
@@ -150,7 +186,9 @@ public class EfficiencyStatementDetailsController extends BasicController implem
 
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
-		if(source == segmentView && event instanceof SegmentViewEvent) {
+		if(nextLink == source || previousLink == source) {
+			fireEvent(ureq, event);
+		} else if(source == segmentView && event instanceof SegmentViewEvent) {
 			SegmentViewEvent sve = (SegmentViewEvent)event;
 			if(efficiencyStatementLink != null && efficiencyStatementLink.getComponentName().equals(sve.getComponentName())) {
 				if(hasChanged) {

@@ -23,7 +23,8 @@ import java.util.List;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
-import org.olat.core.gui.components.panel.Panel;
+import org.olat.core.gui.components.stack.PopEvent;
+import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.components.table.ColumnDescriptor;
 import org.olat.core.gui.components.table.CustomRenderColumnDescriptor;
 import org.olat.core.gui.components.table.DefaultColumnDescriptor;
@@ -60,7 +61,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class CourseListController extends BasicController implements Activateable2 {
 	
-	private final Panel content;
+	private final TooledStackedPanel stackPanel;
 	private final TableController tableCtr;
 	private final VelocityContainer mainVC;
 	private CourseController courseCtrl;
@@ -72,8 +73,10 @@ public class CourseListController extends BasicController implements Activateabl
 	@Autowired
 	private RepositoryManager repositoryManager;
 	
-	public CourseListController(UserRequest ureq, WindowControl wControl) {
+	public CourseListController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel) {
 		super(ureq, wControl);
+		this.stackPanel = stackPanel;
+		stackPanel.addListener(this);
 
 		TableGuiConfiguration tableConfig = new TableGuiConfiguration();
 		tableConfig.setTableEmptyMessage(translate("error.no.found"));
@@ -95,10 +98,7 @@ public class CourseListController extends BasicController implements Activateabl
 		
 		mainVC = createVelocityContainer("course_list");
 		mainVC.put("coursTable", tableCtr.getInitialComponent());
-		
-		content = new Panel("courseList");
-		content.setContent(mainVC);
-		putInitialPanel(content);
+		putInitialPanel(mainVC);
 	}
 	
 	private void loadModel() {
@@ -116,12 +116,19 @@ public class CourseListController extends BasicController implements Activateabl
 	
 	@Override
 	protected void doDispose() {
-		//
+		stackPanel.removeListener(this);
 	}
 
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
-		//
+		if(source == stackPanel) {
+			if(event instanceof PopEvent) {
+				PopEvent pe = (PopEvent)event;
+				if(pe.getController() == courseCtrl && hasChanged) {
+					reloadModel();
+				}
+			}
+		}
 	}
 
 	@Override
@@ -134,12 +141,6 @@ public class CourseListController extends BasicController implements Activateabl
 					selectCourse(ureq, courseStat);
 				}
 			}
-		} else if (event == Event.BACK_EVENT) {
-			reloadModel();
-			content.setContent(tableCtr.getInitialComponent());
-			removeAsListenerAndDispose(courseCtrl);
-			courseCtrl = null;
-			addToHistory(ureq);
 		} else if (source == courseCtrl) {
 			if(event == Event.CHANGED_EVENT) {
 				hasChanged = true;
@@ -173,7 +174,7 @@ public class CourseListController extends BasicController implements Activateabl
 		}
 	}
 	
-	protected void previousCourse(UserRequest ureq) {
+	private void previousCourse(UserRequest ureq) {
 		CourseStatEntry currentEntry = courseCtrl.getEntry();
 		int previousIndex = tableCtr.getIndexOfSortedObject(currentEntry) - 1;
 		if(previousIndex < 0 || previousIndex >= tableCtr.getRowCount()) {
@@ -183,7 +184,7 @@ public class CourseListController extends BasicController implements Activateabl
 		selectCourse(ureq, previousEntry);
 	}
 	
-	protected void nextCourse(UserRequest ureq) {
+	private void nextCourse(UserRequest ureq) {
 		CourseStatEntry currentEntry = courseCtrl.getEntry();
 		int nextIndex = tableCtr.getIndexOfSortedObject(currentEntry) + 1;
 		if(nextIndex < 0 || nextIndex >= tableCtr.getRowCount()) {
@@ -193,7 +194,7 @@ public class CourseListController extends BasicController implements Activateabl
 		selectCourse(ureq, nextEntry);
 	}
 	
-	protected void selectCourse(UserRequest ureq, CourseStatEntry courseStat) {
+	private void selectCourse(UserRequest ureq, CourseStatEntry courseStat) {
 		removeAsListenerAndDispose(courseCtrl);
 		courseCtrl = null;
 		
@@ -203,9 +204,10 @@ public class CourseListController extends BasicController implements Activateabl
 			WindowControl bwControl = addToHistory(ureq, ores, null);
 			
 			int index = tableCtr.getIndexOfSortedObject(courseStat);
-			courseCtrl = new CourseController(ureq, bwControl, re, courseStat, index, tableCtr.getRowCount());
+			courseCtrl = new CourseController(ureq, bwControl, stackPanel, re, courseStat, index, tableCtr.getRowCount());
 			listenTo(courseCtrl);
-			content.setContent(courseCtrl.getInitialComponent());
+			stackPanel.popUpToRootController(ureq);
+			stackPanel.pushController(re.getDisplayname(), courseCtrl);
 		}
 	}
 }

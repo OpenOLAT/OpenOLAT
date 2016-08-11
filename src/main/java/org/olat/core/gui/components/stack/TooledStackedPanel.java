@@ -207,7 +207,6 @@ public class TooledStackedPanel extends BreadcrumbedStackedPanel implements Stac
 		}
 	}
 
-	
 	public static class Tool {
 		private final  Align align;
 		private final boolean inherit;

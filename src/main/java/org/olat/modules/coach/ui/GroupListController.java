@@ -23,6 +23,8 @@ import java.util.List;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.stack.PopEvent;
+import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.components.table.ColumnDescriptor;
 import org.olat.core.gui.components.table.CustomRenderColumnDescriptor;
 import org.olat.core.gui.components.table.DefaultColumnDescriptor;
@@ -57,7 +59,8 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
 public class GroupListController extends BasicController implements Activateable2 {
-	
+
+	private final TooledStackedPanel stackPanel;
 	private final TableController tableCtr;
 	private final VelocityContainer mainVC;
 	private GroupController groupCtrl;
@@ -66,8 +69,9 @@ public class GroupListController extends BasicController implements Activateable
 	@Autowired
 	private CoachingService coachingService;
 	
-	public GroupListController(UserRequest ureq, WindowControl wControl) {
+	public GroupListController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel) {
 		super(ureq, wControl);
+		this.stackPanel = stackPanel;
 		
 		TableGuiConfiguration tableConfig = new TableGuiConfiguration();
 		tableConfig.setTableEmptyMessage(translate("error.no.found"));
@@ -114,7 +118,14 @@ public class GroupListController extends BasicController implements Activateable
 
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
-		//
+		if(source == stackPanel) {
+			if(event instanceof PopEvent) {
+				PopEvent pe = (PopEvent)event;
+				if(pe.getController() == groupCtrl && hasChanged) {
+					reloadModel();
+				}
+			}
+		}
 	}
 	
 	@Override
@@ -127,12 +138,6 @@ public class GroupListController extends BasicController implements Activateable
 					selectGroup(ureq, groupStatistic);
 				}
 			}
-		} else if (event == Event.BACK_EVENT) {
-			reloadModel();
-			mainVC.put("groupsTable", tableCtr.getInitialComponent());
-			removeAsListenerAndDispose(groupCtrl);
-			groupCtrl = null;
-			addToHistory(ureq);
 		} else if (source == groupCtrl) {
 			if(event == Event.CHANGED_EVENT) {
 				hasChanged = true;
@@ -191,8 +196,9 @@ public class GroupListController extends BasicController implements Activateable
 		WindowControl bwControl = addToHistory(ureq, ores, null);
 
 		int index = tableCtr.getIndexOfSortedObject(groupStatistic);
-		groupCtrl = new GroupController(ureq, bwControl, groupStatistic, index, tableCtr.getRowCount());
+		groupCtrl = new GroupController(ureq, bwControl, stackPanel, groupStatistic, index, tableCtr.getRowCount());
 		listenTo(groupCtrl);
-		mainVC.put("groupsTable", groupCtrl.getInitialComponent());
+		stackPanel.popUpToRootController(ureq);
+		stackPanel.pushController(groupStatistic.getGroupName(), groupCtrl);
 	}
 }

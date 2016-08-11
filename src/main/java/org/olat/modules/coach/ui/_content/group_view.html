@@ -1,12 +1,7 @@
-$r.render("toolbar")
-#if($r.available("efficiencyDetails"))
-	$r.render("efficiencyDetails")
-#else
-	<div class="o_eff_statement_details">
-		<h3><i class="o_icon o_icon_group"> </i> $groupName</h3>
-		#if($r.available("open.group"))
-			$r.render("open.group")
-		#end
-	</div>
-	$r.render("table")
-#end
+<div class="o_header_with_buttons">
+	<h3><i class="o_icon o_icon_group"> </i> $groupName</h3>
+	#if($r.available("open.group"))
+		<div class="o_button_group">$r.render("open.group")</div>
+	#end
+</div>
+$r.render("table")

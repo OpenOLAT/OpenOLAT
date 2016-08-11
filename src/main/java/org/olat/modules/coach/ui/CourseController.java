@@ -24,6 +24,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 import org.olat.NewControllerFactory;
+import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -39,7 +40,9 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
-import org.olat.core.gui.components.text.TextComponent;
+import org.olat.core.gui.components.stack.PopEvent;
+import org.olat.core.gui.components.stack.TooledController;
+import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -64,7 +67,6 @@ import org.olat.modules.coach.model.CourseStatEntry;
 import org.olat.modules.coach.model.EfficiencyStatementEntry;
 import org.olat.modules.coach.model.IdentityResourceKey;
 import org.olat.modules.coach.ui.EfficiencyStatementEntryTableDataModel.Columns;
-import org.olat.modules.coach.ui.ToolbarController.Position;
 import org.olat.repository.RepositoryEntry;
 import org.olat.user.UserManager;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
@@ -80,22 +82,22 @@ import org.springframework.beans.factory.annotation.Autowired;
  *
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
-public class CourseController extends FormBasicController implements Activateable2, GenericEventListener {
+public class CourseController extends FormBasicController implements Activateable2, GenericEventListener, TooledController {
 	
-	private final Link backLink, next, previous;
-	private final Link nextCourse, previousCourse;
 	private final Link openCourse;
-	private final TextComponent detailsCmp, detailsCourseCmp;
-	
+	private Link nextCourse, detailsCourseCmp, previousCourse;
+
 	private FlexiTableElement tableEl;
 	private EfficiencyStatementEntryTableDataModel model;
 	
 	private CloseableModalController cmc;
 	private ContactController contactCtrl;
-	private final ToolbarController toolbar;
+	private final TooledStackedPanel stackPanel;
 	private EfficiencyStatementDetailsController statementCtrl;
 	
 	private boolean hasChanged = false;
+	private int index;
+	private int numOfCourses;
 	
 	private final RepositoryEntry course;
 	private final CourseStatEntry courseStat;
@@ -106,13 +108,16 @@ public class CourseController extends FormBasicController implements Activateabl
 	@Autowired
 	private UserManager userManager;
 	@Autowired
+	private BaseSecurity securityManager;
+	@Autowired
 	private BaseSecurityModule securityModule;
 	@Autowired
 	private CoachingService coachingService;
 	@Autowired
 	private CertificatesManager certificatesManager;
 	
-	public CourseController(UserRequest ureq, WindowControl wControl, RepositoryEntry course, CourseStatEntry courseStat, int index, int numOfCourses) {
+	public CourseController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
+			RepositoryEntry course, CourseStatEntry courseStat, int index, int numOfCourses) {
 		super(ureq, wControl, "course");
 		setTranslator(userManager.getPropertyHandlerTranslator(getTranslator()));
 		isAdministrativeUser = securityModule.isUserAllowedAdminProps(ureq.getUserSession().getRoles());
@@ -120,56 +125,43 @@ public class CourseController extends FormBasicController implements Activateabl
 		
 		this.course = course;
 		this.courseStat = courseStat;
+		this.stackPanel = stackPanel;
+		stackPanel.addListener(this);
+		this.index = index;
+		this.numOfCourses = numOfCourses;
 		
 		initForm(ureq);
-
-		List<EfficiencyStatementEntry> entries = loadModel();
-
-
-		toolbar = new ToolbarController(ureq, wControl, getTranslator());
-		listenTo(toolbar);
-		flc.getFormItemComponent().put("toolbar", toolbar.getInitialComponent());
-
-		backLink = toolbar.addToolbarLink("back", this, Position.left);
-		backLink.setIconLeftCSS("o_icon o_icon_back");
-
-		previous = toolbar.addToolbarLink("previous", this, Position.center);
-		previous.setIconLeftCSS("o_icon o_icon_move_left");
-		previous.setCustomDisabledLinkCSS("navbar-text");
-		previous.setEnabled(entries.size() > 1);
-		
-		detailsCmp = toolbar.addToolbarText("", this, Position.center);
-
-		next = toolbar.addToolbarLink("next", this, Position.center);
-		next.setIconRightCSS("o_icon o_icon_move_right");
-		next.setCustomDisabledLinkCSS("navbar-text");
-		next.setEnabled(entries.size() > 1);
-		
-		//courses next,previous
-		previousCourse = toolbar.addToolbarLink("previous.course", this, Position.center);
-		previousCourse.setIconLeftCSS("o_icon o_icon_move_left");
-		previousCourse.setCustomDisabledLinkCSS("navbar-text");
-		previousCourse.setEnabled(numOfCourses > 1);
-		
-		detailsCourseCmp = toolbar.addToolbarText("details.course", "", this, Position.center);
-		detailsCourseCmp.setCssClass("navbar-text");
-		detailsCourseCmp.setText(translate("students.details", new String[]{
-				StringHelper.escapeHtml(course.getDisplayname()),
-				Integer.toString(index + 1), Integer.toString(numOfCourses)
-		}));
-		nextCourse = toolbar.addToolbarLink("next.course", this, Position.center);
-		nextCourse.setIconRightCSS("o_icon o_icon_move_right");
-		nextCourse.setCustomDisabledLinkCSS("navbar-text");
-		nextCourse.setEnabled(numOfCourses > 1);
+		loadModel();
 		
 		openCourse = LinkFactory.createButton("open", flc.getFormItemComponent(), this);
 		openCourse.setIconLeftCSS("o_icon o_CourseModule_icon");
 		flc.getFormItemComponent().put("open.group", openCourse);
-
-		setDetailsToolbarVisible(false);
 		
 		CoordinatorManager.getInstance().getCoordinator().getEventBus()
 			.registerFor(this, getIdentity(), CertificatesManager.ORES_CERTIFICATE_EVENT);
+	}
+
+	@Override
+	public void initTools() {
+		//courses next,previous
+		previousCourse = LinkFactory.createToolLink("previous.course", translate("previous.course"), this);
+		previousCourse.setIconLeftCSS("o_icon o_icon_previous");
+		previousCourse.setEnabled(numOfCourses > 1);
+		stackPanel.addTool(previousCourse);
+		
+		String details = translate("students.details", new String[]{
+				StringHelper.escapeHtml(course.getDisplayname()),
+				Integer.toString(index + 1), Integer.toString(numOfCourses)
+		});
+		
+		detailsCourseCmp = LinkFactory.createToolLink("details.course", details, this);
+		detailsCourseCmp.setIconLeftCSS("o_icon o_CourseModule_icon");
+		stackPanel.addTool(detailsCourseCmp);
+		
+		nextCourse = LinkFactory.createToolLink("next.course", translate("next.course"), this);
+		nextCourse.setIconLeftCSS("o_icon o_icon_next");
+		nextCourse.setEnabled(numOfCourses > 1);
+		stackPanel.addTool(nextCourse);
 	}
 
 	@Override
@@ -207,6 +199,7 @@ public class CourseController extends FormBasicController implements Activateabl
 
 	@Override
 	protected void doDispose() {
+		stackPanel.removeListener(this);
 		CoordinatorManager.getInstance().getCoordinator().getEventBus()
 			.deregisterFor(this, CertificatesManager.ORES_CERTIFICATE_EVENT);
 	}
@@ -267,7 +260,7 @@ public class CourseController extends FormBasicController implements Activateabl
 				String cmd = se.getCommand();
 				EfficiencyStatementEntry selectedRow = model.getObject(se.getIndex());
 				if("select".equals(cmd)) {
-					selectDetails(ureq, selectedRow);
+					doSelectDetails(ureq, selectedRow);
 				}
 			}
 		} 
@@ -276,14 +269,17 @@ public class CourseController extends FormBasicController implements Activateabl
 
 	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
-		if (source == next) {
-			nextEntry(ureq);
-		} else if (source == previous) {
-			previousEntry(ureq);
-		} else if (source == backLink) {
-			back(ureq);
+		if(nextCourse == source || previousCourse == source) {
+			fireEvent(ureq, event);
+		} else if(stackPanel == source) {
+			if(event instanceof PopEvent) {
+				PopEvent pe = (PopEvent)event;
+				if(pe.getController() == statementCtrl && hasChanged) {
+					reloadModel();
+				}
+			}
 		} else if (source == openCourse) {
-			openCourse(ureq);
+			doOpenCourse(ureq);
 		}
 		super.event(ureq, source, event);
 	}
@@ -294,29 +290,16 @@ public class CourseController extends FormBasicController implements Activateabl
 			if(event == Event.CHANGED_EVENT) {
 				hasChanged = true;
 				fireEvent(ureq, Event.CHANGED_EVENT);
-			} else {
-				removeDetails(ureq);
+			} else if("next".equals(event.getCommand())) {
+				nextEntry(ureq);
+			} else if("previous".equals(event.getCommand())) {
+				previousEntry(ureq);
 			}
 		} else if (source == cmc) {
 			removeAsListenerAndDispose(cmc);
 			removeAsListenerAndDispose(contactCtrl);
 			cmc = null;
 			contactCtrl = null;
-		} else if (source == toolbar) {
-			if("back".equals(event.getCommand())) {
-				reloadModel();
-				back(ureq);
-			} else if("next".equals(event.getCommand())) {
-				nextEntry(ureq);
-			} else if("previous".equals(event.getCommand())) {
-				previousEntry(ureq);
-			} else if("contact.link".equals(event.getCommand())) {
-				contact(ureq);
-			} else if ("next.course".equals(event.getCommand())) {
-				fireEvent(ureq, event);
-			} else if ("previous.course".equals(event.getCommand())) {
-				fireEvent(ureq, event);
-			}
 		}
 		super.event(ureq, source, event);
 	}
@@ -331,7 +314,7 @@ public class CourseController extends FormBasicController implements Activateabl
 			Long identityKey = ores.getResourceableId();
 			for(EfficiencyStatementEntry entry:model.getObjects()) {
 				if(identityKey.equals(entry.getIdentityKey())) {
-					selectDetails(ureq, entry);
+					doSelectDetails(ureq, entry);
 					statementCtrl.activate(ureq, entries.subList(1, entries.size()), ce.getTransientState());
 					break;
 				}
@@ -339,34 +322,6 @@ public class CourseController extends FormBasicController implements Activateabl
 		}
 	}
 
-	private void setDetailsToolbarVisible(boolean visible) {
-		next.setVisible(visible);
-		previous.setVisible(visible);
-		detailsCmp.setVisible(visible);
-
-		nextCourse.setVisible(!visible);
-		previousCourse.setVisible(!visible);
-		detailsCourseCmp.setVisible(!visible);
-	}
-	
-	private void contact(UserRequest ureq) {
-		removeAsListenerAndDispose(cmc);
-		if(statementCtrl != null) {
-			contactCtrl = new ContactController(ureq, getWindowControl());
-			cmc = new CloseableModalController(getWindowControl(), translate("close"), contactCtrl.getInitialComponent());
-			cmc.activate();
-			listenTo(cmc);
-		}
-	}
-	
-	private void back(UserRequest ureq) {
-		if(statementCtrl == null) {
-			fireEvent(ureq, Event.BACK_EVENT);
-		} else {
-			removeDetails(ureq);
-		}
-	}
-	
 	private void previousEntry(UserRequest ureq) {
 		EfficiencyStatementEntry currentEntry = statementCtrl.getEntry();
 		int previousIndex = model.getObjects().indexOf(currentEntry) - 1;
@@ -374,7 +329,7 @@ public class CourseController extends FormBasicController implements Activateabl
 			previousIndex = model.getRowCount() - 1;
 		}
 		EfficiencyStatementEntry previousEntry = model.getObject(previousIndex);
-		selectDetails(ureq, previousEntry);
+		doSelectDetails(ureq, previousEntry);
 	}
 	
 	private void nextEntry(UserRequest ureq) {
@@ -384,18 +339,10 @@ public class CourseController extends FormBasicController implements Activateabl
 			nextIndex = 0;
 		}
 		EfficiencyStatementEntry nextEntry = model.getObject(nextIndex);
-		selectDetails(ureq, nextEntry);
+		doSelectDetails(ureq, nextEntry);
 	}
 	
-	private void removeDetails(UserRequest ureq) {
-		flc.getFormItemComponent().remove(statementCtrl.getInitialComponent());	
-		removeAsListenerAndDispose(statementCtrl);
-		statementCtrl = null;
-		setDetailsToolbarVisible(false);
-		addToHistory(ureq);
-	}
-	
-	private void selectDetails(UserRequest ureq,  EfficiencyStatementEntry entry) {
+	private void doSelectDetails(UserRequest ureq,  EfficiencyStatementEntry entry) {
 		boolean selectAssessmentTool = false;
 		if(statementCtrl != null) {
 			selectAssessmentTool = statementCtrl.isAssessmentToolSelected();
@@ -404,21 +351,22 @@ public class CourseController extends FormBasicController implements Activateabl
 
 		OLATResourceable ores = OresHelper.createOLATResourceableInstance(Identity.class, entry.getIdentityKey());
 		WindowControl bwControl = addToHistory(ureq, ores, null);
-		statementCtrl = new EfficiencyStatementDetailsController(ureq, bwControl, entry, selectAssessmentTool);
+		int entryIndex = model.getObjects().indexOf(entry) + 1;
+		Identity assessedIdentity = securityManager.loadIdentityByKey(entry.getIdentityKey());
+		String fullname = userManager.getUserDisplayName(assessedIdentity);
+		String details = translate("students.details", new String[] {
+				fullname, String.valueOf(entryIndex), String.valueOf(model.getRowCount())
+		});
+		
+		statementCtrl = new EfficiencyStatementDetailsController(ureq, bwControl, stackPanel,
+				entry, assessedIdentity, details, entryIndex, model.getRowCount(), selectAssessmentTool);
 		listenTo(statementCtrl);
 		
-		flc.getFormItemComponent().put("efficiencyDetails", statementCtrl.getInitialComponent());
-		
-		int index = model.getObjects().indexOf(entry) + 1;
-		String details = translate("students.details", new String[] {
-				StringHelper.escapeHtml(entry.getIdentityKey().toString()),//TODO user props
-				String.valueOf(index), String.valueOf(model.getRowCount())
-		});
-		detailsCmp.setText(details);
-		setDetailsToolbarVisible(true);
+		stackPanel.popUpToController(this);
+		stackPanel.pushController(fullname, statementCtrl);
 	}
 	
-	private void openCourse(UserRequest ureq) {
+	private void doOpenCourse(UserRequest ureq) {
 		OLATResourceable ores = OresHelper.createOLATResourceableInstance("RepositoryEntry", courseStat.getRepoKey());
 		WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(getWindowControl(), ores);
 		NewControllerFactory.getInstance().launch(ureq, bwControl);

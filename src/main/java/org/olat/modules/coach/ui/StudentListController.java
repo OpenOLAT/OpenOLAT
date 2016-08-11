@@ -24,6 +24,7 @@ import java.util.List;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
@@ -34,6 +35,8 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableSearchEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
+import org.olat.core.gui.components.stack.PopEvent;
+import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -64,6 +67,7 @@ public class StudentListController extends FormBasicController implements Activa
 	
 	private FlexiTableElement tableEl;
 	private StudentsTableDataModel model;
+	private TooledStackedPanel stackPanel;
 	
 	private StudentCoursesController studentCtrl;
 	
@@ -81,12 +85,15 @@ public class StudentListController extends FormBasicController implements Activa
 	@Autowired
 	private CoachingService coachingService;
 	
-	public StudentListController(UserRequest ureq, WindowControl wControl) {
+	public StudentListController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel) {
 		super(ureq, wControl, LAYOUT_BAREBONE);
 		setTranslator(userManager.getPropertyHandlerTranslator(getTranslator()));
 		isAdministrativeUser = securityModule.isUserAllowedAdminProps(ureq.getUserSession().getRoles());
 		userPropertyHandlers = userManager.getUserPropertyHandlersFor(UserListController.usageIdentifyer, isAdministrativeUser);
 
+		this.stackPanel = stackPanel;
+		stackPanel.addListener(this);
+		
 		initForm(ureq);
 		loadModel();
 	}
@@ -116,12 +123,11 @@ public class StudentListController extends FormBasicController implements Activa
 		tableEl.setEmtpyTableMessageKey("error.no.found");
 		tableEl.setAndLoadPersistedPreferences(ureq, "fStudentListController");
 		tableEl.setSearchEnabled(new StudentListProvider(model, userManager), ureq.getUserSession());
-		
 	}
 	
 	@Override
 	protected void doDispose() {
-		//
+		stackPanel.removeListener(this);
 	}
 
 	@Override
@@ -166,13 +172,7 @@ public class StudentListController extends FormBasicController implements Activa
 
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
-		if(event == Event.BACK_EVENT) {
-			reloadModel();
-			initialPanel.popContent();
-			removeAsListenerAndDispose(studentCtrl);
-			studentCtrl = null;
-			addToHistory(ureq);
-		} else if (source == studentCtrl) {
+		if (source == studentCtrl) {
 			if(event == Event.CHANGED_EVENT) {
 				hasChanged = true;
 			} else if("next.student".equals(event.getCommand())) {
@@ -183,7 +183,20 @@ public class StudentListController extends FormBasicController implements Activa
 		}
 		super.event(ureq, source, event);
 	}
-	
+
+	@Override
+	public void event(UserRequest ureq, Component source, Event event) {
+		if(stackPanel == source) {
+			if(event instanceof PopEvent) {
+				PopEvent pe = (PopEvent)event;
+				if(pe.getController() == this.studentCtrl && hasChanged) {
+					reloadModel();
+				}
+			}
+		}
+		super.event(ureq, source, event);
+	}
+
 	@Override
 	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
 		if(entries == null || entries.isEmpty()) return;
@@ -223,20 +236,17 @@ public class StudentListController extends FormBasicController implements Activa
 	}
 
 	protected StudentCoursesController selectStudent(UserRequest ureq, StudentStatEntry studentStat) {
-		if(studentCtrl != null) {
-			initialPanel.popContent();
-			removeAsListenerAndDispose(studentCtrl);
-		}
-		
 		Identity student = securityManager.loadIdentityByKey(studentStat.getIdentityKey());
 		OLATResourceable ores = OresHelper.createOLATResourceableInstance(Identity.class, student.getKey());
 		WindowControl bwControl = addToHistory(ureq, ores, null);
 		
 		int index = model.getObjects().indexOf(studentStat);
-		studentCtrl = new StudentCoursesController(ureq, bwControl, studentStat, student, index, model.getRowCount(), false);
+		studentCtrl = new StudentCoursesController(ureq, bwControl, stackPanel, studentStat, student, index, model.getRowCount(), false);
 		listenTo(studentCtrl);
 		
-		initialPanel.pushContent(studentCtrl.getInitialComponent());
+		stackPanel.popUpToRootController(ureq);
+		String displayName = userManager.getUserDisplayName(student);
+		stackPanel.pushController(displayName, studentCtrl);
 		return studentCtrl;
 	}
 }

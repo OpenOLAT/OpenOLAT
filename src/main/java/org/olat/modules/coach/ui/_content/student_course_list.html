@@ -1,15 +1,11 @@
-$r.render("toolbar")
-#if($r.available("efficiencyDetails"))
-	$r.render("efficiencyDetails")
-#else
-	<div class="o_eff_statement_details">
-		<h3><i class="o_icon o_icon_user"> </i> $studentName</h3>
-		#if($r.available("home"))
-			$r.render("home")
-		#end
-		#if($r.available("contact"))
-			$r.render("contact")
-		#end
-	</div>
-	$r.render("table")
-#end
+<div class="o_header_with_buttons">
+	<h3><i class="o_icon o_icon_user"> </i> $studentName</h3>
+	<div class="o_button_group"><div class="btn-group">
+	#if($r.available("home"))
+		$r.render("home")
+	#end
+	#if($r.available("contact"))
+		$r.render("contact")
+	#end</div></div>
+</div>
+$r.render("table")

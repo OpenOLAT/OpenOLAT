@@ -24,7 +24,7 @@ import java.util.List;
 import org.olat.core.commons.fullWebApp.LayoutMain3ColsController;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
-import org.olat.core.gui.components.panel.Panel;
+import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.components.tree.GenericTreeModel;
 import org.olat.core.gui.components.tree.GenericTreeNode;
 import org.olat.core.gui.components.tree.MenuTree;
@@ -56,15 +56,15 @@ import org.olat.util.logging.activity.LoggingResourceable;
  */
 public class CoachMainController extends MainLayoutBasicController implements Activateable2 {
 
-	private Panel content;
-	private MenuTree menu;
+	private final MenuTree menu;
+	private final TooledStackedPanel content;
 	
 	private GroupListController groupListCtrl;
 	private UserSearchController userSearchCtrl;
 	private CourseListController courseListCtrl;
 	private StudentListController studentListCtrl;
 	private LayoutMain3ColsController columnLayoutCtr;
-
+	
 	public CoachMainController(UserRequest ureq, WindowControl control) {
 		super(ureq, control);
 
@@ -72,8 +72,10 @@ public class CoachMainController extends MainLayoutBasicController implements Ac
 		menu.setExpandSelectedNode(false);
 		menu.setRootVisible(false);
 		menu.setTreeModel(buildTreeModel(ureq));
-		
-		content = new Panel("content");
+
+		content = new TooledStackedPanel("coaching-stack", getTranslator(), this);
+		content.setNeverDisposeRootController(true);
+		content.setToolbarAutoEnabled(true);
 
 		columnLayoutCtr = new LayoutMain3ColsController(ureq, getWindowControl(), menu, content, "coaching");
 		columnLayoutCtr.addCssClassToMain("o_coaching");
@@ -121,7 +123,7 @@ public class CoachMainController extends MainLayoutBasicController implements Ac
 				OLATResourceable ores = OresHelper.createOLATResourceableInstance("Members", 0l);
 				ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ores));
 				WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ores, null, getWindowControl());
-				studentListCtrl = new StudentListController(ureq, bwControl);
+				studentListCtrl = new StudentListController(ureq, bwControl, content);
 				listenTo(studentListCtrl);
 			}
 			selectedCtrl = studentListCtrl;
@@ -130,7 +132,7 @@ public class CoachMainController extends MainLayoutBasicController implements Ac
 				OLATResourceable ores = OresHelper.createOLATResourceableInstance("Groups", 0l);
 				ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ores));
 				WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ores, null, getWindowControl());
-				groupListCtrl = new GroupListController(ureq, bwControl);
+				groupListCtrl = new GroupListController(ureq, bwControl, content);
 				listenTo(groupListCtrl);
 			}
 			selectedCtrl = groupListCtrl;
@@ -139,7 +141,7 @@ public class CoachMainController extends MainLayoutBasicController implements Ac
 				OLATResourceable ores = OresHelper.createOLATResourceableInstance("Courses", 0l);
 				ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ores));
 				WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ores, null, getWindowControl());
-				courseListCtrl = new CourseListController(ureq, bwControl);
+				courseListCtrl = new CourseListController(ureq, bwControl, content);
 				listenTo(courseListCtrl);
 			}
 			selectedCtrl = courseListCtrl;
@@ -148,7 +150,7 @@ public class CoachMainController extends MainLayoutBasicController implements Ac
 				OLATResourceable ores = OresHelper.createOLATResourceableInstance("Search", 0l);
 				ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ores));
 				WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ores, null, getWindowControl());
-				userSearchCtrl = new UserSearchController(ureq, bwControl);
+				userSearchCtrl = new UserSearchController(ureq, bwControl, content);
 				listenTo(userSearchCtrl);
 			}
 			selectedCtrl = userSearchCtrl;
@@ -159,7 +161,8 @@ public class CoachMainController extends MainLayoutBasicController implements Ac
 			if (selTreeNode != null && !selTreeNode.getIdent().equals(menu.getSelectedNodeId())) {
 				menu.setSelectedNodeId(selTreeNode.getIdent());
 			}
-			columnLayoutCtr.setCol3(selectedCtrl.getInitialComponent());
+			
+			content.rootController(selTreeNode.getTitle(), selectedCtrl);
 			addToHistory(ureq, selectedCtrl);
 		}
 		return (Activateable2)selectedCtrl;

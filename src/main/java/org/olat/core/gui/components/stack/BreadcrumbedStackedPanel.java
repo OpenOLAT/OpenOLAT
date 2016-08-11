@@ -62,6 +62,7 @@ public class BreadcrumbedStackedPanel extends Panel implements StackedPanel, Bre
 	private String cssClass;
 	private boolean showCloseLink = false;
 	private boolean showCloseLinkForRootCrumb = false;
+	private boolean neverDisposeRootController = false;
 	
 	public BreadcrumbedStackedPanel(String name, Translator translator, ComponentEventListener listener) {
 		this(name, translator, listener, null);
@@ -122,6 +123,14 @@ public class BreadcrumbedStackedPanel extends Panel implements StackedPanel, Bre
 	public void setShowCloseLink(boolean showCloseLinkForCrumbs, boolean showCloseLinkForRootCrumb) {
 		this.showCloseLink = showCloseLinkForCrumbs;
 		this.showCloseLinkForRootCrumb = showCloseLinkForRootCrumb;
+	}
+	
+	public boolean isNeverDisposeRootController() {
+		return neverDisposeRootController;
+	}
+
+	public void setNeverDisposeRootController(boolean neverDisposeRootController) {
+		this.neverDisposeRootController = neverDisposeRootController;
 	}
 	
 	public List<Link> getBreadCrumbs() {
@@ -328,6 +337,10 @@ public class BreadcrumbedStackedPanel extends Panel implements StackedPanel, Bre
 			for(int i=stack.size(); i-->0; ) {
 				Link link = stack.remove(i);
 				BreadCrumb crumb = (BreadCrumb)link.getUserObject();
+				
+				if(neverDisposeRootController && i == 0) {
+					continue;
+				}
 				crumb.dispose();
 			}
 		}

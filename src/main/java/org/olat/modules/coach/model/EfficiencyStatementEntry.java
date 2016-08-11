@@ -42,11 +42,6 @@ public class EfficiencyStatementEntry extends UserPropertiesRow {
 	private final RepositoryEntry course;
 	private final UserEfficiencyStatement efficencyStatement;
 	
-	/*public EfficiencyStatementEntry(IdentityShort student, RepositoryEntry course, UserEfficiencyStatement efficencyStatement) {
-		this.course = course;
-		this.efficencyStatement = efficencyStatement;
-	}*/
-	
 	public EfficiencyStatementEntry(Identity student, RepositoryEntry course, UserEfficiencyStatement efficencyStatement,
 			List<UserPropertyHandler> userPropertyHandlers, Locale locale) {
 		super(student, userPropertyHandlers, locale);
@@ -56,7 +51,7 @@ public class EfficiencyStatementEntry extends UserPropertiesRow {
 	}
 
 	public String getCourseDisplayName() {
-		return null;
+		return course == null ? null : course.getDisplayname();
 	}
 	
 	public RepositoryEntry getCourse() {

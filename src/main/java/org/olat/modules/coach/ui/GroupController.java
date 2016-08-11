@@ -25,6 +25,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 import org.olat.NewControllerFactory;
+import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -40,7 +41,9 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
-import org.olat.core.gui.components.text.TextComponent;
+import org.olat.core.gui.components.stack.PopEvent;
+import org.olat.core.gui.components.stack.TooledController;
+import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -67,7 +70,6 @@ import org.olat.modules.coach.model.EfficiencyStatementEntry;
 import org.olat.modules.coach.model.GroupStatEntry;
 import org.olat.modules.coach.model.IdentityResourceKey;
 import org.olat.modules.coach.ui.EfficiencyStatementEntryTableDataModel.Columns;
-import org.olat.modules.coach.ui.ToolbarController.Position;
 import org.olat.user.UserManager;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -82,21 +84,20 @@ import org.springframework.beans.factory.annotation.Autowired;
  *
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
-public class GroupController extends FormBasicController implements Activateable2, GenericEventListener {
+public class GroupController extends FormBasicController implements Activateable2, GenericEventListener, TooledController {
 	
-	private final Link backLink, next, previous;
-	private final Link nextGroup, previousGroup;
 	private final Link openGroup;
-	private final TextComponent detailsCmp, detailsGroupCmp;
+	private final TooledStackedPanel stackPanel;
+	private Link nextGroup, detailsGroupCmp, previousGroup;
 	
 	private FlexiTableElement tableEl;
 	private EfficiencyStatementEntryTableDataModel model;
-
-	private final ToolbarController toolbar;
 	private EfficiencyStatementDetailsController statementCtrl;
 
 	private boolean hasChanged = false;
 	
+	private final int index;
+	private final int numOfGroups;
 	private final BusinessGroup group;
 	private final GroupStatEntry entry;
 
@@ -106,6 +107,8 @@ public class GroupController extends FormBasicController implements Activateable
 	@Autowired
 	private UserManager userManager;
 	@Autowired
+	private BaseSecurity securityManager;
+	@Autowired
 	private BaseSecurityModule securityModule;
 	@Autowired
 	private CoachingService coachingService;
@@ -114,68 +117,54 @@ public class GroupController extends FormBasicController implements Activateable
 	@Autowired
 	private CertificatesManager certificatesManager;
 	
-	public GroupController(UserRequest ureq, WindowControl wControl, GroupStatEntry groupStatistic, int index, int numOfGroups) {
+	public GroupController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
+			GroupStatEntry groupStatistic, int index, int numOfGroups) {
 		super(ureq, wControl, "group_view");
 		setTranslator(userManager.getPropertyHandlerTranslator(getTranslator()));
 		isAdministrativeUser = securityModule.isUserAllowedAdminProps(ureq.getUserSession().getRoles());
 		userPropertyHandlers = userManager.getUserPropertyHandlersFor(UserListController.usageIdentifyer, isAdministrativeUser);
 		
+		this.index = index;
 		this.entry = groupStatistic;
+		this.stackPanel = stackPanel;
+		this.numOfGroups = numOfGroups;
 		group = groupManager.loadBusinessGroup(groupStatistic.getGroupKey());
 		
 		initForm(ureq);
-
-		List<EfficiencyStatementEntry> allGroup = loadModel();
-
-		toolbar = new ToolbarController(ureq, wControl, getTranslator());
-		listenTo(toolbar);
-		flc.getFormItemComponent().put("toolbar", toolbar.getInitialComponent());
-		
-		backLink = toolbar.addToolbarLink("back", this, Position.left);
-		backLink.setIconLeftCSS("o_icon o_icon_back");
-
-		//next/previous student
-		previous = toolbar.addToolbarLink("previous", this, Position.center);
-		previous.setIconLeftCSS("o_icon o_icon_move_left");
-		previous.setCustomDisabledLinkCSS("navbar-text");
-		previous.setEnabled(allGroup.size() > 1);
-		
-		detailsCmp = toolbar.addToolbarText("", this, Position.center);
-	
-		next = toolbar.addToolbarLink("next", this, Position.center);
-		next.setIconRightCSS("o_icon o_icon_move_right");
-		next.setCustomDisabledLinkCSS("navbar-text");
-		next.setEnabled(allGroup.size() > 1);
-		//next/previous group
-		//students next,previous
-		previousGroup = toolbar.addToolbarLink("previous.group", this, Position.center);
-		previousGroup.setIconLeftCSS("o_icon o_icon_move_left");
-		previousGroup.setCustomDisabledLinkCSS("navbar-text");
-		previousGroup.setEnabled(numOfGroups > 1);
-		
-		detailsGroupCmp = toolbar.addToolbarText("details.group", "", this, Position.center);
-		detailsGroupCmp.setCssClass("navbar-text");
-		detailsGroupCmp.setText(translate("students.details", new String[]{
-				StringHelper.escapeHtml(group.getName()), Integer.toString(index + 1), Integer.toString(numOfGroups)
-		}));
-		nextGroup = toolbar.addToolbarLink("next.group", this, Position.center);
-		nextGroup.setIconRightCSS("o_icon o_icon_move_right");
-		nextGroup.setCustomDisabledLinkCSS("navbar-text");
-		nextGroup.setEnabled(numOfGroups > 1);
+		loadModel();
 
 		openGroup = LinkFactory.createButton("open.group", flc.getFormItemComponent(), this);
 		openGroup.setIconLeftCSS("o_icon o_icon_group");
 		flc.getFormItemComponent().put("open", openGroup);
-
-		setDetailsToolbarVisible(false);
 
 		CoordinatorManager.getInstance().getCoordinator().getEventBus()
 			.registerFor(this, getIdentity(), CertificatesManager.ORES_CERTIFICATE_EVENT);
 	}
 
 	@Override
-	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+	public void initTools() {
+		//next, previous group
+		previousGroup = LinkFactory.createToolLink("previous.group", translate("previous.group"), this);
+		previousGroup.setIconLeftCSS("o_icon o_icon_previous");
+		previousGroup.setEnabled(numOfGroups > 1);
+		stackPanel.addTool(previousGroup);
+		
+		String details = translate("students.details", new String[]{
+				StringHelper.escapeHtml(group.getName()), Integer.toString(index + 1), Integer.toString(numOfGroups)
+		});		
+		detailsGroupCmp = LinkFactory.createToolLink("details.group", details, this);
+		detailsGroupCmp.setIconLeftCSS("o_icon o_icon_group");
+		stackPanel.addTool(detailsGroupCmp);
+				
+		nextGroup = LinkFactory.createToolLink("next.group", translate("next.group"), this);
+		nextGroup.setIconLeftCSS("o_icon o_icon_next");
+		nextGroup.setEnabled(numOfGroups > 1);
+		stackPanel.addTool(nextGroup);
+		stackPanel.addListener(this);
+	}
 
+	@Override
+	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		if(formLayout instanceof FormLayoutContainer) {
 			FormLayoutContainer layoutCont = (FormLayoutContainer)formLayout;
 			layoutCont.contextPut("groupName", StringHelper.escapeHtml(group.getName()));
@@ -209,6 +198,7 @@ public class GroupController extends FormBasicController implements Activateable
 
 	@Override
 	protected void doDispose() {
+		stackPanel.removeListener(this);
 		CoordinatorManager.getInstance().getCoordinator().getEventBus()
 			.deregisterFor(this, CertificatesManager.ORES_CERTIFICATE_EVENT);
 	}
@@ -277,39 +267,34 @@ public class GroupController extends FormBasicController implements Activateable
 
 	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
-		if (source == next) {
-			nextEntry(ureq);
-		} else if (source == previous) {
-			previousEntry(ureq);
-		} else if(source == backLink) {
-			reloadModel();
-			back(ureq);
-		} else if(source == openGroup) {
+		if(source == openGroup) {
 			openGroup(ureq);
+		} else if(nextGroup == source) {
+			fireEvent(ureq, event);
+		} else if(previousGroup == source) {
+			fireEvent(ureq, event);
+		} else if(stackPanel == source) {
+			if(event instanceof PopEvent) {
+				PopEvent pe = (PopEvent)event;
+				if(pe.getController() == statementCtrl && hasChanged) {
+					reloadModel();
+				}
+			}
 		}
 		super.event(ureq, source, event);
 	}
 
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
-		if (source == toolbar) {
-			if("back".equals(event.getCommand())) {
-				reloadModel();
-				back(ureq);
+		if (statementCtrl == source) {
+			if(event == Event.CHANGED_EVENT) {
+				hasChanged = true;
+				fireEvent(ureq, event);
 			} else if ("previous".equals(event.getCommand())) {
 				previousEntry(ureq);
 			} else if ("next".equals(event.getCommand())) {
 				nextEntry(ureq);
-			} else if ("next.group".equals(event.getCommand())) {
-				fireEvent(ureq, event);
-			} else if ("previous.group".equals(event.getCommand())) {
-				fireEvent(ureq, event);
-			}
-		} else if (statementCtrl == source) {
-			if(event == Event.CHANGED_EVENT) {
-				hasChanged = true;
-				fireEvent(ureq, event);
-			}
+			} 
 		}
 		super.event(ureq, source, event);
 	}
@@ -329,24 +314,6 @@ public class GroupController extends FormBasicController implements Activateable
 					break;
 				}
 			}
-		}
-	}
-	
-	private void setDetailsToolbarVisible(boolean visible) {
-		next.setVisible(visible);
-		previous.setVisible(visible);
-		detailsCmp.setVisible(visible);
-		
-		nextGroup.setVisible(!visible);
-		previousGroup.setVisible(!visible);
-		detailsGroupCmp.setVisible(!visible);
-	}
-	
-	private void back(UserRequest ureq) {
-		if(statementCtrl == null) {
-			fireEvent(ureq, Event.BACK_EVENT);
-		} else {
-			removeDetails(ureq);
 		}
 	}
 	
@@ -370,34 +337,29 @@ public class GroupController extends FormBasicController implements Activateable
 		selectDetails(ureq, nextEntry);
 	}
 	
-	private void removeDetails(UserRequest ureq) {
-		flc.getFormItemComponent().remove(statementCtrl.getInitialComponent());	
-		removeAsListenerAndDispose(statementCtrl);
-		statementCtrl = null;
-		setDetailsToolbarVisible(false);
-		addToHistory(ureq);
-	}
-	
 	private void selectDetails(UserRequest ureq, EfficiencyStatementEntry statementEntry) {
 		boolean selectAssessmentTool = false;
 		if(statementCtrl != null) {
 			selectAssessmentTool = statementCtrl.isAssessmentToolSelected();
-			removeAsListenerAndDispose(statementCtrl);
 		}
-		
+
+		int entryIndex = model.getObjects().indexOf(statementEntry) + 1;
+		Identity assessedIdentity = securityManager.loadIdentityByKey(statementEntry.getIdentityKey());
 		OLATResourceable ores = OresHelper.createOLATResourceableInstance(Identity.class, statementEntry.getIdentityKey());
 		WindowControl bwControl = addToHistory(ureq, ores, null);
-		statementCtrl = new EfficiencyStatementDetailsController(ureq, bwControl, statementEntry, selectAssessmentTool);
-		listenTo(statementCtrl);
-		flc.getFormItemComponent().put("efficiencyDetails", statementCtrl.getInitialComponent());
-		
-		int index = model.getObjects().indexOf(statementEntry) + 1;
-		String details = translate("students.details", new String[]{
-				StringHelper.escapeHtml(statementEntry.getIdentityKey().toString()),//TODO user props
-				String.valueOf(index), String.valueOf(model.getRowCount())
+
+		String fullname = userManager.getUserDisplayName(assessedIdentity);
+		String displayName = statementEntry.getCourseDisplayName();
+		String display =fullname + " (" + displayName + ")";
+		String details = translate("students.details", new String[] {
+				display, String.valueOf(entryIndex), String.valueOf(model.getRowCount())
 		});
-		detailsCmp.setText(details);
-		setDetailsToolbarVisible(true);
+
+		statementCtrl = new EfficiencyStatementDetailsController(ureq, bwControl, stackPanel,
+				statementEntry, assessedIdentity, details, entryIndex, model.getRowCount(), selectAssessmentTool);
+		listenTo(statementCtrl);
+		stackPanel.popUpToController(this);
+		stackPanel.pushController(display, statementCtrl);
 	}
 	
 	private void openGroup(UserRequest ureq) {

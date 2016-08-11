@@ -40,7 +40,9 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
-import org.olat.core.gui.components.text.TextComponent;
+import org.olat.core.gui.components.stack.PopEvent;
+import org.olat.core.gui.components.stack.TooledController;
+import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -69,7 +71,6 @@ import org.olat.modules.coach.model.EfficiencyStatementEntry;
 import org.olat.modules.coach.model.IdentityResourceKey;
 import org.olat.modules.coach.model.StudentStatEntry;
 import org.olat.modules.coach.ui.EfficiencyStatementEntryTableDataModel.Columns;
-import org.olat.modules.coach.ui.ToolbarController.Position;
 import org.olat.repository.RepositoryEntry;
 import org.olat.user.UserManager;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
@@ -85,23 +86,23 @@ import org.springframework.beans.factory.annotation.Autowired;
  *
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
-public class StudentCoursesController extends FormBasicController implements Activateable2, GenericEventListener {
+public class StudentCoursesController extends FormBasicController implements Activateable2, GenericEventListener, TooledController {
 
-	private final Link backLink, next, previous;
-	private final Link nextStudent, previousStudent;
 	private final Link homeLink, contactLink;
-	private final TextComponent detailsCmp, detailsStudentCmp;
+	private Link nextStudent, detailsStudentCmp, previousStudent;
 
 	private FlexiTableElement tableEl;
+	private final TooledStackedPanel stackPanel;
 	private EfficiencyStatementEntryTableDataModel model;
 	
 	private CloseableModalController cmc;
 	private ContactFormController contactCtrl;
-	private final ToolbarController toolbar;
 	private EfficiencyStatementDetailsController statementCtrl;
 	
 	private boolean hasChanged = false;
 	
+	private final int index;
+	private final int numOfStudents;
 	private final Identity student;
 	private final boolean fullAccess;
 	private final StudentStatEntry statEntry;
@@ -118,54 +119,23 @@ public class StudentCoursesController extends FormBasicController implements Act
 	@Autowired
 	private CertificatesManager certificatesManager;
 	
-	public StudentCoursesController(UserRequest ureq, WindowControl wControl, StudentStatEntry statEntry,
-			Identity student, int index, int numOfStudents, boolean fullAccess) {
+	public StudentCoursesController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
+			StudentStatEntry statEntry, Identity student, int index, int numOfStudents, boolean fullAccess) {
 		super(ureq, wControl, "student_course_list");
 		setTranslator(userManager.getPropertyHandlerTranslator(getTranslator()));
 		isAdministrativeUser = securityModule.isUserAllowedAdminProps(ureq.getUserSession().getRoles());
 		userPropertyHandlers = userManager.getUserPropertyHandlersFor(UserListController.usageIdentifyer, isAdministrativeUser);
 
+		this.index = index;
 		this.student = student;
 		this.statEntry = statEntry;
 		this.fullAccess = fullAccess;
+		this.stackPanel = stackPanel;
+		this.numOfStudents = numOfStudents;
 		
 		initForm(ureq);
+		loadModel();
 
-		List<EfficiencyStatementEntry> statements = loadModel();
-		String fullName = StringHelper.escapeHtml(userManager.getUserDisplayName(student));
-
-		toolbar = new ToolbarController(ureq, wControl, getTranslator());
-		listenTo(toolbar);
-		flc.getFormItemComponent().put("toolbar", toolbar.getInitialComponent());
-		
-		backLink = toolbar.addToolbarLink("back", this, Position.left);
-		backLink.setIconLeftCSS("o_icon o_icon_back");
-		previous = toolbar.addToolbarLink("previous.course", this, Position.center);
-		previous.setIconLeftCSS("o_icon o_icon_move_left");
-		previous.setCustomDisabledLinkCSS("navbar-text");
-		previous.setEnabled(statements.size() > 1);
-		detailsCmp = toolbar.addToolbarText("details", this, Position.center);
-		next = toolbar.addToolbarLink("next.course", this, Position.center);
-		next.setIconRightCSS("o_icon o_icon_move_right");
-		next.setCustomDisabledLinkCSS("navbar-text");
-		next.setEnabled(statements.size() > 1);
-		
-		//students next,previous
-		previousStudent = toolbar.addToolbarLink("previous.student", this, Position.center);
-		previousStudent.setIconLeftCSS("o_icon o_icon_move_left");
-		previousStudent.setCustomDisabledLinkCSS("navbar-text");
-		previousStudent.setEnabled(numOfStudents > 1);
-		
-		detailsStudentCmp = toolbar.addToolbarText("details.student", "", this, Position.center);
-		detailsStudentCmp.setCssClass("navbar-text");
-		detailsStudentCmp.setText(translate("students.details", new String[]{
-				fullName, Integer.toString(index + 1), Integer.toString(numOfStudents)
-		}));
-		nextStudent = toolbar.addToolbarLink("next.student", this, Position.center);
-		nextStudent.setIconRightCSS("o_icon o_icon_move_right");
-		nextStudent.setCustomDisabledLinkCSS("navbar-text");
-		nextStudent.setEnabled(numOfStudents > 1);
-		
 		contactLink = LinkFactory.createButton("contact.link", flc.getFormItemComponent(), this);
 		contactLink.setIconLeftCSS("o_icon o_icon_mail");
 		flc.getFormItemComponent().put("contact", contactLink);
@@ -173,18 +143,38 @@ public class StudentCoursesController extends FormBasicController implements Act
 		homeLink = LinkFactory.createButton("home.link", flc.getFormItemComponent(), this);
 		homeLink.setIconLeftCSS("o_icon o_icon_home");
 		flc.getFormItemComponent().put("home", homeLink);
-
-		setDetailsToolbarVisible(false);
 		
 		CoordinatorManager.getInstance().getCoordinator().getEventBus()
 			.registerFor(this, getIdentity(), CertificatesManager.ORES_CERTIFICATE_EVENT);
 	}
 
 	@Override
+	public void initTools() {
+		previousStudent = LinkFactory.createToolLink("previous.student", translate("previous.student"), this);
+		previousStudent.setIconLeftCSS("o_icon o_icon_previous");
+		previousStudent.setEnabled(numOfStudents > 1);
+		stackPanel.addTool(previousStudent);
+		
+		String fullName = StringHelper.escapeHtml(userManager.getUserDisplayName(student));
+		String details = translate("students.details", new String[]{
+				fullName, Integer.toString(index + 1), Integer.toString(numOfStudents)
+		});
+		detailsStudentCmp = LinkFactory.createToolLink("details.student", details, this);
+		detailsStudentCmp.setIconLeftCSS("o_icon o_icon_user");
+		stackPanel.addTool(detailsStudentCmp);
+
+		nextStudent = LinkFactory.createToolLink("next.student", translate("next.student"), this);
+		nextStudent.setIconLeftCSS("o_icon o_icon_next");
+		nextStudent.setEnabled(numOfStudents > 1);
+		stackPanel.addTool(nextStudent);
+		stackPanel.addListener(this);
+	}
+
+	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		if(formLayout instanceof FormLayoutContainer) {
 			FormLayoutContainer layoutCont = (FormLayoutContainer)formLayout;
-			String fullName = StringHelper.escapeHtml(userManager.getUserDisplayName(student));
+			String fullName = userManager.getUserDisplayName(student);
 			layoutCont.contextPut("studentName", StringHelper.escapeHtml(fullName));
 		}
 		
@@ -200,7 +190,7 @@ public class StudentCoursesController extends FormBasicController implements Act
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, userPropertyHandler.i18nColumnDescriptorLabelKey(), colIndex++, "select", true, null));
 		}
 		
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Columns.repoName));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Columns.repoName, "select"));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Columns.passed, new PassedCellRenderer()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Columns.score, new ScoreCellRenderer()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Columns.certificate, new DownloadCertificateCellRenderer()));
@@ -216,6 +206,7 @@ public class StudentCoursesController extends FormBasicController implements Act
 
 	@Override
 	protected void doDispose() {
+		stackPanel.removeListener(this);
 		CoordinatorManager.getInstance().getCoordinator().getEventBus()
 			.deregisterFor(this, CertificatesManager.ORES_CERTIFICATE_EVENT);
 	}
@@ -287,16 +278,19 @@ public class StudentCoursesController extends FormBasicController implements Act
 
 	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
-		if (source == next) {
-			nextEntry(ureq);
-		} else if (source == previous) {
-			previousEntry(ureq);
-		} else if(source == backLink) {
-			back(ureq);
+		if(previousStudent == source || nextStudent == source) {
+			fireEvent(ureq, event);
 		} else if (source == homeLink) {
 			openHome(ureq);
 		} else if (source == contactLink) {
 			contact(ureq);
+		} else if(stackPanel == source) {
+			if(event instanceof PopEvent) {
+				PopEvent pe = (PopEvent)event;
+				if(pe.getController() == statementCtrl && hasChanged) {
+					reloadModel();
+				}
+			}
 		}
 		super.event(ureq, source, event);
 	}
@@ -307,10 +301,11 @@ public class StudentCoursesController extends FormBasicController implements Act
 			if(event == Event.CHANGED_EVENT) {
 				hasChanged = true;
 				fireEvent(ureq, event);
-			} else {
-				reloadModel();
-				removeDetails(ureq);
-			}
+			} else if ("next".equals(event.getCommand())) {
+				nextEntry(ureq);
+			} else if ("previous".equals(event.getCommand())) {
+				previousEntry(ureq);
+			} 
 		} else if (source == cmc) {
 			removeAsListenerAndDispose(cmc);
 			removeAsListenerAndDispose(contactCtrl);
@@ -322,21 +317,6 @@ public class StudentCoursesController extends FormBasicController implements Act
 			removeAsListenerAndDispose(contactCtrl);
 			cmc = null;
 			contactCtrl = null;
-		} else if (source == toolbar) {
-			if("back".equals(event.getCommand())) {
-				reloadModel();
-				back(ureq);
-			} else if ("next.course".equals(event.getCommand())) {
-				nextEntry(ureq);
-			} else if ("previous.course".equals(event.getCommand())) {
-				previousEntry(ureq);
-			} else if ("contact.link".equals(event.getCommand())) {
-				contact(ureq);
-			} else if ("next.student".equals(event.getCommand())) {
-				fireEvent(ureq, event);
-			} else if ("previous.student".equals(event.getCommand())) {
-				fireEvent(ureq, event);
-			}
 		}
 		super.event(ureq, source, event);
 	}
@@ -359,16 +339,6 @@ public class StudentCoursesController extends FormBasicController implements Act
 		}
 	}
 	
-	private void setDetailsToolbarVisible(boolean visible) {
-		next.setVisible(visible);
-		previous.setVisible(visible);
-		detailsCmp.setVisible(visible);
-		
-		nextStudent.setVisible(!visible);
-		previousStudent.setVisible(!visible);
-		detailsStudentCmp.setVisible(!visible);
-	}
-	
 	private void contact(UserRequest ureq) {
 		removeAsListenerAndDispose(cmc);
 
@@ -381,22 +351,6 @@ public class StudentCoursesController extends FormBasicController implements Act
 		cmc = new CloseableModalController(getWindowControl(), translate("close"), contactCtrl.getInitialComponent());
 		cmc.activate();
 		listenTo(cmc);
-	}
-	
-	private void removeDetails(UserRequest ureq) {
-		flc.getFormItemComponent().remove(statementCtrl.getInitialComponent());
-		removeAsListenerAndDispose(statementCtrl);
-		statementCtrl = null;
-		setDetailsToolbarVisible(false);
-		addToHistory(ureq);
-	}
-	
-	private void back(UserRequest ureq) {
-		if(statementCtrl == null) {
-			fireEvent(ureq, Event.BACK_EVENT);
-		} else {
-			removeDetails(ureq);
-		}
 	}
 	
 	private void nextEntry(UserRequest ureq) {
@@ -423,18 +377,21 @@ public class StudentCoursesController extends FormBasicController implements Act
 		boolean selectAssessmentTool = false;
 		if(statementCtrl != null) {
 			selectAssessmentTool = statementCtrl.isAssessmentToolSelected();
-			flc.getFormItemComponent().remove(statementCtrl.getInitialComponent());
-			removeAsListenerAndDispose(statementCtrl);
 		}
 		
 		OLATResourceable ores = OresHelper.createOLATResourceableInstance(RepositoryEntry.class, entry.getCourse().getKey());
 		WindowControl bwControl = addToHistory(ureq, ores, null);
-		statementCtrl = new EfficiencyStatementDetailsController(ureq, bwControl, entry, selectAssessmentTool);
+		String displayName = entry.getCourseDisplayName();
+		int entryIndex = model.getObjects().indexOf(entry);
+		String details = translate("students.details", new String[] {
+				displayName, String.valueOf(entryIndex), String.valueOf(model.getRowCount())
+		});
+		
+		statementCtrl = new EfficiencyStatementDetailsController(ureq, bwControl, stackPanel,
+				entry, student, details, entryIndex, model.getRowCount(), selectAssessmentTool);
 		listenTo(statementCtrl);
-		detailsCmp.setText(entry.getCourse().getDisplayname());
-
-		flc.getFormItemComponent().put("efficiencyDetails", statementCtrl.getInitialComponent());	
-		setDetailsToolbarVisible(true);
+		stackPanel.popUpToController(this);
+		stackPanel.pushController(displayName, statementCtrl);
 	}
 	
 	private void openHome(UserRequest ureq) {

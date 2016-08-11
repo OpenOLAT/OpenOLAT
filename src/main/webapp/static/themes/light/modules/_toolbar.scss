@@ -63,6 +63,11 @@
 			min-height: $o-toolbar-height-xs;
 			text-align: left;
 		}
+		
+		span.o_tool_text {
+			color: $o-toolbar-link-color;
+			display: inline-block;
+		}
 
 		a {
 			// Following rules copied from .navbar-link;

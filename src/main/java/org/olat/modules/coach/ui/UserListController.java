@@ -35,6 +35,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.components.link.Link;
+import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -66,6 +67,7 @@ public class UserListController extends FormBasicController implements Activatea
 	private Link back;
 	private FlexiTableElement tableEl;
 	private StudentsTableDataModel model;
+	private final TooledStackedPanel stackPanel;
 	private StudentCoursesController studentCtrl;
 	
 	private boolean hasChanged;
@@ -83,11 +85,12 @@ public class UserListController extends FormBasicController implements Activatea
 	@Autowired
 	private CoachingService coachingService;
 	
-	public UserListController(UserRequest ureq, WindowControl wControl) {
+	public UserListController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel) {
 		super(ureq, wControl, LAYOUT_BAREBONE);
 		setTranslator(userManager.getPropertyHandlerTranslator(getTranslator()));
 		isAdministrativeUser = securityModule.isUserAllowedAdminProps(ureq.getUserSession().getRoles());
 		userPropertyHandlers = userManager.getUserPropertyHandlersFor(usageIdentifyer, isAdministrativeUser);
+		this.stackPanel = stackPanel;
 		initForm(ureq);
 	}
 
@@ -232,9 +235,11 @@ public class UserListController extends FormBasicController implements Activatea
 		WindowControl bwControl = addToHistory(ureq, ores, null);
 		
 		int index = model.getObjects().indexOf(studentStat);
-		studentCtrl = new StudentCoursesController(ureq, bwControl, studentStat, student, index, model.getRowCount(), true);
+		String fullname = userManager.getUserDisplayName(student);
+		studentCtrl = new StudentCoursesController(ureq, bwControl, stackPanel, studentStat, student, index, model.getRowCount(), true);
 		
 		listenTo(studentCtrl);
-		initialPanel.pushContent(studentCtrl.getInitialComponent());
+		stackPanel.popUpToController(this);
+		stackPanel.pushController(fullname, studentCtrl);
 	}
 }

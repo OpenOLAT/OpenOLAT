@@ -24,7 +24,7 @@ import java.util.Map;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
-import org.olat.core.gui.components.panel.StackedPanel;
+import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -43,20 +43,19 @@ import org.olat.modules.coach.model.SearchCoachedIdentityParams;
  */
 public class UserSearchController extends BasicController implements Activateable2 {
 	
+	private UserListController userListCtrl;
 	private final UserSearchForm searchForm;
-	private final UserListController userListCtrl;
-	private final StackedPanel mainPanel;
+	private final TooledStackedPanel stackPanel;
 	
-	public UserSearchController(UserRequest ureq, WindowControl wControl) {
+	public UserSearchController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel) {
 		super(ureq, wControl);
+		
+		this.stackPanel = stackPanel;
 		
 		//search form
 		searchForm = new UserSearchForm(ureq, getWindowControl());
 		listenTo(searchForm);
-		userListCtrl = new UserListController(ureq, getWindowControl());
-		listenTo(userListCtrl);
-
-		mainPanel = putInitialPanel(searchForm.getInitialComponent());
+		putInitialPanel(searchForm.getInitialComponent());
 	}
 
 	@Override
@@ -84,27 +83,27 @@ public class UserSearchController extends BasicController implements Activateabl
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if(searchForm == source) {
 			if(event == Event.DONE_EVENT) {
-				doSearch();
+				doSearch(ureq);
 			}	
-		} else if(userListCtrl == source) {
-			if(event == Event.BACK_EVENT) {
-				mainPanel.popContent();
-			}
-		}
+		} 
 		super.event(ureq, source, event);
 	}
 	
 	private void doSearchByIdentityKey(UserRequest ureq, Long identityKey) {
 		SearchCoachedIdentityParams params = new SearchCoachedIdentityParams();
 		params.setIdentityKey(identityKey);
+		userListCtrl = new UserListController(ureq, getWindowControl(), stackPanel);
 		userListCtrl.search(params);
-		mainPanel.pushContent(userListCtrl.getInitialComponent());
 		if(userListCtrl.size() == 1) {
 			userListCtrl.selectUniqueStudent(ureq);
+			stackPanel.pushController("Result", userListCtrl);
+		} else {
+
+			stackPanel.pushController("Results", userListCtrl);
 		}
 	}
 	
-	private void doSearch() {
+	private void doSearch(UserRequest ureq) {
 		String login = searchForm.getLogin();
 		boolean onlyActive = searchForm.isOnlyActive();
 		Map<String,String> searchProps = searchForm.getSearchProperties();
@@ -115,7 +114,11 @@ public class UserSearchController extends BasicController implements Activateabl
 		if(onlyActive) {
 			params.setStatus(Identity.STATUS_VISIBLE_LIMIT);
 		}
+		
+		userListCtrl = new UserListController(ureq, getWindowControl(), stackPanel);
 		userListCtrl.search(params);
-		mainPanel.pushContent(userListCtrl.getInitialComponent());
+		listenTo(userListCtrl);
+		stackPanel.popUpToRootController(ureq);
+		stackPanel.pushController(translate("results"), userListCtrl);
 	}
 }
