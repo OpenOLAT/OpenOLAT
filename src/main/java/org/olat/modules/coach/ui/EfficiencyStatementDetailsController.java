@@ -40,13 +40,12 @@ import org.olat.core.id.Identity;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.course.CorruptedCourseException;
-import org.olat.course.CourseFactory;
-import org.olat.course.ICourse;
 import org.olat.course.assessment.EfficiencyStatement;
-import org.olat.course.assessment.IdentityAssessmentEditController;
 import org.olat.course.assessment.UserEfficiencyStatement;
 import org.olat.course.assessment.manager.EfficiencyStatementManager;
+import org.olat.course.assessment.ui.tool.AssessmentIdentityCourseController;
 import org.olat.course.certificate.ui.CertificateAndEfficiencyStatementController;
+import org.olat.modules.assessment.ui.event.AssessmentFormEvent;
 import org.olat.modules.coach.model.EfficiencyStatementEntry;
 import org.olat.repository.RepositoryEntry;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -69,7 +68,7 @@ public class EfficiencyStatementDetailsController extends BasicController implem
 	private boolean hasChanged;
 	private EfficiencyStatementEntry statementEntry;
 	private CertificateAndEfficiencyStatementController statementCtrl;
-	private IdentityAssessmentEditController assessmentCtrl;
+	private AssessmentIdentityCourseController assessmentCtrl;
 	
 	private final Identity assessedIdentity;
 	
@@ -94,9 +93,7 @@ public class EfficiencyStatementDetailsController extends BasicController implem
 			mainVC.put("segmentCmp", statementCtrl.getInitialComponent());
 		} else {
 			try {
-				ICourse course = CourseFactory.loadCourse(entry);
-				assessmentCtrl = new IdentityAssessmentEditController(wControl, ureq, null,
-						assessedIdentity, course, true, false, false);
+				assessmentCtrl = new AssessmentIdentityCourseController(ureq, wControl, null, entry, assessedIdentity);
 				listenTo(assessmentCtrl);
 				
 				segmentView = SegmentViewFactory.createSegmentView("segments", mainVC, this);
@@ -140,7 +137,7 @@ public class EfficiencyStatementDetailsController extends BasicController implem
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if(assessmentCtrl == source) {
-			if(event == Event.CHANGED_EVENT) {
+			if(event == Event.CHANGED_EVENT || event instanceof AssessmentFormEvent) {
 				//reload the details
 				efficiencyStatementChanged();
 				hasChanged = true;

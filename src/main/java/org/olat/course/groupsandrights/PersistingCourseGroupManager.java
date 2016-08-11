@@ -36,7 +36,6 @@ import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
-import org.olat.core.manager.BasicManager;
 import org.olat.core.util.StringHelper;
 import org.olat.course.export.CourseEnvironmentMapper;
 import org.olat.group.BusinessGroup;
@@ -61,7 +60,7 @@ import org.olat.resource.OLATResourceManager;
  * Initial Date: Aug 25, 2004
  * @author gnaegi
  */
-public class PersistingCourseGroupManager extends BasicManager implements CourseGroupManager {
+public class PersistingCourseGroupManager implements CourseGroupManager {
 	
 	private static final OLog log = Tracing.createLoggerFor(PersistingCourseGroupManager.class);
 
@@ -98,10 +97,6 @@ public class PersistingCourseGroupManager extends BasicManager implements Course
 		repositoryService = CoreSpringFactory.getImpl(RepositoryService.class);
 		businessGroupService = CoreSpringFactory.getImpl(BusinessGroupService.class);
 	}
-	
-	public void updateCourseEntry(RepositoryEntry courseEntry) {
-		this.courseRepoEntry = courseEntry;
-	}
 
 	@Override
 	public OLATResource getCourseResource() {
@@ -116,8 +111,7 @@ public class PersistingCourseGroupManager extends BasicManager implements Course
 		return courseRepoEntry;
 	}
 	
-	@Override
-	public void refreshRepositoryEntry(RepositoryEntry entry) {
+	public void updateRepositoryEntry(RepositoryEntry entry) {
 		courseRepoEntry = entry;
 	}
 
@@ -317,7 +311,7 @@ public class PersistingCourseGroupManager extends BasicManager implements Course
 			for(BGArea area:areas) {
 				areaManager.deleteBGArea(area);
 			}
-			logAudit("Deleting course groupmanagement for " + re.toString());
+			log.audit("Deleting course groupmanagement for " + re.toString());
 		}
 	}
 

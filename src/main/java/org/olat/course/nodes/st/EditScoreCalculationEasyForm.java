@@ -43,6 +43,7 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.course.editor.StatusDescription;
 import org.olat.course.nodes.CourseNode;
+import org.olat.course.run.scoring.FailedEvaluationType;
 import org.olat.course.run.scoring.ScoreCalculator;
 
 /**
@@ -55,16 +56,17 @@ import org.olat.course.run.scoring.ScoreCalculator;
  * @author gnaegi
  */
 public class EditScoreCalculationEasyForm extends FormBasicController {
-	
+
 	private MultipleSelectionElement hasScore, hasPassed;
-	private SingleSelection passedType;
+	private SingleSelection passedType, failedType;
 	private MultipleSelectionElement scoreNodeIdents, passedNodeIdents;
 	private IntegerElement passedCutValue;
 	private ScoreCalculator sc;
 	
 	private static final String DELETED_NODE_IDENTIFYER = "deletedNode";
-  private List<CourseNode> assessableNodesList;
-  private List<CourseNode> nodeIdentList;
+	private List<CourseNode> assessableNodesList;
+	private List<CourseNode> nodeIdentList;
+	
   /**
 	 * @param name
 	 * @param trans
@@ -80,115 +82,84 @@ public class EditScoreCalculationEasyForm extends FormBasicController {
 
 		initForm(ureq);
 	}
-
-	/**
-	 * @see org.olat.core.gui.components.Form#validate(org.olat.core.gui.UserRequest)
-	 */
-	public boolean validateFormLogic(UserRequest ureq) {
-		boolean rv = true;
-		if (hasScore.isSelected(0)) {
-			if (scoreNodeIdents.getSelectedKeys().size() == 0) {
-				scoreNodeIdents.setErrorKey("scform.scoreNodeIndents.error", null);
-				rv = false;
-			} else if (scoreNodeIdents.getSelectedKeys().contains(DELETED_NODE_IDENTIFYER)) {
-				scoreNodeIdents.setErrorKey("scform.deletedNode.error", null);
-				rv = false;
-			} else {
-					scoreNodeIdents.clearError();
-			}
-		}
+	
+	@Override
+	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		hasScore = uifactory.addCheckboxesHorizontal("scform.hasScore", formLayout, new String[]{"xx"}, new String[]{null});
+		hasScore.select("xx", sc != null && sc.getSumOfScoreNodes() != null && sc.getSumOfScoreNodes().size() > 0);
+		hasScore.addActionListener(FormEvent.ONCLICK);
+		hasScore.setElementCssClass("o_sel_has_score");
 		
-		if (hasPassed.isSelected(0)) {
-			if (passedType.getSelectedKey().equals(ScoreCalculator.PASSED_TYPE_INHERIT)) {
-				if (passedNodeIdents.getSelectedKeys().size() == 0) {
-					passedNodeIdents.setErrorKey("scform.passedNodeIndents.error", null);
-					rv = false;
-				} else {
-					passedNodeIdents.clearError();
-				}
-			} else if (passedType.getSelectedKey().equals(ScoreCalculator.PASSED_TYPE_CUTVALUE)) {
-				if (!hasScore.isSelected(0)) {
-					passedType.setErrorKey("scform.passedType.error", null);
-					rv = false;
-				} else {
-					passedType.clearError();
-				}
-			}
+		List<String> sumOfScoreNodes = (sc == null ? null : sc.getSumOfScoreNodes());
+		scoreNodeIdents = initNodeSelectionElement(formLayout, "scform.scoreNodeIndents", sc, sumOfScoreNodes, nodeIdentList);
+		scoreNodeIdents.setVisible(hasScore.isSelected(0));
+
+		uifactory.addSpacerElement("spacer", formLayout, false);
+		
+		hasPassed = uifactory.addCheckboxesHorizontal("scform.passedtype", formLayout, new String[]{"xx"}, new String[]{null});
+		hasPassed.select("xx", sc != null && sc.getPassedType() != null && !sc.getPassedType().equals(ScoreCalculator.PASSED_TYPE_NONE));
+		hasPassed.addActionListener(FormEvent.ONCLICK); // Radios/Checkboxes need onclick because of IE bug OLAT-5753
+		hasPassed.setElementCssClass("o_sel_has_passed");
+		
+		String[] passedTypeKeys = new String[] {
+				ScoreCalculator.PASSED_TYPE_CUTVALUE,
+				ScoreCalculator.PASSED_TYPE_INHERIT
+		};
+		String[] passedTypeValues = new String[] {
+				translate("scform.passedtype.cutvalue"),
+				translate("scform.passedtype.inherit")
+		};
 			
+		passedType = uifactory.addRadiosVertical("passedType", null, formLayout, passedTypeKeys, passedTypeValues);
+		passedType.setVisible(hasPassed.isSelected(0));
+		if (sc != null && sc.getPassedType() != null && !sc.getPassedType().equals(ScoreCalculator.PASSED_TYPE_NONE)) {
+			passedType.select(sc.getPassedType(), true);
+		} else {
+			passedType.select(ScoreCalculator.PASSED_TYPE_CUTVALUE, true);
 		}
-	
-		return rv;
-	}
-
-	/**
-	 * @return ScoreCalcualtor or null if no score calculator is set
-	 */
-	public ScoreCalculator getScoreCalulator() {
-		if (!hasScore.isSelected(0) && !hasPassed.isSelected(0)) {
-			return null;
-		}
+		passedType.addActionListener(FormEvent.ONCLICK); // Radios/Checkboxes need onclick because of IE bug OLAT-5753
 		
+		int cutinitval = 0;
+		if (sc != null) cutinitval = sc.getPassedCutValue();
+		passedCutValue = uifactory.addIntegerElement("scform.passedCutValue", cutinitval, formLayout);
+		passedCutValue.setDisplaySize(4);
+		passedCutValue.setVisible(passedType.isVisible() && passedType.isSelected(0));
+		passedCutValue.setMandatory(true);
+				
+		passedNodeIdents = initNodeSelectionElement(
+				formLayout, "scform.passedNodeIndents", sc, (sc == null ? null : sc.getPassedNodes()), nodeIdentList
+		);
+		passedNodeIdents.setVisible(passedType.isVisible() && passedType.isSelected(1));
 		
-		// 1) score configuration
-		if (hasScore.isSelected(0)) {
-			sc.setSumOfScoreNodes(new ArrayList<String>(scoreNodeIdents.getSelectedKeys()));
-		}else {
-			//reset
-			sc.setSumOfScoreNodes(null);
-		}
+		String[] failedTypeKeys = new String[]{
+				FailedEvaluationType.failedAsNotPassed.name(),
+				FailedEvaluationType.failedAsNotPassedAfterEndDate.name(),
+				FailedEvaluationType.manual.name()
+		};
+		String[] failedTypeValues = new String[]{
+				translate(FailedEvaluationType.failedAsNotPassed.name()),
+				translate(FailedEvaluationType.failedAsNotPassedAfterEndDate.name()),
+				translate(FailedEvaluationType.manual.name())
+		};
 		
-		// 2) passed configuration
-		if (!hasPassed.isSelected(0)) {
-			sc.setPassedType(ScoreCalculator.PASSED_TYPE_NONE);
-		} else if (passedType.getSelectedKey().equals(ScoreCalculator.PASSED_TYPE_CUTVALUE)) {
-			sc.setPassedType(ScoreCalculator.PASSED_TYPE_CUTVALUE);
-			sc.setPassedCutValue(passedCutValue.getIntValue());
-		} else if (passedType.getSelectedKey().equals(ScoreCalculator.PASSED_TYPE_INHERIT)) {
-			sc.setPassedType(ScoreCalculator.PASSED_TYPE_INHERIT);
-			sc.setPassedNodes(new ArrayList<String>(passedNodeIdents.getSelectedKeys()));
-		}
-		
-
-		// update score and passed expression from easy mode configuration
-		sc.setScoreExpression(sc.getScoreExpressionFromEasyModeConfiguration());
-		sc.setPassedExpression(sc.getPassedExpressionFromEasyModeConfiguration());
-
-		if (sc.getScoreExpression() == null && sc.getPassedExpression() == null) return null;
-		sc.setExpertMode(false);
-		return sc;
-	}
-	
-	/**
-	 *   
-	 * @return Returns a list with the invalid node descriptions, 
-	 * 				("invalid" is a node that is not associated with a test resource)
-	 */
-	public List<String> getInvalidNodeDescriptions() {
-		List<String> testElemWithNoResource = new ArrayList<String>();
-		List<String> selectedNodesIds = new ArrayList<String>(scoreNodeIdents.getSelectedKeys());		
-		for (Iterator<CourseNode> nodeIter = assessableNodesList.iterator(); nodeIter.hasNext();) {
-			CourseNode node = nodeIter.next();
-			if (selectedNodesIds.contains(node.getIdent())) {				
-				StatusDescription isConfigValid = node.isConfigValid();
-				if (isConfigValid != null && isConfigValid.isError()) {
-					String nodeDescription = node.getShortName() + " (Id:" + node.getIdent() + ")";
-					if (!testElemWithNoResource.contains(nodeDescription)) {
-						testElemWithNoResource.add(nodeDescription);
-					}
-				}
+		failedType = uifactory.addDropdownSingleselect("scform.failedtype", formLayout, failedTypeKeys, failedTypeValues, null);
+		failedType.addActionListener(FormEvent.ONCLICK);
+		FailedEvaluationType failedTypeValue = sc.getFailedType() == null ? FailedEvaluationType.failedAsNotPassed : sc.getFailedType();
+		boolean failedSelected = false;
+		for(String failedTypeKey:failedTypeKeys) {
+			if(failedTypeKey.equals(failedTypeValue.name())) {
+				failedType.select(failedTypeKey, true);
+				failedSelected = true;
 			}
 		}
-		return testElemWithNoResource;
-	}
-
-	@Override
-	protected void formOK(UserRequest ureq) {
-		fireEvent (ureq, Event.DONE_EVENT);
-	}
-	
-	@Override
-	protected void formCancelled(UserRequest ureq) {
-		fireEvent (ureq, Event.CANCELLED_EVENT);
+		if(!failedSelected) {
+			failedType.select(failedTypeKeys[0], true);
+		}
+		
+		FormLayoutContainer buttonGroupLayout = FormLayoutContainer.createButtonLayout("buttonGroupLayout", getTranslator());
+		formLayout.add(buttonGroupLayout);
+		uifactory.addFormSubmitButton("submit", buttonGroupLayout);
+		uifactory.addFormCancelButton("cancel", buttonGroupLayout, ureq, getWindowControl());
 	}
 	
 	/**
@@ -257,16 +228,59 @@ public class EditScoreCalculationEasyForm extends FormBasicController {
 		}		
 		return mse;
 	}
-	
-	protected void formInnerEvent (UserRequest ureq, FormItem item, FormEvent event) {
-		if (item == passedType) {
-			passedType.clearError();
+
+	@Override
+	protected void doDispose() {
+		//
+	}
+
+	/**
+	 * @see org.olat.core.gui.components.Form#validate(org.olat.core.gui.UserRequest)
+	 */
+	@Override
+	public boolean validateFormLogic(UserRequest ureq) {
+		boolean rv = true;
+		if (hasScore.isSelected(0)) {
+			if (scoreNodeIdents.getSelectedKeys().size() == 0) {
+				scoreNodeIdents.setErrorKey("scform.scoreNodeIndents.error", null);
+				rv = false;
+			} else if (scoreNodeIdents.getSelectedKeys().contains(DELETED_NODE_IDENTIFYER)) {
+				scoreNodeIdents.setErrorKey("scform.deletedNode.error", null);
+				rv = false;
+			} else {
+					scoreNodeIdents.clearError();
+			}
 		}
+		
+		if (hasPassed.isSelected(0)) {
+			if (passedType.getSelectedKey().equals(ScoreCalculator.PASSED_TYPE_INHERIT)) {
+				if (passedNodeIdents.getSelectedKeys().size() == 0) {
+					passedNodeIdents.setErrorKey("scform.passedNodeIndents.error", null);
+					rv = false;
+				} else {
+					passedNodeIdents.clearError();
+				}
+			} else if (passedType.getSelectedKey().equals(ScoreCalculator.PASSED_TYPE_CUTVALUE)) {
+				if (!hasScore.isSelected(0)) {
+					passedType.setErrorKey("scform.passedType.error", null);
+					rv = false;
+				} else {
+					passedType.clearError();
+				}
+			}
+		}
+	
+		return rv;
+	}
+	
+	private void updateUI() {
 		scoreNodeIdents.setVisible(hasScore.isSelected(0));
 		if (!scoreNodeIdents.isVisible()) {
 			scoreNodeIdents.clearError();
 		}
 		passedType.setVisible(hasPassed.isSelected(0));
+		failedType.setVisible(hasPassed.isSelected(0));
+		
 		passedCutValue.setVisible(passedType.isVisible() && passedType.isSelected(0));
 		if (!passedCutValue.isVisible()) {
 			passedCutValue.setIntValue(0);
@@ -277,65 +291,84 @@ public class EditScoreCalculationEasyForm extends FormBasicController {
 			passedNodeIdents.clearError();
 		}
 	}
-	
-	@Override
-	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		
-		hasScore = uifactory.addCheckboxesHorizontal("scform.hasScore", formLayout, new String[]{"xx"}, new String[]{null});
-		hasScore.select("xx", sc != null && sc.getSumOfScoreNodes() != null && sc.getSumOfScoreNodes().size() > 0);
-		hasScore.addActionListener(FormEvent.ONCLICK); // Radios/Checkboxes need onclick because of IE bug OLAT-5753
-		hasScore.setElementCssClass("o_sel_has_score");
-		
-		scoreNodeIdents = initNodeSelectionElement(
-				formLayout, "scform.scoreNodeIndents", sc, (sc == null ? null : sc.getSumOfScoreNodes()), nodeIdentList
-		);
-		scoreNodeIdents.setVisible(hasScore.isSelected(0));
-		
-		uifactory.addSpacerElement("spacer", formLayout, false);
-		
-		hasPassed = uifactory.addCheckboxesHorizontal("scform.passedtype", formLayout, new String[]{"xx"}, new String[]{null});
-		hasPassed.select("xx", sc != null && sc.getPassedType() != null && !sc.getPassedType().equals(ScoreCalculator.PASSED_TYPE_NONE));
-		hasPassed.addActionListener(FormEvent.ONCLICK); // Radios/Checkboxes need onclick because of IE bug OLAT-5753
-		hasPassed.setElementCssClass("o_sel_has_passed");
-		
-		String[] passedTypeKeys = new String[] {
-				ScoreCalculator.PASSED_TYPE_CUTVALUE,
-				ScoreCalculator.PASSED_TYPE_INHERIT
-		};
-		String[] passedTypeValues = new String[] {
-				translate("scform.passedtype.cutvalue"),
-				translate("scform.passedtype.inherit")
-		};
-			
-		passedType = uifactory.addRadiosVertical("passedType", null, formLayout, passedTypeKeys, passedTypeValues);
-		passedType.setVisible(hasPassed.isSelected(0));
-		if (sc != null && sc.getPassedType() != null && !sc.getPassedType().equals(ScoreCalculator.PASSED_TYPE_NONE)) {
-			passedType.select(sc.getPassedType(), true);
-		} else {
-			passedType.select(ScoreCalculator.PASSED_TYPE_CUTVALUE, true);
+
+	/**
+	 * @return ScoreCalcualtor or null if no score calculator is set
+	 */
+	public ScoreCalculator getScoreCalulator() {
+		if (!hasScore.isSelected(0) && !hasPassed.isSelected(0)) {
+			return null;
 		}
-		passedType.addActionListener(FormEvent.ONCLICK); // Radios/Checkboxes need onclick because of IE bug OLAT-5753
+
+		// 1) score configuration
+		if (hasScore.isSelected(0)) {
+			sc.setSumOfScoreNodes(new ArrayList<String>(scoreNodeIdents.getSelectedKeys()));
+		}else {
+			//reset
+			sc.setSumOfScoreNodes(null);
+		}
 		
-		int cutinitval = 0;
-		if (sc != null) cutinitval = sc.getPassedCutValue();
-		passedCutValue = uifactory.addIntegerElement("scform.passedCutValue", cutinitval, formLayout);
-		passedCutValue.setDisplaySize(4);
-		passedCutValue.setVisible(passedType.isVisible() && passedType.isSelected(0));
-		passedCutValue.setMandatory(true);
-				
-		passedNodeIdents = initNodeSelectionElement(
-				formLayout, "scform.passedNodeIndents", sc, (sc == null ? null : sc.getPassedNodes()), nodeIdentList
-		);
-		passedNodeIdents.setVisible(passedType.isVisible() && passedType.isSelected(1));
-		
-		FormLayoutContainer buttonGroupLayout = FormLayoutContainer.createButtonLayout("buttonGroupLayout", getTranslator());
-		formLayout.add(buttonGroupLayout);
-		uifactory.addFormSubmitButton("submit", buttonGroupLayout);
-		uifactory.addFormCancelButton("cancel", buttonGroupLayout, ureq, getWindowControl());
+		// 2) passed configuration
+		if (!hasPassed.isSelected(0)) {
+			sc.setPassedType(ScoreCalculator.PASSED_TYPE_NONE);
+		} else if (passedType.getSelectedKey().equals(ScoreCalculator.PASSED_TYPE_CUTVALUE)) {
+			sc.setPassedType(ScoreCalculator.PASSED_TYPE_CUTVALUE);
+			sc.setPassedCutValue(passedCutValue.getIntValue());
+		} else if (passedType.getSelectedKey().equals(ScoreCalculator.PASSED_TYPE_INHERIT)) {
+			sc.setPassedType(ScoreCalculator.PASSED_TYPE_INHERIT);
+			sc.setPassedNodes(new ArrayList<>(passedNodeIdents.getSelectedKeys()));
+		}
+
+		// update score and passed expression from easy mode configuration
+		sc.setScoreExpression(sc.getScoreExpressionFromEasyModeConfiguration());
+		sc.setPassedExpression(sc.getPassedExpressionFromEasyModeConfiguration());
+		sc.setFailedType(FailedEvaluationType.valueOf(failedType.getSelectedKey()));
+
+		if (sc.getScoreExpression() == null && sc.getPassedExpression() == null) {
+			return null;
+		}
+		sc.setExpertMode(false);
+		return sc;
+	}
+	
+	/**
+	 *   
+	 * @return Returns a list with the invalid node descriptions, 
+	 * 				("invalid" is a node that is not associated with a test resource)
+	 */
+	public List<String> getInvalidNodeDescriptions() {
+		List<String> testElemWithNoResource = new ArrayList<String>();
+		List<String> selectedNodesIds = new ArrayList<String>(scoreNodeIdents.getSelectedKeys());		
+		for (Iterator<CourseNode> nodeIter = assessableNodesList.iterator(); nodeIter.hasNext();) {
+			CourseNode node = nodeIter.next();
+			if (selectedNodesIds.contains(node.getIdent())) {				
+				StatusDescription isConfigValid = node.isConfigValid();
+				if (isConfigValid != null && isConfigValid.isError()) {
+					String nodeDescription = node.getShortName() + " (Id:" + node.getIdent() + ")";
+					if (!testElemWithNoResource.contains(nodeDescription)) {
+						testElemWithNoResource.add(nodeDescription);
+					}
+				}
+			}
+		}
+		return testElemWithNoResource;
 	}
 
 	@Override
-	protected void doDispose() {
-		//
+	protected void formOK(UserRequest ureq) {
+		fireEvent (ureq, Event.DONE_EVENT);
+	}
+	
+	@Override
+	protected void formCancelled(UserRequest ureq) {
+		fireEvent (ureq, Event.CANCELLED_EVENT);
+	}
+
+	@Override
+	protected void formInnerEvent (UserRequest ureq, FormItem source, FormEvent event) {
+		if (source == passedType) {
+			passedType.clearError();
+		}
+		updateUI();
 	}
 }

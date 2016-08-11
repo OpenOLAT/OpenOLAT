@@ -36,6 +36,7 @@ import org.olat.course.config.CourseConfig;
 import org.olat.course.groupsandrights.CourseGroupManager;
 import org.olat.course.properties.CoursePropertyManager;
 import org.olat.course.run.environment.CourseEnvironment;
+import org.olat.repository.RepositoryEntry;
 
 /**
  * Initial Date:  08.02.2005
@@ -75,10 +76,16 @@ final class PreviewCourseEnvironment implements CourseEnvironment {
 	/**
 	 * @see org.olat.course.run.environment.CourseEnvironment#getCurrentTimeMillis()
 	 */
+	@Override
 	public long getCurrentTimeMillis() {
 		return simulatedDateTime;
 	}
-	
+
+	@Override
+	public void updateCourseEntry(RepositoryEntry courseEntry) {
+		//
+	}
+
 	@Override
 	public boolean isPreview() {
 		return true;
@@ -87,6 +94,7 @@ final class PreviewCourseEnvironment implements CourseEnvironment {
 	/**
 	 * @see org.olat.course.run.environment.CourseEnvironment#getCourseGroupManager()
 	 */
+	@Override
 	public CourseGroupManager getCourseGroupManager() {
 		return cgm;
 	}

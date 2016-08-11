@@ -45,11 +45,10 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Identity;
 import org.olat.core.util.Util;
-import org.olat.course.assessment.AssessmentMainController;
+import org.olat.course.assessment.AssessmentModule;
 import org.olat.course.assessment.AssessmentToolManager;
 import org.olat.course.assessment.model.SearchAssessedIdentityParams;
 import org.olat.course.assessment.ui.tool.AssessmentToolConstants;
-import org.olat.course.assessment.ui.tool.ToReviewRow;
 import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
 import org.olat.repository.RepositoryEntry;
@@ -84,7 +83,7 @@ public class AssessmentToReviewSmallController extends FormBasicController {
 	public AssessmentToReviewSmallController(UserRequest ureq, WindowControl wControl,
 			RepositoryEntry testEntry, AssessmentToolSecurityCallback assessmentCallback) {
 		super(ureq, wControl, "overview_to_review");
-		setTranslator(Util.createPackageTranslator(AssessmentMainController.class, getLocale(), getTranslator()));
+		setTranslator(Util.createPackageTranslator(AssessmentModule.class, getLocale(), getTranslator()));
 		setTranslator(userManager.getPropertyHandlerTranslator(getTranslator()));
 		
 		this.testEntry = testEntry;
@@ -133,10 +132,10 @@ public class AssessmentToReviewSmallController extends FormBasicController {
 			Identity assessedIdentity = entry.getIdentity();
 			if(identityKeyToRow.containsKey(assessedIdentity.getKey())) {
 				identityKeyToRow.get(assessedIdentity.getKey())
-					.getNodeIndents().add(entry.getSubIdent());
+					.getSubIndents().add(entry.getSubIdent());
 			} else {
 				UserToReviewRow row = new UserToReviewRow(entry.getIdentity(), userPropertyHandlers, getLocale());
-				row.getNodeIndents().add(entry.getSubIdent());
+				row.getSubIndents().add(entry.getSubIdent());
 				rows.add(row);
 				identityKeyToRow.put(assessedIdentity.getKey(), row);
 			}
@@ -159,7 +158,7 @@ public class AssessmentToReviewSmallController extends FormBasicController {
 				if("select".equals(se.getCommand())) {
 					int index = se.getIndex();
 					UserToReviewRow row = usersTableModel.getObject(index);
-					fireEvent(ureq, new UserSelectionEvent(row.getIdentityKey(), row.getNodeIndents()));
+					fireEvent(ureq, new UserSelectionEvent(row.getIdentityKey(), row.getSubIndents()));
 				}
 			}
 		}
@@ -179,7 +178,8 @@ public class AssessmentToReviewSmallController extends FormBasicController {
 			super(identity, userPropertyHandlers, locale);
 		}
 
-		public List<String> getNodeIndents() {
+		@Override
+		public List<String> getSubIndents() {
 			return nodeIndents;
 		}
 	}

@@ -40,8 +40,10 @@ import java.util.Set;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
+import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
@@ -55,6 +57,7 @@ import org.olat.course.condition.interpreter.ConditionExpression;
 import org.olat.course.editor.CourseEditorEnv;
 import org.olat.course.editor.StatusDescription;
 import org.olat.course.nodes.CourseNode;
+import org.olat.course.run.scoring.FailedEvaluationType;
 import org.olat.course.run.scoring.ScoreCalculator;
 import org.olat.course.run.userview.UserCourseEnvironment;
 /**
@@ -67,6 +70,7 @@ class EditScoreCalculationExpertForm extends FormBasicController {
 	private static final String[] EXAMPLE_PASSED = new String[]{"getPassed(\"69741247660309\")"};
 	private static final String[] EXAMPLE_SCORE  = new String[]{"getScore(\"69741247660309\") * 2"};
 	private TextElement tscoreexpr, tpassedexpr;
+	private SingleSelection failedType;
 	private UserCourseEnvironment euce;
 	private ScoreCalculator sc;
 	private List<CourseNode> assessableNodesList;
@@ -108,9 +112,7 @@ class EditScoreCalculationExpertForm extends FormBasicController {
 
 	@Override
 	public boolean validateFormLogic (UserRequest ureq) {
-		
 		String scoreExp = tscoreexpr.getValue().trim();
-		
 		if (StringHelper.containsNonWhitespace(scoreExp)) {		
 			
 			CourseEditorEnv cev = euce.getCourseEditorEnv();
@@ -164,6 +166,7 @@ class EditScoreCalculationExpertForm extends FormBasicController {
 		
 		sc.setScoreExpression(scoreExp);
 		sc.setPassedExpression(passedExp);
+		sc.setFailedType(FailedEvaluationType.valueOf(failedType.getSelectedKey()));
 		sc.setExpertMode(true);
 		return sc;
 	}
@@ -210,16 +213,41 @@ class EditScoreCalculationExpertForm extends FormBasicController {
 	
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		
 		tscoreexpr = uifactory.addTextAreaElement("tscoreexpr", "scorecalc.score", 5000, 6, 45, true, sc.getScoreExpression(), formLayout);
-		tpassedexpr = uifactory.addTextAreaElement("tpassedexpr", "scorecalc.passed", 5000, 6, 45, true, sc.getPassedExpression(), formLayout);
 		tscoreexpr.setExampleKey("rules.example", EXAMPLE_SCORE);
+		
+		tpassedexpr = uifactory.addTextAreaElement("tpassedexpr", "scorecalc.passed", 5000, 6, 45, true, sc.getPassedExpression(), formLayout);
 		tpassedexpr.setExampleKey("rules.example", EXAMPLE_PASSED);
+
+		String[] failedTypeKeys = new String[]{
+				FailedEvaluationType.failedAsNotPassed.name(),
+				FailedEvaluationType.failedAsNotPassedAfterEndDate.name(),
+				FailedEvaluationType.manual.name()
+		};
+		String[] failedTypeValues = new String[]{
+				translate(FailedEvaluationType.failedAsNotPassed.name()),
+				translate(FailedEvaluationType.failedAsNotPassedAfterEndDate.name()),
+				translate(FailedEvaluationType.manual.name())
+		};
+		
+		failedType = uifactory.addDropdownSingleselect("scform.failedtype", formLayout, failedTypeKeys, failedTypeValues, null);
+		failedType.addActionListener(FormEvent.ONCLICK);
+		FailedEvaluationType failedTypeValue = sc.getFailedType() == null ? FailedEvaluationType.failedAsNotPassed : sc.getFailedType();
+		boolean failedSelected = false;
+		for(String failedTypeKey:failedTypeKeys) {
+			if(failedTypeKey.equals(failedTypeValue.name())) {
+				failedType.select(failedTypeKey, true);
+				failedSelected = true;
+			}
+		}
+		if(!failedSelected) {
+			failedType.select(failedTypeKeys[0], true);
+		}
+		
 		
 		// Button layout
 		final FormLayoutContainer buttonLayout = FormLayoutContainer.createButtonLayout("button_layout", getTranslator());
 		formLayout.add(buttonLayout);
-		
 		uifactory.addFormSubmitButton("submit", buttonLayout);
 		uifactory.addFormCancelButton("cancel", buttonLayout, ureq, getWindowControl());
 	}

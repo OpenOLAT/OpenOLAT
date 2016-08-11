@@ -41,7 +41,6 @@ import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
-import org.olat.course.assessment.IdentityAssessmentOverviewController;
 import org.olat.course.assessment.ui.tool.event.CourseNodeEvent;
 import org.olat.course.config.CourseConfig;
 import org.olat.course.nodes.CourseNode;
@@ -49,6 +48,7 @@ import org.olat.course.nodes.CourseNodeFactory;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.course.run.userview.UserCourseEnvironmentImpl;
 import org.olat.modules.assessment.ui.AssessedIdentityController;
+import org.olat.modules.assessment.ui.event.AssessmentFormEvent;
 import org.olat.repository.RepositoryEntry;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -148,13 +148,13 @@ public class AssessmentIdentityCourseController extends BasicController implemen
 		} else if(courseNodeChooserCalloutCtrl == source) {
 			cleanUp();
 		} else if(currentNodeCtrl == source) {
-			if(event == Event.DONE_EVENT) {
+			if(event instanceof AssessmentFormEvent) {
+				AssessmentFormEvent aee = (AssessmentFormEvent)event;
 				treeOverviewCtrl.doIdentityAssessmentOverview(ureq);
-				stackPanel.popController(currentNodeCtrl);
-				fireEvent(ureq, Event.CHANGED_EVENT);
-			} else if(event == Event.CHANGED_EVENT) {
-				treeOverviewCtrl.doIdentityAssessmentOverview(ureq);
-				fireEvent(ureq, Event.CHANGED_EVENT);
+				if(aee.isClose()) {
+					stackPanel.popController(currentNodeCtrl);
+				}
+				fireEvent(ureq, aee.cloneNotClose());
 			} else if(event == Event.CANCELLED_EVENT) {
 				stackPanel.popController(currentNodeCtrl);
 			}
@@ -229,7 +229,7 @@ public class AssessmentIdentityCourseController extends BasicController implemen
 		removeAsListenerAndDispose(currentNodeCtrl);
 
 		currentNodeCtrl = new AssessmentIdentityCourseNodeController(ureq, getWindowControl(), stackPanel,
-				courseEntry, courseNode, assessedIdentity);
+				courseEntry, courseNode, assessedIdentity, true);
 		listenTo(currentNodeCtrl);
 		stackPanel.pushController(courseNode.getShortTitle(), currentNodeCtrl);
 		

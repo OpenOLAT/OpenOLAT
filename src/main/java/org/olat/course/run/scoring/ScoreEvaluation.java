@@ -46,6 +46,15 @@ public class ScoreEvaluation {
 	}
 	
 	/**
+	 * This make a clone of the given score evaluation.
+	 * 
+	 * @param scoreEval
+	 */
+	public ScoreEvaluation(ScoreEvaluation scoreEval) {
+		this(scoreEval.getScore(), scoreEval.getPassed(), scoreEval.getAssessmentStatus(), scoreEval.getFullyAssessed(), scoreEval.getAssessmentID());
+	}
+	
+	/**
 	 * @param score
 	 * @param passed
 	 */
@@ -98,6 +107,18 @@ public class ScoreEvaluation {
 	public AssessmentEntryStatus getAssessmentStatus() {
 		return assessmentStatus;
 	}
+
+	/**
+	 * 
+	 * @return Returns the assessmentID.
+	 */
+	public Long getAssessmentID() {
+		return assessmentID;
+	}
+
+	public Boolean getFullyAssessed() {
+		return fullyAssessed;
+	}
 	
 	/** (non-Javadoc)
 	 * @see java.lang.Object#toString()
@@ -105,17 +126,5 @@ public class ScoreEvaluation {
 	@Override
 	public String toString() {
 		return "score:" + score + ", passed:" + passed + ", fullyAssessed " + fullyAssessed + ", S" + hashCode();
-	}
-
-  /**
-   * 
-   * @return Returns the assessmentID.
-   */
-	public Long getAssessmentID() {
-		return assessmentID;
-	}
-	
-	public Boolean getFullyAssessed() {
-		return fullyAssessed;
 	}
 }

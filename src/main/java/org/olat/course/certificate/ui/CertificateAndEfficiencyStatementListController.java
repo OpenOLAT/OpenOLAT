@@ -59,8 +59,8 @@ import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.event.GenericEventListener;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.course.CorruptedCourseException;
+import org.olat.course.assessment.AssessmentModule;
 import org.olat.course.assessment.EfficiencyStatement;
-import org.olat.course.assessment.IdentityAssessmentEditController;
 import org.olat.course.assessment.bulk.PassedCellRenderer;
 import org.olat.course.assessment.manager.EfficiencyStatementManager;
 import org.olat.course.assessment.model.UserEfficiencyStatementLight;
@@ -132,7 +132,7 @@ public class CertificateAndEfficiencyStatementListController extends FormBasicCo
 	public CertificateAndEfficiencyStatementListController(UserRequest ureq, WindowControl wControl,
 			Identity assessedIdentity, boolean linkToCoachingTool) {
 		super(ureq, wControl, "cert_statement_list");
-		setTranslator(Util.createPackageTranslator(IdentityAssessmentEditController.class, getLocale(), getTranslator()));
+		setTranslator(Util.createPackageTranslator(AssessmentModule.class, getLocale(), getTranslator()));
 		this.assessedIdentity = assessedIdentity;
 		this.linkToCoachingTool = linkToCoachingTool;
 		

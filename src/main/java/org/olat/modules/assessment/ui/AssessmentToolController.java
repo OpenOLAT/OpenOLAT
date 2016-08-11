@@ -38,7 +38,7 @@ import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.Util;
 import org.olat.core.util.resource.OresHelper;
-import org.olat.course.assessment.AssessmentMainController;
+import org.olat.course.assessment.AssessmentModule;
 import org.olat.repository.RepositoryEntry;
 
 /**
@@ -63,7 +63,7 @@ public class AssessmentToolController extends MainLayoutBasicController implemen
 	public AssessmentToolController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
 			RepositoryEntry testEntry, AssessableResource element, AssessmentToolSecurityCallback assessmentCallback) {
 		super(ureq, wControl);
-		setTranslator(Util.createPackageTranslator(AssessmentMainController.class, getLocale(), getTranslator()));
+		setTranslator(Util.createPackageTranslator(AssessmentModule.class, getLocale(), getTranslator()));
 		this.element = element;
 		this.testEntry = testEntry;
 		this.stackPanel = stackPanel;

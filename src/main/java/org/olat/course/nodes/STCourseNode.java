@@ -71,6 +71,7 @@ import org.olat.course.nodes.st.STCourseNodeRunController;
 import org.olat.course.nodes.st.STPeekViewController;
 import org.olat.course.run.navigation.NodeRunConstructionResult;
 import org.olat.course.run.scoring.AssessmentEvaluation;
+import org.olat.course.run.scoring.FailedEvaluationType;
 import org.olat.course.run.scoring.ScoreCalculator;
 import org.olat.course.run.scoring.ScoreEvaluation;
 import org.olat.course.run.userview.NodeEvaluation;
@@ -105,8 +106,8 @@ public class STCourseNode extends AbstractAccessableCourseNode implements Calcul
 	private ScoreCalculator scoreCalculator;
 
 	transient private Condition scoreExpression;
-
 	transient private Condition passedExpression;
+	transient private Condition failedExpression;
 
 	/**
 	 * Constructor for a course building block of the type structure
@@ -361,21 +362,32 @@ public class STCourseNode extends AbstractAccessableCourseNode implements Calcul
 	/**
 	 * @return Returns the scoreCalculator.
 	 */
+	@Override
 	public ScoreCalculator getScoreCalculator() {
 		if (scoreCalculator == null) {
-			scoreCalculator = new ScoreCalculator(null, null);
+			scoreCalculator = new ScoreCalculator();
+			scoreCalculator.setFailedType(FailedEvaluationType.failedAsNotPassedAfterEndDate);
 		}
+		
 		passedExpression = new Condition();
 		passedExpression.setConditionId("passed");
 		if (scoreCalculator.getPassedExpression() != null) {
 			passedExpression.setConditionExpression(scoreCalculator.getPassedExpression());
 			passedExpression.setExpertMode(true);
 		}
+		
 		scoreExpression = new Condition();
 		scoreExpression.setConditionId("score");
 		if (scoreCalculator.getScoreExpression() != null) {
 			scoreExpression.setConditionExpression(scoreCalculator.getScoreExpression());
 			scoreExpression.setExpertMode(true);
+		}
+		
+		failedExpression = new Condition();
+		failedExpression.setConditionId("failed");
+		if (scoreCalculator.getFailedExpression() != null) {
+			failedExpression.setConditionExpression(scoreCalculator.getFailedExpression());
+			failedExpression.setExpertMode(true);
 		}
 		return scoreCalculator;
 	}
@@ -388,15 +400,21 @@ public class STCourseNode extends AbstractAccessableCourseNode implements Calcul
 		if (scoreCalculatorP == null) {
 			scoreCalculator = getScoreCalculator();
 		}
-		String passed, score;
-		passed = scoreCalculator.getPassedExpression();
-		score = scoreCalculator.getScoreExpression();
+
+		String score = scoreCalculator.getScoreExpression();
 		scoreExpression.setExpertMode(true);
 		scoreExpression.setConditionExpression(score);
 		scoreExpression.setConditionId("score");
+		
+		String passed = scoreCalculator.getPassedExpression();
 		passedExpression.setExpertMode(true);
 		passedExpression.setConditionExpression(passed);
 		passedExpression.setConditionId("passed");
+		
+		String failed = scoreCalculator.getFailedExpression();
+		failedExpression.setExpertMode(true);
+		failedExpression.setConditionExpression(failed);
+		failedExpression.setConditionId("failed");
 	}
 
 	@Override
@@ -604,6 +622,7 @@ public class STCourseNode extends AbstractAccessableCourseNode implements Calcul
 	 *          from previous node configuration version, set default to maintain
 	 *          previous behaviour
 	 */
+	@Override
 	public void updateModuleConfigDefaults(boolean isNewNode) {
 		ModuleConfiguration config = getModuleConfiguration();
 		if (isNewNode) {
@@ -617,6 +636,9 @@ public class STCourseNode extends AbstractAccessableCourseNode implements Calcul
 			config.set(SPEditController.CONFIG_KEY_DELIVERYOPTIONS, defaultOptions);
 			
 			config.setConfigurationVersion(3);
+			
+			scoreCalculator = new ScoreCalculator();
+			scoreCalculator.setFailedType(FailedEvaluationType.failedAsNotPassedAfterEndDate);
 		} else {
 			// update to version 2
 			if (config.getConfigurationVersion() < 2) {
@@ -728,6 +750,7 @@ public class STCourseNode extends AbstractAccessableCourseNode implements Calcul
 	/**
 	 * @see org.olat.course.nodes.AbstractAccessableCourseNode#getConditionExpressions()
 	 */
+	@Override
 	public List<ConditionExpression> getConditionExpressions() {
 		List<ConditionExpression> retVal;
 		List<ConditionExpression> parentsConditions = super.getConditionExpressions();
@@ -738,24 +761,33 @@ public class STCourseNode extends AbstractAccessableCourseNode implements Calcul
 		}
 		// init passedExpression and scoreExpression
 		getScoreCalculator();
-		//
+
 		passedExpression.setExpertMode(true);
 		String coS = passedExpression.getConditionExpression();
-		if (coS != null && !coS.equals("")) {
+		if (StringHelper.containsNonWhitespace(coS)) {
 			// an active condition is defined
 			ConditionExpression ce = new ConditionExpression(passedExpression.getConditionId());
 			ce.setExpressionString(passedExpression.getConditionExpression());
 			retVal.add(ce);
 		}
+		
 		scoreExpression.setExpertMode(true);
 		coS = scoreExpression.getConditionExpression();
-		if (coS != null && !coS.equals("")) {
+		if (StringHelper.containsNonWhitespace(coS)) {
 			// an active condition is defined
 			ConditionExpression ce = new ConditionExpression(scoreExpression.getConditionId());
 			ce.setExpressionString(scoreExpression.getConditionExpression());
 			retVal.add(ce);
 		}
-		//
+		
+		failedExpression.setExpertMode(true);
+		coS = failedExpression.getConditionExpression();
+		if (StringHelper.containsNonWhitespace(coS)) {
+			// an active condition is defined
+			ConditionExpression ce = new ConditionExpression(failedExpression.getConditionId());
+			ce.setExpressionString(failedExpression.getConditionExpression());
+			retVal.add(ce);
+		}
 		return retVal;
 	}
 

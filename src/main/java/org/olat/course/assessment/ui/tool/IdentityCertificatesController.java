@@ -43,7 +43,7 @@ import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.event.GenericEventListener;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
-import org.olat.course.assessment.AssessmentMainController;
+import org.olat.course.assessment.AssessmentModule;
 import org.olat.course.certificate.Certificate;
 import org.olat.course.certificate.CertificateEvent;
 import org.olat.course.certificate.CertificateTemplate;
@@ -92,7 +92,7 @@ public class IdentityCertificatesController extends BasicController implements G
 	public IdentityCertificatesController(UserRequest ureq, WindowControl wControl,
 			RepositoryEntry courseEntry, Identity assessedIdentity) {
 		super(ureq, wControl);
-		setTranslator(Util.createPackageTranslator(AssessmentMainController.class, getLocale(), getTranslator()));
+		setTranslator(Util.createPackageTranslator(AssessmentModule.class, getLocale(), getTranslator()));
 
 		this.courseEntry = courseEntry;
 		this.assessedIdentity = assessedIdentity;

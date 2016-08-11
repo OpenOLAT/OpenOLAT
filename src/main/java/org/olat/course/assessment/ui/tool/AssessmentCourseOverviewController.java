@@ -34,7 +34,7 @@ import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.util.Util;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
-import org.olat.course.assessment.AssessmentMainController;
+import org.olat.course.assessment.AssessmentModule;
 import org.olat.course.assessment.manager.AssessmentNotificationsHandler;
 import org.olat.course.certificate.CertificatesManager;
 import org.olat.group.BusinessGroupService;
@@ -73,7 +73,7 @@ public class AssessmentCourseOverviewController extends BasicController {
 	public AssessmentCourseOverviewController(UserRequest ureq, WindowControl wControl,
 			RepositoryEntry courseEntry, AssessmentToolSecurityCallback assessmentCallback) {
 		super(ureq, wControl);
-		setTranslator(Util.createPackageTranslator(AssessmentMainController.class, getLocale(), getTranslator()));
+		setTranslator(Util.createPackageTranslator(AssessmentModule.class, getLocale(), getTranslator()));
 		
 		mainVC = createVelocityContainer("course_overview");
 		

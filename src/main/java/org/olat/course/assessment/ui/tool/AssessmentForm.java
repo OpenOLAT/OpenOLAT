@@ -36,6 +36,7 @@ import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.form.flexible.impl.elements.FormSubmit;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
@@ -43,14 +44,20 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.course.assessment.AssessmentHelper;
-import org.olat.course.assessment.AssessmentMainController;
+import org.olat.course.assessment.AssessmentModule;
 import org.olat.course.nodes.AssessableCourseNode;
 import org.olat.course.run.scoring.ScoreEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
+import org.olat.modules.assessment.model.AssessmentEntryStatus;
+import org.olat.modules.assessment.ui.event.AssessmentFormEvent;
 
 
 /**
  * Initial Date:  Jun 24, 2004
+ * 
+ * <ul>
+ * 	
+ * </ul>
  *
  * @author gnaegi
  */
@@ -61,10 +68,9 @@ public class AssessmentForm extends FormBasicController {
 	private StaticTextElement cutVal;
 	private SingleSelection passed;
 	private TextElement userComment, coachComment;
-	private FormLink saveAndCloseLink;
+	private FormSubmit submitButton;
+	private FormLink saveAndDoneLink, reopenLink;
 	
-	private final boolean saveAndClose;
-
 	private final boolean hasScore, hasPassed, hasComment, hasAttempts;
 	private Float min, max, cut;
 
@@ -72,9 +78,8 @@ public class AssessmentForm extends FormBasicController {
 	private final AssessableCourseNode assessableCourseNode;
 	
 	private Integer attemptsValue;
-	private Float   scoreValue;
-	private String  userCommentValue;
-	private String  coachCommentValue;
+	private Float scoreValue;
+	private String userCommentValue, coachCommentValue;
 	
 	/**
 	 * Constructor for an assessment detail form. The form will be configured according
@@ -85,11 +90,9 @@ public class AssessmentForm extends FormBasicController {
 	 * @param trans The package translator
 	 */
 	public AssessmentForm(UserRequest ureq, WindowControl wControl, AssessableCourseNode assessableCourseNode,
-			UserCourseEnvironment assessedUserCourseEnv, boolean saveAndClose) {
+			UserCourseEnvironment assessedUserCourseEnv) {
 		super(ureq, wControl);
-		setTranslator(Util.createPackageTranslator(AssessmentMainController.class, getLocale(), getTranslator()));
-		
-		this.saveAndClose = saveAndClose;
+		setTranslator(Util.createPackageTranslator(AssessmentModule.class, getLocale(), getTranslator()));
 		
 		hasAttempts = assessableCourseNode.hasAttemptsConfigured();
 		hasScore = assessableCourseNode.hasScoreConfigured();
@@ -103,13 +106,19 @@ public class AssessmentForm extends FormBasicController {
 	}
 
 	public boolean isAttemptsDirty() {
-		return hasAttempts && attemptsValue.intValue() != attempts.getIntValue();
+		if(hasAttempts) {
+			if(attemptsValue == null) {
+				return attempts.getIntValue() > 0;
+			} else {
+				return attemptsValue.intValue() != attempts.getIntValue();
+			}
+		}
+		return false;
 	}
 	
 	public int getAttempts() {
 		return attempts.getIntValue();
 	}
-
 
 	public Float getCut() {
 		return cut;
@@ -168,23 +177,22 @@ public class AssessmentForm extends FormBasicController {
 
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if(saveAndCloseLink == source) {
+		if(saveAndDoneLink == source) {
 			if(validateFormLogic(ureq)) {
-				doUpdateAssessmentData();
-				fireEvent(ureq, Event.DONE_EVENT);
+				doUpdateAssessmentData(true);
+				fireEvent(ureq, new AssessmentFormEvent(AssessmentFormEvent.ASSESSMENT_DONE, true));
 			}
+		} else if(reopenLink == source) {
+			doReopen();
+			fireEvent(ureq, new AssessmentFormEvent(AssessmentFormEvent.ASSESSMENT_CHANGED, false));
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
 
 	@Override
 	protected void formOK(UserRequest ureq) {
-		doUpdateAssessmentData();
-		if(saveAndClose) {
-			fireEvent(ureq, Event.CHANGED_EVENT);
-		} else {
-			fireEvent(ureq, Event.DONE_EVENT);
-		}
+		doUpdateAssessmentData(false);
+		fireEvent(ureq, new AssessmentFormEvent(AssessmentFormEvent.ASSESSMENT_CHANGED, true));
 	}
 
 	@Override
@@ -233,7 +241,17 @@ public class AssessmentForm extends FormBasicController {
 		return Float.parseFloat(scoreStr);
 	}
 	
-	protected void doUpdateAssessmentData() {
+	private void doReopen() {
+		ScoreEvaluation scoreEval = assessedUserCourseEnv.getScoreAccounting().evalCourseNode(assessableCourseNode);
+		if (scoreEval != null) {
+			ScoreEvaluation reopenedEval = new ScoreEvaluation(scoreEval.getScore(), scoreEval.getPassed(),
+					AssessmentEntryStatus.inReview, scoreEval.getFullyAssessed(), scoreEval.getAssessmentID());
+			assessableCourseNode.updateUserScoreEvaluation(reopenedEval, assessedUserCourseEnv, getIdentity(), false);
+			updateStatus(reopenedEval);
+		}
+	}
+	
+	protected void doUpdateAssessmentData(boolean setAsDone) {
 		Float updatedScore = null;
 		Boolean updatedPassed = null;
 		
@@ -262,6 +280,11 @@ public class AssessmentForm extends FormBasicController {
 		}
 		// Update score,passed properties in db
 		ScoreEvaluation scoreEval = new ScoreEvaluation(updatedScore, updatedPassed);
+		if(setAsDone) {
+			scoreEval = new ScoreEvaluation(updatedScore, updatedPassed, AssessmentEntryStatus.done, true, null);
+		} else {
+			scoreEval = new ScoreEvaluation(updatedScore, updatedPassed);
+		}
 		assessableCourseNode.updateUserScoreEvaluation(scoreEval, assessedUserCourseEnv, getIdentity(), false);
 
 		if (isHasComment() && isUserCommentDirty()) {
@@ -298,6 +321,34 @@ public class AssessmentForm extends FormBasicController {
 			passed.select(passedValue == null ? "undefined" :passedValue.toString(), true);
 			passed.setEnabled(cut == null);
 		}
+		
+		updateStatus(scoreEval);
+		
+	}
+	
+	private void updateStatus(ScoreEvaluation scoreEval) {
+		boolean closed = (scoreEval != null && scoreEval.getAssessmentStatus() == AssessmentEntryStatus.done);
+		
+		if(hasPassed) {
+			passed.setEnabled(!closed && cut == null);
+		}
+		
+		if(hasScore) {
+			score.setEnabled(!closed);
+		}
+		
+		if(hasComment) {
+			userComment.setEnabled(!closed);
+		}
+		coachComment.setEnabled(!closed);
+			
+		if (hasAttempts) {
+			attempts.setEnabled(!closed);
+		}
+		
+		submitButton.setVisible(!closed);
+		saveAndDoneLink.setVisible(!closed);
+		reopenLink.setVisible(closed);
 	}
 
 	@Override
@@ -312,7 +363,10 @@ public class AssessmentForm extends FormBasicController {
 
 		if (hasAttempts) {
 			attemptsValue = assessableCourseNode.getUserAttempts(assessedUserCourseEnv);
-			attempts = uifactory.addIntegerElement("attempts", "form.attempts", (attemptsValue == null ? 0 : attemptsValue.intValue()), formLayout);
+			if(attemptsValue == null) {
+				attemptsValue = new Integer(0);
+			}
+			attempts = uifactory.addIntegerElement("attempts", "form.attempts", attemptsValue.intValue(), formLayout);
 			attempts.setDisplaySize(3);
 			attempts.setMinValueCheck(0, null);
 		}
@@ -372,36 +426,29 @@ public class AssessmentForm extends FormBasicController {
 		if (hasComment) {
 			// Use init variables from db, not available from wrapper
 			userCommentValue = assessableCourseNode.getUserUserComment(assessedUserCourseEnv);
-			if (userCommentValue == null) {
-				userCommentValue = "";
-			}
 			userComment = uifactory.addTextAreaElement("usercomment", "form.usercomment", 2500, 5, 40, true, userCommentValue, formLayout);
+			userComment.setNotLongerThanCheck(2500, "input.toolong");
 		}
 
 		coachCommentValue = assessableCourseNode.getUserCoachComment(assessedUserCourseEnv);
-		if (coachCommentValue == null) {
-			coachCommentValue = "";
-		}
 		coachComment = uifactory.addTextAreaElement("coachcomment", "form.coachcomment", 2500, 5, 40, true, coachCommentValue, formLayout);
-	
-		//why does the TextElement not use its default error key??? 
-		//userComment could be null for course elements of type Assessment (MSCourseNode)
-		if(userComment!=null) {
-		  userComment.setNotLongerThanCheck(2500, "input.toolong");
-		}
-		if(coachComment!=null) {
-		  coachComment.setNotLongerThanCheck(2500, "input.toolong");
-		}
+		coachComment.setNotLongerThanCheck(2500, "input.toolong");
 		
 		FormLayoutContainer buttonGroupLayout = FormLayoutContainer.createButtonLayout("buttonGroupLayout", getTranslator());
 		formLayout.add(buttonGroupLayout);
 		
-		uifactory.addFormSubmitButton("save", buttonGroupLayout);
-		if(saveAndClose) {
-			saveAndCloseLink = uifactory.addFormLink("save.close", buttonGroupLayout, Link.BUTTON);
-			saveAndCloseLink.setElementCssClass("o_sel_assessment_form_save_and_close");
-		}
+		submitButton = uifactory.addFormSubmitButton("save", buttonGroupLayout);
+		submitButton.setElementCssClass("o_sel_assessment_form_save_and_close");
+
+		saveAndDoneLink = uifactory.addFormLink("save.done", buttonGroupLayout, Link.BUTTON);
+		saveAndDoneLink.setElementCssClass("o_sel_assessment_form_save_and_done");
+		
+		reopenLink = uifactory.addFormLink("reopen", buttonGroupLayout, Link.BUTTON);
+		reopenLink.setElementCssClass("o_sel_assessment_form_reopen");
+
 		uifactory.addFormCancelButton("cancel", buttonGroupLayout, ureq, getWindowControl());
+
+		updateStatus(scoreEval);
 	}
 
 	@Override

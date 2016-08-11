@@ -58,6 +58,9 @@ import org.olat.course.assessment.AssessmentManager;
 import org.olat.course.assessment.bulk.PassedCellRenderer;
 import org.olat.course.nodes.GTACourseNode;
 import org.olat.course.nodes.MSCourseNode;
+import org.olat.course.nodes.gta.GTAManager;
+import org.olat.course.nodes.gta.Task;
+import org.olat.course.nodes.gta.TaskProcess;
 import org.olat.course.nodes.gta.ui.GroupAssessmentModel.Cols;
 import org.olat.course.nodes.ms.MSCourseNodeRunController;
 import org.olat.course.run.environment.CourseEnvironment;
@@ -90,6 +93,7 @@ public class GTACoachedGroupGradingController extends FormBasicController {
 	private GroupAssessmentController assessmentCtrl;
 	private CloseableCalloutWindowController commentCalloutCtrl;
 
+	private Task assignedTask;
 	private final GTACourseNode gtaNode;
 	private final BusinessGroup assessedGroup;
 	private final CourseEnvironment courseEnv;
@@ -100,6 +104,8 @@ public class GTACoachedGroupGradingController extends FormBasicController {
 	private final List<UserPropertyHandler> userPropertyHandlers;
 	
 	@Autowired
+	private GTAManager gtaManager;
+	@Autowired
 	private UserManager userManager;
 	@Autowired
 	private BaseSecurityModule securityModule;
@@ -107,12 +113,14 @@ public class GTACoachedGroupGradingController extends FormBasicController {
 	private BusinessGroupService businessGroupService;
 	
 	public GTACoachedGroupGradingController(UserRequest ureq, WindowControl wControl,
-			CourseEnvironment courseEnv, GTACourseNode gtaNode, BusinessGroup assessedGroup) {
+			CourseEnvironment courseEnv, GTACourseNode gtaNode,
+			BusinessGroup assessedGroup, Task assignedTask) {
 		super(ureq, wControl, "coach_group_grading");
 		setTranslator(Util.createPackageTranslator(MSCourseNodeRunController.class, getLocale(), getTranslator()));
 		this.gtaNode = gtaNode;
 		this.assessedGroup = assessedGroup;
 		this.courseEnv = courseEnv;
+		this.assignedTask = assignedTask;
 		assessmentManager = courseEnv.getAssessmentManager();
 		
 		withScore = gtaNode.hasScoreConfigured();
@@ -241,8 +249,11 @@ public class GTACoachedGroupGradingController extends FormBasicController {
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if(assessmentCtrl == source) {
 			if(event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
+				loadMembers();
+			} else if(event == Event.CLOSE_EVENT) {
 				doGrading();
 				loadMembers();
+				fireEvent(ureq, Event.CHANGED_EVENT);
 			}
 			cmc.deactivate();
 			cleanUp();
@@ -280,7 +291,7 @@ public class GTACoachedGroupGradingController extends FormBasicController {
 	}
 	
 	private void doGrading() {
-		//assignedTask = gtaManager.updateTask(assignedTask, TaskProcess.graded);
+		assignedTask = gtaManager.updateTask(assignedTask, TaskProcess.graded, gtaNode);
 	}
 	
 	private void doOpenAssessmentForm(UserRequest ureq) {

@@ -66,6 +66,7 @@ import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
 import org.olat.modules.assessment.AssessmentEntry;
+import org.olat.modules.assessment.model.AssessmentEntryStatus;
 import org.olat.user.UserManager;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -83,6 +84,7 @@ public class GroupAssessmentController extends FormBasicController {
 	
 	private FlexiTableElement table;
 	private GroupAssessmentModel model;
+	private FormLink saveAndDoneButton;
 	private TextElement groupScoreEl, groupCommentEl;
 	private MultipleSelectionElement groupPassedEl, applyToAllEl;
 	
@@ -214,6 +216,7 @@ public class GroupAssessmentController extends FormBasicController {
 		FormLayoutContainer buttonsCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		formLayout.add(buttonsCont);
 		uifactory.addFormSubmitButton("save", buttonsCont);
+		saveAndDoneButton = uifactory.addFormLink("save.done", buttonsCont, Link.BUTTON);
 		uifactory.addFormCancelButton("cancel", buttonsCont, ureq, getWindowControl());
 	}
 	
@@ -419,6 +422,9 @@ public class GroupAssessmentController extends FormBasicController {
 			if(groupCommentEl != null) {
 				groupCommentEl.setVisible(allGroup);
 			}
+		} else if(source == saveAndDoneButton) {
+			applyChanges(true);
+			fireEvent(ureq, Event.CLOSE_EVENT);
 		} else if(source instanceof FormLink) {
 			FormLink link = (FormLink)source;
 			if("comment".equals(link.getCmd())) {
@@ -470,6 +476,11 @@ public class GroupAssessmentController extends FormBasicController {
 
 	@Override
 	protected void formOK(UserRequest ureq) {
+		applyChanges(false);
+		fireEvent(ureq, Event.DONE_EVENT);
+	}
+	
+	private void applyChanges(boolean setAsDone) {
 		List<AssessmentRow> rows = model.getObjects();
 		ICourse course = CourseFactory.loadCourse(courseEnv.getCourseResourceableId());
 		if(applyToAllEl.isAtLeastSelected(1)) {
@@ -493,7 +504,12 @@ public class GroupAssessmentController extends FormBasicController {
 			
 			for(AssessmentRow row:rows) {
 				UserCourseEnvironment userCourseEnv = row.getUserCourseEnvironment(course);
-				ScoreEvaluation newScoreEval = new ScoreEvaluation(score, passed);
+				ScoreEvaluation newScoreEval;
+				if(setAsDone) {
+					newScoreEval = new ScoreEvaluation(score, passed, AssessmentEntryStatus.done, true, null);
+				} else {
+					newScoreEval = new ScoreEvaluation(score, passed);
+				}
 				gtaNode.updateUserScoreEvaluation(newScoreEval, userCourseEnv, getIdentity(), false);
 			}
 
@@ -528,7 +544,12 @@ public class GroupAssessmentController extends FormBasicController {
 					}
 				}
 				
-				ScoreEvaluation newScoreEval = new ScoreEvaluation(score, passed);
+				ScoreEvaluation newScoreEval;
+				if(setAsDone) {
+					newScoreEval = new ScoreEvaluation(score, passed, AssessmentEntryStatus.done, true, null);
+				} else {
+					newScoreEval = new ScoreEvaluation(score, passed);
+				}
 				gtaNode.updateUserScoreEvaluation(newScoreEval, userCourseEnv, getIdentity(), false);
 				
 				if(withComment) {
@@ -539,8 +560,6 @@ public class GroupAssessmentController extends FormBasicController {
 				}
 			}
 		}
-		
-		fireEvent(ureq, Event.DONE_EVENT);
 	}
 
 	@Override

@@ -17,19 +17,18 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.course.assessment.ui.tool;
-
-import java.util.List;
+package org.olat.course.run.scoring;
 
 /**
  * 
- * 
- * Initial date: 09.10.2015<br>
+ * Initial date: 10.08.2016<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public interface ToReviewRow {
+public enum FailedEvaluationType {
 	
-	public List<String> getNodeIndents();
-	
+	failedAsNotPassed,
+	failedAsNotPassedAfterEndDate,
+	manual,
+
 }

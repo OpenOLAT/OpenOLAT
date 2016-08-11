@@ -23,7 +23,7 @@
 * under the Apache 2.0 license as the original file.
 */
 
-package org.olat.course.assessment;
+package org.olat.course.assessment.ui.tool;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -48,9 +48,13 @@ import org.olat.core.gui.control.generic.messages.MessageUIFactory;
 import org.olat.core.logging.AssertException;
 import org.olat.core.util.Util;
 import org.olat.course.Structure;
+import org.olat.course.assessment.AssessmentHelper;
+import org.olat.course.assessment.AssessmentModule;
+import org.olat.course.assessment.FilterName;
+import org.olat.course.assessment.IndentedNodeRenderer;
+import org.olat.course.assessment.NodeAssessmentTableDataModel;
+import org.olat.course.assessment.ScoreCellRenderer;
 import org.olat.course.assessment.model.AssessmentNodeData;
-import org.olat.course.assessment.ui.tool.AssessmentStatusCellRenderer;
-import org.olat.course.assessment.ui.tool.AssessmentToolController;
 import org.olat.course.nodes.AssessableCourseNode;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.run.userview.UserCourseEnvironment;
@@ -104,7 +108,7 @@ public class IdentityAssessmentOverviewController extends BasicController {
 	public IdentityAssessmentOverviewController(UserRequest ureq, WindowControl wControl, UserCourseEnvironment userCourseEnvironment, 
 			boolean nodesSelectable, boolean discardEmptyNodes, boolean allowTableFiltering) {
 		super(ureq, wControl);
-		setTranslator(Util.createPackageTranslator(AssessmentToolController.class, ureq.getLocale(), getTranslator()));
+		setTranslator(Util.createPackageTranslator(AssessmentModule.class, getLocale(), getTranslator()));
 		
 		this.runStructure = userCourseEnvironment.getCourseEnvironment().getRunStructure();
 		this.nodesSelectable = nodesSelectable;
@@ -128,6 +132,8 @@ public class IdentityAssessmentOverviewController extends BasicController {
 	 */
 	public IdentityAssessmentOverviewController(UserRequest ureq, WindowControl wControl, List<AssessmentNodeData> assessmentCourseNodes) {
 		super(ureq, wControl);
+		setTranslator(Util.createPackageTranslator(AssessmentModule.class, getLocale(), getTranslator()));
+		
 		this.runStructure = null;
 		this.nodesSelectable = false;
 		this.discardEmptyNodes = true;

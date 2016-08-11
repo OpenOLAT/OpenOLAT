@@ -34,7 +34,7 @@ import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.Util;
-import org.olat.course.assessment.AssessmentMainController;
+import org.olat.course.assessment.AssessmentModule;
 import org.olat.group.BusinessGroupService;
 import org.olat.group.model.SearchBusinessGroupParams;
 import org.olat.repository.RepositoryEntry;
@@ -65,7 +65,7 @@ public class AssessmentOverviewController extends BasicController implements Act
 	public AssessmentOverviewController(UserRequest ureq, WindowControl wControl,
 			RepositoryEntry testEntry, AssessmentToolSecurityCallback assessmentCallback) {
 		super(ureq, wControl);
-		setTranslator(Util.createPackageTranslator(AssessmentMainController.class, getLocale(), getTranslator()));
+		setTranslator(Util.createPackageTranslator(AssessmentModule.class, getLocale(), getTranslator()));
 		
 		mainVC = createVelocityContainer("overview");
 		

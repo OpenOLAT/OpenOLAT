@@ -34,12 +34,19 @@ import org.olat.core.id.OLATResourceable;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
-import org.olat.course.assessment.AssessedIdentityWrapper;
-import org.olat.course.assessment.AssessmentEditController;
 import org.olat.course.assessment.AssessmentHelper;
+import org.olat.course.assessment.ui.tool.AssessmentIdentityCourseNodeController;
 import org.olat.course.nodes.GTACourseNode;
+import org.olat.course.nodes.gta.GTAManager;
+import org.olat.course.nodes.gta.Task;
+import org.olat.course.nodes.gta.TaskProcess;
 import org.olat.course.nodes.ms.MSCourseNodeRunController;
+import org.olat.course.run.scoring.AssessmentEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
+import org.olat.modules.assessment.model.AssessmentEntryStatus;
+import org.olat.modules.assessment.ui.event.AssessmentFormEvent;
+import org.olat.repository.RepositoryEntry;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -52,18 +59,23 @@ public class GTACoachedParticipantGradingController extends BasicController {
 	private final Link assessmentFormButton;
 	private final VelocityContainer mainVC;
 	
-	private AssessmentEditController assessmentForm;
 	private CloseableModalController cmc;
 	private MSCourseNodeRunController msCtrl;
+	private AssessmentIdentityCourseNodeController assessmentForm;
 	
+	private Task assignedTask;
 	private final GTACourseNode gtaNode;
 	private final Identity assessedIdentity;
 	private final OLATResourceable courseOres;
+
+	@Autowired
+	private GTAManager gtaManager;
 	
 	public GTACoachedParticipantGradingController(UserRequest ureq, WindowControl wControl,
-			OLATResourceable courseOres, GTACourseNode gtaNode, Identity assessedIdentity) {
+			OLATResourceable courseOres, GTACourseNode gtaNode, Task assignedTask, Identity assessedIdentity) {
 		super(ureq, wControl);
 		this.gtaNode = gtaNode;
+		this.assignedTask = assignedTask;
 		this.courseOres = OresHelper.clone(courseOres);
 		this.assessedIdentity = assessedIdentity;
 		
@@ -86,9 +98,9 @@ public class GTACoachedParticipantGradingController extends BasicController {
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if(assessmentForm == source) {
-			if(event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
-				setAssessmentDatas(ureq);
-				doGraded();
+			if(event instanceof AssessmentFormEvent) {
+				UserCourseEnvironment assessedUserCourseEnv = assessmentForm.getAssessedUserCourseEnvironment();
+				doGraded(ureq, assessedUserCourseEnv);
 			}
 			cmc.deactivate();
 			cleanUp();
@@ -122,23 +134,29 @@ public class GTACoachedParticipantGradingController extends BasicController {
 		mainVC.put("msrun", msCtrl.getInitialComponent());
 	}
 	
-	private void doGraded() {
-		//assignedTask = gtaManager.updateTask(assignedTask, TaskProcess.grading);
+	private void doGraded(UserRequest ureq, UserCourseEnvironment assessedUserCourseEnv) {
+		removeAsListenerAndDispose(msCtrl);
+		msCtrl = new MSCourseNodeRunController(ureq, getWindowControl(), assessedUserCourseEnv, gtaNode, false, false);
+		listenTo(msCtrl);
+		mainVC.put("msrun", msCtrl.getInitialComponent());
+		
+		AssessmentEvaluation scoreEval = gtaNode.getUserScoreEvaluation(assessedUserCourseEnv);
+		if(scoreEval.getAssessmentStatus() == AssessmentEntryStatus.done) {
+			assignedTask = gtaManager.updateTask(assignedTask, TaskProcess.graded, gtaNode);
+			fireEvent(ureq, Event.CHANGED_EVENT);
+		}
 	}
 
 	private void doOpenAssessmentForm(UserRequest ureq) {
 		if(assessmentForm != null) return;//already open
 		
-		ICourse course = CourseFactory.loadCourse(courseOres);
-		UserCourseEnvironment uce = AssessmentHelper.createAndInitUserCourseEnvironment(assessedIdentity, course);
-		AssessedIdentityWrapper assessedIdentityWrapper = AssessmentHelper.wrapIdentity(uce, null, gtaNode);
-		
-		assessmentForm = new AssessmentEditController(ureq, getWindowControl(), null, course, gtaNode,
-				assessedIdentityWrapper, false, true, true);
+		RepositoryEntry courseEntry = CourseFactory.loadCourse(courseOres).getCourseEnvironment().getCourseGroupManager().getCourseEntry();
+
+		assessmentForm = new AssessmentIdentityCourseNodeController(ureq, getWindowControl(), null, courseEntry, gtaNode, assessedIdentity, false);
 		listenTo(assessmentForm);
 		
 		String title = translate("grading");
-		cmc = new CloseableModalController(getWindowControl(), "close", assessmentForm.getInitialComponent(), true, title, false);
+		cmc = new CloseableModalController(getWindowControl(), "close", assessmentForm.getInitialComponent(), true, title, true);
 		listenTo(cmc);
 		cmc.activate();
 	}

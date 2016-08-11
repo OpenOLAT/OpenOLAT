@@ -409,7 +409,7 @@ public class GTACoachController extends GTAAbstractController {
 		assignedTask = super.stepGrading(ureq, assignedTask);
 		if(withGrading) {
 			mainVC.contextPut("gradingCssClass", "o_active");
-			setGrading(ureq);
+			setGrading(ureq, assignedTask);
 		} else {
 			mainVC.contextPut("gradingEnabled", Boolean.FALSE);
 		}
@@ -417,15 +417,17 @@ public class GTACoachController extends GTAAbstractController {
 		return assignedTask;
 	}
 
-	private void setGrading(UserRequest ureq) {
+	private void setGrading(UserRequest ureq, Task assignedTask) {
 		mainVC.put("grading", new Panel("empty"));
 		if(assessedGroup != null) {
-			groupGradingCtrl = new GTACoachedGroupGradingController(ureq, getWindowControl(), courseEnv, gtaNode, assessedGroup);
+			groupGradingCtrl = new GTACoachedGroupGradingController(ureq, getWindowControl(),
+					courseEnv, gtaNode, assessedGroup, assignedTask);
 			listenTo(groupGradingCtrl);
 			mainVC.put("grading", groupGradingCtrl.getInitialComponent());
 		} else if(assessedIdentity != null) {
 			OLATResource courseOres = courseEntry.getOlatResource();
-			participantGradingCtrl = new GTACoachedParticipantGradingController(ureq, getWindowControl(), courseOres, gtaNode, assessedIdentity);
+			participantGradingCtrl = new GTACoachedParticipantGradingController(ureq, getWindowControl(),
+					courseOres, gtaNode, assignedTask, assessedIdentity);
 			listenTo(participantGradingCtrl);
 			mainVC.put("grading", participantGradingCtrl.getInitialComponent());
 		}

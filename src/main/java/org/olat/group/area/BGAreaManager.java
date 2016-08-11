@@ -111,7 +111,7 @@ public interface BGAreaManager {
 	 * 
 	 * @param group
 	 */
-	public abstract void deleteBGtoAreaRelations(BusinessGroup group);
+	public void deleteBGtoAreaRelations(BusinessGroup group);
 
 	/**
 	 * Searches for all business groups that are associated with the given

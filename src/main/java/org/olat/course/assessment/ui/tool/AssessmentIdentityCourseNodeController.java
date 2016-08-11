@@ -19,6 +19,9 @@
  */
 package org.olat.course.assessment.ui.tool;
 
+import java.text.Collator;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 import org.olat.basesecurity.BaseSecurity;
@@ -30,12 +33,16 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.gui.control.generic.modal.DialogBoxController;
+import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.id.Identity;
 import org.olat.core.id.IdentityEnvironment;
 import org.olat.core.id.Roles;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.Formatter;
+import org.olat.core.util.coordinate.CoordinatorManager;
+import org.olat.core.util.coordinate.LockResult;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.assessment.OpenSubDetailsEvent;
@@ -45,10 +52,12 @@ import org.olat.course.nodes.CourseNodeFactory;
 import org.olat.course.nodes.MSCourseNode;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.course.run.userview.UserCourseEnvironmentImpl;
+import org.olat.group.BusinessGroup;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.assessment.ui.AssessedIdentityController;
 import org.olat.repository.RepositoryEntry;
 import org.olat.user.UserManager;
+import org.olat.util.logging.activity.LoggingResourceable;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -65,9 +74,12 @@ public class AssessmentIdentityCourseNodeController extends BasicController impl
 	private AssessmentForm assessmentForm;
 	private Controller subDetailsController;
 	private Controller detailsEditController;
-	
+	private DialogBoxController alreadyLockedDialogController;
+
+	private LockResult lockEntry;
 	private final CourseNode courseNode;
 	private final Identity assessedIdentity;
+	private final UserCourseEnvironment assessedUserCourseEnvironment;
 	
 	@Autowired
 	private UserManager userManager;
@@ -75,14 +87,54 @@ public class AssessmentIdentityCourseNodeController extends BasicController impl
 	private BaseSecurity securityManager;
 	
 	public AssessmentIdentityCourseNodeController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
-			RepositoryEntry courseEntry, CourseNode courseNode, Identity assessedIdentity) {
+			RepositoryEntry courseEntry, CourseNode courseNode, Identity assessedIdentity, boolean courseNodeDetails) {
 		super(ureq, wControl);
 		
 		this.stackPanel = stackPanel;
 		this.courseNode = courseNode;
 		this.assessedIdentity = assessedIdentity;
+
+		ICourse course = CourseFactory.loadCourse(courseEntry);
+		Roles roles = securityManager.getRoles(assessedIdentity);
+		IdentityEnvironment identityEnv = new IdentityEnvironment(assessedIdentity, roles);
+		assessedUserCourseEnvironment = new UserCourseEnvironmentImpl(identityEnv, course.getCourseEnvironment());
+		assessedUserCourseEnvironment.getScoreAccounting().evaluateAll();
+		
+		addLoggingResourceable(LoggingResourceable.wrap(course));
+		addLoggingResourceable(LoggingResourceable.wrap(courseNode));
 		
 		identityAssessmentVC = createVelocityContainer("identity_personal_node_infos");
+		initDetails(course);
+
+		//acquire lock and show dialog box on failure.
+		String lockSubKey = "AssessmentLock-NID::" + courseNode.getIdent() + "-IID::" + assessedIdentity.getKey();
+		lockEntry = CoordinatorManager.getInstance().getCoordinator().getLocker().acquireLock(course, ureq.getIdentity(), lockSubKey);
+		if(!lockEntry.isSuccess()) {
+			alreadyLockedDialogController = DialogBoxUIFactory.createResourceLockedMessage(ureq, wControl, lockEntry, "assessmentLock", getTranslator());
+			listenTo(alreadyLockedDialogController);
+			alreadyLockedDialogController.activate();
+		} else if(courseNode instanceof AssessableCourseNode) {
+			AssessableCourseNode aCourseNode = (AssessableCourseNode)courseNode;
+
+			// Add the users details controller
+			if (aCourseNode.hasDetails() && courseNodeDetails) {
+				detailsEditController = aCourseNode.getDetailsEditController(ureq, wControl, stackPanel, assessedUserCourseEnvironment);
+				listenTo(detailsEditController);
+				identityAssessmentVC.put("details", detailsEditController.getInitialComponent());
+			}
+			
+			assessmentForm = new AssessmentForm(ureq, wControl, aCourseNode, assessedUserCourseEnvironment);
+			listenTo(assessmentForm);
+			identityAssessmentVC.put("assessmentForm", assessmentForm.getInitialComponent());
+		}
+		putInitialPanel(identityAssessmentVC);
+	}
+	
+	public UserCourseEnvironment getAssessedUserCourseEnvironment() {
+		return assessedUserCourseEnvironment;
+	}
+	
+	private void initDetails(ICourse course) {
 		identityAssessmentVC.contextPut("user", assessedIdentity.getUser());
 		identityAssessmentVC.contextPut("fullName", userManager.getUserDisplayName(assessedIdentity));
 		identityAssessmentVC.contextPut("courseNode", courseNode.getShortTitle());
@@ -96,29 +148,16 @@ public class AssessmentIdentityCourseNodeController extends BasicController impl
 		infoCoach = Formatter.formatLatexFormulas(infoCoach);
 		identityAssessmentVC.contextPut("infoCoach", infoCoach);
 		
-		ICourse course = CourseFactory.loadCourse(courseEntry);
-		Roles roles = securityManager.getRoles(assessedIdentity);
-		IdentityEnvironment identityEnv = new IdentityEnvironment(assessedIdentity, roles);
-		UserCourseEnvironment assessedUserCourseEnv = new UserCourseEnvironmentImpl(identityEnv, course.getCourseEnvironment());
-		assessedUserCourseEnv.getScoreAccounting().evaluateAll();
-
-		// Add the assessment details form
-		if(courseNode instanceof AssessableCourseNode) {
-			AssessableCourseNode aCourseNode = (AssessableCourseNode)courseNode;
-
-			// Add the users details controller
-			if (aCourseNode.hasDetails()) {
-				detailsEditController = aCourseNode.getDetailsEditController(ureq, wControl, stackPanel, assessedUserCourseEnv);
-				listenTo(detailsEditController);
-				identityAssessmentVC.put("details", detailsEditController.getInitialComponent());
+		List<BusinessGroup> participantGroups = course.getCourseEnvironment().getCourseGroupManager()
+				.getParticipatingBusinessGroups(assessedIdentity);
+		final Collator collator = Collator.getInstance(getLocale());
+		Collections.sort(participantGroups, new Comparator<BusinessGroup>() {
+			@Override
+			public int compare(BusinessGroup a, BusinessGroup b) {
+				return collator.compare(a.getName(), b.getName());
 			}
-
-			assessmentForm = new AssessmentForm(ureq, wControl, aCourseNode, assessedUserCourseEnv, true);
-			listenTo(assessmentForm);
-			identityAssessmentVC.put("assessmentForm", assessmentForm.getInitialComponent());
-		}
-		
-		putInitialPanel(identityAssessmentVC);
+		});
+		identityAssessmentVC.contextPut("participantGroups", participantGroups);
 	}
 	
 	@Override
@@ -132,7 +171,15 @@ public class AssessmentIdentityCourseNodeController extends BasicController impl
 
 	@Override
 	protected void doDispose() {
-		//
+		releaseEditorLock();
+	}
+	
+	private void releaseEditorLock() {
+		if (lockEntry != null && lockEntry.isSuccess()) {
+			// release lock
+			CoordinatorManager.getInstance().getCoordinator().getLocker().releaseLock(lockEntry);
+			lockEntry = null;
+		}
 	}
 	
 	@Override

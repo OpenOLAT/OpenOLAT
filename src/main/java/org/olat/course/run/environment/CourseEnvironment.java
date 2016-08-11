@@ -33,6 +33,7 @@ import org.olat.course.auditing.UserNodeAuditManager;
 import org.olat.course.config.CourseConfig;
 import org.olat.course.groupsandrights.CourseGroupManager;
 import org.olat.course.properties.CoursePropertyManager;
+import org.olat.repository.RepositoryEntry;
 
 /**
  * Initial Date:  May 5, 2004
@@ -69,6 +70,12 @@ public interface CourseEnvironment {
 	 * @return The course resourceable id
 	 */
 	public Long getCourseResourceableId();
+	
+	/**
+	 * Refresh the repository entry
+	 * @param courseEntry
+	 */
+	public void updateCourseEntry(RepositoryEntry courseEntry);
 	
 
 	/**

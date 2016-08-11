@@ -28,6 +28,7 @@ import org.olat.core.gui.render.Renderer;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
+import org.olat.modules.assessment.ui.ToReviewRow;
 
 /**
  * 
@@ -50,7 +51,7 @@ public class ElementToReviewCellRenderer implements FlexiCellRenderer {
 			FlexiTableComponent source, URLBuilder ubu, Translator trans) {
 		if(cellValue instanceof ToReviewRow) {
 			ToReviewRow rowToReview = (ToReviewRow)cellValue;
-			List<String> elements = rowToReview.getNodeIndents();
+			List<String> elements = rowToReview.getSubIndents();
 			if(elements.size() == 1) {
 				String msg = nodeIdentToNodeShortTitles.get(elements.get(0));
 				target.append(msg);

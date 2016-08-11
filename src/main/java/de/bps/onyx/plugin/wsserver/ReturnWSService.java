@@ -44,7 +44,6 @@ import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.assessment.AssessmentManager;
 import org.olat.course.assessment.manager.AssessmentNotificationsHandler;
-import org.olat.course.assessment.manager.CourseAssessmentManagerImpl;
 import org.olat.course.nodes.AssessableCourseNode;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.run.scoring.ScoreEvaluation;
@@ -207,7 +206,7 @@ public class ReturnWSService {
 								ICourse course = CourseFactory.loadCourse(resourceId);
 
 								CourseNode courseNode = course.getRunStructure().getNode(qtiResultSet.getOlatResourceDetail());
-								AssessmentManager am = new CourseAssessmentManagerImpl(course.getCourseEnvironment().getCourseGroupManager().getCourseEntry());
+								AssessmentManager am = course.getCourseEnvironment().getAssessmentManager();
 
 								// create an identenv with no roles, no
 								// attributes, no locale

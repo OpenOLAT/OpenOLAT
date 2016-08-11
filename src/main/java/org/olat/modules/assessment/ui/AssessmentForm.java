@@ -45,7 +45,7 @@ import org.olat.core.id.Identity;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.course.assessment.AssessmentHelper;
-import org.olat.course.assessment.AssessmentMainController;
+import org.olat.course.assessment.AssessmentModule;
 import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.assessment.AssessmentService;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
@@ -88,7 +88,7 @@ public class AssessmentForm extends FormBasicController {
 	public AssessmentForm(UserRequest ureq, WindowControl wControl, Identity assessedIdentity, RepositoryEntry testEntry,
 			AssessableResource assessableElement, boolean saveAndClose) {
 		super(ureq, wControl);
-		setTranslator(Util.createPackageTranslator(AssessmentMainController.class, getLocale(), getTranslator()));
+		setTranslator(Util.createPackageTranslator(AssessmentModule.class, getLocale(), getTranslator()));
 		
 		this.saveAndClose = saveAndClose;
 		this.testEntry = testEntry;

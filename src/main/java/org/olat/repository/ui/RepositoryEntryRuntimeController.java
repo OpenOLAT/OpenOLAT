@@ -116,7 +116,7 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 	protected AuthoringEditAccessController accessCtrl;
 	private RepositoryEntryDetailsController detailsCtrl;
 	private RepositoryMembersController membersEditController;
-	private RepositoryEditDescriptionController descriptionCtrl;
+	protected RepositoryEditDescriptionController descriptionCtrl;
 	private RepositoryEntryLifeCycleChangeController lifeCycleChangeCtr;
 	
 	private Dropdown tools;

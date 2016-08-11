@@ -54,6 +54,8 @@ import org.olat.user.UserManager;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
 
 /**
+ * This class is used as identifier for user properties configuration, don't move it, don't delete it.
+ * 
  * Initial Date:  Jun 23, 2004
  * @author gnaegi
  */

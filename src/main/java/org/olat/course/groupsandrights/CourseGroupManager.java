@@ -57,7 +57,7 @@ public interface CourseGroupManager {
 	
 	public RepositoryEntry getCourseEntry();
 	
-	public void refreshRepositoryEntry(RepositoryEntry entry);
+	//public void refreshRepositoryEntry(RepositoryEntry entry);
 
 	/**
 	 * Checks users course rights in any of the available right group context of

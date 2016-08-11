@@ -836,6 +836,7 @@ public class RepositoryManager {
 		updatedRe.getStatistics().getLaunchCounter();
 		if(updatedRe.getLifecycle() != null) {
 			updatedRe.getLifecycle().getKey();
+			System.out.println(updatedRe.getLifecycle().getValidTo());
 		}
 		
 		dbInstance.commit();

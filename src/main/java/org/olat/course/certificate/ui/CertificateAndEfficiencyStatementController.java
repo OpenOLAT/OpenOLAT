@@ -58,13 +58,13 @@ import org.olat.core.util.mail.ContactMessage;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.course.assessment.AssessmentHelper;
+import org.olat.course.assessment.AssessmentModule;
 import org.olat.course.assessment.EfficiencyStatement;
-import org.olat.course.assessment.IdentityAssessmentEditController;
-import org.olat.course.assessment.IdentityAssessmentOverviewController;
 import org.olat.course.assessment.manager.EfficiencyStatementManager;
 import org.olat.course.assessment.model.AssessmentNodeData;
 import org.olat.course.assessment.portfolio.EfficiencyStatementArtefact;
 import org.olat.course.assessment.portfolio.EfficiencyStatementMediaHandler;
+import org.olat.course.assessment.ui.tool.IdentityAssessmentOverviewController;
 import org.olat.course.certificate.Certificate;
 import org.olat.course.certificate.CertificatesManager;
 import org.olat.group.BusinessGroup;
@@ -157,7 +157,7 @@ public class CertificateAndEfficiencyStatementController extends BasicController
 	public CertificateAndEfficiencyStatementController(WindowControl wControl, UserRequest ureq, Identity statementOwner,
 			BusinessGroup businessGroup, Long resourceKey, RepositoryEntry courseRepo, EfficiencyStatement efficiencyStatement, boolean links) {
 		super(ureq, wControl);
-		setTranslator(Util.createPackageTranslator(IdentityAssessmentEditController.class, getLocale(), getTranslator()));
+		setTranslator(Util.createPackageTranslator(AssessmentModule.class, getLocale(), getTranslator()));
 		setTranslator(UserManager.getInstance().getPropertyHandlerTranslator(getTranslator()));
 		
 		this.courseRepoEntry = courseRepo;

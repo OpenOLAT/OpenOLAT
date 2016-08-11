@@ -44,7 +44,7 @@ import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.assessment.AssessedIdentitiesTableDataModel;
 import org.olat.course.assessment.AssessedIdentityWrapper;
-import org.olat.course.assessment.AssessmentMainController;
+import org.olat.course.assessment.AssessmentModule;
 import org.olat.course.assessment.bulk.PassedCellRenderer;
 import org.olat.course.certificate.model.CertificateInfos;
 import org.olat.course.nodes.CourseNode;
@@ -80,7 +80,7 @@ public class CertificatesSelectionController extends StepFormBasicController {
 			List<AssessedIdentityWrapper> datas, boolean hasAssessableNodes) {
 		super(ureq, wControl, rootForm, runContext, LAYOUT_BAREBONE, null);
 		setTranslator(Util.createPackageTranslator(UserPropertyHandler.class, getLocale(), getTranslator()));
-		setTranslator(Util.createPackageTranslator(AssessmentMainController.class, getLocale(), getTranslator()));
+		setTranslator(Util.createPackageTranslator(AssessmentModule.class, getLocale(), getTranslator()));
 		
 		this.datas = datas;
 		this.courseEntry = courseEntry;

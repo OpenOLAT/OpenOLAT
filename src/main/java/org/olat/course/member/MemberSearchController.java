@@ -26,9 +26,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Identity;
-import org.olat.course.CourseFactory;
-import org.olat.course.ICourse;
-import org.olat.course.assessment.IdentityAssessmentEditController;
+import org.olat.course.assessment.ui.tool.AssessmentIdentityCourseController;
 import org.olat.group.ui.main.AbstractMemberListController;
 import org.olat.group.ui.main.MemberView;
 import org.olat.group.ui.main.SearchMembersParams;
@@ -43,7 +41,7 @@ public class MemberSearchController extends AbstractMemberListController {
 	private SearchMembersParams searchParams = new SearchMembersParams();
 	
 	private MemberSearchForm searchForm;
-	private IdentityAssessmentEditController identityAssessmentController;
+	private AssessmentIdentityCourseController identityAssessmentController;
 	
 	public MemberSearchController(UserRequest ureq, WindowControl wControl, TooledStackedPanel toolbarPanel,
 			RepositoryEntry repoEntry) {
@@ -83,10 +81,8 @@ public class MemberSearchController extends AbstractMemberListController {
 		removeAsListenerAndDispose(identityAssessmentController);
 		
 		Identity assessedIdentity = securityManager.loadIdentityByKey(member.getIdentityKey());
-		ICourse course = CourseFactory.loadCourse(repoEntry);
-		
-		identityAssessmentController = new IdentityAssessmentEditController(getWindowControl(),ureq, toolbarPanel,
-				assessedIdentity, course, true, false, true);
+		identityAssessmentController = new AssessmentIdentityCourseController(ureq, getWindowControl(), toolbarPanel,
+				repoEntry, assessedIdentity);
 		listenTo(identityAssessmentController);
 		
 		String displayName = userManager.getUserDisplayName(assessedIdentity);

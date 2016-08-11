@@ -26,6 +26,7 @@
 package org.olat.course.run.scoring;
 
 import java.math.BigDecimal;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -37,6 +38,7 @@ import org.olat.core.util.nodes.INode;
 import org.olat.core.util.tree.TreeVisitor;
 import org.olat.core.util.tree.Visitor;
 import org.olat.course.condition.interpreter.ConditionInterpreter;
+import org.olat.course.groupsandrights.CourseGroupManager;
 import org.olat.course.nodes.AssessableCourseNode;
 import org.olat.course.nodes.CalculatedAssessableCourseNode;
 import org.olat.course.nodes.CourseNode;
@@ -44,6 +46,7 @@ import org.olat.course.nodes.PersistentAssessableCourseNode;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
+import org.olat.repository.model.RepositoryEntryLifecycle;
 
 /**
  * Description:<BR/>
@@ -170,6 +173,13 @@ public class ScoreAccounting {
 			return se;
 		}
 		
+		/**
+		 * Recalculate the score of structure nodes.
+		 * 
+		 * @param entry
+		 * @param cNode
+		 * @return
+		 */
 		private AssessmentEvaluation calculateScoreEvaluation(AssessmentEntry entry, CalculatedAssessableCourseNode cNode) {
 			AssessmentEvaluation se;
 			if(cNode.hasScoreConfigured() || cNode.hasPassedConfigured()) {
@@ -189,8 +199,21 @@ public class ScoreAccounting {
 					if(hasPassed) {
 						passed = Boolean.TRUE;
 						assessmentStatus = AssessmentEntryStatus.done;
+					} else {
+						//some rules to set -> failed
+						FailedEvaluationType failedType = scoreCalculator.getFailedType();
+						if(failedType == null || failedType == FailedEvaluationType.failedAsNotPassed) {
+							passed = Boolean.FALSE;
+						} else if(failedType == FailedEvaluationType.failedAsNotPassedAfterEndDate) {
+							CourseGroupManager cgm = userCourseEnvironment.getCourseEnvironment().getCourseGroupManager();
+							RepositoryEntryLifecycle lifecycle = cgm.getCourseEntry().getLifecycle();
+							if(lifecycle != null && lifecycle.getValidTo() != null && lifecycle.getValidTo().compareTo(new Date()) < 0) {
+								passed = Boolean.FALSE;
+							}
+						} else if(failedType == FailedEvaluationType.manual) {
+							passed = entry == null ? null : entry.getPassed();
+						}
 					}
-					//some rules to set -> failed
 				}
 				se = new AssessmentEvaluation(score, passed, null, assessmentStatus, null, null, null, null);
 				

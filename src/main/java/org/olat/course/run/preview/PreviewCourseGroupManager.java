@@ -91,11 +91,6 @@ final class PreviewCourseGroupManager extends BasicManager implements CourseGrou
 		return courseResource;
 	}
 
-	@Override
-	public void refreshRepositoryEntry(RepositoryEntry entry) {
-		this.courseResource = entry;
-	}
-
 	/**
 	 * @see org.olat.course.groupsandrights.CourseGroupManager#hasRight(org.olat.core.id.Identity, java.lang.String)
 	 */
@@ -304,8 +299,8 @@ final class PreviewCourseGroupManager extends BasicManager implements CourseGrou
 
 	@Override
 	public List<Identity> getCoachesFromAreas() {
-		List<BusinessGroup> groups = areaManager.findBusinessGroupsOfAreas(areas);
-		return businessGroupService.getMembers(groups, GroupRoles.coach.name());
+		List<BusinessGroup> groupList = areaManager.findBusinessGroupsOfAreas(areas);
+		return businessGroupService.getMembers(groupList, GroupRoles.coach.name());
 	}
 
 	@Override
@@ -321,9 +316,9 @@ final class PreviewCourseGroupManager extends BasicManager implements CourseGrou
 
 	@Override
 	public List<Identity> getCoachesFromAreas(List<Long> areaKeys) {
-		List<BGArea> areas = areaManager.loadAreas(areaKeys);
-		List<BusinessGroup> groups = areaManager.findBusinessGroupsOfAreas(areas);
-		return businessGroupService.getMembers(groups, GroupRoles.coach.name());
+		List<BGArea> areaList = areaManager.loadAreas(areaKeys);
+		List<BusinessGroup> groupList = areaManager.findBusinessGroupsOfAreas(areaList);
+		return businessGroupService.getMembers(groupList, GroupRoles.coach.name());
 	}
 
 	@Override
@@ -333,9 +328,9 @@ final class PreviewCourseGroupManager extends BasicManager implements CourseGrou
 
 	@Override
 	public List<Identity> getParticipantsFromAreas(List<Long> areaKeys) {
-		List<BGArea> areas = areaManager.loadAreas(areaKeys);
-		List<BusinessGroup> groups = areaManager.findBusinessGroupsOfAreas(areas);
-		return businessGroupService.getMembers(groups, GroupRoles.participant.name());
+		List<BGArea> areaList = areaManager.loadAreas(areaKeys);
+		List<BusinessGroup> groupList = areaManager.findBusinessGroupsOfAreas(areaList);
+		return businessGroupService.getMembers(groupList, GroupRoles.participant.name());
 	}
 
 	@Override

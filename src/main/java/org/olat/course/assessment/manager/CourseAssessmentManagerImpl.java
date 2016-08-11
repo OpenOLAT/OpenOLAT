@@ -45,6 +45,7 @@ import org.olat.course.auditing.UserNodeAuditManager;
 import org.olat.course.certificate.CertificateTemplate;
 import org.olat.course.certificate.CertificatesManager;
 import org.olat.course.certificate.model.CertificateInfos;
+import org.olat.course.groupsandrights.CourseGroupManager;
 import org.olat.course.nodes.AssessableCourseNode;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.run.environment.CourseEnvironment;
@@ -68,40 +69,40 @@ public class CourseAssessmentManagerImpl implements AssessmentManager {
 	private static final Float FLOAT_ZERO = new Float(0);
 	private static final Integer INTEGER_ZERO = new Integer(0);
 	
-	private final RepositoryEntry courseEntry;
+	private final CourseGroupManager cgm;
 	private final AssessmentService assessmentService;
 	private final CertificatesManager certificatesManager;
 	private final EfficiencyStatementManager efficiencyStatementManager;
 	
-	public CourseAssessmentManagerImpl(RepositoryEntry courseEntry) {
-		this.courseEntry = courseEntry;
+	public CourseAssessmentManagerImpl(CourseGroupManager cgm) {
+		this.cgm = cgm;
 		assessmentService = CoreSpringFactory.getImpl(AssessmentService.class);
 		certificatesManager = CoreSpringFactory.getImpl(CertificatesManager.class);
 		efficiencyStatementManager = CoreSpringFactory.getImpl(EfficiencyStatementManager.class);
 	}
-	
+
 	private AssessmentEntry getOrCreate(Identity assessedIdentity, CourseNode courseNode) {
-		return assessmentService.getOrCreateAssessmentEntry(assessedIdentity, courseEntry, courseNode.getIdent(), courseNode.getReferencedRepositoryEntry());
+		return assessmentService.getOrCreateAssessmentEntry(assessedIdentity, cgm.getCourseEntry(), courseNode.getIdent(), courseNode.getReferencedRepositoryEntry());
 	}
 
 	@Override
 	public List<AssessmentEntry> getAssessmentEntries(CourseNode courseNode) {
-		return assessmentService.loadAssessmentEntriesBySubIdent(courseEntry, courseNode.getIdent());
+		return assessmentService.loadAssessmentEntriesBySubIdent(cgm.getCourseEntry(), courseNode.getIdent());
 	}
 
 	@Override
 	public AssessmentEntry getAssessmentEntry(CourseNode courseNode, Identity assessedIdentity, String referenceSoftKey) {
-		return assessmentService.loadAssessmentEntry(assessedIdentity, courseEntry, courseNode.getIdent(), referenceSoftKey);
+		return assessmentService.loadAssessmentEntry(assessedIdentity, cgm.getCourseEntry(), courseNode.getIdent(), referenceSoftKey);
 	}
 
 	@Override
 	public List<AssessmentEntry> getAssessmentEntries(Identity assessedIdentity) {
-		return assessmentService.loadAssessmentEntriesByAssessedIdentity(assessedIdentity, courseEntry);
+		return assessmentService.loadAssessmentEntriesByAssessedIdentity(assessedIdentity, cgm.getCourseEntry());
 	}
 
 	@Override
 	public List<AssessmentEntry> getAssessmentEntries(BusinessGroup assessedGoup, CourseNode courseNode) {
-		return assessmentService.loadAssessmentEntries(assessedGoup, courseEntry, courseNode.getIdent());
+		return assessmentService.loadAssessmentEntries(assessedGoup, cgm.getCourseEntry(), courseNode.getIdent());
 	}
 
 	@Override
@@ -117,7 +118,7 @@ public class CourseAssessmentManagerImpl implements AssessmentManager {
 			passed = scoreEvaluation.getPassed();
 		}
 		return assessmentService
-				.createAssessmentEntry(assessedIdentity, courseEntry, courseNode.getIdent(), referenceEntry, score, passed);
+				.createAssessmentEntry(assessedIdentity, cgm.getCourseEntry(), courseNode.getIdent(), referenceEntry, score, passed);
 	}
 
 	@Override
@@ -127,7 +128,7 @@ public class CourseAssessmentManagerImpl implements AssessmentManager {
 
 	@Override
 	public void saveNodeAttempts(CourseNode courseNode, Identity identity, Identity assessedIdentity, Integer attempts) {
-		ICourse course = CourseFactory.loadCourse(courseEntry.getOlatResource());
+		ICourse course = CourseFactory.loadCourse(cgm.getCourseEntry());
 		
 		AssessmentEntry nodeAssessment = getOrCreate(assessedIdentity, courseNode);
 		nodeAssessment.setAttempts(attempts);
@@ -150,7 +151,7 @@ public class CourseAssessmentManagerImpl implements AssessmentManager {
 
 	@Override
 	public void saveNodeComment(CourseNode courseNode, Identity identity, Identity assessedIdentity, String comment) {
-		ICourse course = CourseFactory.loadCourse(courseEntry.getOlatResource());
+		ICourse course = CourseFactory.loadCourse(cgm.getCourseEntry());
 		
 		AssessmentEntry nodeAssessment = getOrCreate(assessedIdentity, courseNode);
 		nodeAssessment.setComment(comment);
@@ -173,7 +174,7 @@ public class CourseAssessmentManagerImpl implements AssessmentManager {
 
 	@Override
 	public void saveNodeCoachComment(CourseNode courseNode, Identity assessedIdentity, String comment) {
-		ICourse course = CourseFactory.loadCourse(courseEntry.getOlatResource());
+		ICourse course = CourseFactory.loadCourse(cgm.getCourseEntry());
 		
 		AssessmentEntry nodeAssessment = getOrCreate(assessedIdentity, courseNode);
 		nodeAssessment.setCoachComment(comment);
@@ -192,7 +193,7 @@ public class CourseAssessmentManagerImpl implements AssessmentManager {
 
 	@Override
 	public void incrementNodeAttempts(CourseNode courseNode, Identity assessedIdentity, UserCourseEnvironment userCourseEnv) {
-		ICourse course = CourseFactory.loadCourse(courseEntry.getOlatResource());
+		ICourse course = CourseFactory.loadCourse(cgm.getCourseEntry());
 		
 		AssessmentEntry nodeAssessment = getOrCreate(assessedIdentity, courseNode);
 		int attempts = nodeAssessment.getAttempts() == null ? 1 :nodeAssessment.getAttempts().intValue() + 1;
@@ -216,7 +217,7 @@ public class CourseAssessmentManagerImpl implements AssessmentManager {
 
 	@Override
 	public void incrementNodeAttemptsInBackground(CourseNode courseNode, Identity assessedIdentity, UserCourseEnvironment userCourseEnv) {
-		ICourse course = CourseFactory.loadCourse(courseEntry.getOlatResource());
+		ICourse course = CourseFactory.loadCourse(cgm.getCourseEntry());
 		
 		AssessmentEntry nodeAssessment = getOrCreate(assessedIdentity, courseNode);
 		int attempts = nodeAssessment.getAttempts() == null ? 1 :nodeAssessment.getAttempts().intValue() + 1;
@@ -236,7 +237,7 @@ public class CourseAssessmentManagerImpl implements AssessmentManager {
 	public void saveScoreEvaluation(AssessableCourseNode courseNode, Identity identity, Identity assessedIdentity,
 			ScoreEvaluation scoreEvaluation, UserCourseEnvironment userCourseEnv,
 			boolean incrementUserAttempts) {
-		final ICourse course = CourseFactory.loadCourse(courseEntry);
+		final ICourse course = CourseFactory.loadCourse(cgm.getCourseEntry());
 		final CourseEnvironment courseEnv = userCourseEnv.getCourseEnvironment();
 		
 		Float score = scoreEvaluation.getScore();
@@ -315,18 +316,18 @@ public class CourseAssessmentManagerImpl implements AssessmentManager {
 			List<AssessmentNodeData> data = new ArrayList<AssessmentNodeData>(50);
 			AssessmentHelper.getAssessmentNodeDataList(0, courseEnv.getRunStructure().getRootNode(),
 					scoreAccounting, userCourseEnv, true, true, data);
-			efficiencyStatementManager.updateUserEfficiencyStatement(assessedIdentity, courseEnv, data, courseEntry);
+			efficiencyStatementManager.updateUserEfficiencyStatement(assessedIdentity, courseEnv, data, cgm.getCourseEntry());
 		}
 
 		if(passed != null && passed.booleanValue() && course.getCourseConfig().isAutomaticCertificationEnabled()) {
-			if(certificatesManager.isCertificationAllowed(assessedIdentity, courseEntry)) {
+			if(certificatesManager.isCertificationAllowed(assessedIdentity, cgm.getCourseEntry())) {
 				CertificateTemplate template = null;
 				Long templateId = course.getCourseConfig().getCertificateTemplate();
 				if(templateId != null) {
 					template = certificatesManager.getTemplateById(templateId);
 				}
 				CertificateInfos certificateInfos = new CertificateInfos(assessedIdentity, score, passed);
-				certificatesManager.generateCertificate(certificateInfos, courseEntry, template, true);
+				certificatesManager.generateCertificate(certificateInfos, cgm.getCourseEntry(), template, true);
 			}
 		}
 	}
@@ -337,7 +338,7 @@ public class CourseAssessmentManagerImpl implements AssessmentManager {
 			return FLOAT_ZERO; // return default value
 		}
 		
-		AssessmentEntry entry = assessmentService.loadAssessmentEntry(identity, courseEntry, courseNode.getIdent());	
+		AssessmentEntry entry = assessmentService.loadAssessmentEntry(identity, cgm.getCourseEntry(), courseNode.getIdent());	
 		if(entry != null && entry.getScore() != null) {
 			return entry.getScore().floatValue();
 		}
@@ -347,14 +348,14 @@ public class CourseAssessmentManagerImpl implements AssessmentManager {
 	@Override
 	public String getNodeComment(CourseNode courseNode, Identity identity) {
 		AssessmentEntry entry = assessmentService
-				.loadAssessmentEntry(identity, courseEntry, courseNode.getIdent());	
+				.loadAssessmentEntry(identity, cgm.getCourseEntry(), courseNode.getIdent());	
 		return entry == null ? null : entry.getComment();
 	}
 
 	@Override
 	public String getNodeCoachComment(CourseNode courseNode, Identity identity) {
 		AssessmentEntry entry = assessmentService
-				.loadAssessmentEntry(identity, courseEntry, courseNode.getIdent());	
+				.loadAssessmentEntry(identity, cgm.getCourseEntry(), courseNode.getIdent());	
 		return entry == null ? null : entry.getCoachComment();
 	}
 
@@ -365,7 +366,7 @@ public class CourseAssessmentManagerImpl implements AssessmentManager {
 		}
 		
 		AssessmentEntry nodeAssessment = assessmentService
-				.loadAssessmentEntry(identity, courseEntry, courseNode.getIdent());	
+				.loadAssessmentEntry(identity, cgm.getCourseEntry(), courseNode.getIdent());	
 		return nodeAssessment == null ? null : nodeAssessment.getPassed();
 	}
 
@@ -374,14 +375,14 @@ public class CourseAssessmentManagerImpl implements AssessmentManager {
 		if(courseNode == null) return INTEGER_ZERO;
 		
 		AssessmentEntry nodeAssessment = assessmentService
-				.loadAssessmentEntry(identity, courseEntry, courseNode.getIdent());	
+				.loadAssessmentEntry(identity, cgm.getCourseEntry(), courseNode.getIdent());	
 		return nodeAssessment == null ? INTEGER_ZERO : nodeAssessment.getAttempts();
 	}
 
 	@Override
 	public Long getAssessmentID(CourseNode courseNode, Identity identity) {
 		AssessmentEntry nodeAssessment = assessmentService
-				.loadAssessmentEntry(identity, courseEntry, courseNode.getIdent());	
+				.loadAssessmentEntry(identity, cgm.getCourseEntry(), courseNode.getIdent());	
 		return nodeAssessment == null ? null : nodeAssessment.getAssessmentId();
 	}
 
@@ -389,14 +390,14 @@ public class CourseAssessmentManagerImpl implements AssessmentManager {
 	public Date getScoreLastModifiedDate(CourseNode courseNode, Identity identity) {
 		if(courseNode == null) return null;
 		AssessmentEntry nodeAssessment = assessmentService
-				.loadAssessmentEntry(identity, courseEntry, courseNode.getIdent());
+				.loadAssessmentEntry(identity, cgm.getCourseEntry(), courseNode.getIdent());
 		return nodeAssessment == null ? null : nodeAssessment.getLastModified();
 	}
 
 	@Override
 	public Boolean getNodeFullyAssessed(CourseNode courseNode, Identity identity) {
 		AssessmentEntry nodeAssessment = assessmentService
-				.loadAssessmentEntry(identity, courseEntry, courseNode.getIdent());	
+				.loadAssessmentEntry(identity, cgm.getCourseEntry(), courseNode.getIdent());	
 		return nodeAssessment == null ? null : nodeAssessment.getFullyAssessed();
 	}
 	
@@ -407,11 +408,11 @@ public class CourseAssessmentManagerImpl implements AssessmentManager {
 	
 	@Override
 	public void registerForAssessmentChangeEvents(GenericEventListener gel, Identity identity) {
-		CoordinatorManager.getInstance().getCoordinator().getEventBus().registerFor(gel, identity, courseEntry.getOlatResource());
+		CoordinatorManager.getInstance().getCoordinator().getEventBus().registerFor(gel, identity, cgm.getCourseEntry().getOlatResource());
 	}
 
 	@Override
 	public void deregisterFromAssessmentChangeEvents(GenericEventListener gel) {
-		CoordinatorManager.getInstance().getCoordinator().getEventBus().deregisterFor(gel, courseEntry.getOlatResource());
+		CoordinatorManager.getInstance().getCoordinator().getEventBus().deregisterFor(gel, cgm.getCourseEntry().getOlatResource());
 	}
 }

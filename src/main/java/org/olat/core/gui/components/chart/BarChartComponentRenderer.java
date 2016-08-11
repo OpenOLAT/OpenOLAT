@@ -123,9 +123,6 @@ public class BarChartComponentRenderer extends DefaultComponentRenderer {
 		sb.append("});\n")
 		  .append("/* ]]> */")
 		  .append("</script>\n");
-		
-		//System.out.println("--------------------------");
-		//System.out.println(sb.toString());
 	}
 	
 	private void appendSeries(StringOutput sb, StringBuilder colors, BarChartComponent chartCmp) {

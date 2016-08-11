@@ -41,6 +41,7 @@ import java.util.List;
 public class ScoreCalculator implements Serializable {
 	private String scoreExpression;
 	private String passedExpression;
+	private String failedExpression;
 	
 	/** config flag: no passed configured **/
 	public static final String PASSED_TYPE_NONE = "no";
@@ -57,14 +58,11 @@ public class ScoreCalculator implements Serializable {
 	private String passedType;
 	private List<String> passedNodes;
 	private int passedCutValue;
-
-	/**
-	 * @param scoreExpression
-	 * @param passedExpression
-	 */
-	public ScoreCalculator(String scoreExpression, String passedExpression) {
-		this.scoreExpression = scoreExpression;
-		this.passedExpression = passedExpression;
+	
+	private FailedEvaluationType failedType;
+	
+	public ScoreCalculator() {
+		//
 	}
 	
 	/**
@@ -87,6 +85,10 @@ public class ScoreCalculator implements Serializable {
 		// to the new correct value using something like
 		// sc.setScoreExpression(sc.getScoreExpressionFromEasyModeConfiguration());
 		return scoreExpression;
+	}
+	
+	public String getFailedExpression() {
+		return failedExpression;
 	}
 	
 	
@@ -224,6 +226,15 @@ public class ScoreCalculator implements Serializable {
 	public void setPassedType(String passedType) {
 		this.passedType = passedType;
 	}
+	
+	public FailedEvaluationType getFailedType() {
+		return failedType;
+	}
+
+	public void setFailedType(FailedEvaluationType failedType) {
+		this.failedType = failedType;
+	}
+
 	/**
 	 * clears the fields set in easy mode back to default values.
 	 *

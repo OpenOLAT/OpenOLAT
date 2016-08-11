@@ -17,28 +17,38 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.course.assessment.ui.tool;
+package org.olat.modules.assessment.ui.event;
 
-import java.util.List;
-import java.util.Locale;
-
-import org.olat.core.id.Identity;
-import org.olat.user.UserPropertiesRow;
-import org.olat.user.propertyhandlers.UserPropertyHandler;
+import org.olat.core.gui.control.Event;
 
 /**
  * 
- * Initial date: 21.07.2015<br>
+ * Initial date: 10.08.2016<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class AssessedIdentityRow extends UserPropertiesRow {
+public class AssessmentFormEvent extends Event {
+
+	private static final long serialVersionUID = -5578626308503719045L;
 	
+	public static final String ASSESSMENT_DONE = "assessment-entry-done";
+	public static final String ASSESSMENT_CHANGED = "assessment-entry-CHANGED";
+
+	private boolean close;
 	
-	public AssessedIdentityRow(Identity identity, List<UserPropertyHandler> userPropertyHandlers, Locale locale) {
-		super(identity, userPropertyHandlers, locale);
+	public AssessmentFormEvent(String cmd, boolean close) {
+		super(cmd);
+		this.close = close;
 	}
-
-
+	
+	public boolean isClose() {
+		return close;
+	}
+	
+	public AssessmentFormEvent cloneNotClose() {
+		AssessmentFormEvent afe = new AssessmentFormEvent(getCommand(), false);
+		
+		return afe;
+	}
 
 }

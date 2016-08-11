@@ -37,7 +37,7 @@ import org.olat.core.gui.control.generic.wizard.StepsRunContext;
 import org.olat.core.id.Roles;
 import org.olat.core.util.Util;
 import org.olat.course.assessment.AssessedIdentitiesTableDataModel;
-import org.olat.course.assessment.AssessmentMainController;
+import org.olat.course.assessment.AssessmentModule;
 import org.olat.course.assessment.bulk.PassedCellRenderer;
 import org.olat.course.certificate.model.CertificateInfos;
 import org.olat.user.UserManager;
@@ -66,7 +66,7 @@ public class CertificatesSelectionOverviewController extends StepFormBasicContro
 			StepsRunContext runContext, boolean hasAssessableNodes) {
 		super(ureq, wControl, rootForm, runContext, LAYOUT_BAREBONE, null);
 		setTranslator(Util.createPackageTranslator(UserPropertyHandler.class, getLocale(), getTranslator()));
-		setTranslator(Util.createPackageTranslator(AssessmentMainController.class, getLocale(), getTranslator()));
+		setTranslator(Util.createPackageTranslator(AssessmentModule.class, getLocale(), getTranslator()));
 		
 		Roles roles = ureq.getUserSession().getRoles();
 		isAdministrativeUser = securityModule.isUserAllowedAdminProps(roles);

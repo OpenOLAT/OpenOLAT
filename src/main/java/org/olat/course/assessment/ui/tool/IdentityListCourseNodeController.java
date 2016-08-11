@@ -24,6 +24,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
@@ -36,6 +37,7 @@ import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
+import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
@@ -54,7 +56,9 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.id.Identity;
+import org.olat.core.id.IdentityEnvironment;
 import org.olat.core.id.OLATResourceable;
+import org.olat.core.id.Roles;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.StringHelper;
@@ -62,7 +66,7 @@ import org.olat.core.util.Util;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
-import org.olat.course.assessment.AssessmentMainController;
+import org.olat.course.assessment.AssessmentModule;
 import org.olat.course.assessment.AssessmentToolManager;
 import org.olat.course.assessment.bulk.PassedCellRenderer;
 import org.olat.course.assessment.model.SearchAssessedIdentityParams;
@@ -72,8 +76,12 @@ import org.olat.course.certificate.CertificatesManager;
 import org.olat.course.certificate.ui.DownloadCertificateCellRenderer;
 import org.olat.course.nodes.AssessableCourseNode;
 import org.olat.course.nodes.AssessmentToolOptions;
+import org.olat.course.nodes.CalculatedAssessableCourseNode;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.CourseNodeFactory;
+import org.olat.course.run.scoring.ScoreEvaluation;
+import org.olat.course.run.userview.UserCourseEnvironment;
+import org.olat.course.run.userview.UserCourseEnvironmentImpl;
 import org.olat.group.BusinessGroup;
 import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
@@ -83,6 +91,7 @@ import org.olat.modules.assessment.ui.AssessedIdentityListState;
 import org.olat.modules.assessment.ui.AssessmentToolContainer;
 import org.olat.modules.assessment.ui.AssessmentToolSecurityCallback;
 import org.olat.modules.assessment.ui.ScoreCellRenderer;
+import org.olat.modules.assessment.ui.event.AssessmentFormEvent;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryService;
 import org.olat.user.UserManager;
@@ -107,6 +116,7 @@ public class IdentityListCourseNodeController extends FormBasicController implem
 	
 	private Link nextLink, previousLink;
 	private FlexiTableElement tableEl;
+	private FormLink bulkDoneButton;
 	private final TooledStackedPanel stackPanel;
 	private final AssessmentToolContainer toolContainer;
 	private IdentityListCourseNodeTableModel usersTableModel;
@@ -131,7 +141,7 @@ public class IdentityListCourseNodeController extends FormBasicController implem
 			RepositoryEntry courseEntry, BusinessGroup group, CourseNode courseNode, AssessmentToolContainer toolContainer,
 			AssessmentToolSecurityCallback assessmentCallback) {
 		super(ureq, wControl, "identity_courseelement");
-		setTranslator(Util.createPackageTranslator(AssessmentMainController.class, getLocale(), getTranslator()));
+		setTranslator(Util.createPackageTranslator(AssessmentModule.class, getLocale(), getTranslator()));
 		setTranslator(userManager.getPropertyHandlerTranslator(getTranslator()));
 		
 		this.group = group;
@@ -200,6 +210,7 @@ public class IdentityListCourseNodeController extends FormBasicController implem
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", usersTableModel, 20, false, getTranslator(), formLayout);
 		tableEl.setExportEnabled(true);
 		tableEl.setSearchEnabled(new AssessedIdentityListProvider(getIdentity(), courseEntry, referenceEntry, courseNode.getIdent(), assessmentCallback), ureq.getUserSession());
+		tableEl.setMultiSelect(true);
 		
 		List<FlexiTableFilter> filters = new ArrayList<>();
 		filters.add(new FlexiTableFilter(translate("filter.passed"), "passed"));
@@ -226,6 +237,10 @@ public class IdentityListCourseNodeController extends FormBasicController implem
 				
 				tableEl.setExtendedFilterButton(translate("filter.groups"), groupFilters);
 			}
+		}
+		
+		if(courseNode instanceof AssessableCourseNode && !(courseNode instanceof CalculatedAssessableCourseNode)) {
+			bulkDoneButton = uifactory.addFormLink("bulk.done", formLayout, Link.BUTTON);
 		}
 	}
 	
@@ -320,10 +335,6 @@ public class IdentityListCourseNodeController extends FormBasicController implem
 		flc.contextPut("toolCmpNames", toolCmpNames);
 	}
 	
-	private void updateModel(UserRequest ureq, Identity assessedIdentity) {
-		updateModel(ureq, null, null, null);
-	}
-	
 	/*
 	private boolean accept(AssessmentEntry entry, SearchAssessedIdentityParams params) {
 		boolean ok = true;
@@ -411,11 +422,14 @@ public class IdentityListCourseNodeController extends FormBasicController implem
 	@Override
 	public void event(UserRequest ureq, Controller source, Event event) {
 		if(currentIdentityCtrl == source) {
-			if(event == Event.CHANGED_EVENT) {
-				updateModel(ureq, currentIdentityCtrl.getAssessedIdentity());
-			} else if(event == Event.DONE_EVENT) {
-				updateModel(ureq, currentIdentityCtrl.getAssessedIdentity());
-				stackPanel.popController(currentIdentityCtrl);
+			if(event instanceof AssessmentFormEvent) {
+				AssessmentFormEvent aee = (AssessmentFormEvent)event;
+				updateModel(ureq, null, null, null);
+				if(aee.isClose()) {
+					stackPanel.popController(currentIdentityCtrl);
+				}
+			} else if(event == Event.CHANGED_EVENT) {
+				updateModel(ureq, null, null, null);
 			} else if(event == Event.CANCELLED_EVENT) {
 				stackPanel.popController(currentIdentityCtrl);
 			}
@@ -441,6 +455,8 @@ public class IdentityListCourseNodeController extends FormBasicController implem
 				FlexiTableSearchEvent ftse = (FlexiTableSearchEvent)event;
 				updateModel(ureq, ftse.getSearch(), ftse.getFilters(), ftse.getExtendedFilters());
 			}
+		} else if(bulkDoneButton == source) {
+			doSetDone(ureq);
 		}
 		
 		super.formInnerEvent(ureq, source, event);
@@ -499,7 +515,7 @@ public class IdentityListCourseNodeController extends FormBasicController implem
 					courseEntry, assessedIdentity);
 		} else {
 			currentIdentityCtrl = new AssessmentIdentityCourseNodeController(ureq, getWindowControl(), stackPanel,
-					courseEntry, courseNode, assessedIdentity);
+					courseEntry, courseNode, assessedIdentity, true);
 		}
 		listenTo(currentIdentityCtrl);
 		stackPanel.pushController(fullName, currentIdentityCtrl);
@@ -510,5 +526,39 @@ public class IdentityListCourseNodeController extends FormBasicController implem
 		nextLink = LinkFactory.createToolLink("nextelement","", this, "o_icon_next_toolbar");
 		nextLink.setTitle(translate("command.next"));
 		stackPanel.addTool(nextLink, Align.rightEdge, false, "o_tool_next");
+	}
+	
+	private void doSetDone(UserRequest ureq) {
+		Set<Integer> selections = tableEl.getMultiSelectedIndex();
+		List<AssessedIdentityElementRow> rows = new ArrayList<>(selections.size());
+		for(Integer i:selections) {
+			AssessedIdentityElementRow row = usersTableModel.getObject(i.intValue());
+			if(row != null && row.getAssessmentStatus() != AssessmentEntryStatus.done) {
+				rows.add(row);
+			}
+		}
+
+		if(rows == null || rows.isEmpty()) {
+			showWarning("warning.bulk.done");
+		} else if(courseNode instanceof AssessableCourseNode) {
+			ICourse course = CourseFactory.loadCourse(courseEntry);
+			AssessableCourseNode assessableCourseNode = (AssessableCourseNode)courseNode;
+			
+			for(AssessedIdentityElementRow row:rows) {
+				Identity assessedIdentity = securityManager.loadIdentityByKey(row.getIdentityKey());
+				
+				Roles roles = securityManager.getRoles(assessedIdentity);
+				
+				IdentityEnvironment identityEnv = new IdentityEnvironment(assessedIdentity, roles);
+				UserCourseEnvironment assessedUserCourseEnv = new UserCourseEnvironmentImpl(identityEnv, course.getCourseEnvironment());
+				assessedUserCourseEnv.getScoreAccounting().evaluateAll();
+
+				ScoreEvaluation scoreEval = assessableCourseNode.getUserScoreEvaluation(assessedUserCourseEnv);
+				ScoreEvaluation doneEval = new ScoreEvaluation(scoreEval.getScore(), scoreEval.getPassed(), AssessmentEntryStatus.done, scoreEval.getFullyAssessed(), scoreEval.getAssessmentID());
+				assessableCourseNode.updateUserScoreEvaluation(doneEval, assessedUserCourseEnv, getIdentity(), false);
+			}
+			
+			updateModel(ureq, null, null, null);
+		}
 	}
 }

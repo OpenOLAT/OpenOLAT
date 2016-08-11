@@ -118,7 +118,7 @@ public class AssessmentToolPage {
 		By scoreBy = By.cssSelector(".o_sel_assessment_form_score input[type='text']");
 		browser.findElement(scoreBy).sendKeys(Float.toString(score));
 		
-		By saveBy = By.cssSelector("a.btn.o_sel_assessment_form_save_and_close");
+		By saveBy = By.cssSelector("button.btn.o_sel_assessment_form_save_and_close");
 		browser.findElement(saveBy).click();
 		OOGraphene.waitBusy(browser);
 		return this;

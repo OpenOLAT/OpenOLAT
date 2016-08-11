@@ -388,8 +388,6 @@ public class UserSessionManager implements GenericEventListener {
 					// do logging
 					if (ident != null) {
 						ThreadLocalUserActivityLogger.log(OlatLoggingAction.OLAT_LOGOUT, UserSession.class, CoreLoggingResourceable.wrap(ident));
-					} else {
-						//System.out.println("identity is null!!!!!!!!!!!!!!!!!!!!!");
 					}
 					// notify all variables in the store (the values) about the disposal
 					// if
