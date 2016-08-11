@@ -652,14 +652,16 @@ public class CheckListCourseNode extends AbstractAccessableCourseNode implements
 		ModuleConfiguration config = getModuleConfiguration();
 		CheckboxManager checkboxManager = CoreSpringFactory.getImpl(CheckboxManager.class);
 		CheckboxList list = (CheckboxList)config.get(CONFIG_KEY_CHECKBOX);
-		for(Checkbox checkbox:list.getList()) {
-			String sourceId = checkbox.getCheckboxId();
-			String targetId = envMapper.getTargetUniqueKey(getIdent(), sourceId);
-			if(targetId == null) {
-				targetId = UUID.randomUUID().toString();
-				envMapper.addUniqueKeyPair(getIdent(), sourceId, targetId);
+		if (list !=null && list.getList().size() > 0) {
+			for(Checkbox checkbox:list.getList()) {
+				String sourceId = checkbox.getCheckboxId();
+				String targetId = envMapper.getTargetUniqueKey(getIdent(), sourceId);
+				if(targetId == null) {
+					targetId = UUID.randomUUID().toString();
+					envMapper.addUniqueKeyPair(getIdent(), sourceId, targetId);
+				}
+				checkbox.setCheckboxId(targetId);
 			}
-			checkbox.setCheckboxId(targetId);
 		}
 		
 		// the ident of the course node is the same

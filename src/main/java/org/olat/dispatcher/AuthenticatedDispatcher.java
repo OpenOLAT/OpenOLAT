@@ -290,6 +290,17 @@ public class AuthenticatedDispatcher implements Dispatcher {
 	
 	private void processBusinessPath(String businessPath, UserRequest ureq, UserSession usess) {
 		ChiefController chiefController = Windows.getWindows(usess).getChiefController();
+		
+		if(chiefController == null) {
+			if(usess.isAuthenticated()) {
+				AuthHelper.createAuthHome(ureq).getWindow();
+				chiefController = Windows.getWindows(usess).getChiefController();
+			} else {
+				redirectToDefaultDispatcher(ureq.getHttpReq(), ureq.getHttpResp());
+				return;
+			}
+		}
+
 		WindowBackOffice windowBackOffice = chiefController.getWindow().getWindowBackOffice();
 		if(chiefController.isLoginInterceptionInProgress()) {
 			Window w = windowBackOffice.getWindow();
