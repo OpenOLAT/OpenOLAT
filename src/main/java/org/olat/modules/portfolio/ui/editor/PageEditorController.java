@@ -293,7 +293,7 @@ public class PageEditorController extends BasicController {
 			}
 		} else if(handler instanceof SimpleAddPageElementHandler) {
 			SimpleAddPageElementHandler simpleHandler = (SimpleAddPageElementHandler)handler;
-			doAddPageElement(ureq, simpleHandler.createPageElement(), refenceFragment, target);
+			doAddPageElement(ureq, simpleHandler.createPageElement(getLocale()), refenceFragment, target);
 		}
 	}
 	

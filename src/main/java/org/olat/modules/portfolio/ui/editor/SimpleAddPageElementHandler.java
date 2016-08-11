@@ -19,6 +19,8 @@
  */
 package org.olat.modules.portfolio.ui.editor;
 
+import java.util.Locale;
+
 /**
  * 
  * Initial date: 04.07.2016<br>
@@ -27,6 +29,6 @@ package org.olat.modules.portfolio.ui.editor;
  */
 public interface SimpleAddPageElementHandler {
 	
-	public PageElement createPageElement();
+	public PageElement createPageElement(Locale locale);
 
 }

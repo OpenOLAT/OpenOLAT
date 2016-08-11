@@ -147,11 +147,9 @@ public class PageMetadataEditController extends FormBasicController {
 		summaryEl.setPlaceholderKey("summary.placeholder", null);
 		
 		imageUpload = uifactory.addFileElement(getWindowControl(), "file", "fileupload",formLayout);			
-		
 		imageUpload.setPreview(ureq.getUserSession(), true);
 		imageUpload.addActionListener(FormEvent.ONCHANGE);
 		imageUpload.setDeleteEnabled(true);
-		imageUpload.setHelpText("page.title");
 		imageUpload.limitToMimeType(imageMimeTypes, null, null);
 		imageUpload.setMaxUploadSizeKB(picUploadlimitKB, null, null);
 		if(page != null) {

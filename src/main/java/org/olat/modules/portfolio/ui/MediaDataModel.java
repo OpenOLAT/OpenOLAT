@@ -88,7 +88,6 @@ public class MediaDataModel extends DefaultFlexiTableDataModel<MediaRow>
 			case title: return media.getTitle();
 			case collectionDate: return media.getCollectionDate();
 			case type: return media;
-			case open: return media.getOpenFormItem();
 		}
 		return null;
 	}
@@ -110,8 +109,7 @@ public class MediaDataModel extends DefaultFlexiTableDataModel<MediaRow>
 		key("table.header.key"),
 		title("table.header.title"),
 		collectionDate("table.header.collection.date"),
-		type("table.header.type"),
-		open("table.header.open");
+		type("table.header.type");
 
 		private final String i18nKey;
 		

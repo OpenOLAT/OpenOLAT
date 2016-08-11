@@ -174,7 +174,7 @@ public class MediaCenterController extends FormBasicController
 				new MediaTypeCellRenderer(handlersMap)));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(MediaCols.title, "select"));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(MediaCols.collectionDate, "select"));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(MediaCols.open));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("select", translate("select"), "select"));
 	
 		model = new MediaDataModel(columnsModel, getLocale());
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", model, 20, false, getTranslator(), formLayout);
@@ -222,7 +222,12 @@ public class MediaCenterController extends FormBasicController
 
 	@Override
 	public Iterable<Component> getComponents(int row, Object rowObject) {
-		return null;
+		MediaRow mediaRow = model.getObject(row);
+		List<Component> components = new ArrayList<>(2);
+		if(mediaRow.getOpenFormItem() != null) {
+			components.add(mediaRow.getOpenFormItem().getComponent());
+		}
+		return components;
 	}
 	
 	private void loadModel() {
@@ -239,7 +244,7 @@ public class MediaCenterController extends FormBasicController
 			} else {
 				MediaHandler handler = portfolioService.getMediaHandler(media.getType());
 				VFSLeaf thumbnail = handler.getThumbnail(media, THUMBNAIL_SIZE);
-				FormLink openLink =  uifactory.addFormLink("select_" + (++counter), "select", media.getTitle(), null, null, Link.NONTRANSLATED);
+				FormLink openLink =  uifactory.addFormLink("select_" + (++counter), "select", media.getTitle(), null, flc, Link.NONTRANSLATED);
 				MediaRow row = new MediaRow(media, thumbnail, openLink, handler.getIconCssClass(media));
 				openLink.setUserObject(row);
 				rows.add(row);

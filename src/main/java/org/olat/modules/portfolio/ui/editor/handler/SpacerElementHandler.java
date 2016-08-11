@@ -19,6 +19,7 @@
  */
 package org.olat.modules.portfolio.ui.editor.handler;
 
+import java.util.Locale;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.olat.core.gui.UserRequest;
@@ -69,7 +70,7 @@ public class SpacerElementHandler implements PageElementHandler, SimpleAddPageEl
 	}
 
 	@Override
-	public PageElement createPageElement() {
+	public PageElement createPageElement(Locale locale) {
 		String content = "<hr/>";
 		SpacerPart part = new SpacerPart();
 		part.setContent(content);
