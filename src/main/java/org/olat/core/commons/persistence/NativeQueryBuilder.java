@@ -123,7 +123,7 @@ public class NativeQueryBuilder {
 		} else if(dbInstance.isPostgreSQL()) {
 			sb.append(" array_to_string(array_agg(").append(var).append("),',')");
 		} else if(dbInstance.isOracle()) {
-			sb.append(" listagg(").append(var).append(",',')");
+			sb.append(" listagg(").append(var).append(",',') within group (order by ").append(var).append(") ");
 		}
 		return this;
 	}
