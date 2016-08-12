@@ -16,17 +16,16 @@
 	#end
 	#if($r.isInvalidResponse($interaction.responseIdentifier))
 		<div class="o_error badResponse">
-		## This will happen if either a pattern is wrong or the wrong number of choices were made
-          
-		## <xsl:variable name="requiredQuantity" as="xs:string" select="if ($minStrings=$maxStrings) then 'all' else concat('at least ', $minStrings)"/>
- 
-		#if($interaction.patternMask && $interaction.minStrings > 0)
-              You must fill in <xsl:value-of select="$requiredQuantity"/> box(es)
-              and use the correct format for your input in each box.
+		#if($interaction.minStrings > 0 && $interaction.maxStrings > 0)
+			$r.translate("errror.input.extendedText.min.max", $interaction.minStrings, $interaction.maxStrings)
 		#elseif($interaction.minStrings > 0)
-              You must fill in <xsl:value-of select="$requiredQuantity"/> box(es).
-		#elseif($interaction.patternMask)
-              You must use the correct format for your input in each box.
+			$r.translate("errror.input.extendedText.min", $interaction.minStrings)
+		#elseif($interaction.maxStrings > 0)
+			$r.translate("errror.input.extendedText.max", $interaction.maxStrings)
+		#end
+
+		#if($interaction.patternMask)
+			$r.translate("error.required.format")
  		#end
         </div>
 	#end

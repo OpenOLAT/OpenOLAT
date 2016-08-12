@@ -504,6 +504,17 @@ public class VelocityRenderDecorator implements Closeable {
 	public String translate(String key, String arg1) {
 		return translate(key, new String[] {arg1});
 	}
+	
+	public String translate(String key, Integer arg1) {
+		return translate(key, new String[] { (arg1 == null ? "" : arg1.toString()) });
+	}
+	
+	public String translate(String key, Integer arg1, Integer arg2) {
+		return translate(key, new String[] {
+				(arg1 == null ? "" : arg1.toString()),
+				(arg2 == null ? "" : arg2.toString())
+			});
+	}
 
 	/**
 	 * Method to translate a key that comes from another package. This should be

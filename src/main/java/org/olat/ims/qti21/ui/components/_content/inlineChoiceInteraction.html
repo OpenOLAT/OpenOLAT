@@ -5,9 +5,7 @@
 <input name="qtiworks_presented_${responseIdentifier}" type="hidden" value="1"/>
 <span class="$localName"> 
 	#if($r.isInvalidResponse($interaction.responseIdentifier))
-	<span class="o_error badResponse">
-          You must select one of the following options
-    </span>
+	<span class="o_error badResponse">$r.translate("error.choice")</span>
 	#end
       
 	<select id="oo_${responseIdentifier}" name="qtiworks_response_${responseIdentifier}">

@@ -15,8 +15,6 @@
 
 	<div id="${containerId}">
       	<div id="${containerId}_container" style="width:${interaction.object.width}px; height:${interaction.object.height}px; position:relative; background-image: url('${r.convertLinkFull($interaction.object.data)}') " data-openolat="">
-			
-			
 			<canvas id="${containerId}_canvas" width="${interaction.object.width}" height="${interaction.object.height}" style="position:absolute; top:0;left:0; "></canvas>
 			<img id="${containerId}" width="${interaction.object.width}" height="${interaction.object.height}" src="${r.convertLinkFull($interaction.object.data)}" usemap="#${containerId}_map" style="position:absolute; top:0; left:0; opacity:0;"></img>
 			<map name="${containerId}_map">
