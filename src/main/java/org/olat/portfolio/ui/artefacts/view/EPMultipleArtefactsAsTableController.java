@@ -19,6 +19,8 @@
  */
 package org.olat.portfolio.ui.artefacts.view;
 
+import java.util.ArrayList;
+import java.util.BitSet;
 import java.util.List;
 
 import org.olat.core.CoreSpringFactory;
@@ -32,6 +34,7 @@ import org.olat.core.gui.components.table.StaticColumnDescriptor;
 import org.olat.core.gui.components.table.TableController;
 import org.olat.core.gui.components.table.TableEvent;
 import org.olat.core.gui.components.table.TableGuiConfiguration;
+import org.olat.core.gui.components.table.TableMultiSelectEvent;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
@@ -83,7 +86,9 @@ public class EPMultipleArtefactsAsTableController extends BasicController implem
 	private CloseableModalController artefactBox;
 	private PortfolioStructure struct;
 	private EPFrontendManager ePFMgr;
+	
 	private boolean mapClosed = false;
+	private boolean multiSelect = false;
 	private boolean artefactChooseMode;
 	private EPSecurityCallback secCallback;
 	private PortfolioModule portfolioModule;
@@ -91,10 +96,12 @@ public class EPMultipleArtefactsAsTableController extends BasicController implem
 	private EPCollectStepForm04 moveTreeCtrl;
 	private CloseableModalController moveTreeBox;
 
-	public EPMultipleArtefactsAsTableController(UserRequest ureq, WindowControl wControl, List<AbstractArtefact> artefacts, PortfolioStructure struct, boolean artefactChooseMode, EPSecurityCallback secCallback) {
+	public EPMultipleArtefactsAsTableController(UserRequest ureq, WindowControl wControl,
+			List<AbstractArtefact> artefacts, PortfolioStructure struct, boolean artefactChooseMode, boolean multiSelect, EPSecurityCallback secCallback) {
 		super(ureq, wControl);
-		this.artefactChooseMode = artefactChooseMode;
+		this.multiSelect = multiSelect;
 		this.secCallback = secCallback;
+		this.artefactChooseMode = artefactChooseMode;
 		vC = createVelocityContainer("multiArtefactTable");
 		this.struct = struct; 
 		if(struct != null && struct.getRoot() instanceof PortfolioStructureMap) {
@@ -123,6 +130,10 @@ public class EPMultipleArtefactsAsTableController extends BasicController implem
 		tableGuiConfiguration.setResultsPerPage(10);
 		tableGuiConfiguration.setPreferencesOffered(true, "artefacts.as.table.prefs");
 		artefactListTblCtrl = new TableController(tableGuiConfiguration, ureq, getWindowControl(), getTranslator());
+		if(multiSelect) {
+			artefactListTblCtrl.setMultiSelect(true);
+			artefactListTblCtrl.addMultiSelectAction("select", "select");
+		}
 		listenTo(artefactListTblCtrl);
 
 		String details = artefactChooseMode ? null : CMD_TITLE;
@@ -244,6 +255,16 @@ public class EPMultipleArtefactsAsTableController extends BasicController implem
 					deleteDialogController = activateYesNoDialog(ureq, translate("delete.artefact"), text, deleteDialogController);
 					deleteDialogController.setUserObject(artefact);
 				}
+			} else if(event instanceof TableMultiSelectEvent) {
+				TableMultiSelectEvent tmse = (TableMultiSelectEvent)event;
+
+				BitSet objectMarkers = tmse.getSelection();
+				List<AbstractArtefact> selectedArtefacts = new ArrayList<>(objectMarkers.size());
+				for(int i=objectMarkers.nextSetBit(0); i >= 0; i=objectMarkers.nextSetBit(i+1)) {
+					AbstractArtefact entry =  (AbstractArtefact)artefactListTblCtrl.getTableDataModel().getObject(i);
+					selectedArtefacts.add(entry);
+				}
+				fireEvent(ureq, new EPArtefactListChoosenEvent(selectedArtefacts));
 			}
 		} else if (source == moveTreeCtrl && event.getCommand().equals(EPStructureChangeEvent.CHANGED)){
 			EPStructureChangeEvent epsEv = (EPStructureChangeEvent) event;

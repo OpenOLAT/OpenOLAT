@@ -207,6 +207,8 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 		if(component != null) {
 			component.setDirty(true);
 		}
+		
+
 	}
 	
 	public FlexiTableRendererType[] getAvailableRendererTypes() {
@@ -835,10 +837,14 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 				&& customTypeButton.getFormDispatchId().equals(dispatchuri)) {
 			setRendererType(FlexiTableRendererType.custom);
 			saveCustomSettings(ureq);
+			getRootForm().fireFormEvent(ureq, new FlexiTableRenderEvent(FlexiTableRenderEvent.CHANGE_RENDER_TYPE, this,
+					FlexiTableRendererType.custom, FormEvent.ONCLICK));
 		} else if(classicTypeButton != null
 				&& classicTypeButton.getFormDispatchId().equals(dispatchuri)) {
 			setRendererType(FlexiTableRendererType.classic);
 			saveCustomSettings(ureq);
+			getRootForm().fireFormEvent(ureq, new FlexiTableRenderEvent(FlexiTableRenderEvent.CHANGE_RENDER_TYPE, this,
+					FlexiTableRendererType.classic, FormEvent.ONCLICK));
 		} else if(doSelect(ureq)) {
 			//do select
 		}
@@ -918,8 +924,15 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 	
 	@Override
 	public void sort(String sortKey, boolean asc) {
-		SortKey key = new SortKey(sortKey, asc);
-		orderBy = new SortKey[]{ key };
+		SortKey key;
+		if(StringHelper.containsNonWhitespace(sortKey)) {
+			key = new SortKey(sortKey, asc);
+			orderBy = new SortKey[]{ key };
+		} else {
+			key = null;
+			orderBy = null;
+		}
+		
 		if(dataModel instanceof SortableFlexiTableDataModel) {
 			((SortableFlexiTableDataModel<?>)dataModel).sort(key);
 		} else if(dataSource != null) {
@@ -931,7 +944,7 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 		selectSortOption(sortKey, asc);
 		component.setDirty(true);
 	}
-	
+
 	private void selectSortOption(String sortKey, boolean asc) {
 		if(sortOptions != null) {
 			for(FlexiTableSort sort:sortOptions.getSorts()) {
@@ -1110,11 +1123,13 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 			if(orderBy != null && orderBy.length > 0 && orderBy[0] != null) {
 				sortDirection = orderBy[0].isAsc();
 				String sortKey = orderBy[0].getKey();
-				FlexiTableColumnModel colModel = dataModel.getTableColumnModel();
-				for(int i=colModel.getColumnCount(); i-->0; ) {
-					FlexiColumnModel col = colModel.getColumnModel(i);
-					if(col.getSortKey() != null && sortKey.equals(col.getSortKey())) {
-						sortedColKey = col.getColumnKey();
+				if(sortKey != null) {
+					FlexiTableColumnModel colModel = dataModel.getTableColumnModel();
+					for(int i=colModel.getColumnCount(); i-->0; ) {
+						FlexiColumnModel col = colModel.getColumnModel(i);
+						if(col.getSortKey() != null && sortKey.equals(col.getSortKey())) {
+							sortedColKey = col.getColumnKey();
+						}
 					}
 				}
 				

@@ -325,7 +325,7 @@ public class TableOfContentController extends BasicController implements TooledC
 		if(newSectionTool == source || newSectionButton == source) {
 			doCreateNewSection(ureq);
 		} else if(newEntryLink == source) {
-			doCreateNewPage(ureq);
+			doCreateNewEntry(ureq);
 		} else if(editBinderMetadataLink == source) {
 			doEditBinderMetadata(ureq);
 		} else if(source instanceof Link) {
@@ -394,7 +394,7 @@ public class TableOfContentController extends BasicController implements TooledC
 		return pageCtrl;
 	}
 	
-	private void doCreateNewPage(UserRequest ureq) {
+	private void doCreateNewEntry(UserRequest ureq) {
 		if(newPageCtrl != null) return;
 		
 		newPageCtrl = new PageMetadataEditController(ureq, getWindowControl(), binder, false, null, true);

@@ -17,50 +17,31 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.portfolio;
+package org.olat.core.gui.components.form.flexible.impl.elements.table;
 
-import java.util.Date;
+import org.olat.core.gui.components.form.flexible.FormItem;
+import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 
 /**
  * 
- * Initial date: 21.07.2016<br>
+ * Initial date: 12.08.2016<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public interface DublinCoreMetadata {
+public class FlexiTableRenderEvent extends FormEvent {
 	
-	public String getTitle();
-	
-	public String getCreators();
+	private static final long serialVersionUID = 8160122565963299504L;
 
-	public void setCreators(String creators);
+	public static final String CHANGE_RENDER_TYPE = "changeRenderType";
 
-	public String getPlace();
+	private final FlexiTableRendererType rendererType;
 
-	public void setPlace(String place);
+	public FlexiTableRenderEvent(String cmd, FormItem source, FlexiTableRendererType rendererType, int action) {
+		super(cmd, source, action);
+		this.rendererType = rendererType;
+	}
 
-	public String getPublisher();
-
-	public void setPublisher(String publisher);
-	
-	public Date getPublicationDate();
-	
-	public void setPublicationDate(Date date);
-
-	public String getDate();
-
-	public void setDate(String date);
-
-	public String getUrl();
-
-	public void setUrl(String url);
-
-	public String getSource();
-
-	public void setSource(String source);
-
-	public String getLanguage();
-
-	public void setLanguage(String language);
-
+	public FlexiTableRendererType getRendererType() {
+		return rendererType;
+	}
 }

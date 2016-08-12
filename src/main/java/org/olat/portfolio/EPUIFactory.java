@@ -138,7 +138,7 @@ public class EPUIFactory {
 		if (artefacts.size() != 0) {
 			EPMultiArtefactsController artefactCtrl;
 			if (EPStructureDetailsController.VIEWMODE_TABLE.equals(viewMode)){
-				artefactCtrl = new EPMultipleArtefactsAsTableController(ureq, wControl, artefacts, struct, false, secCallback);
+				artefactCtrl = new EPMultipleArtefactsAsTableController(ureq, wControl, artefacts, struct, false, false, secCallback);
 			} else {
 				artefactCtrl = new EPMultipleArtefactSmallReadOnlyPreviewController(ureq, wControl, artefacts, struct, secCallback);
 			}

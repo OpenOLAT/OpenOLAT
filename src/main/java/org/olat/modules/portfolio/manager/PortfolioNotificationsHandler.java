@@ -19,6 +19,8 @@
  */
 package org.olat.modules.portfolio.manager;
 
+ import static org.apache.commons.lang.time.DateUtils.isSameDay;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -30,7 +32,6 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
-import org.apache.commons.lang.time.DateUtils;
 import org.olat.basesecurity.IdentityNames;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.services.notifications.NotificationsHandler;
@@ -110,10 +111,60 @@ public class PortfolioNotificationsHandler implements NotificationsHandler {
 		String rootBusinessPath = "[Binder:" + binder.getKey() + "]";
 		Translator translator = Util.createPackageTranslator(PortfolioHomeController.class, locale);
 		
+		System.out.println(compareDate);
+		
 		List<SubscriptionListItem> items = new ArrayList<>();
 		items.addAll(getCommentNotifications(binder, compareDate, rootBusinessPath, translator));
 		items.addAll(getPageNotifications(binder, compareDate, rootBusinessPath, translator));
+		items.addAll(getSectionNotifications(binder, compareDate, rootBusinessPath, translator));
 		Collections.sort(items, new PortfolioNotificationComparator());
+		return items;
+	}
+	
+	public List<SubscriptionListItem> getSectionNotifications(Binder binder, Date compareDate,
+			String rootBusinessPath, Translator translator) {
+		
+		StringBuilder sb = new StringBuilder();
+		sb.append("select")
+		  .append("  section.key as sectionKey,")
+		  .append("  section.title as sectionTitle,")
+		  .append("  section.creationDate as sectionCreationDate,")
+		  .append("  section.lastModified as sectionLastModified")
+		  .append(" from pfsection as section")
+		  .append(" inner join section.binder as binder")
+		  .append(" where binder.key=:binderKey and section.lastModified>=:compareDate");
+		
+		List<Object[]> objects = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Object[].class)
+				.setParameter("binderKey", binder.getKey())
+				.setParameter("compareDate", compareDate)
+				.getResultList();
+
+		Set<Long> uniqueSectionKeys = new HashSet<>();
+		Set<Long> uniqueCreateSectionKeys = new HashSet<>();
+
+		List<SubscriptionListItem> items = new ArrayList<>(objects.size());
+		for (Object[] object : objects) {
+			//section
+			Long sectionKey = (Long)object[0];
+			String sectionTitle = (String)object[1];
+			Date sectionCreationDate = (Date)object[2];
+			Date sectionLastModified = (Date)object[3];
+			
+			if(isSameDay(sectionCreationDate, sectionLastModified)) {
+				if(!uniqueCreateSectionKeys.contains(sectionKey)) {
+					uniqueCreateSectionKeys.add(sectionKey);
+					SubscriptionListItem item = sectionCreateItem(sectionKey, sectionTitle,
+							sectionCreationDate, rootBusinessPath, translator);
+					items.add(item);
+				}
+			} else if(!uniqueSectionKeys.contains(sectionKey)) {
+				uniqueSectionKeys.add(sectionKey);
+				SubscriptionListItem item = sectionModifiedItem(sectionKey, sectionTitle,
+						sectionLastModified, rootBusinessPath, translator);
+				items.add(item);
+			}
+		}
 		return items;
 	}
 	
@@ -136,17 +187,12 @@ public class PortfolioNotificationsHandler implements NotificationsHandler {
 		  .append("  page.title as pageTitle,")
 		  .append("  page.creationDate as pageCreationDate,")
 		  .append("  page.lastModified as pageLastModified,")
-		  .append("  section.key as sectionKey,")
-		  .append("  section.title as sectionTitle,")
-		  .append("  section.creationDate as sectionCreationDate,")
-		  .append("  section.lastModified as sectionLastModified,")
 		  .append("  pagepart.lastModified as pagepartLastModified")
 		  .append(" from pfpage as page")
 		  .append(" inner join page.section as section")
 		  .append(" inner join section.binder as binder")
 		  .append(" left join pfpagepart as pagepart on (pagepart.body.key = page.body.key)")
-		  .append(" where binder.key=:binderKey and ")
-		  .append(" (page.lastModified>=:compareDate or section.lastModified>=:compareDate)");
+		  .append(" where binder.key=:binderKey and (pagepart.lastModified>=:compareDate or page.lastModified>=:compareDate)");
 		
 		List<Object[]> objects = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), Object[].class)
@@ -154,7 +200,6 @@ public class PortfolioNotificationsHandler implements NotificationsHandler {
 				.setParameter("compareDate", compareDate)
 				.getResultList();
 
-		Set<Long> uniqueSectionKeys = new HashSet<>();
 		Map<Long,SubscriptionListItem> uniquePartKeys = new HashMap<>();
 		Map<Long,SubscriptionListItem> uniqueCreatePageKeys = new HashMap<>();
 		
@@ -165,69 +210,64 @@ public class PortfolioNotificationsHandler implements NotificationsHandler {
 			String pageTitle = (String)object[1];
 			Date pageCreationDate = (Date)object[2];
 			Date pageLastModified = (Date)object[3];
-			//section
-			Long sectionKey = (Long)object[4];
-			String sectionTitle = (String)object[5];
-			Date sectionCreationDate = (Date)object[6];
-			Date sectionLastModified = (Date)object[7];
 			//page part
-			Date partLastModified = (Date)object[8];
-			
+			Date partLastModified = (Date)object[4];
+
 			// page created
-			if(pageCreationDate.equals(pageLastModified) && pageCreationDate.compareTo(compareDate) >= 0) {
-				if(uniqueCreatePageKeys.containsKey(pageKey)) {
+			if(isSameDay(pageCreationDate, pageLastModified) && pageCreationDate.compareTo(compareDate) >= 0) {
+				if(!uniqueCreatePageKeys.containsKey(pageKey)) {
 					SubscriptionListItem item = pageCreateItem(pageKey, pageTitle,
 							pageCreationDate, rootBusinessPath, translator);
 					uniqueCreatePageKeys.put(pageKey, item);
 				}
-			}
-
-			if(uniquePartKeys.containsKey(pageKey)) {
-				SubscriptionListItem item = uniquePartKeys.get(pageKey);
-				SubscriptionListItem potentitalItem = pageModifiedItem( pageKey, pageTitle,
-							pageLastModified, partLastModified, rootBusinessPath, translator);
-				if(item.getDate().before(potentitalItem.getDate())) {
-					uniquePartKeys.put(pageKey, potentitalItem);
-				}
-			} else if(pageLastModified.compareTo(compareDate) >= 0
-						|| (partLastModified != null && partLastModified.compareTo(compareDate) >= 0)) {
-				SubscriptionListItem item = pageModifiedItem( pageKey, pageTitle,
-						 pageLastModified, partLastModified, rootBusinessPath, translator);
+			} else {
 				
-				boolean overlapCreate = false;
-				if(uniqueCreatePageKeys.containsKey(pageKey)) {
-					SubscriptionListItem createItem = uniqueCreatePageKeys.get(pageKey);
-					overlapCreate = DateUtils.isSameDay(item.getDate(), createItem.getDate());
-				}
-				if(!overlapCreate) {
-					uniquePartKeys.put(pageKey, item);
+				if(uniquePartKeys.containsKey(pageKey)) {
+					SubscriptionListItem item = uniquePartKeys.get(pageKey);
+					SubscriptionListItem potentitalItem = pageModifiedItem( pageKey, pageTitle,
+								pageLastModified, partLastModified, rootBusinessPath, translator);
+					if(item.getDate().before(potentitalItem.getDate())) {
+						uniquePartKeys.put(pageKey, potentitalItem);
+					}
+				} else if(pageLastModified.compareTo(compareDate) >= 0
+							|| (partLastModified != null && partLastModified.compareTo(compareDate) >= 0)) {
+					SubscriptionListItem item = pageModifiedItem( pageKey, pageTitle,
+							 pageLastModified, partLastModified, rootBusinessPath, translator);
+					
+					boolean overlapCreate = false;
+					if(uniqueCreatePageKeys.containsKey(pageKey)) {
+						SubscriptionListItem createItem = uniqueCreatePageKeys.get(pageKey);
+						overlapCreate = isSameDay(item.getDate(), createItem.getDate());
+					}
+					if(!overlapCreate) {
+						uniquePartKeys.put(pageKey, item);
+					}
 				}
 			}
-			
-			if(!uniqueSectionKeys.contains(sectionKey) && sectionLastModified.compareTo(compareDate) >= 0) {
-				SubscriptionListItem item = sectionCreateItem(sectionKey, sectionTitle,
-						sectionCreationDate, sectionLastModified, rootBusinessPath, translator);
-				items.add(item);
-			}
-			uniqueSectionKeys.add(sectionKey);
 		}
+		
 		items.addAll(uniquePartKeys.values());
 		items.addAll(uniqueCreatePageKeys.values());
 		return items;
 	}
 	
 	private SubscriptionListItem sectionCreateItem(Long sectionKey, String sectionTitle,
-			Date sectionCreationDate, Date sectionLastModified, String rootBusinessPath, Translator translator) {
-		String title;
-		if(sectionCreationDate.equals(sectionLastModified)) {
-			title = translator.translate("notifications.new.section", new String[]{ sectionTitle });
-		} else {
-			title = translator.translate("notifications.modified.section", new String[]{ sectionTitle });
-		}
-		
+			Date sectionCreationDate, String rootBusinessPath, Translator translator) {
+		String title = translator.translate("notifications.new.section", new String[]{ sectionTitle });
 		String bPath = rootBusinessPath + "[Section:" + sectionKey + "]";
 		String linkUrl = BusinessControlFactory.getInstance().getURLFromBusinessPathString(bPath);
-		SubscriptionListItem item = new SubscriptionListItem(title, linkUrl, bPath, sectionLastModified, "o_icon_portfolio_section");
+		SubscriptionListItem item = new SubscriptionListItem(title, linkUrl, bPath, sectionCreationDate, "o_icon_pf_section");
+		item.setUserObject(sectionKey);
+		return item;
+	}
+	
+	private SubscriptionListItem sectionModifiedItem(Long sectionKey, String sectionTitle,
+			Date sectionLastModified, String rootBusinessPath, Translator translator) {
+		String title = translator.translate("notifications.modified.section", new String[]{ sectionTitle });
+
+		String bPath = rootBusinessPath + "[Section:" + sectionKey + "]";
+		String linkUrl = BusinessControlFactory.getInstance().getURLFromBusinessPathString(bPath);
+		SubscriptionListItem item = new SubscriptionListItem(title, linkUrl, bPath, sectionLastModified, "o_icon_pf_section");
 		item.setUserObject(sectionKey);
 		return item;
 	}
@@ -237,7 +277,7 @@ public class PortfolioNotificationsHandler implements NotificationsHandler {
 		String title = translator.translate("notifications.new.page", new String[]{ pageTitle });
 		String bPath = rootBusinessPath + "[Page:" + pageKey + "]";
 		String linkUrl = BusinessControlFactory.getInstance().getURLFromBusinessPathString(bPath);
-		SubscriptionListItem item = new SubscriptionListItem(title, linkUrl, bPath, pageCreationDate, "o_icon_portfolio_page");
+		SubscriptionListItem item = new SubscriptionListItem(title, linkUrl, bPath, pageCreationDate, "o_icon_pf_page");
 		item.setUserObject(pageKey);
 		return item;
 	}
@@ -256,7 +296,7 @@ public class PortfolioNotificationsHandler implements NotificationsHandler {
 
 		String bPath = rootBusinessPath + "[Page:" + pageKey + "]";
 		String linkUrl = BusinessControlFactory.getInstance().getURLFromBusinessPathString(bPath);
-		SubscriptionListItem item = new SubscriptionListItem(title, linkUrl, bPath, date, "o_icon_portfolio_page");
+		SubscriptionListItem item = new SubscriptionListItem(title, linkUrl, bPath, date, "o_icon_pf_page");
 		item.setUserObject(pageKey);
 		return item;
 	}
@@ -350,7 +390,7 @@ public class PortfolioNotificationsHandler implements NotificationsHandler {
 				sb.append(")");
 			}
 		}
-		return new TitleItem(sb.toString(), "o_icon_portfolio_binder");
+		return new TitleItem(sb.toString(), "o_icon_pf_binder");
 	}
 	
 	public static class NotificationIdentityNames implements IdentityNames {

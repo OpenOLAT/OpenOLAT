@@ -42,6 +42,8 @@ public class CitationXml implements Citation {
 	private String pages;
 
 	private String institution;
+	
+	private String isbn;
 
 	public CitationSourceType getItemType() {
 		return itemType;

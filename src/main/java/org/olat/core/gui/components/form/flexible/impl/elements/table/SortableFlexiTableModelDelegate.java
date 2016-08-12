@@ -43,18 +43,20 @@ public class SortableFlexiTableModelDelegate<T> {
 	
 	private boolean asc;
 	private int columnIndex;
+	private final SortKey orderBy;
 	private final Collator collator; 
 	private final SortableFlexiTableDataModel<T> tableModel;
 	
 	public SortableFlexiTableModelDelegate(SortKey orderBy, SortableFlexiTableDataModel<T> tableModel, Locale locale) {
 		this.tableModel = tableModel;
+		this.orderBy = orderBy;
 		if(orderBy != null && orderBy.getKey() != null) {
 			FlexiColumnModel colModel = getColumnModel(orderBy.getKey(), tableModel.getTableColumnModel());
 			columnIndex = colModel.getColumnIndex();
 			asc = orderBy.isAsc();
 		} else {
 			columnIndex = 0;
-			asc = true;
+			asc = orderBy == null ? true : orderBy.isAsc();
 		}
 		
 		if (locale != null) {
@@ -74,6 +76,10 @@ public class SortableFlexiTableModelDelegate<T> {
 	
 	public Collator getCollator() {
 		return collator;
+	}
+	
+	public SortKey getOrderBy() {
+		return orderBy;
 	}
 	
 	public SortableFlexiTableDataModel<T> getTableModel() {

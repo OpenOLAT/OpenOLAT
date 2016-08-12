@@ -15,7 +15,7 @@
 				#if(${section.getPages().size()} > 0)
 				<ul class="list-unstyled">
 					#foreach($page in $section.pages)
-						<li>$r.render($page.openLink)</li>
+						<li>$r.render($page.openLink) <i class="o_icon $page.cssClassStatus"> </i></li>
 					#end
 				</ul>
 				#end

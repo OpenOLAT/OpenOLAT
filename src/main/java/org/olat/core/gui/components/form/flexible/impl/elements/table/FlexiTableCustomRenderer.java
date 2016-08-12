@@ -118,6 +118,7 @@ class FlexiTableCustomRenderer extends AbstractFlexiTableRenderer implements Com
 		FlexiTableDataModel<?> dataModel = ftE.getTableDataModel();
 		Object rowObject = ftE.getTableDataModel().getObject(row);
 		container.contextPut("row", rowObject);
+		container.contextPut("rowIndex", row);
 		
 		FlexiTableColumnModel columnsModel = ftE.getTableDataModel().getTableColumnModel();
 		int numOfCols = columnsModel.getColumnCount();

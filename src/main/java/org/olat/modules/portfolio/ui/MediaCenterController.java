@@ -84,6 +84,7 @@ import org.olat.modules.portfolio.ui.renderer.MediaTypeCellRenderer;
 import org.olat.portfolio.model.artefacts.AbstractArtefact;
 import org.olat.portfolio.ui.EPArtefactPoolRunController;
 import org.olat.portfolio.ui.artefacts.view.EPArtefactChoosenEvent;
+import org.olat.portfolio.ui.artefacts.view.EPArtefactListChoosenEvent;
 import org.olat.repository.model.SearchMyRepositoryEntryViewParams.OrderBy;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -359,6 +360,14 @@ public class MediaCenterController extends FormBasicController
 				media = doImportArtefactV1(cEvent.getArtefact());
 				loadModel();
 				tableEl.reloadData();
+			} else if(event instanceof EPArtefactListChoosenEvent) {
+				EPArtefactListChoosenEvent cmEvent = (EPArtefactListChoosenEvent)event;
+				for(AbstractArtefact artefact:cmEvent.getArtefacts()) {
+					doImportArtefactV1(artefact);
+				}
+				loadModel();
+				tableEl.reloadData();
+				showInfo("message.imported.successfully", new String[]{ Integer.toString(cmEvent.getArtefacts().size()) });
 			}
 			cmc.deactivate();
 			cleanUp();
@@ -470,7 +479,7 @@ public class MediaCenterController extends FormBasicController
 	private void doChooseArtefactV1(UserRequest ureq) {
 		if(importArtefactv1Ctrl != null) return;
 		
-		importArtefactv1Ctrl = new EPArtefactPoolRunController(ureq, this.getWindowControl(), true, false);
+		importArtefactv1Ctrl = new EPArtefactPoolRunController(ureq, this.getWindowControl(), true, false, true);
 		listenTo(importArtefactv1Ctrl);
 		
 		String title = translate("import.artefactV1");

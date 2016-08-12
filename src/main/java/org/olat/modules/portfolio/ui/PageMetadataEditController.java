@@ -319,6 +319,7 @@ public class PageMetadataEditController extends FormBasicController {
 				align = PageImageAlign.valueOf(imageAlignEl.getSelectedKey());
 			}
 			page = portfolioService.appendNewPage(getIdentity(), title, summary, imagePath, align, selectSection);
+			
 		} else {
 			page.setTitle(titleEl.getValue());
 			page.setSummary(summaryEl.getValue());

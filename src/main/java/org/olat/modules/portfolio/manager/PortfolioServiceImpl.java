@@ -621,8 +621,6 @@ public class PortfolioServiceImpl implements PortfolioService {
 		List<Page> pages = pageDao.getOwnedPages(owner, searchString);
 		return pages;
 	}
-	
-	
 
 	@Override
 	public List<Page> searchDeletedPages(IdentityRef owner, String searchString) {
@@ -633,6 +631,9 @@ public class PortfolioServiceImpl implements PortfolioService {
 	@Override
 	public Page appendNewPage(Identity owner, String title, String summary, String imagePath, PageImageAlign align, SectionRef section) {
 		Section reloadedSection = section == null ? null : binderDao.loadSectionByKey(section.getKey());
+		if(reloadedSection != null && reloadedSection.getSectionStatus() == SectionStatus.notStarted) {
+			((SectionImpl)reloadedSection).setSectionStatus(SectionStatus.inProgress);
+		}
 		Page page = pageDao.createAndPersist(title, summary, imagePath, align, reloadedSection, null);
 		groupDao.addMembership(page.getBaseGroup(), owner, PortfolioRoles.owner.name());
 		return page;

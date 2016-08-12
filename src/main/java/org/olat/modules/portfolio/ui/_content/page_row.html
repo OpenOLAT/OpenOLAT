@@ -1,3 +1,16 @@
+#if($rowIndex == 0 && $r.isNotNull($row.newFloatingEntryLink))
+<div class="panel panel-placeholder">
+	<div class="panel-heading">
+		<h4 class="panel-title">$r.translate("create.new.page.title")</h4>
+	</div>
+	<div class="panel-body">
+		<p>$r.translate("create.new.page.descr")</p>
+		<div class="o_button_group">
+			$r.render($row.newFloatingEntryLink)
+		</div>
+	</div>
+</div>
+#end
 #if(${row.isSection()} && $row.firstPageOfSection)
 <div class="o_portfolio_section">
 	<h3>$r.escapeHtml($row.sectionLongTitle) <small><i class="o_icon $row.sectionCssClassStatus"> </i></small></h3>
@@ -14,9 +27,13 @@
 				<span><strong>$r.translate("section.score"): </strong> $row.score</span>
 			#end
 		</div>
+		#if($r.isNotEmpty($row.sectionDescription))
 		<div class="o_section_lead o_block_large_bottom">
-			<p>$r.xssScan($row.sectionDescription)</p>
+			<div class="o_desc o_user_content_block">
+				$r.xssScan($row.sectionDescription)
+			</div>
 		</div>
+		#end
 		#if($r.isNotEmpty($row.sectionCategories))
 		<div class="o_block_large_bottom">
 			<div class="o_portfolio_page_meta text-muted o_small">
@@ -96,11 +113,6 @@
 		<i class="o_icon ${row.getCssClassStatus()} o_icon-fw"> </i>
 		$r.escapeHtml($row.title)
 	</h4>
-	#if($r.isNotNull($row.lastPublicationDate))
-	<span class="o_portfolio_page_meta text-muted o_small">
-		 $r.translate("meta.last.publication", $r.formatDateAndTime($row.lastPublicationDate))
-	</span>
-	#end
 	#if($r.isNotEmpty($row.pageCategories))
 	<span class="o_portfolio_page_meta text-muted o_small">
 		 $r.translate("meta.categories") <i class="o_icon o_icon_tags"> </i>
@@ -110,12 +122,19 @@
 		 #end
 	</span>
 	#end
+	#if($r.isNotNull($row.lastPublicationDate))
 	<span class="o_portfolio_page_meta text-muted o_small">
-		 $r.translate("meta.last.modified", $r.formatDateAndTime($row.lastModified))
+		#if($r.isNotEmpty($row.pageCategories)), #end
+		$r.translate("meta.last.publication", $r.formatDateAndTime($row.lastPublicationDate))
+	</span>
+	#end
+	<span class="o_portfolio_page_meta text-muted o_small">
+		#if($r.isNotNull($row.lastPublicationDate) or $r.isNotEmpty($row.pageCategories)), #end
+		$r.translate("meta.last.modified", $r.formatDateAndTime($row.lastModified))
 	</span>
 	#if(${row.hasMetaBinderAndSectionTitle()})
 	<div class="o_portfolio_page_meta text-muted o_small">
-		 $r.translate("meta.binder.section.titles", ${row.getMetaBinderAndSectionTitles()})
+		$r.translate("meta.binder.section.titles", ${row.getMetaBinderAndSectionTitles()})
 	</div>
 	#end
 	
@@ -127,19 +146,6 @@
 		#if($r.isNotNull($row.commentFormItem))
 			$r.render($row.commentFormItem)
 		#end
-	</div>
-</div>
-#end
-#if($r.isNotNull($row.newFloatingEntryLink))
-<div class="panel panel-placeholder">
-	<div class="panel-heading">
-		<h4 class="panel-title">$r.translate("create.new.page.title")</h4>
-	</div>
-	<div class="panel-body">
-		<p>$r.translate("create.new.page.descr")</p>
-		<div class="o_button_group">
-			$r.render($row.newFloatingEntryLink)
-		</div>
 	</div>
 </div>
 #end

@@ -1562,6 +1562,7 @@ create table o_pf_media (
    p_description varchar2(4000 char),
    p_content CLOB,
    p_signature number(20) default 0 not null,
+   p_reference_id varchar2(255 char) default null,
    p_business_path varchar2(255 char) not null,
    fk_author_id number(20) not null,
    primary key (id)

@@ -17,50 +17,34 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.portfolio;
+package org.olat.portfolio.ui.artefacts.view;
 
-import java.util.Date;
+import java.util.List;
+
+import org.olat.core.gui.control.Event;
+import org.olat.portfolio.model.artefacts.AbstractArtefact;
 
 /**
  * 
- * Initial date: 21.07.2016<br>
+ * Initial date: 12.08.2016<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public interface DublinCoreMetadata {
+public class EPArtefactListChoosenEvent extends Event {
+
+	private static final long serialVersionUID = 3315648841308296779L;
+	private List<AbstractArtefact> artefacts;
+
+	public EPArtefactListChoosenEvent(List<AbstractArtefact> artefacts) {
+		super("artefactChoosen");
+		this.artefacts = artefacts;
+	}
 	
-	public String getTitle();
+	/**
+	 * @return Returns the artefact.
+	 */
+	public List<AbstractArtefact> getArtefacts() {
+		return artefacts;
+	}
 	
-	public String getCreators();
-
-	public void setCreators(String creators);
-
-	public String getPlace();
-
-	public void setPlace(String place);
-
-	public String getPublisher();
-
-	public void setPublisher(String publisher);
-	
-	public Date getPublicationDate();
-	
-	public void setPublicationDate(Date date);
-
-	public String getDate();
-
-	public void setDate(String date);
-
-	public String getUrl();
-
-	public void setUrl(String url);
-
-	public String getSource();
-
-	public void setSource(String source);
-
-	public String getLanguage();
-
-	public void setLanguage(String language);
-
 }

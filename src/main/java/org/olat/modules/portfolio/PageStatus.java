@@ -30,11 +30,11 @@ import java.util.Date;
  */
 public enum PageStatus {
 	
-	draft("o_icon_portfolio_entry_draft"),
-	published("o_icon_portfolio_entry_published"),
-	inRevision("o_icon_portfolio_entry_revision"),
-	closed("o_icon_portfolio_entry_closed"),
-	deleted("o_icon_portfolio_entry_deleted");
+	draft("o_icon_pf_entry_draft"),
+	published("o_icon_pf_entry_published"),
+	inRevision("o_icon_pf_entry_revision"),
+	closed("o_icon_pf_entry_closed"),
+	deleted("o_icon_pf_entry_deleted");
 	
 	private final String cssClass;
 	

@@ -143,8 +143,7 @@ public class PageRow {
 	}
 	
 	public String getSectionLongTitle() {
-		long pos = section.getPos();
-		return (pos+1) + ". " + section.getTitle();
+		return section.getTitle();
 	}
 	
 	public Date getSectionBeginDate() {

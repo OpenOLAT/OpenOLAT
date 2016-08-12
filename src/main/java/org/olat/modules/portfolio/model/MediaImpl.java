@@ -81,6 +81,8 @@ public class MediaImpl implements Persistable, CreateInfo, Media  {
 	private int signature;
 	@Column(name="p_business_path", nullable=false, insertable=true, updatable=true)
 	private String businessPath;
+	@Column(name="p_reference_id", nullable=false, insertable=true, updatable=true)
+	private String referenceId;
 
 	@ManyToOne(targetEntity=IdentityImpl.class,fetch=FetchType.LAZY,optional=false)
 	@JoinColumn(name="fk_author_id", nullable=false, insertable=true, updatable=false)
@@ -93,6 +95,8 @@ public class MediaImpl implements Persistable, CreateInfo, Media  {
 	private String place; // Zot + City of MetaInfo
 	@Column(name="p_publisher", nullable=true, insertable=true, updatable=true)
 	private String publisher;// Zot + Dublin core
+	@Column(name="p_publication_date", nullable=true, insertable=true, updatable=true)
+	private Date publicationDate;
 	@Column(name="p_date", nullable=true, insertable=true, updatable=true)
 	private String date;// Zot + Dublin core
 	@Column(name="p_url", nullable=true, insertable=true, updatable=true)
@@ -193,6 +197,14 @@ public class MediaImpl implements Persistable, CreateInfo, Media  {
 		this.signature = signature;
 	}
 
+	public String getReferenceId() {
+		return referenceId;
+	}
+
+	public void setReferenceId(String referenceId) {
+		this.referenceId = referenceId;
+	}
+
 	@Override
 	public String getBusinessPath() {
 		return businessPath;
@@ -230,6 +242,16 @@ public class MediaImpl implements Persistable, CreateInfo, Media  {
 	@Override
 	public void setPublisher(String publisher) {
 		this.publisher = publisher;
+	}
+
+	@Override
+	public Date getPublicationDate() {
+		return publicationDate;
+	}
+
+	@Override
+	public void setPublicationDate(Date publicationDate) {
+		this.publicationDate = publicationDate;
 	}
 
 	@Override

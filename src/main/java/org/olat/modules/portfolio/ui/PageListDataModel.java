@@ -129,6 +129,7 @@ public class PageListDataModel extends DefaultFlexiTableDataModel<PageRow>
 			}
 			case publicationDate: return page.getLastPublicationDate();
 			case status: return page.getPageStatus();
+			case section: return page.getSectionTitle();
 			case comment: return page.getCommentFormLink();
 		}
 		return null;
@@ -145,6 +146,7 @@ public class PageListDataModel extends DefaultFlexiTableDataModel<PageRow>
 		status("table.header.status"),
 		date("table.header.date"),
 		publicationDate("table.header.publication.date"),
+		section("table.header.section"),
 		comment("comment.title");
 		
 		private final String i18nKey;

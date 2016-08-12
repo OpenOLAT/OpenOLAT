@@ -5,7 +5,11 @@
 			$r.render("addArtefactCtrl")
 		</div><br /><br />
 	#else
-		$r.translate("choose.artefact.intro")
+		#if($importV2)
+			$r.translate("choose.artefact.intro.v2")
+		#else
+			$r.translate("choose.artefact.intro")
+		#end
 		#if($r.available("addArtefactCtrl"))
 			<p>$r.render("addArtefactCtrl")</p>
 		#end

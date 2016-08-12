@@ -55,7 +55,7 @@ public class CitationHandler extends AbstractMediaHandler {
 
 	@Override
 	public String getIconCssClass() {
-		return "o_filetype_txt";
+		return "o_icon_citation";
 	}
 	
 	@Override

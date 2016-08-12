@@ -105,6 +105,10 @@ public class MyPageListController extends AbstractPageListController {
 			assignmentList.add(assignment);
 		}
 		
+		PageRow createRow = new PageRow(null, null, null, false, false);
+		FormLink newEntryButton = uifactory.addFormLink("new.entry." + (++counter), "new.entry", "create.new.page", null, flc, Link.BUTTON);
+		newEntryButton.setCustomEnabledLinkCSS("btn btn-primary");
+		newEntryButton.setUserObject(createRow);
 		
 		List<Page> pages = portfolioService.searchOwnedPages(getIdentity(), searchString);
 		List<PageRow> rows = new ArrayList<>(pages.size());
@@ -120,18 +124,13 @@ public class MyPageListController extends AbstractPageListController {
 					row.setMetaBinderTitle(section.getBinder().getTitle());
 				}
 			}
+			
+			row.setNewFloatingEntryLink(newEntryButton);
 
 			String s = page.getPageStatus() == null ? "draft" : page.getPageStatus().name();
 			points.add(new TimelinePoint(page.getKey().toString(), page.getTitle(), page.getCreationDate(), s));
 		}
-		
-		PageRow createRow = new PageRow(null, null, null, false, false);
-		FormLink newEntryButton = uifactory.addFormLink("new.entry." + (++counter), "new.entry", "create.new.page", null, flc, Link.BUTTON);
-		newEntryButton.setCustomEnabledLinkCSS("btn btn-primary");
-		newEntryButton.setUserObject(createRow);
-		createRow.setNewFloatingEntryLink(newEntryButton);
-		rows.add(createRow);
-		
+
 		timelineEl.setPoints(points);
 		model.setObjects(rows);
 		tableEl.reset();

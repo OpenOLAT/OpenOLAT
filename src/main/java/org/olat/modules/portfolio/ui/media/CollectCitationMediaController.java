@@ -28,6 +28,7 @@ import org.olat.core.commons.modules.bc.meta.MetaInfoController;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.form.flexible.elements.DateChooser;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.TextBoxListElement;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
@@ -79,6 +80,7 @@ public class CollectCitationMediaController extends FormBasicController implemen
 	private SingleSelection sourceTypeEl;
 	private TextElement urlEl, sourceEl, languageEl;
 	private TextElement creatorsEl, placeEl, publisherEl;
+	private DateChooser publicationDateEl;
 	private TextElement editionEl, volumeEl, seriesEl, publicationTitleEl, issueEl, pagesEl, institutionEl;
 	
 	private CitationXml citation;
@@ -95,8 +97,8 @@ public class CollectCitationMediaController extends FormBasicController implemen
 
 	public CollectCitationMediaController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
-		setTranslator(Util.createPackageTranslator(PortfolioHomeController.class, getLocale(), getTranslator()));
 		setTranslator(Util.createPackageTranslator(MetaInfoController.class, getLocale(), getTranslator()));
+		setTranslator(Util.createPackageTranslator(PortfolioHomeController.class, getLocale(), getTranslator()));
 		businessPath = "[HomeSite:" + getIdentity().getKey() + "][PortfolioV2:0][MediaCenter:0]";
 		initForm(ureq);
 		updateCitationFieldsVisibility();
@@ -104,8 +106,8 @@ public class CollectCitationMediaController extends FormBasicController implemen
 	
 	public CollectCitationMediaController(UserRequest ureq, WindowControl wControl, Media media) {
 		super(ureq, wControl);
-		setTranslator(Util.createPackageTranslator(PortfolioHomeController.class, getLocale(), getTranslator()));
 		setTranslator(Util.createPackageTranslator(MetaInfoController.class, getLocale(), getTranslator()));
+		setTranslator(Util.createPackageTranslator(PortfolioHomeController.class, getLocale(), getTranslator()));
 		businessPath = media.getBusinessPath();
 		mediaReference = media;
 		
@@ -154,6 +156,24 @@ public class CollectCitationMediaController extends FormBasicController implemen
 		categoriesEl.setElementCssClass("o_sel_ep_tagsinput");
 		categoriesEl.setAllowDuplicates(false);
 		
+		String[] typeKeys = new String[CitationSourceType.values().length];
+		String[] typeValues = new String[CitationSourceType.values().length];
+		int i = 0;
+		for(CitationSourceType type : CitationSourceType.values()) {
+			typeKeys[i] = type.name();
+			typeValues[i++] = translate("mf.sourceType." + type.name());
+		}
+		
+		sourceTypeEl = uifactory.addDropdownSingleselect("mf.sourceType", formLayout, typeKeys, typeValues, null);
+		sourceTypeEl.addActionListener(FormEvent.ONCHANGE);
+		String sourceType = (citation != null && citation.getItemType() != null
+				? citation.getItemType().name() : CitationSourceType.book.name());
+		for(String typeKey:typeKeys) {
+			if(typeKey.equals(sourceType)) {
+				sourceTypeEl.select(typeKey, true);
+			}
+		}
+		
 		initMetadataForm(formLayout);
 		initCitationForm(formLayout);
 		
@@ -190,28 +210,13 @@ public class CollectCitationMediaController extends FormBasicController implemen
 
 		String language = (mediaReference != null ? mediaReference.getLanguage() : null);
 		languageEl = uifactory.addTextElement("language", "mf.language", -1, language, formLayout);
+
+		Date pubDate = (mediaReference != null ? mediaReference.getPublicationDate() : null);
+		publicationDateEl = uifactory.addDateChooser("publicationDate", "mf.publicationDate", pubDate, formLayout);
 	}
 
 	protected void initCitationForm(FormItemContainer formLayout) {
-		
-		String[] typeKeys = new String[CitationSourceType.values().length];
-		String[] typeValues = new String[CitationSourceType.values().length];
-		int i = 0;
-		for(CitationSourceType type : CitationSourceType.values()) {
-			typeKeys[i] = type.name();
-			typeValues[i++] = translate("mf.sourceType." + type.name());
-		}
-		
-		sourceTypeEl = uifactory.addDropdownSingleselect("mf.sourceType", formLayout, typeKeys, typeValues, null);
-		sourceTypeEl.addActionListener(FormEvent.ONCHANGE);
-		String sourceType = (citation != null && citation.getItemType() != null
-				? citation.getItemType().name() : CitationSourceType.book.name());
-		for(String typeKey:typeKeys) {
-			if(typeKey.equals(sourceType)) {
-				sourceTypeEl.select(typeKey, true);
-			}
-		}
-		
+
 		String edition = (citation != null ? citation.getEdition() : null);
 		editionEl = uifactory.addTextElement("edition", "mf.edition", -1, edition, formLayout);
 		String volume = (citation != null ? citation.getVolume() : null);
@@ -244,7 +249,7 @@ public class CollectCitationMediaController extends FormBasicController implemen
 		seriesEl.setVisible(sourceType == CitationSourceType.book);
 		publicationTitleEl.setVisible(sourceType == CitationSourceType.journalArticle);
 		issueEl.setVisible(sourceType == CitationSourceType.journalArticle);
-		pagesEl.setVisible(sourceType == CitationSourceType.journalArticle);
+		pagesEl.setVisible(sourceType == CitationSourceType.journalArticle || sourceType == CitationSourceType.book);
 		institutionEl.setVisible(sourceType == CitationSourceType.report);
 	}
 	
@@ -295,6 +300,7 @@ public class CollectCitationMediaController extends FormBasicController implemen
 		mediaReference.setCreators(creatorsEl.getValue());
 		mediaReference.setPlace(placeEl.getValue());
 		mediaReference.setPublisher(publisherEl.getValue());
+		mediaReference.setPublicationDate(publicationDateEl.getDate());
 		mediaReference.setUrl(urlEl.getValue());
 		mediaReference.setSource(sourceEl.getValue());
 		mediaReference.setLanguage(languageEl.getValue());

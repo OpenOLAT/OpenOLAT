@@ -29,10 +29,10 @@ import java.util.Date;
  */
 public enum SectionStatus {
 	
-	notStarted("o_icon_warn", "status.not.started"),
-	inProgress("o_icon_refresh", "status.in.progress"),
-	submitted("o_icon_refresh", "status.submitted"),
-	closed("o_icon_locked", "status.closed");
+	notStarted("o_icon_pf_section_draft", "status.not.started"),
+	inProgress("o_icon_pf_section_progress", "status.in.progress"),
+	submitted("o_icon_pf_section_submitted", "status.submitted"),
+	closed("o_icon_pf_section_closed", "status.closed");
 	
 	private final String cssClass;
 	private final String i18nKey;

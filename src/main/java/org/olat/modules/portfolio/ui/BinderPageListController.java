@@ -36,6 +36,8 @@ import org.olat.core.gui.components.form.flexible.elements.FlexiTableSortOptions
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableRenderEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableRendererType;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
@@ -59,7 +61,6 @@ import org.olat.modules.portfolio.CategoryToElement;
 import org.olat.modules.portfolio.Page;
 import org.olat.modules.portfolio.PortfolioRoles;
 import org.olat.modules.portfolio.Section;
-import org.olat.modules.portfolio.ui.PageListDataModel.PageCols;
 import org.olat.modules.portfolio.ui.component.TimelinePoint;
 import org.olat.modules.portfolio.ui.model.PageRow;
 import org.olat.user.UserManager;
@@ -129,7 +130,7 @@ public class BinderPageListController extends AbstractPageListController  {
 
 		FlexiTableSortOptions options = new FlexiTableSortOptions();
 		options.setFromColumnModel(false);
-		options.setDefaultOrderBy(new SortKey(PageCols.date.name(), false));
+		options.setDefaultOrderBy(new SortKey(null, false));
 		tableEl.setSortSettings(options);
 		
 		previousSectionLink = uifactory.addFormLink("section.paging.previous", formLayout, Link.BUTTON | Link.NONTRANSLATED);
@@ -265,7 +266,14 @@ public class BinderPageListController extends AbstractPageListController  {
 
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if(previousSectionLink == source) {
+		if(tableEl == source) {
+			if(event instanceof FlexiTableRenderEvent) {
+				FlexiTableRenderEvent re = (FlexiTableRenderEvent)event;
+				if(re.getRendererType() == FlexiTableRendererType.custom) {
+					tableEl.sort(null, false);
+				}
+			} 
+		} else if(previousSectionLink == source) {
 			Section previousSection = (Section)previousSectionLink.getUserObject();
 			doFilterSection(previousSection);
 		} else if(nextSectionLink == source) {

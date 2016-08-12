@@ -48,11 +48,15 @@ public class PageListSortableDataModelDelegate extends SortableFlexiTableModelDe
 
 	@Override
 	protected void sort(List<PageRow> rows) {
-		int columnIndex = getColumnIndex();
-		PageCols column = PageCols.values()[columnIndex];
-		switch(column) {
-			case status: Collections.sort(rows, new StatusComparator()); break;
-			default: Collections.sort(rows, new ClassicComparator());
+		if(getOrderBy() == null) {
+			Collections.sort(rows, new ClassicComparator());
+		} else {
+			int columnIndex = getColumnIndex();
+			PageCols column = PageCols.values()[columnIndex];
+			switch(column) {
+				case status: Collections.sort(rows, new StatusComparator()); break;
+				default: Collections.sort(rows, new DefaultComparator()); break;
+			}
 		}
 	}
 	

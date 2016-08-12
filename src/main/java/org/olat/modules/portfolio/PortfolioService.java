@@ -322,6 +322,8 @@ public interface PortfolioService {
 	public List<Page> searchDeletedPages(IdentityRef owner, String searchString);
 	
 	/**
+	 * Append an entry or page to a section. If the section is not started, it will automatically
+	 * started.
 	 * 
 	 * @param title
 	 * @param summary
