@@ -26,6 +26,7 @@ import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.gui.util.CSSHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
@@ -58,6 +59,12 @@ public class FileMediaController extends BasicController {
 		if(item instanceof VFSLeaf) {
 			DownloadComponent downloadCmp = new DownloadComponent("download", (VFSLeaf)item);
 			mainVC.put("download", downloadCmp);
+			
+			String cssClass = CSSHelper.createFiletypeIconCssClassFor(item.getName());
+			if(cssClass == null) {
+				cssClass = "o_filetype_file";
+			}
+			mainVC.contextPut("cssClass", cssClass);
 		}
 		
 		mainVC.setDomReplacementWrapperRequired(false);

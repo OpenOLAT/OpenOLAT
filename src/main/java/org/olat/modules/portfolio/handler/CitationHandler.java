@@ -75,7 +75,7 @@ public class CitationHandler extends AbstractMediaHandler {
 
 	@Override
 	public Media createMedia(String title, String description, Object mediaObject, String businessPath, Identity author) {
-		Media media = mediaDao.createMedia(title, description, (String)mediaObject, CITATION_MEDIA, businessPath, 60, author);
+		Media media = mediaDao.createMedia(title, description, (String)mediaObject, CITATION_MEDIA, businessPath, null, 60, author);
 		return media;
 	}
 

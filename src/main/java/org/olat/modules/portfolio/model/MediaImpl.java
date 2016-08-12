@@ -81,7 +81,7 @@ public class MediaImpl implements Persistable, CreateInfo, Media  {
 	private int signature;
 	@Column(name="p_business_path", nullable=false, insertable=true, updatable=true)
 	private String businessPath;
-	@Column(name="p_reference_id", nullable=false, insertable=true, updatable=true)
+	@Column(name="p_reference_id", nullable=true, insertable=true, updatable=true)
 	private String referenceId;
 
 	@ManyToOne(targetEntity=IdentityImpl.class,fetch=FetchType.LAZY,optional=false)

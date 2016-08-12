@@ -1,7 +1,5 @@
 $r.render("meta")
-$r.render("page")
+<div class="o_pf_content clearfix">$r.render("page")</div>
 #if($r.available("comments"))
-<div class="clearfix">
-	$r.render("comments")
-</div>
+<div class="o_pf_comments clearfix">$r.render("comments")</div>
 #end

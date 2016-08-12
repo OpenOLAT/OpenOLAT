@@ -87,7 +87,7 @@ public class WikiMediaHandler extends AbstractMediaHandler {
 			WikiPage page = (WikiPage)mediaObject;
 			content = page.getContent();
 		}
-		return mediaDao.createMedia(title, description, content, WIKI_HANDLER, businessPath, 70, author);
+		return mediaDao.createMedia(title, description, content, WIKI_HANDLER, businessPath, null, 70, author);
 	}
 
 	@Override
@@ -99,7 +99,8 @@ public class WikiMediaHandler extends AbstractMediaHandler {
 		if(businessPath == null) {
 			businessPath = "[PortfolioV2:0][MediaCenter:0]";
 		}
-		return mediaDao.createMedia(title, description, content, WIKI_HANDLER, businessPath, artefact.getSignature(), artefact.getAuthor());
+		return mediaDao.createMedia(title, description, content, WIKI_HANDLER, businessPath,
+				artefact.getKey().toString(), artefact.getSignature(), artefact.getAuthor());
 	}
 
 	@Override

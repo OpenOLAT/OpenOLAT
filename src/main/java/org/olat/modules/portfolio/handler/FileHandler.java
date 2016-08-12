@@ -137,7 +137,7 @@ public class FileHandler extends AbstractMediaHandler {
 	}
 
 	public Media createMedia(String title, String description, File file, String filename, String businessPath, Identity author) {
-		Media media = mediaDao.createMedia(title, description, filename, FILE_TYPE, businessPath, 60, author);
+		Media media = mediaDao.createMedia(title, description, filename, FILE_TYPE, businessPath, null, 60, author);
 		File mediaDir = fileStorage.generateMediaSubDirectory(media);
 		File mediaFile = new File(mediaDir, filename);
 		FileUtils.copyFileToFile(file, mediaFile, false);
@@ -163,7 +163,7 @@ public class FileHandler extends AbstractMediaHandler {
 				businessPath = "[PortfolioV2:0][MediaCenter:0]";
 			}
 			media = mediaDao.createMedia(artefact.getTitle(), artefact.getDescription(), filename, type,
-					businessPath, artefact.getSignature(), artefact.getAuthor());
+					businessPath, artefact.getKey().toString(), artefact.getSignature(), artefact.getAuthor());
 		
 			File mediaDir = fileStorage.generateMediaSubDirectory(media);
 			String storagePath = fileStorage.getRelativePath(mediaDir);

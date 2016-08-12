@@ -44,7 +44,7 @@ public class MediaDAOTest extends OlatTestCase {
 	@Test
 	public void createMedia() {
 		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("pf-media-1");
-		Media media = mediaDao.createMedia("Media", "Media description", "Media content", "Forum", "[Media:0]", 10, id);
+		Media media = mediaDao.createMedia("Media", "Media description", "Media content", "Forum", "[Media:0]", null, 10, id);
 		dbInstance.commit();
 		
 		Assert.assertNotNull(media);

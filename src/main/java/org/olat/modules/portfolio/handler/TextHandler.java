@@ -79,7 +79,7 @@ public class TextHandler extends AbstractMediaHandler {
 
 	@Override
 	public Media createMedia(String title, String description, Object mediaObject, String businessPath, Identity author) {
-		Media media = mediaDao.createMedia(title, description, (String)mediaObject, TEXT_MEDIA, businessPath, 60, author);
+		Media media = mediaDao.createMedia(title, description, (String)mediaObject, TEXT_MEDIA, businessPath, null, 60, author);
 		return media;
 	}
 
@@ -96,7 +96,7 @@ public class TextHandler extends AbstractMediaHandler {
 		if(businessPath == null) {
 			businessPath = "[PortfolioV2:0][MediaCenter:0]";
 		}
-		return mediaDao.createMedia(title, description, content, TEXT_MEDIA, businessPath, artefact.getSignature(), artefact.getAuthor());
+		return mediaDao.createMedia(title, description, content, TEXT_MEDIA, businessPath, artefact.getKey().toString(), artefact.getSignature(), artefact.getAuthor());
 	}
 
 	@Override

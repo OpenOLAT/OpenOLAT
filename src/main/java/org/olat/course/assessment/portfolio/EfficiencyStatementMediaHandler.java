@@ -94,7 +94,7 @@ public class EfficiencyStatementMediaHandler extends AbstractMediaHandler {
 		if (mediaObject instanceof EfficiencyStatement) {
 			EfficiencyStatement statement = (EfficiencyStatement) mediaObject;
 			String xml = myXStream.toXML(statement); 
-			media = mediaDao.createMedia(title, description, xml, EFF_MEDIA, businessPath, 90, author);
+			media = mediaDao.createMedia(title, description, xml, EFF_MEDIA, businessPath, null, 90, author);
 		}
 		return media;
 	}
@@ -108,7 +108,7 @@ public class EfficiencyStatementMediaHandler extends AbstractMediaHandler {
 		if(businessPath == null) {
 			businessPath = "[PortfolioV2:0][MediaCenter:0]";
 		}
-		return mediaDao.createMedia(title, description, xml, EFF_MEDIA, businessPath, artefact.getSignature(), artefact.getAuthor());
+		return mediaDao.createMedia(title, description, xml, EFF_MEDIA, businessPath, artefact.getKey().toString(), artefact.getSignature(), artefact.getAuthor());
 	}
 
 	@Override

@@ -50,11 +50,25 @@ public class MediaDAO {
 	@Autowired
 	private DB dbInstance;
 	
-	public Media createMedia(String title, String description, String content, String type, String businessPath, int signature, Identity author) {
+	/**
+	 * 
+	 * @param title
+	 * @param description
+	 * @param content
+	 * @param type
+	 * @param businessPath
+	 * @param referenceId Some external id
+	 * @param signature
+	 * @param author
+	 * @return
+	 */
+	public Media createMedia(String title, String description, String content, String type, String businessPath,
+			String referenceId, int signature, Identity author) {
 		MediaImpl media = new MediaImpl();
 		media.setCreationDate(new Date());
 		media.setCollectionDate(media.getCreationDate());
 		media.setType(type);
+		media.setReferenceId(referenceId);
 		
 		media.setTitle(title);
 		media.setDescription(description);

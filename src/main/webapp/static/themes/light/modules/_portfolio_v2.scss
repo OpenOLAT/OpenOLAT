@@ -84,7 +84,34 @@ div#o_main_toolbar.o_toolbar.o_portfolio {
 	}
 }
 
-.o_portfolio_page_editor {
+.o_pf_comments {
+	margin-top: 2em;
+}
+
+.o_pf_content {
+
+	.o_cit, .o_file,  {
+		margin-top: 1em;
+		background-color: $o-portfolio-media-content-background-color;
+		padding: $o-portfolio-media-content-space;
+		border-radius: $o-panel-placeholder-border-radius;
+	}
+	
+	.o_forum {
+		margin-top: 1em;
+		border: 1px $o-portfolio-media-content-background-color solid;
+		padding: $o-portfolio-media-content-space;
+		border-radius: $o-panel-placeholder-border-radius;
+	}
+	
+	.o_image {
+		padding: $o-portfolio-media-content-space;
+		text-align: center;
+		width: 100%;
+	}
+}
+
+.o_pf_content_editor {
 	.o_toolbar {
 		border:none;
 	}
@@ -115,6 +142,10 @@ div#o_main_toolbar.o_toolbar.o_portfolio {
 			border-right: $o-panel-placeholder-border-width dashed $o-panel-placeholder-border-color;
 			border-radius: 0 0 $o-panel-placeholder-border-radius $o-panel-placeholder-border-radius;
 		}
+	}
+	
+	.o_pf_add_contents {
+		margin-top: 30px;
 	}
 }
 

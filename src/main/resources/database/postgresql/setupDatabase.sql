@@ -2562,7 +2562,7 @@ create index idx_pf_asection_ident_idx on o_pf_assessment_section (fk_identity_i
 alter table o_pf_assignment add constraint pf_assign_section_idx foreign key (fk_section_id) references o_pf_section (id);
 create index idx_pf_assign_section_idx on o_pf_assignment (fk_section_id);
 alter table o_pf_assignment add constraint pf_assign_ref_assign_idx foreign key (fk_template_reference_id) references o_pf_assignment (id);
-create index idx_pf_assign_ref_assign_idx on o_pf_assignment (fk_section_id);
+create index idx_pf_assign_ref_assign_idx on o_pf_assignment (fk_template_reference_id);
 alter table o_pf_assignment add constraint pf_assign_page_idx foreign key (fk_page_id) references o_pf_page (id);
 create index idx_pf_assign_page_idx on o_pf_assignment (fk_page_id);
 alter table o_pf_assignment add constraint pf_assign_assignee_idx foreign key (fk_assignee_id) references o_bs_identity (id);

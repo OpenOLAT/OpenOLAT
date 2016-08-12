@@ -97,7 +97,7 @@ public class BlogEntryMediaHandler extends AbstractMediaHandler {
 		Feed feed = entry.getFeed();
 		Item item = entry.getItem();
 		
-		Media media = mediaDao.createMedia(title, description, "", BLOG_ENTRY_HANDLER, businessPath, 70, author);
+		Media media = mediaDao.createMedia(title, description, "", BLOG_ENTRY_HANDLER, businessPath, null, 70, author);
 		File mediaDir = fileStorage.generateMediaSubDirectory(media);
 		String storagePath = fileStorage.getRelativePath(mediaDir);
 		media = mediaDao.updateStoragePath(media, storagePath, BlogArtefact.BLOG_FILE_NAME);
@@ -121,7 +121,7 @@ public class BlogEntryMediaHandler extends AbstractMediaHandler {
 
 		String filename = null;
 		Media media = mediaDao.createMedia(artefact.getTitle(), artefact.getDescription(), filename, BLOG_ENTRY_HANDLER,
-				businessPath, artefact.getSignature(), artefact.getAuthor());
+				businessPath, artefact.getKey().toString(), artefact.getSignature(), artefact.getAuthor());
 		
 		File mediaDir = fileStorage.generateMediaSubDirectory(media);
 		String storagePath = fileStorage.getRelativePath(mediaDir);

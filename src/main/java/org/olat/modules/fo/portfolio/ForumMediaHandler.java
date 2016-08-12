@@ -111,7 +111,7 @@ public class ForumMediaHandler extends AbstractMediaHandler {
 		}
 		
 		String content = message.getBody();
-		Media media = mediaDao.createMedia(title, description, content, FORUM_HANDLER, businessPath, 70, author);
+		Media media = mediaDao.createMedia(title, description, content, FORUM_HANDLER, businessPath, null, 70, author);
 		
 		File messageDir = forumManager.getMessageDirectory(message.getForum().getKey(), message.getKey(), false);
 		if (messageDir != null && messageDir.exists()) {
@@ -138,7 +138,7 @@ public class ForumMediaHandler extends AbstractMediaHandler {
 			businessPath = "[PortfolioV2:0][MediaCenter:0]";
 		}
 		Media media = mediaDao.createMedia(artefact.getTitle(), artefact.getDescription(), null, FORUM_HANDLER,
-				businessPath, artefact.getSignature(), artefact.getAuthor());
+				businessPath, artefact.getKey().toString(), artefact.getSignature(), artefact.getAuthor());
 		
 		List<VFSItem> items = artefactFolder.getItems(new SystemItemFilter());
 		if(items.size() > 0) {

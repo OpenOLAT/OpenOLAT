@@ -666,6 +666,10 @@ public class CoachingDAO {
 		  .append("   or ")
 		  .append("   (sg_re.accesscode = ").append(RepositoryEntry.ACC_OWNERS).append(" and sg_re.membersonly=").appendTrue().append(")) ")
 		  .append(" group by sg_participant_id.id, sg_participant_user.user_id");
+		if(dbInstance.isOracle()) {
+			sb.append(", sg_participant_id.name");
+			writeUserPropertiesGroupBy("sg_participant_user", sb, userPropertyHandlers);
+		}
 
 		List<?> rawList = dbInstance.getCurrentEntityManager()
 				.createNativeQuery(sb.toString())
@@ -702,6 +706,12 @@ public class CoachingDAO {
 		}	
 	}
 	
+	private void writeUserPropertiesGroupBy(String user, NativeQueryBuilder sb, List<UserPropertyHandler> userPropertyHandlers) {
+		for(UserPropertyHandler handler:userPropertyHandlers) {
+			sb.append(", ").append(user).append(".").append(handler.getDatabaseColumnName());
+		}	
+	}
+	
 	private boolean getStudentsStastisticInfosForOwner(IdentityRef coach, Map<Long, StudentStatEntry> map, List<UserPropertyHandler> userPropertyHandlers) {
 		NativeQueryBuilder sb = new NativeQueryBuilder(1024, dbInstance);
 		sb.append("select")
@@ -725,6 +735,10 @@ public class CoachingDAO {
 		  .append("  select sg_res.resource_id from o_olatresource sg_res where sg_res.resname = 'CourseModule'")
 		  .append(" )")
 		  .append(" group by sg_participant_id.id, sg_participant_user.user_id");
+		if(dbInstance.isOracle()) {
+			sb.append(", sg_participant_id.name");
+			writeUserPropertiesGroupBy("sg_participant_user", sb, userPropertyHandlers);
+		}
 
 		List<?> rawList = dbInstance.getCurrentEntityManager()
 				.createNativeQuery(sb.toString())
@@ -891,6 +905,10 @@ public class CoachingDAO {
 		  .append(" where sg_re.accesscode >= ").append(RepositoryEntry.ACC_OWNERS).append(" ");
 		appendUsersStatisticsSearchParams(params, queryParams, sb)
 		  .append(" group by sg_participant_id.id, sg_participant_user.user_id");
+		if(dbInstance.isOracle()) {
+			sb.append(", sg_participant_id.name");
+			writeUserPropertiesGroupBy("sg_participant_user", sb, userPropertyHandlers);
+		}
 
 		Query query = dbInstance.getCurrentEntityManager().createNativeQuery(sb.toString());
 		for(Map.Entry<String, Object> entry:queryParams.entrySet()) {

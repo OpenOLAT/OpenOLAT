@@ -143,7 +143,7 @@ public class VideoHandler extends AbstractMediaHandler {
 	}
 	
 	public Media createMedia(String title, String description, File file, String filename, String businessPath, Identity author) {
-		Media media = mediaDao.createMedia(title, description, filename, VIDEO_TYPE, businessPath, 60, author);
+		Media media = mediaDao.createMedia(title, description, filename, VIDEO_TYPE, businessPath, null, 60, author);
 		File mediaDir = fileStorage.generateMediaSubDirectory(media);
 		File mediaFile = new File(mediaDir, filename);
 		FileUtils.copyFileToFile(file, mediaFile, false);
