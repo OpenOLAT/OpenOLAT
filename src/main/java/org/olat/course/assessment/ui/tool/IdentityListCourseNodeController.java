@@ -169,6 +169,10 @@ public class IdentityListCourseNodeController extends FormBasicController implem
 			FormLayoutContainer layoutCont = (FormLayoutContainer)formLayout;
 			layoutCont.contextPut("courseNodeTitle", courseNode.getShortTitle());
 			layoutCont.contextPut("courseNodeCssClass", CourseNodeFactory.getInstance().getCourseNodeConfiguration(courseNode.getType()).getIconCSSClass());
+		
+			if(group != null) {
+				layoutCont.contextPut("businessGroupName", group.getName());
+			}
 		}
 
 		//add the table

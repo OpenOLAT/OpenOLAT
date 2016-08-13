@@ -19,7 +19,6 @@
  */
 package org.olat.course.assessment.ui.tool;
 
-import java.util.Collections;
 import java.util.List;
 
 import org.olat.core.commons.fullWebApp.LayoutMain3ColsController;
@@ -40,48 +39,41 @@ import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.resource.OresHelper;
-import org.olat.core.util.tree.TreeHelper;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.assessment.AssessmentHelper;
-import org.olat.course.nodes.AssessableCourseNode;
 import org.olat.course.nodes.CourseNode;
-import org.olat.course.nodes.GTACourseNode;
-import org.olat.course.run.environment.CourseEnvironment;
-import org.olat.group.BusinessGroup;
 import org.olat.modules.assessment.ui.AssessmentToolContainer;
 import org.olat.modules.assessment.ui.AssessmentToolSecurityCallback;
 import org.olat.repository.RepositoryEntry;
 
 /**
  * 
- * Initial date: 07.10.2015<br>
+ * Initial date: 13.08.2016<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class AssessmentIdentityListCourseTreeController extends BasicController implements Activateable2 {
+public class AssessedBusinessGroupListCourseTreeController extends BasicController implements Activateable2 {
 	
-	private final MenuTree menuTree;
 	private final Panel mainPanel;
+	private final MenuTree menuTree;
 	private final TooledStackedPanel stackPanel;
-	private final AssessmentToolContainer toolContainer;
-	private Controller currentCtrl;
+	
+	private AssessedBusinessGroupCourseNodeListController currentCtrl;
 	
 	private final RepositoryEntry courseEntry;
-	private final BusinessGroup businessGroup;
-	private AssessmentToolSecurityCallback assessmentCallback;
+	private final AssessmentToolContainer toolContainer;
+	private final AssessmentToolSecurityCallback assessmentCallback;
 	
-	public AssessmentIdentityListCourseTreeController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
-			RepositoryEntry courseEntry, BusinessGroup businessGroup, AssessmentToolContainer toolContainer, AssessmentToolSecurityCallback assessmentCallback) {
+	public AssessedBusinessGroupListCourseTreeController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
+			RepositoryEntry courseEntry, AssessmentToolContainer toolContainer, AssessmentToolSecurityCallback assessmentCallback) {
 		super(ureq, wControl);
-		this.courseEntry = courseEntry;
 		this.stackPanel = stackPanel;
+		this.courseEntry = courseEntry;
 		this.toolContainer = toolContainer;
 		this.assessmentCallback = assessmentCallback;
-		this.businessGroup = businessGroup;
 
 		ICourse course = CourseFactory.loadCourse(courseEntry);
-		
 		// Navigation menu
 		menuTree = new MenuTree("menuTree");
 		TreeModel tm = AssessmentHelper.assessmentTreeModel(course);
@@ -112,22 +104,11 @@ public class AssessmentIdentityListCourseTreeController extends BasicController 
 			String resourceTypeName = entries.get(0).getOLATResourceable().getResourceableTypeName();
 			if("Node".equalsIgnoreCase(resourceTypeName)) {
 				Long nodeIdent = entries.get(0).getOLATResourceable().getResourceableId();
-				CourseNode courseNode = CourseFactory.loadCourse(courseEntry).getRunStructure()
-						.getNode(nodeIdent.toString());
-				TreeNode courseTreeNode = TreeHelper
-						.findNodeByUserObject(courseNode, menuTree.getTreeModel().getRootNode());	
-				if(courseNode != null && courseTreeNode != null) {
+				CourseNode courseNode = CourseFactory.loadCourse(courseEntry).getRunStructure().getNode(nodeIdent.toString());
+				if(courseNode != null) {
 					doSelectCourseNode(ureq, courseNode);
-					menuTree.setSelectedNode(courseTreeNode);
 				}
 			}
-		}
-		
-		if(currentCtrl instanceof Activateable2) {
-			List<ContextEntry> subEntries = emptyEntries
-					? entries : entries.subList(1, entries.size());
-			StateEntry subState = emptyEntries ? state : entries.get(0).getTransientState();
-			((Activateable2)currentCtrl).activate(ureq, subEntries, subState);
 		}
 	}
 
@@ -151,23 +132,8 @@ public class AssessmentIdentityListCourseTreeController extends BasicController 
 		
 		OLATResourceable ores = OresHelper.createOLATResourceableInstance("Node", new Long(courseNode.getIdent()));
 		WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ores, null, getWindowControl());
-		if(courseNode instanceof AssessableCourseNode && ((AssessableCourseNode)courseNode).isAssessedBusinessGroups()) {
-			if(courseNode instanceof GTACourseNode) {
-				CourseEnvironment courseEnv = CourseFactory.loadCourse(courseEntry).getCourseEnvironment();
-				
-				List<BusinessGroup> coachedGroups;
-				if(businessGroup != null) {
-					coachedGroups = Collections.singletonList(businessGroup);
-				} else {
-					coachedGroups = assessmentCallback.getCoachedGroups();
-				}
-				currentCtrl = ((GTACourseNode)courseNode).getCoachedGroupListController(ureq, getWindowControl(), stackPanel,
-						courseEnv, assessmentCallback.isAdmin(), coachedGroups);
-			}
-		} else {
-			currentCtrl = new IdentityListCourseNodeController(ureq, bwControl, stackPanel,
-					courseEntry, businessGroup, courseNode, toolContainer, assessmentCallback);
-		}
+		currentCtrl = new AssessedBusinessGroupCourseNodeListController(ureq, bwControl, stackPanel,
+				courseEntry, courseNode, toolContainer, assessmentCallback);
 		listenTo(currentCtrl);
 		mainPanel.setContent(currentCtrl.getInitialComponent());
 		addToHistory(ureq, currentCtrl);

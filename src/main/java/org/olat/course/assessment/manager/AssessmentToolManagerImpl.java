@@ -19,6 +19,7 @@
  */
 package org.olat.course.assessment.manager;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.persistence.TypedQuery;
@@ -31,6 +32,7 @@ import org.olat.core.commons.persistence.PersistenceHelper;
 import org.olat.core.id.Identity;
 import org.olat.core.util.StringHelper;
 import org.olat.course.assessment.AssessmentToolManager;
+import org.olat.course.assessment.model.AssessedBusinessGroup;
 import org.olat.course.assessment.model.AssessmentStatistics;
 import org.olat.course.assessment.model.SearchAssessedIdentityParams;
 import org.olat.modules.assessment.AssessmentEntry;
@@ -157,6 +159,105 @@ public class AssessmentToolManagerImpl implements AssessmentToolManager {
 		List<Object[]> results = infos.getResultList();
 		return results != null && results.size() > 0 && results.get(0)[0] instanceof Number
 				? ((Number)results.get(0)[0]).intValue(): 0;
+	}
+	
+
+	/*public List<AssessedBusinessGroup> getBusinessGroupLoginStatistics(Identity coach, SearchAssessedIdentityParams params) {
+		RepositoryEntry courseEntry = params.getEntry();
+		
+		StringBuilder sf = new StringBuilder();
+		sf.append("select bgi.key, bgi.name, count(infos.key)")
+		  .append(" from businessgroup as bgi")
+		  .append(" inner join bgi.baseGroup as baseGroup")
+		  .append(" inner join repoentrytogroup as rel on (rel.group.key=baseGroup.key and rel.entry.key=:repoEntryKey)")
+		  .append(" inner join repositoryentry as entry on (rel.entry.key=entry.key)")
+		  .append(" inner join baseGroup.members as bmember on (bmember.role='").append(GroupRoles.participant.name()).append("')")
+		  .append(" inner join usercourseinfos as infos on (bmember.identity.key=infos.identity.key and infos.resource.key=entry.olatResource.key)");
+		if(!params.isAdmin()) {
+			sf.append(" where bgi.key n (:groupKeys)");
+		}
+		sf.append(" group by bgi.key");
+		
+		TypedQuery<Object[]> stats = dbInstance.getCurrentEntityManager()
+				.createQuery(sf.toString(), Object[].class)
+				.setParameter("repoEntryKey", courseEntry.getKey());
+		if(!params.isAdmin()) {
+			stats.setParameter("groupKeys", params.getBusinessGroupKeys());
+		}
+		
+		List<Object[]> results = stats.getResultList();
+		List<AssessedBusinessGroup> rows = new ArrayList<>(results.size());
+		for(Object[] result:results) {
+			Long key = (Long)result[0];
+			String name = (String)result[1];
+			int login = result[2] == null ? 0 : ((Number)result[2]).intValue();
+		}
+		return rows;
+	}*/
+
+	@Override
+	public List<AssessedBusinessGroup> getBusinessGroupStatistics(Identity coach, SearchAssessedIdentityParams params) {
+		RepositoryEntry courseEntry = params.getEntry();
+
+		StringBuilder sf = new StringBuilder();
+		sf.append("select bgi.key, bgi.name, baseGroup.key,")
+		  .append(" avg(aentry.score) as scoreAverage,")
+		  .append(" sum(case when aentry.passed=true then 1 else 0 end) as numOfPassed,")
+		  .append(" sum(case when aentry.passed=false then 1 else 0 end) as numOfFailed,")
+		  .append(" sum(case when (aentry.status is null or not(aentry.status='").append(AssessmentEntryStatus.notStarted.name()).append("') or aentry.passed is null) then 1 else 0 end) as numOfNotAttempted,")
+		  .append(" (select count(gmember.key) from bgroupmember as gmember")
+		  .append("   where gmember.group.key=baseGroup.key and gmember.role='").append(GroupRoles.participant.name()).append("'")
+		  .append(" ) as numOfParticipants")
+		  .append(" from businessgroup as bgi")
+		  .append(" inner join bgi.baseGroup as baseGroup")
+		  .append(" inner join repoentrytogroup as rel on (rel.group.key=bgi.baseGroup.key and rel.entry.key=:repoEntryKey)")
+		  .append(" left join baseGroup.members as bmember on (bmember.role='").append(GroupRoles.participant.name()).append("')")
+		  .append(" left join assessmententry as aentry on (bmember.identity.key=aentry.identity.key and rel.entry.key = aentry.repositoryEntry.key)");
+
+		boolean where = false;
+		if(!params.isAdmin()) {
+			where = PersistenceHelper.appendAnd(sf, where);
+			sf.append(" bgi.key in (:groupKeys)");
+		}
+		if(params.getSubIdent() != null) {
+			where = PersistenceHelper.appendAnd(sf, where);
+			sf.append(" aentry.subIdent=:subIdent");
+		}
+		if(params.getReferenceEntry() != null) {
+			where = PersistenceHelper.appendAnd(sf, where);
+			sf.append(" aentry.referenceEntry.key=:referenceKey");
+		}
+		sf.append(" group by bgi.key, baseGroup.key");
+
+		TypedQuery<Object[]> stats = dbInstance.getCurrentEntityManager()
+				.createQuery(sf.toString(), Object[].class)
+				.setParameter("repoEntryKey", courseEntry.getKey());
+		if(!params.isAdmin()) {
+			stats.setParameter("groupKeys", params.getBusinessGroupKeys());
+		}
+		if(params.getSubIdent() != null) {
+			stats.setParameter("subIdent", params.getSubIdent());
+		}
+		if(params.getReferenceEntry() != null) {
+			stats.setParameter("referenceKey", params.getReferenceEntry().getKey());
+		}
+		
+		List<Object[]> results = stats.getResultList();
+		List<AssessedBusinessGroup> rows = new ArrayList<>(results.size());
+		for(Object[] result:results) {
+			Long key = (Long)result[0];
+			String name = (String)result[1];
+			double averageScore = result[3] == null ? 0.0d : ((Number)result[3]).doubleValue();
+			int numOfPassed = result[4] == null ? 0 : ((Number)result[4]).intValue();
+			int numOfFailed = result[5] == null ? 0  : ((Number)result[5]).intValue();
+			int numOfNotAttempted = result[6] == null ? 0 : ((Number)result[6]).intValue();
+			int numOfParticipants = result[7] == null ? 0 : ((Number)result[7]).intValue();
+
+			rows.add(new AssessedBusinessGroup(key, name, averageScore,
+					numOfPassed, numOfFailed, numOfNotAttempted,
+					numOfParticipants));
+		}
+		return rows;
 	}
 	
 	@Override

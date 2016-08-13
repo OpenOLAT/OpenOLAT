@@ -28,6 +28,8 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSorta
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableModelDelegate;
+import org.olat.course.assessment.model.AssessedBusinessGroup;
+import org.olat.modules.coach.ui.ProgressValue;
 
 /**
  * 
@@ -35,8 +37,8 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFl
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class AssessedBusinessGroupTableModel extends DefaultFlexiTableDataModel<AssessedBusinessGroupRow>
-implements SortableFlexiTableDataModel<AssessedBusinessGroupRow>, FilterableFlexiTableModel {
+public class AssessedBusinessGroupTableModel extends DefaultFlexiTableDataModel<AssessedBusinessGroup>
+implements SortableFlexiTableDataModel<AssessedBusinessGroup>, FilterableFlexiTableModel {
 	
 	public AssessedBusinessGroupTableModel(FlexiTableColumnModel columnsModel) {
 		super(columnsModel);
@@ -49,37 +51,56 @@ implements SortableFlexiTableDataModel<AssessedBusinessGroupRow>, FilterableFlex
 
 	@Override
 	public void sort(SortKey orderBy) {
-		SortableFlexiTableModelDelegate<AssessedBusinessGroupRow> sorter
+		SortableFlexiTableModelDelegate<AssessedBusinessGroup> sorter
 			= new SortableFlexiTableModelDelegate<>(orderBy, this, null);
-		List<AssessedBusinessGroupRow> views = sorter.sort();
+		List<AssessedBusinessGroup> views = sorter.sort();
 		super.setObjects(views);
 	}
 	
 	@Override
 	public Object getValueAt(int row, int col) {
-		AssessedBusinessGroupRow groupRow = getObject(row);
+		AssessedBusinessGroup groupRow = getObject(row);
 		return getValueAt(groupRow, col);
 	}
 
 	@Override
-	public Object getValueAt(AssessedBusinessGroupRow row, int col) {
+	public Object getValueAt(AssessedBusinessGroup row, int col) {
 		switch(ABGCols.values()[col]) {
 			case key: return row.getKey();
 			case name: return row.getName();
-			case description: return row.getDescription();
+			case countPassed: {
+				int numOfParticipants = row.getNumOfParticipants();
+				if(numOfParticipants == 0) {
+					return numOfParticipants;
+				}
+				ProgressValue val = new ProgressValue();
+				val.setTotal(numOfParticipants);
+				val.setGreen(row.getNumOfPassed());
+				return val;
+			}
+			case averageScore: {
+				if(row.getNumOfParticipants() == row.getNumOfNotAttempted()) {
+					return null;
+				}
+				if(row.getAverageScore() == 0.0) {
+					return null;
+				}
+				return row.getAverageScore();
+			}
 		}
 		return null;
 	}
 
 	@Override
-	public DefaultFlexiTableDataModel<AssessedBusinessGroupRow> createCopyWithEmptyList() {
+	public DefaultFlexiTableDataModel<AssessedBusinessGroup> createCopyWithEmptyList() {
 		return new AssessedBusinessGroupTableModel(getTableColumnModel());
 	}
 
 	public enum ABGCols implements FlexiSortableColumnDef {
 		key("table.header.id"),
 		name("table.header.group.name"),
-		description("table.header.description");
+		countPassed("table.header.passed"),
+		averageScore("table.header.scoreAverage");
 		
 		private final String i18nKey;
 		

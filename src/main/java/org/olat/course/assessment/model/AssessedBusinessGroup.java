@@ -17,11 +17,8 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.course.assessment.ui.tool;
+package org.olat.course.assessment.model;
 
-import org.olat.core.util.Formatter;
-import org.olat.core.util.filter.FilterFactory;
-import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupRef;
 
 /**
@@ -30,16 +27,28 @@ import org.olat.group.BusinessGroupRef;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class AssessedBusinessGroupRow implements BusinessGroupRef {
+public class AssessedBusinessGroup implements BusinessGroupRef {
 	
 	private final Long key;
 	private final String name;
-	private final String description;
 	
-	public AssessedBusinessGroupRow(BusinessGroup group) {
-		key = group.getKey();
-		name = group.getName();
-    	description = Formatter.truncate(FilterFactory.getHtmlTagsFilter().filter(group.getDescription()), 256);
+	private int numOfParticipants;
+	private int numOfPassed;
+	private int numOfFailed;
+	private int numOfNotAttempted;
+	private double averageScore;
+	
+	public AssessedBusinessGroup(Long key, String name, double averageScore,
+			int numOfPassed, int numOfFailed, int numOfNotAttempted,
+			int numOfParticipants) {
+		this.key = key;
+		this.name = name;
+		this.averageScore = averageScore;
+		this.numOfPassed = numOfPassed;
+		this.numOfFailed = numOfFailed;
+		this.numOfNotAttempted = numOfNotAttempted;
+		this.numOfParticipants = numOfParticipants;
+		
 	}
 
 	@Override
@@ -50,8 +59,24 @@ public class AssessedBusinessGroupRow implements BusinessGroupRef {
 	public String getName() {
 		return name;
 	}
+	
+	public double getAverageScore() {
+		return averageScore;
+	}
 
-	public String getDescription() {
-		return description;
+	public int getNumOfParticipants() {
+		return numOfParticipants;
+	}
+
+	public int getNumOfPassed() {
+		return numOfPassed;
+	}
+
+	public int getNumOfFailed() {
+		return numOfFailed;
+	}
+
+	public int getNumOfNotAttempted() {
+		return numOfNotAttempted;
 	}
 }

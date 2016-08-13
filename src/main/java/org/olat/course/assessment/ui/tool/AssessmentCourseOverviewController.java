@@ -62,6 +62,8 @@ public class AssessmentCourseOverviewController extends BasicController {
 	private final AssessmentCourseStatisticsSmallController statisticsCtrl;
 
 	private Link assessedIdentitiesLink, assessedGroupsLink, passedLink, failedLink;
+	
+	private final int numOfGroups;
 
 	@Autowired
 	private CertificatesManager certificatesManager;
@@ -127,7 +129,6 @@ public class AssessmentCourseOverviewController extends BasicController {
 		failedLink.setCustomDisplayText(translate("assessment.tool.numOfFailed", new String[]{ Integer.toString(numOfFailed) }));
 		failedLink.setIconLeftCSS("o_icon o_icon_user");
 		
-		int numOfGroups = 0;
 		if(assessmentCallback.canAssessBusinessGoupMembers()) {
 			SearchBusinessGroupParams params = new SearchBusinessGroupParams();
 			if(assessmentCallback.isAdmin()) {
@@ -137,6 +138,8 @@ public class AssessmentCourseOverviewController extends BasicController {
 				params.setIdentity(getIdentity());
 			}
 			numOfGroups = businessGroupService.countBusinessGroups(params, courseEntry);
+		} else {
+			numOfGroups = 0;
 		}
 		
 		if(numOfGroups > 0) {
@@ -146,6 +149,10 @@ public class AssessmentCourseOverviewController extends BasicController {
 		}
 
 		putInitialPanel(mainVC);
+	}
+	
+	public int getNumOfBusinessGroups() {
+		return numOfGroups;
 	}
 
 	@Override

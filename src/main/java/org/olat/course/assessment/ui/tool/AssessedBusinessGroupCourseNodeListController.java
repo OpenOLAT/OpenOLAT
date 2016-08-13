@@ -19,15 +19,19 @@
  */
 package org.olat.course.assessment.ui.tool;
 
-import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
+import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
+import org.olat.core.gui.components.form.flexible.elements.FlexiTableSortOptions;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
+import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
@@ -42,12 +46,19 @@ import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.resource.OresHelper;
+import org.olat.course.assessment.AssessmentToolManager;
+import org.olat.course.assessment.model.AssessedBusinessGroup;
+import org.olat.course.assessment.model.SearchAssessedIdentityParams;
 import org.olat.course.assessment.ui.tool.AssessedBusinessGroupTableModel.ABGCols;
+import org.olat.course.nodes.AssessableCourseNode;
+import org.olat.course.nodes.CourseNode;
+import org.olat.course.nodes.CourseNodeFactory;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
-import org.olat.group.model.SearchBusinessGroupParams;
 import org.olat.modules.assessment.ui.AssessmentToolContainer;
 import org.olat.modules.assessment.ui.AssessmentToolSecurityCallback;
+import org.olat.modules.assessment.ui.ScoreCellRenderer;
+import org.olat.modules.coach.ui.ProgressRenderer;
 import org.olat.repository.RepositoryEntry;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -57,7 +68,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class AssessedBusinessGroupListController extends FormBasicController implements Activateable2 {
+public class AssessedBusinessGroupCourseNodeListController extends FormBasicController implements Activateable2 {
 	
 	private FlexiTableElement tableEl;
 	private AssessedBusinessGroupTableModel tableModel;
@@ -65,16 +76,21 @@ public class AssessedBusinessGroupListController extends FormBasicController imp
 	
 	private AssessmentIdentityListCourseTreeController currentCtrl;
 	
+	private final CourseNode courseNode;
 	private final RepositoryEntry courseEntry;
 	private final AssessmentToolContainer toolContainer;
 	private final AssessmentToolSecurityCallback assessmentCallback;
 	
 	@Autowired
 	private BusinessGroupService businessGroupService;
+	@Autowired
+	private AssessmentToolManager assessmentToolManager;
 	
-	public AssessedBusinessGroupListController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
-			RepositoryEntry courseEntry, AssessmentToolContainer toolContainer, AssessmentToolSecurityCallback assessmentCallback) {
+	public AssessedBusinessGroupCourseNodeListController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
+			RepositoryEntry courseEntry, CourseNode courseNode, AssessmentToolContainer toolContainer,
+			AssessmentToolSecurityCallback assessmentCallback) {
 		super(ureq, wControl, "groups");
+		this.courseNode = courseNode;
 		this.courseEntry = courseEntry;
 		this.assessmentCallback = assessmentCallback;
 		this.toolContainer = toolContainer;
@@ -89,28 +105,64 @@ public class AssessedBusinessGroupListController extends FormBasicController imp
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, ABGCols.key, "select"));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ABGCols.name, "select"));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ABGCols.description));
+		
+		if(courseNode instanceof AssessableCourseNode) {
+			AssessableCourseNode aNode = (AssessableCourseNode)courseNode;
+			if(aNode.hasPassedConfigured()) {
+				columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ABGCols.countPassed,
+						new ProgressRenderer(false, getTranslator())));
+			}
+			if(aNode.hasScoreConfigured()) {
+				columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ABGCols.averageScore,
+						new ScoreCellRenderer()));
+			}
+		}
 		
 		tableModel = new AssessedBusinessGroupTableModel(columnsModel); 
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, 20, false, getTranslator(), formLayout);
 		tableEl.setExportEnabled(true);
+		FlexiTableSortOptions options = new FlexiTableSortOptions();
+		options.setDefaultOrderBy(new SortKey(ABGCols.name.name(), true));
+		tableEl.setSortSettings(options);
+		
+		if(formLayout instanceof FormLayoutContainer) {
+			FormLayoutContainer layoutcont = (FormLayoutContainer)formLayout;
+			if(courseNode != null) {
+				String courseNodeCssClass = CourseNodeFactory.getInstance()
+						.getCourseNodeConfigurationEvenForDisabledBB(courseNode.getType()).getIconCSSClass();
+				layoutcont.contextPut("courseNodeCssClass", courseNodeCssClass);
+				layoutcont.contextPut("courseNodeTitle", courseNode.getShortTitle());
+			}
+		}
 	}
 	
 	protected void loadModel() {
 		if(assessmentCallback.canAssessBusinessGoupMembers()) {
-			SearchBusinessGroupParams params = new SearchBusinessGroupParams();
-			if(assessmentCallback.isAdmin()) {
-				//all groups
-			} else {
-				params.setOwner(true);
-				params.setIdentity(getIdentity());
+			RepositoryEntry testEntry = null;
+			if(courseNode.needsReferenceToARepositoryEntry()) {
+				testEntry = courseNode.getReferencedRepositoryEntry();
 			}
-			List<BusinessGroup> businessGroups = businessGroupService.findBusinessGroups(params, courseEntry, 0, -1);
-			List<AssessedBusinessGroupRow> businessGroupRows = new ArrayList<>();
-			for(BusinessGroup group:businessGroups) {
-				businessGroupRows.add(new AssessedBusinessGroupRow(group));
+			SearchAssessedIdentityParams params
+				= new SearchAssessedIdentityParams(courseEntry, courseNode.getIdent(), testEntry, assessmentCallback);
+			if(assessmentCallback.getCoachedGroups() != null) {
+				List<Long> groupKeys = assessmentCallback.getCoachedGroups()
+					.stream().map(c -> c.getKey()).collect(Collectors.toList());
+				params.setBusinessGroupKeys(groupKeys);
 			}
-			tableModel.setObjects(businessGroupRows);
+			
+			List<AssessedBusinessGroup> rows = assessmentToolManager.getBusinessGroupStatistics(getIdentity(), params);
+			Set<Long> keys = rows.stream().map(c -> c.getKey()).collect(Collectors.toSet());
+			
+			List<BusinessGroup> groups = assessmentCallback.getCoachedGroups();
+			for(BusinessGroup group:groups) {
+				if(!keys.contains(group.getKey())) {
+					rows.add(new AssessedBusinessGroup(group.getKey(), group.getName(), 0.0d, 0, 0, 0, 0));
+				}
+			}
+			
+			tableModel.setObjects(rows);
+			tableEl.reset();
+			tableEl.reloadData();
 		}
 	}
 	
@@ -144,7 +196,7 @@ public class AssessedBusinessGroupListController extends FormBasicController imp
 			if(event instanceof SelectionEvent) {
 				SelectionEvent se = (SelectionEvent)event;
 				String cmd = se.getCommand();
-				AssessedBusinessGroupRow row = tableModel.getObject(se.getIndex());
+				AssessedBusinessGroup row = tableModel.getObject(se.getIndex());
 				if("select".equals(cmd)) {
 					doSelect(ureq, row);
 				}
@@ -154,7 +206,7 @@ public class AssessedBusinessGroupListController extends FormBasicController imp
 		super.formInnerEvent(ureq, source, event);
 	}
 	
-	private AssessmentIdentityListCourseTreeController doSelect(UserRequest ureq, AssessedBusinessGroupRow row) {
+	private AssessmentIdentityListCourseTreeController doSelect(UserRequest ureq, AssessedBusinessGroup row) {
 		BusinessGroup businessGroup = businessGroupService.loadBusinessGroup(row.getKey());
 		return doSelect(ureq, businessGroup);
 	}
@@ -168,11 +220,15 @@ public class AssessedBusinessGroupListController extends FormBasicController imp
 		AssessmentIdentityListCourseTreeController treeCtrl = new AssessmentIdentityListCourseTreeController(ureq, bwControl, stackPanel,
 				courseEntry, businessGroup, toolContainer, assessmentCallback);
 		listenTo(treeCtrl);
-		
+
 		String groupName = StringHelper.escapeHtml(businessGroup.getName());
 		stackPanel.pushController(groupName, treeCtrl);
 		currentCtrl = treeCtrl;
-		treeCtrl.activate(ureq, null, null);
+		
+		List<ContextEntry> entries = BusinessControlFactory.getInstance()
+				.createCEListFromString(OresHelper
+						.createOLATResourceableInstance("Node", new Long(courseNode.getIdent())));
+		treeCtrl.activate(ureq, entries, null);
 		return currentCtrl;
 	}
 }

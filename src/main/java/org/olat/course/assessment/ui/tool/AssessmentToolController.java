@@ -25,6 +25,7 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
+import org.olat.core.gui.components.stack.ButtonGroupComponent;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.components.stack.TooledStackedPanel.Align;
 import org.olat.core.gui.control.Controller;
@@ -59,13 +60,15 @@ public class AssessmentToolController extends MainLayoutBasicController implemen
 	private RepositoryEntry courseEntry;
 	private final AssessmentToolSecurityCallback assessmentCallback;
 	
-	private Link usersLink, efficiencyStatementsLink, bulkAssessmentLink;
+	private Link overviewLink, usersLink, groupsLink;
+	private Link efficiencyStatementsLink, bulkAssessmentLink;
 	private final TooledStackedPanel stackPanel;
 	private final AssessmentToolContainer toolContainer;
+	private final ButtonGroupComponent segmentButtonsCmp;
 	
-	private AssessedBusinessGroupListController groupsCtrl;
 	private AssessmentCourseOverviewController overviewCtrl;
 	private AssessmentIdentityListCourseTreeController currentCtrl;
+	private AssessedBusinessGroupListCourseTreeController groupsCtrl;
 	private BulkAssessmentOverviewController bulkAssessmentOverviewCtrl;
 	private EfficiencyStatementAssessmentController efficiencyStatementCtrl;
 	
@@ -77,6 +80,8 @@ public class AssessmentToolController extends MainLayoutBasicController implemen
 		this.stackPanel = stackPanel;
 		this.assessmentCallback = assessmentCallback;
 		toolContainer = new AssessmentToolContainer();
+	
+		segmentButtonsCmp = new ButtonGroupComponent("segments");
 		
 		overviewCtrl = new AssessmentCourseOverviewController(ureq, getWindowControl(), courseEntry, assessmentCallback);
 		listenTo(overviewCtrl);
@@ -84,9 +89,20 @@ public class AssessmentToolController extends MainLayoutBasicController implemen
 	}
 	
 	public void initToolbar() {
-		usersLink = LinkFactory.createToolLink("users", translate("users"), this, "o_icon_user");
+		overviewLink = LinkFactory.createToolLink("overview", translate("overview"), this/*, "o_icon_user"*/);
+		overviewLink.setElementCssClass("o_sel_assessment_tool_overview");
+		segmentButtonsCmp.addButton(overviewLink, false);
+		
+		usersLink = LinkFactory.createToolLink("users", translate("users"), this/*, "o_icon_user"*/);
 		usersLink.setElementCssClass("o_sel_assessment_tool_users");
-		stackPanel.addTool(usersLink);
+		segmentButtonsCmp.addButton(usersLink, false);
+		
+		if(overviewCtrl.getNumOfBusinessGroups() > 0) {
+			groupsLink = LinkFactory.createToolLink("groups", translate("groups"), this/*, "o_icon_group"*/);
+			groupsLink.setElementCssClass("o_sel_assessment_tool_groups");
+			segmentButtonsCmp.addButton(groupsLink, false);
+		}
+		stackPanel.addTool(segmentButtonsCmp, Align.segment, true);
 		
 		efficiencyStatementsLink = LinkFactory.createToolLink("efficiencyStatements", translate("menu.efficiency.statment"), this, "o_icon_certificate");
 		efficiencyStatementsLink.setElementCssClass("o_sel_assessment_tool_efficiency_statements");
@@ -118,9 +134,16 @@ public class AssessmentToolController extends MainLayoutBasicController implemen
 
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
-		if (source == usersLink) {
+		if (overviewLink == source) {
+			cleanUp();
+			stackPanel.popUpToController(this);
+			addToHistory(ureq, getWindowControl());
+		} else if (source == usersLink) {
 			cleanUp();
 			doSelectUsersView(ureq);
+		} else if (groupsLink == source) {
+			cleanUp();
+			doSelectGroupsView(ureq);
 		} else if(efficiencyStatementsLink == source) {
 			cleanUp();
 			doEfficiencyStatementView(ureq);
@@ -178,13 +201,15 @@ public class AssessmentToolController extends MainLayoutBasicController implemen
 	}
 	
 
-	private AssessedBusinessGroupListController doSelectGroupsView(UserRequest ureq) {
+	private AssessedBusinessGroupListCourseTreeController doSelectGroupsView(UserRequest ureq) {
 		OLATResourceable ores = OresHelper.createOLATResourceableInstance("BusinessGroups", 0l);
 		WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ores, null, getWindowControl());
 		addToHistory(ureq, bwControl);
-		groupsCtrl = new AssessedBusinessGroupListController(ureq, bwControl, stackPanel, courseEntry, toolContainer, assessmentCallback);
+		groupsCtrl = new AssessedBusinessGroupListCourseTreeController(ureq, bwControl, stackPanel, courseEntry, toolContainer, assessmentCallback);
 		listenTo(groupsCtrl);
+		stackPanel.popUpToController(this);
 		stackPanel.pushController(translate("groups"), groupsCtrl);
+		segmentButtonsCmp.setSelectedButton(groupsLink);
 		groupsCtrl.activate(ureq, null, null);
 		return groupsCtrl;
 	}
@@ -196,7 +221,9 @@ public class AssessmentToolController extends MainLayoutBasicController implemen
 		AssessmentIdentityListCourseTreeController treeCtrl = new AssessmentIdentityListCourseTreeController(ureq, bwControl, stackPanel,
 				courseEntry, null, toolContainer, assessmentCallback);
 		listenTo(treeCtrl);
+		stackPanel.popUpToController(this);
 		stackPanel.pushController(translate("users"), treeCtrl);
+		segmentButtonsCmp.setSelectedButton(usersLink);
 		currentCtrl = treeCtrl;
 		treeCtrl.activate(ureq, null, null);
 		return treeCtrl;
@@ -209,7 +236,9 @@ public class AssessmentToolController extends MainLayoutBasicController implemen
 		AssessmentIdentityListCourseTreeController treeCtrl = new AssessmentIdentityListCourseTreeController(ureq, bwControl, stackPanel,
 				courseEntry, null, toolContainer, assessmentCallback);
 		listenTo(treeCtrl);
+		stackPanel.popUpToController(this);
 		stackPanel.pushController(translate("users"), treeCtrl);
+		segmentButtonsCmp.setSelectedButton(usersLink);
 		currentCtrl = treeCtrl;
 		
 		AssessedIdentityListState state = new AssessedIdentityListState();
@@ -224,7 +253,9 @@ public class AssessmentToolController extends MainLayoutBasicController implemen
 		AssessmentIdentityListCourseTreeController treeCtrl = new AssessmentIdentityListCourseTreeController(ureq, bwControl, stackPanel,
 				courseEntry, null, toolContainer, assessmentCallback);
 		listenTo(treeCtrl);
+		stackPanel.popUpToController(this);
 		stackPanel.pushController(translate("users"), treeCtrl);
+		segmentButtonsCmp.setSelectedButton(usersLink);
 		currentCtrl = treeCtrl;
 		
 		AssessedIdentityListState state = new AssessedIdentityListState();

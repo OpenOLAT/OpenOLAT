@@ -20,9 +20,11 @@
 package org.olat.modules.assessment.ui;
 
 import java.math.BigDecimal;
+import java.util.Locale;
 
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableComponent;
+import org.olat.core.gui.components.table.CustomCellRenderer;
 import org.olat.core.gui.render.Renderer;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
@@ -36,16 +38,28 @@ import org.olat.course.assessment.AssessmentHelper;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class ScoreCellRenderer implements FlexiCellRenderer {
+public class ScoreCellRenderer implements FlexiCellRenderer, CustomCellRenderer {
 
+	@Override
+	public void render(StringOutput sb, Renderer renderer, Object val, Locale locale, int alignment, String action) {
+		renderValue(sb, val);
+	}
+	
 	@Override
 	public void render(Renderer renderer, StringOutput target, Object cellValue,
 			int row, FlexiTableComponent source, URLBuilder ubu, Translator translator) {
-		
+		renderValue(target, cellValue);
+	}
+	
+	private final void renderValue(StringOutput target, Object cellValue) {
 		if(cellValue instanceof Float) {
 			target.append(AssessmentHelper.getRoundedScore((Float)cellValue));
+		} else if(cellValue instanceof Double) {
+			target.append(AssessmentHelper.getRoundedScore((Double)cellValue));
 		} else if(cellValue instanceof BigDecimal) {
 			target.append(AssessmentHelper.getRoundedScore((BigDecimal)cellValue));
+		} else if(cellValue instanceof String) {
+			target.append((String)cellValue);
 		}
 	}
 }
