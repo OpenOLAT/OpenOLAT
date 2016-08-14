@@ -64,9 +64,9 @@ public class ContactDAO {
 		sb.append("select contact.identity.key from businessgroup bgroup ")
 		  .append(" inner join bgroup.baseGroup baseGroup")
 		  .append(" inner join baseGroup.members contact")
-		  .append(" where exists (select me.key from bgroupmember as me where me.group.key=baseGroup.key and me.identity.key=:identKey)")
-		  .append("  and ((bgroup.ownersVisibleIntern=true and contact.role='coach')")
-		  .append("  or (bgroup.participantsVisibleIntern=true and contact.role='participant'))");
+		  .append(" inner join baseGroup.members me on (me.identity.key=:identKey)")
+		  .append(" where (bgroup.ownersVisibleIntern=true and contact.role='coach')")
+		  .append("  or (bgroup.participantsVisibleIntern=true and contact.role='participant')");
 
 		return dbInstance.getCurrentEntityManager().createQuery(sb.toString(), Long.class)
 				.setParameter("identKey", me.getKey())
