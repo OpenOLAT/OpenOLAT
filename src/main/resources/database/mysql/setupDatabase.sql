@@ -1968,9 +1968,9 @@ create view o_gp_contactkey_v as (
    inner join o_bs_group_member as bg_member on (bg_member.fk_group_id = bgroup.fk_group_id)
    inner join o_bs_group_member as bg_me on (bg_me.fk_group_id = bgroup.fk_group_id)
    where
-      (bgroup.ownersintern=true and bg_member.g_role='coach')
+      (bgroup.ownersintern=1 and bg_member.g_role='coach')
       or
-      (bgroup.participantsintern=true and bg_member.g_role='participant')
+      (bgroup.participantsintern=1 and bg_member.g_role='participant')
 );
 
 create view o_gp_contactext_v as (
@@ -1990,9 +1990,9 @@ create view o_gp_contactext_v as (
    inner join o_user as us_member on (id_member.fk_user_id = us_member.user_id)
    inner join o_bs_group_member as bg_me on (bg_me.fk_group_id = bgroup.fk_group_id)
    where
-      (bgroup.ownersintern=true and bg_member.g_role='coach')
+      (bgroup.ownersintern=1 and bg_member.g_role='coach')
       or
-      (bgroup.participantsintern=true and bg_member.g_role='participant')
+      (bgroup.participantsintern=1 and bg_member.g_role='participant')
 );
 
 
