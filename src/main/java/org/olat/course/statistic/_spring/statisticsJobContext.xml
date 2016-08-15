@@ -21,7 +21,7 @@
 			Day-of-Week 	1-7 or SUN-SAT 	  	, - * ? / L C #
 			Year (Optional)	empty, 1970-2099 	, - * /
 	    -->
-	    <property name="cronExpression" value="0 10 5 * * ?" />
+	    <property name="cronExpression" ref="statsCronGenerator" />
 
 		<!-- OLAT-5093 start delay ensures there's no conflict with server startup and db not being ready yet -->
 	    <property name="startDelay" value="300000" />
@@ -35,6 +35,11 @@
 	<bean id="org.olat.statistics.job.disabled" class="org.springframework.scheduling.quartz.JobDetailBean"  lazy-init="true">
 		<!-- NOTE: reusing the notifications.DummyJob here -->
 		<property name="jobClass" value="org.olat.core.commons.services.scheduler.DummyJob" />
+	</bean>
+	
+	<bean id="statsCronGenerator" class="org.olat.course.statistic.StatisticsCronGenerator">
+		<property name="tomcatId" value="${tomcat.id}" />
+		<property name="cronExpression" value="${statistics.cronjob.expression}" />
 	</bean>
 
 </beans>
