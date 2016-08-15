@@ -208,6 +208,17 @@ public class AssessmentTestSessionDAO {
     private OlatRootFolderImpl getQtiSerializationPath() {
     	return new OlatRootFolderImpl("/qtiassessment/", null);
 	}
+    
+	public AssessmentTestSession loadByKey(Long testSessionKey) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select session from qtiassessmenttestsession session")
+		  .append(" where session.key=:sessionKey");
+		List<AssessmentTestSession> sessions = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), AssessmentTestSession.class)
+				.setParameter("sessionKey", testSessionKey)
+				.getResultList();
+		return sessions == null || sessions.isEmpty() ? null : sessions.get(0);
+	}
 	
 	public AssessmentTestSession update(AssessmentTestSession testSession) {
 		((AssessmentTestSessionImpl)testSession).setLastModified(new Date());
@@ -259,6 +270,7 @@ public class AssessmentTestSessionDAO {
 		} else {
 			sb.append("session.subIdent is null");
 		}
+		sb.append(" order by session.creationDate desc");
 		
 		TypedQuery<AssessmentTestSession> query = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), AssessmentTestSession.class)
@@ -268,6 +280,55 @@ public class AssessmentTestSessionDAO {
 			query.setParameter("subIdent", courseSubIdent);
 		}
 		return query.getResultList();
+	}
+	
+	public List<AssessmentTestSession> getRunningTestSessions(RepositoryEntryRef entry, String courseSubIdent, RepositoryEntry testEntry) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select session from qtiassessmenttestsession session")
+		  .append(" left join fetch session.testEntry testEntry")
+		  .append(" left join fetch testEntry.olatResource testResource")
+		  .append(" inner join fetch session.identity assessedIdentity")
+		  .append(" inner join fetch assessedIdentity.user assessedUser")
+		  .append(" where session.repositoryEntry.key=:repositoryEntryKey and session.terminationTime is null and session.testEntry.key=:testEntryKey");
+		if(StringHelper.containsNonWhitespace(courseSubIdent)) {
+			sb.append(" and session.subIdent=:subIdent");
+		} else {
+			sb.append(" and session.subIdent is null");
+		}
+		
+		TypedQuery<AssessmentTestSession> query = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), AssessmentTestSession.class)
+				.setParameter("repositoryEntryKey", entry.getKey())
+				.setParameter("testEntryKey", testEntry.getKey());
+		if(StringHelper.containsNonWhitespace(courseSubIdent)) {
+			query.setParameter("subIdent", courseSubIdent);
+		}
+		return query.getResultList();
+	}
+	
+	public boolean hasRunningTestSessions(RepositoryEntryRef entry, String courseSubIdent, RepositoryEntry testEntry) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select session.key from qtiassessmenttestsession session")
+		  .append(" left join session.testEntry testEntry")
+		  .append(" left join testEntry.olatResource testResource")
+		  .append(" where session.repositoryEntry.key=:repositoryEntryKey and session.terminationTime is null and session.testEntry.key=:testEntryKey");
+		if(StringHelper.containsNonWhitespace(courseSubIdent)) {
+			sb.append(" and session.subIdent=:subIdent");
+		} else {
+			sb.append(" and session.subIdent is null");
+		}
+		
+		TypedQuery<Long> query = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Long.class)
+				.setParameter("repositoryEntryKey", entry.getKey())
+				.setParameter("testEntryKey", testEntry.getKey())
+				.setFirstResult(0)
+				.setMaxResults(1);
+		if(StringHelper.containsNonWhitespace(courseSubIdent)) {
+			query.setParameter("subIdent", courseSubIdent);
+		}
+		List<Long> found = query.getResultList();
+		return found == null || found.isEmpty() || found.get(0) == null ? false : found.get(0) >= 0;
 	}
 	
 	public int deleteTestSession(AssessmentTestSession testSession) {

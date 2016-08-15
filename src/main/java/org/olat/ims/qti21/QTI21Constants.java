@@ -19,6 +19,9 @@
  */
 package org.olat.ims.qti21;
 
+import org.olat.core.id.OLATResourceable;
+import org.olat.core.util.resource.OresHelper;
+
 import uk.ac.ed.ph.jqtiplus.types.ComplexReferenceIdentifier;
 import uk.ac.ed.ph.jqtiplus.types.Identifier;
 import uk.ac.ed.ph.jqtiplus.value.IdentifierValue;
@@ -30,6 +33,8 @@ import uk.ac.ed.ph.jqtiplus.value.IdentifierValue;
  *
  */
 public class QTI21Constants {
+	
+	public static final OLATResourceable ASSESSMENT_TEST_SESSION_PULLED = OresHelper.createOLATResourceableInstance("assessment-test-session-pulled", 0l);
 	
 	public static final String TOOLNAME = "OpenOLAT";
 	

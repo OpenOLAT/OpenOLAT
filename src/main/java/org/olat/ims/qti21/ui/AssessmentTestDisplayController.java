@@ -54,6 +54,8 @@ import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.logging.OLATRuntimeException;
+import org.olat.core.util.coordinate.CoordinatorManager;
+import org.olat.core.util.event.GenericEventListener;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.fileresource.FileResourceManager;
 import org.olat.fileresource.types.ImsQTI21Resource;
@@ -80,6 +82,7 @@ import org.olat.ims.qti21.ui.ResponseInput.FileInput;
 import org.olat.ims.qti21.ui.ResponseInput.StringInput;
 import org.olat.ims.qti21.ui.components.AssessmentTestFormItem;
 import org.olat.ims.qti21.ui.components.AssessmentTreeFormItem;
+import org.olat.ims.qti21.ui.event.RetrieveAssessmentTestSessionEvent;
 import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.assessment.AssessmentService;
 import org.olat.repository.RepositoryEntry;
@@ -138,7 +141,7 @@ import uk.ac.ed.ph.jqtiplus.xmlutils.locators.ResourceLocator;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class AssessmentTestDisplayController extends BasicController implements CandidateSessionContext {
+public class AssessmentTestDisplayController extends BasicController implements CandidateSessionContext, GenericEventListener {
 	
 	private final File fUnzippedDirRoot;
 	private final String mapperUri;
@@ -243,6 +246,10 @@ public class AssessmentTestDisplayController extends BasicController implements 
         }
         
         mainPanel = putInitialPanel(mainVC);
+        
+        OLATResourceable sessionOres = OresHelper
+        		.createOLATResourceableInstance(AssessmentTestSession.class, candidateSession.getKey());
+        CoordinatorManager.getInstance().getCoordinator().getEventBus().registerFor(this, getIdentity(), sessionOres);
 	}
 	
 	private void initQtiWorks(UserRequest ureq) {
@@ -254,6 +261,9 @@ public class AssessmentTestDisplayController extends BasicController implements 
 	@Override
 	protected void doDispose() {
 		suspendAssessmentTest();
+        OLATResourceable sessionOres = OresHelper
+        		.createOLATResourceableInstance(AssessmentTestSession.class, candidateSession.getKey());
+		CoordinatorManager.getInstance().getCoordinator().getEventBus().deregisterFor(this, sessionOres);
 	}
 
 	@Override
@@ -278,6 +288,16 @@ public class AssessmentTestDisplayController extends BasicController implements 
 	
 	public boolean isResultsVisible() {
 		return qtiWorksCtrl.isResultsVisible();
+	}
+
+	@Override
+	public void event(Event event) {
+		if(event instanceof RetrieveAssessmentTestSessionEvent) {
+			RetrieveAssessmentTestSessionEvent rats = (RetrieveAssessmentTestSessionEvent)event;
+			if(candidateSession != null && candidateSession.getKey().equals(rats.getAssessmentTestSessionKey())) {
+				candidateSession = qtiService.reloadAssessmentTestSession(candidateSession);
+			}
+		}
 	}
 
 	@Override

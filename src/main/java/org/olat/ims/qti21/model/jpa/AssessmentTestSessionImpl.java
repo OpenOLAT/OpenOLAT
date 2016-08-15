@@ -172,6 +172,7 @@ public class AssessmentTestSessionImpl implements AssessmentTestSession, Persist
 		this.lastModified = lastModified;
 	}
 
+	@Override
 	public AssessmentEntry getAssessmentEntry() {
 		return assessmentEntry;
 	}
@@ -180,6 +181,7 @@ public class AssessmentTestSessionImpl implements AssessmentTestSession, Persist
 		this.assessmentEntry = assessmentEntry;
 	}
 
+	@Override
 	public RepositoryEntry getTestEntry() {
 		return testEntry;
 	}
@@ -188,6 +190,7 @@ public class AssessmentTestSessionImpl implements AssessmentTestSession, Persist
 		this.testEntry = testEntry;
 	}
 
+	@Override
 	public RepositoryEntry getRepositoryEntry() {
 		return repositoryEntry;
 	}
@@ -196,6 +199,7 @@ public class AssessmentTestSessionImpl implements AssessmentTestSession, Persist
 		this.repositoryEntry = repositoryEntry;
 	}
 
+	@Override
 	public String getSubIdent() {
 		return subIdent;
 	}

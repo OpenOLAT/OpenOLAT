@@ -17,12 +17,13 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.ims.qti.statistics.ui;
+package org.olat.ims.qti21.ui;
 
-import java.io.File;
+import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
-import org.dom4j.Document;
+import org.olat.core.commons.persistence.DB;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
@@ -35,38 +36,30 @@ import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.id.Identity;
+import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.coordinate.CoordinatorManager;
-import org.olat.core.util.i18n.I18nModule;
-import org.olat.course.CourseFactory;
-import org.olat.course.ICourse;
-import org.olat.course.assessment.AssessmentHelper;
+import org.olat.core.util.resource.OresHelper;
 import org.olat.course.nodes.AssessmentToolOptions;
 import org.olat.course.nodes.IQTESTCourseNode;
 import org.olat.course.run.environment.CourseEnvironment;
-import org.olat.course.run.scoring.ScoreEvaluation;
-import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.ims.qti.QTIResultManager;
-import org.olat.ims.qti.container.AssessmentContext;
-import org.olat.ims.qti.process.AssessmentFactory;
-import org.olat.ims.qti.process.AssessmentInstance;
-import org.olat.ims.qti.process.FilePersister;
-import org.olat.modules.ModuleConfiguration;
-import org.olat.modules.iq.IQManager;
-import org.olat.modules.iq.IQRetrievedEvent;
+import org.olat.ims.qti21.AssessmentTestSession;
+import org.olat.ims.qti21.QTI21Service;
+import org.olat.ims.qti21.ui.event.RetrieveAssessmentTestSessionEvent;
 import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
- * Initial date: 15.08.2016<br>
+ * Initial date: 07.07.2015<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class QTI12PullTestsToolController extends BasicController implements Activateable2 {
+public class QTI21RetrieveTestsToolController extends BasicController implements Activateable2 {
 	
 	private final Link pullButton;
 	private DialogBoxController retrieveConfirmationCtr;
@@ -76,11 +69,13 @@ public class QTI12PullTestsToolController extends BasicController implements Act
 	private final List<Identity> assessedIdentities;
 	
 	@Autowired
-	private IQManager iqm;
+	private DB dbInstance;
 	@Autowired
 	private UserManager userManager;
+	@Autowired
+	private QTI21Service qtiService;
 	
-	public QTI12PullTestsToolController(UserRequest ureq, WindowControl wControl, CourseEnvironment courseEnv,
+	public QTI21RetrieveTestsToolController(UserRequest ureq, WindowControl wControl, CourseEnvironment courseEnv,
 			AssessmentToolOptions asOptions, IQTESTCourseNode courseNode) {
 		super(ureq, wControl);
 		setTranslator(Util.createPackageTranslator(QTIResultManager.class, getLocale(), getTranslator()));
@@ -89,7 +84,7 @@ public class QTI12PullTestsToolController extends BasicController implements Act
 		this.courseNode = courseNode;
 		this.assessedIdentities = asOptions.getIdentities();
 		
-		pullButton = LinkFactory.createButton("menu.pull.tests.title", null, this);
+		pullButton = LinkFactory.createButton("menu.retrieve.tests.title", null, this);
 		pullButton.setTranslator(getTranslator());
 		putInitialPanel(pullButton);
 		getInitialComponent().setSpanAsDomReplaceable(true); // override to wrap panel as span to not break link layout 
@@ -116,7 +111,9 @@ public class QTI12PullTestsToolController extends BasicController implements Act
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if(retrieveConfirmationCtr == source) {
 			if(DialogBoxUIFactory.isYesEvent(event)) {
-				doRetrieveTests();
+				@SuppressWarnings("unchecked")
+				List<AssessmentTestSession> sessionsToRetrieve = (List<AssessmentTestSession>)retrieveConfirmationCtr.getUserObject();
+				doRetrieveTests(sessionsToRetrieve);
 			}
 			removeAsListenerAndDispose(retrieveConfirmationCtr);
 			retrieveConfirmationCtr = null;
@@ -124,66 +121,52 @@ public class QTI12PullTestsToolController extends BasicController implements Act
 	}
 	
 	private void confirmPull(UserRequest ureq) {
-		int count = 0;
+
 		StringBuilder fullnames = new StringBuilder(256);
-		for(Identity assessedIdentity:assessedIdentities) {
-			if(courseNode.isQTI12TestRunning(assessedIdentity, courseEnv)) {
+		
+		List<AssessmentTestSession> sessions = qtiService
+				.getRunningAssessmentTestSession(courseEnv.getCourseGroupManager().getCourseEntry(), courseNode.getIdent(), courseNode.getReferencedRepositoryEntry());
+		
+		List<AssessmentTestSession> sessionsToRetrieve = new ArrayList<>();
+		for(AssessmentTestSession session:sessions) {
+			if(assessedIdentities.contains(session.getIdentity())) {
 				if(fullnames.length() > 0) fullnames.append(", ");
-				String name = userManager.getUserDisplayName(assessedIdentity);
+				String name = userManager.getUserDisplayName(session.getIdentity());
 				if(StringHelper.containsNonWhitespace(name)) {
 					fullnames.append(name);
-					count++;
+					sessionsToRetrieve.add(session);
 				}
 			}
 		}
 		
-		if(count == 0) {
+		if(sessionsToRetrieve.size() == 0) {
 			showInfo("retrievetest.nothing.todo");
-		} else if(count == 1) {
+		} else if(sessionsToRetrieve.size() == 1) {
 			String title = translate("retrievetest.confirm.title");
 			String text = translate("retrievetest.confirm.text", new String[]{ fullnames.toString() });
 			retrieveConfirmationCtr = activateYesNoDialog(ureq, title, text, retrieveConfirmationCtr);
+			retrieveConfirmationCtr.setUserObject(sessionsToRetrieve);
 		} else  {
 			String title = translate("retrievetest.confirm.title");
 			String text = translate("retrievetest.confirm.text.plural", new String[]{ fullnames.toString() });
 			retrieveConfirmationCtr = activateYesNoDialog(ureq, title, text, retrieveConfirmationCtr);
+			retrieveConfirmationCtr.setUserObject(sessionsToRetrieve);
 		}
 	}
 	
-	private void doRetrieveTests() {
-		ICourse course = CourseFactory.loadCourse(courseEnv.getCourseResourceableId());
-		for(Identity assessedIdentity:assessedIdentities) {
-			if(courseNode.isQTI12TestRunning(assessedIdentity, courseEnv)) {
-				IQRetrievedEvent retrieveEvent = new IQRetrievedEvent(assessedIdentity, courseEnv.getCourseResourceableId(), courseNode.getIdent());
-				CoordinatorManager.getInstance().getCoordinator().getEventBus().fireEventToListenersOf(retrieveEvent, retrieveEvent);
-				retrieveTest(assessedIdentity, course);
-			}
+	private void doRetrieveTests(List<AssessmentTestSession> sessionsToRetrieve) {
+		for(AssessmentTestSession sessionToRetrieve:sessionsToRetrieve) {
+			doRetrieveTest(sessionToRetrieve);
 		}
 	}
 
-	private void retrieveTest(Identity assessedIdentity, ICourse course) {
-		ModuleConfiguration modConfig = courseNode.getModuleConfiguration();
-
-		String resourcePathInfo = courseEnv.getCourseResourceableId() + File.separator + courseNode.getIdent();
-		AssessmentInstance ai = AssessmentFactory.createAssessmentInstance(assessedIdentity, "", modConfig, false, courseEnv.getCourseResourceableId(), courseNode.getIdent(), resourcePathInfo, null);
-		//close the test
-		ai.stop();
-		//persist the results
-		iqm.persistResults(ai);
-
-		//reporting
-		Document docResReporting = iqm.getResultsReporting(ai, assessedIdentity, I18nModule.getDefaultLocale());
-		FilePersister.createResultsReporting(docResReporting, assessedIdentity, ai.getFormattedType(), ai.getAssessID());
+	private void doRetrieveTest(AssessmentTestSession session) {
+		session.setTerminationTime(new Date());
+		session = qtiService.updateAssessmentTestSession(session);
+		dbInstance.commit();//make sure that the changes committed before sending the event
 		
-		//olat results
-		AssessmentContext ac = ai.getAssessmentContext();
-		Float score = new Float(ac.getScore());
-		Boolean passed = new Boolean(ac.isPassed());
-		ScoreEvaluation sceval = new ScoreEvaluation(score, passed, Boolean.FALSE, new Long(ai.getAssessID()));
-		UserCourseEnvironment userCourseEnv = AssessmentHelper.createAndInitUserCourseEnvironment(assessedIdentity, course);
-		courseNode.updateUserScoreEvaluation(sceval, userCourseEnv, assessedIdentity, true);
-		
-		//cleanup
-		ai.cleanUp();
+		OLATResourceable sessionOres = OresHelper.createOLATResourceableInstance(AssessmentTestSession.class, session.getKey());
+		CoordinatorManager.getInstance().getCoordinator().getEventBus()
+			.fireEventToListenersOf(new RetrieveAssessmentTestSessionEvent(session.getKey()), sessionOres);
 	}
 }

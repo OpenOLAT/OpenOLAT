@@ -21,9 +21,12 @@ package org.olat.ims.qti21.ui;
 
 import java.io.File;
 import java.net.URI;
+import java.util.Date;
 import java.util.List;
 
+import org.olat.core.commons.persistence.DB;
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.EscapeMode;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
@@ -35,17 +38,25 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiCellRenderer;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.TextFlexiCellRenderer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
+import org.olat.core.gui.control.generic.modal.DialogBoxController;
+import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.id.Identity;
+import org.olat.core.id.OLATResourceable;
+import org.olat.core.util.coordinate.CoordinatorManager;
+import org.olat.core.util.resource.OresHelper;
 import org.olat.fileresource.FileResourceManager;
 import org.olat.ims.qti21.AssessmentTestSession;
 import org.olat.ims.qti21.QTI21DeliveryOptions.ShowResultsOnFinish;
 import org.olat.ims.qti21.QTI21Service;
 import org.olat.ims.qti21.ui.QTI21TestSessionTableModel.TSCols;
+import org.olat.ims.qti21.ui.event.RetrieveAssessmentTestSessionEvent;
 import org.olat.repository.RepositoryEntry;
+import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -65,7 +76,12 @@ public class QTI21AssessmentDetailsController extends FormBasicController {
 	
 	private CloseableModalController cmc;
 	private AssessmentResultController resultCtrl;
+	private DialogBoxController retrieveConfirmationCtr;
 	
+	@Autowired
+	private DB dbInstance;
+	@Autowired
+	private UserManager userManager;
 	@Autowired
 	protected QTI21Service qtiService;
 	
@@ -84,14 +100,17 @@ public class QTI21AssessmentDetailsController extends FormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TSCols.lastModified.i18nKey(), TSCols.lastModified.ordinal()));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TSCols.results.i18nKey(), TSCols.results.ordinal(), "result",
-				new BooleanCellRenderer(new StaticFlexiCellRenderer(translate(TSCols.results.i18nKey()), "result"), null)));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TSCols.lastModified));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TSCols.duration, new TextFlexiCellRenderer(EscapeMode.none)));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TSCols.results, new TextFlexiCellRenderer(EscapeMode.none)));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TSCols.open.i18nHeaderKey(), TSCols.open.ordinal(), "open",
+				new BooleanCellRenderer(new StaticFlexiCellRenderer(translate("select"), "open"),
+						new StaticFlexiCellRenderer(translate("pull"), "open"))));
 
-		tableModel = new QTI21TestSessionTableModel(columnsModel);
+		tableModel = new QTI21TestSessionTableModel(columnsModel, getTranslator());
 		tableEl = uifactory.addTableElement(getWindowControl(), "sessions", tableModel, 20, false, getTranslator(), formLayout);
 	}
-	
+
 	@Override
 	protected void doDispose() {
 		//
@@ -100,6 +119,7 @@ public class QTI21AssessmentDetailsController extends FormBasicController {
 	protected void updateModel() {
 		List<AssessmentTestSession> sessions = qtiService.getAssessmentTestSessions(entry, subIdent, assessedIdentity);
 		tableModel.setObjects(sessions);
+		tableEl.reloadData();
 		tableEl.reset();
 	}
 
@@ -108,6 +128,11 @@ public class QTI21AssessmentDetailsController extends FormBasicController {
 		if(cmc == source) {
 			cmc.deactivate();
 			cleanUp();
+		} else if(retrieveConfirmationCtr == source) {
+			if(DialogBoxUIFactory.isYesEvent(event) || DialogBoxUIFactory.isOkEvent(event)) {
+				doPullSession((AssessmentTestSession)retrieveConfirmationCtr.getUserObject());
+				updateModel();
+			}
 		}
 		super.event(ureq, source, event);
 	}
@@ -126,8 +151,12 @@ public class QTI21AssessmentDetailsController extends FormBasicController {
 				SelectionEvent se = (SelectionEvent)event;
 				String cmd = se.getCommand();
 				AssessmentTestSession row = tableModel.getObject(se.getIndex());
-				if("result".equals(cmd)) {
-					doOpenResult(ureq, row);
+				if("open".equals(cmd)) {
+					if(row.getTerminationTime() == null) {
+						doConfirmPullSession(ureq, row);
+					} else {
+						doOpenResult(ureq, row);
+					}
 				}
 			}
 		}
@@ -137,6 +166,25 @@ public class QTI21AssessmentDetailsController extends FormBasicController {
 	@Override
 	protected void formOK(UserRequest ureq) {
 		//
+	}
+
+	private void doConfirmPullSession(UserRequest ureq, AssessmentTestSession session) {
+		String title = translate("pull");
+		String fullname = userManager.getUserDisplayName(session.getIdentity());
+		String text = translate("retrievetest.confirm.text", new String[]{ fullname });
+		retrieveConfirmationCtr = activateOkCancelDialog(ureq, title, text, retrieveConfirmationCtr);
+		retrieveConfirmationCtr.setUserObject(session);
+	}
+	
+	private void doPullSession(AssessmentTestSession session) {
+		session.setTerminationTime(new Date());
+		session = qtiService.updateAssessmentTestSession(session);
+		dbInstance.commit();//make sure that the changes committed before sending the event
+		
+		OLATResourceable sessionOres = OresHelper.createOLATResourceableInstance(AssessmentTestSession.class, session.getKey());
+		CoordinatorManager.getInstance().getCoordinator().getEventBus()
+			.fireEventToListenersOf(new RetrieveAssessmentTestSessionEvent(session.getKey()), sessionOres);
+		
 	}
 
 	private void doOpenResult(UserRequest ureq, AssessmentTestSession session) {

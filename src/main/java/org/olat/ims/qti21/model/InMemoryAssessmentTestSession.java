@@ -22,6 +22,7 @@ package org.olat.ims.qti21.model;
 import java.math.BigDecimal;
 import java.util.Date;
 
+import org.olat.core.id.Identity;
 import org.olat.ims.qti21.AssessmentTestSession;
 import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.repository.RepositoryEntry;
@@ -137,6 +138,11 @@ public class InMemoryAssessmentTestSession implements AssessmentTestSession {
 	@Override
 	public void setDuration(Long duration) {
 		this.duration = duration;
+	}
+
+	@Override
+	public Identity getIdentity() {
+		return null;
 	}
 
 	@Override

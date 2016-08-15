@@ -23,6 +23,7 @@ import java.math.BigDecimal;
 import java.util.Date;
 
 import org.olat.core.id.CreateInfo;
+import org.olat.core.id.Identity;
 import org.olat.core.id.ModifiedInfo;
 import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.repository.RepositoryEntry;
@@ -68,6 +69,9 @@ public interface AssessmentTestSession extends CreateInfo, ModifiedInfo {
 	public boolean isExploded();
 	
 	public String getStorage();
+	
+	
+	public Identity getIdentity();
 	
 
 	public AssessmentEntry getAssessmentEntry();

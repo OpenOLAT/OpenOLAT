@@ -472,6 +472,11 @@ public class QTI21ServiceImpl implements QTI21Service, InitializingBean, Disposa
 	}
 	
 	@Override
+	public AssessmentTestSession reloadAssessmentTestSession(AssessmentTestSession session) {
+		return testSessionDao.loadByKey(session.getKey());
+	}
+
+	@Override
 	public AssessmentTestSession updateAssessmentTestSession(AssessmentTestSession session) {
 		return testSessionDao.update(session);
 	}
@@ -479,6 +484,16 @@ public class QTI21ServiceImpl implements QTI21Service, InitializingBean, Disposa
 	@Override
 	public List<AssessmentTestSession> getAssessmentTestSessions(RepositoryEntryRef courseEntry, String courseSubIdent, IdentityRef identity) {
 		return testSessionDao.getUserTestSessions(courseEntry, courseSubIdent, identity);
+	}
+
+	@Override
+	public boolean isRunningAssessmentTestSession(RepositoryEntry entry, String subIdent, RepositoryEntry testEntry) {
+		return testSessionDao.hasRunningTestSessions(entry, subIdent, testEntry);
+	}
+
+	@Override
+	public List<AssessmentTestSession> getRunningAssessmentTestSession(RepositoryEntry entry, String subIdent, RepositoryEntry testEntry) {
+		return testSessionDao.getRunningTestSessions(entry, subIdent, testEntry);
 	}
 
 	@Override

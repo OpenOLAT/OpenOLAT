@@ -32,6 +32,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.zip.ZipOutputStream;
 
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.stack.BreadcrumbPanel;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
@@ -85,10 +86,12 @@ import org.olat.ims.qti.statistics.QTIStatisticSearchParams;
 import org.olat.ims.qti.statistics.QTIType;
 import org.olat.ims.qti.statistics.ui.QTI12PullTestsToolController;
 import org.olat.ims.qti.statistics.ui.QTI12StatisticsToolController;
+import org.olat.ims.qti21.QTI21Service;
 import org.olat.ims.qti21.manager.archive.QTI21ArchiveFormat;
 import org.olat.ims.qti21.model.QTI21StatisticSearchParams;
 import org.olat.ims.qti21.ui.QTI21AssessmentDetailsController;
 import org.olat.ims.qti21.ui.QTI21ResetToolController;
+import org.olat.ims.qti21.ui.QTI21RetrieveTestsToolController;
 import org.olat.ims.qti21.ui.statistics.QTI21StatisticResourceResult;
 import org.olat.ims.qti21.ui.statistics.QTI21StatisticsToolController;
 import org.olat.modules.ModuleConfiguration;
@@ -207,6 +210,12 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements Pe
 		RepositoryEntry qtiTestEntry = getReferencedRepositoryEntry();
 		if(ImsQTI21Resource.TYPE_NAME.equals(qtiTestEntry.getOlatResource().getResourceableTypeName())) {
 			tools.add(new QTI21StatisticsToolController(ureq, wControl, stackPanel, courseEnv, options, this));
+			RepositoryEntry courseEntry = courseEnv.getCourseGroupManager().getCourseEntry();
+			boolean isRunningSessions = CoreSpringFactory.getImpl(QTI21Service.class)
+					.isRunningAssessmentTestSession(courseEntry, getIdent(), getReferencedRepositoryEntry());
+			if(isRunningSessions) {
+				tools.add(new QTI21RetrieveTestsToolController(ureq, wControl, courseEnv, options, this));
+			}
 			if(options.isAdmin()) {
 				tools.add(new QTI21ResetToolController(ureq, wControl, courseEnv, options, this));
 			}
