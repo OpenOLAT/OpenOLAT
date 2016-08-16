@@ -821,6 +821,8 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 	
 	@Override
 	public void sort(String sortKey, boolean asc) {
+		collapseAllDetails();
+		
 		SortKey key = new SortKey(sortKey, asc);
 		orderBy = new SortKey[]{ key };
 		if(dataModel instanceof SortableFlexiTableDataModel) {
