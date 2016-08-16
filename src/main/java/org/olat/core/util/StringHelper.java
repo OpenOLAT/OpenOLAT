@@ -478,7 +478,7 @@ public class StringHelper {
 		String lcName = name.toLowerCase();
 
 		int index = 0;
-		while((index = lcExpresion.indexOf(lcName, index)) > 0) {
+		while((index = lcExpresion.indexOf(lcName, index)) >= 0) {
 			int startIndex = index;
 			int stopIndex = index + lcName.length();
 			
