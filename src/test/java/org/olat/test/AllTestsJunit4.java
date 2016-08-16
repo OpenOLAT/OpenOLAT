@@ -129,6 +129,8 @@ import org.junit.runners.Suite;
 	org.olat.instantMessaging.InstantMessagePreferencesDAOTest.class,
 	org.olat.instantMessaging.RosterDAOTest.class,
 	org.olat.instantMessaging.InstantMessageServiceTest.class,
+	org.olat.course.condition.ConditionTest.class,
+	org.olat.course.condition.KeyAndNameConverterTest.class,
 	org.olat.course.nodes.en.EnrollmentManagerSerialTest.class,
 	org.olat.course.nodes.en.EnrollmentManagerConcurrentTest.class,
 	org.olat.course.nodes.gta.manager.GTAManagerTest.class,

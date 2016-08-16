@@ -56,6 +56,7 @@ import org.olat.course.CourseFactory;
 import org.olat.course.CourseModule;
 import org.olat.course.ICourse;
 import org.olat.course.condition.Condition;
+import org.olat.course.condition.KeyAndNameConverter;
 import org.olat.course.condition.interpreter.ConditionExpression;
 import org.olat.course.condition.interpreter.ConditionInterpreter;
 import org.olat.course.editor.CourseEditorEnv;
@@ -692,8 +693,8 @@ public class STCourseNode extends AbstractAccessableCourseNode implements Calcul
 		boolean changed = false;
 		if(StringHelper.containsNonWhitespace(calculator.getScoreExpression())) {
 			String score = calculator.getScoreExpression();
-			String processedExpression = convertExpressionNameToKey(score, envMapper);
-			processedExpression = convertExpressionKeyToKey(score, envMapper);
+			String processedExpression = KeyAndNameConverter.convertExpressionNameToKey(score, envMapper);
+			processedExpression = KeyAndNameConverter.convertExpressionKeyToKey(score, envMapper);
 			if(!processedExpression.equals(score)) {
 				calculator.setScoreExpression(processedExpression);
 				changed = true;
@@ -702,8 +703,8 @@ public class STCourseNode extends AbstractAccessableCourseNode implements Calcul
 		
 		if(StringHelper.containsNonWhitespace(calculator.getPassedExpression())) {
 			String passed = calculator.getPassedExpression();
-			String processedExpression = convertExpressionNameToKey(passed, envMapper);
-			processedExpression = convertExpressionKeyToKey(passed, envMapper);
+			String processedExpression = KeyAndNameConverter.convertExpressionNameToKey(passed, envMapper);
+			processedExpression = KeyAndNameConverter.convertExpressionKeyToKey(passed, envMapper);
 			if(!processedExpression.equals(passed)) {
 				calculator.setScoreExpression(processedExpression);
 				changed = true;
@@ -725,7 +726,7 @@ public class STCourseNode extends AbstractAccessableCourseNode implements Calcul
 			boolean changed = false;
 			if(StringHelper.containsNonWhitespace(calculator.getScoreExpression())) {
 				String score = calculator.getScoreExpression();
-				String processedExpression = convertExpressionKeyToName(score, envMapper);
+				String processedExpression = KeyAndNameConverter.convertExpressionKeyToName(score, envMapper);
 				if(!processedExpression.equals(score)) {
 					calculator.setScoreExpression(processedExpression);
 					changed = true;
@@ -734,7 +735,7 @@ public class STCourseNode extends AbstractAccessableCourseNode implements Calcul
 			
 			if(StringHelper.containsNonWhitespace(calculator.getPassedExpression())) {
 				String passed = calculator.getPassedExpression();
-				String processedExpression = convertExpressionKeyToName(passed, envMapper);
+				String processedExpression = KeyAndNameConverter.convertExpressionKeyToName(passed, envMapper);
 				if(!processedExpression.equals(passed)) {
 					calculator.setScoreExpression(processedExpression);
 					changed = true;

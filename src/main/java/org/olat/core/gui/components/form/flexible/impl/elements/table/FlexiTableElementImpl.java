@@ -924,6 +924,8 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 	
 	@Override
 	public void sort(String sortKey, boolean asc) {
+		collapseAllDetails();
+		
 		SortKey key;
 		if(StringHelper.containsNonWhitespace(sortKey)) {
 			key = new SortKey(sortKey, asc);
