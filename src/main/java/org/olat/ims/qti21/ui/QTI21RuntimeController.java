@@ -255,7 +255,7 @@ public class QTI21RuntimeController extends RepositoryEntryRuntimeController  {
 			AssessmentToolController ctrl = new AssessmentToolController(ureq, swControl, toolbarPanel,
 					getRepositoryEntry(), el, secCallback);
 			listenTo(ctrl);
-			assessmentToolCtrl = pushController(ureq, "Statistics", ctrl);
+			assessmentToolCtrl = pushController(ureq, translate("command.openassessment"), ctrl);
 			currentToolCtr = assessmentToolCtrl;
 			setActiveTool(assessmentLink);
 			return assessmentToolCtrl;

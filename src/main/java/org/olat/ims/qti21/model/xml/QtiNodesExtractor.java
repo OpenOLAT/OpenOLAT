@@ -53,6 +53,10 @@ public interface QtiNodesExtractor {
 		return getOutcomeDeclarationDefaultFloatValue(assessmentItem.getOutcomeDeclaration(MAXSCORE_IDENTIFIER));
 	}
 	
+	public static Double extractMinScore(AssessmentItem assessmentItem) {
+		return getOutcomeDeclarationDefaultFloatValue(assessmentItem.getOutcomeDeclaration(MINSCORE_IDENTIFIER));
+	}
+	
 	public static Double extractMaxScore(AssessmentTest assessmentTest) {
 		return getOutcomeDeclarationDefaultFloatValue(assessmentTest.getOutcomeDeclaration(MAXSCORE_IDENTIFIER));
 	}

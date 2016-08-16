@@ -23,8 +23,10 @@ import java.io.IOException;
 import java.util.Map;
 
 import org.olat.core.gui.render.StringOutput;
+import org.olat.core.id.Identity;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
+import org.olat.ims.qti21.AssessmentItemSession;
 import org.olat.ims.qti21.AssessmentResponse;
 import org.olat.ims.qti21.AssessmentSessionAuditLogger;
 import org.olat.ims.qti21.AssessmentTestSession;
@@ -79,9 +81,30 @@ public class AssessmentSessionAuditOLog implements AssessmentSessionAuditLogger 
 	}
 
 	@Override
+	public void logCorrection(AssessmentTestSession candidateSession, AssessmentItemSession itemSession, Identity coach) {
+		try {
+			StringOutput sb = new StringOutput(255);
+			sb.append("Test session " + candidateSession.getKey() + " (assessed identity=" + candidateSession.getIdentity().getKey() + "/" + candidateSession.getIdentity().getName() + " ");
+			AuditLogFormatter.logCorrection(itemSession, coach, sb);
+			log.audit("", sb.toString());
+		} catch (IOException e) {
+			log.error("", e);
+		}
+		
+		//
+	}
+
+	@Override
+	public void logTestRetrieved(AssessmentTestSession candidateSession, Identity coach) {
+		log.audit("Test session " + candidateSession.getKey() + " (assessed identity=" + candidateSession.getIdentity().getKey() + "/" + candidateSession.getIdentity().getName() + " ) retrieved by coach " + coach.getKey() + "/" + coach.getName());
+	}
+	
+	@Override
 	public void logAndThrowCandidateException(AssessmentTestSession session, CandidateExceptionReason reason, Exception ex) {
 		log.error(reason.name(), ex);
 	}
+	
+
 
 	@Override
 	public void close() throws IOException {

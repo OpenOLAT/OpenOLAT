@@ -44,6 +44,7 @@ import org.olat.ims.qti21.QTI21Constants;
 import org.olat.ims.qti21.QTI21DeliveryOptions.ShowResultsOnFinish;
 import org.olat.ims.qti21.QTI21Service;
 import org.olat.ims.qti21.model.QTI21QuestionType;
+import org.olat.ims.qti21.ui.assessment.TerminatedStaticCandidateSessionContext;
 import org.olat.ims.qti21.ui.components.InteractionResultFormItem;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -87,6 +88,7 @@ public class AssessmentResultController extends FormBasicController {
 	
 	private final TestSessionState testSessionState;
 	private final AssessmentResult assessmentResult;
+	private final CandidateSessionContext candidateSessionContext;
 
 	private final URI assessmentObjectUri;
 	private final ResourceLocator inputResourceLocator;
@@ -103,6 +105,7 @@ public class AssessmentResultController extends FormBasicController {
 		super(ureq, wControl, "assessment_results");
 		this.mapperUri = mapperUri;
 		this.resultsOnfinish = resultsOnfinish;
+
 		
 		ResourceLocator fileResourceLocator = new PathResourceLocator(fUnzippedDirRoot.toPath());
 		inputResourceLocator = 
@@ -116,6 +119,7 @@ public class AssessmentResultController extends FormBasicController {
 		
 		testSessionState = qtiService.loadTestSessionState(candidateSession);
 		assessmentResult = qtiService.getAssessmentResult(candidateSession);
+		candidateSessionContext = new TerminatedStaticCandidateSessionContext(candidateSession);
 
 		initForm(ureq);
 	}
@@ -225,9 +229,9 @@ public class AssessmentResultController extends FormBasicController {
 		return r;
 	}
 	
-	
 	private void initInteractionResultFormItem(InteractionResultFormItem responseFormItem, ItemSessionState sectionState) {
 		responseFormItem.setItemSessionState(sectionState);
+		responseFormItem.setCandidateSessionContext(candidateSessionContext);
 		responseFormItem.setResolvedAssessmentTest(resolvedAssessmentTest);
 		responseFormItem.setResourceLocator(inputResourceLocator);
 		responseFormItem.setAssessmentObjectUri(assessmentObjectUri);

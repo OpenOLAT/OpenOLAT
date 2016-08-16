@@ -20,7 +20,10 @@
 package org.olat.ims.qti21.ui;
 
 import java.io.File;
+import java.math.BigDecimal;
 import java.net.URI;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 
@@ -49,15 +52,24 @@ import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.resource.OresHelper;
+import org.olat.course.nodes.IQTESTCourseNode;
+import org.olat.course.run.scoring.ScoreEvaluation;
+import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.fileresource.FileResourceManager;
+import org.olat.ims.qti21.AssessmentSessionAuditLogger;
 import org.olat.ims.qti21.AssessmentTestSession;
 import org.olat.ims.qti21.QTI21DeliveryOptions.ShowResultsOnFinish;
 import org.olat.ims.qti21.QTI21Service;
 import org.olat.ims.qti21.ui.QTI21TestSessionTableModel.TSCols;
+import org.olat.ims.qti21.ui.assessment.IdentityAssessmentTestCorrectionController;
 import org.olat.ims.qti21.ui.event.RetrieveAssessmentTestSessionEvent;
+import org.olat.modules.assessment.AssessmentEntry;
+import org.olat.modules.assessment.AssessmentService;
 import org.olat.repository.RepositoryEntry;
 import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
+
+import uk.ac.ed.ph.jqtiplus.resolution.ResolvedAssessmentTest;
 
 /**
  * 
@@ -70,13 +82,18 @@ public class QTI21AssessmentDetailsController extends FormBasicController {
 	private FlexiTableElement tableEl;
 	private QTI21TestSessionTableModel tableModel;
 	
-	private Identity assessedIdentity;
 	private RepositoryEntry entry;
 	private final String subIdent;
+	private final boolean manualCorrections;
+	private final Identity assessedIdentity;
+	
+	private IQTESTCourseNode courseNode;
+	private UserCourseEnvironment assessedUserCourseEnv;
 	
 	private CloseableModalController cmc;
 	private AssessmentResultController resultCtrl;
 	private DialogBoxController retrieveConfirmationCtr;
+	private IdentityAssessmentTestCorrectionController correctionCtrl;
 	
 	@Autowired
 	private DB dbInstance;
@@ -84,14 +101,41 @@ public class QTI21AssessmentDetailsController extends FormBasicController {
 	private UserManager userManager;
 	@Autowired
 	protected QTI21Service qtiService;
+	@Autowired
+	private AssessmentService assessmentService;
 	
 	public QTI21AssessmentDetailsController(UserRequest ureq, WindowControl wControl,
-			RepositoryEntry assessableEntry, String subIdent, Identity assessedIdentity) {
+			RepositoryEntry assessableEntry, IQTESTCourseNode courseNode, UserCourseEnvironment assessedUserCourseEnv) {
 		super(ureq, wControl, "assessment_details");
 		
 		entry = assessableEntry;
-		this.subIdent = subIdent;
+		this.courseNode = courseNode;
+		subIdent = courseNode.getIdent();
+		this.assessedUserCourseEnv = assessedUserCourseEnv;
+		RepositoryEntry testEntry = courseNode.getReferencedRepositoryEntry();
+		assessedIdentity = assessedUserCourseEnv.getIdentityEnvironment().getIdentity();
+		
+		FileResourceManager frm = FileResourceManager.getInstance();
+		File fUnzippedDirRoot = frm.unzipFileResource(testEntry.getOlatResource());
+		ResolvedAssessmentTest resolvedAssessmentTest = qtiService.loadAndResolveAssessmentTest(fUnzippedDirRoot, false);
+		manualCorrections = qtiService.needManualCorrection(resolvedAssessmentTest);
+
+		initForm(ureq);
+		updateModel();
+	}
+	
+	public QTI21AssessmentDetailsController(UserRequest ureq, WindowControl wControl,
+			RepositoryEntry assessableEntry, Identity assessedIdentity) {
+		super(ureq, wControl, "assessment_details");
+		
+		entry = assessableEntry;
+		subIdent = null;
 		this.assessedIdentity = assessedIdentity;
+		
+		FileResourceManager frm = FileResourceManager.getInstance();
+		File fUnzippedDirRoot = frm.unzipFileResource(assessableEntry.getOlatResource());
+		ResolvedAssessmentTest resolvedAssessmentTest = qtiService.loadAndResolveAssessmentTest(fUnzippedDirRoot, false);
+		manualCorrections = qtiService.needManualCorrection(resolvedAssessmentTest);
 
 		initForm(ureq);
 		updateModel();
@@ -106,6 +150,10 @@ public class QTI21AssessmentDetailsController extends FormBasicController {
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TSCols.open.i18nHeaderKey(), TSCols.open.ordinal(), "open",
 				new BooleanCellRenderer(new StaticFlexiCellRenderer(translate("select"), "open"),
 						new StaticFlexiCellRenderer(translate("pull"), "open"))));
+		if(manualCorrections) {
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TSCols.correction.i18nHeaderKey(), TSCols.correction.ordinal(), "correction",
+					new BooleanCellRenderer(new StaticFlexiCellRenderer(translate("correction"), "correction"), null)));
+		}
 
 		tableModel = new QTI21TestSessionTableModel(columnsModel, getTranslator());
 		tableEl = uifactory.addTableElement(getWindowControl(), "sessions", tableModel, 20, false, getTranslator(), formLayout);
@@ -118,6 +166,7 @@ public class QTI21AssessmentDetailsController extends FormBasicController {
 	
 	protected void updateModel() {
 		List<AssessmentTestSession> sessions = qtiService.getAssessmentTestSessions(entry, subIdent, assessedIdentity);
+		Collections.sort(sessions, new AssessmentTestSessionComparator());
 		tableModel.setObjects(sessions);
 		tableEl.reloadData();
 		tableEl.reset();
@@ -126,6 +175,17 @@ public class QTI21AssessmentDetailsController extends FormBasicController {
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if(cmc == source) {
+			cleanUp();
+		} else if(correctionCtrl == source) {
+			if(event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
+				if(courseNode != null) {
+					doUpdateCourseNode(correctionCtrl.getAssessmentTestSession());
+				} else {
+					doUpdateEntry(correctionCtrl.getAssessmentTestSession());
+				}
+				updateModel();
+				fireEvent(ureq, Event.CHANGED_EVENT);
+			}
 			cmc.deactivate();
 			cleanUp();
 		} else if(retrieveConfirmationCtr == source) {
@@ -138,8 +198,10 @@ public class QTI21AssessmentDetailsController extends FormBasicController {
 	}
 	
 	private void cleanUp() {
+		removeAsListenerAndDispose(correctionCtrl);
 		removeAsListenerAndDispose(resultCtrl);
 		removeAsListenerAndDispose(cmc);
+		correctionCtrl = null;
 		resultCtrl = null;
 		cmc = null;
 	}
@@ -157,6 +219,8 @@ public class QTI21AssessmentDetailsController extends FormBasicController {
 					} else {
 						doOpenResult(ureq, row);
 					}
+				} else if("correction".equals(cmd)) {
+					doCorrection(ureq, row);
 				}
 			}
 		}
@@ -166,6 +230,42 @@ public class QTI21AssessmentDetailsController extends FormBasicController {
 	@Override
 	protected void formOK(UserRequest ureq) {
 		//
+	}
+
+	private void doCorrection(UserRequest ureq, AssessmentTestSession session) {
+		correctionCtrl = new IdentityAssessmentTestCorrectionController(ureq, getWindowControl(), session);
+		listenTo(correctionCtrl);
+		cmc = new CloseableModalController(getWindowControl(), "close", correctionCtrl.getInitialComponent(),
+				true, translate("correction"));
+		cmc.activate();
+		listenTo(cmc);
+	}
+	
+	private void doUpdateCourseNode(AssessmentTestSession session) {
+		ScoreEvaluation scoreEval = courseNode.getUserScoreEvaluation(assessedUserCourseEnv);
+		BigDecimal finalScore = calculateFinalScore(session);
+		Float score = finalScore == null ? null : finalScore.floatValue();
+		ScoreEvaluation manualScoreEval = new ScoreEvaluation(score, scoreEval.getPassed(),
+				scoreEval.getAssessmentStatus(), scoreEval.getFullyAssessed(), session.getKey());
+		courseNode.updateUserScoreEvaluation(manualScoreEval, assessedUserCourseEnv, getIdentity(), false);
+	}
+	
+	private void doUpdateEntry(AssessmentTestSession session) {
+		AssessmentEntry assessmentEntry = assessmentService.loadAssessmentEntry(assessedIdentity, entry, null, entry);
+		BigDecimal finalScore = calculateFinalScore(session);
+		assessmentEntry.setScore(finalScore);
+		assessmentEntry.setAssessmentId(session.getKey());
+		assessmentService.updateAssessmentEntry(assessmentEntry);
+	}
+	
+	private BigDecimal calculateFinalScore(AssessmentTestSession session) {
+		BigDecimal finalScore = session.getScore();
+		if(finalScore == null) {
+			finalScore = session.getManualScore();
+		} else if(session.getManualScore() != null) {
+			finalScore = finalScore.add(session.getManualScore());
+		}
+		return finalScore;
 	}
 
 	private void doConfirmPullSession(UserRequest ureq, AssessmentTestSession session) {
@@ -181,10 +281,12 @@ public class QTI21AssessmentDetailsController extends FormBasicController {
 		session = qtiService.updateAssessmentTestSession(session);
 		dbInstance.commit();//make sure that the changes committed before sending the event
 		
+		AssessmentSessionAuditLogger candidateAuditLogger = qtiService.getAssessmentSessionAuditLogger(session, false);
+		candidateAuditLogger.logTestRetrieved(session, getIdentity());
+		
 		OLATResourceable sessionOres = OresHelper.createOLATResourceableInstance(AssessmentTestSession.class, session.getKey());
 		CoordinatorManager.getInstance().getCoordinator().getEventBus()
 			.fireEventToListenersOf(new RetrieveAssessmentTestSessionEvent(session.getKey()), sessionOres);
-		
 	}
 
 	private void doOpenResult(UserRequest ureq, AssessmentTestSession session) {
@@ -202,5 +304,40 @@ public class QTI21AssessmentDetailsController extends FormBasicController {
 				true, translate("table.header.results"));
 		cmc.activate();
 		listenTo(cmc);
+	}
+	
+	public static class AssessmentTestSessionComparator implements Comparator<AssessmentTestSession> {
+
+		@Override
+		public int compare(AssessmentTestSession a1, AssessmentTestSession a2) {
+			Date t1 = a1.getTerminationTime();
+			Date t2 = a2.getTerminationTime();
+			
+			int c;
+			if(t1 == null && t2 == null) {
+				c = 0;
+			} else if(t2 == null) {
+				return -1;
+			} else if(t1 == null) {
+				return 1;
+			} else {
+				c = t1.compareTo(t2);
+			}
+			
+			if(c == 0) {
+				Date c1 = a1.getCreationDate();
+				Date c2 = a2.getCreationDate();
+				if(c1 == null && c2 == null) {
+					c = 0;
+				} else if(c2 == null) {
+					return -1;
+				} else if(c1 == null) {
+					return 1;
+				} else {
+					c = c1.compareTo(c2);
+				}
+			}
+			return -c;
+		}
 	}
 }

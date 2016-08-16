@@ -22,6 +22,7 @@ package org.olat.ims.qti21;
 import java.io.Closeable;
 import java.util.Map;
 
+import org.olat.core.id.Identity;
 import org.olat.ims.qti21.model.audit.CandidateEvent;
 import org.olat.ims.qti21.model.audit.CandidateExceptionReason;
 
@@ -44,5 +45,9 @@ public interface AssessmentSessionAuditLogger extends Closeable {
 	public void logCandidateOutcomes(AssessmentTestSession candidateSession, Map<Identifier, String> outcomes);
 	
 	public void logAndThrowCandidateException(AssessmentTestSession session, CandidateExceptionReason reason, Exception ex);
+	
+	public void logCorrection(AssessmentTestSession candidateSession, AssessmentItemSession itemSession, Identity coach);
+	
+	public void logTestRetrieved(AssessmentTestSession candidateSession, Identity coach);
 
 }

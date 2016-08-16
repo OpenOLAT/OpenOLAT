@@ -136,6 +136,9 @@ public class AssessmentTestSessionImpl implements AssessmentTestSession, Persist
 
     @Column(name="q_score", nullable=true, insertable=true, updatable=true)
     private BigDecimal score;
+    
+    @Column(name="q_manual_score", nullable=true, insertable=true, updatable=true)
+    private BigDecimal manualScore;
 
     /**
      * Flag to indicate if this session blew up while running, either because
@@ -280,6 +283,14 @@ public class AssessmentTestSessionImpl implements AssessmentTestSession, Persist
 	@Override
 	public void setScore(BigDecimal score) {
 		this.score = score;
+	}
+
+	public BigDecimal getManualScore() {
+		return manualScore;
+	}
+
+	public void setManualScore(BigDecimal manualScore) {
+		this.manualScore = manualScore;
 	}
 
 	@Override

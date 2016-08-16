@@ -77,6 +77,9 @@ public class AssessmentItemSessionImpl implements AssessmentItemSession, Persist
     @Column(name="q_score", nullable=true, insertable=true, updatable=true)
     private BigDecimal score;
     
+    @Column(name="q_manual_score", nullable=true, insertable=true, updatable=true)
+    private BigDecimal manualScore;
+    
 	@ManyToOne(targetEntity=AssessmentTestSessionImpl.class,fetch=FetchType.LAZY,optional=false)
 	@JoinColumn(name="fk_assessmenttest_session", nullable=false, insertable=true, updatable=false)
 	private AssessmentTestSession assessmentTestSession;
@@ -138,6 +141,14 @@ public class AssessmentItemSessionImpl implements AssessmentItemSession, Persist
 	@Override
 	public void setScore(BigDecimal score) {
 		this.score = score;
+	}
+
+	public BigDecimal getManualScore() {
+		return manualScore;
+	}
+
+	public void setManualScore(BigDecimal manualScore) {
+		this.manualScore = manualScore;
 	}
 
 	@Override

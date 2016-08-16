@@ -27,8 +27,10 @@ import java.util.Map;
 
 import org.apache.commons.io.IOUtils;
 import org.olat.core.helpers.Settings;
+import org.olat.core.id.Identity;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
+import org.olat.ims.qti21.AssessmentItemSession;
 import org.olat.ims.qti21.AssessmentResponse;
 import org.olat.ims.qti21.AssessmentSessionAuditLogger;
 import org.olat.ims.qti21.AssessmentTestSession;
@@ -93,6 +95,32 @@ public class AssessmentSessionAuditFileLog implements AssessmentSessionAuditLogg
 			writer.write("\n");
 			writer.flush();
 			debugLog.logCandidateOutcomes(candidateSession, outcomes);
+		} catch (IOException e) {
+			log.error("", e);
+		}
+	}
+
+	@Override
+	public void logCorrection(AssessmentTestSession candidateSession, AssessmentItemSession itemSession, Identity coach) {
+		try {
+			AuditLogFormatter.logDate(writer);
+			AuditLogFormatter.logCorrection(itemSession, coach, writer);
+			writer.write("\n");
+			writer.flush();
+			debugLog.logCorrection(candidateSession, itemSession, coach);
+		} catch (IOException e) {
+			log.error("", e);
+		}
+	}
+
+	@Override
+	public void logTestRetrieved(AssessmentTestSession candidateSession, Identity coach) {
+		try {
+			AuditLogFormatter.logDate(writer);
+			writer.write("Test session retrieved by " + coach.getKey() + "/" + coach.getName());
+			writer.write("\n");
+			writer.flush();
+			debugLog.logTestRetrieved(candidateSession, coach);
 		} catch (IOException e) {
 			log.error("", e);
 		}

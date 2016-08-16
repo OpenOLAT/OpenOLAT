@@ -195,6 +195,10 @@ public interface QTI21Service {
 	
 	public AssessmentItemSession getOrCreateAssessmentItemSession(AssessmentTestSession candidateSession, ParentPartItemRefs parentParts, String assessmentItemIdentifier);
 	
+	public List<AssessmentItemSession> getAssessmentItemSessions(AssessmentTestSession candidateSession);
+	
+	public AssessmentItemSession updateAssessmentItemSession(AssessmentItemSession itemSession);
+	
 	public AssessmentResponse createAssessmentResponse(AssessmentTestSession candidateSession, AssessmentItemSession assessmentItemSession,
 			String responseIdentifier, ResponseLegality legality, ResponseDataType type);
 	

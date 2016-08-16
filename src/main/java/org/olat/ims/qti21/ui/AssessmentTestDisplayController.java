@@ -90,15 +90,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import uk.ac.ed.ph.jqtiplus.JqtiPlus;
 import uk.ac.ed.ph.jqtiplus.exception.QtiCandidateStateException;
-import uk.ac.ed.ph.jqtiplus.node.QtiNode;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.Interaction;
 import uk.ac.ed.ph.jqtiplus.node.result.AbstractResult;
 import uk.ac.ed.ph.jqtiplus.node.result.AssessmentResult;
 import uk.ac.ed.ph.jqtiplus.node.result.ItemResult;
 import uk.ac.ed.ph.jqtiplus.node.result.ItemVariable;
 import uk.ac.ed.ph.jqtiplus.node.result.OutcomeVariable;
-import uk.ac.ed.ph.jqtiplus.node.test.AssessmentItemRef;
-import uk.ac.ed.ph.jqtiplus.node.test.AssessmentSection;
 import uk.ac.ed.ph.jqtiplus.node.test.AssessmentTest;
 import uk.ac.ed.ph.jqtiplus.node.test.NavigationMode;
 import uk.ac.ed.ph.jqtiplus.node.test.SubmissionMode;
@@ -635,45 +632,9 @@ public class AssessmentTestDisplayController extends BasicController implements 
         testSessionController.selectItemNonlinear(requestTimestamp, null);
 	}
 	
-	private ParentPartItemRefs getParentSection(TestPlanNodeKey itemKey) {
-		ParentPartItemRefs parentParts = new ParentPartItemRefs();
-
-		try {
-			TestSessionState testSessionState = testSessionController.getTestSessionState();
-			TestPlanNode currentItem = testSessionState.getTestPlan().getNode(itemKey);
-			List<AssessmentItemRef> itemRefs = resolvedAssessmentTest
-					.getItemRefsBySystemIdMap().get(currentItem.getItemSystemId());
-			
-			AssessmentItemRef itemRef = null;
-			if(itemRefs.size() == 1) {
-				itemRef = itemRefs.get(0);
-			} else {
-				Identifier itemId = itemKey.getIdentifier();
-				for(AssessmentItemRef ref:itemRefs) {
-					if(ref.getIdentifier().equals(itemId)) {
-						itemRef = ref;
-						break;
-					}
-				}
-			}
-			
-			if(itemRef != null) {
-				for(QtiNode parentPart=itemRef.getParent(); parentPart != null; parentPart = parentPart.getParent()) {
-					if(parentParts.getSectionIdentifier() == null && parentPart instanceof AssessmentSection) {
-						AssessmentSection section = (AssessmentSection)parentPart;
-						parentParts.setSectionIdentifier(section.getIdentifier().toString());
-					} else if(parentParts.getTestPartIdentifier() == null && parentPart instanceof TestPart) {
-						TestPart testPart = (TestPart)parentPart;
-						parentParts.setTestPartIdentifier(testPart.getIdentifier().toString());
-					}
-				}
-			}
-		} catch (Exception e) {
-			logError("", e);
-		}
-		
-		return parentParts;
-		
+	private  ParentPartItemRefs getParentSection(TestPlanNodeKey itemKey) {
+		TestSessionState testSessionState = testSessionController.getTestSessionState();
+		return AssessmentTestHelper.getParentSection(itemKey, testSessionState, resolvedAssessmentTest);
 	}
 	
 	//public CandidateSession handleResponses(final CandidateSessionContext candidateSessionContext,

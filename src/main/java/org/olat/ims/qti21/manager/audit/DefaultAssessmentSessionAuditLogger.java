@@ -21,6 +21,8 @@ package org.olat.ims.qti21.manager.audit;
 
 import java.util.Map;
 
+import org.olat.core.id.Identity;
+import org.olat.ims.qti21.AssessmentItemSession;
 import org.olat.ims.qti21.AssessmentResponse;
 import org.olat.ims.qti21.AssessmentSessionAuditLogger;
 import org.olat.ims.qti21.AssessmentTestSession;
@@ -56,6 +58,16 @@ public class DefaultAssessmentSessionAuditLogger implements AssessmentSessionAud
 
 	@Override
 	public void logAndThrowCandidateException(AssessmentTestSession session, CandidateExceptionReason reason, Exception ex) {
+		//
+	}
+
+	@Override
+	public void logCorrection(AssessmentTestSession candidateSession, AssessmentItemSession itemSession, Identity coach) {
+		//
+	}
+
+	@Override
+	public void logTestRetrieved(AssessmentTestSession candidateSession, Identity coach) {
 		//
 	}
 

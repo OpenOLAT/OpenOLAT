@@ -63,6 +63,10 @@ public interface AssessmentItemSession extends CreateInfo, ModifiedInfo {
 
 	public void setScore(BigDecimal score);
 	
+	public BigDecimal getManualScore();
+	
+	public void setManualScore(BigDecimal score);
+	
 	public AssessmentTestSession getAssessmentTestSession();
 
 }

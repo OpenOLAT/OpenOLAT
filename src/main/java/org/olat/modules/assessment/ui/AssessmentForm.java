@@ -37,6 +37,7 @@ import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.form.flexible.impl.elements.FormSubmit;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
@@ -49,6 +50,7 @@ import org.olat.course.assessment.AssessmentModule;
 import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.assessment.AssessmentService;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
+import org.olat.modules.assessment.ui.event.AssessmentFormEvent;
 import org.olat.repository.RepositoryEntry;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -64,9 +66,8 @@ public class AssessmentForm extends FormBasicController {
 	private IntegerElement attempts;
 	private SingleSelection passed;
 	private TextElement userComment, coachComment;
-	private FormLink saveAndCloseLink;
-	
-	private final boolean saveAndClose;
+	private FormSubmit submitButton;
+	private FormLink saveAndDoneLink, reopenLink;
 
 	private Double min, max, cut;
 	private Identity assessedIdentity;
@@ -86,11 +87,10 @@ public class AssessmentForm extends FormBasicController {
 	 * @param trans The package translator
 	 */
 	public AssessmentForm(UserRequest ureq, WindowControl wControl, Identity assessedIdentity, RepositoryEntry testEntry,
-			AssessableResource assessableElement, boolean saveAndClose) {
+			AssessableResource assessableElement) {
 		super(ureq, wControl);
 		setTranslator(Util.createPackageTranslator(AssessmentModule.class, getLocale(), getTranslator()));
 		
-		this.saveAndClose = saveAndClose;
 		this.testEntry = testEntry;
 		this.assessedIdentity = assessedIdentity;
 		this.assessableElement = assessableElement;
@@ -186,12 +186,41 @@ public class AssessmentForm extends FormBasicController {
 		FormLayoutContainer buttonGroupLayout = FormLayoutContainer.createButtonLayout("buttonGroupLayout", getTranslator());
 		formLayout.add(buttonGroupLayout);
 		
-		uifactory.addFormSubmitButton("save", buttonGroupLayout);
-		if(saveAndClose) {
-			saveAndCloseLink = uifactory.addFormLink("save.close", buttonGroupLayout, Link.BUTTON);
-			saveAndCloseLink.setElementCssClass("o_sel_assessment_form_save_and_close");
-		}
+		submitButton = uifactory.addFormSubmitButton("save", buttonGroupLayout);
+
+		saveAndDoneLink = uifactory.addFormLink("save.done", buttonGroupLayout, Link.BUTTON);
+		saveAndDoneLink.setElementCssClass("o_sel_assessment_form_save_and_close");
+		
+		reopenLink = uifactory.addFormLink("reopen", buttonGroupLayout, Link.BUTTON);
+		reopenLink.setElementCssClass("o_sel_assessment_form_reopen");
+
 		uifactory.addFormCancelButton("cancel", buttonGroupLayout, ureq, getWindowControl());
+		updateStatus(assessmentEntry);
+	}
+	
+	private void updateStatus(AssessmentEntry aEntry) {
+		boolean closed = (aEntry != null && aEntry.getAssessmentStatus() == AssessmentEntryStatus.done);
+		
+		if(assessableElement.hasPassedConfigured()) {
+			passed.setEnabled(!closed && cut == null);
+		}
+		
+		if(assessableElement.hasScoreConfigured()) {
+			score.setEnabled(!closed);
+		}
+		
+		if(assessableElement.hasCommentConfigured()) {
+			userComment.setEnabled(!closed);
+		}
+		coachComment.setEnabled(!closed);
+			
+		if (assessableElement.hasAttemptsConfigured()) {
+			attempts.setEnabled(!closed);
+		}
+		
+		submitButton.setVisible(!closed);
+		saveAndDoneLink.setVisible(!closed);
+		reopenLink.setVisible(closed);
 	}
 
 	@Override
@@ -201,23 +230,22 @@ public class AssessmentForm extends FormBasicController {
 
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if(saveAndCloseLink == source) {
+		if(saveAndDoneLink == source) {
 			if(validateFormLogic(ureq)) {
-				doUpdateAssessmentData();
-				fireEvent(ureq, Event.DONE_EVENT);
+				doUpdateAssessmentData(true);
+				fireEvent(ureq, new AssessmentFormEvent(AssessmentFormEvent.ASSESSMENT_DONE, true));
 			}
+		} else if(reopenLink == source) {
+			doReopen();
+			fireEvent(ureq, new AssessmentFormEvent(AssessmentFormEvent.ASSESSMENT_CHANGED, false));
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
 
 	@Override
 	protected void formOK(UserRequest ureq) {
-		doUpdateAssessmentData();
-		if(saveAndClose) {
-			fireEvent(ureq, Event.CHANGED_EVENT);
-		} else {
-			fireEvent(ureq, Event.DONE_EVENT);
-		}
+		doUpdateAssessmentData(false);
+		fireEvent(ureq, new AssessmentFormEvent(AssessmentFormEvent.ASSESSMENT_CHANGED, true));
 	}
 
 	@Override
@@ -266,7 +294,16 @@ public class AssessmentForm extends FormBasicController {
 		return Float.parseFloat(scoreStr);
 	}
 	
-	protected void doUpdateAssessmentData() {
+	private void doReopen() {
+		assessmentEntry = assessmentService.loadAssessmentEntry(assessedIdentity, testEntry, null, testEntry);
+		if (assessmentEntry != null) {
+			assessmentEntry.setAssessmentStatus(AssessmentEntryStatus.inReview);
+			assessmentEntry = assessmentService.updateAssessmentEntry(assessmentEntry);
+			updateStatus(assessmentEntry);
+		}
+	}
+	
+	protected void doUpdateAssessmentData(boolean asDone) {
 		assessmentEntry = assessmentService.loadAssessmentEntry(assessedIdentity, testEntry, null, testEntry);
 		if(assessmentEntry == null) {
 			assessmentEntry = assessmentService.getOrCreateAssessmentEntry(assessedIdentity, testEntry, null, testEntry);
@@ -299,7 +336,9 @@ public class AssessmentForm extends FormBasicController {
 			}
 		}
 		
-		assessmentEntry.setAssessmentStatus(AssessmentEntryStatus.done);
+		if(asDone) {
+			assessmentEntry.setAssessmentStatus(AssessmentEntryStatus.done);
+		}
 		assessmentEntry = assessmentService.updateAssessmentEntry(assessmentEntry);
 	}
 	
@@ -322,5 +361,7 @@ public class AssessmentForm extends FormBasicController {
 			passed.select(passedValue == null ? "undefined" : passedValue.toString(), true);
 			passed.setEnabled(cut == null);
 		}
+		
+		updateStatus(assessmentEntry);
 	}
 }

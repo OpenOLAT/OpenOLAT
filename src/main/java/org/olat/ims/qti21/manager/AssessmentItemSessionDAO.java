@@ -71,6 +71,17 @@ public class AssessmentItemSessionDAO {
 		return itemSessions == null || itemSessions.isEmpty() ? null : itemSessions.get(0);
 	}
 	
+	public List<AssessmentItemSession> getAssessmentItemSessions(AssessmentTestSession assessmentTestSession) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select itemSession from qtiassessmentitemsession itemSession")
+		  .append(" where itemSession.assessmentTestSession.key=:assessmentTestSessionKey");
+		
+		return dbInstance.getCurrentEntityManager()
+			.createQuery(sb.toString(), AssessmentItemSession.class)
+			.setParameter("assessmentTestSessionKey", assessmentTestSession.getKey())
+			.getResultList();
+	}
+	
 	public AssessmentItemSession merge(AssessmentItemSession itemSession) {
 		return dbInstance.getCurrentEntityManager().merge(itemSession);
 	}

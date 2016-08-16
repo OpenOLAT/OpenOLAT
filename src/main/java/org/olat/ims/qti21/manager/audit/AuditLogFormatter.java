@@ -26,6 +26,9 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Map;
 
+import org.olat.core.id.Identity;
+import org.olat.course.assessment.AssessmentHelper;
+import org.olat.ims.qti21.AssessmentItemSession;
 import org.olat.ims.qti21.AssessmentResponse;
 import org.olat.ims.qti21.AssessmentTestSession;
 import org.olat.ims.qti21.model.audit.CandidateEvent;
@@ -134,6 +137,22 @@ public class AuditLogFormatter {
 				}
 			}
 		}
-		
+	}
+	
+	protected static void logCorrection(AssessmentItemSession itemSession, Identity coach, Writer writer) throws IOException {
+		writer.append("Manual correction itemSession identifier=");
+		writer.append(itemSession.getAssessmentItemIdentifier());
+		writer.append(" key=");
+		writer.append(itemSession.getKey().toString());
+		writer.append(" manualScore=");
+		if(itemSession.getManualScore() == null) {
+			writer.append("NULL");
+		} else {
+			writer.append(AssessmentHelper.getRoundedScore(itemSession.getManualScore()));
+		}
+		writer.append(" by ");
+		writer.append(coach.getKey().toString());
+		writer.append("/");
+		writer.append(coach.getName());
 	}
 }

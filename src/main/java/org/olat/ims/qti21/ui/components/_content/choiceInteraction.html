@@ -5,16 +5,16 @@
 	<div class="badResponse">
 	#if($interaction.minChoices == $interaction.maxChoices && $interaction.minChoices > 0)
 		#if($interaction.minChoices == 1)
-			$r.translate("errror.input.choice.minax.one")
+			$r.translate("error.input.choice.minax.one")
 		#else
-			$r.translate("errror.input.choice.minax")
+			$r.translate("error.input.choice.minax")
 		#end
 	#elseif($interaction.minChoices > 0 && $interaction.maxChoices > 0)
-		$r.translate("errror.input.choice.min.max", $interaction.minChoices, $interaction.maxChoices)
+		$r.translate("error.input.choice.min.max", $interaction.minChoices, $interaction.maxChoices)
 	#elseif($interaction.minChoices > 0)
-		$r.translate("errror.input.choice.min", $interaction.minChoices)
+		$r.translate("error.input.choice.min", $interaction.minChoices)
 	#elseif($interaction.maxChoices > 0)
-		$r.translate("errror.input.choice.max", $interaction.maxChoices)
+		$r.translate("error.input.choice.max", $interaction.maxChoices)
 	#end
 	</div>
 #end

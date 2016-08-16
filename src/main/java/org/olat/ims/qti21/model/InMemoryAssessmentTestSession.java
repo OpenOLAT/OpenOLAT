@@ -44,6 +44,7 @@ public class InMemoryAssessmentTestSession implements AssessmentTestSession {
     private Long duration;
     private Boolean passed;
     private BigDecimal score;
+    private BigDecimal manualScore;
     private boolean exploded;
     
     public InMemoryAssessmentTestSession() {
@@ -128,6 +129,16 @@ public class InMemoryAssessmentTestSession implements AssessmentTestSession {
 	@Override
 	public void setScore(BigDecimal score) {
 		this.score = score;
+	}
+
+	@Override
+	public BigDecimal getManualScore() {
+		return manualScore;
+	}
+
+	@Override
+	public void setManualScore(BigDecimal manualScore) {
+		this.manualScore = manualScore;
 	}
 
 	@Override

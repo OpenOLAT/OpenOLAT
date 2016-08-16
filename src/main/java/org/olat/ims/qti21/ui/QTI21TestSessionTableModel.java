@@ -19,7 +19,10 @@
  */
 package org.olat.ims.qti21.ui;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
+import java.util.List;
 
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiColumnDef;
@@ -28,6 +31,7 @@ import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.Formatter;
 import org.olat.course.assessment.AssessmentHelper;
 import org.olat.ims.qti21.AssessmentTestSession;
+import org.olat.ims.qti21.ui.QTI21AssessmentDetailsController.AssessmentTestSessionComparator;
 
 /**
  * 
@@ -38,6 +42,7 @@ import org.olat.ims.qti21.AssessmentTestSession;
 public class QTI21TestSessionTableModel extends DefaultFlexiTableDataModel<AssessmentTestSession> {
 	
 	private final Translator translator;
+	private AssessmentTestSession lastSession;
 	
 	public QTI21TestSessionTableModel(FlexiTableColumnModel columnModel, Translator translator) {
 		super(columnModel);
@@ -71,15 +76,30 @@ public class QTI21TestSessionTableModel extends DefaultFlexiTableDataModel<Asses
 				Date terminated = session.getTerminationTime();
 				return terminated == null ? Boolean.FALSE : Boolean.TRUE;
 			}
+			case correction: {
+				return (lastSession != null && lastSession.equals(session));
+			}
 			default: return "ERROR";
 		}
 	}
-	
+
+	@Override
+	public void setObjects(List<AssessmentTestSession> objects) {
+		super.setObjects(objects);
+		
+		List<AssessmentTestSession> sessions = new ArrayList<>(objects);
+		Collections.sort(sessions, new AssessmentTestSessionComparator());
+		if(sessions.size() > 0) {
+			lastSession = sessions.get(0);
+		}
+	}
+
 	public enum TSCols implements FlexiColumnDef {
 		lastModified("table.header.lastModified"),
 		duration("table.header.duration"),
 		results("table.header.results"),
-		open("table.header.action");
+		open("table.header.action"),
+		correction("table.header.action");
 		
 		private final String i18nKey;
 		

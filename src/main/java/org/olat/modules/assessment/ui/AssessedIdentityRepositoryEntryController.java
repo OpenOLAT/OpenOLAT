@@ -34,6 +34,7 @@ import org.olat.core.id.Identity;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.course.assessment.ui.tool.AssessedIdentityLargeInfosController;
+import org.olat.modules.assessment.ui.event.AssessmentFormEvent;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.handlers.RepositoryHandler;
 import org.olat.repository.handlers.RepositoryHandlerFactory;
@@ -54,7 +55,7 @@ public class AssessedIdentityRepositoryEntryController extends BasicController i
 	private Link nextLink, previousLink;
 
 	private Controller detailsCtrl;
-	private AssessmentForm currentNodeCtrl;
+	private AssessmentForm assessmentForm;
 	private AssessedIdentityLargeInfosController infosController;
 
 	@Autowired
@@ -79,12 +80,11 @@ public class AssessedIdentityRepositoryEntryController extends BasicController i
 			detailsCtrl = handler.createAssessmentDetailsController(assessableEntry, ureq, getWindowControl(), stackPanel, assessedIdentity);
 			listenTo(detailsCtrl);
 			identityAssessmentVC.put("details", detailsCtrl.getInitialComponent());
-			
 		}
 		
-		currentNodeCtrl = new AssessmentForm(ureq, getWindowControl(), assessedIdentity, assessableEntry, element, false);
-		listenTo(currentNodeCtrl);
-		identityAssessmentVC.put("assessmentForm", currentNodeCtrl.getInitialComponent());
+		assessmentForm = new AssessmentForm(ureq, getWindowControl(), assessedIdentity, assessableEntry, element);
+		listenTo(assessmentForm);
+		identityAssessmentVC.put("assessmentForm", assessmentForm.getInitialComponent());
 		
 		putInitialPanel(identityAssessmentVC);
 	}
@@ -106,13 +106,22 @@ public class AssessedIdentityRepositoryEntryController extends BasicController i
 
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
-		if(currentNodeCtrl == source) {
-			if(event == Event.DONE_EVENT) {
-				stackPanel.popController(currentNodeCtrl);
-			} else if(event == Event.CHANGED_EVENT) {
-				//
+		if(assessmentForm == source) {
+			if(event instanceof AssessmentFormEvent) {
+				AssessmentFormEvent afe = (AssessmentFormEvent)event;
+				if(afe.isClose()) {
+					stackPanel.popController(assessmentForm);
+					fireEvent(ureq, Event.DONE_EVENT);
+				} else {
+					fireEvent(ureq, Event.CHANGED_EVENT);
+				}
 			} else if(event == Event.CANCELLED_EVENT) {
-				stackPanel.popController(currentNodeCtrl);
+				stackPanel.popController(assessmentForm);
+			}
+		} else if(detailsCtrl == source) {
+			if(event == Event.CHANGED_EVENT || event == Event.DONE_EVENT) {
+				assessmentForm.reloadData();
+				fireEvent(ureq, Event.CHANGED_EVENT);
 			}
 		}
 		super.event(ureq, source, event);

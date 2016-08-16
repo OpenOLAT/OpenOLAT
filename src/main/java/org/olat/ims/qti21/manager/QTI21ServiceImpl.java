@@ -538,6 +538,16 @@ public class QTI21ServiceImpl implements QTI21Service, InitializingBean, Disposa
 		}
 		return itemSession;
 	}
+	
+	@Override
+	public AssessmentItemSession updateAssessmentItemSession(AssessmentItemSession itemSession) {
+		return itemSessionDao.merge(itemSession);
+	}
+
+	@Override
+	public List<AssessmentItemSession> getAssessmentItemSessions(AssessmentTestSession candidateSession) {
+		return itemSessionDao.getAssessmentItemSessions(candidateSession);
+	}
 
 	@Override
 	public AssessmentResponse createAssessmentResponse(AssessmentTestSession assessmentTestSession, AssessmentItemSession assessmentItemSession, String responseIdentifier,

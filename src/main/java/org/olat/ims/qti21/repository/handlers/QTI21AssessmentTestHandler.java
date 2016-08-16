@@ -359,7 +359,7 @@ public class QTI21AssessmentTestHandler extends FileHandler {
 	@Override
 	public Controller createAssessmentDetailsController(RepositoryEntry re, UserRequest ureq, WindowControl wControl,
 			TooledStackedPanel toolbar, Identity assessedIdentity) {
-		return new QTI21AssessmentDetailsController(ureq, wControl, re, null, assessedIdentity);
+		return new QTI21AssessmentDetailsController(ureq, wControl, re, assessedIdentity);
 	}
 
 	@Override

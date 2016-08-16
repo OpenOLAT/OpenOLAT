@@ -54,6 +54,10 @@ public interface AssessmentTestSession extends CreateInfo, ModifiedInfo {
 
 	public void setScore(BigDecimal score);
 	
+	public BigDecimal getManualScore();
+	
+	public void setManualScore(BigDecimal manualScore);
+	
 	/**
 	 * Return the duration in milliseconds
 	 * @return

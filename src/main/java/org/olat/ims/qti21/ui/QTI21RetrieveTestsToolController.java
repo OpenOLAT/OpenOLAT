@@ -47,6 +47,7 @@ import org.olat.course.nodes.AssessmentToolOptions;
 import org.olat.course.nodes.IQTESTCourseNode;
 import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.ims.qti.QTIResultManager;
+import org.olat.ims.qti21.AssessmentSessionAuditLogger;
 import org.olat.ims.qti21.AssessmentTestSession;
 import org.olat.ims.qti21.QTI21Service;
 import org.olat.ims.qti21.ui.event.RetrieveAssessmentTestSessionEvent;
@@ -164,6 +165,9 @@ public class QTI21RetrieveTestsToolController extends BasicController implements
 		session.setTerminationTime(new Date());
 		session = qtiService.updateAssessmentTestSession(session);
 		dbInstance.commit();//make sure that the changes committed before sending the event
+		
+		AssessmentSessionAuditLogger candidateAuditLogger = qtiService.getAssessmentSessionAuditLogger(session, false);
+		candidateAuditLogger.logTestRetrieved(session, getIdentity());
 		
 		OLATResourceable sessionOres = OresHelper.createOLATResourceableInstance(AssessmentTestSession.class, session.getKey());
 		CoordinatorManager.getInstance().getCoordinator().getEventBus()
