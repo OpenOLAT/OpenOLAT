@@ -1312,6 +1312,7 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 		rowCount = -1;
 		component.setDirty(true);
 		multiSelectedIndex = null;
+		detailsIndex = null;
 	}
 	
 	@Override
