@@ -28,6 +28,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
+import org.olat.admin.user.delete.service.UserDeletionManager;
 import org.olat.basesecurity.AuthHelper;
 import org.olat.basesecurity.Authentication;
 import org.olat.basesecurity.BaseSecurityManager;
@@ -170,6 +171,8 @@ public class OAuthDispatcher implements Dispatcher {
 						DispatcherModule.redirectToDefaultDispatcher(response); 
 					}
 				} else {
+					//update last login date and register active user
+					UserDeletionManager.getInstance().setIdentityAsActiv(identity);
 					MediaResource mr = ureq.getDispatchResult().getResultingMediaResource();
 					if (mr instanceof RedirectMediaResource) {
 						RedirectMediaResource rmr = (RedirectMediaResource)mr;
