@@ -140,8 +140,8 @@
 	</div>
 	<div class="o_portfolio_page_links">
 		$r.render($row.openFormItem)
-		#if($r.isNotNull($row.commentFormItem))
-			$r.render($row.commentFormItem)
+		#if($r.isNotNull($row.commentFormLink))
+			<span class="btn btn-sm o_portfolio_comment">$r.render($row.commentFormLink)</span>
 		#end
 	</div>
 </div>

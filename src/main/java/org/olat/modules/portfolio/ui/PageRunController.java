@@ -71,6 +71,7 @@ import org.olat.modules.portfolio.ui.editor.handler.SpacerElementHandler;
 import org.olat.modules.portfolio.ui.editor.handler.TitlePageElementHandler;
 import org.olat.modules.portfolio.ui.event.ClosePageEvent;
 import org.olat.modules.portfolio.ui.event.MediaSelectionEvent;
+import org.olat.modules.portfolio.ui.event.PageRemoved;
 import org.olat.modules.portfolio.ui.event.PublishEvent;
 import org.olat.modules.portfolio.ui.event.ReopenPageEvent;
 import org.olat.modules.portfolio.ui.event.RevisionEvent;
@@ -85,14 +86,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class PageRunController extends BasicController implements TooledController, Activateable2  {
 
 	private VelocityContainer mainVC;
-	private Link editLink, editMetadataLink;
+	private Link editLink, editMetadataLink, deleteLink;
 	protected final TooledStackedPanel stackPanel;
 	
 	private CloseableModalController cmc;
 	private PageMetadataController pageMetaCtrl;
 	private PageController pageCtrl;
 	private PageEditorController pageEditCtrl;
-	private DialogBoxController confirmPublishCtrl, confirmRevisionCtrl, confirmCloseCtrl, confirmReopenCtrl;
+	private DialogBoxController confirmPublishCtrl, confirmRevisionCtrl, confirmCloseCtrl,
+		confirmReopenCtrl, confirmDeleteCtrl;
 	private PageMetadataEditController editMetadataCtrl;
 	private UserCommentsAndRatingsController commentsCtrl;
 	
@@ -142,6 +144,12 @@ public class PageRunController extends BasicController implements TooledControll
 			editMetadataLink = LinkFactory.createToolLink("edit.page.metadata", translate("edit.page.metadata"), this);
 			editMetadataLink.setIconLeftCSS("o_icon o_icon-lg o_icon_edit_metadata");
 			stackPanel.addTool(editMetadataLink, Align.left);
+		}
+		
+		if(secCallback.canDeletePage(page)) {
+			deleteLink = LinkFactory.createToolLink("edit.page", translate("delete.page"), this);
+			deleteLink.setIconLeftCSS("o_icon o_icon-lg o_icon_delete_item");
+			stackPanel.addTool(deleteLink, Align.right);
 		}
 	}
 	
@@ -217,6 +225,10 @@ public class PageRunController extends BasicController implements TooledControll
 			if(DialogBoxUIFactory.isYesEvent(event)) {
 				doReopen(ureq);
 			}
+		} else if(confirmDeleteCtrl == source) {
+			if(DialogBoxUIFactory.isYesEvent(event)) {
+				doDelete(ureq);
+			}
 		} else if(cmc == source) {
 			cleanUp();
 		}
@@ -236,7 +248,20 @@ public class PageRunController extends BasicController implements TooledControll
 			doEditPage(ureq);
 		} else if(editMetadataLink == source) {
 			doEditMetadata(ureq);
+		} else if(deleteLink == source) {
+			doConfirmDelete(ureq);
 		}
+	}
+	
+	private void doConfirmDelete(UserRequest ureq) {
+		String title = translate("delete.page.confirm.title");
+		String text = translate("delete.page.confirm.descr", new String[]{ page.getTitle() });
+		confirmDeleteCtrl = activateYesNoDialog(ureq, title, text, confirmDeleteCtrl);
+	}
+	
+	private void doDelete(UserRequest ureq) {
+		Page floatingPage = portfolioService.removePage(page);
+		fireEvent(ureq, new PageRemoved(floatingPage));
 	}
 	
 	private void doConfirmPublish(UserRequest ureq) {
@@ -320,7 +345,7 @@ public class PageRunController extends BasicController implements TooledControll
 			}
 			mainVC.put("page", pageCtrl.getInitialComponent());
 			
-			editLink.setCustomDisplayText(translate("edit"));
+			editLink.setCustomDisplayText(translate("edit.page"));
 			editLink.setIconLeftCSS("o_icon o_icon-lg o_icon_edit");
 			editLink.setUserObject(Boolean.FALSE);
 		} else {

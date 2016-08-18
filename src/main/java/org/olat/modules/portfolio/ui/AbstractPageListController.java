@@ -72,6 +72,7 @@ import org.olat.modules.portfolio.SectionStatus;
 import org.olat.modules.portfolio.ui.PageListDataModel.PageCols;
 import org.olat.modules.portfolio.ui.component.CategoriesCellRenderer;
 import org.olat.modules.portfolio.ui.component.TimelineElement;
+import org.olat.modules.portfolio.ui.event.PageRemoved;
 import org.olat.modules.portfolio.ui.model.PageAssignmentRow;
 import org.olat.modules.portfolio.ui.model.PageRow;
 import org.olat.modules.portfolio.ui.renderer.StatusCellRenderer;
@@ -264,15 +265,17 @@ implements Activateable2, TooledController, FlexiTableComponentDelegate {
 		
 		if(secCallback.canComment(page)) {
 			String title;
+			String cssClass = "o_icon o_icon-fw o_icon_comments";
 			if(row.getNumOfComments() == 1) {
 				title = translate("comment.one");
 			} else if(row.getNumOfComments() > 1) {
 				title = translate("comment.several", new String[]{ Long.toString(row.getNumOfComments()) });
 			} else {
 				title = translate("comment.zero");
+				cssClass += "_none";
 			}
 			FormLink commentLink = uifactory.addFormLink("com_" + (++counter), "comment", title, null, flc, Link.LINK | Link.NONTRANSLATED);
-			commentLink.setCustomEnabledLinkCSS("btn btn-sm o_portfolio_comment");
+			commentLink.setIconLeftCSS(cssClass);
 			commentLink.setUserObject(row);
 			row.setCommentFormLink(commentLink);
 		}
@@ -390,6 +393,10 @@ implements Activateable2, TooledController, FlexiTableComponentDelegate {
 		if(pageCtrl == source) {
 			if(event == Event.CHANGED_EVENT) {
 				loadModel(null);
+				fireEvent(ureq, Event.CHANGED_EVENT);
+			} else if(event instanceof PageRemoved) {
+				loadModel(null);
+				stackPanel.popUpToController(this);
 				fireEvent(ureq, Event.CHANGED_EVENT);
 			}
 		} else if(commentsCtrl == source) {

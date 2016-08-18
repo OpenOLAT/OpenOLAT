@@ -345,9 +345,23 @@ public class BinderPageListController extends AbstractPageListController {
 	
 	@Override
 	public void event(UserRequest ureq, Controller source, Event event) {
-		if(newSectionCtrl == source || newPageCtrl == source || newAssignmentCtrl == source) {
+		if(newSectionCtrl == source || newAssignmentCtrl == source) {
 			if(event == Event.DONE_EVENT) {
 				loadModel(null);
+				fireEvent(ureq, Event.CHANGED_EVENT);
+			}
+			cmc.deactivate();
+			cleanUp();
+		} else if(newSectionCtrl == source || newPageCtrl == source || newAssignmentCtrl == source) {
+			if(event == Event.DONE_EVENT) {
+				loadModel(null);
+				Page newPage = newPageCtrl.getPage();
+				for(PageRow row:model.getObjects()) {
+					if(row.getPage() != null && row.getPage().equals(newPage)) {
+						doOpenPage(ureq, row);
+						break;
+					}
+				}
 				fireEvent(ureq, Event.CHANGED_EVENT);
 			}
 			cmc.deactivate();

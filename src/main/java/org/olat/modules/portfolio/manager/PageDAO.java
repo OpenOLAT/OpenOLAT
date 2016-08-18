@@ -319,6 +319,17 @@ public class PageDAO {
 		return pages == null || pages.isEmpty() ? null : pages.get(0);
 	}
 	
+	public Page removePage(Page page) {
+		PageImpl reloadedPage = (PageImpl)loadByKey(page.getKey());
+		Section section = reloadedPage.getSection();
+		section.getPages().remove(reloadedPage);
+		reloadedPage.setLastModified(new Date());
+		reloadedPage.setSection(null);
+		reloadedPage.setPageStatus(PageStatus.deleted);
+		dbInstance.getCurrentEntityManager().merge(section);
+		return dbInstance.getCurrentEntityManager().merge(reloadedPage);
+	}
+	
 	public PagePart persistPart(PageBody body, PagePart part) {
 		AbstractPart aPart = (AbstractPart)part;
 		aPart.setCreationDate(new Date());

@@ -740,6 +740,11 @@ public class PortfolioServiceImpl implements PortfolioService {
 	}
 
 	@Override
+	public Page removePage(Page page) {
+		return pageDao.removePage(page);
+	}
+
+	@Override
 	public List<PagePart> getPageParts(Page page) {
 		return pageDao.getParts(page.getBody());
 	}

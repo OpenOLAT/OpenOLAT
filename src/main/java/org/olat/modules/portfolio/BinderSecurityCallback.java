@@ -62,6 +62,8 @@ public interface BinderSecurityCallback {
 	
 	public boolean canReopen(Page page);
 	
+	public boolean canDeletePage(Page page);
+	
 	/**
 	 * 
 	 * @return true if the user can instantiate and begin to fill a page from the assignment

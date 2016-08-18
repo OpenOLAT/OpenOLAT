@@ -280,6 +280,13 @@ public class BinderSecurityCallbackFactory {
 		}
 
 		@Override
+		public boolean canDeletePage(Page page) {
+			return owner && page.getPageStatus() != PageStatus.published
+					&& page.getPageStatus() != PageStatus.closed
+					&& page.getPageStatus() != PageStatus.deleted;
+		}
+
+		@Override
 		public boolean canClose(Page page) {
 			if(owner) {
 				return !task && !PageStatus.isClosed(page);
@@ -470,6 +477,11 @@ public class BinderSecurityCallbackFactory {
 
 		@Override
 		public boolean canReopen(Page page) {
+			return false;
+		}
+
+		@Override
+		public boolean canDeletePage(Page page) {
 			return false;
 		}
 

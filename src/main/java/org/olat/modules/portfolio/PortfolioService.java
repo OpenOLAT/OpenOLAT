@@ -375,6 +375,15 @@ public interface PortfolioService {
 	public void moveDownPagePart(Page page, PagePart part);
 	
 	/**
+	 * Remove the page from the section, remove relations to the
+	 * binder and set the status to deleted.
+	 * 
+	 * @param page
+	 * @return A floating entry with status deleted
+	 */
+	public Page removePage(Page page);
+	
+	/**
 	 * The list of page fragments
 	 * @param page
 	 * @return
