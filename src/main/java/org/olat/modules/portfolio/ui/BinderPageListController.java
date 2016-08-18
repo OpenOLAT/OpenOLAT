@@ -230,9 +230,14 @@ public class BinderPageListController extends AbstractPageListController {
 		//sections without pages
 		if(!StringHelper.containsNonWhitespace(searchString)) {
 			for(Section section:sections) {
+				if(!secCallback.canViewElement(section)) {
+					continue;
+				}
+				
 				PageRow pageRow = forgeRow(section, sectionToAssessmentSectionMap.get(section), sectionToAssignmentMap.get(section),
 						true, categorizedElementMap);
 				rows.add(pageRow);
+
 				if(secCallback.canAddPage(section)) {
 					FormLink newEntryButton = uifactory.addFormLink("new.entry." + (++counter), "new.entry", "create.new.page", null, flc, Link.BUTTON);
 					newEntryButton.setCustomEnabledLinkCSS("btn btn-primary");

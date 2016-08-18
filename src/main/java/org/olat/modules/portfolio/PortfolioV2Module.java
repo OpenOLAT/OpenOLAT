@@ -60,6 +60,8 @@ public class PortfolioV2Module extends AbstractSpringModule implements ConfigOnO
 		NewControllerFactory.getInstance().addContextEntryControllerCreator("BinderInvitation",
 				new BinderInvitationContextEntryControllerCreator());	
 		NewControllerFactory.getInstance().addContextEntryControllerCreator("Binder",
+				new BinderContextEntryControllerCreator());
+		NewControllerFactory.getInstance().addContextEntryControllerCreator("PortfolioV2",
 				new BinderContextEntryControllerCreator());	
 	}
 

@@ -24,6 +24,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.olat.core.commons.services.commentAndRating.CommentAndRatingDefaultSecurityCallback;
+import org.olat.core.commons.services.commentAndRating.CommentAndRatingSecurityCallback;
+import org.olat.core.commons.services.commentAndRating.ui.UserCommentsController;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.dropdown.Dropdown;
@@ -78,6 +81,7 @@ public class TableOfContentController extends BasicController implements TooledC
 	private final TooledStackedPanel stackPanel;
 	
 	private CloseableModalController cmc;
+	private UserCommentsController commentsCtrl;
 	private SectionEditController newSectionCtrl;
 	private SectionEditController editSectionCtrl;
 	private SectionDatesEditController editSectionDatesCtrl;
@@ -151,6 +155,8 @@ public class TableOfContentController extends BasicController implements TooledC
 		Map<Long,SectionRow> sectionMap = new HashMap<>();
 		
 		List<AssessmentSection> assessmentSections = portfolioService.getAssessmentSections(binder, getIdentity());
+		Map<Long,Long> numberOfCommentsMap = portfolioService.getNumberOfComments(binder);
+		
 		Map<Section,AssessmentSection> sectionToAssessmentSectionMap = new HashMap<>();
 		for(AssessmentSection assessmentSection:assessmentSections) {
 			sectionToAssessmentSectionMap.put(assessmentSection.getSection(), assessmentSection);
@@ -168,7 +174,7 @@ public class TableOfContentController extends BasicController implements TooledC
 			if(secCallback.canViewElement(page)) {
 				Section section = page.getSection();
 				SectionRow sectionRow = sectionMap.get(section.getKey());
-				PageRow pageRow = forgePageRow(page, sectionRow);
+				PageRow pageRow = forgePageRow(page, sectionRow, numberOfCommentsMap);
 				sectionRow.getPages().add(pageRow);
 			}
 		}
@@ -226,14 +232,27 @@ public class TableOfContentController extends BasicController implements TooledC
 		return sectionRow;
 	}
 	
-	private PageRow forgePageRow(Page page, SectionRow sectionRow) {
+	private PageRow forgePageRow(Page page, SectionRow sectionRow, Map<Long,Long> numberOfCommentsMap) {
 		PageRow pageRow = new PageRow(page, sectionRow.getSection(), null, false, config.isAssessable());
-		
+
 		String pageId = "page" + (++counter);
 		String title = StringHelper.escapeHtml(page.getTitle());
 		Link openLink = LinkFactory.createCustomLink(pageId, "open_page", title, Link.LINK | Link.NONTRANSLATED, mainVC, this);
 		openLink.setUserObject(pageRow);
 		pageRow.setOpenLink(openLink);
+		
+
+		Long numOfComments = numberOfCommentsMap.get(page.getKey());
+		if(numOfComments != null && numOfComments.longValue() > 0) {
+			pageRow.setNumOfComments(numOfComments.longValue());
+			Link commentLink = LinkFactory.createCustomLink("com_" + (++counter), "comments", "(" + numOfComments + ")", Link.LINK | Link.NONTRANSLATED, mainVC, this);
+			commentLink.setDomReplacementWrapperRequired(false);
+			commentLink.setIconLeftCSS("o_icon o_icon-fw o_icon_comments");
+			commentLink.setUserObject(pageRow);
+			pageRow.setCommentLink(commentLink);
+		} else {
+			pageRow.setNumOfComments(0);
+		}
 		
 		return pageRow;
 	}
@@ -300,6 +319,13 @@ public class TableOfContentController extends BasicController implements TooledC
 				loadModel();
 				fireEvent(ureq, Event.CHANGED_EVENT);
 			}	
+		} else if(commentsCtrl == source) {
+			if("comment_count_changed".equals(event.getCommand())) {
+				loadModel();
+				fireEvent(ureq, Event.CHANGED_EVENT);
+			}
+			cmc.deactivate();
+			cleanUp();
 		} else if(cmc == source) {
 			cleanUp();
 		}
@@ -310,12 +336,14 @@ public class TableOfContentController extends BasicController implements TooledC
 		removeAsListenerAndDispose(binderMetadataCtrl);
 		removeAsListenerAndDispose(editSectionCtrl);
 		removeAsListenerAndDispose(newSectionCtrl);
+		removeAsListenerAndDispose(commentsCtrl);
 		removeAsListenerAndDispose(newPageCtrl);
 		removeAsListenerAndDispose(cmc);
 		editSectionDatesCtrl = null;
 		binderMetadataCtrl = null;
 		editSectionCtrl = null;
 		newSectionCtrl = null;
+		commentsCtrl = null;
 		newPageCtrl = null;
 		cmc = null;
 	}
@@ -349,8 +377,23 @@ public class TableOfContentController extends BasicController implements TooledC
 			} else if("override.dates.section".equals(cmd)) {
 				SectionRow row = (SectionRow)link.getUserObject();
 				doOverrideDatesSection(ureq, row);
+			} else if("comments".equals(cmd)) {
+				PageRow row = (PageRow)link.getUserObject();
+				doOpenComments(ureq, row);
 			}
 		}
+	}
+	
+	private void doOpenComments(UserRequest ureq, PageRow pageRow) {
+		CommentAndRatingSecurityCallback commentSecCallback = new CommentAndRatingDefaultSecurityCallback(getIdentity(), false, false);
+		OLATResourceable ores = OresHelper.createOLATResourceableInstance(Page.class, pageRow.getKey());
+		commentsCtrl = new UserCommentsController(ureq, getWindowControl(), ores, null, commentSecCallback);
+		listenTo(commentsCtrl);
+		
+		String title = translate("comment.title");
+		cmc = new CloseableModalController(getWindowControl(), null, commentsCtrl.getInitialComponent(), true, title, true);
+		listenTo(cmc);
+		cmc.activate();
 	}
 	
 	private void doOpenSection(UserRequest ureq, Section section) {

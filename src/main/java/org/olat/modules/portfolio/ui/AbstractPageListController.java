@@ -223,8 +223,7 @@ implements Activateable2, TooledController, FlexiTableComponentDelegate {
 	
 	protected abstract void loadModel(String searchString);
 	
-	protected PageRow forgeRow(Page page, AssessmentSection assessmentSection, List<Assignment> assignments,
-			boolean firstOfSection,
+	protected PageRow forgeRow(Page page, AssessmentSection assessmentSection, List<Assignment> assignments, boolean firstOfSection,
 			Map<OLATResourceable,List<Category>> categorizedElementMap, Map<Long,Long> numberOfCommentsMap) {
 
 		Section section = page.getSection();

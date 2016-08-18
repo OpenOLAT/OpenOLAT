@@ -10,12 +10,21 @@
 					#if(${section.hasEditDropdown()})
 						<div id="sect_$foreach.count" class="o_button_group o_button_group_right dropdown">$r.render($section.editDropdownName)</div>
 					#end
+					#if($r.notNull($section.section.beginDate) || $r.notNull($section.section.endDate))
+						<div class="o_portfolio_section_meta">
+						#if($r.notNull($section.section.beginDate))
+							<span><strong>$r.translate("begin.date"): </strong> $r.formatDate($section.section.beginDate)</span>
+						#end
+						#if($r.notNull($section.section.endDate))
+							<span><strong>$r.translate("end.date"): </strong> $r.formatDate($section.section.endDate)</span>
+						#end
+						</div>
+					#end
 				</div>
-		
 				#if(${section.getPages().size()} > 0)
 				<ul class="list-unstyled">
 					#foreach($page in $section.pages)
-						<li>$r.render($page.openLink) <i class="o_icon $page.cssClassStatus"> </i></li>
+						<li>$r.render($page.openLink) <i class="o_icon $page.cssClassStatus"> </i> #if($r.isNotNull($page.commentLink)) $r.render($page.commentLink) #end</li>
 					#end
 				</ul>
 				#end

@@ -191,7 +191,7 @@ public class BinderAssessmentController extends FormBasicController {
 			reopenButton.setUserObject(row);
 			row.setButton(reopenButton);
 		} else {
-			FormLink closeButton = uifactory.addFormLink("close" + (++counter), "close", "close", null, flc, Link.BUTTON);
+			FormLink closeButton = uifactory.addFormLink("close" + (++counter), "close", "close.section", null, flc, Link.BUTTON);
 			closeButton.setUserObject(row);
 			row.setButton(closeButton);
 		}

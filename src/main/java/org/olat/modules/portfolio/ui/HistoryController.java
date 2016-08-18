@@ -74,7 +74,7 @@ public class HistoryController extends FormBasicController {
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		subsContext = new SubscriptionContext(PortfolioNotificationsHandler.TYPE_NAME, binder.getKey(), PortfolioNotificationsHandler.TYPE_NAME);
 		if (subsContext != null) {
-			String businessPath = "[PortfolioV2:0][Binder:" + binder.getKey() + "]";
+			String businessPath = "[Binder:" + binder.getKey() + "]";
 			PublisherData data = new PublisherData(PortfolioNotificationsHandler.TYPE_NAME, null, businessPath);
 			cSubscriptionCtrl = new ContextualSubscriptionController(ureq, getWindowControl(), subsContext, data);
 			listenTo(cSubscriptionCtrl);
