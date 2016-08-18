@@ -469,7 +469,7 @@ public class RepositoryEditDescriptionController extends FormBasicController {
 	@Override
 	protected void formOK(UserRequest ureq) {
 		File uploadedImage = fileUpload.getUploadFile();
-		if(uploadedImage != null) {
+		if(uploadedImage != null && uploadedImage.exists()) {
 			VFSContainer tmpHome = new LocalFolderImpl(new File(WebappHelper.getTmpDir()));
 			VFSContainer container = tmpHome.createChildContainer(UUID.randomUUID().toString());
 			VFSLeaf newFile = fileUpload.moveUploadFileTo(container);//give it it's real name and extension
@@ -486,7 +486,7 @@ public class RepositoryEditDescriptionController extends FormBasicController {
 		}
 
 		File uploadedMovie = movieUpload.getUploadFile();
-		if(uploadedMovie != null) {
+		if(uploadedMovie != null && uploadedMovie.exists()) {
 			VFSContainer m = (VFSContainer)mediaContainer.resolve("media");
 			VFSLeaf newFile = movieUpload.moveUploadFileTo(m);
 			if (newFile == null) {
