@@ -1812,7 +1812,7 @@ create table o_gta_task (
    lastmodified date not null,
    g_status varchar2(36 char),
    g_rev_loop number(20) default 0 not null,
-   g_taskname varchar2(36 char),
+   g_taskname varchar2(1024 char),
    g_assignment_date date,
    fk_tasklist number(20) not null,
    fk_identity number(20),
