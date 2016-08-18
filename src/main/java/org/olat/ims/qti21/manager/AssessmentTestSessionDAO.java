@@ -258,6 +258,31 @@ public class AssessmentTestSessionDAO {
 				.setParameter("testEntryKey", testEntry.getKey())
 				.getResultList();
 	}
+	
+	public List<AssessmentTestSession> getTestSessions(RepositoryEntryRef courseEntry, String courseSubIdent, RepositoryEntry testEntry) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select session from qtiassessmenttestsession session")
+		  .append(" left join fetch session.testEntry testEntry")
+		  .append(" left join fetch testEntry.olatResource testResource")
+		  .append(" inner join fetch session.identity assessedIdentity")
+		  .append(" inner join fetch assessedIdentity.user assessedUser")
+		  .append("  where session.repositoryEntry.key=:repositoryEntryKey and session.testEntry.key=:testEntryKey and ");
+		if(StringHelper.containsNonWhitespace(courseSubIdent)) {
+			sb.append("session.subIdent=:subIdent");
+		} else {
+			sb.append("session.subIdent is null");
+		}
+		sb.append(" order by session.creationDate desc");
+		
+		TypedQuery<AssessmentTestSession> query = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), AssessmentTestSession.class)
+				.setParameter("repositoryEntryKey", courseEntry.getKey())
+				.setParameter("testEntryKey", testEntry.getKey());
+		if(StringHelper.containsNonWhitespace(courseSubIdent)) {
+			query.setParameter("subIdent", courseSubIdent);
+		}
+		return query.getResultList();
+	}
 
 	public List<AssessmentTestSession> getUserTestSessions(RepositoryEntryRef courseEntry, String courseSubIdent, IdentityRef identity) {
 		StringBuilder sb = new StringBuilder();

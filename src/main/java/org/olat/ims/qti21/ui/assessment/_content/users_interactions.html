@@ -1,0 +1,36 @@
+<fieldset class="o_form form-horizontal" role="form">
+#foreach($interactionWrapper in $interactionWrappers)
+	<h4>${foreach.count}. $r.translate("assessed.identity")</h4>##$interactionWrapper.fullName
+	#if($interactionWrapper.responded)
+		#foreach($responseFormItem in $interactionWrapper.responseFormItems)
+			<div class="o_block clearfix">
+				$r.render($responseFormItem.name)
+			</div>
+		#end
+	#else
+		<div class="o_warning">$r.translate("not.responded")</div>
+	#end
+	<div class="form-group #if($f.hasError($item)) has-feedback has-error #end clearfix">
+		$r.render("${interactionWrapper.scoreEl.name}_LABEL", "$f.getItemId($item)", "col-sm-3")
+		<div class="col-sm-9">
+			$r.render($interactionWrapper.scoreEl.name, "form")
+			#if($f.hasError($item))
+				<span class="o_icon o_icon_error form-control-feedback"></span>
+			#end
+		</div>
+		#if($f.hasError($interactionWrapper.scoreEl.name))
+			<div class="col-sm-offset-3 col-sm-9">
+				$r.render("${interactionWrapper.scoreEl.name}_ERROR")
+			</div>
+		#elseif($f.hasExample(${interactionWrapper.scoreEl.name}))
+			<div class="o_form_example help-block col-sm-offset-3 col-sm-9">
+				$r.render("${interactionWrapper.scoreEl.name}_EXAMPLE")
+			</div>
+		#end
+	</div>
+#end
+
+	<div class="o_button_group">
+		$r.render("buttons")
+	</div>
+</fieldset>

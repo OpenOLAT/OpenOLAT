@@ -23,7 +23,6 @@ import java.util.List;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
-import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
@@ -52,7 +51,6 @@ public class AssessedIdentityRepositoryEntryController extends BasicController i
 
 	private final TooledStackedPanel stackPanel;
 	private final VelocityContainer identityAssessmentVC;
-	private Link nextLink, previousLink;
 
 	private Controller detailsCtrl;
 	private AssessmentForm assessmentForm;
@@ -129,10 +127,6 @@ public class AssessedIdentityRepositoryEntryController extends BasicController i
 
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
-		if(previousLink == source) {
-			//
-		} else if(nextLink == source) {
-			//
-		}
+		//
 	}
 }

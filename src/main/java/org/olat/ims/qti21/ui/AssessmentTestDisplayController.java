@@ -63,6 +63,7 @@ import org.olat.fileresource.types.ImsQTI21Resource.PathResourceLocator;
 import org.olat.ims.qti21.AssessmentItemSession;
 import org.olat.ims.qti21.AssessmentResponse;
 import org.olat.ims.qti21.AssessmentSessionAuditLogger;
+import org.olat.ims.qti21.AssessmentTestHelper;
 import org.olat.ims.qti21.AssessmentTestMarks;
 import org.olat.ims.qti21.AssessmentTestSession;
 import org.olat.ims.qti21.OutcomesListener;
@@ -210,7 +211,7 @@ public class AssessmentTestDisplayController extends BasicController implements 
 		AssessmentEntry assessmentEntry = assessmentService.getOrCreateAssessmentEntry(getIdentity(), entry, subIdent, testEntry);
 		marks = qtiService.getMarks(getIdentity(), entry, subIdent, testEntry);
 		if(listener == null) {
-			boolean manualCorrections = qtiService.needManualCorrection(resolvedAssessmentTest);
+			boolean manualCorrections = AssessmentTestHelper.needManualCorrection(resolvedAssessmentTest);
 			outcomesListener = new AssessmentEntryOutcomesListener(assessmentEntry, manualCorrections, assessmentService);
 		}
 

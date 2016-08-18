@@ -22,6 +22,7 @@ package org.olat.ims.qti21.ui.assessment;
 import java.util.List;
 
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
+import org.olat.ims.qti21.AssessmentTestSession;
 import org.olat.ims.qti21.ui.components.InteractionResultFormItem;
 
 import uk.ac.ed.ph.jqtiplus.node.item.AssessmentItem;
@@ -35,26 +36,47 @@ import uk.ac.ed.ph.jqtiplus.state.TestPlanNodeKey;
  */
 public class IdentityAssessmentItemWrapper {
 	
+	private final String fullName;
 	private String minScore, maxScore;
 	private Double minScoreVal, maxScoreVal;
 	private TextElement scoreEl;
 	private final AssessmentItem assessmentItem;
-	private final TestPlanNodeKey testPlanNodeKey;
 	private final List<InteractionResultFormItem> responseFormItems;
 	
-	public IdentityAssessmentItemWrapper(AssessmentItem assessmentItem, TestPlanNodeKey testPlanNodeKey, List<InteractionResultFormItem> responseFormItems, TextElement scoreEl) {
+	private AssessmentItemCorrection itemInfos;
+	
+	public IdentityAssessmentItemWrapper(String fullName, AssessmentItem assessmentItem,
+			AssessmentItemCorrection itemInfos,
+			List<InteractionResultFormItem> responseFormItems, TextElement scoreEl) {
 		this.scoreEl = scoreEl;
+		this.fullName = fullName;
 		this.assessmentItem = assessmentItem;
-		this.testPlanNodeKey = testPlanNodeKey;
 		this.responseFormItems = responseFormItems;
+		this.itemInfos = itemInfos;
+	}
+	
+	public AssessmentItemCorrection getCorrection() {
+		return itemInfos;
+	}
+	
+	public String getFullName() {
+		return fullName;
 	}
 	
 	public String getAssessmentItemTitle() {
 		return assessmentItem.getTitle();
 	}
 	
+	public boolean isResponded() {
+		return itemInfos.isResponded();
+	}
+	
+	public AssessmentTestSession getTestSession() {
+		return itemInfos.getTestSession();
+	}
+	
 	public TestPlanNodeKey getTestPlanNodeKey() {
-		return testPlanNodeKey;
+		return itemInfos.getItemNode().getKey();
 	}
 
 	public TextElement getScoreEl() {

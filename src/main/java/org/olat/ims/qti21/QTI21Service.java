@@ -109,10 +109,10 @@ public interface QTI21Service {
 	
 	/**
 	 * 
-	 * @param resolvedAssessmentTest
+	 * @param The test resource
 	 * @return
 	 */
-	public boolean needManualCorrection(ResolvedAssessmentTest resolvedAssessmentTest);
+	public boolean needManualCorrection(RepositoryEntry testEntry);
 	
 	/**
 	 * 
@@ -193,9 +193,21 @@ public interface QTI21Service {
 	 */
 	public List<AssessmentTestSession> getAssessmentTestSessions(RepositoryEntryRef courseEntry, String subIdent, IdentityRef identity);
 	
+	/**
+	 * Retrieve the sessions for a test.
+	 * 
+	 * @param courseEntry
+	 * @param subIdent
+	 * @param testEntry
+	 * @return
+	 */
+	public List<AssessmentTestSession> getAssessmentTestSessions(RepositoryEntryRef courseEntry, String subIdent, RepositoryEntry testEntry);
+	
 	public AssessmentItemSession getOrCreateAssessmentItemSession(AssessmentTestSession candidateSession, ParentPartItemRefs parentParts, String assessmentItemIdentifier);
 	
 	public List<AssessmentItemSession> getAssessmentItemSessions(AssessmentTestSession candidateSession);
+	
+	public List<AssessmentItemSession> getAssessmentItemSessions(RepositoryEntryRef courseEntry, String subIdent, RepositoryEntry testEntry, String itemRef);
 	
 	public AssessmentItemSession updateAssessmentItemSession(AssessmentItemSession itemSession);
 	

@@ -108,7 +108,7 @@ public abstract class AssessmentObjectComponent extends AbstractComponent implem
 	}
 	
 	public boolean isItemSessionEnded(ItemSessionState itemSessionState, boolean solutionMode) {
-		return itemSessionState.getEndTime() != null || solutionMode;
+		return candidateSessionContext.isTerminated() || itemSessionState.getEndTime() != null || solutionMode;
 	}
 	
 	//<xsl:variable name="identifierMatch" select="boolean(qw:value-contains(qw:get-outcome-value(@outcomeIdentifier), @identifier))" as="xs:boolean"/>

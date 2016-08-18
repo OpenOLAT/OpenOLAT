@@ -197,6 +197,16 @@ public interface FlexiTableElement extends FormItem {
 	public boolean isMultiSelectedIndex(int index);
 	
 	/**
+	 * Select all rows of all pages.
+	 */
+	public void selectAll();
+	
+	/**
+	 * Remove all multi selected index.
+	 */
+	public void deselectAll();
+	
+	/**
 	 * Is a search field enabled
 	 * @return
 	 */
@@ -355,8 +365,6 @@ public interface FlexiTableElement extends FormItem {
 	public void sort(String sortKey, boolean asc);
 	
 	public void reloadData();
-	
-	public void deselectAll();
 
 	/**
 	 * Set the message displayed when the table is empty and the table header

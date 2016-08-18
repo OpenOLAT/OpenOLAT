@@ -55,6 +55,7 @@ import org.olat.course.nodes.ProjectBrokerCourseNode;
 import org.olat.course.nodes.STCourseNode;
 import org.olat.course.nodes.ScormCourseNode;
 import org.olat.course.nodes.iq.IQEditController;
+import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.course.run.scoring.AssessmentEvaluation;
 import org.olat.course.run.scoring.ScoreAccounting;
 import org.olat.course.run.userview.UserCourseEnvironment;
@@ -181,6 +182,17 @@ public class AssessmentHelper {
 		IdentityEnvironment ienv = new IdentityEnvironment(); 
 		ienv.setIdentity(identity);
 		UserCourseEnvironment uce = new UserCourseEnvironmentImpl(ienv, course.getCourseEnvironment());
+		// Fetch all score and passed and calculate score accounting for the entire
+		// course
+		uce.getScoreAccounting().evaluateAll();
+		return uce;
+	}
+	
+	public static UserCourseEnvironment createAndInitUserCourseEnvironment(Identity identity, CourseEnvironment courseEnv) {
+		// create an identenv with no roles, no attributes, no locale
+		IdentityEnvironment ienv = new IdentityEnvironment(); 
+		ienv.setIdentity(identity);
+		UserCourseEnvironment uce = new UserCourseEnvironmentImpl(ienv, courseEnv);
 		// Fetch all score and passed and calculate score accounting for the entire
 		// course
 		uce.getScoreAccounting().evaluateAll();

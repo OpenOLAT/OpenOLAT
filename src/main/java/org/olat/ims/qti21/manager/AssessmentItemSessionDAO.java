@@ -22,11 +22,15 @@ package org.olat.ims.qti21.manager;
 import java.util.Date;
 import java.util.List;
 
+import javax.persistence.TypedQuery;
+
 import org.olat.core.commons.persistence.DB;
 import org.olat.ims.qti21.AssessmentItemSession;
 import org.olat.ims.qti21.AssessmentTestSession;
 import org.olat.ims.qti21.model.ParentPartItemRefs;
 import org.olat.ims.qti21.model.jpa.AssessmentItemSessionImpl;
+import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryRef;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -80,6 +84,42 @@ public class AssessmentItemSessionDAO {
 			.createQuery(sb.toString(), AssessmentItemSession.class)
 			.setParameter("assessmentTestSessionKey", assessmentTestSession.getKey())
 			.getResultList();
+	}
+	
+	public List<AssessmentItemSession> getAssessmentItemSessions(RepositoryEntryRef entry, String subIdent, RepositoryEntry testEntry, String itemRef) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select itemSession from qtiassessmentitemsession itemSession")
+		  .append(" inner join itemSession.assessmentTestSession testSession")
+		  .append(" where testSession.testEntry.key=:testEntryKey");
+		if(entry != null) {
+			sb.append(" and testSession.repositoryEntry.key=:courseEntryKey");
+		} else {
+			sb.append(" and testSession.repositoryEntry.key=:testEntryKey");
+		}
+		
+		if(subIdent != null) {
+			sb.append(" and testSession.subIdent=:subIdent");
+		} else {
+			sb.append(" and testSession.subIdent is null");
+		}
+		
+		if(itemRef != null) {
+			sb.append(" and itemSession.assessmentItemIdentifier=:itemRef");
+		}
+		
+		TypedQuery<AssessmentItemSession> query = dbInstance.getCurrentEntityManager()
+			.createQuery(sb.toString(), AssessmentItemSession.class)
+			.setParameter("testEntryKey", testEntry.getKey());
+		if(entry != null) {
+			query.setParameter("courseEntryKey", entry.getKey());
+		}
+		if(subIdent != null) {
+			query.setParameter("subIdent", subIdent);
+		}
+		if(itemRef != null) {
+			query.setParameter("itemRef", itemRef);
+		}
+		return query.getResultList();
 	}
 	
 	public AssessmentItemSession merge(AssessmentItemSession itemSession) {

@@ -17,50 +17,34 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.ims.qti21.ui.assessment;
+package org.olat.modules.assessment.ui.event;
 
-import java.util.Date;
 
+import java.util.List;
+
+import org.olat.core.gui.control.Event;
 import org.olat.ims.qti21.AssessmentTestSession;
-import org.olat.ims.qti21.model.audit.CandidateEvent;
-import org.olat.ims.qti21.ui.CandidateSessionContext;
 
 /**
  * 
- * Initial date: 16.08.2016<br>
+ * Initial date: 18.08.2016<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class TerminatedStaticCandidateSessionContext implements CandidateSessionContext {
+public class CompleteAssessmentTestSessionEvent extends Event {
+
+	private static final long serialVersionUID = 795226774030848980L;
+
+	public static final String COMPLETE_EVENT = "complete-assessments";
 	
-	private final AssessmentTestSession testSession;
+	private final List<AssessmentTestSession> testSessions;
 	
-	public TerminatedStaticCandidateSessionContext(AssessmentTestSession testSession) {
-		this.testSession = testSession;
+	public CompleteAssessmentTestSessionEvent(List<AssessmentTestSession> testSessions) {
+		super(COMPLETE_EVENT);
+		this.testSessions = testSessions;
 	}
 
-	@Override
-	public boolean isTerminated() {
-		return true;
-	}
-
-	@Override
-	public AssessmentTestSession getCandidateSession() {
-		return testSession;
-	}
-
-	@Override
-	public CandidateEvent getLastEvent() {
-		return null;
-	}
-
-	@Override
-	public Date getCurrentRequestTimestamp() {
-		return null;
-	}
-
-	@Override
-	public boolean isMarked(String itemKey) {
-		return false;
+	public List<AssessmentTestSession> getTestSessions() {
+		return testSessions;
 	}
 }

@@ -826,7 +826,7 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 				&& exportButton.getFormDispatchId().equals(dispatchuri)) {
 			doExport(ureq);
 		} else if(dispatchuri != null && select != null && select.equals("checkall")) {
-			doSelectAll();
+			selectAll();
 		} else if(dispatchuri != null && select != null && select.equals("uncheckall")) {
 			doUnSelectAll();
 		} else if(customButton != null
@@ -1282,7 +1282,8 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 		}
 	}
 	
-	protected void doSelectAll() {
+	@Override
+	public void selectAll() {
 		if(multiSelectedIndex != null) {
 			multiSelectedIndex.clear();
 		} else {

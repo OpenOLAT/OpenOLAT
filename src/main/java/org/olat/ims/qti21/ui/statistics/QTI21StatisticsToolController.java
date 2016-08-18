@@ -98,6 +98,7 @@ public class QTI21StatisticsToolController extends BasicController implements Ac
 		}
 		
 		statsButton = LinkFactory.createButton("menu.title", null, this);
+		statsButton.setIconLeftCSS("o_icon o_icon-fw o_icon_statistics_tool");
 		statsButton.setTranslator(getTranslator());
 		putInitialPanel(statsButton);
 		getInitialComponent().setSpanAsDomReplaceable(true); // override to wrap panel as span to not break link layout 

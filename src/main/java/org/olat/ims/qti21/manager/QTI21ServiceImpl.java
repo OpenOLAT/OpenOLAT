@@ -64,6 +64,7 @@ import org.olat.fileresource.types.ImsQTI21Resource.PathResourceLocator;
 import org.olat.ims.qti21.AssessmentItemSession;
 import org.olat.ims.qti21.AssessmentResponse;
 import org.olat.ims.qti21.AssessmentSessionAuditLogger;
+import org.olat.ims.qti21.AssessmentTestHelper;
 import org.olat.ims.qti21.AssessmentTestMarks;
 import org.olat.ims.qti21.AssessmentTestSession;
 import org.olat.ims.qti21.QTI21Constants;
@@ -95,21 +96,11 @@ import uk.ac.ed.ph.jqtiplus.JqtiExtensionPackage;
 import uk.ac.ed.ph.jqtiplus.QtiConstants;
 import uk.ac.ed.ph.jqtiplus.node.AssessmentObject;
 import uk.ac.ed.ph.jqtiplus.node.QtiNode;
-import uk.ac.ed.ph.jqtiplus.node.item.AssessmentItem;
-import uk.ac.ed.ph.jqtiplus.node.item.interaction.DrawingInteraction;
-import uk.ac.ed.ph.jqtiplus.node.item.interaction.ExtendedTextInteraction;
-import uk.ac.ed.ph.jqtiplus.node.item.interaction.Interaction;
-import uk.ac.ed.ph.jqtiplus.node.item.interaction.UploadInteraction;
 import uk.ac.ed.ph.jqtiplus.node.result.AbstractResult;
 import uk.ac.ed.ph.jqtiplus.node.result.AssessmentResult;
 import uk.ac.ed.ph.jqtiplus.node.result.ItemResult;
 import uk.ac.ed.ph.jqtiplus.node.result.ItemVariable;
 import uk.ac.ed.ph.jqtiplus.node.result.OutcomeVariable;
-import uk.ac.ed.ph.jqtiplus.node.test.AssessmentItemRef;
-import uk.ac.ed.ph.jqtiplus.node.test.AssessmentSection;
-import uk.ac.ed.ph.jqtiplus.node.test.AssessmentTest;
-import uk.ac.ed.ph.jqtiplus.node.test.SectionPart;
-import uk.ac.ed.ph.jqtiplus.node.test.TestPart;
 import uk.ac.ed.ph.jqtiplus.notification.NotificationRecorder;
 import uk.ac.ed.ph.jqtiplus.reading.AssessmentObjectXmlLoader;
 import uk.ac.ed.ph.jqtiplus.reading.QtiObjectReadResult;
@@ -337,54 +328,11 @@ public class QTI21ServiceImpl implements QTI21Service, InitializingBean, Disposa
 	}
 	
 	@Override
-	public boolean needManualCorrection(ResolvedAssessmentTest resolvedAssessmentTest) {
-		AssessmentTest test = resolvedAssessmentTest.getRootNodeLookup().extractIfSuccessful();
-
-		boolean needManualCorrection = false; 
-		List<TestPart> parts = test.getChildAbstractParts();
-		for(TestPart part:parts) {
-			List<AssessmentSection> sections = part.getAssessmentSections();
-			for(AssessmentSection section:sections) {
-				if(needManualCorrectionQTI21(section, resolvedAssessmentTest)) {
-					needManualCorrection = true;
-					break;
-				}
-			}
-		}
-		return needManualCorrection;
-	}
-	
-	private boolean needManualCorrectionQTI21(AssessmentSection section, ResolvedAssessmentTest resolvedAssessmentTest) {
-		for(SectionPart part: section.getSectionParts()) {
-			if(part instanceof AssessmentItemRef) {
-				if(needManualCorrectionQTI21((AssessmentItemRef)part, resolvedAssessmentTest)) {
-					return true;
-				}
-			} else if(part instanceof AssessmentSection) {
-				if(needManualCorrectionQTI21((AssessmentSection) part, resolvedAssessmentTest)) {
-					return true;
-				}
-			}
-		}
-		return false;
-	}
-	
-	private boolean needManualCorrectionQTI21(AssessmentItemRef itemRef, ResolvedAssessmentTest resolvedAssessmentTest) {
-		ResolvedAssessmentItem resolvedAssessmentItem = resolvedAssessmentTest.getResolvedAssessmentItem(itemRef);
-		if(resolvedAssessmentItem != null
-				&& resolvedAssessmentItem.getItemLookup() != null
-				&& resolvedAssessmentItem.getItemLookup().getRootNodeHolder() != null) {
-			AssessmentItem assessmentItem = resolvedAssessmentItem.getItemLookup().getRootNodeHolder().getRootNode();
-			List<Interaction> interactions = assessmentItem.getItemBody().findInteractions();
-			for(Interaction interaction:interactions) {
-				if(interaction instanceof UploadInteraction
-						|| interaction instanceof DrawingInteraction
-						|| interaction instanceof ExtendedTextInteraction) {
-					return true;
-				}
-			}
-		}
-		return false;
+	public boolean needManualCorrection(RepositoryEntry testEntry) {
+		FileResourceManager frm = FileResourceManager.getInstance();
+		File fUnzippedDirRoot = frm.unzipFileResource(testEntry.getOlatResource());
+		ResolvedAssessmentTest resolvedAssessmentTest = loadAndResolveAssessmentTest(fUnzippedDirRoot, false);
+		return AssessmentTestHelper.needManualCorrection(resolvedAssessmentTest);
 	}
 
 	@Override
@@ -482,8 +430,13 @@ public class QTI21ServiceImpl implements QTI21Service, InitializingBean, Disposa
 	}
 
 	@Override
-	public List<AssessmentTestSession> getAssessmentTestSessions(RepositoryEntryRef courseEntry, String courseSubIdent, IdentityRef identity) {
-		return testSessionDao.getUserTestSessions(courseEntry, courseSubIdent, identity);
+	public List<AssessmentTestSession> getAssessmentTestSessions(RepositoryEntryRef courseEntry, String subIdent, IdentityRef identity) {
+		return testSessionDao.getUserTestSessions(courseEntry, subIdent, identity);
+	}
+
+	@Override
+	public List<AssessmentTestSession> getAssessmentTestSessions(RepositoryEntryRef courseEntry, String subIdent, RepositoryEntry testEntry) {
+		return testSessionDao.getTestSessions(courseEntry, subIdent, testEntry);
 	}
 
 	@Override
@@ -547,6 +500,11 @@ public class QTI21ServiceImpl implements QTI21Service, InitializingBean, Disposa
 	@Override
 	public List<AssessmentItemSession> getAssessmentItemSessions(AssessmentTestSession candidateSession) {
 		return itemSessionDao.getAssessmentItemSessions(candidateSession);
+	}
+
+	@Override
+	public List<AssessmentItemSession> getAssessmentItemSessions(RepositoryEntryRef courseEntry, String subIdent, RepositoryEntry testEntry, String itemRef) {
+		return itemSessionDao.getAssessmentItemSessions(courseEntry, subIdent, testEntry, itemRef);
 	}
 
 	@Override

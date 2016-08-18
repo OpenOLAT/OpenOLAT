@@ -17,7 +17,7 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.ims.qti21.ui;
+package org.olat.ims.qti21;
 
 import java.util.List;
 
@@ -26,9 +26,17 @@ import org.olat.core.logging.Tracing;
 import org.olat.ims.qti21.model.ParentPartItemRefs;
 
 import uk.ac.ed.ph.jqtiplus.node.QtiNode;
+import uk.ac.ed.ph.jqtiplus.node.item.AssessmentItem;
+import uk.ac.ed.ph.jqtiplus.node.item.interaction.DrawingInteraction;
+import uk.ac.ed.ph.jqtiplus.node.item.interaction.ExtendedTextInteraction;
+import uk.ac.ed.ph.jqtiplus.node.item.interaction.Interaction;
+import uk.ac.ed.ph.jqtiplus.node.item.interaction.UploadInteraction;
 import uk.ac.ed.ph.jqtiplus.node.test.AssessmentItemRef;
 import uk.ac.ed.ph.jqtiplus.node.test.AssessmentSection;
+import uk.ac.ed.ph.jqtiplus.node.test.AssessmentTest;
+import uk.ac.ed.ph.jqtiplus.node.test.SectionPart;
 import uk.ac.ed.ph.jqtiplus.node.test.TestPart;
+import uk.ac.ed.ph.jqtiplus.resolution.ResolvedAssessmentItem;
 import uk.ac.ed.ph.jqtiplus.resolution.ResolvedAssessmentTest;
 import uk.ac.ed.ph.jqtiplus.state.TestPlanNode;
 import uk.ac.ed.ph.jqtiplus.state.TestPlanNodeKey;
@@ -86,7 +94,66 @@ public class AssessmentTestHelper {
 		}
 		
 		return parentParts;
-		
+	}
+	
+	public static String getAssessmentItemTitle(AssessmentItemRef itemRef, ResolvedAssessmentTest resolvedAssessmentTest) {
+		ResolvedAssessmentItem resolvedAssessmentItem = resolvedAssessmentTest.getResolvedAssessmentItem(itemRef);
+		if(resolvedAssessmentItem != null
+				&& resolvedAssessmentItem.getItemLookup() != null
+				&& resolvedAssessmentItem.getItemLookup().getRootNodeHolder() != null) {
+			return resolvedAssessmentItem.getItemLookup().extractIfSuccessful().getTitle();
+		}
+		return "ERROR";
+	}
+	
+	public static boolean needManualCorrection(ResolvedAssessmentTest resolvedAssessmentTest) {
+		AssessmentTest test = resolvedAssessmentTest.getRootNodeLookup().extractIfSuccessful();
+
+		boolean needManualCorrection = false; 
+		List<TestPart> parts = test.getChildAbstractParts();
+		for(TestPart part:parts) {
+			List<AssessmentSection> sections = part.getAssessmentSections();
+			for(AssessmentSection section:sections) {
+				if(needManualCorrection(section, resolvedAssessmentTest)) {
+					needManualCorrection = true;
+					break;
+				}
+			}
+		}
+		return needManualCorrection;
+	}
+	
+	private static boolean needManualCorrection(AssessmentSection section, ResolvedAssessmentTest resolvedAssessmentTest) {
+		for(SectionPart part: section.getSectionParts()) {
+			if(part instanceof AssessmentItemRef) {
+				if(needManualCorrection((AssessmentItemRef)part, resolvedAssessmentTest)) {
+					return true;
+				}
+			} else if(part instanceof AssessmentSection) {
+				if(needManualCorrection((AssessmentSection) part, resolvedAssessmentTest)) {
+					return true;
+				}
+			}
+		}
+		return false;
+	}
+	
+	public static boolean needManualCorrection(AssessmentItemRef itemRef, ResolvedAssessmentTest resolvedAssessmentTest) {
+		ResolvedAssessmentItem resolvedAssessmentItem = resolvedAssessmentTest.getResolvedAssessmentItem(itemRef);
+		if(resolvedAssessmentItem != null
+				&& resolvedAssessmentItem.getItemLookup() != null
+				&& resolvedAssessmentItem.getItemLookup().getRootNodeHolder() != null) {
+			AssessmentItem assessmentItem = resolvedAssessmentItem.getItemLookup().getRootNodeHolder().getRootNode();
+			List<Interaction> interactions = assessmentItem.getItemBody().findInteractions();
+			for(Interaction interaction:interactions) {
+				if(interaction instanceof UploadInteraction
+						|| interaction instanceof DrawingInteraction
+						|| interaction instanceof ExtendedTextInteraction) {
+					return true;
+				}
+			}
+		}
+		return false;
 	}
 
 }

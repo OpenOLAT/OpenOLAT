@@ -95,7 +95,6 @@ import de.bps.onyx.plugin.OnyxModule;
 import de.bps.onyx.plugin.course.nodes.iq.IQEditForm;
 import de.bps.webservices.clients.onyxreporter.OnyxReporterConnector;
 import de.bps.webservices.clients.onyxreporter.OnyxReporterException;
-import uk.ac.ed.ph.jqtiplus.resolution.ResolvedAssessmentTest;
 
 /**
  * 
@@ -319,9 +318,9 @@ public class IQConfigurationController extends BasicController {
 				// repository search controller done				
 				cmc.deactivate();
 				RepositoryEntry re = searchController.getSelectedEntry();
-				doIQReference(urequest, re);
+				boolean needManualCorrection = checkManualCorrectionNeeded(re);
+				doIQReference(urequest, re, needManualCorrection);
 				updateEditController(urequest);
-				checkManualCorrectionNeeded(re);
 			}
 		} else if (source == fccecontr) {
 			if (event == FileChooseCreateEditController.FILE_CHANGED_EVENT) {
@@ -351,7 +350,10 @@ public class IQConfigurationController extends BasicController {
 					// couldn't removed qtiser files
 					logWarn("Couldn't removed course node folder! Course resourceable id: " + course.getResourceableId() + ", Course node ident: " + courseNode.getIdent(), null);
 				}
-				doIQReference(urequest, replaceWizard.getSelectedRepositoryEntry());
+				
+				RepositoryEntry re = replaceWizard.getSelectedRepositoryEntry();
+				boolean needManualCorrection = checkManualCorrectionNeeded(re);
+				doIQReference(urequest, re, needManualCorrection);
 				fireEvent(urequest, NodeEditController.NODECONFIG_CHANGED_EVENT);
 			}
 		} else if (source == mod12ConfigForm) {
@@ -508,26 +510,28 @@ public class IQConfigurationController extends BasicController {
 		}
 	}
 
-	private void checkManualCorrectionNeeded(RepositoryEntry re) {
-		if(OnyxModule.isOnyxTest(re.getOlatResource())) return;
+	private boolean checkManualCorrectionNeeded(RepositoryEntry re) {
+		if(OnyxModule.isOnyxTest(re.getOlatResource())) {
+			return false;
+		}
 		if(courseNode instanceof IQSURVCourseNode || courseNode instanceof IQSELFCourseNode) {
 			//nothing to do
 		} else if(ImsQTI21Resource.TYPE_NAME.equals(re.getOlatResource().getResourceableTypeName())) {
 			if(needManualCorrectionQTI21(re)) {
 				showWarning("warning.test.with.essay");
+				return true;
 			}
 		} else {
 			if(needManualCorrectionQTI12(re)) {
 				showWarning("warning.test.with.essay");
+				return true;
 			}
 		}
+		return false;
 	}
 	
 	private boolean needManualCorrectionQTI21(RepositoryEntry re) {
-		FileResourceManager frm = FileResourceManager.getInstance();
-		File fUnzippedDirRoot = frm.unzipFileResource(re.getOlatResource());
-		ResolvedAssessmentTest resolvedAssessmentTest = qti21service.loadAndResolveAssessmentTest(fUnzippedDirRoot, false);
-		return qti21service.needManualCorrection(resolvedAssessmentTest);
+		return qti21service.needManualCorrection(re);
 	}
 	
 	private boolean needManualCorrectionQTI12(RepositoryEntry re) {
@@ -552,7 +556,7 @@ public class IQConfigurationController extends BasicController {
 		return needManualCorrection;
 	}
 	
-	private void doIQReference(UserRequest urequest, RepositoryEntry re) {
+	private void doIQReference(UserRequest urequest, RepositoryEntry re, boolean manualCorrection) {
 		// repository search controller done				
 		if (re != null) {
 			if (CoordinatorManager.getInstance().getCoordinator().getLocker().isLocked(re.getOlatResource(), null)) {
@@ -606,6 +610,12 @@ public class IQConfigurationController extends BasicController {
 					if (isEditable(urequest.getIdentity(), urequest.getUserSession().getRoles(), re)) {
 						editTestButton = LinkFactory.createButtonSmall("command.editRepFile", myContent, this);
 					}
+				}
+				
+				if(manualCorrection) {
+					myContent.contextPut(IQEditController.CONFIG_CORRECTION_MODE, "manual");
+				} else {
+					myContent.contextPut(IQEditController.CONFIG_CORRECTION_MODE, "auto");
 				}
 				fireEvent(urequest, NodeEditController.NODECONFIG_CHANGED_EVENT);
 			}

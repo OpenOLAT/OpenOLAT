@@ -92,6 +92,7 @@ import org.olat.ims.qti21.model.QTI21StatisticSearchParams;
 import org.olat.ims.qti21.ui.QTI21AssessmentDetailsController;
 import org.olat.ims.qti21.ui.QTI21ResetToolController;
 import org.olat.ims.qti21.ui.QTI21RetrieveTestsToolController;
+import org.olat.ims.qti21.ui.assessment.QTI21CorrectionToolController;
 import org.olat.ims.qti21.ui.statistics.QTI21StatisticResourceResult;
 import org.olat.ims.qti21.ui.statistics.QTI21StatisticsToolController;
 import org.olat.modules.ModuleConfiguration;
@@ -211,13 +212,17 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements Pe
 		if(ImsQTI21Resource.TYPE_NAME.equals(qtiTestEntry.getOlatResource().getResourceableTypeName())) {
 			tools.add(new QTI21StatisticsToolController(ureq, wControl, stackPanel, courseEnv, options, this));
 			RepositoryEntry courseEntry = courseEnv.getCourseGroupManager().getCourseEntry();
-			boolean isRunningSessions = CoreSpringFactory.getImpl(QTI21Service.class)
-					.isRunningAssessmentTestSession(courseEntry, getIdent(), getReferencedRepositoryEntry());
+			QTI21Service qtiService = CoreSpringFactory.getImpl(QTI21Service.class);
+			boolean isRunningSessions = qtiService
+					.isRunningAssessmentTestSession(courseEntry, getIdent(), qtiTestEntry);
 			if(isRunningSessions) {
 				tools.add(new QTI21RetrieveTestsToolController(ureq, wControl, courseEnv, options, this));
 			}
 			if(options.isAdmin()) {
 				tools.add(new QTI21ResetToolController(ureq, wControl, courseEnv, options, this));
+			}
+			if(qtiService.needManualCorrection(qtiTestEntry)) {
+				tools.add(new QTI21CorrectionToolController(ureq, wControl, courseEnv, options, this));
 			}
 		} else {
 			tools.add(new QTI12StatisticsToolController(ureq, wControl, stackPanel, courseEnv, options, this));

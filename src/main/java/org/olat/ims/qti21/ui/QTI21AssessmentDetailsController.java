@@ -69,8 +69,6 @@ import org.olat.repository.RepositoryEntry;
 import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import uk.ac.ed.ph.jqtiplus.resolution.ResolvedAssessmentTest;
-
 /**
  * 
  * Initial date: 28.06.2016<br>
@@ -107,18 +105,13 @@ public class QTI21AssessmentDetailsController extends FormBasicController {
 	public QTI21AssessmentDetailsController(UserRequest ureq, WindowControl wControl,
 			RepositoryEntry assessableEntry, IQTESTCourseNode courseNode, UserCourseEnvironment assessedUserCourseEnv) {
 		super(ureq, wControl, "assessment_details");
-		
 		entry = assessableEntry;
 		this.courseNode = courseNode;
 		subIdent = courseNode.getIdent();
 		this.assessedUserCourseEnv = assessedUserCourseEnv;
 		RepositoryEntry testEntry = courseNode.getReferencedRepositoryEntry();
 		assessedIdentity = assessedUserCourseEnv.getIdentityEnvironment().getIdentity();
-		
-		FileResourceManager frm = FileResourceManager.getInstance();
-		File fUnzippedDirRoot = frm.unzipFileResource(testEntry.getOlatResource());
-		ResolvedAssessmentTest resolvedAssessmentTest = qtiService.loadAndResolveAssessmentTest(fUnzippedDirRoot, false);
-		manualCorrections = qtiService.needManualCorrection(resolvedAssessmentTest);
+		manualCorrections = qtiService.needManualCorrection(testEntry);
 
 		initForm(ureq);
 		updateModel();
@@ -127,15 +120,10 @@ public class QTI21AssessmentDetailsController extends FormBasicController {
 	public QTI21AssessmentDetailsController(UserRequest ureq, WindowControl wControl,
 			RepositoryEntry assessableEntry, Identity assessedIdentity) {
 		super(ureq, wControl, "assessment_details");
-		
 		entry = assessableEntry;
 		subIdent = null;
 		this.assessedIdentity = assessedIdentity;
-		
-		FileResourceManager frm = FileResourceManager.getInstance();
-		File fUnzippedDirRoot = frm.unzipFileResource(assessableEntry.getOlatResource());
-		ResolvedAssessmentTest resolvedAssessmentTest = qtiService.loadAndResolveAssessmentTest(fUnzippedDirRoot, false);
-		manualCorrections = qtiService.needManualCorrection(resolvedAssessmentTest);
+		manualCorrections = qtiService.needManualCorrection(assessableEntry);
 
 		initForm(ureq);
 		updateModel();
