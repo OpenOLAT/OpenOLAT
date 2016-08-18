@@ -150,19 +150,21 @@ public class PageListDataModel extends DefaultFlexiTableDataModel<PageRow>
 	}
 
 	public enum PageCols implements FlexiSortableColumnDef {
-		key("table.header.key"),
-		title("table.header.title"),
-		status("table.header.status"),
-		date("table.header.date"),
-		publicationDate("table.header.publication.date"),
-		categories("table.header.categories"),
-		section("table.header.section"),
-		comment("comment.title");
+		key("table.header.key", true),
+		title("table.header.title", true),
+		status("table.header.status", true),
+		date("table.header.date", true),
+		publicationDate("table.header.publication.date", true),
+		categories("table.header.categories", false),
+		section("table.header.section", true),
+		comment("comment.title", true);
 		
 		private final String i18nKey;
+		private final boolean sortable;
 		
-		private PageCols(String i18nKey) {
+		private PageCols(String i18nKey, boolean sortable) {
 			this.i18nKey = i18nKey;
+			this.sortable = sortable;
 		}
 		
 		@Override
@@ -172,7 +174,7 @@ public class PageListDataModel extends DefaultFlexiTableDataModel<PageRow>
 
 		@Override
 		public boolean sortable() {
-			return true;
+			return sortable;
 		}
 
 		@Override

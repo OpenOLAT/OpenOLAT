@@ -5,7 +5,11 @@ div#o_main_toolbar.o_toolbar.o_portfolio {
 
 
 .o_section_lead, .o_page_lead {
-	@extend .jumbotron;
+	padding: $o-portfolio-lead-space-sm $o-portfolio-lead-space-sm;
+	margin-bottom: $o-portfolio-lead-space-sm;
+	background-color: $o-portfolio-lead-background-color;
+	border-radius: $o-portfolio-lead-border-radius;
+	border: 1px $o-portfolio-lead-border-color solid;
 }
 
 .o_portfolio_listing {

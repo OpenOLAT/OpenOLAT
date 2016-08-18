@@ -20,8 +20,10 @@
 package org.olat.modules.portfolio.ui;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import javax.servlet.http.HttpServletRequest;
@@ -74,8 +76,9 @@ import org.olat.modules.portfolio.Media;
 import org.olat.modules.portfolio.MediaHandler;
 import org.olat.modules.portfolio.MediaLight;
 import org.olat.modules.portfolio.PortfolioService;
-import org.olat.modules.portfolio.model.CategoryStatistics;
+import org.olat.modules.portfolio.model.CategoryLight;
 import org.olat.modules.portfolio.ui.MediaDataModel.MediaCols;
+import org.olat.modules.portfolio.ui.component.CategoriesCellRenderer;
 import org.olat.modules.portfolio.ui.event.MediaSelectionEvent;
 import org.olat.modules.portfolio.ui.media.CollectCitationMediaController;
 import org.olat.modules.portfolio.ui.media.CollectTextMediaController;
@@ -175,6 +178,7 @@ public class MediaCenterController extends FormBasicController
 				new MediaTypeCellRenderer(handlersMap)));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(MediaCols.title, "select"));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(MediaCols.collectionDate, "select"));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(MediaCols.categories, new CategoriesCellRenderer()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("select", translate("select"), "select"));
 	
 		model = new MediaDataModel(columnsModel, getLocale());
@@ -254,11 +258,26 @@ public class MediaCenterController extends FormBasicController
 		model.setObjects(rows);
 		model.filter(tableEl.getSelectedFilterKey());
 		
-		List<CategoryStatistics> categoryStats = portfolioService.getMediaCategories(getIdentity());
-		List<FormLink> newTagLinks = new ArrayList<>(categoryStats.size());
-		for(CategoryStatistics categoryStat:categoryStats) {
-			FormLink tagLink =  uifactory.addFormLink("tag_" + (++counter), "tag", categoryStat.getName(), null, null, Link.NONTRANSLATED);
-			CategoryState state = new CategoryState(categoryStat, tagNames.contains(categoryStat.getName()));
+		Map<Long,MediaRow> rowMap = model.getObjects()
+				.stream().collect(Collectors.toMap(r -> r.getKey(), r -> r));
+		
+		Set<String> duplicateCategories = new HashSet<>();
+		List<CategoryLight> categories = portfolioService.getMediaCategories(getIdentity());
+		List<FormLink> newTagLinks = new ArrayList<>(categories.size());
+		for(CategoryLight category:categories) {
+			String name = category.getCategory();
+			MediaRow mRow = rowMap.get(category.getMediaKey());
+			if(mRow != null) {
+				mRow.addCategory(name);
+			}
+			
+			if(duplicateCategories.contains(name)) {
+				continue;
+			}
+			duplicateCategories.add(name);
+			
+			FormLink tagLink =  uifactory.addFormLink("tag_" + (++counter), "tag", name, null, null, Link.NONTRANSLATED);
+			CategoryState state = new CategoryState(category, tagNames.contains(name));
 			tagLink.setUserObject(state);
 			if(state.isSelected()) {
 				tagLink.setCustomEnabledLinkCSS("tag label label-info o_disabled");
@@ -597,9 +616,9 @@ public class MediaCenterController extends FormBasicController
 	private static class CategoryState {
 		
 		private boolean selected;
-		private final CategoryStatistics category;
+		private final CategoryLight category;
 		
-		public CategoryState(CategoryStatistics category, boolean selected) {
+		public CategoryState(CategoryLight category, boolean selected) {
 			this.category = category;
 			this.selected = selected;
 		}
@@ -613,7 +632,7 @@ public class MediaCenterController extends FormBasicController
 		}
 
 		public String getName() {
-			return category.getName();
+			return category.getCategory();
 		}
 	}
 	

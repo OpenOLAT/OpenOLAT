@@ -345,6 +345,11 @@ $o-portfolio-entry-closed-color						: $brand-success;
 $o-portfolio-entry-deleted-color					: #000;
 $o-portfolio-media-content-background-color			: #f8f8f8;
 $o-portfolio-media-content-space					: $padding-large-vertical;
+$o-portfolio-lead-space-sm							: $padding-large-vertical !default;
+$o-portfolio-lead-border-color						: $gray-lighter;
+$o-portfolio-lead-border-radius						: $border-radius-small !default;
+$o-portfolio-lead-background-color					: $gray-lighter;
+
 
 /* Chat and other floating window */
 $o-dialog-window-bg				: #fefefe !default;

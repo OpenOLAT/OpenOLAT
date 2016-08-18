@@ -19,6 +19,8 @@
  */
 package org.olat.modules.portfolio.model;
 
+import java.util.Date;
+
 import org.olat.modules.portfolio.Citation;
 import org.olat.modules.portfolio.CitationSourceType;
 
@@ -34,6 +36,7 @@ public class CitationXml implements Citation {
 	private CitationSourceType itemType;
 	
 	private String edition;
+	private String editor;
 	private String volume;
 	private String series;
 	
@@ -44,7 +47,10 @@ public class CitationXml implements Citation {
 	private String institution;
 	
 	private String isbn;
+	
+	private Date lastVisit;
 
+	@Override
 	public CitationSourceType getItemType() {
 		return itemType;
 	}
@@ -53,60 +59,102 @@ public class CitationXml implements Citation {
 		this.itemType = itemType;
 	}
 
+	@Override
 	public String getEdition() {
 		return edition;
 	}
 
+	@Override
 	public void setEdition(String edition) {
 		this.edition = edition;
 	}
 
+	@Override
+	public String getEditor() {
+		return editor;
+	}
+
+	@Override
+	public void setEditor(String editor) {
+		this.editor = editor;
+	}
+
+	public String getIsbn() {
+		return isbn;
+	}
+
+	public void setIsbn(String isbn) {
+		this.isbn = isbn;
+	}
+
+	@Override
 	public String getVolume() {
 		return volume;
 	}
 
+	@Override
 	public void setVolume(String volume) {
 		this.volume = volume;
 	}
 
+	@Override
 	public String getSeries() {
 		return series;
 	}
 
+	@Override
 	public void setSeries(String series) {
 		this.series = series;
 	}
 
+	@Override
 	public String getPublicationTitle() {
 		return publicationTitle;
 	}
 
+	@Override
 	public void setPublicationTitle(String publicationTitle) {
 		this.publicationTitle = publicationTitle;
 	}
 
+	@Override
 	public String getIssue() {
 		return issue;
 	}
 
+	@Override
 	public void setIssue(String issue) {
 		this.issue = issue;
 	}
 
+	@Override
 	public String getPages() {
 		return pages;
 	}
 
+	@Override
 	public void setPages(String pages) {
 		this.pages = pages;
 	}
 
+	@Override
 	public String getInstitution() {
 		return institution;
 	}
 
+	@Override
 	public void setInstitution(String institution) {
 		this.institution = institution;
 	}
+
+	public Date getLastVisit() {
+		return lastVisit;
+	}
+
+	public void setLastVisit(Date lastVisit) {
+		this.lastVisit = lastVisit;
+	}
+	
+	
 
 }

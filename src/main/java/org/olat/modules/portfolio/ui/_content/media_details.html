@@ -41,8 +41,12 @@
 				#end
 				
 				#if($r.isNotNull($metadata) && $r.isNotEmpty($metadata.edition))
-				<tr><th>$r.translate("edition")</th>
+				<tr><th>$r.translate("mf.edition")</th>
 					<td>$r.escapeHtml($metadata.edition)</td></tr>
+				#end
+				#if($r.isNotNull($metadata) && $r.isNotEmpty($metadata.editor))
+				<tr><th>$r.translate("mf.editor")</th>
+					<td>$r.escapeHtml($metadata.editor)</td></tr>
 				#end
 				#if($r.isNotNull($metadata) && $r.isNotEmpty($metadata.volume))
 				<tr><th>$r.translate("volume")</th>
@@ -67,6 +71,15 @@
 				#if($r.isNotNull($metadata) && $r.isNotEmpty($metadata.institution))
 				<tr><th>$r.translate("institution")</th>
 					<td>$r.escapeHtml($metadata.institution)</td></tr>
+				#end
+				#if($r.isNotNull($metadata) && $r.isNotEmpty($metadata.isbn))
+				<tr><th>$r.translate("mf.isbn")</th>
+					<td>$r.escapeHtml($metadata.isbn)</td></tr>
+				#end
+				
+				#if($r.isNotNull($metadata) && $r.isNotEmpty($metadata.lastVisit))
+				<tr><th>$r.translate("mf.lastVisitDate")</th>
+					<td>$r.formatDate($metadata.lastVisit)</td></tr>
 				#end
 				
 				#if($r.available("categories"))

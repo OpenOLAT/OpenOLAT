@@ -135,6 +135,10 @@ public class PageDAO {
 			appendFuzzyLike(sb, "page.title", "searchString", dbInstance.getDbVendor());
 			sb.append(" or ");
 			appendFuzzyLike(sb, "page.summary", "searchString", dbInstance.getDbVendor());
+			sb.append(" or exists (select cat from pfcategoryrelation rel ")
+			  .append("   inner join rel.category cat")
+			  .append("   where rel.resId=page.key and rel.resName='Page' and lower(cat.name) like :searchString")
+			  .append(" )");
 			sb.append(")");
 		}
 		sb.append(" order by section.pos, page.pos");
@@ -161,6 +165,10 @@ public class PageDAO {
 			appendFuzzyLike(sb, "page.title", "searchString", dbInstance.getDbVendor());
 			sb.append(" or ");
 			appendFuzzyLike(sb, "page.summary", "searchString", dbInstance.getDbVendor());
+			sb.append(" or exists (select cat from pfcategoryrelation rel ")
+			  .append("   inner join rel.category cat")
+			  .append("   where rel.resId=page.key and rel.resName='Page' and lower(cat.name) like :searchString")
+			  .append(" )");
 			sb.append(")");
 		}
 		sb.append(" order by page.pos");
@@ -190,6 +198,10 @@ public class PageDAO {
 			appendFuzzyLike(sb, "page.title", "searchString", dbInstance.getDbVendor());
 			sb.append(" or ");
 			appendFuzzyLike(sb, "page.summary", "searchString", dbInstance.getDbVendor());
+			sb.append(" or exists (select cat from pfcategoryrelation rel ")
+			  .append("   inner join rel.category cat")
+			  .append("   where rel.resId=page.key and rel.resName='Page' and lower(cat.name) like :searchString")
+			  .append(" )");
 			sb.append(")");
 		}
 		sb.append(" order by page.creationDate desc");

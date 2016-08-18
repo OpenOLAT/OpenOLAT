@@ -19,7 +19,9 @@
  */
 package org.olat.modules.portfolio.ui.model;
 
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.util.vfs.VFSLeaf;
@@ -38,6 +40,8 @@ public class MediaRow implements MediaLight {
 	private final String cssClass;
 	private final VFSLeaf thumbnail;
 	private final FormLink openFormLink;
+	
+	private List<String> categories;
 	
 	public MediaRow(MediaLight media, VFSLeaf thumbnail, FormLink openFormLink, String cssClass) {
 		this.media = media;
@@ -93,6 +97,17 @@ public class MediaRow implements MediaLight {
 	@Override
 	public String getBusinessPath() {
 		return media.getBusinessPath();
+	}
+	
+	public List<String> getCategories() {
+		return categories;
+	}
+	
+	public void addCategory(String category) {
+		if(categories == null) {
+			categories = new ArrayList<>();
+		}
+		categories.add(category);
 	}
 
 	public FormLink getOpenFormItem() {

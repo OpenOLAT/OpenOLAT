@@ -19,6 +19,8 @@
  */
 package org.olat.modules.portfolio;
 
+import java.util.Date;
+
 /**
  * For XStream
  * 
@@ -33,6 +35,14 @@ public interface Citation {
 	public String getEdition();
 
 	public void setEdition(String edition);
+	
+	public String getEditor();
+	
+	public void setEditor(String editor);
+	
+	public String getIsbn();
+	
+	public void setIsbn(String isbn);
 
 	public String getVolume();
 
@@ -57,5 +67,9 @@ public interface Citation {
 	public String getInstitution();
 
 	public void setInstitution(String institution);
+	
+	public Date getLastVisit();
+	
+	public void setLastVisit(Date date);
 
 }

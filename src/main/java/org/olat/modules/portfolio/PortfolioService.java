@@ -33,7 +33,7 @@ import org.olat.modules.portfolio.model.AccessRights;
 import org.olat.modules.portfolio.model.AssessedBinder;
 import org.olat.modules.portfolio.model.AssessmentSectionChange;
 import org.olat.modules.portfolio.model.BinderStatistics;
-import org.olat.modules.portfolio.model.CategoryStatistics;
+import org.olat.modules.portfolio.model.CategoryLight;
 import org.olat.modules.portfolio.model.SynchedBinder;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
@@ -402,12 +402,9 @@ public interface PortfolioService {
 	
 	public List<Category> getCategories(Media media);
 	
-	/**
-	 * 
-	 * @param owner
-	 * @return
-	 */
-	public List<CategoryStatistics> getMediaCategories(IdentityRef owner);
+
+	public List<CategoryLight> getMediaCategories(IdentityRef owner);
+
 	
 	public List<BinderLight> getUsedInBinders(MediaLight media);
 	

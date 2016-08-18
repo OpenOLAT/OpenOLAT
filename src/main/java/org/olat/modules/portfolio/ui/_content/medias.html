@@ -1,12 +1,15 @@
-#if($r.isNotEmpty($tagLinks) && $r.available("new.medias"))
+#if($r.isNotEmpty($tagLinks) || $r.available("new.medias"))
 <div class="o_block clearfix">
-	<div class="pull-left">
-	<i class="o_icon o_icon_tags"> </i>
-	#foreach($tagLink in $tagLinks)
-		$r.render($tagLink)
+	#if($r.isNotEmpty($tagLinks))
+		<div class="pull-left"><i class="o_icon o_icon_tags"> </i>
+		#foreach($tagLink in $tagLinks)
+			$r.render($tagLink)
+		#end
+		</div>
 	#end
-	</div>
-	<div class="pull-right">$r.render("new.medias")</div>
+	#if($r.available("new.medias"))
+		<div class="pull-right">$r.render("new.medias")</div>
+	#end
 </div>
 #end
 <div class="o_portfolio_media_browser">$r.render("table")</div>

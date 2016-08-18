@@ -56,6 +56,7 @@ import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.modules.portfolio.AssessmentSection;
 import org.olat.modules.portfolio.Assignment;
@@ -107,7 +108,8 @@ implements Activateable2, TooledController, FlexiTableComponentDelegate {
 	protected PortfolioService portfolioService;
 	
 	public AbstractPageListController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
-			BinderSecurityCallback secCallback, BinderConfiguration config, String vTemplate, boolean withSections) {
+			BinderSecurityCallback secCallback, BinderConfiguration config, String vTemplate,
+			boolean withSections) {
 		super(ureq, wControl, vTemplate);
 		this.config = config;
 		this.stackPanel = stackPanel;
@@ -464,6 +466,13 @@ implements Activateable2, TooledController, FlexiTableComponentDelegate {
 			} else if("open.assignment".equals(cmd)) {
 				PageAssignmentRow row = (PageAssignmentRow)link.getUserObject();
 				doOpenAssignment(ureq, row);
+			}
+		} else if(source == flc) {
+			if("ONCLICK".equals(event.getCommand())) {
+				String category = ureq.getParameter("tag_select");
+				if(StringHelper.containsNonWhitespace(category)) {
+					tableEl.quickSearch(ureq, category);
+				}
 			}
 		}
 		super.formInnerEvent(ureq, source, event);

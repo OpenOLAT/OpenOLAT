@@ -86,7 +86,7 @@ import org.olat.modules.portfolio.model.AssessmentSectionImpl;
 import org.olat.modules.portfolio.model.AssignmentImpl;
 import org.olat.modules.portfolio.model.BinderImpl;
 import org.olat.modules.portfolio.model.BinderStatistics;
-import org.olat.modules.portfolio.model.CategoryStatistics;
+import org.olat.modules.portfolio.model.CategoryLight;
 import org.olat.modules.portfolio.model.PageImpl;
 import org.olat.modules.portfolio.model.SectionImpl;
 import org.olat.modules.portfolio.model.SynchedBinder;
@@ -785,8 +785,8 @@ public class PortfolioServiceImpl implements PortfolioService {
 	}
 
 	@Override
-	public List<CategoryStatistics> getMediaCategories(IdentityRef owner) {
-		return categoryDao.getMediaCategoriesStatistics(owner);
+	public List<CategoryLight> getMediaCategories(IdentityRef owner) {
+		return categoryDao.getMediaCategories(owner);
 	}
 
 	@Override

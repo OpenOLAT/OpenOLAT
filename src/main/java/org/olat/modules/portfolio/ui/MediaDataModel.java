@@ -87,6 +87,7 @@ public class MediaDataModel extends DefaultFlexiTableDataModel<MediaRow>
 			case key: return media.getKey();
 			case title: return media.getTitle();
 			case collectionDate: return media.getCollectionDate();
+			case categories: return media.getCategories();
 			case type: return media;
 		}
 		return null;
@@ -106,15 +107,18 @@ public class MediaDataModel extends DefaultFlexiTableDataModel<MediaRow>
 	}
 		
 	public enum MediaCols implements FlexiSortableColumnDef {
-		key("table.header.key"),
-		title("table.header.title"),
-		collectionDate("table.header.collection.date"),
-		type("table.header.type");
+		key("table.header.key", true),
+		title("table.header.title", true),
+		collectionDate("table.header.collection.date", true),
+		categories("table.header.categories", false),
+		type("table.header.type", true);
 
 		private final String i18nKey;
+		private final boolean sortable;
 		
-		private MediaCols(String i18nKey) {
+		private MediaCols(String i18nKey, boolean sortable) {
 			this.i18nKey = i18nKey;
+			this.sortable = sortable;
 		}
 		
 		@Override
@@ -124,7 +128,7 @@ public class MediaDataModel extends DefaultFlexiTableDataModel<MediaRow>
 
 		@Override
 		public boolean sortable() {
-			return true;
+			return sortable;
 		}
 
 		@Override

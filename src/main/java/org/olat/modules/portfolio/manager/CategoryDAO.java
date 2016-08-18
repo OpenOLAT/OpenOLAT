@@ -32,6 +32,7 @@ import org.olat.modules.portfolio.CategoryToElement;
 import org.olat.modules.portfolio.PortfolioRoles;
 import org.olat.modules.portfolio.SectionRef;
 import org.olat.modules.portfolio.model.CategoryImpl;
+import org.olat.modules.portfolio.model.CategoryLight;
 import org.olat.modules.portfolio.model.CategoryStatistics;
 import org.olat.modules.portfolio.model.CategoryToElementImpl;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -161,6 +162,27 @@ public class CategoryDAO {
 			String name = (String)object[0];
 			int count = object[1] == null ? 0 : ((Number)object[1]).intValue();
 			stats.add(new CategoryStatistics(name, count));
+		}
+		return stats;
+	}
+	
+	public List<CategoryLight> getMediaCategories(IdentityRef owner) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select category.name, media.key from pfcategoryrelation as rel")
+		  .append(" inner join rel.category as category")
+		  .append(" inner join pfmedia as media on (rel.resId=media.key and rel.resName='Media')")
+		  .append(" where media.author.key=:identityKey");
+		
+		List<Object[]> objects = dbInstance.getCurrentEntityManager()
+			.createQuery(sb.toString(), Object[].class)
+			.setParameter("identityKey", owner.getKey())
+			.getResultList();
+		
+		List<CategoryLight> stats = new ArrayList<>(objects.size());
+		for(Object[] object:objects) {
+			String name = (String)object[0];
+			Long mediaKey = (Long)object[1];
+			stats.add(new CategoryLight(name, mediaKey));
 		}
 		return stats;
 	}

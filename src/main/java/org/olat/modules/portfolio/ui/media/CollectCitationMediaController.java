@@ -80,8 +80,8 @@ public class CollectCitationMediaController extends FormBasicController implemen
 	private SingleSelection sourceTypeEl;
 	private TextElement urlEl, sourceEl, languageEl;
 	private TextElement creatorsEl, placeEl, publisherEl;
-	private DateChooser publicationDateEl;
-	private TextElement editionEl, volumeEl, seriesEl, publicationTitleEl, issueEl, pagesEl, institutionEl;
+	private DateChooser publicationDateEl, lastVisitDateEl;
+	private TextElement editorEl, editionEl, volumeEl, seriesEl, publicationTitleEl, isbnEl, issueEl, pagesEl, institutionEl;
 	
 	private CitationXml citation;
 	private Media mediaReference;
@@ -217,13 +217,19 @@ public class CollectCitationMediaController extends FormBasicController implemen
 	}
 
 	protected void initCitationForm(FormItemContainer formLayout) {
-
+		
+		String editor = (citation != null ? citation.getEditor() : null);
+		editorEl = uifactory.addTextElement("editor", "mf.editor", -1, editor, formLayout);
+		
 		String edition = (citation != null ? citation.getEdition() : null);
 		editionEl = uifactory.addTextElement("edition", "mf.edition", -1, edition, formLayout);
 		String volume = (citation != null ? citation.getVolume() : null);
 		volumeEl = uifactory.addTextElement("volume", "mf.volume", -1, volume, formLayout);
 		String series = (citation != null ? citation.getSeries() : null);
 		seriesEl = uifactory.addTextElement("series", "mf.series", -1, series, formLayout);
+		
+		String isbn = (citation != null ? citation.getIsbn() : null);
+		isbnEl = uifactory.addTextElement("isbn", "mf.isbn", -1, isbn, formLayout);
 		
 		String publicationTitle = (citation != null ? citation.getPublicationTitle() : null);
 		publicationTitleEl = uifactory.addTextElement("publicationTitle", "mf.publicationTitle", -1, publicationTitle, formLayout);
@@ -234,24 +240,32 @@ public class CollectCitationMediaController extends FormBasicController implemen
 
 		String institution = (citation != null ? citation.getInstitution() : null);
 		institutionEl = uifactory.addTextElement("institution", "mf.institution", -1, institution, formLayout);
+		
+		Date visitDate = (citation != null ? citation.getLastVisit() : null);
+		lastVisitDateEl = uifactory.addDateChooser("lastVisitDate", "mf.lastVisitDate", visitDate, formLayout);
 	}
 	
 	/**
-	 * webpage: authorString, title, url<br>
- * book: authorString, title, volume, series, edition, place, publisher, date, url<br>
- * journalArticle: authorString, title, publicationTitle, issue, date, pages, url<br>
- * report: title, place, institution, date, url
- * film: authorString, title, date, url
+	 * <ul>
+	 * 	<li>webpage: authorString, title, url. last visit</li>
+	 * 	<li>book: authorString, title, volume, series, edition, editor, isbn, place, publisher, date, url</li>
+	 * 	<li>journalArticle: authorString, title, publicationTitle, issue, date, pages, url</li>
+	 * 	<li>report: title, place, institution, date, url</li>
+	 * 	<li>film: authorString, title, date, url</li>
+	 * </ul>
 	 */
 	private void updateCitationFieldsVisibility() {
 		CitationSourceType sourceType = CitationSourceType.valueOf(sourceTypeEl.getSelectedKey());
+		editorEl.setVisible(sourceType == CitationSourceType.book);
 		editionEl.setVisible(sourceType == CitationSourceType.book);
 		volumeEl.setVisible(sourceType == CitationSourceType.book);
 		seriesEl.setVisible(sourceType == CitationSourceType.book);
+		isbnEl.setVisible(sourceType == CitationSourceType.book);
 		publicationTitleEl.setVisible(sourceType == CitationSourceType.journalArticle);
 		issueEl.setVisible(sourceType == CitationSourceType.journalArticle);
 		pagesEl.setVisible(sourceType == CitationSourceType.journalArticle || sourceType == CitationSourceType.book);
 		institutionEl.setVisible(sourceType == CitationSourceType.report);
+		lastVisitDateEl.setVisible(sourceType == CitationSourceType.webpage);
 	}
 	
 	@Override
@@ -281,8 +295,6 @@ public class CollectCitationMediaController extends FormBasicController implemen
 			String description = descriptionEl.getValue();
 			String content = textEl.getValue();
 			mediaReference = citationHandler.createMedia(title, description, content, businessPath, getIdentity());
-		} else {
-			//TODO can we update an artefact?
 		}
 
 		citation = new CitationXml();
@@ -295,6 +307,9 @@ public class CollectCitationMediaController extends FormBasicController implemen
 		citation.setPublicationTitle(publicationTitleEl.getValue());
 		citation.setSeries(seriesEl.getValue());
 		citation.setVolume(volumeEl.getValue());
+		citation.setEditor(editorEl.getValue());
+		citation.setIsbn(isbnEl.getValue());
+		citation.setLastVisit(lastVisitDateEl.getDate());
 		mediaReference.setMetadataXml(MetadataXStream.get().toXML(citation));
 		
 		// dublin core
