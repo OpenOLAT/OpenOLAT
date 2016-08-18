@@ -1,7 +1,7 @@
 <div class="o_portfolio_content clearfix">
 	<div class="o_header_with_buttons">
 		<h2>$r.translate("binder.title", $binderTitle) #if($owners && !$owners.isEmpty())<small>$r.translate("binder.by",$owners)</small>#end</h2>
-		
+		##$binderKey
 		#if($r.available("timeline.switch.on") || $r.available("timeline.switch.off"))
 		<div class="o_button_group">
 			$r.render("timeline.switch.off")

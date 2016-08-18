@@ -115,7 +115,7 @@
 	</h4>
 	#if($r.isNotEmpty($row.pageCategories))
 	<span class="o_portfolio_page_meta text-muted o_small">
-		 $r.translate("meta.categories") <i class="o_icon o_icon_tags"> </i>
+		<strong>$r.translate("meta.categories")</strong> <i class="o_icon o_icon_tags"> </i>
 		 #foreach($category in $row.pageCategories)
 		 	#if(${foreach.count} > 1), #end
 		 	$category

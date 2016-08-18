@@ -55,8 +55,23 @@ public class PageListSortableDataModelDelegate extends SortableFlexiTableModelDe
 			PageCols column = PageCols.values()[columnIndex];
 			switch(column) {
 				case status: Collections.sort(rows, new StatusComparator()); break;
+				case comment: Collections.sort(rows, new CommentsComparator()); break;
 				default: Collections.sort(rows, new DefaultComparator()); break;
 			}
+		}
+	}
+	
+	private class CommentsComparator implements Comparator<PageRow> {
+		@Override
+		public int compare(PageRow o1, PageRow o2) {
+			long c1 = o1.getNumOfComments();
+			long c2 = o2.getNumOfComments();
+			
+			int c = Long.compare(c1, c2);
+			if(c == 0) {
+				c = compareString(o1.getTitle(), o2.getTitle());
+			}
+			return c;
 		}
 	}
 	

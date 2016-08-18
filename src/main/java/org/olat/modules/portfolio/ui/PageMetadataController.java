@@ -118,6 +118,8 @@ public class PageMetadataController extends BasicController {
 		mainVC.contextPut("pageTitle", page.getTitle());
 		mainVC.contextPut("pageSummary", page.getSummary());
 		mainVC.contextPut("status", page.getPageStatus());
+		mainVC.contextPut("statusCss", page.getPageStatus() == null ? PageStatus.draft.cssClass() : page.getPageStatus().cssClass());
+		
 		mainVC.contextPut("lastPublicationDate", page.getLastPublicationDate());
 
 		List<Category> categories = portfolioService.getCategories(page);

@@ -192,6 +192,14 @@ public class BinderImpl implements Persistable, ModifiedInfo, CreateInfo, Binder
 		this.title = title;
 	}
 
+	public String getStatus() {
+		return status;
+	}
+
+	public void setStatus(String status) {
+		this.status = status;
+	}
+
 	@Override
 	public String getSummary() {
 		return summary;

@@ -73,7 +73,6 @@ public class PortfolioNotificationsHandler implements NotificationsHandler {
 
 	@Override
 	public SubscriptionInfo createSubscriptionInfo(Subscriber subscriber, Locale locale, Date compareDate) {
-
 		SubscriptionInfo si = null;
 		Publisher publisher = subscriber.getPublisher();
 		Binder binder = binderDao.loadByKey(publisher.getResId());
@@ -81,7 +80,10 @@ public class PortfolioNotificationsHandler implements NotificationsHandler {
 			si = new SubscriptionInfo(subscriber.getKey(), publisher.getType(), getTitleItemForBinder(binder), null);
 			List<SubscriptionListItem> allItems = getAllItems(binder, compareDate, locale);
 			for (SubscriptionListItem item : allItems) {
-				si.addSubscriptionListItem(item);
+				//only a type of icon
+				SubscriptionListItem clonedItem = new SubscriptionListItem(item.getDescription(), item.getDescriptionTooltip(),
+						item.getLink(), item.getBusinessPath(), item.getDate(), "o_ep_icon");
+				si.addSubscriptionListItem(clonedItem);
 			}
 		}
 
@@ -110,9 +112,7 @@ public class PortfolioNotificationsHandler implements NotificationsHandler {
 	public List<SubscriptionListItem> getAllItems(Binder binder, Date compareDate, Locale locale) {
 		String rootBusinessPath = "[Binder:" + binder.getKey() + "]";
 		Translator translator = Util.createPackageTranslator(PortfolioHomeController.class, locale);
-		
-		System.out.println(compareDate);
-		
+
 		List<SubscriptionListItem> items = new ArrayList<>();
 		items.addAll(getCommentNotifications(binder, compareDate, rootBusinessPath, translator));
 		items.addAll(getPageNotifications(binder, compareDate, rootBusinessPath, translator));

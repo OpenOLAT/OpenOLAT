@@ -133,6 +133,7 @@ public class MediaDetailsController extends FormBasicController implements Activ
 				Map<String,String> categoriesMap = categories.stream()
 						.collect(Collectors.toMap(c -> c.getName(), c -> c.getName()));
 				TextBoxListElement categoriesEl = uifactory.addTextBoxListElement("categories", "categories", "categories.hint", categoriesMap, formLayout, getTranslator());
+				categoriesEl.setHelpText(translate("categories.hint"));
 				categoriesEl.setElementCssClass("o_sel_ep_tagsinput");
 				categoriesEl.setEnabled(false);
 			}

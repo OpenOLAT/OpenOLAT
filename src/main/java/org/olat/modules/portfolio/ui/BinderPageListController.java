@@ -38,6 +38,7 @@ import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableRenderEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableRendererType;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
@@ -72,7 +73,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class BinderPageListController extends AbstractPageListController  {
+public class BinderPageListController extends AbstractPageListController {
 	
 	private Link newSectionLink, newEntryLink;
 	private FormLink previousSectionLink, nextSectionLink, showAllSectionsLink;
@@ -125,6 +126,7 @@ public class BinderPageListController extends AbstractPageListController  {
 				ownerSb.append(userManager.getUserDisplayName(owner));
 			}
 			layoutCont.contextPut("owners", ownerSb.toString());
+			layoutCont.contextPut("binderKey", binder.getKey());
 			layoutCont.contextPut("binderTitle", StringHelper.escapeHtml(binder.getTitle()));
 		}
 
@@ -272,7 +274,14 @@ public class BinderPageListController extends AbstractPageListController  {
 				if(re.getRendererType() == FlexiTableRendererType.custom) {
 					tableEl.sort(null, false);
 				}
-			} 
+			} else if(event instanceof SelectionEvent) {
+				SelectionEvent se = (SelectionEvent)event;
+				String cmd = se.getCommand();
+				if("select-page".equals(cmd)) {
+					PageRow row = model.getObject(se.getIndex());
+					doOpenPage(ureq, row);
+				}
+			}
 		} else if(previousSectionLink == source) {
 			Section previousSection = (Section)previousSectionLink.getUserObject();
 			doFilterSection(previousSection);

@@ -118,7 +118,7 @@ public class PageRow {
 	}
 	
 	public String getSectionTitle() {
-		return section.getTitle();
+		return section == null ? null : section.getTitle();
 	}
 	
 	public boolean isSection () {
@@ -258,7 +258,7 @@ public class PageRow {
 	}
 
 	public String[] getMetaBinderAndSectionTitles() {
-		return new String[]{ metaSectionTitle, metaBinderTitle };
+		return new String[]{ metaBinderTitle, metaSectionTitle };
 	}
 
 	public void setMetaSectionTitle(String metaSectionTitle) {

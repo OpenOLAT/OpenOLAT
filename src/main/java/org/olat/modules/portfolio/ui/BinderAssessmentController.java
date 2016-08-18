@@ -56,6 +56,7 @@ import org.olat.modules.portfolio.Section;
 import org.olat.modules.portfolio.SectionStatus;
 import org.olat.modules.portfolio.model.AssessmentSectionChange;
 import org.olat.modules.portfolio.ui.BinderAssessmentDataModel.AssessmentSectionCols;
+import org.olat.modules.portfolio.ui.component.SectionStatusCellRenderer;
 import org.olat.modules.portfolio.ui.renderer.PassedCellRenderer;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -106,7 +107,7 @@ public class BinderAssessmentController extends FormBasicController {
 		if(withScore) {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(AssessmentSectionCols.score, new ScoreCellRenderer()));
 		}
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(AssessmentSectionCols.changeStatus));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(AssessmentSectionCols.changeStatus, new SectionStatusCellRenderer(getTranslator())));
 		
 		model = new BinderAssessmentDataModel(columnsModel);
 		tableEl = uifactory.addTableElement(getWindowControl(), "section-list", model, getTranslator(), formLayout);
@@ -114,7 +115,6 @@ public class BinderAssessmentController extends FormBasicController {
 		tableEl.setEditMode(true);
 		tableEl.setAndLoadPersistedPreferences(ureq, "section-assessment");
 		
-
 		buttonsCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		formLayout.add(buttonsCont);
 		uifactory.addFormSubmitButton("save", buttonsCont);

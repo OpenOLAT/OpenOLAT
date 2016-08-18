@@ -29,6 +29,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFle
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
+import org.olat.modules.portfolio.PageStatus;
 import org.olat.modules.portfolio.Section;
 import org.olat.modules.portfolio.ui.model.PageRow;
 
@@ -128,7 +129,15 @@ public class PageListDataModel extends DefaultFlexiTableDataModel<PageRow>
 				return null;
 			}
 			case publicationDate: return page.getLastPublicationDate();
-			case status: return page.getPageStatus();
+			case status: {
+				PageStatus pageStatus = page.getPageStatus();
+				if(pageStatus == null && page.isPage()) {
+					pageStatus = PageStatus.draft;
+				}
+				
+				return pageStatus;
+			}
+			case categories: return page.getPageCategories();
 			case section: return page.getSectionTitle();
 			case comment: return page.getCommentFormLink();
 		}
@@ -146,6 +155,7 @@ public class PageListDataModel extends DefaultFlexiTableDataModel<PageRow>
 		status("table.header.status"),
 		date("table.header.date"),
 		publicationDate("table.header.publication.date"),
+		categories("table.header.categories"),
 		section("table.header.section"),
 		comment("comment.title");
 		

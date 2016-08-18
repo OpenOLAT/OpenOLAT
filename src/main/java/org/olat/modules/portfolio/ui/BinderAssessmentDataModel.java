@@ -19,9 +19,11 @@
  */
 package org.olat.modules.portfolio.ui;
 
+import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
+import org.olat.modules.portfolio.SectionStatus;
 import org.olat.modules.portfolio.ui.BinderAssessmentController.AssessmentSectionWrapper;
 
 /**
@@ -54,7 +56,17 @@ public class BinderAssessmentDataModel extends DefaultFlexiTableDataModel<Assess
 				}
 				return wrapper.getScore();
 			}
-			case changeStatus: return wrapper.getButton();
+			case changeStatus: {
+				FormLink changeButton = wrapper.getButton();
+				if(changeButton == null && wrapper.getSection() != null) {
+					SectionStatus status = wrapper.getSection().getSectionStatus();
+					if(status == null) {
+						status = SectionStatus.notStarted;
+					}
+					return status;
+				}
+				return changeButton;
+			}
 		}
 		return null;
 	}

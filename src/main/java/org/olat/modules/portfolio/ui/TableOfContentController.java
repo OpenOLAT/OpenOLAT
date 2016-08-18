@@ -390,7 +390,7 @@ public class TableOfContentController extends BasicController implements TooledC
 		Page reloadedPage = portfolioService.getPageByKey(page.getKey());
 		pageCtrl = new PageRunController(ureq, swControl, stackPanel, secCallback, reloadedPage);
 		listenTo(pageCtrl);
-		stackPanel.pushController(StringHelper.escapeHtml(page.getTitle()), pageCtrl);
+		stackPanel.pushController(page.getTitle(), pageCtrl);
 		return pageCtrl;
 	}
 	
