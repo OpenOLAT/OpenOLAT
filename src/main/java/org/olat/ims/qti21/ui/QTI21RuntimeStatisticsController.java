@@ -42,9 +42,12 @@ import org.olat.core.util.resource.OresHelper;
 import org.olat.course.nodes.ArchiveOptions;
 import org.olat.course.nodes.AssessmentToolOptions;
 import org.olat.course.nodes.AssessmentToolOptions.AlternativeToIdentities;
+import org.olat.ims.qti21.QTI21DeliveryOptions;
+import org.olat.ims.qti21.QTI21Service;
 import org.olat.ims.qti21.model.QTI21StatisticSearchParams;
 import org.olat.ims.qti21.ui.statistics.QTI21StatisticResourceResult;
 import org.olat.repository.RepositoryEntry;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -61,6 +64,9 @@ public class QTI21RuntimeStatisticsController extends BasicController implements
 	private final ArchiveOptions options;
 	private final QTI21StatisticSearchParams searchParams;
 	private final QTI21StatisticResourceResult resourceResult;
+	
+	@Autowired
+	private QTI21Service qtiService;
 	
 	public QTI21RuntimeStatisticsController(UserRequest ureq, WindowControl wControl, 
 			RepositoryEntry testEntry, AssessmentToolOptions asOptions) {
@@ -79,6 +85,9 @@ public class QTI21RuntimeStatisticsController extends BasicController implements
 			searchParams.setLimitToGroups(alt.getGroups());
 		}
 		
+		QTI21DeliveryOptions deliveryOptions = qtiService.getDeliveryOptions(testEntry);
+		searchParams.setViewAnonymUsers(deliveryOptions.isAllowAnonym());
+
 		resourceResult = new QTI21StatisticResourceResult(testEntry, searchParams);
 		
 		TreeModel treeModel = resourceResult.getTreeModel();

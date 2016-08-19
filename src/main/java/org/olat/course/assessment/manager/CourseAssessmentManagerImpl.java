@@ -82,7 +82,7 @@ public class CourseAssessmentManagerImpl implements AssessmentManager {
 	}
 
 	private AssessmentEntry getOrCreate(Identity assessedIdentity, CourseNode courseNode) {
-		return assessmentService.getOrCreateAssessmentEntry(assessedIdentity, cgm.getCourseEntry(), courseNode.getIdent(), courseNode.getReferencedRepositoryEntry());
+		return assessmentService.getOrCreateAssessmentEntry(assessedIdentity, null, cgm.getCourseEntry(), courseNode.getIdent(), courseNode.getReferencedRepositoryEntry());
 	}
 
 	@Override

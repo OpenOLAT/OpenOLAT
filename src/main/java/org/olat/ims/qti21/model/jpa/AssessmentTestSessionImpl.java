@@ -83,9 +83,12 @@ public class AssessmentTestSessionImpl implements AssessmentTestSession, Persist
     @Column(name="q_subident", nullable=true, insertable=true, updatable=false)
 	private String subIdent;
 
-	@ManyToOne(targetEntity=IdentityImpl.class,fetch=FetchType.LAZY,optional=false)
-	@JoinColumn(name="fk_identity", nullable=false, insertable=true, updatable=false)
+	@ManyToOne(targetEntity=IdentityImpl.class,fetch=FetchType.LAZY,optional=true)
+	@JoinColumn(name="fk_identity", nullable=true, insertable=true, updatable=false)
     private Identity identity;
+	
+    @Column(name="q_anon_identifier", nullable=true, insertable=true, updatable=false)
+	private String anonymousIdentifier;
 
     /** Is this session running in author mode? (I.e. providing debugging information) */
     @Column(name="q_author_mode", nullable=false, insertable=true, updatable=true)
@@ -211,12 +214,22 @@ public class AssessmentTestSessionImpl implements AssessmentTestSession, Persist
 		this.subIdent = subIdent;
 	}
 
+	@Override
 	public Identity getIdentity() {
 		return identity;
 	}
 
 	public void setIdentity(Identity identity) {
 		this.identity = identity;
+	}
+
+	@Override
+	public String getAnonymousIdentifier() {
+		return anonymousIdentifier;
+	}
+
+	public void setAnonymousIdentifier(String identifier) {
+		this.anonymousIdentifier = identifier;
 	}
 
 	public boolean isAuthorMode() {

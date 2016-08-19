@@ -153,8 +153,8 @@ public interface QTI21Service {
 	public void setDeliveryOptions(RepositoryEntry testEntry, QTI21DeliveryOptions options);
 	
 	
-	public AssessmentTestSession createAssessmentTestSession(Identity identity, AssessmentEntry assessmentEntry,
-			RepositoryEntry entry, String subIdent, RepositoryEntry testEntry,
+	public AssessmentTestSession createAssessmentTestSession(Identity identity, String anonymousIdentifier,
+			AssessmentEntry assessmentEntry, RepositoryEntry entry, String subIdent, RepositoryEntry testEntry,
 			boolean authorMode);
 	
 	/**
@@ -165,7 +165,8 @@ public interface QTI21Service {
 	 */
 	public AssessmentSessionAuditLogger getAssessmentSessionAuditLogger(AssessmentTestSession session, boolean authorMode);
 	
-	public AssessmentTestSession getResumableAssessmentTestSession(Identity identity, RepositoryEntry entry, String subIdent, RepositoryEntry testEntry);
+	public AssessmentTestSession getResumableAssessmentTestSession(Identity identity, String anonymousIdentifier,
+			RepositoryEntry entry, String subIdent, RepositoryEntry testEntry);
 
 	public AssessmentTestSession reloadAssessmentTestSession(AssessmentTestSession session);
 	

@@ -30,6 +30,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.UUID;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -50,10 +51,12 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
+import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.logging.OLATRuntimeException;
+import org.olat.core.util.UserSession;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.event.GenericEventListener;
 import org.olat.core.util.resource.OresHelper;
@@ -72,6 +75,7 @@ import org.olat.ims.qti21.QTI21DeliveryOptions;
 import org.olat.ims.qti21.QTI21DeliveryOptions.ShowResultsOnFinish;
 import org.olat.ims.qti21.QTI21Service;
 import org.olat.ims.qti21.manager.ResponseFormater;
+import org.olat.ims.qti21.model.InMemoryAssessmentTestMarks;
 import org.olat.ims.qti21.model.ParentPartItemRefs;
 import org.olat.ims.qti21.model.ResponseLegality;
 import org.olat.ims.qti21.model.audit.CandidateEvent;
@@ -165,6 +169,10 @@ public class AssessmentTestDisplayController extends BasicController implements 
 	private RepositoryEntry entry;
 	private String subIdent;
 	
+	private final boolean anonym;
+	private final Identity assessedIdentity;
+	private final String anonymousIdentifier;
+	
 	private final boolean showCloseResults;
 	private OutcomesListener outcomesListener;
 	private AssessmentSessionAuditLogger candidateAuditLogger;
@@ -199,6 +207,17 @@ public class AssessmentTestDisplayController extends BasicController implements 
 		this.deliveryOptions = deliveryOptions;
 		this.showCloseResults = showCloseResults;
 		
+		UserSession usess = ureq.getUserSession();
+		if(usess.getRoles().isGuestOnly()) {
+			anonym = true;
+			assessedIdentity = null;
+			anonymousIdentifier = getAnonymousIdentifier(usess);
+		} else {
+			anonym = false;
+			assessedIdentity = getIdentity();
+			anonymousIdentifier = null;
+		}
+		
 		FileResourceManager frm = FileResourceManager.getInstance();
 		fUnzippedDirRoot = frm.unzipFileResource(testEntry.getOlatResource());
 		resolvedAssessmentTest = qtiService.loadAndResolveAssessmentTest(fUnzippedDirRoot, false);
@@ -208,30 +227,8 @@ public class AssessmentTestDisplayController extends BasicController implements 
 		
 		currentRequestTimestamp = ureq.getRequestTimestamp();
 		
-		AssessmentEntry assessmentEntry = assessmentService.getOrCreateAssessmentEntry(getIdentity(), entry, subIdent, testEntry);
-		marks = qtiService.getMarks(getIdentity(), entry, subIdent, testEntry);
-		if(listener == null) {
-			boolean manualCorrections = AssessmentTestHelper.needManualCorrection(resolvedAssessmentTest);
-			outcomesListener = new AssessmentEntryOutcomesListener(assessmentEntry, manualCorrections, assessmentService);
-		}
-
-		AssessmentTestSession lastSession = null;
-		if(deliveryOptions.isEnableSuspend()) {
-			lastSession = qtiService.getResumableAssessmentTestSession(getIdentity(), entry, subIdent, testEntry);
-		}
-		if(lastSession == null) {
-			candidateSession = qtiService.createAssessmentTestSession(getIdentity(), assessmentEntry, entry, subIdent, testEntry, authorMode);
-			candidateAuditLogger = qtiService.getAssessmentSessionAuditLogger(candidateSession, authorMode);
-			testSessionController = enterSession(ureq);
-		} else {
-			candidateSession = lastSession;
-			candidateAuditLogger = qtiService.getAssessmentSessionAuditLogger(candidateSession, authorMode);
-			
-			lastEvent = new CandidateEvent(candidateSession, testEntry, entry);
-			lastEvent.setTestEventType(CandidateTestEventType.ITEM_EVENT);
-			
-			testSessionController = resumeSession();
-		}
+		initMarks();
+		initOrResumeAssessmentTestSession(ureq, authorMode);
 
 		/* Handle immediate end of test session */
         if (testSessionController.getTestSessionState() != null && testSessionController.getTestSessionState().isEnded()) {
@@ -248,6 +245,53 @@ public class AssessmentTestDisplayController extends BasicController implements 
         OLATResourceable sessionOres = OresHelper
         		.createOLATResourceableInstance(AssessmentTestSession.class, candidateSession.getKey());
         CoordinatorManager.getInstance().getCoordinator().getEventBus().registerFor(this, getIdentity(), sessionOres);
+	}
+	
+	private String getAnonymousIdentifier(UserSession usess) {
+		String sessionId = usess.getSessionInfo().getSession().getId();
+		String testKey = (entry == null ? testEntry.getKey() : entry.getKey()) + "-" + subIdent +"-" + testEntry.getKey() + "-" + sessionId;
+		Object id = usess.getEntry(testKey);
+		if(id instanceof String) {
+			return (String)id;
+		}
+
+		String newId = UUID.randomUUID().toString();
+		usess.putEntryInNonClearedStore(testKey, newId);
+		return newId;
+	}
+	
+	private void initMarks() {
+		if(anonym) {
+			marks = new InMemoryAssessmentTestMarks();
+		} else {
+			marks = qtiService.getMarks(getIdentity(), entry, subIdent, testEntry);
+		}
+	}
+	
+	private void initOrResumeAssessmentTestSession(UserRequest ureq, boolean authorMode) {
+		AssessmentEntry assessmentEntry = assessmentService.getOrCreateAssessmentEntry(assessedIdentity, anonymousIdentifier, entry, subIdent, testEntry);
+		if(outcomesListener == null) {
+			boolean manualCorrections = AssessmentTestHelper.needManualCorrection(resolvedAssessmentTest);
+			outcomesListener = new AssessmentEntryOutcomesListener(assessmentEntry, manualCorrections, assessmentService);
+		}
+
+		AssessmentTestSession lastSession = null;
+		if(deliveryOptions.isEnableSuspend()) {
+			lastSession = qtiService.getResumableAssessmentTestSession(assessedIdentity, anonymousIdentifier, entry, subIdent, testEntry);
+		}
+		if(lastSession == null) {
+			candidateSession = qtiService.createAssessmentTestSession(assessedIdentity, anonymousIdentifier, assessmentEntry, entry, subIdent, testEntry, authorMode);
+			candidateAuditLogger = qtiService.getAssessmentSessionAuditLogger(candidateSession, authorMode);
+			testSessionController = enterSession(ureq);
+		} else {
+			candidateSession = lastSession;
+			candidateAuditLogger = qtiService.getAssessmentSessionAuditLogger(candidateSession, authorMode);
+			
+			lastEvent = new CandidateEvent(candidateSession, testEntry, entry);
+			lastEvent.setTestEventType(CandidateTestEventType.ITEM_EVENT);
+			
+			testSessionController = resumeSession();
+		}
 	}
 	
 	private void initQtiWorks(UserRequest ureq) {
@@ -466,7 +510,11 @@ public class AssessmentTestDisplayController extends BasicController implements 
 	
 	private void toogleMark(String itemRef) {
 		if(marks == null) {
-			marks = qtiService.createMarks(getIdentity(), entry, subIdent, testEntry, itemRef);
+			if(anonym) {
+				marks = new InMemoryAssessmentTestMarks(itemRef);
+			} else {
+				marks = qtiService.createMarks(assessedIdentity, entry, subIdent, testEntry, itemRef);
+			}
 		} else {
 			String currentMarks = marks.getMarks();
 			if(currentMarks == null) {
@@ -1387,7 +1435,7 @@ public class AssessmentTestDisplayController extends BasicController implements 
 					&& deliveryOptions.getShowResultsOnFinish() != null
 					&& !ShowResultsOnFinish.none.equals(deliveryOptions.getShowResultsOnFinish())) {
 				removeAsListenerAndDispose(resultCtrl);
-				resultCtrl = new AssessmentResultController(ureq, getWindowControl(), getIdentity(),
+				resultCtrl = new AssessmentResultController(ureq, getWindowControl(), assessedIdentity, anonym,
 						AssessmentTestDisplayController.this.getCandidateSession(),
 						deliveryOptions.getShowResultsOnFinish(), fUnzippedDirRoot, mapperUri);
 				listenTo(resultCtrl);

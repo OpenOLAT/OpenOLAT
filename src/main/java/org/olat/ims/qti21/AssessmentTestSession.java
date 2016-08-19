@@ -77,6 +77,8 @@ public interface AssessmentTestSession extends CreateInfo, ModifiedInfo {
 	
 	public Identity getIdentity();
 	
+	public String getAnonymousIdentifier();
+	
 
 	public AssessmentEntry getAssessmentEntry();
 	

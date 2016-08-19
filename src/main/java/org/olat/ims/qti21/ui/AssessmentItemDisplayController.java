@@ -178,7 +178,7 @@ public class AssessmentItemDisplayController extends BasicController implements 
 		this.candidateAuditLogger = candidateAuditLogger;
 		deliveryOptions = QTI21DeliveryOptions.defaultSettings();
 		currentRequestTimestamp = ureq.getRequestTimestamp();
-		candidateSession = qtiService.createAssessmentTestSession(getIdentity(), assessmentEntry, testEntry, itemRef.getIdentifier().toString(), testEntry, authorMode);
+		candidateSession = qtiService.createAssessmentTestSession(getIdentity(), null, assessmentEntry, testEntry, itemRef.getIdentifier().toString(), testEntry, authorMode);
 		mapperUri = registerCacheableMapper(null, UUID.randomUUID().toString(), new ResourcesMapper(itemFileRef.toURI()));
 		
 		itemSessionController = enterSession(ureq);

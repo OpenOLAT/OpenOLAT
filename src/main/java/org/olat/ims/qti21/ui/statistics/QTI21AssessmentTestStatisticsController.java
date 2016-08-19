@@ -40,6 +40,8 @@ import org.olat.course.nodes.QTICourseNode;
 import org.olat.course.nodes.iq.IQEditController;
 import org.olat.ims.qti.statistics.QTIType;
 import org.olat.ims.qti.statistics.model.StatisticAssessment;
+import org.olat.ims.qti21.QTI21DeliveryOptions;
+import org.olat.ims.qti21.QTI21Service;
 import org.olat.ims.qti21.QTI21StatisticsManager;
 import org.olat.ims.qti21.model.QTI21StatisticSearchParams;
 import org.olat.repository.RepositoryEntry;
@@ -57,6 +59,8 @@ public class QTI21AssessmentTestStatisticsController extends BasicController imp
 	private QTIType type;
 	private QTICourseNode courseNode;
 	
+	@Autowired
+	private QTI21Service qtiService;
 	@Autowired
 	private QTI21StatisticsManager statisticsManager;
 
@@ -91,6 +95,9 @@ public class QTI21AssessmentTestStatisticsController extends BasicController imp
 		putInitialPanel(mainVC);
 		
 		QTI21StatisticSearchParams searchParams = new QTI21StatisticSearchParams(testEntry, null, null);
+		QTI21DeliveryOptions deliveryOptions = qtiService.getDeliveryOptions(testEntry);
+		searchParams.setViewAnonymUsers(deliveryOptions.isAllowAnonym());
+		
 		StatisticAssessment stats = statisticsManager.getAssessmentStatistics(searchParams);
 		initScoreHistogram(stats);
 		initDurationHistogram(stats);

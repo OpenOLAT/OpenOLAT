@@ -56,6 +56,7 @@ public class QTI21EditForm extends FormBasicController {
 	private MultipleSelectionElement limitAttemptsEl, blockAfterSuccessEl;
 	private MultipleSelectionElement displayQuestionProgressEl, displayScoreProgressEl;
 	private MultipleSelectionElement showResultsOnFinishEl;
+	private MultipleSelectionElement allowAnonymEl;
 	private SingleSelection typeShowResultsOnFinishEl;
 	
 	private TextElement maxAttemptsEl;
@@ -115,6 +116,12 @@ public class QTI21EditForm extends FormBasicController {
 		blockAfterSuccessEl = uifactory.addCheckboxesHorizontal("blockAfterSuccess", "qti.form.block.afterSuccess", formLayout, onKeys, onValues);
 		if(blockAfterSuccess) {
 			blockAfterSuccessEl.select(onKeys[0], true);
+		}
+		
+		boolean allowAnonym = modConfig.getBooleanSafe(IQEditController.CONFIG_ALLOW_ANONYM, deliveryOptions.isAllowAnonym());
+		allowAnonymEl = uifactory.addCheckboxesHorizontal("allowAnonym", "qti.form.allow.anonym", formLayout, onKeys, onValues);
+		if(allowAnonym) {
+			allowAnonymEl.select(onKeys[0], true);
 		}
 		
 		boolean fullWindow = modConfig.getBooleanSafe(IQEditController.CONFIG_FULLWINDOW);
@@ -250,6 +257,7 @@ public class QTI21EditForm extends FormBasicController {
 		modConfig.setBooleanEntry(IQEditController.CONFIG_KEY_ENABLESUSPEND, enableSuspendEl.isSelected(0));
 		modConfig.setBooleanEntry(IQEditController.CONFIG_KEY_QUESTIONPROGRESS, displayQuestionProgressEl.isSelected(0));
 		modConfig.setBooleanEntry(IQEditController.CONFIG_KEY_SCOREPROGRESS, displayScoreProgressEl.isSelected(0));
+		modConfig.setBooleanEntry(IQEditController.CONFIG_ALLOW_ANONYM, allowAnonymEl.isSelected(0));
 		
 		if(showResultsOnFinishEl.isAtLeastSelected(1)) {
 			if(typeShowResultsOnFinishEl.isOneSelected()) {

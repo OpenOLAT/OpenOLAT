@@ -60,6 +60,7 @@ public class QTI21DeliveryOptionsController extends FormBasicController implemen
 	private MultipleSelectionElement limitAttemptsEl, blockAfterSuccessEl;
 	private MultipleSelectionElement displayQuestionProgressEl, displayScoreProgressEl;
 	private MultipleSelectionElement showResultsOnFinishEl;
+	private MultipleSelectionElement allowAnonymEl;
 	private SingleSelection typeShowResultsOnFinishEl;
 	private TextElement maxAttemptsEl;
 	
@@ -95,6 +96,11 @@ public class QTI21DeliveryOptionsController extends FormBasicController implemen
 		blockAfterSuccessEl = uifactory.addCheckboxesHorizontal("blockAfterSuccess", "qti.form.block.afterSuccess", formLayout, onKeys, onValues);
 		if(deliveryOptions.isBlockAfterSuccess()) {
 			blockAfterSuccessEl.select(onKeys[0], true);
+		}
+		
+		allowAnonymEl = uifactory.addCheckboxesHorizontal("allowAnonym", "qti.form.allow.anonym", formLayout, onKeys, onValues);
+		if(deliveryOptions.isAllowAnonym()) {
+			allowAnonymEl.select(onKeys[0], true);
 		}
 
 		showTitlesEl = uifactory.addCheckboxesHorizontal("showTitles", "qti.form.questiontitle", formLayout, onKeys, onValues);
@@ -220,6 +226,7 @@ public class QTI21DeliveryOptionsController extends FormBasicController implemen
 		deliveryOptions.setEnableSuspend(enableSuspendEl.isAtLeastSelected(1));
 		deliveryOptions.setDisplayQuestionProgress(displayQuestionProgressEl.isAtLeastSelected(1));
 		deliveryOptions.setDisplayScoreProgress(displayScoreProgressEl.isAtLeastSelected(1));
+		deliveryOptions.setAllowAnonym(allowAnonymEl.isAtLeastSelected(1));
 		if(showResultsOnFinishEl.isAtLeastSelected(1)) {
 			if(typeShowResultsOnFinishEl.isOneSelected()) {
 				String selectedType = typeShowResultsOnFinishEl.getSelectedKey();

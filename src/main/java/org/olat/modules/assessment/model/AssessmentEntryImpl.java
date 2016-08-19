@@ -56,10 +56,6 @@ import org.olat.repository.RepositoryEntry;
 @NamedQueries({
 	@NamedQuery(name="loadAssessmentEntryById",
 		query="select data from assessmententry data where data.key=:key"),
-	@NamedQuery(name="loadAssessmentEntryByRepositoryEntryAndUserAndSubIdent",
-		query="select data from assessmententry data where data.repositoryEntry.key=:repositoryEntryKey and data.identity.key=:identityKey and data.subIdent=:subIdent"),
-	@NamedQuery(name="loadAssessmentEntryByRepositoryEntryAndUserAndNullSubIdent",
-		query="select data from assessmententry data where data.repositoryEntry.key=:repositoryEntryKey and data.identity.key=:identityKey and data.subIdent is null"),
 	@NamedQuery(name="loadAssessmentEntryByRepositoryEntryAndSubIdent",
 		query="select data from assessmententry data where data.repositoryEntry.key=:repositoryEntryKey and data.subIdent=:subIdent")
 })
@@ -115,8 +111,11 @@ public class AssessmentEntryImpl implements Persistable, ModifiedInfo, CreateInf
 	@JoinColumn(name="fk_reference_entry", nullable=true, insertable=true, updatable=false)
     private RepositoryEntry referenceEntry;
 
-	@ManyToOne(targetEntity=IdentityImpl.class,fetch=FetchType.LAZY,optional=false)
-	@JoinColumn(name="fk_identity", nullable=false, insertable=true, updatable=false)
+    @Column(name="a_anon_identifier", nullable=true, insertable=true, updatable=false)
+	private String anonymousIdentifier;
+
+	@ManyToOne(targetEntity=IdentityImpl.class,fetch=FetchType.LAZY,optional=true)
+	@JoinColumn(name="fk_identity", nullable=true, insertable=true, updatable=false)
     private Identity identity;
 	
 	
@@ -279,6 +278,14 @@ public class AssessmentEntryImpl implements Persistable, ModifiedInfo, CreateInf
 
 	public void setReferenceEntry(RepositoryEntry referenceEntry) {
 		this.referenceEntry = referenceEntry;
+	}
+
+	public String getAnonymousIdentifier() {
+		return anonymousIdentifier;
+	}
+
+	public void setAnonymousIdentifier(String identifier) {
+		this.anonymousIdentifier = identifier;
 	}
 
 	@Override

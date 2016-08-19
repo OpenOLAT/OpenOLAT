@@ -90,20 +90,38 @@ public class AssessmentEntryDAO {
 		return nodeAssessment.isEmpty() ? null : nodeAssessment.get(0);
 	}
 
-	public AssessmentEntry loadAssessmentEntry(IdentityRef assessedIdentity, RepositoryEntryRef entry, String subIdent) {
-		TypedQuery<AssessmentEntry> query;
-		if(subIdent == null) {
-			query = dbInstance.getCurrentEntityManager()
-				.createNamedQuery("loadAssessmentEntryByRepositoryEntryAndUserAndNullSubIdent", AssessmentEntry.class);
+	public AssessmentEntry loadAssessmentEntry(IdentityRef assessedIdentity, String anonymousIdentifier, RepositoryEntryRef entry, String subIdent) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select data from assessmententry data")
+		  .append(" left join fetch data.identity ident")
+		  .append(" where data.repositoryEntry.key=:repositoryEntryKey");
+
+		if(subIdent != null) {
+			sb.append(" and data.subIdent=:subIdent");
 		} else {
-			query = dbInstance.getCurrentEntityManager()
-				.createNamedQuery("loadAssessmentEntryByRepositoryEntryAndUserAndSubIdent", AssessmentEntry.class)
-				.setParameter("subIdent", subIdent);
+			sb.append(" and data.subIdent is null");
 		}
-		List<AssessmentEntry> entries = query
-			.setParameter("repositoryEntryKey", entry.getKey())
-			.setParameter("identityKey", assessedIdentity.getKey())
-			.getResultList();
+		
+		if(anonymousIdentifier != null) {
+			sb.append(" and data.anonymousIdentifier=:anonymousIdentifier");
+		} else {
+			sb.append(" and data.identity.key=:identityKey")
+			  .append(" and data.anonymousIdentifier is null");
+		}
+
+		TypedQuery<AssessmentEntry> query = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), AssessmentEntry.class)
+				.setParameter("repositoryEntryKey", entry.getKey());
+		if(subIdent != null) {
+			query.setParameter("subIdent", subIdent);
+		} 
+		if(anonymousIdentifier != null) {
+			query.setParameter("anonymousIdentifier", anonymousIdentifier);
+		} else {
+			query.setParameter("identityKey", assessedIdentity.getKey());
+		}
+
+		List<AssessmentEntry> entries = query.getResultList();
 		return entries.isEmpty() ? null : entries.get(0);
 	}
 	

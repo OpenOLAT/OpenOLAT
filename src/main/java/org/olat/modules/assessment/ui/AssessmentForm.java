@@ -306,7 +306,7 @@ public class AssessmentForm extends FormBasicController {
 	protected void doUpdateAssessmentData(boolean asDone) {
 		assessmentEntry = assessmentService.loadAssessmentEntry(assessedIdentity, testEntry, null, testEntry);
 		if(assessmentEntry == null) {
-			assessmentEntry = assessmentService.getOrCreateAssessmentEntry(assessedIdentity, testEntry, null, testEntry);
+			assessmentEntry = assessmentService.getOrCreateAssessmentEntry(assessedIdentity, null, testEntry, null, testEntry);
 		}
 		
 		if (assessableElement.hasAttemptsConfigured()) {

@@ -50,8 +50,11 @@ import org.olat.course.nodes.AssessmentToolOptions.AlternativeToIdentities;
 import org.olat.course.nodes.QTICourseNode;
 import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.course.statistic.StatisticResourceNode;
+import org.olat.ims.qti21.QTI21DeliveryOptions;
+import org.olat.ims.qti21.QTI21Service;
 import org.olat.ims.qti21.model.QTI21StatisticSearchParams;
 import org.olat.repository.RepositoryEntry;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -75,6 +78,9 @@ public class QTI21StatisticsToolController extends BasicController implements Ac
 
 	private final QTI21StatisticSearchParams searchParams;
 	
+	@Autowired
+	private QTI21Service qtiService;
+	
 	public QTI21StatisticsToolController(UserRequest ureq, WindowControl wControl, 
 			TooledStackedPanel stackPanel, CourseEnvironment courseEnv,
 			AssessmentToolOptions asOptions, QTICourseNode courseNode) {
@@ -88,6 +94,10 @@ public class QTI21StatisticsToolController extends BasicController implements Ac
 		testEntry = courseNode.getReferencedRepositoryEntry();
 		
 		searchParams = new QTI21StatisticSearchParams(testEntry, courseEntry, courseNode.getIdent());
+		
+		QTI21DeliveryOptions deliveryOptions = qtiService.getDeliveryOptions(testEntry);
+		searchParams.setViewAnonymUsers(deliveryOptions.isAllowAnonym());
+
 		if(asOptions.getGroup() != null) {
 			List<Group> bGroups = Collections.singletonList(asOptions.getGroup().getBaseGroup());
 			searchParams.setLimitToGroups(bGroups);

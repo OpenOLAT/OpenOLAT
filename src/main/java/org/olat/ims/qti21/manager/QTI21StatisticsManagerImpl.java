@@ -85,8 +85,12 @@ public class QTI21StatisticsManagerImpl implements QTI21StatisticsManager {
 			sb.append(" and asession.repositoryEntry.key=:repositoryEntryKey and asession.subIdent=:subIdent");
 		}
 		sb.append(" and asession.lastModified = (select max(a2session.lastModified) from qtiassessmenttestsession a2session")
-		  .append("   where a2session.identity.key=asession.identity.key and a2session.repositoryEntry.key=asession.repositoryEntry.key")
-		  .append("   and a2session.subIdent=asession.subIdent")
+		  .append("   where a2session.subIdent=asession.subIdent and a2session.repositoryEntry.key=asession.repositoryEntry.key")
+		  .append("   and (a2session.identity.key=asession.identity.key");
+		if(searchParams.isViewAnonymUsers()) {
+			sb.append("   or (a2session.anonymousIdentifier is not null and a2session.anonymousIdentifier=asession.anonymousIdentifier)");
+		}
+		sb.append("    )")
 		  .append(" )");
 		
 		if(searchParams.getLimitToGroups() != null && searchParams.getLimitToGroups().size() > 0) {
@@ -96,9 +100,13 @@ public class QTI21StatisticsManagerImpl implements QTI21StatisticsManager {
 		}
 		
 		if(searchParams.isMayViewAllUsersAssessments()) {
-			sb.append(" and asession.identity.key in (select data.identity.key from assessmententry data ")
+			sb.append(" and (asession.identity.key in (select data.identity.key from assessmententry data ")
 			  .append("   where data.repositoryEntry=asession.repositoryEntry")
 			  .append(" )");
+			if(searchParams.isViewAnonymUsers()) {
+				sb.append(" or asession.anonymousIdentifier is not null");
+			}
+			sb.append(" )");
 		}
 		return sb;
 	}

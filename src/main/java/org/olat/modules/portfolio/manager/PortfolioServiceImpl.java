@@ -948,7 +948,7 @@ public class PortfolioServiceImpl implements PortfolioService {
 			OLATResource resource = ((BinderImpl)binder.getTemplate()).getOlatResource();
 			RepositoryEntry referenceEntry = repositoryService.loadByResourceKey(resource.getKey());
 			AssessmentEntry assessmentEntry = assessmentService
-					.getOrCreateAssessmentEntry(assessedIdentity, binder.getEntry(), binder.getSubIdent(), referenceEntry);
+					.getOrCreateAssessmentEntry(assessedIdentity, null, binder.getEntry(), binder.getSubIdent(), referenceEntry);
 			assessmentEntry.setScore(totalScore);
 			assessmentEntry.setPassed(totalPassed);
 			assessmentEntry.setAssessmentStatus(binderStatus);

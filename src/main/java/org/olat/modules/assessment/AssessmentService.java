@@ -57,7 +57,7 @@ public interface AssessmentService {
 	 * @param referenceEntry The test repository entry 
 	 * @return
 	 */
-	public AssessmentEntry getOrCreateAssessmentEntry(Identity assessedIdentity,
+	public AssessmentEntry getOrCreateAssessmentEntry(Identity assessedIdentity, String anonymousIdentifier,
 			RepositoryEntry entry, String subIdent, RepositoryEntry referenceEntry);
 	
 	public AssessmentEntry loadAssessmentEntry(Identity assessedIdentity, RepositoryEntry entry, String subIdent);

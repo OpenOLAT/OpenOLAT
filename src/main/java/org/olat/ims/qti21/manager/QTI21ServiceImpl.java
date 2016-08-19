@@ -55,6 +55,7 @@ import org.olat.core.logging.OLATRuntimeException;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.cache.CacheWrapper;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.xml.XStreamHelper;
@@ -74,6 +75,7 @@ import org.olat.ims.qti21.QTI21Module;
 import org.olat.ims.qti21.QTI21Service;
 import org.olat.ims.qti21.manager.audit.AssessmentSessionAuditFileLog;
 import org.olat.ims.qti21.manager.audit.AssessmentSessionAuditOLog;
+import org.olat.ims.qti21.model.InMemoryAssessmentTestMarks;
 import org.olat.ims.qti21.model.ParentPartItemRefs;
 import org.olat.ims.qti21.model.ResponseLegality;
 import org.olat.ims.qti21.model.audit.CandidateEvent;
@@ -388,6 +390,9 @@ public class QTI21ServiceImpl implements QTI21Service, InitializingBean, Disposa
 		if(authorMode) {
 			return new AssessmentSessionAuditOLog();
 		}
+		if(session.getIdentity() == null && StringHelper.containsNonWhitespace(session.getAnonymousIdentifier())) {
+			return new AssessmentSessionAuditOLog();
+		}
 		try {
 			File userStorage = testSessionDao.getSessionStorage(session);
 			File auditLog = new File(userStorage, "audit.log");
@@ -400,14 +405,16 @@ public class QTI21ServiceImpl implements QTI21Service, InitializingBean, Disposa
 	}
 
 	@Override
-	public AssessmentTestSession createAssessmentTestSession(Identity identity, AssessmentEntry assessmentEntry,
-			RepositoryEntry entry, String subIdent, RepositoryEntry testEntry, boolean authorMode) {
-		return testSessionDao.createAndPersistTestSession(testEntry, entry, subIdent, assessmentEntry, identity, authorMode);
+	public AssessmentTestSession createAssessmentTestSession(Identity identity, String anonymousIdentifier,
+			AssessmentEntry assessmentEntry,  RepositoryEntry entry, String subIdent, RepositoryEntry testEntry,
+			boolean authorMode) {
+		return testSessionDao.createAndPersistTestSession(testEntry, entry, subIdent, assessmentEntry, identity, anonymousIdentifier, authorMode);
 	}
 
 	@Override
-	public AssessmentTestSession getResumableAssessmentTestSession(Identity identity, RepositoryEntry entry, String subIdent, RepositoryEntry testEntry) {
-		AssessmentTestSession session = testSessionDao.getLastTestSession(testEntry, entry, subIdent, identity);
+	public AssessmentTestSession getResumableAssessmentTestSession(Identity identity, String anonymousIdentifier,
+			RepositoryEntry entry, String subIdent, RepositoryEntry testEntry) {
+		AssessmentTestSession session = testSessionDao.getLastTestSession(testEntry, entry, subIdent, identity, anonymousIdentifier);
 		if(session == null || session.isExploded() || session.getTerminationTime() != null) {
 			session = null;
 		} else {
@@ -480,6 +487,9 @@ public class QTI21ServiceImpl implements QTI21Service, InitializingBean, Disposa
 
 	@Override
 	public AssessmentTestMarks updateMarks(AssessmentTestMarks marks) {
+		if(marks instanceof InMemoryAssessmentTestMarks) {
+			return marks;
+		}
 		return testMarksDao.merge(marks);
 	}
 

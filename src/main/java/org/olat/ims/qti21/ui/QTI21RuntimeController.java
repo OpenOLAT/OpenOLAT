@@ -230,9 +230,7 @@ public class QTI21RuntimeController extends RepositoryEntryRuntimeController  {
 			QTI21RuntimeStatisticsController ctrl = new QTI21RuntimeStatisticsController(ureq, swControl,
 					getRepositoryEntry(), asOptions);
 			listenTo(ctrl);
-			
-	
-	
+
 			statsToolCtr = pushController(ureq, translate("command.openteststatistic"), ctrl);
 			currentToolCtr = ctrl;
 			setActiveTool(testStatisticLink);

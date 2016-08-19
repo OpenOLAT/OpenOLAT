@@ -58,7 +58,7 @@ public class AssessmentItemSessionDAOTest extends OlatTestCase {
 		// prepare a test and a user
 		RepositoryEntry testEntry = JunitTestHelper.createAndPersistRepositoryEntry();
 		Identity assessedIdentity = JunitTestHelper.createAndPersistIdentityAsRndUser("response-session-1");
-		AssessmentEntry assessmentEntry = assessmentService.getOrCreateAssessmentEntry(assessedIdentity, testEntry, "-", testEntry);
+		AssessmentEntry assessmentEntry = assessmentService.getOrCreateAssessmentEntry(assessedIdentity, null, testEntry, "-", testEntry);
 		dbInstance.commit();
 		
 		String itemIdentifier = UUID.randomUUID().toString();
@@ -69,7 +69,7 @@ public class AssessmentItemSessionDAOTest extends OlatTestCase {
 		parentParts.setTestPartIdentifier(testPartIdentifier);
 		
 		//make test, item and response
-		AssessmentTestSession testSession = testSessionDao.createAndPersistTestSession(testEntry, testEntry, "_", assessmentEntry, assessedIdentity, true);
+		AssessmentTestSession testSession = testSessionDao.createAndPersistTestSession(testEntry, testEntry, "_", assessmentEntry, assessedIdentity, null, true);
 		Assert.assertNotNull(testSession);
 		AssessmentItemSession itemSession = itemSessionDao.createAndPersistAssessmentItemSession(testSession, parentParts, itemIdentifier);
 		Assert.assertNotNull(itemSession);

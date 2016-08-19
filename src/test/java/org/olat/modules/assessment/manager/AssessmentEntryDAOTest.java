@@ -93,7 +93,7 @@ public class AssessmentEntryDAOTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		AssessmentEntry reloadedAssessment = courseNodeAssessmentDao
-				.loadAssessmentEntry(assessedIdentity, entry, subIdent);
+				.loadAssessmentEntry(assessedIdentity, null, entry, subIdent);
 		Assert.assertEquals(nodeAssessment.getKey(), reloadedAssessment.getKey());
 		Assert.assertEquals(nodeAssessment, reloadedAssessment);
 		Assert.assertEquals(assessedIdentity, reloadedAssessment.getIdentity());

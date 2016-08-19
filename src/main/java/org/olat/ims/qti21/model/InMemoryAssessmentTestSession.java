@@ -46,6 +46,7 @@ public class InMemoryAssessmentTestSession implements AssessmentTestSession {
     private BigDecimal score;
     private BigDecimal manualScore;
     private boolean exploded;
+    private String anonymousIdentifier;
     
     public InMemoryAssessmentTestSession() {
     	key = -1l;
@@ -154,6 +155,11 @@ public class InMemoryAssessmentTestSession implements AssessmentTestSession {
 	@Override
 	public Identity getIdentity() {
 		return null;
+	}
+	
+	@Override
+	public String getAnonymousIdentifier() {
+		return anonymousIdentifier;
 	}
 
 	@Override

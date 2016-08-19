@@ -84,27 +84,37 @@ public class AssessmentSessionAuditOLog implements AssessmentSessionAuditLogger 
 	public void logCorrection(AssessmentTestSession candidateSession, AssessmentItemSession itemSession, Identity coach) {
 		try {
 			StringOutput sb = new StringOutput(255);
-			sb.append("Test session " + candidateSession.getKey() + " (assessed identity=" + candidateSession.getIdentity().getKey() + "/" + candidateSession.getIdentity().getName() + " ");
+			sb.append("Test session ").append(candidateSession.getKey()).append(" (assessed identity=");
+			if(candidateSession.getIdentity() != null) {
+				sb.append(candidateSession.getIdentity().getKey()).append("/").append(candidateSession.getIdentity().getName());
+			} else {
+				sb.append(candidateSession.getAnonymousIdentifier());
+			}
+			sb.append(" ");
 			AuditLogFormatter.logCorrection(itemSession, coach, sb);
 			log.audit("", sb.toString());
 		} catch (IOException e) {
 			log.error("", e);
 		}
-		
-		//
 	}
 
 	@Override
 	public void logTestRetrieved(AssessmentTestSession candidateSession, Identity coach) {
-		log.audit("Test session " + candidateSession.getKey() + " (assessed identity=" + candidateSession.getIdentity().getKey() + "/" + candidateSession.getIdentity().getName() + " ) retrieved by coach " + coach.getKey() + "/" + coach.getName());
+		StringBuilder sb = new StringBuilder(255);
+		sb.append("Test session ").append(candidateSession.getKey()).append(" (assessed identity=");
+		if(candidateSession.getIdentity() != null) {
+			sb.append(candidateSession.getIdentity().getKey()).append("/").append(candidateSession.getIdentity().getName());
+		} else {
+			sb.append(candidateSession.getAnonymousIdentifier());
+		}
+		sb.append(" ) retrieved by coach ").append(coach.getKey()).append("/").append(coach.getName());
+		log.audit(sb.toString());
 	}
 	
 	@Override
 	public void logAndThrowCandidateException(AssessmentTestSession session, CandidateExceptionReason reason, Exception ex) {
 		log.error(reason.name(), ex);
 	}
-	
-
 
 	@Override
 	public void close() throws IOException {

@@ -142,7 +142,7 @@ public class AssessmentItemEditorController extends BasicController {
 
 		initItemEditor(ureq);
 		
-		AssessmentEntry assessmentEntry = assessmentService.getOrCreateAssessmentEntry(getIdentity(), testEntry, null, testEntry);
+		AssessmentEntry assessmentEntry = assessmentService.getOrCreateAssessmentEntry(getIdentity(), null, testEntry, null, testEntry);
 		displayCtrl = new AssessmentItemPreviewController(ureq, getWindowControl(),
 				resolvedAssessmentItem, itemRef, testEntry, assessmentEntry, rootDirectory, itemFile);
 		listenTo(displayCtrl);
@@ -296,7 +296,7 @@ public class AssessmentItemEditorController extends BasicController {
 				((SyncAssessmentItem)selectedCtrl).sync(ureq, itemBuilder);
 			} else if(selectedCtrl == displayCtrl) {
 				if(testEntry != null) {
-					AssessmentEntry assessmentEntry = assessmentService.getOrCreateAssessmentEntry(getIdentity(), testEntry, null, testEntry);
+					AssessmentEntry assessmentEntry = assessmentService.getOrCreateAssessmentEntry(getIdentity(), null, testEntry, null, testEntry);
 					displayCtrl = new AssessmentItemPreviewController(ureq, getWindowControl(),
 						resolvedAssessmentItem, itemRef, testEntry, assessmentEntry, rootDirectory, itemFile);
 				} else {

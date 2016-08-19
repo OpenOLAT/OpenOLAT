@@ -86,6 +86,7 @@ import org.olat.ims.qti.statistics.QTIStatisticSearchParams;
 import org.olat.ims.qti.statistics.QTIType;
 import org.olat.ims.qti.statistics.ui.QTI12PullTestsToolController;
 import org.olat.ims.qti.statistics.ui.QTI12StatisticsToolController;
+import org.olat.ims.qti21.QTI21DeliveryOptions;
 import org.olat.ims.qti21.QTI21Service;
 import org.olat.ims.qti21.manager.archive.QTI21ArchiveFormat;
 import org.olat.ims.qti21.model.QTI21StatisticSearchParams;
@@ -150,9 +151,13 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements Pe
 		Roles roles = ureq.getUserSession().getRoles();
 		Translator trans = Util.createPackageTranslator(IQTESTCourseNode.class, ureq.getLocale());
 		if (roles.isGuestOnly()) {
-			String title = trans.translate("guestnoaccess.title");
-			String message = trans.translate("guestnoaccess.message");
-			controller = MessageUIFactory.createInfoMessage(ureq, wControl, title, message);
+			if(isGuestAllowedForQTI21()) {
+				controller = new QTI21AssessmentRunController(ureq, wControl, userCourseEnv, this);
+			} else {
+				String title = trans.translate("guestnoaccess.title");
+				String message = trans.translate("guestnoaccess.message");
+				controller = MessageUIFactory.createInfoMessage(ureq, wControl, title, message);
+			}
 		} else {
 			ModuleConfiguration config = getModuleConfiguration();
 			boolean onyx = IQEditController.CONFIG_VALUE_QTI2.equals(config.get(IQEditController.CONFIG_KEY_TYPE_QTI));
@@ -182,6 +187,16 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements Pe
 		}
 		Controller ctrl = TitledWrapperHelper.getWrapper(ureq, wControl, controller, this, "o_iqtest_icon");
 		return new NodeRunConstructionResult(ctrl);
+	}
+	
+	private boolean isGuestAllowedForQTI21() {
+		RepositoryEntry testEntry = getReferencedRepositoryEntry();
+		OLATResource ores = testEntry.getOlatResource();
+		if(ImsQTI21Resource.TYPE_NAME.equals(ores.getResourceableTypeName())) {
+			QTI21DeliveryOptions options = CoreSpringFactory.getImpl(QTI21Service.class).getDeliveryOptions(testEntry);
+			return options != null && options.isAllowAnonym();
+		}
+		return false;
 	}
 
 	/**
@@ -256,6 +271,9 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements Pe
 		if(ImsQTI21Resource.TYPE_NAME.equals(qtiTestEntry.getOlatResource().getResourceableTypeName())) {
 			RepositoryEntry courseEntry = userCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
 			QTI21StatisticSearchParams searchParams = new QTI21StatisticSearchParams(qtiTestEntry, courseEntry, getIdent());
+			QTI21DeliveryOptions deliveryOptions = CoreSpringFactory.getImpl(QTI21Service.class)
+					.getDeliveryOptions(qtiTestEntry);
+			searchParams.setViewAnonymUsers(deliveryOptions.isAllowAnonym());
 			return new QTI21StatisticResourceResult(qtiTestEntry, courseEntry, this, searchParams);
 		}
 		

@@ -44,6 +44,8 @@ public class QTI21DeliveryOptions {
 	private boolean blockAfterSuccess;
 	private int maxAttempts;
 	
+	private boolean allowAnonym;
+	
 	private Integer templateProcessingLimit;
 	
 	private ShowResultsOnFinish showResultsOnFinish;
@@ -104,6 +106,14 @@ public class QTI21DeliveryOptions {
 		this.personalNotes = personalNotes;
 	}
 	
+	public boolean isAllowAnonym() {
+		return allowAnonym;
+	}
+
+	public void setAllowAnonym(boolean allowAnonym) {
+		this.allowAnonym = allowAnonym;
+	}
+
 	public boolean isBlockAfterSuccess() {
 		return blockAfterSuccess;
 	}
@@ -145,6 +155,7 @@ public class QTI21DeliveryOptions {
 		defaultSettings.showMenu = true;
 		defaultSettings.showTitles = true;
 		defaultSettings.personalNotes = false;
+		defaultSettings.allowAnonym = false;
 		defaultSettings.blockAfterSuccess = false;
 		defaultSettings.maxAttempts = 0;
 		defaultSettings.showResultsOnFinish = ShowResultsOnFinish.none;
@@ -161,6 +172,7 @@ public class QTI21DeliveryOptions {
 		clone.showMenu = showMenu;
 		clone.showTitles = showTitles;
 		clone.personalNotes = personalNotes;
+		clone.allowAnonym = allowAnonym;
 		clone.blockAfterSuccess = blockAfterSuccess;
 		clone.maxAttempts = maxAttempts;
 		clone.showResultsOnFinish = showResultsOnFinish;

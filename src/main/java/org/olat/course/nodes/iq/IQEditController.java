@@ -122,6 +122,8 @@ public class IQEditController extends ActivateableTabbableDefaultController impl
 	public final static String CONFIG_FULLWINDOW = "fullwindow";
 	/** Enable manual correction */
 	public final static String CONFIG_CORRECTION_MODE = "correctionMode";
+	/** Test in full window mode*/
+	public final static String CONFIG_ALLOW_ANONYM = "allowAnonym";
 	
 	public final static String CORRECTION_AUTO = "auto";
 	public final static String CORRECTION_MANUAL = "manual";

@@ -122,7 +122,6 @@ public class QTI21RetrieveTestsToolController extends BasicController implements
 	}
 	
 	private void confirmPull(UserRequest ureq) {
-
 		StringBuilder fullnames = new StringBuilder(256);
 		
 		List<AssessmentTestSession> sessions = qtiService

@@ -42,6 +42,7 @@ import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamWriter;
 
 import org.olat.core.CoreSpringFactory;
+import org.olat.core.commons.fullWebApp.LayoutMain3ColsController;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.gui.UserRequest;
@@ -49,8 +50,10 @@ import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.layout.MainLayoutController;
+import org.olat.core.gui.control.generic.messages.MessageUIFactory;
 import org.olat.core.gui.control.generic.wizard.StepsMainRunController;
 import org.olat.core.gui.media.MediaResource;
+import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Roles;
@@ -58,8 +61,10 @@ import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.PathUtils.YesMatcher;
+import org.olat.core.util.Util;
 import org.olat.core.util.coordinate.LockResult;
 import org.olat.course.assessment.AssessmentMode;
+import org.olat.course.assessment.manager.UserCourseInformationsManager;
 import org.olat.fileresource.FileResourceManager;
 import org.olat.fileresource.ZippedDirectoryMediaResource;
 import org.olat.fileresource.types.FileResource;
@@ -344,7 +349,16 @@ public class QTI21AssessmentTestHandler extends FileHandler {
 					public Controller create(UserRequest uureq, WindowControl wwControl, TooledStackedPanel toolbarPanel,
 							RepositoryEntry entry, RepositoryEntrySecurity repoSecurity, AssessmentMode mode) {
 						QTI21DeliveryOptions options = qtiService.getDeliveryOptions(entry);
+						if(!options.isAllowAnonym() && ureq.getUserSession().getRoles().isGuestOnly()) {
+							Translator translator = Util.createPackageTranslator(QTI21RuntimeController.class, uureq.getLocale());
+							Controller contentCtr = MessageUIFactory.createInfoMessage(uureq, wwControl,
+									translator.translate("anonym.not.allowed.title"),
+									translator.translate("anonym.not.allowed.descr"));
+							return new LayoutMain3ColsController(uureq, wwControl, contentCtr);
+						}
 						boolean authorMode = reSecurity.isEntryAdmin();
+						CoreSpringFactory.getImpl(UserCourseInformationsManager.class)
+							.updateUserCourseInformations(entry.getOlatResource(), uureq.getIdentity());
 						return new AssessmentTestDisplayController(uureq, wwControl, null, entry, entry, null, options, false, authorMode);
 					}
 				});

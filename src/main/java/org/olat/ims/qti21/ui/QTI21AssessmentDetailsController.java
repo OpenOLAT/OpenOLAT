@@ -285,7 +285,7 @@ public class QTI21AssessmentDetailsController extends FormBasicController {
 		URI assessmentObjectUri = qtiService.createAssessmentObjectUri(fUnzippedDirRoot);
 		String mapperUri = registerCacheableMapper(null, "QTI21Resources::" + session.getTestEntry().getKey(), new ResourcesMapper(assessmentObjectUri));
 		
-		resultCtrl = new AssessmentResultController(ureq, getWindowControl(), assessedIdentity, session,
+		resultCtrl = new AssessmentResultController(ureq, getWindowControl(), assessedIdentity, false, session,
 				ShowResultsOnFinish.details, fUnzippedDirRoot, mapperUri);
 		listenTo(resultCtrl);
 		cmc = new CloseableModalController(getWindowControl(), "close", resultCtrl.getInitialComponent(),

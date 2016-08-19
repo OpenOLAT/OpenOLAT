@@ -86,6 +86,7 @@ public class AssessmentResultController extends FormBasicController {
 	private final String mapperUri;
 	private final ShowResultsOnFinish resultsOnfinish;
 	
+	private final boolean anonym;
 	private final TestSessionState testSessionState;
 	private final AssessmentResult assessmentResult;
 	private final CandidateSessionContext candidateSessionContext;
@@ -93,27 +94,30 @@ public class AssessmentResultController extends FormBasicController {
 	private final URI assessmentObjectUri;
 	private final ResourceLocator inputResourceLocator;
 	private final ResolvedAssessmentTest resolvedAssessmentTest;
-	private final UserShortDescription assessedIdentityInfosCtrl;
+	private UserShortDescription assessedIdentityInfosCtrl;
 	
 	private int count = 0;
 	
 	@Autowired
 	private QTI21Service qtiService;
 	
-	public AssessmentResultController(UserRequest ureq, WindowControl wControl, Identity assessedIdentity,
+	public AssessmentResultController(UserRequest ureq, WindowControl wControl, Identity assessedIdentity, boolean anonym,
 			AssessmentTestSession candidateSession, ShowResultsOnFinish resultsOnfinish, File fUnzippedDirRoot, String mapperUri) {
 		super(ureq, wControl, "assessment_results");
+		
+		this.anonym = anonym;
 		this.mapperUri = mapperUri;
 		this.resultsOnfinish = resultsOnfinish;
 
-		
 		ResourceLocator fileResourceLocator = new PathResourceLocator(fUnzippedDirRoot.toPath());
 		inputResourceLocator = 
         		ImsQTI21Resource.createResolvingResourceLocator(fileResourceLocator);
 		assessmentObjectUri = qtiService.createAssessmentObjectUri(fUnzippedDirRoot);
 		
-		assessedIdentityInfosCtrl = new UserShortDescription(ureq, getWindowControl(), assessedIdentity);
-		listenTo(assessedIdentityInfosCtrl);
+		if(!anonym && assessedIdentity != null) {
+			assessedIdentityInfosCtrl = new UserShortDescription(ureq, getWindowControl(), assessedIdentity);
+			listenTo(assessedIdentityInfosCtrl);
+		}
 		
 		resolvedAssessmentTest = qtiService.loadAndResolveAssessmentTest(fUnzippedDirRoot, false);
 		
@@ -128,7 +132,11 @@ public class AssessmentResultController extends FormBasicController {
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		if(formLayout instanceof FormLayoutContainer) {
 			FormLayoutContainer layoutCont = (FormLayoutContainer)formLayout;
-			layoutCont.put("assessedIdentityInfos", assessedIdentityInfosCtrl.getInitialComponent());
+			if(assessedIdentityInfosCtrl != null) {
+				layoutCont.put("assessedIdentityInfos", assessedIdentityInfosCtrl.getInitialComponent());
+			} else if(anonym) {
+				layoutCont.contextPut("anonym", Boolean.TRUE);
+			}
 			
 			Results results = new Results(false, "o_qtiassessment_icon");
 			results.setSessionState(testSessionState);

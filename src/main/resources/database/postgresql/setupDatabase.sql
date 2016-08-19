@@ -1168,7 +1168,8 @@ create table o_as_entry (
    fk_entry int8 not null,
    a_subident varchar(64),
    fk_reference_entry int8,
-   fk_identity int8 not null,
+   fk_identity int8 default null,
+   a_anon_identifier varchar(128) default null,
    primary key (id),
    unique(fk_identity, fk_entry, a_subident)
 );
@@ -1421,7 +1422,8 @@ create table o_qti_assessmenttest_session (
    fk_reference_entry int8 not null,
    fk_entry int8,
    q_subident varchar(64),
-   fk_identity int8 not null,
+   fk_identity int8 default null,
+   q_anon_identifier varchar(128) default null,
    fk_assessment_entry int8 not null,
    primary key (id)
 );

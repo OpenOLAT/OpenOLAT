@@ -191,19 +191,19 @@ public class IQManager implements UserDataDeletable {
 		//wrap simple message into mainLayout
 		GenericMainController glc = new GenericMainController(ureq, wControl) {
 			@Override
-			public void init(UserRequest ureq) {
+			public void init(UserRequest uureq) {
 				Panel empty = new Panel("empty");
-				setTranslator(Util.createPackageTranslator(this.getClass(), ureq.getLocale()));
-				Controller contentCtr = MessageUIFactory.createInfoMessage(ureq, getWindowControl(), translate("status.currently.locked.title"), translate("status.currently.locked", fullName));
+				setTranslator(Util.createPackageTranslator(this.getClass(), uureq.getLocale()));
+				Controller contentCtr = MessageUIFactory.createInfoMessage(uureq, getWindowControl(), translate("status.currently.locked.title"), translate("status.currently.locked", fullName));
 				listenTo(contentCtr); // auto dispose later
 				Component resComp = contentCtr.getInitialComponent();
-				LayoutMain3ColsController columnLayoutCtr = new LayoutMain3ColsController(ureq, getWindowControl(), empty, resComp, /*do not save no prefs*/null);
+				LayoutMain3ColsController columnLayoutCtr = new LayoutMain3ColsController(uureq, getWindowControl(), empty, resComp, /*do not save no prefs*/null);
 				listenTo(columnLayoutCtr); // auto dispose later
 				putInitialPanel(columnLayoutCtr.getInitialComponent());
 			}
 		
 			@Override
-			protected Controller handleOwnMenuTreeEvent(Object uobject, UserRequest ureq) {
+			protected Controller handleOwnMenuTreeEvent(Object uobject, UserRequest uureq) {
 				//no menutree means no menu events.
 				return null;
 			}

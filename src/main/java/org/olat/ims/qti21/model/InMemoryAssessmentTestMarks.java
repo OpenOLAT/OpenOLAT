@@ -17,31 +17,52 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.portfolio.ui.event;
+package org.olat.ims.qti21.model;
 
-import org.olat.core.gui.control.Event;
-import org.olat.modules.portfolio.Page;
+import java.util.Date;
+
+import org.olat.ims.qti21.AssessmentTestMarks;
 
 /**
  * 
- * Initial date: 18.08.2016<br>
+ * Initial date: 19.08.2016<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class PageRemoved extends Event {
+public class InMemoryAssessmentTestMarks implements AssessmentTestMarks {
 
-	private static final long serialVersionUID = -7075556842338612328L;
-
-	public static final String PAGE_REMOVED = "pfpage-removed";
+	private String marks;
 	
-	private final Page page;
+	public InMemoryAssessmentTestMarks() {
+		//
+	}
 	
-	public PageRemoved(Page page) {
-		super(PAGE_REMOVED);
-		this.page = page;
+	public InMemoryAssessmentTestMarks(String marks) {
+		this.marks = marks;
+	}
+	
+	@Override
+	public Date getCreationDate() {
+		return null;
+	}
+	
+	@Override
+	public Date getLastModified() {
+		return null;
 	}
 
-	public Page getPage() {
-		return page;
+	@Override
+	public void setLastModified(Date date) {
+		//
+	}
+
+	@Override
+	public String getMarks() {
+		return marks;
+	}
+
+	@Override
+	public void setMarks(String marks) {
+		this.marks = marks;
 	}
 }

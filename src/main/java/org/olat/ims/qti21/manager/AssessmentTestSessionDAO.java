@@ -64,7 +64,7 @@ public class AssessmentTestSessionDAO {
 	
 	public AssessmentTestSession createAndPersistTestSession(RepositoryEntry testEntry,
 			RepositoryEntry repositoryEntry, String subIdent,
-			AssessmentEntry assessmentEntry, Identity identity,
+			AssessmentEntry assessmentEntry, Identity identity, String anonymousIdentifier,
 			boolean authorMode) {
 		
 		AssessmentTestSessionImpl testSession = new AssessmentTestSessionImpl();
@@ -78,17 +78,18 @@ public class AssessmentTestSessionDAO {
 		testSession.setAuthorMode(authorMode);
 		testSession.setExploded(false);
 		testSession.setIdentity(identity);
+		testSession.setAnonymousIdentifier(anonymousIdentifier);
 		testSession.setStorage(createSessionStorage(testSession));
 		dbInstance.getCurrentEntityManager().persist(testSession);
 		return testSession;
 	}
 	
 	public AssessmentTestSession getLastTestSession(RepositoryEntryRef testEntry,
-			RepositoryEntryRef entry, String subIdent, IdentityRef identity) {
+			RepositoryEntryRef entry, String subIdent, IdentityRef identity, String anonymousIdentifier) {
 		
 		StringBuilder sb = new StringBuilder();
 		sb.append("select session from qtiassessmenttestsession session ")
-		  .append("where session.testEntry.key=:testEntryKey and session.identity.key=:identityKey");
+		  .append("where session.testEntry.key=:testEntryKey");
 		if(entry != null) {
 			sb.append(" and session.repositoryEntry.key=:courseEntryKey");
 		} else {
@@ -100,17 +101,32 @@ public class AssessmentTestSessionDAO {
 		} else {
 			sb.append(" and session.subIdent is null");
 		}
+		
+		if(anonymousIdentifier != null) {
+			sb.append(" and session.anonymousIdentifier=:anonymousIdentifier");
+		} else {
+			sb.append(" and session.anonymousIdentifier is null");
+		}
+		if(identity != null) {
+			sb.append(" and session.identity.key=:identityKey");
+		}
+		
 		sb.append(" order by session.creationDate desc");
 		
 		TypedQuery<AssessmentTestSession> query = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), AssessmentTestSession.class)
-				.setParameter("testEntryKey", testEntry.getKey())
-				.setParameter("identityKey", identity.getKey());
+				.setParameter("testEntryKey", testEntry.getKey());
 		if(entry != null) {
 			query.setParameter("courseEntryKey", entry.getKey());
 		}
 		if(subIdent != null) {
 			query.setParameter("courseSubIdent", subIdent);
+		}
+		if(anonymousIdentifier != null) {
+			query.setParameter("anonymousIdentifier", anonymousIdentifier);
+		}
+		if(identity != null) {
+			query.setParameter("identityKey", identity.getKey());
 		}
 		
 		List<AssessmentTestSession> lastSessions = query.setMaxResults(1).getResultList();
@@ -183,7 +199,12 @@ public class AssessmentTestSessionDAO {
 		synchronized(formater) {
 			datePart = formater.format(session.getCreationDate());
 		}
-		String userPart = session.getIdentity().getKey() + "_" + datePart;
+		String userPart;
+		if(session.getIdentity() != null) {
+			userPart = session.getIdentity().getKey() + "_" + datePart;
+		} else {
+			userPart = session.getAnonymousIdentifier();
+		}
 
 		File storage = rootDir;
 		if(session.getRepositoryEntry() != null
