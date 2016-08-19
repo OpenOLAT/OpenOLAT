@@ -295,7 +295,7 @@ public class QTI21RuntimeController extends RepositoryEntryRuntimeController  {
 		
 		try(FileOutputStream fileStream = new FileOutputStream(exportFile);
 			ZipOutputStream exportStream = new ZipOutputStream(fileStream)) {
-			new QTI21ArchiveFormat(getLocale()).export(testEntry, exportStream);
+			new QTI21ArchiveFormat(getLocale(), true, true, true).export(testEntry, exportStream);
 		} catch (IOException e) {
 			logError("", e);
 		}

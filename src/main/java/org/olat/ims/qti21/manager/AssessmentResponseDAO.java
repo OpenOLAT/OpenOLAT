@@ -25,6 +25,7 @@ import java.util.List;
 
 import javax.persistence.TypedQuery;
 
+import org.olat.basesecurity.GroupRoles;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.util.StringHelper;
 import org.olat.ims.qti21.AssessmentItemSession;
@@ -94,7 +95,8 @@ public class AssessmentResponseDAO {
 	 * @param testEntry
 	 * @return
 	 */
-	public boolean hasResponses(RepositoryEntryRef courseEntry, String subIdent, RepositoryEntryRef testEntry) {
+	public boolean hasResponses(RepositoryEntryRef courseEntry, String subIdent, RepositoryEntryRef testEntry,
+			boolean participant, boolean users, boolean anonymUsers) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select response.key from qtiassessmentresponse response ")
 		  .append(" inner join response.assessmentItemSession itemSession")
@@ -102,7 +104,21 @@ public class AssessmentResponseDAO {
 		  .append(" where testSession.repositoryEntry.key=:repoEntryKey")
 		  .append("  and testSession.testEntry.key=:testEntryKey")
 		  .append("  and testSession.subIdent=:subIdent")
-		  .append("  and testSession.terminationTime is not null");
+		  .append("  and testSession.terminationTime is not null")
+		  .append("  and (");
+		if(users) {
+			sb.append(" testSession.identity.key is not null");
+		} else if(participant) {
+			sb.append(" testSession.identity.key in (select membership.identity.key from  bgroupmember as membership, repoentrytogroup as rel")
+			  .append("   where rel.entry.key=:repoEntryKey and rel.group.key=membership.group.key ")
+			  .append("   and membership.role='").append(GroupRoles.participant.name()).append("'")
+			  .append(" )");
+		}
+		if(anonymUsers) {
+			if(participant || users) sb.append(" or ");
+			sb.append(" testSession.anonymousIdentifier is not null");
+		}
+		sb.append("))");
 		
 		List<Long> responses = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), Long.class)
@@ -115,14 +131,15 @@ public class AssessmentResponseDAO {
 		return responses.size() > 0 && responses.get(0) != null;
 	}
 	
-	public List<AssessmentResponse> getResponse(RepositoryEntryRef courseEntry, String subIdent, RepositoryEntryRef testEntry) {
+	public List<AssessmentResponse> getResponse(RepositoryEntryRef courseEntry, String subIdent, RepositoryEntryRef testEntry,
+			boolean participant, boolean users, boolean anonymUsers) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select response from qtiassessmentresponse response ")
 		  .append(" inner join fetch response.assessmentItemSession itemSession")
 		  .append(" inner join fetch itemSession.assessmentTestSession testSession")
 		  .append(" inner join fetch testSession.assessmentEntry assessmentEntry")
-		  .append(" inner join assessmentEntry.identity as ident")
-		  .append(" inner join ident.user as usr")
+		  .append(" left join assessmentEntry.identity as ident")
+		  .append(" left join ident.user as usr")
 		  .append(" where testSession.testEntry.key=:testEntryKey")
 		  .append("  and testSession.terminationTime is not null");
 		if(courseEntry != null) {
@@ -131,6 +148,21 @@ public class AssessmentResponseDAO {
 		if(StringHelper.containsNonWhitespace(subIdent)) {
 			sb.append(" and testSession.subIdent=:subIdent");
 		}
+		
+		sb.append(" and (");
+		if(users) {
+			sb.append(" testSession.identity.key is not null");
+		} else if(participant) {
+			sb.append(" testSession.identity.key in (select membership.identity.key from  bgroupmember as membership, repoentrytogroup as rel")
+			  .append("   where rel.entry.key=:repoEntryKey and rel.group.key=membership.group.key ")
+			  .append("   and membership.role='").append(GroupRoles.participant.name()).append("'")
+			  .append(" )");
+		}
+		if(anonymUsers) {
+			if(participant || users) sb.append(" or ");
+			sb.append(" testSession.anonymousIdentifier is not null");
+		}
+		sb.append(")");
 
 		//need to be anonymized
 		sb.append(" order by usr.lastName, testSession.key, itemSession.key");

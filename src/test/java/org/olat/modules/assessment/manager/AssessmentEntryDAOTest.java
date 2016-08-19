@@ -53,7 +53,7 @@ public class AssessmentEntryDAOTest extends OlatTestCase {
 		String subIdent = "39485349759";
 
 		AssessmentEntry nodeAssessment = courseNodeAssessmentDao
-				.createCourseNodeAssessment(assessedIdentity, entry, subIdent, entry);
+				.createCourseNodeAssessment(assessedIdentity, null, entry, subIdent, entry);
 		Assert.assertNotNull(nodeAssessment);
 		dbInstance.commitAndCloseSession();
 		
@@ -72,7 +72,7 @@ public class AssessmentEntryDAOTest extends OlatTestCase {
 		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
 		String subIdent = UUID.randomUUID().toString();
 		AssessmentEntry nodeAssessment = courseNodeAssessmentDao
-				.createCourseNodeAssessment(assessedIdentity, entry, subIdent, entry);
+				.createCourseNodeAssessment(assessedIdentity, null, entry, subIdent, entry);
 		dbInstance.commitAndCloseSession();
 		
 		AssessmentEntry reloadedAssessment = courseNodeAssessmentDao.loadAssessmentEntryById(nodeAssessment.getKey());
@@ -89,7 +89,7 @@ public class AssessmentEntryDAOTest extends OlatTestCase {
 		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
 		String subIdent = UUID.randomUUID().toString();
 		AssessmentEntry nodeAssessment = courseNodeAssessmentDao
-				.createCourseNodeAssessment(assessedIdentity, entry, subIdent, entry);
+				.createCourseNodeAssessment(assessedIdentity, null, entry, subIdent, entry);
 		dbInstance.commitAndCloseSession();
 		
 		AssessmentEntry reloadedAssessment = courseNodeAssessmentDao

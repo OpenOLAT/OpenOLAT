@@ -48,9 +48,9 @@ public class AssessmentServiceImpl implements AssessmentService {
 	private AssessmentEntryDAO assessmentEntryDao;
 	
 	@Override
-	public AssessmentEntry createAssessmentEntry(Identity assessedIdentity, RepositoryEntry entry, String subIdent,
-			RepositoryEntry referenceEntry, Float score, Boolean passed) {
-		return assessmentEntryDao.createCourseNodeAssessment(assessedIdentity, entry, subIdent, referenceEntry, score, passed);
+	public AssessmentEntry createAssessmentEntry(Identity assessedIdentity, String anonymousIdentifier,
+			RepositoryEntry entry, String subIdent, RepositoryEntry referenceEntry, Float score, Boolean passed) {
+		return assessmentEntryDao.createCourseNodeAssessment(assessedIdentity, anonymousIdentifier, entry, subIdent, referenceEntry, score, passed);
 	}
 
 	@Override
@@ -59,7 +59,7 @@ public class AssessmentServiceImpl implements AssessmentService {
 		
 		AssessmentEntry assessmentEntry = assessmentEntryDao.loadAssessmentEntry(assessedIdentity, anonymousIdentifier, entry, subIdent);
 		if(assessmentEntry == null) {
-			assessmentEntry = assessmentEntryDao.createCourseNodeAssessment(assessedIdentity, entry, subIdent, referenceEntry);
+			assessmentEntry = assessmentEntryDao.createCourseNodeAssessment(assessedIdentity, anonymousIdentifier, entry, subIdent, referenceEntry);
 			dbInstance.commit();
 		}
 		return assessmentEntry;

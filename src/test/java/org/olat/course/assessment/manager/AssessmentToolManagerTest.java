@@ -54,7 +54,7 @@ public class AssessmentToolManagerTest extends OlatTestCase {
 		String subIdent = "39486543874";
 
 		AssessmentEntry nodeAssessment = courseNodeAssessmentDao
-				.createCourseNodeAssessment(assessedIdentity, entry, subIdent, entry);
+				.createCourseNodeAssessment(assessedIdentity, null, entry, subIdent, entry);
 		Assert.assertNotNull(nodeAssessment);
 		dbInstance.commitAndCloseSession();
 		

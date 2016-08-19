@@ -29,7 +29,6 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.wizard.BasicStep;
 import org.olat.core.gui.control.generic.wizard.PrevNextFinishConfig;
-import org.olat.core.gui.control.generic.wizard.Step;
 import org.olat.core.gui.control.generic.wizard.StepFormBasicController;
 import org.olat.core.gui.control.generic.wizard.StepFormController;
 import org.olat.core.gui.control.generic.wizard.StepsEvent;
@@ -56,19 +55,12 @@ public class Archive_1_SelectNodeStep extends BasicStep {
 		this.advanced = advanced;
 		this.courseOres = courseOres;
 		setI18nTitleAndDescr("wizard.nodechoose.title", "wizard.nodechoose.howto");
-		if(advanced) {
-			setNextStep(new Archive_2_SettingsStep(ureq));
-		} else {
-			setNextStep(Step.NOSTEP);
-		}
+		setNextStep(new Archive_2_UserSelectionStep(ureq, advanced));
 	}
 
 	@Override
 	public PrevNextFinishConfig getInitialPrevNextFinishConfig() {
-		if(advanced) {
-			return new PrevNextFinishConfig(false, false, false);
-		}
-		return new PrevNextFinishConfig(true, false, true);
+		return new PrevNextFinishConfig(false, false, false);
 	}
 
 	@Override
@@ -79,7 +71,7 @@ public class Archive_1_SelectNodeStep extends BasicStep {
 		return new SelectNodeController(ureq, wControl, form, nodeList, runContext);
 	}
 	
-	public static class SelectNodeController extends StepFormBasicController {
+	public class SelectNodeController extends StepFormBasicController {
 		
 		private final SelectTestOrSurveyController selectCtrl;
 		
@@ -112,8 +104,8 @@ public class Archive_1_SelectNodeStep extends BasicStep {
 			if(source == selectCtrl) {
 				if(event instanceof SelectTestOrSurveyEvent) {
 					QTIArchiver archiver = ((QTIArchiver)getFromRunContext("archiver"));
-					if(archiver.getType() == Type.onyx || archiver.getType() == Type.qti21) {
-						fireEvent(ureq, StepsEvent.INFORM_FINISHED);
+					if(archiver.getType() == Type.onyx || (archiver.getType() == Type.qti12 && !advanced)) {
+						fireEvent(ureq, StepsEvent.INFORM_FINISHED);	
 					} else {
 						fireEvent(ureq, StepsEvent.ACTIVATE_NEXT);
 					}

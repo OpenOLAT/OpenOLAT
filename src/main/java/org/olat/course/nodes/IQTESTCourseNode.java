@@ -622,7 +622,7 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements Pe
 				}
 				return true;
 			} else if(ImsQTI21Resource.TYPE_NAME.equals(re.getOlatResource().getResourceableTypeName())) {
-				QTI21ArchiveFormat qaf = new QTI21ArchiveFormat(locale);
+				QTI21ArchiveFormat qaf = new QTI21ArchiveFormat(locale, true, true, true);
 				RepositoryEntry courseEntry = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
 				qaf.export(courseEntry, getIdent(), re, exportStream);
 				return true;	

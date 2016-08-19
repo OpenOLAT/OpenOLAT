@@ -65,7 +65,6 @@ public class CourseQTIArchiveController extends BasicController {
 
 	private CloseableModalController cmc;
 	private StepsMainRunController archiveWizardCtrl;
-	private SelectTestOrSurveyController simpleArchiveCtrl;
 
 	private Link startExportDummyButton, startExportButton;
 
@@ -102,9 +101,9 @@ public class CourseQTIArchiveController extends BasicController {
 	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
 		if (source == startExportButton){
-			doAdvancedArchive(ureq, true);
+			doArchive(ureq, true);
 		} else if (source == startExportDummyButton) {
-			doSimpleArchive(ureq);
+			doArchive(ureq, false);
 		}
 	}
 	
@@ -117,13 +116,6 @@ public class CourseQTIArchiveController extends BasicController {
 		if (source == archiveWizardCtrl){
 			getWindowControl().pop();
 			cleanUp();
-		} else if(simpleArchiveCtrl == source) {
-			if(event instanceof SelectTestOrSurveyEvent) {
-				SelectTestOrSurveyEvent stos = (SelectTestOrSurveyEvent)event;
-				doExportSimpleArchive(ureq, stos.getArchiver(), stos.getData());
-			}
-			cmc.deactivate();
-			cleanUp();
 		} else if(cmc == source) {
 			cleanUp();
 		}
@@ -131,34 +123,12 @@ public class CourseQTIArchiveController extends BasicController {
 	
 	private void cleanUp() {
 		removeAsListenerAndDispose(archiveWizardCtrl);
-		removeAsListenerAndDispose(simpleArchiveCtrl);
 		removeAsListenerAndDispose(cmc);
 		archiveWizardCtrl = null;
-		simpleArchiveCtrl = null;
 		cmc = null;
 	}
 
-	private void doSimpleArchive(UserRequest ureq) {
-		QTIArchiver archiver = new QTIArchiver(courseOres, getIdentity(), getLocale());
-		simpleArchiveCtrl = new SelectTestOrSurveyController(ureq, getWindowControl(), archiver, nodeList);
-		listenTo(simpleArchiveCtrl);
-		cmc = new CloseableModalController(getWindowControl(), translate("close"), simpleArchiveCtrl.getInitialComponent(),
-				true, translate("archive.wizard.title"));
-		cmc.activate();
-		listenTo(cmc);
-	}
-	
-	private void doExportSimpleArchive(UserRequest ureq, QTIArchiver archiver, AssessmentNodeData data) {
-		try {
-			archiver.setData(data);
-			MediaResource resource = archiver.export();
-			ureq.getDispatchResult().setResultingMediaResource(resource);
-		} catch (IOException e) {
-			logError("", e);
-		}
-	}
-	
-	private void doAdvancedArchive(UserRequest ureq, boolean advanced) {
+	private void doArchive(UserRequest ureq, boolean advanced) {
 		StepRunnerCallback finish = new FinishArchive();
 		Step start  = new Archive_1_SelectNodeStep(ureq, courseOres, nodeList, advanced);
 		archiveWizardCtrl = new StepsMainRunController(ureq, getWindowControl(), start, finish, null,

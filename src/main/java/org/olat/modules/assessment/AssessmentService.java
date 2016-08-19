@@ -45,8 +45,8 @@ public interface AssessmentService {
 	 * @param passed
 	 * @return
 	 */
-	public AssessmentEntry createAssessmentEntry(Identity assessedIdentity, RepositoryEntry entry, String subIdent,
-			RepositoryEntry referenceEntry, Float score, Boolean passed);
+	public AssessmentEntry createAssessmentEntry(Identity assessedIdentity, String anonymousIdentifier,
+			RepositoryEntry entry, String subIdent, RepositoryEntry referenceEntry, Float score, Boolean passed);
 	
 	/**
 	 * 

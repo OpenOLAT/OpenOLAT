@@ -118,7 +118,7 @@ public class CourseAssessmentManagerImpl implements AssessmentManager {
 			passed = scoreEvaluation.getPassed();
 		}
 		return assessmentService
-				.createAssessmentEntry(assessedIdentity, cgm.getCourseEntry(), courseNode.getIdent(), referenceEntry, score, passed);
+				.createAssessmentEntry(assessedIdentity, null, cgm.getCourseEntry(), courseNode.getIdent(), referenceEntry, score, passed);
 	}
 
 	@Override

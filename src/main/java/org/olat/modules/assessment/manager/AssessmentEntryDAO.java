@@ -49,13 +49,14 @@ public class AssessmentEntryDAO {
 	@Autowired
 	private DB dbInstance;
 	
-	public AssessmentEntry createCourseNodeAssessment(Identity assessedIdentity,
+	public AssessmentEntry createCourseNodeAssessment(Identity assessedIdentity, String anonymousIdentifier,
 			RepositoryEntry entry, String subIdent, RepositoryEntry referenceEntry) {
 		
 		AssessmentEntryImpl data = new AssessmentEntryImpl();
 		data.setCreationDate(new Date());
 		data.setLastModified(data.getCreationDate());
 		data.setIdentity(assessedIdentity);
+		data.setAnonymousIdentifier(anonymousIdentifier);
 		data.setRepositoryEntry(entry);
 		data.setSubIdent(subIdent);
 		data.setReferenceEntry(referenceEntry);
@@ -63,7 +64,7 @@ public class AssessmentEntryDAO {
 		return data;
 	}
 	
-	public AssessmentEntry createCourseNodeAssessment(Identity assessedIdentity,
+	public AssessmentEntry createCourseNodeAssessment(Identity assessedIdentity, String anonymousIdentifier,
 			RepositoryEntry entry, String subIdent, RepositoryEntry referenceEntry,
 			Float score, Boolean passed) {
 		
@@ -71,6 +72,7 @@ public class AssessmentEntryDAO {
 		data.setCreationDate(new Date());
 		data.setLastModified(data.getCreationDate());
 		data.setIdentity(assessedIdentity);
+		data.setAnonymousIdentifier(anonymousIdentifier);
 		data.setRepositoryEntry(entry);
 		data.setSubIdent(subIdent);
 		data.setReferenceEntry(referenceEntry);

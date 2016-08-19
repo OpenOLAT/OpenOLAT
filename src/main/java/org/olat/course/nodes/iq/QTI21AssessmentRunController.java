@@ -80,11 +80,12 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 	private static final OLATResourceable assessmentInstanceOres = OresHelper.createOLATResourceableType(AssessmentInstance.class);
 	
 	private Link startButton;
-	private Link showResultsButton, hideResultsButton;
 	private final VelocityContainer mainVC;
 	
 	private boolean assessmentStopped = true;
+	
 	private EventBus singleUserEventCenter;
+	private final boolean anonym;
 	private final UserSession userSession;
 	private final ModuleConfiguration config;
 	private final UserCourseEnvironment userCourseEnv;
@@ -108,9 +109,10 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 		this.courseNode = courseNode;
 		this.userCourseEnv = userCourseEnv;
 		userSession = ureq.getUserSession();
+		anonym = userSession.getRoles().isGuestOnly();
 		config = courseNode.getModuleConfiguration();
 		testEntry = courseNode.getReferencedRepositoryEntry();
-		singleUserEventCenter = ureq.getUserSession().getSingleUserEventCenter();
+		singleUserEventCenter = userSession.getSingleUserEventCenter();
 		mainVC = createVelocityContainer("assessment_run");
 		
 		if(courseNode instanceof IQTESTCourseNode) {
@@ -118,7 +120,6 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 		} else if(courseNode instanceof IQSELFCourseNode) {
 			mainVC.contextPut("type", "self");
 		}
-		
 		
 		deliveryOptions = getDeliveryOptions();
 		init(ureq);
@@ -180,8 +181,10 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 				Integer attempts = assessmentEntry.getAttempts();
 				mainVC.contextPut("attempts", attempts == null ? new Integer(0) : attempts);
 	
-				UserNodeAuditManager am = userCourseEnv.getCourseEnvironment().getAuditManager();
-				mainVC.contextPut("log", am.getUserNodeLog(courseNode, identity));
+				if(!anonym) {
+					UserNodeAuditManager am = userCourseEnv.getCourseEnvironment().getAuditManager();
+					mainVC.contextPut("log", am.getUserNodeLog(courseNode, identity));
+				}
 			}
 		}
 						
@@ -216,8 +219,6 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 			boolean dateRelatedVisibility = AssessmentHelper.isResultVisible(config);		
 			if(showResultsOnHomePage && dateRelatedVisibility) {
 				mainVC.contextPut("showResultsVisible",Boolean.TRUE);
-				showResultsButton = LinkFactory.createButton("command.showResults", mainVC, this);
-				hideResultsButton = LinkFactory.createButton("command.hideResults", mainVC, this);
 			} else if(showResultsOnHomePage) {
 				Date startDate = config.getDateValue(IQEditController.CONFIG_KEY_RESULTS_START_DATE);
 				Date endDate = config.getDateValue(IQEditController.CONFIG_KEY_RESULTS_END_DATE);
@@ -259,10 +260,6 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 	protected void event(UserRequest ureq, Component source, Event event) {
 		if(startButton == source) {
 			doStart(ureq);
-		} else if(showResultsButton == source) {
-			
-		} else if(hideResultsButton == source) {
-			
 		}
 	}
 	
@@ -376,6 +373,8 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 
 	@Override
 	public void submit(Float score, Boolean pass, Long assessmentId) {
+		if(anonym) return;
+		
 		if(courseNode instanceof IQTESTCourseNode) {
 			AssessmentEntryStatus assessmentStatus;
 			if(IQEditController.CORRECTION_MANUAL.equals(courseNode.getModuleConfiguration().getStringValue(IQEditController.CONFIG_CORRECTION_MODE))) {

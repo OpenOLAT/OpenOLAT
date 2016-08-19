@@ -81,6 +81,7 @@ import org.olat.ims.qti21.manager.archive.interactions.PositionObjectInteraction
 import org.olat.ims.qti21.manager.archive.interactions.SelectPointInteractionArchive;
 import org.olat.ims.qti21.manager.archive.interactions.SliderInteractionArchive;
 import org.olat.ims.qti21.manager.archive.interactions.TextEntryInteractionArchive;
+import org.olat.ims.qti21.ui.QTI21RuntimeController;
 import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.repository.RepositoryEntry;
 import org.olat.user.UserManager;
@@ -129,6 +130,10 @@ public class QTI21ArchiveFormat {
 	private ResolvedAssessmentTest resolvedAssessmentTest;
 	private List<UserPropertyHandler> userPropertyHandlers;
 
+	private boolean participants;
+	private boolean allUsers;
+	private boolean anonymUsers;
+	
 	private List<ItemInfos> itemInfos;
 	private final Map<String, InteractionArchive> interactionArchiveMap = new HashMap<>();
 	
@@ -136,14 +141,18 @@ public class QTI21ArchiveFormat {
 	private final UserManager userManager;
 	private final AssessmentResponseDAO responseDao;
 	
-	public QTI21ArchiveFormat(Locale locale) {
+	public QTI21ArchiveFormat(Locale locale, boolean participants, boolean allUsers, boolean anonymUsers) {
+		this.participants = participants;
+		this.allUsers = allUsers;
+		this.anonymUsers = anonymUsers;
+		
 		userManager = CoreSpringFactory.getImpl(UserManager.class);
 		qtiService = CoreSpringFactory.getImpl(QTI21ServiceImpl.class);
 		responseDao = CoreSpringFactory.getImpl(AssessmentResponseDAO.class);
 		
 		userPropertyHandlers = userManager.getUserPropertyHandlersFor(QTIArchiver.TEST_USER_PROPERTIES, true);
 		
-		translator = Util.createPackageTranslator(QTI21ArchiveFormat.class, locale);
+		translator = Util.createPackageTranslator(QTI21RuntimeController.class, locale);
 		translator = Util.createPackageTranslator(QTIExportFormatter.class, locale, translator);
 		translator = userManager.getPropertyHandlerTranslator(translator);
 		initInteractionWriters();
@@ -176,7 +185,7 @@ public class QTI21ArchiveFormat {
 	}
 	
 	public boolean hasResults(RepositoryEntry courseEntry, String subIdent, RepositoryEntry testEntry) {
-		return responseDao.hasResponses(courseEntry, subIdent, testEntry);
+		return responseDao.hasResponses(courseEntry, subIdent, testEntry, participants, allUsers, anonymUsers);
 	}
 
 	public void export(RepositoryEntry courseEntry, String subIdent, RepositoryEntry testEntry, ZipOutputStream exportStream) {
@@ -206,7 +215,7 @@ public class QTI21ArchiveFormat {
 	
 	private void export(RepositoryEntry courseEntry, String subIdent, RepositoryEntry testEntry, String filename, ZipOutputStream exportStream) {
 		//content
-		final List<AssessmentResponse> responses = responseDao.getResponse(courseEntry, subIdent, testEntry);
+		final List<AssessmentResponse> responses = responseDao.getResponse(courseEntry, subIdent, testEntry, participants, allUsers, anonymUsers);
 		try {
 			exportStream.putNextEntry(new ZipEntry(filename));
 			OpenXMLWorkbook workbook = new OpenXMLWorkbook(new ShieldOutputStream(exportStream), 1);
@@ -238,7 +247,7 @@ public class QTI21ArchiveFormat {
 				+ ".xlsx";
 		
 		//content
-		final List<AssessmentResponse> responses = responseDao.getResponse(courseEntry, subIdent, testEntry);
+		final List<AssessmentResponse> responses = responseDao.getResponse(courseEntry, subIdent, testEntry, participants, allUsers, anonymUsers);
 
 		return new OpenXMLWorkbookResource(label) {
 			@Override
@@ -351,18 +360,35 @@ public class QTI21ArchiveFormat {
 		AssessmentEntry entry = testSession.getAssessmentEntry();
 		
 		//user properties
-		User assessedUser = entry.getIdentity().getUser();
-		for (UserPropertyHandler userPropertyHandler : userPropertyHandlers) {
-			if (userPropertyHandler == null) {
-				continue;
+		if(entry.getIdentity() == null) {
+			for (UserPropertyHandler userPropertyHandler:userPropertyHandlers) {
+				if (userPropertyHandler != null) {
+					if(userPropertyHandlers.get(0) == userPropertyHandler) {
+						dataRow.addCell(col++, translator.translate("anonym.user"), null);
+					} else {
+						col++;
+					}	
+				}	
 			}
-			String property = userPropertyHandler.getUserProperty(assessedUser, translator.getLocale());
-			dataRow.addCell(col++, property, null);
+		} else {
+			User assessedUser = entry.getIdentity().getUser();
+			for (UserPropertyHandler userPropertyHandler : userPropertyHandlers) {
+				if (userPropertyHandler != null) {
+					String property = userPropertyHandler.getUserProperty(assessedUser, translator.getLocale());
+					dataRow.addCell(col++, property, null);
+				}
+			}
 		}
 		
 		//homepage, assesspoints, passed, ipaddress, date, duration
-		ContextEntry ce = BusinessControlFactory.getInstance().createContextEntry(entry.getIdentity());
-		String homepage = BusinessControlFactory.getInstance().getAsURIString(Collections.singletonList(ce), false);
+		String homepage;
+		if(entry.getIdentity() == null) {
+			homepage = "";
+		} else {
+			ContextEntry ce = BusinessControlFactory.getInstance().createContextEntry(entry.getIdentity());
+			homepage = BusinessControlFactory.getInstance().getAsURIString(Collections.singletonList(ce), false);
+		}
+		
 		dataRow.addCell(col++, homepage, null);
 		if(testSession.getScore() != null) {
 			dataRow.addCell(col++, testSession.getScore(), null);

@@ -91,6 +91,10 @@ public class QTIArchiver {
 	private final Identity identity;
 	private final OLATResourceable courseOres;
 	
+	private boolean participants = true;
+	private boolean allUsers = true;
+	private boolean anonymUsers = true;
+	
 	private Boolean results;
 	private List<QTIItemObject> qtiItemObjectList;
 	private Map<Class<?>, QTIExportItemFormatConfig> qtiItemConfigs;
@@ -119,6 +123,30 @@ public class QTIArchiver {
 	
 	public CourseNode getCourseNode() {
 		return courseNode;
+	}
+
+	public boolean isParticipants() {
+		return participants;
+	}
+
+	public void setParticipants(boolean participants) {
+		this.participants = participants;
+	}
+
+	public boolean isAllUsers() {
+		return allUsers;
+	}
+
+	public void setAllUsers(boolean allUsers) {
+		this.allUsers = allUsers;
+	}
+
+	public boolean isAnonymUsers() {
+		return anonymUsers;
+	}
+
+	public void setAnonymUsers(boolean anonymUsers) {
+		this.anonymUsers = anonymUsers;
 	}
 
 	public AssessmentNodeData getData() {
@@ -195,7 +223,7 @@ public class QTIArchiver {
 	    } else if(ImsQTI21Resource.TYPE_NAME.equals(testRe.getOlatResource().getResourceableTypeName())) {
 	    	type = Type.qti21;
 	    	RepositoryEntry courseEntry = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
-	    	success = new QTI21ArchiveFormat(locale).hasResults(courseEntry, courseNode.getIdent(), testRe);
+	    	success = new QTI21ArchiveFormat(locale, participants, allUsers, anonymUsers).hasResults(courseEntry, courseNode.getIdent(), testRe);
 	    } else {
 	    	type = Type.qti12;
 			success = qrm.hasResultSets(courseOres.getResourceableId(), courseNode.getIdent(), testRe.getKey());
@@ -240,7 +268,7 @@ public class QTIArchiver {
 		ICourse course = CourseFactory.loadCourse(courseOres);
 		RepositoryEntry testRe = courseNode.getReferencedRepositoryEntry();
     	RepositoryEntry courseEntry = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
-		return (new QTI21ArchiveFormat(locale)).export(courseEntry, courseNode.getIdent(), testRe);
+		return (new QTI21ArchiveFormat(locale, participants, allUsers, anonymUsers)).export(courseEntry, courseNode.getIdent(), testRe);
 	}
 	
 	public MediaResource exportQTI12() throws IOException {

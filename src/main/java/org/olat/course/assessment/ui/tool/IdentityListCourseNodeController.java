@@ -283,7 +283,9 @@ public class IdentityListCourseNodeController extends FormBasicController implem
 		List<Identity> assessedIdentities = assessmentToolManager.getAssessedIdentities(getIdentity(), params);
 		List<AssessmentEntry> assessmentEntries = assessmentToolManager.getAssessmentEntries(getIdentity(), params, null);
 		Map<Long,AssessmentEntry> entryMap = new HashMap<>();
-		assessmentEntries.forEach((entry) -> entryMap.put(entry.getIdentity().getKey(), entry));
+		assessmentEntries.stream()
+			.filter(entry -> entry.getIdentity() != null)
+			.forEach((entry) -> entryMap.put(entry.getIdentity().getKey(), entry));
 
 		List<AssessedIdentityElementRow> rows = new ArrayList<>(assessedIdentities.size());
 		for(Identity assessedIdentity:assessedIdentities) {

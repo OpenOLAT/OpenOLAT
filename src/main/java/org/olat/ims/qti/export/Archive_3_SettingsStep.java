@@ -36,9 +36,9 @@ import org.olat.core.gui.control.generic.wizard.StepsRunContext;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class Archive_2_SettingsStep extends BasicStep {
+public class Archive_3_SettingsStep extends BasicStep {
 	
-	public Archive_2_SettingsStep(UserRequest ureq) {
+	public Archive_3_SettingsStep(UserRequest ureq) {
 		super(ureq);
 		setI18nTitleAndDescr("wizard.optionschoose.title", "wizard.optionschoose.howto");
 		setNextStep(Step.NOSTEP);
