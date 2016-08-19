@@ -160,6 +160,11 @@ public class BinderSecurityCallbackFactory {
 		public boolean canNewAssignment() {
 			return admin;
 		}
+
+		@Override
+		public boolean canViewElement(PortfolioElement element) {
+			return true;
+		}
 	}
 	
 	private static class BinderSecurityCallbackImpl implements BinderSecurityCallback {
