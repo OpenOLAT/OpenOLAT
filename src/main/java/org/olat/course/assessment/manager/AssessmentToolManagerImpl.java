@@ -160,40 +160,6 @@ public class AssessmentToolManagerImpl implements AssessmentToolManager {
 		return results != null && results.size() > 0 && results.get(0)[0] instanceof Number
 				? ((Number)results.get(0)[0]).intValue(): 0;
 	}
-	
-
-	/*public List<AssessedBusinessGroup> getBusinessGroupLoginStatistics(Identity coach, SearchAssessedIdentityParams params) {
-		RepositoryEntry courseEntry = params.getEntry();
-		
-		StringBuilder sf = new StringBuilder();
-		sf.append("select bgi.key, bgi.name, count(infos.key)")
-		  .append(" from businessgroup as bgi")
-		  .append(" inner join bgi.baseGroup as baseGroup")
-		  .append(" inner join repoentrytogroup as rel on (rel.group.key=baseGroup.key and rel.entry.key=:repoEntryKey)")
-		  .append(" inner join repositoryentry as entry on (rel.entry.key=entry.key)")
-		  .append(" inner join baseGroup.members as bmember on (bmember.role='").append(GroupRoles.participant.name()).append("')")
-		  .append(" inner join usercourseinfos as infos on (bmember.identity.key=infos.identity.key and infos.resource.key=entry.olatResource.key)");
-		if(!params.isAdmin()) {
-			sf.append(" where bgi.key n (:groupKeys)");
-		}
-		sf.append(" group by bgi.key");
-		
-		TypedQuery<Object[]> stats = dbInstance.getCurrentEntityManager()
-				.createQuery(sf.toString(), Object[].class)
-				.setParameter("repoEntryKey", courseEntry.getKey());
-		if(!params.isAdmin()) {
-			stats.setParameter("groupKeys", params.getBusinessGroupKeys());
-		}
-		
-		List<Object[]> results = stats.getResultList();
-		List<AssessedBusinessGroup> rows = new ArrayList<>(results.size());
-		for(Object[] result:results) {
-			Long key = (Long)result[0];
-			String name = (String)result[1];
-			int login = result[2] == null ? 0 : ((Number)result[2]).intValue();
-		}
-		return rows;
-	}*/
 
 	@Override
 	public List<AssessedBusinessGroup> getBusinessGroupStatistics(Identity coach, SearchAssessedIdentityParams params) {
@@ -538,6 +504,8 @@ public class AssessmentToolManagerImpl implements AssessmentToolManager {
 	public List<AssessmentEntry> getAssessmentEntries(Identity coach, SearchAssessedIdentityParams params, AssessmentEntryStatus status) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select aentry from assessmententry aentry")
+		  .append(" inner join fetch aentry.identity as assessedIdentity")
+		  .append(" inner join fetch assessedIdentity.user as assessedUser")
 		  .append(" where aentry.repositoryEntry.key=:repoEntryKey");
 		if(params.getReferenceEntry() != null) {
 			sb.append(" and aentry.referenceEntry.key=:referenceKey");
@@ -548,19 +516,19 @@ public class AssessmentToolManagerImpl implements AssessmentToolManager {
 		if(status != null) {
 			sb.append(" and aentry.status=:assessmentStatus");
 		}
-		sb.append(" and (aentry.identity in");
+		sb.append(" and (assessedIdentity.key in");
 		if(params.isAdmin()) {
-			sb.append(" (select participant.identity from repoentrytogroup as rel, bgroupmember as participant")
+			sb.append(" (select participant.identity.key from repoentrytogroup as rel, bgroupmember as participant")
 	          .append("    where rel.entry.key=:repoEntryKey and rel.group=participant.group")
 	          .append("      and participant.role='").append(GroupRoles.participant.name()).append("'")
 	          .append("  )");
 			if(params.isNonMembers()) {
-				sb.append(" or aentry.identity not in (select membership.identity from repoentrytogroup as rel, bgroupmember as membership")
+				sb.append(" or assessedIdentity.key not in (select membership.identity.key from repoentrytogroup as rel, bgroupmember as membership")
 		          .append("    where rel.entry.key=:repoEntryKey and rel.group=membership.group and membership.identity=aentry.identity")
 		          .append(" )");
 			}
 		} else if(params.isBusinessGroupCoach() || params.isRepositoryEntryCoach()) {
-			sb.append(" (select participant.identity from repoentrytogroup as rel, bgroupmember as participant, bgroupmember as coach")
+			sb.append(" (select participant.identity.key from repoentrytogroup as rel, bgroupmember as participant, bgroupmember as coach")
 	          .append("    where rel.entry.key=:repoEntryKey")
 	          .append("      and rel.group=coach.group and coach.role='").append(GroupRoles.coach.name()).append("' and coach.identity.key=:identityKey")
 	          .append("      and rel.group=participant.group and participant.role='").append(GroupRoles.participant.name()).append("'")

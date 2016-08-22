@@ -168,6 +168,17 @@ public class AssessmentHelper {
 		Date lastModified = uce.getCourseEnvironment().getAssessmentManager().getScoreLastModifiedDate(courseNode, identity);
 		return new AssessedIdentityWrapper(uce, attempts, details, initialLaunchDate, lastModified);
 	}
+	
+	public static UserCourseEnvironment createInitAndUpdateUserCourseEnvironment(Identity identity, ICourse course) {
+		// create an identenv with no roles, no attributes, no locale
+		IdentityEnvironment ienv = new IdentityEnvironment(); 
+		ienv.setIdentity(identity);
+		UserCourseEnvironment uce = new UserCourseEnvironmentImpl(ienv, course.getCourseEnvironment());
+		// Fetch all score and passed and calculate score accounting for the entire
+		// course
+		uce.getScoreAccounting().evaluateAll(true);
+		return uce;
+	}
 
 	/**
 	 * Create a user course environment for the given user and course. After

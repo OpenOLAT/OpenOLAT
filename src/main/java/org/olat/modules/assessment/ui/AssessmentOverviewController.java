@@ -65,8 +65,7 @@ public class AssessmentOverviewController extends BasicController implements Act
 		
 	public AssessmentOverviewController(UserRequest ureq, WindowControl wControl,
 			RepositoryEntry testEntry, AssessmentToolSecurityCallback assessmentCallback) {
-		super(ureq, wControl);
-		setTranslator(Util.createPackageTranslator(AssessmentModule.class, getLocale(), getTranslator()));
+		super(ureq, wControl, Util.createPackageTranslator(AssessmentModule.class, ureq.getLocale()));
 		
 		mainVC = createVelocityContainer("overview");
 		

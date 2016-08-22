@@ -232,11 +232,17 @@ public class EfficiencyStatementManager implements UserDataDeletable {
 			Object passed = rootNode.get(AssessmentHelper.KEY_PASSED);
 			if(passed instanceof Boolean) {
 				efficiencyProperty.setPassed((Boolean)passed);
+			} else {
+				efficiencyProperty.setPassed(null);
 			}
 			
 			Object fscore = rootNode.get(AssessmentHelper.KEY_SCORE_F);
 			if(fscore instanceof Float) {
-				efficiencyProperty.setScore((Float)fscore);
+				efficiencyProperty.setScore((Float)fscore);	
+			} else if(fscore instanceof Number) {
+				efficiencyProperty.setScore(((Number)fscore).floatValue());
+			} else {
+				efficiencyProperty.setScore(null);
 			}
 	
 			Object shortTitle = rootNode.get(AssessmentHelper.KEY_TITLE_SHORT);
@@ -681,7 +687,7 @@ public class EfficiencyStatementManager implements UserDataDeletable {
 					@Override
 					public void execute() {					
 						// create temporary user course env
-						UserCourseEnvironment uce = AssessmentHelper.createAndInitUserCourseEnvironment(identity, course);
+						UserCourseEnvironment uce = AssessmentHelper.createInitAndUpdateUserCourseEnvironment(identity, course);
 						updateUserEfficiencyStatement(uce, courseEntry);
 					}
 				});
