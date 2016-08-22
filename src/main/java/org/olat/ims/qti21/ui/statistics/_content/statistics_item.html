@@ -1,3 +1,9 @@
+#if($r.available("filter"))
+<div class="o_button_group o_button_group_right">
+	$r.render("filter")
+</div>
+#end
+
 <div class="o_qti_statistics">
 	#if($sectionTitle)
 	<h5>$r.translate("section"): $sectionTitle</h5>

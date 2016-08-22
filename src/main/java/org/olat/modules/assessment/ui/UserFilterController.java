@@ -69,6 +69,7 @@ public class UserFilterController extends FormBasicController {
 			allowValues[i] = translate("filter.".concat(allowKeys[i]));
 		}
 		restrictionEl = uifactory.addCheckboxesHorizontal("user.restrictions", null, formLayout, allowKeys, allowValues);
+		restrictionEl.setDomReplacementWrapperRequired(false);
 		restrictionEl.addActionListener(FormEvent.ONCHANGE);
 	}
 

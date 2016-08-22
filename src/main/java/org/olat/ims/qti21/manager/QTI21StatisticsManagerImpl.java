@@ -47,6 +47,7 @@ import org.olat.ims.qti21.model.statistics.SimpleChoiceStatistics;
 import org.olat.ims.qti21.model.statistics.TextEntryInteractionStatistics;
 import org.olat.ims.qti21.model.xml.interactions.FIBAssessmentItemBuilder;
 import org.olat.ims.qti21.model.xml.interactions.FIBAssessmentItemBuilder.NumericalEntry;
+import org.olat.modules.vitero.model.GroupRole;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -79,39 +80,47 @@ public class QTI21StatisticsManagerImpl implements QTI21StatisticsManager {
 	@Autowired
 	private DB dbInstance;
 	
-	private StringBuilder decorateRSet(StringBuilder sb, QTI21StatisticSearchParams searchParams) {
-		sb.append(" where asession.testEntry.key=:testEntryKey");
-		if(searchParams.getCourseEntry() != null) {
-			sb.append(" and asession.repositoryEntry.key=:repositoryEntryKey and asession.subIdent=:subIdent");
+	private StringBuilder decorateRSet(StringBuilder sb, QTI21StatisticSearchParams searchParams, boolean terminated) {
+		sb.append(" where asession.testEntry.key=:testEntryKey and asession.repositoryEntry.key=:repositoryEntryKey");
+		if(searchParams.getNodeIdent() != null ) {
+			sb.append(" and asession.subIdent=:subIdent");
+		} else {
+			sb.append(" and asession.subIdent is null");
 		}
-		sb.append(" and asession.lastModified = (select max(a2session.lastModified) from qtiassessmenttestsession a2session")
-		  .append("   where a2session.subIdent=asession.subIdent and a2session.repositoryEntry.key=asession.repositoryEntry.key")
-		  .append("   and (a2session.identity.key=asession.identity.key");
-		if(searchParams.isViewAnonymUsers()) {
-			sb.append("   or (a2session.anonymousIdentifier is not null and a2session.anonymousIdentifier=asession.anonymousIdentifier)");
+
+		if(terminated) {
+			sb.append(" and asession.terminationTime is not null");
 		}
-		sb.append("    )")
-		  .append(" )");
 		
-		if(searchParams.getLimitToGroups() != null && searchParams.getLimitToGroups().size() > 0) {
+		sb.append(" and asession.lastModified = (select max(a2session.lastModified) from qtiassessmenttestsession a2session")
+		  .append("   where asession.testEntry.key=a2session.testEntry.key and a2session.repositoryEntry.key=asession.repositoryEntry.key");
+		if(searchParams.getNodeIdent() != null ) {
+			sb.append(" and a2session.subIdent=asession.subIdent");
+		} else {
+			sb.append(" and asession.subIdent is null and a2session.subIdent is null");
+		}
+		sb.append("   and (a2session.identity.key=asession.identity.key or a2session.anonymousIdentifier=asession.anonymousIdentifier)")
+		  .append(" )");
+
+		if(searchParams.isViewAllUsers() && searchParams.isViewAnonymUsers()) {
+			//no restrictions
+		} else if(searchParams.isViewAnonymUsers()) {
+			sb.append(" and asession.anonymousIdentifier is not null");
+		} else if(searchParams.isViewAllUsers()) {
+			sb.append(" and asession.identity.key in (select data.identity.key from assessmententry data")
+			  .append("   where data.repositoryEntry.key=asession.repositoryEntry.key")
+			  .append(" )");
+		} else if(searchParams.getLimitToGroups() != null && searchParams.getLimitToGroups().size() > 0) {
 			sb.append(" and asession.identity.key in ( select membership.identity.key from bgroupmember membership")
 			  .append("   where membership.group in (:baseGroups)")
 			  .append(" )");
-		}
-		
-		if(searchParams.isViewAllUsers() || searchParams.isViewAnonymUsers()) {
-			sb.append(" and (");
-			if(searchParams.isViewAllUsers()) {
-			sb.append(" asession.identity.key in (select data.identity.key from assessmententry data")
-			  .append("   where data.repositoryEntry.key=asession.repositoryEntry.key")
+		} else {
+			//limit to participants
+			sb.append(" and asession.identity.key in ( select membership.identity.key from repoentrytogroup as rel, bgroup as reBaseGroup, bgroupmember membership ")
+			  .append("   where rel.entry.key=:repositoryEntryKey and rel.group.key=reBaseGroup.key and membership.group.key=reBaseGroup.key and membership.role='").append(GroupRole.participant).append("'")
 			  .append(" )");
-			}
-			if(searchParams.isViewAnonymUsers()) {
-				if(searchParams.isViewAllUsers()) sb.append(" or");
-				sb.append(" asession.anonymousIdentifier is not null");
-			}
-			sb.append(" )");
 		}
+
 		return sb;
 	}
 	
@@ -130,7 +139,7 @@ public class QTI21StatisticsManagerImpl implements QTI21StatisticsManager {
 	public StatisticAssessment getAssessmentStatistics(QTI21StatisticSearchParams searchParams) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select asession.score, asession.passed, asession.duration from qtiassessmenttestsession asession ");
-		decorateRSet(sb, searchParams);
+		decorateRSet(sb, searchParams, true);
 		sb.append(" order by asession.key asc");
 
 		TypedQuery<Object[]> rawDataQuery = dbInstance.getCurrentEntityManager()
@@ -216,7 +225,7 @@ public class QTI21StatisticsManagerImpl implements QTI21StatisticsManager {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select isession.score, count(isession.key), avg(isession.duration) from qtiassessmentitemsession isession ")
 		  .append(" inner join isession.assessmentTestSession asession");
-		decorateRSet(sb, searchParams);
+		decorateRSet(sb, searchParams, true);
 		sb.append(" and isession.assessmentItemIdentifier=:itemIdent and isession.duration > 0")
 		  .append(" group by isession.score");
 
@@ -488,7 +497,7 @@ public class QTI21StatisticsManagerImpl implements QTI21StatisticsManager {
 		sb.append("select isession.key, aresponse.responseIdentifier, aresponse.stringuifiedResponse, count(aresponse.key) from qtiassessmentresponse aresponse ")
 		  .append(" inner join aresponse.assessmentItemSession isession")
 		  .append(" inner join isession.assessmentTestSession asession");
-		decorateRSet(sb, searchParams);
+		decorateRSet(sb, searchParams, true);
 		sb.append(" and isession.assessmentItemIdentifier=:itemIdent and aresponse.responseIdentifier=:responseIdentifier and isession.duration > 0")
 		  .append(" group by isession.key, aresponse.responseIdentifier, aresponse.stringuifiedResponse");
 

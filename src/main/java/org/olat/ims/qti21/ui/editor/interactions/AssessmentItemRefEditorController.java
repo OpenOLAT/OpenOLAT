@@ -91,7 +91,7 @@ public abstract class AssessmentItemRefEditorController extends FormBasicControl
 	protected boolean validateFormLogic(UserRequest ureq) {
 		boolean allOk = true;
 		
-		if(limitAttemptsEl.isOneSelected() && limitAttemptsEl.isSelected(0) && maxAttemptsEl != null) {
+		if(limitAttemptsEl != null && limitAttemptsEl.isOneSelected() && limitAttemptsEl.isSelected(0) && maxAttemptsEl != null) {
 			maxAttemptsEl.clearError();
 			if(StringHelper.containsNonWhitespace(maxAttemptsEl.getValue())) {
 				try {
@@ -115,7 +115,9 @@ public abstract class AssessmentItemRefEditorController extends FormBasicControl
 
 	@Override
 	protected void formOK(UserRequest ureq) {
-		if(limitAttemptsEl.isOneSelected() && limitAttemptsEl.isSelected(0)
+		if(limitAttemptsEl == null) {
+			//case in question poll where there isn't an AssessmentItemRef
+		} else if(limitAttemptsEl.isOneSelected() && limitAttemptsEl.isSelected(0)
 				&& maxAttemptsEl != null && maxAttemptsEl.isVisible()
 				&& StringHelper.isLong(maxAttemptsEl.getValue())) {
 			try {

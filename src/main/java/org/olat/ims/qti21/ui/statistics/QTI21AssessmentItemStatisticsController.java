@@ -44,6 +44,8 @@ import org.olat.ims.qti21.ui.statistics.interactions.HotspotInteractionStatistic
 import org.olat.ims.qti21.ui.statistics.interactions.KPrimStatisticsController;
 import org.olat.ims.qti21.ui.statistics.interactions.TextEntryInteractionsStatisticsController;
 import org.olat.ims.qti21.ui.statistics.interactions.UnsupportedInteractionController;
+import org.olat.modules.assessment.ui.UserFilterController;
+import org.olat.modules.assessment.ui.event.UserFilterEvent;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import uk.ac.ed.ph.jqtiplus.node.item.AssessmentItem;
@@ -64,6 +66,8 @@ import uk.ac.ed.ph.jqtiplus.node.test.AssessmentItemRef;
 public class QTI21AssessmentItemStatisticsController extends BasicController {
 	
 	private final VelocityContainer mainVC;
+	
+	private UserFilterController filterCtrl;
 	
 	private final int numOfParticipants;
 	private final AssessmentItem item;
@@ -100,10 +104,26 @@ public class QTI21AssessmentItemStatisticsController extends BasicController {
 			mainVC.contextPut("itemCss", "o_mi_qtiunkown");
 		}
 		
+		if(resourceResult.canViewAnonymousUsers() || resourceResult.canViewNonParticipantUsers()) {
+			filterCtrl = new UserFilterController(ureq, getWindowControl(),
+					resourceResult.canViewNonParticipantUsers(), resourceResult.canViewAnonymousUsers());
+			listenTo(filterCtrl);
+			mainVC.put("filter", filterCtrl.getInitialComponent());
+		}
+		
+		putInitialPanel(mainVC);
+		updateData(ureq);
+	}
+	
+	@Override
+	protected void doDispose() {
+		//
+	}
+	
+	private void updateData(UserRequest ureq) {
 		StatisticsItem itemStats = initItemStatistics();
 		List<String> interactionIds = initInteractionControllers(ureq, itemStats);
 		mainVC.contextPut("interactionIds", interactionIds);
-		putInitialPanel(mainVC);
 	}
 	
 	private List<String> initInteractionControllers(UserRequest ureq, StatisticsItem itemStats) {
@@ -190,12 +210,17 @@ public class QTI21AssessmentItemStatisticsController extends BasicController {
 	protected void event(UserRequest ureq, Component source, Event event) {
 		//
 	}
-
+	
 	@Override
-	protected void doDispose() {
-		//
+	protected void event(UserRequest ureq, Controller source, Event event) {
+		if(filterCtrl == source) {
+			if(event instanceof UserFilterEvent) {
+				UserFilterEvent ufe = (UserFilterEvent)event;
+				resourceResult.setViewAnonymousUsers(ufe.isWithAnonymousUser());
+				resourceResult.setViewNonPaticipantUsers(ufe.isWithNonParticipantUsers());
+				updateData(ureq);
+			}
+		}
+		super.event(ureq, source, event);
 	}
-	
-	
-
 }

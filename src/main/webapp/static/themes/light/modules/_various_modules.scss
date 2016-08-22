@@ -453,6 +453,19 @@ ul.o_certificates li {
 	margin-top:20px;
 }
 
+/* Assessment */
+div.o_assessment_user_type_filter {
+	display: inline-block;
+	padding: 0.5em;
+	border: 1px solid $gray-lighter;
+	border-radius: $panel-border-radius;
+	
+	div.form-inline {
+		margin-left: 5px;
+		display: inline-block;
+	}
+}
+
 
 /* vitero */
 /* onyx   */
