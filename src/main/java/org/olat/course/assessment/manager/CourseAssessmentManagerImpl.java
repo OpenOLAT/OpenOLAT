@@ -319,14 +319,17 @@ public class CourseAssessmentManagerImpl implements AssessmentManager {
 			efficiencyStatementManager.updateUserEfficiencyStatement(assessedIdentity, courseEnv, data, cgm.getCourseEntry());
 		}
 
-		if(passed != null && passed.booleanValue() && course.getCourseConfig().isAutomaticCertificationEnabled()) {
-			if(certificatesManager.isCertificationAllowed(assessedIdentity, cgm.getCourseEntry())) {
+		if(course.getCourseConfig().isAutomaticCertificationEnabled()) {
+			CourseNode rootNode = userCourseEnv.getCourseEnvironment().getRunStructure().getRootNode();
+			ScoreEvaluation rootEval = scoreAccounting.evalCourseNode((AssessableCourseNode)rootNode);
+			if(rootEval != null && rootEval.getPassed() != null && rootEval.getPassed().booleanValue()
+					&& certificatesManager.isCertificationAllowed(assessedIdentity, cgm.getCourseEntry())) {
 				CertificateTemplate template = null;
 				Long templateId = course.getCourseConfig().getCertificateTemplate();
 				if(templateId != null) {
 					template = certificatesManager.getTemplateById(templateId);
 				}
-				CertificateInfos certificateInfos = new CertificateInfos(assessedIdentity, score, passed);
+				CertificateInfos certificateInfos = new CertificateInfos(assessedIdentity, rootEval.getScore(), rootEval.getPassed());
 				certificatesManager.generateCertificate(certificateInfos, cgm.getCourseEntry(), template, true);
 			}
 		}
