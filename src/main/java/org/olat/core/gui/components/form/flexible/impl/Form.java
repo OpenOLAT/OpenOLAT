@@ -52,6 +52,7 @@ import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.Submit;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
+import org.olat.core.gui.media.ServletUtil;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.logging.AssertException;
 import org.olat.core.logging.OLog;
@@ -325,7 +326,7 @@ public class Form {
 			for(Part part:req.getParts()) {
 				String name = part.getName();
 				String contentType = part.getContentType();
-				String fileName = part.getSubmittedFileName();
+				String fileName = getSubmittedFileName(part);
 				if(StringHelper.containsNonWhitespace(fileName)) {
 					File tmpFile = new File(WebappHelper.getTmpDir(), "upload-" + CodeHelper.getGlobalForeverUniqueID());
 					part.write(tmpFile.getAbsolutePath());
@@ -348,6 +349,19 @@ public class Form {
 		} catch (IOException | ServletException e) {
 			log.error("", e);
 		}
+	}
+	
+	private String getSubmittedFileName(Part part) {
+		final String disposition = part.getHeader("Content-Disposition");
+	    if (disposition != null) {
+	        if (disposition.startsWith("form-data")) {
+	           String fileName = ServletUtil.extractQuotedValueFromHeader(disposition, "filename");
+	            if (fileName != null) {
+	                return fileName;
+	            }
+	        }
+	    }
+	    return null;
 	}
 	
 	private boolean isMultipartContent(HttpServletRequest request) {

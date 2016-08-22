@@ -628,6 +628,76 @@ public class ServletUtil {
 		return (normalized);
 	}
 	
+    /**
+     * Extracts a quoted value from a header that has a given key. For instance if the header is
+     * <p>
+     * content-disposition=form-data; name="my field"
+     * and the key is name then "my field" will be returned without the quotes.
+     *
+     * @param header The header
+     * @param key    The key that identifies the token to extract
+     * @return The token, or null if it was not found
+     */
+    public static String extractQuotedValueFromHeader(final String header, final String key) {
+
+        int keypos = 0;
+        int pos = -1;
+        boolean inQuotes = false;
+        for (int i = 0; i < header.length() - 1; ++i) { //-1 because we need room for the = at the end
+            //TODO: a more efficient matching algorithm
+            char c = header.charAt(i);
+            if (inQuotes) {
+                if (c == '"') {
+                    inQuotes = false;
+                }
+            } else {
+                if (key.charAt(keypos) == c) {
+                    keypos++;
+                } else if (c == '"') {
+                    keypos = 0;
+                    inQuotes = true;
+                } else {
+                    keypos = 0;
+                }
+                if (keypos == key.length()) {
+                    if (header.charAt(i + 1) == '=') {
+                        pos = i + 2;
+                        break;
+                    } else {
+                        keypos = 0;
+                    }
+                }
+            }
+
+        }
+        if (pos == -1) {
+            return null;
+        }
+
+        int end;
+        int start = pos;
+        if (header.charAt(start) == '"') {
+            start++;
+            for (end = start; end < header.length(); ++end) {
+                char c = header.charAt(end);
+                if (c == '"') {
+                    break;
+                }
+            }
+            return header.substring(start, end);
+
+        } else {
+            //no quotes
+            for (end = start; end < header.length(); ++end) {
+                char c = header.charAt(end);
+                if (c == ' ' || c == '\t' || c == ';') {
+                    break;
+                }
+            }
+            return header.substring(start, end);
+        }
+    }
+	
 	//fxdiff FXOLAT-118: accept range to deliver videos for iPad
   protected static class Range {
     public long start;
