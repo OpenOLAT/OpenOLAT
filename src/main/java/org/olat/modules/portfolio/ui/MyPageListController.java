@@ -29,6 +29,9 @@ import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableRenderEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableRendererType;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
@@ -44,6 +47,7 @@ import org.olat.modules.portfolio.BinderSecurityCallback;
 import org.olat.modules.portfolio.Category;
 import org.olat.modules.portfolio.CategoryToElement;
 import org.olat.modules.portfolio.Page;
+import org.olat.modules.portfolio.PageStatus;
 import org.olat.modules.portfolio.Section;
 import org.olat.modules.portfolio.ui.component.TimelinePoint;
 import org.olat.modules.portfolio.ui.model.PageRow;
@@ -114,6 +118,10 @@ public class MyPageListController extends AbstractPageListController {
 		List<PageRow> rows = new ArrayList<>(pages.size());
 		List<TimelinePoint> points = new ArrayList<>(pages.size());
 		for (Page page : pages) {
+			if(page.getPageStatus() == PageStatus.deleted) {
+				continue;
+			}
+			
 			List<Assignment> pageAssignmentList = pageToAssignments.get(page);
 			PageRow row = forgeRow(page, null, pageAssignmentList, false, categorizedElementMap, numberOfCommentsMap);
 			rows.add(row);
@@ -139,7 +147,21 @@ public class MyPageListController extends AbstractPageListController {
 
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if(source instanceof FormLink) {
+		if(tableEl == source) {
+			if(event instanceof FlexiTableRenderEvent) {
+				FlexiTableRenderEvent re = (FlexiTableRenderEvent)event;
+				if(re.getRendererType() == FlexiTableRendererType.custom) {
+					tableEl.sort(null, false);
+				}
+			} else if(event instanceof SelectionEvent) {
+				SelectionEvent se = (SelectionEvent)event;
+				String cmd = se.getCommand();
+				if("select-page".equals(cmd)) {
+					PageRow row = model.getObject(se.getIndex());
+					doOpenPage(ureq, row);
+				}
+			}
+		} else if(source instanceof FormLink) {
 			FormLink link = (FormLink)source;
 			String cmd = link.getCmd();
 			if("new.entry".equals(cmd)) {
