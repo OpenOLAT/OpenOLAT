@@ -227,6 +227,7 @@ public class QTI21RuntimeController extends RepositoryEntryRuntimeController  {
 		
 		if (reSecurity.isEntryAdmin() || reSecurity.isCourseCoach() || reSecurity.isGroupCoach()) {
 			AssessmentToolOptions asOptions = new AssessmentToolOptions();
+			asOptions.setAdmin(reSecurity.isEntryAdmin());
 			QTI21RuntimeStatisticsController ctrl = new QTI21RuntimeStatisticsController(ureq, swControl,
 					getRepositoryEntry(), asOptions);
 			listenTo(ctrl);

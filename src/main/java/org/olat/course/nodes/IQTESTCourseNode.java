@@ -95,6 +95,7 @@ import org.olat.ims.qti21.ui.QTI21ResetToolController;
 import org.olat.ims.qti21.ui.QTI21RetrieveTestsToolController;
 import org.olat.ims.qti21.ui.assessment.QTI21CorrectionToolController;
 import org.olat.ims.qti21.ui.statistics.QTI21StatisticResourceResult;
+import org.olat.ims.qti21.ui.statistics.QTI21StatisticsSecurityCallback;
 import org.olat.ims.qti21.ui.statistics.QTI21StatisticsToolController;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.assessment.AssessmentEntry;
@@ -273,8 +274,9 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements Pe
 			QTI21StatisticSearchParams searchParams = new QTI21StatisticSearchParams(qtiTestEntry, courseEntry, getIdent());
 			QTI21DeliveryOptions deliveryOptions = CoreSpringFactory.getImpl(QTI21Service.class)
 					.getDeliveryOptions(qtiTestEntry);
-			searchParams.setViewAnonymUsers(deliveryOptions.isAllowAnonym());
-			return new QTI21StatisticResourceResult(qtiTestEntry, courseEntry, this, searchParams);
+			boolean admin = userCourseEnv.isAdmin();
+			QTI21StatisticsSecurityCallback secCallback = new QTI21StatisticsSecurityCallback(admin, admin && deliveryOptions.isAllowAnonym());
+			return new QTI21StatisticResourceResult(qtiTestEntry, courseEntry, this, searchParams, secCallback);
 		}
 		
 		QTIStatisticSearchParams searchParams = new QTIStatisticSearchParams(courseOres.getResourceableId(), getIdent());

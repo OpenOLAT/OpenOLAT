@@ -17,9 +17,7 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.assessment.ui;
-
-import java.util.List;
+package org.olat.modules.assessment.ui.event;
 
 import org.olat.core.gui.control.Event;
 
@@ -29,25 +27,25 @@ import org.olat.core.gui.control.Event;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class UserSelectionEvent extends Event {
+public class UserFilterEvent extends Event {
 
-	private static final long serialVersionUID = -4842433236044263696L;
-	private static final String CMD = "select-user";
+	private static final long serialVersionUID = -8695229967742591048L;
+	private static final String CMD = "filter-user";
 	
-	private final Long identityKey;
-	private final List<String> courseNodeIdents;
+	private final boolean withAnonymousUser;
+	private final boolean withNonParticipantUsers;
 	
-	public UserSelectionEvent(Long identityKey, List<String> courseNodeIdents) {
+	public UserFilterEvent(boolean withNonParticipantUsers, boolean withAnonymousUser) {
 		super(CMD);
-		this.identityKey = identityKey;
-		this.courseNodeIdents = courseNodeIdents;
+		this.withNonParticipantUsers = withNonParticipantUsers;
+		this.withAnonymousUser = withAnonymousUser;
 	}
 
-	public Long getIdentityKey() {
-		return identityKey;
+	public boolean isWithAnonymousUser() {
+		return withAnonymousUser;
 	}
 
-	public List<String> getCourseNodeIdents() {
-		return courseNodeIdents;
+	public boolean isWithNonParticipantUsers() {
+		return withNonParticipantUsers;
 	}
 }

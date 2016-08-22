@@ -32,6 +32,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.zip.ZipOutputStream;
 
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.stack.BreadcrumbPanel;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
@@ -75,8 +76,11 @@ import org.olat.ims.qti.statistics.QTIStatisticResourceResult;
 import org.olat.ims.qti.statistics.QTIStatisticSearchParams;
 import org.olat.ims.qti.statistics.QTIType;
 import org.olat.ims.qti.statistics.ui.QTI12StatisticsToolController;
+import org.olat.ims.qti21.QTI21DeliveryOptions;
+import org.olat.ims.qti21.QTI21Service;
 import org.olat.ims.qti21.model.QTI21StatisticSearchParams;
 import org.olat.ims.qti21.ui.statistics.QTI21StatisticResourceResult;
+import org.olat.ims.qti21.ui.statistics.QTI21StatisticsSecurityCallback;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.iq.IQSecurityCallback;
 import org.olat.repository.RepositoryEntry;
@@ -187,7 +191,11 @@ public class IQSURVCourseNode extends AbstractAccessableCourseNode implements QT
 			RepositoryEntry courseEntry = userCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
 			QTI21StatisticSearchParams searchParams = new QTI21StatisticSearchParams(qtiSurveyEntry, courseEntry, getIdent());
 			searchParams.setLimitToGroups(options.getParticipantsGroups());
-			return new QTI21StatisticResourceResult(qtiSurveyEntry, courseEntry, this, searchParams);
+			QTI21DeliveryOptions deliveryOptions = CoreSpringFactory.getImpl(QTI21Service.class)
+					.getDeliveryOptions(qtiSurveyEntry);
+			boolean admin = userCourseEnv.isAdmin();
+			QTI21StatisticsSecurityCallback secCallback = new QTI21StatisticsSecurityCallback(admin, admin && deliveryOptions.isAllowAnonym());
+			return new QTI21StatisticResourceResult(qtiSurveyEntry, courseEntry, this, searchParams, secCallback);
 		}
 		
 		QTIStatisticSearchParams searchParams = new QTIStatisticSearchParams(courseOres.getResourceableId(), getIdent());
@@ -239,9 +247,8 @@ public class IQSURVCourseNode extends AbstractAccessableCourseNode implements QT
 		if (!isValid) {
 			String shortKey = "error.surv.undefined.short";
 			String longKey = "error.surv.undefined.long";
-			String[] params = new String[] { this.getShortTitle() };
-			String translPackage = Util.getPackageName(IQEditController.class);
-			sd = new StatusDescription(StatusDescription.ERROR, shortKey, longKey, params, translPackage);
+			String[] params = new String[] { getShortTitle() };
+			sd = new StatusDescription(StatusDescription.ERROR, shortKey, longKey, params, PACKAGE_IQ);
 			sd.setDescriptionForUnit(getIdent());
 			// set which pane is affected by error
 			sd.setActivateableViewIdentifier(IQEditController.PANE_TAB_IQCONFIG_SURV);
@@ -257,8 +264,7 @@ public class IQSURVCourseNode extends AbstractAccessableCourseNode implements QT
 		oneClickStatusCache = null;
 		// only here we know which translator to take for translating condition
 		// error messages
-		String translatorStr = Util.getPackageName(IQEditController.class);
-		List<StatusDescription> sds = isConfigValidWithTranslator(cev, translatorStr, getConditionExpressions());
+		List<StatusDescription> sds = isConfigValidWithTranslator(cev, PACKAGE_IQ, getConditionExpressions());
 		oneClickStatusCache = StatusDescriptionHelper.sort(sds);
 		return oneClickStatusCache;
 	}

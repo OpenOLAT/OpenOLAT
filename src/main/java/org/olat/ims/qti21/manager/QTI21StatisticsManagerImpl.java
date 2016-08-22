@@ -94,17 +94,21 @@ public class QTI21StatisticsManagerImpl implements QTI21StatisticsManager {
 		  .append(" )");
 		
 		if(searchParams.getLimitToGroups() != null && searchParams.getLimitToGroups().size() > 0) {
-			sb.append(" and asession.identity.key in ( select membership.identity.key from bgroupmember membership ")
+			sb.append(" and asession.identity.key in ( select membership.identity.key from bgroupmember membership")
 			  .append("   where membership.group in (:baseGroups)")
 			  .append(" )");
 		}
 		
-		if(searchParams.isMayViewAllUsersAssessments()) {
-			sb.append(" and (asession.identity.key in (select data.identity.key from assessmententry data ")
-			  .append("   where data.repositoryEntry=asession.repositoryEntry")
+		if(searchParams.isViewAllUsers() || searchParams.isViewAnonymUsers()) {
+			sb.append(" and (");
+			if(searchParams.isViewAllUsers()) {
+			sb.append(" asession.identity.key in (select data.identity.key from assessmententry data")
+			  .append("   where data.repositoryEntry.key=asession.repositoryEntry.key")
 			  .append(" )");
+			}
 			if(searchParams.isViewAnonymUsers()) {
-				sb.append(" or asession.anonymousIdentifier is not null");
+				if(searchParams.isViewAllUsers()) sb.append(" or");
+				sb.append(" asession.anonymousIdentifier is not null");
 			}
 			sb.append(" )");
 		}

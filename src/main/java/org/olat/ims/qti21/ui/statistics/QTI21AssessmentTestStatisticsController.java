@@ -30,6 +30,7 @@ import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.chart.BarSeries;
 import org.olat.core.gui.components.chart.StatisticsComponent;
 import org.olat.core.gui.components.velocity.VelocityContainer;
+import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
@@ -40,12 +41,8 @@ import org.olat.course.nodes.QTICourseNode;
 import org.olat.course.nodes.iq.IQEditController;
 import org.olat.ims.qti.statistics.QTIType;
 import org.olat.ims.qti.statistics.model.StatisticAssessment;
-import org.olat.ims.qti21.QTI21DeliveryOptions;
-import org.olat.ims.qti21.QTI21Service;
-import org.olat.ims.qti21.QTI21StatisticsManager;
-import org.olat.ims.qti21.model.QTI21StatisticSearchParams;
-import org.olat.repository.RepositoryEntry;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.olat.modules.assessment.ui.UserFilterController;
+import org.olat.modules.assessment.ui.event.UserFilterEvent;
 
 /**
  * 
@@ -56,57 +53,48 @@ public class QTI21AssessmentTestStatisticsController extends BasicController imp
 	
 	private final VelocityContainer mainVC;
 	
+	private UserFilterController filterCtrl;
+	
 	private QTIType type;
 	private QTICourseNode courseNode;
-	
-	@Autowired
-	private QTI21Service qtiService;
-	@Autowired
-	private QTI21StatisticsManager statisticsManager;
+	private final QTI21StatisticResourceResult resourceResult;
 
 	public QTI21AssessmentTestStatisticsController(UserRequest ureq, WindowControl wControl,
 			QTI21StatisticResourceResult resourceResult, boolean printMode) {
 		super(ureq, wControl);
-		
+		this.resourceResult = resourceResult;
 		courseNode = resourceResult.getTestCourseNode();
 		type = resourceResult.getType();
 
 		mainVC = createVelocityContainer("statistics_assessment_test");
 		mainVC.put("loadd3js", new StatisticsComponent("d3loader"));
 		mainVC.contextPut("printMode", new Boolean(printMode));
-		mainVC.contextPut("courseId", resourceResult.getCourseEntry().getKey());
+		if(resourceResult.getCourseEntry() != null) {
+			mainVC.contextPut("courseId", resourceResult.getCourseEntry().getKey());
+		}
 		mainVC.contextPut("testId", resourceResult.getTestEntry().getKey());
-		putInitialPanel(mainVC);
-
-		StatisticAssessment stats = resourceResult.getQTIStatisticAssessment();
-		initScoreHistogram(stats);
-		initDurationHistogram(stats);
-		initCourseNodeInformation(stats);
-	}
-	
-	public QTI21AssessmentTestStatisticsController(UserRequest ureq, WindowControl wControl,
-			RepositoryEntry testEntry, boolean printMode) {
-		super(ureq, wControl);
-
-		mainVC = createVelocityContainer("statistics_assessment_test");
-		mainVC.put("loadd3js", new StatisticsComponent("d3loader"));
-		mainVC.contextPut("printMode", new Boolean(printMode));
-		mainVC.contextPut("testId", testEntry.getKey());
-		putInitialPanel(mainVC);
 		
-		QTI21StatisticSearchParams searchParams = new QTI21StatisticSearchParams(testEntry, null, null);
-		QTI21DeliveryOptions deliveryOptions = qtiService.getDeliveryOptions(testEntry);
-		searchParams.setViewAnonymUsers(deliveryOptions.isAllowAnonym());
+		if(resourceResult.canViewAnonymousUsers() || resourceResult.canViewNonParticipantUsers()) {
+			filterCtrl = new UserFilterController(ureq, getWindowControl(),
+					resourceResult.canViewNonParticipantUsers(), resourceResult.canViewAnonymousUsers());
+			listenTo(filterCtrl);
+			mainVC.put("filter", filterCtrl.getInitialComponent());
+		}
 		
-		StatisticAssessment stats = statisticsManager.getAssessmentStatistics(searchParams);
-		initScoreHistogram(stats);
-		initDurationHistogram(stats);
-		initCourseNodeInformation(stats);
+		putInitialPanel(mainVC);
+		updateData();
 	}
 	
 	@Override
 	protected void doDispose() {
 		//
+	}
+	
+	private void updateData() {
+		StatisticAssessment stats = resourceResult.getQTIStatisticAssessment();
+		initScoreHistogram(stats);
+		initDurationHistogram(stats);
+		initCourseNodeInformation(stats);
 	}
 	
 	private Float getMaxScoreSetting(QTICourseNode testNode) {
@@ -179,6 +167,19 @@ public class QTI21AssessmentTestStatisticsController extends BasicController imp
 	@Override
 	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
 		//
+	}
+
+	@Override
+	protected void event(UserRequest ureq, Controller source, Event event) {
+		if(filterCtrl == source) {
+			if(event instanceof UserFilterEvent) {
+				UserFilterEvent ufe = (UserFilterEvent)event;
+				resourceResult.setViewAnonymousUsers(ufe.isWithAnonymousUser());
+				resourceResult.setViewNonPaticipantUsers(ufe.isWithNonParticipantUsers());
+				updateData();
+			}
+		}
+		super.event(ureq, source, event);
 	}
 
 	@Override

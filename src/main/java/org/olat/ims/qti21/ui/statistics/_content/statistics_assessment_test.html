@@ -1,8 +1,14 @@
+#if($r.available("filter"))
+<div class="o_button_group o_button_group_right">
+	$r.render("filter")
+</div>
+#end
+
 <div class="panel panel-default">
 	<div class="panel-heading"><h4>$r.translate("fig.title")</h4></div>	  	
 	<table class="table"><tbody>
 		<tr><th>$r.translate("fig.courseId")</th>
-			<td>$courseId</td>
+			<td>#if($r.isNotEmpty($courseId))$courseId#end</td>
 			<th>#if($type == "survey") $r.translate("fig.surveyId") #else $r.translate("fig.testId") #end</th>
 			<td>$testId</td></tr>
 		<tr><th>$r.translate("fig.participants")</th>

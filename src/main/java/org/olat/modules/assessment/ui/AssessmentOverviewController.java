@@ -37,6 +37,7 @@ import org.olat.core.util.Util;
 import org.olat.course.assessment.AssessmentModule;
 import org.olat.group.BusinessGroupService;
 import org.olat.group.model.SearchBusinessGroupParams;
+import org.olat.modules.assessment.ui.event.UserSelectionEvent;
 import org.olat.repository.RepositoryEntry;
 import org.springframework.beans.factory.annotation.Autowired;
 

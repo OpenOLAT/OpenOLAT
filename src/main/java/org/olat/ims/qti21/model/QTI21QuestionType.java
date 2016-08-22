@@ -97,53 +97,56 @@ public enum QTI21QuestionType {
 	}
 	
 	public static QTI21QuestionType getType(AssessmentItem item) {
-
 		if(QTI21Constants.TOOLNAME.equals(item.getToolName())) {
-			//we have create this one
-			List<Interaction> interactions = item.getItemBody().findInteractions();
-			
-			boolean fChoice = false;
-			boolean fMatch = false;
-			boolean fTextEntry = false;
-			boolean fEssay = false;
-			boolean fHotspot = false;
-			boolean fUnkown = false;
-			
-			if(interactions != null && interactions.size() > 0) {
-				for(Interaction interaction: interactions) {
-					if(interaction instanceof ChoiceInteraction) {
-						fChoice = true;
-					} else if(interaction instanceof MatchInteraction) {
-						fMatch = true;
-					} else if(interaction instanceof ExtendedTextInteraction) {
-						fEssay = true;
-					} else if(interaction instanceof TextEntryInteraction) {
-						fTextEntry = true;
-					} else if(interaction instanceof HotspotInteraction) {
-						fHotspot = true;
-					} else if(interaction instanceof EndAttemptInteraction) {
-						//ignore
-					}   else {
-						fUnkown = true;
-					}	
+			return getTypeRelax(item);
+		} else {
+			return QTI21QuestionType.unkown;
+		}
+	}
+	
+	public static QTI21QuestionType getTypeRelax(AssessmentItem item) {
+		//we have create this one
+		List<Interaction> interactions = item.getItemBody().findInteractions();
+		
+		boolean fChoice = false;
+		boolean fMatch = false;
+		boolean fTextEntry = false;
+		boolean fEssay = false;
+		boolean fHotspot = false;
+		boolean fUnkown = false;
+
+		if(interactions != null && interactions.size() > 0) {
+			for(Interaction interaction: interactions) {
+				if(interaction instanceof ChoiceInteraction) {
+					fChoice = true;
+				} else if(interaction instanceof MatchInteraction) {
+					fMatch = true;
+				} else if(interaction instanceof ExtendedTextInteraction) {
+					fEssay = true;
+				} else if(interaction instanceof TextEntryInteraction) {
+					fTextEntry = true;
+				} else if(interaction instanceof HotspotInteraction) {
+					fHotspot = true;
+				} else if(interaction instanceof EndAttemptInteraction) {
+					//ignore
+				}   else {
+					fUnkown = true;
 				}	
-			}
-			
-			if(fUnkown) {
-				return QTI21QuestionType.unkown;
-			} else if(fChoice && !fMatch && !fTextEntry && !fEssay && !fHotspot && !fUnkown) {
-				return getTypeOfChoice(item, interactions);
-			} else if(!fChoice && fMatch && !fTextEntry && !fEssay && !fHotspot && !fUnkown) {
-				return getTypeOfMatch(item, interactions);
-			} else if(!fChoice && !fMatch && fTextEntry && !fEssay && !fHotspot && !fUnkown) {
-				return getTypeOfTextEntryInteraction(item);
-			} else if(!fChoice && !fMatch && !fTextEntry && fEssay && !fHotspot && !fUnkown) {
-				return QTI21QuestionType.essay;
-			} else if(!fChoice && !fMatch && !fTextEntry && !fEssay && fHotspot && !fUnkown) {
-				return QTI21QuestionType.hotspot;
-			} else {
-				return QTI21QuestionType.unkown;
-			}
+			}	
+		}
+		
+		if(fUnkown) {
+			return QTI21QuestionType.unkown;
+		} else if(fChoice && !fMatch && !fTextEntry && !fEssay && !fHotspot && !fUnkown) {
+			return getTypeOfChoice(item, interactions);
+		} else if(!fChoice && fMatch && !fTextEntry && !fEssay && !fHotspot && !fUnkown) {
+			return getTypeOfMatch(item, interactions);
+		} else if(!fChoice && !fMatch && fTextEntry && !fEssay && !fHotspot && !fUnkown) {
+			return getTypeOfTextEntryInteraction(item);
+		} else if(!fChoice && !fMatch && !fTextEntry && fEssay && !fHotspot && !fUnkown) {
+			return QTI21QuestionType.essay;
+		} else if(!fChoice && !fMatch && !fTextEntry && !fEssay && fHotspot && !fUnkown) {
+			return QTI21QuestionType.hotspot;
 		} else {
 			return QTI21QuestionType.unkown;
 		}

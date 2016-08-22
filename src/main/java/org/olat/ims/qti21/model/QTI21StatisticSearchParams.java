@@ -39,7 +39,7 @@ public class QTI21StatisticSearchParams {
 	private List<Group> limitToGroups;
 	
 	private boolean viewAnonymUsers;
-	private boolean mayViewAllUsersAssessments;
+	private boolean viewAllUsers;
 	
 	public QTI21StatisticSearchParams(RepositoryEntry testEntry, RepositoryEntry courseEntry, String nodeIdent) {
 		this.nodeIdent = nodeIdent;
@@ -67,12 +67,12 @@ public class QTI21StatisticSearchParams {
 		this.limitToGroups = limitToGroups;
 	}
 	
-	public boolean isMayViewAllUsersAssessments() {
-		return mayViewAllUsersAssessments;
+	public boolean isViewAllUsers() {
+		return viewAllUsers;
 	}
 	
-	public void setMayViewAllUsersAssessments(boolean mayViewAllUsersAssessments) {
-		this.mayViewAllUsersAssessments = mayViewAllUsersAssessments;
+	public void setViewAllUsers(boolean view) {
+		this.viewAllUsers = view;
 	}
 
 	public boolean isViewAnonymUsers() {

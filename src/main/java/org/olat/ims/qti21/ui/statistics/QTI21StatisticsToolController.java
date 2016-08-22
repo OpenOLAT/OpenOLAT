@@ -75,6 +75,7 @@ public class QTI21StatisticsToolController extends BasicController implements Ac
 	private final RepositoryEntry testEntry;
 	private final RepositoryEntry courseEntry;
 	private QTI21StatisticResourceResult result;
+	private QTI21StatisticsSecurityCallback secCallback;
 
 	private final QTI21StatisticSearchParams searchParams;
 	
@@ -93,17 +94,17 @@ public class QTI21StatisticsToolController extends BasicController implements Ac
 		courseEntry = courseEnv.getCourseGroupManager().getCourseEntry();
 		testEntry = courseNode.getReferencedRepositoryEntry();
 		
-		searchParams = new QTI21StatisticSearchParams(testEntry, courseEntry, courseNode.getIdent());
-		
 		QTI21DeliveryOptions deliveryOptions = qtiService.getDeliveryOptions(testEntry);
-		searchParams.setViewAnonymUsers(deliveryOptions.isAllowAnonym());
-
+		secCallback = new QTI21StatisticsSecurityCallback(asOptions.isAdmin(), asOptions.isAdmin() && deliveryOptions.isAllowAnonym());
+		
+		searchParams = new QTI21StatisticSearchParams(testEntry, courseEntry, courseNode.getIdent());
+		searchParams.setViewAnonymUsers(secCallback.canViewAnonymousUsers());
+		
 		if(asOptions.getGroup() != null) {
 			List<Group> bGroups = Collections.singletonList(asOptions.getGroup().getBaseGroup());
 			searchParams.setLimitToGroups(bGroups);
 		} else if(asOptions.getAlternativeToIdentities() != null) {
 			AlternativeToIdentities alt = asOptions.getAlternativeToIdentities();
-			searchParams.setMayViewAllUsersAssessments(alt.isMayViewAllUsersAssessments());
 			searchParams.setLimitToGroups(alt.getGroups());
 		}
 		
@@ -166,7 +167,7 @@ public class QTI21StatisticsToolController extends BasicController implements Ac
 
 	private void doLaunchStatistics(UserRequest ureq, WindowControl wControl) {
 		if(result == null) {
-			result = new QTI21StatisticResourceResult(testEntry, courseEntry, courseNode, searchParams);
+			result = new QTI21StatisticResourceResult(testEntry, courseEntry, courseNode, searchParams, secCallback);
 		}
 		
 		GenericTreeModel treeModel = new GenericTreeModel();

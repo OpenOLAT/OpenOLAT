@@ -45,7 +45,7 @@ import org.olat.course.assessment.bulk.BulkAssessmentOverviewController;
 import org.olat.modules.assessment.ui.AssessedIdentityListState;
 import org.olat.modules.assessment.ui.AssessmentToolContainer;
 import org.olat.modules.assessment.ui.AssessmentToolSecurityCallback;
-import org.olat.modules.assessment.ui.UserSelectionEvent;
+import org.olat.modules.assessment.ui.event.UserSelectionEvent;
 import org.olat.repository.RepositoryEntry;
 
 /**

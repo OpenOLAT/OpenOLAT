@@ -13,6 +13,7 @@ import org.olat.core.gui.control.generic.wizard.StepFormBasicController;
 import org.olat.core.gui.control.generic.wizard.StepFormController;
 import org.olat.core.gui.control.generic.wizard.StepsEvent;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
+import org.olat.course.nodes.iq.IQEditController;
 import org.olat.ims.qti.export.QTIArchiver.Type;
 
 /**
@@ -62,7 +63,7 @@ public class Archive_2_UserSelectionStep extends BasicStep {
 		protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 			String[] restrictions;
 			String[] restrictionValues;
-			if(archiver.getType() == Type.qti21) {
+			if(canAnonym()) {
 				restrictions = new String[]{ "participant", "others", "anonym" };
 				restrictionValues = new String[] {
 						translate("archive.participants"), translate("archive.all.users"), translate("archive.anonymous.users")
@@ -78,6 +79,15 @@ public class Archive_2_UserSelectionStep extends BasicStep {
 			for(String restriction:restrictions) {
 				restrictionEl.select(restriction, true);
 			}
+		}
+		
+		private boolean canAnonym() {
+			if(archiver.getType() == Type.qti21) {
+				return archiver.getCourseNode().getModuleConfiguration()
+						.getBooleanSafe(IQEditController.CONFIG_ALLOW_ANONYM, false);
+			}
+			
+			return false;
 		}
 		
 		@Override

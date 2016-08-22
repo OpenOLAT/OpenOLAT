@@ -40,7 +40,7 @@ import org.olat.course.certificate.CertificatesManager;
 import org.olat.group.BusinessGroupService;
 import org.olat.group.model.SearchBusinessGroupParams;
 import org.olat.modules.assessment.ui.AssessmentToolSecurityCallback;
-import org.olat.modules.assessment.ui.UserSelectionEvent;
+import org.olat.modules.assessment.ui.event.UserSelectionEvent;
 import org.olat.repository.RepositoryEntry;
 import org.springframework.beans.factory.annotation.Autowired;
 

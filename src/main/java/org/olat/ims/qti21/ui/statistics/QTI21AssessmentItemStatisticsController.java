@@ -93,7 +93,7 @@ public class QTI21AssessmentItemStatisticsController extends BasicController {
 		mainVC.contextPut("numOfParticipants", numOfParticipants);
 		mainVC.contextPut("printMode", new Boolean(printMode));
 		
-		QTI21QuestionType type = QTI21QuestionType.getType(item);
+		QTI21QuestionType type = QTI21QuestionType.getTypeRelax(item);
 		if(type != null) {
 			mainVC.contextPut("itemCss", type.getCssClass());
 		} else {

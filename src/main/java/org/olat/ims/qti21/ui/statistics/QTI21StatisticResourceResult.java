@@ -73,21 +73,25 @@ public class QTI21StatisticResourceResult implements StatisticResourceResult {
 	private final RepositoryEntry courseEntry;
 	private final QTICourseNode courseNode;
 	private ResolvedAssessmentTest resolvedAssessmentTest;
+	private final QTI21StatisticsSecurityCallback secCallback;
 	
 	private final QTI21Service qtiService;
 	private final QTI21StatisticsManager qtiStatisticsManager;
 
-	public QTI21StatisticResourceResult(RepositoryEntry testEntry, QTI21StatisticSearchParams searchParams) {
-		this(testEntry, null, null, searchParams);
+	public QTI21StatisticResourceResult(RepositoryEntry testEntry, QTI21StatisticSearchParams searchParams,
+			QTI21StatisticsSecurityCallback secCallback) {
+		this(testEntry, null, null, searchParams, secCallback);
 	}
 	
 	public QTI21StatisticResourceResult(RepositoryEntry testEntry, RepositoryEntry courseEntry,
-			QTICourseNode courseNode, QTI21StatisticSearchParams searchParams) {
+			QTICourseNode courseNode, QTI21StatisticSearchParams searchParams,
+			QTI21StatisticsSecurityCallback secCallback) {
 		
 		this.courseNode = courseNode;
 		this.testEntry = testEntry;
 		this.courseEntry = courseEntry;
 		this.searchParams = searchParams;
+		this.secCallback = secCallback;
 
 		qtiService = CoreSpringFactory.getImpl(QTI21Service.class);
 		qtiStatisticsManager = CoreSpringFactory.getImpl(QTI21StatisticsManager.class);
@@ -123,6 +127,36 @@ public class QTI21StatisticResourceResult implements StatisticResourceResult {
 	public File getAssessmentItemFile(AssessmentItemRef itemRef) {
 		URI itemUri = resolvedAssessmentTest.getSystemIdByItemRefMap().get(itemRef);
 		return new File(itemUri);
+	}
+	
+	public boolean canViewAnonymousUsers() {
+		return secCallback.canViewAnonymousUsers();
+	}
+	
+	public boolean canViewNonParticipantUsers() {
+		return secCallback.canViewNonParticipantUsers();
+	}
+	
+	public boolean isViewAnonymousUsers() {
+		return searchParams.isViewAnonymUsers();
+	}
+	
+	public void setViewAnonymousUsers(boolean view) {
+		if(view != searchParams.isViewAnonymUsers()) {
+			statisticAssessment = null;
+		}
+		searchParams.setViewAnonymUsers(view);
+	}
+	
+	public boolean isViewNonParticipantUsers() {
+		return searchParams.isViewAllUsers();
+	}
+	
+	public void setViewNonPaticipantUsers(boolean view) {
+		if(view != searchParams.isViewAllUsers()) {
+			statisticAssessment = null;
+		}
+		searchParams.setViewAllUsers(view);
 	}
 	
 	/**
@@ -229,7 +263,7 @@ public class QTI21StatisticResourceResult implements StatisticResourceResult {
 			AssessmentItem assessmentItem = resolvedAssessmentItem.getItemLookup().getRootNodeHolder().getRootNode();
 			itemNode.setTitle(assessmentItem.getTitle());
 			
-			QTI21QuestionType type = QTI21QuestionType.getType(assessmentItem);
+			QTI21QuestionType type = QTI21QuestionType.getTypeRelax(assessmentItem);
 			if(type != null) {
 				itemNode.setIconCssClass("o_icon ".concat(type.getCssClass()));
 			} else {
@@ -266,13 +300,9 @@ public class QTI21StatisticResourceResult implements StatisticResourceResult {
 		return null;
 	}
 	
-	private Controller createAssessmentController(UserRequest ureq, WindowControl wControl,
-			boolean printMode) {
-		Controller ctrl;
-		if(courseNode == null) {
-			ctrl = new QTI21AssessmentTestStatisticsController(ureq, wControl, testEntry, printMode);
-		} else {
-			ctrl = new QTI21AssessmentTestStatisticsController(ureq, wControl, this, printMode);
+	private Controller createAssessmentController(UserRequest ureq, WindowControl wControl, boolean printMode) {
+		Controller ctrl = new QTI21AssessmentTestStatisticsController(ureq, wControl, this, printMode);
+		if(courseNode != null) {
 			CourseNodeConfiguration cnConfig = CourseNodeFactory.getInstance()
 					.getCourseNodeConfigurationEvenForDisabledBB(courseNode.getType());
 			String iconCssClass = cnConfig.getIconCSSClass();

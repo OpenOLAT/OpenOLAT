@@ -46,6 +46,7 @@ import org.olat.ims.qti21.QTI21DeliveryOptions;
 import org.olat.ims.qti21.QTI21Service;
 import org.olat.ims.qti21.model.QTI21StatisticSearchParams;
 import org.olat.ims.qti21.ui.statistics.QTI21StatisticResourceResult;
+import org.olat.ims.qti21.ui.statistics.QTI21StatisticsSecurityCallback;
 import org.olat.repository.RepositoryEntry;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -63,6 +64,7 @@ public class QTI21RuntimeStatisticsController extends BasicController implements
 
 	private final ArchiveOptions options;
 	private final QTI21StatisticSearchParams searchParams;
+	private final QTI21StatisticsSecurityCallback secCallback;
 	private final QTI21StatisticResourceResult resourceResult;
 	
 	@Autowired
@@ -81,14 +83,12 @@ public class QTI21RuntimeStatisticsController extends BasicController implements
 			searchParams.setLimitToGroups(bGroups);
 		} else if(asOptions.getAlternativeToIdentities() != null) {
 			AlternativeToIdentities alt = asOptions.getAlternativeToIdentities();
-			searchParams.setMayViewAllUsersAssessments(alt.isMayViewAllUsersAssessments());
 			searchParams.setLimitToGroups(alt.getGroups());
 		}
 		
 		QTI21DeliveryOptions deliveryOptions = qtiService.getDeliveryOptions(testEntry);
-		searchParams.setViewAnonymUsers(deliveryOptions.isAllowAnonym());
-
-		resourceResult = new QTI21StatisticResourceResult(testEntry, searchParams);
+		secCallback = new QTI21StatisticsSecurityCallback(asOptions.isAdmin(), asOptions.isAdmin() && deliveryOptions.isAllowAnonym());
+		resourceResult = new QTI21StatisticResourceResult(testEntry, searchParams, secCallback);
 		
 		TreeModel treeModel = resourceResult.getTreeModel();
 
