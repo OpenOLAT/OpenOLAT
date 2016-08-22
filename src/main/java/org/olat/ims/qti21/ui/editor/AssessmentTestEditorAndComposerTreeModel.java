@@ -61,9 +61,17 @@ public class AssessmentTestEditorAndComposerTreeModel extends GenericTreeModel i
 		
 		//list all test parts
 		List<TestPart> parts = test.getChildAbstractParts();
-		int counter = 0;
-		for(TestPart part:parts) {
-			buildRecursively(part, ++counter, node);
+		if(parts.size() == 1) {
+			List<AssessmentSection> sections = parts.get(0).getAssessmentSections();
+			for(AssessmentSection section:sections) {
+				buildRecursively(section, node);
+			}
+			
+		} else {
+			int counter = 0;
+			for(TestPart part:parts) {
+				buildRecursively(part, ++counter, node);
+			}
 		}
 	}
 	

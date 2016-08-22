@@ -237,15 +237,15 @@ public class IdentitiesAssessmentTestCorrectionController extends BasicControlle
 				continue;
 			}
 			
-			Date tDate = session.getTerminationTime();
-			if(tDate == null) {
+			Date fDate = session.getFinishTime();
+			if(fDate == null) {
 				//not terminated
 			} else {
 				if(identityToSessions.containsKey(assessedIdentity)) {
 					AssessmentTestSession currentSession = identityToSessions.get(assessedIdentity);
 
-					Date currentTDate = currentSession.getTerminationTime();
-					if(tDate.after(currentTDate)) {
+					Date currentFDate = currentSession.getFinishTime();
+					if(fDate.after(currentFDate)) {
 						identityToSessions.put(assessedIdentity, session);
 					}
 				} else {

@@ -906,7 +906,9 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 
 		Object uobject = selectedNode.getUserObject();
 		if(uobject instanceof AssessmentTest) {
-			currentEditorCtrl = new AssessmentTestEditorController(ureq, getWindowControl(), assessmentTestBuilder, restrictedEdit);
+			AssessmentTest test = (AssessmentTest)uobject;
+			TestPart uniqueTestPart = test.getTestParts().size() == 1 ? test.getTestParts().get(0) : null;
+			currentEditorCtrl = new AssessmentTestEditorController(ureq, getWindowControl(), assessmentTestBuilder, uniqueTestPart, restrictedEdit);
 		} else if(uobject instanceof TestPart) {
 			currentEditorCtrl = new AssessmentTestPartEditorController(ureq, getWindowControl(), (TestPart)uobject, restrictedEdit);
 		} else if(uobject instanceof AssessmentSection) {
@@ -930,8 +932,16 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 		}
 		
 		if(deleteLink != null) {
-			deleteLink.setEnabled(uobject instanceof AssessmentSection || uobject instanceof AssessmentItemRef);
+			if(uobject instanceof AssessmentSection || uobject instanceof AssessmentItemRef) {
+				deleteLink.setEnabled(true);
+			} else if(uobject instanceof TestPart) {
+				TestPart testPart = (TestPart)uobject;
+				deleteLink.setEnabled(testPart.getParent().getTestParts().size() > 1);
+			} else {
+				deleteLink.setEnabled(false);
+			}
 		}
+		
 		if(copyLink != null) {
 			copyLink.setEnabled(uobject instanceof AssessmentItemRef);
 		}
@@ -1002,7 +1012,14 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 		if(uobject instanceof AssessmentTest) {
 			showWarning("error.cannot.delete");
 		} else if(uobject instanceof TestPart) {
-			showWarning("error.cannot.delete");
+			TestPart testPart = (TestPart)uobject;
+			if(testPart.getParent().getTestParts().size() == 1) {
+				showWarning("error.cannot.delete");
+			}
+			
+			String msg = translate("delete.testPart");
+			confirmDeleteCtrl = activateYesNoDialog(ureq, translate("tools.change.delete"), msg, confirmDeleteCtrl);
+			confirmDeleteCtrl.setUserObject(selectedNode);
 		} else {
 			String msg;
 			if(uobject instanceof AssessmentSection) {
@@ -1021,7 +1038,9 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 	
 	private void doDelete(UserRequest ureq, TreeNode selectedNode) {
 		Object uobject = selectedNode.getUserObject();
-		if(uobject instanceof AssessmentSection) {
+		if(uobject instanceof TestPart) {
+			doDeleteTestPart((TestPart)uobject);
+		} else if(uobject instanceof AssessmentSection) {
 			doDeleteAssessmentSection((AssessmentSection)uobject);
 		} else if(uobject instanceof AssessmentItemRef) {
 			doDeleteAssessmentItemRef((AssessmentItemRef)uobject);
@@ -1081,6 +1100,14 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 		} else {
 			assessmentSection.getParent().getChildAbstractParts().remove(assessmentSection);
 		}
+	}
+	
+	private void doDeleteTestPart(TestPart testPart) {
+		List<AssessmentSection> sections = new ArrayList<>(testPart.getAssessmentSections());
+		for(AssessmentSection section:sections) {
+			doDeleteAssessmentSection(section);
+		}
+		testPart.getParent().getTestParts().remove(testPart);
 	}
 
 	private ResourceType getResourceType(AssessmentItemRef itemRef) {

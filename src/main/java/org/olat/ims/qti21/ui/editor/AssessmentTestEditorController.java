@@ -34,6 +34,7 @@ import org.olat.ims.qti21.ui.AssessmentTestDisplayController;
 import org.olat.ims.qti21.ui.editor.events.AssessmentTestEvent;
 
 import uk.ac.ed.ph.jqtiplus.node.test.AssessmentTest;
+import uk.ac.ed.ph.jqtiplus.node.test.TestPart;
 
 /**
  * 
@@ -46,17 +47,19 @@ public class AssessmentTestEditorController extends BasicController {
 	private final TabbedPane tabbedPane;
 	private final VelocityContainer mainVC;
 	
-	private AssessmentTestOptionsEditorController optionsCtrl;
+	private Controller optionsCtrl;
 	private AssessmentTestFeedbackEditorController feedbackCtrl;
 	
 	private final boolean restrictedEdit;
+	private final TestPart testPart;
 	private final AssessmentTest assessmentTest;
 	private final AssessmentTestBuilder testBuilder;
 	
 	public AssessmentTestEditorController(UserRequest ureq, WindowControl wControl,
-			AssessmentTestBuilder testBuilder, boolean restrictedEdit) {
+			AssessmentTestBuilder testBuilder, TestPart testPart, boolean restrictedEdit) {
 		super(ureq, wControl, Util.createPackageTranslator(AssessmentTestDisplayController.class, ureq.getLocale()));
 		this.testBuilder = testBuilder;
+		this.testPart = testPart;
 		this.assessmentTest = testBuilder.getAssessmentTest();
 		this.restrictedEdit = restrictedEdit;
 		
@@ -77,8 +80,13 @@ public class AssessmentTestEditorController extends BasicController {
 	
 	private void initTestEditor(UserRequest ureq) {
 		if(QTI21Constants.TOOLNAME.equals(assessmentTest.getToolName())) {
-			optionsCtrl = new AssessmentTestOptionsEditorController(ureq, getWindowControl(), assessmentTest, testBuilder, restrictedEdit);
+			if(testPart != null) {
+				optionsCtrl = new AssessmentTestAndTestPartOptionsEditorController(ureq, getWindowControl(), assessmentTest, testPart, testBuilder, restrictedEdit);
+			} else {
+				optionsCtrl = new AssessmentTestOptionsEditorController(ureq, getWindowControl(), assessmentTest, testBuilder, restrictedEdit);
+			}
 			listenTo(optionsCtrl);
+			
 			feedbackCtrl = new AssessmentTestFeedbackEditorController(ureq, getWindowControl(), testBuilder, restrictedEdit);
 			listenTo(feedbackCtrl);
 			

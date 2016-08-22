@@ -155,7 +155,7 @@ public class AssessmentTestDisplayController extends BasicController implements 
 	private AssessmentResultController resultCtrl;
 	private TestSessionController testSessionController;
 
-	private DialogBoxController advanceTestPartDialog;
+	private DialogBoxController advanceTestPartDialog, endTestPartDialog;
 	private DialogBoxController confirmCancelDialog;
 	private DialogBoxController confirmSuspendDialog;
 	
@@ -354,6 +354,11 @@ public class AssessmentTestDisplayController extends BasicController implements 
 				processAdvanceTestPart(ureq);
 			}
 			mainVC.setDirty(true);
+		} else if(endTestPartDialog == source) {
+			if(DialogBoxUIFactory.isOkEvent(event) || DialogBoxUIFactory.isYesEvent(event)) {
+				processEndTestPart(ureq);
+			}
+			mainVC.setDirty(true);
 		} else if(confirmCancelDialog == source) {
 			if(DialogBoxUIFactory.isOkEvent(event) || DialogBoxUIFactory.isYesEvent(event)) {
 				doCancel(ureq);
@@ -476,7 +481,7 @@ public class AssessmentTestDisplayController extends BasicController implements 
 				handleResponse(ureq, qe.getStringResponseMap(), qe.getFileResponseMap(), qe.getComment());
 				break;
 			case endTestPart:
-				processEndTestPart(ureq);
+				confirmEndTestPart(ureq);
 				break;
 			case advanceTestPart:
 				confirmAdvanceTestPart(ureq);
@@ -845,12 +850,40 @@ public class AssessmentTestDisplayController extends BasicController implements 
         	itemSession.setPassed(pass);
         }
     }
+	
+	private void confirmEndTestPart(UserRequest ureq) {
+		TestPlanNode nextTestPart = testSessionController.findNextEnterableTestPart();
+
+		if(nextTestPart == null) {
+			String title = translate("confirm.close.test.title");
+			String text = translate("confirm.close.test.text");
+			endTestPartDialog = activateOkCancelDialog(ureq, title, text, endTestPartDialog);
+		} else {
+			TestPart currentTestPart = testSessionController.getCurrentTestPart();
+			if(currentTestPart == null) {
+				processEndTestPart(ureq);
+			} else {
+				String title = translate("confirm.end.testpart.title");
+				String text = translate("confirm.end.testpart.text");
+				endTestPartDialog = activateOkCancelDialog(ureq, title, text, endTestPartDialog);
+			}
+		}
+	}
 
 	//public CandidateSession endCurrentTestPart(final CandidateSessionContext candidateSessionContext)
 	private void processEndTestPart(UserRequest ureq) {
 		 /* Update state */
         final Date requestTimestamp = ureq.getRequestTimestamp();
         testSessionController.endCurrentTestPart(requestTimestamp);
+        
+        TestSessionState testSessionState = testSessionController.getTestSessionState();
+        
+        // Record current result state
+	    final AssessmentResult assessmentResult = computeAndRecordTestAssessmentResult(ureq, testSessionState, false);
+        
+        if(testSessionController.findNextEnterableTestPart() == null) {
+        	candidateSession = qtiService.finishTestSession(candidateSession, testSessionState, assessmentResult, requestTimestamp);
+        }
 	}
 	
 	/**

@@ -335,7 +335,7 @@ public class AssessmentTestSessionDAO {
 		  .append(" left join fetch testEntry.olatResource testResource")
 		  .append(" inner join fetch session.identity assessedIdentity")
 		  .append(" inner join fetch assessedIdentity.user assessedUser")
-		  .append(" where session.repositoryEntry.key=:repositoryEntryKey and session.terminationTime is null and session.testEntry.key=:testEntryKey");
+		  .append(" where session.repositoryEntry.key=:repositoryEntryKey and (session.finishTime is null or session.terminationTime is null) and session.testEntry.key=:testEntryKey");
 		if(StringHelper.containsNonWhitespace(courseSubIdent)) {
 			sb.append(" and session.subIdent=:subIdent");
 		} else {
@@ -357,7 +357,7 @@ public class AssessmentTestSessionDAO {
 		sb.append("select session.key from qtiassessmenttestsession session")
 		  .append(" left join session.testEntry testEntry")
 		  .append(" left join testEntry.olatResource testResource")
-		  .append(" where session.repositoryEntry.key=:repositoryEntryKey and session.terminationTime is null and session.testEntry.key=:testEntryKey");
+		  .append(" where session.repositoryEntry.key=:repositoryEntryKey and (session.finishTime is null or session.terminationTime is null) and session.testEntry.key=:testEntryKey");
 		if(StringHelper.containsNonWhitespace(courseSubIdent)) {
 			sb.append(" and session.subIdent=:subIdent");
 		} else {

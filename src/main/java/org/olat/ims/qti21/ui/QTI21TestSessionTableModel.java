@@ -61,20 +61,20 @@ public class QTI21TestSessionTableModel extends DefaultFlexiTableDataModel<Asses
 		switch(TSCols.values()[col]) {
 			case lastModified: return session.getLastModified();
 			case duration: {
-				if(session.getTerminationTime() != null) {
+				if(session.getFinishTime() != null) {
 					return Formatter.formatDuration(session.getDuration().longValue());
 				}
 				return "<span class='o_ochre'>" + translator.translate("assessment.test.open") + "</span>";
 			}
 			case results: {
-				if(session.getTerminationTime() != null) {
+				if(session.getFinishTime() != null) {
 					return AssessmentHelper.getRoundedScore(session.getScore());
 				}
 				return "<span class='o_ochre'>" + translator.translate("assessment.test.notReleased") + "</span>";
 			}
 			case open: {
-				Date terminated = session.getTerminationTime();
-				return terminated == null ? Boolean.FALSE : Boolean.TRUE;
+				Date finished = session.getFinishTime();
+				return finished == null ? Boolean.FALSE : Boolean.TRUE;
 			}
 			case correction: {
 				return (lastSession != null && lastSession.equals(session));

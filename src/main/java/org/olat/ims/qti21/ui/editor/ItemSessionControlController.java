@@ -48,7 +48,7 @@ public abstract class ItemSessionControlController extends FormBasicController {
 	private static final String[] attemtpsKeys = new String[] { "y", "n", "inherit" };
 
 	private TextElement maxAttemptsEl /*, maxTimeEl */;
-	private SingleSelection limitAttemptsEl, allowCommentEl, showSolutionEl;
+	private SingleSelection limitAttemptsEl, allowCommentEl, allowReviewEl, showSolutionEl;
 	
 	protected final boolean restrictedEdit;
 	private final AbstractPart part;
@@ -112,6 +112,15 @@ public abstract class ItemSessionControlController extends FormBasicController {
 		} else {
 			allowCommentEl.select(yesnoKeys[1], false);
 		}
+		
+		allowReviewEl = uifactory.addRadiosHorizontal("item.session.control.allow.review", formLayout, yesnoKeys, yesnoValues);
+		allowReviewEl.addActionListener(FormEvent.ONCHANGE);
+		allowReviewEl.setEnabled(!restrictedEdit);
+		if(itemSessionControl != null && itemSessionControl.getAllowReview() != null && itemSessionControl.getAllowReview().booleanValue()) {
+			allowReviewEl.select(yesnoKeys[0], true);
+		} else {
+			allowReviewEl.select(yesnoKeys[1], false);
+		}
 	
 		showSolutionEl = uifactory.addRadiosHorizontal("item.session.control.show.solution", formLayout, yesnoKeys, yesnoValues);
 		showSolutionEl.addActionListener(FormEvent.ONCHANGE);
@@ -135,6 +144,12 @@ public abstract class ItemSessionControlController extends FormBasicController {
 		allowCommentEl.clearError();
 		if(!allowCommentEl.isOneSelected()) {
 			allowCommentEl.setErrorKey("form.legende.mandatory", null);
+			allOk &= false;
+		}
+		
+		allowReviewEl.clearError();
+		if(!allowReviewEl.isOneSelected()) {
+			allowReviewEl.setErrorKey("form.legende.mandatory", null);
 			allOk &= false;
 		}
 		
@@ -194,6 +209,12 @@ public abstract class ItemSessionControlController extends FormBasicController {
 			checkNotNull(itemSessionControl).setAllowComment(Boolean.TRUE);
 		} else if(itemSessionControl != null) {
 			itemSessionControl.setAllowComment(Boolean.FALSE);
+		}
+		
+		if(allowReviewEl.isOneSelected() && allowReviewEl.isSelected(0)) {
+			checkNotNull(itemSessionControl).setAllowReview(Boolean.TRUE);
+		} else if(itemSessionControl != null) {
+			itemSessionControl.setAllowReview(Boolean.FALSE);
 		}
 		
 		if(showSolutionEl.isOneSelected() && showSolutionEl.isSelected(0)) {

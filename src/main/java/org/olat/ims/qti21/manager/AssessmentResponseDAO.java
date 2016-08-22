@@ -104,7 +104,7 @@ public class AssessmentResponseDAO {
 		  .append(" where testSession.repositoryEntry.key=:repoEntryKey")
 		  .append("  and testSession.testEntry.key=:testEntryKey")
 		  .append("  and testSession.subIdent=:subIdent")
-		  .append("  and testSession.terminationTime is not null")
+		  .append("  and testSession.finishTime is not null")
 		  .append("  and (");
 		if(users) {
 			sb.append(" testSession.identity.key is not null");
@@ -141,7 +141,7 @@ public class AssessmentResponseDAO {
 		  .append(" left join assessmentEntry.identity as ident")
 		  .append(" left join ident.user as usr")
 		  .append(" where testSession.testEntry.key=:testEntryKey")
-		  .append("  and testSession.terminationTime is not null");
+		  .append("  and testSession.finishTime is not null");
 		if(courseEntry != null) {
 			sb.append(" and testSession.repositoryEntry.key=:repoEntryKey");
 		}

@@ -80,7 +80,7 @@ public class QTI21StatisticsManagerImpl implements QTI21StatisticsManager {
 	@Autowired
 	private DB dbInstance;
 	
-	private StringBuilder decorateRSet(StringBuilder sb, QTI21StatisticSearchParams searchParams, boolean terminated) {
+	private StringBuilder decorateRSet(StringBuilder sb, QTI21StatisticSearchParams searchParams, boolean finished) {
 		sb.append(" where asession.testEntry.key=:testEntryKey and asession.repositoryEntry.key=:repositoryEntryKey");
 		if(searchParams.getNodeIdent() != null ) {
 			sb.append(" and asession.subIdent=:subIdent");
@@ -88,8 +88,8 @@ public class QTI21StatisticsManagerImpl implements QTI21StatisticsManager {
 			sb.append(" and asession.subIdent is null");
 		}
 
-		if(terminated) {
-			sb.append(" and asession.terminationTime is not null");
+		if(finished) {
+			sb.append(" and asession.finishTime is not null");
 		}
 		
 		sb.append(" and asession.lastModified = (select max(a2session.lastModified) from qtiassessmenttestsession a2session")

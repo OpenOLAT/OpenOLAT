@@ -170,6 +170,7 @@ public class QTI21Page {
 		By endBy = By.cssSelector("a.o_sel_end_testpart");
 		browser.findElement(endBy).click();
 		OOGraphene.waitBusy(browser);
+		confirm();
 		return this;
 	}
 	
@@ -177,12 +178,19 @@ public class QTI21Page {
 		By endBy = By.cssSelector("a.o_sel_close_test");
 		browser.findElement(endBy).click();
 		OOGraphene.waitBusy(browser);
-		
+		confirm();
+		return this;
+	}
+	
+	/**
+	 * Yes in a dialog box controller.
+	 */
+	private void confirm() {
 		// confirm
 		By confirmButtonBy = By.cssSelector("div.modal-dialog div.modal-footer a");
+		OOGraphene.waitElement(confirmButtonBy, 5, browser);
 		List<WebElement> buttonsEl = browser.findElements(confirmButtonBy);
 		buttonsEl.get(0).click();
 		OOGraphene.waitBusy(browser);
-		return this;
 	}
 }
