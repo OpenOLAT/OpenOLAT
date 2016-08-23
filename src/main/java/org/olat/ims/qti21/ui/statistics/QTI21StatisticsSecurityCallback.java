@@ -30,7 +30,7 @@ public class QTI21StatisticsSecurityCallback {
 	private boolean anonymousUsers;
 	private boolean nonParticipantUsers;
 	
-	public QTI21StatisticsSecurityCallback(boolean anonymousUsers, boolean nonParticipantUsers) {
+	public QTI21StatisticsSecurityCallback(boolean nonParticipantUsers, boolean anonymousUsers) {
 		this.anonymousUsers = anonymousUsers;
 		this.nonParticipantUsers = nonParticipantUsers;
 	}

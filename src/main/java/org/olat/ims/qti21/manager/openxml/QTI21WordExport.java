@@ -343,66 +343,76 @@ public class QTI21WordExport implements MediaResource {
 		@Override
 		public void startElement(String uri, String localName, String qName, Attributes attributes) {
 
-			
 			String tag = localName.toLowerCase();
-			if("choiceinteraction".equals(tag)) {
-				responseIdentifier = attributes.getValue("responseidentifier");
-			} else if("simplechoice".equals(tag)) {
-				if(currentTable == null) {
-					startTable();
-				}
-				currentTable.addRowEl();
-				currentTable.addCellEl(factory.createTableCell("E9EAF2", 4560, Unit.pct), 1);
-				simpleChoiceIdentifier = attributes.getValue("identifier");
-			} else if("textentryinteraction".equals(tag)) {
-				startTextEntryInteraction(tag, attributes);
-			} else if("extendedtextinteraction".equals(tag)) {
-				startExtendedTextInteraction(attributes);
-			} else if("hotspotinteraction".equals(tag)) {
-				startHotspotInteraction(attributes);
-			} else if("inlinechoiceinteraction".equals(tag)) {
-				
-			} else if("hottextinteraction".equals(tag)) {
-				
-			} else if("hottext".equals(tag)) {
-				
-			} else if("matchinteraction".equals(tag)) {
-				renderElement = false;
-				
-				Interaction interaction = getInteractionByResponseIdentifier(attributes);
-				if(interaction instanceof MatchInteraction) {
-					MatchInteraction matchInteraction = (MatchInteraction)interaction;
-					QTI21QuestionType type = QTI21QuestionType.getTypeOfMatch(assessmentItem, matchInteraction);
-					if(type == QTI21QuestionType.kprim) {
-						startKPrim(matchInteraction);
+			switch(tag) {
+				case "choiceinteraction":
+					responseIdentifier = attributes.getValue("responseidentifier");
+					break;
+				case "simplechoice":
+					if(currentTable == null) {
+						startTable();
+					}
+					currentTable.addRowEl();
+					currentTable.addCellEl(factory.createTableCell("E9EAF2", 4560, Unit.pct), 1);
+					simpleChoiceIdentifier = attributes.getValue("identifier");
+					break;
+				case "textentryinteraction":
+					startTextEntryInteraction(tag, attributes);
+					break;
+				case "extendedtextinteraction":
+					startExtendedTextInteraction(attributes);
+					break;
+				case "hotspotinteraction":
+					startHotspotInteraction(attributes);
+					break;
+				case "inlinechoiceinteraction":
+				case "hottextinteraction":
+				case "hottext":
+					break;
+				case "matchinteraction":
+					renderElement = false;
+					
+					Interaction interaction = getInteractionByResponseIdentifier(attributes);
+					if(interaction instanceof MatchInteraction) {
+						MatchInteraction matchInteraction = (MatchInteraction)interaction;
+						QTI21QuestionType type = QTI21QuestionType.getTypeOfMatch(assessmentItem, matchInteraction);
+						if(type == QTI21QuestionType.kprim) {
+							startKPrim(matchInteraction);
+						}
+					}
+					break;
+				case "gapmatchinteraction":
+					break;
+				case "selectpointinteraction":
+					startSelectPointInteraction(attributes);
+					break;
+				case "graphicassociateinteraction":
+					startGraphicAssociateInteraction(attributes);
+					break;
+				case "graphicorderinteraction":
+					startGraphicOrderInteraction(attributes);
+					break;
+				case "graphicgapmatchinteraction":
+				case "associateinteraction":
+				case "uploadinteraction":
+					break;
+				case "positionobjectinteraction":
+					startPositionObjectInteraction(attributes);
+					break;
+				case "sliderinteraction":
+					break;
+				case "drawinginteraction":
+					startDrawingInteraction(attributes);
+					break;
+				case "simplematchset":
+				case "simpleassociablechoice":
+					//do nothing
+					break;
+				default: {
+					if(renderElement) {
+						super.startElement(uri, localName, qName, attributes);
 					}
 				}
-			}  else if("gapmatchinteraction".equals(tag)) {
-				
-			} else if("selectpointinteraction".equals(tag)) {
-				startSelectPointInteraction(attributes);
-			} else if("graphicassociateinteraction".equals(tag)) {
-				startGraphicAssociateInteraction(attributes);
-			} else if("graphicorderinteraction".equals(tag)) {
-				startGraphicOrderInteraction(attributes);
-			} else if("graphicgapmatchinteraction".equals(tag)) {
-				// 
-			} else if("associateinteraction".equals(tag)) {
-				//
-			} else if("uploadinteraction".equals(tag)) {
-				//
-			} else if("positionobjectinteraction".equals(tag)) {
-				startPositionObjectInteraction(attributes);
-			} else if("sliderinteraction".equals(tag)) {
-				//
-			} else if("drawinginteraction".equals(tag)) {
-				startDrawingInteraction(attributes);
-			} else if("simplematchset".equals(tag)) {
-				//do nothing
-			} else if("simpleassociablechoice".equals(tag)) {
-				//do nothing
-			} else if(renderElement) {
-				super.startElement(uri, localName, qName, attributes);
 			}
 		}
 
@@ -416,34 +426,42 @@ public class QTI21WordExport implements MediaResource {
 		@Override
 		public void endElement(String uri, String localName, String qName) {
 			String tag = localName.toLowerCase();
-			if("choiceinteraction".equals(tag)) {
-				endTable();
-			} else if("simplechoice".equals(tag)) {
-				Element checkboxCell = factory.createTableCell(null, 369, Unit.pct);
-				Node checkboxNode = currentTable.addCellEl(checkboxCell, 1);
-				
-				boolean checked = false;
-				if(withResponses) {
-					Identifier identifier = Identifier.assumedLegal(simpleChoiceIdentifier);
-					List<Identifier> correctAnswers = CorrectResponsesUtil
-							.getCorrectIdentifierResponses(assessmentItem, Identifier.assumedLegal(responseIdentifier));
-					checked = correctAnswers.contains(identifier);	
+			switch(tag) {
+				case "choiceinteraction":
+					endTable();
+					break;
+				case "simplechoice":
+					Element checkboxCell = factory.createTableCell(null, 369, Unit.pct);
+					Node checkboxNode = currentTable.addCellEl(checkboxCell, 1);
+					
+					boolean checked = false;
+					if(withResponses) {
+						Identifier identifier = Identifier.assumedLegal(simpleChoiceIdentifier);
+						List<Identifier> correctAnswers = CorrectResponsesUtil
+								.getCorrectIdentifierResponses(assessmentItem, Identifier.assumedLegal(responseIdentifier));
+						checked = correctAnswers.contains(identifier);	
+					}
+					
+					Node responseEl = factory.createCheckbox(checked);
+					Node wrapEl = factory.wrapInParagraph(responseEl);
+					checkboxNode.appendChild(wrapEl);
+					closeCurrentTableRow();
+					break;
+				case "textentryinteraction":
+					//auto closing tag
+				case "extendedtextinteraction":
+					//auto closing tag
+				case "hotspotinteraction":
+					//all work done during start
+					break;
+				case "matchinteraction":
+					renderElement = true;
+					break;
+				default: {
+					if(renderElement) {
+						super.endElement(uri, localName, qName);
+					}
 				}
-				
-				Node responseEl = factory.createCheckbox(checked);
-				Node wrapEl = factory.wrapInParagraph(responseEl);
-				checkboxNode.appendChild(wrapEl);
-				closeCurrentTableRow();
-			} else if("textentryinteraction".equals(tag)) {
-				//auto closing tag
-			} else if("extendedtextinteraction".equals(tag)) {
-				//auto closing tag
-			} else if("hotspotinteraction".equals(tag)) {
-				//all work done during start
-			} else if("matchinteraction".equals(tag)) {
-				renderElement = true;
-			} else if(renderElement) {
-				super.endElement(uri, localName, qName);
 			}
 		}
 		

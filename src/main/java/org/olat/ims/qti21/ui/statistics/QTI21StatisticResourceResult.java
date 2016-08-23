@@ -177,13 +177,7 @@ public class QTI21StatisticResourceResult implements StatisticResourceResult {
 		rootTreeNode.setTitle(test.getTitle());
 		rootTreeNode.setUserObject(test);
 		rootTreeNode.setIconCssClass("o_icon o_icon-lg o_qtiassessment_icon");
-		
-		//list all test parts
-		List<TestPart> parts = test.getChildAbstractParts();
-		int counter = 0;
-		for(TestPart part:parts) {
-			buildRecursively(part, ++counter, rootTreeNode);
-		}
+		buildRecursively(test, rootTreeNode);
 		return treeModel;
 	}
 
@@ -202,13 +196,29 @@ public class QTI21StatisticResourceResult implements StatisticResourceResult {
 		resolvedAssessmentTest = qtiService.loadAndResolveAssessmentTest(unzippedDirRoot, false);
 		
 		AssessmentTest test = resolvedAssessmentTest.getTestLookup().getRootNodeHolder().getRootNode();
-		//list all test parts
-		List<TestPart> parts = test.getChildAbstractParts();
-		int counter = 0;
-		for(TestPart part:parts) {
-			buildRecursively(part, ++counter, rootTreeNode);
-		}
+		buildRecursively(test, rootTreeNode);
 		return subTreeModel;
+	}
+	
+	private void buildRecursively(AssessmentTest test, GenericTreeNode rootTreeNode) {
+		//list all test parts
+		List<TestPart> parts = test.getTestParts();
+		if(parts.size() == 1) {
+			TreeNode firstItem = null;
+			List<AssessmentSection> sections = test.getTestParts().get(0).getAssessmentSections();
+			for(AssessmentSection section:sections) {
+				TreeNode itemNode = buildRecursively(section, rootTreeNode);
+				if(firstItem == null) {
+					firstItem = itemNode;
+				}
+			}
+			rootTreeNode.setDelegate(firstItem);
+		} else {
+			int counter = 0;
+			for(TestPart part:parts) {
+				buildRecursively(part, ++counter, rootTreeNode);
+			}
+		}
 	}
 	
 	private void buildRecursively(TestPart part, int pos, TreeNode parentNode) {
