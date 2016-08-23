@@ -486,7 +486,8 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 				}
 				
 			} else if(droppedObject instanceof AssessmentSection
-					&& (targetObject instanceof AssessmentSection || targetObject instanceof TestPart)) {
+					&& (targetObject instanceof AssessmentSection || targetObject instanceof TestPart
+							|| (targetObject instanceof AssessmentTest && ((AssessmentTest)targetObject).getTestParts().size() == 1))) {
 				AssessmentSection droppedSection = (AssessmentSection)droppedObject;
 				if(droppedSection.getParentSection() != null) {
 					droppedSection.getParentSection().getSectionParts().remove(droppedSection);
@@ -498,6 +499,9 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 					targetSection.getChildAbstractParts().add(droppedSection);
 				} else if(targetObject instanceof TestPart) {
 					TestPart targetTestPart = (TestPart)targetObject;
+					targetTestPart.getAssessmentSections().add(droppedSection);
+				} else if(targetObject instanceof AssessmentTest) {
+					TestPart targetTestPart = ((AssessmentTest)targetObject).getTestParts().get(0);
 					targetTestPart.getAssessmentSections().add(droppedSection);
 				}
 			}
