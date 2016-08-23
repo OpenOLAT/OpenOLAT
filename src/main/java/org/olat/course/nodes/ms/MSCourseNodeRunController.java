@@ -37,6 +37,7 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.auditing.UserNodeAuditManager;
+import org.olat.course.highscore.ui.HighScoreRunController;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.MSCourseNode;
 import org.olat.course.nodes.ObjectivesHelper;
@@ -74,7 +75,15 @@ public class MSCourseNodeRunController extends DefaultController {
 		Translator trans = Util.createPackageTranslator(MSCourseNodeRunController.class, ureq.getLocale(), fallbackTrans);
 		
 		myContent = new VelocityContainer("olatmsrun", VELOCITY_ROOT + "/run.html", trans, this);
-		
+
+		if (msCourseNode.getModuleConfiguration().getBooleanSafe(MSCourseNode.CONFIG_KEY_HAS_SCORE_FIELD,false)){
+			HighScoreRunController highScoreCtr = new HighScoreRunController(ureq, wControl, userCourseEnv, msCourseNode);
+			if (highScoreCtr.isViewHighscore()) {
+				Component compi = highScoreCtr.getInitialComponent();
+				myContent.put("highScore", compi);							
+			}
+		}
+				
 		ModuleConfiguration config = msCourseNode.getModuleConfiguration();
 		myContent.contextPut("displayNodeInfo", Boolean.valueOf(displayNodeInfo));
 		if (displayNodeInfo) {

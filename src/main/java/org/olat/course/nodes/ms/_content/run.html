@@ -99,6 +99,9 @@
 	</script>
 #end
 
+#if ($r.available("highScore"))
+	$r.render("highScore")
+#end
 
 #if($log)
 <div class="o_box">

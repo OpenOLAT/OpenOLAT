@@ -36,12 +36,14 @@ import org.olat.core.gui.control.ControllerEventListener;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.tabbable.ActivateableTabbableDefaultController;
+import org.olat.core.util.Util;
 import org.olat.course.ICourse;
 import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.auditing.UserNodeAuditManager;
 import org.olat.course.condition.Condition;
 import org.olat.course.condition.ConditionEditController;
 import org.olat.course.editor.NodeEditController;
+import org.olat.course.highscore.ui.HighScoreEditController;
 import org.olat.course.nodes.MSCourseNode;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.course.tree.CourseEditorTreeModel;
@@ -53,12 +55,14 @@ import org.olat.course.tree.CourseEditorTreeModel;
 public class MSCourseNodeEditController extends ActivateableTabbableDefaultController implements ControllerEventListener {
 
 	public static final String PANE_TAB_CONFIGURATION = "pane.tab.configuration";
-	private static final String PANE_TAB_ACCESSIBILITY = "pane.tab.accessibility";	
+	private static final String PANE_TAB_ACCESSIBILITY = "pane.tab.accessibility";
+	public static final String PANE_TAB_HIGHSCORE = "pane.tab.highscore";
 	private static final String[] paneKeys = { PANE_TAB_CONFIGURATION, PANE_TAB_ACCESSIBILITY };
 
 	private MSCourseNode msNode;
 	private VelocityContainer configurationVC;
 	private MSEditFormController modConfigController;
+	private HighScoreEditController highScoreNodeConfigController;
 
 	private ConditionEditController accessibilityCondContr;
 	private TabbedPane myTabbedPane;
@@ -75,6 +79,8 @@ public class MSCourseNodeEditController extends ActivateableTabbableDefaultContr
 	 */
 	public MSCourseNodeEditController(UserRequest ureq, WindowControl wControl, MSCourseNode msNode, ICourse course, UserCourseEnvironment euce) {
 		super(ureq, wControl);
+		setTranslator(Util.createPackageTranslator(HighScoreEditController.class, getLocale(), getTranslator()));
+		
 		this.msNode = msNode;
 		
 		configurationVC = createVelocityContainer("edit");
@@ -92,6 +98,9 @@ public class MSCourseNodeEditController extends ActivateableTabbableDefaultContr
 		modConfigController = new MSEditFormController(ureq, wControl, msNode.getModuleConfiguration());
 		listenTo(modConfigController);
 		configurationVC.put("mseditform", modConfigController.getInitialComponent());
+		
+		highScoreNodeConfigController = new HighScoreEditController(ureq, wControl, msNode, euce);
+		listenTo(highScoreNodeConfigController);
 		
 		// if there is already user data available, make for read only
 		//TODO:chg:a concurrency issues?
@@ -146,7 +155,19 @@ public class MSCourseNodeEditController extends ActivateableTabbableDefaultContr
 				modConfigController.updateModuleConfiguration(msNode.getModuleConfiguration());
 				fireEvent(ureq, NodeEditController.NODECONFIG_CHANGED_EVENT);
 			}
+			updateHighscoreTab();
+			
+		} else if (source == highScoreNodeConfigController){
+			if (event == Event.DONE_EVENT) {
+				highScoreNodeConfigController.updateModuleConfiguration(msNode.getModuleConfiguration());
+				fireEvent(ureq, NodeEditController.NODECONFIG_CHANGED_EVENT);
+			}
 		}
+	}
+	
+	private void updateHighscoreTab() {
+		Boolean sf = msNode.getModuleConfiguration().getBooleanSafe(MSCourseNode.CONFIG_KEY_HAS_SCORE_FIELD,false);
+		myTabbedPane.setEnabled(4, sf);
 	}
 
 	/**
@@ -156,6 +177,9 @@ public class MSCourseNodeEditController extends ActivateableTabbableDefaultContr
 		myTabbedPane = tabbedPane;
 		tabbedPane.addTab(translate(PANE_TAB_ACCESSIBILITY), accessibilityCondContr.getWrappedDefaultAccessConditionVC(translate("condition.accessibility.title")));
 		tabbedPane.addTab(translate(PANE_TAB_CONFIGURATION), configurationVC);
+		tabbedPane.addTab(translate(PANE_TAB_HIGHSCORE) , highScoreNodeConfigController.getInitialComponent());
+		updateHighscoreTab();
+
 	}
 
 	/**

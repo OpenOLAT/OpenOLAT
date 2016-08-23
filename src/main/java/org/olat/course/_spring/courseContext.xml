@@ -8,7 +8,7 @@
   http://www.springframework.org/schema/context 
   http://www.springframework.org/schema/context/spring-context.xsd">
 	
-	<context:component-scan base-package="org.olat.course.certificate.manager,org.olat.course.reminder" />
+	<context:component-scan base-package="org.olat.course.certificate.manager,org.olat.course.reminder,org.olat.course.highscore" />
 
 	<import resource="classpath:/org/olat/course/assessment/_spring/assessmentContext.xml"/>
 	<import resource="classpath:/org/olat/course/certificate/_spring/certificateContext.xml"/>

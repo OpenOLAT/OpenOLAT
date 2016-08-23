@@ -1,0 +1,16 @@
+<div id='histogram_$r.getCId()' class='d3chart'>
+
+<script type='text/javascript'>
+/* <![CDATA[ */
+jQuery(function () {
+	jQuery('#histogram_$r.getCId()').qtiStatistics('highScore', {
+		values: [$datas],
+        cut: #if($cutValue) $cutValue #else null #end,
+        mapperUrl: '$mapperUrl',
+        xBottomLegend: '$r.translate("graph.axis.points")',
+        yLeftLegend: '$r.translate("graph.axis.percent")',
+        yRightLegend: '$r.translate("graph.axis.absolute")'
+	});
+});
+/* ]]> */</script>
+</div>
