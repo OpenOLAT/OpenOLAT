@@ -129,8 +129,11 @@ public class IdentitiesAssessmentItemCorrectionController extends FormBasicContr
 		if(formLayout instanceof FormLayoutContainer) {
 			FormLayoutContainer layoutCont = (FormLayoutContainer)formLayout;
 			layoutCont.contextPut("interactionWrappers", itemResults);
-			for(AssessmentItemCorrection correction:testCorrections.getCorrections(itemRef)) {
-				initFormItemResult(correction, layoutCont);
+			List<AssessmentItemCorrection> corrections = testCorrections.getCorrections(itemRef);
+			if(corrections != null) {
+				for(AssessmentItemCorrection correction:corrections) {
+					initFormItemResult(correction, layoutCont);
+				}
 			}
 		}
 		

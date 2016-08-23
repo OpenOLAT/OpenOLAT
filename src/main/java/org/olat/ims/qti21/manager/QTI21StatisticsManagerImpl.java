@@ -128,9 +128,18 @@ public class QTI21StatisticsManagerImpl implements QTI21StatisticsManager {
 		query.setParameter("testEntryKey", searchParams.getTestEntry().getKey());
 		if(searchParams.getCourseEntry() != null) {
 			query.setParameter("repositoryEntryKey", searchParams.getCourseEntry().getKey());
+		}
+		if(searchParams.getNodeIdent() != null ) {
 			query.setParameter("subIdent", searchParams.getNodeIdent());
 		}
-		if(searchParams.getLimitToGroups() != null && searchParams.getLimitToGroups().size() > 0) {
+		
+		if(searchParams.isViewAllUsers() && searchParams.isViewAnonymUsers()) {
+			//no restrictions
+		} else if(searchParams.isViewAnonymUsers()) {
+			//
+		} else if(searchParams.isViewAllUsers()) {
+			//
+		} else if(searchParams.getLimitToGroups() != null && searchParams.getLimitToGroups().size() > 0) {
 			query.setParameter("baseGroups", searchParams.getLimitToGroups());
 		}
 	}

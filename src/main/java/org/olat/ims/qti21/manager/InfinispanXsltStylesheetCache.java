@@ -44,7 +44,7 @@ public class InfinispanXsltStylesheetCache implements XsltStylesheetCache {
 	@SuppressWarnings("static-access")
 	@Autowired
 	public InfinispanXsltStylesheetCache(CoordinatorManager coordinatorManager) {
-		cache = coordinatorManager.getInstance().getCoordinator().getCacher().getCache("QTIWorks", "ssltStylesheets");
+		cache = coordinatorManager.getInstance().getCoordinator().getCacher().getCache("QTIWorks", "xsltStylesheets");
 	}
 
 	@Override

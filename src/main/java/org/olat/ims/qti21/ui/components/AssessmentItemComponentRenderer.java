@@ -160,7 +160,7 @@ public class AssessmentItemComponentRenderer extends AssessmentObjectComponentRe
 		sb.append("<h1 class='itemTitle'>");
 		renderItemStatus(renderer, sb, itemSessionState, translator);
 		sb.append(assessmentItem.getTitle()).append("</h1>")
-		  .append("<div id='itemBody'>");
+		  .append("<div id='itemBody' class='clearfix'>");
 		
 		//TODO prompt
 	

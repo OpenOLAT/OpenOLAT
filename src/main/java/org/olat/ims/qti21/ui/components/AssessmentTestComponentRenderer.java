@@ -346,7 +346,7 @@ public class AssessmentTestComponentRenderer extends AssessmentObjectComponentRe
 		renderItemStatus(sb, itemSessionState, options, translator);
 		sb.append(itemNode.getSectionPartTitle(), component.isShowTitles())
 		  .append("</h3>")
-		  .append("<div id='itemBody'>");
+		  .append("<div id='itemBody' class='clearfix'>");
 
 		//render itemBody
 		assessmentItem.getItemBody().getBlocks().forEach((block)

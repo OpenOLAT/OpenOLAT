@@ -855,16 +855,16 @@ public class AssessmentTestDisplayController extends BasicController implements 
 		TestPlanNode nextTestPart = testSessionController.findNextEnterableTestPart();
 
 		if(nextTestPart == null) {
-			String title = translate("confirm.close.test.title");
-			String text = translate("confirm.close.test.text");
+			String title = translate("confirm.finish.test.title");
+			String text = translate("confirm.finish.test.text");
 			endTestPartDialog = activateOkCancelDialog(ureq, title, text, endTestPartDialog);
 		} else {
 			TestPart currentTestPart = testSessionController.getCurrentTestPart();
 			if(currentTestPart == null) {
 				processEndTestPart(ureq);
 			} else {
-				String title = translate("confirm.end.testpart.title");
-				String text = translate("confirm.end.testpart.text");
+				String title = translate("confirm.finish.testpart.title");
+				String text = translate("confirm.finish.testpart.text");
 				endTestPartDialog = activateOkCancelDialog(ureq, title, text, endTestPartDialog);
 			}
 		}
