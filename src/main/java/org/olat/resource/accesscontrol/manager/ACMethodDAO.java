@@ -333,7 +333,10 @@ public class ACMethodDAO implements GenericEventListener {
 				.createQuery(sb.toString(), AccessMethod.class)
 				.getResultList();
 		if(methods.isEmpty() && enable) {
-			dbInstance.saveObject(new TokenAccessMethod());
+			TokenAccessMethod method = new TokenAccessMethod();
+			method.setCreationDate(new Date());
+			method.setLastModified(method.getCreationDate());
+			dbInstance.saveObject(method);
 		} else {
 			for(AccessMethod method:methods) {
 				if(method.isEnabled() != enable) {
@@ -352,7 +355,10 @@ public class ACMethodDAO implements GenericEventListener {
 		TypedQuery<AccessMethod> query = dbInstance.getCurrentEntityManager().createQuery(sb.toString(), AccessMethod.class);
 		List<AccessMethod> methods = query.getResultList();
 		if(methods.isEmpty() && enable) {
-			dbInstance.saveObject(new FreeAccessMethod());
+			FreeAccessMethod method = new FreeAccessMethod();
+			method.setCreationDate(new Date());
+			method.setLastModified(method.getCreationDate());
+			dbInstance.saveObject(method);
 		} else {
 			for(AccessMethod method:methods) {
 				if(method.isEnabled() != enable) {

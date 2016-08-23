@@ -80,7 +80,7 @@ public class VideoTrackEditController extends FormBasicController {
 		FormLayoutContainer generalCont = FormLayoutContainer.createVerticalFormLayout("general", getTranslator());
 		generalCont.setFormTitle(translate("tab.video.trackConfig"));
 		generalCont.setRootForm(mainForm);
-		generalCont.setFormContextHelp("Video Tracks");
+		generalCont.setFormContextHelp("Learning resource: Video#_video_subtitle");
 		formLayout.add(generalCont);
 
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();

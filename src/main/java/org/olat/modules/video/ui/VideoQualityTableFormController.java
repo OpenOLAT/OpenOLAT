@@ -76,7 +76,7 @@ public class VideoQualityTableFormController extends FormBasicController {
 		FormLayoutContainer generalCont = FormLayoutContainer.createVerticalFormLayout("general", getTranslator());
 		generalCont.setFormTitle(translate("tab.video.qualityConfig"));
 		generalCont.setRootForm(mainForm);
-		generalCont.setFormContextHelp("Video Tracks");
+		generalCont.setFormContextHelp("Learning resource: Video#_video_resolution");
 		formLayout.add(generalCont);
 
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
