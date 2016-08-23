@@ -31,6 +31,7 @@ import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.assessment.AssessmentToolManager;
 import org.olat.course.assessment.model.AssessmentStatistics;
 import org.olat.course.assessment.model.SearchAssessedIdentityParams;
+import org.olat.modules.assessment.model.AssessmentMembersStatistics;
 import org.olat.modules.assessment.ui.AssessmentToolSecurityCallback;
 import org.olat.repository.RepositoryEntry;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -50,8 +51,8 @@ public class AssessmentCourseStatisticsSmallController extends BasicController {
 	
 	private int numOfPassed;
 	private int numOfFailed;
-	private int numOfParticipants;
 	private int numOfAssessedIdentities;
+	private AssessmentMembersStatistics memberStatistics;
 	
 	@Autowired
 	private AssessmentToolManager assessmentToolManager;
@@ -79,8 +80,8 @@ public class AssessmentCourseStatisticsSmallController extends BasicController {
 		return numOfAssessedIdentities;
 	}
 	
-	public int getNumOfParticipants() {
-		return numOfParticipants;
+	public AssessmentMembersStatistics getMemberStatistics() {
+		return memberStatistics;
 	}
 	
 	public void updateStatistics() {
@@ -91,24 +92,33 @@ public class AssessmentCourseStatisticsSmallController extends BasicController {
 		numOfAssessedIdentities = assessmentToolManager.getNumberOfAssessedIdentities(getIdentity(), params);
 		mainVC.contextPut("numOfAssessedIdentities", numOfAssessedIdentities);
 		
-		numOfParticipants = assessmentToolManager.getNumberOfParticipants(getIdentity(), params);
-		mainVC.contextPut("numOfParticipants", numOfParticipants);
+		memberStatistics = assessmentToolManager.getNumberOfParticipants(getIdentity(), params);
+		mainVC.contextPut("numOfParticipants", memberStatistics.getNumOfParticipants());
+		if(assessmentCallback.canAssessNonMembers()) {
+			mainVC.contextPut("numOfOtherUsers", memberStatistics.getNumOfOtherUsers());
+		}
 		
 		AssessmentStatistics stats = assessmentToolManager.getStatistics(getIdentity(), params);
 		mainVC.contextPut("scoreAverage", AssessmentHelper.getRoundedScore(stats.getAverageScore()));
 		numOfPassed = stats.getCountPassed();
 		mainVC.contextPut("numOfPassed", numOfPassed);
-		int percentPassed = numOfParticipants == 0 ? 0 :
-				Math.round(100.0f * (stats.getCountPassed() / numOfParticipants));
+		
+		int total = memberStatistics.getTotal();
+		int percentPassed = total == 0 ? 0 :
+				Math.round(100.0f * (stats.getCountPassed() / total));
 		mainVC.contextPut("percentPassed", percentPassed);
 		numOfFailed = stats.getCountFailed();
 		mainVC.contextPut("numOfFailed", numOfFailed);
-		int percentFailed = numOfParticipants == 0 ? 0 :
-				Math.round(100.0f * (stats.getCountFailed() / numOfParticipants));
+		int percentFailed = total == 0 ? 0 :
+				Math.round(100.0f * (stats.getCountFailed() / total));
 		mainVC.contextPut("percentFailed", percentFailed);
 		
-		int numOfLaunches = assessmentToolManager.getNumberOfInitialLaunches(getIdentity(), params);
-		mainVC.contextPut("numOfInitialLaunch", numOfLaunches);
+		int numOfParticipantLaunches = memberStatistics.getNumOfParticipantsLoggedIn();
+		mainVC.contextPut("numOfParticipantLaunches", numOfParticipantLaunches);
+		if(assessmentCallback.canAssessNonMembers()) {
+			int numOfOtherUserLaunches = memberStatistics.getLoggedIn();
+			mainVC.contextPut("numOfOtherUserLaunches", numOfOtherUserLaunches);
+		}
 	}
 
 	@Override

@@ -20,7 +20,9 @@
 package org.olat.course.assessment.manager;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import javax.persistence.TypedQuery;
 
@@ -37,6 +39,7 @@ import org.olat.course.assessment.model.AssessmentStatistics;
 import org.olat.course.assessment.model.SearchAssessedIdentityParams;
 import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
+import org.olat.modules.assessment.model.AssessmentMembersStatistics;
 import org.olat.repository.RepositoryEntry;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -69,56 +72,74 @@ public class AssessmentToolManagerImpl implements AssessmentToolManager {
 
 
 	@Override
-	public int getNumberOfParticipants(Identity coach, SearchAssessedIdentityParams params) {
+	public AssessmentMembersStatistics getNumberOfParticipants(Identity coach, SearchAssessedIdentityParams params) {
 		RepositoryEntry courseEntry = params.getEntry();
 		
+		int loggedIn = 0;
+		int numOfOtherUsers = 0;
 		int numOfParticipants = 0;
+		int participantLoggedIn = 0;
+		
+		StringBuilder sc = new StringBuilder();
+		sc.append("select infos.identity.key from usercourseinfos as infos ")
+		  .append(" inner join infos.resource as infosResource on (infosResource.key=:resourceKey)");
+		List<Long> allKeys = dbInstance.getCurrentEntityManager()
+			.createQuery(sc.toString(), Long.class)
+			.setParameter("resourceKey", courseEntry.getOlatResource().getKey())
+			.getResultList();
+		
 		if(params.isAdmin()) {
 			StringBuilder sb = new StringBuilder();
-			sb.append("select count(participant.identity.key) from repoentrytogroup as rel")
+			sb.append("select participant.identity.key from repoentrytogroup as rel")
 	          .append("  inner join rel.group as bGroup")
 	          .append("  inner join bGroup.members as participant on (participant.role='").append(GroupRoles.participant.name()).append("')")
 	          .append("  where rel.entry.key=:repoEntryKey)");
 			
-			List<Number> count = dbInstance.getCurrentEntityManager()
-				.createQuery(sb.toString(), Number.class)
+			List<Long> keys = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Long.class)
 				.setParameter("repoEntryKey", courseEntry.getKey())
 				.getResultList();
-			numOfParticipants = count == null || count.isEmpty() || count.get(0) == null ? 0 : count.get(0).intValue();
+			Set<Long> participantKeys = new HashSet<>(keys);
+			numOfParticipants = participantKeys.size();
 			
+			Set<Long> participantLoggedInKeys = new HashSet<>(allKeys);
+			participantLoggedInKeys.retainAll(participantKeys);
+			participantLoggedIn = participantLoggedInKeys.size();
+
 			//count the users which login but are not members of the course
 			if(params.isNonMembers()) {
-				StringBuilder sc = new StringBuilder();
-				sc.append("select count(infos.key) from usercourseinfos as infos ")
-				  .append(" inner join infos.resource as infosResource on (infosResource.key=:resourceKey)")
-				  .append(" where not exists (select membership.identity from repoentrytogroup as rel, bgroupmember as membership")
-		          .append("   where rel.entry.key=:repoEntryKey and rel.group.key=membership.group.key and membership.identity.key=infos.identity.key")
-		          .append("  )");
-				
-				List<Number> countAlt = dbInstance.getCurrentEntityManager()
-					.createQuery(sc.toString(), Number.class)
-					.setParameter("repoEntryKey", courseEntry.getKey())
-					.setParameter("resourceKey", courseEntry.getOlatResource().getKey())
-					.getResultList();
-				numOfParticipants += countAlt == null || countAlt.isEmpty() || countAlt.get(0) == null ? 0 : countAlt.get(0).intValue();
+				Set<Long> allLoggedInKeys = new HashSet<>(allKeys);
+				allLoggedInKeys.removeAll(participantLoggedInKeys);
+				loggedIn = allLoggedInKeys.size();
+				allLoggedInKeys.removeAll(participantKeys);
+				numOfOtherUsers = allLoggedInKeys.size();
+			} else {
+				loggedIn = participantLoggedIn;
 			}
-			
 		} else if(params.isBusinessGroupCoach() || params.isRepositoryEntryCoach()) {
 			StringBuilder sb = new StringBuilder();
-			sb.append("select count(participant.identity.key) from repoentrytogroup as rel")
+			sb.append("select participant.identity.key from repoentrytogroup as rel")
 	          .append("  inner join rel.group as bGroup")
 	          .append("  inner join bGroup.members as coach on (coach.identity.key=:identityKey and coach.role='").append(GroupRoles.coach.name()).append("')")
 	          .append("  inner join bGroup.members as participant on (participant.role='").append(GroupRoles.participant.name()).append("')")
 	          .append("  where rel.entry.key=:repoEntryKey)");
 			
-			List<Number> count = dbInstance.getCurrentEntityManager()
-				.createQuery(sb.toString(), Number.class)
+			List<Long> keys = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Long.class)
 				.setParameter("identityKey", coach.getKey())
 				.setParameter("repoEntryKey", courseEntry.getKey())
 				.getResultList();
-			numOfParticipants = count == null || count.isEmpty() || count.get(0) == null ? 0 : count.get(0).intValue();
+
+			Set<Long> participantKeys = new HashSet<>(keys);
+			numOfParticipants = participantKeys.size();
+			
+			Set<Long> participantLoggedInKeys = new HashSet<>(allKeys);
+			participantLoggedInKeys.retainAll(participantKeys);
+			participantLoggedIn = participantLoggedInKeys.size();
+
+			loggedIn = participantLoggedIn;
 		}
-		return numOfParticipants;
+		return new AssessmentMembersStatistics(numOfParticipants, participantLoggedIn, numOfOtherUsers, loggedIn);
 	}
 
 	@Override

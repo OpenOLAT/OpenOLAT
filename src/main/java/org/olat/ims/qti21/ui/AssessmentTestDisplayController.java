@@ -197,7 +197,7 @@ public class AssessmentTestDisplayController extends BasicController implements 
 	 */
 	public AssessmentTestDisplayController(UserRequest ureq, WindowControl wControl, OutcomesListener listener,
 			RepositoryEntry testEntry, RepositoryEntry entry, String subIdent, QTI21DeliveryOptions deliveryOptions,
-			boolean showCloseResults, boolean authorMode) {
+			boolean showCloseResults, boolean authorMode, boolean anonym) {
 		super(ureq, wControl);
 
 		this.entry = entry;
@@ -208,12 +208,12 @@ public class AssessmentTestDisplayController extends BasicController implements 
 		this.showCloseResults = showCloseResults;
 		
 		UserSession usess = ureq.getUserSession();
-		if(usess.getRoles().isGuestOnly()) {
-			anonym = true;
+		if(usess.getRoles().isGuestOnly() || anonym) {
+			this.anonym = anonym;
 			assessedIdentity = null;
 			anonymousIdentifier = getAnonymousIdentifier(usess);
 		} else {
-			anonym = false;
+			this.anonym = anonym;
 			assessedIdentity = getIdentity();
 			anonymousIdentifier = null;
 		}

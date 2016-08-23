@@ -28,6 +28,7 @@ import org.olat.course.assessment.model.AssessmentStatistics;
 import org.olat.course.assessment.model.SearchAssessedIdentityParams;
 import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
+import org.olat.modules.assessment.model.AssessmentMembersStatistics;
 
 /**
  * The manager taylored for the assessment tool.
@@ -59,7 +60,7 @@ public interface AssessmentToolManager {
 	 * @param params
 	 * @return
 	 */
-	public int getNumberOfParticipants(Identity coach, SearchAssessedIdentityParams params);
+	public AssessmentMembersStatistics getNumberOfParticipants(Identity coach, SearchAssessedIdentityParams params);
 	
 	/**
 	 * The number of user who launched the course / resource

@@ -359,7 +359,7 @@ public class QTI21AssessmentTestHandler extends FileHandler {
 						boolean authorMode = reSecurity.isEntryAdmin();
 						CoreSpringFactory.getImpl(UserCourseInformationsManager.class)
 							.updateUserCourseInformations(entry.getOlatResource(), uureq.getIdentity());
-						return new AssessmentTestDisplayController(uureq, wwControl, null, entry, entry, null, options, false, authorMode);
+						return new AssessmentTestDisplayController(uureq, wwControl, null, entry, entry, null, options, false, authorMode, false);
 					}
 				});
 	}

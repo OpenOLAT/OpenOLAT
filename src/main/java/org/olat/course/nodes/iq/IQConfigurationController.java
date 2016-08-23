@@ -376,11 +376,19 @@ public class IQConfigurationController extends BasicController {
 		
 		RepositoryEntry re = getIQReference(moduleConfiguration, false);
 		if(re != null && !OnyxModule.isOnyxTest(re.getOlatResource())) {
+			Controller previewController;
 			if(ImsQTI21Resource.TYPE_NAME.equals(re.getOlatResource().getResourceableTypeName())) {
-				//TODO
+				//TODO qti
+				/* need to clean up the assessment test session
+				QTI21DeliveryOptions deliveryOptions = qti21service.getDeliveryOptions(re);
+				RepositoryEntry courseEntry = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
+				previewController = new AssessmentTestDisplayController(ureq, getWindowControl(), new InMemoryOutcomeListener(),
+						re, courseEntry, courseNode.getIdent(),
+						deliveryOptions, true, true, true);
+				*/
 			} else {
 				long courseResId = course.getResourceableId().longValue();
-				Controller previewController = iqManager.createIQDisplayController(moduleConfiguration, new IQPreviewSecurityCallback(), ureq, getWindowControl(), courseResId, courseNode.getIdent(), null);
+				previewController = iqManager.createIQDisplayController(moduleConfiguration, new IQPreviewSecurityCallback(), ureq, getWindowControl(), courseResId, courseNode.getIdent(), null);
 				previewLayoutCtr = new LayoutMain3ColsController(ureq, getWindowControl(), previewController);
 				stackPanel.pushController(translate("preview"), previewLayoutCtr);
 			}
@@ -407,7 +415,7 @@ public class IQConfigurationController extends BasicController {
 		removeAsListenerAndDispose(cmc);
 		removeAsListenerAndDispose(searchController);
 		
-		String[] types = new String[]{ TestFileResource.TYPE_NAME };
+		String[] types = new String[]{ TestFileResource.TYPE_NAME, ImsQTI21Resource.TYPE_NAME };
 		searchController = new ReferencableEntriesSearchController(getWindowControl(), ureq, types, translate("command.chooseTest"));
 		listenTo(searchController);
 		

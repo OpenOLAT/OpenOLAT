@@ -51,10 +51,12 @@ import org.olat.core.util.openxml.OpenXMLWorksheet;
 import org.olat.core.util.openxml.OpenXMLWorksheet.Row;
 import org.olat.core.util.openxml.workbookstyle.CellStyle;
 import org.olat.course.CourseFactory;
+import org.olat.course.ICourse;
 import org.olat.course.nodes.CourseNode;
 import org.olat.fileresource.FileResourceManager;
 import org.olat.ims.qti.export.QTIArchiver;
 import org.olat.ims.qti.export.QTIExportFormatter;
+import org.olat.ims.qti.export.helper.IdentityAnonymizerCallback;
 import org.olat.ims.qti21.AssessmentItemSession;
 import org.olat.ims.qti21.AssessmentResponse;
 import org.olat.ims.qti21.AssessmentTestSession;
@@ -129,6 +131,7 @@ public class QTI21ArchiveFormat {
 	
 	private ResolvedAssessmentTest resolvedAssessmentTest;
 	private List<UserPropertyHandler> userPropertyHandlers;
+	private IdentityAnonymizerCallback anonymizerCallback;
 
 	private boolean participants;
 	private boolean allUsers;
@@ -193,11 +196,16 @@ public class QTI21ArchiveFormat {
 		File unzippedDirRoot = frm.unzipFileResource(testEntry.getOlatResource());
 		resolvedAssessmentTest = qtiService.loadAndResolveAssessmentTest(unzippedDirRoot, false);
 		
-		CourseNode courseNode = CourseFactory.loadCourse(courseEntry).getRunStructure().getNode(subIdent);
+		ICourse course = CourseFactory.loadCourse(courseEntry);
+		CourseNode courseNode = course.getRunStructure().getNode(subIdent);
 		String label = courseNode.getType() + "_"
 				+ StringHelper.transformDisplayNameToFileSystemName(courseNode.getShortName())
 				+ "_" + Formatter.formatDatetimeFilesystemSave(new Date(System.currentTimeMillis()))
 				+ ".xlsx";
+		
+		if("iqself".equals(courseNode.getType())) {
+			anonymizerCallback = course.getCourseEnvironment().getCoursePropertyManager();
+		}
 		
 		export(courseEntry, subIdent, testEntry, label, exportStream);
 	}
@@ -213,7 +221,7 @@ public class QTI21ArchiveFormat {
 		export(null, null, testEntry, archiveName, exportStream);
 	}
 	
-	private void export(RepositoryEntry courseEntry, String subIdent, RepositoryEntry testEntry, String filename, ZipOutputStream exportStream) {
+	private void export(RepositoryEntry courseEntry, String subIdent, RepositoryEntry testEntry, String filename,  ZipOutputStream exportStream) {
 		//content
 		final List<AssessmentResponse> responses = responseDao.getResponse(courseEntry, subIdent, testEntry, participants, allUsers, anonymUsers);
 		try {
@@ -240,11 +248,16 @@ public class QTI21ArchiveFormat {
 		File unzippedDirRoot = frm.unzipFileResource(testEntry.getOlatResource());
 		resolvedAssessmentTest = qtiService.loadAndResolveAssessmentTest(unzippedDirRoot, false);
 		
-		CourseNode courseNode = CourseFactory.loadCourse(courseEntry).getRunStructure().getNode(subIdent);
+		ICourse course = CourseFactory.loadCourse(courseEntry);
+		CourseNode courseNode = course.getRunStructure().getNode(subIdent);
 		String label = courseNode.getType() + "_"
 				+ StringHelper.transformDisplayNameToFileSystemName(courseNode.getShortName())
 				+ "_" + Formatter.formatDatetimeFilesystemSave(new Date(System.currentTimeMillis()))
 				+ ".xlsx";
+		
+		if("iqself".equals(courseNode.getType())) {
+			anonymizerCallback = course.getCourseEnvironment().getCoursePropertyManager();
+		}
 		
 		//content
 		final List<AssessmentResponse> responses = responseDao.getResponse(courseEntry, subIdent, testEntry, participants, allUsers, anonymUsers);
@@ -271,12 +284,16 @@ public class QTI21ArchiveFormat {
 		//first header
 		Row header1Row = exportSheet.newRow();
 		int col = 1;
-		for (UserPropertyHandler userPropertyHandler : userPropertyHandlers) {
-			if (userPropertyHandler != null) {
-				col++;
+		if(anonymizerCallback != null) {
+			col += 5;// anonymized name -> test duration
+		} else {
+			for (UserPropertyHandler userPropertyHandler : userPropertyHandlers) {
+				if (userPropertyHandler != null) {
+					col++;
+				}
 			}
+			col += 5;// homepage -> test duration
 		}
-		col += 5;// homepage -> test duration
 		
 		List<ItemInfos> infos = getItemInfos();
 		for(int i=0; i<infos.size(); i++) {
@@ -298,20 +315,24 @@ public class QTI21ArchiveFormat {
 		Row header2Row = exportSheet.newRow();
 		String sequentialNumber = translator.translate("column.header.seqnum");
 		header2Row.addCell(col++, sequentialNumber, headerStyle);
-	
-		for (UserPropertyHandler userPropertyHandler : userPropertyHandlers) {
-			if (userPropertyHandler == null) {
-				continue;
+
+		if(anonymizerCallback != null) {
+			col++;
+		} else {
+			for (UserPropertyHandler userPropertyHandler : userPropertyHandlers) {
+				if (userPropertyHandler == null) {
+					continue;
+				}
+				String header = translator.translate(userPropertyHandler.i18nFormElementLabelKey());
+				header2Row.addCell(col++, header, headerStyle);			
 			}
-			String header = translator.translate(userPropertyHandler.i18nFormElementLabelKey());
-			header2Row.addCell(col++, header, headerStyle);			
+			
+			// add other user and session information
+			header2Row.addCell(col++, translator.translate("column.header.homepage"), headerStyle);
 		}
 		
-		// add other user and session information
-		header2Row.addCell(col++, translator.translate("column.header.homepage"), headerStyle);
 		header2Row.addCell(col++, translator.translate("column.header.assesspoints"), headerStyle);
 		header2Row.addCell(col++, translator.translate("column.header.passed"), headerStyle);
-		//header2Row.addCell(col++, translator.translate("column.header.ipaddress"), headerStyle);
 		header2Row.addCell(col++, translator.translate("column.header.date"), headerStyle);
 		header2Row.addCell(col++, translator.translate("column.header.duration"), headerStyle);
 
@@ -370,6 +391,9 @@ public class QTI21ArchiveFormat {
 					}	
 				}	
 			}
+		} else if(anonymizerCallback != null) {
+			String anonymizedName = anonymizerCallback.getAnonymizedUserName(entry.getIdentity());
+			dataRow.addCell(col++, anonymizedName, null);
 		} else {
 			User assessedUser = entry.getIdentity().getUser();
 			for (UserPropertyHandler userPropertyHandler : userPropertyHandlers) {
@@ -380,16 +404,19 @@ public class QTI21ArchiveFormat {
 			}
 		}
 		
-		//homepage, assesspoints, passed, ipaddress, date, duration
-		String homepage;
-		if(entry.getIdentity() == null) {
-			homepage = "";
-		} else {
-			ContextEntry ce = BusinessControlFactory.getInstance().createContextEntry(entry.getIdentity());
-			homepage = BusinessControlFactory.getInstance().getAsURIString(Collections.singletonList(ce), false);
+		//homepage
+		if(anonymizerCallback == null) {
+			String homepage;
+			if(entry.getIdentity() == null) {
+				homepage = "";
+			} else {
+				ContextEntry ce = BusinessControlFactory.getInstance().createContextEntry(entry.getIdentity());
+				homepage = BusinessControlFactory.getInstance().getAsURIString(Collections.singletonList(ce), false);
+			}
+			dataRow.addCell(col++, homepage, null);
 		}
 		
-		dataRow.addCell(col++, homepage, null);
+		//assesspoints, passed, ipaddress, date, duration
 		if(testSession.getScore() != null) {
 			dataRow.addCell(col++, testSession.getScore(), null);
 		} else {
@@ -400,7 +427,6 @@ public class QTI21ArchiveFormat {
 		} else {
 			col++;
 		}
-		//dataRow.addCell(col++, "0.0.0.1", null);
 		dataRow.addCell(col++, testSession.getCreationDate(), workbook.getStyles().getDateStyle());
 		dataRow.addCell(col++, toDurationInMilliseconds(testSession.getDuration()), null);
 

@@ -161,6 +161,9 @@ public class QTI21RetrieveTestsToolController extends BasicController implements
 	}
 
 	private void doRetrieveTest(AssessmentTestSession session) {
+		if(session.getFinishTime() == null) {
+			session.setFinishTime(new Date());
+		}
 		session.setTerminationTime(new Date());
 		session = qtiService.updateAssessmentTestSession(session);
 		dbInstance.commit();//make sure that the changes committed before sending the event

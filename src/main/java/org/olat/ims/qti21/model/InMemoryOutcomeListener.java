@@ -17,30 +17,25 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.ims.qti21.ui.statistics;
+package org.olat.ims.qti21.model;
+
+import org.olat.ims.qti21.OutcomesListener;
 
 /**
  * 
- * Initial date: 19.08.2016<br>
+ * Initial date: 23.08.2016<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class QTI21StatisticsSecurityCallback {
-	
-	private boolean anonymousUsers;
-	private boolean nonParticipantUsers;
-	
-	public QTI21StatisticsSecurityCallback(boolean anonymousUsers, boolean nonParticipantUsers) {
-		this.anonymousUsers = anonymousUsers;
-		this.nonParticipantUsers = nonParticipantUsers;
-	}
-	
-	public boolean canViewAnonymousUsers() {
-		return anonymousUsers;
-	}
-	
-	public boolean canViewNonParticipantUsers() {
-		return nonParticipantUsers;
+public class InMemoryOutcomeListener implements OutcomesListener {
+
+	@Override
+	public void updateOutcomes(Float score, Boolean pass) {
+		//
 	}
 
+	@Override
+	public void submit(Float score, Boolean pass, Long assessmentId) {
+		//
+	}
 }

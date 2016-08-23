@@ -17,30 +17,45 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.ims.qti21.ui.statistics;
+package org.olat.modules.assessment.model;
 
 /**
  * 
- * Initial date: 19.08.2016<br>
+ * Initial date: 23.08.2016<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class QTI21StatisticsSecurityCallback {
+public class AssessmentMembersStatistics {
 	
-	private boolean anonymousUsers;
-	private boolean nonParticipantUsers;
+	private final int numOfParticipants;
+	private final int numOfOtherUsers;
+	private final int loggedIn;
+	private final int numOfParticipantsLoggedIn; 
 	
-	public QTI21StatisticsSecurityCallback(boolean anonymousUsers, boolean nonParticipantUsers) {
-		this.anonymousUsers = anonymousUsers;
-		this.nonParticipantUsers = nonParticipantUsers;
-	}
-	
-	public boolean canViewAnonymousUsers() {
-		return anonymousUsers;
-	}
-	
-	public boolean canViewNonParticipantUsers() {
-		return nonParticipantUsers;
+	public AssessmentMembersStatistics(int numOfParticipants, int numOfParticipantsLoggedIn, int numOfOtherUsers, int loggedIn) {
+		this.numOfParticipants = numOfParticipants;
+		this.numOfParticipantsLoggedIn = numOfParticipantsLoggedIn;
+		this.numOfOtherUsers = numOfOtherUsers;
+		this.loggedIn = loggedIn;
 	}
 
+	public int getNumOfParticipants() {
+		return numOfParticipants;
+	}
+
+	public int getNumOfOtherUsers() {
+		return numOfOtherUsers;
+	}
+	
+	public int getLoggedIn() {
+		return loggedIn;
+	}
+
+	public int getNumOfParticipantsLoggedIn() {
+		return numOfParticipantsLoggedIn;
+	}
+
+	public int getTotal() {
+		return numOfOtherUsers + numOfParticipants;
+	}
 }
