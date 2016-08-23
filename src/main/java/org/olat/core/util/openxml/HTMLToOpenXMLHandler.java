@@ -339,6 +339,11 @@ public class HTMLToOpenXMLHandler extends DefaultHandler {
 		currentTable = new Table();
 	}
 	
+	protected void startTable(Integer... width) {
+		closeParagraph();
+		currentTable = new Table(width);
+	}
+	
 	protected void startCurrentTableRow() {
 		currentTable.addRowEl();
 	}
@@ -518,6 +523,10 @@ public class HTMLToOpenXMLHandler extends DefaultHandler {
 		
 		public Table() {
 			tableEl = factory.createTable();
+		}
+		
+		public Table(Integer... width) {
+			tableEl = factory.createTable(width);
 		}
 
 		public Element getTableEl() {

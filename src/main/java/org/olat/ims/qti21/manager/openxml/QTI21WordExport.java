@@ -41,6 +41,7 @@ import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
+import org.olat.core.util.filter.FilterFactory;
 import org.olat.core.util.openxml.HTMLToOpenXMLHandler;
 import org.olat.core.util.openxml.OpenXMLDocument;
 import org.olat.core.util.openxml.OpenXMLDocument.Style;
@@ -75,8 +76,12 @@ import uk.ac.ed.ph.jqtiplus.node.item.interaction.GraphicAssociateInteraction;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.GraphicOrderInteraction;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.HotspotInteraction;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.Interaction;
+import uk.ac.ed.ph.jqtiplus.node.item.interaction.MatchInteraction;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.PositionObjectInteraction;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.SelectPointInteraction;
+import uk.ac.ed.ph.jqtiplus.node.item.interaction.choice.SimpleAssociableChoice;
+import uk.ac.ed.ph.jqtiplus.node.item.interaction.choice.SimpleMatchSet;
+import uk.ac.ed.ph.jqtiplus.node.item.response.declaration.MapEntry;
 import uk.ac.ed.ph.jqtiplus.node.item.response.declaration.ResponseDeclaration;
 import uk.ac.ed.ph.jqtiplus.node.test.AssessmentItemRef;
 import uk.ac.ed.ph.jqtiplus.node.test.AssessmentSection;
@@ -90,6 +95,8 @@ import uk.ac.ed.ph.jqtiplus.resolution.ResolvedAssessmentTest;
 import uk.ac.ed.ph.jqtiplus.types.Identifier;
 import uk.ac.ed.ph.jqtiplus.value.BaseType;
 import uk.ac.ed.ph.jqtiplus.value.Cardinality;
+import uk.ac.ed.ph.jqtiplus.value.DirectedPairValue;
+import uk.ac.ed.ph.jqtiplus.value.SingleValue;
 
 /**
  * 
@@ -313,11 +320,10 @@ public class QTI21WordExport implements MediaResource {
 		
 		List<Block> itemBodyBlocks = item.getItemBody().getBlocks();
 		String html = htmlBuilder.blocksString(itemBodyBlocks);
-		//System.out.println(html);
 		document.appendHtmlText(html, true, new QTI21AndHTMLToOpenXMLHandler(document, item, itemFile, withResponses));
 	}
 	
-	private static class QTI21AndHTMLToOpenXMLHandler extends HTMLToOpenXMLHandler {
+	private class QTI21AndHTMLToOpenXMLHandler extends HTMLToOpenXMLHandler {
 		
 		private final File itemFile;
 		private final AssessmentItem assessmentItem;
@@ -325,6 +331,7 @@ public class QTI21WordExport implements MediaResource {
 		
 		private String simpleChoiceIdentifier;
 		private String responseIdentifier;
+		private boolean renderElement = true;
 		
 		public QTI21AndHTMLToOpenXMLHandler(OpenXMLDocument document, AssessmentItem assessmentItem, File itemFile, boolean withResponses) {
 			super(document);
@@ -335,7 +342,8 @@ public class QTI21WordExport implements MediaResource {
 		
 		@Override
 		public void startElement(String uri, String localName, String qName, Attributes attributes) {
-			super.startElement(uri, localName, qName, attributes);
+
+			
 			String tag = localName.toLowerCase();
 			if("choiceinteraction".equals(tag)) {
 				responseIdentifier = attributes.getValue("responseidentifier");
@@ -359,7 +367,16 @@ public class QTI21WordExport implements MediaResource {
 			} else if("hottext".equals(tag)) {
 				
 			} else if("matchinteraction".equals(tag)) {
-				//
+				renderElement = false;
+				
+				Interaction interaction = getInteractionByResponseIdentifier(attributes);
+				if(interaction instanceof MatchInteraction) {
+					MatchInteraction matchInteraction = (MatchInteraction)interaction;
+					QTI21QuestionType type = QTI21QuestionType.getTypeOfMatch(assessmentItem, matchInteraction);
+					if(type == QTI21QuestionType.kprim) {
+						startKPrim(matchInteraction);
+					}
+				}
 			}  else if("gapmatchinteraction".equals(tag)) {
 				
 			} else if("selectpointinteraction".equals(tag)) {
@@ -380,6 +397,19 @@ public class QTI21WordExport implements MediaResource {
 				//
 			} else if("drawinginteraction".equals(tag)) {
 				startDrawingInteraction(attributes);
+			} else if("simplematchset".equals(tag)) {
+				//do nothing
+			} else if("simpleassociablechoice".equals(tag)) {
+				//do nothing
+			} else if(renderElement) {
+				super.startElement(uri, localName, qName, attributes);
+			}
+		}
+
+		@Override
+		public void characters(char[] ch, int start, int length) {
+			if(renderElement) {
+				super.characters(ch, start, length);
 			}
 		}
 
@@ -410,8 +440,11 @@ public class QTI21WordExport implements MediaResource {
 				//auto closing tag
 			} else if("hotspotinteraction".equals(tag)) {
 				//all work done during start
+			} else if("matchinteraction".equals(tag)) {
+				renderElement = true;
+			} else if(renderElement) {
+				super.endElement(uri, localName, qName);
 			}
-			super.endElement(uri, localName, qName);
 		}
 		
 		private void startDrawingInteraction(Attributes attributes) {
@@ -460,6 +493,75 @@ public class QTI21WordExport implements MediaResource {
 				HotspotInteraction hotspotInteraction = (HotspotInteraction)interaction;
 				setObject(hotspotInteraction.getObject());
 			}
+		}
+		
+		private void startKPrim(MatchInteraction matchInteraction) {
+			SimpleMatchSet questionMatchSet = matchInteraction.getSimpleMatchSets().get(0);
+
+			//open a table with 3 columns
+			startTable(new Integer[]{9062, 1116, 1116});
+
+			currentTable.addRowEl();
+			//draw header with +/-
+			Node emptyCell = currentTable.addCellEl(factory.createTableCell(null, 9062, Unit.dxa), 1);
+			emptyCell.appendChild(factory.createParagraphEl(""));
+			
+			Node plusCell = currentTable.addCellEl(factory.createTableCell(null, 1116, Unit.dxa), 1);
+			plusCell.appendChild(factory.createParagraphEl("+"));
+			Node minusCell = currentTable.addCellEl(factory.createTableCell(null, 1116, Unit.dxa), 1);
+			minusCell.appendChild(factory.createParagraphEl("-"));
+
+			currentTable.closeRow();
+			
+			for(SimpleAssociableChoice choice:questionMatchSet.getSimpleAssociableChoices()) {
+				currentTable.addRowEl();
+	
+				//answer
+				Node answerCell = currentTable.addCellEl(factory.createTableCell("E9EAF2", 4120, Unit.pct), 1);
+
+				String html = htmlBuilder.flowStaticString(choice.getFlowStatics());
+				String text = FilterFactory.getHtmlTagAndDescapingFilter().filter(html);
+				Element responseEl = factory.createTextEl(text);
+				Node wrapEl = factory.wrapInParagraph(responseEl);
+				answerCell.appendChild(wrapEl);
+				
+				//checkbox
+				boolean correct = isCorrectKPrimResponse(choice.getIdentifier(), "correct", matchInteraction);
+				appendKPrimCheckBox(correct, factory);
+				boolean wrong = isCorrectKPrimResponse(choice.getIdentifier(), "wrong", matchInteraction);
+				appendKPrimCheckBox(wrong, factory);
+
+				currentTable.closeRow();
+			}
+			
+			endTable();
+		}
+		
+		private boolean isCorrectKPrimResponse(Identifier choiceIdentifier, String id, MatchInteraction interaction) {
+			if(!withResponses) return false;
+			String choiceId = choiceIdentifier.toString();
+			
+			ResponseDeclaration responseDeclaration = assessmentItem.getResponseDeclaration(interaction.getResponseIdentifier());
+			List<MapEntry> mapEntries = responseDeclaration.getMapping().getMapEntries();
+			for(MapEntry mapEntry:mapEntries) {
+				SingleValue mapKey = mapEntry.getMapKey();
+				if(mapKey instanceof DirectedPairValue) {
+					DirectedPairValue pairValue = (DirectedPairValue)mapKey;
+					String source = pairValue.sourceValue().toString();
+					String destination = pairValue.destValue().toString();
+					if(source.equals(choiceId) && destination.equals(id)) {
+						return true;
+					}
+				}
+			}
+			return false;
+		}
+		
+		private void appendKPrimCheckBox(boolean checked, OpenXMLDocument document) {
+			Node checkboxCell = currentTable.addCellEl(document.createTableCell(null, 369, Unit.pct), 1);
+			Node responseEl = document.createCheckbox(checked);
+			Node wrapEl = document.wrapInParagraph(responseEl);
+			checkboxCell.appendChild(wrapEl);
 		}
 		
 		private void setObject(Object object) {

@@ -177,8 +177,12 @@ public enum QTI21QuestionType {
 		return QTI21QuestionType.unkown;
 	}
 	
-	private static final QTI21QuestionType getTypeOfMatch(AssessmentItem item, List<Interaction> interactions) {
+	public static final QTI21QuestionType getTypeOfMatch(AssessmentItem item, List<Interaction> interactions) {
 		Interaction interaction = interactions.get(0);
+		return getTypeOfMatch(item, interaction);
+	}
+
+	public static final QTI21QuestionType getTypeOfMatch(AssessmentItem item, Interaction interaction) {
 		if(item.getResponseDeclaration(interaction.getResponseIdentifier()) != null) {
 			ResponseDeclaration responseDeclaration = item.getResponseDeclaration(interaction.getResponseIdentifier());
 			String responseIdentifier = responseDeclaration.getIdentifier().toString();
