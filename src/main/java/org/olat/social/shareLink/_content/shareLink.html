@@ -1,10 +1,6 @@
 ## some common JS helper methods
 <script type="text/javascript">
 /* <![CDATA[ */
-    ## Called from Window.java to update the businesspath
-	function o_shareActiveSocialUrl() {
-		jQuery('#o_mail').attr('href','mailto:?subject=' + o_shareSocialTitle() + '&body=' + o_shareSocialUrl());
-	}
 	## Helper methods for buttons below
 	function o_shareSocialUrl() {
 		if(o_info.businessPath && o_info.businessPath.length > 0) return o_info.businessPath;
@@ -31,29 +27,29 @@
 	<div id="o_share_social_wrapper" class="hide"><div id="o_share_social_container">
 	#foreach ($link in $shareLinks)
 		#if ($link == "twitter")
-			<a id="o_twitter" href="#" target="_blank" title="$r.translateInAttribute("share.twitter")" onclick="window.open('http://twitter.com/share?url='+o_shareSocialUrl()+'&amp;text='+o_shareSocialTitle());return false;">
+			<a id="o_twitter" href="#" target="_blank" title="$r.translateInAttribute("share.twitter")" onclick="window.open('http://twitter.com/share?url='+encodeURIComponent(o_shareSocialUrl())+'&amp;text='+encodeURIComponent(o_shareSocialTitle()));return false;">
 				<i class="o_icon o_icon_twitter o_icon-lg"></i>
 			</a>
 		#elseif ($link == "facebook")
-			<a id="o_facebook" href="#" target="_blank" title="$r.translateInAttribute("share.facebook")" onclick="window.open('http://www.facebook.com/sharer.php?u='+o_shareSocialUrl()+'&amp;t='+o_shareSocialTitle());return false;">
+			<a id="o_facebook" href="#" target="_blank" title="$r.translateInAttribute("share.facebook")" onclick="window.open('http://www.facebook.com/sharer.php?u='+encodeURIComponent(o_shareSocialUrl())+'&amp;t='+encodeURIComponent(o_shareSocialTitle()));return false;">
 				<i class="o_icon o_icon_facebook o_icon-lg"></i>
 			</a>
 		#elseif ($link == "google")
-			<a id="o_google" href="#" target="_blank" title="$r.translateInAttribute("share.google")" onclick="window.open('https://www.google.com/bookmarks/mark?op=add&amp;bkmk='+o_shareSocialUrl()+'&amp;title='+o_shareSocialTitle());return false;">
+			<a id="o_google" href="#" target="_blank" title="$r.translateInAttribute("share.google")" onclick="window.open('https://www.google.com/bookmarks/mark?op=add&amp;bkmk='+encodeURIComponent(o_shareSocialUrl())+'&amp;title='+encodeURIComponent(o_shareSocialTitle()));return false;">
 				<i class="o_icon o_icon_google o_icon-lg"></i>
 			</a>
 		#elseif ($link == "delicious")
-			<a id="o_delicious" href="#" target="_blank" title="$r.translateInAttribute("share.delicious")" onclick="window.open('http://www.delicious.com/save?url='+o_shareSocialUrl()+'&amp;title='+o_shareSocialTitle());return false;">
+			<a id="o_delicious" href="#" target="_blank" title="$r.translateInAttribute("share.delicious")" onclick="window.open('http://www.delicious.com/save?url='+encodeURIComponent(o_shareSocialUrl())+'&amp;title='+encodeURIComponent(o_shareSocialTitle()));return false;">
 				<i class="o_icon o_icon_delicious o_icon-lg"></i>
 			</a>
 		#elseif ($link == "digg")
-			<a id="o_digg" href="#" title="$r.translateInAttribute("share.digg")" onclick="window.open('http://digg.com/submit?url='+o_shareSocialUrl()+'&amp;title='+o_shareSocialTitle());return false;">		
+			<a id="o_digg" href="#" title="$r.translateInAttribute("share.digg")" onclick="window.open('http://digg.com/submit?url='+encodeURIComponent(o_shareSocialUrl())+'&amp;title='+encodeURIComponent(o_shareSocialTitle()));return false;">		
 				<i class="o_icon o_icon_digg o_icon-lg"></i>
 			</a>
 		#elseif ($link == "mail")	
-			<a id="o_mail" href="mailto:?body=$baseURL" title="$r.translateInAttribute("share.mail")">
-				<i class="o_icon o_icon_mailto o_icon-lg"></i>
-			</a>
+			<a id="o_mail" href="javascript: window.location.href='mailto:?subject=' + encodeURIComponent(o_shareSocialTitle()) + '&body=' + encodeURIComponent(o_shareSocialUrl());" title="$r.translateInAttribute("share.mail")">
+ 				<i class="o_icon o_icon_mailto o_icon-lg"></i>
+ 			</a>
 		#end
 	#end
 	</div></div>
