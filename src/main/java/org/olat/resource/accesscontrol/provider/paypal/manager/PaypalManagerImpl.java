@@ -205,6 +205,8 @@ public class PaypalManagerImpl extends BasicManager implements PaypalManager {
 			smethod = methods.get(0);
 		} else {
 			smethod = new PaypalAccessMethod();
+			smethod.setCreationDate(new Date());
+			smethod.setLastModified(smethod.getCreationDate());
 			save(smethod);
 		}
 		for(PaypalAccessMethod method:methods) {
