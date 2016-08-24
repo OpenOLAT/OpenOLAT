@@ -108,6 +108,9 @@ import uk.ac.ed.ph.jqtiplus.node.content.variable.PrintedVariable;
 import uk.ac.ed.ph.jqtiplus.node.content.variable.RubricBlock;
 import uk.ac.ed.ph.jqtiplus.node.content.variable.TextOrVariable;
 import uk.ac.ed.ph.jqtiplus.node.content.xhtml.image.Img;
+import uk.ac.ed.ph.jqtiplus.node.content.xhtml.list.Li;
+import uk.ac.ed.ph.jqtiplus.node.content.xhtml.list.Ol;
+import uk.ac.ed.ph.jqtiplus.node.content.xhtml.list.Ul;
 import uk.ac.ed.ph.jqtiplus.node.content.xhtml.text.Br;
 import uk.ac.ed.ph.jqtiplus.node.content.xhtml.text.Div;
 import uk.ac.ed.ph.jqtiplus.node.item.AssessmentItem;
@@ -315,6 +318,18 @@ public abstract class AssessmentObjectComponentRenderer extends DefaultComponent
 						-> renderFlow(renderer, sb, component, resolvedAssessmentItem, itemSessionState, flow, ubu, translator));
 				renderEndTag(sb, block);
 				break;
+			case Ul.QTI_CLASS_NAME:
+				renderStartHtmlTag(sb, component, resolvedAssessmentItem, block, null);
+				((Ul)block).getLis().forEach((li)
+						-> renderLi(renderer, sb, component, resolvedAssessmentItem, itemSessionState, li, ubu, translator));
+				renderEndTag(sb, block);
+				break;
+			case Ol.QTI_CLASS_NAME:
+				renderStartHtmlTag(sb, component, resolvedAssessmentItem, block, null);
+				((Ol)block).getLis().forEach((li)
+						-> renderLi(renderer, sb, component, resolvedAssessmentItem, itemSessionState, li, ubu, translator));
+				renderEndTag(sb, block);
+				break;	
 			default: {
 				renderStartHtmlTag(sb, component, resolvedAssessmentItem, block, null);
 				if(block instanceof AtomicBlock) {
@@ -330,6 +345,14 @@ public abstract class AssessmentObjectComponentRenderer extends DefaultComponent
 				renderEndTag(sb, block);
 			}
 		}
+	}
+	
+	public void renderLi(AssessmentRenderer renderer, StringOutput sb, AssessmentObjectComponent component,
+			ResolvedAssessmentItem resolvedAssessmentItem, ItemSessionState itemSessionState, Li li, URLBuilder ubu, Translator translator) {
+		renderStartHtmlTag(sb, component, resolvedAssessmentItem, li, null);
+		li.getFlows().forEach((flow)
+				-> renderFlow(renderer, sb, component, resolvedAssessmentItem, itemSessionState, flow, ubu, translator));
+		renderEndTag(sb, li);
 	}
 	
 	public void renderInline(AssessmentRenderer renderer, StringOutput sb, AssessmentObjectComponent component, ResolvedAssessmentItem resolvedAssessmentItem,
