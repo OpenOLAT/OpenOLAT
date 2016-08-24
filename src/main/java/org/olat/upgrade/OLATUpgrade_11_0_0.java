@@ -1120,6 +1120,11 @@ public class OLATUpgrade_11_0_0 extends OLATUpgrade {
 		}
 
 		@Override
+		public HashMap<String, Serializable> replace(NewCacheKey key, HashMap<String, Serializable> value) {
+			return map.replace(key, value);
+		}
+
+		@Override
 		public HashMap<String, Serializable> computeIfAbsent(NewCacheKey key,
 				Function<? super NewCacheKey, ? extends HashMap<String, Serializable>> mappingFunction) {
 			return map.computeIfAbsent(key, mappingFunction);

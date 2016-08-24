@@ -892,7 +892,6 @@ public class RichTextConfiguration implements Disposable {
  		StringOutput tinyMenuSb = new StringOutput();
  		tinyMenuSb.append("plugins: '").append(tinyConfig.getPlugins()).append("',\n")
  		  .append("image_advtab:true,\n")
-		  .append("statusbar:true,\n")
 		  .append("relative_urls:").append(isRelativeUrls()).append(",\n")
 		  .append("remove_script_host:").append(isRemoveScriptHost()).append(",\n")
 		  .append("inline:").append(isInline()).append(",\n")

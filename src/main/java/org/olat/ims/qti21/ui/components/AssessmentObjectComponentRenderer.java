@@ -89,6 +89,7 @@ import org.xml.sax.InputSource;
 import org.xml.sax.XMLReader;
 
 import uk.ac.ed.ph.jqtiplus.attribute.Attribute;
+import uk.ac.ed.ph.jqtiplus.attribute.value.IntegerAttribute;
 import uk.ac.ed.ph.jqtiplus.node.ForeignElement;
 import uk.ac.ed.ph.jqtiplus.node.QtiNode;
 import uk.ac.ed.ph.jqtiplus.node.content.InfoControl;
@@ -108,9 +109,21 @@ import uk.ac.ed.ph.jqtiplus.node.content.variable.PrintedVariable;
 import uk.ac.ed.ph.jqtiplus.node.content.variable.RubricBlock;
 import uk.ac.ed.ph.jqtiplus.node.content.variable.TextOrVariable;
 import uk.ac.ed.ph.jqtiplus.node.content.xhtml.image.Img;
+import uk.ac.ed.ph.jqtiplus.node.content.xhtml.list.Dd;
+import uk.ac.ed.ph.jqtiplus.node.content.xhtml.list.Dl;
+import uk.ac.ed.ph.jqtiplus.node.content.xhtml.list.DlElement;
+import uk.ac.ed.ph.jqtiplus.node.content.xhtml.list.Dt;
 import uk.ac.ed.ph.jqtiplus.node.content.xhtml.list.Li;
 import uk.ac.ed.ph.jqtiplus.node.content.xhtml.list.Ol;
 import uk.ac.ed.ph.jqtiplus.node.content.xhtml.list.Ul;
+import uk.ac.ed.ph.jqtiplus.node.content.xhtml.table.Col;
+import uk.ac.ed.ph.jqtiplus.node.content.xhtml.table.Colgroup;
+import uk.ac.ed.ph.jqtiplus.node.content.xhtml.table.Table;
+import uk.ac.ed.ph.jqtiplus.node.content.xhtml.table.TableCell;
+import uk.ac.ed.ph.jqtiplus.node.content.xhtml.table.Tbody;
+import uk.ac.ed.ph.jqtiplus.node.content.xhtml.table.Tfoot;
+import uk.ac.ed.ph.jqtiplus.node.content.xhtml.table.Thead;
+import uk.ac.ed.ph.jqtiplus.node.content.xhtml.table.Tr;
 import uk.ac.ed.ph.jqtiplus.node.content.xhtml.text.Br;
 import uk.ac.ed.ph.jqtiplus.node.content.xhtml.text.Div;
 import uk.ac.ed.ph.jqtiplus.node.item.AssessmentItem;
@@ -224,7 +237,10 @@ public abstract class AssessmentObjectComponentRenderer extends DefaultComponent
 				sb.append("<div class='modalFeedback o_info'>");
 				Attribute<?> title = modalFeedback.getAttributes().get("title");
 				if(title != null && title.getValue() != null) {
-					sb.append("<h4>").append(title.getValue().toString()).append("</h4>");
+					String feedbackTitle = title.getValue().toString();
+					if(StringHelper.containsNonWhitespace(feedbackTitle)) {
+						sb.append("<h4>").append(feedbackTitle).append("</h4>");
+					}
 				}
 				
 				modalFeedback.getFlowStatics().forEach((flow)
@@ -239,7 +255,7 @@ public abstract class AssessmentObjectComponentRenderer extends DefaultComponent
 	
 	public void renderFlow(AssessmentRenderer renderer, StringOutput sb, AssessmentObjectComponent component,
 			ResolvedAssessmentItem resolvedAssessmentItem, ItemSessionState itemSessionState, Flow flow, URLBuilder ubu, Translator translator) {
-		
+
 		if(flow instanceof Block) {
 			renderBlock(renderer, sb, component, resolvedAssessmentItem, itemSessionState, (Block)flow, ubu, translator);
 		} else if(flow instanceof Inline) {
@@ -329,7 +345,17 @@ public abstract class AssessmentObjectComponentRenderer extends DefaultComponent
 				((Ol)block).getLis().forEach((li)
 						-> renderLi(renderer, sb, component, resolvedAssessmentItem, itemSessionState, li, ubu, translator));
 				renderEndTag(sb, block);
-				break;	
+				break;
+			case Dl.QTI_CLASS_NAME:
+				renderStartHtmlTag(sb, component, resolvedAssessmentItem, block, null);
+				((Dl)block).getDlElements().forEach((dlElement)
+						-> renderDlElement(renderer, sb, component, resolvedAssessmentItem, itemSessionState, dlElement, ubu, translator));
+				renderEndTag(sb, block);
+				break;
+				
+			case Table.QTI_CLASS_NAME:
+				renderTable(renderer, sb, component, resolvedAssessmentItem, itemSessionState, (Table)block, ubu, translator);
+				break;
 			default: {
 				renderStartHtmlTag(sb, component, resolvedAssessmentItem, block, null);
 				if(block instanceof AtomicBlock) {
@@ -347,12 +373,114 @@ public abstract class AssessmentObjectComponentRenderer extends DefaultComponent
 		}
 	}
 	
+	public void renderTable(AssessmentRenderer renderer, StringOutput sb, AssessmentObjectComponent component,
+			ResolvedAssessmentItem resolvedAssessmentItem, ItemSessionState itemSessionState, Table table, URLBuilder ubu, Translator translator) {
+		renderStartHtmlTag(sb, component, resolvedAssessmentItem, table, null);
+		
+		table.getColgroups().forEach(colgroup
+				-> renderColgroup(sb, component, resolvedAssessmentItem, colgroup));
+		
+		Thead thead = table.getThead();
+		if(thead != null) {
+			renderStartHtmlTag(sb, component, resolvedAssessmentItem, thead, null);
+			thead.getTrs().forEach(tr
+					-> renderTr(renderer, sb, component, resolvedAssessmentItem, itemSessionState, tr, ubu, translator));
+			renderEndTag(sb, thead);
+		}
+		
+		List<Tbody> tbodies = table.getTbodys();
+		for(Tbody tbody:tbodies) {
+			renderStartHtmlTag(sb, component, resolvedAssessmentItem, tbody, null);
+			tbody.getTrs().forEach(tr
+					-> renderTr(renderer, sb, component, resolvedAssessmentItem, itemSessionState, tr, ubu, translator));
+			renderEndTag(sb, tbody);
+		}
+
+		Tfoot tfoot = table.getTfoot();
+		if(tfoot != null) {
+			renderStartHtmlTag(sb, component, resolvedAssessmentItem, tfoot, null);
+			tfoot.getTrs().forEach(tr
+					-> renderTr(renderer, sb, component, resolvedAssessmentItem, itemSessionState, tr, ubu, translator));
+			renderEndTag(sb, tfoot);
+		}
+		
+		renderEndTag(sb, table);
+	}
+	
+	public void renderColgroup(StringOutput sb, AssessmentObjectComponent component,
+			ResolvedAssessmentItem resolvedAssessmentItem, Colgroup colGroup) {
+		renderStartHtmlTag(sb, component, resolvedAssessmentItem, colGroup, null);
+		colGroup.getCols().forEach(col
+				-> renderCol(sb, component, resolvedAssessmentItem, col));
+		renderEndTag(sb, colGroup);
+	}
+	
+	public void renderCol(StringOutput sb, AssessmentObjectComponent component,
+			ResolvedAssessmentItem resolvedAssessmentItem, Col col) {
+		sb.append("<").append(col.getQtiClassName());
+		renderHtmlTagAttributes(sb, component, resolvedAssessmentItem, col, null);
+		
+		IntegerAttribute spanAttr = col.getAttributes().getIntegerAttribute(Col.ATTR_SPAN_NAME);
+		if(spanAttr.getComputedValue() != null) {
+			sb.append(" span=\"").append(spanAttr.getComputedNonNullValue()).append("\"");
+		}
+		sb.append(">");
+		renderEndTag(sb, col);
+	}
+	
+	public void renderTr(AssessmentRenderer renderer, StringOutput sb, AssessmentObjectComponent component,
+			ResolvedAssessmentItem resolvedAssessmentItem, ItemSessionState itemSessionState, Tr tr, URLBuilder ubu, Translator translator) {
+		renderStartHtmlTag(sb, component, resolvedAssessmentItem, tr, null);
+		tr.getTableCells().forEach(cell
+				-> renderTableCell(renderer, sb, component, resolvedAssessmentItem, itemSessionState, cell, ubu, translator));
+		renderEndTag(sb, tr);
+	}
+	
+	public void renderTableCell(AssessmentRenderer renderer, StringOutput sb, AssessmentObjectComponent component,
+			ResolvedAssessmentItem resolvedAssessmentItem, ItemSessionState itemSessionState, TableCell cell, URLBuilder ubu, Translator translator) {
+		sb.append("<").append(cell.getQtiClassName());
+		renderHtmlTagAttributes(sb, component, resolvedAssessmentItem, cell, null);
+		
+		IntegerAttribute colSpanAttr = cell.getAttributes().getIntegerAttribute(TableCell.ATTR_COLSPAN_NAME);
+		if(colSpanAttr.getComputedValue() != null) {
+			sb.append(" colspan=\"").append(colSpanAttr.getComputedNonNullValue()).append("\"");
+		}
+		IntegerAttribute rowSpanAttr = cell.getAttributes().getIntegerAttribute(TableCell.ATTR_ROWSPAN_NAME);
+		if(rowSpanAttr.getComputedValue() != null) {
+			sb.append(" rowspan=\"").append(rowSpanAttr.getComputedNonNullValue()).append("\"");
+		}
+		sb.append(">");
+		
+		cell.getChildren().forEach(child
+				-> renderFlow(renderer, sb, component, resolvedAssessmentItem, itemSessionState, child, ubu, translator));
+		renderEndTag(sb, cell);
+	}
+	
 	public void renderLi(AssessmentRenderer renderer, StringOutput sb, AssessmentObjectComponent component,
 			ResolvedAssessmentItem resolvedAssessmentItem, ItemSessionState itemSessionState, Li li, URLBuilder ubu, Translator translator) {
 		renderStartHtmlTag(sb, component, resolvedAssessmentItem, li, null);
 		li.getFlows().forEach((flow)
 				-> renderFlow(renderer, sb, component, resolvedAssessmentItem, itemSessionState, flow, ubu, translator));
 		renderEndTag(sb, li);
+	}
+	
+	public void renderDlElement(AssessmentRenderer renderer, StringOutput sb, AssessmentObjectComponent component,
+			ResolvedAssessmentItem resolvedAssessmentItem, ItemSessionState itemSessionState, DlElement dlElement, URLBuilder ubu, Translator translator) {
+		renderStartHtmlTag(sb, component, resolvedAssessmentItem, dlElement, null);
+		switch(dlElement.getQtiClassName()) {
+			case Dt.QTI_CLASS_NAME:
+				((Dt)dlElement).getInlines().forEach((inline)
+						-> renderInline(renderer, sb, component, resolvedAssessmentItem, itemSessionState, inline, ubu, translator));
+				break;
+			case Dd.QTI_CLASS_NAME:
+				((Dd)dlElement).getFlows().forEach((flow)
+						-> renderFlow(renderer, sb, component, resolvedAssessmentItem, itemSessionState, flow, ubu, translator));
+				break;
+			default:
+				//ignore other type
+				break;
+		}
+		renderEndTag(sb, dlElement);
 	}
 	
 	public void renderInline(AssessmentRenderer renderer, StringOutput sb, AssessmentObjectComponent component, ResolvedAssessmentItem resolvedAssessmentItem,
@@ -448,6 +576,11 @@ public abstract class AssessmentObjectComponentRenderer extends DefaultComponent
 	
 	protected final void renderStartHtmlTag(StringOutput sb, AssessmentObjectComponent component, ResolvedAssessmentItem resolvedAssessmentItem, QtiNode node, String cssClass) {
 		sb.append("<").append(node.getQtiClassName());
+		renderHtmlTagAttributes(sb, component, resolvedAssessmentItem, node, cssClass);
+		sb.append(">");
+	}
+	
+	protected final void renderHtmlTagAttributes(StringOutput sb, AssessmentObjectComponent component, ResolvedAssessmentItem resolvedAssessmentItem, QtiNode node, String cssClass) {
 		for(Attribute<?> attribute:node.getAttributes()) {
 			String value = getHtmlAttributeValue(component, resolvedAssessmentItem, attribute);
 			if(StringHelper.containsNonWhitespace(value)) {
@@ -459,7 +592,6 @@ public abstract class AssessmentObjectComponentRenderer extends DefaultComponent
 				sb.append("\"");
 			}
 		}
-		sb.append(">");
 	}
 	
 	protected void renderEndTag(StringOutput sb, QtiNode node) {

@@ -21,7 +21,7 @@
 
 #set($visibleOrderedChoices = $r.getVisibleOrderedSimpleChoices($interaction))
 #if($r.getOrientation($interaction.orientation) == "horizontal")
-	#if($interaction.getPrompt())
+	#if($r.isNotNull($interaction.getPrompt()))
 		<div class="prompt">$r.renderPrompt($interaction.getPrompt())</div>
 	#end
 

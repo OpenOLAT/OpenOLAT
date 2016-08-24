@@ -551,7 +551,9 @@ public class AssessmentRenderFunctions {
 	}
 
 	/**
-	 * Return only value if the attribute is a legal html attribute
+	 * Return only value if the attribute is a legal html attribute. the list doesn't
+	 * include some HTML 5 like contenteditable (content is never editable but by QTI runtime).
+	 * 
 	 * @param attribute
 	 * @return
 	 */
@@ -560,10 +562,18 @@ public class AssessmentRenderFunctions {
 		String value;
 		String name = attribute.getLocalName();
 		switch(name) {
+			case "accesskey":
 			case "class":
+			case "contextmenu":
+			case "dir":
+			case "hidden":
 			case "name":
 			case "id":
+			case "lang":
 			case "encoding":
+			case "tabindex":
+			case "title":
+			case "style":
 				value = getDomAttributeValue(attribute);
 				break;
 			case "href":

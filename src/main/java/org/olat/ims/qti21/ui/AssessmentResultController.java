@@ -119,7 +119,7 @@ public class AssessmentResultController extends FormBasicController {
 			listenTo(assessedIdentityInfosCtrl);
 		}
 		
-		resolvedAssessmentTest = qtiService.loadAndResolveAssessmentTest(fUnzippedDirRoot, false);
+		resolvedAssessmentTest = qtiService.loadAndResolveAssessmentTest(fUnzippedDirRoot, false, false);
 		
 		testSessionState = qtiService.loadTestSessionState(candidateSession);
 		assessmentResult = qtiService.getAssessmentResult(candidateSession);

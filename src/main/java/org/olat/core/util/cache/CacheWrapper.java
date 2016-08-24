@@ -92,6 +92,8 @@ public interface CacheWrapper<U, V> {
 	
 	public V putIfAbsent(U key, V value);
 	
+	public V replace(U key, V value);
+	
 	public V computeIfAbsent(U key, Function<? super U, ? extends V> mappingFunction);
 	
 	/**

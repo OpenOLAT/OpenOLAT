@@ -265,7 +265,7 @@ public class QTI21RuntimeController extends RepositoryEntryRuntimeController  {
 	private AssessableResource getAssessableElement(RepositoryEntry testEntry) {
 		FileResourceManager frm = FileResourceManager.getInstance();
 		File fUnzippedDirRoot = frm.unzipFileResource(testEntry.getOlatResource());
-		ResolvedAssessmentTest resolvedAssessmentTest = qtiService.loadAndResolveAssessmentTest(fUnzippedDirRoot, false);
+		ResolvedAssessmentTest resolvedAssessmentTest = qtiService.loadAndResolveAssessmentTest(fUnzippedDirRoot, false, false);
 		
 		AssessmentTest assessmentTest = resolvedAssessmentTest.getRootNodeLookup().extractIfSuccessful();
 		Double maxScore = QtiNodesExtractor.extractMaxScore(assessmentTest);

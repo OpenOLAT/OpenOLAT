@@ -272,18 +272,26 @@ public class QTI21ServiceImpl implements QTI21Service, InitializingBean, Disposa
 	}
 
 	@Override
-	public ResolvedAssessmentTest loadAndResolveAssessmentTest(File resourceDirectory, boolean debugInfo) {
+	public ResolvedAssessmentTest loadAndResolveAssessmentTest(File resourceDirectory, boolean replace, boolean debugInfo) {
         URI assessmentObjectSystemId = createAssessmentObjectUri(resourceDirectory);
 		File resourceFile = new File(assessmentObjectSystemId);
+		if(replace) {
+			ResolvedAssessmentTest resolvedAssessmentTest = internalLoadAndResolveAssessmentTest(resourceDirectory, assessmentObjectSystemId);
+			assessmentTestsCache.replace(resourceFile, resolvedAssessmentTest);
+			return resolvedAssessmentTest;
+		}
 		return assessmentTestsCache.computeIfAbsent(resourceFile, file -> {
-			QtiXmlReader qtiXmlReader = new QtiXmlReader(jqtiExtensionManager());
-			ResourceLocator fileResourceLocator = new PathResourceLocator(resourceDirectory.toPath());
-			ResourceLocator inputResourceLocator = 
-	        		ImsQTI21Resource.createResolvingResourceLocator(fileResourceLocator);
-	        AssessmentObjectXmlLoader assessmentObjectXmlLoader = new AssessmentObjectXmlLoader(qtiXmlReader, inputResourceLocator);
-	        ResolvedAssessmentTest resolvedAssessmentTest = assessmentObjectXmlLoader.loadAndResolveAssessmentTest(assessmentObjectSystemId);
-	        return resolvedAssessmentTest;
+	        return internalLoadAndResolveAssessmentTest(resourceDirectory, assessmentObjectSystemId);
 		});
+	}
+	
+	private ResolvedAssessmentTest internalLoadAndResolveAssessmentTest(File resourceDirectory, URI assessmentObjectSystemId) {
+		QtiXmlReader qtiXmlReader = new QtiXmlReader(jqtiExtensionManager());
+		ResourceLocator fileResourceLocator = new PathResourceLocator(resourceDirectory.toPath());
+		ResourceLocator inputResourceLocator = 
+        		ImsQTI21Resource.createResolvingResourceLocator(fileResourceLocator);
+        AssessmentObjectXmlLoader assessmentObjectXmlLoader = new AssessmentObjectXmlLoader(qtiXmlReader, inputResourceLocator);
+        return assessmentObjectXmlLoader.loadAndResolveAssessmentTest(assessmentObjectSystemId);
 	}
 	
 	@Override
@@ -333,7 +341,7 @@ public class QTI21ServiceImpl implements QTI21Service, InitializingBean, Disposa
 	public boolean needManualCorrection(RepositoryEntry testEntry) {
 		FileResourceManager frm = FileResourceManager.getInstance();
 		File fUnzippedDirRoot = frm.unzipFileResource(testEntry.getOlatResource());
-		ResolvedAssessmentTest resolvedAssessmentTest = loadAndResolveAssessmentTest(fUnzippedDirRoot, false);
+		ResolvedAssessmentTest resolvedAssessmentTest = loadAndResolveAssessmentTest(fUnzippedDirRoot, false, false);
 		return AssessmentTestHelper.needManualCorrection(resolvedAssessmentTest);
 	}
 

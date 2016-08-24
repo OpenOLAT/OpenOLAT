@@ -220,7 +220,7 @@ public class AssessmentTestDisplayController extends BasicController implements 
 		
 		FileResourceManager frm = FileResourceManager.getInstance();
 		fUnzippedDirRoot = frm.unzipFileResource(testEntry.getOlatResource());
-		resolvedAssessmentTest = qtiService.loadAndResolveAssessmentTest(fUnzippedDirRoot, false);
+		resolvedAssessmentTest = qtiService.loadAndResolveAssessmentTest(fUnzippedDirRoot, false, false);
 		
 		URI assessmentObjectUri = qtiService.createAssessmentObjectUri(fUnzippedDirRoot);
 		mapperUri = registerCacheableMapper(null, "QTI21Resources::" + testEntry.getKey(), new ResourcesMapper(assessmentObjectUri));

@@ -11,16 +11,24 @@ $r.render("display")
 </div>
 #end
 #if($outcomes && !${outcomes.isEmpty()})
-<div class="o_togglebox_wrapper o_block">
-	<i class="o_icon o_icon_dev o_icon-fw"> </i> <a href="#o_qti_debug_outomes" data-toggle="collapse" data-target="#o_qti_debug_outomes" class="o_opener" onclick="jQuery(this).toggleClass('o_in'); return false;">
-		<i class="o_icon o_icon-fw o_icon-lg"> </i> $r.translate("debug.outcomes")
-	</a>
-	<div id="o_qti_debug_outomes" class="collapse">
-		<table class="o_info small table table-hover"><tbody>
-		#foreach($outcome in $outcomes)
-			<tr><th>${outcome.identifier}</th><td>${outcome.stringuifiedValue}<td></td>
-		#end
-		</tbody></table>
+	<div class="o_togglebox_wrapper o_block">
+		<i class="o_icon o_icon_dev o_icon-fw"> </i> <a id="o_qti_debug_outomes_l" href="#o_qti_debug_outomes" data-toggle="collapse" data-target="#o_qti_debug_outomes" aria-expanded="$showOutcomes" #if(!$showOutcomes) class="o_opener collapsed" #else class="o_opener" #end>
+			<i class="o_icon o_icon-fw o_icon-lg"> </i> $r.translate("debug.outcomes")</a>
+		<div id="o_qti_debug_outomes" class="collapse #if($showOutcomes) in #end" aria-expanded="$showOutcomes">
+			<table class="o_info small table table-hover"><tbody>
+			#foreach($outcome in $outcomes)
+				<tr><th>${outcome.identifier}</th><td>${outcome.stringuifiedValue}<td></td>
+			#end
+			</tbody></table>
+		</div>
 	</div>
-</div>
+	<script type='text/javascript'>/* <![CDATA[ */
+		jQuery('#o_qti_debug_outomes').on('hide.bs.collapse', function () {
+			jQuery('#o_qti_debug_outomes_l').toggleClass('o_in');
+	  		$r.backgroundCommand("hide","debug","outcomes")
+		}).on('show.bs.collapse', function () {
+			jQuery('#o_qti_debug_outomes_l').toggleClass('o_in');
+			$r.backgroundCommand("show","debug","outcomes")
+		})
+	/* ]]> */</script>
 #end

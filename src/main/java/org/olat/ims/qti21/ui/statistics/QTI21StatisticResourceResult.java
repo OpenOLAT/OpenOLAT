@@ -171,7 +171,7 @@ public class QTI21StatisticResourceResult implements StatisticResourceResult {
 		
 		FileResourceManager frm = FileResourceManager.getInstance();
 		File unzippedDirRoot = frm.unzipFileResource(testEntry.getOlatResource());
-		resolvedAssessmentTest = qtiService.loadAndResolveAssessmentTest(unzippedDirRoot, false);
+		resolvedAssessmentTest = qtiService.loadAndResolveAssessmentTest(unzippedDirRoot, false, false);
 		AssessmentTest test = resolvedAssessmentTest.getTestLookup().getRootNodeHolder().getRootNode();
 		
 		rootTreeNode.setTitle(test.getTitle());
@@ -193,7 +193,7 @@ public class QTI21StatisticResourceResult implements StatisticResourceResult {
 		
 		FileResourceManager frm = FileResourceManager.getInstance();
 		File unzippedDirRoot = frm.unzipFileResource(testEntry.getOlatResource());
-		resolvedAssessmentTest = qtiService.loadAndResolveAssessmentTest(unzippedDirRoot, false);
+		resolvedAssessmentTest = qtiService.loadAndResolveAssessmentTest(unzippedDirRoot, false, false);
 		
 		AssessmentTest test = resolvedAssessmentTest.getTestLookup().getRootNodeHolder().getRootNode();
 		buildRecursively(test, rootTreeNode);

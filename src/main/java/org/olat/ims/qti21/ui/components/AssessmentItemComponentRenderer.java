@@ -163,28 +163,30 @@ public class AssessmentItemComponentRenderer extends AssessmentObjectComponentRe
 		  .append("<div id='itemBody' class='clearfix'>");
 		
 		//TODO prompt
-	
-
+		
 		//render itemBody
 		assessmentItem.getItemBody().getBlocks().forEach((block)
 				-> renderBlock(renderer, sb, component, resolvedAssessmentItem, itemSessionState, block, ubu, translator));
 
 		//comment
 		renderComment(renderer, sb, component, itemSessionState, translator);
-				
+		
+		// Display active modal feedback (only after responseProcessing)
+		if(itemSessionState.getSessionStatus() == SessionStatus.FINAL) {
+			renderTestItemModalFeedback(renderer, sb, component, resolvedAssessmentItem, itemSessionState, ubu, translator);
+		}
+		
+		//end body
+		sb.append("</div>");
+
+		//controls
+		sb.append("<div class='o_button_group'>");
 		//submit button
 		if(component.isItemSessionOpen(itemSessionState, renderer.isSolutionMode())) {
 			Component submit = component.getQtiItem().getSubmitButton().getComponent();
 			submit.getHTMLRendererSingleton().render(renderer.getRenderer(), sb, submit, ubu, translator, new RenderResult(), null);
 		}
-
-		//end body
 		sb.append("</div>");
-
-		// Display active modal feedback (only after responseProcessing)
-		if(itemSessionState.getSessionStatus() == SessionStatus.FINAL) {
-			renderTestItemModalFeedback(renderer, sb, component, resolvedAssessmentItem, itemSessionState, ubu, translator);
-		}
 	}
     
 	private void renderItemStatus(AssessmentRenderer renderer, StringOutput sb, ItemSessionState itemSessionState, Translator translator) {

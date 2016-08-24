@@ -22,6 +22,10 @@ ul.sessionControl {
 	background-color: white;
 }
 
+.prompt {
+	font-weight: bold;
+}
+
 /* Drawing */
 #sketch {
 	position: relative;
@@ -62,6 +66,13 @@ ul.sessionControl {
 	&.oo-selected {
 		border: 3px solid grey;
 	}
+}
+
+.o_gap_container_help, .o_items_container_help {
+	font-size: 90%;
+	font-style: italic;
+	color: $gray-light;
+	padding: 5px;
 }
 
 /* Position object */

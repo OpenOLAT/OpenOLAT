@@ -89,10 +89,8 @@
     		revert: "invalid",
     		stop: function(event, ui) {
     			if(!jQuery(this).hasClass('oo-choosed')) {
-        			console.log('stopped');
     				jQuery(this).css({'position':'relative', 'left': '0px', 'top': '0px' });
     			}
-    			console.log('stopped');
     		}
     	}).mousemove(function(event, ui) {
     		var itemEl = jQuery(this);
