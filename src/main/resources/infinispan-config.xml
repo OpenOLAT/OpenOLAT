@@ -174,4 +174,11 @@
 		<transaction transactionMode="NON_TRANSACTIONAL" />
 	</namedCache>
 
+	<namedCache name="Publisher@identity">
+		<locking isolationLevel="READ_COMMITTED" concurrencyLevel="1000" lockAcquisitionTimeout="15000" useLockStriping="false"/>
+		<eviction maxEntries="15002" strategy="LRU"/>
+		<expiration maxIdle="900000" wakeUpInterval="15000"/>
+		<transaction transactionMode="NON_TRANSACTIONAL" />
+	</namedCache>
+
 </infinispan>

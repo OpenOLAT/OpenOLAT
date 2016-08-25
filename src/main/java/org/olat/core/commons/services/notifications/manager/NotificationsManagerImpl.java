@@ -60,6 +60,7 @@ import org.olat.core.commons.services.notifications.SubscriptionContext;
 import org.olat.core.commons.services.notifications.SubscriptionInfo;
 import org.olat.core.commons.services.notifications.SubscriptionItem;
 import org.olat.core.commons.services.notifications.model.NoSubscriptionInfo;
+import org.olat.core.commons.services.notifications.model.PublisherIdentityKey;
 import org.olat.core.commons.services.notifications.model.PublisherImpl;
 import org.olat.core.commons.services.notifications.model.SubscriberImpl;
 import org.olat.core.commons.services.notifications.ui.NotificationSubscriptionController;
@@ -74,6 +75,7 @@ import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.WorkThreadInformations;
+import org.olat.core.util.cache.CacheWrapper;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.coordinate.SyncerCallback;
 import org.olat.core.util.event.EventFactory;
@@ -117,6 +119,8 @@ public class NotificationsManagerImpl extends NotificationsManager implements Us
 	private BaseSecurity securityManager;
 	private PropertyManager propertyManager;
 	
+	private CacheWrapper<PublisherIdentityKey,PublisherIdentityKey> subscriberCache;
+	
 	/**
 	 * [used by spring]
 	 * @param userDeletionManager
@@ -148,6 +152,10 @@ public class NotificationsManagerImpl extends NotificationsManager implements Us
 	 */
 	public void setPropertyManager(PropertyManager propertyManager) {
 		this.propertyManager = propertyManager;
+	}
+	
+	public void init() {
+		subscriberCache = CoordinatorManager.getInstance().getCoordinator().getCacher().getCache("Publisher", "identity");
 	}
 
 	/**
@@ -839,13 +847,17 @@ public class NotificationsManagerImpl extends NotificationsManager implements Us
 			//lock the publisher
 			toUpdate = getPublisherForUpdate(subscriptionContext);
 		}
-
-		Subscriber s = getSubscriber(identity, toUpdate);
-		if (s == null) {
-			// no subscriber -> create.
-			// s.latestReadDate >= p.latestNewsDate == no news for subscriber when no
-			// news after subscription time
-			doCreateAndPersistSubscriber(toUpdate, identity);
+		
+		PublisherIdentityKey publisherKey = new PublisherIdentityKey(toUpdate.getKey(), identity.getKey());
+		if(!subscriberCache.containsKey(publisherKey)) {
+			subscriberCache.put(publisherKey, publisherKey);
+			Subscriber s = getSubscriber(identity, toUpdate);
+			if (s == null) {
+				// no subscriber -> create.
+				// s.latestReadDate >= p.latestNewsDate == no news for subscriber when no
+				// news after subscription time
+				doCreateAndPersistSubscriber(toUpdate, identity);
+			}
 		}
 		dbInstance.commit();
 	}
