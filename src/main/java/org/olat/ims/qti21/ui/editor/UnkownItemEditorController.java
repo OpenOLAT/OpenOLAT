@@ -63,7 +63,7 @@ public class UnkownItemEditorController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		setFormWarning("warning.unkown.assessment.item");
+		setFormWarning("warning.alien.assessment.item");
 		
 		String title = item.getTitle();
 		uifactory.addStaticTextElement("title", "form.imd.title", title, formLayout);

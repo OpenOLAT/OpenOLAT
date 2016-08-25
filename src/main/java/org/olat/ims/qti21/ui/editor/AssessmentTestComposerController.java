@@ -198,8 +198,7 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 		// test structure
 		menuTree = new MenuTree("atTree");
 		menuTree.setExpandSelectedNode(false);
-		menuTree.setDragEnabled(!restrictedEdit);
-		menuTree.setDropEnabled(!restrictedEdit);
+
 		menuTree.setDropSiblingEnabled(!restrictedEdit);	
 		menuTree.setDndAcceptJSMethod("treeAcceptDrop_notWithChildren");	
 		menuTree.setElementCssClass("o_assessment_test_editor_menu");
@@ -210,6 +209,9 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 		unzippedContRoot = frm.unzipContainerResource(testEntry.getOlatResource());
 		updateTreeModel(false);
 		manifestBuilder = ManifestBuilder.read(new File(unzippedDirRoot, "imsmanifest.xml"));
+		//is the test editable ?
+		menuTree.setDragEnabled(!restrictedEdit && assessmentTestBuilder.isEditable());
+		menuTree.setDropEnabled(!restrictedEdit && assessmentTestBuilder.isEditable());
 		
 		//add elements
 		addItemTools = new Dropdown("editTools", "new.elements", false, getTranslator());
@@ -859,6 +861,7 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 	private void doSaveAssessmentTest() {
 		assessmentChanged = true;
 		recalculateMaxScoreAssessmentTest();
+		assessmentTestBuilder.build();
 		URI testURI = resolvedAssessmentTest.getTestLookup().getSystemId();
 		File testFile = new File(testURI);
 		qtiService.updateAssesmentObject(testFile, resolvedAssessmentTest);
@@ -921,9 +924,11 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 			TestPart uniqueTestPart = test.getTestParts().size() == 1 ? test.getTestParts().get(0) : null;
 			currentEditorCtrl = new AssessmentTestEditorController(ureq, getWindowControl(), assessmentTestBuilder, uniqueTestPart, restrictedEdit);
 		} else if(uobject instanceof TestPart) {
-			currentEditorCtrl = new AssessmentTestPartEditorController(ureq, getWindowControl(), (TestPart)uobject, restrictedEdit);
+			currentEditorCtrl = new AssessmentTestPartEditorController(ureq, getWindowControl(), (TestPart)uobject,
+					restrictedEdit, assessmentTestBuilder.isEditable());
 		} else if(uobject instanceof AssessmentSection) {
-			currentEditorCtrl = new AssessmentSectionEditorController(ureq, getWindowControl(), (AssessmentSection)uobject, restrictedEdit);
+			currentEditorCtrl = new AssessmentSectionEditorController(ureq, getWindowControl(), (AssessmentSection)uobject,
+					restrictedEdit, assessmentTestBuilder.isEditable());
 		} else if(uobject instanceof AssessmentItemRef) {
 			AssessmentItemRef itemRef = (AssessmentItemRef)uobject;
 			ResolvedAssessmentItem item = resolvedAssessmentTest.getResolvedAssessmentItem(itemRef);

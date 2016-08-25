@@ -29,6 +29,7 @@ import org.olat.core.gui.components.form.flexible.elements.RichTextElement;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.form.flexible.impl.elements.FormSubmit;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.StringHelper;
@@ -60,8 +61,8 @@ public class AssessmentSectionEditorController extends ItemSessionControlControl
 	private static final String[] yesnoKeys = new String[]{ "y", "n"};
 	
 	public AssessmentSectionEditorController(UserRequest ureq, WindowControl wControl,
-			AssessmentSection section, boolean restrictedEdit) {
-		super(ureq, wControl, section, restrictedEdit);
+			AssessmentSection section, boolean restrictedEdit, boolean editable) {
+		super(ureq, wControl, section, restrictedEdit, editable);
 		this.section = section;
 		htmlBuilder = new AssessmentHtmlBuilder();
 		initForm(ureq);
@@ -71,15 +72,20 @@ public class AssessmentSectionEditorController extends ItemSessionControlControl
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormTitle("assessment.section.config");
 		setFormContextHelp("Test and Questionnaire Editor in Detail#details_testeditor_test_konf");
+		if(!editable) {
+			setFormWarning("warning.alien.assessment.test");
+		}
 		
 		String title = section.getTitle();
 		titleEl = uifactory.addTextElement("title", "form.metadata.title", 255, title, formLayout);
+		titleEl.setEnabled(editable);
 		titleEl.setMandatory(true);
 		
 		if(section.getRubricBlocks().isEmpty()) {
 			RichTextElement rubricEl = uifactory.addRichTextElementForStringDataCompact("rubric" + counter++, "form.imd.rubric", "", 8, -1, null,
 					formLayout, ureq.getUserSession(), getWindowControl());
 			rubricEl.getEditorConfiguration().setFileBrowserUploadRelPath("media");
+			rubricEl.setEnabled(editable);
 			rubricEls.add(rubricEl);
 		} else {
 			for(RubricBlock rubricBlock:section.getRubricBlocks()) {
@@ -87,6 +93,7 @@ public class AssessmentSectionEditorController extends ItemSessionControlControl
 				RichTextElement rubricEl = uifactory.addRichTextElementForStringDataCompact("rubric" + counter++, "form.imd.rubric", rubric, 8, -1, null,
 						formLayout, ureq.getUserSession(), getWindowControl());
 				rubricEl.getEditorConfiguration().setFileBrowserUploadRelPath("media");
+				rubricEl.setEnabled(editable);
 				rubricEl.setUserObject(rubricBlock);
 				rubricEls.add(rubricEl);
 			}
@@ -102,7 +109,7 @@ public class AssessmentSectionEditorController extends ItemSessionControlControl
 		} else {
 			shuffleEl.select("n", true);
 		}
-		shuffleEl.setEnabled(!restrictedEdit);
+		shuffleEl.setEnabled(!restrictedEdit && editable);
 
 		
 		int numOfItems = getNumOfQuestions(section);
@@ -117,7 +124,7 @@ public class AssessmentSectionEditorController extends ItemSessionControlControl
 		
 		randomSelectedEl = uifactory.addDropdownSingleselect("form.section.selection_pre", formLayout, theKeys, theValues, null);
 		randomSelectedEl.setHelpText(translate("form.section.selection_pre.hover"));
-		randomSelectedEl.setEnabled(!restrictedEdit);
+		randomSelectedEl.setEnabled(!restrictedEdit && editable);
 		
 		int currentNum = section.getSelection() != null ? section.getSelection().getSelect() : 0;
 		if(currentNum <= numOfItems) {
@@ -130,7 +137,7 @@ public class AssessmentSectionEditorController extends ItemSessionControlControl
 
 		//visible
 		visibleEl = uifactory.addRadiosHorizontal("visible", "form.section.visible", formLayout, yesnoKeys, yesnoValues);
-		visibleEl.setEnabled(!restrictedEdit);
+		visibleEl.setEnabled(!restrictedEdit && editable);
 		if (section.getVisible()) {
 			visibleEl.select("y", true);
 		} else {
@@ -139,7 +146,8 @@ public class AssessmentSectionEditorController extends ItemSessionControlControl
 		
 		FormLayoutContainer buttonsCont = FormLayoutContainer.createButtonLayout("butons", getTranslator());
 		formLayout.add(buttonsCont);
-		uifactory.addFormSubmitButton("save", "save", buttonsCont);
+		FormSubmit submit = uifactory.addFormSubmitButton("save", "save", buttonsCont);
+		submit.setEnabled(editable);
 	}
 	
 	/**

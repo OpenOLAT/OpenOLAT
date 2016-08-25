@@ -28,7 +28,6 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.util.Util;
-import org.olat.ims.qti21.QTI21Constants;
 import org.olat.ims.qti21.model.xml.AssessmentTestBuilder;
 import org.olat.ims.qti21.ui.AssessmentTestDisplayController;
 import org.olat.ims.qti21.ui.editor.events.AssessmentTestEvent;
@@ -79,23 +78,19 @@ public class AssessmentTestEditorController extends BasicController {
 	}
 	
 	private void initTestEditor(UserRequest ureq) {
-		if(QTI21Constants.TOOLNAME.equals(assessmentTest.getToolName())) {
-			if(testPart != null) {
-				optionsCtrl = new AssessmentTestAndTestPartOptionsEditorController(ureq, getWindowControl(), assessmentTest, testPart, testBuilder, restrictedEdit);
-			} else {
-				optionsCtrl = new AssessmentTestOptionsEditorController(ureq, getWindowControl(), assessmentTest, testBuilder, restrictedEdit);
-			}
-			listenTo(optionsCtrl);
-			
-			feedbackCtrl = new AssessmentTestFeedbackEditorController(ureq, getWindowControl(), testBuilder, restrictedEdit);
-			listenTo(feedbackCtrl);
-			
-			tabbedPane.addTab(translate("assessment.test.config"), optionsCtrl.getInitialComponent());
-			tabbedPane.addTab(translate("form.feedback"), feedbackCtrl.getInitialComponent());
+		if(testPart != null) {
+			optionsCtrl = new AssessmentTestAndTestPartOptionsEditorController(ureq, getWindowControl(), assessmentTest, testPart, testBuilder, restrictedEdit);
 		} else {
-			Controller ctrl = new UnkownTestEditorController(ureq, getWindowControl());
-			listenTo(ctrl);
-			tabbedPane.addTab("Unkown", ctrl.getInitialComponent());
+			optionsCtrl = new AssessmentTestOptionsEditorController(ureq, getWindowControl(), assessmentTest, testBuilder, restrictedEdit);
+		}
+		listenTo(optionsCtrl);
+		
+		feedbackCtrl = new AssessmentTestFeedbackEditorController(ureq, getWindowControl(), testBuilder, restrictedEdit);
+		listenTo(feedbackCtrl);
+		
+		tabbedPane.addTab(translate("assessment.test.config"), optionsCtrl.getInitialComponent());
+		if(testBuilder.isEditable()) {
+			tabbedPane.addTab(translate("form.feedback"), feedbackCtrl.getInitialComponent());
 		}
 	}
 

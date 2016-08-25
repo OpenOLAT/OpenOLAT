@@ -24,6 +24,7 @@ import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.form.flexible.impl.elements.FormSubmit;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.StringHelper;
@@ -57,7 +58,7 @@ public class AssessmentTestAndTestPartOptionsEditorController extends ItemSessio
 	
 	public AssessmentTestAndTestPartOptionsEditorController(UserRequest ureq, WindowControl wControl,
 			AssessmentTest assessmentTest, TestPart testPart, AssessmentTestBuilder testBuilder, boolean restrictedEdit) {
-		super(ureq, wControl, testPart, restrictedEdit);
+		super(ureq, wControl, testPart, restrictedEdit, testBuilder.isEditable());
 		this.assessmentTest = assessmentTest;
 		this.testBuilder = testBuilder;
 		this.testPart = testPart;
@@ -67,15 +68,19 @@ public class AssessmentTestAndTestPartOptionsEditorController extends ItemSessio
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormContextHelp("Test and Questionnaire Editor in Detail#details_testeditor_test_konf");
+		if(!editable) {
+			setFormWarning("warning.alien.assessment.test");
+		}
 		
 		String title = assessmentTest.getTitle();
 		titleEl = uifactory.addTextElement("title", "form.metadata.title", 255, title, formLayout);
+		titleEl.setEnabled(testBuilder.isEditable());
 		titleEl.setMandatory(true);
 		
 		//export score
 		String[] yesnoValues = new String[] { translate("yes"), translate("no") };
 		exportScoreEl = uifactory.addRadiosHorizontal("form.test.export.score", formLayout, yesnoKeys, yesnoValues);
-		exportScoreEl.setEnabled(!restrictedEdit);
+		exportScoreEl.setEnabled(!restrictedEdit && testBuilder.isEditable());
 		if(testBuilder.isExportScore()) {
 			exportScoreEl.select(yesnoKeys[0], true);
 		} else {
@@ -90,7 +95,7 @@ public class AssessmentTestAndTestPartOptionsEditorController extends ItemSessio
 		Double cutValue = testBuilder.getCutValue();
 		String cutValueStr = cutValue == null ? "" : cutValue.toString();
 		cutValueEl = uifactory.addTextElement("cut.value", "cut.value", 8, cutValueStr, formLayout);
-		cutValueEl.setEnabled(!restrictedEdit);
+		cutValueEl.setEnabled(!restrictedEdit && testBuilder.isEditable());
 		
 		uifactory.addSpacerElement("space-test-part", formLayout, false);
 		
@@ -100,13 +105,14 @@ public class AssessmentTestAndTestPartOptionsEditorController extends ItemSessio
 		String mode = testPart.getNavigationMode() == null ? NavigationMode.LINEAR.name() : testPart.getNavigationMode().name();
 		navigationModeEl = uifactory.addRadiosHorizontal("navigationMode", "form.testPart.navigationMode", formLayout, navigationKeys, navigationValues);
 		navigationModeEl.select(mode, true);
-		navigationModeEl.setEnabled(!restrictedEdit);
+		navigationModeEl.setEnabled(!restrictedEdit && testBuilder.isEditable());
 		
 		super.initForm(formLayout, listener, ureq);
 		
 		FormLayoutContainer buttonsCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		formLayout.add(buttonsCont);
-		uifactory.addFormSubmitButton("save", "save", buttonsCont);
+		FormSubmit submit = uifactory.addFormSubmitButton("save", "save", buttonsCont);
+		submit.setEnabled(testBuilder.isEditable());
 	}
 	
 	@Override

@@ -50,13 +50,15 @@ public abstract class ItemSessionControlController extends FormBasicController {
 	private TextElement maxAttemptsEl /*, maxTimeEl */;
 	private SingleSelection limitAttemptsEl, allowCommentEl, allowReviewEl, showSolutionEl;
 	
+	protected final boolean editable;
 	protected final boolean restrictedEdit;
 	private final AbstractPart part;
 	
 	public ItemSessionControlController(UserRequest ureq, WindowControl wControl,
-			AbstractPart part, boolean restrictedEdit) {
+			AbstractPart part, boolean restrictedEdit, boolean editable) {
 		super(ureq, wControl, Util.createPackageTranslator(AssessmentTestDisplayController.class, ureq.getLocale()));
 		this.part = part;
+		this.editable = editable;
 		this.restrictedEdit = restrictedEdit;
 	}
 
@@ -100,13 +102,13 @@ public abstract class ItemSessionControlController extends FormBasicController {
 		} else {
 			limitAttemptsEl.select(attemtpsKeys[0], true);
 		}
-		limitAttemptsEl.setEnabled(!restrictedEdit);
+		limitAttemptsEl.setEnabled(!restrictedEdit && editable);
 		maxAttemptsEl.setVisible(limitAttemptsEl.isSelected(0));
-		maxAttemptsEl.setEnabled(!restrictedEdit);
+		maxAttemptsEl.setEnabled(!restrictedEdit && editable);
 		
 		allowCommentEl = uifactory.addRadiosHorizontal("item.session.control.allow.comment", formLayout, yesnoKeys, yesnoValues);
 		allowCommentEl.addActionListener(FormEvent.ONCHANGE);
-		allowCommentEl.setEnabled(!restrictedEdit);
+		allowCommentEl.setEnabled(!restrictedEdit && editable);
 		if(itemSessionControl != null && itemSessionControl.getAllowComment() != null && itemSessionControl.getAllowComment().booleanValue()) {
 			allowCommentEl.select(yesnoKeys[0], true);
 		} else {
@@ -115,7 +117,7 @@ public abstract class ItemSessionControlController extends FormBasicController {
 		
 		allowReviewEl = uifactory.addRadiosHorizontal("item.session.control.allow.review", formLayout, yesnoKeys, yesnoValues);
 		allowReviewEl.addActionListener(FormEvent.ONCHANGE);
-		allowReviewEl.setEnabled(!restrictedEdit);
+		allowReviewEl.setEnabled(!restrictedEdit && editable);
 		if(itemSessionControl != null && itemSessionControl.getAllowReview() != null && itemSessionControl.getAllowReview().booleanValue()) {
 			allowReviewEl.select(yesnoKeys[0], true);
 		} else {
@@ -124,7 +126,7 @@ public abstract class ItemSessionControlController extends FormBasicController {
 	
 		showSolutionEl = uifactory.addRadiosHorizontal("item.session.control.show.solution", formLayout, yesnoKeys, yesnoValues);
 		showSolutionEl.addActionListener(FormEvent.ONCHANGE);
-		showSolutionEl.setEnabled(!restrictedEdit);
+		showSolutionEl.setEnabled(!restrictedEdit && editable);
 		if(itemSessionControl != null && itemSessionControl.getShowSolution() != null && itemSessionControl.getShowSolution().booleanValue()) {
 			showSolutionEl.select(yesnoKeys[0], true);
 		} else {

@@ -25,6 +25,7 @@ import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.form.flexible.impl.elements.FormSubmit;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.StringHelper;
@@ -69,11 +70,13 @@ public class AssessmentTestOptionsEditorController extends FormBasicController {
 		String title = assessmentTest.getTitle();
 		titleEl = uifactory.addTextElement("title", "form.metadata.title", 255, title, formLayout);
 		titleEl.setMandatory(true);
+		titleEl.setEnabled(testBuilder.isEditable());
 		
 		//export score
 		String[] yesnoValues = new String[] { translate("yes"), translate("no") };
 		exportScoreEl = uifactory.addRadiosHorizontal("form.test.export.score", formLayout, yesnoKeys, yesnoValues);
 		exportScoreEl.setEnabled(!restrictedEdit);
+		exportScoreEl.setEnabled(testBuilder.isEditable());
 		if(testBuilder.isExportScore()) {
 			exportScoreEl.select(yesnoKeys[0], true);
 		} else {
@@ -88,11 +91,12 @@ public class AssessmentTestOptionsEditorController extends FormBasicController {
 		Double cutValue = testBuilder.getCutValue();
 		String cutValueStr = cutValue == null ? "" : cutValue.toString();
 		cutValueEl = uifactory.addTextElement("cut.value", "cut.value", 8, cutValueStr, formLayout);
-		cutValueEl.setEnabled(!restrictedEdit);
+		cutValueEl.setEnabled(!restrictedEdit && testBuilder.isEditable());
 
 		FormLayoutContainer buttonsCont = FormLayoutContainer.createButtonLayout("butons", getTranslator());
 		formLayout.add(buttonsCont);
-		uifactory.addFormSubmitButton("save", "save", buttonsCont);
+		FormSubmit submit = uifactory.addFormSubmitButton("save", "save", buttonsCont);
+		submit.setEnabled(testBuilder.isEditable());
 	}
 	
 	@Override
