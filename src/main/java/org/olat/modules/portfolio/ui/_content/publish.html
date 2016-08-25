@@ -14,7 +14,7 @@
 
 	<ul class="list-unstyled">
 	#foreach($section in $binderRow.children)
-		<li><h4>${foreach.count}. $r.escapeHtml($section.title) <small><i class="o_icon $section.cssClassStatus"> </i> #if($section.assessable) ${section.getFormattedResult()} #end</small></h4> 
+		<li><h4>$r.escapeHtml($section.title) <small><i class="o_icon $section.cssClassStatus"> </i> #if($section.assessable) ${section.getFormattedResult()} #end</small></h4> 
 		
 			#if(!${section.getAccessRights().isEmpty()})
 				<table class="o_portfolio_ac"><tbody>
