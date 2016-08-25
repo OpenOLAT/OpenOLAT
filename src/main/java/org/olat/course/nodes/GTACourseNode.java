@@ -425,6 +425,8 @@ public class GTACourseNode extends AbstractAccessableCourseNode implements Asses
 	@Override
 	public void postCopy(CourseEnvironmentMapper envMapper, Processing processType, ICourse course, ICourse sourceCourse) {
 		super.postCopy(envMapper, processType, course, sourceCourse);
+		//change groups and areas mapping
+		postImportCopy(envMapper);
 		
 		GTAManager gtaManager = CoreSpringFactory.getImpl(GTAManager.class);
 		//copy tasks
@@ -451,6 +453,27 @@ public class GTACourseNode extends AbstractAccessableCourseNode implements Asses
 		
 		RepositoryEntry entry = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
 		gtaManager.createIfNotExists(entry, this);
+	}
+	
+    @Override	
+    public void postImport(File importDirectory, ICourse course, CourseEnvironmentMapper envMapper, Processing processType) {
+    	super.postImport(importDirectory, course, envMapper, processType);
+     	postImportCopy(envMapper);
+    }
+	
+	private void postImportCopy(CourseEnvironmentMapper envMapper) {
+		ModuleConfiguration mc = getModuleConfiguration();
+		List<Long> groupKeys = mc.getList(GTACourseNode.GTASK_GROUPS, Long.class);
+		if(groupKeys != null) {
+			groupKeys = envMapper.toGroupKeyFromOriginalKeys(groupKeys);
+		}
+		mc.set(GTACourseNode.GTASK_GROUPS, groupKeys);
+	
+		List<Long> areaKeys =  mc.getList(GTACourseNode.GTASK_AREAS, Long.class);
+		if(areaKeys != null) {
+			areaKeys = envMapper.toAreaKeyFromOriginalKeys(areaKeys);
+		}
+		mc.set(GTACourseNode.GTASK_AREAS, areaKeys);
 	}
 
 	@Override
