@@ -284,6 +284,7 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 		
 		if(ureq.getUserSession().getRoles().isOLATAdmin()) {
 			reloadInCacheLink = LinkFactory.createToolLink("replace.in.cache.pool", translate("tools.reload.from.files"), this, "o_icon_refresh");
+			reloadInCacheLink.setTooltip(translate("tools.reload.from.files.tooltip"));
 			reloadInCacheLink.setDomReplacementWrapperRequired(false);
 			changeItemTools.addComponent(reloadInCacheLink);
 		}
