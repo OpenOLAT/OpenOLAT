@@ -105,7 +105,11 @@ class FlexiTableCustomRenderer extends AbstractFlexiTableRenderer implements Com
 		sb.append("<div class='");
 		if(ftC.getFlexiTableElement().getCssDelegate() != null) {
 			String cssClass = ftC.getFlexiTableElement().getCssDelegate().getRowCssClass(FlexiTableRendererType.custom, row);
-			sb.append(cssClass);
+			if (cssClass == null) {
+				sb.append("o_table_row row");
+			} else {
+				sb.append(cssClass);				
+			}
 		} else {
 			sb.append("o_table_row row");
 		}
