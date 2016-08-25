@@ -831,6 +831,7 @@ public class BaseFullWebappController extends BasicController implements DTabs, 
 		NavElement navEl = s.getNavElement();
 		if(navEl != null) {
 			setWindowTitle(navEl.getTitle());
+			setBodyDataResource("site", s.getClass().getSimpleName(), null);
 		}
 		// update marking of active site/tab
 		navSitesVc.setDirty(true);
@@ -850,6 +851,13 @@ public class BaseFullWebappController extends BasicController implements DTabs, 
 		setGuiStack(dtabi.getGuiStackHandle());
 		// set description as page title, getTitel() might contain trucated values
 		setWindowTitle(dtabi.getNavElement().getDescription());
+		// set data-* values on body for css and javascript customizations
+		OLATResourceable ores = dtabi.getOLATResourceable();
+		String restype = (ores == null ? null : ores.getResourceableTypeName());
+		String resid = (ores == null ? null : ores.getResourceableId() + "");
+		OLATResourceable initialOres = dtabi.getInitialOLATResourceable();
+		String repoid = (initialOres == null ? null : initialOres.getResourceableId() + "");
+		setBodyDataResource(restype, resid, repoid);
 		// update marking of active site/tab
 		navSitesVc.setDirty(true);
 		navTabsVc.setDirty(true);
@@ -862,6 +870,55 @@ public class BaseFullWebappController extends BasicController implements DTabs, 
 		sb.append("document.title = \"");
 		sb.append(Formatter.escapeDoubleQuotes(translate("page.appname") + " - " + newTitle));
 		sb.append("\";");
+		JSCommand jsc = new JSCommand(sb.toString());
+		WindowControl wControl = getWindowControl();
+		if (wControl != null && wControl.getWindowBackOffice() != null) {
+			wControl.getWindowBackOffice().sendCommandTo(jsc);			
+		}
+	}
+
+	/**
+	 * Helper method to set data-" attributes to the body element in the DOM.
+	 * Using the data attributes it is possible to implement css styles specific
+	 * to certain areas (sites, groups, courses) of for specific course id's.
+	 * The data attributes are removed if null
+	 * 
+	 * @param restype The resource type or NULL if n.a.
+	 * @param resid The resource ID that matchtes the restype or NULL if n.a.
+	 * @param repoentryid the repository entry ID if available or NULL if n.a.
+	 */
+	private void setBodyDataResource(String restype, String resid, String repoentryid) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("try {var oobody = jQuery('body');");
+		// The source type info: for sites value is 'site', for courses
+		// 'CourseModule' and groups 'BusinessGroup'
+		if (restype == null) {
+			sb.append("oobody.removeAttr('data-restype');");						
+		} else {
+			sb.append("oobody.attr('data-restype','");
+			sb.append(Formatter.escapeDoubleQuotes(restype));
+			sb.append("');");			
+		}
+		// The resource id: for sites this is the name of the site (e.g.
+		// MyCoursesSite") for courses it is the numeric resource id (not the
+		// course/repo entry id)
+		if (resid == null) {
+			sb.append("oobody.removeAttr('data-resid');");									
+		} else {
+			sb.append("oobody.attr('data-resid','");
+			sb.append(Formatter.escapeDoubleQuotes(resid));
+			sb.append("');");
+		}
+		// The repository id, aka course-id. Normally only available for courses
+		// (not for sites or groups)
+		if (repoentryid == null) {
+			sb.append("oobody.removeAttr('data-repoid');");									
+		} else {
+			sb.append("oobody.attr('data-repoid','");
+			sb.append(Formatter.escapeDoubleQuotes(repoentryid));
+			sb.append("');");
+		}
+		sb.append("}catch(e){}");
 		JSCommand jsc = new JSCommand(sb.toString());
 		WindowControl wControl = getWindowControl();
 		if (wControl != null && wControl.getWindowBackOffice() != null) {
