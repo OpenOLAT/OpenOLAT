@@ -274,8 +274,6 @@ create table if not exists o_user (
    u_genericselectionproperty varchar(255),
    u_genericselectionproperty2 varchar(255),
    u_genericselectionproperty3 varchar(255),
-   u_genericselectionproperty4 varchar(255),
-   u_genericselectionproperty5 varchar(255),
    u_generictextproperty varchar(255),
    u_generictextproperty2 varchar(255),
    u_generictextproperty3 varchar(255),
@@ -288,13 +286,6 @@ create table if not exists o_user (
    u_genericcheckboxproperty varchar(255),
    u_genericcheckboxproperty2 varchar(255),
    u_genericcheckboxproperty3 varchar(255),
-   u_genericcheckboxproperty4 varchar(255),
-   u_genericcheckboxproperty5 varchar(255),
-   u_genericyesnoproperty varchar(255),
-   u_genericyesnoproperty2 varchar(255),
-   u_genericyesnoproperty3 varchar(255),
-   u_genericyesnoproperty4 varchar(255),
-   u_genericyesnoproperty5 varchar(255),
    
    primary key (user_id)
 );

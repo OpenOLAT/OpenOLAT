@@ -305,8 +305,6 @@ CREATE TABLE o_user (
    u_genericselectionproperty varchar2(255 char),
    u_genericselectionproperty2 varchar2(255 char),
    u_genericselectionproperty3 varchar2(255 char),
-   u_genericselectionproperty4 varchar2(255 char),
-   u_genericselectionproperty5 varchar2(255 char),
    u_generictextproperty varchar2(255 char),
    u_generictextproperty2 varchar2(255 char),
    u_generictextproperty3 varchar2(255 char),
@@ -319,13 +317,6 @@ CREATE TABLE o_user (
    u_genericcheckboxproperty varchar2(255 char),
    u_genericcheckboxproperty2 varchar2(255 char),
    u_genericcheckboxproperty3 varchar2(255 char),
-   u_genericcheckboxproperty4 varchar2(255 char),
-   u_genericcheckboxproperty5 varchar2(255 char),
-   u_genericyesnoproperty varchar2(255 char),
-   u_genericyesnoproperty2 varchar2(255 char),
-   u_genericyesnoproperty3 varchar2(255 char),
-   u_genericyesnoproperty4 varchar2(255 char),
-   u_genericyesnoproperty5 varchar2(255 char),
    
   PRIMARY KEY (user_id)
 );
