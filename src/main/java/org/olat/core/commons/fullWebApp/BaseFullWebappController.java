@@ -918,7 +918,7 @@ public class BaseFullWebappController extends BasicController implements DTabs, 
 			sb.append(Formatter.escapeDoubleQuotes(repoentryid));
 			sb.append("');");
 		}
-		sb.append("}catch(e){}");
+		sb.append("oobody=null;}catch(e){}");
 		JSCommand jsc = new JSCommand(sb.toString());
 		WindowControl wControl = getWindowControl();
 		if (wControl != null && wControl.getWindowBackOffice() != null) {
