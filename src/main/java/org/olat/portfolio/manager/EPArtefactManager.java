@@ -488,6 +488,18 @@ public class EPArtefactManager extends BasicManager {
 		return artefacts;		
 	}
 	
+	public int countArtefacts(Identity identity) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select count(artefact) from ").append(AbstractArtefact.class.getName()).append(" artefact")
+			.append(" where artefact.author=:ident");
+
+		Number count = dbInstance.getCurrentEntityManager()
+			.createQuery(sb.toString(), Number.class)
+			.setParameter("ident", identity)
+			.getSingleResult();
+		return count == null ? 0: count.intValue();
+	}
+	
 	protected Map<String,Long> loadNumOfArtefactsByStartingBusinessPath(String startOfBusinessPath, IdentityRef author) {
 		if (!StringHelper.containsNonWhitespace(startOfBusinessPath) || author == null) {
 			return Collections.emptyMap();
