@@ -57,6 +57,8 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.UserSession;
 import org.olat.core.util.Util;
 import org.olat.core.util.coordinate.LockResult;
+import org.olat.core.util.event.EventBus;
+import org.olat.core.util.event.GenericEventListener;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.course.CourseModule;
 import org.olat.course.assessment.AssessmentMode;
@@ -69,6 +71,8 @@ import org.olat.repository.RepositoryEntryRef;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryModule;
 import org.olat.repository.RepositoryService;
+import org.olat.repository.controllers.EntryChangedEvent;
+import org.olat.repository.controllers.EntryChangedEvent.Change;
 import org.olat.repository.handlers.EditionSupport;
 import org.olat.repository.handlers.RepositoryHandler;
 import org.olat.repository.handlers.RepositoryHandlerFactory;
@@ -99,7 +103,8 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class RepositoryEntryRuntimeController extends MainLayoutBasicController implements Activateable2 {
+public class RepositoryEntryRuntimeController extends MainLayoutBasicController implements Activateable2, GenericEventListener {
+
 
 	private Controller runtimeController;
 	protected final TooledStackedPanel toolbarPanel;
@@ -144,6 +149,7 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 	protected final RepositoryHandler handler;
 	private AtomicBoolean launchDateUpdated = new AtomicBoolean(false);
 	
+	private final EventBus eventBus;
 	private HistoryPoint launchedFromPoint;
 	
 	@Autowired
@@ -226,6 +232,9 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 		doRun(ureq, reSecurity);
 		loadRights(reSecurity);
 		initToolbar();
+		
+		eventBus = ureq.getUserSession().getSingleUserEventCenter();
+		eventBus.registerFor(this, getIdentity(), RepositoryService.REPOSITORY_EVENT_ORES);
 	}
 	
 	protected boolean isCorrupted(RepositoryEntry entry) {
@@ -477,6 +486,22 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 		if(runtimeController != null && !runtimeController.isDisposed()) {
 			runtimeController.dispose();
 		}
+		eventBus.deregisterFor(this, RepositoryService.REPOSITORY_EVENT_ORES);
+	}
+
+	@Override
+	public void event(Event event) {
+		//
+	}
+	
+	protected void processEntryChangedEvent(EntryChangedEvent repoEvent) {
+		if(repoEvent.isMe(getIdentity()) &&
+				(repoEvent.getChange() == Change.addBookmark || repoEvent.getChange() == Change.removeBookmark)) {
+			boolean marked = markManager.isMarked(OresHelper.clone(re), getIdentity(), null);
+			String css = "o_icon " + (marked ? Mark.MARK_CSS_ICON : Mark.MARK_ADD_CSS_ICON);
+			bookmarkLink.setIconLeftCSS(css);
+			bookmarkLink.setTitle( translate(marked ? "details.bookmark.remove" : "details.bookmark"));
+		}
 	}
 
 	@Override
@@ -498,7 +523,7 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 		} else if(detailsLink == source) {
 			doDetails(ureq);
 		} else if(bookmarkLink == source) {
-			boolean marked = doMark();
+			boolean marked = doMark(ureq);
 			String css = "o_icon " + (marked ? Mark.MARK_CSS_ICON : Mark.MARK_ADD_CSS_ICON);
 			bookmarkLink.setIconLeftCSS(css);
 			bookmarkLink.setTitle( translate(marked ? "details.bookmark.remove" : "details.bookmark"));
@@ -578,7 +603,7 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 		} else if (lifeCycleChangeCtr == source) {
 			if (event == RepositoryEntryLifeCycleChangeController.deletedEvent) {
 				doClose(ureq);
-				cleanUp();				
+				cleanUp();	
 			} else if (event == RepositoryEntryLifeCycleChangeController.closedEvent) {
 				if(editLink != null) {
 					editLink.setVisible(false);
@@ -593,6 +618,9 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 				RepositoryEntryRef copy = copyCtrl.getCopiedEntry();
 				String businessPath = "[RepositoryEntry:" + copy.getKey() + "][EditDescription:0]";
 				NewControllerFactory.getInstance().launch(businessPath, ureq, getWindowControl());
+				
+				EntryChangedEvent e = new EntryChangedEvent(getRepositoryEntry(), getIdentity(), Change.added, "runtime");
+				ureq.getUserSession().getSingleUserEventCenter().fireEventToListenersOf(e, RepositoryService.REPOSITORY_EVENT_ORES);
 			}
 			cleanUp();
 		}
@@ -787,14 +815,19 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 		return new ACResultAndSecurity(acResult, security);
 	}
 	
-	protected boolean doMark() {
+	protected boolean doMark(UserRequest ureq) {
 		OLATResourceable item = OresHelper.clone(re);
 		if(markManager.isMarked(item, getIdentity(), null)) {
 			markManager.removeMark(item, getIdentity(), null);
+			
+			EntryChangedEvent e = new EntryChangedEvent(getRepositoryEntry(), getIdentity(), Change.removeBookmark, "runtime");
+			ureq.getUserSession().getSingleUserEventCenter().fireEventToListenersOf(e, RepositoryService.REPOSITORY_EVENT_ORES);
 			return false;
 		} else {
 			String businessPath = "[RepositoryEntry:" + item.getResourceableId() + "]";
 			markManager.setMark(item, getIdentity(), null, businessPath);
+			EntryChangedEvent e = new EntryChangedEvent(getRepositoryEntry(), getIdentity(), Change.addBookmark, "runtime");
+			ureq.getUserSession().getSingleUserEventCenter().fireEventToListenersOf(e, RepositoryService.REPOSITORY_EVENT_ORES);
 			return true;
 		}
 	}

@@ -461,7 +461,7 @@ public class QuestionListController extends AbstractItemListController implement
 				cleanUp();
 				
 				EntryChangedEvent addEvent = (EntryChangedEvent)event;
-				Long repoEntryKey = addEvent.getChangedEntryKey();
+				Long repoEntryKey = addEvent.getRepositoryEntryKey();
 				doExportToRepositoryEntry(ureq, repoEntryKey);
 			} else if(event == Event.CANCELLED_EVENT) {
 				cmc.deactivate();

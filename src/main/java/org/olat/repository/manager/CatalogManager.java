@@ -700,7 +700,7 @@ public class CatalogManager implements UserDataDeletable, InitializingBean {
 	 */
 	public void notifyReferencedRepositoryEntryChanges(RepositoryEntry re) {
 		// inform anybody interested about this change
-		MultiUserEvent modifiedEvent = new EntryChangedEvent(re, null, Change.modifiedDescription);
+		MultiUserEvent modifiedEvent = new EntryChangedEvent(re, null, Change.modifiedDescription, "CatalogManager");
 		CoordinatorManager.getInstance().getCoordinator().getEventBus().fireEventToListenersOf(modifiedEvent, re);
 	}
 	

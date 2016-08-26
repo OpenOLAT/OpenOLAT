@@ -28,6 +28,7 @@ package org.olat.repository.controllers;
 import org.olat.basesecurity.IdentityRef;
 import org.olat.core.util.event.MultiUserEvent;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryRef;
 
 
 /**
@@ -37,9 +38,13 @@ import org.olat.repository.RepositoryEntry;
 public class EntryChangedEvent extends MultiUserEvent {
 
 	private static final long serialVersionUID = 8339474599787388699L;
-	private Change change;
-	private Long changedEntryKey;
-	private Long authorKey;
+	
+	public static final String CHANGE_CMD = "repo-entry-changed";
+	
+	private final Change change;
+	private final Long entryKey;
+	private final Long identityKey;
+	private final String source;
 	
 	/**
 	 * Event signaling the change of a repository entry. Use getChange to see the status of the change.
@@ -47,26 +52,39 @@ public class EntryChangedEvent extends MultiUserEvent {
 	 * @param changedEntry
 	 * @param change
 	 */
-	public EntryChangedEvent(RepositoryEntry changedEntry, IdentityRef identity, Change change) {
-		super("");
-		changedEntryKey = changedEntry.getKey();
-		authorKey = identity == null ? null : identity.getKey();
+	public EntryChangedEvent(RepositoryEntryRef entry, IdentityRef identity, Change change, String source) {
+		super(CHANGE_CMD);
+		this.source = source;
 		this.change = change;
+		entryKey = entry.getKey();
+		identityKey = identity == null ? null : identity.getKey();
 	}
 	
 	/**
 	 * @return the key of the repository entry that has been changed.
 	 */
-	public Long getChangedEntryKey() {
-		return changedEntryKey;
+	public Long getRepositoryEntryKey() {
+		return entryKey;
 	}
 	
 	/**
 	 * The author of the change
 	 * @return
 	 */
-	public Long getAuthorKey() {
-		return authorKey;
+	public Long getIdentityKey() {
+		return identityKey;
+	}
+	
+	public boolean isMe(IdentityRef identity) {
+		return identityKey != null && identity != null && identityKey.equals(identity.getKey());
+	}
+	
+	public boolean isMe(RepositoryEntry entry) {
+		return entryKey != null && entry != null && entryKey.equals(entry.getKey());
+	}
+	
+	public String getSource() {
+		return source;
 	}
 
 	/**
@@ -82,6 +100,8 @@ public class EntryChangedEvent extends MultiUserEvent {
 		deleted,
 		modifiedAccess,
 		modifiedDescription,
-		modifiedAtPublish
+		modifiedAtPublish,
+		addBookmark,
+		removeBookmark
 	}
 }
