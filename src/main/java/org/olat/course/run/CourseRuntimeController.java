@@ -325,7 +325,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 		RunMainController run = getRunMainController();
 		if(run != null) {
 			addCustomCSS(ureq);
-			run.toolCtrDone(ureq);
+			run.toolCtrDone(ureq, reSecurity);
 			currentToolCtr = null;
 		}
 	}

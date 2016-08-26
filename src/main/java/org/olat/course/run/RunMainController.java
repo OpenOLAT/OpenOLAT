@@ -512,7 +512,7 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 		}
 	}
 	
-	protected void toolCtrDone(UserRequest ureq) {
+	protected void toolCtrDone(UserRequest ureq, RepositoryEntrySecurity reSecurity) {
 		if (isInEditor) {
 			isInEditor = false; // for clarity
 			if (needsRebuildAfterPublish) {
@@ -520,9 +520,7 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 				
 			  // rebuild up the running structure for this user, after publish;
 				course = CourseFactory.loadCourse(course.getResourceableId());
-				uce = new UserCourseEnvironmentImpl(ureq.getUserSession().getIdentityEnvironment(), course.getCourseEnvironment(), getWindowControl(),
-						uce.getCoachedGroups(), uce.getParticipatingGroups(), uce.getWaitingLists(),
-						null, null, null);
+				uce = loadUserCourseEnvironment(ureq, reSecurity);
 				// build score now
 				uce.getScoreAccounting().evaluateAll();
 				navHandler = new NavigationHandler(uce, treeFilter, false);
