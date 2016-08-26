@@ -1230,7 +1230,7 @@ public class BaseFullWebappController extends BasicController implements DTabs, 
 			}
 			doActivateDTab(dtabi);
 	
-			if(entries != null && !entries.isEmpty() && c instanceof Activateable2) {
+			if(c instanceof Activateable2) {
 				final Activateable2 activateable = ((Activateable2) c);
 				activateable.activate(ureq, entries, null);
 			}

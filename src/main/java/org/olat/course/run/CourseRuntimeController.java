@@ -319,7 +319,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 		RunMainController run = getRunMainController();
 		if(run != null) {
 			addCustomCSS(ureq);
-			run.toolCtrDone(ureq);
+			run.toolCtrDone(ureq, reSecurity);
 			currentToolCtr = null;
 		}
 	}
@@ -914,6 +914,19 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 
 	@Override
 	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
+		if(entries == null || entries.isEmpty()) {
+			if(currentToolCtr != null) {
+				addToHistory(ureq, currentToolCtr);
+			} else {
+				Controller runtimeCtrl = getRuntimeController();
+				if(runtimeCtrl instanceof Activateable2) {
+					((Activateable2)runtimeCtrl).activate(ureq, entries, state);
+				} else {
+					addToHistory(ureq, runtimeCtrl);
+				}
+			}
+			return;
+		}
 
 		entries = removeRepositoryEntry(entries);
 		if(entries != null && entries.size() > 0) {

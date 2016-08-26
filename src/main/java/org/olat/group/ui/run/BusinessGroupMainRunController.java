@@ -903,7 +903,13 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 
 	@Override
 	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
-		if(entries == null || entries.isEmpty() || needActivation) return;
+		if(needActivation) {
+			return;
+		}
+		if(entries == null || entries.isEmpty()) {
+			addToHistory(ureq);
+			return;
+		}
 		
 		// release edit lock if available
 		removeAsListenerAndDispose(bgEditCntrllr);
