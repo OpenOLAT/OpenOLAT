@@ -40,8 +40,13 @@ import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.Util;
+import org.olat.core.util.event.EventBus;
+import org.olat.core.util.event.GenericEventListener;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.repository.RepositoryManager;
+import org.olat.repository.RepositoryService;
+import org.olat.repository.controllers.EntryChangedEvent;
+import org.olat.repository.controllers.EntryChangedEvent.Change;
 import org.olat.repository.model.SearchAuthorRepositoryEntryViewParams;
 import org.olat.util.logging.activity.LoggingResourceable;
 
@@ -51,7 +56,7 @@ import org.olat.util.logging.activity.LoggingResourceable;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class OverviewAuthoringController extends BasicController implements Activateable2 {
+public class OverviewAuthoringController extends BasicController implements Activateable2, GenericEventListener {
 	
 	private MainPanel mainPanel;
 	private final VelocityContainer mainVC;
@@ -60,7 +65,9 @@ public class OverviewAuthoringController extends BasicController implements Acti
 	private final Link myEntriesLink, searchLink;
 	private AuthorListController currentCtrl, markedCtrl, myEntriesCtrl, searchEntriesCtrl;
 
-	private boolean isGuestonly;
+	private final boolean isGuestonly;
+	private boolean favoritDirty, myDirty;
+	private final EventBus eventBus;
 	
 	public OverviewAuthoringController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
@@ -84,14 +91,33 @@ public class OverviewAuthoringController extends BasicController implements Acti
 		searchLink = LinkFactory.createLink("search.generic", mainVC, this);
 		segmentView.addSegment(searchLink, false);
 
+		eventBus = ureq.getUserSession().getSingleUserEventCenter();
+		eventBus.registerFor(this, getIdentity(), RepositoryService.REPOSITORY_EVENT_ORES);
+
 		putInitialPanel(mainPanel);
 	}
 	
 	@Override
 	protected void doDispose() {
-		//
+		eventBus.deregisterFor(this, RepositoryService.REPOSITORY_EVENT_ORES);
 	}
 	
+	@Override
+	public void event(Event event) {
+		if(EntryChangedEvent.CHANGE_CMD.equals(event.getCommand()) && event instanceof EntryChangedEvent) {
+			EntryChangedEvent ece = (EntryChangedEvent)event;
+			if(ece.getChange() == Change.addBookmark || ece.getChange() == Change.removeBookmark
+					|| ece.getChange() == Change.added || ece.getChange() == Change.deleted) {
+				if(markedCtrl != null && !markedCtrl.getI18nName().equals(ece.getSource())) {
+					favoritDirty = true;
+				}
+				if(myEntriesCtrl != null && !myEntriesCtrl.getI18nName().equals(ece.getSource())) {
+					myDirty = true;
+				}
+			}
+		}
+	}
+
 	@Override
 	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
 		if(entries == null || entries.isEmpty()) {
@@ -108,6 +134,12 @@ public class OverviewAuthoringController extends BasicController implements Acti
 						segmentView.select(favoriteLink);
 					}
 				}
+			}
+			if(favoritDirty && markedCtrl != null) {
+				markedCtrl.reloadRows();
+			}
+			if(myDirty && myEntriesCtrl != null) {
+				myEntriesCtrl.reloadRows();
 			}
 			addToHistory(ureq, currentCtrl);
 		} else {
@@ -165,7 +197,10 @@ public class OverviewAuthoringController extends BasicController implements Acti
 			WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ores, null, getWindowControl());
 			markedCtrl = new AuthorListController(ureq, bwControl, "search.mark", searchParams, false);
 			listenTo(markedCtrl);
+		} else if(favoritDirty) {
+			markedCtrl.reloadRows();
 		}
+		favoritDirty = false;
 		
 		currentCtrl = markedCtrl;
 		addToHistory(ureq, markedCtrl);
@@ -183,8 +218,11 @@ public class OverviewAuthoringController extends BasicController implements Acti
 			ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ores));
 			WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ores, null, getWindowControl());
 			myEntriesCtrl = new AuthorListController(ureq, bwControl, "search.my", searchParams, false);
-			listenTo(myEntriesCtrl);
+			listenTo(myEntriesCtrl);	
+		} else if(myDirty) {
+			myEntriesCtrl.reloadRows();
 		}
+		myDirty = false;
 		
 		currentCtrl = myEntriesCtrl;
 		addToHistory(ureq, myEntriesCtrl);

@@ -291,7 +291,7 @@ public class ConfirmDeleteController extends FormBasicController {
 					allOk = false;
 					errorList.add(errors);
 				} else {
-					fireEvent(ureq, new EntryChangedEvent(reloadedEntry, getIdentity(), Change.deleted));
+					fireEvent(ureq, new EntryChangedEvent(reloadedEntry, getIdentity(), Change.deleted, "delete"));
 				}
 			}
 		}

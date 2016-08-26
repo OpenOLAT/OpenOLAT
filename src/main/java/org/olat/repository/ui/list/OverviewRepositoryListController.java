@@ -42,10 +42,15 @@ import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.Util;
+import org.olat.core.util.event.EventBus;
+import org.olat.core.util.event.GenericEventListener;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.repository.CatalogEntry;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryModule;
+import org.olat.repository.RepositoryService;
+import org.olat.repository.controllers.EntryChangedEvent;
+import org.olat.repository.controllers.EntryChangedEvent.Change;
 import org.olat.repository.manager.CatalogManager;
 import org.olat.repository.model.SearchMyRepositoryEntryViewParams;
 import org.olat.repository.ui.catalog.CatalogNodeController;
@@ -58,7 +63,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class OverviewRepositoryListController extends BasicController implements Activateable2 {
+public class OverviewRepositoryListController extends BasicController implements Activateable2, GenericEventListener {
 
 	private final VelocityContainer mainVC;
 	private final SegmentViewComponent segmentView;
@@ -76,6 +81,9 @@ public class OverviewRepositoryListController extends BasicController implements
 	private BreadcrumbedStackedPanel searchCoursesStackPanel;
 	
 	private final boolean isGuestOnly;
+	private boolean favoritDirty, myDirty;
+	
+	private final EventBus eventBus;
 	
 	@Autowired
 	private CatalogManager catalogManager;
@@ -115,6 +123,9 @@ public class OverviewRepositoryListController extends BasicController implements
 			segmentView.addSegment(searchCourseLink, false);
 		}
 		
+		eventBus = ureq.getUserSession().getSingleUserEventCenter();
+		eventBus.registerFor(this, getIdentity(), RepositoryService.REPOSITORY_EVENT_ORES);
+		
 		putInitialPanel(mainPanel);
 	}
 	
@@ -134,6 +145,13 @@ public class OverviewRepositoryListController extends BasicController implements
 						segmentView.select(favoriteLink);
 					}
 				}
+			}
+			
+			if(favoritDirty && markedCtrl != null) {
+				markedCtrl.reloadRows();
+			}
+			if(myDirty && myCoursesCtrl != null) {
+				myCoursesCtrl.reloadRows();
 			}
 			addToHistory(ureq, this);
 		} else {
@@ -171,7 +189,24 @@ public class OverviewRepositoryListController extends BasicController implements
 
 	@Override
 	protected void doDispose() {
-		//
+		eventBus.deregisterFor(this, RepositoryService.REPOSITORY_EVENT_ORES);
+	}
+
+	
+	@Override
+	public void event(Event event) {
+		if(EntryChangedEvent.CHANGE_CMD.equals(event.getCommand()) && event instanceof EntryChangedEvent) {
+			EntryChangedEvent ece = (EntryChangedEvent)event;
+			if(ece.getChange() == Change.addBookmark || ece.getChange() == Change.removeBookmark
+					|| ece.getChange() == Change.added || ece.getChange() == Change.deleted) {
+				if(markedCtrl != null && !markedCtrl.getName().equals(ece.getSource())) {
+					favoritDirty = true;
+				}
+				if(myCoursesCtrl != null && !myCoursesCtrl.getName().equals(ece.getSource())) {
+					myDirty = true;
+				}
+			}
+		}
 	}
 
 	@Override
@@ -221,6 +256,7 @@ public class OverviewRepositoryListController extends BasicController implements
 		markedStackPanel.pushController(translate("search.mark"), markedCtrl);
 		listenTo(markedCtrl);
 		currentCtrl = markedCtrl;
+		favoritDirty = false;
 
 		addToHistory(ureq, markedCtrl);
 		mainVC.put("segmentCmp", markedStackPanel);
@@ -242,6 +278,7 @@ public class OverviewRepositoryListController extends BasicController implements
 		myCoursesStackPanel.pushController(translate("search.mycourses.student"), myCoursesCtrl);
 		listenTo(myCoursesCtrl);
 		currentCtrl = myCoursesCtrl;
+		myDirty = false;
 
 		addToHistory(ureq, myCoursesCtrl);
 		mainVC.put("segmentCmp", myCoursesStackPanel);

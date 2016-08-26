@@ -719,7 +719,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 			}
 		} else if (event instanceof EntryChangedEvent ) {
 			EntryChangedEvent repoEvent = (EntryChangedEvent) event;
-			if (getRepositoryEntry().getKey().equals(repoEvent.getChangedEntryKey())) {
+			if (repoEvent.isMe(getRepositoryEntry())) {
 				processEntryChangedEvent(repoEvent);
 			}
 		//All events are MultiUserEvent, check with command at the end
@@ -728,6 +728,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 				updateCurrentUserCount();
 			}
 		}
+		super.event(event);
 	}
 
 	@Override
@@ -1570,7 +1571,8 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 		}
 	}
 	
-	private void processEntryChangedEvent(EntryChangedEvent repoEvent) {
+	@Override
+	protected void processEntryChangedEvent(EntryChangedEvent repoEvent) {
 		switch(repoEvent.getChange()) {
 			case modifiedAtPublish:
 			case modifiedAccess:
@@ -1579,12 +1581,14 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 			case deleted:
 				doDisposeAfterEvent();
 				break;
-			default: {}
+			default:
+				super.processEntryChangedEvent(repoEvent);
+				break;
 		}
 	}
 	
 	private void processEntryAccessChanged(EntryChangedEvent repoEvent) {
-		if(repoEvent.getAuthorKey() != null && getIdentity().getKey().equals(repoEvent.getAuthorKey())) {
+		if(repoEvent.isMe(getIdentity())) {
 			//author is not affected
 		} else {
 			loadRepositoryEntry();

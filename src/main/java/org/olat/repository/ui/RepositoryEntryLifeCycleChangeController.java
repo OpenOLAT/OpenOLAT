@@ -41,6 +41,8 @@ import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryManagedFlag;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
+import org.olat.repository.controllers.EntryChangedEvent;
+import org.olat.repository.controllers.EntryChangedEvent.Change;
 import org.olat.repository.handlers.RepositoryHandler;
 import org.olat.repository.model.RepositoryEntrySecurity;
 import org.olat.repository.ui.author.ConfirmDeleteController;
@@ -135,6 +137,8 @@ public class RepositoryEntryLifeCycleChangeController extends BasicController{
 			} else if (event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
 				cleanUp();
 				fireEvent(ureq, deletedEvent);
+				EntryChangedEvent e = new EntryChangedEvent(re, getIdentity(), Change.deleted, "runtime");
+				ureq.getUserSession().getSingleUserEventCenter().fireEventToListenersOf(e, RepositoryService.REPOSITORY_EVENT_ORES);
 			}
 			
 		} else if(cmc == source) {
