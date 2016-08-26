@@ -117,7 +117,10 @@ public class GroupInfoMainController extends MainLayoutBasicController implement
 
 	@Override
 	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
-		if(entries == null || entries.isEmpty()) return;
+		if(entries == null || entries.isEmpty()) {
+			addToHistory(ureq);
+			return;
+		}
 		
 		ContextEntry entry = entries.get(0);
 		String menuItem = entry.getOLATResourceable().getResourceableTypeName();
