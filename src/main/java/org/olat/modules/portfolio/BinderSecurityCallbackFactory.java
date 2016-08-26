@@ -264,6 +264,17 @@ public class BinderSecurityCallbackFactory {
 		}
 
 		@Override
+		public boolean canEditPageMetadata(Page page, List<Assignment> assignments) {
+			if(owner) {
+				if(task) {
+					return assignments == null || assignments.size() == 0;
+				}
+				return true;
+			}
+			return false;
+		}
+
+		@Override
 		public boolean canPublish(Page page) {
 			return owner && (page.getPageStatus() == null || page.getPageStatus() == PageStatus.draft || page.getPageStatus() == PageStatus.inRevision);
 		}
@@ -462,6 +473,11 @@ public class BinderSecurityCallbackFactory {
 
 		@Override
 		public boolean canEditPage(Page page) {
+			return false;
+		}
+
+		@Override
+		public boolean canEditPageMetadata(Page page, List<Assignment> assignments) {
 			return false;
 		}
 

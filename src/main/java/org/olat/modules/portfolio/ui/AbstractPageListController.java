@@ -195,11 +195,14 @@ implements Activateable2, TooledController, FlexiTableComponentDelegate {
 				if(assignmentRow.getEditLink() != null) {
 					components.add(assignmentRow.getEditLink().getComponent());
 				}
-				if(assignmentRow.getOpenLink() != null) {
-					components.add(assignmentRow.getOpenLink().getComponent());
-				}
 				if(assignmentRow.getCreateLink() != null) {
 					components.add(assignmentRow.getCreateLink().getComponent());
+				}
+				if(assignmentRow.getUpLink() != null) {
+					components.add(assignmentRow.getUpLink().getComponent());
+				}
+				if(assignmentRow.getDownLink() != null) {
+					components.add(assignmentRow.getDownLink().getComponent());
 				}
 			}	
 		}
@@ -239,6 +242,13 @@ implements Activateable2, TooledController, FlexiTableComponentDelegate {
 		openLink.setUserObject(row);
 		addAssignmentsToRow(row, assignments);
 		addCategoriesToRow(row, categorizedElementMap);
+		if(assignments != null) {
+			for(Assignment assignment:assignments) {
+				if(page.equals(assignment.getPage())) {
+					row.setPageAssignment(assignment);
+				}
+			}
+		}
 		
 		if(numberOfCommentsMap != null) {
 			Long numOfComments = numberOfCommentsMap.get(page.getKey());
@@ -307,30 +317,35 @@ implements Activateable2, TooledController, FlexiTableComponentDelegate {
 		if(assignments != null && assignments.size() > 0) {
 			List<PageAssignmentRow> assignmentRows = new ArrayList<>();
 			for(Assignment assignment:assignments) {
-				PageAssignmentRow assignmentRow = new PageAssignmentRow(assignment);
-				
 				if(assignment.getPage() != null) {
-					if(secCallback.canViewElement(assignment.getPage())) {
-						FormLink openLink = uifactory.addFormLink("open_assign_" + (++counter), "open.assignment", "open", null, flc, Link.BUTTON);
-						openLink.setUserObject(assignmentRow);
-						assignmentRow.setOpenLink(openLink);
-					}
-				} else if(secCallback.canInstantiateAssignment()) {
+					continue;
+				}
+
+				PageAssignmentRow assignmentRow = new PageAssignmentRow(assignment);
+				if(secCallback.canInstantiateAssignment()) {
 					if(assignment.getAssignmentStatus() == AssignmentStatus.notStarted) {
 						FormLink startLink = uifactory.addFormLink("create_assign_" + (++counter), "start.assignment", "create.start.assignment", null, flc, Link.BUTTON);
 						startLink.setUserObject(assignmentRow);
 						startLink.setPrimary(true);
 						assignmentRow.setCreateLink(startLink);
-					} else {
-						FormLink openLink = uifactory.addFormLink("open_assign_" + (++counter), "open.assignment", "open", null, flc, Link.BUTTON);
-						openLink.setUserObject(assignmentRow);
-						assignmentRow.setOpenLink(openLink);
 					}
 				} else if(secCallback.canNewAssignment()) {
 					if(assignment.getTemplateReference() == null) {
 						FormLink editLink = uifactory.addFormLink("edit_assign_" + (++counter), "edit.assignment", "edit", null, flc, Link.BUTTON);
 						editLink.setUserObject(assignmentRow);
 						assignmentRow.setEditLink(editLink);
+						
+						FormLink upLink = uifactory.addFormLink("up_assign_" + (++counter), "up.assignment", "", null, flc, Link.BUTTON | Link.NONTRANSLATED);
+						upLink.setIconLeftCSS("o_icon o_icon o_icon-lg o_icon_move_up");
+						upLink.setEnabled(assignmentRows.size() > 0);
+						upLink.setUserObject(assignmentRow);
+						assignmentRow.setUpLink(upLink);
+						
+						FormLink downLink = uifactory.addFormLink("down_assign_" + (++counter), "down.assignment", "", null, flc, Link.BUTTON | Link.NONTRANSLATED);
+						downLink.setIconLeftCSS("o_icon o_icon o_icon-lg o_icon_move_down");
+						downLink.setUserObject(assignmentRow);
+						downLink.setEnabled(assignmentRows.size() + 1 != assignments.size());
+						assignmentRow.setDownLink(downLink);
 					}
 				}
 				assignmentRows.add(assignmentRow);
@@ -473,7 +488,14 @@ implements Activateable2, TooledController, FlexiTableComponentDelegate {
 			} else if("open.assignment".equals(cmd)) {
 				PageAssignmentRow row = (PageAssignmentRow)link.getUserObject();
 				doOpenAssignment(ureq, row);
+			} else if("up.assignment".equals(cmd)) {
+				PageAssignmentRow row = (PageAssignmentRow)link.getUserObject();
+				doMoveUpAssignment(row);
+			} else if("down.assignment".equals(cmd)) {
+				PageAssignmentRow row = (PageAssignmentRow)link.getUserObject();
+				doMoveDownAssignment(row);
 			}
+			
 		} else if(source == flc) {
 			if("ONCLICK".equals(event.getCommand())) {
 				String category = ureq.getParameter("tag_select");
@@ -548,6 +570,20 @@ implements Activateable2, TooledController, FlexiTableComponentDelegate {
 		} else {
 			showWarning("not.implemented");
 		}
+	}
+	
+	private void doMoveUpAssignment(PageAssignmentRow row) {
+		Assignment assigment = row.getAssignment();
+		Section section = assigment.getSection();
+		portfolioService.moveUpAssignment(section, assigment);
+		loadModel(null);
+	}
+	
+	private void doMoveDownAssignment(PageAssignmentRow row) {
+		Assignment assigment = row.getAssignment();
+		Section section = assigment.getSection();
+		portfolioService.moveDownAssignment(section, assigment);
+		loadModel(null);
 	}
 	
 	private void doEditAssignment(UserRequest ureq, PageAssignmentRow row) {

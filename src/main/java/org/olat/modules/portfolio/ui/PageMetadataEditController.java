@@ -83,6 +83,7 @@ public class PageMetadataEditController extends FormBasicController {
 	
 	private final boolean chooseBinder;
 	private final boolean chooseSection;
+	private final boolean editTitleAndSummary;
 
 	private Map<String,String> categories = new HashMap<>();
 	private Map<String,Category> categoriesMap = new HashMap<>();
@@ -100,15 +101,18 @@ public class PageMetadataEditController extends FormBasicController {
 		
 		this.chooseBinder = chooseBinder;
 		this.chooseSection = chooseSection;
+		editTitleAndSummary = true;
 		initForm(ureq);
 	}
 	
 	public PageMetadataEditController(UserRequest ureq, WindowControl wControl,
 			Binder currentBinder, boolean chooseBinder,
-			Section currentSection, boolean chooseSection, Page page) {
+			Section currentSection, boolean chooseSection,
+			Page page, boolean editTitleAndSummary) {
 		super(ureq, wControl);
 
 		this.page = page;
+		this.editTitleAndSummary = editTitleAndSummary;
 		
 		this.currentBinder = currentBinder;
 		this.currentSection = currentSection;
@@ -140,11 +144,13 @@ public class PageMetadataEditController extends FormBasicController {
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		String title = page == null ? null : page.getTitle();
 		titleEl = uifactory.addTextElement("title", "page.title", 255, title, formLayout);
+		titleEl.setEnabled(editTitleAndSummary);
 		titleEl.setMandatory(true);
 		
 		String summary = page == null ? null : page.getSummary();
 		summaryEl = uifactory.addTextAreaElement("summary", "page.summary", 4096, 4, 60, false, summary, formLayout);
 		summaryEl.setPlaceholderKey("summary.placeholder", null);
+		summaryEl.setEnabled(editTitleAndSummary);
 		
 		imageUpload = uifactory.addFileElement(getWindowControl(), "file", "fileupload",formLayout);			
 		imageUpload.setPreview(ureq.getUserSession(), true);
@@ -217,7 +223,7 @@ public class PageMetadataEditController extends FormBasicController {
 
 			String selectedBinder = theKeys[0];
 			if (currentBinder != null) {
-				selectedBinder = currentBinder.toString();					
+				selectedBinder = currentBinder.getKey().toString();					
 			}
 			
 			for (String key : theKeys) {

@@ -5,23 +5,39 @@
 	<div class="o_portfolio_toc #if($timelineSwitch) o_portfolio_withtimeline #end">
 		<ul class="list-unstyled">
 		#foreach($section in $sections)
-			<li><div class="o_header_with_buttons">
-					<h4>$r.render($section.sectionLinkName) </h4> <i class="o_icon $section.cssClassStatus"> </i>#if(${section.isAssessable()}) ${section.getFormattedResult()} #end
-					#if(${section.hasEditDropdown()})
-						<div id="sect_$foreach.count" class="o_button_group o_button_group_right dropdown">$r.render($section.editDropdownName)</div>
+			<li class="o_section"><div class="o_header_with_buttons"><h4>$r.render($section.sectionLink) </h4> <i class="o_icon $section.cssClassStatus"> </i>#if(${section.isAssessable()}) ${section.getFormattedResult()} #end</div>
+				#if($r.notNull($section.section.beginDate) || $r.notNull($section.section.endDate))
+					<div class="o_portfolio_section_meta">
+					#if($r.notNull($section.section.beginDate))
+						<span><strong>$r.translate("begin.date"): </strong> $r.formatDate($section.section.beginDate)</span>
 					#end
-					#if($r.notNull($section.section.beginDate) || $r.notNull($section.section.endDate))
-						<div class="o_portfolio_section_meta">
-						#if($r.notNull($section.section.beginDate))
-							<span><strong>$r.translate("begin.date"): </strong> $r.formatDate($section.section.beginDate)</span>
-						#end
-						#if($r.notNull($section.section.endDate))
-							<span><strong>$r.translate("end.date"): </strong> $r.formatDate($section.section.endDate)</span>
-						#end
-						</div>
+					#if($r.notNull($section.section.endDate))
+						<span><strong>$r.translate("end.date"): </strong> $r.formatDate($section.section.endDate)</span>
 					#end
-				</div>
-				#if(${section.getPages().size()} > 0)
+					</div>
+				#end
+					
+				#if($r.isNotNull($section.editDropdown))
+					<div id="sect_$foreach.count" class="o_section_actions dropdown">
+						<span class="o_section_move_up_and_down">
+							<div class="o_move_up">$r.render($section.upSectionLink)</div>
+							<div class="o_move_down">$r.render($section.downSectionLink)</div>
+						</span>
+						<span class="o_section_dropdown">
+						$r.render($section.editDropdown)
+						</span>
+					</div>
+				#end
+				
+				#if($r.isNotEmpty(${section.getAssignments()}))
+				<ul class="list-unstyled">
+					#foreach($assignment in $section.assignments)
+						<li><i class="o_icon o_icon_assignment"> </i> $assignment.title</li>
+					#end
+				</ul>
+				#end	
+			
+				#if($r.isNotEmpty(${section.getPages()}))
 				<ul class="list-unstyled">
 					#foreach($page in $section.pages)
 						<li>$r.render($page.openLink) <i class="o_icon $page.cssClassStatus"> </i> #if($r.isNotNull($page.commentLink)) $r.render($page.commentLink) #end</li>

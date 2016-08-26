@@ -259,6 +259,20 @@ public class AssessmentHelper {
 		}
 		return false;
 	}
+	
+	public static int countAssessableNodes(CourseNode node) {
+		int count = 0;
+		if(checkIfNodeIsAssessable(node)) {
+			count++;
+		}
+		// check children now
+		int numOfChildren = node.getChildCount();
+		for (int i = 0; i<numOfChildren; i++) {
+			CourseNode cn = (CourseNode) node.getChildAt(i);
+			count += countAssessableNodes(cn);
+		}
+		return count;
+	}
 
 	/**
 	 * Get all assessable nodes including the root node (if assessable)

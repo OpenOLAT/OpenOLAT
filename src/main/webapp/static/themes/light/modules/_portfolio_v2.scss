@@ -4,7 +4,7 @@ div#o_main_toolbar.o_toolbar.o_portfolio {
 }
 
 
-.o_section_lead, .o_page_lead {
+.o_section_lead, .o_page_lead, .o_assignment_lead {
 	padding: $o-portfolio-lead-space-sm $o-portfolio-lead-space-sm;
 	margin-bottom: $o-portfolio-lead-space-sm;
 	background-color: $o-portfolio-lead-background-color;
@@ -182,6 +182,24 @@ div#o_main_toolbar.o_toolbar.o_portfolio {
 	.o_portfolio_section_meta {
 		font-size: 80%;
 		color: $gray-light;
+	}
+	
+	.o_section {
+		position: relative;
+	}
+
+	.o_section_actions {
+		position: absolute;
+		top: 0;
+		right: 0;
+	
+		.o_section_move_up_and_down {
+			display: inline-block;
+		}
+		
+		.o_section_dropdown {
+			display: inline-block;
+		}
 	}
 }
 

@@ -20,6 +20,7 @@
 package org.olat.core.gui.components.stack;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import org.olat.core.gui.components.Component;
@@ -120,7 +121,11 @@ public class TooledStackedPanelRenderer extends DefaultComponentRenderer {
 								&& rightTools.isEmpty() && notAlignedTools.isEmpty();
 						sb.append("<ul class='o_tools o_tools_segments list-inline")
 						  .append(" o_tools_segments_alone", segmentAlone).append("'>");
-						renderTools(segmentsTools, renderer, sb, args);
+						
+						Tool segmentTool = segmentsTools.get(segmentsTools.size() - 1);
+						List<Tool> lastSegmentTool = Collections.singletonList(segmentTool);
+						renderTools(lastSegmentTool, renderer, sb, args);
+						
 						sb.append("</ul>");
 					}
 					sb.append("</div>"); 

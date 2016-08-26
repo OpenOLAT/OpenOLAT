@@ -15,6 +15,9 @@
 		</div>
 		<div class="panel-body">
 			<ul>
+				#if($r.isNotNull($row.referenceEntryName))
+					<li><span> <i class="o_icon o_CourseModule_icon"> </i> $r.translate("binder.entry.name"): $r.escapeHtml($row.referenceEntryName)</span></li>
+				#end
 				<li><span>$r.translate("binder.last.update"): $r.formatDateAndTime($row.lastUpdate)</span></li>
 				<li><span>$r.translate("binder.num.sections.pages", $row.numOfSectionsAndPages)</span></li>
 				<li><span>$r.translate("binder.num.comments", $row.numOfComments)</span></li>

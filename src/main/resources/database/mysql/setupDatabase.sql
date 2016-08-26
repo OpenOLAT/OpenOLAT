@@ -1713,6 +1713,7 @@ create table o_pf_assignment (
    id bigint not null auto_increment,
    creationdate datetime not null,
    lastmodified datetime not null,
+   pos bigint default null,
    p_status varchar(32) default null,
    p_type varchar(32) not null,
    p_version bigint not null default 0,

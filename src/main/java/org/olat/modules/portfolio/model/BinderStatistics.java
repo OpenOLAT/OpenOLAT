@@ -40,8 +40,10 @@ public class BinderStatistics implements BinderLight {
 	private final int numOfPages;
 	private final String status;
 	private final int numOfComments;
+	private final String entryDisplayname;
 	
-	public BinderStatistics(Long key, String title, String imagePath, Date lastModified, int numOfSections, int numOfPages, String status, int numOfComments) {
+	public BinderStatistics(Long key, String title, String imagePath, Date lastModified, int numOfSections, int numOfPages,
+			String status, String entryDisplayname, int numOfComments) {
 		this.key = key;
 		this.title = title;
 		this.imagePath = imagePath;
@@ -49,6 +51,7 @@ public class BinderStatistics implements BinderLight {
 		this.numOfSections = numOfSections;
 		this.numOfPages = numOfPages;
 		this.status = status;
+		this.entryDisplayname = entryDisplayname;
 		this.numOfComments = numOfComments;
 	}
 	
@@ -85,4 +88,10 @@ public class BinderStatistics implements BinderLight {
 	public int getNumOfComments() {
 		return numOfComments;
 	}
+
+	public String getEntryDisplayname() {
+		return entryDisplayname;
+	}
+
+	
 }

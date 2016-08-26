@@ -158,6 +158,8 @@ public class AssessmentToolController extends MainLayoutBasicController implemen
 		if(overviewCtrl == source) {
 			if(event == AssessmentCourseOverviewController.SELECT_USERS_EVENT) {
 				doSelectUsersView(ureq);
+			} else if(event == AssessmentCourseOverviewController.SELECT_NODES_EVENT) {
+				doSelectUsersView(ureq);
 			} else if(event == AssessmentCourseOverviewController.SELECT_GROUPS_EVENT) {
 				doSelectGroupsView(ureq);
 			} else if(event == AssessmentCourseOverviewController.SELECT_PASSED_EVENT) {

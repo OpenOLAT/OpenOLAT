@@ -26,6 +26,7 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
+import org.olat.core.gui.components.panel.Panel;
 import org.olat.core.gui.components.panel.SimpleStackedPanel;
 import org.olat.core.gui.components.panel.StackedPanel;
 import org.olat.core.gui.components.stack.ButtonGroupComponent;
@@ -66,8 +67,8 @@ public class BinderController extends BasicController implements TooledControlle
 	private HistoryController historyCtrl;
 	private PublishController publishCtrl;
 	private BinderPageListController entriesCtrl;
+	private TableOfContentController overviewCtrl;
 	private BinderAssessmentController assessmentCtrl;
-	private final TableOfContentController overviewCtrl;
 	
 	private Binder binder;
 	private final BinderConfiguration config;
@@ -80,13 +81,10 @@ public class BinderController extends BasicController implements TooledControlle
 		this.config = config;
 		this.stackPanel = stackPanel;
 		this.secCallback = secCallback;
-		
-		overviewCtrl = new TableOfContentController(ureq, getWindowControl(), stackPanel, secCallback, binder, config);
-		listenTo(overviewCtrl);
-		
+
 		segmentButtonsCmp = new ButtonGroupComponent("segments");
 		overviewLink = LinkFactory.createLink("portfolio.overview", getTranslator(), this);
-		segmentButtonsCmp.addButton(overviewLink, true);
+		segmentButtonsCmp.addButton(overviewLink, false);
 		entriesLink = LinkFactory.createLink("portfolio.entries", getTranslator(), this);
 		segmentButtonsCmp.addButton(entriesLink, false);
 		historyLink = LinkFactory.createLink("portfolio.history", getTranslator(), this);
@@ -101,7 +99,7 @@ public class BinderController extends BasicController implements TooledControlle
 		}
 		
 		mainPanel = putInitialPanel(new SimpleStackedPanel("portfolioSegments"));
-		mainPanel.setContent(overviewCtrl.getInitialComponent());
+		mainPanel.setContent(new Panel("empty"));
 		stackPanel.addListener(this);
 	}
 
@@ -111,7 +109,9 @@ public class BinderController extends BasicController implements TooledControlle
 		stackPanel.addTool(editBinderMetadataLink, Align.right);
 		
 		if(segmentButtonsCmp.getSelectedButton() == overviewLink) {
-			overviewCtrl.initTools();
+			if(overviewCtrl != null) {
+				overviewCtrl.initTools();
+			}
 		}
 	}
 	
@@ -149,6 +149,8 @@ public class BinderController extends BasicController implements TooledControlle
 			}
 		} else if("History".equalsIgnoreCase(resName)) {
 			doOpenHistory(ureq);
+		} else if("Toc".equalsIgnoreCase(resName)) {
+			doOpenOverview(ureq);
 		}
 	}
 
@@ -156,7 +158,9 @@ public class BinderController extends BasicController implements TooledControlle
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if(entriesCtrl == source) {
 			if(event == Event.CHANGED_EVENT) {
-				overviewCtrl.loadModel();
+				if(overviewCtrl != null) {
+					overviewCtrl.loadModel();
+				}
 			}
 		} else if(overviewCtrl == source) {
 			if(event == Event.CHANGED_EVENT) {
@@ -201,6 +205,11 @@ public class BinderController extends BasicController implements TooledControlle
 	}
 	
 	private TableOfContentController doOpenOverview(UserRequest ureq) {
+		OLATResourceable bindersOres = OresHelper.createOLATResourceableInstance("Toc", 0l);
+		WindowControl swControl = addToHistory(ureq, bindersOres, null);
+		overviewCtrl = new TableOfContentController(ureq, swControl, stackPanel, secCallback, binder, config);
+		listenTo(overviewCtrl);
+		
 		popUpToBinderController(ureq);
 		segmentButtonsCmp.setSelectedButton(overviewLink);
 		mainPanel.setContent(overviewCtrl.getInitialComponent());

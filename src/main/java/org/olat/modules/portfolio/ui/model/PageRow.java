@@ -28,6 +28,7 @@ import org.olat.core.gui.components.link.Link;
 import org.olat.core.util.StringHelper;
 import org.olat.course.assessment.AssessmentHelper;
 import org.olat.modules.portfolio.AssessmentSection;
+import org.olat.modules.portfolio.Assignment;
 import org.olat.modules.portfolio.Page;
 import org.olat.modules.portfolio.PageStatus;
 import org.olat.modules.portfolio.Section;
@@ -46,6 +47,8 @@ public class PageRow {
 	private final boolean assessable;
 	private boolean firstPageOfSection;
 	private final AssessmentSection assessmentSection;
+	
+	private Assignment pageAssignment;
 	
 	private Collection<String> pageCategories;
 	private Collection<String> sectionCategories;
@@ -180,6 +183,18 @@ public class PageRow {
 
 	public void setSectionCategories(Collection<String> sectionCategories) {
 		this.sectionCategories = sectionCategories;
+	}
+
+	public Assignment getPageAssignment() {
+		return pageAssignment;
+	}
+
+	public void setPageAssignment(Assignment pageAssignment) {
+		this.pageAssignment = pageAssignment;
+	}
+	
+	public String getPageAssignmentTitle() {
+		return pageAssignment == null ? null : pageAssignment.getTitle();
 	}
 
 	public boolean isAssessable() {

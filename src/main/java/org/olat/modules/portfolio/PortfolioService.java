@@ -73,7 +73,13 @@ public interface PortfolioService {
 	 */
 	public Assignment addAssignment(String title, String summary, String content, AssignmentType type, Section section);
 	
+	public Section moveUpAssignment(Section section, Assignment assignment);
+	
+	public Section moveDownAssignment(Section section, Assignment assignment);
+	
 	public Assignment updateAssignment(Assignment assignment, String title, String summary, String content, AssignmentType type);
+	
+	
 	
 	public List<Assignment> getAssignments(PortfolioElement binder);
 	
@@ -295,6 +301,10 @@ public interface PortfolioService {
 	 * @return
 	 */
 	public Section getSection(SectionRef section);
+	
+	public Binder moveUpSection(Binder binder, Section section);
+	
+	public Binder moveDownSection(Binder binder, Section section);
 	
 	/**
 	 * Load the pages and the sections order by sections and pages.

@@ -17,7 +17,6 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-
 package org.olat.modules.portfolio.ui;
 
 import java.util.HashMap;
@@ -35,13 +34,10 @@ import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.stack.BreadcrumbPanel;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.control.Controller;
-import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
 import org.olat.core.id.Identity;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
-import org.olat.course.nodes.portfolio.DeadlineController;
 import org.olat.modules.portfolio.Binder;
 import org.olat.modules.portfolio.BinderConfiguration;
 import org.olat.modules.portfolio.BinderSecurityCallback;
@@ -64,8 +60,6 @@ public class PortfolioAssessmentDetailsController extends FormBasicController {
 	private List<Binder> binders;
 	private Map<Binder, MapElements> binderToElements = new HashMap<Binder, MapElements>();
 	
-	private DeadlineController deadlineCtr;
-	private CloseableCalloutWindowController deadlineCalloutCtr;
 	private final BreadcrumbPanel stackPanel;
 	
 	@Autowired
@@ -164,28 +158,6 @@ public class PortfolioAssessmentDetailsController extends FormBasicController {
 			String displayName = StringHelper.escapeHtml(binder.getTitle());
 			stackPanel.pushController(displayName, binderCtrl);
 			binderCtrl.activate(ureq, null, null);
-		}
-	}
-	
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest,
-	 *      org.olat.core.gui.control.Controller, org.olat.core.gui.control.Event)
-	 */
-	@Override
-	protected void event(UserRequest ureq, Controller source, Event event) {
-		if (source == deadlineCalloutCtr && event == CloseableCalloutWindowController.CLOSE_WINDOW_EVENT) {
-			removeAsListenerAndDispose(deadlineCalloutCtr);
-			deadlineCalloutCtr = null;
-		} else if (source == deadlineCtr) {
-			closeDeadlineBox();
-		}
-	}
-	
-	private void closeDeadlineBox() {
-		if (deadlineCalloutCtr != null){
-			deadlineCalloutCtr.deactivate();
-			removeAsListenerAndDispose(deadlineCalloutCtr);
-			deadlineCalloutCtr = null;
 		}
 	}
 	

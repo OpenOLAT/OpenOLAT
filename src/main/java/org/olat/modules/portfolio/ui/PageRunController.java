@@ -45,6 +45,7 @@ import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.resource.OresHelper;
+import org.olat.modules.portfolio.Assignment;
 import org.olat.modules.portfolio.Binder;
 import org.olat.modules.portfolio.BinderSecurityCallback;
 import org.olat.modules.portfolio.Media;
@@ -99,6 +100,7 @@ public class PageRunController extends BasicController implements TooledControll
 	private UserCommentsAndRatingsController commentsCtrl;
 	
 	private Page page;
+	private List<Assignment> assignments;
 	private boolean dirtyMarker = false;
 	private final BinderSecurityCallback secCallback;
 	
@@ -111,6 +113,8 @@ public class PageRunController extends BasicController implements TooledControll
 		this.page = page;
 		this.stackPanel = stackPanel;
 		this.secCallback = secCallback;
+		
+		assignments = portfolioService.getAssignments(page);
 		
 		mainVC = createVelocityContainer("page_content");
 		mainVC.contextPut("pageTitle", page.getTitle());
@@ -328,7 +332,9 @@ public class PageRunController extends BasicController implements TooledControll
 			binder = portfolioService.getBinderBySection(section);
 		}
 		
-		editMetadataCtrl = new PageMetadataEditController(ureq, getWindowControl(), binder, true, section, true, page);
+		boolean editMetadata = secCallback.canEditPageMetadata(page, assignments);
+		editMetadataCtrl = new PageMetadataEditController(ureq, getWindowControl(),
+				binder, editMetadata, section, editMetadata, page, editMetadata);
 		listenTo(editMetadataCtrl);
 		
 		String title = translate("edit.page.metadata");

@@ -34,6 +34,7 @@ import org.olat.modules.portfolio.PortfolioRoles;
 import org.olat.modules.portfolio.Section;
 import org.olat.modules.portfolio.SectionRef;
 import org.olat.modules.portfolio.model.AssignmentImpl;
+import org.olat.modules.portfolio.model.SectionImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -62,7 +63,10 @@ public class AssignmentDAO {
 		assignment.setType(type.name());
 		assignment.setStatus(status.name());
 		
+		((SectionImpl)section).getAssignments().size();
+		((SectionImpl)section).getAssignments().add(assignment);
 		dbInstance.getCurrentEntityManager().persist(assignment);
+		dbInstance.getCurrentEntityManager().merge(section);
 		return assignment;
 	}
 	
@@ -77,14 +81,41 @@ public class AssignmentDAO {
 		assignment.setType(templateReference.getAssignmentType().name());
 		assignment.setTemplateReference(templateReference);
 		assignment.setStatus(status.name());
-		
+
+		((SectionImpl)section).getAssignments().size();
+		((SectionImpl)section).getAssignments().add(assignment);
 		dbInstance.getCurrentEntityManager().persist(assignment);
+		dbInstance.getCurrentEntityManager().merge(section);
 		return assignment;
 	}
 	
 	public Assignment updateAssignment(Assignment assignment) {
 		((AssignmentImpl)assignment).setLastModified(new Date());
 		return dbInstance.getCurrentEntityManager().merge(assignment);
+	}
+	
+	public Section moveUpAssignment(SectionImpl section, Assignment assignment) {
+		section.getAssignments().size();
+		int index = section.getAssignments().indexOf(assignment);
+		if(index > 0) {
+			Assignment reloadedAssigment = section.getAssignments().remove(index);
+			section.getAssignments().add(index - 1, reloadedAssigment);
+		} else {
+			section.getAssignments().add(0, assignment);
+		}
+		section = dbInstance.getCurrentEntityManager().merge(section);
+		return section;
+	}
+	
+	public Section moveDownAssignment(SectionImpl section, Assignment assignment) {
+		section.getAssignments().size();
+		int index = section.getAssignments().indexOf(assignment);
+		if(index >= 0 && index + 1 < section.getAssignments().size()) {
+			Assignment reloadedAssignment = section.getAssignments().remove(index);
+			section.getAssignments().add(index + 1, reloadedAssignment);
+			section = dbInstance.getCurrentEntityManager().merge(section);
+		}
+		return section;
 	}
 	
 	public Assignment startEssayAssignment(Assignment assigment, Page page, Identity assignee) {

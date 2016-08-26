@@ -1625,6 +1625,7 @@ create table o_pf_assignment (
    id number(20) GENERATED ALWAYS AS IDENTITY,
    creationdate date not null,
    lastmodified date not null,
+   pos number(20) default null,
    p_status varchar2(32 char) default null,
    p_type varchar2(32 char) not null,
    p_version number(20) default 0 not null,

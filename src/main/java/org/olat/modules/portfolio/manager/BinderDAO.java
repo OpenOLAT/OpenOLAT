@@ -264,6 +264,7 @@ public class BinderDAO {
 	public List<BinderStatistics> searchOwnedBinders(IdentityRef owner) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select binder.key, binder.title, binder.imagePath, binder.lastModified, binder.status,")
+		  .append(" binderEntry.displayname,")
 		  .append(" (select count(section.key) from pfsection as section")
 		  .append("   where section.binder.key=binder.key")
 		  .append(" ) as numOfSections,")
@@ -276,6 +277,7 @@ public class BinderDAO {
 		  .append(" from pfbinder as binder")
 		  .append(" inner join binder.baseGroup as baseGroup")
 		  .append(" inner join baseGroup.members as membership")
+		  .append(" left join binder.entry binderEntry")
 		  .append(" where binder.olatResource is null and membership.identity.key=:identityKey and membership.role=:role");
 		
 		List<Object[]> objects = dbInstance.getCurrentEntityManager()
@@ -292,10 +294,13 @@ public class BinderDAO {
 			String imagePath = (String)object[pos++];
 			Date lastModified = (Date)object[pos++];
 			String status = (String)object[pos++];
+			String repoEntryName = (String)object[pos++];
+
 			int numOfSections = ((Number)object[pos++]).intValue();
 			int numOfPages = ((Number)object[pos++]).intValue();
 			int numOfComments = ((Number)object[pos++]).intValue();
-			rows.add(new BinderStatistics(key, title, imagePath, lastModified, numOfSections, numOfPages, status, numOfComments));
+			
+			rows.add(new BinderStatistics(key, title, imagePath, lastModified, numOfSections, numOfPages, status, repoEntryName, numOfComments));
 		}
 		return rows;
 	}
@@ -686,6 +691,29 @@ public class BinderDAO {
 			.createQuery(sb.toString(), Section.class)
 			.setParameter("binderKey", binder.getKey())
 			.getResultList();
+	}
+	
+	public Binder moveUpSection(BinderImpl binder, Section section) {
+		binder.getSections().size();
+		int index = binder.getSections().indexOf(section);
+		if(index > 0) {
+			Section reloadedPart = binder.getSections().remove(index);
+			binder.getSections().add(index - 1, reloadedPart);
+		} else {
+			binder.getSections().add(0, section);
+		}
+		return dbInstance.getCurrentEntityManager().merge(binder);
+	}
+
+	public Binder moveDownSection(BinderImpl binder, Section section) {
+		binder.getSections().size();
+		int index = binder.getSections().indexOf(section);
+		if(index >= 0 && index + 1 < binder.getSections().size()) {
+			Section reloadedSection = binder.getSections().remove(index);
+			binder.getSections().add(index + 1, reloadedSection);
+			binder = dbInstance.getCurrentEntityManager().merge(binder);
+		}
+		return binder;
 	}
 	
 	/**

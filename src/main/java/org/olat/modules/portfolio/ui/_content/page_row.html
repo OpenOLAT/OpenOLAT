@@ -58,19 +58,7 @@
 		</div>
 	</div>
 	
-	#if($r.isNotNull($row.newEntryLink))
-	<div class="panel panel-placeholder">
-		<div class="panel-heading">
-			<h4 class="panel-title">$r.translate("create.new.page.title")</h4>
-		</div>
-		<div class="panel-body">
-			<p>$r.translate("create.new.page.descr")</p>
-			<div class="o_button_group">
-				$r.render($row.newEntryLink)
-			</div>
-		</div>
-	</div>
-	#end
+
 	#if($r.isNotNull($row.newAssignmentLink))
 	<div class="panel panel-placeholder">
 		<div class="panel-heading">
@@ -85,24 +73,46 @@
 	</div>
 	#end
 	#if($r.isNotEmpty($row.assignments))
-	<div class="panel panel-placeholder o_portfolio_assignments">
 		#foreach($assignment in $row.assignments)
+			#if($r.isNotNull($assignment.editLink))
+				<div class="clearfix">
+					<h4>$r.translate("assignment") ${foreach.count}: $assignment.title</h4>
+					
+					#if($r.isNotEmpty($assignment.summary))
+					<div class="o_assignment_lead o_block_large_bottom">
+						<div class="o_desc o_user_content_block">
+							$r.xssScan($assignment.summary)
+						</div>
+					</div>
+					#end
+					<div class="o_button_group">
+						$r.render($assignment.upLink) $r.render($assignment.downLink) $r.render($assignment.editLink)
+					</div>
+				</div>
+			#elseif($r.isNotNull($assignment.createLink))
+			<div class="panel panel-placeholder o_portfolio_assignments">
+				<div class="panel-heading">
+					<h4 class="panel-title"><i class="o_icon o_icon_assignment"> </i>$r.translate("assignment") ${foreach.count}: $assignment.title</h4>
+				</div>
+				<div class="panel-body">
+					$r.xssScan($assignment.summary)
+					<div class="o_button_group">$r.render($assignment.createLink)</div>
+				</div>
+			</div>
+			#end
+		#end
+	#end
+	#if($r.isNotNull($row.newEntryLink))
+	<div class="panel panel-placeholder">
 		<div class="panel-heading">
-			<h4 class="panel-title"><i class="o_icon o_icon_assignment"> </i> $r.translate("assignment") ${foreach.count}: $assignment.title</h4>
+			<h4 class="panel-title">$r.translate("create.new.page.title")</h4>
 		</div>
 		<div class="panel-body">
-			$r.xssScan($assignment.summary)
+			<p>$r.translate("create.new.page.descr")</p>
 			<div class="o_button_group">
-			#if($r.isNotNull($assignment.editLink))
-		 		$r.render($assignment.editLink)
-		 	#elseif($r.isNotNull($assignment.openLink))
-		 		$r.render($assignment.openLink)
-		 	#elseif($r.isNotNull($assignment.createLink))
-		 		$r.render($assignment.createLink)
-		 	#end
+				$r.render($row.newEntryLink)
 			</div>
 		</div>
-		#end
 	</div>
 	#end
 </div>
@@ -110,8 +120,12 @@
 #if(${row.isPage()})
 <div class="o_portfolio_page o_block_large_bottom">
 	<h4><i class="o_icon ${row.getCssClassStatus()} o_icon-fw"> </i> $r.escapeHtml($row.title)</h4>
+	#if($r.isNotNull($row.pageAssignment))
+		<i class="o_icon o_icon_assignment"> </i> <strong>$r.translate("meta.assignment", $row.pageAssignmentTitle)</strong> 
+	#end
 	#if($r.isNotEmpty($row.pageCategories))
 	<span class="o_portfolio_page_meta text-muted o_small">
+		#if($r.isNotNull($row.pageAssignment)), #end
 		<strong>$r.translate("meta.categories")</strong> <i class="o_icon o_icon_tags"> </i>
 		 #foreach($category in $row.pageCategories)
 		 	#if(${foreach.count} > 1), #end
@@ -121,12 +135,12 @@
 	#end
 	#if($r.isNotNull($row.lastPublicationDate))
 	<span class="o_portfolio_page_meta text-muted o_small">
-		#if($r.isNotEmpty($row.pageCategories)), #end
+		#if($r.isNotNull($row.pageAssignment) || $r.isNotEmpty($row.pageCategories)), #end
 		$r.translate("meta.last.publication", $r.formatDateAndTime($row.lastPublicationDate))
 	</span>
 	#end
 	<span class="o_portfolio_page_meta text-muted o_small">
-		#if($r.isNotNull($row.lastPublicationDate) or $r.isNotEmpty($row.pageCategories)), #end
+		#if($r.isNotNull($row.pageAssignment) || $r.isNotNull($row.lastPublicationDate) or $r.isNotEmpty($row.pageCategories)), #end
 		$r.translate("meta.last.modified", $r.formatDateAndTime($row.lastModified))
 	</span>
 	#if(${row.hasMetaBinderAndSectionTitle()})

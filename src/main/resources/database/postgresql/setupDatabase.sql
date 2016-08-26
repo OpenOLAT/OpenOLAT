@@ -1595,6 +1595,7 @@ create table o_pf_assignment (
    id bigserial,
    creationdate timestamp not null,
    lastmodified timestamp not null,
+   pos int8 default null,
    p_status varchar(32) default null,
    p_type varchar(32) not null,
    p_version int8 not null default 0,

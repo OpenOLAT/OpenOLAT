@@ -32,7 +32,8 @@ public class PageAssignmentRow {
 	
 	private Assignment assignment;
 	
-	private FormLink editLink, openLink, createLink;
+	private FormLink editLink, createLink;
+	private FormLink upLink, downLink;
 	
 	public PageAssignmentRow(Assignment assignment) {
 		this.assignment = assignment;
@@ -62,12 +63,20 @@ public class PageAssignmentRow {
 		this.editLink = editLink;
 	}
 
-	public FormLink getOpenLink() {
-		return openLink;
+	public FormLink getUpLink() {
+		return upLink;
 	}
 
-	public void setOpenLink(FormLink openLink) {
-		this.openLink = openLink;
+	public void setUpLink(FormLink upLink) {
+		this.upLink = upLink;
+	}
+
+	public FormLink getDownLink() {
+		return downLink;
+	}
+
+	public void setDownLink(FormLink downLink) {
+		this.downLink = downLink;
 	}
 
 	public FormLink getCreateLink() {

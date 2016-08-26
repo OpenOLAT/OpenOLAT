@@ -220,7 +220,8 @@ public class PortfolioServiceImpl implements PortfolioService {
 			File newStorage = portfolioFileStorage.generateAssignmentSubDirectory();
 			storage = portfolioFileStorage.getRelativePath(newStorage);
 		}
-		return assignmentDao.createAssignment(title, summary, content, storage, type, AssignmentStatus.template, section);
+		Section reloadedSection = binderDao.loadSectionByKey(section.getKey());
+		return assignmentDao.createAssignment(title, summary, content, storage, type, AssignmentStatus.template, reloadedSection);
 	}
 
 	@Override
@@ -239,6 +240,18 @@ public class PortfolioServiceImpl implements PortfolioService {
 		impl.setContent(content);
 		impl.setType(type.name());
 		return assignmentDao.updateAssignment(assignment);
+	}
+	
+	@Override
+	public Section moveUpAssignment(Section section, Assignment assignment) {
+		Section reloadedSection = binderDao.loadSectionByKey(section.getKey());
+		return assignmentDao.moveUpAssignment((SectionImpl)reloadedSection, assignment);
+	}
+
+	@Override
+	public Section moveDownAssignment(Section section, Assignment assignment) {
+		Section reloadedSection = binderDao.loadSectionByKey(section.getKey());
+		return assignmentDao.moveDownAssignment((SectionImpl)reloadedSection, assignment);
 	}
 
 	@Override
@@ -298,6 +311,18 @@ public class PortfolioServiceImpl implements PortfolioService {
 	@Override
 	public Section getSection(SectionRef section) {
 		return binderDao.loadSectionByKey(section.getKey());
+	}
+
+	@Override
+	public Binder moveUpSection(Binder binder, Section section) {
+		Binder reloadedBinder = binderDao.loadByKey(binder.getKey());
+		return binderDao.moveUpSection((BinderImpl)reloadedBinder, section);
+	}
+
+	@Override
+	public Binder moveDownSection(Binder binder, Section section) {
+		Binder reloadedBinder = binderDao.loadByKey(binder.getKey());
+		return binderDao.moveDownSection((BinderImpl)reloadedBinder, section);
 	}
 
 	@Override
