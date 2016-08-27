@@ -273,6 +273,9 @@ public class SectionImpl implements Persistable, ModifiedInfo, CreateInfo, Secti
 	}
 
 	public List<Assignment> getAssignments() {
+		if(assignments == null) {
+			assignments = new ArrayList<>();
+		}
 		return assignments;
 	}
 

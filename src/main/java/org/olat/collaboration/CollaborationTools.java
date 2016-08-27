@@ -56,6 +56,7 @@ import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.BusinessControl;
+import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.logging.AssertException;
 import org.olat.core.logging.OLog;
@@ -517,7 +518,10 @@ public class CollaborationTools implements Serializable {
 							Binder binder = portfolioService.createNewBinder(group.getName(), group.getDescription(), null, null);
 							mapKeyProperty = npm.createPropertyInstance(null, null, PROP_CAT_BG_COLLABTOOLS, KEY_PORTFOLIO, null, binder.getKey(), "2", null);
 							BinderSecurityCallback secCallback = BinderSecurityCallbackFactory.getCallbackForBusinessGroup();
-							ctrl = new BinderController(ureq, wControl, stackPanel, secCallback, binder, BinderConfiguration.createBusinessGroupConfig());
+							BinderController binderCtrl = new BinderController(ureq, wControl, stackPanel, secCallback, binder, BinderConfiguration.createBusinessGroupConfig());					
+							List<ContextEntry> entries = BusinessControlFactory.getInstance().createCEListFromResourceType("Toc");
+							binderCtrl.activate(ureq, entries, null);
+							ctrl = binderCtrl;
 						} else {
 							EPFrontendManager ePFMgr = CoreSpringFactory.getImpl(EPFrontendManager.class);
 							PortfolioStructureMap map = ePFMgr.createAndPersistPortfolioDefaultMap(group.getName(), group.getDescription());					
