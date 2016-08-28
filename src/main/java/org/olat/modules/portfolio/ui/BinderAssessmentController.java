@@ -40,6 +40,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
+import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Identity;
 import org.olat.core.util.StringHelper;
@@ -249,6 +250,7 @@ public class BinderAssessmentController extends FormBasicController {
 		}
 		
 		portfolioService.updateAssessmentSections(binder, changes, getIdentity());
+		fireEvent(ureq, Event.CHANGED_EVENT);
 	}
 	
 	private void doClose(Section section) {

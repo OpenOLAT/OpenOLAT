@@ -19,25 +19,21 @@
  */
 package org.olat.modules.portfolio.ui;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.components.form.flexible.FormItem;
-import org.olat.core.gui.components.form.flexible.FormItemContainer;
-import org.olat.core.gui.components.form.flexible.elements.FormLink;
-import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
-import org.olat.core.gui.components.form.flexible.impl.FormEvent;
-import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
-import org.olat.core.gui.components.link.Link;
+import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.stack.BreadcrumbPanel;
-import org.olat.core.gui.components.stack.TooledStackedPanel;
+import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
+import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.id.Identity;
 import org.olat.core.util.Formatter;
-import org.olat.core.util.StringHelper;
+import org.olat.core.util.Util;
+import org.olat.course.nodes.CourseNode;
+import org.olat.course.nodes.portfolio.PortfolioResultDetailsController;
 import org.olat.modules.portfolio.Binder;
 import org.olat.modules.portfolio.BinderConfiguration;
 import org.olat.modules.portfolio.BinderSecurityCallback;
@@ -54,76 +50,89 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class PortfolioAssessmentDetailsController extends FormBasicController {
+public class PortfolioAssessmentDetailsController extends BasicController {
 	
-	private Binder templateBinder;
-	private List<Binder> binders;
-	private Map<Binder, MapElements> binderToElements = new HashMap<Binder, MapElements>();
+	private Binder binder;
 	
+	private BinderAssessmentController assessmentCtrl;
+
+	private CourseNode courseNode;
+	private final VelocityContainer mainVC;
 	private final BreadcrumbPanel stackPanel;
 	
 	@Autowired
 	private PortfolioService portfolioService;
 	
-	public PortfolioAssessmentDetailsController(UserRequest ureq, WindowControl wControl, BreadcrumbPanel stackPanel, RepositoryEntry templateEntry,
-			Identity assessedIdentity) {
+	public PortfolioAssessmentDetailsController(UserRequest ureq, WindowControl wControl, BreadcrumbPanel stackPanel,
+			RepositoryEntry templateEntry, Identity assessedIdentity) {
+		super(ureq, wControl, Util.createPackageTranslator(PortfolioResultDetailsController.class, ureq.getLocale()));
+
+		this.stackPanel = stackPanel;
+		mainVC = createVelocityContainer("binder_result_details");
+		
+		if(templateEntry != null && BinderTemplateResource.TYPE_NAME.equals(templateEntry.getOlatResource().getResourceableTypeName())) {
+			List<Binder> binders = portfolioService.getBinders(assessedIdentity, templateEntry, null);
+			if(binders.size() == 1) {
+				binder = binders.get(0);
+			} else if(binders.size() > 1) {
+				//warning
+				binder = binders.get(0);
+			}
+		}
+		
+		loadModel(ureq, binder);
+		putInitialPanel(mainVC);
+	}
+	
+	public PortfolioAssessmentDetailsController(UserRequest ureq, WindowControl wControl, BreadcrumbPanel stackPanel,
+			RepositoryEntry courseEntry, CourseNode courseNode, RepositoryEntry templateEntry, Identity assessedIdentity) {
 		super(ureq, wControl);
 
 		this.stackPanel = stackPanel;
+		mainVC = createVelocityContainer("binder_result_details");
 		
 		if(templateEntry != null && BinderTemplateResource.TYPE_NAME.equals(templateEntry.getOlatResource().getResourceableTypeName())) {
-			templateBinder = portfolioService.getBinderByResource(templateEntry.getOlatResource());
-			binders = portfolioService.getBinders(assessedIdentity, templateEntry, null);
-		}
-		initForm(ureq);
-	}
-
-	@Override
-	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		if(binders == null || binders.isEmpty()) {
-			setFormWarning("no.map");
-		} else if(binders != null && binders.size() > 0) {
-			initBindersForm(formLayout);
-		}
-	}
-	
-	protected void initBindersForm(FormItemContainer formLayout) {
-		Formatter formatter = Formatter.getInstance(getLocale());
-		
-		int count = 0;
-		for(Binder binder:binders) {
-			MapElements mapElements = new MapElements();
-	
-			if(binders.size() > 1 || !binder.getTemplate().equals(templateBinder)) {
-				String templateTitle = binder.getTemplate().getTitle();
-				uifactory.addStaticTextElement("map.template." + count, "map.template", templateTitle, formLayout);
+			List<Binder> binders = portfolioService.getBinders(assessedIdentity, courseEntry, courseNode.getIdent());
+			if(binders.size() == 1) {
+				binder = binders.get(0);
+			} else if(binders.size() > 1) {
+				//warning
+				binder = binders.get(0);
 			}
+		}
+		
+		loadModel(ureq, binder);
+		putInitialPanel(mainVC);
+	}
+	
+	private void loadModel(UserRequest ureq, Binder loadedBinder) {
+		if(loadedBinder == null) {
+			mainVC.contextPut("noMap", Boolean.TRUE);
+		} else {
+			Formatter formatter = Formatter.getInstance(getLocale());
+			String templateTitle = loadedBinder.getTemplate().getTitle();
+			mainVC.contextPut("templateTitle", templateTitle);
 			
 			String copyDate = "";
-			if(binder.getCopyDate() != null) {
-				copyDate = formatter.formatDateAndTime(binder.getCopyDate());
+			if(loadedBinder.getCopyDate() != null) {
+				copyDate = formatter.formatDateAndTime(loadedBinder.getCopyDate());
 			}
-			uifactory.addStaticTextElement("map.copyDate." + count, "map.copyDate", copyDate, formLayout);
-			
+			mainVC.contextPut("copyDate", copyDate);
+
 			String returnDate = "";
-			if(binder.getReturnDate() != null) {
-				returnDate = formatter.formatDateAndTime(binder.getReturnDate());
+			if(loadedBinder.getReturnDate() != null) {
+				returnDate = formatter.formatDateAndTime(loadedBinder.getReturnDate());
 			}
-			uifactory.addStaticTextElement("map.returnDate." + count, "map.returnDate", returnDate, formLayout);
-
-			FormLayoutContainer buttonsCont = FormLayoutContainer.createButtonLayout("buttons." + count, getTranslator());
-			buttonsCont.setRootForm(mainForm);
-			formLayout.add(buttonsCont);
-
-			mapElements.openMapLink = uifactory.addFormLink("open.binder." + count, "open.binder", "open.map", null, buttonsCont, Link.BUTTON);
-			mapElements.openMapLink.setUserObject(binder);
+			mainVC.contextPut("returnDate", returnDate);
 			
-			count++;
-			if(count != binders.size()) {
-				uifactory.addSpacerElement("spacer-" + count, formLayout, false);
-			}
+			List<AccessRights> rights = portfolioService.getAccessRights(loadedBinder, getIdentity());
+			BinderSecurityCallback secCallback = BinderSecurityCallbackFactory.getCallbackForCoach(loadedBinder, rights);
+			BinderConfiguration config = BinderConfiguration.createConfig(loadedBinder);
 			
-			binderToElements.put(binder, mapElements);
+			assessmentCtrl = new BinderAssessmentController(ureq, getWindowControl(),
+					secCallback, loadedBinder, config);
+			listenTo(assessmentCtrl);
+			mainVC.put("assessment", assessmentCtrl.getInitialComponent());
 		}
 	}
 	
@@ -131,24 +140,23 @@ public class PortfolioAssessmentDetailsController extends FormBasicController {
 	protected void doDispose() {
 		//
 	}
-
+	
 	@Override
-	protected void formOK(UserRequest ureq) {
+	protected void event(UserRequest ureq, Component source, Event event) {
 		//
 	}
-
-	@Override
-	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if(source instanceof FormLink) {
-			FormLink link = (FormLink)source;
-			if(link.getName().startsWith("open.binder")) {
-				Binder map = (Binder)link.getUserObject();
-				doOpenMap(ureq, map);
-			}
-		} 
-		super.formInnerEvent(ureq, source, event);
-	}
 	
+	@Override
+	protected void event(UserRequest ureq, Controller source, Event event) {
+		if(event == Event.CHANGED_EVENT || event == Event.DONE_EVENT) {
+			if(courseNode != null) {
+				fireEvent(ureq, Event.CHANGED_EVENT);
+			}
+		}
+		fireEvent(ureq, event);
+	}
+
+	/*
 	private void doOpenMap(UserRequest ureq, Binder binder) {
 		if(stackPanel instanceof TooledStackedPanel) {
 			List<AccessRights> rights = portfolioService.getAccessRights(binder, getIdentity());
@@ -160,16 +168,5 @@ public class PortfolioAssessmentDetailsController extends FormBasicController {
 			binderCtrl.activate(ureq, null, null);
 		}
 	}
-	
-	public static class MapElements {
-		private FormLink openMapLink;
-		
-		public FormLink getOpenMapLink() {
-			return openMapLink;
-		}
-		
-		public void setOpenMapLink(FormLink openMapLink) {
-			this.openMapLink = openMapLink;
-		}
-	}
+	*/
 }
