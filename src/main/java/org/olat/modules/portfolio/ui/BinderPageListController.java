@@ -192,6 +192,13 @@ public class BinderPageListController extends AbstractPageListController {
 				List<Assignment> sectionAssignments = sectionToAssignmentMap.get(section);
 				PortfolioElementRow row = forgePendingAssignmentRow(assignment, section, sectionAssignments);
 				rows.add(row);
+				
+				if(secCallback.canAddPage(section)) {
+					FormLink newEntryButton = uifactory.addFormLink("new.entry." + (++counter), "new.entry", "create.new.page", null, flc, Link.BUTTON);
+					newEntryButton.setCustomEnabledLinkCSS("btn btn-primary");
+					newEntryButton.setUserObject(row);
+					row.setNewEntryLink(newEntryButton);
+				}
 			}
 		}
 
@@ -201,11 +208,10 @@ public class BinderPageListController extends AbstractPageListController {
 				continue;
 			}
 			
-			boolean first = false;
 			Section section = page.getSection();
 
-			PortfolioElementRow pageRow = forgePageRow(page, sectionToAssessmentSectionMap.get(section), sectionToAssignmentMap.get(section),
-					first, categorizedElementMap, numberOfCommentsMap);
+			PortfolioElementRow pageRow = forgePageRow(page, sectionToAssessmentSectionMap.get(section),
+					sectionToAssignmentMap.get(section), categorizedElementMap, numberOfCommentsMap);
 			rows.add(pageRow);
 			if(secCallback.canAddPage(section)) {
 				FormLink newEntryButton = uifactory.addFormLink("new.entry." + (++counter), "new.entry", "create.new.page", null, flc, Link.BUTTON);
@@ -243,7 +249,7 @@ public class BinderPageListController extends AbstractPageListController {
 				}
 				
 				PortfolioElementRow sectionRow = forgeSectionRow(section, sectionToAssessmentSectionMap.get(section),
-						true, categorizedElementMap);
+						sectionToAssignmentMap.get(section), categorizedElementMap);
 				rows.add(sectionRow);
 
 				if(secCallback.canAddPage(section)) {
@@ -431,6 +437,7 @@ public class BinderPageListController extends AbstractPageListController {
 		previousSectionLink.setVisible(visible);
 		nextSectionLink.setVisible(visible);
 		showAllSectionsLink.setVisible(visible);
+		flc.setDirty(true);
 	}
 	
 	private void doCreateNewSection(UserRequest ureq) {

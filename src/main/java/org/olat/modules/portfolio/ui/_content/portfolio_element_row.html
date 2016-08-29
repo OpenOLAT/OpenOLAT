@@ -72,20 +72,6 @@
 		</div>
 	</div>
 	#end
-
-	#if($r.isNotNull($row.newEntryLink))
-	<div class="panel panel-placeholder">
-		<div class="panel-heading">
-			<h4 class="panel-title">$r.translate("create.new.page.title")</h4>
-		</div>
-		<div class="panel-body">
-			<p>$r.translate("create.new.page.descr")</p>
-			<div class="o_button_group">
-				$r.render($row.newEntryLink)
-			</div>
-		</div>
-	</div>
-	#end
 </div>
 #end
 #if(${row.isPendingAssignment()})
@@ -154,6 +140,19 @@
 		#if($r.isNotNull($row.commentFormLink))
 			<span class="btn btn-sm o_portfolio_comment">$r.render($row.commentFormLink)</span>
 		#end
+	</div>
+</div>
+#end
+#if($row.newEntry && $r.isNotNull($row.newEntryLink))
+<div class="panel panel-placeholder">
+	<div class="panel-heading">
+		<h4 class="panel-title">$r.translate("create.new.page.title")</h4>
+	</div>
+	<div class="panel-body">
+		<p>$r.translate("create.new.page.descr")</p>
+		<div class="o_button_group">
+			$r.render($row.newEntryLink)
+		</div>
 	</div>
 </div>
 #end

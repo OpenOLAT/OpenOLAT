@@ -48,7 +48,7 @@ public class PortfolioElementRow {
 	private String metaBinderTitle;
 	
 	private final boolean assessable;
-	private boolean firstPageOfSection;
+	private final boolean assignments;
 
 	private Collection<String> pageCategories;
 	private Collection<String> sectionCategories;
@@ -61,26 +61,27 @@ public class PortfolioElementRow {
 	// assignment
 	private FormLink newAssignmentLink, editAssignmentLink, instantiateAssignmentLink, upAssignmentLink, downAssignmentLink;
 	
+	private boolean newEntry;
 	private RowType type;
 	
 	public PortfolioElementRow(Section section, AssessmentSection assessmentSection,
-			boolean firstPageOfSection, boolean assessable) {
+			boolean assessable, boolean assignments) {
 		this.page = null;
 		type = RowType.section;
 		this.section = section;
 		this.assessable = assessable;
+		this.assignments = assignments;
 		this.assessmentSection = assessmentSection;
-		this.firstPageOfSection = firstPageOfSection;
 	}
 	
 	public PortfolioElementRow(Page page, AssessmentSection assessmentSection,
-			boolean firstPageOfSection, boolean assessable) {
+			boolean assessable) {
 		this.page = page;
 		this.section = page.getSection();
 		type = RowType.page;
 		this.assessable = assessable;
+		this.assignments = false;
 		this.assessmentSection = assessmentSection;
-		this.firstPageOfSection = firstPageOfSection;
 	}
 	
 	private int assignmentPos;
@@ -92,6 +93,7 @@ public class PortfolioElementRow {
 		
 		page = null;
 		assessable = false;
+		assignments = false;
 		assessmentSection = null;
 		type = RowType.pendingAssignment;
 	}
@@ -108,6 +110,18 @@ public class PortfolioElementRow {
 		return type == RowType.pendingAssignment;
 	}
 	
+	public boolean isNewEntry() {
+		return newEntry;
+	}
+	
+	public boolean isAssignments() {
+		return assignments;
+	}
+
+	public void setNewEntry(boolean newEntry) {
+		this.newEntry = newEntry;
+	}
+
 	public Long getKey() {
 		return page == null ? null : page.getKey();
 	}
@@ -185,14 +199,6 @@ public class PortfolioElementRow {
 	
 	public String getSectionDescription() {
 		return section.getDescription();
-	}
-
-	public boolean isFirstPageOfSection() {
-		return firstPageOfSection;
-	}
-	
-	public void setFirstPageOfSection(boolean firstPageOfSection) {
-		this.firstPageOfSection = firstPageOfSection;
 	}
 	
 	public Collection<String> getPageCategories() {

@@ -53,14 +53,31 @@ public class PageListDataModel extends DefaultFlexiTableDataModel<PortfolioEleme
 		PageListSortableDataModelDelegate sorter = new PageListSortableDataModelDelegate(orderBy, this, null);
 		List<PortfolioElementRow> rows = sorter.sort();
 		
-		Section section = null;
+		// This say where is the link to create a new entry
+		// if a section has assignments, it's at the end of
+		// the section. If there isn't any assignment, it
+		// under the section.
+		boolean lastNewEntry = false;
+		PortfolioElementRow previousRow = null;
 		for(PortfolioElementRow row:rows) {
-			if(section == null || !section.equals(row.getSection())) {
-				row.setFirstPageOfSection(true);
-				section = row.getSection();
+			if(row.isSection()) {
+				if(lastNewEntry && previousRow != null) {
+					previousRow.setNewEntry(true);
+				}
+				
+				if(row.isAssignments()) {
+					lastNewEntry = true;
+				} else {
+					lastNewEntry = false;
+					row.setNewEntry(true);
+				}
 			} else {
-				row.setFirstPageOfSection(false);
+				row.setNewEntry(false);
 			}
+			previousRow = row;
+		}
+		if(lastNewEntry && previousRow != null) {
+			previousRow.setNewEntry(true);
 		}
 		
 		super.setObjects(rows);
@@ -146,6 +163,18 @@ public class PageListDataModel extends DefaultFlexiTableDataModel<PortfolioEleme
 			}
 			case categories: return page.getPageCategories();
 			case section: return page.getSectionTitle();
+			case up: {
+				if(page.isPendingAssignment()) {
+					return page.getUpAssignmentLink() != null && page.getUpAssignmentLink().isEnabled();
+				}
+				return Boolean.FALSE;
+			}
+			case down: {
+				if(page.isPendingAssignment()) {
+					return page.getDownAssignmentLink() != null && page.getDownAssignmentLink().isEnabled();
+				}
+				return Boolean.FALSE;
+			}
 			case comment: return page.getCommentFormLink();
 		}
 		return null;
@@ -164,6 +193,8 @@ public class PageListDataModel extends DefaultFlexiTableDataModel<PortfolioEleme
 		publicationDate("table.header.publication.date", true),
 		categories("table.header.categories", false),
 		section("table.header.section", true),
+		up("table.header.up", false),
+		down("table.header.down", false),
 		comment("comment.title", true);
 		
 		private final String i18nKey;

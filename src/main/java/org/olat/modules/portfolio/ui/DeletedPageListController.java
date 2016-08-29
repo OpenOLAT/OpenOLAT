@@ -69,7 +69,7 @@ public class DeletedPageListController extends AbstractPageListController {
 		List<Page> pages = portfolioService.searchDeletedPages(getIdentity(), searchString);
 		List<PortfolioElementRow> rows = new ArrayList<>(pages.size());
 		for (Page page : pages) {
-			rows.add(forgePageRow(page, null, null, false, categorizedElementMap, numberOfCommentsMap));
+			rows.add(forgePageRow(page, null, null, categorizedElementMap, numberOfCommentsMap));
 		}
 
 		model.setObjects(rows);

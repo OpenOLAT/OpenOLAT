@@ -121,7 +121,7 @@ public class MyPageListController extends AbstractPageListController {
 			}
 			
 			List<Assignment> assignmentList = pageToAssignments.get(page);
-			PortfolioElementRow row = forgePageRow(page, null, assignmentList, false, categorizedElementMap, numberOfCommentsMap);
+			PortfolioElementRow row = forgePageRow(page, null, assignmentList, categorizedElementMap, numberOfCommentsMap);
 			rows.add(row);
 			if(page.getSection() != null) {
 				Section section = page.getSection();

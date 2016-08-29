@@ -59,6 +59,10 @@ public class PageListSortableDataModelDelegate extends SortableFlexiTableModelDe
 				default: comparator = new DefaultComparator(); break;
 			}
 		}
+		if(!isAsc()) {
+			comparator = new ReverseComparator(comparator);
+		}
+		
 		Collections.sort(rows, new ClassicComparator(comparator));
 	}
 
@@ -67,7 +71,21 @@ public class PageListSortableDataModelDelegate extends SortableFlexiTableModelDe
 		//do nothing
 	}
 	
-	public class CommentsComparator implements Comparator<PortfolioElementRow> {
+	private static class ReverseComparator implements Comparator<PortfolioElementRow> {
+		
+		private Comparator<PortfolioElementRow> delegate;
+		
+		public ReverseComparator(Comparator<PortfolioElementRow> delegate) {
+			this.delegate = delegate;
+		}
+
+		@Override
+		public int compare(PortfolioElementRow o1, PortfolioElementRow o2) {
+			return -delegate.compare(o1, o2);
+		}
+	}
+	
+	private final class CommentsComparator implements Comparator<PortfolioElementRow> {
 		@Override
 		public int compare(PortfolioElementRow o1, PortfolioElementRow o2) {
 			long c1 = o1.getNumOfComments();
@@ -81,7 +99,7 @@ public class PageListSortableDataModelDelegate extends SortableFlexiTableModelDe
 		}
 	}
 	
-	public class StatusComparator extends PageComparator {
+	private final class StatusComparator extends PageComparator {
 		@Override
 		public int compare(Page p1, Page p2) {
 			PageStatus s1 = p1.getPageStatus();
@@ -101,7 +119,7 @@ public class PageListSortableDataModelDelegate extends SortableFlexiTableModelDe
 		}
 	}
 	
-	public class PageCreationDateComparator extends PageComparator {
+	private final class PageCreationDateComparator extends PageComparator {
 		@Override
 		public int compare(Page p1, Page p2) {
 			return compareDateAndTimestamps(p1.getCreationDate(), p2.getCreationDate());
@@ -134,7 +152,7 @@ public class PageListSortableDataModelDelegate extends SortableFlexiTableModelDe
 		protected abstract int compare(Page p1, Page p2);
 	}
 
-	private class ClassicComparator implements Comparator<PortfolioElementRow> {
+	private final class ClassicComparator implements Comparator<PortfolioElementRow> {
 		
 		private final Comparator<PortfolioElementRow> lastComparator;
 		

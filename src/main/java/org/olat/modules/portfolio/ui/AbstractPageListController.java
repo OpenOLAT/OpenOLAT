@@ -35,6 +35,7 @@ import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.BooleanCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableCssDelegate;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
@@ -42,6 +43,8 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableRendererType;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableSearchEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiCellRenderer;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.stack.TooledController;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
@@ -151,8 +154,16 @@ implements Activateable2, TooledController, FlexiTableComponentDelegate {
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(PageCols.publicationDate, "select-page"));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(PageCols.categories, new CategoriesCellRenderer()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, PageCols.section/*, "select-section"*/, null));
-		if(!config.isTemplate()) {
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, PageCols.comment, null));
+		if(secCallback.canNewAssignment()) {
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("table.header.up", PageCols.up.ordinal(), "up",
+					new BooleanCellRenderer(
+							new StaticFlexiCellRenderer(translate("up"), "up"), null)));
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("table.header.down", PageCols.down.ordinal(), "down",
+					new BooleanCellRenderer(
+							new StaticFlexiCellRenderer(translate("down"), "down"), null)));
+		}
+		if(!secCallback.canNewAssignment()) {
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(PageCols.comment));
 		}
 	
 		model = new PageListDataModel(columnsModel);
@@ -231,10 +242,11 @@ implements Activateable2, TooledController, FlexiTableComponentDelegate {
 	
 	protected abstract void loadModel(String searchString);
 	
-	protected PortfolioElementRow forgeSectionRow(Section section, AssessmentSection assessmentSection, boolean firstOfSection,
-			Map<OLATResourceable,List<Category>> categorizedElementMap) {
+	protected PortfolioElementRow forgeSectionRow(Section section, AssessmentSection assessmentSection,
+			List<Assignment> assignments, Map<OLATResourceable,List<Category>> categorizedElementMap) {
 		
-		PortfolioElementRow row = new PortfolioElementRow(section, assessmentSection, firstOfSection, config.isAssessable());
+		PortfolioElementRow row = new PortfolioElementRow(section, assessmentSection,
+				config.isAssessable(), (assignments != null && assignments.size() > 0));
 		String openLinkId = "open_" + (++counter);
 		FormLink openLink = uifactory.addFormLink(openLinkId, "open.full", "open.full.page", null, flc, Link.BUTTON_SMALL);
 		openLink.setIconRightCSS("o_icon o_icon_start");
@@ -277,11 +289,11 @@ implements Activateable2, TooledController, FlexiTableComponentDelegate {
 		return row;
 	}
 	
-	protected PortfolioElementRow forgePageRow(Page page, AssessmentSection assessmentSection, List<Assignment> assignments, boolean firstOfSection,
+	protected PortfolioElementRow forgePageRow(Page page, AssessmentSection assessmentSection, List<Assignment> assignments,
 			Map<OLATResourceable,List<Category>> categorizedElementMap, Map<Long,Long> numberOfCommentsMap) {
 
 		Section section = page.getSection();
-		PortfolioElementRow row = new PortfolioElementRow(page, assessmentSection, firstOfSection, config.isAssessable());
+		PortfolioElementRow row = new PortfolioElementRow(page, assessmentSection, config.isAssessable());
 		String openLinkId = "open_" + (++counter);
 		FormLink openLink = uifactory.addFormLink(openLinkId, "open.full", "open.full.page", null, flc, Link.BUTTON_SMALL);
 		openLink.setIconRightCSS("o_icon o_icon_start");
@@ -444,6 +456,19 @@ implements Activateable2, TooledController, FlexiTableComponentDelegate {
 			if(event instanceof FlexiTableSearchEvent) {
 				FlexiTableSearchEvent se = (FlexiTableSearchEvent)event;
 				loadModel(se.getSearch());
+			} else if(event instanceof SelectionEvent) {
+				SelectionEvent se = (SelectionEvent)event;
+				String cmd = se.getCommand();
+				PortfolioElementRow row = model.getObject(se.getIndex());
+				if("up".equals(cmd)) {
+					if(row.isPendingAssignment()) {
+						doMoveUpAssignment(row);
+					}
+				} else if("down".equals(cmd)) {
+					if(row.isPendingAssignment()) {
+						doMoveDownAssignment(row);
+					}
+				}
 			}
 		} else if(timelineSwitchOnButton == source) {
 			doSwitchTimelineOff();
