@@ -42,6 +42,12 @@ div#o_main_toolbar.o_toolbar.o_portfolio {
 	}
 }
 
+.o_rendertype_classic {
+	.o_pf_page, .o_pf_assignment {
+		padding-left: 1em;
+	}
+}
+
 .o_portfolio_timeline {
 	.o_timeline_up {
 		text-align: center;

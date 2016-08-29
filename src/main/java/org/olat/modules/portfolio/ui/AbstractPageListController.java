@@ -73,8 +73,8 @@ import org.olat.modules.portfolio.ui.PageListDataModel.PageCols;
 import org.olat.modules.portfolio.ui.component.CategoriesCellRenderer;
 import org.olat.modules.portfolio.ui.component.TimelineElement;
 import org.olat.modules.portfolio.ui.event.PageRemoved;
-import org.olat.modules.portfolio.ui.model.PageAssignmentRow;
-import org.olat.modules.portfolio.ui.model.PageRow;
+import org.olat.modules.portfolio.ui.model.PortfolioElementRow;
+import org.olat.modules.portfolio.ui.renderer.PortfolioElementCellRenderer;
 import org.olat.modules.portfolio.ui.renderer.StatusCellRenderer;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -145,13 +145,15 @@ implements Activateable2, TooledController, FlexiTableComponentDelegate {
 		
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, PageCols.key, "select-page"));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(PageCols.title, "select-page"));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(PageCols.title, "select-page", new PortfolioElementCellRenderer()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(PageCols.date, "select-page"));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(PageCols.status, new StatusCellRenderer()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(PageCols.publicationDate, "select-page"));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(PageCols.categories, new CategoriesCellRenderer()));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(PageCols.section/*, "select-section"*/));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, PageCols.comment, null));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, PageCols.section/*, "select-section"*/, null));
+		if(!config.isTemplate()) {
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, PageCols.comment, null));
+		}
 	
 		model = new PageListDataModel(columnsModel);
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", model, 20, false, getTranslator(), formLayout);
@@ -162,7 +164,7 @@ implements Activateable2, TooledController, FlexiTableComponentDelegate {
 		tableEl.setElementCssClass("o_binder_page_listing");
 		tableEl.setEmtpyTableMessageKey("table.sEmptyTable");
 		tableEl.setPageSize(24);
-		VelocityContainer row = createVelocityContainer("page_row");
+		VelocityContainer row = createVelocityContainer("portfolio_element_row");
 		row.setDomReplacementWrapperRequired(false); // sets its own DOM id in velocity container
 		tableEl.setRowRenderer(row, this);
 		tableEl.setCssDelegate(new DefaultFlexiTableCssDelegate());
@@ -188,64 +190,109 @@ implements Activateable2, TooledController, FlexiTableComponentDelegate {
 	
 	@Override
 	public final Iterable<Component> getComponents(int row, Object rowObject) {
-		PageRow pageRow = model.getObject(row);
+		PortfolioElementRow elRow = model.getObject(row);
 		List<Component> components = new ArrayList<>(4);
-		if(pageRow.getAssignments() != null && pageRow.getAssignments().size() > 0) {
-			for(PageAssignmentRow assignmentRow:pageRow.getAssignments()) {
-				if(assignmentRow.getEditLink() != null) {
-					components.add(assignmentRow.getEditLink().getComponent());
-				}
-				if(assignmentRow.getCreateLink() != null) {
-					components.add(assignmentRow.getCreateLink().getComponent());
-				}
-				if(assignmentRow.getUpLink() != null) {
-					components.add(assignmentRow.getUpLink().getComponent());
-				}
-				if(assignmentRow.getDownLink() != null) {
-					components.add(assignmentRow.getDownLink().getComponent());
-				}
-			}	
+		if(elRow.getNewEntryLink() != null) {
+			components.add(elRow.getNewEntryLink().getComponent());
 		}
-		if(pageRow.getNewEntryLink() != null) {
-			components.add(pageRow.getNewEntryLink().getComponent());
+		if(elRow.getNewFloatingEntryLink() != null) {
+			components.add(elRow.getNewFloatingEntryLink().getComponent());
 		}
-		if(pageRow.getNewFloatingEntryLink() != null) {
-			components.add(pageRow.getNewFloatingEntryLink().getComponent());
+		if(elRow.getNewAssignmentLink() != null) {
+			components.add(elRow.getNewAssignmentLink().getComponent());
 		}
-		if(pageRow.getNewAssignmentLink() != null) {
-			components.add(pageRow.getNewAssignmentLink().getComponent());
+		if(elRow.getOpenFormItem() != null) {
+			components.add(elRow.getOpenFormItem().getComponent());
 		}
-		if(pageRow.getOpenFormItem() != null) {
-			components.add(pageRow.getOpenFormItem().getComponent());
+		if(elRow.getReopenSectionLink() != null) {
+			components.add(elRow.getReopenSectionLink().getComponent());
 		}
-		if(pageRow.getReopenSectionLink() != null) {
-			components.add(pageRow.getReopenSectionLink().getComponent());
+		if(elRow.getCloseSectionLink() != null) {
+			components.add(elRow.getCloseSectionLink().getComponent());
 		}
-		if(pageRow.getCloseSectionLink() != null) {
-			components.add(pageRow.getCloseSectionLink().getComponent());
+		if(elRow.getEditAssignmentLink() != null) {
+			components.add(elRow.getEditAssignmentLink().getComponent());
 		}
+		if(elRow.getUpAssignmentLink() != null) {
+			components.add(elRow.getUpAssignmentLink().getComponent());
+		}
+		if(elRow.getDownAssignmentLink() != null) {
+			components.add(elRow.getDownAssignmentLink().getComponent());
+		}
+		if(elRow.getInstantiateAssignmentLink() != null) {
+			components.add(elRow.getInstantiateAssignmentLink().getComponent());
+		}
+		if(elRow.getCommentFormLink() != null) {
+			components.add(elRow.getCommentFormLink().getComponent());
+		}
+		
 		return components;
 	}
 	
 	protected abstract void loadModel(String searchString);
 	
-	protected PageRow forgeRow(Page page, AssessmentSection assessmentSection, List<Assignment> assignments, boolean firstOfSection,
-			Map<OLATResourceable,List<Category>> categorizedElementMap, Map<Long,Long> numberOfCommentsMap) {
-
-		Section section = page.getSection();
-		PageRow row = new PageRow(page, section, assessmentSection, firstOfSection, config.isAssessable());
+	protected PortfolioElementRow forgeSectionRow(Section section, AssessmentSection assessmentSection, boolean firstOfSection,
+			Map<OLATResourceable,List<Category>> categorizedElementMap) {
+		
+		PortfolioElementRow row = new PortfolioElementRow(section, assessmentSection, firstOfSection, config.isAssessable());
 		String openLinkId = "open_" + (++counter);
 		FormLink openLink = uifactory.addFormLink(openLinkId, "open.full", "open.full.page", null, flc, Link.BUTTON_SMALL);
 		openLink.setIconRightCSS("o_icon o_icon_start");
 		openLink.setPrimary(true);
 		row.setOpenFormLink(openLink);
 		openLink.setUserObject(row);
-		addAssignmentsToRow(row, assignments);
+		addCategoriesToRow(row, categorizedElementMap);
+		return row;
+	}
+	
+	protected PortfolioElementRow forgePendingAssignmentRow(Assignment assignment, Section section, List<Assignment> assignments) {
+		int index = assignments == null ? 0 : assignments.indexOf(assignment);
+		PortfolioElementRow row = new PortfolioElementRow(assignment, section, index);
+		if(secCallback.canInstantiateAssignment()) {
+			if(assignment.getAssignmentStatus() == AssignmentStatus.notStarted) {
+				FormLink startLink = uifactory.addFormLink("create_assign_" + (++counter), "start.assignment", "create.start.assignment", null, flc, Link.BUTTON);
+				startLink.setUserObject(row);
+				startLink.setPrimary(true);
+				row.setInstantiateAssignmentLink(startLink);
+			}
+		} else if(secCallback.canNewAssignment()) {
+			if(assignment.getTemplateReference() == null) {
+				FormLink editLink = uifactory.addFormLink("edit_assign_" + (++counter), "edit.assignment", "edit", null, flc, Link.BUTTON);
+				editLink.setUserObject(row);
+				row.setEditAssignmentLink(editLink);
+				
+				FormLink upLink = uifactory.addFormLink("up_assign_" + (++counter), "up.assignment", "", null, flc, Link.BUTTON | Link.NONTRANSLATED);
+				upLink.setIconLeftCSS("o_icon o_icon o_icon-lg o_icon_move_up");
+				upLink.setEnabled(index > 0);
+				upLink.setUserObject(row);
+				row.setUpAssignmentLink(upLink);
+				
+				FormLink downLink = uifactory.addFormLink("down_assign_" + (++counter), "down.assignment", "", null, flc, Link.BUTTON | Link.NONTRANSLATED);
+				downLink.setIconLeftCSS("o_icon o_icon o_icon-lg o_icon_move_down");
+				downLink.setUserObject(row);
+				downLink.setEnabled(assignments != null && index + 1 != assignments.size());
+				row.setDownAssignmentLink(downLink);
+			}
+		}
+		return row;
+	}
+	
+	protected PortfolioElementRow forgePageRow(Page page, AssessmentSection assessmentSection, List<Assignment> assignments, boolean firstOfSection,
+			Map<OLATResourceable,List<Category>> categorizedElementMap, Map<Long,Long> numberOfCommentsMap) {
+
+		Section section = page.getSection();
+		PortfolioElementRow row = new PortfolioElementRow(page, assessmentSection, firstOfSection, config.isAssessable());
+		String openLinkId = "open_" + (++counter);
+		FormLink openLink = uifactory.addFormLink(openLinkId, "open.full", "open.full.page", null, flc, Link.BUTTON_SMALL);
+		openLink.setIconRightCSS("o_icon o_icon_start");
+		openLink.setPrimary(true);
+		row.setOpenFormLink(openLink);
+		openLink.setUserObject(row);
 		addCategoriesToRow(row, categorizedElementMap);
 		if(assignments != null) {
 			for(Assignment assignment:assignments) {
 				if(page.equals(assignment.getPage())) {
-					row.setPageAssignment(assignment);
+					row.setAssignment(assignment);
 				}
 			}
 		}
@@ -292,69 +339,7 @@ implements Activateable2, TooledController, FlexiTableComponentDelegate {
 		return row;
 	}
 	
-	protected PageRow forgeRow(Section section, AssessmentSection assessmentSection, List<Assignment> assignments,
-			boolean firstOfSection,
-			Map<OLATResourceable,List<Category>> categorizedElementMap) {
-		
-		PageRow row = new PageRow(null, section, assessmentSection, firstOfSection, config.isAssessable());
-		String openLinkId = "open_" + (++counter);
-		FormLink openLink = uifactory.addFormLink(openLinkId, "open.full", "open.full.page", null, flc, Link.BUTTON_SMALL);
-		openLink.setIconRightCSS("o_icon o_icon_start");
-		openLink.setPrimary(true);
-		row.setOpenFormLink(openLink);
-		openLink.setUserObject(row);
-		addAssignmentsToRow(row, assignments);
-		addCategoriesToRow(row, categorizedElementMap);
-		return row;
-	}
-	
-	/**
-	 * the assignments are synchronized with the binder.
-	 * @param row
-	 * @param assignments
-	 */
-	private void addAssignmentsToRow(PageRow row, List<Assignment> assignments) {
-		if(assignments != null && assignments.size() > 0) {
-			List<PageAssignmentRow> assignmentRows = new ArrayList<>();
-			for(Assignment assignment:assignments) {
-				if(assignment.getPage() != null) {
-					continue;
-				}
-
-				PageAssignmentRow assignmentRow = new PageAssignmentRow(assignment);
-				if(secCallback.canInstantiateAssignment()) {
-					if(assignment.getAssignmentStatus() == AssignmentStatus.notStarted) {
-						FormLink startLink = uifactory.addFormLink("create_assign_" + (++counter), "start.assignment", "create.start.assignment", null, flc, Link.BUTTON);
-						startLink.setUserObject(assignmentRow);
-						startLink.setPrimary(true);
-						assignmentRow.setCreateLink(startLink);
-					}
-				} else if(secCallback.canNewAssignment()) {
-					if(assignment.getTemplateReference() == null) {
-						FormLink editLink = uifactory.addFormLink("edit_assign_" + (++counter), "edit.assignment", "edit", null, flc, Link.BUTTON);
-						editLink.setUserObject(assignmentRow);
-						assignmentRow.setEditLink(editLink);
-						
-						FormLink upLink = uifactory.addFormLink("up_assign_" + (++counter), "up.assignment", "", null, flc, Link.BUTTON | Link.NONTRANSLATED);
-						upLink.setIconLeftCSS("o_icon o_icon o_icon-lg o_icon_move_up");
-						upLink.setEnabled(assignmentRows.size() > 0);
-						upLink.setUserObject(assignmentRow);
-						assignmentRow.setUpLink(upLink);
-						
-						FormLink downLink = uifactory.addFormLink("down_assign_" + (++counter), "down.assignment", "", null, flc, Link.BUTTON | Link.NONTRANSLATED);
-						downLink.setIconLeftCSS("o_icon o_icon o_icon-lg o_icon_move_down");
-						downLink.setUserObject(assignmentRow);
-						downLink.setEnabled(assignmentRows.size() + 1 != assignments.size());
-						assignmentRow.setDownLink(downLink);
-					}
-				}
-				assignmentRows.add(assignmentRow);
-			}
-			row.setAssignments(assignmentRows);
-		}
-	}
-	
-	private void addCategoriesToRow(PageRow row, Map<OLATResourceable,List<Category>> categorizedElementMap) {
+	private void addCategoriesToRow(PortfolioElementRow row, Map<OLATResourceable,List<Category>> categorizedElementMap) {
 		if(categorizedElementMap != null) {
 			if(row.getPage() != null) {
 				OLATResourceable ores = OresHelper.createOLATResourceableInstance(Page.class, row.getPage().getKey());
@@ -382,19 +367,19 @@ implements Activateable2, TooledController, FlexiTableComponentDelegate {
 		String resName = entries.get(0).getOLATResourceable().getResourceableTypeName();
 		if("Page".equalsIgnoreCase(resName) || "Entry".equalsIgnoreCase(resName)) {
 			Long resId = entries.get(0).getOLATResourceable().getResourceableId();
-			PageRow activatedRow = null;
-			for(PageRow row :model.getObjects()) {
+			PortfolioElementRow activatedRow = null;
+			for(PortfolioElementRow row :model.getObjects()) {
 				if(row.getKey() != null && row.getKey().equals(resId)) {
 					activatedRow = row;
 					break;
 				}
 			}
 			if(activatedRow != null) {
-				doOpenPage(ureq, activatedRow);
+				doOpenRow(ureq, activatedRow);
 			}
 		} else if("Section".equalsIgnoreCase(resName)) {
 			Long resId = entries.get(0).getOLATResourceable().getResourceableId();
-			for(PageRow row :model.getObjects()) {
+			for(PortfolioElementRow row :model.getObjects()) {
 				if(row.getSection() != null && row.getSection().getKey().equals(resId)) {
 					//doOpenPage(ureq, row);
 					break;
@@ -430,12 +415,12 @@ implements Activateable2, TooledController, FlexiTableComponentDelegate {
 			cleanUp();
 		} else if(confirmCloseSectionCtrl == source) {
 			if(DialogBoxUIFactory.isYesEvent(event)) {
-				PageRow row = (PageRow)confirmCloseSectionCtrl.getUserObject();
+				PortfolioElementRow row = (PortfolioElementRow)confirmCloseSectionCtrl.getUserObject();
 				doClose(ureq, row);
 			}
 		} else if(confirmReopenSectionCtrl == source) {
 			if(DialogBoxUIFactory.isYesEvent(event)) {
-				PageRow row = (PageRow)confirmReopenSectionCtrl.getUserObject();
+				PortfolioElementRow row = (PortfolioElementRow)confirmReopenSectionCtrl.getUserObject();
 				doReopen(ureq, row);
 			}	
 		} else if(cmc == source) {
@@ -468,31 +453,31 @@ implements Activateable2, TooledController, FlexiTableComponentDelegate {
 			FormLink link = (FormLink)source;
 			String cmd = link.getCmd();
 			if("open.full".equals(cmd)) {
-				PageRow row = (PageRow)link.getUserObject();
-				doOpenPage(ureq, row);
+				PortfolioElementRow row = (PortfolioElementRow)link.getUserObject();
+				doOpenRow(ureq, row);
 			} else if("comment".equals(cmd)) {
-				PageRow row = (PageRow)link.getUserObject();
+				PortfolioElementRow row = (PortfolioElementRow)link.getUserObject();
 				doComment(ureq, row.getPage());
 			} else if("close.section".equals(cmd)) {
-				PageRow row = (PageRow)link.getUserObject();
+				PortfolioElementRow row = (PortfolioElementRow)link.getUserObject();
 				doConfirmCloseSection(ureq, row);
 			} else if("reopen.section".equals(cmd)) {
-				PageRow row = (PageRow)link.getUserObject();
+				PortfolioElementRow row = (PortfolioElementRow)link.getUserObject();
 				doConfirmReopenSection(ureq, row);
 			} else if("edit.assignment".equals(cmd)) {
-				PageAssignmentRow row = (PageAssignmentRow)link.getUserObject();
+				PortfolioElementRow row = (PortfolioElementRow)link.getUserObject();
 				doEditAssignment(ureq, row);
 			} else if("start.assignment".equals(cmd)) {
-				PageAssignmentRow row = (PageAssignmentRow)link.getUserObject();
+				PortfolioElementRow row = (PortfolioElementRow)link.getUserObject();
 				doStartAssignment(ureq, row);
 			} else if("open.assignment".equals(cmd)) {
-				PageAssignmentRow row = (PageAssignmentRow)link.getUserObject();
+				PortfolioElementRow row = (PortfolioElementRow)link.getUserObject();
 				doOpenAssignment(ureq, row);
 			} else if("up.assignment".equals(cmd)) {
-				PageAssignmentRow row = (PageAssignmentRow)link.getUserObject();
+				PortfolioElementRow row = (PortfolioElementRow)link.getUserObject();
 				doMoveUpAssignment(row);
 			} else if("down.assignment".equals(cmd)) {
-				PageAssignmentRow row = (PageAssignmentRow)link.getUserObject();
+				PortfolioElementRow row = (PortfolioElementRow)link.getUserObject();
 				doMoveDownAssignment(row);
 			}
 			
@@ -512,28 +497,28 @@ implements Activateable2, TooledController, FlexiTableComponentDelegate {
 		//
 	}
 	
-	private void doConfirmCloseSection(UserRequest ureq, PageRow row) {
+	private void doConfirmCloseSection(UserRequest ureq, PortfolioElementRow row) {
 		String title = translate("close.section.confirm.title");
 		String text = translate("close.section.confirm.descr", new String[]{ row.getSectionTitle() });
 		confirmCloseSectionCtrl = activateYesNoDialog(ureq, title, text, confirmCloseSectionCtrl);
 		confirmCloseSectionCtrl.setUserObject(row);
 	}
 	
-	private void doClose(UserRequest ureq, PageRow row) {
+	private void doClose(UserRequest ureq, PortfolioElementRow row) {
 		Section section = row.getSection();
 		section = portfolioService.changeSectionStatus(section, SectionStatus.closed, getIdentity());
 		loadModel(null);
 		fireEvent(ureq, Event.CHANGED_EVENT);
 	}
 	
-	private void doConfirmReopenSection(UserRequest ureq, PageRow row) {
+	private void doConfirmReopenSection(UserRequest ureq, PortfolioElementRow row) {
 		String title = translate("reopen.section.confirm.title");
 		String text = translate("reopen.section.confirm.descr", new String[]{ row.getSectionTitle() });
 		confirmReopenSectionCtrl = activateYesNoDialog(ureq, title, text, confirmReopenSectionCtrl);
 		confirmReopenSectionCtrl.setUserObject(row);
 	}
 	
-	private void doReopen(UserRequest ureq, PageRow row) {
+	private void doReopen(UserRequest ureq, PortfolioElementRow row) {
 		Section section = row.getSection();
 		section = portfolioService.changeSectionStatus(section, SectionStatus.inProgress, getIdentity());
 		loadModel(null);
@@ -552,7 +537,7 @@ implements Activateable2, TooledController, FlexiTableComponentDelegate {
 		flc.contextPut("timelineSwitch", Boolean.FALSE);
 	}
 	
-	private void doStartAssignment(UserRequest ureq, PageAssignmentRow row) {
+	private void doStartAssignment(UserRequest ureq, PortfolioElementRow row) {
 		Assignment assignment = row.getAssignment();
 		Assignment startedAssigment = portfolioService.startAssignment(assignment, getIdentity());
 		row.setAssignment(startedAssigment);
@@ -560,7 +545,7 @@ implements Activateable2, TooledController, FlexiTableComponentDelegate {
 		loadModel(null);//TODO only update the links
 	}
 	
-	private void doOpenAssignment(UserRequest ureq, PageAssignmentRow row) {
+	private void doOpenAssignment(UserRequest ureq, PortfolioElementRow row) {
 		Assignment assignment = row.getAssignment();
 		if(assignment.getAssignmentType() == AssignmentType.essay
 				|| assignment.getAssignmentType() == AssignmentType.document) {
@@ -572,21 +557,23 @@ implements Activateable2, TooledController, FlexiTableComponentDelegate {
 		}
 	}
 	
-	private void doMoveUpAssignment(PageAssignmentRow row) {
+	private void doMoveUpAssignment(PortfolioElementRow row) {
 		Assignment assigment = row.getAssignment();
 		Section section = assigment.getSection();
-		portfolioService.moveUpAssignment(section, assigment);
+		section = portfolioService.moveUpAssignment(section, assigment);
+		//DBFactory.getInstance().commitAndCloseSession();
 		loadModel(null);
 	}
 	
-	private void doMoveDownAssignment(PageAssignmentRow row) {
+	private void doMoveDownAssignment(PortfolioElementRow row) {
 		Assignment assigment = row.getAssignment();
-		Section section = assigment.getSection();
-		portfolioService.moveDownAssignment(section, assigment);
+		Section section = row.getSection();
+		section = portfolioService.moveDownAssignment(section, assigment);
+		//DBFactory.getInstance().commitAndCloseSession();
 		loadModel(null);
 	}
 	
-	private void doEditAssignment(UserRequest ureq, PageAssignmentRow row) {
+	private void doEditAssignment(UserRequest ureq, PortfolioElementRow row) {
 		if(editAssignmentCtrl != null) return;
 		
 		Assignment assignment = row.getAssignment();
@@ -611,9 +598,17 @@ implements Activateable2, TooledController, FlexiTableComponentDelegate {
 		cmc.activate();
 	}
 	
-	protected void doOpenPage(UserRequest ureq, PageRow row) {
-		Page reloadedPage = portfolioService.getPageByKey(row.getKey());
-		doOpenPage(ureq, reloadedPage);
+	protected void doOpenRow(UserRequest ureq, PortfolioElementRow row) {
+		if(row.isPage()) {
+			Page reloadedPage = portfolioService.getPageByKey(row.getKey());
+			doOpenPage(ureq, reloadedPage);
+		} else if(row.isPendingAssignment()) {
+			if(secCallback.canNewAssignment()) {
+				doEditAssignment(ureq, row);
+			} else {
+				//TODO portfolio
+			}
+		}
 	}
 	
 	protected void doOpenPage(UserRequest ureq, Page reloadedPage) {

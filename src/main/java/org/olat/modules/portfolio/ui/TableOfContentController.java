@@ -57,13 +57,13 @@ import org.olat.modules.portfolio.Binder;
 import org.olat.modules.portfolio.BinderConfiguration;
 import org.olat.modules.portfolio.BinderSecurityCallback;
 import org.olat.modules.portfolio.Page;
+import org.olat.modules.portfolio.PageStatus;
 import org.olat.modules.portfolio.PortfolioRoles;
 import org.olat.modules.portfolio.PortfolioService;
 import org.olat.modules.portfolio.Section;
 import org.olat.modules.portfolio.SectionStatus;
 import org.olat.modules.portfolio.model.SectionRefImpl;
 import org.olat.modules.portfolio.ui.event.SectionSelectionEvent;
-import org.olat.modules.portfolio.ui.model.PageRow;
 import org.olat.modules.portfolio.ui.renderer.PortfolioRendererHelper;
 import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -197,7 +197,7 @@ public class TableOfContentController extends BasicController implements TooledC
 			if(secCallback.canViewElement(page)) {
 				Section section = page.getSection();
 				SectionRow sectionRow = sectionMap.get(section.getKey());
-				PageRow pageRow = forgePageRow(page, sectionRow, numberOfCommentsMap);
+				PageRow pageRow = forgePageRow(page, numberOfCommentsMap);
 				sectionRow.getPages().add(pageRow);
 			}
 		}
@@ -276,26 +276,22 @@ public class TableOfContentController extends BasicController implements TooledC
 		return sectionRow;
 	}
 	
-	private PageRow forgePageRow(Page page, SectionRow sectionRow, Map<Long,Long> numberOfCommentsMap) {
-		PageRow pageRow = new PageRow(page, sectionRow.getSection(), null, false, config.isAssessable());
+	private PageRow forgePageRow(Page page, Map<Long,Long> numberOfCommentsMap) {
+		PageRow pageRow = new PageRow(page);
 
 		String pageId = "page" + (++counter);
 		String title = StringHelper.escapeHtml(page.getTitle());
 		Link openLink = LinkFactory.createCustomLink(pageId, "open_page", title, Link.LINK | Link.NONTRANSLATED, mainVC, this);
 		openLink.setUserObject(pageRow);
 		pageRow.setOpenLink(openLink);
-		
 
 		Long numOfComments = numberOfCommentsMap.get(page.getKey());
 		if(numOfComments != null && numOfComments.longValue() > 0) {
-			pageRow.setNumOfComments(numOfComments.longValue());
 			Link commentLink = LinkFactory.createCustomLink("com_" + (++counter), "comments", "(" + numOfComments + ")", Link.LINK | Link.NONTRANSLATED, mainVC, this);
 			commentLink.setDomReplacementWrapperRequired(false);
 			commentLink.setIconLeftCSS("o_icon o_icon-fw o_icon_comments");
 			commentLink.setUserObject(pageRow);
 			pageRow.setCommentLink(commentLink);
-		} else {
-			pageRow.setNumOfComments(0);
 		}
 		
 		return pageRow;
@@ -557,6 +553,46 @@ public class TableOfContentController extends BasicController implements TooledC
 	private void doReopen(SectionRow row) {
 		Section section = row.getSection();
 		section = portfolioService.changeSectionStatus(section, SectionStatus.inProgress, getIdentity());
+	}
+	
+	public class PageRow {
+		
+		private final Page page;
+		private Link openLink;
+		private Link commentLink;
+
+		public PageRow(Page page) {
+			this.page = page;
+		}
+		
+		public Long getKey() {
+			return page.getKey();
+		}
+		
+		public Page getPage() {
+			return page;
+		}
+		
+		public String getCssClassStatus() {
+			return page.getPageStatus() == null
+					? PageStatus.draft.cssClass() : page.getPageStatus().cssClass();
+		}
+
+		public Link getOpenLink() {
+			return openLink;
+		}
+
+		public void setOpenLink(Link openLink) {
+			this.openLink = openLink;
+		}
+
+		public Link getCommentLink() {
+			return commentLink;
+		}
+
+		public void setCommentLink(Link commentLink) {
+			this.commentLink = commentLink;
+		}
 	}
 	
 	public class SectionRow {

@@ -39,15 +39,17 @@ public class BinderConfiguration {
 	private final boolean timeline;
 	private final boolean shareable;
 	private final boolean options;
+	private final boolean template;
 	
 	public BinderConfiguration(boolean assessable, boolean withScore, boolean withPassed,
-			boolean timeline, boolean shareable, boolean options) {
+			boolean timeline, boolean shareable, boolean options, boolean template) {
 		this.assessable = assessable;
 		this.withScore = withScore;
 		this.withPassed = withPassed;
 		this.timeline = timeline;
 		this.shareable = shareable;
 		this.options = options;
+		this.template = template;
 	}
 	
 	public boolean isAssessable() {
@@ -74,6 +76,10 @@ public class BinderConfiguration {
 		return options;
 	}
 	
+	public boolean isTemplate() {
+		return template;
+	}
+	
 	@Override
 	public String toString() {
 		StringBuilder sb = new StringBuilder();
@@ -84,23 +90,23 @@ public class BinderConfiguration {
 	}
 	
 	public static BinderConfiguration createBusinessGroupConfig() {
-		return new BinderConfiguration(false, false, false, true, false, false);
+		return new BinderConfiguration(false, false, false, true, false, false, true);
 	}
 	
 	public static BinderConfiguration createTemplateConfig() {
-		return new BinderConfiguration(false, false, false, false, false, true);
+		return new BinderConfiguration(false, false, false, false, false, true, false);
 	}
 	
 	public static BinderConfiguration createInvitationConfig() {
-		return new BinderConfiguration(false, false, false, true, false, false);
+		return new BinderConfiguration(false, false, false, true, false, false, true);
 	}
 	
 	public static BinderConfiguration createMyPagesConfig() {
-		return new BinderConfiguration(false, false, false, true, true, false);
+		return new BinderConfiguration(false, false, false, true, true, false, true);
 	}
 	
 	public static BinderConfiguration createDeletedPagesConfig() {
-		return new BinderConfiguration(false, false, false, false, false, false);
+		return new BinderConfiguration(false, false, false, false, false, false, true);
 	}
 
 	public static BinderConfiguration createConfig(Binder binder) {
@@ -129,6 +135,6 @@ public class BinderConfiguration {
 		} else {
 			withPassed = withScore = assessable = false;
 		}
-		return new BinderConfiguration(assessable, withScore, withPassed, true, true, false);
+		return new BinderConfiguration(assessable, withScore, withPassed, true, true, false, true);
 	}
 }

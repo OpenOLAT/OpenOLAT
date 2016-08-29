@@ -33,7 +33,7 @@ import org.olat.modules.portfolio.BinderSecurityCallback;
 import org.olat.modules.portfolio.Category;
 import org.olat.modules.portfolio.CategoryToElement;
 import org.olat.modules.portfolio.Page;
-import org.olat.modules.portfolio.ui.model.PageRow;
+import org.olat.modules.portfolio.ui.model.PortfolioElementRow;
 
 /**
  * 
@@ -67,9 +67,9 @@ public class DeletedPageListController extends AbstractPageListController {
 		}
 
 		List<Page> pages = portfolioService.searchDeletedPages(getIdentity(), searchString);
-		List<PageRow> rows = new ArrayList<>(pages.size());
+		List<PortfolioElementRow> rows = new ArrayList<>(pages.size());
 		for (Page page : pages) {
-			rows.add(forgeRow(page, null, null, false, categorizedElementMap, numberOfCommentsMap));
+			rows.add(forgePageRow(page, null, null, false, categorizedElementMap, numberOfCommentsMap));
 		}
 
 		model.setObjects(rows);

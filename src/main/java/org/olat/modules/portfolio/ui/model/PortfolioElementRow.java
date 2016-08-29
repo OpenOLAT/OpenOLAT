@@ -21,11 +21,8 @@ package org.olat.modules.portfolio.ui.model;
 
 import java.util.Collection;
 import java.util.Date;
-import java.util.List;
 
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
-import org.olat.core.gui.components.link.Link;
-import org.olat.core.util.StringHelper;
 import org.olat.course.assessment.AssessmentHelper;
 import org.olat.modules.portfolio.AssessmentSection;
 import org.olat.modules.portfolio.Assignment;
@@ -40,43 +37,75 @@ import org.olat.modules.portfolio.SectionStatus;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class PageRow {
+public class PortfolioElementRow {
 	
 	private final Page page;
 	private final Section section;
-	private final boolean assessable;
-	private boolean firstPageOfSection;
+	private Assignment assignment;
 	private final AssessmentSection assessmentSection;
-	
-	private Assignment pageAssignment;
-	
-	private Collection<String> pageCategories;
-	private Collection<String> sectionCategories;
-	private List<PageAssignmentRow> assignments;
-	
-	private Link openLink;
-	private FormLink openFormLink, newFloatingEntryLink, newEntryLink, newAssignmentLink;
-	
-	private FormLink closeSectionLink, reopenSectionLink;
-	
-	private long numOfComments;
-	private Link commentLink;
-	private FormLink commentFormLink;
 	
 	private String metaSectionTitle;
 	private String metaBinderTitle;
 	
-	public PageRow(Page page, Section section, AssessmentSection assessmentSection,
+	private final boolean assessable;
+	private boolean firstPageOfSection;
+
+	private Collection<String> pageCategories;
+	private Collection<String> sectionCategories;
+
+	private long numOfComments;
+
+	private FormLink commentFormLink, openFormLink,
+		newFloatingEntryLink, newEntryLink,
+		closeSectionLink, reopenSectionLink;
+	// assignment
+	private FormLink newAssignmentLink, editAssignmentLink, instantiateAssignmentLink, upAssignmentLink, downAssignmentLink;
+	
+	private RowType type;
+	
+	public PortfolioElementRow(Section section, AssessmentSection assessmentSection,
 			boolean firstPageOfSection, boolean assessable) {
-		this.page = page;
+		this.page = null;
+		type = RowType.section;
 		this.section = section;
 		this.assessable = assessable;
 		this.assessmentSection = assessmentSection;
 		this.firstPageOfSection = firstPageOfSection;
 	}
 	
+	public PortfolioElementRow(Page page, AssessmentSection assessmentSection,
+			boolean firstPageOfSection, boolean assessable) {
+		this.page = page;
+		this.section = page.getSection();
+		type = RowType.page;
+		this.assessable = assessable;
+		this.assessmentSection = assessmentSection;
+		this.firstPageOfSection = firstPageOfSection;
+	}
+	
+	private int assignmentPos;
+	
+	public PortfolioElementRow(Assignment assignment, Section section, int assignmentPos) {
+		this.assignment = assignment;
+		this.section = section;
+		this.assignmentPos = assignmentPos;
+		
+		page = null;
+		assessable = false;
+		assessmentSection = null;
+		type = RowType.pendingAssignment;
+	}
+	
 	public boolean isPage() {
-		return page != null;
+		return type == RowType.page;
+	}
+	
+	public boolean isSection() {
+		return type == RowType.section;
+	}
+	
+	public boolean isPendingAssignment() {
+		return type == RowType.pendingAssignment;
 	}
 	
 	public Long getKey() {
@@ -124,18 +153,15 @@ public class PageRow {
 		return section == null ? null : section.getTitle();
 	}
 	
-	public boolean isSection () {
-		if(section == null) {
-			return false;
+	public SectionStatus getSectionStatus() {
+		if(section == null || section.getSectionStatus() == null) {
+			return SectionStatus.notStarted;
 		}
-		return true;
+		return section.getSectionStatus();
 	}
 	
 	public String getSectionStatusI18nKey() {
-		if(section == null || section.getSectionStatus() == null) {
-			return SectionStatus.notStarted.i18nKey();
-		}
-		return section.getSectionStatus().i18nKey();
+		return getSectionStatus().i18nKey();
 	}
 	
 	public String getSectionCssClassStatus() {
@@ -185,16 +211,24 @@ public class PageRow {
 		this.sectionCategories = sectionCategories;
 	}
 
-	public Assignment getPageAssignment() {
-		return pageAssignment;
+	public Assignment getAssignment() {
+		return assignment;
 	}
 
-	public void setPageAssignment(Assignment pageAssignment) {
-		this.pageAssignment = pageAssignment;
+	public void setAssignment(Assignment assignment) {
+		this.assignment = assignment;
 	}
 	
-	public String getPageAssignmentTitle() {
-		return pageAssignment == null ? null : pageAssignment.getTitle();
+	public String getAssignmentTitle() {
+		return assignment == null ? null : assignment.getTitle();
+	}
+	
+	public String getAssignmentSummary() {
+		return assignment == null ? null : assignment.getSummary();
+	}
+	
+	public int getAssignmentPos() {
+		return assignmentPos;
 	}
 
 	public boolean isAssessable() {
@@ -235,14 +269,6 @@ public class PageRow {
 	public void setOpenFormLink(FormLink openFormLink) {
 		this.openFormLink = openFormLink;
 	}
-	
-	public Link getOpenLink() {
-		return openLink;
-	}
-	
-	public void setOpenLink(Link openLink) {
-		this.openLink = openLink;
-	}
 
 	public long getNumOfComments() {
 		return numOfComments;
@@ -252,14 +278,6 @@ public class PageRow {
 		this.numOfComments = numOfComments;
 	}
 
-	public Link getCommentLink() {
-		return commentLink;
-	}
-
-	public void setCommentLink(Link commentLink) {
-		this.commentLink = commentLink;
-	}
-
 	public FormLink getCommentFormLink() {
 		return commentFormLink;
 	}
@@ -267,10 +285,7 @@ public class PageRow {
 	public void setCommentFormLink(FormLink commentFormLink) {
 		this.commentFormLink = commentFormLink;
 	}
-	
-	public boolean hasMetaBinderAndSectionTitle() {
-		return StringHelper.containsNonWhitespace(metaSectionTitle) || StringHelper.containsNonWhitespace(metaBinderTitle);
-	}
+
 
 	public String[] getMetaBinderAndSectionTitles() {
 		return new String[]{ metaBinderTitle, metaSectionTitle };
@@ -284,20 +299,44 @@ public class PageRow {
 		this.metaBinderTitle = metaBinderTitle;
 	}
 	
-	public List<PageAssignmentRow> getAssignments() {
-		return assignments;
-	}
-
-	public void setAssignments(List<PageAssignmentRow> assignments) {
-		this.assignments = assignments;
-	}
-	
 	public FormLink getNewAssignmentLink() {
 		return newAssignmentLink;
 	}
 	
 	public void setNewAssignmentLink(FormLink newAssignmentLink) {
 		this.newAssignmentLink = newAssignmentLink;
+	}
+	
+	public FormLink getEditAssignmentLink() {
+		return editAssignmentLink;
+	}
+
+	public void setEditAssignmentLink(FormLink editAssignmentLink) {
+		this.editAssignmentLink = editAssignmentLink;
+	}
+
+	public FormLink getUpAssignmentLink() {
+		return upAssignmentLink;
+	}
+
+	public void setUpAssignmentLink(FormLink upAssignmentLink) {
+		this.upAssignmentLink = upAssignmentLink;
+	}
+
+	public FormLink getDownAssignmentLink() {
+		return downAssignmentLink;
+	}
+
+	public void setDownAssignmentLink(FormLink downAssignmentLink) {
+		this.downAssignmentLink = downAssignmentLink;
+	}
+
+	public FormLink getInstantiateAssignmentLink() {
+		return instantiateAssignmentLink;
+	}
+
+	public void setInstantiateAssignmentLink(FormLink instantiateAssignmentLink) {
+		this.instantiateAssignmentLink = instantiateAssignmentLink;
 	}
 
 	public FormLink getCloseSectionLink() {
@@ -314,5 +353,11 @@ public class PageRow {
 
 	public void setReopenSectionLink(FormLink reopenSectionLink) {
 		this.reopenSectionLink = reopenSectionLink;
+	}
+	
+	public enum RowType {
+		section,
+		page,
+		pendingAssignment
 	}
 }

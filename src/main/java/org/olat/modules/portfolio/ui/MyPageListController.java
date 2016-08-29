@@ -50,7 +50,7 @@ import org.olat.modules.portfolio.Page;
 import org.olat.modules.portfolio.PageStatus;
 import org.olat.modules.portfolio.Section;
 import org.olat.modules.portfolio.ui.component.TimelinePoint;
-import org.olat.modules.portfolio.ui.model.PageRow;
+import org.olat.modules.portfolio.ui.model.PortfolioElementRow;
 
 /**
  * 
@@ -109,21 +109,19 @@ public class MyPageListController extends AbstractPageListController {
 			assignmentList.add(assignment);
 		}
 		
-		PageRow createRow = new PageRow(null, null, null, false, false);
 		FormLink newEntryButton = uifactory.addFormLink("new.entry." + (++counter), "new.entry", "create.new.page", null, flc, Link.BUTTON);
 		newEntryButton.setCustomEnabledLinkCSS("btn btn-primary");
-		newEntryButton.setUserObject(createRow);
 		
 		List<Page> pages = portfolioService.searchOwnedPages(getIdentity(), searchString);
-		List<PageRow> rows = new ArrayList<>(pages.size());
+		List<PortfolioElementRow> rows = new ArrayList<>(pages.size());
 		List<TimelinePoint> points = new ArrayList<>(pages.size());
 		for (Page page : pages) {
 			if(page.getPageStatus() == PageStatus.deleted) {
 				continue;
 			}
 			
-			List<Assignment> pageAssignmentList = pageToAssignments.get(page);
-			PageRow row = forgeRow(page, null, pageAssignmentList, false, categorizedElementMap, numberOfCommentsMap);
+			List<Assignment> assignmentList = pageToAssignments.get(page);
+			PortfolioElementRow row = forgePageRow(page, null, assignmentList, false, categorizedElementMap, numberOfCommentsMap);
 			rows.add(row);
 			if(page.getSection() != null) {
 				Section section = page.getSection();
@@ -157,8 +155,8 @@ public class MyPageListController extends AbstractPageListController {
 				SelectionEvent se = (SelectionEvent)event;
 				String cmd = se.getCommand();
 				if("select-page".equals(cmd)) {
-					PageRow row = model.getObject(se.getIndex());
-					doOpenPage(ureq, row);
+					PortfolioElementRow row = model.getObject(se.getIndex());
+					doOpenRow(ureq, row);
 				}
 			}
 		} else if(source instanceof FormLink) {

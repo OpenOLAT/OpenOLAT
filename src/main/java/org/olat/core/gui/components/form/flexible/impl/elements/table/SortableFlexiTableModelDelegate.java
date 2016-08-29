@@ -93,10 +93,14 @@ public class SortableFlexiTableModelDelegate<T> {
 			rows.add(tableModel.getObject(i));
 		}
 		sort(rows);
+		reverse(rows);
+		return rows;
+	}
+	
+	protected void reverse(List<T> rows) {
 		if(!asc) {
 			Collections.reverse(rows);
 		}
-		return rows;
 	}
 	
 	protected void sort(List<T> rows) {
@@ -115,7 +119,7 @@ public class SortableFlexiTableModelDelegate<T> {
 		return colModel;
 	}
 	
-	protected int compareString(final String a, final String b) {
+	protected final int compareString(final String a, final String b) {
 		if (a == null || b == null) {
 			return compareNullObjects(a, b);
 		}
@@ -136,7 +140,7 @@ public class SortableFlexiTableModelDelegate<T> {
 		return a? (b? 0: -1):(b? 1: 0);
 	}
 	
-	protected int compareDateAndTimestamps(Date a, Date b) {
+	protected final int compareDateAndTimestamps(Date a, Date b) {
 		if (a == null || b == null) {
 			return compareNullObjects(a, b);
 		}
@@ -156,8 +160,15 @@ public class SortableFlexiTableModelDelegate<T> {
 		}
 		return a.compareTo(b);
 	}
+	
+	protected final int compareLongs(Long a, Long b) {
+		if (a == null || b == null) {
+			return compareNullObjects(a, b);
+		}
+		return a.compareTo(b);
+	}
 
-	protected int compareNullObjects(final Object a, final Object b) {
+	protected final int compareNullObjects(final Object a, final Object b) {
 		boolean ba = (a == null);
 		boolean bb = (b == null);
 		return ba? (bb? 0: -1):(bb? 1: 0);

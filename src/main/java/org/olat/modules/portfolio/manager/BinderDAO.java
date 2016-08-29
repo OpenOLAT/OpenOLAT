@@ -699,7 +699,7 @@ public class BinderDAO {
 		if(index > 0) {
 			Section reloadedPart = binder.getSections().remove(index);
 			binder.getSections().add(index - 1, reloadedPart);
-		} else {
+		} else if(index < 0) {
 			binder.getSections().add(0, section);
 		}
 		return dbInstance.getCurrentEntityManager().merge(binder);

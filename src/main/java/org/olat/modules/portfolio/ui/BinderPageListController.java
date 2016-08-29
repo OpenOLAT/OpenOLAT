@@ -63,7 +63,7 @@ import org.olat.modules.portfolio.Page;
 import org.olat.modules.portfolio.PortfolioRoles;
 import org.olat.modules.portfolio.Section;
 import org.olat.modules.portfolio.ui.component.TimelinePoint;
-import org.olat.modules.portfolio.ui.model.PageRow;
+import org.olat.modules.portfolio.ui.model.PortfolioElementRow;
 import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -148,7 +148,7 @@ public class BinderPageListController extends AbstractPageListController {
 	@Override
 	protected void loadModel(String searchString) {
 		List<Section> sections = portfolioService.getSections(binder);
-		
+
 		List<CategoryToElement> categorizedElements = portfolioService.getCategorizedSectionsAndPages(binder);
 		Map<OLATResourceable,List<Category>> categorizedElementMap = new HashMap<>();
 		Map<Section,Set<String>> sectionAggregatedCategoriesMap = new HashMap<>();
@@ -168,23 +168,34 @@ public class BinderPageListController extends AbstractPageListController {
 		List<AssessmentSection> assessmentSections = portfolioService.getAssessmentSections(binder, getIdentity());
 		Map<Section,AssessmentSection> sectionToAssessmentSectionMap = assessmentSections.stream()
 				.collect(Collectors.toMap(as -> as.getSection(), as -> as));
-		
+
+		List<PortfolioElementRow> rows = new ArrayList<>();
+
 		//assignments
 		List<Assignment> assignments = portfolioService.getAssignments(binder);
 		Map<Section,List<Assignment>> sectionToAssignmentMap = new HashMap<>();
 		for(Assignment assignment:assignments) {
 			List<Assignment> assignmentList;
-			if(sectionToAssignmentMap.containsKey(assignment.getSection())) {
-				assignmentList = sectionToAssignmentMap.get(assignment.getSection());
+			Section section = assignment.getSection();
+			if(sectionToAssignmentMap.containsKey(section)) {
+				assignmentList = sectionToAssignmentMap.get(section);
 			} else {
 				assignmentList = new ArrayList<>();
-				sectionToAssignmentMap.put(assignment.getSection(), assignmentList);
+				sectionToAssignmentMap.put(section, assignmentList);
 			}
 			assignmentList.add(assignment);
 		}
+		
+		for(Assignment assignment:assignments) {
+			if(assignment.getPage() == null) {
+				Section section = assignment.getSection();
+				List<Assignment> sectionAssignments = sectionToAssignmentMap.get(section);
+				PortfolioElementRow row = forgePendingAssignmentRow(assignment, section, sectionAssignments);
+				rows.add(row);
+			}
+		}
 
 		List<Page> pages = portfolioService.getPages(binder, searchString);
-		List<PageRow> rows = new ArrayList<>(pages.size());
 		for (Page page : pages) {
 			if(!secCallback.canViewElement(page)) {
 				continue;
@@ -192,11 +203,8 @@ public class BinderPageListController extends AbstractPageListController {
 			
 			boolean first = false;
 			Section section = page.getSection();
-			if (sections.remove(section)) {
-				first = true;
-			}
-			
-			PageRow pageRow = forgeRow(page, sectionToAssessmentSectionMap.get(section), sectionToAssignmentMap.get(section),
+
+			PortfolioElementRow pageRow = forgePageRow(page, sectionToAssessmentSectionMap.get(section), sectionToAssignmentMap.get(section),
 					first, categorizedElementMap, numberOfCommentsMap);
 			rows.add(pageRow);
 			if(secCallback.canAddPage(section)) {
@@ -234,22 +242,22 @@ public class BinderPageListController extends AbstractPageListController {
 					continue;
 				}
 				
-				PageRow pageRow = forgeRow(section, sectionToAssessmentSectionMap.get(section), sectionToAssignmentMap.get(section),
+				PortfolioElementRow sectionRow = forgeSectionRow(section, sectionToAssessmentSectionMap.get(section),
 						true, categorizedElementMap);
-				rows.add(pageRow);
+				rows.add(sectionRow);
 
 				if(secCallback.canAddPage(section)) {
 					FormLink newEntryButton = uifactory.addFormLink("new.entry." + (++counter), "new.entry", "create.new.page", null, flc, Link.BUTTON);
 					newEntryButton.setCustomEnabledLinkCSS("btn btn-primary");
-					newEntryButton.setUserObject(pageRow);
-					pageRow.setNewEntryLink(newEntryButton);
+					newEntryButton.setUserObject(sectionRow);
+					sectionRow.setNewEntryLink(newEntryButton);
 				}
 				
 				if(secCallback.canNewAssignment() && section != null) {
 					FormLink newAssignmentButton = uifactory.addFormLink("new.assignment." + (++counter), "new.assignment", "create.new.assignment", null, flc, Link.BUTTON);
 					newAssignmentButton.setCustomEnabledLinkCSS("btn btn-primary");
-					newAssignmentButton.setUserObject(pageRow);
-					pageRow.setNewAssignmentLink(newAssignmentButton);
+					newAssignmentButton.setUserObject(sectionRow);
+					sectionRow.setNewAssignmentLink(newAssignmentButton);
 				}
 			}
 		}
@@ -260,9 +268,9 @@ public class BinderPageListController extends AbstractPageListController {
 	}
 	
 	private void updateTimeline() {
-		List<PageRow> pages = model.getObjects();
+		List<PortfolioElementRow> pages = model.getObjects();
 		List<TimelinePoint> points = new ArrayList<>(pages.size());
-		for(PageRow page:pages) {
+		for(PortfolioElementRow page:pages) {
 			if(page.isPage()) {
 				String s = page.getPageStatus() == null ? "draft" : page.getPageStatus().name();
 				points.add(new TimelinePoint(page.getKey().toString(), page.getTitle(), page.getCreationDate(), s));
@@ -283,8 +291,8 @@ public class BinderPageListController extends AbstractPageListController {
 				SelectionEvent se = (SelectionEvent)event;
 				String cmd = se.getCommand();
 				if("select-page".equals(cmd)) {
-					PageRow row = model.getObject(se.getIndex());
-					doOpenPage(ureq, row);
+					PortfolioElementRow row = model.getObject(se.getIndex());
+					doOpenRow(ureq, row);
 				}
 			}
 		} else if(previousSectionLink == source) {
@@ -299,10 +307,10 @@ public class BinderPageListController extends AbstractPageListController {
 			FormLink link = (FormLink)source;
 			String cmd = link.getCmd();
 			if("new.entry".equals(cmd)) {
-				PageRow row = (PageRow)link.getUserObject();
+				PortfolioElementRow row = (PortfolioElementRow)link.getUserObject();
 				doCreateNewPage(ureq, row.getSection());
 			} else if("new.assignment".equals(cmd)) {
-				PageRow row = (PageRow)link.getUserObject();
+				PortfolioElementRow row = (PortfolioElementRow)link.getUserObject();
 				doCreateNewAssignment(ureq, row.getSection());
 			}
 		}
@@ -329,8 +337,8 @@ public class BinderPageListController extends AbstractPageListController {
 		if("Section".equalsIgnoreCase(resName)) {
 			Long resId = entries.get(0).getOLATResourceable().getResourceableId();
 			
-			PageRow activatedRow = null;
-			for(PageRow row :model.getObjects()) {
+			PortfolioElementRow activatedRow = null;
+			for(PortfolioElementRow row :model.getObjects()) {
 				if(row.getSection() != null && row.getSection().getKey().equals(resId)) {
 					activatedRow = row;
 					break;
@@ -356,9 +364,9 @@ public class BinderPageListController extends AbstractPageListController {
 			if(event == Event.DONE_EVENT) {
 				loadModel(null);
 				Page newPage = newPageCtrl.getPage();
-				for(PageRow row:model.getObjects()) {
+				for(PortfolioElementRow row:model.getObjects()) {
 					if(row.getPage() != null && row.getPage().equals(newPage)) {
-						doOpenPage(ureq, row);
+						doOpenRow(ureq, row);
 						break;
 					}
 				}
@@ -459,5 +467,14 @@ public class BinderPageListController extends AbstractPageListController {
 		cmc = new CloseableModalController(getWindowControl(), null, newAssignmentCtrl.getInitialComponent(), true, title, true);
 		listenTo(cmc);
 		cmc.activate();
+	}
+	
+	@Override
+	protected void doOpenRow(UserRequest ureq, PortfolioElementRow row) {
+		if(row.isSection()) {
+			doFilterSection(row.getSection());
+		} else {
+			super.doOpenRow(ureq, row);
+		}
 	}
 }

@@ -32,7 +32,7 @@ import org.olat.modules.portfolio.Page;
 import org.olat.modules.portfolio.PageStatus;
 import org.olat.modules.portfolio.Section;
 import org.olat.modules.portfolio.ui.PageListDataModel.PageCols;
-import org.olat.modules.portfolio.ui.model.PageRow;
+import org.olat.modules.portfolio.ui.model.PortfolioElementRow;
 
 /**
  * 
@@ -40,30 +40,36 @@ import org.olat.modules.portfolio.ui.model.PageRow;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class PageListSortableDataModelDelegate extends SortableFlexiTableModelDelegate<PageRow> {
+public class PageListSortableDataModelDelegate extends SortableFlexiTableModelDelegate<PortfolioElementRow> {
 	
-	public PageListSortableDataModelDelegate(SortKey orderBy, SortableFlexiTableDataModel<PageRow> tableModel, Locale locale) {
+	public PageListSortableDataModelDelegate(SortKey orderBy, SortableFlexiTableDataModel<PortfolioElementRow> tableModel, Locale locale) {
 		super(orderBy, tableModel, locale);
 	}
 
 	@Override
-	protected void sort(List<PageRow> rows) {
-		if(getOrderBy() == null) {
-			Collections.sort(rows, new ClassicComparator());
-		} else {
+	protected void sort(List<PortfolioElementRow> rows) {
+		Comparator<PortfolioElementRow> comparator = new PageCreationDateComparator();
+		if(getOrderBy() != null) {
 			int columnIndex = getColumnIndex();
 			PageCols column = PageCols.values()[columnIndex];
 			switch(column) {
-				case status: Collections.sort(rows, new StatusComparator()); break;
-				case comment: Collections.sort(rows, new CommentsComparator()); break;
-				default: Collections.sort(rows, new DefaultComparator()); break;
+				case key: comparator = new PageCreationDateComparator(); break;
+				case status: comparator = new StatusComparator(); break;
+				case comment: comparator = new CommentsComparator(); break;
+				default: comparator = new DefaultComparator(); break;
 			}
 		}
+		Collections.sort(rows, new ClassicComparator(comparator));
+	}
+
+	@Override
+	protected void reverse(List<PortfolioElementRow> rows) {
+		//do nothing
 	}
 	
-	private class CommentsComparator implements Comparator<PageRow> {
+	public class CommentsComparator implements Comparator<PortfolioElementRow> {
 		@Override
-		public int compare(PageRow o1, PageRow o2) {
+		public int compare(PortfolioElementRow o1, PortfolioElementRow o2) {
 			long c1 = o1.getNumOfComments();
 			long c2 = o2.getNumOfComments();
 			
@@ -75,11 +81,11 @@ public class PageListSortableDataModelDelegate extends SortableFlexiTableModelDe
 		}
 	}
 	
-	private class StatusComparator implements Comparator<PageRow> {
+	public class StatusComparator extends PageComparator {
 		@Override
-		public int compare(PageRow t1, PageRow t2) {
-			PageStatus s1 = t1.getPageStatus();
-			PageStatus s2 = t2.getPageStatus();
+		public int compare(Page p1, Page p2) {
+			PageStatus s1 = p1.getPageStatus();
+			PageStatus s2 = p2.getPageStatus();
 			if(s1 == null && s2 != null) {
 				return -1;
 			}
@@ -91,58 +97,109 @@ public class PageListSortableDataModelDelegate extends SortableFlexiTableModelDe
 			if(s1 != null && s2 != null) {
 				compare = Integer.compare(s1.ordinal(), s2.ordinal());
 			}
-			if(compare == 0) {
-				compare = compareString(t1.getTitle(), t2.getTitle());
-			}
 			return compare;
 		}
 	}
-
-	private class ClassicComparator implements Comparator<PageRow> {
+	
+	public class PageCreationDateComparator extends PageComparator {
+		@Override
+		public int compare(Page p1, Page p2) {
+			return compareDateAndTimestamps(p1.getCreationDate(), p2.getCreationDate());
+		}
+	}
+	
+	public abstract class PageComparator implements Comparator<PortfolioElementRow> {
 		
 		@Override
-		public int compare(PageRow r1, PageRow r2) {
-			if(r1.getNewFloatingEntryLink() != null) {
+		public int compare(PortfolioElementRow t1, PortfolioElementRow t2) {
+			Page p1 = t1.getPage();
+			Page p2 = t2.getPage();
+			if(p1 == null && p2 != null) {
 				return 1;
 			}
-			if(r2.getNewFloatingEntryLink() != null) {
+			if(p1 != null && p2 == null) {
 				return -1;
 			}
 			
-			
-			Section s1 = r1.getSection();
-			Section s2 = r2.getSection();
-			if(s1 == null && s2 != null) {
-				return -1;
+			int c = 0;
+			if(p1 != null && p1 != null) {
+				c = compare(p1, p2);
 			}
-			if(s1 != null && s2 == null) {
-				return 1;
-			}
-
-			int c = compare(s1, s2);
 			if(c == 0) {
-				Page p1 = r1.getPage();
-				Page p2 = r2.getPage();
-				if(p1 == null && p2 != null) {
-					return -1;
-				}
-				if(p1 != null && p2 == null) {
-					return 1;
-				}
-				c = compareDateAndTimestamps(p1.getCreationDate(), p2.getCreationDate());
+				c = compareString(t1.getTitle(), t2.getTitle());
 			}
 			return c;
 		}
 		
-		private int compare(Section s1, Section s2) {
+		protected abstract int compare(Page p1, Page p2);
+	}
+
+	private class ClassicComparator implements Comparator<PortfolioElementRow> {
+		
+		private final Comparator<PortfolioElementRow> lastComparator;
+		
+		public ClassicComparator(Comparator<PortfolioElementRow> lastComparator) {
+			this.lastComparator = lastComparator;
+		}
+		
+		@Override
+		public int compare(PortfolioElementRow r1, PortfolioElementRow r2) {
+			if(r1.getNewFloatingEntryLink() != null) {
+				return -1;
+			}
+			if(r2.getNewFloatingEntryLink() != null) {
+				return 1;
+			}
+
+			Section s1 = r1.getSection();
+			Section s2 = r2.getSection();
+			int c = compareSections(s1, s2);
+			if(c == 0) {
+				boolean a1 = r1.isPendingAssignment();
+				boolean a2 = r2.isPendingAssignment();
+				if(a1 && a2) {
+					int apc1 = r1.getAssignmentPos();
+					int apc2 = r2.getAssignmentPos();
+					c = compareLongs(new Long(apc1), new Long(apc2));
+				} else if(a1) {
+					if(r1.isSection()) {
+						c = 1;
+					} else if(r1.isPage()) {
+						c = -1;
+					}
+				} else if(a2) {
+					if(r1.isSection()) {
+						c = -1;
+					} else if(r1.isPage()) {
+						c = 1;
+					}
+				} else {
+					Page p1 = r1.getPage();
+					Page p2 = r2.getPage();
+					if(p1 == null && p2 != null) {
+						c = -1;
+					} else if(p1 != null && p2 == null) {
+						c = 1;
+					} else {
+						c = lastComparator.compare(r1, r2);
+					}
+				}
+			}
+			return c;
+		}
+		
+		private int compareSections(Section s1, Section s2) {
 			if(s1 == null && s2 == null) {
 				return 0;
 			}
 			if(s1 == null && s2 != null) {
-				return -1;
+				return 1;
 			}
 			if(s1 != null && s2 == null) {
-				return 1;
+				return -1;
+			}
+			if(s1.equals(s2)) {
+				return 0;
 			}
 			
 			Date b1 = s1.getBeginDate();
@@ -151,10 +208,14 @@ public class PageListSortableDataModelDelegate extends SortableFlexiTableModelDe
 			}
 			Date b2 = s2.getBeginDate();
 			if(b2 == null) {
-				b2 = s2.getBeginDate();
+				b2 = s2.getCreationDate();
 			}
 			
-			return compareDateAndTimestamps(b1, b2);
+			int c = compareDateAndTimestamps(b1, b2);
+			if(c == 0) {
+				c = compareLongs(s1.getKey(), s2.getKey());
+			}
+			return c;
 		}
 	}
 	

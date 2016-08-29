@@ -373,7 +373,7 @@ public class PageDAO {
 		if(index > 0) {
 			PagePart reloadedPart = body.getParts().remove(index);
 			body.getParts().add(index - 1, reloadedPart);
-		} else {
+		} else if(index < 0) {
 			body.getParts().add(0, part);
 		}
 		dbInstance.getCurrentEntityManager().merge(body);

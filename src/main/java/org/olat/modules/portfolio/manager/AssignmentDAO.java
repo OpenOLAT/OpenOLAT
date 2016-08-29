@@ -100,7 +100,7 @@ public class AssignmentDAO {
 		if(index > 0) {
 			Assignment reloadedAssigment = section.getAssignments().remove(index);
 			section.getAssignments().add(index - 1, reloadedAssigment);
-		} else {
+		} else if(index < 0) {
 			section.getAssignments().add(0, assignment);
 		}
 		section = dbInstance.getCurrentEntityManager().merge(section);
@@ -145,7 +145,8 @@ public class AssignmentDAO {
 		sb.append("select assignment from pfassignment as assignment")
 		  .append(" inner join fetch assignment.section as section")
 		  .append(" left join fetch assignment.page as page")
-		  .append(" where section.binder.key=:binderKey");
+		  .append(" where section.binder.key=:binderKey")
+		  .append(" order by section.key, assignment.pos");
 		
 		return dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), Assignment.class)
@@ -158,7 +159,8 @@ public class AssignmentDAO {
 		sb.append("select assignment from pfassignment as assignment")
 		  .append(" inner join fetch assignment.section as section")
 		  .append(" left join fetch assignment.page as page")
-		  .append(" where section.key=:sectionKey");
+		  .append(" where section.key=:sectionKey")
+		  .append(" order by section.key, assignment.pos");
 		
 		return dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), Assignment.class)
@@ -171,7 +173,8 @@ public class AssignmentDAO {
 		sb.append("select assignment from pfassignment as assignment")
 		  .append(" inner join fetch assignment.section as section")
 		  .append(" inner join fetch assignment.page as page")
-		  .append(" where page.key=:pageKey");
+		  .append(" where page.key=:pageKey")
+		  .append(" order by section.key, assignment.pos");
 		
 		return dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), Assignment.class)

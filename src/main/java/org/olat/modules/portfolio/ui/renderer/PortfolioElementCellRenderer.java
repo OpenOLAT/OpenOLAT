@@ -25,26 +25,37 @@ import org.olat.core.gui.render.Renderer;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
-import org.olat.modules.portfolio.PageStatus;
-import org.olat.modules.portfolio.SectionStatus;
+import org.olat.modules.portfolio.ui.model.PortfolioElementRow;
 
 /**
  * 
- * Initial date: 06.07.2016<br>
+ * Initial date: 29.08.2016<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class StatusCellRenderer implements FlexiCellRenderer {
+public class PortfolioElementCellRenderer implements FlexiCellRenderer {
 
 	@Override
-	public void render(Renderer renderer, StringOutput target, Object cellValue,
-			int row, FlexiTableComponent source, URLBuilder ubu, Translator translator) {
-		if(cellValue instanceof PageStatus) {
-			PageStatus status = (PageStatus)cellValue;
-			target.append("<i class='o_icon ").append(status.cssClass()).append(" o_icon-fw'> </i>");
-		} else if(cellValue instanceof SectionStatus) {
-			SectionStatus status = (SectionStatus)cellValue;
-			target.append("<i class='o_icon ").append(status.cssClass()).append(" o_icon-fw'> </i>");
+	public void render(Renderer renderer, StringOutput target, Object cellValue, int row, FlexiTableComponent source,
+			URLBuilder ubu, Translator translator) {
+		if(cellValue instanceof String) {
+			Object objRow = source.getFlexiTableElement().getTableDataModel().getObject(row);
+			target.append("<span class='");
+			if(objRow instanceof PortfolioElementRow) {
+				PortfolioElementRow elRow = (PortfolioElementRow)objRow;
+				if(elRow.isSection()) {
+					target.append("o_pf_section'><i class='o_icon o_icon-fw o_icon_pf_section'> </i> ");
+				} else if(elRow.isPage()) {
+					target.append("o_pf_page'><i class='o_icon o_icon-fw o_icon_pf_page'> </i> ");
+				} else if(elRow.isPendingAssignment()) {
+					target.append("o_pf_assignment'><i class='o_icon o_icon-fw o_icon_assignment'> </i> ");
+				} else {
+					target.append("'>");
+				}
+			} else {
+				target.append("'>");
+			}
+			target.append((String)cellValue).append("</span>");
 		}
 	}
 }
