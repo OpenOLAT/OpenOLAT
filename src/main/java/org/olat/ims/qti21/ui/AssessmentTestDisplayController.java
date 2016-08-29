@@ -1263,7 +1263,6 @@ public class AssessmentTestDisplayController extends BasicController implements 
 		@Override
 		protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 			mainForm.setMultipartEnabled(true);
-			mainForm.setOnSubmitCallback("QtiWorksRendering.maySubmit();");
 
 			FormSubmit submit = uifactory.addFormSubmitButton("submit", formLayout);
 			submit.setElementCssClass("o_sel_assessment_item_submit");

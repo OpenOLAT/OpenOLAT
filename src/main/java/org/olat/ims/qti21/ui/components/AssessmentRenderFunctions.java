@@ -505,7 +505,9 @@ public class AssessmentRenderFunctions {
 			checks.add(patternMask);
 		}
 
-		if(checks == null || checks.isEmpty()) return "()";
+		if(checks == null || checks.isEmpty()) {
+			return null;
+		}
 		
 		StringBuilder out = new StringBuilder(128);
 		out.append("QtiWorksRendering.validateInput(this");

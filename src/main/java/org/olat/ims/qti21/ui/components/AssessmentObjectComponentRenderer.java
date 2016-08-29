@@ -967,8 +967,9 @@ public abstract class AssessmentObjectComponentRenderer extends DefaultComponent
 		ResponseDeclaration responseDeclaration = getResponseDeclaration(assessmentItem, interaction.getResponseIdentifier());
 		String checkJavascript = checkJavaScript(responseDeclaration, interaction.getPatternMask());
 		if(StringHelper.containsNonWhitespace(checkJavascript)) {
-			sb.append(" onchange=\"").append(checkJavascript).append("\">");
+			sb.append(" onchange=\"").append(checkJavascript).append("\"");
 		}
+		sb.append(">");
 		
 		if(renderer.isSolutionMode()) {
 			String placeholder = interaction.getPlaceholderText();
@@ -980,6 +981,12 @@ public abstract class AssessmentObjectComponentRenderer extends DefaultComponent
 		}
 		sb.append("</textarea>");
 		FormJSHelper.appendFlexiFormDirty(sb, component.getQtiItem().getRootForm(), responseUniqueId);
+		sb.append(FormJSHelper.getJSStartWithVarDeclaration(responseUniqueId))
+		//plain textAreas should not propagate the keypress "enter" (keynum = 13) as this would submit the form
+		  .append(responseUniqueId).append(".on('keypress', function(event, target){if (13 == event.keyCode) {event.stopPropagation()} })")
+		  .append(FormJSHelper.getJSEnd());
+	
+		
 	}
 	
 	protected abstract void renderPrintedVariable(AssessmentRenderer renderer, StringOutput sb,
