@@ -23,6 +23,7 @@ import java.util.Date;
 
 import org.olat.core.id.OLATResourceable;
 import org.olat.repository.RepositoryEntry;
+import org.olat.resource.OLATResource;
 
 /**
  * 
@@ -61,6 +62,15 @@ public interface Binder extends BinderLight, PortfolioElement, OLATResourceable 
 	 * @return
 	 */
 	public RepositoryEntry getEntry();
+	
+	/**
+	 * This is the shared olat resource between a template and its
+	 * repository entry. Standard binder without an entry in the learn
+	 * resources doesn't have one.
+	 * 
+	 * @return
+	 */
+	public OLATResource getOlatResource();
 	
 	public String getSubIdent();
 	

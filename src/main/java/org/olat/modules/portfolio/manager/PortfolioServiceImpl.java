@@ -20,6 +20,9 @@
 package org.olat.modules.portfolio.manager;
 
 import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Date;
@@ -38,11 +41,14 @@ import org.olat.core.commons.modules.bc.vfs.OlatRootFileImpl;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.vfs.VFSLeaf;
+import org.olat.core.util.xml.XStreamHelper;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.assessment.AssessmentHelper;
@@ -50,6 +56,7 @@ import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.PortfolioCourseNode;
 import org.olat.course.run.scoring.ScoreEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
+import org.olat.fileresource.FileResourceManager;
 import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.assessment.AssessmentService;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
@@ -58,6 +65,7 @@ import org.olat.modules.portfolio.Assignment;
 import org.olat.modules.portfolio.AssignmentStatus;
 import org.olat.modules.portfolio.AssignmentType;
 import org.olat.modules.portfolio.Binder;
+import org.olat.modules.portfolio.BinderDeliveryOptions;
 import org.olat.modules.portfolio.BinderLight;
 import org.olat.modules.portfolio.BinderRef;
 import org.olat.modules.portfolio.Category;
@@ -99,6 +107,8 @@ import org.olat.resource.OLATResourceManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.thoughtworks.xstream.XStream;
+
 /**
  * 
  * Initial date: 06.06.2016<br>
@@ -107,6 +117,13 @@ import org.springframework.stereotype.Service;
  */
 @Service
 public class PortfolioServiceImpl implements PortfolioService {
+	
+	private static final OLog log = Tracing.createLoggerFor(PortfolioServiceImpl.class);
+	
+	private static XStream configXstream = XStreamHelper.createXStreamInstance();
+	static {
+		configXstream.alias("deliveryOptions", BinderDeliveryOptions.class);
+	}
 	
 	@Autowired
 	private PageDAO pageDao;
@@ -211,6 +228,42 @@ public class PortfolioServiceImpl implements PortfolioService {
 		int deletedRows = binderDao.deleteBinderTemplate(binder);
 		return deletedRows > 0;
 	}
+	
+	@Override
+	public BinderDeliveryOptions getDeliveryOptions(OLATResource resource) {
+		FileResourceManager frm = FileResourceManager.getInstance();
+		File reFolder = frm.getFileResourceRoot(resource);
+		File configXml = new File(reFolder, PACKAGE_CONFIG_FILE_NAME);
+		
+		BinderDeliveryOptions config;
+		if(configXml.exists()) {
+			config = (BinderDeliveryOptions)configXstream.fromXML(configXml);
+		} else {
+			//set default config
+			config = BinderDeliveryOptions.defaultOptions();
+			setDeliveryOptions(resource, config);
+		}
+		return config;
+	}
+
+	@Override
+	public void setDeliveryOptions(OLATResource resource, BinderDeliveryOptions options) {
+		FileResourceManager frm = FileResourceManager.getInstance();
+		File reFolder = frm.getFileResourceRoot(resource);
+		File configXml = new File(reFolder, PACKAGE_CONFIG_FILE_NAME);
+		if(options == null) {
+			if(configXml.exists()) {
+				configXml.delete();
+			}
+		} else {
+			try (OutputStream out = new FileOutputStream(configXml)) {
+				configXstream.toXML(options, out);
+			} catch (IOException e) {
+				log.error("", e);
+			}
+		}
+	}
+	
 
 	@Override
 	public Assignment addAssignment(String title, String summary, String content, AssignmentType type,
@@ -373,6 +426,13 @@ public class PortfolioServiceImpl implements PortfolioService {
 	@Override
 	public Binder getBinderByResource(OLATResource resource) {
 		return binderDao.loadByResource(resource);
+	}
+
+	@Override
+	public RepositoryEntry getRepositoryEntry(Binder binder) {
+		OLATResource resource = ((BinderImpl)binder).getOlatResource();
+		Long resourceKey = resource.getKey();
+		return repositoryService.loadByResourceKey(resourceKey);
 	}
 
 	@Override

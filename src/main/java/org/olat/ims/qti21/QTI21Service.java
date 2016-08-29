@@ -143,6 +143,15 @@ public interface QTI21Service {
 	public QTI21DeliveryOptions getDeliveryOptions(RepositoryEntry testEntry);
 	
 	/**
+	 * Set some extra options for the QTI 2.1 which are not part
+	 * of the standard fomr IMS.
+	 * 
+	 * @param testEntry
+	 * @param options
+	 */
+	public void setDeliveryOptions(RepositoryEntry testEntry, QTI21DeliveryOptions options);
+	
+	/**
 	 * Check if some user made assessment with this test.
 	 * 
 	 * @param testEntry
@@ -150,7 +159,6 @@ public interface QTI21Service {
 	 */
 	public boolean isAssessmentTestActivelyUsed(RepositoryEntry testEntry);
 	
-	public void setDeliveryOptions(RepositoryEntry testEntry, QTI21DeliveryOptions options);
 	
 	
 	public AssessmentTestSession createAssessmentTestSession(Identity identity, String anonymousIdentifier,

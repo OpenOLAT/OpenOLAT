@@ -46,6 +46,9 @@ import org.olat.resource.OLATResource;
  *
  */
 public interface PortfolioService {
+
+	public static final String PACKAGE_CONFIG_FILE_NAME = "BinderPackageConfig.xml";
+	
 	
 	public Binder createNewBinder(String title, String summary, String imagePath, Identity owner);
 	
@@ -61,7 +64,24 @@ public interface PortfolioService {
 	
 	public boolean deleteBinderTemplate(Binder binder, RepositoryEntry templateEntry);
 	
-	/**S
+	
+	/**
+	 * Set some extra options for the template.
+	 * 
+	 * @param testEntry
+	 * @return
+	 */
+	public BinderDeliveryOptions getDeliveryOptions(OLATResource resource);
+	
+	/**
+	 * Set some extra options for the template.
+	 * 
+	 * @param testEntry
+	 * @param options
+	 */
+	public void setDeliveryOptions(OLATResource resource, BinderDeliveryOptions options);
+	
+	/**
 	 * Add an assignment to a section.
 	 * 
 	 * @param title
@@ -166,6 +186,13 @@ public interface PortfolioService {
 	public Binder getBinderByKey(Long portfolioKey);
 	
 	public Binder getBinderByResource(OLATResource resource);
+	
+	/**
+	 * Retrieve the repository entry of a template.
+	 * @param binder
+	 * @return
+	 */
+	public RepositoryEntry getRepositoryEntry(Binder binder);
 	
 	public Binder getBinderBySection(SectionRef section);
 	
