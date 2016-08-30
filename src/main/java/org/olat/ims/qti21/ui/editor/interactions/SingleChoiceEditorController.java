@@ -214,10 +214,12 @@ public class SingleChoiceEditorController extends FormBasicController {
 		}
 		
 		answersCont.clearError();
-		String correctAnswer = ureq.getParameter("correct");
-		if(!StringHelper.containsNonWhitespace(correctAnswer)) {
-			allOk &= false;
-			answersCont.setErrorKey("error.need.correct.answer", null);
+		if(!restrictedEdit) {
+			String correctAnswer = ureq.getParameter("correct");
+			if(!StringHelper.containsNonWhitespace(correctAnswer)) {
+				allOk &= false;
+				answersCont.setErrorKey("error.need.correct.answer", null);
+			}
 		}
 		
 		return allOk & super.validateFormLogic(ureq);

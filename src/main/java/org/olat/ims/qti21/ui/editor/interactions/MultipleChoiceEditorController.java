@@ -218,10 +218,12 @@ public class MultipleChoiceEditorController extends FormBasicController {
 		}
 		
 		answersCont.clearError();
-		String[] correctAnswers = ureq.getHttpReq().getParameterValues("correct");
-		if(correctAnswers == null || correctAnswers.length == 0) {
-			answersCont.setErrorKey("error.need.correct.answer", null);
-			allOk &= false;
+		if(!restrictedEdit) {
+			String[] correctAnswers = ureq.getHttpReq().getParameterValues("correct");
+			if(correctAnswers == null || correctAnswers.length == 0) {
+				answersCont.setErrorKey("error.need.correct.answer", null);
+				allOk &= false;
+			}
 		}
 		
 		return allOk & super.validateFormLogic(ureq);

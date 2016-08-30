@@ -456,6 +456,11 @@ public class LoggingResourceable implements ILoggingResourceable {
 				String.valueOf(course.getResourceableId()), course.getCourseTitle(), false);
 	}
 	
+	public static LoggingResourceable wrapTest(RepositoryEntry entry) {
+		return new LoggingResourceable(entry, OlatResourceableType.test, entry.getOlatResource().getResourceableTypeName(), 
+				String.valueOf(entry.getOlatResource().getResourceableId()), entry.getDisplayname(), false);
+	}
+	
 	/**
 	 * Wraps a CourseNode into a LoggingResourceable - setting type/id/name accordingly 
 	 * @param node the node to be wrapped

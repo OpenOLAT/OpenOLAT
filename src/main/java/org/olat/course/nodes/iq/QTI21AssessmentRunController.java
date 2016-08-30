@@ -22,6 +22,7 @@ package org.olat.course.nodes.iq;
 import java.text.DateFormat;
 import java.util.Date;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.olat.core.commons.fullWebApp.LayoutMain3ColsController;
 import org.olat.core.gui.UserRequest;
@@ -57,6 +58,7 @@ import org.olat.ims.qti.process.AssessmentInstance;
 import org.olat.ims.qti21.OutcomesListener;
 import org.olat.ims.qti21.QTI21DeliveryOptions;
 import org.olat.ims.qti21.QTI21DeliveryOptions.ShowResultsOnFinish;
+import org.olat.ims.qti21.QTI21LoggingAction;
 import org.olat.ims.qti21.QTI21Service;
 import org.olat.ims.qti21.ui.AssessmentTestDisplayController;
 import org.olat.ims.qti21.ui.QTI21Event;
@@ -97,6 +99,7 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 	
 	private AssessmentTestDisplayController displayCtrl;
 	private LayoutMain3ColsController displayContainerController;
+	private AtomicBoolean incrementAttempts = new AtomicBoolean(true);
 	
 	@Autowired
 	private QTI21Service qtiService;
@@ -114,6 +117,8 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 		testEntry = courseNode.getReferencedRepositoryEntry();
 		singleUserEventCenter = userSession.getSingleUserEventCenter();
 		mainVC = createVelocityContainer("assessment_run");
+		
+		addLoggingResourceable(LoggingResourceable.wrap(courseNode));
 		
 		if(courseNode instanceof IQTESTCourseNode) {
 			mainVC.contextPut("type", "test");
@@ -321,7 +326,9 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 
 			assessmentStopped = false;		
 			singleUserEventCenter.registerFor(this, getIdentity(), assessmentInstanceOres);
-			singleUserEventCenter.fireEventToListenersOf(new AssessmentEvent(AssessmentEvent.TYPE.STARTED, ureq.getUserSession()), assessmentEventOres);						
+			singleUserEventCenter.fireEventToListenersOf(new AssessmentEvent(AssessmentEvent.TYPE.STARTED, ureq.getUserSession()), assessmentEventOres);
+			
+			ThreadLocalUserActivityLogger.log(QTI21LoggingAction.QTI_START_IN_COURSE, getClass());
 		}
 	}
 	
@@ -385,9 +392,17 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 				assessmentStatus = AssessmentEntryStatus.done;
 			}
 			ScoreEvaluation sceval = new ScoreEvaluation(score, pass, assessmentStatus, Boolean.TRUE, assessmentId);
-			((IQTESTCourseNode)courseNode).updateUserScoreEvaluation(sceval, userCourseEnv, getIdentity(), true);
+			
+			boolean increment = incrementAttempts.getAndSet(false);
+			((IQTESTCourseNode)courseNode).updateUserScoreEvaluation(sceval, userCourseEnv, getIdentity(), increment);
+			if(increment) {
+				ThreadLocalUserActivityLogger.log(QTI21LoggingAction.QTI_CLOSE_IN_COURSE, getClass());
+			}
 		} else if(courseNode instanceof IQSELFCourseNode) {
-			((IQSELFCourseNode)courseNode).incrementUserAttempts(userCourseEnv);
+			boolean increment = incrementAttempts.getAndSet(false);
+			if(increment) {
+				((IQSELFCourseNode)courseNode).incrementUserAttempts(userCourseEnv);
+			}
 		}
 	}
 }

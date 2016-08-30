@@ -62,6 +62,7 @@ import org.olat.core.gui.control.generic.wizard.StepsMainRunController;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.helpers.Settings;
+import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.Util;
 import org.olat.core.util.coordinate.CoordinatorManager;
@@ -69,6 +70,7 @@ import org.olat.core.util.coordinate.LockResult;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.fileresource.FileResourceManager;
 import org.olat.ims.qti21.QTI21Constants;
+import org.olat.ims.qti21.QTI21LoggingAction;
 import org.olat.ims.qti21.QTI21Service;
 import org.olat.ims.qti21.manager.openxml.QTI21WordExport;
 import org.olat.ims.qti21.model.IdentifierGenerator;
@@ -103,6 +105,7 @@ import org.olat.modules.qpool.ui.events.QItemViewEvent;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.ui.RepositoryEntryRuntimeController.ToolbarAware;
 import org.olat.user.UserManager;
+import org.olat.util.logging.activity.LoggingResourceable;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import uk.ac.ed.ph.jqtiplus.node.QtiNode;
@@ -194,6 +197,8 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 			putInitialPanel(columnLayoutCtr.getInitialComponent());
 			return;
 		}
+		
+		addLoggingResourceable(LoggingResourceable.wrapTest(testEntry));
 		
 		// test structure
 		menuTree = new MenuTree("atTree");
@@ -866,6 +871,8 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 		URI testURI = resolvedAssessmentTest.getTestLookup().getSystemId();
 		File testFile = new File(testURI);
 		qtiService.updateAssesmentObject(testFile, resolvedAssessmentTest);
+
+		ThreadLocalUserActivityLogger.log(QTI21LoggingAction.QTI_EDIT_RESOURCE, getClass());
 	}
 	
 	private void recalculateMaxScoreAssessmentTest() {
