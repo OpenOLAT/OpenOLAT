@@ -40,11 +40,14 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Identity;
+import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.modules.portfolio.Binder;
 import org.olat.modules.portfolio.Category;
+import org.olat.modules.portfolio.PortfolioLoggingAction;
 import org.olat.modules.portfolio.PortfolioRoles;
 import org.olat.modules.portfolio.PortfolioService;
 import org.olat.user.UserManager;
+import org.olat.util.logging.activity.LoggingResourceable;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -197,6 +200,9 @@ public class BinderMetadataEditController extends FormBasicController {
 				imagePath = portfolioService.addPosterImageForBinder(fileUpload.getUploadFile(), fileUpload.getUploadFileName());
 			}
 			binder = portfolioService.createNewBinder(title, summary, imagePath, getIdentity());
+			
+			ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrap(binder));
+			ThreadLocalUserActivityLogger.log(PortfolioLoggingAction.PORTFOLIO_BINDER_CREATED, getClass());
 		} else {
 			binder = portfolioService.getBinderByKey(binder.getKey());
 			if(fileUpload.getUploadFile() != null) {

@@ -27,6 +27,7 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Identity;
+import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.vfs.VFSContainer;
@@ -41,12 +42,14 @@ import org.olat.modules.fo.manager.ForumManager;
 import org.olat.modules.portfolio.Media;
 import org.olat.modules.portfolio.MediaInformations;
 import org.olat.modules.portfolio.MediaLight;
+import org.olat.modules.portfolio.PortfolioLoggingAction;
 import org.olat.modules.portfolio.handler.AbstractMediaHandler;
 import org.olat.modules.portfolio.manager.MediaDAO;
 import org.olat.modules.portfolio.manager.PortfolioFileStorage;
 import org.olat.modules.portfolio.ui.media.StandardEditMediaController;
 import org.olat.portfolio.manager.EPFrontendManager;
 import org.olat.portfolio.model.artefacts.AbstractArtefact;
+import org.olat.util.logging.activity.LoggingResourceable;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -112,6 +115,8 @@ public class ForumMediaHandler extends AbstractMediaHandler {
 		
 		String content = message.getBody();
 		Media media = mediaDao.createMedia(title, description, content, FORUM_HANDLER, businessPath, null, 70, author);
+		ThreadLocalUserActivityLogger.log(PortfolioLoggingAction.PORTFOLIO_MEDIA_ADDED, getClass(),
+				LoggingResourceable.wrap(media));
 		
 		File messageDir = forumManager.getMessageDirectory(message.getForum().getKey(), message.getKey(), false);
 		if (messageDir != null && messageDir.exists()) {
@@ -139,6 +144,8 @@ public class ForumMediaHandler extends AbstractMediaHandler {
 		}
 		Media media = mediaDao.createMedia(artefact.getTitle(), artefact.getDescription(), null, FORUM_HANDLER,
 				businessPath, artefact.getKey().toString(), artefact.getSignature(), artefact.getAuthor());
+		ThreadLocalUserActivityLogger.log(PortfolioLoggingAction.PORTFOLIO_MEDIA_ADDED, getClass(),
+				LoggingResourceable.wrap(media));
 		
 		List<VFSItem> items = artefactFolder.getItems(new SystemItemFilter());
 		if(items.size() > 0) {

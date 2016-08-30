@@ -17,15 +17,21 @@
 					</div>
 				#end
 					
-				#if($r.isNotNull($section.editDropdown))
+				#if($r.isNotNull($section.editDropdown) || $r.isNotNull($section.upSectionLink) || $r.isNotNull($section.downSectionLink))
 					<div id="sect_$foreach.count" class="o_section_actions dropdown">
+						#if($r.isNotNull($section.upSectionLink) || $r.isNotNull($section.downSectionLink))
 						<span class="o_section_move_up_and_down">
-							<div class="o_move_up">$r.render($section.upSectionLink)</div>
-							<div class="o_move_down">$r.render($section.downSectionLink)</div>
+							#if($r.isNotNull($section.upSectionLink))
+								<div class="o_move_up">$r.render($section.upSectionLink)</div>
+							#end
+							#if($r.isNotNull($section.downSectionLink))
+								<div class="o_move_down">$r.render($section.downSectionLink)</div>
+							#end
 						</span>
-						<span class="o_section_dropdown">
-						$r.render($section.editDropdown)
-						</span>
+						#end
+						#if($r.isNotNull($section.editDropdown))
+							<span class="o_section_dropdown">$r.render($section.editDropdown)</span>
+						#end
 					</div>
 				#end
 				

@@ -43,11 +43,13 @@ import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
+import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.modules.portfolio.Binder;
 import org.olat.modules.portfolio.BinderConfiguration;
 import org.olat.modules.portfolio.BinderSecurityCallback;
 import org.olat.modules.portfolio.ui.event.SectionSelectionEvent;
+import org.olat.util.logging.activity.LoggingResourceable;
 
 /**
  * 
@@ -82,6 +84,8 @@ public class BinderController extends BasicController implements TooledControlle
 		this.config = config;
 		this.stackPanel = stackPanel;
 		this.secCallback = secCallback;
+
+		ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrap(binder));
 
 		segmentButtonsCmp = new ButtonGroupComponent("segments");
 		overviewLink = LinkFactory.createLink("portfolio.overview", getTranslator(), this);

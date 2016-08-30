@@ -29,9 +29,12 @@ import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
+import org.olat.modules.portfolio.PortfolioLoggingAction;
 import org.olat.modules.portfolio.PortfolioService;
 import org.olat.modules.portfolio.Section;
 import org.olat.modules.portfolio.SectionStatus;
+import org.olat.util.logging.activity.LoggingResourceable;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -111,6 +114,8 @@ public class SectionDatesEditController extends FormBasicController {
 				&& section.getEndDate() != null
 				&& section.getEndDate().compareTo(new Date()) >= 0) {
 			portfolioService.changeSectionStatus(section, SectionStatus.inProgress, getIdentity());
+			ThreadLocalUserActivityLogger.log(PortfolioLoggingAction.PORTFOLIO_SECTION_REOPEN, getClass(),
+					LoggingResourceable.wrap(section));
 		}
 		
 		fireEvent(ureq, Event.DONE_EVENT);

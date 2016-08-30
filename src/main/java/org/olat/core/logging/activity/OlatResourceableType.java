@@ -84,6 +84,9 @@ public enum OlatResourceableType implements ILoggingResourceableType {
 	
 	/**   reprensents a portfolio map   **/
 	portfolio,
+	section,
+	assignment,
+	media,
 	
 	/**   reprensents openmeetings **/
 	openmeetings,

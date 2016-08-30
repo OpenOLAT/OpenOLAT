@@ -49,6 +49,7 @@ import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
+import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.modules.portfolio.AssessmentSection;
@@ -58,6 +59,7 @@ import org.olat.modules.portfolio.BinderConfiguration;
 import org.olat.modules.portfolio.BinderSecurityCallback;
 import org.olat.modules.portfolio.Page;
 import org.olat.modules.portfolio.PageStatus;
+import org.olat.modules.portfolio.PortfolioLoggingAction;
 import org.olat.modules.portfolio.PortfolioRoles;
 import org.olat.modules.portfolio.PortfolioService;
 import org.olat.modules.portfolio.Section;
@@ -66,6 +68,7 @@ import org.olat.modules.portfolio.model.SectionRefImpl;
 import org.olat.modules.portfolio.ui.event.SectionSelectionEvent;
 import org.olat.modules.portfolio.ui.renderer.PortfolioRendererHelper;
 import org.olat.user.UserManager;
+import org.olat.util.logging.activity.LoggingResourceable;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -541,6 +544,8 @@ public class TableOfContentController extends BasicController implements TooledC
 	private void doClose(SectionRow row) {
 		Section section = row.getSection();
 		section = portfolioService.changeSectionStatus(section, SectionStatus.closed, getIdentity());
+		ThreadLocalUserActivityLogger.log(PortfolioLoggingAction.PORTFOLIO_SECTION_CLOSE, getClass(),
+				LoggingResourceable.wrap(section));
 	}
 	
 	private void doConfirmReopenSection(UserRequest ureq, SectionRow row) {
@@ -553,6 +558,8 @@ public class TableOfContentController extends BasicController implements TooledC
 	private void doReopen(SectionRow row) {
 		Section section = row.getSection();
 		section = portfolioService.changeSectionStatus(section, SectionStatus.inProgress, getIdentity());
+		ThreadLocalUserActivityLogger.log(PortfolioLoggingAction.PORTFOLIO_SECTION_REOPEN, getClass(),
+				LoggingResourceable.wrap(section));
 	}
 	
 	public class PageRow {

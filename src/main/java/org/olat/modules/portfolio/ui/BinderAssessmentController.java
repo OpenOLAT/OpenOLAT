@@ -43,6 +43,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Identity;
+import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.StringHelper;
 import org.olat.course.assessment.AssessmentHelper;
 import org.olat.modules.assessment.ui.ScoreCellRenderer;
@@ -51,6 +52,7 @@ import org.olat.modules.portfolio.Binder;
 import org.olat.modules.portfolio.BinderConfiguration;
 import org.olat.modules.portfolio.BinderSecurityCallback;
 import org.olat.modules.portfolio.Page;
+import org.olat.modules.portfolio.PortfolioLoggingAction;
 import org.olat.modules.portfolio.PortfolioRoles;
 import org.olat.modules.portfolio.PortfolioService;
 import org.olat.modules.portfolio.Section;
@@ -59,6 +61,7 @@ import org.olat.modules.portfolio.model.AssessmentSectionChange;
 import org.olat.modules.portfolio.ui.BinderAssessmentDataModel.AssessmentSectionCols;
 import org.olat.modules.portfolio.ui.component.SectionStatusCellRenderer;
 import org.olat.modules.portfolio.ui.renderer.PassedCellRenderer;
+import org.olat.util.logging.activity.LoggingResourceable;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -255,10 +258,14 @@ public class BinderAssessmentController extends FormBasicController {
 	
 	private void doClose(Section section) {
 		portfolioService.changeSectionStatus(section, SectionStatus.closed, getIdentity());
+		ThreadLocalUserActivityLogger.log(PortfolioLoggingAction.PORTFOLIO_SECTION_CLOSE, getClass(),
+				LoggingResourceable.wrap(section));
 	}
 	
 	private void doReopen(Section section) {
 		portfolioService.changeSectionStatus(section, SectionStatus.inProgress, getIdentity());
+		ThreadLocalUserActivityLogger.log(PortfolioLoggingAction.PORTFOLIO_SECTION_REOPEN, getClass(),
+				LoggingResourceable.wrap(section));
 	}
 
 	public static class AssessmentSectionWrapper {

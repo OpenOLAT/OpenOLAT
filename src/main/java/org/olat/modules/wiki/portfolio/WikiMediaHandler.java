@@ -24,16 +24,19 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Identity;
+import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.fileresource.types.WikiResource;
 import org.olat.modules.portfolio.Media;
 import org.olat.modules.portfolio.MediaInformations;
 import org.olat.modules.portfolio.MediaLight;
+import org.olat.modules.portfolio.PortfolioLoggingAction;
 import org.olat.modules.portfolio.handler.AbstractMediaHandler;
 import org.olat.modules.portfolio.manager.MediaDAO;
 import org.olat.modules.portfolio.ui.media.StandardEditMediaController;
 import org.olat.modules.wiki.WikiPage;
 import org.olat.portfolio.model.artefacts.AbstractArtefact;
+import org.olat.util.logging.activity.LoggingResourceable;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -87,7 +90,10 @@ public class WikiMediaHandler extends AbstractMediaHandler {
 			WikiPage page = (WikiPage)mediaObject;
 			content = page.getContent();
 		}
-		return mediaDao.createMedia(title, description, content, WIKI_HANDLER, businessPath, null, 70, author);
+		Media media = mediaDao.createMedia(title, description, content, WIKI_HANDLER, businessPath, null, 70, author);
+		ThreadLocalUserActivityLogger.log(PortfolioLoggingAction.PORTFOLIO_MEDIA_ADDED, getClass(),
+				LoggingResourceable.wrap(media));
+		return media;
 	}
 
 	@Override
@@ -99,8 +105,11 @@ public class WikiMediaHandler extends AbstractMediaHandler {
 		if(businessPath == null) {
 			businessPath = "[PortfolioV2:0][MediaCenter:0]";
 		}
-		return mediaDao.createMedia(title, description, content, WIKI_HANDLER, businessPath,
+		Media media = mediaDao.createMedia(title, description, content, WIKI_HANDLER, businessPath,
 				artefact.getKey().toString(), artefact.getSignature(), artefact.getAuthor());
+		ThreadLocalUserActivityLogger.log(PortfolioLoggingAction.PORTFOLIO_MEDIA_ADDED, getClass(),
+				LoggingResourceable.wrap(media));
+		return media;
 	}
 
 	@Override

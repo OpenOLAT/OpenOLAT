@@ -47,6 +47,10 @@ import org.olat.group.ui.run.BusinessGroupMainRunController;
 import org.olat.modules.fo.Forum;
 import org.olat.modules.fo.Message;
 import org.olat.modules.fo.manager.ForumManager;
+import org.olat.modules.portfolio.Assignment;
+import org.olat.modules.portfolio.Binder;
+import org.olat.modules.portfolio.Media;
+import org.olat.modules.portfolio.Section;
 import org.olat.modules.webFeed.models.Feed;
 import org.olat.modules.webFeed.models.Item;
 import org.olat.repository.RepositoryEntry;
@@ -251,6 +255,61 @@ public class LoggingResourceable implements ILoggingResourceable {
 		} else {
 			return wrap(olatResourceable, OlatResourceableType.portfolio);
 		}
+	}
+	
+	/**
+	 * Wraps a portfolio v 2.0 or binder into a LoggingResourceable
+	 * @param binder The binder (persisted)
+	 * @return a LoggingResourceable representing the given binder
+	 */
+	public static LoggingResourceable wrap(Binder binder) {
+		if (binder==null) {
+			throw new IllegalArgumentException("binder must not be null");
+		}
+		return new LoggingResourceable(binder, OlatResourceableType.portfolio, binder.getResourceableTypeName(),
+				String.valueOf(binder.getResourceableId()), binder.getTitle(), false);
+	}
+	
+	/**
+	 * Wraps the section of a portfolio v 2.0 or binder into a LoggingResourceable
+	 * @param section The section (persisted)
+	 * @return a LoggingResourceable representing the given section
+	 */
+	public static LoggingResourceable wrap(Section section) {
+		if (section==null) {
+			throw new IllegalArgumentException("assignment must not be null");
+		}
+		OLATResourceable sectionOres = OresHelper.createOLATResourceableInstance(Section.class, section.getKey());
+		return new LoggingResourceable(sectionOres, OlatResourceableType.section, sectionOres.getResourceableTypeName(),
+				String.valueOf(sectionOres.getResourceableId()), section.getTitle(), false);
+	}
+	
+	/**
+	 * Wraps the assignment in a portfolio v 2.0 or binder into a LoggingResourceable
+	 * @param assignment The assignment (persisted)
+	 * @return a LoggingResourceable representing the given assignment
+	 */
+	public static LoggingResourceable wrap(Assignment assignment) {
+		if (assignment == null) {
+			throw new IllegalArgumentException("assignment must not be null");
+		}
+		OLATResourceable assignmentOres = OresHelper.createOLATResourceableInstance(Assignment.class, assignment.getKey());
+		return new LoggingResourceable(assignmentOres, OlatResourceableType.assignment, assignmentOres.getResourceableTypeName(),
+				String.valueOf(assignmentOres.getResourceableId()), assignment.getTitle(), false);	
+	}
+	
+	/**
+	 * Wraps the media in portfolio v 2.0 into a LoggingResourceable
+	 * @param media The media (persisted)
+	 * @return a LoggingResourceable representing the given media
+	 */
+	public static LoggingResourceable wrap(Media media) {
+		if (media == null) {
+			throw new IllegalArgumentException("media must not be null");
+		}
+		OLATResourceable mediaOres = OresHelper.createOLATResourceableInstance(Media.class, media.getKey());
+		return new LoggingResourceable(mediaOres, OlatResourceableType.media, mediaOres.getResourceableTypeName(),
+				String.valueOf(mediaOres.getResourceableId()), media.getTitle(), false);		
 	}
 	
 	/**

@@ -59,6 +59,7 @@ import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
+import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.modules.portfolio.AssessmentSection;
@@ -69,6 +70,7 @@ import org.olat.modules.portfolio.BinderConfiguration;
 import org.olat.modules.portfolio.BinderSecurityCallback;
 import org.olat.modules.portfolio.Category;
 import org.olat.modules.portfolio.Page;
+import org.olat.modules.portfolio.PortfolioLoggingAction;
 import org.olat.modules.portfolio.PortfolioService;
 import org.olat.modules.portfolio.Section;
 import org.olat.modules.portfolio.SectionStatus;
@@ -79,6 +81,7 @@ import org.olat.modules.portfolio.ui.event.PageRemoved;
 import org.olat.modules.portfolio.ui.model.PortfolioElementRow;
 import org.olat.modules.portfolio.ui.renderer.PortfolioElementCellRenderer;
 import org.olat.modules.portfolio.ui.renderer.StatusCellRenderer;
+import org.olat.util.logging.activity.LoggingResourceable;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -532,6 +535,8 @@ implements Activateable2, TooledController, FlexiTableComponentDelegate {
 	private void doClose(UserRequest ureq, PortfolioElementRow row) {
 		Section section = row.getSection();
 		section = portfolioService.changeSectionStatus(section, SectionStatus.closed, getIdentity());
+		ThreadLocalUserActivityLogger.log(PortfolioLoggingAction.PORTFOLIO_SECTION_CLOSE, getClass(),
+				LoggingResourceable.wrap(section));
 		loadModel(null);
 		fireEvent(ureq, Event.CHANGED_EVENT);
 	}
@@ -546,6 +551,8 @@ implements Activateable2, TooledController, FlexiTableComponentDelegate {
 	private void doReopen(UserRequest ureq, PortfolioElementRow row) {
 		Section section = row.getSection();
 		section = portfolioService.changeSectionStatus(section, SectionStatus.inProgress, getIdentity());
+		ThreadLocalUserActivityLogger.log(PortfolioLoggingAction.PORTFOLIO_SECTION_REOPEN, getClass(),
+				LoggingResourceable.wrap(section));
 		loadModel(null);
 		fireEvent(ureq, Event.CHANGED_EVENT);
 	}
@@ -562,12 +569,13 @@ implements Activateable2, TooledController, FlexiTableComponentDelegate {
 		flc.contextPut("timelineSwitch", Boolean.FALSE);
 	}
 	
-	private void doStartAssignment(UserRequest ureq, PortfolioElementRow row) {
+	protected Assignment doStartAssignment(UserRequest ureq, PortfolioElementRow row) {
 		Assignment assignment = row.getAssignment();
 		Assignment startedAssigment = portfolioService.startAssignment(assignment, getIdentity());
 		row.setAssignment(startedAssigment);
 		doOpenPage(ureq, startedAssigment.getPage());
 		loadModel(null);//TODO only update the links
+		return startedAssigment;
 	}
 	
 	private void doOpenAssignment(UserRequest ureq, PortfolioElementRow row) {
@@ -586,7 +594,6 @@ implements Activateable2, TooledController, FlexiTableComponentDelegate {
 		Assignment assigment = row.getAssignment();
 		Section section = assigment.getSection();
 		section = portfolioService.moveUpAssignment(section, assigment);
-		//DBFactory.getInstance().commitAndCloseSession();
 		loadModel(null);
 	}
 	
@@ -594,7 +601,6 @@ implements Activateable2, TooledController, FlexiTableComponentDelegate {
 		Assignment assigment = row.getAssignment();
 		Section section = row.getSection();
 		section = portfolioService.moveDownAssignment(section, assigment);
-		//DBFactory.getInstance().commitAndCloseSession();
 		loadModel(null);
 	}
 	
