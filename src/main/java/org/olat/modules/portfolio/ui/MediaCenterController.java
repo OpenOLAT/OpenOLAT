@@ -449,7 +449,11 @@ public class MediaCenterController extends FormBasicController
 						List<MediaRow> rows = model.getObjects();
 						for(MediaRow row:rows) {
 							if(row != null && row.getKey().equals(rowKey)) {
-								doOpenMedia(ureq, rowKey);
+								if(select) {
+									doSelect(ureq, rowKey);
+								} else {
+									doOpenMedia(ureq, rowKey);
+								}
 							}
 						}
 					} catch (NumberFormatException e) {

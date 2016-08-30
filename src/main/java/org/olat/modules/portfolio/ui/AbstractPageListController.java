@@ -462,12 +462,13 @@ implements Activateable2, TooledController, FlexiTableComponentDelegate {
 			} else if(event instanceof SelectionEvent) {
 				SelectionEvent se = (SelectionEvent)event;
 				String cmd = se.getCommand();
-				PortfolioElementRow row = model.getObject(se.getIndex());
 				if("up".equals(cmd)) {
+					PortfolioElementRow row = model.getObject(se.getIndex());
 					if(row.isPendingAssignment()) {
 						doMoveUpAssignment(row);
 					}
 				} else if("down".equals(cmd)) {
+					PortfolioElementRow row = model.getObject(se.getIndex());
 					if(row.isPendingAssignment()) {
 						doMoveDownAssignment(row);
 					}

@@ -23,6 +23,7 @@ import java.util.Collection;
 import java.util.Date;
 
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
+import org.olat.core.util.StringHelper;
 import org.olat.course.assessment.AssessmentHelper;
 import org.olat.modules.portfolio.AssessmentSection;
 import org.olat.modules.portfolio.Assignment;
@@ -292,9 +293,11 @@ public class PortfolioElementRow {
 		this.commentFormLink = commentFormLink;
 	}
 
-
 	public String[] getMetaBinderAndSectionTitles() {
-		return new String[]{ metaBinderTitle, metaSectionTitle };
+		if(StringHelper.containsNonWhitespace(metaBinderTitle) && StringHelper.containsNonWhitespace(metaSectionTitle)) {
+			return new String[]{ metaBinderTitle, metaSectionTitle };
+		}
+		return null;
 	}
 
 	public void setMetaSectionTitle(String metaSectionTitle) {
