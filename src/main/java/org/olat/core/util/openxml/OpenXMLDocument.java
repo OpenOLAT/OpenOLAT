@@ -77,6 +77,8 @@ public class OpenXMLDocument {
 	
 	private static final OLog log = Tracing.createLoggerFor(OpenXMLDocument.class);
 	
+	private final int DPI = 72;
+	
 	private final Document document;
 	private final Element rootElement;
 	private final Element bodyElement;
@@ -535,6 +537,10 @@ public class OpenXMLDocument {
 			spacingEl.setAttribute("w:afterAutospacing", "0");
 		}
 		return paragraphEl;
+	}
+	
+	public Element createRunEl() {
+		return createRunEl(null, null);
 	}
 	
 	public Element createRunEl(Collection<? extends Node> textEls) {
@@ -1037,21 +1043,10 @@ public class OpenXMLDocument {
  * @return
  */
 	public Element createImageEl(File image) {
-		String id;
-		Size emuSize;
-		String filename;
-		if(fileToImagesMap.containsKey(image)) {
-			DocReference ref = fileToImagesMap.get(image);
-			id = ref.getId();
-			emuSize = ref.getEmuSize();
-			filename = ref.getFilename();
-		} else {
-			id = generateId();
-			Size size = ImageUtils.getImageSize(image);
-			emuSize = OpenXMLUtils.convertPixelToEMUs(size, 72, 15.9/* cm */);
-			filename = getUniqueFilename(image);
-			fileToImagesMap.put(image, new DocReference(id, filename, emuSize, image));
-		}
+		DocReference ref = registerImage(image);
+		String id = ref.getId();
+		OpenXMLSize emuSize = ref.getEmuSize();
+		String filename = ref.getFilename();
 
 		Element drawingEl = document.createElement("w:drawing");
 		Element inlineEl = (Element)drawingEl.appendChild(document.createElement("wp:inline"));
@@ -1062,8 +1057,8 @@ public class OpenXMLDocument {
 		//wp14:anchorId="152D4A51" wp14:editId="0588CC29"
 
 		Element extentEl = (Element)inlineEl.appendChild(document.createElement("wp:extent"));
-		extentEl.setAttribute("cx", Integer.toString(emuSize.getWidth()));
-		extentEl.setAttribute("cy", Integer.toString(emuSize.getHeight()));
+		extentEl.setAttribute("cx", Integer.toString(emuSize.getWidthEmu()));
+		extentEl.setAttribute("cy", Integer.toString(emuSize.getHeightEmu()));
 		Element effectExtentEl = (Element)inlineEl.appendChild(document.createElement("wp:effectExtent"));
 		effectExtentEl.setAttribute("l", "0");
 		effectExtentEl.setAttribute("t", "0");
@@ -1083,6 +1078,8 @@ public class OpenXMLDocument {
 		graphicEl.setAttribute("xmlns:a", "http://schemas.openxmlformats.org/drawingml/2006/main");
 		Element graphicDataEl = (Element)graphicEl.appendChild(document.createElement("a:graphicData"));
 		graphicDataEl.setAttribute("uri", "http://schemas.openxmlformats.org/drawingml/2006/picture");
+		
+		//pic
 		Element picEl = (Element)graphicDataEl.appendChild(document.createElement("pic:pic"));
 		picEl.setAttribute("xmlns:pic", "http://schemas.openxmlformats.org/drawingml/2006/picture");
 		
@@ -1124,8 +1121,8 @@ public class OpenXMLDocument {
 		xfrmOffEl.setAttribute("x", "0");
 		xfrmOffEl.setAttribute("y", "0");
 		Element xfrmExtEl = (Element)xfrmEl.appendChild(document.createElement("a:ext"));
-		xfrmExtEl.setAttribute("cx", Integer.toString(emuSize.getWidth()));
-		xfrmExtEl.setAttribute("cy", Integer.toString(emuSize.getHeight()));
+		xfrmExtEl.setAttribute("cx", Integer.toString(emuSize.getWidthEmu()));
+		xfrmExtEl.setAttribute("cy", Integer.toString(emuSize.getHeightEmu()));
 		//pic -> spPr -> prstGeom
 		Element prstGeomEl = (Element)spPrEl.appendChild(document.createElement("a:prstGeom"));
 		prstGeomEl.setAttribute("prst","rect");
@@ -1134,9 +1131,463 @@ public class OpenXMLDocument {
 		spPrEl.appendChild(document.createElement("a:noFill"));
 		Node lnEl = spPrEl.appendChild(document.createElement("a:ln"));
 		lnEl.appendChild(document.createElement("a:noFill"));
-
 		
 		return drawingEl;
+	}
+	
+	private DocReference registerImage(File image) {
+		DocReference ref;
+		if(fileToImagesMap.containsKey(image)) {
+			ref = fileToImagesMap.get(image);
+		} else {
+			String id = generateId();
+			Size size = ImageUtils.getImageSize(image);
+			OpenXMLSize emuSize = OpenXMLUtils.convertPixelToEMUs(size, DPI, 15.9/* cm */);
+			String filename = getUniqueFilename(image);
+			ref = new DocReference(id, filename, emuSize, image);
+			fileToImagesMap.put(image, ref);
+		}
+		return ref;
+	}
+	
+	private void appendPicture(Element parentEl, DocReference ref) {
+		String id = ref.getId();
+		String filename = ref.getFilename();
+		OpenXMLSize emuSize = ref.getEmuSize();
+		
+		//pic
+		Element picEl = (Element)parentEl.appendChild(document.createElement("pic:pic"));
+		picEl.setAttribute("xmlns:pic", "http://schemas.openxmlformats.org/drawingml/2006/picture");
+		
+		//picture information
+		Node nvPicPrEl = picEl.appendChild(document.createElement("pic:nvPicPr"));
+		Element cNvPrEl = (Element)nvPicPrEl.appendChild(document.createElement("pic:cNvPr"));
+		cNvPrEl.setAttribute("id", "0");
+		cNvPrEl.setAttribute("name", filename);
+		Node cNvPicPrEl = nvPicPrEl.appendChild(document.createElement("pic:cNvPicPr"));
+		Element picLocksEl = (Element)cNvPicPrEl.appendChild(document.createElement("a:picLocks"));
+		picLocksEl.setAttribute("noChangeAspect", "1");
+		picLocksEl.setAttribute("noChangeArrowheads", "1");
+
+		//picture blip
+		Node blipFillEl = picEl.appendChild(document.createElement("pic:blipFill"));
+		Element blipEl = (Element)blipFillEl.appendChild(document.createElement("a:blip"));
+		blipEl.setAttribute("r:embed", id);
+		
+		//extLst
+		Node extLstEl = blipEl.appendChild(document.createElement("a:extLst"));
+		Element extEl = (Element)extLstEl.appendChild(document.createElement("a:ext"));
+		extEl.setAttribute("uri", "{" + UUID.randomUUID().toString() + "}");
+		Element useLocalDpiEl = (Element)extEl.appendChild(document.createElement("a14:useLocalDpi"));
+		useLocalDpiEl.setAttribute("xmlns:a14", "http://schemas.microsoft.com/office/drawing/2010/main");
+		useLocalDpiEl.setAttribute("val", "0");
+
+		//srcRect
+		blipFillEl.appendChild(document.createElement("a:srcRect"));
+		//fill
+		Node strechEl = blipFillEl.appendChild(document.createElement("a:stretch"));
+		strechEl.appendChild(document.createElement("a:fillRect"));
+
+		//pic -> spPr
+		Element spPrEl = (Element)picEl.appendChild(document.createElement("pic:spPr"));
+		spPrEl.setAttribute("bwMode", "auto");
+		//pic -> spPr -> xfrm
+		Node xfrmEl = spPrEl.appendChild(document.createElement("a:xfrm"));
+		Element xfrmOffEl = (Element)xfrmEl.appendChild(document.createElement("a:off"));
+		xfrmOffEl.setAttribute("x", "0");
+		xfrmOffEl.setAttribute("y", "0");
+		Element xfrmExtEl = (Element)xfrmEl.appendChild(document.createElement("a:ext"));
+		xfrmExtEl.setAttribute("cx", Integer.toString(emuSize.getWidthEmu()));
+		xfrmExtEl.setAttribute("cy", Integer.toString(emuSize.getHeightEmu()));
+		//pic -> spPr -> prstGeom
+		Element prstGeomEl = (Element)spPrEl.appendChild(document.createElement("a:prstGeom"));
+		prstGeomEl.setAttribute("prst","rect");
+		prstGeomEl.appendChild(document.createElement("a:avLst"));
+
+		spPrEl.appendChild(document.createElement("a:noFill"));
+		Node lnEl = spPrEl.appendChild(document.createElement("a:ln"));
+		lnEl.appendChild(document.createElement("a:noFill"));
+	}
+	
+	
+/*
+<w:drawing>
+	<wp:anchor distT="0" distB="0" distL="114300" distR="114300"
+		simplePos="0" relativeHeight="251663360" behindDoc="0" locked="0"
+		layoutInCell="1" allowOverlap="1" wp14:anchorId="0DC40B5E"
+		wp14:editId="2CD7359E">
+		<wp:simplePos x="0" y="0" />
+		<wp:positionH relativeFrom="column">
+			<wp:posOffset>0</wp:posOffset>
+		</wp:positionH>
+		<wp:positionV relativeFrom="paragraph">
+			<wp:posOffset>179070</wp:posOffset>
+		</wp:positionV>
+		<wp:extent cx="5756910" cy="2282190" />
+		<wp:effectExtent l="0" t="0" r="8890" b="3810" />
+		<wp:wrapThrough wrapText="bothSides">
+			<wp:wrapPolygon edited="0">
+				<wp:start x="0" y="0" />
+				<wp:lineTo x="0" y="21396" />
+				<wp:lineTo x="21538" y="21396" />
+				<wp:lineTo x="21538" y="0" />
+				<wp:lineTo x="0" y="0" />
+			</wp:wrapPolygon>
+		</wp:wrapThrough>
+		<wp:docPr id="5" name="Gruppierung 5" />
+		<wp:cNvGraphicFramePr />
+		<a:graphic xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main">
+			<a:graphicData
+				uri="http://schemas.microsoft.com/office/word/2010/wordprocessingGroup">
+				<wpg:wgp>
+					<wpg:cNvGrpSpPr />
+					<wpg:grpSpPr>
+						<a:xfrm>
+							<a:off x="0" y="0" />
+							<a:ext cx="5756910" cy="2282190" />
+							<a:chOff x="0" y="0" />
+							<a:chExt cx="5756910" cy="2282190" />
+						</a:xfrm>
+					</wpg:grpSpPr>
+				</wpg:wgp>
+			</a:graphicData>
+		</a:graphic>
+	</wp:anchor>
+</w:drawing>
+*/
+	public Element createGraphicEl(File backgroundImage, List<OpenXMLGraphic> elements) {
+		DocReference backgroundImageRef = registerImage(backgroundImage);
+		OpenXMLSize emuSize = backgroundImageRef.getEmuSize();
+
+		Element drawingEl = document.createElement("w:drawing");
+		
+		//anchor
+		Element anchorEl = (Element)drawingEl.appendChild(document.createElement("wp:anchor"));
+		anchorEl.setAttribute("distT", "0");
+		anchorEl.setAttribute("distB", "0");
+		anchorEl.setAttribute("distL", "0");
+		anchorEl.setAttribute("distR", "0");
+		anchorEl.setAttribute("simplePos", "0");
+		anchorEl.setAttribute("relativeHeight", "251663360");//TODO
+		anchorEl.setAttribute("behindDoc", "0");
+		anchorEl.setAttribute("locked", "0");
+		anchorEl.setAttribute("layoutInCell", "1");
+		anchorEl.setAttribute("allowOverlap", "1");
+		anchorEl.setAttribute("locked", "0");
+		
+		//simple pos
+		Element simplePosEl = (Element)anchorEl.appendChild(document.createElement("wp:simplePos"));
+		simplePosEl.setAttribute("x", "0");
+		simplePosEl.setAttribute("y", "0");
+		
+		/*<wp:positionH relativeFrom="column">
+			<wp:posOffset>0</wp:posOffset>
+		</wp:positionH>*/
+		Element positionHEl = (Element)anchorEl.appendChild(document.createElement("wp:positionH"));
+		positionHEl.setAttribute("relativeFrom", "column");
+		Element positionHPosOffsetEl = (Element)positionHEl.appendChild(document.createElement("wp:posOffset"));
+		positionHPosOffsetEl.appendChild(document.createTextNode("0"));
+
+		/*<wp:positionV relativeFrom="paragraph">
+			<wp:posOffset>179070</wp:posOffset>
+		</wp:positionV>*/
+		Element positionVEl = (Element)anchorEl.appendChild(document.createElement("wp:positionV"));
+		positionVEl.setAttribute("relativeFrom", "paragraph");
+		Element positionVposOffsetEl = (Element)positionVEl.appendChild(document.createElement("wp:posOffset"));
+		positionVposOffsetEl.appendChild(document.createTextNode("179070"));
+		
+		String width = Integer.toString(emuSize.getWidthEmu());//"5756910";
+		String height = Integer.toString(emuSize.getHeightEmu());// "2282190";
+		
+		//extent
+		Element extentEl = (Element)anchorEl.appendChild(document.createElement("wp:extent"));
+		extentEl.setAttribute("cx", width);
+		extentEl.setAttribute("cy", height);
+		//effectExtent
+		Element effectExtentEl = (Element)anchorEl.appendChild(document.createElement("wp:effectExtent"));
+		effectExtentEl.setAttribute("l", "0");
+		effectExtentEl.setAttribute("t", "0");
+		effectExtentEl.setAttribute("r", "8890");
+		effectExtentEl.setAttribute("b", "3810");
+		
+		/*<wp:wrapThrough wrapText="bothSides">
+			<wp:wrapPolygon edited="0">
+				<wp:start x="0" y="0" />
+				<wp:lineTo x="0" y="21396" />
+				<wp:lineTo x="21538" y="21396" />
+				<wp:lineTo x="21538" y="0" />
+				<wp:lineTo x="0" y="0" />
+			</wp:wrapPolygon>
+		</wp:wrapThrough>*/
+		Element wrapThroughEl = (Element)anchorEl.appendChild(document.createElement("wp:wrapThrough"));
+		wrapThroughEl.setAttribute("wrapText", "bothSides");
+		Element wrapPolygonEl = (Element)wrapThroughEl.appendChild(document.createElement("wp:wrapPolygon"));
+		wrapPolygonEl.setAttribute("edited", "0");
+		Element wrapPolygonStartEl = (Element)wrapPolygonEl.appendChild(document.createElement("wp:start"));
+		wrapPolygonStartEl.setAttribute("x", "0");
+		wrapPolygonStartEl.setAttribute("y", "0");
+		appendLineTo(wrapPolygonEl, "0", "21396");//TODO
+		appendLineTo(wrapPolygonEl, "21538", "21396");
+		appendLineTo(wrapPolygonEl, "21538", "0");
+		appendLineTo(wrapPolygonEl, "0", "0");
+		
+		//<wp:docPr id="5" name="Gruppierung 5" />
+		Element docPrEl = (Element)anchorEl.appendChild(document.createElement("wp:docPr"));
+		String groupId = generateSimpleId();
+		docPrEl.setAttribute("id", groupId);
+		docPrEl.setAttribute("name", "Gruppierung " + groupId);
+		//<wp:cNvGraphicFramePr />
+		anchorEl.appendChild(document.createElement("wp:cNvGraphicFramePr"));
+		
+		//<a:graphic xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main">
+		Element graphicEl = (Element)anchorEl.appendChild(document.createElement("a:graphic"));
+		graphicEl.setAttribute("xmlns:a", "http://schemas.openxmlformats.org/drawingml/2006/main");
+		//<a:graphicData uri="http://schemas.microsoft.com/office/word/2010/wordprocessingGroup">
+		Element graphicDataEl = (Element)graphicEl.appendChild(document.createElement("a:graphicData"));
+		graphicDataEl.setAttribute("uri", "http://schemas.microsoft.com/office/word/2010/wordprocessingGroup");
+		
+		//groups
+		Element wpgEl = (Element)graphicDataEl.appendChild(document.createElement("wpg:wgp"));
+		//<wpg:cNvGrpSpPr />
+		wpgEl.appendChild(document.createElement("wpg:cNvGrpSpPr"));
+		
+		Element wpgGrpSpPrEl = (Element)wpgEl.appendChild(document.createElement("wpg:grpSpPr"));
+		appendAXfrm_ch(wpgGrpSpPrEl, width, height);
+		
+		// list of elements <wpg:grpSp>
+		Element grpSpEl = (Element)wpgEl.appendChild(document.createElement("wpg:grpSp"));
+		
+		Element cNvPrEl = (Element)grpSpEl.appendChild(document.createElement("wpg:cNvPr"));
+		String subGroupId = generateSimpleId();
+		cNvPrEl.setAttribute("id", subGroupId);
+		cNvPrEl.setAttribute("name", "Gruppierung " + subGroupId);
+		grpSpEl.appendChild(document.createElement("wpg:cNvGrpSpPr"));
+		Element grpSpPrEl = (Element)grpSpEl.appendChild(document.createElement("wpg:grpSpPr"));
+		appendAXfrm_ch(grpSpPrEl, width, height);
+
+		appendPicture(grpSpEl, backgroundImageRef);
+		
+		for(OpenXMLGraphic element:elements) {
+			appendGraphicElementEl(grpSpEl, backgroundImageRef.getEmuSize(), element);
+		}
+
+		return drawingEl;
+	}
+	
+	/*
+	<wps:wsp>
+		<wps:cNvPr id="2" name="Rechteck 2" />
+		<wps:cNvSpPr />
+		<wps:spPr>
+			<a:xfrm>
+				<a:off x="2028190" y="581660" />
+				<a:ext cx="822960" cy="822960" />
+			</a:xfrm>
+			<a:prstGeom prst="rect">
+				<a:avLst />
+			</a:prstGeom>
+			<a:noFill />
+			<a:ln w="38100" />
+			<a:effectLst />
+			<a:extLst>
+				<a:ext uri="{FAA26D3D-D897-4be2-8F04-BA451C77F1D7}">
+					<ma14:placeholderFlag
+						xmlns:ma14="http://schemas.microsoft.com/office/mac/drawingml/2011/main" />
+				</a:ext>
+				<a:ext uri="{C572A759-6A51-4108-AA02-DFA0A04FC94B}">
+					<ma14:wrappingTextBoxFlag
+						xmlns:ma14="http://schemas.microsoft.com/office/mac/drawingml/2011/main" />
+				</a:ext>
+			</a:extLst>
+		</wps:spPr>
+		<wps:style>
+			<a:lnRef idx="1">
+				<a:schemeClr val="accent1" />
+			</a:lnRef>
+			<a:fillRef idx="3">
+				<a:schemeClr val="accent1" />
+			</a:fillRef>
+			<a:effectRef idx="2">
+				<a:schemeClr val="accent1" />
+			</a:effectRef>
+			<a:fontRef idx="minor">
+				<a:schemeClr val="lt1" />
+			</a:fontRef>
+		</wps:style>
+		<wps:bodyPr />
+	</wps:wsp>
+	*/
+	private void appendGraphicElementEl(Element parentEl, OpenXMLSize size, OpenXMLGraphic element) {
+		Element wspEl = (Element)parentEl.appendChild(document.createElement("wps:wsp"));
+		
+		String formId = generateSimpleId();
+		//<wps:cNvPr id="2" name="Rechteck 2" />
+		Element cNvPrEl = (Element)wspEl.appendChild(document.createElement("wps:cNvPr"));
+		cNvPrEl.setAttribute("id", formId);
+		cNvPrEl.setAttribute("name", "Form " + formId);
+		//<wps:cNvSpPr />
+		wspEl.appendChild(document.createElement("wps:cNvSpPr"));
+		
+		Element spPrEl = (Element)wspEl.appendChild(document.createElement("wps:spPr"));
+		if(element.type() == OpenXMLGraphic.Type.rectangle) {
+			appendGraphicRectangle(spPrEl, size, element);
+		} else if(element.type() == OpenXMLGraphic.Type.circle) {
+			appendGraphicEllipse(spPrEl, size, element);
+		}
+	
+		appendGraphicSolidFill(spPrEl, element.getStyle());
+		Element lnEl = (Element)spPrEl.appendChild(document.createElement("a:ln"));
+		lnEl.setAttribute("w", "38100");
+		//spPrEl.appendChild(document.createElement("a:noFill"));
+		spPrEl.appendChild(document.createElement("a:effectLst"));
+
+		//styles
+		Element styleEl = (Element)wspEl.appendChild(document.createElement("wps:style"));
+		appendAStyle(styleEl, "a:lnRef", "1", element.getStyle().name());
+		appendAStyle(styleEl, "a:fillRef", "3", element.getStyle().name());
+		appendAStyle(styleEl, "a:effectRef", "2", element.getStyle().name());
+		appendAStyle(styleEl, "a:fontRef", "minor", "lt1");
+
+		wspEl.appendChild(document.createElement("wps:bodyPr"));
+	}
+	
+	
+	/*
+	<a:solidFill>
+		<a:schemeClr val="accent3">
+			<a:lumMod val="60000" />
+			<a:lumOff val="40000" />
+			<a:alpha val="63000" />
+		</a:schemeClr>
+	</a:solidFill>
+	*/
+	private void appendGraphicSolidFill(Element parentEl, OpenXMLGraphic.Style style) {
+		Element solidFillEl = (Element)parentEl.appendChild(document.createElement("a:solidFill"));
+		Element schemeClrEl = (Element)solidFillEl.appendChild(document.createElement("a:schemeClr"));
+		schemeClrEl.setAttribute("val", style.name());
+		
+		/*Element lumModEl = (Element)solidFillEl.appendChild(document.createElement("a:lumMod"));
+		lumModEl.setAttribute("val", "60000");
+		Element lumOffEl = (Element)solidFillEl.appendChild(document.createElement("a:lumOff"));
+		lumOffEl.setAttribute("val", "60000");*/
+		Element alphaEl = (Element)solidFillEl.appendChild(document.createElement("a:alpha"));
+		alphaEl.setAttribute("val", "50000");
+	}
+	
+	private void appendGraphicRectangle(Element spPrEl, OpenXMLSize size, OpenXMLGraphic element) {
+		/*
+		<a:xfrm>
+			<a:off x="2028190" y="581660" />
+			<a:ext cx="822960" cy="822960" />
+		</a:xfrm>
+		*/
+		Element aXfrmEl = (Element)spPrEl.appendChild(document.createElement("a:xfrm"));
+		Element aOffEl = (Element)aXfrmEl.appendChild(document.createElement("a:off"));
+		List<Integer> coords = element.getCoords();
+		int leftx = coords.get(0);
+		int topy = coords.get(1);
+		int leftxEmu = OpenXMLUtils.convertPixelToEMUs(leftx, DPI, size.getResizeRatio());
+		int topyEmu = OpenXMLUtils.convertPixelToEMUs(topy, DPI, size.getResizeRatio());	
+		aOffEl.setAttribute("x", Integer.toString(leftxEmu));
+		aOffEl.setAttribute("y", Integer.toString(topyEmu));
+		
+		Element aExtEl = (Element)aXfrmEl.appendChild(document.createElement("a:ext"));
+		int rightx = coords.get(2);
+		int bottomy = coords.get(3);
+		int width = rightx -leftx;
+		int cx = OpenXMLUtils.convertPixelToEMUs(width, DPI, size.getResizeRatio());	
+		int height = bottomy - topy;
+		int cy = OpenXMLUtils.convertPixelToEMUs(height, DPI, size.getResizeRatio());	
+		aExtEl.setAttribute("cx", Integer.toString(cx));
+		aExtEl.setAttribute("cy", Integer.toString(cy));
+		/*
+		<a:prstGeom prst="rect">
+			<a:avLst />
+		</a:prstGeom>
+		*/
+		Element prstGeomEl = (Element)spPrEl.appendChild(document.createElement("a:prstGeom"));
+		prstGeomEl.setAttribute("prst", "rect");
+		prstGeomEl.appendChild(document.createElement("a:avLst"));
+	}
+	
+	private void appendGraphicEllipse(Element spPrEl, OpenXMLSize size, OpenXMLGraphic element) {
+		/*
+		<a:xfrm>
+			<a:off x="2028190" y="581660" />
+			<a:ext cx="822960" cy="822960" />
+		</a:xfrm>
+		*/
+		Element aXfrmEl = (Element)spPrEl.appendChild(document.createElement("a:xfrm"));
+		Element aOffEl = (Element)aXfrmEl.appendChild(document.createElement("a:off"));
+		List<Integer> coords = element.getCoords();
+		int centerx = coords.get(0);
+		int centery = coords.get(1);	
+		int radius = coords.get(2);
+		
+		int topx = centerx - radius;
+		int lefty = centery - radius;
+		int topxEmu = OpenXMLUtils.convertPixelToEMUs(topx, DPI, size.getResizeRatio());
+		int leftyEmu = OpenXMLUtils.convertPixelToEMUs(lefty, DPI, size.getResizeRatio());
+		
+		aOffEl.setAttribute("x", Integer.toString(topxEmu));
+		aOffEl.setAttribute("y", Integer.toString(leftyEmu));
+	
+		Element aExtEl = (Element)aXfrmEl.appendChild(document.createElement("a:ext"));
+		
+		int width = (radius * 2);
+		int widthEmu = OpenXMLUtils.convertPixelToEMUs(width, DPI, size.getResizeRatio());
+		aExtEl.setAttribute("cx", Integer.toString(widthEmu));
+		aExtEl.setAttribute("cy", Integer.toString(widthEmu));
+		/*
+		<a:prstGeom prst="rect">
+			<a:avLst />
+		</a:prstGeom>
+		*/
+		Element prstGeomEl = (Element)spPrEl.appendChild(document.createElement("a:prstGeom"));
+		prstGeomEl.setAttribute("prst", "ellipse");
+		prstGeomEl.appendChild(document.createElement("a:avLst"));
+	}
+	
+	private void appendAStyle(Element styleEl, String name, String idx, String schemeClrVal) {
+		Element aStyleEl = (Element)styleEl.appendChild(document.createElement(name));
+		aStyleEl.setAttribute("idx", idx);
+		Element schemeClrEl = (Element)aStyleEl.appendChild(document.createElement("a:schemeClr"));
+		schemeClrEl.setAttribute("val", schemeClrVal);
+	}
+	
+	// <wp:lineTo x="0" y="21396" />
+	private void appendLineTo(Element parentEl, String x, String y) {
+		Element lineToEl = (Element)parentEl.appendChild(document.createElement("wp:lineTo"));
+		lineToEl.setAttribute("x", x);
+		lineToEl.setAttribute("y", y);
+	}
+	
+	/*
+	<a:xfrm>
+		<a:off x="0" y="0" />
+		<a:ext cx="5756910" cy="2282190" />
+		<a:chOff x="0" y="0" />
+		<a:chExt cx="5756910" cy="2282190" />
+	</a:xfrm>
+	*/
+	private void appendAXfrm_ch(Element parentEl, String cx, String cy) {
+		Element aXfrmEl = (Element)parentEl.appendChild(document.createElement("a:xfrm"));
+		//<a:off x="0" y="0" />
+		Element aOffEl = (Element)aXfrmEl.appendChild(document.createElement("a:off"));
+		aOffEl.setAttribute("x", "0");
+		aOffEl.setAttribute("y", "0");
+		//<a:ext cx="5756910" cy="2282190" />
+		Element aExtEl = (Element)aXfrmEl.appendChild(document.createElement("a:ext"));
+		aExtEl.setAttribute("cx", cx);
+		aExtEl.setAttribute("cy", cy);
+		//<a:chOff x="0" y="0" />
+		Element chOffEl = (Element)aXfrmEl.appendChild(document.createElement("a:chOff"));
+		chOffEl.setAttribute("x", "0");
+		chOffEl.setAttribute("y", "0");
+		//<a:chExt cx="5756910" cy="2282190" />
+		Element chExtEl = (Element)aXfrmEl.appendChild(document.createElement("a:chExt"));
+		chExtEl.setAttribute("cx", cx);
+		chExtEl.setAttribute("cy", cy);
 	}
 	
 	private String getUniqueFilename(File image) {
@@ -1166,6 +1617,10 @@ public class OpenXMLDocument {
 	
 	private String generateId() {
 		return "rId" + (++currentId);
+	}
+	
+	private String generateSimpleId() {
+		return Integer.toString(++currentId);
 	}
 
 	private final Element createRootElement(Document doc) {

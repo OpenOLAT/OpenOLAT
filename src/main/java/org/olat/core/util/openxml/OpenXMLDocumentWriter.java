@@ -102,6 +102,16 @@ public class OpenXMLDocumentWriter {
 		//word/media
 		appendMedias(out, document);
 		
+		/* word/theme/theme1.xml
+		out.putNextEntry(new ZipEntry("word/theme/theme1.xml"));
+		try(InputStream in = OpenXMLDocumentWriter.class.getResourceAsStream("_resources/theme1.xml")) {
+			IOUtils.copy(in, out);
+		} catch (IOException e) {
+			log.error("", e);
+		}
+		out.closeEntry();
+		*/
+		
 		//word/numbering
 		ZipEntry numberingDocument = new ZipEntry("word/numbering.xml");
 		out.putNextEntry(numberingDocument);
@@ -321,8 +331,8 @@ public class OpenXMLDocumentWriter {
 			Document doc = OpenXMLUtils.createDocument();
 			Element propertiesEl = (Element)doc.appendChild(doc.createElement("properties:Properties"));
 			propertiesEl.setAttribute("xmlns:properties", SCHEMA_EXT_PROPERTIES);
-			addExtProperty("Application", "OpenOLAT", propertiesEl, doc);
-			addExtProperty("AppVersion", "9.1.0", propertiesEl, doc);
+			addExtProperty("Application", "Microsoft Macintosh Word", propertiesEl, doc);
+			addExtProperty("AppVersion", "14.0000", propertiesEl, doc);
 			OpenXMLUtils.writeTo(doc, out, false);
 		} catch (DOMException e) {
 			log.error("", e);

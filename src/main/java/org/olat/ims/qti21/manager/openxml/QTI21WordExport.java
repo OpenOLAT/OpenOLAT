@@ -19,11 +19,14 @@
  */
 package org.olat.ims.qti21.manager.openxml;
 
+import static org.olat.ims.qti21.model.xml.QtiNodesExtractor.extractIdentifiersFromCorrectResponse;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.CountDownLatch;
@@ -47,6 +50,7 @@ import org.olat.core.util.openxml.OpenXMLDocument;
 import org.olat.core.util.openxml.OpenXMLDocument.Style;
 import org.olat.core.util.openxml.OpenXMLDocument.Unit;
 import org.olat.core.util.openxml.OpenXMLDocumentWriter;
+import org.olat.core.util.openxml.OpenXMLGraphic;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.course.assessment.AssessmentHelper;
 import org.olat.ims.qti.editor.beecom.objects.Item;
@@ -70,7 +74,9 @@ import org.xml.sax.Attributes;
 import uk.ac.ed.ph.jqtiplus.node.content.basic.Block;
 import uk.ac.ed.ph.jqtiplus.node.content.variable.RubricBlock;
 import uk.ac.ed.ph.jqtiplus.node.content.xhtml.object.Object;
+import uk.ac.ed.ph.jqtiplus.node.expression.operator.Shape;
 import uk.ac.ed.ph.jqtiplus.node.item.AssessmentItem;
+import uk.ac.ed.ph.jqtiplus.node.item.CorrectResponse;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.DrawingInteraction;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.GraphicAssociateInteraction;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.GraphicOrderInteraction;
@@ -81,6 +87,7 @@ import uk.ac.ed.ph.jqtiplus.node.item.interaction.PositionObjectInteraction;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.SelectPointInteraction;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.choice.SimpleAssociableChoice;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.choice.SimpleMatchSet;
+import uk.ac.ed.ph.jqtiplus.node.item.interaction.graphic.HotspotChoice;
 import uk.ac.ed.ph.jqtiplus.node.item.response.declaration.MapEntry;
 import uk.ac.ed.ph.jqtiplus.node.item.response.declaration.ResponseDeclaration;
 import uk.ac.ed.ph.jqtiplus.node.test.AssessmentItemRef;
@@ -509,7 +516,40 @@ public class QTI21WordExport implements MediaResource {
 			Interaction interaction = getInteractionByResponseIdentifier(attributes);
 			if(interaction instanceof HotspotInteraction) {
 				HotspotInteraction hotspotInteraction = (HotspotInteraction)interaction;
-				setObject(hotspotInteraction.getObject());
+				
+				Object object = hotspotInteraction.getObject();
+				if(object != null && StringHelper.containsNonWhitespace(object.getData())) {
+					File backgroundImg = new File(itemFile.getParentFile(), object.getData());
+					
+					List<Identifier> correctAnswers = new ArrayList<>();
+					ResponseDeclaration responseDeclaration = assessmentItem.getResponseDeclaration(interaction.getResponseIdentifier());
+					if(responseDeclaration != null) {
+						CorrectResponse correctResponse = responseDeclaration.getCorrectResponse();
+						if(correctResponse != null) {
+							extractIdentifiersFromCorrectResponse(correctResponse, correctAnswers);
+						}
+					}
+					
+					List<OpenXMLGraphic> elements = new ArrayList<>();
+					List<HotspotChoice> choices = hotspotInteraction.getHotspotChoices();
+					for(HotspotChoice choice:choices) {
+						OpenXMLGraphic.Style style = OpenXMLGraphic.Style.accent1;
+						if(withResponses) {
+							boolean correct = correctAnswers.contains(choice.getIdentifier());
+							if(correct) {
+								style = OpenXMLGraphic.Style.accent3;
+							}
+						}
+						
+						Shape shape = choice.getShape();
+						if(shape == Shape.CIRCLE || shape == Shape.ELLIPSE) {
+							elements.add(new OpenXMLGraphic(OpenXMLGraphic.Type.circle, style, choice.getCoords()));
+						} else if(shape == Shape.RECT) {
+							elements.add(new OpenXMLGraphic(OpenXMLGraphic.Type.rectangle, style, choice.getCoords()));
+						}
+					}
+					startGraphic(backgroundImg, elements);
+				}
 			}
 		}
 		

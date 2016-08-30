@@ -19,41 +19,45 @@
  */
 package org.olat.core.util.openxml;
 
-import java.io.File;
-
 /**
  * 
- * Initial date: 04.09.2013<br>
+ * Initial date: 30.08.2016<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class DocReference {
+public class OpenXMLSize {
 	
-	private final String id;
-	private final String filename;
-	private final File file;
-	private final OpenXMLSize emuSize;
+	private final int widthPx;
+	private final int heightPx;
+	private final int widthEmu;
+	private final int heightEmu;
+	private final double resizeRatio;
 	
-	public DocReference(String id, String filename, OpenXMLSize emuSize, File file) {
-		this.id = id;
-		this.file = file;
-		this.emuSize = emuSize;
-		this.filename = filename;
-	}
-	
-	public String getId() {
-		return id;
-	}
-	
-	public String getFilename() {
-		return filename;
+	public OpenXMLSize(int widthPx, int heightPx, int widthEmu, int heightEmu, double resizeRatio) {
+		this.widthPx = widthPx;
+		this.heightPx = heightPx;
+		this.widthEmu = widthEmu;
+		this.heightEmu = heightEmu;
+		this.resizeRatio = resizeRatio;
 	}
 
-	public File getFile() {
-		return file;
+	public int getWidthPx() {
+		return widthPx;
 	}
 
-	public OpenXMLSize getEmuSize() {
-		return emuSize;
+	public int getHeightPx() {
+		return heightPx;
+	}
+
+	public int getWidthEmu() {
+		return widthEmu;
+	}
+
+	public int getHeightEmu() {
+		return heightEmu;
+	}
+
+	public double getResizeRatio() {
+		return resizeRatio;
 	}
 }

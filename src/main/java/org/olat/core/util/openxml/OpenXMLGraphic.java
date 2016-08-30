@@ -19,41 +19,45 @@
  */
 package org.olat.core.util.openxml;
 
-import java.io.File;
+import java.util.List;
 
 /**
  * 
- * Initial date: 04.09.2013<br>
+ * Initial date: 30.08.2016<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class DocReference {
+public class OpenXMLGraphic {
 	
-	private final String id;
-	private final String filename;
-	private final File file;
-	private final OpenXMLSize emuSize;
+	private final Style style;
+	private final Type type;
+	private final List<Integer> coords;
 	
-	public DocReference(String id, String filename, OpenXMLSize emuSize, File file) {
-		this.id = id;
-		this.file = file;
-		this.emuSize = emuSize;
-		this.filename = filename;
+	public OpenXMLGraphic(Type type, Style style, List<Integer> coords) {
+		this.type = type;
+		this.style = style;
+		this.coords = coords;
 	}
 	
-	public String getId() {
-		return id;
+	public Type type() {
+		return type;
 	}
 	
-	public String getFilename() {
-		return filename;
+	public Style getStyle() {
+		return style;
 	}
-
-	public File getFile() {
-		return file;
+	
+	public List<Integer> getCoords() {
+		return coords;
 	}
-
-	public OpenXMLSize getEmuSize() {
-		return emuSize;
+	
+	public enum Type {
+		circle,
+		rectangle
+	}
+	
+	public enum Style {
+		accent1,
+		accent3;
 	}
 }

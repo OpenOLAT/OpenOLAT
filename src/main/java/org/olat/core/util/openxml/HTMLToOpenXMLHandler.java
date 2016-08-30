@@ -334,6 +334,15 @@ public class HTMLToOpenXMLHandler extends DefaultHandler {
 		}
 	}
 	
+	protected void startGraphic(File backgroundImage, List<OpenXMLGraphic> elements) {
+		Element paragrapheEl = getCurrentParagraph(true);
+		Element graphicEl = factory.createGraphicEl(backgroundImage, elements);
+		Element runEl = factory.createRunEl();
+		runEl.appendChild(graphicEl);
+		paragrapheEl.appendChild(runEl);
+		closeParagraph();
+	}
+	
 	protected void startTable() {
 		closeParagraph();
 		currentTable = new Table();
