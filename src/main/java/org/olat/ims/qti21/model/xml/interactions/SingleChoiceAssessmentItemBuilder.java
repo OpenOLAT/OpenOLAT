@@ -100,7 +100,7 @@ public class SingleChoiceAssessmentItemBuilder extends SimpleChoiceAssessmentIte
 		ItemBody itemBody = appendDefaultItemBody(assessmentItem);
 		ChoiceInteraction choiceInteraction = appendChoiceInteraction(itemBody, responseDeclarationId, 1, true);
 		
-		appendSimpleChoice(choiceInteraction, "New answer", "sc");
+		appendSimpleChoice(choiceInteraction, "New answer", correctResponseId);
 
 		//response processing
 		ResponseProcessing responseProcessing = createResponseProcessing(assessmentItem, responseDeclarationId);

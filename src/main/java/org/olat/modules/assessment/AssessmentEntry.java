@@ -60,6 +60,10 @@ public interface AssessmentEntry {
 	
 	public void setAssessmentStatus(AssessmentEntryStatus assessmentStatus);
 
+	/**
+	 * Used by Onyx
+	 * @return 
+	 */
 	public Boolean getFullyAssessed();
 
 	public void setFullyAssessed(Boolean fullyAssessed);
@@ -76,16 +80,28 @@ public interface AssessmentEntry {
 
 	public void setCoachComment(String coachComment);
 
+	/**
+	 * @return The course or learn resource where the user is assessed.
+	 */
 	public RepositoryEntry getRepositoryEntry();
 	
 	public String getSubIdent();
 	
 	/**
-	 * 
-	 * @return
+	 * @return The reference to the test
 	 */
 	public RepositoryEntry getReferenceEntry();
+	
+	/**
+	 * @return The unique identifier for anonymous user (guest)
+	 */
+	public String getAnonymousIdentifier();
 
+	/**
+	 * If the anonymous identifier is set, this method return null, must return null.
+	 * 
+	 * @return The assessed identity
+	 */
 	public Identity getIdentity();
 
 }

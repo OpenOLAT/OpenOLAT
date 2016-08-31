@@ -29,7 +29,6 @@ public class AssessmentStatistics {
 
 	private int countPassed;
 	private int countFailed;
-	private int countNotAttempted;
 	private Double averageScore;
 	
 	public int getCountPassed() {
@@ -46,14 +45,6 @@ public class AssessmentStatistics {
 	
 	public void setCountFailed(int countFailed) {
 		this.countFailed = countFailed;
-	}
-	
-	public int getCountNotAttempted() {
-		return countNotAttempted;
-	}
-	
-	public void setCountNotAttempted(int countNotAttempted) {
-		this.countNotAttempted = countNotAttempted;
 	}
 	
 	public Double getAverageScore() {

@@ -140,6 +140,8 @@ This product uses software based on the BSD License
 * Antlr (BSD license) [http://www.antlr.org]
 * PostgreSQL JDBC Driver(BSD License) [http://jdbc.postgresql.org]
 * d3js (BSD License) [http://d3js.org]
+* qtiworks (BSD License) [https://github.com/davemckain/qtiworks][https://webapps.ph.ed.ac.uk/qtiworks/public/]
+* snuggletex (BSD License) [https://sourceforge.net/projects/snuggletex/]
 
 -----------------------------------------------------------------------
 This product uses software based on the Common Public License Version
@@ -156,6 +158,11 @@ This product uses software based on the Lesser General Public License (LGPL)
 * JAMWiki (GNU Lesser General Public License) [http://jamwiki.org/wiki/en]
 * XOM (GNU Lesser General Public License) [http://www.xom.nu]
 * TinyMCE WYSIWYG HTML editor (LGPL) [http://tinymce.moxiecode.com]
+* asciimath-parser (LGPL 3.0) [https://github.com/davemckain/asciimath-parser]
+
+-----------------------------------------------------------------------
+This product uses software based on the Mozilla Public License
+* saxon (Mozilla Public License Version 2.0) [http://www.saxonica.com]
 
 -----------------------------------------------------------------------
 This product uses software in the public domain

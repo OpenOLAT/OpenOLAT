@@ -117,7 +117,7 @@ public class AssessmentItemFactory {
 		//the single choice interaction
 		ItemBody itemBody = appendDefaultItemBody(assessmentItem);
 		ChoiceInteraction choiceInteraction = appendChoiceInteraction(itemBody, responseDeclarationId, 1, true);
-		appendSimpleChoice(choiceInteraction, "New answer", "sc");
+		appendSimpleChoice(choiceInteraction, "New answer", correctResponseId);
 
 		//response processing
 		ResponseProcessing responseProcessing = createResponseProcessing(assessmentItem, responseDeclarationId);
@@ -509,6 +509,15 @@ public class AssessmentItemFactory {
 	
 	public static SimpleChoice appendSimpleChoice(ChoiceInteraction choiceInteraction, String text, String prefix) {
 		SimpleChoice newChoice = createSimpleChoice(choiceInteraction, text, prefix);
+		choiceInteraction.getNodeGroups().getSimpleChoiceGroup().getSimpleChoices().add(newChoice);
+		return newChoice;
+	}
+	
+	public static SimpleChoice appendSimpleChoice(ChoiceInteraction choiceInteraction, String text, Identifier identifier) {
+		SimpleChoice newChoice = new SimpleChoice(choiceInteraction);
+		newChoice.setIdentifier(identifier);
+		P firstChoiceText = AssessmentItemFactory.getParagraph(newChoice, text);
+		newChoice.getFlowStatics().add(firstChoiceText);
 		choiceInteraction.getNodeGroups().getSimpleChoiceGroup().getSimpleChoices().add(newChoice);
 		return newChoice;
 	}
