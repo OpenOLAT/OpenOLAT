@@ -232,7 +232,7 @@ public class BinderPageListController extends AbstractPageListController {
 			
 			if(secCallback.canNewAssignment() && section != null) {
 				FormLink newAssignmentButton = uifactory.addFormLink("new.assignment." + (++counter), "new.assignment", "create.new.assignment", null, flc, Link.BUTTON);
-				newAssignmentButton.setCustomEnabledLinkCSS("btn btn-primary");
+				newAssignmentButton.setCustomEnabledLinkCSS("btn btn-primary o_sel_pf_new_assignment");
 				newAssignmentButton.setUserObject(pageRow);
 				pageRow.setNewAssignmentLink(newAssignmentButton);
 			}
@@ -271,7 +271,7 @@ public class BinderPageListController extends AbstractPageListController {
 				
 				if(secCallback.canNewAssignment() && section != null) {
 					FormLink newAssignmentButton = uifactory.addFormLink("new.assignment." + (++counter), "new.assignment", "create.new.assignment", null, flc, Link.BUTTON);
-					newAssignmentButton.setCustomEnabledLinkCSS("btn btn-primary");
+					newAssignmentButton.setCustomEnabledLinkCSS("btn btn-primary o_sel_pf_new_assignment");
 					newAssignmentButton.setUserObject(sectionRow);
 					sectionRow.setNewAssignmentLink(newAssignmentButton);
 				}

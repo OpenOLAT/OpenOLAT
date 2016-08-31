@@ -81,6 +81,13 @@ public class AuthoringEnvPage {
 			.assertOnGeneralTab();
 	}
 	
+	public RepositoryEditDescriptionPage createPortfolioBinder(String title) {
+		return openCreateDropDown()
+			.clickCreate(ResourceType.portfolio)
+			.fillCreateForm(title)
+			.assertOnGeneralTab();
+	}
+	
 	/**
 	 * Open the drop-down to create a new resource.
 	 * @return
@@ -192,7 +199,8 @@ public class AuthoringEnvPage {
 	public enum ResourceType {
 		course("CourseModule"),
 		cp("FileResource.IMSCP"),
-		wiki("FileResource.WIKI");
+		wiki("FileResource.WIKI"),
+		portfolio("BinderTemplate");
 		
 		private final String type;
 		

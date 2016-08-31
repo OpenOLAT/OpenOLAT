@@ -105,12 +105,12 @@ public class BinderController extends BasicController implements TooledControlle
 		}
 		if(config.isAssessable()) {
 			assessmentLink = LinkFactory.createLink("portfolio.assessment", getTranslator(), this);
-			publishLink.setElementCssClass("o_sel_pf_assessment");
+			assessmentLink.setElementCssClass("o_sel_pf_assessment");
 			segmentButtonsCmp.addButton(assessmentLink, false);
 		}
 		if(config.isOptions()) {
 			optionsLink = LinkFactory.createLink("portfolio.template.options", getTranslator(), this);
-			publishLink.setElementCssClass("o_sel_pf_options");
+			optionsLink.setElementCssClass("o_sel_pf_options");
 			segmentButtonsCmp.addButton(optionsLink, false);
 		}
 		

@@ -108,12 +108,16 @@ public class AssignmentEditController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		formLayout.setElementCssClass("o_sel_pf_edit_assignment_form");
+		
 		String title = assignment == null ? null : assignment.getTitle();
 		titleEl = uifactory.addTextElement("title", "assignment.title", 255, title, formLayout);
+		titleEl.setElementCssClass("o_sel_pf_edit_assignment_title");
 		titleEl.setMandatory(true);
 		
 		String summary = assignment == null ? null : assignment.getSummary();
 		summaryEl = uifactory.addTextAreaElement("summary", "summary", 4096, 6, 60, false, summary, formLayout);
+		summaryEl.setElementCssClass("o_sel_pf_edit_assignment_summary");
 		summaryEl.setPlaceholderKey("summary.placeholder", null);
 		
 		String content = assignment == null ? null : assignment.getContent();
@@ -124,6 +128,7 @@ public class AssignmentEditController extends FormBasicController {
 		
 		String[] typeValues = new String[]{ translate("assignment.type.essay"), translate("assignment.type.document") };
 		typeEl = uifactory.addDropdownSingleselect("type", "assignment.type", formLayout, typeKeys, typeValues, null);
+		typeEl.setElementCssClass("o_sel_pf_edit_assignment_type");
 		typeEl.addActionListener(FormEvent.ONCHANGE);
 		String selectedType = assignment == null ? typeKeys[0] : assignment.getAssignmentType().name();
 		typeEl.select(selectedType, true);

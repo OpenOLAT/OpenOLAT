@@ -19,6 +19,8 @@
  */
 package org.olat.selenium.page.portfolio;
 
+import java.util.List;
+
 import org.junit.Assert;
 import org.olat.selenium.page.graphene.OOGraphene;
 import org.openqa.selenium.By;
@@ -67,6 +69,13 @@ public class PortfolioV2Page {
 		return this;
 	}
 	
+	public PortfolioV2Page assertOnAssignmentInEntries(String title) {
+		By assignmentTitleBy = By.xpath("//h4[i[contains(@class,'o_icon_assignment')]][contains(text(),'" + title + "')]");
+		OOGraphene.waitElement(assignmentTitleBy, 5, browser);
+		return this;
+	}
+	
+	
 	public PortfolioV2Page selectTableOfContent() {
 		By tocBy = By.cssSelector("li.o_tool .o_sel_pf_binder_navigation .o_sel_pf_toc");
 		browser.findElement(tocBy).click();
@@ -78,6 +87,20 @@ public class PortfolioV2Page {
 		By tocBy = By.cssSelector("li.o_tool .o_sel_pf_binder_navigation .o_sel_pf_entries");
 		browser.findElement(tocBy).click();
 		OOGraphene.waitBusy(browser);
+		return this;
+	}
+	
+	
+	/**
+	 * Create a section in the tab entries (this is one must
+	 * be selected).
+	 * 
+	 * @param title
+	 * @return
+	 */
+	public PortfolioV2Page createSectionInEntries(String title) {
+		createSection(title);
+		assertOnSectionTitleInEntries(title);
 		return this;
 	}
 	
@@ -126,6 +149,33 @@ public class PortfolioV2Page {
 		OOGraphene.waitBusy(browser);
 		return this;
 	}
+	
+	public PortfolioV2Page createAssignmentForSection(String sectionTitle, String title, String summary) {
+		By newAssignmentBy = By.xpath("//div[contains(@class,'o_portfolio_section')][h3[contains(text(),'" + sectionTitle + "')]]//a[contains(@class,'o_sel_pf_new_assignment')]");
+		List<WebElement> newAssignmentButtons = browser.findElements(newAssignmentBy);
+		Assert.assertEquals(1, newAssignmentButtons.size());
+		newAssignmentButtons.get(0).click();
+		
+		OOGraphene.waitBusy(browser);
+		OOGraphene.waitModalDialog(browser);
+		By popupBy = By.cssSelector("div.modal-content fieldset.o_sel_pf_edit_assignment_form");
+		OOGraphene.waitElement(popupBy, 5, browser);
+		
+		//fill the form
+		By nameBy = By.cssSelector(".o_sel_pf_edit_assignment_title input[type='text']");
+		WebElement nameEl = browser.findElement(nameBy);
+		nameEl.sendKeys(title);
+		By summaryBy = By.cssSelector(".o_sel_pf_edit_assignment_summary textarea");
+		WebElement summaryEl = browser.findElement(summaryBy);
+		summaryEl.sendKeys(summary);
+		
+		//save
+		By submitBy = By.cssSelector(".o_sel_pf_edit_assignment_form button.btn-primary");
+		WebElement submitButton = browser.findElement(submitBy);
+		submitButton.click();
+		OOGraphene.waitBusy(browser);
+		return this;
+	} 
 	
 
 }
