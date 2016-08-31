@@ -42,13 +42,27 @@ div#o_main_toolbar.o_toolbar.o_portfolio {
 	}
 }
 
-.o_binder {
-	&.o_assignment {
-		.panel-heading,
-		.panel-body {
-			border-left: 3px solid $o-portfolio-assignment-color;
+/* binder with assignments (binders created from course element */
+.o_binder.o_portfolio_assignments {
+	.panel-heading,
+	.panel-body {
+		border-left: 3px solid $o-portfolio-assignment-color;
+	}
+}
+/* an assignment in template edit mode*/ 
+.panel-default.o_portfolio_assignments {
+	.panel-heading,
+	.panel-body {
+		border-left: 3px solid $o-portfolio-assignment-color;
+	}
+}
+/* an assignment entry */
+.o_portfolio_page .o_portfolio_assignments {
+		border-left: 3px solid $o-portfolio-assignment-color;
+		.o_portfolio_page_meta_wrapper,
+		.o_portfolio_page_summary {
+			padding-left: 10px;
 		}
-	}	
 }
 
 .o_rendertype_classic {

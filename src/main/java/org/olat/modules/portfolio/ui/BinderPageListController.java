@@ -280,7 +280,7 @@ public class BinderPageListController extends AbstractPageListController {
 		
 		if(rows.isEmpty()) {
 			flc.add("create.new.section", newSectionButton);
-		} else {
+		} else if (newSectionButton != null)  {
 			flc.remove(newSectionButton);
 		}
 
