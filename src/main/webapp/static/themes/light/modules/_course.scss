@@ -210,6 +210,13 @@
 		.o_cmember_info_wrapper {
 			word-wrap:break-word;
 		}
+		
+		.o_prop {
+			&.o_zipCode {
+				float: left;
+				padding-right: 0.5em;
+			}
+		}
 	}
 	
 	/* print font styles */

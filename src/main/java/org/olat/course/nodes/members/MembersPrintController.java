@@ -77,6 +77,7 @@ public class MembersPrintController extends BasicController {
 		listVC.contextPut("avatarBaseURL", avatarBaseURL);
 		listVC.contextPut("members", members);
 		listVC.contextPut("userPropertyHandlers", userPropertyHandlers);
+		listVC.contextPut("typecss", "o_" + name);
 		mainVC.put(name, listVC);
 	}
 
