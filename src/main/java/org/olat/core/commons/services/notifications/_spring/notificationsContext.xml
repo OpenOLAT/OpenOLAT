@@ -17,7 +17,7 @@
 	<bean id="org.olat.user.notification.NewUsersNotificationHandler" class="org.olat.user.notification.NewUsersNotificationHandler" />
 	<bean id="org.olat.commons.info.notification.InfoMessageNotificationHandler" class="org.olat.commons.info.notification.InfoMessageNotificationHandler" />
 	
-	<bean id="notificationsManager" class="org.olat.core.commons.services.notifications.manager.NotificationsManagerImpl" init-method="init">
+	<bean id="notificationsManager" class="org.olat.core.commons.services.notifications.manager.NotificationsManagerImpl" >
 		<property name="dbInstance" ref="database"/>
 		<property name="securityManager" ref="baseSecurityManager"/>
 		<property name="propertyManager" ref="propertyManager"/>
