@@ -50,7 +50,7 @@ doCompile () {
 	UPDATE=$UPDATECMD
 	if [ $1 = "."  ];
 	then
-		TARGET="light"
+		TARGET="o"
 	if [[ "--watch" == $UPDATECMD && ! -z $THEMES ]]; then UPDATE="--update"; fi
 	fi
 	echo "Compiling SASS: $TARGET $STYLE"
