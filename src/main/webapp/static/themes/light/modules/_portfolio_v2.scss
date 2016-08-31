@@ -30,7 +30,7 @@ div#o_main_toolbar.o_toolbar.o_portfolio {
 		ul {
 			padding-left: 2em;
 		}
-	}
+	}	
 	
 	.panel-imagebg .panel-body ul {
 		margin: 0;
@@ -40,6 +40,15 @@ div#o_main_toolbar.o_toolbar.o_portfolio {
 			padding: 2px;
 		}
 	}
+}
+
+.o_binder {
+	&.o_assignment {
+		.panel-heading,
+		.panel-body {
+			border-left: 3px solid $o-portfolio-assignment-color;
+		}
+	}	
 }
 
 .o_rendertype_classic {

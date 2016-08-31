@@ -1,108 +1,113 @@
-<div class="col-sm-6">
-	<div class="panel panel-default">
-		<div class="panel-heading">
-			<h4 class="panel-title">
-				<i class="o_icon o_icon_mediacenter o_icon-fw"> </i>
-				$r.translate("media.center")
-			</h4>
+<div class="row">
+	<div class="col-sm-6">
+		<div class="panel panel-default">
+			<div class="panel-heading">
+				<h4 class="panel-title">
+					<i class="o_icon o_icon_mediacenter o_icon-fw"> </i>
+					$r.translate("media.center")
+				</h4>
+			</div>
+			<div class="panel-body">
+				$r.translate("media.center.text")
+				<div class="o_button_group o_button_group_right">
+					$r.render("goto.media.center")
+				</div>
+			</div>
 		</div>
-		<div class="panel-body">
-			$r.translate("media.center.text")
-			<div class="o_button_group o_button_group_right">
-				$r.render("goto.media.center")
+	</div>
+	
+	<div class="col-sm-6">
+		<div class="panel panel-default">
+			<div class="panel-heading">
+				<h4 class="panel-title">
+					<i class="o_icon o_icon_pf_quick_links o_icon-fw"> </i>
+					$r.translate("quick.links")
+				</h4>
+			</div>
+			<div class="panel-body">
+				<div class="o_button_group o_button_group_right">
+					<ul class="list-unstyled">
+						<li>$r.render("edit.last.entry")</li>
+						<li>$r.render("new.entry")</li>
+						<li>$r.render("edit.last.binder")</li>
+						<li>$r.render("go.to.trash")</li>
+					</ul>
+				</div>
 			</div>
 		</div>
 	</div>
 </div>
 
-<div class="col-sm-6">
-	<div class="panel panel-default">
-		<div class="panel-heading">
-			<h4 class="panel-title">
-				<i class="o_icon o_icon_pf_quick_links o_icon-fw"> </i>
-				$r.translate("quick.links")
-			</h4>
+<div class="row">
+	<div class="col-sm-6">
+		<div class="panel panel-default">
+			<div class="panel-heading">
+				<h4 class="panel-title">
+					<i class="o_icon o_icon_pf_entry o_icon-fw"> </i>
+					$r.translate("my.portfolio.binders")
+				</h4>
+			</div>
+			<div class="panel-body">
+				$r.translate("my.portfolio.binders.text")
+				<div class="o_button_group o_button_group_right">
+					$r.render("goto.my.binders")
+				</div>
+			</div>
 		</div>
-		<div class="panel-body">
-			<div class="o_button_group o_button_group_right">
-				<ul class="list-unstyled">
-					<li>$r.render("edit.last.entry")</li>
-					<li>$r.render("new.entry")</li>
-					<li>$r.render("edit.last.binder")</li>
-					<li>$r.render("go.to.trash")</li>
-				</ul>
+	</div>
+	
+	<div class="col-sm-6">
+		<div class="panel panel-default">
+			<div class="panel-heading">
+				<h4 class="panel-title">
+					<i class="o_icon o_icon_pf_entry o_icon-fw"> </i>
+					$r.translate("my.entries")
+				</h4>
+			</div>
+			<div class="panel-body">
+				$r.translate("my.entries.text")
+				<div class="o_button_group o_button_group_right">
+					$r.render("goto.my.pages")
+				</div>
 			</div>
 		</div>
 	</div>
 </div>
 
-<div class="col-sm-6">
-	<div class="panel panel-default">
-		<div class="panel-heading">
-			<h4 class="panel-title">
-				<i class="o_icon o_icon_pf_entry o_icon-fw"> </i>
-				$r.translate("my.portfolio.binders")
-			</h4>
+<div class="row">
+	<div class="col-sm-6">
+		<div class="panel panel-default">
+			<div class="panel-heading">
+				<h4 class="panel-title">
+					<i class="o_icon o_icon_pf_my_shares o_icon-fw"> </i>
+					$r.translate("my.shared.items")
+				</h4>
+			</div>
+			<div class="panel-body">
+				$r.translate("my.shared.items.text")
+				<div class="o_button_group o_button_group_right">
+					$r.render("goto.my.shared.items")
+				</div>
+			</div>
 		</div>
-		<div class="panel-body">
-			$r.translate("my.portfolio.binders.text")
-			<div class="o_button_group o_button_group_right">
-				$r.render("goto.my.binders")
+	</div>
+	
+	<div class="col-sm-6">
+		<div class="panel panel-default">
+			<div class="panel-heading">
+				<h4 class="panel-title">
+					<i class="o_icon o_icon_pf_shared_with_me o_icon-fw"> </i>
+					$r.translate("shared.with.me")
+				</h4>
+			</div>
+			<div class="panel-body">
+				$r.translate("shared.with.me.text")
+				<div class="o_button_group o_button_group_right">
+					$r.render("goto.shared.with.me")
+				</div>
 			</div>
 		</div>
 	</div>
 </div>
-
-<div class="col-sm-6">
-	<div class="panel panel-default">
-		<div class="panel-heading">
-			<h4 class="panel-title">
-				<i class="o_icon o_icon_pf_entry o_icon-fw"> </i>
-				$r.translate("my.entries")
-			</h4>
-		</div>
-		<div class="panel-body">
-			$r.translate("my.entries.text")
-			<div class="o_button_group o_button_group_right">
-				$r.render("goto.my.pages")
-			</div>
-		</div>
-	</div>
-</div>
-
-<div class="col-sm-6">
-	<div class="panel panel-default">
-		<div class="panel-heading">
-			<h4 class="panel-title">
-				<i class="o_icon o_icon_pf_my_shares o_icon-fw"> </i>
-				$r.translate("my.shared.items")
-			</h4>
-		</div>
-		<div class="panel-body">
-			$r.translate("my.shared.items.text")
-			<div class="o_button_group o_button_group_right">
-				$r.render("goto.my.shared.items")
-			</div>
-		</div>
-	</div>
-</div>
-
-<div class="col-sm-6">
-	<div class="panel panel-default">
-		<div class="panel-heading">
-			<h4 class="panel-title">
-				<i class="o_icon o_icon_pf_shared_with_me o_icon-fw"> </i>
-				$r.translate("shared.with.me")
-			</h4>
-		</div>
-		<div class="panel-body">
-			$r.translate("shared.with.me.text")
-			<div class="o_button_group o_button_group_right">
-				$r.render("goto.shared.with.me")
-			</div>
-		</div>
-	</div>
-</div>
-
 
 
