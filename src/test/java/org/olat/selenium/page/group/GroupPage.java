@@ -170,7 +170,7 @@ public class GroupPage {
 	
 	public PortfolioV2Page openPortfolio() {
 		openMenuItem(portfolioTool);
-		OOGraphene.waitElement(PortfolioV2Page.tocBy, 5, browser);
+		OOGraphene.waitElement(PortfolioV2Page.portfolioBy, 5, browser);
 		return new PortfolioV2Page(browser);
 	}
 	

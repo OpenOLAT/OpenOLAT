@@ -43,6 +43,7 @@ import org.olat.core.commons.services.notifications.SubscriptionContext;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.panel.Panel;
+import org.olat.core.gui.components.stack.PopEvent;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.components.table.Table;
 import org.olat.core.gui.components.table.TableController;
@@ -431,6 +432,13 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 		} else if(source == toolbarPanel) {
 			if (event == Event.CLOSE_EVENT) {
 				doClose(ureq);
+			} else if(event instanceof PopEvent) {
+				PopEvent pe = (PopEvent)event;
+				Controller popedCtrl = pe.getController();
+				if(popedCtrl == collabToolCtr) {
+					handleTreeActions(ureq, ACTIVITY_MENUSELECT_OVERVIEW);
+					bgTree.setSelectedNode(bgTree.getTreeModel().getRootNode());
+				}
 			}
 		}
 	}
@@ -778,11 +786,11 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 		addToHistory(ureq, bwControl);
 		
 		CollaborationTools collabTools = CollaborationToolsFactory.getInstance().getOrCreateCollaborationTools(businessGroup);
-		Controller collaborationToolCtr = collabTools.createPortfolioController(ureq, bwControl, toolbarPanel, businessGroup);
-		listenTo(collaborationToolCtr);
+		collabToolCtr = collabTools.createPortfolioController(ureq, bwControl, toolbarPanel, businessGroup);
+		listenTo(collabToolCtr);
 		toolbarPanel.popUpToRootController(ureq);
-		toolbarPanel.pushController("Portfolio", collaborationToolCtr);
-		return (Activateable2)collaborationToolCtr;
+		toolbarPanel.pushController("Portfolio", collabToolCtr);
+		return (Activateable2)collabToolCtr;
 	}
 	
 	private void doOpenMeetings(UserRequest ureq) {

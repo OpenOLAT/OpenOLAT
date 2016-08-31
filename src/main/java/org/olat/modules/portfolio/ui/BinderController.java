@@ -88,22 +88,29 @@ public class BinderController extends BasicController implements TooledControlle
 		ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrap(binder));
 
 		segmentButtonsCmp = new ButtonGroupComponent("segments");
+		segmentButtonsCmp.setElementCssClass("o_sel_pf_binder_navigation");
 		overviewLink = LinkFactory.createLink("portfolio.overview", getTranslator(), this);
+		overviewLink.setElementCssClass("o_sel_pf_toc");
 		segmentButtonsCmp.addButton(overviewLink, false);
 		entriesLink = LinkFactory.createLink("portfolio.entries", getTranslator(), this);
+		entriesLink.setElementCssClass("o_sel_pf_entries");
 		segmentButtonsCmp.addButton(entriesLink, false);
 		historyLink = LinkFactory.createLink("portfolio.history", getTranslator(), this);
+		historyLink.setElementCssClass("o_sel_pf_history");
 		segmentButtonsCmp.addButton(historyLink, false);
 		if(config.isShareable()) {
 			publishLink = LinkFactory.createLink("portfolio.publish", getTranslator(), this);
+			publishLink.setElementCssClass("o_sel_pf_publication");
 			segmentButtonsCmp.addButton(publishLink, false);
 		}
 		if(config.isAssessable()) {
 			assessmentLink = LinkFactory.createLink("portfolio.assessment", getTranslator(), this);
+			publishLink.setElementCssClass("o_sel_pf_assessment");
 			segmentButtonsCmp.addButton(assessmentLink, false);
 		}
 		if(config.isOptions()) {
 			optionsLink = LinkFactory.createLink("portfolio.template.options", getTranslator(), this);
+			publishLink.setElementCssClass("o_sel_pf_options");
 			segmentButtonsCmp.addButton(optionsLink, false);
 		}
 		

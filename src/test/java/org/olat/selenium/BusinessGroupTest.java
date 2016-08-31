@@ -249,19 +249,19 @@ public class BusinessGroupTest {
 		
 		//check portfolio
 		String pageTitle = "Portfolio page " + UUID.randomUUID();
-		String structureElementTitle = "Structure " + UUID.randomUUID();
+		String sectionTitle = "Section " + UUID.randomUUID();
 		group
-			.openPortfolio();
-		//TODO portfolio
-		/*
-			.openEditor()
-			.selectMapInEditor()
-			.selectFirstPageInEditor()
-			.setPage(pageTitle, "With a little description")
-			.createStructureElement(structureElementTitle, "Structure description")
-			.closeEditor()
-			.assertStructure(structureElementTitle);
-		*/
+			.openPortfolio()
+			.assertOnBinder()
+			.selectTableOfContent()
+			.selectEntries()
+			.createSection(sectionTitle)
+			.assertOnSectionTitleInEntries(sectionTitle)
+			.createEntry(pageTitle)
+			.selectEntries()
+			.assertOnPageInEntries(pageTitle)
+			.selectTableOfContent()
+			.assertOnPageInToc(pageTitle);
 	}
 	
 	/**

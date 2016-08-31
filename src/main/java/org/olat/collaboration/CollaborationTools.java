@@ -564,7 +564,10 @@ public class CollaborationTools implements Serializable {
 		if("2".equals(version)) {
 			Binder binder = CoreSpringFactory.getImpl(PortfolioService.class).getBinderByKey(key);
 			BinderSecurityCallback secCallback = BinderSecurityCallbackFactory.getCallbackForBusinessGroup();
-			ctrl = new BinderController(ureq, wControl, stackPanel, secCallback, binder, BinderConfiguration.createBusinessGroupConfig());
+			BinderController binderCtrl = new BinderController(ureq, wControl, stackPanel, secCallback, binder, BinderConfiguration.createBusinessGroupConfig());
+			List<ContextEntry> entries = BusinessControlFactory.getInstance().createCEListFromResourceType("Toc");
+			binderCtrl.activate(ureq, entries, null);
+			ctrl = binderCtrl;
 		} else {
 			PortfolioStructureMap map = (PortfolioStructureMap) CoreSpringFactory.getImpl(EPFrontendManager.class)
 					.loadPortfolioStructureByKey(key);

@@ -29,6 +29,7 @@ import org.olat.core.gui.render.Renderer;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.util.StringHelper;
 
 /**
  * 
@@ -43,7 +44,11 @@ public class ButtonGroupComponentRenderer extends DefaultComponentRenderer {
 			RenderResult renderResult, String[] args) {
 		
 		ButtonGroupComponent cmp = (ButtonGroupComponent)source;
-		sb.append("<div id='o_c").append(cmp.getDispatchID()).append("' class='btn-group btn-group-sm'>");
+		sb.append("<div id='o_c").append(cmp.getDispatchID()).append("' class='btn-group btn-group-sm");
+		if(StringHelper.containsNonWhitespace(cmp.getElementCssClass())) {
+			sb.append(" ").append(cmp.getElementCssClass());
+		}
+		sb.append("'>");
 		List<Link> buttons = cmp.getButtons();
 		for(Link button:buttons) {
 			if(cmp.getSelectedButton() == button) {

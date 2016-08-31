@@ -79,7 +79,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class BinderPageListController extends AbstractPageListController {
 	
 	private Link newSectionLink, newEntryLink;
-	private FormLink previousSectionLink, nextSectionLink, showAllSectionsLink;
+	private FormLink newSectionButton, previousSectionLink, nextSectionLink, showAllSectionsLink;
 	
 	private CloseableModalController cmc;
 	private SectionEditController newSectionCtrl;
@@ -107,12 +107,14 @@ public class BinderPageListController extends AbstractPageListController {
 		if(secCallback.canAddPage(null)) {
 			newEntryLink = LinkFactory.createToolLink("new.page", translate("create.new.page"), this);
 			newEntryLink.setIconLeftCSS("o_icon o_icon-lg o_icon_new_portfolio");
+			newEntryLink.setElementCssClass("o_sel_pf_new_entry");
 			stackPanel.addTool(newEntryLink, Align.right);
 		}
 		
 		if(secCallback.canAddSection()) {
 			newSectionLink = LinkFactory.createToolLink("new.section", translate("create.new.section"), this);
 			newSectionLink.setIconLeftCSS("o_icon o_icon-lg o_icon_new_portfolio");
+			newSectionLink.setElementCssClass("o_sel_pf_new_section");
 			stackPanel.addTool(newSectionLink, Align.right);
 		}
 	}
@@ -146,6 +148,11 @@ public class BinderPageListController extends AbstractPageListController {
 		nextSectionLink.setIconRightCSS("o_icon o_icon_move_right");
 		showAllSectionsLink = uifactory.addFormLink("section.paging.all", formLayout, Link.BUTTON);
 		showAllSectionsLink.setVisible(false);
+		
+		if(secCallback.canAddSection()) {
+			newSectionButton = uifactory.addFormLink("create.new.section", formLayout, Link.BUTTON);
+			newSectionButton.setCustomEnabledLinkCSS("btn btn-primary o_sel_pf_new_section");
+		}
 	}
 
 	@Override
@@ -198,7 +205,7 @@ public class BinderPageListController extends AbstractPageListController {
 				
 				if(secCallback.canAddPage(section)) {
 					FormLink newEntryButton = uifactory.addFormLink("new.entry." + (++counter), "new.entry", "create.new.page", null, flc, Link.BUTTON);
-					newEntryButton.setCustomEnabledLinkCSS("btn btn-primary");
+					newEntryButton.setCustomEnabledLinkCSS("btn btn-primary o_sel_pf_new_entry");
 					newEntryButton.setUserObject(row);
 					row.setNewEntryLink(newEntryButton);
 				}
@@ -218,7 +225,7 @@ public class BinderPageListController extends AbstractPageListController {
 			rows.add(pageRow);
 			if(secCallback.canAddPage(section)) {
 				FormLink newEntryButton = uifactory.addFormLink("new.entry." + (++counter), "new.entry", "create.new.page", null, flc, Link.BUTTON);
-				newEntryButton.setCustomEnabledLinkCSS("btn btn-primary");
+				newEntryButton.setCustomEnabledLinkCSS("btn btn-primary o_sel_pf_new_entry");
 				newEntryButton.setUserObject(pageRow);
 				pageRow.setNewEntryLink(newEntryButton);
 			}
@@ -257,7 +264,7 @@ public class BinderPageListController extends AbstractPageListController {
 
 				if(secCallback.canAddPage(section)) {
 					FormLink newEntryButton = uifactory.addFormLink("new.entry." + (++counter), "new.entry", "create.new.page", null, flc, Link.BUTTON);
-					newEntryButton.setCustomEnabledLinkCSS("btn btn-primary");
+					newEntryButton.setCustomEnabledLinkCSS("btn btn-primary o_sel_pf_new_entry");
 					newEntryButton.setUserObject(sectionRow);
 					sectionRow.setNewEntryLink(newEntryButton);
 				}
@@ -269,6 +276,12 @@ public class BinderPageListController extends AbstractPageListController {
 					sectionRow.setNewAssignmentLink(newAssignmentButton);
 				}
 			}
+		}
+		
+		if(rows.isEmpty()) {
+			flc.add("create.new.section", newSectionButton);
+		} else {
+			flc.remove(newSectionButton);
 		}
 
 		model.setObjects(rows);
@@ -312,6 +325,8 @@ public class BinderPageListController extends AbstractPageListController {
 			doFilterSection(nextSection);
 		} else if(showAllSectionsLink == source) {
 			doShowAll();
+		} else if(newSectionButton == source) {
+			doCreateNewSection(ureq);
 		} else if(source instanceof FormLink) {
 			FormLink link = (FormLink)source;
 			String cmd = link.getCmd();

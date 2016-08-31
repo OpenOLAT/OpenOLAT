@@ -85,8 +85,12 @@ public class SectionEditController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+
+		formLayout.setElementCssClass("o_sel_pf_edit_section_form");
+		
 		String title = section == null ? null : section.getTitle();
 		titleEl = uifactory.addTextElement("title", "title", 255, title, formLayout);
+		titleEl.setElementCssClass("o_sel_pf_edit_section_title");
 		titleEl.setMandatory(true);
 		
 		String description = section == null ? null : section.getDescription();

@@ -139,15 +139,14 @@ public class TableOfContentController extends BasicController implements TooledC
 		if(secCallback.canAddSection()) {
 			newSectionTool = LinkFactory.createToolLink("new.section", translate("create.new.section"), this);
 			newSectionTool.setIconLeftCSS("o_icon o_icon-lg o_icon_new_portfolio");
+			newSectionTool.setElementCssClass("o_sel_pf_new_section");
 			stackPanel.addTool(newSectionTool, Align.right);
-		
-			newSectionButton = LinkFactory.createButton("create.new.section", mainVC, this);
-			newSectionButton.setCustomEnabledLinkCSS("btn btn-primary");
 		}
 		
 		if(secCallback.canAddPage(null)) {
 			newEntryLink = LinkFactory.createToolLink("new.page", translate("create.new.page"), this);
 			newEntryLink.setIconLeftCSS("o_icon o_icon-lg o_icon_new_portfolio");
+			newEntryLink.setElementCssClass("o_sel_pf_new_entry");
 			stackPanel.addTool(newEntryLink, Align.right);
 		}
 	}
@@ -205,6 +204,20 @@ public class TableOfContentController extends BasicController implements TooledC
 			}
 		}
 		mainVC.contextPut("sections", sectionList);
+		
+		
+		if(secCallback.canAddSection()) {
+			if(newSectionButton == null) {
+				newSectionButton = LinkFactory.createButton("create.new.section", mainVC, this);
+				newSectionButton.setCustomEnabledLinkCSS("btn btn-primary");
+			}
+			
+			if(sections.isEmpty()) {
+				mainVC.put("create.new.section", newSectionButton);
+			} else {
+				mainVC.remove(newSectionButton);
+			}
+		}
 	}
 	
 	private SectionRow forgeSectionRow(Section section, AssessmentSection assessmentSection, List<Assignment> assignemnts, boolean first, boolean last) {
@@ -285,6 +298,7 @@ public class TableOfContentController extends BasicController implements TooledC
 		String pageId = "page" + (++counter);
 		String title = StringHelper.escapeHtml(page.getTitle());
 		Link openLink = LinkFactory.createCustomLink(pageId, "open_page", title, Link.LINK | Link.NONTRANSLATED, mainVC, this);
+		openLink.setElementCssClass("o_pf_open_entry");
 		openLink.setUserObject(pageRow);
 		pageRow.setOpenLink(openLink);
 

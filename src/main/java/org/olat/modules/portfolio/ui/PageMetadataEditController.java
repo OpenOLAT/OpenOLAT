@@ -142,8 +142,11 @@ public class PageMetadataEditController extends FormBasicController {
 	
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		formLayout.setElementCssClass("o_sel_pf_edit_entry_form");
+		
 		String title = page == null ? null : page.getTitle();
 		titleEl = uifactory.addTextElement("title", "page.title", 255, title, formLayout);
+		titleEl.setElementCssClass("o_sel_pf_edit_entry_title");
 		titleEl.setEnabled(editTitleAndSummary);
 		titleEl.setMandatory(true);
 		

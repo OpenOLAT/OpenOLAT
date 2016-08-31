@@ -12,6 +12,18 @@
 	
 	<div class="o_portfolio_entries #if($timelineSwitch) o_portfolio_withtimeline #end">
 		$r.render("table")
+		
+		#if($r.available("create.new.section"))
+		<div class="panel panel-placeholder o_block_large">
+			<div class="panel-body">
+				<h5>$r.translate("create.new.section.title")</h5>
+				<p>$r.translate("create.new.section.text")</p>
+				<div class="o_button_group">
+					$r.render("create.new.section")
+				</div>
+			</div>
+		</div>
+		#end
 		<div class="o_button_group">
 			<div class="btn-group">
 			#if($r.visible("section.paging.previous"))
