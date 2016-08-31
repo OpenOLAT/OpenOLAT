@@ -7,7 +7,7 @@
 #end
 </div>
 
-<div class="o_cmembers">
+<div class="o_cmembers o_owners">
 	#if($showOwners && $hasOwners)
 	<div class="clearfix">
 		<h4>$r.translate("members.owners")</h4>
@@ -15,13 +15,13 @@
 	</div>
 	#end
 	#if($showCoaches && $hasCoaches)
-	<div class="clearfix o_block">
+	<div class="clearfix o_block o_coaches">
 		<h4>$r.translate("members.coaches")</h4>
 		$r.render("coaches")
 	</div>
 	#end
 	#if($showParticipants)
-		<div class="clearfix o_block">
+		<div class="clearfix o_block o_participants">
 			<h4>$r.translate("members.participants")</h4>
 			#if($hasParticipants)
 				$r.render("participants")
