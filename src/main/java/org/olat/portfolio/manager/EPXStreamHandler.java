@@ -54,6 +54,7 @@ import org.olat.portfolio.model.structel.EPStructureToStructureLink;
 import org.olat.portfolio.model.structel.EPStructuredMap;
 import org.olat.portfolio.model.structel.EPStructuredMapTemplate;
 import org.olat.portfolio.model.structel.PortfolioStructure;
+import org.olat.resource.OLATResourceImpl;
 
 import com.thoughtworks.xstream.XStream;
 
@@ -79,6 +80,8 @@ public class EPXStreamHandler {
 		myStream.alias("structureToArtefact", EPStructureToArtefactLink.class);
 		myStream.alias("structureToStructure", EPStructureToStructureLink.class);
 		myStream.alias("collectionRestriction", CollectRestriction.class);
+		myStream.alias("olatResource", OLATResourceImpl.class);
+		myStream.alias("OLATResource", OLATResourceImpl.class);
 		myStream.omitField(EPAbstractMap.class, "ownerGroup"); // see also OLAT-6344
 		myStream.omitField(EPAbstractMap.class, "groups"); // see also OLAT-6344
 		
