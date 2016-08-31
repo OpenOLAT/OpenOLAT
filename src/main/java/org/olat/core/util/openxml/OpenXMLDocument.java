@@ -1435,10 +1435,10 @@ public class OpenXMLDocument {
 			appendGraphicEllipse(spPrEl, size, element);
 		}
 	
-		appendGraphicSolidFill(spPrEl, element.getStyle());
+		appendGraphicSolidFill_transparent(spPrEl, element.getStyle());
+		//spPrEl.appendChild(document.createElement("a:noFill"));
 		Element lnEl = (Element)spPrEl.appendChild(document.createElement("a:ln"));
 		lnEl.setAttribute("w", "38100");
-		//spPrEl.appendChild(document.createElement("a:noFill"));
 		spPrEl.appendChild(document.createElement("a:effectLst"));
 
 		//styles
@@ -1455,22 +1455,16 @@ public class OpenXMLDocument {
 	/*
 	<a:solidFill>
 		<a:schemeClr val="accent3">
-			<a:lumMod val="60000" />
-			<a:lumOff val="40000" />
 			<a:alpha val="63000" />
 		</a:schemeClr>
 	</a:solidFill>
 	*/
-	private void appendGraphicSolidFill(Element parentEl, OpenXMLGraphic.Style style) {
+	private void appendGraphicSolidFill_transparent(Element parentEl, OpenXMLGraphic.Style style) {
 		Element solidFillEl = (Element)parentEl.appendChild(document.createElement("a:solidFill"));
 		Element schemeClrEl = (Element)solidFillEl.appendChild(document.createElement("a:schemeClr"));
 		schemeClrEl.setAttribute("val", style.name());
-		
-		/*Element lumModEl = (Element)solidFillEl.appendChild(document.createElement("a:lumMod"));
-		lumModEl.setAttribute("val", "60000");
-		Element lumOffEl = (Element)solidFillEl.appendChild(document.createElement("a:lumOff"));
-		lumOffEl.setAttribute("val", "60000");*/
-		Element alphaEl = (Element)solidFillEl.appendChild(document.createElement("a:alpha"));
+
+		Element alphaEl = (Element)schemeClrEl.appendChild(document.createElement("a:alpha"));
 		alphaEl.setAttribute("val", "50000");
 	}
 	
@@ -1615,11 +1609,11 @@ public class OpenXMLDocument {
 		return filename;	
 	}
 	
-	private String generateId() {
+	protected String generateId() {
 		return "rId" + (++currentId);
 	}
 	
-	private String generateSimpleId() {
+	protected String generateSimpleId() {
 		return Integer.toString(++currentId);
 	}
 
