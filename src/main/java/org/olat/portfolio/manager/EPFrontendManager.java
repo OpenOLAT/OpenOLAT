@@ -127,6 +127,10 @@ public class EPFrontendManager implements UserDataDeletable, DeletableGroupData 
 	private AssessmentService assessmentService;
 	
 	
+	public boolean hasMapOrArtefact(Identity identity) {
+		return artefactManager.hasArtefactPool(identity) || structureManager.hasMap(identity);
+	}
+	
 	/**
 	 * Create and persist an artefact of the given type
 	 * 

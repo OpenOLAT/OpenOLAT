@@ -103,9 +103,12 @@ import org.olat.ims.qti.process.FilePersister;
 import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.assessment.model.AssessmentEntryImpl;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
+import org.olat.modules.portfolio.PortfolioV2Module;
 import org.olat.modules.scorm.assessment.CmiData;
 import org.olat.modules.scorm.assessment.ScormAssessmentManager;
+import org.olat.portfolio.PortfolioModule;
 import org.olat.portfolio.manager.EPFrontendManager;
+import org.olat.portfolio.model.structel.EPStructureElement;
 import org.olat.portfolio.model.structel.PortfolioStructureMap;
 import org.olat.portfolio.model.structel.StructureStatusEnum;
 import org.olat.properties.Property;
@@ -129,6 +132,7 @@ public class OLATUpgrade_11_0_0 extends OLATUpgrade {
 	private static final int BATCH_SIZE = 50;
 	private static final String ASSESSMENT_DATAS = "ASSESSMENT PROPERTY TABLE";
 	private static final String EFFICIENCY_STATEMENT_DATAS = "EFFICIENCY STATEMENT TABLE";
+	private static final String PORTFOLIO_SETTINGS = "PORTFOLIO SETTINGS";
 	private static final String VERSION = "OLAT_11.0.0";
 
 	private final Map<Long,Boolean> qtiEssayMap = new HashMap<>();
@@ -147,6 +151,12 @@ public class OLATUpgrade_11_0_0 extends OLATUpgrade {
 	private RepositoryManager repositoryManager;
 	@Autowired
 	private BusinessGroupService businessGroupService;
+	
+
+	@Autowired
+	private PortfolioModule portfolioModule;
+	@Autowired
+	private PortfolioV2Module portfolioV2Module;
 
 	public OLATUpgrade_11_0_0() {
 		super();
@@ -175,6 +185,7 @@ public class OLATUpgrade_11_0_0 extends OLATUpgrade {
 		boolean allOk = true;
 		allOk &= upgradeEfficiencyStatementTable(upgradeManager, uhd);
 		allOk &= upgradeAssessmentPropertyTable(upgradeManager, uhd);
+		allOk &= upgradePortfolioSettings(upgradeManager, uhd);
 
 		uhd.setInstallationComplete(allOk);
 		upgradeManager.setUpgradesHistory(uhd, VERSION);
@@ -184,6 +195,59 @@ public class OLATUpgrade_11_0_0 extends OLATUpgrade {
 			log.audit("OLATUpgrade_11_0_0 not finished, try to restart OpenOLAT!");
 		}
 		return allOk;
+	}
+	
+
+	private boolean upgradePortfolioSettings(UpgradeManager upgradeManager, UpgradeHistoryData uhd) {
+		boolean allOk = true;
+		if (!uhd.getBooleanDataValue(PORTFOLIO_SETTINGS)) {
+			if(portfolioModule.isEnabled()) {
+				portfolioV2Module.setEnabled(true);
+				
+				boolean hasMaps = hasMap();
+				if(!hasMaps) {
+					portfolioModule.setEnabled(false);
+				}
+			} else {
+				boolean hasBinder = hasBinder();
+				if(!hasBinder) {
+					portfolioV2Module.setEnabled(false);
+				}
+			}
+			uhd.setBooleanDataValue(PORTFOLIO_SETTINGS, allOk);
+			upgradeManager.setUpgradesHistory(uhd, VERSION);
+		}
+		return allOk;
+	}
+	
+	private boolean hasMap() {
+		try {
+			StringBuilder sb = new StringBuilder();
+			sb.append("select stEl.key from ").append(EPStructureElement.class.getName()).append(" stEl ");
+			List<Long> count =	dbInstance.getCurrentEntityManager().createQuery(sb.toString(), Long.class)
+					.setFirstResult(0)
+					.setMaxResults(1)
+					.getResultList();
+			return count != null && count.size() > 0 && count.get(0) != null && count.get(0) >= 0;
+		} catch (Exception e) {
+			log.error("", e);
+			return true;
+		}
+	}
+	
+	private boolean hasBinder() {
+		try {
+			StringBuilder sb = new StringBuilder();
+			sb.append("select binder.key from pfbinder as binder");
+			List<Long> count =	dbInstance.getCurrentEntityManager().createQuery(sb.toString(), Long.class)
+					.setFirstResult(0)
+					.setMaxResults(1)
+					.getResultList();
+			return count != null && count.size() > 0 && count.get(0) != null && count.get(0) >= 0;
+		} catch (Exception e) {
+			log.error("", e);
+			return true;
+		}
 	}
 
 	private boolean upgradeEfficiencyStatementTable(UpgradeManager upgradeManager, UpgradeHistoryData uhd) {

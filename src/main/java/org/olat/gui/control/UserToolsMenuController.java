@@ -38,6 +38,7 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.UserSession;
 import org.olat.core.util.prefs.Preferences;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -62,11 +63,14 @@ public class UserToolsMenuController extends BasicController implements Lockable
 		
 		menuVC = createVelocityContainer("menu");
 		menuVC.setDomReplacementWrapperRequired(false);
-		if(ureq.getIdentity() != null && ureq.getUserSession() != null && ureq.getUserSession().getRoles() != null) {
-			boolean isGuest = ureq.getUserSession().getRoles().isGuestOnly();
-			boolean isInvitee = ureq.getUserSession().getRoles().isInvitee();
-			if(!isGuest && !isInvitee) {
-				loadPersonalTools(ureq);
+		if(ureq.getIdentity() != null) {
+			UserSession usess = ureq.getUserSession();
+			if(usess != null && ureq.getUserSession().getRoles() != null) {
+				boolean isGuest = usess.getRoles().isGuestOnly();
+				boolean isInvitee = usess.getRoles().isInvitee();
+				if(!isGuest && !isInvitee) {
+					loadPersonalTools(ureq);
+				}
 			}
 		}
 		putInitialPanel(menuVC);
@@ -74,9 +78,9 @@ public class UserToolsMenuController extends BasicController implements Lockable
 
 	private void loadPersonalTools(UserRequest ureq) {
 		List<String> linksName = new ArrayList<String>();
-		List<String> configLinksName = new ArrayList<String>();
-		List<String> searchLinksName = new ArrayList<String>();
-		List<String> systemLinksName = new ArrayList<String>();
+		List<String> configLinksName = new ArrayList<>();
+		List<String> searchLinksName = new ArrayList<>();
+		List<String> systemLinksName = new ArrayList<>();
 		
 		Preferences prefs = ureq.getUserSession().getGuiPreferences();
 		String selectedTools = userToolsModule.getUserTools(prefs);

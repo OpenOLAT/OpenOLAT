@@ -142,10 +142,9 @@ public class OlatTopNavController extends BasicController implements LockableCon
 		List<UserToolExtension> toolExtensions = userToolsModule.getUserToolExtensions(ureq);
 		for (UserToolExtension toolExtension : toolExtensions) {
 			// check for sites
-			UserTool tool = toolExtension.createUserTool(ureq, getWindowControl(), getLocale());
-			if(tool != null) {
-				boolean shortCutOnly = toolExtension.isShortCutOnly();
-				if(shortCutOnly || selectedToolSet.contains(toolExtension.getUniqueExtensionID())) {
+			if(toolExtension.isShortCutOnly() || selectedToolSet.contains(toolExtension.getUniqueExtensionID())) {
+				UserTool tool = toolExtension.createUserTool(ureq, getWindowControl(), getLocale());
+				if(tool != null) {
 					Component cmp = tool.getMenuComponent(ureq, topNavVC);
 					String cssId = toolExtension.getShortCutCssId();
 					String cssClass = toolExtension.getShortCutCssClass();

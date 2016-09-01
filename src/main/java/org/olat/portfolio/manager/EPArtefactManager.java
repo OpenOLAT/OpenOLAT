@@ -141,6 +141,18 @@ public class EPArtefactManager extends BasicManager {
 		Number count = (Number)query.uniqueResult();
 		return count.intValue() > 0;
 	}
+	
+	protected boolean hasArtefactPool(IdentityRef ident) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select artefact.key from ").append(AbstractArtefact.class.getName()).append(" artefact").append(" where author.key=:authorKey");
+		List<Long> firstKey = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Long.class)
+				.setParameter("authorKey", ident.getKey())
+				.setFirstResult(0)
+				.setMaxResults(1)
+				.getResultList();
+		return firstKey != null && firstKey.size() > 0 && firstKey.get(0) != null && firstKey.get(0).longValue() >= 0;
+	}
 
 	protected List<AbstractArtefact> getArtefactPoolForUser(Identity ident) {
 		long start = System.currentTimeMillis();

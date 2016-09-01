@@ -144,6 +144,21 @@ public class EPStructureManager {
 	}
 	*/
 	
+	protected boolean hasMap(IdentityRef identity) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select stEl.key from ").append(EPStructureElement.class.getName()).append(" stEl ")
+		  .append(" inner join stEl.groups as relGroup on relGroup.defaultGroup=true")
+		  .append(" inner join relGroup.group as baseGroup")
+		  .append(" inner join baseGroup.members as membership on (membership.identity.key=:identityKey and membership.role='").append(GroupRoles.owner.name()).append("')");
+		
+		List<Long> count =	dbInstance.getCurrentEntityManager().createQuery(sb.toString(), Long.class)
+				.setParameter("identityKey", identity.getKey())
+				.setFirstResult(0)
+				.setMaxResults(1)
+				.getResultList();
+		return count != null && count.size() > 0 && count.get(0) != null && count.get(0) >= 0;
+	}
+	
 	protected List<PortfolioStructureMap> getOpenStructuredMapAfterDeadline() {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select map from ").append(EPStructuredMap.class.getName()).append(" as map");

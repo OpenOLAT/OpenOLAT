@@ -57,7 +57,7 @@ public class PortfolioModule extends AbstractSpringModule implements ConfigOnOff
 	private static final OLog log = Tracing.createLoggerFor(PortfolioModule.class);
 	
 
-	@Value("${portfolio.enabled:true}")
+	@Value("${portfolio.enabled:false}")
 	private boolean enabled;
 	private VFSContainer portfolioRoot;
 	@Value("${portfolio.map.styles}")
