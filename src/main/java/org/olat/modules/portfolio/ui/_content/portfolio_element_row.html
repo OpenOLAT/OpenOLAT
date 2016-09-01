@@ -13,7 +13,7 @@
 #end
 #if(${row.isSection()})
 <div class="o_portfolio_section">
-	<h3>$r.escapeHtml($row.sectionLongTitle) <small><i class="o_icon $row.sectionCssClassStatus"> </i></small></h3>
+	<h3>$r.escapeHtml($row.sectionLongTitle) <small><i class="o_icon $row.sectionCssClassStatus" title="$r.translate("section.status"): $r.translate("$row.getSectionStatusI18nKey()")"> </i></small></h3>
 	<div class="o_section_lead o_block_large_bottom">
 		<div class="o_portfolio_section_meta o_small">
 			<div class="o_portfolio_dates clearfix">
@@ -75,7 +75,7 @@
 #if(${row.isPendingAssignment()})
 	<div class="panel #if($r.isNotNull($row.editAssignmentLink)) panel-default #else panel-placeholder #end o_portfolio_assignments">
 		<div class="panel-heading">
-			<h4 class="panel-title"><i class="o_icon o_icon_assignment"> </i>$r.translate("assignment"): $row.assignmentTitle</h4>
+			<h4 class="panel-title"><i class="o_icon o_icon_assignment o_icon-fw"> </i>$r.translate("assignment"): $row.assignmentTitle</h4>
 		</div>
 		<div class="panel-body">
 			$r.xssScan($row.assignmentSummary)
@@ -101,39 +101,41 @@
 #if(${row.isPage()})
 <div class="o_portfolio_page o_block_large">
 	<div class="#if($r.isNotNull($row.assignment)) o_portfolio_assignments #end ">
-		<h4><i class="o_icon ${row.getCssClassStatus()} o_icon-fw"> </i> $r.escapeHtml($row.title)</h4>
-		<div class="o_portfolio_page_meta_wrapper">
-			#if($r.isNotNull($row.assignment))
-				<i class="o_icon o_icon_assignment"> </i> <strong>$r.translate("meta.assignment", $row.assignmentTitle)</strong> 
-			#end
-			#if($r.isNotEmpty($row.pageCategories))
-			<span class="o_portfolio_page_meta text-muted o_small">
-				#if($r.isNotNull($row.assignment)), #end
-				<strong>$r.translate("meta.categories")</strong> <i class="o_icon o_icon_tags"> </i>
-				 #foreach($category in $row.pageCategories)
-				 	#if(${foreach.count} > 1), #end
-				 	<a class="o_pf_tag" href="javascript:${f.ffXHREvent("tag_select","$category")}">$category</a>
-				 #end
-			</span>
-			#end
-			#if($r.isNotNull($row.lastPublicationDate))
-			<span class="o_portfolio_page_meta text-muted o_small">
-				#if($r.isNotNull($row.assignment) || $r.isNotEmpty($row.pageCategories)), #end
-				$r.translate("meta.last.publication", $r.formatDateAndTime($row.lastPublicationDate))
-			</span>
-			#end
-			<span class="o_portfolio_page_meta text-muted o_small">
-				#if($r.isNotNull($row.assignment) || $r.isNotNull($row.lastPublicationDate) or $r.isNotEmpty($row.pageCategories)), #end
-				$r.translate("meta.last.modified", $r.formatDateAndTime($row.lastModified))
-			</span>
-			#if($r.isNotNull(${r.row.getMetaBinderAndSectionTitles()}))
-			<div class="o_portfolio_page_meta text-muted o_small">
-				$r.translate("meta.binder.section.titles", ${row.getMetaBinderAndSectionTitles()})
+		<h4><i class="o_icon ${row.getCssClassStatus()} o_icon-fw" title="$r.translate("page.status"): $r.translate("$row.getPageStatusI18nKey()")"> </i> $r.escapeHtml($row.title)</h4>
+		<div class="o_portfolio_page_body">
+			<div class="o_portfolio_page_meta_wrapper">
+				#if($r.isNotNull($row.assignment))
+					<i class="o_icon o_icon_assignment o_icon-fw"> </i> <strong>$r.translate("meta.assignment", $row.assignmentTitle)</strong> 
+				#end
+				#if($r.isNotEmpty($row.pageCategories))
+				<span class="o_portfolio_page_meta text-muted o_small">
+					#if($r.isNotNull($row.assignment)), #end
+					<strong>$r.translate("meta.categories")</strong> <i class="o_icon o_icon_tags"> </i>
+					 #foreach($category in $row.pageCategories)
+					 	#if(${foreach.count} > 1), #end
+					 	<a class="o_pf_tag" href="javascript:${f.ffXHREvent("tag_select","$category")}">$category</a>
+					 #end
+				</span>
+				#end
+				#if($r.isNotNull($row.lastPublicationDate))
+				<span class="o_portfolio_page_meta text-muted o_small">
+					#if($r.isNotNull($row.assignment) || $r.isNotEmpty($row.pageCategories)), #end
+					$r.translate("meta.last.publication", $r.formatDateAndTime($row.lastPublicationDate))
+				</span>
+				#end
+				<span class="o_portfolio_page_meta text-muted o_small">
+					#if($r.isNotNull($row.assignment) || $r.isNotNull($row.lastPublicationDate) or $r.isNotEmpty($row.pageCategories)), #end
+					$r.translate("meta.last.modified", $r.formatDateAndTime($row.lastModified))
+				</span>
+				#if($r.isNotNull(${r.row.getMetaBinderAndSectionTitles()}))
+				<div class="o_portfolio_page_meta text-muted o_small">
+					$r.translate("meta.binder.section.titles", ${row.getMetaBinderAndSectionTitles()})
+				</div>
+				#end		
 			</div>
-			#end		
-		</div>
-		<div class="o_portfolio_page_summary o_block">
-			$r.xssScan($row.summary)
+			<div class="o_portfolio_page_summary o_block">
+				$r.xssScan($row.summary)
+			</div>
 		</div>
 	</div>
 	<div class="o_portfolio_page_links">

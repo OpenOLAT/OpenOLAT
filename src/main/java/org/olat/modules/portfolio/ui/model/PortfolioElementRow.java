@@ -151,6 +151,10 @@ public class PortfolioElementRow {
 		return page == null ? null : page.getPageStatus();
 	}
 	
+	public String getPageStatusI18nKey() {
+		return (page == null || page.getPageStatus() == null ) ? PageStatus.draft.i18nKey() : page.getPageStatus().i18nKey();
+	}
+	
 	public Date getLastPublicationDate() {
 		return page == null ? null : page.getLastPublicationDate();
 	}

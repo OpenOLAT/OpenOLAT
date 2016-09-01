@@ -57,7 +57,7 @@ div#o_main_toolbar.o_toolbar.o_portfolio {
 	}
 }
 /* an assignment entry */
-.o_portfolio_page .o_portfolio_assignments {
+.o_portfolio_page .o_portfolio_assignments .o_portfolio_page_body {
 		border-left: 3px solid $o-portfolio-assignment-color;
 		.o_portfolio_page_meta_wrapper,
 		.o_portfolio_page_summary {
@@ -211,10 +211,16 @@ div#o_main_toolbar.o_toolbar.o_portfolio {
 	.o_portfolio_section_meta {
 		font-size: 80%;
 		color: $gray-light;
+		/* compensate for header o_header_with_buttons margin */
+		position: relative;
+		top: -15px;
 	}
 	
 	.o_section {
 		position: relative;
+		.o_header_with_buttons h4 {
+			padding-right: 0.5em;
+		}
 	}
 
 	.o_section_actions {
@@ -228,6 +234,9 @@ div#o_main_toolbar.o_toolbar.o_portfolio {
 		
 		.o_section_dropdown {
 			display: inline-block;
+			position: relative;
+			top: -0.5em;
+			padding-left: 0.5em;
 		}
 	}
 }
