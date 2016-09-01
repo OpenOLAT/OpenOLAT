@@ -225,12 +225,18 @@ public class BinderController extends BasicController implements TooledControlle
 	}
 	
 	private TableOfContentController doOpenOverview(UserRequest ureq) {
-		OLATResourceable bindersOres = OresHelper.createOLATResourceableInstance("Toc", 0l);
-		WindowControl swControl = addToHistory(ureq, bindersOres, null);
-		overviewCtrl = new TableOfContentController(ureq, swControl, stackPanel, secCallback, binder, config);
-		listenTo(overviewCtrl);
-		
 		popUpToBinderController(ureq);
+		
+		if(overviewCtrl == null) {
+			OLATResourceable bindersOres = OresHelper.createOLATResourceableInstance("Toc", 0l);
+			WindowControl swControl = addToHistory(ureq, bindersOres, null);
+			overviewCtrl = new TableOfContentController(ureq, swControl, stackPanel, secCallback, binder, config);
+			overviewCtrl.initTools();//because it will not end in the stackPanel as a pushed controller
+			listenTo(overviewCtrl);
+		} else {
+			overviewCtrl.loadModel();
+		}
+
 		segmentButtonsCmp.setSelectedButton(overviewLink);
 		mainPanel.setContent(overviewCtrl.getInitialComponent());
 		return overviewCtrl;

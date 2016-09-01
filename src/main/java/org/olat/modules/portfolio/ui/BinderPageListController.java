@@ -104,18 +104,18 @@ public class BinderPageListController extends AbstractPageListController {
 
 	@Override
 	public void initTools() {
-		if(secCallback.canAddPage(null)) {
-			newEntryLink = LinkFactory.createToolLink("new.page", translate("create.new.page"), this);
-			newEntryLink.setIconLeftCSS("o_icon o_icon-lg o_icon_new_portfolio");
-			newEntryLink.setElementCssClass("o_sel_pf_new_entry");
-			stackPanel.addTool(newEntryLink, Align.right);
-		}
-		
 		if(secCallback.canAddSection()) {
 			newSectionLink = LinkFactory.createToolLink("new.section", translate("create.new.section"), this);
 			newSectionLink.setIconLeftCSS("o_icon o_icon-lg o_icon_new_portfolio");
 			newSectionLink.setElementCssClass("o_sel_pf_new_section");
 			stackPanel.addTool(newSectionLink, Align.right);
+		}
+		
+		if(secCallback.canAddPage(null)) {
+			newEntryLink = LinkFactory.createToolLink("new.page", translate("create.new.page"), this);
+			newEntryLink.setIconLeftCSS("o_icon o_icon-lg o_icon_new_portfolio");
+			newEntryLink.setElementCssClass("o_sel_pf_new_entry");
+			stackPanel.addTool(newEntryLink, Align.right);
 		}
 	}
 
