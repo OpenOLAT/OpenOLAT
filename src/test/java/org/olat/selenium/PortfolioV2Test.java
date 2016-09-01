@@ -85,7 +85,7 @@ public class PortfolioV2Test {
 	@RunAsClient
 	public void createSimpleBinder(@InitialPage LoginPage loginPage) 
 			throws IOException, URISyntaxException {
-		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
+		UserVO author = new UserRestClient(deploymentUrl).createRandomUser("rei");
 		
 		loginPage
 			.loginAs(author.getLogin(), author.getPassword())
@@ -96,13 +96,21 @@ public class PortfolioV2Test {
 				.openUserToolsMenu()
 				.openPortfolioV2();
 		
-		String binderTitle = "First binder " + UUID.randomUUID().toString();
-		portfolio
+		String binderTitle = "First binder " + UUID.randomUUID();
+		BinderPage binder = portfolio
 			.openMyBinders()
-			.createBinder(binderTitle);
+			.createBinder(binderTitle, "A brand new binder");
 		
+		String sectionTitle = "Section one " + UUID.randomUUID();
+		binder
+			.selectEntries()
+			.createSection(sectionTitle)
+			.assertOnSectionTitleInEntries(sectionTitle);
 		
-	
+		String pageTitle = "Page one " + UUID.randomUUID();
+		binder
+			.createEntry(pageTitle)
+			.assertOnPage(pageTitle);
 	}
 	
 	/**

@@ -51,6 +51,12 @@ public class PortfolioV2HomePage {
 	}
 	
 	public BindersPage openMyBinders() {
+		By myBindersBy = By.cssSelector("a.o_sel_pf_my_binders");
+		OOGraphene.waitElement(myBindersBy, 5, browser);
+		browser.findElement(myBindersBy).click();
+		
+		By binderListBy = By.cssSelector("div.o_table_flexi.o_portfolio_listing");
+		OOGraphene.waitElement(binderListBy, 5, browser);
 		return new BindersPage(browser);
 	}
 

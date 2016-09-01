@@ -69,6 +69,18 @@ public class BinderPage {
 		return this;
 	}
 	
+	/**
+	 * Assert that the page is opened in the page view.
+	 * 
+	 * @param title
+	 * @return
+	 */
+	public BinderPage assertOnPage(String title) {
+		By metaTitleBy = By.xpath("//div[contains(@class,'o_portfolio_page_meta_wrapper')]//h2[contains(text(),'" + title + "')]");
+		OOGraphene.waitElement(metaTitleBy, 5, browser);
+		return this;
+	}
+	
 	public BinderPage assertOnAssignmentInEntries(String title) {
 		By assignmentTitleBy = By.xpath("//h4[i[contains(@class,'o_icon_assignment')]][contains(text(),'" + title + "')]");
 		OOGraphene.waitElement(assignmentTitleBy, 5, browser);
@@ -107,8 +119,7 @@ public class BinderPage {
 	public BinderPage createSection(String title) {
 		//click create button
 		By createBy = By.className("o_sel_pf_new_section");
-		WebElement createButton = browser.findElement(createBy);
-		createButton.click();
+		browser.findElement(createBy).click();
 		OOGraphene.waitBusy(browser);
 		OOGraphene.waitModalDialog(browser);
 		By popupBy = By.cssSelector("div.modal-content fieldset.o_sel_pf_edit_section_form");

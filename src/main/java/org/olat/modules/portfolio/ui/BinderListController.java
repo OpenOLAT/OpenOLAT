@@ -167,6 +167,7 @@ public class BinderListController extends FormBasicController
 	public void initTools() {
 		newBinderLink = LinkFactory.createToolLink("create.new.binder", translate("create.new.binder"), this);
 		newBinderLink.setIconLeftCSS("o_icon o_icon-lg o_icon_new_portfolio");
+		newBinderLink.setElementCssClass("o_sel_pf_new_binder");
 		stackPanel.addTool(newBinderLink, Align.right);
 	}
 

@@ -101,12 +101,16 @@ public class BinderMetadataEditController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		formLayout.setElementCssClass("o_sel_pf_edit_binder_form");
+		
 		String title = binder == null ? null : binder.getTitle();
 		titleEl = uifactory.addTextElement("title", "title", 255, title, formLayout);
+		titleEl.setElementCssClass("o_sel_pf_edit_binder_title");
 		titleEl.setMandatory(true);
 		
 		String summary = binder == null ? null : binder.getSummary();
 		summaryEl = uifactory.addTextAreaElement("summary", "summary", 4096, 4, 60, false, summary, formLayout);
+		summaryEl.setElementCssClass("o_sel_pf_edit_binder_summary");
 		summaryEl.setPlaceholderKey("summary.placeholder", null);
 		
 		fileUpload = uifactory.addFileElement(getWindowControl(), "file", "fileupload",formLayout);			
