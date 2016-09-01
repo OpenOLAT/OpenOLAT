@@ -12,6 +12,33 @@ div#o_main_toolbar.o_toolbar.o_portfolio {
 	border: 1px $o-portfolio-lead-border-color solid;
 }
 
+.o_page_lead {
+	padding: $o-portfolio-lead-space-sm * 2;
+	
+	.o_page_summary {
+		font-size: $o-portfolio-page-summary-font-size;
+	}
+	
+	.o_portfolio_status {
+		display: inline-block;
+		padding-right: 2em;
+	}
+}
+
+.o_page_assignment{
+	font-size: $o-portfolio-assignment-font-size;
+	&.o_togglebox_wrapper div.o_togglebox_content {
+	    margin: 10px 0 20px 0;
+	    padding: 20px;
+	    border-left: 3px solid $o-portfolio-assignment-color;
+	    background-color: $o-portfolio-assignment-background-color;
+	}       
+	.o_page_assignement_info {
+		position: relative;
+	    left: -1em;
+	}
+}
+
 .o_portfolio_listing {
 	
 	.o_table_body.container-fluid {
@@ -100,6 +127,11 @@ div#o_main_toolbar.o_toolbar.o_portfolio {
 		stroke: #ddd;
 	}
 
+	text {
+		fill: #888; 
+		stroke: none; 
+		font-size: 10px;
+	}
 	.dot.o_pf_status_draft {
 		fill: $o-portfolio-entry-draft-color;
 	}
@@ -305,19 +337,22 @@ div#o_main_toolbar.o_toolbar.o_portfolio {
 }
 
 @media (max-width: $screen-xs-max) { 
-	.o_portfolio_toc.o_portfolio_withtimeline, .o_portfolio_entries.o_portfolio_withtimeline {
-		width: 100%;
-		float:none;
-	}
-	
-	.o_sel_timeline_off, .o_sel_timeline_on, .o_portfolio_timeline {
-		display:none;
-	}
-	
-	.o_portfolio_content .o_portfolio_toc.o_portfolio_withtimeline {
-		width: 100%;
-		float:none;
-	}
+	/* hide timeline on small screen, even when configured to be visible */
+	.o_portfolio_content {
+		.o_portfolio_toc.o_portfolio_withtimeline, .o_portfolio_entries.o_portfolio_withtimeline {
+			width: 100%;
+			float:none;
+		}
+		
+		.o_sel_timeline_off, .o_sel_timeline_on, .o_portfolio_timeline {
+			display:none;
+		}
+		
+		.o_portfolio_content .o_portfolio_toc.o_portfolio_withtimeline {
+			width: 100%;
+			float:none;
+		}
+	}	
 }
 
 .o_portfolio_media_browser {
