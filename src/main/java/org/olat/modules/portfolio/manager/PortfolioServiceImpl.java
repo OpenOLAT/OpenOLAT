@@ -264,24 +264,19 @@ public class PortfolioServiceImpl implements PortfolioService {
 		}
 	}
 	
-
 	@Override
 	public Assignment addAssignment(String title, String summary, String content, AssignmentType type,
 			Section section) {
-		String storage = null;
-		if(type == AssignmentType.document) {
-			File newStorage = portfolioFileStorage.generateAssignmentSubDirectory();
-			storage = portfolioFileStorage.getRelativePath(newStorage);
-		}
+		File newStorage = portfolioFileStorage.generateAssignmentSubDirectory();
+		String storage = portfolioFileStorage.getRelativePath(newStorage);
+
 		Section reloadedSection = binderDao.loadSectionByKey(section.getKey());
 		return assignmentDao.createAssignment(title, summary, content, storage, type, AssignmentStatus.template, reloadedSection);
 	}
 
 	@Override
 	public Assignment updateAssignment(Assignment assignment, String title, String summary, String content, AssignmentType type) {
-		if(assignment.getAssignmentType() == AssignmentType.document && type != AssignmentType.document) {
-			//remove storage
-		} else if(type == AssignmentType.document && !StringHelper.containsNonWhitespace(assignment.getStorage())) {
+		if(!StringHelper.containsNonWhitespace(assignment.getStorage())) {
 			File newStorage = portfolioFileStorage.generateAssignmentSubDirectory();
 			String newRelativeStorage = portfolioFileStorage.getRelativePath(newStorage);
 			((AssignmentImpl)assignment).setStorage(newRelativeStorage);

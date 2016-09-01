@@ -43,7 +43,6 @@ import org.olat.core.gui.media.MediaResource;
 import org.olat.core.id.Identity;
 import org.olat.core.util.StringHelper;
 import org.olat.modules.portfolio.Assignment;
-import org.olat.modules.portfolio.AssignmentType;
 import org.olat.modules.portfolio.BinderSecurityCallback;
 import org.olat.modules.portfolio.Category;
 import org.olat.modules.portfolio.Page;
@@ -155,15 +154,15 @@ public class PageMetadataController extends BasicController {
 		List<UserAssignmentInfos> assignmentInfos = new ArrayList<>(assignments.size());
 		for(Assignment assignment:assignments) {
 			List<File> documents = null;
-			if(assignment.getAssignmentType() == AssignmentType.document) {
-				File storage = fileStorage.getAssignmentDirectory(assignment);
-				if(storage != null) {
-					documents = Arrays.<File>asList(storage.listFiles());
-					if(documents.size() > 0) {
-						needMapper = true;
-					}
+
+			File storage = fileStorage.getAssignmentDirectory(assignment);
+			if(storage != null) {
+				documents = Arrays.<File>asList(storage.listFiles());
+				if(documents.size() > 0) {
+					needMapper = true;
 				}
 			}
+
 			UserAssignmentInfos infos = new UserAssignmentInfos(assignment, documents);
 			assignmentInfos.add(infos);
 		}

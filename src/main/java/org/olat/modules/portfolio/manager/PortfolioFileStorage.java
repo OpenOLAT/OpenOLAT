@@ -44,6 +44,8 @@ import org.springframework.stereotype.Service;
 @Service
 public class PortfolioFileStorage implements InitializingBean {
 	
+	private static final int MAX_SUB_DIRECTORIES = 32000;
+	
 	private File rootDirectory, bcrootDirectory;
 	private File pagesPostersDirectory, binderPostersDirectory, mediaDirectory, assignmentDirectory;
 	
@@ -100,7 +102,7 @@ public class PortfolioFileStorage implements InitializingBean {
 		String cleanUuid = UUID.randomUUID().toString().replace("-", "");
 		String firstToken = cleanUuid.substring(0, 2).toLowerCase();
 		File parentDir = new File(assignmentDirectory, firstToken);
-		File dir = new File(parentDir, "001");
+		File dir = new File(parentDir, "00001");
 		if(!dir.exists()) {
 			dir.mkdirs();
 		} else {
@@ -110,11 +112,15 @@ public class PortfolioFileStorage implements InitializingBean {
 				names.add(child);
 			}
 			
-			for(int i=1; i<1000; i++) {
+			for(int i=1; i<MAX_SUB_DIRECTORIES; i++) {
 				String potentielName = Integer.toString(i);
 				if(potentielName.length() == 1) {
-					potentielName = "00" + potentielName;
+					potentielName = "0000" + potentielName;
 				} else if(potentielName.length() == 2) {
+					potentielName = "000" + potentielName;
+				} else if(potentielName.length() == 3) {
+					potentielName = "00" + potentielName;
+				} else if(potentielName.length() == 4) {
 					potentielName = "0" + potentielName;
 				}
 

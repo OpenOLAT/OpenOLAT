@@ -36,7 +36,6 @@ import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FileElement;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.RichTextElement;
-import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
@@ -70,12 +69,12 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class AssignmentEditController extends FormBasicController {
 
-	private static final String[] typeKeys = new String[]{
+	public static final String[] typeKeys = new String[]{
 			AssignmentType.essay.name(), AssignmentType.document.name()
 	};
 	
 	private TextElement titleEl, summaryEl;
-	private SingleSelection typeEl;
+	//private SingleSelection typeEl;
 	private FileElement documentUploadEl;
 	private FormLayoutContainer filesLayout;
 	private RichTextElement contentEl;
@@ -125,13 +124,14 @@ public class AssignmentEditController extends FormBasicController {
 				ureq.getUserSession(), getWindowControl());
 		contentEl.getEditorConfiguration().disableMedia();
 		contentEl.getEditorConfiguration().disableImageAndMovie();
-		
+		/*
 		String[] typeValues = new String[]{ translate("assignment.type.essay"), translate("assignment.type.document") };
 		typeEl = uifactory.addDropdownSingleselect("type", "assignment.type", formLayout, typeKeys, typeValues, null);
 		typeEl.setElementCssClass("o_sel_pf_edit_assignment_type");
 		typeEl.addActionListener(FormEvent.ONCHANGE);
 		String selectedType = assignment == null ? typeKeys[0] : assignment.getAssignmentType().name();
 		typeEl.select(selectedType, true);
+		*/
 		
 		createAssignmentDocumentForm(formLayout);
 		
@@ -161,42 +161,37 @@ public class AssignmentEditController extends FormBasicController {
 			filesLayout.contextPut("mapperUri", mapperUri);
 		}
 		
-		boolean visible = AssignmentType.document.name().equals(typeEl.getSelectedKey());
-		List<VFSItem> files = new ArrayList<VFSItem>();
-		if(visible) {
-			if(assignment != null && StringHelper.containsNonWhitespace(assignment.getStorage())) {
-				documentContainer = fileStorage.getAssignmentContainer(assignment);
-				files.addAll(documentContainer.getItems(new SystemItemFilter()));
-			}
+		List<VFSItem> files = new ArrayList<>();
+		if(assignment != null && StringHelper.containsNonWhitespace(assignment.getStorage())) {
+			documentContainer = fileStorage.getAssignmentContainer(assignment);
+			files.addAll(documentContainer.getItems(new SystemItemFilter()));
+		}
 
-			// add files from TempFolder
-			if(tempUploadFolder != null) {
-				files.addAll(tempUploadFolder.getItems(new SystemItemFilter()));
+		// add files from TempFolder
+		if(tempUploadFolder != null) {
+			files.addAll(tempUploadFolder.getItems(new SystemItemFilter()));
+		}
+		
+		Collections.sort(files, new Comparator<VFSItem>(){
+			final Collator c = Collator.getInstance(getLocale());
+			@Override
+			public int compare(final VFSItem o1, final VFSItem o2) {
+				return c.compare((o1).getName(), (o2).getName());
 			}
-			
-			Collections.sort(files, new Comparator<VFSItem>(){
-				final Collator c = Collator.getInstance(getLocale());
-				@Override
-				public int compare(final VFSItem o1, final VFSItem o2) {
-					return c.compare((o1).getName(), (o2).getName());
-				}
-			});		
+		});		
 
-			filesLayout.contextPut("files", files);
+		filesLayout.contextPut("files", files);
 
-			// add delete links for each attachment if user is allowed to see them
-			int count = 0;
-			for (VFSItem file : files) {
-				FormLink deleteLink = uifactory.addFormLink("delete_" + (++count), filesLayout, Link.BUTTON_XSMALL);
-				deleteLink.setUserObject(file);
-				deleteLink.setI18nKey("delete");
-			}
+		// add delete links for each attachment if user is allowed to see them
+		int count = 0;
+		for (VFSItem file : files) {
+			FormLink deleteLink = uifactory.addFormLink("delete_" + (++count), filesLayout, Link.BUTTON_XSMALL);
+			deleteLink.setUserObject(file);
+			deleteLink.setI18nKey("delete");
 		}
 
 		boolean hasFile = files.size() > 0;
-		filesLayout.setVisible(visible && files.size() > 0);
-		documentUploadEl.setVisible(visible);
-
+		filesLayout.setVisible(files.size() > 0);
 		filesLayout.showLabel(hasFile);
 		documentUploadEl.showLabel(!hasFile);
 	}
@@ -211,7 +206,7 @@ public class AssignmentEditController extends FormBasicController {
 		String title = titleEl.getValue();
 		String summary = summaryEl.getValue();
 		String content = contentEl.getValue();
-		AssignmentType type = AssignmentType.valueOf(typeEl.getSelectedKey());
+		AssignmentType type = AssignmentType.essay;//AssignmentType.valueOf(typeEl.getSelectedKey());
 		if(assignment == null) {
 			assignment = portfolioService.addAssignment(title, summary, content, type, section);
 		} else {
@@ -248,9 +243,9 @@ public class AssignmentEditController extends FormBasicController {
 
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if(source == typeEl) {
+		/*if(source == typeEl) {
 			updateAssignmentDocumentForm(ureq);
-		} else if (source == documentUploadEl) {
+		} else */if (source == documentUploadEl) {
 			if (documentUploadEl.isUploadSuccess()) {
 				String fileName = documentUploadEl.getUploadFileName();
 				// checking tmp-folder and msg-container for filename
