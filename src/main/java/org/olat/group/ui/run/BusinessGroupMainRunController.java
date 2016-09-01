@@ -95,6 +95,7 @@ import org.olat.instantMessaging.InstantMessagingModule;
 import org.olat.instantMessaging.InstantMessagingService;
 import org.olat.modules.co.ContactFormController;
 import org.olat.modules.openmeetings.OpenMeetingsModule;
+import org.olat.modules.portfolio.PortfolioV2Module;
 import org.olat.modules.wiki.WikiManager;
 import org.olat.portfolio.PortfolioModule;
 import org.olat.repository.RepositoryEntry;
@@ -226,6 +227,10 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 	private CalendarModule calendarModule;
 	@Autowired
 	private InstantMessagingModule imModule;
+	@Autowired
+	private PortfolioModule portfolioModule;
+	@Autowired
+	private PortfolioV2Module portfolioV2Module;
 	@Autowired
 	private BusinessGroupService businessGroupService;
 
@@ -1209,9 +1214,9 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 			root.addChild(gtnChild);
 			nodeWiki = gtnChild;
 		}
-		
-		PortfolioModule portfolioModule = (PortfolioModule) CoreSpringFactory.getBean("portfolioModule");		
-		if (collabTools.isToolEnabled(CollaborationTools.TOOL_PORTFOLIO) && portfolioModule.isEnabled()) {
+			
+		if (collabTools.isToolEnabled(CollaborationTools.TOOL_PORTFOLIO) &&
+				(portfolioModule.isEnabled() || portfolioV2Module.isEnabled())) {
 			gtnChild = new GenericTreeNode(nodeIdPrefix.concat("eportfolio"));
 			gtnChild.setTitle(translate("menutree.portfolio"));
 			gtnChild.setUserObject(ACTIVITY_MENUSELECT_PORTFOLIO);

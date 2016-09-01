@@ -17,37 +17,31 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.selenium.page.course;
+package org.olat.selenium.page.portfolio;
 
-import org.olat.selenium.page.graphene.OOGraphene;
-import org.olat.selenium.page.portfolio.BinderPage;
-import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 
 /**
  * 
- * Initial date: 31.08.2016<br>
+ * Initial date: 01.09.2016<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class PortfolioElementPage {
+public class BindersPage {
 	
-	private WebDriver browser;
-	
-	public PortfolioElementPage(WebDriver browser) {
+	private final WebDriver browser;
+
+	public BindersPage(WebDriver browser) {
 		this.browser = browser;
 	}
 	
-	public PortfolioElementPage pickPortfolio() {
-		By pickBy = By.cssSelector("a.btn.o_sel_ep_new_map_template");
-		OOGraphene.waitElement(pickBy, 5, browser);
-		browser.findElement(pickBy).click();
-		OOGraphene.waitBusy(browser);
-		OOGraphene.waitAndCloseBlueMessageWindow(browser);
-		return this;
+	public BinderPage createBinder(String title) {
+		
+		return new BinderPage(browser);
 	}
 	
-	public BinderPage goToPortfolioV2() {
+	public BinderPage selectBinder(String title) {
+		
 		return new BinderPage(browser);
 	}
 

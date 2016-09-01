@@ -17,38 +17,41 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.selenium.page.course;
+package org.olat.selenium.page.portfolio;
 
+import org.junit.Assert;
 import org.olat.selenium.page.graphene.OOGraphene;
-import org.olat.selenium.page.portfolio.BinderPage;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebElement;
 
 /**
  * 
- * Initial date: 31.08.2016<br>
+ * Drive the portfolio homepage, mostly to jump to the list
+ * of binders, entries...
+ * 
+ * Initial date: 01.09.2016<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class PortfolioElementPage {
+public class PortfolioV2HomePage {
 	
-	private WebDriver browser;
-	
-	public PortfolioElementPage(WebDriver browser) {
+	private final WebDriver browser;
+
+	public PortfolioV2HomePage(WebDriver browser) {
 		this.browser = browser;
 	}
 	
-	public PortfolioElementPage pickPortfolio() {
-		By pickBy = By.cssSelector("a.btn.o_sel_ep_new_map_template");
-		OOGraphene.waitElement(pickBy, 5, browser);
-		browser.findElement(pickBy).click();
-		OOGraphene.waitBusy(browser);
-		OOGraphene.waitAndCloseBlueMessageWindow(browser);
+	public PortfolioV2HomePage assertHome() {
+		By toolbarBy = By.cssSelector("div.o_toolbar.o_portfolio");
+		OOGraphene.waitElement(toolbarBy, 5, browser);
+		WebElement toolbarEl = browser.findElement(toolbarBy);
+		Assert.assertTrue(toolbarEl.isDisplayed());
 		return this;
 	}
 	
-	public BinderPage goToPortfolioV2() {
-		return new BinderPage(browser);
+	public BindersPage openMyBinders() {
+		return new BindersPage(browser);
 	}
 
 }

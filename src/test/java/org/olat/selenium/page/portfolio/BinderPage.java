@@ -33,17 +33,17 @@ import org.openqa.selenium.WebElement;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class PortfolioV2Page {
+public class BinderPage {
 	
 	public static final By portfolioBy = By.cssSelector("li.o_tool .o_sel_pf_binder_navigation");
 
 	private final WebDriver browser;
 
-	public PortfolioV2Page(WebDriver browser) {
+	public BinderPage(WebDriver browser) {
 		this.browser = browser;
 	}
 	
-	public PortfolioV2Page assertOnBinder() {
+	public BinderPage assertOnBinder() {
 		By navigationBy = By.cssSelector("li.o_tool .o_sel_pf_binder_navigation");
 		OOGraphene.waitElement(navigationBy, browser);
 		WebElement navigationEl = browser.findElement(navigationBy);
@@ -51,39 +51,39 @@ public class PortfolioV2Page {
 		return this;
 	}
 	
-	public PortfolioV2Page assertOnSectionTitleInEntries(String title) {
+	public BinderPage assertOnSectionTitleInEntries(String title) {
 		By sectionTitleBy = By.xpath("//div[contains(@class,'o_portfolio_section')]//h3[contains(text(),'" + title + "')]");
 		OOGraphene.waitElement(sectionTitleBy, 5, browser);
 		return this;
 	}
 	
-	public PortfolioV2Page assertOnPageInEntries(String title) {
+	public BinderPage assertOnPageInEntries(String title) {
 		By sectionTitleBy = By.xpath("//div[contains(@class,'o_portfolio_page')]//h4[contains(text(),'" + title + "')]");
 		OOGraphene.waitElement(sectionTitleBy, 5, browser);
 		return this;
 	}
 	
-	public PortfolioV2Page assertOnPageInToc(String title) {
+	public BinderPage assertOnPageInToc(String title) {
 		By sectionTitleBy = By.xpath("//a[contains(@class,'o_pf_open_entry')]/span[contains(text(),'" + title + "')]");
 		OOGraphene.waitElement(sectionTitleBy, 5, browser);
 		return this;
 	}
 	
-	public PortfolioV2Page assertOnAssignmentInEntries(String title) {
+	public BinderPage assertOnAssignmentInEntries(String title) {
 		By assignmentTitleBy = By.xpath("//h4[i[contains(@class,'o_icon_assignment')]][contains(text(),'" + title + "')]");
 		OOGraphene.waitElement(assignmentTitleBy, 5, browser);
 		return this;
 	}
 	
 	
-	public PortfolioV2Page selectTableOfContent() {
+	public BinderPage selectTableOfContent() {
 		By tocBy = By.cssSelector("li.o_tool .o_sel_pf_binder_navigation .o_sel_pf_toc");
 		browser.findElement(tocBy).click();
 		OOGraphene.waitBusy(browser);
 		return this;
 	}
 	
-	public PortfolioV2Page selectEntries() {
+	public BinderPage selectEntries() {
 		By tocBy = By.cssSelector("li.o_tool .o_sel_pf_binder_navigation .o_sel_pf_entries");
 		browser.findElement(tocBy).click();
 		OOGraphene.waitBusy(browser);
@@ -98,13 +98,13 @@ public class PortfolioV2Page {
 	 * @param title
 	 * @return
 	 */
-	public PortfolioV2Page createSectionInEntries(String title) {
+	public BinderPage createSectionInEntries(String title) {
 		createSection(title);
 		assertOnSectionTitleInEntries(title);
 		return this;
 	}
 	
-	public PortfolioV2Page createSection(String title) {
+	public BinderPage createSection(String title) {
 		//click create button
 		By createBy = By.className("o_sel_pf_new_section");
 		WebElement createButton = browser.findElement(createBy);
@@ -127,7 +127,7 @@ public class PortfolioV2Page {
 		return this;
 	}
 	
-	public PortfolioV2Page createEntry(String title) {
+	public BinderPage createEntry(String title) {
 		//click create button
 		By createBy = By.className("o_sel_pf_new_entry");
 		WebElement createButton = browser.findElement(createBy);
@@ -150,7 +150,7 @@ public class PortfolioV2Page {
 		return this;
 	}
 	
-	public PortfolioV2Page createAssignmentForSection(String sectionTitle, String title, String summary) {
+	public BinderPage createAssignmentForSection(String sectionTitle, String title, String summary) {
 		By newAssignmentBy = By.xpath("//div[contains(@class,'o_portfolio_section')][h3[contains(text(),'" + sectionTitle + "')]]//a[contains(@class,'o_sel_pf_new_assignment')]");
 		List<WebElement> newAssignmentButtons = browser.findElements(newAssignmentBy);
 		Assert.assertEquals(1, newAssignmentButtons.size());

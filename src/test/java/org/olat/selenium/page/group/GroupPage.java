@@ -29,7 +29,7 @@ import org.olat.selenium.page.core.FolderPage;
 import org.olat.selenium.page.core.IMPage;
 import org.olat.selenium.page.forum.ForumPage;
 import org.olat.selenium.page.graphene.OOGraphene;
-import org.olat.selenium.page.portfolio.PortfolioV2Page;
+import org.olat.selenium.page.portfolio.BinderPage;
 import org.olat.selenium.page.wiki.WikiPage;
 import org.olat.user.restapi.UserVO;
 import org.openqa.selenium.By;
@@ -168,10 +168,10 @@ public class GroupPage {
 		return WikiPage.getGroupWiki(browser);
 	}
 	
-	public PortfolioV2Page openPortfolio() {
+	public BinderPage openPortfolio() {
 		openMenuItem(portfolioTool);
-		OOGraphene.waitElement(PortfolioV2Page.portfolioBy, 5, browser);
-		return new PortfolioV2Page(browser);
+		OOGraphene.waitElement(BinderPage.portfolioBy, 5, browser);
+		return new BinderPage(browser);
 	}
 	
 	private GroupPage openMenuItem(Tool tool) {

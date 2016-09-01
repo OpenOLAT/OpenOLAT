@@ -60,6 +60,7 @@ import org.olat.course.nodes.GTACourseNode;
 import org.olat.course.nodes.MSCourseNode;
 import org.olat.course.nodes.gta.GTAManager;
 import org.olat.course.nodes.gta.Task;
+import org.olat.course.nodes.gta.TaskList;
 import org.olat.course.nodes.gta.TaskProcess;
 import org.olat.course.nodes.gta.ui.GroupAssessmentModel.Cols;
 import org.olat.course.nodes.ms.MSCourseNodeRunController;
@@ -93,6 +94,7 @@ public class GTACoachedGroupGradingController extends FormBasicController {
 	private GroupAssessmentController assessmentCtrl;
 	private CloseableCalloutWindowController commentCalloutCtrl;
 
+	private TaskList taskList;
 	private Task assignedTask;
 	private final GTACourseNode gtaNode;
 	private final BusinessGroup assessedGroup;
@@ -114,10 +116,11 @@ public class GTACoachedGroupGradingController extends FormBasicController {
 	
 	public GTACoachedGroupGradingController(UserRequest ureq, WindowControl wControl,
 			CourseEnvironment courseEnv, GTACourseNode gtaNode,
-			BusinessGroup assessedGroup, Task assignedTask) {
+			BusinessGroup assessedGroup, TaskList taskList, Task assignedTask) {
 		super(ureq, wControl, "coach_group_grading");
 		setTranslator(Util.createPackageTranslator(MSCourseNodeRunController.class, getLocale(), getTranslator()));
 		this.gtaNode = gtaNode;
+		this.taskList = taskList;
 		this.assessedGroup = assessedGroup;
 		this.courseEnv = courseEnv;
 		this.assignedTask = assignedTask;
@@ -291,7 +294,11 @@ public class GTACoachedGroupGradingController extends FormBasicController {
 	}
 	
 	private void doGrading() {
-		assignedTask = gtaManager.updateTask(assignedTask, TaskProcess.graded, gtaNode);
+		if(assignedTask == null) {
+			assignedTask = gtaManager.createTask(null, taskList, TaskProcess.graded, assessedGroup, null, gtaNode);
+		} else {
+			assignedTask = gtaManager.updateTask(assignedTask, TaskProcess.graded, gtaNode);
+		}
 	}
 	
 	private void doOpenAssessmentForm(UserRequest ureq) {

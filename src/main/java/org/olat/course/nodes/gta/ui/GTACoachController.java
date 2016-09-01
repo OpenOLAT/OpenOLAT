@@ -421,7 +421,7 @@ public class GTACoachController extends GTAAbstractController {
 		mainVC.put("grading", new Panel("empty"));
 		if(assessedGroup != null) {
 			groupGradingCtrl = new GTACoachedGroupGradingController(ureq, getWindowControl(),
-					courseEnv, gtaNode, assessedGroup, assignedTask);
+					courseEnv, gtaNode, assessedGroup, taskList, assignedTask);
 			listenTo(groupGradingCtrl);
 			mainVC.put("grading", groupGradingCtrl.getInitialComponent());
 		} else if(assessedIdentity != null) {

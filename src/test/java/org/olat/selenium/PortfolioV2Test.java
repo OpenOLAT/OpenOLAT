@@ -42,7 +42,9 @@ import org.olat.selenium.page.course.CoursePageFragment;
 import org.olat.selenium.page.course.MembersPage;
 import org.olat.selenium.page.course.PortfolioElementPage;
 import org.olat.selenium.page.course.PublisherPageFragment.Access;
-import org.olat.selenium.page.portfolio.PortfolioV2Page;
+import org.olat.selenium.page.portfolio.BinderPage;
+import org.olat.selenium.page.portfolio.PortfolioV2HomePage;
+import org.olat.selenium.page.user.UserToolsPage;
 import org.olat.test.ArquillianDeployments;
 import org.olat.test.rest.UserRestClient;
 import org.olat.user.restapi.UserVO;
@@ -70,6 +72,38 @@ public class PortfolioV2Test {
 	private URL deploymentUrl;
 	@Page
 	private NavigationPage navBar;
+	
+	
+	/**
+	 * A user create a simple binder with section and page.
+	 * 
+	 * @param loginPage
+	 * @throws IOException
+	 * @throws URISyntaxException
+	 */
+	@Test
+	@RunAsClient
+	public void createSimpleBinder(@InitialPage LoginPage loginPage) 
+			throws IOException, URISyntaxException {
+		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
+		
+		loginPage
+			.loginAs(author.getLogin(), author.getPassword())
+			.resume();
+		
+		UserToolsPage userTools = new UserToolsPage(browser);
+		PortfolioV2HomePage portfolio = userTools
+				.openUserToolsMenu()
+				.openPortfolioV2();
+		
+		String binderTitle = "First binder " + UUID.randomUUID().toString();
+		portfolio
+			.openMyBinders()
+			.createBinder(binderTitle);
+		
+		
+	
+	}
 	
 	/**
 	 * Create a portfolio, a course with a portoflio course element,
@@ -101,7 +135,7 @@ public class PortfolioV2Test {
 		String sectionTitle = "Section 1 " + UUID.randomUUID();
 		String assignmentTitle = "Assignment 1 " + UUID.randomUUID();
 		
-		PortfolioV2Page portfolio = new PortfolioV2Page(browser);
+		BinderPage portfolio = new BinderPage(browser);
 		portfolio
 			.assertOnBinder()
 			.selectEntries()

@@ -40,6 +40,7 @@ import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.group.BusinessGroup;
 import org.olat.instantMessaging.InstantMessagingModule;
 import org.olat.modules.openmeetings.OpenMeetingsModule;
+import org.olat.modules.portfolio.PortfolioV2Module;
 import org.olat.portfolio.PortfolioModule;
 
 /**
@@ -96,8 +97,9 @@ public class CollaborationToolsFactory {
 		if (securityModule.isWikiEnabled()) {
 			toolArr.add(CollaborationTools.TOOL_WIKI);			
 		}
-		PortfolioModule portfolioModule = (PortfolioModule) CoreSpringFactory.getBean("portfolioModule");
-		if (portfolioModule.isEnabled()) {
+		PortfolioModule portfolioModule = CoreSpringFactory.getImpl(PortfolioModule.class);
+		PortfolioV2Module portfolioV2Module = CoreSpringFactory.getImpl(PortfolioV2Module.class);
+		if (portfolioModule.isEnabled() || portfolioV2Module.isEnabled()) {
 			toolArr.add(CollaborationTools.TOOL_PORTFOLIO);
 		}	
 		OpenMeetingsModule openMeetingsModule = CoreSpringFactory.getImpl(OpenMeetingsModule.class);

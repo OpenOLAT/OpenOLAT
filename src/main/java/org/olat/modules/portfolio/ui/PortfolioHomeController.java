@@ -78,6 +78,7 @@ public class PortfolioHomeController extends BasicController implements Activate
 		mainVC = createVelocityContainer("home");
 		myBindersLink = LinkFactory.createLink("goto.my.binders", mainVC, this);
 		myBindersLink.setIconRightCSS("o_icon o_icon_start");
+		myBindersLink.setElementCssClass("o_sel_pf_my_binders");
 		
 		myEntriesLink = LinkFactory.createLink("goto.my.pages", mainVC, this);
 		myEntriesLink.setIconRightCSS("o_icon o_icon_start");
@@ -90,6 +91,7 @@ public class PortfolioHomeController extends BasicController implements Activate
 		
 		mediaCenterLink = LinkFactory.createLink("goto.media.center", mainVC, this);
 		mediaCenterLink.setIconRightCSS("o_icon o_icon_start");
+		mediaCenterLink.setElementCssClass("o_sel_pf_media_center");
 		
 		editLastEntryLink = LinkFactory.createLink("edit.last.entry", mainVC, this);
 		editLastEntryLink.setIconRightCSS("o_icon o_icon_start");
