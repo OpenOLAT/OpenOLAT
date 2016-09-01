@@ -213,7 +213,7 @@ public class BinderSecurityCallbackFactory {
 
 		@Override
 		public boolean canEditMetadataBinder() {
-			return owner;
+			return owner && !task;
 		}
 
 		@Override

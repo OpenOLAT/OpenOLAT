@@ -205,18 +205,12 @@ public class TableOfContentController extends BasicController implements TooledC
 		}
 		mainVC.contextPut("sections", sectionList);
 		
-		
 		if(secCallback.canAddSection()) {
 			if(newSectionButton == null) {
 				newSectionButton = LinkFactory.createButton("create.new.section", mainVC, this);
 				newSectionButton.setCustomEnabledLinkCSS("btn btn-primary");
 			}
-			
-			if(sections.isEmpty()) {
-				mainVC.put("create.new.section", newSectionButton);
-			} else {
-				mainVC.remove(newSectionButton);
-			}
+			mainVC.put("create.new.section", newSectionButton);
 		}
 	}
 	
