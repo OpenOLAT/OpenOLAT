@@ -423,8 +423,10 @@ public class GroupAssessmentController extends FormBasicController {
 				groupCommentEl.setVisible(allGroup);
 			}
 		} else if(source == saveAndDoneButton) {
-			applyChanges(true);
-			fireEvent(ureq, Event.CLOSE_EVENT);
+			if(validateFormLogic(ureq)) {
+				applyChanges(true);
+				fireEvent(ureq, Event.CLOSE_EVENT);
+			}
 		} else if(source instanceof FormLink) {
 			FormLink link = (FormLink)source;
 			if("comment".equals(link.getCmd())) {
