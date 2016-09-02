@@ -163,8 +163,7 @@ public class BinderTemplateHandler implements RepositoryHandler {
 	public RepositoryEntry copy(Identity author, RepositoryEntry source, RepositoryEntry target) {
 		PortfolioService portfolioService = CoreSpringFactory.getImpl(PortfolioService.class);
 		Binder templateSource = portfolioService.getBinderByResource(source.getOlatResource());
-		Binder transientCopy = BinderXStream.copy(templateSource);
-		portfolioService.copyBinder(transientCopy, target);
+		portfolioService.copyBinder(templateSource, target);
 		return target;
 	}
 

@@ -200,7 +200,7 @@ public class PortfolioServiceImpl implements PortfolioService {
 				imagePath = addPosterImageForBinder(image, image.getName());
 			}
 		}
-		return internalCopyTransientBinder(transientBinder, entry, imagePath);
+		return internalCopyTransientBinder(transientBinder, entry, imagePath, true);
 	}
 
 	@Override
@@ -209,15 +209,30 @@ public class PortfolioServiceImpl implements PortfolioService {
 		if(StringHelper.containsNonWhitespace(transientBinder.getImagePath())) {
 			imagePath = addPosterImageForBinder(image, image.getName());
 		}
-		return internalCopyTransientBinder(transientBinder, templateEntry, imagePath);
+		return internalCopyTransientBinder(transientBinder, templateEntry, imagePath, false);
 	}
 	
-	private Binder internalCopyTransientBinder(Binder transientBinder, RepositoryEntry entry, String imagePath) {
+	private Binder internalCopyTransientBinder(Binder transientBinder, RepositoryEntry entry, String imagePath, boolean copy) {
 		Binder binder = binderDao.createAndPersist(transientBinder.getTitle(), transientBinder.getSummary(), imagePath, entry);
 		//copy sections
 		for(Section transientSection:((BinderImpl)transientBinder).getSections()) {
-			binderDao.createSection(transientSection.getTitle(), transientSection.getDescription(),
+			SectionImpl section = binderDao.createSection(transientSection.getTitle(), transientSection.getDescription(),
 					transientSection.getBeginDate(), transientSection.getEndDate(), binder);
+			
+			List<Assignment> transientAssignments = ((SectionImpl)transientSection).getAssignments();
+			for(Assignment transientAssignment:transientAssignments) {
+				File newStorage = portfolioFileStorage.generateAssignmentSubDirectory();
+				String storage = portfolioFileStorage.getRelativePath(newStorage);
+				
+				assignmentDao.createAssignment(transientAssignment.getTitle(), transientAssignment.getSummary(),
+						transientAssignment.getContent(), storage, transientAssignment.getAssignmentType(),
+						transientAssignment.getAssignmentStatus(), section);
+				//copy attachments
+				File templateDirectory = portfolioFileStorage.getAssignmentDirectory(transientAssignment);
+				if(copy && templateDirectory != null) {
+					FileUtils.copyDirContentsToDir(templateDirectory, newStorage, false, "Assignment attachments");
+				}
+			}
 		}
 		return binder;
 	}
