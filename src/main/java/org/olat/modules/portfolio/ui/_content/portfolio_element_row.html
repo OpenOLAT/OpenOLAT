@@ -75,7 +75,7 @@
 #if(${row.isPendingAssignment()})
 	<div class="panel #if($r.isNotNull($row.editAssignmentLink)) panel-default #else panel-placeholder #end o_portfolio_assignments">
 		<div class="panel-heading">
-			<h4 class="panel-title"><i class="o_icon o_icon_assignment o_icon-fw"> </i>$r.translate("assignment"): $row.assignmentTitle</h4>
+			<h4 class="panel-title"><i class="o_icon o_icon_assignment o_icon-fw"> </i>$r.translate("assignment"): $r.escapeHtml($row.assignmentTitle)</h4>
 		</div>
 		<div class="panel-body">
 			$r.xssScan($row.assignmentSummary)
@@ -92,6 +92,9 @@
 				#end
 				#if($r.isNotNull($row.editAssignmentLink))
 					$r.render($row.editAssignmentLink)
+				#end
+				#if($r.isNotNull($row.deleteAssignmentLink))
+					$r.render($row.deleteAssignmentLink)
 				#end
 				</div>
 			#end

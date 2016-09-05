@@ -298,8 +298,9 @@ public class PageEditorController extends BasicController {
 	}
 	
 	private void doAddPageElement(UserRequest ureq, PageElement element, EditorFragment referenceFragment, PageElementTarget target) {
+		EditorFragment newFragment = null;
 		if(target == PageElementTarget.atTheEnd) {
-			doAddPageElementAtTheEnd(ureq, element);
+			newFragment = doAddPageElementAtTheEnd(ureq, element);
 		} else if(target == PageElementTarget.above || target == PageElementTarget.below) {
 			int index = fragments.indexOf(referenceFragment);
 			if(target == PageElementTarget.below) {
@@ -307,26 +308,29 @@ public class PageEditorController extends BasicController {
 			}
 			
 			if(index >= fragments.size()) {
-				doAddPageElementAtTheEnd(ureq, element);
+				newFragment = doAddPageElementAtTheEnd(ureq, element);
 			} else {
 				if(index < 0) {
 					index = 0;
 				}
 
 				PageElement pageElement = provider.appendPageElementAt(element, index);
-				EditorFragment fragment = createFragment(ureq, pageElement);
-				fragments.add(index, fragment);
+				newFragment = createFragment(ureq, pageElement);
+				fragments.add(index, newFragment);
 			}
 		}
 
 		mainVC.setDirty(true);
+		
+		doEditElement(newFragment);
 		fireEvent(ureq, Event.CHANGED_EVENT);
 	}
 
-	private void doAddPageElementAtTheEnd(UserRequest ureq, PageElement element) {
+	private EditorFragment doAddPageElementAtTheEnd(UserRequest ureq, PageElement element) {
 		PageElement pageElement = provider.appendPageElement(element);
 		EditorFragment fragment = createFragment(ureq, pageElement);
 		fragments.add(fragment);
+		return fragment;
 	}
 	
 	private void doSaveElement(UserRequest ureq, EditorFragment fragment) {

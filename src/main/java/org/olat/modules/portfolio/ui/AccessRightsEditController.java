@@ -115,8 +115,12 @@ public class AccessRightsEditController extends FormBasicController {
 		
 		//binder
 		MultipleSelectionElement coachEl = uifactory.addCheckboxesHorizontal("access-" + (counter++), null, formLayout, theKeys, theValues);
+		coachEl.addActionListener(FormEvent.ONCHANGE);
 		MultipleSelectionElement reviewerEl = uifactory.addCheckboxesHorizontal("access-" + (counter++), null, formLayout, theKeys, theValues);
+		reviewerEl.addActionListener(FormEvent.ONCHANGE);
 		binderRow = new BinderAccessRightsRow(coachEl, reviewerEl, binder);
+		coachEl.setUserObject(binderRow);
+		reviewerEl.setUserObject(binderRow);
 		
 		//sections
 		List<Section> sections = portfolioService.getSections(binder);
@@ -127,6 +131,8 @@ public class AccessRightsEditController extends FormBasicController {
 			SectionAccessRightsRow sectionRow = new SectionAccessRightsRow(sectionCoachEl, sectionReviewerEl, section);
 			binderRow.getSections().add(sectionRow);
 			sectionMap.put(section.getKey(), sectionRow);	
+			sectionCoachEl.setUserObject(sectionRow);
+			sectionReviewerEl.setUserObject(sectionRow);
 		}
 		
 		//pages
@@ -134,11 +140,12 @@ public class AccessRightsEditController extends FormBasicController {
 		for(Page page:pages) {
 			Section section = page.getSection();
 			SectionAccessRightsRow sectionRow = sectionMap.get(section.getKey());
-			
 			MultipleSelectionElement pageCoachEl = uifactory.addCheckboxesHorizontal("access-" + (counter++), null, formLayout, theKeys, theValues);
 			MultipleSelectionElement pageReviewerEl = uifactory.addCheckboxesHorizontal("access-" + (counter++), null, formLayout, theKeys, theValues);
 			PortfolioElementAccessRightsRow pageRow = new PortfolioElementAccessRightsRow(pageCoachEl, pageReviewerEl, page);
 			sectionRow.getPages().add(pageRow);
+			pageCoachEl.setUserObject(pageRow);
+			pageReviewerEl.setUserObject(pageRow);
 		}
 		
 		if(formLayout instanceof FormLayoutContainer) {

@@ -200,4 +200,31 @@ public class AssignmentDAO {
 			.setParameter("assigneeKey", assignee.getKey())
 			.getResultList();
 	}
+	
+	public boolean isAssignmentInUse(Assignment assignment) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select assignment.key from pfassignment as assignment")
+		  .append(" where assignment.templateReference.key=:assignmentKey");
+
+		List<Long> counts = dbInstance.getCurrentEntityManager()
+			.createQuery(sb.toString(), Long.class)
+			.setParameter("assignmentKey", assignment.getKey())
+			.setFirstResult(0)
+			.setMaxResults(1)
+			.getResultList();
+		return counts != null && counts.size() > 0 && counts.get(0) != null && counts.get(0).intValue() >= 0;
+	}
+	
+	public int deleteAssignment(Assignment assignment) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("delete pfassignment assignment where assignment.templateReference.key=:assignmentKey");
+		int deleted = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString())
+				.setParameter("assignmentKey", assignment.getKey())
+				.executeUpdate();
+		dbInstance.getCurrentEntityManager().remove(assignment);
+		return deleted + 1;
+	}
+
+
 }

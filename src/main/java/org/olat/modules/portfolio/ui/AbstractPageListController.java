@@ -70,6 +70,7 @@ import org.olat.modules.portfolio.BinderConfiguration;
 import org.olat.modules.portfolio.BinderSecurityCallback;
 import org.olat.modules.portfolio.Category;
 import org.olat.modules.portfolio.Page;
+import org.olat.modules.portfolio.PageStatus;
 import org.olat.modules.portfolio.PortfolioLoggingAction;
 import org.olat.modules.portfolio.PortfolioService;
 import org.olat.modules.portfolio.Section;
@@ -104,7 +105,7 @@ implements Activateable2, TooledController, FlexiTableComponentDelegate {
 	private CloseableModalController cmc;
 	private UserCommentsController commentsCtrl;
 	private AssignmentEditController editAssignmentCtrl;
-	private DialogBoxController confirmCloseSectionCtrl, confirmReopenSectionCtrl;
+	private DialogBoxController confirmCloseSectionCtrl, confirmReopenSectionCtrl, confirmDeleteAssignmentCtrl;
 	
 	protected int counter;
 	protected final boolean withSections;
@@ -227,6 +228,9 @@ implements Activateable2, TooledController, FlexiTableComponentDelegate {
 		if(elRow.getEditAssignmentLink() != null) {
 			components.add(elRow.getEditAssignmentLink().getComponent());
 		}
+		if(elRow.getDeleteAssignmentLink() != null) {
+			components.add(elRow.getDeleteAssignmentLink().getComponent());
+		}
 		if(elRow.getUpAssignmentLink() != null) {
 			components.add(elRow.getUpAssignmentLink().getComponent());
 		}
@@ -275,6 +279,10 @@ implements Activateable2, TooledController, FlexiTableComponentDelegate {
 				FormLink editLink = uifactory.addFormLink("edit_assign_" + (++counter), "edit.assignment", "edit", null, flc, Link.BUTTON);
 				editLink.setUserObject(row);
 				row.setEditAssignmentLink(editLink);
+				
+				FormLink deleteLink = uifactory.addFormLink("del_assign_" + (++counter), "delete.assignment", "delete", null, flc, Link.BUTTON);
+				deleteLink.setUserObject(row);
+				row.setDeleteAssignmentLink(deleteLink);
 				
 				FormLink upLink = uifactory.addFormLink("up_assign_" + (++counter), "up.assignment", "", null, flc, Link.BUTTON | Link.NONTRANSLATED);
 				upLink.setIconLeftCSS("o_icon o_icon o_icon-lg o_icon_move_up");
@@ -390,7 +398,7 @@ implements Activateable2, TooledController, FlexiTableComponentDelegate {
 				}
 			}
 			if(activatedRow != null) {
-				doOpenRow(ureq, activatedRow);
+				doOpenRow(ureq, activatedRow, false);
 			}
 		} else if("Section".equalsIgnoreCase(resName)) {
 			Long resId = entries.get(0).getOLATResourceable().getResourceableId();
@@ -438,6 +446,12 @@ implements Activateable2, TooledController, FlexiTableComponentDelegate {
 				PortfolioElementRow row = (PortfolioElementRow)confirmReopenSectionCtrl.getUserObject();
 				doReopen(ureq, row);
 			}	
+		} else if(confirmDeleteAssignmentCtrl == source) {
+			if(DialogBoxUIFactory.isYesEvent(event)) {
+				PortfolioElementRow row = (PortfolioElementRow)confirmDeleteAssignmentCtrl.getUserObject();
+				doDelete(row);
+				loadModel(null);
+			}
 		} else if(cmc == source) {
 			cleanUp();
 		}
@@ -483,7 +497,7 @@ implements Activateable2, TooledController, FlexiTableComponentDelegate {
 			String cmd = link.getCmd();
 			if("open.full".equals(cmd)) {
 				PortfolioElementRow row = (PortfolioElementRow)link.getUserObject();
-				doOpenRow(ureq, row);
+				doOpenRow(ureq, row, false);
 			} else if("comment".equals(cmd)) {
 				PortfolioElementRow row = (PortfolioElementRow)link.getUserObject();
 				doComment(ureq, row.getPage());
@@ -496,6 +510,9 @@ implements Activateable2, TooledController, FlexiTableComponentDelegate {
 			} else if("edit.assignment".equals(cmd)) {
 				PortfolioElementRow row = (PortfolioElementRow)link.getUserObject();
 				doEditAssignment(ureq, row);
+			} else if("delete.assignment".equals(cmd)) {
+				PortfolioElementRow row = (PortfolioElementRow)link.getUserObject();
+				doConfirmDeleteAssignment(ureq, row);
 			} else if("start.assignment".equals(cmd)) {
 				PortfolioElementRow row = (PortfolioElementRow)link.getUserObject();
 				doStartAssignment(ureq, row);
@@ -574,7 +591,7 @@ implements Activateable2, TooledController, FlexiTableComponentDelegate {
 		Assignment assignment = row.getAssignment();
 		Assignment startedAssigment = portfolioService.startAssignment(assignment, getIdentity());
 		row.setAssignment(startedAssigment);
-		doOpenPage(ureq, startedAssigment.getPage());
+		doOpenPage(ureq, startedAssigment.getPage(), true);
 		loadModel(null);//TODO only update the links
 		return startedAssigment;
 	}
@@ -585,7 +602,7 @@ implements Activateable2, TooledController, FlexiTableComponentDelegate {
 				|| assignment.getAssignmentType() == AssignmentType.document) {
 			Page page = assignment.getPage();
 			Page reloadedPage = portfolioService.getPageByKey(page.getKey());
-			doOpenPage(ureq, reloadedPage);
+			doOpenPage(ureq, reloadedPage, false);
 		} else {
 			showWarning("not.implemented");
 		}
@@ -618,6 +635,28 @@ implements Activateable2, TooledController, FlexiTableComponentDelegate {
 		cmc.activate();
 	}
 	
+	private void doConfirmDeleteAssignment(UserRequest ureq, PortfolioElementRow row) {
+		boolean inUse = portfolioService.isAssignmentInUse(row.getAssignment());
+		
+		String text;
+		String[] assignmentTitle = new String[]{ StringHelper.escapeHtml(row.getAssignmentTitle()) };
+		if(inUse) {
+			text = translate("delete.assignment.in.use.confirm.descr", assignmentTitle);
+		} else {
+			text = translate("delete.assignment.confirm.descr", assignmentTitle);
+		}
+		String title = translate("delete.assignment.confirm.title");
+		confirmDeleteAssignmentCtrl = activateYesNoDialog(ureq, title, text, confirmDeleteAssignmentCtrl);
+		confirmDeleteAssignmentCtrl.setUserObject(row);
+	}
+	
+	private void doDelete(PortfolioElementRow row) {
+		if(row.isPendingAssignment()) {
+			Assignment assignment = row.getAssignment();
+			portfolioService.deleteAssignment(assignment);
+		}
+	}
+	
 	private void doComment(UserRequest ureq, Page page) {
 		CommentAndRatingSecurityCallback commentSecCallback = new CommentAndRatingDefaultSecurityCallback(getIdentity(), false, false);
 		OLATResourceable ores = OresHelper.createOLATResourceableInstance(Page.class, page.getKey());
@@ -630,10 +669,10 @@ implements Activateable2, TooledController, FlexiTableComponentDelegate {
 		cmc.activate();
 	}
 	
-	protected void doOpenRow(UserRequest ureq, PortfolioElementRow row) {
+	protected void doOpenRow(UserRequest ureq, PortfolioElementRow row, boolean newElement) {
 		if(row.isPage()) {
 			Page reloadedPage = portfolioService.getPageByKey(row.getKey());
-			doOpenPage(ureq, reloadedPage);
+			doOpenPage(ureq, reloadedPage, newElement);
 		} else if(row.isPendingAssignment()) {
 			if(secCallback.canNewAssignment()) {
 				doEditAssignment(ureq, row);
@@ -643,12 +682,14 @@ implements Activateable2, TooledController, FlexiTableComponentDelegate {
 		}
 	}
 	
-	protected void doOpenPage(UserRequest ureq, Page reloadedPage) {
+	protected void doOpenPage(UserRequest ureq, Page reloadedPage, boolean newElement) {
 		OLATResourceable pageOres = OresHelper.createOLATResourceableInstance("Entry", reloadedPage.getKey());
 		WindowControl swControl = addToHistory(ureq, pageOres, null);
-		pageCtrl = new PageRunController(ureq, swControl, stackPanel, secCallback, reloadedPage);
-		listenTo(pageCtrl);
 		
+		boolean openInEditMode = newElement || (secCallback.canEditPage(reloadedPage)
+				&& (reloadedPage.getPageStatus() == null || reloadedPage.getPageStatus() == PageStatus.draft || reloadedPage.getPageStatus() == PageStatus.inRevision));
+		pageCtrl = new PageRunController(ureq, swControl, stackPanel, secCallback, reloadedPage, openInEditMode);
+		listenTo(pageCtrl);
 		stackPanel.pushController(reloadedPage.getTitle(), pageCtrl);
 	}
 }

@@ -215,7 +215,7 @@ public class PortfolioHomeController extends BasicController implements Activate
 			//show message
 		} else if(lastModifiedPage.getSection() == null) {
 			MyPageListController ctrl = doOpenMyPages(ureq);
-			ctrl.doOpenPage(ureq, lastModifiedPage);
+			ctrl.doOpenPage(ureq, lastModifiedPage, false);
 		} else {
 			Binder binder = lastModifiedPage.getSection().getBinder();
 			List<ContextEntry> entries = new ArrayList<>();

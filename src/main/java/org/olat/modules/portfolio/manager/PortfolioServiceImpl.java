@@ -337,6 +337,18 @@ public class PortfolioServiceImpl implements PortfolioService {
 	}
 
 	@Override
+	public boolean isAssignmentInUse(Assignment assignment) {
+		return assignmentDao.isAssignmentInUse(assignment);
+	}
+
+	@Override
+	public boolean deleteAssignment(Assignment assignment) {
+		Assignment reloadedAssignment = assignmentDao.loadAssignmentByKey(assignment.getKey());
+		assignmentDao.deleteAssignment(reloadedAssignment);
+		return true;
+	}
+
+	@Override
 	public Assignment startAssignment(Assignment assignment, Identity author) {
 		Assignment reloadedAssignment = assignmentDao.loadAssignmentByKey(assignment.getKey());
 		if(reloadedAssignment.getAssignmentType() == AssignmentType.essay) {
@@ -386,6 +398,13 @@ public class PortfolioServiceImpl implements PortfolioService {
 	public Binder moveDownSection(Binder binder, Section section) {
 		Binder reloadedBinder = binderDao.loadByKey(binder.getKey());
 		return binderDao.moveDownSection((BinderImpl)reloadedBinder, section);
+	}
+
+	@Override
+	public Binder deleteSection(Binder binder, Section section) {
+		Section reloadedSection = binderDao.loadSectionByKey(section.getKey());
+		Binder reloadedBinder = section.getBinder();
+		return binderDao.deleteSection(reloadedBinder, reloadedSection);
 	}
 
 	@Override

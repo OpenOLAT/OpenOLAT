@@ -98,12 +98,15 @@ public interface PortfolioService {
 	public Section moveDownAssignment(Section section, Assignment assignment);
 	
 	public Assignment updateAssignment(Assignment assignment, String title, String summary, String content, AssignmentType type);
-	
-	
+
 	
 	public List<Assignment> getAssignments(PortfolioElement binder);
 	
 	public List<Assignment> searchOwnedAssignments(IdentityRef assignee);
+	
+	public boolean isAssignmentInUse(Assignment assignment);
+	
+	public boolean deleteAssignment(Assignment assignment);
 	
 	
 	/**
@@ -332,6 +335,15 @@ public interface PortfolioService {
 	public Binder moveUpSection(Binder binder, Section section);
 	
 	public Binder moveDownSection(Binder binder, Section section);
+	
+	/**
+	 * Delete the specified section in the specified binder.
+	 * 
+	 * @param binder
+	 * @param section
+	 * @return
+	 */
+	public Binder deleteSection(Binder binder, Section section);
 	
 	/**
 	 * Load the pages and the sections order by sections and pages.

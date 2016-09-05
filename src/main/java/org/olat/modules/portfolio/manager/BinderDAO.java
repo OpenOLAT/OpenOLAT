@@ -40,6 +40,7 @@ import org.olat.modules.portfolio.Assignment;
 import org.olat.modules.portfolio.AssignmentStatus;
 import org.olat.modules.portfolio.Binder;
 import org.olat.modules.portfolio.BinderRef;
+import org.olat.modules.portfolio.Page;
 import org.olat.modules.portfolio.PortfolioRoles;
 import org.olat.modules.portfolio.Section;
 import org.olat.modules.portfolio.SectionRef;
@@ -66,6 +67,8 @@ public class BinderDAO {
 
 	@Autowired
 	private DB dbInstance;
+	@Autowired
+	private PageDAO pageDao;
 	@Autowired
 	private GroupDAO groupDao;
 	@Autowired
@@ -167,7 +170,7 @@ public class BinderDAO {
 		List<Assignment> currentAssignments = assignmentDao.loadAssignments(currentSection);
 		for(Assignment currentAssignment:currentAssignments) {
 			Assignment refAssignment = currentAssignment.getTemplateReference();
-			if(!templateAssignments.remove(refAssignment)) {
+			if(refAssignment == null || !templateAssignments.remove(refAssignment)) {
 				currentAssignment.setAssignmentStatus(AssignmentStatus.deleted);
 			} else {
 				AssignmentImpl currentImpl = (AssignmentImpl)currentAssignment;
@@ -242,6 +245,13 @@ public class BinderDAO {
 	}
 	
 	public int deleteBinderTemplate(Binder binder) {
+		String assignmentQ = "delete from pfassignment assignment where assignment.section.key in (select section.key from pfsection as section where section.binder.key=:binderKey)";
+		int assignments = dbInstance.getCurrentEntityManager()
+				.createQuery(assignmentQ)
+				.setParameter("binderKey", binder.getKey())
+				.executeUpdate();
+		
+		
 		String sectionQ = "delete from pfsection section where section.binder.key=:binderKey";
 		int sections = dbInstance.getCurrentEntityManager()
 				.createQuery(sectionQ)
@@ -253,7 +263,7 @@ public class BinderDAO {
 				.createQuery(binderQ)
 				.setParameter("binderKey", binder.getKey())
 				.executeUpdate();
-		return sections + binders;
+		return assignments + sections + binders;
 	}
 	
 	/**
@@ -344,6 +354,24 @@ public class BinderDAO {
 			.setParameter("sectionKey", section.getKey())
 			.getResultList();
 		return binders == null || binders.isEmpty() ? null : binders.get(0);
+	}
+	
+	public Binder deleteSection(Binder binder, Section section) {
+		
+		List<Page> pages = section.getPages();
+		//delete pages
+		for(Page page:pages) {
+			pageDao.deletePage(page);
+		}
+		
+		List<Assignment> assignments = ((SectionImpl)section).getAssignments();
+		for(Assignment assignment:assignments) {
+			assignmentDao.deleteAssignment(assignment);
+		}
+		
+		((BinderImpl)binder).getSections().remove(section);
+		dbInstance.getCurrentEntityManager().remove(section);
+		return dbInstance.getCurrentEntityManager().merge(binder);
 	}
 	
 	public boolean isTemplateInUse(BinderRef template, RepositoryEntryRef entry, String subIdent) {

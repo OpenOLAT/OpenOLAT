@@ -156,7 +156,7 @@ public class MyPageListController extends AbstractPageListController {
 				String cmd = se.getCommand();
 				if("select-page".equals(cmd)) {
 					PortfolioElementRow row = model.getObject(se.getIndex());
-					doOpenRow(ureq, row);
+					doOpenRow(ureq, row, false);
 				}
 			}
 		} else if(source instanceof FormLink) {
@@ -182,7 +182,7 @@ public class MyPageListController extends AbstractPageListController {
 		if(newPageCtrl == source) {
 			if(event == Event.DONE_EVENT) {
 				loadModel(null);
-				doOpenPage(ureq, newPageCtrl.getPage());
+				doOpenPage(ureq, newPageCtrl.getPage(), true);
 				fireEvent(ureq, Event.CHANGED_EVENT);
 			}
 			cmc.deactivate();

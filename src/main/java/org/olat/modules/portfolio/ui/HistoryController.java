@@ -40,6 +40,7 @@ import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.Formatter;
+import org.olat.core.util.StringHelper;
 import org.olat.modules.portfolio.Binder;
 import org.olat.modules.portfolio.manager.PortfolioNotificationsHandler;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -98,7 +99,8 @@ public class HistoryController extends FormBasicController {
 		for (SubscriptionListItem item:items) {
 			String dateString = formatter.formatDate(item.getDate());
 			String linkName = "subscrIL_" + (counter++);
-			FormLink link = uifactory.addFormLink(linkName, item.getDescription(), null, flc, Link.NONTRANSLATED);
+			String linkLabel = StringHelper.escapeHtml(item.getDescription());
+			FormLink link = uifactory.addFormLink(linkName, linkLabel, null, flc, Link.NONTRANSLATED);
 			link.setUserObject(item.getBusinessPath());
 			SubscriptionListItemWrapper bundle = new SubscriptionListItemWrapper(linkName, dateString, item.getIconCssClass());
 			wrappers.add(bundle);

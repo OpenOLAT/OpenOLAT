@@ -405,6 +405,13 @@ public class BinderSecurityCallbackFactory {
 
 		@Override
 		public boolean canComment(PortfolioElement element) {
+			if(element.getType() == PortfolioElementType.page) {
+				Page page = (Page)element;
+				if(page.getPageStatus() == null || page.getPageStatus() == PageStatus.draft) {
+					return false;
+				}
+			}
+
 			if(owner) return true;
 			
 			if(rights != null) {

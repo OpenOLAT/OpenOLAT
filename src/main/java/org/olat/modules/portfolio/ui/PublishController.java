@@ -45,6 +45,7 @@ import org.olat.core.gui.control.generic.wizard.StepRunnerCallback;
 import org.olat.core.gui.control.generic.wizard.StepsMainRunController;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
 import org.olat.core.id.Identity;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.WebappHelper;
 import org.olat.core.util.mail.ContactList;
 import org.olat.core.util.mail.MailBundle;
@@ -113,7 +114,7 @@ public class PublishController extends BasicController implements TooledControll
 		this.stackPanel = stackPanel;
 		
 		mainVC = createVelocityContainer("publish");
-		mainVC.contextPut("binderTitle", binder.getTitle());
+		mainVC.contextPut("binderTitle", StringHelper.escapeHtml(binder.getTitle()));
 		
 		binderRow = new PortfolioElementRow(binder, null);
 		mainVC.contextPut("binderRow", binderRow);
@@ -301,7 +302,6 @@ public class PublishController extends BasicController implements TooledControll
 	private void doEditInvitation(UserRequest ureq, Identity invitee) {
 		if(addInvitationCtrl != null) return;
 
-		
 		addInvitationCtrl = new InvitationEditRightsController(ureq, getWindowControl(), binder, invitee);
 		listenTo(addInvitationCtrl);
 		

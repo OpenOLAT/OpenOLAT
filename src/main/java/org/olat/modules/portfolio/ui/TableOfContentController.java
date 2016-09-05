@@ -498,7 +498,10 @@ public class TableOfContentController extends BasicController implements TooledC
 		OLATResourceable pageOres = OresHelper.createOLATResourceableInstance("Entry", page.getKey());
 		WindowControl swControl = addToHistory(ureq, pageOres, null);
 		Page reloadedPage = portfolioService.getPageByKey(page.getKey());
-		pageCtrl = new PageRunController(ureq, swControl, stackPanel, secCallback, reloadedPage);
+		
+		boolean openInEditMode = (secCallback.canEditPage(reloadedPage)
+				&& (reloadedPage.getPageStatus() == null || reloadedPage.getPageStatus() == PageStatus.draft || reloadedPage.getPageStatus() == PageStatus.inRevision));
+		pageCtrl = new PageRunController(ureq, swControl, stackPanel, secCallback, reloadedPage, openInEditMode);
 		listenTo(pageCtrl);
 		stackPanel.pushController(page.getTitle(), pageCtrl);
 		return pageCtrl;

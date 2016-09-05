@@ -314,7 +314,7 @@ public class BinderPageListController extends AbstractPageListController {
 				String cmd = se.getCommand();
 				if("select-page".equals(cmd)) {
 					PortfolioElementRow row = model.getObject(se.getIndex());
-					doOpenRow(ureq, row);
+					doOpenRow(ureq, row, false);
 				}
 			}
 		} else if(previousSectionLink == source) {
@@ -390,7 +390,7 @@ public class BinderPageListController extends AbstractPageListController {
 				Page newPage = newPageCtrl.getPage();
 				for(PortfolioElementRow row:model.getObjects()) {
 					if(row.getPage() != null && row.getPage().equals(newPage)) {
-						doOpenRow(ureq, row);
+						doOpenRow(ureq, row, true);
 						break;
 					}
 				}
@@ -495,11 +495,11 @@ public class BinderPageListController extends AbstractPageListController {
 	}
 	
 	@Override
-	protected void doOpenRow(UserRequest ureq, PortfolioElementRow row) {
+	protected void doOpenRow(UserRequest ureq, PortfolioElementRow row, boolean newElement) {
 		if(row.isSection()) {
 			doFilterSection(row.getSection());
 		} else {
-			super.doOpenRow(ureq, row);
+			super.doOpenRow(ureq, row, newElement);
 		}
 	}
 

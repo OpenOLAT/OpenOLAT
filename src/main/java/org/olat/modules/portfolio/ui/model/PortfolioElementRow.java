@@ -60,7 +60,8 @@ public class PortfolioElementRow {
 		newFloatingEntryLink, newEntryLink,
 		closeSectionLink, reopenSectionLink;
 	// assignment
-	private FormLink newAssignmentLink, editAssignmentLink, instantiateAssignmentLink, upAssignmentLink, downAssignmentLink;
+	private FormLink newAssignmentLink, editAssignmentLink, deleteAssignmentLink,
+		instantiateAssignmentLink, upAssignmentLink, downAssignmentLink;
 	
 	private boolean newEntry;
 	private RowType type;
@@ -326,6 +327,14 @@ public class PortfolioElementRow {
 
 	public void setEditAssignmentLink(FormLink editAssignmentLink) {
 		this.editAssignmentLink = editAssignmentLink;
+	}
+
+	public FormLink getDeleteAssignmentLink() {
+		return deleteAssignmentLink;
+	}
+
+	public void setDeleteAssignmentLink(FormLink deleteAssignmentLink) {
+		this.deleteAssignmentLink = deleteAssignmentLink;
 	}
 
 	public FormLink getUpAssignmentLink() {

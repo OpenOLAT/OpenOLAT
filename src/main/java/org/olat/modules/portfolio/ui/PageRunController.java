@@ -108,7 +108,7 @@ public class PageRunController extends BasicController implements TooledControll
 	private PortfolioService portfolioService;
 	
 	public PageRunController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
-			BinderSecurityCallback secCallback, Page page) {
+			BinderSecurityCallback secCallback, Page page, boolean openInEditMode) {
 		super(ureq, wControl);
 		this.page = page;
 		this.stackPanel = stackPanel;
@@ -126,41 +126,61 @@ public class PageRunController extends BasicController implements TooledControll
 		loadModel(ureq);
 		stackPanel.addListener(this);
 
-		if(secCallback.canComment(page)) {
-			CommentAndRatingSecurityCallback commentSecCallback = new CommentAndRatingDefaultSecurityCallback(getIdentity(), false, false);
-			OLATResourceable ores = OresHelper.createOLATResourceableInstance(Page.class, page.getKey());
-			commentsCtrl = new UserCommentsAndRatingsController(ureq, getWindowControl(), ores, null, commentSecCallback, true, false, true);
-			listenTo(commentsCtrl);
-			mainVC.put("comments", commentsCtrl.getInitialComponent());
-		}
 		putInitialPanel(mainVC);
+		
+		if(openInEditMode) {
+			pageEditCtrl = new PageEditorController(ureq, getWindowControl(), new PortfolioPageEditorProvider());
+			listenTo(pageEditCtrl);
+			mainVC.put("page", pageEditCtrl.getInitialComponent());
+		}
 	}
 
 	@Override
 	public void initTools() {
-		if(secCallback.canEditPage(page)) {
-			editLink = LinkFactory.createToolLink("edit.page", translate("edit.page"), this);
-			editLink.setIconLeftCSS("o_icon o_icon-lg o_icon_edit");
-			stackPanel.addTool(editLink, Align.left);
-		}
+		editLink = LinkFactory.createToolLink("edit.page", translate("edit.page"), this);
+		editLink.setIconLeftCSS("o_icon o_icon-lg o_icon_edit");
+		editLink.setVisible(secCallback.canEditPage(page));
+		stackPanel.addTool(editLink, Align.left);
+
+		editMetadataLink = LinkFactory.createToolLink("edit.page.metadata", translate("edit.page.metadata"), this);
+		editMetadataLink.setIconLeftCSS("o_icon o_icon-lg o_icon_edit_metadata");
+		editMetadataLink.setVisible(secCallback.canEditMetadataBinder());
+		stackPanel.addTool(editMetadataLink, Align.left);
 		
-		if(secCallback.canEditMetadataBinder()) {
-			editMetadataLink = LinkFactory.createToolLink("edit.page.metadata", translate("edit.page.metadata"), this);
-			editMetadataLink.setIconLeftCSS("o_icon o_icon-lg o_icon_edit_metadata");
-			stackPanel.addTool(editMetadataLink, Align.left);
-		}
-		
-		if(secCallback.canDeletePage(page)) {
-			deleteLink = LinkFactory.createToolLink("edit.page", translate("delete.page"), this);
-			deleteLink.setIconLeftCSS("o_icon o_icon-lg o_icon_delete_item");
-			stackPanel.addTool(deleteLink, Align.right);
-		}
+		deleteLink = LinkFactory.createToolLink("edit.page", translate("delete.page"), this);
+		deleteLink.setIconLeftCSS("o_icon o_icon-lg o_icon_delete_item");
+		deleteLink.setVisible(secCallback.canDeletePage(page));
+		stackPanel.addTool(deleteLink, Align.right);
 	}
 	
 	private void loadModel(UserRequest ureq) {
 		mainVC.contextPut("pageTitle", page.getTitle());
 		pageCtrl.loadElements(ureq);
 		dirtyMarker = false;
+		
+		if(secCallback.canComment(page)) {
+			if(commentsCtrl == null) {
+				CommentAndRatingSecurityCallback commentSecCallback = new CommentAndRatingDefaultSecurityCallback(getIdentity(), false, false);
+				OLATResourceable ores = OresHelper.createOLATResourceableInstance(Page.class, page.getKey());
+				commentsCtrl = new UserCommentsAndRatingsController(ureq, getWindowControl(), ores, null, commentSecCallback, true, false, true);
+				listenTo(commentsCtrl);
+			}
+			mainVC.put("comments", commentsCtrl.getInitialComponent());
+		} else if(commentsCtrl != null) {
+			mainVC.remove(commentsCtrl.getInitialComponent());
+			removeAsListenerAndDispose(commentsCtrl);
+			commentsCtrl = null;
+		}
+		
+		if(editLink != null) {
+			editLink.setVisible(secCallback.canEditPage(page));
+		}
+		if(editMetadataLink != null) {
+			editMetadataLink.setVisible(secCallback.canEditMetadataBinder());
+		}
+		if(deleteLink != null) {
+			deleteLink.setVisible(secCallback.canDeletePage(page));
+		}
 	}
 	
 	private void loadMeta(UserRequest ureq) {
@@ -278,6 +298,7 @@ public class PageRunController extends BasicController implements TooledControll
 		page = portfolioService.changePageStatus(page, PageStatus.published);
 		stackPanel.popUpToController(this);
 		loadMeta(ureq);
+		loadModel(ureq);
 		fireEvent(ureq, Event.CHANGED_EVENT);
 	}
 	
@@ -291,6 +312,7 @@ public class PageRunController extends BasicController implements TooledControll
 		page = portfolioService.changePageStatus(page, PageStatus.inRevision);
 		stackPanel.popUpToController(this);
 		loadMeta(ureq);
+		loadModel(ureq);
 		fireEvent(ureq, Event.CHANGED_EVENT);
 	}
 	
@@ -304,6 +326,7 @@ public class PageRunController extends BasicController implements TooledControll
 		page = portfolioService.changePageStatus(page, PageStatus.closed);
 		stackPanel.popUpToController(this);
 		loadMeta(ureq);
+		loadModel(ureq);
 		fireEvent(ureq, Event.CHANGED_EVENT);
 	}
 	
@@ -317,6 +340,7 @@ public class PageRunController extends BasicController implements TooledControll
 		page = portfolioService.changePageStatus(page, PageStatus.published);
 		stackPanel.popUpToController(this);
 		loadMeta(ureq);
+		loadModel(ureq);
 		fireEvent(ureq, Event.CHANGED_EVENT);
 	}
 	

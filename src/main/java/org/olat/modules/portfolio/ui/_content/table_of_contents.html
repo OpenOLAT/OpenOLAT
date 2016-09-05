@@ -38,7 +38,7 @@
 				#if($r.isNotEmpty(${section.getAssignments()}))
 				<ul class="list-unstyled">
 					#foreach($assignment in $section.assignments)
-						<li><i class="o_icon o_icon_assignment o_icon-fw"> </i> $assignment.title</li>
+						<li><i class="o_icon o_icon_assignment o_icon-fw"> </i> $r.escapeHtml($assignment.title)</li>
 					#end
 				</ul>
 				#end	

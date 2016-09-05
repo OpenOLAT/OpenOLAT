@@ -406,4 +406,15 @@ public class PageDAO {
 	public PagePart merge(PagePart part) {
 		return dbInstance.getCurrentEntityManager().merge(part);
 	}
+	
+	
+	public int deletePage(Page page) {
+		String partQ = "delete from pfpagepart part where part.page.key=:pageKey";
+		int parts = dbInstance.getCurrentEntityManager()
+				.createQuery(partQ)
+				.setParameter("pageKey", page.getKey())
+				.executeUpdate();
+		dbInstance.getCurrentEntityManager().remove(page);
+		return parts + 1;
+	}
 }
