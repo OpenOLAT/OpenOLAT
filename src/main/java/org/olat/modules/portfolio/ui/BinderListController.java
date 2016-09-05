@@ -73,6 +73,7 @@ import org.olat.modules.portfolio.BinderSecurityCallback;
 import org.olat.modules.portfolio.BinderSecurityCallbackFactory;
 import org.olat.modules.portfolio.PortfolioLoggingAction;
 import org.olat.modules.portfolio.PortfolioService;
+import org.olat.modules.portfolio.PortfolioV2Module;
 import org.olat.modules.portfolio.handler.BinderTemplateResource;
 import org.olat.modules.portfolio.model.BinderRefImpl;
 import org.olat.modules.portfolio.model.BinderStatistics;
@@ -105,7 +106,7 @@ public class BinderListController extends FormBasicController
 	private FlexiTableElement tableEl;
 	private BindersDataModel model;
 	private final TooledStackedPanel stackPanel;
-	private FormLink newBinderDropdown;
+	private FormLink newBinderDropdown, newBinderFromCourseButton;
 	
 	private CloseableModalController cmc;
 	private BinderController binderCtrl;
@@ -117,6 +118,8 @@ public class BinderListController extends FormBasicController
 	private CloseableCalloutWindowController newBinderCalloutCtrl;
 	
 	@Autowired
+	private PortfolioV2Module portfolioModule;
+	@Autowired
 	private PortfolioService portfolioService;
 	
 	public BinderListController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel) {
@@ -124,6 +127,17 @@ public class BinderListController extends FormBasicController
 		this.stackPanel = stackPanel;
 		initForm(ureq);
 		loadModel();
+	}
+	
+	public int getNumOfBinders() {
+		return model.getRowCount() - 1;
+	}
+	
+	public BinderRow getFirstBinder() {
+		if(model.getRowCount() > 0) {
+			return model.getObject(0);
+		}
+		return null;
 	}
 
 	@Override
@@ -152,10 +166,14 @@ public class BinderListController extends FormBasicController
 		mapperThumbnailUrl = registerCacheableMapper(ureq, "binder-list", new ImageMapper(model));
 		row.contextPut("mapperThumbnailUrl", mapperThumbnailUrl);
 		
-		newBinderDropdown = uifactory.addFormLink("create.binders", "create.new.binder", null, formLayout, Link.BUTTON);
-		newBinderDropdown.setIconRightCSS("o_icon o_icon_caret");
-		
-		row.put("createDropdown", newBinderDropdown.getComponent());
+		if(portfolioModule.isLearnerCanCreateBinders()) {
+			newBinderDropdown = uifactory.addFormLink("create.binders", "create.new.binder", null, formLayout, Link.BUTTON);
+			newBinderDropdown.setIconRightCSS("o_icon o_icon_caret");
+			row.put("createDropdown", newBinderDropdown.getComponent());
+		} else {
+			newBinderFromCourseButton = uifactory.addFormLink("create.binder.from.course", "create.empty.binder.from.course", null, formLayout, Link.BUTTON);
+			row.put("createBinderFromCourse", newBinderFromCourseButton.getComponent());
+		}
 	}
 
 	@Override
@@ -165,10 +183,12 @@ public class BinderListController extends FormBasicController
 
 	@Override
 	public void initTools() {
-		newBinderLink = LinkFactory.createToolLink("create.new.binder", translate("create.new.binder"), this);
-		newBinderLink.setIconLeftCSS("o_icon o_icon-lg o_icon_new_portfolio");
-		newBinderLink.setElementCssClass("o_sel_pf_new_binder");
-		stackPanel.addTool(newBinderLink, Align.right);
+		if(portfolioModule.isLearnerCanCreateBinders()) {
+			newBinderLink = LinkFactory.createToolLink("create.new.binder", translate("create.new.binder"), this);
+			newBinderLink.setIconLeftCSS("o_icon o_icon-lg o_icon_new_portfolio");
+			newBinderLink.setElementCssClass("o_sel_pf_new_binder");
+			stackPanel.addTool(newBinderLink, Align.right);
+		}
 	}
 
 	@Override
@@ -216,7 +236,9 @@ public class BinderListController extends FormBasicController
 	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
 		if(newBinderLink == source) {
-			doNewBinder(ureq);
+			if(portfolioModule.isLearnerCanCreateBinders()) {
+				doNewBinder(ureq);
+			}
 		}
 		super.event(ureq, source, event);
 	}
@@ -282,6 +304,8 @@ public class BinderListController extends FormBasicController
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(newBinderDropdown == source) {
 			doNewBinderCallout(ureq);
+		} else if(newBinderFromCourseButton == source) {
+			doNewBinderFromCourse(ureq);
 		} else if(source instanceof FormLink) {
 			FormLink link = (FormLink)source;
 			String cmd = link.getCmd();

@@ -256,7 +256,8 @@ public class MediaCenterController extends FormBasicController
 			} else {
 				MediaHandler handler = portfolioService.getMediaHandler(media.getType());
 				VFSLeaf thumbnail = handler.getThumbnail(media, THUMBNAIL_SIZE);
-				FormLink openLink =  uifactory.addFormLink("select_" + (++counter), "select", media.getTitle(), null, flc, Link.NONTRANSLATED);
+				String mediaTitle = StringHelper.escapeHtml(media.getTitle());
+				FormLink openLink =  uifactory.addFormLink("select_" + (++counter), "select", mediaTitle, null, flc, Link.NONTRANSLATED);
 				MediaRow row = new MediaRow(media, thumbnail, openLink, handler.getIconCssClass(media));
 				openLink.setUserObject(row);
 				rows.add(row);

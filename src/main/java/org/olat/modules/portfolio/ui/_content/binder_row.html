@@ -5,7 +5,11 @@
 		</div>
 		<div class="panel-body">
 			<p>$r.translate("create.new.binder.descr")</p>
-			$r.render("createDropdown")
+			#if($r.available("createDropdown"))
+				$r.render("createDropdown")
+			#elseif($r.available("createBinderFromCourse"))
+				$r.render("createBinderFromCourse")
+			#end
 		</div>
 	</div>
 #else

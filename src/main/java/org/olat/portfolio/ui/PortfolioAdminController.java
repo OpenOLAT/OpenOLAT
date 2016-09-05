@@ -54,6 +54,7 @@ public class PortfolioAdminController extends FormBasicController  {
 
 	private FormLayoutContainer wizardFlc;
 	private MultipleSelectionElement portfoliosEnabled;
+	private MultipleSelectionElement userCanCreatePortfolioEnabled;
 	private final List<MultipleSelectionElement> handlersEnabled = new ArrayList<>();
 	private MultipleSelectionElement copyrightStepCB, reflexionStepCB;
 
@@ -84,6 +85,11 @@ public class PortfolioAdminController extends FormBasicController  {
 		portfoliosEnabled.addActionListener(FormEvent.ONCHANGE);
 
 		String[] enabledValues = new String[] { translate("enabled")};
+		
+		userCanCreatePortfolioEnabled = uifactory.addCheckboxesHorizontal("portfolio.user.can.create.binder", moduleFlc, enabledKeys, enabledValues);
+		userCanCreatePortfolioEnabled.addActionListener(FormEvent.ONCHANGE);
+		userCanCreatePortfolioEnabled.setVisible(portfolioV2Module.isEnabled());
+		
 		//handlers configuration
 		FormLayoutContainer handlersFlc = FormLayoutContainer.createDefaultFormLayout("flc_handlers", getTranslator());
 		formLayout.add(handlersFlc);
@@ -138,6 +144,7 @@ public class PortfolioAdminController extends FormBasicController  {
 			// update collaboration tools list
 
 			wizardFlc.setVisible(portfoliosEnabled.isSelected(1));
+			userCanCreatePortfolioEnabled.setVisible(portfolioV2Module.isEnabled());
 			CollaborationToolsFactory.getInstance().initAvailableTools();
 			showInfo("save.admin.settings");
 		} else if(handlersEnabled.contains(source)) {
@@ -145,11 +152,14 @@ public class PortfolioAdminController extends FormBasicController  {
 			boolean enabled = ((MultipleSelectionElement)source).isSelected(0);
 			portfolioModule.setEnableArtefactHandler(handler, enabled);
 		} else if(source == reflexionStepCB){
-			boolean enabled = ((MultipleSelectionElement)source).isSelected(0);
+			boolean enabled = reflexionStepCB.isSelected(0);
 			portfolioModule.setReflexionStepEnabled(enabled);
 		} else if(source == copyrightStepCB){
-			boolean enabled = ((MultipleSelectionElement)source).isSelected(0);
+			boolean enabled = copyrightStepCB.isSelected(0);
 			portfolioModule.setCopyrightStepEnabled(enabled);
+		} else if(userCanCreatePortfolioEnabled == source) {
+			boolean enabled = userCanCreatePortfolioEnabled.isSelected(0);
+			portfolioV2Module.setLearnerCanCreateBinders(enabled);
 		}
 	}
 }
