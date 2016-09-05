@@ -88,6 +88,7 @@ public class PortfolioAssessmentDetailsController extends BasicController {
 			RepositoryEntry courseEntry, CourseNode courseNode, RepositoryEntry templateEntry, Identity assessedIdentity) {
 		super(ureq, wControl);
 
+		this.courseNode = courseNode;
 		this.stackPanel = stackPanel;
 		mainVC = createVelocityContainer("binder_result_details");
 		

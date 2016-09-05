@@ -192,7 +192,7 @@ public class AssessmentIdentityCourseNodeController extends BasicController impl
 		if (source == detailsEditController) {
 			// reset SCORM test
 			if(event == Event.CHANGED_EVENT) {
-				assessmentForm.reloadData();
+				assessmentForm.reloadData(true);
 			} else if(event == Event.DONE_EVENT) {
 				fireEvent(ureq, Event.DONE_EVENT);
 			} else if(event instanceof OpenSubDetailsEvent) {

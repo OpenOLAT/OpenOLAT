@@ -44,6 +44,7 @@ import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.modules.portfolio.Assignment;
 import org.olat.modules.portfolio.Binder;
@@ -279,7 +280,7 @@ public class PageRunController extends BasicController implements TooledControll
 	
 	private void doConfirmDelete(UserRequest ureq) {
 		String title = translate("delete.page.confirm.title");
-		String text = translate("delete.page.confirm.descr", new String[]{ page.getTitle() });
+		String text = translate("delete.page.confirm.descr", new String[]{ StringHelper.escapeHtml(page.getTitle()) });
 		confirmDeleteCtrl = activateYesNoDialog(ureq, title, text, confirmDeleteCtrl);
 	}
 	
@@ -290,7 +291,7 @@ public class PageRunController extends BasicController implements TooledControll
 	
 	private void doConfirmPublish(UserRequest ureq) {
 		String title = translate("publish.confirm.title");
-		String text = translate("publish.confirm.descr", new String[]{ page.getTitle() });
+		String text = translate("publish.confirm.descr", new String[]{ StringHelper.escapeHtml(page.getTitle()) });
 		confirmPublishCtrl = activateYesNoDialog(ureq, title, text, confirmPublishCtrl);
 	}
 	
@@ -299,12 +300,13 @@ public class PageRunController extends BasicController implements TooledControll
 		stackPanel.popUpToController(this);
 		loadMeta(ureq);
 		loadModel(ureq);
+		doRunPage(ureq);
 		fireEvent(ureq, Event.CHANGED_EVENT);
 	}
 	
 	private void doConfirmRevision(UserRequest ureq) {
 		String title = translate("revision.confirm.title");
-		String text = translate("revision.confirm.descr", new String[]{ page.getTitle() });
+		String text = translate("revision.confirm.descr", new String[]{ StringHelper.escapeHtml(page.getTitle()) });
 		confirmRevisionCtrl = activateYesNoDialog(ureq, title, text, confirmRevisionCtrl);
 	}
 	
@@ -318,7 +320,7 @@ public class PageRunController extends BasicController implements TooledControll
 	
 	private void doConfirmClose(UserRequest ureq) {
 		String title = translate("close.confirm.title");
-		String text = translate("close.confirm.descr", new String[]{ page.getTitle() });
+		String text = translate("close.confirm.descr", new String[]{ StringHelper.escapeHtml(page.getTitle()) });
 		confirmCloseCtrl = activateYesNoDialog(ureq, title, text, confirmCloseCtrl);
 	}
 	
@@ -332,7 +334,7 @@ public class PageRunController extends BasicController implements TooledControll
 	
 	private void doConfirmReopen(UserRequest ureq) {
 		String title = translate("reopen.confirm.title");
-		String text = translate("reopen.confirm.descr", new String[]{ page.getTitle() });
+		String text = translate("reopen.confirm.descr", new String[]{ StringHelper.escapeHtml(page.getTitle()) });
 		confirmReopenCtrl = activateYesNoDialog(ureq, title, text, confirmReopenCtrl);
 	}
 	
@@ -370,14 +372,7 @@ public class PageRunController extends BasicController implements TooledControll
 	private void doEditPage(UserRequest ureq) {
 		removeAsListenerAndDispose(pageEditCtrl);
 		if(Boolean.TRUE.equals(editLink.getUserObject())) {
-			if(dirtyMarker) {
-				loadModel(ureq);
-			}
-			mainVC.put("page", pageCtrl.getInitialComponent());
-			
-			editLink.setCustomDisplayText(translate("edit.page"));
-			editLink.setIconLeftCSS("o_icon o_icon-lg o_icon_edit");
-			editLink.setUserObject(Boolean.FALSE);
+			doRunPage(ureq);
 		} else {
 			pageEditCtrl = new PageEditorController(ureq, getWindowControl(), new PortfolioPageEditorProvider());
 			listenTo(pageEditCtrl);
@@ -386,6 +381,18 @@ public class PageRunController extends BasicController implements TooledControll
 			editLink.setCustomDisplayText(translate("save"));
 			editLink.setIconLeftCSS("o_icon o_icon-lg o_icon_save");
 			editLink.setUserObject(Boolean.TRUE);
+		}
+	}
+	
+	private void doRunPage(UserRequest ureq) {
+		if(dirtyMarker) {
+			loadModel(ureq);
+		}
+		mainVC.put("page", pageCtrl.getInitialComponent());
+		if(editLink != null) {
+			editLink.setCustomDisplayText(translate("edit.page"));
+			editLink.setIconLeftCSS("o_icon o_icon-lg o_icon_edit");
+			editLink.setUserObject(Boolean.FALSE);
 		}
 	}
 

@@ -135,9 +135,11 @@ public class InvitationEditRightsController extends FormBasicController {
 			
 		if(StringHelper.containsNonWhitespace(invitation.getMail()) && MailHelper.isValidEmailAddress(invitation.getMail())) {
 			SecurityGroup allUsers = securityManager.findSecurityGroupByName(Constants.GROUP_OLATUSERS);
-			Identity currentIdentity = userManager.findIdentityByEmail(invitation.getMail());
-			if(currentIdentity != null && securityManager.isIdentityInSecurityGroup(currentIdentity, allUsers)) {
-				mailEl.setErrorKey("map.share.with.mail.error.olatUser", new String[]{ invitation.getMail() });
+			List<Identity> currentIdentities = userManager.findIdentitiesByEmail(Collections.singletonList(invitation.getMail()));
+			for(Identity currentIdentity:currentIdentities) {
+				if(currentIdentity != null && securityManager.isIdentityInSecurityGroup(currentIdentity, allUsers)) {
+					mailEl.setErrorKey("map.share.with.mail.error.olatUser", new String[]{ invitation.getMail() });
+				}
 			}
 		}
 			

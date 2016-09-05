@@ -1025,7 +1025,8 @@ public class PortfolioServiceImpl implements PortfolioService {
 	private void updateAssessmentEntry(Identity assessedIdentity, Binder binder, Set<AssessmentSection> assessmentSections, Identity coachingIdentity) {
 		
 		boolean allPassed = true;
-		int totalSectionDone = 0;
+		int totalSectionPassed = 0;
+		int totalSectionClosed = 0;
 		BigDecimal totalScore = new BigDecimal("0.0");
 		AssessmentEntryStatus binderStatus = null;
 
@@ -1033,21 +1034,29 @@ public class PortfolioServiceImpl implements PortfolioService {
 			if(assessmentSection.getScore() != null) {
 				totalScore = totalScore.add(assessmentSection.getScore());
 			}
-			if(assessmentSection.getPassed() != null) {
-				totalSectionDone++;
-				allPassed &= assessmentSection.getPassed().booleanValue();
+			if(assessmentSection.getPassed() != null && assessmentSection.getPassed().booleanValue()) {
+				allPassed &= true;
+				totalSectionPassed++;
+			}
+			
+			Section section = assessmentSection.getSection();
+			if(section.getSectionStatus() == SectionStatus.closed) {
+				totalSectionClosed++;
 			}
 		}
-		
+
 		Boolean totalPassed = null;
-		if(totalSectionDone == assessmentSections.size()) {
+		if(totalSectionClosed == assessmentSections.size()) {
 			totalPassed = new Boolean(allPassed);
 			binderStatus = AssessmentEntryStatus.done;
 		} else {
+			if(assessmentSections.size() == totalSectionPassed) {
+				totalPassed = Boolean.TRUE;
+			}
 			binderStatus = AssessmentEntryStatus.inProgress;
 		}
-		//order status from the entry / section
 
+		//order status from the entry / section
 		RepositoryEntry entry = binder.getEntry();
 		if("CourseModule".equals(entry.getOlatResource().getResourceableTypeName())) {
 			ICourse course = CourseFactory.loadCourse(entry);
