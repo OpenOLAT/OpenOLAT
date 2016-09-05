@@ -116,7 +116,7 @@
 				var domIdentity = "olatFlashMovieViewer";
 				var placeHolders = ed.dom.select("img.mceItemOlatMovieViewer");
 				do {
-					domIdentity = "olatFlashMovieViewer" + (count++);
+					domIdentity = "olatFlashMovieViewer" + (~~(Math.random() * 1000000));
 					if(count > 20) {
 						break;
 					}

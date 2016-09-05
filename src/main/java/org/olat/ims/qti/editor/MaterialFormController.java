@@ -132,7 +132,7 @@ public class MaterialFormController extends FormBasicController {
 		richTextConfig.enableCode();
 		//allow script tags...
 		richTextConfig.setInvalidElements(RichTextConfiguration.INVALID_ELEMENTS_FORM_FULL_VALUE_UNSAVE_WITH_SCRIPT);
-		richTextConfig.setExtendedValidElements("script[src,type,defer]");
+		richTextConfig.setExtendedValidElements("script[src|type|defer]");
 		
 		uifactory.addFormSubmitButton("submit", formLayout);
 	}
