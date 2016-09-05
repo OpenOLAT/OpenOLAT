@@ -197,9 +197,12 @@ public class PortfolioV2Test {
 			.clickTree()
 			.selectWithTitle(portfolioNodeTitle);
 		PortfolioElementPage portfolioCourseEl = new PortfolioElementPage(ryomouBrowser);
-		portfolioCourseEl
-			.pickPortfolio()
-			.goToPortfolioV2();
+		BinderPage binder = portfolioCourseEl
+				.pickPortfolio()
+				.goToPortfolioV2();
+
+		binder
+			.pickAssignment(assignmentTitle);
 	}
 
 }

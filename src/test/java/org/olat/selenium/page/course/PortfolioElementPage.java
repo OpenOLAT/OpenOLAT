@@ -48,7 +48,13 @@ public class PortfolioElementPage {
 	}
 	
 	public BinderPage goToPortfolioV2() {
-		return new BinderPage(browser);
+		By openBy = By.cssSelector("a.o_sel_ep_select_map");
+		OOGraphene.waitElement(openBy, 5, browser);
+		browser.findElement(openBy).click();
+		OOGraphene.waitBusy(browser);
+		BinderPage binderPage = new BinderPage(browser);
+		binderPage.assertOnBinder();
+		return binderPage;
 	}
 
 }

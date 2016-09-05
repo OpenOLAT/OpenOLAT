@@ -67,10 +67,4 @@ public class BindersPage {
 		OOGraphene.waitElement(contentBy, 5, browser);
 		return new BinderPage(browser);
 	}
-	
-	public BinderPage selectBinder(String title) {
-		
-		return new BinderPage(browser);
-	}
-
 }

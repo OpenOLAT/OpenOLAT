@@ -87,21 +87,32 @@ public class BinderPage {
 		return this;
 	}
 	
-	
+	/**
+	 * Select the table of content segment of the navigation
+	 * @return Itself
+	 */
 	public BinderPage selectTableOfContent() {
-		By tocBy = By.cssSelector("li.o_tool .o_sel_pf_binder_navigation .o_sel_pf_toc");
-		browser.findElement(tocBy).click();
+		By tocLinkBy = By.cssSelector("li.o_tool .o_sel_pf_binder_navigation .o_sel_pf_toc");
+		browser.findElement(tocLinkBy).click();
 		OOGraphene.waitBusy(browser);
+		By tocBy = By.cssSelector("div.o_portfolio_toc");
+		OOGraphene.waitElement(tocBy, 5, browser);
 		return this;
 	}
 	
+	/**
+	 * Select the entries segment of the navigation
+	 * 
+	 * @return Itself
+	 */
 	public BinderPage selectEntries() {
 		By tocBy = By.cssSelector("li.o_tool .o_sel_pf_binder_navigation .o_sel_pf_entries");
 		browser.findElement(tocBy).click();
 		OOGraphene.waitBusy(browser);
+		By binderPageListBy = By.cssSelector("div.o_portfolio_entries");
+		OOGraphene.waitElement(binderPageListBy, 5, browser);
 		return this;
 	}
-	
 	
 	/**
 	 * Create a section in the tab entries (this is one must
@@ -186,7 +197,14 @@ public class BinderPage {
 		submitButton.click();
 		OOGraphene.waitBusy(browser);
 		return this;
-	} 
+	}
 	
+	public BinderPage pickAssignment(String assignmentTitle) {
+		By assignmentButton = By.xpath("//div[contains(@class,'o_portfolio_assignments')][div/h4[contains(text(),'" + assignmentTitle + "')]]//a[contains(@class,'btn')]");
+		browser.findElement(assignmentButton).click();
+		OOGraphene.waitBusy(browser);
+		assertOnPage(assignmentTitle);
+		return this;
+	}
 
 }
