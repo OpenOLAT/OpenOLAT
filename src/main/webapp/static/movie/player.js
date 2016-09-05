@@ -175,7 +175,7 @@ var BPlayer = {
 		};
 
 		var mimeType = null;
-		var extension = config.file.split('.').pop().toLowerCase();
+		var extension = config.file.split('.').pop().toLowerCase().split('&').shift();
 		if(config.provider == 'sound') {
 			if(extension == 'mp3') {
 				mimeType = "audio/mp3";
