@@ -29,6 +29,7 @@ import org.olat.core.gui.control.navigation.SiteDefinitions;
 import org.olat.core.gui.control.navigation.SiteInstance;
 import org.olat.core.gui.control.navigation.SiteSecurityCallback;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.UserSession;
 import org.olat.course.site.model.CourseSiteConfiguration;
 import org.olat.course.site.model.LanguageConfiguration;
 
@@ -88,10 +89,13 @@ public class CourseSiteDef extends AbstractSiteDefinition implements SiteDefinit
 		
 		String secCallbackBeanId = config.getSecurityCallbackBeanId();
 		SiteSecurityCallback siteSecCallback = (SiteSecurityCallback)CoreSpringFactory.getBean(secCallbackBeanId);
+		
+		UserSession usess = ureq.getUserSession();
+		if(usess == null || usess.getRoles() == null) return null;
 
-		boolean canSeeToolController = ureq.getUserSession().getRoles().isAuthor()
-				|| ureq.getUserSession().getRoles().isOLATAdmin()
-				|| ureq.getUserSession().getRoles().isInstitutionalResourceManager();
+		boolean canSeeToolController = usess.getRoles().isAuthor()
+				|| usess.getRoles().isOLATAdmin()
+				|| usess.getRoles().isInstitutionalResourceManager();
 		boolean showToolController = true;
 		if (!canSeeToolController && !courseConfig.isToolbar()) {
 			showToolController = false;
