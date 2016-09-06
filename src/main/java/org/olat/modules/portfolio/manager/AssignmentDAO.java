@@ -215,6 +215,15 @@ public class AssignmentDAO {
 		return counts != null && counts.size() > 0 && counts.get(0) != null && counts.get(0).intValue() >= 0;
 	}
 	
+	public int deleteAssignmentReference(Assignment assignment) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("delete pfassignment assignment where assignment.templateReference.key=:assignmentKey");
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString())
+				.setParameter("assignmentKey", assignment.getKey())
+				.executeUpdate();
+	}
+
 	public int deleteAssignment(Assignment assignment) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("delete pfassignment assignment where assignment.templateReference.key=:assignmentKey");
@@ -225,6 +234,4 @@ public class AssignmentDAO {
 		dbInstance.getCurrentEntityManager().remove(assignment);
 		return deleted + 1;
 	}
-
-
 }

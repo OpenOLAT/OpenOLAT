@@ -239,8 +239,8 @@ public class PortfolioServiceImpl implements PortfolioService {
 
 	@Override
 	public boolean deleteBinderTemplate(Binder binder, RepositoryEntry templateEntry) {
-		binderDao.detachBinderTemplate();
-		int deletedRows = binderDao.deleteBinderTemplate(binder);
+		BinderImpl reloadedBinder = (BinderImpl)binderDao.loadByKey(binder.getKey());
+		int deletedRows = binderDao.deleteBinderTemplate(reloadedBinder);
 		return deletedRows > 0;
 	}
 	
@@ -403,7 +403,7 @@ public class PortfolioServiceImpl implements PortfolioService {
 	@Override
 	public Binder deleteSection(Binder binder, Section section) {
 		Section reloadedSection = binderDao.loadSectionByKey(section.getKey());
-		Binder reloadedBinder = section.getBinder();
+		Binder reloadedBinder = reloadedSection.getBinder();
 		return binderDao.deleteSection(reloadedBinder, reloadedSection);
 	}
 

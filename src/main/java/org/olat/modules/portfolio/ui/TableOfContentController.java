@@ -90,7 +90,7 @@ public class TableOfContentController extends BasicController implements TooledC
 	private SectionEditController editSectionCtrl;
 	private SectionDatesEditController editSectionDatesCtrl;
 	private BinderMetadataEditController binderMetadataCtrl;
-	private DialogBoxController confirmCloseSectionCtrl, confirmReopenSectionCtrl;
+	private DialogBoxController confirmCloseSectionCtrl, confirmReopenSectionCtrl, confirmDeleteSectionCtrl;
 	
 	private PageRunController pageCtrl;
 	private PageMetadataEditController newPageCtrl;
@@ -375,6 +375,13 @@ public class TableOfContentController extends BasicController implements TooledC
 				loadModel();
 				fireEvent(ureq, Event.CHANGED_EVENT);
 			}	
+		} else if(confirmDeleteSectionCtrl == source) {
+			if(DialogBoxUIFactory.isYesEvent(event)) {
+				SectionRow row = (SectionRow)confirmDeleteSectionCtrl.getUserObject();
+				doDelete(row);
+				loadModel();
+				fireEvent(ureq, Event.CHANGED_EVENT);
+			}	
 		} else if(commentsCtrl == source) {
 			if("comment_count_changed".equals(event.getCommand())) {
 				loadModel();
@@ -442,6 +449,9 @@ public class TableOfContentController extends BasicController implements TooledC
 			} else if("down_section".equals(cmd)) {
 				SectionRow row = (SectionRow)link.getUserObject();
 				doMoveSectionDown(row);
+			} else if("delete_section".equals(cmd)) {
+				SectionRow row = (SectionRow)link.getUserObject();
+				doConfirmDeleteSection(ureq, row);
 			}
 		}
 	}
@@ -552,7 +562,7 @@ public class TableOfContentController extends BasicController implements TooledC
 	
 	private void doConfirmCloseSection(UserRequest ureq, SectionRow row) {
 		String title = translate("close.section.confirm.title");
-		String text = translate("close.section.confirm.descr", new String[]{ row.getTitle() });
+		String text = translate("close.section.confirm.descr", new String[]{ StringHelper.escapeHtml(row.getTitle()) });
 		confirmCloseSectionCtrl = activateYesNoDialog(ureq, title, text, confirmCloseSectionCtrl);
 		confirmCloseSectionCtrl.setUserObject(row);
 	}
@@ -566,7 +576,7 @@ public class TableOfContentController extends BasicController implements TooledC
 	
 	private void doConfirmReopenSection(UserRequest ureq, SectionRow row) {
 		String title = translate("reopen.section.confirm.title");
-		String text = translate("reopen.section.confirm.descr", new String[]{ row.getTitle() });
+		String text = translate("reopen.section.confirm.descr", new String[]{ StringHelper.escapeHtml(row.getTitle()) });
 		confirmReopenSectionCtrl = activateYesNoDialog(ureq, title, text, confirmReopenSectionCtrl);
 		confirmReopenSectionCtrl.setUserObject(row);
 	}
@@ -576,6 +586,17 @@ public class TableOfContentController extends BasicController implements TooledC
 		section = portfolioService.changeSectionStatus(section, SectionStatus.inProgress, getIdentity());
 		ThreadLocalUserActivityLogger.log(PortfolioLoggingAction.PORTFOLIO_SECTION_REOPEN, getClass(),
 				LoggingResourceable.wrap(section));
+	}
+	
+	private void doConfirmDeleteSection(UserRequest ureq, SectionRow row) {
+		String title = translate("delete.section.confirm.title");
+		String text = translate("delete.section.confirm.descr", new String[]{ StringHelper.escapeHtml(row.getTitle()) });
+		confirmDeleteSectionCtrl = activateYesNoDialog(ureq, title, text, confirmDeleteSectionCtrl);
+		confirmDeleteSectionCtrl.setUserObject(row);
+	}
+	
+	private void doDelete(SectionRow row) {
+		portfolioService.deleteSection(binder, row.getSection());
 	}
 	
 	public class PageRow {

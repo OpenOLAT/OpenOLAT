@@ -100,5 +100,13 @@ public class AssessmentSectionDAO {
 	public AssessmentSection update(AssessmentSection assessmentSection) {
 		return dbInstance.getCurrentEntityManager().merge(assessmentSection);
 	}
+	
+	public int deleteAssessmentSections(Section section) {
+		String partQ = "delete from pfassessmentsection asection where asection.section.key=:sectionKey";
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(partQ)
+				.setParameter("sectionKey", section.getKey())
+				.executeUpdate();
+	}
 
 }

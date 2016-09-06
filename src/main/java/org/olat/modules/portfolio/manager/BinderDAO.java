@@ -73,6 +73,8 @@ public class BinderDAO {
 	private GroupDAO groupDao;
 	@Autowired
 	private AssignmentDAO assignmentDao;
+	@Autowired
+	private AssessmentSectionDAO assessmentSectionDao;
 	
 	public BinderImpl createAndPersist(String title, String summary, String imagePath, RepositoryEntry entry) {
 		BinderImpl binder = new BinderImpl();
@@ -244,26 +246,27 @@ public class BinderDAO {
 		//unlink template
 	}
 	
-	public int deleteBinderTemplate(Binder binder) {
-		String assignmentQ = "delete from pfassignment assignment where assignment.section.key in (select section.key from pfsection as section where section.binder.key=:binderKey)";
-		int assignments = dbInstance.getCurrentEntityManager()
-				.createQuery(assignmentQ)
-				.setParameter("binderKey", binder.getKey())
-				.executeUpdate();
+	public int deleteBinderTemplate(BinderImpl binder) {
+		List<Section> sections = new ArrayList<>(binder.getSections());
+		for(Section section:sections) {
+			binder = (BinderImpl)deleteSection(binder, section);
+		}
 		
+		dbInstance.getCurrentEntityManager().flush();
 		
-		String sectionQ = "delete from pfsection section where section.binder.key=:binderKey";
-		int sections = dbInstance.getCurrentEntityManager()
-				.createQuery(sectionQ)
-				.setParameter("binderKey", binder.getKey())
-				.executeUpdate();
+		//remove reference via template
+		String sb = "update pfbinder binder set binder.template=null where binder.template.key=:binderKey";
+		int rows = dbInstance.getCurrentEntityManager()
+			.createQuery(sb)
+			.setParameter("binderKey", binder.getKey())
+			.executeUpdate();
 
 		String binderQ = "delete from pfbinder binder where binder.key=:binderKey";
-		int binders = dbInstance.getCurrentEntityManager()
+		rows += dbInstance.getCurrentEntityManager()
 				.createQuery(binderQ)
 				.setParameter("binderKey", binder.getKey())
 				.executeUpdate();
-		return assignments + sections + binders;
+		return rows;
 	}
 	
 	/**
@@ -357,18 +360,26 @@ public class BinderDAO {
 	}
 	
 	public Binder deleteSection(Binder binder, Section section) {
-		
 		List<Page> pages = section.getPages();
 		//delete pages
 		for(Page page:pages) {
 			pageDao.deletePage(page);
 		}
 		
-		List<Assignment> assignments = ((SectionImpl)section).getAssignments();
+		List<Assignment> assignments = new ArrayList<>(((SectionImpl)section).getAssignments());
 		for(Assignment assignment:assignments) {
-			assignmentDao.deleteAssignment(assignment);
+			assignmentDao.deleteAssignmentReference(assignment);
 		}
 		
+		assessmentSectionDao.deleteAssessmentSections(section);
+
+		//remove reference via template
+		String sb = "update pfsection section set section.templateReference=null where section.templateReference.key=:sectionKey";
+		dbInstance.getCurrentEntityManager()
+			.createQuery(sb)
+			.setParameter("sectionKey", section.getKey())
+			.executeUpdate();
+
 		((BinderImpl)binder).getSections().remove(section);
 		dbInstance.getCurrentEntityManager().remove(section);
 		return dbInstance.getCurrentEntityManager().merge(binder);

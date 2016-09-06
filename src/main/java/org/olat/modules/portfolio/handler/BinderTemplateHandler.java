@@ -61,7 +61,6 @@ import org.olat.modules.portfolio.ui.BinderController;
 import org.olat.modules.portfolio.ui.BinderPickerController;
 import org.olat.modules.portfolio.ui.BinderRuntimeController;
 import org.olat.modules.portfolio.ui.PortfolioAssessmentDetailsController;
-import org.olat.modules.portfolio.ui.PortfolioHomeController;
 import org.olat.repository.ErrorList;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryImportExport;
@@ -190,14 +189,14 @@ public class BinderTemplateHandler implements RepositoryHandler {
 
 	@Override
 	public boolean readyToDelete(RepositoryEntry entry, Identity identity, Roles roles, Locale locale, ErrorList errors) {
-		PortfolioService portfolioService = CoreSpringFactory.getImpl(PortfolioService.class);
+		/*PortfolioService portfolioService = CoreSpringFactory.getImpl(PortfolioService.class);
 		Binder template = portfolioService.getBinderByResource(entry.getOlatResource());
 		if(portfolioService.isTemplateInUse(template, null, null)) {
 			Translator translator = Util.createPackageTranslator(PortfolioHomeController.class, locale);
 			errors.setError(translator.translate("warning.template.in.use",
 					new String[] { template.getTitle(), entry.getDisplayname() }));
 			return false;
-		}
+		}*/
 		
 		String referencesSummary = CoreSpringFactory.getImpl(ReferenceManager.class)
 				.getReferencesToSummary(entry.getOlatResource(), locale);
