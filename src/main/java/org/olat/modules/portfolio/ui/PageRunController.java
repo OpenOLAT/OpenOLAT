@@ -250,6 +250,10 @@ public class PageRunController extends BasicController implements TooledControll
 			} else if(event instanceof ReopenPageEvent) {
 				doConfirmReopen(ureq);
 			}	
+		} else if(commentsCtrl == source) {
+			if(event == Event.CANCELLED_EVENT) {
+				commentsCtrl.collapseComments();
+			}
 		} else if(confirmPublishCtrl == source) {
 			if(DialogBoxUIFactory.isYesEvent(event)) {
 				doPublish(ureq);
