@@ -54,6 +54,11 @@ public class LifecycleDataModel implements FlexiTableDataModel<RepositoryEntryLi
 	}
 
 	@Override
+	public boolean isSelectable(int row) {
+		return true;
+	}
+
+	@Override
 	public int getColumnCount() {
 		return 4;
 	}

@@ -22,6 +22,7 @@ package org.olat.course.assessment.ui.tool;
 import java.util.List;
 
 import org.olat.core.commons.persistence.SortKey;
+import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FilterableFlexiTableModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
@@ -45,7 +46,7 @@ implements SortableFlexiTableDataModel<AssessedBusinessGroup>, FilterableFlexiTa
 	}
 	
 	@Override
-	public void filter(String key) {
+	public void filter(List<FlexiTableFilter> filters) {
 		//
 	}
 

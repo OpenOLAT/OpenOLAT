@@ -39,7 +39,7 @@ import java.util.zip.ZipEntry;
 
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.poi.util.IOUtils;
+import org.apache.commons.io.IOUtils;
 import org.olat.core.helpers.Settings;
 import org.olat.core.logging.LogDelegator;
 import org.olat.core.util.StringHelper;

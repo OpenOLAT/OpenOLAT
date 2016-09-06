@@ -55,6 +55,11 @@ public abstract class DefaultFlexiTableDataSourceModel<U> implements FlexiTableD
 	}
 	
 	@Override
+	public boolean isSelectable(int row) {
+		return true;
+	}
+
+	@Override
 	public int getColumnCount() {
 		return columnModel.getColumnCount();
 	}

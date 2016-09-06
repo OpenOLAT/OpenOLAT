@@ -202,7 +202,12 @@ public class PoolsController extends FormBasicController {
 		public void setTableColumnModel(FlexiTableColumnModel tableColumnModel) {
 			this.columnModel = tableColumnModel;
 		}
-	
+
+		@Override
+		public boolean isSelectable(int row) {
+			return true;
+		}
+
 		@Override
 		public int getRowCount() {
 			return rows == null ? 0 : rows.size();

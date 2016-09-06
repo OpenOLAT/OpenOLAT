@@ -108,7 +108,7 @@ public class AjaxController extends DefaultController {
 	@Autowired
 	private SessionStatsManager statsManager;
 
-	AjaxController(UserRequest ureq, WindowBackOfficeImpl wboImpl, boolean ajaxEnabled) {
+	AjaxController(UserRequest ureq, final WindowBackOfficeImpl wboImpl, boolean ajaxEnabled) {
 		super(null);
 		this.ajaxEnabled = ajaxEnabled;
 		this.wboImpl = wboImpl;

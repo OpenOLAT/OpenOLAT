@@ -103,6 +103,12 @@ public class Dropdown extends AbstractComponent implements ComponentCollection {
 	public void setIconCSS(String iconCSS) {
 		this.iconCSS = iconCSS;
 	}
+	
+	public void addComponent(Component component) {
+		if(component != null) {
+			components.add(component);
+		}
+	}
 
 	public void addComponent(Link component) {
 		if(component != null) {

@@ -17,25 +17,23 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.core.gui.components.form.flexible.impl.elements.table;
+package org.olat.core.gui.components.form.flexible.elements;
 
-import java.util.List;
-
-import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableComponent;
+import org.olat.core.gui.render.StringOutput;
+import org.olat.core.gui.translator.Translator;
 
 /**
- * Mark a data model as filterable
  * 
- * Initial date: 11.02.2014<br>
+ * Optional renderer for the filters, only render the label (with some icons)
+ * 
+ * Initial date: 09.06.2015<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public interface FilterableFlexiTableModel {
+public interface FlexiTableFilterIconRenderer {
 	
-	/**
-	 * @param key
-	 * @return True if a reload is needed
-	 */
-	public void filter(List<FlexiTableFilter> filters);
+
+	public void render(StringOutput target, FlexiTableFilter filter, FlexiTableComponent source,  Translator translator);
 
 }

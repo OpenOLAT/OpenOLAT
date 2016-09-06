@@ -253,8 +253,9 @@ public interface FlexiTableElement extends FormItem {
 	 * Set the values for the filter and it will enable it.
 	 * @param keys
 	 * @param values
+	 * @param multiSelection Allow to select more than one filter
 	 */
-	public void setFilters(String label, List<FlexiTableFilter> filters);
+	public void setFilters(String label, List<FlexiTableFilter> filters, boolean multiSelection);
 	
 	/**
 	 * 

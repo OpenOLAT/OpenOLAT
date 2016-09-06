@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.Locale;
 
 import org.olat.core.commons.persistence.SortKey;
+import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FilterableFlexiTableModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
@@ -53,7 +54,8 @@ public class MediaDataModel extends DefaultFlexiTableDataModel<MediaRow>
 	}
 
 	@Override
-	public void filter(String key) {
+	public void filter(List<FlexiTableFilter> filters) {
+		String key = filters == null || filters.isEmpty() || filters.get(0) == null ? null : filters.get(0).getFilter();
 		if(StringHelper.containsNonWhitespace(key) && !"showall".equals(key)) {
 			List<MediaRow> filteredRows = new ArrayList<>();
 			for(MediaRow row:backups) {

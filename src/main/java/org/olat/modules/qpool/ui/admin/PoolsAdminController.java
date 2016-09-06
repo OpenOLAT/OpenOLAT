@@ -277,6 +277,11 @@ public class PoolsAdminController extends FormBasicController {
 		}
 		
 		@Override
+		public boolean isSelectable(int row) {
+			return true;
+		}
+
+		@Override
 		public boolean isRowLoaded(int row) {
 			return rows != null && row < rows.size();
 		}

@@ -67,6 +67,11 @@ public abstract class DefaultFlexiTableDataModel<U> implements FlexiTableDataMod
 	}
 	
 	@Override
+	public boolean isSelectable(int row) {
+		return true;//TODO 11 remove
+	}
+
+	@Override
 	public abstract DefaultFlexiTableDataModel<U> createCopyWithEmptyList();
 	
 	@Override

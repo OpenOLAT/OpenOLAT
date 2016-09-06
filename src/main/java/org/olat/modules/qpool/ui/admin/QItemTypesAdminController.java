@@ -260,6 +260,11 @@ public class QItemTypesAdminController extends FormBasicController {
 		}
 
 		@Override
+		public boolean isSelectable(int row) {
+			return true;
+		}
+
+		@Override
 		public QItemType getObject(int row) {
 			if(types != null && row >= 0 && row < types.size()) {
 				return types.get(row);

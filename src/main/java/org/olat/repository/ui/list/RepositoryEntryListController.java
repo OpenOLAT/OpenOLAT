@@ -241,7 +241,7 @@ public class RepositoryEntryListController extends FormBasicController
 		filters.add(new FlexiTableFilter(translate("filter.passed"), Filter.passed.name()));
 		filters.add(new FlexiTableFilter(translate("filter.not.passed"), Filter.notPassed.name()));
 		filters.add(new FlexiTableFilter(translate("filter.without.passed.infos"), Filter.withoutPassedInfos.name()));
-		tableElement.setFilters(null, filters);
+		tableElement.setFilters(null, filters, false);
 	}
 	
 	private void initSorters(FlexiTableElement tableElement) {

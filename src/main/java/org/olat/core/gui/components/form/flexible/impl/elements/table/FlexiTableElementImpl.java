@@ -131,6 +131,7 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 	private FlexiTableSortOptions sortOptions;
 	private List<FlexiTableFilter> filters;
 	private List<FlexiTableFilter> extendedFilters;
+	private boolean multiFilterSelection = false;
 	private Object selectedObj;
 	private boolean allSelectedNeedLoadOfWholeModel = false;
 	private Set<Integer> multiSelectedIndex;
@@ -402,8 +403,9 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 	}
 
 	@Override
-	public void setFilters(String name, List<FlexiTableFilter> filters) {
+	public void setFilters(String name, List<FlexiTableFilter> filters, boolean multiSelection) {
 		this.filters = new ArrayList<>(filters);
+		multiFilterSelection = multiSelection;
 	}
 	
 	public boolean isSortEnabled() {
@@ -962,11 +964,19 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 	}
 	
 	private void doFilter(String filterKey) {
-		String selectedFilterKey = null;
-		FlexiTableFilter selectedFilter = null;
+		List<FlexiTableFilter> selectedFilters = new ArrayList<>();
 		if(filterKey == null) {
 			for(FlexiTableFilter filter:filters) {
 				filter.setSelected(false);
+			}
+		} else if(multiFilterSelection) {
+			for(FlexiTableFilter filter:filters) {
+				if(filter.getFilter().equals(filterKey)) {
+					filter.setSelected(!filter.isSelected());
+				}
+				if(filter.isSelected()) {
+					selectedFilters.add(filter);
+				}
 			}
 		} else {
 			for(FlexiTableFilter filter:filters) {
@@ -976,8 +986,7 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 						filter.setSelected(false);
 					} else {
 						filter.setSelected(true);
-						selectedFilterKey = filterKey;
-						selectedFilter = filter;
+						selectedFilters.add(filter);
 					}
 				} else {
 					filter.setSelected(false);
@@ -988,12 +997,10 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 		if(dataModel instanceof FilterableFlexiTableModel) {
 			rowCount = -1;
 			currentPage = 0;
-			((FilterableFlexiTableModel)dataModel).filter(selectedFilterKey);
+			((FilterableFlexiTableModel)dataModel).filter(selectedFilters);
 		} else if(dataSource != null) {
 			rowCount = -1;
 			currentPage = 0;
-
-			List<FlexiTableFilter> selectedFilters = Collections.singletonList(selectedFilter);
 			dataSource.clear();
 			dataSource.load(null, selectedFilters, null, 0, getPageSize(), orderBy);
 		}
@@ -1455,7 +1462,7 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 		} else {
 			if(dataModel instanceof FilterableFlexiTableModel) {
 				if(isFilterEnabled()) {
-					String filter = getSelectedFilterKey();
+					List<FlexiTableFilter> filter = getSelectedFilters();
 					((FilterableFlexiTableModel)dataModel).filter(filter);
 				}
 			}

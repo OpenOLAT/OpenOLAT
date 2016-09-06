@@ -222,7 +222,7 @@ public class IdentityListCourseNodeController extends FormBasicController implem
 		filters.add(new FlexiTableFilter(translate("filter.inProgress"), "inProgress"));
 		filters.add(new FlexiTableFilter(translate("filter.inReview"), "inReview"));
 		filters.add(new FlexiTableFilter(translate("filter.done"), "done"));
-		tableEl.setFilters("", filters);
+		tableEl.setFilters("", filters, false);
 		
 		if(assessmentCallback.canAssessBusinessGoupMembers() && group == null) {
 			List<BusinessGroup> coachedGroups = null;
@@ -303,8 +303,8 @@ public class IdentityListCourseNodeController extends FormBasicController implem
 		}
 		usersTableModel.setCertificateMap(toolContainer.getCertificateMap());
 		usersTableModel.setObjects(rows);
-		if(filters != null && filters.size() > 0) {
-			usersTableModel.filter(filters.get(0).getFilter());
+		if(filters != null && filters.size() > 0 && filters.get(0) != null) {
+			usersTableModel.filter(Collections.singletonList(filters.get(0)));
 		}
 		tableEl.reset();
 		tableEl.reloadData();

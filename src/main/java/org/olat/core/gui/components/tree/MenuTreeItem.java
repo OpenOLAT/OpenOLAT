@@ -29,7 +29,6 @@ import org.olat.core.gui.components.ComponentEventListener;
 import org.olat.core.gui.components.form.flexible.impl.FormItemImpl;
 import org.olat.core.util.tree.INodeFilter;
 import org.olat.core.util.tree.TreeHelper;
-import org.olat.course.tree.TreePosition;
 
 /**
  * 

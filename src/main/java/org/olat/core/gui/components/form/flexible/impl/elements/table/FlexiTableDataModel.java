@@ -54,6 +54,8 @@ public interface FlexiTableDataModel<T> {
 	 * @return Object for certain table cell
 	 */
 	public Object getValueAt(int row, int col);
+	
+	public boolean isSelectable(int row);
 
 	/**
 	 * Return table-column-model (all columns) for this table-data-model.

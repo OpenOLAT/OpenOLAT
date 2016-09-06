@@ -852,8 +852,6 @@ public class FileUtils {
 		return nameSanitized;
 	}
 	
-	
-	
 	/**
 	 * Creates a new directory in the specified directory, using the given prefix and suffix strings to generate its name.
 	 * It uses File.createTempFile() and should provide a unique name.

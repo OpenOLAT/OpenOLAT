@@ -20,6 +20,7 @@
 package org.olat.modules.assessment.ui;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -174,7 +175,7 @@ public class AssessedIdentityListController extends FormBasicController implemen
 		filters.add(new FlexiTableFilter(translate("filter.inProgress"), "inProgress"));
 		filters.add(new FlexiTableFilter(translate("filter.inReview"), "inReview"));
 		filters.add(new FlexiTableFilter(translate("filter.done"), "done"));
-		tableEl.setFilters("", filters);
+		tableEl.setFilters("", filters, false);
 		
 		if(assessmentCallback.canAssessBusinessGoupMembers()) {
 			List<BusinessGroup> coachedGroups = assessmentCallback.getCoachedGroups(); 
@@ -233,8 +234,8 @@ public class AssessedIdentityListController extends FormBasicController implemen
 		}
 
 		usersTableModel.setObjects(rows);
-		if(filters != null && filters.size() > 0) {
-			usersTableModel.filter(filters.get(0).getFilter());
+		if(filters != null && filters.size() > 0 && filters.get(0) != null) {
+			usersTableModel.filter(Collections.singletonList(filters.get(0)));
 		}
 		tableEl.reloadData();
 	}

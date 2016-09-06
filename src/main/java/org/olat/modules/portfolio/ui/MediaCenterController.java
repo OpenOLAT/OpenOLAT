@@ -229,7 +229,7 @@ public class MediaCenterController extends FormBasicController
 		for(MediaHandler handler:handlers) {
 			filters.add(new FlexiTableFilter(translate("artefact." + handler.getType()), handler.getType()));
 		}
-		tableElement.setFilters(null, filters);
+		tableElement.setFilters(null, filters, false);
 	}
 
 	@Override
@@ -264,7 +264,7 @@ public class MediaCenterController extends FormBasicController
 			}
 		}
 		model.setObjects(rows);
-		model.filter(tableEl.getSelectedFilterKey());
+		model.filter(tableEl.getSelectedFilters());
 		
 		Map<Long,MediaRow> rowMap = model.getObjects()
 				.stream().collect(Collectors.toMap(r -> r.getKey(), r -> r));

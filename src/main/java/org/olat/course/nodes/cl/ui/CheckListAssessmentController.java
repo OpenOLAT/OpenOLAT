@@ -255,7 +255,7 @@ public class CheckListAssessmentController extends FormBasicController implement
 				String groupName = StringHelper.escapeHtml(group.getName());
 				filters.add(new FlexiTableFilter(groupName, group.getKey().toString()));
 			}
-			table.setFilters("participants", filters);
+			table.setFilters("participants", filters, false);
 		}
 		table.setExportEnabled(true);
 		table.setCustomizeColumns(true);
