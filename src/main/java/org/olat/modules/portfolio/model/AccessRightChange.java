@@ -58,4 +58,12 @@ public class AccessRightChange {
 	public boolean isAdd() {
 		return add;
 	}
+	
+	@Override
+	public String toString() {
+		StringBuilder sb = new StringBuilder();
+		sb.append("accessRightChange[").append(element.getType().name()).append("=").append(element.getKey()).append(":")
+			.append(role.name()).append(":").append(add ? "add" : "remove").append("]");
+		return sb.toString();
+	}
 }

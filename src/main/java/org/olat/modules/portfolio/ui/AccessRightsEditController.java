@@ -68,6 +68,7 @@ public class AccessRightsEditController extends FormBasicController {
 	private final Binder binder;
 	private final Identity member;
 	private BinderAccessRightsRow binderRow;
+	private FormLink selectAll, deselectAll;
 	
 	private final boolean canEdit;
 	private final boolean hasButtons;
@@ -113,6 +114,11 @@ public class AccessRightsEditController extends FormBasicController {
 			listenTo(userShortDescrCtr);
 		}
 		
+		selectAll = uifactory.addFormLink("form.checkall", "form.checkall", null, formLayout, Link.LINK);
+		selectAll.setIconLeftCSS("o_icon o_icon-sm o_icon_check_on");
+		deselectAll = uifactory.addFormLink("form.uncheckall", "form.uncheckall", null, formLayout, Link.LINK);
+		deselectAll.setIconLeftCSS("o_icon o_icon-sm o_icon_check_off");
+
 		//binder
 		MultipleSelectionElement coachEl = uifactory.addCheckboxesHorizontal("access-" + (counter++), null, formLayout, theKeys, theValues);
 		coachEl.addActionListener(FormEvent.ONCHANGE);
@@ -127,8 +133,10 @@ public class AccessRightsEditController extends FormBasicController {
 		Map<Long,SectionAccessRightsRow> sectionMap = new HashMap<>();
 		for(Section section:sections) {
 			MultipleSelectionElement sectionCoachEl = uifactory.addCheckboxesHorizontal("access-" + (counter++), null, formLayout, theKeys, theValues);
+			sectionCoachEl.addActionListener(FormEvent.ONCHANGE);
 			MultipleSelectionElement sectionReviewerEl = uifactory.addCheckboxesHorizontal("access-" + (counter++), null, formLayout, theKeys, theValues);
-			SectionAccessRightsRow sectionRow = new SectionAccessRightsRow(sectionCoachEl, sectionReviewerEl, section);
+			sectionReviewerEl.addActionListener(FormEvent.ONCHANGE);
+			SectionAccessRightsRow sectionRow = new SectionAccessRightsRow(sectionCoachEl, sectionReviewerEl, section, binderRow);
 			binderRow.getSections().add(sectionRow);
 			sectionMap.put(section.getKey(), sectionRow);	
 			sectionCoachEl.setUserObject(sectionRow);
@@ -141,8 +149,10 @@ public class AccessRightsEditController extends FormBasicController {
 			Section section = page.getSection();
 			SectionAccessRightsRow sectionRow = sectionMap.get(section.getKey());
 			MultipleSelectionElement pageCoachEl = uifactory.addCheckboxesHorizontal("access-" + (counter++), null, formLayout, theKeys, theValues);
+			pageCoachEl.addActionListener(FormEvent.ONCHANGE);
 			MultipleSelectionElement pageReviewerEl = uifactory.addCheckboxesHorizontal("access-" + (counter++), null, formLayout, theKeys, theValues);
-			PortfolioElementAccessRightsRow pageRow = new PortfolioElementAccessRightsRow(pageCoachEl, pageReviewerEl, page);
+			pageReviewerEl.addActionListener(FormEvent.ONCHANGE);
+			PortfolioElementAccessRightsRow pageRow = new PortfolioElementAccessRightsRow(pageCoachEl, pageReviewerEl, page, sectionRow);
 			sectionRow.getPages().add(pageRow);
 			pageCoachEl.setUserObject(pageRow);
 			pageReviewerEl.setUserObject(pageRow);
@@ -166,6 +176,11 @@ public class AccessRightsEditController extends FormBasicController {
 		}
 	}
 	
+	
+	public Identity getMember() {
+		return member;
+	}
+	
 	private void loadModel() {
 		if(member != null) {
 			List<AccessRights> currentRights = portfolioService.getAccessRights(binder, member);
@@ -177,11 +192,8 @@ public class AccessRightsEditController extends FormBasicController {
 					pageRow.applyRights(currentRights);
 				}
 			}
+			binderRow.recalculate();
 		}
-	}
-	
-	public Identity getMember() {
-		return member;
 	}
 	
 	public List<AccessRightChange> getChanges() {
@@ -207,6 +219,22 @@ public class AccessRightsEditController extends FormBasicController {
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(removeLink == source) {
 			fireEvent(ureq, new AccessRightsEvent(AccessRightsEvent.REMOVE_ALL_RIGHTS));
+		} else if(selectAll == source) {
+			binderRow.setCoach();
+			binderRow.recalculate();
+		} else if(deselectAll == source) {
+			binderRow.unsetCoach();
+			binderRow.unsetReviewer();
+			for(SectionAccessRightsRow sectionRow:binderRow.getSections()) {
+				sectionRow.unsetCoach();
+				sectionRow.unsetReviewer();
+				for(PortfolioElementAccessRightsRow pageRow:sectionRow.getPages()) {
+					pageRow.unsetCoach();
+					pageRow.unsetReviewer();
+				}
+			}
+		} else if(source instanceof MultipleSelectionElement) {
+			binderRow.recalculate();
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
@@ -223,11 +251,55 @@ public class AccessRightsEditController extends FormBasicController {
 		private final List<SectionAccessRightsRow> sections = new ArrayList<>();
 
 		public BinderAccessRightsRow(MultipleSelectionElement coachEl, MultipleSelectionElement reviewerEl, PortfolioElement element) {
-			super(coachEl, reviewerEl, element);
+			super(coachEl, reviewerEl, element, null);
 		}
 
 		public List<SectionAccessRightsRow> getSections() {
 			return sections;
+		}
+		
+		@Override
+		public void appendChanges(List<AccessRightChange> changes, Identity identity) {
+			boolean removeCoachRight = false;
+			boolean removeReviewerRight = false;
+			
+			if(getCoachEl().isAtLeastSelected(1)) {
+				changes.add(new AccessRightChange(PortfolioRoles.coach, getElement(), identity, true));
+				removeReviewerRight = true;
+			} else if(getReviewerEl().isAtLeastSelected(1)) {
+				changes.add(new AccessRightChange(PortfolioRoles.reviewer, getElement(), identity, true));
+				removeCoachRight = true;
+			} else {
+				removeCoachRight = removeReviewerRight = true;
+			}
+			
+			if(removeCoachRight && getCoachRight() != null) {
+				changes.add(new AccessRightChange(PortfolioRoles.coach, getElement(), identity, false));
+			}
+			if(removeReviewerRight && getReviewerRight() != null) {
+				changes.add(new AccessRightChange(PortfolioRoles.reviewer, getElement(), identity, false));
+			}
+		}
+		
+		@Override
+		public void recalculate() {
+			super.recalculate();
+
+			if(sections != null) {
+				if(isCoach()) {
+					for(SectionAccessRightsRow section:sections) {
+						section.setCoach();
+					}
+				} else if(isReviewer()) {
+					for(SectionAccessRightsRow section:sections) {
+						section.setReviewer();
+					}
+				}
+				
+				for(SectionAccessRightsRow section:sections) {
+					section.recalculate();
+				}
+			}
 		}
 	}
 	
@@ -235,43 +307,115 @@ public class AccessRightsEditController extends FormBasicController {
 		
 		private final List<PortfolioElementAccessRightsRow> pages = new ArrayList<>();
 		
-		public SectionAccessRightsRow(MultipleSelectionElement coachEl, MultipleSelectionElement reviewerEl, PortfolioElement element) {
-			super(coachEl, reviewerEl, element);
+		public SectionAccessRightsRow(MultipleSelectionElement coachEl, MultipleSelectionElement reviewerEl,
+				PortfolioElement element, BinderAccessRightsRow parentRow) {
+			super(coachEl, reviewerEl, element, parentRow);
 		}
 		
 		public List<PortfolioElementAccessRightsRow> getPages() {
 			return pages;
 		}
+		
+		@Override
+		public void appendChanges(List<AccessRightChange> changes, Identity identity) {
+			boolean removeCoachRight = false;
+			boolean removeReviewerRight = false;
+			
+			if(getCoachEl().isAtLeastSelected(1)) {
+				if(!getParentRow().isCoach()) {
+					changes.add(new AccessRightChange(PortfolioRoles.coach, getElement(), identity, true));
+				} else {
+					removeReviewerRight = true;
+				}
+			} else if(getReviewerEl().isAtLeastSelected(1)) {
+				if(!getParentRow().isCoach() && !getParentRow().isReviewer()) {
+					changes.add(new AccessRightChange(PortfolioRoles.reviewer, getElement(), identity, true));
+					removeCoachRight = true;
+				} else {
+					removeReviewerRight = removeCoachRight = true;
+				}
+			} else {
+				removeReviewerRight = removeCoachRight = true;
+			}
+			
+			if(removeCoachRight && getCoachRight() != null) {
+				changes.add(new AccessRightChange(PortfolioRoles.coach, getElement(), identity, false));
+			}
+			if(removeReviewerRight && getReviewerRight() != null) {
+				changes.add(new AccessRightChange(PortfolioRoles.reviewer, getElement(), identity, false));
+			}
+		}
+
+		@Override
+		public void recalculate() {
+			super.recalculate();
+			
+			if(pages != null) {
+				if(isCoach()) {
+					for(PortfolioElementAccessRightsRow page:pages) {
+						page.setCoach();
+						page.recalculate();
+					}
+				} else if(isReviewer()) {
+					for(PortfolioElementAccessRightsRow page:pages) {
+						page.setReviewer();
+					}
+				}
+			}
+		}
 	}
 	
 	public static class PortfolioElementAccessRightsRow {
 		
-		private PortfolioElement element;
-		private MultipleSelectionElement coachEl;
-		private MultipleSelectionElement reviewerEl;
+		private MultipleSelectionElement coachEl, reviewerEl;
 		
-		public PortfolioElementAccessRightsRow(MultipleSelectionElement coachEl, MultipleSelectionElement reviewerEl, PortfolioElement element) {
+		private PortfolioElement element;
+		private AccessRights coachRight, reviewerRight;
+		private final PortfolioElementAccessRightsRow parentRow;
+		
+		public PortfolioElementAccessRightsRow(MultipleSelectionElement coachEl, MultipleSelectionElement reviewerEl,
+				PortfolioElement element, PortfolioElementAccessRightsRow parentRow) {
 			this.element = element;
 			this.coachEl = coachEl;
 			this.reviewerEl = reviewerEl;
-			coachEl.setUserObject(Boolean.FALSE);
-			reviewerEl.setUserObject(Boolean.FALSE);
+			this.parentRow = parentRow;
+		}
+		
+		public void recalculate() {
+			if(isCoach()) {
+				if(!isReviewer()) {
+					setReviewer();
+				}
+			}
 		}
 		
 		public void appendChanges(List<AccessRightChange> changes, Identity identity) {
+			boolean removeCoachRight = false;
+			boolean removeReviewerRight = false;
+
 			if(coachEl.isAtLeastSelected(1)) {
-				if(!Boolean.TRUE.equals(coachEl.getUserObject())) {
+				if(!parentRow.isCoach() && !parentRow.getParentRow().isCoach()) {
 					changes.add(new AccessRightChange(PortfolioRoles.coach, element, identity, true));
+					removeReviewerRight = true;
+				} else {
+					removeCoachRight = removeReviewerRight = true;
 				}
-			} else if(Boolean.TRUE.equals(coachEl.getUserObject())) {
+			} else if(reviewerEl.isAtLeastSelected(1)) {
+				if(!parentRow.isCoach() && !parentRow.getParentRow().isCoach()
+						&& !parentRow.isReviewer() && !parentRow.getParentRow().isReviewer()) {
+					changes.add(new AccessRightChange(PortfolioRoles.reviewer, element, identity, true));
+					removeCoachRight = true;
+				} else {
+					removeCoachRight = removeReviewerRight = true;
+				}
+			} else {
+				removeCoachRight = removeReviewerRight = true;
+			}
+			
+			if(removeCoachRight && coachRight != null) {
 				changes.add(new AccessRightChange(PortfolioRoles.coach, element, identity, false));
 			}
-
-			if(reviewerEl.isAtLeastSelected(1)) {
-				if(!Boolean.TRUE.equals(reviewerEl.getUserObject())) {
-					changes.add(new AccessRightChange(PortfolioRoles.reviewer, element, identity, true));
-				}
-			} else if(Boolean.TRUE.equals(reviewerEl.getUserObject())) {
+			if(removeReviewerRight && reviewerRight != null) {
 				changes.add(new AccessRightChange(PortfolioRoles.reviewer, element, identity, false));
 			}
 		}
@@ -294,13 +438,14 @@ public class AccessRightsEditController extends FormBasicController {
 			}
 		}
 		
+		
 		public void applyRight(AccessRights right) {
 			if(right.getRole().equals(PortfolioRoles.coach)) {
 				coachEl.select("xx", true);
-				coachEl.setUserObject(Boolean.TRUE);
+				coachRight = right;
 			} else if(right.getRole().equals(PortfolioRoles.reviewer)) {
 				reviewerEl.select("xx", true);
-				reviewerEl.setUserObject(Boolean.TRUE);
+				reviewerRight = right;
 			}
 		}
 		
@@ -310,6 +455,42 @@ public class AccessRightsEditController extends FormBasicController {
 
 		public PortfolioElement getElement() {
 			return element;
+		}
+		
+		public PortfolioElementAccessRightsRow getParentRow() {
+			return parentRow;
+		}
+		
+		public AccessRights getCoachRight() {
+			return coachRight;
+		}
+
+		public AccessRights getReviewerRight() {
+			return reviewerRight;
+		}
+
+		public boolean isCoach() {
+			return coachEl.isAtLeastSelected(1);
+		}
+		
+		public void setCoach() {
+			coachEl.select(theKeys[0], true);
+		}
+		
+		public void unsetCoach() {
+			coachEl.uncheckAll();
+		}
+		
+		public boolean isReviewer() {
+			return reviewerEl.isAtLeastSelected(1);
+		}
+		
+		public void setReviewer() {
+			reviewerEl.select(theKeys[0], true);
+		}
+		
+		public void unsetReviewer() {
+			reviewerEl.uncheckAll();
 		}
 
 		public MultipleSelectionElement getCoachEl() {
