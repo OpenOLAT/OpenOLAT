@@ -300,7 +300,7 @@ public class PortfolioElementRow {
 
 	public String[] getMetaBinderAndSectionTitles() {
 		if(StringHelper.containsNonWhitespace(metaBinderTitle) && StringHelper.containsNonWhitespace(metaSectionTitle)) {
-			return new String[]{ metaBinderTitle, metaSectionTitle };
+			return new String[]{ StringHelper.escapeHtml(metaBinderTitle), StringHelper.escapeHtml(metaSectionTitle) };
 		}
 		return null;
 	}

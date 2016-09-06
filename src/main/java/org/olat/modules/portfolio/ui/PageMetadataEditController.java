@@ -30,6 +30,7 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FileElement;
+import org.olat.core.gui.components.form.flexible.elements.RichTextElement;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.TextBoxListElement;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
@@ -69,7 +70,8 @@ public class PageMetadataEditController extends FormBasicController {
 	
 	private static final String[] alignKeys = new String[]{ PageImageAlign.background.name(), PageImageAlign.right.name() };
 	
-	private TextElement titleEl, summaryEl;
+	private TextElement titleEl;
+	private RichTextElement summaryEl;
 	private SingleSelection bindersEl, sectionsEl;
 	private TextBoxListElement categoriesEl;
 	
@@ -151,10 +153,11 @@ public class PageMetadataEditController extends FormBasicController {
 		titleEl.setMandatory(true);
 		
 		String summary = page == null ? null : page.getSummary();
-		summaryEl = uifactory.addTextAreaElement("summary", "page.summary", 4096, 4, 60, false, summary, formLayout);
+		summaryEl = uifactory.addRichTextElementForStringDataMinimalistic("summary", "page.summary", summary, 8, 60, formLayout, getWindowControl());
 		summaryEl.setPlaceholderKey("summary.placeholder", null);
 		summaryEl.setEnabled(editTitleAndSummary);
-		
+		summaryEl.getEditorConfiguration().setStatusBar(false);
+
 		imageUpload = uifactory.addFileElement(getWindowControl(), "file", "fileupload",formLayout);			
 		imageUpload.setPreview(ureq.getUserSession(), true);
 		imageUpload.addActionListener(FormEvent.ONCHANGE);

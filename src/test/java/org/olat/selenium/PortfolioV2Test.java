@@ -148,7 +148,7 @@ public class PortfolioV2Test {
 			.assertOnBinder()
 			.selectEntries()
 			.createSectionInEntries(sectionTitle)
-			.createAssignmentForSection(sectionTitle, assignmentTitle, "Write a small text")
+			.createAssignmentForSection(sectionTitle, assignmentTitle, "Write a small summary", "Your task is...")
 			.assertOnAssignmentInEntries(assignmentTitle);
 		
 		String courseTitle = "PF Course " + UUID.randomUUID();

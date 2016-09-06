@@ -73,7 +73,8 @@ public class AssignmentEditController extends FormBasicController {
 			AssignmentType.essay.name(), AssignmentType.document.name()
 	};
 	
-	private TextElement titleEl, summaryEl;
+	private TextElement titleEl;
+	private RichTextElement summaryEl;
 	//private SingleSelection typeEl;
 	private FileElement documentUploadEl;
 	private FormLayoutContainer filesLayout;
@@ -115,13 +116,15 @@ public class AssignmentEditController extends FormBasicController {
 		titleEl.setMandatory(true);
 		
 		String summary = assignment == null ? null : assignment.getSummary();
-		summaryEl = uifactory.addTextAreaElement("summary", "summary", 4096, 6, 60, false, summary, formLayout);
+		summaryEl = uifactory.addRichTextElementForStringDataMinimalistic("summary", "summary", summary, 8, 60, formLayout, getWindowControl());
 		summaryEl.setElementCssClass("o_sel_pf_edit_assignment_summary");
 		summaryEl.setPlaceholderKey("summary.placeholder", null);
+		summaryEl.getEditorConfiguration().setStatusBar(false);
 		
 		String content = assignment == null ? null : assignment.getContent();
 		contentEl = uifactory.addRichTextElementForStringDataCompact("content", "assignment.content", content, 6, 60, null, formLayout,
 				ureq.getUserSession(), getWindowControl());
+		contentEl.setElementCssClass("o_sel_pf_edit_assignment_content");
 		contentEl.getEditorConfiguration().disableMedia();
 		contentEl.getEditorConfiguration().disableImageAndMovie();
 		/*

@@ -103,6 +103,7 @@ public class PageRunController extends BasicController implements TooledControll
 	private Page page;
 	private List<Assignment> assignments;
 	private boolean dirtyMarker = false;
+	private final boolean openInEditMode;
 	private final BinderSecurityCallback secCallback;
 	
 	@Autowired
@@ -114,6 +115,7 @@ public class PageRunController extends BasicController implements TooledControll
 		this.page = page;
 		this.stackPanel = stackPanel;
 		this.secCallback = secCallback;
+		this.openInEditMode = openInEditMode;
 		
 		assignments = portfolioService.getAssignments(page);
 		
@@ -138,9 +140,7 @@ public class PageRunController extends BasicController implements TooledControll
 
 	@Override
 	public void initTools() {
-		editLink = LinkFactory.createToolLink("edit.page", translate("edit.page"), this);
-		editLink.setIconLeftCSS("o_icon o_icon-lg o_icon_edit");
-		editLink.setVisible(secCallback.canEditPage(page));
+		editLink(!openInEditMode);
 		stackPanel.addTool(editLink, Align.left);
 
 		editMetadataLink = LinkFactory.createToolLink("edit.page.metadata", translate("edit.page.metadata"), this);
@@ -148,10 +148,26 @@ public class PageRunController extends BasicController implements TooledControll
 		editMetadataLink.setVisible(secCallback.canEditMetadataBinder());
 		stackPanel.addTool(editMetadataLink, Align.left);
 		
-		deleteLink = LinkFactory.createToolLink("edit.page", translate("delete.page"), this);
+		deleteLink = LinkFactory.createToolLink("delete.page", translate("delete.page"), this);
 		deleteLink.setIconLeftCSS("o_icon o_icon-lg o_icon_delete_item");
 		deleteLink.setVisible(secCallback.canDeletePage(page));
 		stackPanel.addTool(deleteLink, Align.right);
+	}
+	
+	private Link editLink(boolean edit) {
+		if(editLink == null) {
+			editLink = LinkFactory.createToolLink("edit.page", translate("edit.page"), this);
+		}
+		if(edit) {
+			editLink.setCustomDisplayText(translate("edit.page"));
+			editLink.setIconLeftCSS("o_icon o_icon-lg o_icon_toggle_on");
+		} else {
+			editLink.setCustomDisplayText(translate("edit.page.close"));
+			editLink.setIconLeftCSS("o_icon o_icon-lg o_icon_toggle_off");
+		}
+		editLink.setVisible(secCallback.canEditPage(page));
+		editLink.setUserObject(edit);
+		return editLink;
 	}
 	
 	private void loadModel(UserRequest ureq) {
@@ -371,16 +387,13 @@ public class PageRunController extends BasicController implements TooledControll
 	
 	private void doEditPage(UserRequest ureq) {
 		removeAsListenerAndDispose(pageEditCtrl);
-		if(Boolean.TRUE.equals(editLink.getUserObject())) {
+		if(Boolean.FALSE.equals(editLink.getUserObject())) {
 			doRunPage(ureq);
 		} else {
 			pageEditCtrl = new PageEditorController(ureq, getWindowControl(), new PortfolioPageEditorProvider());
 			listenTo(pageEditCtrl);
 			mainVC.put("page", pageEditCtrl.getInitialComponent());
-			
-			editLink.setCustomDisplayText(translate("save"));
-			editLink.setIconLeftCSS("o_icon o_icon-lg o_icon_save");
-			editLink.setUserObject(Boolean.TRUE);
+			editLink(false);
 		}
 	}
 	
@@ -389,11 +402,7 @@ public class PageRunController extends BasicController implements TooledControll
 			loadModel(ureq);
 		}
 		mainVC.put("page", pageCtrl.getInitialComponent());
-		if(editLink != null) {
-			editLink.setCustomDisplayText(translate("edit.page"));
-			editLink.setIconLeftCSS("o_icon o_icon-lg o_icon_edit");
-			editLink.setUserObject(Boolean.FALSE);
-		}
+		editLink(true);
 	}
 
 	private class PortfolioPageProvider implements PageProvider {

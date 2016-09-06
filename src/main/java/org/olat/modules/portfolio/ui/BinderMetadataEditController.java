@@ -30,6 +30,7 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FileElement;
+import org.olat.core.gui.components.form.flexible.elements.RichTextElement;
 import org.olat.core.gui.components.form.flexible.elements.TextBoxListElement;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
@@ -66,7 +67,8 @@ public class BinderMetadataEditController extends FormBasicController {
 		imageMimeTypes.add("image/png");
 	}
 	
-	private TextElement titleEl, summaryEl;
+	private TextElement titleEl;
+	private RichTextElement summaryEl;
 	private TextBoxListElement categoriesEl;
 	
 	private FileElement fileUpload;
@@ -109,9 +111,10 @@ public class BinderMetadataEditController extends FormBasicController {
 		titleEl.setMandatory(true);
 		
 		String summary = binder == null ? null : binder.getSummary();
-		summaryEl = uifactory.addTextAreaElement("summary", "summary", 4096, 4, 60, false, summary, formLayout);
+		summaryEl = uifactory.addRichTextElementForStringDataMinimalistic("summary", "summary", summary, 8, 60, formLayout, getWindowControl());
 		summaryEl.setElementCssClass("o_sel_pf_edit_binder_summary");
 		summaryEl.setPlaceholderKey("summary.placeholder", null);
+		summaryEl.getEditorConfiguration().setStatusBar(false);
 		
 		fileUpload = uifactory.addFileElement(getWindowControl(), "file", "fileupload",formLayout);			
 		fileUpload.setPreview(ureq.getUserSession(), true);

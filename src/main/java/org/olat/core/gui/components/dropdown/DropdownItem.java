@@ -59,7 +59,7 @@ public class DropdownItem extends FormItemImpl implements FormItemCollection {
 	public void addElement(FormLink link) {
 		items.add(link);
 		
-		Link linkCmp = (Link)link.getComponent();
+		Link linkCmp = link.getComponent();
 		linkCmp.setDomReplacementWrapperRequired(false);
 		dropdown.addComponent(linkCmp);
 	}

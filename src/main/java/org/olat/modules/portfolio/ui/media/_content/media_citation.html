@@ -2,7 +2,7 @@
 	#if($r.available("cit"))
 		$r.render("cit")
 	#else
-	<div class="o_quote_author">$author</div>
+	<div class="o_quote_author">$r.escapeHtml($author)</div>
 	#end
 	<blockquote class="o_quote">$r.xssScan($citation)</blockquote>
 </div>

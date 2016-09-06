@@ -26,6 +26,7 @@ import java.util.Map;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.form.flexible.elements.RichTextElement;
 import org.olat.core.gui.components.form.flexible.elements.TextBoxListElement;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
@@ -57,7 +58,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class CollectTextMediaController extends FormBasicController implements PageElementAddController {
 	
 	private TextElement titleEl;
-	private TextElement descriptionEl, textEl;
+	private RichTextElement descriptionEl, textEl;
 	private TextBoxListElement categoriesEl;
 
 	private Media mediaReference;
@@ -120,7 +121,8 @@ public class CollectTextMediaController extends FormBasicController implements P
 		titleEl.setMandatory(true);
 		
 		String desc = mediaReference == null ? null : mediaReference.getDescription();
-		descriptionEl = uifactory.addRichTextElementForStringData("artefact.descr", "artefact.descr", desc, 6, 6, false, null, null, formLayout, ureq.getUserSession(), getWindowControl());
+		descriptionEl = uifactory.addRichTextElementForStringDataMinimalistic("artefact.descr", "artefact.descr", desc, 6, 60, formLayout, getWindowControl());
+		descriptionEl.getEditorConfiguration().setStatusBar(false);
 		
 		String content = mediaReference == null ? null : mediaReference.getContent();
 		textEl = uifactory.addRichTextElementForStringData("artefact.text", "artefact.text", content, 10, 6, false, null, null, formLayout, ureq.getUserSession(), getWindowControl());

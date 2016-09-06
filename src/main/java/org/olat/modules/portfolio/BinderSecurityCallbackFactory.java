@@ -180,6 +180,11 @@ public class BinderSecurityCallbackFactory {
 		public boolean canViewElement(PortfolioElement element) {
 			return true;
 		}
+
+		@Override
+		public boolean canViewPendingAssignments(Section section) {
+			return true;
+		}
 	}
 	
 	private static class BinderSecurityCallbackImpl implements BinderSecurityCallback {
@@ -404,6 +409,22 @@ public class BinderSecurityCallbackFactory {
 		}
 
 		@Override
+		public boolean canViewPendingAssignments(Section section) {
+			if(owner) return true;
+			
+			if(rights != null) {
+				for(AccessRights right:rights) {
+					if((PortfolioRoles.reviewer.equals(right.getRole()) || PortfolioRoles.coach.equals(right.getRole()))
+							&& right.matchElementAndAncestors(section)) {
+						return true;
+					}
+				}
+			}
+
+			return false;
+		}
+
+		@Override
 		public boolean canComment(PortfolioElement element) {
 			if(element.getType() == PortfolioElementType.page) {
 				Page page = (Page)element;
@@ -539,6 +560,11 @@ public class BinderSecurityCallbackFactory {
 
 		@Override
 		public boolean canViewElement(PortfolioElement element) {
+			return false;
+		}
+
+		@Override
+		public boolean canViewPendingAssignments(Section section) {
 			return false;
 		}
 

@@ -175,7 +175,7 @@ public class MembersMailController extends FormBasicController {
 			addMemberButton = uifactory.addFormLink("add.member", "add", "", "", individualMemberCont, Link.NONTRANSLATED);
 			addMemberButton.setIconLeftCSS("o_icon o_icon-lg o_icon_table_large");
 			addMemberButton.setDomReplacementWrapperRequired(false);
-			((Link)addMemberButton.getComponent()).setSuppressDirtyFormWarning(true);
+			addMemberButton.getComponent().setSuppressDirtyFormWarning(true);
 		}
 
 		String[] extValues = new String[] { translate("contact.external") };

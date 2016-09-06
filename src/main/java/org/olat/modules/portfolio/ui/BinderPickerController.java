@@ -161,7 +161,7 @@ public class BinderPickerController extends FormBasicController {
 
 	private void updateSelectedBinderUI() {
 		String copyTitle = StringHelper.escapeHtml(copyBinder.getTitle());
-		((Link)selectMapLink.getComponent()).setCustomDisplayText(copyTitle);
+		selectMapLink.getComponent().setCustomDisplayText(copyTitle);
 		
 		updateCopyDate(copyBinder.getCopyDate());
 		updateAssessmentInfos(copyBinder.getReturnDate());

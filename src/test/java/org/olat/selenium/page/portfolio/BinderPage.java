@@ -172,7 +172,7 @@ public class BinderPage {
 		return this;
 	}
 	
-	public BinderPage createAssignmentForSection(String sectionTitle, String title, String summary) {
+	public BinderPage createAssignmentForSection(String sectionTitle, String title, String summary, String content) {
 		By newAssignmentBy = By.xpath("//div[contains(@class,'o_portfolio_section')][h3[contains(text(),'" + sectionTitle + "')]]//a[contains(@class,'o_sel_pf_new_assignment')]");
 		List<WebElement> newAssignmentButtons = browser.findElements(newAssignmentBy);
 		Assert.assertEquals(1, newAssignmentButtons.size());
@@ -187,9 +187,8 @@ public class BinderPage {
 		By nameBy = By.cssSelector(".o_sel_pf_edit_assignment_title input[type='text']");
 		WebElement nameEl = browser.findElement(nameBy);
 		nameEl.sendKeys(title);
-		By summaryBy = By.cssSelector(".o_sel_pf_edit_assignment_summary textarea");
-		WebElement summaryEl = browser.findElement(summaryBy);
-		summaryEl.sendKeys(summary);
+		OOGraphene.tinymce(summary, ".o_sel_pf_edit_assignment_summary", browser);
+		OOGraphene.tinymce(content, ".o_sel_pf_edit_assignment_content", browser);
 		
 		//save
 		By submitBy = By.cssSelector(".o_sel_pf_edit_assignment_form button.btn-primary");

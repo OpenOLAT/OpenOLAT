@@ -27,6 +27,7 @@ import org.olat.core.gui.render.Renderer;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.util.StringHelper;
 
 /**
  * 
@@ -70,7 +71,7 @@ public class TimelineComponentRenderer extends DefaultComponentRenderer {
 				TimelinePoint point = cmp.getPoints().get(i);
 				if(i > 0) sb.append(",");
 				sb.append("{ id:\"").append(point.getId()).append("\"")
-				  .append(", \"title\":").append(JSONObject.quote(point.getTitle()))
+				  .append(", \"title\":").append(JSONObject.quote(StringHelper.escapeHtml(point.getTitle())))
 				  .append(", \"time\":").append(point.getDate().getTime()).append("")
 				  .append(", \"status\":\"").append(point.getStatus()).append("\"}");
 			}

@@ -186,18 +186,21 @@ public class TableOfContentController extends BasicController implements TooledC
 			boolean first = count == 0;
 			boolean last = count == sections.size() - 1;
 			count++;
-			SectionRow sectionRow = forgeSectionRow(section,
-					sectionToAssessmentSectionMap.get(section),
-					sectionToAssignmentMap.get(section),
-					first, last);
-			sectionList.add(sectionRow);
-			sectionMap.put(section.getKey(), sectionRow);
+			
+			if(secCallback.canViewElement(section)) {
+				SectionRow sectionRow = forgeSectionRow(section,
+						sectionToAssessmentSectionMap.get(section),
+						sectionToAssignmentMap.get(section),
+						first, last);
+				sectionList.add(sectionRow);
+				sectionMap.put(section.getKey(), sectionRow);
+			}
 		}
 
 		List<Page> pages = portfolioService.getPages(binder, null);
 		for(Page page:pages) {
-			if(secCallback.canViewElement(page)) {
-				Section section = page.getSection();
+			Section section = page.getSection();
+			if(secCallback.canViewElement(page) && section != null) {
 				SectionRow sectionRow = sectionMap.get(section.getKey());
 				PageRow pageRow = forgePageRow(page, numberOfCommentsMap);
 				sectionRow.getPages().add(pageRow);
@@ -219,10 +222,12 @@ public class TableOfContentController extends BasicController implements TooledC
 		String title = StringHelper.escapeHtml(section.getTitle());
 		
 		List<Assignment> notAssignedAssignments = new ArrayList<>();
-		if(assignemnts != null) {
-			for(Assignment assignemnt:assignemnts) {
-				if(assignemnt.getPage() == null) {
-					notAssignedAssignments.add(assignemnt);
+		if(secCallback.canViewPendingAssignments(section)) {
+			if(assignemnts != null) {
+				for(Assignment assignemnt:assignemnts) {
+					if(assignemnt.getPage() == null) {
+						notAssignedAssignments.add(assignemnt);
+					}
 				}
 			}
 		}

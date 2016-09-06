@@ -28,6 +28,7 @@ import java.util.Map;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FileElement;
+import org.olat.core.gui.components.form.flexible.elements.RichTextElement;
 import org.olat.core.gui.components.form.flexible.elements.TextBoxListElement;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
@@ -63,7 +64,7 @@ public class CollectFileMediaController extends FormBasicController implements P
 	
 	private FileElement fileEl;
 	private TextElement titleEl;
-	private TextElement descriptionEl;
+	private RichTextElement descriptionEl;
 	private TextBoxListElement categoriesEl;
 
 	private Media mediaReference;
@@ -125,7 +126,8 @@ public class CollectFileMediaController extends FormBasicController implements P
 		titleEl.setMandatory(true);
 		
 		String desc = mediaReference == null ? null : mediaReference.getTitle();
-		descriptionEl = uifactory.addRichTextElementForStringData("artefact.descr", "artefact.descr", desc, 8, 6, false, null, null, formLayout, ureq.getUserSession(), getWindowControl());
+		descriptionEl = uifactory.addRichTextElementForStringDataMinimalistic("artefact.descr", "artefact.descr", desc, 8, 60, formLayout, getWindowControl());
+		descriptionEl.getEditorConfiguration().setStatusBar(false);
 		
 		fileEl = uifactory.addFileElement(getWindowControl(), "artefact.file", "artefact.file", formLayout);
 		fileEl.addActionListener(FormEvent.ONCHANGE);

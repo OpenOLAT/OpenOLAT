@@ -84,6 +84,8 @@ public interface BinderSecurityCallback {
 	
 	public boolean canViewElement(PortfolioElement element);
 	
+	public boolean canViewPendingAssignments(Section section);
+	
 	public boolean canViewEmptySection(Section section);
 	
 	public boolean canComment(PortfolioElement element);

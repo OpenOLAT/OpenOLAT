@@ -242,7 +242,7 @@ public class PortfolioCourseNodeRunController extends FormBasicController {
 
 	private void updateSelectedBinderUI() {
 		String copyTitle = StringHelper.escapeHtml(copyBinder.getTitle());
-		((Link)selectMapLink.getComponent()).setCustomDisplayText(copyTitle);
+		selectMapLink.getComponent().setCustomDisplayText(copyTitle);
 		
 		updateCopyDate(copyBinder.getCopyDate());
 		updateAssessmentInfos(copyBinder.getReturnDate());
@@ -251,7 +251,7 @@ public class PortfolioCourseNodeRunController extends FormBasicController {
 
 	private void updateSelectedMapUI() {	
 		String copyTitle = StringHelper.escapeHtml(copyMap.getTitle());
-		((Link)selectMapLink.getComponent()).setCustomDisplayText(copyTitle);
+		selectMapLink.getComponent().setCustomDisplayText(copyTitle);
 		
 		// show results, when already handed in
 		EPStructuredMap structuredMap = (EPStructuredMap)copyMap;

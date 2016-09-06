@@ -53,9 +53,7 @@ public class BindersPage {
 		By nameBy = By.cssSelector(".o_sel_pf_edit_binder_title input[type='text']");
 		WebElement nameEl = browser.findElement(nameBy);
 		nameEl.sendKeys(title);
-		By summaryBy = By.cssSelector(".o_sel_pf_edit_binder_summary textarea");
-		WebElement summaryEl = browser.findElement(summaryBy);
-		summaryEl.sendKeys(summary);
+		OOGraphene.tinymce(summary, ".o_sel_pf_edit_binder_summary", browser);
 		
 		//save
 		By submitBy = By.cssSelector(".o_sel_pf_edit_binder_form button.btn-primary");

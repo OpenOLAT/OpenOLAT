@@ -90,6 +90,17 @@ public class OOGraphene {
 		((JavascriptExecutor)browser).executeScript("top.tinymce.activeEditor.setContent('" + content + "')");
 	}
 	
+	public static final void tinymce(String content, String containerCssSelector, WebDriver browser) {
+		By tinyIdBy = By.cssSelector(containerCssSelector + " div.o_richtext_mce");
+		waitElement(tinyIdBy, 5, browser);
+		WebElement tinyIdEl = browser.findElement(tinyIdBy);
+		String tinyId = tinyIdEl.getAttribute("id").replace("_diw", "");
+
+		Graphene.waitModel(browser).withTimeout(waitTinyDuration, TimeUnit.SECONDS)
+			.pollingEvery(poolingDuration, TimeUnit.MILLISECONDS).until(new TinyMCELoadedByIdPredicate(tinyId));
+		((JavascriptExecutor)browser).executeScript("top.tinymce.editors['" + tinyId + "'].setContent('" + content + "')");
+	}
+	
 	/**
 	 * Make sure that the checkbox is in the correct state.
 	 * @param checkboxEl

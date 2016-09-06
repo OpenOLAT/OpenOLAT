@@ -197,8 +197,8 @@ public class BinderPageListController extends AbstractPageListController {
 		}
 		
 		for(Assignment assignment:assignments) {
-			if(assignment.getPage() == null) {
-				Section section = assignment.getSection();
+			Section section = assignment.getSection();
+			if(assignment.getPage() == null && secCallback.canViewPendingAssignments(section)) {
 				List<Assignment> sectionAssignments = sectionToAssignmentMap.get(section);
 				PortfolioElementRow row = forgePendingAssignmentRow(assignment, section, sectionAssignments);
 				rows.add(row);
