@@ -28,6 +28,7 @@ import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.util.StringHelper;
 import org.olat.course.CorruptedCourseException;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
@@ -65,7 +66,7 @@ public class QTI21ConfirmDeleteDataController extends FormBasicController {
 				if(sb.length() > 0) sb.append(", ");
 				try {
 					ICourse course = CourseFactory.loadCourse(ref.getSource().getResourceableId());
-					sb.append(course.getCourseTitle());
+					sb.append(StringHelper.escapeHtml(course.getCourseTitle()));
 				} catch(CorruptedCourseException e) {
 					logError("", e);
 				}

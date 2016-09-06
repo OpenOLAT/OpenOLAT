@@ -30,6 +30,7 @@ import org.olat.core.gui.translator.Translator;
 import org.olat.core.logging.OLATRuntimeException;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.StringHelper;
 import org.olat.ims.qti21.AssessmentTestSession;
 import org.olat.ims.qti21.model.audit.CandidateEvent;
 import org.olat.ims.qti21.model.audit.CandidateItemEventType;
@@ -159,7 +160,7 @@ public class AssessmentItemComponentRenderer extends AssessmentObjectComponentRe
 		//title + status
 		sb.append("<h1 class='itemTitle'>");
 		renderItemStatus(renderer, sb, itemSessionState, translator);
-		sb.append(assessmentItem.getTitle()).append("</h1>")
+		sb.append(StringHelper.escapeHtml(assessmentItem.getTitle())).append("</h1>")
 		  .append("<div id='itemBody' class='clearfix'>");
 		
 		//TODO prompt

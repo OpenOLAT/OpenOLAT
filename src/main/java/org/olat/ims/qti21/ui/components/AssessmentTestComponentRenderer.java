@@ -344,7 +344,7 @@ public class AssessmentTestComponentRenderer extends AssessmentObjectComponentRe
 		//title + status
 		sb.append("<h3 class='itemTitle'>");
 		renderItemStatus(sb, itemSessionState, options, translator);
-		sb.append(itemNode.getSectionPartTitle(), component.isShowTitles())
+		sb.append(StringHelper.escapeHtml(itemNode.getSectionPartTitle()), component.isShowTitles())
 		  .append("</h3>")
 		  .append("<div id='itemBody' class='clearfix'>");
 
@@ -519,7 +519,7 @@ public class AssessmentTestComponentRenderer extends AssessmentObjectComponentRe
 		if(currentTestPart.getNavigationMode() == NavigationMode.NONLINEAR || assessmentSessionSessionState.getEntryTime() != null) {
 			sb.append("<li class='o_assessmentsection'>")
 			  .append("<header><h2>")
-			  .append(sectionNode.getSectionPartTitle()).append("</h2>");
+			  .append(StringHelper.escapeHtml(sectionNode.getSectionPartTitle())).append("</h2>");
 			renderAssessmentSectionRubrickBlock(renderer, sb, component, sectionNode, ubu, translator);
 			sb.append("</header>");
 			sb.append("<ul class='o_testpartnavigation_inner list-unstyled'>");
@@ -548,7 +548,7 @@ public class AssessmentTestComponentRenderer extends AssessmentObjectComponentRe
 			sb.append(FormJSHelper.getXHRFnCallFor(component.getQtiItem(), true, true,
 					new NameValuePair("cid", Event.reviewItem.name()), new NameValuePair("item", key)));
 			sb.append(";\" class='btn btn-default' ").append(" disabled", !reviewable).append("><span class='questionTitle'>")
-			  .append(itemNode.getSectionPartTitle()).append("</span>");
+			  .append(StringHelper.escapeHtml(itemNode.getSectionPartTitle())).append("</span>");
 
 			if(!reviewable) {
 				sb.append("<span class='o_assessmentitem_status reviewNotAllowed'>").append(translator.translate("assessment.item.status.reviewNot")).append("</span>");
@@ -585,13 +585,12 @@ public class AssessmentTestComponentRenderer extends AssessmentObjectComponentRe
 				|| (!identifierMatch && testFeedback.getVisibilityMode() == VisibilityMode.HIDE_IF_MATCH)) {
 			sb.append("<h2>");
 			if(StringHelper.containsNonWhitespace(testFeedback.getTitle())) {
-				sb.append(testFeedback.getTitle());
+				sb.append(StringHelper.escapeHtml(testFeedback.getTitle()));
 			} else {
 				sb.append(translator.translate("assessment.test.modal.feedback"));
 			}
 			sb.append("</h2>");
 			
-			testFeedback.getTitle();
 			final QtiSerializer serializer = CoreSpringFactory.getImpl(QTI21Service.class).qtiSerializer();
 			//TODO QTI flow: need to handle url, feedbackBlock... -->
 			testFeedback.getChildren().forEach((flow) -> sb.append(serializer.serializeJqtiObject(flow)));
@@ -651,7 +650,7 @@ public class AssessmentTestComponentRenderer extends AssessmentObjectComponentRe
 	private void renderNavigationAssessmentSection(AssessmentRenderer renderer, StringOutput sb, AssessmentTestComponent component, TestPlanNode sectionNode,
 			URLBuilder ubu, Translator translator) {
 		sb.append("<li class='o_assessmentsection o_qti_menu_item'>")
-		  .append("<header><h4>").append(sectionNode.getSectionPartTitle()).append("</h4>");
+		  .append("<header><h4>").append(StringHelper.escapeHtml(sectionNode.getSectionPartTitle())).append("</h4>");
 		renderAssessmentSectionRubrickBlock(renderer, sb, component, sectionNode, ubu, translator);
 
 		sb.append("</header><ul class='o_testpartnavigation_inner list-unstyled'>");
@@ -682,7 +681,7 @@ public class AssessmentTestComponentRenderer extends AssessmentObjectComponentRe
 		sb.append(FormJSHelper.getXHRFnCallFor(form, dispatchId, 1, true, true,
 				new NameValuePair("cid", Event.selectItem.name()), new NameValuePair("item", key)));
 		sb.append(";\" class='btn btn-default'><span class='questionTitle'>")
-		  .append(itemNode.getSectionPartTitle()).append("</span>");
+		  .append(StringHelper.escapeHtml(itemNode.getSectionPartTitle())).append("</span>");
 		
 		ItemSessionState itemSessionState = component.getItemSessionState(itemNode.getKey());
 		if(itemSessionState.getEndTime() != null) {

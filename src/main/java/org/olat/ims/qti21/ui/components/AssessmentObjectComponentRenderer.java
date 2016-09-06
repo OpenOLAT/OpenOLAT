@@ -239,7 +239,7 @@ public abstract class AssessmentObjectComponentRenderer extends DefaultComponent
 				if(title != null && title.getValue() != null) {
 					String feedbackTitle = title.getValue().toString();
 					if(StringHelper.containsNonWhitespace(feedbackTitle)) {
-						sb.append("<h4>").append(feedbackTitle).append("</h4>");
+						sb.append("<h4>").append(StringHelper.escapeHtml(feedbackTitle)).append("</h4>");
 					}
 				}
 				
@@ -551,7 +551,7 @@ public abstract class AssessmentObjectComponentRenderer extends DefaultComponent
 			ResolvedAssessmentItem resolvedAssessmentItem, ItemSessionState itemSessionState, InfoControl infoControl, URLBuilder ubu, Translator translator) {
 		sb.append("<div class=\"infoControl\">")
 		  .append("<button type='button' onclick=\"return QtiWorksRendering.showInfoControlContent(this)\" class='btn btn-default'>")
-		  .append("<span>").append(infoControl.getTitle()).append("</span></button>")
+		  .append("<span>").append(StringHelper.escapeHtml(infoControl.getTitle())).append("</span></button>")
 		  .append("<div class='infoControlContent o_info'>");
 		infoControl.getChildren().forEach((flow)
 				-> renderFlow(renderer, sb, component, resolvedAssessmentItem, itemSessionState, flow, ubu, translator));
@@ -652,7 +652,8 @@ public abstract class AssessmentObjectComponentRenderer extends DefaultComponent
 		
 		FormItem endAttemptButton = item.getFormComponent(id);
 		if(endAttemptButton == null) {
-			endAttemptButton = FormUIFactory.getInstance().addFormLink(id, id, interaction.getTitle(), null, null, Link.BUTTON | Link.NONTRANSLATED);
+			String title = StringHelper.escapeHtml(interaction.getTitle());
+			endAttemptButton = FormUIFactory.getInstance().addFormLink(id, id, title, null, null, Link.BUTTON | Link.NONTRANSLATED);
 			endAttemptButton.setTranslator(translator);
 			endAttemptButton.setUserObject(interaction);
 			if(item.getRootForm() != endAttemptButton.getRootForm()) {

@@ -2,6 +2,6 @@
 	<div class="o_warning">$r.translate("warning.in.use")</div>
 #end
 <div class="o_assessment_test_editor_and_composer">
-	<h2><i class="$cssClass"> </i> $title#if($identifier && !${identifier.isEmpty()}) <small>$identifier</small>#end</h2>
+	<h2><i class="$cssClass"> </i> $r.escapeHtml($title)#if($identifier && !${identifier.isEmpty()}) <small>$identifier</small>#end</h2>
 	<section>$r.render("content")</section>
 </div>

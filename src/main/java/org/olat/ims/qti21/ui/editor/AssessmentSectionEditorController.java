@@ -76,7 +76,7 @@ public class AssessmentSectionEditorController extends ItemSessionControlControl
 			setFormWarning("warning.alien.assessment.test");
 		}
 		
-		String title = section.getTitle();
+		String title = StringHelper.escapeHtml(section.getTitle());
 		titleEl = uifactory.addTextElement("title", "form.metadata.title", 255, title, formLayout);
 		titleEl.setEnabled(editable);
 		titleEl.setMandatory(true);
