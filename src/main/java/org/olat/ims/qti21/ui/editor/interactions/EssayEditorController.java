@@ -163,7 +163,7 @@ public class EssayEditorController extends FormBasicController {
 		//title
 		itemBuilder.setTitle(titleEl.getValue());
 		//question
-		String questionText = textEl.getValue();
+		String questionText = textEl.getRawValue();
 		itemBuilder.setQuestion(questionText);
 		
 		itemBuilder.setPlaceholder(placeholderEl.getValue());

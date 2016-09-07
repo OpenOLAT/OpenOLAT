@@ -21,14 +21,24 @@
       <item ident="QTIEDIT:SCQ:8000138058" title="Neue Frage">
         <presentation>
           <material>
-            <mattext texttype="text/html"><![CDATA[Neue Frage]]></mattext>
+            <mattext texttype="text/html"><![CDATA[Neue Frage<br /><br /><span id="olatFlashMovieViewer549242" class="olatFlashMovieViewer" style="display:block;border:solid 1px #000; width:320px; height:240px;">
+<script src="/raw/fx-111111x11/movie/player.js" type="text/javascript"></script>
+<script type="text/javascript" defer="defer">
+BPlayer.insertPlayer("media/demo-video.mp4","olatFlashMovieViewer549242",320,240,0,0,"video",undefined,false,false,true,undefined);
+</script>
+</span>]]></mattext>
           </material>
           <response_lid ident="8000138060" rcardinality="Single" rtiming="No">
             <render_choice shuffle="No" minnumber="1" maxnumber="1">
               <flow_label class="List">
                 <response_label ident="8000138063" rshuffle="Yes">
                   <material>
-                    <mattext texttype="text/html"><![CDATA[Richtige Antwort]]></mattext>
+                    <mattext texttype="text/html"><![CDATA[Richtige Antwort<br /><br /><span id="olatFlashMovieViewer656727" class="olatFlashMovieViewer" style="display:block;border:solid 1px #000; width:320px; height:240px;">
+<script src="/raw/fx-111111x11/movie/player.js" type="text/javascript"></script>
+<script type="text/javascript" defer="defer">
+BPlayer.insertPlayer("media/demo-video.mp4","olatFlashMovieViewer656727",320,240,0,0,"video",undefined,false,false,true,undefined);
+</script>
+</span>]]></mattext>
                   </material>
                 </response_label>
               </flow_label>
@@ -344,7 +354,7 @@
         <presentation label="notset">
           <flow>
             <material>
-              <mattext texttype="text/html"><![CDATA[<p>To be or</p>]]></mattext>
+              <mattext texttype="text/html"><![CDATA[To be or]]></mattext>
             </material>
             <response_str ident="8000177110" rcardinality="Single">
               <render_fib columns="3" maxchars="10">
@@ -366,7 +376,7 @@
             <conditionvar>
               <and>
                 <or>
-                  <varequal respident="8000177110" case="No"><![CDATA[not]]></varequal>
+                  <varequal respident="8000177110" case="No"><![CDATA[New text element<br />Et encor<br />bla]]></varequal>
                 </or>
               </and>
             </conditionvar>

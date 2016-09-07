@@ -291,9 +291,17 @@ public class QTI12To21Converter {
 		List<Response> responses = question.getResponses();
 		for(Response response:responses) {
 			String responseText = response.getContent().renderAsHtmlForEditor();
-			SimpleChoice newChoice = AssessmentItemFactory
+			SimpleChoice newChoice;
+			if(StringHelper.isHtml(responseText)) {
+				newChoice = AssessmentItemFactory
+						.createSimpleChoice(interaction, "", itemBuilder.getQuestionType().getPrefix());
+				htmlBuilder.appendHtml(newChoice, responseText);
+			} else {
+				newChoice = AssessmentItemFactory
 					.createSimpleChoice(interaction, responseText, itemBuilder.getQuestionType().getPrefix());
+			}
 			itemBuilder.addSimpleChoice(newChoice);
+			
 			if(response.isCorrect()) {
 				itemBuilder.setCorrectAnswer(newChoice.getIdentifier());
 			}	
@@ -323,8 +331,17 @@ public class QTI12To21Converter {
 		List<Response> responses = question.getResponses();
 		for(Response response:responses) {
 			String responseText = response.getContent().renderAsHtmlForEditor();
-			SimpleChoice newChoice = AssessmentItemFactory
+
+			SimpleChoice newChoice;
+			if(StringHelper.isHtml(responseText)) {
+				newChoice = AssessmentItemFactory
+						.createSimpleChoice(interaction, "", itemBuilder.getQuestionType().getPrefix());
+				htmlBuilder.appendHtml(newChoice, responseText);
+			} else {
+				newChoice = AssessmentItemFactory
 					.createSimpleChoice(interaction, responseText, itemBuilder.getQuestionType().getPrefix());
+			}
+			
 			itemBuilder.addSimpleChoice(newChoice);
 			if(response.isCorrect()) {
 				itemBuilder.addCorrectAnswer(newChoice.getIdentifier());
@@ -402,16 +419,21 @@ public class QTI12To21Converter {
 				FIBResponse gap = (FIBResponse)response;
 				if(FIBResponse.TYPE_BLANK.equals(gap.getType())) {
 					String responseId = itemBuilder.generateResponseIdentifier();
+					
+					StringBuilder entryString = new StringBuilder();
+					entryString.append(" <textentryinteraction responseidentifier=\"").append(responseId).append("\"");
+					
 					TextEntry entry = itemBuilder.createTextEntry(responseId);
 					entry.setCaseSensitive("Yes".equals(gap.getCaseSensitive()));
 					if(gap.getMaxLength() > 0) {
 						entry.setExpectedLength(gap.getMaxLength());
+						entryString.append(" expectedlength=\"").append(gap.getMaxLength()).append("\"");
 					} else if(gap.getSize() > 0) {
 						entry.setExpectedLength(gap.getSize());
+						entryString.append(" expectedlength=\"").append(gap.getSize()).append("\"");
 					}
 					parseAlternatives(gap.getCorrectBlank(), gap.getPoints(), entry);
-					
-					String entryString = " <textEntryInteraction responseIdentifier=\"" + responseId + "\"/>";
+					entryString.append("></textentryinteraction>");
 					sb.append(entryString);
 				} else if(FIBResponse.TYPE_CONTENT.equals(gap.getType())) {
 					Material text = gap.getContent();
@@ -421,10 +443,7 @@ public class QTI12To21Converter {
 			}
 		}
 		
-		String fib = sb.toString();
-		if(!fib.startsWith("<p") && !fib.startsWith("<div")) {
-			fib = "<p>" + fib + "</p>";
-		}
+		String fib = "<div>" + sb.toString() + "</div>";
 		itemBuilder.setQuestion(fib);
 		return itemBuilder;
 	}

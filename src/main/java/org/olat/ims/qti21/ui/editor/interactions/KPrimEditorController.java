@@ -68,9 +68,7 @@ public class KPrimEditorController extends FormBasicController {
 	private final List<KprimWrapper> choiceWrappers = new ArrayList<>();
 
 	private int count = 0;
-	private final File itemFile;
-	private final File rootDirectory;
-	private final VFSContainer rootContainer;
+	private final VFSContainer itemContainer;
 	
 	private final boolean restrictedEdit;
 	private final KPrimAssessmentItemBuilder itemBuilder;
@@ -79,11 +77,12 @@ public class KPrimEditorController extends FormBasicController {
 			File rootDirectory, VFSContainer rootContainer, File itemFile, boolean restrictedEdit) {
 		super(ureq, wControl, "simple_choices_editor");
 		setTranslator(Util.createPackageTranslator(AssessmentTestEditorController.class, getLocale()));
-		this.itemFile = itemFile;
 		this.itemBuilder = itemBuilder;
-		this.rootDirectory = rootDirectory;
-		this.rootContainer = rootContainer;
 		this.restrictedEdit = restrictedEdit;
+		
+		String relativePath = rootDirectory.toPath().relativize(itemFile.toPath().getParent()).toString();
+		itemContainer = (VFSContainer)rootContainer.resolve(relativePath);
+		
 		initForm(ureq);
 	}
 
@@ -97,10 +96,7 @@ public class KPrimEditorController extends FormBasicController {
 		
 		titleEl = uifactory.addTextElement("title", "form.imd.title", -1, itemBuilder.getTitle(), metadata);
 		titleEl.setMandatory(true);
-		
-		String relativePath = rootDirectory.toPath().relativize(itemFile.toPath().getParent()).toString();
-		VFSContainer itemContainer = (VFSContainer)rootContainer.resolve(relativePath);
-		
+
 		String description = itemBuilder.getQuestion();
 		textEl = uifactory.addRichTextElementForQTI21("desc", "form.imd.descr", description, 8, -1, itemContainer,
 				metadata, ureq.getUserSession(), getWindowControl());
@@ -154,7 +150,7 @@ public class KPrimEditorController extends FormBasicController {
 	private void wrapAnswer(UserRequest ureq, SimpleAssociableChoice choice) {
 		String choiceContent =  itemBuilder.getHtmlHelper().flowStaticString(choice.getFlowStatics());
 		String choiceId = "answer" + count++;
-		RichTextElement choiceEl = uifactory.addRichTextElementForQTI21(choiceId, "form.imd.answer", choiceContent, 8, -1, null,
+		RichTextElement choiceEl = uifactory.addRichTextElementForQTI21(choiceId, "form.imd.answer", choiceContent, 8, -1, itemContainer,
 				answersCont, ureq.getUserSession(), getWindowControl());
 		choiceEl.setUserObject(choice);
 		answersCont.add("choiceId", choiceEl);
@@ -184,7 +180,7 @@ public class KPrimEditorController extends FormBasicController {
 		//title
 		itemBuilder.setTitle(titleEl.getValue());
 		//question
-		String questionText = textEl.getValue();
+		String questionText = textEl.getRawValue();
 		itemBuilder.setQuestion(questionText);
 		
 		//shuffle
@@ -202,7 +198,7 @@ public class KPrimEditorController extends FormBasicController {
 		List<SimpleAssociableChoice> choiceList = new ArrayList<>();
 		for(KprimWrapper choiceWrapper:choiceWrappers) {
 			SimpleAssociableChoice choice = choiceWrapper.getSimpleChoice();
-			String answer = choiceWrapper.getAnswer().getValue();
+			String answer = choiceWrapper.getAnswer().getRawValue();
 			itemBuilder.getHtmlHelper().appendHtml(choice, answer);
 			choiceList.add(choice);
 		}
