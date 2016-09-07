@@ -261,7 +261,7 @@ public class BinderTemplateHandler implements RepositoryHandler {
 	@Override
 	public Controller createAssessmentDetailsController(RepositoryEntry re, UserRequest ureq, WindowControl wControl,
 			TooledStackedPanel toolbar, Identity assessedIdentity) {
-		return new PortfolioAssessmentDetailsController(ureq, wControl, toolbar, re, assessedIdentity);
+		return new PortfolioAssessmentDetailsController(ureq, wControl, re, assessedIdentity);
 	}
 
 	@Override

@@ -442,7 +442,7 @@ public class PortfolioCourseNode extends AbstractAccessableCourseNode implements
 		if(mapEntry != null && BinderTemplateResource.TYPE_NAME.equals(mapEntry.getOlatResource().getResourceableTypeName())) {
 			Identity assessedIdentity = userCourseEnvironment.getIdentityEnvironment().getIdentity();
 			RepositoryEntry courseEntry = userCourseEnvironment.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
-			return new PortfolioAssessmentDetailsController(ureq, wControl, stackPanel,
+			return new PortfolioAssessmentDetailsController(ureq, wControl,
 					courseEntry, this, mapEntry, assessedIdentity);
 		}
 		return new PortfolioResultDetailsController(ureq, wControl, stackPanel, this, userCourseEnvironment);

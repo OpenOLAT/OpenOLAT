@@ -277,8 +277,8 @@ public class BinderPageListController extends AbstractPageListController {
 				}
 			}
 		}
-		
-		if(rows.isEmpty()) {
+
+		if(newSectionButton != null && rows.isEmpty()) {
 			flc.add("create.new.section", newSectionButton);
 		} else if (newSectionButton != null)  {
 			flc.remove(newSectionButton);

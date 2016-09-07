@@ -23,7 +23,6 @@ import java.util.List;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
-import org.olat.core.gui.components.stack.BreadcrumbPanel;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
@@ -58,16 +57,14 @@ public class PortfolioAssessmentDetailsController extends BasicController {
 
 	private CourseNode courseNode;
 	private final VelocityContainer mainVC;
-	private final BreadcrumbPanel stackPanel;
 	
 	@Autowired
 	private PortfolioService portfolioService;
 	
-	public PortfolioAssessmentDetailsController(UserRequest ureq, WindowControl wControl, BreadcrumbPanel stackPanel,
+	public PortfolioAssessmentDetailsController(UserRequest ureq, WindowControl wControl,
 			RepositoryEntry templateEntry, Identity assessedIdentity) {
 		super(ureq, wControl, Util.createPackageTranslator(PortfolioResultDetailsController.class, ureq.getLocale()));
 
-		this.stackPanel = stackPanel;
 		mainVC = createVelocityContainer("binder_result_details");
 		
 		if(templateEntry != null && BinderTemplateResource.TYPE_NAME.equals(templateEntry.getOlatResource().getResourceableTypeName())) {
@@ -84,12 +81,11 @@ public class PortfolioAssessmentDetailsController extends BasicController {
 		putInitialPanel(mainVC);
 	}
 	
-	public PortfolioAssessmentDetailsController(UserRequest ureq, WindowControl wControl, BreadcrumbPanel stackPanel,
+	public PortfolioAssessmentDetailsController(UserRequest ureq, WindowControl wControl,
 			RepositoryEntry courseEntry, CourseNode courseNode, RepositoryEntry templateEntry, Identity assessedIdentity) {
 		super(ureq, wControl);
 
 		this.courseNode = courseNode;
-		this.stackPanel = stackPanel;
 		mainVC = createVelocityContainer("binder_result_details");
 		
 		if(templateEntry != null && BinderTemplateResource.TYPE_NAME.equals(templateEntry.getOlatResource().getResourceableTypeName())) {

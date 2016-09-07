@@ -115,6 +115,11 @@ public class EMailIdentity implements Identity {
 		public String getLastName() {
 			return data.get(UserConstants.LASTNAME);
 		}
+		
+		@Override
+		public String getEmail() {
+			return data.get(UserConstants.EMAIL);
+		}
 
 		@Override
 		public Date getLastModified() {
@@ -142,7 +147,7 @@ public class EMailIdentity implements Identity {
 		}
 
 		@Override
-		public String getProperty(String propertyName, Locale locale) {
+		public String getProperty(String propertyName, Locale propLocale) {
 			return data.get(propertyName);
 		}
 
@@ -151,7 +156,7 @@ public class EMailIdentity implements Identity {
 		}
 
 		@Override
-		public String getPropertyOrIdentityEnvAttribute(String propertyName, Locale locale) {
+		public String getPropertyOrIdentityEnvAttribute(String propertyName, Locale propLocale) {
 			return data.get(propertyName);
 		}
 

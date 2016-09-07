@@ -90,10 +90,12 @@ public class InvitationDAO {
 	public Invitation update(Invitation invitation, String firstName, String lastName, String email) {
 		List<Identity> identities = groupDao.getMembers(invitation.getBaseGroup(), GroupRoles.invitee.name());
 		for(Identity identity:identities) {
-			if(email.equals(identity.getUser().getProperty(UserConstants.EMAIL, null))) {
-				identity.getUser().setProperty(UserConstants.FIRSTNAME, firstName);
-				identity.getUser().setProperty(UserConstants.LASTNAME, lastName);
-				identity.getUser().setProperty(UserConstants.EMAIL, email);
+			User user = identity.getUser();
+			if(email.equals(user.getEmail())) {
+				user.setProperty(UserConstants.FIRSTNAME, firstName);
+				user.setProperty(UserConstants.LASTNAME, lastName);
+				user.setProperty(UserConstants.EMAIL, email);
+				userManager.updateUserFromIdentity(identity);
 			}
 		}
 		
@@ -194,12 +196,24 @@ public class InvitationDAO {
 		return invitations.get(0);
 	}
 	
+	/**
+	 * 
+	 * Warning! The E-mail is used in this case as a foreign key to match
+	 * the identity and the invitation on a base group which ca have several
+	 * identities.
+	 * 
+	 * @param group
+	 * @param identity
+	 * @return
+	 */
 	public Invitation findInvitation(Group group, IdentityRef identity) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select invitation from binvitation as invitation ")
 		  .append(" inner join fetch invitation.baseGroup bGroup")
 		  .append(" inner join bGroup.members as members")
-		  .append(" where bGroup.key=:groupKey and members.identity.key=:inviteeKey and members.role=:role");
+		  .append(" inner join members.identity as identity")
+		  .append(" inner join identity.user as user")
+		  .append(" where bGroup.key=:groupKey and identity.key=:inviteeKey and members.role=:role and invitation.mail=user.email");
 
 		List<Invitation> invitations = dbInstance.getCurrentEntityManager()
 				  .createQuery(sb.toString(), Invitation.class)
