@@ -104,7 +104,7 @@ public class SingleChoiceEditorController extends FormBasicController {
 		VFSContainer itemContainer = (VFSContainer)rootContainer.resolve(relativePath);
 		
 		String description = itemBuilder.getQuestion();
-		textEl = uifactory.addRichTextElementForStringDataCompact("desc", "form.imd.descr", description, 8, -1, itemContainer,
+		textEl = uifactory.addRichTextElementForQTI21("desc", "form.imd.descr", description, 8, -1, itemContainer,
 				metadata, ureq.getUserSession(), getWindowControl());
 		
 		//shuffle
@@ -166,7 +166,7 @@ public class SingleChoiceEditorController extends FormBasicController {
 	private void wrapAnswer(UserRequest ureq, SimpleChoice choice) {
 		String choiceContent =  itemBuilder.getHtmlHelper().flowStaticString(choice.getFlowStatics());
 		String choiceId = "answer" + count++;
-		RichTextElement choiceEl = uifactory.addRichTextElementForStringDataCompact(choiceId, "form.imd.answer", choiceContent, 8, -1, null,
+		RichTextElement choiceEl = uifactory.addRichTextElementForQTI21(choiceId, "form.imd.answer", choiceContent, 8, -1, null,
 				answersCont, ureq.getUserSession(), getWindowControl());
 		choiceEl.setUserObject(choice);
 		answersCont.add("choiceId", choiceEl);
@@ -230,7 +230,8 @@ public class SingleChoiceEditorController extends FormBasicController {
 		//title
 		itemBuilder.setTitle(titleEl.getValue());
 		//question
-		String questionText = textEl.getValue();
+		String questionText = textEl.getRawValue();
+		System.out.println(questionText);
 		itemBuilder.setQuestion(questionText);
 		
 		Identifier correctAnswerIdentifier = null;

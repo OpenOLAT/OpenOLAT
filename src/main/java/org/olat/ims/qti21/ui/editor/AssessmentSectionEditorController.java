@@ -76,13 +76,13 @@ public class AssessmentSectionEditorController extends ItemSessionControlControl
 			setFormWarning("warning.alien.assessment.test");
 		}
 		
-		String title = StringHelper.escapeHtml(section.getTitle());
+		String title = section.getTitle();
 		titleEl = uifactory.addTextElement("title", "form.metadata.title", 255, title, formLayout);
 		titleEl.setEnabled(editable);
 		titleEl.setMandatory(true);
 		
 		if(section.getRubricBlocks().isEmpty()) {
-			RichTextElement rubricEl = uifactory.addRichTextElementForStringDataCompact("rubric" + counter++, "form.imd.rubric", "", 8, -1, null,
+			RichTextElement rubricEl = uifactory.addRichTextElementForQTI21("rubric" + counter++, "form.imd.rubric", "", 8, -1, null,
 					formLayout, ureq.getUserSession(), getWindowControl());
 			rubricEl.getEditorConfiguration().setFileBrowserUploadRelPath("media");
 			rubricEl.setEnabled(editable);
@@ -90,7 +90,7 @@ public class AssessmentSectionEditorController extends ItemSessionControlControl
 		} else {
 			for(RubricBlock rubricBlock:section.getRubricBlocks()) {
 				String rubric = htmlBuilder.blocksString(rubricBlock.getBlocks());
-				RichTextElement rubricEl = uifactory.addRichTextElementForStringDataCompact("rubric" + counter++, "form.imd.rubric", rubric, 8, -1, null,
+				RichTextElement rubricEl = uifactory.addRichTextElementForQTI21("rubric" + counter++, "form.imd.rubric", rubric, 8, -1, null,
 						formLayout, ureq.getUserSession(), getWindowControl());
 				rubricEl.getEditorConfiguration().setFileBrowserUploadRelPath("media");
 				rubricEl.setEnabled(editable);

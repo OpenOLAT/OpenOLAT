@@ -14,7 +14,7 @@
 				author : 'frentix GmbH',
 				authorurl : 'http://www.frentix.com',
 				infourl : 'http://www.frentix.com',
-				version : '2.3.4'
+				version : '2.3.5'
 			};
 		},
 
@@ -338,11 +338,14 @@
 				var start = script.indexOf(startMark);
 				var end = script.indexOf(');');
 				if(start < 0 || end < 0) return '';
+				var params = script.substring(start + startMark.length,end);
+				return parseBPlayerScriptParameters(editor,params);
+			}
 
+			function parseBPlayerScriptParameters(editor,scriptParameters) {
 				var playerOffsetHeight = editor.getParam("olatmovieviewer_playerOffsetHeight");
 				var playerOffsetWidth = editor.getParam("olatmovieviewer_playerOffsetWidth");
-				var params = script.substring(start + startMark.length,end);
-				var settingsArr = params.split(',');
+				var settingsArr = scriptParameters.split(',');
 				var pl = 'domIdentity:' + settingsArr[1] + ',';
 				pl += 'address:' + settingsArr[0] + ',';
 				pl += 'streamer:' + settingsArr[7] + ',';
@@ -461,16 +464,24 @@
 			ed.on('SetContent', function(e) {
 				// Get the URL of the transparent placeholder image
 				var imgUrl = ed.getParam("olatmovieviewer_transparentImage");
-				tinymce.each(ed.dom.select("div.olatFlashMovieViewer,span.olatFlashMovieViewer"), function(node) {
+				tinymce.each(ed.dom.select("div.olatFlashMovieViewer,span.olatFlashMovieViewer,object.olatFlashMovieViewer"), function(node) {
 					// ...and for each of these, create an IMG...
-					var movieSettingsString = parseBPlayerScript(ed,node.innerHTML);
+					var movieSettingsString
+					var dataMovie = ed.dom.getAttrib(node, 'data-oo-movie');
+					if(dataMovie == "" || typeof dataMovie == "undefined") {
+						movieSettingsString = parseBPlayerScript(ed,node.innerHTML);
+					} else {
+						dataMovie = dataMovie.replace(new RegExp("'", 'g'), '"');
+						movieSettingsString = parseBPlayerScriptParameters(ed, dataMovie);
+					}
+					
 					var movieSettings;
 					try {
 						movieSettings = eval("x={" + movieSettingsString + "}");
 					} catch (exception) {
 						movieSettings = {};
 					}
-
+					
 					var imgNode = ed.dom.create("img", {
 						id:movieSettings.domIdentity,
 						name:movieSettings.domIdentity,

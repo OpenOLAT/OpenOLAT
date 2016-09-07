@@ -122,7 +122,7 @@ public class CollectTextMediaController extends FormBasicController implements P
 		
 		String desc = mediaReference == null ? null : mediaReference.getDescription();
 		descriptionEl = uifactory.addRichTextElementForStringDataMinimalistic("artefact.descr", "artefact.descr", desc, 6, 60, formLayout, getWindowControl());
-		descriptionEl.getEditorConfiguration().setStatusBar(false);
+		descriptionEl.getEditorConfiguration().setPathInStatusBar(false);
 		
 		String content = mediaReference == null ? null : mediaReference.getContent();
 		textEl = uifactory.addRichTextElementForStringData("artefact.text", "artefact.text", content, 10, 6, false, null, null, formLayout, ureq.getUserSession(), getWindowControl());

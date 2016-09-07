@@ -98,7 +98,7 @@ public class SectionEditController extends FormBasicController {
 		String description = section == null ? null : section.getDescription();
 		descriptionEl = uifactory.addRichTextElementForStringDataMinimalistic("summary", "page.summary", description, 8, 60, formLayout, getWindowControl());
 		descriptionEl.setPlaceholderKey("summary.placeholder", null);
-		descriptionEl.getEditorConfiguration().setStatusBar(false);
+		descriptionEl.getEditorConfiguration().setPathInStatusBar(false);
 		
 		Date begin = section == null ? null : section.getBeginDate();
 		beginDateEl = uifactory.addDateChooser("begin.date", "begin.date", begin, formLayout);

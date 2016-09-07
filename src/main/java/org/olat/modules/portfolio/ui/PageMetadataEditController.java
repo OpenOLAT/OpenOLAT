@@ -156,7 +156,7 @@ public class PageMetadataEditController extends FormBasicController {
 		summaryEl = uifactory.addRichTextElementForStringDataMinimalistic("summary", "page.summary", summary, 8, 60, formLayout, getWindowControl());
 		summaryEl.setPlaceholderKey("summary.placeholder", null);
 		summaryEl.setEnabled(editTitleAndSummary);
-		summaryEl.getEditorConfiguration().setStatusBar(false);
+		summaryEl.getEditorConfiguration().setPathInStatusBar(false);
 
 		imageUpload = uifactory.addFileElement(getWindowControl(), "file", "fileupload",formLayout);			
 		imageUpload.setPreview(ureq.getUserSession(), true);

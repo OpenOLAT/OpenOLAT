@@ -119,7 +119,7 @@ public class AssignmentEditController extends FormBasicController {
 		summaryEl = uifactory.addRichTextElementForStringDataMinimalistic("summary", "summary", summary, 8, 60, formLayout, getWindowControl());
 		summaryEl.setElementCssClass("o_sel_pf_edit_assignment_summary");
 		summaryEl.setPlaceholderKey("summary.placeholder", null);
-		summaryEl.getEditorConfiguration().setStatusBar(false);
+		summaryEl.getEditorConfiguration().setPathInStatusBar(false);
 		
 		String content = assignment == null ? null : assignment.getContent();
 		contentEl = uifactory.addRichTextElementForStringDataCompact("content", "assignment.content", content, 6, 60, null, formLayout,

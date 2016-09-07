@@ -86,7 +86,11 @@ class RichTextElementRenderer extends DefaultComponentRenderer {
 			sb.append(Formatter.formatLatexFormulas(value));
 			sb.append("</div>");
 		} else {
-			sb.append("<div id='").append(domID).append("_diw' class='o_richtext_mce'>");
+			sb.append("<div id='").append(domID).append("_diw' class='o_richtext_mce");
+			if(!te.getEditorConfiguration().isPathInStatusBar()) {
+				sb.append(" o_richtext_mce_without_path");
+			}
+			sb.append("'>");
 			renderTinyMCE_4(sb, domID, teC, ubu, source.getTranslator());
 			sb.append("</div>");
 		}

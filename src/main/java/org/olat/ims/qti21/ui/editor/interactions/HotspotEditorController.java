@@ -129,7 +129,7 @@ public class HotspotEditorController extends FormBasicController {
 		VFSContainer itemContainer = (VFSContainer)rootContainer.resolve(relativePath);
 		
 		String question = itemBuilder.getQuestion();
-		textEl = uifactory.addRichTextElementForStringDataCompact("desc", "form.imd.descr", question, 8, -1, itemContainer,
+		textEl = uifactory.addRichTextElementForQTI21("desc", "form.imd.descr", question, 8, -1, itemContainer,
 				formLayout, ureq.getUserSession(), getWindowControl());
 		textEl.addActionListener(FormEvent.ONCLICK);
 		

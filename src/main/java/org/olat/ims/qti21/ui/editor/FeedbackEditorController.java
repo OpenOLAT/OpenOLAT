@@ -69,7 +69,7 @@ public class FeedbackEditorController extends FormBasicController {
 		hintTitleEl.setUserObject(hint);
 		hintTitleEl.setEnabled(!restrictedEdit);
 		String hintText = hint == null ? "" : hint.getText();
-		hintTextEl = uifactory.addRichTextElementForStringDataCompact("hintText", "form.imd.hint.text", hintText, 8, -1, null,
+		hintTextEl = uifactory.addRichTextElementForQTI21("hintText", "form.imd.hint.text", hintText, 8, -1, null,
 				formLayout, ureq.getUserSession(), getWindowControl());
 		hintTextEl.setEnabled(!restrictedEdit);
 		RichTextConfiguration hintConfig = hintTextEl.getEditorConfiguration();
@@ -82,7 +82,7 @@ public class FeedbackEditorController extends FormBasicController {
 		feedbackCorrectTitleEl.setUserObject(correctFeedback);
 		feedbackCorrectTitleEl.setEnabled(!restrictedEdit);
 		String correctText = correctFeedback == null ? "" : correctFeedback.getText();
-		feedbackCorrectTextEl = uifactory.addRichTextElementForStringDataCompact("correctText", "form.imd.correct.text", correctText, 8, -1, null,
+		feedbackCorrectTextEl = uifactory.addRichTextElementForQTI21("correctText", "form.imd.correct.text", correctText, 8, -1, null,
 				formLayout, ureq.getUserSession(), getWindowControl());
 		feedbackCorrectTextEl.setEnabled(!restrictedEdit);
 		RichTextConfiguration richTextConfig = feedbackCorrectTextEl.getEditorConfiguration();
@@ -95,7 +95,7 @@ public class FeedbackEditorController extends FormBasicController {
 		feedbackIncorrectTitleEl.setUserObject(incorrectFeedback);
 		feedbackIncorrectTitleEl.setEnabled(!restrictedEdit);
 		String incorrectText = incorrectFeedback == null ? "" : incorrectFeedback.getText();
-		feedbackIncorrectTextEl = uifactory.addRichTextElementForStringDataCompact("incorrectText", "form.imd.incorrect.text", incorrectText, 8, -1, null,
+		feedbackIncorrectTextEl = uifactory.addRichTextElementForQTI21("incorrectText", "form.imd.incorrect.text", incorrectText, 8, -1, null,
 				formLayout, ureq.getUserSession(), getWindowControl());
 		feedbackIncorrectTextEl.setEnabled(!restrictedEdit);
 		RichTextConfiguration richTextConfig2 = feedbackIncorrectTextEl.getEditorConfiguration();

@@ -76,6 +76,7 @@ import org.olat.core.gui.render.StringOutputPool;
 import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.render.velocity.VelocityHelper;
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.helpers.Settings;
 import org.olat.core.logging.OLATRuntimeException;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
@@ -126,6 +127,7 @@ import uk.ac.ed.ph.jqtiplus.node.content.xhtml.table.Thead;
 import uk.ac.ed.ph.jqtiplus.node.content.xhtml.table.Tr;
 import uk.ac.ed.ph.jqtiplus.node.content.xhtml.text.Br;
 import uk.ac.ed.ph.jqtiplus.node.content.xhtml.text.Div;
+import uk.ac.ed.ph.jqtiplus.node.content.xhtml.object.Object;
 import uk.ac.ed.ph.jqtiplus.node.item.AssessmentItem;
 import uk.ac.ed.ph.jqtiplus.node.item.ModalFeedback;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.AssociateInteraction;
@@ -356,6 +358,9 @@ public abstract class AssessmentObjectComponentRenderer extends DefaultComponent
 			case Table.QTI_CLASS_NAME:
 				renderTable(renderer, sb, component, resolvedAssessmentItem, itemSessionState, (Table)block, ubu, translator);
 				break;
+			case Object.QTI_CLASS_NAME:
+				System.out.println("1");
+				break;
 			default: {
 				renderStartHtmlTag(sb, component, resolvedAssessmentItem, block, null);
 				if(block instanceof AtomicBlock) {
@@ -535,6 +540,10 @@ public abstract class AssessmentObjectComponentRenderer extends DefaultComponent
 				sb.append("<br/>");
 				break;
 			}
+			case Object.QTI_CLASS_NAME: {
+				renderObject(sb, (Object)inline, component, resolvedAssessmentItem);
+				break;
+			}
 			default: {
 				renderStartHtmlTag(sb, component, resolvedAssessmentItem, inline, null);
 				if(inline instanceof SimpleInline) {
@@ -544,6 +553,42 @@ public abstract class AssessmentObjectComponentRenderer extends DefaultComponent
 				}
 				renderEndTag(sb, inline);
 			}
+		}
+	}
+	
+	protected final void renderObject(StringOutput sb, Object object, AssessmentObjectComponent component, ResolvedAssessmentItem resolvedAssessmentItem) {
+		Attribute<?> attrId = object.getAttributes().get("id");
+		String id = attrId.getValue().toString();
+		if(id.startsWith("olatFlashMovieViewer")) {
+			//this is a OpenOLAT movie and need to be converted
+			/*
+			<span id="olatFlashMovieViewer213060" class="olatFlashMovieViewer" style="display:block;border:solid 1px #000; width:320px; height:240px;">
+			  <script src="/raw/fx-111111x11/movie/player.js" type="text/javascript"></script>
+			  <script type="text/javascript" defer="defer">// <![CDATA[
+			    BPlayer.insertPlayer("demo-video.mp4","olatFlashMovieViewer213060",320,240,0,0,"video",undefined,false,false,true,undefined);
+			   // ]]></script>
+			</span>
+			*/
+
+			Attribute<?> dataAttr = object.getAttributes().get("data");
+			String data = dataAttr.getValue().toString();
+			Attribute<?> attrDataMovie = object.getAttributes().get("data-oo-movie");
+			String dataMovie = attrDataMovie.getValue().toString();
+			
+			String relativePath = component.relativePathTo(resolvedAssessmentItem);
+			String src = Settings.getServerContextPathURI() + component.getMapperUri() + relativePath + "/" + data;
+			dataMovie = dataMovie.replace(data, src);
+			
+			sb.append("<span id=\"").append(id).append("\" class=\"olatFlashMovieViewer\" style=\"display:block;border:solid 1px #000; width:320px; height:240px;\">\n")
+			  .append(" <script src=\"/raw/fx-111111x11/movie/player.js\" type=\"text/javascript\"></script>\n")
+			  .append(" <script type=\"text/javascript\" defer=\"defer\">// <![CDATA[\n")
+			  .append("  BPlayer.insertPlayer(").append(dataMovie).append(");\n")
+			  .append(" // ]]></script>\n")
+			  .append("</span>\n");
+		} else {
+			renderStartHtmlTag(sb, component, resolvedAssessmentItem, object, null);
+			//TODO object.getObjectFlows();
+			renderEndTag(sb, object);
 		}
 	}
 	

@@ -108,7 +108,7 @@ public class MediaUploadController extends FormBasicController implements PageEl
 		titleEl.setMandatory(true);
 		
 		descriptionEl = uifactory.addRichTextElementForStringDataMinimalistic("artefact.descr", "artefact.descr", "", 8, 60, formLayout, getWindowControl());
-		descriptionEl.getEditorConfiguration().setStatusBar(false);
+		descriptionEl.getEditorConfiguration().setPathInStatusBar(false);
 		
 		fileEl = uifactory.addFileElement(getWindowControl(), "artefact.file", "artefact.file", formLayout);
 		fileEl.addActionListener(FormEvent.ONCHANGE);

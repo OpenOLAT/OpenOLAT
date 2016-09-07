@@ -29,6 +29,7 @@ import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.render.StringOutput;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.ims.qti21.QTI21Service;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -65,7 +66,7 @@ public class UnkownItemEditorController extends FormBasicController {
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormWarning("warning.alien.assessment.item");
 		
-		String title = item.getTitle();
+		String title = StringHelper.escapeHtml(item.getTitle());
 		uifactory.addStaticTextElement("title", "form.imd.title", title, formLayout);
 
 		//question

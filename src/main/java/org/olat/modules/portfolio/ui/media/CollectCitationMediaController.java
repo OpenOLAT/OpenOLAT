@@ -149,7 +149,7 @@ public class CollectCitationMediaController extends FormBasicController implemen
 		
 		String desc = mediaReference == null ? null : mediaReference.getDescription();
 		descriptionEl = uifactory.addRichTextElementForStringDataMinimalistic("artefact.descr", "artefact.descr", desc, 6, 60, formLayout, getWindowControl());
-		descriptionEl.getEditorConfiguration().setStatusBar(false);
+		descriptionEl.getEditorConfiguration().setPathInStatusBar(false);
 		
 		String text = mediaReference == null ? null : mediaReference.getContent();
 		textEl = uifactory.addRichTextElementForStringData("citation", "citation", text, 10, 6, false, null, null, formLayout, ureq.getUserSession(), getWindowControl());

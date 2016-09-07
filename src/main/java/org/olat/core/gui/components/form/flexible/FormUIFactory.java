@@ -75,6 +75,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.StaticTextElemen
 import org.olat.core.gui.components.form.flexible.impl.elements.TextAreaElementImpl;
 import org.olat.core.gui.components.form.flexible.impl.elements.TextBoxListElementImpl;
 import org.olat.core.gui.components.form.flexible.impl.elements.TextElementImpl;
+import org.olat.core.gui.components.form.flexible.impl.elements.richText.RichTextConfiguration;
 import org.olat.core.gui.components.form.flexible.impl.elements.richText.RichTextElementImpl;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableElementImpl;
@@ -755,6 +756,38 @@ public class FormUIFactory {
 		// Now configure editor
 		Theme theme = wControl.getWindowBackOffice().getWindow().getGuiTheme();
 		rte.getEditorConfiguration().setConfigProfileFormCompactEditor(usess, theme, baseContainer);			
+		// Add to form and finish
+		formLayout.add(rte);
+		return rte;
+	}
+	
+	/**
+	 * 
+	 * This is a version with olat media only. The tiny media is disabled because we need to catch the object
+	 * tag use by QTI and interpret it as a olat video.
+	 * 
+	 * @param name
+	 * @param i18nLabel
+	 * @param initialHTMLValue
+	 * @param rows
+	 * @param cols
+	 * @param baseContainer
+	 * @param formLayout
+	 * @param usess
+	 * @param wControl
+	 * @return
+	 */
+	public RichTextElement addRichTextElementForQTI21(String name, String i18nLabel, String initialHTMLValue, int rows,
+			int cols, VFSContainer baseContainer, FormItemContainer formLayout, UserSession usess, WindowControl wControl) {
+		// Create rich text element with bare bone configuration
+		RichTextElement rte = new RichTextElementImpl(name, initialHTMLValue, rows, cols, formLayout.getRootForm(), formLayout.getTranslator().getLocale());
+		setLabelIfNotNull(i18nLabel, rte);
+		// Now configure editor
+		Theme theme = wControl.getWindowBackOffice().getWindow().getGuiTheme();
+		rte.getEditorConfiguration().setConfigProfileFormCompactEditor(usess, theme, baseContainer);
+		rte.getEditorConfiguration().setInvalidElements(RichTextConfiguration.INVALID_ELEMENTS_FORM_FULL_VALUE_UNSAVE_WITH_SCRIPT);
+		rte.getEditorConfiguration().setExtendedValidElements("script[src|type|defer]");
+		rte.getEditorConfiguration().disableTinyMedia();
 		// Add to form and finish
 		formLayout.add(rte);
 		return rte;

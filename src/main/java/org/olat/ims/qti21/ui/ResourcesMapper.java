@@ -30,6 +30,7 @@ import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.media.NotFoundMediaResource;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.StringHelper;
 
 /**
  * 
@@ -49,11 +50,21 @@ public class ResourcesMapper implements Mapper {
 
 	@Override
 	public MediaResource handle(String relPath, HttpServletRequest request) {
-		String href = request.getParameter("href");
+		String filename = null;
 		MediaResource resource = null;
 		try {
 			File root = new File(assessmentObjectUri.getPath());
-			File file = new File(root.getParentFile(), href);
+			String href = request.getParameter("href");
+			if(StringHelper.containsNonWhitespace(href)) {
+				filename = href;	
+			} else if(StringHelper.containsNonWhitespace(relPath)) {
+				filename = relPath;
+				if(filename.startsWith("/")) {
+					filename = filename.substring(1, filename.length());
+				}
+			}
+			
+			File file = new File(root.getParentFile(), filename);
 			if(file.exists()) {
 				resource = new FileMediaResource(file);
 			} else {
@@ -61,7 +72,7 @@ public class ResourcesMapper implements Mapper {
 			}
 		} catch (Exception e) {
 			log.error("", e);
-			resource = new NotFoundMediaResource(href);
+			resource = new NotFoundMediaResource(filename);
 		}
 		return resource;
 	}

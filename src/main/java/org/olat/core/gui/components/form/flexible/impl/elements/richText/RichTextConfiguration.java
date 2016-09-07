@@ -145,6 +145,7 @@ public class RichTextConfiguration implements Disposable {
 	private boolean relativeUrls = true;
 	private boolean removeScriptHost = true;
 	private boolean statusBar = true;
+	private boolean pathInStatusBar = true;
 	private boolean allowCustomMediaFactory = true;
 	private boolean inline = false;
 	private boolean sendOnBlur;
@@ -222,7 +223,7 @@ public class RichTextConfiguration implements Disposable {
 		// Don't allow javascript or iframes, if the file browser is there allow also media elements (the full values)
 		setQuotedConfigValue(INVALID_ELEMENTS, (baseContainer == null ? INVALID_ELEMENTS_FORM_SIMPLE_VALUE_UNSAVE : INVALID_ELEMENTS_FORM_FULL_VALUE_UNSAVE));
 		tinyConfig = TinyConfig.editorCompactConfig;
-		setStatusBar(false);
+		setPathInStatusBar(false);
 		
 		// Setup file and link browser
 		if (baseContainer != null) {
@@ -404,8 +405,18 @@ public class RichTextConfiguration implements Disposable {
 	 * 
 	 * @param statusBar
 	 */
-	public void setStatusBar(boolean statusBar) {
+	public void setStatusBar2(boolean statusBar) {
 		this.statusBar = statusBar;
+	}
+	
+	
+
+	public boolean isPathInStatusBar() {
+		return pathInStatusBar;
+	}
+
+	public void setPathInStatusBar(boolean pathInStatusBar) {
+		this.pathInStatusBar = pathInStatusBar;
 	}
 
 	/**
@@ -495,6 +506,10 @@ public class RichTextConfiguration implements Disposable {
 	
 	public void disableMedia() {
 		tinyConfig = tinyConfig.disableMedia();
+	}
+	
+	public void disableTinyMedia() {
+		tinyConfig = tinyConfig.disableTinyMedia();
 	}
 	
 	public void disableMathEditor() {
@@ -895,7 +910,8 @@ public class RichTextConfiguration implements Disposable {
 		  .append("relative_urls:").append(isRelativeUrls()).append(",\n")
 		  .append("remove_script_host:").append(isRemoveScriptHost()).append(",\n")
 		  .append("inline:").append(isInline()).append(",\n")
-		  .append("statusbar:").append(isStatusBar()).append(",\n")
+		  .append("statusbar:").append(true).append(",\n")
+		  .append("resize:").append(true).append(",\n")
 		  .append("menubar:").append(tinyConfig.hasMenu()).append(",\n");
  		
  		String leftAndClear = "Left and clear";

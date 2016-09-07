@@ -127,7 +127,7 @@ public class CollectImageMediaController extends FormBasicController implements 
 		
 		String desc = mediaReference == null ? null : mediaReference.getDescription();
 		descriptionEl = uifactory.addRichTextElementForStringDataMinimalistic("artefact.descr", "artefact.descr", desc, 8, 60, formLayout, getWindowControl());
-		descriptionEl.getEditorConfiguration().setStatusBar(false);
+		descriptionEl.getEditorConfiguration().setPathInStatusBar(false);
 		
 		fileEl = uifactory.addFileElement(getWindowControl(), "artefact.file", "artefact.file", formLayout);
 		fileEl.addActionListener(FormEvent.ONCHANGE);

@@ -114,7 +114,7 @@ public class BinderMetadataEditController extends FormBasicController {
 		summaryEl = uifactory.addRichTextElementForStringDataMinimalistic("summary", "summary", summary, 8, 60, formLayout, getWindowControl());
 		summaryEl.setElementCssClass("o_sel_pf_edit_binder_summary");
 		summaryEl.setPlaceholderKey("summary.placeholder", null);
-		summaryEl.getEditorConfiguration().setStatusBar(false);
+		summaryEl.getEditorConfiguration().setPathInStatusBar(false);
 		
 		fileUpload = uifactory.addFileElement(getWindowControl(), "file", "fileupload",formLayout);			
 		fileUpload.setPreview(ureq.getUserSession(), true);
