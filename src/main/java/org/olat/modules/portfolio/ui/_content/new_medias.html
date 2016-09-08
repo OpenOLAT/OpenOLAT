@@ -2,5 +2,7 @@
 	<li>$r.render("add.file")</li>
 	<li>$r.render("add.text")</li>
 	<li>$r.render("add.citation")</li>
+	#if($r.available("import.artefactV1"))
 	<li>$r.render("import.artefactV1")</li>
+	#end
 </ul>

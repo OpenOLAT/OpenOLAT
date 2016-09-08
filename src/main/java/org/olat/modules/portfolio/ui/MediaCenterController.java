@@ -84,6 +84,7 @@ import org.olat.modules.portfolio.ui.media.CollectCitationMediaController;
 import org.olat.modules.portfolio.ui.media.CollectTextMediaController;
 import org.olat.modules.portfolio.ui.model.MediaRow;
 import org.olat.modules.portfolio.ui.renderer.MediaTypeCellRenderer;
+import org.olat.portfolio.PortfolioModule;
 import org.olat.portfolio.manager.EPArtefactManager;
 import org.olat.portfolio.model.artefacts.AbstractArtefact;
 import org.olat.portfolio.ui.EPArtefactPoolRunController;
@@ -129,6 +130,8 @@ public class MediaCenterController extends FormBasicController
 	
 	@Autowired
 	private EPArtefactManager legacyArtefactManager;
+	@Autowired
+	private PortfolioModule legacyPortfolioModule;
 	 
 	public MediaCenterController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl, "medias");
@@ -163,7 +166,7 @@ public class MediaCenterController extends FormBasicController
 		stackPanel.addTool(addCitationLink, Align.left);
 		
 		// only if there are v1 artefacts available
-		if (legacyArtefactManager.countArtefacts(getIdentity()) > 0) {
+		if (legacyPortfolioModule.isEnabled() &&  legacyArtefactManager.countArtefacts(getIdentity()) > 0) {
 			importArtefactV1Link = LinkFactory.createToolLink("import.artefactV1", translate("import.artefactV1"), this);
 			importArtefactV1Link.setIconLeftCSS("o_icon o_icon-lg o_icon_import");
 			stackPanel.addTool(importArtefactV1Link, Align.left);			
@@ -649,6 +652,10 @@ public class MediaCenterController extends FormBasicController
 	}
 	
 	private static class NewMediasController extends BasicController {
+		@Autowired
+		private EPArtefactManager legacyArtefactManager;
+		@Autowired
+		private PortfolioModule legacyPortfolioModule;
 
 		private final Link addMediaLink, addTextLink, addCitationLink, importArtefactV1Link;
 		
@@ -666,8 +673,13 @@ public class MediaCenterController extends FormBasicController
 			addCitationLink = LinkFactory.createLink("add.citation", "add.citation", getTranslator(), mainVc, this, Link.LINK);
 			addCitationLink.setIconLeftCSS("o_icon o_icon_citation");
 			
-			importArtefactV1Link = LinkFactory.createLink("import.artefactV1", "import.artefactV1", getTranslator(), mainVc, this, Link.LINK);
-			importArtefactV1Link.setIconLeftCSS("o_icon o_icon_import");
+			// only if there are v1 artefacts available
+			if (legacyPortfolioModule.isEnabled() && legacyArtefactManager.countArtefacts(getIdentity()) > 0) {
+				importArtefactV1Link = LinkFactory.createLink("import.artefactV1", "import.artefactV1", getTranslator(), mainVc, this, Link.LINK);
+				importArtefactV1Link.setIconLeftCSS("o_icon o_icon_import");
+			} else {
+				importArtefactV1Link = null;
+			}
 
 			putInitialPanel(mainVc);
 		}

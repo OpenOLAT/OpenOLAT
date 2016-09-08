@@ -87,6 +87,7 @@ public class PortfolioAdminController extends FormBasicController  {
 		String[] enabledValues = new String[] { translate("enabled")};
 		
 		userCanCreatePortfolioEnabled = uifactory.addCheckboxesHorizontal("portfolio.user.can.create.binder", moduleFlc, enabledKeys, enabledValues);
+		userCanCreatePortfolioEnabled.select(enabledKeys[0], portfolioV2Module.isLearnerCanCreateBinders());
 		userCanCreatePortfolioEnabled.addActionListener(FormEvent.ONCHANGE);
 		userCanCreatePortfolioEnabled.setVisible(portfolioV2Module.isEnabled());
 		
