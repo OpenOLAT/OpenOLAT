@@ -145,7 +145,10 @@ public class BinderController extends BasicController implements TooledControlle
 	@Override
 	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
 		if(entries == null || entries.isEmpty()) {
-			doOpenEntries(ureq);
+			BinderPageListController pagesCtrl = doOpenEntries(ureq);
+			if(pagesCtrl == null || pagesCtrl.getNumOfPages() == 0) {
+				doOpenOverview(ureq);
+			}
 			return;
 		}
 		

@@ -42,6 +42,8 @@ import org.olat.modules.portfolio.MediaLight;
 import org.olat.modules.portfolio.PortfolioLoggingAction;
 import org.olat.modules.portfolio.manager.MediaDAO;
 import org.olat.modules.portfolio.manager.PortfolioFileStorage;
+import org.olat.modules.portfolio.ui.editor.InteractiveAddPageElementHandler;
+import org.olat.modules.portfolio.ui.editor.PageElementAddController;
 import org.olat.modules.portfolio.ui.media.CollectFileMediaController;
 import org.olat.modules.portfolio.ui.media.FileMediaController;
 import org.olat.modules.portfolio.ui.media.UploadMedia;
@@ -59,7 +61,7 @@ import org.springframework.stereotype.Service;
  *
  */
 @Service
-public class FileHandler extends AbstractMediaHandler {
+public class FileHandler extends AbstractMediaHandler implements InteractiveAddPageElementHandler {
 	
 	public static final String FILE_TYPE = "bc";
 
@@ -191,8 +193,8 @@ public class FileHandler extends AbstractMediaHandler {
 		return new CollectFileMediaController(ureq, wControl, media);
 	}
 
-	/*@Override
+	@Override
 	public PageElementAddController getAddPageElementController(UserRequest ureq, WindowControl wControl) {
 		return new CollectFileMediaController(ureq, wControl);
-	}*/
+	}
 }

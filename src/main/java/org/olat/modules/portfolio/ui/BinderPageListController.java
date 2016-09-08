@@ -88,6 +88,7 @@ public class BinderPageListController extends AbstractPageListController {
 
 	private final Binder binder;
 	private final List<Identity> owners;
+	private Section filteringSection;
 	
 	@Autowired
 	private UserManager userManager;
@@ -115,6 +116,7 @@ public class BinderPageListController extends AbstractPageListController {
 			newEntryLink = LinkFactory.createToolLink("new.page", translate("create.new.page"), this);
 			newEntryLink.setIconLeftCSS("o_icon o_icon-lg o_icon_new_portfolio");
 			newEntryLink.setElementCssClass("o_sel_pf_new_entry");
+			newEntryLink.setVisible(model.getRowCount() > 0);
 			stackPanel.addTool(newEntryLink, Align.right);
 		}
 	}
@@ -153,6 +155,19 @@ public class BinderPageListController extends AbstractPageListController {
 			newSectionButton = uifactory.addFormLink("create.new.section", formLayout, Link.BUTTON);
 			newSectionButton.setCustomEnabledLinkCSS("btn btn-primary o_sel_pf_new_section");
 		}
+	}
+	
+	public int getNumOfPages() {
+		int countPages = 0;
+		if(model != null) {
+			List<PortfolioElementRow> rows = model.getObjects();
+			for(PortfolioElementRow row:rows) {
+				if(row.isPage()) {
+					countPages++;
+				}
+			}
+		}
+		return countPages;
 	}
 
 	@Override
@@ -283,10 +298,18 @@ public class BinderPageListController extends AbstractPageListController {
 		} else if (newSectionButton != null)  {
 			flc.remove(newSectionButton);
 		}
+		if(newEntryLink != null && !newEntryLink.isVisible()) {
+			newEntryLink.setVisible(rows.size() > 0);
+			stackPanel.setDirty(true);
+		}
 
 		model.setObjects(rows);
-		tableEl.reloadData();
-		updateTimeline();
+		if(filteringSection != null) {
+			doFilterSection(filteringSection);
+		} else {
+			tableEl.reloadData();
+			updateTimeline();
+		}
 	}
 	
 	private void updateTimeline() {
@@ -416,6 +439,7 @@ public class BinderPageListController extends AbstractPageListController {
 	}
 	
 	private void doShowAll() {
+		this.filteringSection = null;
 		model.filter(null);
 		tableEl.reloadData();
 		updateTimeline();
@@ -426,6 +450,7 @@ public class BinderPageListController extends AbstractPageListController {
 	}
 	
 	protected void doFilterSection(Section section) {
+		this.filteringSection = section;
 		List<Section> currentSections = model.filter(section);
 		tableEl.reloadData();
 		updateTimeline();

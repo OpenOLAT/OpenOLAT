@@ -98,6 +98,7 @@ public class TableOfContentController extends BasicController implements TooledC
 	private int counter = 0;
 	private Binder binder;
 	private final List<Identity> owners;
+	private List<SectionRow> sectionList;
 	private final BinderConfiguration config;
 	private final BinderSecurityCallback secCallback;
 	
@@ -147,6 +148,7 @@ public class TableOfContentController extends BasicController implements TooledC
 			newEntryLink = LinkFactory.createToolLink("new.page", translate("create.new.page"), this);
 			newEntryLink.setIconLeftCSS("o_icon o_icon-lg o_icon_new_portfolio");
 			newEntryLink.setElementCssClass("o_sel_pf_new_entry");
+			newEntryLink.setVisible(sectionList != null && sectionList.size() > 0);
 			stackPanel.addTool(newEntryLink, Align.right);
 		}
 	}
@@ -154,7 +156,7 @@ public class TableOfContentController extends BasicController implements TooledC
 	protected void loadModel() {
 		mainVC.contextPut("binderTitle", StringHelper.escapeHtml(binder.getTitle()));
 		
-		List<SectionRow> sectionList = new ArrayList<>();
+		List<SectionRow> sectionRows = new ArrayList<>();
 		Map<Long,SectionRow> sectionMap = new HashMap<>();
 		
 		List<AssessmentSection> assessmentSections = portfolioService.getAssessmentSections(binder, getIdentity());
@@ -192,7 +194,7 @@ public class TableOfContentController extends BasicController implements TooledC
 						sectionToAssessmentSectionMap.get(section),
 						sectionToAssignmentMap.get(section),
 						first, last);
-				sectionList.add(sectionRow);
+				sectionRows.add(sectionRow);
 				sectionMap.put(section.getKey(), sectionRow);
 			}
 		}
@@ -206,7 +208,8 @@ public class TableOfContentController extends BasicController implements TooledC
 				sectionRow.getPages().add(pageRow);
 			}
 		}
-		mainVC.contextPut("sections", sectionList);
+		mainVC.contextPut("sections", sectionRows);
+		sectionList = sectionRows;
 		
 		if(secCallback.canAddSection()) {
 			if(newSectionButton == null) {
@@ -214,6 +217,11 @@ public class TableOfContentController extends BasicController implements TooledC
 				newSectionButton.setCustomEnabledLinkCSS("btn btn-primary");
 			}
 			mainVC.put("create.new.section", newSectionButton);
+		}
+		
+		if(newEntryLink != null && !newEntryLink.isVisible()) {
+			newEntryLink.setVisible(sectionList != null && sectionList.size() > 0);
+			stackPanel.setDirty(true);
 		}
 	}
 	

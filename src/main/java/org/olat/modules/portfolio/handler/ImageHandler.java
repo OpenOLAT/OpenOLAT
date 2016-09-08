@@ -48,7 +48,9 @@ import org.olat.modules.portfolio.PortfolioLoggingAction;
 import org.olat.modules.portfolio.manager.MediaDAO;
 import org.olat.modules.portfolio.manager.PortfolioFileStorage;
 import org.olat.modules.portfolio.model.MediaPart;
+import org.olat.modules.portfolio.ui.editor.InteractiveAddPageElementHandler;
 import org.olat.modules.portfolio.ui.editor.PageElement;
+import org.olat.modules.portfolio.ui.editor.PageElementAddController;
 import org.olat.modules.portfolio.ui.media.CollectImageMediaController;
 import org.olat.modules.portfolio.ui.media.ImageMediaController;
 import org.olat.modules.portfolio.ui.media.UploadMedia;
@@ -64,7 +66,7 @@ import org.springframework.stereotype.Service;
  *
  */
 @Service
-public class ImageHandler extends AbstractMediaHandler {
+public class ImageHandler extends AbstractMediaHandler implements InteractiveAddPageElementHandler {
 	
 	public static final String IMAGE_TYPE = "image";
 	private final AtomicInteger idGenerator = new AtomicInteger();
@@ -203,8 +205,8 @@ public class ImageHandler extends AbstractMediaHandler {
 		return new CollectImageMediaController(ureq, wControl, media);
 	}
 
-	/*@Override
+	@Override
 	public PageElementAddController getAddPageElementController(UserRequest ureq, WindowControl wControl) {
 		return new CollectImageMediaController(ureq, wControl);
-	}*/
+	}
 }

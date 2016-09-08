@@ -22,8 +22,10 @@ package org.olat.modules.portfolio.ui.media;
 import java.io.File;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -61,6 +63,14 @@ import org.springframework.beans.factory.annotation.Autowired;
  *
  */
 public class CollectImageMediaController extends FormBasicController implements PageElementAddController {
+
+	private static final Set<String> imageMimeTypes = new HashSet<String>();
+	static {
+		imageMimeTypes.add("image/gif");
+		imageMimeTypes.add("image/jpg");
+		imageMimeTypes.add("image/jpeg");
+		imageMimeTypes.add("image/png");
+	}
 	
 	private FileElement fileEl;
 	private TextElement titleEl;
@@ -130,6 +140,7 @@ public class CollectImageMediaController extends FormBasicController implements 
 		descriptionEl.getEditorConfiguration().setPathInStatusBar(false);
 		
 		fileEl = uifactory.addFileElement(getWindowControl(), "artefact.file", "artefact.file", formLayout);
+		fileEl.limitToMimeType(imageMimeTypes, null, null);
 		fileEl.addActionListener(FormEvent.ONCHANGE);
 		fileEl.setMaxUploadSizeKB(10000, null, null);
 		fileEl.setPreview(ureq.getUserSession(), true);
