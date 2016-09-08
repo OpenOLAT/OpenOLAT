@@ -151,24 +151,29 @@ public class BinderDAO {
 				currentSections.add(currentSection);
 				syncSectionMetadata(templateSection, currentSection);
 				templateToSectionsMap.put(templateSection, currentSection);
-				//syncAssignments(templateSection, currentSection, templateToSectionsMap);
 			} else {
 				SectionImpl section = createInternalSection(binder, templateSection);
 				currentSections.add(section);
 				dbInstance.getCurrentEntityManager().persist(section);
 				templateToSectionsMap.put(templateSection, section);
-				//syncAssignments(templateSection, section, templateToSectionsMap);
 			}
 		}
 		currentSections.addAll(leadingSections);
+		
+		//sync moving assignments
+		for(int i=0; i<templateSections.size(); i++) {
+			SectionImpl templateSection = (SectionImpl)templateSections.get(i);
+			SectionImpl currentSection = (SectionImpl)templateToSectionsMap.get(templateSection);
+			syncMovingAssignments(templateSection, currentSection, templateToSectionsMap);
+		}
 		
 		//sync assignments
 		for(int i=0; i<templateSections.size(); i++) {
 			SectionImpl templateSection = (SectionImpl)templateSections.get(i);
 			SectionImpl currentSection = (SectionImpl)templateToSectionsMap.get(templateSection);
-			syncAssignments(templateSection, currentSection, templateToSectionsMap);
+			syncAssignments(templateSection, currentSection);
 		}
-		
+
 		//update all sections
 		for(int i=0; i<templateSections.size(); i++) {
 			SectionImpl templateSection = (SectionImpl)templateSections.get(i);
@@ -190,32 +195,58 @@ public class BinderDAO {
 		}
 	}
 	
-	private void syncAssignments(SectionImpl templateSection, SectionImpl currentSection, Map<Section,Section> templateToSectionsMap) {
+	private void syncMovingAssignments(SectionImpl templateSection, SectionImpl currentSection, Map<Section,Section> templateToSectionsMap) {
+		List<Assignment> templateAssignments = new ArrayList<>(templateSection.getAssignments());
+		List<Assignment> currentAssignments = new ArrayList<>(currentSection.getAssignments());
+		for(Assignment currentAssignment:currentAssignments) {
+			Assignment refAssignment = currentAssignment.getTemplateReference();
+			if(refAssignment != null
+					&& !templateAssignments.contains(refAssignment)
+					&& !refAssignment.getSection().equals(templateSection)
+					&& templateToSectionsMap.containsKey(refAssignment.getSection())) {
+					//really moved
+				templateAssignments.remove(refAssignment);
+				SectionImpl newSection = (SectionImpl)templateToSectionsMap.get(refAssignment.getSection());
+				syncMovedAssignment(currentSection, newSection, currentAssignment);
+			}
+		}
+	}
+	
+	private void syncMovedAssignment(SectionImpl currentSection, SectionImpl newSection, Assignment assignment) {
+		currentSection.getAssignments().size();
+		newSection.getAssignments().size();
+
+		currentSection.getAssignments().remove(assignment);
+		((AssignmentImpl)assignment).setSection(newSection);
+		assignment = dbInstance.getCurrentEntityManager().merge(assignment);
+		newSection.getAssignments().add(assignment);
+
+		Page page = assignment.getPage();
+		currentSection.getPages().remove(page);
+		newSection.getPages().add(page);
+		((PageImpl)page).setSection(newSection);
+		dbInstance.getCurrentEntityManager().merge(page);
+	}
+	
+	private void syncAssignments(SectionImpl templateSection, SectionImpl currentSection) {
 		List<Assignment> templateAssignments = new ArrayList<>(templateSection.getAssignments());
 		
 		List<Assignment> currentAssignments = new ArrayList<>(currentSection.getAssignments());
 		for(Assignment currentAssignment:currentAssignments) {
 			Assignment refAssignment = currentAssignment.getTemplateReference();
 			if(refAssignment == null) {
-				currentAssignment.setAssignmentStatus(AssignmentStatus.deleted);
-				currentAssignment = dbInstance.getCurrentEntityManager().merge(currentAssignment);
-			} else if(!templateAssignments.contains(refAssignment)) {
-				//move
-				if(!refAssignment.getSection().equals(templateSection)) {
-					//really moved
-					SectionImpl newSection = (SectionImpl)templateToSectionsMap.get(refAssignment.getSection());
-					syncMovedAssignment(currentSection, newSection, currentAssignment);
+				if(currentAssignment.getAssignmentStatus() != AssignmentStatus.deleted) {
+					currentAssignment.setAssignmentStatus(AssignmentStatus.deleted);
+					currentAssignment = dbInstance.getCurrentEntityManager().merge(currentAssignment);
 				}
+			} else if(!templateAssignments.contains(refAssignment)) {
+				//this case is normally not possible
+				//if it happens, don't do anything, let the data safe
 			} else {
 				templateAssignments.remove(refAssignment);
-				
+
 				AssignmentImpl currentImpl = (AssignmentImpl)currentAssignment;
-				currentImpl.setTitle(refAssignment.getTitle());
-				currentImpl.setSummary(refAssignment.getSummary());
-				currentImpl.setContent(refAssignment.getContent());
-				currentImpl.setStorage(refAssignment.getStorage());
-				currentImpl.setType(refAssignment.getAssignmentType().name());
-				currentAssignment = dbInstance.getCurrentEntityManager().merge(currentImpl);
+				currentAssignment = syncAssignment(refAssignment, currentImpl);
 			}
 		}
 		
@@ -224,17 +255,21 @@ public class BinderDAO {
 		}
 	}
 	
-	private void syncMovedAssignment(SectionImpl currentSection, SectionImpl newSection, Assignment assignment) {
-		currentSection.getAssignments().remove(assignment);
-		newSection.getAssignments().add(assignment);
-		((AssignmentImpl)assignment).setSection(newSection);
-		assignment = dbInstance.getCurrentEntityManager().merge(assignment);
+	private AssignmentImpl syncAssignment(Assignment refAssignment, AssignmentImpl currentAssignment) {
+		if(StringHelper.isSame(currentAssignment.getTitle(), refAssignment.getTitle())
+				&& StringHelper.isSame(currentAssignment.getSummary(), refAssignment.getSummary())
+				&& StringHelper.isSame(currentAssignment.getContent(), refAssignment.getContent())
+				&& StringHelper.isSame(currentAssignment.getStorage(), refAssignment.getStorage())
+				&& StringHelper.isSame(currentAssignment.getType(), refAssignment.getAssignmentType().name())) {
+			return currentAssignment;
+		}
 		
-		Page page = assignment.getPage();
-		currentSection.getPages().remove(page);
-		newSection.getPages().add(page);
-		((PageImpl)page).setSection(newSection);
-		dbInstance.getCurrentEntityManager().merge(page);
+		currentAssignment.setTitle(refAssignment.getTitle());
+		currentAssignment.setSummary(refAssignment.getSummary());
+		currentAssignment.setContent(refAssignment.getContent());
+		currentAssignment.setStorage(refAssignment.getStorage());
+		currentAssignment.setType(refAssignment.getAssignmentType().name());
+		return dbInstance.getCurrentEntityManager().merge(currentAssignment);
 	}
 	
 	private SectionImpl createInternalSection(Binder binder, Section templateSection) {

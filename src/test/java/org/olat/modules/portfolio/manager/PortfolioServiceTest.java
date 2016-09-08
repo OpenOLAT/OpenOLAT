@@ -58,6 +58,8 @@ public class PortfolioServiceTest extends OlatTestCase {
 	@Autowired
 	private DB dbInstance;
 	@Autowired
+	private AssignmentDAO assignmentDao;
+	@Autowired
 	private PortfolioService portfolioService;
 	@Autowired
 	private RepositoryService repositoryService;
@@ -505,6 +507,195 @@ public class PortfolioServiceTest extends OlatTestCase {
 		Assignment templateSynchedSection3b = assignmentsSection3.get(1).getTemplateReference();
 		Assert.assertTrue(assignment3_1.equals(templateSynchedSection3a) || assignment3_1.equals(templateSynchedSection3b));
 		Assert.assertTrue(assignment2_1.equals(templateSynchedSection3a) || assignment2_1.equals(templateSynchedSection3b));
+	}
+	
+	@Test
+	public void syncBinder_moveInNewSection_moreComplexCase() {
+		Identity owner = JunitTestHelper.createAndPersistIdentityAsRndUser("port-u-10");
+		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("port-u-11");
+		RepositoryEntry templateEntry = createTemplate(owner, "Template", "TE");
+		dbInstance.commitAndCloseSession();
+		
+		//make 2 sections
+		Binder templateBinder = portfolioService.getBinderByResource(templateEntry.getOlatResource());
+		SectionRef sectionRef0 = portfolioService.getSections(templateBinder).get(0);
+		//add 2 sections
+		SectionRef sectionRef1 = portfolioService.appendNewSection("1 section ", "Section 1", null, null, templateBinder);
+		SectionRef sectionRef2 = portfolioService.appendNewSection("2 section ", "Section 2", null, null, templateBinder);
+		dbInstance.commit();
+		
+		//make 4 assignments
+		Section templateSection0 = portfolioService.getSection(sectionRef0);
+		Section templateSection1 = portfolioService.getSection(sectionRef1);
+		Section templateSection2 = portfolioService.getSection(sectionRef2);
+		Assignment assignment0_1 = portfolioService.addAssignment("0.1 Assignment", "", "", AssignmentType.essay, templateSection0);
+		Assignment assignment1_1 = portfolioService.addAssignment("1.1 Assignment", "", "", AssignmentType.essay, templateSection1);
+		Assignment assignment1_2 = portfolioService.addAssignment("1.2 Assignment", "", "", AssignmentType.essay, templateSection1);
+		Assignment assignment2_1 = portfolioService.addAssignment("2.1 Assignment", "", "", AssignmentType.essay, templateSection2);
+		Assignment assignment2_2 = portfolioService.addAssignment("2.2 Assignment", "", "", AssignmentType.essay, templateSection2);
+		dbInstance.commit();
+		List<Assignment> templateAssignments = portfolioService.getAssignments(templateBinder);
+		Assert.assertEquals(5, templateAssignments.size());
+		
+		// a user take the binder and synched it a first time
+		Binder binder = portfolioService.assignBinder(id, templateBinder, templateEntry, "74", null);
+		dbInstance.commit();
+		SynchedBinder synchedBinder = portfolioService.loadAndSyncBinder(binder);
+		dbInstance.commitAndCloseSession();
+		Assert.assertNotNull(synchedBinder);
+		Assert.assertEquals(binder, synchedBinder.getBinder());
+		
+		//start all assignments
+		List<Assignment> assignments = portfolioService.getAssignments(binder);
+		Assert.assertEquals(5, assignments.size());
+		for(Assignment assignment:assignments) {
+			portfolioService.startAssignment(assignment, id);
+			dbInstance.commit();
+		}
+		dbInstance.commit();
+		
+		// check that the student has it's 4 pages
+		List<Page> pages = portfolioService.getPages(binder, null);
+		Assert.assertEquals(5, pages.size());
+		
+		//author create 2 new sections, move the 4 to the top
+		SectionRef sectionRef3 = portfolioService.appendNewSection("3 section ", "Section 3", null, null, templateBinder);
+		SectionRef sectionRef4 = portfolioService.appendNewSection("4 section ", "Section 4", null, null, templateBinder);
+		dbInstance.commit();
+		
+		Section templateSection3 = portfolioService.getSection(sectionRef3);
+		Section templateSection4 = portfolioService.getSection(sectionRef4);
+		
+		templateBinder = portfolioService.moveUpSection(templateBinder, templateSection4);
+		dbInstance.commit();
+		templateBinder = portfolioService.moveUpSection(templateBinder, templateSection4);
+		dbInstance.commit();
+		templateBinder = portfolioService.moveUpSection(templateBinder, templateSection4);
+		dbInstance.commit();
+		templateBinder = portfolioService.moveUpSection(templateBinder, templateSection4);
+		dbInstance.commit();
+
+		// add new assignment
+		Assignment assignment3_1 = portfolioService.addAssignment("3.1 Assignment", "", "", AssignmentType.essay, templateSection3);
+		Assignment assignment4_1 = portfolioService.addAssignment("4.1 Assignment", "", "", AssignmentType.essay, templateSection4);
+		dbInstance.commit();
+		
+		//the author move some assignments
+		portfolioService.moveAssignment(templateSection1, assignment1_1, templateSection3);
+		dbInstance.commit();
+		portfolioService.moveAssignment(templateSection1, assignment1_2, templateSection2);
+		dbInstance.commit();
+		portfolioService.moveAssignment(templateSection2, assignment2_1, templateSection3);
+		dbInstance.commit();
+		portfolioService.moveAssignment(templateSection2, assignment2_2, templateSection4);
+		dbInstance.commitAndCloseSession();
+		
+		//update the data of some assignments
+		assignment2_1 = assignmentDao.loadAssignmentByKey(assignment2_1.getKey());
+		assignment4_1 = assignmentDao.loadAssignmentByKey(assignment4_1.getKey());
+		assignment2_1 = portfolioService.updateAssignment(assignment2_1, "2.1 Assignment", "Assignment 2 description", "", AssignmentType.essay);
+		assignment4_1 = portfolioService.updateAssignment(assignment4_1, "4.1 Assignment", "Assignment 4 description", "", AssignmentType.document);
+		dbInstance.commit();
+		
+		//check the move
+		List<Assignment> templateAssignmentsSection0 = portfolioService.getAssignments(templateSection0);
+		Assert.assertTrue(templateAssignmentsSection0.contains(assignment0_1));
+		
+		List<Assignment> templateAssignmentsSection1 = portfolioService.getAssignments(templateSection1);
+		Assert.assertTrue(templateAssignmentsSection1.isEmpty());
+		List<Assignment> templateAssignmentsSection2 = portfolioService.getAssignments(templateSection2);
+		Assert.assertEquals(1, templateAssignmentsSection2.size());
+		Assert.assertTrue(templateAssignmentsSection2.contains(assignment1_2));
+		List<Assignment> templateAssignmentsSection3 = portfolioService.getAssignments(templateSection3);
+		Assert.assertEquals(3, templateAssignmentsSection3.size());
+		Assert.assertTrue(templateAssignmentsSection3.contains(assignment1_1));
+		Assert.assertTrue(templateAssignmentsSection3.contains(assignment2_1));
+		Assert.assertTrue(templateAssignmentsSection3.contains(assignment3_1));
+		List<Assignment> templateAssignmentsSection4 = portfolioService.getAssignments(templateSection4);
+		Assert.assertEquals(2, templateAssignmentsSection4.size());
+		Assert.assertTrue(templateAssignmentsSection4.contains(assignment2_2));
+		Assert.assertTrue(templateAssignmentsSection4.contains(assignment4_1));
+		
+
+		// synched and check the sections order
+		SynchedBinder synchedBinder2 = portfolioService.loadAndSyncBinder(binder);
+		Binder freshBinder = synchedBinder2.getBinder();
+		dbInstance.commitAndCloseSession();
+		
+		List<Section> sections = portfolioService.getSections(freshBinder);
+		Assert.assertEquals(5, sections.size());
+		Section section4 = sections.get(0);
+		Section section0 = sections.get(1);
+		Section section1 = sections.get(2);
+		Section section2 = sections.get(3);
+		Section section3 = sections.get(4);
+		Assert.assertEquals(templateSection0, section0.getTemplateReference());
+		Assert.assertEquals(templateSection1, section1.getTemplateReference());
+		Assert.assertEquals(templateSection2, section2.getTemplateReference());
+		Assert.assertEquals(templateSection3, section3.getTemplateReference());
+		Assert.assertEquals(templateSection4, section4.getTemplateReference());
+		
+		// load pages from section 0
+		List<Page> pagesSection0 = portfolioService.getPages(section0, null);
+		Assert.assertEquals(1, pagesSection0.size());
+		Page page0_1 = pagesSection0.get(0);
+		Assert.assertTrue(page0_1.getTitle().equals("0.1 Assignment"));
+		// load pages from section 1
+		List<Page> pagesSection1 = portfolioService.getPages(section1, null);
+		Assert.assertTrue(pagesSection1.isEmpty());
+		// and pages from section 2
+		List<Page> pagesSection2 = portfolioService.getPages(section2, null);
+		Assert.assertEquals(1, pagesSection2.size());
+		Page page1_2 = pagesSection2.get(0);
+		Assert.assertTrue(page1_2.getTitle().equals("1.2 Assignment"));
+		// and pages from section 3
+		List<Page> pagesSection3 = portfolioService.getPages(section3, null);
+		Assert.assertEquals(2, pagesSection3.size());
+		Page page1_1 = pagesSection3.get(0);
+		Page page2_1 = pagesSection3.get(1);
+		Assert.assertTrue(page1_1.getTitle().equals("1.1 Assignment") || page1_1.getTitle().equals("2.1 Assignment"));
+		Assert.assertTrue(page2_1.getTitle().equals("1.1 Assignment") || page2_1.getTitle().equals("2.1 Assignment"));
+		// and pages from section 4
+		List<Page> pagesSection4 = portfolioService.getPages(section4, null);
+		Assert.assertEquals(1, pagesSection4.size());
+		Page page2_2 = pagesSection4.get(0);
+		Assert.assertTrue(page2_2.getTitle().equals("2.2 Assignment"));
+
+		
+		//check the assignments
+		//section 0
+		List<Assignment> assignmentsSection0 = section0.getAssignments();
+		Assert.assertEquals(1, assignmentsSection0.size());
+		Assignment templateSynchedSection0a = assignmentsSection0.get(0).getTemplateReference();
+		Assert.assertTrue(assignment0_1.equals(templateSynchedSection0a));
+		//section 1
+		List<Assignment> assignmentsSection1 = section1.getAssignments();
+		Assert.assertTrue(assignmentsSection1.isEmpty());
+		//section 2
+		List<Assignment> assignmentsSection2= section2.getAssignments();
+		Assert.assertEquals(1, assignmentsSection2.size());
+		Assignment templateSynchedSection2a = assignmentsSection2.get(0).getTemplateReference();
+		Assert.assertTrue(assignment1_2.equals(templateSynchedSection2a));
+		//section 3
+		List<Assignment> assignmentsSection3 = section3.getAssignments();
+		Assert.assertEquals(3, assignmentsSection3.size());
+		Assignment templateSynchedSection3a = assignmentsSection3.get(0).getTemplateReference();
+		Assignment templateSynchedSection3b = assignmentsSection3.get(1).getTemplateReference();
+		Assignment templateSynchedSection3c = assignmentsSection3.get(2).getTemplateReference();
+		Assert.assertTrue(assignment3_1.equals(templateSynchedSection3a) || assignment3_1.equals(templateSynchedSection3b) || assignment3_1.equals(templateSynchedSection3c));
+		Assert.assertTrue(assignment2_1.equals(templateSynchedSection3a) || assignment2_1.equals(templateSynchedSection3b) || assignment2_1.equals(templateSynchedSection3c));
+		Assert.assertTrue(assignment1_1.equals(templateSynchedSection3a) || assignment1_1.equals(templateSynchedSection3b) || assignment1_1.equals(templateSynchedSection3c));
+		//section 4
+		List<Assignment> assignmentsSection4 = section4.getAssignments();
+		Assert.assertEquals(2, assignmentsSection4.size());
+		Assignment templateSynchedSection4a = assignmentsSection4.get(0).getTemplateReference();
+		Assignment templateSynchedSection4b = assignmentsSection4.get(1).getTemplateReference();
+		Assert.assertTrue(assignment2_2.equals(templateSynchedSection4a) || assignment2_2.equals(templateSynchedSection4b));
+		Assert.assertTrue(assignment4_1.equals(templateSynchedSection4a) || assignment4_1.equals(templateSynchedSection4b));
+		
+		//check update of assignments
+		Assert.assertEquals("Assignment 2 description", assignment2_1.getSummary());
+		Assert.assertEquals("Assignment 4 description", assignment4_1.getSummary());
 	}
 	
 	private RepositoryEntry createTemplate(Identity initialAuthor, String displayname, String description) {
