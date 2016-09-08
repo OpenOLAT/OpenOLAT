@@ -44,7 +44,6 @@ import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
-import org.olat.core.util.StringHelper;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.course.assessment.AssessmentToolManager;
 import org.olat.course.assessment.model.AssessedBusinessGroup;
@@ -221,8 +220,7 @@ public class AssessedBusinessGroupCourseNodeListController extends FormBasicCont
 				courseEntry, businessGroup, toolContainer, assessmentCallback);
 		listenTo(treeCtrl);
 
-		String groupName = StringHelper.escapeHtml(businessGroup.getName());
-		stackPanel.pushController(groupName, treeCtrl);
+		stackPanel.pushController(businessGroup.getName(), treeCtrl);
 		currentCtrl = treeCtrl;
 		
 		List<ContextEntry> entries = BusinessControlFactory.getInstance()
