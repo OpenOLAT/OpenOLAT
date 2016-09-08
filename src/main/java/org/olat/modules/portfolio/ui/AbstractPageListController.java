@@ -105,6 +105,7 @@ implements Activateable2, TooledController, FlexiTableComponentDelegate {
 	private CloseableModalController cmc;
 	private UserCommentsController commentsCtrl;
 	private AssignmentEditController editAssignmentCtrl;
+	private AssignmentMoveController moveAssignmentCtrl;
 	private DialogBoxController confirmCloseSectionCtrl, confirmReopenSectionCtrl, confirmDeleteAssignmentCtrl;
 	
 	protected int counter;
@@ -284,6 +285,10 @@ implements Activateable2, TooledController, FlexiTableComponentDelegate {
 				deleteLink.setUserObject(row);
 				row.setDeleteAssignmentLink(deleteLink);
 				
+				FormLink moveLink = uifactory.addFormLink("move_assign_" + (++counter), "move.assignment", "move", null, flc, Link.BUTTON);
+				moveLink.setUserObject(row);
+				row.setDeleteAssignmentLink(moveLink);
+				
 				FormLink upLink = uifactory.addFormLink("up_assign_" + (++counter), "up.assignment", "", null, flc, Link.BUTTON | Link.NONTRANSLATED);
 				upLink.setIconLeftCSS("o_icon o_icon o_icon-lg o_icon_move_up");
 				upLink.setEnabled(index > 0);
@@ -429,7 +434,7 @@ implements Activateable2, TooledController, FlexiTableComponentDelegate {
 			}
 			cmc.deactivate();
 			cleanUp();
-		} else if(editAssignmentCtrl == source) {
+		} else if(editAssignmentCtrl == source || moveAssignmentCtrl == source) {
 			if(event == Event.CHANGED_EVENT || event == Event.DONE_EVENT) {
 				loadModel(null);
 				fireEvent(ureq, Event.CHANGED_EVENT);
@@ -460,9 +465,11 @@ implements Activateable2, TooledController, FlexiTableComponentDelegate {
 	
 	private void cleanUp() {
 		removeAsListenerAndDispose(editAssignmentCtrl);
+		removeAsListenerAndDispose(moveAssignmentCtrl);
 		removeAsListenerAndDispose(commentsCtrl);
 		removeAsListenerAndDispose(cmc);
 		editAssignmentCtrl = null;
+		moveAssignmentCtrl = null;
 		commentsCtrl = null;
 		cmc = null;
 	}
@@ -513,6 +520,9 @@ implements Activateable2, TooledController, FlexiTableComponentDelegate {
 			} else if("delete.assignment".equals(cmd)) {
 				PortfolioElementRow row = (PortfolioElementRow)link.getUserObject();
 				doConfirmDeleteAssignment(ureq, row);
+			} else if("move.assignment".equals(cmd)) {
+				PortfolioElementRow row = (PortfolioElementRow)link.getUserObject();
+				doMoveAssignment(ureq, row);
 			} else if("start.assignment".equals(cmd)) {
 				PortfolioElementRow row = (PortfolioElementRow)link.getUserObject();
 				doStartAssignment(ureq, row);
@@ -631,6 +641,19 @@ implements Activateable2, TooledController, FlexiTableComponentDelegate {
 		
 		String title = translate("edit.assignment");
 		cmc = new CloseableModalController(getWindowControl(), null, editAssignmentCtrl.getInitialComponent(), true, title, true);
+		listenTo(cmc);
+		cmc.activate();
+	}
+	
+	private void doMoveAssignment(UserRequest ureq, PortfolioElementRow row) {
+		if(moveAssignmentCtrl != null) return;
+		
+		Assignment assignment = row.getAssignment();
+		moveAssignmentCtrl = new AssignmentMoveController(ureq, getWindowControl(), assignment, row.getSection());
+		listenTo(moveAssignmentCtrl);
+		
+		String title = translate("move.assignment");
+		cmc = new CloseableModalController(getWindowControl(), null, moveAssignmentCtrl.getInitialComponent(), true, title, true);
 		listenTo(cmc);
 		cmc.activate();
 	}

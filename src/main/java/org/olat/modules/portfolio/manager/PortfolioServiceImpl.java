@@ -97,6 +97,7 @@ import org.olat.modules.portfolio.model.BinderStatistics;
 import org.olat.modules.portfolio.model.CategoryLight;
 import org.olat.modules.portfolio.model.PageImpl;
 import org.olat.modules.portfolio.model.SectionImpl;
+import org.olat.modules.portfolio.model.SectionKeyRef;
 import org.olat.modules.portfolio.model.SynchedBinder;
 import org.olat.modules.portfolio.ui.PortfolioHomeController;
 import org.olat.repository.RepositoryEntry;
@@ -318,6 +319,13 @@ public class PortfolioServiceImpl implements PortfolioService {
 	}
 
 	@Override
+	public void moveAssignment(SectionRef currentSectionRef, Assignment assignment, SectionRef newParentSectionRef) {
+		Section currentSection = binderDao.loadSectionByKey(currentSectionRef.getKey());
+		Section newParentSection = binderDao.loadSectionByKey(newParentSectionRef.getKey());
+		assignmentDao.moveAssignment((SectionImpl)currentSection, assignment, (SectionImpl)newParentSection);
+	}
+
+	@Override
 	public List<Assignment> getAssignments(PortfolioElement element) {
 		if(element.getType() == PortfolioElementType.binder) {
 			return assignmentDao.loadAssignments((BinderRef)element);
@@ -368,9 +376,10 @@ public class PortfolioServiceImpl implements PortfolioService {
 	}
 
 	@Override
-	public void appendNewSection(String title, String description, Date begin, Date end, BinderRef binder) {
+	public SectionRef appendNewSection(String title, String description, Date begin, Date end, BinderRef binder) {
 		Binder reloadedBinder = binderDao.loadByKey(binder.getKey());
-		binderDao.createSection(title, description, begin, end, reloadedBinder);
+		SectionImpl newSection = binderDao.createSection(title, description, begin, end, reloadedBinder);
+		return new SectionKeyRef(newSection.getKey());
 	}
 
 	@Override

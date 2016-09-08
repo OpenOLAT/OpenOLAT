@@ -118,6 +118,21 @@ public class AssignmentDAO {
 		return section;
 	}
 	
+	public void moveAssignment(SectionImpl currentSection, Assignment assignment, SectionImpl newParentSection) {
+		currentSection.getAssignments().size();//load the assignments
+		newParentSection.getAssignments().size();
+		int index = currentSection.getAssignments().indexOf(assignment);
+		if(index >= 0) {
+			Assignment reloadedAssignment = currentSection.getAssignments().remove(index);
+			((AssignmentImpl)reloadedAssignment).setSection(newParentSection);
+			dbInstance.getCurrentEntityManager().merge(currentSection);
+			newParentSection.getAssignments().add(reloadedAssignment);
+			reloadedAssignment = dbInstance.getCurrentEntityManager().merge(reloadedAssignment);
+			
+			dbInstance.getCurrentEntityManager().merge(newParentSection);
+		}
+	}
+	
 	public Assignment startEssayAssignment(Assignment assigment, Page page, Identity assignee) {
 		((AssignmentImpl)assigment).setPage(page);
 		((AssignmentImpl)assigment).setAssignee(assignee);

@@ -97,6 +97,8 @@ public interface PortfolioService {
 	
 	public Section moveDownAssignment(Section section, Assignment assignment);
 	
+	public void moveAssignment(SectionRef currentSection, Assignment assignment, SectionRef newParentSection);
+	
 	public Assignment updateAssignment(Assignment assignment, String title, String summary, String content, AssignmentType type);
 
 	
@@ -126,7 +128,7 @@ public interface PortfolioService {
 	 * @param end
 	 * @param binder
 	 */
-	public void appendNewSection(String title, String description, Date begin, Date end, BinderRef binder);
+	public SectionRef appendNewSection(String title, String description, Date begin, Date end, BinderRef binder);
 	
 	public Section updateSection(Section section);
 	

@@ -225,10 +225,12 @@ public class SectionImpl implements Persistable, ModifiedInfo, CreateInfo, Secti
 		this.endDate = endDate;
 	}
 
+	@Override
 	public boolean isOverrideBeginEndDates() {
 		return overrideBeginEndDates;
 	}
 
+	@Override
 	public void setOverrideBeginEndDates(boolean overrideBeginEndDates) {
 		this.overrideBeginEndDates = overrideBeginEndDates;
 	}
@@ -272,6 +274,7 @@ public class SectionImpl implements Persistable, ModifiedInfo, CreateInfo, Secti
 		this.pages = pages;
 	}
 
+	@Override
 	public List<Assignment> getAssignments() {
 		if(assignments == null) {
 			assignments = new ArrayList<>();

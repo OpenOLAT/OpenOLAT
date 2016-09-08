@@ -57,24 +57,32 @@ public interface Section extends SectionRef, PortfolioElement {
 	public SectionStatus getSectionStatus();
 	
 	/**
-	 * Return the section of the template used to create this section or null.
-	 * The section is lazily loaded.
-	 * 
-	 * @return
-	 */
-	public Section getTemplateReference();
-	
-	/**
-	 * Return the list of entries / pages of the section. They are lazily loaded.
-	 * @return
-	 */
-	public List<Page> getPages();
-	
-	/**
 	 * The binder is lazily loaded.
 	 * 
 	 * @return
 	 */
 	public Binder getBinder();
+	
+	/**
+	 * Return the section of the template used to create this section or null.
+	 * The section is lazily loaded.
+	 * 
+	 * @return The parent binder
+	 */
+	public Section getTemplateReference();
+	
+	/**
+	 * Return the list of entries / pages of the section. They are lazily loaded.
+	 * @return A list of pages
+	 */
+	public List<Page> getPages();
+	
+	/**
+	 * Return the list of assignments of the section. They are lazily loaded.
+	 * @return A list of assignments
+	 */
+	public List<Assignment> getAssignments();
+	
+
 
 }

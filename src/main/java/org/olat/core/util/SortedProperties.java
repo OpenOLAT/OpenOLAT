@@ -56,12 +56,12 @@ public class SortedProperties extends Properties {
 	 * 
 	 * @see java.util.Hashtable#keys()
 	 */
-	@SuppressWarnings({ "unchecked", "cast" })
+	@SuppressWarnings({ "unchecked" })
 	@Override
 	public synchronized Enumeration<Object> keys() {
 		// sort elements based on detector (prop key) names
 		Set set = keySet();
-		return (Enumeration<Object>)sortKeys(set);
+		return sortKeys(set);
 	}
 
 	/**
