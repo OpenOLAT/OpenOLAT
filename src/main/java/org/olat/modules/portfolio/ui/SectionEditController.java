@@ -127,6 +127,16 @@ public class SectionEditController extends FormBasicController {
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
 		boolean allOk = true;
+		
+		if(secCallback.canSectionBeginAndEnd()) {
+			Date begin = beginDateEl.getDate();
+			Date end = endDateEl.getDate();
+			if(begin != null && end != null && end.before(begin)) {
+				endDateEl.setErrorKey("error.begin.after.end", null);
+				allOk &= false;
+			}
+		}
+		
 		return allOk & super.validateFormLogic(ureq);
 	}
 

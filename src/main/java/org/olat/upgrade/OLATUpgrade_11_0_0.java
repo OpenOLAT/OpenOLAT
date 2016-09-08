@@ -53,6 +53,7 @@ import org.olat.core.id.Identity;
 import org.olat.core.id.IdentityEnvironment;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Roles;
+import org.olat.core.logging.OLATRuntimeException;
 import org.olat.core.logging.activity.LoggingObject;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
@@ -120,6 +121,8 @@ import org.olat.repository.model.SearchRepositoryEntryParameters;
 import org.olat.upgrade.legacy.NewCacheKey;
 import org.olat.upgrade.legacy.NewCachePersistingAssessmentManager;
 import org.springframework.beans.factory.annotation.Autowired;
+
+import de.bps.onyx.plugin.OnyxModule;
 
 /**
  * 
@@ -875,7 +878,10 @@ public class OLATUpgrade_11_0_0 extends OLATUpgrade {
 				Long courseResourceableId = course.getResourceableId();
 				List<QTIResultSet> resultSets = qtiResultManager.getResultSets(courseResourceableId, cNode.getIdent(), ref.getKey(), assessedIdentity);
 				if(resultSets.size() > 0) {
-					if(checkEssay(ref)) {
+					if(OnyxModule.isOnyxTest(ref.getOlatResource())) {
+						//make it later with the flag fully assessed
+						entry.setAssessmentStatus(AssessmentEntryStatus.inProgress);
+					} else if(checkEssay(ref)) {
 						entry.setAssessmentStatus(AssessmentEntryStatus.inReview);
 					} else {
 						entry.setAssessmentStatus(AssessmentEntryStatus.done);
@@ -903,21 +909,25 @@ public class OLATUpgrade_11_0_0 extends OLATUpgrade {
 		TransientIdentity pseudoIdentity = new TransientIdentity();
 		pseudoIdentity.setName("transient");
 		Translator translator = Util.createPackageTranslator(QTIModule.class, Locale.ENGLISH);
-		QTIEditorPackage qtiPackage = new QTIEditorPackageImpl(pseudoIdentity, fr, null, translator);
-		if(qtiPackage.getQTIDocument() != null && qtiPackage.getQTIDocument().getAssessment() != null) {
-			Assessment ass = qtiPackage.getQTIDocument().getAssessment();
-			//Sections with their Items
-			List<Section> sections = ass.getSections();
-			for (Section section:sections) {
-				List<Item> items = section.getItems();
-				for (Item item:items) {
-					String ident = item.getIdent();
-					if(ident != null && ident.startsWith("QTIEDIT:ESSAY")) {
-						qtiEssayMap.put(testEntry.getKey(), Boolean.TRUE);
-						return true;
+		try {
+			QTIEditorPackage qtiPackage = new QTIEditorPackageImpl(pseudoIdentity, fr, null, translator);
+			if(qtiPackage.getQTIDocument() != null && qtiPackage.getQTIDocument().getAssessment() != null) {
+				Assessment ass = qtiPackage.getQTIDocument().getAssessment();
+				//Sections with their Items
+				List<Section> sections = ass.getSections();
+				for (Section section:sections) {
+					List<Item> items = section.getItems();
+					for (Item item:items) {
+						String ident = item.getIdent();
+						if(ident != null && ident.startsWith("QTIEDIT:ESSAY")) {
+							qtiEssayMap.put(testEntry.getKey(), Boolean.TRUE);
+							return true;
+						}
 					}
 				}
 			}
+		} catch (OLATRuntimeException e) {
+			log.warn("QTI without content in repository entry: " + testEntry.getKey(), e);
 		}
 		qtiEssayMap.put(testEntry.getKey(), Boolean.FALSE);
 		return false;
@@ -1028,7 +1038,17 @@ public class OLATUpgrade_11_0_0 extends OLATUpgrade {
 			}
 		} else if(propertyName.equals(FULLY_ASSESSED)) {
 			if(StringHelper.containsNonWhitespace(property.getStringValue())) {
-				nodeAssessment.setFullyAssessed(new Boolean(property.getStringValue()));
+				Boolean fullyAssessed = new Boolean(property.getStringValue());
+				nodeAssessment.setFullyAssessed(fullyAssessed);
+				if(nodeAssessment.getStatus() == null
+						|| nodeAssessment.getAssessmentStatus() == AssessmentEntryStatus.notStarted
+						|| nodeAssessment.getAssessmentStatus() == AssessmentEntryStatus.inProgress) {
+					if(fullyAssessed.booleanValue()) {
+						nodeAssessment.setAssessmentStatus(AssessmentEntryStatus.done);
+					} else {
+						nodeAssessment.setAssessmentStatus(AssessmentEntryStatus.inProgress);
+					}
+				}
 			}
 		} else if (propertyName.equals(ASSESSMENT_ID)) {
 			nodeAssessment.setAssessmentId(property.getLongValue());
