@@ -82,10 +82,8 @@ import org.olat.modules.qpool.model.QEducationalContext;
 import org.olat.modules.qpool.model.QItemType;
 import org.olat.modules.qpool.model.QLicense;
 import org.olat.modules.qpool.model.QuestionItemImpl;
-import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
-import org.xml.sax.helpers.DefaultHandler;
 
 /**
  * This class is NOT thread-safe
@@ -98,7 +96,6 @@ class QTIImportProcessor {
 	
 	private static final OLog log = Tracing.createLoggerFor(QTIImportProcessor.class);
 	
-	private static final String OPENOLAT_MOVIE_MARKER = "BPlayer.insertPlayer(";
 	
 	private final Identity owner;
 	private final Locale defaultLocale;
@@ -526,7 +523,7 @@ class QTIImportProcessor {
 	protected void findMaterialInMatText(String content, List<String> materialPath) {
 		try {
 			SAXParser parser = new SAXParser();
-			HTMLHandler contentHandler = new HTMLHandler(materialPath);
+			QTI12HtmlHandler contentHandler = new QTI12HtmlHandler(materialPath);
 			parser.setContentHandler(contentHandler);
 			parser.parse(new InputSource(new StringReader(content)));
 		} catch (SAXException e) {
@@ -535,63 +532,6 @@ class QTIImportProcessor {
 			log.error("", e);
 		} catch (Exception e) {
 			log.error("", e);
-		}
-	}
-	
-	private static class HTMLHandler extends DefaultHandler {
-		private final List<String> materialPath;
-		
-		private StringBuffer scriptBuffer;
-		
-		public HTMLHandler(List<String> materialPath) {
-			this.materialPath = materialPath;
-		}
-		
-		@Override
-		public void startElement(String uri, String localName, String qName, Attributes attributes) {
-			String elem = localName.toLowerCase();
-			if("img".equals(elem)) {
-				String imgSrc = attributes.getValue("src");
-				if(StringHelper.containsNonWhitespace(imgSrc)) {
-					materialPath.add(imgSrc);
-				}
-			} else if("script".equals(elem)) {
-				scriptBuffer = new StringBuffer();
-			}
-		}
-
-		@Override
-		public void characters(char[] ch, int start, int length)
-		throws SAXException {
-			if(scriptBuffer != null) {
-				scriptBuffer.append(ch, start, length);
-			}
-		}
-
-		@Override
-		public void endElement(String uri, String localName, String qName)
-		throws SAXException {
-			String elem = localName.toLowerCase();
-			if("script".equals(elem)) {
-				String content = scriptBuffer == null ? "" : scriptBuffer.toString();
-				processScriptContent(content);
-				scriptBuffer = null;
-			}
-		}
-		
-		private void processScriptContent(String content) {
-			int markerIndex = content.indexOf(OPENOLAT_MOVIE_MARKER);
-			if(markerIndex >= 0) {
-				int beginIndex = markerIndex + OPENOLAT_MOVIE_MARKER.length();
-				char quote = content.charAt(beginIndex);
-				int endIndex = content.indexOf(quote, beginIndex + 1);
-				if(endIndex > beginIndex) {
-					String media = content.substring(beginIndex + 1, endIndex);
-					if(StringHelper.containsNonWhitespace(media)) {
-						materialPath.add(media.trim());
-					}
-				}
-			}
 		}
 	}
 	
