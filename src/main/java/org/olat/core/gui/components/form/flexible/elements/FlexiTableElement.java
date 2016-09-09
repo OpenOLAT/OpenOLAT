@@ -322,6 +322,18 @@ public interface FlexiTableElement extends FormItem {
 	
 	public void sort(String sortKey, boolean asc);
 	
+	@Override
+	public void reset();
+	
+	/**
+	 * Fine grained reset method for the flexi table.
+	 * 
+	 * @param page Set the current page of pageing to the firs
+	 * @param internal Set the row count and other internal variable to 0
+	 * @param reloadData Reload the data
+	 */
+	public void reset(boolean page, boolean internal, boolean reloadData);
+	
 	public void reloadData();
 	
 	public void deselectAll();

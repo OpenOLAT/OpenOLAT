@@ -891,7 +891,7 @@ public abstract class AbstractMemberListController extends FormBasicController i
 		filterByOrigin(memberList, params);
 		
 		memberListModel.setObjects(memberList);
-		membersTable.reset();
+		membersTable.reset(true, true, true);
 		return memberList;
 	}
 	

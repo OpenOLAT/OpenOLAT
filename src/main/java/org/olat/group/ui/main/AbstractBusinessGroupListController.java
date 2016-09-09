@@ -1103,7 +1103,7 @@ public abstract class AbstractBusinessGroupListController extends FormBasicContr
 		this.lastSearchParams = params;
 		if(params == null) {
 			groupTableModel.setEntries(Collections.<BGTableItem>emptyList());
-			tableEl.reset();
+			tableEl.reset(true, true, true);
 			return 0;
 		} else {
 			List<BGTableItem> items = searchTableItems(params);
@@ -1116,7 +1116,7 @@ public abstract class AbstractBusinessGroupListController extends FormBasicContr
 			}
 			
 			groupTableModel.setEntries(items);
-			tableEl.reset();
+			tableEl.reset(true, true, true);
 			return items.size();
 		}
 	}
