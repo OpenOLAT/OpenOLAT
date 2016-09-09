@@ -82,7 +82,7 @@ public class DownloadComponentRenderer extends DefaultComponentRenderer {
 		if (iconCssClass != null || cssArg != null) {
 			sb.append("<i class=\"");
 			if (iconCssClass != null) {
-				sb.append("o_icon ")
+				sb.append("o_icon o_icon-fw ")
 				  .append(iconCssClass)
 				  .append(" ");
 			}
