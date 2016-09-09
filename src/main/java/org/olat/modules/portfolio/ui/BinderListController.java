@@ -27,6 +27,7 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.olat.core.commons.modules.bc.meta.MetaInfo;
 import org.olat.core.commons.modules.bc.meta.tagged.MetaTagged;
+import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.commons.services.image.Size;
 import org.olat.core.dispatcher.mapper.Mapper;
 import org.olat.core.gui.UserRequest;
@@ -288,11 +289,13 @@ public class BinderListController extends FormBasicController
 	}
 	
 	private void cleanUp() {
+		removeAsListenerAndDispose(searchCourseTemplateCtrl);
 		removeAsListenerAndDispose(chooseNewBinderTypeCtrl);
 		removeAsListenerAndDispose(newBinderCalloutCtrl);
 		removeAsListenerAndDispose(searchTemplateCtrl);
 		removeAsListenerAndDispose(newBinderCtrl);
 		removeAsListenerAndDispose(cmc);
+		searchCourseTemplateCtrl = null;
 		chooseNewBinderTypeCtrl = null;
 		newBinderCalloutCtrl = null;
 		searchTemplateCtrl = null;
@@ -395,6 +398,9 @@ public class BinderListController extends FormBasicController
 	private void doCreateBinderFromTemplate(UserRequest ureq, RepositoryEntry entry) {
 		Binder templateBinder = portfolioService.getBinderByResource(entry.getOlatResource());
 		Binder newBinder = portfolioService.assignBinder(getIdentity(), templateBinder, null, null, null);
+		DBFactory.getInstance().commit();
+		SynchedBinder synchedBinder = portfolioService.loadAndSyncBinder(newBinder);
+		newBinder = synchedBinder.getBinder();
 		doOpenBinder(ureq, newBinder).activate(ureq, null, null);
 	}
 	
@@ -416,12 +422,15 @@ public class BinderListController extends FormBasicController
 		RepositoryEntry templateEntry = row.getTemplateEntry();
 		PortfolioCourseNode courseNode = row.getCourseNode();
 		Binder templateBinder = portfolioService.getBinderByResource(templateEntry.getOlatResource());
-		
-		
+
 		Binder copyBinder = portfolioService.getBinder(getIdentity(), templateBinder, courseEntry, courseNode.getIdent());
 		if(copyBinder == null) {
 			Date deadline = courseNode.getDeadline();
 			copyBinder = portfolioService.assignBinder(getIdentity(), templateBinder, courseEntry, courseNode.getIdent(), deadline);
+			DBFactory.getInstance().commit();
+			SynchedBinder synchedBinder = portfolioService.loadAndSyncBinder(copyBinder);
+			copyBinder = synchedBinder.getBinder();
+			
 			if(copyBinder != null) {
 				showInfo("map.copied", StringHelper.escapeHtml(templateBinder.getTitle()));
 				ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrap(copyBinder));

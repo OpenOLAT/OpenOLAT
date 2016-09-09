@@ -177,7 +177,8 @@ public class IdentityListCourseNodeController extends FormBasicController implem
 		}
 		
 		ICourse course = CourseFactory.loadCourse(courseEntry);
-		String select = (courseNode instanceof AssessableCourseNode && !(courseNode instanceof STCourseNode))
+		String select = (courseNode instanceof AssessableCourseNode
+				&& (courseNode.getParent() == null || !(courseNode instanceof STCourseNode)))
 				? "select" : null;
 
 		//add the table

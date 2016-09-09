@@ -222,10 +222,12 @@ public class BinderDAO {
 		newSection.getAssignments().add(assignment);
 
 		Page page = assignment.getPage();
-		currentSection.getPages().remove(page);
-		newSection.getPages().add(page);
-		((PageImpl)page).setSection(newSection);
-		dbInstance.getCurrentEntityManager().merge(page);
+		if(assignment != null) {
+			currentSection.getPages().remove(page);
+			newSection.getPages().add(page);
+			((PageImpl)page).setSection(newSection);
+			dbInstance.getCurrentEntityManager().merge(page);
+		}
 	}
 	
 	private void syncAssignments(SectionImpl templateSection, SectionImpl currentSection) {
