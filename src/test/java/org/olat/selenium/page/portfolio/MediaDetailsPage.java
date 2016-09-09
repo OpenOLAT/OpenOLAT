@@ -19,11 +19,14 @@
  */
 package org.olat.selenium.page.portfolio;
 
-import org.olat.core.util.StringHelper;
+import java.util.List;
+
+import org.junit.Assert;
 import org.olat.selenium.page.graphene.OOGraphene;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
+
 
 /**
  * 
@@ -31,32 +34,19 @@ import org.openqa.selenium.WebElement;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class MediaPage {
+public class MediaDetailsPage {
 	
 	private final WebDriver browser;
 
-	public MediaPage(WebDriver browser) {
+	public MediaDetailsPage(WebDriver browser) {
 		this.browser = browser;
 	}
 	
-	public MediaPage fillForumMedia(String title, String description) {
-		if(StringHelper.containsNonWhitespace(title)) {
-			By titleBy = By.cssSelector(".o_sel_pf_collect_media_title input[type='text']");
-			WebElement titleEl = browser.findElement(titleBy);
-			titleEl.clear();
-			titleEl.sendKeys(title);
-		}
-		
-		if(StringHelper.containsNonWhitespace(description)) {
-			String cssSelector = ".o_sel_pf_collect_media_description";
-			OOGraphene.tinymce(description, cssSelector, browser);
-		}
-		
-		//save
-		By submitBy = By.cssSelector(".o_sel_pf_collect_media_form button.btn-primary");
-		WebElement submitButton = browser.findElement(submitBy);
-		submitButton.click();
-		OOGraphene.waitBusy(browser);
+	public MediaDetailsPage assertOnMediaDetails(String title) {
+		By titleBy = By.xpath("//div//h2[contains(text(),'" + title + "')]");
+		OOGraphene.waitElement(titleBy, 5, browser);
+		List<WebElement> titleEls = browser.findElements(titleBy);
+		Assert.assertFalse(titleEls.isEmpty());
 		return this;
 	}
 

@@ -17,39 +17,20 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.assessment.ui.event;
+package org.olat.course.assessment.ui.tool;
 
-import org.olat.core.gui.control.Event;
+import org.olat.core.gui.UserRequest;
 
 /**
  * 
- * Initial date: 10.08.2016<br>
+ * Initial date: 09.09.2016<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class AssessmentFormEvent extends Event {
-
-	private static final long serialVersionUID = -5578626308503719045L;
+public interface AssessmentFormCallback {
 	
-	public static final String ASSESSMENT_DONE = "assessment-entry-done";
-	public static final String ASSESSMENT_CHANGED = "assessment-entry-CHANGED";
-	public static final String ASSESSMENT_REOPEN = "assessment-entry-reopened";
-
-	private boolean close;
+	public void assessmentDone(UserRequest ureq);
 	
-	public AssessmentFormEvent(String cmd, boolean close) {
-		super(cmd);
-		this.close = close;
-	}
-	
-	public boolean isClose() {
-		return close;
-	}
-	
-	public AssessmentFormEvent cloneNotClose() {
-		AssessmentFormEvent afe = new AssessmentFormEvent(getCommand(), false);
-		
-		return afe;
-	}
+	public void assessmentReopen(UserRequest ureq);
 
 }

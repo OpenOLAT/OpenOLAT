@@ -59,5 +59,15 @@ public class PortfolioV2HomePage {
 		OOGraphene.waitElement(binderListBy, 5, browser);
 		return new BindersPage(browser);
 	}
+	
+	public MediaCenterPage openMediaCenter() {
+		By mediaCenterLinkBy = By.cssSelector("a.o_sel_pf_media_center");
+		OOGraphene.waitElement(mediaCenterLinkBy, 5, browser);
+		browser.findElement(mediaCenterLinkBy).click();
+		
+		By mediaListBy = By.cssSelector("div.o_portfolio_media_browser div.o_table_flexi");
+		OOGraphene.waitElement(mediaListBy, 5, browser);
+		return new MediaCenterPage(browser);
+	}
 
 }

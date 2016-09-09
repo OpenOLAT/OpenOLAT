@@ -88,7 +88,7 @@ public class GTACoachedGroupGradingController extends FormBasicController {
 
 	private FlexiTableElement table;
 	private GroupAssessmentModel model;
-	private FormLink assessmentFormButton;
+	private FormLink assessmentFormButton, reopenButton;
 	
 	private CloseableModalController cmc;
 	private GroupAssessmentController assessmentCtrl;
@@ -146,6 +146,11 @@ public class GTACoachedGroupGradingController extends FormBasicController {
 		assessmentFormButton.setCustomEnabledLinkCSS("btn btn-primary");
 		assessmentFormButton.setIconLeftCSS("o_icon o_icon o_icon_submit");
 		assessmentFormButton.setElementCssClass("o_sel_course_gta_assessment_button");
+		assessmentFormButton.setVisible(assignedTask == null || assignedTask.getTaskStatus() != TaskProcess.graded);
+
+		reopenButton = uifactory.addFormLink("coach.reopen", "coach.reopen", null, formLayout, Link.BUTTON);
+		reopenButton.setElementCssClass("o_sel_course_gta_reopen_button");
+		reopenButton.setVisible(assignedTask != null && assignedTask.getTaskStatus() == TaskProcess.graded);
 		
 		if(formLayout instanceof FormLayoutContainer) {
 			ModuleConfiguration config = gtaNode.getModuleConfiguration();
@@ -278,6 +283,8 @@ public class GTACoachedGroupGradingController extends FormBasicController {
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(assessmentFormButton == source) {
 			doOpenAssessmentForm(ureq);
+		} else if(reopenButton == source) {
+			doReopenAssessment(ureq);
 		} else if(source instanceof FormLink) {
 			FormLink link = (FormLink)source;
 			if("comment".equals(link.getCmd())) {
@@ -299,6 +306,11 @@ public class GTACoachedGroupGradingController extends FormBasicController {
 		} else {
 			assignedTask = gtaManager.updateTask(assignedTask, TaskProcess.graded, gtaNode);
 		}
+	}
+	
+	private void doReopenAssessment(UserRequest ureq) {
+		assignedTask = gtaManager.updateTask(assignedTask, TaskProcess.grading, gtaNode);
+		fireEvent(ureq, Event.CHANGED_EVENT);
 	}
 	
 	private void doOpenAssessmentForm(UserRequest ureq) {

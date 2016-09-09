@@ -55,6 +55,7 @@ import org.olat.course.run.userview.UserCourseEnvironmentImpl;
 import org.olat.group.BusinessGroup;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.assessment.ui.AssessedIdentityController;
+import org.olat.modules.assessment.ui.event.AssessmentFormEvent;
 import org.olat.repository.RepositoryEntry;
 import org.olat.user.UserManager;
 import org.olat.util.logging.activity.LoggingResourceable;
@@ -204,6 +205,13 @@ public class AssessmentIdentityCourseNodeController extends BasicController impl
 				stackPanel.pushController(translate("sub.details"), subDetailsController);
 			}
 		} else if(assessmentForm == source) {
+			if(detailsEditController instanceof AssessmentFormCallback) {
+				if(AssessmentFormEvent.ASSESSMENT_DONE.equals(event.getCommand())) {
+					((AssessmentFormCallback)detailsEditController).assessmentDone(ureq);
+				} else if(AssessmentFormEvent.ASSESSMENT_REOPEN.equals(event.getCommand())) {
+					((AssessmentFormCallback)detailsEditController).assessmentReopen(ureq);	
+				}
+			}
 			fireEvent(ureq, event);
 		}
 		super.event(ureq, source, event);

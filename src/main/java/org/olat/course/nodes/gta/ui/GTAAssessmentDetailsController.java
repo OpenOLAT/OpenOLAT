@@ -34,6 +34,7 @@ import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.messages.MessageUIFactory;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
+import org.olat.course.assessment.ui.tool.AssessmentFormCallback;
 import org.olat.course.nodes.GTACourseNode;
 import org.olat.course.nodes.gta.GTAManager;
 import org.olat.course.nodes.gta.GTAType;
@@ -53,7 +54,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class GTAAssessmentDetailsController extends BasicController {
+public class GTAAssessmentDetailsController extends BasicController implements AssessmentFormCallback {
 
 	private GTACoachController coachingCtrl;
 	private GTACoachedGroupListController groupListCtrl;
@@ -129,6 +130,20 @@ public class GTAAssessmentDetailsController extends BasicController {
 	@Override
 	protected void doDispose() {
 		//
+	}
+
+	@Override
+	public void assessmentDone(UserRequest ureq) {
+		if(coachingCtrl != null) {
+			coachingCtrl.assessmentDone(ureq);
+		}
+	}
+
+	@Override
+	public void assessmentReopen(UserRequest ureq) {
+		if(coachingCtrl != null) {
+			coachingCtrl.assessmentReopen(ureq);
+		}
 	}
 
 	@Override

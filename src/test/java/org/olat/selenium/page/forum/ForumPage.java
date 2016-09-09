@@ -235,6 +235,7 @@ public class ForumPage {
 		OOGraphene.waitElement(collectBy, 5, browser);
 		browser.findElement(collectBy).click();
 		OOGraphene.waitBusy(browser);
+		OOGraphene.waitModalDialog(browser);
 		return new MediaPage(browser);
 	}
 }

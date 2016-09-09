@@ -42,8 +42,11 @@ import org.olat.selenium.page.course.CoursePageFragment;
 import org.olat.selenium.page.course.MembersPage;
 import org.olat.selenium.page.course.PortfolioElementPage;
 import org.olat.selenium.page.course.PublisherPageFragment.Access;
+import org.olat.selenium.page.forum.ForumPage;
 import org.olat.selenium.page.portfolio.BinderPage;
+import org.olat.selenium.page.portfolio.MediaCenterPage;
 import org.olat.selenium.page.portfolio.PortfolioV2HomePage;
+import org.olat.selenium.page.repository.AuthoringEnvPage.ResourceType;
 import org.olat.selenium.page.user.UserToolsPage;
 import org.olat.test.ArquillianDeployments;
 import org.olat.test.rest.UserRestClient;
@@ -202,7 +205,72 @@ public class PortfolioV2Test {
 				.goToPortfolioV2();
 
 		binder
+			.selectEntries()
 			.pickAssignment(assignmentTitle);
+	}
+	
+	/**
+	 * Create a course with a forum, open a new thread and pick it as
+	 * a media. Go in the media center and check that the media
+	 * is waiting there, click the details and check again.
+	 * 
+	 * @param loginPage
+	 * @throws IOException
+	 * @throws URISyntaxException
+	 */
+	@Test
+	@RunAsClient
+	public void collectForumArtefactInCourse(@InitialPage LoginPage loginPage)
+	throws IOException, URISyntaxException {
+		
+		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
+		loginPage
+			.loginAs(author.getLogin(), author.getPassword())
+			.resume();
+		
+		String courseTitle = "Collect-Forum-" + UUID.randomUUID();
+		String forumTitle = ("Forum-" + UUID.randomUUID()).substring(0, 24);
+		//go to authoring, create a course with a forum
+		navBar
+			.openAuthoringEnvironment()
+			.openCreateDropDown()
+			.clickCreate(ResourceType.course)
+			.fillCreateForm(courseTitle)
+			.clickToolbarBack();
+		
+		//open course editor
+		CourseEditorPageFragment courseEditor = CoursePageFragment.getCourse(browser)
+			.edit();
+		courseEditor
+			.createNode("fo")
+			.nodeTitle(forumTitle)
+			.publish()
+			.quickPublish();
+		courseEditor.clickToolbarBack();
+		
+		CoursePageFragment course = CoursePageFragment.getCourse(browser);
+		course
+			.clickTree()
+			.selectWithTitle(forumTitle);
+		
+		String mediaTitle = "A post";
+		
+		String threadTitle = "Very interessant thread";
+		ForumPage forum = ForumPage.getCourseForumPage(browser);
+		forum
+			.createThread(threadTitle, "With a lot of content", null)
+			.addAsMedia()
+			.fillForumMedia(mediaTitle, "A post I write");
+		
+		UserToolsPage userTools = new UserToolsPage(browser);
+		MediaCenterPage mediaCenter = userTools
+				.openUserToolsMenu()
+				.openPortfolioV2()
+				.openMediaCenter();
+		mediaCenter
+				.assertOnMedia(mediaTitle)
+				.selectMedia(mediaTitle)
+				.assertOnMediaDetails(mediaTitle);
 	}
 
 }

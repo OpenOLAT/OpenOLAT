@@ -51,7 +51,7 @@
 	</table>
 </div>
 
-#if ($comment)		
+#if ($r.isNotEmpty($comment))		
 	<div class="panel panel-default o_comment">
 	  	<div class="panel-heading" data-toggle="collapse" data-target="#collapseComment">
 	  		<h4 class="panel-title">
@@ -75,7 +75,7 @@
 	</script>
 #end
 
-#if($infoTextUser)
+#if($r.isNotEmpty($infoTextUser))
 	<div class="panel panel-default o_disclaimer">
 	  	<div class="panel-heading" data-toggle="collapse" data-target="#collapseDisclaimer">
 	  		<h4 class="panel-title">

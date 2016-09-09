@@ -185,7 +185,7 @@ public class AssessmentForm extends FormBasicController {
 			}
 		} else if(reopenLink == source) {
 			doReopen();
-			fireEvent(ureq, new AssessmentFormEvent(AssessmentFormEvent.ASSESSMENT_CHANGED, false));
+			fireEvent(ureq, new AssessmentFormEvent(AssessmentFormEvent.ASSESSMENT_REOPEN, false));
 		}
 		super.formInnerEvent(ureq, source, event);
 	}

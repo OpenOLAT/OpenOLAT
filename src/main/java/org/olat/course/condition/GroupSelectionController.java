@@ -120,8 +120,10 @@ public class GroupSelectionController extends FormBasicController {
 				loadNamesAndKeys();
 				// select new value
 				entrySelector.setKeysAndValues(groupKeys, groupNames);
-				entrySelector.select(groupCreateCntrllr.getCreatedGroup().getKey().toString(), true);
-				
+				Collection<Long> newGroupKeys = groupCreateCntrllr.getCreatedGroupKeys();
+				for(Long newGroupKey:newGroupKeys) {
+					entrySelector.select(newGroupKey.toString(), true);
+				}
 				//inform condition config easy about new groups -> which informs further
 				fireEvent(ureq, Event.CHANGED_EVENT);
 			} 
@@ -174,11 +176,11 @@ public class GroupSelectionController extends FormBasicController {
 	
 	public List<Long> getSelectedKeys() {
 		Collection<String> selectedKeys = entrySelector.getSelectedKeys();
-		List<Long> groupKeys = new ArrayList<Long>();
+		List<Long> keys = new ArrayList<>();
 		for(String selectedKey:selectedKeys) {
-			groupKeys.add(new Long(selectedKey));
+			keys.add(new Long(selectedKey));
 		}
-		return groupKeys;
+		return keys;
 	}
 
 }
