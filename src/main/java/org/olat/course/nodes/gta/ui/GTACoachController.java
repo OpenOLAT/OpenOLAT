@@ -185,9 +185,6 @@ public class GTACoachController extends GTAAbstractController {
 				mainVC.contextPut("submitCssClass", "o_active");
 				collect(assignedTask);
 			} else {
-				if (assignedTask == null || assignedTask.getTaskStatus() == TaskProcess.review) {
-					backToSubmission(assignedTask);
-				}
 				mainVC.contextPut("submitCssClass", "o_done");
 				viewSubmittedDocument = true;
 			}	
@@ -195,11 +192,11 @@ public class GTACoachController extends GTAAbstractController {
 			mainVC.contextPut("submitCssClass", "o_active");
 			collect(assignedTask);
 		} else {
-			if (assignedTask == null || assignedTask.getTaskStatus() == TaskProcess.review) {
-				backToSubmission(assignedTask);
-			}
 			mainVC.contextPut("submitCssClass", "o_done");
 			viewSubmittedDocument = true;
+		}
+		if (assignedTask == null || (assignedTask.getTaskStatus() != TaskProcess.submit)) {
+			backToSubmission(assignedTask);
 		}
 		
 		if(viewSubmittedDocument) {
