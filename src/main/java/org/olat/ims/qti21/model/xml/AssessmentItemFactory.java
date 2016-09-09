@@ -806,6 +806,15 @@ public class AssessmentItemFactory {
 		choiceInteraction.getNodeGroups().add(singleChoices);
 		return choiceInteraction;
 	}
+	
+	public static void ensureFeedbackBasicOutcomeDeclaration(AssessmentItem assessmentItem) {
+		OutcomeDeclaration feedbackBasicDeclaration = assessmentItem.getOutcomeDeclaration(QTI21Constants.FEEDBACKBASIC_IDENTIFIER);
+		if(feedbackBasicDeclaration == null) {
+			feedbackBasicDeclaration = AssessmentItemFactory
+					.createOutcomeDeclarationForFeedbackBasic(assessmentItem);
+			assessmentItem.getOutcomeDeclarations().add(feedbackBasicDeclaration);	
+		}
+	}
 
 	public static ModalFeedback createModalFeedback(AssessmentItem assessmentItem, Identifier identifier, String title, String text) {
 		return createModalFeedback(assessmentItem, QTI21Constants.FEEDBACKMODAL_IDENTIFIER, identifier, title, text);

@@ -193,6 +193,7 @@ import org.junit.runners.Suite;
 	org.olat.ims.qti21.model.xml.AssessmentHtmlBuilderTest.class,
 	org.olat.ims.qti21.model.xml.AssessmentItemPackageTest.class,
 	org.olat.ims.qti21.model.xml.ManifestPackageTest.class,
+	org.olat.ims.qti21.model.xml.OnyxToQtiAssessementItemsTest.class,
 	org.olat.ims.lti.LTIManagerTest.class,
 	org.olat.modules.webFeed.FeedManagerImplTest.class,
 	org.olat.modules.qpool.manager.MetadataConverterHelperTest.class,

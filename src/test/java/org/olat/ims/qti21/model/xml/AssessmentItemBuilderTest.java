@@ -50,7 +50,7 @@ public class AssessmentItemBuilderTest {
 	
 	@Test
 	public void findFeedbacks()  throws URISyntaxException {
-		URL itemUrl = AssessmentItemPackageTest.class.getResource("assessment-item-single-choice-feedbacks.xml");
+		URL itemUrl = AssessmentItemBuilderTest.class.getResource("assessment-item-single-choice-feedbacks.xml");
 		AssessmentItem assessmentItem = loadAssessmentItem(itemUrl);
 		SingleChoiceAssessmentItemBuilder itemBuilder = new SingleChoiceAssessmentItemBuilder(assessmentItem, qtiSerializer);
 		

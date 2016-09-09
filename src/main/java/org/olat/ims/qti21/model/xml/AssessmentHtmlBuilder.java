@@ -194,7 +194,17 @@ public class AssessmentHtmlBuilder {
 			
 			if("textentryinteraction".equals(localName)) {
 				localName = qName = "textEntryInteraction";
-				attributes = new AttributesDelegate(attributes);
+
+				AttributesImpl attributesCleaned = new AttributesImpl("");
+				for(int i=0; i<attributes.getLength(); i++) {
+					String name = attributes.getLocalName(i);
+					if(!"openolattype".equalsIgnoreCase(name)) {
+						String value = attributes.getValue(i);
+						attributesCleaned.addAttribute(name, value);
+					}
+				}
+
+				attributes = new AttributesDelegate(attributesCleaned);
 			} else if("span".equals(localName)) {
 				String cssClass = attributes.getValue("class");
 				if(cssClass != null && "olatFlashMovieViewer".equals(cssClass)) {
