@@ -186,9 +186,6 @@ public class GTACoachController extends GTAAbstractController implements Assessm
 				mainVC.contextPut("submitCssClass", "o_active");
 				collect(assignedTask);
 			} else {
-				if (assignedTask == null || assignedTask.getTaskStatus() == TaskProcess.review) {
-					backToSubmission(assignedTask);
-				}
 				mainVC.contextPut("submitCssClass", "o_done");
 				viewSubmittedDocument = true;
 			}	
@@ -196,11 +193,11 @@ public class GTACoachController extends GTAAbstractController implements Assessm
 			mainVC.contextPut("submitCssClass", "o_active");
 			collect(assignedTask);
 		} else {
-			if (assignedTask == null || assignedTask.getTaskStatus() == TaskProcess.review) {
-				backToSubmission(assignedTask);
-			}
 			mainVC.contextPut("submitCssClass", "o_done");
 			viewSubmittedDocument = true;
+		}
+		if (assignedTask == null || (assignedTask.getTaskStatus() != TaskProcess.submit && !config.getBooleanSafe(GTACourseNode.GTASK_REVISION_PERIOD))) {
+			backToSubmission(assignedTask);
 		}
 		
 		if(viewSubmittedDocument) {
