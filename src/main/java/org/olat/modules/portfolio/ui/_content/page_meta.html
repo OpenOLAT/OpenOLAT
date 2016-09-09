@@ -1,4 +1,4 @@
-<div class="o_page_lead" #if($imageAlign == "background") style="background-image: url('$mapperThumbnailUrl/${imageName}');" #end>
+<div class="o_page_lead #if($imageAlign == "background") o_block_imagebg" style="background-image: url('$mapperThumbnailUrl/${imageName}');" #else " #end>
 	<h2>$r.escapeHtml($pageTitle) <small>$r.translate("binder.by",$owners)</small></h2>
 	<div class="o_portfolio_page_meta">
 		#if($r.isNotEmpty(pageCategories))
@@ -22,9 +22,9 @@
 		</span>
 	</div>
 	#if($r.available("poster") || $r.isNotEmpty($pageSummary))
-	<div class="o_page_summary o_block_top">
+	<div class="o_page_summary clearfix">
 		#if($r.available("poster"))
-		<div class="o_media #if(!$pageSummary || $pageSummary.length() == 0) o_desc_empty"#end ">
+		<div class="o_media #if(!$pageSummary || $pageSummary.length() == 0) o_desc_empty #else o_media_right #end ">
 			$r.render("poster")
 		</div>
 		#end

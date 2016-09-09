@@ -349,9 +349,9 @@ $o-portfolio-entry-deleted-color					: #000 !default;
 $o-portfolio-media-content-background-color			: #f8f8f8 !default;
 $o-portfolio-media-content-space					: $padding-large-vertical !default;
 $o-portfolio-lead-space-sm							: $padding-large-vertical !default;
-$o-portfolio-lead-border-color						: $gray-lighter !default;
+$o-portfolio-lead-background-color					: lighten($gray-base, 95%) !default;
+$o-portfolio-lead-border-color						: darken($o-portfolio-lead-background-color,10%) !default;
 $o-portfolio-lead-border-radius						: $border-radius-small !default;
-$o-portfolio-lead-background-color					: $gray-lighter !default;
 $o-portfolio-page-summary-font-size					: $font-size-large !default;
 
 
@@ -475,3 +475,4 @@ $o-panel-placeholder-padding		: 10px !default;
 $o-portrait-radius				: 50% !default;
 $o-portrait-border				: none !default;
 $o-bookmark-color				: #bc2d0c !default;
+$o-imagebg-text-background		: rgba(255, 255, 255, 0.8) !default;

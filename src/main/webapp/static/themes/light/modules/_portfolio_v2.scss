@@ -17,11 +17,46 @@ div#o_main_toolbar.o_toolbar.o_portfolio {
 	
 	.o_page_summary {
 		font-size: $o-portfolio-page-summary-font-size;
+		
 	}
 	
+	.o_media {
+		&.o_media_right {
+			max-height: 200px;
+			float: right;
+			margin-left: 2em;
+			margin-bottom: 2em;
+		}
+		&.o_desc_empty {
+			/* when no content is there, show larger image and centered */
+			max-height: 300px;
+			text-align: center;
+		}
+		
+		img {
+			border-radius: $o-portfolio-lead-border-radius;
+			border: 1px $o-portfolio-lead-border-color solid;
+			background: #fff;
+			max-height: 100%;
+		}		
+	}
+	
+	.o_portfolio_status_block {
+		border-top: 1px solid $o-portfolio-lead-border-color;
+		padding-top: 1em;
+		margin-bottom: -1em; /* push at bottom of lead block */
+	}
 	.o_portfolio_status {
 		display: inline-block;
 		padding-right: 2em;
+	}
+	
+	/* inline image formatting */
+	&.o_block_imagebg {
+		.o_portfolio_status {
+			padding: 2px;
+			background-color: $o-imagebg-text-background;
+		}
 	}
 }
 

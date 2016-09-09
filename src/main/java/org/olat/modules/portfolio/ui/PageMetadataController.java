@@ -137,6 +137,7 @@ public class PageMetadataController extends BasicController {
 				mainVC.contextPut("imageAlign", PageImageAlign.background.name());
 				mainVC.contextPut("imageName", posterImage.getName());
 			} else {
+				// alignment is right
 				imageCmp = new ImageComponent(ureq.getUserSession(), "poster");
 				imageCmp.setMaxWithAndHeightToFitWithin(PICTURE_WIDTH, PICTURE_HEIGHT);
 				imageCmp.setMedia(posterImage);
