@@ -542,7 +542,7 @@ public class PageRunController extends BasicController implements TooledControll
 
 		@Override
 		public String getIconCssClass() {
-			return "o_icon_others";
+			return "o_icon_mediacenter";
 		}
 
 		@Override

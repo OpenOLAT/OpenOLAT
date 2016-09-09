@@ -87,7 +87,7 @@ public class VideoHandler extends AbstractMediaHandler implements InteractiveAdd
 	
 	@Override
 	public String getIconCssClass() {
-		return "o_filetype_video";
+		return "o_icon_video";
 	}
 
 	@Override
@@ -101,7 +101,7 @@ public class VideoHandler extends AbstractMediaHandler implements InteractiveAdd
 		if (filename != null){
 			return CSSHelper.createFiletypeIconCssClassFor(filename);
 		}
-		return "o_filetype_video";
+		return "o_icon_video";
 	}
 
 	@Override
@@ -183,6 +183,7 @@ public class VideoHandler extends AbstractMediaHandler implements InteractiveAdd
 		File mediaFile = new File(mediaDir, media.getRootFilename());
 		ImageComponent imageCmp = new ImageComponent(ureq.getUserSession(), "video_" + idGenerator.incrementAndGet());
 		imageCmp.setMedia(mediaFile);
+		imageCmp.setMaxWithAndHeightToFitWithin(800, 600);
 		return imageCmp;
 	}
 

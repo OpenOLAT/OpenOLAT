@@ -111,14 +111,20 @@ public class CitationComponentRenderer extends DefaultComponentRenderer {
 	}
 	
 	public static String getOrdinalAPA(String n) {
-		if(StringHelper.containsNonWhitespace(n) && StringHelper.isLong(n)){
-			String w = "("+ n + ". Aufl.)";	
-			if (w.equals("(. Aufl.)")) {
-				return "";
+		if(StringHelper.containsNonWhitespace(n)) {
+			if (StringHelper.isLong(n)){
+				String w = "("+ n + ". Aufl.)";	
+				if (w.equals("(. Aufl.)")) {
+					return "";
+				}
+				return "<span class='edition'>" + w + "</span>"; 
 			}
-			return "<span class='edition'>" + w + "</span>"; 
+			else {
+				return "<span class='edition'>(" + n + ")</span>";				
+			}
+		} else {
+			return "";				
 		}
-		return "<span class='edition'>(" + n + ")</span>";
 	}
 	
 	public static String getVolumeAPA(String volume) {

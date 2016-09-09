@@ -1,50 +1,58 @@
 <div class="o_portfolio_publication">
 	<h2>$r.translate("publish.status.title", $binderTitle)</h2>
 	#if(!${binderRow.getAccessRights().isEmpty()})
-		<table><tbody>
+		<div class="o_portfolio_ac o_portfolio_ac_binder" >
+		<h6>$r.translate("access.binder")</h6>
+		<table class="table table-striped table-condensed"><tbody>
 		#foreach($binderRights in $binderRow.accessRights)
 			<tr>
 				<td><i class="$binderRights.cssClass"> </i> $r.escapeHtml($binderRights.fullName)</td>
-				<td>$binderRights.explanation</td>
+				<td class="text-muted">$binderRights.explanation</td>
 				<td>#if($r.isNotNull($binderRights.editLink)) $r.render($binderRights.editLink) #end</td>
 			</tr>
 		#end
 		</tbody></table>
+		</div>
 	#end
 
 	<ul class="list-unstyled">
 	#foreach($section in $binderRow.children)
-		<li><h4>$r.escapeHtml($section.title) <small><i class="o_icon $section.cssClassStatus"> </i> #if($section.assessable) ${section.getFormattedResult()} #end</small></h4> 
+		<li>
+			<h4><i class="o_icon o_icon_pf_section o_icon-fw"> </i> $r.escapeHtml($section.title) <small><i class="o_icon $section.cssClassStatus"> </i> #if($section.assessable) ${section.getFormattedResult()} #end</small></h4> 
 		
 			#if(!${section.getAccessRights().isEmpty()})
-				<table class="o_portfolio_ac"><tbody>
+				<div class="o_portfolio_ac o_portfolio_ac_section">
+				<table class="table table-striped table-condensed"><tbody>
 				#foreach($sectionRights in $section.accessRights)
 					<tr>
 						<td><i class="$sectionRights.cssClass"> </i> $r.escapeHtml($sectionRights.fullName)</td>
-						<td>$sectionRights.explanation</td>
+						<td class="text-muted">$sectionRights.explanation</td>
 						<td>#if($r.isNotNull($sectionRights.editLink)) $r.render($sectionRights.editLink) #end</td>
 					</tr>
 				#end
 				</tbody></table>
+				</div>
 			#end
 
 			#if(${section.getChildren().size()} > 0)
 			<ul class="list-unstyled">
 				#foreach($page in $section.children)
-					<li><h5>$r.escapeHtml($page.title)</h5></li>
-					
+					<li>
+						<h5><i class="o_icon o_icon_pf_entry o_icon-fw"> </i> $r.escapeHtml($page.title)</h5>
 					#if(!${page.getAccessRights().isEmpty()})
-						<table><tbody>
+						<div class="o_portfolio_ac o_portfolio_ac_entry">
+						<table class="table table-striped table-condensed"><tbody>
 						#foreach($pageRights in $page.accessRights)
 							<tr>
 								<td><i class="$pageRights.cssClass"> </i> $r.escapeHtml($pageRights.fullName)</td>
-								<td>$pageRights.explanation</td>
+								<td class="text-muted">$pageRights.explanation</td>
 								<td>#if($r.isNotNull($pageRights.editLink)) $r.render($pageRights.editLink) #end</td>
 							</tr>
 						#end
 						</tbody></table>
-					#end
-					
+						</div>
+					#end					
+					</li>
 				#end
 			</ul>
 			#end

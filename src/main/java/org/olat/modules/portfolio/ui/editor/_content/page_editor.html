@@ -1,18 +1,20 @@
 <div class="o_pf_content_editor">
 	#foreach($fragment in $fragments)
 		#if($fragment.editMode)
-			<div class="o_block o_page_fragment_edit">
+			<div class="o_page_fragment_edit">
 				<div class="o_page_tools_above clearfix">
 					<div class="o_page_add_above">
 						$r.render($fragment.addElementAboveLink)
 					</div>
 					<div class="o_page_others_above">
-						<span><i class="o_icon $fragment.typeCssClass"> </i> $r.translate($fragment.type)</span>
+						<span class="o_page_type"><i class="o_icon $fragment.typeCssClass"> </i> $r.translate($fragment.type)</span>
 						$r.render($fragment.saveLink)
-						$r.render($fragment.moveUpLink)
-						$r.render($fragment.moveDownLink)
 						$r.render($fragment.deleteLink)
 					</div>
+				</div>
+				<div class="o_page_tools_dd">
+						$r.render($fragment.moveUpLink)
+						$r.render($fragment.moveDownLink)
 				</div>
 				<div class="o_page_part o_page_edit" data-oo-page-fragment="$fragment.componentName">
 				$r.render($fragment.componentName)

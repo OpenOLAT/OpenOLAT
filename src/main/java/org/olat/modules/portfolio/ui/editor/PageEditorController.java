@@ -37,6 +37,7 @@ import org.olat.core.gui.control.generic.closablewrapper.CalloutSettings;
 import org.olat.core.gui.control.generic.closablewrapper.CalloutSettings.CalloutOrientation;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
+import org.olat.core.gui.translator.PackageTranslator;
 import org.olat.core.util.Util;
 import org.olat.modules.portfolio.PagePart;
 import org.olat.modules.portfolio.ui.PageRunController;
@@ -66,7 +67,13 @@ public class PageEditorController extends BasicController {
 	public PageEditorController(UserRequest ureq, WindowControl wControl, PageEditorProvider provider) {
 		super(ureq, wControl);
 		this.provider = provider;
-		setTranslator(Util.createPackageTranslator(PageRunController.class, getLocale(), getTranslator()));
+		// Set a fallback translator from runtime package. Important to not do it the other way round
+		// because they have same keys in the package and overwrite each other otherwise.
+		PackageTranslator fallbackTrans = (PackageTranslator)Util.createPackageTranslator(PageRunController.class, getLocale());
+		if (getTranslator() instanceof PackageTranslator) {
+			PackageTranslator myTrans = (PackageTranslator) getTranslator();
+			myTrans.setFallBack(fallbackTrans);
+		}
 		
 		mainVC = createVelocityContainer("page_editor");
 		for(PageElementHandler handler:provider.getAvailableHandlers()) {
@@ -229,22 +236,26 @@ public class PageEditorController extends BasicController {
 		addBelowLink.setUserObject(fragment);
 		fragment.setAddElementBelowLink(addBelowLink);
 
-		Link saveLink = LinkFactory.createLink("save", "save.element", getTranslator(), mainVC, this, Link.LINK);
-		saveLink.setIconLeftCSS("o_icon o_icon-sm o_icon_save");
+		Link saveLink = LinkFactory.createLink("save.and.close", "save.element", getTranslator(), mainVC, this, Link.LINK);
+		saveLink.setIconLeftCSS("o_icon o_icon-sm o_icon_close");
 		saveLink.setElementCssClass("o_sel_save_element");
 		saveLink.setUserObject(fragment);
 		fragment.setSaveLink(saveLink);
 
-		Link moveUpLink = LinkFactory.createLink("move.up", "move.up.element", getTranslator(), mainVC, this, Link.LINK);
+		Link moveUpLink = LinkFactory.createLink("move.up", "move.up.element", getTranslator(), mainVC, this, Link.LINK + Link.NONTRANSLATED);
 		moveUpLink.setIconLeftCSS("o_icon o_icon-sm o_icon_move_up");
 		moveUpLink.setElementCssClass("o_sel_move_up_element");
+		moveUpLink.setCustomDisplayText("");
+		moveUpLink.setTitle(translate("move.up"));
 		moveUpLink.setUserObject(fragment);
 		moveUpLink.setEnabled(fragments.indexOf(fragment) > 0);
 		fragment.setMoveUpLink(moveUpLink);
 		 
-		Link moveDownLink = LinkFactory.createLink("move.down", "move.down.element", getTranslator(), mainVC, this, Link.LINK);
+		Link moveDownLink = LinkFactory.createLink("move.down", "move.down.element", getTranslator(), mainVC, this, Link.LINK + Link.NONTRANSLATED);
 		moveDownLink.setIconLeftCSS("o_icon o_icon-sm o_icon_move_down");
 		moveDownLink.setElementCssClass("o_sel_move_down_element");
+		moveDownLink.setCustomDisplayText("");
+		moveUpLink.setTitle(translate("move.down"));
 		moveDownLink.setUserObject(fragment);
 		moveDownLink.setEnabled(fragments.indexOf(fragment) < (fragments.size() - 1));
 		fragment.setMoveDownLink(moveDownLink);

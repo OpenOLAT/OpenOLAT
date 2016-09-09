@@ -89,7 +89,7 @@ public class ImageHandler extends AbstractMediaHandler implements InteractiveAdd
 	
 	@Override
 	public String getIconCssClass() {
-		return "o_filetype_jpg";
+		return "o_icon_image";
 	}
 	
 	@Override
@@ -103,7 +103,7 @@ public class ImageHandler extends AbstractMediaHandler implements InteractiveAdd
 		if (filename != null){
 			return CSSHelper.createFiletypeIconCssClassFor(filename);
 		}
-		return "o_filetype_jpg";
+		return "o_icon_image";
 	}
 
 	@Override

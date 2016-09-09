@@ -188,8 +188,8 @@ public class PublishController extends BasicController implements TooledControll
 					if(canEditSectionAccessRights && !PortfolioRoles.owner.equals(right.getRole())) {
 						String id = "edit_" + (counter++);
 						editLink = LinkFactory.createLink(id, id, "edit_access", "edit", getTranslator(), mainVC, this, Link.LINK);
+						sectionRow.getAccessRights().add(new AccessRightsRow(section, right, editLink));
 					}
-					sectionRow.getAccessRights().add(new AccessRightsRow(section, right, editLink));
 				}
 			}
 		}
@@ -210,8 +210,8 @@ public class PublishController extends BasicController implements TooledControll
 					if(canEditPageAccessRights && !PortfolioRoles.owner.equals(right.getRole())) {
 						String id = "edit_" + (counter++);
 						editLink = LinkFactory.createLink(id, id, "edit_access", "edit", getTranslator(), mainVC, this, Link.LINK);
+						pageRow.getAccessRights().add(new AccessRightsRow(page, right, editLink));
 					}
-					pageRow.getAccessRights().add(new AccessRightsRow(page, right, editLink));
 				}
 			}
 		}
@@ -415,9 +415,9 @@ public class PublishController extends BasicController implements TooledControll
 		
 		public String getCssClass() {
 			if(PortfolioRoles.reviewer.equals(rights.getRole())) {
-				return "o_icon o_icon_reviewer";
+				return "o_icon o_icon_reviewer o_icon-fw";
 			}
-			return "o_icon o_icon_user";
+			return "o_icon o_icon_user o_icon-fw";
 		}
 
 		public Link getEditLink() {

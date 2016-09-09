@@ -52,7 +52,7 @@ public class TitlePageElementHandler implements PageElementHandler, SimpleAddPag
 
 	@Override
 	public String getIconCssClass() {
-		return "o_icon_title";
+		return "o_icon_header";
 	}
 
 	@Override
