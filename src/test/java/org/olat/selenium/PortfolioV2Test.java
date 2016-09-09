@@ -46,8 +46,11 @@ import org.olat.selenium.page.forum.ForumPage;
 import org.olat.selenium.page.portfolio.BinderPage;
 import org.olat.selenium.page.portfolio.MediaCenterPage;
 import org.olat.selenium.page.portfolio.PortfolioV2HomePage;
+import org.olat.selenium.page.repository.AuthoringEnvPage;
+import org.olat.selenium.page.repository.FeedPage;
 import org.olat.selenium.page.repository.AuthoringEnvPage.ResourceType;
 import org.olat.selenium.page.user.UserToolsPage;
+import org.olat.selenium.page.wiki.WikiPage;
 import org.olat.test.ArquillianDeployments;
 import org.olat.test.rest.UserRestClient;
 import org.olat.user.restapi.UserVO;
@@ -220,7 +223,7 @@ public class PortfolioV2Test {
 	 */
 	@Test
 	@RunAsClient
-	public void collectForumArtefactInCourse(@InitialPage LoginPage loginPage)
+	public void collectForumMediaInCourse(@InitialPage LoginPage loginPage)
 	throws IOException, URISyntaxException {
 		
 		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
@@ -262,6 +265,134 @@ public class PortfolioV2Test {
 			.addAsMedia()
 			.fillForumMedia(mediaTitle, "A post I write");
 		
+		UserToolsPage userTools = new UserToolsPage(browser);
+		MediaCenterPage mediaCenter = userTools
+				.openUserToolsMenu()
+				.openPortfolioV2()
+				.openMediaCenter();
+		mediaCenter
+				.assertOnMedia(mediaTitle)
+				.selectMedia(mediaTitle)
+				.assertOnMediaDetails(mediaTitle);
+	}
+	
+	/**
+	 * Create a wiki as resource, add and fill a page. The author
+	 * picks the page as media and go in its media center to see it.
+	 * 
+	 * @param loginPage
+	 * @throws IOException
+	 * @throws URISyntaxException
+	 */
+	@Test
+	@RunAsClient
+	public void collectWikiMediaInWikiResource(@InitialPage LoginPage loginPage)
+	throws IOException, URISyntaxException {
+		
+		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
+		loginPage
+			.loginAs(author.getLogin(), author.getPassword())
+			.resume();
+		
+		//go to authoring
+		AuthoringEnvPage authoringEnv = navBar
+			.assertOnNavigationPage()
+			.openAuthoringEnvironment();
+				
+		String title = "PF-Wiki-" + UUID.randomUUID();
+		//create a wiki and launch it
+		authoringEnv
+			.openCreateDropDown()
+			.clickCreate(ResourceType.wiki)
+			.fillCreateForm(title)
+			.assertOnGeneralTab()
+			.clickToolbarBack();
+		
+		//create a page in the wiki
+		String page = "LMS-" + UUID.randomUUID();
+		String content = "Learning Management System";
+		WikiPage wiki = WikiPage.getWiki(browser);
+
+		//create page and add it as artefact to portfolio
+		String mediaTitle = "My own wiki page";
+		wiki
+			.createPage(page, content)
+			.addAsMedia()
+			.fillForumMedia(mediaTitle, "A post I write");
+
+		UserToolsPage userTools = new UserToolsPage(browser);
+		MediaCenterPage mediaCenter = userTools
+				.openUserToolsMenu()
+				.openPortfolioV2()
+				.openMediaCenter();
+		mediaCenter
+				.assertOnMedia(mediaTitle)
+				.selectMedia(mediaTitle)
+				.assertOnMediaDetails(mediaTitle);
+	}
+	
+	/**
+	 * Create a blog as learn resource, create a new entry and publish it.
+	 * Than pick the entry as a media and go to the media center to see it.
+	 * 
+	 * @param loginPage
+	 * @throws IOException
+	 * @throws URISyntaxException
+	 */
+	@Test
+	@RunAsClient
+	public void collectBlogEntryMediaInBlogResource(@InitialPage LoginPage loginPage)
+	throws IOException, URISyntaxException {
+		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
+		loginPage
+			.loginAs(author.getLogin(), author.getPassword())
+			.resume();
+		
+		//create a course
+		String courseTitle = "Course-With-Blog-" + UUID.randomUUID().toString();
+		navBar
+			.openAuthoringEnvironment()
+			.createCourse(courseTitle)
+			.clickToolbarBack();
+		
+		String blogNodeTitle = "Blog-EP-1";
+		String blogTitle = "Blog - EP - " + UUID.randomUUID().toString();
+		
+		//create a course element of type blog with a blog
+		CourseEditorPageFragment courseEditor = CoursePageFragment.getCourse(browser)
+			.edit();
+		courseEditor
+			.createNode("blog")
+			.nodeTitle(blogNodeTitle)
+			.selectTabLearnContent()
+			.createFeed(blogTitle);
+
+		//publish the course
+		courseEditor
+			.publish()
+			.quickPublish();
+		
+		//open the course and see the CP
+		CoursePageFragment course = courseEditor
+			.clickToolbarBack();
+		course
+			.clickTree()
+			.selectWithTitle(blogNodeTitle);
+		
+		String postTitle = "Post-EP-" + UUID.randomUUID();
+		String postSummary = "Some explantations as teaser";
+		String postContent = "Content of the post";
+
+		FeedPage feed = FeedPage.getFeedPage(browser);
+		feed
+			.newBlog()
+			.fillPostForm(postTitle, postSummary, postContent)
+			.publishPost();
+		
+		String mediaTitle = "My very own entry";
+		feed
+			.addAsMedia()
+			.fillForumMedia(mediaTitle, "A post I write");
 		UserToolsPage userTools = new UserToolsPage(browser);
 		MediaCenterPage mediaCenter = userTools
 				.openUserToolsMenu()

@@ -24,6 +24,7 @@ import java.util.List;
 import org.junit.Assert;
 import org.olat.selenium.page.graphene.OOGraphene;
 import org.olat.selenium.page.portfolio.ArtefactWizardPage;
+import org.olat.selenium.page.portfolio.MediaPage;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
@@ -163,6 +164,20 @@ public class FeedPage {
 		addAsArtefactButton.click();
 		OOGraphene.waitBusy(browser);
 		return ArtefactWizardPage.getWizard(browser);
+	}
+	
+	/**
+	 * Click the button to add a blog entry as media
+	 * to your portfolio.
+	 * 
+	 * @return Itself
+	 */
+	public MediaPage addAsMedia() {
+		By addAsMediaBy = By.cssSelector(".o_post .o_portfolio_collector");
+		WebElement addAsmediaButton = browser.findElement(addAsMediaBy);
+		addAsmediaButton.click();
+		OOGraphene.waitBusy(browser);
+		return new MediaPage(browser);
 	}
 	
 	/**

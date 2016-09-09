@@ -26,6 +26,7 @@ import org.jboss.arquillian.graphene.Graphene;
 import org.junit.Assert;
 import org.olat.selenium.page.graphene.OOGraphene;
 import org.olat.selenium.page.portfolio.ArtefactWizardPage;
+import org.olat.selenium.page.portfolio.MediaPage;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
@@ -132,6 +133,15 @@ public class WikiPage {
 		addAsArtefactButton.click();
 		OOGraphene.waitBusy(browser);
 		return ArtefactWizardPage.getWizard(browser);
+	}
+	
+	public MediaPage addAsMedia() {
+		By collectBy = By.cssSelector(".o_wikimod_nav .o_portfolio_collector");
+		OOGraphene.waitElement(collectBy, 5, browser);
+		browser.findElement(collectBy).click();
+		OOGraphene.waitBusy(browser);
+		OOGraphene.waitModalDialog(browser);
+		return new MediaPage(browser);
 	}
 
 }
