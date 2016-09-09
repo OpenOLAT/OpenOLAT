@@ -45,7 +45,6 @@ import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.CodeHelper;
 import org.olat.core.util.FileUtils;
-import org.olat.core.util.StringHelper;
 import org.olat.core.util.ZipUtil;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
@@ -57,9 +56,7 @@ import org.olat.ims.qti.editor.QTIEditHelper;
 import org.olat.ims.resources.IMSEntityResolver;
 import org.olat.modules.qpool.QuestionItemFull;
 import org.olat.modules.qpool.manager.QPoolFileStorage;
-import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
-import org.xml.sax.helpers.DefaultHandler;
 
 /**
  * 
@@ -285,7 +282,7 @@ public class QTIExportProcessor {
 	private List<String> findMaterialInMatText(String content) {
 		try {
 			SAXParser parser = new SAXParser();
-			HTMLHandler contentHandler = new HTMLHandler();
+			QTI12HtmlHandler contentHandler = new QTI12HtmlHandler();
 			parser.setContentHandler(contentHandler);
 			parser.parse(new InputSource(new StringReader(content)));
 			return contentHandler.getMaterialPath();
@@ -407,25 +404,6 @@ public class QTIExportProcessor {
 		if(qtimetadata != null) {
 			QTIMetadataConverter enricher = new QTIMetadataConverter(qtimetadata);
 			enricher.toXml(fullItem);
-		}
-	}
-	
-	private static final class HTMLHandler extends DefaultHandler {
-		private final List<String> materialPath = new ArrayList<String>();
-		
-		public List<String> getMaterialPath() {
-			return materialPath;
-		}
-		
-		@Override
-		public void startElement(String uri, String localName, String qName, Attributes attributes) {
-			String elem = localName.toLowerCase();
-			if("img".equals(elem)) {
-				String imgSrc = attributes.getValue("src");
-				if(StringHelper.containsNonWhitespace(imgSrc)) {
-					materialPath.add(imgSrc);
-				}
-			}
 		}
 	}
 	

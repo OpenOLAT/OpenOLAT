@@ -662,7 +662,7 @@ public class AuthorListController extends FormBasicController implements Activat
 		searchParams.setOwnedResourcesOnly(se.isOwnedResourcesOnly());
 		searchParams.setDisplayname(se.getDisplayname());
 		searchParams.setDescription(se.getDescription());
-		tableEl.reset();
+		tableEl.reset(true, true, true);
 		
 		AuthorListState stateEntry = new AuthorListState();
 		stateEntry.setSearchEvent(se);
