@@ -195,7 +195,7 @@ public class GTACoachController extends GTAAbstractController {
 			mainVC.contextPut("submitCssClass", "o_done");
 			viewSubmittedDocument = true;
 		}
-		if (assignedTask == null || (assignedTask.getTaskStatus() != TaskProcess.submit && !config.getBooleanSafe(GTACourseNode.GTASK_REVISION_PERIOD))) {
+		if (assignedTask == null || (assignedTask.getTaskStatus() != TaskProcess.submit)) {
 			backToSubmission(assignedTask);
 		}
 		
