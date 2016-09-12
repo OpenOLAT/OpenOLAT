@@ -121,7 +121,9 @@ public class PageEditorController extends BasicController {
 			if(event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
 				PageElement element = addCtrl.getPageElement();
 				AddElementInfos uobject = addCtrl.getUserObject();
-				doAddPageElement(ureq, element, uobject.getReferenceFragment(), uobject.getTarget());
+				EditorFragment fragment = doAddPageElement(ureq, element, uobject.getReferenceFragment(), uobject.getTarget());
+				// close editor right away (file upload etc makes more sense)
+				doSaveElement(ureq, fragment);
 			}
 			cmc.deactivate();
 			cleanUp();
@@ -308,7 +310,7 @@ public class PageEditorController extends BasicController {
 		}
 	}
 	
-	private void doAddPageElement(UserRequest ureq, PageElement element, EditorFragment referenceFragment, PageElementTarget target) {
+	private EditorFragment doAddPageElement(UserRequest ureq, PageElement element, EditorFragment referenceFragment, PageElementTarget target) {
 		EditorFragment newFragment = null;
 		if(target == PageElementTarget.atTheEnd) {
 			newFragment = doAddPageElementAtTheEnd(ureq, element);
@@ -335,6 +337,7 @@ public class PageEditorController extends BasicController {
 		
 		doEditElement(newFragment);
 		fireEvent(ureq, Event.CHANGED_EVENT);
+		return newFragment;
 	}
 
 	private EditorFragment doAddPageElementAtTheEnd(UserRequest ureq, PageElement element) {
