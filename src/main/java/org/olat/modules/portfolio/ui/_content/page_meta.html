@@ -53,8 +53,9 @@
 </div>
 
 #foreach($assignment in $assignments)
+	#if(($assignment.content && $assignment.content.length() > 0) || ($assignment.documents && $assignment.documents.size() > 0))
 	<div class="o_page_assignment o_togglebox_wrapper o_block">
-		<a href="#page_assignment_${assignment.key}" data-toggle="collapse" data-target="#page_assignment_${assignment.key}" class="o_opener o_in" onclick="jQuery(this).toggleClass('o_in'); return false;"><i class="o_icon o_icon-fw o_icon-lg"></i></a>
+		<a href="#page_assignment_${assignment.key}" id="o_toggler_${assignment.key}" data-toggle="collapse" data-target="#page_assignment_${assignment.key}" class="o_opener o_in" onclick="jQuery(this).toggleClass('o_in'); return false;"><i class="o_icon o_icon-fw o_icon-lg"></i></a>
 		<span class="o_page_assignement_info">
 			<i class="o_icon o_icon_assignment o_icon-fw"> </i>
 			<div class="o_block_inline_right"><strong>$r.translate("meta.page.assignment")</strong></div> 
@@ -86,8 +87,17 @@
 					#end 
 					</ul>
 				#end
-				<div class="pull-right"><a href="#page_assignment_${assignment.key}" data-toggle="collapse" data-target="#page_assignment_${assignment.key}" onclick="jQuery('.o_page_assignment .o_opener ').toggleClass('o_in'); return false;">$r.translate("assignment.hide")</a></div>
+				<div class="pull-right"><a href="#page_assignment_${assignment.key}" data-toggle="collapse" data-target="#page_assignment_${assignment.key}" onclick="jQuery('#o_toggler_${assignment.key}').toggleClass('o_in'); return false;">$r.translate("assignment.hide")</a></div>
 			</div>
     	</div>
 	</div>
+	#else
+	<div class="o_page_assignment o_block" style="position: relative; left: 1em;">
+		<span class="o_page_assignement_info">
+			<i class="o_icon o_icon_assignment o_icon-fw"> </i>
+			<div class="o_block_inline_right"><strong>$r.translate("meta.page.assignment")</strong></div> 
+			<div class="o_block_inline_left"><strong>$r.translate("meta.page.assignment.type"):</strong> $r.translate("assignment.type.${assignment.type}")</div>
+		</span>
+	</div>
+	#end
 #end
