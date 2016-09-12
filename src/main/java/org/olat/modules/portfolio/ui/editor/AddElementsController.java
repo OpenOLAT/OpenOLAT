@@ -30,9 +30,6 @@ import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
-import org.olat.core.gui.translator.PackageTranslator;
-import org.olat.core.util.Util;
-import org.olat.modules.portfolio.ui.PageRunController;
 import org.olat.modules.portfolio.ui.editor.PageEditorController.EditorFragment;
 import org.olat.modules.portfolio.ui.editor.event.AddElementEvent;
 

@@ -24,10 +24,11 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
+import java.net.URISyntaxException;
 import java.net.URL;
-import java.nio.file.Files;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.UUID;
 
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
@@ -44,6 +45,7 @@ import org.junit.runners.Parameterized.Parameters;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
+import org.olat.core.util.WebappHelper;
 import org.olat.fileresource.types.ImsQTI21Resource.PathResourceLocator;
 import org.xml.sax.SAXException;
 
@@ -84,14 +86,12 @@ public class OnyxToQtiAssessementItemsTest {
 
 	@Test
 	public void fixItem()
-	throws IOException, XMLStreamException, SAXException, ParserConfigurationException {
+	throws IOException, XMLStreamException, SAXException, ParserConfigurationException, URISyntaxException {	
 		URL xmlUrl = OnyxToQtiAssessementItemsTest.class.getResource(xmlFilename);
-		File xmlFile = new File(xmlUrl.getFile());
-		File tmpDir = Files.createTempDirectory("onyx").toFile();
-        if(!tmpDir.exists()) {
-        	tmpDir.mkdirs();
-        }
-		
+		File xmlFile = new File(xmlUrl.toURI());
+		File tmpDir = new File(WebappHelper.getTmpDir(), "onyx" + UUID.randomUUID());
+		tmpDir.mkdirs();
+
 		File outFile = new File(tmpDir, "text.xml");
 		OutputStream byteOut = new FileOutputStream(outFile);
 		OutputStreamWriter out = new OutputStreamWriter(byteOut, "UTF8");
@@ -107,7 +107,6 @@ public class OnyxToQtiAssessementItemsTest {
 		
 		out.flush();
 		byteOut.flush();
-		
 
 		QtiXmlReader qtiXmlReader = new QtiXmlReader(new JqtiExtensionManager());
 		ResourceLocator fileResourceLocator = new PathResourceLocator(outFile.toPath());
