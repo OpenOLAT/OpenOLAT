@@ -135,7 +135,7 @@ public class COCourseNode extends AbstractAccessableCourseNode {
         String particpantsGroupNames = (String)mc.get(COEditController.CONFIG_KEY_EMAILTOPARTICIPANTS_GROUP);
         //remap group keys
         List<Long> coachesGroupKeys = mc.getList(COEditController.CONFIG_KEY_EMAILTOCOACHES_GROUP_ID, Long.class);
-        if(coachesGroupKeys == null) {
+        if(coachesGroupKeys == null || coachesGroupKeys.isEmpty()) {
             coachesGroupKeys = envMapper.toGroupKeyFromOriginalNames(coachesGroupNames);
         } else {
             coachesGroupKeys = envMapper.toGroupKeyFromOriginalKeys(coachesGroupKeys);
@@ -143,7 +143,7 @@ public class COCourseNode extends AbstractAccessableCourseNode {
         mc.set(COEditController.CONFIG_KEY_EMAILTOCOACHES_GROUP_ID, coachesGroupKeys);
 
         List<Long> participantsGroupKeys = mc.getList(COEditController.CONFIG_KEY_EMAILTOPARTICIPANTS_GROUP_ID, Long.class);
-        if(participantsGroupKeys == null) {
+        if(participantsGroupKeys == null || participantsGroupKeys.isEmpty()) {
             participantsGroupKeys = envMapper.toGroupKeyFromOriginalNames(particpantsGroupNames);
         } else {
             participantsGroupKeys = envMapper.toGroupKeyFromOriginalKeys(participantsGroupKeys);
@@ -153,7 +153,7 @@ public class COCourseNode extends AbstractAccessableCourseNode {
         //remap area keys
         String coachesAreaNames = (String)mc.get(COEditController.CONFIG_KEY_EMAILTOCOACHES_AREA);
         List<Long> coachesAreaKeys = mc.getList(COEditController.CONFIG_KEY_EMAILTOCOACHES_AREA_IDS, Long.class);
-        if(coachesAreaKeys == null) {
+        if(coachesAreaKeys == null || coachesAreaKeys.isEmpty()) {
             coachesAreaKeys = envMapper.toAreaKeyFromOriginalNames(coachesAreaNames);
         } else {
             coachesAreaKeys = envMapper.toAreaKeyFromOriginalKeys(coachesAreaKeys);
@@ -162,7 +162,7 @@ public class COCourseNode extends AbstractAccessableCourseNode {
         
         String participantsAreaNames = (String)mc.get(COEditController.CONFIG_KEY_EMAILTOPARTICIPANTS_AREA);
         List<Long> participantsAreaKeys = mc.getList(COEditController.CONFIG_KEY_EMAILTOPARTICIPANTS_AREA_ID, Long.class);
-        if(participantsAreaKeys == null) {
+        if(participantsAreaKeys == null || participantsAreaKeys.isEmpty()) {
             participantsAreaKeys = envMapper.toAreaKeyFromOriginalNames(participantsAreaNames);
         } else {
             participantsAreaKeys = envMapper.toAreaKeyFromOriginalKeys(participantsAreaKeys);
