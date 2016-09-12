@@ -265,7 +265,7 @@ public class AuthoringEntryRow implements RepositoryEntryRef, RepositoryEntryLig
 	
 	@Override
 	public int hashCode() {
-		return key == null ? 12456775 : key.hashCode();
+		return key == null ? -79224867 : key.hashCode();
 	}
 
 	@Override

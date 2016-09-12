@@ -166,7 +166,7 @@ public class BusinessGroupRow implements BusinessGroupRef, BusinessGroupShort {
 	
 	@Override
 	public int hashCode() {
-		return key == null ? 45974589 : key.hashCode();
+		return key == null ? -54851 : key.hashCode();
 	}
 
 	@Override

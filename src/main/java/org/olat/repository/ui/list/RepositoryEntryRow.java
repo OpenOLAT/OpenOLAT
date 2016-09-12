@@ -490,4 +490,21 @@ public class RepositoryEntryRow implements RepositoryEntryRef {
 	public boolean isFailed() {
 		return passed != null && !passed.booleanValue();
 	}
+
+	@Override
+	public int hashCode() {
+		return key == null ? 16174545 : key.hashCode();
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if(obj == this) {
+			return true;
+		}
+		if(obj instanceof RepositoryEntryRow) {
+			RepositoryEntryRow row = (RepositoryEntryRow)obj;
+			return key != null && key.equals(row.getKey());
+		}
+		return false;
+	}
 }

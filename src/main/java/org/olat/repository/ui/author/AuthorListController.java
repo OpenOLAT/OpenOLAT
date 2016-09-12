@@ -504,16 +504,22 @@ public class AuthorListController extends FormBasicController implements Activat
 			List<AuthoringEntryRow> rows = getMultiSelectedRows();
 			if(!rows.isEmpty()) {
 				doAddOwners(ureq, rows);
+			} else {
+				showWarning("bulk.update.nothing.selected");
 			}
 		} else if(copyButton == source) {
 			List<AuthoringEntryRow> rows = getMultiSelectedRows();
 			if(!rows.isEmpty()) {
 				doConfirmCopy(ureq, rows);
+			} else {
+				showWarning("bulk.update.nothing.selected");
 			}
 		} else if(deleteButton == source) {
 			List<AuthoringEntryRow> rows = getMultiSelectedRows();
 			if(!rows.isEmpty()) {
 				doDelete(ureq, rows);
+			} else {
+				showWarning("bulk.update.nothing.selected");
 			}
 		} else if(source instanceof FormLink) {
 			FormLink link = (FormLink)source;
@@ -758,7 +764,7 @@ public class AuthorListController extends FormBasicController implements Activat
 			StringBuilder sb = new StringBuilder();
 			for(AuthoringEntryRow row:copyableRows) {
 				if(sb.length() > 0) sb.append(", ");
-				sb.append(row.getDisplayname());
+				sb.append(StringHelper.escapeHtml(row.getDisplayname()));
 			}
 			
 			String dialogText = (copyableRows.size() != rows.size())
