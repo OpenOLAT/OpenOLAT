@@ -127,12 +127,12 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 	private List<FlexiTableFilter> filters;
 	private Object selectedObj;
 	private boolean allSelectedNeedLoadOfWholeModel = false;
-	private Set<Integer> multiSelectedIndex;
+	private Map<Integer,Object> multiSelectedIndex;
 	private Set<Integer> detailsIndex;
 	private List<String> conditionalQueries;
-	private Set<Integer> enabledColumnIndex = new HashSet<Integer>();
+	private Set<Integer> enabledColumnIndex = new HashSet<>();
 	
-	private Map<String,FormItem> components = new HashMap<String,FormItem>();
+	private Map<String,FormItem> components = new HashMap<>();
 	
 	public FlexiTableElementImpl(WindowControl wControl, String name, Translator translator, FlexiTableDataModel<?> tableModel) {
 		this(wControl, name, translator, tableModel, -1, true);
@@ -832,9 +832,35 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 			dataSource.clear();
 			dataSource.load(null, conditionalQueries, 0, getPageSize(), orderBy);
 		}
-
+		reorderMultiSelectIndex();
 		selectSortOption(sortKey, asc);
 		component.setDirty(true);
+	}
+	
+	private void reorderMultiSelectIndex() {
+		if(multiSelectedIndex == null) return;
+		
+		Set<Object> selectedObjects = new HashSet<>(multiSelectedIndex.values());
+		multiSelectedIndex.clear();
+		
+		for(int i=dataModel.getRowCount(); i-->0; ) {
+			Object obj = dataModel.getObject(i);
+			if(obj != null && selectedObjects.contains(obj)) {
+				multiSelectedIndex.put(new Integer(i), obj);
+			}
+		}
+		
+		// In the case of a data source, we need to check if all index has been found.
+		// If not, we need to load all the data and find them
+		if(dataSource != null && multiSelectedIndex.size() != selectedObjects.size()) {
+			dataSource.load(getSearchText(), getConditionalQueries(), 0, -1);
+			for(int i=dataModel.getRowCount(); i-->0; ) {
+				Object obj = dataModel.getObject(i);
+				if(obj != null && selectedObjects.contains(obj)) {
+					multiSelectedIndex.put(new Integer(i), obj);
+				}
+			}
+		}
 	}
 	
 	private void selectSortOption(String sortKey, boolean asc) {
@@ -1142,12 +1168,13 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 		if(multiSelectedIndex != null) {
 			multiSelectedIndex.clear();
 		} else {
-			multiSelectedIndex = new HashSet<>();
+			multiSelectedIndex = new HashMap<>();
 		}
 		
 		int numOfRows = getRowCount();
 		for(int i=0; i<numOfRows;i++) {
-			multiSelectedIndex.add(new Integer(i));
+			Object objectRow = dataModel.getObject(i);
+			multiSelectedIndex.put(new Integer(i), objectRow);
 		}
 		allSelectedNeedLoadOfWholeModel = true;
 	}
@@ -1221,32 +1248,35 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 		if(allSelectedNeedLoadOfWholeModel && dataSource != null) {
 			//ensure the whole data model is loaded
 			dataSource.load(getSearchText(), getConditionalQueries(), 0, -1);
-			Set<Integer> allIndex = new HashSet<Integer>();
+			Set<Integer> allIndex = new HashSet<>();
 			for(int i=dataModel.getRowCount(); i-->0; ) {
 				allIndex.add(new Integer(i));
 			}
 			allSelectedNeedLoadOfWholeModel = false;
 			return allIndex;
 		}
-		return multiSelectedIndex == null ? Collections.<Integer>emptySet() : multiSelectedIndex;
+		return multiSelectedIndex == null ? Collections.<Integer>emptySet() : multiSelectedIndex.keySet();
 	}
 
 	@Override
 	public void setMultiSelectedIndex(Set<Integer> set) {
 		if(multiSelectedIndex == null) {
-			multiSelectedIndex = new HashSet<Integer>();
+			multiSelectedIndex = new HashMap<>();
 		}
-		multiSelectedIndex.addAll(set);
+		for(Integer index:set) {
+			Object objectRow = dataModel.getObject(index.intValue());
+			multiSelectedIndex.put(index, objectRow);
+		}
 	}
 
 	@Override
 	public boolean isMultiSelectedIndex(int index) {
-		return multiSelectedIndex != null && multiSelectedIndex.contains(new Integer(index));
+		return multiSelectedIndex != null && multiSelectedIndex.containsKey(new Integer(index));
 	}
 	
 	protected void toogleSelectIndex(String selection) {
 		if(multiSelectedIndex == null) {
-			multiSelectedIndex = new HashSet<Integer>();
+			multiSelectedIndex = new HashMap<>();
 		}
 
 		String rowStr;
@@ -1259,12 +1289,13 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 		
 		try {
 			Integer row = new Integer(rowStr);
-			if(multiSelectedIndex.contains(row)) {
-				if(multiSelectedIndex.remove(row) & allSelectedNeedLoadOfWholeModel) {
+			if(multiSelectedIndex.containsKey(row)) {
+				if(multiSelectedIndex.remove(row) != null & allSelectedNeedLoadOfWholeModel) {
 					allSelectedNeedLoadOfWholeModel = false;
 				}
 			} else {
-				multiSelectedIndex.add(row);
+				Object objectRow = dataModel.getObject(row.intValue());
+				multiSelectedIndex.put(row, objectRow);
 			}	
 		} catch (NumberFormatException e) {
 			//can happen
@@ -1273,7 +1304,7 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 	
 	protected void setMultiSelectIndex(String[] selections) {
 		if(multiSelectedIndex == null) {
-			multiSelectedIndex = new HashSet<Integer>();
+			multiSelectedIndex = new HashMap<>();
 		}
 		//selection format row_{formDispId}-{index}
 		if(selections != null && selections.length > 0) {
@@ -1288,7 +1319,8 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 				if(index > 0 && index+1 < selection.length()) {
 					String rowStr = selection.substring(index+1);
 					int row = Integer.parseInt(rowStr);
-					multiSelectedIndex.add(new Integer(row));
+					Object objectRow = dataModel.getObject(row);
+					multiSelectedIndex.put(new Integer(row), objectRow);
 				}
 			}
 		}

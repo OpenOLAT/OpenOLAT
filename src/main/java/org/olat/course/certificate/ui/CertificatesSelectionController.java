@@ -122,7 +122,7 @@ public class CertificatesSelectionController extends StepFormBasicController {
 		Set<Integer> preselectedRows = new HashSet<>();
 		ICourse course = CourseFactory.loadCourse(courseOres);
 		CourseNode rootNode = course.getRunStructure().getRootNode();
-		List<CertificateInfos> infos = new ArrayList<CertificateInfos>(datas.size());
+		List<CertificateInfos> infos = new ArrayList<>(datas.size());
 		
 		int count = 0;
 		for(AssessedIdentityWrapper data:datas) {

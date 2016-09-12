@@ -62,4 +62,22 @@ public class CertificateInfos {
 	public void setCreationDate(Date creationDate) {
 		this.creationDate = creationDate;
 	}
+
+	@Override
+	public int hashCode() {
+		return assessedIdentity == null ? 88121 : assessedIdentity.hashCode();
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if(this == obj) {
+			return true;
+		}
+		if(obj instanceof CertificateInfos) {
+			CertificateInfos infos = (CertificateInfos)obj;
+			return assessedIdentity != null && assessedIdentity.equals(infos.getAssessedIdentity());
+		}
+		
+		return super.equals(obj);
+	}
 }

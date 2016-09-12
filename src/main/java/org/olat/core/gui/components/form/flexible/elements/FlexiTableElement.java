@@ -91,7 +91,10 @@ public interface FlexiTableElement extends FormItem {
 	public boolean isMultiSelect();
 	
 	/**
-	 * Enable multi-selection
+	 * Enable multi-selection. In the case of multi, the rows
+	 * of the data model needs to implements and hashCode / equals
+	 * method.
+	 * 
 	 */
 	public void setMultiSelect(boolean enable);
 	
