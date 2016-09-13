@@ -117,6 +117,7 @@ import uk.ac.ed.ph.jqtiplus.node.content.xhtml.list.Dt;
 import uk.ac.ed.ph.jqtiplus.node.content.xhtml.list.Li;
 import uk.ac.ed.ph.jqtiplus.node.content.xhtml.list.Ol;
 import uk.ac.ed.ph.jqtiplus.node.content.xhtml.list.Ul;
+import uk.ac.ed.ph.jqtiplus.node.content.xhtml.object.Object;
 import uk.ac.ed.ph.jqtiplus.node.content.xhtml.table.Col;
 import uk.ac.ed.ph.jqtiplus.node.content.xhtml.table.Colgroup;
 import uk.ac.ed.ph.jqtiplus.node.content.xhtml.table.Table;
@@ -127,7 +128,7 @@ import uk.ac.ed.ph.jqtiplus.node.content.xhtml.table.Thead;
 import uk.ac.ed.ph.jqtiplus.node.content.xhtml.table.Tr;
 import uk.ac.ed.ph.jqtiplus.node.content.xhtml.text.Br;
 import uk.ac.ed.ph.jqtiplus.node.content.xhtml.text.Div;
-import uk.ac.ed.ph.jqtiplus.node.content.xhtml.object.Object;
+import uk.ac.ed.ph.jqtiplus.node.content.xhtml.text.Span;
 import uk.ac.ed.ph.jqtiplus.node.item.AssessmentItem;
 import uk.ac.ed.ph.jqtiplus.node.item.ModalFeedback;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.AssociateInteraction;
@@ -540,6 +541,10 @@ public abstract class AssessmentObjectComponentRenderer extends DefaultComponent
 				sb.append("<br/>");
 				break;
 			}
+			case Span.QTI_CLASS_NAME: {
+				renderSpan(renderer, sb, (Span)inline, component, resolvedAssessmentItem, itemSessionState, ubu, translator);
+				break;
+			}
 			case Object.QTI_CLASS_NAME: {
 				renderObject(sb, (Object)inline, component, resolvedAssessmentItem);
 				break;
@@ -556,10 +561,32 @@ public abstract class AssessmentObjectComponentRenderer extends DefaultComponent
 		}
 	}
 	
+	protected final void renderSpan(AssessmentRenderer renderer, StringOutput sb, Span span, AssessmentObjectComponent component,
+			ResolvedAssessmentItem resolvedAssessmentItem, ItemSessionState itemSessionState, URLBuilder ubu, Translator translator) {
+		Attribute<?> attrClass = span.getAttributes().get("class");
+
+		if(attrClass != null && attrClass.getValue() != null && attrClass.getValue().toString().equals("[math]")) {
+			String domid = "mw_" + CodeHelper.getRAMUniqueID();
+			sb.append("<span id=\"").append(domid).append("\">");
+			
+			renderStartHtmlTag(sb, component, resolvedAssessmentItem, span, null);
+			span.getInlines().forEach((child)
+					-> renderInline(renderer, sb, component, resolvedAssessmentItem, itemSessionState, child, ubu, translator));
+			renderEndTag(sb, span);
+			
+			sb.append("</span>")
+			  .append("\n<script type='text/javascript'>\n/* <![CDATA[ */\n jQuery(function() {setTimeout(function() { BFormatter.formatLatexFormulas('").append(domid).append("');}, 100); }); \n/* ]]> */\n</script>");
+		} else {
+			renderStartHtmlTag(sb, component, resolvedAssessmentItem, span, null);
+			span.getInlines().forEach((child)
+					-> renderInline(renderer, sb, component, resolvedAssessmentItem, itemSessionState, child, ubu, translator));
+			renderEndTag(sb, span);
+		}
+	}
+	
 	protected final void renderObject(StringOutput sb, Object object, AssessmentObjectComponent component, ResolvedAssessmentItem resolvedAssessmentItem) {
 		Attribute<?> attrId = object.getAttributes().get("id");
-		String id = attrId.getValue().toString();
-		if(id.startsWith("olatFlashMovieViewer")) {
+		if(attrId != null && attrId.getValue() != null && attrId.getValue().toString().startsWith("olatFlashMovieViewer")) {
 			//this is a OpenOLAT movie and need to be converted
 			/*
 			<span id="olatFlashMovieViewer213060" class="olatFlashMovieViewer" style="display:block;border:solid 1px #000; width:320px; height:240px;">
@@ -569,7 +596,7 @@ public abstract class AssessmentObjectComponentRenderer extends DefaultComponent
 			   // ]]></script>
 			</span>
 			*/
-
+			String id = attrId.getValue().toString();
 			Attribute<?> dataAttr = object.getAttributes().get("data");
 			String data = dataAttr.getValue().toString();
 			Attribute<?> attrDataMovie = object.getAttributes().get("data-oo-movie");
