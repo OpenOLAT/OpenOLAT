@@ -33,7 +33,7 @@ import org.xml.sax.helpers.DefaultHandler;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-class QTI12HtmlHandler extends DefaultHandler {
+public class QTI12HtmlHandler extends DefaultHandler {
 
 	private static final String OPENOLAT_MOVIE_MARKER = "BPlayer.insertPlayer(";
 	private final List<String> materialPath;

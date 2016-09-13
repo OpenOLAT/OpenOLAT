@@ -71,7 +71,7 @@ public class QTI12To21ConverterTest {
 		exportDir.mkdirs();
 
 		QTI12To21Converter converter = new QTI12To21Converter(exportDir, Locale.ENGLISH);
-		converter.convert(doc);
+		converter.convert(null, doc);
 		
 		int validAssessmentItems = 0;
 		boolean validAssessmentTest = false;

@@ -49,6 +49,7 @@ import java.util.Iterator;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.commons.io.IOUtils;
 import org.olat.core.logging.AssertException;
 import org.olat.core.logging.OLATRuntimeException;
 import org.olat.core.logging.OLog;
@@ -398,6 +399,26 @@ public class FileUtils {
 		}
 		return true;
 	} // end copy
+	
+	public static boolean copyToFile(InputStream in, File targetFile, String wt) {
+		if (targetFile.isDirectory()) return false;
+		
+		// create target directories
+		targetFile.getParentFile().mkdirs(); // don't check for success... would return false on
+		
+		BufferedInputStream  bis = new BufferedInputStream(in);
+		try (OutputStream dst = new FileOutputStream(targetFile);
+				BufferedOutputStream bos = getBos (dst)) {
+			cpio (bis, bos, wt);
+			bos.flush();
+			return true;
+		} catch (IOException e) {
+			throw new RuntimeException("I/O error in cpio "+wt);
+		} finally {
+			IOUtils.closeQuietly(bis);
+			IOUtils.closeQuietly(in);
+		}
+	}
 	
 	/**
 	 * Copy method to copy a file to another file
