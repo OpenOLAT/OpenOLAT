@@ -68,10 +68,6 @@ class FormWrapperContainer extends AbstractComponent implements ComponentCollect
 		return form.getFormName();
 	}
 
-	public String getOnSubmitCallback() {
-		return form.getOnSubmitCallback();
-	}
-
 	/**
 	 * @return
 	 */

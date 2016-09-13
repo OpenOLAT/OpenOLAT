@@ -156,8 +156,6 @@ public class Form {
 	private String formName;
 	private String dispatchFieldId;
 	private String eventFieldId;
-	
-	private String onSubmitCallback;
 
 	// the real form
 	private FormItemContainer formLayout;
@@ -783,18 +781,6 @@ public class Form {
 
 	public String getFormName() {
 		return formName;
-	}
-	
-	public String getOnSubmitCallback() {
-		return onSubmitCallback;
-	}
-
-	/**
-	 * Add an additional on onSubmit method
-	 * @param onSubmitCallback
-	 */
-	public void setOnSubmitCallback(String onSubmitCallback) {
-		this.onSubmitCallback = onSubmitCallback;
 	}
 
 	public void fireFormEvent(UserRequest ureq, FormEvent event) {
