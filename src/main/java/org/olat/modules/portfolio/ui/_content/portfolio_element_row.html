@@ -82,7 +82,7 @@
 			#if($r.isNotNull($row.instantiateAssignmentLink))
 				<div class="o_button_group">$r.render($row.instantiateAssignmentLink)</div>
 			#end
-			#if($r.isNotNull($row.editAssignmentLink) || $r.isNotNull($row.upAssignmentLink) || $r.isNotNull($row.downAssignmentLink))
+			#if($r.isNotNull($row.editAssignmentLink) || $r.isNotNull($row.upAssignmentLink) || $r.isNotNull($row.downAssignmentLink) || $r.isNotNull($row.moveAssignmentLink) || $r.isNotNull($row.deleteAssignmentLink))
 				<div class="o_button_group">
 				#if($r.isNotNull($row.upAssignmentLink))
 					$r.render($row.upAssignmentLink)
@@ -92,6 +92,9 @@
 				#end
 				#if($r.isNotNull($row.editAssignmentLink))
 					$r.render($row.editAssignmentLink)
+				#end
+				#if($r.isNotNull($row.moveAssignmentLink))
+					$r.render($row.moveAssignmentLink)
 				#end
 				#if($r.isNotNull($row.deleteAssignmentLink))
 					$r.render($row.deleteAssignmentLink)

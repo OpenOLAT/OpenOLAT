@@ -238,6 +238,9 @@ implements Activateable2, TooledController, FlexiTableComponentDelegate {
 		if(elRow.getDownAssignmentLink() != null) {
 			components.add(elRow.getDownAssignmentLink().getComponent());
 		}
+		if(elRow.getMoveAssignmentLink() != null) {
+			components.add(elRow.getMoveAssignmentLink().getComponent());
+		}
 		if(elRow.getInstantiateAssignmentLink() != null) {
 			components.add(elRow.getInstantiateAssignmentLink().getComponent());
 		}
@@ -287,7 +290,7 @@ implements Activateable2, TooledController, FlexiTableComponentDelegate {
 				
 				FormLink moveLink = uifactory.addFormLink("move_assign_" + (++counter), "move.assignment", "move", null, flc, Link.BUTTON);
 				moveLink.setUserObject(row);
-				row.setDeleteAssignmentLink(moveLink);
+				row.setMoveAssignmentLink(moveLink);
 				
 				FormLink upLink = uifactory.addFormLink("up_assign_" + (++counter), "up.assignment", "", null, flc, Link.BUTTON | Link.NONTRANSLATED);
 				upLink.setIconLeftCSS("o_icon o_icon o_icon-lg o_icon_move_up");
