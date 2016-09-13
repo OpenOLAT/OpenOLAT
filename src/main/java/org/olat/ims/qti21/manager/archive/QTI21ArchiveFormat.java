@@ -369,7 +369,9 @@ public class QTI21ArchiveFormat {
 			}
 			sessionResponses.addResponse(itemSession, response);
 		}
-		writeDataRow(++num, sessionResponses, exportSheet, workbook);
+		if(sessionResponses != null) {
+			writeDataRow(++num, sessionResponses, exportSheet, workbook);
+		}
 	}
 	
 	private void writeDataRow(int num, SessionResponses responses, OpenXMLWorksheet exportSheet, OpenXMLWorkbook workbook) {
