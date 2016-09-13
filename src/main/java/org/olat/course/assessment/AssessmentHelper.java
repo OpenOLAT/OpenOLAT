@@ -582,7 +582,7 @@ public class AssessmentHelper {
 	 */
 	public static boolean isResultVisible(ModuleConfiguration modConfig) {
 		boolean isVisible = false;
-		Boolean showResultsActive = (Boolean)modConfig.get(IQEditController.CONFIG_KEY_DATE_DEPENDENT_RESULTS);
+		Boolean showResultsActive = modConfig.getBooleanEntry(IQEditController.CONFIG_KEY_DATE_DEPENDENT_RESULTS);
 		if(showResultsActive != null && showResultsActive.booleanValue()) {
 			Date startDate = (Date)modConfig.get(IQEditController.CONFIG_KEY_RESULTS_START_DATE);
 			Date endDate = (Date)modConfig.get(IQEditController.CONFIG_KEY_RESULTS_END_DATE);
