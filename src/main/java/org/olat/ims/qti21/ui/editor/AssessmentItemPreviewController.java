@@ -86,7 +86,6 @@ public class AssessmentItemPreviewController extends BasicController {
 				resolvedAssessmentItem, rootDirectory, itemFile, candidateAuditLogger);
 		listenTo(displayCtrl);
 		mainVC.put("display", displayCtrl.getInitialComponent());
-		mainVC.addListener(this);
 	}
 	
 	public AssessmentItemPreviewController(UserRequest ureq, WindowControl wControl,
