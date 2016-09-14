@@ -110,25 +110,25 @@ public class CORunController extends BasicController {
 		
 		String participantGroupNames = (String)moduleConfiguration.get(COEditController.CONFIG_KEY_EMAILTOPARTICIPANTS_GROUP);
 		List<Long> participantGroupKeys = moduleConfiguration.getList(COEditController.CONFIG_KEY_EMAILTOPARTICIPANTS_GROUP_ID, Long.class);
-		if(participantGroupKeys == null && StringHelper.containsNonWhitespace(participantGroupNames)) {
+		if((participantGroupKeys == null || participantGroupKeys.isEmpty())  && StringHelper.containsNonWhitespace(participantGroupNames)) {
 			participantGroupKeys = businessGroupService.toGroupKeys(participantGroupNames, cgm.getCourseEntry());
 		}
 		
 		String participantAreaNames = (String)moduleConfiguration.get(COEditController.CONFIG_KEY_EMAILTOPARTICIPANTS_AREA);
 		List<Long> participantAreaKeys = moduleConfiguration.getList(COEditController.CONFIG_KEY_EMAILTOPARTICIPANTS_AREA_ID, Long.class);
-		if(participantAreaKeys == null && StringHelper.containsNonWhitespace(participantAreaNames)) {
+		if((participantAreaKeys == null || participantAreaKeys.isEmpty()) && StringHelper.containsNonWhitespace(participantAreaNames)) {
 			participantAreaKeys = businessGroupService.toGroupKeys(participantAreaNames, cgm.getCourseEntry());
 		}
 		
 		String coachGroupNames = (String)moduleConfiguration.get(COEditController.CONFIG_KEY_EMAILTOCOACHES_GROUP);
 		List<Long> coachGroupKeys = moduleConfiguration.getList(COEditController.CONFIG_KEY_EMAILTOCOACHES_GROUP_ID, Long.class);
-		if(coachGroupKeys == null && StringHelper.containsNonWhitespace(coachGroupNames)) {
+		if((coachGroupKeys == null || coachGroupKeys.isEmpty()) && StringHelper.containsNonWhitespace(coachGroupNames)) {
 			coachGroupKeys = businessGroupService.toGroupKeys(coachGroupNames, cgm.getCourseEntry());
 		}
 		
 		String coachAreaNames = (String)moduleConfiguration.get(COEditController.CONFIG_KEY_EMAILTOCOACHES_AREA);
 		List<Long> coachAreaKeys = moduleConfiguration.getList(COEditController.CONFIG_KEY_EMAILTOCOACHES_AREA_IDS, Long.class);
-		if(coachAreaKeys == null && StringHelper.containsNonWhitespace(coachAreaNames)) {
+		if((coachAreaKeys == null || coachAreaKeys.isEmpty()) && StringHelper.containsNonWhitespace(coachAreaNames)) {
 			coachAreaKeys = businessGroupService.toGroupKeys(coachAreaNames, cgm.getCourseEntry());
 		}
 		

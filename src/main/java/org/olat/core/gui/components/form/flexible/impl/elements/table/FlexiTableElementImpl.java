@@ -942,7 +942,7 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 		} else if(dataSource != null) {
 			currentPage = 0;
 			dataSource.clear();
-			dataSource.load(null, getSelectedFilters(), conditionalQueries, 0, getPageSize(), orderBy);
+			dataSource.load(getSearchText(), getSelectedFilters(), getConditionalQueries(), 0, getPageSize(), orderBy);
 		}
 		reorderMultiSelectIndex();
 		selectSortOption(sortKey, asc);
@@ -965,7 +965,7 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 		// In the case of a data source, we need to check if all index has been found.
 		// If not, we need to load all the data and find them
 		if(dataSource != null && multiSelectedIndex.size() != selectedObjects.size()) {
-			dataSource.load(getSearchText(), getSelectedFilters(), getConditionalQueries(), 0, -1);
+			dataSource.load(getSearchText(), getSelectedFilters(), getConditionalQueries(), 0, -1, orderBy);
 			for(int i=dataModel.getRowCount(); i-->0; ) {
 				Object obj = dataModel.getObject(i);
 				if(obj != null && selectedObjects.contains(obj)) {
