@@ -104,7 +104,7 @@ public class VideoSettingsController extends BasicController {
 
 	private void doOpenMetaDataConfig(UserRequest ureq) {
 		if(metaDataController == null) {
-			metaDataController = new VideoMetaDataEditFormController(ureq, getWindowControl(), entry.getOlatResource());
+			metaDataController = new VideoMetaDataEditFormController(ureq, getWindowControl(), entry);
 			listenTo(metaDataController);
 		}
 		mainVC.put("segmentCmp", metaDataController.getInitialComponent());
