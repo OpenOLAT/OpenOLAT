@@ -189,7 +189,8 @@ public class QTI21RuntimeController extends RepositoryEntryRuntimeController  {
 				doReset(ureq);
 			}
 			cmd.deactivate();
-			cleanUp();
+			//only this one
+			cleanUpReset();
 		} else if(cmd == source) {
 			cleanUp();
 		}
@@ -199,6 +200,10 @@ public class QTI21RuntimeController extends RepositoryEntryRuntimeController  {
 	@Override
 	protected void cleanUp() {
 		super.cleanUp();
+		cleanUpReset();
+	}
+	
+	private void cleanUpReset() {
 		removeAsListenerAndDispose(confirmResetDialog);
 		removeAsListenerAndDispose(cmd);
 		confirmResetDialog = null;
