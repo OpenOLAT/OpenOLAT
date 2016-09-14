@@ -1335,6 +1335,7 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 		if(multiSelectedIndex != null) {
 			multiSelectedIndex.clear();
 		}
+		allSelectedNeedLoadOfWholeModel = false;
 	}
 	
 	protected void doSelect(UserRequest ureq, int index) {
@@ -1422,7 +1423,7 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 		try {
 			Integer row = new Integer(rowStr);
 			if(multiSelectedIndex.containsKey(row)) {
-				if(multiSelectedIndex.remove(row) != null & allSelectedNeedLoadOfWholeModel) {
+				if(multiSelectedIndex.remove(row) != null && allSelectedNeedLoadOfWholeModel) {
 					allSelectedNeedLoadOfWholeModel = false;
 				}
 			} else {
