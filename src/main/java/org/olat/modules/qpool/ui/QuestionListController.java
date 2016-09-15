@@ -827,7 +827,7 @@ public class QuestionListController extends AbstractItemListController implement
 	
 	private void doDelete(List<QuestionItemShort> items) {
 		qpoolService.deleteItems(items);
-		getItemsTable().reset();
+		getItemsTable().reset(true, true, true);
 		showInfo("item.deleted");
 	}
 	
