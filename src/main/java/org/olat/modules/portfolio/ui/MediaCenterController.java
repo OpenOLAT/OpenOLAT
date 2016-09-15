@@ -85,7 +85,7 @@ import org.olat.modules.portfolio.ui.media.CollectTextMediaController;
 import org.olat.modules.portfolio.ui.model.MediaRow;
 import org.olat.modules.portfolio.ui.renderer.MediaTypeCellRenderer;
 import org.olat.portfolio.PortfolioModule;
-import org.olat.portfolio.manager.EPArtefactManager;
+import org.olat.portfolio.manager.EPFrontendManager;
 import org.olat.portfolio.model.artefacts.AbstractArtefact;
 import org.olat.portfolio.ui.EPArtefactPoolRunController;
 import org.olat.portfolio.ui.artefacts.view.EPArtefactChoosenEvent;
@@ -129,7 +129,7 @@ public class MediaCenterController extends FormBasicController
 	private PortfolioService portfolioService;
 	
 	@Autowired
-	private EPArtefactManager legacyArtefactManager;
+	private EPFrontendManager legacyEPFontentManager;
 	@Autowired
 	private PortfolioModule legacyPortfolioModule;
 	 
@@ -166,7 +166,7 @@ public class MediaCenterController extends FormBasicController
 		stackPanel.addTool(addCitationLink, Align.left);
 		
 		// only if there are v1 artefacts available
-		if (legacyPortfolioModule.isEnabled() &&  legacyArtefactManager.countArtefacts(getIdentity()) > 0) {
+		if (legacyPortfolioModule.isEnabled() &&  legacyEPFontentManager.hasMapOrArtefact(getIdentity())) {
 			importArtefactV1Link = LinkFactory.createToolLink("import.artefactV1", translate("import.artefactV1"), this);
 			importArtefactV1Link.setIconLeftCSS("o_icon o_icon-lg o_icon_import");
 			stackPanel.addTool(importArtefactV1Link, Align.left);			
@@ -653,7 +653,7 @@ public class MediaCenterController extends FormBasicController
 	
 	private static class NewMediasController extends BasicController {
 		@Autowired
-		private EPArtefactManager legacyArtefactManager;
+		private EPFrontendManager legacyEPFontentManager;
 		@Autowired
 		private PortfolioModule legacyPortfolioModule;
 
@@ -674,7 +674,7 @@ public class MediaCenterController extends FormBasicController
 			addCitationLink.setIconLeftCSS("o_icon o_icon_citation");
 			
 			// only if there are v1 artefacts available
-			if (legacyPortfolioModule.isEnabled() && legacyArtefactManager.countArtefacts(getIdentity()) > 0) {
+			if (legacyPortfolioModule.isEnabled() && legacyEPFontentManager.hasMapOrArtefact(getIdentity())) {
 				importArtefactV1Link = LinkFactory.createLink("import.artefactV1", "import.artefactV1", getTranslator(), mainVc, this, Link.LINK);
 				importArtefactV1Link.setIconLeftCSS("o_icon o_icon_import");
 			} else {

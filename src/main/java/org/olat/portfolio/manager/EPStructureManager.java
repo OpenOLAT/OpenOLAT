@@ -417,7 +417,27 @@ public class EPStructureManager {
 		
 		return query.getResultList();
 	}
-	
+
+	protected boolean hasStructureElementsFromOthersWithoutPublic(IdentityRef ident){
+		StringBuilder sb = new StringBuilder();
+		
+		sb.append("select stEl.key from ").append(EPStructureElement.class.getName()).append(" stEl ")
+		  .append(" inner join stEl.groups as relGroup on relGroup.defaultGroup=false")
+		  .append(" inner join relGroup.group as baseGroup")
+		  .append(" inner join baseGroup.members as members")
+		  .append(" where members.identity.key=:identityKey")
+		  .append(" and (relGroup.validFrom is null or relGroup.validFrom<=:date)")
+		  .append(" and (relGroup.validTo is null or relGroup.validTo>=:date)");
+		
+		List<Long> count =	dbInstance.getCurrentEntityManager().createQuery(sb.toString(), Long.class)
+				.setParameter("identityKey", ident.getKey())
+				.setParameter("date", new Date())
+				.setFirstResult(0)
+				.setMaxResults(1)
+				.getResultList();
+		return count != null && count.size() > 0 && count.get(0) != null && count.get(0) >= 0;
+	}
+
 	private Class<?> getImplementation(ElementType type) {
 		switch(type) {
 			case DEFAULT_MAP: return EPDefaultMap.class;
