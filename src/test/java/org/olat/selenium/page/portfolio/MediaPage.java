@@ -40,6 +40,14 @@ public class MediaPage {
 	}
 	
 	public MediaPage fillForumMedia(String title, String description) {
+		return fillStandardMedia(title, description);
+	}
+	
+	public MediaPage fillEfficiencyStatementMedia(String title, String description) {
+		return fillStandardMedia(title, description);
+	}
+	
+	private MediaPage fillStandardMedia(String title, String description) {
 		if(StringHelper.containsNonWhitespace(title)) {
 			By titleBy = By.cssSelector(".o_sel_pf_collect_media_title input[type='text']");
 			WebElement titleEl = browser.findElement(titleBy);

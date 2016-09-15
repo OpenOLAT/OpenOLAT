@@ -37,6 +37,7 @@ import org.junit.runner.RunWith;
 import org.olat.selenium.page.LoginPage;
 import org.olat.selenium.page.NavigationPage;
 import org.olat.selenium.page.User;
+import org.olat.selenium.page.course.AssessmentCEConfigurationPage;
 import org.olat.selenium.page.course.CourseEditorPageFragment;
 import org.olat.selenium.page.course.CoursePageFragment;
 import org.olat.selenium.page.course.MembersPage;
@@ -49,6 +50,7 @@ import org.olat.selenium.page.portfolio.PortfolioV2HomePage;
 import org.olat.selenium.page.repository.AuthoringEnvPage;
 import org.olat.selenium.page.repository.FeedPage;
 import org.olat.selenium.page.repository.AuthoringEnvPage.ResourceType;
+import org.olat.selenium.page.repository.RepositoryAccessPage.UserAccess;
 import org.olat.selenium.page.user.UserToolsPage;
 import org.olat.selenium.page.wiki.WikiPage;
 import org.olat.test.ArquillianDeployments;
@@ -404,4 +406,105 @@ public class PortfolioV2Test {
 				.assertOnMediaDetails(mediaTitle);
 	}
 
+
+	/**
+	 * Create a course with an assessment course element, setup
+	 * efficiency statement, add a user and assess her.
+	 * The user log in, search its efficency statemet, pick it
+	 * as a media for is portfolio and goes in the media center
+	 * to search it and select it.
+	 * 
+	 * @param authorLoginPage
+	 * @param ryomouBrowser
+	 * @throws IOException
+	 * @throws URISyntaxException
+	 */
+	@Test
+	@RunAsClient
+	public void collectEfficiencyStatement(@InitialPage LoginPage authorLoginPage,
+			@Drone @User WebDriver ryomouBrowser)
+	throws IOException, URISyntaxException {
+
+		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
+		UserVO ryomou = new UserRestClient(deploymentUrl).createRandomUser("Ryomou");
+		
+		authorLoginPage.loginAs(author.getLogin(), author.getPassword());
+		
+		//create a course
+		String courseTitle = "Course-Assessment-" + UUID.randomUUID();
+		navBar
+			.openAuthoringEnvironment()
+			.createCourse(courseTitle)
+			.clickToolbarBack();
+
+		//create a course element of type Test with the test that we create above
+		String assessmentNodeTitle = "Efficiency PF";
+		CourseEditorPageFragment courseEditor = CoursePageFragment.getCourse(browser)
+			.edit()
+			.createNode("ms")
+			.nodeTitle(assessmentNodeTitle);
+		
+		//configure assessment
+		AssessmentCEConfigurationPage assessmentConfig = new AssessmentCEConfigurationPage(browser);
+		assessmentConfig
+			.selectConfiguration()
+			.setScoreAuto(1.0f, 6.0f, 4.0f);
+		//set the score / passed calculation in root node and publish
+		courseEditor
+			.selectRoot()
+			.selectTabScore()
+			.enableRootScoreByNodes()
+			.autoPublish()
+			.accessConfiguration()
+			.setUserAccess(UserAccess.registred);
+		
+		//go to members management
+		CoursePageFragment courseRuntime = courseEditor.clickToolbarBack();
+		MembersPage members = courseRuntime
+			.members();
+		members
+			.addMember()
+			.searchMember(ryomou, true)
+			.next().next().next().finish();
+		
+		//efficiency statement is default on
+		//go to the assessment to to set the points
+		members
+			.clickToolbarBack()
+			.assessmentTool()
+			.users()
+			.assertOnUsers(ryomou)
+			.selectUser(ryomou)
+			.selectCourseNode(assessmentNodeTitle)
+			.setAssessmentScore(4.5f)
+			.assertUserPassedCourseNode(assessmentNodeTitle);
+		
+		//Ryomou login
+		LoginPage ryomouLoginPage = LoginPage.getLoginPage(ryomouBrowser, deploymentUrl);
+		ryomouLoginPage
+			.loginAs(ryomou.getLogin(), ryomou.getPassword())
+			.resume();
+		
+		//see its beautiful efficiency statement
+		String mediaTitle = "My efficiency";
+		String mediaDesc = "My efficiency statement " + UUID.randomUUID();
+		
+		UserToolsPage ryomouUserTools = new UserToolsPage(ryomouBrowser);
+		ryomouUserTools
+			.openUserToolsMenu()
+			.openMyEfficiencyStatement()
+			.assertOnEfficiencyStatmentPage()
+			.assertOnStatement(courseTitle, true)
+			.addAsMediaInList(courseTitle)
+			.fillEfficiencyStatementMedia(mediaTitle, mediaDesc);
+		
+		MediaCenterPage mediaCenter = ryomouUserTools
+				.openUserToolsMenu()
+				.openPortfolioV2()
+				.openMediaCenter();
+		mediaCenter
+				.assertOnMedia(mediaTitle)
+				.selectMedia(mediaTitle)
+				.assertOnMediaDetails(mediaTitle);
+	}
 }
