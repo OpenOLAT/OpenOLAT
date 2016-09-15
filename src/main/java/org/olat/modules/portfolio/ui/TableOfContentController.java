@@ -202,7 +202,7 @@ public class TableOfContentController extends BasicController implements TooledC
 		List<Page> pages = portfolioService.getPages(binder, null);
 		for(Page page:pages) {
 			Section section = page.getSection();
-			if(secCallback.canViewElement(page) && section != null) {
+			if(secCallback.canViewElement(page) && section != null && sectionMap.containsKey(section.getKey())) {
 				SectionRow sectionRow = sectionMap.get(section.getKey());
 				PageRow pageRow = forgePageRow(page, numberOfCommentsMap);
 				sectionRow.getPages().add(pageRow);
