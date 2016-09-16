@@ -257,7 +257,7 @@ public class InvitationEditRightsController extends FormBasicController {
 			invitation.setFirstName(firstNameEl.getValue());
 			invitation.setLastName(lastNameEl.getValue());
 			invitation.setMail(mailEl.getValue());
-			invitee = invitationDao.createIdentityAndPersistInvitation(invitation, binder.getBaseGroup(), getLocale());
+			invitee = invitationDao.loadOrCreateIdentityAndPersistInvitation(invitation, binder.getBaseGroup(), getLocale());
 			portfolioService.changeAccessRights(Collections.singletonList(invitee), changes);
 			sendInvitation();
 			fireEvent(ureq, Event.DONE_EVENT);
