@@ -87,8 +87,8 @@ public class BinderConfiguration {
 		return new BinderConfiguration(false, false, false, true, false, false);
 	}
 	
-	public static BinderConfiguration createTemplateConfig() {
-		return new BinderConfiguration(false, false, false, false, false, true);
+	public static BinderConfiguration createTemplateConfig(boolean optionsEditable) {
+		return new BinderConfiguration(false, false, false, false, false, optionsEditable);
 	}
 	
 	public static BinderConfiguration createInvitationConfig() {

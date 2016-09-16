@@ -73,13 +73,15 @@ public class HistoryController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		subsContext = new SubscriptionContext(PortfolioNotificationsHandler.TYPE_NAME, binder.getKey(), PortfolioNotificationsHandler.TYPE_NAME);
-		if (subsContext != null) {
-			String businessPath = "[Binder:" + binder.getKey() + "]";
-			PublisherData data = new PublisherData(PortfolioNotificationsHandler.TYPE_NAME, null, businessPath);
-			cSubscriptionCtrl = new ContextualSubscriptionController(ureq, getWindowControl(), subsContext, data);
-			listenTo(cSubscriptionCtrl);
-			flc.put("subscription", cSubscriptionCtrl.getInitialComponent());
+		if (!ureq.getUserSession().getRoles().isGuestOnly()) {			
+			subsContext = new SubscriptionContext(PortfolioNotificationsHandler.TYPE_NAME, binder.getKey(), PortfolioNotificationsHandler.TYPE_NAME);
+			if (subsContext != null) {
+				String businessPath = "[Binder:" + binder.getKey() + "]";
+				PublisherData data = new PublisherData(PortfolioNotificationsHandler.TYPE_NAME, null, businessPath);
+				cSubscriptionCtrl = new ContextualSubscriptionController(ureq, getWindowControl(), subsContext, data);
+				listenTo(cSubscriptionCtrl);
+				flc.put("subscription", cSubscriptionCtrl.getInitialComponent());
+			}
 		}
 		
 		dateChooser = uifactory.addDateChooser("dateChooser", "changes.since", null, formLayout);

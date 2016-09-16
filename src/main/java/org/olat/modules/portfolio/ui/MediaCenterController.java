@@ -108,7 +108,7 @@ public class MediaCenterController extends FormBasicController
 	private FormLink newMediaCallout;
 	private FlexiTableElement tableEl;
 	private String mapperThumbnailUrl;
-	private Link addMediaLink, addTextLink, addCitationLink, importArtefactV1Link;
+	private Link addFileLink, addMediaLink, addTextLink, addCitationLink, importArtefactV1Link;
 	
 	private int counter = 0;
 	private final boolean select;
@@ -153,8 +153,12 @@ public class MediaCenterController extends FormBasicController
 	
 	@Override
 	public void initTools() {
-		addMediaLink = LinkFactory.createToolLink("add.file", translate("add.file"), this);
-		addMediaLink.setIconLeftCSS("o_icon o_icon-lg o_icon_files");
+		addFileLink = LinkFactory.createToolLink("add.file", translate("add.file"), this);
+		addFileLink.setIconLeftCSS("o_icon o_icon-lg o_icon_files");
+		stackPanel.addTool(addFileLink, Align.left);
+
+		addMediaLink = LinkFactory.createToolLink("add.media", translate("add.media"), this);
+		addMediaLink.setIconLeftCSS("o_icon o_icon-lg o_icon_media");
 		stackPanel.addTool(addMediaLink, Align.left);
 		
 		addTextLink = LinkFactory.createToolLink("add.text", translate("add.text"), this);
@@ -177,6 +181,7 @@ public class MediaCenterController extends FormBasicController
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		if(select) {
 			newMediaCallout = uifactory.addFormLink("new.medias", formLayout, Link.BUTTON);
+			newMediaCallout.setIconRightCSS("o_icon o_icon_caret o_icon-fw");
 		}
 		
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
@@ -407,7 +412,9 @@ public class MediaCenterController extends FormBasicController
 		} else if(newMediasCtrl == source) {
 			newMediasCalloutCtrl.deactivate();
 			if("add.file".equals(event.getCommand())) {
-				doAddMedia(ureq);
+				doAddMedia(ureq, "add.file");
+			} else if("add.media".equals(event.getCommand())) {
+				doAddMedia(ureq, "add.media");
 			} else if("add.text".equals(event.getCommand())) {
 				doAddTextMedia(ureq);
 			} else if("add.citation".equals(event.getCommand())) {
@@ -436,8 +443,10 @@ public class MediaCenterController extends FormBasicController
 
 	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
-		if(addMediaLink == source) {
-			doAddMedia(ureq);
+		if(addFileLink == source) {
+			doAddMedia(ureq, "add.file");
+		} else if(addMediaLink == source) {
+			doAddMedia(ureq, "add.media");
 		} else if(addTextLink == source) {
 			doAddTextMedia(ureq);
 		} else if(addCitationLink == source) {
@@ -474,13 +483,13 @@ public class MediaCenterController extends FormBasicController
 		//
 	}
 	
-	private void doAddMedia(UserRequest ureq) {
+	private void doAddMedia(UserRequest ureq, String titleKey) {
 		if(mediaUploadCtrl != null) return;
 		
 		mediaUploadCtrl = new MediaUploadController(ureq, getWindowControl());
 		listenTo(mediaUploadCtrl);
 		
-		String title = translate("add.media");
+		String title = translate(titleKey);
 		cmc = new CloseableModalController(getWindowControl(), null, mediaUploadCtrl.getInitialComponent(), true, title, true);
 		listenTo(cmc);
 		cmc.activate();
@@ -657,26 +666,29 @@ public class MediaCenterController extends FormBasicController
 		@Autowired
 		private PortfolioModule legacyPortfolioModule;
 
-		private final Link addMediaLink, addTextLink, addCitationLink, importArtefactV1Link;
+		private final Link addFileLink, addMediaLink, addTextLink, addCitationLink, importArtefactV1Link;
 		
 		public NewMediasController(UserRequest ureq, WindowControl wControl) {
 			super(ureq, wControl);
 			
 			VelocityContainer mainVc = createVelocityContainer("new_medias");
 			
-			addMediaLink = LinkFactory.createLink("add.file", "add.file", getTranslator(), mainVc, this, Link.LINK);
-			addMediaLink.setIconLeftCSS("o_icon o_icon_files");
+			addFileLink = LinkFactory.createLink("add.file", "add.file", getTranslator(), mainVc, this, Link.LINK);
+			addFileLink.setIconLeftCSS("o_icon o_icon_files o_icon-fw");
 
+			addMediaLink = LinkFactory.createLink("add.media", "add.media", getTranslator(), mainVc, this, Link.LINK);
+			addMediaLink.setIconLeftCSS("o_icon o_icon_media o_icon-fw");
+			
 			addTextLink = LinkFactory.createLink("add.text", "add.text", getTranslator(), mainVc, this, Link.LINK);
-			addTextLink.setIconLeftCSS("o_icon o_filetype_txt");
+			addTextLink.setIconLeftCSS("o_icon o_filetype_txt o_icon-fw");
 			
 			addCitationLink = LinkFactory.createLink("add.citation", "add.citation", getTranslator(), mainVc, this, Link.LINK);
-			addCitationLink.setIconLeftCSS("o_icon o_icon_citation");
+			addCitationLink.setIconLeftCSS("o_icon o_icon_citation o_icon-fw");
 			
 			// only if there are v1 artefacts available
 			if (legacyPortfolioModule.isEnabled() && legacyEPFontentManager.hasMapOrArtefact(getIdentity())) {
 				importArtefactV1Link = LinkFactory.createLink("import.artefactV1", "import.artefactV1", getTranslator(), mainVc, this, Link.LINK);
-				importArtefactV1Link.setIconLeftCSS("o_icon o_icon_import");
+				importArtefactV1Link.setIconLeftCSS("o_icon o_icon_import o_icon-fw");
 			} else {
 				importArtefactV1Link = null;
 			}

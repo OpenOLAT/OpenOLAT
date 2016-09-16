@@ -259,7 +259,7 @@ public class PortfolioConfigForm extends FormBasicController {
 			previewCtr = EPUIFactory.createPortfolioStructureMapPreviewController(ureq, getWindowControl(), map, secCallback);
 		} else if(binder != null && stackPanel instanceof TooledStackedPanel) {
 			BinderSecurityCallback secCallback = BinderSecurityCallbackFactory.getReadOnlyCallback();
-			BinderConfiguration bConfig = BinderConfiguration.createTemplateConfig();
+			BinderConfiguration bConfig = BinderConfiguration.createTemplateConfig(false);
 			previewCtr = new BinderController(ureq, getWindowControl(), (TooledStackedPanel)stackPanel, secCallback, binder, bConfig);
 		} else {
 			return;

@@ -250,7 +250,7 @@ public class BinderTemplateHandler implements RepositoryHandler {
 						Binder binder = portfolioService.getBinderByResource(entry.getOlatResource());
 						CoreSpringFactory.getImpl(UserCourseInformationsManager.class)
 							.updateUserCourseInformations(entry.getOlatResource(), uureq.getIdentity());
-						BinderConfiguration bConfig = BinderConfiguration.createTemplateConfig();
+						BinderConfiguration bConfig = BinderConfiguration.createTemplateConfig(reSecurity.isEntryAdmin());
 						BinderSecurityCallback secCallback = BinderSecurityCallbackFactory.getCallbackForTemplate(reSecurity);
 						return new BinderController(uureq, wwControl, toolbarPanel, secCallback, binder, bConfig);
 					}
