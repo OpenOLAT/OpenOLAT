@@ -119,24 +119,24 @@ public class AssessmentCourseOverviewController extends BasicController {
 		assessedIdentitiesLink = LinkFactory.createLink("assessed.identities", "assessed.identities", getTranslator(), mainVC, this, Link.NONTRANSLATED);
 		assessedIdentitiesLink.setCustomDisplayText(translate("assessment.tool.numOfAssessedIdentities", new String[]{ Integer.toString(numOfAssessedIdentities) }));
 		assessedIdentitiesLink.setElementCssClass("o_sel_assessment_tool_assessed_users");
-		assessedIdentitiesLink.setIconLeftCSS("o_icon o_icon_user");
+		assessedIdentitiesLink.setIconLeftCSS("o_icon o_icon_user o_icon-fw");
 		
 		int numOfPassed = statisticsCtrl.getNumOfPassed();
 		passedLink = LinkFactory.createLink("passed.identities", "passed.identities", getTranslator(), mainVC, this, Link.NONTRANSLATED);
 		passedLink.setCustomDisplayText(translate("assessment.tool.numOfPassed", new String[]{ Integer.toString(numOfPassed) }));
-		passedLink.setIconLeftCSS("o_icon o_icon_user");
+		passedLink.setIconLeftCSS("o_passed o_icon o_icon_passed o_icon-fw");
 
 		int numOfFailed = statisticsCtrl.getNumOfFailed();
 		failedLink = LinkFactory.createLink("failed.identities", "failed.identities", getTranslator(), mainVC, this, Link.NONTRANSLATED);
 		failedLink.setCustomDisplayText(translate("assessment.tool.numOfFailed", new String[]{ Integer.toString(numOfFailed) }));
-		failedLink.setIconLeftCSS("o_icon o_icon_user");
+		failedLink.setIconLeftCSS("o_failed o_icon o_icon_failed o_icon-fw");
 		
 		int numOfAssessableCourseNodes = hasAssessableNodes ?
 				AssessmentHelper.countAssessableNodes(course.getRunStructure().getRootNode()) : 0;
 		assessableCoureNodesLink = LinkFactory.createLink("assessable.nodes", "assessable.nodes", getTranslator(), mainVC, this, Link.NONTRANSLATED);
 		assessableCoureNodesLink.setCustomDisplayText(translate("assessment.tool.numOfAssessableCourseNodes", new String[]{ Integer.toString(numOfAssessableCourseNodes) }));
 		assessableCoureNodesLink.setElementCssClass("o_sel_assessment_tool_assessable_course_nodes");
-		assessableCoureNodesLink.setIconLeftCSS("o_icon o_ms_icon");
+		assessableCoureNodesLink.setIconLeftCSS("o_icon o_ms_icon o_icon-fw");
 		
 		if(assessmentCallback.canAssessBusinessGoupMembers()) {
 			SearchBusinessGroupParams params = new SearchBusinessGroupParams();
@@ -154,7 +154,7 @@ public class AssessmentCourseOverviewController extends BasicController {
 		if(numOfGroups > 0) {
 			assessedGroupsLink = LinkFactory.createLink("assessed.groups", "assessed.groups", getTranslator(), mainVC, this, Link.NONTRANSLATED);
 			assessedGroupsLink.setCustomDisplayText(translate("assessment.tool.numOfAssessedGroups", new String[]{ Integer.toString(numOfGroups) }));
-			assessedGroupsLink.setIconLeftCSS("o_icon o_icon_group");
+			assessedGroupsLink.setIconLeftCSS("o_icon o_icon_group o_icon-fw");
 		}
 
 		putInitialPanel(mainVC);

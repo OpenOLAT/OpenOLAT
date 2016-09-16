@@ -449,9 +449,11 @@ public class AssessmentForm extends FormBasicController {
 
 		saveAndDoneLink = uifactory.addFormLink("save.done", buttonGroupLayout, Link.BUTTON);
 		saveAndDoneLink.setElementCssClass("o_sel_assessment_form_save_and_done");
+		saveAndDoneLink.setIconLeftCSS("o_icon o_icon_status_done o_icon-fw");
 		
 		reopenLink = uifactory.addFormLink("reopen", buttonGroupLayout, Link.BUTTON);
 		reopenLink.setElementCssClass("o_sel_assessment_form_reopen");
+		reopenLink.setIconLeftCSS("o_icon o_icon_status_in_review o_icon-fw");
 
 		uifactory.addFormCancelButton("cancel", buttonGroupLayout, ureq, getWindowControl());
 
