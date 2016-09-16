@@ -36,6 +36,7 @@ div#o_main_toolbar.o_toolbar.o_portfolio {
 		&.o_media_left,
 		&.o_media_right {
 			max-height: 200px;
+			max-width: 50%;
 			img {
 				max-height: 200px;
 			}		
@@ -43,6 +44,7 @@ div#o_main_toolbar.o_toolbar.o_portfolio {
 		&.o_media_right_large,
 		&.o_media_left_large {
 			max-height: 300px;
+			max-width: 75%;
 			img {
 				max-height: 300px;
 			}		
