@@ -21,23 +21,46 @@ div#o_main_toolbar.o_toolbar.o_portfolio {
 	}
 	
 	.o_media {
-		&.o_media_right {
-			max-height: 200px;
+		&.o_media_right,
+		&.o_media_right_large {
 			float: right;
 			margin-left: 2em;
 			margin-bottom: 2em;
 		}
+		&.o_media_left,
+		&.o_media_left_large {
+			float: left;
+			margin-right: 2em;
+			margin-bottom: 2em;
+		}
+		&.o_media_left,
+		&.o_media_right {
+			max-height: 200px;
+			img {
+				max-height: 200px;
+			}		
+		}
+		&.o_media_right_large,
+		&.o_media_left_large {
+			max-height: 300px;
+			img {
+				max-height: 300px;
+			}		
+		}
+
 		&.o_desc_empty {
 			/* when no content is there, show larger image and centered */
 			max-height: 300px;
 			text-align: center;
+			img {
+				max-height: 300px;
+			}		
 		}
 		
 		img {
 			border-radius: $o-portfolio-lead-border-radius;
 			border: 1px $o-portfolio-lead-border-color solid;
 			background: #fff;
-			max-height: 100%;
 		}		
 	}
 	

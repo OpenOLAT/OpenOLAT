@@ -28,6 +28,9 @@ package org.olat.modules.portfolio;
 public enum PageImageAlign {
 	
 	background,
-	right
+	right,
+	right_large,
+	left,
+	left_large
 
 }

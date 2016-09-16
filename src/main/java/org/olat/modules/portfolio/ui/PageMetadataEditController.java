@@ -68,7 +68,7 @@ public class PageMetadataEditController extends FormBasicController {
 		imageMimeTypes.add("image/png");
 	}
 	
-	private static final String[] alignKeys = new String[]{ PageImageAlign.background.name(), PageImageAlign.right.name() };
+	private static final String[] alignKeys = new String[]{ PageImageAlign.background.name(), PageImageAlign.right.name(), PageImageAlign.right_large.name(), PageImageAlign.left.name(), PageImageAlign.left_large.name() };
 	
 	private TextElement titleEl;
 	private RichTextElement summaryEl;
@@ -171,7 +171,7 @@ public class PageMetadataEditController extends FormBasicController {
 			}
 		}
 		
-		String[] alignValues = new String[]{ translate("image.align.background"), translate("image.align.right") };
+		String[] alignValues = new String[]{ translate("image.align.background"), translate("image.align.right"), translate("image.align.right.large"), translate("image.align.left"), translate("image.align.left.large") };
 		imageAlignEl = uifactory.addDropdownSingleselect("image.align", null, formLayout, alignKeys, alignValues, null);
 		PageImageAlign alignment = page == null ? null : page.getImageAlignment();
 		if(alignment == null) {

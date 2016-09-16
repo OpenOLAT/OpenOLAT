@@ -24,7 +24,7 @@
 	#if($r.available("poster") || $r.isNotEmpty($pageSummary))
 	<div class="o_page_summary clearfix">
 		#if($r.available("poster"))
-		<div class="o_media #if(!$pageSummary || $pageSummary.length() == 0) o_desc_empty #else o_media_right #end ">
+		<div class="o_media #if(!$pageSummary || $pageSummary.length() == 0) o_desc_empty #else o_media_${imageAlign} #end ">
 			$r.render("poster")
 		</div>
 		#end
