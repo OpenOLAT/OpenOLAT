@@ -322,11 +322,15 @@ public class PageDAO {
 	public Page removePage(Page page) {
 		PageImpl reloadedPage = (PageImpl)loadByKey(page.getKey());
 		Section section = reloadedPage.getSection();
-		section.getPages().remove(reloadedPage);
+		if(section != null) {
+			section.getPages().remove(reloadedPage);
+		}
 		reloadedPage.setLastModified(new Date());
 		reloadedPage.setSection(null);
 		reloadedPage.setPageStatus(PageStatus.deleted);
-		dbInstance.getCurrentEntityManager().merge(section);
+		if(section != null) {
+			dbInstance.getCurrentEntityManager().merge(section);
+		}
 		return dbInstance.getCurrentEntityManager().merge(reloadedPage);
 	}
 	
