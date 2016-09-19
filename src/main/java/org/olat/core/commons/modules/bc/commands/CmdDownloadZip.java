@@ -30,6 +30,8 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.io.IOUtils;
 import org.olat.core.commons.modules.bc.FileSelection;
 import org.olat.core.commons.modules.bc.components.FolderComponent;
+import org.olat.core.commons.modules.bc.meta.MetaInfo;
+import org.olat.core.commons.modules.bc.meta.tagged.MetaTagged;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
@@ -156,6 +158,13 @@ public class CmdDownloadZip implements FolderCommand {
 					VFSItem item = currentContainer.resolve(fileName);
 					if (item != null) {
 						vfsFiles.add(item);
+						// update download counter
+						if (item instanceof MetaTagged) {
+							MetaTagged itemWithMeta = (MetaTagged) item;
+							MetaInfo meta = itemWithMeta.getMetaInfo();
+							meta.increaseDownloadCount();
+							meta.write();
+						}
 					}
 				}
 				
