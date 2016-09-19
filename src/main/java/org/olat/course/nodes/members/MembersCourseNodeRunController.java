@@ -321,11 +321,11 @@ public class MembersCourseNodeRunController extends FormBasicController {
 	private Member createMember(Identity identity) {
 		MediaResource rsrc = portraitManager.getSmallPortraitResource(identity.getName());
 		
-		String portraitCssClass = null;
+		String portraitCssClass;
 		String gender = identity.getUser().getProperty(UserConstants.GENDER, Locale.ENGLISH);
-		if (gender.equalsIgnoreCase("male")) {
+		if ("male".equalsIgnoreCase(gender)) {
 			portraitCssClass = DisplayPortraitManager.DUMMY_MALE_BIG_CSS_CLASS;
-		} else if (gender.equalsIgnoreCase("female")) {
+		} else if ("female".equalsIgnoreCase(gender)) {
 			portraitCssClass = DisplayPortraitManager.DUMMY_FEMALE_BIG_CSS_CLASS;
 		} else {
 			portraitCssClass = DisplayPortraitManager.DUMMY_BIG_CSS_CLASS;
