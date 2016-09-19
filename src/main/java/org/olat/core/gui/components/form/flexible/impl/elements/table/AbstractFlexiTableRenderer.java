@@ -237,6 +237,9 @@ public abstract class AbstractFlexiTableRenderer extends DefaultComponentRendere
 				if(filter.getIconLeftCSS() != null) {
 					sb.append("<i class='o_icon ").append(filter.getIconLeftCSS()).append("'> </i> ");
 				}
+				if(filter.getIconRenderer() != null) {
+					filter.getIconRenderer().render(sb, filter, ftE.getComponent(), ftE.getTranslator());
+				}
 				sb.append(filter.getLabel()).append("</a></li>");
 				if(filter.isSelected()) {
 					selected = filter.getLabel();

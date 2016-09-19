@@ -29,6 +29,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.util.CSSHelper;
 import org.olat.core.id.Identity;
+import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.vfs.VFSContainer;
@@ -38,14 +39,18 @@ import org.olat.core.util.vfs.VFSManager;
 import org.olat.modules.portfolio.Media;
 import org.olat.modules.portfolio.MediaInformations;
 import org.olat.modules.portfolio.MediaLight;
+import org.olat.modules.portfolio.PortfolioLoggingAction;
 import org.olat.modules.portfolio.manager.MediaDAO;
 import org.olat.modules.portfolio.manager.PortfolioFileStorage;
+import org.olat.modules.portfolio.ui.editor.InteractiveAddPageElementHandler;
+import org.olat.modules.portfolio.ui.editor.PageElementAddController;
 import org.olat.modules.portfolio.ui.media.CollectFileMediaController;
 import org.olat.modules.portfolio.ui.media.FileMediaController;
 import org.olat.modules.portfolio.ui.media.UploadMedia;
 import org.olat.portfolio.manager.EPFrontendManager;
 import org.olat.portfolio.model.artefacts.AbstractArtefact;
 import org.olat.portfolio.model.artefacts.FileArtefact;
+import org.olat.util.logging.activity.LoggingResourceable;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -56,7 +61,7 @@ import org.springframework.stereotype.Service;
  *
  */
 @Service
-public class FileHandler extends AbstractMediaHandler {
+public class FileHandler extends AbstractMediaHandler implements InteractiveAddPageElementHandler {
 	
 	public static final String FILE_TYPE = "bc";
 
@@ -138,6 +143,8 @@ public class FileHandler extends AbstractMediaHandler {
 
 	public Media createMedia(String title, String description, File file, String filename, String businessPath, Identity author) {
 		Media media = mediaDao.createMedia(title, description, filename, FILE_TYPE, businessPath, null, 60, author);
+		ThreadLocalUserActivityLogger.log(PortfolioLoggingAction.PORTFOLIO_MEDIA_ADDED, getClass(),
+				LoggingResourceable.wrap(media));
 		File mediaDir = fileStorage.generateMediaSubDirectory(media);
 		File mediaFile = new File(mediaDir, filename);
 		FileUtils.copyFileToFile(file, mediaFile, false);
@@ -164,6 +171,8 @@ public class FileHandler extends AbstractMediaHandler {
 			}
 			media = mediaDao.createMedia(artefact.getTitle(), artefact.getDescription(), filename, type,
 					businessPath, artefact.getKey().toString(), artefact.getSignature(), artefact.getAuthor());
+			ThreadLocalUserActivityLogger.log(PortfolioLoggingAction.PORTFOLIO_MEDIA_ADDED, getClass(),
+					LoggingResourceable.wrap(media));
 		
 			File mediaDir = fileStorage.generateMediaSubDirectory(media);
 			String storagePath = fileStorage.getRelativePath(mediaDir);
@@ -184,8 +193,8 @@ public class FileHandler extends AbstractMediaHandler {
 		return new CollectFileMediaController(ureq, wControl, media);
 	}
 
-	/*@Override
+	@Override
 	public PageElementAddController getAddPageElementController(UserRequest ureq, WindowControl wControl) {
 		return new CollectFileMediaController(ureq, wControl);
-	}*/
+	}
 }

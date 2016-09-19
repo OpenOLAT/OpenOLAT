@@ -33,6 +33,7 @@ public class AssessmentFormEvent extends Event {
 	
 	public static final String ASSESSMENT_DONE = "assessment-entry-done";
 	public static final String ASSESSMENT_CHANGED = "assessment-entry-CHANGED";
+	public static final String ASSESSMENT_REOPEN = "assessment-entry-reopened";
 
 	private boolean close;
 	

@@ -289,6 +289,16 @@ public class StringHelper {
 		return !matcher.find();
 	}
 	
+	public static boolean isSame(String s1, String s2) {
+		if(s1 == null && s2 == null) {
+			return true;
+		}
+		if(s1 == null || s2 == null) {
+			return false;
+		}
+		return s1.equals(s2);
+	}
+	
 	/**
 	 * Check if the string contains some HTML tags
 	 * @param s

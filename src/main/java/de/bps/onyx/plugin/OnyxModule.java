@@ -56,6 +56,7 @@ import org.olat.ims.qti.fileresource.SurveyFileResource;
 import org.olat.ims.qti.fileresource.TestFileResource;
 import org.olat.ims.qti.process.ImsRepositoryResolver;
 import org.olat.ims.qti.process.Resolver;
+import org.olat.modules.assessment.model.AssessmentEntryStatus;
 
 /**
  * @author Ingmar Kroll
@@ -356,7 +357,12 @@ public class OnyxModule extends AbstractOLATModule implements ConfigOnOff {
 		}
 		if (currentResultSet != null && !currentResultSet.getSuspended()) {
 			// <OLATCE-374>
-			return new ScoreEvaluation(currentResultSet.getScore(), currentResultSet.getIsPassed(), currentResultSet.getFullyAssessed(), currentResultSet.getAssessmentID());
+			AssessmentEntryStatus status = null;
+			if(currentResultSet.getFullyAssessed() != null && currentResultSet.getFullyAssessed().booleanValue()) {
+				status = AssessmentEntryStatus.done;
+			}
+			return new ScoreEvaluation(currentResultSet.getScore(), currentResultSet.getIsPassed(),
+					status, currentResultSet.getFullyAssessed(), currentResultSet.getAssessmentID());
 			// </OLATCE-374>
 		}
 		return null;

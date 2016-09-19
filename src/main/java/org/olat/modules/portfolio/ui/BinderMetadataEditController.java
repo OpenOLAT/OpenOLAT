@@ -30,6 +30,7 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FileElement;
+import org.olat.core.gui.components.form.flexible.elements.RichTextElement;
 import org.olat.core.gui.components.form.flexible.elements.TextBoxListElement;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
@@ -40,11 +41,14 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Identity;
+import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.modules.portfolio.Binder;
 import org.olat.modules.portfolio.Category;
+import org.olat.modules.portfolio.PortfolioLoggingAction;
 import org.olat.modules.portfolio.PortfolioRoles;
 import org.olat.modules.portfolio.PortfolioService;
 import org.olat.user.UserManager;
+import org.olat.util.logging.activity.LoggingResourceable;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -63,7 +67,8 @@ public class BinderMetadataEditController extends FormBasicController {
 		imageMimeTypes.add("image/png");
 	}
 	
-	private TextElement titleEl, summaryEl;
+	private TextElement titleEl;
+	private RichTextElement summaryEl;
 	private TextBoxListElement categoriesEl;
 	
 	private FileElement fileUpload;
@@ -98,13 +103,18 @@ public class BinderMetadataEditController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		formLayout.setElementCssClass("o_sel_pf_edit_binder_form");
+		
 		String title = binder == null ? null : binder.getTitle();
 		titleEl = uifactory.addTextElement("title", "title", 255, title, formLayout);
+		titleEl.setElementCssClass("o_sel_pf_edit_binder_title");
 		titleEl.setMandatory(true);
 		
 		String summary = binder == null ? null : binder.getSummary();
-		summaryEl = uifactory.addTextAreaElement("summary", "summary", 4096, 4, 60, false, summary, formLayout);
+		summaryEl = uifactory.addRichTextElementForStringDataMinimalistic("summary", "summary", summary, 8, 60, formLayout, getWindowControl());
+		summaryEl.setElementCssClass("o_sel_pf_edit_binder_summary");
 		summaryEl.setPlaceholderKey("summary.placeholder", null);
+		summaryEl.getEditorConfiguration().setPathInStatusBar(false);
 		
 		fileUpload = uifactory.addFileElement(getWindowControl(), "file", "fileupload",formLayout);			
 		fileUpload.setPreview(ureq.getUserSession(), true);
@@ -197,6 +207,9 @@ public class BinderMetadataEditController extends FormBasicController {
 				imagePath = portfolioService.addPosterImageForBinder(fileUpload.getUploadFile(), fileUpload.getUploadFileName());
 			}
 			binder = portfolioService.createNewBinder(title, summary, imagePath, getIdentity());
+			
+			ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrap(binder));
+			ThreadLocalUserActivityLogger.log(PortfolioLoggingAction.PORTFOLIO_BINDER_CREATED, getClass());
 		} else {
 			binder = portfolioService.getBinderByKey(binder.getKey());
 			if(fileUpload.getUploadFile() != null) {

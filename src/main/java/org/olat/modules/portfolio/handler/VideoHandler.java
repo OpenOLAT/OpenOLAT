@@ -35,6 +35,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.util.CSSHelper;
 import org.olat.core.id.Identity;
+import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.vfs.VFSContainer;
@@ -43,14 +44,18 @@ import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.modules.portfolio.Media;
 import org.olat.modules.portfolio.MediaInformations;
 import org.olat.modules.portfolio.MediaLight;
+import org.olat.modules.portfolio.PortfolioLoggingAction;
 import org.olat.modules.portfolio.manager.MediaDAO;
 import org.olat.modules.portfolio.manager.PortfolioFileStorage;
 import org.olat.modules.portfolio.model.MediaPart;
+import org.olat.modules.portfolio.ui.editor.InteractiveAddPageElementHandler;
 import org.olat.modules.portfolio.ui.editor.PageElement;
+import org.olat.modules.portfolio.ui.editor.PageElementAddController;
 import org.olat.modules.portfolio.ui.media.CollectVideoMediaController;
 import org.olat.modules.portfolio.ui.media.UploadMedia;
 import org.olat.modules.portfolio.ui.media.VideoMediaController;
 import org.olat.portfolio.model.artefacts.AbstractArtefact;
+import org.olat.util.logging.activity.LoggingResourceable;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -61,7 +66,7 @@ import org.springframework.stereotype.Service;
  *
  */
 @Service
-public class VideoHandler extends AbstractMediaHandler {
+public class VideoHandler extends AbstractMediaHandler implements InteractiveAddPageElementHandler {
 	
 	public static final String VIDEO_TYPE = "video";
 	public static final Set<String> mimeTypes = new HashSet<>();
@@ -82,7 +87,7 @@ public class VideoHandler extends AbstractMediaHandler {
 	
 	@Override
 	public String getIconCssClass() {
-		return "o_filetype_video";
+		return "o_icon_video";
 	}
 
 	@Override
@@ -96,7 +101,7 @@ public class VideoHandler extends AbstractMediaHandler {
 		if (filename != null){
 			return CSSHelper.createFiletypeIconCssClassFor(filename);
 		}
-		return "o_filetype_video";
+		return "o_icon_video";
 	}
 
 	@Override
@@ -144,6 +149,10 @@ public class VideoHandler extends AbstractMediaHandler {
 	
 	public Media createMedia(String title, String description, File file, String filename, String businessPath, Identity author) {
 		Media media = mediaDao.createMedia(title, description, filename, VIDEO_TYPE, businessPath, null, 60, author);
+		
+		ThreadLocalUserActivityLogger.log(PortfolioLoggingAction.PORTFOLIO_MEDIA_ADDED, getClass(),
+				LoggingResourceable.wrap(media));
+		
 		File mediaDir = fileStorage.generateMediaSubDirectory(media);
 		File mediaFile = new File(mediaDir, filename);
 		FileUtils.copyFileToFile(file, mediaFile, false);
@@ -174,6 +183,7 @@ public class VideoHandler extends AbstractMediaHandler {
 		File mediaFile = new File(mediaDir, media.getRootFilename());
 		ImageComponent imageCmp = new ImageComponent(ureq.getUserSession(), "video_" + idGenerator.incrementAndGet());
 		imageCmp.setMedia(mediaFile);
+		imageCmp.setMaxWithAndHeightToFitWithin(800, 600);
 		return imageCmp;
 	}
 
@@ -187,8 +197,8 @@ public class VideoHandler extends AbstractMediaHandler {
 		return new CollectVideoMediaController(ureq, wControl, media);
 	}
 
-	/*@Override
+	@Override
 	public PageElementAddController getAddPageElementController(UserRequest ureq, WindowControl wControl) {
 		return new CollectVideoMediaController(ureq, wControl);
-	}*/
+	}
 }

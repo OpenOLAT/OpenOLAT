@@ -220,7 +220,7 @@ public class IQEditForm extends FormBasicController {
 		}
 
 		//<OLATCE-982>
-		Boolean confAllowShowSolution = (Boolean) modConfig.get(IQEditController.CONFIG_KEY_ALLOW_SHOW_SOLUTION);
+		Boolean confAllowShowSolution = modConfig.getBooleanEntry(IQEditController.CONFIG_KEY_ALLOW_SHOW_SOLUTION);
 		String[] allowShowSolution=new String[]{ALLOW};
 		String[] valuesShowSolution = new String[]{""};
 		//Surveys do not have a solution
@@ -235,7 +235,7 @@ public class IQEditForm extends FormBasicController {
 		}
 		//</OLATCE-982>
 		//<OLATCE-2009>
-		Boolean confAllowSuspension = (Boolean) modConfig.get(IQEditController.CONFIG_KEY_ALLOW_SUSPENSION_ALLOWED);
+		Boolean confAllowSuspension = modConfig.getBooleanEntry(IQEditController.CONFIG_KEY_ALLOW_SUSPENSION_ALLOWED);
 		String[] allowSuspension = new String[] { ALLOW };
 		String[] valuesSuspesion = new String[] { "" };
 		allowSuspensionBox = uifactory.addCheckboxesHorizontal("allowSuspension", "qti.form.allowSuspension", formLayout, allowSuspension,
@@ -299,7 +299,7 @@ public class IQEditForm extends FormBasicController {
 		String configuredSummary = (String) modConfig.get(IQEditController.CONFIG_KEY_SUMMARY);
 		boolean noSummary = configuredSummary != null && configuredSummary.equals(AssessmentInstance.QMD_ENTRY_SUMMARY_NONE) ? true : false;
 
-		Boolean showResultOnHomePage = (Boolean) modConfig.get(IQEditController.CONFIG_KEY_RESULT_ON_HOME_PAGE);
+		Boolean showResultOnHomePage = modConfig.getBooleanEntry(IQEditController.CONFIG_KEY_RESULT_ON_HOME_PAGE);
 		boolean confEnableShowResultOnHomePage = (showResultOnHomePage != null) ? showResultOnHomePage.booleanValue() : false;
 		confEnableShowResultOnHomePage = !noSummary && confEnableShowResultOnHomePage;
 		showResultsOnHomePage = uifactory.addCheckboxesVertical("qti_enableResultsOnHomePage", "qti.form.results.onhomepage", formLayout, new String[] { "xx" },
@@ -308,7 +308,7 @@ public class IQEditForm extends FormBasicController {
 		showResultsOnHomePage.addActionListener(FormEvent.ONCLICK);
 		showResultsOnHomePage.setVisible(!isSurvey);
 
-		Boolean showResultsActive = (Boolean) modConfig.get(IQEditController.CONFIG_KEY_DATE_DEPENDENT_RESULTS);
+		Boolean showResultsActive = modConfig.getBooleanEntry(IQEditController.CONFIG_KEY_DATE_DEPENDENT_RESULTS);
 		boolean showResultsDateDependent = false; // default false
 		if (showResultsActive != null) {
 			showResultsDateDependent = showResultsActive.booleanValue();

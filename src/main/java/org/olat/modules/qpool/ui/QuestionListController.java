@@ -52,6 +52,7 @@ import org.olat.core.id.Identity;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.group.BusinessGroup;
 import org.olat.group.model.BusinessGroupSelectionEvent;
@@ -461,7 +462,7 @@ public class QuestionListController extends AbstractItemListController implement
 				cleanUp();
 				
 				EntryChangedEvent addEvent = (EntryChangedEvent)event;
-				Long repoEntryKey = addEvent.getChangedEntryKey();
+				Long repoEntryKey = addEvent.getRepositoryEntryKey();
 				doExportToRepositoryEntry(ureq, repoEntryKey);
 			} else if(event == Event.CANCELLED_EVENT) {
 				cmc.deactivate();
@@ -808,13 +809,25 @@ public class QuestionListController extends AbstractItemListController implement
 	}
 	
 	private void doConfirmDelete(UserRequest ureq, List<QuestionItemShort> items) {
-		confirmDeleteBox = activateYesNoDialog(ureq, null, translate("confirm.delete"), confirmDeleteBox);
+		StringBuilder sb = new StringBuilder();
+		for(QuestionItemShort item:items) {
+			if(sb.length() > 0) sb.append(", ");
+			sb.append(StringHelper.escapeHtml(item.getTitle()));
+		}
+		
+		String msg;
+		if(items.size() > 1) {
+			msg = translate("confirm.delete.plural", sb.toString());
+		} else {
+			msg = translate("confirm.delete", sb.toString());
+		}
+		confirmDeleteBox = activateYesNoDialog(ureq, null, msg, confirmDeleteBox);
 		confirmDeleteBox.setUserObject(items);
 	}
 	
 	private void doDelete(List<QuestionItemShort> items) {
 		qpoolService.deleteItems(items);
-		getItemsTable().reset();
+		getItemsTable().reset(true, true, true);
 		showInfo("item.deleted");
 	}
 	

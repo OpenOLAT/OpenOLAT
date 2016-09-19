@@ -157,6 +157,10 @@ public class TinyConfig {
 		return new TinyConfig(plugins, new String[0], null);
 	}
 	
+	public TinyConfig disableTinyMedia() {
+		return disableFeature("media");
+	}
+	
 	/**
 	 * Remove media + olatmovie
 	 * @return

@@ -50,7 +50,7 @@ public class AssessmentServiceImpl implements AssessmentService {
 	@Override
 	public AssessmentEntry createAssessmentEntry(Identity assessedIdentity, String anonymousIdentifier,
 			RepositoryEntry entry, String subIdent, RepositoryEntry referenceEntry, Float score, Boolean passed) {
-		return assessmentEntryDao.createCourseNodeAssessment(assessedIdentity, anonymousIdentifier, entry, subIdent, referenceEntry, score, passed);
+		return assessmentEntryDao.createAssessmentEntry(assessedIdentity, anonymousIdentifier, entry, subIdent, referenceEntry, score, passed);
 	}
 
 	@Override
@@ -59,7 +59,7 @@ public class AssessmentServiceImpl implements AssessmentService {
 		
 		AssessmentEntry assessmentEntry = assessmentEntryDao.loadAssessmentEntry(assessedIdentity, anonymousIdentifier, entry, subIdent);
 		if(assessmentEntry == null) {
-			assessmentEntry = assessmentEntryDao.createCourseNodeAssessment(assessedIdentity, anonymousIdentifier, entry, subIdent, referenceEntry);
+			assessmentEntry = assessmentEntryDao.createAssessmentEntry(assessedIdentity, anonymousIdentifier, entry, subIdent, referenceEntry);
 			dbInstance.commit();
 		}
 		return assessmentEntry;
@@ -102,7 +102,7 @@ public class AssessmentServiceImpl implements AssessmentService {
 
 	@Override
 	public List<AssessmentEntry> loadAssessmentEntries(BusinessGroup assessedGroup, RepositoryEntry entry, String subIdent) {
-		return assessmentEntryDao.loadAssessmentEntryByBusinessGroup(assessedGroup.getBaseGroup(), entry, subIdent);
+		return assessmentEntryDao.loadAssessmentEntryByGroup(assessedGroup.getBaseGroup(), entry, subIdent);
 	}
 
 	@Override

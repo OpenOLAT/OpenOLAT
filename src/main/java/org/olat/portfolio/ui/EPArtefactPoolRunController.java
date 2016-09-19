@@ -204,7 +204,7 @@ public class EPArtefactPoolRunController extends BasicController implements Acti
 			removeAsListenerAndDispose(artCtrl);
 		}
 
-		if (userPrefsMode != null && userPrefsMode.equals(EPViewModeController.VIEWMODE_TABLE)){
+		if (importV2  || (userPrefsMode != null && userPrefsMode.equals(EPViewModeController.VIEWMODE_TABLE))){
 			EPSecurityCallback secCallback = new EPSecurityCallbackImpl(true, true);
 			artCtrl = new EPMultipleArtefactsAsTableController(ureq, getWindowControl(), artefacts, null, artefactChooseMode, importV2, secCallback);
 			viewModeCtrl.selectTable();

@@ -21,6 +21,7 @@ package org.olat.ims.qti21.model.xml;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.xml.parsers.DocumentBuilder;
@@ -180,25 +181,194 @@ public class AssessmentHtmlBuilder {
 	 */
 	private static class HtmlToDomBuilderHandler extends SimpleDomBuilderHandler {
 		
+		private boolean video = false;
+		private StringBuilder scriptBuffer = new StringBuilder();
+		
 		public HtmlToDomBuilderHandler(Document document) {
 			super(document);
 		}
 
 		@Override
 		public void startElement(String uri, String localName, String qName, Attributes attributes) {
+			if(video) return;
+			
 			if("textentryinteraction".equals(localName)) {
 				localName = qName = "textEntryInteraction";
-				attributes = new AttributesDelegate(attributes);
+
+				AttributesImpl attributesCleaned = new AttributesImpl("");
+				for(int i=0; i<attributes.getLength(); i++) {
+					String name = attributes.getLocalName(i);
+					if(!"openolattype".equalsIgnoreCase(name)) {
+						String value = attributes.getValue(i);
+						attributesCleaned.addAttribute(name, value);
+					}
+				}
+
+				attributes = new AttributesDelegate(attributesCleaned);
+			} else if("span".equals(localName)) {
+				String cssClass = attributes.getValue("class");
+				if(cssClass != null && "olatFlashMovieViewer".equals(cssClass)) {
+					video = true;
+					return;
+				}
 			}
 			super.startElement(uri, localName, qName, attributes);
 		}
 
 		@Override
+		public void characters(char[] ch, int start, int length) {
+			if(video) {
+				scriptBuffer.append(new String(ch, start, length));
+			} else {
+				super.characters(ch, start, length);
+			}
+		}
+
+		@Override
 		public void endElement(String uri, String localName, String qName) {
+			if(video) {
+				if("span".equals(localName)) {
+					String content = scriptBuffer.toString();
+					String startScript = "BPlayer.insertPlayer(";
+					int start = content.indexOf(startScript);
+					if(start >= 0) {
+						int end = content.indexOf(")", start);
+						String parameters = content.substring(start + startScript.length(), end);
+						translateToObject(uri, parameters);
+					}
+					video = false;
+				}
+				return;
+			}
+			
 			if("textentryinteraction".equals(localName)) {
 				localName = qName = "textEntryInteraction";
-			}
+			} 
 			super.endElement(uri, localName, qName);
+		}
+		
+		private void translateToObject(String uri, String parameters) {
+			String[] array = parameters.split(",");
+			
+			String data = array[0].replace("\"", "");
+			String id = array[1].replace("\"", "");
+			String width = array[2];
+			String height = array[3];
+			String type = array[6].replace("\"", "");
+			String ooData = parameters.replace("\"", "'");
+
+			AttributesImpl attributes = new AttributesImpl(uri);
+			attributes.addAttribute("data", data);
+			attributes.addAttribute("id", id);
+			attributes.addAttribute("class", "olatFlashMovieViewer");
+			attributes.addAttribute("width", width);
+			attributes.addAttribute("height", height);
+			attributes.addAttribute("type", type);
+			attributes.addAttribute("data-oo-movie", ooData);
+
+			super.startElement(uri, "object", "object", attributes);
+			super.endElement(uri, "object", "object");
+		}
+	}
+	
+	private static class AttributeImpl {
+		private String name;
+		private String value;
+		
+		public AttributeImpl(String name, String value) {
+			this.name = name;
+			this.value = value;
+		}
+		
+		public String getName() {
+			return name;
+		}
+		
+		public String getValue() {
+			return value;
+		}
+	}
+	
+	/**
+	 * This implementation is specifically coded for the SimpleDomBuilderHandler
+	 * and only for this handler. It implements only the needed methods by this
+	 * handler implementation.
+	 * 
+	 * Initial date: 07.09.2016<br>
+	 * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+	 *
+	 */
+	private static class AttributesImpl implements Attributes {
+		
+		private String attributesUri;
+		private List<AttributeImpl> attributes = new ArrayList<>();
+		
+		public AttributesImpl(String uri) {
+			this.attributesUri = uri;
+		}
+		
+		public void addAttribute(String name, String value) {
+			attributes.add(new AttributeImpl(name, value));
+		}
+
+		@Override
+		public int getLength() {
+			return attributes.size();
+		}
+
+		@Override
+		public String getURI(int index) {
+			return attributesUri;
+		}
+
+		@Override
+		public String getLocalName(int index) {
+			return attributes.get(index).getName();
+		}
+
+		@Override
+		public String getQName(int index) {
+			return attributes.get(index).getName();
+		}
+
+		@Override
+		public String getType(int index) {
+			return null;
+		}
+
+		@Override
+		public String getValue(int index) {
+			return attributes.get(index).getValue();
+		}
+
+		@Override
+		public int getIndex(String uri, String localName) {
+			return 0;
+		}
+
+		@Override
+		public int getIndex(String qName) {
+			return 0;
+		}
+
+		@Override
+		public String getType(String uri, String localName) {
+			return null;
+		}
+
+		@Override
+		public String getType(String qName) {
+			return null;
+		}
+
+		@Override
+		public String getValue(String uri, String localName) {
+			return null;
+		}
+
+		@Override
+		public String getValue(String qName) {
+			return null;
 		}
 	}
 	

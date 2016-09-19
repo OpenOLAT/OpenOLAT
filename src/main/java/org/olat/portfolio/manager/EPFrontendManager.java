@@ -126,6 +126,14 @@ public class EPFrontendManager implements UserDataDeletable, DeletableGroupData 
 	@Autowired
 	private AssessmentService assessmentService;
 	
+	/**
+	 * Check if a user has any kind of EP v1 resources: artefacts, a owned map or a shared map
+	 * @param identity
+	 * @return true: yes, has some EP v1 stuff; false: has no EP v1 resources
+	 */
+	public boolean hasMapOrArtefact(Identity identity) {
+		return artefactManager.hasArtefactPool(identity) || structureManager.hasMap(identity) || structureManager.hasStructureElementsFromOthersWithoutPublic(identity);
+	}
 	
 	/**
 	 * Create and persist an artefact of the given type

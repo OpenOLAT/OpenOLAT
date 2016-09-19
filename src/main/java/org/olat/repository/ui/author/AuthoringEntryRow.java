@@ -262,4 +262,21 @@ public class AuthoringEntryRow implements RepositoryEntryRef, RepositoryEntryLig
 	public void setToolsLink(FormLink toolsLink) {
 		this.toolsLink = toolsLink;
 	}
+	
+	@Override
+	public int hashCode() {
+		return key == null ? -79224867 : key.hashCode();
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if(obj == this) {
+			return true;
+		}
+		if(obj instanceof AuthoringEntryRow) {
+			AuthoringEntryRow row = (AuthoringEntryRow)obj;
+			return key != null && key.equals(row.getKey());
+		}
+		return super.equals(obj);
+	}
 }

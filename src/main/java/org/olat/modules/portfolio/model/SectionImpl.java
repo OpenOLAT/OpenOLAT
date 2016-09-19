@@ -45,6 +45,7 @@ import org.olat.core.id.CreateInfo;
 import org.olat.core.id.ModifiedInfo;
 import org.olat.core.id.Persistable;
 import org.olat.core.util.StringHelper;
+import org.olat.modules.portfolio.Assignment;
 import org.olat.modules.portfolio.Binder;
 import org.olat.modules.portfolio.Page;
 import org.olat.modules.portfolio.PortfolioElementType;
@@ -108,6 +109,11 @@ public class SectionImpl implements Persistable, ModifiedInfo, CreateInfo, Secti
 			orphanRemoval=true, cascade={CascadeType.REMOVE})
 	@OrderColumn(name="pos")
 	private List<Page> pages;
+	
+	@OneToMany(targetEntity=AssignmentImpl.class, mappedBy="section", fetch=FetchType.LAZY,
+			orphanRemoval=true, cascade={CascadeType.REMOVE})
+	@OrderColumn(name="pos")
+	private List<Assignment> assignments;
 	
 
 	@ManyToOne(targetEntity=SectionImpl.class,fetch=FetchType.LAZY,optional=true)
@@ -219,10 +225,12 @@ public class SectionImpl implements Persistable, ModifiedInfo, CreateInfo, Secti
 		this.endDate = endDate;
 	}
 
+	@Override
 	public boolean isOverrideBeginEndDates() {
 		return overrideBeginEndDates;
 	}
 
+	@Override
 	public void setOverrideBeginEndDates(boolean overrideBeginEndDates) {
 		this.overrideBeginEndDates = overrideBeginEndDates;
 	}
@@ -264,6 +272,18 @@ public class SectionImpl implements Persistable, ModifiedInfo, CreateInfo, Secti
 
 	public void setPages(List<Page> pages) {
 		this.pages = pages;
+	}
+
+	@Override
+	public List<Assignment> getAssignments() {
+		if(assignments == null) {
+			assignments = new ArrayList<>();
+		}
+		return assignments;
+	}
+
+	public void setAssignments(List<Assignment> assignments) {
+		this.assignments = assignments;
 	}
 
 	@Override

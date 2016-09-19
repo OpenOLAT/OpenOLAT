@@ -212,10 +212,6 @@ public class UserImpl implements Persistable, User {
 	private String genericSelectionProperty2;
 	@Column(name="u_genericselectionproperty3", nullable=true, insertable=true, updatable=true)
 	private String genericSelectionProperty3; // delete
-	@Column(name="u_genericselectionproperty4", nullable=true, insertable=true, updatable=true)
-	private String genericSelectionProperty4; // delete
-	@Column(name="u_genericselectionproperty5", nullable=true, insertable=true, updatable=true)
-	private String genericSelectionProperty5; // delete
 	
 	@Column(name="u_generictextproperty", nullable=true, insertable=true, updatable=true)
 	private String genericTextProperty;
@@ -244,21 +240,6 @@ public class UserImpl implements Persistable, User {
 	private String genericCheckboxProperty2; // delete
 	@Column(name="u_genericcheckboxproperty3", nullable=true, insertable=true, updatable=true)
 	private String genericCheckboxProperty3; // delete
-	@Column(name="u_genericcheckboxproperty4", nullable=true, insertable=true, updatable=true)
-	private String genericCheckboxProperty4; // delete
-	@Column(name="u_genericcheckboxproperty5", nullable=true, insertable=true, updatable=true)
-	private String genericCheckboxProperty5; // delete
-	
-	@Column(name="u_genericyesnoproperty", nullable=true, insertable=true, updatable=true)
-	private String genericYesNoProperty; // delete
-	@Column(name="u_genericyesnoproperty2", nullable=true, insertable=true, updatable=true)
-	private String genericYesNoProperty2; // delete
-	@Column(name="u_genericyesnoproperty3", nullable=true, insertable=true, updatable=true)
-	private String genericYesNoProperty3; // delete
-	@Column(name="u_genericyesnoproperty4", nullable=true, insertable=true, updatable=true)
-	private String genericYesNoProperty4; // delete
-	@Column(name="u_genericyesnoproperty5", nullable=true, insertable=true, updatable=true)
-	private String genericYesNoProperty5; // delete
 	
 	@Column(name="u_edupersonaffiliation", nullable=true, insertable=true, updatable=true)
 	private String eduPersonAffiliation;
@@ -412,8 +393,6 @@ public class UserImpl implements Persistable, User {
 			case "genericSelectionProperty": return genericSelectionProperty;
 			case "genericSelectionProperty2": return genericSelectionProperty2;
 			case "genericSelectionProperty3": return genericSelectionProperty3;
-			case "genericSelectionProperty4": return genericSelectionProperty4;
-			case "genericSelectionProperty5": return genericSelectionProperty5;
 			case "genericTextProperty": return genericTextProperty;
 			case "genericTextProperty2": return genericTextProperty2;
 			case "genericTextProperty3": return genericTextProperty3;
@@ -426,13 +405,6 @@ public class UserImpl implements Persistable, User {
 			case "genericCheckboxProperty": return genericCheckboxProperty;
 			case "genericCheckboxProperty2": return genericCheckboxProperty2;
 			case "genericCheckboxProperty3": return genericCheckboxProperty3;
-			case "genericCheckboxProperty4": return genericCheckboxProperty4;
-			case "genericCheckboxProperty5": return genericCheckboxProperty5;
-			case "genericYesNoProperty": return genericYesNoProperty;
-			case "genericYesNoProperty2": return genericYesNoProperty2;
-			case "genericYesNoProperty3": return genericYesNoProperty3;
-			case "genericYesNoProperty4": return genericYesNoProperty4;
-			case "genericYesNoProperty5": return genericYesNoProperty5;
 			case "rank": return rank;
 			case "degree": return degree;
 			case "position": return position;
@@ -496,8 +468,6 @@ public class UserImpl implements Persistable, User {
 			case "genericSelectionProperty": genericSelectionProperty = value; break;
 			case "genericSelectionProperty2": genericSelectionProperty2 = value; break;
 			case "genericSelectionProperty3": genericSelectionProperty3 = value; break;
-			case "genericSelectionProperty4": genericSelectionProperty4 = value; break;
-			case "genericSelectionProperty5": genericSelectionProperty5 = value; break;
 			case "genericTextProperty": genericTextProperty = value; break;
 			case "genericTextProperty2": genericTextProperty2 = value; break;
 			case "genericTextProperty3": genericTextProperty3 = value; break;
@@ -510,13 +480,6 @@ public class UserImpl implements Persistable, User {
 			case "genericCheckboxProperty": genericCheckboxProperty = value; break;
 			case "genericCheckboxProperty2": genericCheckboxProperty2 = value; break;
 			case "genericCheckboxProperty3": genericCheckboxProperty3 = value; break;
-			case "genericCheckboxProperty4": genericCheckboxProperty4 = value; break;
-			case "genericCheckboxProperty5": genericCheckboxProperty5 = value; break;
-			case "genericYesNoProperty": genericYesNoProperty = value; break;
-			case "genericYesNoProperty2": genericYesNoProperty2 = value; break;
-			case "genericYesNoProperty3": genericYesNoProperty3 = value; break;
-			case "genericYesNoProperty4": genericYesNoProperty4 = value; break;
-			case "genericYesNoProperty5": genericYesNoProperty5 = value; break;
 			case "rank": rank = value; break;
 			case "degree": degree = value; break;
 			case "position": position = value; break;

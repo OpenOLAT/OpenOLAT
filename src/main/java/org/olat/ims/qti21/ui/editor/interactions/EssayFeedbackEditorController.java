@@ -73,7 +73,7 @@ public class EssayFeedbackEditorController extends FormBasicController {
 		hintTitleEl.setUserObject(hint);
 		hintTitleEl.setEnabled(!restrictedEdit);
 		String hintText = hint == null ? "" : hint.getText();
-		hintTextEl = uifactory.addRichTextElementForStringDataCompact("hintText", "form.imd.hint.text", hintText, 8, -1, null,
+		hintTextEl = uifactory.addRichTextElementForQTI21("hintText", "form.imd.hint.text", hintText, 8, -1, null,
 				formLayout, ureq.getUserSession(), getWindowControl());
 		hintTextEl.setEnabled(!restrictedEdit);
 		RichTextConfiguration hintConfig = hintTextEl.getEditorConfiguration();
@@ -86,7 +86,7 @@ public class EssayFeedbackEditorController extends FormBasicController {
 		feedbackTitleEl.setUserObject(answeredFeedback);
 		feedbackTitleEl.setEnabled(!restrictedEdit);
 		String correctText = answeredFeedback == null ? "" : answeredFeedback.getText();
-		feedbackTextEl = uifactory.addRichTextElementForStringDataCompact("answeredText", "form.imd.answered.text", correctText, 8, -1, null,
+		feedbackTextEl = uifactory.addRichTextElementForQTI21("answeredText", "form.imd.answered.text", correctText, 8, -1, null,
 				formLayout, ureq.getUserSession(), getWindowControl());
 		feedbackTextEl.setEnabled(!restrictedEdit);
 		RichTextConfiguration richTextConfig = feedbackTextEl.getEditorConfiguration();
@@ -98,7 +98,7 @@ public class EssayFeedbackEditorController extends FormBasicController {
 		feedbackEmptyTitleEl.setUserObject(emptyFeedback);
 		feedbackEmptyTitleEl.setEnabled(!restrictedEdit);
 		String emptyText = emptyFeedback == null ? "" : emptyFeedback.getText();
-		feedbackEmptyTextEl = uifactory.addRichTextElementForStringDataCompact("emptyText", "form.imd.empty.text", emptyText, 8, -1, null,
+		feedbackEmptyTextEl = uifactory.addRichTextElementForQTI21("emptyText", "form.imd.empty.text", emptyText, 8, -1, null,
 				formLayout, ureq.getUserSession(), getWindowControl());
 		feedbackEmptyTextEl.setEnabled(!restrictedEdit);
 		RichTextConfiguration emptyTextConfig = feedbackEmptyTextEl.getEditorConfiguration();

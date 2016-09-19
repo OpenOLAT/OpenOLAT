@@ -106,7 +106,7 @@ public class DefaultRepositoryEntryDataSource implements FlexiTableDataSourceDel
 	public final ResultInfos<RepositoryEntryRow> getRows(String query, List<FlexiTableFilter> filters, 
 			List<String> condQueries, int firstResult, int maxResults, SortKey... orderBy) {
 		
-		if(filters != null && filters.size() > 0) {
+		if(filters != null && filters.size() > 0 && filters.get(0) != null) {
 			String filter = filters.get(0).getFilter();
 			if(StringHelper.containsNonWhitespace(filter)) {
 				searchParams.setFilters(Collections.singletonList(Filter.valueOf(filter)));

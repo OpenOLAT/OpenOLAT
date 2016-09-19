@@ -40,6 +40,7 @@ import org.olat.modules.portfolio.Assignment;
 import org.olat.modules.portfolio.AssignmentStatus;
 import org.olat.modules.portfolio.Binder;
 import org.olat.modules.portfolio.BinderRef;
+import org.olat.modules.portfolio.Page;
 import org.olat.modules.portfolio.PortfolioRoles;
 import org.olat.modules.portfolio.Section;
 import org.olat.modules.portfolio.SectionRef;
@@ -48,6 +49,7 @@ import org.olat.modules.portfolio.model.AccessRights;
 import org.olat.modules.portfolio.model.AssignmentImpl;
 import org.olat.modules.portfolio.model.BinderImpl;
 import org.olat.modules.portfolio.model.BinderStatistics;
+import org.olat.modules.portfolio.model.PageImpl;
 import org.olat.modules.portfolio.model.SectionImpl;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
@@ -67,9 +69,13 @@ public class BinderDAO {
 	@Autowired
 	private DB dbInstance;
 	@Autowired
+	private PageDAO pageDao;
+	@Autowired
 	private GroupDAO groupDao;
 	@Autowired
 	private AssignmentDAO assignmentDao;
+	@Autowired
+	private AssessmentSectionDAO assessmentSectionDao;
 	
 	public BinderImpl createAndPersist(String title, String summary, String imagePath, RepositoryEntry entry) {
 		BinderImpl binder = new BinderImpl();
@@ -117,8 +123,15 @@ public class BinderDAO {
 	
 	public Binder syncWithTemplate(BinderImpl template, BinderImpl binder, AtomicBoolean changes) {
 		List<Section> templateSections = template.getSections();
+		Map<Assignment,Section> assignmentTemplateToSectionTemplatesMap = new HashMap<>();
+		for(Section templateSection:templateSections) {
+			for(Assignment assignment:templateSection.getAssignments()) {
+				assignmentTemplateToSectionTemplatesMap.put(assignment, templateSection);
+			}
+		}
+
 		List<Section> currentSections = binder.getSections();
-		
+		List<Section> leadingSections = new ArrayList<>(binder.getSections());
 		Map<Section,Section> templateToSectionsMap = new HashMap<>();
 		for(Section currentSection:currentSections) {
 			Section templateRef = currentSection.getTemplateReference();
@@ -129,31 +142,43 @@ public class BinderDAO {
 		
 		currentSections.clear();
 		for(int i=0; i<templateSections.size(); i++) {
-			Section templateSection = templateSections.get(i);
-			Section currentSection = templateToSectionsMap.remove(templateSection);
+			SectionImpl templateSection = (SectionImpl)templateSections.get(i);
+			SectionImpl currentSection = (SectionImpl)templateToSectionsMap.get(templateSection);
+			
 			if(currentSection != null) {
+				leadingSections.remove(currentSection);
+				
 				currentSections.add(currentSection);
-				
-				//sync meta-data of section
-				currentSection.setTitle(templateSection.getTitle());
-				currentSection.setDescription(templateSection.getDescription());
-				if(!currentSection.isOverrideBeginEndDates()) {
-					currentSection.setBeginDate(templateSection.getBeginDate());
-					currentSection.setEndDate(templateSection.getEndDate());
-				}
-				currentSection = dbInstance.getCurrentEntityManager().merge(currentSection);
-				
-				syncAssignments(templateSection, currentSection);
+				syncSectionMetadata(templateSection, currentSection);
+				templateToSectionsMap.put(templateSection, currentSection);
 			} else {
-				Section section = createInternalSection(binder, templateSection);
+				SectionImpl section = createInternalSection(binder, templateSection);
 				currentSections.add(section);
 				dbInstance.getCurrentEntityManager().persist(section);
-				syncAssignments(templateSection, section);
+				templateToSectionsMap.put(templateSection, section);
 			}
 		}
+		currentSections.addAll(leadingSections);
 		
-		for(Section leadingSection:templateToSectionsMap.values()) {
-			currentSections.add(leadingSection);
+		//sync moving assignments
+		for(int i=0; i<templateSections.size(); i++) {
+			SectionImpl templateSection = (SectionImpl)templateSections.get(i);
+			SectionImpl currentSection = (SectionImpl)templateToSectionsMap.get(templateSection);
+			syncMovingAssignments(templateSection, currentSection, templateToSectionsMap);
+		}
+		
+		//sync assignments
+		for(int i=0; i<templateSections.size(); i++) {
+			SectionImpl templateSection = (SectionImpl)templateSections.get(i);
+			SectionImpl currentSection = (SectionImpl)templateToSectionsMap.get(templateSection);
+			syncAssignments(templateSection, currentSection);
+		}
+
+		//update all sections
+		for(int i=0; i<templateSections.size(); i++) {
+			SectionImpl templateSection = (SectionImpl)templateSections.get(i);
+			SectionImpl currentSection = (SectionImpl)templateToSectionsMap.get(templateSection);
+			currentSection = dbInstance.getCurrentEntityManager().merge(currentSection);
 		}
 
 		binder = dbInstance.getCurrentEntityManager().merge(binder);
@@ -161,22 +186,69 @@ public class BinderDAO {
 		return binder;
 	}
 	
-	private void syncAssignments(Section templateSection, Section currentSection) {
-		List<Assignment> templateAssignments = new ArrayList<>(assignmentDao.loadAssignments(templateSection));
-		
-		List<Assignment> currentAssignments = assignmentDao.loadAssignments(currentSection);
+	private void syncSectionMetadata(Section templateSection, Section currentSection) {
+		currentSection.setTitle(templateSection.getTitle());
+		currentSection.setDescription(templateSection.getDescription());
+		if(!currentSection.isOverrideBeginEndDates()) {
+			currentSection.setBeginDate(templateSection.getBeginDate());
+			currentSection.setEndDate(templateSection.getEndDate());
+		}
+	}
+	
+	private void syncMovingAssignments(SectionImpl templateSection, SectionImpl currentSection, Map<Section,Section> templateToSectionsMap) {
+		List<Assignment> templateAssignments = new ArrayList<>(templateSection.getAssignments());
+		List<Assignment> currentAssignments = new ArrayList<>(currentSection.getAssignments());
 		for(Assignment currentAssignment:currentAssignments) {
 			Assignment refAssignment = currentAssignment.getTemplateReference();
-			if(!templateAssignments.remove(refAssignment)) {
-				currentAssignment.setAssignmentStatus(AssignmentStatus.deleted);
+			if(refAssignment != null
+					&& !templateAssignments.contains(refAssignment)
+					&& !refAssignment.getSection().equals(templateSection)
+					&& templateToSectionsMap.containsKey(refAssignment.getSection())) {
+					//really moved
+				templateAssignments.remove(refAssignment);
+				SectionImpl newSection = (SectionImpl)templateToSectionsMap.get(refAssignment.getSection());
+				syncMovedAssignment(currentSection, newSection, currentAssignment);
+			}
+		}
+	}
+	
+	private void syncMovedAssignment(SectionImpl currentSection, SectionImpl newSection, Assignment assignment) {
+		currentSection.getAssignments().size();
+		newSection.getAssignments().size();
+
+		currentSection.getAssignments().remove(assignment);
+		((AssignmentImpl)assignment).setSection(newSection);
+		assignment = dbInstance.getCurrentEntityManager().merge(assignment);
+		newSection.getAssignments().add(assignment);
+
+		Page page = assignment.getPage();
+		if(assignment != null) {
+			currentSection.getPages().remove(page);
+			newSection.getPages().add(page);
+			((PageImpl)page).setSection(newSection);
+			dbInstance.getCurrentEntityManager().merge(page);
+		}
+	}
+	
+	private void syncAssignments(SectionImpl templateSection, SectionImpl currentSection) {
+		List<Assignment> templateAssignments = new ArrayList<>(templateSection.getAssignments());
+		
+		List<Assignment> currentAssignments = new ArrayList<>(currentSection.getAssignments());
+		for(Assignment currentAssignment:currentAssignments) {
+			Assignment refAssignment = currentAssignment.getTemplateReference();
+			if(refAssignment == null) {
+				if(currentAssignment.getAssignmentStatus() != AssignmentStatus.deleted) {
+					currentAssignment.setAssignmentStatus(AssignmentStatus.deleted);
+					currentAssignment = dbInstance.getCurrentEntityManager().merge(currentAssignment);
+				}
+			} else if(!templateAssignments.contains(refAssignment)) {
+				//this case is normally not possible
+				//if it happens, don't do anything, let the data safe
 			} else {
+				templateAssignments.remove(refAssignment);
+
 				AssignmentImpl currentImpl = (AssignmentImpl)currentAssignment;
-				currentImpl.setTitle(refAssignment.getTitle());
-				currentImpl.setSummary(refAssignment.getSummary());
-				currentImpl.setContent(refAssignment.getContent());
-				currentImpl.setStorage(refAssignment.getStorage());
-				currentImpl.setType(refAssignment.getAssignmentType().name());
-				currentAssignment = dbInstance.getCurrentEntityManager().merge(currentImpl);
+				currentAssignment = syncAssignment(refAssignment, currentImpl);
 			}
 		}
 		
@@ -185,7 +257,24 @@ public class BinderDAO {
 		}
 	}
 	
-	private Section createInternalSection(Binder binder, Section templateSection) {
+	private AssignmentImpl syncAssignment(Assignment refAssignment, AssignmentImpl currentAssignment) {
+		if(StringHelper.isSame(currentAssignment.getTitle(), refAssignment.getTitle())
+				&& StringHelper.isSame(currentAssignment.getSummary(), refAssignment.getSummary())
+				&& StringHelper.isSame(currentAssignment.getContent(), refAssignment.getContent())
+				&& StringHelper.isSame(currentAssignment.getStorage(), refAssignment.getStorage())
+				&& StringHelper.isSame(currentAssignment.getType(), refAssignment.getAssignmentType().name())) {
+			return currentAssignment;
+		}
+		
+		currentAssignment.setTitle(refAssignment.getTitle());
+		currentAssignment.setSummary(refAssignment.getSummary());
+		currentAssignment.setContent(refAssignment.getContent());
+		currentAssignment.setStorage(refAssignment.getStorage());
+		currentAssignment.setType(refAssignment.getAssignmentType().name());
+		return dbInstance.getCurrentEntityManager().merge(currentAssignment);
+	}
+	
+	private SectionImpl createInternalSection(Binder binder, Section templateSection) {
 		SectionImpl section = new SectionImpl();
 		section.setCreationDate(new Date());
 		section.setLastModified(section.getCreationDate());
@@ -241,19 +330,27 @@ public class BinderDAO {
 		//unlink template
 	}
 	
-	public int deleteBinderTemplate(Binder binder) {
-		String sectionQ = "delete from pfsection section where section.binder.key=:binderKey";
-		int sections = dbInstance.getCurrentEntityManager()
-				.createQuery(sectionQ)
-				.setParameter("binderKey", binder.getKey())
-				.executeUpdate();
+	public int deleteBinderTemplate(BinderImpl binder) {
+		List<Section> sections = new ArrayList<>(binder.getSections());
+		for(Section section:sections) {
+			binder = (BinderImpl)deleteSection(binder, section);
+		}
+		
+		dbInstance.getCurrentEntityManager().flush();
+		
+		//remove reference via template
+		String sb = "update pfbinder binder set binder.template=null where binder.template.key=:binderKey";
+		int rows = dbInstance.getCurrentEntityManager()
+			.createQuery(sb)
+			.setParameter("binderKey", binder.getKey())
+			.executeUpdate();
 
 		String binderQ = "delete from pfbinder binder where binder.key=:binderKey";
-		int binders = dbInstance.getCurrentEntityManager()
+		rows += dbInstance.getCurrentEntityManager()
 				.createQuery(binderQ)
 				.setParameter("binderKey", binder.getKey())
 				.executeUpdate();
-		return sections + binders;
+		return rows;
 	}
 	
 	/**
@@ -264,6 +361,7 @@ public class BinderDAO {
 	public List<BinderStatistics> searchOwnedBinders(IdentityRef owner) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select binder.key, binder.title, binder.imagePath, binder.lastModified, binder.status,")
+		  .append(" binderEntry.displayname,")
 		  .append(" (select count(section.key) from pfsection as section")
 		  .append("   where section.binder.key=binder.key")
 		  .append(" ) as numOfSections,")
@@ -276,6 +374,7 @@ public class BinderDAO {
 		  .append(" from pfbinder as binder")
 		  .append(" inner join binder.baseGroup as baseGroup")
 		  .append(" inner join baseGroup.members as membership")
+		  .append(" left join binder.entry binderEntry")
 		  .append(" where binder.olatResource is null and membership.identity.key=:identityKey and membership.role=:role");
 		
 		List<Object[]> objects = dbInstance.getCurrentEntityManager()
@@ -292,10 +391,13 @@ public class BinderDAO {
 			String imagePath = (String)object[pos++];
 			Date lastModified = (Date)object[pos++];
 			String status = (String)object[pos++];
+			String repoEntryName = (String)object[pos++];
+
 			int numOfSections = ((Number)object[pos++]).intValue();
 			int numOfPages = ((Number)object[pos++]).intValue();
 			int numOfComments = ((Number)object[pos++]).intValue();
-			rows.add(new BinderStatistics(key, title, imagePath, lastModified, numOfSections, numOfPages, status, numOfComments));
+			
+			rows.add(new BinderStatistics(key, title, imagePath, lastModified, numOfSections, numOfPages, status, repoEntryName, numOfComments));
 		}
 		return rows;
 	}
@@ -339,6 +441,32 @@ public class BinderDAO {
 			.setParameter("sectionKey", section.getKey())
 			.getResultList();
 		return binders == null || binders.isEmpty() ? null : binders.get(0);
+	}
+	
+	public Binder deleteSection(Binder binder, Section section) {
+		List<Page> pages = section.getPages();
+		//delete pages
+		for(Page page:pages) {
+			pageDao.deletePage(page);
+		}
+		
+		List<Assignment> assignments = new ArrayList<>(((SectionImpl)section).getAssignments());
+		for(Assignment assignment:assignments) {
+			assignmentDao.deleteAssignmentReference(assignment);
+		}
+		
+		assessmentSectionDao.deleteAssessmentSections(section);
+
+		//remove reference via template
+		String sb = "update pfsection section set section.templateReference=null where section.templateReference.key=:sectionKey";
+		dbInstance.getCurrentEntityManager()
+			.createQuery(sb)
+			.setParameter("sectionKey", section.getKey())
+			.executeUpdate();
+
+		((BinderImpl)binder).getSections().remove(section);
+		dbInstance.getCurrentEntityManager().remove(section);
+		return dbInstance.getCurrentEntityManager().merge(binder);
 	}
 	
 	public boolean isTemplateInUse(BinderRef template, RepositoryEntryRef entry, String subIdent) {
@@ -686,6 +814,29 @@ public class BinderDAO {
 			.createQuery(sb.toString(), Section.class)
 			.setParameter("binderKey", binder.getKey())
 			.getResultList();
+	}
+	
+	public Binder moveUpSection(BinderImpl binder, Section section) {
+		binder.getSections().size();
+		int index = binder.getSections().indexOf(section);
+		if(index > 0) {
+			Section reloadedPart = binder.getSections().remove(index);
+			binder.getSections().add(index - 1, reloadedPart);
+		} else if(index < 0) {
+			binder.getSections().add(0, section);
+		}
+		return dbInstance.getCurrentEntityManager().merge(binder);
+	}
+
+	public Binder moveDownSection(BinderImpl binder, Section section) {
+		binder.getSections().size();
+		int index = binder.getSections().indexOf(section);
+		if(index >= 0 && index + 1 < binder.getSections().size()) {
+			Section reloadedSection = binder.getSections().remove(index);
+			binder.getSections().add(index + 1, reloadedSection);
+			binder = dbInstance.getCurrentEntityManager().merge(binder);
+		}
+		return binder;
 	}
 	
 	/**

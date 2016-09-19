@@ -56,10 +56,12 @@ import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.BusinessControl;
+import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.logging.AssertException;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
+import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.Util;
 import org.olat.core.util.ZipUtil;
@@ -100,6 +102,7 @@ import org.olat.modules.portfolio.Binder;
 import org.olat.modules.portfolio.BinderConfiguration;
 import org.olat.modules.portfolio.BinderSecurityCallback;
 import org.olat.modules.portfolio.BinderSecurityCallbackFactory;
+import org.olat.modules.portfolio.PortfolioLoggingAction;
 import org.olat.modules.portfolio.PortfolioService;
 import org.olat.modules.portfolio.PortfolioV2Module;
 import org.olat.modules.portfolio.ui.BinderController;
@@ -117,6 +120,7 @@ import org.olat.properties.NarrowedPropertyManager;
 import org.olat.properties.Property;
 import org.olat.properties.PropertyManager;
 import org.olat.repository.RepositoryEntry;
+import org.olat.util.logging.activity.LoggingResourceable;
 
 /**
  * Description:<BR>
@@ -517,7 +521,13 @@ public class CollaborationTools implements Serializable {
 							Binder binder = portfolioService.createNewBinder(group.getName(), group.getDescription(), null, null);
 							mapKeyProperty = npm.createPropertyInstance(null, null, PROP_CAT_BG_COLLABTOOLS, KEY_PORTFOLIO, null, binder.getKey(), "2", null);
 							BinderSecurityCallback secCallback = BinderSecurityCallbackFactory.getCallbackForBusinessGroup();
-							ctrl = new BinderController(ureq, wControl, stackPanel, secCallback, binder, BinderConfiguration.createBusinessGroupConfig());
+							BinderController binderCtrl = new BinderController(ureq, wControl, stackPanel, secCallback, binder, BinderConfiguration.createBusinessGroupConfig());					
+							List<ContextEntry> entries = BusinessControlFactory.getInstance().createCEListFromResourceType("Toc");
+							binderCtrl.activate(ureq, entries, null);
+							ctrl = binderCtrl;
+
+							ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrap(binder));
+							ThreadLocalUserActivityLogger.log(PortfolioLoggingAction.PORTFOLIO_BINDER_CREATED, getClass());
 						} else {
 							EPFrontendManager ePFMgr = CoreSpringFactory.getImpl(EPFrontendManager.class);
 							PortfolioStructureMap map = ePFMgr.createAndPersistPortfolioDefaultMap(group.getName(), group.getDescription());					
@@ -554,7 +564,10 @@ public class CollaborationTools implements Serializable {
 		if("2".equals(version)) {
 			Binder binder = CoreSpringFactory.getImpl(PortfolioService.class).getBinderByKey(key);
 			BinderSecurityCallback secCallback = BinderSecurityCallbackFactory.getCallbackForBusinessGroup();
-			ctrl = new BinderController(ureq, wControl, stackPanel, secCallback, binder, BinderConfiguration.createBusinessGroupConfig());
+			BinderController binderCtrl = new BinderController(ureq, wControl, stackPanel, secCallback, binder, BinderConfiguration.createBusinessGroupConfig());
+			List<ContextEntry> entries = BusinessControlFactory.getInstance().createCEListFromResourceType("Toc");
+			binderCtrl.activate(ureq, entries, null);
+			ctrl = binderCtrl;
 		} else {
 			PortfolioStructureMap map = (PortfolioStructureMap) CoreSpringFactory.getImpl(EPFrontendManager.class)
 					.loadPortfolioStructureByKey(key);

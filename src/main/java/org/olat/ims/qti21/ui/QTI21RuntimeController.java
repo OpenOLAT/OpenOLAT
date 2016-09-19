@@ -39,9 +39,8 @@ import org.olat.core.gui.components.stack.PopEvent;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
-import org.olat.core.gui.control.generic.modal.DialogBoxController;
-import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
@@ -77,11 +76,12 @@ import uk.ac.ed.ph.jqtiplus.resolution.ResolvedAssessmentTest;
 public class QTI21RuntimeController extends RepositoryEntryRuntimeController  {
 	
 	private Link assessmentLink, testStatisticLink, qtiOptionsLink, resetDataLink;
-	
-	private DialogBoxController confirmResetDialog;
+
+	private CloseableModalController cmd;
 	private QTI21DeliveryOptionsController optionsCtrl;
 	private AssessmentToolController assessmentToolCtrl;
 	private QTI21RuntimeStatisticsController statsToolCtr;
+	private QTI21ConfirmDeleteDataController confirmResetDialog;
 	
 	private boolean reloadRuntime = false;
 
@@ -185,11 +185,29 @@ public class QTI21RuntimeController extends RepositoryEntryRuntimeController  {
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if(confirmResetDialog == source) {
-			if(DialogBoxUIFactory.isOkEvent(event) || DialogBoxUIFactory.isYesEvent(event)) {
+			if(event == Event.DONE_EVENT) {
 				doReset(ureq);
 			}
+			cmd.deactivate();
+			//only this one
+			cleanUpReset();
+		} else if(cmd == source) {
+			cleanUp();
 		}
 		super.event(ureq, source, event);
+	}
+	
+	@Override
+	protected void cleanUp() {
+		super.cleanUp();
+		cleanUpReset();
+	}
+	
+	private void cleanUpReset() {
+		removeAsListenerAndDispose(confirmResetDialog);
+		removeAsListenerAndDispose(cmd);
+		confirmResetDialog = null;
+		cmd = null;
 	}
 
 	private void doReloadRuntimeController(UserRequest ureq) {
@@ -265,7 +283,7 @@ public class QTI21RuntimeController extends RepositoryEntryRuntimeController  {
 	private AssessableResource getAssessableElement(RepositoryEntry testEntry) {
 		FileResourceManager frm = FileResourceManager.getInstance();
 		File fUnzippedDirRoot = frm.unzipFileResource(testEntry.getOlatResource());
-		ResolvedAssessmentTest resolvedAssessmentTest = qtiService.loadAndResolveAssessmentTest(fUnzippedDirRoot, false);
+		ResolvedAssessmentTest resolvedAssessmentTest = qtiService.loadAndResolveAssessmentTest(fUnzippedDirRoot, false, false);
 		
 		AssessmentTest assessmentTest = resolvedAssessmentTest.getRootNodeLookup().extractIfSuccessful();
 		Double maxScore = QtiNodesExtractor.extractMaxScore(assessmentTest);
@@ -276,9 +294,15 @@ public class QTI21RuntimeController extends RepositoryEntryRuntimeController  {
 	}
 	
 	private void doConfirmResetData(UserRequest ureq) {
+		if(confirmResetDialog != null) return;
+
+		confirmResetDialog = new QTI21ConfirmDeleteDataController(ureq, getWindowControl(), getRepositoryEntry());
+		listenTo(confirmResetDialog);
+
 		String title = translate("reset.test.data.title");
-		String text = translate("reset.test.data.text");
-		confirmResetDialog = activateOkCancelDialog(ureq, title, text, confirmResetDialog);
+		cmd = new CloseableModalController(getWindowControl(), translate("close"), confirmResetDialog.getInitialComponent(), true, title);
+		cmd.activate();
+		listenTo(cmd);
 	}
 	
 	private void doReset(UserRequest ureq) {

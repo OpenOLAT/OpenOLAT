@@ -117,7 +117,7 @@ public class AssessmentItemFactory {
 		//the single choice interaction
 		ItemBody itemBody = appendDefaultItemBody(assessmentItem);
 		ChoiceInteraction choiceInteraction = appendChoiceInteraction(itemBody, responseDeclarationId, 1, true);
-		appendSimpleChoice(choiceInteraction, "New answer", "sc");
+		appendSimpleChoice(choiceInteraction, "New answer", correctResponseId);
 
 		//response processing
 		ResponseProcessing responseProcessing = createResponseProcessing(assessmentItem, responseDeclarationId);
@@ -513,6 +513,15 @@ public class AssessmentItemFactory {
 		return newChoice;
 	}
 	
+	public static SimpleChoice appendSimpleChoice(ChoiceInteraction choiceInteraction, String text, Identifier identifier) {
+		SimpleChoice newChoice = new SimpleChoice(choiceInteraction);
+		newChoice.setIdentifier(identifier);
+		P firstChoiceText = AssessmentItemFactory.getParagraph(newChoice, text);
+		newChoice.getFlowStatics().add(firstChoiceText);
+		choiceInteraction.getNodeGroups().getSimpleChoiceGroup().getSimpleChoices().add(newChoice);
+		return newChoice;
+	}
+	
 	private static void appendIdentifierValue(CorrectResponse correctResponse, Identifier correctResponseId) {
 		FieldValue fieldValue = new FieldValue(correctResponse);
 		IdentifierValue identifierValue = new IdentifierValue(correctResponseId);
@@ -796,6 +805,15 @@ public class AssessmentItemFactory {
 		SimpleChoiceGroup singleChoices = new SimpleChoiceGroup(choiceInteraction);
 		choiceInteraction.getNodeGroups().add(singleChoices);
 		return choiceInteraction;
+	}
+	
+	public static void ensureFeedbackBasicOutcomeDeclaration(AssessmentItem assessmentItem) {
+		OutcomeDeclaration feedbackBasicDeclaration = assessmentItem.getOutcomeDeclaration(QTI21Constants.FEEDBACKBASIC_IDENTIFIER);
+		if(feedbackBasicDeclaration == null) {
+			feedbackBasicDeclaration = AssessmentItemFactory
+					.createOutcomeDeclarationForFeedbackBasic(assessmentItem);
+			assessmentItem.getOutcomeDeclarations().add(feedbackBasicDeclaration);	
+		}
 	}
 
 	public static ModalFeedback createModalFeedback(AssessmentItem assessmentItem, Identifier identifier, String title, String text) {

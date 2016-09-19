@@ -66,6 +66,10 @@ public class BinderRow implements BinderRef {
 		return binderStats == null ? null : binderStats.getTitle();
 	}
 	
+	public String getReferenceEntryName() {
+		return binderStats == null ? null : binderStats.getEntryDisplayname();
+	}
+	
 	public Date getLastUpdate() {
 		return binderStats == null ? null : binderStats.getLastModified();
 	}

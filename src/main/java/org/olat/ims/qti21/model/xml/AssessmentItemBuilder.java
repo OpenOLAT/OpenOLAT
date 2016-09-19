@@ -287,12 +287,7 @@ public abstract class AssessmentItemBuilder {
 	protected abstract void buildResponseAndOutcomeDeclarations();
 	
 	protected void ensureFeedbackBasicOutcomeDeclaration() {
-		OutcomeDeclaration feedbackBasicDeclaration = assessmentItem.getOutcomeDeclaration(QTI21Constants.FEEDBACKBASIC_IDENTIFIER);
-		if(feedbackBasicDeclaration == null) {
-			feedbackBasicDeclaration = AssessmentItemFactory
-					.createOutcomeDeclarationForFeedbackBasic(assessmentItem);
-			assessmentItem.getOutcomeDeclarations().add(feedbackBasicDeclaration);	
-		}
+		AssessmentItemFactory.ensureFeedbackBasicOutcomeDeclaration(assessmentItem);
 	}
 	
 	protected abstract void buildMainScoreRule(List<OutcomeDeclaration> outcomeDeclarations, List<ResponseRule> responseRules);

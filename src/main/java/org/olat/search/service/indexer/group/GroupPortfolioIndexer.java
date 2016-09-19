@@ -98,15 +98,20 @@ public class GroupPortfolioIndexer extends AbstractHierarchicalIndexer  {
 		Property mapKeyProperty = npm.findProperty(null, null, CollaborationTools.PROP_CAT_BG_COLLABTOOLS, CollaborationTools.KEY_PORTFOLIO);
 		// Check if portfolio map property exist
 		if (mapKeyProperty != null) {
-		  Long mapKey = mapKeyProperty.getLongValue();
-		  PortfolioStructure map = frontendManager.loadPortfolioStructureByKey(mapKey);
-		  SearchResourceContext resourceContext = new SearchResourceContext(parentResourceContext);
-		  resourceContext.setBusinessControlFor(BusinessGroupMainRunController.ORES_TOOLPORTFOLIO);
-		  resourceContext.setDocumentType(TYPE);
-			resourceContext.setParentContextType(GroupDocument.TYPE);
-			resourceContext.setParentContextName(businessGroup.getName());
-			Document document = PortfolioMapDocument.createDocument(resourceContext, map);
-			indexerWriter.addDocument(document);
+			Long mapKey = mapKeyProperty.getLongValue();
+			String version = mapKeyProperty.getStringValue();
+			if(version == null || !version.equals("2")) {
+				PortfolioStructure map = frontendManager.loadPortfolioStructureByKey(mapKey);
+				if(map != null) {
+					SearchResourceContext resourceContext = new SearchResourceContext(parentResourceContext);
+					resourceContext.setBusinessControlFor(BusinessGroupMainRunController.ORES_TOOLPORTFOLIO);
+					resourceContext.setDocumentType(TYPE);
+					resourceContext.setParentContextType(GroupDocument.TYPE);
+					resourceContext.setParentContextName(businessGroup.getName());
+					Document document = PortfolioMapDocument.createDocument(resourceContext, map);
+					indexerWriter.addDocument(document);
+				}
+			}
 		}
 	}
 }

@@ -63,6 +63,8 @@ import org.olat.course.run.userview.NodeEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.assessment.AssessmentEntry;
+import org.olat.modules.portfolio.handler.BinderTemplateResource;
+import org.olat.modules.portfolio.ui.PortfolioAssessmentDetailsController;
 import org.olat.portfolio.EPTemplateMapResource;
 import org.olat.portfolio.manager.EPFrontendManager;
 import org.olat.portfolio.manager.EPStructureManager;
@@ -436,6 +438,13 @@ public class PortfolioCourseNode extends AbstractAccessableCourseNode implements
 
 	@Override
 	public Controller getDetailsEditController(UserRequest ureq, WindowControl wControl, BreadcrumbPanel stackPanel, UserCourseEnvironment userCourseEnvironment) {
+		RepositoryEntry mapEntry = getReferencedRepositoryEntry();
+		if(mapEntry != null && BinderTemplateResource.TYPE_NAME.equals(mapEntry.getOlatResource().getResourceableTypeName())) {
+			Identity assessedIdentity = userCourseEnvironment.getIdentityEnvironment().getIdentity();
+			RepositoryEntry courseEntry = userCourseEnvironment.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
+			return new PortfolioAssessmentDetailsController(ureq, wControl,
+					courseEntry, this, mapEntry, assessedIdentity);
+		}
 		return new PortfolioResultDetailsController(ureq, wControl, stackPanel, this, userCourseEnvironment);
 	}
 

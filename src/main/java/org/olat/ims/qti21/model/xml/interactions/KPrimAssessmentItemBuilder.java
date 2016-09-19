@@ -54,6 +54,7 @@ import uk.ac.ed.ph.jqtiplus.node.item.AssessmentItem;
 import uk.ac.ed.ph.jqtiplus.node.item.CorrectResponse;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.MatchInteraction;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.choice.SimpleAssociableChoice;
+import uk.ac.ed.ph.jqtiplus.node.item.interaction.choice.SimpleMatchSet;
 import uk.ac.ed.ph.jqtiplus.node.item.response.declaration.ResponseDeclaration;
 import uk.ac.ed.ph.jqtiplus.node.item.response.processing.ResponseCondition;
 import uk.ac.ed.ph.jqtiplus.node.item.response.processing.ResponseElse;
@@ -106,10 +107,16 @@ public class KPrimAssessmentItemBuilder extends AssessmentItemBuilder {
 		nodeGroups.getResponseDeclarationGroup().getResponseDeclarations().add(responseDeclaration);
 		
 		appendDefaultOutcomeDeclarations(assessmentItem, maxScore);
-		
+
 		//the single choice interaction
 		ItemBody itemBody = appendDefaultItemBody(assessmentItem);
-		appendMatchInteractionForKPrim(itemBody, responseDeclarationId);
+		MatchInteraction matchInteraction = appendMatchInteractionForKPrim(itemBody, responseDeclarationId);
+		SimpleMatchSet matchSet = matchInteraction.getSimpleMatchSets().get(0);
+		Map<Identifier,Identifier> associations = new HashMap<>();
+		for(SimpleAssociableChoice choice:matchSet.getSimpleAssociableChoices()) {
+			associations.put(choice.getIdentifier(), QTI21Constants.WRONG_IDENTIFIER);
+		}
+		appendAssociationKPrimResponseDeclaration(responseDeclaration, associations, 1.0);
 		
 		//response processing
 		ResponseProcessing responseProcessing = createResponseProcessing(assessmentItem, responseDeclarationId);
@@ -272,6 +279,12 @@ public class KPrimAssessmentItemBuilder extends AssessmentItemBuilder {
 		}
 		
 		blocks.add(matchInteraction);
+	}
+
+	@Override
+	protected void buildModalFeedbacksAndHints(List<OutcomeDeclaration> outcomeDeclarations, List<ResponseRule> responseRules) {
+		super.buildModalFeedbacksAndHints(outcomeDeclarations, responseRules);
+		ensureFeedbackBasicOutcomeDeclaration();
 	}
 
 	@Override

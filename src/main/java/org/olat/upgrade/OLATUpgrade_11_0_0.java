@@ -53,6 +53,7 @@ import org.olat.core.id.Identity;
 import org.olat.core.id.IdentityEnvironment;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Roles;
+import org.olat.core.logging.OLATRuntimeException;
 import org.olat.core.logging.activity.LoggingObject;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
@@ -103,9 +104,12 @@ import org.olat.ims.qti.process.FilePersister;
 import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.assessment.model.AssessmentEntryImpl;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
+import org.olat.modules.portfolio.PortfolioV2Module;
 import org.olat.modules.scorm.assessment.CmiData;
 import org.olat.modules.scorm.assessment.ScormAssessmentManager;
+import org.olat.portfolio.PortfolioModule;
 import org.olat.portfolio.manager.EPFrontendManager;
+import org.olat.portfolio.model.structel.EPStructureElement;
 import org.olat.portfolio.model.structel.PortfolioStructureMap;
 import org.olat.portfolio.model.structel.StructureStatusEnum;
 import org.olat.properties.Property;
@@ -118,6 +122,8 @@ import org.olat.upgrade.legacy.NewCacheKey;
 import org.olat.upgrade.legacy.NewCachePersistingAssessmentManager;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import de.bps.onyx.plugin.OnyxModule;
+
 /**
  * 
  * Initial date: 27.03.2015<br>
@@ -129,6 +135,7 @@ public class OLATUpgrade_11_0_0 extends OLATUpgrade {
 	private static final int BATCH_SIZE = 50;
 	private static final String ASSESSMENT_DATAS = "ASSESSMENT PROPERTY TABLE";
 	private static final String EFFICIENCY_STATEMENT_DATAS = "EFFICIENCY STATEMENT TABLE";
+	private static final String PORTFOLIO_SETTINGS = "PORTFOLIO SETTINGS";
 	private static final String VERSION = "OLAT_11.0.0";
 
 	private final Map<Long,Boolean> qtiEssayMap = new HashMap<>();
@@ -147,6 +154,12 @@ public class OLATUpgrade_11_0_0 extends OLATUpgrade {
 	private RepositoryManager repositoryManager;
 	@Autowired
 	private BusinessGroupService businessGroupService;
+	
+
+	@Autowired
+	private PortfolioModule portfolioModule;
+	@Autowired
+	private PortfolioV2Module portfolioV2Module;
 
 	public OLATUpgrade_11_0_0() {
 		super();
@@ -175,6 +188,7 @@ public class OLATUpgrade_11_0_0 extends OLATUpgrade {
 		boolean allOk = true;
 		allOk &= upgradeEfficiencyStatementTable(upgradeManager, uhd);
 		allOk &= upgradeAssessmentPropertyTable(upgradeManager, uhd);
+		allOk &= upgradePortfolioSettings(upgradeManager, uhd);
 
 		uhd.setInstallationComplete(allOk);
 		upgradeManager.setUpgradesHistory(uhd, VERSION);
@@ -184,6 +198,59 @@ public class OLATUpgrade_11_0_0 extends OLATUpgrade {
 			log.audit("OLATUpgrade_11_0_0 not finished, try to restart OpenOLAT!");
 		}
 		return allOk;
+	}
+	
+
+	private boolean upgradePortfolioSettings(UpgradeManager upgradeManager, UpgradeHistoryData uhd) {
+		boolean allOk = true;
+		if (!uhd.getBooleanDataValue(PORTFOLIO_SETTINGS)) {
+			if(portfolioModule.isEnabled()) {
+				portfolioV2Module.setEnabled(true);
+				
+				boolean hasMaps = hasMap();
+				if(!hasMaps) {
+					portfolioModule.setEnabled(false);
+				}
+			} else {
+				boolean hasBinder = hasBinder();
+				if(!hasBinder) {
+					portfolioV2Module.setEnabled(false);
+				}
+			}
+			uhd.setBooleanDataValue(PORTFOLIO_SETTINGS, allOk);
+			upgradeManager.setUpgradesHistory(uhd, VERSION);
+		}
+		return allOk;
+	}
+	
+	private boolean hasMap() {
+		try {
+			StringBuilder sb = new StringBuilder();
+			sb.append("select stEl.key from ").append(EPStructureElement.class.getName()).append(" stEl ");
+			List<Long> count =	dbInstance.getCurrentEntityManager().createQuery(sb.toString(), Long.class)
+					.setFirstResult(0)
+					.setMaxResults(1)
+					.getResultList();
+			return count != null && count.size() > 0 && count.get(0) != null && count.get(0) >= 0;
+		} catch (Exception e) {
+			log.error("", e);
+			return true;
+		}
+	}
+	
+	private boolean hasBinder() {
+		try {
+			StringBuilder sb = new StringBuilder();
+			sb.append("select binder.key from pfbinder as binder");
+			List<Long> count =	dbInstance.getCurrentEntityManager().createQuery(sb.toString(), Long.class)
+					.setFirstResult(0)
+					.setMaxResults(1)
+					.getResultList();
+			return count != null && count.size() > 0 && count.get(0) != null && count.get(0) >= 0;
+		} catch (Exception e) {
+			log.error("", e);
+			return true;
+		}
 	}
 
 	private boolean upgradeEfficiencyStatementTable(UpgradeManager upgradeManager, UpgradeHistoryData uhd) {
@@ -811,7 +878,10 @@ public class OLATUpgrade_11_0_0 extends OLATUpgrade {
 				Long courseResourceableId = course.getResourceableId();
 				List<QTIResultSet> resultSets = qtiResultManager.getResultSets(courseResourceableId, cNode.getIdent(), ref.getKey(), assessedIdentity);
 				if(resultSets.size() > 0) {
-					if(checkEssay(ref)) {
+					if(OnyxModule.isOnyxTest(ref.getOlatResource())) {
+						//make it later with the flag fully assessed
+						entry.setAssessmentStatus(AssessmentEntryStatus.inProgress);
+					} else if(checkEssay(ref)) {
 						entry.setAssessmentStatus(AssessmentEntryStatus.inReview);
 					} else {
 						entry.setAssessmentStatus(AssessmentEntryStatus.done);
@@ -839,21 +909,25 @@ public class OLATUpgrade_11_0_0 extends OLATUpgrade {
 		TransientIdentity pseudoIdentity = new TransientIdentity();
 		pseudoIdentity.setName("transient");
 		Translator translator = Util.createPackageTranslator(QTIModule.class, Locale.ENGLISH);
-		QTIEditorPackage qtiPackage = new QTIEditorPackageImpl(pseudoIdentity, fr, null, translator);
-		if(qtiPackage.getQTIDocument() != null && qtiPackage.getQTIDocument().getAssessment() != null) {
-			Assessment ass = qtiPackage.getQTIDocument().getAssessment();
-			//Sections with their Items
-			List<Section> sections = ass.getSections();
-			for (Section section:sections) {
-				List<Item> items = section.getItems();
-				for (Item item:items) {
-					String ident = item.getIdent();
-					if(ident != null && ident.startsWith("QTIEDIT:ESSAY")) {
-						qtiEssayMap.put(testEntry.getKey(), Boolean.TRUE);
-						return true;
+		try {
+			QTIEditorPackage qtiPackage = new QTIEditorPackageImpl(pseudoIdentity, fr, null, translator);
+			if(qtiPackage.getQTIDocument() != null && qtiPackage.getQTIDocument().getAssessment() != null) {
+				Assessment ass = qtiPackage.getQTIDocument().getAssessment();
+				//Sections with their Items
+				List<Section> sections = ass.getSections();
+				for (Section section:sections) {
+					List<Item> items = section.getItems();
+					for (Item item:items) {
+						String ident = item.getIdent();
+						if(ident != null && ident.startsWith("QTIEDIT:ESSAY")) {
+							qtiEssayMap.put(testEntry.getKey(), Boolean.TRUE);
+							return true;
+						}
 					}
 				}
 			}
+		} catch (OLATRuntimeException e) {
+			log.warn("QTI without content in repository entry: " + testEntry.getKey(), e);
 		}
 		qtiEssayMap.put(testEntry.getKey(), Boolean.FALSE);
 		return false;
@@ -964,7 +1038,17 @@ public class OLATUpgrade_11_0_0 extends OLATUpgrade {
 			}
 		} else if(propertyName.equals(FULLY_ASSESSED)) {
 			if(StringHelper.containsNonWhitespace(property.getStringValue())) {
-				nodeAssessment.setFullyAssessed(new Boolean(property.getStringValue()));
+				Boolean fullyAssessed = new Boolean(property.getStringValue());
+				nodeAssessment.setFullyAssessed(fullyAssessed);
+				if(nodeAssessment.getStatus() == null
+						|| nodeAssessment.getAssessmentStatus() == AssessmentEntryStatus.notStarted
+						|| nodeAssessment.getAssessmentStatus() == AssessmentEntryStatus.inProgress) {
+					if(fullyAssessed.booleanValue()) {
+						nodeAssessment.setAssessmentStatus(AssessmentEntryStatus.done);
+					} else {
+						nodeAssessment.setAssessmentStatus(AssessmentEntryStatus.inProgress);
+					}
+				}
 			}
 		} else if (propertyName.equals(ASSESSMENT_ID)) {
 			nodeAssessment.setAssessmentId(property.getLongValue());
@@ -1117,6 +1201,11 @@ public class OLATUpgrade_11_0_0 extends OLATUpgrade {
 		@Override
 		public HashMap<String, Serializable> putIfAbsent(NewCacheKey key, HashMap<String, Serializable> value) {
 			return map.putIfAbsent(key, value);
+		}
+
+		@Override
+		public HashMap<String, Serializable> replace(NewCacheKey key, HashMap<String, Serializable> value) {
+			return map.replace(key, value);
 		}
 
 		@Override

@@ -17,35 +17,47 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.selenium.page.portfolio;
+package org.olat.core.util.openxml;
 
-import org.openqa.selenium.By;
-import org.openqa.selenium.WebDriver;
+import java.util.List;
 
 /**
  * 
- * Initial date: 14.07.2016<br>
+ * Initial date: 30.08.2016<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class PortfolioV2Page {
+public class OpenXMLGraphic {
 	
-	public static final By tocBy = By.cssSelector("div.o_portfolio_toc");
-
-	private final WebDriver browser;
-
-	public PortfolioV2Page(WebDriver browser) {
-		this.browser = browser;
+	private final Style style;
+	private final Type type;
+	private final List<Integer> coords;
+	
+	public OpenXMLGraphic(Type type, Style style, List<Integer> coords) {
+		this.type = type;
+		this.style = style;
+		this.coords = coords;
 	}
 	
-	/*
-	  .openEditor()
-	 .selectMapInEditor()
-			.selectFirstPageInEditor()
-			.setPage(pageTitle, "With a little description")
-			.createStructureElement(structureElementTitle, "Structure description")
-			.closeEditor()
-			.assertStructure(structureElementTitle);
-	 */
-
+	public Type type() {
+		return type;
+	}
+	
+	public Style getStyle() {
+		return style;
+	}
+	
+	public List<Integer> getCoords() {
+		return coords;
+	}
+	
+	public enum Type {
+		circle,
+		rectangle
+	}
+	
+	public enum Style {
+		accent1,
+		accent3;
+	}
 }

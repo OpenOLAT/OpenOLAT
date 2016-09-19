@@ -43,7 +43,6 @@ import org.olat.core.gui.media.MediaResource;
 import org.olat.core.id.Identity;
 import org.olat.core.util.StringHelper;
 import org.olat.modules.portfolio.Assignment;
-import org.olat.modules.portfolio.AssignmentType;
 import org.olat.modules.portfolio.BinderSecurityCallback;
 import org.olat.modules.portfolio.Category;
 import org.olat.modules.portfolio.Page;
@@ -138,6 +137,7 @@ public class PageMetadataController extends BasicController {
 				mainVC.contextPut("imageAlign", PageImageAlign.background.name());
 				mainVC.contextPut("imageName", posterImage.getName());
 			} else {
+				// alignment is right
 				imageCmp = new ImageComponent(ureq.getUserSession(), "poster");
 				imageCmp.setMaxWithAndHeightToFitWithin(PICTURE_WIDTH, PICTURE_HEIGHT);
 				imageCmp.setMedia(posterImage);
@@ -155,15 +155,15 @@ public class PageMetadataController extends BasicController {
 		List<UserAssignmentInfos> assignmentInfos = new ArrayList<>(assignments.size());
 		for(Assignment assignment:assignments) {
 			List<File> documents = null;
-			if(assignment.getAssignmentType() == AssignmentType.document) {
-				File storage = fileStorage.getAssignmentDirectory(assignment);
-				if(storage != null) {
-					documents = Arrays.<File>asList(storage.listFiles());
-					if(documents.size() > 0) {
-						needMapper = true;
-					}
+
+			File storage = fileStorage.getAssignmentDirectory(assignment);
+			if(storage != null) {
+				documents = Arrays.<File>asList(storage.listFiles());
+				if(documents.size() > 0) {
+					needMapper = true;
 				}
 			}
+
 			UserAssignmentInfos infos = new UserAssignmentInfos(assignment, documents);
 			assignmentInfos.add(infos);
 		}
@@ -187,16 +187,20 @@ public class PageMetadataController extends BasicController {
 			mainVC.contextPut("pageStatus", status);
 			
 			if(secCallback.canPublish(page)) {
-				publishButton = LinkFactory.createButton("publish", mainVC, this);
+				publishButton = LinkFactory.createButtonSmall("publish", mainVC, this);
+				publishButton.setIconLeftCSS("o_icon o_icon_publish o_icon-fw");
 			}
 			if(secCallback.canRevision(page)) {
-				revisionButton = LinkFactory.createButton("revision.page", mainVC, this);
+				revisionButton = LinkFactory.createButtonSmall("revision.page", mainVC, this);
+				revisionButton.setIconLeftCSS("o_icon o_icon_rejected o_icon-fw");
 			}
 			if(secCallback.canClose(page)) {
-				closeButton = LinkFactory.createButton("close.page", mainVC, this);
+				closeButton = LinkFactory.createButtonSmall("close.page", mainVC, this);
+				closeButton.setIconLeftCSS("o_icon o_icon_status_done o_icon-fw");
 			}
 			if(secCallback.canReopen(page)) {
-				reopenButton = LinkFactory.createButton("reopen.page", mainVC, this);
+				reopenButton = LinkFactory.createButtonSmall("reopen.page", mainVC, this);
+				reopenButton.setIconLeftCSS("o_icon o_icon_redo o_icon-fw");
 			}
 		}
 	}

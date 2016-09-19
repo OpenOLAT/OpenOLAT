@@ -195,7 +195,9 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements Pe
 		OLATResource ores = testEntry.getOlatResource();
 		if(ImsQTI21Resource.TYPE_NAME.equals(ores.getResourceableTypeName())) {
 			QTI21DeliveryOptions options = CoreSpringFactory.getImpl(QTI21Service.class).getDeliveryOptions(testEntry);
-			return options != null && options.isAllowAnonym();
+			boolean allowAnonym = options != null && options.isAllowAnonym();
+			allowAnonym = getModuleConfiguration().getBooleanSafe(IQEditController.CONFIG_ALLOW_ANONYM, allowAnonym);
+			return allowAnonym;
 		}
 		return false;
 	}

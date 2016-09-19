@@ -26,6 +26,7 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
+import org.olat.core.gui.components.panel.Panel;
 import org.olat.core.gui.components.panel.SimpleStackedPanel;
 import org.olat.core.gui.components.panel.StackedPanel;
 import org.olat.core.gui.components.stack.ButtonGroupComponent;
@@ -42,11 +43,13 @@ import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
+import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.modules.portfolio.Binder;
 import org.olat.modules.portfolio.BinderConfiguration;
 import org.olat.modules.portfolio.BinderSecurityCallback;
 import org.olat.modules.portfolio.ui.event.SectionSelectionEvent;
+import org.olat.util.logging.activity.LoggingResourceable;
 
 /**
  * 
@@ -56,7 +59,7 @@ import org.olat.modules.portfolio.ui.event.SectionSelectionEvent;
  */
 public class BinderController extends BasicController implements TooledController, Activateable2 {
 	
-	private Link assessmentLink, publishLink;
+	private Link assessmentLink, publishLink, optionsLink;
 	private final Link overviewLink, entriesLink, historyLink;
 	private final ButtonGroupComponent segmentButtonsCmp;
 	private final TooledStackedPanel stackPanel;
@@ -65,9 +68,10 @@ public class BinderController extends BasicController implements TooledControlle
 	
 	private HistoryController historyCtrl;
 	private PublishController publishCtrl;
+	private BinderDeliveryOptionsController optionsCtrl;
 	private BinderPageListController entriesCtrl;
+	private TableOfContentController overviewCtrl;
 	private BinderAssessmentController assessmentCtrl;
-	private final TableOfContentController overviewCtrl;
 	
 	private Binder binder;
 	private final BinderConfiguration config;
@@ -80,28 +84,38 @@ public class BinderController extends BasicController implements TooledControlle
 		this.config = config;
 		this.stackPanel = stackPanel;
 		this.secCallback = secCallback;
-		
-		overviewCtrl = new TableOfContentController(ureq, getWindowControl(), stackPanel, secCallback, binder, config);
-		listenTo(overviewCtrl);
-		
+
+		ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrap(binder));
+
 		segmentButtonsCmp = new ButtonGroupComponent("segments");
+		segmentButtonsCmp.setElementCssClass("o_sel_pf_binder_navigation");
 		overviewLink = LinkFactory.createLink("portfolio.overview", getTranslator(), this);
-		segmentButtonsCmp.addButton(overviewLink, true);
+		overviewLink.setElementCssClass("o_sel_pf_toc");
+		segmentButtonsCmp.addButton(overviewLink, false);
 		entriesLink = LinkFactory.createLink("portfolio.entries", getTranslator(), this);
+		entriesLink.setElementCssClass("o_sel_pf_entries");
 		segmentButtonsCmp.addButton(entriesLink, false);
 		historyLink = LinkFactory.createLink("portfolio.history", getTranslator(), this);
+		historyLink.setElementCssClass("o_sel_pf_history");
 		segmentButtonsCmp.addButton(historyLink, false);
 		if(config.isShareable()) {
 			publishLink = LinkFactory.createLink("portfolio.publish", getTranslator(), this);
+			publishLink.setElementCssClass("o_sel_pf_publication");
 			segmentButtonsCmp.addButton(publishLink, false);
 		}
 		if(config.isAssessable()) {
 			assessmentLink = LinkFactory.createLink("portfolio.assessment", getTranslator(), this);
+			assessmentLink.setElementCssClass("o_sel_pf_assessment");
 			segmentButtonsCmp.addButton(assessmentLink, false);
+		}
+		if(config.isOptions()) {
+			optionsLink = LinkFactory.createLink("portfolio.template.options", getTranslator(), this);
+			optionsLink.setElementCssClass("o_sel_pf_options");
+			segmentButtonsCmp.addButton(optionsLink, false);
 		}
 		
 		mainPanel = putInitialPanel(new SimpleStackedPanel("portfolioSegments"));
-		mainPanel.setContent(overviewCtrl.getInitialComponent());
+		mainPanel.setContent(new Panel("empty"));
 		stackPanel.addListener(this);
 	}
 
@@ -111,7 +125,9 @@ public class BinderController extends BasicController implements TooledControlle
 		stackPanel.addTool(editBinderMetadataLink, Align.right);
 		
 		if(segmentButtonsCmp.getSelectedButton() == overviewLink) {
-			overviewCtrl.initTools();
+			if(overviewCtrl != null) {
+				overviewCtrl.initTools();
+			}
 		}
 	}
 	
@@ -129,7 +145,10 @@ public class BinderController extends BasicController implements TooledControlle
 	@Override
 	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
 		if(entries == null || entries.isEmpty()) {
-			doOpenEntries(ureq);
+			BinderPageListController pagesCtrl = doOpenEntries(ureq);
+			if(pagesCtrl == null || pagesCtrl.getNumOfPages() == 0) {
+				doOpenOverview(ureq);
+			}
 			return;
 		}
 		
@@ -149,6 +168,10 @@ public class BinderController extends BasicController implements TooledControlle
 			}
 		} else if("History".equalsIgnoreCase(resName)) {
 			doOpenHistory(ureq);
+		} else if("Toc".equalsIgnoreCase(resName)) {
+			doOpenOverview(ureq);
+		} else if("Options".equalsIgnoreCase(resName)) {
+			doOpenOptions(ureq);
 		}
 	}
 
@@ -156,7 +179,9 @@ public class BinderController extends BasicController implements TooledControlle
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if(entriesCtrl == source) {
 			if(event == Event.CHANGED_EVENT) {
-				overviewCtrl.loadModel();
+				if(overviewCtrl != null) {
+					overviewCtrl.loadModel();
+				}
 			}
 		} else if(overviewCtrl == source) {
 			if(event == Event.CHANGED_EVENT) {
@@ -183,6 +208,8 @@ public class BinderController extends BasicController implements TooledControlle
 			doOpenAssessment(ureq);
 		} else if(historyLink == source) {
 			doOpenHistory(ureq);
+		} else if(optionsLink == source) {
+			doOpenOptions(ureq);
 		} else if(stackPanel == source) {
 			if(event instanceof PopEvent) {
 				if(stackPanel.getLastController() == this) {
@@ -202,6 +229,17 @@ public class BinderController extends BasicController implements TooledControlle
 	
 	private TableOfContentController doOpenOverview(UserRequest ureq) {
 		popUpToBinderController(ureq);
+		
+		if(overviewCtrl == null) {
+			OLATResourceable bindersOres = OresHelper.createOLATResourceableInstance("Toc", 0l);
+			WindowControl swControl = addToHistory(ureq, bindersOres, null);
+			overviewCtrl = new TableOfContentController(ureq, swControl, stackPanel, secCallback, binder, config);
+			overviewCtrl.initTools();//because it will not end in the stackPanel as a pushed controller
+			listenTo(overviewCtrl);
+		} else {
+			overviewCtrl.loadModel();
+		}
+
 		segmentButtonsCmp.setSelectedButton(overviewLink);
 		mainPanel.setContent(overviewCtrl.getInitialComponent());
 		return overviewCtrl;
@@ -253,5 +291,16 @@ public class BinderController extends BasicController implements TooledControlle
 		stackPanel.pushController(translate("portfolio.history"), historyCtrl);
 		segmentButtonsCmp.setSelectedButton(historyLink);
 		return historyCtrl;
+	}
+	
+	private void doOpenOptions(UserRequest ureq) {
+		OLATResourceable bindersOres = OresHelper.createOLATResourceableInstance("Options", 0l);
+		WindowControl swControl = addToHistory(ureq, bindersOres, null);
+		optionsCtrl = new BinderDeliveryOptionsController(ureq, swControl, binder);
+		listenTo(optionsCtrl);
+		
+		popUpToBinderController(ureq);
+		stackPanel.pushController(translate("portfolio.template.options"), optionsCtrl);
+		segmentButtonsCmp.setSelectedButton(optionsLink);
 	}
 }

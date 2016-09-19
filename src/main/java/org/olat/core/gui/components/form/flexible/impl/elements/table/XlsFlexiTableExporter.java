@@ -100,9 +100,9 @@ public class XlsFlexiTableExporter implements FlexiTableExporter {
 				if(colIndex >= 0) {
 					Object value = dataModel.getValueAt(r, colIndex);
 					if(value instanceof Date) {
-						dataRow.addCell(r, (Date)value, workbook.getStyles().getDateStyle());
+						dataRow.addCell(c, (Date)value, workbook.getStyles().getDateStyle());
 					} else if(value instanceof Number) {
-						dataRow.addCell(r, (Number)value, null);
+						dataRow.addCell(c, (Number)value, null);
 					} else {
 						StringOutput so = StringOutputPool.allocStringBuilder(1000);
 						cd.getCellRenderer().render(null, so, value, r, ftC, ubu, translator);

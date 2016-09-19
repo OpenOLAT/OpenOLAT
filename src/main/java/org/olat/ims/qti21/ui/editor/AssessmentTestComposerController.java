@@ -62,6 +62,7 @@ import org.olat.core.gui.control.generic.wizard.StepsMainRunController;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.helpers.Settings;
+import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.Util;
 import org.olat.core.util.coordinate.CoordinatorManager;
@@ -69,6 +70,7 @@ import org.olat.core.util.coordinate.LockResult;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.fileresource.FileResourceManager;
 import org.olat.ims.qti21.QTI21Constants;
+import org.olat.ims.qti21.QTI21LoggingAction;
 import org.olat.ims.qti21.QTI21Service;
 import org.olat.ims.qti21.manager.openxml.QTI21WordExport;
 import org.olat.ims.qti21.model.IdentifierGenerator;
@@ -103,6 +105,7 @@ import org.olat.modules.qpool.ui.events.QItemViewEvent;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.ui.RepositoryEntryRuntimeController.ToolbarAware;
 import org.olat.user.UserManager;
+import org.olat.util.logging.activity.LoggingResourceable;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import uk.ac.ed.ph.jqtiplus.node.QtiNode;
@@ -136,7 +139,7 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 	private Link newTestPartLink, newSectionLink, newSingleChoiceLink, newMultipleChoiceLink, newKPrimLink,
 		newFIBLink, newNumericalLink, newHotspotLink, newEssayLink;
 	private Link importFromPoolLink, importFromTableLink, exportToPoolLink, exportToDocxLink;
-	private Link deleteLink, copyLink;
+	private Link reloadInCacheLink, deleteLink, copyLink;
 	private final TooledStackedPanel toolbar;
 	private VelocityContainer mainVC;
 
@@ -172,8 +175,7 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 	
 	public AssessmentTestComposerController(UserRequest ureq, WindowControl wControl, TooledStackedPanel toolbar,
 			RepositoryEntry testEntry) {
-		super(ureq, wControl);
-		setTranslator(Util.createPackageTranslator(AssessmentTestDisplayController.class, getLocale(), getTranslator()));
+		super(ureq, wControl, Util.createPackageTranslator(AssessmentTestDisplayController.class, ureq.getLocale()));
 		
 		this.toolbar = toolbar;
 		this.testEntry = testEntry;
@@ -196,11 +198,12 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 			return;
 		}
 		
+		addLoggingResourceable(LoggingResourceable.wrapTest(testEntry));
+		
 		// test structure
 		menuTree = new MenuTree("atTree");
 		menuTree.setExpandSelectedNode(false);
-		menuTree.setDragEnabled(!restrictedEdit);
-		menuTree.setDropEnabled(!restrictedEdit);
+
 		menuTree.setDropSiblingEnabled(!restrictedEdit);	
 		menuTree.setDndAcceptJSMethod("treeAcceptDrop_notWithChildren");	
 		menuTree.setElementCssClass("o_assessment_test_editor_menu");
@@ -209,8 +212,11 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 		FileResourceManager frm = FileResourceManager.getInstance();
 		unzippedDirRoot = frm.unzipFileResource(testEntry.getOlatResource());
 		unzippedContRoot = frm.unzipContainerResource(testEntry.getOlatResource());
-		updateTreeModel();
+		updateTreeModel(false);
 		manifestBuilder = ManifestBuilder.read(new File(unzippedDirRoot, "imsmanifest.xml"));
+		//is the test editable ?
+		menuTree.setDragEnabled(!restrictedEdit && assessmentTestBuilder.isEditable());
+		menuTree.setDropEnabled(!restrictedEdit && assessmentTestBuilder.isEditable());
 		
 		//add elements
 		addItemTools = new Dropdown("editTools", "new.elements", false, getTranslator());
@@ -280,7 +286,14 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 		changeItemTools = new Dropdown("changeTools", "change.elements", false, getTranslator());
 		changeItemTools.setIconCSS("o_icon o_icon-fw o_icon_customize");
 		changeItemTools.setVisible(!restrictedEdit);
-
+		
+		if(ureq.getUserSession().getRoles().isOLATAdmin()) {
+			reloadInCacheLink = LinkFactory.createToolLink("replace.in.cache.pool", translate("tools.reload.from.files"), this, "o_icon_refresh");
+			reloadInCacheLink.setTooltip(translate("tools.reload.from.files.tooltip"));
+			reloadInCacheLink.setDomReplacementWrapperRequired(false);
+			changeItemTools.addComponent(reloadInCacheLink);
+		}
+		
 		deleteLink = LinkFactory.createToolLink("import.pool", translate("tools.change.delete"), this, "o_icon_delete_item");
 		deleteLink.setDomReplacementWrapperRequired(false);
 		changeItemTools.addComponent(deleteLink);
@@ -304,8 +317,8 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 		partEditorFactory(ureq, selectedNode);
 	}
 	
-	private void updateTreeModel() {
-		resolvedAssessmentTest = qtiService.loadAndResolveAssessmentTest(unzippedDirRoot, true);
+	private void updateTreeModel(boolean forceReload) {
+		resolvedAssessmentTest = qtiService.loadAndResolveAssessmentTest(unzippedDirRoot, forceReload, true);
 		menuTree.setTreeModel(new AssessmentTestEditorAndComposerTreeModel(resolvedAssessmentTest));
 		assessmentTestBuilder = new AssessmentTestBuilder(resolvedAssessmentTest.getRootNodeLookup().extractIfSuccessful());
 	}
@@ -446,6 +459,8 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 			doConfirmDelete(ureq);
 		} else if(copyLink == source) {
 			doCopy(ureq);
+		} else if(reloadInCacheLink == source) {
+			doForceReloadFiles();
 		}
 	}
 	
@@ -555,7 +570,7 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 		//quickly saved the assessment test with wrong parent
 		doSaveAssessmentTest();
 		//reload a clean instance
-		updateTreeModel();
+		updateTreeModel(false);
 		
 		TreeNode droppedItemNode = menuTree.getTreeModel().getNodeById(droppedNode.getIdent());
 		if(droppedItemNode != null) {
@@ -652,7 +667,7 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 			logError("", e);
 		}
 		
-		updateTreeModel();
+		updateTreeModel(false);
 		
 		TreeNode newItemNode = menuTree.getTreeModel().getNodeById(firstItemId);
 		menuTree.setSelectedNode(newItemNode);
@@ -687,7 +702,7 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 		
 		//persist metadata
 		doSaveManifest();
-		updateTreeModel();
+		updateTreeModel(false);
 		
 		TreeNode newItemNode = menuTree.getTreeModel().getNodeById(firstItemId);
 		menuTree.setSelectedNode(newItemNode);
@@ -748,7 +763,7 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 		//save the test
 		doSaveAssessmentTest();
 		//reload the test
-		updateTreeModel();
+		updateTreeModel(false);
 		
 		TreeNode newTestPartNode = menuTree.getTreeModel().getNodeById(testPart.getIdentifier().toString());
 		menuTree.setSelectedNode(newTestPartNode);
@@ -787,7 +802,7 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 		assessmentChanged = true;
 
 		//reload the test
-		updateTreeModel();
+		updateTreeModel(false);
 		
 		TreeNode newSectionNode = menuTree.getTreeModel().getNodeById(newSection.getIdentifier().toString());
 		menuTree.setSelectedNode(newSectionNode);
@@ -822,7 +837,7 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 			manifestBuilder.appendAssessmentItem(itemFile.getName());
 			doSaveManifest();
 			
-			updateTreeModel();
+			updateTreeModel(false);
 			
 			TreeNode newItemNode = menuTree.getTreeModel().getNodeById(itemId);
 			menuTree.setSelectedNode(newItemNode);
@@ -852,9 +867,12 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 	private void doSaveAssessmentTest() {
 		assessmentChanged = true;
 		recalculateMaxScoreAssessmentTest();
+		assessmentTestBuilder.build();
 		URI testURI = resolvedAssessmentTest.getTestLookup().getSystemId();
 		File testFile = new File(testURI);
 		qtiService.updateAssesmentObject(testFile, resolvedAssessmentTest);
+
+		ThreadLocalUserActivityLogger.log(QTI21LoggingAction.QTI_EDIT_RESOURCE, getClass());
 	}
 	
 	private void recalculateMaxScoreAssessmentTest() {
@@ -914,9 +932,11 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 			TestPart uniqueTestPart = test.getTestParts().size() == 1 ? test.getTestParts().get(0) : null;
 			currentEditorCtrl = new AssessmentTestEditorController(ureq, getWindowControl(), assessmentTestBuilder, uniqueTestPart, restrictedEdit);
 		} else if(uobject instanceof TestPart) {
-			currentEditorCtrl = new AssessmentTestPartEditorController(ureq, getWindowControl(), (TestPart)uobject, restrictedEdit);
+			currentEditorCtrl = new AssessmentTestPartEditorController(ureq, getWindowControl(), (TestPart)uobject,
+					restrictedEdit, assessmentTestBuilder.isEditable());
 		} else if(uobject instanceof AssessmentSection) {
-			currentEditorCtrl = new AssessmentSectionEditorController(ureq, getWindowControl(), (AssessmentSection)uobject, restrictedEdit);
+			currentEditorCtrl = new AssessmentSectionEditorController(ureq, getWindowControl(), (AssessmentSection)uobject,
+					restrictedEdit, assessmentTestBuilder.isEditable());
 		} else if(uobject instanceof AssessmentItemRef) {
 			AssessmentItemRef itemRef = (AssessmentItemRef)uobject;
 			ResolvedAssessmentItem item = resolvedAssessmentTest.getResolvedAssessmentItem(itemRef);
@@ -997,7 +1017,7 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 				logError("", e);
 			}
 
-			updateTreeModel();
+			updateTreeModel(false);
 			
 			TreeNode newItemNode = menuTree.getTreeModel().getNodeById(itemId);
 			menuTree.setSelectedNode(newItemNode);
@@ -1006,6 +1026,10 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 		} catch (URISyntaxException e) {
 			logError("", e);
 		}
+	}
+	
+	private void doForceReloadFiles() {
+		updateTreeModel(true);
 	}
 	
 	private void doConfirmDelete(UserRequest ureq) {
@@ -1054,7 +1078,7 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 		
 		doSaveAssessmentTest();
 		doSaveManifest();
-		updateTreeModel();
+		updateTreeModel(false);
 
 		if(selectedNode != null && selectedNode.getParent() != null) {
 			TreeNode parentNode = (TreeNode)selectedNode.getParent();

@@ -80,6 +80,7 @@ public class InvitationEditRightsController extends FormBasicController {
 	private static final String[] theValues = new String[]{ "" };
 	
 	private FormLink removeLink;
+	private FormLink selectAll, deselectAll;
 	private TextElement firstNameEl, lastNameEl, mailEl;
 	
 	private int counter;
@@ -132,12 +133,15 @@ public class InvitationEditRightsController extends FormBasicController {
 		mailEl = uifactory.addTextElement("mail", "mail", 128, invitation.getMail(), inviteeCont);
 		mailEl.setMandatory(true);
 		mailEl.setNotEmptyCheck("map.share.empty.warn");
+		mailEl.setEnabled(invitation.getKey() == null);
 			
 		if(StringHelper.containsNonWhitespace(invitation.getMail()) && MailHelper.isValidEmailAddress(invitation.getMail())) {
 			SecurityGroup allUsers = securityManager.findSecurityGroupByName(Constants.GROUP_OLATUSERS);
-			Identity currentIdentity = userManager.findIdentityByEmail(invitation.getMail());
-			if(currentIdentity != null && securityManager.isIdentityInSecurityGroup(currentIdentity, allUsers)) {
-				mailEl.setErrorKey("map.share.with.mail.error.olatUser", new String[]{ invitation.getMail() });
+			List<Identity> currentIdentities = userManager.findIdentitiesByEmail(Collections.singletonList(invitation.getMail()));
+			for(Identity currentIdentity:currentIdentities) {
+				if(currentIdentity != null && securityManager.isIdentityInSecurityGroup(currentIdentity, allUsers)) {
+					mailEl.setErrorKey("map.share.with.mail.error.olatUser", new String[]{ invitation.getMail() });
+				}
 			}
 		}
 			
@@ -145,9 +149,9 @@ public class InvitationEditRightsController extends FormBasicController {
 		StaticTextElement linkEl = uifactory.addStaticTextElement("invitation.link" , link, inviteeCont);
 		linkEl.setLabel("invitation.link", null);
 		
-		
 		//binder
 		MultipleSelectionElement accessEl = uifactory.addCheckboxesHorizontal("access-" + (counter++), null, formLayout, theKeys, theValues);
+		accessEl.addActionListener(FormEvent.ONCHANGE);
 		binderRow = new BinderAccessRightsRow(accessEl, binder);
 		
 		//sections
@@ -155,7 +159,8 @@ public class InvitationEditRightsController extends FormBasicController {
 		Map<Long,SectionAccessRightsRow> sectionMap = new HashMap<>();
 		for(Section section:sections) {
 			MultipleSelectionElement sectionAccessEl = uifactory.addCheckboxesHorizontal("access-" + (counter++), null, formLayout, theKeys, theValues);
-			SectionAccessRightsRow sectionRow = new SectionAccessRightsRow(sectionAccessEl, section);
+			sectionAccessEl.addActionListener(FormEvent.ONCHANGE);
+			SectionAccessRightsRow sectionRow = new SectionAccessRightsRow(sectionAccessEl, section, binderRow);
 			binderRow.getSections().add(sectionRow);
 			sectionMap.put(section.getKey(), sectionRow);	
 		}
@@ -167,7 +172,8 @@ public class InvitationEditRightsController extends FormBasicController {
 			SectionAccessRightsRow sectionRow = sectionMap.get(section.getKey());
 			
 			MultipleSelectionElement pageAccessEl = uifactory.addCheckboxesHorizontal("access-" + (counter++), null, formLayout, theKeys, theValues);
-			PortfolioElementAccessRightsRow pageRow = new PortfolioElementAccessRightsRow(pageAccessEl, page);
+			pageAccessEl.addActionListener(FormEvent.ONCHANGE);
+			PortfolioElementAccessRightsRow pageRow = new PortfolioElementAccessRightsRow(pageAccessEl, page, sectionRow);
 			sectionRow.getPages().add(pageRow);
 		}
 		
@@ -175,6 +181,11 @@ public class InvitationEditRightsController extends FormBasicController {
 			FormLayoutContainer layoutCont = (FormLayoutContainer)formLayout;
 			layoutCont.contextPut("binderRow", binderRow);
 		}
+		
+		selectAll = uifactory.addFormLink("form.checkall", "form.checkall", null, formLayout, Link.LINK);
+		selectAll.setIconLeftCSS("o_icon o_icon-sm o_icon_check_on");
+		deselectAll = uifactory.addFormLink("form.uncheckall", "form.uncheckall", null, formLayout, Link.LINK);
+		deselectAll.setIconLeftCSS("o_icon o_icon-sm o_icon_check_off");
 
 		FormLayoutContainer buttonsCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		formLayout.add(buttonsCont);
@@ -201,6 +212,8 @@ public class InvitationEditRightsController extends FormBasicController {
 					pageRow.applyRights(currentRights);
 				}
 			}
+			
+			binderRow.recalculate();
 		}
 	}
 	
@@ -244,7 +257,7 @@ public class InvitationEditRightsController extends FormBasicController {
 			invitation.setFirstName(firstNameEl.getValue());
 			invitation.setLastName(lastNameEl.getValue());
 			invitation.setMail(mailEl.getValue());
-			invitee = invitationDao.createIdentityAndPersistInvitation(invitation, binder.getBaseGroup(), getLocale());
+			invitee = invitationDao.loadOrCreateIdentityAndPersistInvitation(invitation, binder.getBaseGroup(), getLocale());
 			portfolioService.changeAccessRights(Collections.singletonList(invitee), changes);
 			sendInvitation();
 			fireEvent(ureq, Event.DONE_EVENT);
@@ -277,6 +290,19 @@ public class InvitationEditRightsController extends FormBasicController {
 		if(removeLink == source) {
 			doRemoveInvitation();
 			fireEvent(ureq, Event.DONE_EVENT);
+		} else if(selectAll == source) {
+			binderRow.setAccessible();
+			binderRow.recalculate();
+		} else if(deselectAll == source) {
+			binderRow.unsetAccessible();
+			for(SectionAccessRightsRow sectionRow:binderRow.getSections()) {
+				sectionRow.unsetAccessible();
+				for(PortfolioElementAccessRightsRow pageRow:sectionRow.getPages()) {
+					pageRow.unsetAccessible();
+				}
+			}
+		} else if(source instanceof MultipleSelectionElement) {
+			binderRow.recalculate();
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
@@ -323,11 +349,36 @@ public class InvitationEditRightsController extends FormBasicController {
 		private final List<SectionAccessRightsRow> sections = new ArrayList<>();
 
 		public BinderAccessRightsRow(MultipleSelectionElement accessEl, PortfolioElement element) {
-			super(accessEl, element);
+			super(accessEl, element, null);
 		}
 
 		public List<SectionAccessRightsRow> getSections() {
 			return sections;
+		}
+		
+		@Override
+		public void recalculate() {
+			super.recalculate();
+			
+			if(sections != null) {
+				if(isAccessible()) {
+					for(SectionAccessRightsRow section:sections) {
+						section.setAccessible();
+					}
+				}
+				for(SectionAccessRightsRow section:sections) {
+					section.recalculate();
+				}
+			}
+		}
+		
+		@Override
+		public void appendChanges(List<AccessRightChange> changes, Identity identity) {
+			if(isAccessible()) {
+				changes.add(new AccessRightChange(PortfolioRoles.readInvitee, getElement(), identity, true));
+			} else if(accessRight != null) {
+				changes.add(new AccessRightChange(PortfolioRoles.readInvitee, getElement(), identity, false));
+			}
 		}
 	}
 	
@@ -335,8 +386,30 @@ public class InvitationEditRightsController extends FormBasicController {
 		
 		private final List<PortfolioElementAccessRightsRow> pages = new ArrayList<>();
 		
-		public SectionAccessRightsRow(MultipleSelectionElement accessEl, PortfolioElement element) {
-			super(accessEl, element);
+		public SectionAccessRightsRow(MultipleSelectionElement accessEl, PortfolioElement element, BinderAccessRightsRow parentRow) {
+			super(accessEl, element, parentRow);
+		}
+		
+		@Override
+		public void recalculate() {
+			super.recalculate();
+			
+			if(pages != null) {
+				if(isAccessible()) {
+					for(PortfolioElementAccessRightsRow page:pages) {
+						page.setAccessible();
+					}
+				}
+			}
+		}
+		
+		@Override
+		public void appendChanges(List<AccessRightChange> changes, Identity identity) {
+			if(isAccessible() && !getParentRow().isAccessible()) {
+				changes.add(new AccessRightChange(PortfolioRoles.readInvitee, getElement(), identity, true));
+			} else if(accessRight != null) {
+				changes.add(new AccessRightChange(PortfolioRoles.readInvitee, getElement(), identity, false));
+			}
 		}
 		
 		public List<PortfolioElementAccessRightsRow> getPages() {
@@ -346,21 +419,28 @@ public class InvitationEditRightsController extends FormBasicController {
 	
 	public static class PortfolioElementAccessRightsRow {
 		
-		private PortfolioElement element;
-		private MultipleSelectionElement accessEl;
+		private final PortfolioElement element;
+		private final MultipleSelectionElement accessEl;
 		
-		public PortfolioElementAccessRightsRow(MultipleSelectionElement accessEl, PortfolioElement element) {
+		protected AccessRights accessRight;
+		private final PortfolioElementAccessRightsRow parentRow;
+		
+		public PortfolioElementAccessRightsRow(MultipleSelectionElement accessEl,
+				PortfolioElement element, PortfolioElementAccessRightsRow parentRow) {
 			this.element = element;
 			this.accessEl = accessEl;
+			this.parentRow = parentRow;
 			accessEl.setUserObject(Boolean.FALSE);
 		}
 		
+		public void recalculate() {
+			//do nothing
+		}
+		
 		public void appendChanges(List<AccessRightChange> changes, Identity identity) {
-			if(accessEl.isAtLeastSelected(1)) {
-				if(!Boolean.TRUE.equals(accessEl.getUserObject())) {
-					changes.add(new AccessRightChange(PortfolioRoles.readInvitee, element, identity, true));
-				}
-			} else if(Boolean.TRUE.equals(accessEl.getUserObject())) {
+			if(accessEl.isAtLeastSelected(1) && !parentRow.isAccessible() && !parentRow.getParentRow().isAccessible()) {
+				changes.add(new AccessRightChange(PortfolioRoles.readInvitee, element, identity, true));
+			} else if(accessRight != null) {
 				changes.add(new AccessRightChange(PortfolioRoles.readInvitee, element, identity, false));
 			}
 		}
@@ -386,12 +466,16 @@ public class InvitationEditRightsController extends FormBasicController {
 		public void applyRight(AccessRights right) {
 			if(right.getRole().equals(PortfolioRoles.readInvitee)) {
 				accessEl.select("xx", true);
-				accessEl.setUserObject(Boolean.TRUE);
+				accessRight = right;
 			}
 		}
 		
 		public String getTitle() {
 			return element.getTitle();
+		}
+		
+		public PortfolioElementAccessRightsRow getParentRow() {
+			return parentRow;
 		}
 
 		public PortfolioElement getElement() {
@@ -400,6 +484,18 @@ public class InvitationEditRightsController extends FormBasicController {
 
 		public MultipleSelectionElement getAccess() {
 			return accessEl;
+		}
+		
+		public boolean isAccessible() {
+			return accessEl.isAtLeastSelected(1);
+		}
+		
+		public void setAccessible() {
+			accessEl.select(theKeys[0], true);
+		}
+		
+		public void unsetAccessible() {
+			accessEl.uncheckAll();
 		}
 	}
 }

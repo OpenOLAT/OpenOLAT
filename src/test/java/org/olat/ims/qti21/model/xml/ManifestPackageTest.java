@@ -22,12 +22,13 @@ package org.olat.ims.qti21.model.xml;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.nio.file.Files;
 import java.util.List;
+import java.util.UUID;
 
 import org.junit.Assert;
 import org.junit.Test;
 import org.olat.core.util.FileUtils;
+import org.olat.core.util.WebappHelper;
 
 import uk.ac.ed.ph.jqtiplus.utils.contentpackaging.ContentPackageResource;
 import uk.ac.ed.ph.jqtiplus.utils.contentpackaging.ImsManifestException;
@@ -51,10 +52,10 @@ public class ManifestPackageTest {
         Assert.assertNotNull(testFilename);
         Assert.assertNotNull(itemFilename);
         
-        File tmpDir = Files.createTempDirectory("manifests").toFile();
-        if(!tmpDir.exists()) {
-        	tmpDir.mkdirs();
-        }
+        File tmpDir = new File(WebappHelper.getTmpDir(), "itembuilder" + UUID.randomUUID());
+		tmpDir.mkdirs();
+        
+
         
         File manifestFile = new File(tmpDir, "imsmanifest.xml");
         FileOutputStream out = new FileOutputStream(manifestFile);
@@ -71,7 +72,6 @@ public class ManifestPackageTest {
         
         ManifestBuilder reloadManifest = ManifestBuilder.read(manifestFile);
         Assert.assertNotNull(reloadManifest);
-        
         FileUtils.deleteDirsAndFiles(tmpDir.toPath());
 	}
 }

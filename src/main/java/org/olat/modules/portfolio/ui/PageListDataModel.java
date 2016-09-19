@@ -20,6 +20,7 @@
 package org.olat.modules.portfolio.ui;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -29,9 +30,8 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFle
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
-import org.olat.modules.portfolio.PageStatus;
 import org.olat.modules.portfolio.Section;
-import org.olat.modules.portfolio.ui.model.PageRow;
+import org.olat.modules.portfolio.ui.model.PortfolioElementRow;
 
 /**
  * 
@@ -39,10 +39,10 @@ import org.olat.modules.portfolio.ui.model.PageRow;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class PageListDataModel extends DefaultFlexiTableDataModel<PageRow>
-	implements SortableFlexiTableDataModel<PageRow> {
+public class PageListDataModel extends DefaultFlexiTableDataModel<PortfolioElementRow>
+	implements SortableFlexiTableDataModel<PortfolioElementRow> {
 	
-	private List<PageRow> backup;
+	private List<PortfolioElementRow> backup;
 	
 	public PageListDataModel(FlexiTableColumnModel columnModel) {
 		super(columnModel);
@@ -51,16 +51,33 @@ public class PageListDataModel extends DefaultFlexiTableDataModel<PageRow>
 	@Override
 	public void sort(SortKey orderBy) {
 		PageListSortableDataModelDelegate sorter = new PageListSortableDataModelDelegate(orderBy, this, null);
-		List<PageRow> rows = sorter.sort();
+		List<PortfolioElementRow> rows = sorter.sort();
 		
-		Section section = null;
-		for(PageRow row:rows) {
-			if(section == null || !section.equals(row.getSection())) {
-				row.setFirstPageOfSection(true);
-				section = row.getSection();
+		// This say where is the link to create a new entry
+		// if a section has assignments, it's at the end of
+		// the section. If there isn't any assignment, it
+		// under the section.
+		boolean lastNewEntry = false;
+		PortfolioElementRow previousRow = null;
+		for(PortfolioElementRow row:rows) {
+			if(row.isSection()) {
+				if(lastNewEntry && previousRow != null) {
+					previousRow.setNewEntry(true);
+				}
+				
+				if(row.isAssignments()) {
+					lastNewEntry = true;
+				} else {
+					lastNewEntry = false;
+					row.setNewEntry(true);
+				}
 			} else {
-				row.setFirstPageOfSection(false);
+				row.setNewEntry(false);
 			}
+			previousRow = row;
+		}
+		if(lastNewEntry && previousRow != null) {
+			previousRow.setNewEntry(true);
 		}
 		
 		super.setObjects(rows);
@@ -76,8 +93,8 @@ public class PageListDataModel extends DefaultFlexiTableDataModel<PageRow>
 		
 		Set<Section> sectionSet = new HashSet<>();
 		List<Section> sectionList = new ArrayList<>();
-		List<PageRow> sectionRows = new ArrayList<>();
-		for(PageRow row:backup) {
+		List<PortfolioElementRow> sectionRows = new ArrayList<>();
+		for(PortfolioElementRow row:backup) {
 			if(row.getSection() != null) {
 				if(!sectionSet.contains(row.getSection())) {
 					sectionSet.add(row.getSection());
@@ -94,58 +111,77 @@ public class PageListDataModel extends DefaultFlexiTableDataModel<PageRow>
 	}
 
 	@Override
-	public void setObjects(List<PageRow> objects) {
+	public void setObjects(List<PortfolioElementRow> objects) {
 		backup = objects;
 		super.setObjects(objects);
 	}
 
 	@Override
 	public Object getValueAt(int row, int col) {
-		PageRow page = getObject(row);
+		PortfolioElementRow page = getObject(row);
 		return getValueAt(page, col);
 	}
 	
 	@Override
-	public Object getValueAt(PageRow page, int col) {
+	public Object getValueAt(PortfolioElementRow page, int col) {
 		switch(PageCols.values()[col]) {
 			case key: return page.getKey();
 			case title: {
-				String title = page.getTitle();
-				if(title == null && page.getSection() != null) {
-					title = page.getSection().getTitle();
+				String title = null;
+				if(page.isPage()) {
+					title = page.getTitle();
+				} else if(page.isSection()) {
+					title = page.getSectionTitle();
+				} else if(page.isPendingAssignment()) {
+					title = page.getAssignmentTitle();
 				}
 				return title;
 			}
 			case date: {
-				if(page.getPage() != null) {
-					return page.getPage().getCreationDate();
-				}
-				if(page.getSection() != null) {
-					if(page.getSectionBeginDate() != null) {
-						return page.getSection().getBeginDate();
+				Date creationDate = null;
+				if(page.isPage()) {
+					creationDate = page.getPage().getCreationDate();
+				} else if(page.isSection()) {
+					creationDate = page.getSection().getBeginDate();
+					if(creationDate == null) {
+						creationDate = page.getSection().getCreationDate();
 					}
-					return page.getSection().getCreationDate();
+				} else if(page.isPendingAssignment()) {
+					creationDate = page.getAssignment().getCreationDate();
 				}
-				return null;
+				return creationDate;
 			}
 			case publicationDate: return page.getLastPublicationDate();
 			case status: {
-				PageStatus pageStatus = page.getPageStatus();
-				if(pageStatus == null && page.isPage()) {
-					pageStatus = PageStatus.draft;
+				if(page.isPage()) {
+					return page.getPageStatus();
 				}
-				
-				return pageStatus;
+				if(page.isSection()) {
+					return page.getSectionStatus();
+				}
+				return null;
 			}
 			case categories: return page.getPageCategories();
 			case section: return page.getSectionTitle();
+			case up: {
+				if(page.isPendingAssignment()) {
+					return page.getUpAssignmentLink() != null && page.getUpAssignmentLink().isEnabled();
+				}
+				return Boolean.FALSE;
+			}
+			case down: {
+				if(page.isPendingAssignment()) {
+					return page.getDownAssignmentLink() != null && page.getDownAssignmentLink().isEnabled();
+				}
+				return Boolean.FALSE;
+			}
 			case comment: return page.getCommentFormLink();
 		}
 		return null;
 	}
 	
 	@Override
-	public DefaultFlexiTableDataModel<PageRow> createCopyWithEmptyList() {
+	public DefaultFlexiTableDataModel<PortfolioElementRow> createCopyWithEmptyList() {
 		return new PageListDataModel(getTableColumnModel());
 	}
 
@@ -157,6 +193,8 @@ public class PageListDataModel extends DefaultFlexiTableDataModel<PageRow>
 		publicationDate("table.header.publication.date", true),
 		categories("table.header.categories", false),
 		section("table.header.section", true),
+		up("table.header.up", false),
+		down("table.header.down", false),
 		comment("comment.title", true);
 		
 		private final String i18nKey;

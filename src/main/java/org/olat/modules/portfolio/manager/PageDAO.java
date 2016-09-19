@@ -322,11 +322,15 @@ public class PageDAO {
 	public Page removePage(Page page) {
 		PageImpl reloadedPage = (PageImpl)loadByKey(page.getKey());
 		Section section = reloadedPage.getSection();
-		section.getPages().remove(reloadedPage);
+		if(section != null) {
+			section.getPages().remove(reloadedPage);
+		}
 		reloadedPage.setLastModified(new Date());
 		reloadedPage.setSection(null);
 		reloadedPage.setPageStatus(PageStatus.deleted);
-		dbInstance.getCurrentEntityManager().merge(section);
+		if(section != null) {
+			dbInstance.getCurrentEntityManager().merge(section);
+		}
 		return dbInstance.getCurrentEntityManager().merge(reloadedPage);
 	}
 	
@@ -373,7 +377,7 @@ public class PageDAO {
 		if(index > 0) {
 			PagePart reloadedPart = body.getParts().remove(index);
 			body.getParts().add(index - 1, reloadedPart);
-		} else {
+		} else if(index < 0) {
 			body.getParts().add(0, part);
 		}
 		dbInstance.getCurrentEntityManager().merge(body);
@@ -405,5 +409,16 @@ public class PageDAO {
 	
 	public PagePart merge(PagePart part) {
 		return dbInstance.getCurrentEntityManager().merge(part);
+	}
+	
+	
+	public int deletePage(Page page) {
+		String partQ = "delete from pfpagepart part where part.page.key=:pageKey";
+		int parts = dbInstance.getCurrentEntityManager()
+				.createQuery(partQ)
+				.setParameter("pageKey", page.getKey())
+				.executeUpdate();
+		dbInstance.getCurrentEntityManager().remove(page);
+		return parts + 1;
 	}
 }

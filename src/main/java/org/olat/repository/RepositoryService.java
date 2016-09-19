@@ -28,7 +28,9 @@ import java.util.Map;
 import org.olat.basesecurity.Group;
 import org.olat.basesecurity.IdentityRef;
 import org.olat.core.id.Identity;
+import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Roles;
+import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.repository.model.SearchAuthorRepositoryEntryViewParams;
 import org.olat.repository.model.SearchMyRepositoryEntryViewParams;
@@ -45,6 +47,8 @@ import org.olat.resource.OLATResource;
  *
  */
 public interface RepositoryService {
+	
+	public static final OLATResourceable REPOSITORY_EVENT_ORES = OresHelper.createOLATResourceableInstance("REPO-CHANGE", 1l);
 	
 	
 	public RepositoryEntry create(Identity initialAuthor, String initialAuthorAlt,

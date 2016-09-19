@@ -110,6 +110,11 @@ public class InfinispanCacheWrapper<U,V> implements CacheWrapper<U,V> {
 	}
 
 	@Override
+	public V replace(U key, V value) {
+		return cache.replace(key, value);
+	}
+
+	@Override
 	public V computeIfAbsent(U key, Function<? super U, ? extends V> mappingFunction) {
 		return cache.computeIfAbsent(key, mappingFunction);
 	}

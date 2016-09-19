@@ -305,8 +305,6 @@ CREATE TABLE o_user (
    u_genericselectionproperty varchar2(255 char),
    u_genericselectionproperty2 varchar2(255 char),
    u_genericselectionproperty3 varchar2(255 char),
-   u_genericselectionproperty4 varchar2(255 char),
-   u_genericselectionproperty5 varchar2(255 char),
    u_generictextproperty varchar2(255 char),
    u_generictextproperty2 varchar2(255 char),
    u_generictextproperty3 varchar2(255 char),
@@ -319,13 +317,6 @@ CREATE TABLE o_user (
    u_genericcheckboxproperty varchar2(255 char),
    u_genericcheckboxproperty2 varchar2(255 char),
    u_genericcheckboxproperty3 varchar2(255 char),
-   u_genericcheckboxproperty4 varchar2(255 char),
-   u_genericcheckboxproperty5 varchar2(255 char),
-   u_genericyesnoproperty varchar2(255 char),
-   u_genericyesnoproperty2 varchar2(255 char),
-   u_genericyesnoproperty3 varchar2(255 char),
-   u_genericyesnoproperty4 varchar2(255 char),
-   u_genericyesnoproperty5 varchar2(255 char),
    
   PRIMARY KEY (user_id)
 );
@@ -1634,6 +1625,7 @@ create table o_pf_assignment (
    id number(20) GENERATED ALWAYS AS IDENTITY,
    creationdate date not null,
    lastmodified date not null,
+   pos number(20) default null,
    p_status varchar2(32 char) default null,
    p_type varchar2(32 char) not null,
    p_version number(20) default 0 not null,
@@ -2533,11 +2525,14 @@ alter table o_ep_struct_artefact_link add constraint FKF26C8375236F26Y foreign k
 create index idx_structart_to_auth_idx on o_ep_struct_artefact_link (fk_auth_id);
 
 alter table o_ep_struct_to_group add constraint struct_to_group_group_ctx foreign key (fk_group_id) references o_bs_group (id);
+create index idx_struct_to_group_group_ctx on o_ep_struct_to_group (fk_group_id);
 alter table o_ep_struct_to_group add constraint struct_to_group_re_ctx foreign key (fk_struct_id) references o_ep_struct_el (structure_id);
+create index idx_struct_to_group_re_ctx on o_ep_struct_to_group (fk_struct_id);
 
 -- tag
 alter table o_tag add constraint FK6491FCA5A4FA5DC foreign key (fk_author_id) references o_bs_identity (id);
 create index idx_tag_to_auth_idx on o_tag (fk_author_id);
+create index idx_tag_to_resid_idx on o_tag (resid);
 
 -- mail
 alter table o_mail add constraint FKF86663165A4FA5DC foreign key (fk_from_id) references o_mail_recipient (recipient_id);

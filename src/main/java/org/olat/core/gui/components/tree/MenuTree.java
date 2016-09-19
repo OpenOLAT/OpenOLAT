@@ -46,7 +46,6 @@ import org.olat.core.gui.render.ValidationResult;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.nodes.INode;
 import org.olat.core.util.tree.INodeFilter;
-import org.olat.course.tree.TreePosition;
 
 /**
  * Description: <br>

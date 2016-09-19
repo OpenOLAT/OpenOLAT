@@ -91,6 +91,7 @@ import org.olat.ims.qti21.ui.event.RetrieveAssessmentTestSessionEvent;
 import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.assessment.AssessmentService;
 import org.olat.repository.RepositoryEntry;
+import org.olat.util.logging.activity.LoggingResourceable;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import uk.ac.ed.ph.jqtiplus.JqtiPlus;
@@ -218,9 +219,15 @@ public class AssessmentTestDisplayController extends BasicController implements 
 			anonymousIdentifier = null;
 		}
 		
+		if(testEntry == entry) {
+			// Limit to the case where the test is launched as resource,
+			// within course is this task delegated to the QTI21AssessmentRunController
+			addLoggingResourceable(LoggingResourceable.wrapTest(entry));
+		}
+		
 		FileResourceManager frm = FileResourceManager.getInstance();
 		fUnzippedDirRoot = frm.unzipFileResource(testEntry.getOlatResource());
-		resolvedAssessmentTest = qtiService.loadAndResolveAssessmentTest(fUnzippedDirRoot, false);
+		resolvedAssessmentTest = qtiService.loadAndResolveAssessmentTest(fUnzippedDirRoot, false, false);
 		
 		URI assessmentObjectUri = qtiService.createAssessmentObjectUri(fUnzippedDirRoot);
 		mapperUri = registerCacheableMapper(null, "QTI21Resources::" + testEntry.getKey(), new ResourcesMapper(assessmentObjectUri));
@@ -272,7 +279,7 @@ public class AssessmentTestDisplayController extends BasicController implements 
 		AssessmentEntry assessmentEntry = assessmentService.getOrCreateAssessmentEntry(assessedIdentity, anonymousIdentifier, entry, subIdent, testEntry);
 		if(outcomesListener == null) {
 			boolean manualCorrections = AssessmentTestHelper.needManualCorrection(resolvedAssessmentTest);
-			outcomesListener = new AssessmentEntryOutcomesListener(assessmentEntry, manualCorrections, assessmentService);
+			outcomesListener = new AssessmentEntryOutcomesListener(assessmentEntry, manualCorrections, assessmentService, authorMode);
 		}
 
 		AssessmentTestSession lastSession = null;
@@ -877,11 +884,11 @@ public class AssessmentTestDisplayController extends BasicController implements 
         testSessionController.endCurrentTestPart(requestTimestamp);
         
         TestSessionState testSessionState = testSessionController.getTestSessionState();
+        TestPlanNode nextTestPart = testSessionController.findNextEnterableTestPart();
         
         // Record current result state
-	    final AssessmentResult assessmentResult = computeAndRecordTestAssessmentResult(ureq, testSessionState, false);
-        
-        if(testSessionController.findNextEnterableTestPart() == null) {
+	    final AssessmentResult assessmentResult = computeAndRecordTestAssessmentResult(ureq, testSessionState, nextTestPart == null);
+        if(nextTestPart == null) {
         	candidateSession = qtiService.finishTestSession(candidateSession, testSessionState, assessmentResult, requestTimestamp);
         }
 	}
@@ -1263,7 +1270,6 @@ public class AssessmentTestDisplayController extends BasicController implements 
 		@Override
 		protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 			mainForm.setMultipartEnabled(true);
-			mainForm.setOnSubmitCallback("QtiWorksRendering.maySubmit();");
 
 			FormSubmit submit = uifactory.addFormSubmitButton("submit", formLayout);
 			submit.setElementCssClass("o_sel_assessment_item_submit");

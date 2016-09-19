@@ -3,6 +3,7 @@
 	background-position: center;
 	background-repeat: no-repeat;
 	background-color: #ffffcc;
-	background-image: url('../images/movieviewer.gif');
+	background-image: url('olatmovieviewer.png');
+	background-size: 32px 32px;
 	display: block;
 }

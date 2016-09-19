@@ -344,7 +344,7 @@
         <presentation label="notset">
           <flow>
             <material>
-              <mattext texttype="text/html"><![CDATA[<p>To be or</p>]]></mattext>
+              <mattext texttype="text/html"><![CDATA[To be or]]></mattext>
             </material>
             <response_str ident="8000177110" rcardinality="Single">
               <render_fib columns="3" maxchars="10">
@@ -366,7 +366,7 @@
             <conditionvar>
               <and>
                 <or>
-                  <varequal respident="8000177110" case="No"><![CDATA[not]]></varequal>
+                  <varequal respident="8000177110" case="No"><![CDATA[New text element<br />Et encor<br />bla]]></varequal>
                 </or>
               </and>
             </conditionvar>

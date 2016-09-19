@@ -204,9 +204,6 @@
 		<property name="deletable" value="true" />
 	</bean>
 	
-
-
-	<!-- fxdiff: FXOLAT-31 additional generic properties-->
 	<bean id="userPropertyGenericSelect" class="org.olat.user.propertyhandlers.GenericSelectionPropertyHandler" depends-on="UsrPropHandlerCfgFactory" >
 		<property name="name" value="genericSelectionProperty" />
 		<property name="group" value="person" />
@@ -231,23 +228,6 @@
 			<ref bean="UsrPropHandlerCfgFactory" />
 		</property>
 	</bean>
-	<bean id="userPropertyGenericSelect4" class="org.olat.user.propertyhandlers.GenericSelectionPropertyHandler" depends-on="UsrPropHandlerCfgFactory" >
-		<property name="name" value="genericSelectionProperty4" />
-		<property name="group" value="person" />
-		<property name="deletable" value="true" />
-		<property name="HandlerConfigFactory" >
-			<ref bean="UsrPropHandlerCfgFactory" />
-		</property>
-	</bean>
-	<bean id="userPropertyGenericSelect5" class="org.olat.user.propertyhandlers.GenericSelectionPropertyHandler" depends-on="UsrPropHandlerCfgFactory" >
-		<property name="name" value="genericSelectionProperty5" />
-		<property name="group" value="person" />
-		<property name="deletable" value="true" />
-		<property name="HandlerConfigFactory" >
-			<ref bean="UsrPropHandlerCfgFactory" />
-		</property>
-	</bean>
-	
 	
 	<bean id="userPropertyGenericText" class="org.olat.user.propertyhandlers.Generic127CharTextPropertyHandler">
 		<property name="name" value="genericTextProperty" />
@@ -312,16 +292,6 @@
 		<property name="group" value="person" />
 		<property name="deletable" value="true" />
 	</bean>
-	<bean id="userPropertyGenericCheckbox4" class="de.bps.olat.user.propertyhandlers.GenericCheckboxPropertyHandler">
-		<property name="name" value="genericCheckboxProperty4" />
-		<property name="group" value="person" />
-		<property name="deletable" value="true" />
-	</bean>
-	<bean id="userPropertyGenericCheckbox5" class="de.bps.olat.user.propertyhandlers.GenericCheckboxPropertyHandler">
-		<property name="name" value="genericCheckboxProperty5" />
-		<property name="group" value="person" />
-		<property name="deletable" value="true" />
-	</bean>
 	
 	<bean id="userPropertyCreationDateDisplay" class="org.olat.user.propertyhandlers.DateDisplayPropertyHandler">
 		<property name="name" value="creationDateDisplayProperty" />
@@ -334,36 +304,6 @@
 		<property name="group" value="person" />
 		<property name="deletable" value="true" />
 	</bean>
-	
-	<bean id="userPropertyGenericYesNo" class="org.olat.user.propertyhandlers.GenericYesNoPropertyHandler">
-		<property name="name" value="genericYesNoProperty" />
-		<property name="group" value="person" />
-		<property name="deletable" value="true" />
-	</bean>
-	<bean id="userPropertyGenericYesNo2" class="org.olat.user.propertyhandlers.GenericYesNoPropertyHandler">
-		<property name="name" value="genericYesNoProperty2" />
-		<property name="group" value="person" />
-		<property name="deletable" value="true" />
-	</bean>
-	<bean id="userPropertyGenericYesNo3" class="org.olat.user.propertyhandlers.GenericYesNoPropertyHandler">
-		<property name="name" value="genericYesNoProperty3" />
-		<property name="group" value="person" />
-		<property name="deletable" value="true" />
-	</bean>
-	<bean id="userPropertyGenericYesNo4" class="org.olat.user.propertyhandlers.GenericYesNoPropertyHandler">
-		<property name="name" value="genericYesNoProperty4" />
-		<property name="group" value="person" />
-		<property name="deletable" value="true" />
-	</bean>
-	<bean id="userPropertyGenericYesNo5" class="org.olat.user.propertyhandlers.GenericYesNoPropertyHandler">
-		<property name="name" value="genericYesNoProperty5" />
-		<property name="group" value="person" />
-		<property name="deletable" value="true" />
-	</bean>
-	
-	
-	
-	<!--  fxdiff: FXOLAT-239 the following properties were moved from baks-config (application.xml) -->
 	
 	<bean id="userPropertyRank" class="org.olat.user.propertyhandlers.Generic127CharTextPropertyHandler">
     <property name="name" value="rank" />

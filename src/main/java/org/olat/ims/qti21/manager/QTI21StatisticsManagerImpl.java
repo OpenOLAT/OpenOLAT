@@ -87,6 +87,7 @@ public class QTI21StatisticsManagerImpl implements QTI21StatisticsManager {
 		} else {
 			sb.append(" and asession.subIdent is null");
 		}
+		sb.append(" and asession.authorMode=false");
 
 		if(finished) {
 			sb.append(" and asession.finishTime is not null");
@@ -126,7 +127,9 @@ public class QTI21StatisticsManagerImpl implements QTI21StatisticsManager {
 	
 	private void decorateRSetQuery(TypedQuery<?> query, QTI21StatisticSearchParams searchParams) {
 		query.setParameter("testEntryKey", searchParams.getTestEntry().getKey());
-		if(searchParams.getCourseEntry() != null) {
+		if(searchParams.getCourseEntry() == null) {
+			query.setParameter("repositoryEntryKey", searchParams.getTestEntry().getKey());
+		} else {
 			query.setParameter("repositoryEntryKey", searchParams.getCourseEntry().getKey());
 		}
 		if(searchParams.getNodeIdent() != null ) {
@@ -147,7 +150,7 @@ public class QTI21StatisticsManagerImpl implements QTI21StatisticsManager {
 	@Override
 	public StatisticAssessment getAssessmentStatistics(QTI21StatisticSearchParams searchParams) {
 		StringBuilder sb = new StringBuilder();
-		sb.append("select asession.score, asession.passed, asession.duration from qtiassessmenttestsession asession ");
+		sb.append("select asession.score, asession.manualScore, asession.passed, asession.duration from qtiassessmenttestsession asession ");
 		decorateRSet(sb, searchParams, true);
 		sb.append(" order by asession.key asc");
 
@@ -170,7 +173,14 @@ public class QTI21StatisticsManagerImpl implements QTI21StatisticsManager {
 		int dataPos = 0;
 		boolean hasScore = false;
 		for(Object[] rawData:rawDatas) {
-			BigDecimal score = (BigDecimal)rawData[0];
+			int pos = 0;
+			BigDecimal score = (BigDecimal)rawData[pos++];
+			BigDecimal manualScore = (BigDecimal)rawData[pos++];
+			if(score == null) {
+				score = manualScore;
+			} else if(manualScore != null) {
+				score = score.add(manualScore);
+			}
 			if(score != null) {
 				double scored = score.doubleValue();
 				scores[dataPos] = scored;
@@ -179,7 +189,7 @@ public class QTI21StatisticsManagerImpl implements QTI21StatisticsManager {
 				hasScore = true;
 			}
 			
-			Boolean passed = (Boolean)rawData[1];
+			Boolean passed = (Boolean)rawData[pos++];
 			if(passed != null) {
 				if(passed.booleanValue()) {
 					numOfPassed++;
@@ -188,7 +198,7 @@ public class QTI21StatisticsManagerImpl implements QTI21StatisticsManager {
 				}
 			}
 
-			Long duration = (Long)rawData[2];
+			Long duration = (Long)rawData[pos++];
 			if(duration != null) {
 				double durationd = duration.doubleValue();
 				double durationSecond = Math.round(durationd / 1000d);
@@ -232,11 +242,11 @@ public class QTI21StatisticsManagerImpl implements QTI21StatisticsManager {
 			QTI21StatisticSearchParams searchParams) {
 		
 		StringBuilder sb = new StringBuilder();
-		sb.append("select isession.score, count(isession.key), avg(isession.duration) from qtiassessmentitemsession isession ")
+		sb.append("select isession.score, isession.manualScore, count(isession.key), avg(isession.duration) from qtiassessmentitemsession isession ")
 		  .append(" inner join isession.assessmentTestSession asession");
 		decorateRSet(sb, searchParams, true);
 		sb.append(" and isession.assessmentItemIdentifier=:itemIdent and isession.duration > 0")
-		  .append(" group by isession.score");
+		  .append(" group by isession.score, isession.manualScore");
 
 		TypedQuery<Object[]> query = dbInstance.getCurrentEntityManager()
 			.createQuery(sb.toString(), Object[].class)
@@ -254,15 +264,23 @@ public class QTI21StatisticsManagerImpl implements QTI21StatisticsManager {
 		long numOfIncorrectAnswers = 0;
 		
 		for(Object[] result:results) {
-			double score = ((Number)result[0]).doubleValue();
-			long numOfResults = ((Number)result[1]).longValue();
-			double averageDuration = ((Number)result[2]).doubleValue();
+			BigDecimal score = (BigDecimal)result[0];
+			BigDecimal manualScore = (BigDecimal)result[1];
+			if(score == null) {
+				score = manualScore;
+			} else if(manualScore != null) {
+				score = score.add(manualScore);
+			}
+			
+			long numOfResults = ((Number)result[2]).longValue();
+			double averageDuration = ((Number)result[3]).doubleValue();
 			
 			//average
-			totalScore += (score * numOfResults);
+			double dScore = score == null ? 0.0d : score.doubleValue();
+			totalScore += (dScore * numOfResults);
 			totalResults += numOfResults;
 			
-			if((maxScore - score) < 0.0001) {
+			if((maxScore - dScore) < 0.0001) {
 				numOfCorrectAnswers += numOfResults;
 			} else {
 				numOfIncorrectAnswers += numOfResults;

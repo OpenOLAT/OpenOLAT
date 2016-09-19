@@ -67,9 +67,7 @@ public class MultipleChoiceEditorController extends FormBasicController {
 	private FormLayoutContainer answersCont;
 	private final List<SimpleChoiceWrapper> choiceWrappers = new ArrayList<>();
 	
-	private final File itemFile;
-	private final File rootDirectory;
-	private final VFSContainer rootContainer;
+	private final VFSContainer itemContainer;
 	
 	private int count = 0;
 	private final boolean restrictedEdit;
@@ -85,10 +83,11 @@ public class MultipleChoiceEditorController extends FormBasicController {
 		super(ureq, wControl, "simple_choices_editor");
 		setTranslator(Util.createPackageTranslator(AssessmentTestEditorController.class, getLocale()));
 		this.itemBuilder = itemBuilder;
-		this.itemFile = itemFile;
-		this.rootDirectory = rootDirectory;
-		this.rootContainer = rootContainer;
 		this.restrictedEdit = restrictedEdit;
+		
+		String relativePath = rootDirectory.toPath().relativize(itemFile.toPath().getParent()).toString();
+		itemContainer = (VFSContainer)rootContainer.resolve(relativePath);
+		
 		initForm(ureq);
 	}
 
@@ -103,11 +102,8 @@ public class MultipleChoiceEditorController extends FormBasicController {
 		titleEl = uifactory.addTextElement("title", "form.imd.title", -1, itemBuilder.getTitle(), metadata);
 		titleEl.setMandatory(true);
 		
-		String relativePath = rootDirectory.toPath().relativize(itemFile.toPath().getParent()).toString();
-		VFSContainer itemContainer = (VFSContainer)rootContainer.resolve(relativePath);
-		
 		String description = itemBuilder.getQuestion();
-		textEl = uifactory.addRichTextElementForStringDataCompact("desc", "form.imd.descr", description, 8, -1, itemContainer,
+		textEl = uifactory.addRichTextElementForQTI21("desc", "form.imd.descr", description, 8, -1, itemContainer,
 				metadata, ureq.getUserSession(), getWindowControl());
 		
 		//shuffle
@@ -170,7 +166,7 @@ public class MultipleChoiceEditorController extends FormBasicController {
 	private void wrapAnswer(UserRequest ureq, SimpleChoice choice) {
 		String choiceContent =  itemBuilder.getHtmlHelper().flowStaticString(choice.getFlowStatics());
 		String choiceId = "answer" + count++;
-		RichTextElement choiceEl = uifactory.addRichTextElementForStringDataCompact(choiceId, "form.imd.answer", choiceContent, 8, -1, null,
+		RichTextElement choiceEl = uifactory.addRichTextElementForQTI21(choiceId, "form.imd.answer", choiceContent, 8, -1, itemContainer,
 				answersCont, ureq.getUserSession(), getWindowControl());
 		choiceEl.setUserObject(choice);
 		answersCont.add("choiceId", choiceEl);
@@ -218,10 +214,12 @@ public class MultipleChoiceEditorController extends FormBasicController {
 		}
 		
 		answersCont.clearError();
-		String[] correctAnswers = ureq.getHttpReq().getParameterValues("correct");
-		if(correctAnswers == null || correctAnswers.length == 0) {
-			answersCont.setErrorKey("error.need.correct.answer", null);
-			allOk &= false;
+		if(!restrictedEdit) {
+			String[] correctAnswers = ureq.getHttpReq().getParameterValues("correct");
+			if(correctAnswers == null || correctAnswers.length == 0) {
+				answersCont.setErrorKey("error.need.correct.answer", null);
+				allOk &= false;
+			}
 		}
 		
 		return allOk & super.validateFormLogic(ureq);
@@ -232,7 +230,7 @@ public class MultipleChoiceEditorController extends FormBasicController {
 		//title
 		itemBuilder.setTitle(titleEl.getValue());
 		//question
-		String questionText = textEl.getValue();
+		String questionText = textEl.getRawValue();
 		itemBuilder.setQuestion(questionText);
 		
 		if(!restrictedEdit) {
@@ -261,7 +259,7 @@ public class MultipleChoiceEditorController extends FormBasicController {
 		for(SimpleChoiceWrapper choiceWrapper:choiceWrappers) {
 			SimpleChoice choice = choiceWrapper.getSimpleChoice();
 			//text
-			String answer = choiceWrapper.getAnswer().getValue();
+			String answer = choiceWrapper.getAnswer().getRawValue();
 			itemBuilder.getHtmlHelper().appendHtml(choice, answer);
 			choiceList.add(choice);
 		}

@@ -19,6 +19,10 @@
  */
 package org.olat.core.gui.components.form.flexible.impl.elements.table;
 
+import java.util.List;
+
+import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
+
 /**
  * Mark a data model as filterable
  * 
@@ -32,6 +36,6 @@ public interface FilterableFlexiTableModel {
 	 * @param key
 	 * @return True if a reload is needed
 	 */
-	public void filter(String key);
+	public void filter(List<FlexiTableFilter> filters);
 
 }

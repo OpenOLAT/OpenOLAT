@@ -164,6 +164,21 @@ public class BusinessGroupRow implements BusinessGroupRef, BusinessGroupShort {
 		this.member = member;
 	}
 	
-	
-	
+	@Override
+	public int hashCode() {
+		return key == null ? -54851 : key.hashCode();
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if(obj == this) {
+			return true;
+		}
+		
+		if(obj instanceof BusinessGroupRow) {
+			BusinessGroupRow row = (BusinessGroupRow)obj;
+			return key != null && key.equals(row.getKey());
+		}
+		return false;
+	}
 }

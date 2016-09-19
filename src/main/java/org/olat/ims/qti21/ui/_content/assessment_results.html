@@ -53,7 +53,7 @@
 #foreach($itemResult in $itemResults)
 <div class="panel panel-default o_personal">
   	<div class="panel-heading">
- 		<h5 class="panel-title"><i class="o_icon $itemResult.cssClass"> </i> $itemResult.title</h5>
+ 		<h5 class="panel-title"><i class="o_icon $itemResult.cssClass"> </i> $r.escapeHtml($itemResult.title)</h5>
  	</div>
 	<table class="table"><tbody>
 		<tr class="o_score">

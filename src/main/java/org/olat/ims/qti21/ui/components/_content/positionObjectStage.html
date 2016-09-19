@@ -18,8 +18,11 @@
 	#end
 
     <div id="${containerId}" style="width:${positionObjectStage.object.width}px; position:relative; ">
-		<img id="${containerId}_img" width="${positionObjectStage.object.width}" height="${positionObjectStage.object.height}" src="${r.convertLinkFull($positionObjectStage.object.data)}"></img>
-		<div class="items_container" style="width:${positionObjectStage.object.width}px;" class="clearfix">
+		<img id="${containerId}_img" width="${positionObjectStage.object.width}" height="${positionObjectStage.object.height}" src="${r.convertLinkFull($positionObjectStage.object.data)}" />
+		<div class="o_items_container_help">
+			<p><i class="o_icon o_icon_help"> </i> $r.translate("graphic.gap.explanation")</p>
+		</div>
+		<div class="items_container clearfix" style="width:${positionObjectStage.object.width}px;">
 		#foreach($interaction in $interactions)
 			#set($maxChoices = $r.maxToList($interaction.maxChoices))
 			#set($responseValue = $r.getResponseValue($interaction.responseIdentifier))

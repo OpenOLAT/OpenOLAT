@@ -85,7 +85,7 @@ public class PortfolioHandler implements RepositoryHandler {
 	
 	@Override
 	public boolean isCreate() {
-		return true;
+		return false;
 	}
 	
 	@Override

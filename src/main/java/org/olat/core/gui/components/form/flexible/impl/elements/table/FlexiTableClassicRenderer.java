@@ -158,7 +158,11 @@ class FlexiTableClassicRenderer extends AbstractFlexiTableRenderer implements Co
 				  .append(";\"");	 
 			if(ftE.isMultiSelectedIndex(row)) {
 				target.append(" checked='checked'");
-			}   
+			}
+			boolean selectable = ftE.getTableDataModel().isSelectable(row);
+			if(!selectable) {
+				target.append(" disabled='disabled'");
+			}
 			target.append("/></td>");
 		}
 				

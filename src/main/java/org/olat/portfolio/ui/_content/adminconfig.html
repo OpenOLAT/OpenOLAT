@@ -12,8 +12,10 @@
 	$r.render("flc_handlers")
 </fieldset>
 
+#if($r.available("flc_wizard") && $r.visible("flc_wizard"))
 <fieldset>
 	<legend>$r.translate("wizard.title")</legend>
 	<p>$r.translate("wizard.intro")</p>
 	$r.render("flc_wizard")
 </fieldset>
+#end

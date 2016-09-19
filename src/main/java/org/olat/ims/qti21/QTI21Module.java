@@ -20,6 +20,7 @@
 package org.olat.ims.qti21;
 
 import org.olat.core.configuration.AbstractSpringModule;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.ims.qti21.repository.handlers.QTI21AssessmentTestHandler;
 import org.olat.repository.handlers.RepositoryHandlerFactory;
@@ -39,7 +40,7 @@ public class QTI21Module extends AbstractSpringModule {
 	@Autowired
 	private QTI21AssessmentTestHandler assessmentHandler;
 	
-	@Value("${qti21.math.assessment.extension.enabled:true}")
+	@Value("${qti21.math.assessment.extension.enabled:false}")
 	private boolean mathAssessExtensionEnabled;
 	
 	@Autowired
@@ -52,23 +53,23 @@ public class QTI21Module extends AbstractSpringModule {
 		RepositoryHandlerFactory.registerHandler(assessmentHandler, 10);
 		//Saxon is mandatory, JQTI need XSLT 2.0
 		//XsltFactoryUtilities.SAXON_TRANSFORMER_FACTORY_CLASS_NAME;
+		initFromChangedProperties();
 	}
 
 	@Override
 	protected void initFromChangedProperties() {
-		//
+		String mathExtensionObj = getStringPropertyValue("math.extension", true);
+		if(StringHelper.containsNonWhitespace(mathExtensionObj)) {
+			mathAssessExtensionEnabled = "enabled".equals(mathExtensionObj);
+		}
 	}
 
 	public boolean isMathAssessExtensionEnabled() {
 		return mathAssessExtensionEnabled;
 	}
 
-	public void setMathAssessExtensionEnabled(boolean mathAssessExtensionEnabled) {
-		this.mathAssessExtensionEnabled = mathAssessExtensionEnabled;
+	public void setMathAssessExtensionEnabled(boolean enabled) {
+		mathAssessExtensionEnabled = enabled;
+		setStringProperty("math.extension", enabled ? "enabled" : "disabled", true);
 	}
-	
-	
-	
-	
-
 }

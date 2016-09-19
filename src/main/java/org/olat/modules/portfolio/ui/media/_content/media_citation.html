@@ -1,8 +1,21 @@
 <div class="o_cit">
-	#if($r.available("cit"))
-		$r.render("cit")
-	#else
-	<div class="o_quote_author">$author</div>
+	#if($title)
+	<h5>
+		<i class="o_icon o_icon-fw o_icon_citation"> </i> 
+		$title
+	</h5>
 	#end
-	<blockquote class="o_quote">$r.xssScan($citation)</blockquote>
+	<blockquote class="o_quote">
+		$r.xssScan($citation)
+	</blockquote>	
+	#if ($description)
+	<div class="o_desc o_block">
+		$r.xssScan($description)
+	</div>
+	#end
+	#if($r.available("cit"))
+		<div class="o_cit_bibinfo">
+			$r.render("cit")
+		</div>
+	#end
 </div>

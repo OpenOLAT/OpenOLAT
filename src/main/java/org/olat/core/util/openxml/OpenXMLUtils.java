@@ -66,7 +66,13 @@ public class OpenXMLUtils {
 	public static final double emusPerInch = 914400.0d;
 	public static final double emusPerCm = 360000.0d;
 	
-	public static final Size convertPixelToEMUs2(Size img, int dpi) {
+
+	public static final int convertPixelToEMUs(int pixel, int dpi, double resizeRatio) {
+		double rezDpi = dpi * 1.0d;
+		return (int)(((pixel / rezDpi) * emusPerInch) / resizeRatio);
+	}
+	
+	public static final OpenXMLSize convertPixelToEMUs2(Size img, int dpi) {
 		int widthPx = img.getWidth();
 		int heightPx = img.getHeight();
 		double horzRezDpi = dpi * 1.0d;
@@ -75,10 +81,10 @@ public class OpenXMLUtils {
 		double widthEmus = (widthPx / horzRezDpi) * emusPerInch;
 		double heightEmus = (heightPx / vertRezDpi) * emusPerInch;
 		
-		return new Size((int)widthEmus, (int)heightEmus, 0, 0, true);
+		return new OpenXMLSize(widthPx, heightPx, (int)widthEmus, (int)heightEmus, 1.0d);
 	}
 	
-	public static final Size convertPixelToEMUs(Size img, int dpi, double maxWidthCm) {
+	public static final OpenXMLSize convertPixelToEMUs(Size img, int dpi, double maxWidthCm) {
 		int widthPx = img.getWidth();
 		int heightPx = img.getHeight();
 		double horzRezDpi = dpi * 1.0d;
@@ -88,13 +94,15 @@ public class OpenXMLUtils {
 		double heightEmus = (heightPx / vertRezDpi) * emusPerInch;
 
 		double maxWidthEmus = maxWidthCm * emusPerCm;
+		double resizeRatio = 1.0d;
 		if (widthEmus > maxWidthEmus) {
+			resizeRatio = maxWidthEmus / widthEmus;
 			double ratio = heightEmus / widthEmus;
 			widthEmus = maxWidthEmus;
 			heightEmus = widthEmus * ratio;
 		}
 
-		return new Size((int)widthEmus, (int)heightEmus, 0, 0, true);
+		return new OpenXMLSize(widthPx, heightPx, (int)widthEmus, (int)heightEmus, resizeRatio);
 	}
 	
 	public static int getSpanAttribute(String name, Attributes attrs) {

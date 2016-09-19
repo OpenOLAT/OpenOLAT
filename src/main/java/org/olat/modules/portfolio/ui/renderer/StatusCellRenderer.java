@@ -26,6 +26,7 @@ import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
 import org.olat.modules.portfolio.PageStatus;
+import org.olat.modules.portfolio.SectionStatus;
 
 /**
  * 
@@ -40,6 +41,9 @@ public class StatusCellRenderer implements FlexiCellRenderer {
 			int row, FlexiTableComponent source, URLBuilder ubu, Translator translator) {
 		if(cellValue instanceof PageStatus) {
 			PageStatus status = (PageStatus)cellValue;
+			target.append("<i class='o_icon ").append(status.cssClass()).append(" o_icon-fw'> </i>");
+		} else if(cellValue instanceof SectionStatus) {
+			SectionStatus status = (SectionStatus)cellValue;
 			target.append("<i class='o_icon ").append(status.cssClass()).append(" o_icon-fw'> </i>");
 		}
 	}

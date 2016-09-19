@@ -40,6 +40,28 @@
 	@extend %o_block_inline_right;
 }
 
+/* content block with a full-scale background image (fat media style) */
+.o_block_imagebg {
+	background-repeat:no-repeat;
+	background-position: center;
+	background-size: cover;
+	span {
+		padding: 2px;
+		background-color: $o-imagebg-text-background;
+	}	
+	
+	h1, h2, h3, h4, h5,
+	p {
+		padding: 2px;
+		background-color: $o-imagebg-text-background;
+		display: inline-block;
+		&:after {
+			content: ' ';
+			display: block;
+		}
+	}	
+}
+
 
 /* overflowing content that should have scrollbar when content overflows available space */
 .o_scrollblock, %o_scrollblock {
@@ -107,12 +129,12 @@
 	background-size: cover;
 
 	&.panel-default>.panel-heading {
-		background-color: rgba(255, 255, 255, 0.5);
+		background-color: $o-imagebg-text-background;
 		border-bottom: transparent;
 	}
 	.panel-body span {
 		padding: 2px;
-		background-color: rgba(255, 255, 255, 0.8);
+		background-color: $o-imagebg-text-background;
 	}	
 }
 

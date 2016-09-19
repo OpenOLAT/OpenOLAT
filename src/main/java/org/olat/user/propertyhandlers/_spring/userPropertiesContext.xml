@@ -48,7 +48,6 @@
 				<ref bean="userPropertyTypeOfUser" />
 				<ref bean="userPropertySocialSecurityNumber" />
 				
-				<!-- fxdiff: FXOLAT-239 these are from BAKS (moved from application.xml) -->
 				<ref bean="userPropertyRank" />
 			  	<ref bean="userPropertyDegree" />
 				<ref bean="userPropertyPosition" />
@@ -61,9 +60,7 @@
 				<ref bean="userPropertyOfficeCity" />
 				<ref bean="userPropertyOfficeCountry" />
 				<ref bean="userPropertyOfficeMobilePhone" />        
-				
-				
-				<!-- fxdiff: FXOLAT-31 additional generic properties-->
+
 				<ref bean="userPropertyGenericText" />
 				<ref bean="userPropertyGenericText2" />
 				<ref bean="userPropertyGenericText3" />
@@ -76,24 +73,13 @@
 				
 				<ref bean="userPropertyGenericEmail" />
 				
-				<!--  OO-98 additional yesNo properties -->
-				<ref bean="userPropertyGenericYesNo" />
-				<ref bean="userPropertyGenericYesNo2" />
-				<ref bean="userPropertyGenericYesNo3" />
-				<ref bean="userPropertyGenericYesNo4" />
-				<ref bean="userPropertyGenericYesNo5" />
-				<!--  discouraged for homeprofile, use yesnoproperties, see OO-98 -->
 				<ref bean="userPropertyGenericCheckbox" />
 				<ref bean="userPropertyGenericCheckbox2" />
 				<ref bean="userPropertyGenericCheckbox3" />
-				<ref bean="userPropertyGenericCheckbox4" />
-				<ref bean="userPropertyGenericCheckbox5" />
 				
 				<ref bean="userPropertyGenericSelect" />
 				<ref bean="userPropertyGenericSelect2" />
 				<ref bean="userPropertyGenericSelect3" />
-				<ref bean="userPropertyGenericSelect4" />
-				<ref bean="userPropertyGenericSelect5" />
 				
 				<ref bean="userPropertyCreationDateDisplay" />
 				<ref bean="userPropertylastLoginDateDisplay" />

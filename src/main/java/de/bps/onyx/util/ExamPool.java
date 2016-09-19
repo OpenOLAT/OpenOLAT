@@ -123,21 +123,21 @@ public class ExamPool implements Serializable {
 			byte[] contentPackage = getContentPackage(entry);
 			HashMap<String, String> parameterMap = new HashMap<String, String>();
 			// set allowShowSolution either to the configured value (!= null) or to defaultvalue false if test or survey, if selftest then the default is true 
-			Boolean allowShowSolution = (Boolean) courseNode.getModuleConfiguration().get(IQEditController.CONFIG_KEY_ALLOW_SHOW_SOLUTION);
+			Boolean allowShowSolution = courseNode.getModuleConfiguration().getBooleanEntry(IQEditController.CONFIG_KEY_ALLOW_SHOW_SOLUTION);
 			allowShowSolution = allowShowSolution != null ? allowShowSolution : false;
 			parameterMap.put(SHOW_SOLUTION, String.valueOf(allowShowSolution));
 //			Boolean showFeedback = (Boolean) courseNode.getModuleConfiguration().get(IQEditController.CONFIG_KEY_ALLOW_SHOW_FEEDBACK);
 //			showFeedback = showFeedback != null ? showFeedback : false;
 //			parameterMap.put(SHOW_FEEDBACK, String.valueOf(showFeedback));
 			parameterMap.put(IS_SURVEY, String.valueOf(referencedCourseNode instanceof IQSURVCourseNode));
-			Boolean examControl = (Boolean) courseNode.getModuleConfiguration().get(ExamPoolManager.CONFIG_KEY_EXAM_CONTROL);
+			Boolean examControl = courseNode.getModuleConfiguration().getBooleanEntry(ExamPoolManager.CONFIG_KEY_EXAM_CONTROL);
 			examControl = examControl != null ? examControl : Boolean.FALSE;
 			//couple the synchronizedStart again to the examMode
 			Boolean synchronizedStart = (Boolean) courseNode.getModuleConfiguration().get(ExamPoolManager.CONFIG_KEY_EXAM_CONTROL_SYNCHRONIZED_START);
 			synchronizedStart = synchronizedStart != null ? synchronizedStart && examControl : false;
 			parameterMap.put(IS_SYNCHRONIZED, String.valueOf(synchronizedStart));
 			parameterMap.put(CONTINUATION_ALLOWED, Boolean.toString(!examControl.booleanValue()));
-			Boolean allowSuspension = (Boolean) courseNode.getModuleConfiguration().get(IQEditController.CONFIG_KEY_ALLOW_SUSPENSION_ALLOWED);
+			Boolean allowSuspension = courseNode.getModuleConfiguration().getBooleanEntry(IQEditController.CONFIG_KEY_ALLOW_SUSPENSION_ALLOWED);
 			allowSuspension = allowSuspension != null ? allowSuspension : false;
 			parameterMap.put(SUSPENSION_ALLOWED, String.valueOf(allowSuspension));
 

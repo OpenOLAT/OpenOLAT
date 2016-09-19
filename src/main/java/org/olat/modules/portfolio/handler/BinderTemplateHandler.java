@@ -61,7 +61,6 @@ import org.olat.modules.portfolio.ui.BinderController;
 import org.olat.modules.portfolio.ui.BinderPickerController;
 import org.olat.modules.portfolio.ui.BinderRuntimeController;
 import org.olat.modules.portfolio.ui.PortfolioAssessmentDetailsController;
-import org.olat.modules.portfolio.ui.PortfolioHomeController;
 import org.olat.repository.ErrorList;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryImportExport;
@@ -163,8 +162,7 @@ public class BinderTemplateHandler implements RepositoryHandler {
 	public RepositoryEntry copy(Identity author, RepositoryEntry source, RepositoryEntry target) {
 		PortfolioService portfolioService = CoreSpringFactory.getImpl(PortfolioService.class);
 		Binder templateSource = portfolioService.getBinderByResource(source.getOlatResource());
-		Binder transientCopy = BinderXStream.copy(templateSource);
-		portfolioService.copyBinder(transientCopy, target);
+		portfolioService.copyBinder(templateSource, target);
 		return target;
 	}
 
@@ -191,14 +189,14 @@ public class BinderTemplateHandler implements RepositoryHandler {
 
 	@Override
 	public boolean readyToDelete(RepositoryEntry entry, Identity identity, Roles roles, Locale locale, ErrorList errors) {
-		PortfolioService portfolioService = CoreSpringFactory.getImpl(PortfolioService.class);
+		/*PortfolioService portfolioService = CoreSpringFactory.getImpl(PortfolioService.class);
 		Binder template = portfolioService.getBinderByResource(entry.getOlatResource());
 		if(portfolioService.isTemplateInUse(template, null, null)) {
 			Translator translator = Util.createPackageTranslator(PortfolioHomeController.class, locale);
 			errors.setError(translator.translate("warning.template.in.use",
 					new String[] { template.getTitle(), entry.getDisplayname() }));
 			return false;
-		}
+		}*/
 		
 		String referencesSummary = CoreSpringFactory.getImpl(ReferenceManager.class)
 				.getReferencesToSummary(entry.getOlatResource(), locale);
@@ -252,7 +250,7 @@ public class BinderTemplateHandler implements RepositoryHandler {
 						Binder binder = portfolioService.getBinderByResource(entry.getOlatResource());
 						CoreSpringFactory.getImpl(UserCourseInformationsManager.class)
 							.updateUserCourseInformations(entry.getOlatResource(), uureq.getIdentity());
-						BinderConfiguration bConfig = BinderConfiguration.createTemplateConfig();
+						BinderConfiguration bConfig = BinderConfiguration.createTemplateConfig(reSecurity.isEntryAdmin());
 						BinderSecurityCallback secCallback = BinderSecurityCallbackFactory.getCallbackForTemplate(reSecurity);
 						return new BinderController(uureq, wwControl, toolbarPanel, secCallback, binder, bConfig);
 					}
@@ -263,7 +261,7 @@ public class BinderTemplateHandler implements RepositoryHandler {
 	@Override
 	public Controller createAssessmentDetailsController(RepositoryEntry re, UserRequest ureq, WindowControl wControl,
 			TooledStackedPanel toolbar, Identity assessedIdentity) {
-		return new PortfolioAssessmentDetailsController(ureq, wControl, toolbar, re, assessedIdentity);
+		return new PortfolioAssessmentDetailsController(ureq, wControl, re, assessedIdentity);
 	}
 
 	@Override

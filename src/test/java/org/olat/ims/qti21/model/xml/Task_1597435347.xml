@@ -1,0 +1,41 @@
+<?xml version='1.0' encoding='utf-8'?><!--This file was created using: Onyx Editor, Version 3.1.1 (Unregistered demo version), (c)2011 BPS Bildungsportal Sachsen GmbH --><assessmentItem xmlns="http://www.imsglobal.org/xsd/imsqti_v2p1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.imsglobal.org/xsd/imsqti_v2p1 imsqti_v2p1.xsd" identifier="Task_1597435347" title="task" adaptive="false" timeDependent="false">
+  <responseDeclaration identifier="RESPONSE_CHOICE" cardinality="single" baseType="identifier">
+    <correctResponse>
+      <value>Choice2</value>
+    </correctResponse>
+  </responseDeclaration>
+  <outcomeDeclaration identifier="SCORE" cardinality="single" baseType="integer" interpretation="Points">
+    <defaultValue>
+      <value>0</value>
+    </defaultValue>
+  </outcomeDeclaration>
+  <itemBody><choiceInteraction responseIdentifier="RESPONSE_CHOICE" shuffle="false" maxChoices="1">
+      <prompt>
+      	asdfasdfasdf
+      	asdfasdfasdf
+      
+      </prompt>
+      <simpleChoice identifier="Choice0">blibla</simpleChoice>
+      <simpleChoice identifier="Choice1">adfasdf</simpleChoice>
+      <simpleChoice identifier="Choice2">asdfasdf</simpleChoice>
+    </choiceInteraction>
+  </itemBody>
+  <responseProcessing>
+    <responseCondition>
+      <responseIf>
+        <match>
+          <variable identifier="RESPONSE_CHOICE"/>
+          <correct identifier="RESPONSE_CHOICE"/>
+        </match>
+        <setOutcomeValue identifier="SCORE">
+          <baseValue baseType="integer">0</baseValue>
+        </setOutcomeValue>
+      </responseIf>
+      <responseElse>
+        <setOutcomeValue identifier="SCORE">
+          <baseValue baseType="integer">0</baseValue>
+        </setOutcomeValue>
+      </responseElse>
+    </responseCondition>
+  </responseProcessing>
+</assessmentItem>

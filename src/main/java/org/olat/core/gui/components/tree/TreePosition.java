@@ -23,9 +23,7 @@
 * under the Apache 2.0 license as the original file.
 */
 
-package org.olat.course.tree;
-
-import org.olat.core.gui.components.tree.TreeNode;
+package org.olat.core.gui.components.tree;
 
 /**
  * Description:<br>

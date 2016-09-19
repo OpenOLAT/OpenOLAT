@@ -29,6 +29,7 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.DateChooser;
+import org.olat.core.gui.components.form.flexible.elements.RichTextElement;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.TextBoxListElement;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
@@ -74,7 +75,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class CollectCitationMediaController extends FormBasicController implements PageElementAddController {
 	
 	private TextElement titleEl;
-	private TextElement descriptionEl, textEl;
+	private RichTextElement descriptionEl, textEl;
 	private TextBoxListElement categoriesEl;
 	
 	private SingleSelection sourceTypeEl;
@@ -147,7 +148,8 @@ public class CollectCitationMediaController extends FormBasicController implemen
 		titleEl.setMandatory(true);
 		
 		String desc = mediaReference == null ? null : mediaReference.getDescription();
-		descriptionEl = uifactory.addRichTextElementForStringData("artefact.descr", "artefact.descr", desc, 6, 6, false, null, null, formLayout, ureq.getUserSession(), getWindowControl());
+		descriptionEl = uifactory.addRichTextElementForStringDataMinimalistic("artefact.descr", "artefact.descr", desc, 6, 60, formLayout, getWindowControl());
+		descriptionEl.getEditorConfiguration().setPathInStatusBar(false);
 		
 		String text = mediaReference == null ? null : mediaReference.getContent();
 		textEl = uifactory.addRichTextElementForStringData("citation", "citation", text, 10, 6, false, null, null, formLayout, ureq.getUserSession(), getWindowControl());

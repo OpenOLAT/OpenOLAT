@@ -1,7 +1,7 @@
 <div class="clearfix">
 <h4>$label</h4>
 #foreach($member in $members)
-	<div class="o_cmember o_print_break_avoid col-xs-3 col-sm-3 col-md-3">
+	<div class="o_cmember $typecss o_print_break_avoid col-xs-3 col-sm-3 col-md-3">
 		<div class="clearfix">
 			<div class="o_portrait">
 				#if(${member.isPortraitAvailable()})
@@ -22,16 +22,7 @@
 						#set ($prop=$!{member.getIdentityProp($foreach.index)})			
 						## $prop can contain value of last iteration because when null the value is not assigend to $prop - check again									
 						#if(${member.getIdentityProp($foreach.index)} && $prop != "")
-							#if(!$skipNextBR)
-								<br />
-							#end
-							$prop
-						#end
-						## Skip line break after zip code for standard address formatting
-						#if($userPropertyHandler.name == "zipCode")
-							#set ($skipNextBR=true)
-						#else
-							#set ($skipNextBR=false)
+							<div class="o_prop o_${userPropertyHandler.name}">$prop</div>
 						#end
 					#end
 					

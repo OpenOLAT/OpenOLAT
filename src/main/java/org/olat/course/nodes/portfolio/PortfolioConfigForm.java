@@ -142,7 +142,7 @@ public class PortfolioConfigForm extends FormBasicController {
 		previewMapLink = uifactory.addFormLink("preview", "selected.map", "selected.map", formLayout, Link.LINK);
 		previewMapLink.setCustomEnabledLinkCSS("o_preview");
 		previewMapLink.setIconLeftCSS("o_icon o_icon-fw o_icon_preview");
-		((Link)previewMapLink.getComponent()).setCustomDisplayText(name);
+		previewMapLink.getComponent().setCustomDisplayText(name);
 		previewMapLink.setVisible(map != null);
 		previewMapLink.setElementCssClass("o_sel_preview_map");
 		
@@ -259,7 +259,7 @@ public class PortfolioConfigForm extends FormBasicController {
 			previewCtr = EPUIFactory.createPortfolioStructureMapPreviewController(ureq, getWindowControl(), map, secCallback);
 		} else if(binder != null && stackPanel instanceof TooledStackedPanel) {
 			BinderSecurityCallback secCallback = BinderSecurityCallbackFactory.getReadOnlyCallback();
-			BinderConfiguration bConfig = BinderConfiguration.createTemplateConfig();
+			BinderConfiguration bConfig = BinderConfiguration.createTemplateConfig(false);
 			previewCtr = new BinderController(ureq, getWindowControl(), (TooledStackedPanel)stackPanel, secCallback, binder, bConfig);
 		} else {
 			return;
@@ -288,8 +288,8 @@ public class PortfolioConfigForm extends FormBasicController {
 		mapNameElement.setVisible(map == null && binder == null);
 		
 		previewMapLink.setVisible(map != null || binder != null);
-		((Link)previewMapLink.getComponent()).setCustomDisplayText(name);
-		((Link)previewMapLink.getComponent()).setDirty(true);
+		previewMapLink.getComponent().setCustomDisplayText(name);
+		previewMapLink.getComponent().setDirty(true);
 		
 		chooseMapLink.setVisible(map == null && binder == null);
 		changeMapLink.setVisible(map != null || binder != null);

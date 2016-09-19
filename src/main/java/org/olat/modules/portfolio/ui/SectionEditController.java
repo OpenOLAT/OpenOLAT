@@ -24,6 +24,7 @@ import java.util.Date;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.DateChooser;
+import org.olat.core.gui.components.form.flexible.elements.RichTextElement;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
@@ -44,7 +45,8 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class SectionEditController extends FormBasicController {
 
-	private TextElement titleEl, descriptionEl;
+	private TextElement titleEl;
+	private RichTextElement descriptionEl;
 	private DateChooser beginDateEl, endDateEl;
 	
 	private BinderRef binder;
@@ -85,13 +87,18 @@ public class SectionEditController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+
+		formLayout.setElementCssClass("o_sel_pf_edit_section_form");
+		
 		String title = section == null ? null : section.getTitle();
 		titleEl = uifactory.addTextElement("title", "title", 255, title, formLayout);
+		titleEl.setElementCssClass("o_sel_pf_edit_section_title");
 		titleEl.setMandatory(true);
 		
 		String description = section == null ? null : section.getDescription();
-		descriptionEl = uifactory.addTextAreaElement("summary", "summary", 4096, 4, 60, false, description, formLayout);
+		descriptionEl = uifactory.addRichTextElementForStringDataMinimalistic("summary", "page.summary", description, 8, 60, formLayout, getWindowControl());
 		descriptionEl.setPlaceholderKey("summary.placeholder", null);
+		descriptionEl.getEditorConfiguration().setPathInStatusBar(false);
 		
 		Date begin = section == null ? null : section.getBeginDate();
 		beginDateEl = uifactory.addDateChooser("begin.date", "begin.date", begin, formLayout);
@@ -120,6 +127,16 @@ public class SectionEditController extends FormBasicController {
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
 		boolean allOk = true;
+		
+		if(secCallback.canSectionBeginAndEnd()) {
+			Date begin = beginDateEl.getDate();
+			Date end = endDateEl.getDate();
+			if(begin != null && end != null && end.before(begin)) {
+				endDateEl.setErrorKey("error.begin.after.end", null);
+				allOk &= false;
+			}
+		}
+		
 		return allOk & super.validateFormLogic(ureq);
 	}
 

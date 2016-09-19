@@ -184,6 +184,7 @@ public class CourseOptionsController extends FormBasicController {
 
 		menuEl = uifactory.addCheckboxesHorizontal("menuIsOn", "chkbx.menu.onoff", menuCont, onKeys, onValues);
 		menuEl.select(onKeys[0], courseConfig.isMenuEnabled());
+		menuEl.addActionListener(FormEvent.ONCHANGE);
 		
 		toolbarEl = uifactory.addCheckboxesHorizontal("toolbarIsOn", "chkbx.toolbar.onoff", menuCont, onKeys, onValues);
 		toolbarEl.select(onKeys[0], courseConfig.isToolbarEnabled());
@@ -363,7 +364,7 @@ public class CourseOptionsController extends FormBasicController {
 			}
 			updateToolbar();
 			setSaveButtonDirty();
-		} else if (source instanceof SelectionElement || source == folderReadOnlyEl) {
+		} else if (source instanceof SelectionElement || source == folderReadOnlyEl || source == menuEl) {
 			setSaveButtonDirty();
 		}  else if(saveButton == source) {
 			doSave(ureq);

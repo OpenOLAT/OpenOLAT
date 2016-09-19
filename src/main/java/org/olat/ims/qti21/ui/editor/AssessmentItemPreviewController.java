@@ -54,7 +54,9 @@ import uk.ac.ed.ph.jqtiplus.types.Identifier;
  */
 public class AssessmentItemPreviewController extends BasicController {
 	
+	private static final String DEBUG_OUTCOMES = "qti21-debug-toucomes-toggle";
 	
+	private boolean showOutcomes = false;
 	private AssessmentItemDisplayController displayCtrl;
 	
 	private final VelocityContainer mainVC;
@@ -64,10 +66,15 @@ public class AssessmentItemPreviewController extends BasicController {
 	private AssessmentItemPreviewController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
 		setTranslator(Util.createPackageTranslator(AssessmentTestDisplayController.class, getLocale(), getTranslator()));
-		
+
+		Object debugSettings = ureq.getUserSession().getEntry(DEBUG_OUTCOMES);
+		if(debugSettings instanceof Boolean) {
+			showOutcomes = ((Boolean) debugSettings).booleanValue();
+		}
 		mainVC = createVelocityContainer("assessment_item_preview");
 		mainVC.contextPut("outcomes", new ArrayList<>());
 		mainVC.contextPut("responses", new ArrayList<>());
+		mainVC.contextPut("showOutcomes", new Boolean(showOutcomes));
 		putInitialPanel(mainVC);
 	}
 	
@@ -96,12 +103,18 @@ public class AssessmentItemPreviewController extends BasicController {
 
 	@Override
 	protected void doDispose() {
-		//
+		mainVC.removeListener(this);
 	}
 
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
-		//
+		if("show".equals(event.getCommand())) {
+			showOutcomes = true; 
+			ureq.getUserSession().putEntryInNonClearedStore(DEBUG_OUTCOMES, new Boolean(showOutcomes));
+		} else if("hide".equals(event.getCommand())) {
+			showOutcomes = false;
+			ureq.getUserSession().putEntryInNonClearedStore(DEBUG_OUTCOMES, new Boolean(showOutcomes));
+		}
 	}
 	
 	public class PreviewAuditLogger extends DefaultAssessmentSessionAuditLogger {
@@ -116,6 +129,7 @@ public class AssessmentItemPreviewController extends BasicController {
 			}
 			Collections.sort(responses);
 			mainVC.contextPut("responses", responses);
+			mainVC.contextPut("showOutcomes", new Boolean(showOutcomes));
 			mainVC.setDirty(true);
 		}
 
@@ -129,6 +143,7 @@ public class AssessmentItemPreviewController extends BasicController {
 			}
 			Collections.sort(outcomes);
 			mainVC.contextPut("outcomes", outcomes);
+			mainVC.contextPut("showOutcomes", new Boolean(showOutcomes));
 			mainVC.setDirty(true);
 		}
 	}

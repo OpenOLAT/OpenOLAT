@@ -131,14 +131,15 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 	private FlexiTableSortOptions sortOptions;
 	private List<FlexiTableFilter> filters;
 	private List<FlexiTableFilter> extendedFilters;
+	private boolean multiFilterSelection = false;
 	private Object selectedObj;
 	private boolean allSelectedNeedLoadOfWholeModel = false;
-	private Set<Integer> multiSelectedIndex;
+	private Map<Integer,Object> multiSelectedIndex;
 	private Set<Integer> detailsIndex;
 	private List<String> conditionalQueries;
-	private Set<Integer> enabledColumnIndex = new HashSet<Integer>();
+	private Set<Integer> enabledColumnIndex = new HashSet<>();
 	
-	private Map<String,FormItem> components = new HashMap<String,FormItem>();
+	private Map<String,FormItem> components = new HashMap<>();
 	
 	public FlexiTableElementImpl(WindowControl wControl, String name, Translator translator, FlexiTableDataModel<?> tableModel) {
 		this(wControl, name, translator, tableModel, -1, true);
@@ -223,7 +224,7 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 			//custom
 			customTypeButton = new FormLinkImpl(dispatchId + "_customRTypeButton", "rCustomRTypeButton", "", Link.BUTTON + Link.NONTRANSLATED);
 			customTypeButton.setTranslator(translator);
-			customTypeButton.setIconLeftCSS("o_icon o_icon_list o_icon-lg");
+			customTypeButton.setIconLeftCSS("o_icon o_icon_table_custom o_icon-lg");
 			customTypeButton.setActive(FlexiTableRendererType.custom == rendererType);
 			components.put("rTypeCustom", customTypeButton);
 			//classic tables
@@ -402,8 +403,9 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 	}
 
 	@Override
-	public void setFilters(String name, List<FlexiTableFilter> filters) {
+	public void setFilters(String name, List<FlexiTableFilter> filters, boolean multiSelection) {
 		this.filters = new ArrayList<>(filters);
+		multiFilterSelection = multiSelection;
 	}
 	
 	public boolean isSortEnabled() {
@@ -940,13 +942,39 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 		} else if(dataSource != null) {
 			currentPage = 0;
 			dataSource.clear();
-			dataSource.load(null, getSelectedFilters(), conditionalQueries, 0, getPageSize(), orderBy);
+			dataSource.load(getSearchText(), getSelectedFilters(), getConditionalQueries(), 0, getPageSize(), orderBy);
 		}
-
+		reorderMultiSelectIndex();
 		selectSortOption(sortKey, asc);
 		component.setDirty(true);
 	}
 
+	private void reorderMultiSelectIndex() {
+		if(multiSelectedIndex == null) return;
+		
+		Set<Object> selectedObjects = new HashSet<>(multiSelectedIndex.values());
+		multiSelectedIndex.clear();
+		
+		for(int i=dataModel.getRowCount(); i-->0; ) {
+			Object obj = dataModel.getObject(i);
+			if(obj != null && selectedObjects.contains(obj)) {
+				multiSelectedIndex.put(new Integer(i), obj);
+			}
+		}
+		
+		// In the case of a data source, we need to check if all index has been found.
+		// If not, we need to load all the data and find them
+		if(dataSource != null && multiSelectedIndex.size() != selectedObjects.size()) {
+			dataSource.load(getSearchText(), getSelectedFilters(), getConditionalQueries(), 0, -1, orderBy);
+			for(int i=dataModel.getRowCount(); i-->0; ) {
+				Object obj = dataModel.getObject(i);
+				if(obj != null && selectedObjects.contains(obj)) {
+					multiSelectedIndex.put(new Integer(i), obj);
+				}
+			}
+		}
+	}
+	
 	private void selectSortOption(String sortKey, boolean asc) {
 		if(sortOptions != null) {
 			for(FlexiTableSort sort:sortOptions.getSorts()) {
@@ -962,11 +990,19 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 	}
 	
 	private void doFilter(String filterKey) {
-		String selectedFilterKey = null;
-		FlexiTableFilter selectedFilter = null;
+		List<FlexiTableFilter> selectedFilters = new ArrayList<>();
 		if(filterKey == null) {
 			for(FlexiTableFilter filter:filters) {
 				filter.setSelected(false);
+			}
+		} else if(multiFilterSelection) {
+			for(FlexiTableFilter filter:filters) {
+				if(filter.getFilter().equals(filterKey)) {
+					filter.setSelected(!filter.isSelected());
+				}
+				if(filter.isSelected()) {
+					selectedFilters.add(filter);
+				}
 			}
 		} else {
 			for(FlexiTableFilter filter:filters) {
@@ -976,8 +1012,7 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 						filter.setSelected(false);
 					} else {
 						filter.setSelected(true);
-						selectedFilterKey = filterKey;
-						selectedFilter = filter;
+						selectedFilters.add(filter);
 					}
 				} else {
 					filter.setSelected(false);
@@ -988,12 +1023,10 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 		if(dataModel instanceof FilterableFlexiTableModel) {
 			rowCount = -1;
 			currentPage = 0;
-			((FilterableFlexiTableModel)dataModel).filter(selectedFilterKey);
+			((FilterableFlexiTableModel)dataModel).filter(selectedFilters);
 		} else if(dataSource != null) {
 			rowCount = -1;
 			currentPage = 0;
-
-			List<FlexiTableFilter> selectedFilters = Collections.singletonList(selectedFilter);
 			dataSource.clear();
 			dataSource.load(null, selectedFilters, null, 0, getPageSize(), orderBy);
 		}
@@ -1287,12 +1320,13 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 		if(multiSelectedIndex != null) {
 			multiSelectedIndex.clear();
 		} else {
-			multiSelectedIndex = new HashSet<>();
+			multiSelectedIndex = new HashMap<>();
 		}
 		
 		int numOfRows = getRowCount();
 		for(int i=0; i<numOfRows;i++) {
-			multiSelectedIndex.add(new Integer(i));
+			Object objectRow = dataModel.getObject(i);
+			multiSelectedIndex.put(new Integer(i), objectRow);
 		}
 		allSelectedNeedLoadOfWholeModel = true;
 	}
@@ -1301,6 +1335,7 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 		if(multiSelectedIndex != null) {
 			multiSelectedIndex.clear();
 		}
+		allSelectedNeedLoadOfWholeModel = false;
 	}
 	
 	protected void doSelect(UserRequest ureq, int index) {
@@ -1346,32 +1381,35 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 		if(allSelectedNeedLoadOfWholeModel && dataSource != null) {
 			//ensure the whole data model is loaded
 			dataSource.load(getSearchText(), getSelectedFilters(), getConditionalQueries(), 0, -1);
-			Set<Integer> allIndex = new HashSet<Integer>();
+			Set<Integer> allIndex = new HashSet<>();
 			for(int i=dataModel.getRowCount(); i-->0; ) {
 				allIndex.add(new Integer(i));
 			}
 			allSelectedNeedLoadOfWholeModel = false;
 			return allIndex;
 		}
-		return multiSelectedIndex == null ? Collections.<Integer>emptySet() : multiSelectedIndex;
+		return multiSelectedIndex == null ? Collections.<Integer>emptySet() : multiSelectedIndex.keySet();
 	}
 
 	@Override
 	public void setMultiSelectedIndex(Set<Integer> set) {
 		if(multiSelectedIndex == null) {
-			multiSelectedIndex = new HashSet<Integer>();
+			multiSelectedIndex = new HashMap<>();
 		}
-		multiSelectedIndex.addAll(set);
+		for(Integer index:set) {
+			Object objectRow = dataModel.getObject(index.intValue());
+			multiSelectedIndex.put(index, objectRow);
+		}
 	}
 
 	@Override
 	public boolean isMultiSelectedIndex(int index) {
-		return multiSelectedIndex != null && multiSelectedIndex.contains(new Integer(index));
+		return multiSelectedIndex != null && multiSelectedIndex.containsKey(new Integer(index));
 	}
 	
 	protected void toogleSelectIndex(String selection) {
 		if(multiSelectedIndex == null) {
-			multiSelectedIndex = new HashSet<Integer>();
+			multiSelectedIndex = new HashMap<>();
 		}
 
 		String rowStr;
@@ -1384,12 +1422,13 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 		
 		try {
 			Integer row = new Integer(rowStr);
-			if(multiSelectedIndex.contains(row)) {
-				if(multiSelectedIndex.remove(row) & allSelectedNeedLoadOfWholeModel) {
+			if(multiSelectedIndex.containsKey(row)) {
+				if(multiSelectedIndex.remove(row) != null && allSelectedNeedLoadOfWholeModel) {
 					allSelectedNeedLoadOfWholeModel = false;
 				}
 			} else {
-				multiSelectedIndex.add(row);
+				Object objectRow = dataModel.getObject(row.intValue());
+				multiSelectedIndex.put(row, objectRow);
 			}	
 		} catch (NumberFormatException e) {
 			//can happen
@@ -1398,7 +1437,7 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 	
 	protected void setMultiSelectIndex(String[] selections) {
 		if(multiSelectedIndex == null) {
-			multiSelectedIndex = new HashSet<Integer>();
+			multiSelectedIndex = new HashMap<>();
 		}
 		//selection format row_{formDispId}-{index}
 		if(selections != null && selections.length > 0) {
@@ -1413,7 +1452,8 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 				if(index > 0 && index+1 < selection.length()) {
 					String rowStr = selection.substring(index+1);
 					int row = Integer.parseInt(rowStr);
-					multiSelectedIndex.add(new Integer(row));
+					Object objectRow = dataModel.getObject(row);
+					multiSelectedIndex.put(new Integer(row), objectRow);
 				}
 			}
 		}
@@ -1432,7 +1472,20 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 		resetInternComponents();
 		reloadData();
 	}
-	
+
+	@Override
+	public void reset(boolean page, boolean internal, boolean reloadData) {
+		if(page) {
+			currentPage = 0;
+		}
+		if(internal) {
+			resetInternComponents();
+		}
+		if(reloadData) {
+			reloadData();
+		}
+	}
+
 	private void resetInternComponents() {
 		rowCount = -1;
 		component.setDirty(true);
@@ -1455,7 +1508,7 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 		} else {
 			if(dataModel instanceof FilterableFlexiTableModel) {
 				if(isFilterEnabled()) {
-					String filter = getSelectedFilterKey();
+					List<FlexiTableFilter> filter = getSelectedFilters();
 					((FilterableFlexiTableModel)dataModel).filter(filter);
 				}
 			}

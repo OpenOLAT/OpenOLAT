@@ -208,6 +208,12 @@ public class EssayAssessmentItemBuilder extends AssessmentItemBuilder {
 		buildMainEssayFeedbackRule(rule);
 	}
 
+	@Override
+	protected void buildModalFeedbacksAndHints(List<OutcomeDeclaration> outcomeDeclarations, List<ResponseRule> responseRules) {
+		super.buildModalFeedbacksAndHints(outcomeDeclarations, responseRules);
+		ensureFeedbackBasicOutcomeDeclaration();
+	}
+
 	private void buildMainEssayFeedbackRule(ResponseCondition rule) {
 		/*
 		 <responseCondition>

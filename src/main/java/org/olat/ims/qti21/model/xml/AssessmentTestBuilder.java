@@ -43,6 +43,8 @@ import uk.ac.ed.ph.jqtiplus.types.Identifier;
 import uk.ac.ed.ph.jqtiplus.value.FloatValue;
 
 /**
+ * This builder only build OpenOLAT QTI tests.
+ * 
  * 
  * Initial date: 11.12.2015<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
@@ -52,6 +54,8 @@ public class AssessmentTestBuilder {
 	
 	private final AssessmentTest assessmentTest;
 	private final AssessmentHtmlBuilder htmlBuilder;
+	
+	private final boolean editable;
 	
 	private Double cutValue;
 	private Double maxScore;
@@ -67,6 +71,7 @@ public class AssessmentTestBuilder {
 	public AssessmentTestBuilder(AssessmentTest assessmentTest) {
 		this.assessmentTest = assessmentTest;
 		htmlBuilder = new AssessmentHtmlBuilder();
+		editable = "OpenOLAT".equals(assessmentTest.getToolName());
 		extract();
 	}
 	
@@ -153,6 +158,10 @@ public class AssessmentTestBuilder {
 		}
 	}
 	
+	public boolean isEditable() {
+		return editable;
+	}
+	
 	public AssessmentTest getAssessmentTest() {
 		return assessmentTest;
 	}
@@ -200,6 +209,10 @@ public class AssessmentTestBuilder {
 	}
 
 	public AssessmentTest build() {
+		if(!editable) {
+			return assessmentTest;
+		}
+		
 		if(assessmentTest.getOutcomeProcessing() == null) {
 			assessmentTest.setOutcomeProcessing(new OutcomeProcessing(assessmentTest));
 		}
@@ -238,7 +251,6 @@ public class AssessmentTestBuilder {
 			if(maxScoreDeclaration != null) {
 				assessmentTest.getOutcomeDeclarations().remove(maxScoreDeclaration);
 			}
-			
 		}
 	}
 	

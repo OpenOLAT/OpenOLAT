@@ -47,8 +47,8 @@ public class AssessmentTestPartEditorController extends ItemSessionControlContro
 	};
 		
 	public AssessmentTestPartEditorController(UserRequest ureq, WindowControl wControl,
-			TestPart testPart, boolean restrictedEdit) {
-		super(ureq, wControl, testPart, restrictedEdit);
+			TestPart testPart, boolean restrictedEdit, boolean editable) {
+		super(ureq, wControl, testPart, restrictedEdit, editable);
 		this.testPart = testPart;
 		initForm(ureq);
 	}
@@ -56,6 +56,9 @@ public class AssessmentTestPartEditorController extends ItemSessionControlContro
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormTitle("assessment.testpart.config");
+		if(!editable) {
+			setFormWarning("warning.alien.assessment.test");
+		}
 		
 		super.initForm(formLayout, listener, ureq);
 		

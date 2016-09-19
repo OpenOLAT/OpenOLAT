@@ -34,6 +34,7 @@ import org.olat.modules.portfolio.PortfolioRoles;
 import org.olat.modules.portfolio.Section;
 import org.olat.modules.portfolio.SectionRef;
 import org.olat.modules.portfolio.model.AssignmentImpl;
+import org.olat.modules.portfolio.model.SectionImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -62,7 +63,10 @@ public class AssignmentDAO {
 		assignment.setType(type.name());
 		assignment.setStatus(status.name());
 		
+		((SectionImpl)section).getAssignments().size();
+		((SectionImpl)section).getAssignments().add(assignment);
 		dbInstance.getCurrentEntityManager().persist(assignment);
+		dbInstance.getCurrentEntityManager().merge(section);
 		return assignment;
 	}
 	
@@ -77,14 +81,56 @@ public class AssignmentDAO {
 		assignment.setType(templateReference.getAssignmentType().name());
 		assignment.setTemplateReference(templateReference);
 		assignment.setStatus(status.name());
-		
+
+		((SectionImpl)section).getAssignments().size();
+		((SectionImpl)section).getAssignments().add(assignment);
 		dbInstance.getCurrentEntityManager().persist(assignment);
+		dbInstance.getCurrentEntityManager().merge(section);
 		return assignment;
 	}
 	
 	public Assignment updateAssignment(Assignment assignment) {
 		((AssignmentImpl)assignment).setLastModified(new Date());
 		return dbInstance.getCurrentEntityManager().merge(assignment);
+	}
+	
+	public Section moveUpAssignment(SectionImpl section, Assignment assignment) {
+		section.getAssignments().size();
+		int index = section.getAssignments().indexOf(assignment);
+		if(index > 0) {
+			Assignment reloadedAssigment = section.getAssignments().remove(index);
+			section.getAssignments().add(index - 1, reloadedAssigment);
+		} else if(index < 0) {
+			section.getAssignments().add(0, assignment);
+		}
+		section = dbInstance.getCurrentEntityManager().merge(section);
+		return section;
+	}
+	
+	public Section moveDownAssignment(SectionImpl section, Assignment assignment) {
+		section.getAssignments().size();
+		int index = section.getAssignments().indexOf(assignment);
+		if(index >= 0 && index + 1 < section.getAssignments().size()) {
+			Assignment reloadedAssignment = section.getAssignments().remove(index);
+			section.getAssignments().add(index + 1, reloadedAssignment);
+			section = dbInstance.getCurrentEntityManager().merge(section);
+		}
+		return section;
+	}
+	
+	public void moveAssignment(SectionImpl currentSection, Assignment assignment, SectionImpl newParentSection) {
+		currentSection.getAssignments().size();//load the assignments
+		newParentSection.getAssignments().size();
+		int index = currentSection.getAssignments().indexOf(assignment);
+		if(index >= 0) {
+			Assignment reloadedAssignment = currentSection.getAssignments().remove(index);
+			((AssignmentImpl)reloadedAssignment).setSection(newParentSection);
+			dbInstance.getCurrentEntityManager().merge(currentSection);
+			newParentSection.getAssignments().add(reloadedAssignment);
+			reloadedAssignment = dbInstance.getCurrentEntityManager().merge(reloadedAssignment);
+			
+			dbInstance.getCurrentEntityManager().merge(newParentSection);
+		}
 	}
 	
 	public Assignment startEssayAssignment(Assignment assigment, Page page, Identity assignee) {
@@ -114,7 +160,8 @@ public class AssignmentDAO {
 		sb.append("select assignment from pfassignment as assignment")
 		  .append(" inner join fetch assignment.section as section")
 		  .append(" left join fetch assignment.page as page")
-		  .append(" where section.binder.key=:binderKey");
+		  .append(" where section.binder.key=:binderKey")
+		  .append(" order by section.key, assignment.pos");
 		
 		return dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), Assignment.class)
@@ -127,7 +174,8 @@ public class AssignmentDAO {
 		sb.append("select assignment from pfassignment as assignment")
 		  .append(" inner join fetch assignment.section as section")
 		  .append(" left join fetch assignment.page as page")
-		  .append(" where section.key=:sectionKey");
+		  .append(" where section.key=:sectionKey")
+		  .append(" order by section.key, assignment.pos");
 		
 		return dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), Assignment.class)
@@ -140,7 +188,8 @@ public class AssignmentDAO {
 		sb.append("select assignment from pfassignment as assignment")
 		  .append(" inner join fetch assignment.section as section")
 		  .append(" inner join fetch assignment.page as page")
-		  .append(" where page.key=:pageKey");
+		  .append(" where page.key=:pageKey")
+		  .append(" order by section.key, assignment.pos");
 		
 		return dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), Assignment.class)
@@ -165,5 +214,39 @@ public class AssignmentDAO {
 			.createQuery(sb.toString(), Assignment.class)
 			.setParameter("assigneeKey", assignee.getKey())
 			.getResultList();
+	}
+	
+	public boolean isAssignmentInUse(Assignment assignment) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select assignment.key from pfassignment as assignment")
+		  .append(" where assignment.templateReference.key=:assignmentKey");
+
+		List<Long> counts = dbInstance.getCurrentEntityManager()
+			.createQuery(sb.toString(), Long.class)
+			.setParameter("assignmentKey", assignment.getKey())
+			.setFirstResult(0)
+			.setMaxResults(1)
+			.getResultList();
+		return counts != null && counts.size() > 0 && counts.get(0) != null && counts.get(0).intValue() >= 0;
+	}
+	
+	public int deleteAssignmentReference(Assignment assignment) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("delete pfassignment assignment where assignment.templateReference.key=:assignmentKey");
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString())
+				.setParameter("assignmentKey", assignment.getKey())
+				.executeUpdate();
+	}
+
+	public int deleteAssignment(Assignment assignment) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("delete pfassignment assignment where assignment.templateReference.key=:assignmentKey");
+		int deleted = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString())
+				.setParameter("assignmentKey", assignment.getKey())
+				.executeUpdate();
+		dbInstance.getCurrentEntityManager().remove(assignment);
+		return deleted + 1;
 	}
 }

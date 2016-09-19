@@ -92,6 +92,8 @@ public class DownloadComponent extends AbstractComponent {
 		setLinkText(linkText);
 		setLinkToolTip(linkToolTip);
 		setLinkCssIconClass(linkCssIconClass);
+		// renderer puts dispatch ID in a tag
+		this.setDomReplacementWrapperRequired(false);
 	}
 	
 	public DownloadLink getFormItem() {

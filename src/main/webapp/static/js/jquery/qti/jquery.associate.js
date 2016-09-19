@@ -84,7 +84,6 @@
 					.css('border', 'none') 
 					.removeClass('oo-selected')
 					.addClass('oo-choosed');
-    			console.log(itemEl.data("uiDraggable"));
     			box.append(itemEl);
     			box.css('border', '3px solid grey');
     		}

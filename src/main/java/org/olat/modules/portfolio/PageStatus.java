@@ -30,20 +30,26 @@ import java.util.Date;
  */
 public enum PageStatus {
 	
-	draft("o_icon_pf_entry_draft"),
-	published("o_icon_pf_entry_published"),
-	inRevision("o_icon_pf_entry_revision"),
-	closed("o_icon_pf_entry_closed"),
-	deleted("o_icon_pf_entry_deleted");
+	draft("o_icon_pf_entry_draft", "status.draft"),
+	published("o_icon_pf_entry_published", "status.published"),
+	inRevision("o_icon_pf_entry_revision", "status.in.revision"),
+	closed("o_icon_pf_entry_closed", "status.closed"),
+	deleted("o_icon_pf_entry_deleted", "status.deleted");
 	
 	private final String cssClass;
-	
-	private PageStatus(String cssClass) {
+	private final String i18nKey;
+
+	private PageStatus(String cssClass, String i18nKey) {
 		this.cssClass = cssClass;
+		this.i18nKey = i18nKey;
 	}
 	
 	public String cssClass() {
 		return cssClass;
+	}
+
+	public String i18nKey() {
+		return i18nKey;
 	}
 
 	public static final boolean isValueOf(String val) {

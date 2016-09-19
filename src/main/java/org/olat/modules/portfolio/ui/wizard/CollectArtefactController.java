@@ -80,12 +80,16 @@ public class CollectArtefactController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		formLayout.setElementCssClass("o_sel_pf_collect_media_form");
+		
 		String title = prefillInfos == null ? "" : prefillInfos.getTitle();
 		titleEl = uifactory.addTextElement("artefact.title", "artefact.title", 255, title, formLayout);
+		titleEl.setElementCssClass("o_sel_pf_collect_media_title");
 		titleEl.setMandatory(true);
 		
 		String descr = prefillInfos == null ? "" : prefillInfos.getDescription();
 		descriptionEl = uifactory.addRichTextElementForStringData("artefact.descr", "artefact.descr", descr, 8, 6, false, null, null, formLayout, ureq.getUserSession(), getWindowControl());
+		descriptionEl.setElementCssClass("o_sel_pf_collect_media_description");
 		
 		categoriesEl = uifactory.addTextBoxListElement("categories", "categories", "categories.hint", categories, formLayout, getTranslator());
 		categoriesEl.setHelpText(translate("categories.hint"));

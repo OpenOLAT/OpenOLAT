@@ -56,7 +56,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class GTACoachedParticipantGradingController extends BasicController {
 	
-	private final Link assessmentFormButton;
+	private final Link assessmentFormButton, reopenAssessmentButton;
 	private final VelocityContainer mainVC;
 	
 	private CloseableModalController cmc;
@@ -85,6 +85,11 @@ public class GTACoachedParticipantGradingController extends BasicController {
 		assessmentFormButton.setCustomEnabledLinkCSS("btn btn-primary");
 		assessmentFormButton.setIconLeftCSS("o_icon o_icon o_icon_submit");
 		assessmentFormButton.setElementCssClass("o_sel_course_gta_assessment_button");
+		assessmentFormButton.setVisible(assignedTask == null || assignedTask.getTaskStatus() != TaskProcess.graded);
+		
+		reopenAssessmentButton = LinkFactory.createCustomLink("coach.reopen", "reopen", "coach.reopen", Link.BUTTON, mainVC, this);
+		reopenAssessmentButton.setElementCssClass("o_sel_course_gta_reopen_button");
+		reopenAssessmentButton.setVisible(assignedTask != null && assignedTask.getTaskStatus() == TaskProcess.graded);
 
 		putInitialPanel(mainVC);
 		setAssessmentDatas(ureq);
@@ -121,6 +126,8 @@ public class GTACoachedParticipantGradingController extends BasicController {
 	protected void event(UserRequest ureq, Component source, Event event) {
 		if(assessmentFormButton == source) {
 			doOpenAssessmentForm(ureq);
+		} else if(reopenAssessmentButton == source) {
+			doReopenAssessment(ureq);
 		}
 	}
 	
@@ -132,6 +139,11 @@ public class GTACoachedParticipantGradingController extends BasicController {
 		msCtrl = new MSCourseNodeRunController(ureq, getWindowControl(), uce, gtaNode, false, false);
 		listenTo(msCtrl);
 		mainVC.put("msrun", msCtrl.getInitialComponent());
+	}
+	
+	private void doReopenAssessment(UserRequest ureq) {
+		assignedTask = gtaManager.updateTask(assignedTask, TaskProcess.grading, gtaNode);
+		fireEvent(ureq, Event.CHANGED_EVENT);
 	}
 	
 	private void doGraded(UserRequest ureq, UserCourseEnvironment assessedUserCourseEnv) {

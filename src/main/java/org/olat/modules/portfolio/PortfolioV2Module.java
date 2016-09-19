@@ -40,9 +40,12 @@ import org.springframework.stereotype.Service;
 public class PortfolioV2Module extends AbstractSpringModule implements ConfigOnOff {
 
 	public static final String PORTFOLIO_ENABLED = "portfoliov2.enabled";
+	public static final String PORTFOLIO_LEARNER_CAN_CREATE_BINDERS = "portfoliov2.learner.can.create.binders";
 	
 	@Value("${portfoliov2.enabled:true}")
 	private boolean enabled;
+	@Value("${portfoliov2.learner.can.create.binders:true}")
+	private boolean learnerCanCreateBinders;
 	
 	@Autowired
 	public PortfolioV2Module(CoordinatorManager coordinatorManager) {
@@ -51,9 +54,14 @@ public class PortfolioV2Module extends AbstractSpringModule implements ConfigOnO
 
 	@Override
 	public void init() {
-		String enabledObj = getStringPropertyValue("portfolio.enabled", true);
+		String enabledObj = getStringPropertyValue(PORTFOLIO_ENABLED, true);
 		if(StringHelper.containsNonWhitespace(enabledObj)) {
 			enabled = "true".equals(enabledObj);
+		}
+		
+		String learnerCanCreateBindersObj = getStringPropertyValue(PORTFOLIO_LEARNER_CAN_CREATE_BINDERS, true);
+		if(StringHelper.containsNonWhitespace(learnerCanCreateBindersObj)) {
+			learnerCanCreateBinders = "true".equals(learnerCanCreateBindersObj);
 		}
 		
 		RepositoryHandlerFactory.registerHandler(new BinderTemplateHandler(), 40);
@@ -80,4 +88,12 @@ public class PortfolioV2Module extends AbstractSpringModule implements ConfigOnO
 		setStringProperty(PORTFOLIO_ENABLED, Boolean.toString(enabled), true);
 	}
 
+	public boolean isLearnerCanCreateBinders() {
+		return learnerCanCreateBinders;
+	}
+
+	public void setLearnerCanCreateBinders(boolean learnerCanCreateBinders) {
+		this.learnerCanCreateBinders = learnerCanCreateBinders;
+		setStringProperty(PORTFOLIO_LEARNER_CAN_CREATE_BINDERS, Boolean.toString(learnerCanCreateBinders), true);
+	}
 }

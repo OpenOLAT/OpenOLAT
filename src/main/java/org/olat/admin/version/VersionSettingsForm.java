@@ -120,7 +120,7 @@ public class VersionSettingsForm extends FormBasicController {
 		try {
 			int maxNumber = Integer.parseInt(num);
 			setNumOfVersions(maxNumber);
-			getWindowControl().setInfo("saved");
+			showInfo("save.admin.settings");
 		} catch (NumberFormatException e) {
 			showError("version.notANumber");
 		}

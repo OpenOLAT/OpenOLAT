@@ -47,6 +47,11 @@ public class FlexiTableDataModelImpl<T> implements FlexiTableDataModel<T> {
 		this.tableColumnModel = tableColumnModel;
 	}
 	
+	@Override
+	public boolean isSelectable(int row) {
+		return true;
+	}
+
 	/**
 	 * @return Number of table row.
 	 */

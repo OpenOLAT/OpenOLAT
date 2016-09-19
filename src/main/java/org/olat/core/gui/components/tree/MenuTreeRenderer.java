@@ -168,7 +168,8 @@ public class MenuTreeRenderer extends DefaultComponentRenderer {
 			target.append(" active_parent");			
 		}
 		String ident = curRoot.getIdent();
-		target.append("'><div id='dd").append(ident).append("' class='o_tree_l").append(level);
+		target.append("' data-nodeid='").append(ident).append("'>");			
+		target.append("<div id='dd").append(ident).append("' class='o_tree_l").append(level);
 		if(tree.isDragEnabled() || tree.isDropEnabled()) {
 			target.append(" o_dnd_item");
 		}

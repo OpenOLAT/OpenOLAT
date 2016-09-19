@@ -1,0 +1,167 @@
+#if($rowIndex == 0 && $r.isNotNull($row.newFloatingEntryLink))
+<div class="panel panel-placeholder">
+	<div class="panel-heading">
+		<h4 class="panel-title">$r.translate("create.new.page.title")</h4>
+	</div>
+	<div class="panel-body">
+		<p>$r.translate("create.new.page.descr")</p>
+		<div class="o_button_group">
+			$r.render($row.newFloatingEntryLink)
+		</div>
+	</div>
+</div>
+#end
+#if(${row.isSection()})
+<div class="o_portfolio_section">
+	<h3>$r.escapeHtml($row.sectionLongTitle) <small><i class="o_icon $row.sectionCssClassStatus" title="$r.translate("section.status"): $r.translate("$row.getSectionStatusI18nKey()")"> </i></small></h3>
+	<div class="o_section_lead o_block_large_bottom">
+		<div class="o_portfolio_section_meta o_small">
+			<div class="o_portfolio_dates clearfix">
+				#if($r.notNull($row.sectionBeginDate))
+					<span><strong>$r.translate("begin.date"): </strong> $r.formatDate($row.sectionBeginDate)</span>
+				#end
+				#if($r.notNull($row.sectionEndDate))
+					<span><strong>$r.translate("end.date"): </strong> $r.formatDate($row.sectionEndDate)</span>
+				#end
+				#if($row.assessable && ${row.hasScore()})
+					<span><strong>$r.translate("section.score"): </strong> $row.score</span>
+				#end
+			</div>
+			<div class="o_portfolio_status_block">
+				<span><strong>$r.translate("section.status"): </strong> $r.translate(${row.getSectionStatusI18nKey()})</span>
+		
+				#if($r.isNotNull($row.closeSectionLink))
+					$r.render($row.closeSectionLink)
+				#end
+				#if($r.isNotNull($row.reopenSectionLink))
+					$r.render($row.reopenSectionLink)
+				#end
+			</div>	
+		</div>
+
+		#if($r.isNotEmpty($row.sectionDescription))
+		<div class="o_desc o_user_content_block o_block">
+			$r.xssScan($row.sectionDescription)
+		</div>
+		#end
+		
+		#if($r.isNotEmpty($row.sectionCategories))
+		<div class="o_portfolio_page_meta text-muted o_small">
+			$r.translate("meta.section.categories") <i class="o_icon o_icon_tags"> </i>
+		 	#foreach($category in $row.sectionCategories)
+		 		#if(${foreach.count} > 1), #end
+		 		<a class="o_pf_tag" href="javascript:${f.ffXHREvent("tag_select","$category")}">$category</a>
+		 	#end
+		</div>
+		#end		
+	</div>
+	
+
+	#if($r.isNotNull($row.newAssignmentLink))
+	<div class="panel panel-placeholder">
+		<div class="panel-heading">
+			<h4 class="panel-title">$r.translate("create.new.assignment.title")</h4>
+		</div>
+		<div class="panel-body">
+			<p>$r.translate("create.new.assignment.descr")</p>
+			<div class="o_button_group">
+				$r.render($row.newAssignmentLink)
+			</div>
+		</div>
+	</div>
+	#end
+</div>
+#end
+#if(${row.isPendingAssignment()})
+	<div class="panel #if($r.isNotNull($row.editAssignmentLink)) panel-default #else panel-placeholder #end o_portfolio_assignments">
+		<div class="panel-heading">
+			<h4 class="panel-title"><i class="o_icon o_icon_assignment o_icon-fw"> </i>$r.translate("assignment"): $r.escapeHtml($row.assignmentTitle)</h4>
+		</div>
+		<div class="panel-body">
+			$r.xssScan($row.assignmentSummary)
+			#if($r.isNotNull($row.instantiateAssignmentLink))
+				<div class="o_button_group">$r.render($row.instantiateAssignmentLink)</div>
+			#end
+			#if($r.isNotNull($row.editAssignmentLink) || $r.isNotNull($row.upAssignmentLink) || $r.isNotNull($row.downAssignmentLink) || $r.isNotNull($row.moveAssignmentLink) || $r.isNotNull($row.deleteAssignmentLink))
+				<div class="o_button_group">
+				#if($r.isNotNull($row.upAssignmentLink))
+					$r.render($row.upAssignmentLink)
+				#end
+				#if($r.isNotNull($row.downAssignmentLink))
+					$r.render($row.downAssignmentLink)
+				#end
+				#if($r.isNotNull($row.editAssignmentLink))
+					$r.render($row.editAssignmentLink)
+				#end
+				#if($r.isNotNull($row.moveAssignmentLink))
+					$r.render($row.moveAssignmentLink)
+				#end
+				#if($r.isNotNull($row.deleteAssignmentLink))
+					$r.render($row.deleteAssignmentLink)
+				#end
+				</div>
+			#end
+		</div>
+	</div>
+#end
+#if(${row.isPage()})
+<div class="o_portfolio_page o_block_large">
+	<div class="#if($r.isNotNull($row.assignment)) o_portfolio_assignments #end ">
+		<h4><i class="o_icon ${row.getCssClassStatus()} o_icon-fw" title="$r.translate("page.status"): $r.translate("$row.getPageStatusI18nKey()")"> </i> $r.escapeHtml($row.title)</h4>
+		<div class="o_portfolio_page_body">
+			<div class="o_portfolio_page_meta_wrapper">
+				#if($r.isNotNull($row.assignment))
+					<i class="o_icon o_icon_assignment o_icon-fw"> </i> <strong>$r.translate("meta.assignment", $row.assignmentTitle)</strong> 
+				#end
+				#if($r.isNotEmpty($row.pageCategories))
+				<span class="o_portfolio_page_meta text-muted o_small">
+					#if($r.isNotNull($row.assignment)), #end
+					<strong>$r.translate("meta.categories")</strong> <i class="o_icon o_icon_tags"> </i>
+					 #foreach($category in $row.pageCategories)
+					 	#if(${foreach.count} > 1), #end
+					 	<a class="o_pf_tag" href="javascript:${f.ffXHREvent("tag_select","$category")}">$category</a>
+					 #end
+				</span>
+				#end
+				#if($r.isNotNull($row.lastPublicationDate))
+				<span class="o_portfolio_page_meta text-muted o_small">
+					#if($r.isNotNull($row.assignment) || $r.isNotEmpty($row.pageCategories)), #end
+					$r.translate("meta.last.publication", $r.formatDateAndTime($row.lastPublicationDate))
+				</span>
+				#end
+				<span class="o_portfolio_page_meta text-muted o_small">
+					#if($r.isNotNull($row.assignment) || $r.isNotNull($row.lastPublicationDate) or $r.isNotEmpty($row.pageCategories)), #end
+					$r.translate("meta.last.modified", $r.formatDateAndTime($row.lastModified))
+				</span>
+				#if($r.isNotNull(${r.row.getMetaBinderAndSectionTitles()}))
+				<div class="o_portfolio_page_meta text-muted o_small">
+					$r.translate("meta.binder.section.titles", ${row.getMetaBinderAndSectionTitles()})
+				</div>
+				#end		
+			</div>
+			<div class="o_portfolio_page_summary o_block">
+				$r.xssScan($row.summary)
+			</div>
+		</div>
+	</div>
+	<div class="o_portfolio_page_links">
+		$r.render($row.openFormItem)
+		#if($r.isNotNull($row.commentFormLink))
+			<span class="btn btn-sm o_portfolio_comment">$r.render($row.commentFormLink)</span>
+		#end
+	</div>
+</div>
+#end
+#if($row.newEntry && $r.isNotNull($row.newEntryLink))
+<div class="panel panel-placeholder">
+	<div class="panel-heading">
+		<h4 class="panel-title">$r.translate("create.new.page.title")</h4>
+	</div>
+	<div class="panel-body">
+		<p>$r.translate("create.new.page.descr")</p>
+		<div class="o_button_group">
+			$r.render($row.newEntryLink)
+		</div>
+	</div>
+</div>
+#end

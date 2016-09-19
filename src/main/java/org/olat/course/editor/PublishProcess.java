@@ -703,7 +703,7 @@ public class PublishProcess {
 
 	public void changeGeneralAccess(Identity author, int access, boolean membersOnly){
 		RepositoryManager.getInstance().setAccess(repositoryEntry, access, membersOnly);
-		MultiUserEvent modifiedEvent = new EntryChangedEvent(repositoryEntry, author, Change.modifiedAtPublish);
+		MultiUserEvent modifiedEvent = new EntryChangedEvent(repositoryEntry, author, Change.modifiedAtPublish, "publish");
 		CoordinatorManager.getInstance().getCoordinator().getEventBus().fireEventToListenersOf(modifiedEvent, repositoryEntry);
 	}
 	

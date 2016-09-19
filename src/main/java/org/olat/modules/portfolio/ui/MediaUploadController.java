@@ -29,6 +29,7 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FileElement;
+import org.olat.core.gui.components.form.flexible.elements.RichTextElement;
 import org.olat.core.gui.components.form.flexible.elements.TextBoxListElement;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
@@ -61,7 +62,7 @@ public class MediaUploadController extends FormBasicController implements PageEl
 	
 	private FileElement fileEl;
 	private TextElement titleEl;
-	private TextElement descriptionEl;
+	private RichTextElement descriptionEl;
 	private TextBoxListElement categoriesEl;
 
 	private Media mediaReference;
@@ -106,7 +107,8 @@ public class MediaUploadController extends FormBasicController implements PageEl
 		titleEl = uifactory.addTextElement("artefact.title", "artefact.title", 255, "", formLayout);
 		titleEl.setMandatory(true);
 		
-		descriptionEl = uifactory.addRichTextElementForStringData("artefact.descr", "artefact.descr", "", 8, 6, false, null, null, formLayout, ureq.getUserSession(), getWindowControl());
+		descriptionEl = uifactory.addRichTextElementForStringDataMinimalistic("artefact.descr", "artefact.descr", "", 8, 60, formLayout, getWindowControl());
+		descriptionEl.getEditorConfiguration().setPathInStatusBar(false);
 		
 		fileEl = uifactory.addFileElement(getWindowControl(), "artefact.file", "artefact.file", formLayout);
 		fileEl.addActionListener(FormEvent.ONCHANGE);

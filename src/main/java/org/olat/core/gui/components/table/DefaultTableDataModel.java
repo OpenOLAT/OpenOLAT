@@ -48,6 +48,8 @@ public abstract class DefaultTableDataModel<U> implements TableDataModel<U> {
 	public DefaultTableDataModel(final List<U> objects) {
 		this.objects = objects;
 	}
+	
+	
 
 	/**
 	 * @see org.olat.core.gui.components.table.TableDataModel#getColumnCount()
@@ -59,6 +61,10 @@ public abstract class DefaultTableDataModel<U> implements TableDataModel<U> {
 	 */
 	public int getRowCount() {
 		return objects == null ? 0 : objects.size();
+	}
+	
+	public boolean isSelectable(@SuppressWarnings("unused") int row) {
+		return true;
 	}
 	
 	public boolean isRowLoaded(int row) {

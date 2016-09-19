@@ -48,15 +48,17 @@ public abstract class ItemSessionControlController extends FormBasicController {
 	private static final String[] attemtpsKeys = new String[] { "y", "n", "inherit" };
 
 	private TextElement maxAttemptsEl /*, maxTimeEl */;
-	private SingleSelection limitAttemptsEl, allowCommentEl, allowReviewEl, showSolutionEl;
+	private SingleSelection limitAttemptsEl, allowSkippingEl, allowCommentEl, allowReviewEl, showSolutionEl;
 	
+	protected final boolean editable;
 	protected final boolean restrictedEdit;
 	private final AbstractPart part;
 	
 	public ItemSessionControlController(UserRequest ureq, WindowControl wControl,
-			AbstractPart part, boolean restrictedEdit) {
+			AbstractPart part, boolean restrictedEdit, boolean editable) {
 		super(ureq, wControl, Util.createPackageTranslator(AssessmentTestDisplayController.class, ureq.getLocale()));
 		this.part = part;
+		this.editable = editable;
 		this.restrictedEdit = restrictedEdit;
 	}
 
@@ -76,8 +78,8 @@ public abstract class ItemSessionControlController extends FormBasicController {
 
 		ItemSessionControl itemSessionControl = part.getItemSessionControl();//can be null
 		Integer maxAttempts = null;
-		if(part.getItemSessionControl() != null) {
-			maxAttempts = part.getItemSessionControl().getMaxAttempts();
+		if(itemSessionControl != null) {
+			maxAttempts = itemSessionControl.getMaxAttempts();
 		}
 		String[] aKeys = part instanceof TestPart ? yesnoKeys : attemtpsKeys;
 		String[] yesnoValues = new String[] { translate("yes"), translate("no") };
@@ -100,13 +102,23 @@ public abstract class ItemSessionControlController extends FormBasicController {
 		} else {
 			limitAttemptsEl.select(attemtpsKeys[0], true);
 		}
-		limitAttemptsEl.setEnabled(!restrictedEdit);
+		limitAttemptsEl.setEnabled(!restrictedEdit && editable);
 		maxAttemptsEl.setVisible(limitAttemptsEl.isSelected(0));
-		maxAttemptsEl.setEnabled(!restrictedEdit);
+		maxAttemptsEl.setEnabled(!restrictedEdit && editable);
+		
+		allowSkippingEl = uifactory.addRadiosHorizontal("item.session.control.allow.skipping", formLayout, yesnoKeys, yesnoValues);
+		allowSkippingEl.addActionListener(FormEvent.ONCHANGE);
+		allowSkippingEl.setEnabled(!restrictedEdit && editable);
+		// the default value is allowSkipping=true
+		if(itemSessionControl != null && itemSessionControl.getAllowSkipping() != null && !itemSessionControl.getAllowSkipping().booleanValue()) {
+			allowSkippingEl.select(yesnoKeys[1], true);
+		} else {
+			allowSkippingEl.select(yesnoKeys[0], true);
+		}
 		
 		allowCommentEl = uifactory.addRadiosHorizontal("item.session.control.allow.comment", formLayout, yesnoKeys, yesnoValues);
 		allowCommentEl.addActionListener(FormEvent.ONCHANGE);
-		allowCommentEl.setEnabled(!restrictedEdit);
+		allowCommentEl.setEnabled(!restrictedEdit && editable);
 		if(itemSessionControl != null && itemSessionControl.getAllowComment() != null && itemSessionControl.getAllowComment().booleanValue()) {
 			allowCommentEl.select(yesnoKeys[0], true);
 		} else {
@@ -115,7 +127,7 @@ public abstract class ItemSessionControlController extends FormBasicController {
 		
 		allowReviewEl = uifactory.addRadiosHorizontal("item.session.control.allow.review", formLayout, yesnoKeys, yesnoValues);
 		allowReviewEl.addActionListener(FormEvent.ONCHANGE);
-		allowReviewEl.setEnabled(!restrictedEdit);
+		allowReviewEl.setEnabled(!restrictedEdit && editable);
 		if(itemSessionControl != null && itemSessionControl.getAllowReview() != null && itemSessionControl.getAllowReview().booleanValue()) {
 			allowReviewEl.select(yesnoKeys[0], true);
 		} else {
@@ -124,7 +136,7 @@ public abstract class ItemSessionControlController extends FormBasicController {
 	
 		showSolutionEl = uifactory.addRadiosHorizontal("item.session.control.show.solution", formLayout, yesnoKeys, yesnoValues);
 		showSolutionEl.addActionListener(FormEvent.ONCHANGE);
-		showSolutionEl.setEnabled(!restrictedEdit);
+		showSolutionEl.setEnabled(!restrictedEdit && editable);
 		if(itemSessionControl != null && itemSessionControl.getShowSolution() != null && itemSessionControl.getShowSolution().booleanValue()) {
 			showSolutionEl.select(yesnoKeys[0], true);
 		} else {
@@ -204,6 +216,13 @@ public abstract class ItemSessionControlController extends FormBasicController {
 	@Override
 	protected void formOK(UserRequest ureq) {
 		ItemSessionControl itemSessionControl = part.getItemSessionControl();//can be null
+		
+		// need to be first! 
+		if(allowSkippingEl.isOneSelected() && allowSkippingEl.isSelected(0)) {
+			checkNotNull(itemSessionControl).setAllowSkipping(Boolean.TRUE);
+		} else if(itemSessionControl != null) {
+			itemSessionControl.setAllowSkipping(Boolean.FALSE);
+		}
 		
 		if(allowCommentEl.isOneSelected() && allowCommentEl.isSelected(0)) {
 			checkNotNull(itemSessionControl).setAllowComment(Boolean.TRUE);

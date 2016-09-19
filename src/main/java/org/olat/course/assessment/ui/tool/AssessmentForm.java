@@ -46,6 +46,7 @@ import org.olat.core.util.Util;
 import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.assessment.AssessmentModule;
 import org.olat.course.nodes.AssessableCourseNode;
+import org.olat.course.run.scoring.ScoreAccounting;
 import org.olat.course.run.scoring.ScoreEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
@@ -184,7 +185,7 @@ public class AssessmentForm extends FormBasicController {
 			}
 		} else if(reopenLink == source) {
 			doReopen();
-			fireEvent(ureq, new AssessmentFormEvent(AssessmentFormEvent.ASSESSMENT_CHANGED, false));
+			fireEvent(ureq, new AssessmentFormEvent(AssessmentFormEvent.ASSESSMENT_REOPEN, false));
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
@@ -300,8 +301,14 @@ public class AssessmentForm extends FormBasicController {
 		}
 	}
 	
-	public void reloadData() {
-		ScoreEvaluation scoreEval = assessedUserCourseEnv.getScoreAccounting().evalCourseNode(assessableCourseNode);
+	/**
+	 * Reload the data in the controller
+	 * @param updateScoreAccounting Force a recalculation of the whole scoring in the course for the assessed user.
+	 */
+	public void reloadData(boolean updateScoreAccounting) {
+		ScoreAccounting scoreAccounting = assessedUserCourseEnv.getScoreAccounting();
+		scoreAccounting.evaluateAll(true);
+		ScoreEvaluation scoreEval = scoreAccounting.evalCourseNode(assessableCourseNode);
 		if (scoreEval == null) scoreEval = new ScoreEvaluation(null, null);
 		
 		if (hasAttempts) {
@@ -318,12 +325,12 @@ public class AssessmentForm extends FormBasicController {
 		
 		if (hasPassed) {
 			Boolean passedValue = scoreEval.getPassed();
-			passed.select(passedValue == null ? "undefined" :passedValue.toString(), true);
+			passed.select(passedValue == null ? "undefined" : passedValue.toString(), true);
 			passed.setEnabled(cut == null);
+			passed.getComponent().setDirty(true);//force the dirty
 		}
 		
 		updateStatus(scoreEval);
-		
 	}
 	
 	private void updateStatus(ScoreEvaluation scoreEval) {
@@ -442,9 +449,11 @@ public class AssessmentForm extends FormBasicController {
 
 		saveAndDoneLink = uifactory.addFormLink("save.done", buttonGroupLayout, Link.BUTTON);
 		saveAndDoneLink.setElementCssClass("o_sel_assessment_form_save_and_done");
+		saveAndDoneLink.setIconLeftCSS("o_icon o_icon_status_done o_icon-fw");
 		
 		reopenLink = uifactory.addFormLink("reopen", buttonGroupLayout, Link.BUTTON);
 		reopenLink.setElementCssClass("o_sel_assessment_form_reopen");
+		reopenLink.setIconLeftCSS("o_icon o_icon_status_in_review o_icon-fw");
 
 		uifactory.addFormCancelButton("cancel", buttonGroupLayout, ureq, getWindowControl());
 

@@ -76,6 +76,7 @@ import org.olat.core.gui.render.StringOutputPool;
 import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.render.velocity.VelocityHelper;
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.helpers.Settings;
 import org.olat.core.logging.OLATRuntimeException;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
@@ -89,6 +90,7 @@ import org.xml.sax.InputSource;
 import org.xml.sax.XMLReader;
 
 import uk.ac.ed.ph.jqtiplus.attribute.Attribute;
+import uk.ac.ed.ph.jqtiplus.attribute.value.IntegerAttribute;
 import uk.ac.ed.ph.jqtiplus.node.ForeignElement;
 import uk.ac.ed.ph.jqtiplus.node.QtiNode;
 import uk.ac.ed.ph.jqtiplus.node.content.InfoControl;
@@ -108,8 +110,25 @@ import uk.ac.ed.ph.jqtiplus.node.content.variable.PrintedVariable;
 import uk.ac.ed.ph.jqtiplus.node.content.variable.RubricBlock;
 import uk.ac.ed.ph.jqtiplus.node.content.variable.TextOrVariable;
 import uk.ac.ed.ph.jqtiplus.node.content.xhtml.image.Img;
+import uk.ac.ed.ph.jqtiplus.node.content.xhtml.list.Dd;
+import uk.ac.ed.ph.jqtiplus.node.content.xhtml.list.Dl;
+import uk.ac.ed.ph.jqtiplus.node.content.xhtml.list.DlElement;
+import uk.ac.ed.ph.jqtiplus.node.content.xhtml.list.Dt;
+import uk.ac.ed.ph.jqtiplus.node.content.xhtml.list.Li;
+import uk.ac.ed.ph.jqtiplus.node.content.xhtml.list.Ol;
+import uk.ac.ed.ph.jqtiplus.node.content.xhtml.list.Ul;
+import uk.ac.ed.ph.jqtiplus.node.content.xhtml.object.Object;
+import uk.ac.ed.ph.jqtiplus.node.content.xhtml.table.Col;
+import uk.ac.ed.ph.jqtiplus.node.content.xhtml.table.Colgroup;
+import uk.ac.ed.ph.jqtiplus.node.content.xhtml.table.Table;
+import uk.ac.ed.ph.jqtiplus.node.content.xhtml.table.TableCell;
+import uk.ac.ed.ph.jqtiplus.node.content.xhtml.table.Tbody;
+import uk.ac.ed.ph.jqtiplus.node.content.xhtml.table.Tfoot;
+import uk.ac.ed.ph.jqtiplus.node.content.xhtml.table.Thead;
+import uk.ac.ed.ph.jqtiplus.node.content.xhtml.table.Tr;
 import uk.ac.ed.ph.jqtiplus.node.content.xhtml.text.Br;
 import uk.ac.ed.ph.jqtiplus.node.content.xhtml.text.Div;
+import uk.ac.ed.ph.jqtiplus.node.content.xhtml.text.Span;
 import uk.ac.ed.ph.jqtiplus.node.item.AssessmentItem;
 import uk.ac.ed.ph.jqtiplus.node.item.ModalFeedback;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.AssociateInteraction;
@@ -221,7 +240,10 @@ public abstract class AssessmentObjectComponentRenderer extends DefaultComponent
 				sb.append("<div class='modalFeedback o_info'>");
 				Attribute<?> title = modalFeedback.getAttributes().get("title");
 				if(title != null && title.getValue() != null) {
-					sb.append("<h4>").append(title.getValue().toString()).append("</h4>");
+					String feedbackTitle = title.getValue().toString();
+					if(StringHelper.containsNonWhitespace(feedbackTitle)) {
+						sb.append("<h4>").append(StringHelper.escapeHtml(feedbackTitle)).append("</h4>");
+					}
 				}
 				
 				modalFeedback.getFlowStatics().forEach((flow)
@@ -236,7 +258,7 @@ public abstract class AssessmentObjectComponentRenderer extends DefaultComponent
 	
 	public void renderFlow(AssessmentRenderer renderer, StringOutput sb, AssessmentObjectComponent component,
 			ResolvedAssessmentItem resolvedAssessmentItem, ItemSessionState itemSessionState, Flow flow, URLBuilder ubu, Translator translator) {
-		
+
 		if(flow instanceof Block) {
 			renderBlock(renderer, sb, component, resolvedAssessmentItem, itemSessionState, (Block)flow, ubu, translator);
 		} else if(flow instanceof Inline) {
@@ -315,6 +337,31 @@ public abstract class AssessmentObjectComponentRenderer extends DefaultComponent
 						-> renderFlow(renderer, sb, component, resolvedAssessmentItem, itemSessionState, flow, ubu, translator));
 				renderEndTag(sb, block);
 				break;
+			case Ul.QTI_CLASS_NAME:
+				renderStartHtmlTag(sb, component, resolvedAssessmentItem, block, null);
+				((Ul)block).getLis().forEach((li)
+						-> renderLi(renderer, sb, component, resolvedAssessmentItem, itemSessionState, li, ubu, translator));
+				renderEndTag(sb, block);
+				break;
+			case Ol.QTI_CLASS_NAME:
+				renderStartHtmlTag(sb, component, resolvedAssessmentItem, block, null);
+				((Ol)block).getLis().forEach((li)
+						-> renderLi(renderer, sb, component, resolvedAssessmentItem, itemSessionState, li, ubu, translator));
+				renderEndTag(sb, block);
+				break;
+			case Dl.QTI_CLASS_NAME:
+				renderStartHtmlTag(sb, component, resolvedAssessmentItem, block, null);
+				((Dl)block).getDlElements().forEach((dlElement)
+						-> renderDlElement(renderer, sb, component, resolvedAssessmentItem, itemSessionState, dlElement, ubu, translator));
+				renderEndTag(sb, block);
+				break;
+				
+			case Table.QTI_CLASS_NAME:
+				renderTable(renderer, sb, component, resolvedAssessmentItem, itemSessionState, (Table)block, ubu, translator);
+				break;
+			case Object.QTI_CLASS_NAME:
+				System.out.println("1");
+				break;
 			default: {
 				renderStartHtmlTag(sb, component, resolvedAssessmentItem, block, null);
 				if(block instanceof AtomicBlock) {
@@ -330,6 +377,116 @@ public abstract class AssessmentObjectComponentRenderer extends DefaultComponent
 				renderEndTag(sb, block);
 			}
 		}
+	}
+	
+	public void renderTable(AssessmentRenderer renderer, StringOutput sb, AssessmentObjectComponent component,
+			ResolvedAssessmentItem resolvedAssessmentItem, ItemSessionState itemSessionState, Table table, URLBuilder ubu, Translator translator) {
+		renderStartHtmlTag(sb, component, resolvedAssessmentItem, table, null);
+		
+		table.getColgroups().forEach(colgroup
+				-> renderColgroup(sb, component, resolvedAssessmentItem, colgroup));
+		
+		Thead thead = table.getThead();
+		if(thead != null) {
+			renderStartHtmlTag(sb, component, resolvedAssessmentItem, thead, null);
+			thead.getTrs().forEach(tr
+					-> renderTr(renderer, sb, component, resolvedAssessmentItem, itemSessionState, tr, ubu, translator));
+			renderEndTag(sb, thead);
+		}
+		
+		List<Tbody> tbodies = table.getTbodys();
+		for(Tbody tbody:tbodies) {
+			renderStartHtmlTag(sb, component, resolvedAssessmentItem, tbody, null);
+			tbody.getTrs().forEach(tr
+					-> renderTr(renderer, sb, component, resolvedAssessmentItem, itemSessionState, tr, ubu, translator));
+			renderEndTag(sb, tbody);
+		}
+
+		Tfoot tfoot = table.getTfoot();
+		if(tfoot != null) {
+			renderStartHtmlTag(sb, component, resolvedAssessmentItem, tfoot, null);
+			tfoot.getTrs().forEach(tr
+					-> renderTr(renderer, sb, component, resolvedAssessmentItem, itemSessionState, tr, ubu, translator));
+			renderEndTag(sb, tfoot);
+		}
+		
+		renderEndTag(sb, table);
+	}
+	
+	public void renderColgroup(StringOutput sb, AssessmentObjectComponent component,
+			ResolvedAssessmentItem resolvedAssessmentItem, Colgroup colGroup) {
+		renderStartHtmlTag(sb, component, resolvedAssessmentItem, colGroup, null);
+		colGroup.getCols().forEach(col
+				-> renderCol(sb, component, resolvedAssessmentItem, col));
+		renderEndTag(sb, colGroup);
+	}
+	
+	public void renderCol(StringOutput sb, AssessmentObjectComponent component,
+			ResolvedAssessmentItem resolvedAssessmentItem, Col col) {
+		sb.append("<").append(col.getQtiClassName());
+		renderHtmlTagAttributes(sb, component, resolvedAssessmentItem, col, null);
+		
+		IntegerAttribute spanAttr = col.getAttributes().getIntegerAttribute(Col.ATTR_SPAN_NAME);
+		if(spanAttr.getComputedValue() != null) {
+			sb.append(" span=\"").append(spanAttr.getComputedNonNullValue()).append("\"");
+		}
+		sb.append(">");
+		renderEndTag(sb, col);
+	}
+	
+	public void renderTr(AssessmentRenderer renderer, StringOutput sb, AssessmentObjectComponent component,
+			ResolvedAssessmentItem resolvedAssessmentItem, ItemSessionState itemSessionState, Tr tr, URLBuilder ubu, Translator translator) {
+		renderStartHtmlTag(sb, component, resolvedAssessmentItem, tr, null);
+		tr.getTableCells().forEach(cell
+				-> renderTableCell(renderer, sb, component, resolvedAssessmentItem, itemSessionState, cell, ubu, translator));
+		renderEndTag(sb, tr);
+	}
+	
+	public void renderTableCell(AssessmentRenderer renderer, StringOutput sb, AssessmentObjectComponent component,
+			ResolvedAssessmentItem resolvedAssessmentItem, ItemSessionState itemSessionState, TableCell cell, URLBuilder ubu, Translator translator) {
+		sb.append("<").append(cell.getQtiClassName());
+		renderHtmlTagAttributes(sb, component, resolvedAssessmentItem, cell, null);
+		
+		IntegerAttribute colSpanAttr = cell.getAttributes().getIntegerAttribute(TableCell.ATTR_COLSPAN_NAME);
+		if(colSpanAttr.getComputedValue() != null) {
+			sb.append(" colspan=\"").append(colSpanAttr.getComputedNonNullValue()).append("\"");
+		}
+		IntegerAttribute rowSpanAttr = cell.getAttributes().getIntegerAttribute(TableCell.ATTR_ROWSPAN_NAME);
+		if(rowSpanAttr.getComputedValue() != null) {
+			sb.append(" rowspan=\"").append(rowSpanAttr.getComputedNonNullValue()).append("\"");
+		}
+		sb.append(">");
+		
+		cell.getChildren().forEach(child
+				-> renderFlow(renderer, sb, component, resolvedAssessmentItem, itemSessionState, child, ubu, translator));
+		renderEndTag(sb, cell);
+	}
+	
+	public void renderLi(AssessmentRenderer renderer, StringOutput sb, AssessmentObjectComponent component,
+			ResolvedAssessmentItem resolvedAssessmentItem, ItemSessionState itemSessionState, Li li, URLBuilder ubu, Translator translator) {
+		renderStartHtmlTag(sb, component, resolvedAssessmentItem, li, null);
+		li.getFlows().forEach((flow)
+				-> renderFlow(renderer, sb, component, resolvedAssessmentItem, itemSessionState, flow, ubu, translator));
+		renderEndTag(sb, li);
+	}
+	
+	public void renderDlElement(AssessmentRenderer renderer, StringOutput sb, AssessmentObjectComponent component,
+			ResolvedAssessmentItem resolvedAssessmentItem, ItemSessionState itemSessionState, DlElement dlElement, URLBuilder ubu, Translator translator) {
+		renderStartHtmlTag(sb, component, resolvedAssessmentItem, dlElement, null);
+		switch(dlElement.getQtiClassName()) {
+			case Dt.QTI_CLASS_NAME:
+				((Dt)dlElement).getInlines().forEach((inline)
+						-> renderInline(renderer, sb, component, resolvedAssessmentItem, itemSessionState, inline, ubu, translator));
+				break;
+			case Dd.QTI_CLASS_NAME:
+				((Dd)dlElement).getFlows().forEach((flow)
+						-> renderFlow(renderer, sb, component, resolvedAssessmentItem, itemSessionState, flow, ubu, translator));
+				break;
+			default:
+				//ignore other type
+				break;
+		}
+		renderEndTag(sb, dlElement);
 	}
 	
 	public void renderInline(AssessmentRenderer renderer, StringOutput sb, AssessmentObjectComponent component, ResolvedAssessmentItem resolvedAssessmentItem,
@@ -384,6 +541,14 @@ public abstract class AssessmentObjectComponentRenderer extends DefaultComponent
 				sb.append("<br/>");
 				break;
 			}
+			case Span.QTI_CLASS_NAME: {
+				renderSpan(renderer, sb, (Span)inline, component, resolvedAssessmentItem, itemSessionState, ubu, translator);
+				break;
+			}
+			case Object.QTI_CLASS_NAME: {
+				renderObject(sb, (Object)inline, component, resolvedAssessmentItem);
+				break;
+			}
 			default: {
 				renderStartHtmlTag(sb, component, resolvedAssessmentItem, inline, null);
 				if(inline instanceof SimpleInline) {
@@ -396,11 +561,69 @@ public abstract class AssessmentObjectComponentRenderer extends DefaultComponent
 		}
 	}
 	
+	protected final void renderSpan(AssessmentRenderer renderer, StringOutput sb, Span span, AssessmentObjectComponent component,
+			ResolvedAssessmentItem resolvedAssessmentItem, ItemSessionState itemSessionState, URLBuilder ubu, Translator translator) {
+		Attribute<?> attrClass = span.getAttributes().get("class");
+
+		if(attrClass != null && attrClass.getValue() != null && attrClass.getValue().toString().equals("[math]")) {
+			String domid = "mw_" + CodeHelper.getRAMUniqueID();
+			sb.append("<span id=\"").append(domid).append("\">");
+			
+			renderStartHtmlTag(sb, component, resolvedAssessmentItem, span, null);
+			span.getInlines().forEach((child)
+					-> renderInline(renderer, sb, component, resolvedAssessmentItem, itemSessionState, child, ubu, translator));
+			renderEndTag(sb, span);
+			
+			sb.append("</span>")
+			  .append("\n<script type='text/javascript'>\n/* <![CDATA[ */\n jQuery(function() {setTimeout(function() { BFormatter.formatLatexFormulas('").append(domid).append("');}, 100); }); \n/* ]]> */\n</script>");
+		} else {
+			renderStartHtmlTag(sb, component, resolvedAssessmentItem, span, null);
+			span.getInlines().forEach((child)
+					-> renderInline(renderer, sb, component, resolvedAssessmentItem, itemSessionState, child, ubu, translator));
+			renderEndTag(sb, span);
+		}
+	}
+	
+	protected final void renderObject(StringOutput sb, Object object, AssessmentObjectComponent component, ResolvedAssessmentItem resolvedAssessmentItem) {
+		Attribute<?> attrId = object.getAttributes().get("id");
+		if(attrId != null && attrId.getValue() != null && attrId.getValue().toString().startsWith("olatFlashMovieViewer")) {
+			//this is a OpenOLAT movie and need to be converted
+			/*
+			<span id="olatFlashMovieViewer213060" class="olatFlashMovieViewer" style="display:block;border:solid 1px #000; width:320px; height:240px;">
+			  <script src="/raw/fx-111111x11/movie/player.js" type="text/javascript"></script>
+			  <script type="text/javascript" defer="defer">// <![CDATA[
+			    BPlayer.insertPlayer("demo-video.mp4","olatFlashMovieViewer213060",320,240,0,0,"video",undefined,false,false,true,undefined);
+			   // ]]></script>
+			</span>
+			*/
+			String id = attrId.getValue().toString();
+			Attribute<?> dataAttr = object.getAttributes().get("data");
+			String data = dataAttr.getValue().toString();
+			Attribute<?> attrDataMovie = object.getAttributes().get("data-oo-movie");
+			String dataMovie = attrDataMovie.getValue().toString();
+			
+			String relativePath = component.relativePathTo(resolvedAssessmentItem);
+			String src = Settings.getServerContextPathURI() + component.getMapperUri() + relativePath + "/" + data;
+			dataMovie = dataMovie.replace(data, src);
+			
+			sb.append("<span id=\"").append(id).append("\" class=\"olatFlashMovieViewer\" style=\"display:block;border:solid 1px #000; width:320px; height:240px;\">\n")
+			  .append(" <script src=\"/raw/fx-111111x11/movie/player.js\" type=\"text/javascript\"></script>\n")
+			  .append(" <script type=\"text/javascript\" defer=\"defer\">// <![CDATA[\n")
+			  .append("  BPlayer.insertPlayer(").append(dataMovie).append(");\n")
+			  .append(" // ]]></script>\n")
+			  .append("</span>\n");
+		} else {
+			renderStartHtmlTag(sb, component, resolvedAssessmentItem, object, null);
+			//TODO object.getObjectFlows();
+			renderEndTag(sb, object);
+		}
+	}
+	
 	protected final void renderInfoControl(AssessmentRenderer renderer, StringOutput sb, AssessmentObjectComponent component,
 			ResolvedAssessmentItem resolvedAssessmentItem, ItemSessionState itemSessionState, InfoControl infoControl, URLBuilder ubu, Translator translator) {
 		sb.append("<div class=\"infoControl\">")
 		  .append("<button type='button' onclick=\"return QtiWorksRendering.showInfoControlContent(this)\" class='btn btn-default'>")
-		  .append("<span>").append(infoControl.getTitle()).append("</span></button>")
+		  .append("<span>").append(StringHelper.escapeHtml(infoControl.getTitle())).append("</span></button>")
 		  .append("<div class='infoControlContent o_info'>");
 		infoControl.getChildren().forEach((flow)
 				-> renderFlow(renderer, sb, component, resolvedAssessmentItem, itemSessionState, flow, ubu, translator));
@@ -425,6 +648,11 @@ public abstract class AssessmentObjectComponentRenderer extends DefaultComponent
 	
 	protected final void renderStartHtmlTag(StringOutput sb, AssessmentObjectComponent component, ResolvedAssessmentItem resolvedAssessmentItem, QtiNode node, String cssClass) {
 		sb.append("<").append(node.getQtiClassName());
+		renderHtmlTagAttributes(sb, component, resolvedAssessmentItem, node, cssClass);
+		sb.append(">");
+	}
+	
+	protected final void renderHtmlTagAttributes(StringOutput sb, AssessmentObjectComponent component, ResolvedAssessmentItem resolvedAssessmentItem, QtiNode node, String cssClass) {
 		for(Attribute<?> attribute:node.getAttributes()) {
 			String value = getHtmlAttributeValue(component, resolvedAssessmentItem, attribute);
 			if(StringHelper.containsNonWhitespace(value)) {
@@ -436,7 +664,6 @@ public abstract class AssessmentObjectComponentRenderer extends DefaultComponent
 				sb.append("\"");
 			}
 		}
-		sb.append(">");
 	}
 	
 	protected void renderEndTag(StringOutput sb, QtiNode node) {
@@ -497,7 +724,8 @@ public abstract class AssessmentObjectComponentRenderer extends DefaultComponent
 		
 		FormItem endAttemptButton = item.getFormComponent(id);
 		if(endAttemptButton == null) {
-			endAttemptButton = FormUIFactory.getInstance().addFormLink(id, id, interaction.getTitle(), null, null, Link.BUTTON | Link.NONTRANSLATED);
+			String title = StringHelper.escapeHtml(interaction.getTitle());
+			endAttemptButton = FormUIFactory.getInstance().addFormLink(id, id, title, null, null, Link.BUTTON | Link.NONTRANSLATED);
 			endAttemptButton.setTranslator(translator);
 			endAttemptButton.setUserObject(interaction);
 			if(item.getRootForm() != endAttemptButton.getRootForm()) {
@@ -812,8 +1040,9 @@ public abstract class AssessmentObjectComponentRenderer extends DefaultComponent
 		ResponseDeclaration responseDeclaration = getResponseDeclaration(assessmentItem, interaction.getResponseIdentifier());
 		String checkJavascript = checkJavaScript(responseDeclaration, interaction.getPatternMask());
 		if(StringHelper.containsNonWhitespace(checkJavascript)) {
-			sb.append(" onchange=\"").append(checkJavascript).append("\">");
+			sb.append(" onchange=\"").append(checkJavascript).append("\"");
 		}
+		sb.append(">");
 		
 		if(renderer.isSolutionMode()) {
 			String placeholder = interaction.getPlaceholderText();
@@ -825,6 +1054,12 @@ public abstract class AssessmentObjectComponentRenderer extends DefaultComponent
 		}
 		sb.append("</textarea>");
 		FormJSHelper.appendFlexiFormDirty(sb, component.getQtiItem().getRootForm(), responseUniqueId);
+		sb.append(FormJSHelper.getJSStartWithVarDeclaration(responseUniqueId))
+		//plain textAreas should not propagate the keypress "enter" (keynum = 13) as this would submit the form
+		  .append(responseUniqueId).append(".on('keypress', function(event, target){if (13 == event.keyCode) {event.stopPropagation()} })")
+		  .append(FormJSHelper.getJSEnd());
+	
+		
 	}
 	
 	protected abstract void renderPrintedVariable(AssessmentRenderer renderer, StringOutput sb,

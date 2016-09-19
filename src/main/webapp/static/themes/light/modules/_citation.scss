@@ -1,25 +1,42 @@
 .o_cit {
 	position: relative;
 	margin: $o-forum-quote-padding 0;
-	
-	.o_quote_author { 
-		color: $o-forum-quote-author-color;
-		font-size: $o-forum-quote-font-size; 
-		&:before { 
-			@include o-make-icon(); 
-			content: $fa-var-quote-right; 
-			font-size: ceil(($font-size-base * 1.5));
-			padding-right: 0.5em;
+		
+	blockquote.o_quote { 
+		color: $o-cit-quote-color; 
+		font-size: $o-cit-quote-font-size; 
+		margin-top: $padding-base-vertical; 
+		padding: 0 $padding-base-horizontal;
+		
+		p:last-child {
+			&:after {
+				content: '1)';
+				top: -0.5em;
+				font-size: 75%;
+				line-height: 0;
+				position: relative;
+				vertical-align: baseline;
+			}
 		}
 	}
 	
-	blockquote.o_quote { 
-		color: $o-forum-quote-color; 
-		font-size: $o-forum-quote-font-size; 
-		margin-top: $padding-base-vertical; 
-		padding: 0 $padding-base-horizontal;
+	.o_cit_bibinfo {
+		font-size: 90%;
+		margin-left: 1em;
+		position: relative;
+		
+		>div:first-child {
+			&:before {
+				content: '1)';
+				position: absolute;
+				top: 0.5em;
+				left: -1em;
+				font-size: 75%;
+				line-height: 0;
+				vertical-align: baseline;
+			}
+		}	
 	}
-	
 	
 	.title,
 	.url,

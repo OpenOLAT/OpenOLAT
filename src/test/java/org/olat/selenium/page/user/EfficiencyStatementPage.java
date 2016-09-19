@@ -23,6 +23,7 @@ import java.util.List;
 
 import org.junit.Assert;
 import org.olat.selenium.page.graphene.OOGraphene;
+import org.olat.selenium.page.portfolio.MediaPage;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
@@ -171,5 +172,18 @@ public class EfficiencyStatementPage {
 		browser.findElement(courseDetailsBy).click();
 		OOGraphene.waitBusy(browser);
 		return this;
+	}
+	
+	public MediaPage addAsMediaInList(String courseTitle) {
+		if(courseTitle.length() > 25) {
+			courseTitle = courseTitle.substring(0, 25);
+		}//
+		
+		By collectBy = By.xpath("//div[contains(@class,'o_sel_certificates_table')]//table//tr[td[contains(text(),'" + courseTitle + "')]]/td/a[contains(@href,'cmd.MEDIA')]");
+		OOGraphene.waitElement(collectBy, 5, browser);
+		browser.findElement(collectBy).click();
+		OOGraphene.waitBusy(browser);
+		OOGraphene.waitModalDialog(browser);
+		return new MediaPage(browser);
 	}
 }

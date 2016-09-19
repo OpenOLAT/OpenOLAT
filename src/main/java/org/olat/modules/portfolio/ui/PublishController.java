@@ -45,6 +45,7 @@ import org.olat.core.gui.control.generic.wizard.StepRunnerCallback;
 import org.olat.core.gui.control.generic.wizard.StepsMainRunController;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
 import org.olat.core.id.Identity;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.WebappHelper;
 import org.olat.core.util.mail.ContactList;
 import org.olat.core.util.mail.MailBundle;
@@ -113,7 +114,7 @@ public class PublishController extends BasicController implements TooledControll
 		this.stackPanel = stackPanel;
 		
 		mainVC = createVelocityContainer("publish");
-		mainVC.contextPut("binderTitle", binder.getTitle());
+		mainVC.contextPut("binderTitle", StringHelper.escapeHtml(binder.getTitle()));
 		
 		binderRow = new PortfolioElementRow(binder, null);
 		mainVC.contextPut("binderRow", binderRow);
@@ -187,8 +188,8 @@ public class PublishController extends BasicController implements TooledControll
 					if(canEditSectionAccessRights && !PortfolioRoles.owner.equals(right.getRole())) {
 						String id = "edit_" + (counter++);
 						editLink = LinkFactory.createLink(id, id, "edit_access", "edit", getTranslator(), mainVC, this, Link.LINK);
+						sectionRow.getAccessRights().add(new AccessRightsRow(section, right, editLink));
 					}
-					sectionRow.getAccessRights().add(new AccessRightsRow(section, right, editLink));
 				}
 			}
 		}
@@ -209,8 +210,8 @@ public class PublishController extends BasicController implements TooledControll
 					if(canEditPageAccessRights && !PortfolioRoles.owner.equals(right.getRole())) {
 						String id = "edit_" + (counter++);
 						editLink = LinkFactory.createLink(id, id, "edit_access", "edit", getTranslator(), mainVC, this, Link.LINK);
+						pageRow.getAccessRights().add(new AccessRightsRow(page, right, editLink));
 					}
-					pageRow.getAccessRights().add(new AccessRightsRow(page, right, editLink));
 				}
 			}
 		}
@@ -301,7 +302,6 @@ public class PublishController extends BasicController implements TooledControll
 	private void doEditInvitation(UserRequest ureq, Identity invitee) {
 		if(addInvitationCtrl != null) return;
 
-		
 		addInvitationCtrl = new InvitationEditRightsController(ureq, getWindowControl(), binder, invitee);
 		listenTo(addInvitationCtrl);
 		
@@ -415,9 +415,9 @@ public class PublishController extends BasicController implements TooledControll
 		
 		public String getCssClass() {
 			if(PortfolioRoles.reviewer.equals(rights.getRole())) {
-				return "o_icon o_icon_reviewer";
+				return "o_icon o_icon_reviewer o_icon-fw";
 			}
-			return "o_icon o_icon_user";
+			return "o_icon o_icon_user o_icon-fw";
 		}
 
 		public Link getEditLink() {

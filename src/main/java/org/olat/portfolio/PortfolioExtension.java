@@ -19,8 +19,14 @@
  */
 package org.olat.portfolio;
 
+import java.util.Locale;
+
+import org.olat.admin.user.tools.UserTool;
 import org.olat.admin.user.tools.UserToolExtension;
 import org.olat.core.CoreSpringFactory;
+import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.control.WindowControl;
+import org.olat.portfolio.manager.EPFrontendManager;
 
 /**
  * 
@@ -34,5 +40,15 @@ public class PortfolioExtension extends UserToolExtension {
 	public boolean isEnabled() {
 		PortfolioModule module = CoreSpringFactory.getImpl(PortfolioModule.class);
 		return module.isEnabled() && super.isEnabled();
+	}
+
+	@Override
+	public UserTool createUserTool(UserRequest ureq, WindowControl wControl, Locale locale) {
+		EPFrontendManager epMgr = CoreSpringFactory.getImpl(EPFrontendManager.class);
+		boolean hasMapOrArtefact = epMgr.hasMapOrArtefact(ureq.getIdentity());
+		if(hasMapOrArtefact) {
+			return super.createUserTool(ureq, wControl, locale);
+		}
+		return null;
 	}
 }

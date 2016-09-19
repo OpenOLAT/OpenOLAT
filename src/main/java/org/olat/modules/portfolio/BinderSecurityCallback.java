@@ -19,6 +19,8 @@
  */
 package org.olat.modules.portfolio;
 
+import java.util.List;
+
 /**
  * 
  * Initial date: 15.06.2016<br>
@@ -54,6 +56,8 @@ public interface BinderSecurityCallback {
 	
 	public boolean canEditPage(Page page);
 	
+	public boolean canEditPageMetadata(Page page, List<Assignment> assignments);
+	
 	public boolean canPublish(Page page);
 	
 	public boolean canRevision(Page page);
@@ -79,6 +83,8 @@ public interface BinderSecurityCallback {
 	public boolean canEditAccessRights(PortfolioElement element);
 	
 	public boolean canViewElement(PortfolioElement element);
+	
+	public boolean canViewPendingAssignments(Section section);
 	
 	public boolean canViewEmptySection(Section section);
 	

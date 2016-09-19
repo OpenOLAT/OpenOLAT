@@ -20,6 +20,7 @@
 
 package org.olat.admin.user;
 
+import java.util.List;
 import java.util.Locale;
 
 import org.olat.basesecurity.Authentication;
@@ -130,10 +131,18 @@ public class SendTokenToUserForm extends FormBasicController {
 	
 	private void sendToken(UserRequest ureq, String text) {
 		// mailer configuration
-		// check if user has an OLAT provider token, otherwhise a pwd change makes no sense
-		Authentication auth = BaseSecurityManager.getInstance().findAuthentication(user, BaseSecurityModule.getDefaultAuthProviderIdentifier());
-		if (auth == null) { 
-			showWarning("changeuserpwd.failed");
+		// We allow creation of password token when user has no password so far or when he as an OpenOLAT Password. 
+		// For other cases such as Shibboleth, LDAP, oAuth etc. we don't allow creation of token as this is most 
+		// likely not a desired action.
+		List<Authentication> authentications = BaseSecurityManager.getInstance().getAuthentications(user);
+		boolean isOOpwdAllowed = (authentications.size() == 0);
+		for (Authentication authentication : authentications) {
+			if (authentication.getProvider().equals(BaseSecurityModule.getDefaultAuthProviderIdentifier())) {
+				isOOpwdAllowed = true;
+			}			
+		}		
+		if (!isOOpwdAllowed) { 
+			showWarning("sendtoken.wrong.auth");
 			return;
 		}
 		
@@ -148,6 +157,7 @@ public class SendTokenToUserForm extends FormBasicController {
 		}
 		if(text.indexOf(dummyKey) < 0) {
 			showWarning("changeuserpwd.failed");
+			logWarn("Can not replace temporary registration token in change pwd mail token dialog, user probably changed temporary token in mai template", null);
 			return;
 		}
 		String body = text.replace(dummyKey, tk.getRegistrationKey());

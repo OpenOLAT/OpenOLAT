@@ -131,11 +131,10 @@ public class COCourseNode extends AbstractAccessableCourseNode {
     
     private void postImportCopy(CourseEnvironmentMapper envMapper) {
         ModuleConfiguration mc = getModuleConfiguration();
-        String coachesGroupNames = (String)mc.get(COEditController.CONFIG_KEY_EMAILTOCOACHES_GROUP);
-        String particpantsGroupNames = (String)mc.get(COEditController.CONFIG_KEY_EMAILTOPARTICIPANTS_GROUP);
         //remap group keys
         List<Long> coachesGroupKeys = mc.getList(COEditController.CONFIG_KEY_EMAILTOCOACHES_GROUP_ID, Long.class);
-        if(coachesGroupKeys == null) {
+        if(coachesGroupKeys == null || coachesGroupKeys.isEmpty()) {
+            String coachesGroupNames = (String)mc.get(COEditController.CONFIG_KEY_EMAILTOCOACHES_GROUP);
             coachesGroupKeys = envMapper.toGroupKeyFromOriginalNames(coachesGroupNames);
         } else {
             coachesGroupKeys = envMapper.toGroupKeyFromOriginalKeys(coachesGroupKeys);
@@ -143,8 +142,9 @@ public class COCourseNode extends AbstractAccessableCourseNode {
         mc.set(COEditController.CONFIG_KEY_EMAILTOCOACHES_GROUP_ID, coachesGroupKeys);
 
         List<Long> participantsGroupKeys = mc.getList(COEditController.CONFIG_KEY_EMAILTOPARTICIPANTS_GROUP_ID, Long.class);
-        if(participantsGroupKeys == null) {
-            participantsGroupKeys = envMapper.toGroupKeyFromOriginalNames(particpantsGroupNames);
+        if(participantsGroupKeys == null || participantsGroupKeys.isEmpty()) {
+            String participantsGroupNames = (String)mc.get(COEditController.CONFIG_KEY_EMAILTOPARTICIPANTS_GROUP);
+            participantsGroupKeys = envMapper.toGroupKeyFromOriginalNames(participantsGroupNames);
         } else {
             participantsGroupKeys = envMapper.toGroupKeyFromOriginalKeys(participantsGroupKeys);
         }
@@ -153,7 +153,7 @@ public class COCourseNode extends AbstractAccessableCourseNode {
         //remap area keys
         String coachesAreaNames = (String)mc.get(COEditController.CONFIG_KEY_EMAILTOCOACHES_AREA);
         List<Long> coachesAreaKeys = mc.getList(COEditController.CONFIG_KEY_EMAILTOCOACHES_AREA_IDS, Long.class);
-        if(coachesAreaKeys == null) {
+        if(coachesAreaKeys == null || coachesAreaKeys.isEmpty()) {
             coachesAreaKeys = envMapper.toAreaKeyFromOriginalNames(coachesAreaNames);
         } else {
             coachesAreaKeys = envMapper.toAreaKeyFromOriginalKeys(coachesAreaKeys);
@@ -162,12 +162,26 @@ public class COCourseNode extends AbstractAccessableCourseNode {
         
         String participantsAreaNames = (String)mc.get(COEditController.CONFIG_KEY_EMAILTOPARTICIPANTS_AREA);
         List<Long> participantsAreaKeys = mc.getList(COEditController.CONFIG_KEY_EMAILTOPARTICIPANTS_AREA_ID, Long.class);
-        if(participantsAreaKeys == null) {
+        if(participantsAreaKeys == null || participantsAreaKeys.isEmpty()) {
             participantsAreaKeys = envMapper.toAreaKeyFromOriginalNames(participantsAreaNames);
         } else {
             participantsAreaKeys = envMapper.toAreaKeyFromOriginalKeys(participantsAreaKeys);
         }
         mc.set(COEditController.CONFIG_KEY_EMAILTOPARTICIPANTS_AREA_ID, participantsAreaKeys);
+        
+        //remap the deprecated emailGroupsIds
+        List<Long> deprecatedGroupKeys = mc.getList(COEditController.CONFIG_KEY_EMAILTOGROUP_IDS, Long.class);
+        if(deprecatedGroupKeys != null && deprecatedGroupKeys.size() > 0) {
+        	deprecatedGroupKeys = envMapper.toGroupKeyFromOriginalKeys(deprecatedGroupKeys);
+            mc.set(COEditController.CONFIG_KEY_EMAILTOGROUP_IDS, deprecatedGroupKeys);
+        }
+        
+        //remap the deprecated emailAreasIds
+        List<Long> deprecatedAreaKeys = mc.getList(COEditController.CONFIG_KEY_EMAILTOAREA_IDS, Long.class);
+        if(deprecatedAreaKeys != null && deprecatedAreaKeys.size() > 0) {
+        	deprecatedAreaKeys = envMapper.toAreaKeyFromOriginalKeys(deprecatedAreaKeys);
+            mc.set(COEditController.CONFIG_KEY_EMAILTOAREA_IDS, deprecatedAreaKeys);
+        }
     }
 
     @Override
@@ -368,7 +382,7 @@ public class COCourseNode extends AbstractAccessableCourseNode {
         /*
          * if no version was set before -> version is 1
          */
-        if (version == 2) {
+        if (version <= 2) {
             //check for deprecated Configs
             if(mc.getBooleanSafe(COEditController.CONFIG_KEY_EMAILTOCOACHES)){
                 mc.set(COEditController.CONFIG_KEY_EMAILTOCOACHES_GROUP, mc.get(COEditController.CONFIG_KEY_EMAILTOGROUPS));

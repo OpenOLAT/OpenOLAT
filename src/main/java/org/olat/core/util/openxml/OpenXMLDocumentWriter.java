@@ -67,6 +67,7 @@ public class OpenXMLDocumentWriter {
 	public static final String CT_NUMBERING = "application/vnd.openxmlformats-officedocument.wordprocessingml.numbering+xml";
 	public static final String CT_STYLES = "application/vnd.openxmlformats-officedocument.wordprocessingml.styles+xml";
 	public static final String CT_HEADER = "application/vnd.openxmlformats-officedocument.wordprocessingml.header+xml";
+	public static final String CT_THEME = "application/vnd.openxmlformats-officedocument.theme+xml";
 	
 	
 	public void createDocument(ZipOutputStream out, OpenXMLDocument document)
@@ -101,6 +102,15 @@ public class OpenXMLDocumentWriter {
 		
 		//word/media
 		appendMedias(out, document);
+		
+		// word/theme/theme1.xml
+		out.putNextEntry(new ZipEntry("word/theme/theme1.xml"));
+		try(InputStream in = OpenXMLDocumentWriter.class.getResourceAsStream("_resources/theme1.xml")) {
+			IOUtils.copy(in, out);
+		} catch (IOException e) {
+			log.error("", e);
+		}
+		out.closeEntry();
 		
 		//word/numbering
 		ZipEntry numberingDocument = new ZipEntry("word/numbering.xml");
@@ -224,6 +234,10 @@ public class OpenXMLDocumentWriter {
 							headerRef.getFilename(), writer);
 				}
 			}
+			
+			addRelationship(document.generateId(), "http://schemas.openxmlformats.org/officeDocument/2006/relationships/theme",
+					"theme/theme1.xml", writer);
+
 
 			writer.writeEndElement();// end Relationships
 			writer.writeEndDocument();
@@ -321,8 +335,8 @@ public class OpenXMLDocumentWriter {
 			Document doc = OpenXMLUtils.createDocument();
 			Element propertiesEl = (Element)doc.appendChild(doc.createElement("properties:Properties"));
 			propertiesEl.setAttribute("xmlns:properties", SCHEMA_EXT_PROPERTIES);
-			addExtProperty("Application", "OpenOLAT", propertiesEl, doc);
-			addExtProperty("AppVersion", "9.1.0", propertiesEl, doc);
+			addExtProperty("Application", "Microsoft Macintosh Word", propertiesEl, doc);
+			addExtProperty("AppVersion", "14.0000", propertiesEl, doc);
 			OpenXMLUtils.writeTo(doc, out, false);
 		} catch (DOMException e) {
 			log.error("", e);
@@ -365,11 +379,12 @@ public class OpenXMLDocumentWriter {
 			createContentTypesOverride("/word/document.xml", CT_WORD_DOCUMENT, writer);
 			createContentTypesOverride("/word/styles.xml", CT_STYLES, writer);
 			createContentTypesOverride("/word/numbering.xml", CT_NUMBERING, writer);
+			createContentTypesOverride("/word/theme/theme1.xml", CT_THEME, writer);
 			
 			for(HeaderReference headerRef:document.getHeaders()) {
 				createContentTypesOverride("/word/" + headerRef.getFilename(), CT_HEADER, writer);
 			}
-			
+
 			writer.writeEndElement();// end Types
 			writer.flush();
 			writer.close();

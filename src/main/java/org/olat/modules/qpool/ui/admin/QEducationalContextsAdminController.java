@@ -255,6 +255,11 @@ public class QEducationalContextsAdminController extends FormBasicController {
 		}
 
 		@Override
+		public boolean isSelectable(int row) {
+			return true;
+		}
+
+		@Override
 		public int getColumnCount() {
 			return columnModel.getColumnCount();
 		}

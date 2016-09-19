@@ -224,6 +224,11 @@ public class QLicensesAdminController extends FormBasicController {
 		}
 
 		@Override
+		public boolean isSelectable(int row) {
+			return true;
+		}
+
+		@Override
 		public QLicense getObject(int row) {
 			if(licenses != null && row >= 0 && row < licenses.size()) {
 				return licenses.get(row);

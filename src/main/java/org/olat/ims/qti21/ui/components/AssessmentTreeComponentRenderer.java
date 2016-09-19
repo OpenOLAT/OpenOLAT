@@ -133,7 +133,7 @@ public class AssessmentTreeComponentRenderer extends AssessmentObjectComponentRe
 	private void renderNavigationAssessmentSection(AssessmentRenderer renderer, StringOutput sb, AssessmentTreeComponent component, TestPlanNode sectionNode,
 			URLBuilder ubu, Translator translator, RenderingRequest options) {
 		sb.append("<li class='o_assessmentsection o_qti_menu_item'>")
-		  .append("<header><h4>").append(sectionNode.getSectionPartTitle()).append("</h4>");
+		  .append("<header><h4>").append(StringHelper.escapeHtml(sectionNode.getSectionPartTitle())).append("</h4>");
 		//renderAssessmentSectionRubrickBlock(renderer, sb, component, sectionNode, ubu, translator);
 
 		sb.append("</header><ul class='o_testpartnavigation_inner list-unstyled'>");
@@ -193,7 +193,7 @@ public class AssessmentTreeComponentRenderer extends AssessmentObjectComponentRe
 					new NameValuePair("cid", event.name()), new NameValuePair("item", key)))
 			  .append(";\" class='o_sel_assessmentitem'>");
 		}
-		sb.append("<span class='questionTitle'>").append(itemNode.getSectionPartTitle()).append("</span>");
+		sb.append("<span class='questionTitle'>").append(StringHelper.escapeHtml(itemNode.getSectionPartTitle())).append("</span>");
 
 		if(event == null) {
 			sb.append("</span>");

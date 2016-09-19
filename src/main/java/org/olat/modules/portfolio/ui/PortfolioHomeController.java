@@ -44,7 +44,9 @@ import org.olat.modules.portfolio.BinderSecurityCallbackFactory;
 import org.olat.modules.portfolio.Page;
 import org.olat.modules.portfolio.PortfolioRoles;
 import org.olat.modules.portfolio.PortfolioService;
+import org.olat.modules.portfolio.PortfolioV2Module;
 import org.olat.modules.portfolio.model.BinderRefImpl;
+import org.olat.modules.portfolio.ui.model.BinderRow;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -68,6 +70,8 @@ public class PortfolioHomeController extends BasicController implements Activate
 	private DeletedPageListController deletedItemsCtrl;
 	
 	@Autowired
+	private PortfolioV2Module portfolioModule;
+	@Autowired
 	private PortfolioService portfolioService;
 	
 	public PortfolioHomeController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel) {
@@ -78,6 +82,7 @@ public class PortfolioHomeController extends BasicController implements Activate
 		mainVC = createVelocityContainer("home");
 		myBindersLink = LinkFactory.createLink("goto.my.binders", mainVC, this);
 		myBindersLink.setIconRightCSS("o_icon o_icon_start");
+		myBindersLink.setElementCssClass("o_sel_pf_my_binders");
 		
 		myEntriesLink = LinkFactory.createLink("goto.my.pages", mainVC, this);
 		myEntriesLink.setIconRightCSS("o_icon o_icon_start");
@@ -90,6 +95,7 @@ public class PortfolioHomeController extends BasicController implements Activate
 		
 		mediaCenterLink = LinkFactory.createLink("goto.media.center", mainVC, this);
 		mediaCenterLink.setIconRightCSS("o_icon o_icon_start");
+		mediaCenterLink.setElementCssClass("o_sel_pf_media_center");
 		
 		editLastEntryLink = LinkFactory.createLink("edit.last.entry", mainVC, this);
 		editLastEntryLink.setIconRightCSS("o_icon o_icon_start");
@@ -111,7 +117,13 @@ public class PortfolioHomeController extends BasicController implements Activate
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
 		if(myBindersLink == source) {
-			doOpenMyBinders(ureq);
+			BinderListController bindersCtrl = doOpenMyBinders(ureq);
+			if(!portfolioModule.isLearnerCanCreateBinders() && bindersCtrl.getNumOfBinders() == 1) {
+				BinderRow row = bindersCtrl.getFirstBinder();
+				OLATResourceable resource = OresHelper.createOLATResourceableInstance(Binder.class, row.getKey());
+				List<ContextEntry> entries = BusinessControlFactory.getInstance().createCEListFromString(resource);
+				bindersCtrl.activate(ureq, entries, null);
+			}
 		} else if(myEntriesLink == source) {
 			doOpenMyPages(ureq);
 		} else if(mySharedItemsLink == source) {
@@ -213,7 +225,7 @@ public class PortfolioHomeController extends BasicController implements Activate
 			//show message
 		} else if(lastModifiedPage.getSection() == null) {
 			MyPageListController ctrl = doOpenMyPages(ureq);
-			ctrl.doOpenPage(ureq, lastModifiedPage);
+			ctrl.doOpenPage(ureq, lastModifiedPage, false);
 		} else {
 			Binder binder = lastModifiedPage.getSection().getBinder();
 			List<ContextEntry> entries = new ArrayList<>();

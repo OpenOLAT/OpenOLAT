@@ -46,6 +46,9 @@ import org.olat.resource.OLATResource;
  *
  */
 public interface PortfolioService {
+
+	public static final String PACKAGE_CONFIG_FILE_NAME = "BinderPackageConfig.xml";
+	
 	
 	public Binder createNewBinder(String title, String summary, String imagePath, Identity owner);
 	
@@ -61,7 +64,24 @@ public interface PortfolioService {
 	
 	public boolean deleteBinderTemplate(Binder binder, RepositoryEntry templateEntry);
 	
-	/**S
+	
+	/**
+	 * Set some extra options for the template.
+	 * 
+	 * @param testEntry
+	 * @return
+	 */
+	public BinderDeliveryOptions getDeliveryOptions(OLATResource resource);
+	
+	/**
+	 * Set some extra options for the template.
+	 * 
+	 * @param testEntry
+	 * @param options
+	 */
+	public void setDeliveryOptions(OLATResource resource, BinderDeliveryOptions options);
+	
+	/**
 	 * Add an assignment to a section.
 	 * 
 	 * @param title
@@ -73,11 +93,22 @@ public interface PortfolioService {
 	 */
 	public Assignment addAssignment(String title, String summary, String content, AssignmentType type, Section section);
 	
+	public Section moveUpAssignment(Section section, Assignment assignment);
+	
+	public Section moveDownAssignment(Section section, Assignment assignment);
+	
+	public void moveAssignment(SectionRef currentSection, Assignment assignment, SectionRef newParentSection);
+	
 	public Assignment updateAssignment(Assignment assignment, String title, String summary, String content, AssignmentType type);
+
 	
 	public List<Assignment> getAssignments(PortfolioElement binder);
 	
 	public List<Assignment> searchOwnedAssignments(IdentityRef assignee);
+	
+	public boolean isAssignmentInUse(Assignment assignment);
+	
+	public boolean deleteAssignment(Assignment assignment);
 	
 	
 	/**
@@ -97,7 +128,7 @@ public interface PortfolioService {
 	 * @param end
 	 * @param binder
 	 */
-	public void appendNewSection(String title, String description, Date begin, Date end, BinderRef binder);
+	public SectionRef appendNewSection(String title, String description, Date begin, Date end, BinderRef binder);
 	
 	public Section updateSection(Section section);
 	
@@ -160,6 +191,13 @@ public interface PortfolioService {
 	public Binder getBinderByKey(Long portfolioKey);
 	
 	public Binder getBinderByResource(OLATResource resource);
+	
+	/**
+	 * Retrieve the repository entry of a template.
+	 * @param binder
+	 * @return
+	 */
+	public RepositoryEntry getRepositoryEntry(Binder binder);
 	
 	public Binder getBinderBySection(SectionRef section);
 	
@@ -295,6 +333,19 @@ public interface PortfolioService {
 	 * @return
 	 */
 	public Section getSection(SectionRef section);
+	
+	public Binder moveUpSection(Binder binder, Section section);
+	
+	public Binder moveDownSection(Binder binder, Section section);
+	
+	/**
+	 * Delete the specified section in the specified binder.
+	 * 
+	 * @param binder
+	 * @param section
+	 * @return
+	 */
+	public Binder deleteSection(Binder binder, Section section);
 	
 	/**
 	 * Load the pages and the sections order by sections and pages.

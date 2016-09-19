@@ -255,8 +255,8 @@ public class AssessmentToolManagerImpl implements AssessmentToolManager {
 		sf.append("select avg(aentry.score) as scoreAverage, ")
 		  .append(" sum(case when aentry.passed=true then 1 else 0 end) as numOfPassed,")
 		  .append(" sum(case when aentry.passed=false then 1 else 0 end) as numOfFailed,")
-		  .append(" sum(case when (aentry.status is null or not(aentry.status='").append(AssessmentEntryStatus.notStarted.name()).append("') or aentry.passed is null) then 1 else 0 end) as numOfNotAttempted,")
-		  .append(" sum(aentry.key) as numOfStatements,")
+		  //.append(" sum(case when (aentry.status is null or not(aentry.status='").append(AssessmentEntryStatus.notStarted.name()).append("') or aentry.passed is null) then 1 else 0 end) as numOfNotAttempted,")
+		  //.append(" sum(aentry.key) as numOfStatements,")
 		  .append(" v.key as repoKey")
 		  .append(" from assessmententry aentry ")
 		  .append(" inner join aentry.repositoryEntry v ")
@@ -308,12 +308,10 @@ public class AssessmentToolManagerImpl implements AssessmentToolManager {
 			Double averageScore = (Double)result[0];
 			Long numOfPassed = (Long)result[1];
 			Long numOfFailed = (Long)result[2];
-			Long numOfNotAttempted = (Long)result[3];
 			
 			entry.setAverageScore(averageScore);
 			entry.setCountPassed(numOfPassed == null ? 0 : numOfPassed.intValue());
 			entry.setCountFailed(numOfFailed == null ? 0 : numOfFailed.intValue());
-			entry.setCountNotAttempted(numOfNotAttempted == null ? 0 : numOfNotAttempted.intValue());
 		}
 		return entry;
 	}
@@ -338,7 +336,8 @@ public class AssessmentToolManagerImpl implements AssessmentToolManager {
 		if(params.getBusinessGroupKeys() != null && params.getBusinessGroupKeys().size() > 0) {
 			sb.append(" ident.key in (select participant.identity.key from repoentrytogroup as rel, businessgroup bgi, bgroupmember as participant")
 	          .append("    where rel.entry.key=:repoEntryKey and rel.group=bgi.baseGroup and rel.group=participant.group and bgi.key in (:businessGroupKeys) ")
-	          .append("  )");
+			  .append("    and participant.role='").append(GroupRoles.participant.name()).append("'")
+			  .append("  )");
 		} else if(params.isAdmin()) {
 			sb.append(" (ident.key in (select participant.identity.key from repoentrytogroup as rel, bgroupmember as participant")
 	          .append("    where rel.entry.key=:repoEntryKey and rel.group=participant.group")
@@ -366,7 +365,7 @@ public class AssessmentToolManagerImpl implements AssessmentToolManager {
 		TypedQuery<T> query = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), classResult)
 				.setParameter("repoEntryKey", params.getEntry().getKey());
-		if(!params.isAdmin()) {
+		if(!params.isAdmin() && (params.getBusinessGroupKeys() == null || params.getBusinessGroupKeys().isEmpty())) {
 			query.setParameter("identityKey", coach.getKey());
 		}
 		if(identityKey != null) {

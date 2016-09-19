@@ -319,7 +319,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 		RunMainController run = getRunMainController();
 		if(run != null) {
 			addCustomCSS(ureq);
-			run.toolCtrDone(ureq);
+			run.toolCtrDone(ureq, reSecurity);
 			currentToolCtr = null;
 		}
 	}
@@ -747,7 +747,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 			}
 		} else if (event instanceof EntryChangedEvent ) {
 			EntryChangedEvent repoEvent = (EntryChangedEvent) event;
-			if (getRepositoryEntry().getKey().equals(repoEvent.getChangedEntryKey())) {
+			if (repoEvent.isMe(getRepositoryEntry())) {
 				processEntryChangedEvent(repoEvent);
 			}
 		//All events are MultiUserEvent, check with command at the end
@@ -756,6 +756,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 				updateCurrentUserCount();
 			}
 		}
+		super.event(event);
 	}
 
 	@Override
@@ -913,6 +914,19 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 
 	@Override
 	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
+		if(entries == null || entries.isEmpty()) {
+			if(currentToolCtr != null) {
+				addToHistory(ureq, currentToolCtr);
+			} else {
+				Controller runtimeCtrl = getRuntimeController();
+				if(runtimeCtrl instanceof Activateable2) {
+					((Activateable2)runtimeCtrl).activate(ureq, entries, state);
+				} else {
+					addToHistory(ureq, runtimeCtrl);
+				}
+			}
+			return;
+		}
 
 		entries = removeRepositoryEntry(entries);
 		if(entries != null && entries.size() > 0) {
@@ -1595,7 +1609,8 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 		}
 	}
 	
-	private void processEntryChangedEvent(EntryChangedEvent repoEvent) {
+	@Override
+	protected void processEntryChangedEvent(EntryChangedEvent repoEvent) {
 		switch(repoEvent.getChange()) {
 			case modifiedAtPublish:
 			case modifiedAccess:
@@ -1604,12 +1619,14 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 			case deleted:
 				doDisposeAfterEvent();
 				break;
-			default: {}
+			default:
+				super.processEntryChangedEvent(repoEvent);
+				break;
 		}
 	}
 	
 	private void processEntryAccessChanged(EntryChangedEvent repoEvent) {
-		if(repoEvent.getAuthorKey() != null && getIdentity().getKey().equals(repoEvent.getAuthorKey())) {
+		if(repoEvent.isMe(getIdentity())) {
 			//author is not affected
 		} else {
 			loadRepositoryEntry();

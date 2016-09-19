@@ -157,28 +157,28 @@ public class AssessmentInstance implements Serializable {
 
 		// fetch display titles option
 		displayTitles = DISPLAYTITLES_DEFAULT;
-		Boolean confDisplayTitles = (Boolean)modConfig.get(IQEditController.CONFIG_KEY_QUESTIONTITLE);
+		Boolean confDisplayTitles = modConfig.getBooleanEntry(IQEditController.CONFIG_KEY_QUESTIONTITLE);
 		if (confDisplayTitles != null) {
 			displayTitles = confDisplayTitles.booleanValue();
 		}
 		
 		// fetch auto enum choice options switch
 		autoEnum = AUTOENUM_DEFAULT;
-		Boolean confAutoEnum = (Boolean)modConfig.get(IQEditController.CONFIG_KEY_AUTOENUM_CHOICES);
+		Boolean confAutoEnum = modConfig.getBooleanEntry(IQEditController.CONFIG_KEY_AUTOENUM_CHOICES);
 		if (confAutoEnum != null) {
 			autoEnum = confAutoEnum.booleanValue();
 		}
 		
 		// fetch auto enum choice options switch
 		memo = MEMO_DEFAULT;
-		Boolean confMemo = (Boolean)modConfig.get(IQEditController.CONFIG_KEY_MEMO);
+		Boolean confMemo = modConfig.getBooleanEntry(IQEditController.CONFIG_KEY_MEMO);
 		if (confMemo != null) {
 			memo = confMemo.booleanValue();
 		}
 		
 		// fetch type of menu
 		menu = MENU_DEFAULT;
-		Boolean confEnableMenu = (Boolean)modConfig.get(IQEditController.CONFIG_KEY_ENABLEMENU);
+		Boolean confEnableMenu = modConfig.getBooleanEntry(IQEditController.CONFIG_KEY_ENABLEMENU);
 		if (confEnableMenu != null) {
 			menu = confEnableMenu.booleanValue();
 		}

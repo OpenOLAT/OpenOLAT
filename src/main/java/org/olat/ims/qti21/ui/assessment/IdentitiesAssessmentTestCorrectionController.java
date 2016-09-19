@@ -103,7 +103,7 @@ public class IdentitiesAssessmentTestCorrectionController extends BasicControlle
 		
 		File fUnzippedDirRoot = FileResourceManager.getInstance()
 				.unzipFileResource(testEntry.getOlatResource());
-		resolvedAssessmentTest = qtiService.loadAndResolveAssessmentTest(fUnzippedDirRoot, false);
+		resolvedAssessmentTest = qtiService.loadAndResolveAssessmentTest(fUnzippedDirRoot, false, false);
 
 		assessedIdentities = getAssessedIdentities();
 		lastSessions = getLastSessions(assessedIdentities);

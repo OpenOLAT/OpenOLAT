@@ -70,6 +70,11 @@ public class AssignmentImpl implements Persistable, ModifiedInfo, CreateInfo, As
 	@Column(name="lastmodified", nullable=false, insertable=true, updatable=true)
 	private Date lastModified;
 	
+	/** Only used for order by */
+	@GeneratedValue
+	@Column(name="pos")
+	private long pos;
+	
 	@Column(name="p_status", nullable=false, insertable=true, updatable=true)
 	private String status;
 	@Column(name="p_type", nullable=false, insertable=true, updatable=true)
@@ -88,7 +93,7 @@ public class AssignmentImpl implements Persistable, ModifiedInfo, CreateInfo, As
 	private String storage;
 	
 	@ManyToOne(targetEntity=SectionImpl.class,fetch=FetchType.LAZY,optional=false)
-	@JoinColumn(name="fk_section_id", nullable=false, insertable=true, updatable=false)
+	@JoinColumn(name="fk_section_id", nullable=false, insertable=true, updatable=true)
 	private Section section;
 	
 	@ManyToOne(targetEntity=AssignmentImpl.class,fetch=FetchType.LAZY,optional=true)

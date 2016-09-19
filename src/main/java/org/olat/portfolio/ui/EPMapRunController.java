@@ -26,7 +26,6 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
-import org.olat.core.gui.components.panel.Panel;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
@@ -39,7 +38,6 @@ import org.olat.core.id.Identity;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.portfolio.EPTemplateMapResource;
-import org.olat.portfolio.PortfolioModule;
 import org.olat.portfolio.manager.EPFrontendManager;
 import org.olat.portfolio.model.structel.EPDefaultMap;
 import org.olat.portfolio.model.structel.EPStructuredMap;
@@ -81,8 +79,6 @@ public class EPMapRunController extends BasicController implements Activateable2
 	private final EPMapRunViewOption option;
 	@Autowired
 	private EPFrontendManager ePFMgr;
-	@Autowired
-	private PortfolioModule portfolioModule;
 	private Link createMapCalloutLink;
 	private CloseableCalloutWindowController mapCreateCalloutCtrl;
 
@@ -102,13 +98,7 @@ public class EPMapRunController extends BasicController implements Activateable2
 		this.option = option;
 		this.choosenOwner = choosenOwner;
 		
-		Component viewComp;
-		if (portfolioModule.isEnabled()){
-			viewComp = init(ureq);
-		} else {
-			viewComp = new Panel("empty");
-		}
-
+		Component viewComp = init(ureq);
 		putInitialPanel(viewComp);
 	}
 

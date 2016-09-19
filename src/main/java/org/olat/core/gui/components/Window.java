@@ -856,10 +856,7 @@ public class Window extends AbstractComponent {
 			StringBuilder sb = new StringBuilder();
 			List<ContextEntry> ces = p.getEntries();
 			String url = BusinessControlFactory.getInstance().getAsURIString(ces, true);
-			sb.append("try { o_info.businessPath='").append(url).append("';")
-			  .append("if(!(typeof o_shareActiveSocialUrl === \"undefined\")) {")
-			  .append("  o_shareActiveSocialUrl();")
-			  .append("}} catch(e) { }");
+			sb.append("try { o_info.businessPath='").append(url).append("'; } catch(e) { }");
 			return new JSCommand(sb.toString());
 		}
 		return null;

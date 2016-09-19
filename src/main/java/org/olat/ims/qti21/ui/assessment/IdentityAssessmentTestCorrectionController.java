@@ -114,7 +114,7 @@ public class IdentityAssessmentTestCorrectionController extends FormBasicControl
 		
 		mapperUri = registerCacheableMapper(null, "QTI21Resources::" + testEntry.getKey(), new ResourcesMapper(assessmentObjectUri));
 		
-		resolvedAssessmentTest = qtiService.loadAndResolveAssessmentTest(fUnzippedDirRoot, false);
+		resolvedAssessmentTest = qtiService.loadAndResolveAssessmentTest(fUnzippedDirRoot, false, false);
 		testSessionState = qtiService.loadTestSessionState(candidateSession);
 		candidateSessionContext = new TerminatedStaticCandidateSessionContext(candidateSession);
 

@@ -194,7 +194,7 @@ public class QTI21ArchiveFormat {
 	public void export(RepositoryEntry courseEntry, String subIdent, RepositoryEntry testEntry, ZipOutputStream exportStream) {
 		FileResourceManager frm = FileResourceManager.getInstance();
 		File unzippedDirRoot = frm.unzipFileResource(testEntry.getOlatResource());
-		resolvedAssessmentTest = qtiService.loadAndResolveAssessmentTest(unzippedDirRoot, false);
+		resolvedAssessmentTest = qtiService.loadAndResolveAssessmentTest(unzippedDirRoot, false, false);
 		
 		ICourse course = CourseFactory.loadCourse(courseEntry);
 		CourseNode courseNode = course.getRunStructure().getNode(subIdent);
@@ -213,7 +213,7 @@ public class QTI21ArchiveFormat {
 	public void export(RepositoryEntry testEntry, ZipOutputStream exportStream) {
 		FileResourceManager frm = FileResourceManager.getInstance();
 		File unzippedDirRoot = frm.unzipFileResource(testEntry.getOlatResource());
-		resolvedAssessmentTest = qtiService.loadAndResolveAssessmentTest(unzippedDirRoot, false);
+		resolvedAssessmentTest = qtiService.loadAndResolveAssessmentTest(unzippedDirRoot, false, false);
 		
 		String archiveName = "qti21test_"
 				+ StringHelper.transformDisplayNameToFileSystemName(testEntry.getDisplayname())
@@ -246,7 +246,7 @@ public class QTI21ArchiveFormat {
 	public MediaResource export(RepositoryEntry courseEntry, String subIdent, RepositoryEntry testEntry) {
 		FileResourceManager frm = FileResourceManager.getInstance();
 		File unzippedDirRoot = frm.unzipFileResource(testEntry.getOlatResource());
-		resolvedAssessmentTest = qtiService.loadAndResolveAssessmentTest(unzippedDirRoot, false);
+		resolvedAssessmentTest = qtiService.loadAndResolveAssessmentTest(unzippedDirRoot, false, false);
 		
 		ICourse course = CourseFactory.loadCourse(courseEntry);
 		CourseNode courseNode = course.getRunStructure().getNode(subIdent);
@@ -369,7 +369,9 @@ public class QTI21ArchiveFormat {
 			}
 			sessionResponses.addResponse(itemSession, response);
 		}
-		writeDataRow(++num, sessionResponses, exportSheet, workbook);
+		if(sessionResponses != null) {
+			writeDataRow(++num, sessionResponses, exportSheet, workbook);
+		}
 	}
 	
 	private void writeDataRow(int num, SessionResponses responses, OpenXMLWorksheet exportSheet, OpenXMLWorkbook workbook) {

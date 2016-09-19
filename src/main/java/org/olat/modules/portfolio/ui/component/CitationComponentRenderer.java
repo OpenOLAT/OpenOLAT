@@ -48,7 +48,7 @@ public class CitationComponentRenderer extends DefaultComponentRenderer {
 	
 	public static void renderAPAGerman(StringOutput sb, Citation citation, DublinCoreMetadata dcData, String notes, String links) {
 		String authors = dcData.getCreators();		
-		String authorString = getAuthors(authors, " (Hrsg.). ", true);
+		String authorString = getAuthors(authors/* " (Hrsg.). ", true*/);
 		String edition = getOrdinalAPA(citation.getEdition());
 		String volume = getVolumeAPA(citation.getVolume());
 		String series = getSeries(citation.getSeries());
@@ -105,20 +105,26 @@ public class CitationComponentRenderer extends DefaultComponentRenderer {
 		sb.append("</div>");
 	}
 	
-	public static String getAuthors(String authors, String d, boolean apa) {
+	public static String getAuthors(String authors/*, String d, boolean apa*/) {
 		//TODO portfolio
 		return authors;
 	}
 	
 	public static String getOrdinalAPA(String n) {
-		if(StringHelper.containsNonWhitespace(n) && StringHelper.isLong(n)){
-			String w = "("+ n + ". Aufl.)";	
-			if (w.equals("(. Aufl.)")) {
-				return "";
+		if(StringHelper.containsNonWhitespace(n)) {
+			if (StringHelper.isLong(n)){
+				String w = "("+ n + ". Aufl.)";	
+				if (w.equals("(. Aufl.)")) {
+					return "";
+				}
+				return "<span class='edition'>" + w + "</span>"; 
 			}
-			return "<span class='edition'>" + w + "</span>"; 
+			else {
+				return "<span class='edition'>(" + n + ")</span>";				
+			}
+		} else {
+			return "";				
 		}
-		return "<span class='edition'>(" + n + ")</span>";
 	}
 	
 	public static String getVolumeAPA(String volume) {

@@ -79,6 +79,7 @@ import org.olat.course.nodes.AssessmentToolOptions;
 import org.olat.course.nodes.CalculatedAssessableCourseNode;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.CourseNodeFactory;
+import org.olat.course.nodes.STCourseNode;
 import org.olat.course.run.scoring.ScoreEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.course.run.userview.UserCourseEnvironmentImpl;
@@ -174,18 +175,23 @@ public class IdentityListCourseNodeController extends FormBasicController implem
 				layoutCont.contextPut("businessGroupName", group.getName());
 			}
 		}
+		
+		ICourse course = CourseFactory.loadCourse(courseEntry);
+		String select = (courseNode instanceof AssessableCourseNode
+				&& (courseNode.getParent() == null || !(courseNode instanceof STCourseNode)))
+				? "select" : null;
 
 		//add the table
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		if(isAdministrativeUser) {
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(IdentityCourseElementCols.username, "select"));
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(IdentityCourseElementCols.username, select));
 		}
 		
 		int colIndex = AssessmentToolConstants.USER_PROPS_OFFSET;
 		for (int i = 0; i < userPropertyHandlers.size(); i++) {
 			UserPropertyHandler userPropertyHandler	= userPropertyHandlers.get(i);
 			boolean visible = UserManager.getInstance().isMandatoryUserProperty(AssessmentToolConstants.usageIdentifyer , userPropertyHandler);
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(visible, userPropertyHandler.i18nColumnDescriptorLabelKey(), colIndex, "select", true, "userProp-" + colIndex));
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(visible, userPropertyHandler.i18nColumnDescriptorLabelKey(), colIndex, select, true, "userProp-" + colIndex));
 			colIndex++;
 		}
 		AssessableCourseNode assessableNode = null;
@@ -193,12 +199,18 @@ public class IdentityListCourseNodeController extends FormBasicController implem
 			assessableNode = (AssessableCourseNode)courseNode;
 			
 			if(assessableNode.hasAttemptsConfigured()) {
-				columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(IdentityCourseElementCols.attempts, "select"));
+				columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(IdentityCourseElementCols.attempts));
 			}
 			if(assessableNode.hasScoreConfigured()) {
-				columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(IdentityCourseElementCols.min, "select", new ScoreCellRenderer()));
-				columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(IdentityCourseElementCols.max, "select", new ScoreCellRenderer()));
-				columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(IdentityCourseElementCols.score, "select", new ScoreCellRenderer()));
+				if(!(assessableNode instanceof STCourseNode)) {
+					if(assessableNode.getMinScoreConfiguration() != null) {
+						columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(IdentityCourseElementCols.min, new ScoreCellRenderer()));
+					}
+					if(assessableNode.getMaxScoreConfiguration() != null) {
+						columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(IdentityCourseElementCols.max, new ScoreCellRenderer()));
+					}
+				}
+				columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(IdentityCourseElementCols.score, new ScoreCellRenderer()));
 			}
 			if(assessableNode.hasPassedConfigured()) {
 				columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(IdentityCourseElementCols.passed, new PassedCellRenderer()));
@@ -206,9 +218,12 @@ public class IdentityListCourseNodeController extends FormBasicController implem
 		}
 
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(IdentityCourseElementCols.assessmentStatus, new AssessmentStatusCellRenderer()));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(IdentityCourseElementCols.initialLaunchDate, "select"));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(IdentityCourseElementCols.lastScoreUpdate, "select"));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(IdentityCourseElementCols.certificate, new DownloadCertificateCellRenderer()));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(IdentityCourseElementCols.initialLaunchDate, select));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(IdentityCourseElementCols.lastScoreUpdate, select));
+		
+		if(course.getCourseConfig().isCertificateEnabled()) {
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(IdentityCourseElementCols.certificate, new DownloadCertificateCellRenderer()));
+		}
 
 		usersTableModel = new IdentityListCourseNodeTableModel(columnsModel, assessableNode); 
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", usersTableModel, 20, false, getTranslator(), formLayout);
@@ -222,12 +237,11 @@ public class IdentityListCourseNodeController extends FormBasicController implem
 		filters.add(new FlexiTableFilter(translate("filter.inProgress"), "inProgress"));
 		filters.add(new FlexiTableFilter(translate("filter.inReview"), "inReview"));
 		filters.add(new FlexiTableFilter(translate("filter.done"), "done"));
-		tableEl.setFilters("", filters);
+		tableEl.setFilters("", filters, false);
 		
 		if(assessmentCallback.canAssessBusinessGoupMembers() && group == null) {
 			List<BusinessGroup> coachedGroups = null;
 			if(assessmentCallback.isAdmin()) {
-				ICourse course = CourseFactory.loadCourse(courseEntry);
 				coachedGroups = course.getCourseEnvironment().getCourseGroupManager().getAllBusinessGroups();
 			} else {
 				coachedGroups = assessmentCallback.getCoachedGroups(); 
@@ -303,8 +317,8 @@ public class IdentityListCourseNodeController extends FormBasicController implem
 		}
 		usersTableModel.setCertificateMap(toolContainer.getCertificateMap());
 		usersTableModel.setObjects(rows);
-		if(filters != null && filters.size() > 0) {
-			usersTableModel.filter(filters.get(0).getFilter());
+		if(filters != null && filters.size() > 0 && filters.get(0) != null) {
+			usersTableModel.filter(Collections.singletonList(filters.get(0)));
 		}
 		tableEl.reset();
 		tableEl.reloadData();

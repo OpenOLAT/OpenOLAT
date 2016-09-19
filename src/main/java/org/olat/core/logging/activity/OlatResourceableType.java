@@ -65,6 +65,9 @@ public enum OlatResourceableType implements ILoggingResourceableType {
 	/** represents a content package **/
 	cp,
 	
+	/** this represents a QTi test **/
+	test, 
+	
 	/** represents a shared folder **/
 	sharedFolder,
 
@@ -81,6 +84,9 @@ public enum OlatResourceableType implements ILoggingResourceableType {
 	
 	/**   reprensents a portfolio map   **/
 	portfolio,
+	section,
+	assignment,
+	media,
 	
 	/**   reprensents openmeetings **/
 	openmeetings,

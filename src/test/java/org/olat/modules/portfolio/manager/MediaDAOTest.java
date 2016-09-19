@@ -19,11 +19,22 @@
  */
 package org.olat.modules.portfolio.manager;
 
+import java.util.List;
+
 import org.junit.Assert;
 import org.junit.Test;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
+import org.olat.modules.portfolio.Binder;
+import org.olat.modules.portfolio.BinderLight;
 import org.olat.modules.portfolio.Media;
+import org.olat.modules.portfolio.MediaLight;
+import org.olat.modules.portfolio.Page;
+import org.olat.modules.portfolio.PageBody;
+import org.olat.modules.portfolio.PortfolioService;
+import org.olat.modules.portfolio.Section;
+import org.olat.modules.portfolio.handler.TextHandler;
+import org.olat.modules.portfolio.model.MediaPart;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,6 +51,12 @@ public class MediaDAOTest extends OlatTestCase {
 	private DB dbInstance;
 	@Autowired
 	private MediaDAO mediaDao;
+	@Autowired
+	private PageDAO pageDao;
+	@Autowired
+	private BinderDAO binderDao;
+	@Autowired
+	private PortfolioService portfolioService;
 	
 	@Test
 	public void createMedia() {
@@ -62,5 +79,61 @@ public class MediaDAOTest extends OlatTestCase {
 		Assert.assertEquals("[Media:0]", reloadedMedia.getBusinessPath());
 		Assert.assertEquals(id, reloadedMedia.getAuthor());
 	}
+	
+	@Test
+	public void searchByAuthor() {
+		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser("pf-media-2");
+		Media media1 = mediaDao.createMedia("Media 1", "The media theory", "Media theory is very important subject", "Forum", "[Media:0]", null, 10, author);
+		Media media2 = mediaDao.createMedia("Media 2", "Java", "One of the most widespread programming language", "Forum", "[Media:0]", null, 10, author);
+		Media media3 = mediaDao.createMedia("Media 3", "Europe", "Un continent", "Forum", "[Media:0]", null, 10, author);
+		dbInstance.commit();
+		
+		//not owned
+		Identity someoneElse = JunitTestHelper.createAndPersistIdentityAsRndUser("pf-media-2");
+		Media mediaAlt = mediaDao.createMedia("Media 3", "Europe", "Un continent", "Forum", "[Media:0]", null, 10, someoneElse);
+		dbInstance.commit();
+		
+		// search owned medias
+		List<MediaLight> ownedMedias = mediaDao.searchByAuthor(author, null, null);
+		Assert.assertNotNull(ownedMedias);
+		Assert.assertEquals(3, ownedMedias.size());
+		Assert.assertTrue(ownedMedias.contains(media1));
+		Assert.assertTrue(ownedMedias.contains(media2));
+		Assert.assertTrue(ownedMedias.contains(media3));
+		Assert.assertFalse(ownedMedias.contains(mediaAlt));
+		
+		// search medias
+		List<MediaLight> searchMedias = mediaDao.searchByAuthor(author, "Europe", null);
+		Assert.assertNotNull(searchMedias);
+		Assert.assertEquals(1, searchMedias.size());
+		Assert.assertFalse(searchMedias.contains(media1));
+		Assert.assertFalse(searchMedias.contains(media2));
+		Assert.assertTrue(searchMedias.contains(media3));
+		Assert.assertFalse(searchMedias.contains(mediaAlt));
+	}
+	
+	@Test
+	public void usedInBinders() {
+		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser("pf-media-2");
+		Binder binder = portfolioService.createNewBinder("Binder p2", "A binder with 2 page", null, author);
+		Section section = binderDao.createSection("Section", "First section", null, null, binder);
+		dbInstance.commitAndCloseSession();
+		
+		Section reloadedSection = binderDao.loadSectionByKey(section.getKey());
+		Page page = pageDao.createAndPersist("Page 1", "A page with content.", null, null, reloadedSection, null);
+		Media media = mediaDao.createMedia("Media", "Binder", "Une citation sur les classeurs", TextHandler.TEXT_MEDIA, "[Media:0]", null, 10, author);
+		dbInstance.commitAndCloseSession();
 
+		MediaPart mediaPart = new MediaPart();
+		mediaPart.setMedia(media);
+		PageBody reloadedBody = pageDao.loadPageBodyByKey(page.getBody().getKey());
+		pageDao.persistPart(reloadedBody, mediaPart);
+		dbInstance.commitAndCloseSession();
+		
+		//reload
+		List<BinderLight> binders = mediaDao.usedInBinders(media);
+		Assert.assertNotNull(binders);
+		Assert.assertEquals(1, binders.size());
+		Assert.assertTrue(binders.get(0).getKey().equals(binder.getKey()));
+	}
 }

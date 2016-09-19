@@ -127,7 +127,8 @@ public class FileElementRenderer extends DefaultComponentRenderer {
 			if(showDeleteButton) {
 				sb.append("<a class='input-group-addon' href=\"javascript:")
 				  .append(FormJSHelper.getXHRFnCallFor(fileElem.getRootForm(), fileComp.getFormDispatchId(), 1, false, false, new NameValuePair("delete", "delete")))
-				  .append(";\" onclick=\"\"><i class='o_icon o_icon_delete'> </i></a>");
+				  .append(";\" onclick=\"\" ")
+				  .append(" title=\"").append(StringEscapeUtils.escapeHtml(trans.translate("file.element.delete"))).append("\" ><i class='o_icon o_icon_delete'> </i></a>");
 			}
 			sb.append("</div></div>");
 			// Add example text and  max upload size

@@ -160,7 +160,7 @@ public class AssessmentItemEditorController extends BasicController {
 		//
 	}
 	
-	private void initItemEditor(UserRequest ureq) {
+	private QTI21QuestionType initItemEditor(UserRequest ureq) {
 		AssessmentItem item = resolvedAssessmentItem.getItemLookup().getRootNodeHolder().getRootNode();
 		
 		QTI21QuestionType type = QTI21QuestionType.getType(item);
@@ -180,6 +180,7 @@ public class AssessmentItemEditorController extends BasicController {
 			//listenTo(metadataEditor);
 			//tabbedPane.addTab(translate("form.metadata"), metadataEditor);
 		}
+		return type;
 	}
 	
 	private void initItemCreatedByUnkownEditor(UserRequest ureq, AssessmentItem item) {

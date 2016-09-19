@@ -20,6 +20,9 @@
 package org.olat.modules.portfolio.manager;
 
 import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Date;
@@ -38,11 +41,14 @@ import org.olat.core.commons.modules.bc.vfs.OlatRootFileImpl;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.vfs.VFSLeaf;
+import org.olat.core.util.xml.XStreamHelper;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.assessment.AssessmentHelper;
@@ -50,6 +56,7 @@ import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.PortfolioCourseNode;
 import org.olat.course.run.scoring.ScoreEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
+import org.olat.fileresource.FileResourceManager;
 import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.assessment.AssessmentService;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
@@ -58,6 +65,7 @@ import org.olat.modules.portfolio.Assignment;
 import org.olat.modules.portfolio.AssignmentStatus;
 import org.olat.modules.portfolio.AssignmentType;
 import org.olat.modules.portfolio.Binder;
+import org.olat.modules.portfolio.BinderDeliveryOptions;
 import org.olat.modules.portfolio.BinderLight;
 import org.olat.modules.portfolio.BinderRef;
 import org.olat.modules.portfolio.Category;
@@ -89,6 +97,7 @@ import org.olat.modules.portfolio.model.BinderStatistics;
 import org.olat.modules.portfolio.model.CategoryLight;
 import org.olat.modules.portfolio.model.PageImpl;
 import org.olat.modules.portfolio.model.SectionImpl;
+import org.olat.modules.portfolio.model.SectionKeyRef;
 import org.olat.modules.portfolio.model.SynchedBinder;
 import org.olat.modules.portfolio.ui.PortfolioHomeController;
 import org.olat.repository.RepositoryEntry;
@@ -99,6 +108,8 @@ import org.olat.resource.OLATResourceManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.thoughtworks.xstream.XStream;
+
 /**
  * 
  * Initial date: 06.06.2016<br>
@@ -107,6 +118,13 @@ import org.springframework.stereotype.Service;
  */
 @Service
 public class PortfolioServiceImpl implements PortfolioService {
+	
+	private static final OLog log = Tracing.createLoggerFor(PortfolioServiceImpl.class);
+	
+	private static XStream configXstream = XStreamHelper.createXStreamInstance();
+	static {
+		configXstream.alias("deliveryOptions", BinderDeliveryOptions.class);
+	}
 	
 	@Autowired
 	private PageDAO pageDao;
@@ -183,7 +201,7 @@ public class PortfolioServiceImpl implements PortfolioService {
 				imagePath = addPosterImageForBinder(image, image.getName());
 			}
 		}
-		return internalCopyTransientBinder(transientBinder, entry, imagePath);
+		return internalCopyTransientBinder(transientBinder, entry, imagePath, true);
 	}
 
 	@Override
@@ -192,42 +210,89 @@ public class PortfolioServiceImpl implements PortfolioService {
 		if(StringHelper.containsNonWhitespace(transientBinder.getImagePath())) {
 			imagePath = addPosterImageForBinder(image, image.getName());
 		}
-		return internalCopyTransientBinder(transientBinder, templateEntry, imagePath);
+		return internalCopyTransientBinder(transientBinder, templateEntry, imagePath, false);
 	}
 	
-	private Binder internalCopyTransientBinder(Binder transientBinder, RepositoryEntry entry, String imagePath) {
+	private Binder internalCopyTransientBinder(Binder transientBinder, RepositoryEntry entry, String imagePath, boolean copy) {
 		Binder binder = binderDao.createAndPersist(transientBinder.getTitle(), transientBinder.getSummary(), imagePath, entry);
 		//copy sections
 		for(Section transientSection:((BinderImpl)transientBinder).getSections()) {
-			binderDao.createSection(transientSection.getTitle(), transientSection.getDescription(),
+			SectionImpl section = binderDao.createSection(transientSection.getTitle(), transientSection.getDescription(),
 					transientSection.getBeginDate(), transientSection.getEndDate(), binder);
+			
+			List<Assignment> transientAssignments = ((SectionImpl)transientSection).getAssignments();
+			for(Assignment transientAssignment:transientAssignments) {
+				File newStorage = portfolioFileStorage.generateAssignmentSubDirectory();
+				String storage = portfolioFileStorage.getRelativePath(newStorage);
+				
+				assignmentDao.createAssignment(transientAssignment.getTitle(), transientAssignment.getSummary(),
+						transientAssignment.getContent(), storage, transientAssignment.getAssignmentType(),
+						transientAssignment.getAssignmentStatus(), section);
+				//copy attachments
+				File templateDirectory = portfolioFileStorage.getAssignmentDirectory(transientAssignment);
+				if(copy && templateDirectory != null) {
+					FileUtils.copyDirContentsToDir(templateDirectory, newStorage, false, "Assignment attachments");
+				}
+			}
 		}
 		return binder;
 	}
 
 	@Override
 	public boolean deleteBinderTemplate(Binder binder, RepositoryEntry templateEntry) {
-		binderDao.detachBinderTemplate();
-		int deletedRows = binderDao.deleteBinderTemplate(binder);
+		BinderImpl reloadedBinder = (BinderImpl)binderDao.loadByKey(binder.getKey());
+		int deletedRows = binderDao.deleteBinderTemplate(reloadedBinder);
 		return deletedRows > 0;
+	}
+	
+	@Override
+	public BinderDeliveryOptions getDeliveryOptions(OLATResource resource) {
+		FileResourceManager frm = FileResourceManager.getInstance();
+		File reFolder = frm.getFileResourceRoot(resource);
+		File configXml = new File(reFolder, PACKAGE_CONFIG_FILE_NAME);
+		
+		BinderDeliveryOptions config;
+		if(configXml.exists()) {
+			config = (BinderDeliveryOptions)configXstream.fromXML(configXml);
+		} else {
+			//set default config
+			config = BinderDeliveryOptions.defaultOptions();
+			setDeliveryOptions(resource, config);
+		}
+		return config;
 	}
 
 	@Override
+	public void setDeliveryOptions(OLATResource resource, BinderDeliveryOptions options) {
+		FileResourceManager frm = FileResourceManager.getInstance();
+		File reFolder = frm.getFileResourceRoot(resource);
+		File configXml = new File(reFolder, PACKAGE_CONFIG_FILE_NAME);
+		if(options == null) {
+			if(configXml.exists()) {
+				configXml.delete();
+			}
+		} else {
+			try (OutputStream out = new FileOutputStream(configXml)) {
+				configXstream.toXML(options, out);
+			} catch (IOException e) {
+				log.error("", e);
+			}
+		}
+	}
+	
+	@Override
 	public Assignment addAssignment(String title, String summary, String content, AssignmentType type,
 			Section section) {
-		String storage = null;
-		if(type == AssignmentType.document) {
-			File newStorage = portfolioFileStorage.generateAssignmentSubDirectory();
-			storage = portfolioFileStorage.getRelativePath(newStorage);
-		}
-		return assignmentDao.createAssignment(title, summary, content, storage, type, AssignmentStatus.template, section);
+		File newStorage = portfolioFileStorage.generateAssignmentSubDirectory();
+		String storage = portfolioFileStorage.getRelativePath(newStorage);
+
+		Section reloadedSection = binderDao.loadSectionByKey(section.getKey());
+		return assignmentDao.createAssignment(title, summary, content, storage, type, AssignmentStatus.template, reloadedSection);
 	}
 
 	@Override
 	public Assignment updateAssignment(Assignment assignment, String title, String summary, String content, AssignmentType type) {
-		if(assignment.getAssignmentType() == AssignmentType.document && type != AssignmentType.document) {
-			//remove storage
-		} else if(type == AssignmentType.document && !StringHelper.containsNonWhitespace(assignment.getStorage())) {
+		if(!StringHelper.containsNonWhitespace(assignment.getStorage())) {
 			File newStorage = portfolioFileStorage.generateAssignmentSubDirectory();
 			String newRelativeStorage = portfolioFileStorage.getRelativePath(newStorage);
 			((AssignmentImpl)assignment).setStorage(newRelativeStorage);
@@ -239,6 +304,25 @@ public class PortfolioServiceImpl implements PortfolioService {
 		impl.setContent(content);
 		impl.setType(type.name());
 		return assignmentDao.updateAssignment(assignment);
+	}
+	
+	@Override
+	public Section moveUpAssignment(Section section, Assignment assignment) {
+		Section reloadedSection = binderDao.loadSectionByKey(section.getKey());
+		return assignmentDao.moveUpAssignment((SectionImpl)reloadedSection, assignment);
+	}
+
+	@Override
+	public Section moveDownAssignment(Section section, Assignment assignment) {
+		Section reloadedSection = binderDao.loadSectionByKey(section.getKey());
+		return assignmentDao.moveDownAssignment((SectionImpl)reloadedSection, assignment);
+	}
+
+	@Override
+	public void moveAssignment(SectionRef currentSectionRef, Assignment assignment, SectionRef newParentSectionRef) {
+		Section currentSection = binderDao.loadSectionByKey(currentSectionRef.getKey());
+		Section newParentSection = binderDao.loadSectionByKey(newParentSectionRef.getKey());
+		assignmentDao.moveAssignment((SectionImpl)currentSection, assignment, (SectionImpl)newParentSection);
 	}
 
 	@Override
@@ -261,6 +345,18 @@ public class PortfolioServiceImpl implements PortfolioService {
 	}
 
 	@Override
+	public boolean isAssignmentInUse(Assignment assignment) {
+		return assignmentDao.isAssignmentInUse(assignment);
+	}
+
+	@Override
+	public boolean deleteAssignment(Assignment assignment) {
+		Assignment reloadedAssignment = assignmentDao.loadAssignmentByKey(assignment.getKey());
+		assignmentDao.deleteAssignment(reloadedAssignment);
+		return true;
+	}
+
+	@Override
 	public Assignment startAssignment(Assignment assignment, Identity author) {
 		Assignment reloadedAssignment = assignmentDao.loadAssignmentByKey(assignment.getKey());
 		if(reloadedAssignment.getAssignmentType() == AssignmentType.essay) {
@@ -280,9 +376,10 @@ public class PortfolioServiceImpl implements PortfolioService {
 	}
 
 	@Override
-	public void appendNewSection(String title, String description, Date begin, Date end, BinderRef binder) {
+	public SectionRef appendNewSection(String title, String description, Date begin, Date end, BinderRef binder) {
 		Binder reloadedBinder = binderDao.loadByKey(binder.getKey());
-		binderDao.createSection(title, description, begin, end, reloadedBinder);
+		SectionImpl newSection = binderDao.createSection(title, description, begin, end, reloadedBinder);
+		return new SectionKeyRef(newSection.getKey());
 	}
 
 	@Override
@@ -298,6 +395,25 @@ public class PortfolioServiceImpl implements PortfolioService {
 	@Override
 	public Section getSection(SectionRef section) {
 		return binderDao.loadSectionByKey(section.getKey());
+	}
+
+	@Override
+	public Binder moveUpSection(Binder binder, Section section) {
+		Binder reloadedBinder = binderDao.loadByKey(binder.getKey());
+		return binderDao.moveUpSection((BinderImpl)reloadedBinder, section);
+	}
+
+	@Override
+	public Binder moveDownSection(Binder binder, Section section) {
+		Binder reloadedBinder = binderDao.loadByKey(binder.getKey());
+		return binderDao.moveDownSection((BinderImpl)reloadedBinder, section);
+	}
+
+	@Override
+	public Binder deleteSection(Binder binder, Section section) {
+		Section reloadedSection = binderDao.loadSectionByKey(section.getKey());
+		Binder reloadedBinder = reloadedSection.getBinder();
+		return binderDao.deleteSection(reloadedBinder, reloadedSection);
 	}
 
 	@Override
@@ -348,6 +464,13 @@ public class PortfolioServiceImpl implements PortfolioService {
 	@Override
 	public Binder getBinderByResource(OLATResource resource) {
 		return binderDao.loadByResource(resource);
+	}
+
+	@Override
+	public RepositoryEntry getRepositoryEntry(Binder binder) {
+		OLATResource resource = ((BinderImpl)binder).getOlatResource();
+		Long resourceKey = resource.getKey();
+		return repositoryService.loadByResourceKey(resourceKey);
 	}
 
 	@Override
@@ -911,7 +1034,8 @@ public class PortfolioServiceImpl implements PortfolioService {
 	private void updateAssessmentEntry(Identity assessedIdentity, Binder binder, Set<AssessmentSection> assessmentSections, Identity coachingIdentity) {
 		
 		boolean allPassed = true;
-		int totalSectionDone = 0;
+		int totalSectionPassed = 0;
+		int totalSectionClosed = 0;
 		BigDecimal totalScore = new BigDecimal("0.0");
 		AssessmentEntryStatus binderStatus = null;
 
@@ -919,21 +1043,29 @@ public class PortfolioServiceImpl implements PortfolioService {
 			if(assessmentSection.getScore() != null) {
 				totalScore = totalScore.add(assessmentSection.getScore());
 			}
-			if(assessmentSection.getPassed() != null) {
-				totalSectionDone++;
-				allPassed &= assessmentSection.getPassed().booleanValue();
+			if(assessmentSection.getPassed() != null && assessmentSection.getPassed().booleanValue()) {
+				allPassed &= true;
+				totalSectionPassed++;
+			}
+			
+			Section section = assessmentSection.getSection();
+			if(section.getSectionStatus() == SectionStatus.closed) {
+				totalSectionClosed++;
 			}
 		}
-		
+
 		Boolean totalPassed = null;
-		if(totalSectionDone == assessmentSections.size()) {
+		if(totalSectionClosed == assessmentSections.size()) {
 			totalPassed = new Boolean(allPassed);
 			binderStatus = AssessmentEntryStatus.done;
 		} else {
+			if(assessmentSections.size() == totalSectionPassed) {
+				totalPassed = Boolean.TRUE;
+			}
 			binderStatus = AssessmentEntryStatus.inProgress;
 		}
-		//order status from the entry / section
 
+		//order status from the entry / section
 		RepositoryEntry entry = binder.getEntry();
 		if("CourseModule".equals(entry.getOlatResource().getResourceableTypeName())) {
 			ICourse course = CourseFactory.loadCourse(entry);

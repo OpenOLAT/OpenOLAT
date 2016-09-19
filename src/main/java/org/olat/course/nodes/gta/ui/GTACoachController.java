@@ -42,6 +42,7 @@ import org.olat.core.util.io.SystemFilenameFilter;
 import org.olat.core.util.mail.ContactList;
 import org.olat.core.util.mail.ContactMessage;
 import org.olat.core.util.vfs.VFSContainer;
+import org.olat.course.assessment.ui.tool.AssessmentFormCallback;
 import org.olat.course.nodes.GTACourseNode;
 import org.olat.course.nodes.gta.GTAType;
 import org.olat.course.nodes.gta.Task;
@@ -66,7 +67,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class GTACoachController extends GTAAbstractController {
+public class GTACoachController extends GTAAbstractController implements AssessmentFormCallback {
 
 	private Link reviewedButton, needRevisionsButton;
 
@@ -185,9 +186,6 @@ public class GTACoachController extends GTAAbstractController {
 				mainVC.contextPut("submitCssClass", "o_active");
 				collect(assignedTask);
 			} else {
-				if (assignedTask == null || assignedTask.getTaskStatus() == TaskProcess.review) {
-					backToSubmission(assignedTask);
-				}
 				mainVC.contextPut("submitCssClass", "o_done");
 				viewSubmittedDocument = true;
 			}	
@@ -195,11 +193,11 @@ public class GTACoachController extends GTAAbstractController {
 			mainVC.contextPut("submitCssClass", "o_active");
 			collect(assignedTask);
 		} else {
-			if (assignedTask == null || assignedTask.getTaskStatus() == TaskProcess.review) {
-				backToSubmission(assignedTask);
-			}
 			mainVC.contextPut("submitCssClass", "o_done");
 			viewSubmittedDocument = true;
+		}
+		if (assignedTask == null || (assignedTask.getTaskStatus() != TaskProcess.submit)) {
+			backToSubmission(assignedTask);
 		}
 		
 		if(viewSubmittedDocument) {
@@ -408,7 +406,11 @@ public class GTACoachController extends GTAAbstractController {
 	protected Task stepGrading(UserRequest ureq, Task assignedTask) {
 		assignedTask = super.stepGrading(ureq, assignedTask);
 		if(withGrading) {
-			mainVC.contextPut("gradingCssClass", "o_active");
+			if(assignedTask != null && assignedTask.getTaskStatus() == TaskProcess.graded) {
+				mainVC.contextPut("gradingCssClass", "o_done");
+			} else {
+				mainVC.contextPut("gradingCssClass", "o_active");
+			}
 			setGrading(ureq, assignedTask);
 		} else {
 			mainVC.contextPut("gradingEnabled", Boolean.FALSE);
@@ -421,7 +423,7 @@ public class GTACoachController extends GTAAbstractController {
 		mainVC.put("grading", new Panel("empty"));
 		if(assessedGroup != null) {
 			groupGradingCtrl = new GTACoachedGroupGradingController(ureq, getWindowControl(),
-					courseEnv, gtaNode, assessedGroup, assignedTask);
+					courseEnv, gtaNode, assessedGroup, taskList, assignedTask);
 			listenTo(groupGradingCtrl);
 			mainVC.put("grading", groupGradingCtrl.getInitialComponent());
 		} else if(assessedIdentity != null) {
@@ -436,6 +438,36 @@ public class GTACoachController extends GTAAbstractController {
 	@Override
 	protected void processEvent(TaskMultiUserEvent event) {
 		//
+	}
+
+	@Override
+	public void assessmentDone(UserRequest ureq) {
+		Task task;
+		if(businessGroupTask) {
+			task = gtaManager.getTask(assessedGroup, taskList);
+		} else {
+			task = gtaManager.getTask(assessedIdentity, taskList);
+		}
+		if(task != null) {
+			task = gtaManager.updateTask(task, TaskProcess.graded, gtaNode);
+			cleanUpProcess();
+			process(ureq);
+		}
+	}
+
+	@Override
+	public void assessmentReopen(UserRequest ureq) {
+		Task task;
+		if(businessGroupTask) {
+			task = gtaManager.getTask(assessedGroup, taskList);
+		} else {
+			task = gtaManager.getTask(assessedIdentity, taskList);
+		}
+		if(task != null && task.getTaskStatus() == TaskProcess.graded) {
+			task = gtaManager.updateTask(task, TaskProcess.grading, gtaNode);
+			cleanUpProcess();
+			process(ureq);
+		}
 	}
 
 	@Override

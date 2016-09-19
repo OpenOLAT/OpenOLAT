@@ -77,15 +77,16 @@ public abstract class TextAreaElementImpl extends AbstractTextElement {
 	@Override
 	public void evalFormRequest(UserRequest ureq) {
 		String paramId = String.valueOf(component.getFormDispatchId());
-		String value = getRootForm().getRequestParameter(paramId);
-		if (value != null) {
-			setValue(value);
+		String val = getRootForm().getRequestParameter(paramId);
+		if (val != null) {
+			setValue(val);
 			// mark associated component dirty, that it gets rerendered
 			component.setDirty(true);
 		}
 
 	}
 
+	@Override
 	protected Component getFormItemComponent() {
 		return component;
 	}

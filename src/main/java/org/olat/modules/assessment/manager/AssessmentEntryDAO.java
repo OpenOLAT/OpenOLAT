@@ -49,7 +49,7 @@ public class AssessmentEntryDAO {
 	@Autowired
 	private DB dbInstance;
 	
-	public AssessmentEntry createCourseNodeAssessment(Identity assessedIdentity, String anonymousIdentifier,
+	public AssessmentEntry createAssessmentEntry(Identity assessedIdentity, String anonymousIdentifier,
 			RepositoryEntry entry, String subIdent, RepositoryEntry referenceEntry) {
 		
 		AssessmentEntryImpl data = new AssessmentEntryImpl();
@@ -64,7 +64,7 @@ public class AssessmentEntryDAO {
 		return data;
 	}
 	
-	public AssessmentEntry createCourseNodeAssessment(Identity assessedIdentity, String anonymousIdentifier,
+	public AssessmentEntry createAssessmentEntry(Identity assessedIdentity, String anonymousIdentifier,
 			RepositoryEntry entry, String subIdent, RepositoryEntry referenceEntry,
 			Float score, Boolean passed) {
 		
@@ -212,6 +212,14 @@ public class AssessmentEntryDAO {
 		return dbInstance.getCurrentEntityManager().merge(nodeAssessment);
 	}
 	
+	/**
+	 * Load all assessment entries for the specific assessed repository entry with
+	 * the specific sub identifier (it is mandatory).
+	 * 
+	 * @param entry The entry (mandatory)
+	 * @param subIdent The subIdent (mandatory)
+	 * @return A list of assessment entries
+	 */
 	public List<AssessmentEntry> loadAssessmentEntryBySubIdent(RepositoryEntryRef entry, String subIdent) {
 		return dbInstance.getCurrentEntityManager()
 				.createNamedQuery("loadAssessmentEntryByRepositoryEntryAndSubIdent", AssessmentEntry.class)
@@ -229,6 +237,14 @@ public class AssessmentEntryDAO {
 				.getResultList();
 	}
 
+	/**
+	 * Load all the assessment entries for a specific user and a specific assessed repository entry
+	 * (typically a course).
+	 * 
+	 * @param assessedIdentity The assessed user
+	 * @param entry The assessed course / repository entry
+	 * @return A list of assessment entries
+	 */
 	public List<AssessmentEntry> loadAssessmentEntriesByAssessedIdentity(Identity assessedIdentity, RepositoryEntry entry) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select data from assessmententry data where data.repositoryEntry.key=:repositoryEntryKey and data.identity.key=:identityKey");
@@ -239,7 +255,16 @@ public class AssessmentEntryDAO {
 				.getResultList();
 	}
 
-	public List<AssessmentEntry> loadAssessmentEntryByBusinessGroup(Group assessedGroup, RepositoryEntry entry, String subIdent) {
+	/**
+	 * Load all the assessment entry of the specific group. But aware that the query exclude the default group
+	 * of the repository entry! The query doesn't check the member ship but only the relation to the course.
+	 * 
+	 * @param assessedGroup The group (mandatory)
+	 * @param entry The repository entry (mandatory)
+	 * @param subIdent The sub identifier (mandatory)
+	 * @return A list of assessment entries
+	 */
+	public List<AssessmentEntry> loadAssessmentEntryByGroup(Group assessedGroup, RepositoryEntry entry, String subIdent) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select data from assessmententry data")
 		  .append(" inner join data.repositoryEntry v")

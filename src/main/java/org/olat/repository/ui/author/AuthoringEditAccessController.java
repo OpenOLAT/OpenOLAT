@@ -134,7 +134,7 @@ public class AuthoringEditAccessController extends BasicController {
 					}
 					
 					// inform anybody interested about this change
-					MultiUserEvent modifiedEvent = new EntryChangedEvent(entry, getIdentity(), Change.modifiedAccess);
+					MultiUserEvent modifiedEvent = new EntryChangedEvent(entry, getIdentity(), Change.modifiedAccess, "authoring");
 					CoordinatorManager.getInstance().getCoordinator().getEventBus().fireEventToListenersOf(modifiedEvent, entry);			
 					fireEvent(ureq, Event.CHANGED_EVENT);
 				}
@@ -147,7 +147,7 @@ public class AuthoringEditAccessController extends BasicController {
 					showWarning("repositoryentry.not.existing");
 					fireEvent(ureq, Event.CLOSE_EVENT);
 				} else {
-					MultiUserEvent modifiedEvent = new EntryChangedEvent(entry, getIdentity(), Change.modifiedAccess);
+					MultiUserEvent modifiedEvent = new EntryChangedEvent(entry, getIdentity(), Change.modifiedAccess, "authorings");
 					CoordinatorManager.getInstance().getCoordinator().getEventBus().fireEventToListenersOf(modifiedEvent, entry);	
 					fireEvent(ureq, Event.CHANGED_EVENT);
 				}

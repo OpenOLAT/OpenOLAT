@@ -17,41 +17,40 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.ims.qti21.ui.editor;
-
-import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.components.form.flexible.FormItemContainer;
-import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
-import org.olat.core.gui.control.Controller;
-import org.olat.core.gui.control.WindowControl;
+package org.olat.core.commons.services.notifications.model;
 
 /**
  * 
- * Initial date: 11.12.2015<br>
+ * Initial date: 25.08.2016<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class UnkownTestEditorController extends FormBasicController {
+public class PublisherIdentityKey {
 	
-	public UnkownTestEditorController(UserRequest ureq, WindowControl wControl) {
-		super(ureq, wControl);
-		
-		initForm(ureq);
+	private final Long publisherKey;
+	private final Long identityKey;
+	
+	public PublisherIdentityKey(Long publisherKey, Long identityKey) {
+		this.publisherKey = publisherKey;
+		this.identityKey = identityKey;
 	}
 
 	@Override
-	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		setFormTitle("editor.unkown.title");
-		//
+	public int hashCode() {
+		return (publisherKey == null ? 89456 : publisherKey.hashCode())
+				+ (identityKey == null ? 2896791 : identityKey.hashCode());
 	}
 
 	@Override
-	protected void doDispose() {
-		//
-	}
-
-	@Override
-	protected void formOK(UserRequest ureq) {
-		//
+	public boolean equals(Object obj) {
+		if(this == obj) {
+			return true;
+		}
+		if(obj instanceof PublisherIdentityKey) {
+			PublisherIdentityKey key = (PublisherIdentityKey)obj;
+			return publisherKey != null && publisherKey.equals(key.publisherKey)
+					&& identityKey != null && identityKey.equals(key.identityKey);
+		}
+		return false;
 	}
 }

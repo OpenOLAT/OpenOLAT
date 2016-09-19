@@ -20,8 +20,11 @@
 package org.olat.ims.qti21.ui;
 
 import java.math.BigDecimal;
+import java.util.concurrent.atomic.AtomicBoolean;
 
+import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.ims.qti21.OutcomesListener;
+import org.olat.ims.qti21.QTI21LoggingAction;
 import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.assessment.AssessmentService;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
@@ -36,11 +39,18 @@ public class AssessmentEntryOutcomesListener implements OutcomesListener {
 	
 	private AssessmentEntry assessmentEntry;
 	private final AssessmentService assessmentService;
-	private final boolean needManualCorrection;
 	
-	public AssessmentEntryOutcomesListener(AssessmentEntry assessmentEntry, boolean needManualCorrection, AssessmentService assessmentService) {
+	private final boolean authorMode;
+	private final boolean needManualCorrection;
+
+	private AtomicBoolean start = new AtomicBoolean(true);
+	private AtomicBoolean close = new AtomicBoolean(true);
+	
+	public AssessmentEntryOutcomesListener(AssessmentEntry assessmentEntry, boolean needManualCorrection,
+			AssessmentService assessmentService, boolean authorMode) {
 		this.assessmentEntry = assessmentEntry;
 		this.assessmentService = assessmentService;
+		this.authorMode = authorMode;
 		this.needManualCorrection = needManualCorrection;
 	}
 	
@@ -49,6 +59,11 @@ public class AssessmentEntryOutcomesListener implements OutcomesListener {
 		AssessmentEntryStatus assessmentStatus = AssessmentEntryStatus.inProgress;
 		assessmentEntry.setAssessmentStatus(assessmentStatus);
 		assessmentEntry = assessmentService.updateAssessmentEntry(assessmentEntry);
+		
+		boolean firstStart = start.getAndSet(false);
+		if(firstStart && !authorMode) {
+			ThreadLocalUserActivityLogger.log(QTI21LoggingAction.QTI_START_AS_RESOURCE, getClass());
+		}
 	}
 
 	@Override
@@ -68,5 +83,10 @@ public class AssessmentEntryOutcomesListener implements OutcomesListener {
 		assessmentEntry.setPassed(submittedPass);
 		assessmentEntry.setAssessmentId(assessmentId);
 		assessmentEntry = assessmentService.updateAssessmentEntry(assessmentEntry);
+		
+		boolean firstClose = close.getAndSet(false);
+		if(firstClose && !authorMode) {
+			ThreadLocalUserActivityLogger.log(QTI21LoggingAction.QTI_CLOSE_AS_RESOURCE, getClass());
+		}
 	}
 }

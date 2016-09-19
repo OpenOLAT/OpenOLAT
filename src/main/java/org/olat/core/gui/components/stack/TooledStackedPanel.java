@@ -33,6 +33,8 @@ import org.olat.core.gui.translator.Translator;
 
 /**
  * 
+ * They are only 1 segment at once.
+ * 
  * Initial date: 25.03.2014<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *

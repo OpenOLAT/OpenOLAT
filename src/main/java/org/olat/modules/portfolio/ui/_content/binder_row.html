@@ -5,13 +5,21 @@
 		</div>
 		<div class="panel-body">
 			<p>$r.translate("create.new.binder.descr")</p>
-			$r.render("createDropdown")
+			#if($r.available("createDropdown"))
+				$r.render("createDropdown")
+			#elseif($r.available("createBinderFromCourse"))
+				$r.render("createBinderFromCourse")
+			#end
 		</div>
 	</div>
 #else
-	<div class="panel panel-default #if($row.background) panel-imagebg" style="background-image:url('$mapperThumbnailUrl/$row.key/${row.imageName}');" #else " #end>
+	<div class="panel panel-default o_binder #if($r.isNotNull($row.referenceEntryName)) o_portfolio_assignments #end #if($row.background) panel-imagebg" style="background-image:url('$mapperThumbnailUrl/$row.key/${row.imageName}');" #else " #end>
 		<div class="panel-heading">
-			<h4 class="panel-title">$r.escapeHtml($row.title)</h4>
+			<h4 class="panel-title">$r.escapeHtml($row.title)
+			#if($r.isNotNull($row.referenceEntryName))
+				<small class="text-muted"><br /><i class="o_icon o_CourseModule_icon"> </i> $r.translate("binder.entry.name"): $r.escapeHtml($row.referenceEntryName)</small>
+			#end
+			</h4>
 		</div>
 		<div class="panel-body">
 			<ul>

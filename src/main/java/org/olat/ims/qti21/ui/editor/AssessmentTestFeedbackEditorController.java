@@ -68,7 +68,7 @@ public class AssessmentTestFeedbackEditorController extends FormBasicController 
 		feedbackPassedTitleEl.setUserObject(passedFeedback);
 		feedbackPassedTitleEl.setEnabled(!restrictedEdit);
 		String passedText = passedFeedback == null ? "" : passedFeedback.getText();
-		feedbackPassedTextEl = uifactory.addRichTextElementForStringDataCompact("correctText", "form.test.correct.text", passedText, 8, -1, null,
+		feedbackPassedTextEl = uifactory.addRichTextElementForQTI21("correctText", "form.test.correct.text", passedText, 8, -1, null,
 				formLayout, ureq.getUserSession(), getWindowControl());
 		feedbackPassedTextEl.setEnabled(!restrictedEdit);
 		feedbackPassedTextEl.getEditorConfiguration().setFileBrowserUploadRelPath("media");
@@ -80,7 +80,7 @@ public class AssessmentTestFeedbackEditorController extends FormBasicController 
 		feedbackFailedTitleEl.setUserObject(failedFeedback);
 		feedbackFailedTitleEl.setEnabled(!restrictedEdit);
 		String fialedText = failedFeedback == null ? "" : failedFeedback.getText();
-		feedbackFailedTextEl = uifactory.addRichTextElementForStringDataCompact("incorrectText", "form.test.incorrect.text", fialedText, 8, -1, null,
+		feedbackFailedTextEl = uifactory.addRichTextElementForQTI21("incorrectText", "form.test.incorrect.text", fialedText, 8, -1, null,
 				formLayout, ureq.getUserSession(), getWindowControl());
 		feedbackFailedTextEl.setEnabled(!restrictedEdit);
 		feedbackFailedTextEl.getEditorConfiguration().setFileBrowserUploadRelPath("media");

@@ -26,8 +26,6 @@ import javax.xml.transform.stream.StreamResult;
 import org.junit.Assert;
 import org.junit.Test;
 import org.olat.core.gui.render.StringOutput;
-import org.olat.core.logging.OLog;
-import org.olat.core.logging.Tracing;
 
 import uk.ac.ed.ph.jqtiplus.JqtiExtensionManager;
 import uk.ac.ed.ph.jqtiplus.node.content.ItemBody;
@@ -51,8 +49,6 @@ import uk.ac.ed.ph.jqtiplus.serialization.QtiSerializer;
  */
 public class AssessmentHtmlBuilderTest {
 	
-	private static final OLog log = Tracing.createLoggerFor(AssessmentHtmlBuilderTest.class);
-	
 	@Test
 	public void serializer() {
 		AssessmentItem item = new AssessmentItem();
@@ -63,10 +59,9 @@ public class AssessmentHtmlBuilderTest {
 		helper.getFlowStatics().add(p);
 		
 		String content = new AssessmentHtmlBuilder().flowStaticString(helper.getFlowStatics());
-		System.out.println(content);
+		Assert.assertTrue(content.contains(">Hello world<"));
 	}
-	
-	
+
 	@Test
 	public void filter_alt() {
 		String content = "<p>Test <textEntryInteraction responseIdentifier=\"RESPONSE_1\"/> </p>";
@@ -101,6 +96,34 @@ public class AssessmentHtmlBuilderTest {
 		StringOutput sb = new StringOutput();
 		QtiSerializer qtiSerializer = new QtiSerializer(new JqtiExtensionManager());
 		qtiSerializer.serializeJqtiObject(helper, new StreamResult(sb));
-		log.info(sb.toString());
+		String serializedQti = sb.toString();
+		Assert.assertTrue(serializedQti.contains("img.jpg"));
+	}
+
+	@Test
+	public void serializeVideo() {
+		String content = "<p><span id=\"olatFlashMovieViewer213060\" class=\"olatFlashMovieViewer\" style=\"display:block;border:solid 1px #000; width:320px; height:240px;\">\n"
+			+ "<script src=\"/raw/fx-111111x11/movie/player.js\" type=\"text/javascript\"></script>\n"
+			+ "<script type=\"text/javascript\" defer=\"defer\">// <![CDATA[\n"
+			+ "BPlayer.insertPlayer(\"demo-video.mp4\",\"olatFlashMovieViewer213060\",320,240,0,0,\"video\",undefined,false,false,true,undefined);\n"
+			+ "// ]]></script>\n"
+			+ "</span></p>";
+
+		AssessmentItem item = new AssessmentItem();
+		ItemBody helper = new ItemBody(item);
+		new AssessmentHtmlBuilder().appendHtml(helper, content);
+
+		List<Block> paragraphs = helper.getBlocks();
+		Assert.assertNotNull(paragraphs);
+		Assert.assertEquals(1, paragraphs.size());
+		
+		StringOutput sb = new StringOutput();
+		QtiSerializer qtiSerializer = new QtiSerializer(new JqtiExtensionManager());
+		qtiSerializer.serializeJqtiObject(helper, new StreamResult(sb));
+		String serializedQti =  sb.toString();
+		Assert.assertNotNull(serializedQti);
+		Assert.assertTrue(serializedQti.contains("object"));
+		Assert.assertFalse(serializedQti.contains("span"));
+		Assert.assertFalse(serializedQti.contains("script"));
 	}
 }

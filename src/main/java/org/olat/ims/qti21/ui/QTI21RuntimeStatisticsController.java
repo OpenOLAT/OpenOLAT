@@ -73,9 +73,9 @@ public class QTI21RuntimeStatisticsController extends BasicController implements
 	public QTI21RuntimeStatisticsController(UserRequest ureq, WindowControl wControl, 
 			RepositoryEntry testEntry, AssessmentToolOptions asOptions) {
 		super(ureq, wControl);
-		this.options = new ArchiveOptions();
-		this.options.setGroup(asOptions.getGroup());
-		this.options.setIdentities(asOptions.getIdentities());
+		options = new ArchiveOptions();
+		options.setGroup(asOptions.getGroup());
+		options.setIdentities(asOptions.getIdentities());
 		
 		searchParams = new QTI21StatisticSearchParams(testEntry, null, null);
 		if(asOptions.getGroup() != null) {

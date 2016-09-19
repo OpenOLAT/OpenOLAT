@@ -47,6 +47,7 @@ public class AddElementsController extends BasicController {
 	public AddElementsController(UserRequest ureq, WindowControl wControl, PageEditorProvider provider,
 			EditorFragment referenceFragment, PageElementTarget target) {
 		super(ureq, wControl);
+		
 		this.target = target;
 		this.referenceFragment = referenceFragment;
 		
@@ -59,6 +60,7 @@ public class AddElementsController extends BasicController {
 				Link addLink = LinkFactory.createLink(id, "add." + handler.getType(), "add.elements", mainVC, this);
 				addLink.setIconLeftCSS("o_icon o_icon-lg " + handler.getIconCssClass());
 				addLink.setUserObject(handler);
+				addLink.setTooltip("add." + handler.getType());
 				mainVC.put(id, addLink);
 				addElements.add(id);
 			}

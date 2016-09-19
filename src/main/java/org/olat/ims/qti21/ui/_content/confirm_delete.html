@@ -1,0 +1,9 @@
+#if($r.isNotEmpty($referencees))
+	<div class="o_warning">$r.translate("reset.test.data.text.ref", $referencees)</div>
+#else
+	<div class="o_warning">$r.translate("reset.test.data.text")</div>
+#end
+
+<div class="o_button_group">
+	$r.render("buttons")
+</div>

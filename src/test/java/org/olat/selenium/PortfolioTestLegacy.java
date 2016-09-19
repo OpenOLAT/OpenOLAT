@@ -37,6 +37,7 @@ import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
 import org.junit.Assume;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.olat.selenium.page.LoginPage;
@@ -69,12 +70,13 @@ import org.openqa.selenium.firefox.FirefoxDriver;
  *
  */
 @RunWith(Arquillian.class)
-public class PortfolioTest {
+public class PortfolioTestLegacy {
 	
 	@Deployment(testable = false)
 	public static WebArchive createDeployment() {
 		Map<String,String> propertyPortfolioV1 = new HashMap<>();
 		propertyPortfolioV1.put("portfoliov2.enabled", "false");
+		propertyPortfolioV1.put("portfolio.enabled", "true");
 		return ArquillianDeployments.createDeployment(propertyPortfolioV1);
 	}
 
@@ -95,7 +97,7 @@ public class PortfolioTest {
 	 * @throws IOException
 	 * @throws URISyntaxException
 	 */
-	@Test
+	@Ignore @Test
 	@RunAsClient
 	public void collectForumArtefactInCourse(@InitialPage LoginPage loginPage)
 	throws IOException, URISyntaxException {
@@ -184,7 +186,7 @@ public class PortfolioTest {
 	 * @throws IOException
 	 * @throws URISyntaxException
 	 */
-	@Test
+	@Ignore @Test
 	@RunAsClient
 	public void collectWikiArtefactInWikiResource(@InitialPage LoginPage loginPage)
 	throws IOException, URISyntaxException {
@@ -266,7 +268,7 @@ public class PortfolioTest {
 	 * @throws IOException
 	 * @throws URISyntaxException
 	 */
-	@Test
+	@Ignore @Test
 	@RunAsClient
 	public void collectBlogPostInCourse(@InitialPage LoginPage loginPage)
 	throws IOException, URISyntaxException {
@@ -364,7 +366,7 @@ public class PortfolioTest {
 	 * @throws IOException
 	 * @throws URISyntaxException
 	 */
-	@Test
+	@Ignore @Test
 	@RunAsClient
 	public void addTextArtefact(@InitialPage LoginPage loginPage)
 	throws IOException, URISyntaxException {
@@ -431,7 +433,7 @@ public class PortfolioTest {
 	 * @throws IOException
 	 * @throws URISyntaxException
 	 */
-	@Test
+	@Ignore @Test
 	@RunAsClient
 	public void addTextArtefact_withinMap(@InitialPage LoginPage loginPage)
 	throws IOException, URISyntaxException {
@@ -497,7 +499,7 @@ public class PortfolioTest {
 	 * @throws IOException
 	 * @throws URISyntaxException
 	 */
-	@Test
+	@Ignore @Test
 	@RunAsClient
 	public void addLearningJournal(@InitialPage LoginPage loginPage)
 	throws IOException, URISyntaxException {
@@ -577,7 +579,7 @@ public class PortfolioTest {
 	 * @throws IOException
 	 * @throws URISyntaxException
 	 */
-	@Test
+	@Ignore @Test
 	@RunAsClient
 	public void addLearningJournal_withinMap(@InitialPage LoginPage loginPage)
 	throws IOException, URISyntaxException {
@@ -655,7 +657,7 @@ public class PortfolioTest {
 	 * @throws IOException
 	 * @throws URISyntaxException
 	 */
-	@Test
+	@Ignore @Test
 	@RunAsClient
 	public void addFileArtefact(@InitialPage LoginPage loginPage)
 	throws IOException, URISyntaxException {
@@ -731,7 +733,7 @@ public class PortfolioTest {
 	 * @throws IOException
 	 * @throws URISyntaxException
 	 */
-	@Test
+	@Ignore @Test
 	@RunAsClient
 	public void addFileArtefact_withinMap(@InitialPage LoginPage loginPage)
 	throws IOException, URISyntaxException {
@@ -807,7 +809,7 @@ public class PortfolioTest {
 	 * @throws IOException
 	 * @throws URISyntaxException
 	 */
-	@Test
+	@Ignore @Test
 	@RunAsClient
 	public void createPortfolioTemplate_inCourse(@InitialPage LoginPage loginPage)
 	throws IOException, URISyntaxException {

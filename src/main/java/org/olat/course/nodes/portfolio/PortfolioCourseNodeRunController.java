@@ -51,6 +51,7 @@ import org.olat.course.run.scoring.ScoreEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.portfolio.Binder;
+import org.olat.modules.portfolio.PortfolioLoggingAction;
 import org.olat.modules.portfolio.PortfolioService;
 import org.olat.modules.portfolio.handler.BinderTemplateResource;
 import org.olat.portfolio.EPLoggingAction;
@@ -241,7 +242,7 @@ public class PortfolioCourseNodeRunController extends FormBasicController {
 
 	private void updateSelectedBinderUI() {
 		String copyTitle = StringHelper.escapeHtml(copyBinder.getTitle());
-		((Link)selectMapLink.getComponent()).setCustomDisplayText(copyTitle);
+		selectMapLink.getComponent().setCustomDisplayText(copyTitle);
 		
 		updateCopyDate(copyBinder.getCopyDate());
 		updateAssessmentInfos(copyBinder.getReturnDate());
@@ -250,7 +251,7 @@ public class PortfolioCourseNodeRunController extends FormBasicController {
 
 	private void updateSelectedMapUI() {	
 		String copyTitle = StringHelper.escapeHtml(copyMap.getTitle());
-		((Link)selectMapLink.getComponent()).setCustomDisplayText(copyTitle);
+		selectMapLink.getComponent().setCustomDisplayText(copyTitle);
 		
 		// show results, when already handed in
 		EPStructuredMap structuredMap = (EPStructuredMap)copyMap;
@@ -348,8 +349,8 @@ public class PortfolioCourseNodeRunController extends FormBasicController {
 				copyBinder = portfolioService.assignBinder(getIdentity(), templateBinder, courseEntry, courseNode.getIdent(), deadline);
 				if(copyBinder != null) {
 					showInfo("map.copied", StringHelper.escapeHtml(templateBinder.getTitle()));
-					ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapPortfolioOres(copyBinder));
-					ThreadLocalUserActivityLogger.log(EPLoggingAction.EPORTFOLIO_TASK_STARTED, getClass());
+					ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrap(copyBinder));
+					ThreadLocalUserActivityLogger.log(PortfolioLoggingAction.PORTFOLIO_TASK_STARTED, getClass());
 				}
 			}
 			

@@ -26,11 +26,11 @@ import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.tree.InsertEvent;
 import org.olat.core.gui.components.tree.MenuTree;
 import org.olat.core.gui.components.tree.TreeNode;
+import org.olat.core.gui.components.tree.TreePosition;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
-import org.olat.course.tree.TreePosition;
 import org.olat.ims.qti.editor.tree.InsertItemTreeModel;
 
 /**

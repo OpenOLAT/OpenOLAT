@@ -183,7 +183,7 @@ public class IQRunController extends BasicController implements GenericEventList
 		}
 		
 	  //if show results on test home page configured - show log
-		Boolean showResultOnHomePage = (Boolean) testCourseNode.getModuleConfiguration().get(IQEditController.CONFIG_KEY_RESULT_ON_HOME_PAGE);		
+		Boolean showResultOnHomePage = testCourseNode.getModuleConfiguration().getBooleanEntry(IQEditController.CONFIG_KEY_RESULT_ON_HOME_PAGE);		
 		myContent.contextPut("showChangelog", showResultOnHomePage);
 	}
 
@@ -594,7 +594,7 @@ public class IQRunController extends BasicController implements GenericEventList
 	    		myContent.contextPut("attempts", 0);
     		} else {
 	    		//block if test passed (and config set to check it)
-	    		Boolean blockAfterSuccess = (Boolean)modConfig.get(IQEditController.CONFIG_KEY_BLOCK_AFTER_SUCCESS);
+	    		Boolean blockAfterSuccess = modConfig.getBooleanEntry(IQEditController.CONFIG_KEY_BLOCK_AFTER_SUCCESS);
 	    		Boolean blocked = Boolean.FALSE;
 	    		if(blockAfterSuccess != null && blockAfterSuccess.booleanValue()) {
 	        		Boolean passed = assessmentEntry.getPassed();
@@ -655,7 +655,7 @@ public class IQRunController extends BasicController implements GenericEventList
 	  String configuredSummary = (String) modConfig.get(IQEditController.CONFIG_KEY_SUMMARY);
 	  boolean noSummary = configuredSummary==null || (configuredSummary!=null && configuredSummary.equals(AssessmentInstance.QMD_ENTRY_SUMMARY_NONE));
 		if(!noSummary) {
-			Boolean showResultsObj = (Boolean)modConfig.get(IQEditController.CONFIG_KEY_RESULT_ON_HOME_PAGE);		
+			Boolean showResultsObj = modConfig.getBooleanEntry(IQEditController.CONFIG_KEY_RESULT_ON_HOME_PAGE);		
 			boolean showResultsOnHomePage = (showResultsObj!=null && showResultsObj.booleanValue());
 			myContent.contextPut("showResultsOnHomePage",new Boolean(showResultsOnHomePage));			
 			boolean dateRelatedVisibility = AssessmentHelper.isResultVisible(modConfig);		

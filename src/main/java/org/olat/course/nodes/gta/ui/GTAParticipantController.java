@@ -549,7 +549,12 @@ public class GTAParticipantController extends GTAAbstractController {
 		if(showGrading) {
 			gradingCtrl = msCtrl;
 			listenTo(gradingCtrl);
-			mainVC.contextPut("gradingCssClass", "o_active");
+			if (assignedTask != null && assignedTask.getTaskStatus() == TaskProcess.graded) {
+				mainVC.contextPut("gradingCssClass", "o_done");
+			} else {
+				mainVC.contextPut("gradingCssClass", "o_active");
+			}
+			
 			mainVC.put("grading", gradingCtrl.getInitialComponent());
 			stepPreferences.setGrading(Boolean.TRUE);
 		}

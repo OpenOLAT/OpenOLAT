@@ -293,7 +293,7 @@ public class OnyxRunController extends BasicController {
 			}
 		}
 
-		Boolean confAllowSuspension = (Boolean) modConfig.get(CONFIG_KEY_ALLOW_SUSPENSION_ALLOWED);
+		Boolean confAllowSuspension = modConfig.getBooleanEntry(CONFIG_KEY_ALLOW_SUSPENSION_ALLOWED);
 		confAllowSuspension = confAllowSuspension != null ? confAllowSuspension : false;
 
 		boolean resumeSuspended = false;
@@ -411,7 +411,7 @@ public class OnyxRunController extends BasicController {
 				node = courseNodeSurvey;
 			}
 
-			Boolean confAllowSuspension = (Boolean) modConfig.get(CONFIG_KEY_ALLOW_SUSPENSION_ALLOWED);
+			Boolean confAllowSuspension = modConfig.getBooleanEntry(CONFIG_KEY_ALLOW_SUSPENSION_ALLOWED);
 			confAllowSuspension = confAllowSuspension != null ? confAllowSuspension : false;
 
 			boolean resumeSuspended = false;
@@ -528,7 +528,7 @@ public class OnyxRunController extends BasicController {
 				QTIResultSet resultSet = null;
 				TestState currentState = null;
 
-				Boolean exammode = (Boolean) modConfig.get(ExamPoolManager.CONFIG_KEY_EXAM_CONTROL);
+				Boolean exammode = modConfig.getBooleanEntry(ExamPoolManager.CONFIG_KEY_EXAM_CONTROL);
 				exammode = exammode != null ? exammode : false;
 
 				if (exammode) {
@@ -539,7 +539,7 @@ public class OnyxRunController extends BasicController {
 				if (resultSet == null || currentState == TestState.FINISHED || currentState == TestState.CANCELED || currentState == TestState.SUSPENDED) {
 					// did not find a active attempt
 					// try to check for a suspended one
-					Boolean confAllowSuspension = (Boolean) modConfig.get(CONFIG_KEY_ALLOW_SUSPENSION_ALLOWED);
+					Boolean confAllowSuspension = modConfig.getBooleanEntry(CONFIG_KEY_ALLOW_SUSPENSION_ALLOWED);
 					confAllowSuspension = confAllowSuspension != null ? confAllowSuspension : false;
 					Boolean formerlySuspended = (currentState == TestState.SUSPENDED);
 

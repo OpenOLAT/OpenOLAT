@@ -42,6 +42,7 @@ import org.olat.core.gui.control.generic.closablewrapper.CloseableModalControlle
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.id.Roles;
+import org.olat.core.util.StringHelper;
 import org.olat.group.BusinessGroup;
 import org.olat.group.model.BusinessGroupSelectionEvent;
 import org.olat.group.ui.main.SelectBusinessGroupController;
@@ -269,7 +270,8 @@ public class QuestionItemDetailsController extends BasicController implements Br
 	}
 
 	private void doConfirmDelete(UserRequest ureq, QuestionItem item) {
-		confirmDeleteBox = activateYesNoDialog(ureq, null, translate("confirm.delete"), confirmDeleteBox);
+		String msg = translate("confirm.delete", StringHelper.escapeHtml(item.getTitle()));
+		confirmDeleteBox = activateYesNoDialog(ureq, null, msg, confirmDeleteBox);
 		confirmDeleteBox.setUserObject(item);
 	}
 	

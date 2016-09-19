@@ -90,10 +90,12 @@ public class InvitationDAO {
 	public Invitation update(Invitation invitation, String firstName, String lastName, String email) {
 		List<Identity> identities = groupDao.getMembers(invitation.getBaseGroup(), GroupRoles.invitee.name());
 		for(Identity identity:identities) {
-			if(email.equals(identity.getUser().getProperty(UserConstants.EMAIL, null))) {
-				identity.getUser().setProperty(UserConstants.FIRSTNAME, firstName);
-				identity.getUser().setProperty(UserConstants.LASTNAME, lastName);
-				identity.getUser().setProperty(UserConstants.EMAIL, email);
+			User user = identity.getUser();
+			if(email.equals(user.getEmail())) {
+				user.setProperty(UserConstants.FIRSTNAME, firstName);
+				user.setProperty(UserConstants.LASTNAME, lastName);
+				user.setProperty(UserConstants.EMAIL, email);
+				userManager.updateUserFromIdentity(identity);
 			}
 		}
 		
@@ -112,17 +114,22 @@ public class InvitationDAO {
 		return invitee;
 	}
 	
-	public Identity createIdentityAndPersistInvitation(Invitation invitation, Group group, Locale locale) {
+	public Identity loadOrCreateIdentityAndPersistInvitation(Invitation invitation, Group group, Locale locale) {
 		group = groupDao.loadGroup(group.getKey());
 		((InvitationImpl)invitation).setCreationDate(new Date());
 		((InvitationImpl)invitation).setBaseGroup(group);
 		dbInstance.getCurrentEntityManager().persist(invitation);
 
-		String tempUsername = UUID.randomUUID().toString();
-		User user = userManager.createAndPersistUser(invitation.getFirstName(), invitation.getLastName(), invitation.getMail());
-		user.getPreferences().setLanguage(locale.toString());
-		Identity invitee = securityManager.createAndPersistIdentity(tempUsername, user, null, null, null);
-		groupDao.addMembership(group, invitee, GroupRoles.invitee.name());
+		// create identity only if such a user does not already exist
+		Identity invitee = userManager.findIdentityByEmail(invitation.getMail());
+		if (invitee == null) {
+			String tempUsername = UUID.randomUUID().toString();
+			User user = userManager.createAndPersistUser(invitation.getFirstName(), invitation.getLastName(), invitation.getMail());
+			user.getPreferences().setLanguage(locale.toString());
+			invitee = securityManager.createAndPersistIdentity(tempUsername, user, null, null, null);
+		}
+		// add invitee to the security group of that portfolio element
+		groupDao.addMembership(group, invitee, GroupRoles.invitee.name());			
 		return invitee;
 	}
 	
@@ -194,12 +201,24 @@ public class InvitationDAO {
 		return invitations.get(0);
 	}
 	
+	/**
+	 * 
+	 * Warning! The E-mail is used in this case as a foreign key to match
+	 * the identity and the invitation on a base group which ca have several
+	 * identities.
+	 * 
+	 * @param group
+	 * @param identity
+	 * @return
+	 */
 	public Invitation findInvitation(Group group, IdentityRef identity) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select invitation from binvitation as invitation ")
 		  .append(" inner join fetch invitation.baseGroup bGroup")
 		  .append(" inner join bGroup.members as members")
-		  .append(" where bGroup.key=:groupKey and members.identity.key=:inviteeKey and members.role=:role");
+		  .append(" inner join members.identity as identity")
+		  .append(" inner join identity.user as user")
+		  .append(" where bGroup.key=:groupKey and identity.key=:inviteeKey and members.role=:role and invitation.mail=user.email");
 
 		List<Invitation> invitations = dbInstance.getCurrentEntityManager()
 				  .createQuery(sb.toString(), Invitation.class)

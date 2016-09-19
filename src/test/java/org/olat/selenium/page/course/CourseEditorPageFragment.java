@@ -382,6 +382,16 @@ public class CourseEditorPageFragment {
 	}
 	
 	/**
+	 * Choose a portfolio, v1.0 or v2.0
+	 * 
+	 * @param resourceTitle The name of the binder / portfolio
+	 * @return
+	 */
+	public CourseEditorPageFragment choosePortfolio(String resourceTitle) {
+		return chooseResource(choosePortfolioButton, resourceTitle);
+	}
+	
+	/**
 	 * Click the choose button, which open the resource chooser. Select
 	 * the "My entries" segment, search the rows for the resource title,
 	 * and select it.

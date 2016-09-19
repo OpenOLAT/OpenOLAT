@@ -30,6 +30,7 @@ import org.olat.admin.user.UserSearchController;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.events.MultiIdentityChosenEvent;
 import org.olat.basesecurity.events.SingleIdentityChosenEvent;
+import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.commons.services.mark.Mark;
 import org.olat.core.commons.services.mark.MarkManager;
@@ -93,6 +94,8 @@ import org.olat.repository.RepositoryEntryRef;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryModule;
 import org.olat.repository.RepositoryService;
+import org.olat.repository.controllers.EntryChangedEvent;
+import org.olat.repository.controllers.EntryChangedEvent.Change;
 import org.olat.repository.handlers.RepositoryHandler;
 import org.olat.repository.handlers.RepositoryHandlerFactory;
 import org.olat.repository.handlers.RepositoryHandlerFactory.OrderedRepositoryHandler;
@@ -146,8 +149,10 @@ public class AuthorListController extends FormBasicController implements Activat
 	private LockResult lockResult;
 	private final AtomicInteger counter = new AtomicInteger();
 	//only used as marker for dirty, model cannot load specific rows
-	private final List<Integer> dirtyRows = new ArrayList<>();
+	private final List<Long> dirtyRows = new ArrayList<>();
 	
+	@Autowired
+	private DB dbInstance;
 	@Autowired
 	private UserManager userManager;
 	@Autowired
@@ -209,6 +214,9 @@ public class AuthorListController extends FormBasicController implements Activat
 			}
 			stackPanel.addTool(createDropdown, Align.left);
 		}
+	}
+	public String getI18nName() {
+		return i18nName;
 	}
 	
 	@Override
@@ -306,7 +314,7 @@ public class AuthorListController extends FormBasicController implements Activat
 		tableEl.setAndLoadPersistedPreferences(ureq, "authors-list-" + i18nName);
 		if(!withSearch) {
 			tableEl.reloadData();
-			tableEl.setFilters(null, getFilters());
+			tableEl.setFilters(null, getFilters(), false);
 		}
 		
 		if(hasAuthorRight) {
@@ -388,12 +396,14 @@ public class AuthorListController extends FormBasicController implements Activat
 		} else if(copyCtrl == source) {
 			cmc.deactivate();
 			if (event == Event.DONE_EVENT) {
+				reloadRows();
 				launchEditDescription(ureq, copyCtrl.getCopiedEntry());
 			}
 			cleanUp();
 		} else if(importCtrl == source) {
 			cmc.deactivate();
 			if(Event.DONE_EVENT.equals(event)) {
+				reloadRows();
 				launchEditDescription(ureq, importCtrl.getImportedEntry());
 			}
 			cleanUp();
@@ -494,23 +504,29 @@ public class AuthorListController extends FormBasicController implements Activat
 			List<AuthoringEntryRow> rows = getMultiSelectedRows();
 			if(!rows.isEmpty()) {
 				doAddOwners(ureq, rows);
+			} else {
+				showWarning("bulk.update.nothing.selected");
 			}
 		} else if(copyButton == source) {
 			List<AuthoringEntryRow> rows = getMultiSelectedRows();
 			if(!rows.isEmpty()) {
 				doConfirmCopy(ureq, rows);
+			} else {
+				showWarning("bulk.update.nothing.selected");
 			}
 		} else if(deleteButton == source) {
 			List<AuthoringEntryRow> rows = getMultiSelectedRows();
 			if(!rows.isEmpty()) {
 				doDelete(ureq, rows);
+			} else {
+				showWarning("bulk.update.nothing.selected");
 			}
 		} else if(source instanceof FormLink) {
 			FormLink link = (FormLink)source;
 			String cmd = link.getCmd();
 			if("mark".equals(cmd)) {
 				AuthoringEntryRow row = (AuthoringEntryRow)link.getUserObject();
-				boolean marked = doMark(row);
+				boolean marked = doMark(ureq, row);
 				link.setIconLeftCSS(marked ? "o_icon o_icon_bookmark o_icon-lg" : "o_icon o_icon_bookmark_add o_icon-lg");
 				link.setTitle(translate(marked ? "details.bookmark.remove" : "details.bookmark"));
 				link.getComponent().setDirty(true);
@@ -543,6 +559,10 @@ public class AuthorListController extends FormBasicController implements Activat
 	@Override
 	protected void propagateDirtinessToContainer(FormItem fiSrc, FormEvent event) {
 		//do not update the 
+	}
+	
+	public void addDirtyRows(Long entryKey) {
+		dirtyRows.add(entryKey);
 	}
 	
 	protected void reloadDirtyRows() {
@@ -606,16 +626,24 @@ public class AuthorListController extends FormBasicController implements Activat
 		cmc.activate();
 	}
 	
-	protected boolean doMark(AuthoringEntryRow row) {
+	protected boolean doMark(UserRequest ureq, AuthoringEntryRow row) {
 		OLATResourceable item = OresHelper.createOLATResourceableInstance("RepositoryEntry", row.getKey());
 		if(markManager.isMarked(item, getIdentity(), null)) {
 			markManager.removeMark(item, getIdentity(), null);
+
+			dbInstance.commit();//before sending, save the changes
+			EntryChangedEvent e = new EntryChangedEvent(row, getIdentity(), Change.removeBookmark, i18nName);
+			ureq.getUserSession().getSingleUserEventCenter().fireEventToListenersOf(e, RepositoryService.REPOSITORY_EVENT_ORES);
 			return false;
-		} else {
-			String businessPath = "[RepositoryEntry:" + item.getResourceableId() + "]";
-			markManager.setMark(item, getIdentity(), null, businessPath);
-			return true;
 		}
+		
+		String businessPath = "[RepositoryEntry:" + item.getResourceableId() + "]";
+		markManager.setMark(item, getIdentity(), null, businessPath);
+		
+		dbInstance.commit();//before sending, save the changes
+		EntryChangedEvent e = new EntryChangedEvent(row, getIdentity(), Change.addBookmark, i18nName);
+		ureq.getUserSession().getSingleUserEventCenter().fireEventToListenersOf(e, RepositoryService.REPOSITORY_EVENT_ORES);
+		return true;
 	}
 	
 	private void doPostCreateWizard(UserRequest ureq, RepositoryEntry newEntry, RepositoryHandler handler) {
@@ -640,7 +668,7 @@ public class AuthorListController extends FormBasicController implements Activat
 		searchParams.setOwnedResourcesOnly(se.isOwnedResourcesOnly());
 		searchParams.setDisplayname(se.getDisplayname());
 		searchParams.setDescription(se.getDescription());
-		tableEl.reset();
+		tableEl.reset(true, true, true);
 		
 		AuthorListState stateEntry = new AuthorListState();
 		stateEntry.setSearchEvent(se);
@@ -736,7 +764,7 @@ public class AuthorListController extends FormBasicController implements Activat
 			StringBuilder sb = new StringBuilder();
 			for(AuthoringEntryRow row:copyableRows) {
 				if(sb.length() > 0) sb.append(", ");
-				sb.append(row.getDisplayname());
+				sb.append(StringHelper.escapeHtml(row.getDisplayname()));
 			}
 			
 			String dialogText = (copyableRows.size() != rows.size())

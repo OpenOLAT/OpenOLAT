@@ -27,6 +27,7 @@ import java.util.List;
 
 import org.apache.commons.lang.StringEscapeUtils;
 import org.olat.core.commons.persistence.SortKey;
+import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.ExportableFlexiTableDataModel;
@@ -127,10 +128,10 @@ public class CheckListAssessmentDataModel extends DefaultFlexiTableDataModel<Che
 	 * @param key
 	 */
 	@Override
-	public void filter(String filter) {
+	public void filter(List<FlexiTableFilter> filters) {
 		setObjects(backupRows);
 		
-		Long groupKey = extractGroupKey(filter);
+		Long groupKey = extractGroupKey(filters);
 		if(groupKey != null) {
 			List<CheckListAssessmentRow> filteredViews = new ArrayList<>();
 			int numOfRows = getRowCount();
@@ -144,13 +145,16 @@ public class CheckListAssessmentDataModel extends DefaultFlexiTableDataModel<Che
 		}
 	}
 	
-	private Long extractGroupKey(String filter) {
+	private Long extractGroupKey(List<FlexiTableFilter> filters) {
 		Long key = null;
-		if(StringHelper.isLong(filter)) {
-			try {
-				key = Long.parseLong(filter);
-			} catch (NumberFormatException e) {
-				//
+		if(filters != null && filters.size() > 0 && filters.get(0) != null) {
+			String filter = filters.get(0).getFilter();
+			if(StringHelper.isLong(filter)) {
+				try {
+					key = Long.parseLong(filter);
+				} catch (NumberFormatException e) {
+					//
+				}
 			}
 		}
 		return key;

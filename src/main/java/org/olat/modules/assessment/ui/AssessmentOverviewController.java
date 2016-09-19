@@ -80,17 +80,17 @@ public class AssessmentOverviewController extends BasicController implements Act
 		int numOfAssessedIdentities = statisticsCtrl.getNumOfAssessedIdentities();
 		assessedIdentitiesLink = LinkFactory.createLink("assessed.identities", "assessed.identities", getTranslator(), mainVC, this, Link.NONTRANSLATED);
 		assessedIdentitiesLink.setCustomDisplayText(translate("assessment.tool.numOfAssessedIdentities", new String[]{ Integer.toString(numOfAssessedIdentities) }));
-		assessedIdentitiesLink.setIconLeftCSS("o_icon o_icon_user");
+		assessedIdentitiesLink.setIconLeftCSS("o_icon o_icon_user o_icon-fw");
 		
 		int numOfPassed = statisticsCtrl.getNumOfPassed();
 		passedLink = LinkFactory.createLink("passed.identities", "passed.identities", getTranslator(), mainVC, this, Link.NONTRANSLATED);
 		passedLink.setCustomDisplayText(translate("assessment.tool.numOfPassed", new String[]{ Integer.toString(numOfPassed) }));
-		passedLink.setIconLeftCSS("o_icon o_icon_user");
+		passedLink.setIconLeftCSS("o_passed o_icon o_icon_passed o_icon-fw");
 
 		int numOfFailed = statisticsCtrl.getNumOfFailed();
 		failedLink = LinkFactory.createLink("failed.identities", "failed.identities", getTranslator(), mainVC, this, Link.NONTRANSLATED);
 		failedLink.setCustomDisplayText(translate("assessment.tool.numOfFailed", new String[]{ Integer.toString(numOfFailed) }));
-		failedLink.setIconLeftCSS("o_icon o_icon_user");
+		failedLink.setIconLeftCSS("o_failed o_icon o_icon_failed o_icon-fw");
 		
 		int numOfGroups = 0;
 		if(assessmentCallback.canAssessBusinessGoupMembers()) {
@@ -107,7 +107,7 @@ public class AssessmentOverviewController extends BasicController implements Act
 		if(numOfGroups > 0) {
 			assessedGroupsLink = LinkFactory.createLink("assessed.groups", "assessed.groups", getTranslator(), mainVC, this, Link.NONTRANSLATED);
 			assessedGroupsLink.setCustomDisplayText(translate("assessment.tool.numOfAssessedGroups", new String[]{ Integer.toString(numOfGroups) }));
-			assessedGroupsLink.setIconLeftCSS("o_icon o_icon_group");
+			assessedGroupsLink.setIconLeftCSS("o_icon o_icon_group o_icon-fw");
 		}
 
 		putInitialPanel(mainVC);

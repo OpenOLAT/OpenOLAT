@@ -44,7 +44,9 @@ import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.resource.OresHelper;
+import org.olat.modules.portfolio.Assignment;
 import org.olat.modules.portfolio.Binder;
 import org.olat.modules.portfolio.BinderSecurityCallback;
 import org.olat.modules.portfolio.Media;
@@ -99,18 +101,23 @@ public class PageRunController extends BasicController implements TooledControll
 	private UserCommentsAndRatingsController commentsCtrl;
 	
 	private Page page;
+	private List<Assignment> assignments;
 	private boolean dirtyMarker = false;
+	private final boolean openInEditMode;
 	private final BinderSecurityCallback secCallback;
 	
 	@Autowired
 	private PortfolioService portfolioService;
 	
 	public PageRunController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
-			BinderSecurityCallback secCallback, Page page) {
+			BinderSecurityCallback secCallback, Page page, boolean openInEditMode) {
 		super(ureq, wControl);
 		this.page = page;
 		this.stackPanel = stackPanel;
 		this.secCallback = secCallback;
+		this.openInEditMode = openInEditMode;
+		
+		assignments = portfolioService.getAssignments(page);
 		
 		mainVC = createVelocityContainer("page_content");
 		mainVC.contextPut("pageTitle", page.getTitle());
@@ -122,41 +129,75 @@ public class PageRunController extends BasicController implements TooledControll
 		loadModel(ureq);
 		stackPanel.addListener(this);
 
-		if(secCallback.canComment(page)) {
-			CommentAndRatingSecurityCallback commentSecCallback = new CommentAndRatingDefaultSecurityCallback(getIdentity(), false, false);
-			OLATResourceable ores = OresHelper.createOLATResourceableInstance(Page.class, page.getKey());
-			commentsCtrl = new UserCommentsAndRatingsController(ureq, getWindowControl(), ores, null, commentSecCallback, true, false, true);
-			listenTo(commentsCtrl);
-			mainVC.put("comments", commentsCtrl.getInitialComponent());
-		}
 		putInitialPanel(mainVC);
+		
+		if(openInEditMode) {
+			pageEditCtrl = new PageEditorController(ureq, getWindowControl(), new PortfolioPageEditorProvider());
+			listenTo(pageEditCtrl);
+			mainVC.put("page", pageEditCtrl.getInitialComponent());
+		}
 	}
 
 	@Override
 	public void initTools() {
-		if(secCallback.canEditPage(page)) {
+		editLink(!openInEditMode);
+		stackPanel.addTool(editLink, Align.left);
+
+		editMetadataLink = LinkFactory.createToolLink("edit.page.metadata", translate("edit.page.metadata"), this);
+		editMetadataLink.setIconLeftCSS("o_icon o_icon-lg o_icon_edit_metadata");
+		editMetadataLink.setVisible(secCallback.canEditMetadataBinder());
+		stackPanel.addTool(editMetadataLink, Align.left);
+		
+		deleteLink = LinkFactory.createToolLink("delete.page", translate("delete.page"), this);
+		deleteLink.setIconLeftCSS("o_icon o_icon-lg o_icon_delete_item");
+		deleteLink.setVisible(secCallback.canDeletePage(page));
+		stackPanel.addTool(deleteLink, Align.right);
+	}
+	
+	private Link editLink(boolean edit) {
+		if(editLink == null) {
 			editLink = LinkFactory.createToolLink("edit.page", translate("edit.page"), this);
-			editLink.setIconLeftCSS("o_icon o_icon-lg o_icon_edit");
-			stackPanel.addTool(editLink, Align.left);
 		}
-		
-		if(secCallback.canEditMetadataBinder()) {
-			editMetadataLink = LinkFactory.createToolLink("edit.page.metadata", translate("edit.page.metadata"), this);
-			editMetadataLink.setIconLeftCSS("o_icon o_icon-lg o_icon_edit_metadata");
-			stackPanel.addTool(editMetadataLink, Align.left);
+		if(edit) {
+			editLink.setCustomDisplayText(translate("edit.page"));
+			editLink.setIconLeftCSS("o_icon o_icon-lg o_icon_toggle_on");
+		} else {
+			editLink.setCustomDisplayText(translate("edit.page.close"));
+			editLink.setIconLeftCSS("o_icon o_icon-lg o_icon_toggle_off");
 		}
-		
-		if(secCallback.canDeletePage(page)) {
-			deleteLink = LinkFactory.createToolLink("edit.page", translate("delete.page"), this);
-			deleteLink.setIconLeftCSS("o_icon o_icon-lg o_icon_delete_item");
-			stackPanel.addTool(deleteLink, Align.right);
-		}
+		editLink.setVisible(secCallback.canEditPage(page));
+		editLink.setUserObject(edit);
+		return editLink;
 	}
 	
 	private void loadModel(UserRequest ureq) {
 		mainVC.contextPut("pageTitle", page.getTitle());
 		pageCtrl.loadElements(ureq);
 		dirtyMarker = false;
+		
+		if(secCallback.canComment(page)) {
+			if(commentsCtrl == null) {
+				CommentAndRatingSecurityCallback commentSecCallback = new CommentAndRatingDefaultSecurityCallback(getIdentity(), false, false);
+				OLATResourceable ores = OresHelper.createOLATResourceableInstance(Page.class, page.getKey());
+				commentsCtrl = new UserCommentsAndRatingsController(ureq, getWindowControl(), ores, null, commentSecCallback, true, false, true);
+				listenTo(commentsCtrl);
+			}
+			mainVC.put("comments", commentsCtrl.getInitialComponent());
+		} else if(commentsCtrl != null) {
+			mainVC.remove(commentsCtrl.getInitialComponent());
+			removeAsListenerAndDispose(commentsCtrl);
+			commentsCtrl = null;
+		}
+		
+		if(editLink != null) {
+			editLink.setVisible(secCallback.canEditPage(page));
+		}
+		if(editMetadataLink != null) {
+			editMetadataLink.setVisible(secCallback.canEditMetadataBinder());
+		}
+		if(deleteLink != null) {
+			deleteLink.setVisible(secCallback.canDeletePage(page));
+		}
 	}
 	
 	private void loadMeta(UserRequest ureq) {
@@ -209,6 +250,10 @@ public class PageRunController extends BasicController implements TooledControll
 			} else if(event instanceof ReopenPageEvent) {
 				doConfirmReopen(ureq);
 			}	
+		} else if(commentsCtrl == source) {
+			if(event == Event.CANCELLED_EVENT) {
+				commentsCtrl.collapseComments();
+			}
 		} else if(confirmPublishCtrl == source) {
 			if(DialogBoxUIFactory.isYesEvent(event)) {
 				doPublish(ureq);
@@ -255,7 +300,7 @@ public class PageRunController extends BasicController implements TooledControll
 	
 	private void doConfirmDelete(UserRequest ureq) {
 		String title = translate("delete.page.confirm.title");
-		String text = translate("delete.page.confirm.descr", new String[]{ page.getTitle() });
+		String text = translate("delete.page.confirm.descr", new String[]{ StringHelper.escapeHtml(page.getTitle()) });
 		confirmDeleteCtrl = activateYesNoDialog(ureq, title, text, confirmDeleteCtrl);
 	}
 	
@@ -266,7 +311,7 @@ public class PageRunController extends BasicController implements TooledControll
 	
 	private void doConfirmPublish(UserRequest ureq) {
 		String title = translate("publish.confirm.title");
-		String text = translate("publish.confirm.descr", new String[]{ page.getTitle() });
+		String text = translate("publish.confirm.descr", new String[]{ StringHelper.escapeHtml(page.getTitle()) });
 		confirmPublishCtrl = activateYesNoDialog(ureq, title, text, confirmPublishCtrl);
 	}
 	
@@ -274,12 +319,14 @@ public class PageRunController extends BasicController implements TooledControll
 		page = portfolioService.changePageStatus(page, PageStatus.published);
 		stackPanel.popUpToController(this);
 		loadMeta(ureq);
+		loadModel(ureq);
+		doRunPage(ureq);
 		fireEvent(ureq, Event.CHANGED_EVENT);
 	}
 	
 	private void doConfirmRevision(UserRequest ureq) {
 		String title = translate("revision.confirm.title");
-		String text = translate("revision.confirm.descr", new String[]{ page.getTitle() });
+		String text = translate("revision.confirm.descr", new String[]{ StringHelper.escapeHtml(page.getTitle()) });
 		confirmRevisionCtrl = activateYesNoDialog(ureq, title, text, confirmRevisionCtrl);
 	}
 	
@@ -287,12 +334,13 @@ public class PageRunController extends BasicController implements TooledControll
 		page = portfolioService.changePageStatus(page, PageStatus.inRevision);
 		stackPanel.popUpToController(this);
 		loadMeta(ureq);
+		loadModel(ureq);
 		fireEvent(ureq, Event.CHANGED_EVENT);
 	}
 	
 	private void doConfirmClose(UserRequest ureq) {
 		String title = translate("close.confirm.title");
-		String text = translate("close.confirm.descr", new String[]{ page.getTitle() });
+		String text = translate("close.confirm.descr", new String[]{ StringHelper.escapeHtml(page.getTitle()) });
 		confirmCloseCtrl = activateYesNoDialog(ureq, title, text, confirmCloseCtrl);
 	}
 	
@@ -300,12 +348,13 @@ public class PageRunController extends BasicController implements TooledControll
 		page = portfolioService.changePageStatus(page, PageStatus.closed);
 		stackPanel.popUpToController(this);
 		loadMeta(ureq);
+		loadModel(ureq);
 		fireEvent(ureq, Event.CHANGED_EVENT);
 	}
 	
 	private void doConfirmReopen(UserRequest ureq) {
 		String title = translate("reopen.confirm.title");
-		String text = translate("reopen.confirm.descr", new String[]{ page.getTitle() });
+		String text = translate("reopen.confirm.descr", new String[]{ StringHelper.escapeHtml(page.getTitle()) });
 		confirmReopenCtrl = activateYesNoDialog(ureq, title, text, confirmReopenCtrl);
 	}
 	
@@ -313,6 +362,7 @@ public class PageRunController extends BasicController implements TooledControll
 		page = portfolioService.changePageStatus(page, PageStatus.published);
 		stackPanel.popUpToController(this);
 		loadMeta(ureq);
+		loadModel(ureq);
 		fireEvent(ureq, Event.CHANGED_EVENT);
 	}
 	
@@ -328,7 +378,9 @@ public class PageRunController extends BasicController implements TooledControll
 			binder = portfolioService.getBinderBySection(section);
 		}
 		
-		editMetadataCtrl = new PageMetadataEditController(ureq, getWindowControl(), binder, true, section, true, page);
+		boolean editMetadata = secCallback.canEditPageMetadata(page, assignments);
+		editMetadataCtrl = new PageMetadataEditController(ureq, getWindowControl(),
+				binder, editMetadata, section, editMetadata, page, editMetadata);
 		listenTo(editMetadataCtrl);
 		
 		String title = translate("edit.page.metadata");
@@ -339,24 +391,22 @@ public class PageRunController extends BasicController implements TooledControll
 	
 	private void doEditPage(UserRequest ureq) {
 		removeAsListenerAndDispose(pageEditCtrl);
-		if(Boolean.TRUE.equals(editLink.getUserObject())) {
-			if(dirtyMarker) {
-				loadModel(ureq);
-			}
-			mainVC.put("page", pageCtrl.getInitialComponent());
-			
-			editLink.setCustomDisplayText(translate("edit.page"));
-			editLink.setIconLeftCSS("o_icon o_icon-lg o_icon_edit");
-			editLink.setUserObject(Boolean.FALSE);
+		if(Boolean.FALSE.equals(editLink.getUserObject())) {
+			doRunPage(ureq);
 		} else {
 			pageEditCtrl = new PageEditorController(ureq, getWindowControl(), new PortfolioPageEditorProvider());
 			listenTo(pageEditCtrl);
 			mainVC.put("page", pageEditCtrl.getInitialComponent());
-			
-			editLink.setCustomDisplayText(translate("save"));
-			editLink.setIconLeftCSS("o_icon o_icon-lg o_icon_save");
-			editLink.setUserObject(Boolean.TRUE);
+			editLink(false);
 		}
+	}
+	
+	private void doRunPage(UserRequest ureq) {
+		if(dirtyMarker) {
+			loadModel(ureq);
+		}
+		mainVC.put("page", pageCtrl.getInitialComponent());
+		editLink(true);
 	}
 
 	private class PortfolioPageProvider implements PageProvider {
@@ -492,7 +542,7 @@ public class PageRunController extends BasicController implements TooledControll
 
 		@Override
 		public String getIconCssClass() {
-			return "o_icon_others";
+			return "o_icon_mediacenter";
 		}
 
 		@Override

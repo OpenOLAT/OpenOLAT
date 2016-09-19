@@ -21,8 +21,6 @@ package org.olat.core.util.openxml;
 
 import java.io.File;
 
-import org.olat.core.commons.services.image.Size;
-
 /**
  * 
  * Initial date: 04.09.2013<br>
@@ -34,9 +32,9 @@ public class DocReference {
 	private final String id;
 	private final String filename;
 	private final File file;
-	private final Size emuSize;
+	private final OpenXMLSize emuSize;
 	
-	public DocReference(String id, String filename, Size emuSize, File file) {
+	public DocReference(String id, String filename, OpenXMLSize emuSize, File file) {
 		this.id = id;
 		this.file = file;
 		this.emuSize = emuSize;
@@ -55,7 +53,7 @@ public class DocReference {
 		return file;
 	}
 
-	public Size getEmuSize() {
+	public OpenXMLSize getEmuSize() {
 		return emuSize;
 	}
 }

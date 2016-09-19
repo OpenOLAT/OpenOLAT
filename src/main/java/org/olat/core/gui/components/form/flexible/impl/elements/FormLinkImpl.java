@@ -105,6 +105,11 @@ public class FormLinkImpl extends FormItemImpl implements FormLink {
 	}
 	
 	@Override
+	public Link getComponent() {
+		return component;
+	}
+
+	@Override
 	public void setDomReplacementWrapperRequired(boolean required) {
 		this.domReplacementWrapperRequired = required;
 		if(component != null) {

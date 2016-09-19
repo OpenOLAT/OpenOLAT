@@ -77,6 +77,8 @@ import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryModule;
 import org.olat.repository.RepositoryService;
+import org.olat.repository.controllers.EntryChangedEvent;
+import org.olat.repository.controllers.EntryChangedEvent.Change;
 import org.olat.repository.model.SearchMyRepositoryEntryViewParams;
 import org.olat.repository.model.SearchMyRepositoryEntryViewParams.Filter;
 import org.olat.repository.model.SearchMyRepositoryEntryViewParams.OrderBy;
@@ -149,6 +151,14 @@ public class RepositoryEntryListController extends FormBasicController
 	
 	public boolean isEmpty() {
 		return dataSource.getRowCount() == 0;
+	}
+	
+	public String getName() {
+		return name;
+	}
+	
+	public void reloadRows() {
+		tableEl.reloadData();
 	}
 
 	@Override
@@ -231,7 +241,7 @@ public class RepositoryEntryListController extends FormBasicController
 		filters.add(new FlexiTableFilter(translate("filter.passed"), Filter.passed.name()));
 		filters.add(new FlexiTableFilter(translate("filter.not.passed"), Filter.notPassed.name()));
 		filters.add(new FlexiTableFilter(translate("filter.without.passed.infos"), Filter.withoutPassedInfos.name()));
-		tableElement.setFilters(null, filters);
+		tableElement.setFilters(null, filters, false);
 	}
 	
 	private void initSorters(FlexiTableElement tableElement) {
@@ -298,7 +308,7 @@ public class RepositoryEntryListController extends FormBasicController
 			
 			if("mark".equals(cmd)) {
 				RepositoryEntryRow row = (RepositoryEntryRow)link.getUserObject();
-				boolean marked = doMark(row);
+				boolean marked = doMark(ureq, row);
 				link.setIconLeftCSS(marked ? "o_icon o_icon_bookmark o_icon-lg" : "o_icon o_icon_bookmark_add o_icon-lg");
 				link.setTitle(translate(marked ? "details.bookmark.remove" : "details.bookmark"));
 				link.getComponent().setDirty(true);
@@ -462,7 +472,7 @@ public class RepositoryEntryListController extends FormBasicController
 		searchParams.setAuthor(se.getAuthor());
 		searchParams.setText(se.getDisplayname());
 		searchParams.setMembershipMandatory(se.isMembershipMandatory());
-		tableEl.reset();
+		tableEl.reset(true, true, true);
 		
 		RepositoryEntryListState state = new RepositoryEntryListState();
 		state.setTableState(tableEl.getStateEntry());
@@ -535,14 +545,20 @@ public class RepositoryEntryListController extends FormBasicController
 		cmc.activate();
 	}
 	
-	protected boolean doMark(RepositoryEntryRow row) {
+	protected boolean doMark(UserRequest ureq, RepositoryEntryRow row) {
 		OLATResourceable item = OresHelper.createOLATResourceableInstance("RepositoryEntry", row.getKey());
 		if(markManager.isMarked(item, getIdentity(), null)) {
 			markManager.removeMark(item, getIdentity(), null);
+			
+			EntryChangedEvent e = new EntryChangedEvent(row, getIdentity(), Change.removeBookmark, name);
+			ureq.getUserSession().getSingleUserEventCenter().fireEventToListenersOf(e, RepositoryService.REPOSITORY_EVENT_ORES);
 			return false;
 		} else {
 			String businessPath = "[RepositoryEntry:" + item.getResourceableId() + "]";
 			markManager.setMark(item, getIdentity(), null, businessPath);
+			
+			EntryChangedEvent e = new EntryChangedEvent(row, getIdentity(), Change.addBookmark, name);
+			ureq.getUserSession().getSingleUserEventCenter().fireEventToListenersOf(e, RepositoryService.REPOSITORY_EVENT_ORES);
 			return true;
 		}
 	}

@@ -22,6 +22,7 @@ package org.olat.modules.portfolio;
 import java.util.Collections;
 import java.util.List;
 
+import org.olat.core.CoreSpringFactory;
 import org.olat.modules.portfolio.model.AccessRights;
 import org.olat.repository.model.RepositoryEntrySecurity;
 
@@ -34,11 +35,13 @@ import org.olat.repository.model.RepositoryEntrySecurity;
 public class BinderSecurityCallbackFactory {
 	
 	public static final BinderSecurityCallback getCallbackForOwnedBinder(Binder binder) {
-		return new BinderSecurityCallbackImpl(true, binder.getTemplate() != null);
+		Binder template = binder.getTemplate();
+		BinderDeliveryOptions deliveryOptions = getDeliveryOptions(binder);
+		return new BinderSecurityCallbackImpl(true, template != null, deliveryOptions);
 	}
 	
 	public static final BinderSecurityCallback getCallbackForMyPageList() {
-		return new BinderSecurityCallbackImpl(true, false);
+		return new BinderSecurityCallbackImpl(true, false, null);
 	}
 	
 	/**
@@ -50,7 +53,7 @@ public class BinderSecurityCallbackFactory {
 	}
 	
 	public static final BinderSecurityCallback getReadOnlyCallback() {
-		return new BinderSecurityCallbackImpl(false, false);
+		return new BinderSecurityCallbackImpl(false, false, null);
 	}
 	
 	public static final BinderSecurityCallback getCallbackForTemplate(RepositoryEntrySecurity security) {
@@ -58,7 +61,9 @@ public class BinderSecurityCallbackFactory {
 	}
 	
 	public static final BinderSecurityCallback getCallbackForCoach(Binder binder, List<AccessRights> rights) {
-		return new BinderSecurityCallbackImpl(rights, binder.getTemplate() != null);
+		Binder template = binder.getTemplate();
+		BinderDeliveryOptions deliveryOptions = getDeliveryOptions(binder);
+		return new BinderSecurityCallbackImpl(rights, template != null, deliveryOptions);
 	}
 	
 	/**
@@ -69,12 +74,22 @@ public class BinderSecurityCallbackFactory {
 		return new BinderSecurityCallbackForInvitation(rights);
 	}
 	
+	private static final BinderDeliveryOptions getDeliveryOptions(Binder binder) {
+		Binder template = binder.getTemplate();
+		BinderDeliveryOptions deliveryOptions = null;
+		if(template != null) {
+			deliveryOptions = CoreSpringFactory.getImpl(PortfolioService.class)
+					.getDeliveryOptions(template.getOlatResource());
+		}
+		return deliveryOptions;
+	}
+	
 	/**
 	 * If you can see the business group, you can edit and view the binder.
 	 * @return
 	 */
 	public static final BinderSecurityCallback getCallbackForBusinessGroup() {
-		return new BinderSecurityCallbackImpl(true, false);
+		return new BinderSecurityCallbackImpl(true, false, null);
 	}
 
 	
@@ -165,6 +180,11 @@ public class BinderSecurityCallbackFactory {
 		public boolean canViewElement(PortfolioElement element) {
 			return true;
 		}
+
+		@Override
+		public boolean canViewPendingAssignments(Section section) {
+			return true;
+		}
 	}
 	
 	private static class BinderSecurityCallbackImpl implements BinderSecurityCallback {
@@ -175,17 +195,20 @@ public class BinderSecurityCallbackFactory {
 		private final boolean task;
 		private final boolean owner;
 		private final List<AccessRights> rights;
+		private final BinderDeliveryOptions deliveryOptions;
 		
-		public BinderSecurityCallbackImpl(boolean owner, boolean task) {
+		public BinderSecurityCallbackImpl(boolean owner, boolean task, BinderDeliveryOptions deliveryOptions) {
 			this.task = task;
 			this.owner = owner;
 			this.rights = Collections.emptyList();
+			this.deliveryOptions = deliveryOptions;
 		}
 		
-		public BinderSecurityCallbackImpl(List<AccessRights> rights, boolean task) {
+		public BinderSecurityCallbackImpl(List<AccessRights> rights, boolean task, BinderDeliveryOptions deliveryOptions) {
 			this.owner = false;
 			this.task = task;
 			this.rights = rights;
+			this.deliveryOptions = deliveryOptions;
 		}
 		
 		@Override
@@ -195,7 +218,7 @@ public class BinderSecurityCallbackFactory {
 
 		@Override
 		public boolean canEditMetadataBinder() {
-			return owner;
+			return owner && !task;
 		}
 
 		@Override
@@ -239,12 +262,13 @@ public class BinderSecurityCallbackFactory {
 		@Override
 		public boolean canAddPage(Section section) {
 			if(section == null) {
-				return owner;
+				return owner && (deliveryOptions == null || deliveryOptions.isAllowNewEntries());
 			}
 			if(owner) {
 				return section != null
 						&& !SectionStatus.isClosed(section)
-						&& section.getSectionStatus() != SectionStatus.submitted;
+						&& section.getSectionStatus() != SectionStatus.submitted
+						&& (deliveryOptions == null || deliveryOptions.isAllowNewEntries());
 			}
 			return false;
 		}
@@ -261,6 +285,17 @@ public class BinderSecurityCallbackFactory {
 							||
 							(!task && !PageStatus.isClosed(page))
 					);
+		}
+
+		@Override
+		public boolean canEditPageMetadata(Page page, List<Assignment> assignments) {
+			if(owner) {
+				if(task) {
+					return assignments == null || assignments.size() == 0;
+				}
+				return true;
+			}
+			return false;
 		}
 
 		@Override
@@ -374,7 +409,30 @@ public class BinderSecurityCallbackFactory {
 		}
 
 		@Override
+		public boolean canViewPendingAssignments(Section section) {
+			if(owner) return true;
+			
+			if(rights != null) {
+				for(AccessRights right:rights) {
+					if((PortfolioRoles.reviewer.equals(right.getRole()) || PortfolioRoles.coach.equals(right.getRole()))
+							&& right.matchElementAndAncestors(section)) {
+						return true;
+					}
+				}
+			}
+
+			return false;
+		}
+
+		@Override
 		public boolean canComment(PortfolioElement element) {
+			if(element.getType() == PortfolioElementType.page) {
+				Page page = (Page)element;
+				if(page.getPageStatus() == null || page.getPageStatus() == PageStatus.draft) {
+					return false;
+				}
+			}
+
 			if(owner) return true;
 			
 			if(rights != null) {
@@ -466,6 +524,11 @@ public class BinderSecurityCallbackFactory {
 		}
 
 		@Override
+		public boolean canEditPageMetadata(Page page, List<Assignment> assignments) {
+			return false;
+		}
+
+		@Override
 		public boolean canPublish(Page page) {
 			return false;
 		}
@@ -497,6 +560,11 @@ public class BinderSecurityCallbackFactory {
 
 		@Override
 		public boolean canViewElement(PortfolioElement element) {
+			return false;
+		}
+
+		@Override
+		public boolean canViewPendingAssignments(Section section) {
 			return false;
 		}
 

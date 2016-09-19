@@ -51,7 +51,9 @@ public class HTMLRawPageElementHandler implements PageElementHandler, SimpleAddP
 
 	@Override
 	public String getIconCssClass() {
-		return "o_icon_code";
+		// For now we use the paragraph icon until we have a minimized paragraph eleent
+		//return "o_icon_code";
+		return "o_icon_paragraph";
 	}
 
 	@Override

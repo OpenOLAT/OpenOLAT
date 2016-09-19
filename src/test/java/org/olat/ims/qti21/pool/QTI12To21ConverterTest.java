@@ -20,18 +20,38 @@
 package org.olat.ims.qti21.pool;
 
 import java.io.File;
+import java.io.IOException;
 import java.io.InputStream;
 import java.net.URISyntaxException;
 import java.util.Locale;
+import java.util.UUID;
 
 import org.dom4j.Document;
+import org.jcodec.common.Assert;
 import org.junit.Test;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.FileUtils;
+import org.olat.core.util.WebappHelper;
 import org.olat.core.util.xml.XMLParser;
+import org.olat.fileresource.types.ImsQTI21Resource.PathResourceLocator;
 import org.olat.ims.qti.editor.beecom.objects.QTIDocument;
 import org.olat.ims.qti.editor.beecom.parser.ParserManager;
+import org.olat.ims.qti21.model.xml.BadRessourceHelper;
 import org.olat.ims.resources.IMSEntityResolver;
+
+import uk.ac.ed.ph.jqtiplus.JqtiExtensionManager;
+import uk.ac.ed.ph.jqtiplus.notification.Notification;
+import uk.ac.ed.ph.jqtiplus.provision.BadResourceException;
+import uk.ac.ed.ph.jqtiplus.reading.AssessmentObjectXmlLoader;
+import uk.ac.ed.ph.jqtiplus.reading.QtiXmlReader;
+import uk.ac.ed.ph.jqtiplus.utils.contentpackaging.ImsManifestException;
+import uk.ac.ed.ph.jqtiplus.utils.contentpackaging.QtiContentPackageExtractor;
+import uk.ac.ed.ph.jqtiplus.utils.contentpackaging.QtiContentPackageSummary;
+import uk.ac.ed.ph.jqtiplus.validation.ItemValidationResult;
+import uk.ac.ed.ph.jqtiplus.validation.TestValidationResult;
+import uk.ac.ed.ph.jqtiplus.xmlutils.XmlResourceNotFoundException;
+import uk.ac.ed.ph.jqtiplus.xmlutils.locators.ResourceLocator;
 
 /**
  * 
@@ -44,16 +64,75 @@ public class QTI12To21ConverterTest {
 	private static final OLog log = Tracing.createLoggerFor(QTI12To21ConverterTest.class);
 	
 	@Test
-	public void convert() throws URISyntaxException {
+	public void convert() throws URISyntaxException, IOException, XmlResourceNotFoundException, ImsManifestException {
 		QTIDocument doc = loadDocument("qti12_4questiontypes.xml");
-		File exportDir = new File("/HotCoffee/QTI/today/");
+		
+		File exportDir = new File(WebappHelper.getTmpDir(), "qti12to21" + UUID.randomUUID());
 		exportDir.mkdirs();
+
 		QTI12To21Converter converter = new QTI12To21Converter(exportDir, Locale.ENGLISH);
+		converter.convert(null, doc);
 		
-		converter.convert(doc);
+		int validAssessmentItems = 0;
+		boolean validAssessmentTest = false;
+		QtiContentPackageSummary readableManifest = null;
 		
+		File[] generatedFiles = exportDir.listFiles();
+		for(File generatedFile:generatedFiles) {
+			String filename = generatedFile.getName();
+			if(filename.equals("imsmanifest.xml")) {
+				readableManifest = new QtiContentPackageExtractor(exportDir).parse();
+			} else if(filename.startsWith("test")) {
+				validAssessmentTest = validateAssessmentTest(generatedFile);
+			} else if(filename.endsWith(".xml")) {
+				boolean validItem = validateAssessmentItem(generatedFile);
+				if(validItem) {
+					validAssessmentItems++;
+				}
+			}
+		}
 		
+		//delete tmp
+        FileUtils.deleteDirsAndFiles(exportDir.toPath());
 		
+		Assert.assertTrue(validAssessmentTest);
+		Assert.assertEquals(4, validAssessmentItems);
+		Assert.assertEquals(1, readableManifest.getTestResources().size());
+		Assert.assertEquals(4, readableManifest.getItemResources().size());
+	}
+	
+	private boolean validateAssessmentTest(File assessmentTestFile) {
+		QtiXmlReader qtiXmlReader = new QtiXmlReader(new JqtiExtensionManager());
+		ResourceLocator fileResourceLocator = new PathResourceLocator(assessmentTestFile.toPath());
+        AssessmentObjectXmlLoader assessmentObjectXmlLoader = new AssessmentObjectXmlLoader(qtiXmlReader, fileResourceLocator);
+        TestValidationResult test = assessmentObjectXmlLoader.loadResolveAndValidateTest(assessmentTestFile.toURI());
+
+        for(Notification notification: test.getModelValidationErrors()) {
+        	log.error(notification.getQtiNode() + " : " + notification.getMessage());
+        }
+        
+        BadResourceException e = test.getResolvedAssessmentTest().getTestLookup().getBadResourceException();
+        if(e != null) {
+        	StringBuilder err = new StringBuilder();
+        	BadRessourceHelper.extractMessage(e, err);
+        	log.error(err.toString());
+        }
+        return test.getModelValidationErrors().isEmpty();
+	}
+	
+	private boolean validateAssessmentItem(File assessmentItemFile) {
+		QtiXmlReader qtiXmlReader = new QtiXmlReader(new JqtiExtensionManager());
+		ResourceLocator fileResourceLocator = new PathResourceLocator(assessmentItemFile.toPath());
+        AssessmentObjectXmlLoader assessmentObjectXmlLoader = new AssessmentObjectXmlLoader(qtiXmlReader, fileResourceLocator);
+        ItemValidationResult itemResult = assessmentObjectXmlLoader.loadResolveAndValidateItem(assessmentItemFile.toURI());
+
+        BadResourceException e = itemResult.getResolvedAssessmentItem().getItemLookup().getBadResourceException();
+        if(e != null) {
+			StringBuilder err = new StringBuilder();
+			BadRessourceHelper.extractMessage(e, err);
+			log.error(err.toString());
+		}
+        return itemResult.getModelValidationErrors().isEmpty();
 	}
 	
 	private QTIDocument loadDocument(String filename) {

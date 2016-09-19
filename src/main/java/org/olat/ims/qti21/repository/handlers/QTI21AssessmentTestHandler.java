@@ -349,7 +349,7 @@ public class QTI21AssessmentTestHandler extends FileHandler {
 					public Controller create(UserRequest uureq, WindowControl wwControl, TooledStackedPanel toolbarPanel,
 							RepositoryEntry entry, RepositoryEntrySecurity repoSecurity, AssessmentMode mode) {
 						QTI21DeliveryOptions options = qtiService.getDeliveryOptions(entry);
-						if(!options.isAllowAnonym() && ureq.getUserSession().getRoles().isGuestOnly()) {
+						if(!options.isAllowAnonym() && uureq.getUserSession().getRoles().isGuestOnly()) {
 							Translator translator = Util.createPackageTranslator(QTI21RuntimeController.class, uureq.getLocale());
 							Controller contentCtr = MessageUIFactory.createInfoMessage(uureq, wwControl,
 									translator.translate("anonym.not.allowed.title"),
