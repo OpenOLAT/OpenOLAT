@@ -23,8 +23,12 @@
 * under the Apache 2.0 license as the original file.
 */
 package org.olat.course.highscore.ui;
-
+/**
+ * Initial Date:  10.08.2016 <br>
+ * @author fkiefer
+ */
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import org.olat.core.gui.UserRequest;
@@ -42,9 +46,13 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelImpl;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableRendererType;
+import org.olat.core.gui.components.link.Link;
+import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
+import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
 import org.olat.core.id.Identity;
 import org.olat.course.highscore.manager.HighScoreManager;
 import org.olat.course.nodes.CourseNode;
@@ -65,8 +73,11 @@ public class HighScoreRunController extends FormBasicController{
 	private List<Integer> ownIdIndices;
 	private int tableSize;
 	private Identity ownIdentity;
-	private boolean viewTable, viewHistogram, viewPodium, viewHighscore;
+	private boolean viewTable, viewHistogram, viewPodium, viewHighscore, anonymous;
 	private double[] allScores;
+	private Link[] links = new Link[3];
+	private CloseableCalloutWindowController calloutCtr;
+
 	
 	@Autowired
 	private HighScoreManager highScoreManager;
@@ -83,11 +94,17 @@ public class HighScoreRunController extends FormBasicController{
 		
 		ModuleConfiguration config = courseNode.getModuleConfiguration();		
 		//TODO initialize
+		Date start = config.getBooleanEntry(HighScoreEditController.CONFIG_KEY_DATESTART) != null ? 
+				(Date) config.get(HighScoreEditController.CONFIG_KEY_DATESTART) : null;
+		if (start != null && start.getTime() > new Date().getTime())return;
+
 		viewHighscore = config.getBooleanSafe(HighScoreEditController.CONFIG_KEY_HIGHSCORE);
 		if (!viewHighscore)return;
+		
 		viewTable = config.getBooleanSafe(HighScoreEditController.CONFIG_KEY_LISTING);
 		viewHistogram = config.getBooleanSafe(HighScoreEditController.CONFIG_KEY_HISTOGRAM);
 		viewPodium = config.getBooleanSafe(HighScoreEditController.CONFIG_KEY_PODIUM);
+		anonymous = config.getBooleanSafe(HighScoreEditController.CONFIG_KEY_ANONYMIZE);
 		int bestOnly = (int) config.get(HighScoreEditController.CONFIG_KEY_BESTONLY);
 		tableSize = bestOnly != 0 ? (int) config.get(HighScoreEditController.CONFIG_KEY_NUMUSER) : assessEntries.size();
 		ownIdentity = ureq.getIdentity();
@@ -98,6 +115,7 @@ public class HighScoreRunController extends FormBasicController{
 		
 		initForm(ureq);
 	}
+	
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
@@ -109,7 +127,7 @@ public class HighScoreRunController extends FormBasicController{
 			VelocityContainer scoreHistogramVC = createVelocityContainer("histogram_score");
 			scoreHistogramVC.contextPut("datas", BarSeries.datasToString(allScores));
 			scoreHistogramVC.contextPut("cutValue", 
-					ownIdIndices.size() > 0 ? allMembers.get(ownIdIndices.get(0)).getScore()	: "");
+					ownIdIndices.size() > 0 ? allMembers.get(ownIdIndices.get(0)).getScore() : "");
 			
 			UserAvatarMapper mapper = new UserAvatarMapper(false);
 			String mapperPath = registerMapper(ureq, mapper);
@@ -122,14 +140,25 @@ public class HighScoreRunController extends FormBasicController{
 			String[] localizer = { "first", "second", "third" };
 			for (int i = 0; i < localizer.length; i++) {
 				StringBuilder sb = new StringBuilder();
-				for (HighScoreTableEntry te : allPodium.get(i)) {
-					sb.append(te.getName());
-					sb.append("</br>");
-				}			
-				mainVC.contextPut(localizer[i], allPodium.get(i).size() > 0 ? sb.toString() : "") ;
+				if (allPodium.get(i).size() > 2){
+					sb.append(anonymous && !allPodium.get(i).get(0).getIdentity().equals(ownIdentity) ? 
+							translate("highscore.anonymous") : allPodium.get(i).get(0).getName());
+
+					links[i] = LinkFactory.createLink(null, "link" + (i + 1), "cmd",
+							(allPodium.get(i).size() - 1) + " " + translate("highscore.further"), getTranslator(),
+							mainVC, this, 16);
+
+				} else {
+					for (HighScoreTableEntry te : allPodium.get(i)) {
+						sb.append(anonymous && !te.getIdentity().equals(ownIdentity) ? 
+								translate("highscore.anonymous") : te.getName());
+						sb.append("</br>");
+					}							
+				}
+				mainVC.contextPut(localizer[i], allPodium.get(i).size() > 0 ? sb.toString() : translate("highscore.unavail"));
 				mainVC.contextPut("score" + (i + 1), allPodium.get(i).size() > 0 ? 
 						allPodium.get(i).get(0).getScore() : "");
-				if (tableSize > i) {
+				if (allPodium.get(i).size() > 0) {
 					DisplayPortraitController portrait = new DisplayPortraitController(ureq, getWindowControl(),
 							allPodium.get(i).get(0).getIdentity(), i == 0, true);
 					Component compi = portrait.getInitialComponent();
@@ -147,10 +176,12 @@ public class HighScoreRunController extends FormBasicController{
 					new DefaultFlexiColumnModel("highscore.table.header3", HighScoreTableEntry.NAME));
 			
 			//trim to tableSize
-			allMembers.subList(tableSize, allMembers.size()).clear();
+			if (tableSize < allMembers.size())allMembers.subList(tableSize, allMembers.size()).clear();
 
 			tableDataModel = new FlexiTableDataModelImpl<HighScoreTableEntry>(
-					new HighScoreFlexiTableModel(allMembers), tableColumnModel);
+					new HighScoreFlexiTableModel(allMembers, anonymous, 
+							translate("highscore.anonymous"),ownIdentity),
+					tableColumnModel);
 			FlexiTableElement topTenTable = uifactory.addTableElement(
 					getWindowControl(), "table", tableDataModel, getTranslator(), formLayout);
 			topTenTable.setNumOfRowsEnabled(false);
@@ -160,7 +191,8 @@ public class HighScoreRunController extends FormBasicController{
 
 			if (!ownIdMembers.isEmpty()) {
 				tableDataModel2 = new FlexiTableDataModelImpl<HighScoreTableEntry>(
-						new HighScoreFlexiTableModel(ownIdMembers),
+						new HighScoreFlexiTableModel(ownIdMembers, anonymous, 
+								translate("highscore.anonymous"), ownIdentity),
 						tableColumnModel);
 				FlexiTableElement tableElement = uifactory.addTableElement(
 						getWindowControl(), "table2", tableDataModel2, getTranslator(), formLayout);
@@ -180,6 +212,43 @@ public class HighScoreRunController extends FormBasicController{
 		allPodium.add(new ArrayList<>());
 		allPodium.add(new ArrayList<>());
 		allPodium.add(new ArrayList<>());
+	}
+	
+	private void buildMemberList(List<String> persons, int i){
+		for (HighScoreTableEntry te : allPodium.get(i)) {
+			String person = anonymous && !te.getIdentity().equals(ownIdentity) ? 
+					translate("highscore.anonymous") : te.getName();
+			persons.add(person);
+		}
+	}
+	
+	@Override
+	public void event(UserRequest ureq, Component source, Event event) {
+		if (source == links[0] || source == links[1] || source == links[2]) {
+			List<String> persons = new ArrayList<>();
+			Link link;
+			if (source == links[0]){
+				link = links[0];
+				buildMemberList(persons,0);
+			} else if (source == links[1]){
+				link = links[1];
+				buildMemberList(persons,1);
+			} else{
+				link = links[2];
+				buildMemberList(persons,2);
+			}
+			if (calloutCtr == null) {
+				VelocityContainer podiumcalloutVC = createVelocityContainer("podiumcallout");
+				podiumcalloutVC.contextPut("persons", persons);
+				calloutCtr = new CloseableCalloutWindowController(ureq, getWindowControl(), podiumcalloutVC, link,
+						"This is a title in a callout window", false, null);
+				calloutCtr.activate();
+				listenTo(calloutCtr);
+			} else {
+				removeAsListenerAndDispose(calloutCtr);
+				calloutCtr = null;
+			}
+		}
 	}
 
 	@Override

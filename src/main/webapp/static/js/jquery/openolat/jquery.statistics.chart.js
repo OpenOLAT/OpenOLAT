@@ -5,6 +5,7 @@
             colors: [],
             cut: null,
             participants: -1,
+            mapperUrl: '-',
             barHeight: 40,
             xTopLegend: 'x Top',
             xBottomLegend: 'x Bottom',
@@ -27,6 +28,8 @@
         		horizontalBarMultipleChoice(this, settings);
         	} else if(type == 'horizontalBarMultipleChoiceSurvey') {
         		horizontalBarMultipleChoiceSurvey(this, settings);
+        	} else if(type == 'highScore') {
+        		highScore(this, settings);
         	}
     	} catch(e) {
     		if(window.console) console.log(e);
@@ -700,7 +703,228 @@
     	  .attr('dy', '1em')
     	  .style('text-anchor', 'middle')
     	  .text(settings.yRightLegend);
+    	
+    	svg.append('g')
+    	  .attr('d', lineFunc(values))
+    	  .attr('stroke', 'blue')
+    	  .attr('stroke-width', 3)
+    	  .attr('fill', 'none');
     }
+    
+    highScore = function($obj, settings) {
+    	var placeholderheight = $obj.height();
+    	var placeholderwidth = $obj.width();
+    	var values = settings.values;
+    	
+    	var lquartile = d3.quantile(values, 0.25);
+    	var hquartile = d3.quantile(values, 0.75);
+    	var means = d3.mean(values);
+    	    	
+    	var margin = {top: 20, right: 60, bottom: 40, left: 60},
+    	  width = placeholderwidth - margin.left - margin.right,
+    	  height = placeholderheight - margin.top - margin.bottom;
+    	
+    	var cut = settings.cut;
+     	var maxScore = d3.max(values, function(d) { return d; });
+    	var minScore = d3.min(values, function(d) { return d; });
+    	var max = maxScore + 1;
+    	var min = minScore - 1;
+
+    	if(maxScore < 1.0) {
+    		maxScore = 1.0;
+    	}
+    	var x = d3.scale.linear()
+    	  .domain([min, max])
+    	  .range([0, width]);
+    	
+//    	console.log(lquartile,hquartile,means,width,x(lquartile));
+    	
+    	var data = d3.layout.histogram()
+    	  .bins(x.ticks(20))
+    	  (values);
+    	
+    	var sum = d3.sum(data, function(d) { return d.y; });
+    	
+    	var y = d3.scale.linear()
+    	  .domain([0, d3.max(data, function(d) { return d.y; })])
+    	  .range([height, 0]);
+    	
+    	var y2 = d3.scale.linear()
+    	  .domain([0, d3.max(data, function(d) { return d.y / sum; })])
+    	  .range([height, 0]);
+    	
+    	var xAxis = d3.svg.axis()
+    	  .tickValues(d3.range(min , max + 1 , 1))
+    	  .scale(x)
+    	  .orient('bottom')
+    	  .tickFormat(d3.format("d"));
+    	
+	    var yAxis = d3.svg.axis()
+	  	  .scale(y)
+	  	  .orient('right')
+	  	  .ticks(10)
+	  	  .tickSubdivide(0);
+	
+	  	var y2Axis = d3.svg.axis()
+	  	  .scale(y2)
+	  	  .orient('left')
+	  	  .ticks(10, '%');
+	  	
+	  	var svg = d3.select('#' + $obj.attr('id')).append('svg')
+	  	  .attr('width', width + margin.left + margin.right)
+	  	  .attr('height', height + margin.top + margin.bottom)
+	  	 .append('g')
+	  	  .attr('transform', 'translate(' + margin.left + ',' + margin.top + ')');
+
+	  	var value = d3.range(min , max + 1 , 1)
+  		var bar = svg.selectAll('.bar')
+	  		.data(data)
+	  		.enter().append('g')
+	  		.attr('class', function(d, i) {
+//	  		  console.log(data[i].x == cut, data[i].x,cut);
+	  			if(cut == null) return 'o_empty';
+	  			else if(data[i].x == cut) return 'o_myself';
+	  			else return 'o_other';	  		  
+	  		})
+	  		.attr('transform', function(d) { return 'translate(' + x(d.x) + ',' + y(d.y) + ')'; })
+	  		.append('rect')
+	  		.attr('x', function (d,i){ return - (width / value.length)/2;})
+	  		.attr('y', function (d){return height - y(d.y);})
+	  		.attr('width', (width / value.length))
+	  		.attr('height', function (d){return 0;})
+	  		.style('opacity', 0)
+	  		 .transition().delay(function (d,i){ return i*40;})
+	  		 .duration(800)
+	 	  	.attr('y', function(d) { return 0; })
+	 	  	.attr('height', function(d) { return height - y(d.y); })
+	 	  	.style('opacity', 1);
+	  	
+	  	var line = d3.svg.line()
+			.x(function(d) { return x(d.x); })
+			.y(function(d) { return y2(d.y); })
+			.interpolate('basis');
+	  	
+	  	
+	  	function normal (x){
+	  		sigma = Math.pow(d3.deviation(values),2);
+	  		fx = 1/(Math.sqrt(2*sigma*Math.PI))*Math.exp(-Math.pow(x-means,2)/(2*sigma));
+	  		return fx;
+	  	}
+	  	
+	  	var smoo = [];
+		for (var int2 = 0; int2 < value.length; int2++) {
+			smoo.push({'x': value[int2] , 'y': normal (value[int2])});		  		
+		}
+ 	
+		var path = svg.append("path")
+		.attr("d", line(smoo))
+		.attr("stroke", "steelblue")
+		.attr("stroke-width", "2")
+		.attr("fill", "none");
+		
+		var totalLength = path.node().getTotalLength();
+		
+		var totalLength = path.node().getTotalLength();
+		
+		path.attr("stroke-dasharray", totalLength + " " + totalLength)
+		.attr("stroke-dashoffset", totalLength)
+		.transition()
+		.duration(2000)
+		.ease("linear")
+		.attr("stroke-dashoffset", 0);
+		
+		svg.on("click", function(){
+			path      
+			.transition()
+			.duration(2000)
+			.ease("linear")
+			.attr("stroke-dashoffset", totalLength);
+		})
+		
+		  	
+//	 if (values.length > 10){
+//		 svg.append("path")
+//		 .data([smoo])
+//		 .attr("class", "line")
+//		 .attr("d", line)
+//		 .attr('stroke', 'blue')
+//		 .attr('stroke-width', 2);	 
+//	 } 	
+	  	
+	  	svg.append('g')
+	  	  .attr('class', 'y axis')
+	  	  .call(y2Axis)
+	  	 .append('text')
+	  	  .attr('transform', 'rotate(-90)')
+	  	  .attr('y', 0 - margin.left)
+	  	  .attr('x', 0 - (height / 2))
+	  	  .attr('dy', '1em')
+	  	  .style('text-anchor', 'middle')
+	  	  .text(settings.yLeftLegend);
+	  	
+	  	svg.append('g')
+	  	  .attr('class', 'x axis')
+	  	  .attr('transform', 'translate(0,' + height + ')')
+	  	  .call(xAxis)
+	  	 .append('text')
+	  	  .attr('y', (margin.bottom / 1.1))
+	  	  .attr('x', (width / 2))
+	  	  .attr('dx', '1em')
+	  	  .style('text-anchor', 'middle')
+	  	  .text(settings.xBottomLegend);
+	  	
+	  	svg.append('g')
+	  	  .attr('class', 'y axis')
+	  	  .attr('transform', 'translate(' + width + ',0)')
+	  	 .call(yAxis)
+	  	 .append('text')
+	  	  .attr('transform', 'rotate(90)')
+	  	  .attr('y', 0 - (margin.right))
+	  	  .attr('x', (height / 2))
+	  	  .attr('dy', '1em')
+	  	  .style('text-anchor', 'middle')
+	  	  .text(settings.yRightLegend);
+	        
+		 if (values.length > 20) {
+		     svg.append("line")
+		        .attr("x1", x(lquartile))
+		        .attr("y1", 0)
+		        .attr("x2", x(lquartile))  
+		        .attr("y2", height)
+		        .style("stroke-width", 2)
+		        .style("stroke", "grey")
+		        .style("fill", "none");
+		     
+		     svg.append("line")
+		        .attr("x1", x(hquartile))  
+		        .attr("y1", 0)
+		        .attr("x2", x(hquartile))  
+		        .attr("y2", height)
+		        .style("stroke-width", 2)
+		        .style("stroke", "grey")
+		        .style("fill", "none");
+		 }
+		 
+	     var imgs = svg.selectAll(".image").data(data);
+	     imgs.enter()
+	     .append("image")
+	     .style('opacity', 0)
+//	        .attr("xlink:href", "https://github.com/favicon.ico")
+	     .attr("xlink:href", location.protocol + "//" + location.host + settings.mapperUrl)
+	     .attr("x", 0 )
+	     .attr("y", height)
+	     .attr("width", "0")
+	     .attr("height", "0")
+	     .transition()
+	     .delay(function(d,i) { return i; })
+	     .duration(500)
+	     .style('opacity', 1)     
+	     .attr("x", x(cut) -10 )
+	     .attr("y", -20)
+	     .attr("width", "20")
+	     .attr("height", "20");
+
+  }
     
 
 }( jQuery ));

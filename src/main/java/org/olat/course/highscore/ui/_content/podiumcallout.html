@@ -1,0 +1,12 @@
+#set($counter = 0)
+#set($maxrows = 5)
+#set($runner = $persons.size()/$maxrows+1)
+<table>
+	<tr>
+		#foreach($person in $persons)
+			#set($counter = $counter + 1)
+				<td><i class='o_icon o_icon_user o_icon-fw'>&nbsp;</i>$person</td>
+			#if ($counter % $runner == 0)</tr><tr>#end
+		#end
+	</tr>
+</table>

@@ -1,11 +1,41 @@
+/**
+* OLAT - Online Learning and Training<br>
+* http://www.olat.org
+* <p>
+* Licensed under the Apache License, Version 2.0 (the "License"); <br>
+* you may not use this file except in compliance with the License.<br>
+* You may obtain a copy of the License at
+* <p>
+* http://www.apache.org/licenses/LICENSE-2.0
+* <p>
+* Unless required by applicable law or agreed to in writing,<br>
+* software distributed under the License is distributed on an "AS IS" BASIS, <br>
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. <br>
+* See the License for the specific language governing permissions and <br>
+* limitations under the License.
+* <p>
+* Copyright (c) since 2004 at Multimedia- & E-Learning Services (MELS),<br>
+* University of Zurich, Switzerland.
+* <hr>
+* <a href="http://www.openolat.org">
+* OpenOLAT - Online Learning and Training</a><br>
+* This file has been modified by the OpenOLAT community. Changes are licensed
+* under the Apache 2.0 license as the original file.
+*/
 package org.olat.course.highscore.manager;
-
+/**
+ * Description:<br>
+ * HighScoreManagerTest
+ * Initial Date:  20.08.2016 <br>
+ * @author fkiefer
+ */
 import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 
 import org.olat.core.id.Identity;
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
 import org.olat.course.highscore.ui.HighScoreTableEntry;
 import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.user.UserManager;
@@ -15,7 +45,8 @@ import edu.emory.mathcs.backport.java.util.Collections;
 
 @Service
 public class HighScoreManager {
-	
+
+	private static final OLog log = Tracing.createLoggerFor(HighScoreManager.class);
 	
 	public double[] sortRankByScore (List<AssessmentEntry>  assessEntries,
 			List<HighScoreTableEntry> allMembers, List<HighScoreTableEntry> ownIdMembers,
@@ -28,14 +59,16 @@ public class HighScoreManager {
 					assessmentEntry.getIdentity()));
 		}
 		assessEntries.clear();
-		//2 step comparator, sorts by score then own Identity comes first
+		//3 step comparator, sorts by score then own Identity comes first, last alphabetically
 		Collections.sort(allMembers, new Comparator<HighScoreTableEntry>() {
 			public int compare(HighScoreTableEntry a, HighScoreTableEntry b){
 				int answer = Float.compare(b.getScore(), a.getScore());
 				if (answer == 0){
 					if (a.getIdentity().equals(ownIdentity))return -1;
 					else if (b.getIdentity().equals(ownIdentity))return 1;
-					else return 0;
+					else {
+						return a.getName().compareTo(b.getName());
+					}
 				} else {
 					return answer;
 				}				
@@ -69,6 +102,8 @@ public class HighScoreManager {
 				.skip(tableSize)
 				.filter(a -> a.getIdentity().equals(ownIdentity))
 				.collect(Collectors.toList()));
+		
+		if (ownIdMembers.size() > 0)log.audit("2nd Highscore Table established");
 		
 		return allScores;
 	}

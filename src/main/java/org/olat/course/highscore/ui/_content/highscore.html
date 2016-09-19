@@ -124,40 +124,65 @@
 	width: 5em;
 }
 
+.o_histogram .d3chart .o_myself {
+	fill: blue;
+}
+.o_histogram .d3chart .o_myself:hover {
+	fill: lightblue;
+}
+.o_histogram .d3chart .o_other {
+	fill: silver;
+}
+.o_histogram .d3chart .o_other:hover {
+	fill: #eee;
+}
+.o_histogram .d3chart .o_empty {
+	fill: black;
+}
+
 </style>
 
 
 <div class="panel panel-default o_comment">
 	<div class="panel-heading" data-toggle="collapse"
-		data-target="#collapseComment">
+		data-target="#collapseHighscore">
 		<h4 class="panel-title">
-			<i id="collapseCommentToggler"
+			<i id="collapseHighscoreToggler"
 				class="o_icon o_icon-fw o_icon_close_togglebox"> </i>
 			$r.translate("highscore.title")
 		</h4>
 	</div>
-	<div id="collapseComment" class="panel-collapse collapse in">
+	<div id="collapseHighscore" class="panel-collapse collapse in">
 		<div class="panel-body">
 			<div class="container-fluid">
 			<div class="row clearfix">
 				#if ($first)
 				<div class="col-sm-6 o_podium">
 					<div class="o_step o_first">
-						#if ($r.available("portrait1")) $r.render("portrait1") #end
-						<div class="o_name">$first</div>
+						#if ($r.available("portrait1")) $r.render("portrait1") 
 						<div class="o_score">$score1 $r.translate("graph.axis.points")</div>
+						#end
+						<div class="o_name">$first</br>
+						#if ($r.available("link1")) $r.render("link1") #end 						
+						</div>
 					</div>
 	
 					<div class="o_step o_second">
-						#if ($r.available("portrait2")) $r.render("portrait2") #end
-						<div class="o_name">$second</div>
+						#if ($r.available("portrait2")) $r.render("portrait2") 
 						<div class="o_score">$score2 $r.translate("graph.axis.points")</div>
+						#end
+						<div class="o_name">$second</br>
+						#if ($r.available("link2")) $r.render("link2") #end 						
+						</div>
 					</div>
 	
 					<div class="o_step o_third">
-						#if ($r.available("portrait3")) $r.render("portrait3") #end
-						<div class="o_name">$third</div>
+						#if ($r.available("portrait3")) $r.render("portrait3") 
 						<div class="o_score">$score3 $r.translate("graph.axis.points")</div>
+						#end
+						<div class="o_name">$third</br>
+						#if ($r.available("link3")) $r.render("link3") #end 						
+						</div>
 					</div>
 	
 				</div>

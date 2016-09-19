@@ -1,17 +1,48 @@
+/**
+* OLAT - Online Learning and Training<br>
+* http://www.olat.org
+* <p>
+* Licensed under the Apache License, Version 2.0 (the "License"); <br>
+* you may not use this file except in compliance with the License.<br>
+* You may obtain a copy of the License at
+* <p>
+* http://www.apache.org/licenses/LICENSE-2.0
+* <p>
+* Unless required by applicable law or agreed to in writing,<br>
+* software distributed under the License is distributed on an "AS IS" BASIS, <br>
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. <br>
+* See the License for the specific language governing permissions and <br>
+* limitations under the License.
+* <p>
+* Copyright (c) since 2004 at Multimedia- & E-Learning Services (MELS),<br>
+* University of Zurich, Switzerland.
+* <hr>
+* <a href="http://www.openolat.org">
+* OpenOLAT - Online Learning and Training</a><br>
+* This file has been modified by the OpenOLAT community. Changes are licensed
+* under the Apache 2.0 license as the original file.
+*/
 package org.olat.course.highscore.ui;
+/**
+ * Initial Date:  10.08.2016 <br>
+ * @author fkiefer
+ */
+import java.util.Date;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.form.flexible.elements.IntegerElement;
 import org.olat.core.gui.components.form.flexible.elements.SelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
-import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.form.flexible.impl.elements.JSDateChooser;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.course.condition.interpreter.ConditionDateFormatter;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.ModuleConfiguration;
@@ -34,16 +65,24 @@ public class HighScoreEditController extends FormBasicController {
 	public static final String CONFIG_KEY_NUMUSER = "numUser";
 	/** configuration: boolean anonymize */
 	public static final String CONFIG_KEY_ANONYMIZE = "anonymize";
+	/** configuration: boolean runtime */
+	public static final String CONFIG_KEY_RUNTIME = "runTime";
+	/** configuration: Date Start */
+	public static final String CONFIG_KEY_DATESTART = "dateStarting";
 	
 	private SingleSelection horizontalRadioButtons;
+	
 	private SelectionElement allowHighScore;
 	private SelectionElement showPodium;
 	private SelectionElement showHistogram;
 	private SelectionElement showListing;
 	private SelectionElement displayAnonymous;
-	private TextElement numTableRows;
+
+	private IntegerElement numTableRows;
 	private CourseNode msNode;	
 	private ModuleConfiguration config;
+	private JSDateChooser dateStart;
+
 	
 	public HighScoreEditController(UserRequest ureq, WindowControl wControl, CourseNode msNode, UserCourseEnvironment euce) {
 		super(ureq, wControl, FormBasicController.LAYOUT_DEFAULT);
@@ -60,8 +99,17 @@ public class HighScoreEditController extends FormBasicController {
 		allowHighScore.addActionListener(FormEvent.ONCLICK);
 		allowHighScore.select("xx", true);
 
+		dateStart = new JSDateChooser("startDate", getLocale());
+		dateStart.setLabel("highscore.datestart", null);
+		dateStart.setExampleKey("example.date", null);
+		dateStart.setDateChooserTimeEnabled(true);
+		dateStart.setValidDateCheck("valid.date");
+		formLayout.add(dateStart);
+		
 		uifactory.addSpacerElement("spacer", formLayout, false);
 
+		displayAnonymous = uifactory.addCheckboxesHorizontal("highscore.anonymize", formLayout, new String[] { "xx" },
+				new String[] { null });
 		showPodium = uifactory.addCheckboxesHorizontal("highscore.podium", formLayout, new String[] { "xx" },
 				new String[] { null });
 		showHistogram = uifactory.addCheckboxesHorizontal("highscore.histogram", formLayout, new String[] { "xx" },
@@ -80,12 +128,12 @@ public class HighScoreEditController extends FormBasicController {
 		// A default value is needed for show/hide rules
 		horizontalRadioButtons.select(yesOrNoKeys[1], true);
 		horizontalRadioButtons.addActionListener(FormEvent.ONCLICK);//why
-		
-		numTableRows = uifactory.addTextElement("textField", "highscore.tablesize", 4, "10", formLayout);
+		numTableRows = uifactory.addIntegerElement("textField", "highscore.tablesize", 10, formLayout);
 		numTableRows.setMandatory(true);
 		numTableRows.setNotEmptyCheck("highscore.emptycheck");
-		
-		displayAnonymous = uifactory.addCheckboxesHorizontal("highscore.anonymize", formLayout, new String[] { "xx" }, new String[] { null });
+		numTableRows.setMinValueCheck(1, "integerelement.toosmall");
+		numTableRows.setMaxValueCheck(100000, "integerelement.toobig");
+		numTableRows.setIntValueCheck("integerelement.noint");
 		
 		// Create submit and cancel buttons
 		final FormLayoutContainer buttonLayout = FormLayoutContainer.createButtonLayout("buttonLayout",
@@ -114,16 +162,22 @@ public class HighScoreEditController extends FormBasicController {
 		allowHighScore.select("xx", allowhighscore);
 		showPodium.select("xx", config.getBooleanSafe(CONFIG_KEY_PODIUM));
 		showHistogram.select("xx", config.getBooleanSafe(CONFIG_KEY_HISTOGRAM));
+		displayAnonymous.select("xx", config.getBooleanSafe(CONFIG_KEY_ANONYMIZE));
+		Date start = config.getBooleanEntry(CONFIG_KEY_DATESTART) != null ? 
+				(Date) config.get(CONFIG_KEY_DATESTART) : null;
+		dateStart.setDate(start);
 		boolean listing = config.getBooleanSafe(CONFIG_KEY_LISTING);
 		showListing.select("xx", listing);
-		int showAll = (int) config.get(CONFIG_KEY_BESTONLY);
+		int showAll = config.getBooleanEntry(CONFIG_KEY_BESTONLY) != null ? 
+				(int) config.get(CONFIG_KEY_BESTONLY) : 0;
 		horizontalRadioButtons.select(yesOrNoKeys[showAll], true);
 		if (showAll == 0 || !listing) {
 			numTableRows.setVisible(false);
 		}
-		displayAnonymous.setVisible(listing);
 		horizontalRadioButtons.setVisible(listing);
-		numTableRows.setValue(config.get(CONFIG_KEY_NUMUSER).toString());
+		int numuser = config.getBooleanEntry(CONFIG_KEY_NUMUSER) != null ? 
+				(int) config.get(CONFIG_KEY_NUMUSER) : 10;
+		numTableRows.setIntValue(numuser);
 		activateForm(true);
 	}
 	
@@ -133,25 +187,24 @@ public class HighScoreEditController extends FormBasicController {
 		for (int i = 0; i < checkboxes.length; i++) {
 			checkboxes[i].setEnabled(formactive);
 			if (!init) {
-				checkboxes[i].select("xx", i != 3 ? formactive : false);
+				checkboxes[i].select("xx", formactive);
 			}
 		}
 		if (!init) {
-			displayAnonymous.setVisible(formactive);
 			horizontalRadioButtons.setVisible(formactive);
 			horizontalRadioButtons.select(yesOrNoKeys[1], true);
 			numTableRows.setVisible(formactive);
+			dateStart.setDate(null);
 		}
 	}
 
 	private void activateListing() {
 		boolean listingactive = showListing.isSelected(0);
-		displayAnonymous.setVisible(listingactive);
 		horizontalRadioButtons.setVisible(listingactive);
 		horizontalRadioButtons.select(yesOrNoKeys[1], true);
 		numTableRows.setVisible(listingactive);
 	}
-
+	
 	private void activateTopUsers() {
 		int all = horizontalRadioButtons.getSelected();
 		numTableRows.setVisible(all != 0);
@@ -162,35 +215,12 @@ public class HighScoreEditController extends FormBasicController {
 		moduleConfiguration.set(CONFIG_KEY_PODIUM, showPodium.isSelected(0));
 		moduleConfiguration.set(CONFIG_KEY_HISTOGRAM, showHistogram.isSelected(0));
 		moduleConfiguration.set(CONFIG_KEY_LISTING, showListing.isSelected(0));
+		moduleConfiguration.set(CONFIG_KEY_DATESTART, dateStart.getDate());
+		moduleConfiguration.set(CONFIG_KEY_ANONYMIZE, displayAnonymous.isSelected(0));
 		if (showListing.isSelected(0)) {
-			moduleConfiguration.set(CONFIG_KEY_ANONYMIZE, displayAnonymous.isSelected(0));
 			moduleConfiguration.set(CONFIG_KEY_BESTONLY, horizontalRadioButtons.getSelected());
-			moduleConfiguration.set(CONFIG_KEY_NUMUSER, convertToInteger(numTableRows.getValue()));
+			moduleConfiguration.set(CONFIG_KEY_NUMUSER, numTableRows.getIntValue());
 		}
-	}
-
-	public static int convertToInteger(String str) {
-		if (str == null) {
-			return 10;
-		}
-		int length = str.length();
-		if (length == 0) {
-			return 10;
-		}
-		int i = 0;
-		if (str.charAt(0) == '-') {
-			if (length == 1) {
-				return 10;
-			}
-			i = 1;
-		}
-		for (; i < length; i++) {
-			char c = str.charAt(i);
-			if (c < '0' || c > '9') {
-				return 10;
-			}
-		}
-		return Integer.valueOf(str);
 	}
 
 	

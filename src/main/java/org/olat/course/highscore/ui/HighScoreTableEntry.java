@@ -23,7 +23,10 @@
 * under the Apache 2.0 license as the original file.
 */
 package org.olat.course.highscore.ui;
-
+/**
+ * Initial Date:  10.08.2016 <br>
+ * @author fkiefer
+ */
 import org.olat.core.id.Identity;
 
 public class HighScoreTableEntry {
