@@ -102,9 +102,9 @@ public class EmptyWebResource implements WebResource {
 	public long getCreation() {
 		return 0;
 	}
-
+	
 	@Override
-	public byte[] getContent() {
-		return null;//use the input stream instead
+	public void increaseDownloadCount() {
+		//
 	}
 }
