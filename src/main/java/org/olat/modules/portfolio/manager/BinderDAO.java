@@ -222,7 +222,7 @@ public class BinderDAO {
 		newSection.getAssignments().add(assignment);
 
 		Page page = assignment.getPage();
-		if(assignment != null) {
+		if(page != null) {
 			currentSection.getPages().remove(page);
 			newSection.getPages().add(page);
 			((PageImpl)page).setSection(newSection);
