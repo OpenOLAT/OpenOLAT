@@ -122,7 +122,7 @@ public class AssignmentEditController extends FormBasicController {
 		summaryEl.getEditorConfiguration().setPathInStatusBar(false);
 		
 		String content = assignment == null ? null : assignment.getContent();
-		contentEl = uifactory.addRichTextElementForStringDataCompact("content", "assignment.content", content, 6, 60, null, formLayout,
+		contentEl = uifactory.addRichTextElementForStringDataCompact("content", "assignment.content", content, 12, 60, null, formLayout,
 				ureq.getUserSession(), getWindowControl());
 		contentEl.setElementCssClass("o_sel_pf_edit_assignment_content");
 		contentEl.getEditorConfiguration().disableMedia();

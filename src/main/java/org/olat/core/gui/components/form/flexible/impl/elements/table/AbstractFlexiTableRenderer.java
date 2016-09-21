@@ -171,7 +171,8 @@ public abstract class AbstractFlexiTableRenderer extends DefaultComponentRendere
 			renderFormItem(renderer, sb, ftE.getExportButton(), ubu, translator, renderResult, args);
 			sb.append("</div> ");
 		}
-		if(ftE.getCustomButton() != null && ftE.isCustomizeColumns()) {
+		if(ftE.getCustomButton() != null && ftE.isCustomizeColumns()
+				&& (ftE.getRendererType() == null || ftE.getRendererType() == FlexiTableRendererType.classic)) {
 			sb.append("<div class='btn-group'>");
 			renderFormItem(renderer, sb, ftE.getCustomButton(), ubu, translator, renderResult, args);
 			sb.append("</div> ");

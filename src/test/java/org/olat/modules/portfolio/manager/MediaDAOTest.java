@@ -26,7 +26,6 @@ import org.junit.Test;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.modules.portfolio.Binder;
-import org.olat.modules.portfolio.BinderLight;
 import org.olat.modules.portfolio.Media;
 import org.olat.modules.portfolio.MediaLight;
 import org.olat.modules.portfolio.Page;
@@ -34,6 +33,7 @@ import org.olat.modules.portfolio.PageBody;
 import org.olat.modules.portfolio.PortfolioService;
 import org.olat.modules.portfolio.Section;
 import org.olat.modules.portfolio.handler.TextHandler;
+import org.olat.modules.portfolio.model.BinderPageUsage;
 import org.olat.modules.portfolio.model.MediaPart;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
@@ -131,9 +131,9 @@ public class MediaDAOTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		//reload
-		List<BinderLight> binders = mediaDao.usedInBinders(media);
+		List<BinderPageUsage> binders = mediaDao.usedInBinders(media);
 		Assert.assertNotNull(binders);
 		Assert.assertEquals(1, binders.size());
-		Assert.assertTrue(binders.get(0).getKey().equals(binder.getKey()));
+		Assert.assertTrue(binders.get(0).getBinderKey().equals(binder.getKey()));
 	}
 }

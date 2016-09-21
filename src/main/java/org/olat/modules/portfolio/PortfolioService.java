@@ -34,6 +34,7 @@ import org.olat.modules.portfolio.model.AssessedBinder;
 import org.olat.modules.portfolio.model.AssessmentSectionChange;
 import org.olat.modules.portfolio.model.BinderStatistics;
 import org.olat.modules.portfolio.model.CategoryLight;
+import org.olat.modules.portfolio.model.BinderPageUsage;
 import org.olat.modules.portfolio.model.SynchedBinder;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
@@ -466,7 +467,7 @@ public interface PortfolioService {
 	public List<CategoryLight> getMediaCategories(IdentityRef owner);
 
 	
-	public List<BinderLight> getUsedInBinders(MediaLight media);
+	public List<BinderPageUsage> getUsedInBinders(MediaLight media);
 	
 	/**
 	 * Change the status of the page.

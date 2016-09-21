@@ -95,6 +95,7 @@ import org.olat.modules.portfolio.model.AssignmentImpl;
 import org.olat.modules.portfolio.model.BinderImpl;
 import org.olat.modules.portfolio.model.BinderStatistics;
 import org.olat.modules.portfolio.model.CategoryLight;
+import org.olat.modules.portfolio.model.BinderPageUsage;
 import org.olat.modules.portfolio.model.PageImpl;
 import org.olat.modules.portfolio.model.SectionImpl;
 import org.olat.modules.portfolio.model.SectionKeyRef;
@@ -940,7 +941,7 @@ public class PortfolioServiceImpl implements PortfolioService {
 	}
 
 	@Override
-	public List<BinderLight> getUsedInBinders(MediaLight media) {
+	public List<BinderPageUsage> getUsedInBinders(MediaLight media) {
 		return mediaDao.usedInBinders(media);
 	}
 

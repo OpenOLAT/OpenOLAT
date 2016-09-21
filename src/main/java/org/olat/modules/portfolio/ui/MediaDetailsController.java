@@ -20,8 +20,10 @@
 package org.olat.modules.portfolio.ui;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.olat.NewControllerFactory;
@@ -48,12 +50,13 @@ import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
-import org.olat.modules.portfolio.BinderLight;
 import org.olat.modules.portfolio.Category;
 import org.olat.modules.portfolio.Media;
 import org.olat.modules.portfolio.MediaHandler;
+import org.olat.modules.portfolio.PageStatus;
 import org.olat.modules.portfolio.PortfolioService;
 import org.olat.modules.portfolio.manager.MetadataXStream;
+import org.olat.modules.portfolio.model.BinderPageUsage;
 import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -74,8 +77,9 @@ public class MediaDetailsController extends FormBasicController implements Activ
 	
 	private int counter;
 	private Media media;
+	private boolean editable = true;
 	private final MediaHandler handler;
-	private final List<BinderLight> usedInList;
+	private final List<BinderPageUsage> usedInList;
 	
 	@Autowired
 	private UserManager userManager;
@@ -88,12 +92,17 @@ public class MediaDetailsController extends FormBasicController implements Activ
 		this.stackPanel = stackPanel;
 		handler = portfolioService.getMediaHandler(media.getType());
 		usedInList = portfolioService.getUsedInBinders(media);
+		for(BinderPageUsage binder:usedInList) {
+			if(binder.getPageStatus() == PageStatus.closed || binder.getPageStatus() == PageStatus.published) {
+				editable = false;
+			}
+		}
 		initForm(ureq);
 	}
 
 	@Override
 	public void initTools() {
-		if(usedInList == null || usedInList.isEmpty()) {
+		if(editable) {
 			editLink = LinkFactory.createToolLink("edit", translate("edit"), this);
 			editLink.setIconLeftCSS("o_icon o_icon-lg o_icon_edit");
 			stackPanel.addTool(editLink, Align.left);
@@ -140,10 +149,14 @@ public class MediaDetailsController extends FormBasicController implements Activ
 			
 			
 			List<FormLink> binderLinks = new ArrayList<>(usedInList.size());
-			for(BinderLight binder:usedInList) {
-				FormLink link = uifactory.addFormLink("binder_" + (++counter), binder.getTitle(), null, layoutCont, Link.LINK | Link.NONTRANSLATED);
+			Set<Long> binderUniqueKeys = new HashSet<>();
+			for(BinderPageUsage binder:usedInList) {
+				if(binderUniqueKeys.contains(binder.getBinderKey())) continue;
+				
+				FormLink link = uifactory.addFormLink("binder_" + (++counter), binder.getBinderTitle(), null, layoutCont, Link.LINK | Link.NONTRANSLATED);
 				link.setUserObject(binder);
 				binderLinks.add(link);
+				binderUniqueKeys.add(binder.getBinderKey());
 			}
 			layoutCont.contextPut("binderLinks", binderLinks);
 		}
@@ -203,8 +216,8 @@ public class MediaDetailsController extends FormBasicController implements Activ
 		if(source instanceof FormLink) {
 			FormLink link = (FormLink)source;
 			Object uobject = link.getUserObject();
-			if(uobject instanceof BinderLight) {
-				String businessPath = "[Binder:" + ((BinderLight)uobject).getKey() + "]";
+			if(uobject instanceof BinderPageUsage) {
+				String businessPath = "[Binder:" + ((BinderPageUsage)uobject).getBinderKey() + "]";
 				NewControllerFactory.getInstance().launch(businessPath, ureq, getWindowControl());	
 			}
 		}

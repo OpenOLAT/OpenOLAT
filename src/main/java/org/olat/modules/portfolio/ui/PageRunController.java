@@ -180,6 +180,7 @@ public class PageRunController extends BasicController implements TooledControll
 				CommentAndRatingSecurityCallback commentSecCallback = new CommentAndRatingDefaultSecurityCallback(getIdentity(), false, false);
 				OLATResourceable ores = OresHelper.createOLATResourceableInstance(Page.class, page.getKey());
 				commentsCtrl = new UserCommentsAndRatingsController(ureq, getWindowControl(), ores, null, commentSecCallback, true, false, true);
+				commentsCtrl.expandComments(ureq);
 				listenTo(commentsCtrl);
 			}
 			mainVC.put("comments", commentsCtrl.getInitialComponent());

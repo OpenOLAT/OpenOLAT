@@ -387,7 +387,7 @@ public class BinderListController extends FormBasicController
 		String commandLabel = translate("create.binder.selectTemplate");
 		removeAsListenerAndDispose(searchTemplateCtrl);
 		searchTemplateCtrl = new ReferencableEntriesSearchController(getWindowControl(), ureq,
-				new String[]{ BinderTemplateResource.TYPE_NAME }, commandLabel, false, false, false, false);			
+				new String[]{ BinderTemplateResource.TYPE_NAME }, commandLabel, false, false, false, false);
 		listenTo(searchTemplateCtrl);
 			
 		cmc = new CloseableModalController(getWindowControl(), title, searchTemplateCtrl.getInitialComponent(), true, title);
