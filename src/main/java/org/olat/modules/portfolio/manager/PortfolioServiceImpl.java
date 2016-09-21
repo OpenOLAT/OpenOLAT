@@ -222,16 +222,20 @@ public class PortfolioServiceImpl implements PortfolioService {
 			
 			List<Assignment> transientAssignments = ((SectionImpl)transientSection).getAssignments();
 			for(Assignment transientAssignment:transientAssignments) {
-				File newStorage = portfolioFileStorage.generateAssignmentSubDirectory();
-				String storage = portfolioFileStorage.getRelativePath(newStorage);
-				
-				assignmentDao.createAssignment(transientAssignment.getTitle(), transientAssignment.getSummary(),
-						transientAssignment.getContent(), storage, transientAssignment.getAssignmentType(),
-						transientAssignment.getAssignmentStatus(), section);
-				//copy attachments
-				File templateDirectory = portfolioFileStorage.getAssignmentDirectory(transientAssignment);
-				if(copy && templateDirectory != null) {
-					FileUtils.copyDirContentsToDir(templateDirectory, newStorage, false, "Assignment attachments");
+				if(transientAssignment != null) {
+					File newStorage = portfolioFileStorage.generateAssignmentSubDirectory();
+					String storage = portfolioFileStorage.getRelativePath(newStorage);
+					
+					assignmentDao.createAssignment(transientAssignment.getTitle(), transientAssignment.getSummary(),
+							transientAssignment.getContent(), storage, transientAssignment.getAssignmentType(),
+							transientAssignment.getAssignmentStatus(), section);
+					//copy attachments
+					File templateDirectory = portfolioFileStorage.getAssignmentDirectory(transientAssignment);
+					if(copy && templateDirectory != null) {
+						FileUtils.copyDirContentsToDir(templateDirectory, newStorage, false, "Assignment attachments");
+					}
+				} else {
+					System.out.println("");
 				}
 			}
 		}
@@ -352,7 +356,15 @@ public class PortfolioServiceImpl implements PortfolioService {
 	@Override
 	public boolean deleteAssignment(Assignment assignment) {
 		Assignment reloadedAssignment = assignmentDao.loadAssignmentByKey(assignment.getKey());
+		Section reloadedSection = reloadedAssignment.getSection();
+		boolean removed = false;
+		if(reloadedSection != null) {
+			removed = ((SectionImpl)reloadedSection).getAssignments().remove(reloadedAssignment);
+		}
 		assignmentDao.deleteAssignment(reloadedAssignment);
+		if(removed) {
+			binderDao.updateSection(reloadedSection);
+		}
 		return true;
 	}
 

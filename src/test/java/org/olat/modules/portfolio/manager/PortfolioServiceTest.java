@@ -698,6 +698,35 @@ public class PortfolioServiceTest extends OlatTestCase {
 		Assert.assertEquals("Assignment 4 description", assignment4_1.getSummary());
 	}
 	
+	@Test
+	public void removeAssignment() {
+		Identity owner = JunitTestHelper.createAndPersistIdentityAsRndUser("port-u-10");
+		RepositoryEntry templateEntry = createTemplate(owner, "Template", "TE");
+		dbInstance.commitAndCloseSession();
+			
+		//make the binder and the section
+		Binder templateBinder = portfolioService.getBinderByResource(templateEntry.getOlatResource());
+		SectionRef sectionRef = portfolioService.getSections(templateBinder).get(0);
+		dbInstance.commit();
+			
+		//make 4 assignments
+		Section templateSection = portfolioService.getSection(sectionRef);
+		Assignment assignment_1 = portfolioService.addAssignment("1 Assignment", "", "", AssignmentType.essay, templateSection);
+		Assignment assignment_2 = portfolioService.addAssignment("2 Assignment", "", "", AssignmentType.essay, templateSection);
+		Assignment assignment_3 = portfolioService.addAssignment("3 Assignment", "", "", AssignmentType.essay, templateSection);
+		Assignment assignment_4 = portfolioService.addAssignment("3 Assignment", "", "", AssignmentType.essay, templateSection);
+		dbInstance.commitAndCloseSession();
+		
+		boolean ok = portfolioService.deleteAssignment(assignment_3);
+		Assert.assertTrue(ok);
+		dbInstance.commitAndCloseSession();
+		
+		List<Assignment> assignments = portfolioService.getSection(sectionRef).getAssignments();
+		Assert.assertNotNull(assignments);
+		Assert.assertEquals(3, assignments.size());
+		System.out.println("");
+	}
+	
 	private RepositoryEntry createTemplate(Identity initialAuthor, String displayname, String description) {
 		OLATResource resource = portfolioService.createBinderTemplateResource();
 		RepositoryEntry re = repositoryService.create(initialAuthor, null, "", displayname, description, resource, RepositoryEntry.ACC_OWNERS);
