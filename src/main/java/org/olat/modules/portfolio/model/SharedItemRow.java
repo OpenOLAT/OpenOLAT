@@ -24,7 +24,7 @@ import java.util.List;
 import java.util.Locale;
 
 import org.olat.core.id.Identity;
-import org.olat.modules.assessment.AssessmentEntry;
+import org.olat.modules.assessment.AssessmentEntryLight;
 import org.olat.user.UserPropertiesRow;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
 
@@ -41,7 +41,7 @@ public class SharedItemRow extends UserPropertiesRow {
 	private String binderTitle;
 	private int numOfOpenSections;
 	private String entryDisplayName;
-	private AssessmentEntry assessmentEntry;
+	private AssessmentEntryLight assessmentEntry;
 	
 	public SharedItemRow(Identity identity, List<UserPropertyHandler> userPropertyHandlers, Locale locale) {
 		super(identity, userPropertyHandlers, locale);
@@ -79,11 +79,11 @@ public class SharedItemRow extends UserPropertiesRow {
 		this.lastModified = lastModified;
 	}
 
-	public AssessmentEntry getAssessmentEntry() {
+	public AssessmentEntryLight getAssessmentEntry() {
 		return assessmentEntry;
 	}
 
-	public void setAssessmentEntry(AssessmentEntry assessmentEntry) {
+	public void setAssessmentEntry(AssessmentEntryLight assessmentEntry) {
 		this.assessmentEntry = assessmentEntry;
 	}
 

@@ -137,13 +137,11 @@ public class SharedItemsController extends FormBasicController implements Activa
 		List<SharedItemRow> rows = new ArrayList<>(assessedBinders.size());
 		for(AssessedBinder assessedBinder:assessedBinders) {
 			SharedItemRow row = new SharedItemRow(assessedBinder.getAssessedIdentity(), userPropertyHandlers, getLocale());
-			row.setBinderTitle(assessedBinder.getBinder().getTitle());
-			row.setBinderKey(assessedBinder.getBinder().getKey());
-			row.setLastModified(assessedBinder.getBinder().getLastModified());//TODO max()
-			if(assessedBinder.getBinder().getEntry() != null) {
-				row.setEntryDisplayName(assessedBinder.getBinder().getEntry().getDisplayname());
-			}
-			row.setAssessmentEntry(assessedBinder.getAssessmentEntry());
+			row.setBinderTitle(assessedBinder.getBinderTitle());
+			row.setBinderKey(assessedBinder.getBinderKey());
+			row.setLastModified(assessedBinder.getLastModified());//TODO max()
+			row.setEntryDisplayName(assessedBinder.getEntryDisplayname());
+			row.setAssessmentEntry(assessedBinder);
 			row.setNumOfOpenSections(assessedBinder.getNumOfOpenSections());
 			rows.add(row);
 

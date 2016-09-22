@@ -26,7 +26,7 @@ import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
 import org.olat.course.assessment.AssessmentHelper;
-import org.olat.modules.assessment.AssessmentEntry;
+import org.olat.modules.assessment.AssessmentEntryLight;
 
 /**
  * 
@@ -47,8 +47,8 @@ public class AssessmentEntryCellRenderer implements FlexiCellRenderer {
 			FlexiTableComponent source, URLBuilder ubu, Translator trans) {
 
 		String val;
-		if(cellValue instanceof AssessmentEntry) {
-			AssessmentEntry entry = (AssessmentEntry)cellValue;
+		if(cellValue instanceof AssessmentEntryLight) {
+			AssessmentEntryLight entry = (AssessmentEntryLight)cellValue;
 			if(entry.getScore() != null) {
 				if(entry.getPassed() != null) {
 					if(entry.getPassed().booleanValue()) {

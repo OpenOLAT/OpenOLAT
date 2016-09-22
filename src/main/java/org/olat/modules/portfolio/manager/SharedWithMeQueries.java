@@ -22,6 +22,7 @@ package org.olat.modules.portfolio.manager;
 import static org.olat.core.commons.persistence.PersistenceHelper.appendFuzzyLike;
 import static org.olat.core.commons.persistence.PersistenceHelper.makeFuzzyQueryString;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -30,8 +31,6 @@ import javax.persistence.TypedQuery;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.core.util.StringHelper;
-import org.olat.modules.assessment.AssessmentEntry;
-import org.olat.modules.portfolio.Binder;
 import org.olat.modules.portfolio.PortfolioRoles;
 import org.olat.modules.portfolio.SectionStatus;
 import org.olat.modules.portfolio.model.AssessedBinder;
@@ -52,19 +51,21 @@ public class SharedWithMeQueries {
 	
 	public List<AssessedBinder> searchSharedBinders(Identity member, String searchString) {
 		StringBuilder sb = new StringBuilder();
-		sb.append("select owner, binder, aEntry")
+		sb.append("select binder.key, binder.title, entry.displayname, aEntry.score, aEntry.passed, owner")
 		  .append(" ,(select count(section.key) from pfsection as section ")
 		  .append("   where section.binder.key=binder.key and section.status in ('").append(SectionStatus.inProgress.name()).append("','").append(SectionStatus.submitted.name()).append("','").append(SectionStatus.notStarted.name()).append("')")
 		  .append(" ) as numOfOpenSections")
 		  .append(" from pfbinder as binder")
-		  .append(" inner join fetch binder.baseGroup as baseGroup")
-		  .append(" inner join baseGroup.members as membership")
-		  .append(" inner join baseGroup.members as ownership")
+		  .append(" inner join binder.baseGroup as baseGroup")
+		  .append(" inner join baseGroup.members as ownership on (ownership.role='").append(PortfolioRoles.owner.name()).append("')")
 		  .append(" inner join ownership.identity as owner")
 		  .append(" inner join fetch owner.user as owneruser")
-		  .append(" left join fetch binder.entry as entry")//entry -> assessment entry -> owner
-		  .append(" left join fetch assessmententry as aEntry on (aEntry.identity.key=owner.key and aEntry.repositoryEntry.key=entry.key)")
-		  .append(" where ((membership.identity.key=:identityKey and membership.role in ('").append(PortfolioRoles.coach.name()).append("','").append(PortfolioRoles.reviewer.name()).append("'))")
+		  .append(" left join binder.entry as entry")//entry -> assessment entry -> owner
+		  .append(" left join assessmententry as aEntry on (aEntry.identity.key=owner.key and aEntry.repositoryEntry.key=entry.key and ((binder.subIdent is null and aEntry.subIdent is null) or binder.subIdent=aEntry.subIdent))")
+		  .append(" where")
+		  .append(" exists (select membership.key from bgroupmember as membership")
+		  .append("   where membership.group.key=baseGroup.key and membership.identity.key=:identityKey and membership.role in ('").append(PortfolioRoles.coach.name()).append("','").append(PortfolioRoles.reviewer.name()).append("')")
+		  .append(" )")
 		  .append(" or exists (select section.key from pfsection as section")
 		  .append("   inner join section.baseGroup as sectionGroup")
 		  .append("   inner join sectionGroup.members as sectionMembership on (sectionMembership.identity.key=:identityKey and sectionMembership.role in ('").append(PortfolioRoles.coach.name()).append("','").append(PortfolioRoles.reviewer.name()).append("'))")
@@ -72,9 +73,8 @@ public class SharedWithMeQueries {
 		  .append(" )")
 		  .append(" or exists (select page.key from pfpage as page")
 		  .append("   inner join page.baseGroup as pageGroup")
-		  .append("   inner join page.section as pageSection")
+		  .append("   inner join page.section as pageSection on (pageSection.binder.key=binder.key)")
 		  .append("   inner join pageGroup.members as pageMembership on (pageMembership.identity.key=:identityKey and pageMembership.role in ('").append(PortfolioRoles.coach.name()).append("','").append(PortfolioRoles.reviewer.name()).append("'))")
-		  .append("   where pageSection.binder.key=binder.key")
 		  .append(" ))");
 		if(StringHelper.containsNonWhitespace(searchString)) {
 			searchString = makeFuzzyQueryString(searchString);
@@ -103,14 +103,18 @@ public class SharedWithMeQueries {
 		List<Object[]> objects = query.getResultList();
 		List<AssessedBinder> assessedBinders = new ArrayList<>(objects.size());
 		for(Object[] object:objects) {
-			Identity owner = (Identity)object[0];
-			Binder binder = (Binder)object[1];
-			AssessmentEntry entry = (AssessmentEntry)object[2];
+			int pos = 0;
+			Long binderKey = (Long)object[pos++];
+			String binderTitle = (String)object[pos++];
+			String entryDisplayname = (String)object[pos++];
+			BigDecimal score = (BigDecimal)object[pos++];
+			Boolean passed = (Boolean)object[pos++];
+			Identity owner = (Identity)object[pos++];
 			int numOfSections = 0;
-			if(object[3] != null) {
-				numOfSections = ((Number)object[3]).intValue();
+			if(object[pos] != null) {
+				numOfSections = ((Number)object[pos++]).intValue();
 			}
-			assessedBinders.add(new AssessedBinder(owner, binder, entry, numOfSections));
+			assessedBinders.add(new AssessedBinder(binderKey, binderTitle, entryDisplayname, passed, score, owner, numOfSections));
 		}
 		return assessedBinders;
 	}
