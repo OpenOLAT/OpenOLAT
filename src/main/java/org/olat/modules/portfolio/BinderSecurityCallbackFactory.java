@@ -92,9 +92,13 @@ public class BinderSecurityCallbackFactory {
 		return new BinderSecurityCallbackImpl(true, false, null);
 	}
 
-	
 	private static class BinderSecurityCallbackForDeletedPages extends DefaultBinderSecurityCallback {
-		//all false;	
+
+		@Override
+		public boolean canRestorePage(Page page) {
+			return page.getPageStatus() == PageStatus.deleted;
+		}
+		
 	}
 
 	/**
@@ -325,6 +329,11 @@ public class BinderSecurityCallbackFactory {
 					&& page.getPageStatus() != PageStatus.closed
 					&& page.getPageStatus() != PageStatus.deleted;
 		}
+		
+		@Override
+		public boolean canRestorePage(Page page) {
+			return owner && page.getPageStatus() == PageStatus.deleted;
+		}
 
 		@Override
 		public boolean canClose(Page page) {
@@ -550,6 +559,11 @@ public class BinderSecurityCallbackFactory {
 
 		@Override
 		public boolean canDeletePage(Page page) {
+			return false;
+		}
+
+		@Override
+		public boolean canRestorePage(Page page) {
 			return false;
 		}
 

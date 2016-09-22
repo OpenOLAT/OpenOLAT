@@ -88,13 +88,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class PageRunController extends BasicController implements TooledController, Activateable2  {
 
 	private VelocityContainer mainVC;
-	private Link editLink, editMetadataLink, deleteLink;
+	private Link editLink, editMetadataLink, deleteLink, restoreLink;
 	protected final TooledStackedPanel stackPanel;
 	
 	private CloseableModalController cmc;
 	private PageMetadataController pageMetaCtrl;
 	private PageController pageCtrl;
 	private PageEditorController pageEditCtrl;
+	private RestorePageController restorePageCtrl;
 	private DialogBoxController confirmPublishCtrl, confirmRevisionCtrl, confirmCloseCtrl,
 		confirmReopenCtrl, confirmDeleteCtrl;
 	private PageMetadataEditController editMetadataCtrl;
@@ -152,6 +153,12 @@ public class PageRunController extends BasicController implements TooledControll
 		deleteLink.setIconLeftCSS("o_icon o_icon-lg o_icon_delete_item");
 		deleteLink.setVisible(secCallback.canDeletePage(page));
 		stackPanel.addTool(deleteLink, Align.right);
+		
+		if(secCallback.canRestorePage(page)) {
+			restoreLink = LinkFactory.createToolLink("restore.page", translate("restore.page"), this);
+			restoreLink.setIconLeftCSS("o_icon o_icon-lg o_icon_restore");
+			stackPanel.addTool(restoreLink, Align.left);
+		}
 	}
 	
 	private Link editLink(boolean edit) {
@@ -251,6 +258,13 @@ public class PageRunController extends BasicController implements TooledControll
 			} else if(event instanceof ReopenPageEvent) {
 				doConfirmReopen(ureq);
 			}	
+		} else if(restorePageCtrl == source) {
+			if(event == Event.DONE_EVENT) {
+				loadMeta(ureq);
+				fireEvent(ureq, Event.CHANGED_EVENT);
+			}
+			cmc.deactivate();
+			cleanUp();
 		} else if(commentsCtrl == source) {
 			if(event == Event.CANCELLED_EVENT) {
 				commentsCtrl.collapseComments();
@@ -283,8 +297,10 @@ public class PageRunController extends BasicController implements TooledControll
 	
 	private void cleanUp() {
 		removeAsListenerAndDispose(editMetadataCtrl);
+		removeAsListenerAndDispose(restorePageCtrl);
 		removeAsListenerAndDispose(cmc);
 		editMetadataCtrl = null;
+		restorePageCtrl = null;
 		cmc = null;
 	}
 
@@ -296,6 +312,8 @@ public class PageRunController extends BasicController implements TooledControll
 			doEditMetadata(ureq);
 		} else if(deleteLink == source) {
 			doConfirmDelete(ureq);
+		} else if(restoreLink == source) {
+			doRestorePage(ureq);
 		}
 	}
 	
@@ -408,6 +426,16 @@ public class PageRunController extends BasicController implements TooledControll
 		}
 		mainVC.put("page", pageCtrl.getInitialComponent());
 		editLink(true);
+	}
+	
+	private void doRestorePage(UserRequest ureq) {
+		restorePageCtrl = new RestorePageController(ureq, getWindowControl(), page);
+		listenTo(restorePageCtrl);
+		
+		String title = translate("restore.page");
+		cmc = new CloseableModalController(getWindowControl(), null, restorePageCtrl.getInitialComponent(), true, title, true);
+		listenTo(cmc);
+		cmc.activate();
 	}
 
 	private class PortfolioPageProvider implements PageProvider {

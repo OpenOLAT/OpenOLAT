@@ -25,6 +25,7 @@ import org.olat.core.gui.render.Renderer;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.util.StringHelper;
 import org.olat.modules.portfolio.ui.model.PortfolioElementRow;
 
 /**
@@ -55,7 +56,7 @@ public class PortfolioElementCellRenderer implements FlexiCellRenderer {
 			} else {
 				target.append("'>");
 			}
-			target.append((String)cellValue).append("</span>");
+			target.append(StringHelper.escapeHtml((String)cellValue)).append("</span>");
 		}
 	}
 }

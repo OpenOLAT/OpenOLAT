@@ -66,6 +66,8 @@ public interface BinderSecurityCallback {
 	
 	public boolean canReopen(Page page);
 	
+	public boolean canRestorePage(Page page);
+	
 	public boolean canDeletePage(Page page);
 	
 	/**
