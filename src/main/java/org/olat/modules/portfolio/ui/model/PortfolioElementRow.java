@@ -45,6 +45,8 @@ public class PortfolioElementRow {
 	private Assignment assignment;
 	private final AssessmentSection assessmentSection;
 	
+	private String imageUrl;
+	
 	private String metaSectionTitle;
 	private String metaBinderTitle;
 	
@@ -148,6 +150,14 @@ public class PortfolioElementRow {
 		return page.getCreationDate();
 	}
 	
+	public String getImageUrl() {
+		return imageUrl;
+	}
+
+	public void setImageUrl(String imageUrl) {
+		this.imageUrl = imageUrl;
+	}
+
 	public PageStatus getPageStatus() {
 		return page == null ? null : page.getPageStatus();
 	}

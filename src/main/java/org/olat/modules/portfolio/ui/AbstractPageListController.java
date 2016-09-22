@@ -19,14 +19,18 @@
  */
 package org.olat.modules.portfolio.ui;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 import java.util.Map;
 
+import javax.servlet.http.HttpServletRequest;
+
 import org.olat.core.commons.services.commentAndRating.CommentAndRatingDefaultSecurityCallback;
 import org.olat.core.commons.services.commentAndRating.CommentAndRatingSecurityCallback;
 import org.olat.core.commons.services.commentAndRating.ui.UserCommentsController;
+import org.olat.core.dispatcher.mapper.Mapper;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -56,6 +60,9 @@ import org.olat.core.gui.control.generic.closablewrapper.CloseableModalControlle
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
+import org.olat.core.gui.media.FileMediaResource;
+import org.olat.core.gui.media.MediaResource;
+import org.olat.core.gui.media.NotFoundMediaResource;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
@@ -172,6 +179,8 @@ implements Activateable2, TooledController, FlexiTableComponentDelegate {
 		}
 	
 		model = new PageListDataModel(columnsModel);
+		String mapperThumbnailUrl = registerCacheableMapper(ureq, "page-list", new PageImageMapper(model, portfolioService));
+		
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", model, 20, false, getTranslator(), formLayout);
 		tableEl.setAvailableRendererTypes(FlexiTableRendererType.custom, FlexiTableRendererType.classic);
 		tableEl.setRendererType(FlexiTableRendererType.custom);
@@ -182,6 +191,7 @@ implements Activateable2, TooledController, FlexiTableComponentDelegate {
 		tableEl.setPageSize(24);
 		VelocityContainer row = createVelocityContainer("portfolio_element_row");
 		row.setDomReplacementWrapperRequired(false); // sets its own DOM id in velocity container
+		row.contextPut("mapperThumbnailUrl", mapperThumbnailUrl);
 		tableEl.setRowRenderer(row, this);
 		tableEl.setCssDelegate(new DefaultFlexiTableCssDelegate());
 		tableEl.setAndLoadPersistedPreferences(ureq, "page-list");
@@ -326,6 +336,11 @@ implements Activateable2, TooledController, FlexiTableComponentDelegate {
 					row.setAssignment(assignment);
 				}
 			}
+		}
+		
+		if(StringHelper.containsNonWhitespace(page.getImagePath())) {
+			String imageUrl = "page/" + page.getKey() + "/" + page.getImagePath();
+			row.setImageUrl(imageUrl);
 		}
 		
 		if(numberOfCommentsMap != null) {
@@ -717,5 +732,46 @@ implements Activateable2, TooledController, FlexiTableComponentDelegate {
 		pageCtrl = new PageRunController(ureq, swControl, stackPanel, secCallback, reloadedPage, openInEditMode);
 		listenTo(pageCtrl);
 		stackPanel.pushController(reloadedPage.getTitle(), pageCtrl);
+	}
+	
+	private static final class PageImageMapper implements Mapper {
+		
+		private final PageListDataModel model;
+		private final PortfolioService portfolioService;
+
+		public PageImageMapper(PageListDataModel model, PortfolioService portfolioService) {
+			this.model = model;
+			this.portfolioService = portfolioService;
+		}
+
+		@Override
+		public MediaResource handle(String relPath, HttpServletRequest request) {
+			MediaResource mr = null;
+			
+			String path = relPath;
+			if(path.startsWith("/page/")) {
+				path = path.substring(6, path.length());
+				
+				int index = path.indexOf('/');
+				if(index > 0) {
+					String pageKey = path.substring(0, index);
+					Long key = new Long(pageKey);
+					for(int i=model.getRowCount(); i-->0; ) {
+						PortfolioElementRow row = model.getObject(i);
+						if(row.isPage() && row.getPage().getKey().equals(key)) {
+							File posterImage = portfolioService.getPosterImage(row.getPage());
+							mr = new FileMediaResource(posterImage);
+							break;
+						}
+					}
+				}
+			}
+			
+			if(mr == null) {
+				mr = new NotFoundMediaResource(relPath);
+			}
+			return mr;
+		}
+		
 	}
 }
