@@ -73,7 +73,8 @@ import org.olat.modules.portfolio.ui.editor.handler.SpacerElementHandler;
 import org.olat.modules.portfolio.ui.editor.handler.TitlePageElementHandler;
 import org.olat.modules.portfolio.ui.event.ClosePageEvent;
 import org.olat.modules.portfolio.ui.event.MediaSelectionEvent;
-import org.olat.modules.portfolio.ui.event.PageRemoved;
+import org.olat.modules.portfolio.ui.event.PageDeletedEvent;
+import org.olat.modules.portfolio.ui.event.PageRemovedEvent;
 import org.olat.modules.portfolio.ui.event.PublishEvent;
 import org.olat.modules.portfolio.ui.event.ReopenPageEvent;
 import org.olat.modules.portfolio.ui.event.RevisionEvent;
@@ -88,7 +89,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class PageRunController extends BasicController implements TooledController, Activateable2  {
 
 	private VelocityContainer mainVC;
-	private Link editLink, editMetadataLink, deleteLink, restoreLink;
+	private Link editLink, editMetadataLink, moveToTrashLink, restoreLink, deleteLink;
 	protected final TooledStackedPanel stackPanel;
 	
 	private CloseableModalController cmc;
@@ -97,7 +98,7 @@ public class PageRunController extends BasicController implements TooledControll
 	private PageEditorController pageEditCtrl;
 	private RestorePageController restorePageCtrl;
 	private DialogBoxController confirmPublishCtrl, confirmRevisionCtrl, confirmCloseCtrl,
-		confirmReopenCtrl, confirmDeleteCtrl;
+		confirmReopenCtrl, confirmMoveToTrashCtrl, confirmDeleteCtrl;
 	private PageMetadataEditController editMetadataCtrl;
 	private UserCommentsAndRatingsController commentsCtrl;
 	
@@ -149,15 +150,19 @@ public class PageRunController extends BasicController implements TooledControll
 		editMetadataLink.setVisible(secCallback.canEditMetadataBinder());
 		stackPanel.addTool(editMetadataLink, Align.left);
 		
-		deleteLink = LinkFactory.createToolLink("delete.page", translate("delete.page"), this);
-		deleteLink.setIconLeftCSS("o_icon o_icon-lg o_icon_delete_item");
-		deleteLink.setVisible(secCallback.canDeletePage(page));
-		stackPanel.addTool(deleteLink, Align.right);
+		moveToTrashLink = LinkFactory.createToolLink("delete.page", translate("delete.page"), this);
+		moveToTrashLink.setIconLeftCSS("o_icon o_icon-lg o_icon_delete_item");
+		moveToTrashLink.setVisible(secCallback.canDeletePage(page));
+		stackPanel.addTool(moveToTrashLink, Align.right);
 		
 		if(secCallback.canRestorePage(page)) {
 			restoreLink = LinkFactory.createToolLink("restore.page", translate("restore.page"), this);
 			restoreLink.setIconLeftCSS("o_icon o_icon-lg o_icon_restore");
 			stackPanel.addTool(restoreLink, Align.left);
+			
+			deleteLink = LinkFactory.createToolLink("delete.def.page", translate("delete.def.page"), this);
+			deleteLink.setIconLeftCSS("o_icon o_icon-lg o_icon_delete");
+			stackPanel.addTool(deleteLink, Align.left);
 		}
 	}
 	
@@ -203,8 +208,8 @@ public class PageRunController extends BasicController implements TooledControll
 		if(editMetadataLink != null) {
 			editMetadataLink.setVisible(secCallback.canEditMetadataBinder());
 		}
-		if(deleteLink != null) {
-			deleteLink.setVisible(secCallback.canDeletePage(page));
+		if(moveToTrashLink != null) {
+			moveToTrashLink.setVisible(secCallback.canDeletePage(page));
 		}
 	}
 	
@@ -285,6 +290,10 @@ public class PageRunController extends BasicController implements TooledControll
 			if(DialogBoxUIFactory.isYesEvent(event)) {
 				doReopen(ureq);
 			}
+		} else if(confirmMoveToTrashCtrl == source) {
+			if(DialogBoxUIFactory.isYesEvent(event)) {
+				doMoveToTrash(ureq);
+			}
 		} else if(confirmDeleteCtrl == source) {
 			if(DialogBoxUIFactory.isYesEvent(event)) {
 				doDelete(ureq);
@@ -310,22 +319,35 @@ public class PageRunController extends BasicController implements TooledControll
 			doEditPage(ureq);
 		} else if(editMetadataLink == source) {
 			doEditMetadata(ureq);
-		} else if(deleteLink == source) {
-			doConfirmDelete(ureq);
+		} else if(moveToTrashLink == source) {
+			doConfirmMoveToTrash(ureq);
 		} else if(restoreLink == source) {
 			doRestorePage(ureq);
+		} else if(deleteLink == source) {
+			doConfirmDelete(ureq);
 		}
 	}
 	
-	private void doConfirmDelete(UserRequest ureq) {
+	private void doConfirmMoveToTrash(UserRequest ureq) {
 		String title = translate("delete.page.confirm.title");
 		String text = translate("delete.page.confirm.descr", new String[]{ StringHelper.escapeHtml(page.getTitle()) });
+		confirmMoveToTrashCtrl = activateYesNoDialog(ureq, title, text, confirmMoveToTrashCtrl);
+	}
+	
+	private void doMoveToTrash(UserRequest ureq) {
+		Page floatingPage = portfolioService.removePage(page);
+		fireEvent(ureq, new PageRemovedEvent(floatingPage));
+	}
+	
+	private void doConfirmDelete(UserRequest ureq) {
+		String title = translate("delete.def.page.confirm.title");
+		String text = translate("delete.def.page.confirm.descr", new String[]{ StringHelper.escapeHtml(page.getTitle()) });
 		confirmDeleteCtrl = activateYesNoDialog(ureq, title, text, confirmDeleteCtrl);
 	}
 	
 	private void doDelete(UserRequest ureq) {
-		Page floatingPage = portfolioService.removePage(page);
-		fireEvent(ureq, new PageRemoved(floatingPage));
+		portfolioService.deletePage(page);
+		fireEvent(ureq, new PageDeletedEvent());
 	}
 	
 	private void doConfirmPublish(UserRequest ureq) {

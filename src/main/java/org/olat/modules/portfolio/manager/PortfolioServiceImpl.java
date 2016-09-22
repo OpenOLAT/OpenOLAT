@@ -878,6 +878,12 @@ public class PortfolioServiceImpl implements PortfolioService {
 	@Override
 	public Page removePage(Page page) {
 		return pageDao.removePage(page);
+	}	
+
+	@Override
+	public void deletePage(Page page) {
+		Page reloadedPage = pageDao.loadByKey(page.getKey());
+		pageDao.deletePage(reloadedPage);
 	}
 
 	@Override

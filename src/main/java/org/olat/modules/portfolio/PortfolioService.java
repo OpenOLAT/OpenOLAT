@@ -435,6 +435,8 @@ public interface PortfolioService {
 	 */
 	public Page removePage(Page page);
 	
+	public void deletePage(Page page);
+	
 	/**
 	 * The list of page fragments
 	 * @param page

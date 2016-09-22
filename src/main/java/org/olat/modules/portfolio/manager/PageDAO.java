@@ -423,14 +423,21 @@ public class PageDAO {
 		return dbInstance.getCurrentEntityManager().merge(part);
 	}
 	
-	
+	/**
+	 * The page cannot be detached (reload it if necessary).
+	 * 
+	 * @param page
+	 * @return
+	 */
 	public int deletePage(Page page) {
-		String partQ = "delete from pfpagepart part where part.page.key=:pageKey";
+		PageBody body = page.getBody();
+		String partQ = "delete from pfpagepart part where part.body.key=:bodyKey";
 		int parts = dbInstance.getCurrentEntityManager()
 				.createQuery(partQ)
-				.setParameter("pageKey", page.getKey())
+				.setParameter("bodyKey", body.getKey())
 				.executeUpdate();
 		dbInstance.getCurrentEntityManager().remove(page);
+		dbInstance.getCurrentEntityManager().remove(body);
 		return parts + 1;
 	}
 }

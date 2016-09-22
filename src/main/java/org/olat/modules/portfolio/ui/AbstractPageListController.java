@@ -24,6 +24,7 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -85,7 +86,8 @@ import org.olat.modules.portfolio.SectionStatus;
 import org.olat.modules.portfolio.ui.PageListDataModel.PageCols;
 import org.olat.modules.portfolio.ui.component.CategoriesCellRenderer;
 import org.olat.modules.portfolio.ui.component.TimelineElement;
-import org.olat.modules.portfolio.ui.event.PageRemoved;
+import org.olat.modules.portfolio.ui.event.PageDeletedEvent;
+import org.olat.modules.portfolio.ui.event.PageRemovedEvent;
 import org.olat.modules.portfolio.ui.model.PortfolioElementRow;
 import org.olat.modules.portfolio.ui.renderer.PortfolioElementCellRenderer;
 import org.olat.modules.portfolio.ui.renderer.StatusCellRenderer;
@@ -440,7 +442,7 @@ implements Activateable2, TooledController, FlexiTableComponentDelegate {
 			if(event == Event.CHANGED_EVENT) {
 				loadModel(null);
 				fireEvent(ureq, Event.CHANGED_EVENT);
-			} else if(event instanceof PageRemoved) {
+			} else if(event instanceof PageRemovedEvent || event instanceof PageDeletedEvent) {
 				loadModel(null);
 				stackPanel.popUpToController(this);
 				fireEvent(ureq, Event.CHANGED_EVENT);
@@ -732,6 +734,16 @@ implements Activateable2, TooledController, FlexiTableComponentDelegate {
 		pageCtrl = new PageRunController(ureq, swControl, stackPanel, secCallback, reloadedPage, openInEditMode);
 		listenTo(pageCtrl);
 		stackPanel.pushController(reloadedPage.getTitle(), pageCtrl);
+	}
+	
+	protected List<PortfolioElementRow> getSelectedRows() {
+		Set<Integer> indexes = tableEl.getMultiSelectedIndex();
+		List<PortfolioElementRow> selectedRows = new ArrayList<>(indexes.size());
+		for(Integer index:indexes) {
+			PortfolioElementRow row = model.getObject(index.intValue());
+			selectedRows.add(row);
+		}
+		return selectedRows;
 	}
 	
 	private static final class PageImageMapper implements Mapper {
