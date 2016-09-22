@@ -461,9 +461,15 @@ public interface PortfolioService {
 	
 	public void updateCategories(Media media, List<String> categories);
 	
+	public void deleteMedia(Media media);
+	
+	/**
+	 * The list of categories of the specified media.
+	 * @param media
+	 * @return A list of categories
+	 */
 	public List<Category> getCategories(Media media);
 	
-
 	public List<CategoryLight> getMediaCategories(IdentityRef owner);
 
 	

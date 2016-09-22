@@ -46,6 +46,8 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
+import org.olat.core.gui.control.generic.modal.DialogBoxController;
+import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.Formatter;
@@ -57,6 +59,7 @@ import org.olat.modules.portfolio.PageStatus;
 import org.olat.modules.portfolio.PortfolioService;
 import org.olat.modules.portfolio.manager.MetadataXStream;
 import org.olat.modules.portfolio.model.BinderPageUsage;
+import org.olat.modules.portfolio.ui.event.MediaEvent;
 import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -68,12 +71,13 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class MediaDetailsController extends FormBasicController implements Activateable2, TooledController {
 
-	private Link editLink;
+	private Link editLink, deleteLink;
 	private final TooledStackedPanel stackPanel;
 
 	private Controller mediaCtrl;
 	private Controller mediaEditCtrl;
 	private CloseableModalController cmc;
+	private DialogBoxController confirmDeleteMediaCtrl;
 	
 	private int counter;
 	private Media media;
@@ -106,6 +110,12 @@ public class MediaDetailsController extends FormBasicController implements Activ
 			editLink = LinkFactory.createToolLink("edit", translate("edit"), this);
 			editLink.setIconLeftCSS("o_icon o_icon-lg o_icon_edit");
 			stackPanel.addTool(editLink, Align.left);
+		}
+		
+		if(usedInList.isEmpty()) {
+			deleteLink = LinkFactory.createToolLink("delete", translate("delete"), this);
+			deleteLink.setIconLeftCSS("o_icon o_icon-lg o_icon_delete_item");
+			stackPanel.addTool(deleteLink, Align.left);
 		}
 	}
 
@@ -185,6 +195,8 @@ public class MediaDetailsController extends FormBasicController implements Activ
 	public void event(UserRequest ureq, Component source, Event event) {
 		if(editLink == source) {
 			doEdit(ureq);
+		} else if(deleteLink == source) {
+			doConfirmDelete(ureq);
 		}
 		super.event(ureq, source, event);
 	}
@@ -198,6 +210,11 @@ public class MediaDetailsController extends FormBasicController implements Activ
 			}
 			cmc.deactivate();
 			cleanUp();
+		} else if(confirmDeleteMediaCtrl == source) {
+			if(DialogBoxUIFactory.isYesEvent(event)) {
+				doDelete();
+				fireEvent(ureq, new MediaEvent(MediaEvent.DELETED));
+			}	
 		} else if(cmc == source) {
 			cleanUp();
 		}
@@ -234,5 +251,16 @@ public class MediaDetailsController extends FormBasicController implements Activ
 		cmc = new CloseableModalController(getWindowControl(), null, mediaEditCtrl.getInitialComponent(), true, title, true);
 		listenTo(cmc);
 		cmc.activate();
+	}
+
+	private void doConfirmDelete(UserRequest ureq) {
+		String title = translate("delete.media.confirm.title");
+		String text = translate("delete.media.confirm.descr", new String[]{ StringHelper.escapeHtml(media.getTitle()) });
+		confirmDeleteMediaCtrl = activateYesNoDialog(ureq, title, text, confirmDeleteMediaCtrl);
+		confirmDeleteMediaCtrl.setUserObject(media);
+	}
+	
+	private void doDelete() {
+		portfolioService.deleteMedia(media);
 	}
 }

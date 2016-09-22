@@ -914,6 +914,11 @@ public class PortfolioServiceImpl implements PortfolioService {
 	}
 
 	@Override
+	public void deleteMedia(Media media) {
+		mediaDao.deleteMedia(media);
+	}
+
+	@Override
 	public void updateCategories(Media media, List<String> categories) {
 		OLATResourceable ores = OresHelper.createOLATResourceableInstance(Media.class, media.getKey());
 		updateCategories(ores, categories);

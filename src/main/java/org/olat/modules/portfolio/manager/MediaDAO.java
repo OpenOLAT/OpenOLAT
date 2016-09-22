@@ -32,6 +32,9 @@ import org.olat.basesecurity.IdentityRef;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.vfs.VFSContainer;
+import org.olat.core.util.vfs.VFSItem;
+import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.modules.portfolio.Media;
 import org.olat.modules.portfolio.MediaLight;
 import org.olat.modules.portfolio.model.BinderPageUsage;
@@ -50,6 +53,8 @@ public class MediaDAO {
 	
 	@Autowired
 	private DB dbInstance;
+	@Autowired
+	private PortfolioFileStorage fileStorage;
 	
 	/**
 	 * 
@@ -161,6 +166,18 @@ public class MediaDAO {
 		}
 		return usage;
 		
+	}
+	
+	public void deleteMedia(Media media) {
+		if(StringHelper.containsNonWhitespace(media.getRootFilename())) {
+			VFSContainer container = fileStorage.getMediaContainer(media);
+			VFSItem item = container.resolve(media.getRootFilename());
+			if(item instanceof VFSLeaf) {
+				((VFSLeaf)item).delete();
+			}
+		}
+		Media reloadedMedia = dbInstance.getCurrentEntityManager().getReference(MediaImpl.class, media.getKey());
+		dbInstance.getCurrentEntityManager().remove(reloadedMedia);
 	}
 
 }
