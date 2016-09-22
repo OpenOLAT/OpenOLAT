@@ -27,7 +27,9 @@ import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.modules.portfolio.PortfolioV2Module;
 import org.olat.modules.portfolio.ui.event.NewBinderEvent;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -39,18 +41,25 @@ public class NewBinderCalloutController extends BasicController {
 	
 	private Link createBinderLink, createBinderFromTemplateLink, createBinderFromCourseLink;
 	
+	@Autowired
+	private PortfolioV2Module portfolioModule;
+	
 	public NewBinderCalloutController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
 		
 		VelocityContainer mainVC = createVelocityContainer("new_binder_callout");
-
-		createBinderLink = LinkFactory.createLink("empty", "create.empty.binder", "new.empty", mainVC, this);
-		mainVC.put("empty", createBinderLink);
-		createBinderFromTemplateLink = LinkFactory.createLink("template", "create.empty.binder.from.template", "new.template", mainVC, this);
-		mainVC.put("template", createBinderFromTemplateLink);
-		createBinderFromCourseLink = LinkFactory.createLink("course", "create.empty.binder.from.course", "new.course", mainVC, this);
-		mainVC.put("course", createBinderFromCourseLink);
-
+		if(portfolioModule.isLearnerCanCreateBinders()) {
+			createBinderLink = LinkFactory.createLink("empty", "create.empty.binder", "new.empty", mainVC, this);
+			mainVC.put("empty", createBinderLink);
+		}
+		if(portfolioModule.isCanCreateBindersFromTemplate()) {
+			createBinderFromTemplateLink = LinkFactory.createLink("template", "create.empty.binder.from.template", "new.template", mainVC, this);
+			mainVC.put("template", createBinderFromTemplateLink);
+		}
+		if(portfolioModule.isCanCreateBindersFromCourse()) {
+			createBinderFromCourseLink = LinkFactory.createLink("course", "create.empty.binder.from.course", "new.course", mainVC, this);
+			mainVC.put("course", createBinderFromCourseLink);
+		}
 		putInitialPanel(mainVC);
 	}
 	

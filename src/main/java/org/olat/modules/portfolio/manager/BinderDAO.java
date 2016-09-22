@@ -253,7 +253,9 @@ public class BinderDAO {
 		}
 		
 		for(Assignment templateAssignment:templateAssignments) {
-			assignmentDao.createAssignment(templateAssignment, AssignmentStatus.notStarted, currentSection);
+			if(templateAssignment != null) {
+				assignmentDao.createAssignment(templateAssignment, AssignmentStatus.notStarted, currentSection);
+			}
 		}
 	}
 	
