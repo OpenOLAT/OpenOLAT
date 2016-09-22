@@ -88,9 +88,10 @@ public class PublishController extends BasicController implements TooledControll
 	private final TooledStackedPanel stackPanel;
 
 	private CloseableModalController cmc;
-	private InvitationEditRightsController addInvitationCtrl;
-	private AccessRightsEditController editAccessRightsCtrl;
 	private StepsMainRunController addMembersWizard;
+	private AccessRightsEditController editAccessRightsCtrl;
+	private InvitationEditRightsController addInvitationCtrl;
+	private InvitationEmailController addInvitationEmailCtrl;
 	
 	private int counter;
 	private Binder binder;
@@ -224,7 +225,7 @@ public class PublishController extends BasicController implements TooledControll
 		if(addAccessRightsLink == source) {
 			doAddAccessRights(ureq);
 		} else if(addInvitationLink == source) {
-			doAddInvitation(ureq);
+			doAddInvitationEmail(ureq);
 		} else if(source instanceof Link) {
 			Link link = (Link)source;
 			String cmd = link.getCommand();
@@ -249,6 +250,16 @@ public class PublishController extends BasicController implements TooledControll
 					reloadData();
 				}
 				cleanUp();
+			}
+		} else if(addInvitationEmailCtrl == source) {
+			if(event == Event.CANCELLED_EVENT || event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
+				String email = addInvitationEmailCtrl.getEmail();
+				cmc.deactivate();
+				cleanUp();
+				
+				if(event == Event.DONE_EVENT) {
+					doAddInvitation(ureq, email);
+				}
 			}
 		} else if(addInvitationCtrl == source) {
 			if(event == Event.CANCELLED_EVENT || event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
@@ -277,20 +288,34 @@ public class PublishController extends BasicController implements TooledControll
 	}
 	
 	private void cleanUp() {
+		removeAsListenerAndDispose(addInvitationEmailCtrl);
 		removeAsListenerAndDispose(editAccessRightsCtrl);
 		removeAsListenerAndDispose(addInvitationCtrl);
 		removeAsListenerAndDispose(addMembersWizard);
 		removeAsListenerAndDispose(cmc);
+		addInvitationEmailCtrl = null;
 		editAccessRightsCtrl = null;
 		addInvitationCtrl = null;
 		addMembersWizard = null;
 		cmc = null;
 	}
 	
-	private void doAddInvitation(UserRequest ureq) {
+	private void doAddInvitationEmail(UserRequest ureq) {
+		if(addInvitationEmailCtrl != null) return;
+		
+		addInvitationEmailCtrl = new InvitationEmailController(ureq, getWindowControl(), binder);
+		listenTo(addInvitationEmailCtrl);
+		
+		String title = translate("add.invitation");
+		cmc = new CloseableModalController(getWindowControl(), null, addInvitationEmailCtrl.getInitialComponent(), true, title, true);
+		listenTo(cmc);
+		cmc.activate();
+	}
+	
+	private void doAddInvitation(UserRequest ureq, String email) {
 		if(addInvitationCtrl != null) return;
 		
-		addInvitationCtrl = new InvitationEditRightsController(ureq, getWindowControl(), binder);
+		addInvitationCtrl = new InvitationEditRightsController(ureq, getWindowControl(), binder, email);
 		listenTo(addInvitationCtrl);
 		
 		String title = translate("add.invitation");
