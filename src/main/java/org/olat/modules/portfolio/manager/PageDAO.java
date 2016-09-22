@@ -35,6 +35,7 @@ import org.olat.basesecurity.manager.GroupDAO;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.core.util.StringHelper;
+import org.olat.modules.portfolio.AssignmentStatus;
 import org.olat.modules.portfolio.BinderRef;
 import org.olat.modules.portfolio.Page;
 import org.olat.modules.portfolio.PageBody;
@@ -328,10 +329,21 @@ public class PageDAO {
 		reloadedPage.setLastModified(new Date());
 		reloadedPage.setSection(null);
 		reloadedPage.setPageStatus(PageStatus.deleted);
+		unlinkAssignment(page);
 		if(section != null) {
 			dbInstance.getCurrentEntityManager().merge(section);
 		}
 		return dbInstance.getCurrentEntityManager().merge(reloadedPage);
+	}
+	
+	public int unlinkAssignment(Page page) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("update pfassignment assignment set assignment.page.key=null, assignment.status=:status where assignment.page.key=:pageKey");
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString())
+				.setParameter("pageKey", page.getKey())
+				.setParameter("status", AssignmentStatus.notStarted.name())
+				.executeUpdate();
 	}
 	
 	public PagePart persistPart(PageBody body, PagePart part) {
