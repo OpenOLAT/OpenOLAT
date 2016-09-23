@@ -710,7 +710,7 @@ public class AuthorListController extends FormBasicController implements Activat
 		}
 		
 		if(manageableRows.isEmpty()) {
-			showWarning("bulk.update.nothing.selected");
+			showWarning("bulk.update.nothing.applicable.selected");
 		} else {
 			removeAsListenerAndDispose(userSearchCtr);
 			userSearchCtr = new UserSearchController(ureq, getWindowControl(), false, true, UserSearchController.ACTION_KEY_CHOOSE_FINISH);
@@ -762,7 +762,7 @@ public class AuthorListController extends FormBasicController implements Activat
 			showWarning("repositoryentry.not.existing");
 			tableEl.reloadData();
 		} else if(copyableRows.isEmpty()) {
-			showWarning("bulk.update.nothing.selected");
+			showWarning("bulk.update.nothing.applicable.selected");
 		} else {
 			StringBuilder sb = new StringBuilder();
 			for(AuthoringEntryRow row:copyableRows) {
@@ -831,7 +831,7 @@ public class AuthorListController extends FormBasicController implements Activat
 		
 		List<RepositoryEntry> entriesToDelete = repositoryManager.lookupRepositoryEntries(deleteableRowKeys);
 		if(entriesToDelete.isEmpty()) {
-			showWarning("bulk.update.nothing.selected");
+			showWarning("bulk.update.nothing.applicable.selected");
 		} else {
 			removeAsListenerAndDispose(confirmDeleteCtrl);
 			removeAsListenerAndDispose(cmc);
