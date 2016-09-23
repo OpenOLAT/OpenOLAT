@@ -27,6 +27,7 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
+import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
@@ -52,9 +53,10 @@ public class PortfolioAdminController extends FormBasicController  {
 	private static String[] enabledKeys = new String[]{ "on" };
 	private static String[] enabledPortfolioKeys = new String[]{ "on", "legacy"};
 
+	private SingleSelection entryPointEl;
 	private FormLayoutContainer wizardFlc;
 	private MultipleSelectionElement portfoliosEnabled;
-	private MultipleSelectionElement userCanCreatePortfolioEnabled;
+	private MultipleSelectionElement canCreatePortfolioEnabled;
 	private final List<MultipleSelectionElement> handlersEnabled = new ArrayList<>();
 	private MultipleSelectionElement copyrightStepCB, reflexionStepCB;
 
@@ -73,6 +75,8 @@ public class PortfolioAdminController extends FormBasicController  {
 		//module configuration
 		FormLayoutContainer moduleFlc = FormLayoutContainer.createDefaultFormLayout("flc_module", getTranslator());
 		formLayout.add(moduleFlc);
+
+		String[] enabledValues = new String[] { translate("enabled")};
 		
 		String[] enabledPortfolioValues = new String[] { translate("enabled"), translate("portfolio.v1.module.enabled") };
 		portfoliosEnabled = uifactory.addCheckboxesVertical("portfolio.module.enabled", moduleFlc, enabledPortfolioKeys, enabledPortfolioValues, 1);
@@ -84,12 +88,39 @@ public class PortfolioAdminController extends FormBasicController  {
 		}
 		portfoliosEnabled.addActionListener(FormEvent.ONCHANGE);
 
-		String[] enabledValues = new String[] { translate("enabled")};
+		String[] createBinderKeys = new String[]{ "learner", "template", "course" };
+		String[] createBinderValues = new String[] {
+				translate("portfolio.user.can.create.binder"),
+				translate("portfolio.user.can.create.binder.template"),
+				translate("portfolio.user.can.create.binder.course")
+		};
+		canCreatePortfolioEnabled = uifactory.addCheckboxesVertical("portfolio.user.create.binder", moduleFlc, createBinderKeys, createBinderValues, 1);
+		if(portfolioV2Module.isLearnerCanCreateBinders()) {
+			canCreatePortfolioEnabled.select(createBinderKeys[0], portfolioV2Module.isLearnerCanCreateBinders());
+		}
+		if(portfolioV2Module.isCanCreateBindersFromTemplate()) {
+			canCreatePortfolioEnabled.select(createBinderKeys[1], portfolioV2Module.isCanCreateBindersFromTemplate());
+		}
+		if(portfolioV2Module.isCanCreateBindersFromCourse()) {
+			canCreatePortfolioEnabled.select(createBinderKeys[2], portfolioV2Module.isCanCreateBindersFromCourse());
+		}
+		canCreatePortfolioEnabled.addActionListener(FormEvent.ONCHANGE);
+		canCreatePortfolioEnabled.setVisible(portfolioV2Module.isEnabled());
 		
-		userCanCreatePortfolioEnabled = uifactory.addCheckboxesHorizontal("portfolio.user.can.create.binder", moduleFlc, enabledKeys, enabledValues);
-		userCanCreatePortfolioEnabled.select(enabledKeys[0], portfolioV2Module.isLearnerCanCreateBinders());
-		userCanCreatePortfolioEnabled.addActionListener(FormEvent.ONCHANGE);
-		userCanCreatePortfolioEnabled.setVisible(portfolioV2Module.isEnabled());
+		String[] entryPointKeys = new String[] { PortfolioV2Module.ENTRY_POINT_TOC, PortfolioV2Module.ENTRY_POINT_ENTRIES };
+		String[] entryPointValues = new String[]{ translate("binder.entry.point.toc"), translate("binder.entry.point.entries") };
+		entryPointEl = uifactory.addDropdownSingleselect("binder.entry.point", "binder.entry.point", moduleFlc, entryPointKeys, entryPointValues, null);
+		entryPointEl.addActionListener(FormEvent.ONCHANGE);
+		entryPointEl.setVisible(portfolioV2Module.isEnabled());
+		String entryPoint = portfolioV2Module.getBinderEntryPoint();
+		for(String entryPointKey:entryPointKeys) {
+			if(entryPointKey.equals(entryPoint)) {
+				entryPointEl.select(entryPointKey, true);
+			}
+		}
+		if(!entryPointEl.isOneSelected()) {
+			entryPointEl.select(entryPointKeys[0], true);
+		}
 		
 		//handlers configuration
 		FormLayoutContainer handlersFlc = FormLayoutContainer.createDefaultFormLayout("flc_handlers", getTranslator());
@@ -145,22 +176,36 @@ public class PortfolioAdminController extends FormBasicController  {
 			// update collaboration tools list
 
 			wizardFlc.setVisible(portfoliosEnabled.isSelected(1));
-			userCanCreatePortfolioEnabled.setVisible(portfolioV2Module.isEnabled());
+			entryPointEl.setVisible(portfolioV2Module.isEnabled());
+			canCreatePortfolioEnabled.setVisible(portfolioV2Module.isEnabled());
 			CollaborationToolsFactory.getInstance().initAvailableTools();
 			showInfo("save.admin.settings");
 		} else if(handlersEnabled.contains(source)) {
 			EPArtefactHandler<?> handler = (EPArtefactHandler<?>)source.getUserObject();
 			boolean enabled = ((MultipleSelectionElement)source).isSelected(0);
 			portfolioModule.setEnableArtefactHandler(handler, enabled);
+			showInfo("save.admin.settings");
 		} else if(source == reflexionStepCB){
 			boolean enabled = reflexionStepCB.isSelected(0);
 			portfolioModule.setReflexionStepEnabled(enabled);
+			showInfo("save.admin.settings");
 		} else if(source == copyrightStepCB){
 			boolean enabled = copyrightStepCB.isSelected(0);
 			portfolioModule.setCopyrightStepEnabled(enabled);
-		} else if(userCanCreatePortfolioEnabled == source) {
-			boolean enabled = userCanCreatePortfolioEnabled.isSelected(0);
+			showInfo("save.admin.settings");
+		} else if(canCreatePortfolioEnabled == source) {
+			boolean enabled = canCreatePortfolioEnabled.isSelected(0);
 			portfolioV2Module.setLearnerCanCreateBinders(enabled);
+			boolean enabledTemplate = canCreatePortfolioEnabled.isSelected(1);
+			portfolioV2Module.setCanCreateBindersFromTemplate(enabledTemplate);
+			boolean enabledCourse = canCreatePortfolioEnabled.isSelected(2);
+			portfolioV2Module.setCanCreateBindersFromCourse(enabledCourse);
+			showInfo("save.admin.settings");
+		} else if(entryPointEl == source) {
+			if(entryPointEl.isOneSelected()) {
+				portfolioV2Module.setBinderEntryPoint(entryPointEl.getSelectedKey());
+				showInfo("save.admin.settings");
+			}
 		}
 	}
 }

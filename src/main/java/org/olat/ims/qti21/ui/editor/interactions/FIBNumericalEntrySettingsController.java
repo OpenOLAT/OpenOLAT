@@ -58,8 +58,7 @@ public class FIBNumericalEntrySettingsController extends FormBasicController {
 	private final NumericalEntry interaction;
 	
 	public FIBNumericalEntrySettingsController(UserRequest ureq, WindowControl wControl, NumericalEntry interaction) {
-		super(ureq, wControl);
-		setTranslator(Util.createPackageTranslator(AssessmentTestEditorController.class, getLocale()));
+		super(ureq, wControl, Util.createPackageTranslator(AssessmentTestEditorController.class, ureq.getLocale()));
 		this.interaction = interaction;
 		initForm(ureq);
 	}
@@ -95,11 +94,14 @@ public class FIBNumericalEntrySettingsController extends FormBasicController {
 		Double lowerTolerance = interaction.getLowerTolerance();
 		String lowerToleranceString = lowerTolerance == null ? "" : lowerTolerance.toString();
 		lowerToleranceEl = uifactory.addTextElement("fib.tolerance.low", "fib.tolerance.low", 8, lowerToleranceString, formLayout);
+		lowerToleranceEl.setExampleKey("fib.tolerance.mode.absolute.example", null);
 		
 		Double upperTolerance = interaction.getUpperTolerance();
 		String upperToleranceString = upperTolerance == null ? "" : upperTolerance.toString();
 		upperToleranceEl = uifactory.addTextElement("fib.tolerance.up", "fib.tolerance.up", 8, upperToleranceString, formLayout);
+		upperToleranceEl.setExampleKey("fib.tolerance.mode.absolute.example", null);
 		updateToleranceUpAndLow();
+
 		
 		// Submit Button
 		FormLayoutContainer buttonsContainer = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
@@ -116,6 +118,13 @@ public class FIBNumericalEntrySettingsController extends FormBasicController {
 			boolean visible = mode == ToleranceMode.ABSOLUTE || mode == ToleranceMode.RELATIVE;
 			lowerToleranceEl.setVisible(visible);
 			upperToleranceEl.setVisible(visible);
+			if(mode == ToleranceMode.RELATIVE) {
+				lowerToleranceEl.setExampleKey("fib.tolerance.mode.relative.example", null);
+				upperToleranceEl.setExampleKey("fib.tolerance.mode.relative.example", null);
+			} else if(mode == ToleranceMode.ABSOLUTE) {
+				lowerToleranceEl.setExampleKey("fib.tolerance.mode.absolute.example", null);
+				upperToleranceEl.setExampleKey("fib.tolerance.mode.absolute.example", null);
+			}
 		}
 	}
 
@@ -155,8 +164,8 @@ public class FIBNumericalEntrySettingsController extends FormBasicController {
 			String selectedKey = toleranceModeEl.getSelectedKey();
 			ToleranceMode mode = ToleranceMode.valueOf(selectedKey);
 			if(mode == ToleranceMode.ABSOLUTE || mode == ToleranceMode.RELATIVE) {
-				allOk = validateDouble(lowerToleranceEl);
-				allOk = validateDouble(upperToleranceEl);
+				allOk &= validateDouble(lowerToleranceEl);
+				allOk &= validateDouble(upperToleranceEl);
 			}
 		}
 
@@ -169,7 +178,11 @@ public class FIBNumericalEntrySettingsController extends FormBasicController {
 		element.clearError();
 		if(StringHelper.containsNonWhitespace(element.getValue())) {
 			try {
-				Double.parseDouble(solutionEl.getValue());
+				double val = Double.parseDouble(element.getValue());
+				if(val < 0.0d) {
+					element.setErrorKey("error.positive.double", null);
+					allOk &= false;
+				}
 			} catch (NumberFormatException e) {
 				logError("", e);
 				element.setErrorKey("error.double", null);

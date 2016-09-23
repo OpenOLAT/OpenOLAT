@@ -19,9 +19,12 @@
  */
 package org.olat.modules.portfolio.model;
 
+import java.math.BigDecimal;
+import java.util.Date;
+import java.util.List;
+
 import org.olat.core.id.Identity;
-import org.olat.modules.assessment.AssessmentEntry;
-import org.olat.modules.portfolio.Binder;
+import org.olat.modules.assessment.AssessmentEntryLight;
 
 /**
  * 
@@ -29,34 +32,77 @@ import org.olat.modules.portfolio.Binder;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class AssessedBinder {
+public class AssessedBinder implements AssessmentEntryLight {
 	
-	private final Binder binder;
-	private final int numOfOpenSections;
+	private final Long binderKey;
+	private final String binderTitle;
+	private final String entryDisplayname;
+	
+	private final Boolean passed;
+	private final BigDecimal score;
 	private final Identity assessedIdentity;
-	private final AssessmentEntry assessmentEntry;
 	
-	public AssessedBinder(Identity assessedIdentity, Binder binder,
-			AssessmentEntry assessmentEntry, int numOfOpenSections) {
-		this.binder = binder;
-		this.assessmentEntry = assessmentEntry;
+	private Date lastModified;
+	private List<AssessedBinderSection> sections;
+	private int numOfOpenSections;
+	
+	public AssessedBinder(Long binderKey, String binderTitle, String entryDisplayname,
+			Boolean passed, BigDecimal score, Identity assessedIdentity) {
+		this.binderKey = binderKey;
+		this.binderTitle = binderTitle;
+		this.entryDisplayname = entryDisplayname;
+		this.passed = passed;
+		this.score = score;
 		this.assessedIdentity = assessedIdentity;
-		this.numOfOpenSections = numOfOpenSections;
+	}
+	
+	public Long getBinderKey() {
+		return binderKey;
+	}
+	
+	public String getBinderTitle() {
+		return binderTitle;
+	}
+	
+	public Date getLastModified() {
+		return lastModified;
+	}
+	
+	public void setLastModified(Date lastModified) {
+		this.lastModified = lastModified;
+	}
+	
+	public String getEntryDisplayname() {
+		return entryDisplayname;
 	}
 
-	public Binder getBinder() {
-		return binder;
+	@Override
+	public Boolean getPassed() {
+		return passed;
+	}
+
+	@Override
+	public BigDecimal getScore() {
+		return score;
 	}
 
 	public Identity getAssessedIdentity() {
 		return assessedIdentity;
 	}
 
-	public AssessmentEntry getAssessmentEntry() {
-		return assessmentEntry;
+	public List<AssessedBinderSection> getSections() {
+		return sections;
+	}
+
+	public void setSections(List<AssessedBinderSection> sections) {
+		this.sections = sections;
 	}
 
 	public int getNumOfOpenSections() {
 		return numOfOpenSections;
+	}
+	
+	public void setNumOfOpenSections(int numOfOpenSections) {
+		this.numOfOpenSections = numOfOpenSections;
 	}
 }

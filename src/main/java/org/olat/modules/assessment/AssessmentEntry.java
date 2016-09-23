@@ -32,7 +32,7 @@ import org.olat.repository.RepositoryEntry;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public interface AssessmentEntry {
+public interface AssessmentEntry extends AssessmentEntryLight {
 	
 	public Long getKey();
 	

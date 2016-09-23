@@ -19,7 +19,6 @@
  */
 package org.olat.group.ui.main;
 
-import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
@@ -37,6 +36,7 @@ import org.olat.core.id.Roles;
 import org.olat.group.BusinessGroupModule;
 import org.olat.group.model.BusinessGroupSelectionEvent;
 import org.olat.group.ui.NewBGController;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -64,6 +64,9 @@ public class SelectBusinessGroupController extends BasicController {
 	private Object userObject;
 	private final BusinessGroupViewFilter filter;
 
+	@Autowired
+	private BusinessGroupModule businessGroupModule;
+	
 	public SelectBusinessGroupController(UserRequest ureq, WindowControl wControl) {
 		this(ureq, wControl, null);
 	}
@@ -71,8 +74,7 @@ public class SelectBusinessGroupController extends BasicController {
 	public SelectBusinessGroupController(UserRequest ureq, WindowControl wControl, BusinessGroupViewFilter filter) {
 		super(ureq, wControl);
 		this.filter = filter;
-		enableCreate = CoreSpringFactory.getImpl(BusinessGroupModule.class)
-				.isAllowedCreate(ureq.getUserSession().getRoles());
+		enableCreate = businessGroupModule.isAllowedCreate(ureq.getUserSession().getRoles());
 		mainVC = createVelocityContainer("group_list_overview");
 		
 		if(enableCreate) {
@@ -104,10 +106,9 @@ public class SelectBusinessGroupController extends BasicController {
 	
 	private boolean isAdminSearchAllowed(UserRequest ureq) {
 		Roles roles = ureq.getUserSession().getRoles();
-		return roles.isOLATAdmin() ||
-				(roles.isInstitutionalResourceManager() && roles.isGroupManager()) ||
-				(ureq.getUserSession().getRoles().isInstitutionalResourceManager()
-						&& CoreSpringFactory.getImpl(BusinessGroupModule.class).isResourceManagersAllowedToLinkGroups());
+		return roles.isOLATAdmin() 
+				|| roles.isGroupManager() 
+				|| (roles.isInstitutionalResourceManager() && businessGroupModule.isResourceManagersAllowedToLinkGroups());
 	}
 	
 	public Object getUserObject() {

@@ -31,6 +31,14 @@
 		<level value="FATAL" />
 		<appender-ref ref="stdout" />
 	</logger>
+	
+	<!-- remove the OLAT-4653
+	<logger
+		name="org.olat.core.logging.activity.UserActivityLoggerImpl">
+		<level value="ERROR" />
+		<appender-ref ref="stdout" />
+	</logger>
+ 	-->
 	<!-- 
 	<logger
 		name="org.hibernate.SQL">

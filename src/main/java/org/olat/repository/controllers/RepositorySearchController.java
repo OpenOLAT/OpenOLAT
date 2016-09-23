@@ -400,7 +400,7 @@ public class RepositorySearchController extends BasicController implements Activ
 	 * @param restrictedTypes
 	 * @param ureq
 	 */
-	protected void doSearchByTypeLimitAccess(String[] restrictedTypes, UserRequest ureq) {
+	public void doSearchByTypeLimitAccess(String[] restrictedTypes, UserRequest ureq) {
 		searchType = null;
 		RepositoryManager rm = RepositoryManager.getInstance();
 		List<String> types = Arrays.asList(restrictedTypes);

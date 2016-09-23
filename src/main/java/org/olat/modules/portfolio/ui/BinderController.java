@@ -48,8 +48,10 @@ import org.olat.core.util.resource.OresHelper;
 import org.olat.modules.portfolio.Binder;
 import org.olat.modules.portfolio.BinderConfiguration;
 import org.olat.modules.portfolio.BinderSecurityCallback;
+import org.olat.modules.portfolio.PortfolioV2Module;
 import org.olat.modules.portfolio.ui.event.SectionSelectionEvent;
 import org.olat.util.logging.activity.LoggingResourceable;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -76,6 +78,9 @@ public class BinderController extends BasicController implements TooledControlle
 	private Binder binder;
 	private final BinderConfiguration config;
 	private final BinderSecurityCallback secCallback;
+	
+	@Autowired
+	private PortfolioV2Module portfolioModule;
 
 	public BinderController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
 			BinderSecurityCallback secCallback, Binder binder, BinderConfiguration config) {
@@ -145,9 +150,11 @@ public class BinderController extends BasicController implements TooledControlle
 	@Override
 	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
 		if(entries == null || entries.isEmpty()) {
-			BinderPageListController pagesCtrl = doOpenEntries(ureq);
-			if(pagesCtrl == null || pagesCtrl.getNumOfPages() == 0) {
+			String ePoint = portfolioModule.getBinderEntryPoint();
+			if(PortfolioV2Module.ENTRY_POINT_TOC.equals(ePoint)) {
 				doOpenOverview(ureq);
+			} else {
+				doOpenEntries(ureq);
 			}
 			return;
 		}

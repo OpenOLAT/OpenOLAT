@@ -23,6 +23,7 @@ import java.util.Collection;
 import java.util.Date;
 
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
+import org.olat.core.gui.components.image.ImageComponent;
 import org.olat.core.util.StringHelper;
 import org.olat.course.assessment.AssessmentHelper;
 import org.olat.modules.portfolio.AssessmentSection;
@@ -45,6 +46,8 @@ public class PortfolioElementRow {
 	private Assignment assignment;
 	private final AssessmentSection assessmentSection;
 	
+	private String imageUrl;
+	
 	private String metaSectionTitle;
 	private String metaBinderTitle;
 	
@@ -62,6 +65,8 @@ public class PortfolioElementRow {
 	// assignment
 	private FormLink newAssignmentLink, editAssignmentLink, deleteAssignmentLink,
 		instantiateAssignmentLink, upAssignmentLink, downAssignmentLink, moveAssignmentLink;
+	
+	private ImageComponent poster;
 	
 	private boolean newEntry;
 	private RowType type;
@@ -148,6 +153,26 @@ public class PortfolioElementRow {
 		return page.getCreationDate();
 	}
 	
+	public String getImageAlign() {
+		return page.getImageAlignment() == null ? null : page.getImageAlignment().name();
+	}
+	
+	public String getImageUrl() {
+		return imageUrl;
+	}
+
+	public void setImageUrl(String imageUrl) {
+		this.imageUrl = imageUrl;
+	}
+
+	public ImageComponent getPoster() {
+		return poster;
+	}
+
+	public void setPoster(ImageComponent poster) {
+		this.poster = poster;
+	}
+
 	public PageStatus getPageStatus() {
 		return page == null ? null : page.getPageStatus();
 	}

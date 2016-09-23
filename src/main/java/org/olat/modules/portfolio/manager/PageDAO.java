@@ -35,6 +35,7 @@ import org.olat.basesecurity.manager.GroupDAO;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.core.util.StringHelper;
+import org.olat.modules.portfolio.AssignmentStatus;
 import org.olat.modules.portfolio.BinderRef;
 import org.olat.modules.portfolio.Page;
 import org.olat.modules.portfolio.PageBody;
@@ -328,10 +329,21 @@ public class PageDAO {
 		reloadedPage.setLastModified(new Date());
 		reloadedPage.setSection(null);
 		reloadedPage.setPageStatus(PageStatus.deleted);
+		unlinkAssignment(page);
 		if(section != null) {
 			dbInstance.getCurrentEntityManager().merge(section);
 		}
 		return dbInstance.getCurrentEntityManager().merge(reloadedPage);
+	}
+	
+	public int unlinkAssignment(Page page) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("update pfassignment assignment set assignment.page.key=null, assignment.status=:status where assignment.page.key=:pageKey");
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString())
+				.setParameter("pageKey", page.getKey())
+				.setParameter("status", AssignmentStatus.notStarted.name())
+				.executeUpdate();
 	}
 	
 	public PagePart persistPart(PageBody body, PagePart part) {
@@ -411,14 +423,21 @@ public class PageDAO {
 		return dbInstance.getCurrentEntityManager().merge(part);
 	}
 	
-	
+	/**
+	 * The page cannot be detached (reload it if necessary).
+	 * 
+	 * @param page
+	 * @return
+	 */
 	public int deletePage(Page page) {
-		String partQ = "delete from pfpagepart part where part.page.key=:pageKey";
+		PageBody body = page.getBody();
+		String partQ = "delete from pfpagepart part where part.body.key=:bodyKey";
 		int parts = dbInstance.getCurrentEntityManager()
 				.createQuery(partQ)
-				.setParameter("pageKey", page.getKey())
+				.setParameter("bodyKey", body.getKey())
 				.executeUpdate();
 		dbInstance.getCurrentEntityManager().remove(page);
+		dbInstance.getCurrentEntityManager().remove(body);
 		return parts + 1;
 	}
 }

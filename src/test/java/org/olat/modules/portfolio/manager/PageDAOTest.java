@@ -353,4 +353,24 @@ public class PageDAOTest extends OlatTestCase {
 		Assert.assertEquals(spacePart, moveDownPageParts2.get(2));
 	}
 
+	@Test
+	public void deletePart() {
+		Page page = pageDao.createAndPersist("Page 10", "A page with content.", null, null, null, null);
+		dbInstance.commitAndCloseSession();
+		
+		HTMLPart htmlPart = new HTMLPart();
+		PageBody reloadedBody = pageDao.loadPageBodyByKey(page.getBody().getKey());
+		pageDao.persistPart(reloadedBody, htmlPart);
+		dbInstance.commitAndCloseSession();
+		
+		TitlePart titlePart = new TitlePart();
+		reloadedBody = pageDao.loadPageBodyByKey(page.getBody().getKey());
+		pageDao.persistPart(reloadedBody, titlePart, 0);
+		dbInstance.commitAndCloseSession();
+		
+		//reload
+		Page reloadedPage = pageDao.loadByKey(page.getKey());
+		pageDao.deletePage(reloadedPage);
+		dbInstance.commit();
+	}
 }

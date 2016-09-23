@@ -95,6 +95,7 @@ import org.olat.modules.portfolio.model.AssignmentImpl;
 import org.olat.modules.portfolio.model.BinderImpl;
 import org.olat.modules.portfolio.model.BinderStatistics;
 import org.olat.modules.portfolio.model.CategoryLight;
+import org.olat.modules.portfolio.model.BinderPageUsage;
 import org.olat.modules.portfolio.model.PageImpl;
 import org.olat.modules.portfolio.model.SectionImpl;
 import org.olat.modules.portfolio.model.SectionKeyRef;
@@ -222,16 +223,20 @@ public class PortfolioServiceImpl implements PortfolioService {
 			
 			List<Assignment> transientAssignments = ((SectionImpl)transientSection).getAssignments();
 			for(Assignment transientAssignment:transientAssignments) {
-				File newStorage = portfolioFileStorage.generateAssignmentSubDirectory();
-				String storage = portfolioFileStorage.getRelativePath(newStorage);
-				
-				assignmentDao.createAssignment(transientAssignment.getTitle(), transientAssignment.getSummary(),
-						transientAssignment.getContent(), storage, transientAssignment.getAssignmentType(),
-						transientAssignment.getAssignmentStatus(), section);
-				//copy attachments
-				File templateDirectory = portfolioFileStorage.getAssignmentDirectory(transientAssignment);
-				if(copy && templateDirectory != null) {
-					FileUtils.copyDirContentsToDir(templateDirectory, newStorage, false, "Assignment attachments");
+				if(transientAssignment != null) {
+					File newStorage = portfolioFileStorage.generateAssignmentSubDirectory();
+					String storage = portfolioFileStorage.getRelativePath(newStorage);
+					
+					assignmentDao.createAssignment(transientAssignment.getTitle(), transientAssignment.getSummary(),
+							transientAssignment.getContent(), storage, transientAssignment.getAssignmentType(),
+							transientAssignment.getAssignmentStatus(), section);
+					//copy attachments
+					File templateDirectory = portfolioFileStorage.getAssignmentDirectory(transientAssignment);
+					if(copy && templateDirectory != null) {
+						FileUtils.copyDirContentsToDir(templateDirectory, newStorage, false, "Assignment attachments");
+					}
+				} else {
+					System.out.println("");
 				}
 			}
 		}
@@ -352,7 +357,15 @@ public class PortfolioServiceImpl implements PortfolioService {
 	@Override
 	public boolean deleteAssignment(Assignment assignment) {
 		Assignment reloadedAssignment = assignmentDao.loadAssignmentByKey(assignment.getKey());
+		Section reloadedSection = reloadedAssignment.getSection();
+		boolean removed = false;
+		if(reloadedSection != null) {
+			removed = ((SectionImpl)reloadedSection).getAssignments().remove(reloadedAssignment);
+		}
 		assignmentDao.deleteAssignment(reloadedAssignment);
+		if(removed) {
+			binderDao.updateSection(reloadedSection);
+		}
 		return true;
 	}
 
@@ -865,6 +878,12 @@ public class PortfolioServiceImpl implements PortfolioService {
 	@Override
 	public Page removePage(Page page) {
 		return pageDao.removePage(page);
+	}	
+
+	@Override
+	public void deletePage(Page page) {
+		Page reloadedPage = pageDao.loadByKey(page.getKey());
+		pageDao.deletePage(reloadedPage);
 	}
 
 	@Override
@@ -901,6 +920,11 @@ public class PortfolioServiceImpl implements PortfolioService {
 	}
 
 	@Override
+	public void deleteMedia(Media media) {
+		mediaDao.deleteMedia(media);
+	}
+
+	@Override
 	public void updateCategories(Media media, List<String> categories) {
 		OLATResourceable ores = OresHelper.createOLATResourceableInstance(Media.class, media.getKey());
 		updateCategories(ores, categories);
@@ -928,7 +952,7 @@ public class PortfolioServiceImpl implements PortfolioService {
 	}
 
 	@Override
-	public List<BinderLight> getUsedInBinders(MediaLight media) {
+	public List<BinderPageUsage> getUsedInBinders(MediaLight media) {
 		return mediaDao.usedInBinders(media);
 	}
 

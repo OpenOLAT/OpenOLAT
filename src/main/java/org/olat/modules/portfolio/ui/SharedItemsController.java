@@ -20,6 +20,7 @@
 package org.olat.modules.portfolio.ui;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
 import org.olat.basesecurity.BaseSecurityModule;
@@ -30,15 +31,18 @@ import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableSearchEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiCellRenderer;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.id.OLATResourceable;
+import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.StringHelper;
@@ -50,12 +54,16 @@ import org.olat.modules.portfolio.BinderSecurityCallbackFactory;
 import org.olat.modules.portfolio.PortfolioService;
 import org.olat.modules.portfolio.model.AccessRights;
 import org.olat.modules.portfolio.model.AssessedBinder;
+import org.olat.modules.portfolio.model.AssessedBinderSection;
 import org.olat.modules.portfolio.model.SharedItemRow;
 import org.olat.modules.portfolio.ui.SharedItemsDataModel.ShareItemCols;
 import org.olat.modules.portfolio.ui.renderer.AssessmentEntryCellRenderer;
+import org.olat.modules.portfolio.ui.renderer.SelectSectionsCellRenderer;
 import org.olat.user.UserManager;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
 import org.springframework.beans.factory.annotation.Autowired;
+
+import edu.emory.mathcs.backport.java.util.Collections;
 
 /**
  * 
@@ -99,7 +107,8 @@ public class SharedItemsController extends FormBasicController implements Activa
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
-
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, ShareItemCols.binderKey, "select"));
+		
 		if(isAdministrativeUser) {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ShareItemCols.username));
 		}
@@ -114,14 +123,18 @@ public class SharedItemsController extends FormBasicController implements Activa
 			colPos++;
 		}
 		
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ShareItemCols.binderKey, "select"));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ShareItemCols.binderName, "select"));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ShareItemCols.courseName, "select"));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ShareItemCols.lastModified));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ShareItemCols.openSections, "select"));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ShareItemCols.selectSections, new SelectSectionsCellRenderer()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ShareItemCols.grading,
 				new AssessmentEntryCellRenderer(getTranslator())));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ShareItemCols.lastModified));
-	
+		StaticFlexiCellRenderer selectRenderer = new StaticFlexiCellRenderer(translate("select"), "select");
+		selectRenderer.setIconRightCSS("o_icon-sw o_icon_start");
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(true, true, "select", -1, "select", false, null,
+				FlexiColumnModel.ALIGNMENT_LEFT, selectRenderer));
+		
 		model = new SharedItemsDataModel(columnsModel, getLocale());
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", model, 20, false, getTranslator(), formLayout);
 		tableEl.setSearchEnabled(true);
@@ -137,17 +150,20 @@ public class SharedItemsController extends FormBasicController implements Activa
 		List<SharedItemRow> rows = new ArrayList<>(assessedBinders.size());
 		for(AssessedBinder assessedBinder:assessedBinders) {
 			SharedItemRow row = new SharedItemRow(assessedBinder.getAssessedIdentity(), userPropertyHandlers, getLocale());
-			row.setBinderTitle(assessedBinder.getBinder().getTitle());
-			row.setBinderKey(assessedBinder.getBinder().getKey());
-			row.setLastModified(assessedBinder.getBinder().getLastModified());//TODO max()
-			if(assessedBinder.getBinder().getEntry() != null) {
-				row.setEntryDisplayName(assessedBinder.getBinder().getEntry().getDisplayname());
+			row.setBinderTitle(assessedBinder.getBinderTitle());
+			row.setBinderKey(assessedBinder.getBinderKey());
+			row.setLastModified(assessedBinder.getLastModified());
+			row.setEntryDisplayName(assessedBinder.getEntryDisplayname());
+			row.setAssessmentEntry(assessedBinder);
+			List<AssessedBinderSection> sections = assessedBinder.getSections();
+			if(sections != null && sections.size() > 1) {
+				Collections.sort(sections, new AssessedBinderSectionComparator());
 			}
-			row.setAssessmentEntry(assessedBinder.getAssessmentEntry());
+			row.setSections(sections);
 			row.setNumOfOpenSections(assessedBinder.getNumOfOpenSections());
 			rows.add(row);
-
 		}
+		
 		model.setObjects(rows);
 		tableEl.reset();
 		tableEl.reloadData();
@@ -200,6 +216,15 @@ public class SharedItemsController extends FormBasicController implements Activa
 			} else if(event instanceof FlexiTableSearchEvent) {
 				FlexiTableSearchEvent se = (FlexiTableSearchEvent)event;
 				loadModel(se.getSearch());
+			} else if("ONCLICK".equals(event.getCommand())) {
+				String row = ureq.getParameter("select-section");
+				String expand = ureq.getParameter("expand-section");
+				if(StringHelper.isLong(row)) {
+					doSelectSection(ureq);
+				} else if(StringHelper.containsNonWhitespace(expand)) {
+					doExpandSections(ureq);
+				}
+				
 			}
 		}
 		super.formInnerEvent(ureq, source, event);
@@ -208,6 +233,43 @@ public class SharedItemsController extends FormBasicController implements Activa
 	@Override
 	protected void formOK(UserRequest ureq) {
 		//
+	}
+	
+	private void doExpandSections(UserRequest ureq) {
+		try {
+			String row = ureq.getParameter("expand-section");
+			int index = Integer.parseInt(row);
+			SharedItemRow itemRow = model.getObject(index);
+			if(itemRow != null) {
+				itemRow.setExpandSections(!itemRow.isExpandSections());
+			}
+			tableEl.getComponent().setDirty(true);
+		} catch (NumberFormatException e) {
+			logError("", e);
+		}
+	}
+	
+	private void doSelectSection(UserRequest ureq) {
+		try {
+			String row = ureq.getParameter("select-section");
+			int index = Integer.parseInt(row);
+			SharedItemRow itemRow = model.getObject(index);
+			if(itemRow != null) {
+				String sectionParam = ureq.getParameter("section");
+				int sectionIndex = Integer.parseInt(sectionParam);
+				AssessedBinderSection section = itemRow.getSections().get(sectionIndex);
+
+				Activateable2 activeateable = doSelectBinder(ureq, itemRow);
+				if(activeateable != null) {
+					List<ContextEntry> entries = new ArrayList<>(2);
+					entries.add(BusinessControlFactory.getInstance().createContextEntry(OresHelper.createOLATResourceableInstance("Entries", 0l)));
+					entries.add(BusinessControlFactory.getInstance().createContextEntry(OresHelper.createOLATResourceableInstance("Section", section.getSectionKey())));
+					activeateable.activate(ureq, entries, null);
+				}
+			}
+		} catch (Exception e) {
+			logError("", e);
+		}
 	}
 
 	private BinderController doSelectBinder(UserRequest ureq, SharedItemRow row) {
@@ -227,6 +289,22 @@ public class SharedItemsController extends FormBasicController implements Activa
 			String displayName = StringHelper.escapeHtml(binder.getTitle());
 			stackPanel.pushController(displayName, binderCtrl);
 			return binderCtrl;
+		}
+	}
+	
+	private static class AssessedBinderSectionComparator implements Comparator<AssessedBinderSection> {
+
+		@Override
+		public int compare(AssessedBinderSection o1, AssessedBinderSection o2) {
+			boolean ba = (o1 == null);
+			boolean bb = (o2 == null);
+			int c = ba ? (bb ? 0: -1) : (bb ? 1: 0);
+			if(c == 0) {
+				int p1 = o1.getPos();
+				int p2 = o2.getPos();
+				c = Integer.compare(p1, p2);
+			}
+			return c;
 		}
 	}
 }

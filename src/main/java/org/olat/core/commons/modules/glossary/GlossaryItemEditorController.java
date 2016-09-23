@@ -48,6 +48,7 @@ public class GlossaryItemEditorController extends BasicController {
 	private VelocityContainer editorVC;
 	private GlossaryTermAndSynonymController itmCtrl;
 	private GlossaryFlexionController flexCtrl;
+	private final boolean morphServiceEnabled;
 
 	/**
 	 * 
@@ -76,7 +77,8 @@ public class GlossaryItemEditorController extends BasicController {
 		glossEditTabP.addTab(translate("term.and.synonyms.title"), itmCtrl.getInitialComponent());
 		
 		List<MorphologicalService> morphServices = GlossaryModule.getMorphologicalServices();
-		if (morphServices!=null && morphServices.size()!=0){
+		morphServiceEnabled = morphServices != null && morphServices.size() > 0;
+		if (morphServiceEnabled) {
 			flexCtrl = new GlossaryFlexionController(ureq, control, glossaryItem, glossaryFolder);
 			listenTo(flexCtrl);
 			glossEditTabP.addTab(translate("flexions.title"), flexCtrl.getInitialComponent());
@@ -105,7 +107,9 @@ public class GlossaryItemEditorController extends BasicController {
 
 	private void enableDisableTermDependentTabs(boolean enDis){
 		glossEditTabP.setEnabled(1, enDis);
-		glossEditTabP.setEnabled(2, enDis);
+		if(morphServiceEnabled) {
+			glossEditTabP.setEnabled(2, enDis);
+		}
 		glossEditTabP.setDirty(true);
 	}
 	

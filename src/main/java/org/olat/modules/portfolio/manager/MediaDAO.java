@@ -22,6 +22,7 @@ package org.olat.modules.portfolio.manager;
 import static org.olat.core.commons.persistence.PersistenceHelper.appendFuzzyLike;
 import static org.olat.core.commons.persistence.PersistenceHelper.makeFuzzyQueryString;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -31,9 +32,12 @@ import org.olat.basesecurity.IdentityRef;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.core.util.StringHelper;
-import org.olat.modules.portfolio.BinderLight;
+import org.olat.core.util.vfs.VFSContainer;
+import org.olat.core.util.vfs.VFSItem;
+import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.modules.portfolio.Media;
 import org.olat.modules.portfolio.MediaLight;
+import org.olat.modules.portfolio.model.BinderPageUsage;
 import org.olat.modules.portfolio.model.MediaImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -49,6 +53,8 @@ public class MediaDAO {
 	
 	@Autowired
 	private DB dbInstance;
+	@Autowired
+	private PortfolioFileStorage fileStorage;
 	
 	/**
 	 * 
@@ -136,19 +142,42 @@ public class MediaDAO {
 		return query.getResultList();
 	}
 	
-	public List<BinderLight> usedInBinders(MediaLight media) {
+	public List<BinderPageUsage> usedInBinders(MediaLight media) {
 		StringBuilder sb = new StringBuilder();
-		sb.append("select binder from pfbinder as binder")
+		sb.append("select binder.key, binder.title, page.key, page.title, page.status from pfbinder as binder")
 		  .append(" inner join binder.sections as section")
 		  .append(" inner join section.pages as page")
 		  .append(" inner join page.body as pageBody")
 		  .append(" inner join pageBody.parts as bodyPart")
 		  .append(" where bodyPart.media.key=:mediaKey");
 		
-		return dbInstance.getCurrentEntityManager()
-				.createQuery(sb.toString(), BinderLight.class)
+		List<Object[]> objects = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Object[].class)
 				.setParameter("mediaKey", media.getKey())
 				.getResultList();
+		List<BinderPageUsage> usage = new ArrayList<>(objects.size());
+		for(Object[] object:objects) {
+			Long binderKey = (Long)object[0];
+			String binderTitle = (String)object[1];
+			Long pageKey = (Long)object[2];
+			String pageTitle = (String)object[3];
+			String pageStatus = (String)object[4];
+			usage.add(new BinderPageUsage(binderKey, binderTitle, pageKey, pageTitle, pageStatus));
+		}
+		return usage;
+		
+	}
+	
+	public void deleteMedia(Media media) {
+		if(StringHelper.containsNonWhitespace(media.getRootFilename())) {
+			VFSContainer container = fileStorage.getMediaContainer(media);
+			VFSItem item = container.resolve(media.getRootFilename());
+			if(item instanceof VFSLeaf) {
+				((VFSLeaf)item).delete();
+			}
+		}
+		Media reloadedMedia = dbInstance.getCurrentEntityManager().getReference(MediaImpl.class, media.getKey());
+		dbInstance.getCurrentEntityManager().remove(reloadedMedia);
 	}
 
 }

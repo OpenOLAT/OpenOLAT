@@ -28,6 +28,7 @@ import org.olat.core.gui.render.Renderer;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.util.Util;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
 
 /**
@@ -37,6 +38,12 @@ import org.olat.modules.assessment.model.AssessmentEntryStatus;
  *
  */
 public class AssessmentStatusCellRenderer implements FlexiCellRenderer, CustomCellRenderer {
+	
+	private final Translator trans;
+	
+	public AssessmentStatusCellRenderer(Locale locale) {
+		trans = Util.createPackageTranslator(AssessmentStatusCellRenderer.class, locale);
+	}
 	
 	@Override
 	public void render(StringOutput sb, Renderer renderer, Object val, Locale locale, int alignment, String action) {
@@ -49,10 +56,10 @@ public class AssessmentStatusCellRenderer implements FlexiCellRenderer, CustomCe
 		if(cellValue instanceof AssessmentEntryStatus) {
 			AssessmentEntryStatus status = (AssessmentEntryStatus)cellValue;
 			switch(status) {
-				case notStarted: target.append("<i class='o_icon o_icon_status_not_started o_icon-fw'> </i> ").append(translator.translate("assessment.status.notStart")); break;
-				case inProgress: target.append("<i class='o_icon o_icon_status_in_progress o_icon-fw'> </i> ").append(translator.translate("assessment.status.inProgress")); break;
-				case inReview: target.append("<i class='o_icon o_icon_status_in_review o_icon-fw'> </i> ").append(translator.translate("assessment.status.inReview")); break;
-				case done: target.append("<i class='o_icon o_icon_status_done o_icon-fw'> </i> ").append(translator.translate("assessment.status.done")); break;
+				case notStarted: target.append("<i class='o_icon o_icon_status_not_started o_icon-fw'> </i> ").append(trans.translate("assessment.status.notStart")); break;
+				case inProgress: target.append("<i class='o_icon o_icon_status_in_progress o_icon-fw'> </i> ").append(trans.translate("assessment.status.inProgress")); break;
+				case inReview: target.append("<i class='o_icon o_icon_status_in_review o_icon-fw'> </i> ").append(trans.translate("assessment.status.inReview")); break;
+				case done: target.append("<i class='o_icon o_icon_status_done o_icon-fw'> </i> ").append(trans.translate("assessment.status.done")); break;
 			}	
 		} else {
 			target.append("-");

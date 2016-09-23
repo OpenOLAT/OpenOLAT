@@ -45,6 +45,7 @@ public class UserDisplayNameCreatorLastnameFirst extends UserDisplayNameCreator{
 	 * @param last The last name
 	 * @return
 	 */
+	@Override
 	protected String getDisplayName(String first, String last) {
 		// expect null values to make it robust against NPE and remove whitespace
 		String combined = "";

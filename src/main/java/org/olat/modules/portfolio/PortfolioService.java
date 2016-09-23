@@ -34,6 +34,7 @@ import org.olat.modules.portfolio.model.AssessedBinder;
 import org.olat.modules.portfolio.model.AssessmentSectionChange;
 import org.olat.modules.portfolio.model.BinderStatistics;
 import org.olat.modules.portfolio.model.CategoryLight;
+import org.olat.modules.portfolio.model.BinderPageUsage;
 import org.olat.modules.portfolio.model.SynchedBinder;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
@@ -434,6 +435,8 @@ public interface PortfolioService {
 	 */
 	public Page removePage(Page page);
 	
+	public void deletePage(Page page);
+	
 	/**
 	 * The list of page fragments
 	 * @param page
@@ -460,13 +463,19 @@ public interface PortfolioService {
 	
 	public void updateCategories(Media media, List<String> categories);
 	
+	public void deleteMedia(Media media);
+	
+	/**
+	 * The list of categories of the specified media.
+	 * @param media
+	 * @return A list of categories
+	 */
 	public List<Category> getCategories(Media media);
 	
-
 	public List<CategoryLight> getMediaCategories(IdentityRef owner);
 
 	
-	public List<BinderLight> getUsedInBinders(MediaLight media);
+	public List<BinderPageUsage> getUsedInBinders(MediaLight media);
 	
 	/**
 	 * Change the status of the page.

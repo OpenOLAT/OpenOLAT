@@ -147,9 +147,6 @@ public class BinderMetadataEditController extends FormBasicController {
 		}
 		uifactory.addStaticTextElement("author", "author", sb.toString(), formLayout);
 		
-		// access
-		uifactory.addStaticTextElement("access", "access", "[private]", formLayout);
-		
 		// template name
 		String templateName;
 		if(binder != null && binder.getTemplate() != null) {

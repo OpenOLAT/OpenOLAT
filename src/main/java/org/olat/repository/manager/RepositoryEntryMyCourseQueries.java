@@ -563,18 +563,12 @@ public class RepositoryEntryMyCourseQueries {
 					appendAsc(sb, asc);	
 					break;
 				case lifecycleLabel:
-					if(asc) {
-						sb.append(" order by lifecycle.label nulls last, lower(v.displayname) asc");
-					} else {
-						sb.append(" order by lifecycle.label nulls last, lower(v.displayname) desc");
-					}
+					sb.append(" order by lifecycle.label");
+					appendAsc(sb, asc).append(" nulls last, lower(v.displayname) asc");
 					break;
 				case lifecycleSoftkey:
-					if(asc) {
-						sb.append(" order by lifecycle.softKey nulls last, lower(v.displayname) asc");
-					} else {
-						sb.append(" order by lifecycle.softKey nulls last, lower(v.displayname) desc");
-					}
+					sb.append(" order by lifecycle.softKey");
+					appendAsc(sb, asc).append(" nulls last, lower(v.displayname) asc");
 					break;
 				case lifecycleStart:
 					sb.append(" order by lifecycle.validFrom ");

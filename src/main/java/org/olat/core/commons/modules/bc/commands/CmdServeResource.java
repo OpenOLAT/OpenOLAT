@@ -34,6 +34,8 @@ import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.modules.bc.FolderLoggingAction;
 import org.olat.core.commons.modules.bc.FolderModule;
 import org.olat.core.commons.modules.bc.components.FolderComponent;
+import org.olat.core.commons.modules.bc.meta.MetaInfo;
+import org.olat.core.commons.modules.bc.meta.tagged.MetaTagged;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
@@ -165,9 +167,18 @@ public class CmdServeResource implements FolderCommand {
 				mr = vmr;
 			}
 		}
-		
+				
 		ThreadLocalUserActivityLogger.log(FolderLoggingAction.BC_FILE_READ, getClass(), CoreLoggingResourceable.wrapBCFile(path));
 		ureq.getDispatchResult().setResultingMediaResource(mr);
+		
+		// update download counter
+		if (vfsitem instanceof MetaTagged) {
+			MetaTagged itemWithMeta = (MetaTagged) vfsitem;
+			MetaInfo meta = itemWithMeta.getMetaInfo();
+			meta.increaseDownloadCount();
+			meta.write();
+		}
+
 		return null;
 	}
 

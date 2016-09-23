@@ -38,14 +38,26 @@ import org.springframework.stereotype.Service;
  */
 @Service("portfolioV2Module")
 public class PortfolioV2Module extends AbstractSpringModule implements ConfigOnOff {
+	
+	public static final String ENTRY_POINT_TOC = "toc";
+	public static final String ENTRY_POINT_ENTRIES = "entries";
 
 	public static final String PORTFOLIO_ENABLED = "portfoliov2.enabled";
 	public static final String PORTFOLIO_LEARNER_CAN_CREATE_BINDERS = "portfoliov2.learner.can.create.binders";
+	public static final String PORTFOLIO_CAN_CREATE_BINDERS_FROM_TEMPLATE = "portfoliov2.can.create.binders.from.template";
+	public static final String PORTFOLIO_CAN_CREATE_BINDERS_FROM_COURSE = "portfoliov2.can.create.binders.from.course";
+	public static final String PORTFOLIO_BINDER_ENTRY_POINT = "portfoliov2.binder.entry.point";
 	
 	@Value("${portfoliov2.enabled:true}")
 	private boolean enabled;
 	@Value("${portfoliov2.learner.can.create.binders:true}")
 	private boolean learnerCanCreateBinders;
+	@Value("${portfoliov2.can.create.binders.from.template:true}")
+	private boolean canCreateBindersFromTemplate;
+	@Value("${portfoliov2.can.create.binders.from.course:true}")
+	private boolean canCreateBindersFromCourse;
+	@Value("${portfoliov2.binder.entry.point:toc}")
+	private String binderEntryPoint;
 	
 	@Autowired
 	public PortfolioV2Module(CoordinatorManager coordinatorManager) {
@@ -95,5 +107,32 @@ public class PortfolioV2Module extends AbstractSpringModule implements ConfigOnO
 	public void setLearnerCanCreateBinders(boolean learnerCanCreateBinders) {
 		this.learnerCanCreateBinders = learnerCanCreateBinders;
 		setStringProperty(PORTFOLIO_LEARNER_CAN_CREATE_BINDERS, Boolean.toString(learnerCanCreateBinders), true);
+	}
+	
+	public boolean isCanCreateBindersFromTemplate() {
+		return canCreateBindersFromTemplate;
+	}
+
+	public void setCanCreateBindersFromTemplate(boolean canCreateBindersFromTemplate) {
+		this.canCreateBindersFromTemplate = canCreateBindersFromTemplate;
+		setStringProperty(PORTFOLIO_CAN_CREATE_BINDERS_FROM_TEMPLATE, Boolean.toString(canCreateBindersFromTemplate), true);
+	}
+
+	public boolean isCanCreateBindersFromCourse() {
+		return canCreateBindersFromCourse;
+	}
+
+	public void setCanCreateBindersFromCourse(boolean canCreateBindersFromCourse) {
+		this.canCreateBindersFromCourse = canCreateBindersFromCourse;
+		setStringProperty(PORTFOLIO_CAN_CREATE_BINDERS_FROM_COURSE, Boolean.toString(canCreateBindersFromCourse), true);
+	}
+
+	public String getBinderEntryPoint() {
+		return binderEntryPoint;
+	}
+
+	public void setBinderEntryPoint(String binderEntryPoint) {
+		this.binderEntryPoint = binderEntryPoint;
+		setStringProperty(PORTFOLIO_BINDER_ENTRY_POINT, binderEntryPoint, true);
 	}
 }

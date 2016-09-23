@@ -698,6 +698,101 @@ public class PortfolioServiceTest extends OlatTestCase {
 		Assert.assertEquals("Assignment 4 description", assignment4_1.getSummary());
 	}
 	
+	@Test
+	public void removeAssignment() {
+		Identity owner = JunitTestHelper.createAndPersistIdentityAsRndUser("port-u-10");
+		RepositoryEntry templateEntry = createTemplate(owner, "Template", "TE");
+		dbInstance.commitAndCloseSession();
+			
+		//make the binder and the section
+		Binder templateBinder = portfolioService.getBinderByResource(templateEntry.getOlatResource());
+		SectionRef sectionRef = portfolioService.getSections(templateBinder).get(0);
+		dbInstance.commit();
+			
+		//make 4 assignments
+		Section templateSection = portfolioService.getSection(sectionRef);
+		Assignment assignment_1 = portfolioService.addAssignment("1 Assignment", "", "", AssignmentType.essay, templateSection);
+		Assignment assignment_2 = portfolioService.addAssignment("2 Assignment", "", "", AssignmentType.essay, templateSection);
+		Assignment assignment_3 = portfolioService.addAssignment("3 Assignment", "", "", AssignmentType.essay, templateSection);
+		Assignment assignment_4 = portfolioService.addAssignment("3 Assignment", "", "", AssignmentType.essay, templateSection);
+		dbInstance.commitAndCloseSession();
+		
+		boolean ok = portfolioService.deleteAssignment(assignment_3);
+		Assert.assertTrue(ok);
+		dbInstance.commitAndCloseSession();
+		
+		List<Assignment> assignments = portfolioService.getSection(sectionRef).getAssignments();
+		Assert.assertNotNull(assignments);
+		Assert.assertEquals(3, assignments.size());
+		Assert.assertTrue(assignments.contains(assignment_1));
+		Assert.assertTrue(assignments.contains(assignment_2));
+		Assert.assertFalse(assignments.contains(assignment_3));
+		Assert.assertTrue(assignments.contains(assignment_4));
+	}
+	
+	@Test
+	public void removeAssignment_usedOne() {
+		Identity owner = JunitTestHelper.createAndPersistIdentityAsRndUser("port-u-10");
+		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("port-u-11");
+		RepositoryEntry templateEntry = createTemplate(owner, "Template", "TE");
+		dbInstance.commitAndCloseSession();
+		
+		//make 2 sections
+		Binder templateBinder = portfolioService.getBinderByResource(templateEntry.getOlatResource());
+		SectionRef sectionRef = portfolioService.getSections(templateBinder).get(0);
+		dbInstance.commit();
+		
+		//make 4 assignments
+		Section templateSection = portfolioService.getSection(sectionRef);
+		Assignment assignment_1 = portfolioService.addAssignment("1 Assignment", "", "", AssignmentType.essay, templateSection);
+		Assignment assignment_2 = portfolioService.addAssignment("2 Assignment", "", "", AssignmentType.essay, templateSection);
+		Assignment assignment_3 = portfolioService.addAssignment("3 Assignment", "", "", AssignmentType.essay, templateSection);
+		Assignment assignment_4 = portfolioService.addAssignment("4 Assignment", "", "", AssignmentType.essay, templateSection);
+		dbInstance.commit();
+		List<Assignment> templateAssignments = portfolioService.getAssignments(templateBinder);
+		Assert.assertEquals(4, templateAssignments.size());
+		Assert.assertTrue(templateAssignments.contains(assignment_1));
+		Assert.assertTrue(templateAssignments.contains(assignment_2));
+		Assert.assertTrue(templateAssignments.contains(assignment_3));
+		Assert.assertTrue(templateAssignments.contains(assignment_4));
+		
+		// synched and check the sections order
+		Binder binder = portfolioService.assignBinder(id, templateBinder, templateEntry, null, null);
+		SynchedBinder synchedBinder = portfolioService.loadAndSyncBinder(binder);
+		binder = synchedBinder.getBinder();
+		dbInstance.commitAndCloseSession();
+		
+		List<Assignment> assignments = portfolioService.getAssignments(binder);
+		portfolioService.startAssignment(assignments.get(0), id);
+		portfolioService.startAssignment(assignments.get(1), id);
+		portfolioService.startAssignment(assignments.get(2), id);
+		portfolioService.startAssignment(assignments.get(3), id);
+		dbInstance.commit();
+		
+		List<Section> sections = portfolioService.getSections(binder);
+		List<Page> pages = portfolioService.getPages(sections.get(0), null);
+		Assert.assertEquals(4, pages.size());
+		
+		//delete an assignment
+		boolean ok = portfolioService.deleteAssignment(assignment_3);
+		Assert.assertTrue(ok);
+		dbInstance.commitAndCloseSession();
+		
+		//sync the binder
+		SynchedBinder reSynchedBinder = portfolioService.loadAndSyncBinder(binder);
+		binder = reSynchedBinder.getBinder();
+		dbInstance.commitAndCloseSession();
+		
+		//deleting an assignment doesn't delete the pages
+		List<Page> allPages = portfolioService.getPages(sections.get(0), null);
+		Assert.assertEquals(4, allPages.size());
+		
+		//sync twice
+		SynchedBinder reReSynchedBinder = portfolioService.loadAndSyncBinder(binder);
+		binder = reReSynchedBinder.getBinder();
+		dbInstance.commitAndCloseSession();
+	}
+	
 	private RepositoryEntry createTemplate(Identity initialAuthor, String displayname, String description) {
 		OLATResource resource = portfolioService.createBinderTemplateResource();
 		RepositoryEntry re = repositoryService.create(initialAuthor, null, "", displayname, description, resource, RepositoryEntry.ACC_OWNERS);

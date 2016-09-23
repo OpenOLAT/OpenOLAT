@@ -280,6 +280,8 @@ public abstract class UserManager extends BasicManager {
 	 */
 	public abstract String getUserDisplayName(IdentityNames user);
 	
+	public abstract String getUserDisplayName(String firstName, String lastName);
+	
 	public abstract String getUserDisplayName(String username);
 	
 	public abstract String getUserDisplayName(Long identityKey);

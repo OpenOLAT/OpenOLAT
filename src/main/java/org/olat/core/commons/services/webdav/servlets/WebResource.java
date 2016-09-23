@@ -100,9 +100,10 @@ public interface WebResource {
      */
     long getCreation();
 
-    /**
-     * Obtain the cached binary content of this resource.
-     */
-    byte[] getContent();
+    
+	/**
+	 * Increases the download count by one.
+	 */
+	public void increaseDownloadCount();
 
 }

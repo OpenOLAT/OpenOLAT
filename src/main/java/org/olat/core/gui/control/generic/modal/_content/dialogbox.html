@@ -1,4 +1,4 @@
-<div id='$r.getId("o_closablewapper_")' class="modal show $cssClass"><div class="modal-dialog modal-lg"><div class="modal-content">
+<div id='$r.getId("o_closablewapper_")' class="modal show"><div class="modal-dialog modal-lg"><div class="modal-content">
 	<div class="modal-header">
 		#if($closeIcon)
 			$r.render("closeIcon")
@@ -7,7 +7,7 @@
 			<h4>$!title</h4>
 		#end
 	</div>
-	<div class="modal-body">
+	<div class="modal-body #if($r.isNotEmpty($cssClass)) $cssClass #end">
 		#if ($off_chelp_url) $r.contextHelpWithWrapper("$off_chelp_url") #end
 		<p>$text</p>
 	</div>

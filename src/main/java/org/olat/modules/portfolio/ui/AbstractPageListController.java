@@ -19,14 +19,19 @@
  */
 package org.olat.modules.portfolio.ui;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+
+import javax.servlet.http.HttpServletRequest;
 
 import org.olat.core.commons.services.commentAndRating.CommentAndRatingDefaultSecurityCallback;
 import org.olat.core.commons.services.commentAndRating.CommentAndRatingSecurityCallback;
 import org.olat.core.commons.services.commentAndRating.ui.UserCommentsController;
+import org.olat.core.dispatcher.mapper.Mapper;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -45,6 +50,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableSearchEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiCellRenderer;
+import org.olat.core.gui.components.image.ImageComponent;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.stack.TooledController;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
@@ -56,6 +62,9 @@ import org.olat.core.gui.control.generic.closablewrapper.CloseableModalControlle
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
+import org.olat.core.gui.media.FileMediaResource;
+import org.olat.core.gui.media.MediaResource;
+import org.olat.core.gui.media.NotFoundMediaResource;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
@@ -70,6 +79,7 @@ import org.olat.modules.portfolio.BinderConfiguration;
 import org.olat.modules.portfolio.BinderSecurityCallback;
 import org.olat.modules.portfolio.Category;
 import org.olat.modules.portfolio.Page;
+import org.olat.modules.portfolio.PageImageAlign;
 import org.olat.modules.portfolio.PageStatus;
 import org.olat.modules.portfolio.PortfolioLoggingAction;
 import org.olat.modules.portfolio.PortfolioService;
@@ -78,7 +88,8 @@ import org.olat.modules.portfolio.SectionStatus;
 import org.olat.modules.portfolio.ui.PageListDataModel.PageCols;
 import org.olat.modules.portfolio.ui.component.CategoriesCellRenderer;
 import org.olat.modules.portfolio.ui.component.TimelineElement;
-import org.olat.modules.portfolio.ui.event.PageRemoved;
+import org.olat.modules.portfolio.ui.event.PageDeletedEvent;
+import org.olat.modules.portfolio.ui.event.PageRemovedEvent;
 import org.olat.modules.portfolio.ui.model.PortfolioElementRow;
 import org.olat.modules.portfolio.ui.renderer.PortfolioElementCellRenderer;
 import org.olat.modules.portfolio.ui.renderer.StatusCellRenderer;
@@ -93,6 +104,9 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public abstract class AbstractPageListController extends FormBasicController
 implements Activateable2, TooledController, FlexiTableComponentDelegate {
+	
+	public static final int PICTURE_WIDTH = 265;
+	public static final int PICTURE_HEIGHT = (PICTURE_WIDTH / 3) * 2;
 
 	protected TimelineElement timelineEl;
 	private FormLink timelineSwitchOnButton, timelineSwitchOffButton;
@@ -172,6 +186,8 @@ implements Activateable2, TooledController, FlexiTableComponentDelegate {
 		}
 	
 		model = new PageListDataModel(columnsModel);
+		String mapperThumbnailUrl = registerCacheableMapper(ureq, "page-list", new PageImageMapper(model, portfolioService));
+		
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", model, 20, false, getTranslator(), formLayout);
 		tableEl.setAvailableRendererTypes(FlexiTableRendererType.custom, FlexiTableRendererType.classic);
 		tableEl.setRendererType(FlexiTableRendererType.custom);
@@ -182,6 +198,7 @@ implements Activateable2, TooledController, FlexiTableComponentDelegate {
 		tableEl.setPageSize(24);
 		VelocityContainer row = createVelocityContainer("portfolio_element_row");
 		row.setDomReplacementWrapperRequired(false); // sets its own DOM id in velocity container
+		row.contextPut("mapperThumbnailUrl", mapperThumbnailUrl);
 		tableEl.setRowRenderer(row, this);
 		tableEl.setCssDelegate(new DefaultFlexiTableCssDelegate());
 		tableEl.setAndLoadPersistedPreferences(ureq, "page-list");
@@ -247,11 +264,26 @@ implements Activateable2, TooledController, FlexiTableComponentDelegate {
 		if(elRow.getCommentFormLink() != null) {
 			components.add(elRow.getCommentFormLink().getComponent());
 		}
-		
+		if(elRow.getPoster() != null) {
+			components.add(elRow.getPoster());
+			
+		}
 		return components;
 	}
 	
-	protected abstract void loadModel(String searchString);
+	protected abstract void loadModel(UserRequest ureq, String searchString);
+	
+	protected void disposeRows() {
+		List<PortfolioElementRow> rows = model.getObjects();
+		if(rows != null && rows.size() > 0) {
+			for(PortfolioElementRow row:rows) {
+				if(row.getPoster() != null) {
+					row.getPoster().dispose();
+					row.setPoster(null);
+				}
+			}
+		}
+	}
 	
 	protected PortfolioElementRow forgeSectionRow(Section section, AssessmentSection assessmentSection,
 			List<Assignment> assignments, Map<OLATResourceable,List<Category>> categorizedElementMap) {
@@ -308,7 +340,7 @@ implements Activateable2, TooledController, FlexiTableComponentDelegate {
 		return row;
 	}
 	
-	protected PortfolioElementRow forgePageRow(Page page, AssessmentSection assessmentSection, List<Assignment> assignments,
+	protected PortfolioElementRow forgePageRow(UserRequest ureq, Page page, AssessmentSection assessmentSection, List<Assignment> assignments,
 			Map<OLATResourceable,List<Category>> categorizedElementMap, Map<Long,Long> numberOfCommentsMap) {
 
 		Section section = page.getSection();
@@ -327,6 +359,8 @@ implements Activateable2, TooledController, FlexiTableComponentDelegate {
 				}
 			}
 		}
+		
+		decorateImage(ureq, row, page);
 		
 		if(numberOfCommentsMap != null) {
 			Long numOfComments = numberOfCommentsMap.get(page.getKey());
@@ -368,6 +402,22 @@ implements Activateable2, TooledController, FlexiTableComponentDelegate {
 			row.setCommentFormLink(commentLink);
 		}
 		return row;
+	}
+	
+	private void decorateImage(UserRequest ureq, PortfolioElementRow row, Page page) {
+		if(StringHelper.containsNonWhitespace(page.getImagePath())) {
+			File posterImage = portfolioService.getPosterImage(page);
+			if(page.getImageAlignment() == PageImageAlign.background) {
+				String imageUrl = "page/" + page.getKey() + "/" + page.getImagePath();
+				row.setImageUrl(imageUrl);
+			} else {
+				// alignment is right
+				ImageComponent imageCmp = new ImageComponent(ureq.getUserSession(), "poster");
+				imageCmp.setMedia(posterImage);
+				imageCmp.setMaxWithAndHeightToFitWithin(PICTURE_WIDTH, PICTURE_HEIGHT);
+				row.setPoster(imageCmp);
+			}
+		}
 	}
 	
 	private void addCategoriesToRow(PortfolioElementRow row, Map<OLATResourceable,List<Category>> categorizedElementMap) {
@@ -423,23 +473,23 @@ implements Activateable2, TooledController, FlexiTableComponentDelegate {
 	public void event(UserRequest ureq, Controller source, Event event) {
 		if(pageCtrl == source) {
 			if(event == Event.CHANGED_EVENT) {
-				loadModel(null);
+				loadModel(ureq, null);
 				fireEvent(ureq, Event.CHANGED_EVENT);
-			} else if(event instanceof PageRemoved) {
-				loadModel(null);
+			} else if(event instanceof PageRemovedEvent || event instanceof PageDeletedEvent) {
+				loadModel(ureq, null);
 				stackPanel.popUpToController(this);
 				fireEvent(ureq, Event.CHANGED_EVENT);
 			}
 		} else if(commentsCtrl == source) {
 			if(event == Event.CHANGED_EVENT || "comment_count_changed".equals(event.getCommand())) {
-				loadModel(null);
+				loadModel(ureq, null);
 				fireEvent(ureq, Event.CHANGED_EVENT);
 			}
 			cmc.deactivate();
 			cleanUp();
 		} else if(editAssignmentCtrl == source || moveAssignmentCtrl == source) {
 			if(event == Event.CHANGED_EVENT || event == Event.DONE_EVENT) {
-				loadModel(null);
+				loadModel(ureq, null);
 				fireEvent(ureq, Event.CHANGED_EVENT);
 			}
 			cmc.deactivate();
@@ -458,7 +508,7 @@ implements Activateable2, TooledController, FlexiTableComponentDelegate {
 			if(DialogBoxUIFactory.isYesEvent(event)) {
 				PortfolioElementRow row = (PortfolioElementRow)confirmDeleteAssignmentCtrl.getUserObject();
 				doDelete(row);
-				loadModel(null);
+				loadModel(ureq, null);
 			}
 		} else if(cmc == source) {
 			cleanUp();
@@ -482,19 +532,19 @@ implements Activateable2, TooledController, FlexiTableComponentDelegate {
 		if(tableEl == source) {
 			if(event instanceof FlexiTableSearchEvent) {
 				FlexiTableSearchEvent se = (FlexiTableSearchEvent)event;
-				loadModel(se.getSearch());
+				loadModel(ureq, se.getSearch());
 			} else if(event instanceof SelectionEvent) {
 				SelectionEvent se = (SelectionEvent)event;
 				String cmd = se.getCommand();
 				if("up".equals(cmd)) {
 					PortfolioElementRow row = model.getObject(se.getIndex());
 					if(row.isPendingAssignment()) {
-						doMoveUpAssignment(row);
+						doMoveUpAssignment(ureq, row);
 					}
 				} else if("down".equals(cmd)) {
 					PortfolioElementRow row = model.getObject(se.getIndex());
 					if(row.isPendingAssignment()) {
-						doMoveDownAssignment(row);
+						doMoveDownAssignment(ureq, row);
 					}
 				}
 			}
@@ -534,12 +584,11 @@ implements Activateable2, TooledController, FlexiTableComponentDelegate {
 				doOpenAssignment(ureq, row);
 			} else if("up.assignment".equals(cmd)) {
 				PortfolioElementRow row = (PortfolioElementRow)link.getUserObject();
-				doMoveUpAssignment(row);
+				doMoveUpAssignment(ureq, row);
 			} else if("down.assignment".equals(cmd)) {
 				PortfolioElementRow row = (PortfolioElementRow)link.getUserObject();
-				doMoveDownAssignment(row);
+				doMoveDownAssignment(ureq, row);
 			}
-			
 		} else if(source == flc) {
 			if("ONCLICK".equals(event.getCommand())) {
 				String category = ureq.getParameter("tag_select");
@@ -568,7 +617,7 @@ implements Activateable2, TooledController, FlexiTableComponentDelegate {
 		section = portfolioService.changeSectionStatus(section, SectionStatus.closed, getIdentity());
 		ThreadLocalUserActivityLogger.log(PortfolioLoggingAction.PORTFOLIO_SECTION_CLOSE, getClass(),
 				LoggingResourceable.wrap(section));
-		loadModel(null);
+		loadModel(ureq, null);
 		fireEvent(ureq, Event.CHANGED_EVENT);
 	}
 	
@@ -584,7 +633,7 @@ implements Activateable2, TooledController, FlexiTableComponentDelegate {
 		section = portfolioService.changeSectionStatus(section, SectionStatus.inProgress, getIdentity());
 		ThreadLocalUserActivityLogger.log(PortfolioLoggingAction.PORTFOLIO_SECTION_REOPEN, getClass(),
 				LoggingResourceable.wrap(section));
-		loadModel(null);
+		loadModel(ureq, null);
 		fireEvent(ureq, Event.CHANGED_EVENT);
 	}
 	
@@ -605,7 +654,7 @@ implements Activateable2, TooledController, FlexiTableComponentDelegate {
 		Assignment startedAssigment = portfolioService.startAssignment(assignment, getIdentity());
 		row.setAssignment(startedAssigment);
 		doOpenPage(ureq, startedAssigment.getPage(), true);
-		loadModel(null);//TODO only update the links
+		loadModel(ureq, null);//TODO only update the links
 		return startedAssigment;
 	}
 	
@@ -621,18 +670,18 @@ implements Activateable2, TooledController, FlexiTableComponentDelegate {
 		}
 	}
 	
-	private void doMoveUpAssignment(PortfolioElementRow row) {
+	private void doMoveUpAssignment(UserRequest ureq, PortfolioElementRow row) {
 		Assignment assigment = row.getAssignment();
 		Section section = assigment.getSection();
 		section = portfolioService.moveUpAssignment(section, assigment);
-		loadModel(null);
+		loadModel(ureq, null);
 	}
 	
-	private void doMoveDownAssignment(PortfolioElementRow row) {
+	private void doMoveDownAssignment(UserRequest ureq, PortfolioElementRow row) {
 		Assignment assigment = row.getAssignment();
 		Section section = row.getSection();
 		section = portfolioService.moveDownAssignment(section, assigment);
-		loadModel(null);
+		loadModel(ureq, null);
 	}
 	
 	private void doEditAssignment(UserRequest ureq, PortfolioElementRow row) {
@@ -717,5 +766,56 @@ implements Activateable2, TooledController, FlexiTableComponentDelegate {
 		pageCtrl = new PageRunController(ureq, swControl, stackPanel, secCallback, reloadedPage, openInEditMode);
 		listenTo(pageCtrl);
 		stackPanel.pushController(reloadedPage.getTitle(), pageCtrl);
+	}
+	
+	protected List<PortfolioElementRow> getSelectedRows() {
+		Set<Integer> indexes = tableEl.getMultiSelectedIndex();
+		List<PortfolioElementRow> selectedRows = new ArrayList<>(indexes.size());
+		for(Integer index:indexes) {
+			PortfolioElementRow row = model.getObject(index.intValue());
+			selectedRows.add(row);
+		}
+		return selectedRows;
+	}
+	
+	private static final class PageImageMapper implements Mapper {
+		
+		private final PageListDataModel model;
+		private final PortfolioService portfolioService;
+
+		public PageImageMapper(PageListDataModel model, PortfolioService portfolioService) {
+			this.model = model;
+			this.portfolioService = portfolioService;
+		}
+
+		@Override
+		public MediaResource handle(String relPath, HttpServletRequest request) {
+			MediaResource mr = null;
+			
+			String path = relPath;
+			if(path.startsWith("/page/")) {
+				path = path.substring(6, path.length());
+				
+				int index = path.indexOf('/');
+				if(index > 0) {
+					String pageKey = path.substring(0, index);
+					Long key = new Long(pageKey);
+					for(int i=model.getRowCount(); i-->0; ) {
+						PortfolioElementRow row = model.getObject(i);
+						if(row.isPage() && row.getPage().getKey().equals(key)) {
+							File posterImage = portfolioService.getPosterImage(row.getPage());
+							mr = new FileMediaResource(posterImage);
+							break;
+						}
+					}
+				}
+			}
+			
+			if(mr == null) {
+				mr = new NotFoundMediaResource(relPath);
+			}
+			return mr;
+		}
+		
 	}
 }

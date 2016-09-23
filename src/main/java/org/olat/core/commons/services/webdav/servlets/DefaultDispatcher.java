@@ -496,6 +496,8 @@ public abstract class DefaultDispatcher implements Serializable {
 
             // Copy the input stream to our output stream (if requested)
             if (serveContent) {
+            	resource.increaseDownloadCount();
+            	
                 try {
                     response.setBufferSize(output);
                 } catch (IllegalStateException e) {
@@ -527,6 +529,8 @@ public abstract class DefaultDispatcher implements Serializable {
             }
 
         } else {
+        	//download counter
+        	resource.increaseDownloadCount();
 
             if ((ranges == null) || (ranges.isEmpty()))
                 return;

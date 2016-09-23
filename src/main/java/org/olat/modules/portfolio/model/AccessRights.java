@@ -19,6 +19,7 @@
  */
 package org.olat.modules.portfolio.model;
 
+import org.olat.basesecurity.Invitation;
 import org.olat.core.id.Identity;
 import org.olat.modules.portfolio.Page;
 import org.olat.modules.portfolio.PortfolioElement;
@@ -39,7 +40,12 @@ public class AccessRights {
 	private Long pageKey;
 	
 	private Identity identity;
+	private Invitation invitation;
 	private PortfolioRoles role;
+	
+	public AccessRights() {
+		//
+	}
 	
 	public Long getBinderKey() {
 		return binderKey;
@@ -117,6 +123,14 @@ public class AccessRights {
 		this.identity = identity;
 	}
 	
+	public Invitation getInvitation() {
+		return invitation;
+	}
+
+	public void setInvitation(Invitation invitation) {
+		this.invitation = invitation;
+	}
+
 	public PortfolioRoles getRole() {
 		return role;
 	}

@@ -84,7 +84,8 @@ public class InvitationEditRightsController extends FormBasicController {
 	private TextElement firstNameEl, lastNameEl, mailEl;
 	
 	private int counter;
-	
+
+	private String email;
 	private Binder binder;
 	private Identity invitee;
 	private Invitation invitation;
@@ -101,10 +102,22 @@ public class InvitationEditRightsController extends FormBasicController {
 	@Autowired
 	private PortfolioService portfolioService;
 	
-	public InvitationEditRightsController(UserRequest ureq, WindowControl wControl, Binder binder) {
+	public InvitationEditRightsController(UserRequest ureq, WindowControl wControl, Binder binder, String email) {
 		super(ureq, wControl, "invitee_access_rights");
+		this.email = email;
 		this.binder = binder;
-		invitation = invitationDao.createInvitation();
+		List<Identity> identities = userManager.findIdentitiesByEmail(Collections.singletonList(email));
+		if(identities.size() == 1) {
+			invitee = identities.get(0);
+			invitation = invitationDao.findInvitation(binder.getBaseGroup(), invitee);
+		} 
+		if(invitation == null) {
+			invitation = invitationDao.createInvitation();
+			if(invitee != null) {
+				invitation.setFirstName(invitee.getUser().getFirstName());
+				invitation.setLastName(invitee.getUser().getLastName());
+			}
+		}
 		initForm(ureq);
 		loadModel();
 	}
@@ -130,7 +143,8 @@ public class InvitationEditRightsController extends FormBasicController {
 		lastNameEl = uifactory.addTextElement("lastName", "lastName", 64, invitation.getLastName(), inviteeCont);
 		lastNameEl.setMandatory(true);
 		
-		mailEl = uifactory.addTextElement("mail", "mail", 128, invitation.getMail(), inviteeCont);
+		String invitationEmail = email != null ? email : invitation.getMail();
+		mailEl = uifactory.addTextElement("mail", "mail", 128, invitationEmail, inviteeCont);
 		mailEl.setMandatory(true);
 		mailEl.setNotEmptyCheck("map.share.empty.warn");
 		mailEl.setEnabled(invitation.getKey() == null);

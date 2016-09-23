@@ -220,6 +220,8 @@ public class PortfolioConfigForm extends FormBasicController {
 				fireEvent(ureq, Event.DONE_EVENT);
 			}
 			cleanUp();
+		} else if (cmc == source) {
+			cleanUp();
 		}
 	}
 	

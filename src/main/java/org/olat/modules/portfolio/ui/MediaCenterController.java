@@ -79,6 +79,7 @@ import org.olat.modules.portfolio.PortfolioService;
 import org.olat.modules.portfolio.model.CategoryLight;
 import org.olat.modules.portfolio.ui.MediaDataModel.MediaCols;
 import org.olat.modules.portfolio.ui.component.CategoriesCellRenderer;
+import org.olat.modules.portfolio.ui.event.MediaEvent;
 import org.olat.modules.portfolio.ui.event.MediaSelectionEvent;
 import org.olat.modules.portfolio.ui.media.CollectCitationMediaController;
 import org.olat.modules.portfolio.ui.media.CollectTextMediaController;
@@ -421,6 +422,15 @@ public class MediaCenterController extends FormBasicController
 				doAddCitationMedia(ureq);
 			} else if("import.artefactV1".equals(event.getCommand())) {
 				doChooseArtefactV1(ureq);
+			}
+		} else if(detailsCtrl == source) {
+			if(event instanceof MediaEvent) {
+				MediaEvent me = (MediaEvent)event;
+				if(MediaEvent.DELETED.equals(me.getCommand())) {
+					stackPanel.popUpToController(this);
+					loadModel();
+					tableEl.reset(false, true, true);
+				}
 			}
 		} else if(cmc == source) {
 			cleanUp();

@@ -667,9 +667,18 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements Pe
 	public void importNode(File importDirectory, ICourse course, Identity owner, Locale locale, boolean withReferences) {
 		RepositoryEntryImportExport rie = new RepositoryEntryImportExport(importDirectory, getIdent());
 		if(withReferences && rie.anyExportedPropertiesAvailable()) {
-			RepositoryHandler handler = RepositoryHandlerFactory.getInstance().getRepositoryHandler(TestFileResource.TYPE_NAME);
-			RepositoryEntry re = handler.importResource(owner, rie.getInitialAuthor(), rie.getDisplayName(),
-				rie.getDescription(), false, locale, rie.importGetExportedFile(), null);
+			File file = rie.importGetExportedFile();
+			RepositoryHandler handlerQTI21 = RepositoryHandlerFactory.getInstance().getRepositoryHandler(ImsQTI21Resource.TYPE_NAME);
+
+			RepositoryEntry re;
+			if(handlerQTI21.acceptImport(file, "repo.zip").isValid()) {
+				re = handlerQTI21.importResource(owner, rie.getInitialAuthor(), rie.getDisplayName(),
+						rie.getDescription(), false, locale, rie.importGetExportedFile(), null);
+			} else {
+				RepositoryHandler handlerQTI = RepositoryHandlerFactory.getInstance().getRepositoryHandler(TestFileResource.TYPE_NAME);
+				re = handlerQTI.importResource(owner, rie.getInitialAuthor(), rie.getDisplayName(),
+						rie.getDescription(), false, locale, rie.importGetExportedFile(), null);
+			}
 			IQEditController.setIQReference(re, getModuleConfiguration());
 		} else {
 			IQEditController.removeIQReference(getModuleConfiguration());
