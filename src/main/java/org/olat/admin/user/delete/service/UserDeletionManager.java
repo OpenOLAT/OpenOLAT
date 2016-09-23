@@ -34,6 +34,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import javax.persistence.TemporalType;
+
 import org.olat.admin.user.delete.SelectionController;
 import org.olat.basesecurity.Authentication;
 import org.olat.basesecurity.BaseSecurity;
@@ -212,19 +214,22 @@ public class UserDeletionManager extends BasicManager {
 		lastLoginLimit.add(Calendar.MONTH, - lastLoginDuration);
 		logDebug("lastLoginLimit=" + lastLoginLimit);
 		// 1. get all 'active' identities with lastlogin > x
-		String queryStr ="from org.olat.core.id.Identity as ident where ident.status=" 
-			+ Identity.STATUS_ACTIV 
-			+ " and (ident.lastLogin = null or ident.lastLogin < :lastLogin)";	
-		DBQuery dbq = DBFactory.getInstance().createQuery(queryStr);
-		dbq.setDate("lastLogin", lastLoginLimit.getTime());
-		List<Identity> identities = dbq.list();
+		StringBuilder sb = new StringBuilder();
+		sb.append("select ident from ").append(IdentityImpl.class.getName()).append(" as ident")
+		  .append(" inner join fetch ident.user as user")
+		  .append(" where ident.status=").append(Identity.STATUS_ACTIV).append(" and (ident.lastLogin = null or ident.lastLogin < :lastLogin)");	
+		List<Identity> identities = DBFactory.getInstance().getCurrentEntityManager()
+				.createQuery(sb.toString(), Identity.class)
+				.setParameter("lastLogin", lastLoginLimit.getTime(), TemporalType.TIMESTAMP)
+				.getResultList();
+		
 		// 2. get all 'active' identities in deletion process
-		queryStr = "select ident from org.olat.core.id.Identity as ident"
+		String queryStr = "select ident from org.olat.core.id.Identity as ident"
 			+ " , org.olat.commons.lifecycle.LifeCycleEntry as le"
 			+ " where ident.key = le.persistentRef "
 			+ " and le.persistentTypeName ='" + IdentityImpl.class.getName() + "'" 
 			+ " and le.action ='" + SEND_DELETE_EMAIL_ACTION + "' ";
-		dbq = DBFactory.getInstance().createQuery(queryStr);
+		DBQuery dbq = DBFactory.getInstance().createQuery(queryStr);
 		List<Identity> identitiesInProcess = dbq.list();
 		// 3. Remove all identities in deletion-process from all inactive-identities
 		identities.removeAll(identitiesInProcess);

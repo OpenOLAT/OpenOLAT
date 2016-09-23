@@ -84,10 +84,10 @@ public class SelectionController extends BasicController {
 	private Link editParameterLink;
 	private MailNotificationEditController deleteUserMailCtr;
 	private List<Identity> selectedIdentities;
-  private boolean isAdministrativeUser;
-  private Translator propertyHandlerTranslator;
+	private boolean isAdministrativeUser;
+	private Translator propertyHandlerTranslator;
   
-  private CloseableModalController cmc;
+	private CloseableModalController cmc;
 
   /**
 	 * @param ureq
