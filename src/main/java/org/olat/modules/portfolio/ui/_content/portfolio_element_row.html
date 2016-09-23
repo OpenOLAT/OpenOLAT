@@ -106,7 +106,7 @@
 #end
 #if(${row.isPage()})
 <div class="o_portfolio_page o_block_large">
-	<div class="#if($r.isNotNull($row.assignment)) o_portfolio_assignments #end" #if($r.isNotNull($row.imageUrl)) style="background-image: url('$mapperThumbnailUrl/${row.imageUrl}')" #end>
+	<div class="#if($r.isNotNull($row.assignment)) o_portfolio_assignments #end  #if($row.imageAlign == "background") o_block_imagebg #end" #if($row.imageAlign == "background" && $r.isNotNull($row.imageUrl)) style="background-image: url('$mapperThumbnailUrl/${row.imageUrl}')" #end>
 		<h4><i class="o_icon ${row.getCssClassStatus()} o_icon-fw" title="$r.translate("page.status"): $r.translate("$row.getPageStatusI18nKey()")"> </i> $r.escapeHtml($row.title)</h4>
 		<div class="o_portfolio_page_body">
 			<div class="o_portfolio_page_meta_wrapper">
@@ -139,7 +139,12 @@
 				</div>
 				#end		
 			</div>
-			<div class="o_portfolio_page_summary o_block">
+			<div class="o_portfolio_page_summary o_block clearfix">
+				#if($r.isNotNull($row.poster))
+				<div class="o_media #if($r.isNotEmpty($row.summary)) o_media_${row.imageAlign} #else o_desc_empty #end ">
+					$r.render($row.poster)
+				</div>
+				#end
 				$r.xssScan($row.summary)
 			</div>
 		</div>

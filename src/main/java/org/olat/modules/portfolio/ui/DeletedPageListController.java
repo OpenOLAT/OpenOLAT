@@ -64,7 +64,7 @@ public class DeletedPageListController extends AbstractPageListController {
 		super(ureq, wControl, stackPanel, secCallback, BinderConfiguration.createDeletedPagesConfig(), "deleted_pages", false);
 
 		initForm(ureq);
-		loadModel(null);
+		loadModel(ureq, null);
 	}
 	
 	@Override
@@ -78,7 +78,7 @@ public class DeletedPageListController extends AbstractPageListController {
 	}
 
 	@Override
-	protected void loadModel(String searchString) {
+	protected void loadModel(UserRequest ureq, String searchString) {
 		Map<Long,Long> numberOfCommentsMap = portfolioService.getNumberOfCommentsOnOwnedPage(getIdentity());
 		
 		List<CategoryToElement> categorizedElements = portfolioService.getCategorizedOwnedPages(getIdentity());
@@ -95,9 +95,10 @@ public class DeletedPageListController extends AbstractPageListController {
 		List<Page> pages = portfolioService.searchDeletedPages(getIdentity(), searchString);
 		List<PortfolioElementRow> rows = new ArrayList<>(pages.size());
 		for (Page page : pages) {
-			rows.add(forgePageRow(page, null, null, categorizedElementMap, numberOfCommentsMap));
+			rows.add(forgePageRow(ureq, page, null, null, categorizedElementMap, numberOfCommentsMap));
 		}
-
+		
+		disposeRows();//clean up the posters
 		model.setObjects(rows);
 		tableEl.reset();
 		tableEl.reloadData();
@@ -111,7 +112,7 @@ public class DeletedPageListController extends AbstractPageListController {
 			if(DialogBoxUIFactory.isYesEvent(event)) {
 				@SuppressWarnings("unchecked")
 				List<PortfolioElementRow> rows = (List<PortfolioElementRow>)confirmDeleteCtrl.getUserObject();
-				doDelete(rows);
+				doDelete(ureq, rows);
 			}
 		}
 		super.event(ureq, source, event);
@@ -157,10 +158,10 @@ public class DeletedPageListController extends AbstractPageListController {
 		}
 	}
 	
-	private void doDelete(List<PortfolioElementRow> rows) {
+	private void doDelete(UserRequest ureq, List<PortfolioElementRow> rows) {
 		for(PortfolioElementRow row:rows) {
 			portfolioService.deletePage(row.getPage());
 		}
-		loadModel(null);
+		loadModel(ureq, null);
 	}
 }

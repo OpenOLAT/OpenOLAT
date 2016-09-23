@@ -100,7 +100,7 @@ public class BinderPageListController extends AbstractPageListController {
 		owners = portfolioService.getMembers(binder, PortfolioRoles.owner.name());
 		
 		initForm(ureq);
-		loadModel(null);
+		loadModel(ureq, null);
 	}
 
 	@Override
@@ -171,7 +171,7 @@ public class BinderPageListController extends AbstractPageListController {
 	}
 
 	@Override
-	protected void loadModel(String searchString) {
+	protected void loadModel(UserRequest ureq, String searchString) {
 		List<Section> sections = portfolioService.getSections(binder);
 
 		List<CategoryToElement> categorizedElements = portfolioService.getCategorizedSectionsAndPages(binder);
@@ -235,7 +235,7 @@ public class BinderPageListController extends AbstractPageListController {
 			
 			Section section = page.getSection();
 
-			PortfolioElementRow pageRow = forgePageRow(page, sectionToAssessmentSectionMap.get(section),
+			PortfolioElementRow pageRow = forgePageRow(ureq, page, sectionToAssessmentSectionMap.get(section),
 					sectionToAssignmentMap.get(section), categorizedElementMap, numberOfCommentsMap);
 			rows.add(pageRow);
 			if(secCallback.canAddPage(section)) {
@@ -303,6 +303,7 @@ public class BinderPageListController extends AbstractPageListController {
 			stackPanel.setDirty(true);
 		}
 
+		disposeRows();//clean up the posters
 		model.setObjects(rows);
 		if(filteringSection != null) {
 			doFilterSection(filteringSection);
@@ -402,14 +403,14 @@ public class BinderPageListController extends AbstractPageListController {
 	public void event(UserRequest ureq, Controller source, Event event) {
 		if(newSectionCtrl == source || newAssignmentCtrl == source) {
 			if(event == Event.DONE_EVENT) {
-				loadModel(null);
+				loadModel(ureq, null);
 				fireEvent(ureq, Event.CHANGED_EVENT);
 			}
 			cmc.deactivate();
 			cleanUp();
 		} else if(newSectionCtrl == source || newPageCtrl == source || newAssignmentCtrl == source) {
 			if(event == Event.DONE_EVENT) {
-				loadModel(null);
+				loadModel(ureq, null);
 				Page newPage = newPageCtrl.getPage();
 				for(PortfolioElementRow row:model.getObjects()) {
 					if(row.getPage() != null && row.getPage().equals(newPage)) {

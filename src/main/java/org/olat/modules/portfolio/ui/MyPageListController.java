@@ -70,7 +70,7 @@ public class MyPageListController extends AbstractPageListController {
 		super(ureq, wControl, stackPanel, secCallback, BinderConfiguration.createMyPagesConfig(), "my_pages", false);
 
 		initForm(ureq);
-		loadModel(null);
+		loadModel(ureq, null);
 	}
 
 	@Override
@@ -81,7 +81,7 @@ public class MyPageListController extends AbstractPageListController {
 	}
 
 	@Override
-	protected void loadModel(String searchString) {
+	protected void loadModel(UserRequest ureq, String searchString) {
 		Map<Long,Long> numberOfCommentsMap = portfolioService.getNumberOfCommentsOnOwnedPage(getIdentity());
 		
 		List<CategoryToElement> categorizedElements = portfolioService.getCategorizedOwnedPages(getIdentity());
@@ -121,7 +121,7 @@ public class MyPageListController extends AbstractPageListController {
 			}
 			
 			List<Assignment> assignmentList = pageToAssignments.get(page);
-			PortfolioElementRow row = forgePageRow(page, null, assignmentList, categorizedElementMap, numberOfCommentsMap);
+			PortfolioElementRow row = forgePageRow(ureq, page, null, assignmentList, categorizedElementMap, numberOfCommentsMap);
 			rows.add(row);
 			if(page.getSection() != null) {
 				Section section = page.getSection();
@@ -138,6 +138,7 @@ public class MyPageListController extends AbstractPageListController {
 		}
 
 		timelineEl.setPoints(points);
+		disposeRows();//clean up the posters
 		model.setObjects(rows);
 		tableEl.reset();
 		tableEl.reloadData();
@@ -181,7 +182,7 @@ public class MyPageListController extends AbstractPageListController {
 	public void event(UserRequest ureq, Controller source, Event event) {
 		if(newPageCtrl == source) {
 			if(event == Event.DONE_EVENT) {
-				loadModel(null);
+				loadModel(ureq, null);
 				doOpenPage(ureq, newPageCtrl.getPage(), true);
 				fireEvent(ureq, Event.CHANGED_EVENT);
 			}

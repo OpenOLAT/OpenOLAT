@@ -152,6 +152,23 @@ div#o_main_toolbar.o_toolbar.o_portfolio {
 		}
 }
 
+.o_portfolio_page_summary {
+	.o_media {
+		&.o_media_right,
+		&.o_media_right_large {
+			float: right;
+			margin-left: 0.5em;
+			margin-bottom: 0.5em;
+		}
+		&.o_media_left,
+		&.o_media_left_large {
+			float: left;
+			margin-right: 0.5em;
+			margin-bottom: 0.5em;
+		}
+	}
+}
+
 .o_rendertype_classic {
 	.o_pf_page, .o_pf_assignment {
 		padding-left: 1em;
