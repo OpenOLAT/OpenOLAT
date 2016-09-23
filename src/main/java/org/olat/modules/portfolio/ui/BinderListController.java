@@ -85,6 +85,9 @@ import org.olat.modules.portfolio.ui.model.BinderRow;
 import org.olat.modules.portfolio.ui.model.CourseTemplateRow;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.controllers.ReferencableEntriesSearchController;
+import org.olat.repository.controllers.RepositorySearchController;
+import org.olat.repository.controllers.RepositorySearchController.Can;
+import org.olat.repository.ui.RepositoryTableModel;
 import org.olat.util.logging.activity.LoggingResourceable;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -112,7 +115,7 @@ public class BinderListController extends FormBasicController
 	private CloseableModalController cmc;
 	private BinderController binderCtrl;
 	private BinderMetadataEditController newBinderCtrl;
-	private ReferencableEntriesSearchController searchTemplateCtrl;
+	private RepositorySearchController searchTemplateCtrl;
 	private CourseTemplateSearchController searchCourseTemplateCtrl;
 	
 	private NewBinderCalloutController chooseNewBinderTypeCtrl;
@@ -283,7 +286,7 @@ public class BinderListController extends FormBasicController
 				}
 			}
 		} else if(searchTemplateCtrl == source) {
-			if(event == ReferencableEntriesSearchController.EVENT_REPOSITORY_ENTRY_SELECTED) {
+			if(RepositoryTableModel.TABLE_ACTION_SELECT_LINK.equals(event.getCommand())) {
 				RepositoryEntry repoEntry = searchTemplateCtrl.getSelectedEntry();
 				doCreateBinderFromTemplate(ureq, repoEntry);
 			}
@@ -409,10 +412,12 @@ public class BinderListController extends FormBasicController
 		String title = translate("create.empty.binder.from.template");
 		String commandLabel = translate("create.binder.selectTemplate");
 		removeAsListenerAndDispose(searchTemplateCtrl);
-		searchTemplateCtrl = new ReferencableEntriesSearchController(getWindowControl(), ureq,
-				new String[]{ BinderTemplateResource.TYPE_NAME }, commandLabel, false, false, false, false);
+		searchTemplateCtrl = new RepositorySearchController(commandLabel, ureq, getWindowControl(),
+				false, false, new String[]{ BinderTemplateResource.TYPE_NAME }, null);
+		searchTemplateCtrl.enableSearchforAllXXAbleInSearchForm(Can.all);
+		searchTemplateCtrl.doSearchByTypeLimitAccess(new String[]{ BinderTemplateResource.TYPE_NAME }, ureq);
 		listenTo(searchTemplateCtrl);
-			
+
 		cmc = new CloseableModalController(getWindowControl(), title, searchTemplateCtrl.getInitialComponent(), true, title);
 		listenTo(cmc);
 		cmc.activate();
