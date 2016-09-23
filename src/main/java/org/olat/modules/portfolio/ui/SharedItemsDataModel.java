@@ -69,6 +69,7 @@ public class SharedItemsDataModel extends DefaultFlexiTableDataModel<SharedItemR
 				case binderName: return itemRow.getBinderTitle();
 				case courseName: return itemRow.getEntryDisplayName();
 				case openSections: return itemRow.getNumOfOpenSections();
+				case selectSections: return itemRow;
 				case grading: return itemRow.getAssessmentEntry();
 				case lastModified: return itemRow.getLastModified();
 			}
@@ -89,6 +90,7 @@ public class SharedItemsDataModel extends DefaultFlexiTableDataModel<SharedItemR
 		binderName("table.header.title"),
 		courseName("table.header.course"),
 		openSections("table.header.open.sections"),
+		selectSections("table.header.select.sections"),
 		grading("table.header.grading"),
 		lastModified("table.header.lastUpdate");
 		

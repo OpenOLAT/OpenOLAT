@@ -84,6 +84,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_courserun:before { content: $fa-var-cube;}
 .o_icon_comments:before { content: $fa-var-comments;}
 .o_icon_comments_none:before { content: $fa-var-comment-o;}
+.o_icon_compress:before { content: $fa-var-compress;}
 .o_icon_content_popup:before { content: $fa-var-external-link; }
 .o_icon_correct_answer:before { content: $fa-var-check; color: $brand-success; }
 .o_icon_correction:before { content: $fa-var-pencil;}
@@ -106,6 +107,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_eportfolio_link:before { content: $fa-var-puzzle-piece; }
 .o_icon_eraser:before { content: $fa-var-eraser; }
 .o_icon_error:before { content: $fa-var-exclamation-circle; color: $brand-danger;}
+.o_icon_expand:before { content: $fa-var-expand;}
 .o_icon_expenditure:before { content: $fa-var-clock-o;}
 .o_icon_export:before { content: $fa-var-share-square-o;}
 .o_icon_external_link:before { content: $fa-var-external-link } 

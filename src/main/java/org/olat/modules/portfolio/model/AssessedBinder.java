@@ -21,6 +21,7 @@ package org.olat.modules.portfolio.model;
 
 import java.math.BigDecimal;
 import java.util.Date;
+import java.util.List;
 
 import org.olat.core.id.Identity;
 import org.olat.modules.assessment.AssessmentEntryLight;
@@ -41,17 +42,18 @@ public class AssessedBinder implements AssessmentEntryLight {
 	private final BigDecimal score;
 	private final Identity assessedIdentity;
 	
-	private final int numOfOpenSections;
+	private Date lastModified;
+	private List<AssessedBinderSection> sections;
+	private int numOfOpenSections;
 	
 	public AssessedBinder(Long binderKey, String binderTitle, String entryDisplayname,
-			Boolean passed, BigDecimal score, Identity assessedIdentity, int numOfOpenSections) {
+			Boolean passed, BigDecimal score, Identity assessedIdentity) {
 		this.binderKey = binderKey;
 		this.binderTitle = binderTitle;
 		this.entryDisplayname = entryDisplayname;
 		this.passed = passed;
 		this.score = score;
 		this.assessedIdentity = assessedIdentity;
-		this.numOfOpenSections = numOfOpenSections;
 	}
 	
 	public Long getBinderKey() {
@@ -63,7 +65,11 @@ public class AssessedBinder implements AssessmentEntryLight {
 	}
 	
 	public Date getLastModified() {
-		return null;
+		return lastModified;
+	}
+	
+	public void setLastModified(Date lastModified) {
+		this.lastModified = lastModified;
 	}
 	
 	public String getEntryDisplayname() {
@@ -84,7 +90,19 @@ public class AssessedBinder implements AssessmentEntryLight {
 		return assessedIdentity;
 	}
 
+	public List<AssessedBinderSection> getSections() {
+		return sections;
+	}
+
+	public void setSections(List<AssessedBinderSection> sections) {
+		this.sections = sections;
+	}
+
 	public int getNumOfOpenSections() {
 		return numOfOpenSections;
+	}
+	
+	public void setNumOfOpenSections(int numOfOpenSections) {
+		this.numOfOpenSections = numOfOpenSections;
 	}
 }

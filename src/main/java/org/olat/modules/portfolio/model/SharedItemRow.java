@@ -43,6 +43,9 @@ public class SharedItemRow extends UserPropertiesRow {
 	private String entryDisplayName;
 	private AssessmentEntryLight assessmentEntry;
 	
+	private boolean expandSections;
+	private List<AssessedBinderSection> sections;
+	
 	public SharedItemRow(Identity identity, List<UserPropertyHandler> userPropertyHandlers, Locale locale) {
 		super(identity, userPropertyHandlers, locale);
 	}
@@ -85,6 +88,22 @@ public class SharedItemRow extends UserPropertiesRow {
 
 	public void setAssessmentEntry(AssessmentEntryLight assessmentEntry) {
 		this.assessmentEntry = assessmentEntry;
+	}
+
+	public boolean isExpandSections() {
+		return expandSections;
+	}
+
+	public void setExpandSections(boolean expandSections) {
+		this.expandSections = expandSections;
+	}
+
+	public List<AssessedBinderSection> getSections() {
+		return sections;
+	}
+
+	public void setSections(List<AssessedBinderSection> sections) {
+		this.sections = sections;
 	}
 
 	public int getNumOfOpenSections() {

@@ -40,7 +40,8 @@ public class StaticFlexiCellRenderer implements FlexiCellRenderer {
 
 	private String label;
 	private String action;
-	private String iconCSS;
+	private String iconLeftCSS;
+	private String iconRightCSS;
 	private String linkCSS;
 	private String linkTitle; 
 	private FlexiCellRenderer labelDelegate;
@@ -49,15 +50,15 @@ public class StaticFlexiCellRenderer implements FlexiCellRenderer {
 		this(label, action, null, null, null);
 	}
 	
-	public StaticFlexiCellRenderer(String label, String action, String linkCSS, String iconCSS) {
-		this(label, action, linkCSS, iconCSS, null);
+	public StaticFlexiCellRenderer(String label, String action, String linkCSS, String iconLeftCSS) {
+		this(label, action, linkCSS, iconLeftCSS, null);
 	}
 	
-	public StaticFlexiCellRenderer(String label, String action, String linkCSS, String iconCSS, String linkTitle) {
+	public StaticFlexiCellRenderer(String label, String action, String linkCSS, String iconLeftCSS, String linkTitle) {
 		this.label = label;
 		this.action = action;
 		this.linkCSS = linkCSS;
-		this.iconCSS = iconCSS;
+		this.iconLeftCSS = iconLeftCSS;
 		this.linkTitle = linkTitle;
 	}
 	
@@ -65,13 +66,43 @@ public class StaticFlexiCellRenderer implements FlexiCellRenderer {
 		this.labelDelegate = labelDelegate;
 		this.action = action;
 	}
+	
+	public String getLabel() {
+		return label;
+	}
 
-  /**
-   * 
-   * @param target
- * @param cellValue
- * @param translator
-   */	
+	public String getIconLeftCSS() {
+		return iconLeftCSS;
+	}
+
+	public void setIconLeftCSS(String iconLeftCSS) {
+		this.iconLeftCSS = iconLeftCSS;
+	}
+
+	public String getIconRightCSS() {
+		return iconRightCSS;
+	}
+
+	public void setIconRightCSS(String iconRightCSS) {
+		this.iconRightCSS = iconRightCSS;
+	}
+
+	public String getLinkCSS() {
+		return linkCSS;
+	}
+
+	public void setLinkCSS(String linkCSS) {
+		this.linkCSS = linkCSS;
+	}
+	
+	public String getAction() {
+		return action;
+	}
+
+	public void setAction(String action) {
+		this.action = action;
+	}
+
 	@Override
 	public void render(Renderer renderer, StringOutput target, Object cellValue, int row,
 			FlexiTableComponent source, URLBuilder ubu, Translator translator) {
@@ -91,13 +122,17 @@ public class StaticFlexiCellRenderer implements FlexiCellRenderer {
 				target.append(" class=\"").append(linkCSS).append("\"");
 			}
 			target.append(">");
-			if(StringHelper.containsNonWhitespace(iconCSS)) {
-				target.append("<i class=\"o_icon ").append(iconCSS).append("\">&nbsp;</i>");
+			if(StringHelper.containsNonWhitespace(iconLeftCSS)) {
+				target.append("<i class=\"o_icon ").append(iconLeftCSS).append("\">&nbsp;</i>");
 			}
 			if(labelDelegate == null) {
 				target.append(getLabel());
 			} else {
 				labelDelegate.render(renderer, target, cellValue, row, source, ubu, translator);
+			}
+			
+			if(StringHelper.containsNonWhitespace(iconRightCSS)) {
+				target.append(" <i class=\"o_icon ").append(iconRightCSS).append("\">&nbsp;</i>");
 			}
 			target.append("</a>");
 		} else if(labelDelegate == null) {
@@ -105,13 +140,5 @@ public class StaticFlexiCellRenderer implements FlexiCellRenderer {
 		} else {
 			labelDelegate.render(renderer, target, cellValue, row, source, ubu, translator);
 		}
-	}
-	
-	protected String getAction() {
-		return action;
-	}
-	
-	protected String getLabel() {
-		return label;
 	}
 }
