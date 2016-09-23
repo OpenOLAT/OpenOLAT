@@ -29,6 +29,7 @@ import org.infinispan.Cache;
 import org.infinispan.configuration.cache.Configuration;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
 import org.infinispan.eviction.EvictionStrategy;
+import org.infinispan.eviction.EvictionType;
 import org.infinispan.manager.EmbeddedCacheManager;
 import org.infinispan.transaction.TransactionMode;
 import org.infinispan.util.concurrent.IsolationLevel;
@@ -75,7 +76,7 @@ public class InfinispanCacher implements Cacher {
 			
 			ConfigurationBuilder builder = new ConfigurationBuilder();
 			builder.eviction().strategy(EvictionStrategy.LRU);
-			builder.eviction().maxEntries(maxEntries);
+			builder.eviction().type(EvictionType.COUNT).size(maxEntries);
 			builder.expiration().maxIdle(maxIdle);
 			builder.transaction().transactionMode(TransactionMode.NON_TRANSACTIONAL);
 			builder.dataContainer().storeAsBinary().storeValuesAsBinary(false);
