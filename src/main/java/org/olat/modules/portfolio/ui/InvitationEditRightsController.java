@@ -110,8 +110,13 @@ public class InvitationEditRightsController extends FormBasicController {
 		if(identities.size() == 1) {
 			invitee = identities.get(0);
 			invitation = invitationDao.findInvitation(binder.getBaseGroup(), invitee);
-		} else {
+		} 
+		if(invitation == null) {
 			invitation = invitationDao.createInvitation();
+			if(invitee != null) {
+				invitation.setFirstName(invitee.getUser().getFirstName());
+				invitation.setLastName(invitee.getUser().getLastName());
+			}
 		}
 		initForm(ureq);
 		loadModel();

@@ -584,6 +584,11 @@ public class UserManagerImpl extends UserManager {
 	}
 
 	@Override
+	public String getUserDisplayName(String firstName, String lastName) {
+		return userDisplayNameCreator.getDisplayName(firstName, lastName);
+	}
+
+	@Override
 	public Map<Long, String> getUserDisplayNamesByKey(Collection<Long> identityKeys) {
 		
 		if(identityKeys == null | identityKeys.isEmpty()) {

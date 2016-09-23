@@ -32,6 +32,7 @@ import javax.persistence.TypedQuery;
 import org.olat.basesecurity.Group;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.IdentityRef;
+import org.olat.basesecurity.Invitation;
 import org.olat.basesecurity.manager.GroupDAO;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
@@ -643,7 +644,7 @@ public class BinderDAO {
 		}
 
 		StringBuilder sb = new StringBuilder();
-		sb.append("select membership.role, membership.identity from pfbinder as binder")
+		sb.append("select membership.role, ident, invitation from pfbinder as binder")
 		  .append(" inner join binder.baseGroup as baseGroup")
 		  .append(" inner join baseGroup.members as membership");
 		if(identity != null) {
@@ -651,6 +652,7 @@ public class BinderDAO {
 		}
 		sb.append(" inner join membership.identity as ident")
 		  .append(" inner join fetch ident.user as identUser")
+		  .append(" left join binvitation as invitation on (invitation.baseGroup.key=baseGroup.key and identUser.email=invitation.mail)")
 		  .append(" where binder.key=:binderKey");
 
 		TypedQuery<Object[]> query = dbInstance.getCurrentEntityManager()
@@ -665,11 +667,13 @@ public class BinderDAO {
 		for(Object[] object:objects) {
 			String role = (String)object[0];
 			Identity member = (Identity)object[1];
+			Invitation invitation = (Invitation)object[2];
 			
 			AccessRights rights = new AccessRights();
 			rights.setRole(PortfolioRoles.valueOf(role));
 			rights.setBinderKey(binder.getKey());
 			rights.setIdentity(member);
+			rights.setInvitation(invitation);
 			rightList.add(rights);
 		}
 		return rightList;
@@ -681,7 +685,7 @@ public class BinderDAO {
 		}
 
 		StringBuilder sb = new StringBuilder();
-		sb.append("select section.key, membership.role, membership.identity from pfbinder as binder")
+		sb.append("select section.key, membership.role, ident, invitation from pfbinder as binder")
 		  .append(" inner join binder.sections as section")
 		  .append(" inner join section.baseGroup as baseGroup")
 		  .append(" inner join baseGroup.members as membership");
@@ -690,6 +694,7 @@ public class BinderDAO {
 		}
 		sb.append(" inner join membership.identity as ident")
 		  .append(" inner join fetch ident.user as identUser")
+		  .append(" left join binvitation as invitation on (invitation.baseGroup.key=binder.baseGroup.key and identUser.email=invitation.mail)")
 		  .append(" where binder.key=:binderKey");
 
 		TypedQuery<Object[]> query = dbInstance.getCurrentEntityManager()
@@ -705,12 +710,14 @@ public class BinderDAO {
 			Long sectionKey = (Long)object[0];
 			String role = (String)object[1];
 			Identity member = (Identity)object[2];
+			Invitation invitation = (Invitation)object[3];
 			
 			AccessRights rights = new AccessRights();
 			rights.setRole(PortfolioRoles.valueOf(role));
 			rights.setBinderKey(binder.getKey());
 			rights.setSectionKey(sectionKey);
 			rights.setIdentity(member);
+			rights.setInvitation(invitation);
 			rightList.add(rights);
 		}
 		return rightList;
@@ -722,16 +729,17 @@ public class BinderDAO {
 		}
 
 		StringBuilder sb = new StringBuilder();
-		sb.append("select section.key, page.key, membership.role, membership.identity from pfbinder as binder")
+		sb.append("select section.key, page.key, membership.role, ident, invitation from pfbinder as binder")
 		  .append(" inner join binder.sections as section")
 		  .append(" inner join section.pages as page")
 		  .append(" inner join page.baseGroup as baseGroup")
 		  .append(" inner join baseGroup.members as membership");
 		if(identity != null) {
-			sb.append(" on (membership.identity.key =:identityKey)");
+			sb.append(" on (membership.identity.key=:identityKey)");
 		}
 		sb.append(" inner join membership.identity as ident")
 		  .append(" inner join fetch ident.user as identUser")
+		  .append(" left join binvitation as invitation on (invitation.baseGroup.key=binder.baseGroup.key and identUser.email=invitation.mail)")
 		  .append(" where binder.key=:binderKey");
 
 		TypedQuery<Object[]> query = dbInstance.getCurrentEntityManager()
@@ -748,6 +756,7 @@ public class BinderDAO {
 			Long pageKey = (Long)object[1];
 			String role = (String)object[2];
 			Identity member = (Identity)object[3];
+			Invitation invitation = (Invitation)object[4];
 			
 			AccessRights rights = new AccessRights();
 			rights.setRole(PortfolioRoles.valueOf(role));
@@ -755,6 +764,7 @@ public class BinderDAO {
 			rights.setSectionKey(sectionKey);
 			rights.setPageKey(pageKey);
 			rights.setIdentity(member);
+			rights.setInvitation(invitation);
 			rightList.add(rights);
 		}
 		return rightList;

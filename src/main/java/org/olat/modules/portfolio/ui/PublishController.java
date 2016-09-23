@@ -25,6 +25,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.olat.basesecurity.Invitation;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.dropdown.Dropdown;
@@ -416,7 +417,14 @@ public class PublishController extends BasicController implements TooledControll
 			this.rights = rights;
 			this.editLink = editLink;
 			this.element = element;
-			fullName = userManager.getUserDisplayName(rights.getIdentity());
+			
+			if(rights.getInvitation() == null) {
+				fullName = userManager.getUserDisplayName(rights.getIdentity());
+			} else {
+				Invitation invitation = rights.getInvitation();
+				fullName = userManager.getUserDisplayName(invitation.getFirstName(), invitation.getLastName()) + " :: " + invitation.getKey();
+			}
+			
 			if(editLink != null) {
 				editLink.setUserObject(this);
 			}

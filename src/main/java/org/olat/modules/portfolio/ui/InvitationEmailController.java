@@ -72,7 +72,7 @@ public class InvitationEmailController extends FormBasicController {
 		formLayout.add(buttonsCont);
 		buttonsCont.setRootForm(mainForm);
 		uifactory.addFormCancelButton("cancel", buttonsCont, ureq, getWindowControl());
-		uifactory.addFormSubmitButton("save", buttonsCont);
+		uifactory.addFormSubmitButton("validate.email", buttonsCont);
 	}
 	
 	@Override
