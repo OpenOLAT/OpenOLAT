@@ -40,10 +40,12 @@ import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.condition.Condition;
 import org.olat.course.condition.ConditionEditController;
 import org.olat.course.editor.NodeEditController;
+import org.olat.course.highscore.ui.HighScoreEditController;
 import org.olat.course.nodes.AbstractAccessableCourseNode;
 import org.olat.course.nodes.IQSELFCourseNode;
 import org.olat.course.nodes.IQSURVCourseNode;
 import org.olat.course.nodes.IQTESTCourseNode;
+import org.olat.course.nodes.MSCourseNode;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.ims.qti.process.AssessmentInstance;
 import org.olat.modules.ModuleConfiguration;
@@ -65,6 +67,7 @@ public class IQEditController extends ActivateableTabbableDefaultController impl
 	public static final String PANE_TAB_IQCONFIG_SELF = "pane.tab.iqconfig.self";
 	public static final String PANE_TAB_IQCONFIG_TEST = "pane.tab.iqconfig.test";
 	public static final String PANE_TAB_ACCESSIBILITY = "pane.tab.accessibility";
+	private static final String PANE_TAB_HIGHSCORE = "pane.tab.highscore"; 
 
 	/** configuration key: repository sof key reference to qti file*/
 	public static final String CONFIG_KEY_REPOSITORY_SOFTKEY = "repoSoftkey";
@@ -158,6 +161,7 @@ public class IQEditController extends ActivateableTabbableDefaultController impl
 	
 	private ConditionEditController accessibilityCondContr;
 	private IQConfigurationController configurationCtrl;
+	private HighScoreEditController highScoreNodeConfigController;
 
 	/**
 	 * Constructor for the IMS QTI edit controller for a test course node
@@ -264,6 +268,9 @@ public class IQEditController extends ActivateableTabbableDefaultController impl
 	private void init(UserRequest ureq) {		
 		configurationCtrl = new IQConfigurationController(ureq, getWindowControl(), this.stackPanel, course, courseNode, euce, type);
 		listenTo(configurationCtrl);
+		
+		highScoreNodeConfigController = new HighScoreEditController(ureq, getWindowControl(), courseNode, euce);
+		listenTo(highScoreNodeConfigController);
 
 		Condition accessCondition = courseNode.getPreConditionAccess();
 		accessibilityCondContr = new ConditionEditController(ureq, getWindowControl(), euce, accessCondition,
@@ -288,6 +295,11 @@ public class IQEditController extends ActivateableTabbableDefaultController impl
 			if (event == NodeEditController.NODECONFIG_CHANGED_EVENT) {
 				fireEvent(urequest, NodeEditController.NODECONFIG_CHANGED_EVENT);
 			}
+		} else if (source == highScoreNodeConfigController){
+			if (event == Event.DONE_EVENT) {
+				highScoreNodeConfigController.updateModuleConfiguration(courseNode.getModuleConfiguration());
+				fireEvent(urequest, NodeEditController.NODECONFIG_CHANGED_EVENT);
+			}
 		} 
 	}
 	
@@ -297,8 +309,9 @@ public class IQEditController extends ActivateableTabbableDefaultController impl
 		tabbedPane.addTab(translate(PANE_TAB_ACCESSIBILITY), accessibilityCondContr.getWrappedDefaultAccessConditionVC(translate("condition.accessibility.title")));
 		//PANE_TAB_IQCONFIG_XXX is set during construction time
 		tabbedPane.addTab(translate(PANE_TAB_IQCONFIG_XXX), configurationCtrl.getInitialComponent());
+		tabbedPane.addTab(translate(PANE_TAB_HIGHSCORE) , highScoreNodeConfigController.getInitialComponent());
 	}
-
+	
 	/**
 	 * Ge the qti file soft key repository reference 
 	 * @param config

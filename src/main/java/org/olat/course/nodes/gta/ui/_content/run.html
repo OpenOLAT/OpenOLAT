@@ -179,6 +179,11 @@
 	/* ]]> */</script>
 #end
 </div>
+
+#if ($r.available("highScore"))
+	$r.render("highScore")
+#end
+
 #if($userLog || $groupLog)
 <div class="o_box">
     #o_togglebox_start("o_course_run_log" $r.translate("log.title"))

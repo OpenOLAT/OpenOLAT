@@ -33,7 +33,9 @@ import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.condition.Condition;
 import org.olat.course.condition.ConditionEditController;
 import org.olat.course.editor.NodeEditController;
+import org.olat.course.highscore.ui.HighScoreEditController;
 import org.olat.course.nodes.CheckListCourseNode;
+import org.olat.course.nodes.MSCourseNode;
 import org.olat.course.nodes.cl.CheckboxManager;
 import org.olat.course.run.userview.UserCourseEnvironment;
 
@@ -48,10 +50,13 @@ public class CheckListEditController extends ActivateableTabbableDefaultControll
 	public static final String PANE_TAB_CLCONFIG = "pane.tab.clconfig";
 	private static final String PANE_TAB_ACCESSIBILITY = "pane.tab.accessibility";
 	private static final String PANE_TAB_CHECKBOX = "pane.tab.checkbox";
+	public static final String PANE_TAB_HIGHSCORE = "pane.tab.highscore";
+
 	
 	private ConditionEditController accessibilityCondCtrl;
 	private CheckListBoxListEditController checkboxListEditCtrl;
 	private CheckListConfigurationController configurationCtrl;
+	private HighScoreEditController highScoreNodeConfigController;
 	private CheckListCourseNode courseNode;
 
 	private TabbedPane myTabbedPane;
@@ -83,6 +88,9 @@ public class CheckListEditController extends ActivateableTabbableDefaultControll
 		listenTo(checkboxListEditCtrl);
 		configurationCtrl = new CheckListConfigurationController(ureq, wControl, courseNode, numOfChecks > 0);
 		listenTo(configurationCtrl);
+		
+		highScoreNodeConfigController = new HighScoreEditController(ureq, wControl, courseNode, euce);
+		listenTo(highScoreNodeConfigController);
 	}
 
 	@Override
@@ -100,6 +108,11 @@ public class CheckListEditController extends ActivateableTabbableDefaultControll
 		return myTabbedPane;
 	}
 	
+	private void updateHighscoreTab() {
+		Boolean sf = courseNode.getModuleConfiguration().getBooleanSafe(MSCourseNode.CONFIG_KEY_HAS_SCORE_FIELD,false);
+		myTabbedPane.setEnabled(5, sf);
+	}
+	
 	@Override
 	public void addTabs(TabbedPane tabbedPane) {
 		myTabbedPane = tabbedPane;
@@ -108,6 +121,8 @@ public class CheckListEditController extends ActivateableTabbableDefaultControll
 				accessibilityCondCtrl.getWrappedDefaultAccessConditionVC(translate("condition.accessibility.title")));
 		tabbedPane.addTab(translate(PANE_TAB_CLCONFIG), configurationCtrl.getInitialComponent());
 		tabbedPane.addTab(translate(PANE_TAB_CHECKBOX), checkboxListEditCtrl.getInitialComponent());
+		tabbedPane.addTab(translate(PANE_TAB_HIGHSCORE) , highScoreNodeConfigController.getInitialComponent());
+		updateHighscoreTab();
 	}
 	
 	@Override
@@ -127,11 +142,17 @@ public class CheckListEditController extends ActivateableTabbableDefaultControll
 			if (event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
 				fireEvent(ureq, NodeEditController.NODECONFIG_CHANGED_EVENT);
 				checkboxListEditCtrl.dispatchEvent(ureq, configurationCtrl, event);
+				updateHighscoreTab();
 			}
 		} else if(source == checkboxListEditCtrl) {
 			if (event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
 				fireEvent(ureq, NodeEditController.NODECONFIG_CHANGED_EVENT);
 				configurationCtrl.dispatchEvent(ureq, checkboxListEditCtrl, event);
+			}
+		} else if (source == highScoreNodeConfigController){
+			if (event == Event.DONE_EVENT) {
+				highScoreNodeConfigController.updateModuleConfiguration(courseNode.getModuleConfiguration());
+				fireEvent(ureq, NodeEditController.NODECONFIG_CHANGED_EVENT);
 			}
 		}
 	}

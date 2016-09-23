@@ -331,6 +331,10 @@ public class EditScoreCalculationEasyForm extends FormBasicController {
 		return sc;
 	}
 	
+	public boolean hasScore (){
+		return hasScore.isSelected(0);
+	}
+	
 	/**
 	 *   
 	 * @return Returns a list with the invalid node descriptions, 

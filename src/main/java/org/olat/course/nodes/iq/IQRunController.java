@@ -69,11 +69,13 @@ import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.assessment.AssessmentManager;
 import org.olat.course.assessment.manager.AssessmentNotificationsHandler;
 import org.olat.course.auditing.UserNodeAuditManager;
+import org.olat.course.highscore.ui.HighScoreRunController;
 import org.olat.course.nodes.AssessableCourseNode;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.IQSELFCourseNode;
 import org.olat.course.nodes.IQSURVCourseNode;
 import org.olat.course.nodes.IQTESTCourseNode;
+import org.olat.course.nodes.MSCourseNode;
 import org.olat.course.nodes.ObjectivesHelper;
 import org.olat.course.nodes.PersistentAssessableCourseNode;
 import org.olat.course.nodes.SelfAssessableCourseNode;
@@ -297,6 +299,14 @@ public class IQRunController extends BasicController implements GenericEventList
 		addLoggingResourceable(LoggingResourceable.wrap(courseNode));
 
 		myContent = createVelocityContainer("surveyrun");
+		
+		if (courseNode.getModuleConfiguration().getBooleanSafe(MSCourseNode.CONFIG_KEY_HAS_SCORE_FIELD,true)){
+			HighScoreRunController highScoreCtr = new HighScoreRunController(ureq, wControl, userCourseEnv, courseNode);
+			if (highScoreCtr.isViewHighscore()) {
+				Component compi = highScoreCtr.getInitialComponent();
+				myContent.put("highScore", compi);							
+			}
+		}
 		
 		mainPanel = putInitialPanel(myContent);		
 

@@ -54,8 +54,10 @@ import org.olat.core.util.SortedProperties;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.course.groupsandrights.CourseGroupManager;
+import org.olat.course.highscore.ui.HighScoreRunController;
 import org.olat.course.nodes.BasicLTICourseNode;
 import org.olat.course.nodes.CourseNode;
+import org.olat.course.nodes.MSCourseNode;
 import org.olat.course.properties.CoursePropertyManager;
 import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.course.run.scoring.ScoreEvaluation;
@@ -110,6 +112,14 @@ public class LTIRunController extends BasicController {
 		// push title and learning objectives, only visible on intro page
 		run.contextPut("menuTitle", courseNode.getShortTitle());
 		run.contextPut("displayTitle", courseNode.getLongTitle());
+		
+		if (courseNode.getModuleConfiguration().getBooleanSafe(MSCourseNode.CONFIG_KEY_HAS_SCORE_FIELD,true)){
+			HighScoreRunController highScoreCtr = new HighScoreRunController(ureq, wControl, userCourseEnv, courseNode);
+			if (highScoreCtr.isViewHighscore()) {
+				Component compi = highScoreCtr.getInitialComponent();
+				run.put("highScore", compi);							
+			}
+		}
 
 		doBasicLTI(ureq, run);
 		mainPanel = putInitialPanel(run);
@@ -310,6 +320,14 @@ public class LTIRunController extends BasicController {
 		startPage = createVelocityContainer("overview");
 		startPage.contextPut("menuTitle", courseNode.getShortTitle());
 		startPage.contextPut("displayTitle", courseNode.getLongTitle());
+		
+		if (courseNode.getModuleConfiguration().getBooleanSafe(MSCourseNode.CONFIG_KEY_HAS_SCORE_FIELD,false)){
+			HighScoreRunController highScoreCtr = new HighScoreRunController(ureq, getWindowControl(), userCourseEnv, courseNode);
+			if (highScoreCtr.isViewHighscore()) {
+				Component compi = highScoreCtr.getInitialComponent();
+				startPage.put("highScore", compi);							
+			}
+		}
 		
 		startButton = LinkFactory.createButton("start", startPage, this);
 		startButton.setPrimary(true);

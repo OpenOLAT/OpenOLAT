@@ -130,3 +130,7 @@
 	
 	<div class="o_button_group">$r.render("start")</div>
 #end
+
+#if ($r.available("highScore"))
+	$r.render("highScore")
+#end

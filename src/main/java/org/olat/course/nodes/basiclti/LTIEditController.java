@@ -43,7 +43,9 @@ import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.condition.Condition;
 import org.olat.course.condition.ConditionEditController;
 import org.olat.course.editor.NodeEditController;
+import org.olat.course.highscore.ui.HighScoreEditController;
 import org.olat.course.nodes.BasicLTICourseNode;
+import org.olat.course.nodes.MSCourseNode;
 import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.course.tree.CourseEditorTreeModel;
@@ -62,12 +64,14 @@ public class LTIEditController extends ActivateableTabbableDefaultController imp
 
 	public static final String PANE_TAB_LTCONFIG = "pane.tab.ltconfig";
 	public static final String PANE_TAB_ACCESSIBILITY = "pane.tab.accessibility";
+	public static final String PANE_TAB_HIGHSCORE = "pane.tab.highscore";
 	
 	private static final String[] paneKeys = {PANE_TAB_LTCONFIG, PANE_TAB_ACCESSIBILITY};
 
 	private ModuleConfiguration config;
 	private CourseEnvironment editCourseEnv;
 	private VelocityContainer myContent;
+	private HighScoreEditController highScoreNodeConfigController;
 
 	private LTIConfigForm ltConfigForm;	
 	private BasicLTICourseNode courseNode;
@@ -98,6 +102,9 @@ public class LTIEditController extends ActivateableTabbableDefaultController imp
 		myContent = createVelocityContainer("edit");
 		previewButton = LinkFactory.createButtonSmall("command.preview", myContent, this);
 		previewButton.setIconLeftCSS("o_icon o_icon_preview");
+		
+		highScoreNodeConfigController = new HighScoreEditController(ureq, wControl, courseNode, euce);
+		listenTo(highScoreNodeConfigController);
 		
 		ltConfigForm = new LTIConfigForm(ureq, wControl, config);
 		listenTo(ltConfigForm);
@@ -151,13 +158,23 @@ public class LTIEditController extends ActivateableTabbableDefaultController imp
 				// do nothing
 			} else if (event == Event.DONE_EVENT) {
 				config = ltConfigForm.getUpdatedConfig();
+				updateHighscoreTab();
 				fireEvent(ureq, NodeEditController.NODECONFIG_CHANGED_EVENT);
 				// form valid -> node config valid -> show preview button
 				myContent.contextPut("showPreviewButton", Boolean.TRUE);
 			}
+		} else if (source == highScoreNodeConfigController){
+			if (event == Event.DONE_EVENT) {
+				highScoreNodeConfigController.updateModuleConfiguration(courseNode.getModuleConfiguration());
+				fireEvent(ureq, NodeEditController.NODECONFIG_CHANGED_EVENT);
+			}
 		}
 	}
 
+	private void updateHighscoreTab() {
+		Boolean sf = courseNode.getModuleConfiguration().getBooleanSafe(MSCourseNode.CONFIG_KEY_HAS_SCORE_FIELD,false);
+		myTabbedPane.setEnabled(4, sf);
+	}
 	/**
 	 * @see org.olat.core.gui.control.generic.tabbable.TabbableDefaultController#addTabs(org.olat.core.gui.components.TabbedPane)
 	 */
@@ -165,6 +182,8 @@ public class LTIEditController extends ActivateableTabbableDefaultController imp
 		myTabbedPane = tabbedPane;
 		tabbedPane.addTab(translate(PANE_TAB_ACCESSIBILITY), accessibilityCondContr.getWrappedDefaultAccessConditionVC(translate("condition.accessibility.title")));
 		tabbedPane.addTab(translate(PANE_TAB_LTCONFIG), myContent);
+		tabbedPane.addTab(translate(PANE_TAB_HIGHSCORE) , highScoreNodeConfigController.getInitialComponent());
+		updateHighscoreTab();
 	}
 
 	/**

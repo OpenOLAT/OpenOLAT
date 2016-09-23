@@ -93,12 +93,13 @@ public class HighScoreRunController extends FormBasicController{
 				.getAssessmentManager().getAssessmentEntries(courseNode);
 		
 		ModuleConfiguration config = courseNode.getModuleConfiguration();		
-		//TODO initialize
+		//initialize ModuleConfig
 		Date start = config.getBooleanEntry(HighScoreEditController.CONFIG_KEY_DATESTART) != null ? 
 				(Date) config.get(HighScoreEditController.CONFIG_KEY_DATESTART) : null;
 		if (start != null && start.getTime() > new Date().getTime())return;
-
+		
 		viewHighscore = config.getBooleanSafe(HighScoreEditController.CONFIG_KEY_HIGHSCORE);
+		//not build form if high-score is not set
 		if (!viewHighscore)return;
 		
 		viewTable = config.getBooleanSafe(HighScoreEditController.CONFIG_KEY_LISTING);
@@ -110,7 +111,8 @@ public class HighScoreRunController extends FormBasicController{
 		ownIdentity = ureq.getIdentity();
 		initLists();
 		
-		 allScores = highScoreManager.sortRankByScore(assessEntries, allMembers, ownIdMembers,
+		//compute ranking and order
+		allScores = highScoreManager.sortRankByScore(assessEntries, allMembers, ownIdMembers,
 				 allPodium, ownIdIndices, tableSize, ownIdentity, userManager);
 		
 		initForm(ureq);
@@ -125,10 +127,12 @@ public class HighScoreRunController extends FormBasicController{
 
 		if (viewHistogram) {
 			VelocityContainer scoreHistogramVC = createVelocityContainer("histogram_score");
+			//transfer all scores to velocity container as base data for histogram
 			scoreHistogramVC.contextPut("datas", BarSeries.datasToString(allScores));
+			//histogram marker for own position
 			scoreHistogramVC.contextPut("cutValue", 
 					ownIdIndices.size() > 0 ? allMembers.get(ownIdIndices.get(0)).getScore() : "");
-			
+			//find path for ownID image to display in histogram
 			UserAvatarMapper mapper = new UserAvatarMapper(false);
 			String mapperPath = registerMapper(ureq, mapper);
 			String identityMapperPath = mapper.createPathFor(mapperPath, ownIdentity);
@@ -141,6 +145,7 @@ public class HighScoreRunController extends FormBasicController{
 			for (int i = 0; i < localizer.length; i++) {
 				StringBuilder sb = new StringBuilder();
 				if (allPodium.get(i).size() > 2){
+					//create link if podium has more than 2 entries per rank, entries can be displayed as anonymous
 					sb.append(anonymous && !allPodium.get(i).get(0).getIdentity().equals(ownIdentity) ? 
 							translate("highscore.anonymous") : allPodium.get(i).get(0).getName());
 
@@ -159,10 +164,13 @@ public class HighScoreRunController extends FormBasicController{
 				mainVC.contextPut("score" + (i + 1), allPodium.get(i).size() > 0 ? 
 						allPodium.get(i).get(0).getScore() : "");
 				if (allPodium.get(i).size() > 0) {
+					//decide whether or not to display id portrait
+					Identity currentID = allPodium.get(i).get(0).getIdentity();
+					boolean choosePortrait = !anonymous || ownIdentity.equals(currentID);
 					DisplayPortraitController portrait = new DisplayPortraitController(ureq, getWindowControl(),
-							allPodium.get(i).get(0).getIdentity(), i == 0, true);
-					Component compi = portrait.getInitialComponent();
-					mainVC.put("portrait" + (i + 1), compi);
+							currentID, i == 0, choosePortrait, !choosePortrait);
+					Component portraitComponent = portrait.getInitialComponent();
+					mainVC.put("portrait" + (i + 1), portraitComponent);
 				}
 			}
 		}
@@ -188,7 +196,7 @@ public class HighScoreRunController extends FormBasicController{
 			topTenTable.setCustomizeColumns(false);
 			topTenTable.setCssDelegate(new MarkedMemberCssDelegate(false));
 
-
+			//establish a 2nd table if ownID position is greater than first table's size setting
 			if (!ownIdMembers.isEmpty()) {
 				tableDataModel2 = new FlexiTableDataModelImpl<HighScoreTableEntry>(
 						new HighScoreFlexiTableModel(ownIdMembers, anonymous, 
@@ -214,6 +222,13 @@ public class HighScoreRunController extends FormBasicController{
 		allPodium.add(new ArrayList<>());
 	}
 	
+	/**
+	 * Builds the member list, which is displayed for each rank's link
+	 * if the chosen rank has more than 2 entries
+	 *
+	 * @param persons the persons in i-th rank
+	 * @param i the rank of the podium
+	 */
 	private void buildMemberList(List<String> persons, int i){
 		for (HighScoreTableEntry te : allPodium.get(i)) {
 			String person = anonymous && !te.getIdentity().equals(ownIdentity) ? 
@@ -270,7 +285,8 @@ public class HighScoreRunController extends FormBasicController{
 		}
 		@Override
 		public String getRowCssClass(FlexiTableRendererType type, int pos) {
-			return ownIdIndices.get(0) < tableSize && pos == ownIdIndices.get(0) || mark ? "o_row_selected" : null;
+			return ownIdIndices.size() > 0 && (ownIdIndices.get(0) < tableSize && pos == ownIdIndices.get(0)) || mark
+					? "o_row_selected" : null;
 		}
 	}
 

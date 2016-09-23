@@ -58,6 +58,8 @@ import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.condition.Condition;
 import org.olat.course.condition.ConditionEditController;
 import org.olat.course.editor.NodeEditController;
+import org.olat.course.highscore.ui.HighScoreEditController;
+import org.olat.course.nodes.MSCourseNode;
 import org.olat.course.nodes.ScormCourseNode;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.fileresource.FileResourceManager;
@@ -84,6 +86,7 @@ public class ScormEditController extends ActivateableTabbableDefaultController i
 	public static final String PANE_TAB_CPCONFIG = "pane.tab.cpconfig";
 	private static final String PANE_TAB_ACCESSIBILITY = "pane.tab.accessibility";
 	private static final String PANE_TAB_DELIVERY = "pane.tab.delivery";
+	public static final String PANE_TAB_HIGHSCORE = "pane.tab.highscore";
 
 
 	private static final String CONFIG_KEY_REPOSITORY_SOFTKEY = "reporef";
@@ -126,6 +129,7 @@ public class ScormEditController extends ActivateableTabbableDefaultController i
 	private ConditionEditController accessibilityCondContr;
 	private DeliveryOptionsConfigurationController deliveryOptionsCtrl;
 	private ScormCourseNode scormNode;
+	private HighScoreEditController highScoreNodeConfigController;
 
 	private TabbedPane myTabbedPane;
 
@@ -157,6 +161,9 @@ public class ScormEditController extends ActivateableTabbableDefaultController i
 		chooseCPButton.setElementCssClass("o_sel_scorm_choose_repofile");
 		changeCPButton = LinkFactory.createButtonSmall("command.changecp", cpConfigurationVc, this);
 		changeCPButton.setElementCssClass("o_sel_scorm_change_repofile");
+		
+		highScoreNodeConfigController = new HighScoreEditController(ureq, wControl, scormNode, euce);
+		listenTo(highScoreNodeConfigController);
 		
 		DeliveryOptions parentConfig = null;
 		if (config.get(CONFIG_KEY_REPOSITORY_SOFTKEY) != null) {
@@ -320,6 +327,7 @@ public class ScormEditController extends ActivateableTabbableDefaultController i
 				// </OLATCE-289>
 				// fire event so the updated config is saved by the
 				// editormaincontroller
+				updateHighscoreTab();
 				fireEvent(urequest, NodeEditController.NODECONFIG_CHANGED_EVENT);
 			}
 		} else if(source == deliveryOptionsCtrl) {
@@ -327,7 +335,17 @@ public class ScormEditController extends ActivateableTabbableDefaultController i
 				config.set(CONFIG_DELIVERY_OPTIONS, deliveryOptionsCtrl.getDeliveryOptions());
 				fireEvent(urequest, NodeEditController.NODECONFIG_CHANGED_EVENT);
 			}
+		} else if (source == highScoreNodeConfigController){
+			if (event == Event.DONE_EVENT) {
+				highScoreNodeConfigController.updateModuleConfiguration(scormNode.getModuleConfiguration());
+				fireEvent(urequest, NodeEditController.NODECONFIG_CHANGED_EVENT);
+			}
 		}
+	}
+	
+	private void updateHighscoreTab() {
+		Boolean sf = scormNode.getModuleConfiguration().getBooleanSafe(CONFIG_ISASSESSABLE,true);
+		myTabbedPane.setEnabled(5, sf);
 	}
 
 	/**
@@ -338,6 +356,8 @@ public class ScormEditController extends ActivateableTabbableDefaultController i
 		tabbedPane.addTab(translate(PANE_TAB_ACCESSIBILITY), accessibilityCondContr.getWrappedDefaultAccessConditionVC(translate(NLS_CONDITION_ACCESSIBILITY_TITLE)));
 		tabbedPane.addTab(translate(PANE_TAB_CPCONFIG), main); // the choose learning content tab
 		tabbedPane.addTab(translate(PANE_TAB_DELIVERY), deliveryOptionsCtrl.getInitialComponent());
+		tabbedPane.addTab(translate(PANE_TAB_HIGHSCORE) , highScoreNodeConfigController.getInitialComponent());
+		updateHighscoreTab();
 	}
 
 	/**

@@ -48,9 +48,11 @@ import org.olat.core.util.resource.OresHelper;
 import org.olat.course.DisposedCourseRestartController;
 import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.auditing.UserNodeAuditManager;
+import org.olat.course.highscore.ui.HighScoreRunController;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.IQSELFCourseNode;
 import org.olat.course.nodes.IQTESTCourseNode;
+import org.olat.course.nodes.MSCourseNode;
 import org.olat.course.nodes.QTICourseNode;
 import org.olat.course.run.scoring.ScoreEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
@@ -117,6 +119,14 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 		testEntry = courseNode.getReferencedRepositoryEntry();
 		singleUserEventCenter = userSession.getSingleUserEventCenter();
 		mainVC = createVelocityContainer("assessment_run");
+		
+		if (courseNode.getModuleConfiguration().getBooleanSafe(MSCourseNode.CONFIG_KEY_HAS_SCORE_FIELD,true)){
+			HighScoreRunController highScoreCtr = new HighScoreRunController(ureq, getWindowControl(), userCourseEnv, courseNode);
+			if (highScoreCtr.isViewHighscore()) {
+				Component compi = highScoreCtr.getInitialComponent();
+				mainVC.put("highScore", compi);							
+			}
+		}
 		
 		addLoggingResourceable(LoggingResourceable.wrap(courseNode));
 		
@@ -185,7 +195,7 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 				mainVC.contextPut("comment", StringHelper.xssScan(comment));
 				Integer attempts = assessmentEntry.getAttempts();
 				mainVC.contextPut("attempts", attempts == null ? new Integer(0) : attempts);
-	
+				
 				if(!anonym) {
 					UserNodeAuditManager am = userCourseEnv.getCourseEnvironment().getAuditManager();
 					mainVC.contextPut("log", am.getUserNodeLog(courseNode, identity));

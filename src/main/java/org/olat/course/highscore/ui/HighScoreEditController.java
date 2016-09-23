@@ -42,7 +42,8 @@ import org.olat.core.gui.components.form.flexible.impl.elements.JSDateChooser;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.course.condition.interpreter.ConditionDateFormatter;
+import org.olat.core.gui.translator.Translator;
+import org.olat.core.util.Util;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.ModuleConfiguration;
@@ -82,17 +83,24 @@ public class HighScoreEditController extends FormBasicController {
 	private CourseNode msNode;	
 	private ModuleConfiguration config;
 	private JSDateChooser dateStart;
-
 	
 	public HighScoreEditController(UserRequest ureq, WindowControl wControl, CourseNode msNode, UserCourseEnvironment euce) {
 		super(ureq, wControl, FormBasicController.LAYOUT_DEFAULT);
 		this.msNode = msNode;
-
 		initForm(ureq);
+	}
+	
+	public void setFormInfoMessage(String i18nKey, Translator infoMessageTranslator) {
+		Translator transWithFallback = Util.createPackageTranslator(HighScoreEditController.class, getLocale(), infoMessageTranslator);
+		setTranslator(transWithFallback);
+		setFormInfo(i18nKey);
 	}
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		setFormTitle("controller.title");
+		setFormDescription("highscore.description");
+		setFormContextHelp("ok");
 
 		allowHighScore = uifactory.addCheckboxesHorizontal("highscore.show", formLayout, new String[] { "xx" },
 				new String[] { null });

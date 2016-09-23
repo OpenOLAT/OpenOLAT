@@ -24,6 +24,7 @@ import java.util.Date;
 
 import org.olat.NewControllerFactory;
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
@@ -32,6 +33,7 @@ import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.link.Link;
+import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.OLATResourceable;
@@ -44,6 +46,8 @@ import org.olat.core.util.resource.OresHelper;
 import org.olat.course.CourseModule;
 import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.assessment.AssessmentManager;
+import org.olat.course.highscore.ui.HighScoreRunController;
+import org.olat.course.nodes.MSCourseNode;
 import org.olat.course.nodes.PortfolioCourseNode;
 import org.olat.course.nodes.portfolio.PortfolioCourseNodeConfiguration.DeadlineType;
 import org.olat.course.run.scoring.ScoreAccounting;
@@ -136,6 +140,15 @@ public class PortfolioCourseNodeRunController extends FormBasicController {
 		assessmentInfosContainer = FormLayoutContainer.createCustomFormLayout("assessmentInfos", getTranslator(), assessmentPage);
 		assessmentInfosContainer.setVisible(false);
 		formLayout.add(assessmentInfosContainer);
+		
+		VelocityContainer mainVC = ((FormLayoutContainer) formLayout).getFormItemComponent();
+		if (courseNode.getModuleConfiguration().getBooleanSafe(MSCourseNode.CONFIG_KEY_HAS_SCORE_FIELD,false)){
+			HighScoreRunController highScoreCtr = new HighScoreRunController(ureq, getWindowControl(), userCourseEnv, courseNode);
+			if (highScoreCtr.isViewHighscore()) {
+				Component compi = highScoreCtr.getInitialComponent();
+				mainVC.put("highScore", compi);							
+			}
+		}
 		
 		Object text = config.get(PortfolioCourseNodeConfiguration.NODE_TEXT);
 		String explanation = (text instanceof String) ? (String)text : "";

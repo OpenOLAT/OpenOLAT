@@ -13,12 +13,12 @@
 	margin-bottom: 50px;
 }
 
-.o_step {
+.o_rank {
 	width: 30%;
 	position: absolute;
 	bottom: 0;
 }
-.o_step:before {
+.o_rank:before {
 	position: absolute;
 	bottom: 0;
 	left: 0;
@@ -26,7 +26,7 @@
 	text-align: center;
 }
 
-.o_step .o_name {
+.o_rank .o_name {
 	position: absolute;
 	top: 100%;
 	width: 100%;
@@ -37,7 +37,7 @@
 	padding-top: 1em;
 }
 
-.o_step .o_score {
+.o_rank .o_score {
 	width: 100%;
 	text-align: center;
 	position: absolute;
@@ -75,27 +75,27 @@
 	font-size: 300%;
 }
 
-.o_step .o_portrait {
+.o_rank .o_portrait {
 	position: absolute;
 	width: 100%;
 	text-align: center;
 }
-.o_step.o_first .o_portrait {
+.o_rank.o_first .o_portrait {
 	top: -125px;
 }
-.o_step.o_second .o_portrait {
+.o_rank.o_second .o_portrait {
 	top: -70px;
 }
-.o_step.o_second .o_portrait .o_portrait_avatar_small, 
-.o_step.o_second .o_portrait .o_portrait_dummy_small, 
-.o_step.o_second .o_portrait .o_portrait_dummy_female_small, 
-.o_step.o_second .o_portrait .o_portrait_dummy_male_small, 
-.o_step.o_second .o_portrait .o_portrait_anonymous_small {
+.o_rank.o_second .o_portrait .o_portrait_avatar_small, 
+.o_rank.o_second .o_portrait .o_portrait_dummy_small, 
+.o_rank.o_second .o_portrait .o_portrait_dummy_female_small, 
+.o_rank.o_second .o_portrait .o_portrait_dummy_male_small, 
+.o_rank.o_second .o_portrait .o_portrait_anonymous_small {
 	width: 50px;
 	height: 50px;
 }
 
-.o_step.o_third .o_portrait {
+.o_rank.o_third .o_portrait {
 	top: -50px;
 }
 
@@ -142,7 +142,6 @@
 
 </style>
 
-
 <div class="panel panel-default o_comment">
 	<div class="panel-heading" data-toggle="collapse"
 		data-target="#collapseHighscore">
@@ -158,7 +157,7 @@
 			<div class="row clearfix">
 				#if ($first)
 				<div class="col-sm-6 o_podium">
-					<div class="o_step o_first">
+					<div class="o_rank o_first">
 						#if ($r.available("portrait1")) $r.render("portrait1") 
 						<div class="o_score">$score1 $r.translate("graph.axis.points")</div>
 						#end
@@ -167,7 +166,7 @@
 						</div>
 					</div>
 	
-					<div class="o_step o_second">
+					<div class="o_rank o_second">
 						#if ($r.available("portrait2")) $r.render("portrait2") 
 						<div class="o_score">$score2 $r.translate("graph.axis.points")</div>
 						#end
@@ -176,7 +175,7 @@
 						</div>
 					</div>
 	
-					<div class="o_step o_third">
+					<div class="o_rank o_third">
 						#if ($r.available("portrait3")) $r.render("portrait3") 
 						<div class="o_score">$score3 $r.translate("graph.axis.points")</div>
 						#end

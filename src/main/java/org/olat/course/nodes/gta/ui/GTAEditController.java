@@ -31,7 +31,9 @@ import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.condition.Condition;
 import org.olat.course.condition.ConditionEditController;
 import org.olat.course.editor.NodeEditController;
+import org.olat.course.highscore.ui.HighScoreEditController;
 import org.olat.course.nodes.GTACourseNode;
+import org.olat.course.nodes.MSCourseNode;
 import org.olat.course.nodes.ms.MSEditFormController;
 import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.course.run.userview.UserCourseEnvironment;
@@ -52,11 +54,12 @@ public class GTAEditController extends ActivateableTabbableDefaultController {
 	public static final String PANE_TAB_SUBMISSION = "pane.tab.submission";
 	public static final String PANE_TAB_GRADING = "pane.tab.grading";
 	public static final String PANE_TAB_SOLUTIONS = "pane.tab.solutions";
+	public static final String PANE_TAB_HIGHSCORE = "pane.tab.highscore";
 	public static final String[] paneKeys = {
 		PANE_TAB_ACCESSIBILITY, PANE_TAB_WORKLOW, PANE_TAB_ASSIGNMENT,
 		PANE_TAB_SUBMISSION, PANE_TAB_GRADING, PANE_TAB_SOLUTIONS
 	};
-	private int workflowPos, assignmentPos, submissionPos, gradingPos, solutionsPos;
+	private int workflowPos, assignmentPos, submissionPos, gradingPos, solutionsPos, highScoreTabPosition;
 	
 	private TabbedPane myTabbedPane;
 	private GTAWorkflowEditController workflowCtrl;
@@ -65,6 +68,7 @@ public class GTAEditController extends ActivateableTabbableDefaultController {
 	private MSEditFormController manualAssessmentCtrl;
 	private ConditionEditController accessibilityCondCtrl;
 	private GTASampleSolutionsEditController solutionsCtrl;
+	private HighScoreEditController highScoreNodeConfigController;
 	
 	private final GTACourseNode gtaNode;
 	private final ModuleConfiguration config;
@@ -101,6 +105,12 @@ public class GTAEditController extends ActivateableTabbableDefaultController {
 		//solutions
 		solutionsCtrl = new GTASampleSolutionsEditController(ureq, getWindowControl(), gtaNode, courseEnv);
 		listenTo(solutionsCtrl);
+		//highscore
+		highScoreNodeConfigController = new HighScoreEditController(ureq, wControl, gtaNode, euce);
+		listenTo(highScoreNodeConfigController);
+		if ("group".equals(config.get(GTACourseNode.GTASK_TYPE))) {
+			highScoreNodeConfigController.setFormInfoMessage("highscore.forminfo", getTranslator());			
+		}
 	}
 	
 	@Override
@@ -117,6 +127,7 @@ public class GTAEditController extends ActivateableTabbableDefaultController {
 		submissionPos = tabbedPane.addTab(translate(PANE_TAB_SUBMISSION), submissionCtrl.getInitialComponent());
 		gradingPos = tabbedPane.addTab(translate(PANE_TAB_GRADING), manualAssessmentCtrl.getInitialComponent());
 		solutionsPos = tabbedPane.addTab(translate(PANE_TAB_SOLUTIONS), solutionsCtrl.getInitialComponent());
+		highScoreTabPosition = myTabbedPane.addTab(translate(PANE_TAB_HIGHSCORE), highScoreNodeConfigController.getInitialComponent());
 		updateEnabledDisabledTabs();
 	}
 	
@@ -125,6 +136,7 @@ public class GTAEditController extends ActivateableTabbableDefaultController {
 		myTabbedPane.setEnabled(submissionPos, config.getBooleanSafe(GTACourseNode.GTASK_SUBMIT));
 		myTabbedPane.setEnabled(gradingPos, config.getBooleanSafe(GTACourseNode.GTASK_GRADING));
 		myTabbedPane.setEnabled(solutionsPos, config.getBooleanSafe(GTACourseNode.GTASK_SAMPLE_SOLUTION));
+		myTabbedPane.setEnabled(highScoreTabPosition, config.getBooleanSafe(MSCourseNode.CONFIG_KEY_HAS_SCORE_FIELD));
 	}
 
 	@Override
@@ -140,6 +152,8 @@ public class GTAEditController extends ActivateableTabbableDefaultController {
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
 		//
+		System.out.println("Fired");
+
 	}
 
 	@Override
@@ -181,6 +195,7 @@ public class GTAEditController extends ActivateableTabbableDefaultController {
 		} else if(manualAssessmentCtrl == source) {
 			if (event == Event.DONE_EVENT){
 				manualAssessmentCtrl.updateModuleConfiguration(config);
+				updateEnabledDisabledTabs();
 				fireEvent(ureq, NodeEditController.NODECONFIG_CHANGED_EVENT);
 			} else if(event == Event.CANCELLED_EVENT) {
 				removeAsListenerAndDispose(manualAssessmentCtrl);
@@ -190,6 +205,11 @@ public class GTAEditController extends ActivateableTabbableDefaultController {
 			}
 		} else if(solutionsCtrl == source) {
 			if(event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
+				fireEvent(ureq, NodeEditController.NODECONFIG_CHANGED_EVENT);
+			}
+		} else if (source == highScoreNodeConfigController){
+			if (event == Event.DONE_EVENT) {
+				highScoreNodeConfigController.updateModuleConfiguration(gtaNode.getModuleConfiguration());
 				fireEvent(ureq, NodeEditController.NODECONFIG_CHANGED_EVENT);
 			}
 		}

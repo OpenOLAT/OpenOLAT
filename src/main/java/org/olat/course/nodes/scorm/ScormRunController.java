@@ -51,6 +51,7 @@ import org.olat.core.util.Util;
 import org.olat.core.util.event.GenericEventListener;
 import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.editor.NodeEditController;
+import org.olat.course.highscore.ui.HighScoreRunController;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.ObjectivesHelper;
 import org.olat.course.nodes.ScormCourseNode;
@@ -132,6 +133,12 @@ public class ScormRunController extends BasicController implements ScormAPICallb
 		if(isAssessable) {
 			assessableType = config.getStringValue(ScormEditController.CONFIG_ASSESSABLE_TYPE,
 					ScormEditController.CONFIG_ASSESSABLE_TYPE_SCORE);
+			
+			HighScoreRunController highScoreCtr = new HighScoreRunController(ureq, getWindowControl(), userCourseEnv, scormNode);
+			if (highScoreCtr.isViewHighscore()) {
+				Component compi = highScoreCtr.getInitialComponent();
+				startPage.put("highScore", compi);							
+			}
 		}
 
 		// <OLATCE-289>

@@ -132,6 +132,10 @@
 	</script>
 #end
 
+#if ($r.available("highScore"))
+	$r.render("highScore")
+#end
+
 <div class="o_cl o_block_large">
 	<div class="o_cl_header hidden-xs row">
 		<div class="col-sm-3"><h4>$r.translate("run.mark")</h4></div>

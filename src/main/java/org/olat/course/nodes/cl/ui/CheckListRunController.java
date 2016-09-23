@@ -28,6 +28,7 @@ import java.util.Map;
 
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.DownloadLink;
@@ -53,6 +54,7 @@ import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.auditing.UserNodeAuditManager;
+import org.olat.course.highscore.ui.HighScoreRunController;
 import org.olat.course.nodes.CheckListCourseNode;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.MSCourseNode;
@@ -140,6 +142,14 @@ public class CheckListRunController extends FormBasicController implements Contr
 				}
 			}
 			layoutCont.contextPut("withScore", new Boolean(withScore));
+			
+			if (courseNode.getModuleConfiguration().getBooleanSafe(MSCourseNode.CONFIG_KEY_HAS_SCORE_FIELD,false)){
+				HighScoreRunController highScoreCtr = new HighScoreRunController(ureq, getWindowControl(), userCourseEnv, courseNode);
+				if (highScoreCtr.isViewHighscore()) {
+					Component compi = highScoreCtr.getInitialComponent();
+					layoutCont.put("highScore", compi);							
+				}
+			}
 			
 			List<DBCheck> checks = checkboxManager.loadCheck(getIdentity(), courseOres, courseNode.getIdent());
 			Map<String, DBCheck> uuidToCheckMap = new HashMap<>();

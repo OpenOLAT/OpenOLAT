@@ -51,7 +51,9 @@ import org.olat.course.condition.Condition;
 import org.olat.course.condition.ConditionEditController;
 import org.olat.course.editor.CourseEditorHelper;
 import org.olat.course.editor.NodeEditController;
+import org.olat.course.highscore.ui.HighScoreEditController;
 import org.olat.course.nodes.CourseNode;
+import org.olat.course.nodes.MSCourseNode;
 import org.olat.course.nodes.STCourseNode;
 import org.olat.course.nodes.sp.SecuritySettingsForm;
 import org.olat.course.run.scoring.ScoreCalculator;
@@ -73,6 +75,7 @@ public class STCourseNodeEditController extends ActivateableTabbableDefaultContr
 	private static final String PANE_TAB_DELIVERYOPTIONS = "pane.tab.deliveryOptions";
 	public static final String PANE_TAB_ST_CONFIG = "pane.tab.st_config";
 	private static final String PANE_TAB_ACCESSIBILITY = "pane.tab.accessibility";
+	private static final String PANE_TAB_HIGHSCORE = "pane.tab.highscore";
 	
 	/** configuration key for the filename */
 	public static final String CONFIG_KEY_FILE = "file";
@@ -106,6 +109,8 @@ public class STCourseNodeEditController extends ActivateableTabbableDefaultContr
 	private EditScoreCalculationEasyForm scoreEasyForm;
 	private List<CourseNode> assessableChildren;
 	private STCourseNodeDisplayConfigFormController nodeDisplayConfigFormController;
+	private HighScoreEditController highScoreNodeConfigController;
+
 	
 	private VelocityContainer score, configvc;
 	private Link activateEasyModeButton;
@@ -183,6 +188,10 @@ public class STCourseNodeEditController extends ActivateableTabbableDefaultContr
 		accessibilityCondContr = new ConditionEditController(ureq, getWindowControl(), accessCondition,
 				assessableChildren, euce, true);		
 		listenTo(accessibilityCondContr);
+		
+		// HighScore Controller
+		highScoreNodeConfigController = new HighScoreEditController(ureq, wControl, stNode, euce);
+		listenTo(highScoreNodeConfigController);
 
 		ScoreCalculator scoreCalc = stNode.getScoreCalculator();
 		if (scoreCalc != null) {
@@ -323,8 +332,7 @@ public class STCourseNodeEditController extends ActivateableTabbableDefaultContr
 				fireEvent(ureq, NodeEditController.NODECONFIG_CHANGED_EVENT);
 			}
 			
-		} else if (source == scoreEasyForm) {
-			
+		} else if (source == scoreEasyForm) {			
 			if (event == Event.DONE_EVENT) {	
 				//show warning if the score might be wrong because of the invalid nodes used for calculation
 				List<String> testElemWithNoResource = scoreEasyForm.getInvalidNodeDescriptions();
@@ -346,6 +354,7 @@ public class STCourseNodeEditController extends ActivateableTabbableDefaultContr
 				stNode.setScoreCalculator(sc);
 				initScoreEasyForm(ureq); // reload form, remove deleted nodes
 				fireEvent(ureq, NodeEditController.NODECONFIG_CHANGED_EVENT);
+				updateHighscoreTab();
 			} else if (event == Event.CANCELLED_EVENT) { // reload form
 				initScoreEasyForm(ureq);
 			}
@@ -368,8 +377,14 @@ public class STCourseNodeEditController extends ActivateableTabbableDefaultContr
 				// ..setScoreCalculator(sc) can handle NULL values!
 				stNode.setScoreCalculator(sc);
 				fireEvent(ureq, NodeEditController.NODECONFIG_CHANGED_EVENT);
+				updateHighscoreTab();
 			} else if (event == Event.CANCELLED_EVENT) { // reload form
 				initScoreExpertForm(ureq);
+			}
+		} else if (source == highScoreNodeConfigController){
+			if (event == Event.DONE_EVENT) {
+				highScoreNodeConfigController.updateModuleConfiguration(stNode.getModuleConfiguration());
+				fireEvent(ureq, NodeEditController.NODECONFIG_CHANGED_EVENT);
 			}
 		}
 	}
@@ -424,7 +439,10 @@ public class STCourseNodeEditController extends ActivateableTabbableDefaultContr
 		}
 	}
 	
-	
+	private void updateHighscoreTab() {
+		Boolean sf = stNode.hasScoreConfigured();
+		myTabbedPane.setEnabled(5, sf);
+	}
 	/**
 	 * @see org.olat.core.gui.control.generic.tabbable.TabbableDefaultController#addTabs(org.olat.core.gui.components.TabbedPane)
 	 */
@@ -433,6 +451,9 @@ public class STCourseNodeEditController extends ActivateableTabbableDefaultContr
 		tabbedPane.addTab(translate(PANE_TAB_ACCESSIBILITY), accessibilityCondContr.getWrappedDefaultAccessConditionVC(translate("condition.accessibility.title")));
 		tabbedPane.addTab(translate(PANE_TAB_ST_CONFIG), configvc);
 		tabbedPane.addTab(translate(PANE_TAB_ST_SCORECALCULATION), score);
+		tabbedPane.addTab(translate(PANE_TAB_HIGHSCORE) , highScoreNodeConfigController.getInitialComponent());
+		updateHighscoreTab();
+
 		if(editorEnabled) {
 			tabbedPane.addTab(translate(PANE_TAB_DELIVERYOPTIONS), deliveryOptionsCtrl.getInitialComponent());
 		}

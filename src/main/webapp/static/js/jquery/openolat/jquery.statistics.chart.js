@@ -738,9 +738,16 @@
     	  .range([0, width]);
     	
 //    	console.log(lquartile,hquartile,means,width,x(lquartile));
+    	var step = 1;
+    	
+    	if (max-min>100){
+    		step = Math.round((max-min)/100);
+    	}
+    	var range = d3.range(min, max + 1 , step);
     	
     	var data = d3.layout.histogram()
-    	  .bins(x.ticks(20))
+//    	  .bins(x.ticks((max-min)*4))
+    	  .bins(range)
     	  (values);
     	
     	var sum = d3.sum(data, function(d) { return d.y; });
@@ -754,7 +761,7 @@
     	  .range([height, 0]);
     	
     	var xAxis = d3.svg.axis()
-    	  .tickValues(d3.range(min , max + 1 , 1))
+    	  .tickValues(range)
     	  .scale(x)
     	  .orient('bottom')
     	  .tickFormat(d3.format("d"));
@@ -781,7 +788,7 @@
 	  		.data(data)
 	  		.enter().append('g')
 	  		.attr('class', function(d, i) {
-//	  		  console.log(data[i].x == cut, data[i].x,cut);
+	  		  console.log(data[i].x == cut, data[i].x,cut);
 	  			if(cut == null) return 'o_empty';
 	  			else if(data[i].x == cut) return 'o_myself';
 	  			else return 'o_other';	  		  
@@ -790,10 +797,11 @@
 	  		.append('rect')
 	  		.attr('x', function (d,i){ return - (width / value.length)/2;})
 	  		.attr('y', function (d){return height - y(d.y);})
-	  		.attr('width', (width / value.length))
+//	  		.attr('width', (width / value.length))
+	  		.attr('width', (width / range.length))
 	  		.attr('height', function (d){return 0;})
 	  		.style('opacity', 0)
-	  		 .transition().delay(function (d,i){ return i*40;})
+	  		 .transition().delay(function (d,i){ return i*200/(max-min);})
 	  		 .duration(800)
 	 	  	.attr('y', function(d) { return 0; })
 	 	  	.attr('height', function(d) { return height - y(d.y); })
@@ -909,7 +917,8 @@
 	     imgs.enter()
 	     .append("image")
 	     .style('opacity', 0)
-//	        .attr("xlink:href", "https://github.com/favicon.ico")
+//	     .attr("xlink:href", "https://github.com/favicon.ico")
+//	     .attr("xlink:href","http://www.openolat.com/wp-uploads/2013/04/openolat_logo_72.png")
 	     .attr("xlink:href", location.protocol + "//" + location.host + settings.mapperUrl)
 	     .attr("x", 0 )
 	     .attr("y", height)

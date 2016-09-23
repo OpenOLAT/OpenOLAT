@@ -54,8 +54,8 @@ public class HighScoreManager {
 			int tableSize, Identity ownIdentity, UserManager userManager){
 
 		for (AssessmentEntry assessmentEntry : assessEntries) {
-			allMembers.add(new HighScoreTableEntry((assessmentEntry.getScore().floatValue()),
-					userManager.getUserDisplayName(assessmentEntry.getIdentity()),
+			float score = assessmentEntry.getScore() == null ? 0f : assessmentEntry.getScore().floatValue();
+			allMembers.add(new HighScoreTableEntry(score, userManager.getUserDisplayName(assessmentEntry.getIdentity()),
 					assessmentEntry.getIdentity()));
 		}
 		assessEntries.clear();
