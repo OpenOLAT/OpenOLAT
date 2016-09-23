@@ -198,16 +198,21 @@ public class BinderDAO {
 	private void syncMovingAssignments(SectionImpl templateSection, SectionImpl currentSection, Map<Section,Section> templateToSectionsMap) {
 		List<Assignment> templateAssignments = new ArrayList<>(templateSection.getAssignments());
 		List<Assignment> currentAssignments = new ArrayList<>(currentSection.getAssignments());
-		for(Assignment currentAssignment:currentAssignments) {
-			Assignment refAssignment = currentAssignment.getTemplateReference();
-			if(refAssignment != null
-					&& !templateAssignments.contains(refAssignment)
-					&& !refAssignment.getSection().equals(templateSection)
-					&& templateToSectionsMap.containsKey(refAssignment.getSection())) {
-					//really moved
-				templateAssignments.remove(refAssignment);
-				SectionImpl newSection = (SectionImpl)templateToSectionsMap.get(refAssignment.getSection());
-				syncMovedAssignment(currentSection, newSection, currentAssignment);
+		for(int i=0; i<currentAssignments.size(); i++) {
+			Assignment currentAssignment = currentAssignments.get(i);
+			if(currentAssignment == null) {
+				currentSection.getAssignments().remove(i);
+			} else {
+				Assignment refAssignment = currentAssignment.getTemplateReference();
+				if(refAssignment != null
+						&& !templateAssignments.contains(refAssignment)
+						&& !refAssignment.getSection().equals(templateSection)
+						&& templateToSectionsMap.containsKey(refAssignment.getSection())) {
+						//really moved
+					templateAssignments.remove(refAssignment);
+					SectionImpl newSection = (SectionImpl)templateToSectionsMap.get(refAssignment.getSection());
+					syncMovedAssignment(currentSection, newSection, currentAssignment);
+				}
 			}
 		}
 	}
