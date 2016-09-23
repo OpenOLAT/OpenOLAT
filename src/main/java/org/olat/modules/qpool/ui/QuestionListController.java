@@ -822,6 +822,7 @@ public class QuestionListController extends AbstractItemListController implement
 			msg = translate("confirm.delete", sb.toString());
 		}
 		confirmDeleteBox = activateYesNoDialog(ureq, null, msg, confirmDeleteBox);
+		confirmDeleteBox.setCssClass("o_error");
 		confirmDeleteBox.setUserObject(items);
 	}
 	
