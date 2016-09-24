@@ -83,8 +83,8 @@ public class SharedWithMeQueries {
 		  .append(" )")
 		  .append(" or exists (select page.key from pfpage as page")
 		  .append("   inner join page.baseGroup as pageGroup")
-		  .append("   inner join page.section as pageSection on (pageSection.binder.key=binder.key)")
 		  .append("   inner join pageGroup.members as pageMembership on (pageMembership.identity.key=:identityKey and pageMembership.role in ('").append(PortfolioRoles.coach.name()).append("','").append(PortfolioRoles.reviewer.name()).append("'))")
+		  .append("   where page.section.binder.key=binder.key")
 		  .append(" ))");
 		if(StringHelper.containsNonWhitespace(searchString)) {
 			searchString = makeFuzzyQueryString(searchString);
