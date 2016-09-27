@@ -119,6 +119,13 @@ public class BinderSecurityCallbackFactory {
 		
 		@Override
 		public boolean canComment(PortfolioElement element) {
+			if(element instanceof Page) {
+				Page page = (Page)element;
+				if(page.getPageStatus() == null || page.getPageStatus() == PageStatus.draft) {
+					return false;
+				}
+			}
+			
 			if(rights != null) {
 				for(AccessRights right:rights) {
 					if(right.getRole() == PortfolioRoles.readInvitee && right.matchElementAndAncestors(element)) {
@@ -131,6 +138,13 @@ public class BinderSecurityCallbackFactory {
 
 		@Override
 		public boolean canViewElement(PortfolioElement element) {
+			if(element instanceof Page) {
+				Page page = (Page)element;
+				if(page.getPageStatus() == null || page.getPageStatus() == PageStatus.draft) {
+					return false;
+				}
+			}
+			
 			if(rights != null) {
 				for(AccessRights right:rights) {
 					if(right.getRole() == PortfolioRoles.readInvitee && right.matchElementAndAncestors(element)) {

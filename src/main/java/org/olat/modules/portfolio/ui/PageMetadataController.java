@@ -189,18 +189,22 @@ public class PageMetadataController extends BasicController {
 			if(secCallback.canPublish(page)) {
 				publishButton = LinkFactory.createButtonSmall("publish", mainVC, this);
 				publishButton.setIconLeftCSS("o_icon o_icon_publish o_icon-fw");
+				publishButton.setElementCssClass("o_sel_pf_publish_entry");
 			}
 			if(secCallback.canRevision(page)) {
 				revisionButton = LinkFactory.createButtonSmall("revision.page", mainVC, this);
 				revisionButton.setIconLeftCSS("o_icon o_icon_rejected o_icon-fw");
+				revisionButton.setElementCssClass("o_sel_pf_revision_entry");
 			}
 			if(secCallback.canClose(page)) {
 				closeButton = LinkFactory.createButtonSmall("close.page", mainVC, this);
 				closeButton.setIconLeftCSS("o_icon o_icon_status_done o_icon-fw");
+				closeButton.setElementCssClass("o_sel_pf_close_entry");
 			}
 			if(secCallback.canReopen(page)) {
 				reopenButton = LinkFactory.createButtonSmall("reopen.page", mainVC, this);
 				reopenButton.setIconLeftCSS("o_icon o_icon_redo o_icon-fw");
+				reopenButton.setElementCssClass("o_sel_pf_reopen_entry");
 			}
 		}
 	}

@@ -161,6 +161,8 @@ import org.junit.runners.Suite;
 	org.olat.modules.portfolio.manager.MediaDAOTest.class,
 	org.olat.modules.portfolio.manager.PageDAOTest.class,
 	org.olat.modules.portfolio.manager.AssignmentDAOTest.class,
+	org.olat.modules.portfolio.manager.SharedByMeQueriesTest.class,
+	org.olat.modules.portfolio.manager.SharedWithMeQueriesTest.class,
 	org.olat.modules.portfolio.manager.PortfolioServiceTest.class,
 	org.olat.modules.reminder.ReminderModuleTest.class,
 	org.olat.modules.reminder.manager.ReminderDAOTest.class,

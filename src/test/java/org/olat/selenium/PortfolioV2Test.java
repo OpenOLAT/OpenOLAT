@@ -45,6 +45,7 @@ import org.olat.selenium.page.course.PortfolioElementPage;
 import org.olat.selenium.page.course.PublisherPageFragment.Access;
 import org.olat.selenium.page.forum.ForumPage;
 import org.olat.selenium.page.portfolio.BinderPage;
+import org.olat.selenium.page.portfolio.BinderPublicationPage;
 import org.olat.selenium.page.portfolio.MediaCenterPage;
 import org.olat.selenium.page.portfolio.PortfolioV2HomePage;
 import org.olat.selenium.page.repository.AuthoringEnvPage;
@@ -506,5 +507,87 @@ public class PortfolioV2Test {
 				.assertOnMedia(mediaTitle)
 				.selectMedia(mediaTitle)
 				.assertOnMediaDetails(mediaTitle);
+	}
+	
+	/**
+	 * A user create a binder with some sections and pages.
+	 * It invites a second person on the last page it creates.
+	 * This page is not published for the moment. The invitee
+	 * follow the invitation URL and see an empty binder.<br>
+	 *  The author publish the last entry. The invitee come back
+	 *  to the list of entries, find the page and open it.
+	 * 
+	 * @param loginPage
+	 * @param inviteeBrowser
+	 * @throws IOException
+	 * @throws URISyntaxException
+	 */
+	@Test
+	@RunAsClient
+	public void binderInvitation(@InitialPage LoginPage loginPage,
+			@Drone @User WebDriver inviteeBrowser)
+			throws IOException, URISyntaxException {
+		
+		UserVO author = new UserRestClient(deploymentUrl).createRandomUser("rei");
+		
+		loginPage
+			.loginAs(author.getLogin(), author.getPassword())
+			.resume();
+		
+		UserToolsPage userTools = new UserToolsPage(browser);
+		PortfolioV2HomePage portfolio = userTools
+				.openUserToolsMenu()
+				.openPortfolioV2();
+		
+		String binderTitle = "Binder on invitation " + UUID.randomUUID();
+		BinderPage binder = portfolio
+			.openMyBinders()
+			.createBinder(binderTitle, "A brand new binder");
+		
+		//create 2 sections and 3 entries
+		binder
+			.selectEntries()
+			.createSection("1. Section")
+			.assertOnSectionTitleInEntries("1. Section")
+			.createEntry("1. Page")
+			.assertOnPage("1. Page")
+			.selectEntries()
+			.createSection("2. Section")
+			.createEntry("2. Page")
+			.assertOnPage("2. Page")
+			.selectEntries()
+			.createEntry("3. Page", 1)
+			.assertOnPage("3. Page");
+		
+		BinderPublicationPage binderPublish = binder
+			.selectPublish()
+			.openAccessMenu()
+			.addInvitation("c.l@frentix.com")
+			.fillInvitation("Clara", "Vigne")
+			.fillAccessRights("3. Page", Boolean.TRUE);
+		String url = binderPublish.getInvitationURL();
+		binderPublish
+			.save();
+		
+		//invitee come to see the bidner
+		inviteeBrowser.get(url);
+		BinderPage invitee = new BinderPage(inviteeBrowser);
+		invitee.assertOnBinder()
+			.selectEntries()
+			.assertNoPagesInEntries();
+		
+		//author publish an entry
+		binder
+			.selectTableOfContent()
+			.selectEntryInToc("3. Page")
+			.publishEntry();
+		
+		//return in entries to check the changes
+		invitee
+			.selectTableOfContent()
+			.selectEntries()
+			.assertOnPageInEntries("3. Page")
+			.selectEntryInEntries("3. Page")
+			.assertOnPage("3. Page");
 	}
 }

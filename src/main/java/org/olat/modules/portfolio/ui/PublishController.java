@@ -129,14 +129,17 @@ public class PublishController extends BasicController implements TooledControll
 		if(secCallback.canEditAccessRights(binder)) {
 			accessDropdown = new Dropdown("access.rights", "access.rights", false, getTranslator());
 			accessDropdown.setIconCSS("o_icon o_icon-fw o_icon_new_portfolio");
+			accessDropdown.setElementCssClass("o_sel_pf_access");
 			accessDropdown.setOrientation(DropdownOrientation.right);
 			
 			addAccessRightsLink = LinkFactory.createToolLink("add.member", translate("add.member"), this);
 			addAccessRightsLink.setIconLeftCSS("o_icon o_icon-lg o_icon_new_portfolio");
+			addAccessRightsLink.setElementCssClass("o_sel_pf_access_member");
 			accessDropdown.addComponent(addAccessRightsLink);
 			
 			addInvitationLink = LinkFactory.createToolLink("add.invitation", translate("add.invitation"), this);
 			addInvitationLink.setIconLeftCSS("o_icon o_icon-lg o_icon_new_portfolio");
+			addInvitationLink.setElementCssClass("o_sel_pf_access_invitation");
 			accessDropdown.addComponent(addInvitationLink);
 			
 			stackPanel.addTool(accessDropdown, Align.right);

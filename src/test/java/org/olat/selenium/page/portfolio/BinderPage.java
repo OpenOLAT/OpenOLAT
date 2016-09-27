@@ -26,6 +26,7 @@ import org.olat.selenium.page.graphene.OOGraphene;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
+import org.openqa.selenium.support.ui.Select;
 
 /**
  * 
@@ -81,6 +82,17 @@ public class BinderPage {
 		return this;
 	}
 	
+	/**
+	 * Assert that no pages in the entries is listed
+	 * @return
+	 */
+	public BinderPage assertNoPagesInEntries() {
+		By metaTitleBy = By.xpath("//div[contains(@class,'o_page_lead')]//h2");
+		List<WebElement> titleEls = browser.findElements(metaTitleBy);
+		Assert.assertTrue(titleEls.isEmpty());
+		return this;
+	}
+	
 	public BinderPage assertOnAssignmentInEntries(String title) {
 		By assignmentTitleBy = By.xpath("//h4[i[contains(@class,'o_icon_assignment')]][contains(text(),'" + title + "')]");
 		OOGraphene.waitElement(assignmentTitleBy, 5, browser);
@@ -112,6 +124,15 @@ public class BinderPage {
 		By binderPageListBy = By.cssSelector("div.o_portfolio_entries");
 		OOGraphene.waitElement(binderPageListBy, 5, browser);
 		return this;
+	}
+	
+	public BinderPublicationPage selectPublish() {
+		By publishBy = By.cssSelector("li.o_tool .o_sel_pf_binder_navigation .o_sel_pf_publication");
+		browser.findElement(publishBy).click();
+		OOGraphene.waitBusy(browser);
+		By binderPageListBy = By.cssSelector("div.o_portfolio_publication");
+		OOGraphene.waitElement(binderPageListBy, 5, browser);
+		return new BinderPublicationPage(browser);
 	}
 	
 	/**
@@ -150,6 +171,10 @@ public class BinderPage {
 	}
 	
 	public BinderPage createEntry(String title) {
+		return createEntry(title, -1);
+	}
+	
+	public BinderPage createEntry(String title, int sectionIndex) {
 		//click create button
 		By createBy = By.className("o_sel_pf_new_entry");
 		WebElement createButton = browser.findElement(createBy);
@@ -163,6 +188,12 @@ public class BinderPage {
 		By nameBy = By.cssSelector(".o_sel_pf_edit_entry_title input[type='text']");
 		WebElement nameEl = browser.findElement(nameBy);
 		nameEl.sendKeys(title);
+		
+		if(sectionIndex > 0) {
+			By sectionBy = By.cssSelector(".o_sel_pf_edit_entry_section select");
+			WebElement sectionEl = browser.findElement(sectionBy);
+			new Select(sectionEl).selectByIndex(sectionIndex);
+		}
 		
 		//save
 		By submitBy = By.cssSelector(".o_sel_pf_edit_entry_form button.btn-primary");
@@ -205,5 +236,56 @@ public class BinderPage {
 		assertOnPage(assignmentTitle);
 		return this;
 	}
-
+	
+	/**
+	 * Select the entry in the table of content.
+	 * 
+	 * @param title The title of the entry to select
+	 * @return Itself
+	 */
+	public BinderPage selectEntryInToc(String title) {
+		By entryLinkBy = By.xpath("//a[contains(@class,' o_pf_open_entry')][span[contains(text(),'" + title + "')]]");
+		browser.findElement(entryLinkBy).click();
+		OOGraphene.waitBusy(browser);
+		return this;
+	}
+	
+	/**
+	 * Select the entry by its title in the entry list
+	 * 
+	 * @param title The title of the entry
+	 * @return Itself
+	 */
+	public BinderPage selectEntryInEntries(String title) {
+		By entryLinkBy = By.xpath("//div[contains(@class,'o_portfolio_page')][div/h4[contains(text(),'" + title + "')]]/div[contains(@class,'o_portfolio_page_links')]/a[contains(@class,'btn')]");
+		OOGraphene.waitElement(entryLinkBy, 5, browser);
+		browser.findElement(entryLinkBy).click();
+		OOGraphene.waitBusy(browser);
+		return this;
+	}
+	
+	/**
+	 * Publish the entry in the page view.
+	 * 
+	 * @return Itself
+	 */
+	public BinderPage publishEntry() {
+		By publishBy = By.cssSelector("a.o_sel_pf_publish_entry");
+		browser.findElement(publishBy).click();
+		OOGraphene.waitBusy(browser);
+		confirm();
+		return this;
+	}
+	
+	/**
+	 * Yes in a dialog box controller.
+	 */
+	private void confirm() {
+		// confirm
+		By confirmButtonBy = By.cssSelector("div.modal-dialog div.modal-footer a");
+		OOGraphene.waitElement(confirmButtonBy, 5, browser);
+		List<WebElement> buttonsEl = browser.findElements(confirmButtonBy);
+		buttonsEl.get(0).click();
+		OOGraphene.waitBusy(browser);
+	}
 }
