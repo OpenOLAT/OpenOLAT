@@ -98,8 +98,8 @@ import org.olat.group.model.IdentityGroupKey;
 import org.olat.group.model.LeaveOption;
 import org.olat.group.model.MembershipModification;
 import org.olat.group.model.OpenBusinessGroupRow;
-import org.olat.group.model.StatisticsBusinessGroupRow;
 import org.olat.group.model.SearchBusinessGroupParams;
+import org.olat.group.model.StatisticsBusinessGroupRow;
 import org.olat.group.right.BGRightManager;
 import org.olat.group.right.BGRightsRole;
 import org.olat.group.ui.BGMailHelper;
@@ -702,8 +702,8 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 	}
 
 	@Override
-	public List<StatisticsBusinessGroupRow> findBusinessGroupsFromRepositoryEntry(BusinessGroupQueryParams params, RepositoryEntryRef entry) {
-		return businessGroupDAO.searchBusinessGroupsForRepositoryEntry(entry);
+	public List<StatisticsBusinessGroupRow> findBusinessGroupsFromRepositoryEntry(BusinessGroupQueryParams params, IdentityRef identity, RepositoryEntryRef entry) {
+		return businessGroupDAO.searchBusinessGroupsForRepositoryEntry(params, identity, entry);
 	}
 
 	@Override
