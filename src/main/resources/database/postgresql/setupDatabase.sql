@@ -2124,7 +2124,6 @@ alter table o_as_user_course_infos add constraint user_course_infos_id_cstr fore
 create index idx_ucourseinfos_ident_idx on o_as_user_course_infos (fk_identity);
 alter table o_as_user_course_infos add constraint user_course_infos_res_cstr foreign key (fk_resource_id) references o_olatresource (resource_id);
 create index idx_ucourseinfos_rsrc_idx on o_as_user_course_infos (fk_resource_id);
-alter table o_as_user_course_infos add unique (fk_identity, fk_resource_id);
 
 -- calendar
 alter table o_cal_use_config add constraint cal_u_conf_to_ident_idx foreign key (fk_identity) references o_bs_identity (id);
