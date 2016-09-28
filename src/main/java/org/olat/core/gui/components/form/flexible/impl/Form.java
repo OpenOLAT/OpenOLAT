@@ -165,6 +165,7 @@ public class Form {
 	private List<FormBasicController> formListeners;
 	private boolean isValidAndSubmitted=true;
 	private boolean isDirtyMarking=true;
+	private boolean isHideDirtyMarkingMessage = false;
 	private boolean multipartEnabled = false;
 	// temporary form data, only valid within execution of evalFormRequest()
 	private Map<String,String[]> requestParams = new HashMap<String,String[]>();
@@ -828,6 +829,23 @@ public class Form {
 	}
 	public void setDirtyMarking(boolean isDirtyMarking){
 		this.isDirtyMarking = isDirtyMarking;
+	}
+	
+	/**
+	 * By default a dirty-marking renders the submit button differently as soon
+	 * as the form gets dirty plus it shows a message to the user when he did
+	 * not save the form but tries to navigate to some other places. Without the
+	 * message he would loose data. However, in search forms or the loginform
+	 * this message is not desired. Set this variable to true to prevent the
+	 * message from popping up.
+	 * 
+	 * @return
+	 */
+	public boolean isHideDirtyMarkingMessage() {
+		return isHideDirtyMarkingMessage;
+	}
+	public void setHideDirtyMarkingMessage(boolean isHideDirtyMarkingMessage) {
+		this.isHideDirtyMarkingMessage = isHideDirtyMarkingMessage;
 	}
 
 	public void addSubFormListener(FormBasicController formBasicController) {

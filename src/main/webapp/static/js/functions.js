@@ -1445,10 +1445,10 @@ function o_toggleMark(el) {
 //
 // param formId a String with flexi form id
 function setFlexiFormDirtyByListener(e){
-	setFlexiFormDirty(e.data.formId);
+	setFlexiFormDirty(e.data.formId, e.data.hideMessage);
 }
 
-function setFlexiFormDirty(formId){
+function setFlexiFormDirty(formId, hideMessage){
 	var isRegistered = o3c.indexOf(formId) > -1;
 	if(!isRegistered){
 		o3c.push(formId);
@@ -1457,7 +1457,7 @@ function setFlexiFormDirty(formId){
 		var submitId = jQuery(this).data('FlexiSubmit');
 		if(submitId != null) {
 			jQuery('#'+submitId).addClass('btn o_button_dirty');
-			o2c=1;
+			o2c = (hideMessage ? 0 : 1);
 		}
 	});
 }
