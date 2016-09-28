@@ -1,0 +1,1 @@
+alter table o_as_user_course_infos drop constraint o_as_user_course_infos_fk_identity_fk_resource_id_key1;

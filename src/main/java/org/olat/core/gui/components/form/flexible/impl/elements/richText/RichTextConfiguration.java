@@ -43,6 +43,7 @@ import org.olat.core.gui.translator.Translator;
 import org.olat.core.helpers.Settings;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.CodeHelper;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.UserSession;
 import org.olat.core.util.Util;
@@ -710,7 +711,7 @@ public class RichTextConfiguration implements Disposable {
 		} else {
 			// Add classname to the file path to remove conflicts with other
 			// usages of the same file path
-			mapperID = this.getClass().getSimpleName() + ":" + mapperID;
+			mapperID = this.getClass().getSimpleName() + ":" + mapperID + ":" + CodeHelper.getRAMUniqueID();
 			contentMapperKey = CoreSpringFactory.getImpl(MapperService.class).register(usess, mapperID, contentMapper);				
 		}
 		

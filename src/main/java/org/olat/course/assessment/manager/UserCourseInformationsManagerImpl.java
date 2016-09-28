@@ -120,8 +120,7 @@ public class UserCourseInformationsManagerImpl implements UserCourseInformations
 	 * @return
 	 */
 	protected int lowLevelUpdate(OLATResource courseResource, Identity identity) {
-		String updateQuery = "update usercourseinfos set visit=visit+1, recentLaunch=:now, lastModified=:now where identity.key=:identityKey and resource.key=:resourceKey";
-		return dbInstance.getCurrentEntityManager().createQuery(updateQuery)
+		return dbInstance.getCurrentEntityManager().createNamedQuery("updateLaunchDates")
 			.setParameter("identityKey", identity.getKey())
 			.setParameter("resourceKey", courseResource.getKey())
 			.setParameter("now", new Date())
@@ -136,6 +135,7 @@ public class UserCourseInformationsManagerImpl implements UserCourseInformations
 	@Override
 	public void updateUserCourseInformations(final OLATResource courseResource, final Identity identity) {
 		int updatedRows = lowLevelUpdate(courseResource, identity);
+		dbInstance.commit();//to make it quick
 		if(updatedRows == 0) {
 			OLATResourceable lockRes = OresHelper.createOLATResourceableInstance("CourseLaunchDate::Identity", identity.getKey());
 			CoordinatorManager.getInstance().getCoordinator().getSyncer().doInSync(lockRes, new SyncerExecutor(){
