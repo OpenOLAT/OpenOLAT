@@ -20,7 +20,6 @@
 package org.olat.course.member.wizard;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
@@ -44,18 +43,14 @@ import org.olat.core.id.Identity;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
 public class ImportMemberBySearchController extends StepFormBasicController {
-	//private UserSearchFlexiController searchController;
-	private UserSearchFlexiController searchController; 
+
+	private final UserSearchFlexiController searchController; 
 
 	public ImportMemberBySearchController(UserRequest ureq, WindowControl wControl, Form rootForm, StepsRunContext runContext) {
 		super(ureq, wControl, rootForm, runContext, LAYOUT_CUSTOM, "import_search");
 
-		//searchController = new UserSearchFlexiController(ureq, wControl, rootForm);
 		searchController = new UserSearchFlexiController(ureq, wControl, rootForm);
-		
-		
 		listenTo(searchController);
-		
 		initForm (ureq);
 	}
 
@@ -68,7 +63,7 @@ public class ImportMemberBySearchController extends StepFormBasicController {
 			fireEvent(ureq, StepsEvent.ACTIVATE_NEXT);
 		} else if(event instanceof MultiIdentityChosenEvent) {
 			MultiIdentityChosenEvent e = (MultiIdentityChosenEvent)event;
-			Collection<String> keys = new ArrayList<String>();
+			List<String> keys = new ArrayList<>();
 			for(Identity identity: e.getChosenIdentities()) {
 				keys.add(identity.getKey().toString());
 			}
@@ -82,12 +77,16 @@ public class ImportMemberBySearchController extends StepFormBasicController {
 	@Override
 	protected void formNext(UserRequest ureq) {
 		List<Identity> identities = searchController.getSelectedIdentities();
-		Collection<String> keys = new ArrayList<String>();
-		for(Identity identity: identities) {
-			keys.add(identity.getKey().toString());
+		if(identities.isEmpty()) {
+			searchController.doSearch();
+		} else {
+			List<String> keys = new ArrayList<>(identities.size());
+			for(Identity identity: identities) {
+				keys.add(identity.getKey().toString());
+			}
+			addToRunContext("keys", keys);
+			fireEvent(ureq, StepsEvent.ACTIVATE_NEXT);
 		}
-		addToRunContext("keys", keys);
-		fireEvent(ureq, StepsEvent.ACTIVATE_NEXT);
 	}
 
 	@Override

@@ -162,7 +162,7 @@ public class CourseBusinessGroupListController extends AbstractBusinessGroupList
 
 	@Override
 	protected List<BGTableItem> searchTableItems(BusinessGroupQueryParams params) {
-		List<StatisticsBusinessGroupRow> rows = businessGroupService.findBusinessGroupsFromRepositoryEntry(params, getResource());
+		List<StatisticsBusinessGroupRow> rows = businessGroupService.findBusinessGroupsFromRepositoryEntry(params, getIdentity(), getResource());
 		List<BGTableItem> items = new ArrayList<>(rows.size());
 		for(StatisticsBusinessGroupRow row:rows) {
 			BusinessGroupMembership membership = row.getMember();
@@ -337,12 +337,16 @@ public class CourseBusinessGroupListController extends AbstractBusinessGroupList
 	
 	@Override
 	protected BusinessGroupQueryParams getSearchParams(SearchEvent event) {
-		return new BusinessGroupQueryParams();
+		BusinessGroupQueryParams params = event.convertToBusinessGroupQueriesParams();
+		params.setRepositoryEntry(re);
+		return params;
 	}
 
 	@Override
 	protected BusinessGroupQueryParams getDefaultSearchParams() {
-		return new BusinessGroupQueryParams();
+		BusinessGroupQueryParams params = new BusinessGroupQueryParams();
+		params.setRepositoryEntry(re);
+		return params;
 	}
 
 	@Override

@@ -329,6 +329,10 @@ public class UserSearchFlexiController extends FlexiAutoCompleterController {
 		if(source == backLink) {
 			flc.contextPut("noList","false");			
 			flc.contextPut("showButton","false");
+			if(userTableModel != null) {
+				userTableModel.setObjects(new ArrayList<>());
+				tableEl.reset();
+			}
 		} else if(searchButton == source) {
 			if(validateForm(ureq)) {
 				doSearch();
@@ -384,7 +388,7 @@ public class UserSearchFlexiController extends FlexiAutoCompleterController {
 	
 	public List<Identity> getSelectedIdentities() {
 		Set<Integer> index = tableEl.getMultiSelectedIndex();		
-		List<Identity> selectedIdentities =	new ArrayList<Identity>();
+		List<Identity> selectedIdentities =	new ArrayList<>(index.size());
 		for(Integer i : index) {
 			Identity selectedIdentity = userTableModel.getObject(i.intValue());
 			selectedIdentities.add(selectedIdentity);
@@ -392,7 +396,7 @@ public class UserSearchFlexiController extends FlexiAutoCompleterController {
 		return selectedIdentities;
 	}
 	
-	private void doSearch() {
+	public void doSearch() {
 		String login = loginEl.getValue();
 		// build user fields search map
 		Map<String, String> userPropertiesSearch = new HashMap<String, String>();				
@@ -422,6 +426,7 @@ public class UserSearchFlexiController extends FlexiAutoCompleterController {
 	/**
 	 * @see org.olat.core.gui.control.DefaultController#doDispose(boolean)
 	 */
+	@Override
 	protected void doDispose() {
 		// Child controllers auto-disposed by basic controller
 	}
