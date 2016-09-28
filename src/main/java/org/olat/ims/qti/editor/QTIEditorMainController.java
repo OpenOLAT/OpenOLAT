@@ -493,7 +493,7 @@ public class QTIEditorMainController extends MainLayoutBasicController implement
 				}
 			}
 		} else if (source == exitVC) {
-			if (event.getCommand().equals(CMD_EXIT_SAVE)) {
+			if (CMD_EXIT_SAVE.equals(event.getCommand())) {
 				if (isRestrictedEdit() && history.size() > 0) {
 					// changes were recorded
 					// start work flow:
@@ -534,7 +534,7 @@ public class QTIEditorMainController extends MainLayoutBasicController implement
 					// remove lock, clean tmp dir, fire done event to close editor
 					saveAndExit(ureq);
 				}
-			} else if (event.getCommand().equals(CMD_EXIT_DISCARD)) {
+			} else if (CMD_EXIT_DISCARD.equals(event.getCommand())) {
 				// remove modal dialog and proceed with exit process
 				cmcExit.deactivate();
 				removeAsListenerAndDispose(cmcExit);
@@ -544,7 +544,7 @@ public class QTIEditorMainController extends MainLayoutBasicController implement
 				// remove lock
 				removeLocksAndExit(ureq);
 				
-			} else if (event.getCommand().equals(CMD_EXIT_CANCEL)) {
+			} else if (CMD_EXIT_CANCEL.equals(event.getCommand())) {
 				// remove modal dialog and go back to edit mode
 				cmcExit.deactivate();
 				removeAsListenerAndDispose(cmcExit);
