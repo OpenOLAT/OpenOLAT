@@ -79,9 +79,12 @@ var BTinyHelper = {
 					// 2) http://localhost/olat/classpath/62x/org.olat.core.gui.components.form.flexible.impl.elements.richText/js/tinymce/
 					// 3) http://localhost/olat/url/RepositoryEntry/27361280/ (REST URL and permalinks)
 					// 4) http://localhost/olat/auth/abc/go?xyz (old jump in URL's)
-				} else {
-					// convert to relative path using TinyMCE standard conversion
-					url = editor.documentBaseURI.toRelative(url);
+				} else if(url.indexOf('/m/') == 0) {
+					// convert media
+					var index = url.indexOf('/',4);
+					url = url.substring(index + 1, url.lengths);//remove /m/{32 characters of mapper id}/
+				} else if(url.indexOf('http://') == 0 || url.indexOf('https://') == 0) {
+					url = editor.documentBaseURI.toAbsolute(url, true);
 				}
 			} else {
 				// Convert to absolute
