@@ -24,10 +24,12 @@ import java.util.Comparator;
 import java.util.List;
 
 import org.olat.basesecurity.BaseSecurityModule;
+import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
+import org.olat.core.gui.components.form.flexible.elements.FlexiTableSortOptions;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
@@ -42,11 +44,13 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.id.OLATResourceable;
+import org.olat.core.id.UserConstants;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.resource.OresHelper;
+import org.olat.group.ui.main.MemberListTableModel.Cols;
 import org.olat.modules.portfolio.Binder;
 import org.olat.modules.portfolio.BinderConfiguration;
 import org.olat.modules.portfolio.BinderSecurityCallback;
@@ -109,8 +113,10 @@ public class SharedItemsController extends FormBasicController implements Activa
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, ShareItemCols.binderKey, "select"));
 		
+		SortKey defaultSortKey = null;
 		if(isAdministrativeUser) {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ShareItemCols.username));
+			defaultSortKey = new SortKey(Cols.username.name(), true);
 		}
 		// followed by the users fields
 		int colPos = USER_PROPS_OFFSET;
@@ -118,6 +124,12 @@ public class SharedItemsController extends FormBasicController implements Activa
 			UserPropertyHandler userPropertyHandler	= userPropertyHandlers.get(i);
 
 			String propName = userPropertyHandler.getName();
+			if(defaultSortKey == null && i == 0) {
+				defaultSortKey = new SortKey(propName, true);
+			} else if(UserConstants.LASTNAME.equals(propName) && !isAdministrativeUser) {
+				defaultSortKey = new SortKey(propName, true);
+			}
+			
 			boolean visible = userManager.isMandatoryUserProperty(USER_PROPS_ID , userPropertyHandler);
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(visible, userPropertyHandler.i18nColumnDescriptorLabelKey(), colPos, true, propName));
 			colPos++;
@@ -143,6 +155,12 @@ public class SharedItemsController extends FormBasicController implements Activa
 		tableEl.setEmtpyTableMessageKey("table.sEmptyTable");
 		tableEl.setPageSize(24);
 		tableEl.setAndLoadPersistedPreferences(ureq, "shared-items");
+		
+		FlexiTableSortOptions options = new FlexiTableSortOptions();
+		if(defaultSortKey != null) {
+			options.setDefaultOrderBy(defaultSortKey);
+		}
+		tableEl.setSortSettings(options);
 	}
 	
 	private void loadModel(String searchString) {

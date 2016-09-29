@@ -22,10 +22,12 @@ package org.olat.modules.portfolio.ui;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
+import org.olat.core.gui.components.form.flexible.elements.FlexiTableSortOptions;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
@@ -100,6 +102,10 @@ public class MySharedItemsController extends FormBasicController implements Acti
 		tableEl.setEmtpyTableMessageKey("table.sEmptyTable");
 		tableEl.setPageSize(24);
 		tableEl.setAndLoadPersistedPreferences(ureq, "my-shared-items");
+		
+		FlexiTableSortOptions options = new FlexiTableSortOptions();
+		options.setDefaultOrderBy(new SortKey(MySharedItemCols.binderName.name(), true));
+		tableEl.setSortSettings(options);
 	}
 	
 	private void loadModel(String searchString) {

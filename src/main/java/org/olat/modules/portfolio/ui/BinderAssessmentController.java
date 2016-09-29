@@ -35,6 +35,8 @@ import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.form.flexible.impl.elements.FormCancel;
+import org.olat.core.gui.components.form.flexible.impl.elements.FormSubmit;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
@@ -46,6 +48,7 @@ import org.olat.core.id.Identity;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.StringHelper;
 import org.olat.course.assessment.AssessmentHelper;
+import org.olat.modules.assessment.model.AssessmentEntryStatus;
 import org.olat.modules.assessment.ui.ScoreCellRenderer;
 import org.olat.modules.portfolio.AssessmentSection;
 import org.olat.modules.portfolio.Binder;
@@ -79,9 +82,11 @@ public class BinderAssessmentController extends FormBasicController {
 	private final BinderSecurityCallback secCallback;
 	
 	private int counter = 0;
+	private FormSubmit saveButton;
+	private FormCancel cancelButton;
 	private FlexiTableElement tableEl;
+	private FormLink saveAndDoneLink, reopenLink;
 	private BinderAssessmentDataModel model;
-	private FormLayoutContainer buttonsCont;
 	
 	private boolean withScore;
 	private boolean withPassed;
@@ -119,10 +124,12 @@ public class BinderAssessmentController extends FormBasicController {
 		tableEl.setEditMode(true);
 		tableEl.setAndLoadPersistedPreferences(ureq, "section-assessment");
 		
-		buttonsCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
+		FormLayoutContainer buttonsCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		formLayout.add(buttonsCont);
-		uifactory.addFormSubmitButton("save", buttonsCont);
-		uifactory.addFormCancelButton("cancel", buttonsCont, ureq, getWindowControl());
+		saveButton = uifactory.addFormSubmitButton("save", buttonsCont);
+		saveAndDoneLink = uifactory.addFormLink("save.done", buttonsCont, Link.BUTTON);
+		reopenLink = uifactory.addFormLink("reopen.binder", buttonsCont, Link.BUTTON);
+		cancelButton = uifactory.addFormCancelButton("cancel", buttonsCont, ureq, getWindowControl());
 	}
 	
 	private void loadModel() {
@@ -131,7 +138,21 @@ public class BinderAssessmentController extends FormBasicController {
 		for(AssessmentSection aSection:aSections) {
 			aSectionsMap.put(aSection.getSection(), aSection);
 		}
+		
+		// binder done only is an owner is present
+		// and all owners have done the binder
+		boolean binderDone = false;
+		List<Identity> assessedIdentities = portfolioService.getMembers(binder, PortfolioRoles.owner.name());
+		int countDone = 0;
+		for(Identity assessedIdentity:assessedIdentities) {
+			AssessmentEntryStatus status = portfolioService.getAssessmentStatus(assessedIdentity, binder);
+			if(status == AssessmentEntryStatus.done) {
+				countDone++;
+			}
+		}
+		binderDone = (countDone > 0 && countDone == assessedIdentities.size());
 
+		boolean allClosed = true;
 		List<Section> sections = portfolioService.getSections(binder);
 		List<AssessmentSectionWrapper> rows = new ArrayList<>();
 		Map<Section,AssessmentSectionWrapper> sectionToRows = new HashMap<>();
@@ -140,6 +161,7 @@ public class BinderAssessmentController extends FormBasicController {
 			AssessmentSectionWrapper row = new AssessmentSectionWrapper(section, assessmentSection);
 			sectionToRows.put(section, row);
 			rows.add(row);
+			allClosed &= section.getSectionStatus() == SectionStatus.closed;
 		}
 
 		List<Page> pages = portfolioService.getPages(binder, null);
@@ -151,15 +173,19 @@ public class BinderAssessmentController extends FormBasicController {
 		}
 		
 		boolean allowedToAssess = false;
+		boolean allowedToAssessBinder = secCallback.canAssess(binder);
 		for(AssessmentSectionWrapper row:rows) {
 			boolean canAssess = secCallback.canAssess(row.getSection());
-			if(canAssess) {
+			if(canAssess && !binderDone) {
 				forgeAssessmentSection(row);
 				allowedToAssess = true;
 			}
 		}
-		
-		buttonsCont.setVisible(allowedToAssess);
+
+		reopenLink.setVisible(allowedToAssessBinder && binderDone);
+		saveAndDoneLink.setVisible(allowedToAssessBinder && !binderDone && allClosed);
+		saveButton.setVisible(allowedToAssess);
+		cancelButton.setVisible(allowedToAssess);
 		model.setObjects(rows);
 		tableEl.reset();
 		tableEl.reloadData();
@@ -208,17 +234,28 @@ public class BinderAssessmentController extends FormBasicController {
 
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if(source instanceof FormLink) {
+		if(reopenLink == source) {
+			doReopenBinder();
+			loadModel();
+			fireEvent(ureq, Event.CHANGED_EVENT);
+		} else if(saveAndDoneLink == source) {
+			commitChanges();
+			doSetBinderDone();
+			loadModel();
+			fireEvent(ureq, Event.CHANGED_EVENT);
+		} else if(source instanceof FormLink) {
 			FormLink button = (FormLink)source;
 			String cmd = button.getCmd();
 			if("close".equals(cmd)) {
 				AssessmentSectionWrapper row = (AssessmentSectionWrapper)button.getUserObject();
 				doClose(row.getSection());
 				loadModel();
+				fireEvent(ureq, Event.CHANGED_EVENT);
 			} else if("reopen".equals(cmd)) {
 				AssessmentSectionWrapper row = (AssessmentSectionWrapper)button.getUserObject();
 				doReopen(row.getSection());
 				loadModel();
+				fireEvent(ureq, Event.CHANGED_EVENT);
 			}
 		}
 		super.formInnerEvent(ureq, source, event);
@@ -226,6 +263,11 @@ public class BinderAssessmentController extends FormBasicController {
 
 	@Override
 	protected void formOK(UserRequest ureq) {
+		commitChanges();
+		fireEvent(ureq, Event.CHANGED_EVENT);
+	}
+	
+	private void commitChanges() {
 		List<AssessmentSectionWrapper> rows = model.getObjects();
 		List<Identity> assessedIdentities = portfolioService.getMembers(binder, PortfolioRoles.owner.name());
 		
@@ -253,7 +295,6 @@ public class BinderAssessmentController extends FormBasicController {
 		}
 		
 		portfolioService.updateAssessmentSections(binder, changes, getIdentity());
-		fireEvent(ureq, Event.CHANGED_EVENT);
 	}
 	
 	private void doClose(Section section) {
@@ -266,6 +307,20 @@ public class BinderAssessmentController extends FormBasicController {
 		portfolioService.changeSectionStatus(section, SectionStatus.inProgress, getIdentity());
 		ThreadLocalUserActivityLogger.log(PortfolioLoggingAction.PORTFOLIO_SECTION_REOPEN, getClass(),
 				LoggingResourceable.wrap(section));
+	}
+	
+	private void doReopenBinder() {
+		List<Identity> assessedIdentities = portfolioService.getMembers(binder, PortfolioRoles.owner.name());
+		for(Identity assessedIdentity:assessedIdentities) {
+			portfolioService.setAssessmentStatus(assessedIdentity, binder, AssessmentEntryStatus.inProgress, getIdentity());
+		}
+	}
+	
+	private void doSetBinderDone() {
+		List<Identity> assessedIdentities = portfolioService.getMembers(binder, PortfolioRoles.owner.name());
+		for(Identity assessedIdentity:assessedIdentities) {
+			portfolioService.setAssessmentStatus(assessedIdentity, binder, AssessmentEntryStatus.done, getIdentity());
+		}
 	}
 
 	public static class AssessmentSectionWrapper {

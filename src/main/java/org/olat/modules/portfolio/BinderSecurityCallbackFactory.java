@@ -482,10 +482,10 @@ public class BinderSecurityCallbackFactory {
 		}
 
 		@Override
-		public boolean canAssess(Section section) {
+		public boolean canAssess(PortfolioElement element) {
 			if(rights != null) {
 				for(AccessRights right:rights) {
-					if(PortfolioRoles.coach.equals(right.getRole()) && right.matchElementAndAncestors(section)) {
+					if(PortfolioRoles.coach.equals(right.getRole()) && right.matchElementAndAncestors(element)) {
 						return true;
 					}
 				}
@@ -612,7 +612,7 @@ public class BinderSecurityCallbackFactory {
 		}
 
 		@Override
-		public boolean canAssess(Section section) {
+		public boolean canAssess(PortfolioElement element) {
 			return false;
 		}
 	}
