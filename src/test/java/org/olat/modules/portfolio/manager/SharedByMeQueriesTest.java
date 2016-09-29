@@ -41,4 +41,10 @@ public class SharedByMeQueriesTest extends OlatTestCase {
 		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("shared-q-1");
 		sharedByMeQueries.searchSharedBinders(id, null);
 	}
+	
+	@Test
+	public void smokeTest_search() {
+		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("shared-q-1");
+		sharedByMeQueries.searchSharedBinders(id, "Hello");
+	}
 }
