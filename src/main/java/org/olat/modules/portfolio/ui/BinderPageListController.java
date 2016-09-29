@@ -197,7 +197,7 @@ public class BinderPageListController extends AbstractPageListController {
 		List<PortfolioElementRow> rows = new ArrayList<>();
 
 		//assignments
-		List<Assignment> assignments = portfolioService.getAssignments(binder);
+		List<Assignment> assignments = portfolioService.getAssignments(binder, searchString);
 		Map<Section,List<Assignment>> sectionToAssignmentMap = new HashMap<>();
 		for(Assignment assignment:assignments) {
 			List<Assignment> assignmentList;

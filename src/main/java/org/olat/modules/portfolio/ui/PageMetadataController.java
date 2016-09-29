@@ -91,7 +91,7 @@ public class PageMetadataController extends BasicController {
 		super(ureq, wControl);
 		this.page = page;
 		this.secCallback = secCallback;
-		assignments = portfolioService.getAssignments(page);
+		assignments = portfolioService.getAssignments(page, null);
 
 		mainVC = createVelocityContainer("page_meta");
 		

@@ -168,7 +168,7 @@ public class TableOfContentController extends BasicController implements TooledC
 		}
 		
 		//assignments
-		List<Assignment> assignments = portfolioService.getAssignments(binder);
+		List<Assignment> assignments = portfolioService.getAssignments(binder, null);
 		Map<Section,List<Assignment>> sectionToAssignmentMap = new HashMap<>();
 		for(Assignment assignment:assignments) {
 			List<Assignment> assignmentList;

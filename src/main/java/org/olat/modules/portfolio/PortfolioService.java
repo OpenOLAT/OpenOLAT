@@ -104,7 +104,7 @@ public interface PortfolioService {
 	public Assignment updateAssignment(Assignment assignment, String title, String summary, String content, AssignmentType type);
 
 	
-	public List<Assignment> getAssignments(PortfolioElement binder);
+	public List<Assignment> getAssignments(PortfolioElement binder, String searchString);
 	
 	public List<Assignment> searchOwnedAssignments(IdentityRef assignee);
 	

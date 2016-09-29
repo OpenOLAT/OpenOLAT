@@ -332,15 +332,15 @@ public class PortfolioServiceImpl implements PortfolioService {
 	}
 
 	@Override
-	public List<Assignment> getAssignments(PortfolioElement element) {
+	public List<Assignment> getAssignments(PortfolioElement element, String searchString) {
 		if(element.getType() == PortfolioElementType.binder) {
-			return assignmentDao.loadAssignments((BinderRef)element);
+			return assignmentDao.loadAssignments((BinderRef)element, searchString);
 		}
 		if(element.getType() == PortfolioElementType.section) {
-			return assignmentDao.loadAssignments((SectionRef)element);
+			return assignmentDao.loadAssignments((SectionRef)element, searchString);
 		}
 		if(element.getType() == PortfolioElementType.page) {
-			return assignmentDao.loadAssignments((Page)element);
+			return assignmentDao.loadAssignments((Page)element, searchString);
 		}
 		return null;
 	}

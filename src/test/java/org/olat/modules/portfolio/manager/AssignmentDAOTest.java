@@ -21,7 +21,7 @@ package org.olat.modules.portfolio.manager;
 
 import java.util.List;
 
-import org.jcodec.common.Assert;
+import org.junit.Assert;
 import org.junit.Test;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
@@ -67,5 +67,97 @@ public class AssignmentDAOTest extends OlatTestCase {
 		Assert.assertNotNull(assignment.getKey());
 		Assert.assertNotNull(assignment.getCreationDate());
 		Assert.assertNotNull(assignment.getLastModified());
+	}
+
+	@Test
+	public void loadAssignments_binder() {
+		Identity owner = JunitTestHelper.createAndPersistIdentityAsRndUser("assign-2");
+		Binder binder = portfolioService.createNewBinder("Assignment binder 2", "Difficult!", null, owner);
+		dbInstance.commit();
+		portfolioService.appendNewSection("Section", "Assignment section", null, null, binder);
+		dbInstance.commit();
+		//create assignment
+		List<Section> sections = portfolioService.getSections(binder);
+		Assignment assignment = assignmentDao.createAssignment("Load assignment", "Load by binder", "The difficult content",
+				null, AssignmentType.essay, AssignmentStatus.template, sections.get(0));
+		dbInstance.commitAndCloseSession();
+	
+		//load the assignment
+		List<Assignment> assignments = assignmentDao.loadAssignments(binder, null);
+		Assert.assertNotNull(assignments);
+		Assert.assertEquals(1, assignments.size());
+		Assert.assertEquals(assignment, assignments.get(0));
+	}
+	
+	@Test
+	public void loadAssignments_binder_search() {
+		Identity owner = JunitTestHelper.createAndPersistIdentityAsRndUser("assign-3");
+		Binder binder = portfolioService.createNewBinder("Assignment binder 3", "Difficult!", null, owner);
+		dbInstance.commit();
+		portfolioService.appendNewSection("Section", "Assignment section", null, null, binder);
+		dbInstance.commit();
+		//create assignment
+		List<Section> sections = portfolioService.getSections(binder);
+		Assignment assignment = assignmentDao.createAssignment("Load assignment", "Load by binder", "The content unkown search",
+				null, AssignmentType.essay, AssignmentStatus.template, sections.get(0));
+		dbInstance.commitAndCloseSession();
+	
+		//search the assignment
+		List<Assignment> assignments = assignmentDao.loadAssignments(binder, "unkown");
+		Assert.assertNotNull(assignments);
+		Assert.assertEquals(1, assignments.size());
+		Assert.assertEquals(assignment, assignments.get(0));
+		
+		//dummy search
+		List<Assignment> emptyAssignments = assignmentDao.loadAssignments(binder, "sdhfks");
+		Assert.assertNotNull(emptyAssignments);
+		Assert.assertEquals(0, emptyAssignments.size());
+	}
+	
+	@Test
+	public void loadAssignments_section() {
+		Identity owner = JunitTestHelper.createAndPersistIdentityAsRndUser("assign-4");
+		Binder binder = portfolioService.createNewBinder("Assignment binder 4", "Difficult!", null, owner);
+		dbInstance.commit();
+		portfolioService.appendNewSection("Section", "Assignment section", null, null, binder);
+		dbInstance.commit();
+		//create assignment
+		List<Section> sections = portfolioService.getSections(binder);
+		Section section = sections.get(0);
+		Assignment assignment = assignmentDao.createAssignment("Load assignment", "Load by section", "The another content",
+				null, AssignmentType.essay, AssignmentStatus.template, section);
+		dbInstance.commitAndCloseSession();
+	
+		//load the assignment
+		List<Assignment> assignments = assignmentDao.loadAssignments(section, null);
+		Assert.assertNotNull(assignments);
+		Assert.assertEquals(1, assignments.size());
+		Assert.assertEquals(assignment, assignments.get(0));
+	}
+	
+	@Test
+	public void loadAssignments_section_search() {
+		Identity owner = JunitTestHelper.createAndPersistIdentityAsRndUser("assign-5");
+		Binder binder = portfolioService.createNewBinder("Assignment binder 5", "Difficult!", null, owner);
+		dbInstance.commit();
+		portfolioService.appendNewSection("Section", "Assignment section", null, null, binder);
+		dbInstance.commit();
+		//create assignment
+		List<Section> sections = portfolioService.getSections(binder);
+		Section section = sections.get(0);
+		Assignment assignment = assignmentDao.createAssignment("Load assignment", "Load by binder", "The little blabla to search",
+				null, AssignmentType.essay, AssignmentStatus.template, section);
+		dbInstance.commitAndCloseSession();
+	
+		//search the assignment
+		List<Assignment> assignments = assignmentDao.loadAssignments(section, "blabla");
+		Assert.assertNotNull(assignments);
+		Assert.assertEquals(1, assignments.size());
+		Assert.assertEquals(assignment, assignments.get(0));
+		
+		//dummy search
+		List<Assignment> emptyAssignments = assignmentDao.loadAssignments(section, "wezruiwezi");
+		Assert.assertNotNull(emptyAssignments);
+		Assert.assertEquals(0, emptyAssignments.size());
 	}
 }

@@ -119,7 +119,7 @@ public class PageRunController extends BasicController implements TooledControll
 		this.secCallback = secCallback;
 		this.openInEditMode = openInEditMode;
 		
-		assignments = portfolioService.getAssignments(page);
+		assignments = portfolioService.getAssignments(page, null);
 		
 		mainVC = createVelocityContainer("page_content");
 		mainVC.contextPut("pageTitle", page.getTitle());
