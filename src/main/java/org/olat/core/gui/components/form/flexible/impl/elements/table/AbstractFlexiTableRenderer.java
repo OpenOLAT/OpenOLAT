@@ -144,7 +144,7 @@ public abstract class AbstractFlexiTableRenderer extends DefaultComponentRendere
 				sb.append(rowCount).append(" ").append(ftE.getTranslator().translate("table.entries"));
 			}
 		}
-		sb.append("</div><div class='col-sm-4 col-xs-8'><div class='pull-right'><div class='o_table_tools'>");
+		sb.append("</div><div class='col-sm-4 col-xs-8'><div class='pull-right'><div class='o_table_tools o_noprint'>");
 		
 		boolean empty = ftE.getTableDataModel().getRowCount() == 0;
 
@@ -201,7 +201,7 @@ public abstract class AbstractFlexiTableRenderer extends DefaultComponentRendere
 			RenderResult renderResult, String[] args) {
 
 		if(ftE.isSearchEnabled()) {
-			sb.append("<div class='o_table_search input-group'>");
+			sb.append("<div class='o_table_search input-group o_noprint'>");
 			renderFormItem(renderer, sb, ftE.getSearchElement(), ubu, translator, renderResult, args);
 			sb.append("<div class='input-group-btn'>");
 			renderFormItem(renderer, sb, ftE.getSearchButton(), ubu, translator, renderResult, args);
@@ -406,7 +406,7 @@ public abstract class AbstractFlexiTableRenderer extends DefaultComponentRendere
 		int rows = dataModel.getRowCount();
 		int lastRow = Math.min(rows, firstRow + maxRows);
 		
-		sb.append("<div class='o_table_rows_infos'>");
+		sb.append("<div class='o_table_rows_infos o_noprint'>");
 		sb.append(translator.translate("page.size.a", new String[] {
 				Integer.toString(firstRow + 1),//for humans
 				Integer.toString(lastRow),

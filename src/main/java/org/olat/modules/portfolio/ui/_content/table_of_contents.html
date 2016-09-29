@@ -18,7 +18,7 @@
 				#end
 					
 				#if($r.isNotNull($section.editDropdown) || $r.isNotNull($section.upSectionLink) || $r.isNotNull($section.downSectionLink))
-					<div id="sect_$foreach.count" class="o_section_actions dropdown">
+					<div id="sect_$foreach.count" class="o_section_actions o_noprint dropdown">
 						#if($r.isNotNull($section.upSectionLink) || $r.isNotNull($section.downSectionLink))
 						<span class="o_section_move_up_and_down">
 							#if($r.isNotNull($section.upSectionLink))
@@ -55,7 +55,7 @@
 		</ul>
 		
 		#if($r.available("create.new.section"))
-		<div class="panel panel-placeholder o_block_large">
+		<div class="panel panel-placeholder o_block_large o_noprint">
 			<div class="panel-body">
 				<h5>$r.translate("create.new.section.title")</h5>
 				<p>$r.translate("create.new.section.text")</p>

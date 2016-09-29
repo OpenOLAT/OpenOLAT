@@ -3,7 +3,7 @@
 		<h2>$r.translate("binder.title", $binderTitle) #if($owners && !$owners.isEmpty())<small>$r.translate("binder.by",$owners)</small>#end</h2>
 		##$binderKey
 		#if($r.available("timeline.switch.on") || $r.available("timeline.switch.off"))
-		<div class="o_button_group">
+		<div class="o_button_group o_noprint">
 			$r.render("timeline.switch.off")
 			$r.render("timeline.switch.on")
 		</div>
@@ -14,7 +14,7 @@
 		$r.render("table")
 		
 		#if($r.available("create.new.section"))
-		<div class="panel panel-placeholder o_block_large">
+		<div class="panel panel-placeholder o_block_large o_noprint">
 			<div class="panel-body">
 				<h5>$r.translate("create.new.section.title")</h5>
 				<p>$r.translate("create.new.section.text")</p>
@@ -24,7 +24,7 @@
 			</div>
 		</div>
 		#end
-		<div class="o_button_group">
+		<div class="o_button_group o_noprint">
 			<div class="btn-group">
 			#if($r.visible("section.paging.previous"))
 				$r.render("section.paging.previous")
