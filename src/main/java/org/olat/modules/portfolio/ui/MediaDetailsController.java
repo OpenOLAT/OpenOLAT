@@ -163,10 +163,16 @@ public class MediaDetailsController extends FormBasicController implements Activ
 			for(BinderPageUsage binder:usedInList) {
 				if(binderUniqueKeys.contains(binder.getBinderKey())) continue;
 				
-				FormLink link = uifactory.addFormLink("binder_" + (++counter), binder.getBinderTitle(), null, layoutCont, Link.LINK | Link.NONTRANSLATED);
+				FormLink link;
+				if(binder.getBinderKey() == null) {
+					link = uifactory.addFormLink("binder_" + (++counter), "page", binder.getPageTitle(), null, layoutCont, Link.LINK | Link.NONTRANSLATED);
+					binderUniqueKeys.add(binder.getPageKey());
+				} else {
+					link = uifactory.addFormLink("binder_" + (++counter), "binder", binder.getBinderTitle(), null, layoutCont, Link.LINK | Link.NONTRANSLATED);
+					binderUniqueKeys.add(binder.getBinderKey());
+				}
 				link.setUserObject(binder);
 				binderLinks.add(link);
-				binderUniqueKeys.add(binder.getBinderKey());
 			}
 			layoutCont.contextPut("binderLinks", binderLinks);
 		}
@@ -232,10 +238,19 @@ public class MediaDetailsController extends FormBasicController implements Activ
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(source instanceof FormLink) {
 			FormLink link = (FormLink)source;
+			String cmd = link.getCmd();
 			Object uobject = link.getUserObject();
-			if(uobject instanceof BinderPageUsage) {
-				String businessPath = "[Binder:" + ((BinderPageUsage)uobject).getBinderKey() + "]";
-				NewControllerFactory.getInstance().launch(businessPath, ureq, getWindowControl());	
+			if("binder".equals(cmd)) {
+				if(uobject instanceof BinderPageUsage) {
+					String businessPath = "[Binder:" + ((BinderPageUsage)uobject).getBinderKey() + "]";
+					NewControllerFactory.getInstance().launch(businessPath, ureq, getWindowControl());	
+				}
+			} else if("page".equals(cmd)) {
+				if(uobject instanceof BinderPageUsage) {
+					//http://localhost:8081/auth/HomeSite/720898/PortfolioV2/0/MyPages/0/Entry/89
+					String businessPath = "[HomeSite:" + getIdentity().getKey() + "][PortfolioV2:0][MyPages:0][Entry:" + ((BinderPageUsage)uobject).getPageKey() + "]";
+					NewControllerFactory.getInstance().launch(businessPath, ureq, getWindowControl());	
+				}
 			}
 		}
 		super.formInnerEvent(ureq, source, event);
