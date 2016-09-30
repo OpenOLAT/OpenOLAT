@@ -50,7 +50,7 @@ public class PortfolioPersonalToolController extends BasicController implements 
 		
 		stackPanel = new TooledStackedPanel("portfolioStackPanel", getTranslator(), this);
 		stackPanel.setToolbarAutoEnabled(true);
-		stackPanel.setShowCloseLink(true, true);
+		stackPanel.setShowCloseLink(true, false);
 		stackPanel.setInvisibleCrumb(0);
 		putInitialPanel(stackPanel);
 		
