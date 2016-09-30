@@ -361,6 +361,7 @@ public class QuestionItemImpl implements QuestionItemFull, CreateInfo, ModifiedI
 		lastModified = date;
 	}
 
+	@Override
 	public String getFormat() {
 		return format;
 	}
@@ -369,6 +370,7 @@ public class QuestionItemImpl implements QuestionItemFull, CreateInfo, ModifiedI
 		this.format = format;
 	}
 
+	@Override
 	public String getLanguage() {
 		return language;
 	}
@@ -377,6 +379,7 @@ public class QuestionItemImpl implements QuestionItemFull, CreateInfo, ModifiedI
 		this.language = language;
 	}
 
+	@Override
 	public QItemType getType() {
 		return type;
 	}

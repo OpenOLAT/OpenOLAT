@@ -34,7 +34,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -63,6 +62,7 @@ import org.olat.modules.qpool.model.QEducationalContext;
 import org.olat.modules.qpool.model.QuestionItemImpl;
 import org.olat.modules.qpool.ui.QuestionsController;
 import org.olat.modules.qpool.ui.metadata.MetaUIFactory.KeyValues;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -101,21 +101,20 @@ public class MetadataBulkChangeController extends FormBasicController {
 	private TaxonomySelectionController selectionCtrl;
 
 	private Map<MultipleSelectionElement,FormLayoutContainer> checkboxContainer
-		= new HashMap<MultipleSelectionElement,FormLayoutContainer>();
-	private final List<MultipleSelectionElement> checkboxSwitch = new ArrayList<MultipleSelectionElement>();
+		= new HashMap<>();
+	private final List<MultipleSelectionElement> checkboxSwitch = new ArrayList<>();
 	
 	private TaxonomyLevel selectedTaxonomicPath;
 	private List<QuestionItem> updatedItems;
 	private final List<QuestionItemShort> items;
-	private final QPoolService qpoolService;
+	
+	@Autowired
+	private QPoolService qpoolService;
 	
 	public MetadataBulkChangeController(UserRequest ureq, WindowControl wControl, List<QuestionItemShort> items) {
 		super(ureq, wControl, "bulk_change");
 		setTranslator(Util.createPackageTranslator(QuestionsController.class, getLocale(), getTranslator()));
-		
 		this.items = items;
-		qpoolService = CoreSpringFactory.getImpl(QPoolService.class);
-		
 		initForm(ureq);
 	}
 	

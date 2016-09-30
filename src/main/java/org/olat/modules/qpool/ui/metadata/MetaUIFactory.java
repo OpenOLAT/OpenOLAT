@@ -29,6 +29,7 @@ import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.StringHelper;
 import org.olat.ims.qti.QTIConstants;
+import org.olat.ims.qti21.QTI21Constants;
 import org.olat.modules.qpool.QPoolService;
 import org.olat.modules.qpool.QuestionStatus;
 import org.olat.modules.qpool.model.QEducationalContext;
@@ -44,7 +45,9 @@ import org.olat.modules.qpool.model.QLicense;
 public class MetaUIFactory {
 	
 	public static KeyValues getFormats() {
-		String[] formatKeys = new String[]{ QTIConstants.QTI_12_FORMAT };
+		String[] formatKeys = new String[]{
+				QTIConstants.QTI_12_FORMAT, QTI21Constants.QTI_21_FORMAT
+			};
 		
 		return new KeyValues(formatKeys, formatKeys);
 	}
@@ -118,10 +121,11 @@ public class MetaUIFactory {
 			typeKeys[count] = type.getType();
 			String translation = translator.translate("item.type." + type.getType().toLowerCase());
 			if(translation.length() > 128) {
-				typeValues[count++] = typeKeys[count];
+				typeValues[count] = typeKeys[count];
 			} else {
-				typeValues[count++] = translation;
+				typeValues[count] = translation;
 			}
+			count++;
 		}
 		return new KeyValues(typeKeys, typeValues);
 	}
