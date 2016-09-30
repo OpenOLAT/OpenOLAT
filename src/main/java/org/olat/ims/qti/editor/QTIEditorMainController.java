@@ -359,6 +359,7 @@ public class QTIEditorMainController extends MainLayoutBasicController implement
 		}
 
 		stackedPanel = new TooledStackedPanel("qtiEditorStackedPanel", getTranslator(), this);
+		stackedPanel.setCssClass("o_edit_mode");
 		
 		// initialize the history
 		if (qtiPackage.isResumed() && qtiPackage.hasSerializedChangelog()) {

@@ -43,9 +43,14 @@ public class BreadcrumbedStackedPanelRenderer extends DefaultComponentRenderer {
 			RenderResult renderResult, String[] args) {
 		BreadcrumbedStackedPanel panel = (BreadcrumbedStackedPanel) source;
 		List<Link> breadCrumbs = panel.getBreadCrumbs();
-		if(breadCrumbs.size() > panel.getInvisibleCrumb()) {
-			String mainCssClass = panel.getCssClass();
-			sb.append("<div class='o_breadcrumb ").append(mainCssClass, mainCssClass != null).append("'><ol class='breadcrumb'>");
+
+		// panel div
+		String mainCssClass = panel.getCssClass();
+		sb.append("<div id='o_c").append(source.getDispatchID()).append("' class='")
+				.append(mainCssClass, mainCssClass != null).append("'>");
+
+		if (breadCrumbs.size() > panel.getInvisibleCrumb()) {
+			sb.append("<div class='o_breadcrumb'><ol class='breadcrumb'>");
 
 			Link backLink = panel.getBackLink();
 			int numOfCrumbs = breadCrumbs.size();
@@ -75,5 +80,7 @@ public class BreadcrumbedStackedPanelRenderer extends DefaultComponentRenderer {
 		if(toRender != null) {
 			renderer.render(sb, toRender, args);
 		}
+
+		sb.append("</div>"); // end of panel div
 	}
 }

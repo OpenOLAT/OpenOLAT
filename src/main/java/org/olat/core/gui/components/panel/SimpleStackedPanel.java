@@ -50,6 +50,7 @@ public class SimpleStackedPanel extends AbstractComponent implements StackedPane
 	private static final ComponentRenderer RENDERER = new PanelRenderer();
 
 	private Component curContent;
+	private String stackCssClass;
 	protected final List<Component> stackList = new ArrayList<Component>(3); // allow access to extending classes
 
 	/**
@@ -57,6 +58,15 @@ public class SimpleStackedPanel extends AbstractComponent implements StackedPane
 	 */
 	public SimpleStackedPanel(String name) {
 		super(name);
+	}
+	
+	/**
+	 * @param name
+	 * @param elementCssClass wrapper CSS class added to the stack
+	 */
+	public SimpleStackedPanel(String name, String elementCssClass) {
+		super(name);
+		setCssClass(elementCssClass);
 	}
 
 	/**
@@ -153,4 +163,15 @@ public class SimpleStackedPanel extends AbstractComponent implements StackedPane
 	public ComponentRenderer getHTMLRendererSingleton() {
 		return RENDERER;
 	}
+
+	@Override
+	public void setCssClass(String stackCss) {
+		this.stackCssClass = stackCss;
+	}
+	
+	@Override
+	public String getCssClass() {
+		return this.stackCssClass;
+	}
+
 }

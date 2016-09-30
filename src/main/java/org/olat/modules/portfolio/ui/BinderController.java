@@ -120,6 +120,10 @@ public class BinderController extends BasicController implements TooledControlle
 		}
 		
 		mainPanel = putInitialPanel(new SimpleStackedPanel("portfolioSegments"));
+		if (secCallback.canNewAssignment()) {
+			// in template mode, add editor class to toolbar
+			mainPanel.setCssClass("o_edit_mode");
+		}
 		mainPanel.setContent(new Panel("empty"));
 		stackPanel.addListener(this);
 	}
@@ -291,7 +295,7 @@ public class BinderController extends BasicController implements TooledControlle
 	private HistoryController doOpenHistory(UserRequest ureq) {
 		OLATResourceable bindersOres = OresHelper.createOLATResourceableInstance("History", 0l);
 		WindowControl swControl = addToHistory(ureq, bindersOres, null);
-		historyCtrl = new HistoryController(ureq, swControl, binder);
+		historyCtrl = new HistoryController(ureq, swControl, secCallback, binder);
 		listenTo(historyCtrl);
 		
 		popUpToBinderController(ureq);

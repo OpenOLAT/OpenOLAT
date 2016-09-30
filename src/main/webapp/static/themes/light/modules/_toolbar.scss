@@ -349,3 +349,14 @@
 	}
 	
 }
+
+/* render toolbar with zebra effect in edit mode */
+.o_edit_mode .o_tools_container {
+	background: repeating-linear-gradient(
+    	300deg,
+	    $o-toolbar-edit_stripe-color,
+	    $o-toolbar-edit_stripe-color 10px,
+	    $o-toolbar-bg-color 10px,
+	    $o-toolbar-bg-color 20px
+	);
+}

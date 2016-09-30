@@ -51,6 +51,7 @@ public class TooledStackedPanel extends BreadcrumbedStackedPanel implements Stac
 	
 	public TooledStackedPanel(String name, Translator translator, ComponentEventListener listener, String cssClass) {
 		super(name, translator, listener, cssClass);
+		this.setDomReplacementWrapperRequired(false); // renders own div in Renderer
 	}
 
 	@Override

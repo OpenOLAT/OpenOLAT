@@ -48,4 +48,16 @@ public interface StackedPanel extends ComponentCollection {
 	 * @param newContent may not be null
 	 */
 	public void pushContent(Component newContent);
+
+	/**
+	 * Set a css class to be applied to the stack itself
+	 * @param stackCss
+	 */
+	public void setCssClass(String stackCss);
+	
+	/**
+	 * The css class for the entire stack
+	 * @return
+	 */
+	public String getCssClass();
 }

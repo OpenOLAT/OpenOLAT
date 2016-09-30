@@ -101,6 +101,11 @@ public class BinderPageListController extends AbstractPageListController {
 		
 		initForm(ureq);
 		loadModel(ureq, null);
+		
+		if (secCallback.canNewAssignment()) {
+			// in template mode, add editor class to toolbar
+			initialPanel.setCssClass("o_edit_mode");
+		}
 	}
 
 	@Override

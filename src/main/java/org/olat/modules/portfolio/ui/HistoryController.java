@@ -42,6 +42,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.modules.portfolio.Binder;
+import org.olat.modules.portfolio.BinderSecurityCallback;
 import org.olat.modules.portfolio.manager.PortfolioNotificationsHandler;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -64,11 +65,16 @@ public class HistoryController extends FormBasicController {
 	@Autowired
 	private PortfolioNotificationsHandler notificationsHandler;
 	 
-	public HistoryController(UserRequest ureq, WindowControl wControl, Binder binder) {
+	public HistoryController(UserRequest ureq, WindowControl wControl, BinderSecurityCallback secCallback, Binder binder) {
 		super(ureq, wControl, "history");
 		this.binder = binder;
 		initForm(ureq);
 		updateChangeLog();
+		
+		if (secCallback.canNewAssignment()) {
+			// in template mode, add editor class to toolbar
+			initialPanel.setCssClass("o_edit_mode");
+		}
 	}
 
 	@Override

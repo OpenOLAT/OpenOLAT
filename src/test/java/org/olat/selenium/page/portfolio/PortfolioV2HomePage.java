@@ -43,7 +43,7 @@ public class PortfolioV2HomePage {
 	}
 	
 	public PortfolioV2HomePage assertHome() {
-		By toolbarBy = By.cssSelector("div.o_toolbar.o_portfolio");
+		By toolbarBy = By.cssSelector("div.o_portfolio div.o_toolbar");
 		OOGraphene.waitElement(toolbarBy, 5, browser);
 		WebElement toolbarEl = browser.findElement(toolbarBy);
 		Assert.assertTrue(toolbarEl.isDisplayed());
