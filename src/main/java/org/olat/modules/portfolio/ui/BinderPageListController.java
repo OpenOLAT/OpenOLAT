@@ -406,14 +406,15 @@ public class BinderPageListController extends AbstractPageListController {
 	
 	@Override
 	public void event(UserRequest ureq, Controller source, Event event) {
-		if(newSectionCtrl == source || newAssignmentCtrl == source) {
+		if(newSectionCtrl == source) {
 			if(event == Event.DONE_EVENT) {
+				filteringSection = newSectionCtrl.getSection();
 				loadModel(ureq, null);
 				fireEvent(ureq, Event.CHANGED_EVENT);
 			}
 			cmc.deactivate();
 			cleanUp();
-		} else if(newSectionCtrl == source || newPageCtrl == source || newAssignmentCtrl == source) {
+		} else if(newPageCtrl == source) {
 			if(event == Event.DONE_EVENT) {
 				loadModel(ureq, null);
 				Page newPage = newPageCtrl.getPage();
@@ -423,6 +424,13 @@ public class BinderPageListController extends AbstractPageListController {
 						break;
 					}
 				}
+				fireEvent(ureq, Event.CHANGED_EVENT);
+			}
+			cmc.deactivate();
+			cleanUp();
+		} else if(newAssignmentCtrl == source) {
+			if(event == Event.DONE_EVENT) {
+				loadModel(ureq, null);
 				fireEvent(ureq, Event.CHANGED_EVENT);
 			}
 			cmc.deactivate();
