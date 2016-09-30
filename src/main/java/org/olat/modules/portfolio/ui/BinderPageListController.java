@@ -373,7 +373,7 @@ public class BinderPageListController extends AbstractPageListController {
 	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
 		if(newEntryLink == source) {
-			doCreateNewPage(ureq, null);
+			doCreateNewPage(ureq, filteringSection);
 		} else if(newSectionLink == source) {
 			doCreateNewSection(ureq);
 		} 
@@ -417,13 +417,7 @@ public class BinderPageListController extends AbstractPageListController {
 		} else if(newPageCtrl == source) {
 			if(event == Event.DONE_EVENT) {
 				loadModel(ureq, null);
-				Page newPage = newPageCtrl.getPage();
-				for(PortfolioElementRow row:model.getObjects()) {
-					if(row.getPage() != null && row.getPage().equals(newPage)) {
-						doOpenRow(ureq, row, true);
-						break;
-					}
-				}
+				doOpenPage(ureq, newPageCtrl.getPage(), true);				
 				fireEvent(ureq, Event.CHANGED_EVENT);
 			}
 			cmc.deactivate();
