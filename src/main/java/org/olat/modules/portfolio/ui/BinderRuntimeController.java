@@ -22,6 +22,7 @@ package org.olat.modules.portfolio.ui;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.dropdown.Dropdown;
+import org.olat.core.gui.components.dropdown.Dropdown.Spacer;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.stack.PopEvent;
@@ -35,10 +36,13 @@ import org.olat.core.util.resource.OresHelper;
 import org.olat.modules.assessment.ui.AssessableResource;
 import org.olat.modules.assessment.ui.AssessmentToolController;
 import org.olat.modules.assessment.ui.AssessmentToolSecurityCallback;
+import org.olat.modules.portfolio.Binder;
+import org.olat.modules.portfolio.PortfolioService;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.model.RepositoryEntrySecurity;
 import org.olat.repository.ui.RepositoryEntryRuntimeController;
 import org.olat.util.logging.activity.LoggingResourceable;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -48,9 +52,13 @@ import org.olat.util.logging.activity.LoggingResourceable;
  */
 public class BinderRuntimeController extends RepositoryEntryRuntimeController {
 	
-	private Link assessmentLink;
+	private Link assessmentLink, optionsLink;
 	
 	private AssessmentToolController assessmentToolCtrl;
+	private BinderDeliveryOptionsController optionsCtrl;
+
+	@Autowired
+	private PortfolioService portfolioService;
 	
 	public BinderRuntimeController(UserRequest ureq, WindowControl wControl, RepositoryEntry re,
 			RepositoryEntrySecurity reSecurity, RuntimeControllerCreator runtimeControllerCreator) {
@@ -80,11 +88,25 @@ public class BinderRuntimeController extends RepositoryEntryRuntimeController {
 			toolsDropdown.addComponent(ordersLink);	
 		}
 	}
+	
+	@Override
+	protected void initSettingsTools(Dropdown settingsDropdown) {
+		super.initSettingsTools(settingsDropdown);
+		if (reSecurity.isEntryAdmin()) {
+			settingsDropdown.addComponent(new Spacer(""));
+
+			optionsLink = LinkFactory.createToolLink("options", translate("portfolio.template.options"), this, "o_sel_repo_options");
+			optionsLink.setIconLeftCSS("o_icon o_icon-fw o_icon_options");
+			settingsDropdown.addComponent(optionsLink);
+		}
+	}
 
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
 		if(assessmentLink == source) {
 			doAssessmentTool(ureq);
+		} else if(optionsLink == source) {
+			doOptions(ureq);
 		} else if(source == toolbarPanel) {
 			if(event instanceof PopEvent) {
 				if(toolbarPanel.getRootController() == getRuntimeController()) {
@@ -114,6 +136,25 @@ public class BinderRuntimeController extends RepositoryEntryRuntimeController {
 			setActiveTool(assessmentLink);
 			enableRuntimeNavBar(false);
 			return assessmentToolCtrl;
+		}
+		return null;
+	}
+	
+	private Activateable2 doOptions(UserRequest ureq) {
+		enableRuntimeNavBar(false);
+
+		OLATResourceable ores = OresHelper.createOLATResourceableType("Options");
+		ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ores));
+		WindowControl swControl = addToHistory(ureq, ores, null);
+		
+		if (reSecurity.isEntryAdmin()) {
+			Binder binder = portfolioService.getBinderByResource(getRepositoryEntry().getOlatResource());
+			BinderDeliveryOptionsController ctrl = new BinderDeliveryOptionsController(ureq, swControl, binder);
+			listenTo(ctrl);
+			optionsCtrl = pushController(ureq, "Options", ctrl);
+			currentToolCtr = optionsCtrl;
+			setActiveTool(optionsLink);
+			return optionsCtrl;
 		}
 		return null;
 	}
