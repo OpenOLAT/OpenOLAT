@@ -63,9 +63,6 @@ public class BinderDeliveryOptionsController extends FormBasicController impleme
 		deliveryOptions = portfolioService.getDeliveryOptions(binder.getOlatResource());
 		 
 		initForm(ureq);
-		
-		// in template mode, add editor class to toolbar
-		initialPanel.setCssClass("o_edit_mode");
 	}
 
 	@Override

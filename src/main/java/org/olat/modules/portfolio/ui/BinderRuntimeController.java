@@ -141,8 +141,6 @@ public class BinderRuntimeController extends RepositoryEntryRuntimeController {
 	}
 	
 	private Activateable2 doOptions(UserRequest ureq) {
-		enableRuntimeNavBar(false);
-
 		OLATResourceable ores = OresHelper.createOLATResourceableType("Options");
 		ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ores));
 		WindowControl swControl = addToHistory(ureq, ores, null);
@@ -154,6 +152,7 @@ public class BinderRuntimeController extends RepositoryEntryRuntimeController {
 			optionsCtrl = pushController(ureq, "Options", ctrl);
 			currentToolCtr = optionsCtrl;
 			setActiveTool(optionsLink);
+			enableRuntimeNavBar(false);
 			return optionsCtrl;
 		}
 		return null;
