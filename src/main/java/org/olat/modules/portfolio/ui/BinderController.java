@@ -61,7 +61,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class BinderController extends BasicController implements TooledController, Activateable2 {
 	
-	private Link assessmentLink, publishLink, optionsLink;
+	private Link assessmentLink, publishLink;
 	private final Link overviewLink, entriesLink, historyLink;
 	private final ButtonGroupComponent segmentButtonsCmp;
 	private final TooledStackedPanel stackPanel;
@@ -70,7 +70,6 @@ public class BinderController extends BasicController implements TooledControlle
 	
 	private HistoryController historyCtrl;
 	private PublishController publishCtrl;
-	private BinderDeliveryOptionsController optionsCtrl;
 	private BinderPageListController entriesCtrl;
 	private TableOfContentController overviewCtrl;
 	private BinderAssessmentController assessmentCtrl;
@@ -112,11 +111,6 @@ public class BinderController extends BasicController implements TooledControlle
 			assessmentLink = LinkFactory.createLink("portfolio.assessment", getTranslator(), this);
 			assessmentLink.setElementCssClass("o_sel_pf_assessment");
 			segmentButtonsCmp.addButton(assessmentLink, false);
-		}
-		if(config.isOptions()) {
-			optionsLink = LinkFactory.createLink("portfolio.template.options", getTranslator(), this);
-			optionsLink.setElementCssClass("o_sel_pf_options");
-			segmentButtonsCmp.addButton(optionsLink, false);
 		}
 		
 		mainPanel = putInitialPanel(new SimpleStackedPanel("portfolioSegments"));
@@ -181,8 +175,6 @@ public class BinderController extends BasicController implements TooledControlle
 			doOpenHistory(ureq);
 		} else if("Toc".equalsIgnoreCase(resName)) {
 			doOpenOverview(ureq);
-		} else if("Options".equalsIgnoreCase(resName)) {
-			doOpenOptions(ureq);
 		}
 	}
 
@@ -219,8 +211,6 @@ public class BinderController extends BasicController implements TooledControlle
 			doOpenAssessment(ureq);
 		} else if(historyLink == source) {
 			doOpenHistory(ureq);
-		} else if(optionsLink == source) {
-			doOpenOptions(ureq);
 		} else if(stackPanel == source) {
 			if(event instanceof PopEvent) {
 				if(stackPanel.getLastController() == this) {
@@ -302,16 +292,5 @@ public class BinderController extends BasicController implements TooledControlle
 		stackPanel.pushController(translate("portfolio.history"), historyCtrl);
 		segmentButtonsCmp.setSelectedButton(historyLink);
 		return historyCtrl;
-	}
-	
-	private void doOpenOptions(UserRequest ureq) {
-		OLATResourceable bindersOres = OresHelper.createOLATResourceableInstance("Options", 0l);
-		WindowControl swControl = addToHistory(ureq, bindersOres, null);
-		optionsCtrl = new BinderDeliveryOptionsController(ureq, swControl, binder);
-		listenTo(optionsCtrl);
-		
-		popUpToBinderController(ureq);
-		stackPanel.pushController(translate("portfolio.template.options"), optionsCtrl);
-		segmentButtonsCmp.setSelectedButton(optionsLink);
 	}
 }

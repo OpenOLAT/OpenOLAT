@@ -84,6 +84,7 @@ public class MemberMailController extends StepFormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		sendMailEl = uifactory.addCheckboxesVertical("sendmail", "", formLayout, new String[]{"xx"}, new String[]{translate("mail.sendMail")}, 1);
+		sendMailEl.setElementCssClass("o_pf_sel_send_mail");
 		sendMailEl.select("xx", true);
 		sendMailEl.addActionListener(FormEvent.ONCLICK);
 

@@ -49,6 +49,8 @@ import org.olat.core.util.Util;
 import org.olat.modules.portfolio.Binder;
 import org.olat.modules.portfolio.PortfolioRoles;
 import org.olat.modules.portfolio.ui.PortfolioHomeController;
+import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryService;
 import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -70,6 +72,8 @@ public class PortfolioNotificationsHandler implements NotificationsHandler {
 	private BinderDAO binderDao;
 	@Autowired
 	private UserManager userManager;
+	@Autowired
+	private RepositoryService repositoryService;
 
 	@Override
 	public SubscriptionInfo createSubscriptionInfo(Subscriber subscriber, Locale locale, Date compareDate) {
@@ -111,6 +115,13 @@ public class PortfolioNotificationsHandler implements NotificationsHandler {
 	
 	public List<SubscriptionListItem> getAllItems(Binder binder, Date compareDate, Locale locale) {
 		String rootBusinessPath = "[Binder:" + binder.getKey() + "]";
+		if(binder.getOlatResource() != null) {
+			RepositoryEntry re = repositoryService.loadByResourceKey(binder.getOlatResource().getKey());
+			rootBusinessPath = "[RepositoryEntry:" + re.getKey() + "]";
+		} else {
+			rootBusinessPath = "[Binder:" + binder.getKey() + "]";
+		}
+
 		Translator translator = Util.createPackageTranslator(PortfolioHomeController.class, locale);
 
 		List<SubscriptionListItem> items = new ArrayList<>();

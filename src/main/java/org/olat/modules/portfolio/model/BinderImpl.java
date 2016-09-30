@@ -219,6 +219,7 @@ public class BinderImpl implements Persistable, ModifiedInfo, CreateInfo, Binder
 		this.imagePath = imagePath;
 	}
 
+	@Override
 	public OLATResource getOlatResource() {
 		return olatResource;
 	}
