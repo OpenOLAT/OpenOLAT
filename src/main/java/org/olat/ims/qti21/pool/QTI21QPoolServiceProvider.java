@@ -41,6 +41,7 @@ import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.i18n.I18nModule;
 import org.olat.core.util.vfs.LocalImpl;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
@@ -121,6 +122,7 @@ public class QTI21QPoolServiceProvider implements QPoolSPI {
 	private static final List<ExportFormatOptions> formats = new ArrayList<ExportFormatOptions>(4);
 	static {
 		formats.add(DefaultExportFormat.ZIP_EXPORT_FORMAT);
+		formats.add(DefaultExportFormat.DOCX_EXPORT_FORMAT);
 		formats.add(new DefaultExportFormat(QTI21Constants.QTI_21_FORMAT, Outcome.download, null));
 		formats.add(new DefaultExportFormat(QTI21Constants.QTI_21_FORMAT, Outcome.repository, ImsQTI21Resource.TYPE_NAME));
 	}
@@ -203,8 +205,9 @@ public class QTI21QPoolServiceProvider implements QPoolSPI {
 	public MediaResource exportTest(List<QuestionItemShort> items, ExportFormatOptions format, Locale locale) {
 		if(QTI21Constants.QTI_21_FORMAT.equals(format.getFormat())) {
 			return new QTI21ExportTestResource("UTF-8", locale, items, this);
+		} else if(DefaultExportFormat.DOCX_EXPORT_FORMAT.getFormat().equals(format.getFormat())) {
+			return new QTI12And21PoolWordExport(items, I18nModule.getDefaultLocale(), "UTF-8", questionItemDao, qpoolFileStorage);
 		}
-		
 		return null;
 	}
 

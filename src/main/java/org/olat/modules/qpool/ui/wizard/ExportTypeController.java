@@ -20,13 +20,14 @@
 package org.olat.modules.qpool.ui.wizard;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
@@ -40,6 +41,7 @@ import org.olat.modules.qpool.ExportFormatOptions;
 import org.olat.modules.qpool.QPoolSPI;
 import org.olat.modules.qpool.QuestionItemShort;
 import org.olat.modules.qpool.QuestionPoolModule;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -51,17 +53,18 @@ public class ExportTypeController extends StepFormBasicController {
 
 	private String[] formatKeys;
 	private String[] formatValues;
-	private Map<String, ExportFormatOptions> formatMap = new HashMap<String, ExportFormatOptions>();
+	private Map<String, ExportFormatOptions> formatMap = new HashMap<>();
 	
 	private SingleSelection formatEl;
+	
+	@Autowired
+	private QuestionPoolModule qpoolModule;
 	
 	public ExportTypeController(UserRequest ureq, WindowControl wControl, Form rootForm,
 			StepsRunContext runContext, List<QuestionItemShort> items) {
 		super(ureq, wControl, rootForm, runContext, LAYOUT_DEFAULT, null);
-		
-		QuestionPoolModule qpoolModule = CoreSpringFactory.getImpl(QuestionPoolModule.class);
-		
-		Set<ExportFormatOptions> formatSet = new HashSet<ExportFormatOptions>();
+
+		Set<ExportFormatOptions> formatSet = new HashSet<>();
 		for(QuestionItemShort item:items) {
 			QPoolSPI sp = qpoolModule.getQuestionPoolProvider(item.getFormat());
 			if(sp != null) {
@@ -69,9 +72,12 @@ public class ExportTypeController extends StepFormBasicController {
 			}	
 		}
 		
-		List<String> formatKeyList = new ArrayList<String>();
-		List<String> formatValueList = new ArrayList<String>();
-		for(ExportFormatOptions format:formatSet) {
+		List<ExportFormatOptions> formatList = new ArrayList<>(formatSet);
+		Collections.sort(formatList, new ExportFormatOptionsComparator());
+		
+		List<String> formatKeyList = new ArrayList<>();
+		List<String> formatValueList = new ArrayList<>();
+		for(ExportFormatOptions format:formatList) {
 			String outcome = format.getOutcome().name();
 			String key = format.getFormat() + "__" + outcome;
 			String formatName = format.getFormat().replace(" ", "_");
@@ -105,5 +111,29 @@ public class ExportTypeController extends StepFormBasicController {
 			addToRunContext("format", options);
 		}
 		fireEvent(ureq, StepsEvent.ACTIVATE_NEXT);
+	}
+	
+	private static class ExportFormatOptionsComparator implements Comparator<ExportFormatOptions> {
+		@Override
+		public int compare(ExportFormatOptions o1, ExportFormatOptions o2) {
+			if(o1 == null && o2 == null) {
+				return 0;
+			} else if(o1 == null) {
+				return -1;
+			} else if(o2 == null) {
+				return 1;
+			}
+			
+			String f1 = o1.getFormat();
+			String f2 = o2.getFormat();
+			if(f1 == null && f2 == null) {
+				return 0;
+			} else if(f1 == null) {
+				return -1;
+			} else if(f2 == null) {
+				return 1;
+			}
+			return f1.compareTo(f2);
+		}
 	}
 }
