@@ -478,7 +478,7 @@ public class AssessmentHelper {
 			if(courseNode instanceof ProjectBrokerCourseNode) {
 				//ProjectBroker : no assessment-tool in V1.0 , remove project broker completely form assessment-tool gui
 				assessmentNodeData.setSelectable(false);
-			} else  if (courseNode instanceof AssessableCourseNode) {
+			} else if (courseNode instanceof AssessableCourseNode) {
 				AssessableCourseNode assessableCourseNode = (AssessableCourseNode) courseNode;
 				AssessmentEvaluation scoreEvaluation = scoreAccounting.evalCourseNode(assessableCourseNode);
 				if(scoreEvaluation != null) {
@@ -569,7 +569,7 @@ public class AssessmentHelper {
 			data.remove(assessmentNodeData);
 			return 0;
 		}
-		return numOfChildren;
+		return numOfChildren + 1;//add itself
 	}
 	
 	/**

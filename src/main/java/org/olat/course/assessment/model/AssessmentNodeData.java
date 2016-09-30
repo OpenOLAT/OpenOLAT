@@ -36,6 +36,8 @@ import static org.olat.course.assessment.AssessmentHelper.KEY_TYPE;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.olat.core.util.StringHelper;
+import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.nodes.CourseNode;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
 
@@ -258,5 +260,15 @@ public class AssessmentNodeData {
 		if(nodeData.get(KEY_SELECTABLE) instanceof Boolean) {
 			selectable = ((Boolean)nodeData.get(KEY_SELECTABLE)).booleanValue();
 		}
+	}
+	
+	@Override
+	public String toString() {
+		StringBuilder sb = new StringBuilder(64);
+		sb.append("data[title=").append(StringHelper.containsNonWhitespace(longTitle) ? longTitle : (shortTitle == null ? "" : shortTitle))
+		  .append(":score=").append(score == null ? "" : AssessmentHelper.getRoundedScore(score))
+		  .append(":passed=").append(passed == null ? "" : passed.toString())
+		  .append("]");
+		return sb.toString();
 	}
 }
