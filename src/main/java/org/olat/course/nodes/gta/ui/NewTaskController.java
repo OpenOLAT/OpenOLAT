@@ -107,7 +107,7 @@ public class NewTaskController extends FormBasicController {
 		} else {
 			String filename = getFilename();
 			if(documentContainer.resolve(filename) != null) {
-				filenameEl.setErrorKey("error.file.exists", null);
+				filenameEl.setErrorKey("error.file.exists", new String[]{filename});
 				allOk &= false;
 			} else if (!FileUtils.validateFilename(filename)) {
 				filenameEl.setErrorKey("error.file.invalid", null);
