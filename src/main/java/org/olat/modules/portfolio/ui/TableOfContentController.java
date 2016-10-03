@@ -245,6 +245,7 @@ public class TableOfContentController extends BasicController implements TooledC
 		sectionLink.setUserObject(sectionRow);
 		
 		Dropdown editDropdown = new Dropdown(sectionId.concat("_dropdown"), null, false, getTranslator());
+		editDropdown.setElementCssClass("o_sel_pf_section_tools");
 		editDropdown.setTranslatedLabel("");
 		editDropdown.setOrientation(DropdownOrientation.right);
 		editDropdown.setIconCSS("o_icon o_icon_actions");
@@ -274,6 +275,7 @@ public class TableOfContentController extends BasicController implements TooledC
 			editDropdown.addComponent(editSectionLink);
 			
 			Link deleteSectionLink = LinkFactory.createLink(sectionId.concat("_delete"), "section.delete", "delete_section", mainVC, this);
+			deleteSectionLink.setElementCssClass("o_sel_pf_delete_section");
 			deleteSectionLink.setIconLeftCSS("o_icon o_icon_delete_item");
 			deleteSectionLink.setUserObject(sectionRow);
 			editDropdown.addComponent(deleteSectionLink);

@@ -92,6 +92,7 @@ public class PortfolioHomeController extends BasicController implements Activate
 
 		sharedItemsLink = LinkFactory.createLink("goto.shared.with.me", mainVC, this);
 		sharedItemsLink.setIconRightCSS("o_icon o_icon_start");
+		sharedItemsLink.setElementCssClass("o_sel_pf_shared_with_me");
 		
 		mediaCenterLink = LinkFactory.createLink("goto.media.center", mainVC, this);
 		mediaCenterLink.setIconRightCSS("o_icon o_icon_start");

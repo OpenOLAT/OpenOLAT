@@ -69,5 +69,15 @@ public class PortfolioV2HomePage {
 		OOGraphene.waitElement(mediaListBy, 5, browser);
 		return new MediaCenterPage(browser);
 	}
+	
+	public SharedWithMePage openSharedWithMe() {
+		By sharedWithMeLinkBy = By.cssSelector("a.o_sel_pf_shared_with_me");
+		OOGraphene.waitElement(sharedWithMeLinkBy, 5, browser);
+		browser.findElement(sharedWithMeLinkBy).click();
+		
+		By sharedWithMeBy = By.cssSelector("div.o_table_flexi.o_binder_shared_items_listing");
+		OOGraphene.waitElement(sharedWithMeBy, 5, browser);
+		return new SharedWithMePage(browser);
+	}
 
 }

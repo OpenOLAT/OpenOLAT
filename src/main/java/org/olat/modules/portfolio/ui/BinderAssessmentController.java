@@ -127,8 +127,11 @@ public class BinderAssessmentController extends FormBasicController {
 		FormLayoutContainer buttonsCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		formLayout.add(buttonsCont);
 		saveButton = uifactory.addFormSubmitButton("save", buttonsCont);
+		saveButton.setElementCssClass("o_sel_pf_assessment_save");
 		saveAndDoneLink = uifactory.addFormLink("save.done", buttonsCont, Link.BUTTON);
+		saveAndDoneLink.setElementCssClass("o_sel_pf_assessment_save_done");
 		reopenLink = uifactory.addFormLink("reopen.binder", buttonsCont, Link.BUTTON);
+		reopenLink.setElementCssClass("o_sel_pf_assessment_reopen");
 		cancelButton = uifactory.addFormCancelButton("cancel", buttonsCont, ureq, getWindowControl());
 	}
 	
@@ -218,10 +221,12 @@ public class BinderAssessmentController extends FormBasicController {
 
 		if(SectionStatus.isClosed(section)) {
 			FormLink reopenButton = uifactory.addFormLink("reopen" + (++counter), "reopen", "reopen", null, flc, Link.BUTTON);
+			reopenButton.setElementCssClass("o_sel_pf_reopen_section");
 			reopenButton.setUserObject(row);
 			row.setButton(reopenButton);
 		} else {
 			FormLink closeButton = uifactory.addFormLink("close" + (++counter), "close", "close.section", null, flc, Link.BUTTON);
+			closeButton.setElementCssClass("o_sel_pf_close_section");
 			closeButton.setUserObject(row);
 			row.setButton(closeButton);
 		}

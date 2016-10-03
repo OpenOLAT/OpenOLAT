@@ -135,6 +135,16 @@ public class BinderPage {
 		return new BinderPublicationPage(browser);
 	}
 	
+	public BinderAssessmentPage selectAssessment() {
+		By assessmentBy = By.cssSelector("li.o_tool .o_sel_pf_binder_navigation .o_sel_pf_assessment");
+		OOGraphene.waitElement(assessmentBy, 5, browser);
+		browser.findElement(assessmentBy).click();
+		OOGraphene.waitBusy(browser);
+		By assessmentTableBy = By.cssSelector("div.o_table_flexi.o_table_edit");
+		OOGraphene.waitElement(assessmentTableBy, 5, browser);
+		return new BinderAssessmentPage(browser);
+	}
+	
 	/**
 	 * Create a section in the tab entries (this is one must
 	 * be selected).
@@ -145,6 +155,24 @@ public class BinderPage {
 	public BinderPage createSectionInEntries(String title) {
 		createSection(title);
 		assertOnSectionTitleInEntries(title);
+		return this;
+	}
+	
+	/**
+	 * Delete the first section it found.
+	 * 
+	 * @return
+	 */
+	public BinderPage deleteSection() {
+		By toolsMenuCaretBy = By.cssSelector("a.o_sel_pf_section_tools");
+		By toolsMenu = By.cssSelector("ul.o_sel_pf_section_tools");
+		browser.findElement(toolsMenuCaretBy).click();
+		OOGraphene.waitElement(toolsMenu, 5, browser);
+		
+		By deleteBy = By.cssSelector("ul.o_sel_pf_section_tools a.o_sel_pf_delete_section");
+		browser.findElement(deleteBy).click();
+		OOGraphene.waitBusy(browser);
+		confirm();
 		return this;
 	}
 	
@@ -271,9 +299,12 @@ public class BinderPage {
 	 */
 	public BinderPage publishEntry() {
 		By publishBy = By.cssSelector("a.o_sel_pf_publish_entry");
+		OOGraphene.waitElement(publishBy, 5, browser);
 		browser.findElement(publishBy).click();
 		OOGraphene.waitBusy(browser);
 		confirm();
+		By publishedBy = By.cssSelector("div.o_portfolio_status i.o_icon_pf_entry_published");
+		OOGraphene.waitElement(publishedBy, 5, browser);
 		return this;
 	}
 	
@@ -281,11 +312,10 @@ public class BinderPage {
 	 * Yes in a dialog box controller.
 	 */
 	private void confirm() {
-		// confirm
-		By confirmButtonBy = By.cssSelector("div.modal-dialog div.modal-footer a");
+		By confirmButtonBy = By.xpath("//div[contains(@class,'modal-dialo')]//div[contains(@class,'modal-footer')]/a[contains(@onclick,'link_0')]");
 		OOGraphene.waitElement(confirmButtonBy, 5, browser);
-		List<WebElement> buttonsEl = browser.findElements(confirmButtonBy);
-		buttonsEl.get(0).click();
+		OOGraphene.waitScrollTop(browser);
+		browser.findElement(confirmButtonBy).click();
 		OOGraphene.waitBusy(browser);
 	}
 }
