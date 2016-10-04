@@ -121,8 +121,11 @@ public class CollectFileMediaController extends FormBasicController implements P
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		formLayout.setElementCssClass("o_sel_pf_collect_document_form");
+		
 		String title = mediaReference == null ? null : mediaReference.getTitle();
 		titleEl = uifactory.addTextElement("artefact.title", "artefact.title", 255, title, formLayout);
+		titleEl.setElementCssClass("o_sel_pf_collect_title");
 		titleEl.setMandatory(true);
 		
 		String desc = mediaReference == null ? null : mediaReference.getTitle();

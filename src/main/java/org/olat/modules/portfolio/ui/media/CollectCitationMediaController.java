@@ -143,8 +143,11 @@ public class CollectCitationMediaController extends FormBasicController implemen
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		formLayout.setElementCssClass("o_sel_pf_collect_citation_form");
+		
 		String title = mediaReference == null ? null : mediaReference.getTitle();
 		titleEl = uifactory.addTextElement("artefact.title", "artefact.title", 255, title, formLayout);
+		titleEl.setElementCssClass("o_sel_pf_collect_title");
 		titleEl.setMandatory(true);
 		
 		String desc = mediaReference == null ? null : mediaReference.getDescription();
@@ -153,6 +156,7 @@ public class CollectCitationMediaController extends FormBasicController implemen
 		
 		String text = mediaReference == null ? null : mediaReference.getContent();
 		textEl = uifactory.addRichTextElementForStringData("citation", "citation", text, 10, 6, false, null, null, formLayout, ureq.getUserSession(), getWindowControl());
+		textEl.setElementCssClass("o_sel_pf_collect_citation");
 		
 		categoriesEl = uifactory.addTextBoxListElement("categories", "categories", "categories.hint", categories, formLayout, getTranslator());
 		categoriesEl.setHelpText(translate("categories.hint"));

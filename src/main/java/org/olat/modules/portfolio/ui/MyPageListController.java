@@ -77,6 +77,7 @@ public class MyPageListController extends AbstractPageListController {
 	public void initTools() {
 		newEntryLink = LinkFactory.createToolLink("new.page", translate("create.new.page"), this);
 		newEntryLink.setIconLeftCSS("o_icon o_icon-lg o_icon_new_portfolio");
+		newEntryLink.setElementCssClass("o_sel_pf_new_entry");
 		stackPanel.addTool(newEntryLink, Align.right);
 	}
 

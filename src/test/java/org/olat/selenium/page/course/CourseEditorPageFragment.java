@@ -25,7 +25,6 @@ import java.util.List;
 import org.jboss.arquillian.graphene.Graphene;
 import org.junit.Assert;
 import org.olat.selenium.page.graphene.OOGraphene;
-import org.olat.selenium.page.portfolio.PortfolioPage;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
@@ -469,20 +468,6 @@ public class CourseEditorPageFragment {
 	 */
 	public CourseEditorPageFragment createPortfolio(String resourceTitle) {
 		return createResource(choosePortfolioButton, resourceTitle, null);
-	}
-	
-	/**
-	 * Edit the map in the course element learn content tab.
-	 * @return
-	 */
-	public PortfolioPage editPortfolio() {
-		By editBy = By.className("o_sel_edit_map");
-		WebElement editLink = browser.findElement(editBy);
-		editLink.click();
-		OOGraphene.waitBusy(browser);
-		
-		WebElement main = browser.findElement(By.id("o_main_wrapper"));
-		return Graphene.createPageFragment(PortfolioPage.class, main);
 	}
 	
 	private CourseEditorPageFragment createResource(By chooseButton, String resourceTitle, String resourceType) {

@@ -19,6 +19,7 @@
  */
 package org.olat.selenium;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -48,6 +49,7 @@ import org.olat.selenium.page.forum.ForumPage;
 import org.olat.selenium.page.graphene.OOGraphene;
 import org.olat.selenium.page.portfolio.BinderPage;
 import org.olat.selenium.page.portfolio.BinderPublicationPage;
+import org.olat.selenium.page.portfolio.EntryPage;
 import org.olat.selenium.page.portfolio.MediaCenterPage;
 import org.olat.selenium.page.portfolio.PortfolioV2HomePage;
 import org.olat.selenium.page.repository.AuthoringEnvPage;
@@ -57,6 +59,7 @@ import org.olat.selenium.page.repository.RepositoryAccessPage.UserAccess;
 import org.olat.selenium.page.user.UserToolsPage;
 import org.olat.selenium.page.wiki.WikiPage;
 import org.olat.test.ArquillianDeployments;
+import org.olat.test.JunitTestHelper;
 import org.olat.test.rest.UserRestClient;
 import org.olat.user.restapi.UserVO;
 import org.openqa.selenium.WebDriver;
@@ -713,7 +716,8 @@ public class PortfolioV2Test {
 		reiBinder
 			.selectEntries()
 			.pickAssignment(assignment1Title)
-			.publishEntry()
+			.publishEntry();
+		reiBinder
 			.selectEntries()
 			.pickAssignment(assignment2Title)
 			.publishEntry();
@@ -763,5 +767,75 @@ public class PortfolioV2Test {
 			.assertOnUsers(rei)
 			.selectUser(rei)
 			.assertPassed(rei);
+	}
+	
+	/**
+	 * A user create a page / entry, it edit it
+	 * and add a title, an image, a document
+	 * and a citation. It toggles between the editor
+	 * mode and the view mode to check if the parts it
+	 * add in the page are really there.
+	 * 
+	 * @param loginPage
+	 * @throws IOException
+	 * @throws URISyntaxException
+	 */
+	@Test
+	@RunAsClient
+	public void editPage(@InitialPage LoginPage loginPage) 
+			throws IOException, URISyntaxException {
+		UserVO user = new UserRestClient(deploymentUrl).createRandomUser("rei");
+		loginPage
+			.loginAs(user.getLogin(), user.getPassword())
+			.resume();
+		
+		UserToolsPage userTools = new UserToolsPage(browser);
+		PortfolioV2HomePage portfolio = userTools
+				.openUserToolsMenu()
+				.openPortfolioV2();
+		
+		String pageTitle = "My page " + UUID.randomUUID();
+		EntryPage entry = portfolio
+				.openMyEntries()
+				.newPage(pageTitle)
+				.assertOnPage(pageTitle);
+		// add a title
+		String title = "My long title " + UUID.randomUUID();
+		entry
+			.addTitle(title)
+			.setTitleSize(4)
+			.closeEditFragment()
+			.assertOnTitle(title, 4);
+		
+		// add an image
+		URL imageUrl = JunitTestHelper.class.getResource("file_resources/IMG_1482.JPG");
+		File imageFile = new File(imageUrl.toURI());
+		entry
+			.addImage("Blue is the new black", imageFile)
+			.assertOnImage(imageFile);
+		// close the editor and check
+		entry
+			.toggleEditor()
+			.assertOnTitle(title, 4)
+			.assertOnImage(imageFile);
+		
+		//reopen the editor and add a document
+		URL pdfUrl = JunitTestHelper.class.getResource("file_resources/handInTopic1.pdf");
+		File pdfFile = new File(pdfUrl.toURI());
+		entry
+			.toggleEditor()
+			.addDocument("Anything about", pdfFile)
+			.assertOnDocument(pdfFile);
+		//and a citation
+		String citation = "Close the world, open the next.";
+		entry
+			.addCitation("Serial experiment", citation)
+			.assertOnCitation(citation);
+		//close the editor and check all parts
+		entry.toggleEditor()
+			.assertOnTitle(title, 4)
+			.assertOnImage(imageFile)
+			.assertOnDocument(pdfFile)
+			.assertOnCitation(citation);
 	}
 }

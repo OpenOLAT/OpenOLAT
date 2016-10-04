@@ -79,5 +79,14 @@ public class PortfolioV2HomePage {
 		OOGraphene.waitElement(sharedWithMeBy, 5, browser);
 		return new SharedWithMePage(browser);
 	}
-
+	
+	public EntriesPage openMyEntries() {
+		By myEntriesLinkBy = By.cssSelector("a.o_sel_pf_my_entries");
+		OOGraphene.waitElement(myEntriesLinkBy, 5, browser);
+		browser.findElement(myEntriesLinkBy).click();
+		
+		By myEntriesBy = By.cssSelector("div.o_portfolio_entries");
+		OOGraphene.waitElement(myEntriesBy, 5, browser);
+		return new EntriesPage(browser);
+	}
 }

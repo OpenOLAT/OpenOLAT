@@ -86,6 +86,7 @@ public class PortfolioHomeController extends BasicController implements Activate
 		
 		myEntriesLink = LinkFactory.createLink("goto.my.pages", mainVC, this);
 		myEntriesLink.setIconRightCSS("o_icon o_icon_start");
+		myEntriesLink.setElementCssClass("o_sel_pf_my_entries");
 		
 		mySharedItemsLink = LinkFactory.createLink("goto.my.shared.items", mainVC, this);
 		mySharedItemsLink.setIconRightCSS("o_icon o_icon_start");

@@ -23,7 +23,6 @@ import java.util.List;
 
 import org.junit.Assert;
 import org.olat.selenium.page.graphene.OOGraphene;
-import org.olat.selenium.page.portfolio.ArtefactWizardPage;
 import org.olat.selenium.page.portfolio.MediaPage;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
@@ -152,18 +151,6 @@ public class FeedPage {
 		browser.findElement(publishButton).click();
 		OOGraphene.waitBusy(browser);
 		return this;
-	}
-	
-	/**
-	 * Add the thread to my artefacts
-	 * 
-	 */
-	public ArtefactWizardPage addAsArtfeact() {
-		By addAsArtefactBy = By.className("o_eportfolio_add");
-		WebElement addAsArtefactButton = browser.findElement(addAsArtefactBy);
-		addAsArtefactButton.click();
-		OOGraphene.waitBusy(browser);
-		return ArtefactWizardPage.getWizard(browser);
 	}
 	
 	/**

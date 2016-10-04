@@ -169,6 +169,7 @@ public class PageRunController extends BasicController implements TooledControll
 	private Link editLink(boolean edit) {
 		if(editLink == null) {
 			editLink = LinkFactory.createToolLink("edit.page", translate("edit.page"), this);
+			editLink.setElementCssClass("o_sel_pf_edit_page");
 		}
 		if(edit) {
 			editLink.setCustomDisplayText(translate("edit.page"));

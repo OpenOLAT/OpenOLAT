@@ -257,12 +257,12 @@ public class BinderPage {
 		return this;
 	}
 	
-	public BinderPage pickAssignment(String assignmentTitle) {
+	public EntryPage pickAssignment(String assignmentTitle) {
 		By assignmentButton = By.xpath("//div[contains(@class,'o_portfolio_assignments')][div/h4[contains(text(),'" + assignmentTitle + "')]]//a[contains(@class,'btn')]");
 		browser.findElement(assignmentButton).click();
 		OOGraphene.waitBusy(browser);
 		assertOnPage(assignmentTitle);
-		return this;
+		return new EntryPage(browser);
 	}
 	
 	/**
@@ -271,11 +271,11 @@ public class BinderPage {
 	 * @param title The title of the entry to select
 	 * @return Itself
 	 */
-	public BinderPage selectEntryInToc(String title) {
+	public EntryPage selectEntryInToc(String title) {
 		By entryLinkBy = By.xpath("//a[contains(@class,' o_pf_open_entry')][span[contains(text(),'" + title + "')]]");
 		browser.findElement(entryLinkBy).click();
 		OOGraphene.waitBusy(browser);
-		return this;
+		return new EntryPage(browser);
 	}
 	
 	/**
@@ -289,22 +289,6 @@ public class BinderPage {
 		OOGraphene.waitElement(entryLinkBy, 5, browser);
 		browser.findElement(entryLinkBy).click();
 		OOGraphene.waitBusy(browser);
-		return this;
-	}
-	
-	/**
-	 * Publish the entry in the page view.
-	 * 
-	 * @return Itself
-	 */
-	public BinderPage publishEntry() {
-		By publishBy = By.cssSelector("a.o_sel_pf_publish_entry");
-		OOGraphene.waitElement(publishBy, 5, browser);
-		browser.findElement(publishBy).click();
-		OOGraphene.waitBusy(browser);
-		confirm();
-		By publishedBy = By.cssSelector("div.o_portfolio_status i.o_icon_pf_entry_published");
-		OOGraphene.waitElement(publishedBy, 5, browser);
 		return this;
 	}
 	
