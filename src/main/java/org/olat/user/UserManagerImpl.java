@@ -55,7 +55,6 @@ import org.olat.core.util.i18n.I18nModule;
 import org.olat.core.util.mail.MailHelper;
 import org.olat.properties.Property;
 import org.olat.properties.PropertyManager;
-import org.olat.user.propertyhandlers.UserPropertyHandler;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -424,30 +423,6 @@ public class UserManagerImpl extends UserManager {
 	       charset = WebappHelper.getDefaultCharset();
 	   }
 	   return charset;
-	}
-
-	/**
-	 * Delete all user-properties which are deletable.
-	 * @param user
-	 */
-	@Override
-	public User deleteUserProperties(User user, boolean keepUserEmail) {
-		// prevent stale objects, reload first
-		user = loadUserByKey(user.getKey());
-		// loop over user fields and remove them form the database if they are
-		// deletable
-		List<UserPropertyHandler> propertyHandlers = userPropertiesConfig.getAllUserPropertyHandlers();
-		for (UserPropertyHandler propertyHandler : propertyHandlers) {
-			String fieldName = propertyHandler.getName();
-			if (propertyHandler.isDeletable()
-					&& !(keepUserEmail && UserConstants.EMAIL.equals(propertyHandler.getName()))) {
-				user.setProperty(fieldName, null);
-			}		
-		}
-		// persist changes
-		User updatedUser = updateUser(user);
-		if(isLogDebugEnabled()) logDebug("Delete all user-attributtes for user=" + user);
-		return updatedUser;
 	}
 
 	@Override

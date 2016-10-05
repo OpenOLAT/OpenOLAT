@@ -83,7 +83,8 @@ public class UserDeletionManagerTest extends OlatTestCase {
 	@Test
 	public void testDeleteIdentity() {
 		String username = "id-to-del-" + UUID.randomUUID();
-		User user = userManager.createUser("first" + username, "last" + username, username + "@frentix.com");
+		String email = username + "@frentix.com";
+		User user = userManager.createUser("first" + username, "last" + username, email);
 		user.setProperty(UserConstants.COUNTRY, "");
 		user.setProperty(UserConstants.CITY, "Basel");
 		user.setProperty(UserConstants.INSTITUTIONALNAME, "Del-23");
@@ -136,6 +137,9 @@ public class UserDeletionManagerTest extends OlatTestCase {
 		Assert.assertFalse(StringHelper.containsNonWhitespace(institutionalName));
 		String institutionalId = deletedUser.getProperty(UserConstants.INSTITUTIONALUSERIDENTIFIER, null);
 		Assert.assertFalse(StringHelper.containsNonWhitespace(institutionalId));
+		String deletedEmail = deletedUser.getProperty(UserConstants.EMAIL, null);
+		Assert.assertNotNull(deletedEmail);
+		Assert.assertFalse(email.equals(deletedEmail));
 	}
 
 	@Test

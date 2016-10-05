@@ -104,7 +104,7 @@ public class UserImpl implements Persistable, User {
 	@Transient
 	private boolean webdav;
 
-	@Column(name="u_firstName", nullable=true, insertable=true, updatable=true)
+	@Column(name="u_firstname", nullable=true, insertable=true, updatable=true)
 	private String firstName;
 	@Column(name="u_lastname", nullable=true, insertable=true, updatable=true)
 	private String lastName;

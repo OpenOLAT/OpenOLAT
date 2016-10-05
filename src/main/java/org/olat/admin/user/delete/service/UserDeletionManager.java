@@ -329,26 +329,29 @@ public class UserDeletionManager extends BasicManager {
 
 		identity = securityManager.loadIdentityByKey(identity.getKey());
 		//keep login-name only -> change email
-		if (!keepUserEmailAfterDeletion){
-			List<UserPropertyHandler> userPropertyHandlers = UserManager.getInstance().getUserPropertyHandlersFor("org.olat.admin.user.UsermanagerUserSearchForm", true);
-			User persistedUser = identity.getUser();
-			String actualProperty;
-			for (UserPropertyHandler userPropertyHandler : userPropertyHandlers) {
-				actualProperty = userPropertyHandler.getName(); 
-				if (actualProperty.equals(UserConstants.EMAIL)){
-					String oldEmail = userPropertyHandler.getUserProperty(persistedUser, null);
-					String newEmail = "";
-					if (StringHelper.containsNonWhitespace(oldEmail)){ 
-						newEmail = getBackupStringWithDate(oldEmail);
-					}
-					logInfo("Update user-property user=" + persistedUser);
-					userPropertyHandler.setUserProperty(persistedUser, newEmail);
+
+		User persistedUser = identity.getUser();
+		List<UserPropertyHandler> userPropertyHandlers = UserManager.getInstance().getAllUserPropertyHandlers();
+		for (UserPropertyHandler userPropertyHandler : userPropertyHandlers) {
+			String actualProperty = userPropertyHandler.getName();
+			if (userPropertyHandler.isDeletable()
+					&& !(keepUserEmailAfterDeletion && UserConstants.EMAIL.equals(actualProperty))) {
+				persistedUser.setProperty(actualProperty, null);
+			}
+			
+			if((!keepUserEmailAfterDeletion && UserConstants.EMAIL.equals(actualProperty))) {
+				String oldEmail = userPropertyHandler.getUserProperty(persistedUser, null);
+				String newEmail = "";
+				if (StringHelper.containsNonWhitespace(oldEmail)){ 
+					newEmail = getBackupStringWithDate(oldEmail);
 				}
+				logInfo("Update user-property user=" + persistedUser);
+				userPropertyHandler.setUserProperty(persistedUser, newEmail);
 			}
 		}
+		UserManager.getInstance().updateUserFromIdentity(identity);
 		
-		logInfo("deleteUserProperties user=" + identity.getUser());
-		UserManager.getInstance().deleteUserProperties(identity.getUser(), keepUserEmailAfterDeletion);
+		logInfo("deleteUserProperties user=" + persistedUser);
 		DBFactory.getInstance().commit();
 		identity = securityManager.loadIdentityByKey(identity.getKey());
 		//keep email only -> change login-name
