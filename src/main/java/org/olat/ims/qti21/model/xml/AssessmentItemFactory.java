@@ -50,13 +50,16 @@ import uk.ac.ed.ph.jqtiplus.node.expression.general.BaseValue;
 import uk.ac.ed.ph.jqtiplus.node.expression.general.Correct;
 import uk.ac.ed.ph.jqtiplus.node.expression.general.Variable;
 import uk.ac.ed.ph.jqtiplus.node.expression.operator.And;
+import uk.ac.ed.ph.jqtiplus.node.expression.operator.Equal;
 import uk.ac.ed.ph.jqtiplus.node.expression.operator.Gt;
 import uk.ac.ed.ph.jqtiplus.node.expression.operator.IsNull;
 import uk.ac.ed.ph.jqtiplus.node.expression.operator.Lt;
 import uk.ac.ed.ph.jqtiplus.node.expression.operator.Match;
 import uk.ac.ed.ph.jqtiplus.node.expression.operator.Multiple;
+import uk.ac.ed.ph.jqtiplus.node.expression.operator.Not;
 import uk.ac.ed.ph.jqtiplus.node.expression.operator.Shape;
 import uk.ac.ed.ph.jqtiplus.node.expression.operator.Sum;
+import uk.ac.ed.ph.jqtiplus.node.expression.operator.ToleranceMode;
 import uk.ac.ed.ph.jqtiplus.node.item.AssessmentItem;
 import uk.ac.ed.ph.jqtiplus.node.item.CorrectResponse;
 import uk.ac.ed.ph.jqtiplus.node.item.ModalFeedback;
@@ -1006,6 +1009,80 @@ public class AssessmentItemFactory {
 
 		responseProcessing.getResponseRules().add(rule);
 		return responseProcessing;
+	}
+	
+	/**
+	 * This generate a response rule which compare the max score and the score
+	 * to set the feedback as "correct".
+	 * 
+	<responseCondition>
+		<responseIf>
+			<and>
+				<not>
+					<match>
+						<variable identifier="FEEDBACKBASIC" />
+						<baseValue baseType="identifier">empty</baseValue>
+					</match>
+				</not>
+				<equal toleranceMode="exact">
+					<variable identifier="SCORE" />
+					<variable identifier="MAXSCORE" />
+				</equal>
+			</and>
+			<setOutcomeValue identifier="FEEDBACKBASIC">
+				<baseValue baseType="identifier">correct</baseValue>
+			</setOutcomeValue>
+		</responseIf>
+	</responseCondition>
+	 */
+	public static ResponseCondition createFeedbackResponseConditionByScore(ResponseProcessing responseProcessing) {
+		ResponseCondition responseCondition = new ResponseCondition(responseProcessing);
+
+		ResponseIf responseIf = new ResponseIf(responseCondition);
+		responseCondition.setResponseIf(responseIf);
+		
+		And and = new And(responseIf);
+		responseIf.getExpressions().add(and);
+		
+		Not not = new Not(and);
+		and.getExpressions().add(not);
+		
+		Match match = new Match(not);
+		not.getExpressions().add(match);
+		
+		Variable feedbackbasicVar = new Variable(match);
+		feedbackbasicVar.setIdentifier(QTI21Constants.FEEDBACKBASIC_CLX_IDENTIFIER);
+		match.getExpressions().add(feedbackbasicVar);
+
+		BaseValue emptyValue = new BaseValue(match);
+		emptyValue.setBaseTypeAttrValue(BaseType.IDENTIFIER);
+		emptyValue.setSingleValue(QTI21Constants.EMPTY_IDENTIFIER_VALUE);
+		match.getExpressions().add(emptyValue);
+
+		//SCORE == MAXSCORE
+		Equal equal = new Equal(and);
+		equal.setToleranceMode(ToleranceMode.EXACT);
+		and.getExpressions().add(equal);
+		
+		Variable scoreVar = new Variable(equal);
+		scoreVar.setIdentifier(QTI21Constants.SCORE_CLX_IDENTIFIER);
+		equal.getExpressions().add(scoreVar);
+		
+		Variable maxScoreVar = new Variable(equal);
+		maxScoreVar.setIdentifier(QTI21Constants.MAXSCORE_CLX_IDENTIFIER);
+		equal.getExpressions().add(maxScoreVar);
+
+		//outcome value
+		SetOutcomeValue correctOutcomeValue = new SetOutcomeValue(responseIf);
+		correctOutcomeValue.setIdentifier(QTI21Constants.FEEDBACKBASIC_IDENTIFIER);
+		responseIf.getResponseRules().add(correctOutcomeValue);
+		
+		BaseValue correctValue = new BaseValue(correctOutcomeValue);
+		correctValue.setBaseTypeAttrValue(BaseType.IDENTIFIER);
+		correctValue.setSingleValue(QTI21Constants.CORRECT_IDENTIFIER_VALUE);
+		correctOutcomeValue.setExpression(correctValue);
+		
+		return responseCondition;
 	}
 
 	public static P getParagraph(QtiNode parent, String content) {
