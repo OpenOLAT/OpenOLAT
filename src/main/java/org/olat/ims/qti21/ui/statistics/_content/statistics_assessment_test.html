@@ -39,9 +39,9 @@
 	</tbody></table>
 </div>
 
-#if($r.available("scoreHistogram"))
+#if($r.available("scoreHistogram") && $r.visible("scoreHistogram"))
 	$r.render("scoreHistogram")
 #end
-#if($r.available("durationHistogram"))
+#if($r.available("durationHistogram") && $r.visible("durationHistogram"))
 	$r.render("durationHistogram")
 #end
