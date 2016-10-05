@@ -142,13 +142,11 @@ public class MembersMailController extends FormBasicController {
 		if(ownerList != null && ownerList.size() > 0) {
 			String[] values = new String[] { translate("contact.all.owners") };
 			ownerEl = uifactory.addCheckboxesHorizontal("contact.all.owners", to, formLayout, keys, values);
-			ownerEl.select(keys[0], true);
 			to = null;
 		}
 		if(coachList != null && coachList.size() > 0) {
 			String[] values = new String[] { translate("contact.all.coaches") };
 			coachEl = uifactory.addCheckboxesHorizontal("contact.all.coaches", to, formLayout, keys, values);
-			coachEl.select(keys[0], true);
 			to = null;
 		}
 		if(participantList != null && participantList.size() > 0) {
