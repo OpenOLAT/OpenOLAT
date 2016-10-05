@@ -65,6 +65,8 @@ import org.olat.modules.portfolio.PortfolioService;
 import org.olat.modules.portfolio.Section;
 import org.olat.modules.portfolio.SectionStatus;
 import org.olat.modules.portfolio.model.SectionRefImpl;
+import org.olat.modules.portfolio.ui.event.PageDeletedEvent;
+import org.olat.modules.portfolio.ui.event.PageRemovedEvent;
 import org.olat.modules.portfolio.ui.event.SectionSelectionEvent;
 import org.olat.modules.portfolio.ui.renderer.PortfolioRendererHelper;
 import org.olat.user.UserManager;
@@ -364,6 +366,15 @@ public class TableOfContentController extends BasicController implements TooledC
 			}
 			cmc.deactivate();
 			cleanUp();
+		} else if(pageCtrl == source) {
+			if(event == Event.CHANGED_EVENT) {
+				loadModel();
+				fireEvent(ureq, Event.CHANGED_EVENT);
+			} else if(event instanceof PageRemovedEvent || event instanceof PageDeletedEvent) {
+				stackPanel.popController(pageCtrl);
+				loadModel();
+				fireEvent(ureq, Event.CHANGED_EVENT);
+			}
 		} else if(binderMetadataCtrl == source) {
 			if(event == Event.DONE_EVENT) {
 				binder = binderMetadataCtrl.getBinder();
