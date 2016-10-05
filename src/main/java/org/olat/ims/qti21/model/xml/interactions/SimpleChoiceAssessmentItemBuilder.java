@@ -240,7 +240,7 @@ public abstract class SimpleChoiceAssessmentItemBuilder extends ChoiceAssessment
 	@Override
 	protected void buildModalFeedbacksAndHints(List<OutcomeDeclaration> outcomeDeclarations, List<ResponseRule> responseRules) {
 		if(correctFeedback != null || incorrectFeedback != null) {
-			ResponseCondition responseCondition = AssessmentItemFactory.createFeedbackResponseConditionByScore(assessmentItem.getResponseProcessing());
+			ResponseCondition responseCondition = AssessmentItemFactory.createModalFeedbackResponseConditionByScore(assessmentItem.getResponseProcessing());
 			responseRules.add(responseCondition);
 		}
 

@@ -680,6 +680,18 @@ public class FIBAssessmentItemBuilder extends AssessmentItemBuilder {
 			}
 		}
 	}
+	
+	@Override
+	protected void buildModalFeedbacksAndHints(List<OutcomeDeclaration> outcomeDeclarations, List<ResponseRule> responseRules) {
+		if(correctFeedback != null || incorrectFeedback != null) {
+			if(scoreEvaluation == ScoreEvaluation.perAnswer) {
+				ResponseCondition responseCondition = AssessmentItemFactory.createModalFeedbackResponseConditionByScore(assessmentItem.getResponseProcessing());
+				responseRules.add(responseCondition);
+			}
+		}
+
+		super.buildModalFeedbacksAndHints(outcomeDeclarations, responseRules);
+	}
 
 	private void buildMainScoreRulePerAnswer(List<OutcomeDeclaration> outcomeDeclarations, List<ResponseRule> responseRules) {
 		/*
@@ -806,6 +818,19 @@ public class FIBAssessmentItemBuilder extends AssessmentItemBuilder {
 					outcomeDeclarations.add(modalOutcomeDeclaration);
 				}
 			}
+		}
+		
+		if(correctFeedback != null || incorrectFeedback != null) {
+			SetOutcomeValue incorrectOutcomeValue = new SetOutcomeValue(assessmentItem.getResponseProcessing());
+			incorrectOutcomeValue.setIdentifier(QTI21Constants.FEEDBACKBASIC_IDENTIFIER);
+			
+			BaseValue correctValue = new BaseValue(incorrectOutcomeValue);
+			correctValue.setBaseTypeAttrValue(BaseType.IDENTIFIER);
+			correctValue.setSingleValue(QTI21Constants.INCORRECT_IDENTIFIER_VALUE);
+			incorrectOutcomeValue.setExpression(correctValue);
+			
+			responseRules.add(count++, incorrectOutcomeValue);
+			
 		}
 	}
 	

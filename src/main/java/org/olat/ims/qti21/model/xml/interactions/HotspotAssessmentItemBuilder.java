@@ -348,7 +348,7 @@ public class HotspotAssessmentItemBuilder extends AssessmentItemBuilder {
 	protected void buildModalFeedbacksAndHints(List<OutcomeDeclaration> outcomeDeclarations, List<ResponseRule> responseRules) {
 		if(correctFeedback != null || incorrectFeedback != null) {
 			if(scoreEvaluation == ScoreEvaluation.perAnswer) {
-				ResponseCondition responseCondition = AssessmentItemFactory.createFeedbackResponseConditionByScore(assessmentItem.getResponseProcessing());
+				ResponseCondition responseCondition = AssessmentItemFactory.createModalFeedbackResponseConditionByScore(assessmentItem.getResponseProcessing());
 				responseRules.add(responseCondition);
 			}
 		}

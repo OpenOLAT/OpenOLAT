@@ -50,8 +50,8 @@ import uk.ac.ed.ph.jqtiplus.node.expression.general.BaseValue;
 import uk.ac.ed.ph.jqtiplus.node.expression.general.Correct;
 import uk.ac.ed.ph.jqtiplus.node.expression.general.Variable;
 import uk.ac.ed.ph.jqtiplus.node.expression.operator.And;
-import uk.ac.ed.ph.jqtiplus.node.expression.operator.Equal;
 import uk.ac.ed.ph.jqtiplus.node.expression.operator.Gt;
+import uk.ac.ed.ph.jqtiplus.node.expression.operator.Gte;
 import uk.ac.ed.ph.jqtiplus.node.expression.operator.IsNull;
 import uk.ac.ed.ph.jqtiplus.node.expression.operator.Lt;
 import uk.ac.ed.ph.jqtiplus.node.expression.operator.Match;
@@ -59,7 +59,6 @@ import uk.ac.ed.ph.jqtiplus.node.expression.operator.Multiple;
 import uk.ac.ed.ph.jqtiplus.node.expression.operator.Not;
 import uk.ac.ed.ph.jqtiplus.node.expression.operator.Shape;
 import uk.ac.ed.ph.jqtiplus.node.expression.operator.Sum;
-import uk.ac.ed.ph.jqtiplus.node.expression.operator.ToleranceMode;
 import uk.ac.ed.ph.jqtiplus.node.item.AssessmentItem;
 import uk.ac.ed.ph.jqtiplus.node.item.CorrectResponse;
 import uk.ac.ed.ph.jqtiplus.node.item.ModalFeedback;
@@ -813,8 +812,7 @@ public class AssessmentItemFactory {
 	public static void ensureFeedbackBasicOutcomeDeclaration(AssessmentItem assessmentItem) {
 		OutcomeDeclaration feedbackBasicDeclaration = assessmentItem.getOutcomeDeclaration(QTI21Constants.FEEDBACKBASIC_IDENTIFIER);
 		if(feedbackBasicDeclaration == null) {
-			feedbackBasicDeclaration = AssessmentItemFactory
-					.createOutcomeDeclarationForFeedbackBasic(assessmentItem);
+			feedbackBasicDeclaration = createOutcomeDeclarationForFeedbackBasic(assessmentItem);
 			assessmentItem.getOutcomeDeclarations().add(feedbackBasicDeclaration);	
 		}
 	}
@@ -1035,7 +1033,7 @@ public class AssessmentItemFactory {
 		</responseIf>
 	</responseCondition>
 	 */
-	public static ResponseCondition createFeedbackResponseConditionByScore(ResponseProcessing responseProcessing) {
+	public static ResponseCondition createModalFeedbackResponseConditionByScore(ResponseProcessing responseProcessing) {
 		ResponseCondition responseCondition = new ResponseCondition(responseProcessing);
 
 		ResponseIf responseIf = new ResponseIf(responseCondition);
@@ -1059,18 +1057,17 @@ public class AssessmentItemFactory {
 		emptyValue.setSingleValue(QTI21Constants.EMPTY_IDENTIFIER_VALUE);
 		match.getExpressions().add(emptyValue);
 
-		//SCORE == MAXSCORE
-		Equal equal = new Equal(and);
-		equal.setToleranceMode(ToleranceMode.EXACT);
-		and.getExpressions().add(equal);
+		//SCORE >= MAXSCORE ( > is for security and special case where the max score is smalle than the sum of correct answers)
+		Gte greaterOrEqual = new Gte(and);
+		and.getExpressions().add(greaterOrEqual);
 		
-		Variable scoreVar = new Variable(equal);
+		Variable scoreVar = new Variable(greaterOrEqual);
 		scoreVar.setIdentifier(QTI21Constants.SCORE_CLX_IDENTIFIER);
-		equal.getExpressions().add(scoreVar);
+		greaterOrEqual.getExpressions().add(scoreVar);
 		
-		Variable maxScoreVar = new Variable(equal);
+		Variable maxScoreVar = new Variable(greaterOrEqual);
 		maxScoreVar.setIdentifier(QTI21Constants.MAXSCORE_CLX_IDENTIFIER);
-		equal.getExpressions().add(maxScoreVar);
+		greaterOrEqual.getExpressions().add(maxScoreVar);
 
 		//outcome value
 		SetOutcomeValue correctOutcomeValue = new SetOutcomeValue(responseIf);
