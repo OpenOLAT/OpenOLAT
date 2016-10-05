@@ -76,7 +76,8 @@ public class QTI21AssessmentTestStatisticsController extends BasicController imp
 		
 		if(resourceResult.canViewAnonymousUsers() || resourceResult.canViewNonParticipantUsers()) {
 			filterCtrl = new UserFilterController(ureq, getWindowControl(),
-					resourceResult.canViewNonParticipantUsers(), resourceResult.canViewAnonymousUsers());
+					resourceResult.canViewNonParticipantUsers(), resourceResult.canViewAnonymousUsers(),
+					resourceResult.isViewNonParticipantUsers(), resourceResult.isViewAnonymousUsers());
 			listenTo(filterCtrl);
 			mainVC.put("filter", filterCtrl.getInitialComponent());
 		}
