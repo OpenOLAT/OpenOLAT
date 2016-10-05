@@ -602,11 +602,24 @@ public abstract class AssessmentObjectComponentRenderer extends DefaultComponent
 			Attribute<?> attrDataMovie = object.getAttributes().get("data-oo-movie");
 			String dataMovie = attrDataMovie.getValue().toString();
 			
-			String relativePath = component.relativePathTo(resolvedAssessmentItem);
-			String src = Settings.getServerContextPathURI() + component.getMapperUri() + relativePath + "/" + data;
-			dataMovie = dataMovie.replace(data, src);
+			if(data != null && !data.startsWith("http://") && !data.startsWith("https://")) {
+				String relativePath = component.relativePathTo(resolvedAssessmentItem);
+				String src = Settings.getServerContextPathURI() + component.getMapperUri() + relativePath + "/" + data;
+				dataMovie = dataMovie.replace(data, src);
+			}
 			
-			sb.append("<span id=\"").append(id).append("\" class=\"olatFlashMovieViewer\" style=\"display:block;border:solid 1px #000; width:320px; height:240px;\">\n")
+			String height = "240";
+			String width = "320";
+			//try to guess the height and width
+			if(dataMovie != null) {
+				String[] dataMovieParts = dataMovie.split(",");
+				if(dataMovieParts.length > 3) {
+					width = dataMovieParts[2];
+					height = dataMovieParts[3];
+				}
+			}
+
+			sb.append("<span id=\"").append(id).append("\" class=\"olatFlashMovieViewer\" style=\"display:block;border:solid 1px #000; width:").append(width).append("px; height:").append(height).append("px;\">\n")
 			  .append(" <script src=\"/raw/fx-111111x11/movie/player.js\" type=\"text/javascript\"></script>\n")
 			  .append(" <script type=\"text/javascript\" defer=\"defer\">// <![CDATA[\n")
 			  .append("  BPlayer.insertPlayer(").append(dataMovie).append(");\n")
