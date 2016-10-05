@@ -21,7 +21,7 @@
 			#foreach($hotspot in $hotspots)
 				<!-- @label, @matchGroup, @matchMax -->
 				<area id="ac_${responseIdentifier}_${hotspot.identifier}" data-qti-id="${hotspot.identifier}" shape="${hotspot.getShape().name().toLowerCase()}" coords="$r.coordsToString($hotspot.coords)" href="javascript:;" data-maphilight=''></area>
-				$r.appendFlexiFormDirtyForClick("$hotspot.identifier")
+				$r.appendFlexiFormDirtyForClick("ac_${responseIdentifier}_$hotspot.identifier")
           	#end
           	</map>
 		</div>
