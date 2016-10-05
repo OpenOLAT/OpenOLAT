@@ -109,7 +109,7 @@ public class MultipleChoiceAssessmentItemBuilder extends SimpleChoiceAssessmentI
 		ItemBody itemBody = appendDefaultItemBody(assessmentItem);
 		ChoiceInteraction choiceInteraction = appendChoiceInteraction(itemBody, responseDeclarationId, 1, true);
 		
-		appendSimpleChoice(choiceInteraction, "New answer", "mc");
+		appendSimpleChoice(choiceInteraction, "New answer", correctResponseId);
 
 		//response processing
 		ResponseProcessing responseProcessing = createResponseProcessing(assessmentItem, responseDeclarationId);
