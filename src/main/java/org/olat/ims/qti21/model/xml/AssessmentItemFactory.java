@@ -375,6 +375,7 @@ public class AssessmentItemFactory {
 		for(int i=0; i<4; i++) {
 			SimpleAssociableChoice correctChoice = new SimpleAssociableChoice(questionMatchSet);
 			correctChoice.setMatchMax(1);
+			correctChoice.setMatchMin(1);
 			correctChoice.setIdentifier(IdentifierGenerator.newNumberAsIdentifier(classic[i]));
 			P question = getParagraph(correctChoice, "New answer " + classic[i]);
 			correctChoice.getFlowStatics().add(question);
