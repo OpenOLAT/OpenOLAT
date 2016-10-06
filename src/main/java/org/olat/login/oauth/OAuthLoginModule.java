@@ -484,6 +484,7 @@ public class OAuthLoginModule extends AbstractSpringModule {
 	
 	public void removeAdditionalOpenIDConnectIF(String providerName) {
 		removeProperty("openIdConnectIF." + providerName + ".Enabled", false);
+		removeProperty("openIdConnectIF." + providerName + ".RootEnabled", false);
 		removeProperty("openIdConnectIF." + providerName + ".ApiKey", false);
 		removeProperty("openIdConnectIF." + providerName + ".ApiSecret", false);
 		removeProperty("openIdConnectIF." + providerName + ".Issuer", false);
