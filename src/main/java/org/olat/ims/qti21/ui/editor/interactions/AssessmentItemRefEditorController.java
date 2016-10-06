@@ -105,6 +105,30 @@ public abstract class AssessmentItemRefEditorController extends FormBasicControl
 		return allOk & super.validateFormLogic(ureq);
 	}
 	
+	/**
+	 * This validate a mandatory double
+	 * @param el
+	 * @return
+	 */
+	protected boolean validateDouble(TextElement el) {
+		boolean allOk = true;
+		
+		String value = el.getValue();
+		el.clearError();
+		if(!StringHelper.containsNonWhitespace(value)) {
+			el.setErrorKey("form.legende.mandatory", null);
+			allOk &= false;
+		} else {
+			try {
+				Double.parseDouble(value);
+			} catch (NumberFormatException e) {
+				el.setErrorKey("error.double", null);
+				allOk &= false;
+			}
+		}
+		return allOk;
+	}
+	
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(limitAttemptsEl == source) {

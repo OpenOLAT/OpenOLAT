@@ -78,8 +78,19 @@ public class MinimalScoreController extends AssessmentItemRefEditorController {
 	}
 
 	@Override
+	protected boolean validateFormLogic(UserRequest ureq) {
+		boolean allOk = true;
+		
+		allOk &= validateDouble(maxScoreEl);
+		
+		return allOk & super.validateFormLogic(ureq);
+	}
+
+	@Override
 	protected void formOK(UserRequest ureq) {
 		if(restrictedEdit) return;
+		
+		super.formOK(ureq);
 		
 		String maxScoreValue = maxScoreEl.getValue();
 		Double maxScore = Double.parseDouble(maxScoreValue);

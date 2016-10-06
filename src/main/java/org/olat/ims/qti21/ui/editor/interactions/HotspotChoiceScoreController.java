@@ -255,24 +255,6 @@ public class HotspotChoiceScoreController extends AssessmentItemRefEditorControl
 		
 		return allOk & super.validateFormLogic(ureq);
 	}
-	
-	private boolean validateDouble(TextElement el) {
-		boolean allOk = true;
-		
-		String value = el.getValue();
-		if(!StringHelper.containsNonWhitespace(value)) {
-			el.setErrorKey("form.legende.mandatory", null);
-			allOk &= false;
-		} else {
-			try {
-				Double.parseDouble(value);
-			} catch (NumberFormatException e) {
-				el.setErrorKey("error.double", null);
-				allOk &= false;
-			}
-		}
-		return allOk;
-	}
 
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
