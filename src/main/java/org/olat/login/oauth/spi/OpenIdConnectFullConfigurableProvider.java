@@ -24,90 +24,138 @@ import org.json.JSONObject;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
-import org.olat.login.oauth.OAuthLoginModule;
+import org.olat.login.oauth.OAuthDisplayName;
 import org.olat.login.oauth.OAuthSPI;
 import org.olat.login.oauth.model.OAuthUser;
 import org.scribe.builder.api.Api;
-import org.scribe.builder.api.TwitterApi;
-import org.scribe.model.OAuthRequest;
-import org.scribe.model.Response;
 import org.scribe.model.Token;
-import org.scribe.model.Verb;
 import org.scribe.oauth.OAuthService;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
 
 /**
  * 
- * Initial date: 05.11.2014<br>
+ * Initial date: 6 oct. 2016<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-@Service
-public class TwitterProvider implements OAuthSPI {
+public class OpenIdConnectFullConfigurableProvider implements OAuthSPI, OAuthDisplayName {
 	
-	private static final OLog log = Tracing.createLoggerFor(TwitterProvider.class);
+	private static final OLog log = Tracing.createLoggerFor(Google2Provider.class);
 
-	@Autowired
-	private OAuthLoginModule oauthModule;
+	private String name;
+	private String displayName;
+	private String providerName;
+	private String appKey;
+	private String appSecret;
+	private String issuer;
+	private String endPoint;
+	
+	private boolean rootEnabled;
 	
 	@Override
 	public boolean isEnabled() {
-		return oauthModule.isTwitterEnabled();
+		return true;
 	}
 	
 	@Override
 	public boolean isRootEnabled() {
-		return false;
+		return rootEnabled;
+	}
+	
+	public void setRootEnabled(boolean rootEnabled) {
+		this.rootEnabled = rootEnabled;
 	}
 	
 	@Override
 	public boolean isImplicitWorkflow() {
-		return false;
+		return true;
 	}
 
 	@Override
 	public Api getScribeProvider() {
-		return new TwitterApi.SSL();
+		return new OpenIdConnectFullConfigurableApi(this);
 	}
 
 	@Override
 	public String getName() {
-		return "twitter";
+		return name;
+	}
+
+	public void setName(String name) {
+		this.name = name;
+	}
+
+	@Override
+	public String getDisplayName() {
+		return displayName;
+	}
+
+	public void setDisplayName(String displayName) {
+		this.displayName = displayName;
 	}
 
 	@Override
 	public String getProviderName() {
-		return "TWITTER";
+		return providerName;
+	}
+	
+	public void setProviderName(String providerName) {
+		this.providerName = providerName;
 	}
 
 	@Override
 	public String getIconCSS() {
-		return "o_icon o_icon_provider_twitter";
+		return "o_icon o_icon_provider_" + name;
 	}
 
 	@Override
 	public String getAppKey() {
-		return oauthModule.getTwitterApiKey();
+		return appKey;
+	}
+	
+	public void setAppKey(String appKey) {
+		this.appKey = appKey;
 	}
 
 	@Override
 	public String getAppSecret() {
-		return oauthModule.getTwitterApiSecret();
+		return appSecret;
+	}
+	
+	public void setAppSecret(String appSecret) {
+		this.appSecret = appSecret;
+	}
+
+	public String getIssuer() {
+		return issuer;
+	}
+
+	public void setIssuer(String issuer) {
+		this.issuer = issuer;
+	}
+
+	public String getEndPoint() {
+		return endPoint;
+	}
+
+	public void setEndPoint(String endPoint) {
+		this.endPoint = endPoint;
 	}
 
 	@Override
 	public String[] getScopes() {
-		return new String[0];
+		return new String[] { "openid", "email" };
 	}
 
 	@Override
 	public OAuthUser getUser(OAuthService service, Token accessToken) {
-		OAuthRequest oauthRequest = new OAuthRequest(Verb.GET, "https://api.twitter.com/1.1/account/verify_credentials.json");
-		service.signRequest(accessToken, oauthRequest);
-		Response oauthResponse = oauthRequest.send();
-		String body = oauthResponse.getBody();
-		return parseInfos(body);
+		try {
+			String idToken = accessToken.getToken();
+			JSONWebToken token = JSONWebToken.parse(idToken);
+			return parseInfos(token.getPayload());
+		} catch (JSONException e) {
+			log.error("", e);
+			return null;
+		}
 	}
 	
 	public OAuthUser parseInfos(String body) {
@@ -115,21 +163,8 @@ public class TwitterProvider implements OAuthSPI {
 		
 		try {
 			JSONObject obj = new JSONObject(body);
-			user.setId(getValue(obj, "id_str"));
-			
-			String name = getValue(obj, "name");
-			if(name != null) {
-				name = name.trim();
-				int lastSpaceIndex = name.lastIndexOf(' ');
-				if(lastSpaceIndex > 0) {
-					user.setFirstName(name.substring(0, lastSpaceIndex));
-					user.setLastName(name.substring(lastSpaceIndex + 1));
-				} else {
-					user.setLastName(name);
-				}	
-			}
-			
-			user.setLang(getValue(obj, "lang"));
+			user.setId(getValue(obj, "sub"));
+			user.setEmail(getValue(obj, "sub"));
 		} catch (JSONException e) {
 			log.error("", e);
 		}

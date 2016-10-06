@@ -235,12 +235,14 @@ public class DMZDispatcher implements Dispatcher {
 					I18nManager.updateLocaleInfoToThread(usess);//update locale infos
 					
 					OAuthLoginModule oauthModule = CoreSpringFactory.getImpl(OAuthLoginModule.class);
-					if(canRedirectOAuth(request, oauthModule)) {
+					if(canRedirectConfigurableOAuth(request, response, oauthModule)) {
+						return;
+					} else if(canRedirectOAuth(request, oauthModule)) {
 						OAuthSPI oauthSpi = oauthModule.getRootProvider();
 						HttpSession session = request.getSession();
 						OAuthResource.redirect(oauthSpi, response, session);
 						return;
-					}
+					} 
 					
 					// request new windows since it is a new usersession, the old one was purged
 					ws = Windows.getWindows(usess);
@@ -300,6 +302,19 @@ public class DMZDispatcher implements Dispatcher {
 			canRedirect = false;
 		}
 		return canRedirect;
+	}
+	
+	private boolean canRedirectConfigurableOAuth(HttpServletRequest request, HttpServletResponse response, OAuthLoginModule oauthModule) {
+		String provider = request.getParameter("provider");
+		if(StringHelper.containsNonWhitespace(provider)) {
+			OAuthSPI spi = oauthModule.getProvider(provider);
+			if(spi != null) {
+				HttpSession session = request.getSession();
+				OAuthResource.redirect(spi, response, session);
+				return true;
+			}
+		}
+		return false;
 	}
 
 	/**

@@ -37,6 +37,18 @@ public class OAuthAuthenticationProvider extends AuthenticationProvider {
 	}
 
 	@Override
+	public boolean accept(String subProviderName) {
+		OAuthLoginModule oauthLoginModule = CoreSpringFactory.getImpl(OAuthLoginModule.class);
+		List<OAuthSPI> spies = oauthLoginModule.getEnableSPIs();
+		for(OAuthSPI spi:spies) {
+			if(spi.getProviderName().equals(subProviderName)) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	@Override
 	public boolean isEnabled() {
 		OAuthLoginModule oauthLoginModule = CoreSpringFactory.getImpl(OAuthLoginModule.class);
 		List<OAuthSPI> spies = oauthLoginModule.getEnableSPIs();

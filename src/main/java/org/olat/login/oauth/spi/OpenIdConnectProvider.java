@@ -63,8 +63,8 @@ public class OpenIdConnectProvider implements OAuthSPI {
 	}
 
 	@Override
-	public Class<? extends Api> getScribeProvider() {
-		return OpenIdConnectApi.class;
+	public Api getScribeProvider() {
+		return new OpenIdConnectApi();
 	}
 
 	@Override

@@ -21,9 +21,11 @@ package org.olat.login.oauth;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 import org.olat.core.configuration.AbstractSpringModule;
 import org.olat.core.util.coordinate.CoordinatorManager;
+import org.olat.login.oauth.spi.OpenIdConnectFullConfigurableProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -35,6 +37,9 @@ import org.springframework.stereotype.Service;
  */
 @Service
 public class OAuthLoginModule extends AbstractSpringModule {
+	
+	private static final String OPEN_ID_IF_START_MARKER = "openIdConnectIF.";
+	private static final String OPEN_ID_IF_END_MARKER = ".Enabled";
 	
 	private boolean allowUserCreation;
 	
@@ -70,6 +75,8 @@ public class OAuthLoginModule extends AbstractSpringModule {
 	
 	@Autowired
 	private List<OAuthSPI> oauthSPIs;
+	
+	private List<OAuthSPI> configurableOauthSPIs;
 	
 	@Autowired
 	public OAuthLoginModule(CoordinatorManager coordinatorManager) {
@@ -131,16 +138,73 @@ public class OAuthLoginModule extends AbstractSpringModule {
 		openIdConnectIFApiSecret = getStringPropertyValue("openIdConnectIFApiSecret", false);
 		openIdConnectIFIssuer = getStringPropertyValue("openIdConnectIFIssuer", false);
 		openIdConnectIFAuthorizationEndPoint = getStringPropertyValue("openIdConnectIFAuthorizationEndPoint", false);
+
+		Set<Object> allPropertyKeys = getPropertyKeys();
+		List<OAuthSPI> otherOAuthSPies = new ArrayList<>();
+		for(Object propertyKey:allPropertyKeys) {
+			if(propertyKey instanceof String) {
+				String key = (String)propertyKey;
+				if(key.startsWith(OPEN_ID_IF_START_MARKER) && key.endsWith(OPEN_ID_IF_END_MARKER)) {
+					 OAuthSPI spi = getAdditionalOpenIDConnectIF(key);
+					 if(spi != null) {
+						 otherOAuthSPies.add(spi);
+					 }
+				}
+			}
+		}
+		configurableOauthSPIs = otherOAuthSPies;
+	}
+	
+	private OAuthSPI getAdditionalOpenIDConnectIF(String enableKey) {
+		String providerName = enableKey.substring(OPEN_ID_IF_START_MARKER.length(), enableKey.length() - OPEN_ID_IF_END_MARKER.length());
+
+		String rootEnabledObj = getStringPropertyValue("openIdConnectIF." + providerName + ".RootEnabled", true);
+		boolean rootEnabled = "true".equals(rootEnabledObj);
+		String apiKey = getStringPropertyValue("openIdConnectIF." + providerName + ".ApiKey", true);
+		String apiSecret = getStringPropertyValue("openIdConnectIF." + providerName + ".ApiSecret", true);
+		String issuer = getStringPropertyValue("openIdConnectIF." + providerName + ".Issuer", true);
+		String endPoint = getStringPropertyValue("openIdConnectIF." + providerName + ".AuthorizationEndPoint", true);
+		String displayName = getStringPropertyValue("openIdConnectIF." + providerName + ".DisplayName", true);
+		
+		OpenIdConnectFullConfigurableProvider provider = new OpenIdConnectFullConfigurableProvider();
+		provider.setRootEnabled(rootEnabled);
+		provider.setName(providerName);
+		provider.setDisplayName(displayName);
+		provider.setProviderName(providerName);
+		provider.setAppKey(apiKey);
+		provider.setAppSecret(apiSecret);
+		provider.setIssuer(issuer);
+		provider.setEndPoint(endPoint);
+		return provider;
 	}
 	
 	public List<OAuthSPI> getAllSPIs() {
-		return new ArrayList<>(oauthSPIs);
+		List<OAuthSPI> spies = new ArrayList<>(oauthSPIs);
+		if(configurableOauthSPIs != null) {
+			spies.addAll(configurableOauthSPIs);
+		}
+		return spies;
+	}
+	
+	public List<OAuthSPI> getAllConfigurableSPIs() {
+		List<OAuthSPI> spies = new ArrayList<>();
+		if(configurableOauthSPIs != null) {
+			spies.addAll(configurableOauthSPIs);
+		}
+		return spies;
 	}
 	
 	public List<OAuthSPI> getEnableSPIs() {
 		List<OAuthSPI> enabledSpis = new ArrayList<>();
 		if(oauthSPIs != null) {
 			for(OAuthSPI spi:oauthSPIs) {
+				if(spi.isEnabled()) {
+					enabledSpis.add(spi);
+				}
+			}
+		}
+		if(configurableOauthSPIs != null) {
+			for(OAuthSPI spi:configurableOauthSPIs) {
 				if(spi.isEnabled()) {
 					enabledSpis.add(spi);
 				}
@@ -162,7 +226,33 @@ public class OAuthLoginModule extends AbstractSpringModule {
 				}
 			}
 		}
+		if(rootSpi == null && configurableOauthSPIs != null) {
+			for(OAuthSPI spi:configurableOauthSPIs) {
+				if(spi.isEnabled() && spi.isRootEnabled()) {
+					rootSpi = spi;
+				}
+			}
+		}
 		return rootSpi;
+	}
+	
+	public OAuthSPI getProvider(String providerName) {
+		OAuthSPI spi = null;
+		if(oauthSPIs != null) {
+			for(OAuthSPI oauthSpi:oauthSPIs) {
+				if(providerName.equals(oauthSpi.getProviderName())) {
+					spi = oauthSpi;
+				}
+			}
+		}
+		if(spi == null && configurableOauthSPIs != null) {
+			for(OAuthSPI oauthSpi:configurableOauthSPIs) {
+				if(providerName.equals(oauthSpi.getProviderName())) {
+					spi = oauthSpi;
+				}
+			}
+		}
+		return spi;
 	}
 
 	public boolean isAllowUserCreation() {
@@ -381,4 +471,24 @@ public class OAuthLoginModule extends AbstractSpringModule {
 		setStringProperty("openIdConnectIFAuthorizationEndPoint", openIdConnectIFAuthorizationEndPoint, true);
 	}
 	
+	public void setAdditionalOpenIDConnectIF(String providerName, String displayName, boolean rootEnabled, String issuer, String endPoint, String apiKey, String apiSecret) {
+		setStringProperty("openIdConnectIF." + providerName + ".Enabled", "true", false);
+		setStringProperty("openIdConnectIF." + providerName + ".RootEnabled", rootEnabled ? "true" : "false", false);
+		setStringProperty("openIdConnectIF." + providerName + ".ApiKey", apiKey, false);
+		setStringProperty("openIdConnectIF." + providerName + ".ApiSecret", apiSecret, false);
+		setStringProperty("openIdConnectIF." + providerName + ".Issuer", issuer, false);
+		setStringProperty("openIdConnectIF." + providerName + ".DisplayName", displayName, false);
+		setStringProperty("openIdConnectIF." + providerName + ".AuthorizationEndPoint", endPoint, true);
+		updateProperties();
+	}
+	
+	public void removeAdditionalOpenIDConnectIF(String providerName) {
+		removeProperty("openIdConnectIF." + providerName + ".Enabled", false);
+		removeProperty("openIdConnectIF." + providerName + ".ApiKey", false);
+		removeProperty("openIdConnectIF." + providerName + ".ApiSecret", false);
+		removeProperty("openIdConnectIF." + providerName + ".Issuer", false);
+		removeProperty("openIdConnectIF." + providerName + ".DisplayName", false);
+		removeProperty("openIdConnectIF." + providerName + ".AuthorizationEndPoint", true);
+		updateProperties();
+	}
 }

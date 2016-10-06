@@ -22,6 +22,7 @@ package org.olat.core.configuration;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.olat.core.gui.control.Event;
@@ -128,6 +129,10 @@ public abstract class AbstractSpringModule implements GenericEventListener, Init
 	protected Properties createPropertiesFromPersistedProperties() {
 		return moduleConfigProperties.createPropertiesFromPersistedProperties();
 	}
+	
+	protected Set<Object> getPropertyKeys() {
+		return moduleConfigProperties.getPropertyKeys();
+	}
 
 	/**
 	 * Return a string value for certain propertyName-parameter.
@@ -197,6 +202,12 @@ public abstract class AbstractSpringModule implements GenericEventListener, Init
 		moduleConfigProperties.setIntProperty(propertyName, value, saveConfiguration);
 		log.audit("change system property: " + propertyName, Integer.toString(value));
 	}
+	
+	protected void removeProperty(String propertyName, boolean saveConfiguration) {
+		moduleConfigProperties.removeProperty(propertyName, saveConfiguration);
+		log.audit("remove system property: " + propertyName, null);
+	}
+	
 	/**
 	 * Return a boolean value for certain propertyName
 	 * 
