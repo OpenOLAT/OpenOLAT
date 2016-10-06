@@ -472,23 +472,23 @@ public class OAuthLoginModule extends AbstractSpringModule {
 	}
 	
 	public void setAdditionalOpenIDConnectIF(String providerName, String displayName, boolean rootEnabled, String issuer, String endPoint, String apiKey, String apiSecret) {
-		setStringProperty("openIdConnectIF." + providerName + ".Enabled", "true", false);
-		setStringProperty("openIdConnectIF." + providerName + ".RootEnabled", rootEnabled ? "true" : "false", false);
-		setStringProperty("openIdConnectIF." + providerName + ".ApiKey", apiKey, false);
-		setStringProperty("openIdConnectIF." + providerName + ".ApiSecret", apiSecret, false);
-		setStringProperty("openIdConnectIF." + providerName + ".Issuer", issuer, false);
-		setStringProperty("openIdConnectIF." + providerName + ".DisplayName", displayName, false);
+		setStringProperty("openIdConnectIF." + providerName + ".Enabled", "true", true);
+		setStringProperty("openIdConnectIF." + providerName + ".RootEnabled", rootEnabled ? "true" : "false", true);
+		setStringProperty("openIdConnectIF." + providerName + ".ApiKey", apiKey, true);
+		setStringProperty("openIdConnectIF." + providerName + ".ApiSecret", apiSecret, true);
+		setStringProperty("openIdConnectIF." + providerName + ".Issuer", issuer, true);
+		setStringProperty("openIdConnectIF." + providerName + ".DisplayName", displayName, true);
 		setStringProperty("openIdConnectIF." + providerName + ".AuthorizationEndPoint", endPoint, true);
 		updateProperties();
 	}
 	
 	public void removeAdditionalOpenIDConnectIF(String providerName) {
-		removeProperty("openIdConnectIF." + providerName + ".Enabled", false);
-		removeProperty("openIdConnectIF." + providerName + ".RootEnabled", false);
-		removeProperty("openIdConnectIF." + providerName + ".ApiKey", false);
-		removeProperty("openIdConnectIF." + providerName + ".ApiSecret", false);
-		removeProperty("openIdConnectIF." + providerName + ".Issuer", false);
-		removeProperty("openIdConnectIF." + providerName + ".DisplayName", false);
+		removeProperty("openIdConnectIF." + providerName + ".Enabled", true);
+		removeProperty("openIdConnectIF." + providerName + ".RootEnabled", true);
+		removeProperty("openIdConnectIF." + providerName + ".ApiKey", true);
+		removeProperty("openIdConnectIF." + providerName + ".ApiSecret", true);
+		removeProperty("openIdConnectIF." + providerName + ".Issuer", true);
+		removeProperty("openIdConnectIF." + providerName + ".DisplayName", true);
 		removeProperty("openIdConnectIF." + providerName + ".AuthorizationEndPoint", true);
 		updateProperties();
 	}
