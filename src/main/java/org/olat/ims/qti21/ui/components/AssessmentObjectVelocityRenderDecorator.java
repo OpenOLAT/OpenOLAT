@@ -583,6 +583,29 @@ public class AssessmentObjectVelocityRenderDecorator extends VelocityRenderDecor
 		return "";
 	}
 	
+	public String renderKprimSpecialFlowStatics(List<FlowStatic> flowStaticList) {
+		StringOutput sb = new StringOutput();
+		if(flowStaticList != null && flowStaticList.size() > 0) {
+			flowStaticList.forEach((flow)
+					-> avc.getHTMLRendererSingleton().renderFlow(renderer, sb, avc, resolvedAssessmentItem, itemSessionState, flow, ubu, translator));
+		}
+		String specialKprim = sb.toString();
+		if("+".equals(specialKprim)) {
+			if(translator != null) {
+				specialKprim = translator.translate("kprim.plus");
+			} else {
+				specialKprim = "True";
+			}
+		} else if("-".equals(specialKprim)) {
+			if(translator != null) {
+				specialKprim = translator.translate("kprim.minus");
+			} else {
+				specialKprim = "False";
+			}
+		}
+		return specialKprim;
+	}
+	
 	public String renderTextOrVariables(List<TextOrVariable> textOrVariables) {
 		if(textOrVariables != null && textOrVariables.size() > 0) {
 			textOrVariables.forEach((textOrVariable)
