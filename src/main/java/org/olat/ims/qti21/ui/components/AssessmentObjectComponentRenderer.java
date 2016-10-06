@@ -728,13 +728,15 @@ public abstract class AssessmentObjectComponentRenderer extends DefaultComponent
 	
 	private void renderEndAttemptInteraction(AssessmentRenderer renderer, StringOutput sb, EndAttemptInteraction interaction,
 			ItemSessionState itemSessionState, AssessmentObjectComponent component, URLBuilder ubu, Translator translator) {
-		
-		String responseUniqueId = component.getResponseUniqueIdentifier(itemSessionState, interaction);
-		sb.append("<input name=\"qtiworks_presented_").append(responseUniqueId).append("\" type=\"hidden\" value=\"1\"/>");
 
+		boolean ended =  component.isItemSessionEnded(itemSessionState, renderer.isSolutionMode());
 		AssessmentObjectFormItem item = component.getQtiItem();
+		String responseUniqueId = component.getResponseUniqueIdentifier(itemSessionState, interaction);
 		String id = "qtiworks_response_".concat(responseUniqueId);
-		
+		if(!ended) {
+			sb.append("<input name=\"qtiworks_presented_").append(responseUniqueId).append("\" type=\"hidden\" value=\"1\"/>");
+		}
+
 		FormItem endAttemptButton = item.getFormComponent(id);
 		if(endAttemptButton == null) {
 			String title = StringHelper.escapeHtml(interaction.getTitle());
@@ -746,8 +748,10 @@ public abstract class AssessmentObjectComponentRenderer extends DefaultComponent
 			}
 			item.addFormItem(endAttemptButton);
 		}
+		endAttemptButton.setEnabled(!ended);
 		endAttemptButton.getComponent().getHTMLRendererSingleton()
-			.render(renderer.getRenderer(), sb, endAttemptButton.getComponent(), ubu, translator, new RenderResult(), null);
+				.render(renderer.getRenderer(), sb, endAttemptButton.getComponent(), ubu, translator, new RenderResult(), null);
+
 	}
 	
 	private void renderPositionObjectStage(AssessmentRenderer renderer, StringOutput sb, PositionObjectStage positionObjectStage,
