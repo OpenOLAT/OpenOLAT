@@ -128,6 +128,9 @@ public class TableOfContentController extends BasicController implements TooledC
 		}
 		mainVC.contextPut("owners", ownerSb.toString());
 
+		mainVC.contextPut("isTemplate", secCallback.canNewAssignment());
+		mainVC.contextPut("isPersonalBinder", (!secCallback.canNewAssignment() && secCallback.canEditMetadataBinder()));
+		
 		putInitialPanel(mainVC);
 		loadModel();
 	}

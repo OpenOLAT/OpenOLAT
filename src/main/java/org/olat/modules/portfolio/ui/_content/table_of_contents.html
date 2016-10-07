@@ -1,8 +1,14 @@
-<div class="o_portfolio_content clearfix">
-	<div class="o_header_with_buttons">
-		<h2>$r.translate("table.of.contents", $binderTitle) #if($owners && !$owners.isEmpty())<small>$r.translate("binder.by",$owners)</small>#end</h2>
-	</div>
-	<div class="o_portfolio_toc #if($timelineSwitch) o_portfolio_withtimeline #end">
+<div class="o_portfolio_content">
+	#if ($isTemplate)
+		$r.contextHelpWithWrapper("Process of an assessment portfolio")	
+	#elseif ($isPersonalBinder)
+		$r.contextHelpWithWrapper("Three steps to your portfolio binder")		
+	#else 
+		$r.contextHelpWithWrapper("Portfolio task and assignment: Collecting and editing")			
+	#end
+	<h2>$r.translate("table.of.contents", $binderTitle) #if($owners && !$owners.isEmpty())<small>$r.translate("binder.by",$owners)</small>#end</h2>
+		
+	<div class="o_portfolio_toc #if($timelineSwitch) o_portfolio_withtimeline #end clearfix">
 		<ul class="list-unstyled">
 		#foreach($section in $sections)
 			<li class="o_section o_block_large_bottom"><div class="o_header_with_buttons"><h4>$r.render($section.sectionLink) </h4> <i class="o_icon $section.cssClassStatus o_icon-fw"> </i>#if(${section.isAssessable()}) ${section.getFormattedResult()} #end</div>

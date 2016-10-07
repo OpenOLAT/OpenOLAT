@@ -67,6 +67,8 @@ public class BinderDeliveryOptionsController extends FormBasicController impleme
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		setFormContextHelp("Portfolio template: Administration and editing#configuration");
+		
 		newEntriesEl = uifactory.addCheckboxesHorizontal("canAddEntries", "allow.new.entries", formLayout, onKeys, onValues);
 		if(deliveryOptions.isAllowNewEntries()) {
 			newEntriesEl.select(onKeys[0], true);

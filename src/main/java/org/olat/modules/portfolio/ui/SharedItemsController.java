@@ -97,7 +97,7 @@ public class SharedItemsController extends FormBasicController implements Activa
 	private BaseSecurityModule securityModule;
 	
 	public SharedItemsController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel) {
-		super(ureq, wControl, "shared");
+		super(ureq, wControl, "shared_with_me");
 		this.stackPanel = stackPanel;
 		setTranslator(userManager.getPropertyHandlerTranslator(getTranslator()));
 		
