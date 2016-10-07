@@ -854,6 +854,13 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 	}
 	
 	private TreeNode getNearestSection(TreeNode node) {
+		if(node.getUserObject() instanceof AssessmentTest) {
+			//choose the first test part or section
+			if(node.getChildCount() > 0) {
+				node = (TreeNode)node.getChildAt(0);
+			}
+		}
+		
 		if(node.getUserObject() instanceof AssessmentSection) {
 			return node;
 		}
