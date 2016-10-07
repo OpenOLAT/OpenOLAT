@@ -445,6 +445,11 @@ public class QTI21ServiceImpl implements QTI21Service, InitializingBean, Disposa
 	}
 
 	@Override
+	public AssessmentTestSession getAssessmentTestSession(Long assessmentTestSessionKey) {
+		return testSessionDao.loadFullByKey(assessmentTestSessionKey);
+	}
+
+	@Override
 	public List<AssessmentTestSession> getAssessmentTestSessions(RepositoryEntryRef courseEntry, String subIdent, IdentityRef identity) {
 		return testSessionDao.getUserTestSessions(courseEntry, subIdent, identity);
 	}

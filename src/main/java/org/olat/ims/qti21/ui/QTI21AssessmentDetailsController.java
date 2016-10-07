@@ -201,6 +201,7 @@ public class QTI21AssessmentDetailsController extends FormBasicController {
 				SelectionEvent se = (SelectionEvent)event;
 				String cmd = se.getCommand();
 				AssessmentTestSession row = tableModel.getObject(se.getIndex());
+				row = qtiService.getAssessmentTestSession(row.getKey());
 				if("open".equals(cmd)) {
 					if(row.getTerminationTime() == null) {
 						doConfirmPullSession(ureq, row);

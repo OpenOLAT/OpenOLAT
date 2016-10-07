@@ -241,6 +241,19 @@ public class AssessmentTestSessionDAO {
 		return sessions == null || sessions.isEmpty() ? null : sessions.get(0);
 	}
 	
+	public AssessmentTestSession loadFullByKey(Long testSessionKey) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select session from qtiassessmenttestsession session")
+		  .append(" left join fetch session.identity ident")
+		  .append(" left join fetch ident.user usr")
+		  .append(" where session.key=:sessionKey");
+		List<AssessmentTestSession> sessions = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), AssessmentTestSession.class)
+				.setParameter("sessionKey", testSessionKey)
+				.getResultList();
+		return sessions == null || sessions.isEmpty() ? null : sessions.get(0);
+	}
+	
 	public AssessmentTestSession update(AssessmentTestSession testSession) {
 		((AssessmentTestSessionImpl)testSession).setLastModified(new Date());
 		return dbInstance.getCurrentEntityManager().merge(testSession);
