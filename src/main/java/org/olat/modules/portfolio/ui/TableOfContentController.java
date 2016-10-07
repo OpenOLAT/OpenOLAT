@@ -81,7 +81,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class TableOfContentController extends BasicController implements TooledController, Activateable2 {
 	
-	private Link newSectionTool, newSectionButton, newEntryLink, editBinderMetadataLink;
+	private Link newSectionTool, newSectionButton, newEntryLink, newAssignmentLink, editBinderMetadataLink;
 	
 	private final VelocityContainer mainVC;
 	private final TooledStackedPanel stackPanel;
@@ -90,6 +90,7 @@ public class TableOfContentController extends BasicController implements TooledC
 	private UserCommentsController commentsCtrl;
 	private SectionEditController newSectionCtrl;
 	private SectionEditController editSectionCtrl;
+	private AssignmentEditController newAssignmentCtrl;
 	private SectionDatesEditController editSectionDatesCtrl;
 	private BinderMetadataEditController binderMetadataCtrl;
 	private DialogBoxController confirmCloseSectionCtrl, confirmReopenSectionCtrl, confirmDeleteSectionCtrl;
@@ -152,6 +153,14 @@ public class TableOfContentController extends BasicController implements TooledC
 			newEntryLink.setElementCssClass("o_sel_pf_new_entry");
 			newEntryLink.setVisible(sectionList != null && sectionList.size() > 0);
 			stackPanel.addTool(newEntryLink, Align.right);
+		}
+		
+		if(secCallback.canNewAssignment()) {
+			newAssignmentLink = LinkFactory.createToolLink("new.assignment", translate("create.new.assignment"), this);
+			newAssignmentLink.setIconLeftCSS("o_icon o_icon-lg o_icon_new_portfolio");
+			newAssignmentLink.setElementCssClass("o_sel_pf_new_assignment");
+			newAssignmentLink.setVisible(sectionList != null && sectionList.size() > 0);
+			stackPanel.addTool(newAssignmentLink, Align.right);
 		}
 	}
 	
@@ -221,8 +230,14 @@ public class TableOfContentController extends BasicController implements TooledC
 			mainVC.put("create.new.section", newSectionButton);
 		}
 		
-		if(newEntryLink != null && !newEntryLink.isVisible()) {
-			newEntryLink.setVisible(sectionList != null && sectionList.size() > 0);
+		boolean hasSection = (sectionList != null && sectionList.size() > 0);
+		if(newEntryLink != null && newEntryLink.isVisible() != hasSection) {
+			newEntryLink.setVisible(hasSection);
+			stackPanel.setDirty(true);
+		}
+		
+		if(newAssignmentLink != null && newAssignmentLink.isVisible() != hasSection) {
+			newAssignmentLink.setVisible(hasSection);
 			stackPanel.setDirty(true);
 		}
 	}
@@ -359,7 +374,8 @@ public class TableOfContentController extends BasicController implements TooledC
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if(newSectionCtrl == source || editSectionCtrl == source 
-				|| editSectionDatesCtrl == source || newPageCtrl == source) {
+				|| editSectionDatesCtrl == source || newPageCtrl == source
+				|| newAssignmentCtrl == source) {
 			if(event == Event.DONE_EVENT) {
 				loadModel();
 				fireEvent(ureq, Event.CHANGED_EVENT);
@@ -418,6 +434,7 @@ public class TableOfContentController extends BasicController implements TooledC
 	private void cleanUp() {
 		removeAsListenerAndDispose(editSectionDatesCtrl);
 		removeAsListenerAndDispose(binderMetadataCtrl);
+		removeAsListenerAndDispose(newAssignmentCtrl);
 		removeAsListenerAndDispose(editSectionCtrl);
 		removeAsListenerAndDispose(newSectionCtrl);
 		removeAsListenerAndDispose(commentsCtrl);
@@ -425,6 +442,7 @@ public class TableOfContentController extends BasicController implements TooledC
 		removeAsListenerAndDispose(cmc);
 		editSectionDatesCtrl = null;
 		binderMetadataCtrl = null;
+		newAssignmentCtrl = null;
 		editSectionCtrl = null;
 		newSectionCtrl = null;
 		commentsCtrl = null;
@@ -438,6 +456,8 @@ public class TableOfContentController extends BasicController implements TooledC
 			doCreateNewSection(ureq);
 		} else if(newEntryLink == source) {
 			doCreateNewEntry(ureq);
+		} else if(newAssignmentLink == source) {
+			doCreateNewAssignment(ureq);
 		} else if(editBinderMetadataLink == source) {
 			doEditBinderMetadata(ureq);
 		} else if(source instanceof Link) {
@@ -524,6 +544,18 @@ public class TableOfContentController extends BasicController implements TooledC
 		
 		String title = translate("create.new.section");
 		cmc = new CloseableModalController(getWindowControl(), null, newSectionCtrl.getInitialComponent(), true, title, true);
+		listenTo(cmc);
+		cmc.activate();
+	}
+	
+	private void doCreateNewAssignment(UserRequest ureq) {
+		if(newAssignmentCtrl != null) return;
+
+		newAssignmentCtrl = new AssignmentEditController(ureq, getWindowControl(), binder);
+		listenTo(newAssignmentCtrl);
+		
+		String title = translate("create.new.assignment");
+		cmc = new CloseableModalController(getWindowControl(), null, newAssignmentCtrl.getInitialComponent(), true, title, true);
 		listenTo(cmc);
 		cmc.activate();
 	}

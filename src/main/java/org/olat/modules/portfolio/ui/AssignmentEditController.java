@@ -36,6 +36,7 @@ import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FileElement;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.RichTextElement;
+import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
@@ -56,9 +57,11 @@ import org.olat.core.util.vfs.VFSMediaResource;
 import org.olat.core.util.vfs.restapi.SystemItemFilter;
 import org.olat.modules.portfolio.Assignment;
 import org.olat.modules.portfolio.AssignmentType;
+import org.olat.modules.portfolio.Binder;
 import org.olat.modules.portfolio.PortfolioService;
 import org.olat.modules.portfolio.Section;
 import org.olat.modules.portfolio.manager.PortfolioFileStorage;
+import org.olat.modules.portfolio.model.SectionKeyRef;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -76,10 +79,12 @@ public class AssignmentEditController extends FormBasicController {
 	private TextElement titleEl;
 	private RichTextElement summaryEl;
 	//private SingleSelection typeEl;
+	private SingleSelection sectionsEl;
 	private FileElement documentUploadEl;
 	private FormLayoutContainer filesLayout;
 	private RichTextElement contentEl;
 	
+	private Binder binder;
 	private Section section;
 	private Assignment assignment;
 	private VFSContainer tempUploadFolder;
@@ -93,6 +98,12 @@ public class AssignmentEditController extends FormBasicController {
 	private PortfolioService portfolioService;
 	@Autowired
 	private PortfolioFileStorage portfolioFileStorage;
+	
+	public AssignmentEditController(UserRequest ureq, WindowControl wControl, Binder binder) {
+		super(ureq, wControl);
+		this.binder = binder;
+		initForm(ureq);
+	}
 	
 	public AssignmentEditController(UserRequest ureq, WindowControl wControl, Section section) {
 		super(ureq, wControl);
@@ -127,6 +138,31 @@ public class AssignmentEditController extends FormBasicController {
 		contentEl.setElementCssClass("o_sel_pf_edit_assignment_content");
 		contentEl.getEditorConfiguration().disableMedia();
 		contentEl.getEditorConfiguration().disableImageAndMovie();
+		
+		if(binder != null) {
+			List<Section> sections = portfolioService.getSections(binder);
+
+			String selectedKey = null;
+			int numOfSections = sections.size();
+			String[] theKeys = new String[numOfSections];
+			String[] theValues = new String[numOfSections];
+			for (int i = 0; i < numOfSections; i++) {
+				Long sectionKey = sections.get(i).getKey();
+				theKeys[i] = sectionKey.toString();
+				theValues[i] = (i + 1) + ". " + sections.get(i).getTitle();
+				if (section != null && section.getKey().equals(sectionKey)) {
+					selectedKey = theKeys[i];
+				}
+			}
+			
+			sectionsEl = uifactory.addDropdownSingleselect("sections", "page.sections", formLayout, theKeys, theValues, null);
+			if (selectedKey != null) {
+				sectionsEl.select(selectedKey, true);
+			} else if(theKeys.length > 0) {
+				sectionsEl.select(theKeys[0], true);
+			}
+		}
+		
 		/*
 		String[] typeValues = new String[]{ translate("assignment.type.essay"), translate("assignment.type.document") };
 		typeEl = uifactory.addDropdownSingleselect("type", "assignment.type", formLayout, typeKeys, typeValues, null);
@@ -205,13 +241,36 @@ public class AssignmentEditController extends FormBasicController {
 	}
 	
 	@Override
+	protected boolean validateFormLogic(UserRequest ureq) {
+		boolean allOk = true;
+		
+		if(sectionsEl != null) {
+			sectionsEl.clearError();
+			if(!sectionsEl.isOneSelected()) {
+				sectionsEl.setErrorKey("form.legende.mandatory", null);
+				allOk &= false;
+			}
+		}
+
+		return allOk & super.validateFormLogic(ureq);
+	}
+
+	@Override
 	protected void formOK(UserRequest ureq) {
 		String title = titleEl.getValue();
 		String summary = summaryEl.getValue();
 		String content = contentEl.getValue();
 		AssignmentType type = AssignmentType.essay;//AssignmentType.valueOf(typeEl.getSelectedKey());
+		
+		Section selectedSection = section;
+		if(sectionsEl != null && sectionsEl.isOneSelected()) {
+			String selectedKey = sectionsEl.getSelectedKey();
+			Long selectedSectionKey = new Long(selectedKey);
+			selectedSection = portfolioService.getSection(new SectionKeyRef(selectedSectionKey));
+		}
+
 		if(assignment == null) {
-			assignment = portfolioService.addAssignment(title, summary, content, type, section);
+			assignment = portfolioService.addAssignment(title, summary, content, type, selectedSection);
 		} else {
 			assignment = portfolioService.updateAssignment(assignment, title, summary, content, type);
 		}

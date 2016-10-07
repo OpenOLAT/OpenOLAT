@@ -78,7 +78,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class BinderPageListController extends AbstractPageListController {
 	
-	private Link newSectionLink, newEntryLink;
+	private Link newSectionLink, newEntryLink, newAssignmentLink;
 	private FormLink newSectionButton, previousSectionLink, nextSectionLink, showAllSectionsLink;
 	
 	private CloseableModalController cmc;
@@ -123,6 +123,14 @@ public class BinderPageListController extends AbstractPageListController {
 			newEntryLink.setElementCssClass("o_sel_pf_new_entry");
 			newEntryLink.setVisible(model.getRowCount() > 0);
 			stackPanel.addTool(newEntryLink, Align.right);
+		}
+		
+		if(secCallback.canNewAssignment()) {
+			newAssignmentLink = LinkFactory.createToolLink("new.assignment", translate("create.new.assignment"), this);
+			newAssignmentLink.setIconLeftCSS("o_icon o_icon-lg o_icon_new_portfolio");
+			newAssignmentLink.setElementCssClass("o_sel_pf_new_assignment");
+			newAssignmentLink.setVisible(model.getRowCount() > 0);
+			stackPanel.addTool(newAssignmentLink, Align.right);
 		}
 	}
 
@@ -307,6 +315,10 @@ public class BinderPageListController extends AbstractPageListController {
 			newEntryLink.setVisible(rows.size() > 0);
 			stackPanel.setDirty(true);
 		}
+		if(newAssignmentLink != null && !newAssignmentLink.isVisible()) {
+			newAssignmentLink.setVisible(rows.size() > 0);
+			stackPanel.setDirty(true);
+		}
 
 		disposeRows();//clean up the posters
 		model.setObjects(rows);
@@ -376,7 +388,13 @@ public class BinderPageListController extends AbstractPageListController {
 			doCreateNewPage(ureq, filteringSection);
 		} else if(newSectionLink == source) {
 			doCreateNewSection(ureq);
-		} 
+		} else if(newAssignmentLink == source) {
+			if(filteringSection == null) {
+				doCreateNewAssignment(ureq);
+			} else {
+				doCreateNewAssignment(ureq, filteringSection);
+			}
+		}
 		super.event(ureq, source, event);
 	}
 	
@@ -511,6 +529,18 @@ public class BinderPageListController extends AbstractPageListController {
 		
 		String title = translate("create.new.page");
 		cmc = new CloseableModalController(getWindowControl(), null, newPageCtrl.getInitialComponent(), true, title, true);
+		listenTo(cmc);
+		cmc.activate();
+	}
+	
+	private void doCreateNewAssignment(UserRequest ureq) {
+		if(newAssignmentCtrl != null) return;
+
+		newAssignmentCtrl = new AssignmentEditController(ureq, getWindowControl(), binder);
+		listenTo(newAssignmentCtrl);
+		
+		String title = translate("create.new.assignment");
+		cmc = new CloseableModalController(getWindowControl(), null, newAssignmentCtrl.getInitialComponent(), true, title, true);
 		listenTo(cmc);
 		cmc.activate();
 	}
