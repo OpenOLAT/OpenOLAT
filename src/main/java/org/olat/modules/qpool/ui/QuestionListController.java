@@ -67,13 +67,10 @@ import org.olat.ims.qti.questionimport.QImport_1_InputStep;
 import org.olat.modules.qpool.ExportFormatOptions;
 import org.olat.modules.qpool.Pool;
 import org.olat.modules.qpool.QItemFactory;
-import org.olat.modules.qpool.QPoolItemEditorController;
 import org.olat.modules.qpool.QuestionItem;
 import org.olat.modules.qpool.QuestionItemCollection;
 import org.olat.modules.qpool.QuestionItemShort;
-import org.olat.modules.qpool.model.QItemDocument;
 import org.olat.modules.qpool.model.QItemList;
-import org.olat.modules.qpool.ui.events.QItemChangeEvent;
 import org.olat.modules.qpool.ui.events.QItemCreationCmdEvent;
 import org.olat.modules.qpool.ui.events.QItemEdited;
 import org.olat.modules.qpool.ui.events.QItemEvent;
@@ -90,7 +87,6 @@ import org.olat.repository.controllers.RepositorySearchController.Can;
 import org.olat.repository.handlers.RepositoryHandler;
 import org.olat.repository.handlers.RepositoryHandlerFactory;
 import org.olat.repository.ui.author.CreateEntryController;
-import org.olat.search.service.indexer.LifeFullIndexer;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -108,9 +104,7 @@ public class QuestionListController extends AbstractItemListController implement
 	private BreadcrumbPanel stackPanel;
 	private RenameController renameCtrl;
 	private CloseableModalController cmc;
-	private CloseableModalController cmcNewItem;
 	private CloseableModalController cmcShareItemToSource;
-	private QPoolItemEditorController newItemCtrl;
 	private DialogBoxController confirmCopyBox;
 	private DialogBoxController confirmDeleteBox;
 	private DialogBoxController confirmRemoveBox;
@@ -140,8 +134,6 @@ public class QuestionListController extends AbstractItemListController implement
 	
 	private boolean itemCollectionDirty = false;
 
-	@Autowired
-	private LifeFullIndexer lifeFullIndexer;
 	@Autowired
 	private RepositoryManager repositoryManager;
 	@Autowired
@@ -468,23 +460,6 @@ public class QuestionListController extends AbstractItemListController implement
 				cmc.deactivate();
 				cleanUp();
 			}
-		} else if(source == cmcNewItem) {
-			showInfo("create.success");
-			if(newItemCtrl.getItem() != null && newItemCtrl.getItem().getKey() != null) {
-				List<QuestionItem> newItems = Collections.singletonList(newItemCtrl.getItem());
-				getSource().postImport(newItems, false);
-			}
-			getItemsTable().reset();
-			QPoolEvent qce = new QPoolEvent(QPoolEvent.ITEM_CREATED);
-			fireEvent(ureq, qce);
-			cleanUp();
-		} else if(source == newItemCtrl) {
-			if(event instanceof QItemChangeEvent) {
-				QItemChangeEvent ce = (QItemChangeEvent)event;
-				if(ce.getItem() != null) {
-					lifeFullIndexer.indexDocument(QItemDocument.TYPE, ce.getItem().getKey());
-				}
-			}
 		} else if(source == cmc) {
 			cleanUp();
 		}
@@ -493,8 +468,6 @@ public class QuestionListController extends AbstractItemListController implement
 	
 	private void cleanUp() {
 		removeAsListenerAndDispose(cmc);
-		removeAsListenerAndDispose(cmcNewItem);
-		removeAsListenerAndDispose(newItemCtrl);
 		removeAsListenerAndDispose(addController);
 		removeAsListenerAndDispose(bulkChangeCtrl);
 		removeAsListenerAndDispose(importItemCtrl);
@@ -502,8 +475,6 @@ public class QuestionListController extends AbstractItemListController implement
 		removeAsListenerAndDispose(selectGroupCtrl);
 		removeAsListenerAndDispose(createCollectionCtrl);
 		cmc = null;
-		cmcNewItem = null;
-		newItemCtrl = null;
 		addController = null;
 		bulkChangeCtrl = null;
 		importItemCtrl = null;
@@ -562,16 +533,16 @@ public class QuestionListController extends AbstractItemListController implement
 	}
 	
 	private void doCreateNewItem(UserRequest ureq, String title, QItemFactory factory) {
-		removeAsListenerAndDispose(newItemCtrl);
+		QuestionItem item = factory.createItem(getIdentity(), title, getLocale());
+		List<QuestionItem> newItems = Collections.singletonList(item);
+		getSource().postImport(newItems, false);
+		getItemsTable().reset();
 		
-		newItemCtrl = factory.getEditor(ureq, getWindowControl(), title);
-		listenTo(newItemCtrl);
+		QPoolEvent qce = new QPoolEvent(QPoolEvent.ITEM_CREATED);
+		fireEvent(ureq, qce);
 
-		removeAsListenerAndDispose(cmcNewItem);
-		cmcNewItem = new CloseableModalController(getWindowControl(), translate("close"),
-				newItemCtrl.getInitialComponent(), true, translate("import.repository"));
-		cmcNewItem.activate();
-		listenTo(cmcNewItem);
+		List<ContextEntry> entries = BusinessControlFactory.getInstance().createCEListFromResourceType("Edit");
+		doSelect(ureq, item, true).activate(ureq, entries, null);
 	}
 	
 	private void doOpenImport(UserRequest ureq) {
@@ -939,7 +910,7 @@ public class QuestionListController extends AbstractItemListController implement
 		doSelect(ureq, item, row.isEditable());
 	}
 		
-	protected void doSelect(UserRequest ureq, QuestionItem item, boolean editable) {
+	protected QuestionItemDetailsController doSelect(UserRequest ureq, QuestionItem item, boolean editable) {
 		removeAsListenerAndDispose(currentDetailsCtrl);
 		removeAsListenerAndDispose(currentMainDetailsCtrl);
 		
@@ -950,5 +921,6 @@ public class QuestionListController extends AbstractItemListController implement
 		currentMainDetailsCtrl = new LayoutMain3ColsController(ureq, getWindowControl(), currentDetailsCtrl);
 		listenTo(currentMainDetailsCtrl);
 		stackPanel.pushController(item.getTitle(), currentMainDetailsCtrl);
+		return currentDetailsCtrl;
 	}
 }
