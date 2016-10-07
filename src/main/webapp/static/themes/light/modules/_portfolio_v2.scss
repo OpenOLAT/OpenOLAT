@@ -227,6 +227,14 @@
 		fill: $o-portfolio-entry-deleted-color;
 	}
 }
+/* helper to position context help button next to timeline */
+.o_portfolio_title_help_helper {
+	display: inline-block; 
+	float: right; 
+	position: relative; 
+	top: 1em;
+	right: 1em;
+}
 
 .o_pf_comments {
 	margin-top: 2em;
