@@ -251,6 +251,12 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 		// it is to correctly apply external links using course-internal links via javascript
 		coursemain.contextPut("courserepokey", courseRepositoryEntry.getKey());
 		coursemain.put("coursemain", columnLayoutCtr.getInitialComponent());
+		// on initial call we have to set the data-nodeid manually. later it will be updated by updateCourseDataAttributes() automatically. 
+		String initNodeId = currentCourseNode != null ? currentCourseNode.getIdent() : null;
+		if (initNodeId == null) {
+			initNodeId = treeModel.getRootNode().getIdent();
+		}
+		coursemain.contextPut("initNodeId", initNodeId);
 		putInitialPanel(coursemain);
 
 		// disposed message controller must be created beforehand
