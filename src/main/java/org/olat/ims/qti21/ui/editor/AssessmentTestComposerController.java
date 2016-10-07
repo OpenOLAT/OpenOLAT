@@ -854,6 +854,9 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 	}
 	
 	private TreeNode getNearestSection(TreeNode node) {
+		if(node == null) {
+			node = menuTree.getTreeModel().getRootNode();
+		}
 		if(node.getUserObject() instanceof AssessmentTest) {
 			//choose the first test part or section
 			if(node.getChildCount() > 0) {
