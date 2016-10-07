@@ -588,5 +588,53 @@ div.o_assessment_user_type_filter {
 	.jumbotron h1 { 
 		color: $brand-danger;
 	}
-
 }
+
+/* personal mail box tool */
+.o_mail_message {
+	.o_mail_meta {
+		background: #fafafa;
+		border: 1px solid #eee;
+		padding: 5px 10px;
+		h3 {
+			margin-top: 0;
+		}
+	}
+	
+	.o_mail_date,
+	.o_mail_from,
+	.o_mail_recipients {
+		color: $text-muted;
+		font-size: 90%;
+		
+		.o_label {
+			font-weight: bold;
+			margin-right: 1em;
+		}
+		.o_group span {
+			font-weight: bold;
+			&:after {
+				content: ':';
+				margin-right: 0.5em;
+			}
+		}
+		i {
+			margin-left: 1em;
+		}
+
+		ul.list-inline {
+			display: inline;
+			li {
+				padding-right: 0;
+				padding-left: 0;
+			}
+		}	
+	}
+	.o_more {
+		margin-left: 1em;
+	}
+	.o_showAllLink {
+		float: right;
+		font-size: 80%;
+	}
+}	

@@ -1,5 +1,5 @@
 <p class="from-static-control"><ul class="list-unstyled">
 	#foreach ($attachment in $attachments)
-		<li><a href="$mapperBaseURI/attachments/$attachment.key/$attachment.name" target="_blank"><i class="o_icon o_icon-fw $attachment.cssClass"> </i> $attachment.name</a></li>
+		<li><a href="$mapperBaseURI/attachments/$attachment.key/$attachment.name" target="_blank"><i class="o_icon o_icon-fw $attachment.cssClass"> </i> $attachment.name ($r.formatBytes($attachment.getSize()))</a></li>
 	#end
 </ul></p>

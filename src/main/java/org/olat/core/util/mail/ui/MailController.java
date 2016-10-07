@@ -25,7 +25,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -37,6 +36,8 @@ import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.id.Identity;
+import org.olat.core.id.User;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.filter.impl.OWASPAntiSamyXSSFilter;
@@ -45,7 +46,7 @@ import org.olat.core.util.mail.MailModule;
 import org.olat.core.util.mail.model.DBMail;
 import org.olat.core.util.mail.model.DBMailAttachment;
 import org.olat.core.util.mail.model.DBMailRecipient;
-import org.olat.user.UserManager;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -57,22 +58,26 @@ import org.olat.user.UserManager;
  */
 public class MailController extends FormBasicController {
 	
-	private FormLink backLink;
+	private FormLink backLink, showAllRecipientsLink;
 	
 	private String mapperBaseURI;
 	private final boolean back;
 	private final DBMail mail;
 	private final List<DBMailAttachment> attachments;
-	private final MailManager mailManager;
-	private final UserManager userManager;
+	private boolean showAllRecipients = false;
+	private int maxRecipients = 10;
+	private FormLayoutContainer vcLayout;
 	
+	@Autowired
+	private MailModule mailModule;
+	@Autowired
+	private MailManager mailManager;
+
 	public MailController(UserRequest ureq, WindowControl wControl, DBMail mail, boolean back) {
 		super(ureq, wControl, LAYOUT_VERTICAL);
 		setTranslator(Util.createPackageTranslator(MailModule.class, ureq.getLocale()));
 		this.mail = mail;
 		this.back = back;
-		mailManager = CoreSpringFactory.getImpl(MailManager.class);
-		userManager = CoreSpringFactory.getImpl(UserManager.class);
 		attachments = mailManager.getAttachments(mail);
 		if(!attachments.isEmpty()) {
 			mapperBaseURI = registerMapper(ureq, new MailAttachmentMapper(mailManager));
@@ -84,7 +89,7 @@ public class MailController extends FormBasicController {
 	protected void initForm(FormItemContainer mainLayout, Controller listener, UserRequest ureq) {
 		setTranslator(Util.createPackageTranslator(MailModule.class, ureq.getLocale()));
 		String page = Util.getPackageVelocityRoot(MailModule.class) + "/mail.html";
-		FormLayoutContainer vcLayout = FormLayoutContainer.createCustomFormLayout("wrapper", getTranslator(), page);
+		vcLayout = FormLayoutContainer.createCustomFormLayout("wrapper", getTranslator(), page);
 		vcLayout.setRootForm(mainForm);
 		mainLayout.add(vcLayout);
 		
@@ -93,56 +98,112 @@ public class MailController extends FormBasicController {
 			vcLayout.add("back", backLink);
 		}
 
-		FormLayoutContainer formLayout = FormLayoutContainer.createDefaultFormLayout("mainCmp", getTranslator());
-		formLayout.setRootForm(mainForm);
-		vcLayout.add("mainCmp", formLayout);
+		if (mail.getRecipients().size() > maxRecipients) {
+			showAllRecipientsLink = uifactory.addFormLink("recipients.all", vcLayout, Link.LINK_CUSTOM_CSS);
+			showAllRecipientsLink.setElementCssClass("o_showAllLink");
+			vcLayout.add("showAllRecipients", showAllRecipientsLink);			
+		}
 		
 		String subject = StringHelper.escapeHtml(mail.getSubject());
-		uifactory.addStaticTextElement("subject", "mail.subject", subject, formLayout);		
+		vcLayout.contextPut("subject", subject);		
 		
-		String from = StringHelper.escapeHtml(getFullName(mail.getFrom()));
-		uifactory.addStaticTextElement("from", "mail.from", from, formLayout);
+		String from = getFrom();
+		vcLayout.contextPut("from", from);
 		
 		String recipients = getRecipients();
-		uifactory.addStaticTextElement("recipients", "mail.recipients", recipients, formLayout);
+		vcLayout.contextPut("recipients", recipients);
 
 		String date = DateFormat.getDateInstance(DateFormat.MEDIUM, getLocale()).format(mail.getCreationDate());
-		uifactory.addStaticTextElement("date", "mail.sendDate", date, formLayout);
-		
-		uifactory.addSpacerElement("spacer2", formLayout, false);
+		vcLayout.contextPut("date", date);
+
 		String formattedBody = formattedBody();
-		uifactory.addStaticTextElement("body", "mail.body", formattedBody, formLayout);
+		vcLayout.contextPut("body", formattedBody);
 		
 		if(!attachments.isEmpty()) {
-			uifactory.addSpacerElement("spacer3", formLayout, false);
 			String attachmentsPage = Util.getPackageVelocityRoot(MailModule.class) + "/attachments.html";
 			FormLayoutContainer container = FormLayoutContainer.createCustomFormLayout("attachments", getTranslator(), attachmentsPage);
 			container.setLabel("mail.attachments", null);
 			container.setRootForm(mainForm);
 			container.contextPut("attachments", attachments);
 			container.contextPut("mapperBaseURI", mapperBaseURI);
-			formLayout.add(container);
+			vcLayout.add(container);
 		}
+	}
+	
+	private String getFrom() {
+		StringBuilder sb = new StringBuilder();
+		DBMailRecipient from = mail.getFrom();
+		sb.append("<ul class='list-inline'><li>");
+		sb.append(getFullName(from));
+		if (mailModule.isShowMailAddresses()) {
+			Identity fromIdentity = from.getRecipient();
+			sb.append(" &lt;").append(fromIdentity.getUser().getEmail()).append("&gt; ");
+		}
+		sb.append("</li></ul>");
+		return sb.toString();
 	}
 	
 	private String getRecipients() {
 		StringBuilder sb = new StringBuilder();
 		Set<String> groups = new HashSet<String>();
+		int recipientsCounter = 0;
+		int groupCounter = 0;
+		sb.append("<ul class='list-inline'>");
 		for(DBMailRecipient recipient:mail.getRecipients()) {
 			if(recipient == null) continue;
-			String group = recipient.getGroup();
+			if (recipientsCounter >= maxRecipients && !showAllRecipients) {
+				sb.append("<li class='o_more'>").append(translate("recipients.more", (mail.getRecipients().size() - recipientsCounter) + "")).append("<span>");
+				break;
+			}
+			recipientsCounter++;
+			String group = recipient.getGroup();			
 			if(StringHelper.containsNonWhitespace(group) && !groups.contains(group)) {
-				if(sb.length() > 0) sb.append(", ");
+				// recipient is the entire group
+				if(sb.length() > 0) {
+					sb.append("</ul>");
+					sb.append("<ul class='list-inline'>");
+				}
+				sb.append("<li class='o_group'><i class='o_icon o_icon_group o_icon-fw'> </i><span>");
 				sb.append(group);
+				sb.append("</span></li>");
 				groups.add(group);
-			}	
+				groupCounter = 0;
+			}
+			if (mailModule.isShowRecipientNames()) {
+				if (recipient.getRecipient() != null) {
+					// recipient is an individual
+					Identity repicientIdentity = recipient.getRecipient();
+					sb.append("<li class='o_recipient'>");
+					if(groupCounter> 0) sb.append(", ");
+					sb.append("<span>").append(getFullName(recipient)).append("</span>");
+					if (mailModule.isShowMailAddresses()) {
+						sb.append(" &lt;").append(repicientIdentity.getUser().getEmail()).append("&gt;");
+					}
+					sb.append("</li>");
+					groupCounter++;
+				}
+				if (recipient.getEmailAddress() != null) {
+					// recipient is not an OpenOLAT identity but an external email
+					sb.append("<li class='o_mail'>");
+					if(groupCounter > 0) sb.append(", ");
+					sb.append("&lt;");
+					sb.append(recipient.getEmailAddress());
+					sb.append("&gt;</li>");
+					groupCounter++;
+				}
+			}
 		}
+		sb.append("</ul>");
 		return sb.toString();
 	}
 	
 	private String getFullName(DBMailRecipient recipient) {
 		if(recipient == null) return "";
-		return userManager.getUserDisplayName(recipient.getRecipient());
+		// dont't use the standard user display name formatter as this one adds
+		// a comma. The comma is used already to separate the users in the list
+		// of recipients
+		User user = recipient.getRecipient().getUser();
+		return StringHelper.escapeHtml(user.getFirstName() + " " + user.getLastName());
 	}
 	
 	private String formattedBody() {
@@ -174,6 +235,16 @@ public class MailController extends FormBasicController {
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(source == backLink) {
 			fireEvent(ureq, Event.BACK_EVENT);
+		} else if (source == showAllRecipientsLink) {
+			if (showAllRecipients) {
+				showAllRecipientsLink.setI18nKey("recipients.all");								
+			} else {
+				showAllRecipientsLink.setI18nKey("recipients.hide");				
+			}
+			showAllRecipients = !showAllRecipients;
+			// update list of recipients
+			String recipients = getRecipients();
+			vcLayout.contextPut("recipients", recipients);
 		} else {
 			super.formInnerEvent(ureq, source, event);
 		}

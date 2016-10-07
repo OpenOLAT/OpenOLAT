@@ -105,6 +105,8 @@ public class MailBoxOverviewController extends BasicController implements Activa
 		if(inboxCtrl == null) {
 			inboxCtrl = new MailListController(ureq, getWindowControl(), false, resolver);
 			listenTo(inboxCtrl);
+		} else {
+			inboxCtrl.activate(ureq, null, null);
 		}
 		mainVC.put("segmentCmp", inboxCtrl.getInitialComponent());
 	}
@@ -113,6 +115,8 @@ public class MailBoxOverviewController extends BasicController implements Activa
 		if(outboxCtrl == null) {
 			outboxCtrl = new MailListController(ureq, getWindowControl(), true, resolver);
 			listenTo(outboxCtrl);
+		} else {
+			outboxCtrl.activate(ureq, null, null);
 		}
 		mainVC.put("segmentCmp", outboxCtrl.getInitialComponent());
 	}
