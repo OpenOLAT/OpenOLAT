@@ -300,6 +300,16 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 	}
 
 	@Override
+	public List<OLATResource> getResourceWithCertificates() {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select distinct resource from certificate cer")
+		  .append(" inner join cer.olatResource resource");
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), OLATResource.class)
+				.getResultList();
+	}
+
+	@Override
 	public VFSLeaf getCertificateLeaf(Certificate certificate) {
 		VFSContainer cerContainer = getCertificateRootContainer();
 		VFSItem cerItem = null;
@@ -477,6 +487,17 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 		if(or) sb.append(" or ");
 		else sb.append(" ");
 		return true;
+	}
+	
+	@Override
+	public List<Certificate> getCertificates(OLATResource resource) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select cer from certificate cer")
+		  .append(" where cer.olatResource.key=:resourceKey");
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Certificate.class)
+				.setParameter("resourceKey", resource.getKey())
+				.getResultList();
 	}
 
 	@Override
@@ -765,6 +786,9 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 		certificate.setCourseTitle(entry.getDisplayname());
 		certificate.setStatus(CertificateStatus.pending);
 		
+		Date nextCertification = getDateNextRecertification(certificate, entry);
+		certificate.setNextRecertificationDate(nextCertification);
+		
 		dbInstance.getCurrentEntityManager().persist(certificate);
 		dbInstance.commit();
 		
@@ -846,7 +870,7 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 		Boolean passed = workUnit.getPassed();
 		Date dateCertification = certificate.getCreationDate();
 		Date dateFirstCertification = getDateFirstCertification(identity, resource.getKey());
-		Date dateNextRecertification = getDateNextRecertification(certificate, entry);
+		Date dateNextRecertification = certificate.getNextRecertificationDate();
 		
 		File certificateFile;
 		// File name with user name

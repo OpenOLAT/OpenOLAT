@@ -69,6 +69,8 @@ public class CertificateLightImpl implements CertificateLight, Persistable {
 	
 	@Column(name="c_uuid", nullable=false, insertable=true, updatable=false)
 	private String uuid;
+	@Column(name="c_next_recertification", nullable=true, insertable=true, updatable=true)
+	private Date nextRecertificationDate;
 	@Column(name="c_last", nullable=false, insertable=true, updatable=true)
 	private boolean last;
 	@Column(name="c_course_title", nullable=true, insertable=true, updatable=false)
@@ -108,6 +110,14 @@ public class CertificateLightImpl implements CertificateLight, Persistable {
 	@Override
 	public CertificateStatus getStatus() {
 		return CertificateStatus.valueOf(statusString);
+	}
+
+	public Date getNextRecertificationDate() {
+		return nextRecertificationDate;
+	}
+
+	public void setNextRecertificationDate(Date nextRecertificationDate) {
+		this.nextRecertificationDate = nextRecertificationDate;
 	}
 
 	@Override

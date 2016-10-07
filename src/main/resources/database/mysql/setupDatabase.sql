@@ -1228,6 +1228,7 @@ create table o_cer_certificate (
    c_status varchar(16) not null default 'pending',
    c_email_status varchar(16),
    c_uuid varchar(36) not null,
+   c_next_recertification datetime,
    c_path varchar(1024),
    c_last boolean not null default 1,
    c_course_title varchar(255),

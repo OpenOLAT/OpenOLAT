@@ -20,6 +20,7 @@
 package org.olat.course.assessment.ui.tool;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import org.olat.basesecurity.BaseSecurity;
@@ -134,10 +135,16 @@ public class IdentityCertificatesController extends BasicController implements G
 		List<Certificate> certificates = certificatesManager.getCertificates(assessedIdentity, courseEntry.getOlatResource());
 		List<Links> certificatesLink = new ArrayList<>(certificates.size());
 		int count = 0;
+		Date now = new Date();
 		for(Certificate certificate:certificates) {
 			String displayName = formatter.formatDateAndTime(certificate.getCreationDate());
 			String url = DownloadCertificateCellRenderer.getUrl(certificate);
-			Links links = new Links(url, displayName, certificate.getStatus().name());
+			boolean needRecertification = false;
+			if(certificate.getNextRecertificationDate() != null && certificate.getNextRecertificationDate().compareTo(now) < 0) {
+				needRecertification = true; //only check the last one???
+			}
+			
+			Links links = new Links(url, displayName, certificate.getStatus().name(), needRecertification);
 			certificatesLink.add(links);
 			
 			if(canDelete) {
@@ -238,11 +245,13 @@ public class IdentityCertificatesController extends BasicController implements G
 		private String name;
 		private String status;
 		private Link delete;
+		private boolean needRecertification;
 		
-		public Links(String url, String name, String status) {
+		public Links(String url, String name, String status, boolean needRecertification) {
 			this.url = url;
 			this.name = name;
 			this.status = status;
+			this.needRecertification = needRecertification;
 		}
 		
 		public String getUrl() {
@@ -255,6 +264,10 @@ public class IdentityCertificatesController extends BasicController implements G
 		
 		public String getStatus() {
 			return status;
+		}
+		
+		public boolean isNeedRecertification() {
+			return needRecertification;
 		}
 
 		public String getDeleteName() {

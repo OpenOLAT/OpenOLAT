@@ -19,6 +19,8 @@
  */
 package org.olat.course.certificate;
 
+import java.util.Date;
+
 import org.olat.core.id.CreateInfo;
 
 /**
@@ -34,6 +36,8 @@ public interface CertificateLight extends CreateInfo {
 	public CertificateStatus getStatus();
 	
 	public String getUuid();
+
+	public Date getNextRecertificationDate();
 	
 	public String getCourseTitle();
 	
