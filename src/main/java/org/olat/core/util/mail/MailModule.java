@@ -79,7 +79,17 @@ public class MailModule extends AbstractSpringModule{
 		if(StringHelper.containsNonWhitespace(receiveRealMailUserDefaultSettingValue)) {
 			receiveRealMailUserDefaultSetting = "true".equalsIgnoreCase(receiveRealMailUserDefaultSettingValue);
 		}
-	}
+
+		String showRecipientNamesValue = getStringPropertyValue(SHOW_RECIPIENT_NAMES, true);
+		if(StringHelper.containsNonWhitespace(showRecipientNamesValue)) {
+			showRecipientNames = "true".equalsIgnoreCase(showRecipientNamesValue);
+		}
+
+		String showMailAddressesValue = getStringPropertyValue(SHOW_MAIL_ADDRESSES, true);
+		if(StringHelper.containsNonWhitespace(showMailAddressesValue)) {
+			showMailAddresses = "true".equalsIgnoreCase(showMailAddressesValue);
+		}
+}
 
 	@Override
 	protected void initFromChangedProperties() {
