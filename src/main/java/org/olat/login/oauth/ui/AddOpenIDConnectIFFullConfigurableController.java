@@ -19,6 +19,9 @@
  */
 package org.olat.login.oauth.ui;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
@@ -30,6 +33,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.ValidationStatus;
 import org.olat.login.oauth.OAuthLoginModule;
 import org.olat.login.oauth.OAuthSPI;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -69,6 +73,8 @@ public class AddOpenIDConnectIFFullConfigurableController extends FormBasicContr
 		openIdConnectIFDefaultEl.addActionListener(FormEvent.ONCHANGE);
 		
 		openIdConnectIFName = uifactory.addTextElement("openidconnectif.name", "openidconnectif.name", 256, "", formLayout);
+		openIdConnectIFName.setMaxLength(8);
+		openIdConnectIFName.setRegexMatchCheck("[a-zA-Z0-9._-]{3,8}", "openidconnectif.name.error");
 		openIdConnectIFDisplayName = uifactory.addTextElement("openidconnectif.displayname", "openidconnectif.displayname", 256, "", formLayout);
 
 		openIdConnectIFApiKeyEl = uifactory.addTextElement("openidconnectif.id", "openidconnectif.api.id", 256, "", formLayout);
@@ -95,6 +101,9 @@ public class AddOpenIDConnectIFFullConfigurableController extends FormBasicContr
 	protected boolean validateFormLogic(UserRequest ureq) {
 		boolean allOk = true;
 		allOk &= validate(openIdConnectIFName);
+		List<ValidationStatus> nameValidation = new ArrayList<ValidationStatus>();
+		openIdConnectIFName.validate(nameValidation);
+		allOk &= nameValidation.isEmpty();  
 		allOk &= validate(openIdConnectIFDisplayName);
 		allOk &= validate(openIdConnectIFApiKeyEl);
 		allOk &= validate(openIdConnectIFApiSecretEl);
