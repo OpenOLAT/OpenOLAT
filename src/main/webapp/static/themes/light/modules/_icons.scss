@@ -146,7 +146,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_managed:before { content: $fa-var-retweet; color: $text-muted}
 .o_icon_manual:before { content: $fa-var-book; cursor: help;}
 .o_icon_mail:before { content: $fa-var-envelope-o; }
-.o_icon_math:before { content: "\u03A3"; }
+.o_icon_math:before { content: "\03a3"; }
 .o_icon_media:before { content: $fa-var-image; }
 .o_icon_mediacenter:before { content: $fa-var-folder-open; }
 .o_icon_membersmanagement:before { content: $fa-var-users;}
