@@ -82,7 +82,7 @@ public class OAuthAuthenticationController extends FormBasicController implement
 		
 			FormLink button = uifactory.addFormLink(spiName, "login", spiName, null, formLayout, presentation);
 			button.setIconLeftCSS(spi.getIconCSS());
-			button.setElementCssClass("o_sel_auth_" + spiName);
+			button.setElementCssClass("o_sel_auth_" + spi.getName());
 			button.setUserObject(spi);
 		}
 	}
