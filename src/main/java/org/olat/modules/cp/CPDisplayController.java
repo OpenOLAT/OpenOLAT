@@ -391,6 +391,11 @@ public class CPDisplayController extends BasicController implements Activateable
 	 */
 	public void selectTreeNode(UserRequest ureq, String newUri) {
 		TreeNode newNode = ctm.lookupTreeNodeByHref(newUri);
+		if (newNode == null && newUri.contains("?")) {
+			// remove any url paramters in case it is not an html5 app. E.g. some ELML contents
+			newUri = newUri.substring(0, newUri.indexOf("?"));
+			newNode = ctm.lookupTreeNodeByHref(newUri);
+		}
 		selectTreeNode(ureq, newNode);
 		ThreadLocalUserActivityLogger.log(CourseLoggingAction.CP_GET_FILE, getClass(), LoggingResourceable.wrapCpNode(newUri));
 	}

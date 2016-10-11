@@ -504,7 +504,7 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 		} else if(previousLink == source) {
 			doPrevious(ureq);
 		} else if (source == luTree) {
-			if (event.getCommand().equals(MenuTree.COMMAND_TREENODE_CLICKED)) {
+			if (event.getCommand().equals(MenuTree.COMMAND_TREENODE_CLICKED) || event.getCommand().equals(MenuTree.COMMAND_TREENODE_EXPANDED)) {
 				TreeEvent tev = (TreeEvent) event;
 				doNodeClick(ureq, tev);
 			}
