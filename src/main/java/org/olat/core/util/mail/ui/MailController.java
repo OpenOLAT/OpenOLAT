@@ -134,10 +134,14 @@ public class MailController extends FormBasicController {
 		StringBuilder sb = new StringBuilder();
 		DBMailRecipient from = mail.getFrom();
 		sb.append("<ul class='list-inline'><li>");
-		sb.append(getFullName(from));
-		if (mailModule.isShowMailAddresses()) {
-			Identity fromIdentity = from.getRecipient();
-			sb.append(" &lt;").append(fromIdentity.getUser().getEmail()).append("&gt; ");
+		if (from != null) {
+			sb.append(getFullName(from));
+			if (mailModule.isShowMailAddresses()) {
+				Identity fromIdentity = from.getRecipient();
+				if (fromIdentity != null) {
+					sb.append(" &lt;").append(fromIdentity.getUser().getEmail()).append("&gt; ");
+				}
+			}			
 		}
 		sb.append("</li></ul>");
 		return sb.toString();
@@ -198,7 +202,7 @@ public class MailController extends FormBasicController {
 	}
 	
 	private String getFullName(DBMailRecipient recipient) {
-		if(recipient == null) return "";
+		if(recipient == null || recipient.getRecipient() == null) return "";
 		// dont't use the standard user display name formatter as this one adds
 		// a comma. The comma is used already to separate the users in the list
 		// of recipients
