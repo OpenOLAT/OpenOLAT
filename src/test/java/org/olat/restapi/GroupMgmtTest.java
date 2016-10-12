@@ -36,6 +36,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -439,6 +440,9 @@ public class GroupMgmtTest extends OlatJerseyTestCase {
 		//update the configuration
 		GroupConfigurationVO configVo = new GroupConfigurationVO();
 		configVo.setTools(new String[]{ "hasFolder", "hasNews" });
+		HashMap<String, Integer> toolsAccess = new HashMap<String, Integer>();
+		toolsAccess.put("hasFolder", new Integer(CollaborationTools.FOLDER_ACCESS_OWNERS));
+		configVo.setToolsAccess(toolsAccess);
 		configVo.setOwnersVisible(Boolean.TRUE);
 		configVo.setParticipantsVisible(Boolean.FALSE);
 		URI configRequest = UriBuilder.fromUri(getContextURI()).path("groups").path(newGroupVo.getKey().toString()).path("configuration").build();
@@ -466,6 +470,9 @@ public class GroupMgmtTest extends OlatJerseyTestCase {
 		assertFalse(tools.isToolEnabled(CollaborationTools.TOOL_FORUM));
 		assertFalse(tools.isToolEnabled(CollaborationTools.TOOL_PORTFOLIO));
 		assertFalse(tools.isToolEnabled(CollaborationTools.TOOL_WIKI));
+		// Check collab tools access configuration
+		assertTrue(tools.lookupFolderAccess().intValue() == CollaborationTools.FOLDER_ACCESS_OWNERS);		// modified
+		assertTrue(tools.lookupCalendarAccess().intValue() == CollaborationTools.CALENDAR_ACCESS_OWNERS); 	// default
 		//check display members
 		assertTrue(bg.isOwnersVisibleIntern());
 		assertFalse(bg.isParticipantsVisibleIntern());

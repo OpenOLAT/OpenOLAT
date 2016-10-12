@@ -25,6 +25,7 @@ import static org.olat.restapi.support.ObjectFactory.getInformation;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Consumes;
@@ -300,6 +301,14 @@ public class LearningGroupWebService {
 				}
 			}
 			tools.setToolEnabled(tool, enable);
+		}
+		
+		Map<String,Integer> toolsAccess = group.getToolsAccess();
+		if (toolsAccess != null) {
+			// ignore null for backward compatibility, don't change current configuration
+			for (String tool : toolsAccess.keySet()) {
+				tools.setToolAccess(tool, toolsAccess.get(tool));
+			}
 		}
 		
 		boolean ownersIntern = bg.isOwnersVisibleIntern();

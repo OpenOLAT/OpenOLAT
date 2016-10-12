@@ -795,6 +795,22 @@ public class CollaborationTools implements Serializable {
 		}
 	}
 	
+	public void setToolAccess(String tool, Integer access) {
+		if (TOOL_FOLDER.equals(tool) && access != null) {
+			if (FOLDER_ACCESS_ALL == access.intValue()) {
+				saveFolderAccess(new Long(FOLDER_ACCESS_ALL));
+			} else if (FOLDER_ACCESS_OWNERS == access.intValue()) {
+				saveFolderAccess(new Long(FOLDER_ACCESS_OWNERS));
+			} 			
+		} else if (TOOL_CALENDAR.equals(tool) && access != null) {
+			if (CALENDAR_ACCESS_ALL == access.intValue()) {
+				saveCalendarAccess(new Long(CALENDAR_ACCESS_ALL));
+			} else if (CALENDAR_ACCESS_OWNERS == access.intValue()) {
+				saveCalendarAccess(new Long(CALENDAR_ACCESS_OWNERS));
+			} 						
+		}
+	}
+	
 	public Long lookupCalendarAccess() {
 		NarrowedPropertyManager npm = NarrowedPropertyManager.getInstance(ores);
 		Property property = npm.findProperty(null, null, PROP_CAT_BG_COLLABTOOLS, KEY_CALENDAR_ACCESS);
