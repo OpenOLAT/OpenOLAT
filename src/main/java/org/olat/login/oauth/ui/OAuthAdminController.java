@@ -553,6 +553,7 @@ public class OAuthAdminController extends FormBasicController {
 		private FormLayoutContainer openIdConnectIFCont;
 		
 		private FormLink deleteButton;
+		private MultipleSelectionElement openIdConnectIFDefaultEl;
 		private TextElement openIdConnectIFConfName;
 		private TextElement openIdConnectIFConfDisplayName;
 		private TextElement openIdConnectIFConfApiKeyEl;
