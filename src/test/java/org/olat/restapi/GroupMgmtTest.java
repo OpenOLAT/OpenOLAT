@@ -472,7 +472,7 @@ public class GroupMgmtTest extends OlatJerseyTestCase {
 		assertFalse(tools.isToolEnabled(CollaborationTools.TOOL_WIKI));
 		// Check collab tools access configuration
 		assertTrue(tools.lookupFolderAccess().intValue() == CollaborationTools.FOLDER_ACCESS_OWNERS);		// modified
-		assertTrue(tools.lookupCalendarAccess().intValue() == CollaborationTools.CALENDAR_ACCESS_OWNERS); 	// default
+		assertNull(tools.lookupCalendarAccess()); 	// not explicitly initialized -> null
 		//check display members
 		assertTrue(bg.isOwnersVisibleIntern());
 		assertFalse(bg.isParticipantsVisibleIntern());
