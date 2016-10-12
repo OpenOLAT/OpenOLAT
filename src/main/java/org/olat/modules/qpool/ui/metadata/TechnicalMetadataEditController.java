@@ -96,6 +96,8 @@ public class TechnicalMetadataEditController extends FormBasicController {
 				}
 			}
 		}
+		// don't let users modify our internal formats
+		formatEl.setEnabled(!formatList.contains(item.getFormat()));
 		
 		Formatter formatter = Formatter.getInstance(getLocale());
 		String creationDate = formatter.formatDateAndTime(item.getCreationDate());
