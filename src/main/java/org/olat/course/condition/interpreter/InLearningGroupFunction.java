@@ -29,6 +29,9 @@ import java.util.List;
 
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.id.Identity;
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
+import org.olat.core.util.StringHelper;
 import org.olat.course.editor.CourseEditorEnv;
 import org.olat.course.groupsandrights.CourseGroupManager;
 import org.olat.course.run.userview.UserCourseEnvironment;
@@ -39,6 +42,8 @@ import org.olat.group.BusinessGroupService;
  *
  */
 public class InLearningGroupFunction extends AbstractFunction {
+	
+	private static final OLog log = Tracing.createLoggerFor(InLearningGroupFunction.class);
 	
 	public final String name;
 
@@ -53,6 +58,7 @@ public class InLearningGroupFunction extends AbstractFunction {
 	/**
 	 * @see com.neemsoft.jmep.FunctionCB#call(java.lang.Object[])
 	 */
+	@Override
 	public Object call(Object[] inStack) {		/*
 		 * argument check
 		 */
@@ -66,8 +72,8 @@ public class InLearningGroupFunction extends AbstractFunction {
 		 */
 		if (!(inStack[0] instanceof String)) return handleException( new ArgumentParseException(ArgumentParseException.WRONG_ARGUMENT_FORMAT, name, "",
 				"error.argtype.groupnameexpected", "solution.example.name.infunction"));
-    String groupName = (String)inStack[0];
-    groupName = groupName != null ? groupName.trim() : null;
+		String groupName = (String)inStack[0];
+		groupName = groupName != null ? groupName.trim() : null;
 		/*
 		 * check reference integrity
 		 */
@@ -82,10 +88,13 @@ public class InLearningGroupFunction extends AbstractFunction {
 		}
 
 		//the real function evaluation which is used during run time
-		if(isGroupKey(groupName)) {
-			Long groupKey = Long.parseLong(groupName);
-			return getUserCourseEnv().isIdentityInCourseGroup(groupKey) ? ConditionInterpreter.INT_TRUE: ConditionInterpreter.INT_FALSE;
-			//return cgm.isIdentityInGroup(ident, groupKey) ? ConditionInterpreter.INT_TRUE: ConditionInterpreter.INT_FALSE;
+		if(StringHelper.isLong(groupName)) {
+			try {
+				Long groupKey = Long.parseLong(groupName);
+				return getUserCourseEnv().isIdentityInCourseGroup(groupKey) ? ConditionInterpreter.INT_TRUE: ConditionInterpreter.INT_FALSE;
+			} catch (NumberFormatException e) {
+				log.error("" + groupName, e);
+			}
 		}
 
 		CourseGroupManager cgm = getUserCourseEnv().getCourseEnvironment().getCourseGroupManager();
@@ -97,18 +106,8 @@ public class InLearningGroupFunction extends AbstractFunction {
 		return ConditionInterpreter.INT_FALSE;
 	}
 
+	@Override
 	protected Object defaultValue() {
 		return ConditionInterpreter.INT_TRUE;
-	}
-	
-	private boolean isGroupKey(String groupName) {
-		char[] charArr = groupName.toCharArray();
-		for(int i=charArr.length; i-->0; ) {
-			char ch = charArr[i];
-			if(ch < 47 || ch > 58) {
-				return false;
-			}
-		}
-		return true;
 	}
 }

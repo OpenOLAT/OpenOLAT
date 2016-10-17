@@ -41,6 +41,7 @@ import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.logging.OLATRuntimeException;
 import org.olat.core.util.Util;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -123,7 +124,7 @@ public class ImportCalendarFileController extends FormBasicController {
 		try {
 			importedCalendar = importCalendarManager.importCalendar(getIdentity(), name, CalendarManager.TYPE_USER, uploadedFile);
 			fireEvent(ureq, Event.DONE_EVENT);
-		} catch (IOException e) {
+		} catch (OLATRuntimeException | IOException e) {
 			logError("Cannot upload calendar file", e);
 			showError("cal.import.form.format.error");
 		}
