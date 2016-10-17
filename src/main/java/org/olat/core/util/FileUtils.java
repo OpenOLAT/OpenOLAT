@@ -792,10 +792,12 @@ public class FileUtils {
 	 * @return return empty String "" without suffix. 
 	 */
 	public static String getFileSuffix(String filePath) {
-		int lastDot = filePath.lastIndexOf('.');
-		if (lastDot > 0) {
-			if (lastDot < filePath.length())
-				return filePath.substring(lastDot + 1).toLowerCase();
+		if(StringHelper.containsNonWhitespace(filePath)) { 
+			int lastDot = filePath.lastIndexOf('.');
+			if (lastDot > 0) {
+				if (lastDot < filePath.length())
+					return filePath.substring(lastDot + 1).toLowerCase();
+			}
 		}
 		return "";
 	}
