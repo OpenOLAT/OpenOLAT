@@ -106,7 +106,8 @@ public class HighScoreRunController extends FormBasicController{
 		viewHistogram = config.getBooleanSafe(HighScoreEditController.CONFIG_KEY_HISTOGRAM);
 		viewPodium = config.getBooleanSafe(HighScoreEditController.CONFIG_KEY_PODIUM);
 		anonymous = config.getBooleanSafe(HighScoreEditController.CONFIG_KEY_ANONYMIZE);
-		int bestOnly = (int) config.get(HighScoreEditController.CONFIG_KEY_BESTONLY);
+		int bestOnly = config.getBooleanEntry(HighScoreEditController.CONFIG_KEY_BESTONLY) != null ? 
+				(int) config.get(HighScoreEditController.CONFIG_KEY_BESTONLY) : 0;
 		tableSize = bestOnly != 0 ? (int) config.get(HighScoreEditController.CONFIG_KEY_NUMUSER) : assessEntries.size();
 		ownIdentity = ureq.getIdentity();
 		initLists();
