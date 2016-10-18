@@ -332,7 +332,7 @@ public class RepositoryEditDescriptionController extends FormBasicController {
 			fileUpload.setInitialFile(((LocalFileImpl)img).getBasefile());
 		}
 		fileUpload.setVisible(!managed);
-		fileUpload.limitToMimeType(imageMimeTypes, null, null);
+		fileUpload.limitToMimeType(imageMimeTypes, "cif.error.mimetype", new String[]{ imageMimeTypes.toString()} );
 
 		VFSLeaf movie = repositoryService.getIntroductionMovie(repositoryEntry);
 		movieUpload = uifactory.addFileElement(getWindowControl(), "rentry.movie", "rentry.movie", descCont);
@@ -409,7 +409,6 @@ public class RepositoryEditDescriptionController extends FormBasicController {
 			}
 		}
 
-		// Ok, passed all checks
 		return allOk & super.validateFormLogic(ureq);
 	}
 	
@@ -436,6 +435,7 @@ public class RepositoryEditDescriptionController extends FormBasicController {
 			updateDatesVisibility();
 		} else if (source == fileUpload) {
 			if(FileElementEvent.DELETE.equals(event.getCommand())) {
+				fileUpload.clearError();
 				VFSLeaf img = repositoryManager.getImage(repositoryEntry);
 				if(fileUpload.getUploadFile() != null && fileUpload.getUploadFile() != fileUpload.getInitialFile()) {
 					fileUpload.reset();
@@ -450,6 +450,7 @@ public class RepositoryEditDescriptionController extends FormBasicController {
 			}
 		} else if (source == movieUpload) {
 			if(FileElementEvent.DELETE.equals(event.getCommand())) {
+				movieUpload.clearError();
 				VFSLeaf movie = repositoryService.getIntroductionMovie(repositoryEntry);
 				if(movieUpload.getUploadFile() != null && movieUpload.getUploadFile() != movieUpload.getInitialFile()) {
 					movieUpload.reset();
