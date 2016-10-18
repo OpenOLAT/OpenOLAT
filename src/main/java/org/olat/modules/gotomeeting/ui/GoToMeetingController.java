@@ -98,7 +98,7 @@ public class GoToMeetingController extends BasicController {
 		}
 		
 		List<GoToRecordingsG2T> recordings = meetingMgr.getRecordings(meeting, error);
-		openRecordingsLink.setVisible(recordings.size() > 0);
+		openRecordingsLink.setVisible(recordings != null && recordings.size() > 0);
 
 		Date start = meeting.getStartDate();
 		Date end = meeting.getEndDate();
