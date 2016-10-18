@@ -41,7 +41,6 @@ import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElem
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
-import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -127,7 +126,7 @@ public class CcStep00 extends BasicStep {
 		protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 			super.formInnerEvent(ureq, source, event);
 			// show edit button if enrollment is activated
-			if (this.isEnrollmentSelected()) {
+			if (isEnrollmentSelected()) {
 				if (editButtonEnrollment != null) {
 					editButtonEnrollment.setVisible(true);
 				}
@@ -139,12 +138,13 @@ public class CcStep00 extends BasicStep {
 
 			// overlay with configuration of enrollment
 			if (source == editButtonEnrollment) {
-				this.finishWorkflowItem();
-				VelocityContainer vcEditEnrol = new VelocityContainer("cceedit", velocity_root + "/cceedit.html", getTranslator(), null);
+				finishWorkflowItem();
 				formEditEnrol = new EnrollmentEditForm(ureq, getWindowControl(), courseConfig);
 				listenTo(formEditEnrol);
-				vcEditEnrol.put("formEditEnrol", formEditEnrol.getInitialComponent());
-				cmc = new CloseableModalController(getWindowControl(), "close", vcEditEnrol);
+				
+				String title = translate("coursecreation.enrollment.title");
+				cmc = new CloseableModalController(getWindowControl(), "close", formEditEnrol.getInitialComponent(), true, title);
+				listenTo(cmc);
 				cmc.activate();
 			}
 		}

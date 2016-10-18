@@ -136,17 +136,4 @@ public class CourseExtensionHelper {
 		if(log.isDebug()) log.debug("Created new course node: " + nodeConfig.getAlias());
 		return node;
 	}
-
-	/**
-	 * Removes a course node from a course.
-	 * 
-	 * @param node node to be removed
-	 * @param course course where the node belongs to
-	 */
-	public static final void removeNode(final CourseNode node, ICourse course) {
-		course = CourseFactory.openCourseEditSession(course.getResourceableId());
-		course.getEditorTreeModel().removeCourseNode(node);
-		CourseFactory.saveCourseEditorTreeModel(course.getResourceableId());
-		CourseFactory.closeCourseEditSession(course.getResourceableId(), true);
-	}
 }
