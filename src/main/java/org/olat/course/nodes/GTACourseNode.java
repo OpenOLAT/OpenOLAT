@@ -20,7 +20,6 @@
 package org.olat.course.nodes;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
@@ -31,7 +30,6 @@ import java.util.Set;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
-import org.apache.commons.io.IOUtils;
 import org.olat.basesecurity.IdentityRef;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.services.notifications.NotificationsManager;
@@ -55,6 +53,7 @@ import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.ZipUtil;
+import org.olat.core.util.io.ShieldOutputStream;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.restapi.SystemItemFilter;
@@ -534,15 +533,13 @@ public class GTACourseNode extends AbstractAccessableCourseNode implements Persi
 			users = ScoreAccountingHelper.loadUsers(course.getCourseEnvironment(), options);
 			
 			String courseTitle = course.getCourseTitle();
-			String fileName = ExportUtil.createFileNameWithTimeStamp(courseTitle, "xls");
+			String fileName = ExportUtil.createFileNameWithTimeStamp(courseTitle, "xlsx");
 			List<AssessableCourseNode> nodes = Collections.<AssessableCourseNode>singletonList(this);
-			String s = ScoreAccountingHelper.createCourseResultsOverviewTable(users, nodes, course, locale);
-			// write course results overview table to filesystem
 			try {
 				exportStream.putNextEntry(new ZipEntry(dirName + "/" + fileName));
-				IOUtils.write(s, exportStream);
+				ScoreAccountingHelper.createCourseResultsOverviewXMLTable(users, nodes, course, locale, new ShieldOutputStream(exportStream));
 				exportStream.closeEntry();
-			} catch (IOException e) {
+			} catch (Exception e) {
 				log.error("", e);
 			}
 		}
