@@ -256,6 +256,8 @@ public class IdentityListCourseNodeController extends FormBasicController implem
 				tableEl.setExtendedFilterButton(translate("filter.groups"), groupFilters);
 			}
 		}
+
+		tableEl.setAndLoadPersistedPreferences(ureq, "assessment-tool-identity-list");
 		
 		if(courseNode instanceof AssessableCourseNode && !(courseNode instanceof CalculatedAssessableCourseNode)) {
 			bulkDoneButton = uifactory.addFormLink("bulk.done", formLayout, Link.BUTTON);

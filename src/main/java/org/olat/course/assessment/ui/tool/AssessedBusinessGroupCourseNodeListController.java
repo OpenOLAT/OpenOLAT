@@ -123,6 +123,7 @@ public class AssessedBusinessGroupCourseNodeListController extends FormBasicCont
 		FlexiTableSortOptions options = new FlexiTableSortOptions();
 		options.setDefaultOrderBy(new SortKey(ABGCols.name.name(), true));
 		tableEl.setSortSettings(options);
+		tableEl.setAndLoadPersistedPreferences(ureq, "assessment-tool-group-list");
 		
 		if(formLayout instanceof FormLayoutContainer) {
 			FormLayoutContainer layoutcont = (FormLayoutContainer)formLayout;
