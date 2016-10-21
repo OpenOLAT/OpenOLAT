@@ -223,7 +223,7 @@ public class MembersManagementMainController extends MainLayoutBasicController  
 		} else if(CMD_GROUPS.equals(cmd)) {
 			if(entryAdmin || memberManagementRight || groupManagementRight) {
 				if(groupsCtrl == null) {
-					groupsCtrl = new CourseBusinessGroupListController(ureq, bwControl, repoEntry);
+					groupsCtrl = new CourseBusinessGroupListController(ureq, bwControl, repoEntry, entryAdmin || groupManagementRight);
 					listenTo(groupsCtrl);
 				}
 				groupsCtrl.reloadModel();

@@ -24,7 +24,6 @@ import java.util.List;
 import java.util.Locale;
 
 import org.olat.core.commons.persistence.SortKey;
-import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
@@ -155,26 +154,6 @@ public class BusinessGroupListFlexiTableModel extends DefaultFlexiTableDataModel
 			List<BGTableItem> views = new BusinessGroupFlexiTableModelSort(orderBy, this, locale).sort();
 			super.setObjects(views);
 		}
-	}
-	
-	public boolean filterEditableGroupKeys(UserRequest ureq, List<Long> groupKeys) {
-		if(ureq.getUserSession().getRoles().isOLATAdmin() || ureq.getUserSession().getRoles().isGroupManager()) {
-			return false;
-		}
-		
-		int countBefore = groupKeys.size();
-		
-		for(BGTableItem item:getObjects()) {
-			Long groupKey = item.getBusinessGroupKey();
-			if(groupKeys.contains(groupKey)) {
-				BusinessGroupMembership membership = item.getMembership();
-				if(membership == null || !membership.isOwner()) {
-					groupKeys.remove(groupKey);
-				}
-			}
-		}
-		
-		return groupKeys.size() != countBefore;
 	}
 
 	/**

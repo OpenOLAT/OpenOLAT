@@ -28,7 +28,6 @@ package org.olat.admin.user.groups;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.table.DefaultTableDataModel;
 import org.olat.core.gui.translator.Translator;
 import org.olat.group.BusinessGroupManagedFlag;
@@ -96,26 +95,6 @@ class BusinessGroupTableModelWithType extends DefaultTableDataModel<GroupOvervie
 	@Override
 	public Object createCopyWithEmptyList() {
 		return new BusinessGroupTableModelWithType(trans, columnCount);
-	}
-	
-	public boolean filterEditableGroupKeys(UserRequest ureq, List<Long> groupKeys) {
-		if(ureq.getUserSession().getRoles().isOLATAdmin() || ureq.getUserSession().getRoles().isGroupManager()) {
-			return false;
-		}
-		
-		int countBefore = groupKeys.size();
-		
-		for(GroupOverviewRow item:getObjects()) {
-			Long groupKey = item.getKey();
-			if(groupKeys.contains(groupKey)) {
-				BusinessGroupMembership membership = item.getMembership();
-				if(membership == null || !membership.isOwner()) {
-					groupKeys.remove(groupKey);
-				}
-			}
-		}
-		
-		return groupKeys.size() != countBefore;
 	}
 
 	/**

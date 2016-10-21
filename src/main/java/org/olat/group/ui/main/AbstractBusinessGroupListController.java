@@ -1050,16 +1050,37 @@ public abstract class AbstractBusinessGroupListController extends FormBasicContr
 		}
 	}
 	
-	protected List<BusinessGroup> toBusinessGroups(UserRequest ureq, List<? extends BusinessGroupRef> items, boolean editableOnly) {
+	protected final List<BusinessGroup> toBusinessGroups(UserRequest ureq, List<? extends BusinessGroupRef> items, boolean editableOnly) {
 		List<Long> groupKeys = new ArrayList<Long>();
 		for(BusinessGroupRef item:items) {
 			groupKeys.add(item.getKey());
 		}
 		if(editableOnly) {
-			groupTableModel.filterEditableGroupKeys(ureq, groupKeys);
+			filterEditableGroupKeys(ureq, groupKeys);
 		}
+
 		List<BusinessGroup> groups = businessGroupService.loadBusinessGroups(groupKeys);
 		return groups;
+	}
+	
+	protected boolean filterEditableGroupKeys(UserRequest ureq, List<Long> groupKeys) {
+		if(ureq.getUserSession().getRoles().isOLATAdmin() || ureq.getUserSession().getRoles().isGroupManager()) {
+			return false;
+		}
+		
+		int countBefore = groupKeys.size();
+
+		for(BGTableItem item:groupTableModel.getObjects()) {
+			Long groupKey = item.getBusinessGroupKey();
+			if(groupKeys.contains(groupKey)) {
+				BusinessGroupMembership membership = item.getMembership();
+				if(membership == null || !membership.isOwner()) {
+					groupKeys.remove(groupKey);
+				}
+			}
+		}
+		
+		return groupKeys.size() != countBefore;
 	}
 	
 	/**
