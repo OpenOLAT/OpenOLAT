@@ -27,6 +27,7 @@ import org.olat.core.gui.components.form.flexible.FormUIFactory;
 import org.olat.core.gui.components.form.flexible.elements.RichTextElement;
 import org.olat.core.gui.components.form.flexible.elements.SelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
+import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.link.Link;
@@ -41,7 +42,11 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.tabbable.ActivateableTabbableDefaultController;
 import org.olat.core.logging.AssertException;
+import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.filter.FilterFactory;
+import org.olat.core.util.vfs.VFSContainer;
+import org.olat.core.util.vfs.VFSContainerMapper;
 import org.olat.course.ICourse;
 import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.condition.Condition;
@@ -56,6 +61,8 @@ import org.olat.modules.video.ui.VideoDisplayController;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.controllers.ReferencableEntriesSearchController;
+import org.olat.repository.handlers.RepositoryHandler;
+import org.olat.repository.handlers.RepositoryHandlerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -95,6 +102,7 @@ public class VideoEditController  extends ActivateableTabbableDefaultController 
 	private final VideoCourseNode videoNode;
 	private RepositoryEntry repositoryEntry;
 
+	private VideoOptionsForm videoOptionsCtrl;
 	private ReferencableEntriesSearchController searchController;
 
 	private Link previewLink;
@@ -234,9 +242,11 @@ public class VideoEditController  extends ActivateableTabbableDefaultController 
 					fireEvent(urequest, NodeEditController.NODECONFIG_CHANGED_EVENT);
 
 					videoConfigurationVc.contextPut("showOptions", Boolean.TRUE);
-					VideoOptionsForm videoOptions = new VideoOptionsForm(urequest, getWindowControl(), repositoryEntry, config);
-					videoConfigurationVc.put("videoOptions", videoOptions.getInitialComponent());
-					listenTo(videoOptions);
+					
+					removeAsListenerAndDispose(videoOptionsCtrl);
+					videoOptionsCtrl = new VideoOptionsForm(urequest, getWindowControl(), repositoryEntry, config);
+					videoConfigurationVc.put("videoOptions", videoOptionsCtrl.getInitialComponent());
+					listenTo(videoOptionsCtrl);
 				}
 			}
 		} else if (source == accessibilityCondContr) {
@@ -318,26 +328,35 @@ class VideoOptionsForm extends FormBasicController{
 	@Autowired	
 	protected VideoManager videoManager;
 
-	private RepositoryEntry repoEntry;
 	private SelectionElement videoComments;
 	private SelectionElement videoRating;
 	private SelectionElement videoAutoplay;
 	private SingleSelection description;
 	private RichTextElement descriptionField;
+	private StaticTextElement descriptionRepoField;
 	private boolean commentsEnabled;
 	private boolean ratingEnabled;
 	private boolean autoplay;
-	private ModuleConfiguration config;
-
-
+	
+	private String mediaRepoBaseUrl;
+	private final RepositoryEntry repoEntry;
+	private final ModuleConfiguration config;
 
 	VideoOptionsForm(UserRequest ureq, WindowControl wControl, RepositoryEntry repoEntry, ModuleConfiguration moduleConfiguration) {
 		super(ureq, wControl);
 		this.config = moduleConfiguration;
 		this.repoEntry = repoEntry;
-		this.commentsEnabled = config.getBooleanSafe(VideoEditController.CONFIG_KEY_COMMENTS);
-		this.ratingEnabled = config.getBooleanSafe(VideoEditController.CONFIG_KEY_RATING);
-		this.autoplay = config.getBooleanSafe(VideoEditController.CONFIG_KEY_AUTOPLAY);
+		
+		commentsEnabled = config.getBooleanSafe(VideoEditController.CONFIG_KEY_COMMENTS);
+		ratingEnabled = config.getBooleanSafe(VideoEditController.CONFIG_KEY_RATING);
+		autoplay = config.getBooleanSafe(VideoEditController.CONFIG_KEY_AUTOPLAY);
+		
+		RepositoryHandler handler = RepositoryHandlerFactory.getInstance().getRepositoryHandler(repoEntry);
+		VFSContainer mediaContainer = handler.getMediaContainer(repoEntry);
+		if(mediaContainer != null) {
+			mediaRepoBaseUrl = registerMapper(ureq, new VFSContainerMapper(mediaContainer.getParentContainer()));
+		}
+		
 		initForm(ureq);
 	}
 
@@ -376,6 +395,8 @@ class VideoOptionsForm extends FormBasicController{
 		description.select(config.getStringValue(VideoEditController.CONFIG_KEY_DESCRIPTION_SELECT,"none"), true);
 		String desc = repoEntry.getDescription();
 		descriptionField = uifactory.addRichTextElementForStringDataMinimalistic("description", "", desc, -1, -1, formLayout, getWindowControl());
+		descriptionRepoField = uifactory.addStaticTextElement("description.repo", "", "", formLayout);
+
 		updateDescriptionField();
 		uifactory.addFormSubmitButton("submit", formLayout);
 		//init options-config
@@ -395,14 +416,26 @@ class VideoOptionsForm extends FormBasicController{
 		String selectDescOption = description.getSelectedKey();
 		if("none".equals(selectDescOption)) {
 			descriptionField.setVisible(false);
+			descriptionRepoField.setVisible(false);
 		} else if("resourceDescription".equals(selectDescOption)) {
-			descriptionField.setVisible(true);
-			descriptionField.setValue(repoEntry.getDescription());
+			descriptionField.setVisible(false);
 			descriptionField.setEnabled(false);
+			
+			String text = repoEntry.getDescription();
+			if(StringHelper.containsNonWhitespace(text)) {
+				text = StringHelper.xssScan(text);
+				if(mediaRepoBaseUrl != null) {
+					text = FilterFactory.getBaseURLToMediaRelativeURLFilter(mediaRepoBaseUrl).filter(text);
+				}
+				text = Formatter.formatLatexFormulas(text);
+			}
+			descriptionRepoField.setValue(text);
+			descriptionRepoField.setVisible(true);
 		} else if("customDescription".equals(selectDescOption)) {
 			descriptionField.setVisible(true);
-			descriptionField.setValue(config.getStringValue(VideoEditController.CONFIG_KEY_DESCRIPTION_CUSTOMTEXT, ""));
 			descriptionField.setEnabled(true);
+			descriptionField.setValue(config.getStringValue(VideoEditController.CONFIG_KEY_DESCRIPTION_CUSTOMTEXT, ""));
+			descriptionRepoField.setVisible(false);
 		}
 	}
 
@@ -412,6 +445,7 @@ class VideoOptionsForm extends FormBasicController{
 			updateDescriptionField();
 		}
 	}
+	
 	@Override
 	protected void doDispose() {
 		//

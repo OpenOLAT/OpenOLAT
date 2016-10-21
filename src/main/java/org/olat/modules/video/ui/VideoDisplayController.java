@@ -35,9 +35,12 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.render.Renderer;
 import org.olat.core.gui.render.StringOutput;
+import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.filter.FilterFactory;
 import org.olat.core.util.prefs.Preferences;
 import org.olat.core.util.vfs.VFSContainer;
+import org.olat.core.util.vfs.VFSContainerMapper;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.modules.video.VideoManager;
 import org.olat.modules.video.VideoMetadata;
@@ -45,6 +48,8 @@ import org.olat.modules.video.VideoModule;
 import org.olat.modules.video.VideoTranscoding;
 import org.olat.modules.video.manager.VideoMediaMapper;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.handlers.RepositoryHandler;
+import org.olat.repository.handlers.RepositoryHandlerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -69,6 +74,7 @@ public class VideoDisplayController extends BasicController {
 	
 	private RepositoryEntry entry;
 	private String descriptionText;
+	private String mediaRepoBaseUrl;
 
 
 	public VideoDisplayController(UserRequest ureq, WindowControl wControl, RepositoryEntry entry, boolean autoWidth) {
@@ -86,6 +92,12 @@ public class VideoDisplayController extends BasicController {
 		
 		mainVC = createVelocityContainer("video_run");
 		putInitialPanel(mainVC);
+		
+		RepositoryHandler handler = RepositoryHandlerFactory.getInstance().getRepositoryHandler(entry);
+		VFSContainer mediaContainer = handler.getMediaContainer(entry);
+		if(mediaContainer != null) {
+			mediaRepoBaseUrl = registerMapper(ureq, new VFSContainerMapper(mediaContainer.getParentContainer()));
+		}
 
 		// load mediaelementjs player and sourcechooser plugin
 		StringOutput sb = new StringOutput(50);
@@ -153,6 +165,22 @@ public class VideoDisplayController extends BasicController {
 		VFSLeaf video = videoManager.getMasterVideoFile(entry.getOlatResource());
 		loadVideo(video);
 	}
+	
+	/**
+	 * Set the text with url rewrite for embedded images, latex...
+	 * @param text
+	 * @param key
+	 */
+	private void setText(String text, String key) {
+		if(StringHelper.containsNonWhitespace(text)) {
+			text = StringHelper.xssScan(text);
+			if(mediaRepoBaseUrl != null) {
+				text = FilterFactory.getBaseURLToMediaRelativeURLFilter(mediaRepoBaseUrl).filter(text);
+			}
+			text = Formatter.formatLatexFormulas(text);
+		}
+		mainVC.contextPut(key, text);
+	}
 
 	/**
 	 * Internal helper to do the actual video loading, checking for transcoded versions and captions
@@ -161,8 +189,8 @@ public class VideoDisplayController extends BasicController {
 	 */
 	private void loadVideo(VFSLeaf video) {
 		mainVC.contextPut("title", entry.getDisplayname());
-		String desc = (descriptionText   != null ? descriptionText : entry.getDescription());
-		mainVC.contextPut("description", (StringHelper.containsNonWhitespace(desc) ? desc : null));
+		String desc = (descriptionText != null ? descriptionText : entry.getDescription());
+		setText(desc, "description");
 		String authors = entry.getAuthors();
 		mainVC.contextPut("authors", (StringHelper.containsNonWhitespace(authors) ? authors : null));
 
