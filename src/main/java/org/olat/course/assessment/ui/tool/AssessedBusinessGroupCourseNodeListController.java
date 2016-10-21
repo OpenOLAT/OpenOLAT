@@ -19,6 +19,7 @@
  */
 package org.olat.course.assessment.ui.tool;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -44,7 +45,10 @@ import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
+import org.olat.core.util.Util;
 import org.olat.core.util.resource.OresHelper;
+import org.olat.course.CourseFactory;
+import org.olat.course.assessment.AssessmentModule;
 import org.olat.course.assessment.AssessmentToolManager;
 import org.olat.course.assessment.model.AssessedBusinessGroup;
 import org.olat.course.assessment.model.SearchAssessedIdentityParams;
@@ -52,6 +56,7 @@ import org.olat.course.assessment.ui.tool.AssessedBusinessGroupTableModel.ABGCol
 import org.olat.course.nodes.AssessableCourseNode;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.CourseNodeFactory;
+import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
 import org.olat.modules.assessment.ui.AssessmentToolContainer;
@@ -88,7 +93,7 @@ public class AssessedBusinessGroupCourseNodeListController extends FormBasicCont
 	public AssessedBusinessGroupCourseNodeListController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
 			RepositoryEntry courseEntry, CourseNode courseNode, AssessmentToolContainer toolContainer,
 			AssessmentToolSecurityCallback assessmentCallback) {
-		super(ureq, wControl, "groups");
+		super(ureq, wControl, "groups", Util.createPackageTranslator(AssessmentModule.class, ureq.getLocale()));
 		this.courseNode = courseNode;
 		this.courseEntry = courseEntry;
 		this.assessmentCallback = assessmentCallback;
@@ -153,7 +158,16 @@ public class AssessedBusinessGroupCourseNodeListController extends FormBasicCont
 			List<AssessedBusinessGroup> rows = assessmentToolManager.getBusinessGroupStatistics(getIdentity(), params);
 			Set<Long> keys = rows.stream().map(c -> c.getKey()).collect(Collectors.toSet());
 			
-			List<BusinessGroup> groups = assessmentCallback.getCoachedGroups();
+			List<BusinessGroup> groups;
+			if(assessmentCallback.isAdmin()) {
+				CourseEnvironment courseEnv = CourseFactory.loadCourse(courseEntry).getCourseEnvironment();
+				groups = courseEnv.getCourseGroupManager().getAllBusinessGroups();
+			} else if(assessmentCallback.getCoachedGroups() != null) {
+				groups = assessmentCallback.getCoachedGroups();
+			} else {
+				groups = Collections.emptyList();
+			}
+
 			for(BusinessGroup group:groups) {
 				if(!keys.contains(group.getKey())) {
 					rows.add(new AssessedBusinessGroup(group.getKey(), group.getName(), 0.0d, 0, 0, 0, 0));

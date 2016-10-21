@@ -63,6 +63,8 @@ import org.olat.course.assessment.ui.tool.AssessedIdentityListProvider;
 import org.olat.course.assessment.ui.tool.AssessmentStatusCellRenderer;
 import org.olat.course.assessment.ui.tool.AssessmentToolConstants;
 import org.olat.group.BusinessGroup;
+import org.olat.group.BusinessGroupService;
+import org.olat.group.model.SearchBusinessGroupParams;
 import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
 import org.olat.modules.assessment.ui.AssessedIdentityListTableModel.IdentityCourseElementCols;
@@ -101,6 +103,8 @@ public class AssessedIdentityListController extends FormBasicController implemen
 	private BaseSecurity securityManager;
 	@Autowired
 	private BaseSecurityModule securityModule;
+	@Autowired
+	private BusinessGroupService businessGroupService;
 	@Autowired
 	private AssessmentToolManager assessmentToolManager;
 	@Autowired
@@ -178,7 +182,13 @@ public class AssessedIdentityListController extends FormBasicController implemen
 		tableEl.setFilters("", filters, false);
 		
 		if(assessmentCallback.canAssessBusinessGoupMembers()) {
-			List<BusinessGroup> coachedGroups = assessmentCallback.getCoachedGroups(); 
+			List<BusinessGroup> coachedGroups;
+			if(assessmentCallback.isAdmin()) {
+				SearchBusinessGroupParams params = new SearchBusinessGroupParams();
+				coachedGroups = businessGroupService.findBusinessGroups(params, testEntry, 0, -1);
+			} else {
+				coachedGroups = assessmentCallback.getCoachedGroups();
+			}
 
 			if(coachedGroups.size() > 0) {
 				List<FlexiTableFilter> groupFilters = new ArrayList<>();
