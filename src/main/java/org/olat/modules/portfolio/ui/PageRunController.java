@@ -147,7 +147,7 @@ public class PageRunController extends BasicController implements TooledControll
 
 		editMetadataLink = LinkFactory.createToolLink("edit.page.metadata", translate("edit.page.metadata"), this);
 		editMetadataLink.setIconLeftCSS("o_icon o_icon-lg o_icon_edit_metadata");
-		editMetadataLink.setVisible(secCallback.canEditMetadataBinder());
+		editMetadataLink.setVisible(secCallback.canEditPageMetadata(page, assignments));
 		stackPanel.addTool(editMetadataLink, Align.left);
 		
 		moveToTrashLink = LinkFactory.createToolLink("delete.page", translate("delete.page"), this);
