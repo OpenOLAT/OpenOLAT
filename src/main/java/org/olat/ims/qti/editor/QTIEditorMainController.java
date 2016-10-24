@@ -140,6 +140,7 @@ import org.olat.repository.handlers.RepositoryHandler;
 import org.olat.repository.handlers.RepositoryHandlerFactory;
 import org.olat.repository.ui.author.CreateRepositoryEntryController;
 import org.olat.resource.references.Reference;
+import org.olat.resource.references.ReferenceManager;
 import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -273,6 +274,8 @@ public class QTIEditorMainController extends MainLayoutBasicController implement
 	@Autowired
 	private RepositoryManager repositoryManager;
 	@Autowired
+	private ReferenceManager referenceManager;
+	@Autowired
 	private RepositoryService repositoryService;
 	@Autowired
 	private QTIQPoolServiceProvider qtiQpoolServiceProvider;
@@ -288,18 +291,27 @@ public class QTIEditorMainController extends MainLayoutBasicController implement
 				try {
 					ICourse course = CourseFactory.loadCourse(ref.getSource().getResourceableId());
 					CourseNode courseNode = course.getEditorTreeModel().getCourseNode(ref.getUserdata());
-					String repositorySoftKey = (String) courseNode.getModuleConfiguration().get(IQEditController.CONFIG_KEY_REPOSITORY_SOFTKEY);
-					//check softly that the setting if ok
-					if(qtiEntry.getSoftkey().equals(repositorySoftKey)) {
-						restrictedEdit = ((CoordinatorManager.getInstance().getCoordinator().getLocker().isLocked(course, null))
-							|| qtiResultManager.countResults(course.getResourceableId(), courseNode.getIdent(), qtiEntry.getKey()) > 0) ? true : false;
+					if(courseNode == null) {
+						courseNode = course.getRunStructure().getNode(ref.getUserdata());
+					}
+						
+					if(courseNode == null) {
+						referenceManager.delete(ref);	
 					} else {
-						logError("The course node soft key doesn't match the test/survey sotf key. Course resourceable id: "
-					      + course.getResourceableId() + " (" + course.getCourseTitle() + ") course node: " + courseNode.getIdent() + " (" + courseNode.getShortTitle() + " )"
-					      + " soft key of test/survey in course: " + repositorySoftKey + "  test/survey soft key: " + qtiEntry.getSoftkey(), null);
+						String repositorySoftKey = (String) courseNode.getModuleConfiguration().get(IQEditController.CONFIG_KEY_REPOSITORY_SOFTKEY);
+						//check softly that the setting if ok
+						if(qtiEntry.getSoftkey().equals(repositorySoftKey)) {
+							restrictedEdit = ((CoordinatorManager.getInstance().getCoordinator().getLocker().isLocked(course, null))
+								|| qtiResultManager.countResults(course.getResourceableId(), courseNode.getIdent(), qtiEntry.getKey()) > 0) ? true : false;
+						} else {
+							logError("The course node soft key doesn't match the test/survey sotf key. Course resourceable id: "
+						      + course.getResourceableId() + " (" + course.getCourseTitle() + ") course node: " + courseNode.getIdent() + " (" + courseNode.getShortTitle() + " )"
+						      + " soft key of test/survey in course: " + repositorySoftKey + "  test/survey soft key: " + qtiEntry.getSoftkey(), null);
+						}
 					}
 				} catch(CorruptedCourseException e) {
 					logError("", e);
+					referenceManager.delete(ref);
 				}
 			}
 			if(restrictedEdit) {
