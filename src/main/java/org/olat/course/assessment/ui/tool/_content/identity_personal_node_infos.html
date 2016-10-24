@@ -22,7 +22,7 @@
 		#if ($matnr)
 			<li class="list-group-item"><span>$matnr</span></li>
 		#end
-		#if($participantGroups.size() > 0)
+		#if($r.isNotEmpty($participantGroups.size()))
 		<li class="list-group-item">
 			<span><i class="o_icon o_icon_group"> </i> $r.translate("participantgroups.title")</span>
 		</li>
