@@ -43,6 +43,7 @@ import org.olat.modules.fo.manager.ForumManager;
 import org.olat.modules.fo.model.ForumThread;
 import org.olat.modules.fo.model.ForumUserStatistics;
 import org.olat.modules.fo.model.MessageImpl;
+import org.olat.modules.fo.model.PseudonymStatistics;
 import org.olat.modules.fo.ui.MessagePeekview;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
@@ -1120,5 +1121,187 @@ public class ForumManagerTest extends OlatTestCase {
 		for(Message message:messages) {
 			Assert.assertEquals(message.getForum(), masterForum);
 		}
+	}
+	
+	@Test
+	public void createProtectedPseudonym() {
+		String pseudonym = UUID.randomUUID().toString();
+		String password = "secret"; 
+		
+		Pseudonym protectedPseudo = forumManager.createProtectedPseudonym(pseudonym, password);
+		dbInstance.commit();
+		
+		Assert.assertNotNull(protectedPseudo);
+		Assert.assertNotNull(protectedPseudo.getKey());
+		Assert.assertNotNull(protectedPseudo.getCreationDate());
+		Assert.assertNotNull(protectedPseudo.getCredential());
+		Assert.assertNotNull(protectedPseudo.getSalt());
+		Assert.assertNotNull(protectedPseudo.getAlgorithm());
+		Assert.assertEquals(pseudonym, protectedPseudo.getPseudonym());
+	}
+	
+	@Test
+	public void loadProtectedPseudonym() {
+		String pseudonym = UUID.randomUUID().toString();
+		String password = "secret"; 
+		
+		Pseudonym protectedPseudo = forumManager.createProtectedPseudonym(pseudonym, password);
+		dbInstance.commitAndCloseSession();
+		
+		//load and check the content
+		Pseudonym reloadedPseudo = forumManager.getPseudonymByKey(protectedPseudo.getKey());
+		Assert.assertNotNull(reloadedPseudo);
+		Assert.assertNotNull(reloadedPseudo.getKey());
+		Assert.assertNotNull(reloadedPseudo.getCreationDate());
+		Assert.assertNotNull(reloadedPseudo.getCredential());
+		Assert.assertNotNull(reloadedPseudo.getSalt());
+		Assert.assertNotNull(reloadedPseudo.getAlgorithm());
+		Assert.assertEquals(pseudonym, reloadedPseudo.getPseudonym());
+	}
+	
+	@Test
+	public void getPseudonyms() {
+		String pseudonym = UUID.randomUUID().toString();
+		String password = "secret"; 
+		
+		Pseudonym protectedPseudo = forumManager.createProtectedPseudonym(pseudonym, password);
+		dbInstance.commitAndCloseSession();
+		
+		//load and check the content
+		List<Pseudonym> thePseudo = forumManager.getPseudonyms(pseudonym);
+		Assert.assertNotNull(thePseudo);
+		Assert.assertEquals(1, thePseudo.size());
+		Assert.assertTrue(thePseudo.contains(protectedPseudo));
+		
+		//negative tests
+		List<Pseudonym> noPseudo = forumManager.getPseudonyms(UUID.randomUUID().toString() + "break");
+		Assert.assertNotNull(noPseudo);
+		Assert.assertTrue(noPseudo.isEmpty());
+	}
+	
+	@Test
+	public void authenticatePseudonym() {
+		String pseudonym = UUID.randomUUID().toString();
+		String password = "thesecret"; 
+		forumManager.createProtectedPseudonym(pseudonym, password);
+		dbInstance.commitAndCloseSession();
+		
+		//load 
+		List<Pseudonym> thePseudos = forumManager.getPseudonyms(pseudonym);
+		Assert.assertNotNull(thePseudos);
+		Assert.assertEquals(1, thePseudos.size());
+		Pseudonym thePseudo = thePseudos.get(0);
+		
+		//check authentication
+		boolean ok = forumManager.authenticatePseudonym(thePseudo, password);
+		Assert.assertTrue(ok);
+		//negative tests
+		boolean notOk = forumManager.authenticatePseudonym(thePseudo, "12345");
+		Assert.assertFalse(notOk);
+	}
+	
+	@Test
+	public void isPseudonymProtected() {
+		//create a reference
+		String pseudonym = UUID.randomUUID().toString();
+		String password = "thesecret"; 
+		forumManager.createProtectedPseudonym(pseudonym, password);
+		dbInstance.commitAndCloseSession();
+		
+		//load 
+		boolean protectedYes = forumManager.isPseudonymProtected(pseudonym);
+		Assert.assertTrue(protectedYes);
+		//negative tests
+		boolean protectedNo = forumManager.isPseudonymProtected("12345");
+		Assert.assertFalse(protectedNo);
+	}
+	
+	@Test
+	public void isPseudonymInUseInForums() {
+		Identity id1 = JunitTestHelper.createAndPersistIdentityAsRndUser("fo-1");
+		Forum forum = forumManager.addAForum();
+		dbInstance.commit();
+		
+		Message thread = forumManager.createMessage(forum, id1, false);
+		thread.setTitle("Get pseudonym");
+		thread.setBody("Get pseudonym");
+		String pseudo = "Id pseudo " + UUID.randomUUID();
+		thread.setPseudonym(pseudo);
+		forumManager.addTopMessage(thread);
+		dbInstance.commit();
+
+		//load 
+		boolean protectedYes = forumManager.isPseudonymInUseInForums(pseudo);
+		Assert.assertTrue(protectedYes);
+		//negative tests
+		boolean protectedNo = forumManager.isPseudonymInUseInForums("12345");
+		Assert.assertFalse(protectedNo);
+	}
+	
+	@Test
+	public void getPseudonymStatistics() {
+		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("fo-9");
+		Forum forum = forumManager.addAForum();
+		dbInstance.commit();
+		
+		Message thread = forumManager.createMessage(forum, id, false);
+		thread.setTitle("Message with pseudonym");
+		thread.setBody("Message with pseudonym");
+		String pseudo = "Id pseudo " + UUID.randomUUID();
+		thread.setPseudonym(pseudo);
+		forumManager.addTopMessage(thread);
+		Pseudonym protectedPseudo = forumManager.createProtectedPseudonym(pseudo, "secret");
+		dbInstance.commit();
+		
+		//check statistics
+		List<PseudonymStatistics> stats = forumManager.getPseudonymStatistics(null);
+		Assert.assertNotNull(stats);
+		Assert.assertTrue(stats.size() > 0);
+		PseudonymStatistics thePseudoStats = null;
+		for(PseudonymStatistics stat:stats) {
+			if(pseudo.equals(stat.getPseudonym())) {
+				thePseudoStats = stat;
+			}
+		}
+		Assert.assertNotNull(thePseudoStats);
+		Assert.assertEquals(protectedPseudo.getKey(), thePseudoStats.getKey());
+		Assert.assertEquals(new Long(1l), thePseudoStats.getNumOfMessages());
+		
+		//check with search
+	}
+	
+	@Test
+	public void getPseudonymStatistics_searchString() {
+		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("fo-10");
+		Forum forum = forumManager.addAForum();
+		dbInstance.commit();
+		
+		Message thread = forumManager.createMessage(forum, id, false);
+		thread.setTitle("Message with pseudonym");
+		thread.setBody("Message with pseudonym");
+		String pseudo = "Search string pseudo " + UUID.randomUUID();
+		thread.setPseudonym(pseudo);
+		forumManager.addTopMessage(thread);
+		Pseudonym protectedPseudo = forumManager.createProtectedPseudonym(pseudo, "secret");
+		dbInstance.commit();
+		
+		//check statistics with search
+		List<PseudonymStatistics> stats = forumManager.getPseudonymStatistics("Search string");
+		Assert.assertNotNull(stats);
+		Assert.assertTrue(stats.size() > 0);
+		PseudonymStatistics thePseudoStats = null;
+		for(PseudonymStatistics stat:stats) {
+			if(pseudo.equals(stat.getPseudonym())) {
+				thePseudoStats = stat;
+			}
+		}
+		Assert.assertNotNull(thePseudoStats);
+		Assert.assertEquals(protectedPseudo.getKey(), thePseudoStats.getKey());
+		Assert.assertEquals(new Long(1l), thePseudoStats.getNumOfMessages());
+		
+		//check negative
+		List<PseudonymStatistics> emptyStats = forumManager.getPseudonymStatistics("This string is never a pseudo");
+		Assert.assertNotNull(emptyStats);
+		Assert.assertTrue(emptyStats.isEmpty());
 	}
 }

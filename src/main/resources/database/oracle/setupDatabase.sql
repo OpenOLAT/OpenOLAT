@@ -7,7 +7,15 @@ CREATE TABLE o_forum (
   creationdate date,
   PRIMARY KEY (forum_id)
 );
-
+CREATE TABLE o_forum_pseudonym (
+   id number(20) GENERATED ALWAYS AS IDENTITY,
+   creationdate date not null,
+   p_pseudonym varchar2(255 char) NOT NULL,
+   p_credential varchar2(255 char) NOT NULL,
+   p_salt varchar2(255 char) NOT NULL,
+   p_hashalgorithm varchar2(16 char) NOT NULL,
+   PRIMARY KEY (id)
+);
 
 CREATE TABLE o_property (
   id number(20) NOT NULL,
@@ -2465,9 +2473,12 @@ alter table o_message add constraint FKF26C8378EAC1DBB foreign key (topthread_id
 create index FKF26C8378EAC1DBB on o_message (topthread_id);
 alter table o_message add constraint FKF26C8371CB7C4A3 foreign key (forum_fk) references o_forum (forum_id);
 create index FKF26C8371CB7C4A3 on o_message (forum_fk);
+create index forum_pseudonym_idx on o_forum_pseudonym (p_pseudonym);
 
 create index readmessage_forum_idx on o_readmessage (forum_id);
 create index readmessage_identity_idx on o_readmessage (identity_id);
+
+create index forum_msg_pseudonym_idx on o_message (pseudonym);
 
 -- project broker
 create index projectbroker_prj_broker_idx on o_projectbroker_project (projectbroker_fk);
