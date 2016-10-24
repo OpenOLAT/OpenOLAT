@@ -33,26 +33,21 @@ import java.util.regex.PatternSyntaxException;
 import org.olat.NewControllerFactory;
 import org.olat.admin.site.UserAdminSite;
 import org.olat.admin.user.UserAdminContextEntryControllerCreator;
-import org.olat.basesecurity.BaseSecurity;
-import org.olat.basesecurity.BaseSecurityManager;
-import org.olat.basesecurity.Constants;
-import org.olat.basesecurity.SecurityGroup;
 import org.olat.core.CoreSpringFactory;
-import org.olat.core.commons.persistence.DBFactory;
-import org.olat.core.configuration.AbstractOLATModule;
-import org.olat.core.configuration.PersistedProperties;
+import org.olat.core.configuration.AbstractSpringModule;
 import org.olat.core.id.Identity;
 import org.olat.core.id.User;
 import org.olat.core.id.UserConstants;
-import org.olat.core.logging.OLATRuntimeException;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.StartupException;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.ldap.LDAPLoginManager;
-import org.olat.login.AfterLoginConfig;
-import org.olat.login.AfterLoginInterceptionManager;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
-import org.springframework.util.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
 
 /**
  * Desciption: The user module represents an implementation of
@@ -60,75 +55,33 @@ import org.springframework.util.StringUtils;
  * 
  * @author Florian Gnägi
  */
-public class UserModule extends AbstractOLATModule {
-	private List<String> loginBlacklist;
-	private static List<String> loginBlacklistChecked = new ArrayList<String>();
-	private static boolean hasTestUsers;
-	private BaseSecurity securityManager;
-	private SecurityGroup adminGroup, authorGroup, olatuserGroup, anonymousGroup, groupmanagerGroup, usermanagerGroup;
-	private static boolean pwdchangeallowed;
-	private static boolean pwdchangeallowedLDAP;
-	private static String adminUserName;
-	private static boolean enabledLogoByProfile;
-	private List<DefaultUser> defaultUsers;
-	private List<DefaultUser> testUsers;
+@Service
+public class UserModule extends AbstractSpringModule {
+
 	private static OLog log = Tracing.createLoggerFor(UserModule.class);
-	private String authenticationProviderConstant;
+	
+	@Autowired @Qualifier("loginBlacklist")
+	private ArrayList<String> loginBlacklist;
+	private List<String> loginBlacklistChecked = new ArrayList<String>();
+	
+	@Value("${password.change.allowed}")
+	private boolean pwdchangeallowed;
+	@Value("${ldap.propagatePasswordChangedOnLdapServer}")
+	private boolean pwdchangeallowedLDAP;
+	private String adminUserName = "administrator";
+	@Value("${user.logoByProfile:disabled}")
+	private String enabledLogoByProfile;
+	
+	@Autowired
 	private UserManager userManger;
-	private AfterLoginConfig afterLoginConfig; 
-	private AfterLoginInterceptionManager afterLoginInterceptionManager;
 	
-
-	/**
-	 * [used by spring]
-	 * @param authenticationProviderConstant
-	 */
-	private UserModule(String authenticationProviderConstant, UserManager userManager, AfterLoginInterceptionManager afterLoginInterceptionManager) {
-		this.authenticationProviderConstant = authenticationProviderConstant;
-		this.userManger = userManager;
-		this.afterLoginInterceptionManager = afterLoginInterceptionManager;
+	@Autowired
+	public UserModule(CoordinatorManager coordinatorManager) {
+		super(coordinatorManager);
 	}
 
-	/**
-	 * [used by spring]
-	 * @param afterLoginConfig
-	 */
-	public void setAfterLoginConfig(AfterLoginConfig afterLoginConfig) {
-		this.afterLoginConfig = afterLoginConfig;
-	}
-
-	/**
-	 * [used by spring]
-	 * @param loginBlacklist
-	 */
-	public void setLoginBlacklist(List<String> loginBlacklist) {
-		this.loginBlacklist = loginBlacklist;
-	}
-	
-	/**
-	 * Check wether a login is on the blacklist.
-	 * 
-	 * @param login
-	 * @return True if login is in blacklist
-	 */
-	public static boolean isLoginOnBlacklist(String login) {
-		login = login.toLowerCase();
-		for (String regexp: getLoginBlacklist()) {
-			if (login.matches(regexp)) {
-				log.audit("Blacklist entry match for login '" + login + "' with regexp '" + regexp + "'.");
-				return true;
-			}
-		}
-		return false;
-	}
-	
-	/**
-	 * @see org.olat.core.configuration.OLATModule#init(com.anthonyeden.lib.config.Configuration)
-	 */
+	@Override
 	public void init() {
-		pwdchangeallowed = getBooleanConfigParameter("passwordChangeAllowed", true);
-		pwdchangeallowedLDAP = getBooleanConfigParameter("passwordChangeAllowedLDAP", false);
-		
 		int count = 0;
 		for (String regexp : loginBlacklist) {
 			try {
@@ -140,41 +93,7 @@ public class UserModule extends AbstractOLATModule {
 			count ++;
 		}
 		
-		logInfo("Successfully added " + count + " entries to login blacklist.");
-		
-
-		// Autogeneration of test users
-		hasTestUsers = getBooleanConfigParameter("generateTestUsers", true);
-		enabledLogoByProfile = "enabled".equals(getStringConfigParameter("logoByProfileEnabled", "disabled", true));
-		
-		// Check if default users exists, if not create them
-		securityManager = BaseSecurityManager.getInstance();
-		adminGroup = securityManager.findSecurityGroupByName(Constants.GROUP_ADMIN);
-		authorGroup = securityManager.findSecurityGroupByName(Constants.GROUP_AUTHORS);
-		olatuserGroup = securityManager.findSecurityGroupByName(Constants.GROUP_OLATUSERS);
-		anonymousGroup = securityManager.findSecurityGroupByName(Constants.GROUP_ANONYMOUS);
-		groupmanagerGroup = securityManager.findSecurityGroupByName(Constants.GROUP_GROUPMANAGERS);
-		usermanagerGroup = securityManager.findSecurityGroupByName(Constants.GROUP_USERMANAGERS);
-
-		// read user editable fields configuration
-		if (defaultUsers != null) {
-			for (DefaultUser user:defaultUsers) {
-				createUser(user);
-			}
-		}
-		if (hasTestUsers) {
-			// read user editable fields configuration
-			if (testUsers != null) {
-				for (DefaultUser user :testUsers) {
-					createUser(user);
-				}
-			}
-		}
-		// Cleanup, otherwhise this subjects will have problems in normal OLAT
-		// operation
-		DBFactory.getInstance().commitAndCloseSession();
-		
-		adminUserName = getStringConfigParameter("adminUserName", "administrator", false);
+		log.info("Successfully added " + count + " entries to login blacklist.");
 		
 		// Check if user manager is configured properly and has user property
 		// handlers for the mandatory user properties used in OLAT
@@ -193,17 +112,6 @@ public class UserModule extends AbstractOLATModule {
 				new UserAdminContextEntryControllerCreator());
 		NewControllerFactory.getInstance().addContextEntryControllerCreator(UserAdminSite.class.getSimpleName(),
 				new UserAdminContextEntryControllerCreator());
-		
-		
-		// Append AfterLoginControllers if any configured
-		if (afterLoginConfig != null) {
-			afterLoginInterceptionManager.addAfterLoginControllerConfig(afterLoginConfig);
-		}
-	}
-
-	@Override
-	protected void initDefaultProperties() {
-		//
 	}
 
 	@Override
@@ -227,70 +135,27 @@ public class UserModule extends AbstractOLATModule {
 	}
 
 	/**
-	 * Method to create a user with the given configuration
-	 * 
-	 * @return Identity or null
-	 */
-	protected Identity createUser(DefaultUser user) {
-		Identity identity;
-		identity = securityManager.findIdentityByName(user.getUserName());
-		if (identity == null) {
-			// Create new user and subject
-			UserImpl newUser = new UserImpl();
-			newUser.setFirstName(user.getFirstName());
-			newUser.setLastName(user.getLastName());
-			newUser.setEmail(user.getEmail());
-			
-			newUser.getPreferences().setLanguage(user.getLanguage());
-			newUser.getPreferences().setInformSessionTimeout(true);
-			
-			if (!StringUtils.hasText(authenticationProviderConstant)){
-				throw new OLATRuntimeException(this.getClass(), "Auth token not set! Please fix! " + authenticationProviderConstant, null);
-			}
-
-			// Now finally create that user thing on the database with all
-			// credentials, person etc. in one transation context!
-			identity = BaseSecurityManager.getInstance().createAndPersistIdentityAndUser(user.getUserName(), null, newUser, authenticationProviderConstant,
-					user.getUserName(), user.getPassword());
-			if (identity == null) {
-				throw new OLATRuntimeException(this.getClass(), "Error, could not create  user and subject with name " + user.getUserName(), null);
-			} else {
-				
-				if (user.isGuest()) {
-					securityManager.addIdentityToSecurityGroup(identity, anonymousGroup);
-					log .info("Created anonymous user " + user.getUserName());
-				} else {
-					if (user.isAdmin()) {
-						securityManager.addIdentityToSecurityGroup(identity, adminGroup);
-						securityManager.addIdentityToSecurityGroup(identity, olatuserGroup);
-						log .info("Created admin user " + user.getUserName());
-					}  else if (user.isAuthor()) {
-						securityManager.addIdentityToSecurityGroup(identity, authorGroup);
-						securityManager.addIdentityToSecurityGroup(identity, olatuserGroup);
-						log.info("Created author user " + user.getUserName());
-					} else if (user.isUserManager()) {
-						securityManager.addIdentityToSecurityGroup(identity, usermanagerGroup);
-						securityManager.addIdentityToSecurityGroup(identity, olatuserGroup);
-						log .info("Created userManager user " + user.getUserName());
-					} else if (user.isGroupManager()) {
-						securityManager.addIdentityToSecurityGroup(identity, groupmanagerGroup);
-						securityManager.addIdentityToSecurityGroup(identity, olatuserGroup);
-						log .info("Created groupManager user " + user.getUserName());
-					} else {
-						securityManager.addIdentityToSecurityGroup(identity, olatuserGroup);
-						log .info("Created user " + user.getUserName());
-					}
-				}
-			}
-		}
-		return identity;
-	}
-
-	/**
 	 * @return List of logins on blacklist.
 	 */
-	public static List<String> getLoginBlacklist() {
+	public List<String> getLoginBlacklist() {
 		return loginBlacklistChecked;
+	}
+	
+	/**
+	 * Check wether a login is on the blacklist.
+	 * 
+	 * @param login
+	 * @return True if login is in blacklist
+	 */
+	public boolean isLoginOnBlacklist(String login) {
+		login = login.toLowerCase();
+		for (String regexp: getLoginBlacklist()) {
+			if (login.matches(regexp)) {
+				log.audit("Blacklist entry match for login '" + login + "' with regexp '" + regexp + "'.");
+				return true;
+			}
+		}
+		return false;
 	}
 
 	/**
@@ -304,14 +169,16 @@ public class UserModule extends AbstractOLATModule {
 	 * @param id
 	 * @return
 	 */
-	public static boolean isPwdchangeallowed(Identity id) {
-		
-		if(id == null) return isAnyPwdchangeallowed();
+	public boolean isPwdChangeAllowed(Identity id) {
+		if(id == null) {
+			return isAnyPwdchangeallowed();
+		}
 		
 		// if this is set to false, noone can change their pw
-		if (!pwdchangeallowed)
+		if (!pwdchangeallowed) {
 			return false;
-		LDAPLoginManager ldapLoginManager = (LDAPLoginManager) CoreSpringFactory.getBean("org.olat.ldap.LDAPLoginManager");
+		}
+		LDAPLoginManager ldapLoginManager = CoreSpringFactory.getImpl(LDAPLoginManager.class);
 		if (ldapLoginManager.isIdentityInLDAPSecGroup(id)) {
 			// it's an ldap-user
 			return pwdchangeallowedLDAP;
@@ -325,29 +192,15 @@ public class UserModule extends AbstractOLATModule {
 	 * 
 	 * @return
 	 */
-	private static boolean isAnyPwdchangeallowed() {
+	private boolean isAnyPwdchangeallowed() {
 		return pwdchangeallowed;
 	}
 	
-	public static boolean isLogoByProfileEnabled() {
-		return enabledLogoByProfile;
+	public boolean isLogoByProfileEnabled() {
+		return "enabled".equals(enabledLogoByProfile);
 	}
 	
-	public static String getAdminUserName() {
+	public String getAdminUserName() {
 		return adminUserName;
 	}
-	
-	public void setDefaultUsers(List<DefaultUser> defaultUsers) {
-		this.defaultUsers = defaultUsers;
-	}
-
-	public void setTestUsers(List<DefaultUser> testUsers) {
-		this.testUsers = testUsers;
-	}
-
-	@Override
-	public void setPersistedProperties(PersistedProperties persistedProperties) {
-		this.moduleConfigProperties = persistedProperties;
-	}
-	
 }

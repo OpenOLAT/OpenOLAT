@@ -8,7 +8,7 @@
   http://www.springframework.org/schema/context 
   http://www.springframework.org/schema/context/spring-context.xsd">
   
-	<context:component-scan base-package="org.olat.core.util.session" />
+	<context:component-scan base-package="org.olat.core.util.session,org.olat.core.util.vfs.version,org.olat.core.helpers" />
 
 	<bean id="codeHelper" class="org.olat.core.util.CodeHelper" >
 		<constructor-arg value="${node.id}" />
@@ -50,13 +50,7 @@
 		<property name="mathJaxCdn" value="${mathjax.cdn}"/>
 	</bean>
 
-	<bean id="org.olat.core.helpers.Settings" class="org.olat.core.helpers.Settings" depends-on="org.olat.core.util.WebappHelper" init-method="init" destroy-method="destroy">
-		<property name="persistedProperties">
-			<bean class="org.olat.core.configuration.PersistedProperties" scope="prototype" init-method="init" destroy-method="destroy">
-				<constructor-arg index="0" ref="coordinatorManager" />
-				<constructor-arg index="1" ref="org.olat.core.helpers.Settings" />
-			</bean>
-		</property>
+	<bean id="org.olat.core.helpers.Settings" class="org.olat.core.helpers.Settings" depends-on="org.olat.core.util.WebappHelper">
 		<!-- OLAT Tomcat server configuration parameters. This is used e.g. to assemble absolute URIS where needed. -->
 		<property name="serverDomainName" value="${server.domainname}" />
 		<property name="serverSecurePort" value="${server.port.ssl}" />
@@ -79,13 +73,7 @@
 				<value>.*Lynx.*</value>					<!-- Lynx console browser (no js) -->
 			</list>
 		</property>
-		<property name="crossOriginFilter" value="${allow.cross.origin.domain}"/>
-		<!-- 
-			Set the system theme here. Make sure the directory webapp/WEB-INF/static/themes/YOURTHEME exists. 
-			This is only the default value in case no user configuration is found. Use the administration GUI to
-			Set a specific theme.
-		-->				
-		<property name="guiThemeIdentifyer" value="${layout.theme}" />				
+		<property name="crossOriginFilter" value="${allow.cross.origin.domain}"/>				
 		<!-- 
 			Optional path to a directory which contains custom themes. This is an alternative to placing the theme
 			into the webapp, default is to have your custom themes in olatdata/customizing/themes
@@ -130,27 +118,6 @@
 	<bean id="core.preferences.PreferencesStorage"
 		class="org.olat.core.util.prefs.db.DbStorage"  />
 
-		<!-- Definition of the providers -->
-	<bean id="userSessionModule" class="org.olat.core.util.session.UserSessionModule">
-		<property name="persistedProperties">
-	  	<bean class="org.olat.core.configuration.PersistedProperties" scope="prototype" init-method="init" destroy-method="destroy" 
-	  		depends-on="coordinatorManager,org.olat.core.util.WebappHelper">
-	    	<constructor-arg index="0" ref="coordinatorManager"/>
-	    	<constructor-arg index="1" ref="userSessionModule" />
-	  	</bean>
-		</property>
-	</bean>
-
-	<bean  class="org.springframework.beans.factory.config.MethodInvokingFactoryBean">
-		<property name="targetObject" ref="userSessionModule" />
-		<property name="targetMethod" value="init" />
-		<property name="arguments">
-			<value>
-				session.timeout=${session.timeout}
-				session.timeout.authenticated=${session.timeout.authenticated}
-			</value>
-		</property>
-	</bean>
 	
 	<!-- Cache -->
 	<bean id="infinispanCacheManager" class="org.olat.core.util.cache.infinispan.InfinispanCacheManager" destroy-method="stop">

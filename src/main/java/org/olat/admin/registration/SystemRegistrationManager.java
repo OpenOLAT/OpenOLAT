@@ -50,11 +50,10 @@ import org.olat.basesecurity.PermissionOnResourceable;
 import org.olat.basesecurity.SecurityGroup;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.DB;
-import org.olat.core.configuration.Destroyable;
-import org.olat.core.configuration.Initializable;
 import org.olat.core.helpers.Settings;
 import org.olat.core.id.Identity;
-import org.olat.core.manager.BasicManager;
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.httpclient.HttpClientFactory;
 import org.olat.core.util.i18n.I18nModule;
@@ -68,6 +67,10 @@ import org.quartz.CronTrigger;
 import org.quartz.JobDetail;
 import org.quartz.Scheduler;
 import org.quartz.SchedulerException;
+import org.springframework.beans.factory.InitializingBean;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
 
 /**
  * Description:<br>
@@ -80,71 +83,40 @@ import org.quartz.SchedulerException;
  * @author gnaegi
  */
 
-public class SystemRegistrationManager extends BasicManager implements Initializable, Destroyable {
+@Service
+public class SystemRegistrationManager implements InitializingBean {
+	
+	private static final OLog log = Tracing.createLoggerFor(SystemRegistrationManager.class);
 
 	private static final String SCHEDULER_NAME = "system.registration";
 	private static final String TRIGGER = "system_registration_trigger";
 	public static final String PRODUCT = "openolat";
 
-	private final SystemRegistrationModule registrationModule;
-	private final Scheduler scheduler;
-	private final String clusterMode;
-	private final DB database;
+	@Value("${cluster.mode}")
+	private String clusterMode;
+	
+	@Autowired
+	private DB database;
+	@Autowired
+	private Scheduler scheduler;
+	@Autowired
 	private RepositoryManager repositoryManager;
+	@Autowired
 	private BaseSecurity securityManager;
+	@Autowired
 	private BusinessGroupService businessGroupService;
+	@Autowired
+	private SystemRegistrationModule registrationModule;
 
 	private static final String REGISTRATION_SERVER = "http://registration.openolat.org/registration/restapi/registration/openolat";
 	//private static final String REGISTRATION_SERVER = "http://localhost:8083/registration/restapi/registration/openolat";
 	
 	/**
-	 * [used by spring]
-	 * Use getInstance(), this is a singleton
-	 */
-	private SystemRegistrationManager(Scheduler scheduler, String clusterMode, DB database, SystemRegistrationModule registrationModule) {
-		this.scheduler = scheduler;
-		this.clusterMode = clusterMode;
-		this.database = database;
-		this.registrationModule = registrationModule;
-	}
-	
-	/**
 	 * Initialize the configuration
 	 */
-	public void init() {
+	@Override
+	public void afterPropertiesSet() throws Exception {
 		setupRegistrationBackgroundThread();
-	}
-
-	/**
-	 * Call this to shutdown the cron scheduler and remove cluster event listeners
-	 * from the PersistedProperties infrastructure
-	 */
-	public void destroy() {
-		//
-	}
-	
-	/**
-	 * [used by Spring]
-	 * @param repositoryManager
-	 */
-	public void setRepositoryManager(RepositoryManager repositoryManager) {
-		this.repositoryManager = repositoryManager;
-	}
-	
-	/**
-	 * [used by Spring]
-	 * @param securityManager
-	 */
-	public void setSecurityManager(BaseSecurity securityManager) {
-		this.securityManager = securityManager;
-	}
-	
-	/**
-	 * [used by Spring]
-	 * @param businessGroupService
-	 */
-	public void setBusinessGroupService(BusinessGroupService businessGroupService) {
-		this.businessGroupService = businessGroupService;
 	}
 
 	/**
@@ -201,7 +173,7 @@ public class SystemRegistrationManager extends BasicManager implements Initializ
 		try {
 			scheduler.triggerJob(SCHEDULER_NAME, Scheduler.DEFAULT_GROUP);
 		} catch (SchedulerException e) {
-			logError("", e);
+			log.error("", e);
 		}
 	}
 	
@@ -240,20 +212,20 @@ public class SystemRegistrationManager extends BasicManager implements Initializ
 			HttpResponse response = client.execute(method);
 			int status = response.getStatusLine().getStatusCode();
 			if(status == HttpStatus.SC_CREATED) {
-				logInfo("Successfully registered OLAT installation on openolat.org server, thank you for your support!", null);
+				log.info("Successfully registered OLAT installation on openolat.org server, thank you for your support!", null);
 				String registrationKey = EntityUtils.toString(response.getEntity());
 				registrationModule.setSecretKey(registrationKey);
 			} else if (status == HttpStatus.SC_NOT_MODIFIED || status == HttpStatus.SC_OK || status == HttpStatus.SC_CREATED) {
-				logInfo("Successfully registered OLAT installation on openolat.org server, thank you for your support!", null);
+				log.info("Successfully registered OLAT installation on openolat.org server, thank you for your support!", null);
 			} else if (status == HttpStatus.SC_NOT_FOUND) {
-				logError("Registration server not found: " + response.getStatusLine().toString(), null);
+				log.error("Registration server not found: " + response.getStatusLine().toString(), null);
 			} else if(status == HttpStatus.SC_NO_CONTENT){
-				logInfo(EntityUtils.toString(response.getEntity()), response.getStatusLine().toString());
+				log.info(EntityUtils.toString(response.getEntity()), response.getStatusLine().toString());
 			} else {
-				logError("Unexpected HTTP Status: " + response.getStatusLine().toString() + " during registration call", null);
+				log.error("Unexpected HTTP Status: " + response.getStatusLine().toString() + " during registration call", null);
 			}
 		} catch (Exception e) {
-			logError("Unexpected exception during registration call", e);
+			log.error("Unexpected exception during registration call", e);
 		} finally {
 			database.commitAndCloseSession();
 			if(method != null) {
@@ -356,10 +328,10 @@ public class SystemRegistrationManager extends BasicManager implements Initializ
 			// Schedule job now
 			scheduler.scheduleJob(jobDetail, trigger);
 		} catch (ParseException e) {
-			logError("Illegal cron expression for system registration", e);
+			log.error("Illegal cron expression for system registration", e);
 		} catch (SchedulerException e) {
-			logError("Can not start system registration scheduler", e);
+			log.error("Can not start system registration scheduler", e);
 		}
-		logInfo("Registration background job successfully started: "+cronExpression, null);
+		log.info("Registration background job successfully started: "+cronExpression, null);
 	}
 }

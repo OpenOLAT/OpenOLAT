@@ -12,7 +12,7 @@
 
 	<bean id="courseDbWebService" class="org.olat.course.db.restapi.CourseDbWebService" />
 
-	<bean class="org.springframework.beans.factory.config.MethodInvokingFactoryBean" depends-on="org.springframework.beans.factory.config.MethodInvokingFactoryBean">
+	<bean class="org.springframework.beans.factory.config.MethodInvokingFactoryBean">
 		<property name="targetObject" ref="org.olat.restapi.support.RestRegistrationService" />
 		<property name="targetMethod" value="addSingleton" />
 		<property name="arguments" ref="courseDbWebService"/>

@@ -104,6 +104,8 @@ public class ProfileFormController extends FormBasicController {
 	private String currentEmail;
 	
 	@Autowired
+	private UserModule userModule;
+	@Autowired
 	private UserManager userManager;
 	@Autowired
 	private RegistrationManager rm;
@@ -144,7 +146,7 @@ public class ProfileFormController extends FormBasicController {
 		
 		this.identityToModify = identityToModify;
 		this.isAdministrativeUser = isAdministrativeUser;
-		this.logoEnabled = UserModule.isLogoByProfileEnabled();
+		this.logoEnabled = userModule.isLogoByProfileEnabled();
 		
 		userPropertyHandlers = userManager.getUserPropertyHandlersFor(usageIdentifier, isAdministrativeUser);
 		initForm(ureq);

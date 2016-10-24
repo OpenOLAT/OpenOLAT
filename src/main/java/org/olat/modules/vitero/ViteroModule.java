@@ -25,15 +25,20 @@ import java.util.Calendar;
 
 import javax.ws.rs.core.UriBuilder;
 
-import org.olat.core.configuration.AbstractOLATModule;
+import org.olat.core.configuration.AbstractSpringModule;
 import org.olat.core.configuration.ConfigOnOff;
-import org.olat.core.configuration.PersistedProperties;
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.modules.vitero.manager.ViteroZombieSlayerJob;
 import org.quartz.CronTrigger;
 import org.quartz.JobDetail;
 import org.quartz.Scheduler;
 import org.quartz.SchedulerException;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
 
 /**
  * 
@@ -44,7 +49,10 @@ import org.quartz.SchedulerException;
  *
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
-public class ViteroModule extends AbstractOLATModule implements ConfigOnOff {
+@Service
+public class ViteroModule extends AbstractSpringModule implements ConfigOnOff {
+	
+	private static final OLog log = Tracing.createLoggerFor(ViteroModule.class);
 	
 	private static final String ENABLED = "vc.vitero.enabled";
 	private static final String PROTOCOL = "protocol";
@@ -56,22 +64,35 @@ public class ViteroModule extends AbstractOLATModule implements ConfigOnOff {
 	private static final String CUSTOMER_ID = "customerId";
 	private static final String OLAT_TIMEZONE_ID = "olatTimeZoneId";
 	
+	@Value("${vc.vitero.enabled}")
 	private boolean enabled;
 	private String displayName;
+	@Value("${vc.vitero.protocol}")
 	private String protocol;
+	@Value("${vc.vitero.port}")
 	private int port;
+	@Value("${vc.vitero.baseurl}")
 	private String baseUrl;
+	@Value("${vc.vitero.contextPath}")
 	private String contextPath;
+	@Value("${vc.vitero.adminlogin}")
 	private String adminLogin;
+	@Value("${vc.vitero.adminpassword}")
 	private String adminPassword;
+	@Value("${vc.vitero.customerid}")
 	private int customerId;
+	@Value("${vc.vitero.olatTimeZoneId}")
 	private String olatTimeZoneId;
-	
+	@Value("${vc.vitero.cron:0 15 */12 * * ?}")
 	private String cronExpression;
-	private final Scheduler scheduler;
+	@Value("${vc.vitero.deleteVmsUserOnUserDelete}")
 	private boolean deleteVmsUserOnUserDelete;
 	
-	public ViteroModule(Scheduler scheduler) {
+	private final Scheduler scheduler;
+	
+	@Autowired
+	public ViteroModule(CoordinatorManager coordinatorManager, Scheduler scheduler) {
+		super(coordinatorManager);
 		this.scheduler = scheduler;
 	}
 	
@@ -119,19 +140,6 @@ public class ViteroModule extends AbstractOLATModule implements ConfigOnOff {
 	}
 
 	@Override
-	protected void initDefaultProperties() {
-		enabled = getBooleanConfigParameter(ENABLED, true);
-		protocol = getStringConfigParameter(PROTOCOL, "http", false);
-		port = getIntConfigParameter(PORT, 8080);
-		baseUrl = getStringConfigParameter(BASE_URL, "localhost", false);
-		contextPath = getStringConfigParameter(CONTEXT_PATH, "vitero", false);
-		adminLogin = getStringConfigParameter(ADMIN_LOGIN, "admin", false);
-		adminPassword = getStringConfigParameter(ADMIN_PASSWORD, "007", false);
-		customerId = Integer.parseInt(getStringConfigParameter(CUSTOMER_ID, "1", false));
-		olatTimeZoneId = getStringConfigParameter(OLAT_TIMEZONE_ID, "Africa/Ceuta", false);
-	}
-
-	@Override
 	protected void initFromChangedProperties() {
 		init();
 	}
@@ -150,15 +158,10 @@ public class ViteroModule extends AbstractOLATModule implements ConfigOnOff {
 				scheduler.scheduleJob(jobDetail, trigger);
 			}
 		} catch (ParseException e) {
-			logError("Cannot start the Quartz Job which clean the Vitero rooms", e);
+			log.error("Cannot start the Quartz Job which clean the Vitero rooms", e);
 		} catch (SchedulerException e) {
-			logError("Cannot start the Quartz Job which clean the Vitero rooms", e);
+			log.error("Cannot start the Quartz Job which clean the Vitero rooms", e);
 		}
-	}
-	
-	@Override
-	public void setPersistedProperties(PersistedProperties persistedProperties) {
-		this.moduleConfigProperties = persistedProperties;
 	}
 
 	public boolean isDeleteVmsUserOnUserDelete() {

@@ -27,6 +27,8 @@ import javax.xml.namespace.QName;
 import javax.xml.ws.Service;
 import javax.xml.ws.WebEndpoint;
 
+import org.olat.core.CoreSpringFactory;
+
 import de.bps.onyx.plugin.OnyxModule;
 
 public class OnyxExamMode extends Service {
@@ -36,12 +38,13 @@ public class OnyxExamMode extends Service {
 
 	static {
 		URL url = null;
+		String location = CoreSpringFactory.getImpl(OnyxModule.class).getOnyxExamModeLocation();
 		try {
 			URL baseUrl;
 			baseUrl = de.bps.onyx.plugin.wsclient.OnyxExamMode.class.getResource(".");
-			url = new URL(baseUrl, OnyxModule.getOnyxExamModeLocation() + "?wsdl");
+			url = new URL(baseUrl, location + "?wsdl");
 		} catch (MalformedURLException e) {
-			logger.warning("Failed to create URL for the wsdl Location: '" + OnyxModule.getOnyxExamModeLocation() + "?wsdl', retrying as a local file");
+			logger.warning("Failed to create URL for the wsdl Location: '" + location + "?wsdl', retrying as a local file");
 			logger.warning(e.getMessage());
 		}
 		EXAM_SERVICE_WSDL_LOCATION = url;

@@ -166,7 +166,6 @@ public class SettingsTest {
 		Properties defaultPropertiesHttp = new Properties();
 		defaultPropertiesHttp.setProperty("dummykey", "dummyvalue");
 		persistedPropertiesHttp.setDefaultProperties(defaultPropertiesHttp);
-		settings.setPersistedProperties(persistedPropertiesHttp);
 		settings.setServerSecurePort(securePort);
 		settings.setServerInsecurePort(insecurePort);
 		settings.setServerDomainName(SettingsTest.serverFqnd);//${server.domainname}

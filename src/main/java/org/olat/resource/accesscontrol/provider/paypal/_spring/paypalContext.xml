@@ -2,50 +2,9 @@
 <beans xmlns="http://www.springframework.org/schema/beans"
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://www.springframework.org/schema/beans 
-                        http://www.springframework.org/schema/beans/spring-beans-3.0.xsd">
+                        http://www.springframework.org/schema/beans/spring-beans.xsd">
 
-	<bean id="paypalModule" class="org.olat.resource.accesscontrol.provider.paypal.PaypalModule" init-method="init">
-		<property name="persistedProperties">
-			<bean class="org.olat.core.configuration.PersistedProperties" scope="prototype" init-method="init" destroy-method="destroy"
-				depends-on="org.olat.core.util.WebappHelper">
-				<constructor-arg index="0" ref="coordinatorManager" />
-				<constructor-arg index="1" ref="paypalModule" />
-				<constructor-arg index="2" value="com.frentix.olat.accesscontrol.paypal.PaypalModule" />
-				<constructor-arg index="3" value="true" />
-			</bean>
-		</property>
-  </bean>
-  
-	<bean class="org.springframework.beans.factory.config.MethodInvokingFactoryBean">
-		<property name="targetObject" ref="paypalModule" />
-		<property name="targetMethod" value="init" />
-		<property name="arguments">
-			<value>
-			
-			<!-- API USERNAME, Replace RHS with your API user name you obtained from sandbox/live server. -->
-			paypal.security.user.id=${paypal.security.user.id}
-			<!-- API PASSWORD, Replace RHS with your API password you obtained from sandbox/live server. -->
-			paypal.security.password=${paypal.security.password}
-			<!-- API SIGNATURE ,If you are using the 3 token credential then you should uncomment the following 
-			     line and specify/change the signature on the RHS of the = sign. The module only implements the
-			     3 token credential. -->
-			paypal.security.signature=${paypal.security.signature}
-			<!-- APPLICATION ID, Replace RHS with your application id -->
-			paypal.application.id=${paypal.application.id}
-			<!-- Replace the RHS with the email address you used to signup at http://developer.paypal.com -->
-			paypal.sandbox.email=${paypal.sandbox.email}
-			<!--  Use the sandbox server -->
-			paypal.sandbox=${paypal.sandbox}
-			<!--  change only if you know what you do -->
-			paypal.data.format=${paypal.data.format}
-			<!-- Email fo the first receiver/merchant -->
-			paypal.first.receiver.email=${paypal.first.receiver.email}	
-			</value>
-		</property>
-	</bean>
-	
 	<bean id="paypalAccessHandler" class="org.olat.resource.accesscontrol.provider.paypal.PaypalAccessHandler"/>
-	
 	
 	<!--  Paypal admin panel -->
 	<bean class="org.olat.core.extensions.action.GenericActionExtension" id="sysadmin.menupoint.paypal" init-method="initExtensionPoints">

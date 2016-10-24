@@ -29,6 +29,8 @@ import javax.xml.ws.WebEndpoint;
 import javax.xml.ws.WebServiceClient;
 import javax.xml.ws.WebServiceFeature;
 
+import org.olat.core.CoreSpringFactory;
+
 import de.bps.onyx.plugin.OnyxModule;
 
 /**
@@ -42,12 +44,13 @@ public class PluginService extends Service {
 
 	static {
 		URL url = null;
+		String location = CoreSpringFactory.getImpl(OnyxModule.class).getPluginWSLocation();
 		try {
 			URL baseUrl;
 			baseUrl = de.bps.onyx.plugin.wsclient.PluginService.class.getResource(".");
-			url = new URL(baseUrl, OnyxModule.getPluginWSLocation() + "?wsdl");
+			url = new URL(baseUrl, location + "?wsdl");
 		} catch (final MalformedURLException e) {
-			logger.warning("Failed to create URL for the wsdl Location: '" + OnyxModule.getPluginWSLocation() + "?wsdl', retrying as a local file");
+			logger.warning("Failed to create URL for the wsdl Location: '" + location + "?wsdl', retrying as a local file");
 			logger.warning(e.getMessage());
 		}
 		PLUGINSERVICE_WSDL_LOCATION = url;

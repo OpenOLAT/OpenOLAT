@@ -25,9 +25,12 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 
-import org.olat.core.configuration.AbstractOLATModule;
-import org.olat.core.configuration.PersistedProperties;
+import org.olat.core.configuration.AbstractSpringModule;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.coordinate.CoordinatorManager;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
 
 /**
  * <h3>Description:</h3>
@@ -40,21 +43,28 @@ import org.olat.core.util.StringHelper;
  * 
  * @author Florian Gnaegi, frentix GmbH, http://www.frentix.com
  */
-
-public class SocialModule extends AbstractOLATModule {
+@Service("socialModule")
+public class SocialModule extends AbstractSpringModule {
 	private static final String SHARE_ENABLED = "social.share.enabled";
 	private static final String SHARE_LINK_BUTTONS = "social.share.link.buttons";
 	private static final String SHARE_LINK_BUTTONS_AVAILABLE = "twitter,facebook,google,delicious,digg,mail,link";
 	
 	// the share enabled config saved in the persisted properties
+	@Value("${social.share.enabled:false}")
 	private boolean shareEnabled;
 	// the share links enabled config separated by comma saved in the persisted properties
+	@Value("${social.share.link.buttons}")
 	private String shareLinkButtonsEnabled;
 	
 	// the list of all configurable share links
 	private List<String> shareLinkButtonsAvailableList;
 	// the list of enabled link buttons for your convenience as list object
 	private List<String> shareLinkButtonsEnabledList;
+	
+	@Autowired
+	public SocialModule(CoordinatorManager coordinatorManager) {
+		super(coordinatorManager);
+	}
 	
 	/* (non-Javadoc)
 	 * @see org.olat.core.configuration.AbstractOLATModule#init()
@@ -89,38 +99,12 @@ public class SocialModule extends AbstractOLATModule {
 		}
 	}
 
-	/**
-	 * [Spring] Setter
-	 * @see org.olat.core.configuration.AbstractOLATModule#setPersistedProperties(org.olat.core.configuration.PersistedProperties)
-	 */
-	@Override
-	public void setPersistedProperties(PersistedProperties persistedProperties) {
-		this.moduleConfigProperties = persistedProperties;		
-	}
-
-	/* (non-Javadoc)
-	 * @see org.olat.core.configuration.AbstractOLATModule#initDefaultProperties()
-	 */
-	@Override
-	protected void initDefaultProperties() {
-		// init default configuration from spring configuration. Might be overriden in init() by persisted properties
-		shareEnabled = getBooleanConfigParameter(SHARE_ENABLED, true);
-		shareLinkButtonsEnabled = getStringConfigParameter(SHARE_LINK_BUTTONS, SHARE_LINK_BUTTONS_AVAILABLE, true);
-	}
-
 	/* (non-Javadoc)
 	 * @see org.olat.core.configuration.AbstractOLATModule#initFromChangedProperties()
 	 */
 	@Override
 	protected void initFromChangedProperties() {
 		init();
-	}
-
-	/**
-	 * [Spring] Destroy method
-	 */ 
-	public void destroy() {
-		// nothing to do so far
 	}
 
 	/**
@@ -173,6 +157,4 @@ public class SocialModule extends AbstractOLATModule {
 	public List<String> getEnabledShareLinkButtons() {
 		return shareLinkButtonsEnabledList;
 	}
-
-
 }

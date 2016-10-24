@@ -21,9 +21,11 @@ package org.olat.admin.registration;
 
 import java.util.UUID;
 
-import org.olat.core.configuration.AbstractOLATModule;
-import org.olat.core.configuration.PersistedProperties;
+import org.olat.core.configuration.AbstractSpringModule;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.coordinate.CoordinatorManager;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 /**
  * 
@@ -34,7 +36,8 @@ import org.olat.core.util.StringHelper;
  *
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
-public class SystemRegistrationModule extends AbstractOLATModule {
+@Service
+public class SystemRegistrationModule extends AbstractSpringModule {
 	
 	protected static final String CONF_KEY_PUBLISH_WEBSITE = "publishWebsite";
 	protected static final String CONF_KEY_WEBSITE_DESCRIPTION = "websiteDescription";
@@ -58,6 +61,11 @@ public class SystemRegistrationModule extends AbstractOLATModule {
 	private String locationCoordinates;
 	private String secretKey;
 	private String instanceIdentifier;
+	
+	@Autowired
+	public SystemRegistrationModule(CoordinatorManager coordinatorManager) {
+		super(coordinatorManager);
+	}
 
 	@Override
 	public void init() {
@@ -97,23 +105,8 @@ public class SystemRegistrationModule extends AbstractOLATModule {
 			instanceIdentifier = instanceIdentifierObj;
 		} else {
 			instanceIdentifier = UUID.randomUUID().toString();
-			moduleConfigProperties.setStringProperty(CONF_KEY_IDENTIFYER, instanceIdentifier, true);
+			setStringProperty(CONF_KEY_IDENTIFYER, instanceIdentifier, true);
 		}
-	}
-
-	@Override
-	public void setPersistedProperties(PersistedProperties persistedProperties) {
-		this.moduleConfigProperties = persistedProperties;
-	}
-
-	@Override
-	protected void initDefaultProperties() {
-		publishWebsite = getBooleanConfigParameter(CONF_KEY_PUBLISH_WEBSITE, false);
-		websiteDescription = getStringConfigParameter(CONF_KEY_WEBSITE_DESCRIPTION, "", true);
-		notifyReleases = getBooleanConfigParameter(CONF_KEY_NOTIFY_RELEASES, false);
-		email = getStringConfigParameter(CONF_KEY_EMAIL, "", false);
-		location = getStringConfigParameter(CONF_KEY_LOCATION, "", false);
-		locationCoordinates = getStringConfigParameter(CONF_KEY_LOCATION_COORDS, "", false);
 	}
 
 	@Override
@@ -180,14 +173,4 @@ public class SystemRegistrationModule extends AbstractOLATModule {
 	public void setLocationCoordinates(String locationCoordinates) {
 		setStringProperty(CONF_KEY_LOCATION_COORDS, locationCoordinates, true);
 	}
-	
-	
-	
-	
-	
-	
-	
-	
-	
-
 }

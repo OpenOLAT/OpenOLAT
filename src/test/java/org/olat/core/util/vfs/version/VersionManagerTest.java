@@ -81,16 +81,16 @@ public class VersionManagerTest extends OlatTestCase {
 		id2 = JunitTestHelper.createAndPersistIdentityAsUser("vm-two" + getRandomName());
 		
 		SimpleVersionConfig versionConfig = (SimpleVersionConfig)CoreSpringFactory.getBean("versioningConfigurator");
-		versionConfig.setMaxNumberOfVersionsProperty(new Long(10));
+		versionConfig.setMaxNumberOfVersionsProperty(10);
 		waitForCondition(new SetMaxNumberOfVersions(versionConfig,  10l), 2000);
 		setuped = true;
 	}
 	
 	@After
 	public void resetMaxVersions() {
-		Long maxNumberOfVersions = versioningConfigurator.getMaxNumberOfVersionsProperty();
-		if(maxNumberOfVersions == null || maxNumberOfVersions.longValue() != 10) {
-			versioningConfigurator.setMaxNumberOfVersionsProperty(new Long(10));
+		int maxNumberOfVersions = versioningConfigurator.getMaxNumberOfVersionsProperty();
+		if(maxNumberOfVersions != 10) {
+			versioningConfigurator.setMaxNumberOfVersionsProperty(10);
 			waitForCondition(new SetMaxNumberOfVersions(versioningConfigurator,  10l), 2000);
 		}
 	}
@@ -107,8 +107,8 @@ public class VersionManagerTest extends OlatTestCase {
 
 		@Override
 		public Boolean call() throws Exception {
-			Long currentValue = versioningConfig.getMaxNumberOfVersionsProperty();
-			return currentValue != null && currentValue.longValue() == maxNumOfVersions.longValue();
+			int currentValue = versioningConfig.getMaxNumberOfVersionsProperty();
+			return currentValue == maxNumOfVersions.longValue();
 		}
 	}
 	
@@ -168,7 +168,7 @@ public class VersionManagerTest extends OlatTestCase {
 	
 	@Test
 	public void testOverflow_lowLevel() throws IOException {
-		versioningConfigurator.setMaxNumberOfVersionsProperty(new Long(3));
+		versioningConfigurator.setMaxNumberOfVersionsProperty(3);
 		waitForCondition(new SetMaxNumberOfVersions(versioningConfigurator, 3l), 2000);
 		
 		//create a file
@@ -205,7 +205,7 @@ public class VersionManagerTest extends OlatTestCase {
 	
 	@Test
 	public void testOverflow_lowLevel_deactivated() throws IOException {
-		versioningConfigurator.setMaxNumberOfVersionsProperty(new Long(0));
+		versioningConfigurator.setMaxNumberOfVersionsProperty(0);
 		waitForCondition(new SetMaxNumberOfVersions(versioningConfigurator,  0l), 2000);
 		
 		//create a file

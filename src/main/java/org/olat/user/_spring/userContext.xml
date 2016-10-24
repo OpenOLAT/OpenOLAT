@@ -13,22 +13,9 @@
 	<import resource="classpath:/org/olat/user/propertyhandlers/_spring/userPropertiesContext.xml"/>
 	<import resource="classpath:/org/olat/user/propertyhandlers/_spring/userPropertriesHandlersContext.xml"/>
 
-<bean id="userModule" class="org.olat.user.UserModule" 
-	depends-on="notificationsManager, database, baseSecurityManager, triggerI18nModuleInit">
-	<!-- default auth string -->
-	<constructor-arg index="0" value="${default.auth.provider.identifier}" />
-	<constructor-arg index="1" ref="userManager" />
-	<constructor-arg index="2" ref="afterLoginInterceptionManager" />
-	<property name="persistedProperties">
-	  <bean class="org.olat.core.configuration.PersistedProperties" scope="prototype" init-method="init" destroy-method="destroy">
-	    <constructor-arg index="0" ref="coordinatorManager"/>
-	    <constructor-arg index="1" ref="userModule" />
-	  </bean>
-	</property>
-	
-	<!-- provide an admin user-->
-	<property name="defaultUsers">
-        <list>
+	<bean id="defaultUsers" class="java.util.ArrayList">
+		<constructor-arg index="0">
+        	<list>
                 <bean class="org.olat.user.DefaultUser">
                         <!-- constructor arg is userName -->
                         <constructor-arg type="java.lang.String" value="administrator" />
@@ -39,12 +26,14 @@
                         <property name="language" value="${defaultlang}" />
                         <property name="admin" value="true" />
                 </bean>
-        </list>
-	</property>
+			</list>
+       </constructor-arg>
+	</bean>
 
 	<!-- provide some test users -->
-	<property name="testUsers">
-        <list>
+	<bean id="testUsers" class="java.util.ArrayList">
+		<constructor-arg index="0">
+        	<list>
                 <bean class="org.olat.user.DefaultUser">
                         <!-- constructor arg is userName -->
                        <constructor-arg type="java.lang.String" value="author" />
@@ -133,8 +122,11 @@
                        <property name="admin" value="false" />
                </bean>
            </list>
-	</property>
-	<property name="loginBlacklist">
+		</constructor-arg>
+	</bean>
+	
+	<bean id="loginBlacklist" class="java.util.ArrayList">
+		<constructor-arg index="0">
 		<list>
 			<!--
 			Use regexp to define logins which are not allowed.
@@ -175,16 +167,22 @@
 			<value>[\.\-_].*</value>
 			<value>[\.\-_]*</value>
 		</list>
-	</property> 
-	<property name="afterLoginConfig">
-		<ref bean="org.olat.user.AfterLoginConfig"/>
-	</property>
-</bean>
+		</constructor-arg>
+	</bean>
+
+	<!-- 
+	<bean id="org.olat.user.AfterLogin.Injection" class="org.springframework.beans.factory.config.MethodInvokingFactoryBean">
+		<property name="targetObject" ref="afterLoginInterceptionManager" />
+		<property name="targetMethod" value="addAfterLoginControllerConfig" />
+		<property name="arguments">
+			<ref bean="org.olat.user.AfterLoginConfig"/>
+		</property>
+	</bean>
 
 	<bean id="org.olat.user.AfterLoginConfig" class="org.olat.login.AfterLoginConfig" scope="prototype">	
 		<property name="afterLoginControllerList">
 			<list>
-			<!-- Configuration to force users to regularly check and update the user profile, redoTimeout sets the interval	(seconds)		
+			// Configuration to force users to regularly check and update the user profile, redoTimeout sets the interval	(seconds)		
 				<map>
 					<entry key="controller">
 						<bean class="org.olat.core.gui.control.creator.AutoCreator" scope="prototype">
@@ -195,8 +193,7 @@
 					  <entry key="redoTimeout"><value>10</value></entry>  
 					<entry key="i18nIntro"><value>org.olat.user:runonce.profile.intro</value></entry>	
 				</map> 
-			-->
-			<!-- Alternative configuration to force users to fill out profile if a mandatory user property is missing (no syntax checks done, only checks if property exists)
+			// Alternative configuration to force users to fill out profile if a mandatory user property is missing (no syntax checks done, only checks if property exists)
                 <map>
                         <entry key="controller">
                                 <bean class="org.olat.user.ProfileAndHomePageEditIfMissingMandatoryControllerCreator" scope="prototype" />
@@ -205,9 +202,8 @@
                         <entry key="redoTimeout"><value>31536000</value></entry>
                         <entry key="i18nIntro"><value>org.olat.user:runonce.profile.intro</value></entry>
                         <entry key="size"><value>800x600</value></entry>
-                </map>
-			-->				
-			<!-- Configuration to force users to change their password after the configured redoTimeout (seconds) 
+                </map>			
+			// Configuration to force users to change their password after the configured redoTimeout (seconds) 
 				<map>
 					<entry key="controller">
 						<bean class="org.olat.core.gui.control.creator.AutoCreator" scope="prototype">
@@ -237,24 +233,11 @@
 					## specify in the form of "package:i18nKey"
 					<entry key="i18nIntro"><value>org.olat.user:runonce.intro</value></entry>		
 				</map> 
-			--> 
+		
 			</list> 
 		</property>
 	</bean>
-
-	<bean id="triggerUserModuleInit" class="org.springframework.beans.factory.config.MethodInvokingFactoryBean">
-	    <property name="targetObject" ref="userModule" />
-	    <property name="targetMethod" value="init" />
-	    <property name="arguments">
-            <value>
-                    generateTestUsers=${user.generateTestUsers}
-                    passwordChangeAllowed=${password.change.allowed}
-                    passwordChangeAllowedLDAP=${ldap.propagatePasswordChangedOnLdapServer}
-                    adminUserName=administrator
-                    logoByProfileEnabled=${user.logoByProfile}
-            </value>
-	    </property>
-	</bean>
+	-->
 
 	<!-- Implementation to display "firstname lastname" -->
     <bean id="userDisplayName_firstname_lastname" class="org.olat.user.UserDisplayNameCreator" />

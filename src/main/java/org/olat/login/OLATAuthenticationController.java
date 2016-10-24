@@ -80,6 +80,8 @@ public class OLATAuthenticationController extends AuthenticationController imple
 	private Link registerLink;
 	
 	@Autowired
+	private UserModule userModule;
+	@Autowired
 	private LoginModule loginModule;
 	@Autowired
 	private OLATAuthManager olatAuthenticationSpi;
@@ -95,7 +97,7 @@ public class OLATAuthenticationController extends AuthenticationController imple
 		
 		loginComp = createVelocityContainer("olat_log", "olatlogin");
 		
-		if(UserModule.isPwdchangeallowed(null)) {
+		if(userModule.isPwdChangeAllowed(null)) {
 			pwLink = LinkFactory.createLink("_olat_login_change_pwd", "menu.pw", loginComp, this);
 			pwLink.setElementCssClass("o_login_pwd");
 		}
@@ -154,7 +156,7 @@ public class OLATAuthenticationController extends AuthenticationController imple
 	
 	protected void openChangePassword(UserRequest ureq, String initialEmail) {
 		// double-check if allowed first
-		if (!UserModule.isPwdchangeallowed(ureq.getIdentity())) {
+		if (!userModule.isPwdChangeAllowed(ureq.getIdentity())) {
 			throw new OLATSecurityException("chose password to be changed, but disallowed by config");
 		}
 

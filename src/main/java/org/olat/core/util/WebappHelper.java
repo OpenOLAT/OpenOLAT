@@ -46,7 +46,6 @@ import org.olat.core.helpers.Settings;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.StartupException;
 import org.olat.core.logging.Tracing;
-import org.olat.core.util.i18n.I18nModule;
 import org.springframework.beans.factory.BeanInitializationException;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
@@ -239,12 +238,10 @@ public class WebappHelper implements Initializable, Destroyable, ServletContextA
 		File fil = new File(fullPathToSrc);
 		if(fil.exists()){
 			log.debug("Path to source set to: " + fullPathToSrc);
-		}else{
-			if (Settings.isDebuging() || I18nModule.isTransToolEnabled()) {
-				log.error("Path to source wrong, debugging may not work as expected: " + fullPathToSrc, new Exception("getSourcePath"));
-			} else {
-				log.info("Path to source not valid: " + fullPathToSrc);
-			}
+		} else if (Settings.isDebuging()) {
+			log.error("Path to source wrong, debugging may not work as expected: " + fullPathToSrc, new Exception("getSourcePath"));
+		} else {
+			log.info("Path to source not valid: " + fullPathToSrc);
 		}
 		
 		return fullPathToSrc;

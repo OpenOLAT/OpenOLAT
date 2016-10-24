@@ -30,6 +30,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.commons.io.IOUtils;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.modules.bc.vfs.OlatRootFolderImpl;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
@@ -82,8 +83,6 @@ public class ExamPool implements Serializable {
 	private final Map<Identity, TestState> studentStates = new ConcurrentHashMap<Identity, TestState>();
 
 	private final Long testSessionId;
-
-	private final static String providerId = OnyxModule.getConfigName();
 
 	//	private final Boolean sessionInitializied;
 
@@ -148,6 +147,7 @@ public class ExamPool implements Serializable {
 
 			MapWrapper wrapper = new MapWrapper();
 			wrapper.setMap(parameterMap);
+			String providerId = CoreSpringFactory.getImpl(OnyxModule.class).getConfigName();
 			Long result = service.registerTest(testSessionId, providerId, contentPackage, wrapper);
 			log.info("Init result : " + TestState.getState(result) + " for " + testSessionId + " , provider " + providerId + " and parameters " + parameterMap);
 		} else {

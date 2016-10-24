@@ -84,6 +84,8 @@ public class PwChangeController extends BasicController {
 	private Link pwchangeHomelink;
 	
 	@Autowired
+	private UserModule userModule;
+	@Autowired
 	private RegistrationManager rm;
 	@Autowired
 	private UserManager userManager;
@@ -232,7 +234,7 @@ public class PwChangeController extends BasicController {
 				if (identity != null) {
 					// check if user has an OLAT provider token, otherwhise a pwd change makes no sense
 					Authentication auth = BaseSecurityManager.getInstance().findAuthentication(identity, BaseSecurityModule.getDefaultAuthProviderIdentifier());
-					if (auth == null || !UserModule.isPwdchangeallowed(identity)) { 
+					if (auth == null || !userModule.isPwdChangeAllowed(identity)) { 
 						getWindowControl().setWarning(translate("password.cantchange"));
 						return;
 					}

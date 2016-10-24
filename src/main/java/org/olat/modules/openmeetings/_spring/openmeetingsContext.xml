@@ -4,41 +4,12 @@
 	xmlns:context="http://www.springframework.org/schema/context" 
 	xsi:schemaLocation="
   http://www.springframework.org/schema/beans 
-  http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+  http://www.springframework.org/schema/beans/spring-beans.xsd
   http://www.springframework.org/schema/context 
-  http://www.springframework.org/schema/context/spring-context-3.0.xsd">
+  http://www.springframework.org/schema/context/spring-context.xsd">
   
 	<context:component-scan base-package="org.olat.modules.openmeetings" />
 
-	<!-- Definition of the providers -->
-	<bean id="openmeetingsModule" class="org.olat.modules.openmeetings.OpenMeetingsModule">
-		<property name="persistedProperties">
-	  	<bean class="org.olat.core.configuration.PersistedProperties" scope="prototype" init-method="init" destroy-method="destroy" 
-	  		depends-on="coordinatorManager,org.olat.core.util.WebappHelper">
-	    	<constructor-arg index="0" ref="coordinatorManager"/>
-	    	<constructor-arg index="1" ref="openmeetingsModule" />
-	  	</bean>
-		</property>
-	</bean>
-	
-	<!-- default configuration -->
-	<bean  class="org.springframework.beans.factory.config.MethodInvokingFactoryBean">
-		<property name="targetObject" ref="openmeetingsModule" />
-		<property name="targetMethod" value="init" />
-		<property name="arguments">
-			<value>
-				vc.openmeetings.enabled=${vc.openmeetings.enabled}
-				protocol=${vc.openmeetings.protocol}
-				port=${vc.openmeetings.port}
-				baseUrl=${vc.openmeetings.baseurl}
-				contextPath=${vc.openmeetings.contextPath}
-				adminLogin=${vc.openmeetings.adminlogin}
-				adminPassword=${vc.openmeetings.adminpassword}
-				customerId=${vc.openmeetings.customerid}
-			</value>
-		</property>
-	</bean>
-	
 	<!-- OpenMeetings admin. panel -->
 	<bean class="org.olat.core.extensions.action.GenericActionExtension" init-method="initExtensionPoints">
 		<property name="order" value="7210" />

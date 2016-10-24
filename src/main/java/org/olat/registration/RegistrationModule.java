@@ -29,10 +29,16 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import org.olat.core.configuration.AbstractOLATModule;
-import org.olat.core.configuration.PersistedProperties;
+import org.olat.core.configuration.AbstractSpringModule;
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.mail.EmailAddressValidator;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
 
 /**
  * Initial Date: May 4, 2004
@@ -47,49 +53,48 @@ import org.olat.core.util.mail.EmailAddressValidator;
  *         disclaimer that has to be accepted by users when entering the system
  *         the first time.
  */
-public class RegistrationModule extends AbstractOLATModule {
-	// registration config
-	private static final String CONFIG_SELFREGISTRATION = "enableSelfregistration";
-	private static final String CONFIG_STATIC_PROPERTY_MAPPING = "enableStaticPropertyMapping";
-	private static final String CONFIG_STATIC_PROPERTY_MAPPING_KEY = "staticPropertyMapping";
-	private static final String CONFIG_STATIC_PROPERTY_MAPPING_VAL = "staticPropertyMappingValue";
-	private static final String CONFIG_SELFREGISTRATION_LINK = "enableSelfregistrationLink";
-	private static final String CONFIG_SELFREGISTRATION_LOGIN = "enableSelfregistrationLogin";
-	private static final String CONFIG_REGISTRATION_NOTIFICATION ="registrationNotificationEnabled";
-	private static final String CONFIG_REGISTRATION_NOTIFICATION_EMAIL ="registrationNotificationEmail";
+@Service("registrationModule")
+public class RegistrationModule extends AbstractSpringModule {
+	private static final OLog log = Tracing.createLoggerFor(RegistrationModule.class);
+	
+	@Value("${registration.enableSelfRegistration}")
 	private boolean selfRegistrationEnabled;
+	@Value("${registration.enableSelfRegistration.link}")
 	private boolean selfRegistrationLinkEnabled;
+	@Value("${registration.enableSelfRegistration.login}")
 	private boolean selfRegistrationLoginEnabled;
-	private boolean staticPropertyMappingEnabled;
+	
+	@Value("${registration.enableNotificationEmail}")
+	private boolean registrationNotificationEmailEnabled;
+	@Value("${registration.notificationEmail}")
 	private String registrationNotificationEmail;
+	
+	@Value("${registration.staticPropertyMapping:false}")
+	private boolean staticPropertyMappingEnabled;
+	@Value("${registration.domainList}")
 	private String domainList;
 	private String staticPropertyMappingName;
 	private String staticPropertyMappingValue;
 	
-	// disclaimer config
-	private static final String CONFIG_DISCLAIMER = "disclaimerEnabled";
-	private static final String CONFIG_ADDITIONAL_CHECKBOX ="disclaimerAdditionalCheckbox";
-	private static final String CONFIG_ADDITIONAL_LINK ="disclaimerAdditionaLinkText";	
-	private static boolean disclaimerEnabled;	
-	private static boolean additionalCheckbox;
-	private static boolean additionaLinkText;
+	@Value("${registration.enableDisclaimer}")
+	private boolean disclaimerEnabled;	
+	@Value("${registration.disclaimerAdditionalCheckbox}")
+	private boolean additionalCheckbox;
+	@Value("${registration.disclaimerAdditionaLinkText}	")
+	private boolean additionaLinkText;
 	
-	private static UserNameCreationInterceptor usernamePresetBean;
+	@Autowired @Qualifier("usernamePresetBean")
+	private UserNameCreationInterceptor usernamePresetBean;
 	
-	/**
-	 * [used by spring]
-	 */
-	private RegistrationModule() {
-		//
+	@Autowired
+	public RegistrationModule(CoordinatorManager coordinatorManager) {
+		super(coordinatorManager);
 	}
 
-	public static UserNameCreationInterceptor getUsernamePresetBean() {
-		return RegistrationModule.usernamePresetBean;
+	public UserNameCreationInterceptor getUsernamePresetBean() {
+		return usernamePresetBean;
 	}
 
-	public void setUsernamePresetBean(UserNameCreationInterceptor usernamePresetBean) {
-		RegistrationModule.usernamePresetBean = usernamePresetBean;
-	}
 
 	/**
 	 * @return true if self registration is turned on, false otherwhise
@@ -261,49 +266,32 @@ public class RegistrationModule extends AbstractOLATModule {
 
 	@Override
 	protected void initDefaultProperties() {
-		selfRegistrationEnabled = getBooleanConfigParameter(CONFIG_SELFREGISTRATION, false);
-		if (selfRegistrationEnabled) {
-		  logInfo("Selfregistration is turned ON");
-		} else {
-			logInfo("Selfregistration is turned OFF");
-		}
+		super.initDefaultProperties();
 		
-		selfRegistrationLinkEnabled = getBooleanConfigParameter(CONFIG_SELFREGISTRATION_LINK, false);
-		selfRegistrationLoginEnabled = getBooleanConfigParameter(CONFIG_SELFREGISTRATION_LOGIN, false);
+		if (selfRegistrationEnabled) {
+			log.info("Selfregistration is turned ON");
+		} else {
+			log.info("Selfregistration is turned OFF");
+		}
 
 		// Check for registration email notification configuration
-		Boolean regNoti = getBooleanConfigParameter(CONFIG_REGISTRATION_NOTIFICATION, true);
-		registrationNotificationEmail = getStringConfigParameter(CONFIG_REGISTRATION_NOTIFICATION_EMAIL, "", true);
-		if (EmailAddressValidator.isValidEmailAddress(registrationNotificationEmail) || !regNoti) {
-			logInfo("Registration notification email is turned OFF by configuration or because given email::" + registrationNotificationEmail + "  is not valid.");
+		if (EmailAddressValidator.isValidEmailAddress(registrationNotificationEmail) || !registrationNotificationEmailEnabled) {
+			log.info("Registration notification email is turned OFF by configuration or because given email::" + registrationNotificationEmail + "  is not valid.");
 			registrationNotificationEmail = null;
 		} else {				
-			logInfo("Registration notification email is turned ON, email used is '" + registrationNotificationEmail + "'");								
+			log.info("Registration notification email is turned ON, email used is '" + registrationNotificationEmail + "'");								
 		}
 		
 		// disclaimer configuration
-		disclaimerEnabled = getBooleanConfigParameter(CONFIG_DISCLAIMER, false);
 		if (disclaimerEnabled) {
-		  logInfo("Disclaimer is turned ON");
+			log.info("Disclaimer is turned ON");
 		} else {
-			logInfo("Disclaimer is turned OFF");
+			log.info("Disclaimer is turned OFF");
 		}
-		// optional disclaimer elements
-		additionalCheckbox = getBooleanConfigParameter(CONFIG_ADDITIONAL_CHECKBOX, false);
-		additionaLinkText = getBooleanConfigParameter(CONFIG_ADDITIONAL_LINK, false);
-
-		staticPropertyMappingEnabled = getBooleanConfigParameter(CONFIG_STATIC_PROPERTY_MAPPING, false);
-		staticPropertyMappingName = getStringConfigParameter(CONFIG_STATIC_PROPERTY_MAPPING_KEY, "", true);
-		staticPropertyMappingValue = getStringConfigParameter(CONFIG_STATIC_PROPERTY_MAPPING_VAL, "", true);
 	}
 
 	@Override
 	protected void initFromChangedProperties() {
 		init();
-	}
-
-	@Override
-	public void setPersistedProperties(PersistedProperties persistedProperties) {
-		this.moduleConfigProperties = persistedProperties;
 	}
 }

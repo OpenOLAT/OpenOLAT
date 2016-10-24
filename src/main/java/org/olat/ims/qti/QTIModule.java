@@ -25,65 +25,36 @@
 
 package org.olat.ims.qti;
 
-import java.util.List;
-
-import org.olat.core.configuration.AbstractOLATModule;
-import org.olat.core.configuration.PersistedProperties;
-import org.olat.repository.handlers.RepositoryHandler;
+import org.olat.core.configuration.AbstractSpringModule;
+import org.olat.core.util.coordinate.CoordinatorManager;
+import org.olat.ims.qti.repository.handlers.QTISurveyHandler;
+import org.olat.ims.qti.repository.handlers.QTITestHandler;
 import org.olat.repository.handlers.RepositoryHandlerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 /**
  * Initial Date:  13.11.2002
  *
  * @author Mike Stock
  */
-public class QTIModule extends AbstractOLATModule {	
-	private static boolean isValidating = false;
-	private static final String CONFIG_VALIDATING = "validating";
-	private List<RepositoryHandler> qtiRepositoryHandlers;
-	
-	/**
-	 * @return true if qti xml files should be validated
-	 */
-	public static boolean isValidating() { return isValidating; }
+@Service("")
+public class QTIModule extends AbstractSpringModule {	
 
-	
-	/**
-	 * [used by spring]
-	 */
-	private QTIModule() {
-		//
+	@Autowired
+	public QTIModule(CoordinatorManager coordinatorManager) {
+		super(coordinatorManager);
 	}
 	
 	@Override
 	public void init() {
-		for (RepositoryHandler qtiRepositoryHandler : qtiRepositoryHandlers) {
-			RepositoryHandlerFactory.registerHandler(qtiRepositoryHandler, 10);
-		}
+		RepositoryHandlerFactory.registerHandler(new QTISurveyHandler(), 10);
+		RepositoryHandlerFactory.registerHandler(new QTITestHandler(), 10);
 	}
 
-	@Override
-	protected void initDefaultProperties() {
-		isValidating = getBooleanConfigParameter(CONFIG_VALIDATING, false);
-		
-	}
 
 	@Override
 	protected void initFromChangedProperties() {
 		//
 	}
-
-	@Override
-	public void setPersistedProperties(PersistedProperties persistedProperties) {
-		this.moduleConfigProperties = persistedProperties;
-	}
-
-	/**
-	 * [SPRING]
-	 * @param qtiFileHandlers
-	 */
-	public void setQtiRepositoryHandlers(List<RepositoryHandler> qtiRepositoryHandlers) {
-		this.qtiRepositoryHandlers = qtiRepositoryHandlers;
-	}
-
 }

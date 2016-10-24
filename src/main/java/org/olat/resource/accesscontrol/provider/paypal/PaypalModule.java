@@ -23,11 +23,14 @@ package org.olat.resource.accesscontrol.provider.paypal;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 
-import org.olat.core.configuration.AbstractOLATModule;
-import org.olat.core.configuration.PersistedProperties;
+import org.olat.core.configuration.AbstractSpringModule;
 import org.olat.core.helpers.Settings;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.event.GenericEventListener;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
 
 /**
  * 
@@ -39,7 +42,8 @@ import org.olat.core.util.event.GenericEventListener;
  * Initial Date:  25 mai 2011 <br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
-public class PaypalModule extends AbstractOLATModule implements GenericEventListener {
+@Service
+public class PaypalModule extends AbstractSpringModule implements GenericEventListener {
 	
 	private static final String X_PAYPAL_SECURITY_USERID = "paypal.security.user.id";
 	private static final String X_PAYPAL_SECURITY_PASSWORD = "paypal.security.password";
@@ -54,21 +58,39 @@ public class PaypalModule extends AbstractOLATModule implements GenericEventList
 	private static final String PAYPAL_CURRENCY = "paypal.currency";
 	private static final String DEFAULT_PAYPAL_DATA_FORMAT = "XML";
 
-	private boolean sandbox = true;
 
+	// API USERNAME, Replace RHS with your API user name you obtained from sandbox/live server.
+	@Value("${paypal.security.user.id}")
 	private String paypalSecurityUserId;
+	// API PASSWORD, Replace RHS with your API password you obtained from sandbox/live server.
+	@Value("${paypal.security.password}")
 	private String paypalSecurityPassword;
+	// API SIGNATURE ,If you are using the 3 token credential then you should uncomment the following 
+    // line and specify/change the signature on the RHS of the = sign. The module only implements the
+    // 3 token credential.
+	@Value("${paypal.security.signature}")
 	private String paypalSecuritySignature;
+	// APPLICATION ID, Replace RHS with your application id
+	@Value("${paypal.application.id}")
 	private String paypalApplicationId;
+	// Replace the RHS with the email address you used to signup at http://developer.paypal.com
+	@Value("${paypal.sandbox:false}")
+	private boolean sandbox;
+	@Value("${paypal.sandbox.email}")
 	private String paypalSandboxEmailAddress;
+	// Email fo the first receiver/merchant
+	@Value("${paypal.first.receiver.email}	")
 	private String paypalFirstReceiverEmailAddress;
 	private String deviceIpAddress;
 	
 	private String paypalCurrency;
+	// change only if you know what you do
+	@Value("${paypal.data.format}")
 	private String paypalDataFormat;
-	
-	public PaypalModule() {
-		//
+
+	@Autowired
+	public PaypalModule(CoordinatorManager coordinatorManager) {
+		super(coordinatorManager);
 	}
 
 	@Override
@@ -117,23 +139,6 @@ public class PaypalModule extends AbstractOLATModule implements GenericEventList
 		if(StringHelper.containsNonWhitespace(sandboxObj)) {
 			sandbox = "true".equals(sandboxObj);
 		}
-	}
-
-	@Override
-	public void setPersistedProperties(PersistedProperties persistedProperties) {
-		this.moduleConfigProperties = persistedProperties;
-	}
-
-	@Override
-	protected void initDefaultProperties() {
-		paypalSecurityUserId = getStringConfigParameter(X_PAYPAL_SECURITY_USERID, "", true);
-		paypalSecurityPassword = getStringConfigParameter(X_PAYPAL_SECURITY_PASSWORD, "", true);
-		paypalSecuritySignature = getStringConfigParameter(X_PAYPAL_SECURITY_SIGNATURE, "", true);
-		paypalApplicationId = getStringConfigParameter(X_PAYPAL_APPLICATION_ID, "", true);
-		paypalSandboxEmailAddress = getStringConfigParameter(X_PAYPAL_SANDBOX_EMAIL_ADDRESS, "", true);
-		paypalDataFormat = getStringConfigParameter(DATA_FORMAT_XML, DEFAULT_PAYPAL_DATA_FORMAT, true);
-		paypalFirstReceiverEmailAddress = getStringConfigParameter(FIRST_RECEIVER_EMAIL_ADDRESS, "", true);
-		sandbox = getBooleanConfigParameter(SANDBOX, false);
 	}
 
 	@Override

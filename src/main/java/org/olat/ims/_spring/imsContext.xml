@@ -10,7 +10,6 @@
   
 	<context:component-scan base-package="org.olat.ims.lti.manager,org.olat.ims.qti,org.olat.ims.qti21,uk.ac.ed.ph.jqtiplus" />
 
-	<import resource="classpath:/org/olat/ims/qti/_spring/qtiContext.xml"/>
 
 	<bean id="org.olat.ims.cp.CPManager" class="org.olat.ims.cp.CPManagerImpl"/> 
 	

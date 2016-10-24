@@ -28,6 +28,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.WindowManager;
 import org.olat.core.gui.Windows;
@@ -585,7 +586,7 @@ public class OnyxRunController extends BasicController {
 					manager.controllExam(pool, identities, TestState.RESUME_REQUESTED);
 				}
 
-				String onyxRunURL = OnyxModule.getUserViewLocation() + "?id=" + assessmentId;
+				String onyxRunURL = CoreSpringFactory.getImpl(OnyxModule.class).getUserViewLocation() + "?id=" + assessmentId;
 				log.info(onyxRunURL);
 
 				onyxPlugin.contextPut("urlonyxplugin", onyxRunURL);
@@ -710,6 +711,8 @@ public class OnyxRunController extends BasicController {
 		String tempalteId = "onyxdefault";
 
 		this.uniqueId = OnyxResultManager.getUniqueIdForShowOnly(ureq.getIdentity(), entry);
+		
+		OnyxModule onyxModule = CoreSpringFactory.getImpl(OnyxModule.class);
 
 		java.io.FileInputStream inp = null;
 		try {
@@ -718,7 +721,7 @@ public class OnyxRunController extends BasicController {
 			byte[] byteArray = new byte[fileLength.intValue()];
 			inp = new java.io.FileInputStream(cpFile);
 			inp.read(byteArray);
-			onyxplugin.run(this.uniqueId, byteArray, language, "", tempalteId, OnyxModule.getConfigName(), true);
+			onyxplugin.run(this.uniqueId, byteArray, language, "", tempalteId, onyxModule.getConfigName(), true);
 		} catch (FileNotFoundException e) {
 			log.error("Cannot find CP of Onyx Test with assassmentId: " + uniqueId, e);
 		} catch (IOException e) {
@@ -733,7 +736,7 @@ public class OnyxRunController extends BasicController {
 			}
 		}
 
-		String urlonyxplugin = OnyxModule.getUserViewLocation() + "?id=" + this.uniqueId;
+		String urlonyxplugin = onyxModule.getUserViewLocation() + "?id=" + this.uniqueId;
 
 		onyxPlugin = createVelocityContainer("onyxstart");
 		onyxPlugin.contextPut("isSurvey", Boolean.FALSE);

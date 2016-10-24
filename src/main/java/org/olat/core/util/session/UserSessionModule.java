@@ -19,9 +19,12 @@
  */
 package org.olat.core.util.session;
 
-import org.olat.core.configuration.AbstractOLATModule;
-import org.olat.core.configuration.PersistedProperties;
+import org.olat.core.configuration.AbstractSpringModule;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.coordinate.CoordinatorManager;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
 
 /**
  * 
@@ -29,14 +32,22 @@ import org.olat.core.util.StringHelper;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class UserSessionModule extends AbstractOLATModule {
+@Service
+public class UserSessionModule extends AbstractSpringModule {
 	
 
 	private static final String SESSION_TIMEOUT = "session.timeout";
 	private static final String SESSION_TIMEOUT_AUTH = "session.timeout.authenticated";
 	
+	@Value("${session.timeout}")
 	private int sessionTimeout;
+	@Value("${session.timeout.authenticated}")
 	private int sessionTimeoutAuthenticated;
+	
+	@Autowired
+	public UserSessionModule(CoordinatorManager coordinatorManager) {
+		super(coordinatorManager);
+	}
 
 	@Override
 	public void init() {
@@ -50,21 +61,10 @@ public class UserSessionModule extends AbstractOLATModule {
 			sessionTimeoutAuthenticated = Integer.parseInt(timeoutAuthObj);
 		}
 	}
-	
-	@Override
-	protected void initDefaultProperties() {
-		sessionTimeout = getIntConfigParameter(SESSION_TIMEOUT, 7200);
-		sessionTimeoutAuthenticated = getIntConfigParameter(SESSION_TIMEOUT_AUTH, 300);
-	}
 
 	@Override
 	protected void initFromChangedProperties() {
 		init();
-	}
-
-	@Override
-	public void setPersistedProperties(PersistedProperties persistedProperties) {
-		this.moduleConfigProperties = persistedProperties;
 	}
 
 	public int getSessionTimeout() {

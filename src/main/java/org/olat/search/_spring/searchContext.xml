@@ -1,8 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <beans xmlns="http://www.springframework.org/schema/beans"
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://www.springframework.org/schema/beans 
-                        http://www.springframework.org/schema/beans/spring-beans.xsd">
+	xmlns:context="http://www.springframework.org/schema/context"
+	xsi:schemaLocation="
+        http://www.springframework.org/schema/beans 
+        http://www.springframework.org/schema/beans/spring-beans.xsd
+        http://www.springframework.org/schema/context 
+        http://www.springframework.org/schema/context/spring-context.xsd">
+  
+	<context:component-scan base-package="org.olat.search" />
 
 	<!-- Search components -->
 	<bean id="org.olat.admin.user.UserSearchUIService"
@@ -30,7 +36,7 @@
 	</bean>
    	
 	<bean id="org.olat.search.service.enabled" class="org.olat.search.service.SearchServiceImpl"
-		init-method="init" destroy-method="stop" depends-on="searchModuleInit" lazy-init="true">
+		init-method="init" destroy-method="stop" lazy-init="true">
 		<constructor-arg index="0" ref="searchModule" />
 		<constructor-arg index="1" ref="mainIndexer" />
 		<constructor-arg index="2" ref="searchProvider" />
@@ -69,31 +75,31 @@
 		</property>
 	</bean>
 	
-	<bean id="searchModule" class="org.olat.search.SearchModule" lazy-init="true">
-		<property name="fileBlackList">
+	<bean id="fileSizeSuffixes" class="java.util.ArrayList">
+		<constructor-arg index="0">
+			<list>
+				<!-- list of files which will not be indexed -->
+				<value>ppt</value>
+			</list>
+		</constructor-arg>
+	</bean>
+	
+	<bean id="fileBlackList" class="java.util.ArrayList">
+		<constructor-arg index="0">
 			<list>
 				<!-- list of files which will not be indexed -->
 				<value>imsmanifest.xml</value>
 			</list>
-		</property>
-		<property name="repositoryBlackList">
+		</constructor-arg>
+	</bean>
+	
+	<bean id="repositoryBlackList" class="java.util.ArrayList">
+		<constructor-arg index="0">
 			<list>
 				<!-- list of repository-entry ResourceableId which will not be indexed -->
 				<value></value>
 			</list>
-		</property>
-		<property name="fileSizeSuffixes">
-				<!-- list of file-suffixes for which will be checked the file size by 'maxFileSize'-parameter -->
-				<value>ppt</value>
-				
-		</property>
-		
-		<property name="persistedProperties">
-		  <bean class="org.olat.core.configuration.PersistedProperties" scope="prototype" init-method="init" destroy-method="destroy">
-		    <constructor-arg index="0" ref="coordinatorManager"/>
-		    <constructor-arg index="1" ref="searchModule" />
-		  </bean>
-		</property>
+		</constructor-arg>
 	</bean>
 	
 	<bean id="searchProvider" class="org.olat.search.service.searcher.JmsSearchProvider" init-method="springInit" destroy-method="stop" lazy-init="true">
@@ -109,44 +115,6 @@
 		
 	<!-- The metadata fields that are supported in the search engine -->
 	<bean id="SearchMetadataFieldsProvider" class="org.olat.search.service.SimpleDublinCoreMetadataFieldsProvider" />               
-
-	<bean id="searchModuleInit" class="org.springframework.beans.factory.config.MethodInvokingFactoryBean" lazy-init="true">
-	       <property name="targetObject" ref="searchModule" />
-	       <property name="targetMethod" value="init" />
-	       <property name="arguments">
-	             <value>
-					searchService=${search.service}
-	             
-					generateIndexAtStartup=${generate.index.at.startup}		
-					tempIndexPath=${search.index.tempIndex}
-					tempSpellCheckPath=${search.index.tempSpellcheck}
-					pdfTextBufferPath=${search.index.pdfBuffer}
-					indexPath=${search.index.path}
-					permanentIndexPath=${search.permanent.index.path}
-					<!-- indexInterval in ms (0=no delay) -->
-					indexInterval=0
-					documentsPerInterval=4
-					
-					<!-- Files bigger than maxFileSize (and on fileSizeSuffixes-list) will be excluded from index -->
-					maxFileSize=10485760
-					<!-- Control indexer prozess -->
-					folderPoolSize=${search.folder.pool.size}
-					<!-- Define automatic restart time window e.g. 01:00-02:59 restartWindowStart=1 restartWindowEnd=3 -->
-					restartWindowStart=${restart.window.start}
-					restartWindowEnd=${restart.window.end}
-					<!-- Restart only at this day 1=Sunday,2=Monday...7=Saturday (0=restart every day) -->
-					restartDayOfWeek=0
-					<!-- Enable text-buffering of extracted PDF text -->
-					pdfTextBuffering=true
-					pdfExternalIndexer=${search.pdf.external}
-					pdfExternExtractorCommand=${search.pdf.external.command}
-					<!-- updater runs every xx ms (0=stopped) -->
-					<!-- The updater is NOT implemented for all index elements, do not use it for now! -->
-					updateInterval=0
-					ramBufferSizeMb=16		
-			</value>
-		</property>
-	</bean>
 
 	<!-- Indexer factory -->
 	<bean id="mainIndexer" class="org.olat.search.service.indexer.MainIndexer" lazy-init="true">

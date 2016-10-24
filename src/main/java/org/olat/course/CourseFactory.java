@@ -653,7 +653,7 @@ public class CourseFactory {
 	 */
 	public static Controller createHelpCourseLaunchController(UserRequest ureq, WindowControl wControl) {
 		// Find repository entry for this course
-		String helpCourseSoftKey = CourseModule.getHelpCourseSoftKey();
+		String helpCourseSoftKey = CoreSpringFactory.getImpl(CourseModule.class).getHelpCourseSoftKey();
 		RepositoryManager rm = RepositoryManager.getInstance();
 		RepositoryService rs = CoreSpringFactory.getImpl(RepositoryService.class);
 		RepositoryEntry entry = null;

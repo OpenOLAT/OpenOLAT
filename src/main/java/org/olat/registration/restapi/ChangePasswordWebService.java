@@ -68,7 +68,7 @@ public class ChangePasswordWebService {
 		Identity identity = securityManager.loadIdentityByKey(identityKey);
 		if(identity == null) {
 			return Response.serverError().status(Status.NOT_FOUND).build();
-		} else if(!UserModule.isPwdchangeallowed(identity)) {
+		} else if(!CoreSpringFactory.getImpl(UserModule.class).isPwdChangeAllowed(identity)) {
 			return Response.serverError().status(Status.FORBIDDEN).build();
 		}
 

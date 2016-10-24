@@ -32,9 +32,9 @@ import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
-
 import org.olat.user.UserManager;
 import org.olat.user.UserModule;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
 * Initial Date:  09.08.2004
@@ -50,6 +50,10 @@ public class ShibbolethRegistrationForm extends FormBasicController {
 	private TextElement login;
 	private String proposedUsername;
 	
+	@Autowired
+	private UserModule userModule;
+	@Autowired
+	private UserManager userManager;
 	/**
 	 * @param name
 	 * @param translator
@@ -64,11 +68,11 @@ public class ShibbolethRegistrationForm extends FormBasicController {
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
 		if (login.isEmpty("srf.error.loginempty")) return false;
-		if (!UserManager.getInstance().syntaxCheckOlatLogin(getLogin())) {
+		if (!userManager.syntaxCheckOlatLogin(getLogin())) {
 			login.setErrorKey("srf.error.loginregexp", null);
 			return false;
 		}
-		if (UserModule.isLoginOnBlacklist(getLogin())) {
+		if (userModule.isLoginOnBlacklist(getLogin())) {
 			login.setErrorKey("srf.error.blacklist", null);
 			return false;
 		}

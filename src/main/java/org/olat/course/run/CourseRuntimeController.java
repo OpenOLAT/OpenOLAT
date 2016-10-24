@@ -178,6 +178,8 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 	private Map<String, Boolean> courseRightsCache;
 
 	@Autowired
+	private CourseModule courseModule;
+	@Autowired
 	private ReminderModule reminderModule;
 	@Autowired
 	private CalendarModule calendarModule;
@@ -203,7 +205,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 			// - group modification events
 			coordinatorManager.getCoordinator().getEventBus().registerFor(this, getIdentity(), getRepositoryEntry());
 			
-			if (CourseModule.displayParticipantsCount()) {
+			if (courseModule.displayParticipantsCount()) {
 				coordinatorManager.getCoordinator().getEventBus().fireEventToListenersOf(new MultiUserEvent(JOINED), getOlatResourceable());
 				updateCurrentUserCount();
 			}
@@ -701,7 +703,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 				&& imModule.isCourseEnabled() && reSecurity.canLaunch();
 		if(chatIsEnabled && getUserCourseEnvironment() != null) {
 			chatLink = LinkFactory.createToolLink("chat",translate("command.coursechat"), this, "o_icon_chat");
-			chatLink.setVisible(CourseModule.isCourseChatEnabled() && cc.isChatEnabled());
+			chatLink.setVisible(imModule.isCourseEnabled() && cc.isChatEnabled());
 			toolbarPanel.addTool(chatLink);
 		}
 	}
@@ -718,7 +720,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 	protected void doDispose() {
 		super.doDispose();
 		
-		if (CourseModule.displayParticipantsCount()) {
+		if (courseModule.displayParticipantsCount()) {
 			coordinatorManager.getCoordinator().getEventBus().fireEventToListenersOf(new MultiUserEvent(LEFT), getOlatResourceable());
 		}
 	}

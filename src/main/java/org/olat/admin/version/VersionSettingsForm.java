@@ -76,15 +76,13 @@ public class VersionSettingsForm extends FormBasicController {
 
 		numOfVersions = uifactory.addDropdownSingleselect("version.numOfVersions", formLayout, keys, values, null);
 		numOfVersions.addActionListener(FormEvent.ONCHANGE);
-		Long maxNumber = getNumOfVersions();
-		if(maxNumber == null) {
-			numOfVersions.select("0", true);
-		} else if (maxNumber.longValue() == 0l) {
+		int maxNumber = getNumOfVersions();
+		if (maxNumber == 0l) {
 			numOfVersions.select("0", true); // deactivated
-		} else if (maxNumber.longValue() == -1l) {
+		} else if (maxNumber == -1l) {
 			numOfVersions.select("-1", true); // unlimited
 		} else {
-			String str = maxNumber.toString();
+			String str = Integer.toString(maxNumber);
 			boolean found = false;
 			for(String value:values) {
 				if(value.equals(str)) {
@@ -126,13 +124,13 @@ public class VersionSettingsForm extends FormBasicController {
 		}
 	}
 
-	public Long getNumOfVersions() {
-		SimpleVersionConfig config = (SimpleVersionConfig) CoreSpringFactory.getBean(SimpleVersionConfig.class);
+	public int getNumOfVersions() {
+		SimpleVersionConfig config = CoreSpringFactory.getImpl(SimpleVersionConfig.class);
 		return config.getMaxNumberOfVersionsProperty();
 	}
 	
 	public void setNumOfVersions(int maxNumber) {
 		SimpleVersionConfig config = (SimpleVersionConfig) CoreSpringFactory.getBean(SimpleVersionConfig.class);
-		config.setMaxNumberOfVersionsProperty(new Long(maxNumber));
+		config.setMaxNumberOfVersionsProperty(maxNumber);
 	}
 }
