@@ -1,4 +1,49 @@
 <h2><i class="o_icon $courseNodeCss"> </i> $r.escapeHtml($courseNode) <small><i class="o_icon o_icon_user"> </i> $r.escapeHtml($fullName) </small></h2>
+<h4>$r.translate("detailview.title")</h4>
+
+<div class="panel panel-default">
+	<ul class="list-group">
+		<li class="list-group-item">
+			#if ($user.getProperty("institutionalName", $locale) && $user.getProperty("institutionalName", $locale).length() > 0)
+				#set ($inst = $r.escapeHtml($user.getProperty("institutionalName", $locale)))
+			#end
+			#if ($user.getProperty("institutionalUserIdentifier", $locale) && $user.getProperty("institutionalUserIdentifier", $locale).length() > 0)
+				#set ($matnr = $r.escapeHtml($user.getProperty("institutionalUserIdentifier", $locale)))
+			#end
+			<span><i class="o_icon o_icon_mail"> </i> 
+			<a href="mailto:$user.getProperty("email", $locale)">$user.getProperty("email", $locale)</a> 
+			#if ($user.getProperty("institutionalEmail", $locale) && $user.getProperty("institutionalEmail", $locale) != "" && $user.getProperty("email", $locale) != $user.getProperty("institutionalEmail", $locale))
+			 / <a href="mailto:$user.getProperty("institutionalEmail", $locale)">$user.getProperty("institutionalEmail", $locale)</a>
+			#end</span>
+		</li>
+		#if ($inst)
+			<li class="list-group-item"><span><i class="o_icon o_icon_institution"> </i> $inst</span></li>
+		#end
+		#if ($matnr)
+			<li class="list-group-item"><span>$matnr</span></li>
+		#end
+		#if($participantGroups.size() > 0)
+		<li class="list-group-item">
+			<span><i class="o_icon o_icon_group"> </i> $r.translate("participantgroups.title")</span>
+		</li>
+		<li class="list-group-item">
+			#foreach($group in $participantGroups)
+				$r.escapeHtml($group.getName())
+				#if ($velocityCount < $participantGroups.size())
+			,
+				#end
+			#end
+		</li>
+		#end
+	</ul>
+</div>
+
+#if ($r.isNotEmpty($infoCoach))
+	<div class="o_course_run_disclaimer">
+		<h4>$r.translate("title.infocoach")</h4>
+		$r.xssScan($infoCoach)
+	</div>
+#end
 
 #if($r.available("details")) 
 	$r.render("details")
