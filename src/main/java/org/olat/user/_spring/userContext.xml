@@ -271,16 +271,6 @@
 	<bean class="org.olat.user.DisplayPortraitManager"/>
 	<bean class="org.olat.user.HomePageConfigManagerImpl"/>
 	
-	<bean id="userDeletionManager" class="org.olat.admin.user.delete.service.UserDeletionManager">
-		<constructor-arg index="0" ref="deletionModule" />
-		<property name="baseSecurityManager" ref="baseSecurityManager" />
-		<property name="mailManager" ref="mailManager"/>
-		<property name="groupDao" ref="groupDao"/>
-		<property name="registrationManager" ref="selfRegistrationManager" />
-		<property name="keepUserLoginAfterDeletion" value="${keepUserLoginAfterDeletion}" />
-		<property name="keepUserEmailAfterDeletion" value="${keepUserEmailAfterDeletion}" />
-	</bean>
-	
 	<!--  user properties admin-gui -->
 	<bean class="org.olat.core.extensions.action.GenericActionExtension" init-method="initExtensionPoints">
 		<property name="actionController">

@@ -27,19 +27,15 @@ package org.olat.repository;
 
 import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
-import java.util.Collections;
 import java.util.Date;
-import java.util.List;
 
-import org.olat.basesecurity.BaseSecurity;
-import org.olat.basesecurity.IdentityShort;
-import org.olat.core.configuration.AbstractSpringModule;
+import org.olat.basesecurity.manager.IdentityDAO;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.WebappHelper;
-import org.olat.core.util.coordinate.CoordinatorManager;
+import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -49,7 +45,7 @@ import org.springframework.stereotype.Service;
  * @author Christian Guretzki
  */
 @Service("deletionModule")
-public class RepositoryDeletionModule extends AbstractSpringModule {
+public class RepositoryDeletionModule implements InitializingBean {
 	private static final OLog log = Tracing.createLoggerFor(RepositoryDeletionModule.class);
 	private static final String CONF_DELETE_EMAIL_RESPONSE_TO_USER_NAME = "deleteEmailResponseToUserName";
 	private static final String DEFAULT_ADMIN_USERNAME = "administrator";
@@ -60,49 +56,28 @@ public class RepositoryDeletionModule extends AbstractSpringModule {
 	private String emailResponseTo;
 	@Value("${deletionModule.adminUserName:administrator}")
 	private String adminUserName;
-
-	private Identity adminUserIdentity;
-	@Autowired
-	private WebappHelper webappHelper;
-	@Autowired
-	private BaseSecurity baseSecurityManager;
-
-	@Autowired
-	public RepositoryDeletionModule(CoordinatorManager coordinatorManager) {
-		super(coordinatorManager);
-	}
 	
-	@Override
-	protected void initFromChangedProperties() {
-		//
-	}
+	@Autowired
+	private IdentityDAO identityDao;
 
 	@Override
-	public void init() {
+	public void afterPropertiesSet() {
 		if(!StringHelper.containsNonWhitespace(archiveRootPath)) {
 			archiveRootPath = Paths.get(System.getProperty("java.io.tmpdir"), "olatdata", "deleted_archive").toString();
 		}
 				
 		if (!emailResponseTo.contains("@")) {
-			List<IdentityShort> identities = baseSecurityManager.findShortIdentitiesByName(Collections.singletonList(emailResponseTo));
-			if (identities != null && identities.size() == 1) {
-				emailResponseTo = identities.get(0).getEmail();
+			Identity identity = identityDao.findIdentityByName(emailResponseTo);
+			if (identity != null) {
+				emailResponseTo = identity.getUser().getEmail();
 			} else {
 				log.warn("Could not find:  " + CONF_DELETE_EMAIL_RESPONSE_TO_USER_NAME + " with name: " + emailResponseTo, null);
 				emailResponseTo = WebappHelper.getMailConfig("mailFrom");
 			}
 		}
-
-		if (adminUserName != null) {
-			adminUserIdentity = baseSecurityManager.findIdentityByName(adminUserName);
-		} else {
-			adminUserIdentity = baseSecurityManager.findIdentityByName(DEFAULT_ADMIN_USERNAME);
-		}
 		
 		if(log.isDebug()) {
 			log.debug("archiveRootPath=" + archiveRootPath);
-			log.debug("emailResponseTo=" + emailResponseTo);
-			log.debug("adminUserIdentity=" + adminUserIdentity);
 		}
 	}
 
@@ -126,6 +101,12 @@ public class RepositoryDeletionModule extends AbstractSpringModule {
 	}
 
 	public Identity getAdminUserIdentity() {
+		Identity adminUserIdentity;
+		if (adminUserName != null) {
+			adminUserIdentity = identityDao.findIdentityByName(adminUserName);
+		} else {
+			adminUserIdentity = identityDao.findIdentityByName(DEFAULT_ADMIN_USERNAME);
+		}
 		return adminUserIdentity;
 	}
 }

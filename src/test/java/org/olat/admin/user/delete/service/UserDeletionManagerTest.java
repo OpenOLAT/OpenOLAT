@@ -36,7 +36,6 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityModule;
@@ -81,7 +80,7 @@ public class UserDeletionManagerTest extends OlatTestCase {
 	@Autowired
 	private BusinessGroupService businessGroupService;
 	
-	@Test @Ignore
+	@Test
 	public void testDeleteIdentity() {
 		String username = "id-to-del-" + UUID.randomUUID();
 		String email = username + "@frentix.com";
