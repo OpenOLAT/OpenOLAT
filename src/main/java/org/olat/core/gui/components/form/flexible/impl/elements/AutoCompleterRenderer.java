@@ -63,9 +63,10 @@ public class AutoCompleterRenderer extends DefaultComponentRenderer {
 		  .append("    },\n")
 		  .append("	   queryTokenizer: Bloodhound.tokenizers.whitespace,\n")
 		  .append("	   remote: {\n")
-		  .append("	     url: '").append(mapperUri).append("?term=%QUERY',\n")
+		  .append("	    url: '").append(mapperUri).append("/?place=holder&term=%QUERY',\n")//place holder is useless but for tomcat, sometimes it said that the term parameter is corrupted and will not be part of the request send to OpenOLAT
+		  .append("	    wildcard: '%QUERY',\n")
 		  .append("     filter: function ( response ) {\n")
-		  .append("     return jQuery.map(response, function (object) {\n")
+		  .append("      return jQuery.map(response, function (object) {\n")
 		  .append("		  return {\n")
 		  .append("			value: '' + object.key,\n");
 		if(showDisplayKey) {
@@ -93,9 +94,5 @@ public class AutoCompleterRenderer extends DefaultComponentRenderer {
 		  .append("});\n")
 		  .append("/* ]]> */\n")
 		  .append("</script>");
-		
 	}
-	
-	
-
 }

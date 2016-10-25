@@ -66,7 +66,6 @@ public class AssessedIdentityListProvider implements ListProvider {
 		assessmentToolManager = CoreSpringFactory.getImpl(AssessmentToolManager.class);
 	}
 	
-	
 	@Override
 	public void getResult(String searchValue, ListReceiver receiver) {
 		SearchAssessedIdentityParams params = new SearchAssessedIdentityParams(courseEntry, subIdent, referenceEntry, assessmentCallback);
