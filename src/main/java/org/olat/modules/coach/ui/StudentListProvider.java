@@ -47,6 +47,7 @@ public class StudentListProvider implements ListProvider {
 	public void getResult(String searchValue, ListReceiver receiver) {
 		int maxEntries = 10;
 		boolean hasMore = false;
+		searchValue = searchValue.toLowerCase();
 		for (Iterator<StudentStatEntry> it_res = model.getObjects().iterator(); (hasMore=it_res.hasNext()) && maxEntries > 0;) {
 			StudentStatEntry entry = it_res.next();
 			if(contains(searchValue, entry)) {
@@ -64,13 +65,13 @@ public class StudentListProvider implements ListProvider {
 	}
 	
 	public static boolean contains(String searchValue, StudentStatEntry entry) {
-		if(entry.getIdentityName().contains(searchValue)) {
+		if(entry.getIdentityName().toLowerCase().contains(searchValue)) {
 			return true;
 		}
 		String[] userProperties = entry.getIdentityProps();
 		for(int i=userProperties.length; i-->0; ) {
 			String userProp = userProperties[i];
-			if(userProp != null && userProp.contains(searchValue)) {
+			if(userProp != null && userProp.toLowerCase().contains(searchValue)) {
 				return true;
 			}
 		}

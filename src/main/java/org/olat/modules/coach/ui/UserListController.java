@@ -44,6 +44,7 @@ import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
+import org.olat.core.util.UserSession;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.modules.coach.CoachingService;
 import org.olat.modules.coach.model.SearchCoachedIdentityParams;
@@ -117,7 +118,12 @@ public class UserListController extends FormBasicController implements Activatea
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", model, 20, false, getTranslator(), formLayout);
 		tableEl.setExportEnabled(true);
 		tableEl.setEmtpyTableMessageKey("error.no.found");
-		tableEl.setAndLoadPersistedPreferences(ureq, "fUserListController");
+
+		UserSession usess = ureq.getUserSession();
+		boolean autoCompleteAllowed = securityModule.isUserAllowedAutoComplete(usess.getRoles());
+		if(autoCompleteAllowed) {
+			tableEl.setSearchEnabled(new StudentListProvider(model, userManager), usess);
+		}
 	}
 
 	@Override

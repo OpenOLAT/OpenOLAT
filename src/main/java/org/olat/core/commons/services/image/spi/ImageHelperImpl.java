@@ -128,21 +128,19 @@ public class ImageHelperImpl extends AbstractImageHelper {
 	
 	@Override
 	public boolean cropImage(File image, File cropedImage, Crop cropSelection) {
-		ImageInputStream imageSrc = null;
-		try {
-			imageSrc = new FileImageInputStream(image);
+		try (ImageInputStream imageSrc = new FileImageInputStream(image)) {
 			String extension = FileUtils.getFileSuffix(cropedImage.getName());
 			SizeAndBufferedImage img = getImage(imageSrc, extension);
-			BufferedImage croppedImg = cropTo(img.getImage(), img.getSize(), cropSelection);
-			Size size = new Size(cropSelection.getWidth(), cropSelection.getHeight(), false);
-			return writeTo(croppedImg, cropedImage, size, extension);
+			if(img != null) {
+				BufferedImage croppedImg = cropTo(img.getImage(), img.getSize(), cropSelection);
+				Size size = new Size(cropSelection.getWidth(), cropSelection.getHeight(), false);
+				return writeTo(croppedImg, cropedImage, size, extension);
+			}
+			return false;
 		} catch (IOException e) {
 			return false;
-		//fxdiff FXOLAT-109: prevent red screen if the image has wrong EXIF data
-		} catch (CMMException e) {
+		} catch (CMMException e) {// if the image has wrong EXIF data
 			return false;
-		} finally {
-			closeQuietly(imageSrc);
 		}
 	}
 
