@@ -45,12 +45,14 @@ import org.olat.core.gui.components.form.flexible.impl.elements.FileElementEvent
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.util.Util;
 import org.olat.core.util.WebappHelper;
 import org.olat.core.util.vfs.LocalFileImpl;
 import org.olat.core.util.vfs.LocalFolderImpl;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.repository.CatalogEntry;
+import org.olat.repository.RepositoryManager;
 import org.olat.repository.CatalogEntry.Style;
 import org.olat.repository.manager.CatalogManager;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -71,7 +73,7 @@ public class CatalogEntryEditController extends FormBasicController {
 	
 	private static final int picUploadlimitKB = 5024;
 	
-	private static final Set<String> mimeTypes = new HashSet<String>();
+	private static final Set<String> mimeTypes = new HashSet<>();
 	static {
 		mimeTypes.add("image/gif");
 		mimeTypes.add("image/jpg");
@@ -99,7 +101,7 @@ public class CatalogEntryEditController extends FormBasicController {
 	}
 	
 	public CatalogEntryEditController(UserRequest ureq, WindowControl wControl, CatalogEntry entry, CatalogEntry parentEntry) {
-		super(ureq, wControl);
+		super(ureq, wControl, Util.createPackageTranslator(RepositoryManager.class, ureq.getLocale()));
 		
 		this.catalogEntry = entry;
 		this.parentEntry = parentEntry;
@@ -141,7 +143,7 @@ public class CatalogEntryEditController extends FormBasicController {
 		if(img instanceof LocalFileImpl) {
 			fileUpload.setInitialFile(((LocalFileImpl)img).getBasefile());
 		}
-		fileUpload.limitToMimeType(mimeTypes, null, null);
+		fileUpload.limitToMimeType(mimeTypes, "cif.error.mimetype", new String[]{ mimeTypes.toString()} );
 
 		FormLayoutContainer buttonLayout = FormLayoutContainer.createButtonLayout("button_layout", getTranslator());
 		buttonLayout.setElementCssClass("o_sel_catalog_entry_form_buttons");
@@ -162,6 +164,8 @@ public class CatalogEntryEditController extends FormBasicController {
 	public void setElementCssClass(String cssClass) {
 		flc.setElementCssClass(cssClass);
 	}
+	
+	
 
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
@@ -178,8 +182,10 @@ public class CatalogEntryEditController extends FormBasicController {
 					fileUpload.setInitialFile(null);
 				}
 				flc.setDirty(true);
+				fileUpload.clearError();
 			} else if (fileUpload.isUploadSuccess()) {
 				flc.setDirty(true);
+				fileUpload.clearError();
 			}
 		}
 		super.formInnerEvent(ureq, source, event);
