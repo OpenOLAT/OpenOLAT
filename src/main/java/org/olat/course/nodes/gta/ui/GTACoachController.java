@@ -223,8 +223,7 @@ public class GTACoachController extends GTAAbstractController {
 	}
 	
 	private void backToSubmission(Task assignedTask) {
-		if(config.getBooleanSafe(GTACourseNode.GTASK_SUBMIT)) {
-		
+		if(config.getBooleanSafe(GTACourseNode.GTASK_SUBMIT) && assignedTask != null) {
 			Date now = new Date();
 			DueDate dueDate = getSubmissionDueDate(assignedTask);
 			if(dueDate == null || dueDate.getDueDate() == null || now.before(dueDate.getDueDate())) {
