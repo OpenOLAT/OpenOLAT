@@ -203,7 +203,7 @@ public class MessageEditController extends FormBasicController {
 			pseudonymEl = uifactory.addTextElement("pseudonym", "pseudonym", 128, message.getPseudonym(), formLayout);
 			pseudonymEl.setElementCssClass("o_sel_forum_message_alias");
 			
-			passwordEl = uifactory.addPasswordElement("password", "password", 128, message.getPseudonym(), formLayout);
+			passwordEl = uifactory.addPasswordElement("password", "password", 128, "", formLayout);
 			passwordEl.setElementCssClass("o_sel_forum_message_alias_pass");
 			passwordEl.setPlaceholderKey("password.placeholder", null);
 
