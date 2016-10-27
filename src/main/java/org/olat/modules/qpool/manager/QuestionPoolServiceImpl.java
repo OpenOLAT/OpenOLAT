@@ -577,8 +577,8 @@ public class QuestionPoolServiceImpl implements QPoolService {
 	}
 
 	@Override
-	public int countSharedItemByResource(OLATResource resource) {
-		return questionItemDao.countSharedItemByResource(resource);
+	public int countSharedItemByResource(OLATResource resource, SearchQuestionItemParams searchParams) {
+		return questionItemDao.countSharedItemByResource(resource, searchParams.getFormat());
 	}
 
 	@Override
@@ -598,14 +598,16 @@ public class QuestionPoolServiceImpl implements QPoolService {
 				if(results.isEmpty()) {
 					return new DefaultResultInfos<QuestionItemView>();
 				}
-				List<QuestionItemView> items = itemQueriesDao.getSharedItemByResource(searchParams.getIdentity(), resource, results, firstResult, maxResults);
+				List<QuestionItemView> items = itemQueriesDao.getSharedItemByResource(searchParams.getIdentity(), resource, results,
+						searchParams.getFormat(), firstResult, maxResults);
 				return new DefaultResultInfos<QuestionItemView>(firstResult + items.size(), results.size(), items);
 			} catch (Exception e) {
 				log.error("", e);
 			}
 			return new DefaultResultInfos<QuestionItemView>();
 		} else {
-			List<QuestionItemView> items = itemQueriesDao.getSharedItemByResource(searchParams.getIdentity(), resource, null, firstResult, maxResults, orderBy);
+			List<QuestionItemView> items = itemQueriesDao.getSharedItemByResource(searchParams.getIdentity(), resource, null,
+					searchParams.getFormat(), firstResult, maxResults, orderBy);
 			return new DefaultResultInfos<QuestionItemView>(firstResult + items.size(), -1, items);
 		}
 	}
@@ -658,8 +660,8 @@ public class QuestionPoolServiceImpl implements QPoolService {
 	}
 
 	@Override
-	public int countItemsOfCollection(QuestionItemCollection collection) {
-		return collectionDao.countItemsOfCollection(collection);
+	public int countItemsOfCollection(QuestionItemCollection collection, SearchQuestionItemParams searchParams) {
+		return collectionDao.countItemsOfCollection(collection, searchParams.getFormat());
 	}
 
 	@Override
@@ -681,14 +683,16 @@ public class QuestionPoolServiceImpl implements QPoolService {
 				if(results.isEmpty()) {
 					return new DefaultResultInfos<QuestionItemView>();
 				}
-				List<QuestionItemView> items = itemQueriesDao.getItemsOfCollection(searchParams.getIdentity(), collection, results, firstResult, maxResults, orderBy);
+				List<QuestionItemView> items = itemQueriesDao.getItemsOfCollection(searchParams.getIdentity(), collection, results, 
+						searchParams.getFormat(), firstResult, maxResults, orderBy);
 				return new DefaultResultInfos<QuestionItemView>(firstResult + items.size(), results.size(), items);
 			} catch (Exception e) {
 				log.error("", e);
 			}
 			return new DefaultResultInfos<QuestionItemView>();
 		} else {
-			List<QuestionItemView> items = itemQueriesDao.getItemsOfCollection(searchParams.getIdentity(), collection, searchParams.getItemKeys(), firstResult, maxResults, orderBy);
+			List<QuestionItemView> items = itemQueriesDao.getItemsOfCollection(searchParams.getIdentity(), collection, searchParams.getItemKeys(),
+					searchParams.getFormat(), firstResult, maxResults, orderBy);
 			return new DefaultResultInfos<QuestionItemView>(firstResult + items.size(), -1, items);
 		}
 	}

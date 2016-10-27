@@ -31,6 +31,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
+import org.olat.core.util.StringHelper;
 import org.olat.modules.qpool.QPoolService;
 import org.olat.modules.qpool.QuestionItem;
 import org.olat.modules.qpool.QuestionItemCollection;
@@ -52,11 +53,21 @@ public class CollectionOfItemsSource implements QuestionItemsSource {
 	private final QPoolService qpoolService;
 	private final QuestionItemCollection collection;
 	
+	private String restrictToFormat;
+	
 	public CollectionOfItemsSource(QuestionItemCollection collection, Identity identity, Roles roles) {
 		this.roles = roles;
 		this.identity = identity;
 		this.collection = collection;
 		qpoolService = CoreSpringFactory.getImpl(QPoolService.class);
+	}
+
+	public String getRestrictToFormat() {
+		return restrictToFormat;
+	}
+
+	public void setRestrictToFormat(String restrictToFormat) {
+		this.restrictToFormat = restrictToFormat;
 	}
 
 	@Override
@@ -102,13 +113,20 @@ public class CollectionOfItemsSource implements QuestionItemsSource {
 
 	@Override
 	public int getNumOfItems() {
-		return qpoolService.countItemsOfCollection(collection);
+		SearchQuestionItemParams params = new SearchQuestionItemParams(identity, roles);
+		if(StringHelper.containsNonWhitespace(restrictToFormat)) {
+			params.setFormat(restrictToFormat);
+		}
+		return qpoolService.countItemsOfCollection(collection, params);
 	}
 
 	@Override
 	public List<QuestionItemView> getItems(Collection<Long> key) {
 		SearchQuestionItemParams params = new SearchQuestionItemParams(identity, roles);
 		params.setItemKeys(key);
+		if(StringHelper.containsNonWhitespace(restrictToFormat)) {
+			params.setFormat(restrictToFormat);
+		}
 		ResultInfos<QuestionItemView> items = qpoolService.getItemsOfCollection(collection, params, 0, -1);
 		return items.getObjects();
 	}
@@ -118,6 +136,9 @@ public class CollectionOfItemsSource implements QuestionItemsSource {
 		SearchQuestionItemParams params = new SearchQuestionItemParams(identity, roles);
 		params.setSearchString(query);
 		params.setCondQueries(condQueries);
+		if(StringHelper.containsNonWhitespace(restrictToFormat)) {
+			params.setFormat(restrictToFormat);
+		}
 		return qpoolService.getItemsOfCollection(collection, params, firstResult, maxResults, orderBy);
 	}
 }

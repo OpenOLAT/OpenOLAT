@@ -137,8 +137,6 @@ public class ExtendedSearchController extends FormBasicController implements Ext
 				if(uObject instanceof ConditionalQuery) {
 					ConditionalQuery query = (ConditionalQuery)uObject;
 					query.selectAttributeType(attrEl.getSelectedKey(), null);
-				} else {
-					System.out.println("Check");
 				}
 			}
 		} else if(source instanceof FormLink) {
