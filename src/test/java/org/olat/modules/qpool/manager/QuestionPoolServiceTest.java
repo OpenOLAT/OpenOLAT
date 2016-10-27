@@ -117,7 +117,7 @@ public class QuestionPoolServiceTest extends OlatTestCase {
 		SearchQuestionItemParams params = new SearchQuestionItemParams(id, null);
 		
 		//retrieve the list of items in the collection
-		int numOfItemsInCollection = qpoolService.countItemsOfCollection(newColl);
+		int numOfItemsInCollection = qpoolService.countItemsOfCollection(newColl, params);
 		Assert.assertEquals(2, numOfItemsInCollection);
 		ResultInfos<QuestionItemView> itemsOfCollection = qpoolService.getItemsOfCollection(newColl, params, 0, -1);
 		Assert.assertNotNull(itemsOfCollection);

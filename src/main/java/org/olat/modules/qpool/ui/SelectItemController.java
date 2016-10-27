@@ -137,7 +137,7 @@ public class SelectItemController extends BasicController {
 
     private void updateMyLists(UserRequest ureq) {
         if(myListsCtrl == null) {
-            myListsCtrl = new ItemListMyListsController(ureq, getWindowControl());
+            myListsCtrl = new ItemListMyListsController(ureq, getWindowControl(), restrictToFormat);
             listenTo(myListsCtrl);
         }
         mainVC.put("itemList", myListsCtrl.getInitialComponent());
@@ -145,7 +145,7 @@ public class SelectItemController extends BasicController {
 
 	private void updateMyShares(UserRequest ureq) {
 		if(mySharesCtrl == null) {
-			mySharesCtrl = new ItemListMySharesController(ureq, getWindowControl());
+			mySharesCtrl = new ItemListMySharesController(ureq, getWindowControl(), restrictToFormat);
 			listenTo(mySharesCtrl);
 		}
 		mainVC.put("itemList", mySharesCtrl.getInitialComponent());

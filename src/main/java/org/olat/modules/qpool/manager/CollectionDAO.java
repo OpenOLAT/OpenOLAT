@@ -29,6 +29,7 @@ import javax.persistence.TypedQuery;
 
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
+import org.olat.core.util.StringHelper;
 import org.olat.modules.qpool.QuestionItemCollection;
 import org.olat.modules.qpool.QuestionItemShort;
 import org.olat.modules.qpool.model.CollectionToItem;
@@ -116,14 +117,24 @@ public class CollectionDAO {
 		return count.intValue() > 0;
 	}
 	
-	public int countItemsOfCollection(QuestionItemCollection collection) {
+	public int countItemsOfCollection(QuestionItemCollection collection, String format) {
 		StringBuilder sb = new StringBuilder();
-		sb.append("select count(coll2item) from qcollection2item coll2item where coll2item.collection.key=:collectionKey");
+		sb.append("select count(coll2item) from qcollection2item coll2item ")
+		  .append(" inner join coll2item.item item")
+		  .append(" where coll2item.collection.key=:collectionKey");
+		if(StringHelper.containsNonWhitespace(format)) {
+			sb.append(" and item.format=:format");
+		}
 		
-		return dbInstance.getCurrentEntityManager()
+		TypedQuery<Number> countQuery = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), Number.class)
-				.setParameter("collectionKey", collection.getKey())
-				.getSingleResult().intValue();
+				.setParameter("collectionKey", collection.getKey());
+		if(StringHelper.containsNonWhitespace(format)) {
+			countQuery.setParameter("format", format);
+		}
+		
+		Number count = countQuery.getSingleResult();
+		return count.intValue();
 	}
 	
 	public List<Long> getItemKeysOfCollection(QuestionItemCollection collection) {
