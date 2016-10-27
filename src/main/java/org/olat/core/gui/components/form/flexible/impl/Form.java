@@ -340,7 +340,7 @@ public class Form {
 					requestMultipartFileNames.put(name, fileName);
 					requestMultipartFileMimeTypes.put(name, contentType);
 				} else {
-					String value = IOUtils.toString(part.getInputStream());
+					String value = IOUtils.toString(part.getInputStream(), "UTF-8");
 					addRequestParameter(name, value);
 				}
 				part.delete();
