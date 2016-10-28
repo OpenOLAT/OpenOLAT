@@ -369,6 +369,7 @@ public class RepositoryEntryDetailsController extends FormBasicController {
 				}
 				startLink.setIconRightCSS("o_icon o_icon_start o_icon-lg");
 				startLink.setPrimary(true);
+				startLink.setFocus(true);
 				
 				switch (entry.getAccess()) {
 					case 0: accessI18n = "ERROR";

@@ -58,6 +58,8 @@ class FormButtonRenderer extends DefaultComponentRenderer {
 		  .append("\" value=\"").append(StringHelper.escapeHtml(fs.getTranslated())).append("\" ");
 		if(!source.isEnabled()){
 			sb.append(" disabled=\"disabled\" ");
+		} else if (fs.hasFocus()) {
+			sb.append(" autofocus");
 		}
 		sb.append(FormJSHelper.getRawJSFor(fs.getRootForm(), id, fs.getAction()));
 		sb.append(" class=\"btn");

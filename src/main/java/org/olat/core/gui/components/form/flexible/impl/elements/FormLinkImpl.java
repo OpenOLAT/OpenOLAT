@@ -161,6 +161,7 @@ public class FormLinkImpl extends FormItemImpl implements FormLink {
 		component.setElementCssClass(getElementCssClass());
 		component.setTitle(title);
 		component.setDomReplacementWrapperRequired(domReplacementWrapperRequired);
+		component.setFocus(super.hasFocus());
 		if(StringHelper.containsNonWhitespace(getElementCssClass())) {
 			component.setElementCssClass(getElementCssClass());
 		}
@@ -325,4 +326,24 @@ public class FormLinkImpl extends FormItemImpl implements FormLink {
 			component.setPrimary(isPrimary);
 		}		
 	}
+	
+	@Override
+	public void setFocus(boolean hasFocus){
+		if (component != null) {
+			component.setFocus(hasFocus);
+		}
+		// set also on parent as fallback
+		super.setFocus(hasFocus);
+	}
+	
+	@Override
+	public boolean hasFocus(){
+		if (component != null) {
+			return component.isFocus();
+		} else {
+			// fallback
+			return super.hasFocus();			
+		}
+	}
+
 }

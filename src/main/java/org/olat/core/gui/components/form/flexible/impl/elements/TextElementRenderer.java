@@ -82,6 +82,11 @@ class TextElementRenderer extends DefaultComponentRenderer {
 			if (te.hasPlaceholder()) {
 				sb.append(" placeholder=\"").append(te.getPlaceholder()).append("\"");
 			}
+			
+			if (te.hasFocus()) {
+				sb.append(" autofocus");
+			}
+			
 			sb.append(" />");
 			
 			//add set dirty form only if enabled

@@ -86,6 +86,7 @@ public class ResumeController extends FormBasicController {
 		formLayout.add(buttonLayout);
 		okButton = uifactory.addFormSubmitButton("submit", "resume.button", buttonLayout);
 		okButton.setElementCssClass("o_sel_resume_yes");
+		okButton.setFocus(true);
 		landingButton = uifactory.addFormLink("landing", "resume.button.landing", null, buttonLayout, Link.BUTTON);
 		landingButton.setElementCssClass("o_sel_resume_landing");
 		landingButton.setVisible(StringHelper.containsNonWhitespace(redirect.getLandingPage()));
