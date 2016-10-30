@@ -115,7 +115,8 @@ public class CourseCalendarTest extends OlatJerseyTestCase {
 				Date begin = cal.getTime();
 				cal.add(Calendar.HOUR_OF_DAY, 1);
 				Date end = cal.getTime();
-				KalendarEvent event = new KalendarEvent(UUID.randomUUID().toString(), "Unit test " + i, begin, end);
+				String eventId = UUID.randomUUID().toString();
+				KalendarEvent event = new KalendarEvent(eventId, null, "Unit test " + i, begin, end);
 				calManager.addEventTo(calendarWrapper.getKalendar(), event);
 				cal.add(Calendar.DATE, 1);
 			}
@@ -250,7 +251,7 @@ public class CourseCalendarTest extends OlatJerseyTestCase {
 		Date begin = cal.getTime();
 		cal.add(Calendar.HOUR_OF_DAY, 1);
 		String id = UUID.randomUUID().toString();
-		KalendarEvent kalEvent = new KalendarEvent(id, "Subject " + UUID.randomUUID().toString(), begin, cal.getTime());
+		KalendarEvent kalEvent = new KalendarEvent(id, null, "Subject (" + id + ")", begin, cal.getTime());
 		calendarManager.addEventTo(calendarWrapper.getKalendar(), kalEvent);
 
 		//check if the event exists

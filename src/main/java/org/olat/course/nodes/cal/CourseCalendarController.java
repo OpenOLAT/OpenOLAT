@@ -82,8 +82,8 @@ public class CourseCalendarController extends DefaultController implements Clone
 		calendarController.setFocus(date);
 	}
 	
-	public void setFocusOnEvent(String eventId) {
-		calendarController.setFocusOnEvent(eventId);
+	public void setFocusOnEvent(String eventId, String recurrenceId) {
+		calendarController.setFocusOnEvent(eventId, recurrenceId);
 	}
 
 	@Override

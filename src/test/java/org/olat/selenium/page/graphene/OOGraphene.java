@@ -55,6 +55,11 @@ public class OOGraphene {
 		waitElement(modalBy, 5, browser);
 	}
 	
+	public static void waitCallout(WebDriver browser) {
+		By calloutBy = By.cssSelector("div.popover-content div.o_callout_content");
+		waitElement(calloutBy, 5, browser);
+	}
+	
 	public static void waitBusy(WebDriver browser) {
 		Graphene.waitModel(browser).pollingEvery(poolingDuration, TimeUnit.MILLISECONDS).until(new BusyPredicate());
 	}

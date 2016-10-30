@@ -37,6 +37,8 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URISyntaxException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
@@ -79,6 +81,8 @@ public class ICalFileCalendarManagerTest extends OlatTestCase {
 	
 	@Autowired
 	private ICalFileCalendarManager calendarManager;
+	@Autowired
+	private ImportCalendarManager importCalendarManager;
 	
 	private final void emptyCalendarCache() {
 		CoordinatorManager coordinator = CoreSpringFactory.getImpl(CoordinatorManager.class);
@@ -104,7 +108,7 @@ public class ICalFileCalendarManagerTest extends OlatTestCase {
 		// set manager null to force reload of calendar from file-system
 		emptyCalendarCache();
 		cal = calendarManager.getPersonalCalendar(test).getKalendar();
-		KalendarEvent reloadedEvent = cal.getEvent(TEST_EVENT_ID);
+		KalendarEvent reloadedEvent = cal.getEvent(TEST_EVENT_ID, null);
 		Assert.assertNotNull("Could not found added event", reloadedEvent);
 		Assert.assertEquals("Added event has wrong subject", testEvent.getSubject(), reloadedEvent.getSubject());
 		Assert.assertEquals(start, reloadedEvent.getBegin());
@@ -125,7 +129,7 @@ public class ICalFileCalendarManagerTest extends OlatTestCase {
 		// set manager null to force reload of calendar from file-system
 		emptyCalendarCache();
 		cal = calendarManager.getPersonalCalendar(test).getKalendar();
-		KalendarEvent updatedEvent = cal.getEvent(TEST_EVENT_ID);
+		KalendarEvent updatedEvent = cal.getEvent(TEST_EVENT_ID, null);
 		Assert.assertNotNull("Could not found updated event", updatedEvent);
 		Assert.assertEquals("Added event has wrong subject", reloadedEvent.getSubject(), updatedEvent.getSubject());
 		Assert.assertEquals(start, reloadedEvent.getBegin());
@@ -135,7 +139,7 @@ public class ICalFileCalendarManagerTest extends OlatTestCase {
 		calendarManager.removeEventFrom(cal, updatedEvent);
 		emptyCalendarCache();
 		cal = calendarManager.getPersonalCalendar(test).getKalendar();
-		KalendarEvent removedEvent = cal.getEvent(TEST_EVENT_ID);
+		KalendarEvent removedEvent = cal.getEvent(TEST_EVENT_ID, null);
 		assertNull("Found removed event", removedEvent);
 	}
 	
@@ -152,14 +156,14 @@ public class ICalFileCalendarManagerTest extends OlatTestCase {
 		Date start = calendar.getTime();
 		calendar.add(Calendar.HOUR_OF_DAY, 1);
 		Date end = calendar.getTime();
-		KalendarEvent testEvent = new KalendarEvent(TEST_EVENT_ID, "testEvent", start, end);
+		KalendarEvent testEvent = new KalendarEvent(TEST_EVENT_ID, null, "testEvent", start, end);
 		calendarManager.addEventTo(cal, testEvent);
 		
 		//empty the cache
 		emptyCalendarCache();
 		
 		Kalendar reloadedCal = calendarManager.getPersonalCalendar(test).getKalendar();
-		KalendarEvent reloadedEvent = reloadedCal.getEvent(TEST_EVENT_ID);
+		KalendarEvent reloadedEvent = reloadedCal.getEvent(TEST_EVENT_ID, null);
 		Assert.assertNotNull("Could not found added event", reloadedEvent);
 		Assert.assertEquals("Added event has wrong subject", testEvent.getSubject(), reloadedEvent.getSubject());
 		Assert.assertEquals(reloadedEvent.getBegin(), start);
@@ -179,7 +183,7 @@ public class ICalFileCalendarManagerTest extends OlatTestCase {
 		emptyCalendarCache();
 
 		Kalendar updatedCal = calendarManager.getPersonalCalendar(test).getKalendar();
-		KalendarEvent updatedEvent = updatedCal.getEvent(TEST_EVENT_ID);
+		KalendarEvent updatedEvent = updatedCal.getEvent(TEST_EVENT_ID, null);
 		Assert.assertNotNull("Could not found updated event", updatedEvent);
 		Assert.assertEquals("Added event has wrong subject", "testEvent changed", updatedEvent.getSubject());
 		Assert.assertEquals(updatedStart, updatedEvent.getBegin());
@@ -205,7 +209,7 @@ public class ICalFileCalendarManagerTest extends OlatTestCase {
 		Date start = calendar.getTime();
 		calendar.set(Calendar.HOUR_OF_DAY, 12);
 		Date end = calendar.getTime();
-		KalendarEvent testEvent = new KalendarEvent(eventId, "Today Event", start, end);
+		KalendarEvent testEvent = new KalendarEvent(eventId, null, "Today Event", start, end);
 		calendarManager.addEventTo(cal, testEvent);
 		
 		//Next days event
@@ -219,13 +223,13 @@ public class ICalFileCalendarManagerTest extends OlatTestCase {
 		Date nextStart = calendar.getTime();
 		calendar.set(Calendar.HOUR_OF_DAY, 12);
 		Date nextEnd = calendar.getTime();
-		KalendarEvent nextEvent = new KalendarEvent(nextEventId, "Next Event", nextStart, nextEnd);
+		KalendarEvent nextEvent = new KalendarEvent(nextEventId, null, "Next Event", nextStart, nextEnd);
 		calendarManager.addEventTo(cal, nextEvent);
 		
 
 		//2. reload and test
 		emptyCalendarCache();
-		KalendarEvent reloadedEvent = calendarManager.getPersonalCalendar(test).getKalendar().getEvent(eventId);
+		KalendarEvent reloadedEvent = calendarManager.getPersonalCalendar(test).getKalendar().getEvent(eventId, null);
 		Assert.assertNotNull(reloadedEvent);
 		Assert.assertEquals("Today Event", reloadedEvent.getSubject());
 		Assert.assertEquals(start, reloadedEvent.getBegin());
@@ -234,7 +238,7 @@ public class ICalFileCalendarManagerTest extends OlatTestCase {
 		Assert.assertTrue(reloadedEvent.isWithinOneDay());
 		Assert.assertFalse(reloadedEvent.isAllDayEvent());
 		
-		KalendarEvent reloadedNextEvent = calendarManager.getPersonalCalendar(test).getKalendar().getEvent(nextEventId);
+		KalendarEvent reloadedNextEvent = calendarManager.getPersonalCalendar(test).getKalendar().getEvent(nextEventId, null);
 		Assert.assertNotNull(reloadedNextEvent);
 		Assert.assertEquals("Next Event", reloadedNextEvent.getSubject());
 		Assert.assertEquals(nextStart, reloadedNextEvent.getBegin());
@@ -259,7 +263,7 @@ public class ICalFileCalendarManagerTest extends OlatTestCase {
 		Date start = calendar.getTime();
 		calendar.set(Calendar.HOUR_OF_DAY, 15);
 		Date end = calendar.getTime();
-		KalendarEvent testEvent = new KalendarEvent(eventId, "Short Event", start, end);
+		KalendarEvent testEvent = new KalendarEvent(eventId, null, "Short Event", start, end);
 		calendarManager.addEventTo(cal, testEvent);
 		
 		//Next days event
@@ -279,13 +283,13 @@ public class ICalFileCalendarManagerTest extends OlatTestCase {
 		calendar.add(Calendar.DATE, 6);
 		calendar.set(Calendar.HOUR_OF_DAY, 18);
 		Date nextEnd = calendar.getTime();
-		KalendarEvent nextEvent = new KalendarEvent(nextEventId, "Long Event", nextStart, nextEnd);
+		KalendarEvent nextEvent = new KalendarEvent(nextEventId, null, "Long Event", nextStart, nextEnd);
 		calendarManager.addEventTo(cal, nextEvent);
 		
 
 		//2. reload and test
 		emptyCalendarCache();
-		KalendarEvent reloadedEvent = calendarManager.getPersonalCalendar(test).getKalendar().getEvent(eventId);
+		KalendarEvent reloadedEvent = calendarManager.getPersonalCalendar(test).getKalendar().getEvent(eventId, null);
 		Assert.assertNotNull(reloadedEvent);
 		Assert.assertEquals("Short Event", reloadedEvent.getSubject());
 		Assert.assertEquals(start, reloadedEvent.getBegin());
@@ -294,7 +298,7 @@ public class ICalFileCalendarManagerTest extends OlatTestCase {
 		Assert.assertTrue(reloadedEvent.isWithinOneDay());
 		Assert.assertFalse(reloadedEvent.isAllDayEvent());
 		
-		KalendarEvent reloadedNextEvent = calendarManager.getPersonalCalendar(test).getKalendar().getEvent(nextEventId);
+		KalendarEvent reloadedNextEvent = calendarManager.getPersonalCalendar(test).getKalendar().getEvent(nextEventId, null);
 		Assert.assertNotNull(reloadedNextEvent);
 		Assert.assertEquals("Long Event", reloadedNextEvent.getSubject());
 		Assert.assertEquals(nextStart, reloadedNextEvent.getBegin());
@@ -361,7 +365,8 @@ public class ICalFileCalendarManagerTest extends OlatTestCase {
 		long startUsed = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
 		for (int i = 0; i < numEvents; i++) {
 			long begin = kalendarStart + (1000 * ((long)rand.nextInt(goBackNumYears * oneYearSec)));
-			KalendarEvent event = new KalendarEvent("id" + i, "test" + i, new Date(begin), rand.nextInt(maxEventDuratio));
+			String eventId = "id" + i;
+			KalendarEvent event = new KalendarEvent(eventId, "test" + i, new Date(begin), rand.nextInt(maxEventDuratio));
 			kalendar.addEvent(event);
 		}
 		long stopUsed = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
@@ -377,7 +382,8 @@ public class ICalFileCalendarManagerTest extends OlatTestCase {
 		
 		log.info("*** Find events within period...");
 		start = System.currentTimeMillis();
-		List<KalendarEvent> events = CalendarUtils.listEventsForPeriod(kalendar, new Date(kalendarStart), new Date(kalendarStart + (1000 * ((long)(goBackNumYears * oneYearSec))) ));
+		List<KalendarEvent> events = calendarManager.getEvents(kalendar,
+				new Date(kalendarStart), new Date(kalendarStart + (1000 * ((long)(goBackNumYears * oneYearSec)))), true);
 		stop = System.currentTimeMillis();
 		log.info("Duration find: " + (stop - start) + " ms.");
 		log.info("Found " + events.size() + " events out of " + kalendar.getEvents().size() + " total events.");
@@ -418,43 +424,27 @@ public class ICalFileCalendarManagerTest extends OlatTestCase {
 		Assert.assertEquals("e73iiu9masoddi4g0vllmi2ht0@google.com", event.getID());
 		Assert.assertNull(event.getEnd());
 
-		
 		//test persist
 		boolean allOk = calendarManager.persistCalendar(reloadCalWrapper.getKalendar());
 		Assert.assertTrue(allOk);
 		
 		//an other possible RS
 		//within period
-		Calendar cal = Calendar.getInstance();
-		cal.set(Calendar.YEAR, 2010);
-		cal.set(Calendar.MONTH, 3);
-		cal.set(Calendar.DATE, 15);
-		Date periodStart = cal.getTime();
+		Date periodStart = CalendarUtils.getDate(2010, Calendar.MARCH, 15);
+		Date periodEnd = CalendarUtils.getDate(2010, Calendar.MARCH, 20);
 		
-		cal = Calendar.getInstance();
-		cal.set(Calendar.YEAR, 2010);
-		cal.set(Calendar.MONTH, 3);
-		cal.set(Calendar.DATE, 17);
-		Date periodEnd = cal.getTime();
-		List<KalendarEvent> eventsForPeriod = CalendarUtils.listEventsForPeriod(reloadCalWrapper.getKalendar(), periodStart, periodEnd);
+		List<KalendarEvent> eventsForPeriod = calendarManager
+				.getEvents(reloadCalWrapper.getKalendar(), periodStart, periodEnd, true);
 		Assert.assertNotNull(eventsForPeriod);
-		Assert.assertEquals(1, eventsForPeriod.size());
+		Assert.assertEquals(0, eventsForPeriod.size());
 		KalendarEvent eventForPeriod = events.iterator().next();
 		Assert.assertEquals("e73iiu9masoddi4g0vllmi2ht0@google.com", eventForPeriod.getID());
 		
 		//out of scope
-		cal = Calendar.getInstance();
-		cal.set(Calendar.YEAR, 2008);
-		cal.set(Calendar.MONTH, 3);
-		cal.set(Calendar.DATE, 15);
-		Date periodStart2 = cal.getTime();
-		
-		cal = Calendar.getInstance();
-		cal.set(Calendar.YEAR, 2008);
-		cal.set(Calendar.MONTH, 3);
-		cal.set(Calendar.DATE, 17);
-		Date periodEnd2 = cal.getTime();
-		List<KalendarEvent> eventsOutOfPeriod = CalendarUtils.listEventsForPeriod(reloadCalWrapper.getKalendar(), periodStart2, periodEnd2);
+		Date periodStart2 = CalendarUtils.getDate(2008, Calendar.APRIL, 15);
+		Date periodEnd2 = CalendarUtils.getDate(2008, Calendar.APRIL, 17);
+		List<KalendarEvent> eventsOutOfPeriod = calendarManager
+				.getEvents(reloadCalWrapper.getKalendar(), periodStart2, periodEnd2, true);
 		Assert.assertNotNull(eventsOutOfPeriod);
 		Assert.assertTrue(eventsOutOfPeriod.isEmpty());
 	}
@@ -472,16 +462,16 @@ public class ICalFileCalendarManagerTest extends OlatTestCase {
 		Date start = calendar.getTime();
 		calendar.add(Calendar.HOUR_OF_DAY, 1);
 		Date end = calendar.getTime();
-		KalendarEvent notManagedEvent = new KalendarEvent(eventId1, "testEvent", start, end);
+		KalendarEvent notManagedEvent = new KalendarEvent(eventId1, null, "testEvent", start, end);
 		calendarManager.addEventTo(cal, notManagedEvent);
 		
 		// 2. Synchronize with a first calendar
 		Kalendar baseCalendar = calendarManager.createCalendar("user", "first-sync");
 		String eventIdManaged1 = "managed-event-1";
-		KalendarEvent managedEvent1 = new KalendarEvent(eventIdManaged1, "managedEvent", start, end);
+		KalendarEvent managedEvent1 = new KalendarEvent(eventIdManaged1, null, "managedEvent", start, end);
 		baseCalendar.addEvent(managedEvent1);
 		String eventIdManaged2 = "managed-event-2";
-		KalendarEvent managedEvent2 = new KalendarEvent(eventIdManaged2, "managedEvent", start, end);
+		KalendarEvent managedEvent2 = new KalendarEvent(eventIdManaged2, null, "managedEvent", start, end);
 		baseCalendar.addEvent(managedEvent2);
 		
 		ByteArrayOutputStream os1 = new ByteArrayOutputStream();
@@ -493,10 +483,10 @@ public class ICalFileCalendarManagerTest extends OlatTestCase {
 		
 		// 3. Synchronize with a second calendar
 		Kalendar resyncCalendar = calendarManager.createCalendar("user", "first-sync");
-		KalendarEvent managedEvent1Alt = new KalendarEvent(eventIdManaged1, "managedEvent resync", start, end);
+		KalendarEvent managedEvent1Alt = new KalendarEvent(eventIdManaged1, null, "managedEvent resync", start, end);
 		resyncCalendar.addEvent(managedEvent1Alt);
 		String eventIdManaged3 = "managed-event-3";
-		KalendarEvent managedEvent3 = new KalendarEvent(eventIdManaged3, "managedEvent 3", start, end);
+		KalendarEvent managedEvent3 = new KalendarEvent(eventIdManaged3, null, "managedEvent 3", start, end);
 		resyncCalendar.addEvent(managedEvent3);
 		
 		ByteArrayOutputStream os2 = new ByteArrayOutputStream();
@@ -510,18 +500,18 @@ public class ICalFileCalendarManagerTest extends OlatTestCase {
 		//check
 		Kalendar synchedCal = calendarManager.getPersonalCalendar(test).getKalendar();
 		
-		KalendarEvent notManagedEvent1 = synchedCal.getEvent(eventId1);
+		KalendarEvent notManagedEvent1 = synchedCal.getEvent(eventId1, null);
 		Assert.assertNotNull(notManagedEvent1);
 		Assert.assertEquals("testEvent", notManagedEvent1.getSubject());
 		
-		KalendarEvent event1 = synchedCal.getEvent(eventIdManaged1);
+		KalendarEvent event1 = synchedCal.getEvent(eventIdManaged1, null);
 		Assert.assertNotNull(event1);
 		Assert.assertEquals("managedEvent resync", event1.getSubject());
 
-		KalendarEvent event2 = synchedCal.getEvent(eventIdManaged2);
+		KalendarEvent event2 = synchedCal.getEvent(eventIdManaged2, null);
 		Assert.assertNull(event2);
 
-		KalendarEvent event3 = synchedCal.getEvent(eventIdManaged3);
+		KalendarEvent event3 = synchedCal.getEvent(eventIdManaged3, null);
 		Assert.assertNotNull(event3);
 		Assert.assertEquals("managedEvent 3", event3.getSubject());
 	}
@@ -539,25 +529,25 @@ public class ICalFileCalendarManagerTest extends OlatTestCase {
 		Date start = calendar.getTime();
 		calendar.add(Calendar.HOUR_OF_DAY, 1);
 		Date end = calendar.getTime();
-		KalendarEvent markerEvent = new KalendarEvent(eventIdMarker, "markerEvent", start, end);
+		KalendarEvent markerEvent = new KalendarEvent(eventIdMarker, null, "markerEvent", start, end);
 		calendarManager.addEventTo(cal, markerEvent);
 		
 		// 2. Update with a first calendar
 		Kalendar baseCalendar = calendarManager.createCalendar("user", "first-update");
 		String eventId1 = "event-1";
-		KalendarEvent event1 = new KalendarEvent(eventId1, "event 1", start, end);
+		KalendarEvent event1 = new KalendarEvent(eventId1, null, "event 1", start, end);
 		baseCalendar.addEvent(event1);
 		String eventId2 = "event-2";
-		KalendarEvent event2 = new KalendarEvent(eventId2, "event 2", start, end);
+		KalendarEvent event2 = new KalendarEvent(eventId2, null, "event 2", start, end);
 		baseCalendar.addEvent(event2);
 		calendarManager.updateCalendar(cal, baseCalendar);
 		
 		// 3. Update with a second calendar
 		Kalendar updateCalendar = calendarManager.createCalendar("user", "first-update");
-		KalendarEvent event1alt = new KalendarEvent(eventId1, "event 1 alt", start, end);
+		KalendarEvent event1alt = new KalendarEvent(eventId1, null, "event 1 alt", start, end);
 		updateCalendar.addEvent(event1alt);
 		String eventId3 = "event-3";
-		KalendarEvent event3 = new KalendarEvent(eventId3, "event 3", start, end);
+		KalendarEvent event3 = new KalendarEvent(eventId3, null, "event 3", start, end);
 		updateCalendar.addEvent(event3);
 		calendarManager.updateCalendar(cal, updateCalendar);
 		
@@ -565,21 +555,35 @@ public class ICalFileCalendarManagerTest extends OlatTestCase {
 		emptyCalendarCache();
 
 		Kalendar reloadedCal = calendarManager.getPersonalCalendar(test).getKalendar();
-		KalendarEvent marker = reloadedCal.getEvent(eventIdMarker);
+		KalendarEvent marker = reloadedCal.getEvent(eventIdMarker, null);
 		Assert.assertNotNull(marker);
 		Assert.assertEquals("markerEvent", marker.getSubject());
 		
-		KalendarEvent reloaded1 = reloadedCal.getEvent(eventId1);
+		KalendarEvent reloaded1 = reloadedCal.getEvent(eventId1, null);
 		Assert.assertNotNull(reloaded1);
 		Assert.assertEquals("event 1 alt", reloaded1.getSubject());
 		
-		KalendarEvent reloaded2 = reloadedCal.getEvent(eventId2);
+		KalendarEvent reloaded2 = reloadedCal.getEvent(eventId2, null);
 		Assert.assertNotNull(reloaded2);
 		Assert.assertEquals("event 2", reloaded2.getSubject());
 
-		KalendarEvent reloaded3 = reloadedCal.getEvent(eventId3);
+		KalendarEvent reloaded3 = reloadedCal.getEvent(eventId3, null);
 		Assert.assertNotNull(reloaded3);
 		Assert.assertEquals("event 3", reloaded3.getSubject());
+	}
+	
+	@Test
+	public void testImportICal() throws URISyntaxException, IOException {
+		Identity test = JunitTestHelper.createAndPersistIdentityAsRndUser("ur1-");
+		URL calendarUrl = CalendarImportTest.class.getResource("RecurringEvent.ics");
+		File calendarFile = new File(calendarUrl.toURI());
+		String calendarName = UUID.randomUUID().toString().replace("-", "");
+		
+		KalendarRenderWrapper importedCalendar = importCalendarManager
+				.importCalendar(test, calendarName, CalendarManager.TYPE_USER, calendarFile);
+		List<KalendarEvent> events = importedCalendar.getKalendar().getEvents();
+		Assert.assertEquals(2, events.size());
+
 	}
 	
 	/**
@@ -608,18 +612,18 @@ public class ICalFileCalendarManagerTest extends OlatTestCase {
 					
 					// 2. add Event1 => breakpoint hit					
 					log.info("testConcurrentAddEvent thread1 addEvent1");
-					calendarManager.addEventTo(cal, new KalendarEvent(TEST_EVENT_ID_1,TEST_EVENT_SUBJECT_1, new Date(), 1));
+					calendarManager.addEventTo(cal, new KalendarEvent(TEST_EVENT_ID_1, TEST_EVENT_SUBJECT_1, new Date(), 1));
 					log.info("testConcurrentAddEvent thread1 addEvent1 DONE");
 					// 3. check event1 exist
 					cal = calendarManager.getPersonalCalendar(test).getKalendar();
-					KalendarEvent event1 = cal.getEvent(TEST_EVENT_ID_1);
+					KalendarEvent event1 = cal.getEvent(TEST_EVENT_ID_1, null);
 					assertNotNull("Did not found event with id=" + TEST_EVENT_ID_1, event1);
 					assertEquals("Wrong calendar-event subject",event1.getSubject(), TEST_EVENT_SUBJECT_1);
 					// 4. sleep 2sec
 					
 					// 5. check event1 still exist (event2 added in meantime)
 					cal = calendarManager.getPersonalCalendar(test).getKalendar();
-					event1 = cal.getEvent(TEST_EVENT_ID_1);
+					event1 = cal.getEvent(TEST_EVENT_ID_1, null);
 					assertNotNull("Did not found event with id=" + TEST_EVENT_ID_1, event1);
 					assertEquals("Wrong calendar-event subject",event1.getSubject(), TEST_EVENT_SUBJECT_1);
 					statusList.add(Boolean.TRUE);
@@ -641,16 +645,16 @@ public class ICalFileCalendarManagerTest extends OlatTestCase {
 					
 					// 3. add Event2 (breakpoint of thread1 blocks)
 					log.info("testConcurrentAddEvent thread2 addEvent2");
-					calendarManager.addEventTo(cal, new KalendarEvent(TEST_EVENT_ID_2,TEST_EVENT_SUBJECT_2, new Date(), 1));
+					calendarManager.addEventTo(cal, new KalendarEvent(TEST_EVENT_ID_2, TEST_EVENT_SUBJECT_2, new Date(), 1));
 					log.info("testConcurrentAddEvent thread1 addEvent2 DONE");
 					// 4. check event2 exist
 					cal = calendarManager.getPersonalCalendar(test).getKalendar();
-					KalendarEvent event2 = cal.getEvent(TEST_EVENT_ID_2);
+					KalendarEvent event2 = cal.getEvent(TEST_EVENT_ID_2, null);
 					assertNotNull("Did not found event with id=" + TEST_EVENT_ID_2, event2);
 					assertEquals("Wrong calendar-event subject",event2.getSubject(), TEST_EVENT_SUBJECT_2);
 					// 5. check event1 exist
 					cal = calendarManager.getPersonalCalendar(test).getKalendar();
-					KalendarEvent event1 = cal.getEvent(TEST_EVENT_ID_1);
+					KalendarEvent event1 = cal.getEvent(TEST_EVENT_ID_1, null);
 					assertNotNull("Did not found event with id=" + TEST_EVENT_ID_1, event1);
 					assertEquals("Wrong calendar-event subject",event1.getSubject(), TEST_EVENT_SUBJECT_1);
 					statusList.add(Boolean.TRUE);
@@ -700,9 +704,9 @@ public class ICalFileCalendarManagerTest extends OlatTestCase {
 
 		// Generate event for update
 		Kalendar cal = calendarManager.getPersonalCalendar(test).getKalendar();
-		calendarManager.addEventTo(cal, new KalendarEvent(TEST_EVENT_ID_2,TEST_EVENT_SUBJECT_2, new Date(), 1));
+		calendarManager.addEventTo(cal, new KalendarEvent(TEST_EVENT_ID_2, TEST_EVENT_SUBJECT_2, new Date(), 1));
 		cal = calendarManager.getPersonalCalendar(test).getKalendar();
-		KalendarEvent event2 = cal.getEvent(TEST_EVENT_ID_2);
+		KalendarEvent event2 = cal.getEvent(TEST_EVENT_ID_2, null);
 		assertNotNull("Did not found event with id=" + TEST_EVENT_ID_2, event2);
 		assertEquals("Wrong calendar-event subject",event2.getSubject(), TEST_EVENT_SUBJECT_2);
 		log.info("testConcurrentAddUpdateEvent thread2 addEvent2 DONE");
@@ -718,18 +722,18 @@ public class ICalFileCalendarManagerTest extends OlatTestCase {
 					
 					// 2. add Event1 => breakpoint hit					
 					log.info("testConcurrentAddUpdateEvent thread1 addEvent1");
-					calendarManager.addEventTo(currentCalendar, new KalendarEvent(TEST_EVENT_ID_1,TEST_EVENT_SUBJECT_1, new Date(), 1));
+					calendarManager.addEventTo(currentCalendar, new KalendarEvent(TEST_EVENT_ID_1, TEST_EVENT_SUBJECT_1, new Date(), 1));
 					log.info("testConcurrentAddUpdateEvent thread1 addEvent1 DONE");
 					// 3. check event1 exist
 					currentCalendar = calendarManager.getPersonalCalendar(test).getKalendar();
-					KalendarEvent event1 = currentCalendar.getEvent(TEST_EVENT_ID_1);
+					KalendarEvent event1 = currentCalendar.getEvent(TEST_EVENT_ID_1, null);
 					assertNotNull("Did not found event with id=" + TEST_EVENT_ID_1, event1);
 					assertEquals("Wrong calendar-event subject",event1.getSubject(), TEST_EVENT_SUBJECT_1);
 					// 4. sleep 2sec
 					
 					// 5. check event1 still exist (event2 added in meantime)
 					currentCalendar = calendarManager.getPersonalCalendar(test).getKalendar();
-					event1 = currentCalendar.getEvent(TEST_EVENT_ID_1);
+					event1 = currentCalendar.getEvent(TEST_EVENT_ID_1, null);
 					assertNotNull("Did not found event with id=" + TEST_EVENT_ID_1, event1);
 					assertEquals("Wrong calendar-event subject",event1.getSubject(), TEST_EVENT_SUBJECT_1);
 					statusList.add(Boolean.TRUE);
@@ -750,20 +754,20 @@ public class ICalFileCalendarManagerTest extends OlatTestCase {
 					
 					// 3. add Event2 (breakpoint of thread1 blocks)
 					log.info("testConcurrentAddUpdateEvent thread2 updateEvent2");
-					calendarManager.updateEventFrom(calendar, new KalendarEvent(TEST_EVENT_ID_2,TEST_EVENT_SUBJECT_2_UPDATED, new Date(), 1));
+					calendarManager.updateEventFrom(calendar, new KalendarEvent(TEST_EVENT_ID_2, TEST_EVENT_SUBJECT_2_UPDATED, new Date(), 1));
 					log.info("testConcurrentAddUpdateEvent thread1 updateEvent2 DONE");
 					// 4. check event2 exist
 					calendar = calendarManager.getPersonalCalendar(test).getKalendar();
-					KalendarEvent updatedEvent = calendar.getEvent(TEST_EVENT_ID_2);
+					KalendarEvent updatedEvent = calendar.getEvent(TEST_EVENT_ID_2, null);
 					assertNotNull("Did not found event with id=" + TEST_EVENT_ID_2, updatedEvent);
 					assertEquals("Wrong calendar-event subject",updatedEvent.getSubject(), TEST_EVENT_SUBJECT_2_UPDATED);
 					// 5. check event1 exist
 					calendar = calendarManager.getPersonalCalendar(test).getKalendar();
-					KalendarEvent event1 = calendar.getEvent(TEST_EVENT_ID_1);
+					KalendarEvent event1 = calendar.getEvent(TEST_EVENT_ID_1, null);
 					assertNotNull("Did not found event with id=" + TEST_EVENT_ID_1, event1);
 					assertEquals("Wrong calendar-event subject",event1.getSubject(), TEST_EVENT_SUBJECT_1);
 					// Delete Event
-					boolean removed = calendarManager.removeEventFrom(calendar, new KalendarEvent(TEST_EVENT_ID_2,TEST_EVENT_SUBJECT_2_UPDATED, new Date(), 1));
+					boolean removed = calendarManager.removeEventFrom(calendar, new KalendarEvent(TEST_EVENT_ID_2, TEST_EVENT_SUBJECT_2_UPDATED, new Date(), 1));
 					assertTrue(removed);
 					statusList.add(Boolean.TRUE);
 					log.info("testConcurrentAddUpdateEvent thread2 finished");
@@ -812,9 +816,9 @@ public class ICalFileCalendarManagerTest extends OlatTestCase {
 
 		// Generate event for update
 		Kalendar cal = calendarManager.getPersonalCalendar(test).getKalendar();
-		calendarManager.addEventTo(cal, new KalendarEvent(TEST_EVENT_ID_2,TEST_EVENT_SUBJECT_2, new Date(), 1));
+		calendarManager.addEventTo(cal, new KalendarEvent(TEST_EVENT_ID_2, TEST_EVENT_SUBJECT_2, new Date(), 1));
 		cal = calendarManager.getPersonalCalendar(test).getKalendar();
-		KalendarEvent event2 = cal.getEvent(TEST_EVENT_ID_2);
+		KalendarEvent event2 = cal.getEvent(TEST_EVENT_ID_2, null);
 		assertNotNull("Did not found event with id=" + TEST_EVENT_ID_2, event2);
 		assertEquals("Wrong calendar-event subject",event2.getSubject(), TEST_EVENT_SUBJECT_2);
 		log.info("testConcurrentAddRemoveEvent thread2 addEvent2 DONE");
@@ -830,18 +834,18 @@ public class ICalFileCalendarManagerTest extends OlatTestCase {
 					
 					// 2. add Event1 => breakpoint hit					
 					log.info("testConcurrentAddRemoveEvent thread1 addEvent1");
-					calendarManager.addEventTo(calendar, new KalendarEvent(TEST_EVENT_ID_1,TEST_EVENT_SUBJECT_1, new Date(), 1));
+					calendarManager.addEventTo(calendar, new KalendarEvent(TEST_EVENT_ID_1, TEST_EVENT_SUBJECT_1, new Date(), 1));
 					log.info("testConcurrentAddRemoveEvent thread1 addEvent1 DONE");
 					// 3. check event1 exist
 					calendar = calendarManager.getPersonalCalendar(test).getKalendar();
-					KalendarEvent event1 = calendar.getEvent(TEST_EVENT_ID_1);
+					KalendarEvent event1 = calendar.getEvent(TEST_EVENT_ID_1, null);
 					assertNotNull("Did not found event with id=" + TEST_EVENT_ID_1, event1);
 					assertEquals("Wrong calendar-event subject",event1.getSubject(), TEST_EVENT_SUBJECT_1);
 					// 4. sleep 2sec
 					
 					// 5. check event1 still exist (event2 added in meantime)
 					calendar = calendarManager.getPersonalCalendar(test).getKalendar();
-					event1 = calendar.getEvent(TEST_EVENT_ID_1);
+					event1 = calendar.getEvent(TEST_EVENT_ID_1, null);
 					assertNotNull("Did not found event with id=" + TEST_EVENT_ID_1, event1);
 					assertEquals("Wrong calendar-event subject",event1.getSubject(), TEST_EVENT_SUBJECT_1);
 					statusList.add(Boolean.TRUE);
@@ -862,16 +866,16 @@ public class ICalFileCalendarManagerTest extends OlatTestCase {
 					
 					// 3. add Event2 (breakpoint of thread1 blocks)
 					log.info("testConcurrentAddRemoveEvent thread2 removeEvent2");
-					boolean removed = calendarManager.removeEventFrom(calendar, new KalendarEvent(TEST_EVENT_ID_2,TEST_EVENT_SUBJECT_2, new Date(), 1));
+					boolean removed = calendarManager.removeEventFrom(calendar, new KalendarEvent(TEST_EVENT_ID_2, TEST_EVENT_SUBJECT_2, new Date(), 1));
 					assertTrue(removed);
 					log.info("testConcurrentAddRemoveEvent thread1 removeEvent2 DONE");
 					// 4. check event2 exist
 					calendar = calendarManager.getPersonalCalendar(test).getKalendar();
-					KalendarEvent updatedEvent = calendar.getEvent(TEST_EVENT_ID_2);
+					KalendarEvent updatedEvent = calendar.getEvent(TEST_EVENT_ID_2, null);
 					assertNull("Still found deleted event with id=" + TEST_EVENT_ID_2, updatedEvent);
 					// 5. check event1 exist
 					calendar = calendarManager.getPersonalCalendar(test).getKalendar();
-					KalendarEvent event1 = calendar.getEvent(TEST_EVENT_ID_1);
+					KalendarEvent event1 = calendar.getEvent(TEST_EVENT_ID_1, null);
 					assertNotNull("Did not found event with id=" + TEST_EVENT_ID_1, event1);
 					assertEquals("Wrong calendar-event subject",event1.getSubject(), TEST_EVENT_SUBJECT_1);
 					statusList.add(Boolean.TRUE);

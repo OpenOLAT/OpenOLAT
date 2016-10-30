@@ -25,7 +25,6 @@
 package org.olat.commons.calendar.model;
 
 import java.util.Date;
-import java.util.List;
 
 /**
  * 
@@ -37,100 +36,49 @@ import java.util.List;
  * @author skoeber
  */
 public class KalendarRecurEvent extends KalendarEvent {
-	
-	KalendarEvent sourceEvent;
 
-	public KalendarRecurEvent(String id, String subject, Date begin, Date end) {
-		super(id, subject, begin, end);
+	private boolean original;
+
+	public KalendarRecurEvent(String id, boolean original, String subject, Date begin, Date end) {
+		super(id, null, subject, begin, end);
+		this.original = original;
 	}
 	
-	public KalendarRecurEvent(String id, String subject, Date begin, int duration) {
-		super(id, subject, begin, duration);
-	}
-	
-	public KalendarRecurEvent(String id, String subject, Date begin, int duration, String recurrenceRule) {
-		super(id, subject, begin, duration, recurrenceRule);
-	}
-	
-	public KalendarRecurEvent(String id, String subject, Date begin, Date end, String recurrenceRule) {
-		super(id, subject, begin, end, recurrenceRule);
-	}
-	
-	/**
-	 * @return source event for this recurrence
-	 */
-	public KalendarEvent getSourceEvent() {
-		return sourceEvent;
+	public boolean isOriginal() {
+		return original;
 	}
 	
 	/**
 	 * @param source event for this recurrence
 	 */
 	public void setSourceEvent(KalendarEvent sourceEvent) {
-		this.sourceEvent = sourceEvent;
+		fillEvent(sourceEvent);
 	}
 	
-	public Kalendar getCalendar() {
-		return sourceEvent.getCalendar();
+	public void setRecurrenceEvent(KalendarEvent recurrenceEvent) {
+		setRecurrenceID(recurrenceEvent.getRecurrenceID());
+		setBegin(recurrenceEvent.getBegin());
+		setEnd(recurrenceEvent.getEnd());
+		fillEvent(recurrenceEvent);
 	}
 
-	public int getClassification() {
-		return sourceEvent.getClassification();
-	}
-
-	public String getComment() {
-		return sourceEvent.getComment();
-	}
-
-	public long getCreated() {
-		return sourceEvent.getCreated();
-	}
-
-	public String getCreatedBy() {
-		return sourceEvent.getCreatedBy();
-	}
-
-	public String getDescription() {
-		return sourceEvent.getDescription();
-	}
-
-	public String getID() {
-		return sourceEvent.getID();
-	}
-
-	public List<KalendarEventLink> getKalendarEventLinks() {
-		return sourceEvent.getKalendarEventLinks();
-	}
-
-	public long getLastModified() {
-		return sourceEvent.getLastModified();
-	}
-
-	public String getLocation() {
-		return sourceEvent.getLocation();
-	}
-
-	public Integer getNumParticipants() {
-		return sourceEvent.getNumParticipants();
-	}
-
-	public String[] getParticipants() {
-		return sourceEvent.getParticipants();
-	}
-
-	public String getRecurrenceRule() {
-		return sourceEvent.getRecurrenceRule();
-	}
-
-	public String getSourceNodeId() {
-		return sourceEvent.getSourceNodeId();
-	}
-
-	public String getSubject() {
-		return sourceEvent.getSubject();
-	}
-
-	public boolean isAllDayEvent() {
-		return sourceEvent.isAllDayEvent();
+	private void fillEvent(KalendarEvent event) {
+		super.setAllDayEvent(event.isAllDayEvent());
+		super.setClassification(event.getClassification());
+		super.setComment(event.getComment());
+		super.setCreated(event.getCreated());
+		super.setCreatedBy(event.getCreatedBy());
+		super.setDescription(event.getDescription());
+		super.setKalendarEventLinks(event.getKalendarEventLinks());
+		super.setLastModified(event.getLastModified());
+		super.setKalendar(event.getCalendar());
+		super.setLocation(event.getLocation());
+		super.setManagedFlags(event.getManagedFlags());
+		super.setNumParticipants(event.getNumParticipants());
+		super.setParticipants(event.getParticipants());
+		super.setRecurrenceExc(event.getRecurrenceExc());
+		super.setRecurrenceRule(event.getRecurrenceRule());
+		super.setSourceNodeId(event.getSourceNodeId());
+		super.setSubject(event.getSubject());
 	}
 }

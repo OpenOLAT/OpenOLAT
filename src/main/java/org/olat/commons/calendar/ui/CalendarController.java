@@ -53,7 +53,7 @@ public interface CalendarController extends Controller {
 	 * 
 	 * @param Date
 	 */
-	public void setFocusOnEvent(String eventId);
+	public void setFocusOnEvent(String eventId, String recurenceId);
 	
 	/**
 	 * Sets the list of KalendarRenderWrappers for this calendar controller.

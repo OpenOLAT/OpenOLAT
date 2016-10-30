@@ -20,12 +20,15 @@
 package org.olat.commons.calendar.ui.components;
 
 import java.text.Normalizer;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 
 import org.olat.commons.calendar.model.KalendarEvent;
+import org.olat.commons.calendar.model.KalendarRecurEvent;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.dispatcher.mapper.MapperService;
 import org.olat.core.dispatcher.mapper.manager.MapperKey;
@@ -34,6 +37,8 @@ import org.olat.core.gui.components.AbstractComponent;
 import org.olat.core.gui.components.ComponentRenderer;
 import org.olat.core.gui.render.ValidationResult;
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
 
 /**
  * 
@@ -43,9 +48,14 @@ import org.olat.core.gui.translator.Translator;
  */
 public class FullCalendarComponent extends AbstractComponent {
 	
+	private static final OLog log = Tracing.createLoggerFor(FullCalendarComponent.class);
 	private static final FullCalendarComponentRenderer RENDERER = new FullCalendarComponentRenderer();
+	private static final SimpleDateFormat occurenceDateFormat = new SimpleDateFormat("yyyyMMdd'T'hhmmss");
+	
+	public static final String RECURRENCE_ID_SEP = "_xRecOOceRx_";
+	public static final String OCCURRENCE_ID_SEP = "_xOccOOccOx_";
 
-	private List<KalendarRenderWrapper> calendars = new ArrayList<KalendarRenderWrapper>();
+	private List<KalendarRenderWrapper> calendars = new ArrayList<>();
 	private Date currentDate;
 	private String viewName = "month";
 	private boolean configurationEnabled;
@@ -66,7 +76,7 @@ public class FullCalendarComponent extends AbstractComponent {
 			Collection<KalendarRenderWrapper> calendarWrappers, Translator translator) {
 		super(name, translator);
 		setCurrentDate(new Date());
-		calendars = new ArrayList<KalendarRenderWrapper>(calendarWrappers);
+		calendars = new ArrayList<>(calendarWrappers);
 		this.calendarEl = calendarEl;
 		
 		MapperService mapper = CoreSpringFactory.getImpl(MapperService.class);
@@ -139,10 +149,54 @@ public class FullCalendarComponent extends AbstractComponent {
 		vr.getJsAndCSSAdder().addRequiredStaticJsFile("js/jquery/ui/jquery-ui-1.11.4.custom.dnd.min.js");
 	}
 	
+	public boolean isOccurenceOfCalendarEvent(String eventId) {
+		return eventId != null && eventId.indexOf(OCCURRENCE_ID_SEP) > 0;
+	}
+	
+	public boolean isReccurenceOfCalendarEvent(String eventId) {
+		return eventId != null && eventId.indexOf(RECURRENCE_ID_SEP) > 0;
+	}
+	
+	public String getCalendarEventUid(String eventId) {
+		int occIndex = eventId.indexOf(OCCURRENCE_ID_SEP);
+		if(occIndex > 0) {
+			return eventId.substring(0, occIndex);
+		}
+		int recIndex = eventId.indexOf(RECURRENCE_ID_SEP);
+		if(recIndex > 0) {
+			return eventId.substring(0, recIndex);
+		}
+		return eventId;
+	}
+	
+	public Date getCalendarEventOccurenceDate(String eventId) {
+		Date startDate = null;
+		int occIndex = eventId.indexOf(OCCURRENCE_ID_SEP);
+		if(occIndex > 0) {
+			String dateStr = eventId.substring(occIndex + OCCURRENCE_ID_SEP.length());
+			try {
+				synchronized(occurenceDateFormat) {
+					startDate = occurenceDateFormat.parse(dateStr);
+				}
+			} catch (ParseException e) {
+				log.error("Cannot parse start date of occurence: " + dateStr, e);
+			}
+		}
+		return startDate;
+	}
+	
+	public String getCalendarEventOccurenceId(String eventId) {
+		int occIndex = eventId.indexOf(OCCURRENCE_ID_SEP);
+		if(occIndex > 0) {
+			return eventId.substring(occIndex + OCCURRENCE_ID_SEP.length());
+		}
+		return null;
+	}
+	
 	public KalendarEvent getCalendarEvent(String id) {
 		for(KalendarRenderWrapper cal:calendars) {
 			for(KalendarEvent event:cal.getKalendar().getEvents()) {
-				if(id.equals(normalizeId(event.getID()))) {
+				if(id.equals(normalizeId(event))) {
 					return event;
 				}
 			}
@@ -151,6 +205,17 @@ public class FullCalendarComponent extends AbstractComponent {
 	}
 	
 	public KalendarRenderWrapper getCalendarByNormalizedId(String id) {
+		for(KalendarRenderWrapper cal:calendars) {
+			for(KalendarEvent event:cal.getKalendar().getEvents()) {
+				if(id.equals(normalizeId(event))) {
+					return cal;
+				}
+			}
+		}
+		return null;
+	}
+	
+	public KalendarRenderWrapper getCalendarById(String id) {
 		for(KalendarRenderWrapper cal:calendars) {
 			for(KalendarEvent event:cal.getKalendar().getEvents()) {
 				if(id.equals(normalizeId(event.getID()))) {
@@ -193,13 +258,30 @@ public class FullCalendarComponent extends AbstractComponent {
 	}
 
 	public void setCalendars(List<KalendarRenderWrapper> calendarWrappers) {
-		calendars = new ArrayList<KalendarRenderWrapper>(calendarWrappers);
+		calendars = new ArrayList<>(calendarWrappers);
 		setDirty(true);
 	}
 	
 	public void addCalendar(KalendarRenderWrapper calendarWrapper) {
 		calendars.add(calendarWrapper);
 		setDirty(true);
+	}
+	
+	protected static final String normalizeId(KalendarEvent kEvent) {
+		StringBuilder sb = new StringBuilder(64);
+		sb.append(normalizeId(kEvent.getID()));
+		if(kEvent.getRecurrenceID() != null) {
+			sb.append(RECURRENCE_ID_SEP);
+			sb.append(normalizeId(kEvent.getRecurrenceID()));
+		} else if(kEvent instanceof KalendarRecurEvent) {
+			sb.append(OCCURRENCE_ID_SEP);
+			String subIdent;
+			synchronized(occurenceDateFormat) {
+				subIdent = occurenceDateFormat.format(kEvent.getBegin());
+			}
+			sb.append(normalizeId(subIdent));
+		}
+		return sb.toString();
 	}
 	
 	protected static final String normalizeId(String id) {

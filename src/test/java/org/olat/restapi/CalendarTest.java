@@ -112,7 +112,7 @@ public class CalendarTest extends OlatJerseyTestCase {
 				Date begin = cal.getTime();
 				cal.add(Calendar.HOUR_OF_DAY, 1);
 				Date end = cal.getTime();
-				KalendarEvent event = new KalendarEvent(UUID.randomUUID().toString(), "Unit test " + i, begin, end);
+				KalendarEvent event = new KalendarEvent(UUID.randomUUID().toString(), null, "Unit test " + i, begin, end);
 				calendarManager.addEventTo(calendarWrapper.getKalendar(), event);
 				cal.add(Calendar.DATE, 1);
 			}
@@ -122,7 +122,7 @@ public class CalendarTest extends OlatJerseyTestCase {
 			Date begin2 = cal.getTime();
 			cal.add(Calendar.HOUR_OF_DAY, 1);
 			Date end2 = cal.getTime();
-			KalendarEvent event2 = new KalendarEvent(UUID.randomUUID().toString(), "Unit test 2", begin2, end2);
+			KalendarEvent event2 = new KalendarEvent(UUID.randomUUID().toString(), null, "Unit test 2", begin2, end2);
 			calendarManager.addEventTo(calendarWrapper.getKalendar(), event2);
 			
 			RepositoryEntry entry = repositoryManager.lookupRepositoryEntry(course1, false);
@@ -552,7 +552,7 @@ public class CalendarTest extends OlatJerseyTestCase {
 		
 		//check if the event is saved
 		KalendarRenderWrapper calendarWrapper = calendarManager.getPersonalCalendar(id2);
-		KalendarEvent kalEvent = new KalendarEvent(UUID.randomUUID().toString(), "Rendez-vous", new Date(), new Date());
+		KalendarEvent kalEvent = new KalendarEvent(UUID.randomUUID().toString(), null, "Rendez-vous", new Date(), new Date());
 		calendarManager.addEventTo(calendarWrapper.getKalendar(), kalEvent);
 
 		URI eventUri = UriBuilder.fromUri(getContextURI()).path("users").path(id2.getKey().toString())

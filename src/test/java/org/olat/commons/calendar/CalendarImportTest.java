@@ -23,14 +23,21 @@ import static org.junit.Assert.assertNotNull;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Date;
+import java.util.Iterator;
+
+import org.junit.Ignore;
+import org.junit.Test;
 
 import net.fortuna.ical4j.data.CalendarBuilder;
 import net.fortuna.ical4j.data.ParserException;
 import net.fortuna.ical4j.model.Calendar;
+import net.fortuna.ical4j.model.DateTime;
+import net.fortuna.ical4j.model.Period;
+import net.fortuna.ical4j.model.PeriodList;
+import net.fortuna.ical4j.model.component.VEvent;
+import net.fortuna.ical4j.model.property.RecurrenceId;
 import net.fortuna.ical4j.util.CompatibilityHints;
-
-import org.junit.Ignore;
-import org.junit.Test;
 
 /**
  * 
@@ -42,6 +49,7 @@ import org.junit.Test;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
 public class CalendarImportTest {
+
 	
 	@Test
 	public void testImportMonthFromOutlook() throws IOException, ParserException {
@@ -94,5 +102,48 @@ public class CalendarImportTest {
 		Calendar calendar = builder.build(in);
         assertNotNull(calendar);
 	}
+	
+	@Test
+	public void testImportRecurringCal() throws IOException, ParserException {
+		InputStream in = CalendarImportTest.class.getResourceAsStream("RecurringEvent.ics");
+		CalendarBuilder builder = new CalendarBuilder();
+		Calendar calendar = builder.build(in);
+        assertNotNull(calendar);
+        
+        VEvent rootEvent = null;
+        VEvent exceptionEvent = null;
+        for (Iterator<?> iter = calendar.getComponents().iterator(); iter.hasNext();) {
+			Object comp = iter.next();
+			if (comp instanceof VEvent) {
+				VEvent vevent = (VEvent)comp;
+				if(vevent.getRecurrenceId() == null) {
+					rootEvent = vevent;
+				} else {
+					exceptionEvent = vevent;
+				}
+			}
+		}
+        assertNotNull(rootEvent);
+        assertNotNull(exceptionEvent);
+        
+        java.util.Date startDate = CalendarUtils.getDate(2016, java.util.Calendar.OCTOBER, 10);
+        DateTime start = new DateTime(startDate);
+        java.util.Date endDate = CalendarUtils.getDate(2016, java.util.Calendar.NOVEMBER, 10);
+        DateTime end = new DateTime(endDate);
+        
+        Period period = new Period(start, end);
+        PeriodList pList = rootEvent.calculateRecurrenceSet(period);
+        for(Object obj:pList) {
+        	Period p = (Period)obj;
+        	System.out.println("Period: " + p.getStart());
+        }
+        
+        RecurrenceId recurrenceId = exceptionEvent.getRecurrenceId();
+        Date recurrenceDate = recurrenceId.getDate();
+        System.out.println("Recurrence: " + recurrenceDate);
+        
+        exceptionEvent.getSequence();
+	}
+
 
 }

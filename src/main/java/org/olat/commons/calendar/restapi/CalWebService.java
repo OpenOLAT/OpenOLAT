@@ -120,7 +120,7 @@ public class CalWebService {
 		if(eventId == null) {
 			return Response.ok().status(Status.NOT_FOUND).build();
 		} else {
-			KalendarEvent kalEvent = calendar.getKalendar().getEvent(eventId);
+			KalendarEvent kalEvent = calendar.getKalendar().getEvent(eventId, null);
 			if(kalEvent == null) {
 				return Response.ok().status(Status.NOT_FOUND).build();
 			} else {
@@ -193,13 +193,13 @@ public class CalWebService {
 			KalendarEvent kalEvent;
 			if(!StringHelper.containsNonWhitespace(event.getId())) {
 				String id = UUID.randomUUID().toString();
-				kalEvent = new KalendarEvent(id, event.getSubject(), event.getBegin(), event.getEnd());
+				kalEvent = new KalendarEvent(id, event.getRecurrenceId(), event.getSubject(), event.getBegin(), event.getEnd());
 				transfer(event, kalEvent);
 				kalEventToAdd.add(kalEvent);
 			} else {
-				kalEvent = calendar.getKalendar().getEvent(event.getId());
+				kalEvent = calendar.getKalendar().getEvent(event.getId(), event.getRecurrenceId());
 				if(kalEvent == null) {
-					kalEvent = new KalendarEvent(event.getId(), event.getSubject(), event.getBegin(), event.getEnd());
+					kalEvent = new KalendarEvent(event.getId(), event.getRecurrenceId(), event.getSubject(), event.getBegin(), event.getEnd());
 					transfer(event, kalEvent);
 					kalEventToAdd.add(kalEvent);
 				} else {

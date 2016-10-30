@@ -37,12 +37,14 @@ import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.olat.commons.calendar.model.KalendarEvent;
 import org.olat.selenium.page.LoginPage;
 import org.olat.selenium.page.NavigationPage;
 import org.olat.selenium.page.Participant;
 import org.olat.selenium.page.Student;
 import org.olat.selenium.page.User;
 import org.olat.selenium.page.core.AdministrationPage;
+import org.olat.selenium.page.core.CalendarPage;
 import org.olat.selenium.page.core.IMPage;
 import org.olat.selenium.page.course.CourseEditorPageFragment;
 import org.olat.selenium.page.course.CoursePageFragment;
@@ -568,6 +570,119 @@ public class BusinessGroupTest {
 		authorIM
 			.assertOnMessage(msg2)
 			.assertOnMessage(msg3);
+	}
+	
+
+	/**
+	 * A coach create a group, enable the calendar, create an event
+	 * and save it. Reopen it, edit it and save it.
+	 * 
+	 * 
+	 * @param loginPage
+	 * @throws IOException
+	 * @throws URISyntaxException
+	 */
+	@Test
+	@RunAsClient
+	public void groupCalendar_addEditEvent(@InitialPage LoginPage loginPage)
+	throws IOException, URISyntaxException {
+		UserVO coach = new UserRestClient(deploymentUrl).createAuthor();
+		loginPage
+			.loginAs(coach.getLogin(), coach.getPassword())
+			.resume();
+		
+		//go to groups
+		String groupName = "iCal-1-" + UUID.randomUUID();
+		GroupPage group = navBar
+			.openGroups(browser)
+			.createGroup(groupName, "A very little group to delete");
+		
+		group
+			.openAdministration()
+			.openAdminTools()
+			.enableCalendarTool();
+		
+		//add an event to the calendar
+		CalendarPage calendar = group
+			.openCalendar()
+			.assertOnCalendar()
+			.addEvent(2)
+			.setDescription("Hello", "Very important event", "here or there")
+			.save()
+			.assertOnEvent("Hello");
+		//edit the event
+		calendar
+			.openDetails("Hello")
+			.edit()
+			.setDescription("Bye", null, null)
+			.save();
+		//check the changes
+		calendar
+			.assertOnEvent("Bye");
+	}
+	
+	/**
+	 * A coach create a group, enable the calendar, create a recurring event
+	 * and save it. Reopen it, edit it and save it, confirm that it will
+	 * only change a single occurence of the recurring event. After change
+	 * the begin and end hour of all others events.
+	 * 
+	 * 
+	 * @param loginPage
+	 * @throws IOException
+	 * @throws URISyntaxException
+	 */
+	@Test
+	@RunAsClient
+	public void groupCalendar_recurringEvent(@InitialPage LoginPage loginPage)
+	throws IOException, URISyntaxException {
+		UserVO coach = new UserRestClient(deploymentUrl).createAuthor();
+		loginPage
+			.loginAs(coach.getLogin(), coach.getPassword())
+			.resume();
+		
+		//go to groups
+		String groupName = "iCal-2-" + UUID.randomUUID();
+		GroupPage group = navBar
+			.openGroups(browser)
+			.createGroup(groupName, "Calendar with a recurring event");
+		
+		group
+			.openAdministration()
+			.openAdminTools()
+			.enableCalendarTool();
+		
+		int startdDate = 2;
+		//add an event to the calendar
+		CalendarPage calendar = group
+			.openCalendar()
+			.assertOnCalendar()
+			.addEvent(startdDate)
+			.setDescription("Recurring", "Very important event 4-5 times", "In the way")
+			.setAllDay(false)
+			.setBeginEnd(10, 11)
+			.setRecurringEvent(KalendarEvent.WEEKLY, 28)
+			.save()
+			.assertOnEvents("Recurring", 4);
+		
+		//pick an occurence of the recurring event and modify it
+		calendar
+			.openDetailsOccurence("Recurring", 9)
+			.edit()
+			.setDescription("Special", null, null)
+			.save()
+			.configureModifyOneOccurence()
+			.assertOnEvents("Special", 1)
+			.assertOnEvents("Recurring", 3);
+		
+		//pick the first occurence and change all events but the modified above
+		calendar
+			.openDetailsOccurence("Recurring", 2)
+			.edit()
+			.setBeginEnd(11, 12).assertOnEvents("Special", 1)
+			.save()
+			.configureModifyAllOccurences()
+			.assertOnEventsAt("Recurring", 3, 11);
 	}
 	
 	/**

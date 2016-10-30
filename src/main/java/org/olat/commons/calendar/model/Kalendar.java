@@ -26,22 +26,22 @@
 package org.olat.commons.calendar.model;
 
 import java.io.Serializable;
-import java.util.Collection;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class Kalendar implements Serializable {
 
 	private static final long serialVersionUID = -2179014489859413340L;
 	
-	private String calendarID;
-	private String type;
-	private Map<String, KalendarEvent> events;
+	private final String calendarID;
+	private final String type;
+	private final Map<KalendarEventKey, KalendarEvent> events = new HashMap<>();
 	
 	public Kalendar(String calendarID, String type) {
 		this.calendarID = calendarID;
 		this.type = type;
-		events = new HashMap<String, KalendarEvent>();
 	}
 	
 	/**
@@ -58,7 +58,7 @@ public class Kalendar implements Serializable {
 	 */
 	public void addEvent(KalendarEvent event) {
 		event.setKalendar(this);
-		events.put(event.getID(), event);
+		events.put(new KalendarEventKey(event.getID(), event.getRecurrenceID()), event);
 	}
 	
 	/**
@@ -66,7 +66,7 @@ public class Kalendar implements Serializable {
 	 * @param event
 	 */
 	public void removeEvent(KalendarEvent event) {
-		events.remove(event.getID());
+		events.remove(new KalendarEventKey(event.getID(), event.getRecurrenceID()));
 	}
 	
 	/**
@@ -75,24 +75,24 @@ public class Kalendar implements Serializable {
 	 * @param eventID
 	 * @return
 	 */
-	public KalendarEvent getEvent(String eventID) {
-		return events.get(eventID);
+	public KalendarEvent getEvent(String eventID, String recurenceID) {
+		return events.get(new KalendarEventKey(eventID, recurenceID));
 	}
 	
 	/**
 	 * Return all events associated with this calendar.
 	 * @return
 	 */
-	public Collection<KalendarEvent> getEvents() {
-		return events.values();
+	public List<KalendarEvent> getEvents() {
+		return new ArrayList<>(events.values());
 	}
 
 	public String getType() {
 		return type;
 	}
 	
+	@Override
 	public String toString() {
 		return "Kalendar[type=" + getType() + ", id=" + getCalendarID() + "]";
 	}
-	
 }

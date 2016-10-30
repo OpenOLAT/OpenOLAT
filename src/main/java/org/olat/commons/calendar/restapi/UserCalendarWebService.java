@@ -150,7 +150,7 @@ public class UserCalendarWebService {
 		CollectCalendars visitor = new CollectCalendars();
 		getCalendars(visitor, ureq);
 		List<KalendarRenderWrapper> wrappers = visitor.getWrappers();
-		List<EventVO> events = new ArrayList<EventVO>();
+		List<EventVO> events = new ArrayList<>();
 		for(KalendarRenderWrapper wrapper:wrappers) {
 			Collection<KalendarEvent> kalEvents = wrapper.getKalendar().getEvents();
 			for(KalendarEvent kalEvent:kalEvents) {

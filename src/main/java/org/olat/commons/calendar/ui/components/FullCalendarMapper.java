@@ -26,15 +26,11 @@ import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
 
-import net.fortuna.ical4j.model.TimeZone;
-
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.olat.commons.calendar.CalendarModule;
-import org.olat.commons.calendar.CalendarUtils;
+import org.olat.commons.calendar.CalendarManager;
 import org.olat.commons.calendar.model.KalendarEvent;
-import org.olat.commons.calendar.model.KalendarRecurEvent;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.dispatcher.mapper.Mapper;
 import org.olat.core.gui.media.JSONMediaResource;
@@ -55,9 +51,11 @@ public class FullCalendarMapper implements Mapper {
 	private static final DateFormat formatDateTime = new SimpleDateFormat("yyyy-MM-dd HH:mm");
 	
 	private final FullCalendarComponent fcC;
+	private final CalendarManager calendarManager;
 	
 	public FullCalendarMapper(FullCalendarComponent fcC) {
 		this.fcC = fcC;
+		calendarManager = CoreSpringFactory.getImpl(CalendarManager.class);
 	}
 
 	/**
@@ -119,57 +117,25 @@ public class FullCalendarMapper implements Mapper {
 		KalendarRenderWrapper cal =  fcC.getCalendar(calendarId);
 		if(cal != null) {
 			boolean privateEventsVisible = cal.isPrivateEventsVisible();
-			for(KalendarEvent event:cal.getKalendar().getEvents()) {
+			List<KalendarEvent> events = calendarManager.getEvents(cal.getKalendar(), from, to, privateEventsVisible);
+
+			for(KalendarEvent event:events) {
 				if(!privateEventsVisible && event.getClassification() == KalendarEvent.CLASS_PRIVATE) {
 					continue;
 				}
 				
 				boolean timeOnly = !privateEventsVisible && event.getClassification() == KalendarEvent.CLASS_X_FREEBUSY;
-				if(isInRange(from, to, event)) {
-					JSONObject jsonEvent = getJSONEvent(event, cal, timeOnly);
-					ja.put(jsonEvent);
-				}
-				if (StringHelper.containsNonWhitespace(event.getRecurrenceRule())) {
-					TimeZone tz = CoreSpringFactory.getImpl(CalendarModule.class).getDefaultTimeZone();
-					List<KalendarRecurEvent> kalList = CalendarUtils.getRecurringDatesInPeriod (from, to, event, tz);
-					for (KalendarRecurEvent recurEvent:kalList) {
-						JSONObject jsonEvent = getJSONEvent(recurEvent, cal, timeOnly);
-						ja.put(jsonEvent);
-					}
-				}
+				JSONObject jsonEvent = getJSONEvent(event, cal, timeOnly);
+				ja.put(jsonEvent);
 			}
 		}
-	}
-	
-	private boolean isInRange(Date from, Date to, KalendarEvent event) {
-		Date end = event.getEnd();
-		Date begin = event.getBegin();
-		if(begin != null && end != null) {
-			if(from.compareTo(begin) <= 0 && to.compareTo(end) >= 0) {
-				return true;
-			} else if(begin.compareTo(from) <= 0 && end.compareTo(to) >= 0) {
-				return true;
-			} else if(from.compareTo(begin) <= 0 && to.compareTo(begin) >= 0) {
-				return true;
-			} else if(from.compareTo(end) <= 0 && to.compareTo(end) >= 0) {
-				return true;
-			}
-		} else if(begin != null) {
-			if(from.compareTo(begin) <= 0 && to.compareTo(begin) >= 0) {
-				return true;
-			}
-		} else if(end != null) {
-			if(from.compareTo(end) <= 0 && to.compareTo(end) >= 0) {
-				return true;
-			}
-		}
-		return false;
 	}
 	
 	private JSONObject getJSONEvent(KalendarEvent event, KalendarRenderWrapper cal, boolean timeOnly)
 	throws JSONException {
 		JSONObject jsonEvent = new JSONObject();
-		jsonEvent.put("id", FullCalendarComponent.normalizeId(event.getID()));
+		String id = FullCalendarComponent.normalizeId(event);
+		jsonEvent.put("id", id);
 		if(timeOnly) {
 			jsonEvent.put("title", "");
 		} else {

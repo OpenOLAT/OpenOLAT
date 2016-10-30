@@ -81,7 +81,7 @@ public class CalRunController extends BasicController {
 				eventId = eventId.substring(0, eventId.indexOf(':'));
 			}
 			if  (eventId.length() > 0) {
-				calCtr.setFocusOnEvent(eventId);
+				calCtr.setFocusOnEvent(eventId, null);
 				focused = true;
 			}
 		}

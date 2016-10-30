@@ -40,6 +40,7 @@ import org.olat.commons.calendar.model.CalendarUserConfiguration;
 import org.olat.commons.calendar.model.Kalendar;
 import org.olat.commons.calendar.model.KalendarComparator;
 import org.olat.commons.calendar.model.KalendarEvent;
+import org.olat.commons.calendar.model.KalendarRecurEvent;
 import org.olat.commons.calendar.ui.components.FullCalendarElement;
 import org.olat.commons.calendar.ui.components.KalendarRenderWrapper;
 import org.olat.commons.calendar.ui.events.CalendarGUIAddEvent;
@@ -52,6 +53,7 @@ import org.olat.commons.calendar.ui.events.CalendarGUIPrintEvent;
 import org.olat.commons.calendar.ui.events.CalendarGUIRemoveEvent;
 import org.olat.commons.calendar.ui.events.CalendarGUISelectEvent;
 import org.olat.commons.calendar.ui.events.CalendarGUISettingEvent;
+import org.olat.commons.calendar.ui.events.CalendarGUIUpdateEvent;
 import org.olat.core.commons.services.notifications.NotificationsManager;
 import org.olat.core.commons.services.notifications.PublisherData;
 import org.olat.core.commons.services.notifications.SubscriptionContext;
@@ -106,7 +108,8 @@ public class WeeklyCalendarController extends FormBasicController implements Act
 	private CloseableModalController cmc;
 	private SubscriptionContext subsContext;
 	private ContextualSubscriptionController csc;
-	
+
+	private ConfirmUpdateController updateCtr;
 	private CalendarPrintController printCtrl;
 	private CalendarDetailsController eventDetailsCtr;
 	private CloseableCalloutWindowController eventCalloutCtr;
@@ -226,10 +229,10 @@ public class WeeklyCalendarController extends FormBasicController implements Act
 	}
 	
 	@Override
-	public void setFocusOnEvent(String eventId) {
+	public void setFocusOnEvent(String eventId, String recurenceId) {
 		if  (eventId.length() > 0) {
 			for(KalendarRenderWrapper wrapper:calendarWrappers) {
-				KalendarEvent event = wrapper.getKalendar().getEvent(eventId);
+				KalendarEvent event = wrapper.getKalendar().getEvent(eventId, recurenceId);
 				if(event != null) {
 					setFocus(event.getBegin());
 					break;
@@ -276,11 +279,13 @@ public class WeeklyCalendarController extends FormBasicController implements Act
 					isImported = kalendarRenderWrapper.isImported();
 				}
 				if( !isImported && recurrence != null && !recurrence.equals("") ) {
-					List<String> btnLabels = new ArrayList<String>();
+					List<String> btnLabels = new ArrayList<>(3);
 					btnLabels.add(translate("cal.edit.dialog.sequence"));
 					btnLabels.add(translate("cal.edit.dialog.delete.single"));
 					btnLabels.add(translate("cal.edit.dialog.delete.sequence"));
-					if (dbcSequence != null) dbcSequence.dispose();
+					if (dbcSequence != null) {
+						dbcSequence.dispose();
+					}
 					dbcSequence = DialogBoxUIFactory.createGenericDialog(ureq, getWindowControl(), translate("cal.edit.dialog.title"), translate("cal.edit.dialog.text"), btnLabels);
 					dbcSequence.addControllerListener(this);
 					dbcSequence.setUserObject(guiEvent);
@@ -298,9 +303,9 @@ public class WeeklyCalendarController extends FormBasicController implements Act
 				}
 			} else if (event instanceof CalendarGUIMoveEvent) {
 				CalendarGUIMoveEvent moveEvent = (CalendarGUIMoveEvent)event;
-				doMove(moveEvent.getKalendarEvent(), moveEvent.getDayDelta(),
+				doMove(ureq, moveEvent.getKalendarEvent(), moveEvent.getDayDelta(),
 						moveEvent.getMinuteDelta(), moveEvent.getAllDay());
-			} else if (event instanceof CalendarGUIFormEvent) {
+			}  else if (event instanceof CalendarGUIFormEvent) {
 				String cmd = event.getCommand();
 				if(CalendarGUIFormEvent.CONFIGURE.equals(cmd)) {
 					doConfigure(ureq);
@@ -359,6 +364,13 @@ public class WeeklyCalendarController extends FormBasicController implements Act
 				eventCalloutCtr.deactivate();
 				cleanUp();
 			}
+		} else if(source == updateCtr) {
+			if(event instanceof CalendarGUIUpdateEvent) {
+				doUpdate((CalendarGUIUpdateEvent)event, updateCtr.getKalendarEvent(),
+						updateCtr.getDayDelta(), updateCtr.getMinuteDelta(), updateCtr.getAllDay());
+			}
+			cmc.deactivate();
+			cleanUp();
 		} else if(source == printCtrl) {
 			if (event instanceof CalendarGUIPrintEvent) {
 				CalendarGUIPrintEvent printEvent = (CalendarGUIPrintEvent)event;
@@ -379,7 +391,7 @@ public class WeeklyCalendarController extends FormBasicController implements Act
 				KalendarEvent kalendarEvent = guiEvent.getKalendarEvent();
 				if(pos == 0) { // edit the sequence
 					// load the parent event of this sequence
-					KalendarEvent parentEvent = kalendarWrapper.getKalendar().getEvent(kalendarEvent.getID());
+					KalendarEvent parentEvent = kalendarWrapper.getKalendar().getEvent(kalendarEvent.getID(), kalendarEvent.getRecurrenceID());
 					pushEditEventController(ureq, parentEvent, kalendarWrapper);
 				} else if(pos == 1) { // delete a single event of the sequence
 					deleteSingleYesNoController = activateYesNoDialog(ureq, null, translate("cal.delete.dialogtext"), deleteSingleYesNoController);
@@ -394,7 +406,7 @@ public class WeeklyCalendarController extends FormBasicController implements Act
 			if (DialogBoxUIFactory.isYesEvent(event)) {
 				KalendarEvent kalendarEvent = (KalendarEvent)deleteSingleYesNoController.getUserObject();
 				affectedCal = kalendarEvent.getCalendar();
-				KalendarEvent kEvent = affectedCal.getEvent(kalendarEvent.getID());
+				KalendarEvent kEvent = affectedCal.getEvent(kalendarEvent.getID(), kalendarEvent.getRecurrenceID());
 				kEvent.addRecurrenceExc(kalendarEvent.getBegin());
 				calendarManager.updateEventFrom(affectedCal, kEvent);
 				deleteSingleYesNoController.dispose();
@@ -447,11 +459,13 @@ public class WeeklyCalendarController extends FormBasicController implements Act
 		removeAsListenerAndDispose(eventCalloutCtr);
 		removeAsListenerAndDispose(eventDetailsCtr);
 		removeAsListenerAndDispose(editController);
+		removeAsListenerAndDispose(updateCtr);
 		removeAsListenerAndDispose(cmc);
 		eventCalloutCtr = null;
 		eventDetailsCtr = null;
 		configurationCtrl = null;
 		editController = null;
+		updateCtr = null;
 		cmc = null;
 	}
 	
@@ -551,17 +565,52 @@ public class WeeklyCalendarController extends FormBasicController implements Act
 		eventCalloutCtr.activate();
 	}
 	
-	private void doMove(KalendarEvent calEvent, Long dayDelta, Long minuteDelta, Boolean allDay) {
-		Kalendar cal = calEvent.getCalendar();
-		calEvent.setBegin(doMove(calEvent.getBegin(), dayDelta, minuteDelta));
-		calEvent.setEnd(doMove(calEvent.getEnd(), dayDelta, minuteDelta));
-		
-		if(allDay != null && calEvent.isAllDayEvent() != allDay.booleanValue()) {
-			calEvent.setAllDayEvent(allDay.booleanValue());
+	private void doMove(UserRequest ureq, KalendarEvent calEvent, Long dayDelta, Long minuteDelta, Boolean allDay) {
+		if(calEvent instanceof KalendarRecurEvent && !StringHelper.containsNonWhitespace(calEvent.getRecurrenceID())) {
+			updateCtr = new ConfirmUpdateController(ureq, getWindowControl(), (KalendarRecurEvent)calEvent, dayDelta, minuteDelta, allDay);
+			listenTo(updateCtr);
+			
+			String title = translate("cal.edit.update");
+			cmc = new CloseableModalController(getWindowControl(), translate("close"), updateCtr.getInitialComponent(), true, title);
+			listenTo(cmc);
+			cmc.activate();
+		} else {
+			Kalendar cal = calEvent.getCalendar();
+			calEvent.setBegin(doMove(calEvent.getBegin(), dayDelta, minuteDelta));
+			calEvent.setEnd(doMove(calEvent.getEnd(), dayDelta, minuteDelta));
+			if(allDay != null && calEvent.isAllDayEvent() != allDay.booleanValue()) {
+				calEvent.setAllDayEvent(allDay.booleanValue());
+			}
+			calendarManager.updateEventFrom(cal, calEvent);
+			calendarEl.getComponent().setDirty(true);
 		}
-
-		calendarManager.updateEventFrom(cal, calEvent);
-		calendarEl.getComponent().setDirty(true);
+	}
+	
+	private void doUpdate(CalendarGUIUpdateEvent event, KalendarEvent kalendarEvent, Long dayDelta, Long minuteDelta, Boolean allDay) {
+		switch(event.getCascade()) {
+			case all: {
+				kalendarEvent.setBegin(doMove(kalendarEvent.getBegin(), dayDelta, minuteDelta));
+				kalendarEvent.setEnd(doMove(kalendarEvent.getEnd(), dayDelta, minuteDelta));
+				if(allDay != null && kalendarEvent.isAllDayEvent() != allDay.booleanValue()) {
+					kalendarEvent.setAllDayEvent(allDay.booleanValue());
+				}
+				calendarManager.updateEventFrom(kalendarEvent.getCalendar(), kalendarEvent);
+				break;
+			}
+			case once: {
+				if(kalendarEvent instanceof KalendarRecurEvent) {
+					KalendarRecurEvent refEvent = (KalendarRecurEvent)kalendarEvent;
+					kalendarEvent = calendarManager.createKalendarEventRecurringOccurence(refEvent);
+					kalendarEvent.setBegin(doMove(kalendarEvent.getBegin(), dayDelta, minuteDelta));
+					kalendarEvent.setEnd(doMove(kalendarEvent.getEnd(), dayDelta, minuteDelta));
+					if(allDay != null && kalendarEvent.isAllDayEvent() != allDay.booleanValue()) {
+						kalendarEvent.setAllDayEvent(allDay.booleanValue());
+					}
+					calendarManager.addEventTo(refEvent.getCalendar(), kalendarEvent);
+				}
+				break;
+			}
+		}
 	}
 	
 	private Date doMove(Date date, Long dayDelta, Long minuteDelta) {
@@ -633,13 +682,13 @@ public class WeeklyCalendarController extends FormBasicController implements Act
 		
 		if(!isReadOnly) {
 			// create new KalendarEvent
-			Date begin = addEvent.getStartDate();
-			
 			KalendarEvent newEvent;
+			Date begin = addEvent.getStartDate();
+			String eventId = CodeHelper.getGlobalForeverUniqueID();
 			if(addEvent.getEndDate() == null) {
-				newEvent = new KalendarEvent(CodeHelper.getGlobalForeverUniqueID(), "", begin, (1000 * 60 * 60 * 1));
+				newEvent = new KalendarEvent(eventId, "", begin, (1000 * 60 * 60 * 1));
 			} else {
-				newEvent = new KalendarEvent(CodeHelper.getGlobalForeverUniqueID(), "", begin, addEvent.getEndDate());
+				newEvent = new KalendarEvent(eventId, null, "", begin, addEvent.getEndDate());
 			}
 
 			if (calendarWrapper != null &&

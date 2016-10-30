@@ -52,10 +52,13 @@ public class KalendarEvent implements Cloneable, Comparable<KalendarEvent> {
 	public static final String COUNT = "COUNT";
 	
 	private String id;
+	
 	transient private Kalendar kalendar;
+	
 	private String subject;
 	private String description;
 	private Date begin, end;
+	private Date immutableBegin;
 	private boolean isAllDayEvent;
 	private String location;
 	private List<KalendarEventLink> kalendarEventLinks;
@@ -68,6 +71,8 @@ public class KalendarEvent implements Cloneable, Comparable<KalendarEvent> {
 	private String[] participants;
 	private String sourceNodeId;
 
+	private Date occurenceDate;
+	private String recurrenceId;
 	private String recurrenceRule;
 	private String recurrenceExc;
 	
@@ -82,18 +87,19 @@ public class KalendarEvent implements Cloneable, Comparable<KalendarEvent> {
 	/**
 	 * Create a new calendar event with the given subject and
 	 * given start and end times as UNIX timestamps.
-	 * 
 	 * @param subject
 	 * @param begin
 	 * @param end
 	 */
-	public KalendarEvent(String id, String subject, Date begin, Date end) {
+	public KalendarEvent(String id, String recurrenceId, String subject, Date begin, Date end) {
 		this.id = id;
+		this.recurrenceId = recurrenceId;
 		this.subject = subject;
 		this.begin = begin;
+		immutableBegin = begin;
 		this.end = end;
-		this.isAllDayEvent = false;
-		this.kalendarEventLinks = new ArrayList<KalendarEventLink>();
+		isAllDayEvent = false;
+		kalendarEventLinks = new ArrayList<>();
 	}
 	
 	/**
@@ -107,43 +113,40 @@ public class KalendarEvent implements Cloneable, Comparable<KalendarEvent> {
 		this.id = id;
 		this.subject = subject;
 		this.begin = begin;
-		this.end = new Date(begin.getTime() + duration);
-		this.isAllDayEvent = false;
-		this.kalendarEventLinks = new ArrayList<KalendarEventLink>();
+		immutableBegin = begin;
+		end = new Date(begin.getTime() + duration);
+		isAllDayEvent = false;
+		kalendarEventLinks = new ArrayList<>();
 	}
 	
-	/**
-	 * Create a new calendar entry with the given start, a duration and a recurrence
-	 * @param id
-	 * @param subject
-	 * @param begin
-	 * @param duration
-	 * @param recurrenceRule
-	 */
-	public KalendarEvent(String id, String subject, Date begin, int duration, String recurrenceRule) {
-		this(id, subject, begin, duration);
-		this.recurrenceRule = recurrenceRule;
-	}
-	
-	/**
-	 * Create a new calendar entry with the given start and end
-	 * @param id
-	 * @param subject
-	 * @param begin
-	 * @param end
-	 * @param recurrenceRule
-	 */
-	public KalendarEvent(String id, String subject, Date begin, Date end, String recurrenceRule) {
-		this(id, subject, begin, end);
-		this.recurrenceRule = recurrenceRule;
-	}
-	
-	protected void setKalendar(Kalendar kalendar) {
+	public void setKalendar(Kalendar kalendar) {
 		this.kalendar = kalendar;
 	}
 	
 	public String getID() {
 		return id;
+	}
+	
+	public String getRecurrenceID() {
+		return recurrenceId;
+	}
+	
+	public void setRecurrenceID(String recurrenceId) {
+		this.recurrenceId = recurrenceId;
+	}
+	
+	/**
+	 * The occurence date is the date calculated by the algorithm
+	 * from ical4j which list of the events of recurring event.
+	 * 
+	 * @return
+	 */
+	public Date getOccurenceDate() {
+		return occurenceDate;
+	}
+	
+	public void setOccurenceDate(Date occurenceDate) {
+		this.occurenceDate = occurenceDate;
 	}
 	
 	public Date getBegin() {
@@ -152,6 +155,10 @@ public class KalendarEvent implements Cloneable, Comparable<KalendarEvent> {
 	
 	public void setBegin(Date begin) {
 		this.begin = begin;
+	}
+	
+	public Date getImmutableBegin() {
+		return immutableBegin;
 	}
 	
 	public String getDescription() {
@@ -319,7 +326,7 @@ public class KalendarEvent implements Cloneable, Comparable<KalendarEvent> {
 		return numParticipants;
 	}
 
-	public void setNumParticipants(int numParticipants) {
+	public void setNumParticipants(Integer numParticipants) {
 		this.numParticipants = numParticipants;
 	}
 
@@ -347,6 +354,22 @@ public class KalendarEvent implements Cloneable, Comparable<KalendarEvent> {
 		this.recurrenceRule = recurrenceRule;
 	}
 
+	public String getRecurrenceExc() {
+		return recurrenceExc;
+	}
+
+	public void setRecurrenceExc(String recurrenceExc) {
+		this.recurrenceExc = recurrenceExc;
+	}
+	
+	public void addRecurrenceExc(Date excDate) {
+		List<Date> excDates = CalendarUtils.getRecurrenceExcludeDates(recurrenceExc);
+		excDates.add(excDate);
+		String excRule = CalendarUtils.getRecurrenceExcludeRule(excDates);
+		setRecurrenceExc(excRule);
+	}
+	
+	@Override
 	public KalendarEvent clone() {
 		Object c = null;
 		try {
@@ -355,21 +378,6 @@ public class KalendarEvent implements Cloneable, Comparable<KalendarEvent> {
 			return null;
 		}
 		return (KalendarEvent)c;
-	}
-
-	public void setRecurrenceExc(String recurrenceExc) {
-		this.recurrenceExc = recurrenceExc;
-	}
-
-	public String getRecurrenceExc() {
-		return recurrenceExc;
-	}
-	
-	public void addRecurrenceExc(Date excDate) {
-		List<Date> excDates = CalendarUtils.getRecurrenceExcludeDates(recurrenceExc);
-		excDates.add(excDate);
-		String excRule = CalendarUtils.getRecurrenceExcludeRule(excDates);
-		setRecurrenceExc(excRule);
 	}
 	
 	public int compareTo(KalendarEvent event1) {

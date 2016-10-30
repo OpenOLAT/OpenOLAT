@@ -23,12 +23,15 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
+import org.olat.commons.calendar.CalendarManager;
 import org.olat.commons.calendar.model.KalendarEvent;
+import org.olat.commons.calendar.model.KalendarRecurEvent;
 import org.olat.commons.calendar.ui.events.CalendarGUIAddEvent;
 import org.olat.commons.calendar.ui.events.CalendarGUIFormEvent;
 import org.olat.commons.calendar.ui.events.CalendarGUIMoveEvent;
 import org.olat.commons.calendar.ui.events.CalendarGUIPrintEvent;
 import org.olat.commons.calendar.ui.events.CalendarGUISelectEvent;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.impl.FormItemImpl;
 import org.olat.core.gui.translator.Translator;
@@ -169,12 +172,24 @@ public class FullCalendarElement extends FormItemImpl {
 			allDay = Boolean.FALSE;
 		}
 		
-		KalendarEvent event = component.getCalendarEvent(eventId);
-		KalendarRenderWrapper calWrapper = component.getCalendarByNormalizedId(eventId);
-		getRootForm().fireFormEvent(ureq, new CalendarGUIMoveEvent(this, event, calWrapper, day, minute, allDay));
+		if(component.isOccurenceOfCalendarEvent(eventId)) {
+			String uid = component.getCalendarEventUid(eventId);
+			KalendarRenderWrapper cal = component.getCalendarById(uid);
+			KalendarRecurEvent rEvent = getCurrenceKalendarEvent(cal, eventId);
+			getRootForm().fireFormEvent(ureq, new CalendarGUIMoveEvent(this, rEvent, cal, day, minute, allDay));
+		} else if(component.isReccurenceOfCalendarEvent(eventId)) {
+			String uid = component.getCalendarEventUid(eventId);
+			KalendarRenderWrapper cal = component.getCalendarById(uid);
+			KalendarRecurEvent rEvent = getCurrenceKalendarEvent(cal, eventId);
+			getRootForm().fireFormEvent(ureq, new CalendarGUIMoveEvent(this, rEvent, cal, day, minute, allDay));
+		} else {
+			KalendarEvent event = component.getCalendarEvent(eventId);
+			KalendarRenderWrapper calWrapper = component.getCalendarByNormalizedId(eventId);
+			getRootForm().fireFormEvent(ureq, new CalendarGUIMoveEvent(this, event, calWrapper, day, minute, allDay));
+		}
 	}
 	
-	protected void doAdd(UserRequest ureq, String start, String end, String allDay) {
+	private void doAdd(UserRequest ureq, String start, String end, String allDay) {
 		long startTime = -1;
 		if(StringHelper.isLong(start)) {
 			startTime = Long.parseLong(start);
@@ -187,10 +202,46 @@ public class FullCalendarElement extends FormItemImpl {
 		getRootForm().fireFormEvent(ureq, new CalendarGUIAddEvent(this, null, new Date(startTime), new Date(endTime), allDayEvent));
 	}
 	
-	protected void doSelect(UserRequest ureq, String eventId, String targetDomId) {
+	private void doSelect(UserRequest ureq, String eventId, String targetDomId) {
 		KalendarEvent event = component.getCalendarEvent(eventId);
-		KalendarRenderWrapper calWrapper = component.getCalendarByNormalizedId(eventId);
-		getRootForm().fireFormEvent(ureq, new CalendarGUISelectEvent(this, event, calWrapper, targetDomId));
+		
+		if(component.isOccurenceOfCalendarEvent(eventId)) {
+			String uid = component.getCalendarEventUid(eventId);
+			KalendarRenderWrapper cal = component.getCalendarById(uid);
+			KalendarRecurEvent recurEvent = getCurrenceKalendarEvent(cal, eventId);
+			getRootForm().fireFormEvent(ureq, new CalendarGUISelectEvent(this, recurEvent, cal, targetDomId));
+		} else if(component.isReccurenceOfCalendarEvent(eventId)) {
+			String uid = component.getCalendarEventUid(eventId);
+			KalendarRenderWrapper cal = component.getCalendarById(uid);
+			KalendarRecurEvent recurEvent = getCurrenceKalendarEvent(cal, eventId);
+			getRootForm().fireFormEvent(ureq, new CalendarGUISelectEvent(this, recurEvent, cal, targetDomId));
+		} else {
+			KalendarRenderWrapper calWrapper = component.getCalendarByNormalizedId(eventId);
+			getRootForm().fireFormEvent(ureq, new CalendarGUISelectEvent(this, event, calWrapper, targetDomId));
+		}
+	}
+	
+	private KalendarRecurEvent getCurrenceKalendarEvent(KalendarRenderWrapper cal, String eventId) {
+		boolean privateEventsVisible = cal.isPrivateEventsVisible();
+		CalendarManager calendarManager = CoreSpringFactory.getImpl(CalendarManager.class);
+		Date currentDate = component.getCurrentDate();
+		Calendar calendar = Calendar.getInstance();
+		calendar.setTime(currentDate);
+		calendar.add(Calendar.MONTH, -2);
+		Date from = calendar.getTime();
+		calendar.add(Calendar.MONTH, +4);
+		Date to = calendar.getTime();
+		
+		List<KalendarEvent> events = calendarManager.getEvents(cal.getKalendar(), from, to, privateEventsVisible);
+		for(KalendarEvent event:events) {
+			if(event instanceof KalendarRecurEvent) {
+				KalendarRecurEvent kEvent = (KalendarRecurEvent)event;
+				if(eventId.equals(FullCalendarComponent.normalizeId(event))) {
+					return kEvent;
+				}
+			}
+		}
+		return null;
 	}
 
 	@Override
@@ -216,6 +267,7 @@ public class FullCalendarElement extends FormItemImpl {
 		//root form not interesting for Static text
 	}
 
+	@Override
 	protected FullCalendarComponent getFormItemComponent() {
 		return component;
 	}
