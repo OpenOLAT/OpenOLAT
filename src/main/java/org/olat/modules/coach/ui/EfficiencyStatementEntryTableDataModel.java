@@ -98,6 +98,14 @@ public class EfficiencyStatementEntryTableDataModel extends DefaultFlexiTableDat
 					}
 					return certificate;
 				}
+				case recertification: {
+					CertificateLight certificate = null;
+					if(certificateMap != null) {
+						IdentityResourceKey key = new IdentityResourceKey(entry.getIdentityKey(), entry.getCourse().getOlatResource().getKey());
+						certificate = certificateMap.get(key);
+					}
+					return certificate == null ? null : certificate.getNextRecertificationDate();
+				}
 				case progress: {
 					UserEfficiencyStatement s = entry.getUserEfficencyStatement();
 					if(s == null || s.getTotalNodes() == null) {
@@ -139,6 +147,7 @@ public class EfficiencyStatementEntryTableDataModel extends DefaultFlexiTableDat
 		score("table.header.score"),
 		passed("table.header.passed"),
 		certificate("table.header.certificate"),
+		recertification("table.header.recertification"),
 		progress("table.header.progress"),
 		lastModification("table.header.lastScoreDate");
 		

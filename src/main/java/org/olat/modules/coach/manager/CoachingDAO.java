@@ -1164,11 +1164,11 @@ public class CoachingDAO {
 	public List<RepositoryEntry> getUserCourses(IdentityRef student) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select distinct(v) from ").append(RepositoryEntry.class.getName()).append(" as v ")
-		  .append(" inner join v.olatResource res on res.resName='CourseModule'")
+		  .append(" inner join fetch v.olatResource res")
 		  .append(" inner join v.groups as relGroup")
 		  .append(" inner join relGroup.group as baseGroup")
 		  .append(" inner join baseGroup.members as participant on participant.role='participant'")
-		  .append(" where v.access >= ").append(RepositoryEntry.ACC_OWNERS).append(" and participant.identity.key=:studentKey");
+		  .append(" where res.resName='CourseModule' and v.access >= ").append(RepositoryEntry.ACC_OWNERS).append(" and participant.identity.key=:studentKey");
 
 		return dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), RepositoryEntry.class)
