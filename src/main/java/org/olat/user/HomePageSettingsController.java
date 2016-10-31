@@ -19,7 +19,9 @@
  */
 package org.olat.user;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -78,10 +80,11 @@ public class HomePageSettingsController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		String currentGroup = null;
-		FormLayoutContainer groupContainer = null;
+		boolean firstGroup = true;
+		
 		List<UserPropertyHandler> homepagePropertyHanders = userManager.getUserPropertyHandlersFor(HomePageConfig.class.getCanonicalName(), isAdministrativeUser);
 
+		Map<String, FormLayoutContainer> groupContainerMap = new HashMap<>();
 		HomePageConfig conf = hpcm.loadConfigFor(identityToModify.getName());
 		for (UserPropertyHandler userPropertyHandler : userPropertyHandlers) {
 			if (userPropertyHandler == null) {
@@ -90,14 +93,18 @@ public class HomePageSettingsController extends FormBasicController {
 			
 			// add spacer if necessary (i.e. when group name changes)
 			String group = userPropertyHandler.getGroup();
-			if (!group.equals(currentGroup)) {
+			FormLayoutContainer groupContainer;
+			if(groupContainerMap.containsKey(group)) {
+				groupContainer = groupContainerMap.get(group);
+			} else {
 				groupContainer = FormLayoutContainer.createDefaultFormLayout("group." + group, getTranslator());
 				groupContainer.setFormTitle(translate("form.group." + group));
 				formLayout.add(groupContainer);
-				if(currentGroup == null) {
+				groupContainerMap.put(group, groupContainer);
+				if(firstGroup) {
 					groupContainer.setFormContextHelp("Configuration");
+					firstGroup = false;
 				}
-				currentGroup = group;
 			}
 			
 			if (homepagePropertyHanders.contains(userPropertyHandler)) {
