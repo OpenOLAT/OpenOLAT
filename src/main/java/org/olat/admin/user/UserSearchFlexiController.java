@@ -22,6 +22,7 @@ package org.olat.admin.user;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -256,6 +257,11 @@ public class UserSearchFlexiController extends FlexiAutoCompleterController {
 					Identity chosenIdent = securityManager.loadIdentityByKey(key);
 					if(chosenIdent != null) {
 						fireEvent(ureq, new SingleIdentityChosenEvent(chosenIdent));
+						List<Identity> selectedIdentities = Collections.singletonList(chosenIdent);
+						userTableModel.setObjects(selectedIdentities);
+						Set<Integer> selectedIndex = new HashSet<>();
+						selectedIndex.add(new Integer(0));
+						tableEl.setMultiSelectedIndex(selectedIndex);
 					}
 				}
 			} catch (NumberFormatException e) {
