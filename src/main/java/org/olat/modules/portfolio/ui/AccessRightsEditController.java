@@ -71,6 +71,7 @@ public class AccessRightsEditController extends FormBasicController {
 	private FormLink selectAll, deselectAll;
 	
 	private final boolean canEdit;
+	private final boolean grading;
 	private final boolean hasButtons;
 	
 	@Autowired
@@ -82,6 +83,7 @@ public class AccessRightsEditController extends FormBasicController {
 		this.member = member;
 		this.canEdit = true;
 		this.hasButtons = false;
+		grading = binder.getTemplate() != null;
 		initForm(ureq);
 		loadModel();
 	}
@@ -92,6 +94,7 @@ public class AccessRightsEditController extends FormBasicController {
 		this.member = member;
 		this.canEdit = canEdit;
 		this.hasButtons = true;
+		grading = binder.getTemplate() != null;
 		initForm(ureq);
 		loadModel();
 	}
@@ -122,6 +125,7 @@ public class AccessRightsEditController extends FormBasicController {
 		//binder
 		MultipleSelectionElement coachEl = uifactory.addCheckboxesHorizontal("access-" + (counter++), null, formLayout, theKeys, theValues);
 		coachEl.addActionListener(FormEvent.ONCHANGE);
+		coachEl.setVisible(grading);
 		MultipleSelectionElement reviewerEl = uifactory.addCheckboxesHorizontal("access-" + (counter++), null, formLayout, theKeys, theValues);
 		reviewerEl.addActionListener(FormEvent.ONCHANGE);
 		binderRow = new BinderAccessRightsRow(coachEl, reviewerEl, binder);
@@ -134,6 +138,7 @@ public class AccessRightsEditController extends FormBasicController {
 		for(Section section:sections) {
 			MultipleSelectionElement sectionCoachEl = uifactory.addCheckboxesHorizontal("access-" + (counter++), null, formLayout, theKeys, theValues);
 			sectionCoachEl.addActionListener(FormEvent.ONCHANGE);
+			sectionCoachEl.setVisible(grading);
 			MultipleSelectionElement sectionReviewerEl = uifactory.addCheckboxesHorizontal("access-" + (counter++), null, formLayout, theKeys, theValues);
 			sectionReviewerEl.addActionListener(FormEvent.ONCHANGE);
 			SectionAccessRightsRow sectionRow = new SectionAccessRightsRow(sectionCoachEl, sectionReviewerEl, section, binderRow);
@@ -150,6 +155,7 @@ public class AccessRightsEditController extends FormBasicController {
 			SectionAccessRightsRow sectionRow = sectionMap.get(section.getKey());
 			MultipleSelectionElement pageCoachEl = uifactory.addCheckboxesHorizontal("access-" + (counter++), null, formLayout, theKeys, theValues);
 			pageCoachEl.addActionListener(FormEvent.ONCHANGE);
+			pageCoachEl.setVisible(grading);
 			MultipleSelectionElement pageReviewerEl = uifactory.addCheckboxesHorizontal("access-" + (counter++), null, formLayout, theKeys, theValues);
 			pageReviewerEl.addActionListener(FormEvent.ONCHANGE);
 			PortfolioElementAccessRightsRow pageRow = new PortfolioElementAccessRightsRow(pageCoachEl, pageReviewerEl, page, sectionRow);
@@ -161,6 +167,7 @@ public class AccessRightsEditController extends FormBasicController {
 		if(formLayout instanceof FormLayoutContainer) {
 			FormLayoutContainer layoutCont = (FormLayoutContainer)formLayout;
 			layoutCont.contextPut("binderRow", binderRow);
+			layoutCont.contextPut("grading", new Boolean(grading));
 		}
 		
 		if(hasButtons) {
