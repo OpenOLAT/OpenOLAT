@@ -68,6 +68,7 @@ import org.olat.modules.portfolio.model.SectionRefImpl;
 import org.olat.modules.portfolio.ui.event.PageDeletedEvent;
 import org.olat.modules.portfolio.ui.event.PageRemovedEvent;
 import org.olat.modules.portfolio.ui.event.SectionSelectionEvent;
+import org.olat.modules.portfolio.ui.model.ReadOnlyCommentsSecurityCallback;
 import org.olat.modules.portfolio.ui.renderer.PortfolioRendererHelper;
 import org.olat.user.UserManager;
 import org.olat.util.logging.activity.LoggingResourceable;
@@ -511,7 +512,12 @@ public class TableOfContentController extends BasicController implements TooledC
 	}
 	
 	private void doOpenComments(UserRequest ureq, PageRow pageRow) {
-		CommentAndRatingSecurityCallback commentSecCallback = new CommentAndRatingDefaultSecurityCallback(getIdentity(), false, false);
+		CommentAndRatingSecurityCallback commentSecCallback;
+		if(PageStatus.isClosed(pageRow.getPage())) {
+			commentSecCallback = new ReadOnlyCommentsSecurityCallback();
+		} else {
+			commentSecCallback = new CommentAndRatingDefaultSecurityCallback(getIdentity(), false, false);
+		}
 		OLATResourceable ores = OresHelper.createOLATResourceableInstance(Page.class, pageRow.getKey());
 		commentsCtrl = new UserCommentsController(ureq, getWindowControl(), ores, null, commentSecCallback);
 		listenTo(commentsCtrl);

@@ -91,6 +91,7 @@ import org.olat.modules.portfolio.ui.component.TimelineElement;
 import org.olat.modules.portfolio.ui.event.PageDeletedEvent;
 import org.olat.modules.portfolio.ui.event.PageRemovedEvent;
 import org.olat.modules.portfolio.ui.model.PortfolioElementRow;
+import org.olat.modules.portfolio.ui.model.ReadOnlyCommentsSecurityCallback;
 import org.olat.modules.portfolio.ui.renderer.PortfolioElementCellRenderer;
 import org.olat.modules.portfolio.ui.renderer.StatusCellRenderer;
 import org.olat.util.logging.activity.LoggingResourceable;
@@ -733,7 +734,12 @@ implements Activateable2, TooledController, FlexiTableComponentDelegate {
 	}
 	
 	private void doComment(UserRequest ureq, Page page) {
-		CommentAndRatingSecurityCallback commentSecCallback = new CommentAndRatingDefaultSecurityCallback(getIdentity(), false, false);
+		CommentAndRatingSecurityCallback commentSecCallback;
+		if(PageStatus.isClosed(page)) {
+			commentSecCallback = new ReadOnlyCommentsSecurityCallback();
+		} else {
+			commentSecCallback = new CommentAndRatingDefaultSecurityCallback(getIdentity(), false, false);
+		}
 		OLATResourceable ores = OresHelper.createOLATResourceableInstance(Page.class, page.getKey());
 		commentsCtrl = new UserCommentsController(ureq, getWindowControl(), ores, null, commentSecCallback);
 		listenTo(commentsCtrl);

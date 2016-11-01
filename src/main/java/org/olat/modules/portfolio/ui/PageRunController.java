@@ -78,6 +78,7 @@ import org.olat.modules.portfolio.ui.event.PageRemovedEvent;
 import org.olat.modules.portfolio.ui.event.PublishEvent;
 import org.olat.modules.portfolio.ui.event.ReopenPageEvent;
 import org.olat.modules.portfolio.ui.event.RevisionEvent;
+import org.olat.modules.portfolio.ui.model.ReadOnlyCommentsSecurityCallback;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -128,7 +129,7 @@ public class PageRunController extends BasicController implements TooledControll
 		pageCtrl = new PageController(ureq, getWindowControl(), new PortfolioPageProvider());
 		listenTo(pageCtrl);
 		mainVC.put("page", pageCtrl.getInitialComponent());
-		loadModel(ureq);
+		loadModel(ureq, false);
 		stackPanel.addListener(this);
 
 		putInitialPanel(mainVC);
@@ -183,14 +184,24 @@ public class PageRunController extends BasicController implements TooledControll
 		return editLink;
 	}
 	
-	private void loadModel(UserRequest ureq) {
+	private void loadModel(UserRequest ureq, boolean reloadComments) {
 		mainVC.contextPut("pageTitle", page.getTitle());
 		pageCtrl.loadElements(ureq);
 		dirtyMarker = false;
 		
 		if(secCallback.canComment(page)) {
+			if(reloadComments && commentsCtrl != null) {
+				mainVC.remove(commentsCtrl.getInitialComponent());
+				removeAsListenerAndDispose(commentsCtrl);
+				commentsCtrl = null;
+			}
 			if(commentsCtrl == null) {
-				CommentAndRatingSecurityCallback commentSecCallback = new CommentAndRatingDefaultSecurityCallback(getIdentity(), false, false);
+				CommentAndRatingSecurityCallback commentSecCallback;
+				if(PageStatus.isClosed(page)) {
+					commentSecCallback = new ReadOnlyCommentsSecurityCallback();
+				} else {
+					commentSecCallback = new CommentAndRatingDefaultSecurityCallback(getIdentity(), false, false);
+				}
 				OLATResourceable ores = OresHelper.createOLATResourceableInstance(Page.class, page.getKey());
 				commentsCtrl = new UserCommentsAndRatingsController(ureq, getWindowControl(), ores, null, commentSecCallback, true, false, true);
 				commentsCtrl.expandComments(ureq);
@@ -361,7 +372,7 @@ public class PageRunController extends BasicController implements TooledControll
 		page = portfolioService.changePageStatus(page, PageStatus.published);
 		stackPanel.popUpToController(this);
 		loadMeta(ureq);
-		loadModel(ureq);
+		loadModel(ureq, false);
 		doRunPage(ureq);
 		fireEvent(ureq, Event.CHANGED_EVENT);
 	}
@@ -376,7 +387,7 @@ public class PageRunController extends BasicController implements TooledControll
 		page = portfolioService.changePageStatus(page, PageStatus.inRevision);
 		stackPanel.popUpToController(this);
 		loadMeta(ureq);
-		loadModel(ureq);
+		loadModel(ureq, false);
 		fireEvent(ureq, Event.CHANGED_EVENT);
 	}
 	
@@ -390,7 +401,7 @@ public class PageRunController extends BasicController implements TooledControll
 		page = portfolioService.changePageStatus(page, PageStatus.closed);
 		stackPanel.popUpToController(this);
 		loadMeta(ureq);
-		loadModel(ureq);
+		loadModel(ureq, true);
 		fireEvent(ureq, Event.CHANGED_EVENT);
 	}
 	
@@ -404,7 +415,7 @@ public class PageRunController extends BasicController implements TooledControll
 		page = portfolioService.changePageStatus(page, PageStatus.published);
 		stackPanel.popUpToController(this);
 		loadMeta(ureq);
-		loadModel(ureq);
+		loadModel(ureq, true);
 		fireEvent(ureq, Event.CHANGED_EVENT);
 	}
 	
@@ -445,7 +456,7 @@ public class PageRunController extends BasicController implements TooledControll
 	
 	private void doRunPage(UserRequest ureq) {
 		if(dirtyMarker) {
-			loadModel(ureq);
+			loadModel(ureq, false);
 		}
 		mainVC.put("page", pageCtrl.getInitialComponent());
 		editLink(true);
