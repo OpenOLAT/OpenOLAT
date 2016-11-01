@@ -50,6 +50,7 @@ import org.olat.modules.portfolio.BinderConfiguration;
 import org.olat.modules.portfolio.BinderSecurityCallback;
 import org.olat.modules.portfolio.PortfolioV2Module;
 import org.olat.modules.portfolio.ui.event.SectionSelectionEvent;
+import org.olat.modules.portfolio.ui.model.PortfolioElementRow;
 import org.olat.util.logging.activity.LoggingResourceable;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -150,9 +151,12 @@ public class BinderController extends BasicController implements TooledControlle
 		if(entries == null || entries.isEmpty()) {
 			String ePoint = portfolioModule.getBinderEntryPoint();
 			if(PortfolioV2Module.ENTRY_POINT_TOC.equals(ePoint)) {
-				doOpenOverview(ureq);
+				int numOfSections = doOpenOverview(ureq).getNumOfSections();
+				if(numOfSections == 0 && !secCallback.canEditBinder()) {
+					activateEntries(ureq);
+				}
 			} else {
-				doOpenEntries(ureq);
+				activateEntries(ureq);
 			}
 			return;
 		}
@@ -175,6 +179,18 @@ public class BinderController extends BasicController implements TooledControlle
 			doOpenHistory(ureq);
 		} else if("Toc".equalsIgnoreCase(resName)) {
 			doOpenOverview(ureq);
+		}
+	}
+	
+	private void activateEntries(UserRequest ureq) {
+		int numOfPages = doOpenEntries(ureq).getNumOfPages();
+		if(numOfPages == 1 && !secCallback.canEditBinder()) {
+			PortfolioElementRow firstPage = entriesCtrl.getFirstPage();
+			if(firstPage != null) {
+				OLATResourceable ores = OresHelper.createOLATResourceableInstance("Page", firstPage.getPage().getKey());
+				List<ContextEntry> entries = BusinessControlFactory.getInstance().createCEListFromString(ores);
+				entriesCtrl.activate(ureq, entries, null);
+			}
 		}
 	}
 

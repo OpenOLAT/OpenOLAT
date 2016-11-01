@@ -141,6 +141,31 @@ implements Activateable2, TooledController, FlexiTableComponentDelegate {
 		this.withSections = withSections;
 	}
 	
+	public int getNumOfPages() {
+		int count = 0;
+		if(model != null) {
+			List<PortfolioElementRow> rows = model.getObjects();
+			for(PortfolioElementRow row:rows) {
+				if(row.isPage()) {
+					count++;
+				}
+			}
+		}
+		return count;
+	}
+	
+	public PortfolioElementRow getFirstPage() {
+		if(model != null) {
+			List<PortfolioElementRow> rows = model.getObjects();
+			for(PortfolioElementRow row:rows) {
+				if(row.isPage()) {
+					return row;
+				}
+			}
+		}
+		return null;
+	}
+	
 	@Override
 	protected void doDispose() {
 		//

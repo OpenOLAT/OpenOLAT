@@ -136,6 +136,10 @@ public class TableOfContentController extends BasicController implements TooledC
 		loadModel();
 	}
 	
+	public int getNumOfSections() {
+		return sectionList == null ? 0 : sectionList.size();
+	}
+	
 	@Override
 	public void initTools() {
 		if(secCallback.canEditMetadataBinder()) {
