@@ -492,6 +492,21 @@ public class BinderSecurityCallbackFactory {
 			}
 			return false;
 		}
+
+		@Override
+		public boolean canViewAssessment() {
+			if(owner) {
+				return true;
+			}
+			if(rights != null) {
+				for(AccessRights right:rights) {
+					if(PortfolioRoles.coach.equals(right.getRole())) {
+						return true;
+					}
+				}
+			}
+			return false;
+		}
 	}
 	
 	private static class DefaultBinderSecurityCallback implements BinderSecurityCallback {
@@ -615,5 +630,10 @@ public class BinderSecurityCallbackFactory {
 		public boolean canAssess(PortfolioElement element) {
 			return false;
 		}
+
+		@Override
+		public boolean canViewAssessment() {
+			return false;
+		}	
 	}
 }

@@ -108,7 +108,7 @@ public class BinderController extends BasicController implements TooledControlle
 			publishLink.setElementCssClass("o_sel_pf_publication");
 			segmentButtonsCmp.addButton(publishLink, false);
 		}
-		if(config.isAssessable()) {
+		if(config.isAssessable() && secCallback.canViewAssessment()) {
 			assessmentLink = LinkFactory.createLink("portfolio.assessment", getTranslator(), this);
 			assessmentLink.setElementCssClass("o_sel_pf_assessment");
 			segmentButtonsCmp.addButton(assessmentLink, false);
