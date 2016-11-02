@@ -33,7 +33,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.fileresource.types.ImsQTI21Resource;
-import org.olat.ims.qti.fileresource.TestFileResource;
+import org.olat.ims.qti21.pool.QTI12To21Converter;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryManagedFlag;
 import org.olat.repository.handlers.RepositoryHandler;
@@ -75,7 +75,7 @@ public class QTIRuntimeController extends RepositoryEntryRuntimeController imple
 		RepositoryEntry re = getRepositoryEntry();
 		boolean copyManaged = RepositoryEntryManagedFlag.isManaged(re, RepositoryEntryManagedFlag.copy);
 		boolean canConvert = (isAuthor || reSecurity.isEntryAdmin()) && (re.getCanCopy() || reSecurity.isEntryAdmin()) && !copyManaged
-				&& TestFileResource.TYPE_NAME.equals(re.getOlatResource().getResourceableTypeName());
+				&& QTI12To21Converter.isConvertible(re.getOlatResource());
 
 		if(canConvert) {
 			convertQTI21Link = LinkFactory.createToolLink("convert.qti.21", translate("tools.convert.qti21"), this, "o_FileResource-IMSQTI21_icon");

@@ -69,10 +69,9 @@ import org.olat.fileresource.FileResourceManager;
 import org.olat.fileresource.types.ImsQTI21Resource;
 import org.olat.ims.qti.QTIResult;
 import org.olat.ims.qti.QTIResultManager;
-import org.olat.ims.qti.editor.QTIEditorPackage;
-import org.olat.ims.qti.editor.QTIEditorPackageImpl;
 import org.olat.ims.qti.editor.beecom.objects.Assessment;
 import org.olat.ims.qti.editor.beecom.objects.Item;
+import org.olat.ims.qti.editor.beecom.objects.QTIDocument;
 import org.olat.ims.qti.editor.beecom.objects.Section;
 import org.olat.ims.qti.fileresource.SurveyFileResource;
 import org.olat.ims.qti.fileresource.TestFileResource;
@@ -543,21 +542,20 @@ public class IQConfigurationController extends BasicController {
 	}
 	
 	private boolean needManualCorrectionQTI12(RepositoryEntry re) {
-		TestFileResource fr = new TestFileResource();
-		fr.overrideResourceableId(re.getOlatResource().getResourceableId());
-		QTIEditorPackage qtiPackage = new QTIEditorPackageImpl(getIdentity(), fr, null, getTranslator());
-		Assessment ass = qtiPackage.getQTIDocument().getAssessment();
-
 		boolean needManualCorrection = false;
-		//Sections with their Items
-		List<Section> sections = ass.getSections();
-		for (Section section:sections) {
-			List<Item> items = section.getItems();
-			for (Item item:items) {
-				String ident = item.getIdent();
-				if(ident != null && ident.startsWith("QTIEDIT:ESSAY")) {
-					needManualCorrection = true;
-					break;
+		QTIDocument doc = TestFileResource.getQTIDocument(re.getOlatResource());
+		if(doc != null && doc.getAssessment() != null) {
+			Assessment ass = doc.getAssessment();
+			//Sections with their Items
+			List<Section> sections = ass.getSections();
+			for (Section section:sections) {
+				List<Item> items = section.getItems();
+				for (Item item:items) {
+					String ident = item.getIdent();
+					if(ident != null && ident.startsWith("QTIEDIT:ESSAY")) {
+						needManualCorrection = true;
+						break;
+					}
 				}
 			}
 		}

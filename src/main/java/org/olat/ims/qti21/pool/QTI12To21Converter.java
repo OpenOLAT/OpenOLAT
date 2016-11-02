@@ -57,6 +57,7 @@ import org.olat.ims.qti.editor.beecom.objects.Question;
 import org.olat.ims.qti.editor.beecom.objects.Response;
 import org.olat.ims.qti.editor.beecom.objects.Section;
 import org.olat.ims.qti.editor.beecom.objects.SelectionOrdering;
+import org.olat.ims.qti.fileresource.TestFileResource;
 import org.olat.ims.qti.qpool.QTI12HtmlHandler;
 import org.olat.ims.qti21.QTI21Constants;
 import org.olat.ims.qti21.model.IdentifierGenerator;
@@ -76,9 +77,11 @@ import org.olat.ims.qti21.model.xml.interactions.KPrimAssessmentItemBuilder;
 import org.olat.ims.qti21.model.xml.interactions.MultipleChoiceAssessmentItemBuilder;
 import org.olat.ims.qti21.model.xml.interactions.SimpleChoiceAssessmentItemBuilder.ScoreEvaluation;
 import org.olat.ims.qti21.model.xml.interactions.SingleChoiceAssessmentItemBuilder;
+import org.olat.resource.OLATResource;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
+import de.bps.onyx.plugin.OnyxModule;
 import uk.ac.ed.ph.jqtiplus.node.AssessmentObject;
 import uk.ac.ed.ph.jqtiplus.node.content.variable.RubricBlock;
 import uk.ac.ed.ph.jqtiplus.node.content.xhtml.text.P;
@@ -583,5 +586,29 @@ public class QTI12To21Converter {
 		} catch (Exception e) {
 			log.error("", e);
 		}
+	}
+
+	public static boolean isConvertible(OLATResource resource) {
+		if(TestFileResource.TYPE_NAME.equals(resource.getResourceableTypeName())) {
+			if(OnyxModule.isOnyxTest(resource)) {
+				return true;
+			}
+			
+			QTIDocument doc = TestFileResource.getQTIDocument(resource);
+			if(doc == null) {
+				return false;
+			}
+
+			boolean alien = false;
+			@SuppressWarnings("unchecked")
+			List<Item> items = doc.getAssessment().getItems();
+			for(int i=0; i<items.size(); i++) {
+				Item item = items.get(i);
+				alien |= item.isAlient();
+			}
+			return !alien;
+
+		}
+		return false;
 	}
 }

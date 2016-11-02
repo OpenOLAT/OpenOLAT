@@ -63,7 +63,6 @@ import org.olat.core.util.FileUtils;
 import org.olat.core.util.PathUtils.YesMatcher;
 import org.olat.core.util.Util;
 import org.olat.core.util.coordinate.LockResult;
-import org.olat.core.util.vfs.callbacks.FullAccessCallback;
 import org.olat.course.assessment.AssessmentMode;
 import org.olat.course.assessment.manager.UserCourseInformationsManager;
 import org.olat.fileresource.FileResourceManager;
@@ -71,9 +70,7 @@ import org.olat.fileresource.ZippedDirectoryMediaResource;
 import org.olat.fileresource.types.FileResource;
 import org.olat.fileresource.types.ImsQTI21Resource;
 import org.olat.fileresource.types.ResourceEvaluation;
-import org.olat.ims.qti.QTIModule;
 import org.olat.ims.qti.editor.QTIEditorPackage;
-import org.olat.ims.qti.editor.QTIEditorPackageImpl;
 import org.olat.ims.qti.fileresource.TestFileResource;
 import org.olat.ims.qti21.QTI21DeliveryOptions;
 import org.olat.ims.qti21.QTI21Service;
@@ -176,10 +173,7 @@ public class QTI21AssessmentTestHandler extends FileHandler {
 			if(OnyxModule.isOnyxTest((OLATResource)createObject)) {
 				copyOnyxResources(onyxResource, repositoryDir);
 			} else {
-				TestFileResource fr = new TestFileResource();
-				fr.overrideResourceableId(onyxResource.getResourceableId());
-				Translator translator = Util.createPackageTranslator(QTIModule.class, locale);
-				QTIEditorPackage testToConvert = new QTIEditorPackageImpl(initialAuthor, fr, new FullAccessCallback(), translator);
+				QTIEditorPackage testToConvert = TestFileResource.getQTIEditorPackageReader(onyxResource);
 				qpoolServiceProvider.convertFromEditorPackage(testToConvert, repositoryDir, locale);
 			}
 			copyMetadata(onyxRe, re, repositoryDir);
