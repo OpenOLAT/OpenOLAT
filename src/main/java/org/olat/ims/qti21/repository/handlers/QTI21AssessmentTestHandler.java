@@ -63,6 +63,7 @@ import org.olat.core.util.FileUtils;
 import org.olat.core.util.PathUtils.YesMatcher;
 import org.olat.core.util.Util;
 import org.olat.core.util.coordinate.LockResult;
+import org.olat.core.util.vfs.callbacks.FullAccessCallback;
 import org.olat.course.assessment.AssessmentMode;
 import org.olat.course.assessment.manager.UserCourseInformationsManager;
 import org.olat.fileresource.FileResourceManager;
@@ -70,7 +71,10 @@ import org.olat.fileresource.ZippedDirectoryMediaResource;
 import org.olat.fileresource.types.FileResource;
 import org.olat.fileresource.types.ImsQTI21Resource;
 import org.olat.fileresource.types.ResourceEvaluation;
+import org.olat.ims.qti.QTIModule;
 import org.olat.ims.qti.editor.QTIEditorPackage;
+import org.olat.ims.qti.editor.QTIEditorPackageImpl;
+import org.olat.ims.qti.fileresource.TestFileResource;
 import org.olat.ims.qti21.QTI21DeliveryOptions;
 import org.olat.ims.qti21.QTI21Service;
 import org.olat.ims.qti21.manager.AssessmentTestSessionDAO;
@@ -100,6 +104,7 @@ import org.olat.resource.OLATResourceManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import de.bps.onyx.plugin.OnyxModule;
 import uk.ac.ed.ph.jqtiplus.node.item.AssessmentItem;
 import uk.ac.ed.ph.jqtiplus.node.test.AssessmentSection;
 import uk.ac.ed.ph.jqtiplus.node.test.AssessmentTest;
@@ -163,9 +168,67 @@ public class QTI21AssessmentTestHandler extends FileHandler {
 		} else if(createObject instanceof QTIEditorPackage) {
 			QTIEditorPackage testToConvert = (QTIEditorPackage)createObject;
 			qpoolServiceProvider.convertFromEditorPackage(testToConvert, repositoryDir, locale);
+		} else if(createObject instanceof OLATResource) {
+			//convert a Onyx test in QTI 2.1
+			OLATResource onyxResource = (OLATResource)createObject;
+			RepositoryEntry onyxRe = CoreSpringFactory.getImpl(RepositoryService.class)
+					.loadByResourceKey(onyxResource.getKey());
+			if(OnyxModule.isOnyxTest((OLATResource)createObject)) {
+				copyOnyxResources(onyxResource, repositoryDir);
+			} else {
+				TestFileResource fr = new TestFileResource();
+				fr.overrideResourceableId(onyxResource.getResourceableId());
+				Translator translator = Util.createPackageTranslator(QTIModule.class, locale);
+				QTIEditorPackage testToConvert = new QTIEditorPackageImpl(initialAuthor, fr, new FullAccessCallback(), translator);
+				qpoolServiceProvider.convertFromEditorPackage(testToConvert, repositoryDir, locale);
+			}
+			copyMetadata(onyxRe, re, repositoryDir);
 		} else {
 			createMinimalAssessmentTest(displayname, repositoryDir);
 		}
+		return re;
+	}
+	
+	/**
+	 * Copy the Onyx assessmentTest, assessmentItems, attachments and media folder.
+	 * 
+	 * @param onyxZippedDir
+	 * @param targetDirectory
+	 * @return true if the copy is successful
+	 */
+	private boolean copyOnyxResources(OLATResource onyxResource, File targetDirectory) {
+		try {
+			// copy files
+			File onyxResourceFileroot = FileResourceManager.getInstance().getFileResourceRootImpl(onyxResource).getBasefile();
+			File onyxZippedDir = new File(onyxResourceFileroot, FileResourceManager.ZIPDIR);
+			
+			Path path = onyxZippedDir.toPath();
+			Path destDir = targetDirectory.toPath();
+			Files.walkFileTree(path, new CopyAndConvertVisitor(path, destDir, new YesMatcher()));
+			return true;
+		} catch (IOException e) {
+			log.error("", e);
+			return false;
+		}
+	}
+	
+	private RepositoryEntry copyMetadata(RepositoryEntry originalRe, RepositoryEntry re, File targetDirectory) {
+		//copy some metadata
+		re.setAuthors(originalRe.getAuthors());
+		re.setDescription(originalRe.getDescription());
+		re.setObjectives(originalRe.getObjectives());
+		re.setRequirements(originalRe.getRequirements());
+		re.setExpenditureOfWork(originalRe.getExpenditureOfWork());
+		re.setCredits(originalRe.getCredits());
+		re.setLocation(originalRe.getLocation());
+		
+		RepositoryManager repositoryManager = CoreSpringFactory.getImpl(RepositoryManager.class);
+		repositoryManager.copyImage(originalRe, re);
+
+		File resourceFileroot = FileResourceManager.getInstance().getFileResourceRootImpl(originalRe.getOlatResource()).getBasefile();
+		FileUtils.copyDirToDir(new File(resourceFileroot, "media"), targetDirectory.getParentFile(), "copy media folder");
+
+		re = CoreSpringFactory.getImpl(RepositoryService.class).update(re);
 		return re;
 	}
 	

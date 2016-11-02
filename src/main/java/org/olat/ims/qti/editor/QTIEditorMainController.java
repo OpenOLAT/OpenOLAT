@@ -266,6 +266,7 @@ public class QTIEditorMainController extends MainLayoutBasicController implement
 	private CreateRepositoryEntryController createConvertedTestController;
 	private InsertNodeController moveCtrl, copyCtrl, insertCtrl;
 	private CountDownLatch exportLatch;
+	private RepositoryEntry qtiEntry;
 
 	@Autowired
 	private UserManager userManager;
@@ -284,6 +285,8 @@ public class QTIEditorMainController extends MainLayoutBasicController implement
 	
 	public QTIEditorMainController(UserRequest ureq, WindowControl wControl, RepositoryEntry qtiEntry, List<Reference> referencees, FileResource fileResource) {
 		super(ureq, wControl);
+		
+		this.qtiEntry = qtiEntry;
 
 		for(Iterator<Reference> iter = referencees.iterator(); iter.hasNext(); ) {
 			Reference ref = iter.next();
@@ -1060,11 +1063,12 @@ public class QTIEditorMainController extends MainLayoutBasicController implement
 	
 	private void doConvertToQTI21(UserRequest ureq) {
 		removeAsListenerAndDispose(cmc);
-		removeAsListenerAndDispose(selectQItemCtrl);
+		removeAsListenerAndDispose(createConvertedTestController);
 
 		RepositoryHandler handler = repositoryHandlerFactory.getRepositoryHandler(ImsQTI21Resource.TYPE_NAME);
 		createConvertedTestController = new CreateRepositoryEntryController(ureq, getWindowControl(), handler);
-		createConvertedTestController.setCreateObject(qtiPackage);
+		createConvertedTestController.setCreateObject(qtiEntry.getOlatResource());
+		createConvertedTestController.setDisplayname(qtiEntry.getDisplayname());
 		listenTo(createConvertedTestController);
 
 		cmc = new CloseableModalController(getWindowControl(), translate("close"), createConvertedTestController.getInitialComponent(), true, translate("title.convert.qti21") );

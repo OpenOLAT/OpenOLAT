@@ -19,17 +19,30 @@
  */
 package org.olat.ims.qti;
 
+import org.olat.NewControllerFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.dropdown.Dropdown;
+import org.olat.core.gui.components.link.Link;
+import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.stack.VetoPopEvent;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.VetoableCloseController;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
+import org.olat.fileresource.types.ImsQTI21Resource;
+import org.olat.ims.qti.fileresource.TestFileResource;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryManagedFlag;
+import org.olat.repository.handlers.RepositoryHandler;
+import org.olat.repository.handlers.RepositoryHandlerFactory;
 import org.olat.repository.model.RepositoryEntrySecurity;
 import org.olat.repository.ui.RepositoryEntryRuntimeController;
+import org.olat.repository.ui.author.CreateRepositoryEntryController;
+import org.olat.resource.OLATResource;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -41,11 +54,34 @@ import org.olat.repository.ui.RepositoryEntryRuntimeController;
  */
 public class QTIRuntimeController extends RepositoryEntryRuntimeController implements VetoableCloseController  {
 	
+	private Link convertQTI21Link;
+
+	private CloseableModalController localCmc;
+	private CreateRepositoryEntryController createConvertedTestController;
+
 	private Delayed delayedClose;
+	
+	@Autowired
+	private RepositoryHandlerFactory repositoryHandlerFactory;
 	
 	public QTIRuntimeController(UserRequest ureq, WindowControl wControl,
 			RepositoryEntry re, RepositoryEntrySecurity reSecurity, RuntimeControllerCreator runtimeControllerCreator) {
 		super(ureq, wControl, re, reSecurity, runtimeControllerCreator);
+	}
+	
+	@Override
+	protected void initEditionTools(Dropdown settingsDropdown) {
+		super.initEditionTools(settingsDropdown);
+		RepositoryEntry re = getRepositoryEntry();
+		boolean copyManaged = RepositoryEntryManagedFlag.isManaged(re, RepositoryEntryManagedFlag.copy);
+		boolean canConvert = (isAuthor || reSecurity.isEntryAdmin()) && (re.getCanCopy() || reSecurity.isEntryAdmin()) && !copyManaged
+				&& TestFileResource.TYPE_NAME.equals(re.getOlatResource().getResourceableTypeName());
+
+		if(canConvert) {
+			convertQTI21Link = LinkFactory.createToolLink("convert.qti.21", translate("tools.convert.qti21"), this, "o_FileResource-IMSQTI21_icon");
+			convertQTI21Link.setIconLeftCSS("o_icon o_FileResource-IMSQTI21_icon");
+			settingsDropdown.addComponent(convertQTI21Link);
+		}
 	}
 	
 	/**
@@ -89,8 +125,28 @@ public class QTIRuntimeController extends RepositoryEntryRuntimeController imple
 					fireEvent(ureq, Event.DONE_EVENT);
 				}
 			}
+		} else if(createConvertedTestController == source) {
+			localCmc.deactivate();
+			if(event == Event.DONE_EVENT) {
+				showInfo("test.converted");
+				RepositoryEntry convertedEntry = createConvertedTestController.getAddedEntry();
+				String businessPath = "[RepositoryEntry:" + convertedEntry.getKey() + "]";
+				NewControllerFactory.getInstance().launch(businessPath, ureq, getWindowControl());
+			}
+			cleanUp();
+		} else if(localCmc == source) {
+			cleanUp();
 		}
 		super.event(ureq, source, event);
+	}
+	
+	@Override
+	protected void cleanUp() {
+		super.cleanUp();
+		removeAsListenerAndDispose(createConvertedTestController);
+		removeAsListenerAndDispose(localCmc);
+		createConvertedTestController = null;
+		localCmc = null;
 	}
 
 	@Override
@@ -107,6 +163,8 @@ public class QTIRuntimeController extends RepositoryEntryRuntimeController imple
 			} else {
 				delayedClose = Delayed.pop;
 			}
+		} else if(convertQTI21Link == source) {
+			doConvertToQTI21(ureq);
 		} else {
 			super.event(ureq, source, event);
 		}
@@ -165,6 +223,22 @@ public class QTIRuntimeController extends RepositoryEntryRuntimeController imple
 		} else {
 			delayedClose = Delayed.orders; 
 		}
+	}
+	
+	private void doConvertToQTI21(UserRequest ureq) {
+		removeAsListenerAndDispose(localCmc);
+		removeAsListenerAndDispose(createConvertedTestController);
+
+		OLATResource originalObject = getRepositoryEntry().getOlatResource();
+		RepositoryHandler qti21Handler = repositoryHandlerFactory.getRepositoryHandler(ImsQTI21Resource.TYPE_NAME);
+		createConvertedTestController = new CreateRepositoryEntryController(ureq, getWindowControl(), qti21Handler);
+		createConvertedTestController.setCreateObject(originalObject);
+		createConvertedTestController.setDisplayname(getRepositoryEntry().getDisplayname());
+		listenTo(createConvertedTestController);
+
+		localCmc = new CloseableModalController(getWindowControl(), translate("close"), createConvertedTestController.getInitialComponent(), true, translate("title.convert.qti21") );
+		localCmc.activate();
+		listenTo(localCmc);
 	}
 
 	private enum Delayed {
