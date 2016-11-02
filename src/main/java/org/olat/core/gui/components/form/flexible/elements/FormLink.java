@@ -85,6 +85,19 @@ public interface FormLink extends FormItem {
 	public String getLinkTitleText();
 	
 	/**
+	 * 
+	 * @return The title of the link if disabled.
+	 */
+	public String getTextReasonForDisabling();
+	
+	/**
+	 * Add a title (tooltip) to the link if it's disabled.
+	 *  
+	 * @param textReasonForDisabling
+	 */
+	public void setTextReasonForDisabling(String textReasonForDisabling);
+	
+	/**
 	 * @param true: set link to active state (only render issue); false set to not active (default)
 	 */
 	public void setActive(boolean isActive);
