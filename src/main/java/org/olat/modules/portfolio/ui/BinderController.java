@@ -103,7 +103,7 @@ public class BinderController extends BasicController implements TooledControlle
 		historyLink = LinkFactory.createLink("portfolio.history", getTranslator(), this);
 		historyLink.setElementCssClass("o_sel_pf_history");
 		segmentButtonsCmp.addButton(historyLink, false);
-		if(config.isShareable()) {
+		if(config.isShareable() && secCallback.canViewAccessRights()) {
 			publishLink = LinkFactory.createLink("portfolio.publish", getTranslator(), this);
 			publishLink.setElementCssClass("o_sel_pf_publication");
 			segmentButtonsCmp.addButton(publishLink, false);

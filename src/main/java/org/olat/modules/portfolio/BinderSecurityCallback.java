@@ -84,6 +84,10 @@ public interface BinderSecurityCallback {
 	
 	public boolean canEditAccessRights(PortfolioElement element);
 	
+	public boolean canViewAccessRights(PortfolioElement element);
+	
+	public boolean canViewAccessRights();
+	
 	public boolean canViewElement(PortfolioElement element);
 	
 	public boolean canViewPendingAssignments(Section section);
@@ -95,6 +99,8 @@ public interface BinderSecurityCallback {
 	public boolean canReview(PortfolioElement element);
 	
 	public boolean canAssess(PortfolioElement element);
+	
+	public boolean canViewAssess(PortfolioElement element);
 	
 	public boolean canViewAssessment();
  

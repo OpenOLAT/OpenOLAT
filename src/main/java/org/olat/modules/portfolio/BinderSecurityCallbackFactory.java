@@ -391,6 +391,37 @@ public class BinderSecurityCallbackFactory {
 		}
 
 		@Override
+		public boolean canViewAccessRights(PortfolioElement element) {
+			if(owner) return true;
+
+			if(rights != null) {
+				for(AccessRights right:rights) {
+					if(PortfolioRoles.coach.equals(right.getRole())
+							&& right.matchElementAndAncestors(element)) {
+						return true;
+					}
+				}
+			}
+			
+			return false;
+		}
+
+		@Override
+		public boolean canViewAccessRights() {
+			if(owner) return true;
+			
+			if(rights != null) {
+				for(AccessRights right:rights) {
+					if(PortfolioRoles.coach.equals(right.getRole())) {
+						return true;
+					}
+				}
+			}
+			
+			return false;
+		}
+
+		@Override
 		public boolean canViewEmptySection(Section section) {
 			if(owner) return true;
 			
@@ -479,6 +510,12 @@ public class BinderSecurityCallbackFactory {
 				}
 			}
 			return false;
+		}
+
+		@Override
+		public boolean canViewAssess(PortfolioElement element) {
+			if(owner) return true;
+			return canAssess(element);
 		}
 
 		@Override
@@ -602,6 +639,16 @@ public class BinderSecurityCallbackFactory {
 		}
 
 		@Override
+		public boolean canViewAccessRights(PortfolioElement element) {
+			return false;
+		}
+
+		@Override
+		public boolean canViewAccessRights() {
+			return false;
+		}
+
+		@Override
 		public boolean canViewElement(PortfolioElement element) {
 			return false;
 		}
@@ -628,6 +675,11 @@ public class BinderSecurityCallbackFactory {
 
 		@Override
 		public boolean canAssess(PortfolioElement element) {
+			return false;
+		}
+
+		@Override
+		public boolean canViewAssess(PortfolioElement element) {
 			return false;
 		}
 

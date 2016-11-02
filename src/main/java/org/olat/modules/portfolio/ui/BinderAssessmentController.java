@@ -163,7 +163,9 @@ public class BinderAssessmentController extends FormBasicController {
 			AssessmentSection assessmentSection = aSectionsMap.get(section);
 			AssessmentSectionWrapper row = new AssessmentSectionWrapper(section, assessmentSection);
 			sectionToRows.put(section, row);
-			rows.add(row);
+			if(secCallback.canViewAssess(section) || secCallback.canAssess(section)) {
+				rows.add(row);
+			}
 			allClosed &= section.getSectionStatus() == SectionStatus.closed;
 		}
 
