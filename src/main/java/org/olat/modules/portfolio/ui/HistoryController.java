@@ -61,6 +61,7 @@ public class HistoryController extends FormBasicController {
 	private int counter;
 	private Binder binder;
 	private SubscriptionContext subsContext;
+	private final BinderSecurityCallback secCallback;
 	
 	@Autowired
 	private PortfolioNotificationsHandler notificationsHandler;
@@ -68,6 +69,7 @@ public class HistoryController extends FormBasicController {
 	public HistoryController(UserRequest ureq, WindowControl wControl, BinderSecurityCallback secCallback, Binder binder) {
 		super(ureq, wControl, "history");
 		this.binder = binder;
+		this.secCallback = secCallback;
 		initForm(ureq);
 		updateChangeLog();
 		
@@ -100,7 +102,7 @@ public class HistoryController extends FormBasicController {
 	
 	protected void updateChangeLog() {
 		Date date = dateChooser.getDate();
-		List<SubscriptionListItem> items = notificationsHandler.getAllItems(binder, date, getLocale());
+		List<SubscriptionListItem> items = notificationsHandler.getAllItems(binder, secCallback, date, getLocale());
 		Formatter formatter = Formatter.getInstance(getLocale());
 		
 		List<SubscriptionListItemWrapper> wrappers = new ArrayList<>(items.size());
