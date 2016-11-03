@@ -69,10 +69,10 @@ public class TinyConfig {
 		String plugins =   "contextmenu,colorpicker,textcolor,hr,olatsmileys,paste,link,charmap,quotespliter,olatmatheditor,tabfocus,visualchars,visualblocks,noneditable,table";
 		String[] menu = {
 				"edit: {title: 'Edit', items: 'undo redo | cut copy paste pastetext | selectall searchreplace'}",
-			  "insert: {title: 'Insert', items: 'olatmovieviewer media image link | olatmatheditor hr charmap insertdatetime olatsmileys'}",
-			  "view: {title: 'View', items: 'visualblocks visualchars visualaid | preview fullscreen'}",
-			  "format: {title: 'Format', items: 'bold italic underline strikethrough superscript subscript | removeformat'}",
-			  "table: {title: 'Table', items: 'inserttable tableprops deletetable | cell row column'}"
+				"insert: {title: 'Insert', items: 'olatmovieviewer media image link | olatmatheditor hr charmap insertdatetime olatsmileys'}",
+				"view: {title: 'View', items: 'visualblocks visualchars visualaid | preview fullscreen'}",
+				"format: {title: 'Format', items: 'bold italic underline strikethrough superscript subscript | removeformat'}",
+				"table: {title: 'Table', items: 'inserttable tableprops deletetable | cell row column'}"
 		};
 		String tools1 = "bold italic underline | alignjustify alignright aligncenter alignleft | formatselect | fontselect fontsizeselect | forecolor backcolor | bullist numlist indent outdent | olatqtifibtext olatqtifibnumerical olatmovieviewer image charmap olatsmileys hr link";
 		editorFullConfig = new TinyConfig(plugins, menu, tools1);
@@ -87,7 +87,7 @@ public class TinyConfig {
 			  "format: {title: 'Format', items: 'bold italic underline strikethrough superscript subscript | formats | removeformat'}",
 			  "table: {title: 'Table', items: 'inserttable tableprops deletetable | cell row column'}"
 		};
-		String tools1 = "bold italic underline | styleselect | fontselect fontsizeselect | forecolor backcolor | bullist numlist indent outdent | olatqtifibtext olatqtifibnumerical olatmovieviewer image charmap olatsmileys hr link | code";
+		String tools1 = "bold italic underline | styleselect | fontselect fontsizeselect | forecolor backcolor | bullist numlist indent outdent | olatqtifibtext olatqtifibnumerical olatmovieviewer image charmap olatmatheditor olatsmileys hr link | code";
 		fileEditorConfig = new TinyConfig(plugins, menu, tools1);
 	}
 
