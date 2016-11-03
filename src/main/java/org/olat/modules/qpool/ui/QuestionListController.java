@@ -19,8 +19,11 @@
  */
 package org.olat.modules.qpool.ui;
 
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.olat.NewControllerFactory;
 import org.olat.core.CoreSpringFactory;
@@ -67,9 +70,11 @@ import org.olat.ims.qti.questionimport.QImport_1_InputStep;
 import org.olat.modules.qpool.ExportFormatOptions;
 import org.olat.modules.qpool.Pool;
 import org.olat.modules.qpool.QItemFactory;
+import org.olat.modules.qpool.QPoolSPI;
 import org.olat.modules.qpool.QuestionItem;
 import org.olat.modules.qpool.QuestionItemCollection;
 import org.olat.modules.qpool.QuestionItemShort;
+import org.olat.modules.qpool.QuestionPoolModule;
 import org.olat.modules.qpool.model.QItemList;
 import org.olat.modules.qpool.ui.events.QItemCreationCmdEvent;
 import org.olat.modules.qpool.ui.events.QItemEdited;
@@ -99,7 +104,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class QuestionListController extends AbstractItemListController implements BreadcrumbPanelAware, Activateable2 {
 
-	private FormLink list, exportItem, shareItem, removeItem, newItem, copyItem, deleteItem, authorItem, importItem, bulkChange;
+	private FormLink list, exportItem, shareItem, removeItem, newItem, copyItem, convertItem, deleteItem, authorItem, importItem, bulkChange;
 
 	private BreadcrumbPanel stackPanel;
 	private RenameController renameCtrl;
@@ -129,11 +134,14 @@ public class QuestionListController extends AbstractItemListController implement
 	private NewItemOptionsController newItemOptionsCtrl;
 	private CloseableCalloutWindowController calloutCtrl;
 	private ReferencableEntriesSearchController importTestCtrl;
+	private ConversionConfirmationController conversionConfirmationCtrl;
 	
 	private QuestionItemCollection itemCollection;
 	
 	private boolean itemCollectionDirty = false;
 
+	@Autowired
+	private QuestionPoolModule qpoolModule;
 	@Autowired
 	private RepositoryManager repositoryManager;
 	@Autowired
@@ -154,6 +162,7 @@ public class QuestionListController extends AbstractItemListController implement
 
 		newItem = uifactory.addFormLink("new.item", formLayout, Link.BUTTON);
 		copyItem = uifactory.addFormLink("copy", formLayout, Link.BUTTON);
+		convertItem = uifactory.addFormLink("convert.item", formLayout, Link.BUTTON);
 		importItem = uifactory.addFormLink("import.item", formLayout, Link.BUTTON);
 		authorItem = uifactory.addFormLink("author.item", formLayout, Link.BUTTON);
 		if(getSource().isDeleteEnabled()) {
@@ -221,6 +230,13 @@ public class QuestionListController extends AbstractItemListController implement
 				List<QuestionItemShort> items = getSelectedShortItems(false);
 				if(items.size() > 0) {
 					doConfirmCopy(ureq, items);
+				} else {
+					showWarning("error.select.one");
+				}
+			} else if(link == convertItem) {
+				List<QuestionItemShort> items = getSelectedShortItems(false);
+				if(items.size() > 0) {
+					doConfirmConversion(ureq, items);
 				} else {
 					showWarning("error.select.one");
 				}
@@ -417,6 +433,14 @@ public class QuestionListController extends AbstractItemListController implement
 				List<QuestionItemShort> items = (List<QuestionItemShort>)confirmCopyBox.getUserObject();
 				doCopy(ureq, items);
 			}
+		} else if(source == conversionConfirmationCtrl) {
+			if(event == Event.DONE_EVENT) {
+				List<QuestionItemShort> items = conversionConfirmationCtrl.getSelectedItems();
+				String format = conversionConfirmationCtrl.getSelectedFormat();
+				doConvert(ureq, items, format);
+			}
+			cmc.deactivate();
+			cleanUp();
 		} else if(source == confirmDeleteBox) {
 			if(DialogBoxUIFactory.isYesEvent(event) || DialogBoxUIFactory.isOkEvent(event)) {
 				@SuppressWarnings("unchecked")
@@ -474,6 +498,7 @@ public class QuestionListController extends AbstractItemListController implement
 		removeAsListenerAndDispose(importTestCtrl);
 		removeAsListenerAndDispose(selectGroupCtrl);
 		removeAsListenerAndDispose(createCollectionCtrl);
+		removeAsListenerAndDispose(conversionConfirmationCtrl);
 		cmc = null;
 		addController = null;
 		bulkChangeCtrl = null;
@@ -481,6 +506,7 @@ public class QuestionListController extends AbstractItemListController implement
 		importTestCtrl = null;
 		selectGroupCtrl = null;
 		createCollectionCtrl = null;
+		conversionConfirmationCtrl = null;
 	}
 	
 	protected void updateRows(List<QuestionItem> items) {
@@ -890,6 +916,59 @@ public class QuestionListController extends AbstractItemListController implement
 		List<QuestionItem> copies = qpoolService.copyItems(getIdentity(), items);
 		getItemsTable().reset();
 		showInfo("item.copied", Integer.toString(copies.size()));
+		fireEvent(ureq, new QPoolEvent(QPoolEvent.EDIT));
+	}
+	
+	protected void doConfirmConversion(UserRequest ureq, List<QuestionItemShort> items) {
+		Map<String,List<QuestionItemShort>> formatToItems = new HashMap<>();
+		List<QPoolSPI> spies = qpoolModule.getQuestionPoolProviders();
+		for(QuestionItemShort item:items) {
+			for(QPoolSPI sp:spies) {
+				if(sp != null && sp.isConversionPossible(item)) {
+					List<QuestionItemShort> convertItems;
+					if(formatToItems.containsKey(sp.getFormat())) {
+						convertItems = formatToItems.get(sp.getFormat());
+					} else {
+						convertItems = new ArrayList<>(items.size());
+						formatToItems.put(sp.getFormat(), convertItems);
+					}
+					convertItems.add(item);	
+				}
+			}
+		}
+		
+		if(formatToItems.isEmpty()) {
+			showWarning("convert.item.not.possible");
+		} else {
+			conversionConfirmationCtrl = new ConversionConfirmationController(ureq, getWindowControl(), formatToItems);
+			listenTo(conversionConfirmationCtrl);
+			
+			cmc = new CloseableModalController(getWindowControl(), translate("close"),
+					conversionConfirmationCtrl.getInitialComponent(), true, translate("convert.item"));
+			cmc.activate();
+			listenTo(cmc);
+		}
+	}
+	
+	protected void doConvert(UserRequest ureq, List<QuestionItemShort> items, String format) {
+		QPoolSPI sp = qpoolModule.getQuestionPoolProvider(format);
+		
+		int count = 0;
+		for(QuestionItemShort item:items) {
+			QuestionItem convertedQuestion = sp.convert(getIdentity(), item, getLocale());
+			if(convertedQuestion != null) {
+				count++;
+			}
+		}
+		
+		if(count == items.size()) {
+			showInfo("convert.item.successful", new String[]{ Integer.toString(count)} );
+		} else {
+			int errors = items.size() - count;
+			showWarning("convert.item.warning", new String[]{ Integer.toString(errors), Integer.toString(items.size()) } );
+		}
+		
+		getItemsTable().reset();
 		fireEvent(ureq, new QPoolEvent(QPoolEvent.EDIT));
 	}
 	

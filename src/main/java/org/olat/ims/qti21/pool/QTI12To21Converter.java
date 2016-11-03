@@ -33,6 +33,7 @@ import java.util.Locale;
 import java.util.Set;
 
 import org.cyberneko.html.parsers.SAXParser;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.helpers.Settings;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
@@ -77,6 +78,9 @@ import org.olat.ims.qti21.model.xml.interactions.KPrimAssessmentItemBuilder;
 import org.olat.ims.qti21.model.xml.interactions.MultipleChoiceAssessmentItemBuilder;
 import org.olat.ims.qti21.model.xml.interactions.SimpleChoiceAssessmentItemBuilder.ScoreEvaluation;
 import org.olat.ims.qti21.model.xml.interactions.SingleChoiceAssessmentItemBuilder;
+import org.olat.modules.qpool.QuestionType;
+import org.olat.modules.qpool.manager.QItemTypeDAO;
+import org.olat.modules.qpool.model.QuestionItemImpl;
 import org.olat.resource.OLATResource;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
@@ -181,22 +185,7 @@ public class QTI12To21Converter {
 		assessmentTest = assessmentTestBuilder.build();
 		persistAssessmentObject(testFile, assessmentTest);
 		manifest.write(new File(unzippedDirRoot, "imsmanifest.xml"));
-		
-		Set<String> materialSet = new HashSet<>(materialPath);
-		for(String material:materialSet) {
-			if(StringHelper.containsNonWhitespace(material)
-					&& !material.startsWith("http://") && !material.startsWith("https://")) {
-				VFSItem materialItem = originalContainer.resolve(material);
-				if(materialItem instanceof VFSLeaf) {
-					try(InputStream in = ((VFSLeaf) materialItem).getInputStream()) {
-						File dest = new File(unzippedDirRoot, material);
-						FileUtils.copyToFile(in, dest, "");
-					} catch(Exception e) {
-						log.error("Cannot copy: " + material, e);
-					}
-				}
-			}
-		}
+		copyMaterial(originalContainer);
 		return assessmentTest;
 	}
 	
@@ -258,6 +247,81 @@ public class QTI12To21Converter {
 				appendResourceAndMetadata(item, itemBuilder, itemFile);
 			}
 		}
+	}
+	
+	public boolean convert(QuestionItemImpl convertedItem, Item item, VFSContainer originalContainer) {
+		if(convertItem(convertedItem, item)) {
+			copyMaterial(originalContainer);
+			manifest.appendAssessmentItem(convertedItem.getRootFilename());
+			manifest.write(new File(unzippedDirRoot, "imsmanifest.xml"));
+			return true;
+		}
+		return false;
+	}
+	
+	private void copyMaterial(VFSContainer originalContainer) {
+		Set<String> materialSet = new HashSet<>(materialPath);
+		for(String material:materialSet) {
+			if(StringHelper.containsNonWhitespace(material)
+					&& !material.startsWith("http://") && !material.startsWith("https://")) {
+				VFSItem materialItem = originalContainer.resolve(material);
+				if(materialItem instanceof VFSLeaf) {
+					try(InputStream in = ((VFSLeaf) materialItem).getInputStream()) {
+						File dest = new File(unzippedDirRoot, material);
+						FileUtils.copyToFile(in, dest, "");
+					} catch(Exception e) {
+						log.error("Cannot copy: " + material, e);
+					}
+				}
+			}
+		}
+	}
+	
+	/**
+	 * 
+	 * @param item
+	 * @return The name of the assesssmentItem file
+	 */
+	private boolean convertItem(QuestionItemImpl convertedQuestion, Item item) {
+		QItemTypeDAO qItemTypeDao = CoreSpringFactory.getImpl(QItemTypeDAO.class);
+		
+		AssessmentItemBuilder itemBuilder = null;
+		int questionType = item.getQuestion().getType();
+		switch (questionType) {
+			case Question.TYPE_SC:
+				itemBuilder = convertSingleChoice(item);
+				convertedQuestion.setType(qItemTypeDao.loadByType(QuestionType.SC.name()));
+				break;
+			case Question.TYPE_MC:
+				itemBuilder = convertMultipleChoice(item);
+				convertedQuestion.setType(qItemTypeDao.loadByType(QuestionType.MC.name()));
+				break;
+			case Question.TYPE_KPRIM:
+				itemBuilder = convertKPrim(item);
+				convertedQuestion.setType(qItemTypeDao.loadByType(QuestionType.KPRIM.name()));
+				break;
+			case Question.TYPE_FIB:
+				itemBuilder = convertFIB(item);
+				convertedQuestion.setType(qItemTypeDao.loadByType(QuestionType.FIB.name()));
+				break;
+			case Question.TYPE_ESSAY:
+				itemBuilder = convertEssay(item);
+				convertedQuestion.setType(qItemTypeDao.loadByType(QuestionType.ESSAY.name()));
+				break;
+		}
+
+		if(itemBuilder != null) {
+			itemBuilder.build();
+
+			AssessmentItem assessmentItem = itemBuilder.getAssessmentItem();
+			String itemId = IdentifierGenerator.newAsString(itemBuilder.getQuestionType().getPrefix());
+			File itemFile = new File(unzippedDirRoot, itemId + ".xml");
+			persistAssessmentObject(itemFile, assessmentItem);
+			appendResourceAndMetadata(item, itemBuilder, itemFile);
+			convertedQuestion.setRootFilename(itemFile.getName());
+			return true;
+		}
+		return false;
 	}
 	
 	private void convertItemBasics(Item item, AssessmentItemRef itemRef) {

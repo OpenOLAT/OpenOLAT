@@ -104,9 +104,9 @@ public interface QPoolService {
 	
 	public File getRootDirectory(QuestionItem item);
 	
-	public VFSLeaf getRootLeaf(QuestionItem item);
+	public VFSLeaf getRootLeaf(QuestionItemShort item);
 	
-	public VFSContainer getRootContainer(QuestionItem item);
+	public VFSContainer getRootContainer(QuestionItemShort item);
 	
 	public List<QuestionItem> copyItems(Identity cloner, List<QuestionItemShort> itemsToCopy);
 

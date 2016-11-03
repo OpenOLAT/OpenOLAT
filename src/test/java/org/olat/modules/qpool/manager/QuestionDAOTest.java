@@ -156,7 +156,8 @@ public class QuestionDAOTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		//clone it
-		QuestionItemImpl clone = questionDao.copy(cloner, original);
+		QuestionItemImpl clone = questionDao.copy(original);
+		questionDao.persist(cloner, clone);
 		//compare
 		Assert.assertEquals(1, questionDao.countItems(cloner));
 		//general

@@ -205,7 +205,8 @@ public class QuestionPoolServiceImpl implements QPoolService {
 		List<QuestionItem> copies = new ArrayList<QuestionItem>();
 		for(QuestionItemShort itemToCopy:itemsToCopy) {
 			QuestionItemImpl original = questionItemDao.loadById(itemToCopy.getKey());
-			QuestionItemImpl copy = questionItemDao.copy(owner, original);
+			QuestionItemImpl copy = questionItemDao.copy(original);
+			questionItemDao.persist(owner, copy);
 			QPoolSPI provider = qpoolModule.getQuestionPoolProvider(copy.getFormat());
 			if(provider != null) {
 				provider.copyItem(original, copy);
@@ -296,7 +297,7 @@ public class QuestionPoolServiceImpl implements QPoolService {
 	}
 
 	@Override
-	public VFSLeaf getRootLeaf(QuestionItem item) {
+	public VFSLeaf getRootLeaf(QuestionItemShort item) {
 		QuestionItemImpl reloadedItem = questionItemDao.loadById(item.getKey());
 		if(reloadedItem == null) {
 			return null;
@@ -315,7 +316,7 @@ public class QuestionPoolServiceImpl implements QPoolService {
 	}
 
 	@Override
-	public VFSContainer getRootContainer(QuestionItem item) {
+	public VFSContainer getRootContainer(QuestionItemShort item) {
 		QuestionItemImpl reloadedItem = questionItemDao.loadById(item.getKey());
 		VFSContainer root = qpoolModule.getRootContainer();
 		VFSItem dir = root.resolve(reloadedItem.getDirectory());

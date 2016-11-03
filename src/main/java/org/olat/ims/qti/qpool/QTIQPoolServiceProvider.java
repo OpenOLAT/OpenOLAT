@@ -153,6 +153,11 @@ public class QTIQPoolServiceProvider implements QPoolSPI {
 	}
 	
 	@Override
+	public boolean isConversionPossible(QuestionItemShort question) {
+		return false;
+	}
+
+	@Override
 	public List<QItemFactory> getItemfactories() {
 		List<QItemFactory> factories = new ArrayList<QItemFactory>();
 		factories.add(new QTI12ItemFactory(Type.sc));
@@ -362,6 +367,11 @@ public class QTIQPoolServiceProvider implements QPoolSPI {
 		VFSContainer originalDir = qpoolFileStorage.getContainer(original.getDirectory());
 		VFSContainer copyDir = qpoolFileStorage.getContainer(copy.getDirectory());
 		VFSManager.copyContent(originalDir, copyDir);
+	}
+
+	@Override
+	public QuestionItem convert(Identity identity, QuestionItemShort question, Locale locale) {
+		return null;
 	}
 
 	@Override

@@ -112,7 +112,13 @@ public class QuestionItemDAO {
 		}
 	}
 	
-	public QuestionItemImpl copy(Identity owner, QuestionItemImpl original) {
+	/**
+	 * The method make a copy of the original question. The copy is not persisted.
+	 * 
+	 * @param original
+	 * @return A copy of the question.
+	 */
+	public QuestionItemImpl copy(QuestionItemImpl original) {
 		String subject = "(Copy) " + original.getTitle();
 		QuestionItemImpl copy = create(subject, original.getFormat(), null, original.getRootFilename());
 		
@@ -150,8 +156,6 @@ public class QuestionItemDAO {
 		//technical
 		copy.setEditor(original.getEditor());
 		copy.setEditorVersion(original.getEditorVersion());
-
-		persist(owner, copy);
 		return copy;
 	}
 
