@@ -26,6 +26,7 @@
 package org.olat.modules.iq;
 
 import java.io.File;
+import java.io.UnsupportedEncodingException;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
@@ -456,9 +457,14 @@ public class IQDisplayController extends DefaultController implements GenericEve
 			}
 			
 			if (wfCommand.equals("memo")) {
-				ai.setMemo(ureq.getParameter("id"), ureq.getParameter("p"));
-				ai.persist();
-				return;	
+				try {
+					String memo = java.net.URLDecoder.decode(ureq.getParameter("p"), "UTF-8");
+					ai.setMemo(ureq.getParameter("id"), memo);
+					ai.persist();
+					return;
+				} catch (UnsupportedEncodingException ex) {
+					log.info("Could not decode memo text " + ureq.getParameter("p"));
+				}
 			}
 
 			logAudit(ureq);
