@@ -188,10 +188,11 @@ public class QTI21WordExport implements MediaResource {
 			zout.putNextEntry(test);
 			exportTest(assessmentTest, label, zout, false);
 			zout.closeEntry();
-			
+			/*
 			ZipEntry responses = new ZipEntry(secureLabel + "_responses.docx");
 			zout.putNextEntry(responses);
 			exportTest(assessmentTest, label, zout, true);
+			*/
 			zout.closeEntry();
 		} catch (Exception e) {
 			log.error("", e);
@@ -326,7 +327,7 @@ public class QTI21WordExport implements MediaResource {
 
 		List<Block> itemBodyBlocks = item.getItemBody().getBlocks();
 		String html = htmlBuilder.blocksString(itemBodyBlocks);
-		document.appendHtmlText(html, true, new QTI21AndHTMLToOpenXMLHandler(document, item, itemFile, withResponses, htmlBuilder));
+		document.appendHtmlText(html, true, new QTI21AndHTMLToOpenXMLHandler(document, item, itemFile, withResponses, htmlBuilder, translator));
 	}
 	
 	private static class QTI21AndHTMLToOpenXMLHandler extends HTMLToOpenXMLHandler {
@@ -335,18 +336,20 @@ public class QTI21WordExport implements MediaResource {
 		private final AssessmentItem assessmentItem;
 		private final boolean withResponses;
 		private final AssessmentHtmlBuilder htmlBuilder;
+		private final Translator translator;
 		
 		private String simpleChoiceIdentifier;
 		private String responseIdentifier;
 		private boolean renderElement = true;
 
 		public QTI21AndHTMLToOpenXMLHandler(OpenXMLDocument document, AssessmentItem assessmentItem,
-				File itemFile, boolean withResponses, AssessmentHtmlBuilder htmlBuilder) {
+				File itemFile, boolean withResponses, AssessmentHtmlBuilder htmlBuilder, Translator translator) {
 			super(document);
 			this.itemFile = itemFile;
 			this.withResponses = withResponses;
 			this.assessmentItem = assessmentItem;
 			this.htmlBuilder = htmlBuilder;
+			this.translator = translator;
 		}
 		
 		@Override
@@ -466,6 +469,10 @@ public class QTI21WordExport implements MediaResource {
 				case "matchinteraction":
 					renderElement = true;
 					break;
+				case "simplematchset":
+				case "simpleassociablechoice":
+					//do nothing
+					break;
 				default: {
 					if(renderElement) {
 						super.endElement(uri, localName, qName);
@@ -567,9 +574,9 @@ public class QTI21WordExport implements MediaResource {
 			emptyCell.appendChild(factory.createParagraphEl(""));
 			
 			Node plusCell = currentTable.addCellEl(factory.createTableCell(null, 1116, Unit.dxa), 1);
-			plusCell.appendChild(factory.createParagraphEl("+"));
+			plusCell.appendChild(factory.createParagraphEl(translator.translate("kprim.plus")));
 			Node minusCell = currentTable.addCellEl(factory.createTableCell(null, 1116, Unit.dxa), 1);
-			minusCell.appendChild(factory.createParagraphEl("-"));
+			minusCell.appendChild(factory.createParagraphEl(translator.translate("kprim.minus")));
 
 			currentTable.closeRow();
 			

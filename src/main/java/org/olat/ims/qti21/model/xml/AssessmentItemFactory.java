@@ -154,9 +154,6 @@ public class AssessmentItemFactory {
 		ItemBodyGroup itemBodyGroup = nodeGroups.getItemBodyGroup();
 		ItemBody itemBody = new ItemBody(assessmentItem);
 		itemBodyGroup.setItemBody(itemBody);
-
-		P question = getParagraph(itemBody, "");
-		itemBody.getBlocks().add(question);
 		return itemBody;
 	}
 	
