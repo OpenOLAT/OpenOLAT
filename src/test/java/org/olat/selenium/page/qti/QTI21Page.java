@@ -128,6 +128,13 @@ public class QTI21Page {
 		OOGraphene.waitBusy(browser);
 		return this;
 	}
+	
+	public QTI21Page answerHotspot(String shape) {
+		By areaBy = By.cssSelector("div.hotspotInteraction area[shape='" + shape + "']");
+		OOGraphene.waitElement(areaBy, 5, browser);
+		browser.findElement(areaBy).click();
+		return this;
+	}
 
 	//TODO still QTI 1.2
 	public QTI21Page answerKPrim(boolean... choices) {
@@ -163,6 +170,14 @@ public class QTI21Page {
 		By saveAnswerBy = By.cssSelector("button.o_sel_assessment_item_submit");
 		browser.findElement(saveAnswerBy).click();
 		OOGraphene.waitBusy(browser);
+		return this;
+	}
+	
+	public QTI21Page assertFeedback(String feedback) {
+		By feedbackBy = By.xpath("//div[contains(@class,'modalFeedback')]/h4[contains(text(),'" + feedback + "')]");
+		OOGraphene.waitElement(feedbackBy, 5, browser);
+		List<WebElement> feedbackEls = browser.findElements(feedbackBy);
+		Assert.assertEquals(1, feedbackEls.size());
 		return this;
 	}
 	

@@ -131,7 +131,42 @@ public class ImsQTI21Test {
 			.closeTest()
 			.assertOnAttempts(1);
 		
+		//TODO continue
+	}
+	
+	/**
+	 * Check if the hotspot interaction send a "correct" feedback.
+	 * 
+	 * @param authorLoginPage
+	 * @throws IOException
+	 * @throws URISyntaxException
+	 */
+	@Test
+	@RunAsClient
+	public void qti21GraphicInteractionTest(@InitialPage LoginPage authorLoginPage)
+	throws IOException, URISyntaxException {
+		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
+		authorLoginPage.loginAs(author.getLogin(), author.getPassword());
 		
+		//upload a test
+		String qtiTestTitle = "Simple QTI 2.1 " + UUID.randomUUID();
+		URL qtiTestUrl = JunitTestHelper.class.getResource("file_resources/simple_QTI_21_hotspot.zip");
+		File qtiTestFile = new File(qtiTestUrl.toURI());
+		navBar
+			.openAuthoringEnvironment()
+			.uploadResource(qtiTestTitle, qtiTestFile)
+			.clickToolbarRootCrumb();
+		
+		QTI21Page qtiPage = QTI21Page
+				.getQTI12Page(browser);
+		qtiPage
+			.answerHotspot("circle")
+			.saveAnswer()
+			.assertFeedback("Correct!")
+			.endTest()
+			.closeTest();
+		
+		//TODO check the results
 	}
 
 }

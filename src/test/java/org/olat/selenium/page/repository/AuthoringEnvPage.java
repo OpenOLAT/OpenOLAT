@@ -22,6 +22,7 @@ package org.olat.selenium.page.repository;
 import java.io.File;
 
 import org.junit.Assert;
+import org.olat.selenium.page.course.CoursePageFragment;
 import org.olat.selenium.page.course.CourseWizardPage;
 import org.olat.selenium.page.graphene.OOGraphene;
 import org.openqa.selenium.By;
@@ -194,6 +195,19 @@ public class AuthoringEnvPage {
 		By editBy = By.xpath("//div[contains(@class,'o_coursetable')]//tr[//a[contains(text(),'" + title + "')]]//a[contains(@href,'edit')]");
 		browser.findElement(editBy).click();
 		OOGraphene.waitBusy(browser);
+	}
+	
+	/**
+	 * Click back from the editor
+	 * 
+	 * @return
+	 */
+	public CoursePageFragment clickToolbarRootCrumb() {
+		OOGraphene.closeBlueMessageWindow(browser);
+		By toolbarBackBy = By.xpath("//li[contains(@class,'o_breadcrumb_back')]/following-sibling::li/a");
+		browser.findElement(toolbarBackBy).click();
+		OOGraphene.waitBusy(browser);
+		return new CoursePageFragment(browser);
 	}
 	
 	public enum ResourceType {
