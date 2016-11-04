@@ -192,6 +192,8 @@ public interface QTI21Service {
 	
 	public AssessmentTestMarks updateMarks(AssessmentTestMarks marks);
 	
+	public File getAssessmentResultFile(final AssessmentTestSession candidateSession);
+	
 	/**
 	 * Reload the test session by its key and fetch identity, user...
 	 * 

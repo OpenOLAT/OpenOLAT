@@ -1,0 +1,45 @@
+@charset "UTF-8";
+
+/*
+ * =================================================
+ *  
+ * Main SASS file for the OpenOLAT default theme
+ *   
+ * @author gnaegi,  www.frentix.com
+ * @date April 2014
+ *
+ * please read themes.README to create your own themes!
+ *
+ *  =================================================
+ */
+@import "../../themes/light/license";
+
+@import "../../themes/light/config";
+
+/* Bootstrap classes. Override bootstrap variables in your _config.scss file */
+@import "../../themes/light/modules/bootstrap";
+
+/* -------- OpenOLAT modules -------- */
+@import "../../themes/light/modules/fonts"; /* defines extra fonts used as icons */
+@import "modules/icons"; /* must be second include - provides classes used as extensions */
+//@import "modules/emoticons";
+@import "../../themes/light/modules/mixins";
+@import "../../themes/light/modules/helpers";
+@import "../../themes/light/modules/dialog";
+//@import "modules/type";
+@import "../../themes/light/modules/content_embedded";  /* add all styles that are created by html editor but can also be rendered in 
+   										main window, not in iframe (e.g. forum post, blog entry) */
+
+/* now load QTI suff */
+@import "../../themes/light/modules/qti";
+
+.o_page_margins {
+	padding-top: 25px;
+	padding-bottom: 25px;
+	padding-left: 25px;
+	padding-right: 25px;
+}
+
+#o_main {
+	margin-top: 25px;
+}

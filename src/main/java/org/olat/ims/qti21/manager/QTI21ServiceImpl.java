@@ -678,7 +678,7 @@ public class QTI21ServiceImpl implements QTI21Service, InitializingBean, Disposa
         }
     }
     
-    private File getAssessmentResultFile(final AssessmentTestSession candidateSession) {
+    public File getAssessmentResultFile(final AssessmentTestSession candidateSession) {
     	File myStore = testSessionDao.getSessionStorage(candidateSession);
         return new File(myStore, "assessmentResult.xml");
     }
