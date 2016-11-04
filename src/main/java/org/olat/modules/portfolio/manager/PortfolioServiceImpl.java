@@ -252,6 +252,12 @@ public class PortfolioServiceImpl implements PortfolioService {
 	}
 	
 	@Override
+	public boolean deleteBinder(BinderRef binder) {
+		int rows = binderDao.deleteBinder(binder);
+		return rows > 0;
+	}
+
+	@Override
 	public BinderDeliveryOptions getDeliveryOptions(OLATResource resource) {
 		FileResourceManager frm = FileResourceManager.getInstance();
 		File reFolder = frm.getFileResourceRoot(resource);
@@ -436,8 +442,8 @@ public class PortfolioServiceImpl implements PortfolioService {
 	}
 
 	@Override
-	public List<Page> getPages(SectionRef section, String searchString) {
-		return pageDao.getPages(section, searchString);
+	public List<Page> getPages(SectionRef section) {
+		return pageDao.getPages(section);
 	}
 
 	@Override
@@ -447,9 +453,14 @@ public class PortfolioServiceImpl implements PortfolioService {
 
 	@Override
 	public List<BinderStatistics> searchOwnedBinders(IdentityRef owner) {
-		return binderDao.searchOwnedBinders(owner);
+		return binderDao.searchOwnedBinders(owner, false);
 	}
 	
+	@Override
+	public List<BinderStatistics> searchOwnedDeletedBinders(IdentityRef owner) {
+		return binderDao.searchOwnedBinders(owner, true);
+	}
+
 	@Override
 	public List<Binder> searchOwnedBindersFromCourseTemplate(IdentityRef owner) {
 		return binderDao.getOwnedBinderFromCourseTemplate(owner);
@@ -478,6 +489,11 @@ public class PortfolioServiceImpl implements PortfolioService {
 	@Override
 	public Binder getBinderByResource(OLATResource resource) {
 		return binderDao.loadByResource(resource);
+	}
+
+	@Override
+	public BinderStatistics getBinderStatistics(BinderRef binder) {
+		return binderDao.getBinderStatistics(binder);
 	}
 
 	@Override

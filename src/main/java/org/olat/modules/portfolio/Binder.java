@@ -49,6 +49,10 @@ public interface Binder extends BinderLight, PortfolioElement, OLATResourceable 
 	
 	public void setSummary(String summary);
 	
+	public BinderStatus getBinderStatus();
+	
+	public void setBinderStatus(BinderStatus status);
+	
 	@Override
 	public String getImagePath();
 	

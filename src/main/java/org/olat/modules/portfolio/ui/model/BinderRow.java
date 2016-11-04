@@ -24,6 +24,7 @@ import java.util.Date;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.modules.portfolio.BinderRef;
+import org.olat.modules.portfolio.BinderStatus;
 import org.olat.modules.portfolio.model.BinderStatistics;
 
 /**
@@ -55,6 +56,15 @@ public class BinderRow implements BinderRef {
 	
 	public boolean isNewBinder() {
 		return newBinder;
+	}
+	
+	public boolean isDeleted() {
+		if(binderStats == null) return false;
+		return  binderStats.getStatus() == null ? false : BinderStatus.deleted.name().equals(binderStats.getStatus());
+	}
+	
+	public BinderStatistics getStatistics() {
+		return binderStats;
 	}
 
 	@Override

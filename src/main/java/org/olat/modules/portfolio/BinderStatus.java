@@ -21,35 +21,13 @@ package org.olat.modules.portfolio;
 
 /**
  * 
- * Initial date: 29.08.2016<br>
+ * Initial date: 3 nov. 2016<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class BinderDeliveryOptions {
+public enum BinderStatus {
 	
-	private boolean allowNewEntries;
-	private boolean allowDeleteBinder;
+	open,
+	deleted,
 
-	public boolean isAllowNewEntries() {
-		return allowNewEntries;
-	}
-
-	public void setAllowNewEntries(boolean allowNewEntries) {
-		this.allowNewEntries = allowNewEntries;
-	}
-	
-	public boolean isAllowDeleteBinder() {
-		return allowDeleteBinder;
-	}
-
-	public void setAllowDeleteBinder(boolean allowDeleteBinder) {
-		this.allowDeleteBinder = allowDeleteBinder;
-	}
-
-	public static BinderDeliveryOptions defaultOptions() {
-		BinderDeliveryOptions options = new BinderDeliveryOptions();
-		options.setAllowNewEntries(false);
-		options.setAllowDeleteBinder(false);
-		return options;
-	}
 }

@@ -179,7 +179,7 @@ public class DeletedPageListController extends AbstractPageListController {
 	}
 	
 	private void doConfirmDelete(UserRequest ureq) {
-		List<PortfolioElementRow> rows = this.getSelectedRows();
+		List<PortfolioElementRow> rows = getSelectedRows();
 		if(rows.isEmpty()) {
 			showWarning("page.atleastone");
 		} else if (rows.size() == 1) {

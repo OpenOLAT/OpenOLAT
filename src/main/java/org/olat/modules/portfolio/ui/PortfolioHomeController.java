@@ -67,7 +67,7 @@ public class PortfolioHomeController extends BasicController implements Activate
 	private SharedItemsController sharedWithMeCtrl;
 	private BinderListController myPortfolioListCtrl;
 	private MySharedItemsController mySharedItemsCtrl;
-	private DeletedPageListController deletedItemsCtrl;
+	private TrashController deletedItemsCtrl;
 	
 	@Autowired
 	private PortfolioV2Module portfolioModule;
@@ -263,11 +263,11 @@ public class PortfolioHomeController extends BasicController implements Activate
 		}
 	}
 	
-	private DeletedPageListController doDeletedPages(UserRequest ureq) {
+	private TrashController doDeletedPages(UserRequest ureq) {
 		OLATResourceable bindersOres = OresHelper.createOLATResourceableInstance("Trash", 0l);
 		WindowControl swControl = addToHistory(ureq, bindersOres, null);
 		BinderSecurityCallback secCallback = BinderSecurityCallbackFactory.getCallbackForMyPageList();
-		deletedItemsCtrl = new DeletedPageListController(ureq, swControl, stackPanel, secCallback);
+		deletedItemsCtrl = new TrashController(ureq, swControl, stackPanel, secCallback);
 		listenTo(deletedItemsCtrl);
 		stackPanel.pushController(translate("deleted.pages.breadcrump"), deletedItemsCtrl);
 		return deletedItemsCtrl;

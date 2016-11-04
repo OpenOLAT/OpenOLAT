@@ -77,7 +77,7 @@ public class SectionImpl implements Persistable, CreateInfo, Section {
 	
 	/** Only used for order by */
 	@GeneratedValue
-	@Column(name="pos")
+	@Column(name="pos", insertable=false, updatable=false)//TODO order hack
 	private long pos;
 
 	@Column(name="p_title", nullable=true, insertable=true, updatable=true)
@@ -132,7 +132,6 @@ public class SectionImpl implements Persistable, CreateInfo, Section {
 		this.key = key;
 	}
 
-	@Override
 	public long getPos() {
 		return pos;
 	}

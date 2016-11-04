@@ -44,7 +44,9 @@ import org.olat.basesecurity.model.GroupImpl;
 import org.olat.core.id.CreateInfo;
 import org.olat.core.id.ModifiedInfo;
 import org.olat.core.id.Persistable;
+import org.olat.core.util.StringHelper;
 import org.olat.modules.portfolio.Binder;
+import org.olat.modules.portfolio.BinderStatus;
 import org.olat.modules.portfolio.PortfolioElementType;
 import org.olat.modules.portfolio.Section;
 import org.olat.repository.RepositoryEntry;
@@ -198,6 +200,21 @@ public class BinderImpl implements Persistable, ModifiedInfo, CreateInfo, Binder
 
 	public void setStatus(String status) {
 		this.status = status;
+	}
+	
+	@Transient
+	@Override
+	public BinderStatus getBinderStatus() {
+		return StringHelper.containsNonWhitespace(status) ? BinderStatus.valueOf(status) : BinderStatus.open;
+	}
+
+	@Override
+	public void setBinderStatus(BinderStatus binderStatus) {
+		if(binderStatus == null) {
+			status = null;
+		} else {
+			status = binderStatus.name();
+		}
 	}
 
 	@Override

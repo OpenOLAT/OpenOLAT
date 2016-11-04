@@ -30,6 +30,7 @@ import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.core.util.StringHelper;
 import org.olat.modules.portfolio.Binder;
+import org.olat.modules.portfolio.BinderStatus;
 import org.olat.modules.portfolio.PortfolioRoles;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -66,7 +67,8 @@ public class SharedByMeQueries {
 		  .append("   inner join page.section as pageSection")
 		  .append("   inner join pageGroup.members as pageMembership")
 		  .append("   where pageSection.binder.key=binder.key and pageMembership.role in ('").append(PortfolioRoles.coach.name()).append("','").append(PortfolioRoles.reviewer.name()).append("')")
-		  .append(" ))");
+		  .append(" ))")
+		  .append(" and (binder.status is null or binder.status='").append(BinderStatus.open.name()).append("')");
 		if(StringHelper.containsNonWhitespace(searchString)) {
 			searchString = makeFuzzyQueryString(searchString);
 			sb.append(" and (");

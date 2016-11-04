@@ -57,6 +57,7 @@ import org.olat.modules.portfolio.Assignment;
 import org.olat.modules.portfolio.Binder;
 import org.olat.modules.portfolio.BinderConfiguration;
 import org.olat.modules.portfolio.BinderSecurityCallback;
+import org.olat.modules.portfolio.BinderStatus;
 import org.olat.modules.portfolio.Page;
 import org.olat.modules.portfolio.PageStatus;
 import org.olat.modules.portfolio.PortfolioLoggingAction;
@@ -64,9 +65,12 @@ import org.olat.modules.portfolio.PortfolioRoles;
 import org.olat.modules.portfolio.PortfolioService;
 import org.olat.modules.portfolio.Section;
 import org.olat.modules.portfolio.SectionStatus;
+import org.olat.modules.portfolio.model.BinderStatistics;
 import org.olat.modules.portfolio.model.SectionRefImpl;
+import org.olat.modules.portfolio.ui.event.DeleteBinderEvent;
 import org.olat.modules.portfolio.ui.event.PageDeletedEvent;
 import org.olat.modules.portfolio.ui.event.PageRemovedEvent;
+import org.olat.modules.portfolio.ui.event.RestoreBinderEvent;
 import org.olat.modules.portfolio.ui.event.SectionSelectionEvent;
 import org.olat.modules.portfolio.ui.model.ReadOnlyCommentsSecurityCallback;
 import org.olat.modules.portfolio.ui.renderer.PortfolioRendererHelper;
@@ -82,7 +86,8 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class TableOfContentController extends BasicController implements TooledController, Activateable2 {
 	
-	private Link newSectionTool, newSectionButton, newEntryLink, newAssignmentLink, editBinderMetadataLink;
+	private Link newSectionTool, newSectionButton, newEntryLink, newAssignmentLink,
+		editBinderMetadataLink, moveToTrashBinderLink, deleteBinderLink, restoreBinderLink;
 	
 	private final VelocityContainer mainVC;
 	private final TooledStackedPanel stackPanel;
@@ -94,7 +99,9 @@ public class TableOfContentController extends BasicController implements TooledC
 	private AssignmentEditController newAssignmentCtrl;
 	private SectionDatesEditController editSectionDatesCtrl;
 	private BinderMetadataEditController binderMetadataCtrl;
-	private DialogBoxController confirmCloseSectionCtrl, confirmReopenSectionCtrl, confirmDeleteSectionCtrl;
+	private ConfirmDeleteBinderController moveBinderToTrashCtrl, deleteBinderCtrl;
+	private DialogBoxController confirmCloseSectionCtrl, confirmReopenSectionCtrl,
+				confirmDeleteSectionCtrl, confirmRestoreBinderCtrl;
 	
 	private PageRunController pageCtrl;
 	private PageMetadataEditController newPageCtrl;
@@ -146,6 +153,22 @@ public class TableOfContentController extends BasicController implements TooledC
 			editBinderMetadataLink = LinkFactory.createToolLink("edit.binder.metadata", translate("edit.binder.metadata"), this);
 			editBinderMetadataLink.setIconLeftCSS("o_icon o_icon-lg o_icon_new_portfolio");
 			stackPanel.addTool(editBinderMetadataLink, Align.left);
+		}
+		
+		if(secCallback.canMoveToTrashBinder(binder)) {
+			moveToTrashBinderLink = LinkFactory.createToolLink("delete.binder", translate("delete.binder"), this);
+			moveToTrashBinderLink.setIconLeftCSS("o_icon o_icon-lg o_icon_delete_item");
+			stackPanel.addTool(moveToTrashBinderLink, Align.left);
+		}
+		
+		if(secCallback.canDeleteBinder(binder)) {
+			deleteBinderLink = LinkFactory.createToolLink("delete.binder", translate("delete.binder"), this);
+			deleteBinderLink.setIconLeftCSS("o_icon o_icon-lg o_icon_delete_item");
+			stackPanel.addTool(deleteBinderLink, Align.left);
+			
+			restoreBinderLink = LinkFactory.createToolLink("restore.binder", translate("restore.binder"), this);
+			restoreBinderLink.setIconLeftCSS("o_icon o_icon-lg o_icon_restore");
+			stackPanel.addTool(restoreBinderLink, Align.left);
 		}
 		
 		if(secCallback.canAddSection()) {
@@ -427,7 +450,28 @@ public class TableOfContentController extends BasicController implements TooledC
 				loadModel();
 				fireEvent(ureq, Event.CHANGED_EVENT);
 			}	
-		} else if(commentsCtrl == source) {
+		} else if(moveBinderToTrashCtrl == source) {
+			if(event == Event.DONE_EVENT) {
+				doMoveBinderToTrash();
+				fireEvent(ureq, new DeleteBinderEvent());
+			}
+			cmc.deactivate();
+			cleanUp();
+		} else if(deleteBinderCtrl == source) {
+			if(event == Event.DONE_EVENT) {
+				doDeleteBinder();
+				fireEvent(ureq, new DeleteBinderEvent());
+			}
+			cmc.deactivate();
+			cleanUp();
+		} else if(confirmRestoreBinderCtrl == source) {
+			if(DialogBoxUIFactory.isYesEvent(event)) {
+				doRestore();
+				loadModel();
+				fireEvent(ureq, new RestoreBinderEvent());
+			}	
+		}
+		else if(commentsCtrl == source) {
 			if("comment_count_changed".equals(event.getCommand())) {
 				loadModel();
 				fireEvent(ureq, Event.CHANGED_EVENT);
@@ -440,17 +484,21 @@ public class TableOfContentController extends BasicController implements TooledC
 	}
 	
 	private void cleanUp() {
+		removeAsListenerAndDispose(moveBinderToTrashCtrl);
 		removeAsListenerAndDispose(editSectionDatesCtrl);
 		removeAsListenerAndDispose(binderMetadataCtrl);
 		removeAsListenerAndDispose(newAssignmentCtrl);
+		removeAsListenerAndDispose(deleteBinderCtrl);
 		removeAsListenerAndDispose(editSectionCtrl);
 		removeAsListenerAndDispose(newSectionCtrl);
 		removeAsListenerAndDispose(commentsCtrl);
 		removeAsListenerAndDispose(newPageCtrl);
 		removeAsListenerAndDispose(cmc);
+		moveBinderToTrashCtrl = null;
 		editSectionDatesCtrl = null;
 		binderMetadataCtrl = null;
 		newAssignmentCtrl = null;
+		deleteBinderCtrl = null;
 		editSectionCtrl = null;
 		newSectionCtrl = null;
 		commentsCtrl = null;
@@ -468,6 +516,12 @@ public class TableOfContentController extends BasicController implements TooledC
 			doCreateNewAssignment(ureq);
 		} else if(editBinderMetadataLink == source) {
 			doEditBinderMetadata(ureq);
+		} else if(moveToTrashBinderLink == source) {
+			doConfirmMoveToTrashBinder(ureq);
+		} else if(deleteBinderLink == source) {
+			doConfirmDeleteBinder(ureq);
+		} else if(restoreBinderLink == source) {
+			doConfirmRestore(ureq);
 		} else if(source instanceof Link) {
 			Link link = (Link)source;
 			String cmd = link.getCommand();
@@ -663,6 +717,55 @@ public class TableOfContentController extends BasicController implements TooledC
 	
 	private void doDelete(SectionRow row) {
 		portfolioService.deleteSection(binder, row.getSection());
+	}
+	
+	private void doConfirmMoveToTrashBinder(UserRequest ureq) {
+		if(moveBinderToTrashCtrl != null) return;
+		
+		BinderStatistics stats = portfolioService.getBinderStatistics(binder);
+		moveBinderToTrashCtrl = new ConfirmDeleteBinderController(ureq, getWindowControl(), stats, false);
+		listenTo(moveBinderToTrashCtrl);
+		
+		String title = translate("delete.binder");
+		cmc = new CloseableModalController(getWindowControl(), null, moveBinderToTrashCtrl.getInitialComponent(), true, title, true);
+		listenTo(cmc);
+		cmc.activate();
+	}
+	
+	private void doMoveBinderToTrash() {
+		binder.setBinderStatus(BinderStatus.deleted);
+		binder = portfolioService.updateBinder(binder);
+		showInfo("delete.binder.success");
+	}
+	
+	private void doConfirmRestore(UserRequest ureq) {
+		String title = translate("restore.binder.confirm.title");
+		String text = translate("restore.binder.confirm.descr", new String[]{ StringHelper.escapeHtml(binder.getTitle()) });
+		confirmRestoreBinderCtrl = activateYesNoDialog(ureq, title, text, confirmRestoreBinderCtrl);
+	}
+	
+	private void doRestore() {
+		binder.setBinderStatus(BinderStatus.open);
+		binder = portfolioService.updateBinder(binder);
+		showInfo("restore.binder.success");
+	}
+	
+	private void doConfirmDeleteBinder(UserRequest ureq) {
+		if(moveBinderToTrashCtrl != null) return;
+		
+		BinderStatistics stats = portfolioService.getBinderStatistics(binder);
+		deleteBinderCtrl = new ConfirmDeleteBinderController(ureq, getWindowControl(), stats, false);
+		listenTo(deleteBinderCtrl);
+		
+		String title = translate("delete.binder");
+		cmc = new CloseableModalController(getWindowControl(), null, deleteBinderCtrl.getInitialComponent(), true, title, true);
+		listenTo(cmc);
+		cmc.activate();
+	}
+	
+	private void doDeleteBinder() {
+		portfolioService.deleteBinder(binder);
+		showInfo("delete.binder.success");
 	}
 	
 	public class PageRow {

@@ -22,9 +22,11 @@ package org.olat.modules.portfolio.ui;
 import java.util.List;
 
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
+import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
@@ -48,6 +50,7 @@ public class BinderDeliveryOptionsController extends FormBasicController impleme
 	private static final String[] onValues = new String[] { "" };
 	
 	private MultipleSelectionElement newEntriesEl;
+	private MultipleSelectionElement deleteBinderEl;
 	
 	private final Binder binder;
 	private final BinderDeliveryOptions deliveryOptions;
@@ -74,6 +77,12 @@ public class BinderDeliveryOptionsController extends FormBasicController impleme
 			newEntriesEl.select(onKeys[0], true);
 		}
 		
+		deleteBinderEl = uifactory.addCheckboxesHorizontal("canDeleteBinder", "allow.delete.binder", formLayout, onKeys, onValues);
+		deleteBinderEl.addActionListener(FormEvent.ONCHANGE);
+		if(deliveryOptions.isAllowDeleteBinder()) {
+			deleteBinderEl.select(onKeys[0], true);
+		}
+		
 		FormLayoutContainer buttonsLayout = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		buttonsLayout.setRootForm(mainForm);
 		formLayout.add(buttonsLayout);
@@ -91,9 +100,21 @@ public class BinderDeliveryOptionsController extends FormBasicController impleme
 	}
 
 	@Override
+	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
+		if(source == deleteBinderEl) {
+			if(deleteBinderEl.isAtLeastSelected(1)) {
+				showWarning("allow.delete.binder.warning");
+			}
+		}
+		super.formInnerEvent(ureq, source, event);
+	}
+
+	@Override
 	protected void formOK(UserRequest ureq) {
 		boolean allowNewEntries = newEntriesEl.isAtLeastSelected(1);
 		deliveryOptions.setAllowNewEntries(allowNewEntries);
+		boolean allowDeleteBinder = deleteBinderEl.isAtLeastSelected(1);
+		deliveryOptions.setAllowDeleteBinder(allowDeleteBinder);
 		portfolioService.setDeliveryOptions(binder.getOlatResource(), deliveryOptions);
 	}
 }

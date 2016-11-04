@@ -33,8 +33,11 @@ import org.olat.basesecurity.Group;
 import org.olat.basesecurity.IdentityRef;
 import org.olat.basesecurity.manager.GroupDAO;
 import org.olat.core.commons.persistence.DB;
+import org.olat.core.commons.services.commentAndRating.manager.UserCommentsDAO;
 import org.olat.core.id.Identity;
+import org.olat.core.id.OLATResourceable;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.resource.OresHelper;
 import org.olat.modules.portfolio.AssignmentStatus;
 import org.olat.modules.portfolio.BinderRef;
 import org.olat.modules.portfolio.Page;
@@ -64,8 +67,9 @@ public class PageDAO {
 	private DB dbInstance;
 	@Autowired
 	private GroupDAO groupDao;
-	
-	
+	@Autowired
+	private UserCommentsDAO userCommentsDAO;
+
 	/**
 	 * 
 	 * @param title
@@ -153,33 +157,23 @@ public class PageDAO {
 		return query.getResultList();
 	}
 	
-	public List<Page> getPages(SectionRef binder, String searchString) {
+	public List<Page> getPages(SectionRef section) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select page from pfpage as page")
 		  .append(" inner join fetch page.baseGroup as baseGroup")
 		  .append(" inner join fetch page.section as section")
 		  .append(" inner join fetch page.body as body")
 		  .append(" where section.key=:sectionKey");
-		if(StringHelper.containsNonWhitespace(searchString)) {
-			searchString = makeFuzzyQueryString(searchString);
-			sb.append(" and (");
-			appendFuzzyLike(sb, "page.title", "searchString", dbInstance.getDbVendor());
-			sb.append(" or ");
-			appendFuzzyLike(sb, "page.summary", "searchString", dbInstance.getDbVendor());
-			sb.append(" or exists (select cat from pfcategoryrelation rel ")
-			  .append("   inner join rel.category cat")
-			  .append("   where rel.resId=page.key and rel.resName='Page' and lower(cat.name) like :searchString")
-			  .append(" )");
-			sb.append(")");
-		}
 		sb.append(" order by page.pos");
 		
 		TypedQuery<Page> query = dbInstance.getCurrentEntityManager()
 			.createQuery(sb.toString(), Page.class)
-			.setParameter("sectionKey", binder.getKey());
-		if(StringHelper.containsNonWhitespace(searchString)) {
-			query.setParameter("searchString", searchString.toLowerCase());
-		}
+			.setParameter("sectionKey", section.getKey());
+
+		
+		/*SectionImpl refSection = dbInstance.getCurrentEntityManager()
+				.getReference(SectionImpl.class, section.getKey());
+		return refSection.getPages();*/
 		return query.getResultList();
 	}
 	
@@ -430,14 +424,26 @@ public class PageDAO {
 	 * @return
 	 */
 	public int deletePage(Page page) {
+		OLATResourceable ores = OresHelper.createOLATResourceableInstance(Page.class, page.getKey());
+		
 		PageBody body = page.getBody();
 		String partQ = "delete from pfpagepart part where part.body.key=:bodyKey";
 		int parts = dbInstance.getCurrentEntityManager()
 				.createQuery(partQ)
 				.setParameter("bodyKey", body.getKey())
 				.executeUpdate();
+		
+		String assignmentQ = "delete from pfassignment assignment where assignment.page.key=:pageKey";
+		int assignments = dbInstance.getCurrentEntityManager()
+				.createQuery(assignmentQ)
+				.setParameter("pageKey", page.getKey())
+				.executeUpdate();
+		
 		dbInstance.getCurrentEntityManager().remove(page);
 		dbInstance.getCurrentEntityManager().remove(body);
-		return parts + 1;
+		
+		int comments = userCommentsDAO.deleteAllComments(ores, null);
+		
+		return comments + parts + assignments + 1;
 	}
 }

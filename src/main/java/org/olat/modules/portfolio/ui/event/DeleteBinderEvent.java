@@ -17,39 +17,22 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.portfolio;
+package org.olat.modules.portfolio.ui.event;
+
+import org.olat.core.gui.control.Event;
 
 /**
  * 
- * Initial date: 29.08.2016<br>
+ * Initial date: 3 nov. 2016<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class BinderDeliveryOptions {
+public class DeleteBinderEvent extends Event {
+
+	private static final long serialVersionUID = -2218855554538816135L;
+	public static final String DELETE_BINDER = "delete-binder";
 	
-	private boolean allowNewEntries;
-	private boolean allowDeleteBinder;
-
-	public boolean isAllowNewEntries() {
-		return allowNewEntries;
-	}
-
-	public void setAllowNewEntries(boolean allowNewEntries) {
-		this.allowNewEntries = allowNewEntries;
-	}
-	
-	public boolean isAllowDeleteBinder() {
-		return allowDeleteBinder;
-	}
-
-	public void setAllowDeleteBinder(boolean allowDeleteBinder) {
-		this.allowDeleteBinder = allowDeleteBinder;
-	}
-
-	public static BinderDeliveryOptions defaultOptions() {
-		BinderDeliveryOptions options = new BinderDeliveryOptions();
-		options.setAllowNewEntries(false);
-		options.setAllowDeleteBinder(false);
-		return options;
+	public DeleteBinderEvent() {
+		super(DELETE_BINDER);
 	}
 }

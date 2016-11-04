@@ -36,6 +36,7 @@ import javax.persistence.TypedQuery;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.core.util.StringHelper;
+import org.olat.modules.portfolio.BinderStatus;
 import org.olat.modules.portfolio.PortfolioRoles;
 import org.olat.modules.portfolio.SectionStatus;
 import org.olat.modules.portfolio.model.AssessedBinder;
@@ -102,6 +103,7 @@ public class SharedWithMeQueries {
 			appendFuzzyLike(sb, "entry.displayname", "searchString", dbInstance.getDbVendor());
 			sb.append(")");
 		}
+		sb.append(" and (binder.status is null or binder.status='").append(BinderStatus.open.name()).append("')");
 		
 		TypedQuery<Object[]> query = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), Object[].class)

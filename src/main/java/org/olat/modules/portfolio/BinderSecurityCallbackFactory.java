@@ -40,6 +40,10 @@ public class BinderSecurityCallbackFactory {
 		return new BinderSecurityCallbackImpl(true, template != null, deliveryOptions);
 	}
 	
+	public static final BinderSecurityCallback getCallbackForDeletedBinder() {
+		return new BinderSecurityCallbackForDeletedBinder();
+	}
+	
 	public static final BinderSecurityCallback getCallbackForMyPageList() {
 		return new BinderSecurityCallbackImpl(true, false, null);
 	}
@@ -99,6 +103,49 @@ public class BinderSecurityCallbackFactory {
 			return page.getPageStatus() == PageStatus.deleted;
 		}
 		
+	}
+	
+	private static class BinderSecurityCallbackForDeletedBinder extends DefaultBinderSecurityCallback {
+
+		@Override
+		public boolean canDeleteBinder(Binder binder) {
+			return true;
+		}
+
+		@Override
+		public boolean canViewAccessRights(PortfolioElement element) {
+			return true;
+		}
+
+		@Override
+		public boolean canViewAccessRights() {
+			return true;
+		}
+
+		@Override
+		public boolean canViewElement(PortfolioElement element) {
+			return true;
+		}
+
+		@Override
+		public boolean canViewPendingAssignments(Section section) {
+			return true;
+		}
+
+		@Override
+		public boolean canViewEmptySection(Section section) {
+			return true;
+		}
+
+		@Override
+		public boolean canViewAssess(PortfolioElement element) {
+			return true;
+		}
+
+		@Override
+		public boolean canViewAssessment() {
+			return true;
+		}	
 	}
 
 	/**
@@ -232,6 +279,34 @@ public class BinderSecurityCallbackFactory {
 		@Override
 		public boolean canEditBinder() {
 			return owner;
+		}
+
+		@Override
+		public boolean canMoveToTrashBinder(Binder binder) {
+			if(owner) {
+				if(binder.getBinderStatus() == null || binder.getBinderStatus() == BinderStatus.open) {
+					if(task) {
+						return deliveryOptions.isAllowDeleteBinder();
+					} else {
+						return true;
+					}
+				}
+			}
+			return false;
+		}
+		
+		@Override
+		public boolean canDeleteBinder(Binder binder) {
+			if(owner) {
+				if(binder.getBinderStatus() == BinderStatus.deleted) {
+					if(task) {
+						return deliveryOptions.isAllowDeleteBinder();
+					} else {
+						return true;
+					}
+				}
+			}
+			return false;
 		}
 
 		@Override
@@ -550,6 +625,16 @@ public class BinderSecurityCallbackFactory {
 
 		@Override
 		public boolean canEditBinder() {
+			return false;
+		}
+
+		@Override
+		public boolean canMoveToTrashBinder(Binder binder) {
+			return false;
+		}
+
+		@Override
+		public boolean canDeleteBinder(Binder binder) {
 			return false;
 		}
 

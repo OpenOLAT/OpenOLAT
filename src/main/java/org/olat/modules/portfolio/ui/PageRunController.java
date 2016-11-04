@@ -162,7 +162,7 @@ public class PageRunController extends BasicController implements TooledControll
 			stackPanel.addTool(restoreLink, Align.left);
 			
 			deleteLink = LinkFactory.createToolLink("delete.def.page", translate("delete.def.page"), this);
-			deleteLink.setIconLeftCSS("o_icon o_icon-lg o_icon_delete");
+			deleteLink.setIconLeftCSS("o_icon o_icon-lg o_icon_delete_item");
 			stackPanel.addTool(deleteLink, Align.left);
 		}
 	}

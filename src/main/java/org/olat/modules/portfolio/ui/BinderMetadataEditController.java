@@ -42,6 +42,7 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
+import org.olat.core.util.StringHelper;
 import org.olat.modules.portfolio.Binder;
 import org.olat.modules.portfolio.Category;
 import org.olat.modules.portfolio.PortfolioLoggingAction;
@@ -120,7 +121,7 @@ public class BinderMetadataEditController extends FormBasicController {
 		fileUpload.setPreview(ureq.getUserSession(), true);
 		fileUpload.addActionListener(FormEvent.ONCHANGE);
 		fileUpload.setDeleteEnabled(true);
-		fileUpload.limitToMimeType(imageMimeTypes, null, null);
+		fileUpload.limitToMimeType(imageMimeTypes, "error.mimetype", new String[]{ imageMimeTypes.toString() });
 		fileUpload.setMaxUploadSizeKB(picUploadlimitKB, null, null);
 		if(binder != null) {
 			File posterImg = portfolioService.getPosterImageFile(binder);
@@ -189,6 +190,11 @@ public class BinderMetadataEditController extends FormBasicController {
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
 		boolean allOk = true;
+		
+		if(!StringHelper.containsNonWhitespace(titleEl.getValue())) {
+			titleEl.setErrorKey("form.legende.mandatory", null);
+			allOk &= false;
+		}
 
 		return allOk & super.validateFormLogic(ureq);
 	}

@@ -33,7 +33,6 @@ import org.olat.core.gui.components.stack.ButtonGroupComponent;
 import org.olat.core.gui.components.stack.PopEvent;
 import org.olat.core.gui.components.stack.TooledController;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
-import org.olat.core.gui.components.stack.TooledStackedPanel.Align;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -48,7 +47,10 @@ import org.olat.core.util.resource.OresHelper;
 import org.olat.modules.portfolio.Binder;
 import org.olat.modules.portfolio.BinderConfiguration;
 import org.olat.modules.portfolio.BinderSecurityCallback;
+import org.olat.modules.portfolio.BinderStatus;
 import org.olat.modules.portfolio.PortfolioV2Module;
+import org.olat.modules.portfolio.ui.event.DeleteBinderEvent;
+import org.olat.modules.portfolio.ui.event.RestoreBinderEvent;
 import org.olat.modules.portfolio.ui.event.SectionSelectionEvent;
 import org.olat.modules.portfolio.ui.model.PortfolioElementRow;
 import org.olat.util.logging.activity.LoggingResourceable;
@@ -66,7 +68,6 @@ public class BinderController extends BasicController implements TooledControlle
 	private final Link overviewLink, entriesLink, historyLink;
 	private final ButtonGroupComponent segmentButtonsCmp;
 	private final TooledStackedPanel stackPanel;
-	private Link editBinderMetadataLink;
 	private StackedPanel mainPanel;
 	
 	private HistoryController historyCtrl;
@@ -126,8 +127,7 @@ public class BinderController extends BasicController implements TooledControlle
 	@Override
 	public void initTools() {
 		stackPanel.addTool(segmentButtonsCmp, true);
-		stackPanel.addTool(editBinderMetadataLink, Align.right);
-		
+
 		if(segmentButtonsCmp.getSelectedButton() == overviewLink) {
 			if(overviewCtrl != null) {
 				overviewCtrl.initTools();
@@ -150,7 +150,9 @@ public class BinderController extends BasicController implements TooledControlle
 	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
 		if(entries == null || entries.isEmpty()) {
 			String ePoint = portfolioModule.getBinderEntryPoint();
-			if(PortfolioV2Module.ENTRY_POINT_TOC.equals(ePoint)) {
+			if(binder != null && binder.getBinderStatus() == BinderStatus.deleted) {
+				doOpenOverview(ureq);
+			} else if(PortfolioV2Module.ENTRY_POINT_TOC.equals(ePoint)) {
 				int numOfSections = doOpenOverview(ureq).getNumOfSections();
 				if(numOfSections == 0 && !secCallback.canEditBinder()) {
 					activateEntries(ureq);
@@ -211,6 +213,8 @@ public class BinderController extends BasicController implements TooledControlle
 				List<ContextEntry> entries = new ArrayList<>();
 				entries.add(BusinessControlFactory.getInstance().createContextEntry(OresHelper.createOLATResourceableInstance("Section", sse.getSection().getKey())));
 				doOpenEntries(ureq).activate(ureq, entries, null);
+			} else if(event instanceof DeleteBinderEvent || event instanceof RestoreBinderEvent) {
+				fireEvent(ureq, event);
 			}
 		}
 	}
