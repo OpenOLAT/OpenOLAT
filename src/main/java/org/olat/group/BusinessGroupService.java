@@ -290,7 +290,7 @@ public interface BusinessGroupService {
 	 * @param entryRef
 	 * @return
 	 */
-	public List<StatisticsBusinessGroupRow> findBusinessGroupsFromRepositoryEntry(BusinessGroupQueryParams params, RepositoryEntryRef entry);
+	public List<StatisticsBusinessGroupRow> findBusinessGroupsFromRepositoryEntry(BusinessGroupQueryParams params, IdentityRef identity, RepositoryEntryRef entry);
 	
 	/**
 	 * Retrieve the business groups of a repository entry with the number of coaches, participants,

@@ -19,7 +19,6 @@
  */
 package org.olat.core.util.mail.ui;
 
-import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -32,6 +31,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.Util;
 import org.olat.core.util.mail.MailModule;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -44,7 +44,7 @@ import org.olat.core.util.mail.MailModule;
  */
 public class MailSettingsAdminController extends FormBasicController  {
 
-	private MultipleSelectionElement enabled;
+	private MultipleSelectionElement enabled, showRecipientNamesEl, showMailAddressesEl;
 	private SingleSelection userDefaultSettingEl;
 	
 	private String[] values = {""};
@@ -54,6 +54,10 @@ public class MailSettingsAdminController extends FormBasicController  {
 	private String[] userSettingValues ;
 	private String[] userSettingKeys = {"intern.only","send.copy"};
 
+	
+	@Autowired
+	private MailModule mailModule;
+	
 	public MailSettingsAdminController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl, null, Util.createPackageTranslator(MailModule.class, ureq.getLocale()));
 		
@@ -66,12 +70,12 @@ public class MailSettingsAdminController extends FormBasicController  {
 		setFormDescription("mail.admin.description");
 		setFormContextHelp("E-Mail Settings");
 
-		boolean internEnabled = isEnabled();
+		boolean internEnabled = mailModule.isInternSystem();
 		enabled = uifactory.addCheckboxesHorizontal("mail.admin.intern.enabled", formLayout, keys, values);
 		enabled.select(keys[0], internEnabled);
 		enabled.addActionListener(FormEvent.ONCHANGE);
 		
-		boolean realMailSetting = isUserDefaultSetting();
+		boolean realMailSetting = mailModule.isReceiveRealMailUserDefaultSetting();
 		userSettingValues = new String[] {
 			translate("mail.admin.intern.only"),
 			translate("mail.admin.intern.real.mail")
@@ -84,6 +88,17 @@ public class MailSettingsAdminController extends FormBasicController  {
 		}
 		userDefaultSettingEl.setEnabled(internEnabled);
 
+		
+		showRecipientNamesEl = uifactory.addCheckboxesHorizontal("mail.admin.show.recipient.names", formLayout, keys, values);
+		showRecipientNamesEl.select(keys[0], mailModule.isShowRecipientNames());
+		showRecipientNamesEl.addActionListener(FormEvent.ONCHANGE);
+		showRecipientNamesEl.setEnabled(internEnabled);
+
+		showMailAddressesEl = uifactory.addCheckboxesHorizontal("mail.admin.show.mail.addresses", formLayout, keys, values);
+		showMailAddressesEl.select(keys[0], mailModule.isShowMailAddresses());
+		showMailAddressesEl.addActionListener(FormEvent.ONCHANGE);
+		showMailAddressesEl.setEnabled(internEnabled);
+		
 		final FormLayoutContainer buttonGroupLayout = FormLayoutContainer.createButtonLayout("buttonLayout", getTranslator());
 		buttonGroupLayout.setRootForm(mainForm);
 		formLayout.add(buttonGroupLayout);
@@ -98,15 +113,24 @@ public class MailSettingsAdminController extends FormBasicController  {
 
 	@Override
 	protected void formOK(UserRequest ureq) {
+		// module on/off
 		boolean on = !enabled.getSelectedKeys().isEmpty();
-		setEnabled(on);
-		
+		mailModule.setInterSystem(on);
+		// default user prefs
 		if(userDefaultSettingEl.isOneSelected()) {
 			boolean realMailSetting = userDefaultSettingEl.getSelected() == 1;
-			setUserDefaultSetting(realMailSetting);
+			mailModule.setReceiveRealMailUserDefaultSetting(realMailSetting);
 		}
 		userDefaultSettingEl.setEnabled(on);
-		
+		// recipient names
+		boolean showRecipientNames = !showRecipientNamesEl.getSelectedKeys().isEmpty();
+		mailModule.setShowRecipientNames(showRecipientNames);
+		showRecipientNamesEl.setEnabled(on);
+		// mail addresses
+		boolean showMailaddresses = !showMailAddressesEl.getSelectedKeys().isEmpty();
+		mailModule.setShowMailAddresses(showMailaddresses);
+		showMailAddressesEl.setEnabled(on);
+
 		getWindowControl().setInfo("saved");
 	}
 
@@ -115,28 +139,10 @@ public class MailSettingsAdminController extends FormBasicController  {
 		if(source == enabled) {
 			boolean on = !enabled.getSelectedKeys().isEmpty();
 			userDefaultSettingEl.setEnabled(on);
+			showMailAddressesEl.setEnabled(on);
+			showRecipientNamesEl.setEnabled(on);
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
-
-	private boolean isEnabled() {
-		MailModule config = (MailModule) CoreSpringFactory.getBean("mailModule");
-		return config.isInternSystem();
-	}
 	
-	private void setEnabled(boolean enabled) {
-		MailModule config = (MailModule) CoreSpringFactory.getBean("mailModule");
-		config.setInterSystem(enabled);
-	}
-	
-	
-	private boolean isUserDefaultSetting() {
-		MailModule config = (MailModule) CoreSpringFactory.getBean("mailModule");
-		return config.isReceiveRealMailUserDefaultSetting();
-	}
-	
-	private void setUserDefaultSetting(boolean enabled) {
-		MailModule config = (MailModule) CoreSpringFactory.getBean("mailModule");
-		config.setReceiveRealMailUserDefaultSetting(enabled);
-	}
 }

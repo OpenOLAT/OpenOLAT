@@ -36,7 +36,6 @@ import java.util.UUID;
 
 import org.hibernate.ObjectNotFoundException;
 import org.hibernate.StaleObjectStateException;
-import org.olat.admin.user.delete.service.UserDeletionManager;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.Constants;
 import org.olat.basesecurity.Group;
@@ -98,14 +97,15 @@ import org.olat.group.model.IdentityGroupKey;
 import org.olat.group.model.LeaveOption;
 import org.olat.group.model.MembershipModification;
 import org.olat.group.model.OpenBusinessGroupRow;
-import org.olat.group.model.StatisticsBusinessGroupRow;
 import org.olat.group.model.SearchBusinessGroupParams;
+import org.olat.group.model.StatisticsBusinessGroupRow;
 import org.olat.group.right.BGRightManager;
 import org.olat.group.right.BGRightsRole;
 import org.olat.group.ui.BGMailHelper;
 import org.olat.group.ui.edit.BusinessGroupModifiedEvent;
 import org.olat.properties.PropertyManager;
 import org.olat.repository.LeavingStatusList;
+import org.olat.repository.RepositoryDeletionModule;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
 import org.olat.repository.RepositoryEntryRelationType;
@@ -157,7 +157,7 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 	@Autowired
 	private RepositoryEntryRelationDAO repositoryEntryRelationDao;
 	@Autowired
-	private UserDeletionManager userDeletionManager;
+	private RepositoryDeletionModule deletionManager;
 	@Autowired
 	private NotificationsManager notificationsManager;
 	@Autowired
@@ -188,7 +188,8 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 			BusinessGroup businessGroup = iter.next();
 			businessGroupRelationDAO.removeRole(identity, businessGroup, GroupRoles.coach.name());
 			if (businessGroupRelationDAO.countRoles(businessGroup, GroupRoles.coach.name()) == 0) {
-				businessGroupRelationDAO.addRole(userDeletionManager.getAdminIdentity(), businessGroup, GroupRoles.coach.name());
+				Identity admin = deletionManager.getAdminUserIdentity();
+				businessGroupRelationDAO.addRole(admin, businessGroup, GroupRoles.coach.name());
 				log.info("Delete user-data, add Administrator-identity as owner of businessGroup=" + businessGroup.getName());
 			}
 		}
@@ -702,8 +703,8 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 	}
 
 	@Override
-	public List<StatisticsBusinessGroupRow> findBusinessGroupsFromRepositoryEntry(BusinessGroupQueryParams params, RepositoryEntryRef entry) {
-		return businessGroupDAO.searchBusinessGroupsForRepositoryEntry(entry);
+	public List<StatisticsBusinessGroupRow> findBusinessGroupsFromRepositoryEntry(BusinessGroupQueryParams params, IdentityRef identity, RepositoryEntryRef entry) {
+		return businessGroupDAO.searchBusinessGroupsForRepositoryEntry(params, identity, entry);
 	}
 
 	@Override

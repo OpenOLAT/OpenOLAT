@@ -60,7 +60,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class PageMetadataEditController extends FormBasicController {
 	
-	private static final Set<String> imageMimeTypes = new HashSet<String>();
+	private static final Set<String> imageMimeTypes = new HashSet<>();
 	static {
 		imageMimeTypes.add("image/gif");
 		imageMimeTypes.add("image/jpg");
@@ -192,6 +192,7 @@ public class PageMetadataEditController extends FormBasicController {
 		bindersEl = uifactory.addDropdownSingleselect("binders", "page.binders", formLayout, new String[] { "" }, new String[] { "" }, null);
 		
 		sectionsEl = uifactory.addDropdownSingleselect("sections", "page.sections", formLayout, new String[] { "" }, new String[] { "" }, null);
+		sectionsEl.setElementCssClass("o_sel_pf_edit_entry_section");
 		sectionsEl.setVisible(false);
 		
 		initBinderSelection();

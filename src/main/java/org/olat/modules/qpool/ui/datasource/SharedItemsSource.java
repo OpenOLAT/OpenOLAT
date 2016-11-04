@@ -31,6 +31,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
+import org.olat.core.util.StringHelper;
 import org.olat.group.BusinessGroup;
 import org.olat.modules.qpool.QPoolService;
 import org.olat.modules.qpool.QuestionItem;
@@ -52,6 +53,8 @@ public class SharedItemsSource implements QuestionItemsSource {
 	private final Identity identity;
 	private final BusinessGroup group;
 	private final QPoolService qpoolService;
+
+	private String restrictToFormat;
 	
 	public SharedItemsSource(BusinessGroup group, Identity identity, Roles roles, boolean admin) {
 		this.admin = admin;
@@ -59,6 +62,14 @@ public class SharedItemsSource implements QuestionItemsSource {
 		this.identity = identity;
 		this.group = group;
 		qpoolService = CoreSpringFactory.getImpl(QPoolService.class);
+	}
+	
+	public String getRestrictToFormat() {
+		return restrictToFormat;
+	}
+
+	public void setRestrictToFormat(String restrictToFormat) {
+		this.restrictToFormat = restrictToFormat;
 	}
 
 	@Override
@@ -100,13 +111,20 @@ public class SharedItemsSource implements QuestionItemsSource {
 
 	@Override
 	public int getNumOfItems() {
-		return qpoolService.countSharedItemByResource(group.getResource());
+		SearchQuestionItemParams params = new SearchQuestionItemParams(identity, roles);
+		if(StringHelper.containsNonWhitespace(restrictToFormat)) {
+			params.setFormat(restrictToFormat);
+		}
+		return qpoolService.countSharedItemByResource(group.getResource(), params);
 	}
 
 	@Override
 	public List<QuestionItemView> getItems(Collection<Long> keys) {
 		SearchQuestionItemParams params = new SearchQuestionItemParams(identity, roles);
 		params.setItemKeys(keys);
+		if(StringHelper.containsNonWhitespace(restrictToFormat)) {
+			params.setFormat(restrictToFormat);
+		}
 		ResultInfos<QuestionItemView> items = qpoolService.getSharedItemByResource(group.getResource(), params, 0, -1);
 		return items.getObjects();
 	}
@@ -116,6 +134,9 @@ public class SharedItemsSource implements QuestionItemsSource {
 		SearchQuestionItemParams params = new SearchQuestionItemParams(identity, roles);
 		params.setSearchString(query);
 		params.setCondQueries(condQueries);
+		if(StringHelper.containsNonWhitespace(restrictToFormat)) {
+			params.setFormat(restrictToFormat);
+		}
 		return qpoolService.getSharedItemByResource(group.getResource(), params, firstResult, maxResults, orderBy);
 	}
 }

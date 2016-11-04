@@ -12,7 +12,6 @@
   
   	<import resource="classpath:/org/olat/admin/jmx/_spring/jmxContext.xml"/>
 	<import resource="classpath:/org/olat/admin/landingpages/_spring/landingPagesContext.xml"/>
-	<import resource="classpath:/org/olat/admin/registration/_spring/registrationContext.xml"/>
 	<import resource="classpath:/org/olat/admin/sysinfo/_spring/sysinfoContext.xml"/>
 	<import resource="classpath:/org/olat/admin/user/tools/_spring/userToolsContext.xml"/>
 

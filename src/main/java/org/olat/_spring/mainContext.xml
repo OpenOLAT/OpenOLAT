@@ -8,7 +8,7 @@
         http://www.springframework.org/schema/context 
         http://www.springframework.org/schema/context/spring-context.xsd">
   
-	<context:component-scan base-package="org.olat.note" />
+	<context:component-scan base-package="org.olat.note,org.olat.social" />
 
 	<import resource="classpath:/org/olat/core/util/threadlog/_spring/threadlogCorecontext.xml"/>
 	<import resource="classpath:/org/olat/core/_spring/mainCorecontext.xml"/>
@@ -48,7 +48,6 @@
 	<import resource="classpath:/org/olat/restapi/_spring/restApiContext.xml"/>
 	<import resource="classpath:/org/olat/search/_spring/searchContext.xml"/>
 	<import resource="classpath:/org/olat/shibboleth/_spring/shibbolethContext.xml"/>
-	<import resource="classpath:/org/olat/social/_spring/socialContext.xml"/>
 	<import resource="classpath:/org/olat/upgrade/_spring/databaseUpgradeContext.xml"/>
 	<import resource="classpath:/org/olat/upgrade/_spring/upgradeContext.xml"/>
 	

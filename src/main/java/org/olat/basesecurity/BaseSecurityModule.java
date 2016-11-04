@@ -27,11 +27,16 @@ package org.olat.basesecurity;
 
 import org.olat.NewControllerFactory;
 import org.olat.admin.user.UserAdminContextEntryControllerCreator;
-import org.olat.core.configuration.AbstractOLATModule;
-import org.olat.core.configuration.PersistedProperties;
+import org.olat.core.configuration.AbstractSpringModule;
 import org.olat.core.id.Roles;
 import org.olat.core.id.User;
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.coordinate.CoordinatorManager;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
 
 /**
  * Initial Date: May 4, 2004
@@ -39,24 +44,10 @@ import org.olat.core.util.StringHelper;
  * @author guido
  * Comment:
  */
-public class BaseSecurityModule extends AbstractOLATModule {
+@Service("baseSecurityModule")
+public class BaseSecurityModule extends AbstractSpringModule {
 	
-	private static final String CONFIG_USERMANAGER_CAN_CREATE_USER = "sysGroupUsermanager.canCreateUser";
-	private static final String CONFIG_USERMANAGER_CAN_DELETE_USER = "sysGroupUsermanager.canDeleteUser";
-	private static final String CONFIG_USERMANAGER_CAN_CREATE_PWD = "sysGroupUsermanager.canCreatePassword";
-	private static final String CONFIG_USERMANAGER_CAN_MODIFY_PWD = "sysGroupUsermanager.canModifyPassword";
-	private static final String CONFIG_USERMANAGER_CAN_START_GROUPS = "sysGroupUsermanager.canStartGroups";
-	private static final String CONFIG_USERMANAGER_CAN_MODIFY_SUBSCRIPTIONS = "sysGroupUsermanager.canModifySubscriptions";
-	private static final String CONFIG_USERMANAGER_ACCESS_TO_QUOTA = "sysGroupUsermanager.accessToQuota";
-	private static final String CONFIG_USERMANAGER_ACCESS_TO_PROP = "sysGroupUsermanager.accessToProperties";
-	private static final String CONFIG_USERMANAGER_ACCESS_TO_AUTH = "sysGroupUsermanager.accessToAuthentications";
-	private static final String CONFIG_USERMANAGER_CAN_MANAGE_POOLMANAGERS = "sysGroupUsermanager.canManagePoolmanagers";
-	private static final String CONFIG_USERMANAGER_CAN_MANAGE_GROUPMANAGERS = "sysGroupUsermanager.canManageGroupmanagers";
-	private static final String CONFIG_USERMANAGER_CAN_MANAGE_INSTITUTIONAL_RESOURCE_MANAGER = "sysGroupUsermanager.canManageInstitutionalResourceManager";
-	private static final String CONFIG_USERMANAGER_CAN_MANAGE_AUTHORS = "sysGroupUsermanager.canManageAuthors";
-	private static final String CONFIG_USERMANAGER_CAN_MANAGE_GUESTS = "sysGroupUsermanager.canManageGuests";
-	private static final String CONFIG_USERMANAGER_CAN_BYPASS_EMAILVERIFICATION = "sysGroupUsermanager.canBypassEmailverification";
-	private static final String CONFIG_USERMANAGER_CAN_EDIT_ALL_PROFILE_FIELDS = "sysGroupUsermanager.canEditAllProfileFields";
+	private static final OLog log = Tracing.createLoggerFor(BaseSecurityModule.class);
 
 	private static final String USERSEARCH_ADMINPROPS_USERS = "userSearchAdminPropsForUsers";
 	private static final String USERSEARCH_ADMINPROPS_AUTHORS = "userSearchAdminPropsForAuthors";
@@ -87,7 +78,7 @@ public class BaseSecurityModule extends AbstractOLATModule {
 	 * default values
 	 */
 	public static Boolean USERMANAGER_CAN_CREATE_USER = false;
-	public static Boolean USERMANAGER_CAN_DELETE_USER = true;
+	public static Boolean USERMANAGER_CAN_DELETE_USER = false;
 	public static Boolean USERMANAGER_CAN_CREATE_PWD = true;
 	public static Boolean USERMANAGER_CAN_MODIFY_PWD = true;
 	public static Boolean USERMANAGER_CAN_START_GROUPS = true;
@@ -102,35 +93,54 @@ public class BaseSecurityModule extends AbstractOLATModule {
 	public static Boolean USERMANAGER_CAN_MANAGE_GUESTS = false;
 	public static Boolean USERMANAGER_CAN_BYPASS_EMAILVERIFICATION = true;
 	public static Boolean USERMANAGER_CAN_EDIT_ALL_PROFILE_FIELDS = true;
+	
 	private static String defaultAuthProviderIdentifier;
 
+	@Value("${usersearch.adminProps.users:disabled}")
 	private String userSearchAdminPropsForUsers;
+	@Value("${usersearch.adminProps.authors:enabled}")
 	private String userSearchAdminPropsForAuthors;
+	@Value("${usersearch.adminProps.usermanagers:enabled}")
 	private String userSearchAdminPropsForUsermanagers;
+	@Value("${usersearch.adminProps.groupmanagers:enabled}")
 	private String userSearchAdminPropsForGroupmanagers;
+	@Value("${usersearch.adminProps.administrators:enabled}")
 	private String userSearchAdminPropsForAdministrators;
-	
+
+	@Value("${user.lastlogin.visible.users:disabled}")
 	private String userLastLoginVisibleForUsers;
+	@Value("${user.lastlogin.visible.authors:enabled}")
 	private String userLastLoginVisibleForAuthors;
+	@Value("${user.lastlogin.visible.usermanagers:enabled}")
 	private String userLastLoginVisibleForUsermanagers;
+	@Value("${user.lastlogin.visible.groupmanagers:enabled}")
 	private String userLastLoginVisibleForGroupmanagers;
+	@Value("${user.lastlogin.visible.administrators:enabled}")
 	private String userLastLoginVisibleForAdministrators;
 	
+	@Value("${usersearch.maxResults:-1}")
 	private String userSearchMaxResults;
+	@Value("${usersearch.autocomplete.users:enabled}")
 	private String userSearchAutocompleteForUsers;
+	@Value("${usersearch.autocomplete.authors:enabled}")
 	private String userSearchAutocompleteForAuthors;
+	@Value("${usersearch.autocomplete.usermanagers:enabled}")
 	private String userSearchAutocompleteForUsermanagers;
+	@Value("${usersearch.autocomplete.groupmanagers:enabled}")
 	private String userSearchAutocompleteForGroupmanagers;
+	@Value("${usersearch.autocomplete.administrators:enabled}")
 	private String userSearchAutocompleteForAdministrators;
 	
+	@Value("${userinfos.tunnelcoursebuildingblock}")
 	private String userInfosTunnelCourseBuildingBlock;
 	
-	private String forceTopFrame;
-	private String wikiEnabled;
+	private String forceTopFrame = "disabled";
+	private String wikiEnabled = "enabled";
 
-
-	private BaseSecurityModule(String defaultAuthProviderIdentifier) {
-		BaseSecurityModule.defaultAuthProviderIdentifier = defaultAuthProviderIdentifier;
+	@Autowired
+	public BaseSecurityModule(CoordinatorManager coordinatorManager) {
+		super(coordinatorManager);
+		BaseSecurityModule.defaultAuthProviderIdentifier = "OLAT";
 	}
 	
 	/**
@@ -143,57 +153,9 @@ public class BaseSecurityModule extends AbstractOLATModule {
 
 	@Override
 	public void init() {
-		// fxdiff: Add controller factory extension point to launch user admin site
 		NewControllerFactory.getInstance().addContextEntryControllerCreator(User.class.getSimpleName(),
 				new UserAdminContextEntryControllerCreator());
 		updateProperties();
-	}
-
-	@Override
-	protected void initDefaultProperties() {
-		USERMANAGER_CAN_CREATE_USER = getBooleanConfigParameter(CONFIG_USERMANAGER_CAN_CREATE_USER, USERMANAGER_CAN_CREATE_USER);
-		USERMANAGER_CAN_DELETE_USER = getBooleanConfigParameter(CONFIG_USERMANAGER_CAN_DELETE_USER, USERMANAGER_CAN_DELETE_USER);
-		USERMANAGER_CAN_CREATE_PWD = getBooleanConfigParameter(CONFIG_USERMANAGER_CAN_CREATE_PWD, USERMANAGER_CAN_CREATE_PWD);
-		USERMANAGER_CAN_MODIFY_PWD = getBooleanConfigParameter(CONFIG_USERMANAGER_CAN_MODIFY_PWD, USERMANAGER_CAN_MODIFY_PWD);
-		USERMANAGER_CAN_START_GROUPS = getBooleanConfigParameter(CONFIG_USERMANAGER_CAN_START_GROUPS, USERMANAGER_CAN_START_GROUPS);
-		USERMANAGER_CAN_MODIFY_SUBSCRIPTIONS = getBooleanConfigParameter(CONFIG_USERMANAGER_CAN_MODIFY_SUBSCRIPTIONS, USERMANAGER_CAN_MODIFY_SUBSCRIPTIONS);
-		
-		USERMANAGER_ACCESS_TO_QUOTA = getBooleanConfigParameter(CONFIG_USERMANAGER_ACCESS_TO_QUOTA, USERMANAGER_ACCESS_TO_QUOTA);
-		USERMANAGER_ACCESS_TO_PROP = getBooleanConfigParameter(CONFIG_USERMANAGER_ACCESS_TO_PROP, USERMANAGER_ACCESS_TO_PROP);
-		USERMANAGER_ACCESS_TO_AUTH = getBooleanConfigParameter(CONFIG_USERMANAGER_ACCESS_TO_AUTH, USERMANAGER_ACCESS_TO_AUTH);
-		
-		USERMANAGER_CAN_MANAGE_GROUPMANAGERS = getBooleanConfigParameter(CONFIG_USERMANAGER_CAN_MANAGE_GROUPMANAGERS, USERMANAGER_CAN_MANAGE_GROUPMANAGERS);
-		USERMANAGER_CAN_MANAGE_POOLMANAGERS = getBooleanConfigParameter(CONFIG_USERMANAGER_CAN_MANAGE_POOLMANAGERS, USERMANAGER_CAN_MANAGE_POOLMANAGERS);
-		USERMANAGER_CAN_MANAGE_INSTITUTIONAL_RESOURCE_MANAGER = getBooleanConfigParameter(CONFIG_USERMANAGER_CAN_MANAGE_INSTITUTIONAL_RESOURCE_MANAGER, USERMANAGER_CAN_MANAGE_INSTITUTIONAL_RESOURCE_MANAGER);
-		USERMANAGER_CAN_MANAGE_AUTHORS = getBooleanConfigParameter(CONFIG_USERMANAGER_CAN_MANAGE_AUTHORS, USERMANAGER_CAN_MANAGE_AUTHORS);
-		USERMANAGER_CAN_MANAGE_GUESTS = getBooleanConfigParameter(CONFIG_USERMANAGER_CAN_MANAGE_GUESTS, USERMANAGER_CAN_MANAGE_GUESTS);
-		
-		USERMANAGER_CAN_BYPASS_EMAILVERIFICATION = getBooleanConfigParameter(CONFIG_USERMANAGER_CAN_BYPASS_EMAILVERIFICATION, USERMANAGER_CAN_BYPASS_EMAILVERIFICATION);
-		USERMANAGER_CAN_EDIT_ALL_PROFILE_FIELDS = getBooleanConfigParameter(CONFIG_USERMANAGER_CAN_EDIT_ALL_PROFILE_FIELDS, USERMANAGER_CAN_EDIT_ALL_PROFILE_FIELDS);
-
-		userSearchAdminPropsForUsers = getStringConfigParameter(USERSEARCH_ADMINPROPS_USERS, "disabled", true);
-		userSearchAdminPropsForAuthors = getStringConfigParameter(USERSEARCH_ADMINPROPS_AUTHORS, "enabled", true);
-		userSearchAdminPropsForUsermanagers = getStringConfigParameter(USERSEARCH_ADMINPROPS_USERMANAGERS, "enabled", true);
-		userSearchAdminPropsForGroupmanagers = getStringConfigParameter(USERSEARCH_ADMINPROPS_GROUPMANAGERS, "enabled", true);
-		userSearchAdminPropsForAdministrators = getStringConfigParameter(USERSEARCH_ADMINPROPS_ADMINISTRATORS, "enabled", true);
-
-		userLastLoginVisibleForUsers = getStringConfigParameter(USER_LASTLOGIN_VISIBLE_USERS, "disabled", true);
-		userLastLoginVisibleForAuthors = getStringConfigParameter(USER_LASTLOGIN_VISIBLE_AUTHORS, "enabled", true);
-		userLastLoginVisibleForUsermanagers = getStringConfigParameter(USER_LASTLOGIN_VISIBLE_USERMANAGERS, "enabled", true);
-		userLastLoginVisibleForGroupmanagers = getStringConfigParameter(USER_LASTLOGIN_VISIBLE_GROUPMANAGERS, "enabled", true);
-		userLastLoginVisibleForAdministrators = getStringConfigParameter(USER_LASTLOGIN_VISIBLE_ADMINISTRATORS, "enabled", true);
-
-		userSearchAutocompleteForUsers = getStringConfigParameter(USERSEARCHAUTOCOMPLETE_USERS, "enabled", true);
-		userSearchAutocompleteForAuthors = getStringConfigParameter(USERSEARCHAUTOCOMPLETE_AUTHORS, "enabled", true);
-		userSearchAutocompleteForUsermanagers = getStringConfigParameter(USERSEARCHAUTOCOMPLETE_USERMANAGERS, "enabled", true);
-		userSearchAutocompleteForGroupmanagers = getStringConfigParameter(USERSEARCHAUTOCOMPLETE_GROUPMANAGERS, "enabled", true);
-		userSearchAutocompleteForAdministrators = getStringConfigParameter(USERSEARCHAUTOCOMPLETE_ADMINISTRATORS, "enabled", true);
-		userSearchMaxResults = getStringConfigParameter(USERSEARCH_MAXRESULTS, "-1", true);
-
-		userInfosTunnelCourseBuildingBlock = getStringConfigParameter(USERINFOS_TUNNEL_CBB, "disabled", true);
-
-		forceTopFrame = getStringConfigParameter(FORCE_TOP_FRAME, "disabled", true);
-		wikiEnabled = getStringConfigParameter(WIKI_ENABLED, "enabled", true);
 	}
 
 	@Override
@@ -283,11 +245,6 @@ public class BaseSecurityModule extends AbstractOLATModule {
 		if(StringHelper.containsNonWhitespace(enabled)) {
 			wikiEnabled = enabled;
 		}
-	}
-
-	@Override
-	public void setPersistedProperties(PersistedProperties persistedProperties) {
-		this.moduleConfigProperties = persistedProperties;
 	}
 	
 	public boolean isUserAllowedAdminProps(Roles roles) {
@@ -475,7 +432,7 @@ public class BaseSecurityModule extends AbstractOLATModule {
 			try {
 				return Integer.parseInt(userSearchMaxResults);
 			} catch (NumberFormatException e) {
-				logError("userSearchMaxResults as the wrong format", e);
+				log.error("userSearchMaxResults as the wrong format", e);
 			}
 		}
 		return -1;

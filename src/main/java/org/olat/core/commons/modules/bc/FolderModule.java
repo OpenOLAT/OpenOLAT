@@ -28,45 +28,58 @@ package org.olat.core.commons.modules.bc;
 
 import java.io.File;
 
-import org.olat.core.configuration.AbstractOLATModule;
-import org.olat.core.configuration.PersistedProperties;
+import org.olat.core.configuration.AbstractSpringModule;
 import org.olat.core.helpers.Settings;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.vfs.version.FolderVersioningConfigurator;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
 
 /**
  * Initial Date:  13.11.2002
  *
  * @author Mike Stock
  */
-public class FolderModule extends AbstractOLATModule {	
+@Service
+public class FolderModule extends AbstractSpringModule {	
 	
 	private static final OLog log = Tracing.createLoggerFor(FolderModule.class);
-	private static final String CONFIG_ROOT = "Root";
-	private static final String CONFIG_LIMITULMB = "LimitULMB";
-	private static final String CONFIG_EDITFILESIZELIMIT = "EditFileSizeLimit";
-	private static final String CONFIG_QUOTAMB = "QuotaMB";
-	private static final String CONFIG_SENDDOCLINKONLY = "SendDocLinkOnly";
-	private static final String CONFIG_SENDDOCTOEXTERN = "SendDocToExtern";
+
 	private static final String CONFIG_FORCE_DOWNLOAD = "forceDownload";
-	private FolderVersioningConfigurator versioning;
 	
+	@Value("${folder.root}")
+	private String homesRoot;
+	@Value("${folder.editFileSizeLimitBytes:524288}")
+	private int maxEditSizeLimit;
+	@Value("${folder.maxulmb}")
+	private int maxULMB;
+	@Value("${folder.quotamb}")
+	private int quotaMB;
+	@Value("${folder.sendDocumentLinkOnly:true}")
+	private boolean sendDocLinkyOnly;
+	@Value("${folder.sendDocumentToExtern:false}")
+	private boolean sendDocToExtern;
+	@Value("${folder.force.download:true}")
 	private String forceDownload;
 	
-	/**
-	 * [used by spring]
-	 */
-	private FolderModule() {
-		//
+	@Autowired
+	private FolderVersioningConfigurator versioning;
+	
+	@Autowired
+	public FolderModule(CoordinatorManager coordinatorManager) {
+		super(coordinatorManager);
 	}
 
 	@Override
 	protected void initDefaultProperties() {
 		// Set folder root
-		File defaultHome = new File(System.getProperty("java.io.tmpdir"), "olatdata/bcroot");
-		String homesRoot = getStringConfigParameter(CONFIG_ROOT, defaultHome.getAbsolutePath() , false);
+		if(!StringHelper.containsNonWhitespace(homesRoot)) {
+			homesRoot = new File(System.getProperty("java.io.tmpdir"), "olatdata/bcroot").getAbsolutePath();
+		}
 		if (Settings.isJUnitTest()) {
 			// use dummy directory for junit testcases to not conflict with actual data
 			// on current server. someone may start junit test and not realize that this
@@ -75,36 +88,22 @@ public class FolderModule extends AbstractOLATModule {
 		} else { 
 			FolderConfig.setFolderRoot(homesRoot);
 		}
-		
 		log.info("Folder root set to '" + FolderConfig.getCanonicalRoot() + "'.");
 		
-		int maxEditSizeLimit = getIntConfigParameter(CONFIG_EDITFILESIZELIMIT, 524288);
 		FolderConfig.setMaxEditSizeLimit(maxEditSizeLimit);
-		
 		// Set maximum upload filesize
-		int maxULMB =getIntConfigParameter(CONFIG_LIMITULMB, 100);
 		FolderConfig.setLimitULKB(maxULMB * 1024);
-		
 		log.info("Maximum file upload size set to " + FolderConfig.getLimitULKB() + " KB.");
-		
 		// Set default quotas
-		int quotaMB = getIntConfigParameter(CONFIG_QUOTAMB, 100);
 		FolderConfig.setDefaultQuotaKB(quotaMB * 1024);
 		log.info("Default user quota set to " + FolderConfig.getDefaultQuotaKB() + " KB.");
-		
 		//set default
-		boolean sendDocLinkyOnly = getBooleanConfigParameter(CONFIG_SENDDOCLINKONLY, true);
 		FolderConfig.setSendDocumentLinkOnly(sendDocLinkyOnly);
-		
 		//set default
-		boolean sendDocToExtern = getBooleanConfigParameter(CONFIG_SENDDOCTOEXTERN, false);
 		FolderConfig.setSendDocumentToExtern(sendDocToExtern);
 		
 		// create tmp directory
-		File fTmp = new File(FolderConfig.getCanonicalTmpDir());
-		fTmp.mkdirs();
-
-		forceDownload = getStringConfigParameter(CONFIG_FORCE_DOWNLOAD, "true", true);
+		new File(FolderConfig.getCanonicalTmpDir()).mkdirs();
 	}
 
 	@Override
@@ -133,11 +132,6 @@ public class FolderModule extends AbstractOLATModule {
 		this.versioning = versioning;
 	}
 
-	@Override
-	public void setPersistedProperties(PersistedProperties persistedProperties) {
-		this.moduleConfigProperties = persistedProperties;
-	}
-
 	public boolean isForceDownload() {
 		return "true".equals(forceDownload);
 	}
@@ -145,5 +139,9 @@ public class FolderModule extends AbstractOLATModule {
 	public void setForceDownload(boolean enable) {
 		String enabled = enable ? "true" : "false";
 		setStringProperty(CONFIG_FORCE_DOWNLOAD, enabled, true);
+	}
+	
+	public String getCanonicalTmpDir() {
+		return FolderConfig.getCanonicalTmpDir();
 	}
 }

@@ -85,6 +85,8 @@ public class LDAPAuthenticationController extends AuthenticationController imple
 	private final OLATAuthManager olatAuthenticationSpi;
 	
 	@Autowired
+	private UserModule userModule;
+	@Autowired
 	private LoginModule loginModule;
 	@Autowired
 	private LDAPLoginModule ldapLoginModule;
@@ -99,7 +101,7 @@ public class LDAPAuthenticationController extends AuthenticationController imple
 		
 		loginComp = createVelocityContainer("ldaplogin");
 		
-		if(UserModule.isPwdchangeallowed(null) && ldapLoginModule.isPropagatePasswordChangedOnLdapServer()) {
+		if(userModule.isPwdChangeAllowed(null) && ldapLoginModule.isPropagatePasswordChangedOnLdapServer()) {
 			pwLink = LinkFactory.createLink("_olat_login_change_pwd", "menu.pw", loginComp, this);
 			pwLink.setElementCssClass("o_login_pwd");
 		}
@@ -128,7 +130,7 @@ public class LDAPAuthenticationController extends AuthenticationController imple
 	
 	protected void openChangePassword(UserRequest ureq, String initialEmail) {
 		// double-check if allowed first
-		if (!UserModule.isPwdchangeallowed(ureq.getIdentity()) || !ldapLoginModule.isPropagatePasswordChangedOnLdapServer()) {
+		if (!userModule.isPwdChangeAllowed(ureq.getIdentity()) || !ldapLoginModule.isPropagatePasswordChangedOnLdapServer()) {
 			showError("error.password.change.not.allow");
 		} else {
 			removeAsListenerAndDispose(cmc);

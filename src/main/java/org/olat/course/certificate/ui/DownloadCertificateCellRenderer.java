@@ -19,6 +19,7 @@
  */
 package org.olat.course.certificate.ui;
 
+import java.util.Date;
 import java.util.Locale;
 
 import org.olat.basesecurity.IdentityRef;
@@ -100,7 +101,11 @@ public class DownloadCertificateCellRenderer implements CustomCellRenderer, Flex
 			sb.append("<span><i class='o_icon o_icon_error'> </i> ").append(name).append(".pdf").append("</span>");
 		} else {
 			sb.append("<a href='").append(getUrl(certificate, identity))
-			  .append("' target='_blank'><i class='o_icon o_filetype_pdf'> </i> ")
+			  .append("' target='_blank'>");
+			if(certificate.getNextRecertificationDate() != null && new Date().compareTo(certificate.getNextRecertificationDate()) > 0) {
+				sb.append("<i class='o_icon o_icon_warn'> </i> ");
+			}
+			sb.append("<i class='o_icon o_filetype_pdf'> </i> ")
 			  .append(name).append(".pdf").append("</a>");
 		}
 	}

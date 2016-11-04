@@ -349,3 +349,21 @@
 	}
 	
 }
+
+/* render toolbar with zebra effect in edit mode */
+.o_edit_mode {
+	
+	.o_tools_container {
+		background: repeating-linear-gradient(
+	    	300deg,
+		    $o-toolbar-edit_stripe-color,
+		    $o-toolbar-edit_stripe-color 10px,
+		    $o-toolbar-edit-bg-color 10px,
+		    $o-toolbar-edit-bg-color 20px
+		);
+	}
+	/* in QTI 1.2 there is a toolbar below the toolbar - only render the first one in edit mode style */
+	.o_edit_mode .o_tools_container {
+		background: $o-toolbar-bg-color;
+	}
+}

@@ -25,7 +25,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.DefaultResultInfos;
 import org.olat.core.commons.persistence.ResultInfos;
 import org.olat.core.commons.persistence.SortKey;
@@ -67,6 +66,7 @@ import org.olat.modules.qpool.ui.QuestionItemDataModel.Cols;
 import org.olat.modules.qpool.ui.events.QItemMarkedEvent;
 import org.olat.modules.qpool.ui.events.QItemViewEvent;
 import org.olat.modules.qpool.ui.metadata.ExtendedSearchController;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -80,23 +80,29 @@ public abstract class AbstractItemListController extends FormBasicController
 	private QuestionItemDataModel model;
 	
 	private final String prefsKey;
+	protected final String restrictToFormat;
 	private ExtendedSearchController extendedSearchCtrl;
 	private QuestionItemSummaryController summaryCtrl;
 	private QuestionItemPreviewController previewCtrl;
 	
-	private final MarkManager markManager;
-	protected final QPoolService qpoolService;
+	@Autowired
+	private MarkManager markManager;
+	@Autowired
+	protected QPoolService qpoolService;
 	
 	private EventBus eventBus;
 	private QuestionItemsSource itemsSource;
 	
 	public AbstractItemListController(UserRequest ureq, WindowControl wControl, QuestionItemsSource source, String key) {
+		this(ureq, wControl, source, null, key);
+	}
+	
+	public AbstractItemListController(UserRequest ureq, WindowControl wControl, QuestionItemsSource source, String restrictToFormat, String key) {
 		super(ureq, wControl, "item_list");
 
 		this.prefsKey = key;
 		this.itemsSource = source;
-		markManager = CoreSpringFactory.getImpl(MarkManager.class);
-		qpoolService = CoreSpringFactory.getImpl(QPoolService.class);
+		this.restrictToFormat = restrictToFormat;
 
 		eventBus = ureq.getUserSession().getSingleUserEventCenter();
 		eventBus.registerFor(this, getIdentity(), QuestionPoolMainEditorController.QITEM_MARKED);

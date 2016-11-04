@@ -38,10 +38,11 @@
 		        // Check whether the selection is a jsMath objet by looking at its class attribute
 		        if ((contentNode != null) && (/mceItemJSMath/.test(ed.dom.getAttrib(contentNode, "class")))) {
 		            ed.dom.setAttrib(contentNode, "data-mathtex", tex);
+		            ed.dom.setAttrib(contentNode, "data-mce-placeholder", "")
 		            ed.dom.setAttrib(contentNode, "title", escape(tex));
 		            ed.execCommand("mceRepaint");
 		        } else {
-		        	var htmlCode = '<img src="' + tinymce.Env.transparentSrc + '" class="mce-shim mceItemJSMath" data-mathtex="' + tex + '" title="' + escape(tex) + '" width="32" height="32"/>';
+		        	var htmlCode = '<img src="' + tinymce.Env.transparentSrc + '" class="mce-shim mceItemJSMath" data-mce-placeholder="latex" data-mathtex="' + tex + '" title="' + escape(tex) + '" width="32" height="32"/>';
 		            ed.execCommand("mceInsertContent", false, htmlCode);
 		        }
 			}
@@ -114,6 +115,7 @@
 					});
 				}
 			});
+			
 			ed.addMenuItem('olatmatheditor', {
 				text : translator().translate('olatmatheditor.desc'),
 				icon : 'math',
@@ -121,6 +123,7 @@
 				onclick: showDialog,
 				context: 'insert',
 			});
+			
 			ed.on('init', function() {
 			     if (ed.settings.content_css !== false) {
 			    	 ed.dom.loadCSS(url + "/css/content.css");
@@ -142,6 +145,7 @@
 						 height: "32",
 						 src: tinymce.Env.transparentSrc,
 						 "data-mathtex": latex,
+						 "data-mce-placeholder": "latex",
 						 "title": node.title
 					 });
 					 //  ...and replace the SPAN by the IMG.
@@ -193,7 +197,7 @@
 				author : 'frentix GmbH',
 				authorurl : 'http://www.frentix.com',
 				infourl : 'http://www.frentix.com',
-				version : "1.2"
+				version : "1.2.1"
 			};
 		}
 	});

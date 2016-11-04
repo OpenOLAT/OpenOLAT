@@ -123,10 +123,16 @@ public class IQManager implements UserDataDeletable {
 		// -- VERY RARE CASE -- 1) qti is open in an editor session right now on the screen (or session on the way to timeout)
 		// -- 99% of cases   -- 2) qti is ready to be run as test/survey
 		String repositorySoftkey = (String) moduleConfiguration.get(IQEditController.CONFIG_KEY_REPOSITORY_SOFTKEY);
-		RepositoryEntry re = RepositoryManager.getInstance().lookupRepositoryEntryBySoftkey(repositorySoftkey, true);
-		if (CoordinatorManager.getInstance().getCoordinator().getLocker().isLocked(re.getOlatResource(), null)){
+		RepositoryEntry re = RepositoryManager.getInstance().lookupRepositoryEntryBySoftkey(repositorySoftkey, false);
+		if(re == null) {
+			log.error("The test repository entry with this soft key could not be found: " + repositorySoftkey);
 			Translator translator = Util.createPackageTranslator(this.getClass(), ureq.getLocale());
-      //so this resource is locked, let's find out who locked it
+			String title = translator.translate("error.test.deleted.title");
+			String msg = translator.translate("error.test.deleted.msg");
+			return MessageUIFactory.createInfoMessage(ureq, wControl, title, msg);
+		} else if (CoordinatorManager.getInstance().getCoordinator().getLocker().isLocked(re.getOlatResource(), null)){
+			Translator translator = Util.createPackageTranslator(this.getClass(), ureq.getLocale());
+			//so this resource is locked, let's find out who locked it
 			LockResult lockResult = CoordinatorManager.getInstance().getCoordinator().getLocker().acquireLock(re.getOlatResource(), ureq.getIdentity(), null);
 			String fullName = userManager.getUserDisplayName(lockResult.getOwner());
 			return MessageUIFactory.createInfoMessage(ureq, wControl, translator.translate("status.currently.locked.title"), 

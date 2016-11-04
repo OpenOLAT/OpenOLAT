@@ -50,6 +50,7 @@ import org.olat.user.ChangePasswordForm;
 import org.olat.user.UserManager;
 import org.olat.user.UserModule;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * Description:
@@ -74,6 +75,9 @@ public class RegistrationForm2 extends FormBasicController {
 	
 	private FormLayoutContainer buttonLayout;
 
+	@Autowired
+	private UserModule userModule;
+	
 	/**
 	 * @param name
 	 * @param languageKey
@@ -222,7 +226,7 @@ public class RegistrationForm2 extends FormBasicController {
 		}
 		
 		Identity s = BaseSecurityManager.getInstance().findIdentityByName(getLogin());
-		if (s != null || UserModule.isLoginOnBlacklist(getLogin())) {
+		if (s != null || userModule.isLoginOnBlacklist(getLogin())) {
 			setLoginErrorKey("form.check6");
 			return false;
 		}

@@ -72,7 +72,7 @@ public class SharedWithMeQueries {
 		  .append(" inner join fetch owner.user as owneruser")
 		  .append(" left join binder.entry as entry")//entry -> assessment entry -> owner
 		  .append(" left join assessmententry as aEntry on (aEntry.identity.key=owner.key and aEntry.repositoryEntry.key=entry.key and ((binder.subIdent is null and aEntry.subIdent is null) or binder.subIdent=aEntry.subIdent))")
-		  .append(" where")
+		  .append(" where (")
 		  .append(" exists (select membership.key from bgroupmember as membership")
 		  .append("   where membership.group.key=baseGroup.key and membership.identity.key=:identityKey and membership.role in ('").append(PortfolioRoles.coach.name()).append("','").append(PortfolioRoles.reviewer.name()).append("')")
 		  .append(" )")
@@ -83,8 +83,8 @@ public class SharedWithMeQueries {
 		  .append(" )")
 		  .append(" or exists (select page.key from pfpage as page")
 		  .append("   inner join page.baseGroup as pageGroup")
-		  .append("   inner join page.section as pageSection on (pageSection.binder.key=binder.key)")
 		  .append("   inner join pageGroup.members as pageMembership on (pageMembership.identity.key=:identityKey and pageMembership.role in ('").append(PortfolioRoles.coach.name()).append("','").append(PortfolioRoles.reviewer.name()).append("'))")
+		  .append("   where page.section.binder.key=binder.key")
 		  .append(" ))");
 		if(StringHelper.containsNonWhitespace(searchString)) {
 			searchString = makeFuzzyQueryString(searchString);
@@ -143,7 +143,6 @@ public class SharedWithMeQueries {
 		  .append("   where coachedPage.key=page.key")
 		  .append(" ) group by binder.key, section.key, section.status, page.key, page.lastModified");
 
-		
 		List<Object[]> objects = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), Object[].class)
 				.setParameter("identityKey", member.getKey())
@@ -155,6 +154,11 @@ public class SharedWithMeQueries {
 			for(Object[] object:objects) {
 				int pos = 0;
 				Long binderKey = (Long)object[pos++];
+				AssessedBinder binder = keyToBinder.get(binderKey);
+				if(binder == null) {
+					continue;
+				}
+
 				Long sectionKey = (Long)object[pos++];
 				String sectionStatus = (String)object[pos++];
 				String sectionTitle = (String)object[pos++];
@@ -166,7 +170,6 @@ public class SharedWithMeQueries {
 					partLastModified = pageLastModified;
 				}
 
-				AssessedBinder binder = keyToBinder.get(binderKey);
 				if(partLastModified != null) {
 					if(binder.getLastModified() == null || binder.getLastModified().after(partLastModified)) {
 						binder.setLastModified(partLastModified);

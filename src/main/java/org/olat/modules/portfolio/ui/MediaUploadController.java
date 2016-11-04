@@ -112,6 +112,7 @@ public class MediaUploadController extends FormBasicController implements PageEl
 		
 		fileEl = uifactory.addFileElement(getWindowControl(), "artefact.file", "artefact.file", formLayout);
 		fileEl.addActionListener(FormEvent.ONCHANGE);
+		fileEl.setMandatory(true);
 		
 		
 		categoriesEl = uifactory.addTextBoxListElement("categories", "categories", "categories.hint", categories, formLayout, getTranslator());

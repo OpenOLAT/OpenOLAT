@@ -4,6 +4,15 @@ create table o_forum (
    creationdate timestamp,
    primary key (forum_id)
 );
+create table o_forum_pseudonym (
+   id bigserial,
+   creationdate timestamp not null,
+   p_pseudonym varchar(255) not null,
+   p_credential varchar(255) not null,
+   p_salt varchar(255) not null,
+   p_hashalgorithm varchar(16) not null,
+   primary key (id)
+);
 create table o_property (
    id int8 not null,
    version int4 not null,
@@ -1226,6 +1235,7 @@ create table o_cer_certificate (
    c_status varchar(16) not null default 'pending',
    c_email_status varchar(16),
    c_uuid varchar(36) not null,
+   c_next_recertification timestamp,
    c_path varchar(1024),
    c_last bool not null default true,
    c_course_title varchar(255),
@@ -2317,9 +2327,12 @@ alter table o_message add constraint FKF26C8378EAC1DBB foreign key (topthread_id
 create index idx_message_top_idx on o_message (topthread_id);
 alter table o_message add constraint FKF26C8371CB7C4A3 foreign key (forum_fk) references o_forum;
 create index idx_message_forum_idx on o_message (forum_fk);
+create index forum_msg_pseudonym_idx on o_message (pseudonym);
 
 create index readmessage_forum_idx on o_readmessage (forum_id);
 create index readmessage_identity_idx on o_readmessage (identity_id);
+
+create index forum_pseudonym_idx on o_forum_pseudonym (p_pseudonym);
 
 -- project broker
 create index projectbroker_project_broker_idx on o_projectbroker_project (projectbroker_fk);
@@ -2434,7 +2447,6 @@ alter table o_as_user_course_infos add constraint user_course_infos_id_cstr fore
 create index idx_ucourseinfos_ident_idx on o_as_user_course_infos (fk_identity);
 alter table o_as_user_course_infos add constraint user_course_infos_res_cstr foreign key (fk_resource_id) references o_olatresource (resource_id);
 create index idx_ucourseinfos_rsrc_idx on o_as_user_course_infos (fk_resource_id);
-alter table o_as_user_course_infos add unique (fk_identity, fk_resource_id);
 
 alter table o_as_entry add constraint as_entry_to_identity_idx foreign key (fk_identity) references o_bs_identity (id);
 create index idx_as_entry_to_ident_idx on o_as_entry (fk_identity);

@@ -24,6 +24,9 @@ $r.render("items")
 	#if($r.available("copy"))
 		$r.render("copy")
 	#end
+	#if($r.available("convert.item"))
+		$r.render("convert.item")
+	#end
 	#if($r.available("import.item"))
 		$r.render("import.item")
 	#end

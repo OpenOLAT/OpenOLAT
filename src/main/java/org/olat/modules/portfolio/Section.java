@@ -22,13 +22,15 @@ package org.olat.modules.portfolio;
 import java.util.Date;
 import java.util.List;
 
+import org.olat.core.id.ModifiedInfo;
+
 /**
  * 
  * Initial date: 07.06.2016<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public interface Section extends SectionRef, PortfolioElement {
+public interface Section extends SectionRef, PortfolioElement, ModifiedInfo {
 	
 	/**
 	 * This value is generated

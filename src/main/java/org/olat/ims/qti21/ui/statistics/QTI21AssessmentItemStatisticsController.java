@@ -39,6 +39,7 @@ import org.olat.ims.qti.statistics.model.StatisticsItem;
 import org.olat.ims.qti21.QTI21StatisticsManager;
 import org.olat.ims.qti21.model.QTI21QuestionType;
 import org.olat.ims.qti21.model.QTI21StatisticSearchParams;
+import org.olat.ims.qti21.model.xml.QtiNodesExtractor;
 import org.olat.ims.qti21.ui.statistics.interactions.ChoiceInteractionStatisticsController;
 import org.olat.ims.qti21.ui.statistics.interactions.HotspotInteractionStatisticsController;
 import org.olat.ims.qti21.ui.statistics.interactions.KPrimStatisticsController;
@@ -69,7 +70,6 @@ public class QTI21AssessmentItemStatisticsController extends BasicController {
 	
 	private UserFilterController filterCtrl;
 	
-	private final int numOfParticipants;
 	private final AssessmentItem item;
 	private final AssessmentItemRef itemRef;
 	private final QTI21StatisticSearchParams searchParams;
@@ -86,15 +86,13 @@ public class QTI21AssessmentItemStatisticsController extends BasicController {
 		this.itemRef = itemRef;
 		this.resourceResult = resourceResult;
 		searchParams = resourceResult.getSearchParams();
-		numOfParticipants = resourceResult.getQTIStatisticAssessment().getNumOfParticipants();
-
+		
 		mainVC = createVelocityContainer("statistics_item");
 		mainVC.put("d3loader", new StatisticsComponent("d3loader"));
 		mainVC.contextPut("title", item.getTitle());
 		if(StringHelper.containsNonWhitespace(sectionTitle)) {
 			mainVC.contextPut("sectionTitle", sectionTitle);
 		}
-		mainVC.contextPut("numOfParticipants", numOfParticipants);
 		mainVC.contextPut("printMode", new Boolean(printMode));
 		
 		QTI21QuestionType type = QTI21QuestionType.getTypeRelax(item);
@@ -106,7 +104,8 @@ public class QTI21AssessmentItemStatisticsController extends BasicController {
 		
 		if(resourceResult.canViewAnonymousUsers() || resourceResult.canViewNonParticipantUsers()) {
 			filterCtrl = new UserFilterController(ureq, getWindowControl(),
-					resourceResult.canViewNonParticipantUsers(), resourceResult.canViewAnonymousUsers());
+					resourceResult.canViewNonParticipantUsers(), resourceResult.canViewAnonymousUsers(),
+					resourceResult.isViewNonParticipantUsers(), resourceResult.isViewAnonymousUsers());
 			listenTo(filterCtrl);
 			mainVC.put("filter", filterCtrl.getInitialComponent());
 		}
@@ -182,11 +181,17 @@ public class QTI21AssessmentItemStatisticsController extends BasicController {
 	
 	protected StatisticsItem initItemStatistics() {
 		boolean survey = QTIType.survey.equals(resourceResult.getType());
+		
 		double maxScore = 0.0d;
+		Double maxScoreSettings = QtiNodesExtractor.extractMaxScore(item);
+		if(maxScoreSettings != null) {
+			maxScore = maxScoreSettings.doubleValue();
+		}
 
 		StatisticsItem itemStats = qtiStatisticsManager
 				.getAssessmentItemStatistics(itemRef.getIdentifier().toString(), maxScore, searchParams);
-
+		int numOfParticipants = resourceResult.getQTIStatisticAssessment().getNumOfParticipants();
+		
 		if(survey) {
 			long notAnswered = numOfParticipants - itemStats.getNumOfResults();
 			mainVC.contextPut("notAnswered", notAnswered);
@@ -201,6 +206,7 @@ public class QTI21AssessmentItemStatisticsController extends BasicController {
 			mainVC.contextPut("notAnswered", notAnswered);
 			mainVC.contextPut("itemDifficulty", formatTwo(itemStats.getDifficulty()));
 			mainVC.contextPut("averageScore", formatTwo(itemStats.getAverageScore()));
+			mainVC.contextPut("numOfParticipants", numOfParticipants);
 		}
 		mainVC.contextPut("averageDuration", duration(itemStats.getAverageDuration()));
 		return itemStats;

@@ -78,7 +78,9 @@ public class ReminderRuleDAO {
 			Long identityKey = (Long)infos[0];
 			if(identityKeySet == null || identityKeySet.contains(identityKey)) {
 				Number score = (Number)infos[1];
-				dateMap.put(identityKey, score.floatValue());
+				if(score != null) {
+					dateMap.put(identityKey, score.floatValue());
+				}
 			}
 		}
 		return dateMap;

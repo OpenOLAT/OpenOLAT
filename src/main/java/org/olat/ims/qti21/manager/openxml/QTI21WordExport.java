@@ -264,7 +264,8 @@ public class QTI21WordExport implements MediaResource {
 				AssessmentItemRef itemRef = (AssessmentItemRef)sectionPart;
 				ResolvedAssessmentItem resolvedAssessmentItem = resolvedAssessmentTest.getResolvedAssessmentItem(itemRef);
 				AssessmentItem assessmentItem = resolvedAssessmentItem.getRootNodeLookup().extractIfSuccessful();
-				renderAssessmentItem(assessmentItem, itemRef, document, withResponses, translator);
+				URI itemUri = resolvedAssessmentTest.getSystemIdByItemRefMap().get(itemRef);
+				renderAssessmentItem(assessmentItem, new File(itemUri), document, withResponses, translator, htmlBuilder);
 				document.appendPageBreak();
 			}
 		}
@@ -292,7 +293,8 @@ public class QTI21WordExport implements MediaResource {
 		}
 	}
 	
-	public void renderAssessmentItem(AssessmentItem item, AssessmentItemRef itemRef, OpenXMLDocument document, boolean withResponses, Translator translator) {
+	public static void renderAssessmentItem(AssessmentItem item, File itemFile, OpenXMLDocument document,
+			boolean withResponses, Translator translator, AssessmentHtmlBuilder htmlBuilder) {
 		StringBuilder addText = new StringBuilder();
 		
 		QTI21QuestionType type = QTI21QuestionType.getType(item);
@@ -321,30 +323,30 @@ public class QTI21WordExport implements MediaResource {
 		
 		String title = item.getTitle();
 		document.appendHeading1(title, addText.toString());
-		
-		URI itemUri = resolvedAssessmentTest.getSystemIdByItemRefMap().get(itemRef);
-		File itemFile = new File(itemUri);
-		
+
 		List<Block> itemBodyBlocks = item.getItemBody().getBlocks();
 		String html = htmlBuilder.blocksString(itemBodyBlocks);
-		document.appendHtmlText(html, true, new QTI21AndHTMLToOpenXMLHandler(document, item, itemFile, withResponses));
+		document.appendHtmlText(html, true, new QTI21AndHTMLToOpenXMLHandler(document, item, itemFile, withResponses, htmlBuilder));
 	}
 	
-	private class QTI21AndHTMLToOpenXMLHandler extends HTMLToOpenXMLHandler {
+	private static class QTI21AndHTMLToOpenXMLHandler extends HTMLToOpenXMLHandler {
 		
 		private final File itemFile;
 		private final AssessmentItem assessmentItem;
 		private final boolean withResponses;
+		private final AssessmentHtmlBuilder htmlBuilder;
 		
 		private String simpleChoiceIdentifier;
 		private String responseIdentifier;
 		private boolean renderElement = true;
-		
-		public QTI21AndHTMLToOpenXMLHandler(OpenXMLDocument document, AssessmentItem assessmentItem, File itemFile, boolean withResponses) {
+
+		public QTI21AndHTMLToOpenXMLHandler(OpenXMLDocument document, AssessmentItem assessmentItem,
+				File itemFile, boolean withResponses, AssessmentHtmlBuilder htmlBuilder) {
 			super(document);
 			this.itemFile = itemFile;
 			this.withResponses = withResponses;
 			this.assessmentItem = assessmentItem;
+			this.htmlBuilder = htmlBuilder;
 		}
 		
 		@Override

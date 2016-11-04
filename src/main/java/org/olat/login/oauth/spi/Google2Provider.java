@@ -66,8 +66,8 @@ public class Google2Provider implements OAuthSPI {
 	}
 
 	@Override
-	public Class<? extends Api> getScribeProvider() {
-		return Google2Api.class;
+	public Api getScribeProvider() {
+		return new Google2Api();
 	}
 
 	@Override

@@ -103,9 +103,15 @@ public class TextInputController extends StepFormBasicController {
 	private boolean convertInputField() {
 		boolean importDataError = false;
 
-		CSVToQuestionConverter converter = new CSVToQuestionConverter(getTranslator(), options);
-		converter.parse(inputElement.getValue());
-		parsedItems = converter.getItems();
+		try {
+			CSVToQuestionConverter converter = new CSVToQuestionConverter(getTranslator(), options);
+			converter.parse(inputElement.getValue());
+			parsedItems = converter.getItems();
+		} catch (NumberFormatException e) {
+			logError("", e);
+			inputElement.setErrorKey("error.format.number", new String[] { e.getMessage() } );
+			importDataError = true;
+		}
 
 		return importDataError;
 	}

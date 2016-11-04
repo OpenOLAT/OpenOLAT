@@ -86,16 +86,52 @@ public class BreadcrumbedStackedPanel extends Panel implements StackedPanel, Bre
 		closeLink.setIconLeftCSS("o_icon o_icon_close_tool");
 		closeLink.setCustomDisplayText(translator.translate("close"));
 		closeLink.setAccessKey("x"); // allow navigation using keyboard
+		
+		this.setDomReplacementWrapperRequired(false);
 	}
-	
+
+	/**
+	 * Get a string with all css classes to be applied to this DOM element
+	 * @return
+	 */
 	public String getCssClass() {
 		return cssClass;
 	}
 
+	/**
+	 * Set and overwrite any existing cssClasses. Use addCssClass to just add a
+	 * class
+	 * 
+	 * @param cssClass
+	 */
 	public void setCssClass(String cssClass) {
 		this.cssClass = cssClass;
 	}
 
+	/**
+	 * Add css class to this DOM element. Does not overwrite other classes
+	 * @param cssClassToAdd
+	 */
+	public void addCssClass(String cssClassToAdd) {
+		if (this.cssClass == null) {
+			setCssClass(cssClassToAdd);							
+		} else if (cssClassToAdd != null && !this.cssClass.contains(cssClassToAdd)) {
+			setCssClass(this.cssClass + " " + cssClassToAdd);
+		}		
+	}
+
+	/**
+	 * Remove the css class from this DOM element, but keep all the other
+	 * classes
+	 * 
+	 * @param cssClassToRemove
+	 */
+	public void removeCssClass(String cssClassToRemove) {	
+		if (this.cssClass != null && cssClassToRemove != null) {
+			setCssClass(this.cssClass.replace(cssClassToRemove, ""));
+		}
+	}
+	
 	public int getInvisibleCrumb() {
 		return invisibleCrumb;
 	}
@@ -392,7 +428,31 @@ public class BreadcrumbedStackedPanel extends Panel implements StackedPanel, Bre
 			log.error("Set itself as content is forbidden");
 			throw new AssertException("Set itself as content is forbidden");
 		}
-		super.setContent(cmp);
+		setContent(cmp);
+	}
+
+	@Override
+	public void setContent(Component newContent) {
+		// 1: remove any stack css from current active stack
+		Component currentComponent = getContent();
+		if (currentComponent != null) {
+			if (currentComponent instanceof StackedPanel) {
+				StackedPanel currentPanel = (StackedPanel) currentComponent;
+				String currentStackCss = currentPanel.getCssClass();
+				removeCssClass(currentStackCss);
+			}
+		}
+		// 2: update stack with new component on standard Panel
+		super.setContent(newContent);
+		// 3: add new stack css  
+		if (newContent != null) {
+			if (newContent instanceof StackedPanel) {
+				StackedPanel newPanel = (StackedPanel) newContent;
+				String newStackCss = newPanel.getCssClass();
+				addCssClass(newStackCss);
+			}
+		}		
+
 	}
 	
 	/**

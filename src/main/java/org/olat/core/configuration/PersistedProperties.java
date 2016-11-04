@@ -35,7 +35,9 @@ import java.io.OutputStream;
 import java.nio.file.Paths;
 import java.security.SecureRandom;
 import java.security.Security;
+import java.util.HashSet;
 import java.util.Properties;
+import java.util.Set;
 
 import javax.crypto.Cipher;
 import javax.crypto.CipherInputStream;
@@ -257,11 +259,23 @@ public class PersistedProperties extends LogDelegator implements Initializable, 
 	 * Call this method when the PersitedProperties is not used anymore. Will
 	 * remove the event listener for change events on this class
 	 */
+	@Override
 	public final void destroy() {
 		if (propertiesChangedEventListener != null) {
 			coordinatorManager.getCoordinator().getEventBus().deregisterFor(propertiesChangedEventListener, PROPERTIES_CHANGED_EVENT_CHANNEL);
 			propertiesChangedEventListener = null;
 		}
+	}
+	
+	public Set<Object> getPropertyKeys() {
+		Set<Object> keys = new HashSet<>();
+		if(configuredProperties != null) {
+			keys.addAll(configuredProperties.keySet());
+		}
+		if(defaultProperties != null) {
+			keys.addAll(defaultProperties.keySet());
+		}	
+		return keys;
 	}
 
 	/**
@@ -426,6 +440,15 @@ public class PersistedProperties extends LogDelegator implements Initializable, 
 	public void setBooleanPropertyDefault(String propertyName, boolean value) {
 		defaultProperties.setProperty(propertyName, Boolean.toString(value));
 	}
+	
+	public void removeProperty(String propertyName, boolean saveConfiguration) {
+		synchronized (configuredProperties) { // make read/write save in VM
+			configuredProperties.remove(propertyName);
+			if (saveConfiguration) {
+				savePropertiesAndFireChangedEvent();
+			}
+		}
+	}
 
 	/**
 	 * Save the properties configuration to disk and notify other nodes about
@@ -512,20 +535,19 @@ public class PersistedProperties extends LogDelegator implements Initializable, 
 
   
 	private static final String salt = "A long, but constant phrase that will be used each time as the salt.";
-  private static final int iterations = 2000;
-  private static final int keyLength = 128;
-  private static final SecureRandom random = new SecureRandom();
+	private static final int iterations = 2000;
+	private static final int keyLength = 128;
+	private static final SecureRandom random = new SecureRandom();
   
 	private static SecretKey generateKey(String passphrase) throws Exception {
-    PBEKeySpec keySpec = new PBEKeySpec(passphrase.toCharArray(), salt.getBytes(), iterations, keyLength);
-    SecretKeyFactory keyFactory = SecretKeyFactory.getInstance("PBEWITHSHA256AND128BITAES-CBC-BC");
-    return keyFactory.generateSecret(keySpec);
+		PBEKeySpec keySpec = new PBEKeySpec(passphrase.toCharArray(), salt.getBytes(), iterations, keyLength);
+		SecretKeyFactory keyFactory = SecretKeyFactory.getInstance("PBEWITHSHA256AND128BITAES-CBC-BC");
+		return keyFactory.generateSecret(keySpec);
 	}
   
 	private static IvParameterSpec generateIV(Cipher cipher) throws Exception {
-    byte [] ivBytes = new byte[cipher.getBlockSize()];
-    random.nextBytes(ivBytes);
-    return new IvParameterSpec(ivBytes);
-  }
-
+		byte [] ivBytes = new byte[cipher.getBlockSize()];
+		random.nextBytes(ivBytes);
+		return new IvParameterSpec(ivBytes);
+	}
 }

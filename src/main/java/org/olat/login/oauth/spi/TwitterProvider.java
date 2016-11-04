@@ -67,8 +67,8 @@ public class TwitterProvider implements OAuthSPI {
 	}
 
 	@Override
-	public Class<? extends Api> getScribeProvider() {
-		return TwitterApi.SSL.class;
+	public Api getScribeProvider() {
+		return new TwitterApi.SSL();
 	}
 
 	@Override

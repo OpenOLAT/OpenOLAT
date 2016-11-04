@@ -203,8 +203,8 @@ public class VersionMaintenanceForm extends FormBasicController implements Progr
 		taskExecutorManager.execute(new Runnable() {
 			public void run() {
 				waitASecond();
-				Long numOfVersions = getNumOfVersions();
-				versionsManager.pruneHistory(numOfVersions.longValue(), VersionMaintenanceForm.this);
+				int numOfVersions = getNumOfVersions();
+				versionsManager.pruneHistory(numOfVersions, VersionMaintenanceForm.this);
 			}
 		});
 
@@ -225,7 +225,7 @@ public class VersionMaintenanceForm extends FormBasicController implements Progr
 		}
 	}
 	
-	public Long getNumOfVersions() {
+	public int getNumOfVersions() {
 		SimpleVersionConfig config = (SimpleVersionConfig) CoreSpringFactory.getBean(SimpleVersionConfig.class);
 		return config.getMaxNumberOfVersionsProperty();
 	}

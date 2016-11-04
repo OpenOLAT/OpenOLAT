@@ -79,8 +79,11 @@ public class TextBoxListRenderer extends DefaultComponentRenderer {
 		String initialValue = tblComponent.getInitialItemsAsString();
 
 		sb.append("<input type='text' id='textboxlistinput").append(dispatchId).append("'")
-		  .append(" name='textboxlistinput").append(dispatchId).append("'")
-		  .append(" value='").append(initialValue).append("' />\n");
+		  .append(" name='textboxlistinput").append(dispatchId).append("'");
+		if (te.hasFocus()) {
+			sb.append(" autofocus");
+		}
+		sb.append(" value='").append(initialValue).append("' />\n");
 
 		String o_ffEvent = FormJSHelper.getJSFnCallFor(rootForm, dispatchId, 2);
 		// generate the JS-code for the bootstrap tagsinput

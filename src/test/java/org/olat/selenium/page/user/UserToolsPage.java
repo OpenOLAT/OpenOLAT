@@ -21,12 +21,10 @@ package org.olat.selenium.page.user;
 
 import java.util.List;
 
-import org.jboss.arquillian.graphene.Graphene;
 import org.junit.Assert;
 import org.olat.selenium.page.LoginPage;
 import org.olat.selenium.page.core.FolderPage;
 import org.olat.selenium.page.graphene.OOGraphene;
-import org.olat.selenium.page.portfolio.PortfolioPage;
 import org.olat.selenium.page.portfolio.PortfolioV2HomePage;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
@@ -147,16 +145,6 @@ public class UserToolsPage {
 		passwordLink.click();
 		OOGraphene.waitBusy(browser);
 		return new UserSettingsPage(browser);
-	}
-	
-	public PortfolioPage openPortfolio() {
-		By linkBy = By.className("o_sel_user_tools-Portfolio");
-		browser.findElement(linkBy).click();
-		OOGraphene.waitBusy(browser);
-		OOGraphene.closeOffCanvas(browser);
-		
-		WebElement main = browser.findElement(By.id("o_main"));
-		return Graphene.createPageFragment(PortfolioPage.class, main);
 	}
 	
 	public PortfolioV2HomePage openPortfolioV2() {

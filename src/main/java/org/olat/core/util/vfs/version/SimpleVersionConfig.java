@@ -24,9 +24,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.olat.core.commons.modules.bc.FolderConfig;
-import org.olat.core.configuration.PersistedProperties;
-import org.olat.core.configuration.PersistedPropertiesChangedEvent;
-import org.olat.core.gui.control.Event;
+import org.olat.core.configuration.AbstractSpringModule;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.event.GenericEventListener;
@@ -34,6 +32,9 @@ import org.olat.core.util.vfs.LocalFolderImpl;
 import org.olat.core.util.vfs.MergeSource;
 import org.olat.core.util.vfs.NamedContainerImpl;
 import org.olat.core.util.vfs.VFSContainer;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
 
 /**
  * 
@@ -47,7 +48,8 @@ import org.olat.core.util.vfs.VFSContainer;
  * 
  * @author srosse
  */
-public class SimpleVersionConfig implements GenericEventListener, FolderVersioningConfigurator {
+@Service("versioningConfigurator")
+public class SimpleVersionConfig extends AbstractSpringModule implements GenericEventListener, FolderVersioningConfigurator {
 
 	private static final String MAX_NUMBER_OF_VERSIONS = "maxnumber.versions";
 	private static final String COURSE_PATH = "/course/";
@@ -58,9 +60,8 @@ public class SimpleVersionConfig implements GenericEventListener, FolderVersioni
 	
 	private static final String[] EXCLUSIONS_IN_COURSE_PATH = {SOLUTIONS_PATH, RETURNBOXES_PATH, DROPBOXES, TASKFOLDERS};
 
-	private Long maxNumOfVersions;
-	private int maxNumberOfVersionsConfig = -1;
-	private PersistedProperties persistedProperties;
+	@Value("${maxnumber.versions:0}")
+	private int maxNumberOfVersions;
 
 	private String courseRoot;
 	private List<String> excludedRoots;
@@ -68,65 +69,34 @@ public class SimpleVersionConfig implements GenericEventListener, FolderVersioni
 	/**
 	 * [used by spring]
 	 */
-	private SimpleVersionConfig() {
+	@Autowired
+	public SimpleVersionConfig(CoordinatorManager coordinatorManager) {
+		super(coordinatorManager);
 	}
 
-	public void event(Event event) {
-		if (event instanceof PersistedPropertiesChangedEvent) {
-			// Reload the properties
-			if (!((PersistedPropertiesChangedEvent)event).isEventOnThisNode()) {
-				persistedProperties.loadPropertiesFromFile();
-			}
-			maxNumOfVersions = null;
+	@Override
+	public void init() {
+		String maxNumberOfVersionsObj = getStringPropertyValue(MAX_NUMBER_OF_VERSIONS, true);
+		if(StringHelper.containsNonWhitespace(maxNumberOfVersionsObj)) {
+			maxNumberOfVersions = Integer.parseInt(maxNumberOfVersionsObj);
 		}
 	}
-	
-	public void setCoordinator(CoordinatorManager coordinatorManager) {
-		//nothing to do
-	}
-	
-	/**
-	 * [used by spirng]
-	 * @param persistedProperties
-	 */
-	public void setPersistedProperties(PersistedProperties persistedProperties) {
-		this.persistedProperties = persistedProperties;
-	}
 
-	/**
-	 * @return default maximum number of versions, defined in xml file
-	 */
-	public Integer getDefaultMaxNumberOfVersions() {
-		return maxNumberOfVersionsConfig;
-	}
-
-	public void setDefaultMaxNumberOfVersions(Integer maxNumberOfVersionsConfig) {
-		this.maxNumberOfVersionsConfig = maxNumberOfVersionsConfig;
+	@Override
+	protected void initFromChangedProperties() {
+		init();
 	}
 
 	/**
 	 * @return maximum number of revisions, defined in admin. of Olat
 	 */
-	public Long getMaxNumberOfVersionsProperty() {
-		if(maxNumOfVersions != null) {
-			return maxNumOfVersions;
-		}
-		
-		if (getPersistedProperties() == null) {
-			return null;
-		}
-		String maxNumOfVersionsStr = getPersistedProperties().getStringPropertyValue(MAX_NUMBER_OF_VERSIONS, true);
-		if (maxNumOfVersionsStr == null || maxNumOfVersionsStr.length() == 0) {
-			return null;
-		}
-		maxNumOfVersions = Long.parseLong(maxNumOfVersionsStr);
-		return maxNumOfVersions;
+	public int getMaxNumberOfVersionsProperty() {
+		return maxNumberOfVersions;
 	}
 
-	public void setMaxNumberOfVersionsProperty(Long maxNumber) {
-		if (getPersistedProperties() != null) {
-			getPersistedProperties().setStringProperty(MAX_NUMBER_OF_VERSIONS, maxNumber.toString(), true);
-		}
+	public void setMaxNumberOfVersionsProperty(int maxNumber) {
+		this.maxNumberOfVersions = maxNumber;
+		setStringProperty(MAX_NUMBER_OF_VERSIONS, Integer.toString(maxNumber), true);
 	}
 
 	@Override
@@ -188,23 +158,8 @@ public class SimpleVersionConfig implements GenericEventListener, FolderVersioni
 	}
 	
 	private int getVersionAllowed() {
-		Long max = getMaxNumberOfVersionsProperty();
-		if (max != null) {
-			return max.intValue();
-		}
-		Integer configMax = getDefaultMaxNumberOfVersions();
-		if (configMax != null) {
-			return configMax.intValue();
-		}
-		return 0;
-	}
-
-	/**
-	 * 
-	 * @return the persisted properties
-	 */
-	private PersistedProperties getPersistedProperties() {
-		return persistedProperties;
+		int max = getMaxNumberOfVersionsProperty();
+		return max;
 	}
 	
 	private String getCourseRoot() {

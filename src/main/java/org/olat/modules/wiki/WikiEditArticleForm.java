@@ -107,6 +107,7 @@ public class WikiEditArticleForm extends FormBasicController {
 		wikiContent.setElementCssClass("o_sel_wiki_content");
 		wikiContent.setLabel(null, null);
 		wikiContent.preventValueTrim(true);//OO-31 prevent trimming, so first line can be with inset (wiki pre-formatted)
+		wikiContent.setFocus(true);
 
 		updateComment = uifactory.addTextElement("wikiUpdateComment", null, 40, "", formLayout);
 		updateComment.setExampleKey ("update.comment", null);

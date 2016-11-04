@@ -185,8 +185,8 @@ public class RegistrationController extends BasicController implements Activatea
 				Map<String,String> userAttrs = new HashMap<String,String>();
 				userAttrs.put("email", tempKey.getEmailAddress());
 				
-				if(RegistrationModule.getUsernamePresetBean() != null) {
-					UserNameCreationInterceptor interceptor = RegistrationModule.getUsernamePresetBean();
+				if(registrationModule.getUsernamePresetBean() != null) {
+					UserNameCreationInterceptor interceptor = registrationModule.getUsernamePresetBean();
 					String proposedUsername = interceptor.getUsernameFor(userAttrs);
 					if(proposedUsername == null) {
 						if(interceptor.allowChangeOfUsername()) {
@@ -468,7 +468,6 @@ public class RegistrationController extends BasicController implements Activatea
 			
 			//add eventually static value
 			UserPropertiesConfig userPropertiesConfig = CoreSpringFactory.getImpl(UserPropertiesConfig.class);
-			RegistrationModule registrationModule = CoreSpringFactory.getImpl(RegistrationModule.class);
 			if(registrationModule.isStaticPropertyMappingEnabled()) {
 				String propertyName = registrationModule.getStaticPropertyMappingName();
 				String propertyValue = registrationModule.getStaticPropertyMappingValue();

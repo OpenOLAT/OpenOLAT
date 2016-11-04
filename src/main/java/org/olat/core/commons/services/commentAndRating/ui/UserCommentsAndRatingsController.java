@@ -19,7 +19,6 @@
  */
 package org.olat.core.commons.services.commentAndRating.ui;
 
-import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.services.commentAndRating.CommentAndRatingSecurityCallback;
 import org.olat.core.commons.services.commentAndRating.CommentAndRatingService;
 import org.olat.core.commons.services.commentAndRating.model.UserRating;
@@ -37,6 +36,7 @@ import org.olat.core.id.OLATResourceable;
 import org.olat.core.util.CodeHelper;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.event.GenericEventListener;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * Description:<br>
@@ -79,7 +79,9 @@ public class UserCommentsAndRatingsController extends BasicController implements
 	private final String oresSubPath;
 	private final OLATResourceable ores;
 	private final CommentAndRatingSecurityCallback securityCallback;
-	private final CommentAndRatingService commentAndRatingService;
+	
+	@Autowired
+	private CommentAndRatingService commentAndRatingService;
 
 	/**
 	 * Constructor for a user combined user comments and ratings controller. Use
@@ -100,8 +102,7 @@ public class UserCommentsAndRatingsController extends BasicController implements
 		this.ores = ores;
 		this.oresSubPath = oresSubPath;
 		this.securityCallback = securityCallback;
-		commentAndRatingService = CoreSpringFactory.getImpl(CommentAndRatingService.class);
-		this.userCommentsAndRatingsVC = createVelocityContainer("userCommentsAndRatings");
+		userCommentsAndRatingsVC = createVelocityContainer("userCommentsAndRatings");
 		this.canExpandToFullView = canExpandToFullView;
 		putInitialPanel(userCommentsAndRatingsVC);
 		// Add comments views

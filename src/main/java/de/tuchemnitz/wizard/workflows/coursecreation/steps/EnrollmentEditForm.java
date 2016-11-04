@@ -120,6 +120,8 @@ public class EnrollmentEditForm extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		setFormDescription("coursecreation.enrollment.shortDescription");
+		
 		FormLayoutContainer formButtons = FormLayoutContainer.createButtonLayout("formButtons", this.getTranslator());
 
 		// create group count textbox

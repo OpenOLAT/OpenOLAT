@@ -10,40 +10,7 @@
   
 	<context:component-scan base-package="org.olat.registration" />
 
-	<!-- Registration module -->
-	<bean id="registrationModule" class="org.olat.registration.RegistrationModule" depends-on="i18nModule" >
-		<property name="persistedProperties">
-  			<bean class="org.olat.core.configuration.PersistedProperties" scope="prototype" init-method="init" destroy-method="destroy">
-   				<constructor-arg index="0" ref="coordinatorManager"/>
-    			<constructor-arg index="1" ref="registrationModule" />
-			</bean>
-		</property>
-		<property name="usernamePresetBean" ref="registrationPresetUsername.${registration.preset.username}"/>
-	</bean>
-                       
-	<bean  class="org.springframework.beans.factory.config.MethodInvokingFactoryBean">
-        <property name="targetObject" ref="registrationModule" />
-        <property name="targetMethod" value="init" />
-        <property name="arguments">
-        			<value>
-					<!-- Should users be able to register themselfe? If disabled, users can not create     -->
-					<!-- local user accounts themself. This has no effect on the registration mechanism    -->
-					<!-- used in the Shibboleth registration process, its only about local user accounts   -->
-        			enableSelfregistration=${registration.enableSelfRegistration}
-        			enableSelfregistrationLink=${registration.enableSelfRegistration.link}
-        			enableSelfregistrationLogin=${registration.enableSelfRegistration.login}
-        			registrationDomainList=${registration.domainList}
-					
-					<!-- Send an email to the given address every time a new user registers in the system. -->
-					<!-- This is usefull to monitor who is registering and maybe block unwanted users.     -->
-					registrationNotificationEnabled=${registration.enableNotificationEmail}
-					registrationNotificationEmail=${registration.notificationEmail}
-					disclaimerEnabled=${registration.enableDisclaimer}
-					disclaimerAdditionalCheckbox=${registration.disclaimerAdditionalCheckbox}
-					disclaimerAdditionaLinkText=${registration.disclaimerAdditionaLinkText}	
-	                </value>
-	     </property>
-	</bean>
+	<alias alias="usernamePresetBean" name="registrationPresetUsername.${registration.preset.username}"/>
 
 	<bean id="registrationPresetUsername.byEmail"
 		class="org.olat.registration.SelfRegistrationUserNameFromEmailUserNameCreationInterceptor" lazy-init="true">

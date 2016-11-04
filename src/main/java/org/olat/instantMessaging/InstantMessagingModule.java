@@ -62,7 +62,8 @@ public class InstantMessagingModule extends AbstractSpringModule implements Conf
 	private boolean enabled;
 	private boolean groupEnabled = true;
 	private boolean groupAnonymEnabled = true;
-	private boolean groupAnonymDefaultEnabled = false;	
+	private boolean groupAnonymDefaultEnabled = false;
+	@Value("${course.chat.enabled:true}")
 	private boolean courseEnabled = true;
 	private boolean courseAnonymEnabled = true;
 	private boolean courseAnonymDefaultEnabled = true;

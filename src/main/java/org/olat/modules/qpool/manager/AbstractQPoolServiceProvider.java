@@ -76,6 +76,16 @@ public abstract class AbstractQPoolServiceProvider implements QPoolSPI {
 		= Collections.singletonList(DefaultExportFormat.ZIP_EXPORT_FORMAT); 
 
 	@Override
+	public boolean isConversionPossible(QuestionItemShort question) {
+		return false;
+	}
+	
+	@Override
+	public QuestionItem convert(Identity owner, QuestionItemShort question, Locale locale) {
+		return null;
+	}
+
+	@Override
 	public List<ExportFormatOptions> getTestExportFormats() {
 		return exportFormats;
 	}

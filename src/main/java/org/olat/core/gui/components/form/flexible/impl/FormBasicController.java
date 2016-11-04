@@ -573,12 +573,12 @@ public abstract class FormBasicController extends BasicController implements IFo
 	 * @see org.olat.core.gui.control.controller.BasicController#showInfo(java.lang.String)
 	 */
 	
-	protected void setFormInfo (String i18nKey, String args) {
+	protected void setFormInfo (String i18nKey, String[] args) {
 		flc.contextRemove("off_warn");
 		if (i18nKey == null) {
 			flc.contextRemove("off_info");
 		} else {
-			flc.contextPut("off_info", getTranslator().translate(i18nKey, new String[]{args}));
+			flc.contextPut("off_info", getTranslator().translate(i18nKey, args));
 		}
 	}
 	

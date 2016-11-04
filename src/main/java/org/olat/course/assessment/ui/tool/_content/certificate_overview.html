@@ -11,7 +11,7 @@
 					#if($certificate.status == "pending")
 						<span><i class="o_icon o_icon_pending o_icon-spin"> </i> $certificate.name</span>
 					#elseif($certificate.status == "ok")
-						<a href="$certificate.url" target="_blank"><i class="o_icon o_filetype_pdf"> </i> $certificate.name</a>
+						<a href="$certificate.url" target="_blank">#if(${certificate.isNeedRecertification()})<i class="o_icon o_icon_warn"> </i> #end<i class="o_icon o_filetype_pdf"> </i> $certificate.name</a>
 					#elseif($certificate.status == "error")
 						<span><i class="o_icon o_icon_error"> </i> $certificate.name</span>
 					#end

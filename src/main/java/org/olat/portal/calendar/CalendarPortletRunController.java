@@ -35,7 +35,7 @@ import java.util.Iterator;
 import java.util.List;
 
 import org.olat.NewControllerFactory;
-import org.olat.commons.calendar.CalendarUtils;
+import org.olat.commons.calendar.CalendarManager;
 import org.olat.commons.calendar.PersonalCalendarManager;
 import org.olat.commons.calendar.model.KalendarEvent;
 import org.olat.commons.calendar.ui.components.KalendarRenderWrapper;
@@ -79,6 +79,8 @@ public class CalendarPortletRunController extends BasicController {
 	private boolean dirty = false;
 	private Link showAllLink;
 	
+	@Autowired
+	private CalendarManager calendarManager;
 	@Autowired
 	private PersonalCalendarManager personalCalendarManager;
 
@@ -135,10 +137,12 @@ public class CalendarPortletRunController extends BasicController {
 		for (Iterator<KalendarRenderWrapper> iter = calendars.iterator(); iter.hasNext();) {
 			KalendarRenderWrapper calendarWrapper = iter.next();
 			boolean readOnly = (calendarWrapper.getAccess() == KalendarRenderWrapper.ACCESS_READ_ONLY) && !calendarWrapper.isImported();
-			List<KalendarEvent> eventsWithinPeriod = CalendarUtils.listEventsForPeriod(calendarWrapper.getKalendar(), startDate, endDate);
+			List<KalendarEvent> eventsWithinPeriod = calendarManager.getEvents(calendarWrapper.getKalendar(), startDate, endDate, true);
 			for (KalendarEvent event : eventsWithinPeriod) {
 				// skip non-public events
-				if (readOnly && event.getClassification() != KalendarEvent.CLASS_PUBLIC) continue;
+				if (readOnly && event.getClassification() != KalendarEvent.CLASS_PUBLIC) {
+					continue;
+				}
 				events.add(event);
 			}
 		}

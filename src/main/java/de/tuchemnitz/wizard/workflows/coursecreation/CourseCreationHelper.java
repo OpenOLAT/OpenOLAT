@@ -200,8 +200,9 @@ public class CourseCreationHelper {
 			String groupNamesList = "";
 			for (int i = 0; i < courseConfig.getGroupCount(); i++) {
 				// create group
-				BusinessGroup learningGroup = bgs.createBusinessGroup( null, groupBaseName + " "
-						+ (i + 1), null, 0, courseConfig.getSubscriberCount(), courseConfig.getEnableWaitlist(), courseConfig.getEnableFollowup(),
+				String name = groupBaseName + " " + (i + 1);
+				BusinessGroup learningGroup = bgs.createBusinessGroup(ureq.getIdentity(), name, null, 0,
+						courseConfig.getSubscriberCount(), courseConfig.getEnableWaitlist(), courseConfig.getEnableFollowup(),
 						addedEntry);
 				// enable the contact collaboration tool
 				CollaborationTools ct = CollaborationToolsFactory.getInstance().getOrCreateCollaborationTools(learningGroup);

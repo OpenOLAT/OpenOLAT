@@ -67,8 +67,8 @@ public class FacebookProvider implements OAuthSPI {
 	}
 
 	@Override
-	public Class<? extends Api> getScribeProvider() {
-		return FacebookApi.class;
+	public Api getScribeProvider() {
+		return new FacebookApi();
 	}
 
 	@Override

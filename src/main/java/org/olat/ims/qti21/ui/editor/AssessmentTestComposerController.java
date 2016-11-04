@@ -38,6 +38,8 @@ import org.olat.core.gui.components.dropdown.Dropdown;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.panel.Panel;
+import org.olat.core.gui.components.panel.SimpleStackedPanel;
+import org.olat.core.gui.components.panel.StackedPanel;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.components.stack.TooledStackedPanel.Align;
 import org.olat.core.gui.components.tree.GenericTreeNode;
@@ -306,8 +308,10 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 		mainVC = createVelocityContainer("assessment_test_composer");
 		columnLayoutCtr = new LayoutMain3ColsController(ureq, getWindowControl(), menuTree, mainVC, "at" + testEntry.getKey());			
 		columnLayoutCtr.addCssClassToMain("o_editor");
-		listenTo(columnLayoutCtr);
-		putInitialPanel(columnLayoutCtr.getInitialComponent());
+		listenTo(columnLayoutCtr);		
+		StackedPanel initPanel = new SimpleStackedPanel("qti21editpanel", "o_edit_mode");
+		initPanel.setContent(columnLayoutCtr.getInitialComponent());
+		putInitialPanel(initPanel);
 		
 		// init
 		TreeNode selectedNode = doOpenFirstItem();
@@ -850,6 +854,16 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 	}
 	
 	private TreeNode getNearestSection(TreeNode node) {
+		if(node == null) {
+			node = menuTree.getTreeModel().getRootNode();
+		}
+		if(node.getUserObject() instanceof AssessmentTest) {
+			//choose the first test part or section
+			if(node.getChildCount() > 0) {
+				node = (TreeNode)node.getChildAt(0);
+			}
+		}
+		
 		if(node.getUserObject() instanceof AssessmentSection) {
 			return node;
 		}

@@ -52,7 +52,7 @@ public class NewItemOptionsController extends FormBasicController {
 
 	private TextElement titleEl;
 	private SingleSelection typeEl;
-	private Map<String,QItemFactory> keyToFactoryMap = new HashMap<String,QItemFactory>();
+	private Map<String,QItemFactory> keyToFactoryMap = new HashMap<>();
 	
 	@Autowired
 	private QuestionPoolModule qpoolModule;

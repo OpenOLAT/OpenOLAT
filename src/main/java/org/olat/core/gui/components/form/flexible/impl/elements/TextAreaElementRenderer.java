@@ -113,6 +113,9 @@ class TextAreaElementRenderer extends DefaultComponentRenderer {
 			if (te.hasPlaceholder()) {
 				sb.append(" placeholder=\"").append(te.getPlaceholder()).append("\"");
 			}
+			if (te.hasFocus()) {
+				sb.append(" autofocus");
+			}
 			sb.append(FormJSHelper.getRawJSFor(te.getRootForm(), id, te.getAction()))
 			  .append(" >")
 			  .append(value)

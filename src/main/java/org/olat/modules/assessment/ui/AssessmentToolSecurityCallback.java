@@ -58,11 +58,11 @@ public class AssessmentToolSecurityCallback {
 	}
 
 	public boolean canAssessRepositoryEntryMembers() {
-		return repositoryEntryMembers;
+		return repositoryEntryMembers || admin;
 	}
 
 	public boolean canAssessBusinessGoupMembers() {
-		return businessGoupMembers;
+		return businessGoupMembers || admin;
 	}
 
 	public List<BusinessGroup> getCoachedGroups() {

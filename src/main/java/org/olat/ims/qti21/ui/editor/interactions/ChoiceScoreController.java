@@ -33,7 +33,6 @@ import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.Formatter;
-import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.filter.FilterFactory;
 import org.olat.ims.qti21.model.xml.AssessmentHtmlBuilder;
@@ -183,24 +182,6 @@ public class ChoiceScoreController extends AssessmentItemRefEditorController imp
 		}
 		
 		return allOk & super.validateFormLogic(ureq);
-	}
-	
-	private boolean validateDouble(TextElement el) {
-		boolean allOk = true;
-		
-		String value = el.getValue();
-		if(!StringHelper.containsNonWhitespace(value)) {
-			el.setErrorKey("form.legende.mandatory", null);
-			allOk &= false;
-		} else {
-			try {
-				Double.parseDouble(value);
-			} catch (NumberFormatException e) {
-				el.setErrorKey("error.double", null);
-				allOk &= false;
-			}
-		}
-		return allOk;
 	}
 
 	@Override

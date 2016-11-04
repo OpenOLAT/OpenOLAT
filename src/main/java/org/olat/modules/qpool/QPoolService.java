@@ -104,9 +104,9 @@ public interface QPoolService {
 	
 	public File getRootDirectory(QuestionItem item);
 	
-	public VFSLeaf getRootLeaf(QuestionItem item);
+	public VFSLeaf getRootLeaf(QuestionItemShort item);
 	
-	public VFSContainer getRootContainer(QuestionItem item);
+	public VFSContainer getRootContainer(QuestionItemShort item);
 	
 	public List<QuestionItem> copyItems(Identity cloner, List<QuestionItemShort> itemsToCopy);
 
@@ -134,7 +134,7 @@ public interface QPoolService {
 	
 	public List<BusinessGroup> getResourcesWithSharedItems(Identity identity);
 	
-	public int countSharedItemByResource(OLATResource resource);
+	public int countSharedItemByResource(OLATResource resource, SearchQuestionItemParams params);
 	
 	public ResultInfos<QuestionItemView> getSharedItemByResource(OLATResource resource, SearchQuestionItemParams params, int firstResult, int maxResults, SortKey... orderBy);
 	
@@ -153,7 +153,7 @@ public interface QPoolService {
 	
 	public List<QuestionItemCollection> getCollections(Identity owner);
 	
-	public int countItemsOfCollection(QuestionItemCollection collection);
+	public int countItemsOfCollection(QuestionItemCollection collection, SearchQuestionItemParams params);
 	
 	public ResultInfos<QuestionItemView> getItemsOfCollection(QuestionItemCollection collection, SearchQuestionItemParams params, int firstResult, int maxResults, SortKey... orderBy);
 

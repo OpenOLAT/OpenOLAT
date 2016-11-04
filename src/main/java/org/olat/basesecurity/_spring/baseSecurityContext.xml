@@ -8,7 +8,7 @@
   http://www.springframework.org/schema/context 
   http://www.springframework.org/schema/context/spring-context.xsd">
 
-	<context:component-scan base-package="org.olat.basesecurity.manager" />
+	<context:component-scan base-package="org.olat.basesecurity" />
 
 	<!-- manager -->
 	<bean id="baseSecurityManager" class="org.olat.basesecurity.BaseSecurityManager" init-method="init" 
@@ -19,117 +19,5 @@
 		<property name="invitationDao" ref="invitationDao" />
 		<property name="dbVendor" value="${db.vendor}" />
 	</bean>
-
-	<!-- module -->
-	<bean id="baseSecurityModule" class="org.olat.basesecurity.BaseSecurityModule">
-		<constructor-arg type="java.lang.String" value="${default.auth.provider.identifier}" />
-		<property name="persistedProperties">
-		  <bean class="org.olat.core.configuration.PersistedProperties" scope="prototype" init-method="init" destroy-method="destroy">
-		    <constructor-arg index="0" ref="coordinatorManager"/>
-		    <constructor-arg index="1" ref="baseSecurityModule" />
-		  </bean>
-		</property>	
-	</bean>
-                       
-	<bean  class="org.springframework.beans.factory.config.MethodInvokingFactoryBean">
-        <property name="targetObject" ref="baseSecurityModule" />
-        <property name="targetMethod" value="init" />
-        <property name="arguments">
-        			<!-- Important: Set tomcats policy to allow read/write access to Root and TmpDir  -->
-                    <value>
-						userSearchAdminPropsForUsers=${usersearch.adminProps.users}
-						userSearchAdminPropsForAuthors=${usersearch.adminProps.authors}
-						userSearchAdminPropsForUsermanagers=${usersearch.adminProps.usermanagers}
-						userSearchAdminPropsForGroupmanagers=${usersearch.adminProps.groupmanagers}
-						userSearchAdminPropsForAdministrators=${usersearch.adminProps.administrators}
-						
-						userLastLoginVisibleForUsers=${user.lastlogin.visible.users}
-						userLastLoginVisibleForAuthors=${user.lastlogin.visible.authors}
-						userLastLoginVisibleForUsermanagers=${user.lastlogin.visible.usermanagers}
-						userLastLoginVisibleForGroupmanagers=${user.lastlogin.visible.groupmanagers}
-						userLastLoginVisibleForAdministrators=${user.lastlogin.visible.administrators}
-						
-						userSearchAutocompleteForUsers=${usersearch.autocomplete.users}
-						userSearchAutocompleteForAuthors=${usersearch.autocomplete.authors}
-						userSearchAutocompleteForUsermanagers=${usersearch.autocomplete.usermanagers}
-						userSearchAutocompleteForGroupmanagers=${usersearch.autocomplete.groupmanagers}
-						userSearchAutocompleteForAdministrators=${usersearch.autocomplete.administrators}
-						userSearchMaxResults=${usersearch.maxResults}
-						
-						userInfosTunnelCourseBuildingBlock=${userinfos.tunnelcoursebuildingblock}
-            
-						sysGroupUsermanager.canCreateUser=true
-						sysGroupUsermanager.canDeleteUser=false
-						sysGroupUsermanager.canCreatePassword=true
-						sysGroupUsermanager.canModifyPassword=true
-						sysGroupUsermanager.canStartGroups=true
-						sysGroupUsermanager.canModifySubscriptions=true
-						sysGroupUsermanager.accessToQuota=true
-						sysGroupUsermanager.accessToProperties=false
-						sysGroupUsermanager.accessToPolicies=false
-						sysGroupUsermanager.accessToAuthentications=false
-						sysGroupUsermanager.canManagePoolmanagers=true
-						sysGroupUsermanager.canManageGroupmanagers=true
-						sysGroupUsermanager.canManageInstitutionalResourceManager=true
-						sysGroupUsermanager.canManageAuthors=true
-						sysGroupUsermanager.canManageGuests=false
-						sysGroupUsermanager.canBypassEmailverification=true
-						sysGroupUsermanager.canEditAllProfileFields=true
-	         <!--
-				User manager configuration
-				Users from the system group 'userManager' can be configured to have the following 
-				rights within the user management. Currently the rights are applied to all members
-				of the user management. Individual rights on a per user base are not possible. The
-				configuration below does not apply to system administrators, those always have full
-				access to the user management. 
-				- canCreateUser: Allows the user to create new system users. The users are automatically
-				  put into the system group users.
-				- canDeleteUser: Allows the user to delete users. 
-				- canCreatePassword: Allows the user to create new OLAT passwords when no such password
-				  exists. If set to false, the usermanager has a limited user creation form that has no 
-				  option to add a password. In addition, the user import workflow does not feature
-				  a password column.
-				- canModifyPassword: Allows the user to modify the password of all users that he has 
-				  the right to manage (see canManageXXX configuration below)
-				- canStartGroups: Allows the user to start every group a user is in. If disabled, the groups
-				  are only listed and have no link to start.
-				- accessToQuota: Allows the user to modify the personal quota of users he can manage
-				- accessToProperties: Allows the user to see all properties of for users he can manage
-				  including the course properties. This is usually not very interresting for user 
-				  managers, it is commonly used by system administrators for debugging.
-				- accessToPolicies: Allows the user to see system security policies for all users he
-				  can manage. This is usually not very interresting for user managers.
-				- accessToAuthentications: Allows the user to see and delete authentication tokens for
-				  user he can manage. This is used e.g. to reset the RSS or Jabber password or to remove
-				  a shibboleth or OLAT authentication. In most cases this is a power feature used only
-				  by system administrators.
-				- canManageGroupmanagers: Allows the user to add a user to the system group 
-				  groupmanagers. Groupmanagers can manage course comprehensive groups using the top
-				  navigation site Groupmanagement. When set to false, the user manager is not allowed 
-				  to modify any profile information or password from a user that is within such a group.
-				- canModifySubscriptions: Allows the user to list all the subscriptions the users has, 
-				  launch the corresponding resource and allow the user to delete unwanted subscriptions.
-				  This is e.g. usefull to delete subscriptions where the user has no more access or to 
-				  manage users that are inactive at the moment but you do not yet want to delete them.
-				- canManageAuthors: Allows the user to add a user to the system group authors. Authors
-				  are allowed to create new learning resources in the learning resources repository. Note
-				  that beeing added as a co-author to a learning resource grants also the right to create
-				  new learning resources, however the user is not automatically put into the system group
-				  authors! When set to false, the user manager is not allowed to modify any profile 
-				  information or password from a user that is within such a group.
-				- canManageGuests: Allows the user to add a user to the system group guests. Guests are
-				  anonymous users that must not be in any other system group. Guests have limited access
-				  to OLAT. When set to false, the user manager is not allowed to modify any profile 
-				  information or password from a user that is within such a group. Usually it is a good 
-				  idea to let only system administrators manage guests.
-				- canBypassEmailverification: True allows a user admin to bypass the email verification workflow, 
-				  i.e. change emails directly without having a user to do verification.
-				- canEditAllProfileFields: True allowes the user admin to edit all fields in user
-				  profile form. Be careful when enabling this feature since the user admin will be able
-				  to change fields which contain validated data from shibboleth login process.
-				-->
-	                </value>
-                </property>
-</bean>
 
 </beans>

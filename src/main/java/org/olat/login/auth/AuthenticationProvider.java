@@ -85,6 +85,10 @@ public class AuthenticationProvider implements ControllerCreator{
 		return isDefault;
 	}
 	
+	public boolean accept(@SuppressWarnings("unused") String subProviderName) {
+		return false;
+	}
+	
 	/**
 	 * @return Name used to identify this authprovider.
 	 */

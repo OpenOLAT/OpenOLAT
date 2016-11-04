@@ -28,6 +28,8 @@ import static org.olat.modules.qpool.ui.metadata.MetaUIFactory.validateSelection
 import static org.olat.modules.qpool.ui.metadata.MetaUIFactory.validateInteger;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
@@ -41,6 +43,8 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
+import org.olat.ims.qti.QTIConstants;
+import org.olat.ims.qti21.QTI21Constants;
 import org.olat.modules.qpool.QPoolService;
 import org.olat.modules.qpool.QuestionItem;
 import org.olat.modules.qpool.model.QuestionItemImpl;
@@ -80,6 +84,11 @@ public class QuestionMetadataEditController extends FormBasicController {
 		if(item.getType() != null) {
 			typeEl.select(item.getType().getType(), true);
 		}
+		// don't let users modify our internal formats - no automatic magic conversion possible
+		List<String> formatList = new ArrayList<>();
+		formatList.add(QTIConstants.QTI_12_FORMAT);
+		formatList.add(QTI21Constants.QTI_21_FORMAT);
+		typeEl.setEnabled(!formatList.contains(item.getFormat()));
 		
 		String difficulty = bigDToString(item.getDifficulty());
 		difficultyEl = uifactory.addTextElement("question.difficulty", "question.difficulty", 24, difficulty, formLayout);

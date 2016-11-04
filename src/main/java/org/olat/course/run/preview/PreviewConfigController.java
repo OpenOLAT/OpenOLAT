@@ -33,6 +33,8 @@ import java.util.Set;
 import org.olat.core.commons.fullWebApp.LayoutMain3ColsController;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.panel.SimpleStackedPanel;
+import org.olat.core.gui.components.panel.StackedPanel;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
@@ -109,7 +111,9 @@ public class PreviewConfigController extends MainLayoutBasicController {
 		previewLayoutCtr = new LayoutMain3ColsController(ureq, wControl, null, configVc, null);
 		previewLayoutCtr.addCssClassToMain("o_preview");
 		listenTo(previewLayoutCtr); // for later auto disposal
-		putInitialPanel(previewLayoutCtr.getInitialComponent());
+		StackedPanel initialPanel = putInitialPanel(new SimpleStackedPanel("coursePreviewPanel", "o_edit_mode"));
+		initialPanel.setContent(previewLayoutCtr.getInitialComponent());
+
 	}
 
 	/**

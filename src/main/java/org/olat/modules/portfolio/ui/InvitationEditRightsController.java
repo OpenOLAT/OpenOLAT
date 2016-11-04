@@ -133,18 +133,22 @@ public class InvitationEditRightsController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		formLayout.setElementCssClass("o_sel_pf_invitation_form");
 		FormLayoutContainer inviteeCont = FormLayoutContainer.createDefaultFormLayout("inviteeInfos", getTranslator());
 		inviteeCont.setRootForm(mainForm);
 		formLayout.add("inviteeInfos", inviteeCont);
 		
 		firstNameEl = uifactory.addTextElement("firstName", "firstName", 64, invitation.getFirstName(), inviteeCont);
+		firstNameEl.setElementCssClass("o_sel_pf_invitation_firstname");
 		firstNameEl.setMandatory(true);
 		
 		lastNameEl = uifactory.addTextElement("lastName", "lastName", 64, invitation.getLastName(), inviteeCont);
+		lastNameEl.setElementCssClass("o_sel_pf_invitation_lastname");
 		lastNameEl.setMandatory(true);
 		
 		String invitationEmail = email != null ? email : invitation.getMail();
 		mailEl = uifactory.addTextElement("mail", "mail", 128, invitationEmail, inviteeCont);
+		mailEl.setElementCssClass("o_sel_pf_invitation_mail");
 		mailEl.setMandatory(true);
 		mailEl.setNotEmptyCheck("map.share.empty.warn");
 		mailEl.setEnabled(invitation.getKey() == null);
@@ -161,6 +165,7 @@ public class InvitationEditRightsController extends FormBasicController {
 			
 		String link = getInvitationLink();
 		StaticTextElement linkEl = uifactory.addStaticTextElement("invitation.link" , link, inviteeCont);
+		linkEl.setElementCssClass("o_sel_pf_invitation_url");
 		linkEl.setLabel("invitation.link", null);
 		
 		//binder

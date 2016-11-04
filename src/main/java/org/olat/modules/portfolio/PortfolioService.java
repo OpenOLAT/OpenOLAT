@@ -28,13 +28,14 @@ import java.util.Map;
 import org.olat.basesecurity.IdentityRef;
 import org.olat.core.id.Identity;
 import org.olat.core.util.vfs.VFSLeaf;
+import org.olat.modules.assessment.model.AssessmentEntryStatus;
 import org.olat.modules.portfolio.model.AccessRightChange;
 import org.olat.modules.portfolio.model.AccessRights;
 import org.olat.modules.portfolio.model.AssessedBinder;
 import org.olat.modules.portfolio.model.AssessmentSectionChange;
+import org.olat.modules.portfolio.model.BinderPageUsage;
 import org.olat.modules.portfolio.model.BinderStatistics;
 import org.olat.modules.portfolio.model.CategoryLight;
-import org.olat.modules.portfolio.model.BinderPageUsage;
 import org.olat.modules.portfolio.model.SynchedBinder;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
@@ -103,7 +104,7 @@ public interface PortfolioService {
 	public Assignment updateAssignment(Assignment assignment, String title, String summary, String content, AssignmentType type);
 
 	
-	public List<Assignment> getAssignments(PortfolioElement binder);
+	public List<Assignment> getAssignments(PortfolioElement binder, String searchString);
 	
 	public List<Assignment> searchOwnedAssignments(IdentityRef assignee);
 	
@@ -501,6 +502,11 @@ public interface PortfolioService {
 	public List<AssessmentSection> getAssessmentSections(BinderRef binder, Identity coach);
 	
 	public void updateAssessmentSections(BinderRef binder, List<AssessmentSectionChange> changes, Identity coachingIdentity);
+	
+	public AssessmentEntryStatus getAssessmentStatus(Identity assessedIdentity, BinderRef binderRef);
+	
+	public void setAssessmentStatus(Identity assessedIdentity, BinderRef binderRef, AssessmentEntryStatus status, Identity coachingIdentity);
+		
 	
 
 }

@@ -19,7 +19,7 @@
 **/
 package org.olat.group.model;
 
-import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryRef;
 
 /**
  * 
@@ -47,7 +47,7 @@ public class BusinessGroupQueryParams {
 	private boolean authorConnection;
 	
 	private Long businessGroupKey;
-	private RepositoryEntry repositoryEntry;
+	private RepositoryEntryRef repositoryEntry;
 	
 	public BusinessGroupQueryParams() {
 		//
@@ -182,11 +182,11 @@ public class BusinessGroupQueryParams {
 		this.businessGroupKey = businessGroupKey;
 	}
 
-	public RepositoryEntry getRepositoryEntry() {
+	public RepositoryEntryRef getRepositoryEntry() {
 		return repositoryEntry;
 	}
 
-	public void setRepositoryEntry(RepositoryEntry repositoryEntry) {
+	public void setRepositoryEntry(RepositoryEntryRef repositoryEntry) {
 		this.repositoryEntry = repositoryEntry;
 	}
 

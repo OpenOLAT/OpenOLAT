@@ -249,7 +249,7 @@ public class QTI21ImportProcessor {
 		//if question type not found, can be overridden by the metadatas
 		processItemMetadata(poolItem, metadata);
 		if(poolItem.getType() == null) {
-			QItemType defType = qItemTypeDao.loadByType(QuestionType.UNKOWN.name());
+			QItemType defType = convertType(assessmentItem);
 			poolItem.setType(defType);
 		}
 		/*if(docInfos != null) {
@@ -260,6 +260,20 @@ public class QTI21ImportProcessor {
 		}
 		questionItemDao.persist(owner, poolItem);
 		return poolItem;
+	}
+	
+	protected QItemType convertType(AssessmentItem assessmentItem) {
+		QTI21QuestionType qti21Type = QTI21QuestionType.getType(assessmentItem);
+		switch(qti21Type) {
+			case sc: return qItemTypeDao.loadByType(QuestionType.SC.name());
+			case mc: return qItemTypeDao.loadByType(QuestionType.MC.name());
+			case kprim: return qItemTypeDao.loadByType(QuestionType.KPRIM.name());
+			case fib: return qItemTypeDao.loadByType(QuestionType.FIB.name());
+			case numerical: return qItemTypeDao.loadByType(QuestionType.NUMERICAL.name());
+			case hotspot: return qItemTypeDao.loadByType(QuestionType.HOTSPOT.name());
+			case essay: return qItemTypeDao.loadByType(QuestionType.ESSAY.name());
+			default: return qItemTypeDao.loadByType(QuestionType.UNKOWN.name());
+		}
 	}
 	
 	protected void processItemMetadata(QuestionItemImpl poolItem, AssessmentItemMetadata metadata) {

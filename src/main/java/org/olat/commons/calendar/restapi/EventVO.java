@@ -33,6 +33,7 @@ import org.olat.commons.calendar.model.KalendarEvent;
 public class EventVO {
 	
 	private String id;
+	private String recurrenceId;
 	private String subject;
 	private String description;
 	private String location;
@@ -52,6 +53,7 @@ public class EventVO {
 	
 	public EventVO(KalendarEvent event) {
 		id = event.getID();
+		recurrenceId = event.getRecurrenceID();
 		subject = event.getSubject();
 		description = event.getDescription();
 		location = event.getLocation();
@@ -66,6 +68,10 @@ public class EventVO {
 
 	public String getId() {
 		return id;
+	}
+	
+	public String getRecurrenceId() {
+		return recurrenceId;
 	}
 
 	public void setId(String id) {

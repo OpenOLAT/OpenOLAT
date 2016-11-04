@@ -68,8 +68,8 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class PageMetadataController extends BasicController {
 	
-	public static final int PICTURE_WIDTH = 570;
-	public static final int PICTURE_HEIGHT = (PICTURE_WIDTH / 3) * 2;
+	public static final int PICTURE_WIDTH = 300;
+	public static final int PICTURE_HEIGHT = (PICTURE_WIDTH / 3) * 2;//max-height=200px is defined in css
 	
 	private Link publishButton, revisionButton, closeButton, reopenButton;
 	private ImageComponent imageCmp;
@@ -91,7 +91,7 @@ public class PageMetadataController extends BasicController {
 		super(ureq, wControl);
 		this.page = page;
 		this.secCallback = secCallback;
-		assignments = portfolioService.getAssignments(page);
+		assignments = portfolioService.getAssignments(page, null);
 
 		mainVC = createVelocityContainer("page_meta");
 		
@@ -189,18 +189,22 @@ public class PageMetadataController extends BasicController {
 			if(secCallback.canPublish(page)) {
 				publishButton = LinkFactory.createButtonSmall("publish", mainVC, this);
 				publishButton.setIconLeftCSS("o_icon o_icon_publish o_icon-fw");
+				publishButton.setElementCssClass("o_sel_pf_publish_entry");
 			}
 			if(secCallback.canRevision(page)) {
 				revisionButton = LinkFactory.createButtonSmall("revision.page", mainVC, this);
 				revisionButton.setIconLeftCSS("o_icon o_icon_rejected o_icon-fw");
+				revisionButton.setElementCssClass("o_sel_pf_revision_entry");
 			}
 			if(secCallback.canClose(page)) {
 				closeButton = LinkFactory.createButtonSmall("close.page", mainVC, this);
 				closeButton.setIconLeftCSS("o_icon o_icon_status_done o_icon-fw");
+				closeButton.setElementCssClass("o_sel_pf_close_entry");
 			}
 			if(secCallback.canReopen(page)) {
 				reopenButton = LinkFactory.createButtonSmall("reopen.page", mainVC, this);
 				reopenButton.setIconLeftCSS("o_icon o_icon_redo o_icon-fw");
+				reopenButton.setElementCssClass("o_sel_pf_reopen_entry");
 			}
 		}
 	}

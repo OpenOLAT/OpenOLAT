@@ -37,17 +37,11 @@ import java.util.List;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
-import org.olat.core.configuration.Destroyable;
-import org.olat.core.configuration.Initializable;
-import org.olat.core.configuration.PersistedProperties;
-import org.olat.core.configuration.PersistedPropertiesChangedEvent;
 import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.control.Event;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.WebappHelper;
-import org.olat.core.util.event.GenericEventListener;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
 
@@ -60,23 +54,17 @@ import org.springframework.core.io.Resource;
  *
  * @author Felix Jost
  */
-public class Settings implements Initializable, Destroyable, GenericEventListener {
+public class Settings {
 
 	private static boolean debug = false;
-	private static String guiThemeIdentifyer = "light";
 	private static String htmlEditorContentCssClassPrefixes;
 	private static List<Pattern> ajaxBlacklistPatterns = new ArrayList<Pattern>();
 	private static boolean jUnitTest;
-	// the persited properties contain user configurable config data (overrides
-	// default values from spring config)
-	private static PersistedProperties persistedProperties;
 	private static String applicationName;
 	private static String version;
 	private static String buildIdentifier;
 	private static OLog log = Tracing.createLoggerFor(Settings.class);
 
-
-	private static final String KEY_GUI_THEME_IDENTIFYER = "layout.theme";
 	private static int nodeId;
 	private static String clusterMode;
 	private static Date buildDate;
@@ -149,10 +137,6 @@ public class Settings implements Initializable, Destroyable, GenericEventListene
 			setBuildDate();
 		}
 		return buildDate;
-	}
-
-	public void setPersistedProperties(PersistedProperties persistedProperties) {
-		Settings.persistedProperties = persistedProperties;
 	}
 
 	/**
@@ -282,48 +266,7 @@ public class Settings implements Initializable, Destroyable, GenericEventListene
 	public void setDebug(boolean debug) {
 		Settings.debug = debug;
 	}
-	
-	/**
-	 * @see org.olat.core.configuration.ServiceLifeCycle#init()
-	 */
-	@Override
-	public void init() {
-		// Initialize the user configuration and the spring default configuration
-		//
-		// Set the default theme configured in the spring configuration
-		persistedProperties.setStringPropertyDefault(KEY_GUI_THEME_IDENTIFYER, guiThemeIdentifyer);		
-		// Override gui theme with value from properties configuration
-		guiThemeIdentifyer = persistedProperties.getStringPropertyValue(KEY_GUI_THEME_IDENTIFYER, false);
-	}
 
-	/**
-	 * @see org.olat.core.configuration.ServiceLifeCycle#destroy()
-	 */
-	@Override
-	public void destroy() {
-		if (persistedProperties != null) {
-			persistedProperties.destroy();
-			persistedProperties = null;
-		}
-	}
-
-
-	/**
-	 * @return the CSS theme used for this webapp
-	 */
-	public static String getGuiThemeIdentifyer() {
-		return guiThemeIdentifyer;			
-	}
-
-	/**
-	 * Set the CSS theme used for this webapp. Only used by spring. Use static
-	 * method to change the theme at runtime!
-	 * 
-	 * @param guiTheme
-	 */
-	public void setGuiThemeIdentifyer(String guiThemeIdentifyer) {
-		Settings.guiThemeIdentifyer = guiThemeIdentifyer;
-	}
 
 	/**
 	 * @return A regexp that matches for css class name prefixes that should be
@@ -371,27 +314,6 @@ public class Settings implements Initializable, Destroyable, GenericEventListene
 					+ guiCustomThemePath
 					+ " invalid. Configure property layout.custom.themes.dir if you want to use a custom themes directory.");
 		}
-	}	
-	
-	/**
-	 * Set the CSS theme used for this webapp. The configuration is stored in
-	 * the olatdata/system/configuration properties file and overrides the
-	 * spring default configuration.
-	 * 
-	 * @param newGuiThemeIdentifyer
-	 */
-	public static void setGuiThemeIdentifyerGlobally(String newGuiThemeIdentifyer) {
-		if (!guiThemeIdentifyer.equals(newGuiThemeIdentifyer)) {
-			// store new configuration and notify other nodes
-			persistedProperties.setStringProperty(KEY_GUI_THEME_IDENTIFYER, newGuiThemeIdentifyer, true);
-		}
-	}
-	
-	public void event(Event event) {
-		if (event instanceof PersistedPropertiesChangedEvent) {
-			// Override gui theme with value from properties configuration
-			guiThemeIdentifyer = persistedProperties.getStringPropertyValue(KEY_GUI_THEME_IDENTIFYER, false);
-		}
 	}
 	
 	public static String getURIScheme() {
@@ -405,7 +327,6 @@ public class Settings implements Initializable, Destroyable, GenericEventListene
 	public static boolean isInsecurePortAvailable() {
 		return getServerInsecurePort() > 0;
 	}
-
 
 	public static String createServerURI() {
 		String uri;

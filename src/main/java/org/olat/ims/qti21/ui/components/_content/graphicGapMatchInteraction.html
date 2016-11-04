@@ -20,7 +20,7 @@
 		#foreach($hotspot in $hotspots)
 			<!-- @matchGroup, @matchMax -->
 			<area id="ac_${responseIdentifier}_${hotspot.identifier}" data-qti-id="${hotspot.identifier}" shape="${r.shapeToString($hotspot.shape)}" coords="$r.coordsToString($hotspot.coords)" href="javascript:;" #if($hotspot.hotspotLabel && !${hotspot.getHotspotLabel().isEmpty()}) title="$hotspot.getHotspotLabel()" #end class="area-droppable"></area>
-			$r.appendFlexiFormDirtyForClick("$hotspot.identifier")
+			$r.appendFlexiFormDirtyForClick("ac_${responseIdentifier}_$hotspot.identifier")
 		#end
 		</map>
 		<div class="o_gap_container_help">

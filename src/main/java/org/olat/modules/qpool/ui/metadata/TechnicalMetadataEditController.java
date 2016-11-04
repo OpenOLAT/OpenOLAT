@@ -22,6 +22,9 @@ package org.olat.modules.qpool.ui.metadata;
 import static org.olat.modules.qpool.ui.metadata.MetaUIFactory.validateElementLogic;
 import static org.olat.modules.qpool.ui.metadata.MetaUIFactory.validateSelection;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -33,8 +36,10 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.Formatter;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.ims.qti.QTIConstants;
+import org.olat.ims.qti21.QTI21Constants;
 import org.olat.modules.qpool.QPoolService;
 import org.olat.modules.qpool.QuestionItem;
 import org.olat.modules.qpool.model.QuestionItemImpl;
@@ -74,9 +79,25 @@ public class TechnicalMetadataEditController extends FormBasicController {
 		editorEl = uifactory.addTextElement("technical.editor", "technical.editor", 50, item.getEditor(), formLayout);
 		editorVersionEl = uifactory.addTextElement("technical.editorVersion", "technical.editorVersion", 50, item.getEditorVersion(), formLayout);
 		
-		String[] formatKeys = new String[]{ QTIConstants.QTI_12_FORMAT };
+		List<String> formatList = new ArrayList<>();
+		formatList.add(QTIConstants.QTI_12_FORMAT);
+		formatList.add(QTI21Constants.QTI_21_FORMAT);
+		if(StringHelper.containsNonWhitespace(item.getFormat()) && !formatList.contains(item.getFormat())) {
+			formatList.add(item.getFormat());
+		}
+
+		String[] formatKeys = formatList.toArray(new String[formatList.size()]);
 		formatEl = uifactory.addDropdownSingleselect("technical.format", "technical.format", formLayout,
 				formatKeys, formatKeys, null);
+		if(StringHelper.containsNonWhitespace(item.getFormat())) {
+			for(String formatKey:formatKeys) {
+				if(formatKey.equals(item.getFormat())) {
+					formatEl.select(formatKey, true);
+				}
+			}
+		}
+		// don't let users modify our internal formats
+		formatEl.setEnabled(!formatList.contains(item.getFormat()));
 		
 		Formatter formatter = Formatter.getInstance(getLocale());
 		String creationDate = formatter.formatDateAndTime(item.getCreationDate());

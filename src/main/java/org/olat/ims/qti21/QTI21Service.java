@@ -193,6 +193,14 @@ public interface QTI21Service {
 	public AssessmentTestMarks updateMarks(AssessmentTestMarks marks);
 	
 	/**
+	 * Reload the test session by its key and fetch identity, user...
+	 * 
+	 * @param assessmentTestSessionKey
+	 * @return The assessment test session or null if not found.
+	 */
+	public AssessmentTestSession getAssessmentTestSession(Long assessmentTestSessionKey);
+	
+	/**
 	 * Retrieve the sessions of a user.
 	 * 
 	 * @param courseEntry

@@ -51,6 +51,14 @@ public interface QPoolSPI {
 	public boolean isCompatible(String filename, VFSLeaf file);
 	
 	/**
+	 * 
+	 * @param question
+	 * @return A format if 
+	 */
+	public boolean isConversionPossible(QuestionItemShort question);
+
+	
+	/**
 	 * List a item's type this provider can create
 	 * @return
 	 */
@@ -85,6 +93,14 @@ public interface QPoolSPI {
 	 * @param copy
 	 */
 	public void copyItem(QuestionItemFull original, QuestionItemFull copy);
+	
+	/**
+	 * Convert the question to the format supported by this service provider.
+	 * 
+	 * @param question
+	 * @return The created question after conversion or null if the conversion is not possible.
+	 */
+	public QuestionItem convert(Identity owner, QuestionItemShort question, Locale locale);
 	
 	/**
 	 * Return the preview controller used in the main list panel of

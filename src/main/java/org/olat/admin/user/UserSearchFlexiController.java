@@ -22,6 +22,7 @@ package org.olat.admin.user;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -256,6 +257,11 @@ public class UserSearchFlexiController extends FlexiAutoCompleterController {
 					Identity chosenIdent = securityManager.loadIdentityByKey(key);
 					if(chosenIdent != null) {
 						fireEvent(ureq, new SingleIdentityChosenEvent(chosenIdent));
+						List<Identity> selectedIdentities = Collections.singletonList(chosenIdent);
+						userTableModel.setObjects(selectedIdentities);
+						Set<Integer> selectedIndex = new HashSet<>();
+						selectedIndex.add(new Integer(0));
+						tableEl.setMultiSelectedIndex(selectedIndex);
 					}
 				}
 			} catch (NumberFormatException e) {
@@ -329,6 +335,10 @@ public class UserSearchFlexiController extends FlexiAutoCompleterController {
 		if(source == backLink) {
 			flc.contextPut("noList","false");			
 			flc.contextPut("showButton","false");
+			if(userTableModel != null) {
+				userTableModel.setObjects(new ArrayList<>());
+				tableEl.reset();
+			}
 		} else if(searchButton == source) {
 			if(validateForm(ureq)) {
 				doSearch();
@@ -384,7 +394,7 @@ public class UserSearchFlexiController extends FlexiAutoCompleterController {
 	
 	public List<Identity> getSelectedIdentities() {
 		Set<Integer> index = tableEl.getMultiSelectedIndex();		
-		List<Identity> selectedIdentities =	new ArrayList<Identity>();
+		List<Identity> selectedIdentities =	new ArrayList<>(index.size());
 		for(Integer i : index) {
 			Identity selectedIdentity = userTableModel.getObject(i.intValue());
 			selectedIdentities.add(selectedIdentity);
@@ -392,7 +402,7 @@ public class UserSearchFlexiController extends FlexiAutoCompleterController {
 		return selectedIdentities;
 	}
 	
-	private void doSearch() {
+	public void doSearch() {
 		String login = loginEl.getValue();
 		// build user fields search map
 		Map<String, String> userPropertiesSearch = new HashMap<String, String>();				
@@ -422,6 +432,7 @@ public class UserSearchFlexiController extends FlexiAutoCompleterController {
 	/**
 	 * @see org.olat.core.gui.control.DefaultController#doDispose(boolean)
 	 */
+	@Override
 	protected void doDispose() {
 		// Child controllers auto-disposed by basic controller
 	}

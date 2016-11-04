@@ -6,6 +6,15 @@ create table if not exists o_forum (
    creationdate datetime,
    primary key (forum_id)
 );
+create table o_forum_pseudonym (
+   id bigint not null auto_increment,
+   creationdate datetime not null,
+   p_pseudonym varchar(255) not null,
+   p_credential varchar(255) not null,
+   p_salt varchar(255) not null,
+   p_hashalgorithm varchar(16) not null,
+   primary key (id)
+);
 create table if not exists o_property (
    id bigint not null,
    version mediumint unsigned not null,
@@ -1228,6 +1237,7 @@ create table o_cer_certificate (
    c_status varchar(16) not null default 'pending',
    c_email_status varchar(16),
    c_uuid varchar(36) not null,
+   c_next_recertification datetime,
    c_path varchar(1024),
    c_last boolean not null default 1,
    c_course_title varchar(255),
@@ -2042,6 +2052,7 @@ alter table oc_lock add index FK9E30F4B66115906D (identity_fk), add constraint F
 alter table hibernate_unique_key ENGINE = InnoDB;
 
 alter table o_forum ENGINE = InnoDB;
+alter table o_forum_pseudonym ENGINE = InnoDB;
 alter table o_property ENGINE = InnoDB;
 alter table o_bs_secgroup ENGINE = InnoDB;
 alter table o_bs_group ENGINE = InnoDB;
@@ -2366,9 +2377,12 @@ alter table o_message add constraint FKF26C837A3FBEB83 foreign key (modifier_id)
 alter table o_message add constraint FKF26C8377B66B0D0 foreign key (parent_id) references o_message (message_id);
 alter table o_message add constraint FKF26C8378EAC1DBB foreign key (topthread_id) references o_message (message_id);
 alter table o_message add constraint FKF26C8371CB7C4A3 foreign key (forum_fk) references o_forum (forum_id);
+create index forum_msg_pseudonym_idx on o_message (pseudonym);
 
 create index readmessage_forum_idx on o_readmessage (forum_id);
 create index readmessage_identity_idx on o_readmessage (identity_id);
+
+create index forum_pseudonym_idx on o_forum_pseudonym (p_pseudonym);
 
 -- project broker
 create index projectbroker_project_broker_idx on o_projectbroker_project (projectbroker_fk);

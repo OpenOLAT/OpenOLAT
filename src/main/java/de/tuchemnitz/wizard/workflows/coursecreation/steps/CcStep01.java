@@ -132,7 +132,7 @@ class CcStep01 extends BasicStep {
 				cic.init();
 			} else {
 				// save item
-				finishWorkflowItem(ureq);
+				finishWorkflowItem();
 			}
 		}
 
@@ -169,7 +169,7 @@ class CcStep01 extends BasicStep {
 			cic.init();
 		}
 
-		public void finishWorkflowItem(UserRequest ureq) {
+		public void finishWorkflowItem() {
 			if (cic != null) {
 				// close selection tree and remember selection
 				CatalogEntry ce = cic.getSelectedParent();

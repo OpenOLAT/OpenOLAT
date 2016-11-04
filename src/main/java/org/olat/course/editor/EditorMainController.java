@@ -39,6 +39,8 @@ import org.olat.core.gui.components.dropdown.Dropdown;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.panel.MainPanel;
+import org.olat.core.gui.components.panel.SimpleStackedPanel;
+import org.olat.core.gui.components.panel.StackedPanel;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.components.stack.TooledStackedPanel.Align;
 import org.olat.core.gui.components.tabbedpane.TabbedPane;
@@ -277,7 +279,8 @@ public class EditorMainController extends MainLayoutBasicController implements G
 				columnLayoutCtr = new LayoutMain3ColsController(ureq, getWindowControl(), menuTree, main, "course" + course.getResourceableId());			
 				columnLayoutCtr.addCssClassToMain("o_editor");
 				listenTo(columnLayoutCtr);
-				putInitialPanel(columnLayoutCtr.getInitialComponent());
+				StackedPanel initialPanel = putInitialPanel(new SimpleStackedPanel("coursePanel", "o_edit_mode"));
+				initialPanel.setContent(columnLayoutCtr.getInitialComponent());
 				
 				//tools
 				statusLink = LinkFactory.createToolLink("status", translate("status"), this, null);

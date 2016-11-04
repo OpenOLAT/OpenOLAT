@@ -68,6 +68,8 @@ import org.olat.repository.RepositoryDeletionModule;
 import org.olat.user.UserDataDeletable;
 import org.olat.user.UserManager;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 
 /**
@@ -75,6 +77,7 @@ import org.olat.user.propertyhandlers.UserPropertyHandler;
  * 
  * @author Christian Guretzki  
  */
+@Service("userDeletionManager")
 public class UserDeletionManager extends BasicManager {
 	
 	public static final String DELETED_USER_DELIMITER = "_bkp_";
@@ -95,51 +98,22 @@ public class UserDeletionManager extends BasicManager {
 	
 
 	// Flag used in user-delete to indicate that all deletable managers are initialized
+	@Autowired
 	private RepositoryDeletionModule deletionModule;
+	@Autowired
 	private RegistrationManager registrationManager;
+	@Autowired
 	private BaseSecurity securityManager;
+	@Autowired
 	private MailManager mailManager;
+	@Autowired
 	private GroupDAO groupDao;
 
 	/**
 	 * [used by spring]
 	 */
-	private UserDeletionManager(RepositoryDeletionModule deletionModule) {
-		this.deletionModule = deletionModule;
+	private UserDeletionManager() {
 		INSTANCE = this;
-	}
-
-
-	/**
-	 * 
-	 * @param securityManager
-	 */
-	public void setBaseSecurityManager(BaseSecurity securityManager) {
-		this.securityManager = securityManager;
-	}
-	
-	/**
-	 * [used by Spring]
-	 * @param mailManager
-	 */
-	public void setMailManager(MailManager mailManager) {
-		this.mailManager = mailManager;
-	}
-	
-	/**
-	 * [used by Spring]
-	 * @param groupDao
-	 */
-	public void setGroupDao(GroupDAO groupDao) {
-		this.groupDao = groupDao;
-	}
-	
-	/**
-	 * [used by Spring]
-	 * @param registrationManager
-	 */
-	public void setRegistrationManager(RegistrationManager registrationManager) {
-		this.registrationManager = registrationManager;
 	}
 
 	/**
@@ -329,26 +303,29 @@ public class UserDeletionManager extends BasicManager {
 
 		identity = securityManager.loadIdentityByKey(identity.getKey());
 		//keep login-name only -> change email
-		if (!keepUserEmailAfterDeletion){
-			List<UserPropertyHandler> userPropertyHandlers = UserManager.getInstance().getUserPropertyHandlersFor("org.olat.admin.user.UsermanagerUserSearchForm", true);
-			User persistedUser = identity.getUser();
-			String actualProperty;
-			for (UserPropertyHandler userPropertyHandler : userPropertyHandlers) {
-				actualProperty = userPropertyHandler.getName(); 
-				if (actualProperty.equals(UserConstants.EMAIL)){
-					String oldEmail = userPropertyHandler.getUserProperty(persistedUser, null);
-					String newEmail = "";
-					if (StringHelper.containsNonWhitespace(oldEmail)){ 
-						newEmail = getBackupStringWithDate(oldEmail);
-					}
-					logInfo("Update user-property user=" + persistedUser);
-					userPropertyHandler.setUserProperty(persistedUser, newEmail);
+
+		User persistedUser = identity.getUser();
+		List<UserPropertyHandler> userPropertyHandlers = UserManager.getInstance().getAllUserPropertyHandlers();
+		for (UserPropertyHandler userPropertyHandler : userPropertyHandlers) {
+			String actualProperty = userPropertyHandler.getName();
+			if (userPropertyHandler.isDeletable()
+					&& !(keepUserEmailAfterDeletion && UserConstants.EMAIL.equals(actualProperty))) {
+				persistedUser.setProperty(actualProperty, null);
+			}
+			
+			if((!keepUserEmailAfterDeletion && UserConstants.EMAIL.equals(actualProperty))) {
+				String oldEmail = userPropertyHandler.getUserProperty(persistedUser, null);
+				String newEmail = "";
+				if (StringHelper.containsNonWhitespace(oldEmail)){ 
+					newEmail = getBackupStringWithDate(oldEmail);
 				}
+				logInfo("Update user-property user=" + persistedUser);
+				userPropertyHandler.setUserProperty(persistedUser, newEmail);
 			}
 		}
+		UserManager.getInstance().updateUserFromIdentity(identity);
 		
-		logInfo("deleteUserProperties user=" + identity.getUser());
-		UserManager.getInstance().deleteUserProperties(identity.getUser(), keepUserEmailAfterDeletion);
+		logInfo("deleteUserProperties user=" + persistedUser);
 		DBFactory.getInstance().commit();
 		identity = securityManager.loadIdentityByKey(identity.getKey());
 		//keep email only -> change login-name
@@ -439,14 +416,6 @@ public class UserDeletionManager extends BasicManager {
 			property.setLongValue( new Long(value) );
 		}
 		PropertyManager.getInstance().saveProperty(property);
-	}
-
-	/**
-	 * Return in spring config defined administrator identity.
-	 * @return
-	 */
-	public Identity getAdminIdentity() {
-		return deletionModule.getAdminUserIdentity();
 	}
 
 	private File getArchivFilePath(Identity identity) {

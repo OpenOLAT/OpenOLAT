@@ -78,6 +78,8 @@ public class OAuthRegistrationController extends FormBasicController {
 	private Identity authenticatedIdentity;
 	
 	@Autowired
+	private UserModule userModule;
+	@Autowired
 	private UserManager userManager;
 	@Autowired
 	private BaseSecurity securityManager;
@@ -179,7 +181,7 @@ public class OAuthRegistrationController extends FormBasicController {
 		if (!userManager.syntaxCheckOlatLogin(login)) {
 			usernameEl.setErrorKey("form.check3", null);
 			allOk &= false;
-		} else if (UserModule.isLoginOnBlacklist(login)) {
+		} else if (userModule.isLoginOnBlacklist(login)) {
 			usernameEl.setErrorKey("form.check6", null);
 			allOk &= false;
 		} else {

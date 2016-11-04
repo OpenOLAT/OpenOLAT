@@ -820,7 +820,7 @@ public class BusinessGroupDAO {
 	 * @param entry
 	 * @return
 	 */
-	public List<StatisticsBusinessGroupRow> searchBusinessGroupsForRepositoryEntry(RepositoryEntryRef entry) {
+	public List<StatisticsBusinessGroupRow> searchBusinessGroupsForRepositoryEntry(BusinessGroupQueryParams params, IdentityRef identity, RepositoryEntryRef entry) {
 		//name, externalId, description, resources, tutors, participants, free places, waiting, access
 		
 		StringBuilder sb = new StringBuilder();
@@ -839,16 +839,17 @@ public class BusinessGroupDAO {
 		  .append(" ) as numOfReservations")
 		  .append(" from businessgrouptosearch as bgi")
 		  .append(" inner join fetch bgi.resource as bgResource ")
-		  .append(" inner join bgi.baseGroup as bGroup ")
-		  .append(" where bgi.baseGroup.key in (")
-	      .append("  select relation.group.key from repoentrytogroup relation where relation.entry.key=:resourceKey")
-	      .append(" )");
+		  .append(" inner join bgi.baseGroup as bGroup ");
+		if(params.getRepositoryEntry() == null) {
+			params.setRepositoryEntry(entry);//make sur the restricition is applied
+		}
+		filterBusinessGroupToSearch(sb, params, false);
 		
-		List<Object[]> objects = dbInstance.getCurrentEntityManager()
-				.createQuery(sb.toString(), Object[].class)
-				.setParameter("resourceKey", entry.getKey())
-				.getResultList();
+		TypedQuery<Object[]> objectsQuery = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Object[].class);
+		filterBusinessGroupToSearchParameters(objectsQuery, params, identity, false);
 		
+		List<Object[]> objects = objectsQuery.getResultList();
 		List<StatisticsBusinessGroupRow> groups = new ArrayList<>(objects.size());
 		Map<Long,BusinessGroupRow> keyToGroup = new HashMap<>();
 		Map<Long,BusinessGroupRow> resourceKeyToGroup = new HashMap<>();
@@ -858,8 +859,7 @@ public class BusinessGroupDAO {
 			Number numOfParticipants = (Number)object[2];
 			Number numWaiting = (Number)object[3];
 			Number numPending = (Number)object[4];
-			
-			
+
 			StatisticsBusinessGroupRow row
 				= new StatisticsBusinessGroupRow(businessGroup, numOfCoaches, numOfParticipants, numWaiting, numPending);
 			groups.add(row);

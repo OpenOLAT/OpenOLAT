@@ -1,6 +1,8 @@
 
-div#o_main_toolbar.o_toolbar.o_portfolio {
-	margin-top: 0px;
+.o_portfolio {
+	div#o_main_toolbar.o_toolbar {
+		margin-top: 0px;
+	}	
 }
 
 
@@ -224,6 +226,14 @@ div#o_main_toolbar.o_toolbar.o_portfolio {
 	.dot.o_pf_status_deleted {
 		fill: $o-portfolio-entry-deleted-color;
 	}
+}
+/* helper to position context help button next to timeline */
+.o_portfolio_title_help_helper {
+	display: inline-block; 
+	float: right; 
+	position: relative; 
+	top: 1em;
+	right: 1em;
 }
 
 .o_pf_comments {

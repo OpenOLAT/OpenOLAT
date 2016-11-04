@@ -882,6 +882,7 @@
 				
 				<entry key="org.olat.course.assessment.AssessedIdentitiesTableDataModel">
 					<bean class="org.olat.user.propertyhandlers.UserPropertyUsageContext">
+						<property name="description" value="Assessment tool" />
 						<property name="propertyHandlers">
 							<list>
 								<ref bean="userPropertyLastName" />
@@ -899,6 +900,7 @@
 				
 				<entry key="org.olat.modules.coach.ui.UserListController">
 					<bean class="org.olat.user.propertyhandlers.UserPropertyUsageContext">
+						<property name="description" value="Coaching tool" />
 						<property name="propertyHandlers">
 							<list>
 								<ref bean="userPropertyLastName" />
@@ -916,6 +918,7 @@
 				
 				<entry key="org.olat.course.assessment.ui.tool.AssessmentToReviewSmallController">
 					<bean class="org.olat.user.propertyhandlers.UserPropertyUsageContext">
+						<property name="description" value="Small preview in assessment tool" />
 						<property name="propertyHandlers">
 							<list>
 								<ref bean="userPropertyLastName" />

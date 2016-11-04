@@ -78,7 +78,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class BinderPageListController extends AbstractPageListController {
 	
-	private Link newSectionLink, newEntryLink;
+	private Link newSectionLink, newEntryLink, newAssignmentLink;
 	private FormLink newSectionButton, previousSectionLink, nextSectionLink, showAllSectionsLink;
 	
 	private CloseableModalController cmc;
@@ -101,6 +101,11 @@ public class BinderPageListController extends AbstractPageListController {
 		
 		initForm(ureq);
 		loadModel(ureq, null);
+		
+		if (secCallback.canNewAssignment()) {
+			// in template mode, add editor class to toolbar
+			initialPanel.setCssClass("o_edit_mode");
+		}
 	}
 
 	@Override
@@ -118,6 +123,14 @@ public class BinderPageListController extends AbstractPageListController {
 			newEntryLink.setElementCssClass("o_sel_pf_new_entry");
 			newEntryLink.setVisible(model.getRowCount() > 0);
 			stackPanel.addTool(newEntryLink, Align.right);
+		}
+		
+		if(secCallback.canNewAssignment()) {
+			newAssignmentLink = LinkFactory.createToolLink("new.assignment", translate("create.new.assignment"), this);
+			newAssignmentLink.setIconLeftCSS("o_icon o_icon-lg o_icon_new_portfolio");
+			newAssignmentLink.setElementCssClass("o_sel_pf_new_assignment");
+			newAssignmentLink.setVisible(model.getRowCount() > 0);
+			stackPanel.addTool(newAssignmentLink, Align.right);
 		}
 	}
 
@@ -197,7 +210,7 @@ public class BinderPageListController extends AbstractPageListController {
 		List<PortfolioElementRow> rows = new ArrayList<>();
 
 		//assignments
-		List<Assignment> assignments = portfolioService.getAssignments(binder);
+		List<Assignment> assignments = portfolioService.getAssignments(binder, searchString);
 		Map<Section,List<Assignment>> sectionToAssignmentMap = new HashMap<>();
 		for(Assignment assignment:assignments) {
 			List<Assignment> assignmentList;
@@ -302,6 +315,10 @@ public class BinderPageListController extends AbstractPageListController {
 			newEntryLink.setVisible(rows.size() > 0);
 			stackPanel.setDirty(true);
 		}
+		if(newAssignmentLink != null && !newAssignmentLink.isVisible()) {
+			newAssignmentLink.setVisible(rows.size() > 0);
+			stackPanel.setDirty(true);
+		}
 
 		disposeRows();//clean up the posters
 		model.setObjects(rows);
@@ -368,10 +385,16 @@ public class BinderPageListController extends AbstractPageListController {
 	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
 		if(newEntryLink == source) {
-			doCreateNewPage(ureq, null);
+			doCreateNewPage(ureq, filteringSection);
 		} else if(newSectionLink == source) {
 			doCreateNewSection(ureq);
-		} 
+		} else if(newAssignmentLink == source) {
+			if(filteringSection == null) {
+				doCreateNewAssignment(ureq);
+			} else {
+				doCreateNewAssignment(ureq, filteringSection);
+			}
+		}
 		super.event(ureq, source, event);
 	}
 	
@@ -401,23 +424,25 @@ public class BinderPageListController extends AbstractPageListController {
 	
 	@Override
 	public void event(UserRequest ureq, Controller source, Event event) {
-		if(newSectionCtrl == source || newAssignmentCtrl == source) {
+		if(newSectionCtrl == source) {
 			if(event == Event.DONE_EVENT) {
+				filteringSection = newSectionCtrl.getSection();
 				loadModel(ureq, null);
 				fireEvent(ureq, Event.CHANGED_EVENT);
 			}
 			cmc.deactivate();
 			cleanUp();
-		} else if(newSectionCtrl == source || newPageCtrl == source || newAssignmentCtrl == source) {
+		} else if(newPageCtrl == source) {
 			if(event == Event.DONE_EVENT) {
 				loadModel(ureq, null);
-				Page newPage = newPageCtrl.getPage();
-				for(PortfolioElementRow row:model.getObjects()) {
-					if(row.getPage() != null && row.getPage().equals(newPage)) {
-						doOpenRow(ureq, row, true);
-						break;
-					}
-				}
+				doOpenPage(ureq, newPageCtrl.getPage(), true);				
+				fireEvent(ureq, Event.CHANGED_EVENT);
+			}
+			cmc.deactivate();
+			cleanUp();
+		} else if(newAssignmentCtrl == source) {
+			if(event == Event.DONE_EVENT) {
+				loadModel(ureq, null);
 				fireEvent(ureq, Event.CHANGED_EVENT);
 			}
 			cmc.deactivate();
@@ -504,6 +529,18 @@ public class BinderPageListController extends AbstractPageListController {
 		
 		String title = translate("create.new.page");
 		cmc = new CloseableModalController(getWindowControl(), null, newPageCtrl.getInitialComponent(), true, title, true);
+		listenTo(cmc);
+		cmc.activate();
+	}
+	
+	private void doCreateNewAssignment(UserRequest ureq) {
+		if(newAssignmentCtrl != null) return;
+
+		newAssignmentCtrl = new AssignmentEditController(ureq, getWindowControl(), binder);
+		listenTo(newAssignmentCtrl);
+		
+		String title = translate("create.new.assignment");
+		cmc = new CloseableModalController(getWindowControl(), null, newAssignmentCtrl.getInitialComponent(), true, title, true);
 		listenTo(cmc);
 		cmc.activate();
 	}

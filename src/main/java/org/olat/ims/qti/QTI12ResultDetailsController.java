@@ -55,10 +55,9 @@ import org.olat.course.nodes.AssessableCourseNode;
 import org.olat.course.run.scoring.ScoreEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.ims.qti.container.AssessmentContext;
-import org.olat.ims.qti.editor.QTIEditorPackage;
-import org.olat.ims.qti.editor.QTIEditorPackageImpl;
 import org.olat.ims.qti.editor.beecom.objects.Assessment;
 import org.olat.ims.qti.editor.beecom.objects.Item;
+import org.olat.ims.qti.editor.beecom.objects.QTIDocument;
 import org.olat.ims.qti.editor.beecom.objects.Section;
 import org.olat.ims.qti.fileresource.TestFileResource;
 import org.olat.ims.qti.process.AssessmentFactory;
@@ -121,11 +120,9 @@ public class QTI12ResultDetailsController extends BasicController {
 	}
 	
 	private boolean checkEssay() {
-		TestFileResource fr = new TestFileResource();
-		fr.overrideResourceableId(repositoryEntry.getOlatResource().getResourceableId());
-		QTIEditorPackage qtiPackage = new QTIEditorPackageImpl(getIdentity(), fr, null, getTranslator());
-		if(qtiPackage.getQTIDocument() != null && qtiPackage.getQTIDocument().getAssessment() != null) {
-			Assessment ass = qtiPackage.getQTIDocument().getAssessment();
+		QTIDocument doc = TestFileResource.getQTIDocument(repositoryEntry.getOlatResource());
+		if(doc != null && doc.getAssessment() != null) {
+			Assessment ass = doc.getAssessment();
 	
 			//Sections with their Items
 			List<Section> sections = ass.getSections();

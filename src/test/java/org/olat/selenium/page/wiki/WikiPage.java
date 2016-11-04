@@ -25,7 +25,6 @@ import org.jboss.arquillian.drone.api.annotation.Drone;
 import org.jboss.arquillian.graphene.Graphene;
 import org.junit.Assert;
 import org.olat.selenium.page.graphene.OOGraphene;
-import org.olat.selenium.page.portfolio.ArtefactWizardPage;
 import org.olat.selenium.page.portfolio.MediaPage;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
@@ -124,17 +123,9 @@ public class WikiPage {
 	}
 	
 	/**
-	 * Add the current page to my artefacts
+	 * Add the current page to my medias
 	 * 
 	 */
-	public ArtefactWizardPage addAsArtfeact() {
-		By addAsArtefactBy = By.className("o_eportfolio_add");
-		WebElement addAsArtefactButton = browser.findElement(addAsArtefactBy);
-		addAsArtefactButton.click();
-		OOGraphene.waitBusy(browser);
-		return ArtefactWizardPage.getWizard(browser);
-	}
-	
 	public MediaPage addAsMedia() {
 		By collectBy = By.cssSelector(".o_wikimod_nav .o_portfolio_collector");
 		OOGraphene.waitElement(collectBy, 5, browser);
@@ -143,5 +134,4 @@ public class WikiPage {
 		OOGraphene.waitModalDialog(browser);
 		return new MediaPage(browser);
 	}
-
 }

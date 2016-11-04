@@ -41,15 +41,23 @@ import org.olat.modules.assessment.ui.event.UserFilterEvent;
  */
 public class UserFilterController extends FormBasicController {
 
+	private static final String OTHER_USER = "otherUsers";
+	private static final String ANONYMOUS = "anonymousUsers";
+	
 	private MultipleSelectionElement restrictionEl;
 	
 	private final boolean canAnonymous;
 	private final boolean canOtherUsers;
+	private final boolean initialOtherUser;
+	private final boolean initialAnonymous;
 
-	public UserFilterController(UserRequest ureq, WindowControl wControl, boolean canOtherUsers, boolean canAnonymous) {
+	public UserFilterController(UserRequest ureq, WindowControl wControl, boolean canOtherUsers, boolean canAnonymous,
+			boolean initialOtherUser, boolean initialAnonymous) {
 		super(ureq, wControl, "user_filter");
 		this.canAnonymous = canAnonymous;
 		this.canOtherUsers = canOtherUsers;
+		this.initialOtherUser = initialOtherUser;
+		this.initialAnonymous = initialAnonymous;
 		initForm(ureq);
 	}
 
@@ -57,10 +65,10 @@ public class UserFilterController extends FormBasicController {
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		List<String> allowKeyList = new ArrayList<>(2);
 		if(canOtherUsers) {
-			allowKeyList.add("otherUsers");
+			allowKeyList.add(OTHER_USER);
 		}
 		if(canAnonymous) {
-			allowKeyList.add("anonymousUsers");
+			allowKeyList.add(ANONYMOUS);
 		}
 
 		String[] allowKeys = allowKeyList.toArray(new String[allowKeyList.size()]);
@@ -71,6 +79,12 @@ public class UserFilterController extends FormBasicController {
 		restrictionEl = uifactory.addCheckboxesHorizontal("user.restrictions", null, formLayout, allowKeys, allowValues);
 		restrictionEl.setDomReplacementWrapperRequired(false);
 		restrictionEl.addActionListener(FormEvent.ONCHANGE);
+		if(initialOtherUser && allowKeyList.contains(OTHER_USER)) {
+			restrictionEl.select(OTHER_USER, true);
+		}
+		if(initialAnonymous && allowKeyList.contains(ANONYMOUS)) {
+			restrictionEl.select(ANONYMOUS, true);
+		}
 	}
 
 	@Override

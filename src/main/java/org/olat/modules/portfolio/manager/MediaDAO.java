@@ -144,11 +144,12 @@ public class MediaDAO {
 	
 	public List<BinderPageUsage> usedInBinders(MediaLight media) {
 		StringBuilder sb = new StringBuilder();
-		sb.append("select binder.key, binder.title, page.key, page.title, page.status from pfbinder as binder")
-		  .append(" inner join binder.sections as section")
-		  .append(" inner join section.pages as page")
+		sb.append("select binder.key, binder.title, page.key, page.title, page.status")
+		  .append(" from pfpage as page")
 		  .append(" inner join page.body as pageBody")
 		  .append(" inner join pageBody.parts as bodyPart")
+		  .append(" left join page.section as section")
+		  .append(" left join section.binder as binder")
 		  .append(" where bodyPart.media.key=:mediaKey");
 		
 		List<Object[]> objects = dbInstance.getCurrentEntityManager()

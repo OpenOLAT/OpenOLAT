@@ -76,7 +76,7 @@ div.o_qti_statistics {
 	table.o_qti_statistics_figures {
 		tr { float: left; }		
 		tr:nth-child(2n+1) { clear: left; padding-right: 20px; }
-		td { width: 200px; padding-left: 0;}
+		td { width: 200px; padding-left: 0; vertical-align: bottom; }
 		td+td { width: 100px; }
 	}
 	

@@ -114,6 +114,8 @@ public class ShibbolethRegistrationController extends DefaultController implemen
 	
 	@Autowired
 	private ShibbolethModule shibbolethModule;
+	@Autowired
+	private RegistrationModule registrationModule;
 	
 	/**
 	 * Implements the shibboleth registration workflow.
@@ -163,8 +165,8 @@ public class ShibbolethRegistrationController extends DefaultController implemen
 		mainContainer.put("select.language", languageChooserController.getInitialComponent());
 		mainContainer.contextPut("languageCode", locale.getLanguage());
 		
-		if(RegistrationModule.getUsernamePresetBean() != null) {
-			UserNameCreationInterceptor interceptor = RegistrationModule.getUsernamePresetBean();
+		if(registrationModule.getUsernamePresetBean() != null) {
+			UserNameCreationInterceptor interceptor = registrationModule.getUsernamePresetBean();
 			proposedUsername = interceptor.getUsernameFor(shibbolethAttributesMap);
 			if(proposedUsername == null) {
 				if(interceptor.allowChangeOfUsername()) {

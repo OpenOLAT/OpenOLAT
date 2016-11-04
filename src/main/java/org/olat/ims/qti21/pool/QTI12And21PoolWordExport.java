@@ -17,11 +17,13 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.ims.qti.qpool;
+package org.olat.ims.qti21.pool;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -32,6 +34,7 @@ import java.util.zip.ZipOutputStream;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.io.IOUtils;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.logging.OLog;
@@ -43,37 +46,51 @@ import org.olat.core.util.openxml.OpenXMLDocumentWriter;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
+import org.olat.ims.qti.QTIConstants;
 import org.olat.ims.qti.editor.QTIEditHelper;
 import org.olat.ims.qti.editor.beecom.objects.Item;
 import org.olat.ims.qti.export.QTIWordExport;
+import org.olat.ims.qti21.QTI21Service;
+import org.olat.ims.qti21.manager.openxml.QTI21WordExport;
+import org.olat.ims.qti21.model.xml.AssessmentHtmlBuilder;
+import org.olat.ims.qti21.ui.AssessmentTestDisplayController;
+import org.olat.ims.qti21.ui.editor.AssessmentTestComposerController;
+import org.olat.modules.qpool.QPoolService;
 import org.olat.modules.qpool.QuestionItemFull;
 import org.olat.modules.qpool.QuestionItemShort;
 import org.olat.modules.qpool.manager.QPoolFileStorage;
 import org.olat.modules.qpool.manager.QuestionItemDAO;
 
+import uk.ac.ed.ph.jqtiplus.node.item.AssessmentItem;
+import uk.ac.ed.ph.jqtiplus.resolution.ResolvedAssessmentItem;
+
 /**
  * 
- * Initial date: 13.09.2013<br>
+ * Initial date: 30 sept. 2016<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-class QTIPoolWordExport implements MediaResource {
+public class QTI12And21PoolWordExport implements MediaResource {
 	
-	private final static OLog log = Tracing.createLoggerFor(QTIPoolWordExport.class);
+	private final static OLog log = Tracing.createLoggerFor(QTI12And21PoolWordExport.class);
 	
 	private final Locale locale;
 	private final String encoding;
 	private final List<QuestionItemShort> items;
 	private final QuestionItemDAO questionItemDao;
-	private final QPoolFileStorage qpoolFileStorage;
+	private final QPoolService qpoolService;
+	private final QTI21Service qtiService;
+	private QPoolFileStorage qpoolFileStorage;
 	
-	public QTIPoolWordExport(List<QuestionItemShort> items, Locale locale, String encoding,
+	public QTI12And21PoolWordExport(List<QuestionItemShort> items, Locale locale, String encoding,
 			QuestionItemDAO questionItemDao, QPoolFileStorage qpoolFileStorage) {
 		this.encoding = encoding;
 		this.locale = locale;
 		this.items = items;
 		this.questionItemDao = questionItemDao;
 		this.qpoolFileStorage = qpoolFileStorage;
+		qtiService = CoreSpringFactory.getImpl(QTI21Service.class);
+		qpoolService = CoreSpringFactory.getImpl(QPoolService.class);
 	}
 	
 	@Override
@@ -135,12 +152,12 @@ class QTIPoolWordExport implements MediaResource {
 
 			ZipEntry test = new ZipEntry(secureLabel + ".docx");
 			zout.putNextEntry(test);
-			exportTest(fullItems, zout, false);
+			exportItems(fullItems, zout, false);
 			zout.closeEntry();
 			
 			ZipEntry responses = new ZipEntry(secureLabel + "_responses.docx");
 			zout.putNextEntry(responses);
-			exportTest(fullItems, zout, true);
+			exportItems(fullItems, zout, true);
 			zout.closeEntry();
 		} catch (Exception e) {
 			log.error("", e);
@@ -149,26 +166,44 @@ class QTIPoolWordExport implements MediaResource {
 		}
 	}
 	
-	private void exportTest(List<QuestionItemFull> fullItems, OutputStream out, boolean withResponses) {
+	private void exportItems(List<QuestionItemFull> fullItems, OutputStream out, boolean withResponses) {
 		ZipOutputStream zout = null;
 		try {
 			OpenXMLDocument document = new OpenXMLDocument();
 			document.setDocumentHeader("");
-			Translator translator = Util.createPackageTranslator(QTIWordExport.class, locale);
+			
+			Translator qti12Translator = Util.createPackageTranslator(QTIWordExport.class, locale);
+			Translator translator = Util.createPackageTranslator(AssessmentTestDisplayController.class, locale,
+					Util.createPackageTranslator(AssessmentTestComposerController.class, locale, qti12Translator));
+			
+			AssessmentHtmlBuilder htmlBuilder = new AssessmentHtmlBuilder();
 
 			for(Iterator<QuestionItemFull> itemIt=fullItems.iterator(); itemIt.hasNext(); ) {
 				QuestionItemFull fullItem = itemIt.next();
-				
-				String dir = fullItem.getDirectory();
-				VFSContainer container = qpoolFileStorage.getContainer(dir);
-				document.setMediaContainer(container);
-				
-				VFSItem rootItem = container.resolve(fullItem.getRootFilename());
-				Item item = QTIEditHelper.readItemXml((VFSLeaf)rootItem);
-				if(item.isAlient()) {
-					QTIWordExport.renderAlienItem(item, document, translator);
+				if(QTIConstants.QTI_12_FORMAT.equals(fullItem.getFormat())) {
+					String dir = fullItem.getDirectory();
+					VFSContainer container = qpoolFileStorage.getContainer(dir);
+					document.setMediaContainer(container);
+					
+					VFSItem rootItem = container.resolve(fullItem.getRootFilename());
+					Item item = QTIEditHelper.readItemXml((VFSLeaf)rootItem);
+					if(item.isAlient()) {
+						QTIWordExport.renderAlienItem(item, document, translator);
+					} else {
+						QTIWordExport.renderItem(item, document, withResponses, translator);
+					}
 				} else {
-					QTIWordExport.renderItem(item, document, withResponses, translator);
+					File resourceDirectory = qpoolService.getRootDirectory(fullItem);
+					VFSContainer resourceContainer = qpoolService.getRootContainer(fullItem);
+					document.setMediaContainer(resourceContainer);
+					
+					File resourceFile = qpoolService.getRootFile(fullItem);
+					URI assessmentItemUri = resourceFile.toURI();
+					
+					ResolvedAssessmentItem resolvedAssessmentItem = qtiService
+							.loadAndResolveAssessmentItem(assessmentItemUri, resourceDirectory);
+					AssessmentItem item = resolvedAssessmentItem.getItemLookup().extractIfSuccessful();
+					QTI21WordExport.renderAssessmentItem(item, resourceFile, document, withResponses, translator, htmlBuilder);
 				}
 				if(itemIt.hasNext()) {
 					document.appendPageBreak();

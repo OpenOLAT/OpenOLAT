@@ -30,6 +30,8 @@ import org.olat.core.commons.fullWebApp.LayoutMain3ColsController;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.panel.Panel;
+import org.olat.core.gui.components.panel.SimpleStackedPanel;
+import org.olat.core.gui.components.panel.StackedPanel;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.components.tree.TreeEvent;
 import org.olat.core.gui.control.Controller;
@@ -88,7 +90,9 @@ public class CPEditMainController extends BasicController implements ToolbarAwar
 				Controller columnLayoutCtr = new LayoutMain3ColsController(ureq, wControl, treeCtr.getInitialComponent(), contentCtr.getInitialComponent(), "cptestmain");
 				listenTo(columnLayoutCtr);
 				
-				putInitialPanel(columnLayoutCtr.getInitialComponent());
+				StackedPanel initPanel = new SimpleStackedPanel("cpeditpanel", "o_edit_mode");
+				initPanel.setContent(columnLayoutCtr.getInitialComponent());
+				putInitialPanel(initPanel);
 
 				if (!cp.isOLATContentPackage()) {
 					showWarning("maincontroller.cp.created.with.third.party.editor");

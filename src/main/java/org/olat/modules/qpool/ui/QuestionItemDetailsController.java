@@ -39,9 +39,12 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
+import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.id.Roles;
+import org.olat.core.id.context.ContextEntry;
+import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.StringHelper;
 import org.olat.group.BusinessGroup;
 import org.olat.group.model.BusinessGroupSelectionEvent;
@@ -64,7 +67,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class QuestionItemDetailsController extends BasicController implements BreadcrumbPanelAware {
+public class QuestionItemDetailsController extends BasicController implements BreadcrumbPanelAware, Activateable2 {
 	
 	private Link editItem, nextItem, previousItem;
 	private Link deleteItem, shareItem, exportItem, copyItem;
@@ -156,6 +159,20 @@ public class QuestionItemDetailsController extends BasicController implements Br
 			stackPanel.addListener(this);
 		}
 		this.stackPanel = stackPanel;
+	}
+	
+	
+
+	@Override
+	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
+		if(entries == null || entries.isEmpty()) return;
+		
+		String resourceTypeName = entries.get(0).getOLATResourceable().getResourceableTypeName();
+		if("edit".equalsIgnoreCase(resourceTypeName)) {
+			if(canEditContent || metadatasCtrl.getItem() != null) {
+				doEdit(ureq, metadatasCtrl.getItem());
+			}
+		}
 	}
 
 	@Override

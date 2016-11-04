@@ -61,6 +61,8 @@ public interface CertificatesManager {
 	//repository maintenance
 	public int deleteRepositoryEntry(RepositoryEntry re);
 	
+	public List<OLATResource> getResourceWithCertificates();
+	
 	//templates management
 	public List<CertificateTemplate> getTemplates();
 	
@@ -129,12 +131,15 @@ public interface CertificatesManager {
 	
 	public List<Certificate> getCertificatesForNotifications(Identity identity, RepositoryEntry entry, Date lastNews);
 
+	public List<Certificate> getCertificates(OLATResource resource);
 	
 	public boolean hasCertificate(IdentityRef identity, Long resourceKey);
 	
 	public Certificate getLastCertificate(IdentityRef identity, Long resourceKey);
 	
 	public List<Certificate> getCertificates(IdentityRef identity, OLATResource resource);
+	
+	
 	
 	/**
 	 * Check if recertification is allowed and if it is the case, check the

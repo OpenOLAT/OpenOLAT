@@ -37,6 +37,8 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.helpers.Settings;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.logging.OLATRuntimeException;
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
 import org.olat.core.util.ArrayHelper;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.WebappHelper;
@@ -54,6 +56,9 @@ import org.olat.core.util.resource.OresHelper;
  */
 
 public class I18nModule extends AbstractOLATModule implements Destroyable {
+	
+	private static final OLog log = Tracing.createLoggerFor(I18nModule.class);
+	
 	// Some general variables
 	public static final String LOCAL_STRINGS_FILE_PREFIX = "LocalStrings_";
 	public static final String LOCAL_STRINGS_FILE_POSTFIX = ".properties";
@@ -166,6 +171,13 @@ public class I18nModule extends AbstractOLATModule implements Destroyable {
 		// Register on the event channel to get cache flushes of other nodes
 		I18N_CACHE_FLUSHED_EVENT_CHANNEL = OresHelper.createOLATResourceableType(this.getClass().getSimpleName() + "I18N_CACHE_FLUSHED_EVENT_CHANNEL");
 		coordinatorManager.getCoordinator().getEventBus().registerFor(this, null, I18N_CACHE_FLUSHED_EVENT_CHANNEL);
+		
+		if(isTransToolEnabled()) {
+			String sourcePath = WebappHelper.getSourcePath();
+			if(!StringHelper.containsNonWhitespace(sourcePath) || !(new File(sourcePath).exists())) {
+				log.error("Path to source wrong, translation tool may not work as expected: " + sourcePath, null);
+			}
+		}
 	}
 
 	private void doInit() {

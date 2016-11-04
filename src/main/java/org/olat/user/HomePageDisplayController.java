@@ -67,6 +67,8 @@ public class HomePageDisplayController extends BasicController {
 	private Link imLink;
 	
 	@Autowired
+	private UserModule userModule;
+	@Autowired
 	private UserManager userManager;
 	@Autowired
 	private InstantMessagingModule imModule;
@@ -123,7 +125,7 @@ public class HomePageDisplayController extends BasicController {
 		listenTo(dpc); // auto dispose
 		mainVC.put("image", dpc.getInitialComponent());
 
-		if(UserModule.isLogoByProfileEnabled()) {
+		if(userModule.isLogoByProfileEnabled()) {
 			File logo = DisplayPortraitManager.getInstance().getBigLogo(homeIdentity.getName());
 			if (logo != null) {
 				ImageComponent logoCmp = new ImageComponent(ureq.getUserSession(), "logo");

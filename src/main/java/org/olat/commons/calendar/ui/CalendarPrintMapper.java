@@ -27,11 +27,13 @@ import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
 
+import org.olat.commons.calendar.CalendarManager;
 import org.olat.commons.calendar.CalendarUtils;
 import org.olat.commons.calendar.model.KalendarEvent;
 import org.olat.commons.calendar.ui.components.KalendarEventDateComparator;
 import org.olat.commons.calendar.ui.components.KalendarEventRenderWrapper;
 import org.olat.commons.calendar.ui.components.KalendarRenderWrapper;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.dispatcher.mapper.Mapper;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.media.StringMediaResource;
@@ -53,9 +55,12 @@ public class CalendarPrintMapper implements Mapper {
 	private Date from, to;
 	private List<KalendarRenderWrapper> calendarWrappers;
 	
+	private final CalendarManager calendarManager;
+	
 	public CalendarPrintMapper(String themeBaseUri, Translator translator) {
 		this.themeBaseUri = themeBaseUri;
 		this.translator = translator;
+		calendarManager = CoreSpringFactory.getImpl(CalendarManager.class);
 	}
 
 	public Date getFrom() {
@@ -94,7 +99,7 @@ public class CalendarPrintMapper implements Mapper {
 		  .append("</head><body class='o_cal_print' onload='window.focus();window.print()'>");
 		
 		//collect all events
-		List<KalendarEventRenderWrapper> sortedEventsWithin = new ArrayList<KalendarEventRenderWrapper>();
+		List<KalendarEventRenderWrapper> sortedEventsWithin = new ArrayList<>();
 		collectEvents(sortedEventsWithin, calendarWrappers);
 		Collections.sort(sortedEventsWithin, KalendarEventDateComparator.getInstance());
 
@@ -114,7 +119,7 @@ public class CalendarPrintMapper implements Mapper {
 	private void collectEvents(List<KalendarEventRenderWrapper> eventList, List<KalendarRenderWrapper> wrappers) {
 		for (KalendarRenderWrapper calendarWrapper:wrappers) {
 			if (calendarWrapper.isVisible()) {
-				List<KalendarEvent> events = CalendarUtils.listEventsForPeriod(calendarWrapper.getKalendar(), from, to);
+				List<KalendarEvent> events = calendarManager.getEvents(calendarWrapper.getKalendar(), from, to, true);
 				for (KalendarEvent event : events) {
 					//private filter???
 					eventList.add(new KalendarEventRenderWrapper(event, calendarWrapper));

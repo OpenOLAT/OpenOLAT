@@ -131,7 +131,9 @@ public class AssessmentItemDisplayController extends BasicController implements 
 		
 		itemSessionController = enterSession(ureq);
 		
-		if (itemSessionController.getItemSessionState().isEnded()) {
+		if(itemSessionController == null) {
+			mainVC = createVelocityContainer("error");
+		} else if (itemSessionController.getItemSessionState().isEnded()) {
 			mainVC = createVelocityContainer("end");
 		} else {
 			mainVC = createVelocityContainer("run");
@@ -156,7 +158,9 @@ public class AssessmentItemDisplayController extends BasicController implements 
 		
 		itemSessionController = enterSession(ureq);
 		
-		if (itemSessionController.getItemSessionState().isEnded()) {
+		if(itemSessionController == null) {
+			mainVC = createVelocityContainer("error");
+		} else if (itemSessionController.getItemSessionState().isEnded()) {
 			mainVC = createVelocityContainer("end");
 		} else {
 			mainVC = createVelocityContainer("run");

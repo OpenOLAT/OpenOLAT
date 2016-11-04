@@ -2,5 +2,31 @@
 	$r.render("back")<br/><br/>
 #end
 <div class="o_mail_message">
-	$r.render("mainCmp")
+	<div class="o_mail_meta clearfix">
+		<h3>
+			$subject
+		</h3>
+		<div class="o_mail_date">
+			<span class="o_label">$r.translate("mail.sendDate"):</span> $date
+		</div>
+		<div class="o_mail_from">
+			<span class="o_label">$r.translate("mail.from"):</span> $from
+		</div>
+		<div class="o_mail_recipients">
+			<span class="o_label">$r.translate("mail.recipients"):</span> $recipients
+		</div>
+		#if($r.available("showAllRecipients"))
+			$r.render("showAllRecipients")
+		#end
+	</div>	
+	<div class="o_mail_body">
+		$body
+	</div>
+	<hr />
+	#if($r.available("attachments"))
+		<h4>
+			$r.translate("mail.attachments")
+		</h4>
+		$r.render("attachments")
+	#end
 </div>

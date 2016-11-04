@@ -18,7 +18,7 @@
 		#foreach($hotspotChoice in $interaction.getHotspotChoices())
             <!-- Match group, label -->
           	<area id="ac_${responseIdentifier}_${hotspotChoice.identifier}" data-qti-id="${hotspotChoice.identifier}" shape="${r.shapeToString($hotspotChoice.shape)}" coords="$r.coordsToString($hotspotChoice.coords)" href="javascript:;" data-maphilight=''></area>
-			$r.appendFlexiFormDirtyForClick("$hotspotChoice.identifier")
+			$r.appendFlexiFormDirtyForClick("ac_${responseIdentifier}_$hotspotChoice.identifier")
 		#end
 		</map>
 		<script type="text/javascript">

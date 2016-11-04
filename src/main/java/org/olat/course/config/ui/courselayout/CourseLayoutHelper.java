@@ -24,8 +24,10 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.services.image.ImageService;
 import org.olat.core.gui.components.htmlheader.jscss.CustomCSS;
+import org.olat.core.helpers.GUISettings;
 import org.olat.core.helpers.Settings;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.UserSession;
@@ -196,7 +198,7 @@ public class CourseLayoutHelper {
 		File themeDir = null;
 		// first attempt is to use custom theme path
 		if (Settings.getGuiCustomThemePath() != null) {
-			themeDir = new File(Settings.getGuiCustomThemePath(), Settings.getGuiThemeIdentifyer());
+			themeDir = new File(Settings.getGuiCustomThemePath(), CoreSpringFactory.getImpl(GUISettings.class).getGuiThemeIdentifyer());
 			if (themeDir.exists() && themeDir.isDirectory()) {
 				VFSContainer themeContainer = new LocalFolderImpl(themeDir);
 				courseLayoutFolder = (VFSContainer) themeContainer.resolve("/courselayouts");	
@@ -205,7 +207,7 @@ public class CourseLayoutHelper {
 		// fallback is to use the standards themes directory in the web app
 		if (themeDir == null || !themeDir.exists() || !themeDir.isDirectory()) {
 			File themesDir = new File(WebappHelper.getContextRealPath("/static/themes/"));
-			themeDir = new File(themesDir, Settings.getGuiThemeIdentifyer());
+			themeDir = new File(themesDir, CoreSpringFactory.getImpl(GUISettings.class).getGuiThemeIdentifyer());
 		}
 		// resolve now
 		if (themeDir != null && themeDir.exists() && themeDir.isDirectory()) {

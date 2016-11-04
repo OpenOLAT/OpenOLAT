@@ -31,7 +31,6 @@ import java.util.Map;
 
 import org.olat.basesecurity.Authentication;
 import org.olat.basesecurity.BaseSecurity;
-import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.services.webdav.manager.WebDAVAuthManager;
 import org.olat.core.gui.translator.Translator;
@@ -267,7 +266,7 @@ public class OLATAuthManager extends BasicManager implements AuthenticationSPI {
 	 * @return
 	 */
 	public boolean changePasswordAsAdmin(Identity identity, String newPwd) {
-		Identity adminUserIdentity = BaseSecurityManager.getInstance().findIdentityByName("administrator");
+		Identity adminUserIdentity = securityManager.findIdentityByName("administrator");
 		return changePassword(adminUserIdentity, identity, newPwd);
 	}
 	

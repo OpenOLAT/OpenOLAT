@@ -19,12 +19,18 @@
  */
 package org.olat.modules.portfolio.manager;
 
+import static org.olat.core.commons.persistence.PersistenceHelper.appendFuzzyLike;
+import static org.olat.core.commons.persistence.PersistenceHelper.makeFuzzyQueryString;
+
 import java.util.Date;
 import java.util.List;
+
+import javax.persistence.TypedQuery;
 
 import org.olat.basesecurity.IdentityRef;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
+import org.olat.core.util.StringHelper;
 import org.olat.modules.portfolio.Assignment;
 import org.olat.modules.portfolio.AssignmentStatus;
 import org.olat.modules.portfolio.AssignmentType;
@@ -155,46 +161,85 @@ public class AssignmentDAO {
 		return assignments == null || assignments.isEmpty() ? null : assignments.get(0);
 	}
 	
-	public List<Assignment> loadAssignments(BinderRef binder) {
+	public List<Assignment> loadAssignments(BinderRef binder, String searchString) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select assignment from pfassignment as assignment")
 		  .append(" inner join fetch assignment.section as section")
 		  .append(" left join fetch assignment.page as page")
-		  .append(" where section.binder.key=:binderKey")
-		  .append(" order by section.key, assignment.pos");
+		  .append(" where section.binder.key=:binderKey");
+		if(StringHelper.containsNonWhitespace(searchString)) {
+			searchString = makeFuzzyQueryString(searchString);
+			sb.append(" and (");
+			appendFuzzyLike(sb, "assignment.title", "searchString", dbInstance.getDbVendor());
+			sb.append(" or ");
+			appendFuzzyLike(sb, "assignment.summary", "searchString", dbInstance.getDbVendor());
+			sb.append(" or ");
+			appendFuzzyLike(sb, "assignment.content", "searchString", dbInstance.getDbVendor());
+			sb.append(")");
+		}
+		sb.append(" order by section.key, assignment.pos");
 		
-		return dbInstance.getCurrentEntityManager()
+		TypedQuery<Assignment> query = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), Assignment.class)
-				.setParameter("binderKey", binder.getKey())
-				.getResultList();
+				.setParameter("binderKey", binder.getKey());
+		if(StringHelper.containsNonWhitespace(searchString)) {
+			query.setParameter("searchString", searchString);
+		}
+		return query.getResultList();
 	}
 	
-	public List<Assignment> loadAssignments(SectionRef section) {
+	public List<Assignment> loadAssignments(SectionRef section, String searchString) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select assignment from pfassignment as assignment")
 		  .append(" inner join fetch assignment.section as section")
 		  .append(" left join fetch assignment.page as page")
-		  .append(" where section.key=:sectionKey")
-		  .append(" order by section.key, assignment.pos");
+		  .append(" where section.key=:sectionKey");
+		if(StringHelper.containsNonWhitespace(searchString)) {
+			searchString = makeFuzzyQueryString(searchString);
+			sb.append(" and (");
+			appendFuzzyLike(sb, "assignment.title", "searchString", dbInstance.getDbVendor());
+			sb.append(" or ");
+			appendFuzzyLike(sb, "assignment.summary", "searchString", dbInstance.getDbVendor());
+			sb.append(" or ");
+			appendFuzzyLike(sb, "assignment.content", "searchString", dbInstance.getDbVendor());
+			sb.append(")");
+		}
+		sb.append(" order by section.key, assignment.pos");
 		
-		return dbInstance.getCurrentEntityManager()
+		TypedQuery<Assignment> query = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), Assignment.class)
-				.setParameter("sectionKey", section.getKey())
-				.getResultList();
+				.setParameter("sectionKey", section.getKey());
+		if(StringHelper.containsNonWhitespace(searchString)) {
+			query.setParameter("searchString", searchString);
+		}
+		return query.getResultList();
 	}
 	
-	public List<Assignment> loadAssignments(Page page) {
+	public List<Assignment> loadAssignments(Page page, String searchString) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select assignment from pfassignment as assignment")
 		  .append(" inner join fetch assignment.section as section")
 		  .append(" inner join fetch assignment.page as page")
-		  .append(" where page.key=:pageKey")
-		  .append(" order by section.key, assignment.pos");
+		  .append(" where page.key=:pageKey");
+		if(StringHelper.containsNonWhitespace(searchString)) {
+			searchString = makeFuzzyQueryString(searchString);
+			sb.append(" and (");
+			appendFuzzyLike(sb, "assignment.title", "searchString", dbInstance.getDbVendor());
+			sb.append(" or ");
+			appendFuzzyLike(sb, "assignment.summary", "searchString", dbInstance.getDbVendor());
+			sb.append(" or ");
+			appendFuzzyLike(sb, "assignment.content", "searchString", dbInstance.getDbVendor());
+			sb.append(")");
+		}
+		sb.append(" order by section.key, assignment.pos");
 		
-		return dbInstance.getCurrentEntityManager()
+		TypedQuery<Assignment> query =  dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), Assignment.class)
-				.setParameter("pageKey", page.getKey())
-				.getResultList();
+				.setParameter("pageKey", page.getKey());
+		if(StringHelper.containsNonWhitespace(searchString)) {
+			query.setParameter("searchString", searchString);
+		}
+		return query.getResultList();
 	}
 	
 	public List<Assignment> getOwnedAssignments(IdentityRef assignee) {

@@ -47,11 +47,11 @@ public class ItemListMyListsController extends AbstractItemListController {
 
 	private FormLink selectLink;
     private SingleSelection myListEl;
-
+    
 	private List<QuestionItemCollection> myCollections;
 
-	public ItemListMyListsController(UserRequest ureq, WindowControl wControl) {
-		super(ureq, wControl, new EmptyItemsSource(), "select");
+	public ItemListMyListsController(UserRequest ureq, WindowControl wControl, String restrictToFormat) {
+		super(ureq, wControl, new EmptyItemsSource(), restrictToFormat, "select");
 	}
 	
 	@Override
@@ -88,6 +88,7 @@ public class ItemListMyListsController extends AbstractItemListController {
 
             QuestionItemCollection firstCollection = myCollections.get(0);
             CollectionOfItemsSource source = new CollectionOfItemsSource(firstCollection, getIdentity(), ureq.getUserSession().getRoles());
+            source.setRestrictToFormat(restrictToFormat);
             updateSource(source);
         } else {
 			myListEl.setEnabled(false);
@@ -124,6 +125,7 @@ public class ItemListMyListsController extends AbstractItemListController {
 			updateSource(new EmptyItemsSource());
 		} else {
 			CollectionOfItemsSource source = new CollectionOfItemsSource(myCollection, getIdentity(), ureq.getUserSession().getRoles());
+			source.setRestrictToFormat(restrictToFormat);
 			updateSource(source);
 		}
 	}

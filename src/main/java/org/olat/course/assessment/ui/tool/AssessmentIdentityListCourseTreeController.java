@@ -158,6 +158,8 @@ public class AssessmentIdentityListCourseTreeController extends BasicController 
 				List<BusinessGroup> coachedGroups;
 				if(businessGroup != null) {
 					coachedGroups = Collections.singletonList(businessGroup);
+				} else if(assessmentCallback.isAdmin()) {
+					coachedGroups = courseEnv.getCourseGroupManager().getAllBusinessGroups();
 				} else {
 					coachedGroups = assessmentCallback.getCoachedGroups();
 				}

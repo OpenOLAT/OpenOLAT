@@ -258,6 +258,8 @@ public interface CalendarManager {
 	 * @return
 	 */
 	public String getCalendarToken(String calendarType, String calendarID, String userName);
+	
+	public KalendarEvent createKalendarEventRecurringOccurence(KalendarRecurEvent parentEvent);
 
 	/**
 	 * Add an event to given calendar and save calendar.
@@ -277,12 +279,35 @@ public interface CalendarManager {
 	public boolean addEventTo(Kalendar cal, List<KalendarEvent> kalendarEvents);
 
 	/**
-	 * Remove an event from given calendar and save calendar.
+	 * Remove an event from given calendar and save calendar. In the case of
+	 * a recurring event, all the recurrences while be deleted with the exceptions.
+	 * In the case of an exception to a recurring event, only the exception will
+	 * be deleted.
+	 * 
 	 * @param cal
 	 * @param kalendarEvent
 	 * @return true if success
 	 */
 	public boolean removeEventFrom(Kalendar cal, KalendarEvent kalendarEvent);
+	
+	/**
+	 * Remove an occurence of a recurring event.
+	 * 
+	 * @param cal
+	 * @param kalendarEvent
+	 * @return
+	 */
+	public boolean removeOccurenceOfEvent(Kalendar cal, KalendarRecurEvent kalendarEvent);
+	
+	/**
+	 * Truncate the recurrence rule and adjust the unitl date.
+	 * 
+	 * @param cal
+	 * @param kalendarEvent
+	 * @return
+	 */
+	public boolean removeFutureOfEvent(Kalendar cal, KalendarRecurEvent kalendarEvent);
+	
 	
 	/**
 	 * Update an event of given calendar and save calendar.
@@ -324,6 +349,9 @@ public interface CalendarManager {
 	 * @return 
 	 */
 	public Kalendar getCalendar(String type, String calendarID);
+	
+
+	public List<KalendarEvent> getEvents(Kalendar calendar, Date from, Date to, boolean privateEventsVisible);
 
 	/**
 	 * Get the recurring event
@@ -343,14 +371,13 @@ public interface CalendarManager {
 	public boolean isRecurringInPeriod(Date periodStart, Date periodEnd, KalendarEvent kEvent);
 	
 	/**
-	 * Get all recurrings of an event within the given period
-	 * @param periodStart
-	 * @param periodEnd
-	 * @param kEvent
-	 * @return list with <code>KalendarRecurEvent</code>
+	 * Return the last date (until) of a recurrence rule.
+	 * 
+	 * @param rule
+	 * @return
 	 */
-	public List<KalendarRecurEvent> getRecurringDatesInPeriod(Date periodStart, Date periodEnd, KalendarEvent kEvent);
-
+	public Date getRecurrenceEndDate(String rule);
+	
 	/**
 	 * Build a Calendar object from String object.
 	 * @param calendarContent
@@ -374,10 +401,5 @@ public interface CalendarManager {
 	 * @return OLATResourceable for given Kalendar
 	 */
 	public OLATResourceable getOresHelperFor(Kalendar cal);
-	
-	
-	
-	
-	
 	
 }

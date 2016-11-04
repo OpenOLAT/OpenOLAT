@@ -9,7 +9,7 @@
 	#end
 	
 	#if($r.isInvalidResponse($interaction.responseIdentifier))
-	<div class="o_error badResponse">$r.translate("error.as.directed")</div>
+	<div class="o_error badResponse">$r.translate("error.as.directed.kprim")</div>
 	#end
 
 	<table class="table o_qti_item_kprim">
@@ -19,7 +19,7 @@
 				<th class="o_qti_item_kprim_text"/>
 			#end
             #foreach($choice2 in $orderedSet2)
-				<th class="o_qti_item_kprim_input">$r.renderFlowStatics($choice2.getFlowStatics())</th>
+				<th class="o_qti_item_kprim_input">$r.renderKprimSpecialFlowStatics($choice2.getFlowStatics())</th>
 			#end
 			#if(!$r.classContains($interaction,"choiceright"))
 				<th class="o_qti_item_kprim_text"/>

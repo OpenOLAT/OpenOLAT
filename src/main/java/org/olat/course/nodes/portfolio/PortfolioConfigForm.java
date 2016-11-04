@@ -158,11 +158,14 @@ public class PortfolioConfigForm extends FormBasicController {
 			changeMapLink.setElementCssClass("o_sel_map_change_repofile");
 			editMapLink = uifactory.addFormLink("edit.map", buttonGroupLayout, Link.BUTTON);
 			editMapLink.setElementCssClass("o_sel_edit_map");
+			editMapLink.setTitle("Hello world edit");
 			
 			chooseMapLink.setVisible(map == null && binder == null);
 			chooseMapLink.setEnabled(!inUse);
+			chooseMapLink.setTextReasonForDisabling(translate("select.map.disabled.msg"));
 			changeMapLink.setVisible(map != null || binder != null);
 			changeMapLink.setEnabled(!inUse);
+			changeMapLink.setTextReasonForDisabling(translate("select.map.disabled.msg"));
 			editMapLink.setVisible(map != null || binder != null);
 		}
 	}

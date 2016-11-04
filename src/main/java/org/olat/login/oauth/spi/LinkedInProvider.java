@@ -93,8 +93,8 @@ public class LinkedInProvider implements OAuthSPI {
 	}
 
 	@Override
-	public Class<? extends Api> getScribeProvider() {
-		return LinkedInApi.class;
+	public Api getScribeProvider() {
+		return new LinkedInApi();
 	}
 
 	@Override

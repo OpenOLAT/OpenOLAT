@@ -40,7 +40,7 @@ import org.xml.sax.ext.DefaultHandler2;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class OnyxToQtiWorksHandler  extends DefaultHandler2 {
+public class OnyxToQtiWorksHandler extends DefaultHandler2 {
 	
 	private final XMLStreamWriter xtw;
 	
@@ -105,8 +105,13 @@ public class OnyxToQtiWorksHandler  extends DefaultHandler2 {
 				rubricBlock = false;
 				rubricCharacterBuffer = null;
 			}
+			
+			if("label".equals(qName)) {//convert label which are not part of QTI 2.1 standard to span
+				xtw.writeStartElement("span");
+			} else {
+				xtw.writeStartElement(qName);
+			}
 
-			xtw.writeStartElement(qName);
 			if("imscp:resource".equals(qName)) {
 				int numOfAttributes = attributes.getLength();
 				for(int i=0;i<numOfAttributes; i++) {
@@ -136,6 +141,8 @@ public class OnyxToQtiWorksHandler  extends DefaultHandler2 {
 			} else if("prompt".equals(qName)) {
 				prompt = true;
 			}
+			
+			
 		} catch (XMLStreamException e) {
 			throw new SAXException(e);
 		}

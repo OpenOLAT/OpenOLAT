@@ -32,7 +32,6 @@ import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.ims.qti21.model.xml.AssessmentItemBuilder;
 import org.olat.ims.qti21.model.xml.ScoreBuilder;
@@ -177,24 +176,6 @@ public class FIBScoreController extends AssessmentItemRefEditorController implem
 		
 		return allOk & super.validateFormLogic(ureq);
 	}
-	
-	private boolean validateDouble(TextElement el) {
-		boolean allOk = true;
-		
-		String value = el.getValue();
-		if(!StringHelper.containsNonWhitespace(value)) {
-			el.setErrorKey("form.legende.mandatory", null);
-			allOk &= false;
-		} else {
-			try {
-				Double.parseDouble(value);
-			} catch (NumberFormatException e) {
-				el.setErrorKey("error.double", null);
-				allOk &= false;
-			}
-		}
-		return allOk;
-	}
 
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
@@ -208,6 +189,7 @@ public class FIBScoreController extends AssessmentItemRefEditorController implem
 	protected void formOK(UserRequest ureq) {
 		if(restrictedEdit) return;
 		
+		super.formOK(ureq);
 		String maxScoreValue = maxScoreEl.getValue();
 		Double maxScore = Double.parseDouble(maxScoreValue);
 		itemBuilder.setMaxScore(maxScore);

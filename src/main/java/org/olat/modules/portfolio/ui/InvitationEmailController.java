@@ -63,8 +63,10 @@ public class InvitationEmailController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		formLayout.setElementCssClass("o_sel_pf_invitation_form");
 
 		mailEl = uifactory.addTextElement("mail", "mail", 128, "", formLayout);
+		mailEl.setElementCssClass("o_sel_pf_invitation_mail");
 		mailEl.setMandatory(true);
 		mailEl.setNotEmptyCheck("map.share.empty.warn");
 

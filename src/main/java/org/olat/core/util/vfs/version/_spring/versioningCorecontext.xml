@@ -3,26 +3,12 @@
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="
   http://www.springframework.org/schema/beans 
-  http://www.springframework.org/schema/beans/spring-beans-3.1.xsd">
+  http://www.springframework.org/schema/beans/spring-beans.xsd">
 
 	<bean id="versionsManager" class="org.olat.core.util.vfs.version.VersionsFileManager" init-method="init">
 		<property name="versioningConfigurator" ref="versioningConfigurator" />
 	</bean>
 
-	<bean id="versioningConfigurator" class="org.olat.core.util.vfs.version.SimpleVersionConfig"
-		depends-on="coordinatorManager,org.olat.core.util.WebappHelper,folderModule">
-		<property name="coordinator" ref="coordinatorManager" />
-		<property name="persistedProperties">
-			<bean class="org.olat.core.configuration.PersistedProperties" scope="prototype" init-method="init" destroy-method="destroy"
-				depends-on="org.olat.core.util.WebappHelper">
-				<constructor-arg index="0" ref="coordinatorManager" />
-				<constructor-arg index="1" ref="versioningConfigurator" />
-				<!-- Max versions: -1 is unlimited, 0 is no versioning, 1 - n is the exact max. number of versions allowed -->
-				<property name="defaultProperties">
-					<value>maxnumber.versions=0</value>
-				</property>
-			</bean>
-		</property>
-	</bean>
+
 
 </beans>

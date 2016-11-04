@@ -40,18 +40,22 @@ import org.olat.core.id.Identity;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.user.UserDataDeletable;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 /**
  * Description: Useful functions for download
  * 
  * @author Alexander Schneider
  */
+@Service("qtiResultManager")
 public class QTIResultManager implements UserDataDeletable {
 	
 	private static final OLog log = Tracing.createLoggerFor(QTIResultManager.class);
 
 	private static QTIResultManager instance;
 	
+	@Autowired
 	private DB dbInstance;
 
 	/**

@@ -285,6 +285,7 @@ public class BulkAssessmentTask implements LongRunnable, TaskAwareRunnable, Sequ
 		boolean bulkAssessability = false;
 		if (courseNode instanceof MSCourseNode
 				|| courseNode instanceof TACourseNode
+				|| courseNode instanceof GTACourseNode
 				|| courseNode instanceof ProjectBrokerCourseNode) {
 			// now a more fine granular check on bulk features. only show wizard for nodes that have at least one
 			BulkAssessmentSettings settings = new BulkAssessmentSettings((AssessableCourseNode)courseNode);

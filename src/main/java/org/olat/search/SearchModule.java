@@ -33,12 +33,16 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.olat.core.commons.modules.bc.FolderConfig;
-import org.olat.core.configuration.AbstractOLATModule;
-import org.olat.core.configuration.PersistedProperties;
+import org.olat.core.commons.modules.bc.FolderModule;
+import org.olat.core.configuration.AbstractSpringModule;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.coordinate.CoordinatorManager;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
 
 /**
  * Description:<br>
@@ -46,7 +50,8 @@ import org.olat.core.util.StringHelper;
  * Initial Date: 15.06.200g <br>
  * @author Christian Guretzki
  */
-public class SearchModule extends AbstractOLATModule {
+@Service("searchModule")
+public class SearchModule extends AbstractSpringModule {
 	private static final OLog log = Tracing.createLoggerFor(SearchModule.class);
 	
 	// Definitions config parameter names in module-config
@@ -56,102 +61,76 @@ public class SearchModule extends AbstractOLATModule {
 	public final static String CONF_TEMP_INDEX_PATH = "tempIndexPath";
 	public final static String CONF_TEMP_SPELL_CHECK_PATH = "tempSpellCheckPath";
 	public final static String CONF_GENERATE_AT_STARTUP = "generateIndexAtStartup";
-	private static final String CONF_INDEX_INTERVAL = "indexInterval";
-	private static final String CONF_MAX_HITS = "maxHits";
-	private static final String CONF_MAX_RESULTS = "maxResults";
-	private static final String CONF_FOLDER_POOL_SIZE = "folderPoolSize";
-	private static final String CONF_RESTART_WINDOW_START = "restartWindowStart";
-	private static final String CONF_RESTART_WINDOW_END = "restartWindowEnd";
-	private static final String CONF_UPDATE_INTERVAL = "updateInterval";
-	private static final String CONF_DOCUMENTS_PER_INTERVAL = "documentsPerInterval";
-	private static final String CONF_RESTART_DAY_OF_WEEK = "restartDayOfWeek";
 	private static final String CONF_PPT_FILE_ENABLED = "pptFileEnabled";
 	private static final String CONF_EXCEL_FILE_ENABLED = "excelFileEnabled";
 	private static final String CONF_PDF_FILE_ENABLED = "pdfFileEnabled";
-	private static final String CONF_PDF_TEXT_BUFFERING = "pdfTextBuffering";
-	private static final String CONF_PDF_EXTERNAL_INDEXER = "pdfExternalIndexer";
-	private static final String CONF_PDF_EXTERNAL_INDEXER_CMD = "pdfExternExtractorCommand";
-	private static final String CONF_SPELL_CHECK_ENABLED = "spellCheckEnabled";
-	private static final String CONF_TEMP_PDF_TEXT_BUF_PATH = "pdfTextBufferPath";
-	private static final String CONF_MAX_FILE_SIZE = "maxFileSize";
-	private static final String CONF_RAM_BUFFER_SIZE_MB = "ramBufferSizeMb";
-	private static final String CONF_USE_COMPOUND_FILE = "useCompoundFile";
 	private static final String CONF_FILE_BLACK_LIST = "fileBlackList";
+
 	
-	// Default values
-	private static final int    DEFAULT_INDEX_INTERVAL = 0;
-	private static final int    DEFAULT_MAX_HITS = 1000;
-	private static final int    DEFAULT_MAX_RESULTS = 100;
-	private static final int    DEFAULT_FOLDER_POOL_SIZE = 0;
-	private static final int    DEFAULT_RESTART_WINDOW_START = 0;
-	private static final int    DEFAULT_RESTART_WINDOW_END = 24;
-	private static final int    DEFAULT_UPDATE_INTERVAL = 0;
-	private static final int    DEFAULT_DOCUMENTS_PER_INTERVAL = 4;
-	private static final int    DEFAULT_RESTART_DAY_OF_WEEK = 8;
-	private static final String DEFAULT_RAM_BUFFER_SIZE_MB = "48";
-	
+	@Value("${search.service:enabled}")
 	private String searchService;
+	
+	@Value("${search.index.tempIndex:/tmp}")
+	private String tempIndexPath;
+	@Value("${search.index.tempSpellcheck:/tmp}")
+	private String tempSpellCheckPath;
+	@Value("${search.index.pdfBuffer:/tmp}")
+	private String tempPdfTextBufferPath;
+
+	@Value("${search.index.path:/tmp}")
+	private String indexPath;
+	@Value("${search.permanent.index.path:/sidx}")
+	private String permanentIndexPath;
+	
 	private String fullIndexPath;
 	private String fullPermanentIndexPath;
 	private String fullTempIndexPath;
 	private String fullTempSpellCheckPath;
-	private long indexInterval;
+	
+	private long indexInterval = 0;
+	@Value("${generate.index.at.startup:true}")
 	private boolean generateAtStartup;
-	private int maxHits;
-	private int maxResults;
-	private List<String> fileBlackList;
-	private List<String> customFileBlackList;
+	private int maxHits = 1000;
+	private int maxResults = 100;
 
+	@Value("${search.folder.pool.size:3}")
 	private int folderPoolSize;
+	@Value("${restart.window.start}")
 	private int restartWindowStart;
+	@Value("${restart.window.end}")
 	private int restartWindowEnd;
-	private long updateInterval;
-	private int documentsPerInterval;
-	private int restartDayOfWeek;
-	private boolean pptFileEnabled;
-	private boolean excelFileEnabled;
-	private boolean pdfFileEnabled;
-	private boolean pdfTextBuffering;
+	private long updateInterval = 0;
+	private int documentsPerInterval = 4;
+	private int restartDayOfWeek = 0;
+	private boolean pptFileEnabled = true;
+	private boolean excelFileEnabled = true;
+	private boolean pdfFileEnabled = true;
+	private boolean pdfTextBuffering = true;
+	@Value("${search.pdf.external:false}")
 	private boolean pdfExternalIndexer;
+	@Value("${search.pdf.external.command:convertpdf.sh}")
 	private String pdfExternalIndexerCmd;
-	private boolean isSpellCheckEnabled;
+	private boolean isSpellCheckEnabled = true;
 	private String fullPdfTextBufferPath;
-	private List<String> fileSizeSuffixes;
 
-	private long maxFileSize;
-	private List<Long> repositoryBlackList;
+	private long maxFileSize = 10485760;
+	private double ramBufferSizeMB = 16;
+	private boolean useCompoundFile = false;
 	
-	private double ramBufferSizeMB;
-	private boolean useCompoundFile;
+	@Autowired @Qualifier("fileSizeSuffixes")
+	private ArrayList<String> fileSizeSuffixes;
+	@Autowired @Qualifier("fileBlackList")
+	private ArrayList<String> fileBlackList;
+	private ArrayList<String> customFileBlackList;
+	@Autowired @Qualifier("repositoryBlackList")
+	private ArrayList<Long> repositoryBlackList;
 	
+	@Autowired
+	private FolderModule folderModule;
 	
-	/**
-	 * [used by spring]
-	 */
-	private SearchModule() {
-	}
-	
-	/**
-	 * [used by spring]
-	 * @param fileSizeSuffixes
-	 */
-	public void setFileSizeSuffixes(List<String> fileSizeSuffixes) {
-		this.fileSizeSuffixes = fileSizeSuffixes;
-	}
-	/**
-	 * [used by spring]
-	 * @param fileBlackList
-	 */
-	public void setFileBlackList(List<String> fileBlackList) {
-		this.fileBlackList = fileBlackList;
-	}
-	
-	 /**
-	 * [used by spring]
-	 * @param fileBlackList
-	 */
-	public void setRepositoryBlackList(List<Long> repositoryBlackList) {
-		this.repositoryBlackList = repositoryBlackList;
+	@Autowired
+	public SearchModule(CoordinatorManager coordinatorManager) {
+		super(coordinatorManager);
 	}
 
 	/**
@@ -160,45 +139,15 @@ public class SearchModule extends AbstractOLATModule {
 	@Override
 	public void initDefaultProperties() {
 		log.debug("init start...");
-
-		searchService = getStringConfigParameter(CONF_SEARCH_SERVICE, "enabled", false);
+		super.initDefaultProperties();
 		
-		String indexPath = getStringConfigParameter(CONF_INDEX_PATH, "/tmp", false);
-		String permanentIndexPath = getStringConfigParameter(CONF_PERMANENT_INDEX_PATH, "/sidx", false);
-
 		log.debug("init indexPath=" + indexPath);
-		String tempIndexPath = getStringConfigParameter(CONF_TEMP_INDEX_PATH, "/tmp", false);
-		String tempSpellCheckPath = getStringConfigParameter(CONF_TEMP_SPELL_CHECK_PATH, "/tmp",false);
-		String tempPdfTextBufferPath = getStringConfigParameter(CONF_TEMP_PDF_TEXT_BUF_PATH, "/tmp", false);
-    
 		fullIndexPath = buildPath(indexPath);
 		fullPermanentIndexPath = buildPath(permanentIndexPath);
 		
-    fullTempIndexPath = buildPath(tempIndexPath);
-    fullTempSpellCheckPath = buildPath(tempSpellCheckPath);
-    fullPdfTextBufferPath = buildPath(tempPdfTextBufferPath);
-
-    generateAtStartup = getBooleanConfigParameter(CONF_GENERATE_AT_STARTUP, true);
-    indexInterval = getIntConfigParameter(CONF_INDEX_INTERVAL, DEFAULT_INDEX_INTERVAL);
-    maxHits = getIntConfigParameter(CONF_MAX_HITS, DEFAULT_MAX_HITS);
-    maxResults = getIntConfigParameter(CONF_MAX_RESULTS, DEFAULT_MAX_RESULTS);
-    folderPoolSize = getIntConfigParameter(CONF_FOLDER_POOL_SIZE, DEFAULT_FOLDER_POOL_SIZE);
-    restartWindowStart = getIntConfigParameter(CONF_RESTART_WINDOW_START, DEFAULT_RESTART_WINDOW_START);
-    restartWindowEnd = getIntConfigParameter(CONF_RESTART_WINDOW_END, DEFAULT_RESTART_WINDOW_END);
-    updateInterval = getIntConfigParameter(CONF_UPDATE_INTERVAL, DEFAULT_UPDATE_INTERVAL);
-    documentsPerInterval = getIntConfigParameter(CONF_DOCUMENTS_PER_INTERVAL, DEFAULT_DOCUMENTS_PER_INTERVAL);
-    restartDayOfWeek = getIntConfigParameter(CONF_RESTART_DAY_OF_WEEK, DEFAULT_RESTART_DAY_OF_WEEK);
-    pptFileEnabled = getBooleanConfigParameter(CONF_PPT_FILE_ENABLED, true);	
-    excelFileEnabled = getBooleanConfigParameter(CONF_EXCEL_FILE_ENABLED, true);
-    pdfFileEnabled = getBooleanConfigParameter(CONF_PDF_FILE_ENABLED, true);
-    pdfTextBuffering = getBooleanConfigParameter(CONF_PDF_TEXT_BUFFERING, true);
-    pdfExternalIndexer = getBooleanConfigParameter(CONF_PDF_EXTERNAL_INDEXER, false);
-    pdfExternalIndexerCmd = getStringConfigParameter(CONF_PDF_EXTERNAL_INDEXER_CMD, "convertpdf.sh", false);
-    
-    isSpellCheckEnabled = getBooleanConfigParameter(CONF_SPELL_CHECK_ENABLED, true);
-    maxFileSize = Integer.parseInt(getStringConfigParameter(CONF_MAX_FILE_SIZE, "0", false));
-    ramBufferSizeMB = Double.parseDouble(getStringConfigParameter(CONF_RAM_BUFFER_SIZE_MB, DEFAULT_RAM_BUFFER_SIZE_MB, false));
-    useCompoundFile = getBooleanConfigParameter(CONF_USE_COMPOUND_FILE, false);
+		fullTempIndexPath = buildPath(tempIndexPath);
+		fullTempSpellCheckPath = buildPath(tempSpellCheckPath);
+		fullPdfTextBufferPath = buildPath(tempPdfTextBufferPath);
 	}
 	
 	private String buildPath(String path) {
@@ -206,7 +155,7 @@ public class SearchModule extends AbstractOLATModule {
 		if(f.isAbsolute() && (f.exists() || f.mkdirs())) {
 			return path;
 		}
-		return FolderConfig.getCanonicalTmpDir() + File.separator + path;
+		return folderModule.getCanonicalTmpDir() + File.separator + path;
 	}
 	
 	@Override
@@ -457,11 +406,6 @@ public class SearchModule extends AbstractOLATModule {
 		return repositoryBlackList;
 	}
 
-	@Override
-	public void setPersistedProperties(PersistedProperties persistedProperties) {
-		this.moduleConfigProperties = persistedProperties;
-	}
-
 	public double getRAMBufferSizeMB() {
 		return ramBufferSizeMB;
 	}
@@ -469,5 +413,4 @@ public class SearchModule extends AbstractOLATModule {
 	public boolean getUseCompoundFile() {
 		return useCompoundFile;
 	}
- 
 }

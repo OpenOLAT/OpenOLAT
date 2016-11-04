@@ -77,15 +77,17 @@ public class CourseBusinessGroupListController extends AbstractBusinessGroupList
 	public static String TABLE_ACTION_MULTI_UNLINK = "tblMultiUnlink";
 	
 	private final RepositoryEntry re;
+	private final boolean groupManagementRight;
 	private FormLink createGroup, addGroup, removeGroups;
 
 	private DialogBoxController confirmRemoveResource;
 	private DialogBoxController confirmRemoveMultiResource;
 	private SelectBusinessGroupController selectController;
 	
-	public CourseBusinessGroupListController(UserRequest ureq, WindowControl wControl, RepositoryEntry re) {
+	public CourseBusinessGroupListController(UserRequest ureq, WindowControl wControl, RepositoryEntry re, boolean groupManagementRight) {
 		super(ureq, wControl, "group_list", false, false, "course", re);
 		this.re = re;
+		this.groupManagementRight = groupManagementRight;
 	}
 
 	@Override
@@ -162,7 +164,7 @@ public class CourseBusinessGroupListController extends AbstractBusinessGroupList
 
 	@Override
 	protected List<BGTableItem> searchTableItems(BusinessGroupQueryParams params) {
-		List<StatisticsBusinessGroupRow> rows = businessGroupService.findBusinessGroupsFromRepositoryEntry(params, getResource());
+		List<StatisticsBusinessGroupRow> rows = businessGroupService.findBusinessGroupsFromRepositoryEntry(params, getIdentity(), getResource());
 		List<BGTableItem> items = new ArrayList<>(rows.size());
 		for(StatisticsBusinessGroupRow row:rows) {
 			BusinessGroupMembership membership = row.getMember();
@@ -337,12 +339,24 @@ public class CourseBusinessGroupListController extends AbstractBusinessGroupList
 	
 	@Override
 	protected BusinessGroupQueryParams getSearchParams(SearchEvent event) {
-		return new BusinessGroupQueryParams();
+		BusinessGroupQueryParams params = event.convertToBusinessGroupQueriesParams();
+		params.setRepositoryEntry(re);
+		return params;
 	}
 
 	@Override
 	protected BusinessGroupQueryParams getDefaultSearchParams() {
-		return new BusinessGroupQueryParams();
+		BusinessGroupQueryParams params = new BusinessGroupQueryParams();
+		params.setRepositoryEntry(re);
+		return params;
+	}
+	
+	@Override
+	protected boolean filterEditableGroupKeys(UserRequest ureq, List<Long> groupKeys) {
+		if(groupManagementRight) {
+			return false;
+		}
+		return super.filterEditableGroupKeys(ureq, groupKeys);
 	}
 
 	@Override

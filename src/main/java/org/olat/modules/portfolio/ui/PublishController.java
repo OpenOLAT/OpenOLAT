@@ -129,14 +129,17 @@ public class PublishController extends BasicController implements TooledControll
 		if(secCallback.canEditAccessRights(binder)) {
 			accessDropdown = new Dropdown("access.rights", "access.rights", false, getTranslator());
 			accessDropdown.setIconCSS("o_icon o_icon-fw o_icon_new_portfolio");
+			accessDropdown.setElementCssClass("o_sel_pf_access");
 			accessDropdown.setOrientation(DropdownOrientation.right);
 			
 			addAccessRightsLink = LinkFactory.createToolLink("add.member", translate("add.member"), this);
 			addAccessRightsLink.setIconLeftCSS("o_icon o_icon-lg o_icon_new_portfolio");
+			addAccessRightsLink.setElementCssClass("o_sel_pf_access_member");
 			accessDropdown.addComponent(addAccessRightsLink);
 			
 			addInvitationLink = LinkFactory.createToolLink("add.invitation", translate("add.invitation"), this);
 			addInvitationLink.setIconLeftCSS("o_icon o_icon-lg o_icon_new_portfolio");
+			addInvitationLink.setElementCssClass("o_sel_pf_access_invitation");
 			accessDropdown.addComponent(addInvitationLink);
 			
 			stackPanel.addTool(accessDropdown, Align.right);
@@ -179,18 +182,21 @@ public class PublishController extends BasicController implements TooledControll
 		List<Section> sections = portfolioService.getSections(binder);
 		Map<Long,PortfolioElementRow> sectionMap = new HashMap<>();
 		for(Section section:sections) {
-			PortfolioElementRow sectionRow = new PortfolioElementRow(section, sectionToAssessmentSectionMap.get(section));
-			binderRow.getChildren().add(sectionRow);
-			sectionMap.put(section.getKey(), sectionRow);	
-
 			boolean canEditSectionAccessRights = secCallback.canEditAccessRights(section);
-			for(AccessRights right:rights) {
-				if(section.getKey().equals(right.getSectionKey()) && right.getPageKey() == null) {
-					Link editLink = null;
-					if(canEditSectionAccessRights && !PortfolioRoles.owner.equals(right.getRole())) {
-						String id = "edit_" + (counter++);
-						editLink = LinkFactory.createLink(id, id, "edit_access", "edit", getTranslator(), mainVC, this, Link.LINK);
-						sectionRow.getAccessRights().add(new AccessRightsRow(section, right, editLink));
+			boolean canViewSectionAccessRights = secCallback.canViewAccessRights(section);
+			if(canEditSectionAccessRights || canViewSectionAccessRights) {
+				PortfolioElementRow sectionRow = new PortfolioElementRow(section, sectionToAssessmentSectionMap.get(section));
+				binderRow.getChildren().add(sectionRow);
+				sectionMap.put(section.getKey(), sectionRow);	
+	
+				for(AccessRights right:rights) {
+					if(section.getKey().equals(right.getSectionKey()) && right.getPageKey() == null) {
+						Link editLink = null;
+						if(canEditSectionAccessRights && !PortfolioRoles.owner.equals(right.getRole())) {
+							String id = "edit_" + (counter++);
+							editLink = LinkFactory.createLink(id, id, "edit_access", "edit", getTranslator(), mainVC, this, Link.LINK);
+							sectionRow.getAccessRights().add(new AccessRightsRow(section, right, editLink));
+						}
 					}
 				}
 			}
@@ -199,20 +205,23 @@ public class PublishController extends BasicController implements TooledControll
 		//pages
 		List<Page> pages = portfolioService.getPages(binder, null);
 		for(Page page:pages) {
-			Section section = page.getSection();
-			PortfolioElementRow sectionRow = sectionMap.get(section.getKey());
-			
-			PortfolioElementRow pageRow = new PortfolioElementRow(page, null);
-			sectionRow.getChildren().add(pageRow);
-
 			boolean canEditPageAccessRights = secCallback.canEditAccessRights(page);
-			for(AccessRights right:rights) {
-				if(page.getKey().equals(right.getPageKey())) {
-					Link editLink = null;
-					if(canEditPageAccessRights && !PortfolioRoles.owner.equals(right.getRole())) {
-						String id = "edit_" + (counter++);
-						editLink = LinkFactory.createLink(id, id, "edit_access", "edit", getTranslator(), mainVC, this, Link.LINK);
-						pageRow.getAccessRights().add(new AccessRightsRow(page, right, editLink));
+			boolean canViewPageAccessRights = secCallback.canViewAccessRights(page);
+			if(canEditPageAccessRights || canViewPageAccessRights) {
+				Section section = page.getSection();
+				PortfolioElementRow sectionRow = sectionMap.get(section.getKey());
+				
+				PortfolioElementRow pageRow = new PortfolioElementRow(page, null);
+				sectionRow.getChildren().add(pageRow);
+	
+				for(AccessRights right:rights) {
+					if(page.getKey().equals(right.getPageKey())) {
+						Link editLink = null;
+						if(canEditPageAccessRights && !PortfolioRoles.owner.equals(right.getRole())) {
+							String id = "edit_" + (counter++);
+							editLink = LinkFactory.createLink(id, id, "edit_access", "edit", getTranslator(), mainVC, this, Link.LINK);
+							pageRow.getAccessRights().add(new AccessRightsRow(page, right, editLink));
+						}
 					}
 				}
 			}

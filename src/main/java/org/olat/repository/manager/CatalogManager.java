@@ -33,12 +33,12 @@ import java.util.List;
 
 import javax.persistence.TypedQuery;
 
-import org.olat.admin.user.delete.service.UserDeletionManager;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.Constants;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.SecurityGroup;
 import org.olat.basesecurity.SecurityGroupMembershipImpl;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.modules.bc.FolderConfig;
 import org.olat.core.commons.modules.bc.meta.MetaInfo;
 import org.olat.core.commons.modules.bc.meta.tagged.MetaTagged;
@@ -62,6 +62,7 @@ import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSManager;
 import org.olat.repository.CatalogEntry;
 import org.olat.repository.CatalogEntryRef;
+import org.olat.repository.RepositoryDeletionModule;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
 import org.olat.repository.RepositoryService;
@@ -648,6 +649,7 @@ public class CatalogManager implements UserDataDeletable, InitializingBean {
 	 *  
 	 * @see org.olat.user.UserDataDeletable#deleteUserData(org.olat.core.id.Identity)
 	 */
+	@Override
 	public void deleteUserData(Identity identity, String newDeletedUserName) {
 		// Remove as owner
 		List<CatalogEntry> catalogEntries = getCatalogEntriesOwnedBy(identity);
@@ -656,7 +658,8 @@ public class CatalogManager implements UserDataDeletable, InitializingBean {
 			securityManager.removeIdentityFromSecurityGroup(identity, catalogEntry.getOwnerGroup());
 			if (securityManager.countIdentitiesOfSecurityGroup(catalogEntry.getOwnerGroup()) == 0 ) {
 				// This group has no owner anymore => add OLAT-Admin as owner
-				securityManager.addIdentityToSecurityGroup(UserDeletionManager.getInstance().getAdminIdentity(), catalogEntry.getOwnerGroup());
+				Identity admin = CoreSpringFactory.getImpl(RepositoryDeletionModule.class).getAdminUserIdentity();
+				securityManager.addIdentityToSecurityGroup(admin, catalogEntry.getOwnerGroup());
 				log.info("Delete user-data, add Administrator-identity as owner of catalogEntry=" + catalogEntry.getName());
 			}
 		}

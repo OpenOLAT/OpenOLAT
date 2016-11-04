@@ -44,6 +44,8 @@ import org.olat.core.gui.components.tree.GenericTreeModel;
 import org.olat.core.gui.components.tree.GenericTreeNode;
 import org.olat.core.gui.components.tree.TreeNode;
 import org.olat.core.logging.AssertException;
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
 import org.olat.core.util.Encoder;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.xml.XMLParser;
@@ -62,6 +64,7 @@ public class CPManifestTreeModel extends GenericTreeModel {
 	private Map<String,String> resources; // keys: resource att 'identifier'; values: resource att 'href'
 	private final List<TreeNode> treeNodes = new ArrayList<TreeNode>();
 	private final String identPrefix;
+	private final OLog log = Tracing.createLoggerFor(this.getClass());
 
 	/**
 	 * Constructor of the content packaging tree model
@@ -165,6 +168,7 @@ public class CPManifestTreeModel extends GenericTreeModel {
 		// extract title
 		String title = item.elementText("title");
 		if (title == null) title = item.attributeValue("identifier");
+		String identifier = item.attributeValue("identifier");
 		gtn.setAltText(title);
 		gtn.setTitle(title);
 		
@@ -192,7 +196,11 @@ public class CPManifestTreeModel extends GenericTreeModel {
 						meta.setNamespaceURIs(nsuris);
 						gtn.setAccessible(true);
 						gtn.setUserObject(href);
-						hrefToTreeNode.put(href, gtn);
+						if (hrefToTreeNode.containsKey(href)){
+							log.debug("Duplicate href::" + href + " for identifierref::" + identifierref + " and identifier::" + identifier + ", use first one");
+						} else {					
+							hrefToTreeNode.put(href, gtn);
+						}
 						return gtn;
 					} 
 				}				
@@ -210,7 +218,11 @@ public class CPManifestTreeModel extends GenericTreeModel {
 			if (href != null) {
 				gtn.setUserObject(href);
 				// allow lookup of a treenode given a href so we can quickly adjust the menu if the user clicks on hyperlinks within the text
-				hrefToTreeNode.put(href, gtn);
+				if (hrefToTreeNode.containsKey(href)){
+					log.debug("Duplicate href::" + href + " for identifierref::" + identifierref + " and identifier::" + identifier + ", use first one");
+				} else {					
+					hrefToTreeNode.put(href, gtn);
+				}
 			} else {
 				gtn.setAccessible(false);
 			}
@@ -223,6 +235,24 @@ public class CPManifestTreeModel extends GenericTreeModel {
 			Element childitem = chds.get(i);
 			GenericTreeNode gtnchild = buildNode(childitem);
 			gtn.addChild(gtnchild);
+			// set the first accessible child in the hierarchy as delegate when the node itself is not accessible
+			if (gtn.isAccessible() == false) {
+				GenericTreeNode nextHierarchyChild = gtnchild;
+				while (gtn.getDelegate() == null && nextHierarchyChild != null) {
+					if (nextHierarchyChild.isAccessible()) {
+						gtn.setDelegate(nextHierarchyChild);
+					} else {
+						if (nextHierarchyChild.getChildCount() > 0) {
+							nextHierarchyChild = (GenericTreeNode) nextHierarchyChild.getChildAt(0);					
+						} else {
+							nextHierarchyChild = null;
+						}
+					}
+				}
+				if (!gtn.isAccessible()) {
+					log.debug("No accessible child found that could be used as delegate for identifier::" + identifier);
+				}
+			}
 		}
 		return gtn;
 	}

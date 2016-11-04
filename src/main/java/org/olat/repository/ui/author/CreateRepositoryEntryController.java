@@ -92,6 +92,10 @@ public class CreateRepositoryEntryController extends FormBasicController impleme
 	public void setCreateObject(Object userObject) {
 		this.userObject = userObject;
 	}
+	
+	public void setDisplayname(String displayname) {
+		displaynameEl.setValue(displayname);
+	}
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
@@ -105,6 +109,7 @@ public class CreateRepositoryEntryController extends FormBasicController impleme
 
 		displaynameEl = uifactory.addTextElement("cif.displayname", "cif.displayname", 100, "", formLayout);
 		displaynameEl.setElementCssClass("o_sel_author_displayname");
+		displaynameEl.setFocus(true);
 		displaynameEl.setDisplaySize(30);
 		displaynameEl.setMandatory(true);
 		

@@ -65,7 +65,10 @@ import org.olat.modules.portfolio.PortfolioService;
 import org.olat.modules.portfolio.Section;
 import org.olat.modules.portfolio.SectionStatus;
 import org.olat.modules.portfolio.model.SectionRefImpl;
+import org.olat.modules.portfolio.ui.event.PageDeletedEvent;
+import org.olat.modules.portfolio.ui.event.PageRemovedEvent;
 import org.olat.modules.portfolio.ui.event.SectionSelectionEvent;
+import org.olat.modules.portfolio.ui.model.ReadOnlyCommentsSecurityCallback;
 import org.olat.modules.portfolio.ui.renderer.PortfolioRendererHelper;
 import org.olat.user.UserManager;
 import org.olat.util.logging.activity.LoggingResourceable;
@@ -79,7 +82,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class TableOfContentController extends BasicController implements TooledController, Activateable2 {
 	
-	private Link newSectionTool, newSectionButton, newEntryLink, editBinderMetadataLink;
+	private Link newSectionTool, newSectionButton, newEntryLink, newAssignmentLink, editBinderMetadataLink;
 	
 	private final VelocityContainer mainVC;
 	private final TooledStackedPanel stackPanel;
@@ -88,6 +91,7 @@ public class TableOfContentController extends BasicController implements TooledC
 	private UserCommentsController commentsCtrl;
 	private SectionEditController newSectionCtrl;
 	private SectionEditController editSectionCtrl;
+	private AssignmentEditController newAssignmentCtrl;
 	private SectionDatesEditController editSectionDatesCtrl;
 	private BinderMetadataEditController binderMetadataCtrl;
 	private DialogBoxController confirmCloseSectionCtrl, confirmReopenSectionCtrl, confirmDeleteSectionCtrl;
@@ -125,8 +129,15 @@ public class TableOfContentController extends BasicController implements TooledC
 		}
 		mainVC.contextPut("owners", ownerSb.toString());
 
+		mainVC.contextPut("isTemplate", secCallback.canNewAssignment());
+		mainVC.contextPut("isPersonalBinder", (!secCallback.canNewAssignment() && secCallback.canEditMetadataBinder()));
+		
 		putInitialPanel(mainVC);
 		loadModel();
+	}
+	
+	public int getNumOfSections() {
+		return sectionList == null ? 0 : sectionList.size();
 	}
 	
 	@Override
@@ -151,6 +162,14 @@ public class TableOfContentController extends BasicController implements TooledC
 			newEntryLink.setVisible(sectionList != null && sectionList.size() > 0);
 			stackPanel.addTool(newEntryLink, Align.right);
 		}
+		
+		if(secCallback.canNewAssignment()) {
+			newAssignmentLink = LinkFactory.createToolLink("new.assignment", translate("create.new.assignment"), this);
+			newAssignmentLink.setIconLeftCSS("o_icon o_icon-lg o_icon_new_portfolio");
+			newAssignmentLink.setElementCssClass("o_sel_pf_new_assignment");
+			newAssignmentLink.setVisible(sectionList != null && sectionList.size() > 0);
+			stackPanel.addTool(newAssignmentLink, Align.right);
+		}
 	}
 	
 	protected void loadModel() {
@@ -168,7 +187,7 @@ public class TableOfContentController extends BasicController implements TooledC
 		}
 		
 		//assignments
-		List<Assignment> assignments = portfolioService.getAssignments(binder);
+		List<Assignment> assignments = portfolioService.getAssignments(binder, null);
 		Map<Section,List<Assignment>> sectionToAssignmentMap = new HashMap<>();
 		for(Assignment assignment:assignments) {
 			List<Assignment> assignmentList;
@@ -219,8 +238,14 @@ public class TableOfContentController extends BasicController implements TooledC
 			mainVC.put("create.new.section", newSectionButton);
 		}
 		
-		if(newEntryLink != null && !newEntryLink.isVisible()) {
-			newEntryLink.setVisible(sectionList != null && sectionList.size() > 0);
+		boolean hasSection = (sectionList != null && sectionList.size() > 0);
+		if(newEntryLink != null && newEntryLink.isVisible() != hasSection) {
+			newEntryLink.setVisible(hasSection);
+			stackPanel.setDirty(true);
+		}
+		
+		if(newAssignmentLink != null && newAssignmentLink.isVisible() != hasSection) {
+			newAssignmentLink.setVisible(hasSection);
 			stackPanel.setDirty(true);
 		}
 	}
@@ -245,6 +270,7 @@ public class TableOfContentController extends BasicController implements TooledC
 		sectionLink.setUserObject(sectionRow);
 		
 		Dropdown editDropdown = new Dropdown(sectionId.concat("_dropdown"), null, false, getTranslator());
+		editDropdown.setElementCssClass("o_sel_pf_section_tools");
 		editDropdown.setTranslatedLabel("");
 		editDropdown.setOrientation(DropdownOrientation.right);
 		editDropdown.setIconCSS("o_icon o_icon_actions");
@@ -274,6 +300,7 @@ public class TableOfContentController extends BasicController implements TooledC
 			editDropdown.addComponent(editSectionLink);
 			
 			Link deleteSectionLink = LinkFactory.createLink(sectionId.concat("_delete"), "section.delete", "delete_section", mainVC, this);
+			deleteSectionLink.setElementCssClass("o_sel_pf_delete_section");
 			deleteSectionLink.setIconLeftCSS("o_icon o_icon_delete_item");
 			deleteSectionLink.setUserObject(sectionRow);
 			editDropdown.addComponent(deleteSectionLink);
@@ -355,13 +382,23 @@ public class TableOfContentController extends BasicController implements TooledC
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if(newSectionCtrl == source || editSectionCtrl == source 
-				|| editSectionDatesCtrl == source || newPageCtrl == source) {
+				|| editSectionDatesCtrl == source || newPageCtrl == source
+				|| newAssignmentCtrl == source) {
 			if(event == Event.DONE_EVENT) {
 				loadModel();
 				fireEvent(ureq, Event.CHANGED_EVENT);
 			}
 			cmc.deactivate();
 			cleanUp();
+		} else if(pageCtrl == source) {
+			if(event == Event.CHANGED_EVENT) {
+				loadModel();
+				fireEvent(ureq, Event.CHANGED_EVENT);
+			} else if(event instanceof PageRemovedEvent || event instanceof PageDeletedEvent) {
+				stackPanel.popController(pageCtrl);
+				loadModel();
+				fireEvent(ureq, Event.CHANGED_EVENT);
+			}
 		} else if(binderMetadataCtrl == source) {
 			if(event == Event.DONE_EVENT) {
 				binder = binderMetadataCtrl.getBinder();
@@ -405,6 +442,7 @@ public class TableOfContentController extends BasicController implements TooledC
 	private void cleanUp() {
 		removeAsListenerAndDispose(editSectionDatesCtrl);
 		removeAsListenerAndDispose(binderMetadataCtrl);
+		removeAsListenerAndDispose(newAssignmentCtrl);
 		removeAsListenerAndDispose(editSectionCtrl);
 		removeAsListenerAndDispose(newSectionCtrl);
 		removeAsListenerAndDispose(commentsCtrl);
@@ -412,6 +450,7 @@ public class TableOfContentController extends BasicController implements TooledC
 		removeAsListenerAndDispose(cmc);
 		editSectionDatesCtrl = null;
 		binderMetadataCtrl = null;
+		newAssignmentCtrl = null;
 		editSectionCtrl = null;
 		newSectionCtrl = null;
 		commentsCtrl = null;
@@ -425,6 +464,8 @@ public class TableOfContentController extends BasicController implements TooledC
 			doCreateNewSection(ureq);
 		} else if(newEntryLink == source) {
 			doCreateNewEntry(ureq);
+		} else if(newAssignmentLink == source) {
+			doCreateNewAssignment(ureq);
 		} else if(editBinderMetadataLink == source) {
 			doEditBinderMetadata(ureq);
 		} else if(source instanceof Link) {
@@ -475,7 +516,12 @@ public class TableOfContentController extends BasicController implements TooledC
 	}
 	
 	private void doOpenComments(UserRequest ureq, PageRow pageRow) {
-		CommentAndRatingSecurityCallback commentSecCallback = new CommentAndRatingDefaultSecurityCallback(getIdentity(), false, false);
+		CommentAndRatingSecurityCallback commentSecCallback;
+		if(PageStatus.isClosed(pageRow.getPage())) {
+			commentSecCallback = new ReadOnlyCommentsSecurityCallback();
+		} else {
+			commentSecCallback = new CommentAndRatingDefaultSecurityCallback(getIdentity(), false, false);
+		}
 		OLATResourceable ores = OresHelper.createOLATResourceableInstance(Page.class, pageRow.getKey());
 		commentsCtrl = new UserCommentsController(ureq, getWindowControl(), ores, null, commentSecCallback);
 		listenTo(commentsCtrl);
@@ -511,6 +557,18 @@ public class TableOfContentController extends BasicController implements TooledC
 		
 		String title = translate("create.new.section");
 		cmc = new CloseableModalController(getWindowControl(), null, newSectionCtrl.getInitialComponent(), true, title, true);
+		listenTo(cmc);
+		cmc.activate();
+	}
+	
+	private void doCreateNewAssignment(UserRequest ureq) {
+		if(newAssignmentCtrl != null) return;
+
+		newAssignmentCtrl = new AssignmentEditController(ureq, getWindowControl(), binder);
+		listenTo(newAssignmentCtrl);
+		
+		String title = translate("create.new.assignment");
+		cmc = new CloseableModalController(getWindowControl(), null, newAssignmentCtrl.getInitialComponent(), true, title, true);
 		listenTo(cmc);
 		cmc.activate();
 	}

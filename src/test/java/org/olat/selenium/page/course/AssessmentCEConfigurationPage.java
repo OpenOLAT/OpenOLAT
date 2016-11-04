@@ -48,7 +48,7 @@ public class AssessmentCEConfigurationPage {
 	}
 	
 	public AssessmentCEConfigurationPage selectConfiguration() {
-		By configBy = By.className("o_sel_course_ms");
+		By configBy = By.className("o_sel_course_ms_score");
 		return selectTab(configBy);
 	}
 	

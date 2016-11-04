@@ -49,10 +49,13 @@ public class TooledStackedPanelRenderer extends DefaultComponentRenderer {
 		TooledStackedPanel panel = (TooledStackedPanel) source;
 		List<Link> breadCrumbs = panel.getBreadCrumbs();
 		List<Tool> tools = panel.getTools();
-				
+		
+		// panel div
+		String mainCssClass = panel.getCssClass();
+		sb.append("<div id='o_c").append(source.getDispatchID()).append("' class='").append(mainCssClass, mainCssClass != null).append("'>");
+		
 		if(breadCrumbs.size() > panel.getInvisibleCrumb() || tools.size() > 0) {
-			String mainCssClass = panel.getCssClass();
-			sb.append("<div id='o_main_toolbar' class='o_toolbar ").append(mainCssClass, mainCssClass != null).append("'>");
+			sb.append("<div id='o_main_toolbar' class='o_toolbar'>");
 
 			if(breadCrumbs.size() > panel.getInvisibleCrumb()) {
 				sb.append("<div class='o_breadcrumb'><ol class='breadcrumb'>");
@@ -138,6 +141,8 @@ public class TooledStackedPanelRenderer extends DefaultComponentRenderer {
 		if(toRender != null) {
 			renderer.render(sb, toRender, args);
 		}
+		
+		sb.append("</div>"); // end of panel div
 	}
 	
 	private List<Tool> getTools(List<Tool> tools, Align alignement) {

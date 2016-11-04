@@ -22,14 +22,11 @@ package org.olat.ims.qti.qpool;
 import java.util.Locale;
 
 import org.olat.core.CoreSpringFactory;
-import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.id.Identity;
 import org.olat.core.util.Util;
-import org.olat.ims.qti.QTI12EditorController;
 import org.olat.ims.qti.editor.QTIEditorMainController;
 import org.olat.modules.qpool.QItemFactory;
-import org.olat.modules.qpool.QPoolItemEditorController;
 import org.olat.modules.qpool.QuestionItem;
 
 /**
@@ -62,11 +59,10 @@ public class QTI12ItemFactory implements QItemFactory {
 	}
 
 	@Override
-	public QPoolItemEditorController getEditor(UserRequest ureq, WindowControl wControl, String title) {
-		QTIQPoolServiceProvider spi = (QTIQPoolServiceProvider)CoreSpringFactory.getBean("qtiPoolServiceProvider");
-		QuestionItem newItem = spi.createItem(ureq.getIdentity(), type, title, ureq.getLocale());
-		QTI12EditorController ctrl = new QTI12EditorController(ureq, wControl, newItem);
-		return ctrl;
+	public QuestionItem createItem(Identity owner, String title, Locale locale) {
+		QTIQPoolServiceProvider spi = CoreSpringFactory.getImpl(QTIQPoolServiceProvider.class);
+		QuestionItem newItem = spi.createItem(owner, type, title, locale);
+		return newItem;
 	}
 	
 	public enum Type {

@@ -78,6 +78,9 @@ public abstract class AbstractCertificate implements Certificate, Persistable {
 	
 	@Column(name="c_uuid", nullable=false, insertable=true, updatable=false)
 	private String uuid;
+	
+	@Column(name="c_next_recertification", nullable=true, insertable=true, updatable=true)
+	private Date nextRecertificationDate;
 
 	@Column(name="c_path", nullable=true, insertable=true, updatable=true)
 	private String path;
@@ -177,6 +180,14 @@ public abstract class AbstractCertificate implements Certificate, Persistable {
 
 	public void setLast(boolean last) {
 		this.last = last;
+	}
+
+	public Date getNextRecertificationDate() {
+		return nextRecertificationDate;
+	}
+
+	public void setNextRecertificationDate(Date nextRecertificationDate) {
+		this.nextRecertificationDate = nextRecertificationDate;
 	}
 
 	@Override

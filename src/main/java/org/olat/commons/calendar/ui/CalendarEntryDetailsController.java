@@ -35,16 +35,16 @@ import org.olat.commons.calendar.CalendarModule;
 import org.olat.commons.calendar.model.Kalendar;
 import org.olat.commons.calendar.model.KalendarEvent;
 import org.olat.commons.calendar.model.KalendarEventLink;
+import org.olat.commons.calendar.model.KalendarRecurEvent;
 import org.olat.commons.calendar.ui.components.KalendarRenderWrapper;
+import org.olat.commons.calendar.ui.events.CalendarGUIDeleteEvent;
+import org.olat.commons.calendar.ui.events.CalendarGUIUpdateEvent;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.controllers.linkchooser.CustomMediaChooserController;
 import org.olat.core.commons.controllers.linkchooser.CustomMediaChooserFactory;
 import org.olat.core.commons.controllers.linkchooser.URLChoosenEvent;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
-import org.olat.core.gui.components.link.Link;
-import org.olat.core.gui.components.link.LinkFactory;
-import org.olat.core.gui.components.panel.StackedPanel;
 import org.olat.core.gui.components.tabbedpane.TabbedPane;
 import org.olat.core.gui.components.tabbedpane.TabbedPaneChangedEvent;
 import org.olat.core.gui.components.velocity.VelocityContainer;
@@ -52,8 +52,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
-import org.olat.core.gui.control.generic.modal.DialogBoxController;
-import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
+import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.util.CSSHelper;
 import org.olat.core.helpers.Settings;
 import org.olat.core.util.StringHelper;
@@ -66,17 +65,16 @@ public class CalendarEntryDetailsController extends BasicController {
 	private Collection<KalendarRenderWrapper> availableCalendars;
 	private boolean isNew, isReadOnly;
 	private KalendarEvent kalendarEvent;
-	private StackedPanel mainPanel;
 	private VelocityContainer mainVC, eventVC, linkVC;
 	private TabbedPane pane;
 	private CalendarEntryForm eventForm;
+	private CloseableModalController cmc;
 	private LinkProvider activeLinkProvider;
+	private ConfirmDeleteController deleteCtr;
+	private ConfirmUpdateController updateCtr;
 	private CustomMediaChooserController customMediaChooserCtr;
-	private DialogBoxController deleteYesNoController;
-	private CopyEventToCalendarController copyEventToCalendarController;
 	private ExternalLinksController externalLinksController;
 	private MediaLinksController mediaLinksController;
-	private Link deleteButton;
 
 	@Autowired
 	private CalendarManager calendarManager;
@@ -96,12 +94,12 @@ public class CalendarEntryDetailsController extends BasicController {
 		mainVC.put("pane", pane);
 		
 		eventVC = createVelocityContainer("calEditDetails");
-		deleteButton = LinkFactory.createButton("cal.edit.delete", eventVC, this);
 		eventVC.contextPut("caller", caller);
+		eventVC.contextPut("isNewEvent", new Boolean(isNew));
+		
 		eventForm = new CalendarEntryForm(ureq, wControl, kalendarEvent, calendarWrapper, availableCalendars, isNew);
 		listenTo(eventForm);
 		eventVC.put("eventForm", eventForm.getInitialComponent());
-		eventVC.contextPut("isNewEvent", new Boolean(isNew));
 		isReadOnly = calendarWrapper == null ? true : calendarWrapper.getAccess() == KalendarRenderWrapper.ACCESS_READ_ONLY;
 		eventVC.contextPut("isReadOnly", new Boolean(isReadOnly));
 		pane.addTab(translate("tab.event"), eventVC);
@@ -131,7 +129,7 @@ public class CalendarEntryDetailsController extends BasicController {
 		}
 		
 		// wrap everything in a panel
-		mainPanel = putInitialPanel(mainVC);
+		putInitialPanel(mainVC);
 	}
 
 	@Override
@@ -165,79 +163,46 @@ public class CalendarEntryDetailsController extends BasicController {
 					}
 				}
 			}
-		}  else if (source == deleteButton) {
-			// delete calendar entry
-			deleteYesNoController = activateYesNoDialog(ureq, null, translate("cal.delete.dialogtext"), deleteYesNoController);
-			return;
 		}
 	}
 
 	@Override
 	public void event(UserRequest ureq, Controller source, Event event) {
-		if (source == deleteYesNoController) {
-			if (DialogBoxUIFactory.isYesEvent(event)) {
-				Kalendar cal = kalendarEvent.getCalendar();
-				calendarManager.removeEventFrom(cal,kalendarEvent);
+		if (source == deleteCtr) {
+			if(event instanceof CalendarGUIDeleteEvent) {
+				doDelete((CalendarGUIDeleteEvent)event);
+				cmc.deactivate();
+				cleanUp();
+				
 				fireEvent(ureq, Event.DONE_EVENT);
-			}
-		} else if (source == copyEventToCalendarController) {
-			if (event.equals(Event.DONE_EVENT))
-				fireEvent(ureq, Event.DONE_EVENT);
-			else if (event.equals(Event.CANCELLED_EVENT)){
-				eventForm.setMulti(false);// OO-61
-				mainPanel.setContent(mainVC);
+			} else {
+				cmc.deactivate();
+				cleanUp();
 			}
 		} else if (source == activeLinkProvider) {
 			if(kalendarEvent.getCalendar() != null) {
 				fireEvent(ureq, Event.DONE_EVENT);
 			}
-		}else if (source == eventForm) {
+		} else if (source == eventForm) {
 			if (event == Event.DONE_EVENT) {
-				// ok, save edited entry
-				kalendarEvent = eventForm.getUpdatedKalendarEvent();
-				boolean doneSuccessfully = true;
-				if (isNew) {
-					// this is a new event, add event to calendar
-					String calendarID = eventForm.getChoosenKalendarID();
-					for (Iterator<KalendarRenderWrapper> iter = availableCalendars.iterator(); iter.hasNext();) {
-						KalendarRenderWrapper calendarWrapper = iter.next();
-						if (!calendarWrapper.getKalendar().getCalendarID().equals(calendarID)) continue;
-						Kalendar cal = calendarWrapper.getKalendar();
-						boolean result = calendarManager.addEventTo(cal, kalendarEvent);
-						if (result==false) {
-							// if one failed => done not successfully
-							doneSuccessfully = false;
-						}
-					}
-				} else {
-					// this is an existing event, so we get the previousely assigned calendar from the event
-					Kalendar cal = kalendarEvent.getCalendar();
-					doneSuccessfully = calendarManager.updateEventFrom(cal, kalendarEvent);
-				}
-				// check if event is still available
-				if (!doneSuccessfully) {
-					showError("cal.error.save");
-					fireEvent(ureq, Event.FAILED_EVENT);
-					return;
-				}				
-				
-				if (eventForm.isMulti()) {
-					// offer to copy event to multiple calendars.
-					removeAsListenerAndDispose(copyEventToCalendarController);
-					copyEventToCalendarController = new CopyEventToCalendarController(ureq, getWindowControl(), kalendarEvent, availableCalendars);
-					listenTo(copyEventToCalendarController);
-					//copyEventToCalendarController.addControllerListener(this);
-					mainPanel.setContent(copyEventToCalendarController.getInitialComponent());
-					return;
-				}
-			
-				// saving was ok, finish workflow
-				fireEvent(ureq, Event.DONE_EVENT);
-
+				doSave(ureq);
+			} else if("delete".equals(event.getCommand())) {
+				doConfirmDelete(ureq);
 			} else if (event == Event.CANCELLED_EVENT) {
 				eventForm.setEntry(kalendarEvent);
 				// user canceled, finish workflow
 				fireEvent(ureq, Event.DONE_EVENT);
+			}
+		} else if(source == updateCtr) {
+			if(event instanceof CalendarGUIUpdateEvent) {
+				doUpdate((CalendarGUIUpdateEvent)event);
+				cmc.deactivate();
+				cleanUp();
+				
+				fireEvent(ureq, Event.DONE_EVENT);
+			} else {
+				cmc.deactivate();
+				cleanUp();
 			}
 		} else if (source == customMediaChooserCtr) {
 			boolean doneSuccessfully = true;
@@ -278,7 +243,111 @@ public class CalendarEntryDetailsController extends BasicController {
 					fireEvent(ureq, Event.FAILED_EVENT);
 				}
 			}
+		} else if(cmc == source) {
+			cleanUp();
 		}
+	}
+	
+	private void cleanUp() {
+		removeAsListenerAndDispose(deleteCtr);
+		removeAsListenerAndDispose(updateCtr);
+		removeAsListenerAndDispose(cmc);
+		updateCtr = null;
+		deleteCtr = null;
+		cmc = null;
+	}
+	
+	private void doConfirmDelete(UserRequest ureq) {
+		deleteCtr = new ConfirmDeleteController(ureq, getWindowControl(), kalendarEvent);
+		listenTo(deleteCtr);
+		
+		String title = translate("cal.edit.delete");
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), deleteCtr.getInitialComponent(), true, title);
+		listenTo(cmc);
+		cmc.activate();
+	}
+	
+	private void doDelete(CalendarGUIDeleteEvent event) {
+		switch(event.getCascade()) {
+			case all: calendarManager.removeEventFrom(kalendarEvent.getCalendar(), kalendarEvent); break;
+			case once: {
+				if(kalendarEvent instanceof KalendarRecurEvent) {
+					calendarManager.removeOccurenceOfEvent(kalendarEvent.getCalendar(), (KalendarRecurEvent)kalendarEvent);
+				}
+				break;
+			}
+			case future: {
+				if(kalendarEvent instanceof KalendarRecurEvent) {
+					calendarManager.removeFutureOfEvent(kalendarEvent.getCalendar(), (KalendarRecurEvent)kalendarEvent);
+				}
+				break;
+			}
+		}
+	}
+	
+	private void doSave(UserRequest ureq) {
+		// ok, save edited entry
+		kalendarEvent = eventForm.getUpdatedKalendarEvent();
+
+		if (isNew) {
+			boolean doneSuccessfully = true;
+			// this is a new event, add event to calendar
+			String calendarID = eventForm.getChoosenKalendarID();
+			for (Iterator<KalendarRenderWrapper> iter = availableCalendars.iterator(); iter.hasNext();) {
+				KalendarRenderWrapper calendarWrapper = iter.next();
+				if (!calendarWrapper.getKalendar().getCalendarID().equals(calendarID)) {
+					continue;
+				}
+				Kalendar cal = calendarWrapper.getKalendar();
+				boolean result = calendarManager.addEventTo(cal, kalendarEvent);
+				if (result == false) {
+					// if one failed => done not successfully
+					doneSuccessfully = false;
+				}
+			}
+			reportSaveStatus(ureq, doneSuccessfully);	
+		} else if(kalendarEvent instanceof KalendarRecurEvent && !StringHelper.containsNonWhitespace(kalendarEvent.getRecurrenceID())) {
+			updateCtr = new ConfirmUpdateController(ureq, getWindowControl(), (KalendarRecurEvent)kalendarEvent);
+			listenTo(updateCtr);
+
+			String title = translate("cal.edit.update");
+			cmc = new CloseableModalController(getWindowControl(), translate("close"), updateCtr.getInitialComponent(), true, title);
+			listenTo(cmc);
+			cmc.activate();
+		} else {
+			// this is an existing event, so we get the previousely assigned calendar from the event
+			Kalendar cal = kalendarEvent.getCalendar();
+			boolean doneSuccessfully = calendarManager.updateEventFrom(cal, kalendarEvent);
+			reportSaveStatus(ureq, doneSuccessfully);
+		}
+	}
+	
+	private void doUpdate(CalendarGUIUpdateEvent event) {
+		switch(event.getCascade()) {
+			case all: {
+				calendarManager.updateEventFrom(kalendarEvent.getCalendar(), kalendarEvent);
+				break;
+			}
+			case once: {
+				if(kalendarEvent instanceof KalendarRecurEvent) {
+					KalendarRecurEvent refEvent = (KalendarRecurEvent)kalendarEvent;
+					kalendarEvent = calendarManager.createKalendarEventRecurringOccurence(refEvent);
+					calendarManager.addEventTo(refEvent.getCalendar(), kalendarEvent);
+				}
+				break;
+			}
+		}
+	}
+	
+	private void reportSaveStatus(UserRequest ureq, boolean doneSuccessfully) {
+		// check if event is still available
+		if (doneSuccessfully) {
+			// saving was ok, finish workflow
+			fireEvent(ureq, Event.DONE_EVENT);
+		} else {
+			showError("cal.error.save");
+			fireEvent(ureq, Event.FAILED_EVENT);
+		}	
 	}
 
 	@Override

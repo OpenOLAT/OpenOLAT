@@ -42,7 +42,6 @@ import javax.persistence.Transient;
 import org.olat.basesecurity.Group;
 import org.olat.basesecurity.model.GroupImpl;
 import org.olat.core.id.CreateInfo;
-import org.olat.core.id.ModifiedInfo;
 import org.olat.core.id.Persistable;
 import org.olat.core.util.StringHelper;
 import org.olat.modules.portfolio.Assignment;
@@ -60,7 +59,7 @@ import org.olat.modules.portfolio.SectionStatus;
  */
 @Entity(name="pfsection")
 @Table(name="o_pf_section")
-public class SectionImpl implements Persistable, ModifiedInfo, CreateInfo, Section {
+public class SectionImpl implements Persistable, CreateInfo, Section {
 
 	private static final long serialVersionUID = -8520480114785588566L;
 

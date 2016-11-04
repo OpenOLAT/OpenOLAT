@@ -326,7 +326,7 @@ public class AssessmentNotificationsHandler implements NotificationsHandler {
 					}
 
 					List<AssessableCourseNode> testNodes = getCourseTestNodes(course);
-					Translator translator = Util.createPackageTranslator(AssessmentNotificationsHandler.class, locale);
+					Translator translator = Util.createPackageTranslator(AssessmentManager.class, locale);
 					for (AssessableCourseNode test:testNodes) {
 						List<AssessmentEntry> assessments = courseNodeAssessmentDao.loadAssessmentEntryBySubIdent(cgm.getCourseEntry(), test.getIdent());
 						for(AssessmentEntry assessment:assessments) {

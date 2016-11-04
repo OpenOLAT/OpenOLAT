@@ -36,6 +36,7 @@ import org.olat.basesecurity.SecurityGroupMembershipImpl;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.services.mark.impl.MarkImpl;
 import org.olat.core.id.Identity;
+import org.olat.core.util.StringHelper;
 import org.olat.group.BusinessGroup;
 import org.olat.modules.qpool.QuestionItem;
 import org.olat.modules.qpool.QuestionItem2Resource;
@@ -111,7 +112,13 @@ public class QuestionItemDAO {
 		}
 	}
 	
-	public QuestionItemImpl copy(Identity owner, QuestionItemImpl original) {
+	/**
+	 * The method make a copy of the original question. The copy is not persisted.
+	 * 
+	 * @param original
+	 * @return A copy of the question.
+	 */
+	public QuestionItemImpl copy(QuestionItemImpl original) {
 		String subject = "(Copy) " + original.getTitle();
 		QuestionItemImpl copy = create(subject, original.getFormat(), null, original.getRootFilename());
 		
@@ -149,8 +156,6 @@ public class QuestionItemDAO {
 		//technical
 		copy.setEditor(original.getEditor());
 		copy.setEditorVersion(original.getEditorVersion());
-
-		persist(owner, copy);
 		return copy;
 	}
 
@@ -330,15 +335,23 @@ public class QuestionItemDAO {
 		return count.intValue() > 0;
 	}
 	
-	public int countSharedItemByResource(OLATResource resource) {
+	public int countSharedItemByResource(OLATResource resource, String format) {
 		StringBuilder sb = new StringBuilder();
-		sb.append("select count(share.item) from qshareitem share")
+		sb.append("select count(item.key) from qshareitem share")
+		  .append(" inner join share.item item")
 		  .append(" where share.resource.key=:resourceKey");
+		if(StringHelper.containsNonWhitespace(format)) {
+			sb.append(" and item.format=:format");
+		}
 
-		Number count = dbInstance.getCurrentEntityManager()
+		TypedQuery<Number> countQuery = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), Number.class)
-				.setParameter("resourceKey", resource.getKey())
-				.getSingleResult();
+				.setParameter("resourceKey", resource.getKey());
+		if(StringHelper.containsNonWhitespace(format)) {
+			countQuery.setParameter("format", format);
+		}
+		
+		Number count = countQuery.getSingleResult();
 		return count.intValue();
 	}
 	

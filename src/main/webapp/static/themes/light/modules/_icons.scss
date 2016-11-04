@@ -146,7 +146,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_managed:before { content: $fa-var-retweet; color: $text-muted}
 .o_icon_manual:before { content: $fa-var-book; cursor: help;}
 .o_icon_mail:before { content: $fa-var-envelope-o; }
-.o_icon_math:before { content: "\u03A3"; }
+.o_icon_math:before { content: "\03a3"; }
 .o_icon_media:before { content: $fa-var-image; }
 .o_icon_mediacenter:before { content: $fa-var-folder-open; }
 .o_icon_membersmanagement:before { content: $fa-var-users;}
@@ -287,7 +287,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_xing:before { content: $fa-var-xing; color: #cfdc00;}
 
 /* repository type icons */
-.o_BinderTemplate_icon:before, .o_course_icon:before { content: $fa-var-puzzle-piece; }
+.o_BinderTemplate_icon:before { content: $fa-var-briefcase; }
 .o_CourseModule_icon:before, .o_course_icon:before { content: $fa-var-cube; }
 .o_EPStructuredMapTemplate_icon:before { content: $fa-var-puzzle-piece; }
 .o_FileResource-BLOG_icon:before { content: $fa-var-bullhorn; }
@@ -297,7 +297,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_FileResource-SCORMCP_icon:before { content: $fa-var-archive; }
 .o_FileResource-SURVEY_icon:before { content: $fa-var-meh-o; }
 .o_FileResource-TEST_icon:before { content: $fa-var-pencil-square-o; }
-.o_FileResource-IMSQTI21_icon:before { content: $fa-var-graduation-cap; }
+.o_FileResource-IMSQTI21_icon:before { content: $fa-var-pencil-square; }
 .o_FileResource-WIKI_icon:before { content: $fa-var-globe; }
 .o_FileResource-SHAREDFOLDER_icon:before { content: $fa-var-folder-open-o; }
 .o_FileResource-GLOSSARY_icon:before { content: $fa-var-graduation-cap; }
@@ -335,7 +335,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_iqtest_icon:before { content: $fa-var-pencil-square-o; }
 .o_iqself_icon:before { content: $fa-var-pencil-square-o; }
 .o_iqsurv_icon:before { content: $fa-var-meh-o; }
-.o_qtiassessment_icon:before { content: $fa-var-graduation-cap; }
+.o_qtiassessment_icon:before { content: $fa-var-pencil-square; }
 .o_ta_icon:before { content: $fa-var-tasks; }
 .o_gta_icon:before { content: $fa-var-tasks; }
 .o_ms_icon:before { content: $fa-var-thumbs-o-up; }

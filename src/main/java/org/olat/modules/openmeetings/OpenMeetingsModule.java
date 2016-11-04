@@ -23,16 +23,20 @@ import java.net.URI;
 
 import javax.ws.rs.core.UriBuilder;
 
-import org.olat.core.configuration.AbstractOLATModule;
+import org.olat.core.configuration.AbstractSpringModule;
 import org.olat.core.configuration.ConfigOnOff;
-import org.olat.core.configuration.PersistedProperties;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.coordinate.CoordinatorManager;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
 
 /**
  * 
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
-public class OpenMeetingsModule  extends AbstractOLATModule implements ConfigOnOff {
+@Service("openmeetingsModule")
+public class OpenMeetingsModule  extends AbstractSpringModule implements ConfigOnOff {
 
 	private static final String ENABLED = "vc.openmeetings.enabled";
 	private static final String PROTOCOL = "protocol";
@@ -42,14 +46,27 @@ public class OpenMeetingsModule  extends AbstractOLATModule implements ConfigOnO
 	private static final String ADMIN_LOGIN = "adminLogin";
 	private static final String ADMIN_PASSWORD = "adminPassword";
 	
+	@Value("${vc.openmeetings.enabled}")
 	private boolean enabled;
 	private String displayName;
+	@Value("${vc.openmeetings.protocol}")
 	private String protocol;
+	@Value("${vc.openmeetings.port}")
 	private int port;
+	@Value("${vc.openmeetings.baseurl}")
 	private String baseUrl;
+	@Value("${vc.openmeetings.contextPath}")
 	private String contextPath;
+	@Value("${vc.openmeetings.adminlogin}")
 	private String adminLogin;
+	@Value("${vc.openmeetings.adminpassword}")
 	private String adminPassword;
+
+	
+	@Autowired
+	public OpenMeetingsModule(CoordinatorManager coordinatorManager) {
+		super(coordinatorManager);
+	}
 
 	@Override
 	public void init() {
@@ -85,26 +102,9 @@ public class OpenMeetingsModule  extends AbstractOLATModule implements ConfigOnO
 	}
 
 	@Override
-	protected void initDefaultProperties() {
-		enabled = getBooleanConfigParameter(ENABLED, true);
-		protocol = getStringConfigParameter(PROTOCOL, "http", false);
-		port = getIntConfigParameter(PORT, 5080);
-		baseUrl = getStringConfigParameter(BASE_URL, "localhost", false);
-		contextPath = getStringConfigParameter(CONTEXT_PATH, "openmeetings", false);
-		adminLogin = getStringConfigParameter(ADMIN_LOGIN, "admin", false);
-		adminPassword = getStringConfigParameter(ADMIN_PASSWORD, "0007", false);
-	}
-
-	@Override
 	protected void initFromChangedProperties() {
 		init();
 	}
-
-	@Override
-	public void setPersistedProperties(PersistedProperties persistedProperties) {
-		this.moduleConfigProperties = persistedProperties;
-	}
-	
 	
 	public URI getOpenMeetingsURI() {
 		UriBuilder builder = UriBuilder.fromUri(getProtocol() + "://" + getBaseUrl());
@@ -120,8 +120,8 @@ public class OpenMeetingsModule  extends AbstractOLATModule implements ConfigOnO
 	public void setOpenMeetingsURI(URI uri) {
 		String host = uri.getHost();
 		setBaseUrl(host);
-		int port = uri.getPort();
-		setPort(port);
+		int omPort = uri.getPort();
+		setPort(omPort);
 		String path = uri.getPath();
 		if(StringHelper.containsNonWhitespace(path) && path.startsWith("/")) {
 			path = path.substring(1, path.length());

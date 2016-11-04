@@ -35,6 +35,7 @@ import org.olat.modules.portfolio.BinderRef;
 import org.olat.modules.portfolio.BinderSecurityCallback;
 import org.olat.modules.portfolio.PortfolioService;
 import org.olat.modules.portfolio.Section;
+import org.olat.modules.portfolio.SectionRef;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -145,7 +146,8 @@ public class SectionEditController extends FormBasicController {
 		if(section == null) {
 			String title = titleEl.getValue();
 			String description = descriptionEl.getValue();
-			portfolioService.appendNewSection(title, description, beginDateEl.getDate(), endDateEl.getDate(), binder);
+			SectionRef sectionRef = portfolioService.appendNewSection(title, description, beginDateEl.getDate(), endDateEl.getDate(), binder);
+			section = portfolioService.getSection(sectionRef);
 		} else {
 			Section reloadedSection = portfolioService.getSection(section);
 			reloadedSection.setTitle(titleEl.getValue());

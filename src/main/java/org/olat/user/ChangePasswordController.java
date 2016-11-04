@@ -72,7 +72,8 @@ public class ChangePasswordController extends BasicController implements Support
 	private VelocityContainer myContent;
 	private ChangePasswordForm chPwdForm;
 	
-	
+	@Autowired
+	private UserModule userModule;
 	@Autowired
 	private LDAPLoginModule ldapLoginModule;
 	@Autowired
@@ -88,7 +89,7 @@ public class ChangePasswordController extends BasicController implements Support
 		super(ureq, wControl);
 
 		// if a user is not allowed to change his/her own password, say it here
-		if (!UserModule.isPwdchangeallowed(ureq.getIdentity())) {
+		if (!userModule.isPwdChangeAllowed(ureq.getIdentity())) {
 			String text = translate("notallowedtochangepwd", new String[] { WebappHelper.getMailConfig("mailSupport") });
 			Controller simpleMsg = new SimpleMessageController(ureq, wControl, text, "o_warning");
 			listenTo(simpleMsg); //register controller to be disposed automatically on dispose of Change password controller

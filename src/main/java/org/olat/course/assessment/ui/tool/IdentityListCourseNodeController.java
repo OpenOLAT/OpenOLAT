@@ -41,6 +41,7 @@ import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.DateFlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
@@ -223,6 +224,9 @@ public class IdentityListCourseNodeController extends FormBasicController implem
 		
 		if(course.getCourseConfig().isCertificateEnabled()) {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(IdentityCourseElementCols.certificate, new DownloadCertificateCellRenderer()));
+			if(course.getCourseConfig().isRecertificationEnabled()) {
+				columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(IdentityCourseElementCols.recertification, new DateFlexiCellRenderer(getLocale())));
+			}
 		}
 
 		usersTableModel = new IdentityListCourseNodeTableModel(columnsModel, assessableNode); 
@@ -256,6 +260,8 @@ public class IdentityListCourseNodeController extends FormBasicController implem
 				tableEl.setExtendedFilterButton(translate("filter.groups"), groupFilters);
 			}
 		}
+
+		tableEl.setAndLoadPersistedPreferences(ureq, "assessment-tool-identity-list");
 		
 		if(courseNode instanceof AssessableCourseNode && !(courseNode instanceof CalculatedAssessableCourseNode)) {
 			bulkDoneButton = uifactory.addFormLink("bulk.done", formLayout, Link.BUTTON);

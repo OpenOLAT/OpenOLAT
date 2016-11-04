@@ -39,6 +39,7 @@ import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLSession;
 
 import org.apache.commons.io.IOUtils;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.UserConstants;
@@ -219,7 +220,8 @@ public class OnyxReporterConnector {
 				if (assessmentId != null) {
 					underlyingMap.put("assessmentID", String.valueOf(assessmentId));
 				}
-				underlyingMap.put("providerID", OnyxModule.getConfigName());
+				String providerID = CoreSpringFactory.getImpl(OnyxModule.class).getConfigName();
+				underlyingMap.put("providerID", providerID);
 				mapWrapper.setMap(underlyingMap);
 			}
 

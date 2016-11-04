@@ -40,6 +40,7 @@ import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.olat.commons.calendar.model.KalendarEvent;
 import org.olat.selenium.page.Administrator;
 import org.olat.selenium.page.Author;
 import org.olat.selenium.page.LoginPage;
@@ -49,6 +50,7 @@ import org.olat.selenium.page.Student;
 import org.olat.selenium.page.User;
 import org.olat.selenium.page.core.AdministrationPage;
 import org.olat.selenium.page.core.BookingPage;
+import org.olat.selenium.page.core.CalendarPage;
 import org.olat.selenium.page.core.MenuTreePageFragment;
 import org.olat.selenium.page.course.AssessmentCEConfigurationPage;
 import org.olat.selenium.page.course.AssessmentToolPage;
@@ -1152,6 +1154,112 @@ public class CourseTest {
 		int numOfSurvivingMessages = infoMsgConfig.countMessages();
 		Assert.assertEquals(3, numOfSurvivingMessages);
 	}
+	
+
+	/**
+	 * Create a course with a calendar element, add a recurring event
+	 * all day, modify an occurence to an event between 13h and 15h.
+	 * Remove an other single occurence and at the end, remove all remaining
+	 * events by removing the original event and confirm that
+	 * all must be deleted.
+	 * 
+	 * @param loginPage
+	 * @throws IOException
+	 * @throws URISyntaxException
+	 */
+	@Test
+	@RunAsClient
+	public void createCourseWithCalendar(@InitialPage LoginPage loginPage)
+	throws IOException, URISyntaxException {
+		
+		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
+		loginPage.loginAs(author.getLogin(), author.getPassword());
+		
+		//create a course
+		String courseTitle = "Course-With-iCal-" + UUID.randomUUID();
+		navBar
+			.openAuthoringEnvironment()
+			.createCourse(courseTitle)
+			.clickToolbarBack();
+		
+		navBar.openCourse(courseTitle);
+		
+		String calendarNodeTitle = "iCal-1";
+		//create a course element of type CP with the CP that we create above
+		CourseEditorPageFragment courseEditor = CoursePageFragment.getCourse(browser)
+			.edit();
+		courseEditor
+			.createNode("cal")
+			.nodeTitle(calendarNodeTitle);
+		
+		//publish the course
+		courseEditor
+			.publish()
+			.quickPublish();
+		
+		//open the course and see the CP
+		CoursePageFragment course = courseEditor
+			.clickToolbarBack();
+		course
+			.clickTree()
+			.selectWithTitle(calendarNodeTitle);
+		// create a recurring event
+		CalendarPage calendar = new CalendarPage(browser);
+		calendar
+			.addEvent(3)
+			.setDescription("Eventhor", "Hammer", "Asgard")
+			.setAllDay(true)
+			.setRecurringEvent(KalendarEvent.WEEKLY, 28)
+			.save();
+		// modify an occurence
+		calendar
+			.openDetailsOccurence("Eventhor", 17)
+			.edit()
+			.setAllDay(false)
+			.setBeginEnd(13, 15)
+			.save()
+			.configureModifyOneOccurence();
+		
+		// check
+		calendar
+			.assertOnEvents("Eventhor", 4)
+			.assertOnEventsAt("Eventhor", 1, 13);
+		
+		// modify all events
+		calendar
+			.openDetailsOccurence("Eventhor", 3)
+			.edit()
+			.setDescription("Eventoki", null, null)
+			.save()
+			.configureModifyAllOccurences();
+		// check
+		calendar
+			.assertOnEvents("Eventoki", 3)
+			.assertOnEventsAt("Eventhor", 1, 13);
+		
+		// delete an occurence
+		calendar
+			.openDetailsOccurence("Eventoki", 10)
+			.edit()
+			.delete()
+			.configureDeleteOneOccurence();
+		// check
+		calendar
+			.assertOnEvents("Eventoki", 2)
+			.assertOnEventsAt("Eventhor", 1, 13);
+		
+		// delete all
+		calendar
+			.openDetailsOccurence("Eventoki", 3)
+			.edit()
+			.delete()
+			.configureDeleteAllOccurences();
+		
+		OOGraphene.waitingALittleBit();
+		calendar
+			.assertZeroEvent();
+	}
+
 	
 	/**
 	 * An author creates a course, make it visible for

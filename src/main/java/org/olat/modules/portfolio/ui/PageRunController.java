@@ -78,6 +78,7 @@ import org.olat.modules.portfolio.ui.event.PageRemovedEvent;
 import org.olat.modules.portfolio.ui.event.PublishEvent;
 import org.olat.modules.portfolio.ui.event.ReopenPageEvent;
 import org.olat.modules.portfolio.ui.event.RevisionEvent;
+import org.olat.modules.portfolio.ui.model.ReadOnlyCommentsSecurityCallback;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -119,7 +120,7 @@ public class PageRunController extends BasicController implements TooledControll
 		this.secCallback = secCallback;
 		this.openInEditMode = openInEditMode;
 		
-		assignments = portfolioService.getAssignments(page);
+		assignments = portfolioService.getAssignments(page, null);
 		
 		mainVC = createVelocityContainer("page_content");
 		mainVC.contextPut("pageTitle", page.getTitle());
@@ -128,7 +129,7 @@ public class PageRunController extends BasicController implements TooledControll
 		pageCtrl = new PageController(ureq, getWindowControl(), new PortfolioPageProvider());
 		listenTo(pageCtrl);
 		mainVC.put("page", pageCtrl.getInitialComponent());
-		loadModel(ureq);
+		loadModel(ureq, false);
 		stackPanel.addListener(this);
 
 		putInitialPanel(mainVC);
@@ -147,7 +148,7 @@ public class PageRunController extends BasicController implements TooledControll
 
 		editMetadataLink = LinkFactory.createToolLink("edit.page.metadata", translate("edit.page.metadata"), this);
 		editMetadataLink.setIconLeftCSS("o_icon o_icon-lg o_icon_edit_metadata");
-		editMetadataLink.setVisible(secCallback.canEditMetadataBinder());
+		editMetadataLink.setVisible(secCallback.canEditPageMetadata(page, assignments));
 		stackPanel.addTool(editMetadataLink, Align.left);
 		
 		moveToTrashLink = LinkFactory.createToolLink("delete.page", translate("delete.page"), this);
@@ -169,6 +170,7 @@ public class PageRunController extends BasicController implements TooledControll
 	private Link editLink(boolean edit) {
 		if(editLink == null) {
 			editLink = LinkFactory.createToolLink("edit.page", translate("edit.page"), this);
+			editLink.setElementCssClass("o_sel_pf_edit_page");
 		}
 		if(edit) {
 			editLink.setCustomDisplayText(translate("edit.page"));
@@ -182,14 +184,24 @@ public class PageRunController extends BasicController implements TooledControll
 		return editLink;
 	}
 	
-	private void loadModel(UserRequest ureq) {
+	private void loadModel(UserRequest ureq, boolean reloadComments) {
 		mainVC.contextPut("pageTitle", page.getTitle());
 		pageCtrl.loadElements(ureq);
 		dirtyMarker = false;
 		
 		if(secCallback.canComment(page)) {
+			if(reloadComments && commentsCtrl != null) {
+				mainVC.remove(commentsCtrl.getInitialComponent());
+				removeAsListenerAndDispose(commentsCtrl);
+				commentsCtrl = null;
+			}
 			if(commentsCtrl == null) {
-				CommentAndRatingSecurityCallback commentSecCallback = new CommentAndRatingDefaultSecurityCallback(getIdentity(), false, false);
+				CommentAndRatingSecurityCallback commentSecCallback;
+				if(PageStatus.isClosed(page)) {
+					commentSecCallback = new ReadOnlyCommentsSecurityCallback();
+				} else {
+					commentSecCallback = new CommentAndRatingDefaultSecurityCallback(getIdentity(), false, false);
+				}
 				OLATResourceable ores = OresHelper.createOLATResourceableInstance(Page.class, page.getKey());
 				commentsCtrl = new UserCommentsAndRatingsController(ureq, getWindowControl(), ores, null, commentSecCallback, true, false, true);
 				commentsCtrl.expandComments(ureq);
@@ -360,7 +372,7 @@ public class PageRunController extends BasicController implements TooledControll
 		page = portfolioService.changePageStatus(page, PageStatus.published);
 		stackPanel.popUpToController(this);
 		loadMeta(ureq);
-		loadModel(ureq);
+		loadModel(ureq, false);
 		doRunPage(ureq);
 		fireEvent(ureq, Event.CHANGED_EVENT);
 	}
@@ -375,7 +387,7 @@ public class PageRunController extends BasicController implements TooledControll
 		page = portfolioService.changePageStatus(page, PageStatus.inRevision);
 		stackPanel.popUpToController(this);
 		loadMeta(ureq);
-		loadModel(ureq);
+		loadModel(ureq, false);
 		fireEvent(ureq, Event.CHANGED_EVENT);
 	}
 	
@@ -389,7 +401,7 @@ public class PageRunController extends BasicController implements TooledControll
 		page = portfolioService.changePageStatus(page, PageStatus.closed);
 		stackPanel.popUpToController(this);
 		loadMeta(ureq);
-		loadModel(ureq);
+		loadModel(ureq, true);
 		fireEvent(ureq, Event.CHANGED_EVENT);
 	}
 	
@@ -403,7 +415,7 @@ public class PageRunController extends BasicController implements TooledControll
 		page = portfolioService.changePageStatus(page, PageStatus.published);
 		stackPanel.popUpToController(this);
 		loadMeta(ureq);
-		loadModel(ureq);
+		loadModel(ureq, true);
 		fireEvent(ureq, Event.CHANGED_EVENT);
 	}
 	
@@ -444,7 +456,7 @@ public class PageRunController extends BasicController implements TooledControll
 	
 	private void doRunPage(UserRequest ureq) {
 		if(dirtyMarker) {
-			loadModel(ureq);
+			loadModel(ureq, false);
 		}
 		mainVC.put("page", pageCtrl.getInitialComponent());
 		editLink(true);

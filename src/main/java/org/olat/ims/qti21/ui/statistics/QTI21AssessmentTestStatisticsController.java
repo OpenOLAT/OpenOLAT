@@ -76,7 +76,8 @@ public class QTI21AssessmentTestStatisticsController extends BasicController imp
 		
 		if(resourceResult.canViewAnonymousUsers() || resourceResult.canViewNonParticipantUsers()) {
 			filterCtrl = new UserFilterController(ureq, getWindowControl(),
-					resourceResult.canViewNonParticipantUsers(), resourceResult.canViewAnonymousUsers());
+					resourceResult.canViewNonParticipantUsers(), resourceResult.canViewAnonymousUsers(),
+					resourceResult.isViewNonParticipantUsers(), resourceResult.isViewAnonymousUsers());
 			listenTo(filterCtrl);
 			mainVC.put("filter", filterCtrl.getInitialComponent());
 		}
@@ -151,16 +152,20 @@ public class QTI21AssessmentTestStatisticsController extends BasicController imp
 	}
 
 	private void initScoreHistogram(StatisticAssessment stats) {
+		int numOfParticipants = stats.getNumOfParticipants();
 		VelocityContainer scoreHistogramVC = createVelocityContainer("histogram_score");
+		scoreHistogramVC.setVisible(numOfParticipants > 0);
 		scoreHistogramVC.contextPut("datas", BarSeries.datasToString(stats.getScores()));
 		mainVC.put("scoreHistogram", scoreHistogramVC);
 	}
 	
 	private void initDurationHistogram(StatisticAssessment stats) {
-		if(!BarSeries.hasNotNullDatas(stats.getDurations())) return;
-		
+		boolean visible = BarSeries.hasNotNullDatas(stats.getDurations()) && stats.getNumOfParticipants() > 0;
 		VelocityContainer durationHistogramVC = createVelocityContainer("histogram_duration");
-		durationHistogramVC.contextPut("datas", BarSeries.datasToString(stats.getDurations()));
+		durationHistogramVC.setVisible(visible);
+		if(visible) {
+			durationHistogramVC.contextPut("datas", BarSeries.datasToString(stats.getDurations()));
+		}
 		mainVC.put("durationHistogram", durationHistogramVC);
 	}
 	

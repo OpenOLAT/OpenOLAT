@@ -258,6 +258,10 @@ public class GroupPage {
 				.enableTool(portfolioTool);
 	}
 	
+	public GroupPage enableCalendarTool() {
+		return enableTool(calendarTool);
+	}
+	
 	private GroupPage enableTool(Tool tool) {
 		By checkToolsBy = tool.getCheckboxBy();
 		WebElement checkToolEl = browser.findElement(checkToolsBy);

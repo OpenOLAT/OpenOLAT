@@ -26,7 +26,9 @@
 package org.olat.ims.qti.fileresource;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.FileVisitResult;
 import java.nio.file.Path;
 import java.nio.file.SimpleFileVisitor;
@@ -45,10 +47,17 @@ import org.olat.core.util.vfs.LocalFileImpl;
 import org.olat.core.util.vfs.LocalFolderImpl;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
+import org.olat.core.util.xml.XMLParser;
+import org.olat.fileresource.FileResourceManager;
 import org.olat.fileresource.types.FileResource;
 import org.olat.fileresource.types.ResourceEvaluation;
+import org.olat.ims.qti.editor.beecom.objects.QTIDocument;
+import org.olat.ims.qti.editor.beecom.parser.ParserManager;
 import org.olat.ims.qti.process.AssessmentInstance;
+import org.olat.ims.qti.process.ImsRepositoryResolver;
 import org.olat.ims.qti.process.QTIHelper;
+import org.olat.ims.resources.IMSEntityResolver;
+import org.olat.resource.OLATResource;
 
 import de.bps.onyx.plugin.OnyxModule;
 
@@ -68,6 +77,28 @@ public class TestFileResource extends FileResource {
 
 	public TestFileResource() {
 		super(TYPE_NAME);
+	}
+	
+	public static QTIDocument getQTIDocument(OLATResource resource) {
+		File packageDir = FileResourceManager.getInstance().unzipFileResource(resource);
+		File qtiFile = new File(packageDir, ImsRepositoryResolver.QTI_FILE);
+		try(InputStream in = new FileInputStream(qtiFile)) {
+			XMLParser xmlParser = new XMLParser(new IMSEntityResolver());
+			Document doc = xmlParser.parse(in, true);
+			ParserManager parser = new ParserManager();
+			QTIDocument document = (QTIDocument)parser.parse(doc);
+			return document;
+		} catch (Exception e) {			
+			log.error("Exception when parsing input QTI input stream for ", e);
+			return null;
+		}
+	}
+	
+	public static QTIReaderPackage getQTIEditorPackageReader(OLATResource resource) {
+		VFSContainer baseDir = FileResourceManager.getInstance().unzipContainerResource(resource);
+		QTIDocument document = getQTIDocument(resource);
+		return new QTIReaderPackage(baseDir, document);
+		
 	}
 	
 	/**

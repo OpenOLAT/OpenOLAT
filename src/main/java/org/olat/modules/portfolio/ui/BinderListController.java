@@ -368,8 +368,7 @@ public class BinderListController extends FormBasicController
 			BinderSecurityCallback secCallback = BinderSecurityCallbackFactory.getCallbackForOwnedBinder(binder);
 			BinderConfiguration config = BinderConfiguration.createConfig(binder);
 			binderCtrl = new BinderController(ureq, swControl, stackPanel, secCallback, binder, config);
-			String displayName = StringHelper.escapeHtml(binder.getTitle());
-			stackPanel.pushController(displayName, binderCtrl);
+			stackPanel.pushController(binder.getTitle(), binderCtrl);
 			return binderCtrl;
 		}
 	}

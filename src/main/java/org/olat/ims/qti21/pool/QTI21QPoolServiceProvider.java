@@ -41,13 +41,17 @@ import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.i18n.I18nModule;
 import org.olat.core.util.vfs.LocalImpl;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSManager;
 import org.olat.fileresource.types.ImsQTI21Resource;
+import org.olat.ims.qti.QTIConstants;
+import org.olat.ims.qti.editor.QTIEditHelper;
 import org.olat.ims.qti.editor.QTIEditorPackage;
+import org.olat.ims.qti.editor.beecom.objects.Item;
 import org.olat.ims.qti21.QTI21Constants;
 import org.olat.ims.qti21.QTI21Service;
 import org.olat.ims.qti21.model.QTI21QuestionType;
@@ -68,6 +72,7 @@ import org.olat.modules.qpool.ExportFormatOptions;
 import org.olat.modules.qpool.ExportFormatOptions.Outcome;
 import org.olat.modules.qpool.QItemFactory;
 import org.olat.modules.qpool.QPoolSPI;
+import org.olat.modules.qpool.QPoolService;
 import org.olat.modules.qpool.QuestionItem;
 import org.olat.modules.qpool.QuestionItemFull;
 import org.olat.modules.qpool.QuestionItemShort;
@@ -104,7 +109,9 @@ public class QTI21QPoolServiceProvider implements QPoolSPI {
 
 	@Autowired
 	private QTI21Service qtiService;
-	
+
+	@Autowired
+	private QPoolService qpoolService;
 	@Autowired
 	private QPoolFileStorage qpoolFileStorage;
 	@Autowired
@@ -121,6 +128,7 @@ public class QTI21QPoolServiceProvider implements QPoolSPI {
 	private static final List<ExportFormatOptions> formats = new ArrayList<ExportFormatOptions>(4);
 	static {
 		formats.add(DefaultExportFormat.ZIP_EXPORT_FORMAT);
+		formats.add(DefaultExportFormat.DOCX_EXPORT_FORMAT);
 		formats.add(new DefaultExportFormat(QTI21Constants.QTI_21_FORMAT, Outcome.download, null));
 		formats.add(new DefaultExportFormat(QTI21Constants.QTI_21_FORMAT, Outcome.repository, ImsQTI21Resource.TYPE_NAME));
 	}
@@ -156,6 +164,20 @@ public class QTI21QPoolServiceProvider implements QPoolSPI {
 		return ok;
 	}
 	
+	@Override
+	public boolean isConversionPossible(QuestionItemShort item) {
+		if(QTIConstants.QTI_12_FORMAT.equals(item.getFormat())) {
+			VFSLeaf leaf = qpoolService.getRootLeaf(item);
+			if(leaf == null) {
+				return false;
+			} else {
+				Item qtiItem = QTIEditHelper.readItemXml(leaf);
+				return qtiItem != null && !qtiItem.isAlient();
+			}
+		}
+		return false;
+	}
+
 	@Override
 	public List<QItemFactory> getItemfactories() {
 		List<QItemFactory> factories = new ArrayList<QItemFactory>();
@@ -203,8 +225,9 @@ public class QTI21QPoolServiceProvider implements QPoolSPI {
 	public MediaResource exportTest(List<QuestionItemShort> items, ExportFormatOptions format, Locale locale) {
 		if(QTI21Constants.QTI_21_FORMAT.equals(format.getFormat())) {
 			return new QTI21ExportTestResource("UTF-8", locale, items, this);
+		} else if(DefaultExportFormat.DOCX_EXPORT_FORMAT.getFormat().equals(format.getFormat())) {
+			return new QTI12And21PoolWordExport(items, I18nModule.getDefaultLocale(), "UTF-8", questionItemDao, qpoolFileStorage);
 		}
-		
 		return null;
 	}
 
@@ -219,6 +242,35 @@ public class QTI21QPoolServiceProvider implements QPoolSPI {
 		VFSContainer originalDir = qpoolFileStorage.getContainer(original.getDirectory());
 		VFSContainer copyDir = qpoolFileStorage.getContainer(copy.getDirectory());
 		VFSManager.copyContent(originalDir, copyDir);
+	}
+
+	@Override
+	public QuestionItem convert(Identity owner, QuestionItemShort itemToConvert, Locale locale) {
+		if(QTIConstants.QTI_12_FORMAT.equals(itemToConvert.getFormat())) {
+			VFSLeaf leaf = qpoolService.getRootLeaf(itemToConvert);
+			if(leaf == null) {
+				return null;
+			} else {
+				Item qtiItem = QTIEditHelper.readItemXml(leaf);
+				if(qtiItem != null && !qtiItem.isAlient()) {
+					QuestionItemImpl original = questionItemDao.loadById(itemToConvert.getKey());
+					QuestionItemImpl copy = questionItemDao.copy(original);
+					copy.setTitle(original.getTitle());
+					copy.setFormat(getFormat());
+					
+					VFSContainer originalDir = qpoolFileStorage.getContainer(original.getDirectory());
+					File copyDir = qpoolFileStorage.getDirectory(copy.getDirectory());
+
+					QTI12To21Converter converter = new QTI12To21Converter(copyDir, locale);
+					if(converter.convert(copy, qtiItem, originalDir)) {
+						questionItemDao.persist(owner, copy);
+						return copy;
+					}
+				}
+			}
+		}
+
+		return null;
 	}
 
 	@Override

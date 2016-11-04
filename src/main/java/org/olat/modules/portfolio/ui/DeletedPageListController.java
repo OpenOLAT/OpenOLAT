@@ -29,13 +29,16 @@ import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableRenderEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableRendererType;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.id.OLATResourceable;
@@ -57,7 +60,9 @@ public class DeletedPageListController extends AbstractPageListController {
 
 	private FormLink deleteButton;
 	
+	private CloseableModalController cmc;
 	private DialogBoxController confirmDeleteCtrl;
+	private RestorePageController restorePageCtrl;
 	
 	public DeletedPageListController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
 			BinderSecurityCallback secCallback) {
@@ -70,6 +75,7 @@ public class DeletedPageListController extends AbstractPageListController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		super.initForm(formLayout, listener, ureq);
+		model.getTableColumnModel().addFlexiColumnModel(new DefaultFlexiColumnModel("restore.page", translate("restore.page"), "restore"));
 		tableEl.setMultiSelect(true);
 		
 		deleteButton = uifactory.addFormLink("delete.def.page", "delete.def.page", null, formLayout, Link.BUTTON);
@@ -114,8 +120,24 @@ public class DeletedPageListController extends AbstractPageListController {
 				List<PortfolioElementRow> rows = (List<PortfolioElementRow>)confirmDeleteCtrl.getUserObject();
 				doDelete(ureq, rows);
 			}
+		} else if(restorePageCtrl == source) {
+			if(event == Event.DONE_EVENT) {
+				loadModel(ureq, null);
+				fireEvent(ureq, Event.CHANGED_EVENT);
+			}
+			cmc.deactivate();
+			cleanUp();
+		} else if(cmc == source) {
+			cleanUp();
 		}
 		super.event(ureq, source, event);
+	}
+	
+	private void cleanUp() {
+		removeAsListenerAndDispose(restorePageCtrl);
+		removeAsListenerAndDispose(cmc);
+		restorePageCtrl = null;
+		cmc = null;
 	}
 
 	@Override
@@ -126,11 +148,34 @@ public class DeletedPageListController extends AbstractPageListController {
 				deleteButton.setVisible(se.getRendererType() == FlexiTableRendererType.classic
 						&& model.getRowCount() > 0);
 				tableEl.setSelectAllEnable(tableEl.getRendererType() == FlexiTableRendererType.classic);
+			} else if(event instanceof SelectionEvent) {
+				SelectionEvent se = (SelectionEvent)event;
+				String cmd = se.getCommand();
+				if("select-page".equals(cmd)) {
+					PortfolioElementRow row = model.getObject(se.getIndex());
+					doOpenRow(ureq, row, false);
+				} else if("restore".equals(cmd)) {
+					PortfolioElementRow row = model.getObject(se.getIndex());
+					if(row.isPage()) {
+						doRestorePage(ureq, row);
+					}
+				}
 			}
 		} else if(deleteButton == source) {
 			doConfirmDelete(ureq);
 		}
 		super.formInnerEvent(ureq, source, event);
+	}
+	
+	private void doRestorePage(UserRequest ureq, PortfolioElementRow row) {
+		Page reloadedPage = portfolioService.getPageByKey(row.getPage().getKey());
+		restorePageCtrl = new RestorePageController(ureq, getWindowControl(), reloadedPage);
+		listenTo(restorePageCtrl);
+		
+		String title = translate("restore.page");
+		cmc = new CloseableModalController(getWindowControl(), null, restorePageCtrl.getInitialComponent(), true, title, true);
+		listenTo(cmc);
+		cmc.activate();
 	}
 	
 	private void doConfirmDelete(UserRequest ureq) {

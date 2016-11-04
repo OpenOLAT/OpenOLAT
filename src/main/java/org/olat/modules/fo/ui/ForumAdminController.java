@@ -20,18 +20,11 @@
 package org.olat.modules.fo.ui;
 
 import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.components.form.flexible.FormItem;
-import org.olat.core.gui.components.form.flexible.FormItemContainer;
-import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
-import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
-import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
-import org.olat.core.gui.components.form.flexible.impl.FormEvent;
-import org.olat.core.gui.control.Controller;
+import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.velocity.VelocityContainer;
+import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.util.Util;
-import org.olat.modules.fo.Forum;
-import org.olat.modules.fo.ForumModule;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.olat.core.gui.control.controller.BasicController;
 
 /**
  * 
@@ -39,88 +32,32 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class ForumAdminController extends FormBasicController {
-	
-	private static final String[] anonymousPostingKeys = new String[]{ "on" };
-	private static final String[] defaultKeys = new String[]{ "enabled", "disabled" };
-	
-	private MultipleSelectionElement anonymousPostingEl;
-	private SingleSelection defaultCourseEl, defaultGroupEl;
-	
-	@Autowired
-	private ForumModule forumModule;
-	
+public class ForumAdminController extends BasicController {
+
 	public ForumAdminController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
-		setTranslator(Util.createPackageTranslator(Forum.class, getLocale(), getTranslator()));
 		
-		initForm(ureq);
+		VelocityContainer mainVC = createVelocityContainer("admin");
+		
+		ForumSettingsAdminController settingsCtrl = new ForumSettingsAdminController(ureq, getWindowControl());
+		listenTo(settingsCtrl);
+		mainVC.put("settings", settingsCtrl.getInitialComponent());
+		
+		ForumPseudonymsAdminController pseudonymsCtrl = new ForumPseudonymsAdminController(ureq, getWindowControl());
+		listenTo(pseudonymsCtrl);
+		mainVC.put("pseudonyms", pseudonymsCtrl.getInitialComponent());
+
+		putInitialPanel(mainVC);
 	}
 
-	@Override
-	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		setFormTitle("admin.title");
-		
-		String[] anonymousPostingValues = new String[]{ "" };
-		anonymousPostingEl = uifactory.addCheckboxesHorizontal("anonymous.posting", "anonymous.posting", formLayout,
-				anonymousPostingKeys, anonymousPostingValues);
-		if(forumModule.isAnonymousPostingWithPseudonymEnabled()) {
-			anonymousPostingEl.select(anonymousPostingKeys[0], true);
-		}
-		anonymousPostingEl.addActionListener(FormEvent.ONCHANGE);
-		
-		String[] defaultValues = new String[]{
-				translate("anonymous.default.enabled"), translate("anonymous.default.disabled")
-		};
-		defaultCourseEl = uifactory.addRadiosHorizontal("anonymous.course.default", "anonymous.course.default", formLayout,
-				defaultKeys, defaultValues);
-		if(forumModule.isPseudonymForCourseEnabledByDefault()) {
-			defaultCourseEl.select(defaultKeys[0], true);
-		} else {
-			defaultCourseEl.select(defaultKeys[1], true);
-		}
-		defaultCourseEl.addActionListener(FormEvent.ONCHANGE);
-		/*
-		defaultGroupEl = uifactory.addRadiosHorizontal("anonymous.group.default", "anonymous.group.default", formLayout,
-				defaultKeys, defaultValues);
-		if(forumModule.isPseudonymForGroupEnabledByDefault()) {
-			defaultGroupEl.select(defaultKeys[0], true);
-		} else {
-			defaultGroupEl.select(defaultKeys[1], true);
-		}
-		defaultGroupEl.addActionListener(FormEvent.ONCHANGE);
-		*/
-
-		updateUI();
-	}
-	
-	private void updateUI() {
-		defaultCourseEl.setVisible(anonymousPostingEl.isAtLeastSelected(1));
-		//defaultGroupEl.setVisible(anonymousPostingEl.isAtLeastSelected(1));
-	}
-	
 	@Override
 	protected void doDispose() {
 		//
 	}
 	
 	@Override
-	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if(anonymousPostingEl == source) {
-			forumModule.setAnonymousPostingWithPseudonymEnabled(anonymousPostingEl.isAtLeastSelected(1));
-			updateUI();
-		} else if(defaultGroupEl == source) {
-			boolean enabled = defaultGroupEl.isOneSelected() && defaultGroupEl.isSelected(0);
-			forumModule.setPseudonymForGroupEnabledByDefault(enabled);
-		} else if(defaultCourseEl == source) {
-			boolean enabled = defaultCourseEl.isOneSelected() && defaultCourseEl.isSelected(0);
-			forumModule.setPseudonymForCourseEnabledByDefault(enabled);
-		}
-		super.formInnerEvent(ureq, source, event);
-	}
-
-	@Override
-	protected void formOK(UserRequest ureq) {
+	protected void event(UserRequest ureq, Component source, Event event) {
 		//
 	}
+	
 }

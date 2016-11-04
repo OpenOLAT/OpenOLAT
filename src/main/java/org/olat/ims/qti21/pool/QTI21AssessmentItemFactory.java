@@ -22,14 +22,12 @@ package org.olat.ims.qti21.pool;
 import java.util.Locale;
 
 import org.olat.core.CoreSpringFactory;
-import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.id.Identity;
 import org.olat.core.util.Util;
 import org.olat.ims.qti21.model.QTI21QuestionType;
 import org.olat.ims.qti21.ui.editor.AssessmentItemEditorController;
 import org.olat.modules.qpool.QItemFactory;
-import org.olat.modules.qpool.QPoolItemEditorController;
 import org.olat.modules.qpool.QuestionItem;
 
 /**
@@ -62,11 +60,10 @@ public class QTI21AssessmentItemFactory implements QItemFactory {
 	}
 
 	@Override
-	public QPoolItemEditorController getEditor(UserRequest ureq, WindowControl wControl, String title) {
+	public QuestionItem createItem(Identity owner, String title, Locale locale) {
 		QTI21QPoolServiceProvider spi = CoreSpringFactory.getImpl(QTI21QPoolServiceProvider.class);
-		QuestionItem newItem = spi.createItem(ureq.getIdentity(), type, title, ureq.getLocale());
-		QTI21EditorController ctrl = new QTI21EditorController(ureq, wControl, newItem);
-		return ctrl;
+		QuestionItem newItem = spi.createItem(owner, type, title, locale);
+		//QTI21EditorController ctrl = new QTI21EditorController(ureq, wControl, newItem);
+		return newItem;
 	}
-	
 }

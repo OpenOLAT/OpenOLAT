@@ -264,7 +264,7 @@ public class DENManager {
 
 		for( KalendarEvent newEvent : lstEvents ) {
 			createKalendarEventLinks(course, denNode, newEvent);
-			KalendarEvent oldEvent = cal.getEvent(newEvent.getID());
+			KalendarEvent oldEvent = cal.getEvent(newEvent.getID(), newEvent.getRecurrenceID());
 			//new event?
 			if (oldEvent != null) {
 				//event is already in the calendar so first remove it
@@ -394,10 +394,11 @@ public class DENManager {
 			//pause in milliseconds
 			int pause = 1000*60*60*Integer.parseInt(strTok.nextToken()) + 1000*60*Integer.parseInt(strTok.nextToken());
 			KalendarEvent newEvent;
+			String evnetId = CodeHelper.getGlobalForeverUniqueID();
 			if(nextEvent == null) {
-				newEvent = new KalendarEvent(CodeHelper.getGlobalForeverUniqueID(), subjectStr, begin, duration);
+				newEvent = new KalendarEvent(evnetId, subjectStr, begin, duration);
 			} else {
-				newEvent = new KalendarEvent(CodeHelper.getGlobalForeverUniqueID(), subjectStr, nextEvent, duration);
+				newEvent = new KalendarEvent(evnetId, subjectStr, nextEvent, duration);
 			}
 			newEvent.setNumParticipants(numParticipants);
 			newEvent.setLocation(locationStr);
@@ -458,7 +459,8 @@ public class DENManager {
 					newBegin = new Date(oldEvent.getBegin().getTime() - gap);
 					newEnd = new Date(oldEvent.getEnd().getTime() - gap);
 				}
-				KalendarEvent newEvent = new KalendarEvent(dataList.get(i).getID(), subjectStr.equals(new String()) ? oldEvent.getSubject() : subjectStr, newBegin, newEnd);
+				String eventId = oldEvent.getID();
+				KalendarEvent newEvent = new KalendarEvent(eventId, null, subjectStr.equals(new String()) ? oldEvent.getSubject() : subjectStr, newBegin, newEnd);
 				if(numParticipants != 0)
 					newEvent.setNumParticipants(numParticipants);
 				else
@@ -494,9 +496,11 @@ public class DENManager {
 			Identity identity = manager.findIdentityByName(participant);
 			if(identity != null) {
 				Kalendar userCal = calManager.getPersonalCalendar(identity).getKalendar();
-				Collection<KalendarEvent> userEvents = new ArrayList<KalendarEvent>();
+				List<KalendarEvent> userEvents = new ArrayList<>();
 				userEvents.addAll(userCal.getEvents());
-				KalendarEvent userNewEvent = new KalendarEvent(CodeHelper.getGlobalForeverUniqueID(), newEvent.getSubject(), newEvent.getBegin(), newEvent.getEnd());
+				
+				String eventId = CodeHelper.getGlobalForeverUniqueID();
+				KalendarEvent userNewEvent = new KalendarEvent(eventId, null, newEvent.getSubject(), newEvent.getBegin(), newEvent.getEnd());
 				userNewEvent.setLocation(newEvent.getLocation());
 				userNewEvent.setSourceNodeId(newEvent.getSourceNodeId());
 				userNewEvent.setClassification(KalendarEvent.CLASS_PRIVATE);
@@ -521,7 +525,7 @@ public class DENManager {
 			Identity identity = manager.findIdentityByName(participant);
 			if(identity != null) {
 				Kalendar userCal = calManager.getPersonalCalendar(identity).getKalendar();
-				Collection<KalendarEvent> userEvents = new ArrayList<KalendarEvent>();
+				List<KalendarEvent> userEvents = new ArrayList<>();
 				userEvents.addAll(userCal.getEvents());
 				for( KalendarEvent userEvent : userEvents ) {
 					String sourceNodeId = userEvent.getSourceNodeId();

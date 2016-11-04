@@ -54,6 +54,7 @@ import org.olat.course.ICourse;
 import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.PortfolioCourseNode;
+import org.olat.course.run.scoring.AssessmentEvaluation;
 import org.olat.course.run.scoring.ScoreEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.fileresource.FileResourceManager;
@@ -93,9 +94,9 @@ import org.olat.modules.portfolio.model.AssessmentSectionChange;
 import org.olat.modules.portfolio.model.AssessmentSectionImpl;
 import org.olat.modules.portfolio.model.AssignmentImpl;
 import org.olat.modules.portfolio.model.BinderImpl;
+import org.olat.modules.portfolio.model.BinderPageUsage;
 import org.olat.modules.portfolio.model.BinderStatistics;
 import org.olat.modules.portfolio.model.CategoryLight;
-import org.olat.modules.portfolio.model.BinderPageUsage;
 import org.olat.modules.portfolio.model.PageImpl;
 import org.olat.modules.portfolio.model.SectionImpl;
 import org.olat.modules.portfolio.model.SectionKeyRef;
@@ -331,15 +332,15 @@ public class PortfolioServiceImpl implements PortfolioService {
 	}
 
 	@Override
-	public List<Assignment> getAssignments(PortfolioElement element) {
+	public List<Assignment> getAssignments(PortfolioElement element, String searchString) {
 		if(element.getType() == PortfolioElementType.binder) {
-			return assignmentDao.loadAssignments((BinderRef)element);
+			return assignmentDao.loadAssignments((BinderRef)element, searchString);
 		}
 		if(element.getType() == PortfolioElementType.section) {
-			return assignmentDao.loadAssignments((SectionRef)element);
+			return assignmentDao.loadAssignments((SectionRef)element, searchString);
 		}
 		if(element.getType() == PortfolioElementType.page) {
-			return assignmentDao.loadAssignments((Page)element);
+			return assignmentDao.loadAssignments((Page)element, searchString);
 		}
 		return null;
 	}
@@ -968,11 +969,28 @@ public class PortfolioServiceImpl implements PortfolioService {
 			}
 			((PageImpl)reloadedPage).setLastPublicationDate(now);
 			
-			if(currentStatus == PageStatus.closed) {
-				Section section = reloadedPage.getSection();
-				if(section != null && section.getSectionStatus() == SectionStatus.closed) {
+			Section section = reloadedPage.getSection();
+			if(section != null) {
+				SectionStatus sectionStatus = section.getSectionStatus();
+				if(currentStatus == PageStatus.closed) {
+					if(sectionStatus == SectionStatus.closed) {
+						((SectionImpl)section).setSectionStatus(SectionStatus.inProgress);
+						binderDao.updateSection(section);
+					}
+				} else if(sectionStatus == null || sectionStatus == SectionStatus.notStarted || sectionStatus == SectionStatus.closed) {
 					((SectionImpl)section).setSectionStatus(SectionStatus.inProgress);
 					binderDao.updateSection(section);
+				}
+			}
+		} else if(status == PageStatus.inRevision) {
+			Section section = reloadedPage.getSection();
+			if(section != null) {
+				SectionStatus sectionStatus = section.getSectionStatus();
+				if(sectionStatus == null || sectionStatus == SectionStatus.notStarted || sectionStatus == SectionStatus.closed) {
+					if(sectionStatus == SectionStatus.closed) {
+						((SectionImpl)section).setSectionStatus(SectionStatus.inProgress);
+						binderDao.updateSection(section);
+					}
 				}
 			}
 		}
@@ -1056,7 +1074,6 @@ public class PortfolioServiceImpl implements PortfolioService {
 	}
 	
 	private void updateAssessmentEntry(Identity assessedIdentity, Binder binder, Set<AssessmentSection> assessmentSections, Identity coachingIdentity) {
-		
 		boolean allPassed = true;
 		int totalSectionPassed = 0;
 		int totalSectionClosed = 0;
@@ -1081,7 +1098,6 @@ public class PortfolioServiceImpl implements PortfolioService {
 		Boolean totalPassed = null;
 		if(totalSectionClosed == assessmentSections.size()) {
 			totalPassed = new Boolean(allPassed);
-			binderStatus = AssessmentEntryStatus.done;
 		} else {
 			if(assessmentSections.size() == totalSectionPassed) {
 				totalPassed = Boolean.TRUE;
@@ -1111,4 +1127,61 @@ public class PortfolioServiceImpl implements PortfolioService {
 			assessmentService.updateAssessmentEntry(assessmentEntry);
 		}
 	}
+
+	@Override
+	public AssessmentEntryStatus getAssessmentStatus(Identity assessedIdentity, BinderRef binderRef) {
+		Binder binder = binderDao.loadByKey(binderRef.getKey());
+		RepositoryEntry entry = binder.getEntry();
+		
+		AssessmentEntryStatus status = null;
+		if("CourseModule".equals(entry.getOlatResource().getResourceableTypeName())) {
+			ICourse course = CourseFactory.loadCourse(entry);
+			CourseNode courseNode = course.getRunStructure().getNode(binder.getSubIdent());
+			if(courseNode instanceof PortfolioCourseNode) {
+				PortfolioCourseNode pfNode = (PortfolioCourseNode)courseNode;
+				UserCourseEnvironment userCourseEnv = AssessmentHelper.createAndInitUserCourseEnvironment(assessedIdentity, course);
+				AssessmentEvaluation eval = pfNode.getUserScoreEvaluation(userCourseEnv);
+				status = eval.getAssessmentStatus();
+			}
+		} else {
+			OLATResource resource = ((BinderImpl)binder.getTemplate()).getOlatResource();
+			RepositoryEntry referenceEntry = repositoryService.loadByResourceKey(resource.getKey());
+			AssessmentEntry assessmentEntry = assessmentService
+					.getOrCreateAssessmentEntry(assessedIdentity, null, binder.getEntry(), binder.getSubIdent(), referenceEntry);
+			status = assessmentEntry.getAssessmentStatus();
+		}
+		return status;
+	}
+
+	@Override
+	public void setAssessmentStatus(Identity assessedIdentity, BinderRef binderRef, AssessmentEntryStatus status, Identity coachingIdentity) {
+		Boolean fullyAssessed = Boolean.FALSE;
+		if(status == AssessmentEntryStatus.done) {
+			fullyAssessed = Boolean.TRUE;
+		}
+		Binder binder = binderDao.loadByKey(binderRef.getKey());
+		RepositoryEntry entry = binder.getEntry();
+		if("CourseModule".equals(entry.getOlatResource().getResourceableTypeName())) {
+			ICourse course = CourseFactory.loadCourse(entry);
+			CourseNode courseNode = course.getRunStructure().getNode(binder.getSubIdent());
+			if(courseNode instanceof PortfolioCourseNode) {
+				PortfolioCourseNode pfNode = (PortfolioCourseNode)courseNode;
+				UserCourseEnvironment userCourseEnv = AssessmentHelper.createAndInitUserCourseEnvironment(assessedIdentity, course);
+				AssessmentEvaluation eval = pfNode.getUserScoreEvaluation(userCourseEnv);
+				
+				ScoreEvaluation scoreEval= new ScoreEvaluation(eval.getScore(), eval.getPassed(), status, fullyAssessed, binder.getKey());
+				pfNode.updateUserScoreEvaluation(scoreEval, userCourseEnv, coachingIdentity, false);
+			}
+		} else {
+			OLATResource resource = ((BinderImpl)binder.getTemplate()).getOlatResource();
+			RepositoryEntry referenceEntry = repositoryService.loadByResourceKey(resource.getKey());
+			AssessmentEntry assessmentEntry = assessmentService
+					.getOrCreateAssessmentEntry(assessedIdentity, null, binder.getEntry(), binder.getSubIdent(), referenceEntry);
+			assessmentEntry.setFullyAssessed(fullyAssessed);
+			assessmentEntry.setAssessmentStatus(status);
+			assessmentService.updateAssessmentEntry(assessmentEntry);
+		}
+	}
+	
+	
 }

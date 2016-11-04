@@ -21,8 +21,7 @@ package org.olat.modules.qpool;
 
 import java.util.Locale;
 
-import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.control.WindowControl;
+import org.olat.core.id.Identity;
 
 /**
  * 
@@ -34,6 +33,6 @@ public interface QItemFactory {
 	
 	public String getLabel(Locale locale);
 	
-	public QPoolItemEditorController getEditor(UserRequest ureq, WindowControl wControl, String title);
+	public QuestionItem createItem(Identity owner, String title, Locale locale);
 
 }

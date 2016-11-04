@@ -45,6 +45,7 @@ import org.olat.course.assessment.ui.tool.event.CourseNodeEvent;
 import org.olat.course.config.CourseConfig;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.CourseNodeFactory;
+import org.olat.course.nodes.STCourseNode;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.course.run.userview.UserCourseEnvironmentImpl;
 import org.olat.modules.assessment.ui.AssessedIdentityController;
@@ -203,7 +204,16 @@ public class AssessmentIdentityCourseController extends BasicController implemen
 		
 		CourseNode nextNode = treeOverviewCtrl.getNextNode(currentNodeCtrl.getCourseNode());
 		if(nextNode != null && nextNode.getParent() != null) {
-			doSelectCourseNode(ureq, nextNode);
+			if(nextNode instanceof STCourseNode) {
+				for(nextNode=treeOverviewCtrl.getNextNode(nextNode); nextNode instanceof STCourseNode; ) {
+					//search the next node which is not a structure node
+				}
+			}
+			
+			if(nextNode.getParent() != null) {
+			
+				doSelectCourseNode(ureq, nextNode);
+			}
 		}
 	}
 	
@@ -212,12 +222,18 @@ public class AssessmentIdentityCourseController extends BasicController implemen
 		
 		CourseNode previousNode = treeOverviewCtrl.getPreviousNode(currentNodeCtrl.getCourseNode());
 		if(previousNode != null && previousNode.getParent() != null) {
+			if(previousNode instanceof STCourseNode) {
+				for(previousNode=treeOverviewCtrl.getPreviousNode(previousNode); previousNode instanceof STCourseNode; ) {
+					//search the previous node which is not a structure node
+				}
+			}
+
 			doSelectCourseNode(ureq, previousNode);
 		}
 	}
 	
 	private void doSelectCourseNode(UserRequest ureq, CourseNode courseNode) {
-		if(courseNode == null) {
+		if(courseNode == null || courseNode.getParent() == null) {
 			return;
 		}
 		currentCourseNode = courseNode;
@@ -230,6 +246,7 @@ public class AssessmentIdentityCourseController extends BasicController implemen
 
 		currentNodeCtrl = new AssessmentIdentityCourseNodeController(ureq, getWindowControl(), stackPanel,
 				courseEntry, courseNode, assessedIdentity, true);
+
 		listenTo(currentNodeCtrl);
 		stackPanel.pushController(courseNode.getShortTitle(), currentNodeCtrl);
 		

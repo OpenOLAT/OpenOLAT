@@ -89,8 +89,6 @@ public class OLATUpgrade_11_0_2 extends OLATUpgrade {
 				if(StringHelper.containsNonWhitespace(availableUserTools)) {
 					availableUserTools += "," + PORTFOLIO_V2_TOOL;
 					userToolsModule.setAvailableUserTools(availableUserTools);
-				} else if(availableUserTools.contains(PORTFOLIO_V2_TOOL)) {
-					userToolsModule.setAvailableUserTools(PORTFOLIO_V2_TOOL);
 				}
 			}
 			uhd.setBooleanDataValue(PORTFOLIO_SETTINGS, allOk);

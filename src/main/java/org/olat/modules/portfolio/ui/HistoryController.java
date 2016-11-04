@@ -42,6 +42,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.modules.portfolio.Binder;
+import org.olat.modules.portfolio.BinderSecurityCallback;
 import org.olat.modules.portfolio.manager.PortfolioNotificationsHandler;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -60,15 +61,22 @@ public class HistoryController extends FormBasicController {
 	private int counter;
 	private Binder binder;
 	private SubscriptionContext subsContext;
+	private final BinderSecurityCallback secCallback;
 	
 	@Autowired
 	private PortfolioNotificationsHandler notificationsHandler;
 	 
-	public HistoryController(UserRequest ureq, WindowControl wControl, Binder binder) {
+	public HistoryController(UserRequest ureq, WindowControl wControl, BinderSecurityCallback secCallback, Binder binder) {
 		super(ureq, wControl, "history");
 		this.binder = binder;
+		this.secCallback = secCallback;
 		initForm(ureq);
 		updateChangeLog();
+		
+		if (secCallback.canNewAssignment()) {
+			// in template mode, add editor class to toolbar
+			initialPanel.setCssClass("o_edit_mode");
+		}
 	}
 
 	@Override
@@ -94,7 +102,7 @@ public class HistoryController extends FormBasicController {
 	
 	protected void updateChangeLog() {
 		Date date = dateChooser.getDate();
-		List<SubscriptionListItem> items = notificationsHandler.getAllItems(binder, date, getLocale());
+		List<SubscriptionListItem> items = notificationsHandler.getAllItems(binder, secCallback, date, getLocale());
 		Formatter formatter = Formatter.getInstance(getLocale());
 		
 		List<SubscriptionListItemWrapper> wrappers = new ArrayList<>(items.size());

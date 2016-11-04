@@ -192,6 +192,8 @@ public class LoginModule extends AbstractSpringModule {
 		for(AuthenticationProvider authProvider:authenticationProviders) {
 			if(authProvider.getName().equalsIgnoreCase(provider)) {
 				authenticationProvider = authProvider;
+			} else if(authProvider.accept(provider)) {
+				authenticationProvider = authProvider;
 			}
 		}
 		return authenticationProvider;

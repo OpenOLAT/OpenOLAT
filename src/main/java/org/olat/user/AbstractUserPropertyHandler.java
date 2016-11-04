@@ -52,7 +52,6 @@ public abstract class AbstractUserPropertyHandler implements UserPropertyHandler
 	private String name; 
 	private String group;
 	private boolean deletable = true; // default
-	private Field getter;
 	private String databaseColumnName;
 
 	/**
@@ -144,15 +143,9 @@ public abstract class AbstractUserPropertyHandler implements UserPropertyHandler
 	 */
 	protected String getInternalValue(User user) {
 		if (user instanceof UserImpl) {
-			//String value = ((UserImpl)user).getUserProperty(name);
-			String value = null;
-			try {
-				value = (String)getter.get(user);
-				if("_".equals(value) && "oracle".equals(DBFactory.getInstance().getDbVendor())) {
-					value = null;
-				}
-			} catch (IllegalArgumentException | IllegalAccessException e) {
-				log.error("", e);
+			String value = ((UserImpl)user).getUserProperty(name);
+			if("_".equals(value) && "oracle".equals(DBFactory.getInstance().getDbVendor())) {
+				value = null;
 			}
 			return value;
 		} else if (user != null) {
@@ -165,17 +158,13 @@ public abstract class AbstractUserPropertyHandler implements UserPropertyHandler
 	 * @param value The raw value in a 18n independent form
 	 */
 	protected void setInternalValue(User user, String value) {
-		if (user instanceof UserImpl && getter != null) {
-			try {
-				// remove fields with null or empty value from o_userfield table (hibernate)
-				// sparse data storage
-				if (value == null || value.length() == 0) {
-					getter.set(user, null);
-				} else {
-					getter.set(user, value);
-				}
-			} catch (IllegalArgumentException | IllegalAccessException e) {
-				log.error("", e);
+		if (user instanceof UserImpl) {
+			// remove fields with null or empty value from o_userfield table (hibernate)
+			// sparse data storage
+			if (value == null || value.length() == 0) {
+				((UserImpl)user).setUserProperty(name, null);
+			} else {
+				((UserImpl)user).setUserProperty(name, value);
 			}
 		} else {
 			log.warn("Set read-only value: " + name,  null);
@@ -188,6 +177,7 @@ public abstract class AbstractUserPropertyHandler implements UserPropertyHandler
 	 * @return String internal user field info
 	 * @see java.lang.Object#toString()
 	 */
+	@Override
 	public String toString() {
 		String quickinfo = "AbstractUserPropertyHandler("+this.getClass().getName()+")["+getName()+"]" ;
 		return quickinfo + "," + super.toString();
@@ -197,6 +187,7 @@ public abstract class AbstractUserPropertyHandler implements UserPropertyHandler
 	 * Spring setter
 	 * @param group
 	 */
+	@Override
 	public void setGroup(String group) {
 		this.group = group;
 	}
@@ -220,7 +211,7 @@ public abstract class AbstractUserPropertyHandler implements UserPropertyHandler
 	
 	protected void setInternalGetterSetter(String name) {
 		try {
-			getter = UserImpl.class.getDeclaredField(name);
+			Field getter = UserImpl.class.getDeclaredField(name);
 			getter.setAccessible(true);
 			if(getter.isAnnotationPresent(Column.class)) {
 				Column col = getter.getAnnotation(Column.class);

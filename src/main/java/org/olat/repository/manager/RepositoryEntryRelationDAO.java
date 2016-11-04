@@ -576,4 +576,19 @@ public class RepositoryEntryRelationDAO {
 			.setParameter("groups", groups)
 			.getResultList();
 	}
+	
+	public List<Long> getBusinessGroupsKeyOwnedAsAuthor(IdentityRef owner) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select bg.key from repoentrytogroup as rel")
+		  .append(" inner join rel.group as reBaseGroup on (rel.defaultGroup=true)")
+		  .append(" inner join reBaseGroup.members as reMember on (reMember.identity.key=:ownerKey and reMember.role='").append(GroupRoles.owner.name()).append("')")
+		  .append(" inner join rel.entry as v")
+		  .append(" inner join v.groups as relGroup on (relGroup.defaultGroup=false)")
+		  .append(" inner join relGroup.group as bgBaseGroup")
+		  .append(" inner join businessgroup as bg on (bg.baseGroup.key=bgBaseGroup.key)");
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Long.class)
+				.setParameter("ownerKey", owner.getKey())
+				.getResultList();
+	}
 }

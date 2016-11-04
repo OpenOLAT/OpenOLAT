@@ -140,6 +140,7 @@ import org.olat.repository.handlers.RepositoryHandler;
 import org.olat.repository.handlers.RepositoryHandlerFactory;
 import org.olat.repository.ui.author.CreateRepositoryEntryController;
 import org.olat.resource.references.Reference;
+import org.olat.resource.references.ReferenceManager;
 import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -265,6 +266,7 @@ public class QTIEditorMainController extends MainLayoutBasicController implement
 	private CreateRepositoryEntryController createConvertedTestController;
 	private InsertNodeController moveCtrl, copyCtrl, insertCtrl;
 	private CountDownLatch exportLatch;
+	private RepositoryEntry qtiEntry;
 
 	@Autowired
 	private UserManager userManager;
@@ -272,6 +274,8 @@ public class QTIEditorMainController extends MainLayoutBasicController implement
 	private QTIResultManager qtiResultManager;
 	@Autowired
 	private RepositoryManager repositoryManager;
+	@Autowired
+	private ReferenceManager referenceManager;
 	@Autowired
 	private RepositoryService repositoryService;
 	@Autowired
@@ -281,6 +285,8 @@ public class QTIEditorMainController extends MainLayoutBasicController implement
 	
 	public QTIEditorMainController(UserRequest ureq, WindowControl wControl, RepositoryEntry qtiEntry, List<Reference> referencees, FileResource fileResource) {
 		super(ureq, wControl);
+		
+		this.qtiEntry = qtiEntry;
 
 		for(Iterator<Reference> iter = referencees.iterator(); iter.hasNext(); ) {
 			Reference ref = iter.next();
@@ -288,18 +294,27 @@ public class QTIEditorMainController extends MainLayoutBasicController implement
 				try {
 					ICourse course = CourseFactory.loadCourse(ref.getSource().getResourceableId());
 					CourseNode courseNode = course.getEditorTreeModel().getCourseNode(ref.getUserdata());
-					String repositorySoftKey = (String) courseNode.getModuleConfiguration().get(IQEditController.CONFIG_KEY_REPOSITORY_SOFTKEY);
-					//check softly that the setting if ok
-					if(qtiEntry.getSoftkey().equals(repositorySoftKey)) {
-						restrictedEdit = ((CoordinatorManager.getInstance().getCoordinator().getLocker().isLocked(course, null))
-							|| qtiResultManager.countResults(course.getResourceableId(), courseNode.getIdent(), qtiEntry.getKey()) > 0) ? true : false;
+					if(courseNode == null) {
+						courseNode = course.getRunStructure().getNode(ref.getUserdata());
+					}
+						
+					if(courseNode == null) {
+						referenceManager.delete(ref);	
 					} else {
-						logError("The course node soft key doesn't match the test/survey sotf key. Course resourceable id: "
-					      + course.getResourceableId() + " (" + course.getCourseTitle() + ") course node: " + courseNode.getIdent() + " (" + courseNode.getShortTitle() + " )"
-					      + " soft key of test/survey in course: " + repositorySoftKey + "  test/survey soft key: " + qtiEntry.getSoftkey(), null);
+						String repositorySoftKey = (String) courseNode.getModuleConfiguration().get(IQEditController.CONFIG_KEY_REPOSITORY_SOFTKEY);
+						//check softly that the setting if ok
+						if(qtiEntry.getSoftkey().equals(repositorySoftKey)) {
+							restrictedEdit = ((CoordinatorManager.getInstance().getCoordinator().getLocker().isLocked(course, null))
+								|| qtiResultManager.countResults(course.getResourceableId(), courseNode.getIdent(), qtiEntry.getKey()) > 0) ? true : false;
+						} else {
+							logError("The course node soft key doesn't match the test/survey sotf key. Course resourceable id: "
+						      + course.getResourceableId() + " (" + course.getCourseTitle() + ") course node: " + courseNode.getIdent() + " (" + courseNode.getShortTitle() + " )"
+						      + " soft key of test/survey in course: " + repositorySoftKey + "  test/survey soft key: " + qtiEntry.getSoftkey(), null);
+						}
 					}
 				} catch(CorruptedCourseException e) {
 					logError("", e);
+					referenceManager.delete(ref);
 				}
 			}
 			if(restrictedEdit) {
@@ -359,6 +374,7 @@ public class QTIEditorMainController extends MainLayoutBasicController implement
 		}
 
 		stackedPanel = new TooledStackedPanel("qtiEditorStackedPanel", getTranslator(), this);
+		stackedPanel.setCssClass("o_edit_mode");
 		
 		// initialize the history
 		if (qtiPackage.isResumed() && qtiPackage.hasSerializedChangelog()) {
@@ -493,7 +509,7 @@ public class QTIEditorMainController extends MainLayoutBasicController implement
 				}
 			}
 		} else if (source == exitVC) {
-			if (event.getCommand().equals(CMD_EXIT_SAVE)) {
+			if (CMD_EXIT_SAVE.equals(event.getCommand())) {
 				if (isRestrictedEdit() && history.size() > 0) {
 					// changes were recorded
 					// start work flow:
@@ -534,7 +550,7 @@ public class QTIEditorMainController extends MainLayoutBasicController implement
 					// remove lock, clean tmp dir, fire done event to close editor
 					saveAndExit(ureq);
 				}
-			} else if (event.getCommand().equals(CMD_EXIT_DISCARD)) {
+			} else if (CMD_EXIT_DISCARD.equals(event.getCommand())) {
 				// remove modal dialog and proceed with exit process
 				cmcExit.deactivate();
 				removeAsListenerAndDispose(cmcExit);
@@ -544,7 +560,7 @@ public class QTIEditorMainController extends MainLayoutBasicController implement
 				// remove lock
 				removeLocksAndExit(ureq);
 				
-			} else if (event.getCommand().equals(CMD_EXIT_CANCEL)) {
+			} else if (CMD_EXIT_CANCEL.equals(event.getCommand())) {
 				// remove modal dialog and go back to edit mode
 				cmcExit.deactivate();
 				removeAsListenerAndDispose(cmcExit);
@@ -1047,11 +1063,12 @@ public class QTIEditorMainController extends MainLayoutBasicController implement
 	
 	private void doConvertToQTI21(UserRequest ureq) {
 		removeAsListenerAndDispose(cmc);
-		removeAsListenerAndDispose(selectQItemCtrl);
+		removeAsListenerAndDispose(createConvertedTestController);
 
 		RepositoryHandler handler = repositoryHandlerFactory.getRepositoryHandler(ImsQTI21Resource.TYPE_NAME);
 		createConvertedTestController = new CreateRepositoryEntryController(ureq, getWindowControl(), handler);
-		createConvertedTestController.setCreateObject(qtiPackage);
+		createConvertedTestController.setCreateObject(qtiEntry.getOlatResource());
+		createConvertedTestController.setDisplayname(qtiEntry.getDisplayname());
 		listenTo(createConvertedTestController);
 
 		cmc = new CloseableModalController(getWindowControl(), translate("close"), createConvertedTestController.getInitialComponent(), true, translate("title.convert.qti21") );

@@ -1,5 +1,5 @@
 #if($rowIndex == 0 && $r.isNotNull($row.newFloatingEntryLink))
-<div class="panel panel-placeholder">
+<div class="panel panel-placeholder o_noprint">
 	<div class="panel-heading">
 		<h4 class="panel-title">$r.translate("create.new.page.title")</h4>
 	</div>
@@ -58,7 +58,7 @@
 	
 
 	#if($r.isNotNull($row.newAssignmentLink))
-	<div class="panel panel-placeholder">
+	<div class="panel panel-placeholder o_noprint">
 		<div class="panel-heading">
 			<h4 class="panel-title">$r.translate("create.new.assignment.title")</h4>
 		</div>
@@ -80,10 +80,10 @@
 		<div class="panel-body">
 			$r.xssScan($row.assignmentSummary)
 			#if($r.isNotNull($row.instantiateAssignmentLink))
-				<div class="o_button_group">$r.render($row.instantiateAssignmentLink)</div>
+				<div class="o_button_group o_noprint">$r.render($row.instantiateAssignmentLink)</div>
 			#end
 			#if($r.isNotNull($row.editAssignmentLink) || $r.isNotNull($row.upAssignmentLink) || $r.isNotNull($row.downAssignmentLink) || $r.isNotNull($row.moveAssignmentLink) || $r.isNotNull($row.deleteAssignmentLink))
-				<div class="o_button_group">
+				<div class="o_button_group o_noprint">
 				#if($r.isNotNull($row.upAssignmentLink))
 					$r.render($row.upAssignmentLink)
 				#end
@@ -149,7 +149,7 @@
 			</div>
 		</div>
 	</div>
-	<div class="o_portfolio_page_links">
+	<div class="o_portfolio_page_links o_noprint">
 		$r.render($row.openFormItem)
 		#if($r.isNotNull($row.commentFormLink))
 			<span class="btn btn-sm o_portfolio_comment">$r.render($row.commentFormLink)</span>
@@ -158,7 +158,7 @@
 </div>
 #end
 #if($row.newEntry && $r.isNotNull($row.newEntryLink))
-<div class="panel panel-placeholder">
+<div class="panel panel-placeholder o_noprint">
 	<div class="panel-heading">
 		<h4 class="panel-title">$r.translate("create.new.page.title")</h4>
 	</div>

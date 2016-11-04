@@ -214,6 +214,7 @@ public class SearchInputController extends FormBasicController implements Generi
 			searchInput = uifactory.addTextElement("search_input", "search.title", 255, "", searchLayout);
 			searchInput.setLabel(null, null);
 			searchInput.setPlaceholderKey("search", null);
+			searchInput.setFocus(true);
 		}
 		
 		if (displayOption.equals(DisplayOption.STANDARD) || displayOption.equals(DisplayOption.BUTTON)) {

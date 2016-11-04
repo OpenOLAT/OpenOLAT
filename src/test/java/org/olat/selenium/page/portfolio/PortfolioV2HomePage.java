@@ -43,7 +43,7 @@ public class PortfolioV2HomePage {
 	}
 	
 	public PortfolioV2HomePage assertHome() {
-		By toolbarBy = By.cssSelector("div.o_toolbar.o_portfolio");
+		By toolbarBy = By.cssSelector("div.o_portfolio div.o_toolbar");
 		OOGraphene.waitElement(toolbarBy, 5, browser);
 		WebElement toolbarEl = browser.findElement(toolbarBy);
 		Assert.assertTrue(toolbarEl.isDisplayed());
@@ -69,5 +69,24 @@ public class PortfolioV2HomePage {
 		OOGraphene.waitElement(mediaListBy, 5, browser);
 		return new MediaCenterPage(browser);
 	}
-
+	
+	public SharedWithMePage openSharedWithMe() {
+		By sharedWithMeLinkBy = By.cssSelector("a.o_sel_pf_shared_with_me");
+		OOGraphene.waitElement(sharedWithMeLinkBy, 5, browser);
+		browser.findElement(sharedWithMeLinkBy).click();
+		
+		By sharedWithMeBy = By.cssSelector("div.o_table_flexi.o_binder_shared_items_listing");
+		OOGraphene.waitElement(sharedWithMeBy, 5, browser);
+		return new SharedWithMePage(browser);
+	}
+	
+	public EntriesPage openMyEntries() {
+		By myEntriesLinkBy = By.cssSelector("a.o_sel_pf_my_entries");
+		OOGraphene.waitElement(myEntriesLinkBy, 5, browser);
+		browser.findElement(myEntriesLinkBy).click();
+		
+		By myEntriesBy = By.cssSelector("div.o_portfolio_entries");
+		OOGraphene.waitElement(myEntriesBy, 5, browser);
+		return new EntriesPage(browser);
+	}
 }
