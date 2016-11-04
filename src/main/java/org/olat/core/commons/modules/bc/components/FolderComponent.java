@@ -45,6 +45,8 @@ import org.olat.core.gui.components.ComponentRenderer;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.IdentityEnvironment;
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
 import org.olat.core.logging.activity.CoreLoggingResourceable;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.Util;
@@ -60,6 +62,7 @@ import org.olat.core.util.vfs.version.Versionable;
  * @author Mike Stock
  */
 public class FolderComponent extends AbstractComponent {
+	private static final OLog log = Tracing.createLoggerFor(FolderComponent.class);
  	private static final ComponentRenderer RENDERER = new FolderComponentRenderer();
  	
 	public static final String SORT_NAME = "name";
@@ -350,19 +353,25 @@ public class FolderComponent extends AbstractComponent {
 		}
 
 		// get the children and sort them alphabetically
+		List<VFSItem> children;
 		if (filter != null) {
-			currentContainerChildren = currentContainer.getItems(filter);
+			children = currentContainer.getItems(filter);
 		} else {
-			currentContainerChildren = currentContainer.getItems();			
+			children = currentContainer.getItems();			
 		}
 		// OLAT-5256: filter .nfs files
-		Iterator<VFSItem> it = currentContainerChildren.iterator();
-		while(it.hasNext()) {
+		for(Iterator<VFSItem> it = children.iterator(); it.hasNext(); ) {
 			if (!exclFilter.accept(it.next())) {
 				it.remove();
 			}
 		}
-		Collections.sort(currentContainerChildren, comparator);
+		try {
+			Collections.sort(children, comparator);
+		} catch (Exception e) {
+			log.error("", e);
+		}
+		
+		currentContainerChildren = children;
 	}
 	
 	/**
