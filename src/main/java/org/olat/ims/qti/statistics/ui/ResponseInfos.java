@@ -90,7 +90,7 @@ public class ResponseInfos {
 			for(String answer:wrongAnswers) {
 				if(sb.length() > 0) sb.append(", ");
 				if(StringHelper.containsNonWhitespace(answer)) {
-					sb.append(answer);
+					sb.append(StringHelper.escapeHtml(answer));
 				} else {
 					sb.append("\"\"");
 				}
