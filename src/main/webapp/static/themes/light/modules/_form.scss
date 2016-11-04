@@ -104,6 +104,10 @@
 			right: 38px;
 		}
 	}
+	
+	.has-feedback.has-error .o_fileinput .o_fakechooser {
+		margin-right:30px;
+	}
 }
 
 /* centered form labels are still left aligned */
