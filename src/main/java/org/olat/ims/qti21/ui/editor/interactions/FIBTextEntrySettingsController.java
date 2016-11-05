@@ -93,12 +93,6 @@ public class FIBTextEntrySettingsController extends FormBasicController {
 	protected boolean validateFormLogic(UserRequest ureq) {
 		boolean allOk = true;
 		
-		solutionEl.clearError();
-		if(!StringHelper.containsNonWhitespace(solutionEl.getValue())) {
-			solutionEl.setErrorKey("form.legende.mandatory", null);
-			allOk &= false;
-		}
-		
 		expectedLengthEl.clearError();
 		if(StringHelper.containsNonWhitespace(expectedLengthEl.getValue())) {
 			if(StringHelper.isLong(expectedLengthEl.getValue())) {
