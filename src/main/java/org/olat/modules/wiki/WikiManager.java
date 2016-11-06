@@ -27,6 +27,7 @@ package org.olat.modules.wiki;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.nio.file.FileVisitResult;
@@ -55,7 +56,6 @@ import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.cache.CacheWrapper;
 import org.olat.core.util.coordinate.CoordinatorManager;
-import org.olat.core.util.coordinate.SyncerExecutor;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
@@ -166,7 +166,7 @@ public class WikiManager {
 			}
 			
 			Path destDir = targetDirectory.toPath();
-			Files.walkFileTree(path, new CopyVisitor(destDir));
+			Files.walkFileTree(path, new ImportVisitor(destDir));
 			return true;
 		} catch (IOException e) {
 			log.error("", e);
@@ -174,20 +174,123 @@ public class WikiManager {
 		}
 	}
 	
+	/**
+	 * Copy the wiki pages, media but ignores the versions.
+	 * 
+	 */
+	public boolean copyWiki(File sourceDirectory, File targetDirectory) {
+		try {
+			Path path = sourceDirectory.toPath();
+			Path destDir = targetDirectory.toPath();
+			Files.walkFileTree(path, new CopyVisitor(path, destDir));
+			return true;
+		} catch (IOException e) {
+			log.error("", e);
+			return false;
+		}
+	}
 	
 	/**
-	 * Dispatch the content in the wiki and media folders
+	 * Reset the same properties as in the method resetCopiedPage
+	 * of WikiPage.
+	 * 
+	 * @param file
+	 * @param destFile
+	 */
+	private final static void resetAndCopyProperties(Path file, Path destFile) {
+		Properties props = new Properties();
+    	try(InputStream inStream = Files.newInputStream(file);
+    		OutputStream outStream = Files.newOutputStream(destFile)) {
+    		
+    		props.load(inStream);
+    		props.setProperty(VERSION, "0");
+    		props.setProperty(FORUM_KEY, "0");
+    		props.setProperty(MODIFY_AUTHOR, "0");
+    		props.setProperty(UPDATE_COMMENT, "0");
+    		props.setProperty(VIEW_COUNT, "0");
+    		props.setProperty(M_TIME, "0");
+    		props.store(outStream, "");
+    	} catch(Exception e) {
+    		log.error("", e);
+    	}
+	}
+
+	/**
+	 * Copy the content of a resource of type wiki where the files
+	 * are saved in different directories: wiki and media. The versions
+	 * are ignored.
+	 * 
 	 * Initial date: 02.05.2014<br>
 	 * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
 	 *
 	 */
 	public static class CopyVisitor extends SimpleFileVisitor<Path> {
 		
+		private final Path sourceDir;
+		private final Path destDir;
+		
+		public CopyVisitor(Path sourceDir, Path destDir) throws IOException {
+			this.destDir = destDir;
+			this.sourceDir = sourceDir;
+			Path wikiDir = destDir.resolve(WIKI_RESOURCE_FOLDER_NAME);
+			Files.createDirectories(wikiDir);
+			Path mediaDir = destDir.resolve(WikiContainer.MEDIA_FOLDER_NAME);
+			Files.createDirectories(mediaDir);
+			Path versionDir = destDir.resolve(VERSION_FOLDER_NAME);
+			Files.createDirectories(versionDir);
+		}
+		
+		@Override
+		public FileVisitResult visitFile(Path file, BasicFileAttributes attrs)
+	    throws IOException {
+
+			Path relFile = sourceDir.relativize(file);
+			
+	        String filename = file.getFileName().toString();
+	        if(filename.endsWith(WikiManager.WIKI_PROPERTIES_SUFFIX)) {
+	        	final Path destFile = Paths.get(destDir.toString(), relFile.toString());
+	        	resetAndCopyProperties(file, destFile);
+	        	
+	        } else if (filename.endsWith(WIKI_FILE_SUFFIX)) {
+	        	final Path destFile = Paths.get(destDir.toString(), relFile.toString());
+				Files.copy(file, destFile, StandardCopyOption.REPLACE_EXISTING);
+			} else if (!filename.contains(WIKI_FILE_SUFFIX + "-")
+					&& !filename.contains(WIKI_PROPERTIES_SUFFIX + "-")) {
+				final Path destFile = Paths.get(destDir.toString(), relFile.toString());
+				Files.copy(file, destFile, StandardCopyOption.REPLACE_EXISTING);
+			}
+	        return FileVisitResult.CONTINUE;
+		}
+	 
+		@Override
+		public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs)
+		throws IOException {
+			dir = sourceDir.relativize(dir);
+			
+	        final Path dirToCreate = Paths.get(destDir.toString(), dir.toString());
+	        if(Files.notExists(dirToCreate)){
+	        	Files.createDirectory(dirToCreate);
+	        }
+	        return FileVisitResult.CONTINUE;
+		}
+	}
+	
+	
+	/**
+	 * Dispatch the content in the wiki and media folders from an import
+	 * where all the files are flatted at the root of the archive.
+	 * 
+	 * Initial date: 02.05.2014<br>
+	 * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+	 *
+	 */
+	public static class ImportVisitor extends SimpleFileVisitor<Path> {
+		
 		private final Path destDir;
 		private final Path wikiDir;
 		private final Path mediaDir;
 		
-		public CopyVisitor(Path destDir) throws IOException {
+		public ImportVisitor(Path destDir) throws IOException {
 			this.destDir = destDir;
 			wikiDir = destDir.resolve(WIKI_RESOURCE_FOLDER_NAME);
 			Files.createDirectories(wikiDir);
@@ -201,11 +304,14 @@ public class WikiManager {
 		public FileVisitResult visitFile(Path file, BasicFileAttributes attrs)
 	    throws IOException {
 	        String filename = file.getFileName().toString();
-	        if (filename.endsWith(WikiManager.WIKI_FILE_SUFFIX) || filename.endsWith(WikiManager.WIKI_PROPERTIES_SUFFIX)) {
+	        if(filename.endsWith(WikiManager.WIKI_PROPERTIES_SUFFIX)) {
+	        	final Path destFile = Paths.get(wikiDir.toString(), file.toString());
+	        	resetAndCopyProperties(file, destFile);
+	        } else if (filename.endsWith(WIKI_FILE_SUFFIX)) {
 	        	final Path destFile = Paths.get(wikiDir.toString(), file.toString());
 				Files.copy(file, destFile, StandardCopyOption.REPLACE_EXISTING);
-			} else if (!filename.contains(WikiManager.WIKI_FILE_SUFFIX + "-")
-					&& !filename.contains(WikiManager.WIKI_PROPERTIES_SUFFIX + "-")) {
+			} else if (!filename.contains(WIKI_FILE_SUFFIX + "-")
+					&& !filename.contains(WIKI_PROPERTIES_SUFFIX + "-")) {
 				final Path destFile = Paths.get(mediaDir.toString(), file.toString());
 				Files.copy(file, destFile, StandardCopyOption.REPLACE_EXISTING);
 			}
@@ -302,98 +408,85 @@ public class WikiManager {
 		if (wikiCache == null) {
 			wikiCache =  coordinator.getCoordinator().getCacher().getCache(WikiManager.class.getSimpleName(), "wiki");
 		}
-		Wiki wiki = wikiCache.get(wikiKey);
-		if (wiki != null) {
-			log.debug("loading wiki from cache. Ores: " + ores.getResourceableId());
-			return wiki;
-		}
-		// No wiki in cache => load it form file-system
-			coordinator.getCoordinator().getSyncer().doInSync(ores, new SyncerExecutor() {
-			public void execute() {
-
-				long start = 0;
-				// wiki not in cache load form filesystem
-				if (log.isDebug()) {
-					log.debug("wiki not in cache. Loading wiki from filesystem. Ores: " + ores.getResourceableId());
-					start = System.currentTimeMillis();
-				}
-
-				Wiki wiki = null;
-				VFSContainer folder = getWikiContainer(ores, WIKI_RESOURCE_FOLDER_NAME);
-				// wiki folder structure does not yet exists, but resource does. Create
-				// wiki in group context
-				if (folder == null) {
-					// createWikiforExistingResource(ores);
-					createFolders(ores);
-					folder = getWikiContainer(ores, WIKI_RESOURCE_FOLDER_NAME);
-				}
-				// folders should be present, create the wiki
-				wiki = new Wiki(getWikiRootContainer(ores));
-				// filter for xyz.properties files
-				List<VFSItem> wikiLeaves = folder.getItems(new VFSItemSuffixFilter(new String[] { WikiManager.WIKI_PROPERTIES_SUFFIX }));
-				for (Iterator<VFSItem> iter = wikiLeaves.iterator(); iter.hasNext();) {
-					VFSLeaf propertiesFile = (VFSLeaf) iter.next();
-					WikiPage page = Wiki.assignPropertiesToPage(propertiesFile);
-					if (page == null) {
-						// broken pages get automatically cleaned from filesystem
-						String contentFileToBeDeleted = (propertiesFile.getName().substring(0,
-								propertiesFile.getName().length() - WikiManager.WIKI_PROPERTIES_SUFFIX.length()) + WikiManager.WIKI_FILE_SUFFIX);
-						folder.resolve(contentFileToBeDeleted).delete();
-						propertiesFile.delete();
-						continue;
-					}
-					// index and menu page are loaded by default
-					if (page.getPageName().equals(WikiPage.WIKI_INDEX_PAGE) || page.getPageName().equals(WikiPage.WIKI_MENU_PAGE)) {
-						VFSLeaf leaf = (VFSLeaf) folder.resolve(page.getPageId() + "." + WikiManager.WIKI_FILE_SUFFIX);
-						page.setContent(FileUtils.load(leaf.getInputStream(), "utf-8"));
-					}
-
-					// due to a bug we have to rename some pages that start with an non
-					// ASCII lowercase letter
-					String idOutOfFileName = propertiesFile.getName().substring(0, propertiesFile.getName().indexOf("."));
-					if (!page.getPageId().equals(idOutOfFileName)) {
-						// rename corrupt prop file
-						propertiesFile.rename(page.getPageId() + "." + WikiManager.WIKI_PROPERTIES_SUFFIX);
-						// load content and delete corrupt content file
-						VFSLeaf contentFile = (VFSLeaf) folder.resolve(idOutOfFileName + "." + WikiManager.WIKI_FILE_SUFFIX);
-						contentFile.rename(page.getPageId() + "." + WikiManager.WIKI_FILE_SUFFIX);
-					}
-
-					wiki.addPage(page);
-				}
-				// if index and menu page not present create the first page and save it
-				if (wiki.getNumberOfPages() == 0) {
-					WikiPage indexPage = new WikiPage(WikiPage.WIKI_INDEX_PAGE);
-					WikiPage menuPage = new WikiPage(WikiPage.WIKI_MENU_PAGE);
-					indexPage.setCreationTime(System.currentTimeMillis());
-					wiki.addPage(indexPage);
-					menuPage.setCreationTime(System.currentTimeMillis());
-					menuPage.setContent("* [[Index]]\n* [[Index|Your link]]");
-					wiki.addPage(menuPage);
-					saveWikiPage(ores, indexPage, false, wiki);
-					saveWikiPage(ores, menuPage, false, wiki);
-				}
-				// add pages internally used for displaying dynamic data, they are not
-				// persisted
-				WikiPage recentChangesPage = new WikiPage(WikiPage.WIKI_RECENT_CHANGES_PAGE);
-				WikiPage a2zPage = new WikiPage(WikiPage.WIKI_A2Z_PAGE);
-				wiki.addPage(recentChangesPage);
-				wiki.addPage(a2zPage);
-
-				// wikiCache.put(OresHelper.createStringRepresenting(ores), wiki);
-				if (log.isDebug()) {
-					long stop = System.currentTimeMillis();
-					log.debug("loading of wiki from filessystem took (ms) " + (stop - start));
-				}
-				wikiCache.put(wikiKey, wiki);
+		return wikiCache.computeIfAbsent(wikiKey, (key) -> {
+			long start = 0;
+			// wiki not in cache load form filesystem
+			if (log.isDebug()) {
+				log.debug("wiki not in cache. Loading wiki from filesystem. Ores: " + ores.getResourceableId());
+				start = System.currentTimeMillis();
 			}
-		});
-		//at this point there will be something in the cache
-		return wikiCache.get(wikiKey);
 
+			VFSContainer folder = getWikiContainer(ores, WIKI_RESOURCE_FOLDER_NAME);
+			// wiki folder structure does not yet exists, but resource does. Create
+			// wiki in group context
+			if (folder == null) {
+				// createWikiforExistingResource(ores);
+				createFolders(ores);
+				folder = getWikiContainer(ores, WIKI_RESOURCE_FOLDER_NAME);
+			}
+			
+			// folders should be present, create the wiki
+			Wiki wiki = new Wiki(getWikiRootContainer(ores));
+			// filter for xyz.properties files
+			List<VFSItem> wikiLeaves = folder.getItems(new VFSItemSuffixFilter(new String[] { WikiManager.WIKI_PROPERTIES_SUFFIX }));
+			for (Iterator<VFSItem> iter = wikiLeaves.iterator(); iter.hasNext();) {
+				VFSLeaf propertiesFile = (VFSLeaf) iter.next();
+				WikiPage page = Wiki.assignPropertiesToPage(propertiesFile);
+				if (page == null) {
+					// broken pages get automatically cleaned from filesystem
+					String contentFileToBeDeleted = (propertiesFile.getName().substring(0,
+							propertiesFile.getName().length() - WikiManager.WIKI_PROPERTIES_SUFFIX.length()) + WikiManager.WIKI_FILE_SUFFIX);
+					folder.resolve(contentFileToBeDeleted).delete();
+					propertiesFile.delete();
+					continue;
+				}
+				// index and menu page are loaded by default
+				if (page.getPageName().equals(WikiPage.WIKI_INDEX_PAGE) || page.getPageName().equals(WikiPage.WIKI_MENU_PAGE)) {
+					VFSLeaf leaf = (VFSLeaf) folder.resolve(page.getPageId() + "." + WikiManager.WIKI_FILE_SUFFIX);
+					page.setContent(FileUtils.load(leaf.getInputStream(), "utf-8"));
+				}
+
+				// due to a bug we have to rename some pages that start with an non
+				// ASCII lowercase letter
+				String idOutOfFileName = propertiesFile.getName().substring(0, propertiesFile.getName().indexOf("."));
+				if (!page.getPageId().equals(idOutOfFileName)) {
+					// rename corrupt prop file
+					propertiesFile.rename(page.getPageId() + "." + WikiManager.WIKI_PROPERTIES_SUFFIX);
+					// load content and delete corrupt content file
+					VFSLeaf contentFile = (VFSLeaf) folder.resolve(idOutOfFileName + "." + WikiManager.WIKI_FILE_SUFFIX);
+					contentFile.rename(page.getPageId() + "." + WikiManager.WIKI_FILE_SUFFIX);
+				}
+
+				wiki.addPage(page);
+			}
+			
+			// if index and menu page not present create the first page and save it
+			if (wiki.getNumberOfPages() == 0) {
+				WikiPage indexPage = new WikiPage(WikiPage.WIKI_INDEX_PAGE);
+				WikiPage menuPage = new WikiPage(WikiPage.WIKI_MENU_PAGE);
+				indexPage.setCreationTime(System.currentTimeMillis());
+				wiki.addPage(indexPage);
+				menuPage.setCreationTime(System.currentTimeMillis());
+				menuPage.setContent("* [[Index]]\n* [[Index|Your link]]");
+				wiki.addPage(menuPage);
+				saveWikiPage(ores, indexPage, false, wiki);
+				saveWikiPage(ores, menuPage, false, wiki);
+			}
+			
+			// add pages internally used for displaying dynamic data, they are not persisted
+			WikiPage recentChangesPage = new WikiPage(WikiPage.WIKI_RECENT_CHANGES_PAGE);
+			WikiPage a2zPage = new WikiPage(WikiPage.WIKI_A2Z_PAGE);
+			wiki.addPage(recentChangesPage);
+			wiki.addPage(a2zPage);
+
+			if (log.isDebug()) {
+				long stop = System.currentTimeMillis();
+				log.debug("loading of wiki from filessystem took (ms) " + (stop - start));
+			}
+			return wiki;
+		});
 	}
 		
-
 	public DifferenceService getDiffService() {
 		return new CookbookDifferenceService();
 	}

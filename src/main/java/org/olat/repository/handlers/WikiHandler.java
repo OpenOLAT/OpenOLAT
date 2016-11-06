@@ -26,7 +26,6 @@
 package org.olat.repository.handlers;
 
 import java.io.File;
-import java.util.List;
 import java.util.Locale;
 
 import org.olat.basesecurity.BaseSecurityModule;
@@ -54,21 +53,15 @@ import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.coordinate.LockResult;
 import org.olat.core.util.resource.OLATResourceableJustBeforeDeletedEvent;
 import org.olat.core.util.vfs.VFSContainer;
-import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
-import org.olat.core.util.vfs.VFSManager;
 import org.olat.core.util.vfs.VFSMediaResource;
-import org.olat.core.util.vfs.filters.VFSItemSuffixFilter;
 import org.olat.course.assessment.AssessmentMode;
 import org.olat.course.assessment.manager.UserCourseInformationsManager;
 import org.olat.fileresource.FileResourceManager;
 import org.olat.fileresource.types.ResourceEvaluation;
 import org.olat.fileresource.types.WikiResource;
-import org.olat.modules.wiki.Wiki;
-import org.olat.modules.wiki.WikiContainer;
 import org.olat.modules.wiki.WikiMainController;
 import org.olat.modules.wiki.WikiManager;
-import org.olat.modules.wiki.WikiPage;
 import org.olat.modules.wiki.WikiSecurityCallback;
 import org.olat.modules.wiki.WikiSecurityCallbackImpl;
 import org.olat.modules.wiki.WikiToZipUtils;
@@ -144,44 +137,9 @@ public class WikiHandler implements RepositoryHandler {
 		final OLATResource sourceResource = source.getOlatResource();
 		final OLATResource targetResource = target.getOlatResource();
 		final FileResourceManager frm = FileResourceManager.getInstance();
-		
-		VFSContainer sourceWikiContainer = WikiManager.getInstance().getWikiContainer(sourceResource, WikiManager.WIKI_RESOURCE_FOLDER_NAME);
-		if(sourceWikiContainer == null) {
-			//if the wiki container is null, let the WikiManager to create one
-			WikiManager.getInstance().getOrLoadWiki(sourceResource);
-			sourceWikiContainer = WikiManager.getInstance().getWikiContainer(sourceResource, WikiManager.WIKI_RESOURCE_FOLDER_NAME);
-		}
-		
-		VFSContainer targetRootContainer = frm.getFileResourceRootImpl(targetResource);
-		VFSContainer targetWikiContainer = VFSManager.getOrCreateContainer(targetRootContainer, WikiManager.WIKI_RESOURCE_FOLDER_NAME);
-		VFSManager.copyContent(sourceWikiContainer, targetWikiContainer);
-		
-		VFSContainer sourceRootContainer = sourceWikiContainer.getParentContainer();
-		
-		//create versions folder
-		targetRootContainer.createChildContainer(WikiManager.VERSION_FOLDER_NAME);
-		
-		//create media folders and copy it
-		VFSContainer targetMediaContainer = VFSManager.getOrCreateContainer(targetRootContainer, WikiContainer.MEDIA_FOLDER_NAME); 
-		VFSItem sourceMediaItem = sourceRootContainer.resolve(WikiContainer.MEDIA_FOLDER_NAME);
-		if(sourceMediaItem instanceof VFSContainer) {
-			VFSContainer sourceMediaContainer = (VFSContainer)sourceMediaItem;
-			VFSManager.copyContent(sourceMediaContainer, targetMediaContainer);
-		}
-
-		//reset properties files to default values
-		String[] filteredSuffix = new String[]{ WikiManager.WIKI_PROPERTIES_SUFFIX };
-		List<VFSItem> items = targetWikiContainer.getItems(new VFSItemSuffixFilter(filteredSuffix));
-		for (VFSItem item: items) {
-			if(item instanceof VFSLeaf) {
-				VFSLeaf leaf = (VFSLeaf)item;
-				WikiPage page = Wiki.assignPropertiesToPage(leaf);
-				//reset the copied pages to a the default values
-				page.resetCopiedPage();
-				WikiManager.getInstance().updateWikiPageProperties(targetResource, page);
-			}
-		}
-		
+		File sourceDir = frm.getFileResourceRoot(sourceResource);
+		File targetDir = frm.getFileResourceRoot(targetResource);
+		WikiManager.getInstance().copyWiki(sourceDir, targetDir);
 		return target;
 	}
 
