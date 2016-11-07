@@ -614,15 +614,18 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 	}
 	
 	private void doExportPool(AssessmentItemRef itemRef) {
-		AssessmentItem assessmentItem = resolvedAssessmentTest
-				.getResolvedAssessmentItem(itemRef).getRootNodeLookup().extractIfSuccessful();
+		ResolvedAssessmentItem resolvedAssessmentItem = resolvedAssessmentTest.getResolvedAssessmentItem(itemRef);
+		RootNodeLookup<AssessmentItem> rootNode = resolvedAssessmentItem.getItemLookup();
+		AssessmentItem assessmentItem = rootNode.extractIfSuccessful();
 
 		ManifestBuilder clonedManifestBuilder = ManifestBuilder.read(new File(unzippedDirRoot, "imsmanifest.xml"));
 		ResourceType resource = getResourceType(clonedManifestBuilder, itemRef);
 		ManifestMetadataBuilder metadata = clonedManifestBuilder.getMetadataBuilder(resource, true);
 
+		File itemFile = new File(rootNode.getSystemId());
+
 		qti21QPoolServiceProvider
-				.importAssessmentItemRef(getIdentity(), itemRef, assessmentItem, metadata, unzippedDirRoot, getLocale());
+				.importAssessmentItemRef(getIdentity(), assessmentItem, itemFile, metadata, unzippedDirRoot, getLocale());
 	}
 	
 	private void doExportDocx(UserRequest ureq) {
