@@ -250,19 +250,6 @@ public class PortfolioHomeController extends BasicController implements Activate
 		return myPortfolioListCtrl;
 	}
 	
-	private void doOpenLastEditedBindersEntry(UserRequest ureq) {
-		Page lastModifiedPage = portfolioService.getLastPage(getIdentity(), true);
-		if(lastModifiedPage == null) {
-			//show message
-		} else {
-			Binder binder = lastModifiedPage.getSection().getBinder();
-			List<ContextEntry> entries = new ArrayList<>();
-			entries.add(BusinessControlFactory.getInstance().createContextEntry(OresHelper.createOLATResourceableInstance(Binder.class, binder.getKey())));
-			BinderListController ctrl = doOpenMyBinders(ureq);
-			ctrl.activate(ureq, entries, null);
-		}
-	}
-	
 	private TrashController doDeletedPages(UserRequest ureq) {
 		OLATResourceable bindersOres = OresHelper.createOLATResourceableInstance("Trash", 0l);
 		WindowControl swControl = addToHistory(ureq, bindersOres, null);

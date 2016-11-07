@@ -170,7 +170,7 @@ public class DeletedBinderController extends BinderListController {
 				stats.add(row.getStatistics());
 			}
 
-			deleteBinderCtrl = new ConfirmDeleteBinderController(ureq, getWindowControl(), stats, true);
+			deleteBinderCtrl = new ConfirmDeleteBinderController(ureq, getWindowControl(), stats);
 			listenTo(deleteBinderCtrl);
 			
 			String title = translate("delete.binder");

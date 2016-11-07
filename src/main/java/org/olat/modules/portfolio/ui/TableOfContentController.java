@@ -97,9 +97,10 @@ public class TableOfContentController extends BasicController implements TooledC
 	private SectionEditController newSectionCtrl;
 	private SectionEditController editSectionCtrl;
 	private AssignmentEditController newAssignmentCtrl;
+	private ConfirmDeleteBinderController deleteBinderCtrl;
 	private SectionDatesEditController editSectionDatesCtrl;
 	private BinderMetadataEditController binderMetadataCtrl;
-	private ConfirmDeleteBinderController moveBinderToTrashCtrl, deleteBinderCtrl;
+	private ConfirmMoveBinderToTrashController moveBinderToTrashCtrl;
 	private DialogBoxController confirmCloseSectionCtrl, confirmReopenSectionCtrl,
 				confirmDeleteSectionCtrl, confirmRestoreBinderCtrl;
 	
@@ -723,7 +724,7 @@ public class TableOfContentController extends BasicController implements TooledC
 		if(moveBinderToTrashCtrl != null) return;
 		
 		BinderStatistics stats = portfolioService.getBinderStatistics(binder);
-		moveBinderToTrashCtrl = new ConfirmDeleteBinderController(ureq, getWindowControl(), stats, false);
+		moveBinderToTrashCtrl = new ConfirmMoveBinderToTrashController(ureq, getWindowControl(), stats);
 		listenTo(moveBinderToTrashCtrl);
 		
 		String title = translate("delete.binder");
@@ -754,7 +755,7 @@ public class TableOfContentController extends BasicController implements TooledC
 		if(moveBinderToTrashCtrl != null) return;
 		
 		BinderStatistics stats = portfolioService.getBinderStatistics(binder);
-		deleteBinderCtrl = new ConfirmDeleteBinderController(ureq, getWindowControl(), stats, false);
+		deleteBinderCtrl = new ConfirmDeleteBinderController(ureq, getWindowControl(), stats);
 		listenTo(deleteBinderCtrl);
 		
 		String title = translate("delete.binder");

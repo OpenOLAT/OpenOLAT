@@ -35,23 +35,23 @@ import org.olat.modules.portfolio.model.BinderStatistics;
 
 /**
  * 
- * Initial date: 3 nov. 2016<br>
+ * Initial date: 7 nov. 2016<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class ConfirmDeleteBinderController extends FormBasicController {
+public class ConfirmMoveBinderToTrashController extends FormBasicController {
 	
 	private static final String[] onKeys = new String[]{ "on" };
 	
-	private MultipleSelectionElement acknowledgeEl, acknowledge2El;
+	private MultipleSelectionElement acknowledgeEl;
 	
 	private final List<BinderStatistics> stats;
 	
-	public ConfirmDeleteBinderController(UserRequest ureq, WindowControl wControl, BinderStatistics stats) {
+	public ConfirmMoveBinderToTrashController(UserRequest ureq, WindowControl wControl, BinderStatistics stats) {
 		this(ureq, wControl, Collections.singletonList(stats));
 	}
 	
-	public ConfirmDeleteBinderController(UserRequest ureq, WindowControl wControl, List<BinderStatistics> stats) {
+	public ConfirmMoveBinderToTrashController(UserRequest ureq, WindowControl wControl, List<BinderStatistics> stats) {
 		super(ureq, wControl, "confirm_delete_binder");
 		this.stats = stats;
 		initForm(ureq);
@@ -84,14 +84,11 @@ public class ConfirmDeleteBinderController extends FormBasicController {
 		if(formLayout instanceof FormLayoutContainer) {
 			FormLayoutContainer layoutCont = (FormLayoutContainer)formLayout;
 			layoutCont.contextPut("msg", translate("delete.binder.warning", args));
-			layoutCont.contextPut("dangerCssClass", "o_error");
+			layoutCont.contextPut("dangerCssClass", "o_warning");
 		}
 		
-		String[] onValues = new String[]{ translate("delete.binder.acknowledge") };
-		acknowledgeEl = uifactory.addCheckboxesHorizontal("acknowledge", "confirmation", formLayout, onKeys, onValues);
-		String[] on2Values = new String[]{ translate("delete.binder.acknowledge.2") };
-		acknowledge2El = uifactory.addCheckboxesHorizontal("acknowledge2", "confirmation", formLayout, onKeys, on2Values);
-
+		String[] onValues = new String[]{ translate("trash.binder.acknowledge") };
+		acknowledgeEl = uifactory.addCheckboxesHorizontal("acknowledge", "delete.binder.acknowledge", formLayout, onKeys, onValues);
 		uifactory.addFormCancelButton("cancel", formLayout, ureq, getWindowControl());
 		uifactory.addFormSubmitButton("delete", "delete.binder", formLayout);
 	}
@@ -105,15 +102,8 @@ public class ConfirmDeleteBinderController extends FormBasicController {
 	protected boolean validateFormLogic(UserRequest ureq) {
 		boolean allOk = true;
 		
-		acknowledgeEl.clearError();
 		if(!acknowledgeEl.isAtLeastSelected(1)) {
 			acknowledgeEl.setErrorKey("form.mandatory.hover", null);
-			allOk &= false;
-		}
-		
-		acknowledge2El.clearError();
-		if(!acknowledge2El.isAtLeastSelected(1)) {
-			acknowledge2El.setErrorKey("form.mandatory.hover", null);
 			allOk &= false;
 		}
 		

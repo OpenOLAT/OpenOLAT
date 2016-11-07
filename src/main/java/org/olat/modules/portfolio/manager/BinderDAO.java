@@ -419,8 +419,8 @@ public class BinderDAO {
 		  .append("   where pageSection.binder.key=binder.key and page.section.key=pageSection.key and comment.resId=page.key and comment.resName='Page'")
 		  .append(" ) as numOfComments")
 		  .append(" from pfbinder as binder")
-		  .append(" inner join binder.baseGroup as baseGroup")
-		  .append(" inner join baseGroup.members as membership")
+		  .append(" left join binder.baseGroup as baseGroup")
+		  .append(" left join baseGroup.members as membership")
 		  .append(" left join binder.entry binderEntry")
 		  .append(" where binder.key=:binderKey");
 		
@@ -467,8 +467,8 @@ public class BinderDAO {
 		  .append("   where pageSection.binder.key=binder.key and page.section.key=pageSection.key and comment.resId=page.key and comment.resName='Page'")
 		  .append(" ) as numOfComments")
 		  .append(" from pfbinder as binder")
-		  .append(" inner join binder.baseGroup as baseGroup")
-		  .append(" inner join baseGroup.members as membership")
+		  .append(" left join binder.baseGroup as baseGroup")
+		  .append(" left join baseGroup.members as membership")
 		  .append(" left join binder.entry binderEntry")
 		  .append(" where binder.olatResource is null and membership.identity.key=:identityKey and membership.role=:role");
 		if(deleted) {
