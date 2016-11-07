@@ -188,11 +188,11 @@ public class QTI21WordExport implements MediaResource {
 			zout.putNextEntry(test);
 			exportTest(assessmentTest, label, zout, false);
 			zout.closeEntry();
-			/*
+			
 			ZipEntry responses = new ZipEntry(secureLabel + "_responses.docx");
 			zout.putNextEntry(responses);
 			exportTest(assessmentTest, label, zout, true);
-			*/
+
 			zout.closeEntry();
 		} catch (Exception e) {
 			log.error("", e);
