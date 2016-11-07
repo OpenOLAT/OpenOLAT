@@ -553,7 +553,7 @@ public class OAuthAdminController extends FormBasicController {
 		private FormLayoutContainer openIdConnectIFCont;
 		
 		private FormLink deleteButton;
-		private MultipleSelectionElement openIdConnectIFDefaultEl;
+		private MultipleSelectionElement openIdConnectIFConfEl;
 		private TextElement openIdConnectIFConfName;
 		private TextElement openIdConnectIFConfDisplayName;
 		private TextElement openIdConnectIFConfApiKeyEl;
@@ -582,9 +582,9 @@ public class OAuthAdminController extends FormBasicController {
 			openIdConnectIFCont.setFormTitleIconCss("o_icon o_icon_provider_openid");
 			openIdConnectIFCont.setRootForm(mainForm);
 			container.add(openIdConnectIFCont);
-			openIdConnectIFDefaultEl = uifactory.addCheckboxesHorizontal("openidconnectif." + counter + ".default.enabled", "openidconnectif.default.enabled", openIdConnectIFCont, keys, values);
+			openIdConnectIFConfEl = uifactory.addCheckboxesHorizontal("openidconnectif." + counter + ".default.enabled", "openidconnectif.default.enabled", openIdConnectIFCont, keys, values);
 			if(spi.isRootEnabled()) {
-				openIdConnectIFDefaultEl.select(keys[0], true);
+				openIdConnectIFConfEl.select(keys[0], true);
 			}
 			
 			String providerName = spi.getProviderName();
@@ -623,7 +623,7 @@ public class OAuthAdminController extends FormBasicController {
 			String endPoint = openIdConnectIFConfAuthorizationEndPointEl.getValue();
 			String apiKey = openIdConnectIFConfApiKeyEl.getValue();
 			String apiSecret = openIdConnectIFConfApiSecretEl.getValue();
-			boolean rootEnabled = openIdConnectIFDefaultEl.isAtLeastSelected(1);
+			boolean rootEnabled = openIdConnectIFConfEl.isAtLeastSelected(1);
 			oauthModule.setAdditionalOpenIDConnectIF(spi.getProviderName(), displayName, rootEnabled, issuer, endPoint, apiKey, apiSecret);
 		}
 	}
