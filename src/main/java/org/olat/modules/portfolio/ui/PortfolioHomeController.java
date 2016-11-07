@@ -58,7 +58,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class PortfolioHomeController extends BasicController implements Activateable2 {
 	
 	private Link myBindersLink, myEntriesLink, mySharedItemsLink, sharedItemsLink, mediaCenterLink;
-	private Link editLastEntryLink, createNewEntryLink, editLastUsedBinderLink, goToTrashLink;
+	private Link editLastEntryLink, createNewEntryLink, showHelpLink, goToTrashLink;
 	private final VelocityContainer mainVC;
 	private final TooledStackedPanel stackPanel;
 	
@@ -103,8 +103,8 @@ public class PortfolioHomeController extends BasicController implements Activate
 		editLastEntryLink.setIconRightCSS("o_icon o_icon_start");
 		createNewEntryLink = LinkFactory.createLink("new.entry", mainVC, this);
 		createNewEntryLink.setIconRightCSS("o_icon o_icon_start");
-		editLastUsedBinderLink = LinkFactory.createLink("edit.last.binder", mainVC, this);
-		editLastUsedBinderLink.setIconRightCSS("o_icon o_icon_start");
+		showHelpLink = LinkFactory.createLink("show.help.binder", mainVC, this);
+		showHelpLink.setIconRightCSS("o_icon o_icon_start");
 		goToTrashLink = LinkFactory.createLink("go.to.trash", mainVC, this);
 		goToTrashLink.setIconRightCSS("o_icon o_icon_start");
 
@@ -138,8 +138,8 @@ public class PortfolioHomeController extends BasicController implements Activate
 			doOpenLastEntry(ureq);
 		} else if(createNewEntryLink == source) {
 			doNewEntry(ureq);
-		} else if(editLastUsedBinderLink == source) {
-			doOpenLastEditedBindersEntry(ureq);
+		} else if(showHelpLink == source) {
+
 		} else if(goToTrashLink == source) {
 			doDeletedPages(ureq);
 		}
