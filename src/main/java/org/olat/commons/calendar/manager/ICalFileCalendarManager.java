@@ -1454,4 +1454,52 @@ public class ICalFileCalendarManager implements CalendarManager, InitializingBea
 		return null;
 	}
 	
+	/**
+	 * Build iCalendar-compliant recurrence rule
+	 * @param recurrence
+	 * @param recurrenceEnd
+	 * @return rrule
+	 */
+	@Override
+	public String getRecurrenceRule(String recurrence, Date recurrenceEnd) {
+		if (recurrence != null) { // recurrence available
+			// create recurrence rule
+			StringBuilder sb = new StringBuilder();
+			sb.append("FREQ=");
+			if(recurrence.equals(KalendarEvent.WORKDAILY)) {
+				// build rule for monday to friday
+				sb.append(KalendarEvent.DAILY).append(";").append("BYDAY=MO,TU,WE,TH,FR");
+			} else if(recurrence.equals(KalendarEvent.BIWEEKLY)) {
+				// build rule for biweekly
+				sb.append(KalendarEvent.WEEKLY).append(";").append("INTERVAL=2");
+			} else {
+				// normal supported recurrence
+				sb.append(recurrence);
+			}
+			
+			if(recurrenceEnd != null) {
+				java.util.Calendar recurEndCal = java.util.Calendar.getInstance();
+				recurEndCal.setTimeZone(tz);
+				recurEndCal.setTime(recurrenceEnd);
+				recurEndCal = CalendarUtils.getEndOfDay(recurEndCal);
+				
+				long recTime = recurEndCal.getTimeInMillis() - tz.getOffset(recurEndCal.getTimeInMillis());
+				DateTime recurEndDT = new DateTime(recTime);
+				if(tz != null) {
+					recurEndDT.setTimeZone(tz);
+				}
+				sb.append(";").append(KalendarEvent.UNTIL).append("=").append(recurEndDT.toString());
+			}
+			
+			try {
+				Recur recur = new Recur(sb.toString());
+				RRule rrule = new RRule(recur);
+				return rrule.getValue();
+			} catch (ParseException e) {
+				log.error("cannot create recurrence rule: " + recurrence.toString(), e);
+			}
+		}
+		
+		return null;
+	}
 }

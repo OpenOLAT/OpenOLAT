@@ -379,6 +379,15 @@ public interface CalendarManager {
 	public Date getRecurrenceEndDate(String rule);
 	
 	/**
+	 * The method set the recurrence rule until the end of the day.
+	 * 
+	 * @param recurrence
+	 * @param recurrenceEnd
+	 * @return
+	 */
+	public String getRecurrenceRule(String recurrence, Date recurrenceEnd);
+	
+	/**
 	 * Build a Calendar object from String object.
 	 * @param calendarContent
 	 * @return
