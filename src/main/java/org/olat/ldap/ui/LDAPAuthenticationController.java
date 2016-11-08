@@ -33,6 +33,7 @@ import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.dispatcher.DispatcherModule;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.link.ExternalLink;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.velocity.VelocityContainer;
@@ -73,7 +74,7 @@ public class LDAPAuthenticationController extends AuthenticationController imple
 	public static final long WARNING_LIMIT = 15 *1000 * 1000 * 1000;
 	
 	private VelocityContainer loginComp;
-	private Link pwLink;
+	private Component pwLink;
 	private Controller subController;
 	private OLATAuthentcationForm loginForm; 
 	private DisclaimerController disclaimerCtr;
@@ -101,9 +102,18 @@ public class LDAPAuthenticationController extends AuthenticationController imple
 		
 		loginComp = createVelocityContainer("ldaplogin");
 		
-		if(userModule.isPwdChangeAllowed(null) && ldapLoginModule.isPropagatePasswordChangedOnLdapServer()) {
-			pwLink = LinkFactory.createLink("_olat_login_change_pwd", "menu.pw", loginComp, this);
-			pwLink.setElementCssClass("o_login_pwd");
+		if(userModule.isAnyPasswordChangeAllowed() && ldapLoginModule.isPropagatePasswordChangedOnLdapServer()) {
+			Link link = LinkFactory.createLink("_olat_login_change_pwd", "menu.pw", loginComp, this);
+			link.setElementCssClass("o_login_pwd");
+			pwLink = link;
+		} else if(StringHelper.containsNonWhitespace(ldapLoginModule.getChangePasswordUrl())) {
+			ExternalLink link = new ExternalLink("_olat_login_change_pwd", "menu.pw");
+			link.setElementCssClass("o_login_pwd");
+			link.setName(translate("menu.pw"));
+			link.setUrl(ldapLoginModule.getChangePasswordUrl());
+			link.setTarget("_blank");
+			loginComp.put("menu.pw", link);
+			pwLink = link;
 		}
 		
 		// Use the standard OLAT login form but with our LDAP translator
@@ -119,18 +129,17 @@ public class LDAPAuthenticationController extends AuthenticationController imple
 	public void changeLocale(Locale newLocale) {
 		setLocale(newLocale, true);
 	}
-
 	
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
 		if (source == pwLink) {
-			openChangePassword(ureq, null);	//fxdiff FXOLAT-113: business path in DMZ
+			openChangePassword(ureq, null);
 		} 
 	}
 	
 	protected void openChangePassword(UserRequest ureq, String initialEmail) {
 		// double-check if allowed first
-		if (!userModule.isPwdChangeAllowed(ureq.getIdentity()) || !ldapLoginModule.isPropagatePasswordChangedOnLdapServer()) {
+		if (!userModule.isAnyPasswordChangeAllowed() || !ldapLoginModule.isPropagatePasswordChangedOnLdapServer()) {
 			showError("error.password.change.not.allow");
 		} else {
 			removeAsListenerAndDispose(cmc);
@@ -316,17 +325,17 @@ public class LDAPAuthenticationController extends AuthenticationController imple
 	 * Internal helper to perform the real login code and do all necessary steps to
 	 * register the user session
 	 * 
-	 * @param authenticatedIdentity
+	 * @param authIdentity The authenticated identity
 	 * @param ureq
 	 * @param myProvider The provider that identified the user
 	 */
-	private void doLoginAndRegister(Identity authenticatedIdentity, UserRequest ureq, String myProvider) {
+	private void doLoginAndRegister(Identity authIdentity, UserRequest ureq, String myProvider) {
 		if (provider.equals(PROVIDER_LDAP)) {
 			// prepare redirects to home etc, set status
-			int loginStatus = AuthHelper.doLogin(authenticatedIdentity, myProvider, ureq);
+			int loginStatus = AuthHelper.doLogin(authIdentity, myProvider, ureq);
 			if (loginStatus == AuthHelper.LOGIN_OK) {
 				//update last login date and register active user
-				UserDeletionManager.getInstance().setIdentityAsActiv(authenticatedIdentity);
+				UserDeletionManager.getInstance().setIdentityAsActiv(authIdentity);
 			} else if (loginStatus == AuthHelper.LOGIN_NOTAVAILABLE){
 				DispatcherModule.redirectToServiceNotAvailable( ureq.getHttpResp() );
 			} else {
@@ -334,7 +343,7 @@ public class LDAPAuthenticationController extends AuthenticationController imple
 			}
 		} else if (provider.equals(BaseSecurityModule.getDefaultAuthProviderIdentifier())) {
 			// delegate login process to OLAT authentication controller
-			authenticated(ureq, authenticatedIdentity);		
+			authenticated(ureq, authIdentity);		
 		} else {
 			throw new OLATRuntimeException("Unknown login provider::" + myProvider, null);
 		}

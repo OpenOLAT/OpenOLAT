@@ -126,6 +126,8 @@ public class LDAPLoginModule extends AbstractSpringModule {
 	// Propagate the password changes onto the LDAP server
 	@Value("${ldap.propagatePasswordChangedOnLdapServer}")
 	private boolean propagatePasswordChangedOnLdapServer;
+	@Value("${ldap.changePasswordUrl}")
+	private String changePasswordUrl;
 	// Configuration for syncing user attributes
 
 	
@@ -504,5 +506,9 @@ public class LDAPLoginModule extends AbstractSpringModule {
 
 	public boolean isPropagatePasswordChangedOnLdapServer(){
 		return propagatePasswordChangedOnLdapServer;
+	}
+
+	public String getChangePasswordUrl() {
+		return changePasswordUrl;
 	}
 }
