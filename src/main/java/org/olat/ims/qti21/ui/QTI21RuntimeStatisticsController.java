@@ -40,13 +40,13 @@ import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.course.nodes.ArchiveOptions;
-import org.olat.course.nodes.AssessmentToolOptions;
-import org.olat.course.nodes.AssessmentToolOptions.AlternativeToIdentities;
 import org.olat.ims.qti21.QTI21DeliveryOptions;
 import org.olat.ims.qti21.QTI21Service;
 import org.olat.ims.qti21.model.QTI21StatisticSearchParams;
 import org.olat.ims.qti21.ui.statistics.QTI21StatisticResourceResult;
 import org.olat.ims.qti21.ui.statistics.QTI21StatisticsSecurityCallback;
+import org.olat.modules.assessment.AssessmentToolOptions;
+import org.olat.modules.assessment.AssessmentToolOptions.AlternativeToIdentities;
 import org.olat.repository.RepositoryEntry;
 import org.springframework.beans.factory.annotation.Autowired;
 

@@ -1,2 +1,10 @@
 <h2><i class="o_icon $cssClass"> </i> $r.escapeHtml($title)</h2>
+#if($r.isNotEmpty($toolCmpNames))
+	<div class="o_button_group o_button_group_right">
+	#foreach($toolCmpName in $toolCmpNames)
+		$r.render($toolCmpName)
+	#end
+	</div>
+#end
+
 $r.render("table")

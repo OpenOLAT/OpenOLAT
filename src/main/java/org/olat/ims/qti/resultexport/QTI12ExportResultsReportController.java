@@ -32,12 +32,12 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.id.Identity;
-import org.olat.course.nodes.AssessmentToolOptions;
 import org.olat.course.nodes.QTICourseNode;
 import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
 import org.olat.ims.qti21.QTI21Service;
+import org.olat.modules.assessment.AssessmentToolOptions;
 import org.springframework.beans.factory.annotation.Autowired;
 
 

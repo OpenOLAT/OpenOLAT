@@ -34,12 +34,12 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.course.assessment.AssessmentHelper;
-import org.olat.course.nodes.AssessmentToolOptions;
 import org.olat.course.nodes.IQTESTCourseNode;
 import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.course.run.scoring.ScoreEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.ims.qti21.AssessmentTestSession;
+import org.olat.modules.assessment.AssessmentToolOptions;
 import org.olat.modules.assessment.ui.event.CompleteAssessmentTestSessionEvent;
 
 /**

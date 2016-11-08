@@ -19,13 +19,22 @@
  */
 package org.olat.modules.assessment.ui;
 
+import java.util.List;
+
+import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.stack.TooledStackedPanel;
+import org.olat.core.gui.control.Controller;
+import org.olat.core.gui.control.WindowControl;
+import org.olat.modules.assessment.AssessmentToolOptions;
+import org.olat.repository.RepositoryEntry;
+
 /**
  * 
  * Initial date: 24.05.2016<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class AssessableResource {
+public abstract class AssessableResource {
 	
 	private Double minScore;
 	private Double maxScore;
@@ -74,5 +83,8 @@ public class AssessableResource {
 	public boolean hasCommentConfigured() {
 		return hasComments;
 	}
+	
+	public abstract List<Controller> createAssessmentTools(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
+			RepositoryEntry entry, AssessmentToolOptions options);
 
 }

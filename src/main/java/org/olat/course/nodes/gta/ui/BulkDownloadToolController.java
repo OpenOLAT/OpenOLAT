@@ -28,9 +28,9 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.course.archiver.ArchiveResource;
 import org.olat.course.nodes.ArchiveOptions;
-import org.olat.course.nodes.AssessmentToolOptions;
 import org.olat.course.nodes.GTACourseNode;
 import org.olat.course.run.environment.CourseEnvironment;
+import org.olat.modules.assessment.AssessmentToolOptions;
 import org.olat.resource.OLATResource;
 
 /**

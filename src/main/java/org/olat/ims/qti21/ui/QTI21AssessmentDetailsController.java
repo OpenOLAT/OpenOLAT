@@ -29,6 +29,7 @@ import java.util.List;
 
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.EscapeMode;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -65,7 +66,10 @@ import org.olat.ims.qti21.ui.assessment.IdentityAssessmentTestCorrectionControll
 import org.olat.ims.qti21.ui.event.RetrieveAssessmentTestSessionEvent;
 import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.assessment.AssessmentService;
+import org.olat.modules.assessment.AssessmentToolOptions;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryManager;
+import org.olat.repository.model.RepositoryEntrySecurity;
 import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -77,6 +81,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class QTI21AssessmentDetailsController extends FormBasicController {
 
+	private Component resetToolCmp;
 	private FlexiTableElement tableEl;
 	private QTI21TestSessionTableModel tableModel;
 	
@@ -86,10 +91,12 @@ public class QTI21AssessmentDetailsController extends FormBasicController {
 	private final Identity assessedIdentity;
 	
 	private IQTESTCourseNode courseNode;
+	private final RepositoryEntrySecurity reSecurity;
 	private UserCourseEnvironment assessedUserCourseEnv;
 	
 	private CloseableModalController cmc;
 	private AssessmentResultController resultCtrl;
+	private QTI21ResetToolController resetToolCtrl;
 	private DialogBoxController retrieveConfirmationCtr;
 	private IdentityAssessmentTestCorrectionController correctionCtrl;
 	
@@ -99,6 +106,8 @@ public class QTI21AssessmentDetailsController extends FormBasicController {
 	private UserManager userManager;
 	@Autowired
 	protected QTI21Service qtiService;
+	@Autowired
+	private RepositoryManager repositoryManager;
 	@Autowired
 	private AssessmentService assessmentService;
 	
@@ -112,6 +121,9 @@ public class QTI21AssessmentDetailsController extends FormBasicController {
 		RepositoryEntry testEntry = courseNode.getReferencedRepositoryEntry();
 		assessedIdentity = assessedUserCourseEnv.getIdentityEnvironment().getIdentity();
 		manualCorrections = qtiService.needManualCorrection(testEntry);
+		
+		RepositoryEntry courseEntry = assessedUserCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
+		reSecurity = repositoryManager.isAllowed(ureq, courseEntry);
 
 		initForm(ureq);
 		updateModel();
@@ -124,6 +136,7 @@ public class QTI21AssessmentDetailsController extends FormBasicController {
 		subIdent = null;
 		this.assessedIdentity = assessedIdentity;
 		manualCorrections = qtiService.needManualCorrection(assessableEntry);
+		reSecurity = repositoryManager.isAllowed(ureq, assessableEntry);
 
 		initForm(ureq);
 		updateModel();
@@ -145,7 +158,23 @@ public class QTI21AssessmentDetailsController extends FormBasicController {
 
 		tableModel = new QTI21TestSessionTableModel(columnsModel, getTranslator());
 		tableEl = uifactory.addTableElement(getWindowControl(), "sessions", tableModel, 20, false, getTranslator(), formLayout);
-	}
+		tableEl.setEmtpyTableMessageKey("results.empty");
+		
+		
+		if(reSecurity.isEntryAdmin()) {
+			AssessmentToolOptions asOptions = new AssessmentToolOptions();
+			asOptions.setAdmin(reSecurity.isEntryAdmin());
+			asOptions.setIdentities(Collections.singletonList(assessedIdentity));
+			if(courseNode != null) {
+				resetToolCtrl = new QTI21ResetToolController(ureq, getWindowControl(),
+						assessedUserCourseEnv.getCourseEnvironment(), asOptions, courseNode);
+			} else {
+				resetToolCtrl = new QTI21ResetToolController(ureq, getWindowControl(), entry, asOptions);
+			}
+			listenTo(resetToolCtrl);
+			resetToolCmp = resetToolCtrl.getInitialComponent();	
+		}
+	} 
 
 	@Override
 	protected void doDispose() {
@@ -158,6 +187,14 @@ public class QTI21AssessmentDetailsController extends FormBasicController {
 		tableModel.setObjects(sessions);
 		tableEl.reloadData();
 		tableEl.reset();
+			
+		if(resetToolCmp != null) {
+			if(sessions.size() > 0) {
+				flc.getFormItemComponent().put("reset.tool", resetToolCmp);
+			} else {
+				flc.getFormItemComponent().remove(resetToolCmp);
+			}
+		}
 	}
 
 	@Override
@@ -180,6 +217,11 @@ public class QTI21AssessmentDetailsController extends FormBasicController {
 			if(DialogBoxUIFactory.isYesEvent(event) || DialogBoxUIFactory.isOkEvent(event)) {
 				doPullSession((AssessmentTestSession)retrieveConfirmationCtr.getUserObject());
 				updateModel();
+			}
+		} else if(resetToolCtrl == source) {
+			if(event == Event.DONE_EVENT) {
+				updateModel();
+				fireEvent(ureq, Event.CHANGED_EVENT);
 			}
 		}
 		super.event(ureq, source, event);
