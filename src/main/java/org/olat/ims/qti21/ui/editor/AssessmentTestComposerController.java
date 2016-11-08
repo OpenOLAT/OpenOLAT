@@ -788,8 +788,15 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 		} else if(selectedNode.getUserObject() instanceof TestPart) {
 			parentPart = (TestPart)selectedNode.getUserObject();
 		} else {
-			showWarning("error.cannot.create.section");
-			return;
+			TreeNode rootNode = menuTree.getTreeModel().getRootNode();
+			AssessmentTest assessmentTest = (AssessmentTest)rootNode.getUserObject();
+			List<TestPart> parts = assessmentTest.getTestParts();
+			if(parts != null && parts.size() > 0) {
+				parentPart = parts.get(0);
+			} else {
+				showWarning("error.cannot.create.section");
+				return;
+			}
 		}
 
 		AssessmentSection newSection;
@@ -1068,7 +1075,13 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 		} else {
 			String msg;
 			if(uobject instanceof AssessmentSection) {
-				msg = translate("delete.section", selectedNode.getTitle());
+				AssessmentSection section = (AssessmentSection)uobject;
+				if(checkAtLeastOneSection(section)) {
+					msg = translate("delete.section", selectedNode.getTitle());
+				} else {
+					showWarning("warning.atleastonesection");
+					return;
+				}
 			} else if(uobject instanceof AssessmentItemRef) {
 				msg = translate("delete.item", selectedNode.getTitle());
 			} else {
@@ -1086,7 +1099,12 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 		if(uobject instanceof TestPart) {
 			doDeleteTestPart((TestPart)uobject);
 		} else if(uobject instanceof AssessmentSection) {
-			doDeleteAssessmentSection((AssessmentSection)uobject);
+			AssessmentSection section = (AssessmentSection)uobject;
+			if(checkAtLeastOneSection(section)) {
+				doDeleteAssessmentSection(section);
+			} else {
+				showWarning("warning.atleastonesection");
+			}
 		} else if(uobject instanceof AssessmentItemRef) {
 			doDeleteAssessmentItemRef((AssessmentItemRef)uobject);
 		} else {
@@ -1103,6 +1121,20 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 			menuTree.open(parentNode);
 			partEditorFactory(ureq, parentNode);
 		}
+	}
+	
+	private boolean checkAtLeastOneSection(AssessmentSection section) {
+		AbstractPart parent = section.getParent();
+		if(parent instanceof TestPart) {
+			TestPart testPart = (TestPart)parent;
+			for(AssessmentSection testPartSection:testPart.getAssessmentSections()) {
+				if(testPartSection != section) {
+					return true;
+				}
+			}
+			return false;
+		}
+		return true;
 	}
 	
 	private void doDeleteAssessmentItemRef(AssessmentItemRef itemRef) {
