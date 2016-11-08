@@ -212,7 +212,7 @@ public class CourseSiteAdminController extends FormBasicController {
 	
 	private void doReset(LanguageConfigurationRow row) {
 		row.reset();
-		tableEl.getComponent().setDirty(true);
+		tableEl.reset(true, true, true);
 	}
 	
 	private void doSelecCourse(UserRequest ureq, LanguageConfigurationRow row) {
@@ -314,6 +314,9 @@ public class CourseSiteAdminController extends FormBasicController {
 		public void reset() {
 			langConfig.setTitle(null);
 			langConfig.setRepoSoftKey(null);
+			titleEl.setValue("");
+			defLangEl.uncheckAll();
+			repoEntry = null;
 		}
 		
 		public LanguageConfiguration getRawObject() {
