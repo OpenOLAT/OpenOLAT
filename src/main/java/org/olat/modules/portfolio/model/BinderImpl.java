@@ -32,6 +32,8 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import javax.persistence.NamedQueries;
+import javax.persistence.NamedQuery;
 import javax.persistence.OneToMany;
 import javax.persistence.OrderColumn;
 import javax.persistence.Table;
@@ -61,6 +63,11 @@ import org.olat.resource.OLATResourceImpl;
  */
 @Entity(name="pfbinder")
 @Table(name="o_pf_binder")
+@NamedQueries({
+	@NamedQuery(name="loadBinderByKey", query="select binder from pfbinder as binder inner join fetch binder.baseGroup as baseGroup where binder.key=:portfolioKey")
+	
+	
+})
 public class BinderImpl implements Persistable, ModifiedInfo, CreateInfo, Binder {
 
 	private static final long serialVersionUID = -2607615295380443760L;

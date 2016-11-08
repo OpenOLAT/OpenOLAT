@@ -419,8 +419,6 @@ public class BinderDAO {
 		  .append("   where pageSection.binder.key=binder.key and page.section.key=pageSection.key and comment.resId=page.key and comment.resName='Page'")
 		  .append(" ) as numOfComments")
 		  .append(" from pfbinder as binder")
-		  .append(" left join binder.baseGroup as baseGroup")
-		  .append(" left join baseGroup.members as membership")
 		  .append(" left join binder.entry binderEntry")
 		  .append(" where binder.key=:binderKey");
 		
@@ -429,7 +427,7 @@ public class BinderDAO {
 			.setParameter("binderKey", binder.getKey())
 			.getResultList();
 		
-		if(objects.size() == 1) {
+		if(objects.size() >= 1) {
 			int pos = 0;
 			Object[] object = objects.get(0);
 			Long key = (Long)object[pos++];
@@ -454,7 +452,7 @@ public class BinderDAO {
 	 * @return
 	 */
 	public List<BinderStatistics> searchOwnedBinders(IdentityRef owner, boolean deleted) {
-		StringBuilder sb = new StringBuilder();
+		StringBuilder sb = new StringBuilder(1024);
 		sb.append("select binder.key, binder.title, binder.imagePath, binder.lastModified, binder.status,")
 		  .append(" binderEntry.displayname,")
 		  .append(" (select count(section.key) from pfsection as section")
@@ -503,20 +501,15 @@ public class BinderDAO {
 	}
 	
 	public Binder loadByKey(Long key) {
-		StringBuilder sb = new StringBuilder();
-		sb.append("select binder from pfbinder as binder")
-		  .append(" inner join fetch binder.baseGroup as baseGroup")
-		  .append(" where binder.key=:portfolioKey");
-		
 		List<Binder> binders = dbInstance.getCurrentEntityManager()
-			.createQuery(sb.toString(), Binder.class)
+			.createNamedQuery("loadBinderByKey", Binder.class)
 			.setParameter("portfolioKey", key)
 			.getResultList();
 		return binders == null || binders.isEmpty() ? null : binders.get(0);
 	}
 	
 	public Binder loadByResource(OLATResource resource) {
-		StringBuilder sb = new StringBuilder();
+		StringBuilder sb = new StringBuilder(128);
 		sb.append("select binder from pfbinder as binder")
 		  .append(" inner join fetch binder.baseGroup as baseGroup")
 		  .append(" inner join fetch binder.olatResource as olatResource")
@@ -530,7 +523,7 @@ public class BinderDAO {
 	}
 	
 	public Binder loadBySection(SectionRef section) {
-		StringBuilder sb = new StringBuilder();
+		StringBuilder sb = new StringBuilder(128);
 		sb.append("select binder from pfsection as section")
 		  .append(" inner join section.binder as binder")
 		  .append(" inner join fetch binder.baseGroup as baseGroup")
@@ -570,7 +563,7 @@ public class BinderDAO {
 	}
 	
 	public boolean isTemplateInUse(BinderRef template, RepositoryEntryRef entry, String subIdent) {
-		StringBuilder sb = new StringBuilder();
+		StringBuilder sb = new StringBuilder(128);
 		sb.append("select binder.key from pfbinder as binder")
 		  .append(" where binder.template.key=:templateKey");
 		if(entry != null) {
