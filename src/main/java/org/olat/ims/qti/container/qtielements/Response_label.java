@@ -118,7 +118,7 @@ public class Response_label extends GenericQTIElement {
 				appendParameterIdent(buffer, ri);
 				buffer.append("\" type=\"text\" size=\"").append(columns).append("\" maxlength=\"").append(maxlength);
 				if (iinput != null && !iinput.isEmpty() && iinput.getSingle(responseIdent) != null) {
-					buffer.append("\" value=\"").append(iinput.getSingle(getQTIIdent())); //TODO: LD: must this value be escapeHtml?					
+					buffer.append("\" value=\"").append(StringHelper.escapeHtml(iinput.getSingle(getQTIIdent())));
 				}
 				buffer.append("\" onchange=\"return setFormDirty('ofo_iq_item')\" onclick=\"return setFormDirty('ofo_iq_item')\" /><span> </span>");
 			}
