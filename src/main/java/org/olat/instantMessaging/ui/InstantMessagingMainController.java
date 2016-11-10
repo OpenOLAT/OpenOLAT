@@ -169,6 +169,7 @@ public class InstantMessagingMainController extends BasicController implements G
 		imService.unlistenChat(getIdentity(), getPrivatListenToResourceable(), this);
 		singleUserEventCenter.deregisterFor(this, InstantMessagingService.ASSESSMENT_EVENT_ORES);
 		singleUserEventCenter.deregisterFor(this, InstantMessagingService.TOWER_EVENT_ORES);
+		getWindowControl().getWindowBackOffice().removeCycleListener(this);
 	}
 	
 	public OLATResourceable getPrivatListenToResourceable() {
