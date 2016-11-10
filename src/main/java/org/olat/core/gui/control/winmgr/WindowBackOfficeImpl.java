@@ -91,9 +91,9 @@ public class WindowBackOfficeImpl implements WindowBackOffice {
 	private GuiDebugDispatcherController guidebugC;
 	private InlineTranslationInterceptHandlerController inlineTranslationC;
 	
-	private List<ZIndexWrapper> guiMessages = new ArrayList<ZIndexWrapper>(); // request-transient render-related data
+	private List<ZIndexWrapper> guiMessages = new ArrayList<>(); // request-transient render-related data
 	
-	private transient List<GenericEventListener> cycleListeners = new CopyOnWriteArrayList<GenericEventListener>();
+	private transient List<GenericEventListener> cycleListeners = new CopyOnWriteArrayList<>();
 	
 	WindowBackOfficeImpl(final WindowManagerImpl winmgrImpl, String windowName, ChiefController windowOwner, WindowSettings settings) {
 		this.winmgrImpl = winmgrImpl;
@@ -177,6 +177,7 @@ public class WindowBackOfficeImpl implements WindowBackOffice {
 	/**
 	 * @see org.olat.core.gui.control.WindowBackOffice#sendCommandTo(org.olat.core.gui.control.winmgr.Command)
 	 */
+	@Override
 	public void sendCommandTo(Command wco) {
 		if (ajaxC != null) ajaxC.sendCommandTo(new WindowCommand(this,wco));
 	}
@@ -237,6 +238,7 @@ public class WindowBackOfficeImpl implements WindowBackOffice {
 	 * @param windowControl
 	 * @return
 	 */
+	@Override
 	public Controller createInlineTranslationDispatcherController(UserRequest ureq, WindowControl windowControl) {
 		if (inlineTranslationC != null) throw new AssertException("Can't set the inline translation dispatcher twice!", null);
 		inlineTranslationC = I18nUIFactory.createInlineTranslationIntercepHandlerController(ureq, windowControl);
@@ -244,6 +246,7 @@ public class WindowBackOfficeImpl implements WindowBackOffice {
 		return inlineTranslationC;
 	}
 
+	@Override
 	public Controller createAJAXController(UserRequest ureq) {
 		boolean ajaxEnabled = winmgrImpl.isAjaxEnabled();
 		ajaxC = new AjaxController(ureq, this, ajaxEnabled);
@@ -253,6 +256,7 @@ public class WindowBackOfficeImpl implements WindowBackOffice {
 	/* (non-Javadoc)
 	 * @see org.olat.core.gui.control.WindowBackOffice#isDebuging()
 	 */
+	@Override
 	public boolean isDebuging() {
 		return Settings.isDebuging();
 	}
@@ -313,7 +317,6 @@ public class WindowBackOfficeImpl implements WindowBackOffice {
 			// clear the added data for this cycle
 			guiMessages.clear();
 		}
-		
 	}
 
 	@Override

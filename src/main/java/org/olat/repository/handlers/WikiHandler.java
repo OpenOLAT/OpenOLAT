@@ -256,7 +256,7 @@ public class WikiHandler implements RepositoryHandler {
 					} else {
 						controller = new WikiMainController(uureq, wwControl, entry.getOlatResource(), callback, null);
 					}
-					return new OLATResourceableListeningWrapperController(ureq, wControl, entry.getOlatResource(), controller, null, ureq.getIdentity());
+					return new OLATResourceableListeningWrapperController(uureq, wwControl, entry.getOlatResource(), controller, null, uureq.getIdentity());
 				}
 			});
 
