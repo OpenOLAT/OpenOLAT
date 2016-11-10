@@ -1138,9 +1138,23 @@ public class ICalFileCalendarManager implements CalendarManager, InitializingBea
 		
 		if(StringHelper.containsNonWhitespace(kalendarEvent.getRecurrenceRule())) {
 			Date oldBegin = kalendarEvent.getImmutableBegin();
-			Date newBegin = kalendarEvent.getBegin();
-			long diff = newBegin.getTime() - oldBegin.getTime();
+			Date oldEnd = kalendarEvent.getImmutableEnd();
 			
+			KalendarEvent originalEvent = reloadedCal.getEvent(kalendarEvent.getID(), null);
+
+			Date newBegin = kalendarEvent.getBegin();
+			Date newEnd = kalendarEvent.getEnd();
+			long beginDiff = newBegin.getTime() - oldBegin.getTime();
+			long endDiff = newEnd.getTime() - oldEnd.getTime();
+
+			java.util.Calendar cl = java.util.Calendar.getInstance();
+			cl.setTime(originalEvent.getBegin());
+			cl.add(java.util.Calendar.MILLISECOND, (int)beginDiff);
+			kalendarEvent.setBegin(cl.getTime());
+			cl.setTime(originalEvent.getEnd());
+			cl.add(java.util.Calendar.MILLISECOND, (int)endDiff);
+			kalendarEvent.setEnd(cl.getTime());
+
 			List<KalendarEvent> exEvents = new ArrayList<>();
 			List<KalendarEvent> allEvents = reloadedCal.getEvents();
 			for(KalendarEvent event:allEvents) {
@@ -1160,8 +1174,8 @@ public class ICalFileCalendarManager implements CalendarManager, InitializingBea
 						java.util.Calendar calc = java.util.Calendar.getInstance();
 						calc.clear();
 						calc.setTime(currentRecurrence);
-						if(diff > 0) {
-							calc.add(java.util.Calendar.MILLISECOND, (int)diff);
+						if(beginDiff > 0) {
+							calc.add(java.util.Calendar.MILLISECOND, (int)beginDiff);
 						}
 						
 						Date newRecurrenceDate = calc.getTime();
