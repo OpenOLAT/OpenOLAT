@@ -1057,25 +1057,21 @@ public class ICalFileCalendarManager implements CalendarManager, InitializingBea
 				boolean successfullyPersist = false;
 				try {
 					String uid = kalendarEvent.getID();
-					Date occurenceDate = kalendarEvent.getBegin();
-					java.util.Calendar calendar = java.util.Calendar.getInstance();
-					calendar.setTime(occurenceDate);
-					calendar.add(java.util.Calendar.DATE, -1);
-					Date until = calendar.getTime();
+					Date occurenceDate = kalendarEvent.getOccurenceDate();
 
 					Kalendar loadedCal = getCalendarFromCache(cal.getType(), cal.getCalendarID());
 					KalendarEvent rootEvent = loadedCal.getEvent(kalendarEvent.getID(), null);
 					String rRule = rootEvent.getRecurrenceRule();
 					
 					Recur recur = new Recur(rRule);
-					recur.setUntil(CalendarUtils.createDate(until));
+					recur.setUntil(CalendarUtils.createDate(occurenceDate));
 					RRule rrule = new RRule(recur);
 					rootEvent.setRecurrenceRule(rrule.getValue());
 					
 					for(KalendarEvent kEvent:loadedCal.getEvents()) {
 						if(uid.equals(kEvent.getID())
-								&& kEvent.getOccurenceDate() != null
-								&& occurenceDate.before(kEvent.getOccurenceDate())) {
+								&& StringHelper.containsNonWhitespace(kEvent.getRecurrenceID())
+								&& occurenceDate.before(kEvent.getBegin())) {
 							loadedCal.removeEvent(kEvent);
 						}
 					}
