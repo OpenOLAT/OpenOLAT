@@ -52,6 +52,7 @@ import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.basesecurity.Constants;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.SecurityGroup;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.services.taskexecutor.TaskExecutorManager;
 import org.olat.core.gui.control.Event;
@@ -83,6 +84,7 @@ import org.olat.ldap.LDAPSyncConfiguration;
 import org.olat.ldap.model.LDAPGroup;
 import org.olat.ldap.model.LDAPUser;
 import org.olat.ldap.ui.LDAPAuthenticationController;
+import org.olat.login.auth.OLATAuthManager;
 import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -255,13 +257,13 @@ public class LDAPLoginManagerImpl implements LDAPLoginManager, GenericEventListe
 	 * @throws NamingException
 	 */
 	@Override
-	public Attributes bindUser(String uid, String pwd, LDAPError errors) {
+	public Attributes bindUser(String login, String pwd, LDAPError errors) {
 		// get user name, password and attributes
 		String ldapUrl = ldapLoginModule.getLdapUrl();
 		String[] userAttr = syncConfiguration.getUserAttributes();
 
-		if (uid == null || pwd == null) {
-			if (log.isDebug()) log.debug("Error when trying to bind user, missing username or password. Username::" + uid + " pwd::" + pwd);
+		if (login == null || pwd == null) {
+			if (log.isDebug()) log.debug("Error when trying to bind user, missing username or password. Username::" + login + " pwd::" + pwd);
 			errors.insert("Username and password must be selected");
 			return null;
 		}
@@ -271,9 +273,9 @@ public class LDAPLoginManagerImpl implements LDAPLoginManager, GenericEventListe
 			errors.insert("LDAP connection error");
 			return null;
 		}
-		String userDN = ldapDao.searchUserDN(uid, ctx);
+		String userDN = ldapDao.searchUserForLogin(login, ctx);
 		if (userDN == null) {
-			log.info("Error when trying to bind user with username::" + uid + " - user not found on LDAP server"
+			log.info("Error when trying to bind user with username::" + login + " - user not found on LDAP server"
 					+ (ldapLoginModule.isCacheLDAPPwdAsOLATPwdOnLogin() ? ", trying with OLAT login provider" : ""));
 			errors.insert("Username or password incorrect");
 			return null;
@@ -301,14 +303,55 @@ public class LDAPLoginManagerImpl implements LDAPLoginManager, GenericEventListe
 			userBind.close();
 			return attributes;
 		} catch (AuthenticationException e) {
-			log.info("Error when trying to bind user with username::" + uid + " - invalid LDAP password");
+			log.info("Error when trying to bind user with username::" + login + " - invalid LDAP password");
 			errors.insert("Username or password incorrect");
 			return null;
 		} catch (NamingException e) {
-			log.error("NamingException when trying to get attributes after binding user with username::" + uid, e);
+			log.error("NamingException when trying to get attributes after binding user with username::" + login, e);
 			errors.insert("Username or password incorrect");
 			return null;
 		}
+	}
+	
+	@Override
+	public Identity authenticate(String username, String pwd, LDAPError ldapError) {
+		long start = System.nanoTime();
+		//authenticate against LDAP server
+		Attributes attrs = bindUser(username, pwd, ldapError);
+		long takes = System.nanoTime() - start;
+		if(takes > LDAPLoginModule.WARNING_LIMIT) {
+			log.warn("LDAP Authentication takes (ms): " + (takes / 1000000));
+		}
+		
+		if (ldapError.isEmpty() && attrs != null) { 
+			Identity identity = findIdentityByLdapAuthentication(attrs, ldapError);
+			if (!ldapError.isEmpty()) {
+				return null;
+			}
+			if (identity == null) {
+				if(ldapLoginModule.isCreateUsersOnLogin()) {
+					// User authenticated but not yet existing - create as new OLAT user
+					createAndPersistUser(attrs);
+					identity = findIdentityByLdapAuthentication(attrs, ldapError);
+				} else {
+					ldapError.insert("login.notauthenticated");
+				}
+			} else {
+				// User does already exist - just sync attributes
+				Map<String, String> olatProToSync = prepareUserPropertyForSync(attrs, identity);
+				if (olatProToSync != null) {
+					syncUser(olatProToSync, identity);
+				}
+			}
+			// Add or update an OLAT authentication token for this user if configured in the module
+			if (identity != null && ldapLoginModule.isCacheLDAPPwdAsOLATPwdOnLogin()) {
+				// there is no WEBDAV token but an HA1, the HA1 is linked to the OLAT one.
+				CoreSpringFactory.getImpl(OLATAuthManager.class)
+					.synchronizeOlatPasswordAndUsername(identity, identity, username, pwd);
+			}
+			return identity;
+		} 
+		return null;
 	}
 	
 	/**
@@ -321,7 +364,7 @@ public class LDAPLoginManagerImpl implements LDAPLoginManager, GenericEventListe
 		String ldapUserPasswordAttribute = syncConfiguration.getLdapUserPasswordAttribute();
 		try {
 			DirContext ctx = bindSystem();
-			String dn = ldapDao.searchUserDN(uid, ctx);
+			String dn = ldapDao.searchUserDNByUid(uid, ctx);
 			
 			ModificationItem [] modificationItems = new ModificationItem [ 1 ];
 			
@@ -588,7 +631,16 @@ public class LDAPLoginManagerImpl implements LDAPLoginManager, GenericEventListe
 	 *         modified)
 	 */
 	@Override
-	public Identity findIdentyByLdapAuthentication(String uid, LDAPError errors) {
+	public Identity findIdentityByLdapAuthentication(Attributes attrs, LDAPError errors) {
+		if(attrs == null) {
+			errors.insert("findIdentyByLdapAuthentication: attrs::null");
+			return null;
+		}
+		
+		String uid = getAttributeValue(attrs.get(syncConfiguration
+				.getOlatPropertyToLdapAttribute(LDAPConstants.LDAP_USER_IDENTIFYER)));
+		String token = getAttributeValue(attrs.get(syncConfiguration.getLdapUserLoginAttribute()));
+		
 		Identity identity = securityManager.findIdentityByNameCaseInsensitive(uid);
 		if (identity == null) {
 			return null;
@@ -602,22 +654,22 @@ public class LDAPLoginManagerImpl implements LDAPLoginManager, GenericEventListe
 				Authentication ldapAuth = securityManager.findAuthentication(identity, LDAPAuthenticationController.PROVIDER_LDAP);
 				if(ldapAuth == null) {
 					//BUG Fixe: update the user and test if it has a ldap provider
-					securityManager.createAndPersistAuthentication(identity, LDAPAuthenticationController.PROVIDER_LDAP, identity.getName(), null, null);
+					securityManager.createAndPersistAuthentication(identity, LDAPAuthenticationController.PROVIDER_LDAP, token, null, null);
+				} else if(StringHelper.containsNonWhitespace(token) && !token.equals(ldapAuth.getAuthusername())) {
+					ldapAuth.setAuthusername(token);
+					ldapAuth = securityManager.updateAuthentication(ldapAuth);
 				}
 				return identity;
-			}
-			else {
-				if (ldapLoginModule.isConvertExistingLocalUsersToLDAPUsers()) {
-					// Add user to LDAP security group and add the ldap provider
-					securityManager.createAndPersistAuthentication(identity, LDAPAuthenticationController.PROVIDER_LDAP, identity.getName(), null, null);
-					securityManager.addIdentityToSecurityGroup(identity, ldapGroup);
-					log.info("Found identity by LDAP username that was not yet in LDAP security group. Converted user::" + uid
-							+ " to be an LDAP managed user");
-					return identity;
-				} else {
-					errors.insert("findIdentyByLdapAuthentication: User with username::" + uid + " exist but not Managed by LDAP");
-					return null;
-				}
+			} else if (ldapLoginModule.isConvertExistingLocalUsersToLDAPUsers()) {
+				// Add user to LDAP security group and add the ldap provider
+				securityManager.createAndPersistAuthentication(identity, LDAPAuthenticationController.PROVIDER_LDAP, token, null, null);
+				securityManager.addIdentityToSecurityGroup(identity, ldapGroup);
+				log.info("Found identity by LDAP username that was not yet in LDAP security group. Converted user::" + uid
+						+ " to be an LDAP managed user");
+				return identity;
+			} else {
+				errors.insert("findIdentyByLdapAuthentication: User with username::" + uid + " exist but not Managed by LDAP");
+				return null;
 			}
 		}
 	}
@@ -972,7 +1024,7 @@ public class LDAPLoginManagerImpl implements LDAPLoginManager, GenericEventListe
 				Attributes userAttrs = ldapUser.getAttributes();
 				String uidProp = syncConfiguration.getOlatPropertyToLdapAttribute(LDAPConstants.LDAP_USER_IDENTIFYER);
 				user = getAttributeValue(userAttrs.get(uidProp));
-				Identity identity = findIdentyByLdapAuthentication(user, errors);
+				Identity identity = findIdentityByLdapAuthentication(userAttrs, errors);
 				if (identity != null) {
 					Map<String, String> changedAttrMap = prepareUserPropertyForSync(userAttrs, identity);
 					if (changedAttrMap != null) {
@@ -1209,8 +1261,7 @@ public class LDAPLoginManagerImpl implements LDAPLoginManager, GenericEventListe
 		Identity identity = ldapUser == null ? null : ldapUser.getCachedIdentity();
 		if(identity == null) {
 			String userFilter = syncConfiguration.getLdapUserFilter();
-			String uidProp = syncConfiguration.getOlatPropertyToLdapAttribute(LDAPConstants.LDAP_USER_IDENTIFYER);
-
+			
 			String userDN = member;
 			LDAPUserVisitor visitor = new LDAPUserVisitor(syncConfiguration);
 			ldapDao.search(visitor, userDN, userFilter, syncConfiguration.getUserAttributes(), ctx);
@@ -1219,8 +1270,7 @@ public class LDAPLoginManagerImpl implements LDAPLoginManager, GenericEventListe
 			if(ldapUserList.size() == 1) {
 				ldapUser = ldapUserList.get(0);
 				Attributes userAttrs = ldapUser.getAttributes();
-				String user = getAttributeValue(userAttrs.get(uidProp));
-				identity = findIdentyByLdapAuthentication(user, errors);
+				identity = findIdentityByLdapAuthentication(userAttrs, errors);
 				if(identity != null) {
 					dnToIdentityKeyMap.put(userDN, ldapUser);
 				}
@@ -1235,7 +1285,7 @@ public class LDAPLoginManagerImpl implements LDAPLoginManager, GenericEventListe
 		if (ctx == null) {
 			log.error("could not bind to ldap", null);
 		}		
-		String userDN = ldapDao.searchUserDN(ident.getName(), ctx);
+		String userDN = ldapDao.searchUserDNByUid(ident.getName(), ctx);
 
 		final List<Attributes> ldapUserList = new ArrayList<Attributes>();
 		// TODO: use userDN instead of filter to get users attribs

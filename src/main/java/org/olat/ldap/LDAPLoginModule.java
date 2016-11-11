@@ -57,6 +57,8 @@ import org.springframework.stereotype.Service;
 public class LDAPLoginModule extends AbstractSpringModule {
 	// Connection configuration
 	
+	public static final long WARNING_LIMIT = 15 *1000 * 1000 * 1000;
+	
 	@Value("${ldap.ldapUrl}")
 	private String ldapUrl;
 	@Value("${ldap.enable:false}")

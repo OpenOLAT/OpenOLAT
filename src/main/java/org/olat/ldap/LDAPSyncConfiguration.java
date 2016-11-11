@@ -58,6 +58,7 @@ public class LDAPSyncConfiguration {
 	private String ldapUserCreatedTimestampAttribute;
 	private String ldapUserLastModifiedTimestampAttribute;
 	private String ldapUserPasswordAttribute;
+	private String ldapUserLoginAttribute;
 	
 	private String[] userAttributes;
 	
@@ -370,6 +371,14 @@ public class LDAPSyncConfiguration {
 	
 	public void setLdapUserPasswordAttribute(String attribute) {
 		this.ldapUserPasswordAttribute = attribute;
+	}
+
+	public String getLdapUserLoginAttribute() {
+		return ldapUserLoginAttribute;
+	}
+
+	public void setLdapUserLoginAttribute(String ldapUserLoginAttribute) {
+		this.ldapUserLoginAttribute = ldapUserLoginAttribute;
 	}
 
 	public Map<String, String> getRequestAttributes() {

@@ -44,6 +44,7 @@ import org.olat.core.id.Identity;
 import org.olat.core.util.WebappHelper;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.ldap.LDAPError;
+import org.olat.ldap.LDAPLoginManager;
 import org.olat.ldap.LDAPLoginModule;
 import org.olat.ldap.ui.LDAPAuthenticationController;
 import org.olat.login.SupportsAfterLoginInterceptor;
@@ -75,11 +76,13 @@ public class ChangePasswordController extends BasicController implements Support
 	@Autowired
 	private UserModule userModule;
 	@Autowired
+	private BaseSecurity securityManager;
+	@Autowired
 	private LDAPLoginModule ldapLoginModule;
 	@Autowired
-	private OLATAuthManager olatAuthenticationSpi;
+	private LDAPLoginManager ldapLoginManager;
 	@Autowired
-	private BaseSecurity securityManager;
+	private OLATAuthManager olatAuthenticationSpi;
 
 	/**
 	 * @param ureq
@@ -140,7 +143,7 @@ public class ChangePasswordController extends BasicController implements Support
 				if (securityManager.findAuthentication(ureq.getIdentity(), LDAPAuthenticationController.PROVIDER_LDAP) != null) {
 					LDAPError ldapError = new LDAPError();
 					//fallback to OLAT if enabled happen automatically in LDAPAuthenticationController
-					provenIdent = LDAPAuthenticationController.authenticate(ureq.getIdentity().getName(), oldPwd, ldapError);
+					provenIdent = ldapLoginManager.authenticate(ureq.getIdentity().getName(), oldPwd, ldapError);
 				} else if(securityManager.findAuthentication(ureq.getIdentity(), BaseSecurityModule.getDefaultAuthProviderIdentifier()) != null) {
 					provenIdent = olatAuthenticationSpi.authenticate(ureq.getIdentity(), ureq.getIdentity().getName(), oldPwd);
 				}
@@ -151,7 +154,6 @@ public class ChangePasswordController extends BasicController implements Support
 					String newPwd = chPwdForm.getNewPasswordValue();
 					if(olatAuthenticationSpi.changePassword(ureq.getIdentity(), provenIdent, newPwd)) {
 						//TODO: verify that we are NOT in a transaction (changepwd should be commited immediately)				
-						// fxdiff: we need this event for the afterlogin-controller
 						fireEvent(ureq, Event.DONE_EVENT);
 						getLogger().audit("Changed password for identity."+provenIdent.getName());
 						showInfo("password.successful");

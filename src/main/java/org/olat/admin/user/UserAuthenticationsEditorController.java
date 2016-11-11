@@ -29,7 +29,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.olat.basesecurity.Authentication;
-import org.olat.basesecurity.BaseSecurityManager;
+import org.olat.basesecurity.BaseSecurity;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.table.DefaultColumnDescriptor;
@@ -47,6 +47,7 @@ import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.id.Identity;
 import org.olat.user.UserManager;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * Initial Date:  Aug 27, 2004
@@ -58,6 +59,11 @@ public class UserAuthenticationsEditorController extends BasicController{
 	private AuthenticationsTableDataModel authTableModel;
 	private DialogBoxController confirmationDialog;
 	private Identity changeableIdentity;
+	
+	@Autowired
+	private UserManager userManager;
+	@Autowired
+	private BaseSecurity securityManager;
 
 	/**
 	 * @param ureq
@@ -76,7 +82,7 @@ public class UserAuthenticationsEditorController extends BasicController{
 		tableCtr.addColumnDescriptor(new DefaultColumnDescriptor("table.auth.login", 1, null, ureq.getLocale()));
 		tableCtr.addColumnDescriptor(new DefaultColumnDescriptor("table.auth.credential", 2, null, ureq.getLocale()));
 		tableCtr.addColumnDescriptor(new StaticColumnDescriptor("delete", "table.header.action", translate("delete")));
-		authTableModel = new AuthenticationsTableDataModel(BaseSecurityManager.getInstance().getAuthentications(changeableIdentity));
+		authTableModel = new AuthenticationsTableDataModel(securityManager.getAuthentications(changeableIdentity));
 		tableCtr.setTableDataModel(authTableModel);
 		listenTo(tableCtr);
 
@@ -86,6 +92,7 @@ public class UserAuthenticationsEditorController extends BasicController{
 	/**
 	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest, org.olat.core.gui.components.Component, org.olat.core.gui.control.Event)
 	 */
+	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
 		// no events to catch
 	}
@@ -94,21 +101,22 @@ public class UserAuthenticationsEditorController extends BasicController{
 	 * Rebuild the authentications table data model
 	 */
 	public void rebuildAuthenticationsTableDataModel() {
-		authTableModel = new AuthenticationsTableDataModel(BaseSecurityManager.getInstance().getAuthentications(changeableIdentity));
+		authTableModel = new AuthenticationsTableDataModel(securityManager.getAuthentications(changeableIdentity));
 		tableCtr.setTableDataModel(authTableModel);
 	}
 	
 	/**
 	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest, org.olat.core.gui.control.Controller, org.olat.core.gui.control.Event)
 	 */
+	@Override
 	public void event(UserRequest ureq, Controller source, Event event) {
 		if (source == confirmationDialog) {
 			if (DialogBoxUIFactory.isYesEvent(event)) { 
 				Authentication auth = (Authentication)confirmationDialog.getUserObject();
-				BaseSecurityManager.getInstance().deleteAuthentication(auth);
+				securityManager.deleteAuthentication(auth);
 				getWindowControl().setInfo(getTranslator().translate("authedit.delete.success", 
 						new String[] { auth.getProvider(), changeableIdentity.getName() }));
-				authTableModel.setObjects(BaseSecurityManager.getInstance().getAuthentications(changeableIdentity));
+				authTableModel.setObjects(securityManager.getAuthentications(changeableIdentity));
 				tableCtr.modelChanged();
 			}
 		}
@@ -119,11 +127,10 @@ public class UserAuthenticationsEditorController extends BasicController{
 				if (actionid.equals("delete")) {
 					int rowid = te.getRowId();
 					Authentication auth = authTableModel.getObject(rowid);
-					String fullname = UserManager.getInstance().getUserDisplayName(auth.getIdentity());
+					String fullname = userManager.getUserDisplayName(changeableIdentity);
 					String msg = translate("authedit.delete.confirm", new String[] { auth.getProvider(), fullname });
 					confirmationDialog = activateYesNoDialog(ureq, null, msg, confirmationDialog);
 					confirmationDialog.setUserObject(auth);
-					return;
 				}
 			}
 		}
@@ -134,6 +141,7 @@ public class UserAuthenticationsEditorController extends BasicController{
 	 * 
 	 * @see org.olat.core.gui.control.DefaultController#doDispose(boolean)
 	 */
+	@Override
 	protected void doDispose() {
 		// DialogBoxController and TableController get disposed by BasicController
 	}	
@@ -153,20 +161,21 @@ public class UserAuthenticationsEditorController extends BasicController{
 		/**
 		 * @see org.olat.core.gui.components.table.TableDataModel#getValueAt(int, int)
 		 */
+		@Override
 		public final Object getValueAt(int row, int col) {
 			Authentication auth = getObject(row);
 			switch (col) {
-				case 0 : return auth.getProvider();
-				case 1 : return auth.getAuthusername();
-				case 2 : return auth.getCredential();
-				default :
-					return "error";
+				case 0: return auth.getProvider();
+				case 1: return auth.getAuthusername();
+				case 2: return auth.getCredential();
+				default: return "error";
 			}
 		}
 
 		/**
 		 * @see org.olat.core.gui.components.table.TableDataModel#getColumnCount()
 		 */
+		@Override
 		public int getColumnCount() {
 			return 3;
 		}

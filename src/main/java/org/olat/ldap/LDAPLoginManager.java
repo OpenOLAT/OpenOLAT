@@ -38,6 +38,8 @@ public interface LDAPLoginManager {
 	public LdapContext bindSystem();
 
 	public Attributes bindUser(String uid, String pwd, LDAPError errors);
+	
+	public Identity authenticate(String username, String pwd, LDAPError ldapError);
 
 	public boolean changePassword(Identity identity, String pwd, LDAPError errors);
 	
@@ -47,7 +49,7 @@ public interface LDAPLoginManager {
 	
 	public List<Identity> getIdentitysDeletedInLdap(LdapContext ctx);
 	
-	public Identity findIdentyByLdapAuthentication(String uid, LDAPError errors);
+	public Identity findIdentityByLdapAuthentication(Attributes attrs, LDAPError errors);
 	
 	public void syncUser(Map<String,String> olatPropertyMap, Identity identity);
 	

@@ -23,6 +23,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.fail;
 
+import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -35,13 +36,14 @@ import javax.naming.directory.Attribute;
 import javax.naming.directory.Attributes;
 import javax.naming.ldap.LdapContext;
 
+import org.junit.Assert;
 import org.junit.Assume;
+import org.junit.Ignore;
+import org.junit.Rule;
 import org.junit.Test;
 import org.olat.admin.user.delete.service.UserDeletionManager;
 import org.olat.basesecurity.BaseSecurity;
-import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.basesecurity.SecurityGroup;
-import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.id.Identity;
 import org.olat.core.id.User;
@@ -50,6 +52,8 @@ import org.olat.ldap.model.LDAPUser;
 import org.olat.test.OlatTestCase;
 import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.zapodot.junit.ldap.EmbeddedLdapRule;
+import org.zapodot.junit.ldap.EmbeddedLdapRuleBuilder;
 
 
 /**
@@ -67,26 +71,156 @@ public class LDAPLoginTest extends OlatTestCase {
 	@Autowired
 	private LDAPDAO ldapDao;
 	@Autowired
+	private LDAPLoginManager ldapManager;
+	@Autowired
+	private BaseSecurity securityManager;
+	@Autowired
 	private LDAPLoginModule ldapLoginModule;
 	@Autowired
 	private LDAPSyncConfiguration syncConfiguration;
 	
+	@Rule
+	public EmbeddedLdapRule embeddedLdapRule = EmbeddedLdapRuleBuilder
+	        .newInstance()
+	        .usingDomainDsn("dc=olattest,dc=org")
+	        .importingLdifs("org/olat/ldap/junittestdata/olattest.ldif")
+	        .bindingToAddress("localhost")
+	        .bindingToPort(1389)
+	        .build();
+	
 	@Test
 	public void testSystemBind() {
 		Assume.assumeTrue(ldapLoginModule.isLDAPEnabled());
-
-		//edit olatextconfig.xml for testing
-		LDAPLoginManager ldapManager = (LDAPLoginManager) CoreSpringFactory.getBean(LDAPLoginManager.class);
+		
 		LdapContext ctx = ldapManager.bindSystem();
-		assertEquals(true, (ctx != null));
+		Assert.assertNotNull(ctx);
 	}
 	
 	@Test
+	public void testUserBind() throws NamingException {
+		Assume.assumeTrue(ldapLoginModule.isLDAPEnabled());
+
+		LDAPError errors = new LDAPError();
+		String uid = "mrohrer";
+		String userPW = "olat";
+		
+		//normal bind, should work
+		Attributes attrs = ldapManager.bindUser(uid, userPW, errors);
+		Assert.assertNotNull(attrs);
+		Assert.assertEquals("Rohrer", attrs.get("sn").get());
+
+		//wrong password, should fail
+		userPW = "haha";
+		attrs = ldapManager.bindUser(uid, userPW, errors);
+		Assert.assertNull(attrs);
+		Assert.assertEquals("Username or password incorrect", errors.get());
+
+		//wrong username, should fail
+		uid = "ruedisueli";
+		userPW = "olat";
+		attrs = ldapManager.bindUser(uid, userPW, errors);
+		Assert.assertNull(attrs);
+		Assert.assertEquals("Username or password incorrect", errors.get());
+
+		//no password, should fail
+		uid = "mrohrer";
+		userPW = null;
+		attrs = ldapManager.bindUser(uid, userPW, errors);
+		Assert.assertNull(attrs);
+		Assert.assertEquals("Username and password must be selected", errors.get());
+	}
+	
+	@Test @Ignore //need to sync the user
+	public void testCheckUser() {
+		Assume.assumeTrue(ldapLoginModule.isLDAPEnabled());
+
+		LDAPError errors = new LDAPError();
+
+		//should create error entry
+		String uid = "Administrator";
+		Attributes attrs = ldapManager.bindUser(uid, "olat", errors);
+		Identity identity = ldapManager.findIdentityByLdapAuthentication(attrs, errors);
+		Assert.assertEquals("findIdentyByLdapAuthentication: attrs::null", errors.get());
+
+		//should return identity, since is existing in OLAT and Managed by LDAP
+		uid = "mrohrer";
+		attrs = ldapManager.bindUser(uid, "olat", errors);
+		identity = ldapManager.findIdentityByLdapAuthentication(attrs, errors);
+		Assert.assertEquals(uid, identity.getName());
+		Assert.assertTrue(errors.isEmpty());
+	}
+	
+	@Test @Ignore //need to sync the user
+	public void testSyncUser(){
+		Assume.assumeTrue(ldapLoginModule.isLDAPEnabled());
+
+		Map<String,String> changedMap = new HashMap<String,String>();
+		LDAPError errors = new LDAPError();
+		
+		changedMap.put("userID", "kmeier");
+		changedMap.put("firstName", "Klaus");
+		changedMap.put("email", "kmeier@olat.org");
+		changedMap.put("institutionalName", "Informatik");
+		changedMap.put("homepage", "http://www.olat.org");
+		Identity identity = securityManager.findIdentityByName("kmeier");
+		ldapManager.syncUser(changedMap, identity);
+		
+		
+		changedMap.put("userID", "kmeier");
+		Attributes attrs = ldapManager.bindUser("kmeier", "olat", errors);
+		changedMap = ldapManager.prepareUserPropertyForSync(attrs, identity);
+		assertEquals(true, (changedMap==null));
+	}
+
+	@Test  @Ignore
+	public void testIdentityDeletedInLDAP(){
+		Assume.assumeTrue(ldapLoginModule.isLDAPEnabled());
+
+		List<Identity> deletList;
+		
+		//should be empty
+		LdapContext ctx = ldapManager.bindSystem(); 
+		deletList = ldapManager.getIdentitysDeletedInLdap(ctx);
+		assertEquals(0, (deletList.size()));
+		
+		// simulate closed session (user adding from startup job)
+		DBFactory.getInstance().intermediateCommit();
+		
+		//create some users in LDAPSecurityGroup
+		User user = UserManager.getInstance().createUser("grollia", "wa", "gorrila@olat.org");
+		Identity identity = securityManager.createAndPersistIdentityAndUser("gorilla", null,user, "LDAP", "gorrila");
+		SecurityGroup secGroup1 = securityManager.findSecurityGroupByName(LDAPConstants.SECURITY_GROUP_LDAP);
+		securityManager.addIdentityToSecurityGroup(identity, secGroup1);
+		user = UserManager.getInstance().createUser("wer", "immer", "immer@olat.org");
+		identity = securityManager.createAndPersistIdentityAndUser("der", null, user, "LDAP", "der");
+		securityManager.addIdentityToSecurityGroup(identity, secGroup1);
+		user = UserManager.getInstance().createUser("die", "da", "chaspi@olat.org");
+		identity = securityManager.createAndPersistIdentityAndUser("das", null, user, "LDAP", "das");
+		securityManager.addIdentityToSecurityGroup(identity, secGroup1);
+		
+		// simulate closed session
+		DBFactory.getInstance().intermediateCommit();
+				
+		//3 members in LDAP group but not existing in OLAT
+		deletList = ldapManager.getIdentitysDeletedInLdap(ctx);
+		assertEquals(3, (deletList.size()));
+		
+		//delete user in OLAT
+		securityManager.removeIdentityFromSecurityGroup(identity, secGroup1);
+		UserDeletionManager.getInstance().deleteIdentity(identity);
+
+		// simulate closed session
+		DBFactory.getInstance().intermediateCommit();
+
+		//2 members in LDAP group but not existing in OLAT
+		deletList = ldapManager.getIdentitysDeletedInLdap(ctx);
+		assertEquals(2, (deletList.size()));
+	}
+	
+	@Test @Ignore
 	public void testCreateUser() {
 		Assume.assumeTrue(ldapLoginModule.isLDAPEnabled());
 
-		LDAPLoginManager ldapManager = (LDAPLoginManager) CoreSpringFactory.getBean(LDAPLoginManager.class);
-		BaseSecurity securityManager = BaseSecurityManager.getInstance();
 		String uid = "mrohrer";
 		String userPW = "olat";
 		LDAPError errors = new LDAPError();
@@ -106,72 +240,13 @@ public class LDAPLoginTest extends OlatTestCase {
 		assertEquals(true, (securityManager.findIdentityByName(uid) != null));
 	}
 	
-	@Test
-	public void testUserBind() throws NamingException {
-		Assume.assumeTrue(ldapLoginModule.isLDAPEnabled());
-
-		LDAPLoginManager ldapManager = (LDAPLoginManager) CoreSpringFactory.getBean(LDAPLoginManager.class);
-		LDAPError errors = new LDAPError();
-		String uid = "mrohrer";
-		String userPW = "olat";
-		
-		//normal bind, should work
-		Attributes attrs = ldapManager.bindUser(uid, userPW, errors);
-		assertEquals("Rohrer", attrs.get("sn").get());
-
-		//wrong password, should fail
-		userPW = "haha";
-		attrs = ldapManager.bindUser(uid, userPW, errors);
-		assertEquals("Username or passwort incorrect", errors.get());
-
-		//wrong username, should fail
-		uid = "ruedisueli";
-		userPW = "olat";
-		attrs = ldapManager.bindUser(uid, userPW, errors);
-		assertEquals("Username or passwort incorrect", errors.get());
-
-		//no password, should fail
-		uid = "mrohrer";
-		userPW = null;
-		attrs = ldapManager.bindUser(uid, userPW, errors);
-		assertEquals("Username and passwort must be selected", errors.get());
-	}
-	
-	
-	@Test
-	public void testCheckUser() {
-		Assume.assumeTrue(ldapLoginModule.isLDAPEnabled());
-
-		LDAPLoginManager ldapManager = (LDAPLoginManager) CoreSpringFactory.getBean(LDAPLoginManager.class);
-		LDAPError errors = new LDAPError();
-
-		//should create error entry, since Administrator is existing in OLAT but not Managed by LDAP
-		String uid = "Administrator";
-		Identity identity = ldapManager.findIdentyByLdapAuthentication(uid, errors);
-		assertEquals("findIdentyByLdapAuthentication: User with username::Administrator exist but not Managed by LDAP", errors.get());
-
-		//should return null, since user duda is not existing
-		uid = "duda";
-		identity = ldapManager.findIdentyByLdapAuthentication(uid, errors);
-		assertEquals(true, (identity==null));
-		assertEquals(true, errors.isEmpty());
-
-		//should return identity, since is existing in OLAT and Managed by LDAP
-		uid = "mrohrer";
-		identity = ldapManager.findIdentyByLdapAuthentication(uid, errors);
-		assertEquals(uid, identity.getName());
-		assertEquals(true, errors.isEmpty());
-	}
-	
-	@Test
+	@Test  @Ignore
 	public void testCreateChangedAttrMap() {
 		Assume.assumeTrue(ldapLoginModule.isLDAPEnabled());
 
 		// simulate closed session (user adding from startup job)
 		DBFactory.getInstance().intermediateCommit();
 
-		LDAPLoginManager ldapManager = (LDAPLoginManager) CoreSpringFactory.getBean(LDAPLoginManager.class);
-		BaseSecurity securityManager = BaseSecurityManager.getInstance();
 		String uid = "kmeier";
 		String pwd = "olat";
 		LDAPError errors = new LDAPError();
@@ -222,78 +297,7 @@ public class LDAPLoginTest extends OlatTestCase {
 		assertEquals(true, (changedAttrMap==null));
 	}
 	
-	@Test
-	public void testSyncUser(){
-		Assume.assumeTrue(ldapLoginModule.isLDAPEnabled());
-
-		LDAPLoginManager ldapManager = (LDAPLoginManager) CoreSpringFactory.getBean(LDAPLoginManager.class);
-		BaseSecurity securityManager = BaseSecurityManager.getInstance();
-		Map<String,String> changedMap = new HashMap<String,String>();
-		LDAPError errors = new LDAPError();
-		
-		changedMap.put("userID", "kmeier");
-		changedMap.put("firstName", "Klaus");
-		changedMap.put("email", "kmeier@olat.org");
-		changedMap.put("institutionalName", "Informatik");
-		changedMap.put("homepage", "http://www.olat.org");
-		Identity identity = securityManager.findIdentityByName("kmeier");
-		ldapManager.syncUser(changedMap, identity);
-		
-		
-		changedMap.put("userID", "kmeier");
-		Attributes attrs = ldapManager.bindUser("kmeier", "olat", errors);
-		changedMap = ldapManager.prepareUserPropertyForSync(attrs, identity);
-		assertEquals(true, (changedMap==null));
-	}
-
-	@Test
-	public void testIdentityDeletedInLDAP(){
-		Assume.assumeTrue(ldapLoginModule.isLDAPEnabled());
-
-		LDAPLoginManager ldapManager = (LDAPLoginManager) CoreSpringFactory.getBean(LDAPLoginManager.class);
-		BaseSecurity securityManager = BaseSecurityManager.getInstance();
-		List<Identity> deletList;
-		
-		//should be empty
-		LdapContext ctx = ldapManager.bindSystem(); 
-		deletList = ldapManager.getIdentitysDeletedInLdap(ctx);
-		assertEquals(0, (deletList.size()));
-		
-		// simulate closed session (user adding from startup job)
-		DBFactory.getInstance().intermediateCommit();
-		
-		//create some users in LDAPSecurityGroup
-		User user = UserManager.getInstance().createUser("grollia", "wa", "gorrila@olat.org");
-		Identity identity = securityManager.createAndPersistIdentityAndUser("gorilla", null,user, "LDAP", "gorrila");
-		SecurityGroup secGroup1 = securityManager.findSecurityGroupByName(LDAPConstants.SECURITY_GROUP_LDAP);
-		securityManager.addIdentityToSecurityGroup(identity, secGroup1);
-		user = UserManager.getInstance().createUser("wer", "immer", "immer@olat.org");
-		identity = securityManager.createAndPersistIdentityAndUser("der", null, user, "LDAP", "der");
-		securityManager.addIdentityToSecurityGroup(identity, secGroup1);
-		user = UserManager.getInstance().createUser("die", "da", "chaspi@olat.org");
-		identity = securityManager.createAndPersistIdentityAndUser("das", null, user, "LDAP", "das");
-		securityManager.addIdentityToSecurityGroup(identity, secGroup1);
-		
-		// simulate closed session
-		DBFactory.getInstance().intermediateCommit();
-				
-		//3 members in LDAP group but not existing in OLAT
-		deletList = ldapManager.getIdentitysDeletedInLdap(ctx);
-		assertEquals(3, (deletList.size()));
-		
-		//delete user in OLAT
-		securityManager.removeIdentityFromSecurityGroup(identity, secGroup1);
-		UserDeletionManager.getInstance().deleteIdentity(identity);
-
-		// simulate closed session
-		DBFactory.getInstance().intermediateCommit();
-
-		//2 members in LDAP group but not existing in OLAT
-		deletList = ldapManager.getIdentitysDeletedInLdap(ctx);
-		assertEquals(2, (deletList.size()));
-	}
-	
-	@Test
+	@Test  @Ignore
 	public void testCronSync() throws Exception {
 		Assume.assumeTrue(ldapLoginModule.isLDAPEnabled());
 
@@ -302,14 +306,14 @@ public class LDAPLoginTest extends OlatTestCase {
 		List<Attributes> newLdapUserList;
 		Map<Identity, Map<String, String>> changedMapIdenityMap;
 		List<Identity> deletedUserList;
-		String user;
+		
 		LDAPError errors = new LDAPError();
-		BaseSecurity securityManager = BaseSecurityManager.getInstance();
-		LDAPLoginManager ldapMan = (LDAPLoginManager) CoreSpringFactory.getBean(LDAPLoginManager.class);
 
 		//find user changed after 2010,01,09,00,00
-		ctx = ldapMan.bindSystem();
-		Date syncDate = new Date(110,00,10,00,00);
+		ctx = ldapManager.bindSystem();
+		Calendar cal = Calendar.getInstance();
+		cal.set(2010, 0, 10, 0, 0, 0);
+		Date syncDate = cal.getTime();
 		ldapUserList = ldapDao.getUserAttributesModifiedSince(syncDate, ctx);
 		assertEquals(1, ldapUserList.size());
 		
@@ -318,7 +322,6 @@ public class LDAPLoginTest extends OlatTestCase {
 		ldapUserList = ldapDao.getUserAttributesModifiedSince(syncDate, ctx);
 		assertEquals(6, ldapUserList.size());
 
-
 		//prepare create- and sync-Lists for each user from defined syncTime
 		Identity idenity;
 		Map<String,String> changedAttrMap;
@@ -326,10 +329,10 @@ public class LDAPLoginTest extends OlatTestCase {
 		changedMapIdenityMap = new HashMap<Identity, Map<String, String>>();
 		for (int i = 0; i < ldapUserList.size(); i++) {
 			Attributes userAttrs = ldapUserList.get(i).getAttributes();
-			user = getAttributeValue(userAttrs.get(syncConfiguration.getOlatPropertyToLdapAttribute("userID")));
-			idenity = ldapMan.findIdentyByLdapAuthentication(user, errors);
+			String user = getAttributeValue(userAttrs.get(syncConfiguration.getOlatPropertyToLdapAttribute("userID")));
+			idenity = ldapManager.findIdentityByLdapAuthentication(userAttrs, errors);
 			if (idenity != null) {
-				changedAttrMap = ldapMan.prepareUserPropertyForSync(userAttrs, idenity);
+				changedAttrMap = ldapManager.prepareUserPropertyForSync(userAttrs, idenity);
 				if(changedAttrMap!= null) changedMapIdenityMap.put(idenity, changedAttrMap);
 			} else  {
 				if(errors.isEmpty()) {
@@ -352,7 +355,7 @@ public class LDAPLoginTest extends OlatTestCase {
 		securityManager.addIdentityToSecurityGroup(identity1, secGroup1);
 
 		//create User to Delete List
-		deletedUserList = ldapMan.getIdentitysDeletedInLdap(ctx);
+		deletedUserList = ldapManager.getIdentitysDeletedInLdap(ctx);
 		assertEquals(4, (deletedUserList.size()));
 
 
@@ -360,20 +363,20 @@ public class LDAPLoginTest extends OlatTestCase {
 		Iterator<Identity> itrIdent = changedMapIdenityMap.keySet().iterator();
 		while(itrIdent.hasNext()){
 			Identity ident = itrIdent.next();
-			ldapMan.syncUser(changedMapIdenityMap.get(ident), ident);
+			ldapManager.syncUser(changedMapIdenityMap.get(ident), ident);
 		}
 
 
 		//create all users
 		for (int i = 0; i < newLdapUserList.size(); i++) {
-			ldapMan.createAndPersistUser(newLdapUserList.get(i));
+			ldapManager.createAndPersistUser(newLdapUserList.get(i));
 		}
 
 		//delete all users
-		ldapMan.deletIdentities(deletedUserList);
+		ldapManager.deletIdentities(deletedUserList);
 		
 		//check if users are deleted
-		deletedUserList = ldapMan.getIdentitysDeletedInLdap(ctx);
+		deletedUserList = ldapManager.getIdentitysDeletedInLdap(ctx);
 		assertEquals(0, (deletedUserList.size()));
 
 	}
