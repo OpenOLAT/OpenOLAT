@@ -30,9 +30,12 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.List;
+import java.util.TimeZone;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
@@ -78,6 +81,10 @@ public class QTI21ResultsExportMediaResource implements MediaResource {
 	
 	private static final String DATA = "export/userdata/";
 	private static final String SEP = File.separator;
+	private static SimpleDateFormat displayDateFormat = new SimpleDateFormat("HH:mm:ss");
+	static {
+		displayDateFormat.setTimeZone(TimeZone.getTimeZone("GMT"));
+	}
 	
 	private VelocityHelper velocityHelper;
 	
@@ -93,7 +100,7 @@ public class QTI21ResultsExportMediaResource implements MediaResource {
 
 	public QTI21ResultsExportMediaResource(CourseEnvironment courseEnv, List<Identity> identities, 
 			QTICourseNode courseNode, QTI21Service qtiService, UserRequest ureq) {
-		this.title = "qti12export";	
+		this.title = "qti21export";	
 		this.courseNode = courseNode;
 		this.identities = identities;
 		this.velocityHelper = VelocityHelper.getInstance();
@@ -167,14 +174,14 @@ public class QTI21ResultsExportMediaResource implements MediaResource {
 				for (AssessmentTestSession session : sessions) {
 					
 					Long assessmentID = session.getKey();
-					String idPath = idDir + assessmentID + SEP;
+					String idPath = idDir + translator.translate("table.user.attempt") + (sessions.indexOf(session)+1) + SEP;
 					createZipDirectory(zout, idPath);
 					
 					// content of result table
 					ResultDetail resultDetail = new ResultDetail(assessmentID.toString(), session.getCreationDate(),
-							session.getDuration(), session.getScore().floatValue(), 
+							displayDateFormat.format(new Date(session.getDuration())), session.getScore().floatValue(), 
 							createPassedIcons(session.getPassed() == null ? true : session.getPassed()),
-							assessmentID + SEP + assessmentID + ".html");
+							idPath.replace(idDir, "") + assessmentID + ".html");
 					
 					assessments.add(resultDetail);
 					//WindowControlMocker needed because this is not a controller
@@ -279,7 +286,7 @@ public class QTI21ResultsExportMediaResource implements MediaResource {
 		if (assessments.size() > 0) ctx.put("hasResults", Boolean.TRUE);
 		
 		String template = FileUtils.load(QTI21ResultsExportMediaResource.class
-				.getResourceAsStream("_content/qti12listing.html"), "utf-8");
+				.getResourceAsStream("_content/qtiListing.html"), "utf-8");
 
 		return velocityHelper.evaluateVTL(template, ctx);
 	}
@@ -298,7 +305,7 @@ public class QTI21ResultsExportMediaResource implements MediaResource {
 		ctx.put("assessedMembers", assessedMembers);
 
 		String template = FileUtils.load(QTI21ResultsExportMediaResource.class
-				.getResourceAsStream("_content/qti12userlisting.html"), "utf-8");
+				.getResourceAsStream("_content/qtiUserlisting.html"), "utf-8");
 
 		return velocityHelper.evaluateVTL(template, ctx);
 	}

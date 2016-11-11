@@ -30,9 +30,12 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.List;
+import java.util.TimeZone;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
@@ -68,6 +71,10 @@ public class QTI12ResultsExportMediaResource implements MediaResource {
 	
 	private static final String DATA = "export/userdata/";
 	private static final String SEP = File.separator;
+	private static final SimpleDateFormat displayDateFormat = new SimpleDateFormat("HH:mm:ss");
+	static {
+		displayDateFormat.setTimeZone(TimeZone.getTimeZone("GMT"));
+	}
 	
 	private VelocityHelper velocityHelper;
 	
@@ -162,15 +169,15 @@ public class QTI12ResultsExportMediaResource implements MediaResource {
 				for (QTIResultSet qtiResultSet : resultSets) {
 					
 					Long assessmentID = qtiResultSet.getAssessmentID();
-					String idPath = idDir + assessmentID + SEP;
+					String idPath = idDir + translator.translate("table.user.attempt") + (resultSets.indexOf(qtiResultSet)+1) + SEP;
 					createZipDirectory(zout, idPath);
 					
-					String linkToHTML = createHTMLfromQTIResultSet(idPath, zout, ureq, identity, qtiResultSet);
+					String linkToHTML = createHTMLfromQTIResultSet(idPath, idDir, zout, ureq, identity, qtiResultSet);
 					
 					// content of result table
 					ResultDetail resultDetail = new ResultDetail(createLink(String.valueOf(assessmentID), linkToHTML, true),
-							qtiResultSet.getCreationDate(), qtiResultSet.getDuration(), qtiResultSet.getScore(),
-							createPassedIcons(qtiResultSet.getIsPassed()), linkToHTML);
+							qtiResultSet.getCreationDate(), displayDateFormat.format(new Date(qtiResultSet.getDuration())),
+							qtiResultSet.getScore(), createPassedIcons(qtiResultSet.getIsPassed()), linkToHTML);
 					
 					assessments.add(resultDetail);
 					
@@ -242,7 +249,7 @@ public class QTI12ResultsExportMediaResource implements MediaResource {
 		if (assessments.size() > 0) ctx.put("hasResults", Boolean.TRUE);
 		
 		String template = FileUtils.load(QTI12ResultsExportMediaResource.class
-				.getResourceAsStream("_content/qti12listing.html"), "utf-8");
+				.getResourceAsStream("_content/qtiListing.html"), "utf-8");
 
 		return velocityHelper.evaluateVTL(template, ctx);
 	}
@@ -261,7 +268,7 @@ public class QTI12ResultsExportMediaResource implements MediaResource {
 		ctx.put("assessedMembers", assessedMembers);
 
 		String template = FileUtils.load(QTI12ResultsExportMediaResource.class
-				.getResourceAsStream("_content/qti12userlisting.html"), "utf-8");
+				.getResourceAsStream("_content/qtiUserlisting.html"), "utf-8");
 
 		return velocityHelper.evaluateVTL(template, ctx);
 	}
@@ -276,7 +283,7 @@ public class QTI12ResultsExportMediaResource implements MediaResource {
 		return fDoc;
 	}
 	
-	private String createHTMLfromQTIResultSet(String idPath, ZipOutputStream zout, UserRequest ureq,
+	private String createHTMLfromQTIResultSet(String idPath, String idDir, ZipOutputStream zout, UserRequest ureq,
 			Identity assessedIdentity, QTIResultSet resultSet) throws IOException {
 
 		Document doc = FilePersister.retreiveResultsReporting(assessedIdentity,
@@ -294,7 +301,7 @@ public class QTI12ResultsExportMediaResource implements MediaResource {
 		convertToZipEntry(zout, html, resultsHTML);		
 		convertToZipEntry(zout, xml, resourceXML);
 		
-		return resultSet.getAssessmentID() + "/" + resultSet.getAssessmentID() + ".html";
+		return idPath.replace(idDir, "") + resultSet.getAssessmentID() + ".html";
 	}
 	
 	private void fsToZip(ZipOutputStream zout, final Path sourceFolder, final String targetPath) throws IOException {

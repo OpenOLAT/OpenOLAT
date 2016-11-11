@@ -26,7 +26,7 @@ public class ResultDetail {
 	private String assessmentID;
 	private Date assessmentDate;
 	private String dateCaption;
-	private long duration;
+	private String duration;
 	private String durationCaption;
 	private float score;
 	private String scoreCaption;
@@ -36,7 +36,7 @@ public class ResultDetail {
 	public ResultDetail() {
 	}
 
-	public ResultDetail(String assessmentID, Date assessmentDate, long duration, float score, String passed, String link) {
+	public ResultDetail(String assessmentID, Date assessmentDate, String duration, float score, String passed, String link) {
 		super();
 		this.assessmentID = assessmentID;
 		this.assessmentDate = assessmentDate;
@@ -47,16 +47,6 @@ public class ResultDetail {
 	}
 
 
-
-	public ResultDetail(String assessmentID, String dateCaption, String durationCaption, String scoreCaption, String passed) {
-		super();
-		this.assessmentID = assessmentID;
-		this.dateCaption = dateCaption;
-		this.durationCaption = durationCaption;
-		this.scoreCaption = scoreCaption;
-		this.passed = passed;
-	}
-	
 	
 
 	public String getLink() {
@@ -107,11 +97,11 @@ public class ResultDetail {
 		this.assessmentDate = assessmentDate;
 	}
 
-	public long getDuration() {
+	public String getDuration() {
 		return duration;
 	}
 
-	public void setDuration(long duration) {
+	public void setDuration(String duration) {
 		this.duration = duration;
 	}
 
