@@ -165,7 +165,7 @@ public class VideoListingController extends FormBasicController implements Activ
 	private void doShowVideo(UserRequest ureq, Long id) {
 		RepositoryEntry videoEntry = repositoryManager.lookupRepositoryEntry(id);
 		if (repositoryManager.isAllowed(ureq, videoEntry).canLaunch()) {
-			VideoDisplayController videoDisplayCtr = new VideoDisplayController(ureq, getWindowControl(), videoEntry, true, true, true, null, false, true, null);
+			VideoDisplayController videoDisplayCtr = new VideoDisplayController(ureq, getWindowControl(), videoEntry, true, true, true, true, null, false, true, null);
 			listenTo(videoDisplayCtr);
 			toolbarPanel.pushController(videoEntry.getDisplayname(), videoDisplayCtr);
 			// Update launch counter

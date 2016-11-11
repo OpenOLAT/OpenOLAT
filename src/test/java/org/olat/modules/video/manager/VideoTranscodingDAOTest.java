@@ -75,5 +75,26 @@ public class VideoTranscodingDAOTest extends OlatTestCase {
 		Assert.assertEquals(vTranscoding, vTranscodingList2.get(0));
 		
 	}
-
+	
+	@Test
+	public void deleteVideoTranscoding() {
+//		void deleteVideoTranscoding(VideoTranscoding videoTranscoding) {
+			OLATResource resource = JunitTestHelper.createRandomResource();
+			// prepare transcodings
+			VideoTranscoding vTranscoding1 = videoTranscodingDao.createVideoTranscoding(resource, 1080, "mp4");
+			videoTranscodingDao.createVideoTranscoding(resource, 720, "mp4");
+			videoTranscodingDao.createVideoTranscoding(resource, 720, "mp4");
+			videoTranscodingDao.createVideoTranscoding(resource, 720, "mp4");
+			dbInstance.commitAndCloseSession();
+			// delete single transcoding
+			videoTranscodingDao.deleteVideoTranscoding(vTranscoding1);
+			dbInstance.commitAndCloseSession();
+			List<VideoTranscoding> results = videoTranscodingDao.getVideoTranscodings(resource);
+			Assert.assertTrue(results.size() == 3);
+			// delte all transcodings of resource
+			videoTranscodingDao.deleteVideoTranscodings(resource);
+			dbInstance.commitAndCloseSession();
+			results = videoTranscodingDao.getVideoTranscodings(resource);
+			Assert.assertTrue(results.size() == 0);
+	}
 }

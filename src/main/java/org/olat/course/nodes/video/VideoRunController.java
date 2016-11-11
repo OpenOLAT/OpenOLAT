@@ -154,13 +154,13 @@ public class VideoRunController extends BasicController {
 		
 		switch(config.getStringValue(VideoEditController.CONFIG_KEY_DESCRIPTION_SELECT,"none")) {
 			case "resourceDescription":
-					videoDispCtr = new VideoDisplayController(ureq, getWindowControl(), videoEntry, autoplay, comments, ratings, ident, false, false, "");
+					videoDispCtr = new VideoDisplayController(ureq, getWindowControl(), videoEntry, autoplay, comments, ratings, true, ident, false, false, "");
 					break;
 			case "customDescription":
-					videoDispCtr = new VideoDisplayController(ureq, getWindowControl(), videoEntry, autoplay, comments, ratings, ident, true, false, customtext);
+					videoDispCtr = new VideoDisplayController(ureq, getWindowControl(), videoEntry, autoplay, comments, ratings, true, ident, true, false, customtext);
 					break;
 			case "none":
-					videoDispCtr = new VideoDisplayController(ureq, getWindowControl(), videoEntry, autoplay, comments, ratings, ident, true, false, "");
+					videoDispCtr = new VideoDisplayController(ureq, getWindowControl(), videoEntry, autoplay, comments, ratings, true, ident, true, false, "");
 					break;
 		}		
 		listenTo(videoDispCtr);

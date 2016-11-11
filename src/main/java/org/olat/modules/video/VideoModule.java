@@ -52,7 +52,8 @@ public class VideoModule extends AbstractSpringModule {
 	private static final String VIDEOCOURSENODE_ENABLED = "video.coursenode.enabled";
 	private static final String VIDEOTRANSCODING_ENABLED = "video.transcoding.enabled";
 	private static final String VIDEOTRANSCODING_LOCAL = "video.transcoding.local";
-
+	private static final String TRANSCODING_RESOLUTIONS = "video.transcoding.resolutions";
+	private static final String PREFERRED_RESOLUTION = "video.transcoding.resolution.preferred";
 
 	@Value("${video.enabled:true}")
 	private boolean enabled;
@@ -72,8 +73,8 @@ public class VideoModule extends AbstractSpringModule {
 	@Value("${video.transcoding.resolution.preferred}")
 	private String transcodingPreferredResolutionConf;
 	
-	private int[] transcodingResolutionsArr = new int[] { 1080,720,480,360 };
-	private Integer preferredDefaultResolution = new Integer(720);
+	private int[] transcodingResolutionsArr; //= new int[] { 1080,720,480,360 };
+	private Integer preferredDefaultResolution;// = new Integer(720);
 
 
 	@Autowired
@@ -126,6 +127,12 @@ public class VideoModule extends AbstractSpringModule {
 		if(StringHelper.containsNonWhitespace(localTranscodingObj)) {
 			transcodingLocal = "true".equals(localTranscodingObj);
 		}
+		
+		String localPreferredResolutionObj = getStringPropertyValue(PREFERRED_RESOLUTION, true);
+		if(StringHelper.containsNonWhitespace(localPreferredResolutionObj)) {
+			preferredDefaultResolution =  getIntPropertyValue(PREFERRED_RESOLUTION);
+		}
+		
 
 		log.info("video.enabled=" + isEnabled());
 		log.info("video.coursenode.enabled=" + isCoursenodeEnabled());
@@ -149,7 +156,18 @@ public class VideoModule extends AbstractSpringModule {
 	 */
 	public int[] getTranscodingResolutions() {
 		return transcodingResolutionsArr;
-		//TODO: implement GUI for reading/Setting
+	}
+	
+	/**
+	 * set the active resolutions for the transcoding process
+	 */
+	public void setTranscodingResolutions(int[] resolutions){
+		this.transcodingResolutionsArr = resolutions;
+		String resArr = Arrays.toString(this.transcodingResolutionsArr);
+		resArr.replace("[", "");
+		resArr.replace("]", "");
+		resArr.replace(" ", "");
+		setStringProperty(TRANSCODING_RESOLUTIONS, resArr, true);
 	}
 	
 	/**
@@ -158,9 +176,16 @@ public class VideoModule extends AbstractSpringModule {
 	 */
 	public Integer getPreferredDefaultResolution() {
 		return preferredDefaultResolution;
-		//TODO: implement GUI for reading/Setting
 	}
 
+	/**
+	 * Set the system default resolution
+	 * @param 
+	 */
+	public void setPreferedTranscodingResolution(Integer value) {
+		preferredDefaultResolution = value;
+		setIntProperty(PREFERRED_RESOLUTION, preferredDefaultResolution, true);
+	}
 	/**
 	 * The base container where the transcoded videos are stored. This config can only be set in
 	 * olat.localproperties, see "video.transcoding.dir"
@@ -175,13 +200,11 @@ public class VideoModule extends AbstractSpringModule {
 		} 
 		if (transcodingEnabled) {
 			log.error("Error, no valid transcoding dir. Disabling transcoding. video.transcoding.dir=" + transcodingDir);
-			// only disable variabe, don't store it in persisted properties
+			// only disable variable, don't store it in persisted properties
 			transcodingEnabled = false;
 		}
 		return null;
 	}
-
-
 	
 	/**
 	 * @return null to indicate that taskset is disabled or the -c options to control the number of cores, e.g. "0,1"
@@ -212,7 +235,6 @@ public class VideoModule extends AbstractSpringModule {
 
 	public boolean isCoursenodeEnabled() {
 		return (coursenodeEnabled && enabled);
-
 	}
 
 
@@ -229,12 +251,10 @@ public class VideoModule extends AbstractSpringModule {
 	public void setTranscodingEnabled(boolean transcodingEnabled) {
 		this.transcodingEnabled = transcodingEnabled;
 		setStringProperty(VIDEOTRANSCODING_ENABLED, Boolean.toString(transcodingEnabled), true);
-		//TODO: check all video resources if there are missing versions
 	}
 
 	public boolean isTranscodingLocal() {		
 		return isTranscodingEnabled() && transcodingLocal;
-		//TODO: implement GUI for reading/Setting
 	}
 
 	public void setTranscoding(boolean transcodingLocal) {

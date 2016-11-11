@@ -26,31 +26,34 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.translator.Translator;
 
 /**
- * Tablemodel for qualityversions listing 
+ * Table Model for Transcoding Queue listing 
  *
- * Initial date: 01.04.2015<br>
- * @author Dirk Furrer, dirk.furrer@frentix.com, http://www.frentix.com
+ * Initial date: 30.09.2016
+ * @author Fabian Kiefer, fabian.kiefer@frentix.com, http://www.frentix.com
  *
  */
-public class VideoQualityTableModel extends DefaultFlexiTableDataModel<QualityTableRow>{
+public class TranscodingQueueTableModel extends DefaultFlexiTableDataModel<TranscodingQueueTableRow>{
 
 	protected FormUIFactory uifactory = FormUIFactory.getInstance();
 	private Translator translator;
-	public VideoQualityTableModel(FlexiTableColumnModel columnModel, Translator translator) {
+	public TranscodingQueueTableModel(FlexiTableColumnModel columnModel, Translator translator) {
 		super(columnModel);
 		this.translator = translator;
 	}
 
 	@Override
-	public VideoQualityTableModel createCopyWithEmptyList() {
-		return new VideoQualityTableModel(getTableColumnModel(), translator);
+	public TranscodingQueueTableModel createCopyWithEmptyList() {
+		return new TranscodingQueueTableModel(getTableColumnModel(), translator);
 	}
 
 	@Override
 	public Object getValueAt(int row, int col) {
-		QualityTableRow video = getObject(row);
-		switch(QualityTableCols.values()[col]) {
-			case resolution: return video.getResolution();
+		TranscodingQueueTableRow video = getObject(row);
+		switch(TranscodingQueueTableCols.values()[col]) {
+			case resid: return video.getResid();
+			case displayname: return video.getDisplayname();
+			case creator: return video.getCreator();
+			case creationDate: return video.getCreationDate();
 			case dimension: return video.getDimension();
 			case size: return video.getSize();
 			case format: return video.getFormat();
@@ -59,8 +62,11 @@ public class VideoQualityTableModel extends DefaultFlexiTableDataModel<QualityTa
 		}
 	}
 
-	public enum QualityTableCols implements FlexiSortableColumnDef {
-		resolution("quality.table.header.resolution"),
+	public enum TranscodingQueueTableCols implements FlexiSortableColumnDef {
+		resid("queue.table.header.resid"),
+		displayname("queue.table.header.displayname"),
+		creator("queue.table.header.creator"),
+		creationDate("queue.table.header.creationDate"),
 		dimension("quality.table.header.dimension"),
 		size("quality.table.header.size"),
 		format("quality.table.header.format"),
@@ -68,7 +74,7 @@ public class VideoQualityTableModel extends DefaultFlexiTableDataModel<QualityTa
 
 		private final String i18nKey;
 
-		private QualityTableCols(String i18nKey) {
+		private TranscodingQueueTableCols(String i18nKey) {
 			this.i18nKey = i18nKey;
 		}
 

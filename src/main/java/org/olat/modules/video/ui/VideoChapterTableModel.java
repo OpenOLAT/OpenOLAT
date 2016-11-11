@@ -26,54 +26,43 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.translator.Translator;
 
 /**
- * Tablemodel for qualityversions listing 
  *
- * Initial date: 01.04.2015<br>
- * @author Dirk Furrer, dirk.furrer@frentix.com, http://www.frentix.com
+ * Initial date: 21.10.2016<br>
+ * @author Fabian Kiefer, fabian.kiefer@frentix.com, http://www.frentix.com
  *
  */
-public class VideoQualityTableModel extends DefaultFlexiTableDataModel<QualityTableRow>{
+public class VideoChapterTableModel extends DefaultFlexiTableDataModel<VideoChapterTableRow>{
 
 	protected FormUIFactory uifactory = FormUIFactory.getInstance();
 	private Translator translator;
-	public VideoQualityTableModel(FlexiTableColumnModel columnModel, Translator translator) {
+	public VideoChapterTableModel(FlexiTableColumnModel columnModel, Translator translator) {
 		super(columnModel);
 		this.translator = translator;
 	}
 
 	@Override
-	public VideoQualityTableModel createCopyWithEmptyList() {
-		return new VideoQualityTableModel(getTableColumnModel(), translator);
+	public VideoChapterTableModel createCopyWithEmptyList() {
+		return new VideoChapterTableModel(getTableColumnModel(), translator);
 	}
 
 	@Override
 	public Object getValueAt(int row, int col) {
-		QualityTableRow video = getObject(row);
-		switch(QualityTableCols.values()[col]) {
-			case resolution: return video.getResolution();
-			case dimension: return video.getDimension();
-			case size: return video.getSize();
-			case format: return video.getFormat();
-			case delete: return video.getDeleteLink();
+		VideoChapterTableRow chapter = getObject(row);
+		switch(ChapterTableCols.values()[col]) {
+			case chapterName: return chapter.getChapterName();
+			case intervals: return chapter.getIntervals();
 			default: return "";
 		}
 	}
 
-	public enum QualityTableCols implements FlexiSortableColumnDef {
-		resolution("quality.table.header.resolution"),
-		dimension("quality.table.header.dimension"),
-		size("quality.table.header.size"),
-		format("quality.table.header.format"),
-		delete("quality.table.header.delete");
+	public enum ChapterTableCols implements FlexiSortableColumnDef {
+		chapterName("video.chapter.chapterName"),
+		intervals("video.chapter.intervals");
 
 		private final String i18nKey;
 
-		private QualityTableCols(String i18nKey) {
+		private ChapterTableCols(String i18nKey) {
 			this.i18nKey = i18nKey;
-		}
-
-		public String i18nKey() {
-			return i18nKey;
 		}
 
 		@Override
@@ -89,6 +78,10 @@ public class VideoQualityTableModel extends DefaultFlexiTableDataModel<QualityTa
 		@Override
 		public String sortKey() {
 			return name();
+		}
+		
+		public String i18nKey() {
+			return i18nKey;
 		}
 	}
 

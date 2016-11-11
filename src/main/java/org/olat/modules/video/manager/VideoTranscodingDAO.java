@@ -22,6 +22,8 @@ package org.olat.modules.video.manager;
 import java.util.Date;
 import java.util.List;
 
+import javax.persistence.EntityNotFoundException;
+
 import org.olat.core.commons.persistence.DB;
 import org.olat.modules.video.VideoTranscoding;
 import org.olat.modules.video.model.VideoTranscodingImpl;
@@ -89,12 +91,17 @@ public class VideoTranscodingDAO {
 	}
 
 	/**
-	 * Delete a specifig video transcoding version
+	 * Delete a specific video transcoding version
 	 * 
 	 * @param videoTranscoding
 	 */
 	void deleteVideoTranscoding(VideoTranscoding videoTranscoding) {
-		dbInstance.getCurrentEntityManager().remove(videoTranscoding);
+		try {
+			videoTranscoding = dbInstance.getCurrentEntityManager().getReference(VideoTranscodingImpl.class, videoTranscoding.getKey());
+			dbInstance.getCurrentEntityManager().remove(videoTranscoding);
+		} catch (EntityNotFoundException e) {
+			// already deleted
+		}
 	}
 
 	/**

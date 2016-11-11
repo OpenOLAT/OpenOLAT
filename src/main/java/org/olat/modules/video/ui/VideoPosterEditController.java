@@ -47,7 +47,6 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class VideoPosterEditController extends FormBasicController {
 
-
 	@Autowired
 	private VideoManager videoManager;
 	private VFSLeaf posterFile;
@@ -92,7 +91,6 @@ public class VideoPosterEditController extends FormBasicController {
 
 	@Override
 	protected void formOK(UserRequest ureq) {
-		// TODO Auto-generated method stub
 
 	}
 
@@ -106,7 +104,6 @@ public class VideoPosterEditController extends FormBasicController {
 	}
 	@Override
 	protected void doDispose() {
-		// TODO Auto-generated method stub
 
 	}
 
@@ -118,9 +115,12 @@ public class VideoPosterEditController extends FormBasicController {
 				flc.setDirty(true);
 				cmc.deactivate();
 				VFSLeaf newPosterFile = posterFile;
-				videoManager.setPosterframe(videoResource, newPosterFile);
+				
 				if(source == posterUploadForm){
+					videoManager.setPosterframeResizeUploadfile(videoResource, newPosterFile);						
 					posterFile.delete();
+				} else {					
+					videoManager.setPosterframe(videoResource, newPosterFile);
 				}
 				updatePosterImage(ureq, videoResource);
 				// cleanup controllers

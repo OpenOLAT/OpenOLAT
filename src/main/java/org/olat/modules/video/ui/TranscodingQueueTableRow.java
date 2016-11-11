@@ -19,19 +19,22 @@
  */
 package org.olat.modules.video.ui;
 
+import java.util.Date;
+
 import org.olat.core.gui.components.form.flexible.FormUIFactory;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 
 /**
- * Row in the table of videoconfiguration to list the different quality-versiosn of a video
- * 
- * Initial date: 07.04.2015<br>
- * @author dfurrer, dirk.furrer@frentix.com, http://www.frentix.com
+ * Initial date: 30.09.2016<br>
+ * @author fkiefer, fabian.kiefer@frentix.com, http://www.frentix.com
  *
  */
-public class QualityTableRow {
+public class TranscodingQueueTableRow {
 
-	private FormLink resolution;
+	private String resid;
+	private String displayname;
+	private FormLink creator;
+	private Date creationDate;
 	private String dimension;
 	private String size;
 	private String format;
@@ -39,30 +42,59 @@ public class QualityTableRow {
 
 	protected FormUIFactory uifactory = FormUIFactory.getInstance();
 
+
 	/**
-	 * 
-	 * @param resolution
-	 * @param dimension
-	 * @param size
-	 * @param format
-	 * @param viewLink
+	 * Instantiates a new transcoding queue table row.
+	 *
+	 * @param resid the resid
+	 * @param resolution the resolution
+	 * @param dimension the dimension
+	 * @param size the size
+	 * @param format the format
 	 * @param deleteLink FormLink for delete row and corresponding Videodata or null if no deleteLink should be shown
 	 */
-	public QualityTableRow(FormLink resolution, String dimension, String size, String format, FormLink deleteLink) {
-		this.resolution = resolution;
-		this.resolution.setIconLeftCSS("o_icon o_icon-fw o_icon_preview");
+	public TranscodingQueueTableRow(String resid, String displayname, Date creationDate, FormLink resolution, String dimension, String size, String format, FormLink deleteLink) {
+		this.resid = resid;
+		this.displayname = displayname;
+		this.creator = resolution;
+		this.creator.setIconLeftCSS("o_icon o_icon-fw o_icon_preview");
+		this.creationDate = creationDate;
 		this.dimension = dimension;
 		this.size = size;
 		this.format = format;
 		if(deleteLink != null) this.deleteLink = deleteLink;
 	}
 	
-	public FormLink getResolution() {
-		return resolution;
+	public Date getCreationDate(){
+		return creationDate;
+	}
+	
+	public void setCreationDate(Date creationDate){
+		this.creationDate = creationDate;
+	}
+	
+	public String getDisplayname(){
+		return displayname;
+	}
+	
+	public void setDisplayname(String displayname){
+		this.displayname = displayname;
+	}
+	
+	public String getResid(){
+		return resid;
+	}
+	
+	public void setResid(String resid){
+		this.resid = resid;
+	}
+	
+	public FormLink getCreator() {
+		return creator;
 	}
 
 	public void setType(FormLink type) {
-		this.resolution = type;
+		this.creator = type;
 	}
 
 	public String getDimension() {
@@ -97,3 +129,4 @@ public class QualityTableRow {
 		this.deleteLink = deleteLink;
 	}
 }
+

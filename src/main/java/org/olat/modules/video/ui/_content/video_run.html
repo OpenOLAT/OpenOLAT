@@ -1,6 +1,6 @@
 <div class="o_video_run o_block_large_bottom clearfix">
 	<div class="olatFlashMovieViewer">
-		<video id="$r.getId("o_vid")" width="$width" height="$height" #if($usePoster) poster="$masterUrl/poster.jpg" #end controls  preload="none" oncontextmenu="return false;" #if( $autoplay ) autoplay #end class="o_video">			
+		<video id="$r.getId("o_vid")" width="$width" height="$height" #if($usePoster) poster="$masterUrl/poster.jpg" #end controls #if(!$hasChapters) preload="none" #end oncontextmenu="return false;" #if( $autoplay ) autoplay #end class="o_video">			
 	    	#foreach($video in $videos)
 	    		#set($position = $velocityCount - 1)
 	    		<source type="video/mp4" src="$transcodedUrl/${video.getResolution()}video.mp4" title="$displayTitles.get($position) ($r.formatBytes(${video.getSize()}))" />
@@ -12,8 +12,12 @@
 	    	
 	  		#if( $trackfiles )
 		  		#foreach( $track in $trackfiles.keySet())
-		  		<track kind="subtitles" src="$masterUrl/$trackfiles.get($track)" srclang="$track" />
+		  		<track kind="subtitles" src="$masterUrl/$trackfiles.get($track)$!addForceReload" srclang="$track" />
 		  		#end
+		  	#end
+		  	
+		  	#if($hasChapters)
+			  	<track kind="chapters" src="$masterUrl/chapters.vtt$!addForceReload" />
 		  	#end
 		</video>
 
@@ -34,7 +38,7 @@
 			
 			## Enabled features - should be same order as in player.js. 
 			## Special here is tracks and sourcechooser which are not available in player.js
-			features: ['playpause','current','volume','progress','duration','tracks',#if($useSourceChooser)'sourcechooser'#end,'fullscreen'],
+			features: ['playpause','current','volume','progress','duration','tracks' #if($useSourceChooser),'sourcechooser'#end ,'fullscreen'],
 			
 			## Callback to communicate with the server
 			success: function (mediaElement, domObject) {
@@ -42,32 +46,32 @@
 				## listen to play events, fired when movie is finished
 		        mediaElement.addEventListener('play', function(e) {
 		        	if (!o_info.linkbusy) {
-		        		$r.openNoResponseJavaScriptCommand("play"), 'currentTime', mediaElement.currentTime, 'src', mediaElement.src);
+		        		$r.openNoResponseJavaScriptCommand("play"), 'currentTime', mediaElement.currentTime, 'src', mediaElement.src, 'duration', mediaElement.duration);
 					}
 		        }, false);
 		        ## listen to pause events, fired when movie is paused by user
 		        mediaElement.addEventListener('pause', function(e) {
 		        	if (!o_info.linkbusy) {
-						$r.openNoResponseJavaScriptCommand("pause"), 'currentTime', mediaElement.currentTime, 'src', mediaElement.src);
+						$r.openNoResponseJavaScriptCommand("pause"), 'currentTime', mediaElement.currentTime, 'src', mediaElement.src, 'duration', mediaElement.duration);
 					}
 		        }, false);
 		        ## listen to seeked events, fired when user uses the slider in the movie
 		        mediaElement.addEventListener('seeked', function(e) {
 		        	if (!o_info.linkbusy) {
-						$r.openNoResponseJavaScriptCommand("seeked"), 'currentTime', mediaElement.currentTime, 'src', mediaElement.src);
+						$r.openNoResponseJavaScriptCommand("seeked"), 'currentTime', mediaElement.currentTime, 'src', mediaElement.src, 'duration', mediaElement.duration);
 					}
 		        }, false);
 		        ## listen to end events, fired when movie is finished
 		        mediaElement.addEventListener('ended', function(e) {
 		        	if (!o_info.linkbusy) {
-						$r.openNoResponseJavaScriptCommand("ended"), 'currentTime', mediaElement.currentTime, 'src', mediaElement.src);
+						$r.openNoResponseJavaScriptCommand("ended"), 'currentTime', mediaElement.currentTime, 'src', mediaElement.src, 'duration', mediaElement.duration);
 					}
 		        }, false);
 
 				##
 		        ## Preselect the preferred source
 		        #if($useSourceChooser)
-		        jQuery(jQuery('.mejs-sourcechooser-selector input')[$preferredResolution]).prop("checked", true).trigger("click");;
+		        jQuery(jQuery('.mejs-sourcechooser-selector input')[$preferredResolution]).prop("checked", true).trigger("click");
 		        #end
 			}
 		});
@@ -75,7 +79,7 @@
 		</script>
 	</div>
 	
-	#if($description)
+	#if($showTitleAndDescription && $description)
 	<h1>$title</h1>
 	#end
 	#if($authors)
@@ -84,7 +88,7 @@
 		$r.escapeHtml($authors)
 	</div>
 	#end
-	#if($description)
+	#if($showTitleAndDescription && $description)
 	<div class="o_desc clearfix">
 		$description
 	</div>

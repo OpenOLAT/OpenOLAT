@@ -20,28 +20,31 @@
 package org.olat.modules.video.ui;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
-import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
+import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.modules.video.VideoManager;
 import org.olat.modules.video.VideoMetadata;
+import org.olat.modules.video.VideoModule;
 import org.olat.modules.video.VideoTranscoding;
 import org.olat.modules.video.manager.VideoMediaMapper;
 import org.olat.modules.video.ui.VideoQualityTableModel.QualityTableCols;
@@ -55,49 +58,60 @@ import org.springframework.beans.factory.annotation.Autowired;
  *
  */
 public class VideoQualityTableFormController extends FormBasicController {
-
+	
 	private FlexiTableElement tableEl;
 	private VideoQualityTableModel tableModel;
 	private CloseableModalController cmc;
 	private VelocityContainer previewVC;
 	private OLATResource videoResource;
+	private FormItemContainer formLayout;
+	private FormLink refreshbtn;
+
+	private int count = 0;
 
 	@Autowired
 	private VideoManager videoManager;
+	@Autowired
+	private VideoModule videoModule;
 
 	public VideoQualityTableFormController(UserRequest ureq, WindowControl wControl, RepositoryEntry videoEntry) {
-		super(ureq, wControl, LAYOUT_VERTICAL);
+		super(ureq, wControl, "video_quality");
 		this.videoResource = videoEntry.getOlatResource();
 		initForm(ureq);
 	}
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		FormLayoutContainer generalCont = FormLayoutContainer.createVerticalFormLayout("general", getTranslator());
-		generalCont.setFormTitle(translate("tab.video.qualityConfig"));
-		generalCont.setRootForm(mainForm);
-		generalCont.setFormContextHelp("Learning resource: Video#_video_resolution");
-		formLayout.add(generalCont);
+		this.formLayout = formLayout;
 
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(true, QualityTableCols.resolution.i18nKey(), QualityTableCols.resolution.ordinal(), true, QualityTableCols.resolution.name()));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(true, QualityTableCols.dimension.i18nKey(), QualityTableCols.dimension.ordinal(), true, QualityTableCols.dimension.name()));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(true, QualityTableCols.size.i18nKey(), QualityTableCols.size.ordinal(), true, QualityTableCols.size.name()));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(true, QualityTableCols.format.i18nKey(), QualityTableCols.format.ordinal(), true, QualityTableCols.format.name()));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(true, QualityTableCols.view.i18nKey(), QualityTableCols.view.ordinal(), true, QualityTableCols.view.name()));
-		// TODO: delete/recode link
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(QualityTableCols.resolution));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(QualityTableCols.dimension));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(QualityTableCols.size));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(QualityTableCols.format));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(QualityTableCols.delete));
+
 		tableModel = new VideoQualityTableModel(columnsModel, getTranslator());
-
-		List<QualityTableRow> rows = new ArrayList<QualityTableRow>();
+		
+		initTable();
+			
+	}
+	
+	private void initTable(){
+		List<QualityTableRow> rows = new ArrayList<>();
 		VideoMetadata videoMetadata = videoManager.readVideoMetadataFile(videoResource);
-
 		// Add master video file
-		FormLink previewMasterLink = uifactory.addFormLink("view", "viewQuality", "quality.view", "qulaity.view", null, Link.LINK);
-		rows.add(new QualityTableRow(translate("quality.master"), videoMetadata.getWidth() +"x"+ videoMetadata.getHeight(),  Formatter.formatBytes(videoManager.getVideoFile(videoResource).length()), "mp4",previewMasterLink));
+		FormLink previewMasterLink = uifactory.addFormLink("view", "viewQuality", "quality.master", "quality.master", flc, Link.LINK);
+		rows.add(new QualityTableRow(previewMasterLink, videoMetadata.getWidth() +"x"+ videoMetadata.getHeight(), Formatter.formatBytes(videoManager.getVideoFile(videoResource).length()), "mp4",null));
 		// Add all the transcoded versions
 		List<VideoTranscoding> videoTranscodings = videoManager.getVideoTranscodings(videoResource);
 		for(VideoTranscoding videoTranscoding:videoTranscodings){
-			FormLink previewVersionLink = uifactory.addFormLink(Integer.toString(videoTranscoding.getResolution()), "viewQuality", "quality.view", "qulaity.view", null, Link.LINK);
+			String title = videoManager.getDisplayTitleForResolution(videoTranscoding.getResolution(), getTranslator());
+			FormLink previewVersionLink = uifactory.addFormLink("res_" + count++, "viewQuality", title, title, flc, Link.LINK + Link.NONTRANSLATED);
+			FormLink deleteLink = uifactory.addFormLink("del_" + count++, "deleteQuality", "quality.delete", "quality.delete", flc, Link.LINK);
+			deleteLink.setUserObject(videoTranscoding);
+			deleteLink.setIconLeftCSS("o_icon o_icon_delete_item o_icon-fw");
+			
 			previewVersionLink.setUserObject(videoTranscoding);
 			if (videoTranscoding.getStatus() < VideoTranscoding.TRANSCODING_STATUS_DONE) {
 				previewVersionLink.setEnabled(false);
@@ -113,19 +127,62 @@ public class VideoQualityTableFormController extends FormBasicController {
 			} else if (videoTranscoding.getStatus() <= VideoTranscoding.TRANSCODING_STATUS_DONE){
 				fileSize = translate("transcoding.processing") + ": " + videoTranscoding.getStatus() + "%";					
 			}
-			// Set title for version - standard version or original size
-			String title = videoManager.getDisplayTitleForResolution(videoTranscoding.getResolution(), getTranslator());
-			rows.add(new QualityTableRow(title, dimension,  fileSize, videoTranscoding.getFormat(),previewVersionLink));
+			rows.add(new QualityTableRow(previewVersionLink, dimension,  fileSize, videoTranscoding.getFormat(), deleteLink));
 		}
-		
+		List<Integer> missingResolutions = videoManager.getMissingTranscodings(videoResource);
+		if (videoModule.isTranscodingEnabled()) {
+		 	for(Integer missingRes: missingResolutions){
+				String title = videoManager.getDisplayTitleForResolution(missingRes, getTranslator());
+				FormLink transcodeLink = uifactory.addFormLink("res_" + count++, "startTranscoding", "quality.transcode", "quality.transcode", flc, Link.LINK);
+				transcodeLink.setUserObject(missingRes);
+				transcodeLink.setIconLeftCSS("o_icon o_icon_refresh o_icon-fw");
+				
+				FormLink previewMissingLink= uifactory.addFormLink("res_" + count++, "viewQuality", title, title, flc, Link.LINK + Link.NONTRANSLATED);
+				previewMissingLink.setEnabled(false);
+				rows.add(new QualityTableRow(previewMissingLink, missingRes.toString(),  "-", "mp4", transcodeLink));
+			}
+		}
+	 	rows.sort(new VideoComparator());
 		tableModel.setObjects(rows);
-		tableEl = uifactory.addTableElement(getWindowControl(), "qualities", tableModel, getTranslator(), generalCont);
+		
+		if (formLayout.hasFormComponent(tableEl)){
+			formLayout.remove(tableEl);
+		}
+		if (formLayout.hasFormComponent(refreshbtn)){
+			formLayout.remove(refreshbtn);
+		}
+						
+		tableEl = uifactory.addTableElement(getWindowControl(), "qualityTable", tableModel, getTranslator(), formLayout);
 		tableEl.setCustomizeColumns(false);
+		tableEl.setNumOfRowsEnabled(false);
+		
+				
+		refreshbtn = uifactory.addFormLink("button.refresh", formLayout, Link.BUTTON);
+		refreshbtn.setIconLeftCSS("o_icon o_icon_refresh o_icon-fw");
+
+	}
+	
+	@Override
+	public void event(UserRequest ureq, Component source, Event event) {
+		super.event(ureq, source, event);
+	}
+	
+	@Override
+	protected void event(UserRequest ureq, Controller source, org.olat.core.gui.control.Event event) {
+		if (source instanceof FormLink && ((FormLink) source).getCmd().equals("viewQuality")) {
+			if (cmc == null) {
+				// initialize preview controller only once
+				previewVC = createVelocityContainer("video_preview");
+				cmc = new CloseableModalController(getWindowControl(), "close", previewVC);
+				listenTo(cmc);
+			}
+		}
+		super.event(ureq, source, event);
 	}
 	
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if (source instanceof FormLink) {
+		if (source instanceof FormLink && ((FormLink) source).getCmd().equals("viewQuality")) {
 			if (cmc == null) {
 				// initialize preview controller only once
 				previewVC = createVelocityContainer("video_preview");
@@ -144,7 +201,7 @@ public class VideoQualityTableFormController extends FormBasicController {
 				VFSContainer container = videoManager.getMasterContainer(videoResource);
 				String transcodedUrl = registerMapper(ureq, new VideoMediaMapper(container));
 				previewVC.contextPut("mediaUrl", transcodedUrl);
-			} else {				
+			} else {
 				// this is a version
 				previewVC.contextPut("width", videoTranscoding.getWidth());
 				previewVC.contextPut("height", videoTranscoding.getHeight());
@@ -155,9 +212,16 @@ public class VideoQualityTableFormController extends FormBasicController {
 			}
 			// activate dialog to bring it in front
 			cmc.activate();
+		} else if (source instanceof FormLink && ((FormLink) source).getCmd().equals("deleteQuality")) {
+			FormLink link = (FormLink) source;
+			VideoTranscoding videoTranscoding = (VideoTranscoding) link.getUserObject();
+			videoManager.deleteVideoTranscoding(videoTranscoding);
+		} else if (source instanceof FormLink && ((FormLink) source).getCmd().equals("startTranscoding")) {
+			videoManager.createTranscoding(videoResource, (int) source.getUserObject(), "mp4");
 		}
+		initTable();
 	}
-
+	
 	@Override
 	protected void formOK(UserRequest ureq) {
 		// nothing to do, events cached in formInnerEvent
@@ -167,5 +231,20 @@ public class VideoQualityTableFormController extends FormBasicController {
 	protected void doDispose() {
 		// controller auto disposed
 	}
+	
+	private class VideoComparator implements Comparator<QualityTableRow> {
 
+		@Override
+		public int compare(QualityTableRow row1, QualityTableRow row2) {	
+			if (translate(row1.getResolution().getI18nKey()).equals("Master video"))return -1;
+			else if (translate(row2.getResolution().getI18nKey()).equals("Master video"))return 1;
+			else { 
+				String s1 =translate(row1.getResolution().getI18nKey());
+				String s2 = translate(row2.getResolution().getI18nKey());
+				return Integer.parseInt(s2.substring(0,s2.length()<30?s2.length():30).replaceAll("[^0-9]", "")) 
+						- Integer.parseInt(s1.substring(0,s1.length()<30?s1.length():30).replaceAll("[^0-9]", ""));
+			}
+		}
+		
+	}
 }

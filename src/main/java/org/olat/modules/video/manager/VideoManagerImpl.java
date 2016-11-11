@@ -21,16 +21,24 @@
 package org.olat.modules.video.manager;
 
 import java.awt.image.BufferedImage;
+import java.io.BufferedOutputStream;
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.RandomAccessFile;
 import java.math.RoundingMode;
 import java.nio.channels.FileChannel;
 import java.text.DecimalFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map.Entry;
+import java.util.TimeZone;
+import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
@@ -40,6 +48,8 @@ import javax.imageio.ImageIO;
 import org.jcodec.api.FrameGrab;
 import org.jcodec.common.FileChannelWrapper;
 import org.olat.core.commons.modules.bc.vfs.OlatRootFolderImpl;
+import org.olat.core.commons.services.image.Crop;
+import org.olat.core.commons.services.image.ImageService;
 import org.olat.core.commons.services.image.Size;
 import org.olat.core.commons.services.video.MovieService;
 import org.olat.core.gui.translator.Translator;
@@ -64,6 +74,7 @@ import org.olat.modules.video.VideoMetadata;
 import org.olat.modules.video.VideoModule;
 import org.olat.modules.video.VideoTranscoding;
 import org.olat.modules.video.model.VideoMetadataImpl;
+import org.olat.modules.video.ui.VideoChapterTableRow;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryImportExport;
 import org.olat.repository.RepositoryEntryImportExport.RepositoryEntryImport;
@@ -83,12 +94,19 @@ import org.springframework.stereotype.Service;
  */
 @Service("videoManager")
 public class VideoManagerImpl implements VideoManager {
+	private static final String CR = System.lineSeparator();
+	private static final String ENCODING = "utf-8";
 	protected static final String DIRNAME_REPOENTRY = "repoentry";
 	public static final String FILETYPE_MP4 = "mp4";
+	private static final String FILETYPE_JPG = "jpg";
 	private static final String FILENAME_POSTER_JPG = "poster.jpg";
 	private static final String FILENAME_VIDEO_MP4 = "video.mp4";
+	private static final String FILENAME_CHAPTERS_VTT = "chapters.vtt";
 	private static final String FILENAME_VIDEO_METADATA_XML = "video_metadata.xml";
 	private static final String DIRNAME_MASTER = "master";
+	
+	private static final SimpleDateFormat displayDateFormat = new SimpleDateFormat("HH:mm:ss");
+	private static final SimpleDateFormat vttDateFormat = new SimpleDateFormat("HH:mm:ss.SSS");
 
 	@Autowired
 	private MovieService movieService;
@@ -100,6 +118,8 @@ public class VideoManagerImpl implements VideoManager {
 	private VideoTranscodingDAO videoTranscodingDao;
 	@Autowired
 	private Scheduler scheduler;
+	@Autowired
+	private ImageService imageHelper;
 	
 	private static final OLog log = Tracing.createLoggerFor(VideoManagerImpl.class);
 
@@ -126,6 +146,37 @@ public class VideoManagerImpl implements VideoManager {
 		if (posterImage != null) {
 			RepositoryEntry repoEntry = repositoryManager.lookupRepositoryEntry(videoResource, true);
 			repositoryManager.setImage(posterImage, repoEntry);
+		}
+	}
+	
+	/**
+	 * Sets the posterframe resize uploadfile. Tries to fit image to dimensions of video.
+	 *
+	 * @param videoResource the video resource
+	 * @param posterframe the newPosterFile
+	 */
+	public void setPosterframeResizeUploadfile(OLATResource videoResource, VFSLeaf newPosterFile) {
+		VideoMetadata videoMetadata = readVideoMetadataFile(videoResource);
+		Size posterRes = imageHelper.getSize(newPosterFile, FILETYPE_JPG);
+		// file size needs to be bigger than target resolution, otherwise use image as it comes
+		if (posterRes != null 
+				&& posterRes.getHeight() != 0 
+				&& posterRes.getWidth() != 0
+				&& posterRes.getHeight() >= videoMetadata.getHeight() 
+				&& posterRes.getWidth() >= videoMetadata.getWidth()) {
+			VFSLeaf oldPosterFile = getPosterframe(videoResource);
+			oldPosterFile.delete();
+			VFSContainer masterContainer = getMasterContainer(videoResource);
+			LocalFileImpl newPoster = (LocalFileImpl) masterContainer.createChildLeaf(FILENAME_POSTER_JPG);
+			// to shrink image file, resolution ratio needs to be equal, otherwise crop from top left corner
+			if (posterRes.getHeight() / posterRes.getWidth() == videoMetadata.getHeight() / videoMetadata.getWidth()) {
+				imageHelper.scaleImage(newPosterFile, newPoster, videoMetadata.getWidth(), videoMetadata.getHeight(), true);
+			} else {
+				Crop cropSelection = new Crop(0, 0, videoMetadata.getHeight(), videoMetadata.getWidth());
+				imageHelper.cropImage(((LocalFileImpl) newPosterFile).getBasefile(), newPoster.getBasefile(), cropSelection);
+			}
+		} else {
+			setPosterframe(videoResource, newPosterFile);
 		}
 	}
 
@@ -170,6 +221,16 @@ public class VideoManagerImpl implements VideoManager {
 			tracks.put(trackEntry.getKey(), resolveFromMasterContainer(videoResource, trackEntry.getValue()));
 		}
 		return tracks;
+	}
+	
+	/**
+	 * return the chapter file as a VFSLeaf
+	 */
+	@Override
+	public boolean hasChapters(OLATResource videoResource){
+		VFSContainer vfsContainer = getMasterContainer(videoResource);
+		VFSLeaf webvtt = (VFSLeaf) vfsContainer.resolve(FILENAME_CHAPTERS_VTT);
+		return (webvtt != null && webvtt.getSize() > 0);
 	}
 
 	/**
@@ -550,6 +611,116 @@ public class VideoManagerImpl implements VideoManager {
 	public List<VideoTranscoding> getVideoTranscodingsPendingAndInProgress() {
 		return videoTranscodingDao.getVideoTranscodingsPendingAndInProgress();
 	}
+	
+	@Override
+	public void deleteVideoTranscoding(VideoTranscoding videoTranscoding) {
+		videoTranscodingDao.deleteVideoTranscoding(videoTranscoding);
+		VFSContainer container = getTranscodingContainer(videoTranscoding.getVideoResource());
+		VFSLeaf videoFile = (VFSLeaf) container.resolve(videoTranscoding.getResolution() + FILENAME_VIDEO_MP4);
+		if( videoFile != null ) {
+			videoFile.delete();
+		}
+	}
 
+	@Override
+	public List<Integer> getMissingTranscodings(OLATResource videoResource){
+		//get resolutions which are turned on in the videomodule
+		int[] configuredResolutions = videoModule.getTranscodingResolutions();
+		//turn the int[]-Array into a List
+		List<Integer> configResList = IntStream.of(configuredResolutions).boxed().collect(Collectors.toList());
+		List<VideoTranscoding> videoTranscodings = getVideoTranscodings(videoResource);
+
+		for(VideoTranscoding videoTranscoding:videoTranscodings){
+			Integer resolution = videoTranscoding.getResolution();
+			configResList.remove(resolution);
+		}
+		
+		return configResList;
+	}
+	
+	@Override
+	public VideoTranscoding createTranscoding(OLATResource video, int resolution,String format) {
+		return videoTranscodingDao.createVideoTranscoding(video, resolution, format);
+	}
+	
+	@Override
+	public void saveChapters (List<VideoChapterTableRow> chapters, OLATResource videoResource){
+		displayDateFormat.setTimeZone(TimeZone.getTimeZone("GMT"));
+		vttDateFormat.setTimeZone(TimeZone.getTimeZone("GMT"));
+		
+		VFSContainer vfsContainer = getMasterContainer(videoResource);
+		VFSLeaf webvtt = (VFSLeaf) vfsContainer.resolve(FILENAME_CHAPTERS_VTT);		
+		if (webvtt == null) {
+			webvtt = vfsContainer.createChildLeaf(FILENAME_CHAPTERS_VTT);
+		}		
+
+		if (chapters.size() == 0){
+			webvtt.delete();
+			return;
+		}
+
+		StringBuilder vttString = new StringBuilder("WEBVTT").append(CR);
+		for (int i = 0; i < chapters.size(); i++) {
+			vttString.append(CR).append("Chapter "+ (i+1)).append(CR);
+			vttString.append(vttDateFormat.format(chapters.get(i).getBegin()));
+			vttString.append(" --> ");
+			vttString.append(vttDateFormat.format(chapters.get(i).getEnd())).append(CR);
+			vttString.append(chapters.get(i).getChapterName().replaceAll(CR, " "));
+			vttString.append(CR);
+			}
+		
+		final BufferedOutputStream bos = new BufferedOutputStream(webvtt.getOutputStream(false));
+		FileUtils.save(bos, vttString.toString(), ENCODING);
+		try {
+			bos.close();
+		} catch (IOException e) {
+			log.error("chapter.vtt could not be saved for videoResource::" + videoResource, e);
+		}
+	}
+	
+	/**
+	 * reads an existing webvtt file to provide for display and to further process.
+	 *
+	 * @param List<VideoChapterTableRow> chapters the chapters
+	 * @param OLATResource videoResource the video resource
+	 */
+	public void loadChapters(List<VideoChapterTableRow> chapters, OLATResource videoResource) {
+		chapters.clear();
+		displayDateFormat.setTimeZone(TimeZone.getTimeZone("GMT"));
+		vttDateFormat.setTimeZone(TimeZone.getTimeZone("GMT"));
+		
+		VFSContainer vfsContainer = getMasterContainer(videoResource);
+		VFSLeaf webvtt = (VFSLeaf) vfsContainer.resolve(FILENAME_CHAPTERS_VTT);
+
+		if (webvtt != null && webvtt.exists()) {
+			try {
+				BufferedReader webvttReader = new BufferedReader(new InputStreamReader(webvtt.getInputStream()));
+				String thisLine, regex = " --> ";
+				
+				while ((thisLine = webvttReader.readLine()) != null) {
+					if (thisLine.contains(regex)) {
+						String[] interval = thisLine.split(regex);
+						Date begin = vttDateFormat.parse(interval[0]);
+						Date end = vttDateFormat.parse(interval[1]);
+
+						StringBuilder chapterTitle = new StringBuilder();
+						String title;
+						
+						while ((title = webvttReader.readLine()) != null) {
+							if (title.isEmpty() || title.contains(regex))
+								break;
+							chapterTitle.append(title).append(CR);
+						}
+						chapters.add(new VideoChapterTableRow(chapterTitle.toString().replaceAll(CR, " "),
+								displayDateFormat.format(begin), begin, end));
+					}
+				}
+				webvttReader.close();
+				
+			} catch (Exception e) {
+				log.error("Unable to load WEBVTT File for resource::" + videoResource,e);
+			}
+		}
+	}
 
 }
