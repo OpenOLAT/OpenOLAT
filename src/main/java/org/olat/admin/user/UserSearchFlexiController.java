@@ -101,14 +101,15 @@ public class UserSearchFlexiController extends FlexiAutoCompleterController {
 	
 	private FormLink backLink, searchButton;
 	private TextElement loginEl;
-	private List<UserPropertyHandler> userPropertyHandlers;
 	private Map <String,FormItem>propFormItems;
 	private FlexiTableElement tableEl;
 	private UserSearchFlexiTableModel userTableModel;
 	private FormLayoutContainer autoCompleterContainer;
 	private FormLayoutContainer searchFormContainer;
+	
+	private final boolean isAdministrativeUser;
+	private final List<UserPropertyHandler> userSearchFormPropertyHandlers;
 
-	private boolean isAdministrativeUser;
 	@Autowired
 	private UserManager userManager;
 	@Autowired
@@ -128,6 +129,10 @@ public class UserSearchFlexiController extends FlexiAutoCompleterController {
 		setTranslator(Util.createPackageTranslator(UserPropertyHandler.class, getLocale(), getTranslator()));
 		setTranslator(Util.createPackageTranslator(UserSearchFlexiController.class, getLocale(), getTranslator()));
 
+		Roles roles = ureq.getUserSession().getRoles();
+		isAdministrativeUser = securityModule.isUserAllowedAdminProps(roles);
+		userSearchFormPropertyHandlers = userManager.getUserPropertyHandlersFor(UserSearchForm.class.getCanonicalName(), isAdministrativeUser);
+
 		ListProvider provider = new UserSearchListProvider();
 		setListProvider(provider);
 		setAllowNewValues(false);
@@ -139,11 +144,9 @@ public class UserSearchFlexiController extends FlexiAutoCompleterController {
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		if(formLayout instanceof FormLayoutContainer) {
 			FormLayoutContainer layoutCont = (FormLayoutContainer)formLayout;
-			
-			Roles roles = ureq.getUserSession().getRoles();
-			isAdministrativeUser = securityModule.isUserAllowedAdminProps(roles);
-			
+
 			// insert a autocompleter search
+			Roles roles = ureq.getUserSession().getRoles();
 			boolean autoCompleteAllowed = securityModule.isUserAllowedAutoComplete(roles);
 			boolean ajax = Windows.getWindows(ureq).getWindowManager().isAjaxEnabled();
 			if (ajax && autoCompleteAllowed) {
@@ -169,10 +172,9 @@ public class UserSearchFlexiController extends FlexiAutoCompleterController {
 			loginEl = uifactory.addTextElement("login", "search.form.login", 128, "", searchFormContainer);
 			loginEl.setVisible(isAdministrativeUser);
 
-			userPropertyHandlers = userManager.getUserPropertyHandlersFor(UserSearchForm.class.getCanonicalName(), isAdministrativeUser);
 			
-			propFormItems = new HashMap<String,FormItem>();
-			for (UserPropertyHandler userPropertyHandler : userPropertyHandlers) {
+			propFormItems = new HashMap<>();
+			for (UserPropertyHandler userPropertyHandler : userSearchFormPropertyHandlers) {
 				if (userPropertyHandler == null) continue;
 				
 				FormItem fi = userPropertyHandler.addFormItem(getLocale(), null, UserSearchForm.class.getCanonicalName(), false, searchFormContainer);
@@ -293,7 +295,7 @@ public class UserSearchFlexiController extends FlexiAutoCompleterController {
 		// the same validation logic can not be applied
 		// i.e. email must be searchable and not about getting an error like
 		// "this e-mail exists already"
-		for (UserPropertyHandler userPropertyHandler : userPropertyHandlers) {
+		for (UserPropertyHandler userPropertyHandler : userSearchFormPropertyHandlers) {
 			FormItem ui = propFormItems.get(userPropertyHandler.getName());
 			String uiValue = userPropertyHandler.getStringValue(ui);
 			// add value for later non-empty search check
@@ -405,8 +407,8 @@ public class UserSearchFlexiController extends FlexiAutoCompleterController {
 	public void doSearch() {
 		String login = loginEl.getValue();
 		// build user fields search map
-		Map<String, String> userPropertiesSearch = new HashMap<String, String>();				
-		for (UserPropertyHandler userPropertyHandler : userPropertyHandlers) {
+		Map<String, String> userPropertiesSearch = new HashMap<>();				
+		for (UserPropertyHandler userPropertyHandler : userSearchFormPropertyHandlers) {
 			if (userPropertyHandler == null) continue;
 			FormItem ui = propFormItems.get(userPropertyHandler.getName());
 			String uiValue = userPropertyHandler.getStringValue(ui);

@@ -223,6 +223,7 @@ public abstract class AbstractMemberListController extends FormBasicController i
 		membersTable.setEmtpyTableMessageKey("nomembers");
 		membersTable.setAndLoadPersistedPreferences(ureq, this.getClass().getSimpleName());
 		membersTable.setSearchEnabled(true);
+		
 		membersTable.setExportEnabled(true);
 		membersTable.setSelectAllEnable(true);
 		membersTable.setElementCssClass("o_sel_member_list");
@@ -344,6 +345,10 @@ public abstract class AbstractMemberListController extends FormBasicController i
 				}
 			} else if(event instanceof FlexiTableSearchEvent) {
 				if(FlexiTableSearchEvent.SEARCH.equals(event.getCommand())) {
+					FlexiTableSearchEvent se = (FlexiTableSearchEvent)event;
+					String search = se.getSearch();
+					doSearch(search);
+				} else if(FlexiTableSearchEvent.QUICK_SEARCH.equals(event.getCommand())) {
 					FlexiTableSearchEvent se = (FlexiTableSearchEvent)event;
 					String search = se.getSearch();
 					doSearch(search);
