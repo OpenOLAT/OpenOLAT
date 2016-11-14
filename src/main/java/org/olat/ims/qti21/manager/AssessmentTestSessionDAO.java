@@ -192,7 +192,7 @@ public class AssessmentTestSessionDAO {
 	 * @param session
 	 * @return
 	 */
-	protected String createSessionStorage(AssessmentTestSessionImpl session) {
+	protected String createSessionStorage(AssessmentTestSession session) {
 		File rootDir = getQtiSerializationPath().getBasefile();
 		
 		String datePart;
@@ -214,8 +214,10 @@ public class AssessmentTestSessionDAO {
 				storage = new File(storage, session.getSubIdent());
 			}
 			userPart += "-" + session.getTestEntry().getKey().toString();
-		} else {
+		} else if(session.getTestEntry() != null) {
 			storage = new File(storage, session.getTestEntry().getKey().toString());
+		} else {
+			storage = new File(storage, "tmp");
 		}
 		
 		storage = new File(storage, userPart);

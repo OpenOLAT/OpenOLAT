@@ -165,6 +165,22 @@ public interface QTI21Service {
 			AssessmentEntry assessmentEntry, RepositoryEntry entry, String subIdent, RepositoryEntry testEntry,
 			boolean authorMode);
 	
+	
+	/**
+	 * This create an transient session which are not saved on the database. But
+	 * please, at the end of the session, delete the storage.
+	 * 
+	 * @param identity
+	 * @param anonymousIdentifier
+	 * @param assessmentEntry
+	 * @param entry
+	 * @param subIdent
+	 * @param testEntry
+	 * @param authorMode
+	 * @return
+	 */
+	public AssessmentTestSession createInMemoryAssessmentTestSession(Identity identity);
+	
 	/**
 	 * Return the implementation of the log audit.
 	 * 
@@ -266,6 +282,11 @@ public interface QTI21Service {
 	
 	public CandidateEvent recordCandidateItemEvent(AssessmentTestSession candidateSession, RepositoryEntryRef testEntry, RepositoryEntryRef entry,
             CandidateItemEventType itemEventType, ItemSessionState itemSessionState);
+	
+	/**
+	 * 
+	 */
+	public File getSubmissionDirectory(AssessmentTestSession candidateSession);
 	
 	/**
 	 * Import submitted file by an assessed identity in its session storage.

@@ -34,6 +34,7 @@ public enum QuestionType {
 	ESSAY,
 	NUMERICAL,
 	HOTSPOT,
+	UPLOAD,
 	UNKOWN
 
 }

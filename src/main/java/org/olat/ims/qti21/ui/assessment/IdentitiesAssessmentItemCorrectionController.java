@@ -23,7 +23,9 @@ import java.io.File;
 import java.math.BigDecimal;
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.io.IOUtils;
 import org.olat.core.gui.UserRequest;
@@ -84,6 +86,7 @@ public class IdentitiesAssessmentItemCorrectionController extends FormBasicContr
 	
 	private final String mapperUri;
 	private final URI assessmentObjectUri;
+	private final ResourcesMapper resourcesMapper;
 	private final ResourceLocator inputResourceLocator;
 
 	private final AssessmentItemRef itemRef;
@@ -93,6 +96,7 @@ public class IdentitiesAssessmentItemCorrectionController extends FormBasicContr
 	private final ResolvedAssessmentTest resolvedAssessmentTest;
 	
 	private final AssessmentTestCorrection testCorrections;
+	private Map<Long, File> submissionDirectoryMaps = new HashMap<>();
 	private final List<IdentityAssessmentItemWrapper> itemResults = new ArrayList<>();
 
 	@Autowired
@@ -119,7 +123,8 @@ public class IdentitiesAssessmentItemCorrectionController extends FormBasicContr
 		assessmentItem = resolvedAssessmentItem.getRootNodeLookup().extractIfSuccessful();
 		interactions = assessmentItem.getItemBody().findInteractions();
 		
-		mapperUri = registerCacheableMapper(null, "QTI21Resources::" + testEntry.getKey(), new ResourcesMapper(assessmentObjectUri));
+		resourcesMapper = new ResourcesMapper(assessmentObjectUri, submissionDirectoryMaps);
+		mapperUri = registerCacheableMapper(null, "QTI21Resources::" + testEntry.getKey(), resourcesMapper);
 
 		initForm(ureq);
 	}
@@ -160,6 +165,11 @@ public class IdentitiesAssessmentItemCorrectionController extends FormBasicContr
 						|| interaction instanceof DrawingInteraction
 						|| interaction instanceof ExtendedTextInteraction) {
 					responseItems.add(initFormExtendedTextInteraction(testPlanNodeKey, interaction, testSessionState, testSession, layoutCont));
+					
+					File submissionDir = qtiService.getSubmissionDirectory(testSession);
+					if(submissionDir != null) {
+						submissionDirectoryMaps.put(testSession.getKey(), submissionDir);
+					}
 				}
 			}
 		}

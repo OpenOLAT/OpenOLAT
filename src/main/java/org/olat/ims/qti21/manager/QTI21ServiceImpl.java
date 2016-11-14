@@ -76,6 +76,7 @@ import org.olat.ims.qti21.QTI21Service;
 import org.olat.ims.qti21.manager.audit.AssessmentSessionAuditFileLog;
 import org.olat.ims.qti21.manager.audit.AssessmentSessionAuditOLog;
 import org.olat.ims.qti21.model.InMemoryAssessmentTestMarks;
+import org.olat.ims.qti21.model.InMemoryAssessmentTestSession;
 import org.olat.ims.qti21.model.ParentPartItemRefs;
 import org.olat.ims.qti21.model.ResponseLegality;
 import org.olat.ims.qti21.model.audit.CandidateEvent;
@@ -417,6 +418,14 @@ public class QTI21ServiceImpl implements QTI21Service, InitializingBean, Disposa
 			AssessmentEntry assessmentEntry,  RepositoryEntry entry, String subIdent, RepositoryEntry testEntry,
 			boolean authorMode) {
 		return testSessionDao.createAndPersistTestSession(testEntry, entry, subIdent, assessmentEntry, identity, anonymousIdentifier, authorMode);
+	}
+
+	@Override
+	public AssessmentTestSession createInMemoryAssessmentTestSession(Identity identity) {
+		InMemoryAssessmentTestSession candidateSession = new InMemoryAssessmentTestSession();
+		candidateSession.setIdentity(identity);
+		candidateSession.setStorage(testSessionDao.createSessionStorage(candidateSession));
+		return candidateSession;
 	}
 
 	@Override
@@ -817,12 +826,18 @@ public class QTI21ServiceImpl implements QTI21Service, InitializingBean, Disposa
 	
 
 	@Override
-	public File importFileSubmission(AssessmentTestSession candidateSession, String filename, byte[] data) {
+	public File getSubmissionDirectory(AssessmentTestSession candidateSession) {
 		File myStore = testSessionDao.getSessionStorage(candidateSession);
         File submissionDir = new File(myStore, "submissions");
         if(!submissionDir.exists()) {
         	submissionDir.mkdir();
         }
+		return submissionDir;
+	}
+
+	@Override
+	public File importFileSubmission(AssessmentTestSession candidateSession, String filename, byte[] data) {
+		File submissionDir = getSubmissionDirectory(candidateSession);
         
         FileOutputStream out = null;
         try {
@@ -856,11 +871,7 @@ public class QTI21ServiceImpl implements QTI21Service, InitializingBean, Disposa
 
 	@Override
 	public File importFileSubmission(AssessmentTestSession candidateSession, MultipartFileInfos multipartFile) {
-		File myStore = testSessionDao.getSessionStorage(candidateSession);
-        File submissionDir = new File(myStore, "submissions");
-        if(!submissionDir.exists()) {
-        	submissionDir.mkdir();
-        }
+		File submissionDir = this.getSubmissionDirectory(candidateSession);
         
         try {
         	//add the date in the file

@@ -70,6 +70,7 @@ import org.olat.ims.qti21.model.xml.interactions.HotspotAssessmentItemBuilder;
 import org.olat.ims.qti21.model.xml.interactions.KPrimAssessmentItemBuilder;
 import org.olat.ims.qti21.model.xml.interactions.MultipleChoiceAssessmentItemBuilder;
 import org.olat.ims.qti21.model.xml.interactions.SingleChoiceAssessmentItemBuilder;
+import org.olat.ims.qti21.model.xml.interactions.UploadAssessmentItemBuilder;
 import org.olat.ims.resources.IMSEntityResolver;
 import org.olat.imscp.xml.manifest.ResourceType;
 import org.olat.modules.qpool.ExportFormatOptions;
@@ -335,6 +336,7 @@ public class QTI21QPoolServiceProvider implements QPoolSPI {
 			case fib: itemBuilder = new FIBAssessmentItemBuilder(EntryType.text, qtiService.qtiSerializer()); break;
 			case numerical: itemBuilder = new FIBAssessmentItemBuilder(EntryType.numerical, qtiService.qtiSerializer()); break;
 			case essay: itemBuilder = new EssayAssessmentItemBuilder(qtiService.qtiSerializer()); break;
+			case upload: itemBuilder = new UploadAssessmentItemBuilder(qtiService.qtiSerializer()); break;
 			case hotspot: itemBuilder = new HotspotAssessmentItemBuilder(qtiService.qtiSerializer()); break;
 			default: return null;
 		}

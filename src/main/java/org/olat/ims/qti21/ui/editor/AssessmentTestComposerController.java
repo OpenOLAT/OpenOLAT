@@ -90,6 +90,7 @@ import org.olat.ims.qti21.model.xml.interactions.HotspotAssessmentItemBuilder;
 import org.olat.ims.qti21.model.xml.interactions.KPrimAssessmentItemBuilder;
 import org.olat.ims.qti21.model.xml.interactions.MultipleChoiceAssessmentItemBuilder;
 import org.olat.ims.qti21.model.xml.interactions.SingleChoiceAssessmentItemBuilder;
+import org.olat.ims.qti21.model.xml.interactions.UploadAssessmentItemBuilder;
 import org.olat.ims.qti21.pool.QTI21QPoolServiceProvider;
 import org.olat.ims.qti21.questionimport.AssessmentItemAndMetadata;
 import org.olat.ims.qti21.questionimport.AssessmentItemsPackage;
@@ -139,7 +140,7 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 	private MenuTree menuTree;
 	private Dropdown exportItemTools, addItemTools, changeItemTools;
 	private Link newTestPartLink, newSectionLink, newSingleChoiceLink, newMultipleChoiceLink, newKPrimLink,
-		newFIBLink, newNumericalLink, newHotspotLink, newEssayLink;
+		newFIBLink, newNumericalLink, newHotspotLink, newEssayLink, newUploadLink;
 	private Link importFromPoolLink, importFromTableLink, exportToPoolLink, exportToDocxLink;
 	private Link reloadInCacheLink, deleteLink, copyLink;
 	private final TooledStackedPanel toolbar;
@@ -260,6 +261,12 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 		newEssayLink = LinkFactory.createToolLink("new.essay", translate("new.essay"), this, "o_mi_qtiessay");
 		newEssayLink.setDomReplacementWrapperRequired(false);
 		addItemTools.addComponent(newEssayLink);
+		
+		/*
+		newUploadLink = LinkFactory.createToolLink("new.upload", translate("new.upload"), this, "o_mi_qtiupload");
+		newUploadLink.setDomReplacementWrapperRequired(false);
+		addItemTools.addComponent(newUploadLink);
+		*/
 		
 		addItemTools.addComponent(new Dropdown.Spacer("sep-import"));
 		//import
@@ -451,6 +458,8 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 			doNewAssessmentItem(ureq, menuTree.getSelectedNode(), new HotspotAssessmentItemBuilder(qtiService.qtiSerializer()));
 		} else if(newEssayLink == source) {
 			doNewAssessmentItem(ureq, menuTree.getSelectedNode(), new EssayAssessmentItemBuilder(qtiService.qtiSerializer()));
+		} else if(newUploadLink == source) {
+			doNewAssessmentItem(ureq, menuTree.getSelectedNode(), new UploadAssessmentItemBuilder(qtiService.qtiSerializer()));
 		} else if(importFromPoolLink == source) {
 			doSelectQItem(ureq);
 		} else if(importFromTableLink == source) {

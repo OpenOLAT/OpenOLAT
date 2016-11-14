@@ -272,6 +272,7 @@ public class QTI21ImportProcessor {
 			case numerical: return qItemTypeDao.loadByType(QuestionType.NUMERICAL.name());
 			case hotspot: return qItemTypeDao.loadByType(QuestionType.HOTSPOT.name());
 			case essay: return qItemTypeDao.loadByType(QuestionType.ESSAY.name());
+			case upload: return qItemTypeDao.loadByType(QuestionType.UPLOAD.name());
 			default: return qItemTypeDao.loadByType(QuestionType.UNKOWN.name());
 		}
 	}

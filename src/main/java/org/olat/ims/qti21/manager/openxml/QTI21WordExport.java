@@ -308,6 +308,7 @@ public class QTI21WordExport implements MediaResource {
 			case kprim: typeDescription = translator.translate("form.kprim"); break;
 			case hotspot: typeDescription = translator.translate("form.hotspot"); break;
 			case essay: typeDescription = translator.translate("form.essay"); break;
+			case upload: typeDescription = translator.translate("form.upload"); break;
 			default: typeDescription = null; break;
 		}
 		
