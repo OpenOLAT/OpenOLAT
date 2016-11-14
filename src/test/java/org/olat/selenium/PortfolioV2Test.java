@@ -49,6 +49,8 @@ import org.olat.selenium.page.forum.ForumPage;
 import org.olat.selenium.page.graphene.OOGraphene;
 import org.olat.selenium.page.portfolio.BinderPage;
 import org.olat.selenium.page.portfolio.BinderPublicationPage;
+import org.olat.selenium.page.portfolio.BindersPage;
+import org.olat.selenium.page.portfolio.EntriesPage;
 import org.olat.selenium.page.portfolio.EntryPage;
 import org.olat.selenium.page.portfolio.MediaCenterPage;
 import org.olat.selenium.page.portfolio.PortfolioV2HomePage;
@@ -837,5 +839,171 @@ public class PortfolioV2Test {
 			.assertOnImage(imageFile)
 			.assertOnDocument(pdfFile)
 			.assertOnCitation(citation);
+	}
+	
+
+	/**
+	 * A user create a binder with a section and two pages. It deletes
+	 * one, go to the trash, find the delete page, restore it and go
+	 * again in the binder. It move a second time the page to the trash
+	 * and delete it definitively.
+	 * 
+	 * @param loginPage
+	 * @throws IOException
+	 * @throws URISyntaxException
+	 */
+	@Test
+	@RunAsClient
+	public void deletePage(@InitialPage LoginPage loginPage)
+	throws IOException, URISyntaxException {
+		UserVO author = new UserRestClient(deploymentUrl).createRandomUser("rei");
+		
+		loginPage
+			.loginAs(author.getLogin(), author.getPassword())
+			.resume();
+		
+		UserToolsPage userTools = new UserToolsPage(browser);
+		PortfolioV2HomePage portfolio = userTools
+				.openUserToolsMenu()
+				.openPortfolioV2();
+		
+		String binderTitle = "Binder del " + UUID.randomUUID();
+		BinderPage binder = portfolio
+			.openMyBinders()
+			.createBinder(binderTitle, "A binder where I want to delete some pages");
+		
+		String sectionTitle = "Section one " + UUID.randomUUID();
+		binder
+			.selectEntries()
+			.createSection(sectionTitle)
+			.assertOnSectionTitleInEntries(sectionTitle);
+		
+		String pageTitle = "Page two " + UUID.randomUUID();
+		String pageToDelete = "Page del " + UUID.randomUUID();
+		binder
+			.createEntry(pageToDelete)
+			.assertOnPage(pageToDelete)
+			.selectEntries()
+			.createEntry(pageTitle)
+			.assertOnPage(pageTitle)
+			.selectTableOfContent()
+			.selectEntryInToc(pageToDelete)
+			.moveEntryToTrash()
+			.assertOnPageInToc(pageTitle)
+			.assertOnPageNotInToc(pageToDelete);
+		
+		EntriesPage trash = portfolio
+			.clickToolbarBack()
+			.clickToolbarBack()
+			.openDeletedEntries();
+		
+		trash
+			.assertOnPage(pageToDelete)
+			.switchTableView()
+			.restore(pageToDelete, binderTitle, sectionTitle);
+		
+		portfolio
+			.clickToolbarBack()
+			.openMyBinders()
+			.selectBinder(binderTitle)
+			.assertOnPageInToc(pageToDelete)
+			.selectEntryInToc(pageToDelete)
+			.moveEntryToTrash();
+		
+		trash = portfolio
+			.clickToolbarBack()
+			.clickToolbarBack()
+			.openDeletedEntries();
+		
+		trash
+			.assertOnPageTableView(pageToDelete)
+			.switchTableView()
+			.selectPageInTableView(pageToDelete)
+			.deleteEntry()
+			.assertEmptyTableView();
+	}
+	
+	/**
+	 * A user create a binder with section and pages, move it to
+	 * the trash. Then it goes to the trash restore it. Return to
+	 * the list of binders, move the binder again to the trash and
+	 * goes there to delete it definitively.
+	 * 
+	 * @param loginPage
+	 * @throws IOException
+	 * @throws URISyntaxException
+	 */
+	@Test
+	@RunAsClient
+	public void deleteBinder(@InitialPage LoginPage loginPage)
+	throws IOException, URISyntaxException {
+		UserVO author = new UserRestClient(deploymentUrl).createRandomUser("rei");
+		
+		loginPage
+			.loginAs(author.getLogin(), author.getPassword())
+			.resume();
+		
+		UserToolsPage userTools = new UserToolsPage(browser);
+		PortfolioV2HomePage portfolio = userTools
+				.openUserToolsMenu()
+				.openPortfolioV2();
+		
+		String binderTitle = "Binder ephemere " + UUID.randomUUID();
+		BindersPage myBinders = portfolio
+			.openMyBinders();
+		BinderPage binder = myBinders
+			.createBinder(binderTitle, "A binder that I want to delete");
+		
+		String sectionTitle = "Section one " + UUID.randomUUID();
+		binder
+			.selectEntries()
+			.createSection(sectionTitle)
+			.assertOnSectionTitleInEntries(sectionTitle);
+		
+		for(int i=1; i<3; i++) {
+			String pageTitle = "Page " + i;
+			binder
+				.createEntry(pageTitle)
+				.assertOnPage(pageTitle)
+				.selectEntries();
+		}
+		binder
+			.selectTableOfContent()
+			.selectEntryInToc("Page 1");
+		
+		//reload the binder
+		portfolio
+			.clickToolbarBack()
+			.clickToolbarBack();
+		myBinders
+			.selectBinder(binderTitle);
+		
+		// move the binder to the trash
+		binder
+			.assertOnPageInToc("Page 1")
+			.moveBinderToTrash();
+		
+		// go in the trash to restore it
+		portfolio
+			.clickToolbarBack()
+			.openDeletedBinders()
+			.switchTableView()
+			.restoreBinder(binderTitle);
+		
+		// move it to the trash again
+		portfolio
+			.clickToolbarBack()
+			.openMyBinders()
+			.selectBinder(binderTitle)
+			.moveBinderToTrash();
+		
+		// go to the trash to delete it definitively
+		portfolio
+			.clickToolbarBack()
+			.openDeletedBinders()
+			.selectBinderInTableView(binderTitle)
+			.assertOnPageInToc("Page 2")
+			.deleteBinder()
+			.assertEmptyTableView();
 	}
 }

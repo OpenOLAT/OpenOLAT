@@ -501,10 +501,13 @@ implements Activateable2, TooledController, FlexiTableComponentDelegate {
 			if(event == Event.CHANGED_EVENT) {
 				loadModel(ureq, null);
 				fireEvent(ureq, Event.CHANGED_EVENT);
-			} else if(event instanceof PageRemovedEvent || event instanceof PageDeletedEvent) {
+			} else if(event instanceof PageRemovedEvent) {
 				loadModel(ureq, null);
 				stackPanel.popUpToController(this);
 				fireEvent(ureq, Event.CHANGED_EVENT);
+			} else if(event instanceof PageDeletedEvent) {
+				loadModel(ureq, null);
+				fireEvent(ureq, event);
 			}
 		} else if(commentsCtrl == source) {
 			if(event == Event.CHANGED_EVENT || "comment_count_changed".equals(event.getCommand())) {

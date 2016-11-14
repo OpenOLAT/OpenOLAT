@@ -130,7 +130,7 @@ public class RestorePageController extends FormBasicController {
 				for (int i = 0; i < numOfSections; i++) {
 					Long sectionKey = sections.get(i).getKey();
 					theKeys[i] = sectionKey.toString();
-					theValues[i] = (i + 1) + ". " + sections.get(i).getTitle();
+					theValues[i] = sections.get(i).getTitle();
 				}
 				
 				sectionsEl.setKeysAndValues(theKeys, theValues, null);

@@ -173,6 +173,29 @@ public class EntryPage {
 		return this;
 	}
 	
+	public BinderPage moveEntryToTrash() {
+		By moveToTrashBy = By.cssSelector("a.o_sel_pf_move_page_to_trash");
+		OOGraphene.waitElement(moveToTrashBy, 5, browser);
+		browser.findElement(moveToTrashBy).click();
+		OOGraphene.waitBusy(browser);
+		OOGraphene.waitModalDialog(browser);
+		
+		BinderPage binder = new BinderPage(browser);
+		binder.confirm();
+		return binder;
+	}
+	
+	public EntriesPage deleteEntry() {
+		By moveToTrashBy = By.cssSelector("a.o_sel_pf_delete_page");
+		OOGraphene.waitElement(moveToTrashBy, 5, browser);
+		browser.findElement(moveToTrashBy).click();
+		OOGraphene.waitBusy(browser);
+		OOGraphene.waitModalDialog(browser);
+		
+		new BinderPage(browser).confirm();
+		return new EntriesPage(browser);
+	}
+	
 	public EntryPage toggleEditor() {
 		By closeBy = By.cssSelector("a.o_sel_pf_edit_page");
 		OOGraphene.waitElement(closeBy, 5, browser);

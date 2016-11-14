@@ -153,6 +153,7 @@ public class PageRunController extends BasicController implements TooledControll
 		
 		moveToTrashLink = LinkFactory.createToolLink("delete.page", translate("delete.page"), this);
 		moveToTrashLink.setIconLeftCSS("o_icon o_icon-lg o_icon_delete_item");
+		moveToTrashLink.setElementCssClass("o_sel_pf_move_page_to_trash");
 		moveToTrashLink.setVisible(secCallback.canDeletePage(page));
 		stackPanel.addTool(moveToTrashLink, Align.right);
 		
@@ -163,6 +164,7 @@ public class PageRunController extends BasicController implements TooledControll
 			
 			deleteLink = LinkFactory.createToolLink("delete.def.page", translate("delete.def.page"), this);
 			deleteLink.setIconLeftCSS("o_icon o_icon-lg o_icon_delete_item");
+			deleteLink.setElementCssClass("o_sel_pf_delete_page");
 			stackPanel.addTool(deleteLink, Align.left);
 		}
 	}
