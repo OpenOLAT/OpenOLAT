@@ -29,7 +29,8 @@
     	for(i=areaIds.length; i-->0; ) {
     		var areaEl = jQuery('#ac_' + settings.responseIdentifier + '_' + areaIds[i]);
     		var data = areaEl.data('maphilight') || {};
-    		data.alwaysOn = true;
+    		data.selectedOn = true;
+    		colorData(data);
     		areaEl.data('maphilight', data).trigger('alwaysOn.maphilight');
     		
     		var inputElement = jQuery('<input type="hidden"/>')
@@ -51,13 +52,13 @@
     function clickHotspotArea(spot, containerId, responseIdentifier, maxChoices) {
     	var areaEl = jQuery(spot);
     	var data = areaEl.data('maphilight') || {};
-    	if(!data.alwaysOn) {
+    	if((typeof data.selectedOn === "undefined") || !data.selectedOn) {
     		var numOfChoices = maxChoices;
     		if(numOfChoices > 0) {
     			var countChoices = 0;
     			jQuery("area", "map[name='" + containerId + "_map']").each(function(index, el) {
     				var cData = jQuery(el).data('maphilight') || {};
-    				if(cData.alwaysOn) {
+    				if(cData.selectedOn) {
     					countChoices++;
     				}
     			});
@@ -66,7 +67,13 @@
     			}
     		}
     	}
-    	data.alwaysOn = !data.alwaysOn;
+    	
+    	if(typeof data.selectedOn === "undefined") {
+    		data.selectedOn = true;
+    	} else {
+    		data.selectedOn = !data.selectedOn;
+    	}
+    	colorData(data);
     	areaEl.data('maphilight', data).trigger('alwaysOn.maphilight');
 
     	var divContainer = jQuery('#' + containerId);
@@ -74,12 +81,35 @@
     	jQuery("area", "map[name='" + containerId + "_map']").each(function(index, el) {
     		var cAreaEl = jQuery(el);
     		var cData = cAreaEl.data('maphilight') || {};
-    		if(cData.alwaysOn) {
+    		if(cData.selectedOn) {
     			var inputElement = jQuery('<input type="hidden"/>')
     				.attr('name', 'qtiworks_response_' + responseIdentifier)
     				.attr('value', cAreaEl.data('qti-id'));
     			divContainer.append(inputElement);
     		}
     	});
+    };
+    
+    /*
+     * Color the data based on the selectedOn flag
+     */
+    function colorData(data) {
+    	if(data.selectedOn) {
+        	data.fillColor = '0000ff';
+    		data.strokeColor = '0000ff';
+    		data.strokeOpacity = 1;
+    		data.shadow = true;
+    		data.shadowX = 4;
+    		data.shadowY = 4;
+    		data.shadowRadius = 8;
+    		data.shadowColor = '000000';
+    		data.shadowOpacity = 0.8;
+    		data.shadowPosition = 'outside';
+    	} else {
+        	data.fillColor = '888888';
+    		data.strokeColor = '333333';
+    		data.strokeOpacity = 0.5;
+    		data.shadow = false;
+    	}
     }
 }( jQuery ));

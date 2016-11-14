@@ -38,6 +38,7 @@ import org.olat.modules.assessment.ui.AssessmentToolController;
 import org.olat.modules.assessment.ui.AssessmentToolSecurityCallback;
 import org.olat.modules.portfolio.Binder;
 import org.olat.modules.portfolio.PortfolioService;
+import org.olat.modules.portfolio.ui.model.AssessableBinderResource;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.model.RepositoryEntrySecurity;
 import org.olat.repository.ui.RepositoryEntryRuntimeController;
@@ -210,7 +211,7 @@ public class BinderRuntimeController extends RepositoryEntryRuntimeController {
 	private AssessableResource getAssessableElement() {
 		boolean hasScore = false;
 		boolean hasPassed = true;
-		return new AssessableResource(hasScore, hasPassed, true, true, null, null, null);
+		return new AssessableBinderResource(hasScore, hasPassed, true, true, null, null, null);
 	}
 	
 	private void enableRuntimeNavBar(boolean enabled) {

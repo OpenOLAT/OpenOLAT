@@ -81,6 +81,8 @@ import org.olat.ims.qti.export.QTIExportManager;
 import org.olat.ims.qti.fileresource.TestFileResource;
 import org.olat.ims.qti.process.AssessmentInstance;
 import org.olat.ims.qti.process.FilePersister;
+import org.olat.ims.qti.resultexport.QTI12ExportResultsReportController;
+import org.olat.ims.qti.resultexport.QTI21ExportResultsReportController;
 import org.olat.ims.qti.statistics.QTIStatisticResourceResult;
 import org.olat.ims.qti.statistics.QTIStatisticSearchParams;
 import org.olat.ims.qti.statistics.QTIType;
@@ -99,6 +101,7 @@ import org.olat.ims.qti21.ui.statistics.QTI21StatisticsSecurityCallback;
 import org.olat.ims.qti21.ui.statistics.QTI21StatisticsToolController;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.assessment.AssessmentEntry;
+import org.olat.modules.assessment.AssessmentToolOptions;
 import org.olat.modules.iq.IQSecurityCallback;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryImportExport;
@@ -242,6 +245,8 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements Pe
 			if(qtiService.needManualCorrection(qtiTestEntry)) {
 				tools.add(new QTI21CorrectionToolController(ureq, wControl, courseEnv, options, this));
 			}
+			tools.add(new QTI21ExportResultsReportController(ureq, wControl, stackPanel, courseEnv, options, this));
+
 		} else {
 			tools.add(new QTI12StatisticsToolController(ureq, wControl, stackPanel, courseEnv, options, this));
 			if(options.getGroup() == null && options.getIdentities() != null && options.getIdentities().size() > 0) {
@@ -252,6 +257,7 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements Pe
 					}
 				}
 			}
+			tools.add(new QTI12ExportResultsReportController(ureq, wControl, stackPanel, courseEnv, options, this));
 		}
 		return tools;
 	}

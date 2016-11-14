@@ -17,7 +17,7 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.course.nodes;
+package org.olat.modules.assessment;
 
 import java.util.List;
 

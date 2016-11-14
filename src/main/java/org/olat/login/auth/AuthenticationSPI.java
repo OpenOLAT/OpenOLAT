@@ -31,6 +31,14 @@ public interface AuthenticationSPI {
 	
 	public Identity authenticate(Identity identity, String login, String password);
 	
+	/**
+	 * Update the password
+	 * 
+	 * @param identity
+	 * @param login
+	 * @param password
+	 */
 	public void upgradePassword(Identity identity, String login, String password);
+	
 
 }

@@ -67,6 +67,7 @@ import uk.ac.ed.ph.jqtiplus.node.item.interaction.ExtendedTextInteraction;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.HotspotInteraction;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.MatchInteraction;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.TextEntryInteraction;
+import uk.ac.ed.ph.jqtiplus.node.item.interaction.UploadInteraction;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.choice.SimpleAssociableChoice;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.choice.SimpleChoice;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.choice.SimpleMatchSet;
@@ -154,9 +155,6 @@ public class AssessmentItemFactory {
 		ItemBodyGroup itemBodyGroup = nodeGroups.getItemBodyGroup();
 		ItemBody itemBody = new ItemBody(assessmentItem);
 		itemBodyGroup.setItemBody(itemBody);
-
-		P question = getParagraph(itemBody, "");
-		itemBody.getBlocks().add(question);
 		return itemBody;
 	}
 	
@@ -355,6 +353,21 @@ public class AssessmentItemFactory {
 		responseDeclaration.setIdentifier(declarationId);
 		responseDeclaration.setCardinality(Cardinality.SINGLE);
 		responseDeclaration.setBaseType(BaseType.STRING);
+		return responseDeclaration;
+	}
+	
+	public static UploadInteraction appendUploadInteraction(ItemBody itemBody, Identifier responseDeclarationId) {
+		UploadInteraction textInteraction = new UploadInteraction(itemBody);
+		textInteraction.setResponseIdentifier(responseDeclarationId);
+		itemBody.getBlocks().add(textInteraction);
+		return textInteraction;
+	}
+	
+	public static ResponseDeclaration createUploadResponseDeclaration(AssessmentItem assessmentItem, Identifier declarationId) {
+		ResponseDeclaration responseDeclaration = new ResponseDeclaration(assessmentItem);
+		responseDeclaration.setIdentifier(declarationId);
+		responseDeclaration.setCardinality(Cardinality.SINGLE);
+		responseDeclaration.setBaseType(BaseType.FILE);
 		return responseDeclaration;
 	}
 	

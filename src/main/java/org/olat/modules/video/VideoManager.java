@@ -29,6 +29,7 @@ import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.fileresource.types.ResourceEvaluation;
 import org.olat.modules.video.manager.VideoExportMediaResource;
+import org.olat.modules.video.ui.VideoChapterTableRow;
 import org.olat.repository.RepositoryEntry;
 import org.olat.resource.OLATResource;
 
@@ -40,21 +41,74 @@ import org.olat.resource.OLATResource;
  * @author Dirk Furrer, dirk.furrer@frentix.com, http://www.frentix.com
  */
 public interface VideoManager {
-
+	
+	/**
+	 * get Videofile as File representation
+	 * @param videoResource
+	 * @return File 
+	 */
 	public abstract File getVideoFile(OLATResource videoResource);
 
+	/**
+	 * get actually configured posterframe as VFSLeaf representation
+	 * @param videoResource
+	 * @return VFSLeaf
+	 */
 	public abstract VFSLeaf getPosterframe(OLATResource videoResource);
-
+	
+	/**
+	 * set posterframe for given videoResource
+	 * @param videoResource
+	 * @param posterframe
+	 */
 	public abstract void setPosterframe(OLATResource videoResource, VFSLeaf posterframe);
+	
+	/**
+	 * Sets the posterframe resize uploadfile.
+	 *
+	 * @param videoResource the video resource
+	 * @param newPosterFile the new poster file
+	 */
+	public abstract void setPosterframeResizeUploadfile(OLATResource videoResource, VFSLeaf newPosterFile);
 
+	/**
+	 * get all available Tracks of given videoResource
+	 * @param videoResource
+	 * @return HashMap<String, VFSLeaf>
+	 */
 	public abstract HashMap<String, VFSLeaf> getAllTracks(OLATResource videoResource);
 
+	/**
+	 * add track file for given language to videoResource
+	 * @param videoResource
+	 * @param lang
+	 * @param trackFile
+	 */
 	public abstract void addTrack(OLATResource videoResource, String lang, VFSLeaf trackFile);
 
+	/**
+	 * get Track in given lang as VFSLeaf
+	 * @param videoResource
+	 * @param lang
+	 * @return VFSLeaf
+	 */
 	public abstract VFSLeaf getTrack(OLATResource videoResource, String lang);
 
+	/**
+	 * remove a track in given language in videoResource
+	 * @param videoResource
+	 * @param lang
+	 */
 	public abstract void removeTrack(OLATResource videoResource, String lang);
 
+	/**
+	 * get Frame at given frameNumber in video and save it in the VFSLeaf 'frame'
+	 * @param videoResource
+	 * @param frameNumber
+	 * @param frame
+	 * @return true if successfull or false
+	 * @throws IOException
+	 */
 	public abstract boolean getFrame(OLATResource videoResource, int frameNumber, VFSLeaf frame) throws IOException;
 
 	/**
@@ -185,8 +239,54 @@ public interface VideoManager {
 	public abstract boolean deleteVideoTranscodings(OLATResource videoResource);
 
 	/**
+	 * Delete single transcoding of resource
+	 * @param videoTranscoding
+	 * @return
+	 */
+	public abstract void deleteVideoTranscoding(VideoTranscoding videoTranscoding);
+	
+	/**
 	 * @return List of video transcodings which have not yet been done
 	 */
 	public abstract List<VideoTranscoding> getVideoTranscodingsPendingAndInProgress();
+	
+	/**
+	 * Returns a list with 
+	 * @param videoResource
+	 * @return List with versions of videos which are 
+	 */
+	public abstract List<Integer> getMissingTranscodings(OLATResource videoResource);
+	
+	/**
+	 * create a VideoTransconding with the given configuration.
+	 * @param video
+	 * @param resolution
+	 * @param format
+	 * @return
+	 */
+	public abstract VideoTranscoding createTranscoding(OLATResource video, int resolution,String format);
 
+	/**
+	 * Checks for chapters.
+	 *
+	 * @param videoResource the video resource
+	 * @return true, if successful
+	 */
+	public abstract boolean hasChapters(OLATResource videoResource);
+
+	/**
+	 * Load chapters.
+	 *
+	 * @param chapters the chapters
+	 * @param olatResource the video resource
+	 */
+	public abstract void loadChapters(List<VideoChapterTableRow> chapters, OLATResource olatResource);
+
+	/**
+	 * Save chapters.
+	 *
+	 * @param chapters the chapters
+	 * @param olatResource the video resource
+	 */
+	public abstract void saveChapters(List<VideoChapterTableRow> chapters, OLATResource olatResource);	
 }

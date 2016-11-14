@@ -58,7 +58,7 @@ public class KalendarEvent implements Cloneable, Comparable<KalendarEvent> {
 	private String subject;
 	private String description;
 	private Date begin, end;
-	private Date immutableBegin;
+	private Date immutableBegin, immutableEnd;
 	private boolean isAllDayEvent;
 	private String location;
 	private List<KalendarEventLink> kalendarEventLinks;
@@ -98,6 +98,7 @@ public class KalendarEvent implements Cloneable, Comparable<KalendarEvent> {
 		this.begin = begin;
 		immutableBegin = begin;
 		this.end = end;
+		immutableEnd = end;
 		isAllDayEvent = false;
 		kalendarEventLinks = new ArrayList<>();
 	}
@@ -115,6 +116,7 @@ public class KalendarEvent implements Cloneable, Comparable<KalendarEvent> {
 		this.begin = begin;
 		immutableBegin = begin;
 		end = new Date(begin.getTime() + duration);
+		immutableEnd = end;
 		isAllDayEvent = false;
 		kalendarEventLinks = new ArrayList<>();
 	}
@@ -157,8 +159,26 @@ public class KalendarEvent implements Cloneable, Comparable<KalendarEvent> {
 		this.begin = begin;
 	}
 	
+	/**
+	 * This value is the original read value from the calendar
+	 * before any changes by the UI. It serves to compare changes
+	 * made on the event.
+	 * 
+	 * @return The original begin date of the event.
+	 */
 	public Date getImmutableBegin() {
 		return immutableBegin;
+	}
+	
+	/**
+	 * This value is the original read value from the calendar
+	 * before any changes by the UI. It serves to compare changes
+	 * made on the event.
+	 * 
+	 * @return The original begin date of the event.
+	 */
+	public Date getImmutableEnd() {
+		return immutableEnd;
 	}
 	
 	public String getDescription() {

@@ -20,83 +20,99 @@
 package org.olat.modules.video.ui;
 
 import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.components.form.flexible.FormItem;
-import org.olat.core.gui.components.form.flexible.FormItemContainer;
-import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
-import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
-import org.olat.core.gui.components.form.flexible.impl.FormEvent;
-import org.olat.core.gui.control.Controller;
+import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.link.Link;
+import org.olat.core.gui.components.link.LinkFactory;
+import org.olat.core.gui.components.segmentedview.SegmentViewComponent;
+import org.olat.core.gui.components.segmentedview.SegmentViewEvent;
+import org.olat.core.gui.components.segmentedview.SegmentViewFactory;
+import org.olat.core.gui.components.velocity.VelocityContainer;
+import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.modules.video.VideoModule;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.olat.core.gui.control.controller.BasicController;
 
 /**
- * administration mainform of videomodule
- * @author dfurrer, dirk.furrer@frentix.com, http://www.frentix.com
+ * administration segmentview controller
+ * @author fkiefer, fabian.kiefer@frentix.com, http://www.frentix.com
  *
  */
-public class VideoAdminController extends FormBasicController  {
+public class VideoAdminController extends BasicController  {
 
-	private MultipleSelectionElement enableEl;
-	private MultipleSelectionElement enableCourseNodeEl;
-	private MultipleSelectionElement enableTranscodingEl;
-
-	@Autowired
-	private VideoModule videoModule;
+	
+	private final SegmentViewComponent segmentView;
+	private Link adminSetLink, adminListLink, adminTranscodingLink;
+	private VelocityContainer mainVC;
+	
+	private VideoAdminSetController adminSetController;
+	private VideoAdminListController adminListController;
+	private VideoAdminTranscodingController adminTranscodingController;
 
 	public VideoAdminController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
-		initForm(ureq);
+		mainVC = createVelocityContainer("video_admin");
+
+		segmentView = SegmentViewFactory.createSegmentView("segments", mainVC, this);
+
+		adminSetLink = LinkFactory.createLink("tab.admin.set", mainVC, this);
+		segmentView.addSegment(adminSetLink, true);
+		adminListLink = LinkFactory.createLink("tab.admin.list", mainVC, this);
+		segmentView.addSegment(adminListLink, false);
+		adminTranscodingLink = LinkFactory.createLink("tab.admin.transcoding", mainVC, this);
+		segmentView.addSegment(adminTranscodingLink, false);
+		
+		doOpenAdminList(ureq);
+		
+		segmentView.select(adminListLink);
+		
+		putInitialPanel(mainVC);
+	}
+	
+	@Override
+	public void event(UserRequest ureq, Component source, Event event) {
+		if(source == segmentView) {
+			if(event instanceof SegmentViewEvent) {
+				SegmentViewEvent sve = (SegmentViewEvent)event;
+				String segmentCName = sve.getComponentName();
+				Component clickedLink = mainVC.getComponent(segmentCName);
+				if (clickedLink == adminSetLink) {
+					doOpenAdminConfig(ureq);
+				} else if (clickedLink == adminListLink){
+					doOpenAdminList(ureq);
+				} else if (clickedLink == adminTranscodingLink){
+					doOpenTranscodingAdmin(ureq);
+				}
+			}
+		}
+	}
+	
+	private void doOpenAdminConfig(UserRequest ureq) {
+		if(adminSetController == null) {
+			adminSetController = new VideoAdminSetController(ureq, getWindowControl());
+			listenTo(adminSetController);
+		}
+		mainVC.put("segmentCmp", adminSetController.getInitialComponent());
+	}
+
+	private void doOpenAdminList(UserRequest ureq) {
+		if(adminListController == null) {
+			adminListController = new VideoAdminListController(ureq, getWindowControl());
+			listenTo(adminListController);
+		}
+		mainVC.put("segmentCmp", adminListController.getInitialComponent());
+	}
+	
+	private void doOpenTranscodingAdmin(UserRequest ureq){
+		if(adminTranscodingController == null) {
+			adminTranscodingController = new VideoAdminTranscodingController(ureq, getWindowControl());
+			listenTo(adminTranscodingController);
+		}
+		mainVC.put("segmentCmp", adminTranscodingController.getInitialComponent());
+		adminTranscodingController.setChecks();
 	}
 
 	@Override
 	protected void doDispose() {
-		// TODO Auto-generated method stub
+		// nothing to dispose, controllers disposed by basic controller
 	}
 
-	@Override
-	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		setFormTitle("admin.config.title");
-
-		String[] enableKeys = new String[]{ "on" };
-		String[] enableValues = new String[]{ translate("on") };
-
-		enableEl = uifactory.addCheckboxesHorizontal("admin.config.enable", formLayout, enableKeys, enableValues);
-		enableEl.select("on", videoModule.isEnabled());
-		enableEl.addActionListener(FormEvent.ONCHANGE);
-
-		enableCourseNodeEl = uifactory.addCheckboxesHorizontal("admin.config.videoNode", formLayout, enableKeys, enableValues);
-		enableCourseNodeEl.select("on", videoModule.isCoursenodeEnabled());
-		enableCourseNodeEl.setVisible(enableEl.isSelected(0));
-		enableCourseNodeEl.addActionListener(FormEvent.ONCHANGE);
-
-		enableTranscodingEl = uifactory.addCheckboxesHorizontal("admin.config.transcoding", formLayout, enableKeys, enableValues);
-		enableTranscodingEl.select("on", videoModule.isTranscodingEnabled());
-		enableTranscodingEl.setVisible(enableEl.isSelected(0));
-		enableTranscodingEl.addActionListener(FormEvent.ONCHANGE);
-
-	}
-
-	@Override
-	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		//update config with values from UI
-		if(source == enableEl){
-			videoModule.setEnabled(enableEl.isSelected(0));
-			enableCourseNodeEl.setVisible(enableEl.isSelected(0));
-			enableTranscodingEl.setVisible(enableEl.isSelected(0));
-			enableCourseNodeEl.select("on", videoModule.isCoursenodeEnabled());
-			enableTranscodingEl.select("on", videoModule.isTranscodingEnabled());
-		}
-		if(source == enableCourseNodeEl){
-			videoModule.setCoursenodeEnabled(enableCourseNodeEl.isSelected(0));
-		}
-		if(source == enableTranscodingEl){
-			videoModule.setTranscodingEnabled(enableTranscodingEl.isSelected(0));
-		}
-	}
-
-	@Override
-	protected void formOK(UserRequest ureq) {
-
-	}
 }

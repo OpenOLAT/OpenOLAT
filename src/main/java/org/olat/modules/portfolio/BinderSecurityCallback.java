@@ -36,6 +36,10 @@ public interface BinderSecurityCallback {
 	 */
 	public boolean canEditBinder();
 	
+	public boolean canMoveToTrashBinder(Binder binder);
+	
+	public boolean canDeleteBinder(Binder binder);
+	
 	/**
 	 * Can edit the edit the meta-data in this binder inclusive meta-data
 	 * of sections and pages.

@@ -203,13 +203,13 @@ public class VideoEditController  extends ActivateableTabbableDefaultController 
 			switch(config.getStringValue(VideoEditController.CONFIG_KEY_DESCRIPTION_SELECT)){
 
 			case "resourceDescription":
-					previewController = new VideoDisplayController(ureq, getWindowControl(), repositoryEntry, config.getBooleanSafe(VideoEditController.CONFIG_KEY_AUTOPLAY), config.getBooleanSafe(VideoEditController.CONFIG_KEY_COMMENTS), config.getBooleanSafe(VideoEditController.CONFIG_KEY_RATING), "", false,false, "");
+					previewController = new VideoDisplayController(ureq, getWindowControl(), repositoryEntry, config.getBooleanSafe(VideoEditController.CONFIG_KEY_AUTOPLAY), config.getBooleanSafe(VideoEditController.CONFIG_KEY_COMMENTS), config.getBooleanSafe(VideoEditController.CONFIG_KEY_RATING), true, "", false,false, "");
 					break;
 			case "customDescription":
-					previewController = new VideoDisplayController(ureq, getWindowControl(), repositoryEntry, config.getBooleanSafe(VideoEditController.CONFIG_KEY_AUTOPLAY), config.getBooleanSafe(VideoEditController.CONFIG_KEY_COMMENTS), config.getBooleanSafe(VideoEditController.CONFIG_KEY_RATING), "", true,false, config.getStringValue(VideoEditController.CONFIG_KEY_DESCRIPTION_CUSTOMTEXT));
+					previewController = new VideoDisplayController(ureq, getWindowControl(), repositoryEntry, config.getBooleanSafe(VideoEditController.CONFIG_KEY_AUTOPLAY), config.getBooleanSafe(VideoEditController.CONFIG_KEY_COMMENTS), config.getBooleanSafe(VideoEditController.CONFIG_KEY_RATING), true, "", true,false, config.getStringValue(VideoEditController.CONFIG_KEY_DESCRIPTION_CUSTOMTEXT));
 					break;
 			case "none":
-					previewController = new VideoDisplayController(ureq, getWindowControl(), repositoryEntry, config.getBooleanSafe(VideoEditController.CONFIG_KEY_AUTOPLAY), config.getBooleanSafe(VideoEditController.CONFIG_KEY_COMMENTS), config.getBooleanSafe(VideoEditController.CONFIG_KEY_RATING), "", true,false, "");
+					previewController = new VideoDisplayController(ureq, getWindowControl(), repositoryEntry, config.getBooleanSafe(VideoEditController.CONFIG_KEY_AUTOPLAY), config.getBooleanSafe(VideoEditController.CONFIG_KEY_COMMENTS), config.getBooleanSafe(VideoEditController.CONFIG_KEY_RATING), true, "", true,false, "");
 					break;
 			}
 			cmc = new CloseableModalController(

@@ -35,22 +35,18 @@ import java.util.List;
 import java.util.Locale;
 
 import org.olat.commons.calendar.model.KalendarEvent;
-import org.olat.core.CoreSpringFactory;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 
 import net.fortuna.ical4j.model.DateList;
-import net.fortuna.ical4j.model.DateTime;
 import net.fortuna.ical4j.model.Recur;
-import net.fortuna.ical4j.model.TimeZone;
 import net.fortuna.ical4j.model.WeekDayList;
 import net.fortuna.ical4j.model.property.ExDate;
-import net.fortuna.ical4j.model.property.RRule;
 
 public class CalendarUtils {
 	private static final OLog log = Tracing.createLoggerFor(CalendarUtils.class);
 	private static final SimpleDateFormat ical4jFormatter = new SimpleDateFormat("yyyyMMdd");
-	private static final SimpleDateFormat occurenceDateTimeFormat = new SimpleDateFormat("yyyyMMdd'T'hhmmss");
+	private static final SimpleDateFormat occurenceDateTimeFormat = new SimpleDateFormat("yyyyMMdd'T'HHmmss");
 
 	public static String getTimeAsString(Date date, Locale locale) {
 		return DateFormat.getTimeInstance(DateFormat.SHORT, locale).format(date);
@@ -82,6 +78,14 @@ public class CalendarUtils {
 		cal.set(Calendar.HOUR_OF_DAY, 0);
 		cal.set(Calendar.MINUTE, 0);
 		cal.set(Calendar.SECOND, 0);
+		cal.set(Calendar.MILLISECOND, 0);
+		return cal;
+	}
+	
+	public static Calendar getEndOfDay(Calendar cal) {
+		cal.set(Calendar.HOUR_OF_DAY, 23);
+		cal.set(Calendar.MINUTE, 59);
+		cal.set(Calendar.SECOND, 59);
 		cal.set(Calendar.MILLISECOND, 0);
 		return cal;
 	}
@@ -126,54 +130,7 @@ public class CalendarUtils {
 	
 
 	
-	/**
-	 * Build iCalendar-compliant recurrence rule
-	 * @param recurrence
-	 * @param recurrenceEnd
-	 * @return rrule
-	 */
-	public static String getRecurrenceRule(String recurrence, Date recurrenceEnd) {
-		TimeZone tz = ((CalendarModule)CoreSpringFactory.getBean("calendarModule")).getDefaultTimeZone();
-		
-		if (recurrence != null) { // recurrence available
-			// create recurrence rule
-			StringBuilder sb = new StringBuilder();
-			sb.append("FREQ=");
-			if(recurrence.equals(KalendarEvent.WORKDAILY)) {
-				// build rule for monday to friday
-				sb.append(KalendarEvent.DAILY);
-				sb.append(";");
-				sb.append("BYDAY=MO,TU,WE,TH,FR");
-			} else if(recurrence.equals(KalendarEvent.BIWEEKLY)) {
-				// build rule for biweekly
-				sb.append(KalendarEvent.WEEKLY);
-				sb.append(";");
-				sb.append("INTERVAL=2");
-			} else {
-				// normal supported recurrence
-				sb.append(recurrence);
-			}
-			if(recurrenceEnd != null) {
-				DateTime recurEndDT = new DateTime(recurrenceEnd.getTime());
-				if(tz != null) {
-					recurEndDT.setTimeZone(tz);
-				}
-				sb.append(";");
-				sb.append(KalendarEvent.UNTIL);
-				sb.append("=");
-				sb.append(recurEndDT.toString());
-			}
-			try {
-				Recur recur = new Recur(sb.toString());
-				RRule rrule = new RRule(recur);
-				return rrule.getValue();
-			} catch (ParseException e) {
-				log.error("cannot create recurrence rule: " + recurrence.toString(), e);
-			}
-		}
-		
-		return null;
-	}
+
 	
 	/**
 	 * Create list with excluded dates based on the exclusion rule.

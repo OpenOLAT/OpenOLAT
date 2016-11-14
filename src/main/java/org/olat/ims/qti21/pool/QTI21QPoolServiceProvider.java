@@ -22,7 +22,10 @@ package org.olat.ims.qti21.pool;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URI;
 import java.net.URISyntaxException;
+import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -47,6 +50,7 @@ import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSManager;
+import org.olat.fileresource.FileResourceManager;
 import org.olat.fileresource.types.ImsQTI21Resource;
 import org.olat.ims.qti.QTIConstants;
 import org.olat.ims.qti.editor.QTIEditHelper;
@@ -66,6 +70,7 @@ import org.olat.ims.qti21.model.xml.interactions.HotspotAssessmentItemBuilder;
 import org.olat.ims.qti21.model.xml.interactions.KPrimAssessmentItemBuilder;
 import org.olat.ims.qti21.model.xml.interactions.MultipleChoiceAssessmentItemBuilder;
 import org.olat.ims.qti21.model.xml.interactions.SingleChoiceAssessmentItemBuilder;
+import org.olat.ims.qti21.model.xml.interactions.UploadAssessmentItemBuilder;
 import org.olat.ims.resources.IMSEntityResolver;
 import org.olat.imscp.xml.manifest.ResourceType;
 import org.olat.modules.qpool.ExportFormatOptions;
@@ -84,6 +89,7 @@ import org.olat.modules.qpool.manager.QuestionItemDAO;
 import org.olat.modules.qpool.manager.TaxonomyLevelDAO;
 import org.olat.modules.qpool.model.DefaultExportFormat;
 import org.olat.modules.qpool.model.QuestionItemImpl;
+import org.olat.repository.RepositoryEntry;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.xml.sax.InputSource;
@@ -93,6 +99,8 @@ import org.xml.sax.helpers.XMLReaderFactory;
 import uk.ac.ed.ph.jqtiplus.node.item.AssessmentItem;
 import uk.ac.ed.ph.jqtiplus.node.test.AssessmentItemRef;
 import uk.ac.ed.ph.jqtiplus.resolution.ResolvedAssessmentItem;
+import uk.ac.ed.ph.jqtiplus.resolution.ResolvedAssessmentTest;
+import uk.ac.ed.ph.jqtiplus.resolution.RootNodeLookup;
 
 /**
  * 
@@ -220,6 +228,36 @@ public class QTI21QPoolServiceProvider implements QPoolSPI {
 				questionItemDao, qItemTypeDao, qEduContextDao, taxonomyLevelDao, qLicenseDao, qpoolFileStorage, qtiService);
 		return processor.process(file);
 	}
+	
+	public List<QuestionItem> importRepositoryEntry(Identity owner, RepositoryEntry repositoryEntry, Locale defaultLocale) {
+		
+		FileResourceManager frm = FileResourceManager.getInstance();
+		File unzippedDirRoot = frm.unzipFileResource(repositoryEntry.getOlatResource());
+		ResolvedAssessmentTest resolvedAssessmentTest = qtiService.loadAndResolveAssessmentTest(unzippedDirRoot, false, true);
+		ManifestBuilder clonedManifestBuilder = ManifestBuilder.read(new File(unzippedDirRoot, "imsmanifest.xml"));
+		
+		List<AssessmentItemRef> itemRefs = resolvedAssessmentTest.getAssessmentItemRefs();
+		List<QuestionItem> importedItems = new ArrayList<>(itemRefs.size());
+		
+		for(AssessmentItemRef itemRef:itemRefs) {
+			ResolvedAssessmentItem resolvedAssessmentItem = resolvedAssessmentTest.getResolvedAssessmentItem(itemRef);
+			RootNodeLookup<AssessmentItem> rootNode = resolvedAssessmentItem.getItemLookup();
+			
+			URI itemUri = rootNode.getSystemId();
+			File itemFile = new File(itemUri);
+			String relativePathToManifest = unzippedDirRoot.toPath().relativize(itemFile.toPath()).toString();
+			
+			AssessmentItem assessmentItem = resolvedAssessmentItem.getRootNodeLookup().extractIfSuccessful();
+
+			ResourceType resource = clonedManifestBuilder.getResourceTypeByHref(relativePathToManifest);
+			ManifestMetadataBuilder metadata = clonedManifestBuilder.getMetadataBuilder(resource, true);
+			
+			QuestionItem qitem = importAssessmentItemRef(owner, assessmentItem, itemFile, metadata, unzippedDirRoot, defaultLocale);
+			importedItems.add(qitem);
+		}
+		
+		return importedItems;
+	}
 
 	@Override
 	public MediaResource exportTest(List<QuestionItemShort> items, ExportFormatOptions format, Locale locale) {
@@ -298,6 +336,7 @@ public class QTI21QPoolServiceProvider implements QPoolSPI {
 			case fib: itemBuilder = new FIBAssessmentItemBuilder(EntryType.text, qtiService.qtiSerializer()); break;
 			case numerical: itemBuilder = new FIBAssessmentItemBuilder(EntryType.numerical, qtiService.qtiSerializer()); break;
 			case essay: itemBuilder = new EssayAssessmentItemBuilder(qtiService.qtiSerializer()); break;
+			case upload: itemBuilder = new UploadAssessmentItemBuilder(qtiService.qtiSerializer()); break;
 			case hotspot: itemBuilder = new HotspotAssessmentItemBuilder(qtiService.qtiSerializer()); break;
 			default: return null;
 		}
@@ -328,16 +367,16 @@ public class QTI21QPoolServiceProvider implements QPoolSPI {
 	/**
 	 * Very important, the ManifestMetadataBuilder will be changed, it need to be a clone
 	 * 
-	 * 
-	 * @param owner
-	 * @param itemRef
-	 * @param assessmentItem
-	 * @param clonedMetadataBuilder
-	 * @param fUnzippedDirRoot
-	 * @param defaultLocale
+	 * @param owner The future owner of the question
+	 * @param assessmentItem The assessment item to convert
+	 * @param itemFile The file where the assessment item is saved
+	 * @param clonedMetadataBuilder The metadata builder need to be a clone!
+	 * @param fUnzippedDirRoot The directory of the assessment item or the assessment test.
+	 * @param defaultLocale The locale used by some translation
+	 * @return
 	 */
-	public void importAssessmentItemRef(Identity owner,  AssessmentItemRef itemRef, AssessmentItem assessmentItem,
-			ManifestMetadataBuilder clonedMetadataBuilder, File fUnzippedDirRoot, Locale defaultLocale) {
+	public QuestionItem importAssessmentItemRef(Identity owner, AssessmentItem assessmentItem,
+			File itemFile, ManifestMetadataBuilder clonedMetadataBuilder, File fUnzippedDirRoot, Locale defaultLocale) {
 		QTI21ImportProcessor processor =  new QTI21ImportProcessor(owner, defaultLocale,
 				questionItemDao, qItemTypeDao, qEduContextDao, taxonomyLevelDao, qLicenseDao, qpoolFileStorage, qtiService);
 		
@@ -352,9 +391,7 @@ public class QTI21QPoolServiceProvider implements QPoolSPI {
 			editorVersion = assessmentItem.getToolVersion();
 		}
 
-		File itemFile = new File(fUnzippedDirRoot, itemRef.getHref().toString());
 		String originalItemFilename = itemFile.getName();
-
 		QuestionItemImpl qitem = processor.processItem(assessmentItem, null, originalItemFilename,
 				editor, editorVersion, metadata);
 		
@@ -370,15 +407,27 @@ public class QTI21QPoolServiceProvider implements QPoolSPI {
 		manifest.write(new File(itemStorage, "imsmanifest.xml"));
 		
 		//process material
+		File materialDirRoot = itemFile.getParentFile();
 		List<String> materials = processor.getMaterials(assessmentItem);
 		for(String material:materials) {
 			if(material.indexOf("://") < 0) {// material can be an external URL
-				File materialFile = new File(fUnzippedDirRoot, material);
-				if(materialFile.isFile() && materialFile.exists()) {
-					FileUtils.copyDirContentsToDir(materialFile, itemStorage, false, "QTI21 import material in pool");
+				try {
+					File materialFile = new File(materialDirRoot, material);
+					if(materialFile.isFile() && materialFile.exists()) {
+						File itemMaterialFile = new File(itemStorage, material);
+						if(!itemMaterialFile.getParentFile().exists()) {
+							itemMaterialFile.getParentFile().mkdirs();
+						}
+						
+						Files.copy(materialFile.toPath(), itemMaterialFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
+					}
+				} catch (IOException e) {
+					log.error("", e);
 				}
 			}
 		}
+		
+		return qitem;
 	}
 	
 	/**

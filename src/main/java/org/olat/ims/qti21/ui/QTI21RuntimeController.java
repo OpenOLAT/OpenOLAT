@@ -20,15 +20,7 @@
 package org.olat.ims.qti21.ui;
 
 import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.Date;
-import java.util.List;
-import java.util.zip.ZipOutputStream;
 
-import org.olat.core.commons.modules.bc.FolderConfig;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.dropdown.Dropdown;
@@ -39,21 +31,16 @@ import org.olat.core.gui.components.stack.PopEvent;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
-import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
-import org.olat.core.util.Formatter;
-import org.olat.core.util.StringHelper;
 import org.olat.core.util.resource.OresHelper;
-import org.olat.course.nodes.AssessmentToolOptions;
 import org.olat.fileresource.FileResourceManager;
 import org.olat.ims.qti21.QTI21Constants;
 import org.olat.ims.qti21.QTI21Service;
-import org.olat.ims.qti21.manager.archive.QTI21ArchiveFormat;
 import org.olat.ims.qti21.model.xml.QtiNodesExtractor;
 import org.olat.ims.qti21.ui.editor.AssessmentTestComposerController;
+import org.olat.modules.assessment.AssessmentToolOptions;
 import org.olat.modules.assessment.ui.AssessableResource;
 import org.olat.modules.assessment.ui.AssessmentToolController;
 import org.olat.modules.assessment.ui.AssessmentToolSecurityCallback;
@@ -75,13 +62,11 @@ import uk.ac.ed.ph.jqtiplus.resolution.ResolvedAssessmentTest;
  */
 public class QTI21RuntimeController extends RepositoryEntryRuntimeController  {
 	
-	private Link assessmentLink, testStatisticLink, qtiOptionsLink, resetDataLink;
+	private Link assessmentLink, testStatisticLink, qtiOptionsLink;
 
-	private CloseableModalController cmd;
 	private QTI21DeliveryOptionsController optionsCtrl;
 	private AssessmentToolController assessmentToolCtrl;
 	private QTI21RuntimeStatisticsController statsToolCtr;
-	private QTI21ConfirmDeleteDataController confirmResetDialog;
 	
 	private boolean reloadRuntime = false;
 
@@ -137,18 +122,6 @@ public class QTI21RuntimeController extends RepositoryEntryRuntimeController  {
 			settingsDropdown.addComponent(qtiOptionsLink);
 		}
 	}
-	
-	@Override
-	protected void initDeleteTools(Dropdown settingsDropdown, boolean needSpacer) {
-		if (reSecurity.isEntryAdmin()) {
-			settingsDropdown.addComponent(new Spacer(""));
-
-			resetDataLink = LinkFactory.createToolLink("resetData", translate("tab.reset.data"), this, "o_sel_repo_reset_data");
-			resetDataLink.setIconLeftCSS("o_icon o_icon-fw o_icon_delete_item");
-			settingsDropdown.addComponent(resetDataLink);
-		}
-		super.initDeleteTools(settingsDropdown, !reSecurity.isEntryAdmin());
-	}
 
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
@@ -158,8 +131,6 @@ public class QTI21RuntimeController extends RepositoryEntryRuntimeController  {
 			doAssessmentTool(ureq);
 		} else if(qtiOptionsLink == source) {
 			doQtiOptions(ureq);
-		} else if(resetDataLink == source) {
-			doConfirmResetData(ureq);
 		} else if(toolbarPanel == source) {
 			if(event instanceof PopEvent) {
 				PopEvent pe = (PopEvent)event;
@@ -180,34 +151,6 @@ public class QTI21RuntimeController extends RepositoryEntryRuntimeController  {
 			}
 		}
 		super.event(ureq, source, event);
-	}
-	
-	@Override
-	protected void event(UserRequest ureq, Controller source, Event event) {
-		if(confirmResetDialog == source) {
-			if(event == Event.DONE_EVENT) {
-				doReset(ureq);
-			}
-			cmd.deactivate();
-			//only this one
-			cleanUpReset();
-		} else if(cmd == source) {
-			cleanUp();
-		}
-		super.event(ureq, source, event);
-	}
-	
-	@Override
-	protected void cleanUp() {
-		super.cleanUp();
-		cleanUpReset();
-	}
-	
-	private void cleanUpReset() {
-		removeAsListenerAndDispose(confirmResetDialog);
-		removeAsListenerAndDispose(cmd);
-		confirmResetDialog = null;
-		cmd = null;
 	}
 
 	private void doReloadRuntimeController(UserRequest ureq) {
@@ -290,49 +233,6 @@ public class QTI21RuntimeController extends RepositoryEntryRuntimeController  {
 		Double minScore = QtiNodesExtractor.extractMinScore(assessmentTest);
 		boolean hasScore = assessmentTest.getOutcomeDeclaration(QTI21Constants.SCORE_IDENTIFIER) != null;
 		boolean hasPassed = assessmentTest.getOutcomeDeclaration(QTI21Constants.PASS_IDENTIFIER) != null;
-		return new AssessableResource(hasScore, hasPassed, true, true, minScore, maxScore, null);
-	}
-	
-	private void doConfirmResetData(UserRequest ureq) {
-		if(confirmResetDialog != null) return;
-
-		confirmResetDialog = new QTI21ConfirmDeleteDataController(ureq, getWindowControl(), getRepositoryEntry());
-		listenTo(confirmResetDialog);
-
-		String title = translate("reset.test.data.title");
-		cmd = new CloseableModalController(getWindowControl(), translate("close"), confirmResetDialog.getInitialComponent(), true, title);
-		cmd.activate();
-		listenTo(cmd);
-	}
-	
-	private void doReset(UserRequest ureq) {
-		RepositoryEntry testEntry = getRepositoryEntry();
-		List<Identity> identities = repositoryService.getMembers(testEntry);
-		
-		//backup
-		String archiveName = "qti21test_"
-				+ StringHelper.transformDisplayNameToFileSystemName(testEntry.getDisplayname())
-				+ "_" + Formatter.formatDatetimeFilesystemSave(new Date(System.currentTimeMillis())) + ".zip";
-		Path exportPath = Paths.get(FolderConfig.getCanonicalRoot(), FolderConfig.getUserHomes(), getIdentity().getName(),
-				"private", "archive", StringHelper.transformDisplayNameToFileSystemName(testEntry.getDisplayname()), archiveName);
-		File exportFile = exportPath.toFile();
-		exportFile.getParentFile().mkdirs();
-		
-		try(FileOutputStream fileStream = new FileOutputStream(exportFile);
-			ZipOutputStream exportStream = new ZipOutputStream(fileStream)) {
-			new QTI21ArchiveFormat(getLocale(), true, true, true).export(testEntry, exportStream);
-		} catch (IOException e) {
-			logError("", e);
-		}
-
-		//delete
-		qtiService.deleteAssessmentTestSession(identities, testEntry, null, null);
-		
-		//reload
-		if(toolbarPanel.size() == 1) {
-			doReloadRuntimeController(ureq);
-		} else {
-			reloadRuntime = true;
-		}
+		return new QTI21AssessableResource(hasScore, hasPassed, true, true, minScore, maxScore, null);
 	}
 }

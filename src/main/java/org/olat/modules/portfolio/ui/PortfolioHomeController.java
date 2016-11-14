@@ -58,7 +58,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class PortfolioHomeController extends BasicController implements Activateable2 {
 	
 	private Link myBindersLink, myEntriesLink, mySharedItemsLink, sharedItemsLink, mediaCenterLink;
-	private Link editLastEntryLink, createNewEntryLink, editLastUsedBinderLink, goToTrashLink;
+	private Link editLastEntryLink, createNewEntryLink, showHelpLink, goToTrashLink;
 	private final VelocityContainer mainVC;
 	private final TooledStackedPanel stackPanel;
 	
@@ -67,7 +67,7 @@ public class PortfolioHomeController extends BasicController implements Activate
 	private SharedItemsController sharedWithMeCtrl;
 	private BinderListController myPortfolioListCtrl;
 	private MySharedItemsController mySharedItemsCtrl;
-	private DeletedPageListController deletedItemsCtrl;
+	private TrashController deletedItemsCtrl;
 	
 	@Autowired
 	private PortfolioV2Module portfolioModule;
@@ -103,8 +103,8 @@ public class PortfolioHomeController extends BasicController implements Activate
 		editLastEntryLink.setIconRightCSS("o_icon o_icon_start");
 		createNewEntryLink = LinkFactory.createLink("new.entry", mainVC, this);
 		createNewEntryLink.setIconRightCSS("o_icon o_icon_start");
-		editLastUsedBinderLink = LinkFactory.createLink("edit.last.binder", mainVC, this);
-		editLastUsedBinderLink.setIconRightCSS("o_icon o_icon_start");
+		showHelpLink = LinkFactory.createLink("show.help.binder", mainVC, this);
+		showHelpLink.setIconRightCSS("o_icon o_icon_start");
 		goToTrashLink = LinkFactory.createLink("go.to.trash", mainVC, this);
 		goToTrashLink.setIconRightCSS("o_icon o_icon_start");
 
@@ -138,8 +138,8 @@ public class PortfolioHomeController extends BasicController implements Activate
 			doOpenLastEntry(ureq);
 		} else if(createNewEntryLink == source) {
 			doNewEntry(ureq);
-		} else if(editLastUsedBinderLink == source) {
-			doOpenLastEditedBindersEntry(ureq);
+		} else if(showHelpLink == source) {
+
 		} else if(goToTrashLink == source) {
 			doDeletedPages(ureq);
 		}
@@ -250,24 +250,11 @@ public class PortfolioHomeController extends BasicController implements Activate
 		return myPortfolioListCtrl;
 	}
 	
-	private void doOpenLastEditedBindersEntry(UserRequest ureq) {
-		Page lastModifiedPage = portfolioService.getLastPage(getIdentity(), true);
-		if(lastModifiedPage == null) {
-			//show message
-		} else {
-			Binder binder = lastModifiedPage.getSection().getBinder();
-			List<ContextEntry> entries = new ArrayList<>();
-			entries.add(BusinessControlFactory.getInstance().createContextEntry(OresHelper.createOLATResourceableInstance(Binder.class, binder.getKey())));
-			BinderListController ctrl = doOpenMyBinders(ureq);
-			ctrl.activate(ureq, entries, null);
-		}
-	}
-	
-	private DeletedPageListController doDeletedPages(UserRequest ureq) {
+	private TrashController doDeletedPages(UserRequest ureq) {
 		OLATResourceable bindersOres = OresHelper.createOLATResourceableInstance("Trash", 0l);
 		WindowControl swControl = addToHistory(ureq, bindersOres, null);
 		BinderSecurityCallback secCallback = BinderSecurityCallbackFactory.getCallbackForMyPageList();
-		deletedItemsCtrl = new DeletedPageListController(ureq, swControl, stackPanel, secCallback);
+		deletedItemsCtrl = new TrashController(ureq, swControl, stackPanel, secCallback);
 		listenTo(deletedItemsCtrl);
 		stackPanel.pushController(translate("deleted.pages.breadcrump"), deletedItemsCtrl);
 		return deletedItemsCtrl;

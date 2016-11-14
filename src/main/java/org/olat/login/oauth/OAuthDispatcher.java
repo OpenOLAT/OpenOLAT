@@ -143,6 +143,7 @@ public class OAuthDispatcher implements Dispatcher {
 			OAuthUser infos = provider.getUser(service, accessToken);
 			if(infos == null || !StringHelper.containsNonWhitespace(infos.getId())) {
 				error(ureq, translate(ureq, "error.no.id"));
+				log.error("OAuth Login failed, no infos extracted from access token ");
 				return;
 			}
 
@@ -154,6 +155,7 @@ public class OAuthDispatcher implements Dispatcher {
 					register(request, response, registration);
 				} else {
 					error(ureq, translate(ureq, "error.account.creation"));
+					log.error("OAuth Login ok but the user has not an account on OpenOLAT");
 				}
 			} else {
 				if(ureq.getUserSession() != null) {
@@ -216,6 +218,8 @@ public class OAuthDispatcher implements Dispatcher {
 					if(identity != null) {
 						auth = securityManager.createAndPersistAuthentication(identity, registration.getAuthProvider(), id, null, null);
 						registration.setIdentity(identity);
+					} else {
+						log.error("OAuth Login failed, user with user name " + email + " not found.");
 					}
 				}
 			} else {

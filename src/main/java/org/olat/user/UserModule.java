@@ -43,6 +43,7 @@ import org.olat.core.logging.StartupException;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.ldap.LDAPLoginManager;
+import org.olat.ldap.LDAPLoginModule;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -66,8 +67,6 @@ public class UserModule extends AbstractSpringModule {
 	
 	@Value("${password.change.allowed}")
 	private boolean pwdchangeallowed;
-	@Value("${ldap.propagatePasswordChangedOnLdapServer}")
-	private boolean pwdchangeallowedLDAP;
 	private String adminUserName = "administrator";
 	@Value("${user.logoByProfile:disabled}")
 	private String enabledLogoByProfile;
@@ -171,7 +170,7 @@ public class UserModule extends AbstractSpringModule {
 	 */
 	public boolean isPwdChangeAllowed(Identity id) {
 		if(id == null) {
-			return isAnyPwdchangeallowed();
+			return isAnyPasswordChangeAllowed();
 		}
 		
 		// if this is set to false, noone can change their pw
@@ -181,7 +180,8 @@ public class UserModule extends AbstractSpringModule {
 		LDAPLoginManager ldapLoginManager = CoreSpringFactory.getImpl(LDAPLoginManager.class);
 		if (ldapLoginManager.isIdentityInLDAPSecGroup(id)) {
 			// it's an ldap-user
-			return pwdchangeallowedLDAP;
+			return CoreSpringFactory.getImpl(LDAPLoginModule.class)
+					.isPropagatePasswordChangedOnLdapServer();
 		}
 		return pwdchangeallowed;
 	}
@@ -192,7 +192,7 @@ public class UserModule extends AbstractSpringModule {
 	 * 
 	 * @return
 	 */
-	private boolean isAnyPwdchangeallowed() {
+	public boolean isAnyPasswordChangeAllowed() {
 		return pwdchangeallowed;
 	}
 	

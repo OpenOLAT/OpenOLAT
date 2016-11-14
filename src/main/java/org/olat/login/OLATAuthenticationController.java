@@ -28,7 +28,6 @@ package org.olat.login;
 import java.util.List;
 import java.util.Locale;
 
-import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
@@ -86,6 +85,8 @@ public class OLATAuthenticationController extends AuthenticationController imple
 	@Autowired
 	private OLATAuthManager olatAuthenticationSpi;
 	@Autowired
+	private RegistrationModule registrationModule;
+	@Autowired
 	private RegistrationManager registrationManager;
 	
 	/**
@@ -97,13 +98,13 @@ public class OLATAuthenticationController extends AuthenticationController imple
 		
 		loginComp = createVelocityContainer("olat_log", "olatlogin");
 		
-		if(userModule.isPwdChangeAllowed(null)) {
+		if(userModule.isAnyPasswordChangeAllowed()) {
 			pwLink = LinkFactory.createLink("_olat_login_change_pwd", "menu.pw", loginComp, this);
 			pwLink.setElementCssClass("o_login_pwd");
 		}
 		
-		if (CoreSpringFactory.getImpl(RegistrationModule.class).isSelfRegistrationEnabled()
-				&& CoreSpringFactory.getImpl(RegistrationModule.class).isSelfRegistrationLoginEnabled()) {
+		if (registrationModule.isSelfRegistrationEnabled()
+				&& registrationModule.isSelfRegistrationLoginEnabled()) {
 			registerLink = LinkFactory.createLink("_olat_login_register", "menu.register", loginComp, this);
 			registerLink.setElementCssClass("o_login_register");
 			registerLink.setTitle("menu.register.alt");
@@ -156,7 +157,7 @@ public class OLATAuthenticationController extends AuthenticationController imple
 	
 	protected void openChangePassword(UserRequest ureq, String initialEmail) {
 		// double-check if allowed first
-		if (!userModule.isPwdChangeAllowed(ureq.getIdentity())) {
+		if (!userModule.isAnyPasswordChangeAllowed()) {
 			throw new OLATSecurityException("chose password to be changed, but disallowed by config");
 		}
 
@@ -266,8 +267,8 @@ public class OLATAuthenticationController extends AuthenticationController imple
 			}
 			openChangePassword(ureq, email);
 		} else if("registration".equals(type)) {
-			if (CoreSpringFactory.getImpl(RegistrationModule.class).isSelfRegistrationEnabled()
-					&& CoreSpringFactory.getImpl(RegistrationModule.class).isSelfRegistrationLinkEnabled()) {
+			if (registrationModule.isSelfRegistrationEnabled()
+					&& registrationModule.isSelfRegistrationLinkEnabled()) {
 				List<ContextEntry> subEntries = entries.subList(1, entries.size());
 				openRegistration(ureq).activate(ureq, subEntries, entry.getTransientState());
 			}

@@ -158,6 +158,9 @@ public class AssessmentIdentityCourseController extends BasicController implemen
 				fireEvent(ureq, aee.cloneNotClose());
 			} else if(event == Event.CANCELLED_EVENT) {
 				stackPanel.popController(currentNodeCtrl);
+			} else if(event == Event.CHANGED_EVENT) {
+				treeOverviewCtrl.doIdentityAssessmentOverview(ureq);
+				fireEvent(ureq, event);
 			}
 		}
 		super.event(ureq, source, event);
@@ -211,7 +214,6 @@ public class AssessmentIdentityCourseController extends BasicController implemen
 			}
 			
 			if(nextNode.getParent() != null) {
-			
 				doSelectCourseNode(ureq, nextNode);
 			}
 		}

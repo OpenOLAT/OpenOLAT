@@ -32,6 +32,8 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import javax.persistence.NamedQueries;
+import javax.persistence.NamedQuery;
 import javax.persistence.OneToMany;
 import javax.persistence.OrderColumn;
 import javax.persistence.Table;
@@ -44,7 +46,9 @@ import org.olat.basesecurity.model.GroupImpl;
 import org.olat.core.id.CreateInfo;
 import org.olat.core.id.ModifiedInfo;
 import org.olat.core.id.Persistable;
+import org.olat.core.util.StringHelper;
 import org.olat.modules.portfolio.Binder;
+import org.olat.modules.portfolio.BinderStatus;
 import org.olat.modules.portfolio.PortfolioElementType;
 import org.olat.modules.portfolio.Section;
 import org.olat.repository.RepositoryEntry;
@@ -59,6 +63,11 @@ import org.olat.resource.OLATResourceImpl;
  */
 @Entity(name="pfbinder")
 @Table(name="o_pf_binder")
+@NamedQueries({
+	@NamedQuery(name="loadBinderByKey", query="select binder from pfbinder as binder inner join fetch binder.baseGroup as baseGroup where binder.key=:portfolioKey")
+	
+	
+})
 public class BinderImpl implements Persistable, ModifiedInfo, CreateInfo, Binder {
 
 	private static final long serialVersionUID = -2607615295380443760L;
@@ -198,6 +207,21 @@ public class BinderImpl implements Persistable, ModifiedInfo, CreateInfo, Binder
 
 	public void setStatus(String status) {
 		this.status = status;
+	}
+	
+	@Transient
+	@Override
+	public BinderStatus getBinderStatus() {
+		return StringHelper.containsNonWhitespace(status) ? BinderStatus.valueOf(status) : BinderStatus.open;
+	}
+
+	@Override
+	public void setBinderStatus(BinderStatus binderStatus) {
+		if(binderStatus == null) {
+			status = null;
+		} else {
+			status = binderStatus.name();
+		}
 	}
 
 	@Override

@@ -32,6 +32,16 @@ public class Crop {
 	private int height;
 	private int width;
 	
+	public Crop (){}
+	
+	public Crop(int x, int y, int height, int width) {
+		super();
+		this.x = x;
+		this.y = y;
+		this.height = height;
+		this.width = width;
+	}
+
 	public int getX() {
 		return x;
 	}

@@ -34,12 +34,15 @@ public class VideoEvent extends Event {
 	public static final String PAUSE = "pause";
 	public static final String SEEKED = "seeked";
 	public static final String ENDED = "ended";
-	
-	private final String timeCode;
 
-	public VideoEvent(String command, String timeCode) {
+	private final String timeCode;
+	private final String duration;
+
+
+	public VideoEvent(String command, String timeCode, String duration) {
 		super(command);
 		this.timeCode = timeCode;
+		this.duration = duration;
 	}
 
 	/**
@@ -47,6 +50,13 @@ public class VideoEvent extends Event {
 	 */
 	public String getTimeCode() {
 		return timeCode;
+	}
+	
+	/**
+	 * @return The duration for this event or NULL if not available
+	 */
+	public String getDuration() {
+		return duration;
 	}
 	
 }

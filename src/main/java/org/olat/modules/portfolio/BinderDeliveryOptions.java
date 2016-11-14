@@ -28,6 +28,7 @@ package org.olat.modules.portfolio;
 public class BinderDeliveryOptions {
 	
 	private boolean allowNewEntries;
+	private boolean allowDeleteBinder;
 
 	public boolean isAllowNewEntries() {
 		return allowNewEntries;
@@ -37,9 +38,18 @@ public class BinderDeliveryOptions {
 		this.allowNewEntries = allowNewEntries;
 	}
 	
+	public boolean isAllowDeleteBinder() {
+		return allowDeleteBinder;
+	}
+
+	public void setAllowDeleteBinder(boolean allowDeleteBinder) {
+		this.allowDeleteBinder = allowDeleteBinder;
+	}
+
 	public static BinderDeliveryOptions defaultOptions() {
 		BinderDeliveryOptions options = new BinderDeliveryOptions();
 		options.setAllowNewEntries(false);
+		options.setAllowDeleteBinder(false);
 		return options;
 	}
 }

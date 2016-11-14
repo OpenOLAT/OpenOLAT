@@ -90,6 +90,7 @@ import org.olat.ims.qti21.model.xml.interactions.HotspotAssessmentItemBuilder;
 import org.olat.ims.qti21.model.xml.interactions.KPrimAssessmentItemBuilder;
 import org.olat.ims.qti21.model.xml.interactions.MultipleChoiceAssessmentItemBuilder;
 import org.olat.ims.qti21.model.xml.interactions.SingleChoiceAssessmentItemBuilder;
+import org.olat.ims.qti21.model.xml.interactions.UploadAssessmentItemBuilder;
 import org.olat.ims.qti21.pool.QTI21QPoolServiceProvider;
 import org.olat.ims.qti21.questionimport.AssessmentItemAndMetadata;
 import org.olat.ims.qti21.questionimport.AssessmentItemsPackage;
@@ -139,7 +140,7 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 	private MenuTree menuTree;
 	private Dropdown exportItemTools, addItemTools, changeItemTools;
 	private Link newTestPartLink, newSectionLink, newSingleChoiceLink, newMultipleChoiceLink, newKPrimLink,
-		newFIBLink, newNumericalLink, newHotspotLink, newEssayLink;
+		newFIBLink, newNumericalLink, newHotspotLink, newEssayLink, newUploadLink;
 	private Link importFromPoolLink, importFromTableLink, exportToPoolLink, exportToDocxLink;
 	private Link reloadInCacheLink, deleteLink, copyLink;
 	private final TooledStackedPanel toolbar;
@@ -260,6 +261,12 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 		newEssayLink = LinkFactory.createToolLink("new.essay", translate("new.essay"), this, "o_mi_qtiessay");
 		newEssayLink.setDomReplacementWrapperRequired(false);
 		addItemTools.addComponent(newEssayLink);
+		
+		/*
+		newUploadLink = LinkFactory.createToolLink("new.upload", translate("new.upload"), this, "o_mi_qtiupload");
+		newUploadLink.setDomReplacementWrapperRequired(false);
+		addItemTools.addComponent(newUploadLink);
+		*/
 		
 		addItemTools.addComponent(new Dropdown.Spacer("sep-import"));
 		//import
@@ -451,6 +458,8 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 			doNewAssessmentItem(ureq, menuTree.getSelectedNode(), new HotspotAssessmentItemBuilder(qtiService.qtiSerializer()));
 		} else if(newEssayLink == source) {
 			doNewAssessmentItem(ureq, menuTree.getSelectedNode(), new EssayAssessmentItemBuilder(qtiService.qtiSerializer()));
+		} else if(newUploadLink == source) {
+			doNewAssessmentItem(ureq, menuTree.getSelectedNode(), new UploadAssessmentItemBuilder(qtiService.qtiSerializer()));
 		} else if(importFromPoolLink == source) {
 			doSelectQItem(ureq);
 		} else if(importFromTableLink == source) {
@@ -614,15 +623,18 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 	}
 	
 	private void doExportPool(AssessmentItemRef itemRef) {
-		AssessmentItem assessmentItem = resolvedAssessmentTest
-				.getResolvedAssessmentItem(itemRef).getRootNodeLookup().extractIfSuccessful();
+		ResolvedAssessmentItem resolvedAssessmentItem = resolvedAssessmentTest.getResolvedAssessmentItem(itemRef);
+		RootNodeLookup<AssessmentItem> rootNode = resolvedAssessmentItem.getItemLookup();
+		AssessmentItem assessmentItem = rootNode.extractIfSuccessful();
 
 		ManifestBuilder clonedManifestBuilder = ManifestBuilder.read(new File(unzippedDirRoot, "imsmanifest.xml"));
 		ResourceType resource = getResourceType(clonedManifestBuilder, itemRef);
 		ManifestMetadataBuilder metadata = clonedManifestBuilder.getMetadataBuilder(resource, true);
 
+		File itemFile = new File(rootNode.getSystemId());
+
 		qti21QPoolServiceProvider
-				.importAssessmentItemRef(getIdentity(), itemRef, assessmentItem, metadata, unzippedDirRoot, getLocale());
+				.importAssessmentItemRef(getIdentity(), assessmentItem, itemFile, metadata, unzippedDirRoot, getLocale());
 	}
 	
 	private void doExportDocx(UserRequest ureq) {
@@ -785,8 +797,15 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 		} else if(selectedNode.getUserObject() instanceof TestPart) {
 			parentPart = (TestPart)selectedNode.getUserObject();
 		} else {
-			showWarning("error.cannot.create.section");
-			return;
+			TreeNode rootNode = menuTree.getTreeModel().getRootNode();
+			AssessmentTest assessmentTest = (AssessmentTest)rootNode.getUserObject();
+			List<TestPart> parts = assessmentTest.getTestParts();
+			if(parts != null && parts.size() > 0) {
+				parentPart = parts.get(0);
+			} else {
+				showWarning("error.cannot.create.section");
+				return;
+			}
 		}
 
 		AssessmentSection newSection;
@@ -1065,7 +1084,13 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 		} else {
 			String msg;
 			if(uobject instanceof AssessmentSection) {
-				msg = translate("delete.section", selectedNode.getTitle());
+				AssessmentSection section = (AssessmentSection)uobject;
+				if(checkAtLeastOneSection(section)) {
+					msg = translate("delete.section", selectedNode.getTitle());
+				} else {
+					showWarning("warning.atleastonesection");
+					return;
+				}
 			} else if(uobject instanceof AssessmentItemRef) {
 				msg = translate("delete.item", selectedNode.getTitle());
 			} else {
@@ -1083,7 +1108,12 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 		if(uobject instanceof TestPart) {
 			doDeleteTestPart((TestPart)uobject);
 		} else if(uobject instanceof AssessmentSection) {
-			doDeleteAssessmentSection((AssessmentSection)uobject);
+			AssessmentSection section = (AssessmentSection)uobject;
+			if(checkAtLeastOneSection(section)) {
+				doDeleteAssessmentSection(section);
+			} else {
+				showWarning("warning.atleastonesection");
+			}
 		} else if(uobject instanceof AssessmentItemRef) {
 			doDeleteAssessmentItemRef((AssessmentItemRef)uobject);
 		} else {
@@ -1100,6 +1130,20 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 			menuTree.open(parentNode);
 			partEditorFactory(ureq, parentNode);
 		}
+	}
+	
+	private boolean checkAtLeastOneSection(AssessmentSection section) {
+		AbstractPart parent = section.getParent();
+		if(parent instanceof TestPart) {
+			TestPart testPart = (TestPart)parent;
+			for(AssessmentSection testPartSection:testPart.getAssessmentSections()) {
+				if(testPartSection != section) {
+					return true;
+				}
+			}
+			return false;
+		}
+		return true;
 	}
 	
 	private void doDeleteAssessmentItemRef(AssessmentItemRef itemRef) {

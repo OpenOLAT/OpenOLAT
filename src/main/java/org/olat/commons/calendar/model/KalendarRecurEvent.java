@@ -63,22 +63,22 @@ public class KalendarRecurEvent extends KalendarEvent {
 	}
 
 	private void fillEvent(KalendarEvent event) {
-		super.setAllDayEvent(event.isAllDayEvent());
-		super.setClassification(event.getClassification());
-		super.setComment(event.getComment());
-		super.setCreated(event.getCreated());
-		super.setCreatedBy(event.getCreatedBy());
-		super.setDescription(event.getDescription());
-		super.setKalendarEventLinks(event.getKalendarEventLinks());
-		super.setLastModified(event.getLastModified());
-		super.setKalendar(event.getCalendar());
-		super.setLocation(event.getLocation());
-		super.setManagedFlags(event.getManagedFlags());
-		super.setNumParticipants(event.getNumParticipants());
-		super.setParticipants(event.getParticipants());
-		super.setRecurrenceExc(event.getRecurrenceExc());
-		super.setRecurrenceRule(event.getRecurrenceRule());
-		super.setSourceNodeId(event.getSourceNodeId());
-		super.setSubject(event.getSubject());
+		setAllDayEvent(event.isAllDayEvent());
+		setClassification(event.getClassification());
+		setComment(event.getComment());
+		setCreated(event.getCreated());
+		setCreatedBy(event.getCreatedBy());
+		setDescription(event.getDescription());
+		setKalendarEventLinks(event.getKalendarEventLinks());
+		setLastModified(event.getLastModified());
+		setKalendar(event.getCalendar());
+		setLocation(event.getLocation());
+		setManagedFlags(event.getManagedFlags());
+		setNumParticipants(event.getNumParticipants());
+		setParticipants(event.getParticipants());
+		setRecurrenceExc(event.getRecurrenceExc());
+		setRecurrenceRule(event.getRecurrenceRule());
+		setSourceNodeId(event.getSourceNodeId());
+		setSubject(event.getSubject());
 	}
 }

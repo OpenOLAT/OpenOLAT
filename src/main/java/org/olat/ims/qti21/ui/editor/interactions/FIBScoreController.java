@@ -22,6 +22,8 @@ package org.olat.ims.qti21.ui.editor.interactions;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -108,7 +110,7 @@ public class FIBScoreController extends AssessmentItemRefEditorController implem
 		formLayout.add(scoreCont);
 		scoreCont.setLabel(null, null);
 		
-		for(AbstractEntry entry:itemBuilder.getTextEntries()) {
+		for(AbstractEntry entry:itemBuilder.getOrderedTextEntries()) {
 			wrappers.add(createTextEntryWrapper(entry));
 		}
 		scoreCont.contextPut("choices", wrappers);
@@ -124,19 +126,39 @@ public class FIBScoreController extends AssessmentItemRefEditorController implem
 	@Override
 	public void sync(UserRequest ureq, AssessmentItemBuilder assessmentItemBuilder) {
 		if(itemBuilder == assessmentItemBuilder) {
-			for(AbstractEntry entry:itemBuilder.getTextEntries()) {
+			List<AbstractEntry> entries = itemBuilder.getOrderedTextEntries();
+			for(AbstractEntry entry:entries) {
 				TextEntryWrapper wrapper = getTextEntryWrapper(entry);
 				if(wrapper == null) {
 					wrappers.add(createTextEntryWrapper(entry));
 				}
 			}
 			
+			//remove removed entry
 			for(Iterator<TextEntryWrapper> wrapperIt=wrappers.iterator(); wrapperIt.hasNext(); ) {
 				Identifier responseIdentifier = wrapperIt.next().getEntry().getResponseIdentifier();
 				if(itemBuilder.getTextEntry(responseIdentifier.toString()) == null) {
 					wrapperIt.remove();
 				}
 			}
+			
+			//reorder the wrappers
+			Map<AbstractEntry,TextEntryWrapper> wrapperMap = wrappers.stream()
+					.collect(Collectors.toMap(w -> w.getEntry(), w -> w));
+			List<TextEntryWrapper> reorderedWrappers = new ArrayList<>();
+			for(AbstractEntry entry:entries) {
+				TextEntryWrapper wrapper = wrapperMap.get(entry);
+				if(wrapper != null) {
+					reorderedWrappers.add(wrapper);
+					wrapperMap.remove(entry);
+				}
+			}
+			
+			if(wrapperMap.size() > 0) {//paranoid security
+				reorderedWrappers.addAll(wrapperMap.values());
+			}
+			wrappers.clear();
+			wrappers.addAll(reorderedWrappers);
 		}
 	}
 	

@@ -2,7 +2,6 @@
 	<div class="col-sm-6">
 		<div class="panel panel-default">
 			<div class="panel-heading">
-				$r.contextHelpWithWrapper("Media center")		
 				<h4 class="panel-title">
 					<i class="o_icon o_icon_mediacenter o_icon-fw"> </i>
 					$r.translate("media.center")
@@ -20,7 +19,6 @@
 	<div class="col-sm-6">
 		<div class="panel panel-default">
 			<div class="panel-heading">
-				$r.contextHelpWithWrapper("Quick links")
 				<h4 class="panel-title">
 					<i class="o_icon o_icon_pf_quick_links o_icon-fw"> </i>
 					$r.translate("quick.links")
@@ -31,8 +29,12 @@
 					<ul class="list-unstyled">
 						<li>$r.render("edit.last.entry")</li>
 						<li>$r.render("new.entry")</li>
-						<li>$r.render("edit.last.binder")</li>
 						<li>$r.render("go.to.trash")</li>
+						<li>
+							<a href="$r.contextHelpLink('Portfolio 2.0')" target="_blank">
+								$r.translate("show.help.binder") <i class="o_icon o_icon_start"> </i>
+							</a>
+						</li>
 					</ul>
 				</div>
 			</div>
@@ -44,7 +46,6 @@
 	<div class="col-sm-6">
 		<div class="panel panel-default">
 			<div class="panel-heading">
-				$r.contextHelpWithWrapper("My portfolio binders")
 				<h4 class="panel-title">
 					<i class="o_icon o_icon_pf_binder o_icon-fw"> </i>
 					$r.translate("my.portfolio.binders")
@@ -62,7 +63,6 @@
 	<div class="col-sm-6">
 		<div class="panel panel-default">
 			<div class="panel-heading">
-				$r.contextHelpWithWrapper("My entries")
 				<h4 class="panel-title">
 					<i class="o_icon o_icon_pf_entry o_icon-fw"> </i>
 					$r.translate("my.entries")
@@ -82,7 +82,6 @@
 	<div class="col-sm-6">
 		<div class="panel panel-default">
 			<div class="panel-heading">
-				$r.contextHelpWithWrapper("Shared by me")
 				<h4 class="panel-title">
 					<i class="o_icon o_icon_pf_my_shares o_icon-fw"> </i>
 					$r.translate("my.shared.items")
@@ -100,7 +99,6 @@
 	<div class="col-sm-6">
 		<div class="panel panel-default">
 			<div class="panel-heading">
-				$r.contextHelpWithWrapper("Shared with me")
 				<h4 class="panel-title">
 					<i class="o_icon o_icon_pf_shared_with_me o_icon-fw"> </i>
 					$r.translate("shared.with.me")

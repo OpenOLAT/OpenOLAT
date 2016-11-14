@@ -39,7 +39,6 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.id.Identity;
-import org.olat.course.nodes.AssessmentToolOptions;
 import org.olat.course.nodes.IQTESTCourseNode;
 import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.fileresource.FileResourceManager;
@@ -47,6 +46,7 @@ import org.olat.ims.qti21.AssessmentItemSession;
 import org.olat.ims.qti21.AssessmentTestHelper;
 import org.olat.ims.qti21.AssessmentTestSession;
 import org.olat.ims.qti21.QTI21Service;
+import org.olat.modules.assessment.AssessmentToolOptions;
 import org.olat.repository.RepositoryEntry;
 import org.springframework.beans.factory.annotation.Autowired;
 

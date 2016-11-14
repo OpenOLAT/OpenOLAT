@@ -1,1 +1,6 @@
 $r.render("sessions")
+#if($r.available("reset.tool"))
+	<div class="o_button_group">
+		$r.render("reset.tool")
+	</div>
+#end

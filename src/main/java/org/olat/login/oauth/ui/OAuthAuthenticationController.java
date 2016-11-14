@@ -94,7 +94,7 @@ public class OAuthAuthenticationController extends FormBasicController implement
 
 	@Override
 	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
-		System.out.println("");
+		//
 	}
 
 	@Override

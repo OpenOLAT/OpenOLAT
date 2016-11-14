@@ -44,6 +44,7 @@ import org.olat.course.condition.interpreter.ConditionInterpreter;
 import org.olat.course.export.CourseEnvironmentMapper;
 import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.course.run.userview.NodeEvaluation;
+import org.olat.modules.assessment.AssessmentToolOptions;
 
 import de.bps.course.nodes.CourseNodePasswordManagerImpl;
 

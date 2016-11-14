@@ -64,7 +64,15 @@ public interface PortfolioService {
 	
 	public Binder importBinder(Binder transientBinder, RepositoryEntry templateEntry, File image);
 	
+	/**
+	 * 
+	 */
 	public boolean deleteBinderTemplate(Binder binder, RepositoryEntry templateEntry);
+
+	/**
+	 * Delete the binder.
+	 */
+	public boolean deleteBinder(BinderRef binder);
 	
 	
 	/**
@@ -134,15 +142,34 @@ public interface PortfolioService {
 	
 	public Section updateSection(Section section);
 	
+	/**
+	 * Retrieve some statistics about a specific binder.
+	 * 
+	 * @param binder
+	 * @return
+	 */
+	public BinderStatistics getBinderStatistics(BinderRef binder);
+	
 
+	/**
+	 * The list of binders where the specified user is owner. The binders
+	 * with status deleted are excluded from the result.
+	 * 
+	 * @param owner
+	 * @return A list of binders
+	 */
 	public List<Binder> getOwnedBinders(IdentityRef owner);
 	
 	/**
-	 * Return the list of binder owned by the specified user (but not the templates)
+	 * Return the list of binder owned by the specified user (but not the templates).
+	 * The binders with status deleted are excluded from the resulting list.
+	 * 
 	 * @param owner
-	 * @return
+	 * @return A list of statistics about the binders
 	 */
 	public List<BinderStatistics> searchOwnedBinders(IdentityRef owner);
+	
+	public List<BinderStatistics> searchOwnedDeletedBinders(IdentityRef owner);
 	
 	/**
 	 * Return the list of binder owned by the specified user
@@ -362,7 +389,7 @@ public interface PortfolioService {
 	 * @param section
 	 * @return
 	 */
-	public List<Page> getPages(SectionRef section, String searchString);
+	public List<Page> getPages(SectionRef section);
 	
 	public List<Page> searchOwnedPages(IdentityRef owner, String searchString);
 	

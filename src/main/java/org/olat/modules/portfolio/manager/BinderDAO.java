@@ -41,6 +41,7 @@ import org.olat.modules.portfolio.Assignment;
 import org.olat.modules.portfolio.AssignmentStatus;
 import org.olat.modules.portfolio.Binder;
 import org.olat.modules.portfolio.BinderRef;
+import org.olat.modules.portfolio.BinderStatus;
 import org.olat.modules.portfolio.Page;
 import org.olat.modules.portfolio.PortfolioRoles;
 import org.olat.modules.portfolio.Section;
@@ -85,6 +86,7 @@ public class BinderDAO {
 		binder.setTitle(title);
 		binder.setSummary(summary);
 		binder.setImagePath(imagePath);
+		binder.setStatus(BinderStatus.open.name());
 		binder.setBaseGroup(groupDao.createGroup());
 		if(entry != null) {
 			binder.setOlatResource(entry.getOlatResource());
@@ -100,6 +102,7 @@ public class BinderDAO {
 		binder.setTitle(template.getTitle());
 		binder.setSummary(template.getSummary());
 		binder.setImagePath(template.getImagePath());
+		binder.setStatus(BinderStatus.open.name());
 		binder.setBaseGroup(groupDao.createGroup());
 		binder.setTemplate(template);
 		binder.setCopyDate(binder.getCreationDate());
@@ -308,7 +311,8 @@ public class BinderDAO {
 		sb.append("select binder from pfbinder as binder")
 		  .append(" inner join fetch binder.baseGroup as baseGroup")
 		  .append(" inner join baseGroup.members as membership")
-		  .append(" where membership.identity.key=:identityKey and membership.role=:role");
+		  .append(" where membership.identity.key=:identityKey and membership.role=:role")
+		  .append(" and (binder.status is null or binder.status='").append(BinderStatus.open.name()).append("')");
 		
 		return dbInstance.getCurrentEntityManager()
 			.createQuery(sb.toString(), Binder.class)
@@ -336,6 +340,41 @@ public class BinderDAO {
 	public void detachBinderTemplate() {
 		//unlink entry
 		//unlink template
+	}
+	
+	public int deleteBinder(BinderRef binderRef) {
+		int rows = 0;
+		
+		BinderImpl binder = (BinderImpl)loadByKey(binderRef.getKey());
+		List<Section> sections = new ArrayList<>(binder.getSections());
+		for(Section section:sections) {
+			List<Page> pages = new ArrayList<>(section.getPages());
+			section.getPages().clear();
+			section = dbInstance.getCurrentEntityManager().merge(section);
+			
+			for(Page page:pages) {
+				if(page != null) {
+					rows += pageDao.deletePage(page);
+				}
+			}
+			
+			rows += assessmentSectionDao.deleteAssessmentSections(section);
+			
+			Group baseGroup = section.getBaseGroup();
+			rows += groupDao.removeMemberships(baseGroup);
+			
+			dbInstance.getCurrentEntityManager().remove(section);
+			dbInstance.getCurrentEntityManager().remove(baseGroup);
+			rows += 2;
+		}
+		
+		binder.getSections().clear();
+		
+		Group baseGroup = binder.getBaseGroup();
+		rows += groupDao.removeMemberships(baseGroup);
+		dbInstance.getCurrentEntityManager().remove(binder);
+		dbInstance.getCurrentEntityManager().remove(baseGroup);
+		return rows + 2;
 	}
 	
 	public int deleteBinderTemplate(BinderImpl binder) {
@@ -366,7 +405,7 @@ public class BinderDAO {
 	 * @param owner
 	 * @return
 	 */
-	public List<BinderStatistics> searchOwnedBinders(IdentityRef owner) {
+	public BinderStatistics getBinderStatistics(BinderRef binder) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select binder.key, binder.title, binder.imagePath, binder.lastModified, binder.status,")
 		  .append(" binderEntry.displayname,")
@@ -380,10 +419,61 @@ public class BinderDAO {
 		  .append("   where pageSection.binder.key=binder.key and page.section.key=pageSection.key and comment.resId=page.key and comment.resName='Page'")
 		  .append(" ) as numOfComments")
 		  .append(" from pfbinder as binder")
-		  .append(" inner join binder.baseGroup as baseGroup")
-		  .append(" inner join baseGroup.members as membership")
+		  .append(" left join binder.entry binderEntry")
+		  .append(" where binder.key=:binderKey");
+		
+		List<Object[]> objects = dbInstance.getCurrentEntityManager()
+			.createQuery(sb.toString(), Object[].class)
+			.setParameter("binderKey", binder.getKey())
+			.getResultList();
+		
+		if(objects.size() >= 1) {
+			int pos = 0;
+			Object[] object = objects.get(0);
+			Long key = (Long)object[pos++];
+			String title = (String)object[pos++];
+			String imagePath = (String)object[pos++];
+			Date lastModified = (Date)object[pos++];
+			String status = (String)object[pos++];
+			String repoEntryName = (String)object[pos++];
+
+			int numOfSections = ((Number)object[pos++]).intValue();
+			int numOfPages = ((Number)object[pos++]).intValue();
+			int numOfComments = ((Number)object[pos++]).intValue();
+			
+			return new BinderStatistics(key, title, imagePath, lastModified, numOfSections, numOfPages, status, repoEntryName, numOfComments);
+		}
+		return null;
+	}
+	
+	/**
+	 * The same type of query is user for the categories
+	 * @param owner
+	 * @return
+	 */
+	public List<BinderStatistics> searchOwnedBinders(IdentityRef owner, boolean deleted) {
+		StringBuilder sb = new StringBuilder(1024);
+		sb.append("select binder.key, binder.title, binder.imagePath, binder.lastModified, binder.status,")
+		  .append(" binderEntry.displayname,")
+		  .append(" (select count(section.key) from pfsection as section")
+		  .append("   where section.binder.key=binder.key")
+		  .append(" ) as numOfSections,")
+		  .append(" (select count(page.key) from pfpage as page, pfsection as pageSection")
+		  .append("   where pageSection.binder.key=binder.key and page.section.key=pageSection.key")
+		  .append(" ) as numOfPages,")
+		  .append(" (select count(comment.key) from usercomment as comment, pfpage as page, pfsection as pageSection")
+		  .append("   where pageSection.binder.key=binder.key and page.section.key=pageSection.key and comment.resId=page.key and comment.resName='Page'")
+		  .append(" ) as numOfComments")
+		  .append(" from pfbinder as binder")
+		  .append(" left join binder.baseGroup as baseGroup")
+		  .append(" left join baseGroup.members as membership")
 		  .append(" left join binder.entry binderEntry")
 		  .append(" where binder.olatResource is null and membership.identity.key=:identityKey and membership.role=:role");
+		if(deleted) {
+			sb.append(" and binder.status='").append(BinderStatus.deleted.name()).append("'");
+		} else {
+			sb.append(" and (binder.status is null or binder.status='").append(BinderStatus.open.name()).append("')");
+		}
 		
 		List<Object[]> objects = dbInstance.getCurrentEntityManager()
 			.createQuery(sb.toString(), Object[].class)
@@ -411,20 +501,15 @@ public class BinderDAO {
 	}
 	
 	public Binder loadByKey(Long key) {
-		StringBuilder sb = new StringBuilder();
-		sb.append("select binder from pfbinder as binder")
-		  .append(" inner join fetch binder.baseGroup as baseGroup")
-		  .append(" where binder.key=:portfolioKey");
-		
 		List<Binder> binders = dbInstance.getCurrentEntityManager()
-			.createQuery(sb.toString(), Binder.class)
+			.createNamedQuery("loadBinderByKey", Binder.class)
 			.setParameter("portfolioKey", key)
 			.getResultList();
 		return binders == null || binders.isEmpty() ? null : binders.get(0);
 	}
 	
 	public Binder loadByResource(OLATResource resource) {
-		StringBuilder sb = new StringBuilder();
+		StringBuilder sb = new StringBuilder(128);
 		sb.append("select binder from pfbinder as binder")
 		  .append(" inner join fetch binder.baseGroup as baseGroup")
 		  .append(" inner join fetch binder.olatResource as olatResource")
@@ -438,7 +523,7 @@ public class BinderDAO {
 	}
 	
 	public Binder loadBySection(SectionRef section) {
-		StringBuilder sb = new StringBuilder();
+		StringBuilder sb = new StringBuilder(128);
 		sb.append("select binder from pfsection as section")
 		  .append(" inner join section.binder as binder")
 		  .append(" inner join fetch binder.baseGroup as baseGroup")
@@ -478,7 +563,7 @@ public class BinderDAO {
 	}
 	
 	public boolean isTemplateInUse(BinderRef template, RepositoryEntryRef entry, String subIdent) {
-		StringBuilder sb = new StringBuilder();
+		StringBuilder sb = new StringBuilder(128);
 		sb.append("select binder.key from pfbinder as binder")
 		  .append(" where binder.template.key=:templateKey");
 		if(entry != null) {
@@ -819,7 +904,7 @@ public class BinderDAO {
 			.getResultList();
 		return sections == null || sections.isEmpty() ? null : sections.get(0);
 	}
-	
+	/*
 	public List<Section> getSections(BinderRef binder) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select section from pfsection as section")
@@ -831,6 +916,12 @@ public class BinderDAO {
 			.createQuery(sb.toString(), Section.class)
 			.setParameter("binderKey", binder.getKey())
 			.getResultList();
+	}*/
+	
+	public List<Section> getSections(BinderRef binder) {
+		BinderImpl refBinder = dbInstance.getCurrentEntityManager()
+				.getReference(BinderImpl.class, binder.getKey());
+		return refBinder.getSections();
 	}
 	
 	public Binder moveUpSection(BinderImpl binder, Section section) {

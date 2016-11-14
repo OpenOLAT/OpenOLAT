@@ -32,7 +32,7 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.filter.FilterFactory;
 import org.olat.ims.qti21.model.xml.ModalFeedbackBuilder;
-import org.olat.ims.qti21.model.xml.interactions.EssayAssessmentItemBuilder;
+import org.olat.ims.qti21.model.xml.interactions.LobAssessmentItemBuilder;
 import org.olat.ims.qti21.ui.editor.FeedbackEditorController;
 import org.olat.ims.qti21.ui.editor.events.AssessmentItemEvent;
 
@@ -42,7 +42,7 @@ import org.olat.ims.qti21.ui.editor.events.AssessmentItemEvent;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class EssayFeedbackEditorController extends FormBasicController {
+public class LobFeedbackEditorController extends FormBasicController {
 	
 	private TextElement hintTitleEl;
 	private RichTextElement hintTextEl;
@@ -51,9 +51,9 @@ public class EssayFeedbackEditorController extends FormBasicController {
 	private RichTextElement feedbackTextEl, feedbackEmptyTextEl;
 
 	private final boolean restrictedEdit;
-	private final EssayAssessmentItemBuilder itemBuilder;
+	private final LobAssessmentItemBuilder itemBuilder;
 	
-	public EssayFeedbackEditorController(UserRequest ureq, WindowControl wControl, EssayAssessmentItemBuilder itemBuilder,
+	public LobFeedbackEditorController(UserRequest ureq, WindowControl wControl, LobAssessmentItemBuilder itemBuilder,
 			boolean restrictedEdit) {
 		super(ureq, wControl);
 		setTranslator(Util.createPackageTranslator(FeedbackEditorController.class, getLocale(), getTranslator()));

@@ -419,6 +419,25 @@ public class FIBAssessmentItemBuilder extends AssessmentItemBuilder {
 		return new ArrayList<>(responseIdentifierToTextEntry.values());
 	}
 	
+	public List<AbstractEntry> getOrderedTextEntries() {
+		List<Interaction> interactions = assessmentItem.getItemBody().findInteractions();
+		
+		List<AbstractEntry> entries = getTextEntries();
+		List<AbstractEntry> orderedEntries = new ArrayList<>();
+		for(Interaction interaction:interactions) {
+			AbstractEntry entry = getTextEntry(interaction.getResponseIdentifier().toString());
+			if(entry != null) {
+				orderedEntries.add(entry);
+				entries.remove(entry);
+			}
+		}
+		
+		if(entries.size() > 0) {
+			orderedEntries.addAll(entries);//security
+		}
+		return orderedEntries;
+	}
+	
 	public AbstractEntry getTextEntry(String responseIdentifier) {
 		return responseIdentifierToTextEntry.get(responseIdentifier);
 	}

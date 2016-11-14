@@ -43,10 +43,11 @@ public class VideoSettingsController extends BasicController {
 
 	private VideoMetaDataEditFormController metaDataController;
 	private VideoPosterEditController posterEditController;
+	private VideoChapterEditController chapterEditController;
 	private VideoTrackEditController trackEditController;
 	private VideoQualityTableFormController qualityEditController;
 
-	private Link metaDataLink, posterEditLink, trackEditLink, qualityConfig;
+	private Link metaDataLink, posterEditLink, chapterEditLink, trackEditLink, qualityConfig;
 
 	private final VelocityContainer mainVC;
 	private final SegmentViewComponent segmentView;
@@ -65,6 +66,8 @@ public class VideoSettingsController extends BasicController {
 		segmentView.addSegment(metaDataLink, true);
 		posterEditLink = LinkFactory.createLink("tab.video.posterConfig", mainVC, this);
 		segmentView.addSegment(posterEditLink, false);
+		chapterEditLink = LinkFactory.createLink("tab.video.chapterConfig", mainVC, this);
+		segmentView.addSegment(chapterEditLink, false);
 		trackEditLink = LinkFactory.createLink("tab.video.trackConfig", mainVC, this);
 		segmentView.addSegment(trackEditLink, false);
 		qualityConfig = LinkFactory.createLink("tab.video.qualityConfig", mainVC, this);
@@ -91,6 +94,8 @@ public class VideoSettingsController extends BasicController {
 					doOpenTrackConfig(ureq);
 				} else if (clickedLink == qualityConfig){
 					doOpenQualityConfig(ureq);
+				} else if (clickedLink == chapterEditLink){
+					doOpenChapterConfig(ureq);
 				}
 			}
 		}
@@ -134,5 +139,13 @@ public class VideoSettingsController extends BasicController {
 		listenTo(qualityEditController);
 		mainVC.put("segmentCmp", qualityEditController.getInitialComponent());
 	}
+	
+	private void doOpenChapterConfig(UserRequest ureq){
+		if (chapterEditController == null){
+			chapterEditController = new VideoChapterEditController(ureq, getWindowControl(), entry);
+			listenTo(chapterEditController);
+		}
+		mainVC.put("segmentCmp", chapterEditController.getInitialComponent());
+	} 
 
 }

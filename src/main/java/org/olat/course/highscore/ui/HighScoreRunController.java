@@ -246,10 +246,10 @@ public class HighScoreRunController extends FormBasicController{
 			if (source == links[0]){
 				link = links[0];
 				buildMemberList(persons,0);
-			} else if (source == links[1]){
+			} else if (source == links[1]) {
 				link = links[1];
 				buildMemberList(persons,1);
-			} else{
+			} else {
 				link = links[2];
 				buildMemberList(persons,2);
 			}

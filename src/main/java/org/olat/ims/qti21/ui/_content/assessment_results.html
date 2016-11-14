@@ -104,7 +104,7 @@
 	</tbody></table>
 </div>
 	#foreach($itemInteraction in $itemResult.interactionResults)
-	<div class="row">
+	<div class="row #if(!$foreach.hasNext ) o_block_bottom #end">
 		<div class="col-sm-6"><h5>Response</h5>
 			$r.render($itemInteraction.responseFormItem.name)
 		</div>

@@ -35,7 +35,10 @@ import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
+import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.generic.modal.DialogBoxController;
+import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.BusinessControl;
 import org.olat.core.id.context.BusinessControlFactory;
@@ -55,6 +58,7 @@ import org.olat.course.run.scoring.ScoreEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.portfolio.Binder;
+import org.olat.modules.portfolio.BinderStatus;
 import org.olat.modules.portfolio.PortfolioLoggingAction;
 import org.olat.modules.portfolio.PortfolioService;
 import org.olat.modules.portfolio.handler.BinderTemplateResource;
@@ -91,15 +95,13 @@ public class PortfolioCourseNodeRunController extends FormBasicController {
 	
 	private FormLink newMapLink;
 	private FormLink selectMapLink;
-	private StaticTextElement newMapMsgEl;
-	private FormLayoutContainer infosContainer;
-	private FormLayoutContainer assessmentInfosContainer;
+	private StaticTextElement newMapMsgEl, deadlineDateText;
+	private FormLayoutContainer infosContainer, assessmentInfosContainer;
 
+	private DialogBoxController restoreBinderCtrl;
+	
 	private Formatter formatter;
-
-	private UserCourseEnvironment userCourseEnv;
-
-	private StaticTextElement deadlineDateText;
+	private final UserCourseEnvironment userCourseEnv;
 	
 	@Autowired
 	private EPFrontendManager ePFMgr;
@@ -198,20 +200,20 @@ public class PortfolioCourseNodeRunController extends FormBasicController {
 			copyBinder = portfolioService.getBinder(getIdentity(), templateBinder, courseEntry, courseNode.getIdent());
 		}
 		
-		if(copyMap == null && copyBinder == null) {
+		if(copyMap == null && (copyBinder == null || copyBinder.getBinderStatus() == BinderStatus.deleted)) {
 			updateEmptyUI();
 		} else {
 			updateSelectedUI();
 		}	
 
 		if(selectMapLink != null) {
-			selectMapLink.setVisible(copyMap != null || copyBinder != null);
+			selectMapLink.setVisible(copyMap != null || (copyBinder != null && copyBinder.getBinderStatus() != BinderStatus.deleted));
 		}
 		if(newMapLink != null) {
-			newMapLink.setVisible(copyMap == null && copyBinder == null);
+			newMapLink.setVisible(copyMap == null && (copyBinder == null || copyBinder.getBinderStatus() == BinderStatus.deleted));
 		}
 		if(newMapMsgEl != null) {
-			newMapMsgEl.setVisible(copyMap == null && copyBinder == null);
+			newMapMsgEl.setVisible(copyMap == null && (copyBinder == null || copyBinder.getBinderStatus() == BinderStatus.deleted));
 		}
 	}
 	
@@ -342,6 +344,17 @@ public class PortfolioCourseNodeRunController extends FormBasicController {
 	}
 
 	@Override
+	protected void event(UserRequest ureq, Controller source, Event event) {
+		if(restoreBinderCtrl == source) {
+			if(DialogBoxUIFactory.isYesEvent(event)) {
+				doRestore();
+				updateUI();
+			}
+		}
+		super.event(ureq, source, event);
+	}
+
+	@Override
 	protected void formOK(UserRequest ureq) {
 		//
 	}
@@ -359,11 +372,19 @@ public class PortfolioCourseNodeRunController extends FormBasicController {
 					ThreadLocalUserActivityLogger.log(EPLoggingAction.EPORTFOLIO_TASK_STARTED, getClass());
 				}
 			} else if(templateBinder != null) {
-				copyBinder = portfolioService.assignBinder(getIdentity(), templateBinder, courseEntry, courseNode.getIdent(), deadline);
-				if(copyBinder != null) {
-					showInfo("map.copied", StringHelper.escapeHtml(templateBinder.getTitle()));
-					ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrap(copyBinder));
-					ThreadLocalUserActivityLogger.log(PortfolioLoggingAction.PORTFOLIO_TASK_STARTED, getClass());
+				if(copyBinder == null) {
+					copyBinder = portfolioService.assignBinder(getIdentity(), templateBinder, courseEntry, courseNode.getIdent(), deadline);
+					if(copyBinder != null) {
+						showInfo("map.copied", StringHelper.escapeHtml(templateBinder.getTitle()));
+						ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrap(copyBinder));
+						ThreadLocalUserActivityLogger.log(PortfolioLoggingAction.PORTFOLIO_TASK_STARTED, getClass());
+					}
+				} else if(copyBinder != null && copyBinder.getBinderStatus() == BinderStatus.deleted) {
+					String title = translate("trashed.binder.confirm.title");
+					String text = translate("trashed.binder.confirm.descr", new String[]{ StringHelper.escapeHtml(copyBinder.getTitle()) });
+					restoreBinderCtrl = activateYesNoDialog(ureq, title, text, restoreBinderCtrl);
+					restoreBinderCtrl.setUserObject(copyBinder);
+					return;
 				}
 			}
 			
@@ -381,5 +402,12 @@ public class PortfolioCourseNodeRunController extends FormBasicController {
 			WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(bc, getWindowControl());
 			NewControllerFactory.getInstance().launch(ureq, bwControl);
 		}
+	}
+	
+	private void doRestore() {
+		copyBinder = portfolioService.getBinderByKey(copyBinder.getKey());
+		copyBinder.setBinderStatus(BinderStatus.open);
+		copyBinder = portfolioService.updateBinder(copyBinder);
+		showInfo("restore.binder.success");
 	}
 }

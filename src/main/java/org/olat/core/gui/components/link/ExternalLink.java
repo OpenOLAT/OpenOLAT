@@ -39,6 +39,11 @@ public class ExternalLink extends AbstractComponent {
 	private String tooltip;
 	private String iconLeftCSS;
 	
+	public ExternalLink(String id, String name) {
+		super(id, name);
+		setDomReplacementWrapperRequired(false);
+	}
+	
 	public ExternalLink(String name) {
 		super(name);
 		setDomReplacementWrapperRequired(false);

@@ -40,6 +40,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.util.FileUtils;
 import org.olat.fileresource.types.ImsQTI21Resource;
 import org.olat.fileresource.types.ImsQTI21Resource.PathResourceLocator;
 import org.olat.ims.qti21.AssessmentResponse;
@@ -47,7 +48,6 @@ import org.olat.ims.qti21.AssessmentSessionAuditLogger;
 import org.olat.ims.qti21.AssessmentTestSession;
 import org.olat.ims.qti21.QTI21DeliveryOptions;
 import org.olat.ims.qti21.QTI21Service;
-import org.olat.ims.qti21.model.InMemoryAssessmentTestSession;
 import org.olat.ims.qti21.model.audit.AssessmentResponseData;
 import org.olat.ims.qti21.model.audit.CandidateEvent;
 import org.olat.ims.qti21.model.audit.CandidateExceptionReason;
@@ -97,6 +97,9 @@ public class AssessmentItemDisplayController extends BasicController implements 
 	private final QTI21DeliveryOptions deliveryOptions;
 	private final ResolvedAssessmentItem resolvedAssessmentItem;
 	
+	/* This directory will be deleted at the disposal of the controller */
+	private File submissionDirToDispose;
+	
 	private CandidateEvent lastEvent;
 	private Date currentRequestTimestamp;
 	private RepositoryEntry entry;
@@ -126,8 +129,9 @@ public class AssessmentItemDisplayController extends BasicController implements 
 		this.candidateAuditLogger = candidateAuditLogger;
 		deliveryOptions = QTI21DeliveryOptions.defaultSettings();
 		currentRequestTimestamp = ureq.getRequestTimestamp();
-		candidateSession = new InMemoryAssessmentTestSession();
-		mapperUri = registerCacheableMapper(null, UUID.randomUUID().toString(), new ResourcesMapper(itemFileRef.toURI()));
+		candidateSession = qtiService.createInMemoryAssessmentTestSession(getIdentity());
+		submissionDirToDispose = qtiService.getSubmissionDirectory(candidateSession);
+		mapperUri = registerCacheableMapper(null, UUID.randomUUID().toString(), new ResourcesMapper(itemFileRef.toURI(), submissionDirToDispose));
 		
 		itemSessionController = enterSession(ureq);
 		
@@ -153,8 +157,9 @@ public class AssessmentItemDisplayController extends BasicController implements 
 		this.candidateAuditLogger = candidateAuditLogger;
 		deliveryOptions = QTI21DeliveryOptions.defaultSettings();
 		currentRequestTimestamp = ureq.getRequestTimestamp();
-		candidateSession = new InMemoryAssessmentTestSession();
-		mapperUri = registerCacheableMapper(null, UUID.randomUUID().toString(), new ResourcesMapper(itemFileRef.toURI()));
+		candidateSession = qtiService.createInMemoryAssessmentTestSession(getIdentity());
+		submissionDirToDispose = qtiService.getSubmissionDirectory(candidateSession);
+		mapperUri = registerCacheableMapper(null, UUID.randomUUID().toString(), new ResourcesMapper(itemFileRef.toURI(), submissionDirToDispose));
 		
 		itemSessionController = enterSession(ureq);
 		
@@ -183,7 +188,8 @@ public class AssessmentItemDisplayController extends BasicController implements 
 		deliveryOptions = QTI21DeliveryOptions.defaultSettings();
 		currentRequestTimestamp = ureq.getRequestTimestamp();
 		candidateSession = qtiService.createAssessmentTestSession(getIdentity(), null, assessmentEntry, testEntry, itemRef.getIdentifier().toString(), testEntry, authorMode);
-		mapperUri = registerCacheableMapper(null, UUID.randomUUID().toString(), new ResourcesMapper(itemFileRef.toURI()));
+		File submissionDir = qtiService.getSubmissionDirectory(candidateSession);
+		mapperUri = registerCacheableMapper(null, UUID.randomUUID().toString(), new ResourcesMapper(itemFileRef.toURI(), submissionDir));
 		
 		itemSessionController = enterSession(ureq);
 		
@@ -205,7 +211,9 @@ public class AssessmentItemDisplayController extends BasicController implements 
 
 	@Override
 	protected void doDispose() {
-		//
+		if(submissionDirToDispose != null) {
+			FileUtils.deleteDirsAndFiles(submissionDirToDispose, true, true);
+		}
 	}
 
 	@Override

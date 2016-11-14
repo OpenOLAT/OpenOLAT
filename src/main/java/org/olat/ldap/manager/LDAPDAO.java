@@ -173,14 +173,27 @@ public class LDAPDAO {
 		}
 	}
 	
-	public String searchUserDN(String uid, DirContext ctx) {
-		if(ctx == null)
-			return null;
-
+	public String searchUserForLogin(String login, DirContext ctx) {
+		if(ctx == null) return null;
+		
+		String ldapUserIDAttribute = syncConfiguration.getLdapUserLoginAttribute();
+		String filter = buildSearchUserFilter(ldapUserIDAttribute, login);
+		return searchUserDN(login, filter, ctx);
+	}
+	
+	public String searchUserDNByUid(String uid, DirContext ctx) {
+		if(ctx == null) return null;
+		
+		String ldapUserIDAttribute = syncConfiguration.getOlatPropertyToLdapAttribute(LDAPConstants.LDAP_USER_IDENTIFYER);
+		String filter = buildSearchUserFilter(ldapUserIDAttribute, uid);
+		return searchUserDN(uid, filter, ctx);
+	}
+	
+	private String searchUserDN(String username, String filter, DirContext ctx) {
+		
 		List<String> ldapBases = syncConfiguration.getLdapBases();
 		String[] serachAttr = { "dn" };
 		
-		String filter = buildSearchUserFilter(uid);
 		SearchControls ctls = new SearchControls();
 		ctls.setSearchScope(SearchControls.SUBTREE_SCOPE);
 		ctls.setReturningAttributes(serachAttr);
@@ -197,22 +210,21 @@ public class LDAPDAO {
 					break;
 				}
 			} catch (NamingException e) {
-				log.error("NamingException when trying to bind user with username::" + uid + " on ldapBase::" + ldapBase, e);
+				log.error("NamingException when trying to bind user with username::" + username + " on ldapBase::" + ldapBase, e);
 			}
 		}
 		
 		return userDN;
 	}
 	
-	public String buildSearchUserFilter(String uid) {
-		String ldapUserIDAttribute = syncConfiguration.getOlatPropertyToLdapAttribute(LDAPConstants.LDAP_USER_IDENTIFYER);
+	private String buildSearchUserFilter(String attribute, String uid) {
 		String ldapUserFilter = syncConfiguration.getLdapUserFilter();
 		StringBuilder filter = new StringBuilder();
 		if (ldapUserFilter != null) {
 			// merge preconfigured filter (e.g. object class, group filters) with username using AND rule
 			filter.append("(&").append(ldapUserFilter);	
 		}
-		filter.append("(").append(ldapUserIDAttribute).append("=").append(uid).append(")");
+		filter.append("(").append(attribute).append("=").append(uid).append(")");
 		if (ldapUserFilter != null) {
 			filter.append(")");	
 		}

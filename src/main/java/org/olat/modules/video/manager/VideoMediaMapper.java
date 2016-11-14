@@ -22,6 +22,7 @@ package org.olat.modules.video.manager;
 import javax.servlet.http.HttpServletRequest;
 
 import org.olat.core.dispatcher.mapper.Mapper;
+import org.olat.core.gui.media.ForbiddenMediaResource;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.media.NotFoundMediaResource;
 import org.olat.core.util.vfs.VFSContainer;
@@ -39,10 +40,13 @@ public class VideoMediaMapper implements Mapper  {
 
 	@Override
 	public MediaResource handle(String relPath, HttpServletRequest request) {
+		if(relPath != null && relPath.contains("..")) { 
+			return new ForbiddenMediaResource(relPath);
+		}
 		VFSItem mediaFile = mediaBase.resolve(relPath);
 		if (mediaFile instanceof VFSLeaf && !relPath.endsWith("xml")){
 			VFSMediaResource res =  new VFSMediaResource((VFSLeaf)mediaFile);
-			if (relPath.toLowerCase().endsWith("srt")) {
+			if (relPath.toLowerCase().endsWith("srt") && relPath.toLowerCase().endsWith("vtt")) {
 				// SRT caption files are supposed to be UTF-8, see
 				// https://en.wikipedia.org/wiki/SubRip#Text_encoding
 				res.setEncoding("utf-8");				

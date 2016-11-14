@@ -21,6 +21,7 @@ package org.olat.modules.video.ui;
 
 import org.olat.core.gui.components.form.flexible.FormUIFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.translator.Translator;
 
@@ -45,7 +46,6 @@ public class VideoQualityTableModel extends DefaultFlexiTableDataModel<QualityTa
 		return new VideoQualityTableModel(getTableColumnModel(), translator);
 	}
 
-
 	@Override
 	public Object getValueAt(int row, int col) {
 		QualityTableRow video = getObject(row);
@@ -54,17 +54,17 @@ public class VideoQualityTableModel extends DefaultFlexiTableDataModel<QualityTa
 			case dimension: return video.getDimension();
 			case size: return video.getSize();
 			case format: return video.getFormat();
-			case view: return video.getViewLink();
+			case delete: return video.getDeleteLink();
 			default: return "";
 		}
 	}
 
-	public enum QualityTableCols {
+	public enum QualityTableCols implements FlexiSortableColumnDef {
 		resolution("quality.table.header.resolution"),
 		dimension("quality.table.header.dimension"),
 		size("quality.table.header.size"),
 		format("quality.table.header.format"),
-		view("quality.table.header.view");
+		delete("quality.table.header.delete");
 
 		private final String i18nKey;
 
@@ -74,6 +74,21 @@ public class VideoQualityTableModel extends DefaultFlexiTableDataModel<QualityTa
 
 		public String i18nKey() {
 			return i18nKey;
+		}
+
+		@Override
+		public String i18nHeaderKey() {
+			return i18nKey;
+		}
+
+		@Override
+		public boolean sortable() {
+			return true;
+		}
+
+		@Override
+		public String sortKey() {
+			return name();
 		}
 	}
 

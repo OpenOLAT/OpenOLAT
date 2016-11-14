@@ -22,6 +22,7 @@ package org.olat.modules.portfolio.ui;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Set;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -80,6 +81,7 @@ import org.olat.modules.portfolio.model.BinderRefImpl;
 import org.olat.modules.portfolio.model.BinderStatistics;
 import org.olat.modules.portfolio.model.SynchedBinder;
 import org.olat.modules.portfolio.ui.BindersDataModel.PortfolioCols;
+import org.olat.modules.portfolio.ui.event.DeleteBinderEvent;
 import org.olat.modules.portfolio.ui.event.NewBinderEvent;
 import org.olat.modules.portfolio.ui.model.BinderRow;
 import org.olat.modules.portfolio.ui.model.CourseTemplateRow;
@@ -107,13 +109,13 @@ public class BinderListController extends FormBasicController
 	private Link newBinderLink;
 	private String mapperThumbnailUrl;
 	
-	private FlexiTableElement tableEl;
-	private BindersDataModel model;
-	private final TooledStackedPanel stackPanel;
+	protected FlexiTableElement tableEl;
+	protected BindersDataModel model;
+	protected final TooledStackedPanel stackPanel;
 	private FormLink newBinderDropdown, newBinderFromCourseButton;
 	
-	private CloseableModalController cmc;
-	private BinderController binderCtrl;
+	protected CloseableModalController cmc;
+	protected BinderController binderCtrl;
 	private BinderMetadataEditController newBinderCtrl;
 	private RepositorySearchController searchTemplateCtrl;
 	private CourseTemplateSearchController searchCourseTemplateCtrl;
@@ -124,7 +126,7 @@ public class BinderListController extends FormBasicController
 	@Autowired
 	private PortfolioV2Module portfolioModule;
 	@Autowired
-	private PortfolioService portfolioService;
+	protected PortfolioService portfolioService;
 	
 	public BinderListController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel) {
 		super(ureq, wControl, "binder_list");
@@ -134,7 +136,13 @@ public class BinderListController extends FormBasicController
 	}
 	
 	public int getNumOfBinders() {
-		return model.getRowCount() - 1;
+		int count = model.getRowCount();
+		if(portfolioModule.isLearnerCanCreateBinders()
+				|| portfolioModule.isCanCreateBindersFromTemplate()
+				|| portfolioModule.isCanCreateBindersFromCourse()) {
+			count--;
+		}
+		return count;
 	}
 	
 	public BinderRow getFirstBinder() {
@@ -143,13 +151,16 @@ public class BinderListController extends FormBasicController
 		}
 		return null;
 	}
+	
+	protected String getTableId() {
+		return "portfolio-list";
+	}
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(PortfolioCols.key));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(PortfolioCols.title));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(PortfolioCols.open));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, PortfolioCols.key, "select"));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(PortfolioCols.title, "select"));
 
 		model = new BindersDataModel(columnsModel);
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", model, 20, false, getTranslator(), formLayout);
@@ -165,7 +176,7 @@ public class BinderListController extends FormBasicController
 		row.setDomReplacementWrapperRequired(false); // sets its own DOM id in velocity container
 		tableEl.setRowRenderer(row, this);
 		tableEl.setCssDelegate(new BinderCssDelegate());
-		tableEl.setAndLoadPersistedPreferences(ureq, "portfolio-list");
+		tableEl.setAndLoadPersistedPreferences(ureq, getTableId());
 		
 		mapperThumbnailUrl = registerCacheableMapper(ureq, "binder-list", new ImageMapper(model));
 		row.contextPut("mapperThumbnailUrl", mapperThumbnailUrl);
@@ -190,7 +201,12 @@ public class BinderListController extends FormBasicController
 
 	@Override
 	public Iterable<Component> getComponents(int row, Object rowObject) {
-		return null;
+		BinderRow elRow = model.getObject(row);
+		List<Component> components = new ArrayList<>(2);
+		if(elRow.getOpenLink() != null) {
+			components.add(elRow.getOpenLink().getComponent());
+		}
+		return components;
 	}
 
 	@Override
@@ -210,7 +226,7 @@ public class BinderListController extends FormBasicController
 		//
 	}
 	
-	private void loadModel() {
+	protected void loadModel() {
 		List<BinderStatistics> binderRows = portfolioService.searchOwnedBinders(getIdentity());
 		List<BinderRow> rows = new ArrayList<>(binderRows.size());
 		for(BinderStatistics binderRow:binderRows) {
@@ -226,7 +242,7 @@ public class BinderListController extends FormBasicController
 		tableEl.reloadData();
 	}
 	
-	private BinderRow forgePortfolioRow(BinderStatistics binderRow) {
+	protected BinderRow forgePortfolioRow(BinderStatistics binderRow) {
 		String openLinkId = "open_" + (++counter);
 		FormLink openLink = uifactory.addFormLink(openLinkId, "open", "open", null, flc, Link.LINK);
 		openLink.setIconRightCSS("o_icon o_icon_start");
@@ -301,13 +317,18 @@ public class BinderListController extends FormBasicController
 			cleanUp();
 		} else if(newBinderCalloutCtrl == source) {
 			cleanUp();
+		} else if(binderCtrl == source) {
+			if(event instanceof DeleteBinderEvent) {
+				stackPanel.popUpToController(this);
+				loadModel();
+			}
 		} else if(cmc == source) {
 			cleanUp();
 		}
 		super.event(ureq, source, event);
 	}
 	
-	private void cleanUp() {
+	protected void cleanUp() {
 		removeAsListenerAndDispose(searchCourseTemplateCtrl);
 		removeAsListenerAndDispose(chooseNewBinderTypeCtrl);
 		removeAsListenerAndDispose(newBinderCalloutCtrl);
@@ -348,7 +369,17 @@ public class BinderListController extends FormBasicController
 		//
 	}
 	
-	private BinderController doOpenBinder(UserRequest ureq, BinderRef row) {
+	protected List<BinderRow> getSelectedRows() {
+		Set<Integer> indexes = tableEl.getMultiSelectedIndex();
+		List<BinderRow> selectedRows = new ArrayList<>(indexes.size());
+		for(Integer index:indexes) {
+			BinderRow row = model.getObject(index.intValue());
+			selectedRows.add(row);
+		}
+		return selectedRows;
+	}
+	
+	protected BinderController doOpenBinder(UserRequest ureq, BinderRef row) {
 		SynchedBinder binder = portfolioService.loadAndSyncBinder(row);
 		if(binder.isChanged()) {
 			showInfo("warning.binder.synched");
@@ -356,7 +387,7 @@ public class BinderListController extends FormBasicController
 		return doOpenBinder(ureq, binder.getBinder());
 	}
 	
-	private BinderController doOpenBinder(UserRequest ureq, Binder binder) {
+	protected BinderController doOpenBinder(UserRequest ureq, Binder binder) {
 		if(binder == null) {
 			showWarning("warning.portfolio.not.found");
 			return null;
@@ -368,6 +399,7 @@ public class BinderListController extends FormBasicController
 			BinderSecurityCallback secCallback = BinderSecurityCallbackFactory.getCallbackForOwnedBinder(binder);
 			BinderConfiguration config = BinderConfiguration.createConfig(binder);
 			binderCtrl = new BinderController(ureq, swControl, stackPanel, secCallback, binder, config);
+			listenTo(binderCtrl);
 			stackPanel.pushController(binder.getTitle(), binderCtrl);
 			return binderCtrl;
 		}

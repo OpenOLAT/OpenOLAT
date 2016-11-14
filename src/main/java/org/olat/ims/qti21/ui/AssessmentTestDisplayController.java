@@ -229,18 +229,20 @@ public class AssessmentTestDisplayController extends BasicController implements 
 		fUnzippedDirRoot = frm.unzipFileResource(testEntry.getOlatResource());
 		resolvedAssessmentTest = qtiService.loadAndResolveAssessmentTest(fUnzippedDirRoot, false, false);
 		
-		URI assessmentObjectUri = qtiService.createAssessmentObjectUri(fUnzippedDirRoot);
-		mapperUri = registerCacheableMapper(null, "QTI21Resources::" + testEntry.getKey(), new ResourcesMapper(assessmentObjectUri));
-		
 		currentRequestTimestamp = ureq.getRequestTimestamp();
 		
 		initMarks();
 		initOrResumeAssessmentTestSession(ureq, authorMode);
+		
+		URI assessmentObjectUri = qtiService.createAssessmentObjectUri(fUnzippedDirRoot);
+		File submissionDir = qtiService.getSubmissionDirectory(candidateSession);
+		mapperUri = registerCacheableMapper(null, "QTI21Resources::" + testEntry.getKey(),
+				new ResourcesMapper(assessmentObjectUri, submissionDir));
 
 		/* Handle immediate end of test session */
         if (testSessionController.getTestSessionState() != null && testSessionController.getTestSessionState().isEnded()) {
         	AssessmentResult assessmentResult = null;
-            qtiService.finishTestSession(candidateSession, testSessionController.getTestSessionState(), assessmentResult, ureq.getRequestTimestamp());
+            qtiService.finishTestSession(candidateSession, testSessionController.getTestSessionState(), assessmentResult, currentRequestTimestamp);
         	mainVC = createVelocityContainer("end");
         } else {
         	mainVC = createVelocityContainer("run");
@@ -727,7 +729,7 @@ public class AssessmentTestDisplayController extends BasicController implements 
 				} else if(responseData instanceof FileInput) {
 					FileInput fileInput = (FileInput)responseData;
 					File storedFile = qtiService.importFileSubmission(candidateSession, fileInput.getMultipartFileInfos());
-                    responseDataMap.put(identifier, new FileResponseData(storedFile, fileInput.getContentType(), fileInput.getFileName()));
+                    responseDataMap.put(identifier, new FileResponseData(storedFile, fileInput.getContentType(), storedFile.getName()));
                     fileSubmissionMap.put(identifier, storedFile);
 				}
             }
@@ -746,7 +748,7 @@ public class AssessmentTestDisplayController extends BasicController implements 
                 FileInput multipartFile = (FileInput)fileResponseEntry.getValue();
                 if (!multipartFile.isEmpty()) {
                 	File storedFile = qtiService.importFileSubmission(candidateSession, multipartFile.getMultipartFileInfos());
-                    responseDataMap.put(identifier, new FileResponseData(storedFile, multipartFile.getContentType(), multipartFile.getFileName()));
+                    responseDataMap.put(identifier, new FileResponseData(storedFile, multipartFile.getContentType(), storedFile.getName()));
                     fileSubmissionMap.put(identifier, storedFile);
                 }
             }

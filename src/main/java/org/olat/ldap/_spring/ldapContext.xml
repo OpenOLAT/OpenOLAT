@@ -16,8 +16,9 @@
     	
     	<property name="ldapUserCreatedTimestampAttribute" value="${ldap.ldapUserCreatedTimestampAttribute}"/>
 		<property name="ldapUserLastModifiedTimestampAttribute" value="${ldap.ldapUserLastModifiedTimestampAttribute}"/>
-		<property name="ldapUserPasswordAttribute" value="${ldap.ldapUserPassordAttribute}"/>
-		
+		<property name="ldapUserPasswordAttribute" value="${ldap.ldapUserPassordAttribute}"/>	
+		<property name="ldapUserLoginAttribute" value="${ldap.login.attribute}" />
+
 		<property name="ldapUserFilter" value="${ldap.ldapUserFilter}"/>
 		<property name="ldapGroupFilter" value="${ldap.ldapGroupFilter}"/>
 		
@@ -83,7 +84,7 @@
 		</property>
 		<property name="learningResourceManagerRoleAttribute" value="${ldap.learningResourceManagerRoleAttribute}"/>
 		<property name="learningResourceManagerRoleValue" value="${ldap.learningResourceManagerRoleValue}"/>
-		
+
 		<!-- 
 			Define which user attributes are mandatory and how they are mapped to OLAT user properties. 
 			Note that OLAT requires at least the user properties userID and email. Those must be listed 

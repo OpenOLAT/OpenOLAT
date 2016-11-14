@@ -2,3 +2,8 @@
 	$r.contextHelpWithWrapper("My portfolio binders")		
 </div>
 $r.render("table")
+#if($r.available("delete.binder"))
+<div class="o_button_group">
+	$r.render("delete.binder")
+</div>
+#end

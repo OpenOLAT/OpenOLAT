@@ -44,6 +44,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
+import org.olat.core.gui.components.stack.BreadcrumbPanelAware;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.components.stack.TooledStackedPanel.Align;
 import org.olat.core.gui.control.Controller;
@@ -66,6 +67,7 @@ import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
 import org.olat.group.model.SearchBusinessGroupParams;
 import org.olat.modules.assessment.AssessmentEntry;
+import org.olat.modules.assessment.AssessmentToolOptions;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
 import org.olat.modules.assessment.ui.AssessedIdentityListTableModel.IdentityCourseElementCols;
 import org.olat.repository.RepositoryEntry;
@@ -87,6 +89,7 @@ public class AssessedIdentityListController extends FormBasicController implemen
 	private final RepositoryEntry testEntry;
 	private final AssessableResource element;
 	private final boolean isAdministrativeUser;
+	private SearchAssessedIdentityParams searchParams;
 	private final List<UserPropertyHandler> userPropertyHandlers;
 	private final AssessmentToolSecurityCallback assessmentCallback;
 	
@@ -94,7 +97,8 @@ public class AssessedIdentityListController extends FormBasicController implemen
 	private FlexiTableElement tableEl;
 	private final TooledStackedPanel stackPanel;
 	private AssessedIdentityListTableModel usersTableModel;
-	
+
+	private List<Controller> toolsCtrl;
 	private AssessedIdentityController currentIdentityCtrl;
 	
 	@Autowired
@@ -111,7 +115,7 @@ public class AssessedIdentityListController extends FormBasicController implemen
 	private RepositoryHandlerFactory repositoryHandlerFactory;
 	
 	public AssessedIdentityListController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
-			RepositoryEntry testEntry, AssessableResource element,  AssessmentToolSecurityCallback assessmentCallback) {
+			RepositoryEntry testEntry, AssessableResource element, AssessmentToolSecurityCallback assessmentCallback) {
 		super(ureq, wControl, "identity_element");
 		setTranslator(Util.createPackageTranslator(AssessmentModule.class, getLocale(), getTranslator()));
 		setTranslator(userManager.getPropertyHandlerTranslator(getTranslator()));
@@ -199,9 +203,18 @@ public class AssessedIdentityListController extends FormBasicController implemen
 				tableEl.setExtendedFilterButton(translate("filter.groups"), groupFilters);
 			}
 		}
+		
 	}
 	
-	private void updateModel(String searchString, List<FlexiTableFilter> filters, List<FlexiTableFilter> extendedFilters) {
+	public class AToolsOptions extends AssessmentToolOptions {
+
+		@Override
+		public List<Identity> getIdentities() {
+			return assessmentToolManager.getAssessedIdentities(getIdentity(), searchParams);
+		}
+	}
+	
+	private void updateModel(UserRequest ureq, String searchString, List<FlexiTableFilter> filters, List<FlexiTableFilter> extendedFilters) {
 		SearchAssessedIdentityParams params = new SearchAssessedIdentityParams(testEntry, null, testEntry, assessmentCallback);
 		
 		List<AssessmentEntryStatus> assessmentStatus = null;
@@ -248,6 +261,34 @@ public class AssessedIdentityListController extends FormBasicController implemen
 			usersTableModel.filter(Collections.singletonList(filters.get(0)));
 		}
 		tableEl.reloadData();
+		searchParams = params;
+		
+		List<String> toolCmpNames = new ArrayList<>();
+		AssessmentToolOptions asOptions = new AssessmentToolOptions();
+		asOptions.setAdmin(assessmentCallback.isAdmin());
+		asOptions.setIdentities(assessedIdentities);
+		List<Controller> tools = element.createAssessmentTools(ureq, getWindowControl(), stackPanel,
+				testEntry, asOptions);
+		int count = 0;
+		if(tools.size() > 0) {
+			for(Controller tool:tools) {
+				listenTo(tool);
+				String toolCmpName = "ctrl_" + (count++);
+				flc.put(toolCmpName, tool.getInitialComponent());
+				toolCmpNames.add(toolCmpName);
+				if(tool instanceof BreadcrumbPanelAware) {
+					((BreadcrumbPanelAware)tool).setBreadcrumbPanel(stackPanel);
+				}
+			}
+		}
+		
+		if(toolsCtrl != null) {
+			for(Controller toolCtrl:toolsCtrl) {
+				removeAsListenerAndDispose(toolCtrl);
+			}
+		}
+		toolsCtrl = tools;
+		flc.contextPut("toolCmpNames", toolCmpNames);
 	}
 	@Override
 	protected void doDispose() {
@@ -265,7 +306,7 @@ public class AssessedIdentityListController extends FormBasicController implemen
 		}
 
 		tableEl.setSelectedFilterKey(filter);
-		updateModel(null, tableEl.getSelectedFilters(), null);
+		updateModel(ureq, null, tableEl.getSelectedFilters(), null);
 		
 		if(entries != null && entries.size() > 0) {
 			String resourceType = entries.get(0).getOLATResourceable().getResourceableTypeName();
@@ -300,12 +341,16 @@ public class AssessedIdentityListController extends FormBasicController implemen
 	public void event(UserRequest ureq, Controller source, Event event) {
 		if(currentIdentityCtrl == source) {
 			if(event == Event.CHANGED_EVENT) {
-				updateModel(null, null, null);
+				updateModel(ureq, null, null, null);
 			} else if(event == Event.DONE_EVENT) {
-				updateModel(null, null, null);
+				updateModel(ureq, null, null, null);
 				stackPanel.popController(currentIdentityCtrl);
 			} else if(event == Event.CANCELLED_EVENT) {
 				stackPanel.popController(currentIdentityCtrl);
+			}
+		} else if(toolsCtrl != null && toolsCtrl.contains(source)) {
+			if(event == Event.CHANGED_EVENT) {
+				updateModel(ureq, null, null, null);
 			}
 		}
 		super.event(ureq, source, event);
@@ -323,7 +368,7 @@ public class AssessedIdentityListController extends FormBasicController implemen
 				}
 			} else if(event instanceof FlexiTableSearchEvent) {
 				FlexiTableSearchEvent ftse = (FlexiTableSearchEvent)event;
-				updateModel(ftse.getSearch(), ftse.getFilters(), ftse.getExtendedFilters());
+				updateModel(ureq, ftse.getSearch(), ftse.getFilters(), ftse.getExtendedFilters());
 			}
 		}
 		

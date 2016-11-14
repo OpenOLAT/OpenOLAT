@@ -57,6 +57,7 @@ import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.resource.OresHelper;
+import org.olat.fileresource.types.ImsQTI21Resource;
 import org.olat.group.BusinessGroup;
 import org.olat.group.model.BusinessGroupSelectionEvent;
 import org.olat.group.ui.main.SelectBusinessGroupController;
@@ -67,6 +68,7 @@ import org.olat.ims.qti.questionimport.ImportOptions;
 import org.olat.ims.qti.questionimport.ItemAndMetadata;
 import org.olat.ims.qti.questionimport.ItemsPackage;
 import org.olat.ims.qti.questionimport.QImport_1_InputStep;
+import org.olat.ims.qti21.pool.QTI21QPoolServiceProvider;
 import org.olat.modules.qpool.ExportFormatOptions;
 import org.olat.modules.qpool.Pool;
 import org.olat.modules.qpool.QItemFactory;
@@ -595,9 +597,17 @@ public class QuestionListController extends AbstractItemListController implement
 	}
 	
 	private void doImportResource(UserRequest ureq, RepositoryEntry repositoryEntry) {
-		QTIQPoolServiceProvider spi
-			= (QTIQPoolServiceProvider)CoreSpringFactory.getBean("qtiPoolServiceProvider");
-		List<QuestionItem> importItems = spi.importRepositoryEntry(getIdentity(), repositoryEntry, getLocale());
+		
+		List<QuestionItem> importItems = null;
+		if(ImsQTI21Resource.TYPE_NAME.equals(repositoryEntry.getOlatResource().getResourceableTypeName())) {
+			QTI21QPoolServiceProvider spi = CoreSpringFactory.getImpl(QTI21QPoolServiceProvider.class);
+			importItems = spi.importRepositoryEntry(getIdentity(), repositoryEntry, getLocale());
+		} else {
+			QTIQPoolServiceProvider spi
+				= (QTIQPoolServiceProvider)CoreSpringFactory.getBean("qtiPoolServiceProvider");
+			importItems = spi.importRepositoryEntry(getIdentity(), repositoryEntry, getLocale());
+		}
+
 		if(getSource().askEditable()) {
 			removeAsListenerAndDispose(shareItemsToSourceCtrl);
 			shareItemsToSourceCtrl = new ShareItemSourceOptionController(ureq, getWindowControl(), importItems, getSource());
@@ -625,7 +635,7 @@ public class QuestionListController extends AbstractItemListController implement
 	
 	private void doOpenRepositoryImport(UserRequest ureq) {
 		removeAsListenerAndDispose(importTestCtrl);
-		String[] allowed = new String[]{ TestFileResource.TYPE_NAME, SurveyFileResource.TYPE_NAME };
+		String[] allowed = new String[]{ ImsQTI21Resource.TYPE_NAME, TestFileResource.TYPE_NAME, SurveyFileResource.TYPE_NAME };
 		importTestCtrl = new ReferencableEntriesSearchController(getWindowControl(), ureq, allowed,
 				null, translate("import.repository"), false, false, false, true, Can.copyable);
 		listenTo(importTestCtrl);

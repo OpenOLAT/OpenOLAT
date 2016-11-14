@@ -27,6 +27,7 @@ import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.hibernate.ObjectDeletedException;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.commons.services.image.Size;
@@ -197,14 +198,29 @@ public class VideoTranscodingJob extends JobWithDB implements StatefulJob {
 						String percent = line.substring(2, end);
 						log.debug("Output: " + percent);		
 						// update version file for UI
-						videoTranscoding.setStatus(Integer.parseInt(percent));
-						videoTranscoding = videoManager.updateVideoTranscoding(videoTranscoding);
-						DBFactory.getInstance().commitAndCloseSession();
+						try {
+							videoTranscoding.setStatus(Integer.parseInt(percent));
+							videoTranscoding = videoManager.updateVideoTranscoding(videoTranscoding);
+							DBFactory.getInstance().commitAndCloseSession();							
+						} catch (ObjectDeletedException e) {
+							// deleted by other process
+							proc.destroy();
+							br.close();
+							return false;
+						}
 					}
 				}
 			}
 		} catch (IOException e) {
 			//
+		} finally {
+			try {
+				stdout.close();
+				isr.close();
+				br.close();
+			} catch (Exception e2) {
+				// ignore
+			}
 		}
 
 		// Read and ignore errors, Handbrake outputs a lot info on startup. Only
@@ -220,6 +236,14 @@ public class VideoTranscodingJob extends JobWithDB implements StatefulJob {
 			}
 		} catch (IOException e) {
 			//
+		} finally {
+			try {
+				stderr.close();
+				iserr.close();
+				berr.close();
+			} catch (Exception e2) {
+				// ignore
+			}
 		}
 
 		try {

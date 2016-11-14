@@ -26,7 +26,10 @@ import java.util.Locale;
 import org.junit.Assert;
 import org.junit.Test;
 import org.olat.core.commons.persistence.DB;
+import org.olat.core.commons.services.commentAndRating.manager.UserCommentsDAO;
 import org.olat.core.id.Identity;
+import org.olat.core.id.OLATResourceable;
+import org.olat.core.util.resource.OresHelper;
 import org.olat.modules.portfolio.Assignment;
 import org.olat.modules.portfolio.AssignmentType;
 import org.olat.modules.portfolio.Binder;
@@ -58,7 +61,13 @@ public class PortfolioServiceTest extends OlatTestCase {
 	@Autowired
 	private DB dbInstance;
 	@Autowired
+	private PageDAO pageDao;
+	@Autowired
+	private BinderDAO binderDao;
+	@Autowired
 	private AssignmentDAO assignmentDao;
+	@Autowired
+	private UserCommentsDAO userCommentsDao;
 	@Autowired
 	private PortfolioService portfolioService;
 	@Autowired
@@ -122,7 +131,7 @@ public class PortfolioServiceTest extends OlatTestCase {
 		portfolioService.addAccessRights(section, coach, PortfolioRoles.coach);
 		
 		dbInstance.commit();
-		List<Page> pages = portfolioService.getPages(section, null);
+		List<Page> pages = portfolioService.getPages(section);
 		Page page = pages.get(0);
 		portfolioService.addAccessRights(page, reviewer, PortfolioRoles.reviewer);
 
@@ -166,7 +175,7 @@ public class PortfolioServiceTest extends OlatTestCase {
 		portfolioService.addAccessRights(section, identity, PortfolioRoles.coach);
 		
 		dbInstance.commit();
-		List<Page> pages = portfolioService.getPages(section, null);
+		List<Page> pages = portfolioService.getPages(section);
 		Page page = pages.get(0);
 		portfolioService.addAccessRights(page, identity, PortfolioRoles.reviewer);
 
@@ -377,7 +386,7 @@ public class PortfolioServiceTest extends OlatTestCase {
 		Assert.assertEquals(templateSection2, section2.getTemplateReference());
 		
 		// load pages from section 1
-		List<Page> pagesSection1 = portfolioService.getPages(section1, null);
+		List<Page> pagesSection1 = portfolioService.getPages(section1);
 		Assert.assertEquals(2, pagesSection1.size());
 		
 		Page page1_2 = pagesSection1.get(0);
@@ -386,7 +395,7 @@ public class PortfolioServiceTest extends OlatTestCase {
 		Assert.assertTrue(page2_1.getTitle().equals("2.1 Assignment") || page2_1.getTitle().equals("1.2 Assignment"));
 		
 		// and pages from section 2
-		List<Page> pagesSection2 = portfolioService.getPages(section2, null);
+		List<Page> pagesSection2 = portfolioService.getPages(section2);
 		Assert.assertEquals(2, pagesSection2.size());
 		Page page2_2 = pagesSection2.get(0);
 		Page page1_1 = pagesSection2.get(1);
@@ -481,13 +490,13 @@ public class PortfolioServiceTest extends OlatTestCase {
 		Assert.assertEquals(templateSection3, section3.getTemplateReference());
 		
 		// load pages from section 1
-		List<Page> pagesSection1 = portfolioService.getPages(section1, null);
+		List<Page> pagesSection1 = portfolioService.getPages(section1);
 		Assert.assertEquals(1, pagesSection1.size());
 		Page page1_2 = pagesSection1.get(0);
 		Assert.assertTrue(page1_2.getTitle().equals("1.2 Assignment"));
 		
 		// and pages from section 2
-		List<Page> pagesSection2 = portfolioService.getPages(section2, null);
+		List<Page> pagesSection2 = portfolioService.getPages(section2);
 		Assert.assertEquals(2, pagesSection2.size());
 		Page page2_2 = pagesSection2.get(0);
 		Page page1_1 = pagesSection2.get(1);
@@ -495,7 +504,7 @@ public class PortfolioServiceTest extends OlatTestCase {
 		Assert.assertTrue(page1_1.getTitle().equals("1.1 Assignment") || page1_1.getTitle().equals("2.2 Assignment"));
 		
 		// and pages from section 3
-		List<Page> pagesSection3 = portfolioService.getPages(section3, null);
+		List<Page> pagesSection3 = portfolioService.getPages(section3);
 		Assert.assertEquals(1, pagesSection3.size());
 		Page page2_1 = pagesSection3.get(0);
 		Assert.assertTrue(page2_1.getTitle().equals("2.1 Assignment"));		
@@ -636,27 +645,27 @@ public class PortfolioServiceTest extends OlatTestCase {
 		Assert.assertEquals(templateSection4, section4.getTemplateReference());
 		
 		// load pages from section 0
-		List<Page> pagesSection0 = portfolioService.getPages(section0, null);
+		List<Page> pagesSection0 = portfolioService.getPages(section0);
 		Assert.assertEquals(1, pagesSection0.size());
 		Page page0_1 = pagesSection0.get(0);
 		Assert.assertTrue(page0_1.getTitle().equals("0.1 Assignment"));
 		// load pages from section 1
-		List<Page> pagesSection1 = portfolioService.getPages(section1, null);
+		List<Page> pagesSection1 = portfolioService.getPages(section1);
 		Assert.assertTrue(pagesSection1.isEmpty());
 		// and pages from section 2
-		List<Page> pagesSection2 = portfolioService.getPages(section2, null);
+		List<Page> pagesSection2 = portfolioService.getPages(section2);
 		Assert.assertEquals(1, pagesSection2.size());
 		Page page1_2 = pagesSection2.get(0);
 		Assert.assertTrue(page1_2.getTitle().equals("1.2 Assignment"));
 		// and pages from section 3
-		List<Page> pagesSection3 = portfolioService.getPages(section3, null);
+		List<Page> pagesSection3 = portfolioService.getPages(section3);
 		Assert.assertEquals(2, pagesSection3.size());
 		Page page1_1 = pagesSection3.get(0);
 		Page page2_1 = pagesSection3.get(1);
 		Assert.assertTrue(page1_1.getTitle().equals("1.1 Assignment") || page1_1.getTitle().equals("2.1 Assignment"));
 		Assert.assertTrue(page2_1.getTitle().equals("1.1 Assignment") || page2_1.getTitle().equals("2.1 Assignment"));
 		// and pages from section 4
-		List<Page> pagesSection4 = portfolioService.getPages(section4, null);
+		List<Page> pagesSection4 = portfolioService.getPages(section4);
 		Assert.assertEquals(1, pagesSection4.size());
 		Page page2_2 = pagesSection4.get(0);
 		Assert.assertTrue(page2_2.getTitle().equals("2.2 Assignment"));
@@ -770,7 +779,7 @@ public class PortfolioServiceTest extends OlatTestCase {
 		dbInstance.commit();
 		
 		List<Section> sections = portfolioService.getSections(binder);
-		List<Page> pages = portfolioService.getPages(sections.get(0), null);
+		List<Page> pages = portfolioService.getPages(sections.get(0));
 		Assert.assertEquals(4, pages.size());
 		
 		//delete an assignment
@@ -784,7 +793,7 @@ public class PortfolioServiceTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		//deleting an assignment doesn't delete the pages
-		List<Page> allPages = portfolioService.getPages(sections.get(0), null);
+		List<Page> allPages = portfolioService.getPages(sections.get(0));
 		Assert.assertEquals(4, allPages.size());
 		
 		//sync twice
@@ -798,5 +807,91 @@ public class PortfolioServiceTest extends OlatTestCase {
 		RepositoryEntry re = repositoryService.create(initialAuthor, null, "", displayname, description, resource, RepositoryEntry.ACC_OWNERS);
 		portfolioService.createAndPersistBinderTemplate(initialAuthor, re, Locale.ENGLISH);
 		return re;
+	}
+	
+	@Test
+	public void deleteBinder() {
+		Identity owner = JunitTestHelper.createAndPersistIdentityAsRndUser("del-binder-");
+		Binder binder = portfolioService.createNewBinder("Binder to delete", "Deletion", "", owner);
+		SectionRef sectionRef1 = portfolioService.appendNewSection("1. section ", "Section 1", null, null, binder);
+		dbInstance.commit();
+		SectionRef sectionRef2 = portfolioService.appendNewSection("2. section ", "Section 2", null, null, binder);
+		dbInstance.commit();
+		
+		Section reloadedSection1 = portfolioService.getSection(sectionRef1);
+		Page page1 = portfolioService.appendNewPage(owner, "New page", "A brand new page.", null, null, reloadedSection1);
+		Section reloadedSection2 = portfolioService.getSection(sectionRef2);
+		Page page2 = portfolioService.appendNewPage(owner, "New page", "A brand new page.", null, null, reloadedSection2);
+		Assert.assertNotNull(page1);
+		Assert.assertNotNull(page2);
+		dbInstance.commitAndCloseSession();
+		
+		//delete
+		boolean deleted = portfolioService.deleteBinder(binder);
+		dbInstance.commit();
+		Assert.assertTrue(deleted);
+	}
+	
+	@Test
+	public void deleteSynchedBinder() {
+		Identity owner = JunitTestHelper.createAndPersistIdentityAsRndUser("port-u-12");
+		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("port-u-13");
+		RepositoryEntry templateEntry = createTemplate(owner, "Template", "TE");
+		dbInstance.commitAndCloseSession();
+		
+		//get section
+		Binder templateBinder = portfolioService.getBinderByResource(templateEntry.getOlatResource());
+		SectionRef sectionRef = portfolioService.getSections(templateBinder).get(0);
+		dbInstance.commit();
+		
+		//make 2 assignments
+		Section templateSection = portfolioService.getSection(sectionRef);
+		Assignment assignment_1 = portfolioService.addAssignment("1 Assignment", "", "", AssignmentType.essay, templateSection);
+		Assignment assignment_2 = portfolioService.addAssignment("2 Assignment", "", "", AssignmentType.essay, templateSection);
+		dbInstance.commit();
+		List<Assignment> templateAssignments = portfolioService.getAssignments(templateBinder, null);
+		Assert.assertEquals(2, templateAssignments.size());
+		
+		// synched and check the sections order
+		Binder binder = portfolioService.assignBinder(id, templateBinder, templateEntry, null, null);
+		SynchedBinder synchedBinder = portfolioService.loadAndSyncBinder(binder);
+		binder = synchedBinder.getBinder();
+		dbInstance.commitAndCloseSession();
+		
+		List<Assignment> assignments = portfolioService.getAssignments(binder, null);
+		Assignment startedAssignment_1 = portfolioService.startAssignment(assignments.get(0), id);
+		Assignment startedAssignment_2 = portfolioService.startAssignment(assignments.get(1), id);
+		Long startedPageKey_1 = startedAssignment_1.getPage().getKey();
+		Long startedPageKey_2 = startedAssignment_2.getPage().getKey();
+		dbInstance.commitAndCloseSession();
+		
+		//add some comments
+		OLATResourceable startedPageOres_1 = OresHelper.createOLATResourceableInstance(Page.class, startedPageKey_1);
+		userCommentsDao.createComment(id, startedPageOres_1, null, "Hello");
+
+		//delete
+		boolean deleted = portfolioService.deleteBinder(binder);
+		dbInstance.commit();
+		Assert.assertTrue(deleted);
+		
+		//check that the template is save
+		Assignment reloadAssignment_1 = assignmentDao.loadAssignmentByKey(assignment_1.getKey());
+		Assert.assertNotNull(reloadAssignment_1);
+		Assignment reloadAssignment_2 = assignmentDao.loadAssignmentByKey(assignment_2.getKey());
+		Assert.assertNotNull(reloadAssignment_2);
+		
+		//check that the binder is really deleted
+		Binder reloadedBinder = binderDao.loadByKey(binder.getKey());
+		Assert.assertNull(reloadedBinder);
+		
+		Assignment reloadStartedAssignment_1 = assignmentDao.loadAssignmentByKey(startedAssignment_1.getKey());
+		Assert.assertNull(reloadStartedAssignment_1);
+		Assignment reloadStartedAssignment_2 = assignmentDao.loadAssignmentByKey(startedAssignment_2.getKey());
+		Assert.assertNull(reloadStartedAssignment_2);
+		
+		Page reloadedStartedPage_1 = pageDao.loadByKey(startedPageKey_1);
+		Assert.assertNull(reloadedStartedPage_1);
+		Page reloadedStartedPage_2 = pageDao.loadByKey(startedPageKey_2);
+		Assert.assertNull(reloadedStartedPage_2);
 	}
 }

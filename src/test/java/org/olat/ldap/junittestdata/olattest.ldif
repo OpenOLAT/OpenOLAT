@@ -29,7 +29,7 @@ mail: mrohrer@olat.org
 o: Informatik
 sn: Rohrer
 uid: mrohrer
-userpassword:: e1NIQX1SWEhpU0lWZGN1SU1EdVNiVCtaaFpOcWFwYWs9
+userPassword: olat
 modifyTimestamp: 20100630180000Z
 
 dn: uid=test,ou=person,dc=olattest,dc=org
@@ -43,8 +43,8 @@ labeleduri: http://www.olat.org
 mail: test@test.com
 o: Informatik
 sn: Test
-uid: ldaptest
-userpassword:: e1NIQX1SWEhpU0lWZGN1SU1EdVNiVCtaaFpOcWFwYWs9
+uid: test
+userPassword: olattest
 
 dn: uid=halpen,ou=person,dc=olattest,dc=org
 objectClass: organizationalPerson
@@ -72,7 +72,7 @@ mail: kmeier@olat.org
 o: Informatik
 sn: Meier
 uid: kmeier
-userpassword:: e1NIQX1SWEhpU0lWZGN1SU1EdVNiVCtaaFpOcWFwYWs9
+userPassword: olat
 
 dn: uid=hhuerlimann,ou=person,dc=olattest,dc=org
 objectClass: organizationalPerson

@@ -35,8 +35,8 @@ import org.olat.repository.RepositoryEntry;
  */
 public class InMemoryAssessmentTestSession implements AssessmentTestSession {
 
-	private Long key;
-	private Date creationDate;
+	private final Long key;
+	private final Date creationDate;
 	private Date lastModified;
     private String storage;
     private Date finishTime;
@@ -46,6 +46,8 @@ public class InMemoryAssessmentTestSession implements AssessmentTestSession {
     private BigDecimal score;
     private BigDecimal manualScore;
     private boolean exploded;
+    
+    private Identity identity;
     private String anonymousIdentifier;
     
     public InMemoryAssessmentTestSession() {
@@ -154,7 +156,11 @@ public class InMemoryAssessmentTestSession implements AssessmentTestSession {
 
 	@Override
 	public Identity getIdentity() {
-		return null;
+		return identity;
+	}
+	
+	public void setIdentity(Identity identity) {
+		this.identity = identity;
 	}
 	
 	@Override

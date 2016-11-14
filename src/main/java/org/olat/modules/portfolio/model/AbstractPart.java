@@ -70,7 +70,7 @@ public class AbstractPart implements Persistable, ModifiedInfo, CreateInfo, Page
 	
 	/** Only used for order by */
 	@GeneratedValue
-	@Column(name="pos")
+	@Column(name="pos", insertable=false, updatable=false)//TODO order hack
 	private long pos;
 
 	@Column(name="p_content", nullable=true, insertable=true, updatable=true)

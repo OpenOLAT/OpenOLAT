@@ -200,6 +200,8 @@ public class LDAPAdminController extends BasicController implements GenericEvent
 						public Step execute(UserRequest uureq, WindowControl control, StepsRunContext runContext) {
 							hasIdentitiesToDeleteAfterRun = ((Boolean) runContext.get("hasIdentitiesToDelete")).booleanValue();
 							if (hasIdentitiesToDeleteAfterRun) {
+								
+								@SuppressWarnings("unchecked")
 								List<Identity> idToDelete = (List<Identity>) runContext.get("identitiesToDelete");
 								amountUsersToDelete = idToDelete.size();
 								// Delete all identities now and tell everybody that

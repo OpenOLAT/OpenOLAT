@@ -72,7 +72,7 @@ public class AssignmentImpl implements Persistable, ModifiedInfo, CreateInfo, As
 	
 	/** Only used for order by */
 	@GeneratedValue
-	@Column(name="pos")
+	@Column(name="pos", insertable=false, updatable=false)
 	private long pos;
 	
 	@Column(name="p_status", nullable=false, insertable=true, updatable=true)

@@ -37,6 +37,7 @@ import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.course.run.scoring.AssessmentEvaluation;
 import org.olat.course.run.scoring.ScoreEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
+import org.olat.modules.assessment.AssessmentToolOptions;
 
 
 /**

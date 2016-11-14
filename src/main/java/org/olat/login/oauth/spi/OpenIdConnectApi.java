@@ -101,20 +101,25 @@ public class OpenIdConnectApi extends DefaultApi20 {
 				boolean allOk = true;
 				if(!oauthModule.getOpenIdConnectIFIssuer().equals(idJson.get("iss"))) {
 					allOk &= false;
+					log.error("iss don't match issuer");
 				}
 				if(!oauthModule.getOpenIdConnectIFIssuer().equals(accessJson.get("iss"))) {
 					allOk &= false;
+					log.error("iss don't match issuer");
 				}
 				
 				if(!oauthModule.getOpenIdConnectIFApiKey().equals(idJson.get("aud"))) {
 					allOk &= false;
+					log.error("aud don't match application key");
 				}
 				if(!oVerifier.getState().equals(oVerifier.getSessionState())) {
 					allOk &= false;
+					log.error("state doesn't match session state");
 				}
 				
 				if(!oVerifier.getSessionNonce().equals(idJson.get("nonce"))) {
 					allOk &= false;
+					log.error("session nonce don't match verifier nonce");
 				}
 				
 				return allOk ? new Token(idToken, oVerifier.getState()) : null;

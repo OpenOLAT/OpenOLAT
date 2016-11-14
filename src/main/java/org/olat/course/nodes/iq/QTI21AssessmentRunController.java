@@ -123,8 +123,8 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 		if (courseNode.getModuleConfiguration().getBooleanSafe(MSCourseNode.CONFIG_KEY_HAS_SCORE_FIELD,true)){
 			HighScoreRunController highScoreCtr = new HighScoreRunController(ureq, getWindowControl(), userCourseEnv, courseNode);
 			if (highScoreCtr.isViewHighscore()) {
-				Component compi = highScoreCtr.getInitialComponent();
-				mainVC.put("highScore", compi);							
+				Component highScoreComponent = highScoreCtr.getInitialComponent();
+				mainVC.put("highScore", highScoreComponent);							
 			}
 		}
 		

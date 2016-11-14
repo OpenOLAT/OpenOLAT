@@ -36,6 +36,7 @@ import org.olat.core.gui.translator.Translator;
 import org.olat.core.helpers.Settings;
 import org.olat.core.util.StringHelper;
 import org.olat.ims.qti21.AssessmentTestSession;
+import org.olat.ims.qti21.ui.CandidateSessionContext;
 
 import uk.ac.ed.ph.jqtiplus.attribute.value.StringMultipleAttribute;
 import uk.ac.ed.ph.jqtiplus.node.QtiNode;
@@ -131,6 +132,15 @@ public class AssessmentObjectVelocityRenderDecorator extends VelocityRenderDecor
 	//isItemSessionEnded" as="xs:boolean" select="$itemSessionState/@endTime!='' or $solutionMode
 	public boolean isItemSessionEnded() {
 		return avc.isItemSessionEnded(itemSessionState, isSolutionMode());
+	}
+	
+	public String getAssessmentTestSessionKey() {
+		CandidateSessionContext ctx = avc.getCandidateSessionContext();
+		if(ctx != null) {
+			AssessmentTestSession candidateSession = ctx.getCandidateSession();
+			return candidateSession == null ? "" : candidateSession.getKey().toString();
+		}
+		return "";
 	}
 	
 	public String appendFlexiFormDirty(String id) {

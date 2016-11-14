@@ -1057,25 +1057,21 @@ public class ICalFileCalendarManager implements CalendarManager, InitializingBea
 				boolean successfullyPersist = false;
 				try {
 					String uid = kalendarEvent.getID();
-					Date occurenceDate = kalendarEvent.getBegin();
-					java.util.Calendar calendar = java.util.Calendar.getInstance();
-					calendar.setTime(occurenceDate);
-					calendar.add(java.util.Calendar.DATE, -1);
-					Date until = calendar.getTime();
+					Date occurenceDate = kalendarEvent.getOccurenceDate();
 
 					Kalendar loadedCal = getCalendarFromCache(cal.getType(), cal.getCalendarID());
 					KalendarEvent rootEvent = loadedCal.getEvent(kalendarEvent.getID(), null);
 					String rRule = rootEvent.getRecurrenceRule();
 					
 					Recur recur = new Recur(rRule);
-					recur.setUntil(CalendarUtils.createDate(until));
+					recur.setUntil(CalendarUtils.createDate(occurenceDate));
 					RRule rrule = new RRule(recur);
 					rootEvent.setRecurrenceRule(rrule.getValue());
 					
 					for(KalendarEvent kEvent:loadedCal.getEvents()) {
 						if(uid.equals(kEvent.getID())
-								&& kEvent.getOccurenceDate() != null
-								&& occurenceDate.before(kEvent.getOccurenceDate())) {
+								&& StringHelper.containsNonWhitespace(kEvent.getRecurrenceID())
+								&& occurenceDate.before(kEvent.getBegin())) {
 							loadedCal.removeEvent(kEvent);
 						}
 					}
@@ -1138,9 +1134,23 @@ public class ICalFileCalendarManager implements CalendarManager, InitializingBea
 		
 		if(StringHelper.containsNonWhitespace(kalendarEvent.getRecurrenceRule())) {
 			Date oldBegin = kalendarEvent.getImmutableBegin();
-			Date newBegin = kalendarEvent.getBegin();
-			long diff = newBegin.getTime() - oldBegin.getTime();
+			Date oldEnd = kalendarEvent.getImmutableEnd();
 			
+			KalendarEvent originalEvent = reloadedCal.getEvent(kalendarEvent.getID(), null);
+
+			Date newBegin = kalendarEvent.getBegin();
+			Date newEnd = kalendarEvent.getEnd();
+			long beginDiff = newBegin.getTime() - oldBegin.getTime();
+			long endDiff = newEnd.getTime() - oldEnd.getTime();
+
+			java.util.Calendar cl = java.util.Calendar.getInstance();
+			cl.setTime(originalEvent.getBegin());
+			cl.add(java.util.Calendar.MILLISECOND, (int)beginDiff);
+			kalendarEvent.setBegin(cl.getTime());
+			cl.setTime(originalEvent.getEnd());
+			cl.add(java.util.Calendar.MILLISECOND, (int)endDiff);
+			kalendarEvent.setEnd(cl.getTime());
+
 			List<KalendarEvent> exEvents = new ArrayList<>();
 			List<KalendarEvent> allEvents = reloadedCal.getEvents();
 			for(KalendarEvent event:allEvents) {
@@ -1160,8 +1170,8 @@ public class ICalFileCalendarManager implements CalendarManager, InitializingBea
 						java.util.Calendar calc = java.util.Calendar.getInstance();
 						calc.clear();
 						calc.setTime(currentRecurrence);
-						if(diff > 0) {
-							calc.add(java.util.Calendar.MILLISECOND, (int)diff);
+						if(beginDiff > 0) {
+							calc.add(java.util.Calendar.MILLISECOND, (int)beginDiff);
 						}
 						
 						Date newRecurrenceDate = calc.getTime();
@@ -1454,4 +1464,52 @@ public class ICalFileCalendarManager implements CalendarManager, InitializingBea
 		return null;
 	}
 	
+	/**
+	 * Build iCalendar-compliant recurrence rule
+	 * @param recurrence
+	 * @param recurrenceEnd
+	 * @return rrule
+	 */
+	@Override
+	public String getRecurrenceRule(String recurrence, Date recurrenceEnd) {
+		if (recurrence != null) { // recurrence available
+			// create recurrence rule
+			StringBuilder sb = new StringBuilder();
+			sb.append("FREQ=");
+			if(recurrence.equals(KalendarEvent.WORKDAILY)) {
+				// build rule for monday to friday
+				sb.append(KalendarEvent.DAILY).append(";").append("BYDAY=MO,TU,WE,TH,FR");
+			} else if(recurrence.equals(KalendarEvent.BIWEEKLY)) {
+				// build rule for biweekly
+				sb.append(KalendarEvent.WEEKLY).append(";").append("INTERVAL=2");
+			} else {
+				// normal supported recurrence
+				sb.append(recurrence);
+			}
+			
+			if(recurrenceEnd != null) {
+				java.util.Calendar recurEndCal = java.util.Calendar.getInstance();
+				recurEndCal.setTimeZone(tz);
+				recurEndCal.setTime(recurrenceEnd);
+				recurEndCal = CalendarUtils.getEndOfDay(recurEndCal);
+				
+				long recTime = recurEndCal.getTimeInMillis() - tz.getOffset(recurEndCal.getTimeInMillis());
+				DateTime recurEndDT = new DateTime(recTime);
+				if(tz != null) {
+					recurEndDT.setTimeZone(tz);
+				}
+				sb.append(";").append(KalendarEvent.UNTIL).append("=").append(recurEndDT.toString());
+			}
+			
+			try {
+				Recur recur = new Recur(sb.toString());
+				RRule rrule = new RRule(recur);
+				return rrule.getValue();
+			} catch (ParseException e) {
+				log.error("cannot create recurrence rule: " + recurrence.toString(), e);
+			}
+		}
+		
+		return null;
+	}
 }

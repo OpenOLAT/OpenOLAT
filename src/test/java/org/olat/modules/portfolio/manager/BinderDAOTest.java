@@ -24,9 +24,13 @@ import java.util.List;
 import org.junit.Assert;
 import org.junit.Test;
 import org.olat.core.commons.persistence.DB;
+import org.olat.core.id.Identity;
 import org.olat.modules.portfolio.Binder;
+import org.olat.modules.portfolio.BinderStatus;
+import org.olat.modules.portfolio.PortfolioService;
 import org.olat.modules.portfolio.Section;
 import org.olat.modules.portfolio.model.BinderImpl;
+import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -42,7 +46,8 @@ public class BinderDAOTest extends OlatTestCase {
 	private DB dbInstance;
 	@Autowired
 	private BinderDAO binderDao;
-	
+	@Autowired
+	private PortfolioService portfolioService;
 	
 	@Test
 	public void createNewBinder() {
@@ -109,5 +114,50 @@ public class BinderDAOTest extends OlatTestCase {
 		Assert.assertEquals(2, sections.size());
 		Assert.assertEquals(section1, sections.get(0));
 		Assert.assertEquals(section2, sections.get(1));
+	}
+	
+	@Test
+	public void loadSections() {
+		String title = "Binder 3";
+		String summary = "Binder with two sections.";
+		
+		Binder binder = binderDao.createAndPersist(title, summary, null, null);
+		dbInstance.commitAndCloseSession();
+		
+		String section1Title = "1. section";
+		String section1Desc = "My first section.";
+		binder = binderDao.loadByKey(binder.getKey());
+		Section section1 = binderDao.createSection(section1Title, section1Desc, null, null, binder);
+		dbInstance.commitAndCloseSession();
+		
+		String section2Title = "2. section";
+		String section2Desc = "My second section.";
+		binder = binderDao.loadByKey(binder.getKey());
+		Section section2 = binderDao.createSection(section2Title, section2Desc, null, null, binder);
+		dbInstance.commitAndCloseSession();
+
+		List<Section> sections = binderDao.getSections(binder);
+		Assert.assertNotNull(sections);
+		Assert.assertEquals(2, sections.size());
+		Assert.assertEquals(section1, sections.get(0));
+		Assert.assertEquals(section2, sections.get(1));
+	}
+	
+	@Test
+	public void getOwnedBinders() {
+		Identity owner = JunitTestHelper.createAndPersistIdentityAsRndUser("binder-owner");
+		Binder binder = portfolioService.createNewBinder("My own binder", "", "", owner);
+		dbInstance.commit();
+		
+		Binder deletedBinder = portfolioService.createNewBinder("My own deleted binder", "", "", owner);
+		deletedBinder.setBinderStatus(BinderStatus.deleted);
+		deletedBinder = portfolioService.updateBinder(deletedBinder);
+		dbInstance.commitAndCloseSession();
+		
+		List<Binder> ownedBinders = binderDao.getOwnedBinders(owner);
+		Assert.assertNotNull(ownedBinders);
+		Assert.assertEquals(1, ownedBinders.size());
+		Assert.assertTrue(ownedBinders.contains(binder));
+		Assert.assertFalse(ownedBinders.contains(deletedBinder));
 	}
 }

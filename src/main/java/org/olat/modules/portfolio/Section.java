@@ -31,13 +31,7 @@ import org.olat.core.id.ModifiedInfo;
  *
  */
 public interface Section extends SectionRef, PortfolioElement, ModifiedInfo {
-	
-	/**
-	 * This value is generated
-	 * @return
-	 */
-	public long getPos();
-	
+
 	public void setTitle(String title);
 	
 	public String getDescription();

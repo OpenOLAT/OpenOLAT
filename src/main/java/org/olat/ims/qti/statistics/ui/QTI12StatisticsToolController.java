@@ -45,13 +45,13 @@ import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.nodes.INode;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.course.nodes.ArchiveOptions;
-import org.olat.course.nodes.AssessmentToolOptions;
-import org.olat.course.nodes.AssessmentToolOptions.AlternativeToIdentities;
 import org.olat.course.nodes.QTICourseNode;
 import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.course.statistic.StatisticResourceNode;
 import org.olat.ims.qti.statistics.QTIStatisticResourceResult;
 import org.olat.ims.qti.statistics.QTIStatisticSearchParams;
+import org.olat.modules.assessment.AssessmentToolOptions;
+import org.olat.modules.assessment.AssessmentToolOptions.AlternativeToIdentities;
 import org.olat.repository.RepositoryEntry;
 import org.olat.resource.OLATResource;
 

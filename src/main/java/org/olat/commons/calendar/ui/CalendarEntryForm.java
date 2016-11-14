@@ -268,7 +268,7 @@ public class CalendarEntryForm extends FormBasicController {
 		if (chooseRecurrence.getSelectedKey().equals(RECURRENCE_NONE)) {
 			event.setRecurrenceRule(null);
 		} else {
-			String rrule = CalendarUtils.getRecurrenceRule(chooseRecurrence.getSelectedKey(), recurrenceEnd.getDate());
+			String rrule = calendarManager.getRecurrenceRule(chooseRecurrence.getSelectedKey(), recurrenceEnd.getDate());
 			event.setRecurrenceRule(rrule);
 		}
 

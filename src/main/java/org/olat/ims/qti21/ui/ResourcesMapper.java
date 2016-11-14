@@ -21,6 +21,7 @@ package org.olat.ims.qti21.ui;
 
 import java.io.File;
 import java.net.URI;
+import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -43,9 +44,19 @@ public class ResourcesMapper implements Mapper {
 	private static final OLog log = Tracing.createLoggerFor(ResourcesMapper.class);
 	
 	private final URI assessmentObjectUri;
+	private final File submissionDirectory;
+	private final Map<Long,File> submissionDirectoryMaps;
 	
-	public ResourcesMapper(URI assessmentObjectUri) {
+	public ResourcesMapper(URI assessmentObjectUri, File submissionDirectory) {
 		this.assessmentObjectUri = assessmentObjectUri;
+		this.submissionDirectory = submissionDirectory;
+		submissionDirectoryMaps = null;
+	}
+	
+	public ResourcesMapper(URI assessmentObjectUri, Map<Long,File> submissionDirectoryMaps) {
+		this.assessmentObjectUri = assessmentObjectUri;
+		this.submissionDirectoryMaps = submissionDirectoryMaps;
+		submissionDirectory = null;
 	}
 
 	@Override
@@ -68,7 +79,39 @@ public class ResourcesMapper implements Mapper {
 			if(file.exists()) {
 				resource = new FileMediaResource(file);
 			} else {
-				resource = new NotFoundMediaResource(href);
+				
+				String submissionName = null;
+				File storage = null;
+				if(filename.startsWith("submissions/")) {
+					String submission = filename.substring("submissions/".length());
+					int candidateSessionIndex = submission.indexOf('/');
+					if(candidateSessionIndex > 0) {
+						submissionName = submission.substring(candidateSessionIndex + 1);
+						if(submissionDirectory != null) {
+							storage = submissionDirectory;
+						} else if(submissionDirectoryMaps != null) {
+							String sessionKey = submission.substring(0, candidateSessionIndex);
+							if(StringHelper.isLong(sessionKey)) {
+								try {
+									storage = submissionDirectoryMaps.get(new Long(sessionKey));
+								} catch (Exception e) {
+									log.error("", e);
+								}
+							}
+						}
+					}
+				}
+				
+				if(storage != null && StringHelper.containsNonWhitespace(submissionName)) {
+					File submissionFile = new File(storage, submissionName);
+					if(submissionFile.exists()) {
+						resource = new FileMediaResource(submissionFile);
+					} else {
+						resource = new NotFoundMediaResource(href);
+					}
+				} else {
+					resource = new NotFoundMediaResource(href);
+				}
 			}
 		} catch (Exception e) {
 			log.error("", e);

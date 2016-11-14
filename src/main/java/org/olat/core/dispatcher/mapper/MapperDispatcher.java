@@ -68,16 +68,13 @@ public class MapperDispatcher extends LogDelegator implements Dispatcher {
 	 */
 	@Override
 	public void execute(HttpServletRequest hreq, HttpServletResponse hres) throws IOException {
+		if(!hreq.isRequestedSessionIdValid()) {
+			String pathInfo = hreq.getRequestURI();
+			DispatcherModule.sendForbidden(pathInfo, hres);
+			return;
+		}
 
 		String pathInfo = DispatcherModule.subtractContextPath(hreq);
-		final boolean isDebugLog = isLogDebugEnabled();
-		StringBuilder debugMsg = null;
-		long debug_start = 0;
-		if (isDebugLog) {
-			debug_start = System.currentTimeMillis();
-			debugMsg = new StringBuilder("::mprex:");
-		}
-		
 		// e.g. non-cacheable: 	23423/bla/blu.html
 		// e.g. cacheable: 		my.mapper.path/bla/blu.html
 		String subInfo = pathInfo.substring(DispatcherModule.PATH_MAPPED.length());
@@ -89,6 +86,7 @@ public class MapperDispatcher extends LogDelegator implements Dispatcher {
 		} else {
 			smappath = subInfo.substring(0, slashPos);
 		}
+		
 		
 		//legacy???
 		DBFactory.getInstance().commitAndCloseSession();
@@ -115,12 +113,5 @@ public class MapperDispatcher extends LogDelegator implements Dispatcher {
 		// /bla/blu.html
 		MediaResource mr = m.handle(mod, hreq);
 		ServletUtil.serveResource(hreq, hres, mr);
-
-		if (isDebugLog) {
-			long afterserved = System.currentTimeMillis();
-			long syncIntroDiff = afterserved - debug_start;
-			debugMsg.append("nanoseconds:").append(syncIntroDiff);
-			logDebug(debugMsg.toString());
-		}
 	}
 }

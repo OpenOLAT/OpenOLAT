@@ -21,18 +21,15 @@ package org.olat.ldap.ui;
 
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
-
-import javax.naming.directory.Attributes;
 
 import org.olat.admin.user.delete.service.UserDeletionManager;
 import org.olat.basesecurity.AuthHelper;
 import org.olat.basesecurity.BaseSecurityModule;
-import org.olat.core.CoreSpringFactory;
-import org.olat.core.commons.persistence.DBFactory;
+import org.olat.core.commons.persistence.DB;
 import org.olat.core.dispatcher.DispatcherModule;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.link.ExternalLink;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.velocity.VelocityContainer;
@@ -70,10 +67,9 @@ public class LDAPAuthenticationController extends AuthenticationController imple
 	private static final OLog log = Tracing.createLoggerFor(LDAPAuthenticationController.class);
 	
 	public static final String PROVIDER_LDAP = "LDAP";
-	public static final long WARNING_LIMIT = 15 *1000 * 1000 * 1000;
 	
 	private VelocityContainer loginComp;
-	private Link pwLink;
+	private Component pwLink;
 	private Controller subController;
 	private OLATAuthentcationForm loginForm; 
 	private DisclaimerController disclaimerCtr;
@@ -82,8 +78,8 @@ public class LDAPAuthenticationController extends AuthenticationController imple
 
 	private CloseableModalController cmc;
 	
-	private final OLATAuthManager olatAuthenticationSpi;
-	
+	@Autowired
+	private DB dbInstance;
 	@Autowired
 	private UserModule userModule;
 	@Autowired
@@ -91,19 +87,30 @@ public class LDAPAuthenticationController extends AuthenticationController imple
 	@Autowired
 	private LDAPLoginModule ldapLoginModule;
 	@Autowired
+	private LDAPLoginManager ldapLoginManager;
+	@Autowired
+	private OLATAuthManager olatAuthenticationSpi;
+	@Autowired
 	private RegistrationManager registrationManager;
 
 	public LDAPAuthenticationController(UserRequest ureq, WindowControl control) {
 		// use fallback translator to login and registration package
 		super(ureq, control, Util.createPackageTranslator(LoginModule.class, ureq.getLocale(), Util.createPackageTranslator(RegistrationManager.class, ureq.getLocale())));
 
-		olatAuthenticationSpi = CoreSpringFactory.getImpl(OLATAuthManager.class);
-		
 		loginComp = createVelocityContainer("ldaplogin");
 		
-		if(userModule.isPwdChangeAllowed(null) && ldapLoginModule.isPropagatePasswordChangedOnLdapServer()) {
-			pwLink = LinkFactory.createLink("_olat_login_change_pwd", "menu.pw", loginComp, this);
-			pwLink.setElementCssClass("o_login_pwd");
+		if(userModule.isAnyPasswordChangeAllowed() && ldapLoginModule.isPropagatePasswordChangedOnLdapServer()) {
+			Link link = LinkFactory.createLink("_olat_login_change_pwd", "menu.pw", loginComp, this);
+			link.setElementCssClass("o_login_pwd");
+			pwLink = link;
+		} else if(StringHelper.containsNonWhitespace(ldapLoginModule.getChangePasswordUrl())) {
+			ExternalLink link = new ExternalLink("_olat_login_change_pwd", "menu.pw");
+			link.setElementCssClass("o_login_pwd");
+			link.setName(translate("menu.pw"));
+			link.setUrl(ldapLoginModule.getChangePasswordUrl());
+			link.setTarget("_blank");
+			loginComp.put("menu.pw", link);
+			pwLink = link;
 		}
 		
 		// Use the standard OLAT login form but with our LDAP translator
@@ -119,18 +126,17 @@ public class LDAPAuthenticationController extends AuthenticationController imple
 	public void changeLocale(Locale newLocale) {
 		setLocale(newLocale, true);
 	}
-
 	
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
 		if (source == pwLink) {
-			openChangePassword(ureq, null);	//fxdiff FXOLAT-113: business path in DMZ
+			openChangePassword(ureq, null);
 		} 
 	}
 	
 	protected void openChangePassword(UserRequest ureq, String initialEmail) {
 		// double-check if allowed first
-		if (!userModule.isPwdChangeAllowed(ureq.getIdentity()) || !ldapLoginModule.isPropagatePasswordChangedOnLdapServer()) {
+		if (!userModule.isAnyPasswordChangeAllowed() || !ldapLoginModule.isPropagatePasswordChangedOnLdapServer()) {
 			showError("error.password.change.not.allow");
 		} else {
 			removeAsListenerAndDispose(cmc);
@@ -145,6 +151,7 @@ public class LDAPAuthenticationController extends AuthenticationController imple
 		}
 	}
 	
+	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		
 		LDAPError ldapError = new LDAPError();
@@ -160,7 +167,7 @@ public class LDAPAuthenticationController extends AuthenticationController imple
 				getLogger().audit("Login attempt on already blocked login for " + login + ". IP::" + ureq.getHttpReq().getRemoteAddr(), null);
 				return;
 			}
-			authenticatedIdentity = authenticate(login, pass, ldapError);
+			authenticatedIdentity = ldapLoginManager.authenticate(login, pass, ldapError);
 
 			if(!ldapError.isEmpty()) {
 				final String errStr = ldapError.get();
@@ -180,7 +187,7 @@ public class LDAPAuthenticationController extends AuthenticationController imple
 				
 				try {
 					//prevents database timeout
-					DBFactory.getInstance().commitAndCloseSession();
+					dbInstance.commitAndCloseSession();
 				} catch (Exception e) {
 					log.error("", e);
 				}
@@ -198,11 +205,10 @@ public class LDAPAuthenticationController extends AuthenticationController imple
 				if (loginModule.registerFailedLoginAttempt(login)) {
 					logAudit("Too many failed login attempts for " + login + ". Login blocked. IP::" + ureq.getHttpReq().getRemoteAddr(), null);
 					showError("login.blocked", loginModule.getAttackPreventionTimeoutMin().toString());
-					return;
 				} else {
 					showError("login.error", ldapError.get());
-					return;
 				}
+				return;
 			} else {
 				try {
 					String language = authenticatedIdentity.getUser().getPreferences().getLanguage();
@@ -271,62 +277,21 @@ public class LDAPAuthenticationController extends AuthenticationController imple
 		}
 	}
 	
-	public static Identity authenticate(String username, String pwd, LDAPError ldapError) {
-		final LDAPLoginModule ldapModule = CoreSpringFactory.getImpl(LDAPLoginModule.class);
-		final LDAPLoginManager ldapManager = CoreSpringFactory.getImpl(LDAPLoginManager.class);
-		
-		long start = System.nanoTime();
-		//authenticate against LDAP server
-		Attributes attrs = ldapManager.bindUser(username, pwd, ldapError);
-		long takes = System.nanoTime() - start;
-		if(takes > WARNING_LIMIT) {
-			log.warn("LDAP Authentication takes (ms): " + (takes / 1000000));
-		}
-		
-		if (ldapError.isEmpty() && attrs != null) { 
-			Identity identity = ldapManager.findIdentyByLdapAuthentication(username, ldapError);
-			if (!ldapError.isEmpty()) {
-				return null;
-			}
-			if (identity == null) {
-				if(ldapModule.isCreateUsersOnLogin()) {
-					// User authenticated but not yet existing - create as new OLAT user
-					ldapManager.createAndPersistUser(attrs);
-					identity = ldapManager.findIdentyByLdapAuthentication(username, ldapError);
-				} else {
-					ldapError.insert("login.notauthenticated");
-				}
-			} else {
-				// User does already exist - just sync attributes
-				Map<String, String> olatProToSync = ldapManager.prepareUserPropertyForSync(attrs, identity);
-				if (olatProToSync != null) {
-					ldapManager.syncUser(olatProToSync, identity);
-				}
-			}
-			// Add or update an OLAT authentication token for this user if configured in the module
-			if (identity != null && ldapModule.isCacheLDAPPwdAsOLATPwdOnLogin()) {
-				CoreSpringFactory.getImpl(OLATAuthManager.class).changeOlatPassword(identity, identity, pwd);
-			}
-			return identity;
-		} 
-		return null;
-	}
-	
 	/**
 	 * Internal helper to perform the real login code and do all necessary steps to
 	 * register the user session
 	 * 
-	 * @param authenticatedIdentity
+	 * @param authIdentity The authenticated identity
 	 * @param ureq
 	 * @param myProvider The provider that identified the user
 	 */
-	private void doLoginAndRegister(Identity authenticatedIdentity, UserRequest ureq, String myProvider) {
+	private void doLoginAndRegister(Identity authIdentity, UserRequest ureq, String myProvider) {
 		if (provider.equals(PROVIDER_LDAP)) {
 			// prepare redirects to home etc, set status
-			int loginStatus = AuthHelper.doLogin(authenticatedIdentity, myProvider, ureq);
+			int loginStatus = AuthHelper.doLogin(authIdentity, myProvider, ureq);
 			if (loginStatus == AuthHelper.LOGIN_OK) {
 				//update last login date and register active user
-				UserDeletionManager.getInstance().setIdentityAsActiv(authenticatedIdentity);
+				UserDeletionManager.getInstance().setIdentityAsActiv(authIdentity);
 			} else if (loginStatus == AuthHelper.LOGIN_NOTAVAILABLE){
 				DispatcherModule.redirectToServiceNotAvailable( ureq.getHttpResp() );
 			} else {
@@ -334,7 +299,7 @@ public class LDAPAuthenticationController extends AuthenticationController imple
 			}
 		} else if (provider.equals(BaseSecurityModule.getDefaultAuthProviderIdentifier())) {
 			// delegate login process to OLAT authentication controller
-			authenticated(ureq, authenticatedIdentity);		
+			authenticated(ureq, authIdentity);		
 		} else {
 			throw new OLATRuntimeException("Unknown login provider::" + myProvider, null);
 		}
