@@ -71,6 +71,7 @@ public class QTI12ResultsExportMediaResource implements MediaResource {
 	
 	private static final String DATA = "export/userdata/";
 	private static final String SEP = File.separator;
+	private static final SimpleDateFormat assessmentDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 	private static final SimpleDateFormat displayDateFormat = new SimpleDateFormat("HH:mm:ss");
 	static {
 		displayDateFormat.setTimeZone(TimeZone.getTimeZone("GMT"));
@@ -176,7 +177,8 @@ public class QTI12ResultsExportMediaResource implements MediaResource {
 					
 					// content of result table
 					ResultDetail resultDetail = new ResultDetail(createLink(String.valueOf(assessmentID), linkToHTML, true),
-							qtiResultSet.getCreationDate(), displayDateFormat.format(new Date(qtiResultSet.getDuration())),
+							assessmentDateFormat.format(qtiResultSet.getCreationDate()), 
+							displayDateFormat.format(new Date(qtiResultSet.getDuration())),
 							qtiResultSet.getScore(), createPassedIcons(qtiResultSet.getIsPassed()), linkToHTML);
 					
 					assessments.add(resultDetail);

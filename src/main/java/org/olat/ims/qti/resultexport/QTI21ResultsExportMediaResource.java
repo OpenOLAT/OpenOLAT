@@ -81,7 +81,8 @@ public class QTI21ResultsExportMediaResource implements MediaResource {
 	
 	private static final String DATA = "export/userdata/";
 	private static final String SEP = File.separator;
-	private static SimpleDateFormat displayDateFormat = new SimpleDateFormat("HH:mm:ss");
+	private static final SimpleDateFormat assessmentDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+	private static final SimpleDateFormat displayDateFormat = new SimpleDateFormat("HH:mm:ss");
 	static {
 		displayDateFormat.setTimeZone(TimeZone.getTimeZone("GMT"));
 	}
@@ -178,7 +179,8 @@ public class QTI21ResultsExportMediaResource implements MediaResource {
 					createZipDirectory(zout, idPath);
 					
 					// content of result table
-					ResultDetail resultDetail = new ResultDetail(assessmentID.toString(), session.getCreationDate(),
+					ResultDetail resultDetail = new ResultDetail(assessmentID.toString(), 
+							assessmentDateFormat.format(session.getCreationDate()),
 							displayDateFormat.format(new Date(session.getDuration())), session.getScore().floatValue(), 
 							createPassedIcons(session.getPassed() == null ? true : session.getPassed()),
 							idPath.replace(idDir, "") + assessmentID + ".html");

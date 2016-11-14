@@ -24,7 +24,7 @@ import java.util.Date;
 public class ResultDetail {
 	
 	private String assessmentID;
-	private Date assessmentDate;
+	private String assessmentDate;
 	private String dateCaption;
 	private String duration;
 	private String durationCaption;
@@ -36,7 +36,7 @@ public class ResultDetail {
 	public ResultDetail() {
 	}
 
-	public ResultDetail(String assessmentID, Date assessmentDate, String duration, float score, String passed, String link) {
+	public ResultDetail(String assessmentID, String assessmentDate, String duration, float score, String passed, String link) {
 		super();
 		this.assessmentID = assessmentID;
 		this.assessmentDate = assessmentDate;
@@ -89,11 +89,11 @@ public class ResultDetail {
 		this.assessmentID = assessmentID;
 	}
 
-	public Date getAssessmentDate() {
+	public String getAssessmentDate() {
 		return assessmentDate;
 	}
 
-	public void setAssessmentDate(Date assessmentDate) {
+	public void setAssessmentDate(String assessmentDate) {
 		this.assessmentDate = assessmentDate;
 	}
 
