@@ -19,8 +19,6 @@
  */
 package org.olat.ims.qti.resultexport;
 
-import java.util.Date;
-
 public class ResultDetail {
 	
 	private String assessmentID;

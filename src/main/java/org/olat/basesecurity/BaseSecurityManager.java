@@ -1584,7 +1584,7 @@ public class BaseSecurityManager implements BaseSecurity {
 				sb.append("select count(distinct ident.key) from org.olat.core.id.Identity as ident ")
 				  .append(" inner join ident.user as user ");
 			} else {
-				sb.append("select ident from ").append(IdentityImpl.class.getName()).append(" as ident ")
+				sb.append("select distinct ident from org.olat.core.id.Identity as ident ")
 				  .append(" inner join fetch ident.user as user ");
 			}
 		}
