@@ -167,9 +167,11 @@ public class VideoAdminTranscodingController extends FormBasicController {
 			List<VideoTranscoding> transcodings = videoManager.getVideoTranscodings(videoResource);
 			//map resource IDs to resolution
 			for (VideoTranscoding videoTranscoding : transcodings) {
-				if (videoTranscoding.getStatus() != -1 || true) {
-					availableTranscodings.get(videoTranscoding.getResolution())
-							.add(videoTranscoding.getVideoResource().getKey());
+				if (videoTranscoding != null && videoTranscoding.getStatus() != -1) {
+					Set<Long> oneResolution = availableTranscodings.get(videoTranscoding.getResolution());
+					if (oneResolution != null) {
+						oneResolution.add(videoTranscoding.getVideoResource().getKey());						
+					}
 				}
 			}
 		}
