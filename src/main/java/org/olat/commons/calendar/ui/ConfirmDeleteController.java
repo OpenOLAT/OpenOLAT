@@ -62,6 +62,7 @@ public class ConfirmDeleteController extends BasicController {
 					deleteAllButton.setElementCssClass("o_sel_cal_delete_all");
 				} else {
 					deleteFutureButton = LinkFactory.createButton("delete.future", mainVC, this);
+					deleteFutureButton.setElementCssClass("o_sel_cal_delete_future_events");
 				}
 				deleteOneButton = LinkFactory.createButton("delete.one", mainVC, this);
 				deleteOneButton.setElementCssClass("o_sel_cal_delete_one");

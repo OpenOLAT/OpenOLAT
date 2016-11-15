@@ -171,6 +171,17 @@ public class CoursePageFragment {
 		return new RemindersPage(browser);
 	}
 	
+	public CourseOptionsPage options() {
+		if(!browser.findElement(settingsMenu).isDisplayed()) {
+			openSettingsMenu();
+		}
+		
+		By reminderBy = By.cssSelector("a.o_sel_course_options");
+		browser.findElement(reminderBy).click();
+		OOGraphene.waitBusy(browser);
+		return new CourseOptionsPage(browser);
+	}
+	
 	/**
 	 * Click the editor link in the tools drop-down
 	 * @return

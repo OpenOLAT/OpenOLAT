@@ -381,7 +381,7 @@ public class CalendarEntryForm extends FormBasicController {
 		
 		classification = uifactory.addRadiosVertical("classification", "cal.form.class", formLayout, classKeys, classValues);
 		classification.setHelpUrlForManualPage("Calendar#_visibility");
-		classification.setHelpTextKey("cal.form.class.hover", null);
+		//classification.setHelpTextKey("cal.form.class.hover", null);
 		classification.setEnabled(!CalendarManagedFlag.isManaged(event, CalendarManagedFlag.classification));
 		switch (event.getClassification()) {
 			case KalendarEvent.CLASS_PRIVATE: classification.select("0", true); break;

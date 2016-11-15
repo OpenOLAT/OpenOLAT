@@ -146,11 +146,13 @@ public class CalendarPage {
 		By recurrenceBy = By.id("o_fiocal_form_recurrence_SELBOX");
 		WebElement recurrenceEl = browser.findElement(recurrenceBy);
 		new Select(recurrenceEl).selectByValue(recur);
+		OOGraphene.waitBusy(browser);
 		
-		//LocalDate date = LocalDate.now().withDayOfMonth(day);
-		By untilBy = By.cssSelector("fieldset.o_sel_cal_entry_form div.o_sel_cal_until input[type='text']");
-		OOGraphene.waitElement(untilBy, 5, browser);
-		browser.findElement(untilBy).click();
+		//By untilBy = By.cssSelector("fieldset.o_sel_cal_entry_form div.o_sel_cal_until input[type='text']");
+		By untilAltBy = By.cssSelector("fieldset.o_sel_cal_entry_form div.o_sel_cal_until span.input-group-addon i");
+		OOGraphene.waitElement(untilAltBy, 5, browser);
+		browser.findElement(untilAltBy).click();
+		OOGraphene.waitGui(browser);
 
 		selectDayInDatePicker(day);
 		return this;
@@ -171,12 +173,15 @@ public class CalendarPage {
 	public CalendarPage save() {
 		By saveBy = By.cssSelector("fieldset.o_sel_cal_entry_form button.btn.btn-primary");
 		OOGraphene.waitElement(saveBy, 5, browser);
-		browser.findElement(saveBy).click();
+		
+		WebElement saveEl = browser.findElement(saveBy);
+		OOGraphene.moveTo(saveEl, browser)
+			.click();
 		OOGraphene.waitBusy(browser);
 		return this;
 	}
 	
-	public CalendarPage configureModifyOneOccurence() {
+	public CalendarPage confirmModifyOneOccurence() {
 		By saveOneBy = By.cssSelector("div.modal-dialog a.o_sel_cal_update_one");
 		OOGraphene.waitElement(saveOneBy, 5, browser);
 		browser.findElement(saveOneBy).click();
@@ -184,7 +189,7 @@ public class CalendarPage {
 		return this;
 	}
 	
-	public CalendarPage configureModifyAllOccurences() {
+	public CalendarPage confirmModifyAllOccurences() {
 		By saveAllBy = By.cssSelector("div.modal-dialog a.o_sel_cal_update_all");
 		OOGraphene.waitElement(saveAllBy, 5, browser);
 		browser.findElement(saveAllBy).click();
@@ -200,7 +205,7 @@ public class CalendarPage {
 		return this;
 	}
 	
-	public CalendarPage configureDeleteOneOccurence() {
+	public CalendarPage confirmDeleteOneOccurence() {
 		By deleteOneBy = By.cssSelector("div.modal-dialog a.o_sel_cal_delete_one");
 		OOGraphene.waitElement(deleteOneBy, 5, browser);
 		browser.findElement(deleteOneBy).click();
@@ -208,7 +213,15 @@ public class CalendarPage {
 		return this;
 	}
 	
-	public CalendarPage configureDeleteAllOccurences() {
+	public CalendarPage confirmDeleteFuturOccurences() {
+		By deleteFutureBy = By.cssSelector("div.modal-dialog a.o_sel_cal_delete_future_events");
+		OOGraphene.waitElement(deleteFutureBy, 5, browser);
+		browser.findElement(deleteFutureBy).click();
+		OOGraphene.waitBusy(browser);
+		return this;
+	}
+	
+	public CalendarPage confirmDeleteAllOccurences() {
 		By deleteAllBy = By.cssSelector("div.modal-dialog a.o_sel_cal_delete_all");
 		OOGraphene.waitElement(deleteAllBy, 5, browser);
 		browser.findElement(deleteAllBy).click();
