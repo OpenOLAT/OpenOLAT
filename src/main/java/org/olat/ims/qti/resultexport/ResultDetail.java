@@ -23,11 +23,8 @@ public class ResultDetail {
 	
 	private String assessmentID;
 	private String assessmentDate;
-	private String dateCaption;
 	private String duration;
-	private String durationCaption;
 	private float score;
-	private String scoreCaption;
 	private String passed;
 	private String link;
 	
@@ -43,8 +40,6 @@ public class ResultDetail {
 		this.passed = passed;
 		this.link = link;
 	}
-
-
 	
 
 	public String getLink() {
@@ -53,30 +48,6 @@ public class ResultDetail {
 
 	public void setLink(String link) {
 		this.link = link;
-	}
-
-	public String getDateCaption() {
-		return dateCaption;
-	}
-
-	public void setDateCaption(String dateCaption) {
-		this.dateCaption = dateCaption;
-	}
-
-	public String getDurationCaption() {
-		return durationCaption;
-	}
-
-	public void setDurationCaption(String durationCaption) {
-		this.durationCaption = durationCaption;
-	}
-
-	public String getScoreCaption() {
-		return scoreCaption;
-	}
-
-	public void setScoreCaption(String scoreCaption) {
-		this.scoreCaption = scoreCaption;
 	}
 
 	public String getAssessmentID() {
