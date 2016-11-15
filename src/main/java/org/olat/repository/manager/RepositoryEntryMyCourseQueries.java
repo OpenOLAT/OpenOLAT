@@ -41,6 +41,7 @@ import org.olat.core.util.StringHelper;
 import org.olat.course.assessment.manager.EfficiencyStatementManager;
 import org.olat.course.assessment.model.UserEfficiencyStatementImpl;
 import org.olat.course.assessment.model.UserEfficiencyStatementLight;
+import org.olat.fileresource.types.VideoFileResource;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryMyView;
 import org.olat.repository.RepositoryModule;
@@ -99,8 +100,12 @@ public class RepositoryEntryMyCourseQueries {
 		if(maxResults > 0) {
 			query.setMaxResults(maxResults);
 		}
-		
-		boolean neddStats = repositoryModule.isRatingEnabled() || repositoryModule.isCommentEnabled();
+
+		// we don't need statistics when rating and comments are disabled unless
+		// were searching for videos, there we want to see the launch counter
+		// from the statistics
+		boolean neddStats = repositoryModule.isRatingEnabled() || repositoryModule.isCommentEnabled() ||
+				params.getResourceTypes().contains(VideoFileResource.TYPE_NAME);
 		
 		List<Long> effKeys = new ArrayList<>();
 		List<Object[]> objects = query.getResultList();
@@ -115,7 +120,7 @@ public class RepositoryEntryMyCourseQueries {
 			Integer myRating = (Integer)object[3];
 			
 			RepositoryEntryStatistics stats;
-			if(neddStats) {
+			if (neddStats) {
 				stats = re.getStatistics();
 			} else {
 				stats = null;
