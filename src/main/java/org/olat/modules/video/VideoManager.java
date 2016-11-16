@@ -289,4 +289,12 @@ public interface VideoManager {
 	 * @param olatResource the video resource
 	 */
 	public abstract void saveChapters(List<VideoChapterTableRow> chapters, OLATResource olatResource);	
+	
+	/**
+	 * Gets the video duration.
+	 * 
+	 * @param OLATResource videoResource 
+	 * @return the video duration
+	 */
+	public abstract long getVideoDuration(OLATResource videoResource);
 }

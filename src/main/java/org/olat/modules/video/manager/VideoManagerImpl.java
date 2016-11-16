@@ -722,5 +722,13 @@ public class VideoManagerImpl implements VideoManager {
 			}
 		}
 	}
+	
+	@Override
+	public long getVideoDuration (OLATResource videoResource){
+		VFSContainer masterContainer = getMasterContainer(videoResource);
+		VFSLeaf video = (VFSLeaf) masterContainer.resolve(FILENAME_VIDEO_MP4);	
+		long duration = movieService.getDuration(video, FILETYPE_MP4);
+		return duration;
+	}
 
 }
