@@ -135,15 +135,17 @@ public class VideoQualityTableFormController extends FormBasicController {
 		}
 		List<Integer> missingResolutions = videoManager.getMissingTranscodings(videoResource);
 		if (videoModule.isTranscodingEnabled()) {
-		 	for(Integer missingRes: missingResolutions){
-				String title = videoManager.getDisplayTitleForResolution(missingRes, getTranslator());
-				FormLink transcodeLink = uifactory.addFormLink("res_" + count++, "startTranscoding", "quality.transcode", "quality.transcode", flc, Link.LINK);
-				transcodeLink.setUserObject(missingRes);
-				transcodeLink.setIconLeftCSS("o_icon o_icon_refresh o_icon-fw");
-				
-				FormLink previewMissingLink= uifactory.addFormLink("res_" + count++, "viewQuality", title, title, flc, Link.LINK + Link.NONTRANSLATED);
-				previewMissingLink.setEnabled(false);
-				rows.add(new QualityTableRow(previewMissingLink, missingRes.toString(),  "-", "mp4", transcodeLink));
+		 	for(Integer missingRes : missingResolutions){
+				if (missingRes <= videoMetadata.getHeight()) {
+					String title = videoManager.getDisplayTitleForResolution(missingRes, getTranslator());
+					FormLink transcodeLink = uifactory.addFormLink("res_" + count++, "startTranscoding", "quality.transcode", "quality.transcode", flc, Link.LINK);
+					transcodeLink.setUserObject(missingRes);
+					transcodeLink.setIconLeftCSS("o_icon o_icon_refresh o_icon-fw");
+					
+					FormLink previewMissingLink= uifactory.addFormLink("res_" + count++, "viewQuality", title, title, flc, Link.LINK + Link.NONTRANSLATED);
+					previewMissingLink.setEnabled(false);
+					rows.add(new QualityTableRow(previewMissingLink, missingRes.toString(),  "-", "mp4", transcodeLink));
+				}
 			}
 		}
 	 	rows.sort(new VideoComparator());

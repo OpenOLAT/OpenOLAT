@@ -116,7 +116,7 @@ public class VideoResourceEditController extends FormBasicController {
 			VFSLeaf uploadVideo = vfsContainer.createChildLeaf(VIDEO_RESOURCE);
 			VFSManager.copyContent(uploadFile, uploadVideo);
 			// update video duration
-			long duration = movieService.getDuration(uploadVideo, "mp4");
+			long duration = movieService.getDuration(uploadVideo, VideoTranscoding.FORMAT_MP4);
 			if (duration != -1) {
 				entry.setExpenditureOfWork(Formatter.formatTimecode(duration));
 			}
@@ -132,12 +132,15 @@ public class VideoResourceEditController extends FormBasicController {
 	
 	private void queueCreateTranscoding() {
 		List<Integer> missingResolutions = videoManager.getMissingTranscodings(videoResource);
-		VideoMetadata videoMetadata = videoManager.readVideoMetadataFile(videoResource);
-
+		VideoMetadata videoMetadata = videoManager.getMetaDataFromOLATResource(videoResource);
+		int height = videoMetadata.getHeight();
 		if (videoModule.isTranscodingEnabled()) {
+			// 1) setup transcoding job for original file size
+			videoManager.createTranscoding(videoResource, height, VideoTranscoding.FORMAT_MP4);
+			// 2) setup transcoding jobs for all configured sizes below the original size
 			for (Integer missingRes : missingResolutions) {
-				if(videoMetadata.getHeight() >= missingRes){
-					videoManager.createTranscoding(videoResource, missingRes, "mp4");					
+				if(height > missingRes){
+					videoManager.createTranscoding(videoResource, missingRes, VideoTranscoding.FORMAT_MP4);					
 				}
 			}
 		}

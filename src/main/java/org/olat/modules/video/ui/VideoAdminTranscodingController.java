@@ -42,6 +42,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.modules.video.VideoManager;
 import org.olat.modules.video.VideoMetadata;
+import org.olat.modules.video.VideoModule;
 import org.olat.modules.video.VideoTranscoding;
 import org.olat.modules.video.ui.TranscodingTableModel.TranscodingCols;
 import org.olat.resource.OLATResource;
@@ -68,6 +69,8 @@ public class VideoAdminTranscodingController extends FormBasicController {
 	private OLATResourceManager olatresourceManager;
 	@Autowired 
 	private VideoManager videoManager;
+	@Autowired
+	private VideoModule videoModule;
 
 	public VideoAdminTranscodingController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl, "transcoding_admin");
@@ -101,6 +104,16 @@ public class VideoAdminTranscodingController extends FormBasicController {
 		setChecks();
 	}
 	
+	private boolean mayTranscode(int resolution){
+		int[] transcodingRes = videoModule.getTranscodingResolutions();
+		for (int i = 0; i < transcodingRes.length; i++) {
+			if (resolution == transcodingRes[i] && videoModule.isTranscodingEnabled()){
+				return Boolean.TRUE;
+			}
+		}
+		return Boolean.FALSE;
+	}
+	
 	private void loadTable(){
 		//Hardcoded same as VideoAdminSetController
 		int[] resolution = {2160, 1080, 720, 480, 360, 240};
@@ -111,7 +124,7 @@ public class VideoAdminTranscodingController extends FormBasicController {
 				VideoMetadata videoMetadata = videoManager.readVideoMetadataFile(videoResource);
 				if (videoMetadata != null && videoMetadata.getHeight() >= resolution[i]) counter++;
 			}
-			resolutions.add(new TranscodingRow(resolution[i], sizeOfTranscodings, counter));
+			resolutions.add(new TranscodingRow(resolution[i], sizeOfTranscodings, counter, mayTranscode(resolution[i])));
 		}		
 		if (resolutions != null) tableModel.setObjects(resolutions);
 		transcodingTable.reset(true, true, true);	

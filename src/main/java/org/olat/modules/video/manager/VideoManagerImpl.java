@@ -551,6 +551,27 @@ public class VideoManagerImpl implements VideoManager {
 		
 		return true;
 	}
+	
+	@Override
+	public VideoMetadata getMetaDataFromOLATResource (OLATResource videoResource){
+		VFSContainer masterContainer = getMasterContainer(videoResource);
+		VFSLeaf targetFile = (VFSLeaf) masterContainer.resolve(FILENAME_VIDEO_MP4);
+		
+		// 1) generate Metadata file
+		VideoMetadata metaData = new VideoMetadataImpl();
+		// calculate video size
+		Size videoSize = movieService.getSize(targetFile, FILETYPE_MP4);
+		if (videoSize != null) {
+			metaData.setWidth(videoSize.getWidth());
+			metaData.setHeight(videoSize.getHeight());			
+		} else {
+			metaData.setWidth(800);
+			metaData.setHeight(600);						
+		}
+		// 2) update XML file
+		writeVideoMetadataFile(metaData, videoResource);
+		return metaData;
+	}
 
 	@Override
 	public boolean importFromExportArchive(RepositoryEntry repoEntry, VFSLeaf exportArchive) {

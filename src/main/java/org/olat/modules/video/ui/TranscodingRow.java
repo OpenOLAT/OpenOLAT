@@ -32,13 +32,13 @@ public class TranscodingRow {
 	private int numberTranscodings;
 	private boolean allTranscoded;
 
-	public TranscodingRow(int resolution, int numberTranscodings, int sumVideos) {
+	public TranscodingRow(int resolution, int numberTranscodings, int sumVideos, boolean mayTranscode) {
 		super();
 		this.resolution = resolution;
 		this.numberTranscodings = numberTranscodings;
 		this.sumVideos = sumVideos;
 		this.missingTranscodings = sumVideos - numberTranscodings;
-		this.allTranscoded = numberTranscodings != sumVideos;		
+		this.allTranscoded = numberTranscodings < sumVideos && mayTranscode;		
 	}
 
 	
