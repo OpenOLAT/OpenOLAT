@@ -81,6 +81,7 @@ public class QTI21DeliveryOptionsController extends FormBasicController implemen
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormTitle("tab.options");
+		setFormContextHelp("Test editor QTI 2.1 in detail#details_testeditor_test_konf_kurs");
 
 		limitAttemptsEl = uifactory.addCheckboxesHorizontal("limitAttempts", "qti.form.limit.attempts", formLayout, onKeys, onValues);
 		limitAttemptsEl.addActionListener(FormEvent.ONCLICK);
@@ -99,6 +100,8 @@ public class QTI21DeliveryOptionsController extends FormBasicController implemen
 		}
 		
 		allowAnonymEl = uifactory.addCheckboxesHorizontal("allowAnonym", "qti.form.allow.anonym", formLayout, onKeys, onValues);
+		allowAnonymEl.setHelpText(translate("qti.form.allow.anonym.hint"));
+		allowAnonymEl.setHelpUrlForManualPage("Test editor QTI 2.1 in detail#details_testeditor_test_konf_kurs");
 		if(deliveryOptions.isAllowAnonym()) {
 			allowAnonymEl.select(onKeys[0], true);
 		}
@@ -114,6 +117,8 @@ public class QTI21DeliveryOptionsController extends FormBasicController implemen
 		}
 		
 		personalNotesEl = uifactory.addCheckboxesHorizontal("personalNotes", "qti.form.auto.memofield", formLayout, onKeys, onValues);
+		personalNotesEl.setHelpText(translate("qti.form.auto.memofield.hint"));
+		personalNotesEl.setHelpUrlForManualPage("Test editor QTI 2.1 in detail#details_testeditor_test_konf_kurs");
 		if(deliveryOptions.isPersonalNotes()) {
 			personalNotesEl.select(onKeys[0], true);
 		}

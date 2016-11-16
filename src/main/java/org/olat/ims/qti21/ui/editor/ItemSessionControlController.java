@@ -48,7 +48,7 @@ public abstract class ItemSessionControlController extends FormBasicController {
 	private static final String[] attemtpsKeys = new String[] { "y", "n", "inherit" };
 
 	private TextElement maxAttemptsEl /*, maxTimeEl */;
-	private SingleSelection limitAttemptsEl, allowSkippingEl, allowCommentEl, allowReviewEl, showSolutionEl;
+	protected SingleSelection limitAttemptsEl, allowSkippingEl, allowCommentEl, allowReviewEl, showSolutionEl;
 	
 	protected final boolean editable;
 	protected final boolean restrictedEdit;
@@ -109,6 +109,8 @@ public abstract class ItemSessionControlController extends FormBasicController {
 		allowSkippingEl = uifactory.addRadiosHorizontal("item.session.control.allow.skipping", formLayout, yesnoKeys, yesnoValues);
 		allowSkippingEl.addActionListener(FormEvent.ONCHANGE);
 		allowSkippingEl.setEnabled(!restrictedEdit && editable);
+		allowSkippingEl.setHelpText(translate("item.session.control.allow.skipping.hint"));
+		
 		// the default value is allowSkipping=true
 		if(itemSessionControl != null && itemSessionControl.getAllowSkipping() != null && !itemSessionControl.getAllowSkipping().booleanValue()) {
 			allowSkippingEl.select(yesnoKeys[1], true);
@@ -119,6 +121,7 @@ public abstract class ItemSessionControlController extends FormBasicController {
 		allowCommentEl = uifactory.addRadiosHorizontal("item.session.control.allow.comment", formLayout, yesnoKeys, yesnoValues);
 		allowCommentEl.addActionListener(FormEvent.ONCHANGE);
 		allowCommentEl.setEnabled(!restrictedEdit && editable);
+		allowCommentEl.setHelpText(translate("item.session.control.allow.comment.hint"));
 		if(itemSessionControl != null && itemSessionControl.getAllowComment() != null && itemSessionControl.getAllowComment().booleanValue()) {
 			allowCommentEl.select(yesnoKeys[0], true);
 		} else {
@@ -128,6 +131,7 @@ public abstract class ItemSessionControlController extends FormBasicController {
 		allowReviewEl = uifactory.addRadiosHorizontal("item.session.control.allow.review", formLayout, yesnoKeys, yesnoValues);
 		allowReviewEl.addActionListener(FormEvent.ONCHANGE);
 		allowReviewEl.setEnabled(!restrictedEdit && editable);
+		allowReviewEl.setHelpText(translate("item.session.control.allow.review.hint"));
 		if(itemSessionControl != null && itemSessionControl.getAllowReview() != null && itemSessionControl.getAllowReview().booleanValue()) {
 			allowReviewEl.select(yesnoKeys[0], true);
 		} else {
@@ -137,6 +141,7 @@ public abstract class ItemSessionControlController extends FormBasicController {
 		showSolutionEl = uifactory.addRadiosHorizontal("item.session.control.show.solution", formLayout, yesnoKeys, yesnoValues);
 		showSolutionEl.addActionListener(FormEvent.ONCHANGE);
 		showSolutionEl.setEnabled(!restrictedEdit && editable);
+		showSolutionEl.setHelpText(translate("item.session.control.show.solution.hint"));
 		if(itemSessionControl != null && itemSessionControl.getShowSolution() != null && itemSessionControl.getShowSolution().booleanValue()) {
 			showSolutionEl.select(yesnoKeys[0], true);
 		} else {

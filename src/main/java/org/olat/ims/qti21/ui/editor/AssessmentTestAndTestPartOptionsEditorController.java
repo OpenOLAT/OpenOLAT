@@ -67,7 +67,7 @@ public class AssessmentTestAndTestPartOptionsEditorController extends ItemSessio
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		setFormContextHelp("Test and Questionnaire Editor in Detail#details_testeditor_test_konf");
+		setFormContextHelp("Test editor QTI 2.1 in detail#details_testeditor_test");
 		if(!editable) {
 			setFormWarning("warning.alien.assessment.test");
 		}
@@ -106,8 +106,14 @@ public class AssessmentTestAndTestPartOptionsEditorController extends ItemSessio
 		navigationModeEl = uifactory.addRadiosHorizontal("navigationMode", "form.testPart.navigationMode", formLayout, navigationKeys, navigationValues);
 		navigationModeEl.select(mode, true);
 		navigationModeEl.setEnabled(!restrictedEdit && testBuilder.isEditable());
+		navigationModeEl.setHelpText(translate("form.testPart.navigationMode.hint"));
+		navigationModeEl.setHelpUrlForManualPage("Test editor QTI 2.1 in detail#details_testeditor_test");
 		
 		super.initForm(formLayout, listener, ureq);
+		allowSkippingEl.setHelpUrlForManualPage("Test editor QTI 2.1 in detail#details_testeditor_test");
+		allowCommentEl.setHelpUrlForManualPage("Test editor QTI 2.1 in detail#details_testeditor_test");
+		allowReviewEl.setHelpUrlForManualPage("Test editor QTI 2.1 in detail#details_testeditor_test");
+		showSolutionEl.setHelpUrlForManualPage("Test editor QTI 2.1 in detail#details_testeditor_test");
 		
 		FormLayoutContainer buttonsCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		formLayout.add(buttonsCont);
