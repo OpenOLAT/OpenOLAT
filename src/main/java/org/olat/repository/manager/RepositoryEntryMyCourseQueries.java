@@ -104,8 +104,8 @@ public class RepositoryEntryMyCourseQueries {
 		// we don't need statistics when rating and comments are disabled unless
 		// were searching for videos, there we want to see the launch counter
 		// from the statistics
-		boolean neddStats = repositoryModule.isRatingEnabled() || repositoryModule.isCommentEnabled() ||
-				params.getResourceTypes().contains(VideoFileResource.TYPE_NAME);
+		boolean needStats = repositoryModule.isRatingEnabled() || repositoryModule.isCommentEnabled() ||
+				(params.getResourceTypes() != null && params.getResourceTypes().contains(VideoFileResource.TYPE_NAME));
 		
 		List<Long> effKeys = new ArrayList<>();
 		List<Object[]> objects = query.getResultList();
@@ -120,7 +120,7 @@ public class RepositoryEntryMyCourseQueries {
 			Integer myRating = (Integer)object[3];
 			
 			RepositoryEntryStatistics stats;
-			if (neddStats) {
+			if (needStats) {
 				stats = re.getStatistics();
 			} else {
 				stats = null;
