@@ -63,6 +63,7 @@ import uk.ac.ed.ph.jqtiplus.node.item.AssessmentItem;
 import uk.ac.ed.ph.jqtiplus.node.item.CorrectResponse;
 import uk.ac.ed.ph.jqtiplus.node.item.ModalFeedback;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.ChoiceInteraction;
+import uk.ac.ed.ph.jqtiplus.node.item.interaction.DrawingInteraction;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.ExtendedTextInteraction;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.HotspotInteraction;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.MatchInteraction;
@@ -364,6 +365,21 @@ public class AssessmentItemFactory {
 	}
 	
 	public static ResponseDeclaration createUploadResponseDeclaration(AssessmentItem assessmentItem, Identifier declarationId) {
+		ResponseDeclaration responseDeclaration = new ResponseDeclaration(assessmentItem);
+		responseDeclaration.setIdentifier(declarationId);
+		responseDeclaration.setCardinality(Cardinality.SINGLE);
+		responseDeclaration.setBaseType(BaseType.FILE);
+		return responseDeclaration;
+	}
+	
+	public static DrawingInteraction appendDrawingInteraction(ItemBody itemBody, Identifier responseDeclarationId) {
+		DrawingInteraction textInteraction = new DrawingInteraction(itemBody);
+		textInteraction.setResponseIdentifier(responseDeclarationId);
+		itemBody.getBlocks().add(textInteraction);
+		return textInteraction;
+	}
+	
+	public static ResponseDeclaration createDrawingResponseDeclaration(AssessmentItem assessmentItem, Identifier declarationId) {
 		ResponseDeclaration responseDeclaration = new ResponseDeclaration(assessmentItem);
 		responseDeclaration.setIdentifier(declarationId);
 		responseDeclaration.setCardinality(Cardinality.SINGLE);

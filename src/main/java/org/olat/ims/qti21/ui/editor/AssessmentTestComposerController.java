@@ -83,6 +83,7 @@ import org.olat.ims.qti21.model.xml.AssessmentTestFactory;
 import org.olat.ims.qti21.model.xml.ManifestBuilder;
 import org.olat.ims.qti21.model.xml.ManifestMetadataBuilder;
 import org.olat.ims.qti21.model.xml.QtiNodesExtractor;
+import org.olat.ims.qti21.model.xml.interactions.DrawingAssessmentItemBuilder;
 import org.olat.ims.qti21.model.xml.interactions.EssayAssessmentItemBuilder;
 import org.olat.ims.qti21.model.xml.interactions.FIBAssessmentItemBuilder;
 import org.olat.ims.qti21.model.xml.interactions.FIBAssessmentItemBuilder.EntryType;
@@ -140,7 +141,7 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 	private MenuTree menuTree;
 	private Dropdown exportItemTools, addItemTools, changeItemTools;
 	private Link newTestPartLink, newSectionLink, newSingleChoiceLink, newMultipleChoiceLink, newKPrimLink,
-		newFIBLink, newNumericalLink, newHotspotLink, newEssayLink, newUploadLink;
+			newFIBLink, newNumericalLink, newHotspotLink, newEssayLink, newUploadLink, newDrawingLink;
 	private Link importFromPoolLink, importFromTableLink, exportToPoolLink, exportToDocxLink;
 	private Link reloadInCacheLink, deleteLink, copyLink;
 	private final TooledStackedPanel toolbar;
@@ -261,12 +262,12 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 		newEssayLink = LinkFactory.createToolLink("new.essay", translate("new.essay"), this, "o_mi_qtiessay");
 		newEssayLink.setDomReplacementWrapperRequired(false);
 		addItemTools.addComponent(newEssayLink);
-		
-		/*
 		newUploadLink = LinkFactory.createToolLink("new.upload", translate("new.upload"), this, "o_mi_qtiupload");
 		newUploadLink.setDomReplacementWrapperRequired(false);
 		addItemTools.addComponent(newUploadLink);
-		*/
+		newDrawingLink = LinkFactory.createToolLink("new.drawing", translate("new.drawing"), this, "o_mi_qtidrawing");
+		newDrawingLink.setDomReplacementWrapperRequired(false);
+		addItemTools.addComponent(newDrawingLink);
 		
 		addItemTools.addComponent(new Dropdown.Spacer("sep-import"));
 		//import
@@ -460,6 +461,8 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 			doNewAssessmentItem(ureq, menuTree.getSelectedNode(), new EssayAssessmentItemBuilder(qtiService.qtiSerializer()));
 		} else if(newUploadLink == source) {
 			doNewAssessmentItem(ureq, menuTree.getSelectedNode(), new UploadAssessmentItemBuilder(qtiService.qtiSerializer()));
+		} else if(newDrawingLink == source) {
+			doNewAssessmentItem(ureq, menuTree.getSelectedNode(), new DrawingAssessmentItemBuilder(qtiService.qtiSerializer()));
 		} else if(importFromPoolLink == source) {
 			doSelectQItem(ureq);
 		} else if(importFromTableLink == source) {

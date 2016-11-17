@@ -20,10 +20,13 @@
 package org.olat.ims.qti21.ui.editor.interactions;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.RichTextElement;
+import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
@@ -45,8 +48,13 @@ import org.olat.ims.qti21.ui.editor.events.AssessmentItemEvent;
  */
 public class UploadEditorController extends FormBasicController {
 	
+	private static final String[] defaultMimeTypes = new String[]{
+		"image/gif", "image/jpg", "image/jpeg", "image/png"
+	};
+	
 	private TextElement titleEl;
 	private RichTextElement textEl;
+	private SingleSelection mimeTypeEl;
 
 	private final File itemFile;
 	private final File rootDirectory;
@@ -80,12 +88,49 @@ public class UploadEditorController extends FormBasicController {
 		String description = itemBuilder.getQuestion();
 		textEl = uifactory.addRichTextElementForQTI21("desc", "form.imd.descr", description, 8, -1, itemContainer,
 				formLayout, ureq.getUserSession(), getWindowControl());
+		
+		List<String> keysList = new ArrayList<>(500);
+		List<String> valuesList = new ArrayList<>(500);
+		
+		keysList.add("");
+		valuesList.add("-");
+		addDefaultMimeTypes(keysList, valuesList);
+		if(StringHelper.containsNonWhitespace(itemBuilder.getMimeType()) && !keysList.contains(itemBuilder.getMimeType())) {
+			keysList.add(itemBuilder.getMimeType());
+			valuesList.add(itemBuilder.getMimeType());
+		}
+		
+		String[] theKeys = keysList.toArray(new String[keysList.size()]);
+		String[] theValues = valuesList.toArray(new String[valuesList.size()]);
+		mimeTypeEl = uifactory.addDropdownSingleselect("mimetype", "form.imd.mimetype", formLayout, theKeys, theValues, null);
+		mimeTypeEl.setEnabled(!restrictedEdit);
+		if(StringHelper.containsNonWhitespace(itemBuilder.getMimeType())) {
+			String selectedMimeType = itemBuilder.getMimeType();
+			for(String theKey:theKeys) {
+				if(selectedMimeType.equals(theKey)) {
+					mimeTypeEl.select(theKey, true);
+				}
+			}
+		} else {
+			mimeTypeEl.select(theKeys[0], true);
+		}
 
 		// Submit Button
 		FormLayoutContainer buttonsContainer = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		buttonsContainer.setRootForm(mainForm);
 		formLayout.add(buttonsContainer);
 		uifactory.addFormSubmitButton("submit", buttonsContainer);
+	}
+	
+	private void addDefaultMimeTypes(List<String> keysList, List<String> valuesList) {
+		for(String mimeType:defaultMimeTypes) {
+			addMimeType(mimeType, keysList, valuesList);
+		}
+	}
+	
+	private void addMimeType(String mimeType, List<String> keysList, List<String> valuesList) {
+		keysList.add(mimeType);
+		valuesList.add(mimeType);
 	}
 
 	@Override
@@ -110,10 +155,18 @@ public class UploadEditorController extends FormBasicController {
 	protected void formOK(UserRequest ureq) {
 		//title
 		itemBuilder.setTitle(titleEl.getValue());
+		
+		if(mimeTypeEl.isOneSelected()) {
+			String selectedMimeType = mimeTypeEl.getSelectedKey();
+			itemBuilder.setMimeType(selectedMimeType);
+		} else {
+			itemBuilder.setMimeType(null);
+		}
+
 		//question
 		String questionText = textEl.getRawValue();
 		itemBuilder.setQuestion(questionText);
 		
-		fireEvent(ureq, new AssessmentItemEvent(AssessmentItemEvent.ASSESSMENT_ITEM_CHANGED, itemBuilder.getAssessmentItem(), QTI21QuestionType.essay));
+		fireEvent(ureq, new AssessmentItemEvent(AssessmentItemEvent.ASSESSMENT_ITEM_CHANGED, itemBuilder.getAssessmentItem(), QTI21QuestionType.upload));
 	}
 }

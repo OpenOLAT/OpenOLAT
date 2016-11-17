@@ -55,6 +55,7 @@ public class QTI21AssessmentItemFactory implements QItemFactory {
 			case numerical: return "QTI 2.1 " + trans.translate("new.fib.numerical");
 			case essay: return "QTI 2.1 " + trans.translate("new.essay");
 			case upload: return "QTI 2.1 " + trans.translate("new.upload");
+			case drawing: return "QTI 2.1 " + trans.translate("new.drawing");
 			case hotspot: return "QTI 2.1 " + trans.translate("new.hotspot");
 			default: return type.name();
 		}

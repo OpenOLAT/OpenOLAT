@@ -26,6 +26,7 @@ import org.olat.modules.qpool.QuestionType;
 
 import uk.ac.ed.ph.jqtiplus.node.item.AssessmentItem;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.ChoiceInteraction;
+import uk.ac.ed.ph.jqtiplus.node.item.interaction.DrawingInteraction;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.EndAttemptInteraction;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.ExtendedTextInteraction;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.HotspotInteraction;
@@ -52,6 +53,7 @@ public enum QTI21QuestionType {
 	hotspot(true, "hotspot", "o_mi_qtihotspot", QuestionType.HOTSPOT),
 	essay(true, "essay", "o_mi_qtiessay", QuestionType.ESSAY),
 	upload(true, "upload", "o_mi_qtiupload", QuestionType.UPLOAD),
+	drawing(true, "drawing", "o_mi_qtidrawing", QuestionType.DRAWING),
 	unkown(false, null, "o_mi_qtiunkown", null);
 	
 	private final String prefix;
@@ -116,6 +118,7 @@ public enum QTI21QuestionType {
 		boolean fEssay = false;
 		boolean fHotspot = false;
 		boolean fUpload = false;
+		boolean fDrawing = false;
 		boolean fUnkown = false;
 
 		if(interactions != null && interactions.size() > 0) {
@@ -128,6 +131,8 @@ public enum QTI21QuestionType {
 					fEssay = true;
 				} else if(interaction instanceof UploadInteraction) {
 					fUpload = true;
+				}  else if(interaction instanceof DrawingInteraction) {
+					fDrawing = true;
 				} else if(interaction instanceof TextEntryInteraction) {
 					fTextEntry = true;
 				} else if(interaction instanceof HotspotInteraction) {
@@ -142,17 +147,19 @@ public enum QTI21QuestionType {
 		
 		if(fUnkown) {
 			return QTI21QuestionType.unkown;
-		} else if(fChoice && !fMatch && !fTextEntry && !fEssay && !fUpload && !fHotspot && !fUnkown) {
+		} else if(fChoice && !fMatch && !fTextEntry && !fEssay && !fUpload && !fDrawing && !fHotspot && !fUnkown) {
 			return getTypeOfChoice(item, interactions);
-		} else if(!fChoice && fMatch && !fTextEntry && !fEssay && !fUpload && !fHotspot && !fUnkown) {
+		} else if(!fChoice && fMatch && !fTextEntry && !fEssay && !fUpload && !fDrawing && !fHotspot && !fUnkown) {
 			return getTypeOfMatch(item, interactions);
-		} else if(!fChoice && !fMatch && fTextEntry && !fEssay && !fUpload && !fHotspot && !fUnkown) {
+		} else if(!fChoice && !fMatch && fTextEntry && !fEssay && !fUpload && !fDrawing && !fHotspot && !fUnkown) {
 			return getTypeOfTextEntryInteraction(item);
-		} else if(!fChoice && !fMatch && !fTextEntry && fEssay && !fUpload && !fHotspot && !fUnkown) {
+		} else if(!fChoice && !fMatch && !fTextEntry && fEssay && !fUpload && !fDrawing && !fHotspot && !fUnkown) {
 			return QTI21QuestionType.essay;
-		} else if(!fChoice && !fMatch && !fTextEntry && !fEssay && fUpload && !fHotspot && !fUnkown) {
+		} else if(!fChoice && !fMatch && !fTextEntry && !fEssay && fUpload && !fDrawing && !fHotspot && !fUnkown) {
 			return QTI21QuestionType.upload;
-		} else if(!fChoice && !fMatch && !fTextEntry && !fEssay && !fUpload && fHotspot && !fUnkown) {
+		} else if(!fChoice && !fMatch && !fTextEntry && !fEssay && !fUpload && fDrawing && !fHotspot && !fUnkown) {
+			return QTI21QuestionType.drawing;
+		} else if(!fChoice && !fMatch && !fTextEntry && !fEssay && !fUpload && !fDrawing && fHotspot && !fUnkown) {
 			return QTI21QuestionType.hotspot;
 		} else {
 			return QTI21QuestionType.unkown;

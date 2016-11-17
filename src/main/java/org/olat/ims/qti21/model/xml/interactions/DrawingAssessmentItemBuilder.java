@@ -21,23 +21,23 @@ package org.olat.ims.qti21.model.xml.interactions;
 
 import static org.olat.ims.qti21.model.xml.AssessmentItemFactory.appendDefaultItemBody;
 import static org.olat.ims.qti21.model.xml.AssessmentItemFactory.appendDefaultOutcomeDeclarations;
-import static org.olat.ims.qti21.model.xml.AssessmentItemFactory.appendUploadInteraction;
+import static org.olat.ims.qti21.model.xml.AssessmentItemFactory.appendDrawingInteraction;
+import static org.olat.ims.qti21.model.xml.AssessmentItemFactory.createDrawingResponseDeclaration;
 import static org.olat.ims.qti21.model.xml.AssessmentItemFactory.createResponseProcessing;
-import static org.olat.ims.qti21.model.xml.AssessmentItemFactory.createUploadResponseDeclaration;
 
 import java.util.List;
 
 import javax.xml.transform.stream.StreamResult;
 
 import org.olat.core.gui.render.StringOutput;
-import org.olat.core.util.StringHelper;
 import org.olat.ims.qti21.model.QTI21QuestionType;
 import org.olat.ims.qti21.model.xml.AssessmentItemFactory;
 
 import uk.ac.ed.ph.jqtiplus.node.content.ItemBody;
 import uk.ac.ed.ph.jqtiplus.node.content.basic.Block;
+import uk.ac.ed.ph.jqtiplus.node.content.xhtml.object.Object;
 import uk.ac.ed.ph.jqtiplus.node.item.AssessmentItem;
-import uk.ac.ed.ph.jqtiplus.node.item.interaction.UploadInteraction;
+import uk.ac.ed.ph.jqtiplus.node.item.interaction.DrawingInteraction;
 import uk.ac.ed.ph.jqtiplus.node.item.response.declaration.ResponseDeclaration;
 import uk.ac.ed.ph.jqtiplus.node.item.response.processing.ResponseProcessing;
 import uk.ac.ed.ph.jqtiplus.serialization.QtiSerializer;
@@ -45,36 +45,35 @@ import uk.ac.ed.ph.jqtiplus.types.Identifier;
 
 /**
  * 
- * Initial date: 8 nov. 2016<br>
+ * Initial date: 15 nov. 2016<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class UploadAssessmentItemBuilder extends LobAssessmentItemBuilder {
+public class DrawingAssessmentItemBuilder extends LobAssessmentItemBuilder {
 
-	private String mimeType;
-	private UploadInteraction uploadInteraction;
+	private DrawingInteraction drawingInteraction;
 	
-	public UploadAssessmentItemBuilder(QtiSerializer qtiSerializer) {
+	public DrawingAssessmentItemBuilder(QtiSerializer qtiSerializer) {
 		super(createAssessmentItem(), qtiSerializer);
 	}
 	
-	public UploadAssessmentItemBuilder(AssessmentItem assessmentItem, QtiSerializer qtiSerializer) {
+	public DrawingAssessmentItemBuilder(AssessmentItem assessmentItem, QtiSerializer qtiSerializer) {
 		super(assessmentItem, qtiSerializer);
 	}
 	
 	private static AssessmentItem createAssessmentItem() {
-		AssessmentItem assessmentItem = AssessmentItemFactory.createAssessmentItem(QTI21QuestionType.upload, "Upload");
+		AssessmentItem assessmentItem = AssessmentItemFactory.createAssessmentItem(QTI21QuestionType.drawing, "Drawing");
 		
 		//define the response
 		Identifier responseDeclarationId = Identifier.assumedLegal("RESPONSE_1");
-		ResponseDeclaration responseDeclaration = createUploadResponseDeclaration(assessmentItem, responseDeclarationId);
+		ResponseDeclaration responseDeclaration = createDrawingResponseDeclaration(assessmentItem, responseDeclarationId);
 		assessmentItem.getNodeGroups().getResponseDeclarationGroup().getResponseDeclarations().add(responseDeclaration);
 	
 		//outcomes
 		appendDefaultOutcomeDeclarations(assessmentItem, 1.0d);
 		
 		ItemBody itemBody = appendDefaultItemBody(assessmentItem);
-		appendUploadInteraction(itemBody, responseDeclarationId);
+		appendDrawingInteraction(itemBody, responseDeclarationId);
 		
 		//response processing
 		ResponseProcessing responseProcessing = createResponseProcessing(assessmentItem, responseDeclarationId);
@@ -84,7 +83,7 @@ public class UploadAssessmentItemBuilder extends LobAssessmentItemBuilder {
 	
 	@Override
 	public QTI21QuestionType getQuestionType() {
-		return QTI21QuestionType.upload;
+		return QTI21QuestionType.drawing;
 	}
 	
 	@Override
@@ -97,10 +96,9 @@ public class UploadAssessmentItemBuilder extends LobAssessmentItemBuilder {
 		StringOutput sb = new StringOutput();
 		List<Block> blocks = assessmentItem.getItemBody().getBlocks();
 		for(Block block:blocks) {
-			if(block instanceof UploadInteraction) {
-				uploadInteraction = (UploadInteraction)block;
-				mimeType = uploadInteraction.getType();
-				responseIdentifier = uploadInteraction.getResponseIdentifier();
+			if(block instanceof DrawingInteraction) {
+				drawingInteraction = (DrawingInteraction)block;
+				responseIdentifier = drawingInteraction.getResponseIdentifier();
 				break;
 			} else {
 				qtiSerializer.serializeJqtiObject(block, new StreamResult(sb));
@@ -108,19 +106,39 @@ public class UploadAssessmentItemBuilder extends LobAssessmentItemBuilder {
 		}
 		question = sb.toString();
 	}
-
-	public String getMimeType() {
-		return mimeType;
+	
+	public String getBackground() {
+		Object graphichObject = drawingInteraction.getObject();
+		if(graphichObject != null) {
+			return graphichObject.getData();
+		}
+		return null;
 	}
-
-	public void setMimeType(String mimeType) {
-		this.mimeType = mimeType;
+	
+	public void setBackground(String data, String mimeType, int height, int width) {
+		Object graphichObject = drawingInteraction.getObject();
+		if(graphichObject == null) {
+			graphichObject = new Object(drawingInteraction);
+			drawingInteraction.setObject(graphichObject);
+		}
+		graphichObject.setData(data);
+		graphichObject.setType(mimeType);
+		if(height > 0) {
+			graphichObject.setHeight(Integer.toString(height));
+		} else {
+			graphichObject.setHeight(null);
+		}
+		if(width > 0) {
+			graphichObject.setWidth(Integer.toString(width));
+		} else {
+			graphichObject.setWidth(null);
+		}
 	}
 
 	@Override
 	protected void buildResponseAndOutcomeDeclarations() {
 		ResponseDeclaration responseDeclaration =
-				createUploadResponseDeclaration(assessmentItem, responseIdentifier);
+				createDrawingResponseDeclaration(assessmentItem, responseIdentifier);
 		assessmentItem.getResponseDeclarations().add(responseDeclaration);
 	}
 	
@@ -133,13 +151,7 @@ public class UploadAssessmentItemBuilder extends LobAssessmentItemBuilder {
 		//add question
 		getHtmlHelper().appendHtml(assessmentItem.getItemBody(), question);
 		
-		if(StringHelper.containsNonWhitespace(mimeType)) {
-			uploadInteraction.setType(mimeType);
-		} else {
-			uploadInteraction.setType(null);
-		}
-		
 		//add interaction
-		blocks.add(uploadInteraction);
+		blocks.add(drawingInteraction);
 	}
 }
