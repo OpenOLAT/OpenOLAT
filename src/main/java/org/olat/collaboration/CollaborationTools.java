@@ -519,6 +519,7 @@ public class CollaborationTools implements Serializable {
 						if(moduleV2.isEnabled()) {
 							PortfolioService portfolioService = CoreSpringFactory.getImpl(PortfolioService.class);
 							Binder binder = portfolioService.createNewBinder(group.getName(), group.getDescription(), null, null);
+							portfolioService.updateBinderUserInformations(binder, ureq.getIdentity());
 							mapKeyProperty = npm.createPropertyInstance(null, null, PROP_CAT_BG_COLLABTOOLS, KEY_PORTFOLIO, null, binder.getKey(), "2", null);
 							BinderSecurityCallback secCallback = BinderSecurityCallbackFactory.getCallbackForBusinessGroup();
 							BinderController binderCtrl = new BinderController(ureq, wControl, stackPanel, secCallback, binder, BinderConfiguration.createBusinessGroupConfig());					
@@ -562,7 +563,9 @@ public class CollaborationTools implements Serializable {
 		
 		Controller ctrl;
 		if("2".equals(version)) {
-			Binder binder = CoreSpringFactory.getImpl(PortfolioService.class).getBinderByKey(key);
+			PortfolioService portfolioService = CoreSpringFactory.getImpl(PortfolioService.class);
+			Binder binder = portfolioService.getBinderByKey(key);
+			portfolioService.updateBinderUserInformations(binder, ureq.getIdentity());
 			BinderSecurityCallback secCallback = BinderSecurityCallbackFactory.getCallbackForBusinessGroup();
 			BinderController binderCtrl = new BinderController(ureq, wControl, stackPanel, secCallback, binder, BinderConfiguration.createBusinessGroupConfig());
 			List<ContextEntry> entries = BusinessControlFactory.getInstance().createCEListFromResourceType("Toc");

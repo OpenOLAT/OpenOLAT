@@ -156,6 +156,8 @@ public class PortfolioServiceImpl implements PortfolioService {
 	private AssessmentService assessmentService;
 	@Autowired
 	private RepositoryService repositoryService;
+	@Autowired
+	private BinderUserInformationsDAO binderUserInformationsDao;
 	
 	@Autowired
 	private List<MediaHandler> mediaHandlers;
@@ -484,6 +486,12 @@ public class PortfolioServiceImpl implements PortfolioService {
 	@Override
 	public Binder getBinderByKey(Long portfolioKey) {
 		return binderDao.loadByKey(portfolioKey);
+	}
+
+	@Override
+	public void updateBinderUserInformations(Binder binder, Identity user) {
+		if(binder == null || user == null) return;
+		binderUserInformationsDao.updateBinderUserInformations(binder, user);
 	}
 
 	@Override

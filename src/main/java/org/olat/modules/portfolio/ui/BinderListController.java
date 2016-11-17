@@ -407,6 +407,7 @@ public class BinderListController extends FormBasicController
 		} else {
 			removeAsListenerAndDispose(binderCtrl);
 			
+			portfolioService.updateBinderUserInformations(binder, getIdentity());
 			OLATResourceable binderOres = OresHelper.createOLATResourceableInstance("Binder", binder.getKey());
 			WindowControl swControl = addToHistory(ureq, binderOres, null);
 			BinderSecurityCallback secCallback = BinderSecurityCallbackFactory.getCallbackForOwnedBinder(binder);

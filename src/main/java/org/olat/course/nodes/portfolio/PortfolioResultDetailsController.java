@@ -273,6 +273,7 @@ public class PortfolioResultDetailsController extends FormBasicController {
 	private void doOpenMap(UserRequest ureq, Binder binder) {
 		if(stackPanel instanceof TooledStackedPanel) {
 			binder = portfolioService.getBinderByKey(binder.getKey());
+			portfolioService.updateBinderUserInformations(binder, getIdentity());
 			List<AccessRights> rights = portfolioService.getAccessRights(binder, getIdentity());
 			BinderSecurityCallback secCallback = BinderSecurityCallbackFactory.getCallbackForCoach(binder, rights);
 			BinderConfiguration config = BinderConfiguration.createConfig(binder);

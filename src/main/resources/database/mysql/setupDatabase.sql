@@ -1738,6 +1738,19 @@ create table o_pf_assignment (
    primary key (id)
 );
 
+create table o_pf_binder_user_infos (
+   id bigint not null auto_increment,
+   creationdate datetime not null,
+   lastmodified datetime not null,
+   p_initiallaunchdate datetime,
+   p_recentlaunchdate datetime,
+   p_visit bigint,
+   fk_identity bigint,
+   fk_binder bigint,
+   unique(fk_identity, fk_binder),
+   primary key (id)
+);
+
 -- lti
 create table o_lti_outcome (
    id bigint not null,
@@ -2171,6 +2184,7 @@ alter table o_pf_page ENGINE = InnoDB;
 alter table o_pf_binder ENGINE = InnoDB;
 alter table o_pf_assessment_section ENGINE = InnoDB;
 alter table o_pf_assignment ENGINE = InnoDB;
+alter table o_pf_binder_user_infos ENGINE = InnoDB;
 
 
 -- rating
@@ -2554,6 +2568,9 @@ alter table o_pf_assignment add constraint pf_assign_section_idx foreign key (fk
 alter table o_pf_assignment add constraint pf_assign_ref_assign_idx foreign key (fk_template_reference_id) references o_pf_assignment (id);
 alter table o_pf_assignment add constraint pf_assign_page_idx foreign key (fk_page_id) references o_pf_page (id);
 alter table o_pf_assignment add constraint pf_assign_assignee_idx foreign key (fk_assignee_id) references o_bs_identity (id);
+
+alter table o_pf_binder_user_infos add constraint binder_user_to_identity_idx foreign key (fk_identity) references o_bs_identity (id);
+alter table o_pf_binder_user_infos add constraint binder_user_binder_idx foreign key (fk_binder) references o_pf_binder (id);
 
 -- question pool
 alter table o_qp_pool add constraint idx_qp_pool_owner_grp_id foreign key (fk_ownergroup) references o_bs_secgroup(id);

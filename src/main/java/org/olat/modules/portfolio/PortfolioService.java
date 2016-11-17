@@ -218,6 +218,9 @@ public interface PortfolioService {
 	
 	
 	public Binder getBinderByKey(Long portfolioKey);
+
+	
+	public void updateBinderUserInformations(Binder binder, Identity user);
 	
 	public Binder getBinderByResource(OLATResource resource);
 	

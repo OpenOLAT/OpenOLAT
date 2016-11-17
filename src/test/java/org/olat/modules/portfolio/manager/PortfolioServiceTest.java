@@ -817,6 +817,8 @@ public class PortfolioServiceTest extends OlatTestCase {
 		dbInstance.commit();
 		SectionRef sectionRef2 = portfolioService.appendNewSection("2. section ", "Section 2", null, null, binder);
 		dbInstance.commit();
+		portfolioService.updateBinderUserInformations(binder, owner);
+		dbInstance.commit();
 		
 		Section reloadedSection1 = portfolioService.getSection(sectionRef1);
 		Page page1 = portfolioService.appendNewPage(owner, "New page", "A brand new page.", null, null, reloadedSection1);

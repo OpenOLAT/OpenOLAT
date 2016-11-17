@@ -46,6 +46,8 @@ public class AssessedBinder implements AssessmentEntryLight {
 	private List<AssessedBinderSection> sections;
 	private int numOfOpenSections;
 	
+	private Date recentLaunch;
+	
 	public AssessedBinder(Long binderKey, String binderTitle, String entryDisplayname,
 			Boolean passed, BigDecimal score, Identity assessedIdentity) {
 		this.binderKey = binderKey;
@@ -104,5 +106,13 @@ public class AssessedBinder implements AssessmentEntryLight {
 	
 	public void setNumOfOpenSections(int numOfOpenSections) {
 		this.numOfOpenSections = numOfOpenSections;
+	}
+
+	public Date getRecentLaunch() {
+		return recentLaunch;
+	}
+
+	public void setRecentLaunch(Date recentLaunch) {
+		this.recentLaunch = recentLaunch;
 	}
 }
