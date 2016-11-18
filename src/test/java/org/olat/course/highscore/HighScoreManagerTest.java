@@ -79,9 +79,10 @@ public class HighScoreManagerTest extends OlatTestCase {
 		
 		List<AssessmentEntry> assessEntries = new ArrayList<>();
 		int[] scores = {1,23,10};
+		Identity assessedIdentity = null;
 		//Create entries, add to List
 		for (int i = 0; i < scores.length; i++) {
-			Identity assessedIdentity = JunitTestHelper.createAndPersistIdentityAsRndUser("as-node-2");
+			assessedIdentity = JunitTestHelper.createAndPersistIdentityAsRndUser("as-node-2");
 			RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
 			String subIdent = UUID.randomUUID().toString();
 			AssessmentEntry nodeAssessment = courseNodeAssessmentDao
@@ -107,6 +108,8 @@ public class HighScoreManagerTest extends OlatTestCase {
 		assertEquals(allMembers.size(), scores.length);
 		assertTrue(allScores[0] > 20);
 		assertTrue(allScores[2] < 10);
+		// Test for hasScore method
+		assertFalse(highScoreManager.hasScore(assessEntries, assessedIdentity));
 		
 	}
 

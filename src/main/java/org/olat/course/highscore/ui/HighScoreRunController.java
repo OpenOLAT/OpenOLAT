@@ -96,10 +96,13 @@ public class HighScoreRunController extends FormBasicController{
 		//initialize ModuleConfig
 		Date start = config.getBooleanEntry(HighScoreEditController.CONFIG_KEY_DATESTART) != null ? 
 				(Date) config.get(HighScoreEditController.CONFIG_KEY_DATESTART) : null;
-		if (start != null && start.getTime() > new Date().getTime())return;
+		if (start != null && start.getTime() > new Date().getTime())return;		
 		
+		ownIdentity = ureq.getIdentity();
 		viewHighscore = config.getBooleanSafe(HighScoreEditController.CONFIG_KEY_HIGHSCORE);
-		//not build form if high-score is not set
+		// do not display highscore if current user has not yet a score
+		if (!highScoreManager.hasScore(assessEntries, ownIdentity))viewHighscore = false;
+		// do not build form if high-score is not set
 		if (!viewHighscore)return;
 		
 		viewTable = config.getBooleanSafe(HighScoreEditController.CONFIG_KEY_LISTING);
@@ -109,8 +112,7 @@ public class HighScoreRunController extends FormBasicController{
 		int bestOnly = config.getBooleanEntry(HighScoreEditController.CONFIG_KEY_BESTONLY) != null ? 
 				(int) config.get(HighScoreEditController.CONFIG_KEY_BESTONLY) : 0;
 		tableSize = bestOnly != 0 ? (int) config.get(HighScoreEditController.CONFIG_KEY_NUMUSER) : assessEntries.size();
-		ownIdentity = ureq.getIdentity();
-		initLists();
+		initLists();		
 		
 		//compute ranking and order
 		allScores = highScoreManager.sortRankByScore(assessEntries, allMembers, ownIdMembers,
@@ -269,14 +271,12 @@ public class HighScoreRunController extends FormBasicController{
 
 	@Override
 	protected void formOK(UserRequest ureq) {
-		// TODO Auto-generated method stub
-		
+		// only formInnerEvent()		
 	}
 
 	@Override
 	protected void doDispose() {
-		// TODO Auto-generated method stub
-		
+		// only formInnerEvent()		
 	}
 	
 	private class MarkedMemberCssDelegate extends DefaultFlexiTableCssDelegate {

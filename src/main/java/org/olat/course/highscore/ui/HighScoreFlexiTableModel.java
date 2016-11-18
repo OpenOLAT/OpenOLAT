@@ -73,19 +73,16 @@ public class HighScoreFlexiTableModel implements TableDataModel<HighScoreTableEn
 
 	@Override
 	public HighScoreTableEntry getObject(int row) {
-		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
 	public void setObjects(List objects) {
-		// TODO Auto-generated method stub
 		
 	}
 
 	@Override
 	public Object createCopyWithEmptyList() {
-		// TODO Auto-generated method stub
 		return null;
 	}
 	

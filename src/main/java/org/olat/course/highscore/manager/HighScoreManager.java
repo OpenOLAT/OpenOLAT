@@ -23,12 +23,7 @@
 * under the Apache 2.0 license as the original file.
 */
 package org.olat.course.highscore.manager;
-/**
- * Description:<br>
- * HighScoreManagerTest
- * Initial Date:  20.08.2016 <br>
- * @author fkiefer
- */
+
 import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -43,11 +38,50 @@ import org.springframework.stereotype.Service;
 
 import edu.emory.mathcs.backport.java.util.Collections;
 
+/**
+ * The Class HighScoreManager.
+ *  * Initial Date:  20.08.2016 <br>
+ * @author fkiefer
+ */
 @Service
 public class HighScoreManager {
 
 	private static final OLog log = Tracing.createLoggerFor(HighScoreManager.class);
 	
+	/**
+	 * Checks for score. Return false if no Identity is not assessed or if Identity has no score
+	 *
+	 * @param assessEntries 
+	 * @param ownIdentity 
+	 * @return boolean
+	 */
+	public boolean hasScore (List<AssessmentEntry>  assessEntries, Identity ownIdentity) {
+		AssessmentEntry containsOwnId = null;
+		for (AssessmentEntry assessmentEntry : assessEntries) {
+			if (ownIdentity.equals(assessmentEntry.getIdentity())){
+				containsOwnId = assessmentEntry;
+			} 
+		}
+		if (containsOwnId == null) return false;
+		else if (containsOwnId.getScore() == null) return false;		
+		else return true;
+	}
+	
+	/**
+	 * Sort rank by score, then by id and last alphabetically, 
+	 * determine rank of each member dependent on score,
+	 * decide whether there is a second table or not
+	 *
+	 * @param assessEntries all assessable entries for this item
+	 * @param allMembers of the assessable item
+	 * @param ownIdMembers the own id members
+	 * @param allPodium all members of the podium
+	 * @param ownIdIndices to display the rank of each member 
+	 * @param tableSize the number of members to display in the listing
+	 * @param ownIdentity of the current user
+	 * @param userManager the user manager
+	 * @return the double[]
+	 */
 	public double[] sortRankByScore (List<AssessmentEntry>  assessEntries,
 			List<HighScoreTableEntry> allMembers, List<HighScoreTableEntry> ownIdMembers,
 			List<List<HighScoreTableEntry>> allPodium, List<Integer> ownIdIndices,	
