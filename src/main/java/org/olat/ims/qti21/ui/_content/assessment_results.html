@@ -2,31 +2,31 @@
 #if($r.visible("assessedIdentityInfos"))
 	$r.render("assessedIdentityInfos")
 #end
-<div class="panel panel-default o_personal">
+<div class="panel panel-default o_personal o_sel_results_details">
   	<div class="panel-heading">
  		<h4 class="panel-title"><i class="o_icon o_qtiassessment_icon"> </i> $r.translate("head.assessment.overview")</h4>
  	</div>
 	<table class="table"><tbody>
-		<tr class="o_score">
+		<tr>
 			<th>$r.translate("results.entry.time")</th>
 			<td>$r.formatDateAndTime($testResults.entryTime)</td> 
 		</tr>
-		<tr class="o_score">
+		<tr>
 			<th>$r.translate("results.end.time")</th>
 			<td>$r.formatDateAndTime($testResults.endTime)</td> 
 		</tr>
-		<tr class="o_score">
+		<tr>
 			<th>$r.translate("results.duration")</th>
 			<td>$r.formatDurationInMillis($testResults.duration)</td> 
 		</tr>
 		#if(${testResults.hasMaxScore()})
-		<tr class="o_score">
+		<tr class="o_sel_assessmenttest_maxscore">
 			<th>$r.translate("score.max")</th>
 			<td>$testResults.maxScore</td> 
 		</tr>
 		#end
 		#if(${testResults.hasScore()})
-		<tr class="o_score">
+		<tr class="o_sel_assessmenttest_score">
 			<th>$r.translate("results.score.yourscore")</th>
 			<td>$testResults.score</td> 
 		</tr>
@@ -56,31 +56,31 @@
  		<h5 class="panel-title"><i class="o_icon $itemResult.cssClass"> </i> $r.escapeHtml($itemResult.title)</h5>
  	</div>
 	<table class="table"><tbody>
-		<tr class="o_score">
+		<tr>
 			<th>$r.translate("results.entry.time")</th>
 			<td>$r.formatDateAndTime($itemResult.entryTime)</td> 
 		</tr>
-		<tr class="o_score">
+		<tr>
 			<th>$r.translate("results.end.time")</th>
 			<td>$r.formatDateAndTime($itemResult.endTime)</td> 
 		</tr>
-		<tr class="o_score">
+		<tr>
 			<th>$r.translate("results.duration")</th>
 			<td>$r.formatDurationInMillis($itemResult.duration)</td> 
 		</tr>
-		<tr class="o_score">
+		<tr>
 			<th>$r.translate("results.session.status")</th>
 			<td>$itemResult.sessionStatus</td> 
 		</tr>
 		
 		#if(${itemResult.hasMaxScore()})
-		<tr class="o_score">
+		<tr class="o_sel_assessmentitem_maxscore">
 			<th>$r.translate("score.max")</th>
 			<td>$itemResult.maxScore</td> 
 		</tr>
 		#end
 		#if(${itemResult.hasScore()})
-		<tr class="o_score">
+		<tr class="o_sel_assessmentitem_score">
 			<th>$r.translate("results.score.yourscore")</th>
 			<td>$itemResult.score</td> 
 		</tr>

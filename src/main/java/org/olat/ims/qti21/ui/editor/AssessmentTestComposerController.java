@@ -225,6 +225,7 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 		//add elements
 		addItemTools = new Dropdown("editTools", "new.elements", false, getTranslator());
 		addItemTools.setIconCSS("o_icon o_icon-fw o_icon_add");
+		addItemTools.setElementCssClass("o_sel_qti_elements");
 		addItemTools.setVisible(!restrictedEdit);
 		
 		newSectionLink = LinkFactory.createToolLink("new.section", translate("new.section"), this, "o_mi_qtisection");
@@ -296,6 +297,7 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 		changeItemTools = new Dropdown("changeTools", "change.elements", false, getTranslator());
 		changeItemTools.setIconCSS("o_icon o_icon-fw o_icon_customize");
 		changeItemTools.setVisible(!restrictedEdit);
+		changeItemTools.setElementCssClass("o_sel_qti_change_node");
 		
 		if(ureq.getUserSession().getRoles().isOLATAdmin()) {
 			reloadInCacheLink = LinkFactory.createToolLink("replace.in.cache.pool", translate("tools.reload.from.files"), this, "o_icon_refresh");
@@ -304,7 +306,7 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 			changeItemTools.addComponent(reloadInCacheLink);
 		}
 		
-		deleteLink = LinkFactory.createToolLink("import.pool", translate("tools.change.delete"), this, "o_icon_delete_item");
+		deleteLink = LinkFactory.createToolLink("tools.delete", translate("tools.change.delete"), this, "o_icon_delete_item");
 		deleteLink.setDomReplacementWrapperRequired(false);
 		changeItemTools.addComponent(deleteLink);
 
@@ -720,6 +722,7 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 		}
 		
 		//persist metadata
+		doSaveAssessmentTest();
 		doSaveManifest();
 		updateTreeModel(false);
 		
@@ -913,6 +916,7 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 	
 	private void recalculateMaxScoreAssessmentTest() {
 		double sumMaxScore = 0.0d;
+		
 		for(ResolvedAssessmentItem resolvedAssessmentItem:resolvedAssessmentTest.getResolvedAssessmentItemBySystemIdMap().values()) {
 			AssessmentItem assessmentItem = resolvedAssessmentItem.getRootNodeLookup().extractIfSuccessful();
 			if(assessmentItem != null) {
@@ -1122,7 +1126,7 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 		} else {
 			return;//cannot delete test or test part
 		}
-		
+
 		doSaveAssessmentTest();
 		doSaveManifest();
 		updateTreeModel(false);

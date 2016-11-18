@@ -119,6 +119,7 @@ public class QTI21RuntimeController extends RepositoryEntryRuntimeController  {
 
 			qtiOptionsLink = LinkFactory.createToolLink("options", translate("tab.options"), this, "o_sel_repo_options");
 			qtiOptionsLink.setIconLeftCSS("o_icon o_icon-fw o_icon_options");
+			qtiOptionsLink.setElementCssClass("o_sel_qti_resource_options");
 			settingsDropdown.addComponent(qtiOptionsLink);
 		}
 	}

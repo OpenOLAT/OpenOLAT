@@ -89,6 +89,13 @@ public class AuthoringEnvPage {
 			.assertOnGeneralTab();
 	}
 	
+	public RepositoryEditDescriptionPage createQTI21Test(String title) {
+		return openCreateDropDown()
+			.clickCreate(ResourceType.qti21Test)
+			.fillCreateForm(title)
+			.assertOnGeneralTab();
+	}
+	
 	/**
 	 * Open the drop-down to create a new resource.
 	 * @return
@@ -214,7 +221,8 @@ public class AuthoringEnvPage {
 		course("CourseModule"),
 		cp("FileResource.IMSCP"),
 		wiki("FileResource.WIKI"),
-		portfolio("BinderTemplate");
+		portfolio("BinderTemplate"),
+		qti21Test("FileResource.IMSQTI21");
 		
 		private final String type;
 		

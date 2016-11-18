@@ -22,8 +22,8 @@ package org.olat.selenium.page.qti;
 import java.util.List;
 
 import org.junit.Assert;
+import org.olat.selenium.page.NavigationPage;
 import org.olat.selenium.page.graphene.OOGraphene;
-import org.olat.user.restapi.UserVO;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
@@ -36,6 +36,9 @@ import org.openqa.selenium.WebElement;
  */
 public class QTI21Page {
 	
+	private final By toolsMenu = By.cssSelector("ul.o_sel_repository_tools");
+	private final By settingsMenu = By.cssSelector("ul.o_sel_course_settings");
+	
 	private WebDriver browser;
 	
 	private QTI21Page(WebDriver browser) {
@@ -46,36 +49,6 @@ public class QTI21Page {
 		WebElement main = browser.findElement(By.id("o_main_wrapper"));
 		Assert.assertTrue(main.isDisplayed());
 		return new QTI21Page(browser);
-	}
-	
-	//TODO still qti 1.2
-	public QTI21Page passE4(UserVO user) {
-		start()
-			.selectItem(0)
-			.answerSingleChoice(0)
-			.saveAnswer()
-			.selectItem(1)
-			.answerMultipleChoice(0, 2)
-			.saveAnswer()
-			.selectItem(2)
-			.answerKPrim(true, false, true, false)
-			.saveAnswer()
-			.selectItem(3)
-			.answerFillin("not")
-			.saveAnswer()
-			.endTest();
-		
-		//check results page
-		By resultsBy = By.id("o_qti_results");
-		OOGraphene.waitElement(resultsBy, browser);
-		WebElement resultsEl = browser.findElement(resultsBy);
-		Assert.assertTrue(resultsEl.getText().contains(user.getFirstName()));
-		//close the test
-		closeTest();
-		//all answers are correct -> passed
-		WebElement passedEl = browser.findElement(By.cssSelector("tr.o_state.o_passed"));
-		Assert.assertTrue(passedEl.isDisplayed());
-		return this;
 	}
 	
 	public QTI21Page start() {
@@ -93,6 +66,12 @@ public class QTI21Page {
 		OOGraphene.waitElement(attemptBy, 5, browser);
 		WebElement attemptEl = browser.findElement(attemptBy);
 		Assert.assertTrue(attemptEl.isDisplayed());
+		return this;
+	}
+	
+	public QTI21Page assertOnAssessmentItem() {
+		By assessmentItemBy = By.cssSelector("div.qtiworks.o_assessmentitem.o_assessmenttest");
+		OOGraphene.waitElement(assessmentItemBy, 5, browser);
 		return this;
 	}
 	
@@ -116,16 +95,18 @@ public class QTI21Page {
 		OOGraphene.waitBusy(browser);
 		return this;
 	}
+	
+	public QTI21Page answerSingleChoice(String answer) {
+		By choiceBy = By.xpath("//tr[contains(@class,'choiceinteraction')][td[contains(@class,'choiceInteraction')][p[contains(text(),'" + answer + "')]]]/td[contains(@class,'control')]/input[@type='radio']");
+		browser.findElement(choiceBy).click();
+		return this;
+	}
 
-	//TODO still QTI 1.2
-	public QTI21Page answerMultipleChoice(int... selectPositions) {
-		By itemsBy = By.cssSelector("div.choiceInteraction input[type='checkbox']");
-		List<WebElement> optionList = browser.findElements(itemsBy);
-		for(int selectPosition:selectPositions) {
-			Assert.assertTrue(optionList.size() > selectPosition);
-			optionList.get(selectPosition).click();
+	public QTI21Page answerMultipleChoice(String... answers) {
+		for(String answer:answers) {
+			By choiceBy = By.xpath("//tr[contains(@class,'choiceinteraction')][td[contains(@class,'choiceInteraction')][p[contains(text(),'" + answer + "')]]]/td[contains(@class,'control')]/input[@type='checkbox']");
+			browser.findElement(choiceBy).click();
 		}
-		OOGraphene.waitBusy(browser);
 		return this;
 	}
 	
@@ -154,21 +135,24 @@ public class QTI21Page {
 		return this;
 	}
 	
-	//TODO still QTI 1.2
-	public QTI21Page answerFillin(String... texts) {
-		By holesBy = By.cssSelector("div.o_qti_item input[type='text']");
-		List<WebElement> holesList = browser.findElements(holesBy);
-		Assert.assertEquals(texts.length, holesList.size());
-		for(int i=0; i<texts.length; i++) {
-			holesList.get(i).sendKeys(texts[i]);
-		}
-		OOGraphene.waitBusy(browser);
+	public QTI21Page answerGapText(String text, String responseId) {
+		By gapBy = By.xpath("//span[contains(@class,'textEntryInteraction')]/input[@type='text'][contains(@name,'" + responseId + "')]");
+		WebElement gapEl = browser.findElement(gapBy);
+		gapEl.clear();
+		gapEl.sendKeys(text);
 		return this;
 	}
 	
 	public QTI21Page saveAnswer() {
 		By saveAnswerBy = By.cssSelector("button.o_sel_assessment_item_submit");
 		browser.findElement(saveAnswerBy).click();
+		OOGraphene.waitBusy(browser);
+		return this;
+	}
+	
+	public QTI21Page nextAnswer() {
+		By nextAnswerBy = By.cssSelector("button.o_sel_next_question");
+		browser.findElement(nextAnswerBy).click();
 		OOGraphene.waitBusy(browser);
 		return this;
 	}
@@ -197,6 +181,24 @@ public class QTI21Page {
 		return this;
 	}
 	
+	public QTI21Page assertOnResults() {
+		By resultsBy = By.cssSelector("div.o_sel_results_details");
+		OOGraphene.waitElement(resultsBy, 5, browser);
+		return this;
+	}
+	
+	public QTI21Page assertOnAssessmentTestScore(int score) {
+		By resultsBy = By.xpath("//div[contains(@class,'o_sel_results_details')]//tr[contains(@class,'o_sel_assessmenttest_score')]/td[contains(text(),'" + score + "')]");
+		OOGraphene.waitElement(resultsBy, 5, browser);
+		return this;
+	}
+	
+	public QTI21Page assertOnAssessmentTestMaxScore(int score) {
+		By resultsBy = By.xpath("//div[contains(@class,'o_sel_results_details')]//tr[contains(@class,'o_sel_assessmenttest_maxscore')]/td[contains(text(),'" + score + "')]");
+		OOGraphene.waitElement(resultsBy, 5, browser);
+		return this;
+	}
+	
 	/**
 	 * Yes in a dialog box controller.
 	 */
@@ -207,5 +209,54 @@ public class QTI21Page {
 		List<WebElement> buttonsEl = browser.findElements(confirmButtonBy);
 		buttonsEl.get(0).click();
 		OOGraphene.waitBusy(browser);
+	}
+	
+	public QTI21EditorPage edit() {
+		if(!browser.findElement(toolsMenu).isDisplayed()) {
+			openToolsMenu();
+		}
+
+		By editBy = By.xpath("//ul[contains(@class,'o_sel_repository_tools')]//a[contains(@onclick,'edit.cmd')]");
+		browser.findElement(editBy).click();
+		OOGraphene.waitBusy(browser);
+		QTI21EditorPage editor = new QTI21EditorPage(browser);
+		editor.assertOnEditor();
+		return editor;
+	}
+	
+	public QTI21OptionsPage options() {
+		if(!browser.findElement(settingsMenu).isDisplayed()) {
+			openSettingsMenu();
+		}
+		
+		By optionsBy = By.cssSelector("ul.o_sel_course_settings a.o_sel_qti_resource_options");
+		browser.findElement(optionsBy).click();
+		OOGraphene.waitBusy(browser);
+		return new QTI21OptionsPage(browser);
+	}
+	
+	/**
+	 * Click the editor link in the tools drop-down
+	 * @return
+	 */
+	public QTI21Page openToolsMenu() {
+		By toolsMenuCaret = By.cssSelector("a.o_sel_repository_tools");
+		browser.findElement(toolsMenuCaret).click();
+		OOGraphene.waitElement(toolsMenu, browser);
+		return this;
+	}
+	
+	public QTI21Page openSettingsMenu() {
+		By settingsMenuCaret = By.cssSelector("a.o_sel_course_settings");
+		browser.findElement(settingsMenuCaret).click();
+		OOGraphene.waitElement(settingsMenu, browser);
+		return this;
+	}
+	
+	public QTI21Page clickToolbarBack() {
+		OOGraphene.closeBlueMessageWindow(browser);
+		browser.findElement(NavigationPage.toolbarBackBy).click();
+		OOGraphene.waitBusy(browser);
+		return QTI21Page.getQTI12Page(browser);
 	}
 }
