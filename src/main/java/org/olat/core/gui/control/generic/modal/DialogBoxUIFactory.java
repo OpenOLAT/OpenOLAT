@@ -128,7 +128,9 @@ public class DialogBoxUIFactory {
 		List<String> okButton = new ArrayList<String>();
 		okButton.add(trans.translate("ok"));
 		
-		return new DialogBoxController(ureq, wControl, null, lockMsg, okButton);
+		DialogBoxController ctrl = new DialogBoxController(ureq, wControl, null, lockMsg, okButton);
+		ctrl.setCssClass("o_warning");
+		return ctrl;
 	}
 	
 
