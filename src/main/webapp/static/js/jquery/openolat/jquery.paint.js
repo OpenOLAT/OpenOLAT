@@ -1,3 +1,13 @@
+/*
+ * ========================================================
+ *  The code is heavily based on several blog entries:
+ *  http://codetheory.in/html5-canvas-drawing-lines-with-smooth-edges/
+ *  
+ *  	
+ *  
+ *  @author srosse, www.frentix.com
+ *  @date Mar. 2016
+ */
 (function($) {
     $.fn.paint = function(options) {
     	var paint = this.data("data-oo-paint");
@@ -53,13 +63,19 @@
 	
 		// current tool
 		var tool = 'brush';
+		jQuery('#tools a#brush').addClass("active");
 		jQuery('#tools a').on('click', function(){
 			tool = jQuery(this).attr('id');
+			jQuery('#tools a').removeClass("active");
+			jQuery(this).addClass('active');
 		});
 		// colors
 		jQuery('#colors a').on('click', function(){
 			tmp_ctx.strokeStyle = jQuery(this).attr('id');
 			tmp_ctx.fillStyle = tmp_ctx.strokeStyle;
+			
+			jQuery('#colors a').removeClass("active");
+			jQuery(this).addClass('active');
 			drawBrush();
 		});
 	
@@ -73,7 +89,7 @@
 			mouse.x = typeof e.offsetX !== 'undefined' ? e.offsetX : e.layerX;
 			mouse.y = typeof e.offsetY !== 'undefined' ? e.offsetY : e.layerY;
 		}, false);
-			
+	
 		//NEWTHING
 		var drawBrush = function() {
 			context_small.clearRect(0, 0, canvas_small.width, canvas_small.height);
@@ -95,6 +111,7 @@
 		tmp_ctx.lineCap = 'round';
 		tmp_ctx.strokeStyle = 'blue';
 		tmp_ctx.fillStyle = 'blue';
+		jQuery('#colors a.blue').addClass("active");
 		//tmp_ctx.globalAlpha = 0.5;
 				
 		//show current brush view  //NEWTHING
@@ -121,6 +138,14 @@
 		}, false);
 	
 		tmp_canvas.addEventListener('mouseup', function() {
+			stopPainting();
+		}, false);
+		
+		tmp_canvas.addEventListener('mouseleave', function(e) {
+			stopPainting();
+		}, false);
+		
+		var stopPainting = function() {
 			tmp_canvas.removeEventListener('mousemove', onPaint, false);
 			
 			// for erasing
@@ -140,7 +165,9 @@
 			jQuery('#' + inputHolderId).val(image);
 			undo_arr.push(image);
 			undo_count = 0; //NEWTHING
-		}, false);
+		}
+		
+
 	
 		//NEWTHING
 		document.getElementById("undo").addEventListener("click", function(){
