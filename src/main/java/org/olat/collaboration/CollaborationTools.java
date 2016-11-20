@@ -105,6 +105,7 @@ import org.olat.modules.portfolio.BinderSecurityCallbackFactory;
 import org.olat.modules.portfolio.PortfolioLoggingAction;
 import org.olat.modules.portfolio.PortfolioService;
 import org.olat.modules.portfolio.PortfolioV2Module;
+import org.olat.modules.portfolio.manager.BinderUserInformationsDAO;
 import org.olat.modules.portfolio.ui.BinderController;
 import org.olat.modules.wiki.WikiManager;
 import org.olat.modules.wiki.WikiSecurityCallback;
@@ -519,7 +520,7 @@ public class CollaborationTools implements Serializable {
 						if(moduleV2.isEnabled()) {
 							PortfolioService portfolioService = CoreSpringFactory.getImpl(PortfolioService.class);
 							Binder binder = portfolioService.createNewBinder(group.getName(), group.getDescription(), null, null);
-							portfolioService.updateBinderUserInformations(binder, ureq.getIdentity());
+							CoreSpringFactory.getImpl(BinderUserInformationsDAO.class).updateBinderUserInformationsInSync(binder, ureq.getIdentity());
 							mapKeyProperty = npm.createPropertyInstance(null, null, PROP_CAT_BG_COLLABTOOLS, KEY_PORTFOLIO, null, binder.getKey(), "2", null);
 							BinderSecurityCallback secCallback = BinderSecurityCallbackFactory.getCallbackForBusinessGroup();
 							BinderController binderCtrl = new BinderController(ureq, wControl, stackPanel, secCallback, binder, BinderConfiguration.createBusinessGroupConfig());					

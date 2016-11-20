@@ -52,11 +52,12 @@ public class BinderUserInformationsDAO {
 	@Autowired
 	private DB dbInstance;
 	
-	
 	/**
-	 * Update (or create if not exists) the course informations for a user
-	 * @param userCourseEnv
-	 * @return
+	 * Update (or create if not exists) the course informations for a user. To creation
+	 * of the user infos is made with doInSync.
+	 * 
+	 * @param binder The binder
+	 * @param identity The identity
 	 */
 	public void updateBinderUserInformations(final Binder binder, final Identity identity) {
 		int updatedRows = lowLevelUpdate(binder, identity);
@@ -69,15 +70,7 @@ public class BinderUserInformationsDAO {
 					try {
 						int retryUpdatedRows = lowLevelUpdate(binder, identity);
 						if(retryUpdatedRows == 0) {
-							BinderUserInfosImpl infos = new BinderUserInfosImpl();
-							infos.setIdentity(identity);
-							infos.setCreationDate(new Date());
-							infos.setInitialLaunch(infos.getCreationDate());
-							infos.setLastModified(infos.getCreationDate());
-							infos.setRecentLaunch(infos.getCreationDate());
-							infos.setVisit(1);
-							infos.setBinder(binder);
-							dbInstance.getCurrentEntityManager().persist(infos);
+							createAndPersistUserInfos(binder, identity);
 						}
 					} catch (Exception e) {
 						log.error("Cannot update binder informations for: " + identity + " from " + identity, e);
@@ -85,6 +78,33 @@ public class BinderUserInformationsDAO {
 				}
 			});
 		}
+	}
+	
+	/**
+	 * Update or create the user informations for the specified binder and
+	 * identity. This method need to be called within a doInSync.
+	 * 
+	 * @param binder
+	 * @param identity
+	 */
+	public void updateBinderUserInformationsInSync(final Binder binder, final Identity identity) {
+		int updatedRows = lowLevelUpdate(binder, identity);
+		dbInstance.commit();//to make it quick
+		if(updatedRows == 0) {
+			createAndPersistUserInfos(binder, identity);
+		}
+	}
+	
+	private void createAndPersistUserInfos(Binder binder, Identity identity) {
+		BinderUserInfosImpl infos = new BinderUserInfosImpl();
+		infos.setIdentity(identity);
+		infos.setCreationDate(new Date());
+		infos.setInitialLaunch(infos.getCreationDate());
+		infos.setLastModified(infos.getCreationDate());
+		infos.setRecentLaunch(infos.getCreationDate());
+		infos.setVisit(1);
+		infos.setBinder(binder);
+		dbInstance.getCurrentEntityManager().persist(infos);
 	}
 	
 	/**
