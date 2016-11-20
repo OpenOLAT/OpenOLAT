@@ -114,6 +114,7 @@ public class DrawingEditorController extends FormBasicController {
 		
 		initialBackgroundImage = getCurrentBackground();
 		backgroundEl = uifactory.addFileElement(getWindowControl(), "form.imd.background", "form.imd.background", formLayout);
+		backgroundEl.setPreview(ureq.getUserSession(), true);
 		backgroundEl.setEnabled(!restrictedEdit);
 		if(initialBackgroundImage != null) {
 			backgroundEl.setInitialFile(initialBackgroundImage);
@@ -121,7 +122,7 @@ public class DrawingEditorController extends FormBasicController {
 		backgroundEl.addActionListener(FormEvent.ONCHANGE);
 		backgroundEl.setDeleteEnabled(true);
 		backgroundEl.limitToMimeType(mimeTypes, "error.mimetype", new String[]{ mimeTypes.toString() });
-		//backgroundEl.setPreview(ureq.getUserSession(), true);
+		
 
 		// Submit Button
 		FormLayoutContainer buttonsContainer = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
@@ -178,6 +179,10 @@ public class DrawingEditorController extends FormBasicController {
 					backgroundEl.reset();
 					if(initialBackgroundImage != null) {
 						backgroundEl.setInitialFile(initialBackgroundImage);
+						backgroundImage = null;
+					} else {
+						backgroundEl.setInitialFile(null);
+						backgroundImage = null;
 					}
 				} else if(initialBackgroundImage != null) {
 					initialBackgroundImage = null;
@@ -190,6 +195,7 @@ public class DrawingEditorController extends FormBasicController {
 				if(status.isEmpty()) {
 					flc.setDirty(true);
 					backgroundImage = backgroundEl.moveUploadFileTo(itemFile.getParentFile());
+					backgroundEl.setInitialFile(backgroundImage);
 				}
 			}
 		}

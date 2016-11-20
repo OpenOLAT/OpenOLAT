@@ -30,7 +30,6 @@ import java.util.List;
 import javax.xml.transform.stream.StreamResult;
 
 import org.olat.core.gui.render.StringOutput;
-import org.olat.core.util.StringHelper;
 import org.olat.ims.qti21.model.QTI21QuestionType;
 import org.olat.ims.qti21.model.xml.AssessmentItemFactory;
 
@@ -51,7 +50,6 @@ import uk.ac.ed.ph.jqtiplus.types.Identifier;
  */
 public class UploadAssessmentItemBuilder extends LobAssessmentItemBuilder {
 
-	private String mimeType;
 	private UploadInteraction uploadInteraction;
 	
 	public UploadAssessmentItemBuilder(QtiSerializer qtiSerializer) {
@@ -99,7 +97,6 @@ public class UploadAssessmentItemBuilder extends LobAssessmentItemBuilder {
 		for(Block block:blocks) {
 			if(block instanceof UploadInteraction) {
 				uploadInteraction = (UploadInteraction)block;
-				mimeType = uploadInteraction.getType();
 				responseIdentifier = uploadInteraction.getResponseIdentifier();
 				break;
 			} else {
@@ -107,14 +104,6 @@ public class UploadAssessmentItemBuilder extends LobAssessmentItemBuilder {
 			}
 		}
 		question = sb.toString();
-	}
-
-	public String getMimeType() {
-		return mimeType;
-	}
-
-	public void setMimeType(String mimeType) {
-		this.mimeType = mimeType;
 	}
 
 	@Override
@@ -132,12 +121,6 @@ public class UploadAssessmentItemBuilder extends LobAssessmentItemBuilder {
 
 		//add question
 		getHtmlHelper().appendHtml(assessmentItem.getItemBody(), question);
-		
-		if(StringHelper.containsNonWhitespace(mimeType)) {
-			uploadInteraction.setType(mimeType);
-		} else {
-			uploadInteraction.setType(null);
-		}
 		
 		//add interaction
 		blocks.add(uploadInteraction);

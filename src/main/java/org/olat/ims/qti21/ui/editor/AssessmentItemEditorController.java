@@ -298,7 +298,7 @@ public class AssessmentItemEditorController extends BasicController {
 	private AssessmentItemBuilder initUploadEditors(UserRequest ureq, AssessmentItem item) {
 		UploadAssessmentItemBuilder uploadItemBuilder = new UploadAssessmentItemBuilder(item, qtiService.qtiSerializer());
 		itemEditor = new UploadEditorController(ureq, getWindowControl(), uploadItemBuilder,
-				rootDirectory, rootContainer, itemFile, restrictedEdit);
+				rootDirectory, rootContainer, itemFile);
 		listenTo(itemEditor);
 		scoreEditor = new MinimalScoreController(ureq, getWindowControl(), uploadItemBuilder, itemRef, restrictedEdit,
 				"Test editor QTI 2.1 in detail#details_testeditor_score");
