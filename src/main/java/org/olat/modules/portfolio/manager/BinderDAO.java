@@ -904,7 +904,7 @@ public class BinderDAO {
 			.getResultList();
 		return sections == null || sections.isEmpty() ? null : sections.get(0);
 	}
-	/*
+	
 	public List<Section> getSections(BinderRef binder) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select section from pfsection as section")
@@ -916,13 +916,13 @@ public class BinderDAO {
 			.createQuery(sb.toString(), Section.class)
 			.setParameter("binderKey", binder.getKey())
 			.getResultList();
-	}*/
+	}
 	
-	public List<Section> getSections(BinderRef binder) {
+	/*public List<Section> getSections(BinderRef binder) {
 		BinderImpl refBinder = dbInstance.getCurrentEntityManager()
 				.getReference(BinderImpl.class, binder.getKey());
 		return refBinder.getSections();
-	}
+	}*/
 	
 	public Binder moveUpSection(BinderImpl binder, Section section) {
 		binder.getSections().size();
