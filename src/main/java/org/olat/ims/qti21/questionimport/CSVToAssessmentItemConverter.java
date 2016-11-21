@@ -26,19 +26,24 @@ import java.util.List;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
+import org.olat.ims.qti21.QTI21Constants;
 import org.olat.ims.qti21.model.xml.AssessmentItemBuilder;
 import org.olat.ims.qti21.model.xml.AssessmentItemFactory;
-import org.olat.ims.qti21.model.xml.interactions.SimpleChoiceAssessmentItemBuilder;
-import org.olat.ims.qti21.model.xml.interactions.SimpleChoiceAssessmentItemBuilder.ScoreEvaluation;
 import org.olat.ims.qti21.model.xml.interactions.FIBAssessmentItemBuilder;
 import org.olat.ims.qti21.model.xml.interactions.FIBAssessmentItemBuilder.EntryType;
 import org.olat.ims.qti21.model.xml.interactions.FIBAssessmentItemBuilder.TextEntry;
+import org.olat.ims.qti21.model.xml.interactions.KPrimAssessmentItemBuilder;
 import org.olat.ims.qti21.model.xml.interactions.MultipleChoiceAssessmentItemBuilder;
+import org.olat.ims.qti21.model.xml.interactions.SimpleChoiceAssessmentItemBuilder;
+import org.olat.ims.qti21.model.xml.interactions.SimpleChoiceAssessmentItemBuilder.ScoreEvaluation;
 import org.olat.ims.qti21.model.xml.interactions.SingleChoiceAssessmentItemBuilder;
 
+import uk.ac.ed.ph.jqtiplus.node.content.xhtml.text.P;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.ChoiceInteraction;
+import uk.ac.ed.ph.jqtiplus.node.item.interaction.choice.SimpleAssociableChoice;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.choice.SimpleChoice;
 import uk.ac.ed.ph.jqtiplus.serialization.QtiSerializer;
+import uk.ac.ed.ph.jqtiplus.types.Identifier;
 
 /**
  * 
@@ -50,6 +55,7 @@ public class CSVToAssessmentItemConverter {
 	
 	private static final OLog log = Tracing.createLoggerFor(CSVToAssessmentItemConverter.class);
 
+	private int kprimPosition = 0;
 	private ImportOptions options;
 	private final QtiSerializer qtiSerializer;
 	private AssessmentItemAndMetadata currentItem;
@@ -306,6 +312,12 @@ public class CSVToAssessmentItemConverter {
 					itemBuilder = scItemBuilder;
 					break;
 				}
+				case "kprim": {
+					kprimPosition = 0;
+					KPrimAssessmentItemBuilder kprimItemBuilder = new KPrimAssessmentItemBuilder(qtiSerializer);
+					itemBuilder = kprimItemBuilder;
+					break;
+				}
 				default: {
 					itemBuilder = null;
 				}
@@ -397,6 +409,9 @@ public class CSVToAssessmentItemConverter {
 		} else if(itemBuilder instanceof FIBAssessmentItemBuilder) {
 			itemBuilder.setMinScore(0.0d);
 			itemBuilder.setMaxScore(points);
+		} else if(itemBuilder instanceof KPrimAssessmentItemBuilder) {
+			itemBuilder.setMinScore(0.0d);
+			itemBuilder.setMaxScore(points);
 		}
 	}
 	
@@ -408,58 +423,87 @@ public class CSVToAssessmentItemConverter {
 		try {
 			AssessmentItemBuilder itemBuilder = currentItem.getItemBuilder();
 			if (itemBuilder instanceof SimpleChoiceAssessmentItemBuilder) {
-				double point = parseFloat(parts[0], 1.0f);
-				String content = parts[1];
-
-				SimpleChoiceAssessmentItemBuilder choiceBuilder = (SimpleChoiceAssessmentItemBuilder)itemBuilder;
-				ChoiceInteraction interaction = choiceBuilder.getChoiceInteraction();
-				SimpleChoice newChoice = AssessmentItemFactory
-						.createSimpleChoice(interaction, content, choiceBuilder.getQuestionType().getPrefix());
-				choiceBuilder.addSimpleChoice(newChoice);
-				choiceBuilder.setMapping(newChoice.getIdentifier(), point);
-
-				if(point > 0.0) {
-					if (itemBuilder instanceof MultipleChoiceAssessmentItemBuilder) {
-						((MultipleChoiceAssessmentItemBuilder)itemBuilder).addCorrectAnswer(newChoice.getIdentifier());
-					} else if (itemBuilder instanceof SingleChoiceAssessmentItemBuilder) {
-						((SingleChoiceAssessmentItemBuilder)itemBuilder).setCorrectAnswer(newChoice.getIdentifier());
-					}
-				}
+				processChoice_smc(parts, (SimpleChoiceAssessmentItemBuilder)itemBuilder);
 			} else if(itemBuilder instanceof FIBAssessmentItemBuilder) {
-				String firstPart = parts[0].toLowerCase();
-				FIBAssessmentItemBuilder fibBuilder = (FIBAssessmentItemBuilder)itemBuilder;
-				if("text".equals(firstPart) || "texte".equals(firstPart)) {
-					String text = parts[1];
-					if(StringHelper.containsNonWhitespace(fibBuilder.getQuestion())) {
-						fibBuilder.setQuestion(fibBuilder.getQuestion() + " " + text);
-					} else {
-						fibBuilder.setQuestion(text);
-					}	
-				} else {
-					double score = parseFloat(parts[0], 1.0f);
-					String correctBlank = parts[1];
-					String responseId = fibBuilder.generateResponseIdentifier();
-					TextEntry textEntry = fibBuilder.createTextEntry(responseId);
-					parseAlternatives(correctBlank, score, textEntry);
-					if(parts.length > 2) {
-						String sizes = parts[2];
-						String[] sizeArr = sizes.split(",");
-						if(sizeArr.length >= 2) {
-							int size = Integer.parseInt(sizeArr[0]);
-							//int maxLength = Integer.parseInt(sizeArr[1]);
-							textEntry.setExpectedLength(size);
-						}	
-					}
-					
-					String entry = " <textEntryInteraction responseIdentifier=\"" + responseId + "\"/>";
-					fibBuilder.setQuestion(fibBuilder.getQuestion() + " " + entry);
-				}
+				processChoice_fib(parts, (FIBAssessmentItemBuilder)itemBuilder);
+			} else if(itemBuilder instanceof KPrimAssessmentItemBuilder) {
+				processChoice_kprim(parts, (KPrimAssessmentItemBuilder)itemBuilder);
 			}
 		} catch (NumberFormatException e) {
 			log.warn("Cannot parse point for: " + parts[0] + " / " + parts[1], e);
 		}
 	}
+
+	private void processChoice_smc(String[] parts, SimpleChoiceAssessmentItemBuilder choiceBuilder) {
+		double point = parseFloat(parts[0], 1.0f);
+		String content = parts[1];
+
+		ChoiceInteraction interaction = choiceBuilder.getChoiceInteraction();
+		SimpleChoice newChoice = AssessmentItemFactory
+				.createSimpleChoice(interaction, content, choiceBuilder.getQuestionType().getPrefix());
+		choiceBuilder.addSimpleChoice(newChoice);
+		choiceBuilder.setMapping(newChoice.getIdentifier(), point);
+
+		if(point > 0.0) {
+			if (choiceBuilder instanceof MultipleChoiceAssessmentItemBuilder) {
+				((MultipleChoiceAssessmentItemBuilder)choiceBuilder).addCorrectAnswer(newChoice.getIdentifier());
+			} else {
+				((SingleChoiceAssessmentItemBuilder)choiceBuilder).setCorrectAnswer(newChoice.getIdentifier());
+			}
+		}
+	}
+
+	private void processChoice_fib(String[] parts, FIBAssessmentItemBuilder fibBuilder) {
+		String firstPart = parts[0].toLowerCase();
+		if("text".equals(firstPart) || "texte".equals(firstPart)) {
+			String text = parts[1];
+			if(StringHelper.containsNonWhitespace(fibBuilder.getQuestion())) {
+				fibBuilder.setQuestion(fibBuilder.getQuestion() + " " + text);
+			} else {
+				fibBuilder.setQuestion(text);
+			}	
+		} else {
+			double score = parseFloat(parts[0], 1.0f);
+			String correctBlank = parts[1];
+			String responseId = fibBuilder.generateResponseIdentifier();
+			TextEntry textEntry = fibBuilder.createTextEntry(responseId);
+			parseAlternatives(correctBlank, score, textEntry);
+			if(parts.length > 2) {
+				String sizes = parts[2];
+				String[] sizeArr = sizes.split(",");
+				if(sizeArr.length >= 2) {
+					int size = Integer.parseInt(sizeArr[0]);
+					//int maxLength = Integer.parseInt(sizeArr[1]);
+					textEntry.setExpectedLength(size);
+				}	
+			}
+			
+			String entry = " <textEntryInteraction responseIdentifier=\"" + responseId + "\"/>";
+			fibBuilder.setQuestion(fibBuilder.getQuestion() + " " + entry);
+		}
+	}
 	
+	private void processChoice_kprim(String[] parts, KPrimAssessmentItemBuilder kprimBuilder) {
+		String firstPart = parts[0].toLowerCase();
+		String answer = parts[1];
+		
+		Identifier correctIncorrectIdentifier;
+		if("+".equals(firstPart)) {
+			correctIncorrectIdentifier = QTI21Constants.CORRECT_IDENTIFIER;
+		} else {
+			correctIncorrectIdentifier = QTI21Constants.WRONG_IDENTIFIER;
+		}
+		List<SimpleAssociableChoice> choices = kprimBuilder.getKprimChoices();
+		SimpleAssociableChoice choice = choices.get(kprimPosition);
+		
+		P choiceText = AssessmentItemFactory.getParagraph(choice, answer);
+		choice.getFlowStatics().clear();
+		choice.getFlowStatics().add(choiceText);
+		
+		kprimBuilder.setAssociation(choice.getIdentifier(), correctIncorrectIdentifier);
+		kprimPosition++;
+	}
+
 	private void parseAlternatives(String value, double score, TextEntry textEntry) {
 		String[] values = value.split(";");
 		if(values.length > 0) {

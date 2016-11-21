@@ -131,10 +131,10 @@ public class KPrimAssessmentItemBuilder extends AssessmentItemBuilder {
 		extractCorrectResponse();
 		extractMatchInteraction();
 		
-		if(getMinScoreBuilder() != null) {
+		if(getMinScoreBuilder() == null) {
 			setMinScore(0.0d);
 		}
-		if(getMaxScoreBuilder() != null) {
+		if(getMaxScoreBuilder() == null) {
 			setMaxScore(1.0d);
 		}
 	}

@@ -109,6 +109,7 @@ public class OverviewQuestionController extends StepFormBasicController {
 						case sc: typeLabel = translate("item.type.sc"); break;
 						case mc: typeLabel = translate("item.type.mc"); break;
 						case fib: typeLabel = translate("item.type.fib"); break;
+						case kprim: typeLabel = translate("item.type.kprim"); break;
 						default: { typeLabel = "??"; }
 					}
 					return typeLabel;
