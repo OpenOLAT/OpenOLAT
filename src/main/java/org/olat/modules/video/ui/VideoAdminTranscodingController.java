@@ -105,18 +105,22 @@ public class VideoAdminTranscodingController extends FormBasicController {
 	}
 	
 	private boolean mayTranscode(int resolution){
+		if (!videoModule.isTranscodingEnabled()) {
+			return false;
+		}
 		int[] transcodingRes = videoModule.getTranscodingResolutions();
 		for (int i = 0; i < transcodingRes.length; i++) {
-			if (resolution == transcodingRes[i] && videoModule.isTranscodingEnabled()){
-				return Boolean.TRUE;
+			if (resolution == transcodingRes[i]){
+				return true;
 			}
 		}
-		return Boolean.FALSE;
+		return false;
 	}
 	
 	private void loadTable(){
 		//Hardcoded same as VideoAdminSetController
 		int[] resolution = {2160, 1080, 720, 480, 360, 240};
+		//FIXME:FK fetch using one single SQL query
 		for (int i = 0; i < resolution.length; i++) {
 			int sizeOfTranscodings = availableTranscodings.get(resolution[i]).size();
 			int counter = 0;
@@ -162,6 +166,7 @@ public class VideoAdminTranscodingController extends FormBasicController {
 	}
 	
 	private void generateStatusOfTranscodings() {
+		//FIXME:FK fetch using one single SQL query
 		availableTranscodings = new HashMap<>();
 		availableTranscodings.put(240, new HashSet<OLATResource>());
 		availableTranscodings.put(360, new HashSet<OLATResource>());

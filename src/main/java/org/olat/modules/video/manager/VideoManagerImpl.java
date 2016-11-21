@@ -258,7 +258,7 @@ public class VideoManagerImpl implements VideoManager {
 			ch.close();
 
 			return true;
-		} catch (Exception e) {
+		} catch (Exception | AssertionError e) {
 			log.error("Could not get frame::" + frameNumber + " for video::" + videoFile.getAbsolutePath(), e);
 			return false;
 		} 
@@ -309,7 +309,16 @@ public class VideoManagerImpl implements VideoManager {
 	public VideoMetadata readVideoMetadataFile(OLATResource videoResource){
 		VFSContainer baseContainer= FileResourceManager.getInstance().getFileResourceRootImpl(videoResource);
 		VFSLeaf metaDataFile = VFSManager.resolveOrCreateLeafFromPath(baseContainer, FILENAME_VIDEO_METADATA_XML);
-		return (VideoMetadata) XStreamHelper.readObject(XStreamHelper.createXStreamInstance(), metaDataFile);
+		try {
+			return (VideoMetadata) XStreamHelper.readObject(XStreamHelper.createXStreamInstance(), metaDataFile);
+		} catch (Exception e) {
+			log.error("Error while parsing XStream file for videoResource::" + videoResource, e);
+			// return an empty, so at least it displays something and not an error
+			VideoMetadata meta =  new VideoMetadataImpl();
+			meta.setWidth(800);
+			meta.setHeight(600);
+			return meta;
+		}
 	}
 	
 	@Override
@@ -524,8 +533,8 @@ public class VideoManagerImpl implements VideoManager {
 			metaData.setWidth(videoSize.getWidth());
 			metaData.setHeight(videoSize.getHeight());			
 		} else {
-			metaData.setWidth(600);
-			metaData.setHeight(800);						
+			metaData.setHeight(600);
+			metaData.setWidth(800);						
 		}
 		// calculate video duration
 		long duration = movieService.getDuration(targetFile, FILETYPE_MP4);

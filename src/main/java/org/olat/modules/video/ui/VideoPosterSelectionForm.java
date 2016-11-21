@@ -72,7 +72,7 @@ public class VideoPosterSelectionForm extends BasicController {
 		tmp.mkdirs();
 		tmpContainer = new LocalFolderImpl(tmp);
 		
-		long duration =1000;
+		long duration = 1000;
 
 		File videoFile = videoManager.getVideoFile(videoResource);
 		RandomAccessFile accessFile;
@@ -82,7 +82,7 @@ public class VideoPosterSelectionForm extends BasicController {
 			FileChannelWrapper in = new FileChannelWrapper(ch);
 			MP4Demuxer demuxer1 = new MP4Demuxer(in);
 			duration = demuxer1.getVideoTrack().getFrameCount();
-		} catch (Exception e) {
+		} catch (Exception | AssertionError e) {
 			logError("Error while accessing master video::" + videoFile.getAbsolutePath(), e);
 		}
 
@@ -103,7 +103,7 @@ public class VideoPosterSelectionForm extends BasicController {
 				button.setUserObject(fileName);
 				
 				generatedPosters.put(mediaUrl + "/" + fileName,	String.valueOf(x));
-			} catch (Exception e) {
+			} catch (Exception | AssertionError e) {
 				logError("Error while creating poster images for video::" + videoFile.getAbsolutePath(), e);
 			}
 		}
