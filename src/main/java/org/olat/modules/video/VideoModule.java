@@ -138,6 +138,7 @@ public class VideoModule extends AbstractSpringModule {
 		log.info("video.coursenode.enabled=" + isCoursenodeEnabled());
 		log.info("video.transcoding.enabled=" + isTranscodingEnabled());
 		log.info("video.transcoding.resolutions=" + Arrays.toString(getTranscodingResolutions()));
+		log.info("video.transcoding.resolution.preferred=" + getPreferredDefaultResolution());
 		log.info("video.transcoding.taskset.cpuconfig=" + getTranscodingTasksetConfig());
 		log.info("video.transcoding.local=" + isTranscodingLocal());
 
