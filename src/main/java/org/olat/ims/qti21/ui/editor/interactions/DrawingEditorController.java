@@ -109,7 +109,7 @@ public class DrawingEditorController extends FormBasicController {
 		VFSContainer itemContainer = (VFSContainer)rootContainer.resolve(relativePath);
 
 		String description = itemBuilder.getQuestion();
-		textEl = uifactory.addRichTextElementForQTI21("desc", "form.imd.descr", description, 8, -1, itemContainer,
+		textEl = uifactory.addRichTextElementForQTI21("desc", "form.imd.descr", description, 12, -1, itemContainer,
 				formLayout, ureq.getUserSession(), getWindowControl());
 		
 		initialBackgroundImage = getCurrentBackground();

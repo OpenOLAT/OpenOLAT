@@ -80,7 +80,7 @@ public class EssayEditorController extends FormBasicController {
 		VFSContainer itemContainer = (VFSContainer)rootContainer.resolve(relativePath);
 
 		String description = itemBuilder.getQuestion();
-		textEl = uifactory.addRichTextElementForQTI21("desc", "form.imd.descr", description, 8, -1, itemContainer,
+		textEl = uifactory.addRichTextElementForQTI21("desc", "form.imd.descr", description, 12, -1, itemContainer,
 				formLayout, ureq.getUserSession(), getWindowControl());
 		
 		String placeholder = itemBuilder.getPlaceholder();
@@ -90,6 +90,7 @@ public class EssayEditorController extends FormBasicController {
 		String expectedLength = getValue(itemBuilder.getExpectedLength());
 		lengthEl = uifactory.addTextElement("cols", "essay.expectedLength", -1, expectedLength, formLayout);
 		lengthEl.setEnabled(!restrictedEdit);
+		lengthEl.setVisible(StringHelper.containsNonWhitespace(expectedLength));
 		String expectedLines = getValue(itemBuilder.getExpectedLines());
 		heightEl = uifactory.addTextElement("rows", "essay.rows", -1, expectedLines, formLayout);
 		heightEl.setEnabled(!restrictedEdit);
