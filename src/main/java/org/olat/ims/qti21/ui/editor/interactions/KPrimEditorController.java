@@ -195,12 +195,10 @@ public class KPrimEditorController extends FormBasicController {
 		}
 		
 		//update kprims
-		List<SimpleAssociableChoice> choiceList = new ArrayList<>();
 		for(KprimWrapper choiceWrapper:choiceWrappers) {
 			SimpleAssociableChoice choice = choiceWrapper.getSimpleChoice();
 			String answer = choiceWrapper.getAnswer().getRawValue();
 			itemBuilder.getHtmlHelper().appendHtml(choice, answer);
-			choiceList.add(choice);
 		}
 		
 		//set associations

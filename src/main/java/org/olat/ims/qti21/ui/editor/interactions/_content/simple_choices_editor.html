@@ -3,4 +3,6 @@ $r.render("metadata")
 	<div>$r.render("answers_ERROR")</div>
 #end
 $r.render("answers")
-$r.render("buttons")
+#if($r.available("buttons"))
+	$r.render("buttons")
+#end

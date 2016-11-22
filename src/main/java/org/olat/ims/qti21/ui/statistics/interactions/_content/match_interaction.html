@@ -1,0 +1,32 @@
+<div class="o_qti_statistics_interaction">
+	<h4>$r.translate("chart.responses")</h4>
+	<table class="table matchInteraction score">
+		<thead>
+			<tr>
+				<th></th>
+				#foreach($targetChoice in $targetChoices)
+					<th>${targetChoice.getSummary()}
+				#end
+			</tr>
+		</thead>
+		<tbody>
+		#foreach($sourceChoice in $sourceChoices)
+			<tr>
+				<th>${sourceChoice.getSummary()}</th>
+				#foreach($targetChoice in $targetChoices)
+					<td>
+					#set($scoreWrapper = $r.get("${sourceChoice.getChoiceIdentifier().toString()}-${targetChoice.getChoiceIdentifier().toString()}"))
+					#if($scoreWrapper.getRelative(100) > 0)
+						<div class="width:100px; height:100px;">
+							<div class="${scoreWrapper.getCssClass()}" style="text-align:center; border-radius:${scoreWrapper.getRelativeBorder(100)}px; margin:${scoreWrapper.getRelativeMargin(100)}px; width:${scoreWrapper.getRelative(100)}px; height:${scoreWrapper.getRelative(100)}px">
+								<span style="line-height:${scoreWrapper.getRelative(100)}px;">$scoreWrapper.value</span>
+							</div>
+						</div>
+					#end
+					</td>
+				#end
+			</tr>
+		#end
+		</tbody>
+	</table>
+</div>

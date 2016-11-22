@@ -349,6 +349,16 @@ tr.choiceinteraction {
 	border-bottom: 3px solid white;
 }
 
+.matchInteraction {
+	input[type='text'] {
+		display:inline;
+		width:auto;
+	}
+	
+	div.bar_green { background-color: $brand-success; }
+	div.bar_red { background-color: $brand-danger; }
+}
+
 /* MathEntryInteraction styling for MathAssess */
 .o_assessmentitem .mathEntryInteraction {
 	border: 1px solid #ddedfc;

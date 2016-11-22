@@ -479,6 +479,110 @@ public class AssessmentItemFactory {
 		return responseDeclaration;
 	}
 	
+	public static MatchInteraction appendMatchInteraction(ItemBody itemBody, Identifier responseDeclarationId) {
+		MatchInteraction matchInteraction = new MatchInteraction(itemBody);
+		matchInteraction.setResponseIdentifier(responseDeclarationId);
+		matchInteraction.setMaxAssociations(4);
+		matchInteraction.setShuffle(false);
+		itemBody.getBlocks().add(matchInteraction);
+		
+		PromptGroup prompts = new PromptGroup(matchInteraction);
+		matchInteraction.getNodeGroups().add(prompts);
+		
+		SimpleMatchSet sourceMatchSet = new SimpleMatchSet(matchInteraction);
+		matchInteraction.getSimpleMatchSets().add(sourceMatchSet);
+		
+		String[] classic = new String[]{ "a", "b" };
+		for(int i=0; i<2; i++) {
+			SimpleAssociableChoice sourceChoice = new SimpleAssociableChoice(sourceMatchSet);
+			sourceChoice.setMatchMax(1);
+			sourceChoice.setMatchMin(1);
+			sourceChoice.setIdentifier(IdentifierGenerator.newNumberAsIdentifier(classic[i]));
+			P question = getParagraph(sourceChoice, "Source " + classic[i]);
+			sourceChoice.getFlowStatics().add(question);
+			sourceMatchSet.getSimpleAssociableChoices().add(sourceChoice);
+		}
+		
+		SimpleMatchSet targetMatchSet = new SimpleMatchSet(matchInteraction);
+		matchInteraction.getSimpleMatchSets().add(targetMatchSet);
+		
+		String[] target = new String[]{ "m", "n" };
+		for(int i=0; i<2; i++) {
+			SimpleAssociableChoice targetChoice = new SimpleAssociableChoice(sourceMatchSet);
+			targetChoice.setMatchMax(1);
+			targetChoice.setMatchMin(1);
+			targetChoice.setIdentifier(IdentifierGenerator.newNumberAsIdentifier(target[i]));
+			P question = getParagraph(targetChoice, "Target " + target[i]);
+			targetChoice.getFlowStatics().add(question);
+			targetMatchSet.getSimpleAssociableChoices().add(targetChoice);
+		}
+		
+		return matchInteraction;
+	}
+	
+	public static SimpleAssociableChoice createSimpleAssociableChoice(String text, SimpleMatchSet matchSet) {
+		SimpleAssociableChoice targetChoice = new SimpleAssociableChoice(matchSet);
+		targetChoice.setMatchMax(1);
+		targetChoice.setMatchMin(1);
+		targetChoice.setIdentifier(IdentifierGenerator.newNumberAsIdentifier("sa"));
+		P question = getParagraph(targetChoice, text);
+		targetChoice.getFlowStatics().add(question);
+		return targetChoice;
+	}
+	
+	public static ResponseDeclaration createMatchResponseDeclaration(AssessmentItem assessmentItem, Identifier declarationId,
+			Map<Identifier, List<Identifier>> associations, double maxScore) {
+		ResponseDeclaration responseDeclaration = new ResponseDeclaration(assessmentItem);
+		responseDeclaration.setIdentifier(declarationId);
+		responseDeclaration.setCardinality(Cardinality.MULTIPLE);
+		responseDeclaration.setBaseType(BaseType.DIRECTED_PAIR);
+		return appendAssociationMatchResponseDeclaration(responseDeclaration, associations, maxScore);
+	}
+	
+	public static ResponseDeclaration appendAssociationMatchResponseDeclaration(ResponseDeclaration responseDeclaration,
+			Map<Identifier, List<Identifier>> associations, double maxScore) {
+		responseDeclaration.setCardinality(Cardinality.MULTIPLE);
+		responseDeclaration.setBaseType(BaseType.DIRECTED_PAIR);
+
+		//correct response
+		int numOfassociations = 0;
+		CorrectResponse correctResponse = new CorrectResponse(responseDeclaration);
+		responseDeclaration.setCorrectResponse(correctResponse);
+		for(Map.Entry<Identifier,List<Identifier>> association:associations.entrySet()) {
+			Identifier sourceChoiceId = association.getKey();
+			List<Identifier> targetChoiceIds = association.getValue();
+			
+			for(Identifier targetChoiceId:targetChoiceIds) {
+				DirectedPairValue dpValue = new DirectedPairValue(sourceChoiceId, targetChoiceId);
+				FieldValue fValue = new FieldValue(correctResponse, dpValue);
+				correctResponse.getFieldValues().add(fValue);
+				numOfassociations++;
+			}
+		}
+		
+		double mappedValue = maxScore;
+		if(numOfassociations > 0) {
+			mappedValue = maxScore / numOfassociations;
+		}
+		
+		// mapping
+		Mapping mapping = new Mapping(responseDeclaration);
+		mapping.setDefaultValue(-mappedValue);
+		responseDeclaration.setMapping(mapping);
+		for(Map.Entry<Identifier,List<Identifier>> association:associations.entrySet()) {
+			Identifier sourceChoiceId = association.getKey();
+			List<Identifier> targetChoiceIds = association.getValue();
+			for(Identifier targetChoiceId:targetChoiceIds) {
+				MapEntry mapEntry = new MapEntry(mapping);
+				mapEntry.setMapKey(new DirectedPairValue(sourceChoiceId, targetChoiceId));
+				mapEntry.setMappedValue(mappedValue);
+				mapping.getMapEntries().add(mapEntry);
+			}
+		}
+		
+		return responseDeclaration;
+	}
+	
 	public static ChoiceInteraction appendChoiceInteraction(ItemBody itemBody, Identifier responseDeclarationId, int maxChoices, boolean shuffle) {
 		ChoiceInteraction choiceInteraction = new ChoiceInteraction(itemBody);
 		choiceInteraction.setMaxChoices(maxChoices);
@@ -594,6 +698,20 @@ public class AssessmentItemFactory {
 		}
 		return mapping;
 	}
+	
+	public static Mapping appendPairMapping(ResponseDeclaration responseDeclaration, Map<DirectedPairValue,Double> map) {
+		Mapping mapping = new Mapping(responseDeclaration);
+		mapping.setDefaultValue(0d);
+		responseDeclaration.setMapping(mapping);
+		for(Map.Entry<DirectedPairValue, Double> entry:map.entrySet()) {
+			MapEntry mapEntry = new MapEntry(mapping);
+			mapEntry.setMapKey(entry.getKey());
+			mapEntry.setMappedValue(entry.getValue());
+			mapping.getMapEntries().add(mapEntry);
+		}
+		return mapping;
+	}
+	
 	
 	/**
 	 * Create an outcome declaration with SCORE as identifier, single and float

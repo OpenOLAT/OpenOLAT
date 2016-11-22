@@ -95,6 +95,7 @@ import org.olat.ims.qti21.model.xml.interactions.FIBAssessmentItemBuilder;
 import org.olat.ims.qti21.model.xml.interactions.FIBAssessmentItemBuilder.EntryType;
 import org.olat.ims.qti21.model.xml.interactions.HotspotAssessmentItemBuilder;
 import org.olat.ims.qti21.model.xml.interactions.KPrimAssessmentItemBuilder;
+import org.olat.ims.qti21.model.xml.interactions.MatchAssessmentItemBuilder;
 import org.olat.ims.qti21.model.xml.interactions.MultipleChoiceAssessmentItemBuilder;
 import org.olat.ims.qti21.model.xml.interactions.SingleChoiceAssessmentItemBuilder;
 import org.olat.ims.qti21.model.xml.interactions.UploadAssessmentItemBuilder;
@@ -146,7 +147,7 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 	
 	private MenuTree menuTree;
 	private Dropdown exportItemTools, addItemTools, changeItemTools;
-	private Link newTestPartLink, newSectionLink, newSingleChoiceLink, newMultipleChoiceLink, newKPrimLink,
+	private Link newTestPartLink, newSectionLink, newSingleChoiceLink, newMultipleChoiceLink, newKPrimLink, newMatchLink,
 			newFIBLink, newNumericalLink, newHotspotLink, newEssayLink, newUploadLink, newDrawingLink;
 	private Link importFromPoolLink, importFromTableLink, exportToPoolLink, exportToDocxLink;
 	private Link reloadInCacheLink, deleteLink, copyLink;
@@ -254,6 +255,9 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 		newKPrimLink = LinkFactory.createToolLink("new.kprim", translate("new.kprim"), this, "o_mi_qtikprim");
 		newKPrimLink.setDomReplacementWrapperRequired(false);
 		addItemTools.addComponent(newKPrimLink);
+		newMatchLink = LinkFactory.createToolLink("new.match", translate("new.match"), this, "o_mi_qtimatch");
+		newMatchLink.setDomReplacementWrapperRequired(false);
+		addItemTools.addComponent(newMatchLink);
 		
 		newFIBLink = LinkFactory.createToolLink("new.fib", translate("new.fib"), this, "o_mi_qtifib");
 		newFIBLink.setDomReplacementWrapperRequired(false);
@@ -459,6 +463,8 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 			doNewAssessmentItem(ureq, menuTree.getSelectedNode(), new MultipleChoiceAssessmentItemBuilder(qtiService.qtiSerializer()));
 		} else if(newKPrimLink == source) {
 			doNewAssessmentItem(ureq, menuTree.getSelectedNode(), new KPrimAssessmentItemBuilder(qtiService.qtiSerializer()));
+		} else if(newMatchLink == source) {
+			doNewAssessmentItem(ureq, menuTree.getSelectedNode(), new MatchAssessmentItemBuilder(qtiService.qtiSerializer()));
 		} else if(newFIBLink == source) {
 			doNewAssessmentItem(ureq, menuTree.getSelectedNode(), new FIBAssessmentItemBuilder(EntryType.text, qtiService.qtiSerializer()));
 		} else if(newNumericalLink == source) {

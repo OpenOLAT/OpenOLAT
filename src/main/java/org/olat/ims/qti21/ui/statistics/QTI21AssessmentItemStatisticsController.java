@@ -43,6 +43,7 @@ import org.olat.ims.qti21.model.xml.QtiNodesExtractor;
 import org.olat.ims.qti21.ui.statistics.interactions.ChoiceInteractionStatisticsController;
 import org.olat.ims.qti21.ui.statistics.interactions.HotspotInteractionStatisticsController;
 import org.olat.ims.qti21.ui.statistics.interactions.KPrimStatisticsController;
+import org.olat.ims.qti21.ui.statistics.interactions.MatchStatisticsController;
 import org.olat.ims.qti21.ui.statistics.interactions.TextEntryInteractionsStatisticsController;
 import org.olat.ims.qti21.ui.statistics.interactions.UnsupportedInteractionController;
 import org.olat.modules.assessment.ui.UserFilterController;
@@ -164,6 +165,9 @@ public class QTI21AssessmentItemStatisticsController extends BasicController {
 			String responseIdentifier = interaction.getResponseIdentifier().toString();
 			if(responseIdentifier.startsWith("KPRIM_")) {
 				interactionCtrl = new KPrimStatisticsController(ureq, getWindowControl(),
+						itemRef, item, (MatchInteraction)interaction, resourceResult);
+			} else {
+				interactionCtrl = new MatchStatisticsController(ureq, getWindowControl(),
 						itemRef, item, (MatchInteraction)interaction, resourceResult);
 			}
 		} else if(interaction instanceof HotspotInteraction) {

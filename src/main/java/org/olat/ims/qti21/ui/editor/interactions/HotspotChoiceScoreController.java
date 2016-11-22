@@ -204,12 +204,8 @@ public class HotspotChoiceScoreController extends AssessmentItemRefEditorControl
 
 		List<HotspotWrapper> choiceWrappers = new ArrayList<>();
 		List<HotspotChoice> choices = itemBuilder.getHotspotChoices();
-		String[] keys = new String[choices.size()];
-		String[] values = new String[choices.size()];
 		for(int i=0; i<choices.size(); i++) {
 			HotspotChoice choice = choices.get(i);
-			keys[i] = choice.getIdentifier().toString();
-			values[i] = Integer.toString(i + 1) + ".";
 			choiceWrappers.add(new HotspotWrapper(choice, itemBuilder));
 		}
 

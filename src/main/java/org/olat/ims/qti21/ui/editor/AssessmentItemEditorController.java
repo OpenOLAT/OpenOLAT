@@ -40,6 +40,7 @@ import org.olat.ims.qti21.model.xml.interactions.EssayAssessmentItemBuilder;
 import org.olat.ims.qti21.model.xml.interactions.FIBAssessmentItemBuilder;
 import org.olat.ims.qti21.model.xml.interactions.HotspotAssessmentItemBuilder;
 import org.olat.ims.qti21.model.xml.interactions.KPrimAssessmentItemBuilder;
+import org.olat.ims.qti21.model.xml.interactions.MatchAssessmentItemBuilder;
 import org.olat.ims.qti21.model.xml.interactions.MultipleChoiceAssessmentItemBuilder;
 import org.olat.ims.qti21.model.xml.interactions.SingleChoiceAssessmentItemBuilder;
 import org.olat.ims.qti21.model.xml.interactions.UploadAssessmentItemBuilder;
@@ -53,6 +54,8 @@ import org.olat.ims.qti21.ui.editor.interactions.HotspotChoiceScoreController;
 import org.olat.ims.qti21.ui.editor.interactions.HotspotEditorController;
 import org.olat.ims.qti21.ui.editor.interactions.KPrimEditorController;
 import org.olat.ims.qti21.ui.editor.interactions.LobFeedbackEditorController;
+import org.olat.ims.qti21.ui.editor.interactions.MatchEditorController;
+import org.olat.ims.qti21.ui.editor.interactions.MatchScoreController;
 import org.olat.ims.qti21.ui.editor.interactions.MultipleChoiceEditorController;
 import org.olat.ims.qti21.ui.editor.interactions.SingleChoiceEditorController;
 import org.olat.ims.qti21.ui.editor.interactions.UploadEditorController;
@@ -174,6 +177,7 @@ public class AssessmentItemEditorController extends BasicController {
 			case fib: itemBuilder = initFIBEditors(ureq, type, item); break;
 			case numerical: itemBuilder = initFIBEditors(ureq, type, item); break;
 			case kprim: itemBuilder = initKPrimChoiceEditors(ureq, item); break;
+			case match: itemBuilder = initMatchChoiceEditors(ureq, item); break;
 			case hotspot: itemBuilder = initHotspotEditors(ureq, item); break;
 			case essay: itemBuilder = initEssayEditors(ureq, item); break;
 			case upload: itemBuilder = initUploadEditors(ureq, item); break;
@@ -246,6 +250,22 @@ public class AssessmentItemEditorController extends BasicController {
 		return kprimItemBuilder;
 	}
 	
+	private AssessmentItemBuilder initMatchChoiceEditors(UserRequest ureq, AssessmentItem item) {
+		MatchAssessmentItemBuilder matchItemBuilder = new MatchAssessmentItemBuilder(item, qtiService.qtiSerializer());
+		itemEditor = new MatchEditorController(ureq, getWindowControl(), matchItemBuilder,
+				rootDirectory, rootContainer, itemFile, restrictedEdit);
+		listenTo(itemEditor);
+		scoreEditor = new MatchScoreController(ureq, getWindowControl(), matchItemBuilder, itemRef, restrictedEdit);
+		listenTo(scoreEditor);
+		feedbackEditor = new FeedbackEditorController(ureq, getWindowControl(), matchItemBuilder, restrictedEdit);
+		listenTo(feedbackEditor);
+		
+		tabbedPane.addTab(translate("form.match"), itemEditor);
+		tabbedPane.addTab(translate("form.score"), scoreEditor);
+		tabbedPane.addTab(translate("form.feedback"), feedbackEditor);
+		return matchItemBuilder;
+	}
+	
 	private AssessmentItemBuilder initFIBEditors(UserRequest ureq, QTI21QuestionType preferedType, AssessmentItem item) {
 		FIBAssessmentItemBuilder kprimItemBuilder = new FIBAssessmentItemBuilder(item, qtiService.qtiSerializer());
 		itemEditor = new FIBEditorController(ureq, getWindowControl(), preferedType, kprimItemBuilder,
@@ -306,7 +326,7 @@ public class AssessmentItemEditorController extends BasicController {
 		feedbackEditor = new LobFeedbackEditorController(ureq, getWindowControl(), uploadItemBuilder, restrictedEdit);
 		listenTo(feedbackEditor);
 		
-		tabbedPane.addTab(translate("form.essay"), itemEditor);
+		tabbedPane.addTab(translate("form.upload"), itemEditor);
 		tabbedPane.addTab(translate("form.score"), scoreEditor);
 		tabbedPane.addTab(translate("form.feedback"), feedbackEditor);
 		return uploadItemBuilder;
@@ -323,7 +343,7 @@ public class AssessmentItemEditorController extends BasicController {
 		feedbackEditor = new LobFeedbackEditorController(ureq, getWindowControl(), uploadItemBuilder, restrictedEdit);
 		listenTo(feedbackEditor);
 		
-		tabbedPane.addTab(translate("form.essay"), itemEditor);
+		tabbedPane.addTab(translate("form.drawing"), itemEditor);
 		tabbedPane.addTab(translate("form.score"), scoreEditor);
 		tabbedPane.addTab(translate("form.feedback"), feedbackEditor);
 		return uploadItemBuilder;

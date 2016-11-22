@@ -48,6 +48,7 @@ public enum QTI21QuestionType {
 	sc(true, "sc", "o_mi_qtisc", QuestionType.SC),
 	mc(true, "mc", "o_mi_qtimc", QuestionType.MC),
 	kprim(true, "kprim", "o_mi_qtikprim", QuestionType.KPRIM),
+	match(true, "match", "o_mi_qtimatch", QuestionType.MATCH),
 	fib(true, "fib", "o_mi_qtifib", QuestionType.FIB),
 	numerical(true, "numerical", "o_mi_qtinumerical", QuestionType.NUMERICAL),
 	hotspot(true, "hotspot", "o_mi_qtihotspot", QuestionType.HOTSPOT),
@@ -205,10 +206,10 @@ public enum QTI21QuestionType {
 				if(responseIdentifier.startsWith("KPRIM_")) {
 					return QTI21QuestionType.kprim;
 				} else {
-					return QTI21QuestionType.unkown;
+					return QTI21QuestionType.match;
 				}
 			} else {
-				return QTI21QuestionType.unkown;
+				return QTI21QuestionType.match;
 			}
 		} else {
 			return QTI21QuestionType.unkown;

@@ -1,0 +1,47 @@
+<fieldset class="o_form form-horizontal">
+
+<table class="table">
+	<thead>
+		<tr>
+			<th></th>
+			#foreach($targetChoice in $targetChoices)
+				<th>$r.render(${targetChoice.getText()})
+				#if($f.hasError($item))
+					<span class="o_icon o_icon_error form-control-feedback"></span>
+				#end #if(!$restrictedEdit) <div class="pull-right">$r.render(${targetChoice.getDeleteButton()})</div> #end</th>
+			#end
+		</tr>
+	</thead>
+	<tbody>
+	#foreach($sourceChoice in $sourceChoices)
+		<tr>
+			<th>$r.render(${sourceChoice.getText()})
+				#if($f.hasError($item))
+				<span class="o_icon o_icon_error form-control-feedback"></span>
+				#end
+				#if(!$restrictedEdit) <div class="pull-right">$r.render(${sourceChoice.getDeleteButton()})</div> #end
+			</th>
+			#foreach($targetChoice in $targetChoices)
+				<td>
+					<input type="checkbox" id="oo_${sourceChoice.getIdentifierString()}-oo_${targetChoice.getIdentifierString()}" name="${sourceChoice.getIdentifierString()}" value="${targetChoice.getIdentifierString()}" #if($restrictedEdit) disabled #end #if(${sourceChoice.isCorrect(${targetChoice.getIdentifier()})}) checked #end/>
+					$f.appendFlexiFormDirtyForCheckbox("oo_${sourceChoice.getIdentifierString()}-oo_${targetChoice.getIdentifierString()}")
+				</td>
+			#end
+		</tr>
+	#end
+	</tbody>
+</table>
+#if($r.available("add.match.row") || $r.available("add.match.column") || $r.available("submit"))
+<div class="o_button_group">
+	#if($r.available("submit"))
+		$r.render("submit")
+	#end
+	#if($r.available("add.match.row"))
+		$r.render("add.match.row")
+	#end
+	#if($r.available("add.match.column"))
+		$r.render("add.match.column")
+	#end
+</div>
+#end
+</fieldset>

@@ -32,6 +32,7 @@ public class TinyConfig {
 	protected static final TinyConfig editorCompactConfig;
 	protected static final TinyConfig fileEditorConfig;
 	protected static final TinyConfig minimalisticConfig;
+	protected static final TinyConfig veryMinimalisticConfig;
 
 	//min profile
 	static {
@@ -64,6 +65,13 @@ public class TinyConfig {
 		String tools1 = "bold italic underline | alignjustify alignright aligncenter alignleft  | styleselect | forecolor backcolor | bullist numlist indent outdent | olatqtifibtext olatqtifibnumerical olatmovieviewer image charmap hr link";
 		editorCompactConfig = new TinyConfig(plugins, menu, tools1);
 	}
+	//invisible
+	static {
+		String plugins =   "contextmenu,colorpicker,textcolor,hr,charmap,image,insertdatetime,table,visualchars,visualblocks,noneditable,olatsmileys,paste,link,quotespliter,olatmatheditor,olatmovieviewer,tabfocus,visualchars,visualblocks,noneditable,media";
+		String tools1 = "bold italic underline | image olatmatheditor";
+		veryMinimalisticConfig = new TinyConfig(plugins, null, tools1);
+	}
+	
 	//full profile
 	static {
 		String plugins =   "contextmenu,colorpicker,textcolor,hr,olatsmileys,paste,link,charmap,quotespliter,olatmatheditor,tabfocus,visualchars,visualblocks,noneditable,table";

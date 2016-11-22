@@ -69,6 +69,7 @@ import org.olat.ims.qti21.model.xml.interactions.FIBAssessmentItemBuilder;
 import org.olat.ims.qti21.model.xml.interactions.FIBAssessmentItemBuilder.EntryType;
 import org.olat.ims.qti21.model.xml.interactions.HotspotAssessmentItemBuilder;
 import org.olat.ims.qti21.model.xml.interactions.KPrimAssessmentItemBuilder;
+import org.olat.ims.qti21.model.xml.interactions.MatchAssessmentItemBuilder;
 import org.olat.ims.qti21.model.xml.interactions.MultipleChoiceAssessmentItemBuilder;
 import org.olat.ims.qti21.model.xml.interactions.SingleChoiceAssessmentItemBuilder;
 import org.olat.ims.qti21.model.xml.interactions.UploadAssessmentItemBuilder;
@@ -334,6 +335,7 @@ public class QTI21QPoolServiceProvider implements QPoolSPI {
 			case sc: itemBuilder = new SingleChoiceAssessmentItemBuilder(qtiService.qtiSerializer()); break;
 			case mc: itemBuilder = new MultipleChoiceAssessmentItemBuilder(qtiService.qtiSerializer()); break;
 			case kprim: itemBuilder = new KPrimAssessmentItemBuilder(qtiService.qtiSerializer()); break;
+			case match: itemBuilder = new MatchAssessmentItemBuilder(qtiService.qtiSerializer()); break;
 			case fib: itemBuilder = new FIBAssessmentItemBuilder(EntryType.text, qtiService.qtiSerializer()); break;
 			case numerical: itemBuilder = new FIBAssessmentItemBuilder(EntryType.numerical, qtiService.qtiSerializer()); break;
 			case essay: itemBuilder = new EssayAssessmentItemBuilder(qtiService.qtiSerializer()); break;

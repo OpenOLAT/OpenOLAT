@@ -36,6 +36,7 @@ public enum QuestionType {
 	HOTSPOT,
 	UPLOAD,
 	DRAWING,
+	MATCH,
 	UNKOWN
 
 }
