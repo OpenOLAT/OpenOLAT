@@ -666,6 +666,7 @@ public class GTAParticipantController extends GTAAbstractController {
 			}
 			cleanUpPopups();
 		} else if(submitDocCtrl == source) {
+			boolean hasUploadDocuments = submitDocCtrl.hasUploadDocuments();
 			if(event instanceof SubmitEvent) {
 				Task assignedTask = submitDocCtrl.getAssignedTask();
 				gtaManager.log("Submit", (SubmitEvent)event, assignedTask, getIdentity(), assessedIdentity, assessedGroup, courseEnv, gtaNode);
@@ -673,8 +674,10 @@ public class GTAParticipantController extends GTAAbstractController {
 				cleanUpProcess();
 				process(ureq);
 			}
-			submitButton.setCustomEnabledLinkCSS(submitDocCtrl.hasUploadDocuments() ? "btn btn-primary" : "btn btn-default");
-
+			
+			if(submitButton != null) {
+				submitButton.setCustomEnabledLinkCSS(hasUploadDocuments ? "btn btn-primary" : "btn btn-default");
+			}
 		}
 		super.event(ureq, source, event);
 	}
