@@ -77,7 +77,7 @@ public class BaseSecurityModule extends AbstractSpringModule {
 	/**
 	 * default values
 	 */
-	public static Boolean USERMANAGER_CAN_CREATE_USER = false;
+	public static Boolean USERMANAGER_CAN_CREATE_USER = true;
 	public static Boolean USERMANAGER_CAN_DELETE_USER = false;
 	public static Boolean USERMANAGER_CAN_CREATE_PWD = true;
 	public static Boolean USERMANAGER_CAN_MODIFY_PWD = true;
