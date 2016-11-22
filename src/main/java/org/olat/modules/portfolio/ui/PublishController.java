@@ -210,6 +210,10 @@ public class PublishController extends BasicController implements TooledControll
 			if(canEditPageAccessRights || canViewPageAccessRights) {
 				Section section = page.getSection();
 				PortfolioElementRow sectionRow = sectionMap.get(section.getKey());
+				if(sectionRow == null) {
+					logError("Section not found: " + section.getKey() + " of page: " + page.getKey(), null);
+					continue;
+				}
 				
 				PortfolioElementRow pageRow = new PortfolioElementRow(page, null);
 				sectionRow.getChildren().add(pageRow);
