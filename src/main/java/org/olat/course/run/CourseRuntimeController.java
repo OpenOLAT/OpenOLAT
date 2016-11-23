@@ -825,6 +825,8 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 			if(event instanceof BusinessGroupModifiedEvent) {
 				processBusinessGroupModifiedEvent((BusinessGroupModifiedEvent)event);
 			}
+		} else if (lifeCycleChangeCtr == source) {
+			loadRepositoryEntry();
 		} else if (currentToolCtr == source) {
 			if (event == Event.DONE_EVENT) {
 				// special check for editor

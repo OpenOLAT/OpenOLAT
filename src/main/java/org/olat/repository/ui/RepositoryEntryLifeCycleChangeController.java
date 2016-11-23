@@ -22,6 +22,7 @@ package org.olat.repository.ui;
 import java.util.Collections;
 import java.util.List;
 
+import org.olat.core.commons.persistence.DB;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
@@ -74,6 +75,8 @@ public class RepositoryEntryLifeCycleChangeController extends BasicController{
 	private ConfirmDeleteController confirmDeleteCtrl;
 	private CloseableModalController cmc;
 
+	@Autowired
+	private DB dbInstance;
 	@Autowired
 	private RepositoryService repositoryService;
 	@Autowired
@@ -136,6 +139,7 @@ public class RepositoryEntryLifeCycleChangeController extends BasicController{
 				cleanUp();
 			} else if (event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
 				cleanUp();
+				dbInstance.commit();//commit before sending events
 				fireEvent(ureq, deletedEvent);
 				EntryChangedEvent e = new EntryChangedEvent(re, getIdentity(), Change.deleted, "runtime");
 				ureq.getUserSession().getSingleUserEventCenter().fireEventToListenersOf(e, RepositoryService.REPOSITORY_EVENT_ORES);
@@ -172,6 +176,7 @@ public class RepositoryEntryLifeCycleChangeController extends BasicController{
 		re = repositoryService.loadByKey(re.getKey());
 		lifeCycleVC.remove(closeLink);
 		closeLink = null;
+		dbInstance.commit();//commit before sending events
 		fireEvent(ureq, closedEvent);
 	}
 	
