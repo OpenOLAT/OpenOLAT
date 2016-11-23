@@ -44,13 +44,12 @@ import uk.ac.ed.ph.jqtiplus.node.test.TestPart;
  */
 public class AssessmentTestAndTestPartOptionsEditorController extends ItemSessionControlController {
 
-	private static final String[] yesnoKeys = new String[] { "y", "n" };
 	private static final String[] navigationKeys = new String[]{
 			NavigationMode.LINEAR.name(), NavigationMode.NONLINEAR.name()
 	};
 	
 	private TextElement titleEl, maxScoreEl, cutValueEl;
-	private SingleSelection exportScoreEl, navigationModeEl;
+	private SingleSelection navigationModeEl;
 
 	private final TestPart testPart;
 	private final AssessmentTest assessmentTest;
@@ -76,16 +75,6 @@ public class AssessmentTestAndTestPartOptionsEditorController extends ItemSessio
 		titleEl = uifactory.addTextElement("title", "form.metadata.title", 255, title, formLayout);
 		titleEl.setEnabled(testBuilder.isEditable());
 		titleEl.setMandatory(true);
-		
-		//export score
-		String[] yesnoValues = new String[] { translate("yes"), translate("no") };
-		exportScoreEl = uifactory.addRadiosHorizontal("form.test.export.score", formLayout, yesnoKeys, yesnoValues);
-		exportScoreEl.setEnabled(!restrictedEdit && testBuilder.isEditable());
-		if(testBuilder.isExportScore()) {
-			exportScoreEl.select(yesnoKeys[0], true);
-		} else {
-			exportScoreEl.select(yesnoKeys[1], false);
-		}
 		
 		//score
 		String maxScore = testBuilder.getMaxScore() == null ? "" : AssessmentHelper.getRoundedScore(testBuilder.getMaxScore());
@@ -170,8 +159,6 @@ public class AssessmentTestAndTestPartOptionsEditorController extends ItemSessio
 		
 		String title = titleEl.getValue();
 		assessmentTest.setTitle(title);
-		
-		testBuilder.setExportScore(exportScoreEl.isOneSelected() && exportScoreEl.isSelected(0));
 		
 		String cutValue = cutValueEl.getValue();
 		if(StringHelper.containsNonWhitespace(cutValue)) {
