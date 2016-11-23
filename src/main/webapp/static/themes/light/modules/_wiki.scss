@@ -9,3 +9,81 @@
 .o_wiki-file-deleted {
 	text-decoration:line-through;
 }
+
+
+/* styles from wiki.css, see src/main/webapp/static/cp_offline_menu_mat/wiki.css */
+div.o_wiki_wrapper {
+	
+	a.wikiimg {
+		text-decoration: none;
+		color: inherit;
+		font-weight: inherit;
+	}
+	
+	div.imgcaption {
+		padding: 0.3em 0em 0.2em 0.3em;
+	}
+	
+	div.imgleft {
+		clear:left;
+		float: left;
+		margin: 0.3em 0.3em 0.3em 0em;
+	}
+	
+	div.imgright {
+		clear:right;
+		float: right;
+		margin: 0.3em 0em 0.3em 0.3em;
+	}
+	
+	div.imgcenter {
+		clear: both;
+		overflow:hidden;
+		text-align: center;
+		margin: 0.3em 0em 0.3em 0em;
+	}
+	
+	div.imgthumb {
+		border: 1px solid #bbbbbb;
+		padding: 0.3em;
+	}
+	
+	table.gallery {
+		border: 1px solid #ccc;
+		margin: 2px;
+		padding: 2px;
+		background-color: white;
+	}
+	
+	table.gallery tr {
+		vertical-align: middle;
+	}
+	
+	table.gallery td {
+		background-color: #f9f9f9;
+		border: solid 2px white;
+		text-align: center;
+		vertical-align: middle;
+		width:  150px;
+	}
+	
+	img.gallery {
+		border: 1px solid #bbbbbb;
+		padding: 0.3em;
+	}
+	
+	a.edit {
+		font-style: italic;
+		color: red;
+	}
+	
+	a.externallink:before {
+		&:before { 
+			@include o-make-icon(); 
+			padding-right: 0.5em;
+			content: $fa-var-external-link;
+		}
+		padding-right: 2px;
+	}
+}
+	
