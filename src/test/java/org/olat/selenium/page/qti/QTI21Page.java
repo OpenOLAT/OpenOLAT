@@ -117,21 +117,21 @@ public class QTI21Page {
 		return this;
 	}
 
-	//TODO still QTI 1.2
-	public QTI21Page answerKPrim(boolean... choices) {
-		By itemsBy = By.cssSelector("table.o_qti_item_kprim input[type='radio']");
-		List<WebElement> optionList = browser.findElements(itemsBy);
-		Assert.assertEquals(choices.length * 2, optionList.size());
-		for(int i=0; i<choices.length; i++) {
-			WebElement optionTrueEl = optionList.get(i * 2);
-			WebElement optionFalseEl = optionList.get((i * 2) + 1);
-			if(choices[i]) {
-				optionTrueEl.click();
-			} else {
-				optionFalseEl.click();
-			}
+	public QTI21Page answerCorrectKPrim(String... correctChoices) {
+		for(String correctChoice:correctChoices) {
+			By correctBy = By.xpath("//tr[td/p[contains(text(),'" + correctChoice + "')]]/td[contains(@class,'o_qti_item_kprim_input o_qti_item_kprim_input_correct')]/input[@type='checkbox']");
+			WebElement option = browser.findElement(correctBy);
+			OOGraphene.check(option, Boolean.TRUE);
 		}
-		OOGraphene.waitBusy(browser);
+		return this;
+	}
+	
+	public QTI21Page answerIncorrectKPrim(String... incorrectChoices) {
+		for(String incorrectChoice:incorrectChoices) {
+			By correctBy = By.xpath("//tr[td/p[contains(text(),'" + incorrectChoice + "')]]/td[contains(@class,'o_qti_item_kprim_input o_qti_item_kprim_input_wrong')]/input[@type='checkbox']");
+			WebElement option = browser.findElement(correctBy);
+			OOGraphene.check(option, Boolean.TRUE);
+		}
 		return this;
 	}
 	

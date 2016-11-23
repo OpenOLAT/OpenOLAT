@@ -61,3 +61,14 @@ Points	1
 1	Italien	
 0	Griechenland	
 0	Argentinien	
+
+
+Typ	KPRIM	
+Title	Fussball: Weltmeister	
+Description	Prüfen Sie die Weltmeiser kennen	
+Question	Die folgenden Länder haben die Fussball Weltmeistertitel bereits mehr als einmal gewonnen.	
+Points	1	
++	Deutschland	
+-	Frankreich	
+-	Spanien	
++	Uruguay	

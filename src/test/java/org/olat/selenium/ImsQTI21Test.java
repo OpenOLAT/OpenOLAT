@@ -171,7 +171,6 @@ public class ImsQTI21Test {
 		//TODO check the results
 	}
 	
-
 	/**
 	 * Create a test, import the CSV example, remove the
 	 * first single choice which come if someone create a
@@ -207,7 +206,7 @@ public class ImsQTI21Test {
 			.importTable()
 			.importFile("import_qti21_excel.txt")
 			.next()
-			.assertOnNumberOfQuestions(4)
+			.assertOnNumberOfQuestions(5)
 			.finish();
 		
 		//remove the single choice which come from the creation
@@ -236,14 +235,17 @@ public class ImsQTI21Test {
 			.answerMultipleChoice("Deutschland", "Brasilien", "S\u00FCdafrika")
 			.saveAnswer().nextAnswer()
 			.answerSingleChoice("Italien")
+			.saveAnswer().nextAnswer()
+			.answerCorrectKPrim("Deutschland", "Uruguay")
+			.answerIncorrectKPrim("Frankreich", "Spanien")
 			.saveAnswer()
 			.endTest()
 			.closeTest();
+		
 		//check the results
 		qtiPage
 			.assertOnResults()
-			.assertOnAssessmentTestScore(8);
+			.assertOnAssessmentTestScore(9)
+			.assertOnAssessmentTestMaxScore(9);
 	}
-
-
 }
