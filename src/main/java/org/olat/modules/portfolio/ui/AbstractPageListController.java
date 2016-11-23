@@ -331,9 +331,14 @@ implements Activateable2, TooledController, FlexiTableComponentDelegate {
 		PortfolioElementRow row = new PortfolioElementRow(assignment, section, index);
 		if(secCallback.canInstantiateAssignment()) {
 			if(assignment.getAssignmentStatus() == AssignmentStatus.notStarted) {
-				FormLink startLink = uifactory.addFormLink("create_assign_" + (++counter), "start.assignment", "create.start.assignment", null, flc, Link.BUTTON);
+				String title = assignment.getTitle();
+				FormLink startLink = uifactory.addFormLink("create_assign_" + (++counter), "start.assignment", title, null, flc, Link.NONTRANSLATED);
 				startLink.setUserObject(row);
-				startLink.setPrimary(true);
+				startLink.setIconLeftCSS("o_icon o_icon_assignment o_icon-fw");
+				String summary = assignment.getSummary();
+				if(StringHelper.containsNonWhitespace(summary)) {
+					startLink.getComponent().setTitle(StringHelper.xssScan(summary));
+				}
 				row.setInstantiateAssignmentLink(startLink);
 			}
 		} else if(secCallback.canNewAssignment()) {

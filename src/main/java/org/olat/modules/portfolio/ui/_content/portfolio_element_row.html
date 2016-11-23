@@ -14,7 +14,7 @@
 #if(${row.isSection()})
 <div class="o_portfolio_section">
 	<h3>$r.escapeHtml($row.sectionLongTitle) <small><i class="o_icon $row.sectionCssClassStatus" title="$r.translate("section.status"): $r.translate("$row.getSectionStatusI18nKey()")"> </i></small></h3>
-	<div class="o_section_lead o_block_large_bottom">
+	<div class="o_section_lead #if(${row.isSectionWithAssignmentToInstantiate()}) o_assignment_2_instantiate #else o_block_large_bottom #end">
 		<div class="o_portfolio_section_meta o_small">
 			<div class="o_portfolio_dates clearfix">
 				#if($r.notNull($row.sectionBeginDate))
@@ -73,15 +73,27 @@
 </div>
 #end
 #if(${row.isPendingAssignment()})
+	#if($r.isNotNull($row.instantiateAssignmentLink))
+	<div class="o_assignment_2_instantiate #if(${row.isLastAssignmentToInstantiate()}) last #end">$r.render($row.instantiateAssignmentLink)
+	<div id="o_assignment_summary_${row.instantiateAssignmentLink.formDispatchId}" style="display:none;"></div>
+	<script type="text/javascript">/* <![CDATA[ */jQuery(function() {
+	  jQuery('#${row.instantiateAssignmentLink.formDispatchId}').tooltip({
+		   html: true,
+		   container: 'body',
+	    title: function(){ return jQuery('#o_assignment_summary_1${row.instantiateAssignmentLink.formDispatchId}').html(); }
+	  });
+	  jQuery('#${row.instantiateAssignmentLink.formDispatchId}').on('click', function(){
+		   jQuery('#${row.instantiateAssignmentLink.formDispatchId}').tooltip('hide');
+	  });
+	});/* ]]> */</script>
+	</div>
+	#else
 	<div class="panel #if($r.isNotNull($row.editAssignmentLink)) panel-default #else panel-placeholder #end o_portfolio_assignments">
 		<div class="panel-heading">
 			<h4 class="panel-title"><i class="o_icon o_icon_assignment o_icon-fw"> </i>$r.translate("assignment"): $r.escapeHtml($row.assignmentTitle)</h4>
 		</div>
 		<div class="panel-body">
 			$r.xssScan($row.assignmentSummary)
-			#if($r.isNotNull($row.instantiateAssignmentLink))
-				<div class="o_button_group o_noprint">$r.render($row.instantiateAssignmentLink)</div>
-			#end
 			#if($r.isNotNull($row.editAssignmentLink) || $r.isNotNull($row.upAssignmentLink) || $r.isNotNull($row.downAssignmentLink) || $r.isNotNull($row.moveAssignmentLink) || $r.isNotNull($row.deleteAssignmentLink))
 				<div class="o_button_group o_noprint">
 				#if($r.isNotNull($row.upAssignmentLink))
@@ -103,6 +115,7 @@
 			#end
 		</div>
 	</div>
+	#end
 #end
 #if(${row.isPage()})
 <div class="o_portfolio_page o_block_large">
