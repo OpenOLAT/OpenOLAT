@@ -85,8 +85,10 @@ public class EditMembershipController extends FormBasicController {
 	private List<RepositoryEntryMembership> memberships;
 	private List<BusinessGroupMembership> groupMemberships;
 	
+	private final boolean overrideManaged;
 	private final BusinessGroup businessGroup;
 	private final RepositoryEntry repoEntry;
+	
 	@Autowired
 	private RepositoryManager repositoryManager;
 	@Autowired
@@ -96,13 +98,14 @@ public class EditMembershipController extends FormBasicController {
 	private static final String[] values = new String[] {""};
 	
 	public EditMembershipController(UserRequest ureq, WindowControl wControl, Identity member,
-			RepositoryEntry repoEntry, BusinessGroup businessGroup) {
+			RepositoryEntry repoEntry, BusinessGroup businessGroup, boolean overrideManaged) {
 		super(ureq, wControl, "edit_member");
 		this.member = member;
 		this.members = null;
 		this.repoEntry = repoEntry;
 		this.businessGroup = businessGroup;
 		this.withButtons = true;
+		this.overrideManaged = overrideManaged;
 		
 		memberships = repositoryManager.getRepositoryEntryMembership(repoEntry, member);
 		initForm(ureq);
@@ -129,7 +132,7 @@ public class EditMembershipController extends FormBasicController {
 	}
 	
 	public EditMembershipController(UserRequest ureq, WindowControl wControl, List<Identity> members,
-			RepositoryEntry repoEntry, BusinessGroup businessGroup) {
+			RepositoryEntry repoEntry, BusinessGroup businessGroup, boolean overrideManaged) {
 		super(ureq, wControl, "edit_member");
 		
 		this.member = null;
@@ -137,6 +140,7 @@ public class EditMembershipController extends FormBasicController {
 		this.repoEntry = repoEntry;
 		this.businessGroup = businessGroup;
 		this.withButtons = true;
+		this.overrideManaged = overrideManaged;
 		
 		memberships = Collections.emptyList();
 
@@ -145,7 +149,7 @@ public class EditMembershipController extends FormBasicController {
 	}
 	
 	public EditMembershipController(UserRequest ureq, WindowControl wControl, List<Identity> members,
-			RepositoryEntry repoEntry, BusinessGroup businessGroup, Form rootForm) {
+			RepositoryEntry repoEntry, BusinessGroup businessGroup, boolean overrideManaged, Form rootForm) {
 		super(ureq, wControl, LAYOUT_CUSTOM, "edit_member", rootForm);
 		
 		this.member = null;
@@ -153,6 +157,7 @@ public class EditMembershipController extends FormBasicController {
 		this.repoEntry = repoEntry;
 		this.businessGroup = businessGroup;
 		this.withButtons = false;
+		this.overrideManaged = overrideManaged;
 		
 		memberships = Collections.emptyList();
 
@@ -176,12 +181,12 @@ public class EditMembershipController extends FormBasicController {
 		boolean defaultMembership = false;
 		if(memberToLoad == null) {
 			if(repoEntry != null && groups.isEmpty()) {
-				boolean managed = RepositoryEntryManagedFlag.isManaged(repoEntry, RepositoryEntryManagedFlag.membersmanagement);
+				boolean managed = RepositoryEntryManagedFlag.isManaged(repoEntry, RepositoryEntryManagedFlag.membersmanagement) && !overrideManaged;
 				if(!managed) {
 					repoRightsEl.select("participant", true);
 				}
 			} else if(repoEntry == null && groups.size() == 1) {
-				boolean managed = BusinessGroupManagedFlag.isManaged(groups.get(0).getManagedFlags(), BusinessGroupManagedFlag.membersmanagement);
+				boolean managed = BusinessGroupManagedFlag.isManaged(groups.get(0).getManagedFlags(), BusinessGroupManagedFlag.membersmanagement) && !overrideManaged;
 				if(!managed) {
 					defaultMembership = true;
 				}
@@ -196,7 +201,7 @@ public class EditMembershipController extends FormBasicController {
 		
 		List<MemberOption> options = new ArrayList<MemberOption>();
 		for(StatisticsBusinessGroupRow group:groups) {
-			boolean managed = BusinessGroupManagedFlag.isManaged(group.getManagedFlags(), BusinessGroupManagedFlag.membersmanagement);
+			boolean managed = BusinessGroupManagedFlag.isManaged(group.getManagedFlags(), BusinessGroupManagedFlag.membersmanagement) && !overrideManaged;
 			MemberOption option = new MemberOption(group);
 			BGPermission bgPermission = PermissionHelper.getPermission(group.getKey(), memberToLoad, groupMemberships);
 			option.setTutor(createSelection(bgPermission.isTutor(), !managed, GroupRoles.coach.name()));
@@ -236,7 +241,7 @@ public class EditMembershipController extends FormBasicController {
 			String[] repoValues = new String[] {
 					translate("role.repo.owner"), translate("role.repo.tutor"), translate("role.repo.participant")
 			};
-			boolean managed = RepositoryEntryManagedFlag.isManaged(repoEntry, RepositoryEntryManagedFlag.membersmanagement);
+			boolean managed = RepositoryEntryManagedFlag.isManaged(repoEntry, RepositoryEntryManagedFlag.membersmanagement) && !overrideManaged;
 			repoRightsEl = uifactory.addCheckboxesVertical("repoRights", null, formLayout, repoRightsKeys, repoValues, 1);
 			repoRightsEl.setEnabled(!managed);
 			if(member != null) {

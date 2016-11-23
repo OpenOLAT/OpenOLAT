@@ -35,9 +35,9 @@ import org.olat.repository.RepositoryEntry;
  */
 public class ImportMember_1b_ChooseMemberStep extends BasicStep {
 	
-	public ImportMember_1b_ChooseMemberStep(UserRequest ureq, RepositoryEntry repoEntry, BusinessGroup group) {
+	public ImportMember_1b_ChooseMemberStep(UserRequest ureq, RepositoryEntry repoEntry, BusinessGroup group, boolean overrideManaged) {
 		super(ureq);
-		setNextStep(new ImportMember_2_ConfirmMemberChoiceStep(ureq, repoEntry, group));
+		setNextStep(new ImportMember_2_ConfirmMemberChoiceStep(ureq, repoEntry, group, overrideManaged));
 		setI18nTitleAndDescr("import.choose.title", "import.choose.title");
 	}
 

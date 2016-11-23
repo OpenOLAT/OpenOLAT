@@ -44,9 +44,8 @@ public class EditSingleMembershipController extends BasicController {
 	private final RepositoryEntry repoEntry;
 
 	public EditSingleMembershipController(UserRequest ureq, WindowControl wControl,  Identity identity,
-			RepositoryEntry repoEntry, BusinessGroup group, boolean withUserLinks) {
+			RepositoryEntry repoEntry, BusinessGroup group, boolean withUserLinks, boolean overrideManaged) {
 		super(ureq, wControl);
-		
 		this.repoEntry = repoEntry;
 		
 		VelocityContainer mainVC = createVelocityContainer("edit_single_member");
@@ -54,7 +53,7 @@ public class EditSingleMembershipController extends BasicController {
 		listenTo(infoCtrl);
 		mainVC.put("infos", infoCtrl.getInitialComponent());
 		
-		membershipCtrl = new EditMembershipController(ureq, wControl, identity, repoEntry, group);
+		membershipCtrl = new EditMembershipController(ureq, wControl, identity, repoEntry, group, overrideManaged);
 		listenTo(membershipCtrl);
 		mainVC.put("edit", membershipCtrl.getInitialComponent());
 		

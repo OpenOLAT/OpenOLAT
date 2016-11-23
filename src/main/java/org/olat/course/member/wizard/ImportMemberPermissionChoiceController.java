@@ -40,11 +40,11 @@ public class ImportMemberPermissionChoiceController extends StepFormBasicControl
 	private EditMembershipController permissionCtrl;
 
 	public ImportMemberPermissionChoiceController(UserRequest ureq, WindowControl wControl,
-			RepositoryEntry repoEntry, BusinessGroup group,
+			RepositoryEntry repoEntry, BusinessGroup group, boolean overrideManaged,
 			Form rootForm, StepsRunContext runContext) {
 		super(ureq, wControl, rootForm, runContext, LAYOUT_VERTICAL, null);
 		
-		permissionCtrl = new EditMembershipController(ureq, getWindowControl(), null, repoEntry, group, rootForm);
+		permissionCtrl = new EditMembershipController(ureq, getWindowControl(), null, repoEntry, group, overrideManaged, rootForm);
 		listenTo(permissionCtrl);
 
 		initForm (ureq);

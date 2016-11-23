@@ -155,6 +155,8 @@ public abstract class AbstractMemberListController extends FormBasicController i
 	private final boolean isLastVisitVisible;
 	private final boolean isAdministrativeUser;
 	private final boolean chatEnabled;
+	
+	private boolean overrideManaged = false;
 	private final boolean globallyManaged;
 	
 	@Autowired
@@ -211,6 +213,14 @@ public abstract class AbstractMemberListController extends FormBasicController i
 		initForm(ureq);
 	}
 	
+	public void overrideManaged(UserRequest ureq, boolean override) {
+		if(ureq.getUserSession().getRoles().isOLATAdmin()) {
+			overrideManaged = override;
+			editButton.setVisible(!globallyManaged || overrideManaged);
+			removeButton.setVisible(!globallyManaged || overrideManaged);
+			flc.setDirty(true);
+		}
+	}
 	
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
@@ -234,13 +244,11 @@ public abstract class AbstractMemberListController extends FormBasicController i
 			membersTable.setSortSettings(options);
 		}
 
-		if(!globallyManaged) {
-			editButton = uifactory.addFormLink("edit.members", formLayout, Link.BUTTON);
-		}
+		editButton = uifactory.addFormLink("edit.members", formLayout, Link.BUTTON);
+		editButton.setVisible(!globallyManaged || overrideManaged);
 		mailButton = uifactory.addFormLink("table.header.mail", formLayout, Link.BUTTON);
-		if(!globallyManaged) {
-			removeButton = uifactory.addFormLink("table.header.remove", formLayout, Link.BUTTON);
-		}
+		removeButton = uifactory.addFormLink("table.header.remove", formLayout, Link.BUTTON);
+		removeButton.setVisible(!globallyManaged || overrideManaged);
 	}
 	
 	private boolean calcGloballyManaged() {
@@ -496,7 +504,7 @@ public abstract class AbstractMemberListController extends FormBasicController i
 		if(editSingleMemberCtrl != null) return;
 		
 		Identity identity = securityManager.loadIdentityByKey(member.getIdentityKey());
-		editSingleMemberCtrl = new EditSingleMembershipController(ureq, getWindowControl(), identity, repoEntry, businessGroup, false);
+		editSingleMemberCtrl = new EditSingleMembershipController(ureq, getWindowControl(), identity, repoEntry, businessGroup, false, overrideManaged);
 		listenTo(editSingleMemberCtrl);
 		cmc = new CloseableModalController(getWindowControl(), translate("close"), editSingleMemberCtrl.getInitialComponent(),
 				true, translate("edit.member"));
@@ -511,12 +519,12 @@ public abstract class AbstractMemberListController extends FormBasicController i
 			List<Long> identityKeys = getMemberKeys(members);
 			List<Identity> identities = securityManager.loadIdentityByKeys(identityKeys);
 			if(identities.size() == 1) {
-				editSingleMemberCtrl = new EditSingleMembershipController(ureq, getWindowControl(), identities.get(0), repoEntry, businessGroup, false);
+				editSingleMemberCtrl = new EditSingleMembershipController(ureq, getWindowControl(), identities.get(0), repoEntry, businessGroup, false, overrideManaged);
 				listenTo(editSingleMemberCtrl);
 				cmc = new CloseableModalController(getWindowControl(), translate("close"), editSingleMemberCtrl.getInitialComponent(),
 						true, translate("edit.member"));
 			} else {
-				editMembersCtrl = new EditMembershipController(ureq, getWindowControl(), identities, repoEntry, businessGroup);
+				editMembersCtrl = new EditMembershipController(ureq, getWindowControl(), identities, repoEntry, businessGroup, overrideManaged);
 				listenTo(editMembersCtrl);
 				cmc = new CloseableModalController(getWindowControl(), translate("close"), editMembersCtrl.getInitialComponent(),
 						true, translate("edit.member"));
@@ -1086,7 +1094,7 @@ public abstract class AbstractMemberListController extends FormBasicController i
 
 			addLink("edit.member", TABLE_ACTION_EDIT, "o_icon o_icon_edit", links);
 			
-			if(!globallyManaged) {
+			if(!globallyManaged || overrideManaged) {
 				addLink("table.header.remove", TABLE_ACTION_REMOVE, "o_icon o_icon_remove", links);
 			}
 

@@ -82,6 +82,7 @@ public class MembersOverviewController extends BasicController implements Activa
 	private static final String SEG_WAITING_MEMBERS = "Waiting";
 	private static final String SEG_SEARCH_MEMBERS = "Search";
 	
+	private Link overrideLink, unOverrideLink;
 	private final Link allMembersLink, ownersLink, tutorsLink, participantsLink, waitingListLink, searchLink;
 	private final SegmentViewComponent segmentView;
 	private final VelocityContainer mainVC;
@@ -100,7 +101,10 @@ public class MembersOverviewController extends BasicController implements Activa
 	private StepsMainRunController importMembersWizard;
 	private DedupMembersConfirmationController dedupCtrl;
 	
+	private final boolean managed;
+	private boolean overrideManaged = false;
 	private final RepositoryEntry repoEntry;
+	
 	@Autowired
 	private RepositoryManager repositoryManager;
 	@Autowired
@@ -129,7 +133,16 @@ public class MembersOverviewController extends BasicController implements Activa
 		
 		selectedCtrl = updateAllMembers(ureq);
 		
-		boolean managed = RepositoryEntryManagedFlag.isManaged(repoEntry, RepositoryEntryManagedFlag.membersmanagement);
+		managed = RepositoryEntryManagedFlag.isManaged(repoEntry, RepositoryEntryManagedFlag.membersmanagement);
+		if(managed && ureq.getUserSession().getRoles().isOLATAdmin()) {
+			overrideLink = LinkFactory.createButton("override.member", mainVC, this);
+			overrideLink.setIconLeftCSS("o_icon o_icon-fw o_icon_refresh");
+			
+			unOverrideLink = LinkFactory.createButton("unoverride.member", mainVC, this);
+			unOverrideLink.setIconLeftCSS("o_icon o_icon-fw o_icon_refresh");
+			unOverrideLink.setVisible(false);
+		}
+		
 		addMemberLink = LinkFactory.createButton("add.member", mainVC, this);
 		addMemberLink.setIconLeftCSS("o_icon o_icon-fw o_icon_add_member");
 		addMemberLink.setElementCssClass("o_sel_course_add_member");
@@ -207,6 +220,10 @@ public class MembersOverviewController extends BasicController implements Activa
 			doImportMembers(ureq);
 		} else if (source == dedupLink) {
 			doDedupMembers(ureq);
+		} else if (source == overrideLink) {
+			doOverrideManagedResource(ureq);
+		} else if (source == unOverrideLink) {
+			doUnOverrideManagedResource(ureq);
 		}
 	}
 
@@ -265,11 +282,53 @@ public class MembersOverviewController extends BasicController implements Activa
 			searchCtrl.reloadModel();
 		}
 	}
+	
+	private void doOverrideManagedResource(UserRequest ureq) {
+		overrideManagedResource(ureq, true);
+	}
+	
+	private void doUnOverrideManagedResource(UserRequest ureq) {
+		overrideManagedResource(ureq, false);
+	}
+	
+	private void overrideManagedResource(UserRequest ureq, boolean override) {
+		overrideManaged = override;
+
+		overrideLink.setVisible(!overrideManaged);
+		unOverrideLink.setVisible(overrideManaged);
+		
+		addMemberLink.setVisible(overrideManaged);
+		importMemberLink.setVisible(overrideManaged);
+		dedupLink.setVisible(overrideManaged);
+		mainVC.setDirty(true);
+		
+		if(allMemberListCtrl != null) {
+			allMemberListCtrl.overrideManaged(ureq, overrideManaged);
+		}
+		if(ownersCtrl != null) {
+			ownersCtrl.overrideManaged(ureq, overrideManaged);
+		}
+		if(tutorsCtrl != null) {
+			tutorsCtrl.overrideManaged(ureq, overrideManaged);
+		}
+		if(participantsCtrl != null) {
+			participantsCtrl.overrideManaged(ureq, overrideManaged);
+		}
+		if(waitingCtrl != null) {
+			waitingCtrl.overrideManaged(ureq, overrideManaged);
+		}
+		if(selectedCtrl != null) {
+			selectedCtrl.overrideManaged(ureq, overrideManaged);
+		}
+		if(searchCtrl != null) {
+			searchCtrl.overrideManaged(ureq, overrideManaged);
+		}
+	}
 
 	private void doChooseMembers(UserRequest ureq) {
 		removeAsListenerAndDispose(importMembersWizard);
 
-		Step start = new ImportMember_1b_ChooseMemberStep(ureq, repoEntry, null);
+		Step start = new ImportMember_1b_ChooseMemberStep(ureq, repoEntry, null, overrideManaged);
 		StepRunnerCallback finish = new StepRunnerCallback() {
 			@Override
 			public Step execute(UserRequest uureq, WindowControl wControl, StepsRunContext runContext) {
@@ -287,7 +346,7 @@ public class MembersOverviewController extends BasicController implements Activa
 	private void doImportMembers(UserRequest ureq) {
 		removeAsListenerAndDispose(importMembersWizard);
 
-		Step start = new ImportMember_1a_LoginListStep(ureq, repoEntry, null);
+		Step start = new ImportMember_1a_LoginListStep(ureq, repoEntry, null, overrideManaged);
 		StepRunnerCallback finish = new StepRunnerCallback() {
 			@Override
 			public Step execute(UserRequest uureq, WindowControl wControl, StepsRunContext runContext) {
@@ -373,6 +432,7 @@ public class MembersOverviewController extends BasicController implements Activa
 		}
 		
 		allMemberListCtrl.reloadModel();
+		allMemberListCtrl.overrideManaged(ureq, overrideManaged);
 		mainVC.put("membersCmp", allMemberListCtrl.getInitialComponent());
 		addToHistory(ureq, allMemberListCtrl);
 		return allMemberListCtrl;
@@ -390,6 +450,7 @@ public class MembersOverviewController extends BasicController implements Activa
 		}
 		
 		ownersCtrl.reloadModel();
+		ownersCtrl.overrideManaged(ureq, overrideManaged);
 		mainVC.put("membersCmp", ownersCtrl.getInitialComponent());
 		addToHistory(ureq, ownersCtrl);
 		return ownersCtrl;
@@ -407,6 +468,7 @@ public class MembersOverviewController extends BasicController implements Activa
 		}
 		
 		tutorsCtrl.reloadModel();
+		tutorsCtrl.overrideManaged(ureq, overrideManaged);
 		mainVC.put("membersCmp", tutorsCtrl.getInitialComponent());
 		addToHistory(ureq, tutorsCtrl);
 		return tutorsCtrl;
@@ -424,6 +486,7 @@ public class MembersOverviewController extends BasicController implements Activa
 		}
 		
 		participantsCtrl.reloadModel();
+		participantsCtrl.overrideManaged(ureq, overrideManaged);
 		mainVC.put("membersCmp", participantsCtrl.getInitialComponent());
 		addToHistory(ureq, participantsCtrl);
 		return participantsCtrl;
@@ -441,6 +504,7 @@ public class MembersOverviewController extends BasicController implements Activa
 		}
 		
 		waitingCtrl.reloadModel();
+		waitingCtrl.overrideManaged(ureq, overrideManaged);
 		mainVC.put("membersCmp", waitingCtrl.getInitialComponent());
 		addToHistory(ureq, waitingCtrl);
 		return waitingCtrl;
@@ -455,6 +519,7 @@ public class MembersOverviewController extends BasicController implements Activa
 			listenTo(searchCtrl);
 		}
 	
+		searchCtrl.overrideManaged(ureq, overrideManaged);
 		mainVC.put("membersCmp", searchCtrl.getInitialComponent());
 		addToHistory(ureq, searchCtrl);
 		return searchCtrl;
