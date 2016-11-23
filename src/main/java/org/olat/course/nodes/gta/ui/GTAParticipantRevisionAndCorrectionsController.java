@@ -168,7 +168,7 @@ public class GTAParticipantRevisionAndCorrectionsController extends BasicControl
 			documentsContainer = gtaManager.getRevisedDocumentsContainer(courseEnv, gtaNode, iteration, getIdentity());
 		}
 		uploadRevisionsCtrl = new SubmitDocumentsController(ureq, getWindowControl(), task, documentsDir, documentsContainer, -1,
-				gtaNode, courseEnv, "document");
+				gtaNode, courseEnv, null, "document");
 		listenTo(uploadRevisionsCtrl);
 		mainVC.put("uploadRevisions", uploadRevisionsCtrl.getInitialComponent());
 		

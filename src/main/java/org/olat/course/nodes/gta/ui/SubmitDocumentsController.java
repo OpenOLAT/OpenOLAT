@@ -26,6 +26,7 @@ import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 
 import org.olat.core.commons.editor.htmleditor.HTMLEditorController;
@@ -98,6 +99,7 @@ class SubmitDocumentsController extends FormBasicController {
 	private final SubscriptionContext subscriptionContext;
 	
 	private boolean open = true;
+	private final Date deadline;
 	
 	@Autowired
 	private UserManager userManager;
@@ -108,13 +110,14 @@ class SubmitDocumentsController extends FormBasicController {
 	
 	public SubmitDocumentsController(UserRequest ureq, WindowControl wControl, Task assignedTask,
 			File documentsDir, VFSContainer documentsContainer, int maxDocs, GTACourseNode cNode,
-			CourseEnvironment courseEnv, String docI18nKey) {
+			CourseEnvironment courseEnv, Date deadline, String docI18nKey) {
 		super(ureq, wControl, "documents");
 		this.assignedTask = assignedTask;
 		this.documentsDir = documentsDir;
 		this.documentsContainer = documentsContainer;
 		this.maxDocs = maxDocs;
 		this.docI18nKey = docI18nKey;
+		this.deadline = deadline;
 		this.config = cNode.getModuleConfiguration();
 		subscriptionContext = gtaManager.getSubscriptionContext(courseEnv, cNode);
 		initForm(ureq);
@@ -230,6 +233,7 @@ class SubmitDocumentsController extends FormBasicController {
 				notificationsManager.markPublisherNews(subscriptionContext, null, false);
 			}
 			cleanUp();
+			checkDeadline(ureq);
 		} else if(uploadCtrl == source) {
 			if(event == Event.DONE_EVENT) {
 				String filename = uploadCtrl.getUploadedFilename();
@@ -239,6 +243,7 @@ class SubmitDocumentsController extends FormBasicController {
 			}
 			cmc.deactivate();
 			cleanUp();
+			checkDeadline(ureq);
 		} else if(replaceCtrl == source) {
 			if(event == Event.DONE_EVENT) {
 				String filename = replaceCtrl.getUploadedFilename();
@@ -248,6 +253,7 @@ class SubmitDocumentsController extends FormBasicController {
 			}
 			cmc.deactivate();
 			cleanUp();
+			checkDeadline(ureq);
 		} else if(newDocCtrl == source) {
 			String filename = newDocCtrl.getFilename();
 			cmc.deactivate();
@@ -257,6 +263,7 @@ class SubmitDocumentsController extends FormBasicController {
 				doCreateDocumentEditor(ureq, filename);
 				updateModel();
 			} 
+			checkDeadline(ureq);
 		} else if(newDocumentEditorCtrl == source) {
 			if(event == Event.DONE_EVENT) {
 				updateModel();
@@ -265,6 +272,7 @@ class SubmitDocumentsController extends FormBasicController {
 			}
 			cmc.deactivate();
 			cleanUp();
+			checkDeadline(ureq);
 		} else if(editDocumentEditorCtrl == source) {
 			if(event == Event.DONE_EVENT) {
 				updateModel();
@@ -273,6 +281,7 @@ class SubmitDocumentsController extends FormBasicController {
 			}
 			cmc.deactivate();
 			cleanUp();
+			checkDeadline(ureq);
 		} else if(cmc == source) {
 			cleanUp();
 		}
@@ -302,15 +311,15 @@ class SubmitDocumentsController extends FormBasicController {
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(uploadDocButton == source) {
-			if(checkOpen(ureq)) {
+			if(checkOpen(ureq) && checkDeadline(ureq)) {
 				doOpenDocumentUpload(ureq);
 			}
 		} else if(createDocButton == source) {
-			if(checkOpen(ureq)) {
+			if(checkOpen(ureq) && checkDeadline(ureq)) {
 				doChooseFilename(ureq);
 			}
 		} else if(tableEl == source) {
-			if(checkOpen(ureq) && event instanceof SelectionEvent) {
+			if(checkOpen(ureq) && checkDeadline(ureq) && event instanceof SelectionEvent) {
 				SelectionEvent se = (SelectionEvent)event;
 				SubmittedSolution row = model.getObject(se.getIndex());
 				if("delete".equals(se.getCommand())) {
@@ -326,6 +335,13 @@ class SubmitDocumentsController extends FormBasicController {
 			}
 		}
 		super.formInnerEvent(ureq, source, event);
+	}
+	
+	private boolean checkDeadline(UserRequest ureq) {
+		if(deadline == null || deadline.after(new Date())) return true;
+		showWarning("warning.tasks.submitted");
+		fireEvent(ureq, Event.DONE_EVENT);
+		return false;
 	}
 	
 	private boolean checkOpen(UserRequest ureq) {

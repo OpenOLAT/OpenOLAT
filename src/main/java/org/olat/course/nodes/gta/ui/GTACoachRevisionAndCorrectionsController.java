@@ -236,7 +236,7 @@ public class GTACoachRevisionAndCorrectionsController extends BasicController {
 		}
 		
 		uploadCorrectionsCtrl = new SubmitDocumentsController(ureq, getWindowControl(), task, documentsDir, documentsContainer, -1,
-				gtaNode, courseEnv, "coach.document");
+				gtaNode, courseEnv, null, "coach.document");
 		listenTo(uploadCorrectionsCtrl);
 		mainVC.put("uploadCorrections", uploadCorrectionsCtrl.getInitialComponent());
 
