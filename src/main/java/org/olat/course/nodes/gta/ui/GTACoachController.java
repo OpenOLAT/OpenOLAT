@@ -286,7 +286,7 @@ public class GTACoachController extends GTAAbstractController implements Assessm
 		}
 		
 		submitCorrectionsCtrl = new SubmitDocumentsController(ureq, getWindowControl(), task, documentsDir, documentsContainer, -1,
-				gtaNode, courseEnv, "coach.document");
+				gtaNode, courseEnv, null, "coach.document");
 		listenTo(submitCorrectionsCtrl);
 		mainVC.put("corrections", submitCorrectionsCtrl.getInitialComponent());
 		

@@ -122,7 +122,7 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 	private RepositoryEntryDetailsController detailsCtrl;
 	private RepositoryMembersController membersEditController;
 	protected RepositoryEditDescriptionController descriptionCtrl;
-	private RepositoryEntryLifeCycleChangeController lifeCycleChangeCtr;
+	protected RepositoryEntryLifeCycleChangeController lifeCycleChangeCtr;
 	
 	private Dropdown tools;
 	private Dropdown settings;

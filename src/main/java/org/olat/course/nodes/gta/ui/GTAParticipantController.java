@@ -243,9 +243,11 @@ public class GTAParticipantController extends GTAAbstractController {
 			documentsContainer = gtaManager.getSubmitContainer(courseEnv, gtaNode, getIdentity());
 		}
 		
+		DueDate dueDate = getSubmissionDueDate(task);
+		Date deadline = dueDate == null ? null : dueDate.getDueDate();
 		int maxDocs = config.getIntegerSafe(GTACourseNode.GTASK_MAX_SUBMITTED_DOCS, -1);
 		submitDocCtrl = new SubmitDocumentsController(ureq, getWindowControl(), task, documentsDir, documentsContainer, maxDocs,
-				gtaNode, courseEnv, "document");
+				gtaNode, courseEnv, deadline, "document");
 		listenTo(submitDocCtrl);
 		mainVC.put("submitDocs", submitDocCtrl.getInitialComponent());
 		
