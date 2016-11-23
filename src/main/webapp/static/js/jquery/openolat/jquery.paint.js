@@ -142,11 +142,15 @@
 		}, false);
 		
 		tmp_canvas.addEventListener('mouseleave', function(e) {
-			stopPainting();
+			if(tool != "spray" && tool != "eraser") {
+				stopPainting();
+			}
 		}, false);
 		
 		var stopPainting = function() {
 			tmp_canvas.removeEventListener('mousemove', onPaint, false);
+			
+			jQuery('#tools a').removeClass("active");
 			
 			// for erasing
 			ctx.globalCompositeOperation = 'source-over';
@@ -166,14 +170,12 @@
 			undo_arr.push(image);
 			undo_count = 0; //NEWTHING
 		}
-		
 
-	
 		//NEWTHING
 		document.getElementById("undo").addEventListener("click", function(){
 			if( undo_arr.length > 1 ) {
 				if ( undo_count + 1 < undo_arr.length ) {
-					if ( undo_count + 2 == undo_arr.length ) { 
+					if ( undo_count + 2 == undo_arr.length ) {
 						if (confirm("Do you really want to UNDO ??? WARNING ! You will not be able to REDO this step ")) {
 							undo_count++;
 							UndoFunc(undo_count); 
@@ -197,17 +199,13 @@
 				UndoFunc(undo_count);
 			}
 		});
-
-		//NEWTHING  
-		document.getElementById("width_range").addEventListener("change", function(){
+		
+		jQuery("#width_range").on("input change", function() {
 			tmp_ctx.lineWidth = document.getElementById("width_range").value / 2;
-			
 			drawBrush();
-			//document.getElementById("brush_size")
 		});
 		
-		//NEWTHING
-		document.getElementById("opacity_range").addEventListener("change", function(){
+		jQuery("#opacity_range").on("change", function() {
 			tmp_ctx.globalAlpha = document.getElementById("opacity_range").value / 100;
 			drawBrush();
 		});
