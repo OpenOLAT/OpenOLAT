@@ -1019,14 +1019,16 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 				}
 			}
 		}
-		
+
 		if(dataModel instanceof FilterableFlexiTableModel) {
 			rowCount = -1;
 			currentPage = 0;
+			doUnSelectAll();
 			((FilterableFlexiTableModel)dataModel).filter(selectedFilters);
 		} else if(dataSource != null) {
 			rowCount = -1;
 			currentPage = 0;
+			doUnSelectAll();
 			dataSource.clear();
 			dataSource.load(null, selectedFilters, null, 0, getPageSize(), orderBy);
 		}
@@ -1037,6 +1039,7 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 		if(dataSource != null) {
 			rowCount = -1;
 			currentPage = 0;
+			doUnSelectAll();
 
 			List<FlexiTableFilter> selectedFilters = new ArrayList<>(extendedFilters);
 			dataSource.clear();
