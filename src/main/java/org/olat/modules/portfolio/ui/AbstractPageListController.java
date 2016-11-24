@@ -335,10 +335,8 @@ implements Activateable2, TooledController, FlexiTableComponentDelegate {
 				FormLink startLink = uifactory.addFormLink("create_assign_" + (++counter), "start.assignment", title, null, flc, Link.NONTRANSLATED);
 				startLink.setUserObject(row);
 				startLink.setIconLeftCSS("o_icon o_icon_assignment o_icon-fw");
-				String summary = assignment.getSummary();
-				if(StringHelper.containsNonWhitespace(summary)) {
-					startLink.getComponent().setTitle(StringHelper.xssScan(summary));
-				}
+			
+				startLink.getComponent().setTitle(translate("start.assignment.hint"));
 				row.setInstantiateAssignmentLink(startLink);
 			}
 		} else if(secCallback.canNewAssignment()) {

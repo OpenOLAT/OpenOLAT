@@ -170,6 +170,7 @@ public class BinderPageListController extends AbstractPageListController {
 		}
 	}
 	
+	@Override
 	public int getNumOfPages() {
 		int countPages = 0;
 		if(model != null) {

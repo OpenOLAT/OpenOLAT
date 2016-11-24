@@ -89,6 +89,9 @@ public class PageListDataModel extends DefaultFlexiTableDataModel<PortfolioEleme
 		if(lastNewEntry && previousRow != null) {
 			previousRow.setNewEntry(true);
 		}
+		if(previousRow != null && previousRow.isAssignmentToInstantiate()) {
+			previousRow.setLastAssignmentToInstantiate(true);
+		}
 		
 		super.setObjects(rows);
 	}
