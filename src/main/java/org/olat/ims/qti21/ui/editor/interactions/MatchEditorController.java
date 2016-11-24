@@ -98,6 +98,7 @@ public class MatchEditorController extends FormBasicController {
 		String[] singleMultiValues = new String[]{ translate("form.imd.match.single.choice"), translate("form.imd.match.multiple.choice") };
 		singleMultiEl = uifactory.addRadiosHorizontal("singleMulti", "form.imd.match.single.multiple", metadata, singleMultiKeys, singleMultiValues);
 		singleMultiEl.setEnabled(!restrictedEdit);
+		singleMultiEl.addActionListener(FormEvent.ONCHANGE);
 		if (itemBuilder.isMultipleChoice()) {
 			singleMultiEl.select(singleMultiKeys[0], true);
 		} else {
@@ -160,6 +161,29 @@ public class MatchEditorController extends FormBasicController {
 	}
 	
 	@Override
+	protected boolean validateFormLogic(UserRequest ureq) {
+		boolean allOk = true;
+		
+		//clear errors
+		for(MatchWrapper sourceWrapper:sourceWrappers) {
+			sourceWrapper.setErrorSingleChoice(false);
+		}
+		
+		if(singleMultiEl.isOneSelected() && singleMultiEl.isSelected(0)) {
+			for(MatchWrapper sourceWrapper:sourceWrappers) {
+				String name = sourceWrapper.getIdentifierString();
+				String[] targetIds = ureq.getHttpReq().getParameterValues(name);
+				if(targetIds == null || targetIds.length == 0 || targetIds.length > 1) {
+					sourceWrapper.setErrorSingleChoice(true);
+					allOk &= false;
+				}
+			}
+		}
+		
+		return allOk & super.validateFormLogic(ureq);
+	}
+
+	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(addColumnButton == source) {
 			commitAssociations(ureq);
@@ -167,6 +191,8 @@ public class MatchEditorController extends FormBasicController {
 		} else if(addRowButton == source) {
 			commitAssociations(ureq);
 			doAddSourceRow(ureq);
+		} else if(singleMultiEl == source) {
+			//
 		} else if(source instanceof FormLink) {
 			FormLink button = (FormLink)source;
 			if("delete".equals(button.getCmd())) {
@@ -259,6 +285,8 @@ public class MatchEditorController extends FormBasicController {
 		private final Identifier choiceIdentifier;
 		private final SimpleAssociableChoice choice;
 		
+		private boolean errorSingleChoice;
+		
 		public MatchWrapper(SimpleAssociableChoice choice, RichTextElement choiceTextEl, FormLink deleteButton) {
 			this.choice = choice;
 			this.choiceTextEl = choiceTextEl;
@@ -288,6 +316,14 @@ public class MatchEditorController extends FormBasicController {
 		
 		public boolean isCorrect(Identifier targetChoiceId) {
 			return itemBuilder.isCorrect(choiceIdentifier, targetChoiceId);
+		}
+
+		public boolean isErrorSingleChoice() {
+			return errorSingleChoice;
+		}
+
+		public void setErrorSingleChoice(boolean errorSingleChoice) {
+			this.errorSingleChoice = errorSingleChoice;
 		}
 	}
 }

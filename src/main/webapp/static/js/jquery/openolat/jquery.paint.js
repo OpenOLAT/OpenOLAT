@@ -171,7 +171,7 @@
 			undo_count = 0; //NEWTHING
 		}
 
-		//NEWTHING
+		/*
 		document.getElementById("undo").addEventListener("click", function(){
 			if( undo_arr.length > 1 ) {
 				if ( undo_count + 1 < undo_arr.length ) {
@@ -199,6 +199,7 @@
 				UndoFunc(undo_count);
 			}
 		});
+		*/
 		
 		jQuery("#width_range").on("input change", function() {
 			tmp_ctx.lineWidth = document.getElementById("width_range").value / 2;
@@ -211,10 +212,41 @@
 		});
 	
 		//NEWTHING
-		document.getElementById("clear").addEventListener("click", function(){
-			if (confirm("Do you really want CLEAR the canvas?")) {
-				ctx.clearRect(0, 0, tmp_canvas.width, tmp_canvas.height);
+		document.getElementById("clear").addEventListener("click", function() {
+			var mainWin = o_getMainWin();
+			var cachedTrans;
+			if (mainWin) {
+				cachedTrans = jQuery(document).ooTranslator().getTranslator(mainWin.o_info.locale, 'org.olat.ims.qti21.ui');
+			} else {
+				cachedTrans = {	translate : function(key) { return key; } }
 			}
+			
+			var cancel = cachedTrans.translate('cancel');
+			var erase = cachedTrans.translate('paint.erase');
+			var eraseHint = cachedTrans.translate('paint.erase.hint');
+			
+			var modal = '';
+			modal += '<div id="paintModal" class="modal fade" tabindex="-1" role="dialog">';
+			modal += '  <div class="modal-dialog" role="document">';
+			modal += '    <div class="modal-content">';
+			modal += '      <div class="modal-body">';
+			modal += '        <p>' + eraseHint + '</p>';
+			modal += '      </div>';
+			modal += '      <div class="modal-footer">';
+			modal += '        <button type="button" class="btn btn-default" data-dismiss="modal">' + cancel + '</button>';
+			modal += '        <button type="button" class="btn btn-primary" data-dismiss="modal">' + erase + '</button>';
+			modal += '      </div>';
+			modal += '    </div>';
+			modal += '  </div>';
+			modal += '</div>';
+			jQuery("body").append(modal);
+			$('#paintModal').modal('show');
+			$('#paintModal button.btn-primary').on('click', function() {
+				ctx.clearRect(0, 0, tmp_canvas.width, tmp_canvas.height);
+			});
+			$('#paintModal').on('hidden.bs.modal', function (event) {
+				jQuery("#paintModal").remove();
+			});
 		});
 	
 		var onPaintCircle = function() {

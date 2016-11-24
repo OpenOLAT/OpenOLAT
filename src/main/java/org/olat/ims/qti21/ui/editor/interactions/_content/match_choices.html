@@ -25,6 +25,9 @@
 				<td>
 					<input type="checkbox" id="oo_${sourceChoice.getIdentifierString()}-oo_${targetChoice.getIdentifierString()}" name="${sourceChoice.getIdentifierString()}" value="${targetChoice.getIdentifierString()}" #if($restrictedEdit) disabled #end #if(${sourceChoice.isCorrect(${targetChoice.getIdentifier()})}) checked #end/>
 					$f.appendFlexiFormDirtyForCheckbox("oo_${sourceChoice.getIdentifierString()}-oo_${targetChoice.getIdentifierString()}")
+					#if(${sourceChoice.isErrorSingleChoice()})
+						<div class="o_error">Single choice</div>
+					#end
 				</td>
 			#end
 		</tr>
