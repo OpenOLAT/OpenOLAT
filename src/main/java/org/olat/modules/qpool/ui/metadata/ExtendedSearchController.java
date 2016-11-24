@@ -472,6 +472,15 @@ public class ExtendedSearchController extends FormBasicController implements Ext
 			KeyValues formats = MetaUIFactory.getFormats();
 			return createItem(formats.getKeys(), formats.getValues(), startValue);
 		}
+
+		@Override
+		public String getQuery(FormItem item) {
+			String val = getValue(item);
+			if(StringHelper.containsNonWhitespace(val)) {
+				return append(getDocAttribute(), ":\"", val, "\" ");	
+			}
+			return null;
+		}
 	}
 	
 	public class ContextQueryParameter extends SingleChoiceQueryParameter {
@@ -549,6 +558,10 @@ public class ExtendedSearchController extends FormBasicController implements Ext
 				return append(docAttribute, ":(", val, ") ");	
 			}
 			return null;
+		}
+		
+		public String getDocAttribute() {
+			return docAttribute;
 		}
 	}
 	
