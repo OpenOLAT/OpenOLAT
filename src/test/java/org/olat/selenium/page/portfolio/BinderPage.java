@@ -308,7 +308,7 @@ public class BinderPage {
 	}
 	
 	public EntryPage pickAssignment(String assignmentTitle) {
-		By assignmentButton = By.xpath("//div[contains(@class,'o_portfolio_assignments')][div/h4[contains(text(),'" + assignmentTitle + "')]]//a[contains(@class,'btn')]");
+		By assignmentButton = By.xpath("//div[contains(@class,'o_assignment_2_instantiate ')]/a[span[contains(text(),'" + assignmentTitle + "')]]");
 		browser.findElement(assignmentButton).click();
 		OOGraphene.waitBusy(browser);
 		assertOnPage(assignmentTitle);
