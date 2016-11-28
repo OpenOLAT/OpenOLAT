@@ -221,6 +221,7 @@ public class MatchEditorController extends FormBasicController {
 			commitTemporaryAssociations(ureq);
 			doAddSourceRow(ureq);
 		} else if(singleMultiEl == source) {
+			commitTemporaryAssociations(ureq);
 			doSwitchMatchMax();
 		} else if(source instanceof FormLink) {
 			FormLink button = (FormLink)source;
