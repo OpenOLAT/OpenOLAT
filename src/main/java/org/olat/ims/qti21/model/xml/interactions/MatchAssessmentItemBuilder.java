@@ -96,14 +96,8 @@ public class MatchAssessmentItemBuilder extends AssessmentItemBuilder {
 
 		//the single choice interaction
 		ItemBody itemBody = appendDefaultItemBody(assessmentItem);
-		MatchInteraction matchInteraction = appendMatchInteraction(itemBody, responseDeclarationId);
-		SimpleMatchSet matchSet = matchInteraction.getSimpleMatchSets().get(0);
+		appendMatchInteraction(itemBody, responseDeclarationId);
 		Map<Identifier, List<Identifier>> associations = new HashMap<>();
-		for(SimpleAssociableChoice choice:matchSet.getSimpleAssociableChoices()) {
-			List<Identifier> targetChoices = new ArrayList<>();
-			targetChoices.add(QTI21Constants.WRONG_IDENTIFIER);
-			associations.put(choice.getIdentifier(), targetChoices);
-		}
 		appendAssociationMatchResponseDeclaration(responseDeclaration, associations, 1.0);
 		
 		//response processing
@@ -119,6 +113,7 @@ public class MatchAssessmentItemBuilder extends AssessmentItemBuilder {
 		extractCorrectResponse();
 		extractMatchInteraction();
 		extractScoreEvaluationMode();
+		extractSingleChoice();
 		
 		if(getMinScoreBuilder() == null) {
 			setMinScore(0.0d);
@@ -126,6 +121,31 @@ public class MatchAssessmentItemBuilder extends AssessmentItemBuilder {
 		if(getMaxScoreBuilder() == null) {
 			setMaxScore(1.0d);
 		}
+	}
+	
+	/**
+	 * Single choice is a special edge case where
+	 * all source choices have matchMax=1 and all
+	 * target choices have matchMax=0 
+	 */
+	private void extractSingleChoice() {
+		List<SimpleAssociableChoice> sourceChoices = matchInteraction.getSimpleMatchSets().get(0).getSimpleAssociableChoices();
+		List<SimpleAssociableChoice> targetChoices = matchInteraction.getSimpleMatchSets().get(1).getSimpleAssociableChoices();
+		
+		boolean singleChoice = true;
+		for(SimpleAssociableChoice sourceChoice:sourceChoices) {
+			if(sourceChoice.getMatchMax() != 1) {
+				singleChoice &= false;
+			}
+		}
+		
+		for(SimpleAssociableChoice targetChoice:targetChoices) {
+			if(targetChoice.getMatchMax() != 0) {
+				singleChoice &= false;
+			}
+		}
+		
+		multipleChoice = !singleChoice;
 	}
 	
 	private void extractCorrectResponse() {
@@ -233,6 +253,10 @@ public class MatchAssessmentItemBuilder extends AssessmentItemBuilder {
 	public void setScoreEvaluationMode(ScoreEvaluation scoreEvaluation) {
 		this.scoreEvaluation = scoreEvaluation;
 	}
+	
+	public String getResponseIdentifier() {
+		return responseIdentifier.toString();
+	}
 
 	public MatchInteraction getMatchInteraction() {
 		return matchInteraction;
@@ -325,6 +349,7 @@ public class MatchAssessmentItemBuilder extends AssessmentItemBuilder {
 			choice.setMatchMax(0);
 		});
 		
+		matchInteraction.setMaxAssociations(0);
 		matchInteraction.setShuffle(isShuffle());
 		blocks.add(matchInteraction);
 	}

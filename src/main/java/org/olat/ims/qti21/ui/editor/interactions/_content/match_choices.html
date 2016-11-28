@@ -1,6 +1,6 @@
 <fieldset class="o_form form-horizontal">
 
-<table class="table">
+<table id="qti_container_${responseIdentifier}" class="table">
 	<thead>
 		<tr>
 			<th></th>
@@ -14,6 +14,7 @@
 	</thead>
 	<tbody>
 	#foreach($sourceChoice in $sourceChoices)
+		#set($set1Identifier = $sourceChoice.getIdentifierString())
 		<tr>
 			<th>$r.render(${sourceChoice.getText()})
 				#if($f.hasError($item))
@@ -22,11 +23,13 @@
 				#if(!$restrictedEdit) <div class="pull-right">$r.render(${sourceChoice.getDeleteButton()})</div> #end
 			</th>
 			#foreach($targetChoice in $targetChoices)
+				#set($set2Identifier = $targetChoice.getIdentifierString())
+				#set($responseValue = $set1Identifier + " " + $set2Identifier)
 				<td>
-					<input type="checkbox" id="oo_${sourceChoice.getIdentifierString()}-oo_${targetChoice.getIdentifierString()}" name="${sourceChoice.getIdentifierString()}" value="${targetChoice.getIdentifierString()}" #if($restrictedEdit) disabled #end #if(${sourceChoice.isCorrect(${targetChoice.getIdentifier()})}) checked #end/>
-					$f.appendFlexiFormDirtyForCheckbox("oo_${sourceChoice.getIdentifierString()}-oo_${targetChoice.getIdentifierString()}")
+					<input id="oo_${set1Identifier}_${set2Identifier}" type="checkbox" name="qtiworks_response_${responseIdentifier}" value="${responseValue}" #if(${sourceChoice.isCorrect(${targetChoice.getIdentifier()})}) checked #end #if($restrictedEdit) disabled #end/>
+					$f.appendFlexiFormDirtyForCheckbox("oo_${set1Identifier}_${set2Identifier}")
 					#if(${sourceChoice.isErrorSingleChoice()})
-						<div class="o_error">Single choice</div>
+						<div class="o_error">$r.translate("error.singlechoice")</div>
 					#end
 				</td>
 			#end
@@ -34,6 +37,20 @@
 	#end
 	</tbody>
 </table>
+#if(!$restrictedEdit)
+<script type='text/javascript'>
+jQuery(function() {
+	jQuery('#qti_container_${responseIdentifier}').matchInteraction({
+		responseIdentifier: '$responseIdentifier',
+		formDispatchFieldId: '1234',
+		maxAssociations: $interactionMaxAssociations,
+		leftData: {#foreach($choice1 in $sourceChoices) #if($foreach.count > 1),#end $choice1.identifier:$choice1.matchMax #end},
+		rightData: {#foreach($choice2 in $targetChoices) #if($foreach.count > 1),#end $choice2.identifier:$choice2.matchMax #end}
+	});
+});
+</script>
+#end
+
 #if($r.available("add.match.row") || $r.available("add.match.column") || $r.available("submit"))
 <div class="o_button_group">
 	#if($r.available("submit"))

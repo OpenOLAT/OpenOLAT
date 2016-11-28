@@ -482,7 +482,7 @@ public class AssessmentItemFactory {
 	public static MatchInteraction appendMatchInteraction(ItemBody itemBody, Identifier responseDeclarationId) {
 		MatchInteraction matchInteraction = new MatchInteraction(itemBody);
 		matchInteraction.setResponseIdentifier(responseDeclarationId);
-		matchInteraction.setMaxAssociations(4);
+		matchInteraction.setMaxAssociations(0);
 		matchInteraction.setShuffle(false);
 		itemBody.getBlocks().add(matchInteraction);
 		
@@ -495,8 +495,8 @@ public class AssessmentItemFactory {
 		String[] classic = new String[]{ "a", "b" };
 		for(int i=0; i<2; i++) {
 			SimpleAssociableChoice sourceChoice = new SimpleAssociableChoice(sourceMatchSet);
-			sourceChoice.setMatchMax(1);
-			sourceChoice.setMatchMin(1);
+			sourceChoice.setMatchMax(0);
+			sourceChoice.setMatchMin(0);
 			sourceChoice.setIdentifier(IdentifierGenerator.newNumberAsIdentifier(classic[i]));
 			P question = getParagraph(sourceChoice, "Source " + classic[i]);
 			sourceChoice.getFlowStatics().add(question);
@@ -509,8 +509,8 @@ public class AssessmentItemFactory {
 		String[] target = new String[]{ "m", "n" };
 		for(int i=0; i<2; i++) {
 			SimpleAssociableChoice targetChoice = new SimpleAssociableChoice(sourceMatchSet);
-			targetChoice.setMatchMax(1);
-			targetChoice.setMatchMin(1);
+			targetChoice.setMatchMax(0);
+			targetChoice.setMatchMin(0);
 			targetChoice.setIdentifier(IdentifierGenerator.newNumberAsIdentifier(target[i]));
 			P question = getParagraph(targetChoice, "Target " + target[i]);
 			targetChoice.getFlowStatics().add(question);
@@ -522,8 +522,8 @@ public class AssessmentItemFactory {
 	
 	public static SimpleAssociableChoice createSimpleAssociableChoice(String text, SimpleMatchSet matchSet) {
 		SimpleAssociableChoice targetChoice = new SimpleAssociableChoice(matchSet);
-		targetChoice.setMatchMax(1);
-		targetChoice.setMatchMin(1);
+		targetChoice.setMatchMax(0);
+		targetChoice.setMatchMin(0);
 		targetChoice.setIdentifier(IdentifierGenerator.newNumberAsIdentifier("sa"));
 		P question = getParagraph(targetChoice, text);
 		targetChoice.getFlowStatics().add(question);

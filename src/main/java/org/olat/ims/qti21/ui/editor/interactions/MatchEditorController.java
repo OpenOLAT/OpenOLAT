@@ -5,7 +5,9 @@ import static org.olat.ims.qti21.model.xml.AssessmentItemFactory.createSimpleAss
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -17,6 +19,7 @@ import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.htmlheader.jscss.JSAndCSSFormItem;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
@@ -55,6 +58,7 @@ public class MatchEditorController extends FormBasicController {
 	private MatchAssessmentItemBuilder itemBuilder;
 	private final List<MatchWrapper> sourceWrappers = new ArrayList<>();
 	private final List<MatchWrapper> targetWrappers = new ArrayList<>();
+	private final Map<String,List<String>> temporaryAssociations = new HashMap<>();
 	
 	public MatchEditorController(UserRequest ureq, WindowControl wControl, MatchAssessmentItemBuilder itemBuilder,
 			File rootDirectory, VFSContainer rootContainer, File itemFile, boolean restrictedEdit) {
@@ -100,9 +104,9 @@ public class MatchEditorController extends FormBasicController {
 		singleMultiEl.setEnabled(!restrictedEdit);
 		singleMultiEl.addActionListener(FormEvent.ONCHANGE);
 		if (itemBuilder.isMultipleChoice()) {
-			singleMultiEl.select(singleMultiKeys[0], true);
-		} else {
 			singleMultiEl.select(singleMultiKeys[1], true);
+		} else {
+			singleMultiEl.select(singleMultiKeys[0], true);
 		}
 
 		//responses
@@ -127,6 +131,12 @@ public class MatchEditorController extends FormBasicController {
 		answersCont.contextPut("sourceChoices", sourceWrappers);
 		answersCont.contextPut("targetChoices", targetWrappers);
 		answersCont.contextPut("restrictedEdit", restrictedEdit);
+		answersCont.contextPut("responseIdentifier", itemBuilder.getResponseIdentifier());
+		int maxAssociations = itemBuilder.getMatchInteraction().getMaxAssociations();
+		answersCont.contextPut("interactionMaxAssociations", maxAssociations);
+
+		JSAndCSSFormItem js = new JSAndCSSFormItem("js", new String[] { "js/jquery/qti/jquery.match.js" });
+		formLayout.add(js);
 		
 		uifactory.addFormSubmitButton("submit", answersCont);
 		if(!restrictedEdit) {
@@ -169,11 +179,30 @@ public class MatchEditorController extends FormBasicController {
 			sourceWrapper.setErrorSingleChoice(false);
 		}
 		
+		commitTemporaryAssociations(ureq);
+		
 		if(singleMultiEl.isOneSelected() && singleMultiEl.isSelected(0)) {
+			Map<String,String> sourseTargetMap = new HashMap<>();
+			String[] directedPairsIds = ureq.getHttpReq().getParameterValues("qtiworks_response_" + itemBuilder.getResponseIdentifier());
+			for(String directedPairIds: directedPairsIds) {
+				String[] pairs = directedPairIds.split(" ");
+				String sourceId = pairs[0];
+				String targetId = pairs[1];
+				if(sourseTargetMap.containsKey(sourceId)) {
+					for(MatchWrapper sourceWrapper:sourceWrappers) {
+						if(sourceId.equals(sourceWrapper.getIdentifierString())) {
+							sourceWrapper.setErrorSingleChoice(true);
+						}
+					}
+					allOk &= false;
+				} else {
+					sourseTargetMap.put(sourceId, targetId);
+				}
+			}
+
 			for(MatchWrapper sourceWrapper:sourceWrappers) {
-				String name = sourceWrapper.getIdentifierString();
-				String[] targetIds = ureq.getHttpReq().getParameterValues(name);
-				if(targetIds == null || targetIds.length == 0 || targetIds.length > 1) {
+				String sourceId = sourceWrapper.getIdentifierString();
+				if(!sourseTargetMap.containsKey(sourceId)) {
 					sourceWrapper.setErrorSingleChoice(true);
 					allOk &= false;
 				}
@@ -186,17 +215,17 @@ public class MatchEditorController extends FormBasicController {
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(addColumnButton == source) {
-			commitAssociations(ureq);
+			commitTemporaryAssociations(ureq);
 			doAddTargetColumn(ureq);
 		} else if(addRowButton == source) {
-			commitAssociations(ureq);
+			commitTemporaryAssociations(ureq);
 			doAddSourceRow(ureq);
 		} else if(singleMultiEl == source) {
-			//
+			doSwitchMatchMax();
 		} else if(source instanceof FormLink) {
 			FormLink button = (FormLink)source;
 			if("delete".equals(button.getCmd())) {
-				commitAssociations(ureq);
+				commitTemporaryAssociations(ureq);
 				MatchWrapper associationWrapper = (MatchWrapper)button.getUserObject();
 				doDeleteAssociableChoice(associationWrapper);
 			}
@@ -240,23 +269,50 @@ public class MatchEditorController extends FormBasicController {
 		fireEvent(ureq, new AssessmentItemEvent(AssessmentItemEvent.ASSESSMENT_ITEM_CHANGED, itemBuilder.getAssessmentItem(), QTI21QuestionType.match));
 	}
 	
-	private void commitAssociations(UserRequest ureq) {
-		itemBuilder.clearAssociations();
-		for(MatchWrapper sourceWrapper:sourceWrappers) {
-			String name = sourceWrapper.getIdentifierString();
-			Identifier sourceChoiceId = Identifier.assumedLegal(name);
-			String[] targetIds = ureq.getHttpReq().getParameterValues(name);
-			if(targetIds != null && targetIds.length > 0) {
-				for(String targetId:targetIds) {
-					Identifier targetChoiceId = Identifier.assumedLegal(targetId);
-					itemBuilder.addAssociation(sourceChoiceId, targetChoiceId);
+	private void commitTemporaryAssociations(UserRequest ureq) {
+		temporaryAssociations.clear();
+		String[] directedPairsIds = ureq.getHttpReq().getParameterValues("qtiworks_response_" + itemBuilder.getResponseIdentifier());
+		if(directedPairsIds != null) {
+			for(String directedPairIds: directedPairsIds) {
+				String[] pairs = directedPairIds.split(" ");
+				String sourceId = pairs[0];
+				String targetId = pairs[1];
+				
+				List<String> targetIds = temporaryAssociations.get(sourceId);
+				if(targetIds == null) {
+					targetIds = new ArrayList<>();
 				}
+				targetIds.add(targetId);
+				temporaryAssociations.put(sourceId, targetIds);
 			}
+		}
+	}
+	
+	private void commitAssociations(UserRequest ureq) {
+		temporaryAssociations.clear();
+		itemBuilder.clearAssociations();
+
+		String[] directedPairsIds = ureq.getHttpReq().getParameterValues("qtiworks_response_" + itemBuilder.getResponseIdentifier());
+		if(directedPairsIds != null) {
+			for(String directedPairIds: directedPairsIds) {
+				String[] pairs = directedPairIds.split(" ");
+				Identifier sourceChoiceId = Identifier.assumedLegal(pairs[0]);
+				Identifier targetChoiceId = Identifier.assumedLegal(pairs[1]);
+				itemBuilder.addAssociation(sourceChoiceId, targetChoiceId);
+			}
+		}
+	}
+	
+	private void doSwitchMatchMax() {
+		int matchMax = singleMultiEl.isOneSelected() && singleMultiEl.isSelected(0) ? 1 : 0;
+		for(MatchWrapper sourceWrapper:sourceWrappers) {
+			sourceWrapper.choice.setMatchMax(matchMax);
 		}
 	}
 	
 	private void doAddTargetColumn(UserRequest ureq) {
 		SimpleAssociableChoice newChoice = createSimpleAssociableChoice("Text", itemBuilder.getTargetMatchSet());
+		newChoice.setMatchMax(0);
 		itemBuilder.getTargetMatchSet().getSimpleAssociableChoices().add(newChoice);
 		wrapAnswer(ureq, newChoice, targetWrappers);
 		answersCont.setDirty(true);
@@ -264,6 +320,12 @@ public class MatchEditorController extends FormBasicController {
 	
 	private void doAddSourceRow(UserRequest ureq) {
 		SimpleAssociableChoice newChoice = createSimpleAssociableChoice("Text", itemBuilder.getSourceMatchSet());
+		if(singleMultiEl.isOneSelected() && singleMultiEl.isSelected(0)) {
+			newChoice.setMatchMax(1);
+		} else {
+			newChoice.setMatchMax(0);
+		}
+		
 		itemBuilder.getSourceMatchSet().getSimpleAssociableChoices().add(newChoice);
 		wrapAnswer(ureq, newChoice, sourceWrappers);
 		answersCont.setDirty(true);
@@ -314,7 +376,22 @@ public class MatchEditorController extends FormBasicController {
 			return choiceTextEl;
 		}
 		
+		public int getMatchMax() {
+			return choice.getMatchMax();
+		}
+		
+		public int getMatchMin() {
+			return choice.getMatchMin();
+		}
+		
 		public boolean isCorrect(Identifier targetChoiceId) {
+			String sourceId = choice.getIdentifier().toString();
+			String targetId = targetChoiceId.toString();
+			if(temporaryAssociations.containsKey(sourceId)) {
+				if(temporaryAssociations.get(sourceId).contains(targetId)) {
+					return true;
+				}
+			}
 			return itemBuilder.isCorrect(choiceIdentifier, targetChoiceId);
 		}
 
