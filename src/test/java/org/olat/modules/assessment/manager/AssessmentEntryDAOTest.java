@@ -340,7 +340,7 @@ public class AssessmentEntryDAOTest extends OlatTestCase {
 	}
 	
 	@Test
-	public void deleteEntryForReferenceEntry() {
+	public void removeEntryForReferenceEntry() {
 		Identity assessedIdentity1 = JunitTestHelper.createAndPersistIdentityAsRndUser("as-node-18");
 		Identity assessedIdentity2 = JunitTestHelper.createAndPersistIdentityAsRndUser("as-node-19");
 		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
@@ -358,18 +358,24 @@ public class AssessmentEntryDAOTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		// delete by reference
-		assessmentEntryDao.deleteEntryForReferenceEntry(refEntry);
+		int affectedRows = assessmentEntryDao.removeEntryForReferenceEntry(refEntry);
 		dbInstance.commitAndCloseSession();
+		Assert.assertEquals(3, affectedRows);
 
 		//check
 		AssessmentEntry deletedAssessmentEntry1 = assessmentEntryDao.loadAssessmentEntryById(nodeAssessment1.getKey());
-		Assert.assertNull(deletedAssessmentEntry1);
+		Assert.assertNotNull(deletedAssessmentEntry1);
+		Assert.assertNull(deletedAssessmentEntry1.getReferenceEntry());
 		AssessmentEntry deletedAssessmentEntry2 = assessmentEntryDao.loadAssessmentEntryById(nodeAssessment2.getKey());
-		Assert.assertNull(deletedAssessmentEntry2);
+		Assert.assertNotNull(deletedAssessmentEntry2);
+		Assert.assertNull(deletedAssessmentEntry2.getReferenceEntry());
 		AssessmentEntry deletedAssessmentEntry3 = assessmentEntryDao.loadAssessmentEntryById(nodeAssessment3.getKey());
 		Assert.assertNotNull(deletedAssessmentEntry3);
+		Assert.assertNotNull(deletedAssessmentEntry3.getReferenceEntry());
+		Assert.assertEquals(entry, deletedAssessmentEntry3.getReferenceEntry());
 		AssessmentEntry deletedAssessmentEntry4 = assessmentEntryDao.loadAssessmentEntryById(nodeAssessment4.getKey());
-		Assert.assertNull(deletedAssessmentEntry4);
+		Assert.assertNotNull(deletedAssessmentEntry4);
+		Assert.assertNull(deletedAssessmentEntry4.getReferenceEntry());
 	}
 	
 	@Test

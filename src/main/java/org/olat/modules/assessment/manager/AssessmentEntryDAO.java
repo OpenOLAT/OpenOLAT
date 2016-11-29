@@ -272,9 +272,9 @@ public class AssessmentEntryDAO {
 	 * @param entry
 	 * @return
 	 */
-	public int deleteEntryForReferenceEntry(RepositoryEntryRef entry) {
+	public int removeEntryForReferenceEntry(RepositoryEntryRef entry) {
 		StringBuilder sb = new StringBuilder();
-		sb.append("delete from assessmententry data where data.referenceEntry.key=:referenceKey");
+		sb.append("update assessmententry data set data.referenceEntry.key=null where data.referenceEntry.key=:referenceKey");
 		return dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString())
 				.setParameter("referenceKey", entry.getKey())

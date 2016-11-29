@@ -365,6 +365,8 @@ public class RepositoryServiceImpl implements RepositoryService {
 		handler.cleanupOnDelete(entry, resource);
 		dbInstance.commit();
 		
+		//nullify the reference
+		assessmentEntryDao.removeEntryForReferenceEntry(entry);
 		assessmentEntryDao.deleteEntryForRepositoryEntry(entry);
 		dbInstance.commit();
 
