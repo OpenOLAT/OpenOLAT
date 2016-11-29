@@ -26,7 +26,6 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
-import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
@@ -54,7 +53,7 @@ public class QTI12ExportResultsReportController extends BasicController {
 	protected QTI21Service qtiService;
 
 	
-	public QTI12ExportResultsReportController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
+	public QTI12ExportResultsReportController(UserRequest ureq, WindowControl wControl,
 			CourseEnvironment courseEnv, AssessmentToolOptions asOptions, QTICourseNode courseNode) {
 		super(ureq, wControl);
 		this.asOptions = asOptions;

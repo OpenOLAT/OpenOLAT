@@ -19,10 +19,9 @@
  */
 package org.olat.ims.qti.resultexport;
 
-import java.io.BufferedWriter;
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.FileVisitResult;
@@ -315,6 +314,7 @@ public class QTI21ResultsExportMediaResource implements MediaResource {
 
 	private void fsToZip(ZipOutputStream zout, final Path sourceFolder, final String targetPath) throws IOException {
 		Files.walkFileTree(sourceFolder, new SimpleFileVisitor<Path>() {
+			@Override
 			public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
 				zout.putNextEntry(new ZipEntry(targetPath + sourceFolder.relativize(file).toString()));
 				Files.copy(file, zout);
@@ -322,6 +322,7 @@ public class QTI21ResultsExportMediaResource implements MediaResource {
 				return FileVisitResult.CONTINUE;
 			}
 
+			@Override
 			public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) throws IOException {
 				zout.putNextEntry(new ZipEntry(targetPath + sourceFolder.relativize(dir).toString() + "/"));
 				zout.closeEntry();
@@ -330,13 +331,21 @@ public class QTI21ResultsExportMediaResource implements MediaResource {
 		});
 	}
 	
-	private void convertToZipEntry (ZipOutputStream zout, String link, Object content) throws IOException {
+	private void convertToZipEntry(ZipOutputStream zout, String link, File file) throws IOException {
 		zout.putNextEntry(new ZipEntry(link));
-		File file = content instanceof String ? createFile((String)content) : (File)content; 
-		
 		try (InputStream in = new FileInputStream(file)) {
 			FileUtils.copy(in, zout);
-			in.close();
+		} catch (Exception e) {
+			log.error("Error during copy of resource export", e);
+		} finally {
+			zout.closeEntry();
+		}
+	}
+	
+	private void convertToZipEntry(ZipOutputStream zout, String link, String content) throws IOException {
+		zout.putNextEntry(new ZipEntry(link));
+		try (InputStream in = new ByteArrayInputStream(content.getBytes())) {
+			FileUtils.copy(in, zout);
 		} catch (Exception e) {
 			log.error("Error during copy of resource export", e);
 		} finally {
@@ -349,25 +358,7 @@ public class QTI21ResultsExportMediaResource implements MediaResource {
 		zout.putNextEntry(new ZipEntry(dir));
 		zout.closeEntry();		
 	} 
-	
-	
-	private static File createFile(String text) {
-		File textFile = new File("text.txt");
-		FileWriter fw;
-		BufferedWriter out;
-		try {
-			fw = new FileWriter(textFile);
-			out = new BufferedWriter(fw);
-			out.write(text);
-			out.close();
-			fw.close();
-		} catch (IOException e) {
-			log.error("Could not create File from String",e);
-		}
-		return textFile;
-	}
-	
-	
+
 
 	@Override
 	public void release() {

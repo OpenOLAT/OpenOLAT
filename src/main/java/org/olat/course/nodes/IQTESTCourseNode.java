@@ -245,7 +245,7 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements Pe
 			if(qtiService.needManualCorrection(qtiTestEntry)) {
 				tools.add(new QTI21CorrectionToolController(ureq, wControl, courseEnv, options, this));
 			}
-			tools.add(new QTI21ExportResultsReportController(ureq, wControl, stackPanel, courseEnv, options, this));
+			tools.add(new QTI21ExportResultsReportController(ureq, wControl, courseEnv, options, this));
 
 		} else {
 			tools.add(new QTI12StatisticsToolController(ureq, wControl, stackPanel, courseEnv, options, this));
@@ -257,7 +257,7 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements Pe
 					}
 				}
 			}
-			tools.add(new QTI12ExportResultsReportController(ureq, wControl, stackPanel, courseEnv, options, this));
+			tools.add(new QTI12ExportResultsReportController(ureq, wControl, courseEnv, options, this));
 		}
 		return tools;
 	}
