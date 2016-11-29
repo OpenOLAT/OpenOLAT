@@ -383,10 +383,7 @@ public class ScormCourseNode extends AbstractAccessableCourseNode implements Per
 	public AssessmentEntry getUserAssessmentEntry(UserCourseEnvironment userCourseEnv) {
 		AssessmentManager am = userCourseEnv.getCourseEnvironment().getAssessmentManager();
 		Identity mySelf = userCourseEnv.getIdentityEnvironment().getIdentity();
-		if(getReferencedRepositoryEntrySoftkey() != null) {
-			return am.getAssessmentEntry(this, mySelf, getReferencedRepositoryEntrySoftkey());
-		}
-		return null;
+		return am.getAssessmentEntry(this, mySelf);//we want t
 	}
 
 	@Override

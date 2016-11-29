@@ -135,7 +135,9 @@ public class OpenMeetingsDAO {
 	}
 	
 	public void delete(OpenMeetingsRoomReference ref) {
-		dbInstance.getCurrentEntityManager().remove(ref);
+		OpenMeetingsRoomReference reloadedRef = dbInstance.getCurrentEntityManager()
+				.getReference(OpenMeetingsRoomReference.class, ref.getKey());
+		dbInstance.getCurrentEntityManager().remove(reloadedRef);
 	}
 	
 	public String serializeRoom(OpenMeetingsRoom room) {

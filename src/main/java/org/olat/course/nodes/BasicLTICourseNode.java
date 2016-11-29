@@ -333,14 +333,14 @@ public class BasicLTICourseNode extends AbstractAccessableCourseNode implements 
 	@Override
 	public AssessmentEntry getUserAssessmentEntry(UserCourseEnvironment userCourseEnv) {
 		AssessmentManager am = userCourseEnv.getCourseEnvironment().getAssessmentManager();
-		return am.getAssessmentEntry(this, userCourseEnv.getIdentityEnvironment().getIdentity(), null);
+		return am.getAssessmentEntry(this, userCourseEnv.getIdentityEnvironment().getIdentity());
 	}
 
 	@Override
 	public AssessmentEvaluation getUserScoreEvaluation(UserCourseEnvironment userCourseEnv) {
 		AssessmentManager am = userCourseEnv.getCourseEnvironment().getAssessmentManager();
 		Identity mySelf = userCourseEnv.getIdentityEnvironment().getIdentity();
-		AssessmentEntry entry = am.getAssessmentEntry(this, mySelf, null);
+		AssessmentEntry entry = am.getAssessmentEntry(this, mySelf);
 		return getUserScoreEvaluation(entry) ;
 	}
 
