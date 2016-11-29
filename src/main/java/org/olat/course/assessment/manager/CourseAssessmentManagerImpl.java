@@ -84,6 +84,10 @@ public class CourseAssessmentManagerImpl implements AssessmentManager {
 	private AssessmentEntry getOrCreate(Identity assessedIdentity, CourseNode courseNode) {
 		return assessmentService.getOrCreateAssessmentEntry(assessedIdentity, null, cgm.getCourseEntry(), courseNode.getIdent(), courseNode.getReferencedRepositoryEntry());
 	}
+	
+	private AssessmentEntry getOrCreate(Identity assessedIdentity, String subIdent, RepositoryEntry referenceEntry) {
+		return assessmentService.getOrCreateAssessmentEntry(assessedIdentity, null, cgm.getCourseEntry(), subIdent, referenceEntry);
+	}
 
 	@Override
 	public List<AssessmentEntry> getAssessmentEntries(CourseNode courseNode) {
@@ -91,8 +95,8 @@ public class CourseAssessmentManagerImpl implements AssessmentManager {
 	}
 
 	@Override
-	public AssessmentEntry getAssessmentEntry(CourseNode courseNode, Identity assessedIdentity, String referenceSoftKey) {
-		return assessmentService.loadAssessmentEntry(assessedIdentity, cgm.getCourseEntry(), courseNode.getIdent(), referenceSoftKey);
+	public AssessmentEntry getAssessmentEntry(CourseNode courseNode, Identity assessedIdentity) {
+		return assessmentService.loadAssessmentEntry(assessedIdentity, cgm.getCourseEntry(), courseNode.getIdent());
 	}
 
 	@Override
@@ -243,8 +247,13 @@ public class CourseAssessmentManagerImpl implements AssessmentManager {
 		Float score = scoreEvaluation.getScore();
 		Boolean passed = scoreEvaluation.getPassed();
 		Long assessmentId = scoreEvaluation.getAssessmentID();
-
-		AssessmentEntry assessmentEntry = getOrCreate(assessedIdentity, courseNode);
+		
+		String subIdent = courseNode.getIdent();
+		RepositoryEntry referenceEntry = courseNode.getReferencedRepositoryEntry();
+		AssessmentEntry assessmentEntry = getOrCreate(assessedIdentity, subIdent, referenceEntry);
+		if(referenceEntry != null && !referenceEntry.equals(assessmentEntry.getReferenceEntry())) {
+			assessmentEntry.setReferenceEntry(referenceEntry);
+		}
 		if(score == null) {
 			assessmentEntry.setScore(null);
 		} else {

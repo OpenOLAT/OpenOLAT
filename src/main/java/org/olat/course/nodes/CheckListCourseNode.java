@@ -189,7 +189,7 @@ public class CheckListCourseNode extends AbstractAccessableCourseNode implements
 	public AssessmentEntry getUserAssessmentEntry(UserCourseEnvironment userCourseEnv) {
 		AssessmentManager am = userCourseEnv.getCourseEnvironment().getAssessmentManager();
 		Identity mySelf = userCourseEnv.getIdentityEnvironment().getIdentity();
-		return am.getAssessmentEntry(this, mySelf, null);
+		return am.getAssessmentEntry(this, mySelf);
 	}
 
 	/**

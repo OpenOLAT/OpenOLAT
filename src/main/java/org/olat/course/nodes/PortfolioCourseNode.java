@@ -392,7 +392,7 @@ public class PortfolioCourseNode extends AbstractAccessableCourseNode implements
 		}
 		
 		if(referenceSoftkey != null) {
-			return am.getAssessmentEntry(this, mySelf, referenceSoftkey);
+			return am.getAssessmentEntry(this, mySelf);
 		}
 		return null;
 	}

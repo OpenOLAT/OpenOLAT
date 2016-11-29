@@ -149,24 +149,6 @@ public class AssessmentEntryDAOTest extends OlatTestCase {
 	}
 	
 	@Test
-	public void loadAssessmentEntry_withSoftkey() {
-		Identity assessedIdentity = JunitTestHelper.createAndPersistIdentityAsRndUser("as-node-4");
-		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
-		String subIdent = UUID.randomUUID().toString();
-		AssessmentEntry nodeAssessment = assessmentEntryDao
-				.createAssessmentEntry(assessedIdentity, null, entry, subIdent, entry);
-		dbInstance.commitAndCloseSession();
-		
-		AssessmentEntry reloadedAssessment = assessmentEntryDao
-				.loadAssessmentEntry(assessedIdentity, entry, subIdent, entry.getSoftkey());
-		Assert.assertEquals(nodeAssessment.getKey(), reloadedAssessment.getKey());
-		Assert.assertEquals(nodeAssessment, reloadedAssessment);
-		Assert.assertEquals(assessedIdentity, reloadedAssessment.getIdentity());
-		Assert.assertEquals(entry, reloadedAssessment.getRepositoryEntry());
-		Assert.assertEquals(subIdent, reloadedAssessment.getSubIdent());
-	}
-	
-	@Test
 	public void loadAssessmentEntry_specificTest() {
 		Identity assessedIdentity = JunitTestHelper.createAndPersistIdentityAsRndUser("as-node-5");
 		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();

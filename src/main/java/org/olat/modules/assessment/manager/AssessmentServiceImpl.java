@@ -72,14 +72,6 @@ public class AssessmentServiceImpl implements AssessmentService {
 	}
 
 	@Override
-	public AssessmentEntry loadAssessmentEntry(Identity assessedIdentity, RepositoryEntry entry, String subIdent, String referenceSoftKey) {
-		if(assessedIdentity == null || entry == null) return null;
-		return assessmentEntryDao.loadAssessmentEntry(assessedIdentity, entry, subIdent, referenceSoftKey);
-	}
-	
-	
-
-	@Override
 	public AssessmentEntry loadAssessmentEntry(Identity assessedIdentity, RepositoryEntryRef entry, String subIdent, RepositoryEntryRef referenceEntry) {
 		if(assessedIdentity == null || entry == null || referenceEntry == null) return null;
 		return assessmentEntryDao.loadAssessmentEntry(assessedIdentity, entry, subIdent, referenceEntry);

@@ -92,6 +92,8 @@ public interface AssessmentEntry extends AssessmentEntryLight {
 	 */
 	public RepositoryEntry getReferenceEntry();
 	
+	public void setReferenceEntry(RepositoryEntry entry);
+	
 	/**
 	 * @return The unique identifier for anonymous user (guest)
 	 */

@@ -481,7 +481,7 @@ public class ProjectBrokerCourseNode extends GenericCourseNode implements Persis
 	public AssessmentEntry getUserAssessmentEntry(UserCourseEnvironment userCourseEnv) {
 		AssessmentManager am = userCourseEnv.getCourseEnvironment().getAssessmentManager();
 		Identity mySelf = userCourseEnv.getIdentityEnvironment().getIdentity();
-		return am.getAssessmentEntry(this, mySelf, null);
+		return am.getAssessmentEntry(this, mySelf);
 	}
 	
 	@Override
