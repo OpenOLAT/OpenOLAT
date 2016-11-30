@@ -141,6 +141,10 @@ public class FolderModule extends AbstractSpringModule {
 		setStringProperty(CONFIG_FORCE_DOWNLOAD, enabled, true);
 	}
 	
+	public String getCanonicalRoot() {
+		return FolderConfig.getCanonicalRoot();
+	}
+	
 	public String getCanonicalTmpDir() {
 		return FolderConfig.getCanonicalTmpDir();
 	}
