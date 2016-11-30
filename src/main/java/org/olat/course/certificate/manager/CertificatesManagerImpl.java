@@ -54,7 +54,7 @@ import org.apache.velocity.runtime.RuntimeConstants;
 import org.olat.admin.user.imp.TransientIdentity;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.IdentityRef;
-import org.olat.core.commons.modules.bc.FolderConfig;
+import org.olat.core.commons.modules.bc.FolderModule;
 import org.olat.core.commons.modules.bc.vfs.OlatRootFolderImpl;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.services.notifications.NotificationsManager;
@@ -158,6 +158,9 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 	private CoordinatorManager coordinatorManager;
 	@Autowired
 	private NotificationsManager notificationsManager;
+	@Autowired
+	private FolderModule folderModule;
+	
 
 	@Resource(name="certificateQueue")
 	private Queue jmsQueue;
@@ -1122,7 +1125,7 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 	}
 	
 	public File getCertificateTemplatesRoot() {
-		Path path = Paths.get(FolderConfig.getCanonicalRoot(), "certificates", "templates");
+		Path path = Paths.get(folderModule.getCanonicalRoot(), "certificates", "templates");
 		File root = path.toFile();
 		if(!root.exists()) {
 			root.mkdirs();
@@ -1135,7 +1138,7 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 	}
 	
 	public File getCertificateRoot() {
-		Path path = Paths.get(FolderConfig.getCanonicalRoot(), "certificates", "users");
+		Path path = Paths.get(folderModule.getCanonicalRoot(), "certificates", "users");
 		File root = path.toFile();
 		if(!root.exists()) {
 			root.mkdirs();
@@ -1144,12 +1147,12 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 	}
 	
 	public Path getRasterizePath() {
-		Path path = Paths.get(FolderConfig.getCanonicalRoot(), "certificates", "rasterize.js");
+		Path path = Paths.get(folderModule.getCanonicalRoot(), "certificates", "rasterize.js");
 		return path;
 	}
 	
 	public Path getQRCodeLibPath() {
-		Path path = Paths.get(FolderConfig.getCanonicalRoot(), "certificates", "qrcode.min.js");
+		Path path = Paths.get(folderModule.getCanonicalRoot(), "certificates", "qrcode.min.js");
 		return path;
 	}
 	
