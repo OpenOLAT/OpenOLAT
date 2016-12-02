@@ -40,12 +40,12 @@ import org.olat.repository.RepositoryService;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class Close_1_ExplanationStep extends BasicStep {
+public class Unpublish_1_ExplanationStep extends BasicStep {
 
-	public Close_1_ExplanationStep(UserRequest ureq, RepositoryEntry entry ) {
+	public Unpublish_1_ExplanationStep(UserRequest ureq, RepositoryEntry entry ) {
 		super(ureq);
 		setTranslator(Util.createPackageTranslator(RepositoryService.class, getLocale(), getTranslator()));
-		setNextStep(new Close_2_OptionsStep(ureq, entry));
+		setNextStep(new Unpublish_2_OptionsStep(ureq, entry));
 		setI18nTitleAndDescr("close.ressource.step1", "close.ressource.step1");
 	}
 

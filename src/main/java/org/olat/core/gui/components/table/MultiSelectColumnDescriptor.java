@@ -57,7 +57,7 @@ class MultiSelectColumnDescriptor implements ColumnDescriptor {
 			}
 		} else {
 			boolean checked = table.getMultiSelectSelectedRows().get(currentPosInModel);
-			boolean readonly = table.getMultiSelectReadonlyRows().get(currentPosInModel);
+			boolean readonly = table.getMultiSelectReadonlyRows().get(currentPosInModel) || table.isMultiSelectAsDisabled();
 			sb.append("<input type=\"checkbox\" name=\"" + TableRenderer.TABLE_MULTISELECT_GROUP + VALUE).append(currentPosInModel).append(DOUBLE_QUOTE);
 			if (checked){
 				sb.append(" checked=\"checked\"");

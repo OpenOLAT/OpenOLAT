@@ -12,5 +12,11 @@ $r.render("table")
 	#if($r.available("details.delete"))
 		$r.render("details.delete")
 	#end
+	#if($r.available("tools.restore"))
+		$r.render("tools.restore")
+	#end
+		#if($r.available("tools.delete.permanently"))
+		$r.render("tools.delete.permanently")
+	#end
 </div>
 <div class="o_xsmall">$r.translate("table.header.access.desc")</div>

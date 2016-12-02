@@ -69,7 +69,6 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class GTACoachController extends GTAAbstractController implements AssessmentFormCallback {
 
-	private Link reviewedButton, needRevisionsButton;
 
 	private DirectoryController solutionsCtrl;
 	private DirectoryController correctionsCtrl;
@@ -82,20 +81,24 @@ public class GTACoachController extends GTAAbstractController implements Assessm
 	private DialogBoxController confirmRevisionsCtrl, confirmReviewDocumentCtrl, confirmCollectCtrl, confirmBackToSubmissionCtrl;
 	private ContactFormController emailController;
 	private CloseableModalController cmc;
-	private Link emailLink, collectSubmissionsLink, backToSubmissionLink;
+
+	private Link reviewedButton, needRevisionsButton, emailLink, collectSubmissionsLink, backToSubmissionLink;
 	
+	private final UserCourseEnvironment coachCourseEnv;
 	
 	@Autowired
 	private UserManager userManager;
 	
 	public GTACoachController(UserRequest ureq, WindowControl wControl, CourseEnvironment courseEnv, GTACourseNode gtaNode,
-			BusinessGroup assessedGroup, boolean withTitle, boolean withGrading, boolean withSubscription) {
-		this(ureq, wControl, courseEnv, gtaNode, assessedGroup, null, withTitle, withGrading, withSubscription);
+			UserCourseEnvironment coachCourseEnv, BusinessGroup assessedGroup,
+			boolean withTitle, boolean withGrading, boolean withSubscription) {
+		this(ureq, wControl, courseEnv, gtaNode, coachCourseEnv, assessedGroup, null, withTitle, withGrading, withSubscription);
 	}
 	
 	public GTACoachController(UserRequest ureq, WindowControl wControl, CourseEnvironment courseEnv, GTACourseNode gtaNode,
-			Identity assessedIdentity, boolean withTitle, boolean withGrading, boolean withSubscription) {
-		this(ureq, wControl, courseEnv, gtaNode, null, assessedIdentity, withTitle, withGrading, withSubscription);
+			UserCourseEnvironment coachCourseEnv, Identity assessedIdentity,
+			boolean withTitle, boolean withGrading, boolean withSubscription) {
+		this(ureq, wControl, courseEnv, gtaNode, coachCourseEnv, null, assessedIdentity, withTitle, withGrading, withSubscription);
 	}
 
 	/**
@@ -110,8 +113,12 @@ public class GTACoachController extends GTAAbstractController implements Assessm
 	 * @param withGrading Allow to remove the grading panel in assessment tool
 	 */
 	private GTACoachController(UserRequest ureq, WindowControl wControl, CourseEnvironment courseEnv, GTACourseNode gtaNode,
-			BusinessGroup assessedGroup, Identity assessedIdentity, boolean withTitle, boolean withGrading, boolean withSubscription) {
+			UserCourseEnvironment coachCourseEnv, BusinessGroup assessedGroup, Identity assessedIdentity,
+			boolean withTitle, boolean withGrading, boolean withSubscription) {
 		super(ureq, wControl, gtaNode, courseEnv, null, assessedGroup, assessedIdentity, withTitle, withGrading, withSubscription);
+		this.coachCourseEnv = coachCourseEnv;
+		initContainer(ureq);
+		process(ureq);
 	}
 
 	@Override
@@ -122,10 +129,12 @@ public class GTACoachController extends GTAAbstractController implements Assessm
 		reviewedButton.setElementCssClass("o_sel_course_gta_reviewed");
 		reviewedButton.setIconLeftCSS("o_icon o_icon_accepted");
 		reviewedButton.setPrimary(true);
+		reviewedButton.setVisible(!coachCourseEnv.isCourseReadOnly());
 		if(config.getBooleanSafe(GTACourseNode.GTASK_REVISION_PERIOD)) {
 			needRevisionsButton = LinkFactory.createCustomLink("coach.need.revision.button", "need-revision", "coach.need.revision.button", Link.BUTTON, mainVC, this);
 			needRevisionsButton.setElementCssClass("o_sel_course_gta_need_revision");
 			needRevisionsButton.setPrimary(true);
+			needRevisionsButton.setVisible(!coachCourseEnv.isCourseReadOnly());
 			needRevisionsButton.setIconLeftCSS("o_icon o_icon_rejected");
 		}
 	
@@ -227,7 +236,7 @@ public class GTACoachController extends GTAAbstractController implements Assessm
 		if(config.getBooleanSafe(GTACourseNode.GTASK_SUBMIT) && assignedTask != null) {
 			Date now = new Date();
 			DueDate dueDate = getSubmissionDueDate(assignedTask);
-			if(dueDate == null || dueDate.getDueDate() == null || now.before(dueDate.getDueDate())) {
+			if(!coachCourseEnv.isCourseReadOnly() && (dueDate == null || dueDate.getDueDate() == null || now.before(dueDate.getDueDate()))) {
 				backToSubmissionLink = LinkFactory.createButton("coach.back.to.submission", mainVC, this);
 				backToSubmissionLink.setUserObject(assignedTask);
 			}
@@ -236,7 +245,7 @@ public class GTACoachController extends GTAAbstractController implements Assessm
 	
 	private void collect(Task assignedTask) {
 		DueDate dueDate = getSubmissionDueDate(assignedTask);
-		if(dueDate == null || dueDate.getDueDate() == null) {
+		if(!coachCourseEnv.isCourseReadOnly() && (dueDate == null || dueDate.getDueDate() == null)) {
 			collectSubmissionsLink = LinkFactory.createButton("coach.collect.task", mainVC, this);
 			collectSubmissionsLink.setUserObject(assignedTask);
 		}
@@ -286,13 +295,13 @@ public class GTACoachController extends GTAAbstractController implements Assessm
 		}
 		
 		submitCorrectionsCtrl = new SubmitDocumentsController(ureq, getWindowControl(), task, documentsDir, documentsContainer, -1,
-				gtaNode, courseEnv, null, "coach.document");
+				gtaNode, courseEnv, coachCourseEnv.isCourseReadOnly(), null, "coach.document");
 		listenTo(submitCorrectionsCtrl);
 		mainVC.put("corrections", submitCorrectionsCtrl.getInitialComponent());
 		
-		reviewedButton.setVisible(true);
+		reviewedButton.setVisible(!coachCourseEnv.isCourseReadOnly());
 		if(config.getBooleanSafe(GTACourseNode.GTASK_REVISION_PERIOD)) {
-			needRevisionsButton.setVisible(true);
+			needRevisionsButton.setVisible(!coachCourseEnv.isCourseReadOnly());
 		}
 	}
 	
@@ -356,10 +365,10 @@ public class GTACoachController extends GTAAbstractController implements Assessm
 			if(GTAType.individual.name().equals(config.getStringValue(GTACourseNode.GTASK_TYPE))) {
 				UserCourseEnvironment assessedUserCourseEnv = getAssessedUserCourseEnvironment();
 				revisionDocumentsCtrl = new GTACoachRevisionAndCorrectionsController(ureq, getWindowControl(),
-					courseEnv, assignedTask, gtaNode, assessedGroup, assessedIdentity, assessedUserCourseEnv, taskListEventResource);
+					courseEnv, assignedTask, gtaNode, coachCourseEnv, assessedGroup, assessedIdentity, assessedUserCourseEnv, taskListEventResource);
 			} else {
 				revisionDocumentsCtrl = new GTACoachRevisionAndCorrectionsController(ureq, getWindowControl(),
-					courseEnv, assignedTask, gtaNode, assessedGroup, null, null, taskListEventResource);
+					courseEnv, assignedTask, gtaNode, coachCourseEnv, assessedGroup, null, null, taskListEventResource);
 			}
 			listenTo(revisionDocumentsCtrl);
 			mainVC.put("revisionDocs", revisionDocumentsCtrl.getInitialComponent());
@@ -422,13 +431,13 @@ public class GTACoachController extends GTAAbstractController implements Assessm
 		mainVC.put("grading", new Panel("empty"));
 		if(assessedGroup != null) {
 			groupGradingCtrl = new GTACoachedGroupGradingController(ureq, getWindowControl(),
-					courseEnv, gtaNode, assessedGroup, taskList, assignedTask);
+					coachCourseEnv, courseEnv, gtaNode, assessedGroup, taskList, assignedTask);
 			listenTo(groupGradingCtrl);
 			mainVC.put("grading", groupGradingCtrl.getInitialComponent());
 		} else if(assessedIdentity != null) {
 			OLATResource courseOres = courseEntry.getOlatResource();
 			participantGradingCtrl = new GTACoachedParticipantGradingController(ureq, getWindowControl(),
-					courseOres, gtaNode, assignedTask, assessedIdentity);
+					courseOres, gtaNode, assignedTask, coachCourseEnv, assessedIdentity);
 			listenTo(participantGradingCtrl);
 			mainVC.put("grading", participantGradingCtrl.getInitialComponent());
 		}

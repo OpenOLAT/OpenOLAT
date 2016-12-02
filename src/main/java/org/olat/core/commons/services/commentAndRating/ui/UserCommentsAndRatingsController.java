@@ -138,8 +138,8 @@ public class UserCommentsAndRatingsController extends BasicController implements
 			}
 			// Init view with values from DB
 			updateRatingView();
-
 		}
+		
 		// Register to event channel for comments count change events
 		USER_COMMENTS_AND_RATING_CHANNEL = ores;
 		CoordinatorManager.getInstance().getCoordinator().getEventBus().registerFor(this, getIdentity(), USER_COMMENTS_AND_RATING_CHANNEL);

@@ -19,12 +19,16 @@
  */
 package org.olat.repository.manager;
 
+import java.util.Calendar;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 
+import javax.persistence.LockModeType;
 import javax.persistence.TypedQuery;
 
+import org.olat.commons.calendar.CalendarUtils;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.util.StringHelper;
 import org.olat.repository.RepositoryEntry;
@@ -54,6 +58,21 @@ public class RepositoryEntryDAO {
 		}
 		return entries.get(0);
 		
+	}
+	
+	public RepositoryEntry loadForUpdate(RepositoryEntry re) {
+		//first remove it from caches
+		dbInstance.getCurrentEntityManager().detach(re);
+
+		StringBuilder query = new StringBuilder();
+		query.append("select v from ").append(RepositoryEntry.class.getName()).append(" as v ")
+		     .append(" where v.key=:repoKey");
+
+		List<RepositoryEntry> entries = dbInstance.getCurrentEntityManager().createQuery(query.toString(), RepositoryEntry.class)
+				.setParameter("repoKey", re.getKey())
+				.setLockMode(LockModeType.PESSIMISTIC_WRITE)
+				.getResultList();
+		return entries == null || entries.isEmpty() ? null : entries.get(0);
 	}
 	
 	public RepositoryEntry loadByResourceKey(Long resourceKey) {
@@ -170,6 +189,24 @@ public class RepositoryEntryDAO {
 				.setFirstResult(firstResult)
 				.setMaxResults(maxResults)
 				.setParameter("resourceTypeName", resourceTypeName)
+				.getResultList();
+	}
+	
+	public List<RepositoryEntry> getRepositoryEntriesAfterTheEnd() {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select v from ").append(RepositoryEntry.class.getName()).append(" as v ")
+		  .append(" inner join fetch v.olatResource as ores")
+		  .append(" inner join fetch v.statistics as statistics")
+		  .append(" inner join fetch v.lifecycle as lifecycle")
+		  .append(" where lifecycle.validTo>:now");
+		
+		Calendar cal = Calendar.getInstance();
+		CalendarUtils.getEndOfDay(cal);
+		Date endOfDay = cal.getTime();
+		
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), RepositoryEntry.class)
+				.setParameter("now", endOfDay)
 				.getResultList();
 	}
 }

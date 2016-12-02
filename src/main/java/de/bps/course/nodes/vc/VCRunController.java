@@ -54,15 +54,14 @@ public class VCRunController extends BasicController {
   private TableController tableCtr;
 
   // data
-  private VCProvider provider;
   private VCConfiguration config;
   private VCDatesTableDataModel tableData;
   private List<MeetingDate> dateList = new ArrayList<MeetingDate>();
   private MeetingDate meeting;
 
-  public VCRunController(UserRequest ureq, WindowControl wControl, String roomId, String name, String description, VCConfiguration config, VCProvider provider, boolean isModerator) {
+  public VCRunController(UserRequest ureq, WindowControl wControl, String roomId, String name, String description, VCConfiguration config, VCProvider provider,
+		  boolean isModerator, boolean readOnly) {
     super(ureq, wControl);
-    this.provider = provider;
     this.config = config;
 
     if(this.config.getMeetingDates() != null) dateList.addAll(this.config.getMeetingDates());
@@ -104,7 +103,7 @@ public class VCRunController extends BasicController {
     boolean show = isModerator | (isUseDates & isMeeting) | !isUseDates;
     runVC.contextPut("show", show);
 
-    displayCtr = this.provider.createDisplayController(ureq, wControl, roomId, name, description, isModerator, config);
+    displayCtr = provider.createDisplayController(ureq, wControl, roomId, name, description, isModerator, readOnly, config);
     runVC.put("displayCtr", displayCtr.getInitialComponent());
 
     putInitialPanel(runVC);

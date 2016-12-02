@@ -99,6 +99,7 @@ class SubmitDocumentsController extends FormBasicController {
 	private final SubscriptionContext subscriptionContext;
 	
 	private boolean open = true;
+	private final boolean readOnly;
 	private final Date deadline;
 	
 	@Autowired
@@ -110,7 +111,7 @@ class SubmitDocumentsController extends FormBasicController {
 	
 	public SubmitDocumentsController(UserRequest ureq, WindowControl wControl, Task assignedTask,
 			File documentsDir, VFSContainer documentsContainer, int maxDocs, GTACourseNode cNode,
-			CourseEnvironment courseEnv, Date deadline, String docI18nKey) {
+			CourseEnvironment courseEnv, boolean readOnly, Date deadline, String docI18nKey) {
 		super(ureq, wControl, "documents");
 		this.assignedTask = assignedTask;
 		this.documentsDir = documentsDir;
@@ -118,6 +119,7 @@ class SubmitDocumentsController extends FormBasicController {
 		this.maxDocs = maxDocs;
 		this.docI18nKey = docI18nKey;
 		this.deadline = deadline;
+		this.readOnly = readOnly;
 		this.config = cNode.getModuleConfiguration();
 		subscriptionContext = gtaManager.getSubscriptionContext(courseEnv, cNode);
 		initForm(ureq);
@@ -142,23 +144,27 @@ class SubmitDocumentsController extends FormBasicController {
 			uploadDocButton = uifactory.addFormLink("upload.document", formLayout, Link.BUTTON);
 			uploadDocButton.setIconLeftCSS("o_icon o_icon_upload");
 			uploadDocButton.setElementCssClass("o_sel_course_gta_submit_file");
+			uploadDocButton.setVisible(!readOnly);
 		}
 		if(config.getBooleanSafe(GTACourseNode.GTASK_EMBBEDED_EDITOR)) {
 			createDocButton = uifactory.addFormLink("open.editor", formLayout, Link.BUTTON);
 			createDocButton.setIconLeftCSS("o_icon o_icon_edit");
 			createDocButton.setElementCssClass("o_sel_course_gta_create_doc");
 			createDocButton.setI18nKey(docI18nKey + ".open.editor");
+			createDocButton.setVisible(!readOnly);
 		}
 
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(docI18nKey, DocCols.document.ordinal()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(DocCols.date.i18nKey(), DocCols.date.ordinal()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(DocCols.uploadedBy.i18nKey(), DocCols.uploadedBy.ordinal()));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("edit", DocCols.edit.ordinal(), "edit",
-				new BooleanCellRenderer(
-						new StaticFlexiCellRenderer(translate("edit"), "edit"),
-						new StaticFlexiCellRenderer(translate("replace"), "edit"))));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("delete", translate("delete"), "delete"));
+		if(!readOnly) {
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("edit", DocCols.edit.ordinal(), "edit",
+					new BooleanCellRenderer(
+							new StaticFlexiCellRenderer(translate("edit"), "edit"),
+							new StaticFlexiCellRenderer(translate("replace"), "edit"))));
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("delete", translate("delete"), "delete"));
+		}
 		
 		model = new DocumentTableModel(columnsModel);
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", model, getTranslator(), formLayout);

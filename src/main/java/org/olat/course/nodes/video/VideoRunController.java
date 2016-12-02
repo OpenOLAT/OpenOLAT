@@ -39,6 +39,7 @@ import org.olat.course.nodes.TitledWrapperHelper;
 import org.olat.course.nodes.VideoCourseNode;
 import org.olat.course.nodes.cp.CPRunController;
 import org.olat.course.run.navigation.NodeRunConstructionResult;
+import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.video.ui.VideoDisplayController;
 import org.olat.modules.video.ui.VideoEvent;
@@ -62,6 +63,7 @@ public class VideoRunController extends BasicController {
 	
 	private VideoDisplayController videoDispCtr;
 	private VideoCourseNode videoNode;
+	private final UserCourseEnvironment userCourseEnv;
 
 	@Autowired
 	private RepositoryService repositoryService;
@@ -73,13 +75,14 @@ public class VideoRunController extends BasicController {
 	 * @param userCourseEnv
 	 * @param videoNode
 	 */
-	public VideoRunController(ModuleConfiguration config, WindowControl wControl, UserRequest ureq, VideoCourseNode videoNode) {
+	public VideoRunController(ModuleConfiguration config, WindowControl wControl, UserRequest ureq, UserCourseEnvironment userCourseEnv, VideoCourseNode videoNode) {
 		super(ureq,wControl);
 		
 		// assertion to make sure the moduleconfig is valid
 		if (!VideoEditController.isModuleConfigValid(config)) throw new AssertException("videorun controller had an invalid module config:"	+ config.toString());
 		this.config = config;
 		this.videoNode = videoNode;
+		this.userCourseEnv = userCourseEnv;
 		addLoggingResourceable(LoggingResourceable.wrap(videoNode));
 
 		
@@ -154,13 +157,16 @@ public class VideoRunController extends BasicController {
 		
 		switch(config.getStringValue(VideoEditController.CONFIG_KEY_DESCRIPTION_SELECT,"none")) {
 			case "resourceDescription":
-					videoDispCtr = new VideoDisplayController(ureq, getWindowControl(), videoEntry, autoplay, comments, ratings, true, ident, false, false, "");
+					videoDispCtr = new VideoDisplayController(ureq, getWindowControl(), videoEntry, autoplay, comments, ratings, true, ident,
+							false, false, "", userCourseEnv.isCourseReadOnly());
 					break;
 			case "customDescription":
-					videoDispCtr = new VideoDisplayController(ureq, getWindowControl(), videoEntry, autoplay, comments, ratings, true, ident, true, false, customtext);
+					videoDispCtr = new VideoDisplayController(ureq, getWindowControl(), videoEntry, autoplay, comments, ratings, true, ident,
+							true, false, customtext, userCourseEnv.isCourseReadOnly());
 					break;
 			case "none":
-					videoDispCtr = new VideoDisplayController(ureq, getWindowControl(), videoEntry, autoplay, comments, ratings, true, ident, true, false, "");
+					videoDispCtr = new VideoDisplayController(ureq, getWindowControl(), videoEntry, autoplay, comments, ratings, true, ident,
+							true, false, "", userCourseEnv.isCourseReadOnly());
 					break;
 		}		
 		listenTo(videoDispCtr);

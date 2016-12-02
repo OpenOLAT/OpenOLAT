@@ -65,6 +65,9 @@ import org.olat.core.id.Identity;
 import org.olat.core.id.IdentityEnvironment;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
+import org.olat.core.logging.activity.LearningResourceLoggingAction;
+import org.olat.core.logging.activity.OlatResourceableType;
+import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.coordinate.LockResult;
 import org.olat.core.util.mail.MailPackage;
@@ -95,6 +98,7 @@ import org.olat.restapi.support.vo.CourseVO;
 import org.olat.restapi.support.vo.OlatResourceVO;
 import org.olat.user.restapi.UserVO;
 import org.olat.user.restapi.UserVOFactory;
+import org.olat.util.logging.activity.LoggingResourceable;
 
 import com.thoughtworks.xstream.XStream;
 
@@ -311,8 +315,9 @@ public class CourseWebService {
 	}
 
 	/**
-	 * Delete a course by id
-	 * @response.representation.200.doc The metadatas of the created course
+	 * Delete a course by id.
+	 * 
+	 * @response.representation.200.doc The metadatas of the deleted course
 	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
 	 * @response.representation.404.doc The course not found
 	 * @param request The HTTP request
@@ -328,11 +333,39 @@ public class CourseWebService {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		}
 		
+		RepositoryService rs = CoreSpringFactory.getImpl(RepositoryService.class);
+		RepositoryEntry re = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
+		rs.deleteSoftly(re);
+		ThreadLocalUserActivityLogger.log(LearningResourceLoggingAction.LEARNING_RESOURCE_TRASH, getClass(),
+				LoggingResourceable.wrap(re, OlatResourceableType.genRepoEntry));
+		return Response.ok().build();
+	}
+	
+	/**
+	 * Delete a course permanently by id.
+	 * 
+	 * @response.representation.200.doc The metadatas of the deleted course
+	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
+	 * @response.representation.404.doc The course not found
+	 * @param request The HTTP request
+	 * @return It returns the XML representation of the <code>Structure</code>
+	 *         object representing the course.
+	 */
+	@DELETE
+	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
+	@Path("permanent")
+	public Response deleteCoursePermanently(@Context HttpServletRequest request) {
+		if(!isAuthor(request)) {
+			return Response.serverError().status(Status.UNAUTHORIZED).build();
+		} else if (!isAuthorEditor(course, request)) {
+			return Response.serverError().status(Status.UNAUTHORIZED).build();
+		}
+		
 		UserRequest ureq = getUserRequest(request);
 		RepositoryService rs = CoreSpringFactory.getImpl(RepositoryService.class);
 		RepositoryEntry re = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
 		
-		ErrorList errors = rs.delete(re, ureq.getIdentity(), ureq.getUserSession().getRoles(), ureq.getLocale());
+		ErrorList errors = rs.deletePermanently(re, ureq.getIdentity(), ureq.getUserSession().getRoles(), ureq.getLocale());
 		if(errors.hasErrors()) {
 			return Response.serverError().status(500).build();
 		}

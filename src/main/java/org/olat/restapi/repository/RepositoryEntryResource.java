@@ -62,6 +62,9 @@ import org.olat.core.gui.media.MediaResource;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
+import org.olat.core.logging.activity.LearningResourceLoggingAction;
+import org.olat.core.logging.activity.OlatResourceableType;
+import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.coordinate.LockResult;
 import org.olat.fileresource.FileResourceManager;
@@ -83,6 +86,7 @@ import org.olat.restapi.support.vo.RepositoryEntryLifecycleVO;
 import org.olat.restapi.support.vo.RepositoryEntryVO;
 import org.olat.user.restapi.UserVO;
 import org.olat.user.restapi.UserVOFactory;
+import org.olat.util.logging.activity.LoggingResourceable;
 
 /**
  * Description:<br>
@@ -698,40 +702,41 @@ public class RepositoryEntryResource {
     return Response.serverError().status(Status.INTERNAL_SERVER_ERROR).build();
   }
 
-  private RepositoryEntry replaceFileResource(Identity identity, RepositoryEntry re, File fResource) {
-    if(re == null) throw new NullPointerException("RepositoryEntry cannot be null");
+	private RepositoryEntry replaceFileResource(Identity identity, RepositoryEntry re, File fResource) {
+		if (re == null) throw new NullPointerException("RepositoryEntry cannot be null");
 
-    FileResourceManager frm = FileResourceManager.getInstance();
-    File currentResource = frm.getFileResource(re.getOlatResource());
-    if(currentResource == null || !currentResource.exists()) {
-      log.debug("Current resource file doesn't exist");
-      return null;
-    }
+		FileResourceManager frm = FileResourceManager.getInstance();
+		File currentResource = frm.getFileResource(re.getOlatResource());
+		if (currentResource == null || !currentResource.exists()) {
+			log.debug("Current resource file doesn't exist");
+			return null;
+		}
 
-    String typeName = re.getOlatResource().getResourceableTypeName();
-    if(typeName.equals(ImsCPFileResource.TYPE_NAME)) {
-      if(currentResource.delete()) {
-        FileUtils.copyFileToFile(fResource, currentResource, false);
+		String typeName = re.getOlatResource().getResourceableTypeName();
+		if (typeName.equals(ImsCPFileResource.TYPE_NAME)) {
+			if (currentResource.delete()) {
+				FileUtils.copyFileToFile(fResource, currentResource, false);
 
-        String repositoryHome = FolderConfig.getCanonicalRepositoryHome();
-        String relUnzipDir = frm.getUnzippedDirRel(re.getOlatResource());
-        File unzipDir = new File(repositoryHome, relUnzipDir);
-        if(unzipDir != null && unzipDir.exists()) {
-          FileUtils.deleteDirsAndFiles(unzipDir, true, true);
-        }
-        frm.unzipFileResource(re.getOlatResource());
-      }
-      log.audit("Resource: " + re.getOlatResource() + " replaced by " + identity.getName());
-      return re;
-    }
+				String repositoryHome = FolderConfig.getCanonicalRepositoryHome();
+				String relUnzipDir = frm.getUnzippedDirRel(re.getOlatResource());
+				File unzipDir = new File(repositoryHome, relUnzipDir);
+				if (unzipDir != null && unzipDir.exists()) {
+					FileUtils.deleteDirsAndFiles(unzipDir, true, true);
+				}
+				frm.unzipFileResource(re.getOlatResource());
+			}
+			log.audit("Resource: " + re.getOlatResource() + " replaced by " + identity.getName());
+			return re;
+		}
 
-    log.debug("Cannot replace a resource of the type: " + typeName);
-    return null;
-  }
+		log.debug("Cannot replace a resource of the type: " + typeName);
+		return null;
+	}
   
-  /**
-	 * Delete a course by id
-	 * @response.representation.200.doc The metadatas of the created course
+    /**
+	 * Delete a resource by id
+	 * 
+	 * @response.representation.200.doc The metadatas of the deleted resource
 	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
 	 * @response.representation.404.doc The course not found
 	 * @param courseId The course resourceable's id
@@ -752,9 +757,41 @@ public class RepositoryEntryResource {
 		} else if (!isAuthorEditor(re, request)) {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		}
+		RepositoryService rs = CoreSpringFactory.getImpl(RepositoryService.class);
+		rs.deleteSoftly(re);
+		ThreadLocalUserActivityLogger.log(LearningResourceLoggingAction.LEARNING_RESOURCE_TRASH, getClass(),
+				LoggingResourceable.wrap(re, OlatResourceableType.genRepoEntry));
+		return Response.ok().build();
+	}
+	
+	/**
+	 * Delete a resource permanently by id.
+	 * 
+	 * @response.representation.200.doc The metadatas of the deleted resource
+	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
+	 * @response.representation.404.doc The course not found
+	 * @param courseId The course resourceable's id
+	 * @param request The HTTP request
+	 * @return It returns the XML representation of the <code>Structure</code>
+	 *         object representing the course.
+	 */
+	@DELETE
+	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
+	@Path("permanent")
+	public Response deletePermanently(@PathParam("repoEntryKey") String repoEntryKey, @Context HttpServletRequest request) {
+		if(!isAuthor(request)) {
+			return Response.serverError().status(Status.UNAUTHORIZED).build();
+		}
+		
+		RepositoryEntry re = lookupRepositoryEntry(repoEntryKey);
+		if(re == null) {
+			return Response.serverError().status(Status.NOT_FOUND).build();
+		} else if (!isAuthorEditor(re, request)) {
+			return Response.serverError().status(Status.UNAUTHORIZED).build();
+		}
 		UserRequest ureq = getUserRequest(request);
 		RepositoryService rs = CoreSpringFactory.getImpl(RepositoryService.class);
-		ErrorList errors = rs.delete(re, ureq.getIdentity(), ureq.getUserSession().getRoles(), ureq.getLocale());
+		ErrorList errors = rs.deletePermanently(re, ureq.getIdentity(), ureq.getUserSession().getRoles(), ureq.getLocale());
 		if(errors.hasErrors()) {
 			return Response.serverError().status(500).build();
 		}

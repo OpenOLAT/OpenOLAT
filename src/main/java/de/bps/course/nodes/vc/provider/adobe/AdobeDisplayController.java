@@ -71,7 +71,8 @@ public class AdobeDisplayController extends BasicController {
 
 	private VCProvider adobe;
 
-	public AdobeDisplayController(UserRequest ureq, WindowControl wControl, String roomId, String name, String description, boolean isModerator, AdobeConnectConfiguration config, VCProvider provider) {
+	public AdobeDisplayController(UserRequest ureq, WindowControl wControl, String roomId, String name, String description,
+			boolean isModerator, boolean readOnly, AdobeConnectConfiguration config, VCProvider provider) {
 		super(ureq, wControl);
 		this.roomId = roomId;
 		this.adobe = provider;
@@ -105,11 +106,17 @@ public class AdobeDisplayController extends BasicController {
 		runVC = createVelocityContainer("run");
 		
 		startModerator = LinkFactory.createButton(COMMAND_START_MEETING, runVC, this);
+		startModerator.setVisible(!readOnly);
 		startJoinLearner = LinkFactory.createButton(COMMAND_START_JOIN_MEETING, runVC, this);
+		startJoinLearner.setVisible(!readOnly);
 		joinLearner = LinkFactory.createButton(COMMAND_JOIN_LEARNER, runVC, this);
+		joinLearner.setVisible(!readOnly);
 		joinModerator = LinkFactory.createButton(COMMAND_JOIN_MODERATOR, runVC, this);
+		joinModerator.setVisible(!readOnly);
 		removeMeeting = LinkFactory.createButton(COMMAND_REMOVE_MEETING, runVC, this);
+		removeMeeting.setVisible(!readOnly);
 		updateMeeting = LinkFactory.createButton(COMMAND_SYNC_MEETING, runVC, this);
+		updateMeeting.setVisible(!readOnly);
 		// set target to be able to open new browser window on event
 		startJoinLearner.setTarget("_blank");
 		joinLearner.setTarget("_blank");

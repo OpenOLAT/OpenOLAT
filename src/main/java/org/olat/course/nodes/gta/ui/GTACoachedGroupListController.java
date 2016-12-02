@@ -41,7 +41,7 @@ import org.olat.course.nodes.gta.GTAManager;
 import org.olat.course.nodes.gta.TaskLight;
 import org.olat.course.nodes.gta.ui.CoachGroupsTableModel.CGCols;
 import org.olat.course.nodes.gta.ui.events.SelectBusinessGroupEvent;
-import org.olat.course.run.environment.CourseEnvironment;
+import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.group.BusinessGroup;
 import org.olat.repository.RepositoryEntry;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -61,14 +61,16 @@ public class GTACoachedGroupListController extends GTACoachedListController {
 	private GTACoachController coachingCtrl;
 	
 	private final List<BusinessGroup> coachedGroups;
+	private final UserCourseEnvironment coachCourseEnv;
 	
 	@Autowired
 	private GTAManager gtaManager;
 	
 	public GTACoachedGroupListController(UserRequest ureq, WindowControl wControl, BreadcrumbPanel stackPanel,
-			CourseEnvironment courseEnv, GTACourseNode gtaNode, List<BusinessGroup> coachedGroups) {
-		super(ureq, wControl, courseEnv, gtaNode);
+			UserCourseEnvironment coachCourseEnv, GTACourseNode gtaNode, List<BusinessGroup> coachedGroups) {
+		super(ureq, wControl, coachCourseEnv.getCourseEnvironment(), gtaNode);
 		this.coachedGroups = coachedGroups;
+		this.coachCourseEnv = coachCourseEnv;
 		this.stackPanel = stackPanel;
 		initForm(ureq);
 		updateModel();
@@ -143,7 +145,7 @@ public class GTACoachedGroupListController extends GTACoachedListController {
 		} else {
 			removeAsListenerAndDispose(coachingCtrl);
 			
-			coachingCtrl = new GTACoachController(ureq, getWindowControl(), courseEnv, gtaNode, businessGroup, true, true, true);
+			coachingCtrl = new GTACoachController(ureq, getWindowControl(), courseEnv, gtaNode, coachCourseEnv, businessGroup, true, true, true);
 			listenTo(coachingCtrl);
 			stackPanel.pushController(businessGroup.getName(), coachingCtrl);
 		}

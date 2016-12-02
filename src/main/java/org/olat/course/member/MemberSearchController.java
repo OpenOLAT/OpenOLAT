@@ -27,6 +27,7 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Identity;
 import org.olat.course.assessment.ui.tool.AssessmentIdentityCourseController;
+import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.group.ui.main.AbstractMemberListController;
 import org.olat.group.ui.main.MemberView;
 import org.olat.group.ui.main.SearchMembersParams;
@@ -38,14 +39,16 @@ import org.olat.repository.RepositoryEntry;
  */
 public class MemberSearchController extends AbstractMemberListController {
 	
+	private final UserCourseEnvironment coachCourseEnv;
 	private SearchMembersParams searchParams = new SearchMembersParams();
 	
 	private MemberSearchForm searchForm;
 	private AssessmentIdentityCourseController identityAssessmentController;
 	
 	public MemberSearchController(UserRequest ureq, WindowControl wControl, TooledStackedPanel toolbarPanel,
-			RepositoryEntry repoEntry) {
-		super(ureq, wControl, repoEntry, "all_member_list", toolbarPanel);
+			RepositoryEntry repoEntry, UserCourseEnvironment coachCourseEnv) {
+		super(ureq, wControl, repoEntry, "all_member_list", coachCourseEnv.isCourseReadOnly(), toolbarPanel);
+		this.coachCourseEnv = coachCourseEnv;
 	}
 
 	@Override
@@ -82,7 +85,7 @@ public class MemberSearchController extends AbstractMemberListController {
 		
 		Identity assessedIdentity = securityManager.loadIdentityByKey(member.getIdentityKey());
 		identityAssessmentController = new AssessmentIdentityCourseController(ureq, getWindowControl(), toolbarPanel,
-				repoEntry, assessedIdentity);
+				repoEntry, coachCourseEnv, assessedIdentity);
 		listenTo(identityAssessmentController);
 		
 		String displayName = userManager.getUserDisplayName(assessedIdentity);

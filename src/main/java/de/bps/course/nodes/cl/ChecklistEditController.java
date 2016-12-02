@@ -135,7 +135,7 @@ public class ChecklistEditController extends ActivateableTabbableDefaultControll
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
 		if(source.equals(manageCheckpointsButton)) {
-			manageController = ChecklistUIFactory.getInstance().createManageCheckpointsController(ureq, getWindowControl(), checklist, course);
+			manageController = ChecklistUIFactory.getInstance().createManageCheckpointsController(ureq, getWindowControl(), checklist, course, true);
 			manageController.addControllerListener(this);
 			Translator clTranslator = Util.createPackageTranslator(Checklist.class, ureq.getLocale());
 			cmcManage = new CloseableModalController(getWindowControl(), clTranslator.translate("cl.close"), manageController.getInitialComponent(), true, clTranslator.translate("cl.manage.title"));

@@ -7,16 +7,18 @@
 		<i class="o_icon o_icon_error"> </i>
 		$r.translate("run.revision.period.description")
 	</div>
-
-	<h5>$r.translate("submit.documents.title")</h5>
-	<p>$r.translate("submit.documents.desc")</p>
+	#if($r.visible("run.submit.revision.button"))
+		<h5>$r.translate("submit.documents.title")</h5>
+		<p>$r.translate("submit.documents.desc")</p>
+	#end
 	$r.render("uploadRevisions")
-	
-	<h5>$r.translate("submit.submit.title")</h5>
-	<p>$r.translate("submit.submit.desc")</p>
-	<div class="o_button_group">
-		$r.render("run.submit.revision.button")
-	</div>
+	#if($r.visible("run.submit.revision.button"))
+		<h5>$r.translate("submit.submit.title")</h5>
+		<p>$r.translate("submit.submit.desc")</p>
+		<div class="o_button_group">
+			$r.render("run.submit.revision.button")
+		</div>
+	#end
 #end
 #if($r.available("revisions"))
 	$r.render("revisions")

@@ -41,6 +41,7 @@ import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.logging.LogDelegator;
 import org.olat.core.util.Util;
 import org.olat.core.util.resource.OresHelper;
+import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
 
 /**
@@ -56,6 +57,7 @@ public class InfoMessageNotificationHandler extends LogDelegator implements Noti
 
 	private static final String CSS_CLASS_ICON = "o_infomsg_icon";
 	
+	@Override
 	public SubscriptionInfo createSubscriptionInfo(Subscriber subscriber, Locale locale, Date compareDate) {
 		SubscriptionInfo si = null;
 		Publisher p = subscriber.getPublisher();
@@ -70,7 +72,13 @@ public class InfoMessageNotificationHandler extends LogDelegator implements Noti
 				final Long resId = subscriber.getPublisher().getResId();
 				final String resName = subscriber.getPublisher().getResName();
 				String resSubPath = subscriber.getPublisher().getSubidentifier();
-				String displayName = RepositoryManager.getInstance().lookupDisplayNameByOLATResourceableId(resId);
+
+				RepositoryEntry re = RepositoryManager.getInstance().lookupRepositoryEntry(OresHelper.createOLATResourceableInstance(resName, resId), false);
+				if(re.getRepositoryEntryStatus().isClosed() || re.getRepositoryEntryStatus().isUnpublished()) {
+					return NotificationsManager.getInstance().getNoSubscriptionInfo();
+				}
+				
+				String displayName = re.getDisplayname();
 				Translator translator = Util.createPackageTranslator(this.getClass(), locale);
 				String title = translator.translate("notification.title", new String[]{ displayName });
 				si = new SubscriptionInfo(subscriber.getKey(), p.getType(), new TitleItem(title, CSS_CLASS_ICON), null);

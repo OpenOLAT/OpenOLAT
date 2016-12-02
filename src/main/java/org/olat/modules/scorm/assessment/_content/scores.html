@@ -1,4 +1,6 @@
 <p>
 	$r.render("summary")
-	$r.render("resetButton")
+	#if($r.available("resetButton"))
+		$r.render("resetButton")
+	#end
 </p>

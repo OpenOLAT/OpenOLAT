@@ -62,7 +62,7 @@ import org.olat.util.logging.activity.LoggingResourceable;
 public class ChecklistDisplayController extends BasicController {
 
 	// GUI
-	private boolean canEdit, canManage;
+	private boolean canEdit, canManage, readOnly;
 	private ChecklistAuthorOptionsForm authorOptions;
 	private TableController runChecklistTable;
 	private Panel panel;
@@ -77,12 +77,13 @@ public class ChecklistDisplayController extends BasicController {
 	private ChecklistRunTableDataModel runTableData;
 	private BitSet selection;
 	
-	protected ChecklistDisplayController(UserRequest ureq, WindowControl wControl, Checklist checklist, boolean canEdit, boolean canManage, ICourse course) {
+	public ChecklistDisplayController(UserRequest ureq, WindowControl wControl, Checklist checklist, boolean canEdit, boolean canManage, boolean readOnly, ICourse course) {
 		super(ureq, wControl);
 		// initialize attributes
 		this.checklist = checklist;
 		this.course = course;
 		this.canEdit = canEdit;
+		this.readOnly = readOnly;
 		this.canManage = canManage;
 		this.visibleCheckpoints = checklist.getVisibleCheckpoints();
 		
@@ -92,7 +93,7 @@ public class ChecklistDisplayController extends BasicController {
 	
 	private void displayChecklist(UserRequest ureq) {
 		// add title
-		VelocityContainer displayChecklistVC = this.createVelocityContainer("display");
+		VelocityContainer displayChecklistVC = createVelocityContainer("display");
 		
 		String title = checklist.getTitle() == null ? "" : checklist.getTitle();
 		displayChecklistVC.contextPut("checklistTitle", title);
@@ -100,7 +101,7 @@ public class ChecklistDisplayController extends BasicController {
 		if((canEdit | canManage) && course != null) {
 			displayChecklistVC.contextPut("showAuthorBtns", Boolean.TRUE);
 			removeAsListenerAndDispose(authorOptions);
-			authorOptions = new ChecklistAuthorOptionsForm(ureq, getWindowControl(), canEdit, canManage);
+			authorOptions = new ChecklistAuthorOptionsForm(ureq, getWindowControl(), canEdit && !readOnly, canManage);
 			listenTo(authorOptions);
 			displayChecklistVC.put("authorOptions", authorOptions.getInitialComponent());
 		} else {
@@ -133,7 +134,11 @@ public class ChecklistDisplayController extends BasicController {
 		runChecklistTable.addColumnDescriptor(new DefaultColumnDescriptor("cl.table.description", 1, null, ureq.getLocale()));
 		runChecklistTable.addColumnDescriptor(new DefaultColumnDescriptor("cl.table.mode", 2, null, ureq.getLocale()));
 		runChecklistTable.setMultiSelect(true);
-		runChecklistTable.addMultiSelectAction("cl.table.run.action", "save");
+		if(readOnly) {
+			runChecklistTable.setMultiSelectAsDisabled(true);
+		} else {
+			runChecklistTable.addMultiSelectAction("cl.table.run.action", "save");
+		}
 		runChecklistTable.setTableDataModel(runTableData);
 		
 		for(int i = 0; i < visibleCheckpoints.size(); i++) {
@@ -281,7 +286,7 @@ public class ChecklistDisplayController extends BasicController {
 				cmcEdit.activate();
 			} else if(event == ChecklistAuthorOptionsForm.MANAGE_CHECKPOINT) {
 				removeAsListenerAndDispose(manageController);
-				manageController = ChecklistUIFactory.getInstance().createManageCheckpointsController(ureq, getWindowControl(), checklist, course);
+				manageController = new ChecklistManageCheckpointsController(ureq, getWindowControl(), checklist, course, readOnly);
 				listenTo(manageController);
 				
 				removeAsListenerAndDispose(cmcManage);
@@ -327,7 +332,7 @@ class ChecklistAuthorOptionsForm extends FormBasicController {
 		super(ureq, wControl, LAYOUT_HORIZONTAL);
 		this.canEdit = canEdit;
 		this.canManage = canManage;
-		initForm(this.flc, this, ureq);
+		initForm(ureq);
 	}
 
 	@Override

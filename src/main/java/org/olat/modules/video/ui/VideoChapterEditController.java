@@ -99,7 +99,7 @@ public class VideoChapterEditController extends FormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		
-		videoDisplayCtr = new VideoDisplayController(ureq, getWindowControl(), entry, false, false, false, false, null, false, false, null);
+		videoDisplayCtr = new VideoDisplayController(ureq, getWindowControl(), entry, false, false, false, false, null, false, false, null, false);
 		listenTo(videoDisplayCtr);	
 		videoDisplayCtr.reloadVideo(ureq);
 		

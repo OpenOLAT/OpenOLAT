@@ -136,6 +136,7 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 		startButton = LinkFactory.createButton("start", mainVC, this);
 		startButton.setElementCssClass("o_sel_start_qti21assessment");
 		startButton.setPrimary(true);
+		startButton.setVisible(!userCourseEnv.isCourseReadOnly());
 		
 		if (assessmentType) {
 			checkChats(ureq);
@@ -263,7 +264,7 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
-		if(startButton == source) {
+		if(startButton == source && startButton.isEnabled() && startButton.isVisible()) {
 			doStart(ureq);
 		}
 	}

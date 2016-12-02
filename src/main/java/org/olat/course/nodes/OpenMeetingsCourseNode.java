@@ -127,7 +127,7 @@ public class OpenMeetingsCourseNode extends AbstractAccessableCourseNode {
 		// create run controller
 		OLATResourceable ores = OresHelper.clone(
 				userCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseResource());
-		Controller runCtr = new OpenMeetingsRunController(ureq, wControl, null, ores, getIdent(), admin, moderator);
+		Controller runCtr = new OpenMeetingsRunController(ureq, wControl, null, ores, getIdent(), admin, moderator, userCourseEnv.isCourseReadOnly());
 		Controller controller = TitledWrapperHelper.getWrapper(ureq, wControl, runCtr, this, "o_openmeetings_icon");
 		return new NodeRunConstructionResult(controller);
 	}

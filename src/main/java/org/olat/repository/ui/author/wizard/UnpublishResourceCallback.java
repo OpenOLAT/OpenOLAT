@@ -60,9 +60,9 @@ import org.olat.repository.manager.CatalogManager;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class CloseResourceCallback implements StepRunnerCallback {
+public class UnpublishResourceCallback implements StepRunnerCallback {
 	
-	private static final OLog log = Tracing.createLoggerFor(CloseResourceCallback.class);
+	private static final OLog log = Tracing.createLoggerFor(UnpublishResourceCallback.class);
 	
 	private RepositoryEntry repositoryEntry;
 	
@@ -70,7 +70,7 @@ public class CloseResourceCallback implements StepRunnerCallback {
 	private final RepositoryService repositoryService;
 	private final BusinessGroupService businessGroupService;
 	
-	public CloseResourceCallback(RepositoryEntry entry) {
+	public UnpublishResourceCallback(RepositoryEntry entry) {
 		repositoryEntry = entry;
 		mailManager = CoreSpringFactory.getImpl(MailManager.class);
 		repositoryService = CoreSpringFactory.getImpl(RepositoryService.class);

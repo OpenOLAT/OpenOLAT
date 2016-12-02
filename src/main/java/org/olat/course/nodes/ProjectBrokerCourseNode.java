@@ -683,7 +683,8 @@ public class ProjectBrokerCourseNode extends GenericCourseNode implements Persis
 	 *      org.olat.course.run.userview.UserCourseEnvironment)
 	 */
 	@Override
-	public Controller getDetailsEditController(UserRequest ureq, WindowControl wControl, BreadcrumbPanel stackPanel, UserCourseEnvironment userCourseEnvironment) {
+	public Controller getDetailsEditController(UserRequest ureq, WindowControl wControl, BreadcrumbPanel stackPanel,
+			UserCourseEnvironment coachCourseEnv, UserCourseEnvironment assessedUserCourseEnv) {
 		// prepare file component
 		throw new AssertException("ProjectBroker does not support AssessmentTool");
 	}
@@ -691,9 +692,12 @@ public class ProjectBrokerCourseNode extends GenericCourseNode implements Persis
 	/** Factory method to launch course element assessment tools. limitToGroup is optional to skip he the group choose step */
 	@Override
 	public List<Controller> createAssessmentTools(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
-			CourseEnvironment courseEnv, AssessmentToolOptions options) {
+			UserCourseEnvironment coachCourseEnv, AssessmentToolOptions options) {
 		List<Controller> tools = new ArrayList<>(1);
-		tools.add(new BulkAssessmentToolController(ureq, wControl, courseEnv, this));
+		if(!coachCourseEnv.isCourseReadOnly()) {
+			CourseEnvironment courseEnv = coachCourseEnv.getCourseEnvironment();
+			tools.add(new BulkAssessmentToolController(ureq, wControl, courseEnv, this));
+		}
 		return tools;
 	}
 

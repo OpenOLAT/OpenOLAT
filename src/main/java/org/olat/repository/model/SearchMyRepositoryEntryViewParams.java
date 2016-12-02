@@ -37,6 +37,7 @@ public class SearchMyRepositoryEntryViewParams {
 	private Roles roles;
 	
 	private Boolean marked;
+	private Boolean closed;
 	private boolean membershipMandatory = false;
 	
 	private OrderBy orderBy;
@@ -180,6 +181,14 @@ public class SearchMyRepositoryEntryViewParams {
 		return roles;
 	}
 	
+	public Boolean getClosed() {
+		return closed;
+	}
+
+	public void setClosed(Boolean closed) {
+		this.closed = closed;
+	}
+
 	public Boolean getMarked() {
 		return marked;
 	}

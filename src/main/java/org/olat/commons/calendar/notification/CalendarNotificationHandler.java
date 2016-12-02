@@ -99,7 +99,11 @@ public class CalendarNotificationHandler implements NotificationsHandler {
 				String calType = null;
 				String title = null;
 				if (type.equals(CalendarController.ACTION_CALENDAR_COURSE)) {
-					String displayName = repositoryManager.lookupDisplayNameByOLATResourceableId(id);
+					RepositoryEntry re = RepositoryManager.getInstance().lookupRepositoryEntry(OresHelper.createOLATResourceableInstance("CourseModule", id), false);
+					if(re.getRepositoryEntryStatus().isClosed() || re.getRepositoryEntryStatus().isUnpublished()) {
+						return NotificationsManager.getInstance().getNoSubscriptionInfo();
+					}
+					String displayName = re.getDisplayname();
 					calType = CalendarManager.TYPE_COURSE;
 					title = translator.translate("cal.notifications.header.course", new String[]{displayName});
 				} else if (type.equals(CalendarController.ACTION_CALENDAR_GROUP)) {

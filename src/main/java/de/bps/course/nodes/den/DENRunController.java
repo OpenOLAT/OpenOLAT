@@ -74,9 +74,11 @@ public class DENRunController extends BasicController implements GenericEventLis
 	private CloseableModalController manageDatesModalCntrll, listParticipantsModalCntrll;
 
 	private DENManager denManager;
-	private Boolean cancelEnrollEnabled;
 	private ContextualSubscriptionController csc;
 	private SubscriptionContext subsContext;
+	
+	private final boolean enrollmentEnabled;
+	private final boolean cancelEnrollEnabled;
 	
 	private VelocityContainer runVC;
 	private OLATResourceable ores;
@@ -92,9 +94,12 @@ public class DENRunController extends BasicController implements GenericEventLis
 	public DENRunController(UserRequest ureq, WindowControl wControl, ModuleConfiguration moduleConfig, UserCourseEnvironment userCourseEnv, DENCourseNode denCourseNode) {
 		super(ureq, wControl);
 		this.courseNode = denCourseNode;
-		this.ores = CourseFactory.loadCourse(userCourseEnv.getCourseEnvironment().getCourseResourceableId());
-		this.cancelEnrollEnabled = ((Boolean) moduleConfig.get(DENCourseNode.CONF_CANCEL_ENROLL_ENABLED)).booleanValue();
-
+		
+		ICourse course = CourseFactory.loadCourse(userCourseEnv.getCourseEnvironment().getCourseResourceableId());
+		ores = course;
+		cancelEnrollEnabled = ((Boolean) moduleConfig.get(DENCourseNode.CONF_CANCEL_ENROLL_ENABLED)).booleanValue();
+		enrollmentEnabled = !userCourseEnv.isCourseReadOnly();
+		
 		denManager = DENManager.getInstance();
 
 		//prepare table for run view
@@ -105,7 +110,7 @@ public class DENRunController extends BasicController implements GenericEventLis
 		runVC = new VelocityContainer("dateVC", VELOCITY_ROOT + "/run.html", getTranslator(), this);
 		
 		//show only the options for managing dates and participants if user is admin or course coach
-		ICourse course = CourseFactory.loadCourse(ores);
+		
 		CourseGroupManager cgm = course.getCourseEnvironment().getCourseGroupManager();
 		if(cgm.isIdentityCourseAdministrator(ureq.getIdentity()) || cgm.isIdentityCourseCoach(ureq.getIdentity())) {
 			// subscription
@@ -120,11 +125,9 @@ public class DENRunController extends BasicController implements GenericEventLis
 			
 			manageDatesBtn = LinkFactory.createButton("config.dates", runVC, this);
 			manageDatesBtn.setIconLeftCSS("o_icon o_icon-fw o_icon_calendar");
+			manageDatesBtn.setVisible(!userCourseEnv.isCourseReadOnly());
 			enrollmentListBtn = LinkFactory.createButton("run.enrollment.list", runVC, this);
 			enrollmentListBtn.setIconLeftCSS("o_icon o_icon-fw o_icon_user");
-			runVC.contextPut("showAuthorBtns", Boolean.TRUE);
-		} else {
-			runVC.contextPut("showAuthorBtns", Boolean.FALSE);
 		}
 		
   	// Adding learning objectives
@@ -150,7 +153,7 @@ public class DENRunController extends BasicController implements GenericEventLis
 	private void createOrUpdateDateTable(UserRequest ureq, DENCourseNode denCourseNode) {
 		//prepare table for run view
 		runTableDataList = denManager.getDENEvents(ores.getResourceableId(), denCourseNode.getIdent());
-		runTableData = new DENRunTableDataModel(runTableDataList, ureq, denCourseNode, cancelEnrollEnabled, getTranslator());
+		runTableData = new DENRunTableDataModel(runTableDataList, getIdentity(), denCourseNode, cancelEnrollEnabled, enrollmentEnabled, getTranslator());
 	}
 	
 	@Override
@@ -175,6 +178,7 @@ public class DENRunController extends BasicController implements GenericEventLis
 		}
 	}
 
+	@Override
 	public void event(Event event) {
 		//nothing to do
 	}
@@ -193,7 +197,7 @@ public class DENRunController extends BasicController implements GenericEventLis
 		} else if(source == enrollmentListBtn) {
 			//list of participants
 			removeAsListenerAndDispose(listParticipantsModalCntrll);
-			DENManageParticipantsController partsCtr = new DENManageParticipantsController(ureq, getWindowControl(), ores, courseNode);
+			DENManageParticipantsController partsCtr = new DENManageParticipantsController(ureq, getWindowControl(), ores, courseNode, !enrollmentEnabled);
 			listenTo(partsCtr);
 			listParticipantsModalCntrll = new CloseableModalController(getWindowControl(), "close", partsCtr.getInitialComponent(), true, translate("dates.table.list"));
 			listParticipantsModalCntrll.activate();

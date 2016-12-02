@@ -441,8 +441,8 @@ public class WimbaClassroomProvider extends LogDelegator implements VCProvider {
 	}
 
 	@Override
-	public Controller createDisplayController(UserRequest ureq, WindowControl wControl, String roomId, String name, String description, boolean isModerator,
-			VCConfiguration config) {
+	public Controller createDisplayController(UserRequest ureq, WindowControl wControl, String roomId, String name, String description,
+			boolean isModerator, boolean readOnly, VCConfiguration config) {
 		WimbaDisplayController displayCtr = new WimbaDisplayController(ureq, wControl, roomId, name, description, isModerator, (WimbaClassroomConfiguration) config, this);
 		return displayCtr;
 	}

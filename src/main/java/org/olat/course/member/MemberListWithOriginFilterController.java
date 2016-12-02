@@ -30,6 +30,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Identity;
 import org.olat.core.util.StringHelper;
 import org.olat.course.assessment.ui.tool.AssessmentIdentityCourseController;
+import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.group.ui.main.AbstractMemberListController;
 import org.olat.group.ui.main.MemberView;
 import org.olat.group.ui.main.SearchMembersParams;
@@ -48,11 +49,13 @@ public class MemberListWithOriginFilterController extends AbstractMemberListCont
 	private AssessmentIdentityCourseController identityAssessmentController;
 	
 	private final SearchMembersParams searchParams;
+	private final UserCourseEnvironment coachCourseEnv;
 	
 	public MemberListWithOriginFilterController(UserRequest ureq, WindowControl wControl, TooledStackedPanel toolbarPanel,
-			RepositoryEntry repoEntry, SearchMembersParams searchParams, String infos) {
-		super(ureq, wControl, repoEntry, "member_list_origin_filter", toolbarPanel);
+			RepositoryEntry repoEntry, UserCourseEnvironment coachCourseEnv, SearchMembersParams searchParams, String infos) {
+		super(ureq, wControl, repoEntry, "member_list_origin_filter", coachCourseEnv.isCourseReadOnly(), toolbarPanel);
 		this.searchParams = searchParams;
+		this.coachCourseEnv = coachCourseEnv;
 		
 		if(StringHelper.containsNonWhitespace(infos)) {
 			flc.contextPut("infos", infos);
@@ -98,7 +101,7 @@ public class MemberListWithOriginFilterController extends AbstractMemberListCont
 		
 		Identity assessedIdentity = securityManager.loadIdentityByKey(member.getIdentityKey());
 		identityAssessmentController = new AssessmentIdentityCourseController(ureq, getWindowControl(), toolbarPanel,
-				repoEntry, assessedIdentity);
+				repoEntry, coachCourseEnv, assessedIdentity);
 		listenTo(identityAssessmentController);
 		
 		String displayName = userManager.getUserDisplayName(assessedIdentity);

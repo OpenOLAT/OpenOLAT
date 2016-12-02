@@ -73,7 +73,7 @@ public class RepositoryMembersController extends AbstractMemberListController {
 	private BusinessGroupService businessGroupService;
 
 	public RepositoryMembersController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel, RepositoryEntry repoEntry) {
-		super(ureq, wControl, repoEntry, null, "all_member_list", stackPanel,
+		super(ureq, wControl, repoEntry, null, "all_member_list", false, stackPanel,
 				Util.createPackageTranslator(RepositoryService.class, ureq.getLocale(),
 						Util.createPackageTranslator(AbstractMemberListController.class, ureq.getLocale())));
 

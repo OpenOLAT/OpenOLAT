@@ -66,6 +66,7 @@ public class GTACoachSelectionController extends BasicController {
 	
 	private final GTACourseNode gtaNode;
 	private final CourseEnvironment courseEnv;
+	private final UserCourseEnvironment coachCourseEnv;
 	
 	protected final PublisherData publisherData;
 	protected final SubscriptionContext subsContext;
@@ -79,6 +80,7 @@ public class GTACoachSelectionController extends BasicController {
 			UserCourseEnvironment coachCourseEnv, GTACourseNode gtaNode) {
 		super(ureq, wControl);
 		this.gtaNode = gtaNode;
+		this.coachCourseEnv = coachCourseEnv;
 		this.courseEnv = coachCourseEnv.getCourseEnvironment();
 		
 		mainVC = createVelocityContainer("coach_selection");
@@ -109,7 +111,7 @@ public class GTACoachSelectionController extends BasicController {
 			if(groups.size() == 1) {
 				doSelectBusinessGroup(ureq, groups.get(0));
 			} else {
-				groupListCtrl = new GTACoachedGroupListController(ureq, getWindowControl(), null, courseEnv, gtaNode, groups);
+				groupListCtrl = new GTACoachedGroupListController(ureq, getWindowControl(), null, coachCourseEnv, gtaNode, groups);
 				listenTo(groupListCtrl);
 				mainVC.put("list", groupListCtrl.getInitialComponent());
 			}	
@@ -173,14 +175,14 @@ public class GTACoachSelectionController extends BasicController {
 	
 	private void doSelectBusinessGroup(UserRequest ureq, BusinessGroup group) {
 		removeAsListenerAndDispose(coachingCtrl);
-		coachingCtrl = new GTACoachController(ureq, getWindowControl(), courseEnv, gtaNode, group, true, true, false);
+		coachingCtrl = new GTACoachController(ureq, getWindowControl(), courseEnv, gtaNode, coachCourseEnv, group, true, true, false);
 		listenTo(coachingCtrl);
 		mainVC.put("selection", coachingCtrl.getInitialComponent());
 	}
 	
 	private void doSelectParticipant(UserRequest ureq, Identity identity) {
 		removeAsListenerAndDispose(coachingCtrl);
-		coachingCtrl = new GTACoachController(ureq, getWindowControl(), courseEnv, gtaNode, identity, true, true, false);
+		coachingCtrl = new GTACoachController(ureq, getWindowControl(), courseEnv, gtaNode, coachCourseEnv, identity, true, true, false);
 		listenTo(coachingCtrl);
 		mainVC.put("selection", coachingCtrl.getInitialComponent());
 	}

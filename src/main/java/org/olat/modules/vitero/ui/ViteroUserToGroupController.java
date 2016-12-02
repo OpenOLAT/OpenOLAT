@@ -28,7 +28,6 @@ import java.util.Locale;
 import java.util.Set;
 
 import org.olat.basesecurity.GroupRoles;
-import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.table.ColumnDescriptor;
@@ -63,6 +62,7 @@ import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
 import org.olat.user.UserManager;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -76,27 +76,29 @@ import org.olat.user.propertyhandlers.UserPropertyHandler;
 public class ViteroUserToGroupController extends BasicController {
 	
 	private final ViteroBooking booking;
-	private final ViteroManager viteroManager;
-	private final RepositoryManager repositoryManager;
-	private final RepositoryService repositoryService;
-	private final BusinessGroupService businessGroupService;
-	private CourseGroupManager courseGroupManager;
+
 	private final BusinessGroup group;
 	private final OLATResourceable ores;
 	
 	private final TableController tableCtr;
 	private final VelocityContainer mainVC;
 	
-	public ViteroUserToGroupController(UserRequest ureq, WindowControl wControl, BusinessGroup group, OLATResourceable ores, ViteroBooking booking) {
+	@Autowired
+	private ViteroManager viteroManager;
+	@Autowired
+	private RepositoryManager repositoryManager;
+	@Autowired
+	private RepositoryService repositoryService;
+	@Autowired
+	private BusinessGroupService businessGroupService;
+	private CourseGroupManager courseGroupManager;
+	
+	public ViteroUserToGroupController(UserRequest ureq, WindowControl wControl, BusinessGroup group, OLATResourceable ores, ViteroBooking booking, boolean readOnly) {
 		super(ureq, wControl);
 		
 		this.ores = ores;
 		this.group = group;
 		this.booking = booking;
-		viteroManager = CoreSpringFactory.getImpl(ViteroManager.class);
-		repositoryService = CoreSpringFactory.getImpl(RepositoryService.class);
-		businessGroupService = CoreSpringFactory.getImpl(BusinessGroupService.class);
-		repositoryManager = RepositoryManager.getInstance();
 		
 		mainVC = createVelocityContainer("user_admin");
 
@@ -135,13 +137,15 @@ public class ViteroUserToGroupController extends BasicController {
 				return super.compareString(r1, r2);
 			}
 		});
-		tableCtr.addColumnDescriptor(new SignColumnDescriptor("signin", Col.sign.ordinal(), getLocale(), getTranslator()));
 		
-		tableCtr.addMultiSelectAction("signin", "signin");
-		tableCtr.addMultiSelectAction("signout", "signout");
+		if(!readOnly) {
+			tableCtr.addColumnDescriptor(new SignColumnDescriptor("signin", Col.sign.ordinal(), getLocale(), getTranslator()));
+			tableCtr.addMultiSelectAction("signin", "signin");
+			tableCtr.addMultiSelectAction("signout", "signout");
+		}
 		tableCtr.addMultiSelectAction("reload", "reload");
 		tableCtr.setMultiSelect(true);
-		
+
 		loadModel();
 		mainVC.put("userTable", tableCtr.getInitialComponent());
 		

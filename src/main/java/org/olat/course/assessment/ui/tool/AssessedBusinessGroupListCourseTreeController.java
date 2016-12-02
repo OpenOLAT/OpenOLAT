@@ -43,6 +43,7 @@ import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.nodes.CourseNode;
+import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.assessment.ui.AssessmentToolContainer;
 import org.olat.modules.assessment.ui.AssessmentToolSecurityCallback;
 import org.olat.repository.RepositoryEntry;
@@ -62,15 +63,18 @@ public class AssessedBusinessGroupListCourseTreeController extends BasicControll
 	private AssessedBusinessGroupCourseNodeListController currentCtrl;
 	
 	private final RepositoryEntry courseEntry;
+	private final UserCourseEnvironment coachCourseEnv;
 	private final AssessmentToolContainer toolContainer;
 	private final AssessmentToolSecurityCallback assessmentCallback;
 	
 	public AssessedBusinessGroupListCourseTreeController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
-			RepositoryEntry courseEntry, AssessmentToolContainer toolContainer, AssessmentToolSecurityCallback assessmentCallback) {
+			RepositoryEntry courseEntry, UserCourseEnvironment coachCourseEnv,
+			AssessmentToolContainer toolContainer, AssessmentToolSecurityCallback assessmentCallback) {
 		super(ureq, wControl);
 		this.stackPanel = stackPanel;
 		this.courseEntry = courseEntry;
 		this.toolContainer = toolContainer;
+		this.coachCourseEnv = coachCourseEnv;
 		this.assessmentCallback = assessmentCallback;
 
 		ICourse course = CourseFactory.loadCourse(courseEntry);
@@ -133,7 +137,7 @@ public class AssessedBusinessGroupListCourseTreeController extends BasicControll
 		OLATResourceable ores = OresHelper.createOLATResourceableInstance("Node", new Long(courseNode.getIdent()));
 		WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ores, null, getWindowControl());
 		currentCtrl = new AssessedBusinessGroupCourseNodeListController(ureq, bwControl, stackPanel,
-				courseEntry, courseNode, toolContainer, assessmentCallback);
+				courseEntry, courseNode, coachCourseEnv, toolContainer, assessmentCallback);
 		listenTo(currentCtrl);
 		mainPanel.setContent(currentCtrl.getInitialComponent());
 		addToHistory(ureq, currentCtrl);

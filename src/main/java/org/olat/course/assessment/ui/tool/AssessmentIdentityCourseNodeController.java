@@ -80,6 +80,7 @@ public class AssessmentIdentityCourseNodeController extends BasicController impl
 	private LockResult lockEntry;
 	private final CourseNode courseNode;
 	private final Identity assessedIdentity;
+	private final UserCourseEnvironment coachCourseEnv;
 	private final UserCourseEnvironment assessedUserCourseEnvironment;
 	
 	@Autowired
@@ -88,17 +89,19 @@ public class AssessmentIdentityCourseNodeController extends BasicController impl
 	private BaseSecurity securityManager;
 	
 	public AssessmentIdentityCourseNodeController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
-			RepositoryEntry courseEntry, CourseNode courseNode, Identity assessedIdentity, boolean courseNodeDetails) {
+			RepositoryEntry courseEntry, CourseNode courseNode, UserCourseEnvironment coachCourseEnv,
+			Identity assessedIdentity, boolean courseNodeDetails) {
 		super(ureq, wControl);
 		
 		this.stackPanel = stackPanel;
 		this.courseNode = courseNode;
 		this.assessedIdentity = assessedIdentity;
+		this.coachCourseEnv = coachCourseEnv;
 
 		ICourse course = CourseFactory.loadCourse(courseEntry);
 		Roles roles = securityManager.getRoles(assessedIdentity);
 		IdentityEnvironment identityEnv = new IdentityEnvironment(assessedIdentity, roles);
-		assessedUserCourseEnvironment = new UserCourseEnvironmentImpl(identityEnv, course.getCourseEnvironment());
+		assessedUserCourseEnvironment = new UserCourseEnvironmentImpl(identityEnv, course.getCourseEnvironment(), coachCourseEnv.isCourseReadOnly());
 		assessedUserCourseEnvironment.getScoreAccounting().evaluateAll();
 		
 		addLoggingResourceable(LoggingResourceable.wrap(course));
@@ -119,16 +122,20 @@ public class AssessmentIdentityCourseNodeController extends BasicController impl
 
 			// Add the users details controller
 			if (aCourseNode.hasDetails() && courseNodeDetails) {
-				detailsEditController = aCourseNode.getDetailsEditController(ureq, wControl, stackPanel, assessedUserCourseEnvironment);
+				detailsEditController = aCourseNode.getDetailsEditController(ureq, wControl, stackPanel, coachCourseEnv, assessedUserCourseEnvironment);
 				listenTo(detailsEditController);
 				identityAssessmentVC.put("details", detailsEditController.getInitialComponent());
 			}
 			
-			assessmentForm = new AssessmentForm(ureq, wControl, aCourseNode, assessedUserCourseEnvironment);
+			assessmentForm = new AssessmentForm(ureq, wControl, aCourseNode, coachCourseEnv, assessedUserCourseEnvironment);
 			listenTo(assessmentForm);
 			identityAssessmentVC.put("assessmentForm", assessmentForm.getInitialComponent());
 		}
 		putInitialPanel(identityAssessmentVC);
+	}
+	
+	public UserCourseEnvironment getCoachCourseEnvironment() {
+		return coachCourseEnv;
 	}
 	
 	public UserCourseEnvironment getAssessedUserCourseEnvironment() {

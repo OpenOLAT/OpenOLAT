@@ -100,7 +100,7 @@ public class OpenMeetingsAdminRoomInfosController extends BasicController {
 
 	private void doOpenMembers(UserRequest ureq) {
 		if(membersController == null) {
-			membersController = new OpenMeetingsAdminRoomMembersController(ureq, getWindowControl(), room);
+			membersController = new OpenMeetingsAdminRoomMembersController(ureq, getWindowControl(), room, false);
 			listenTo(membersController);
 		} 
 		mainVC.put("segmentCmp", membersController.getInitialComponent());

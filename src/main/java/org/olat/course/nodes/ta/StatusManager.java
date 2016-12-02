@@ -63,7 +63,7 @@ public class StatusManager extends BasicManager {
 	 */
 	public void loadStatusFormData(StatusForm statusForm, CourseNode node, UserCourseEnvironment userCourseEnv) {
 		Identity identity = userCourseEnv.getIdentityEnvironment().getIdentity();
-	  CoursePropertyManager cpm = userCourseEnv.getCourseEnvironment().getCoursePropertyManager();
+		CoursePropertyManager cpm = userCourseEnv.getCourseEnvironment().getCoursePropertyManager();
 		Property statusProperty;
 
 		statusProperty = cpm.findCourseNodeProperty(node, identity, null, PROPERTY_KEY_STATUS);
@@ -74,14 +74,13 @@ public class StatusManager extends BasicManager {
 			String value = statusProperty.getStringValue();
 			statusForm.setSelectedStatus(value);
 		}
-
 	}
 
 	public void saveStatusFormData(StatusForm statusForm, CourseNode node, UserCourseEnvironment userCourseEnv) {
 		Identity identity = userCourseEnv.getIdentityEnvironment().getIdentity();
 		String selectedKey = statusForm.getSelectedStatus();
 		
-	  CoursePropertyManager cpm = userCourseEnv.getCourseEnvironment().getCoursePropertyManager();
+		CoursePropertyManager cpm = userCourseEnv.getCourseEnvironment().getCoursePropertyManager();
 		Property statusProperty;
 
 		statusProperty = cpm.findCourseNodeProperty(node, identity, null, PROPERTY_KEY_STATUS);

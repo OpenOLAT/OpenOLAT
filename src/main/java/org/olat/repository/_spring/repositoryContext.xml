@@ -10,6 +10,16 @@
 
 	<context:component-scan base-package="org.olat.repository" />
 	
+	<bean id="closeResourcesTrigger" class="org.springframework.scheduling.quartz.CronTriggerBean">
+	    <property name="jobDetail" ref="closeResourcesJob" />
+	    <property name="cronExpression" value="5 5 5 * * ?" />
+	    <property name="startDelay" value="55000" />
+	</bean>
+	
+	<bean id="closeResourcesJob" class="org.springframework.scheduling.quartz.JobDetailBean" lazy-init="true">
+		<property name="jobClass" value="org.olat.repository.manager.CloseResourcesJob" />
+	</bean>
+	
 	<!-- life cycle admin. panel -->
 	<bean class="org.olat.core.extensions.action.GenericActionExtension" init-method="initExtensionPoints">
 		<property name="order" value="7216" />

@@ -176,7 +176,8 @@ public interface VCProvider extends ConfigOnOff {
 	 * @param config
 	 * @return the controller to be embedded
 	 */
-	public Controller createDisplayController(UserRequest ureq, WindowControl wControl, String roomId, String name, String description, boolean isModerator, VCConfiguration config);
+	public Controller createDisplayController(UserRequest ureq, WindowControl wControl, String roomId, String name, String description,
+			boolean isModerator, boolean readOnly, VCConfiguration config);
 	
 	/**
 	 * Create controller for creation and configuration of the virtual classroom.

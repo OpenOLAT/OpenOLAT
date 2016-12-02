@@ -446,11 +446,11 @@ public class CheckListCourseNode extends AbstractAccessableCourseNode implements
 	 */
 	@Override
 	public Controller getDetailsEditController(UserRequest ureq, WindowControl wControl,
-			BreadcrumbPanel stackPanel, UserCourseEnvironment userCourseEnv) {
-		Identity assessedIdentity = userCourseEnv.getIdentityEnvironment().getIdentity();
-		Long resId = userCourseEnv.getCourseEnvironment().getCourseResourceableId();
+			BreadcrumbPanel stackPanel, UserCourseEnvironment coachCourseEnv, UserCourseEnvironment assessedUserCourseEnv) {
+		Identity assessedIdentity = assessedUserCourseEnv.getIdentityEnvironment().getIdentity();
+		Long resId = assessedUserCourseEnv.getCourseEnvironment().getCourseResourceableId();
 		OLATResourceable courseOres = OresHelper.createOLATResourceableInstance("CourseModule", resId);
-		return new AssessedIdentityCheckListController(ureq, wControl, assessedIdentity, courseOres, userCourseEnv, this, false);
+		return new AssessedIdentityCheckListController(ureq, wControl, assessedIdentity, courseOres, coachCourseEnv, assessedUserCourseEnv, this, false, false);
 	}
 
 	/**

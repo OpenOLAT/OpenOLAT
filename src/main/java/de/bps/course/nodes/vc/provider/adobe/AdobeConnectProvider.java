@@ -435,8 +435,9 @@ public class AdobeConnectProvider extends LogDelegator implements VCProvider {
   }
 
   @Override
-  public Controller createDisplayController(UserRequest ureq, WindowControl wControl, String roomId, String name, String description, boolean isModerator, VCConfiguration config) {
-  	AdobeDisplayController displayCtr = new AdobeDisplayController(ureq, wControl, roomId, name, description, isModerator, (AdobeConnectConfiguration) config, this);
+  public Controller createDisplayController(UserRequest ureq, WindowControl wControl, String roomId, String name, String description,
+		  boolean isModerator, boolean readOnly, VCConfiguration config) {
+  	AdobeDisplayController displayCtr = new AdobeDisplayController(ureq, wControl, roomId, name, description, isModerator, readOnly, (AdobeConnectConfiguration) config, this);
     return displayCtr;
   }
 

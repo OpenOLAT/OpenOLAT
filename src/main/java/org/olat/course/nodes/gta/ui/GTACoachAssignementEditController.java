@@ -33,8 +33,8 @@ import org.olat.course.run.environment.CourseEnvironment;
 public class GTACoachAssignementEditController extends AbstractAssignmentEditController {
 	
 	public GTACoachAssignementEditController(UserRequest ureq, WindowControl wControl,
-			GTACourseNode gtaNode, CourseEnvironment courseEnv) {
-		super(ureq, wControl, gtaNode, null, courseEnv);
+			GTACourseNode gtaNode, CourseEnvironment courseEnv, boolean readOnly) {
+		super(ureq, wControl, gtaNode, null, courseEnv, readOnly);
 	}
 
 	@Override

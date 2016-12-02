@@ -45,6 +45,7 @@ import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Roles;
+import org.olat.core.util.UserSession;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.course.CourseFactory;
 import org.olat.course.CourseModule;
@@ -92,35 +93,41 @@ public class InfoRunController extends BasicController {
 		businessPath = normalizeBusinessPath(wControl.getBusinessControl().getAsString());
 		
 		//manage opt-out subscription
-		if(!ureq.getUserSession().getRoles().isGuestOnly()) {
+		UserSession usess = ureq.getUserSession();
+		if(!usess.getRoles().isGuestOnly()) {
 			subscriptionManager = InfoSubscriptionManager.getInstance();
 			SubscriptionContext subContext = subscriptionManager.getInfoSubscriptionContext(infoResourceable, resSubPath);
 			PublisherData pdata = subscriptionManager.getInfoPublisherData(infoResourceable, businessPath);
 			if(InfoCourseNodeEditController.getAutoSubscribe(config)) {
-				InfoSubscription infoSubscription = subscriptionManager.getInfoSubscription(ureq.getUserSession().getGuiPreferences());
+				InfoSubscription infoSubscription = subscriptionManager.getInfoSubscription(usess.getGuiPreferences());
 				if(infoSubscription.subscribed(businessPath, false)) {
-					subscriptionManager.subscribe(infoResourceable, resSubPath, businessPath, ureq.getIdentity());
+					subscriptionManager.subscribe(infoResourceable, resSubPath, businessPath, getIdentity());
 				}
 			}
 			subscriptionController = new ContextualSubscriptionController(ureq, getWindowControl(), subContext, pdata);
 			listenTo(subscriptionController);
 		}
+		boolean canAdd, canAdmin;
+		if(userCourseEnv.isCourseReadOnly()) {
+			canAdd = false;
+			canAdmin = false;
+		} else {
+			Identity identity = getIdentity();
+			Roles roles = usess.getRoles();
+			CourseGroupManager cgm = userCourseEnv.getCourseEnvironment().getCourseGroupManager();
+			boolean institutionalManager = RepositoryManager.getInstance().isInstitutionalRessourceManagerFor(identity, roles, cgm.getCourseEntry());
+			boolean courseAdmin = cgm.isIdentityCourseAdministrator(identity);
+			
+			canAdd = courseAdmin
+				|| ne.isCapabilityAccessible(InfoCourseNode.EDIT_CONDITION_ID)
+				|| institutionalManager
+				|| roles.isOLATAdmin();
 		
-		Identity identity = ureq.getIdentity();
-		Roles roles = ureq.getUserSession().getRoles();
-		CourseGroupManager cgm = userCourseEnv.getCourseEnvironment().getCourseGroupManager();
-		boolean institutionalManager = RepositoryManager.getInstance().isInstitutionalRessourceManagerFor(identity, roles, cgm.getCourseEntry());
-		boolean courseAdmin = cgm.isIdentityCourseAdministrator(identity);
-		
-		boolean canAdd = courseAdmin
-			|| ne.isCapabilityAccessible(InfoCourseNode.EDIT_CONDITION_ID)
-			|| institutionalManager
-			|| roles.isOLATAdmin();
-		
-		boolean canAdmin = courseAdmin
-			|| ne.isCapabilityAccessible(InfoCourseNode.ADMIN_CONDITION_ID)
-			|| institutionalManager
-			|| roles.isOLATAdmin();
+			canAdmin = courseAdmin
+				|| ne.isCapabilityAccessible(InfoCourseNode.ADMIN_CONDITION_ID)
+				|| institutionalManager
+				|| roles.isOLATAdmin();
+		}
 
 		InfoSecurityCallback secCallback = new InfoCourseSecurityCallback(canAdd, canAdmin);
 		RepositoryService repositoryService = CoreSpringFactory.getImpl(RepositoryService.class);

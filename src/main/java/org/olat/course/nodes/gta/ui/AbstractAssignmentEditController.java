@@ -90,6 +90,7 @@ abstract class AbstractAssignmentEditController extends FormBasicController {
 	private EditTaskController addTaskCtrl, editTaskCtrl;
 	
 	private final File tasksFolder;
+	protected final boolean readOnly;
 	private final VFSContainer tasksContainer;
 	protected final GTACourseNode gtaNode;
 	protected final CourseEnvironment courseEnv;
@@ -104,10 +105,11 @@ abstract class AbstractAssignmentEditController extends FormBasicController {
 	protected NotificationsManager notificationsManager;
 	
 	public AbstractAssignmentEditController(UserRequest ureq, WindowControl wControl,
-			GTACourseNode gtaNode, ModuleConfiguration config, CourseEnvironment courseEnv) {
+			GTACourseNode gtaNode, ModuleConfiguration config, CourseEnvironment courseEnv, boolean readOnly) {
 		super(ureq, wControl, LAYOUT_BAREBONE);
 		this.config = config;
 		this.gtaNode = gtaNode;
+		this.readOnly = readOnly;
 		this.courseEnv = courseEnv;
 		tasksFolder = gtaManager.getTasksDirectory(courseEnv, gtaNode);
 		tasksContainer = gtaManager.getTasksContainer(courseEnv, gtaNode);
@@ -126,19 +128,23 @@ abstract class AbstractAssignmentEditController extends FormBasicController {
 		addTaskLink = uifactory.addFormLink("add.task", tasksCont, Link.BUTTON);
 		addTaskLink.setElementCssClass("o_sel_course_gta_add_task");
 		addTaskLink.setIconLeftCSS("o_icon o_icon_upload");
+		addTaskLink.setVisible(!readOnly);
 		createTaskLink = uifactory.addFormLink("create.task", tasksCont, Link.BUTTON);
 		createTaskLink.setElementCssClass("o_sel_course_gta_create_task");
 		createTaskLink.setIconLeftCSS("o_icon o_icon_edit");
+		createTaskLink.setVisible(!readOnly);
 		
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TDCols.title.i18nKey(), TDCols.title.ordinal()));
 		fileExistsRenderer = new WarningFlexiCellRenderer();
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TDCols.file.i18nKey(), TDCols.file.ordinal(), fileExistsRenderer));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("table.header.edit", TDCols.edit.ordinal(), "edit",
-				new BooleanCellRenderer(
-						new StaticFlexiCellRenderer(translate("edit"), "edit"),
-						new StaticFlexiCellRenderer(translate("replace"), "edit"))));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("table.header.edit", translate("delete"), "delete"));
+		if(!readOnly) {
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("table.header.edit", TDCols.edit.ordinal(), "edit",
+					new BooleanCellRenderer(
+							new StaticFlexiCellRenderer(translate("edit"), "edit"),
+							new StaticFlexiCellRenderer(translate("replace"), "edit"))));
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("table.header.edit", translate("delete"), "delete"));
+		}
 		
 		taskModel = new TaskDefinitionTableModel(columnsModel);
 		taskDefTableEl = uifactory.addTableElement(getWindowControl(), "taskTable", taskModel, getTranslator(), tasksCont);

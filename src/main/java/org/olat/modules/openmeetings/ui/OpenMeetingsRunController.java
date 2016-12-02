@@ -59,6 +59,7 @@ public class OpenMeetingsRunController extends BasicController {
 	
 	private final boolean admin;
 	private final boolean moderator;
+	private final boolean readOnly;
 	private OpenMeetingsRoom room;
 	private final OpenMeetingsModule openMeetingsModule;
 	private final OpenMeetingsManager openMeetingsManager;
@@ -68,10 +69,11 @@ public class OpenMeetingsRunController extends BasicController {
 	private final String subIdentifier;
 
 	public OpenMeetingsRunController(UserRequest ureq, WindowControl wControl, BusinessGroup group, OLATResourceable ores,
-			String subIdentifier, boolean admin, boolean moderator) {
+			String subIdentifier, boolean admin, boolean moderator, boolean readOnly) {
 		super(ureq, wControl);
 		
 		this.admin = admin;
+		this.readOnly = readOnly;
 		this.moderator = moderator;
 		this.group = group;
 		this.ores = ores;
@@ -99,19 +101,22 @@ public class OpenMeetingsRunController extends BasicController {
 			mainVC.contextPut("noroom", Boolean.TRUE);
 		} else if (ureq.getUserSession().getRoles().isGuestOnly() || ureq.getUserSession().getRoles().isInvitee()){
 			startGuestLink = LinkFactory.createButton("start.room.guest", mainVC, this);
+			startGuestLink.setVisible(!readOnly);
 			mainVC.put("start.room.guest", startGuestLink);
 		} else {
 			if (moderator) {
 				openLink = LinkFactory.createButton("open.room", mainVC, this);
+				openLink.setVisible(!readOnly);
 				mainVC.put("open.room", openLink);
 				
 				closeLink = LinkFactory.createButton("close.room", mainVC, this);
+				closeLink.setVisible(!readOnly);
 				mainVC.put("close.room", closeLink);
 				
 				membersLink = LinkFactory.createButton("room.members", mainVC, this);
 				mainVC.put("room.members", membersLink);
 			}
-			if(admin) {
+			if(admin && !readOnly) {
 				editLink = LinkFactory.createButton("edit.room", mainVC, this);
 				mainVC.put("edit", editLink);
 			}
@@ -120,6 +125,7 @@ public class OpenMeetingsRunController extends BasicController {
 			mainVC.put("open.recordings", recordingLink);
 			
 			startLink = LinkFactory.createButton("start.room", mainVC, this);
+			startLink.setVisible(!readOnly);
 			startLink.setTarget("openmeetings");
 			mainVC.put("start.room", startLink);
 		}
@@ -135,16 +141,16 @@ public class OpenMeetingsRunController extends BasicController {
 		} else {
 			boolean closed = room.isClosed();
 			if(openLink != null) {
-				openLink.setVisible(closed);
+				openLink.setVisible(closed && !readOnly);
 			}
 			if(closeLink != null) {
-				closeLink.setVisible(!closed);
+				closeLink.setVisible(!closed && !readOnly);
 			}
 			if(startLink != null) {
-				startLink.setEnabled(!closed);
+				startLink.setEnabled(!closed && !readOnly);
 			}
 			if(startGuestLink != null) {
-				startGuestLink.setEnabled(!closed);
+				startGuestLink.setEnabled(!closed && !readOnly);
 			}
 			
 			mainVC.contextPut("roomName", room.getName());
@@ -255,8 +261,8 @@ public class OpenMeetingsRunController extends BasicController {
 	private void doOpenMembers(UserRequest ureq) {
 		cleanupPopups();
 		try {
-			OpenMeetingsRoom room = openMeetingsManager.getRoom(group, ores, subIdentifier);
-			membersController = new OpenMeetingsAdminRoomMembersController(ureq, getWindowControl(), room);
+			OpenMeetingsRoom reloadedRoom = openMeetingsManager.getRoom(group, ores, subIdentifier);
+			membersController = new OpenMeetingsAdminRoomMembersController(ureq, getWindowControl(), reloadedRoom, readOnly);
 			listenTo(membersController);
 
 			cmc = new CloseableModalController(getWindowControl(), translate("close"), membersController.getInitialComponent(), true, translate("room.members"));

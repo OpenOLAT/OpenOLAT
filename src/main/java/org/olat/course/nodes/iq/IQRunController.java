@@ -323,6 +323,8 @@ public class IQRunController extends BasicController implements GenericEventList
 		startButton = LinkFactory.createButton("start", myContent, this);
 		startButton.setElementCssClass("o_sel_start_qti12_test");
 		startButton.setPrimary(true);
+		startButton.setVisible(!userCourseEnv.isCourseReadOnly());
+	
 		// fetch disclaimer file
 		String sDisclaimer = (String)modConfig.get(IQEditController.CONFIG_KEY_DISCLAIMER);
 		if (sDisclaimer != null) {
@@ -390,7 +392,7 @@ public class IQRunController extends BasicController implements GenericEventList
 	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest, org.olat.core.gui.components.Component, org.olat.core.gui.control.Event)
 	 */
 	public void event(UserRequest ureq, Component source, Event event) {
-		if (source == startButton && startButton.isEnabled()){
+		if (source == startButton && startButton.isEnabled() && startButton.isVisible()){
 			long courseResId = userCourseEnv.getCourseEnvironment().getCourseResourceableId().longValue();
 			String courseNodeIdent = courseNode.getIdent();
 			removeAsListenerAndDispose(displayController);

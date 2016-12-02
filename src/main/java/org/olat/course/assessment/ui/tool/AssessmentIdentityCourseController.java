@@ -61,8 +61,6 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class AssessmentIdentityCourseController extends BasicController implements AssessedIdentityController {
 	
-	private final Identity assessedIdentity;
-	private final RepositoryEntry courseEntry;
 
 	private final TooledStackedPanel stackPanel;
 	private final VelocityContainer identityAssessmentVC;
@@ -76,16 +74,20 @@ public class AssessmentIdentityCourseController extends BasicController implemen
 	private CloseableCalloutWindowController courseNodeChooserCalloutCtrl;
 	
 	private CourseNode currentCourseNode;
+	private final Identity assessedIdentity;
+	private final RepositoryEntry courseEntry;
+	private final UserCourseEnvironment coachCourseEnv;
 	
 	@Autowired
 	private BaseSecurity securityManager;
 	
 	public AssessmentIdentityCourseController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
-			RepositoryEntry courseEntry, Identity assessedIdentity) {
+			RepositoryEntry courseEntry, UserCourseEnvironment coachCourseEnv, Identity assessedIdentity) {
 		super(ureq, wControl);
 		
 		this.stackPanel = stackPanel;
 		this.courseEntry = courseEntry;
+		this.coachCourseEnv = coachCourseEnv;
 		this.assessedIdentity = assessedIdentity;
 		
 		identityAssessmentVC = createVelocityContainer("identity_personal_infos");
@@ -99,7 +101,7 @@ public class AssessmentIdentityCourseController extends BasicController implemen
 		CourseConfig courseConfig = course.getCourseConfig();
 		Roles roles = securityManager.getRoles(assessedIdentity);
 		IdentityEnvironment identityEnv = new IdentityEnvironment(assessedIdentity, roles);
-		UserCourseEnvironment assessedUserCourseEnv = new UserCourseEnvironmentImpl(identityEnv, course.getCourseEnvironment());
+		UserCourseEnvironment assessedUserCourseEnv = new UserCourseEnvironmentImpl(identityEnv, course.getCourseEnvironment(), coachCourseEnv.isCourseReadOnly());
 
 		if(courseConfig.isAutomaticCertificationEnabled() || courseConfig.isManualCertificationEnabled()) {
 			certificateCtrl = new IdentityCertificatesController(ureq, wControl, courseEntry, assessedIdentity);
@@ -247,7 +249,7 @@ public class AssessmentIdentityCourseController extends BasicController implemen
 		removeAsListenerAndDispose(currentNodeCtrl);
 
 		currentNodeCtrl = new AssessmentIdentityCourseNodeController(ureq, getWindowControl(), stackPanel,
-				courseEntry, courseNode, assessedIdentity, true);
+				courseEntry, courseNode, coachCourseEnv, assessedIdentity, true);
 
 		listenTo(currentNodeCtrl);
 		stackPanel.pushController(courseNode.getShortTitle(), currentNodeCtrl);

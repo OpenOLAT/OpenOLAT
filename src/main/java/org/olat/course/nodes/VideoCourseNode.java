@@ -90,7 +90,7 @@ public class VideoCourseNode extends AbstractAccessableCourseNode {
 			String nodecmd) {
 		NodeRunConstructionResult ncr;
 		updateModuleConfigDefaults(false);
-		VideoRunController cprunC = new VideoRunController(getModuleConfiguration(), wControl, ureq, this);
+		VideoRunController cprunC = new VideoRunController(getModuleConfiguration(), wControl, ureq, userCourseEnv, this);
 		ncr = cprunC.createNodeRunConstructionResult(ureq);
 		return ncr;
 	}

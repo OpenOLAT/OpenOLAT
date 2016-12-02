@@ -1,13 +1,10 @@
 #if ($r.available("subscription"))
-<div class="clearfix">
-	$r.render("subscription")
-</div> 
+<div class="clearfix">$r.render("subscription")</div> 
 #end
-#if($showAuthorBtns)
+#if($r.visible("config.dates") || $r.visible("run.enrollment.list"))
 	<div class="o_button_group o_button_group_right">
-		<div class="btn-group">
-			$r.render("config.dates")
-			$r.render("run.enrollment.list")
+		<div class=" #if($r.visible("config.dates") && $r.visible("run.enrollment.list")) btn-group #end ">
+			$r.render("config.dates") $r.render("run.enrollment.list")
 		</div>
 	</div>
 #end

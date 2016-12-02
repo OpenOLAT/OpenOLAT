@@ -128,14 +128,20 @@ public class ReminderDAO {
 	}
 	
 	/**
+	 * Get all reminders of active repository entries.
 	 * 
 	 * @param startDate
 	 * @return
 	 */
 	public List<Reminder> getReminders(Date startDate) {
-		String q = "select rem from reminder rem inner join rem.entry entry where rem.startDate is null or rem.startDate<=:startDate";
+		StringBuilder sb = new StringBuilder();
+		sb.append("select rem from reminder rem")
+		  .append(" inner join rem.entry entry")
+		  .append(" where (rem.startDate is null or rem.startDate<=:startDate)")
+		  .append(" and entry.statusCode=0");
+
 		return dbInstance.getCurrentEntityManager()
-				.createQuery(q, Reminder.class)
+				.createQuery(sb.toString(), Reminder.class)
 				.setParameter("startDate", startDate)
 				.getResultList();
 	}

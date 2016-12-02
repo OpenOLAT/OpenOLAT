@@ -65,6 +65,7 @@ import org.olat.course.nodes.gta.TaskProcess;
 import org.olat.course.nodes.gta.ui.GroupAssessmentModel.Cols;
 import org.olat.course.nodes.ms.MSCourseNodeRunController;
 import org.olat.course.run.environment.CourseEnvironment;
+import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
 import org.olat.modules.ModuleConfiguration;
@@ -100,6 +101,7 @@ public class GTACoachedGroupGradingController extends FormBasicController {
 	private final BusinessGroup assessedGroup;
 	private final CourseEnvironment courseEnv;
 	private final AssessmentManager assessmentManager;
+	private final UserCourseEnvironment coachCourseEnv;
 	private final boolean withScore, withPassed, withComment;
 	
 	private final boolean isAdministrativeUser;
@@ -115,7 +117,7 @@ public class GTACoachedGroupGradingController extends FormBasicController {
 	private BusinessGroupService businessGroupService;
 	
 	public GTACoachedGroupGradingController(UserRequest ureq, WindowControl wControl,
-			CourseEnvironment courseEnv, GTACourseNode gtaNode,
+			UserCourseEnvironment coachCourseEnv, CourseEnvironment courseEnv, GTACourseNode gtaNode,
 			BusinessGroup assessedGroup, TaskList taskList, Task assignedTask) {
 		super(ureq, wControl, "coach_group_grading");
 		setTranslator(Util.createPackageTranslator(MSCourseNodeRunController.class, getLocale(), getTranslator()));
@@ -124,6 +126,7 @@ public class GTACoachedGroupGradingController extends FormBasicController {
 		this.assessedGroup = assessedGroup;
 		this.courseEnv = courseEnv;
 		this.assignedTask = assignedTask;
+		this.coachCourseEnv = coachCourseEnv;
 		assessmentManager = courseEnv.getAssessmentManager();
 		
 		withScore = gtaNode.hasScoreConfigured();
@@ -146,11 +149,11 @@ public class GTACoachedGroupGradingController extends FormBasicController {
 		assessmentFormButton.setCustomEnabledLinkCSS("btn btn-primary");
 		assessmentFormButton.setIconLeftCSS("o_icon o_icon o_icon_submit");
 		assessmentFormButton.setElementCssClass("o_sel_course_gta_assessment_button");
-		assessmentFormButton.setVisible(assignedTask == null || assignedTask.getTaskStatus() != TaskProcess.graded);
+		assessmentFormButton.setVisible(!coachCourseEnv.isCourseReadOnly() && (assignedTask == null || assignedTask.getTaskStatus() != TaskProcess.graded));
 
 		reopenButton = uifactory.addFormLink("coach.reopen", "coach.reopen", null, formLayout, Link.BUTTON);
 		reopenButton.setElementCssClass("o_sel_course_gta_reopen_button");
-		reopenButton.setVisible(assignedTask != null && assignedTask.getTaskStatus() == TaskProcess.graded);
+		reopenButton.setVisible(!coachCourseEnv.isCourseReadOnly() && assignedTask != null && assignedTask.getTaskStatus() == TaskProcess.graded);
 		
 		if(formLayout instanceof FormLayoutContainer) {
 			ModuleConfiguration config = gtaNode.getModuleConfiguration();

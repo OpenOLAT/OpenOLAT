@@ -100,9 +100,10 @@ public class CourseCalendars {
 		CourseGroupManager cgm = course.getCourseEnvironment().getCourseGroupManager();
 		Identity identity = ureq.getIdentity();
 		Roles roles = ureq.getUserSession().getRoles();
-		boolean isPrivileged = roles.isOLATAdmin() || courseEnv.isAdmin()
-				|| (ne != null && ne.isCapabilityAccessible(CalCourseNode.EDIT_CONDITION_ID))
-				|| RepositoryManager.getInstance().isInstitutionalRessourceManagerFor(identity, roles, cgm.getCourseEntry());
+		boolean isPrivileged = ! courseEnv.isCourseReadOnly() &&
+				(roles.isOLATAdmin() || courseEnv.isAdmin()
+				  || (ne != null && ne.isCapabilityAccessible(CalCourseNode.EDIT_CONDITION_ID))
+				  || RepositoryManager.getInstance().isInstitutionalRessourceManagerFor(identity, roles, cgm.getCourseEntry()));
 		
 		if (isPrivileged) {
 			courseKalendarWrapper.setAccess(KalendarRenderWrapper.ACCESS_READ_WRITE);
@@ -119,7 +120,7 @@ public class CourseCalendars {
 	}
 
 	public static CourseCalendars createCourseCalendarsWrapper(UserRequest ureq, WindowControl wControl, UserCourseEnvironment courseEnv, NodeEvaluation ne) {
-		List<KalendarRenderWrapper> calendars = new ArrayList<KalendarRenderWrapper>();
+		List<KalendarRenderWrapper> calendars = new ArrayList<>();
 		ICourse course = CourseFactory.loadCourse(courseEnv.getCourseEnvironment().getCourseResourceableId());
 		KalendarRenderWrapper courseKalendarWrapper = getCourseCalendarWrapper(ureq, courseEnv, ne);
 		// add link provider
@@ -134,15 +135,16 @@ public class CourseCalendars {
 		// add course group calendars
 		boolean isGroupManager = ureq.getUserSession().getRoles().isOLATAdmin() || ureq.getUserSession().getRoles().isGroupManager()
 				|| cgm.isIdentityCourseAdministrator(identity) || cgm.hasRight(identity, CourseRights.RIGHT_GROUPMANAGEMENT);
+		boolean readOnly = courseEnv.isCourseReadOnly();
 		
 		if (isGroupManager) {
 			// learning groups
 			List<BusinessGroup> allGroups = cgm.getAllBusinessGroups();
-			addCalendars(ureq, courseEnv, allGroups, true, clpc, calendars);
+			addCalendars(ureq, courseEnv, allGroups, !readOnly, clpc, calendars);
 		} else {
 			// learning groups
 			List<BusinessGroup> ownerGroups = cgm.getOwnedBusinessGroups(identity);
-			addCalendars(ureq, courseEnv, ownerGroups, true, clpc, calendars);
+			addCalendars(ureq, courseEnv, ownerGroups, !readOnly, clpc, calendars);
 			List<BusinessGroup> attendedGroups = cgm.getParticipatingBusinessGroups(identity);
 			for (BusinessGroup ownerGroup : ownerGroups) {
 				if (attendedGroups.contains(ownerGroup)) {

@@ -1,6 +1,18 @@
 <fieldset>
 	<legend>$r.translate("details.lifecycle.change")</legend>
 	
+#if ($r.available("readOnly"))
+	<h4>$r.translate("details.read.only.ressoure")</h4>
+	<div class="o_note">
+		<p>
+			$r.translate("details.read.only.ressoure.desc")
+		</p>
+		<div class="o_button_group o_block_large_top">
+			$r.render("readOnly")
+		</div>
+	</div>
+#end
+	
 #if ($r.available("close"))
 	<h4>$r.translate("details.close.ressoure")</h4>
 	<div class="o_warning">
@@ -17,7 +29,7 @@
 	<h4>$r.translate("details.delete")</h4>
 	<div class="o_error">
 		<p>
-			$r.translate("details.delete.desc")
+			$r.translate("details.delete.soft.desc")
 		</p>
 		<div class="o_button_group o_block_large_top">
 			$r.render("delete")

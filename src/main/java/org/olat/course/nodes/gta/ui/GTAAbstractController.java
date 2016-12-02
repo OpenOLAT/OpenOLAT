@@ -155,9 +155,6 @@ public abstract class GTAAbstractController extends BasicController implements G
 		taskListEventResource = OresHelper.createOLATResourceableInstance("GTaskList", taskList.getKey());
 		CoordinatorManager.getInstance().getCoordinator()
 			.getEventBus().registerFor(this, getIdentity(), taskListEventResource);
-		
-		initContainer(ureq);
-		process(ureq);
 	}
 
 	@Override

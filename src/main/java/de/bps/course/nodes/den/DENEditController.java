@@ -62,6 +62,8 @@ public class DENEditController extends ActivateableTabbableDefaultController {
 	private TabbedPane tabPane;
 	final static String[] paneKeys = {PANE_TAB_DENCONFIG,PANE_TAB_ACCESSIBILITY};
 	
+	private final UserCourseEnvironment userCourseEnv;
+	
 	public DENEditController(ModuleConfiguration moduleConfiguration,
 								UserRequest ureq,
 								WindowControl wControl,
@@ -73,6 +75,7 @@ public class DENEditController extends ActivateableTabbableDefaultController {
 		this.moduleConfiguration = moduleConfiguration;
 		this.ores = ores;
 		this.courseNode = courseNode;
+		this.userCourseEnv = userCourseEnv;
 		
 		editVc = this.createVelocityContainer("edit");
 		
@@ -151,7 +154,7 @@ public class DENEditController extends ActivateableTabbableDefaultController {
 			manageDatesModalCntrll.activate();
 		} else if (source == manageParticipantsButton) {
 			//list of participants
-			DENManageParticipantsController partsCtr = new DENManageParticipantsController(ureq, getWindowControl(), ores, courseNode);
+			DENManageParticipantsController partsCtr = new DENManageParticipantsController(ureq, getWindowControl(), ores, courseNode, userCourseEnv.isCourseReadOnly());
 			listParticipantsModalCntrll = new CloseableModalController(getWindowControl(), "close", partsCtr.getInitialComponent(), true, translate("dates.table.list"));
 			listParticipantsModalCntrll.addControllerListener(this);
 			listParticipantsModalCntrll.activate();

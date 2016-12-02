@@ -686,6 +686,14 @@ public class TableController extends BasicController {
 		table.setMultiSelect(isMultiSelect);
 	}
 	
+	/**
+	 * Make the multi select as disabled box and remove the select all / deselect all
+	 * @param disable
+	 */
+	public void setMultiSelectAsDisabled(boolean disabled) {
+		table.setMultiSelectAsDisabled(disabled);
+	}
+	
 	public void setMultiSelectSelectedAt(final int row, final boolean selected) {
 		table.setMultiSelectSelectedAt(row, selected);
 	}

@@ -730,9 +730,10 @@ public class TACourseNode extends GenericCourseNode implements PersistentAssessa
 	 *      org.olat.course.run.userview.UserCourseEnvironment)
 	 */
 	@Override
-	public Controller getDetailsEditController(UserRequest ureq, WindowControl wControl, BreadcrumbPanel stackPanel, UserCourseEnvironment userCourseEnvironment) {
+	public Controller getDetailsEditController(UserRequest ureq, WindowControl wControl, BreadcrumbPanel stackPanel,
+			UserCourseEnvironment coachCourseEnv, UserCourseEnvironment assessedUserCourseEnv) {
 		// prepare file component
-		return new DropboxScoringViewController(ureq, wControl, this, userCourseEnvironment);
+		return new DropboxScoringViewController(ureq, wControl, this, assessedUserCourseEnv);
 	}
 
 	/**
@@ -740,9 +741,12 @@ public class TACourseNode extends GenericCourseNode implements PersistentAssessa
 	 */
 	@Override
 	public List<Controller> createAssessmentTools(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
-			CourseEnvironment courseEnv, AssessmentToolOptions options) {
+			UserCourseEnvironment coachCourseEnv, AssessmentToolOptions options) {
 		List<Controller> tools = new ArrayList<Controller>(1);
-		tools.add(new BulkAssessmentToolController(ureq, wControl, courseEnv, this));
+		CourseEnvironment courseEnv = coachCourseEnv.getCourseEnvironment();
+		if(!coachCourseEnv.isCourseReadOnly()) {
+			tools.add(new BulkAssessmentToolController(ureq, wControl, courseEnv, this));
+		}
 		tools.add(new BulkDownloadToolController(ureq, wControl, courseEnv, options, this));
 		return tools;
 	}

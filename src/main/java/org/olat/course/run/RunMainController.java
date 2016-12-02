@@ -321,7 +321,8 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 				coachedGroups, participatedGroups, waitingLists,
 				reSecurity.isCourseCoach() || reSecurity.isGroupCoach(),
 				reSecurity.isEntryAdmin(),
-				reSecurity.isCourseParticipant() || reSecurity.isGroupParticipant());
+				reSecurity.isCourseParticipant() || reSecurity.isGroupParticipant(),
+				reSecurity.isReadOnly());
 	}
 	
 	/**

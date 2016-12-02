@@ -25,7 +25,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -54,6 +53,7 @@ import org.olat.course.nodes.cl.model.DBCheck;
 import org.olat.course.nodes.cl.model.DBCheckbox;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.ModuleConfiguration;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -65,29 +65,32 @@ public class AssessedIdentityCheckListController extends FormBasicController {
 
 	private static final String[] onKeys = new String[]{ "on" };
 
+	private final boolean cancel;
 	private final boolean withScore;
 	private final boolean saveAndClose;
 	private final ModuleConfiguration config;
 	private final CheckListCourseNode courseNode;
+	private final UserCourseEnvironment coachCourseEnv;
 	private final UserCourseEnvironment assessedUserCourseEnv;
 	private final OLATResourceable courseOres;
 	private final Identity assessedIdentity;
 	private final CheckboxList checkboxList;
 	private List<CheckboxWrapper> wrappers;
 	private FormLink saveAndCloseLink;
-	
-	
-	
-	private final CheckboxManager checkboxManager;
+
+	@Autowired
+	private CheckboxManager checkboxManager;
 	
 	public AssessedIdentityCheckListController(UserRequest ureq, WindowControl wControl,
-			Identity assessedIdentity, OLATResourceable courseOres,
-			UserCourseEnvironment assessedUserCourseEnv, CheckListCourseNode courseNode, boolean saveAndClose) {
+			Identity assessedIdentity, OLATResourceable courseOres, UserCourseEnvironment coachCourseEnv,
+			UserCourseEnvironment assessedUserCourseEnv, CheckListCourseNode courseNode, boolean saveAndClose, boolean cancel) {
 		super(ureq, wControl);
 
+		this.cancel = cancel;
 		this.courseNode = courseNode;
 		this.courseOres = courseOres;
 		this.saveAndClose = saveAndClose;
+		this.coachCourseEnv = coachCourseEnv;
 		this.assessedUserCourseEnv = assessedUserCourseEnv;
 		config = courseNode.getModuleConfiguration();
 		Boolean hasScore = (Boolean)config.get(MSCourseNode.CONFIG_KEY_HAS_SCORE_FIELD);
@@ -102,7 +105,6 @@ public class AssessedIdentityCheckListController extends FormBasicController {
 			checkboxList = configCheckboxList;
 		}
 		
-		checkboxManager = CoreSpringFactory.getImpl(CheckboxManager.class);
 		initForm(ureq);
 	}
 
@@ -132,10 +134,13 @@ public class AssessedIdentityCheckListController extends FormBasicController {
 		formLayout.add(buttonCont);
 		FormSubmit saveButton = uifactory.addFormSubmitButton("save", "save", buttonCont);
 		saveButton.setEnabled(checkboxList.getNumOfCheckbox() > 0);
+		saveButton.setVisible(!coachCourseEnv.isCourseReadOnly());
 		saveAndCloseLink = uifactory.addFormLink("save.close", buttonCont, Link.BUTTON);
 		saveAndCloseLink.setEnabled(checkboxList.getNumOfCheckbox() > 0);
-		saveAndCloseLink.setVisible(saveAndClose);
-		uifactory.addFormCancelButton("cancel", buttonCont, ureq, getWindowControl());
+		saveAndCloseLink.setVisible(saveAndClose && !coachCourseEnv.isCourseReadOnly());
+		if(cancel) {
+			uifactory.addFormCancelButton("cancel", buttonCont, ureq, getWindowControl());
+		}
 	}
 	
 	private CheckboxWrapper forgeCheckboxWrapper(Checkbox checkbox, DBCheck check, boolean readOnly, FormItemContainer formLayout) {
@@ -144,7 +149,7 @@ public class AssessedIdentityCheckListController extends FormBasicController {
 		String boxId = "box_" + checkbox.getCheckboxId();
 		MultipleSelectionElement boxEl = uifactory
 				.addCheckboxesHorizontal(boxId, null, formLayout, onKeys, values);
-		boxEl.setEnabled(!readOnly);
+		boxEl.setEnabled(!readOnly && !coachCourseEnv.isCourseReadOnly());
 		boxEl.setLabel(checkbox.getTitle(), null, false);
 		boxEl.showLabel(true);
 		boxEl.addActionListener(FormEvent.ONCHANGE);
@@ -160,6 +165,7 @@ public class AssessedIdentityCheckListController extends FormBasicController {
 			}
 			pointEl = uifactory.addTextElement(pointId, null, 16, points, formLayout);
 			pointEl.setDisplaySize(5);
+			pointEl.setEnabled(!coachCourseEnv.isCourseReadOnly());
 			
 			Float maxScore = checkbox.getPoints();
 			if(maxScore != null) {

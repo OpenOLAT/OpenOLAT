@@ -26,7 +26,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -65,6 +64,7 @@ import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.util.logging.activity.LoggingResourceable;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -86,7 +86,8 @@ public class CheckListRunController extends FormBasicController implements Contr
 	private final OLATResourceable courseOres;
 	private final UserCourseEnvironment userCourseEnv;
 	
-	private final CheckboxManager checkboxManager;
+	@Autowired
+	private CheckboxManager checkboxManager;
 	
 	/**
 	 * Use this constructor to launch the checklist.
@@ -102,7 +103,6 @@ public class CheckListRunController extends FormBasicController implements Contr
 		this.courseNode = courseNode;
 		this.courseOres = courseOres;
 		this.userCourseEnv = userCourseEnv;
-		checkboxManager = CoreSpringFactory.getImpl(CheckboxManager.class);
 		
 		config = courseNode.getModuleConfiguration();
 		CheckboxList configCheckboxList = (CheckboxList)config.get(CheckListCourseNode.CONFIG_KEY_CHECKBOX);
@@ -207,7 +207,7 @@ public class CheckListRunController extends FormBasicController implements Contr
 		String boxId = "box_" + checkbox.getCheckboxId();
 		MultipleSelectionElement el = uifactory
 				.addCheckboxesHorizontal(boxId, null, formLayout, onKeys, values);
-		el.setEnabled(canCheck && !readOnly);
+		el.setEnabled(canCheck && !readOnly && !userCourseEnv.isCourseReadOnly());
 		el.addActionListener(FormEvent.ONCHANGE);
 
 		DownloadLink downloadLink = null;

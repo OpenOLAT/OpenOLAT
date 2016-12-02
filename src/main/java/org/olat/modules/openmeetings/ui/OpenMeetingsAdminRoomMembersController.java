@@ -24,7 +24,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 
-import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.table.ColumnDescriptor;
@@ -41,12 +40,13 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.UserConstants;
-import org.olat.modules.openmeetings.manager.OpenMeetingsManager;
 import org.olat.modules.openmeetings.manager.OpenMeetingsException;
+import org.olat.modules.openmeetings.manager.OpenMeetingsManager;
 import org.olat.modules.openmeetings.model.OpenMeetingsRoom;
 import org.olat.modules.openmeetings.model.OpenMeetingsUser;
 import org.olat.user.UserManager;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -57,16 +57,16 @@ import org.olat.user.propertyhandlers.UserPropertyHandler;
 public class OpenMeetingsAdminRoomMembersController extends BasicController {
 	
 	private final OpenMeetingsRoom room;
-	private final OpenMeetingsManager openMeetingsManager;
+	@Autowired
+	private OpenMeetingsManager openMeetingsManager;
 
 	private final TableController tableCtr;
 	private final VelocityContainer mainVC;
 	
-	public OpenMeetingsAdminRoomMembersController(UserRequest ureq, WindowControl wControl, OpenMeetingsRoom room) {
+	public OpenMeetingsAdminRoomMembersController(UserRequest ureq, WindowControl wControl, OpenMeetingsRoom room, boolean readOnly) {
 		super(ureq, wControl);
 
 		this.room = room;
-		openMeetingsManager = CoreSpringFactory.getImpl(OpenMeetingsManager.class);
 
 		mainVC = createVelocityContainer("room_user_admin");
 
@@ -80,10 +80,11 @@ public class OpenMeetingsAdminRoomMembersController extends BasicController {
 		tableCtr.addColumnDescriptor(getColumnDescriptor(Col.firstName.ordinal(), UserConstants.FIRSTNAME, ureq.getLocale()));
 		tableCtr.addColumnDescriptor(getColumnDescriptor(Col.lastName.ordinal(), UserConstants.LASTNAME, ureq.getLocale()));
 		tableCtr.addColumnDescriptor(getColumnDescriptor(Col.email.ordinal(), UserConstants.EMAIL, ureq.getLocale()));
-		tableCtr.addColumnDescriptor(new StaticColumnDescriptor("kickout", "table.action", translate("kickout")));
-		
-		tableCtr.addMultiSelectAction("kickout", "kickout");
-		tableCtr.setMultiSelect(true);
+		if(!readOnly) {
+			tableCtr.addColumnDescriptor(new StaticColumnDescriptor("kickout", "table.action", translate("kickout")));
+			tableCtr.addMultiSelectAction("kickout", "kickout");
+			tableCtr.setMultiSelect(true);
+		}
 		
 		loadModel();
 		mainVC.put("userTable", tableCtr.getInitialComponent());

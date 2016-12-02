@@ -335,6 +335,7 @@ public class BookmarksPortletRunController extends AbstractPortletRunController<
 		 */
 		private String getBookmarkTitle(Bookmark bookmark) {
 			String title = bookmark.getTitle();
+			
 			if (RepositoryManager.getInstance().createRepositoryEntryStatus(bookmark.getStatusCode()).isClosed()) {
 				Translator pT = Util.createPackageTranslator(RepositoryEntryStatus.class, locale);
 				title = "[" + pT.translate("title.prefix.closed") + "] ".concat(title);

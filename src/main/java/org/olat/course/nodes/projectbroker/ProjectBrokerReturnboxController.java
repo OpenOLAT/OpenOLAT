@@ -65,6 +65,7 @@ public class ProjectBrokerReturnboxController extends ReturnboxController  {
 	 * Return returnbox base-path. e.g. course/<COURSE_ID>/returnbox/<NODE_id>/<USER_NAME>
 	 * @see org.olat.course.nodes.ta.ReturnboxController#getReturnboxPathFor(org.olat.course.run.environment.CourseEnvironment, org.olat.course.nodes.CourseNode, org.olat.core.id.Identity)
 	 */
+	@Override
 	public String getReturnboxPathFor(CourseEnvironment courseEnv, CourseNode cNode, Identity identity) {
 		return getReturnboxBasePathForProject(this.project, courseEnv, cNode) + File.separator + identity.getName();
 	}

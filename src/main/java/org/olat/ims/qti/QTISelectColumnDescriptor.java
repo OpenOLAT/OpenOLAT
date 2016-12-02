@@ -37,10 +37,12 @@ import org.olat.core.gui.translator.Translator;
  */
 public class QTISelectColumnDescriptor extends DefaultColumnDescriptor {
 	
+	private boolean readOnly;
 	private final Translator translator;
 	
-	public QTISelectColumnDescriptor(final String headerKey, final int dataColumn, final Locale locale, final Translator translator) {
+	public QTISelectColumnDescriptor(String headerKey, int dataColumn, boolean readOnly, Locale locale, Translator translator) {
 		super(headerKey, dataColumn, null, locale);
+		this.readOnly = readOnly;
 		this.translator = translator;
 	}
 
@@ -48,8 +50,9 @@ public class QTISelectColumnDescriptor extends DefaultColumnDescriptor {
 	public String getAction(int row) {
 		int sortedRow = table.getSortedRow(row);
 		Object state = getTable().getTableDataModel().getValueAt(sortedRow, getDataColumn());
+
 		if(state instanceof Boolean && !((Boolean)state).booleanValue()) {
-			return "ret";
+			return readOnly ? null : "ret";
 		}
 		return "sel";
 	}
@@ -58,9 +61,9 @@ public class QTISelectColumnDescriptor extends DefaultColumnDescriptor {
 	public void renderValue(StringOutput sb, int row, Renderer renderer) {
 		int sortedRow = table.getSortedRow(row);
 		Object state = getTable().getTableDataModel().getValueAt(sortedRow, getDataColumn());
-		if(state instanceof Boolean && ((Boolean)state).booleanValue()) {
+		if((state instanceof Boolean && ((Boolean)state).booleanValue())) {
 			sb.append(translator.translate("select"));
-		} else {
+		} else if(!readOnly) {
 			sb.append(translator.translate("retrievetest"));
 		}
 	}

@@ -48,6 +48,7 @@ import org.olat.course.nodes.AssessableCourseNode;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.GTACourseNode;
 import org.olat.course.run.environment.CourseEnvironment;
+import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.group.BusinessGroup;
 import org.olat.modules.assessment.ui.AssessmentToolContainer;
 import org.olat.modules.assessment.ui.AssessmentToolSecurityCallback;
@@ -69,16 +70,19 @@ public class AssessmentIdentityListCourseTreeController extends BasicController 
 	
 	private final RepositoryEntry courseEntry;
 	private final BusinessGroup businessGroup;
+	private final UserCourseEnvironment coachCourseEnv;
 	private AssessmentToolSecurityCallback assessmentCallback;
 	
 	public AssessmentIdentityListCourseTreeController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
-			RepositoryEntry courseEntry, BusinessGroup businessGroup, AssessmentToolContainer toolContainer, AssessmentToolSecurityCallback assessmentCallback) {
+			RepositoryEntry courseEntry, BusinessGroup businessGroup, UserCourseEnvironment coachCourseEnv,
+			AssessmentToolContainer toolContainer, AssessmentToolSecurityCallback assessmentCallback) {
 		super(ureq, wControl);
 		this.courseEntry = courseEntry;
 		this.stackPanel = stackPanel;
 		this.toolContainer = toolContainer;
 		this.assessmentCallback = assessmentCallback;
 		this.businessGroup = businessGroup;
+		this.coachCourseEnv = coachCourseEnv;
 
 		ICourse course = CourseFactory.loadCourse(courseEntry);
 		
@@ -164,11 +168,11 @@ public class AssessmentIdentityListCourseTreeController extends BasicController 
 					coachedGroups = assessmentCallback.getCoachedGroups();
 				}
 				currentCtrl = ((GTACourseNode)courseNode).getCoachedGroupListController(ureq, getWindowControl(), stackPanel,
-						courseEnv, assessmentCallback.isAdmin(), coachedGroups);
+						coachCourseEnv, assessmentCallback.isAdmin(), coachedGroups);
 			}
 		} else {
 			currentCtrl = new IdentityListCourseNodeController(ureq, bwControl, stackPanel,
-					courseEntry, businessGroup, courseNode, toolContainer, assessmentCallback);
+					courseEntry, businessGroup, courseNode, coachCourseEnv, toolContainer, assessmentCallback);
 		}
 		listenTo(currentCtrl);
 		mainPanel.setContent(currentCtrl.getInitialComponent());

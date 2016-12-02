@@ -75,7 +75,7 @@ public class ChooseNodeController extends BasicController {
 		for (String courseNodeAlias : cnf.getRegisteredCourseNodeAliases()) {
 			CourseNodeConfiguration cnConfig = cnf.getCourseNodeConfiguration(courseNodeAlias);
 			if(cnConfig.isDeprecated()) {
-				continue;
+				//continue;
 			}
 			
 			try {

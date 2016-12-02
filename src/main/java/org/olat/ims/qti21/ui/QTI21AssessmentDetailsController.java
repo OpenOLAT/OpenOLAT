@@ -92,6 +92,7 @@ public class QTI21AssessmentDetailsController extends FormBasicController {
 	
 	private IQTESTCourseNode courseNode;
 	private final RepositoryEntrySecurity reSecurity;
+	private UserCourseEnvironment coachCourseEnv;
 	private UserCourseEnvironment assessedUserCourseEnv;
 	
 	private CloseableModalController cmc;
@@ -112,11 +113,13 @@ public class QTI21AssessmentDetailsController extends FormBasicController {
 	private AssessmentService assessmentService;
 	
 	public QTI21AssessmentDetailsController(UserRequest ureq, WindowControl wControl,
-			RepositoryEntry assessableEntry, IQTESTCourseNode courseNode, UserCourseEnvironment assessedUserCourseEnv) {
+			RepositoryEntry assessableEntry, IQTESTCourseNode courseNode,
+			UserCourseEnvironment coachCourseEnv, UserCourseEnvironment assessedUserCourseEnv) {
 		super(ureq, wControl, "assessment_details");
 		entry = assessableEntry;
 		this.courseNode = courseNode;
 		subIdent = courseNode.getIdent();
+		this.coachCourseEnv = coachCourseEnv;
 		this.assessedUserCourseEnv = assessedUserCourseEnv;
 		RepositoryEntry testEntry = courseNode.getReferencedRepositoryEntry();
 		assessedIdentity = assessedUserCourseEnv.getIdentityEnvironment().getIdentity();
@@ -148,20 +151,26 @@ public class QTI21AssessmentDetailsController extends FormBasicController {
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TSCols.lastModified));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TSCols.duration, new TextFlexiCellRenderer(EscapeMode.none)));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TSCols.results, new TextFlexiCellRenderer(EscapeMode.none)));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TSCols.open.i18nHeaderKey(), TSCols.open.ordinal(), "open",
-				new BooleanCellRenderer(new StaticFlexiCellRenderer(translate("select"), "open"),
-						new StaticFlexiCellRenderer(translate("pull"), "open"))));
-		if(manualCorrections) {
+		
+		if(coachCourseEnv.isCourseReadOnly()) {
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("select", translate("select"), "open"));
+		} else {
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TSCols.open.i18nHeaderKey(), TSCols.open.ordinal(), "open",
+					new BooleanCellRenderer(new StaticFlexiCellRenderer(translate("select"), "open"),
+							new StaticFlexiCellRenderer(translate("pull"), "open"))));
+		}
+		if(manualCorrections && !coachCourseEnv.isCourseReadOnly()) {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TSCols.correction.i18nHeaderKey(), TSCols.correction.ordinal(), "correction",
 					new BooleanCellRenderer(new StaticFlexiCellRenderer(translate("correction"), "correction"), null)));
 		}
+	
 
 		tableModel = new QTI21TestSessionTableModel(columnsModel, getTranslator());
 		tableEl = uifactory.addTableElement(getWindowControl(), "sessions", tableModel, 20, false, getTranslator(), formLayout);
 		tableEl.setEmtpyTableMessageKey("results.empty");
 		
 		
-		if(reSecurity.isEntryAdmin()) {
+		if(reSecurity.isEntryAdmin() && !coachCourseEnv.isCourseReadOnly()) {
 			AssessmentToolOptions asOptions = new AssessmentToolOptions();
 			asOptions.setAdmin(reSecurity.isEntryAdmin());
 			asOptions.setIdentities(Collections.singletonList(assessedIdentity));

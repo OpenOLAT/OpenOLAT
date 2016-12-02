@@ -9,26 +9,28 @@
 	<p>$revisionMessage</p>
 #end
 #if($r.available("uploadCorrections"))
-	<h5>$r.translate("coach.feedback.documents.title")</h5>
-	<p>$r.translate("coach.feedback.documents.desc")</p>
+	#if($r.visible("coach.submit.corrections.to.revision.button"))
+		<h5>$r.translate("coach.feedback.documents.title")</h5>
+		<p>$r.translate("coach.feedback.documents.desc")</p>
+	#end
 	$r.render("uploadCorrections")
-
-	<h5>$r.translate("coach.verdict.title")</h5>
-	<p>$r.translate("coach.verdict.desc")</p>
-	<div class="o_button_group">
-	#if($r.available("coach.submit.corrections.to.revision.button"))
-		$r.render("coach.submit.corrections.to.revision.button")
-	#end
-	#if($r.available("coach.close.revision.button"))
-		$r.render("coach.close.revision.button")
-	#end
-	</div>
-#else
-	#if($r.available("coach.collect.revisions"))
-		<h5>$r.translate("coach.collect.confirm.title")</h5>
-		<p>$r.translate("coach.collect.confirm.desc")</p>
+	
+	#if($r.visible("coach.submit.corrections.to.revision.button") || $r.visible("coach.close.revision.button"))
+		<h5>$r.translate("coach.verdict.title")</h5>
+		<p>$r.translate("coach.verdict.desc")</p>
 		<div class="o_button_group">
-			$r.render("coach.collect.revisions")
+		#if($r.visible("coach.submit.corrections.to.revision.button"))
+			$r.render("coach.submit.corrections.to.revision.button")
+		#end
+		#if($r.visible("coach.close.revision.button"))
+			$r.render("coach.close.revision.button")
+		#end
 		</div>
 	#end
+#elseif($r.visible("coach.collect.revisions"))
+	<h5>$r.translate("coach.collect.confirm.title")</h5>
+	<p>$r.translate("coach.collect.confirm.desc")</p>
+	<div class="o_button_group">
+		$r.render("coach.collect.revisions")
+	</div>
 #end

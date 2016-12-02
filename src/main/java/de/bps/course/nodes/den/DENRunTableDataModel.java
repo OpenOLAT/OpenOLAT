@@ -23,7 +23,6 @@ import java.util.Date;
 import java.util.List;
 
 import org.olat.commons.calendar.model.KalendarEvent;
-import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.table.DefaultTableDataModel;
 import org.olat.core.gui.components.table.TableDataModelWithMarkableRows;
 import org.olat.core.gui.translator.Translator;
@@ -47,7 +46,8 @@ public class DENRunTableDataModel extends DefaultTableDataModel<KalendarEvent> i
 	private Identity identity;
 	private DENCourseNode courseNode;
 	private Translator translator;
-	private Boolean cancelEnrollEnabled;
+	private final boolean cancelEnrollEnabled;
+	private final boolean enrollmentEnabled;
 
 	/**
 	 * Standard constructor of the table data model for run view
@@ -55,21 +55,25 @@ public class DENRunTableDataModel extends DefaultTableDataModel<KalendarEvent> i
 	 * @param ureq
 	 * @param DENCourseNode courseNode
 	 */
-	public DENRunTableDataModel(List<KalendarEvent> objects, UserRequest ureq, DENCourseNode courseNode, Boolean cancelEnrollEnabled, Translator translator) {
+	public DENRunTableDataModel(List<KalendarEvent> objects, Identity identity,
+			DENCourseNode courseNode, boolean cancelEnrollEnabled, boolean enrollmentEnabled, Translator translator) {
 		super(objects);
 		denManager = DENManager.getInstance();
-		identity = ureq.getIdentity();
+		this.identity = identity;
 		this.courseNode = courseNode;
 		this.translator = translator;
 		this.cancelEnrollEnabled = cancelEnrollEnabled;
+		this.enrollmentEnabled = enrollmentEnabled;
+	}
+	
+	public boolean isEnrollmentEnabled() {
+		return enrollmentEnabled;
 	}
 
 	@Override
 	public int getColumnCount() {
 		return COLUMN_COUNT;
 	}
-	
-	
 
 	@Override
 	public Object getValueAt(int row, int col) {
@@ -110,6 +114,7 @@ public class DENRunTableDataModel extends DefaultTableDataModel<KalendarEvent> i
 			else
 				return translator.translate("dates.table.run.notenrolled");
 		case 7:
+			if(!enrollmentEnabled) return Boolean.FALSE;
 			//enroll
 			if(denManager.isAlreadyEnrolled(identity, objects, courseNode)) {
 				return Boolean.FALSE;
@@ -119,6 +124,9 @@ public class DENRunTableDataModel extends DefaultTableDataModel<KalendarEvent> i
 			}
 			return Boolean.TRUE;
 		case 8:
+			if(!enrollmentEnabled) {
+				return denManager.isEnrolledInDate(identity, event);
+			}
 			//cancel enrollment
 			if(cancelEnrollEnabled)
 				return denManager.isEnrolledInDate(identity, event);

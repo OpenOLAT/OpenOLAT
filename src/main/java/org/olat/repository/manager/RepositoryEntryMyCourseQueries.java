@@ -207,6 +207,14 @@ public class RepositoryEntryMyCourseQueries {
 			sb.append(" and v.key in (:repoEntryKeys) ");
 		}
 		
+		if(params.getClosed() != null) {
+			if(params.getClosed().booleanValue()) {
+				sb.append(" and v.statusCode>0");
+			} else {
+				sb.append(" and v.statusCode=0");
+			}
+		}
+		
 		if(params.getFilters() != null) {
 			for(Filter filter:params.getFilters()) {
 				needIdentityKey |= appendFiltersInWhereClause(filter, sb);

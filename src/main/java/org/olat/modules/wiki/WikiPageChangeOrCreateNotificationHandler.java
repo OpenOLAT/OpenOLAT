@@ -107,6 +107,9 @@ public class WikiPageChangeOrCreateNotificationHandler implements NotificationsH
 				if (p.getResName().equals( CourseModule.getCourseTypeName() ) ) {
 					// resId = CourseResourceableId           p.getSubidentifier() = wikiCourseNode.getIdent()
 					ICourse course = CourseFactory.loadCourse(resId);
+					if(!courseStatus(course)) {
+						return NotificationsManager.getInstance().getNoSubscriptionInfo();
+					}
 					CourseEnvironment cenv = course.getCourseEnvironment();
 					CourseNode courseNode = cenv.getRunStructure().getNode(p.getSubidentifier());
 					if(courseNode == null){
@@ -206,6 +209,12 @@ public class WikiPageChangeOrCreateNotificationHandler implements NotificationsH
 			si = NotificationsManager.getInstance().getNoSubscriptionInfo();
 		}
 		return si;
+	}
+	
+	private boolean courseStatus(ICourse course) {
+		return course != null
+				&& !course.getCourseEnvironment().getCourseGroupManager().getCourseEntry().getRepositoryEntryStatus().isUnpublished()
+				&& !course.getCourseEnvironment().getCourseGroupManager().getCourseEntry().getRepositoryEntryStatus().isClosed();
 	}
 	
 	private void checkPublisher(Publisher p) {

@@ -34,10 +34,11 @@ package org.olat.repository;
  */
 public class RepositoryEntryStatus {
 
-	public static final int REPOSITORY_STATUS_OPEN = 1;
 	public static final int REPOSITORY_STATUS_CLOSED = 2;
+	public static final int REPOSITORY_STATUS_UNPUBLISHED = 4;
 	
-	private boolean closed; //0010
+	private boolean closed;
+	private boolean unpublished;
 	
 	public RepositoryEntryStatus(int statusCode) {
 		// initialize closed status
@@ -46,17 +47,30 @@ public class RepositoryEntryStatus {
 		} else {
 			setClosed(false);
 		}
+		
+		if((statusCode & REPOSITORY_STATUS_UNPUBLISHED) == REPOSITORY_STATUS_UNPUBLISHED ) {
+			setUnpublished(true);
+		} else {
+			setUnpublished(false);
+		}
 	}
 
 	/**
 	 * @param closed
 	 */
-	private void setClosed(boolean _closed) {
-		this.closed = _closed;
+	private void setClosed(boolean closed) {
+		this.closed = closed;
 	}
 
 	public boolean isClosed() {
-		return this.closed;
+		return closed;
+	}
+	
+	private void setUnpublished(boolean unpublished) {
+		this.unpublished = unpublished;
 	}
 
+	public boolean isUnpublished() {
+		return unpublished;
+	}
 }

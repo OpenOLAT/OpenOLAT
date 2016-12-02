@@ -287,6 +287,12 @@ public class AssessmentNotificationsHandler implements NotificationsHandler {
 			}
 		}
 	}
+	
+	private boolean courseStatus(ICourse course) {
+		return course != null
+				&& !course.getCourseEnvironment().getCourseGroupManager().getCourseEntry().getRepositoryEntryStatus().isUnpublished()
+				&& !course.getCourseEnvironment().getCourseGroupManager().getCourseEntry().getRepositoryEntryStatus().isClosed();
+	}
 
 	/**
 	 * @see org.olat.core.commons.services.notifications.NotificationsHandler#createSubscriptionInfo(org.olat.core.commons.services.notifications.Subscriber,
@@ -311,7 +317,7 @@ public class AssessmentNotificationsHandler implements NotificationsHandler {
 			if (notificationsManager.isPublisherValid(p) && compareDate.before(latestNews)) {
 				Long courseId = new Long(p.getData());
 				final ICourse course = loadCourseFromId(courseId);
-				if (course != null) {
+				if (courseStatus(course)) {
 					// course admins or users with the course right to have full access to
 					// the assessment tool will have full access to user tests
 					CourseGroupManager cgm = course.getCourseEnvironment().getCourseGroupManager();

@@ -157,7 +157,8 @@ public class VCCourseNode extends AbstractAccessableCourseNode {
 		VCProvider provider = providerId == null ? VCProviderFactory.createDefaultProvider() : VCProviderFactory.createProvider(providerId);
 		VCConfiguration config = handleConfig(provider);
 		// create run controller
-		Controller runCtr = new VCRunController(ureq, wControl, key + "_" + this.getIdent(), this.getShortName(), this.getLongTitle(), config, provider, moderator);
+		Controller runCtr = new VCRunController(ureq, wControl, key + "_" + getIdent(), getShortName(), getLongTitle(), config, provider,
+				moderator, userCourseEnv.isCourseReadOnly());
 		Controller controller = TitledWrapperHelper.getWrapper(ureq, wControl, runCtr, this, "o_vc_icon");
 		return new NodeRunConstructionResult(controller);
 	}

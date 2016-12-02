@@ -57,7 +57,7 @@ public enum CrudAction {
 	retrieve, 
 	
 	/** a resource is updated **/
-	update, 
+	update,
 	
 	/** a resource is deleted **/
 	delete,

@@ -587,8 +587,9 @@ public class ScormCourseNode extends AbstractAccessableCourseNode implements Per
 	 *      org.olat.course.run.userview.UserCourseEnvironment)
 	 */
 	@Override
-	public Controller getDetailsEditController(UserRequest ureq, WindowControl wControl, BreadcrumbPanel stackPanel, UserCourseEnvironment userCourseEnvironment) {
-		return new ScormResultDetailsController(ureq, wControl, this, userCourseEnvironment);
+	public Controller getDetailsEditController(UserRequest ureq, WindowControl wControl, BreadcrumbPanel stackPanel,
+			UserCourseEnvironment coachCourseEnv, UserCourseEnvironment assessedUserCourseEnv) {
+		return new ScormResultDetailsController(ureq, wControl, this, coachCourseEnv, assessedUserCourseEnv);
 	}
 
 	/**

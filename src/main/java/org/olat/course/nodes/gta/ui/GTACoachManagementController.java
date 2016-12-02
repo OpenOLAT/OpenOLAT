@@ -47,13 +47,15 @@ public class GTACoachManagementController extends BasicController {
 		VelocityContainer mainVC = createVelocityContainer("coach_management");
 		
 		if(config.getBooleanSafe(GTACourseNode.GTASK_ASSIGNMENT)) {
-			assignmentEditCtrl = new GTACoachAssignementEditController(ureq, wControl, gtaNode, userCourseEnv.getCourseEnvironment());
+			assignmentEditCtrl = new GTACoachAssignementEditController(ureq, wControl, gtaNode,
+					userCourseEnv.getCourseEnvironment(), userCourseEnv.isCourseReadOnly());
 			listenTo(assignmentEditCtrl);
 			mainVC.put("tasks", assignmentEditCtrl.getInitialComponent());
 		}
 		
 		if(config.getBooleanSafe(GTACourseNode.GTASK_SAMPLE_SOLUTION)) {
-			solutionEditCtrl = new GTASampleSolutionsEditController(ureq, wControl, gtaNode, userCourseEnv.getCourseEnvironment());
+			solutionEditCtrl = new GTASampleSolutionsEditController(ureq, wControl, gtaNode,
+					userCourseEnv.getCourseEnvironment(), userCourseEnv.isCourseReadOnly());
 			listenTo(solutionEditCtrl);
 			mainVC.put("solutions", solutionEditCtrl.getInitialComponent());
 		}

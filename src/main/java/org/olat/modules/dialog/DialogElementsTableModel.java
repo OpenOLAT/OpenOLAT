@@ -40,8 +40,8 @@ import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
 import org.olat.course.nodes.dialog.DialogConfigForm;
-import org.olat.course.nodes.dialog.DialogNodeForumCallback;
 import org.olat.modules.ModuleConfiguration;
+import org.olat.modules.fo.ForumCallback;
 
 /**
  * Description:<br>
@@ -56,13 +56,13 @@ public class DialogElementsTableModel extends BaseTableDataModelWithoutFilter<Di
 	private static final int COLUMN_COUNT = 9;
 	private List<DialogElement> entries = new ArrayList<DialogElement>();
 	protected Translator translator;
-	private DialogNodeForumCallback callback;
+	private ForumCallback callback;
 	private ModuleConfiguration config;
 
 	/**
 	 * @param translator
 	 */
-	public DialogElementsTableModel(Translator translator, DialogNodeForumCallback callback, ModuleConfiguration config) {
+	public DialogElementsTableModel(Translator translator, ForumCallback callback, ModuleConfiguration config) {
 		this.translator = translator;
 		this.callback = callback;
 		this.config = config;

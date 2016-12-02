@@ -91,13 +91,13 @@ public class RepositoryServiceImplTest extends OlatTestCase {
 	}
 	
 	@Test
-	public void deleteCourse() {
+	public void deleteCoursePermanently() {
 		Identity initialAuthor = JunitTestHelper.createAndPersistIdentityAsRndUser("auth-del-1");
 		RepositoryEntry re = JunitTestHelper.deployDemoCourse(initialAuthor);
 		dbInstance.commitAndCloseSession();
 		
 		Roles roles = new Roles(false, false, false, true, false, false, false);
-		ErrorList errors = repositoryService.delete(re, initialAuthor, roles, Locale.ENGLISH);
+		ErrorList errors = repositoryService.deletePermanently(re, initialAuthor, roles, Locale.ENGLISH);
 		Assert.assertNotNull(errors);
 		Assert.assertFalse(errors.hasErrors());
 	}

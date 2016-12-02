@@ -42,6 +42,7 @@ import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
+import javax.persistence.Transient;
 import javax.persistence.Version;
 
 import org.hibernate.annotations.GenericGenerator;
@@ -80,6 +81,8 @@ public class RepositoryEntry implements CreateInfo, Persistable , RepositoryEntr
 
 	private static final long serialVersionUID = 5319576295875289054L;
 	// IMPORTANT: Keep relation ACC_OWNERS < ACC_OWNERS_AUTHORS < ACC_USERS < ACC_USERS_GUESTS
+	
+	public static final int DELETED = 0;
 	/**
 	 * limit access to owners
 	 */
@@ -335,6 +338,12 @@ public class RepositoryEntry implements CreateInfo, Persistable , RepositoryEntr
 	public void setStatusCode(int statusCode) {
 		this.statusCode = statusCode;
 	}
+	
+	@Transient
+	public RepositoryEntryStatus getRepositoryEntryStatus() {
+		return new RepositoryEntryStatus(statusCode);
+	}
+	
 	/**
 	 * @return Returns the name.
 	 */

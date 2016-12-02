@@ -44,10 +44,10 @@ public class CustomDBMainController extends MainLayoutBasicController {
 	private final CustomDBController dbController;
 
 
-	public CustomDBMainController(UserRequest ureq, WindowControl windowControl, ICourse course) {
+	public CustomDBMainController(UserRequest ureq, WindowControl windowControl, ICourse course, boolean readOnly) {
 		super(ureq, windowControl);
 
-		dbController = new CustomDBController(ureq, getWindowControl(), course.getResourceableId());
+		dbController = new CustomDBController(ureq, getWindowControl(), course.getResourceableId(), readOnly);
 		listenTo(dbController);
 		
 		LayoutMain3ColsController columnLayoutCtr

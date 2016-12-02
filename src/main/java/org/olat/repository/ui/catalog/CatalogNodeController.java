@@ -66,6 +66,7 @@ public class CatalogNodeController extends BasicController implements Activateab
 	private CatalogNodeController childNodeController;
 	private BreadcrumbedStackedPanel stackPanel;
 	private RepositoryEntryListController entryListController;
+	private RepositoryEntryListController closedEntryListController;
 
 	private final boolean wrapInMainPanel;
 	private final MapperKey mapperThumbnailKey;
@@ -144,11 +145,24 @@ public class CatalogNodeController extends BasicController implements Activateab
 		SearchMyRepositoryEntryViewParams searchParams
 			= new SearchMyRepositoryEntryViewParams(getIdentity(), ureq.getUserSession().getRoles());
 		searchParams.setParentEntry(catalogEntry);
+		searchParams.setClosed(Boolean.FALSE);
+		
 		entryListController = new RepositoryEntryListController(ureq, wControl, searchParams, true, false, "catalog", stackPanel);
 		if(!entryListController.isEmpty()) {
 			mainVC.put("entries", entryListController.getInitialComponent());
 		}
 		listenTo(entryListController);
+		
+		//catalog closed resources
+		SearchMyRepositoryEntryViewParams searchClosedParams
+				= new SearchMyRepositoryEntryViewParams(getIdentity(), ureq.getUserSession().getRoles());
+		searchClosedParams.setParentEntry(catalogEntry);
+		searchClosedParams.setClosed(Boolean.TRUE);
+		closedEntryListController = new RepositoryEntryListController(ureq, wControl, searchClosedParams, true, false, "catalog-closed", stackPanel);
+		if(!closedEntryListController.isEmpty()) {
+			mainVC.put("closedEntries", closedEntryListController.getInitialComponent());
+		}
+		listenTo(closedEntryListController);
 
 		if(wrapInMainPanel) {
 			MainPanel mainPanel = new MainPanel("myCoursesMainPanel");

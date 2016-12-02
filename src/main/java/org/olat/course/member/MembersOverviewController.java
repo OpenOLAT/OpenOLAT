@@ -54,6 +54,7 @@ import org.olat.core.util.mail.MailerResult;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.course.member.wizard.ImportMember_1a_LoginListStep;
 import org.olat.course.member.wizard.ImportMember_1b_ChooseMemberStep;
+import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.group.BusinessGroupService;
 import org.olat.group.model.BusinessGroupMembershipChange;
 import org.olat.group.ui.main.AbstractMemberListController;
@@ -104,16 +105,19 @@ public class MembersOverviewController extends BasicController implements Activa
 	private final boolean managed;
 	private boolean overrideManaged = false;
 	private final RepositoryEntry repoEntry;
+	private final UserCourseEnvironment coachCourseEnv;
 	
 	@Autowired
 	private RepositoryManager repositoryManager;
 	@Autowired
 	private BusinessGroupService businessGroupService;
 	
-	public MembersOverviewController(UserRequest ureq, WindowControl wControl, TooledStackedPanel toolbarPanel, RepositoryEntry repoEntry) {
+	public MembersOverviewController(UserRequest ureq, WindowControl wControl, TooledStackedPanel toolbarPanel,
+			RepositoryEntry repoEntry, UserCourseEnvironment coachCourseEnv) {
 		super(ureq, wControl);
 		this.repoEntry = repoEntry;
 		this.toolbarPanel = toolbarPanel;
+		this.coachCourseEnv = coachCourseEnv;
 		
 		mainVC = createVelocityContainer("members_overview");
 		segmentView = SegmentViewFactory.createSegmentView("segments", mainVC, this);
@@ -146,16 +150,16 @@ public class MembersOverviewController extends BasicController implements Activa
 		addMemberLink = LinkFactory.createButton("add.member", mainVC, this);
 		addMemberLink.setIconLeftCSS("o_icon o_icon-fw o_icon_add_member");
 		addMemberLink.setElementCssClass("o_sel_course_add_member");
-		addMemberLink.setVisible(!managed);
+		addMemberLink.setVisible(!managed && !coachCourseEnv.isCourseReadOnly());
 		mainVC.put("addMembers", addMemberLink);
 		importMemberLink = LinkFactory.createButton("import.member", mainVC, this);
 		importMemberLink.setIconLeftCSS("o_icon o_icon-fw o_icon_import");
 		importMemberLink.setElementCssClass("o_sel_course_import_members");
-		importMemberLink.setVisible(!managed);
+		importMemberLink.setVisible(!managed && !coachCourseEnv.isCourseReadOnly());
 		mainVC.put("importMembers", importMemberLink);
 		dedupLink = LinkFactory.createButton("dedup.members", mainVC, this);
 		dedupLink.setIconLeftCSS("o_icon o_icon-fw o_icon_cleanup");
-		dedupLink.setVisible(!managed);
+		dedupLink.setVisible(!managed && !coachCourseEnv.isCourseReadOnly());
 		mainVC.put("dedupMembers", dedupLink);
 		
 		putInitialPanel(mainVC);
@@ -427,7 +431,7 @@ public class MembersOverviewController extends BasicController implements Activa
 			ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ores));
 			WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ores, null, getWindowControl());
 			SearchMembersParams searchParams = new SearchMembersParams(true, true, true, true, true, false, true);
-			allMemberListCtrl = new MemberListWithOriginFilterController(ureq, bwControl, toolbarPanel, repoEntry, searchParams, null);
+			allMemberListCtrl = new MemberListWithOriginFilterController(ureq, bwControl, toolbarPanel, repoEntry, coachCourseEnv, searchParams, null);
 			listenTo(allMemberListCtrl);
 		}
 		
@@ -445,7 +449,7 @@ public class MembersOverviewController extends BasicController implements Activa
 			WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ores, null, getWindowControl());
 			SearchMembersParams searchParams = new SearchMembersParams(true, false, false, false, false, false, false);
 			String infos = translate("owners.infos");
-			ownersCtrl = new MemberListController(ureq, bwControl, toolbarPanel, repoEntry, searchParams, infos);
+			ownersCtrl = new MemberListController(ureq, bwControl, toolbarPanel, repoEntry, coachCourseEnv, searchParams, infos);
 			listenTo(ownersCtrl);
 		}
 		
@@ -463,7 +467,7 @@ public class MembersOverviewController extends BasicController implements Activa
 			WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ores, null, getWindowControl());
 			SearchMembersParams searchParams = new SearchMembersParams(false, true, false, true, false, false, false);
 			String infos = translate("tutors.infos");
-			tutorsCtrl = new MemberListWithOriginFilterController(ureq, bwControl, toolbarPanel, repoEntry, searchParams, infos);
+			tutorsCtrl = new MemberListWithOriginFilterController(ureq, bwControl, toolbarPanel, repoEntry, coachCourseEnv, searchParams, infos);
 			listenTo(tutorsCtrl);
 		}
 		
@@ -481,7 +485,7 @@ public class MembersOverviewController extends BasicController implements Activa
 			WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ores, null, getWindowControl());
 			SearchMembersParams searchParams = new SearchMembersParams(false, false, true, false, true, false, true);
 			String infos = translate("participants.infos");
-			participantsCtrl = new MemberListWithOriginFilterController(ureq, bwControl, toolbarPanel, repoEntry, searchParams, infos);
+			participantsCtrl = new MemberListWithOriginFilterController(ureq, bwControl, toolbarPanel, repoEntry, coachCourseEnv, searchParams, infos);
 			listenTo(participantsCtrl);
 		}
 		
@@ -499,7 +503,7 @@ public class MembersOverviewController extends BasicController implements Activa
 			WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ores, null, getWindowControl());
 			SearchMembersParams searchParams = new SearchMembersParams(false, false, false, false, false, true, false);
 			String infos = translate("waiting.infos");
-			waitingCtrl = new MemberListController(ureq, bwControl, toolbarPanel, repoEntry, searchParams, infos);
+			waitingCtrl = new MemberListController(ureq, bwControl, toolbarPanel, repoEntry, coachCourseEnv, searchParams, infos);
 			listenTo(waitingCtrl);
 		}
 		
@@ -515,7 +519,7 @@ public class MembersOverviewController extends BasicController implements Activa
 			OLATResourceable ores = OresHelper.createOLATResourceableInstance(SEG_SEARCH_MEMBERS, 0l);
 			ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ores));
 			WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ores, null, getWindowControl());
-			searchCtrl = new MemberSearchController(ureq, bwControl, toolbarPanel, repoEntry);
+			searchCtrl = new MemberSearchController(ureq, bwControl, toolbarPanel, repoEntry, coachCourseEnv);
 			listenTo(searchCtrl);
 		}
 	

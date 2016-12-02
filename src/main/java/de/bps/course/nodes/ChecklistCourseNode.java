@@ -65,13 +65,14 @@ import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.properties.Property;
 import org.olat.repository.RepositoryEntry;
+import org.olat.util.logging.activity.LoggingResourceable;
 
 import com.thoughtworks.xstream.XStream;
 
 import de.bps.course.nodes.cl.ChecklistEditController;
 import de.bps.olat.modules.cl.Checklist;
+import de.bps.olat.modules.cl.ChecklistDisplayController;
 import de.bps.olat.modules.cl.ChecklistManager;
-import de.bps.olat.modules.cl.ChecklistUIFactory;
 import de.bps.olat.modules.cl.Checkpoint;
 import de.bps.olat.modules.cl.CheckpointMode;
 
@@ -204,10 +205,12 @@ public class ChecklistCourseNode extends AbstractAccessableCourseNode {
 					|| cgm.hasRight(ureq.getIdentity(), CourseRights.RIGHT_GROUPMANAGEMENT);
 		}
 		Checklist checklist = loadOrCreateChecklist(userCourseEnv.getCourseEnvironment().getCoursePropertyManager());
-		Controller controller = ChecklistUIFactory.getInstance()
-				.createDisplayController(ureq, wControl, checklist, canEdit, canManage, course, this);
+		ChecklistDisplayController checkController = new ChecklistDisplayController(ureq, wControl, checklist,
+				canEdit, canManage, userCourseEnv.isCourseReadOnly(), course);
+		checkController.addLoggingResourceable(LoggingResourceable.wrap(this));
+		
 		// Add title and descrition
-		controller = TitledWrapperHelper.getWrapper(ureq, wControl, controller, this, "o_cl_icon");
+		Controller controller = TitledWrapperHelper.getWrapper(ureq, wControl, checkController, this, "o_cl_icon");
 		return new NodeRunConstructionResult(controller);
 	}
 

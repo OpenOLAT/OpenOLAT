@@ -42,6 +42,9 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Roles;
+import org.olat.core.logging.activity.LearningResourceLoggingAction;
+import org.olat.core.logging.activity.OlatResourceableType;
+import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.repository.ErrorList;
@@ -51,6 +54,7 @@ import org.olat.repository.controllers.EntryChangedEvent;
 import org.olat.repository.controllers.EntryChangedEvent.Change;
 import org.olat.resource.references.ReferenceInfos;
 import org.olat.resource.references.ReferenceManager;
+import org.olat.util.logging.activity.LoggingResourceable;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -59,7 +63,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class ConfirmDeleteController extends FormBasicController {
+public class ConfirmDeletePermanentlyController extends FormBasicController {
 	
 	private FormLink deleteButton;
 	private SingleSelection deleteReferencesEl;
@@ -79,8 +83,8 @@ public class ConfirmDeleteController extends FormBasicController {
 	@Autowired
 	private RepositoryService repositoryService;
 	
-	public ConfirmDeleteController(UserRequest ureq, WindowControl wControl, List<RepositoryEntry> rows, boolean notAllDeleteable) {
-		super(ureq, wControl, "confirm_delete");
+	public ConfirmDeletePermanentlyController(UserRequest ureq, WindowControl wControl, List<RepositoryEntry> rows, boolean notAllDeleteable) {
+		super(ureq, wControl, "confirm_delete_permanent");
 		setTranslator(Util.createPackageTranslator(RepositoryService.class, getLocale(), getTranslator()));
 		
 		this.rows = rows;
@@ -286,7 +290,9 @@ public class ConfirmDeleteController extends FormBasicController {
 		for(RepositoryEntry entry:entries) {
 			RepositoryEntry reloadedEntry = repositoryService.loadByKey(entry.getKey());
 			if(reloadedEntry != null) {
-				ErrorList errors = repositoryService.delete(reloadedEntry, getIdentity(), roles, getLocale());
+				ErrorList errors = repositoryService.deletePermanently(reloadedEntry, getIdentity(), roles, getLocale());
+				ThreadLocalUserActivityLogger.log(LearningResourceLoggingAction.LEARNING_RESOURCE_DELETE, getClass(),
+						LoggingResourceable.wrap(reloadedEntry, OlatResourceableType.genRepoEntry));
 				if (errors.hasErrors()) {
 					allOk = false;
 					errorList.add(errors);

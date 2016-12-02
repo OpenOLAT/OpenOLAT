@@ -36,6 +36,7 @@ public class SearchAuthorRepositoryEntryViewParams {
 	private final Roles roles;
 	
 	private Boolean marked;
+	private boolean deleted = false;
 	private boolean ownedResourcesOnly;
 	
 	private String idAndRefs;
@@ -157,6 +158,14 @@ public class SearchAuthorRepositoryEntryViewParams {
 		return roles;
 	}
 	
+	public boolean isDeleted() {
+		return deleted;
+	}
+
+	public void setDeleted(boolean deleted) {
+		this.deleted = deleted;
+	}
+
 	public Boolean getMarked() {
 		return marked;
 	}

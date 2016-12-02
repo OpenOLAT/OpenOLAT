@@ -103,6 +103,8 @@ public interface UserCourseEnvironment {
 	
 	public RepositoryEntryLifecycle getLifecycle();
 	
+	public boolean isCourseReadOnly();
+	
 	/**
 	 * Check if the user has an efficiency statement or a certificate. The method
 	 * doesn't check if the efficiency statement or the certificate are configured

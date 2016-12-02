@@ -94,6 +94,8 @@ public class GTAParticipantController extends GTAAbstractController {
 	public GTAParticipantController(UserRequest ureq, WindowControl wControl,
 			GTACourseNode gtaNode, UserCourseEnvironment userCourseEnv) {
 		super(ureq, wControl, gtaNode, userCourseEnv.getCourseEnvironment(), userCourseEnv, true, true, true);
+		initContainer(ureq);
+		process(ureq);
 	}
 	
 	@Override
@@ -147,6 +149,8 @@ public class GTAParticipantController extends GTAAbstractController {
 			if(dueDate != null && dueDate.getDueDate() != null && dueDate.getDueDate().compareTo(new Date()) < 0) {
 				//assignment is closed
 				mainVC.contextPut("assignmentClosed", Boolean.TRUE);
+			} else if(userCourseEnv.isCourseReadOnly()) {
+				showAssignedTask(ureq, assignedTask);
 			} else {
 				List<TaskDefinition> availableTasks = gtaManager.getTaskDefinitions(courseEnv, gtaNode);
 				
@@ -216,14 +220,22 @@ public class GTAParticipantController extends GTAAbstractController {
 				mainVC.contextPut("submitCssClass", "");
 			} else if (assignedTask == null || assignedTask.getTaskStatus() == TaskProcess.submit) {
 				mainVC.contextPut("submitCssClass", "o_active");
-				setSubmitController(ureq, assignedTask);
+				if(userCourseEnv.isCourseReadOnly()) {
+					setSubmittedDocumentsController(ureq);
+				} else {
+					setSubmitController(ureq, assignedTask);
+				}
 			} else {
 				mainVC.contextPut("submitCssClass", "o_done");
 				setSubmittedDocumentsController(ureq);
 			}
 		} else if(assignedTask == null || assignedTask.getTaskStatus() == TaskProcess.submit) {
 			mainVC.contextPut("submitCssClass", "o_active");
-			setSubmitController(ureq, assignedTask);
+			if(userCourseEnv.isCourseReadOnly()) {
+				setSubmittedDocumentsController(ureq);
+			} else {
+				setSubmitController(ureq, assignedTask);
+			}
 		} else {
 			mainVC.contextPut("submitCssClass", "o_done");
 			setSubmittedDocumentsController(ureq);
@@ -247,7 +259,7 @@ public class GTAParticipantController extends GTAAbstractController {
 		Date deadline = dueDate == null ? null : dueDate.getDueDate();
 		int maxDocs = config.getIntegerSafe(GTACourseNode.GTASK_MAX_SUBMITTED_DOCS, -1);
 		submitDocCtrl = new SubmitDocumentsController(ureq, getWindowControl(), task, documentsDir, documentsContainer, maxDocs,
-				gtaNode, courseEnv, deadline, "document");
+				gtaNode, courseEnv, userCourseEnv.isCourseReadOnly(), deadline, "document");
 		listenTo(submitDocCtrl);
 		mainVC.put("submitDocs", submitDocCtrl.getInitialComponent());
 		
@@ -255,7 +267,7 @@ public class GTAParticipantController extends GTAAbstractController {
 		submitButton.setElementCssClass("o_sel_course_gta_submit_docs");
 		submitButton.setCustomEnabledLinkCSS(submitDocCtrl.hasUploadDocuments() ? "btn btn-primary" : "btn btn-default");
 		submitButton.setIconLeftCSS("o_icon o_icon_submit");
-
+		submitButton.setVisible(!userCourseEnv.isCourseReadOnly());
 	}
 	
 	private void setSubmittedDocumentsController(UserRequest ureq) {

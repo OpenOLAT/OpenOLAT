@@ -25,6 +25,7 @@ import java.util.List;
 
 import org.olat.core.commons.services.commentAndRating.CommentAndRatingDefaultSecurityCallback;
 import org.olat.core.commons.services.commentAndRating.CommentAndRatingSecurityCallback;
+import org.olat.core.commons.services.commentAndRating.ReadOnlyCommentsSecurityCallback;
 import org.olat.core.commons.services.commentAndRating.ui.UserCommentsAndRatingsController;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -73,22 +74,26 @@ public class VideoDisplayController extends BasicController {
 	// User preferred resolution, stored in GUI prefs
 	private Integer userPreferredResolution = null;
 	
+	private final boolean readOnly;
 	private RepositoryEntry entry;
 	private String descriptionText;
 	private String mediaRepoBaseUrl;
 
 
 	public VideoDisplayController(UserRequest ureq, WindowControl wControl, RepositoryEntry entry, boolean autoWidth) {
-		this(ureq, wControl, entry, false, false, false, true, null, false, autoWidth, null);
+		this(ureq, wControl, entry, false, false, false, true, null, false, autoWidth, null, false);
 	}
 	
 	public VideoDisplayController(UserRequest ureq, WindowControl wControl, RepositoryEntry entry) {
-		this(ureq, wControl, entry, false, false, false, true, null, false, false, null);
+		this(ureq, wControl, entry, false, false, false, true, null, false, false, null, false);
 	}
 
-	public VideoDisplayController(UserRequest ureq, WindowControl wControl, RepositoryEntry entry, Boolean autoplay, Boolean showComments, Boolean showRating, Boolean showTitleAndDescription, String OresSubPath, boolean customDescription, boolean autoWidth, String descriptionText) {
+	public VideoDisplayController(UserRequest ureq, WindowControl wControl, RepositoryEntry entry,
+			Boolean autoplay, Boolean showComments, Boolean showRating, Boolean showTitleAndDescription, String OresSubPath,
+			boolean customDescription, boolean autoWidth, String descriptionText, boolean readOnly) {
 		super(ureq, wControl);
 		this.entry = entry;
+		this.readOnly = readOnly;
 		this.descriptionText = (customDescription ? this.descriptionText = descriptionText : null);
 		
 		mainVC = createVelocityContainer("video_run");
@@ -132,7 +137,7 @@ public class VideoDisplayController extends BasicController {
 			mainVC.contextPut("autoplay", autoplay);
 	
 			if ((showComments || showRating) && !ureq.getUserSession().getRoles().isGuestOnly()) {
-				CommentAndRatingSecurityCallback ratingSecCallback = new CommentAndRatingDefaultSecurityCallback(getIdentity(), false, false);
+				CommentAndRatingSecurityCallback ratingSecCallback = readOnly ? new ReadOnlyCommentsSecurityCallback() : new CommentAndRatingDefaultSecurityCallback(getIdentity(), false, false);
 				commentsAndRatingCtr = new UserCommentsAndRatingsController(ureq, getWindowControl(),entry.getOlatResource(), OresSubPath , ratingSecCallback,showComments, showRating, true);
 				if (showComments) {					
 					commentsAndRatingCtr.expandComments(ureq);

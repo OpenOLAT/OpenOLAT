@@ -213,7 +213,8 @@ public class ViteroConfigurationController extends FormBasicController {
 		urlEl.clearError();
 		if(StringHelper.containsNonWhitespace(url)) {
 			try {
-				new URI(url);
+				URI uri = new URI(url);
+				uri.getHost();
 			} catch(Exception e) {
 				urlEl.setErrorKey("error.url.invalid", null);
 				allOk = false;

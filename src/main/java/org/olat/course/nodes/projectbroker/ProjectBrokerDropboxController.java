@@ -67,12 +67,13 @@ public class ProjectBrokerDropboxController extends DropboxController {
 	/**
 	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest, org.olat.core.gui.control.Controller, org.olat.core.gui.control.Event)
 	 */
+	@Override
 	public void event(UserRequest ureq, Controller source, Event event) {
 		if (isDropboxAccessible(project, moduleConfig)) {
 			super.event(ureq,  source,  event);
 		} else {
 			getLogger().debug("Dropbos is no longer accessible");
-			this.showInfo("dropbox.is.not.accessible");
+			showInfo("dropbox.is.not.accessible");
 		}
 	}
 	
@@ -98,6 +99,7 @@ public class ProjectBrokerDropboxController extends DropboxController {
 	 * Return dropbox base-path. e.g. course/<COURSE_ID>/dropbox/<NODE_id>/<USER_NAME>
 	 * @see org.olat.course.nodes.ta.DropboxController#getRelativeDropBoxFilePath(org.olat.core.id.Identity)
 	 */
+	@Override
 	protected String getRelativeDropBoxFilePath(Identity identity) {
 		return getDropboxBasePathForProject(this.project, userCourseEnv.getCourseEnvironment(), node) + File.separator + identity.getName();
 	}
