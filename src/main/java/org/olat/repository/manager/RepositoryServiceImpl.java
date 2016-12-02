@@ -329,6 +329,18 @@ public class RepositoryServiceImpl implements RepositoryService {
 		reloadedRe.setAccess(RepositoryEntry.DELETED);
 		reloadedRe = dbInstance.getCurrentEntityManager().merge(reloadedRe);
 		dbInstance.commit();
+		//remove from catalog
+		catalogManager.resourceableDeleted(reloadedRe);
+		//remove participant and coach
+		removeMembers(reloadedRe, GroupRoles.coach.name(), GroupRoles.participant.name(), GroupRoles.waiting.name());
+		//remove relation to business groups
+		List<RepositoryEntryToGroupRelation> relations = reToGroupDao.getRelations(reloadedRe);
+		for(RepositoryEntryToGroupRelation relation:relations) {
+			if(!relation.isDefaultGroup()) {
+				reToGroupDao.removeRelation(relation);
+			}
+		}
+		dbInstance.commit();
 		return reloadedRe;
 	}
 
@@ -431,9 +443,18 @@ public class RepositoryServiceImpl implements RepositoryService {
 	}
 
 	@Override
-	public RepositoryEntry closeRepositoryEntry(RepositoryEntry entry, Identity identity, Roles roles, Locale locale) {
+	public RepositoryEntry closeRepositoryEntry(RepositoryEntry entry) {
 		RepositoryEntry reloadedEntry = repositoryEntryDAO.loadForUpdate(entry);
 		reloadedEntry.setStatusCode(RepositoryEntryStatus.REPOSITORY_STATUS_CLOSED);
+		reloadedEntry = dbInstance.getCurrentEntityManager().merge(reloadedEntry);
+		dbInstance.commit();
+		return reloadedEntry;
+	}
+
+	@Override
+	public RepositoryEntry uncloseRepositoryEntry(RepositoryEntry entry) {
+		RepositoryEntry reloadedEntry = repositoryEntryDAO.loadForUpdate(entry);
+		reloadedEntry.setStatusCode(RepositoryEntryStatus.REPOSITORY_STATUS_OPEN);
 		reloadedEntry = dbInstance.getCurrentEntityManager().merge(reloadedEntry);
 		dbInstance.commit();
 		return reloadedEntry;

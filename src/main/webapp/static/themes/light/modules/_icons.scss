@@ -91,6 +91,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_customize:before { content: $fa-var-gear;}
 .o_icon_delete_item:before { content: $fa-var-trash;}
 .o_icon_delete:before { content: $fa-var-minus-circle; color: #A87E7E;}
+.o_icon_deleted:before { content: $fa-var-trash;}
 .o_icon_details:before { content: $fa-var-lightbulb-o; }
 .o_icon_description:before { content: $fa-var-info-circle; }
 .o_icon_dev:before { content: $fa-var-bug;}

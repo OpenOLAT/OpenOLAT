@@ -33,7 +33,6 @@ import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.id.Roles;
 import org.olat.core.logging.activity.LearningResourceLoggingAction;
 import org.olat.core.logging.activity.OlatResourceableType;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
@@ -144,11 +143,10 @@ public class ConfirmCloseController extends FormBasicController {
 	
 	private boolean setReadOnlyEntries(UserRequest ureq, List<RepositoryEntry> entries) {
 		boolean allOk = true;
-		Roles roles = ureq.getUserSession().getRoles();
 		for(RepositoryEntry entry:entries) {
 			RepositoryEntry reloadedEntry = repositoryService.loadByKey(entry.getKey());
 			if(reloadedEntry != null) {
-				repositoryService.closeRepositoryEntry(reloadedEntry, getIdentity(), roles, getLocale());
+				repositoryService.closeRepositoryEntry(reloadedEntry);
 				ThreadLocalUserActivityLogger.log(LearningResourceLoggingAction.LEARNING_RESOURCE_DEACTIVATE, getClass(),
 						LoggingResourceable.wrap(reloadedEntry, OlatResourceableType.genRepoEntry));
 				fireEvent(ureq, new EntryChangedEvent(reloadedEntry, getIdentity(), Change.closed, "closed"));

@@ -86,6 +86,7 @@ public interface RepositoryService {
 	
 	/**
 	 * Set the access to 0. The resource is not deleted on the database
+	 * but the resource is removed from the catalog.
 	 * 
 	 * 
 	 * @param entry
@@ -125,7 +126,11 @@ public interface RepositoryService {
 	 * @param locale
 	 * @return The closed repository entry
 	 */
-	public RepositoryEntry closeRepositoryEntry(RepositoryEntry entry, Identity identity, Roles roles, Locale locale);
+	public RepositoryEntry closeRepositoryEntry(RepositoryEntry entry);
+	
+
+	public RepositoryEntry uncloseRepositoryEntry(RepositoryEntry entry);
+	
 	
 	/**
 	 * Batch method which close automatically the courses with a life-cycle.

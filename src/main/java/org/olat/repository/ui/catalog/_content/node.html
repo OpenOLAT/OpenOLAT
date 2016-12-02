@@ -76,7 +76,7 @@
 		$r.render("entries")
 	#end
 	
-	#if($r.available("closedEntries"))
+	#if($r.available("closedEntries") && $r.visible("closedEntries"))
 		<h3><i class="o_icon o_CourseModule_icon_closed"> </i> $r.translate("closed.resources.title")</h3>
 		$r.render("closedEntries")
 	#end

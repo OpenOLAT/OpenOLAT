@@ -1116,7 +1116,7 @@ public class RepositoryManager {
 		StringBuilder query = new StringBuilder(400);
 		query.append("select distinct v from ").append(RepositoryEntry.class.getName()).append(" v ")
 		     .append(" inner join fetch v.olatResource as res" )
-			  .append(" inner join fetch v.statistics as statistics")
+			 .append(" inner join fetch v.statistics as statistics")
 		     .append(" left join fetch v.lifecycle as lifecycle");
 		// 2) where clause
 		query.append(" where "); 
@@ -1132,10 +1132,10 @@ public class RepositoryManager {
 			if(checkCanCopy) {
 				query.append(" and v.canCopy=true");
 			}
-			query.append("  or exists (select rel from repoentrytogroup as rel, bgroup as baseGroup, bgroupmember as membership  ")
+			query.append("  or (v.access>0 and exists (select rel from repoentrytogroup as rel, bgroup as baseGroup, bgroupmember as membership  ")
 			     .append("    where rel.entry=v and rel.group=baseGroup and membership.group=baseGroup and membership.identity.key=:identityKey ")
 			     .append("      and membership.role in ('").append(GroupRoles.owner.name()).append("','").append(GroupRoles.coach.name()).append("','").append(GroupRoles.participant.name()).append("')")
-			     .append("  )")
+			     .append("  ))")
 			     .append(" )");
 		} else {
 			access = RepositoryEntry.ACC_OWNERS;

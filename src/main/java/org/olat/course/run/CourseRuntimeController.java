@@ -523,7 +523,8 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 			boolean layoutManaged = RepositoryEntryManagedFlag.isManaged(getRepositoryEntry(), RepositoryEntryManagedFlag.layout);
 			layoutLink = LinkFactory.createToolLink("access.cmd", translate("command.layout"), this, "o_icon_layout");
 			layoutLink.setElementCssClass("o_sel_course_layout");
-			layoutLink.setEnabled(!layoutManaged && !uce.isCourseReadOnly());
+			layoutLink.setEnabled(!layoutManaged);
+			layoutLink.setVisible(!uce.isCourseReadOnly());
 			settings.addComponent(layoutLink);
 			
 			optionsLink = LinkFactory.createToolLink("access.cmd", translate("command.options"), this, "o_icon_options");
@@ -836,6 +837,10 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 			}
 		} else if (lifeCycleChangeCtr == source) {
 			loadRepositoryEntry();
+			String cmd = event.getCommand();
+			if("closed".equals(cmd) || "unclosed".equals(cmd) || "deleted".equals(cmd)) {
+				//do something
+			}
 		} else if (currentToolCtr == source) {
 			if (event == Event.DONE_EVENT) {
 				// special check for editor
@@ -1246,7 +1251,13 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 			removeCustomCSS();
 			// Folder for course with custom link model to jump to course nodes
 			ICourse course = CourseFactory.loadCourse(getRepositoryEntry());
-			VFSContainer namedCourseFolder = new NamedContainerImpl(translate("command.coursefolder"), course.getCourseFolderContainer());
+			VFSContainer courseContainer;
+			if(overrideReadOnly) {
+				courseContainer = course.getCourseFolderContainer(overrideReadOnly);
+			} else {
+				courseContainer = course.getCourseFolderContainer();
+			}
+			VFSContainer namedCourseFolder = new NamedContainerImpl(translate("command.coursefolder"), courseContainer);
 			CustomLinkTreeModel customLinkTreeModel = new CourseInternalLinkTreeModel(course.getEditorTreeModel());
 
 			FolderRunController ctrl = new FolderRunController(namedCourseFolder, true, true, true, true, ureq, getWindowControl(), null, customLinkTreeModel, null);

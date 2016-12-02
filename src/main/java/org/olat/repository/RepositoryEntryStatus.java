@@ -34,6 +34,7 @@ package org.olat.repository;
  */
 public class RepositoryEntryStatus {
 
+	public static final int REPOSITORY_STATUS_OPEN = 0;
 	public static final int REPOSITORY_STATUS_CLOSED = 2;
 	public static final int REPOSITORY_STATUS_UNPUBLISHED = 4;
 	

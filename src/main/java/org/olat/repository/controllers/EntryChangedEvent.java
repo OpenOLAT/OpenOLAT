@@ -104,6 +104,7 @@ public class EntryChangedEvent extends MultiUserEvent {
 		addBookmark,
 		removeBookmark,
 		closed,
+		unclosed,
 		restored
 	}
 }

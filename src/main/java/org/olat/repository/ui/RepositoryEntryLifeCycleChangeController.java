@@ -33,6 +33,8 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
+import org.olat.core.gui.control.generic.modal.DialogBoxController;
+import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.logging.OLATSecurityException;
 import org.olat.core.util.Util;
 import org.olat.repository.RepositoryEntry;
@@ -62,13 +64,14 @@ public class RepositoryEntryLifeCycleChangeController extends BasicController{
 	public static final Event closedEvent = new Event("closed");
 	public static final Event deletedEvent = new Event("deleted");
 	
-	private Link closeLink, deleteLink;
+	private Link closeLink, uncloseLink, deleteLink;
 	private VelocityContainer lifeCycleVC;
 
 	private RepositoryEntry re;
 	private final RepositoryEntrySecurity reSecurity;
 	
 	private CloseableModalController cmc;
+	private DialogBoxController confirmUncloseCtrl;
 	private ConfirmCloseController confirmCloseCtrl;
 	private ConfirmDeleteSoftlyController confirmDeleteCtrl;
 
@@ -91,11 +94,17 @@ public class RepositoryEntryLifeCycleChangeController extends BasicController{
 		RepositoryEntryStatus reStatus = repositoryManager.createRepositoryEntryStatus(re.getStatusCode());
 		boolean isClosed = reStatus.isClosed();
 		boolean closeManaged = RepositoryEntryManagedFlag.isManaged(re, RepositoryEntryManagedFlag.close);
-		if (!isClosed && !closeManaged) {
+		if (!closeManaged) {
 			closeLink = LinkFactory.createButton("close", lifeCycleVC, this);
 			closeLink.setCustomDisplayText(translate("details.close.ressoure"));
 			closeLink.setIconLeftCSS("o_icon o_icon-fw o_icon_close_resource");
 			closeLink.setElementCssClass("o_sel_repo_close");
+			closeLink.setVisible(!isClosed);
+			
+			uncloseLink = LinkFactory.createButton("unclose", lifeCycleVC, this);
+			uncloseLink.setCustomDisplayText(translate("details.unclose.ressoure"));
+			uncloseLink.setElementCssClass("o_sel_repo_unclose");
+			uncloseLink.setVisible(isClosed);
 		}
 
 		boolean deleteManaged = RepositoryEntryManagedFlag.isManaged(re, RepositoryEntryManagedFlag.delete);
@@ -114,6 +123,8 @@ public class RepositoryEntryLifeCycleChangeController extends BasicController{
 			doDelete(ureq);
 		} else if (source == closeLink) {
 			doConfirmCloseResource(ureq);
+		} else if (source == uncloseLink) {
+			doConfirmUncloseResource(ureq);
 		}
 	}
 	
@@ -142,6 +153,15 @@ public class RepositoryEntryLifeCycleChangeController extends BasicController{
 				EntryChangedEvent e = new EntryChangedEvent(re, getIdentity(), Change.closed, "runtime");
 				ureq.getUserSession().getSingleUserEventCenter().fireEventToListenersOf(e, RepositoryService.REPOSITORY_EVENT_ORES);
 			}
+		} else if(confirmUncloseCtrl == source) {
+			if(DialogBoxUIFactory.isOkEvent(event) || DialogBoxUIFactory.isYesEvent(event)) {
+				cleanUp();
+				doUncloseResource();
+				dbInstance.commit();//commit before sending events
+				fireEvent(ureq, closedEvent);
+				EntryChangedEvent e = new EntryChangedEvent(re, getIdentity(), Change.unclosed, "runtime");
+				ureq.getUserSession().getSingleUserEventCenter().fireEventToListenersOf(e, RepositoryService.REPOSITORY_EVENT_ORES);
+			}
 		} else if(cmc == source) {
 			cleanUp();
 		} 
@@ -158,7 +178,7 @@ public class RepositoryEntryLifeCycleChangeController extends BasicController{
 	
 	private void doConfirmCloseResource(UserRequest ureq) {
 		if (!reSecurity.isEntryAdmin()) {
-			throw new OLATSecurityException("Trying to set read-only, but not allowed: user = " + ureq.getIdentity());
+			throw new OLATSecurityException("Trying to close, but not allowed: user = " + ureq.getIdentity());
 		}
 
 		List<RepositoryEntry> entryToClose = Collections.singletonList(re);
@@ -177,9 +197,32 @@ public class RepositoryEntryLifeCycleChangeController extends BasicController{
 	 */
 	private void doCloseResource() {
 		re = repositoryService.loadByKey(re.getKey());
-		lifeCycleVC.remove(closeLink);
-		closeLink = null;
+		closeLink.setVisible(false);
+		uncloseLink.setVisible(true);
+		lifeCycleVC.setDirty(true);
 	}
+	
+	private void doConfirmUncloseResource(UserRequest ureq) {
+		if (!reSecurity.isEntryAdmin()) {
+			throw new OLATSecurityException("Trying to reactivate, but not allowed: user = " + ureq.getIdentity());
+		}
+		
+		String title = translate("warning.unclose.title");
+		String text = translate("warning.unclose.text");
+		confirmUncloseCtrl = activateOkCancelDialog(ureq, title, text, confirmUncloseCtrl);
+	}
+	
+	/**
+	 * Remove close and edit tools, if in edit mode, pop-up-to root
+	 * @param ureq
+	 */
+	private void doUncloseResource() {
+		re = repositoryService.uncloseRepositoryEntry(re);
+		closeLink.setVisible(true);
+		uncloseLink.setVisible(false);
+		lifeCycleVC.setDirty(true);
+	}
+
 	
 	private void doDelete(UserRequest ureq) {
 		if (!reSecurity.isEntryAdmin()) {

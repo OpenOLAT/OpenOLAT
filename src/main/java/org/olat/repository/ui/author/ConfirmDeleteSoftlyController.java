@@ -41,9 +41,6 @@ import org.olat.core.logging.activity.OlatResourceableType;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
-import org.olat.group.BusinessGroup;
-import org.olat.group.BusinessGroupService;
-import org.olat.group.model.SearchBusinessGroupParams;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryService;
 import org.olat.resource.references.ReferenceInfos;
@@ -71,8 +68,6 @@ public class ConfirmDeleteSoftlyController extends FormBasicController {
 	private ReferenceManager referenceManager;
 	@Autowired
 	private RepositoryService repositoryService;
-	@Autowired
-	private BusinessGroupService businessGroupService;
 	
 	public ConfirmDeleteSoftlyController(UserRequest ureq, WindowControl wControl, List<RepositoryEntry> rows, boolean notAllDeleteable) {
 		super(ureq, wControl, "confirm_delete");
@@ -172,11 +167,6 @@ public class ConfirmDeleteSoftlyController extends FormBasicController {
 				reloadedEntry = repositoryService.deleteSoftly(reloadedEntry);
 				ThreadLocalUserActivityLogger.log(LearningResourceLoggingAction.LEARNING_RESOURCE_TRASH, getClass(),
 						LoggingResourceable.wrap(reloadedEntry, OlatResourceableType.genRepoEntry));
-				
-				//remove business groups relations
-				SearchBusinessGroupParams params = new SearchBusinessGroupParams();
-				List<BusinessGroup> businessGroups = businessGroupService.findBusinessGroups(params, reloadedEntry, 0, -1);
-				businessGroupService.removeResourceFrom(businessGroups, reloadedEntry);
 			}
 		}
 		return allOk;

@@ -536,6 +536,10 @@ public class RepositoryEntryRelationDAO {
 		return count;
 	}
 	
+	public void removeRelation(RepositoryEntryToGroupRelation rel) {
+		dbInstance.getCurrentEntityManager().remove(rel);
+	}
+	
 	/**
 	 * Count the number of relation from a group to repository entries
 	 * 
@@ -552,6 +556,27 @@ public class RepositoryEntryRelationDAO {
 			.setParameter("groupKey", group.getKey())
 			.getSingleResult();
 		return count == null ? 0 : count.intValue();
+	}
+	
+	/**
+	 * Get all the relations of a repository entries
+	 * 
+	 * @param groups
+	 * @return The list of relations
+	 */
+	public List<RepositoryEntryToGroupRelation> getRelations(RepositoryEntryRef re) {
+		if(re == null) return Collections.emptyList();
+		
+		StringBuilder sb = new StringBuilder();
+		sb.append("select rel from repoentrytogroup as rel")
+		  .append(" inner join fetch rel.entry as entry")
+		  .append(" inner join fetch rel.group as baseGroup")
+		  .append(" where entry.key=:repoKey");
+
+		return dbInstance.getCurrentEntityManager()
+			.createQuery(sb.toString(), RepositoryEntryToGroupRelation.class)
+			.setParameter("repoKey", re.getKey())
+			.getResultList();
 	}
 	
 	/**
