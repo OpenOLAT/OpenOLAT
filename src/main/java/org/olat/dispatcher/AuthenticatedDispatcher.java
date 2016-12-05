@@ -113,8 +113,6 @@ public class AuthenticatedDispatcher implements Dispatcher {
 			if(log.isDebug()){
 				log.debug("Bad Request "+request.getPathInfo());
 			}
-			DispatcherModule.sendBadRequest(request.getPathInfo(), response);
-			return;
 		}
 		
 		boolean auth = usess.isAuthenticated();
@@ -193,7 +191,7 @@ public class AuthenticatedDispatcher implements Dispatcher {
 			} else {
 				businessPath = extractBusinessPath(ureq, request, uriPrefix);
 				if(businessPath == null) {
-					log.error("Invalid URI in AuthenticatedDispatcher: " + request.getRequestURI());
+					processBusinessPath("", ureq, usess);
 				} else {
 					processBusinessPath(businessPath, ureq, usess);
 				}
