@@ -380,6 +380,14 @@ public interface FlexiTableElement extends FormItem {
 	 */
 	public void reset(boolean page, boolean internal, boolean reloadData);
 	
+	/**
+	 * It will reload all the data without filter. Use it with cautious as
+	 * at some place, there are minimal restrictions to the search string.
+	 * 
+	 * @param ureq
+	 */
+	public void resetSearch(UserRequest ureq);
+	
 	public void reloadData();
 
 	/**
