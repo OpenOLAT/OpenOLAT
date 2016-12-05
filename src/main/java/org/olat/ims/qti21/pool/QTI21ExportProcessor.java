@@ -38,7 +38,6 @@ import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.ZipUtil;
 import org.olat.core.util.io.ShieldOutputStream;
-import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.ims.qti21.QTI21Service;
 import org.olat.ims.qti21.model.xml.AssessmentTestFactory;
 import org.olat.ims.qti21.model.xml.ManifestBuilder;
@@ -47,12 +46,15 @@ import org.olat.imscp.xml.manifest.ResourceType;
 import org.olat.modules.qpool.QuestionItemFull;
 import org.olat.modules.qpool.manager.QPoolFileStorage;
 
+import uk.ac.ed.ph.jqtiplus.node.content.xhtml.image.Img;
+import uk.ac.ed.ph.jqtiplus.node.content.xhtml.object.Object;
 import uk.ac.ed.ph.jqtiplus.node.item.AssessmentItem;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.Interaction;
 import uk.ac.ed.ph.jqtiplus.node.test.AssessmentSection;
 import uk.ac.ed.ph.jqtiplus.node.test.AssessmentTest;
 import uk.ac.ed.ph.jqtiplus.resolution.ResolvedAssessmentItem;
 import uk.ac.ed.ph.jqtiplus.serialization.QtiSerializer;
+import uk.ac.ed.ph.jqtiplus.utils.QueryUtils;
 
 /**
  * 
@@ -122,8 +124,12 @@ public class QTI21ExportProcessor {
 		//write materials
 		for(ItemMaterial material:itemAndMaterials.getMaterials()) {
 			String exportPath = material.getExportUri();
-			File leaf = new File(editorContainer, exportPath);
-			FileUtils.bcopy(leaf, editorContainer, "Export to QTI 2.1 editor");
+			File originalFile = material.getFile();
+			File exportFile = new File(editorContainer, exportPath);
+			if(!exportFile.getParentFile().exists()) {
+				exportFile.getParentFile().mkdirs();
+			}
+			FileUtils.bcopy(originalFile, exportFile, "Copy material QTI 2.1");
 		}
 		return assessmentItem;
 	}
@@ -138,9 +144,33 @@ public class QTI21ExportProcessor {
 			ResolvedAssessmentItem assessmentItem = qtiService.loadAndResolveAssessmentItem(itemFile.toURI(), resourceDirectory);
 			//enrichScore(itemEl);
 			//enrichWithMetadata(fullItem, itemEl);
-			//collectResources(itemEl, container, materials);
+			collectResources(assessmentItem.getRootNodeLookup().extractIfSuccessful(), itemFile, materials);
 			materials.addItemEl(assessmentItem);
 		}
+	}
+	
+	protected void collectResources(AssessmentItem item, File itemFile, AssessmentItemsAndResources materials) {
+		File directory = itemFile.getParentFile();
+
+		QueryUtils.search(Img.class, item).forEach((img) -> {
+			if(img.getSrc() != null) {
+				String imgPath = img.getSrc().toString();
+				File imgFile = new File(directory, imgPath);
+				if(imgFile.exists()) {
+					materials.addMaterial(new ItemMaterial(imgFile, imgPath));
+				}
+			}
+		});
+
+		QueryUtils.search(Object.class, item).forEach((object) -> {
+			if(StringHelper.containsNonWhitespace(object.getData())) {
+				String path = object.getData();
+				File objectFile = new File(directory, path);
+				if(objectFile.exists()) {
+					materials.addMaterial(new ItemMaterial(objectFile, path));
+				}
+			}
+		});
 	}
 	
 	public void enrichWithMetadata(QuestionItemFull qitem, ResolvedAssessmentItem resolvedAssessmentItem, ManifestBuilder manifestBuilder) {
@@ -331,8 +361,8 @@ public class QTI21ExportProcessor {
 
 	private static final class AssessmentItemsAndResources {
 		private final Set<String> paths = new HashSet<String>();
-		private final List<ResolvedAssessmentItem> itemEls = new ArrayList<ResolvedAssessmentItem>();
-		private final List<ItemMaterial> materials = new ArrayList<ItemMaterial>();
+		private final List<ResolvedAssessmentItem> itemEls = new ArrayList<>();
+		private final List<ItemMaterial> materials = new ArrayList<>();
 		
 		public Set<String> getPaths() {
 			return paths;
@@ -356,16 +386,16 @@ public class QTI21ExportProcessor {
 	}
 	
 	private static final class ItemMaterial {
-		private final VFSLeaf leaf;
+		private final File file;
 		private final String exportUri;
 		
-		public ItemMaterial(VFSLeaf leaf, String exportUri) {
-			this.leaf = leaf;
+		public ItemMaterial(File file, String exportUri) {
+			this.file = file;
 			this.exportUri = exportUri;
 		}
 		
-		public VFSLeaf getLeaf() {
-			return leaf;
+		public File getFile() {
+			return file;
 		}
 		
 		public String getExportUri() {
