@@ -162,8 +162,9 @@ public class FOCourseNode extends AbstractAccessableCourseNode {
 		}
 		// Create subscription context and run controller
 		SubscriptionContext forumSubContext = CourseModule.createSubscriptionContext(userCourseEnv.getCourseEnvironment(), this);
-		ForumNodeForumCallback foCallback = new ForumNodeForumCallback(ne, isOlatAdmin, isGuestOnly,
-				guestPostAllowed, pseudonymPostAllowed, forumSubContext);
+		ForumCallback foCallback = userCourseEnv.isCourseReadOnly() ?
+				new ReadOnlyForumCallback(ne, isOlatAdmin, isGuestOnly) :
+				new ForumNodeForumCallback(ne, isOlatAdmin, isGuestOnly, guestPostAllowed, pseudonymPostAllowed, forumSubContext);
 		FOCourseNodeRunController forumC = new FOCourseNodeRunController(ureq, wControl, theForum, foCallback, this);
 		return new NodeRunConstructionResult(forumC);
 	}
@@ -562,6 +563,61 @@ public class FOCourseNode extends AbstractAccessableCourseNode {
 		return retVal;
 	}
 }
+
+class ReadOnlyForumCallback implements ForumCallback {
+
+	private final boolean isGuestOnly;
+	private final boolean isOlatAdmin;
+	private final NodeEvaluation ne;
+	
+	public ReadOnlyForumCallback(NodeEvaluation ne, boolean isOlatAdmin, boolean isGuestOnly) {
+		this.ne = ne;
+		this.isOlatAdmin = isOlatAdmin;
+		this.isGuestOnly = isGuestOnly;
+	}
+
+	@Override
+	public boolean mayUsePseudonym() {
+		return false;
+	}
+
+	@Override
+	public boolean mayOpenNewThread() {
+		return false;
+	}
+
+	@Override
+	public boolean mayReplyMessage() {
+		return false;
+	}
+
+	@Override
+	public boolean mayEditMessageAsModerator() {
+		return false;
+	}
+
+	@Override
+	public boolean mayDeleteMessageAsModerator() {
+		return false;
+	}
+
+	@Override
+	public boolean mayArchiveForum() {
+		return !isGuestOnly;
+	}
+
+	@Override
+	public boolean mayFilterForUser() {
+		if (isGuestOnly) return false;
+		return ne.isCapabilityAccessible("moderator") || isOlatAdmin;
+	}
+
+	@Override
+	public SubscriptionContext getSubscriptionContext() {
+		return null;
+	}
+}
+
 /**
  * 
  * Description:<br>

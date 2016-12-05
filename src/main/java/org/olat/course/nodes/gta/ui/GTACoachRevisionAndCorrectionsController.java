@@ -81,6 +81,7 @@ public class GTACoachRevisionAndCorrectionsController extends BasicController {
 	private final Identity assessedIdentity;
 	private final BusinessGroup assessedGroup;
 	private final CourseEnvironment courseEnv;
+	private final UserCourseEnvironment coachCourseEnv;
 	private final OLATResourceable taskListEventResource;
 	private final UserCourseEnvironment assessedUserCourseEnv;
 	
@@ -92,13 +93,14 @@ public class GTACoachRevisionAndCorrectionsController extends BasicController {
 	private BusinessGroupService businessGroupService;
 	
 	public GTACoachRevisionAndCorrectionsController(UserRequest ureq, WindowControl wControl, CourseEnvironment courseEnv,
-			Task assignedTask, GTACourseNode gtaNode, BusinessGroup assessedGroup,
+			Task assignedTask, GTACourseNode gtaNode, UserCourseEnvironment coachCourseEnv, BusinessGroup assessedGroup,
 			Identity assessedIdentity, UserCourseEnvironment assessedUserCourseEnv, OLATResourceable taskListEventResource) {
 		super(ureq, wControl);
 		this.gtaNode = gtaNode;
 		this.courseEnv = courseEnv;
 		this.assignedTask = assignedTask;
 		this.assessedGroup = assessedGroup;
+		this.coachCourseEnv = coachCourseEnv;
 		this.assessedIdentity = assessedIdentity;
 		this.assessedUserCourseEnv = assessedUserCourseEnv;
 		this.taskListEventResource = taskListEventResource;
@@ -150,6 +152,7 @@ public class GTACoachRevisionAndCorrectionsController extends BasicController {
 	private void setCollectRevisions() {
 		collectButton = LinkFactory.createButton("coach.collect.revisions", mainVC, this);
 		collectButton.setUserObject(assignedTask);
+		collectButton.setVisible(!coachCourseEnv.isCourseReadOnly());
 	}
 	
 	private void setRevisionIteration(UserRequest ureq, int iteration, List<String> revisionStepNames) {
@@ -236,7 +239,7 @@ public class GTACoachRevisionAndCorrectionsController extends BasicController {
 		}
 		
 		uploadCorrectionsCtrl = new SubmitDocumentsController(ureq, getWindowControl(), task, documentsDir, documentsContainer, -1,
-				gtaNode, courseEnv, "coach.document");
+				gtaNode, courseEnv, coachCourseEnv.isCourseReadOnly(), null, "coach.document");
 		listenTo(uploadCorrectionsCtrl);
 		mainVC.put("uploadCorrections", uploadCorrectionsCtrl.getInitialComponent());
 
@@ -244,11 +247,13 @@ public class GTACoachRevisionAndCorrectionsController extends BasicController {
 		returnToRevisionsButton.setCustomEnabledLinkCSS("btn btn-primary");
 		returnToRevisionsButton.setIconLeftCSS("o_icon o_icon o_icon_rejected");
 		returnToRevisionsButton.setElementCssClass("o_sel_course_gta_return_revision");
+		returnToRevisionsButton.setVisible(!coachCourseEnv.isCourseReadOnly());
 		
 		closeRevisionsButton = LinkFactory.createCustomLink("coach.close.revision.button", "close", "coach.close.revision.button", Link.BUTTON, mainVC, this);
 		closeRevisionsButton.setCustomEnabledLinkCSS("btn btn-primary");
 		closeRevisionsButton.setIconLeftCSS("o_icon o_icon o_icon_accepted");
 		closeRevisionsButton.setElementCssClass("o_sel_course_gta_close_revision");
+		closeRevisionsButton.setVisible(!coachCourseEnv.isCourseReadOnly());
 	}
 	
 	@Override

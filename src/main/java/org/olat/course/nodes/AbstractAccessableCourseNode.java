@@ -42,8 +42,8 @@ import org.olat.course.condition.additionalconditions.AdditionalConditionManager
 import org.olat.course.condition.interpreter.ConditionExpression;
 import org.olat.course.condition.interpreter.ConditionInterpreter;
 import org.olat.course.export.CourseEnvironmentMapper;
-import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.course.run.userview.NodeEvaluation;
+import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.assessment.AssessmentToolOptions;
 
 import de.bps.course.nodes.CourseNodePasswordManagerImpl;
@@ -173,7 +173,7 @@ public abstract class AbstractAccessableCourseNode extends GenericCourseNode {
 	
 	/** Factory method to launch course element assessment tools. limitToGroup is optional to skip he the group choose step */
 	public List<Controller> createAssessmentTools(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
-			CourseEnvironment courseEnv, AssessmentToolOptions options) {
+			UserCourseEnvironment coachCourseEnv, AssessmentToolOptions options) {
 		return Collections.emptyList();
 	}
 	

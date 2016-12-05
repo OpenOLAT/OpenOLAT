@@ -1,3 +1,16 @@
+#if($r.visible("override.member") || $r.visible("unoverride.member"))
+	<div class="o_warning">
+		$r.translate("override.member.hint")
+		<div class="o_button_group">
+		#if($r.visible("override.member"))
+			$r.render("override.member")
+		#elseif($r.visible("unoverride.member"))
+			$r.render("unoverride.member")
+		#end
+		</div>
+	</div>
+#end
+
 <div class="o_header_with_buttons">
 	<h4><i class="o_icon o_icon_group"> </i> $r.translate("menu.members")</h4>
 	<div class="o_button_group">

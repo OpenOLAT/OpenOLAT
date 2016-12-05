@@ -5,19 +5,19 @@
 	$r.render("table")
 #end
 
-#if($r.available("upload.document") || $r.available("open.editor"))
+#if($r.visible("upload.document") || $r.visible("open.editor"))
 <div class="panel panel-placeholder">
 	<div class="panel-body">
 		<h5>$r.translate("submission.add.title")</h5>
 		<div class="o_button_group">	
-		#if($r.available("upload.document") && $r.available("open.editor"))
+		#if($r.visible("upload.document") && $r.visible("open.editor"))
 			<div class="btn-group">
 				$r.render("upload.document")
 				$r.render("open.editor")
 			</div>
-		#elseif($r.available("upload.document"))
+		#elseif($r.visible("upload.document"))
 			$r.render("upload.document")
-		#elseif($r.available("open.editor"))
+		#elseif($r.visible("open.editor"))
 			$r.render("open.editor")
 		#end
 		</div>

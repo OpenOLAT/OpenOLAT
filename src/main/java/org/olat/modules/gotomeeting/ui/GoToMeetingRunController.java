@@ -50,7 +50,7 @@ public class GoToMeetingRunController extends BasicController {
 	private final String subIdent;
 	private final BusinessGroup group;
 	private final RepositoryEntry entry;
-	private final boolean administrator, moderator;
+	private final boolean administrator, moderator, readOnly;
 	
 	private GoToMeetingController meetingCtrl;
 	private GoToMeetingsController meetingsCtrl;
@@ -58,13 +58,14 @@ public class GoToMeetingRunController extends BasicController {
 	
 	public GoToMeetingRunController(UserRequest ureq, WindowControl wControl,
 			RepositoryEntry entry, String subIdent,  BusinessGroup group,
-			boolean administrator, boolean moderator) {
+			boolean administrator, boolean moderator, boolean readOnly) {
 		super(ureq, wControl);
 
 		this.group = group;
 		this.entry = entry;
 		this.subIdent = subIdent;
 		
+		this.readOnly = readOnly;
 		this.moderator = moderator;
 		this.administrator = administrator;
 		
@@ -131,7 +132,7 @@ public class GoToMeetingRunController extends BasicController {
 	private void doSelectMeeting(UserRequest ureq, GoToMeeting meeting) {
 		removeAsListenerAndDispose(meetingCtrl);
 		
-		meetingCtrl = new GoToMeetingController(ureq, this.getWindowControl(), meeting, administrator, moderator);
+		meetingCtrl = new GoToMeetingController(ureq, getWindowControl(), meeting, administrator, moderator, readOnly);
 		listenTo(meetingCtrl);
 		mainVC.put("meeting", meetingCtrl.getInitialComponent());
 	}
@@ -148,7 +149,7 @@ public class GoToMeetingRunController extends BasicController {
 	
 	private void doOpenAdmin(UserRequest ureq) {
 		if(adminCtrl == null) {
-			adminCtrl = new GoToMeetingsEditController(ureq, getWindowControl(), entry, subIdent, group);
+			adminCtrl = new GoToMeetingsEditController(ureq, getWindowControl(), entry, subIdent, group, readOnly);
 			listenTo(adminCtrl);
 		} 
 		mainVC.put("segmentCmp", adminCtrl.getInitialComponent());

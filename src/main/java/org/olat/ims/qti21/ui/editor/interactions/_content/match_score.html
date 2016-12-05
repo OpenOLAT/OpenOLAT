@@ -1,0 +1,26 @@
+<table class="table matchInteraction score">
+	<thead>
+		<tr>
+			<th></th>
+			#foreach($targetChoice in $targetChoices)
+				<th>${targetChoice.getSummary()}
+			#end
+		</tr>
+	</thead>
+	<tbody>
+	#foreach($sourceChoice in $sourceChoices)
+		<tr>
+			<th>${sourceChoice.getSummary()}</th>
+			#foreach($targetChoice in $targetChoices)
+				<td>
+				#set($scoreWrapper = $r.get("${sourceChoice.getChoiceIdentifier().toString()}-${targetChoice.getChoiceIdentifier().toString()}"))
+				$r.render("${sourceChoice.getChoiceIdentifier().toString()}-${targetChoice.getChoiceIdentifier().toString()}")
+				#if(${scoreWrapper.isCorrect()})
+					<i class=" o_icon o_icon-lg o_icon_accept"> </i>
+				#end
+				</td>
+			#end
+		</tr>
+	#end
+	</tbody>
+</table>

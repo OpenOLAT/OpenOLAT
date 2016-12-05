@@ -83,6 +83,7 @@ public class QTI12ResultDetailsController extends BasicController {
 	private RepositoryEntry repositoryEntry;
 	private Persister qtiPersister;
 	private String type;
+	private UserCourseEnvironment coachCourseEnv;
 
 	private final IQManager iqm;
 	private final QTIResultManager qrm;
@@ -103,12 +104,13 @@ public class QTI12ResultDetailsController extends BasicController {
 	 * @param wControl
 	 */
 	public QTI12ResultDetailsController(UserRequest ureq, WindowControl wControl, Long courseResourceableId, String nodeIdent,
-			Identity assessedIdentity, RepositoryEntry re, String type) {
+			UserCourseEnvironment coachCourseEnv, Identity assessedIdentity, RepositoryEntry re, String type) {
 		super(ureq, wControl);
 		this.courseResourceableId = courseResourceableId;
 		this.nodeIdent = nodeIdent;
 		this.assessedIdentity = assessedIdentity;
 		this.repositoryEntry = re;
+		this.coachCourseEnv = coachCourseEnv;
 		this.type = type;
 		iqm = CoreSpringFactory.getImpl(IQManager.class);
 		qrm = QTIResultManager.getInstance();
@@ -154,7 +156,7 @@ public class QTI12ResultDetailsController extends BasicController {
 		DefaultColumnDescriptor pointCol = new DefaultColumnDescriptor("column.header.assesspoints", 2, null, ureq.getLocale());
 		pointCol.setEscapeHtml(EscapeMode.none);
 		tableCtr.addColumnDescriptor(pointCol);
-		tableCtr.addColumnDescriptor(new QTISelectColumnDescriptor("column.header.action", 3, ureq.getLocale(), getTranslator()));
+		tableCtr.addColumnDescriptor(new QTISelectColumnDescriptor("column.header.action", 3, coachCourseEnv.isCourseReadOnly(), getLocale(), getTranslator()));
 
 		List<QTIResultSet> resultSets = qrm.getResultSets(courseResourceableId, nodeIdent, repositoryEntry.getKey(), assessedIdentity);
 		tableModel = new QTIResultTableModel(resultSets, qtiPersister, getTranslator());

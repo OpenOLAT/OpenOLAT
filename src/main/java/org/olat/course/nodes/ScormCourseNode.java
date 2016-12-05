@@ -383,10 +383,7 @@ public class ScormCourseNode extends AbstractAccessableCourseNode implements Per
 	public AssessmentEntry getUserAssessmentEntry(UserCourseEnvironment userCourseEnv) {
 		AssessmentManager am = userCourseEnv.getCourseEnvironment().getAssessmentManager();
 		Identity mySelf = userCourseEnv.getIdentityEnvironment().getIdentity();
-		if(getReferencedRepositoryEntrySoftkey() != null) {
-			return am.getAssessmentEntry(this, mySelf, getReferencedRepositoryEntrySoftkey());
-		}
-		return null;
+		return am.getAssessmentEntry(this, mySelf);//we want t
 	}
 
 	@Override
@@ -590,8 +587,9 @@ public class ScormCourseNode extends AbstractAccessableCourseNode implements Per
 	 *      org.olat.course.run.userview.UserCourseEnvironment)
 	 */
 	@Override
-	public Controller getDetailsEditController(UserRequest ureq, WindowControl wControl, BreadcrumbPanel stackPanel, UserCourseEnvironment userCourseEnvironment) {
-		return new ScormResultDetailsController(ureq, wControl, this, userCourseEnvironment);
+	public Controller getDetailsEditController(UserRequest ureq, WindowControl wControl, BreadcrumbPanel stackPanel,
+			UserCourseEnvironment coachCourseEnv, UserCourseEnvironment assessedUserCourseEnv) {
+		return new ScormResultDetailsController(ureq, wControl, this, coachCourseEnv, assessedUserCourseEnv);
 	}
 
 	/**

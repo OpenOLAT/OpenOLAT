@@ -240,7 +240,11 @@ public class CheckListAssessmentController extends FormBasicController implement
 		if(withScore) {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(true, Cols.totalPoints.i18nKey(), Cols.totalPoints.ordinal(), true, "points"));
 		}
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("table.header.edit.checkbox", translate("table.header.edit.checkbox"), "edit"));
+		if(coachCourseEnv.isCourseReadOnly()) {
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("table.header.view.checkbox", translate("table.header.view.checkbox"), "view"));
+		} else {
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("table.header.edit.checkbox", translate("table.header.edit.checkbox"), "edit"));
+		}
 
 		List<CheckListAssessmentRow> datas = loadDatas();
 		model = new CheckListAssessmentDataModel(checkboxList, datas, columnsModel);
@@ -268,6 +272,7 @@ public class CheckListAssessmentController extends FormBasicController implement
 		
 		editButton = uifactory.addFormLink("edit", formLayout, Link.BUTTON);
 		editButton.setEnabled(numOfCheckbox > 0);
+		editButton.setVisible(!coachCourseEnv.isCourseReadOnly());
 		saveButton = uifactory.addFormSubmitButton("save", formLayout);
 		saveButton.getComponent().setSpanAsDomReplaceable(true);
 		saveButton.setVisible(false);
@@ -275,6 +280,7 @@ public class CheckListAssessmentController extends FormBasicController implement
 		cancelButton.setVisible(false);
 		boxAssessmentButton = uifactory.addFormLink("box.assessment", formLayout, Link.BUTTON);
 		boxAssessmentButton.setEnabled(numOfCheckbox > 0);
+		boxAssessmentButton.setVisible(!coachCourseEnv.isCourseReadOnly());
 	}
 	
 	private List<CheckListAssessmentRow> loadDatas() {
@@ -390,7 +396,7 @@ public class CheckListAssessmentController extends FormBasicController implement
 	protected void formOK(UserRequest ureq) {
 		saveButton.setVisible(false);
 		cancelButton.setVisible(false);
-		editButton.setVisible(true);
+		editButton.setVisible(!coachCourseEnv.isCourseReadOnly());
 		doSave();
 	}
 	
@@ -398,7 +404,7 @@ public class CheckListAssessmentController extends FormBasicController implement
 	protected void formCancelled(UserRequest ureq) {
 		saveButton.setVisible(false);
 		cancelButton.setVisible(false);
-		editButton.setVisible(true);
+		editButton.setVisible(!coachCourseEnv.isCourseReadOnly());
 		doDisableEditingMode();
 	}
 
@@ -408,7 +414,7 @@ public class CheckListAssessmentController extends FormBasicController implement
 			if(event instanceof SelectionEvent) {
 				SelectionEvent se = (SelectionEvent)event;
 				String cmd = se.getCommand();
-				if("edit".equals(cmd)) {
+				if("edit".equals(cmd) || "view".equals(cmd)) {
 					CheckListAssessmentRow row = model.getObject(se.getIndex());
 					doOpenEdit(ureq, row);
 				} else if(UserConstants.FIRSTNAME.equals(cmd) || UserConstants.LASTNAME.equals(cmd)) {
@@ -631,7 +637,7 @@ public class CheckListAssessmentController extends FormBasicController implement
 		Identity assessedIdentity = securityManager.loadIdentityByKey(row.getIdentityKey());
 		UserCourseEnvironment assessedUserCourseEnv = AssessmentHelper.createAndInitUserCourseEnvironment(assessedIdentity, course);
 		editCtrl = new AssessedIdentityOverviewController(ureq, getWindowControl(), assessedIdentity,
-				courseOres, assessedUserCourseEnv, courseNode);
+				courseOres, coachCourseEnv, assessedUserCourseEnv, courseNode);
 		listenTo(editCtrl);
 
 		String title = courseNode.getShortTitle();

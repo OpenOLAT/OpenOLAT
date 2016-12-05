@@ -22,7 +22,9 @@ package org.olat.ims.qti21.model.xml;
 import static org.olat.ims.qti21.QTI21Constants.MAXSCORE_IDENTIFIER;
 import static org.olat.ims.qti21.QTI21Constants.MINSCORE_IDENTIFIER;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import uk.ac.ed.ph.jqtiplus.node.item.AssessmentItem;
 import uk.ac.ed.ph.jqtiplus.node.item.CorrectResponse;
@@ -33,6 +35,7 @@ import uk.ac.ed.ph.jqtiplus.node.shared.declaration.DefaultValue;
 import uk.ac.ed.ph.jqtiplus.node.test.AssessmentTest;
 import uk.ac.ed.ph.jqtiplus.types.Identifier;
 import uk.ac.ed.ph.jqtiplus.value.Cardinality;
+import uk.ac.ed.ph.jqtiplus.value.DirectedPairValue;
 import uk.ac.ed.ph.jqtiplus.value.FloatValue;
 import uk.ac.ed.ph.jqtiplus.value.IdentifierValue;
 import uk.ac.ed.ph.jqtiplus.value.MultipleValue;
@@ -98,6 +101,26 @@ public interface QtiNodesExtractor {
 			if(value instanceof IdentifierValue) {
 				IdentifierValue identifierValue = (IdentifierValue)value;
 				correctAnswers.add(identifierValue.identifierValue());
+			}
+		}
+	}
+	
+	public static void extractIdentifiersFromCorrectResponse(CorrectResponse correctResponse, Map<Identifier,List<Identifier>> correctAnswers) {
+		if(correctResponse != null) {
+			List<FieldValue> values = correctResponse.getFieldValues();
+			for(FieldValue value:values) {
+				SingleValue sValue = value.getSingleValue();
+				if(sValue instanceof DirectedPairValue) {
+					DirectedPairValue dpValue = (DirectedPairValue)sValue;
+					Identifier sourceId = dpValue.sourceValue();
+					Identifier targetId = dpValue.destValue();
+					List<Identifier> targetIds = correctAnswers.get(sourceId);
+					if(targetIds == null) {
+						targetIds = new ArrayList<>();
+						correctAnswers.put(sourceId, targetIds);
+					}
+					targetIds.add(targetId);
+				}
 			}
 		}
 	}

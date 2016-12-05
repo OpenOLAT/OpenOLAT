@@ -20,20 +20,15 @@
 package org.olat.repository.ui.author;
 
 import java.text.Collator;
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
-import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
@@ -41,45 +36,40 @@ import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.id.Roles;
+import org.olat.core.logging.activity.LearningResourceLoggingAction;
+import org.olat.core.logging.activity.OlatResourceableType;
+import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
-import org.olat.repository.ErrorList;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryService;
-import org.olat.repository.controllers.EntryChangedEvent;
-import org.olat.repository.controllers.EntryChangedEvent.Change;
 import org.olat.resource.references.ReferenceInfos;
 import org.olat.resource.references.ReferenceManager;
+import org.olat.util.logging.activity.LoggingResourceable;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
- * Initial date: 02.10.2014<br>
+ * Initial date: 1 déc. 2016<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class ConfirmDeleteController extends FormBasicController {
+public class ConfirmDeleteSoftlyController extends FormBasicController {
 	
 	private FormLink deleteButton;
-	private SingleSelection deleteReferencesEl;
-	private MultipleSelectionElement acknowledgeEl, referencesEl;
+	private MultipleSelectionElement acknowledgeEl;
 	
 	private final int numOfMembers;
 	private final boolean notAllDeleteable;
 	private final List<RepositoryEntry> rows;
 	private final List<ReferenceInfos> references;
 	
-	private static final String[] yesNo = new String[] { "yes", "no" };
-	
-	private String[] referenceKeys;
-	
 	@Autowired
 	private ReferenceManager referenceManager;
 	@Autowired
 	private RepositoryService repositoryService;
 	
-	public ConfirmDeleteController(UserRequest ureq, WindowControl wControl, List<RepositoryEntry> rows, boolean notAllDeleteable) {
+	public ConfirmDeleteSoftlyController(UserRequest ureq, WindowControl wControl, List<RepositoryEntry> rows, boolean notAllDeleteable) {
 		super(ureq, wControl, "confirm_delete");
 		setTranslator(Util.createPackageTranslator(RepositoryService.class, getLocale(), getTranslator()));
 		
@@ -115,62 +105,10 @@ public class ConfirmDeleteController extends FormBasicController {
 			String[] acknowledge = new String[] { translate("details.delete.acknowledge.msg") };
 			acknowledgeEl = uifactory.addCheckboxesHorizontal("confirm", "details.delete.acknowledge", layoutCont, new String[]{ "" },  acknowledge);
 			
-			int pos = 0;
-			boolean hasOrphans = false;
-			referenceKeys = new String[references.size()];
-			String[] referenceValues = new String[references.size()];
-			for(ReferenceInfos reference:references) {
-				hasOrphans |= reference.isOrphan() && reference.isOwner() && !reference.isManaged();
-				referenceKeys[pos] = reference.getEntry().getKey().toString();
-				referenceValues[pos++] = getReferenceElValue(reference);
-			}
-			String[] yesNoValues = new String[] { translate("yes"), translate("no") };
-			deleteReferencesEl = uifactory.addRadiosHorizontal("references.yesno", "details.delete.references", layoutCont, yesNo,  yesNoValues);
-			deleteReferencesEl.setVisible(hasOrphans);
-			deleteReferencesEl.addActionListener(FormEvent.ONCHANGE);
-
-			referencesEl = uifactory.addCheckboxesVertical("references.list", null, layoutCont, referenceKeys, referenceValues, 1);
-			referencesEl.setVisible(false);
-			applyDefaultToReferenceList();
-			
 			FormLayoutContainer buttonsCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 			layoutCont.add(buttonsCont);
 			deleteButton = uifactory.addFormLink("details.delete", buttonsCont, Link.BUTTON);
 			uifactory.addFormCancelButton("cancel", buttonsCont, ureq, getWindowControl());
-		}
-	}
-	
-	private String getReferenceElValue(ReferenceInfos reference) {
-		StringBuilder referenceValue = new StringBuilder(64);
-		referenceValue.append(reference.getEntry().getDisplayname());
-		if(!reference.isOrphan() || !reference.isOwner() || reference.isManaged()) {
-			referenceValue.append(" (");
-			if(!reference.isOrphan()) {
-				referenceValue.append(translate("details.delete.notOrphan"));
-			}
-			if(!reference.isOwner()) {
-				if(!reference.isOrphan()) {
-					referenceValue.append(", ");
-				}
-				referenceValue.append(translate("details.delete.notOwner"));
-			}
-			if(reference.isManaged()) {
-				if(!reference.isOrphan() || !reference.isOwner()) {
-					referenceValue.append(", ");
-				}
-				referenceValue.append(translate("details.delete.managed"));
-			}
-			referenceValue.append(")");
-		}
-		return referenceValue.toString();
-	}
-	
-	private void applyDefaultToReferenceList() {
-		for(ReferenceInfos reference:references) {
-			String key = reference.getEntry().getKey().toString();
-			boolean deletable = reference.isOwner() && reference.isOrphan() && !reference.isManaged();
-			referencesEl.setEnabled(key, deletable);
-			referencesEl.select(key, deletable);
 		}
 	}
 	
@@ -189,14 +127,6 @@ public class ConfirmDeleteController extends FormBasicController {
 			allOk &= false;
 		}
 		
-		deleteReferencesEl.clearError();
-		if(deleteReferencesEl.isEnabled() && deleteReferencesEl.isVisible()) {
-			if(!deleteReferencesEl.isOneSelected()) {
-				deleteReferencesEl.setErrorKey("form.mandatory.hover", null);
-				allOk &= false;
-			}
-		}
-		
 		return allOk & super.validateFormLogic(ureq);
 	}
 
@@ -204,19 +134,8 @@ public class ConfirmDeleteController extends FormBasicController {
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(deleteButton == source) {
 			if(validateFormLogic(ureq)) {
-				doCompleteDelete(ureq);
+				doCompleteDelete();
 				fireEvent(ureq, Event.DONE_EVENT);
-			}
-		} else if(deleteReferencesEl == source) {
-			if(deleteReferencesEl.isEnabled() && deleteReferencesEl.isOneSelected()) {
-				if(deleteReferencesEl.isSelected(0)) {
-					//yes
-					referencesEl.setVisible(true);
-					applyDefaultToReferenceList();
-				} else {
-					//no
-					referencesEl.setVisible(false);
-				}
 			}
 		}
 	}
@@ -231,68 +150,23 @@ public class ConfirmDeleteController extends FormBasicController {
 		fireEvent(ureq, Event.CANCELLED_EVENT);
 	}
 	
-	private void doCompleteDelete(UserRequest ureq) {
-		List<ErrorList> errorList = new ArrayList<>();
-		boolean allOk = deleteEntries(ureq, rows, errorList) ;
-		
-		if(allOk && deleteReferencesEl.isVisible() && deleteReferencesEl.isEnabled()
-				&& deleteReferencesEl.isOneSelected() && deleteReferencesEl.isSelected(0)) {
-			Map<Long,ReferenceInfos> referencesMap = new HashMap<>(); 
-			for(ReferenceInfos reference:references) {
-				referencesMap.put(reference.getEntry().getKey(), reference);
-			}
-			
-			Collection<String> selectedKeys = referencesEl.getSelectedKeys();
-			List<RepositoryEntry> referencesToDelete = new ArrayList<>(selectedKeys.size());
-			for(String selectedRefKey:selectedKeys) {
-				Long key = new Long(selectedRefKey);
-				ReferenceInfos refInfos = referencesMap.get(key);
-				if(refInfos != null && refInfos.isOrphan() && refInfos.isOwner() && !refInfos.isManaged()) {
-					referencesToDelete.add(referencesMap.get(key).getEntry());
-				}
-			}
-			allOk &= deleteEntries(ureq, referencesToDelete, errorList);
-		}
-		
+	private void doCompleteDelete() {
+		boolean allOk = deleteEntries(rows);
 		if(allOk) {
 			showInfo("info.entry.deleted");
 		} else {
-			List<String> msgs = new ArrayList<>();
-			for(ErrorList error:errorList) {
-				if(StringHelper.containsNonWhitespace(error.getFirstError())) {
-					msgs.add(error.getFirstError());
-				}
-			}
-			
-			if(msgs.size() == 1) {
-				getWindowControl().setWarning(msgs.get(0));
-			} else if(msgs.size() > 1) {
-				StringBuilder sb = new StringBuilder();
-				sb.append("<ul>");
-				for(String msg:msgs) {
-					sb.append("<li>").append(msg).append("</li>");
-				}
-				sb.append("</ul>");
-				getWindowControl().setWarning(sb.toString());
-			} else {
-				showWarning("info.could.not.delete.entry");
-			}
+			showWarning("info.could.not.delete.entry");
 		}
 	}
 	
-	private boolean deleteEntries(UserRequest ureq, List<RepositoryEntry> entries, List<ErrorList> errorList) {
+	private boolean deleteEntries(List<RepositoryEntry> entries) {
 		boolean allOk = true;
-		Roles roles = ureq.getUserSession().getRoles();
 		for(RepositoryEntry entry:entries) {
 			RepositoryEntry reloadedEntry = repositoryService.loadByKey(entry.getKey());
 			if(reloadedEntry != null) {
-				ErrorList errors = repositoryService.delete(reloadedEntry, getIdentity(), roles, getLocale());
-				if (errors.hasErrors()) {
-					allOk = false;
-					errorList.add(errors);
-				} else {
-					fireEvent(ureq, new EntryChangedEvent(reloadedEntry, getIdentity(), Change.deleted, "delete"));
-				}
+				reloadedEntry = repositoryService.deleteSoftly(reloadedEntry);
+				ThreadLocalUserActivityLogger.log(LearningResourceLoggingAction.LEARNING_RESOURCE_TRASH, getClass(),
+						LoggingResourceable.wrap(reloadedEntry, OlatResourceableType.genRepoEntry));
 			}
 		}
 		return allOk;

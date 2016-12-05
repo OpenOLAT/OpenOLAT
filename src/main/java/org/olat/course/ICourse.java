@@ -95,6 +95,15 @@ public interface ICourse extends OLATResourceable {
 	public VFSContainer getCourseFolderContainer();
 	
 	/**
+	 * Give the possibility to override the read-only mode of the containers
+	 * if the course is closed.
+	 * 
+	 * @param overrideReadOnly
+	 * @return
+	 */
+	public VFSContainer getCourseFolderContainer(boolean overrideReadOnly);
+	
+	/**
 	 * The course folder that the user specified by its identity environment
 	 * can see and use. Used by WebDAV access.
 	 * 

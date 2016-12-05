@@ -35,7 +35,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import javax.persistence.LockModeType;
 import javax.persistence.TypedQuery;
 
 import org.olat.admin.securitygroup.gui.IdentitiesAddEvent;
@@ -76,6 +75,7 @@ import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSManager;
 import org.olat.group.GroupLoggingAction;
+import org.olat.repository.manager.RepositoryEntryDAO;
 import org.olat.repository.manager.RepositoryEntryRelationDAO;
 import org.olat.repository.model.RepositoryEntryLifecycle;
 import org.olat.repository.model.RepositoryEntryMembership;
@@ -117,6 +117,8 @@ public class RepositoryManager {
 	private DB dbInstance;
 	@Autowired
 	private RepositoryModule repositoryModule;
+	@Autowired
+	private RepositoryEntryDAO repositoryEntryDao;
 	@Autowired
 	private RepositoryEntryRelationDAO repositoryEntryRelationDao;
 	@Autowired
@@ -634,29 +636,16 @@ public class RepositoryManager {
 			}
 		}
 		
+		boolean readOnly = new RepositoryEntryStatus(re.getStatusCode()).isClosed();
+		
 		return new RepositoryEntrySecurity(isEntryAdmin, isOwner,
 				isCourseParticipant, isCourseCoach,
 				isGroupParticipant, isGroupCoach,
-				isGroupWaiting, canLaunch);
-	}
-
-	private RepositoryEntry loadForUpdate(RepositoryEntry re) {
-		//first remove it from caches
-		dbInstance.getCurrentEntityManager().detach(re);
-
-		StringBuilder query = new StringBuilder();
-		query.append("select v from ").append(RepositoryEntry.class.getName()).append(" as v ")
-		     .append(" where v.key=:repoKey");
-
-		List<RepositoryEntry> entries = dbInstance.getCurrentEntityManager().createQuery(query.toString(), RepositoryEntry.class)
-				.setParameter("repoKey", re.getKey())
-				.setLockMode(LockModeType.PESSIMISTIC_WRITE)
-				.getResultList();
-		return entries == null || entries.isEmpty() ? null : entries.get(0);
+				isGroupWaiting, canLaunch, readOnly);
 	}
 
 	public RepositoryEntry setAccess(final RepositoryEntry re, int access, boolean membersOnly) {
-		RepositoryEntry reloadedRe = loadForUpdate(re);
+		RepositoryEntry reloadedRe = repositoryEntryDao.loadForUpdate(re);
 		if(reloadedRe == null) {
 			return null;
 		}
@@ -672,7 +661,7 @@ public class RepositoryManager {
 	public RepositoryEntry setAccessAndProperties(final RepositoryEntry re,
 			int access, boolean membersOnly,
 			boolean canCopy, boolean canReference, boolean canDownload) {
-		RepositoryEntry reloadedRe = loadForUpdate(re);
+		RepositoryEntry reloadedRe = repositoryEntryDao.loadForUpdate(re);
 		if(reloadedRe == null) {
 			return null;
 		}
@@ -698,7 +687,7 @@ public class RepositoryManager {
 	
 	public RepositoryEntry setLeaveSetting(final RepositoryEntry re,
 			RepositoryEntryAllowToLeaveOptions setting) {
-		RepositoryEntry reloadedRe = loadForUpdate(re);
+		RepositoryEntry reloadedRe = repositoryEntryDao.loadForUpdate(re);
 		if(reloadedRe == null) {
 			return null;
 		}
@@ -727,7 +716,7 @@ public class RepositoryManager {
 	public RepositoryEntry setDescriptionAndName(final RepositoryEntry re, String displayName, String description,
 			String location, String authors, String externalId, String externalRef, String managedFlags,
 			RepositoryEntryLifecycle cycle) {
-		RepositoryEntry reloadedRe = loadForUpdate(re);
+		RepositoryEntry reloadedRe = repositoryEntryDao.loadForUpdate(re);
 		if(reloadedRe == null) {
 			return null;
 		}
@@ -799,7 +788,7 @@ public class RepositoryManager {
 			String displayName, String externalRef, String authors, String description,
 			String objectives, String requirements, String credits, String mainLanguage,
 			String location, String expenditureOfWork, RepositoryEntryLifecycle cycle) {
-		RepositoryEntry reloadedRe = loadForUpdate(re);
+		RepositoryEntry reloadedRe = repositoryEntryDao.loadForUpdate(re);
 		if(reloadedRe == null) {
 			return null;
 		}
@@ -1127,7 +1116,7 @@ public class RepositoryManager {
 		StringBuilder query = new StringBuilder(400);
 		query.append("select distinct v from ").append(RepositoryEntry.class.getName()).append(" v ")
 		     .append(" inner join fetch v.olatResource as res" )
-			  .append(" inner join fetch v.statistics as statistics")
+			 .append(" inner join fetch v.statistics as statistics")
 		     .append(" left join fetch v.lifecycle as lifecycle");
 		// 2) where clause
 		query.append(" where "); 
@@ -1143,10 +1132,10 @@ public class RepositoryManager {
 			if(checkCanCopy) {
 				query.append(" and v.canCopy=true");
 			}
-			query.append("  or exists (select rel from repoentrytogroup as rel, bgroup as baseGroup, bgroupmember as membership  ")
+			query.append("  or (v.access>0 and exists (select rel from repoentrytogroup as rel, bgroup as baseGroup, bgroupmember as membership  ")
 			     .append("    where rel.entry=v and rel.group=baseGroup and membership.group=baseGroup and membership.identity.key=:identityKey ")
 			     .append("      and membership.role in ('").append(GroupRoles.owner.name()).append("','").append(GroupRoles.coach.name()).append("','").append(GroupRoles.participant.name()).append("')")
-			     .append("  )")
+			     .append("  ))")
 			     .append(" )");
 		} else {
 			access = RepositoryEntry.ACC_OWNERS;

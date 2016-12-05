@@ -129,12 +129,13 @@ public class SharedWithMeQueries {
 	
 	private void searchSharedBindersTwo(Identity member, List<AssessedBinder> binders) {
 		StringBuilder sb = new StringBuilder();
-		sb.append("select binder.key, section.key, section.status, section.title, section.pos, page.key, page.lastModified, max(parts.lastModified)")
+		sb.append("select binder.key, section.key, section.status, section.title, section.pos, page.key, page.lastModified, body.lastModified, max(parts.lastModified), infos.recentLaunch")
 		  .append(" from pfbinder as binder")
 		  .append(" inner join binder.sections as section")
 		  .append(" inner join section.pages as page")
 		  .append(" inner join page.body as body")
 		  .append(" left join body.parts as parts")
+		  .append(" left join pfbinderuserinfos as infos on (infos.binder.key=binder.key and infos.identity.key=:identityKey)")
 		  .append(" where exists (select membership.key from bgroupmember as membership")
 		  .append("   where membership.group.key=binder.baseGroup.key and membership.identity.key=:identityKey and membership.role in ('").append(PortfolioRoles.coach.name()).append("','").append(PortfolioRoles.reviewer.name()).append("')")
 		  .append(" ) or exists (select sectionMembership.key from bgroupmember as sectionMembership")
@@ -143,7 +144,7 @@ public class SharedWithMeQueries {
 		  .append("   inner join coachedPage.baseGroup as pageGroup")
 		  .append("   inner join pageGroup.members as pageMembership on (pageMembership.identity.key=:identityKey and pageMembership.role in ('").append(PortfolioRoles.coach.name()).append("','").append(PortfolioRoles.reviewer.name()).append("'))")
 		  .append("   where coachedPage.key=page.key")
-		  .append(" ) group by binder.key, section.key, section.status, page.key, page.lastModified");
+		  .append(" ) group by binder.key, section.key, section.status, page.key, body.lastModified, page.lastModified, infos.recentLaunch");
 
 		List<Object[]> objects = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), Object[].class)
@@ -167,15 +168,25 @@ public class SharedWithMeQueries {
 				Number sectionPosNumber = (Number)object[pos++];
 				pos++;//Object pageKey = object[pos++];
 				Date pageLastModified = (Date)object[pos++];
+				Date bodyLastModified = (Date)object[pos++];
 				Date partLastModified = (Date)object[pos++];
-				if(partLastModified == null) {
-					partLastModified = pageLastModified;
+				Date recentLaunch = (Date)object[pos++];
+				
+				Date lastModified = pageLastModified;
+				if(lastModified == null ||
+						(lastModified != null && partLastModified != null && partLastModified.after(lastModified))) {
+					lastModified = partLastModified;
 				}
-
-				if(partLastModified != null) {
-					if(binder.getLastModified() == null || binder.getLastModified().after(partLastModified)) {
-						binder.setLastModified(partLastModified);
-					} 
+				if(lastModified == null ||
+						(lastModified != null && bodyLastModified != null && bodyLastModified.after(lastModified))) {
+					lastModified = bodyLastModified;
+				}
+				if(lastModified != null && (binder.getLastModified() == null || binder.getLastModified().before(lastModified))) {
+					binder.setLastModified(lastModified);
+				}
+				
+				if(binder.getRecentLaunch() == null) {
+					binder.setRecentLaunch(recentLaunch);
 				}
 				
 				if(!sectionKeys.contains(sectionKey)) {

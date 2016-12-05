@@ -81,7 +81,7 @@ public class CertificationNotificationHandler implements NotificationsHandler {
 			if (NotificationsManager.getInstance().isPublisherValid(p) && compareDate.before(latestNews)) {
 				Long courseId = new Long(p.getData());
 				final ICourse course = CourseFactory.loadCourse(courseId);
-				if (course != null) {
+				if (courseStatus(course)) {
 					// course admins or users with the course right to have full access to
 					// the assessment tool will have full access to user tests
 					
@@ -117,6 +117,12 @@ public class CertificationNotificationHandler implements NotificationsHandler {
 			log.error("Error while creating assessment notifications", e);
 			return NotificationsManager.getInstance().getNoSubscriptionInfo();
 		}
+	}
+	
+	private boolean courseStatus(ICourse course) {
+		return course != null
+				&& !course.getCourseEnvironment().getCourseGroupManager().getCourseEntry().getRepositoryEntryStatus().isUnpublished()
+				&& !course.getCourseEnvironment().getCourseGroupManager().getCourseEntry().getRepositoryEntryStatus().isClosed();
 	}
 
 	@Override

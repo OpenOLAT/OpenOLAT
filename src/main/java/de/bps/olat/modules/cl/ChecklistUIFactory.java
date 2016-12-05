@@ -21,11 +21,8 @@ package de.bps.olat.modules.cl;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.Controller;
-import org.olat.core.gui.control.DefaultController;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.course.ICourse;
-import org.olat.course.nodes.CourseNode;
-import org.olat.util.logging.activity.LoggingResourceable;
 
 /**
  * Description:<br>
@@ -57,35 +54,6 @@ public class ChecklistUIFactory {
 	}
 	
 	/**
-	 * Create run view of this checklist for course context.
-	 * @param ureq
-	 * @param wControl
-	 * @param checklist
-	 * @param filter
-	 * @param canEdit
-	 * @param canManage
-	 * @param course
-	 * @return controller
-	 */
-	public Controller createDisplayController(UserRequest ureq, WindowControl wControl, Checklist checklist, boolean canEdit, boolean canManage, ICourse course, CourseNode coursenode) {
-		DefaultController checklistController = new ChecklistDisplayController(ureq, wControl, checklist, canEdit, canManage, course);
-		checklistController.addLoggingResourceable(LoggingResourceable.wrap(coursenode));
-		return checklistController;
-	}
-	
-	/**
-	 * Create run view of this checklist.
-	 * @param ureq
-	 * @param wControl
-	 * @param checklist
-	 * @param filter
-	 * @return controller
-	 */
-	public Controller createDisplayController(UserRequest ureq, WindowControl wControl, Checklist checklist) {
-		return new ChecklistDisplayController(ureq, wControl, checklist, false, false, null);
-	}
-	
-	/**
 	 * Create edit view of this checklist.
 	 * @param ureq
 	 * @param wControl
@@ -106,8 +74,8 @@ public class ChecklistUIFactory {
 	 * @param course
 	 * @return controller
 	 */
-	public Controller createManageCheckpointsController(UserRequest ureq, WindowControl wControl, Checklist checklist, ICourse course) {
-		return new ChecklistManageCheckpointsController(ureq, wControl, checklist, course);
+	public Controller createManageCheckpointsController(UserRequest ureq, WindowControl wControl, Checklist checklist, ICourse course, boolean readOnly) {
+		return new ChecklistManageCheckpointsController(ureq, wControl, checklist, course, readOnly);
 	}
 
 }

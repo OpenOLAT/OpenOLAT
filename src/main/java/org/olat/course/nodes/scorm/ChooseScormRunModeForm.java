@@ -46,14 +46,16 @@ import org.olat.modules.scorm.ScormConstants;
 public class ChooseScormRunModeForm extends FormBasicController {
 
 	private SingleSelection mode;
-	private boolean showOptions;
-	private String[] modeKeys, modeValues;
+	private final boolean showOptions;
+	private final boolean readOnly;
+	private final String[] modeKeys, modeValues;
 	/**
 	 * @param name
 	 */
-	public ChooseScormRunModeForm(UserRequest ureq, WindowControl wControl, boolean showOptions) {
+	public ChooseScormRunModeForm(UserRequest ureq, WindowControl wControl, boolean showOptions, boolean readOnly) {
 		super(ureq, wControl, FormBasicController.LAYOUT_VERTICAL);
 		this.showOptions = showOptions;
+		this.readOnly = readOnly;
 		
 		modeKeys = new String[] {
 				ScormConstants.SCORM_MODE_NORMAL,
@@ -86,9 +88,11 @@ public class ChooseScormRunModeForm extends FormBasicController {
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		mode = uifactory.addRadiosVertical("mode", null, formLayout, modeKeys, modeValues);
 		mode.select(ScormConstants.SCORM_MODE_NORMAL, true);
-		mode.setVisible(showOptions);
+		mode.setVisible(showOptions && !readOnly);
 		mode.setElementCssClass("o_scorm_mode");
-		FormSubmit showButton = uifactory.addFormSubmitButton("command.showscorm", formLayout);
+
+		String startLabel = readOnly ? "form.scormmode.browse" : "command.showscorm";
+		FormSubmit showButton = uifactory.addFormSubmitButton("command.showscorm", startLabel, formLayout);
 		showButton.setElementCssClass("o_sel_start_scorm");
 	}
 

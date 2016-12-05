@@ -81,10 +81,12 @@ import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.DialogCourseNode;
 import org.olat.course.nodes.dialog.DialogConfigForm;
 import org.olat.course.nodes.dialog.DialogNodeForumCallback;
+import org.olat.course.nodes.dialog.ReadOnlyDialogNodeForumCallback;
 import org.olat.course.properties.CoursePropertyManager;
 import org.olat.course.run.userview.NodeEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.fo.Forum;
+import org.olat.modules.fo.ForumCallback;
 import org.olat.modules.fo.ForumUIFactory;
 import org.olat.modules.fo.manager.ForumManager;
 import org.olat.repository.RepositoryEntry;
@@ -118,7 +120,7 @@ public class DialogElementsController extends BasicController {
 	private DialogElementsTableModel tableModel;
 	private DialogBoxController confirmDeletionCtr;
 	private ContextualSubscriptionController csCtr;
-	private DialogNodeForumCallback forumCallback;
+	private ForumCallback forumCallback;
 	private SubscriptionContext subsContext;
 	private CoursePropertyManager coursePropMgr;
 	private boolean isOlatAdmin;
@@ -148,7 +150,6 @@ public class DialogElementsController extends BasicController {
 		isOlatAdmin = ureq.getUserSession().getRoles().isOLATAdmin();
 		isGuestOnly = ureq.getUserSession().getRoles().isGuestOnly();
 
-		// fxdiff VCRP-12: copy files from course folder
 		// add copy from course folder if user has course editor rights (course owner and users in a right group with the author right)
 		Identity identity = ureq.getIdentity();
 		ICourse course = CourseFactory.loadCourse(userCourseEnv.getCourseEnvironment().getCourseResourceableId());
@@ -159,7 +160,9 @@ public class DialogElementsController extends BasicController {
 			copyButton = LinkFactory.createButton("dialog.copy.file", content, this);
 		}
 		
-		forumCallback = new DialogNodeForumCallback(nodeEvaluation, isOlatAdmin, isGuestOnly, subsContext);
+		forumCallback = userCourseEnv.isCourseReadOnly() ?
+				new ReadOnlyDialogNodeForumCallback(nodeEvaluation, isOlatAdmin, isGuestOnly, subsContext) :
+				new DialogNodeForumCallback(nodeEvaluation, isOlatAdmin, isGuestOnly, subsContext);
 		content.contextPut("security", forumCallback);
 		
 		if(isGuestOnly){
@@ -187,7 +190,7 @@ public class DialogElementsController extends BasicController {
 		showOverviewTable(ureq, forumCallback);
 	}
 
-	private void showOverviewTable(UserRequest ureq, DialogNodeForumCallback callback) {
+	private void showOverviewTable(UserRequest ureq, ForumCallback callback) {
 		removeAsListenerAndDispose(tableCtr);
 		tableCtr = new TableController(tableConf, ureq, getWindowControl(), getTranslator());
 		DialogPropertyElements elements = dialogElmsMgr.findDialogElements(coursePropMgr, courseNode);
@@ -215,6 +218,7 @@ public class DialogElementsController extends BasicController {
 	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest,
 	 *      org.olat.core.gui.components.Component, org.olat.core.gui.control.Event)
 	 */
+	@Override
 	public void event(UserRequest ureq, Controller source, Event event) {
 		DialogElement entry = null;
 		// process table events
@@ -238,7 +242,9 @@ public class DialogElementsController extends BasicController {
 				String integration = (String) courseNode.getModuleConfiguration().get(DialogConfigForm.DIALOG_CONFIG_INTEGRATION);
 				
 				subsContext = CourseModule.createSubscriptionContext(userCourseEnv.getCourseEnvironment(), courseNode, forum.getKey().toString());
-				forumCallback = new DialogNodeForumCallback(nodeEvaluation, isOlatAdmin, isGuestOnly, subsContext);
+				forumCallback = userCourseEnv.isCourseReadOnly() ?
+						new ReadOnlyDialogNodeForumCallback(nodeEvaluation, isOlatAdmin, isGuestOnly, subsContext) :
+						new DialogNodeForumCallback(nodeEvaluation, isOlatAdmin, isGuestOnly, subsContext);
 				content.contextPut("security", forumCallback);
 				
 				if (integration.equals(DialogConfigForm.CONFIG_INTEGRATION_VALUE_INLINE)) {

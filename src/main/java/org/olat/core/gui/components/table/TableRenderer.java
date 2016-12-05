@@ -38,7 +38,6 @@ import org.olat.core.gui.render.Renderer;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
-import org.olat.core.logging.OLATRuntimeException;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 
@@ -133,26 +132,22 @@ public class TableRenderer extends DefaultComponentRenderer {
 	private void appendMultiselectFormActions(StringOutput target, String formName, Translator translator, Table table) {
 		// add multiselect form actions
 		List<TableMultiSelect> multiSelectActions = table.getMultiSelectActions();
-		if (table.isMultiSelect() && multiSelectActions.isEmpty()) {
-			throw new OLATRuntimeException(null, "Action key in multiselect table is undefined. Use addMultiSelectI18nAction(\"i18nkey\", \"action\"); to set an action for this multiselect table.",
-					null);
-		}
-
-		target.append("<div class=\"o_table_buttons\">");
-		for (TableMultiSelect action: multiSelectActions) {
-
-			String multiSelectActionIdentifer = action.getAction();
-			String value;
-			if(action.getI18nKey() != null) {
-				value = StringEscapeUtils.escapeHtml(translator.translate(action.getI18nKey()));
-			} else {
-				value = action.getLabel();
+		if (multiSelectActions.size() > 0) {
+			target.append("<div class=\"o_table_buttons\">");
+			for (TableMultiSelect action: multiSelectActions) {
+				String multiSelectActionIdentifer = action.getAction();
+				String value;
+				if(action.getI18nKey() != null) {
+					value = StringEscapeUtils.escapeHtml(translator.translate(action.getI18nKey()));
+				} else {
+					value = action.getLabel();
+				}
+	
+				target.append("<button type=\"button\" name=\"").append(multiSelectActionIdentifer)
+				      .append("\" class=\"btn btn-default\" onclick=\"o_TableMultiActionEvent('").append(formName).append("','").append(multiSelectActionIdentifer).append("');\"><span>").append(value).append("</span></button> ");
 			}
-
-			target.append("<button type=\"button\" name=\"").append(multiSelectActionIdentifer)
-			      .append("\" class=\"btn btn-default\" onclick=\"o_TableMultiActionEvent('").append(formName).append("','").append(multiSelectActionIdentifer).append("');\"><span>").append(value).append("</span></button> ");
+			target.append("</div>");
 		}
-		target.append("</div>");
 	}
 
 	private void appendTablePageing(StringOutput target, Translator translator, Table table, int rows,
@@ -211,7 +206,7 @@ public class TableRenderer extends DefaultComponentRenderer {
 
 	private void appendSelectDeselectAllButtons(StringOutput target, Translator translator, Table table, String formName, int rows, int resultsPerPage,
 			boolean ajaxEnabled, URLBuilder ubu) {
-		if (table.isMultiSelect()) {
+		if (table.isMultiSelect() && !table.isMultiSelectAsDisabled()) {
 			target.append("<div class='o_table_checkall input-sm'>")
 			  .append("<label class='checkbox-inline'>")
 			  .append("<a href='#' onclick=\"javascript:o_table_toggleCheck('").append(formName).append("', true)\">")

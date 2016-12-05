@@ -268,6 +268,7 @@ public class QTI21ImportProcessor {
 			case sc: return qItemTypeDao.loadByType(QuestionType.SC.name());
 			case mc: return qItemTypeDao.loadByType(QuestionType.MC.name());
 			case kprim: return qItemTypeDao.loadByType(QuestionType.KPRIM.name());
+			case match: return qItemTypeDao.loadByType(QuestionType.MATCH.name());
 			case fib: return qItemTypeDao.loadByType(QuestionType.FIB.name());
 			case numerical: return qItemTypeDao.loadByType(QuestionType.NUMERICAL.name());
 			case hotspot: return qItemTypeDao.loadByType(QuestionType.HOTSPOT.name());

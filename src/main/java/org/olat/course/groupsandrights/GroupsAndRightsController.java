@@ -26,7 +26,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -51,6 +50,7 @@ import org.olat.group.right.BGRightManager;
 import org.olat.group.right.BGRights;
 import org.olat.group.right.BGRightsRole;
 import org.olat.repository.RepositoryEntry;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -62,20 +62,20 @@ public class GroupsAndRightsController extends FormBasicController {
 	private FormLink removeAllLink;
 	
 	private final RepositoryEntry resource;
-	private final BGRightManager rightManager;
-	private final BusinessGroupService businessGroupService;
+	@Autowired
+	private BGRightManager rightManager;
+	@Autowired
+	private BusinessGroupService businessGroupService;
 	
 	private static final String[] keys = {"ison"};
 	private static final String[] values = {""};
 	
+	private final boolean readOnly;
 	
-	public GroupsAndRightsController(UserRequest ureq, WindowControl wControl, RepositoryEntry resource) {
+	public GroupsAndRightsController(UserRequest ureq, WindowControl wControl, RepositoryEntry resource, boolean readOnly) {
 		super(ureq, wControl, "right_list");
-		
-		rightManager = CoreSpringFactory.getImpl(BGRightManager.class);
-		businessGroupService = CoreSpringFactory.getImpl(BusinessGroupService.class);
+		this.readOnly = readOnly;
 		this.resource = resource;
-		
 		initForm(ureq);
 	}
 
@@ -99,8 +99,10 @@ public class GroupsAndRightsController extends FormBasicController {
 		buttonsLayout.setRootForm(mainForm);
 		formLayout.add("buttons", buttonsLayout);
 		
-		uifactory.addFormSubmitButton("save", buttonsLayout);
-		removeAllLink = uifactory.addFormLink("remove.all", buttonsLayout, Link.BUTTON);
+		if(!readOnly) {
+			uifactory.addFormSubmitButton("save", buttonsLayout);
+			removeAllLink = uifactory.addFormLink("remove.all", buttonsLayout, Link.BUTTON);
+		}
 	}
 	
 	private List<BGRightsOption> loadModel() {
@@ -150,6 +152,7 @@ public class GroupsAndRightsController extends FormBasicController {
 		String name = "cb" + UUID.randomUUID().toString().replace("-", "");
 		MultipleSelectionElement selection = new MultipleSelectionElementImpl(name, Layout.horizontal);
 		selection.setKeysAndValues(keys, values);
+		selection.setEnabled(!readOnly);
 		flc.add(name, selection);
 		selection.select(keys[0], selected);
 		return selection;

@@ -19,105 +19,79 @@
  */
 package org.olat.repository.ui.author.wizard;
 
-import org.apache.velocity.VelocityContext;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.wizard.BasicStep;
 import org.olat.core.gui.control.generic.wizard.PrevNextFinishConfig;
-import org.olat.core.gui.control.generic.wizard.Step;
 import org.olat.core.gui.control.generic.wizard.StepFormBasicController;
 import org.olat.core.gui.control.generic.wizard.StepFormController;
 import org.olat.core.gui.control.generic.wizard.StepsEvent;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
-import org.olat.core.id.Identity;
-import org.olat.core.id.UserConstants;
 import org.olat.core.util.Util;
-import org.olat.core.util.mail.MailTemplate;
-import org.olat.core.util.mail.MailTemplateForm;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryService;
 
 /**
  * 
- * Form to send the notification e-mails
+ * Options to clean-up groups and the catalog.
  * 
  * Initial date: 29.08.2014<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class Close_3_SendMailStep extends BasicStep {
+public class Unpublish_2_OptionsStep extends BasicStep {
 	
-	private final RepositoryEntry entry;
 	
-	public Close_3_SendMailStep(UserRequest ureq, RepositoryEntry entry) {
+	public Unpublish_2_OptionsStep(UserRequest ureq, RepositoryEntry entry ) {
 		super(ureq);
 		setTranslator(Util.createPackageTranslator(RepositoryService.class, getLocale(), getTranslator()));
-		this.entry = entry;
-		setNextStep(Step.NOSTEP);
-		setI18nTitleAndDescr("close.ressource.step3", "close.ressource.step3");
+		setNextStep(new Unpublish_3_SendMailStep(ureq, entry));
+		setI18nTitleAndDescr("close.ressource.step2", "close.ressource.step2");
 	}
 
 	@Override
 	public PrevNextFinishConfig getInitialPrevNextFinishConfig() {
-		return new PrevNextFinishConfig(true, false, true);
+		return new PrevNextFinishConfig(true, true, false);
 	}
 
 	@Override
 	public StepFormController getStepController(UserRequest ureq, WindowControl wControl, StepsRunContext runContext, Form form) {
-		return new SendMailStepController(ureq, wControl, form, runContext, entry);
+		return new CloseRessourceOptionForm(ureq, wControl, form, runContext);
 	}
 	
-	public class SendMailStepController extends StepFormBasicController {
-		private MailTemplate mailTemplate;
-		private MailTemplateForm templateForm;
-		
-		public SendMailStepController(UserRequest ureq, WindowControl wControl,
-				Form rootForm, StepsRunContext runContext, RepositoryEntry entry) {
-			super(ureq, wControl, rootForm, runContext, LAYOUT_BAREBONE, null);
-			setTranslator(Util.createPackageTranslator(RepositoryService.class, getLocale(), getTranslator()));
-			
-			String courseTitle = "'" + entry.getDisplayname() + "'";
-			mailTemplate = createMailTemplate(
-					translate("wizard.step3.mail.subject", new String[] { courseTitle }),
-					translate("wizard.step3.mail.body",
-					new String[] {
-							courseTitle,
-							getIdentity().getUser().getProperty(UserConstants.FIRSTNAME, null) + " "
-									+ getIdentity().getUser().getProperty(UserConstants.LASTNAME, null)
-					}));
+	public class CloseRessourceOptionForm extends StepFormBasicController {
 
-			templateForm = new MailTemplateForm(ureq, wControl, mailTemplate, false, rootForm);
+		private MultipleSelectionElement checkboxClean;
+
+		public CloseRessourceOptionForm(UserRequest ureq, WindowControl wControl,
+				Form rootForm, StepsRunContext runContext) {
+			super(ureq, wControl, rootForm, runContext, LAYOUT_DEFAULT, null);
+			setTranslator(Util.createPackageTranslator(RepositoryService.class, getLocale(), getTranslator()));
 			initForm(ureq);
-		}
-		
-		private MailTemplate createMailTemplate(String subject, String body) {		
-			return new MailTemplate(subject, body, null) {
-				@Override
-				public void putVariablesInMailContext(VelocityContext context, Identity identity) {
-					// nothing to do
-				}
-			};
 		}
 		
 		@Override
 		protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-			formLayout.add(templateForm.getInitialFormItem());
+			String[] keys = new String[] {"form.clean.catalog", "form.clean.groups"};
+			String[] values = new String[] {translate("form.clean.catalog"), translate("form.clean.groups")};
+			checkboxClean = uifactory.addCheckboxesVertical("form.clean.catalog", null, formLayout, keys, values, 1);
 		}
-
+	
 		@Override
 		protected void doDispose() {
-			//
+		  // nothing to do
 		}
-
+	
 		@Override
 		protected void formOK(UserRequest ureq) {
-			if(templateForm.sendMailSwitchEnabled()) {
-				templateForm.updateTemplateFromForm(mailTemplate);
-				addToRunContext("mailTemplate", mailTemplate);
-			}
+			boolean cleanCatalog = checkboxClean.isSelected(0);
+			boolean cleanGroups = checkboxClean.isSelected(1);
+			addToRunContext("cleanCatalog", new Boolean(cleanCatalog));
+			addToRunContext("cleanGroups", new Boolean(cleanGroups));
 			fireEvent(ureq, StepsEvent.ACTIVATE_NEXT);
 		}
 	}

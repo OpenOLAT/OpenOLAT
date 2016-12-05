@@ -194,7 +194,7 @@ public interface AssessmentManager {
 	public Boolean getNodeFullyAssessed(CourseNode courseNode, Identity identity);
 	
 
-	public AssessmentEntry getAssessmentEntry(CourseNode courseNode, Identity assessedIdentity, String referenceSoftKey);
+	public AssessmentEntry getAssessmentEntry(CourseNode courseNode, Identity assessedIdentity);
 	
 	public AssessmentEntry createAssessmentEntry(CourseNode courseNode, Identity assessedIdentity, ScoreEvaluation scoreEvaluation);
 	

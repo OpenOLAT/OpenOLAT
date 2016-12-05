@@ -81,6 +81,8 @@ public class QTI21DeliveryOptionsController extends FormBasicController implemen
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormTitle("tab.options");
+		setFormContextHelp("Test editor QTI 2.1 in detail#details_testeditor_test_konf_kurs");
+		formLayout.setElementCssClass("o_sel_qti_resource_options");
 
 		limitAttemptsEl = uifactory.addCheckboxesHorizontal("limitAttempts", "qti.form.limit.attempts", formLayout, onKeys, onValues);
 		limitAttemptsEl.addActionListener(FormEvent.ONCLICK);
@@ -99,6 +101,8 @@ public class QTI21DeliveryOptionsController extends FormBasicController implemen
 		}
 		
 		allowAnonymEl = uifactory.addCheckboxesHorizontal("allowAnonym", "qti.form.allow.anonym", formLayout, onKeys, onValues);
+		allowAnonymEl.setHelpText(translate("qti.form.allow.anonym.hint"));
+		allowAnonymEl.setHelpUrlForManualPage("Test editor QTI 2.1 in detail#details_testeditor_test_konf_kurs");
 		if(deliveryOptions.isAllowAnonym()) {
 			allowAnonymEl.select(onKeys[0], true);
 		}
@@ -109,37 +113,46 @@ public class QTI21DeliveryOptionsController extends FormBasicController implemen
 		}
 		
 		showMenuEl = uifactory.addCheckboxesHorizontal("showMenu", "qti.form.menudisplay", formLayout, onKeys, onValues);
+		showMenuEl.setElementCssClass("o_sel_qti_show_menu");
 		if(deliveryOptions.isShowMenu()) {
 			showMenuEl.select(onKeys[0], true);
 		}
 		
 		personalNotesEl = uifactory.addCheckboxesHorizontal("personalNotes", "qti.form.auto.memofield", formLayout, onKeys, onValues);
+		personalNotesEl.setHelpText(translate("qti.form.auto.memofield.hint"));
+		personalNotesEl.setHelpUrlForManualPage("Test editor QTI 2.1 in detail#details_testeditor_test_konf_kurs");
+		personalNotesEl.setElementCssClass("o_sel_qti_personal_notes");
 		if(deliveryOptions.isPersonalNotes()) {
 			personalNotesEl.select(onKeys[0], true);
 		}
 		
 		displayQuestionProgressEl = uifactory.addCheckboxesHorizontal("questionProgress", "qti.form.questionprogress", formLayout, onKeys, onValues);
+		displayQuestionProgressEl.setElementCssClass("o_sel_qti_progress_questions");
 		if(deliveryOptions.isDisplayQuestionProgress()) {
 			displayQuestionProgressEl.select(onKeys[0], true);
 		}
 		
 		displayScoreProgressEl = uifactory.addCheckboxesHorizontal("scoreProgress", "qti.form.scoreprogress", formLayout, onKeys, onValues);
+		displayScoreProgressEl.setElementCssClass("o_sel_qti_progress_score");
 		if(deliveryOptions.isDisplayScoreProgress()) {
 			displayScoreProgressEl.select(onKeys[0], true);
 		}
 		
 		enableSuspendEl = uifactory.addCheckboxesHorizontal("suspend", "qti.form.enablesuspend", formLayout, onKeys, onValues);
+		enableSuspendEl.setElementCssClass("o_sel_qti_enable_suspend");
 		if(deliveryOptions.isEnableSuspend()) {
 			enableSuspendEl.select(onKeys[0], true);
 		}
 		
 		enableCancelEl = uifactory.addCheckboxesHorizontal("cancel", "qti.form.enablecancel", formLayout, onKeys, onValues);
+		enableCancelEl.setElementCssClass("o_sel_qti_enable_cancel");
 		if(deliveryOptions.isEnableCancel()) {
 			enableCancelEl.select(onKeys[0], true);
 		}
 		
 		showResultsOnFinishEl = uifactory.addCheckboxesHorizontal("resultOnFiniish", "qti.form.results.onfinish", formLayout, onKeys, onValues);
 		showResultsOnFinishEl.addActionListener(FormEvent.ONCHANGE);
+		showResultsOnFinishEl.setElementCssClass("o_sel_qti_show_results");
 		if(deliveryOptions.getShowResultsOnFinish() != null && !ShowResultsOnFinish.none.equals(deliveryOptions.getShowResultsOnFinish())) {
 			showResultsOnFinishEl.select(onKeys[0], true);
 		}
@@ -152,6 +165,7 @@ public class QTI21DeliveryOptionsController extends FormBasicController implemen
 		};
 		typeShowResultsOnFinishEl = uifactory.addRadiosVertical("typeResultOnFiniish", "qti.form.summary", formLayout, typeShowResultsOnFinishKeys, typeShowResultsOnFinishValues);
 		typeShowResultsOnFinishEl.setVisible(showResultsOnFinishEl.isAtLeastSelected(1));
+		typeShowResultsOnFinishEl.setElementCssClass("o_sel_qti_show_results_options");
 		if(deliveryOptions.getShowResultsOnFinish() != null && !ShowResultsOnFinish.none.equals(deliveryOptions.getShowResultsOnFinish())) {
 			typeShowResultsOnFinishEl.select(deliveryOptions.getShowResultsOnFinish().name(), true);
 		} else {

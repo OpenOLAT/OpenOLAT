@@ -168,7 +168,7 @@ public class GTAParticipantRevisionAndCorrectionsController extends BasicControl
 			documentsContainer = gtaManager.getRevisedDocumentsContainer(courseEnv, gtaNode, iteration, getIdentity());
 		}
 		uploadRevisionsCtrl = new SubmitDocumentsController(ureq, getWindowControl(), task, documentsDir, documentsContainer, -1,
-				gtaNode, courseEnv, "document");
+				gtaNode, courseEnv, assessedUserCourseEnv.isCourseReadOnly(), null, "document");
 		listenTo(uploadRevisionsCtrl);
 		mainVC.put("uploadRevisions", uploadRevisionsCtrl.getInitialComponent());
 		
@@ -176,6 +176,7 @@ public class GTAParticipantRevisionAndCorrectionsController extends BasicControl
 		submitRevisionButton.setCustomEnabledLinkCSS(uploadRevisionsCtrl.hasUploadDocuments() ? "btn btn-primary" : "btn btn-default");
 		submitRevisionButton.setIconLeftCSS("o_icon o_icon o_icon_submit");
 		submitRevisionButton.setElementCssClass("o_sel_course_gta_submit_revisions");
+		submitRevisionButton.setVisible(!assessedUserCourseEnv.isCourseReadOnly());
 	}
 	
 	private boolean setRevision(UserRequest ureq, String cmpName, int iteration) {

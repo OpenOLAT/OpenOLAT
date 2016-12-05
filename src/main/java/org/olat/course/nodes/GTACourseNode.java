@@ -834,29 +834,30 @@ public class GTACourseNode extends AbstractAccessableCourseNode implements Persi
 
 	@Override
 	public Controller getDetailsEditController(UserRequest ureq, WindowControl wControl,
-			BreadcrumbPanel stackPanel, UserCourseEnvironment userCourseEnvironment) {
-		return new GTAAssessmentDetailsController(ureq, wControl, userCourseEnvironment, this);
+			BreadcrumbPanel stackPanel, UserCourseEnvironment coachCourseEnv, UserCourseEnvironment assessedUsserCourseEnv) {
+		return new GTAAssessmentDetailsController(ureq, wControl, coachCourseEnv, assessedUsserCourseEnv, this);
 	}
 	
 	public GTACoachedGroupListController getCoachedGroupListController(UserRequest ureq, WindowControl wControl,
-			BreadcrumbPanel stackPanel, CourseEnvironment courseEnv, boolean admin, List<BusinessGroup> coachedGroups) {
+			BreadcrumbPanel stackPanel, UserCourseEnvironment coachCourseEnv, boolean admin, List<BusinessGroup> coachedGroups) {
 		
 		List<BusinessGroup> groups;
-		CourseGroupManager gm = courseEnv.getCourseGroupManager();
+		CourseGroupManager gm = coachCourseEnv.getCourseEnvironment().getCourseGroupManager();
 		if(admin) {
 			groups = gm.getAllBusinessGroups();
 		} else {
 			groups = coachedGroups;
 		}
 		groups = CoreSpringFactory.getImpl(GTAManager.class).filterBusinessGroups(groups, this);
-		return new GTACoachedGroupListController(ureq, wControl, stackPanel, courseEnv, this, groups);
+		return new GTACoachedGroupListController(ureq, wControl, stackPanel, coachCourseEnv, this, groups);
 	}
 
 	@Override
 	public List<Controller> createAssessmentTools(UserRequest ureq, WindowControl wControl,
-			TooledStackedPanel stackPanel, CourseEnvironment courseEnv, AssessmentToolOptions options) {
+			TooledStackedPanel stackPanel, UserCourseEnvironment coachCourseEnv, AssessmentToolOptions options) {
 		
 		ModuleConfiguration config =  getModuleConfiguration();
+		CourseEnvironment courseEnv = coachCourseEnv.getCourseEnvironment();
 		List<Controller> tools = new ArrayList<>(2);
 		if(GTAType.group.name().equals(config.getStringValue(GTACourseNode.GTASK_TYPE))
 			&& (config.getBooleanSafe(GTASK_ASSIGNMENT)
@@ -864,12 +865,12 @@ public class GTACourseNode extends AbstractAccessableCourseNode implements Persi
 				|| config.getBooleanSafe(GTASK_REVIEW_AND_CORRECTION)
 				|| config.getBooleanSafe(GTASK_REVISION_PERIOD))) {
 			
-			if(options.getGroup() != null) {
+			if(options.getGroup() != null && !coachCourseEnv.isCourseReadOnly()) {
 				tools.add(new GTAGroupAssessmentToolController(ureq, wControl, courseEnv, options.getGroup(), this));
 			}
 			tools.add(new BulkDownloadToolController(ureq, wControl, courseEnv, options, this));
 		} else if(GTAType.individual.name().equals(config.getStringValue(GTACourseNode.GTASK_TYPE))) {
-			if(config.getBooleanSafe(GTASK_REVIEW_AND_CORRECTION) || config.getBooleanSafe(GTASK_GRADING)){
+			if(!coachCourseEnv.isCourseReadOnly() && (config.getBooleanSafe(GTASK_REVIEW_AND_CORRECTION) || config.getBooleanSafe(GTASK_GRADING))){
 				tools.add(new BulkAssessmentToolController(ureq, wControl, courseEnv, this));
 			}
 			
@@ -900,7 +901,7 @@ public class GTACourseNode extends AbstractAccessableCourseNode implements Persi
 	public AssessmentEntry getUserAssessmentEntry(UserCourseEnvironment userCourseEnv) {
 		AssessmentManager am = userCourseEnv.getCourseEnvironment().getAssessmentManager();
 		Identity mySelf = userCourseEnv.getIdentityEnvironment().getIdentity();
-		return am.getAssessmentEntry(this, mySelf, null);
+		return am.getAssessmentEntry(this, mySelf);
 	}
 
 	@Override

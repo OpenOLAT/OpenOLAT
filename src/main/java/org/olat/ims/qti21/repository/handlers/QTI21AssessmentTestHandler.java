@@ -86,7 +86,6 @@ import org.olat.ims.qti21.ui.AssessmentTestDisplayController;
 import org.olat.ims.qti21.ui.QTI21AssessmentDetailsController;
 import org.olat.ims.qti21.ui.QTI21RuntimeController;
 import org.olat.ims.qti21.ui.editor.AssessmentTestComposerController;
-import org.olat.modules.assessment.manager.AssessmentEntryDAO;
 import org.olat.modules.qpool.model.QItemList;
 import org.olat.repository.ErrorList;
 import org.olat.repository.RepositoryEntry;
@@ -127,8 +126,6 @@ public class QTI21AssessmentTestHandler extends FileHandler {
 	@Autowired
 	private QTI21QPoolServiceProvider qpoolServiceProvider;
 	
-	@Autowired
-	private AssessmentEntryDAO assessmentEntryDAO;
 	@Autowired
 	private AssessmentTestSessionDAO assessmentTestSessionDao;
 
@@ -462,7 +459,6 @@ public class QTI21AssessmentTestHandler extends FileHandler {
 	public boolean cleanupOnDelete(RepositoryEntry entry, OLATResourceable res) {
 		boolean clean = super.cleanupOnDelete(entry, res);
 		assessmentTestSessionDao.deleteAllUserTestSessions(entry);
-		assessmentEntryDAO.deleteEntryForReferenceEntry(entry);
 		return clean;
 	}
 

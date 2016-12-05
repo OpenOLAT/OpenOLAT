@@ -166,15 +166,10 @@ public class PageDAO {
 		  .append(" where section.key=:sectionKey");
 		sb.append(" order by page.pos");
 		
-		TypedQuery<Page> query = dbInstance.getCurrentEntityManager()
+		return dbInstance.getCurrentEntityManager()
 			.createQuery(sb.toString(), Page.class)
-			.setParameter("sectionKey", section.getKey());
-
-		
-		/*SectionImpl refSection = dbInstance.getCurrentEntityManager()
-				.getReference(SectionImpl.class, section.getKey());
-		return refSection.getPages();*/
-		return query.getResultList();
+			.setParameter("sectionKey", section.getKey())
+			.getResultList();
 	}
 	
 	public List<Page> getOwnedPages(IdentityRef owner, String searchString) {
@@ -374,6 +369,7 @@ public class PageDAO {
 		body.getParts().size();
 		body.getParts().remove(aPart);
 		dbInstance.getCurrentEntityManager().remove(aPart);
+		((PageBodyImpl)body).setLastModified(new Date());
 		dbInstance.getCurrentEntityManager().merge(body);
 	}
 	
@@ -386,6 +382,7 @@ public class PageDAO {
 		} else if(index < 0) {
 			body.getParts().add(0, part);
 		}
+		((PageBodyImpl)body).setLastModified(new Date());
 		dbInstance.getCurrentEntityManager().merge(body);
 	}
 	
@@ -395,6 +392,7 @@ public class PageDAO {
 		if(index >= 0 && index + 1 < body.getParts().size()) {
 			PagePart reloadedPart = body.getParts().remove(index);
 			body.getParts().add(index + 1, reloadedPart);
+			((PageBodyImpl)body).setLastModified(new Date());
 			dbInstance.getCurrentEntityManager().merge(body);
 		}
 	}
@@ -414,6 +412,7 @@ public class PageDAO {
 	}
 	
 	public PagePart merge(PagePart part) {
+		((AbstractPart)part).setLastModified(new Date());
 		return dbInstance.getCurrentEntityManager().merge(part);
 	}
 	

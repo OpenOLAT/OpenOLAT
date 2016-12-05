@@ -65,8 +65,22 @@ public class BinderPage {
 	}
 	
 	public BinderPage assertOnPageInToc(String title) {
-		By sectionTitleBy = By.xpath("//a[contains(@class,'o_pf_open_entry')]/span[contains(text(),'" + title + "')]");
-		OOGraphene.waitElement(sectionTitleBy, 5, browser);
+		By pageTitleBy = By.xpath("//a[contains(@class,'o_pf_open_entry')]/span[contains(text(),'" + title + "')]");
+		OOGraphene.waitElement(pageTitleBy, 5, browser);
+		return this;
+	}
+	
+	/**
+	 * Make sure the table of content is loaded. The method
+	 * check if the number of pages with this title is zero.
+	 * 
+	 * @param title
+	 * @return
+	 */
+	public BinderPage assertOnPageNotInToc(String title) {
+		By pageTitleBy = By.xpath("//a[contains(@class,'o_pf_open_entry')]/span[contains(text(),'" + title + "')]");
+		List<WebElement> pageEls = browser.findElements(pageTitleBy);
+		Assert.assertTrue(pageEls.isEmpty());
 		return this;
 	}
 	
@@ -97,6 +111,42 @@ public class BinderPage {
 		By assignmentTitleBy = By.xpath("//h4[i[contains(@class,'o_icon_assignment')]][contains(text(),'" + title + "')]");
 		OOGraphene.waitElement(assignmentTitleBy, 5, browser);
 		return this;
+	}
+	
+	public BindersPage moveBinderToTrash() {
+		By deleteBy = By.xpath("//li[contains(@class,'o_tool')]/a[contains(@onclick,'delete.binder')]");
+		OOGraphene.waitElement(deleteBy, 5, browser);
+		browser.findElement(deleteBy).click();
+		OOGraphene.waitBusy(browser);
+		
+		//confirm check box
+		By confirmBoxBy = By.cssSelector("div.modal-body input[type='checkbox']");
+		WebElement confirmBoxEl = browser.findElement(confirmBoxBy);
+		OOGraphene.check(confirmBoxEl, Boolean.TRUE);
+		
+		By deleteButtonBy = By.cssSelector("div.modal-body div.o_button_group button.btn.btn-primary");
+		browser.findElement(deleteButtonBy).click();
+		OOGraphene.waitAndCloseBlueMessageWindow(browser);
+		return new BindersPage(browser);
+	}
+	
+	public BindersPage deleteBinder() {
+		By deleteBy = By.xpath("//li[contains(@class,'o_tool')]/a[contains(@onclick,'delete.binder')]");
+		OOGraphene.waitElement(deleteBy, 5, browser);
+		browser.findElement(deleteBy).click();
+		OOGraphene.waitBusy(browser);
+		
+		//confirm check box
+		By confirmBoxBy = By.cssSelector("div.modal-body input[type='checkbox']");
+		List<WebElement> confirmBoxEls = browser.findElements(confirmBoxBy);
+		for(WebElement confirmBoxEl:confirmBoxEls) {
+			OOGraphene.check(confirmBoxEl, Boolean.TRUE);
+		}
+		
+		By deleteButtonBy = By.cssSelector("div.modal-body div.o_button_group button.btn.btn-primary");
+		browser.findElement(deleteButtonBy).click();
+		OOGraphene.waitAndCloseBlueMessageWindow(browser);
+		return new BindersPage(browser);
 	}
 	
 	/**
@@ -258,7 +308,7 @@ public class BinderPage {
 	}
 	
 	public EntryPage pickAssignment(String assignmentTitle) {
-		By assignmentButton = By.xpath("//div[contains(@class,'o_portfolio_assignments')][div/h4[contains(text(),'" + assignmentTitle + "')]]//a[contains(@class,'btn')]");
+		By assignmentButton = By.xpath("//div[contains(@class,'o_assignment_2_instantiate ')]/a[span[contains(text(),'" + assignmentTitle + "')]]");
 		browser.findElement(assignmentButton).click();
 		OOGraphene.waitBusy(browser);
 		assertOnPage(assignmentTitle);
@@ -295,7 +345,7 @@ public class BinderPage {
 	/**
 	 * Yes in a dialog box controller.
 	 */
-	private void confirm() {
+	protected void confirm() {
 		By confirmButtonBy = By.xpath("//div[contains(@class,'modal-dialo')]//div[contains(@class,'modal-footer')]/a[contains(@onclick,'link_0')]");
 		OOGraphene.waitElement(confirmButtonBy, 5, browser);
 		OOGraphene.waitScrollTop(browser);

@@ -123,7 +123,7 @@ public class ViteroCourseNode extends AbstractAccessableCourseNode {
 			Long resourceId = userCourseEnv.getCourseEnvironment().getCourseResourceableId();
 			OLATResourceable ores = OresHelper.createOLATResourceableInstance(CourseModule.class, resourceId);
 			String courseTitle = userCourseEnv.getCourseEnvironment().getCourseTitle();
-			runCtr = new ViteroBookingsRunController(ureq, wControl, null, ores, getIdent(), courseTitle, moderator);
+			runCtr = new ViteroBookingsRunController(ureq, wControl, null, ores, getIdent(), courseTitle, moderator, userCourseEnv.isCourseReadOnly());
 		}
 		Controller controller = TitledWrapperHelper.getWrapper(ureq, wControl, runCtr, this, "o_vitero_icon");
 		return new NodeRunConstructionResult(controller);

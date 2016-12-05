@@ -155,6 +155,9 @@ public abstract class AbstractMemberListController extends FormBasicController i
 	private final boolean isLastVisitVisible;
 	private final boolean isAdministrativeUser;
 	private final boolean chatEnabled;
+	
+	private final boolean readOnly;
+	private boolean overrideManaged = false;
 	private final boolean globallyManaged;
 	
 	@Autowired
@@ -183,27 +186,28 @@ public abstract class AbstractMemberListController extends FormBasicController i
 	private UserSessionManager sessionManager;
 
 	public AbstractMemberListController(UserRequest ureq, WindowControl wControl, RepositoryEntry repoEntry,
-			String page, TooledStackedPanel stackPanel) {
-		this(ureq, wControl, repoEntry, null, page, stackPanel, Util.createPackageTranslator(AbstractMemberListController.class, ureq.getLocale()));
+			String page,boolean readOnly,  TooledStackedPanel stackPanel) {
+		this(ureq, wControl, repoEntry, null, page, readOnly, stackPanel, Util.createPackageTranslator(AbstractMemberListController.class, ureq.getLocale()));
 	}
 	
 	public AbstractMemberListController(UserRequest ureq, WindowControl wControl, BusinessGroup group,
-			String page, TooledStackedPanel stackPanel) {
-		this(ureq, wControl, null, group, page, stackPanel, Util.createPackageTranslator(AbstractMemberListController.class, ureq.getLocale()));
+			String page, boolean readOnly, TooledStackedPanel stackPanel) {
+		this(ureq, wControl, null, group, page, readOnly, stackPanel, Util.createPackageTranslator(AbstractMemberListController.class, ureq.getLocale()));
 	}
 	
 	protected AbstractMemberListController(UserRequest ureq, WindowControl wControl, RepositoryEntry repoEntry, BusinessGroup group,
-			String page, TooledStackedPanel stackPanel, Translator translator) {
+			String page, boolean readOnly, TooledStackedPanel stackPanel, Translator translator) {
 		super(ureq, wControl, page, Util.createPackageTranslator(UserPropertyHandler.class, ureq.getLocale(), translator));
 		
 		this.businessGroup = group;
 		this.repoEntry = repoEntry;
 		this.toolbarPanel = stackPanel;
+		this.readOnly = readOnly;
 
 		globallyManaged = calcGloballyManaged();
 		
 		Roles roles = ureq.getUserSession().getRoles();
-		chatEnabled = imModule.isEnabled() && imModule.isPrivateEnabled();
+		chatEnabled = imModule.isEnabled() && imModule.isPrivateEnabled() && !readOnly;
 		isAdministrativeUser = securityModule.isUserAllowedAdminProps(roles);
 		isLastVisitVisible = securityModule.isUserLastVisitVisible(roles);
 		userPropertyHandlers = userManager.getUserPropertyHandlersFor(USER_PROPS_ID, isAdministrativeUser);
@@ -211,6 +215,14 @@ public abstract class AbstractMemberListController extends FormBasicController i
 		initForm(ureq);
 	}
 	
+	public void overrideManaged(UserRequest ureq, boolean override) {
+		if(ureq.getUserSession().getRoles().isOLATAdmin()) {
+			overrideManaged = override;
+			editButton.setVisible((!globallyManaged || overrideManaged) && !readOnly);
+			removeButton.setVisible((!globallyManaged || overrideManaged) && !readOnly);
+			flc.setDirty(true);
+		}
+	}
 	
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
@@ -234,13 +246,12 @@ public abstract class AbstractMemberListController extends FormBasicController i
 			membersTable.setSortSettings(options);
 		}
 
-		if(!globallyManaged) {
-			editButton = uifactory.addFormLink("edit.members", formLayout, Link.BUTTON);
-		}
+		editButton = uifactory.addFormLink("edit.members", formLayout, Link.BUTTON);
+		editButton.setVisible((!globallyManaged || overrideManaged) && !readOnly);
 		mailButton = uifactory.addFormLink("table.header.mail", formLayout, Link.BUTTON);
-		if(!globallyManaged) {
-			removeButton = uifactory.addFormLink("table.header.remove", formLayout, Link.BUTTON);
-		}
+		mailButton.setVisible(!readOnly);
+		removeButton = uifactory.addFormLink("table.header.remove", formLayout, Link.BUTTON);
+		removeButton.setVisible((!globallyManaged || overrideManaged) && !readOnly);
 	}
 	
 	private boolean calcGloballyManaged() {
@@ -496,7 +507,7 @@ public abstract class AbstractMemberListController extends FormBasicController i
 		if(editSingleMemberCtrl != null) return;
 		
 		Identity identity = securityManager.loadIdentityByKey(member.getIdentityKey());
-		editSingleMemberCtrl = new EditSingleMembershipController(ureq, getWindowControl(), identity, repoEntry, businessGroup, false);
+		editSingleMemberCtrl = new EditSingleMembershipController(ureq, getWindowControl(), identity, repoEntry, businessGroup, false, overrideManaged);
 		listenTo(editSingleMemberCtrl);
 		cmc = new CloseableModalController(getWindowControl(), translate("close"), editSingleMemberCtrl.getInitialComponent(),
 				true, translate("edit.member"));
@@ -511,12 +522,12 @@ public abstract class AbstractMemberListController extends FormBasicController i
 			List<Long> identityKeys = getMemberKeys(members);
 			List<Identity> identities = securityManager.loadIdentityByKeys(identityKeys);
 			if(identities.size() == 1) {
-				editSingleMemberCtrl = new EditSingleMembershipController(ureq, getWindowControl(), identities.get(0), repoEntry, businessGroup, false);
+				editSingleMemberCtrl = new EditSingleMembershipController(ureq, getWindowControl(), identities.get(0), repoEntry, businessGroup, false, overrideManaged);
 				listenTo(editSingleMemberCtrl);
 				cmc = new CloseableModalController(getWindowControl(), translate("close"), editSingleMemberCtrl.getInitialComponent(),
 						true, translate("edit.member"));
 			} else {
-				editMembersCtrl = new EditMembershipController(ureq, getWindowControl(), identities, repoEntry, businessGroup);
+				editMembersCtrl = new EditMembershipController(ureq, getWindowControl(), identities, repoEntry, businessGroup, overrideManaged);
 				listenTo(editMembersCtrl);
 				cmc = new CloseableModalController(getWindowControl(), translate("close"), editMembersCtrl.getInitialComponent(),
 						true, translate("edit.member"));
@@ -1080,13 +1091,15 @@ public abstract class AbstractMemberListController extends FormBasicController i
 			
 			links.add("-");
 			
-			if(row.getMembership().isGroupWaiting()) {
+			if(row.getMembership().isGroupWaiting() && !readOnly) {
 				addLink("table.header.graduate", TABLE_ACTION_GRADUATE, "o_icon o_icon_graduate", links);
 			}
 
-			addLink("edit.member", TABLE_ACTION_EDIT, "o_icon o_icon_edit", links);
+			if(!readOnly) {
+				addLink("edit.member", TABLE_ACTION_EDIT, "o_icon o_icon_edit", links);
+			}
 			
-			if(!globallyManaged) {
+			if(!globallyManaged || overrideManaged) {
 				addLink("table.header.remove", TABLE_ACTION_REMOVE, "o_icon o_icon_remove", links);
 			}
 

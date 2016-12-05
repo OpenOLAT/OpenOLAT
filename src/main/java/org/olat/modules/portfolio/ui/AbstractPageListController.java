@@ -331,9 +331,12 @@ implements Activateable2, TooledController, FlexiTableComponentDelegate {
 		PortfolioElementRow row = new PortfolioElementRow(assignment, section, index);
 		if(secCallback.canInstantiateAssignment()) {
 			if(assignment.getAssignmentStatus() == AssignmentStatus.notStarted) {
-				FormLink startLink = uifactory.addFormLink("create_assign_" + (++counter), "start.assignment", "create.start.assignment", null, flc, Link.BUTTON);
+				String title = assignment.getTitle();
+				FormLink startLink = uifactory.addFormLink("create_assign_" + (++counter), "start.assignment", title, null, flc, Link.NONTRANSLATED);
 				startLink.setUserObject(row);
-				startLink.setPrimary(true);
+				startLink.setIconLeftCSS("o_icon o_icon_assignment o_icon-fw");
+			
+				startLink.getComponent().setTitle(translate("start.assignment.hint"));
 				row.setInstantiateAssignmentLink(startLink);
 			}
 		} else if(secCallback.canNewAssignment()) {
@@ -501,10 +504,13 @@ implements Activateable2, TooledController, FlexiTableComponentDelegate {
 			if(event == Event.CHANGED_EVENT) {
 				loadModel(ureq, null);
 				fireEvent(ureq, Event.CHANGED_EVENT);
-			} else if(event instanceof PageRemovedEvent || event instanceof PageDeletedEvent) {
+			} else if(event instanceof PageRemovedEvent) {
 				loadModel(ureq, null);
 				stackPanel.popUpToController(this);
 				fireEvent(ureq, Event.CHANGED_EVENT);
+			} else if(event instanceof PageDeletedEvent) {
+				loadModel(ureq, null);
+				fireEvent(ureq, event);
 			}
 		} else if(commentsCtrl == source) {
 			if(event == Event.CHANGED_EVENT || "comment_count_changed".equals(event.getCommand())) {

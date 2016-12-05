@@ -1185,7 +1185,7 @@ public class CourseTest {
 		navBar.openCourse(courseTitle);
 		
 		String calendarNodeTitle = "iCal-1";
-		//create a course element of type CP with the CP that we create above
+		//create a course element of type calendar
 		CourseEditorPageFragment courseEditor = CoursePageFragment.getCourse(browser)
 			.edit();
 		courseEditor
@@ -1197,7 +1197,7 @@ public class CourseTest {
 			.publish()
 			.quickPublish();
 		
-		//open the course and see the CP
+		//open the course and see the calendar
 		CoursePageFragment course = courseEditor
 			.clickToolbarBack();
 		course
@@ -1218,7 +1218,7 @@ public class CourseTest {
 			.setAllDay(false)
 			.setBeginEnd(13, 15)
 			.save()
-			.configureModifyOneOccurence();
+			.confirmModifyOneOccurence();
 		
 		// check
 		calendar
@@ -1231,7 +1231,7 @@ public class CourseTest {
 			.edit()
 			.setDescription("Eventoki", null, null)
 			.save()
-			.configureModifyAllOccurences();
+			.confirmModifyAllOccurences();
 		// check
 		calendar
 			.assertOnEvents("Eventoki", 3)
@@ -1242,7 +1242,7 @@ public class CourseTest {
 			.openDetailsOccurence("Eventoki", 10)
 			.edit()
 			.delete()
-			.configureDeleteOneOccurence();
+			.confirmDeleteOneOccurence();
 		// check
 		calendar
 			.assertOnEvents("Eventoki", 2)
@@ -1253,13 +1253,90 @@ public class CourseTest {
 			.openDetailsOccurence("Eventoki", 3)
 			.edit()
 			.delete()
-			.configureDeleteAllOccurences();
+			.confirmDeleteAllOccurences();
 		
 		OOGraphene.waitingALittleBit();
 		calendar
 			.assertZeroEvent();
 	}
-
+	
+	/**
+	 * This is a variant of the test above based on the
+	 * feedback of our beta-testerin.
+	 * 
+	 * @param loginPage
+	 * @throws IOException
+	 * @throws URISyntaxException
+	 */
+	@Test
+	@RunAsClient
+	public void courseWithCalendar_alt(@InitialPage LoginPage loginPage)
+	throws IOException, URISyntaxException {
+		
+		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
+		loginPage.loginAs(author.getLogin(), author.getPassword());
+		
+		//create a course
+		String courseTitle = "Course-iCal-" + UUID.randomUUID();
+		navBar
+			.openAuthoringEnvironment()
+			.createCourse(courseTitle)
+			.clickToolbarBack();
+		
+		navBar.openCourse(courseTitle);
+		
+		// activate the calendar options
+		CoursePageFragment course = CoursePageFragment.getCourse(browser);
+		course
+			.options()
+			.calendar(Boolean.TRUE)
+			.save()
+			.clickToolbarBack();
+		
+		String calendarNodeTitle = "iCal-2";
+		//create a course element of type calendar
+		CourseEditorPageFragment courseEditor = CoursePageFragment.getCourse(browser)
+			.edit();
+		courseEditor
+			.createNode("cal")
+			.nodeTitle(calendarNodeTitle);
+		
+		//publish the course
+		course = courseEditor
+			.autoPublish();
+		//open the course and see the CP
+		course
+			.clickTree()
+			.selectWithTitle(calendarNodeTitle);
+		
+		// create a recurring event
+		CalendarPage calendar = new CalendarPage(browser);
+		calendar
+			.addEvent(2)
+			.setDescription("Repeat", "Loop", "Foreach")
+			.setAllDay(false)
+			.setBeginEnd(14, 18)
+			.setRecurringEvent(KalendarEvent.WEEKLY, 28)
+			.save()
+			.assertOnEvents("Repeat", 4);
+		
+		//pick an occurence which is not the first and modify it
+		calendar
+			.openDetailsOccurence("Repeat", 16)
+			.edit()
+			.setBeginEnd(15, 18)
+			.save()
+			.confirmModifyAllOccurences()
+			.assertOnEventsAt("Repeat", 4, 15);
+		
+		// delete futur event of the same event as above
+		calendar
+			.openDetailsOccurence("Repeat", 16)
+			.edit()
+			.delete()
+			.confirmDeleteFuturOccurences()
+			.assertOnEventsAt("Repeat", 2, 15);
+	}
 	
 	/**
 	 * An author creates a course, make it visible for

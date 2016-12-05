@@ -226,30 +226,34 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements Pe
 
 	@Override
 	public List<Controller> createAssessmentTools(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
-			CourseEnvironment courseEnv, AssessmentToolOptions options) {
+			UserCourseEnvironment coachCourseEnv, AssessmentToolOptions options) {
 		List<Controller> tools = new ArrayList<>();
+		
+		CourseEnvironment courseEnv = coachCourseEnv.getCourseEnvironment();
 		
 		RepositoryEntry qtiTestEntry = getReferencedRepositoryEntry();
 		if(ImsQTI21Resource.TYPE_NAME.equals(qtiTestEntry.getOlatResource().getResourceableTypeName())) {
 			tools.add(new QTI21StatisticsToolController(ureq, wControl, stackPanel, courseEnv, options, this));
-			RepositoryEntry courseEntry = courseEnv.getCourseGroupManager().getCourseEntry();
-			QTI21Service qtiService = CoreSpringFactory.getImpl(QTI21Service.class);
-			boolean isRunningSessions = qtiService
-					.isRunningAssessmentTestSession(courseEntry, getIdent(), qtiTestEntry);
-			if(isRunningSessions) {
-				tools.add(new QTI21RetrieveTestsToolController(ureq, wControl, courseEnv, options, this));
+			if(!coachCourseEnv.isCourseReadOnly()) {
+				RepositoryEntry courseEntry = courseEnv.getCourseGroupManager().getCourseEntry();
+				QTI21Service qtiService = CoreSpringFactory.getImpl(QTI21Service.class);
+				boolean isRunningSessions = qtiService
+						.isRunningAssessmentTestSession(courseEntry, getIdent(), qtiTestEntry);
+				if(isRunningSessions) {
+					tools.add(new QTI21RetrieveTestsToolController(ureq, wControl, courseEnv, options, this));
+				}
+				if(options.isAdmin()) {
+					tools.add(new QTI21ResetToolController(ureq, wControl, courseEnv, options, this));
+				}
+				if(qtiService.needManualCorrection(qtiTestEntry)) {
+					tools.add(new QTI21CorrectionToolController(ureq, wControl, courseEnv, options, this));
+				}
 			}
-			if(options.isAdmin()) {
-				tools.add(new QTI21ResetToolController(ureq, wControl, courseEnv, options, this));
-			}
-			if(qtiService.needManualCorrection(qtiTestEntry)) {
-				tools.add(new QTI21CorrectionToolController(ureq, wControl, courseEnv, options, this));
-			}
-			tools.add(new QTI21ExportResultsReportController(ureq, wControl, stackPanel, courseEnv, options, this));
+			tools.add(new QTI21ExportResultsReportController(ureq, wControl, courseEnv, options, this));
 
 		} else {
 			tools.add(new QTI12StatisticsToolController(ureq, wControl, stackPanel, courseEnv, options, this));
-			if(options.getGroup() == null && options.getIdentities() != null && options.getIdentities().size() > 0) {
+			if(!coachCourseEnv.isCourseReadOnly() && options.getGroup() == null && options.getIdentities() != null && options.getIdentities().size() > 0) {
 				for(Identity assessedIdentity:options.getIdentities()) {
 					if(isQTI12TestRunning(assessedIdentity, courseEnv)) {
 						tools.add(new QTI12PullTestsToolController(ureq, wControl, courseEnv, options, this));
@@ -257,7 +261,7 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements Pe
 					}
 				}
 			}
-			tools.add(new QTI12ExportResultsReportController(ureq, wControl, stackPanel, courseEnv, options, this));
+			tools.add(new QTI12ExportResultsReportController(ureq, wControl, courseEnv, options, this));
 		}
 		return tools;
 	}
@@ -366,7 +370,7 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements Pe
 		// read score from properties save score, passed and attempts information
 		AssessmentManager am = userCourseEnv.getCourseEnvironment().getAssessmentManager();
 		Identity mySelf = userCourseEnv.getIdentityEnvironment().getIdentity();
-		AssessmentEntry entry = am.getAssessmentEntry(this, mySelf, getRepositoryEntrySoftKey());
+		AssessmentEntry entry = am.getAssessmentEntry(this, mySelf);
 		
 		Boolean passed = null;
 		Float score = null;		
@@ -405,7 +409,7 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements Pe
 		AssessmentManager am = userCourseEnv.getCourseEnvironment().getAssessmentManager();
 		Identity mySelf = userCourseEnv.getIdentityEnvironment().getIdentity();
 		if(getRepositoryEntrySoftKey() != null) {
-			return am.getAssessmentEntry(this, mySelf, getRepositoryEntrySoftKey());
+			return am.getAssessmentEntry(this, mySelf);
 		}
 		return null;
 	}
@@ -741,21 +745,22 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements Pe
 	 *      org.olat.course.run.userview.UserCourseEnvironment)
 	 */
 	@Override
-	public Controller getDetailsEditController(UserRequest ureq, WindowControl wControl, BreadcrumbPanel stackPanel, UserCourseEnvironment userCourseEnvironment) {
+	public Controller getDetailsEditController(UserRequest ureq, WindowControl wControl, BreadcrumbPanel stackPanel,
+			UserCourseEnvironment coachCourseEnv, UserCourseEnvironment assessedUserCourseEnv) {
 		Controller detailsCtrl = null;
 		RepositoryEntry ref = getReferencedRepositoryEntry();
 		if(ref != null) {
 			OLATResource resource = ref.getOlatResource();
-			Long courseResourceableId = userCourseEnvironment.getCourseEnvironment().getCourseResourceableId();
-			Identity assessedIdentity = userCourseEnvironment.getIdentityEnvironment().getIdentity();
+			Long courseResourceableId = assessedUserCourseEnv.getCourseEnvironment().getCourseResourceableId();
+			Identity assessedIdentity = assessedUserCourseEnv.getIdentityEnvironment().getIdentity();
 			
 			if(ImsQTI21Resource.TYPE_NAME.equals(resource.getResourceableTypeName())) {
-				RepositoryEntry courseEntry = userCourseEnvironment.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
-				detailsCtrl = new QTI21AssessmentDetailsController(ureq, wControl, courseEntry, this, userCourseEnvironment);
+				RepositoryEntry courseEntry = assessedUserCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
+				detailsCtrl = new QTI21AssessmentDetailsController(ureq, wControl, courseEntry, this, coachCourseEnv, assessedUserCourseEnv);
 			} else if(OnyxModule.isOnyxTest(ref.getOlatResource())) {
 				detailsCtrl =  new QTIResultDetailsController(courseResourceableId, getIdent(), assessedIdentity, ref, AssessmentInstance.QMD_ENTRY_TYPE_ASSESS, ureq, wControl);
 			} else {
-				detailsCtrl = new QTI12ResultDetailsController(ureq, wControl, courseResourceableId, getIdent(), assessedIdentity, ref, AssessmentInstance.QMD_ENTRY_TYPE_ASSESS);
+				detailsCtrl = new QTI12ResultDetailsController(ureq, wControl, courseResourceableId, getIdent(), coachCourseEnv, assessedIdentity, ref, AssessmentInstance.QMD_ENTRY_TYPE_ASSESS);
 			}	
 		}
 		return detailsCtrl;

@@ -57,6 +57,7 @@ import org.olat.course.nodes.AssessableCourseNode;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.CourseNodeFactory;
 import org.olat.course.run.environment.CourseEnvironment;
+import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
 import org.olat.modules.assessment.ui.AssessmentToolContainer;
@@ -82,6 +83,7 @@ public class AssessedBusinessGroupCourseNodeListController extends FormBasicCont
 	
 	private final CourseNode courseNode;
 	private final RepositoryEntry courseEntry;
+	private final UserCourseEnvironment coachCourseEnv;
 	private final AssessmentToolContainer toolContainer;
 	private final AssessmentToolSecurityCallback assessmentCallback;
 	
@@ -91,11 +93,12 @@ public class AssessedBusinessGroupCourseNodeListController extends FormBasicCont
 	private AssessmentToolManager assessmentToolManager;
 	
 	public AssessedBusinessGroupCourseNodeListController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
-			RepositoryEntry courseEntry, CourseNode courseNode, AssessmentToolContainer toolContainer,
-			AssessmentToolSecurityCallback assessmentCallback) {
+			RepositoryEntry courseEntry, CourseNode courseNode, UserCourseEnvironment coachCourseEnv,
+			AssessmentToolContainer toolContainer, AssessmentToolSecurityCallback assessmentCallback) {
 		super(ureq, wControl, "groups", Util.createPackageTranslator(AssessmentModule.class, ureq.getLocale()));
 		this.courseNode = courseNode;
 		this.courseEntry = courseEntry;
+		this.coachCourseEnv = coachCourseEnv;
 		this.assessmentCallback = assessmentCallback;
 		this.toolContainer = toolContainer;
 		this.stackPanel = stackPanel;
@@ -232,7 +235,7 @@ public class AssessedBusinessGroupCourseNodeListController extends FormBasicCont
 		WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ores, null, getWindowControl());
 		addToHistory(ureq, bwControl);
 		AssessmentIdentityListCourseTreeController treeCtrl = new AssessmentIdentityListCourseTreeController(ureq, bwControl, stackPanel,
-				courseEntry, businessGroup, toolContainer, assessmentCallback);
+				courseEntry, businessGroup, coachCourseEnv, toolContainer, assessmentCallback);
 		listenTo(treeCtrl);
 
 		stackPanel.pushController(businessGroup.getName(), treeCtrl);

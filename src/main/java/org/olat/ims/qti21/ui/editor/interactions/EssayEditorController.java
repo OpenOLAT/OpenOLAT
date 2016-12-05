@@ -71,7 +71,7 @@ public class EssayEditorController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		setFormContextHelp("Test and Questionnaire Editor in Detail#details_testeditor_fragetypen_ft");
+		setFormContextHelp("Test editor QTI 2.1 in detail#details_testeditor_fragetypen_freetext");
 		
 		titleEl = uifactory.addTextElement("title", "form.imd.title", -1, itemBuilder.getTitle(), formLayout);
 		titleEl.setMandatory(true);
@@ -80,7 +80,7 @@ public class EssayEditorController extends FormBasicController {
 		VFSContainer itemContainer = (VFSContainer)rootContainer.resolve(relativePath);
 
 		String description = itemBuilder.getQuestion();
-		textEl = uifactory.addRichTextElementForQTI21("desc", "form.imd.descr", description, 8, -1, itemContainer,
+		textEl = uifactory.addRichTextElementForQTI21("desc", "form.imd.descr", description, 12, -1, itemContainer,
 				formLayout, ureq.getUserSession(), getWindowControl());
 		
 		String placeholder = itemBuilder.getPlaceholder();
@@ -90,6 +90,7 @@ public class EssayEditorController extends FormBasicController {
 		String expectedLength = getValue(itemBuilder.getExpectedLength());
 		lengthEl = uifactory.addTextElement("cols", "essay.expectedLength", -1, expectedLength, formLayout);
 		lengthEl.setEnabled(!restrictedEdit);
+		lengthEl.setVisible(StringHelper.containsNonWhitespace(expectedLength));
 		String expectedLines = getValue(itemBuilder.getExpectedLines());
 		heightEl = uifactory.addTextElement("rows", "essay.rows", -1, expectedLines, formLayout);
 		heightEl.setEnabled(!restrictedEdit);

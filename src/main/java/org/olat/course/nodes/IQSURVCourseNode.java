@@ -173,8 +173,9 @@ public class IQSURVCourseNode extends AbstractAccessableCourseNode implements QT
 	
 	@Override
 	public List<Controller> createAssessmentTools(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
-			CourseEnvironment courseEnv, AssessmentToolOptions options) {
-		List<Controller> tools = new ArrayList<>();
+			UserCourseEnvironment coachCourseEnv, AssessmentToolOptions options) {
+		List<Controller> tools = new ArrayList<>(2);
+		CourseEnvironment courseEnv = coachCourseEnv.getCourseEnvironment();
 		tools.add(new QTI12StatisticsToolController(ureq, wControl, stackPanel, courseEnv, options, this));
 		return tools;
 	}

@@ -46,6 +46,7 @@ import org.olat.core.util.tree.TreeHelper;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.groupsandrights.GroupsAndRightsController;
+import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryManagedFlag;
 import org.olat.resource.accesscontrol.ACService;
@@ -81,6 +82,7 @@ public class MembersManagementMainController extends MainLayoutBasicController  
 	
 	private boolean membersDirty;
 	private RepositoryEntry repoEntry;
+	private final UserCourseEnvironment coachCourseEnv;
 	
 	private final boolean entryAdmin, groupManagementRight, memberManagementRight;
 	
@@ -90,13 +92,15 @@ public class MembersManagementMainController extends MainLayoutBasicController  
 	private AccessControlModule acModule;
 
 	public MembersManagementMainController(UserRequest ureq, WindowControl wControl, TooledStackedPanel toolbarPanel,
-			RepositoryEntry re, boolean entryAdmin, boolean groupManagementRight, boolean memberManagementRight) {
+			RepositoryEntry re, UserCourseEnvironment coachCourseEnv, boolean entryAdmin,
+			boolean groupManagementRight, boolean memberManagementRight) {
 		super(ureq, wControl);
 		this.repoEntry = re;
 		this.toolbarPanel = toolbarPanel;
 		this.entryAdmin = entryAdmin;
 		this.groupManagementRight = groupManagementRight;
 		this.memberManagementRight = memberManagementRight;
+		this.coachCourseEnv = coachCourseEnv;
 
 		//logging
 		getUserActivityLogger().setStickyActionType(ActionType.admin);
@@ -212,7 +216,7 @@ public class MembersManagementMainController extends MainLayoutBasicController  
 		if(CMD_MEMBERS.equals(cmd)) {
 			if(entryAdmin || memberManagementRight) {
 				if(membersOverviewCtrl == null) {
-					membersOverviewCtrl = new MembersOverviewController(ureq, bwControl, toolbarPanel, repoEntry);
+					membersOverviewCtrl = new MembersOverviewController(ureq, bwControl, toolbarPanel, repoEntry, coachCourseEnv);
 					listenTo(membersOverviewCtrl);
 				} else if(membersDirty) {
 					membersOverviewCtrl.reloadMembers();
@@ -223,7 +227,7 @@ public class MembersManagementMainController extends MainLayoutBasicController  
 		} else if(CMD_GROUPS.equals(cmd)) {
 			if(entryAdmin || memberManagementRight || groupManagementRight) {
 				if(groupsCtrl == null) {
-					groupsCtrl = new CourseBusinessGroupListController(ureq, bwControl, repoEntry, entryAdmin || groupManagementRight);
+					groupsCtrl = new CourseBusinessGroupListController(ureq, bwControl, repoEntry, entryAdmin || groupManagementRight, coachCourseEnv.isCourseReadOnly());
 					listenTo(groupsCtrl);
 				}
 				groupsCtrl.reloadModel();
@@ -242,7 +246,7 @@ public class MembersManagementMainController extends MainLayoutBasicController  
 		} else if(CMD_RIGHTS.equals(cmd)) {
 			if(entryAdmin) {
 				if(rightsController == null) {
-					rightsController = new GroupsAndRightsController(ureq, bwControl, repoEntry);
+					rightsController = new GroupsAndRightsController(ureq, bwControl, repoEntry, coachCourseEnv.isCourseReadOnly());
 					listenTo(rightsController);
 				}
 				mainVC.put("content", rightsController.getInitialComponent());

@@ -38,11 +38,14 @@ public class ImportMember_3_ChoosePermissionStep extends BasicStep {
 
 	private final BusinessGroup group;
 	private final RepositoryEntry repoEntry;
+	private final boolean overrideManaged;
 	
-	public ImportMember_3_ChoosePermissionStep(UserRequest ureq, RepositoryEntry repoEntry, BusinessGroup group) {
+	public ImportMember_3_ChoosePermissionStep(UserRequest ureq, RepositoryEntry repoEntry, BusinessGroup group,
+			boolean overrideManaged) {
 		super(ureq);
 		this.group = group;
 		this.repoEntry = repoEntry;
+		this.overrideManaged = overrideManaged;
 		setNextStep(new ImportMember_4_MailStep(ureq, repoEntry));
 		setI18nTitleAndDescr("import.permission.title", "import.permission.title");
 	}
@@ -55,7 +58,7 @@ public class ImportMember_3_ChoosePermissionStep extends BasicStep {
 	@Override
 	public StepFormController getStepController(UserRequest ureq, WindowControl wControl, StepsRunContext runContext, Form form) {
 		ImportMemberPermissionChoiceController controller
-			= new ImportMemberPermissionChoiceController(ureq, wControl, repoEntry, group, form, runContext);
+			= new ImportMemberPermissionChoiceController(ureq, wControl, repoEntry, group, overrideManaged, form, runContext);
 		return controller;
 	}
 }

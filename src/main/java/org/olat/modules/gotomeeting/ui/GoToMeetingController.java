@@ -60,7 +60,7 @@ public class GoToMeetingController extends BasicController {
 	
 	private GoToMeeting meeting;
 	private GoToRegistrant registrant;
-	private final boolean administrator, moderator;
+	private final boolean administrator, moderator, readOnly;
 	
 	private CloseableModalController cmc;
 	private GoToRecordingsController recordingsCtrl;
@@ -69,8 +69,9 @@ public class GoToMeetingController extends BasicController {
 	private GoToMeetingManager meetingMgr;
 	
 	public GoToMeetingController(UserRequest ureq, WindowControl wControl,
-			GoToMeeting meeting, boolean administrator, boolean moderator) {
+			GoToMeeting meeting, boolean administrator, boolean moderator, boolean readOnly) {
 		super(ureq, wControl);
+		this.readOnly = readOnly;
 		this.moderator = moderator;
 		this.administrator = administrator;
 		
@@ -116,57 +117,64 @@ public class GoToMeetingController extends BasicController {
 	}
 	
 	private void updateButtons() {
-		Date start = meeting.getStartDate();
-		Date end = meeting.getEndDate();
-		Date now = new Date();
-		boolean canStart = (start.compareTo(now) <= 0 && end.compareTo(now) > 0);
-
-		Calendar cal = Calendar.getInstance();
-		cal.setTime(start);
-		cal.add(Calendar.MINUTE, -60);
-		Date startMinusOne = cal.getTime();
-		boolean canCoachStart = (startMinusOne.compareTo(now) <= 0 && end.compareTo(now) > 0);
-		
-		boolean ended = (end.compareTo(now) <= 0);
-		if(administrator || moderator) {
-			if(canCoachStart) {
-				startLink.setVisible(true);
-				registerLink.setVisible(false);
-			} else if(ended) {
-				startLink.setVisible(false);
-				registerLink.setVisible(false);
-			} else if(registrant == null) {
-				startLink.setVisible(false);
-				registerLink.setVisible(true);
-			} else {
-				startLink.setVisible(false);
-				registerLink.setVisible(false);
-			}
-			confirmLink.setVisible(false);
-			joinLink.setVisible(false);
-		} else if(ended) {
+		if(readOnly) {
+			startLink.setVisible(false);
 			registerLink.setVisible(false);
 			confirmLink.setVisible(false);
 			joinLink.setVisible(false);
-		} else if(canStart) {
-			if(registrant == null) {
-				registerLink.setVisible(false);
-				confirmLink.setVisible(false);
-				joinLink.setVisible(true);
-			} else {
-				registerLink.setVisible(false);
-				confirmLink.setVisible(false);
-				joinLink.setVisible(true);
-			}
 		} else {
-			if(registrant == null) {
-				registerLink.setVisible(true);
+			Date start = meeting.getStartDate();
+			Date end = meeting.getEndDate();
+			Date now = new Date();
+			boolean canStart = (start.compareTo(now) <= 0 && end.compareTo(now) > 0);
+	
+			Calendar cal = Calendar.getInstance();
+			cal.setTime(start);
+			cal.add(Calendar.MINUTE, -60);
+			Date startMinusOne = cal.getTime();
+			boolean canCoachStart = (startMinusOne.compareTo(now) <= 0 && end.compareTo(now) > 0);
+			
+			boolean ended = (end.compareTo(now) <= 0);
+			if(administrator || moderator) {
+				if(canCoachStart) {
+					startLink.setVisible(true);
+					registerLink.setVisible(false);
+				} else if(ended) {
+					startLink.setVisible(false);
+					registerLink.setVisible(false);
+				} else if(registrant == null) {
+					startLink.setVisible(false);
+					registerLink.setVisible(true);
+				} else {
+					startLink.setVisible(false);
+					registerLink.setVisible(false);
+				}
 				confirmLink.setVisible(false);
 				joinLink.setVisible(false);
-			} else {
+			} else if(ended) {
 				registerLink.setVisible(false);
-				confirmLink.setVisible(true);
+				confirmLink.setVisible(false);
 				joinLink.setVisible(false);
+			} else if(canStart) {
+				if(registrant == null) {
+					registerLink.setVisible(false);
+					confirmLink.setVisible(false);
+					joinLink.setVisible(true);
+				} else {
+					registerLink.setVisible(false);
+					confirmLink.setVisible(false);
+					joinLink.setVisible(true);
+				}
+			} else {
+				if(registrant == null) {
+					registerLink.setVisible(true);
+					confirmLink.setVisible(false);
+					joinLink.setVisible(false);
+				} else {
+					registerLink.setVisible(false);
+					confirmLink.setVisible(true);
+					joinLink.setVisible(false);
+				}
 			}
 		}
 		mainVC.setDirty(true);

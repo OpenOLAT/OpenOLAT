@@ -85,7 +85,7 @@ public class TACourseNodeRunController extends BasicController {
 		
 		content = createVelocityContainer("run");
 		if (hasTask) {
-			taskController = new TaskController(ureq, wControl, config, courseNode, userCourseEnv.getCourseEnvironment());
+			taskController = new TaskController(ureq, wControl, config, courseNode, userCourseEnv);
 			content.put("taskController", taskController.getInitialComponent());
 			content.contextPut("hasTask", Boolean.TRUE);
 		}

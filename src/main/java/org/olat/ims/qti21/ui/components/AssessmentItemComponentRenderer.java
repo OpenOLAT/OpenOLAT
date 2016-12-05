@@ -158,9 +158,9 @@ public class AssessmentItemComponentRenderer extends AssessmentObjectComponentRe
 		final ResolvedAssessmentItem resolvedAssessmentItem = component.getResolvedAssessmentItem();
 
 		//title + status
-		sb.append("<h1 class='itemTitle'>");
+		sb.append("<h3 class='itemTitle'>");
 		renderItemStatus(renderer, sb, itemSessionState, translator);
-		sb.append(StringHelper.escapeHtml(assessmentItem.getTitle())).append("</h1>")
+		sb.append(StringHelper.escapeHtml(assessmentItem.getTitle())).append("</h3>")
 		  .append("<div id='itemBody' class='clearfix'>");
 		
 		//TODO prompt

@@ -22,6 +22,7 @@ package org.olat.course.nodes.gta.manager;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
@@ -104,6 +105,9 @@ class GTANotifications {
 		ICourse course = CourseFactory.loadCourse(p.getResId());
 		CourseNode node = course.getRunStructure().getNode(p.getSubidentifier());
 		RepositoryEntry entry = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
+		if(entry.getRepositoryEntryStatus().isClosed() || entry.getRepositoryEntryStatus().isUnpublished()) {
+			return Collections.emptyList();
+		}
 		
 		if(entry != null && node instanceof GTACourseNode) {
 			displayName = entry.getDisplayname();

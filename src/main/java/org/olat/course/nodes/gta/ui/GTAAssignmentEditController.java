@@ -53,8 +53,8 @@ public class GTAAssignmentEditController extends AbstractAssignmentEditControlle
 	private MultipleSelectionElement coachAllowedTasksEl;
 
 	public GTAAssignmentEditController(UserRequest ureq, WindowControl wControl,
-			GTACourseNode gtaNode, ModuleConfiguration config, CourseEnvironment courseEnv) {
-		super(ureq, wControl, gtaNode, config, courseEnv);
+			GTACourseNode gtaNode, ModuleConfiguration config, CourseEnvironment courseEnv, boolean readOnly) {
+		super(ureq, wControl, gtaNode, config, courseEnv, readOnly);
 	}
 
 	@Override

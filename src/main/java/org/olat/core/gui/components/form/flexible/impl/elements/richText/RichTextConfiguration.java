@@ -234,6 +234,36 @@ public class RichTextConfiguration implements Disposable {
 			setDocumentMediaBase(baseContainer, null, usess);			
 		}
 	}
+	
+	/**
+	 * Contains only the image upload and the math plugin.
+	 * 
+	 * @param usess
+	 * @param guiTheme
+	 * @param baseContainer
+	 */
+	public void setConfigProfileFormVeryMinimalisticConfigEditor(UserSession usess, Theme guiTheme, VFSContainer baseContainer) {
+		setConfigBasics(guiTheme);
+		// Add additional plugins
+		TinyMCECustomPluginFactory customPluginFactory = CoreSpringFactory.getImpl(TinyMCECustomPluginFactory.class);
+		List<TinyMCECustomPlugin> enabledCustomPlugins = customPluginFactory.getCustomPlugionsForProfile();
+		for (TinyMCECustomPlugin tinyMCECustomPlugin : enabledCustomPlugins) {
+			setCustomPluginEnabled(tinyMCECustomPlugin);
+		}
+		
+		// Don't allow javascript or iframes, if the file browser is there allow also media elements (the full values)
+		setQuotedConfigValue(INVALID_ELEMENTS, (baseContainer == null ? INVALID_ELEMENTS_FORM_SIMPLE_VALUE_UNSAVE : INVALID_ELEMENTS_FORM_FULL_VALUE_UNSAVE));
+		tinyConfig = TinyConfig.veryMinimalisticConfig;
+		setPathInStatusBar(false);
+		
+		// Setup file and link browser
+		if (baseContainer != null) {
+			tinyConfig = tinyConfig.enableImageAndMedia();
+			setFileBrowserCallback(baseContainer, null, IMAGE_SUFFIXES_VALUES, MEDIA_SUFFIXES_VALUES, FLASH_PLAYER_SUFFIXES_VALUES);
+			// since in form editor mode and not in file mode we use null as relFilePath
+			setDocumentMediaBase(baseContainer, null, usess);			
+		}
+	}
 
 
 	/**

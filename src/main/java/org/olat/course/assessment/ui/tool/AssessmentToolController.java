@@ -42,6 +42,7 @@ import org.olat.core.util.resource.OresHelper;
 import org.olat.course.assessment.AssessmentModule;
 import org.olat.course.assessment.EfficiencyStatementAssessmentController;
 import org.olat.course.assessment.bulk.BulkAssessmentOverviewController;
+import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.assessment.ui.AssessedIdentityListState;
 import org.olat.modules.assessment.ui.AssessmentToolContainer;
 import org.olat.modules.assessment.ui.AssessmentToolSecurityCallback;
@@ -72,13 +73,17 @@ public class AssessmentToolController extends MainLayoutBasicController implemen
 	private BulkAssessmentOverviewController bulkAssessmentOverviewCtrl;
 	private EfficiencyStatementAssessmentController efficiencyStatementCtrl;
 	
+	private UserCourseEnvironment coachUserEnv;
+	
 	public AssessmentToolController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
-			RepositoryEntry courseEntry, AssessmentToolSecurityCallback assessmentCallback) {
+			RepositoryEntry courseEntry, UserCourseEnvironment coachUserEnv, AssessmentToolSecurityCallback assessmentCallback) {
 		super(ureq, wControl);
 		setTranslator(Util.createPackageTranslator(AssessmentModule.class, getLocale(), getTranslator()));
 		this.courseEntry = courseEntry;
 		this.stackPanel = stackPanel;
+		this.coachUserEnv = coachUserEnv;
 		this.assessmentCallback = assessmentCallback;
+		
 		toolContainer = new AssessmentToolContainer();
 	
 		segmentButtonsCmp = new ButtonGroupComponent("segments");
@@ -207,7 +212,7 @@ public class AssessmentToolController extends MainLayoutBasicController implemen
 		OLATResourceable ores = OresHelper.createOLATResourceableInstance("BusinessGroups", 0l);
 		WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ores, null, getWindowControl());
 		addToHistory(ureq, bwControl);
-		groupsCtrl = new AssessedBusinessGroupListCourseTreeController(ureq, bwControl, stackPanel, courseEntry, toolContainer, assessmentCallback);
+		groupsCtrl = new AssessedBusinessGroupListCourseTreeController(ureq, bwControl, stackPanel, courseEntry, coachUserEnv, toolContainer, assessmentCallback);
 		listenTo(groupsCtrl);
 		stackPanel.popUpToController(this);
 		stackPanel.pushController(translate("groups"), groupsCtrl);
@@ -221,7 +226,7 @@ public class AssessmentToolController extends MainLayoutBasicController implemen
 		WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ores, null, getWindowControl());
 		addToHistory(ureq, bwControl);
 		AssessmentIdentityListCourseTreeController treeCtrl = new AssessmentIdentityListCourseTreeController(ureq, bwControl, stackPanel,
-				courseEntry, null, toolContainer, assessmentCallback);
+				courseEntry, null, coachUserEnv, toolContainer, assessmentCallback);
 		listenTo(treeCtrl);
 		stackPanel.popUpToController(this);
 		stackPanel.pushController(translate("users"), treeCtrl);
@@ -236,7 +241,7 @@ public class AssessmentToolController extends MainLayoutBasicController implemen
 		WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ores, null, getWindowControl());
 		addToHistory(ureq, bwControl);
 		AssessmentIdentityListCourseTreeController treeCtrl = new AssessmentIdentityListCourseTreeController(ureq, bwControl, stackPanel,
-				courseEntry, null, toolContainer, assessmentCallback);
+				courseEntry, null, coachUserEnv, toolContainer, assessmentCallback);
 		listenTo(treeCtrl);
 		stackPanel.popUpToController(this);
 		stackPanel.pushController(translate("users"), treeCtrl);
@@ -253,7 +258,7 @@ public class AssessmentToolController extends MainLayoutBasicController implemen
 		WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ores, null, getWindowControl());
 		addToHistory(ureq, bwControl);
 		AssessmentIdentityListCourseTreeController treeCtrl = new AssessmentIdentityListCourseTreeController(ureq, bwControl, stackPanel,
-				courseEntry, null, toolContainer, assessmentCallback);
+				courseEntry, null, coachUserEnv, toolContainer, assessmentCallback);
 		listenTo(treeCtrl);
 		stackPanel.popUpToController(this);
 		stackPanel.pushController(translate("users"), treeCtrl);

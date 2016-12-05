@@ -45,6 +45,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableComponentDelegate;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableRendererType;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.stack.TooledController;
@@ -349,6 +350,18 @@ public class BinderListController extends FormBasicController
 			doNewBinderCallout(ureq);
 		} else if(newBinderFromCourseButton == source) {
 			doNewBinderFromCourse(ureq);
+		} else if(tableEl == source) {
+			if(event instanceof SelectionEvent) {
+				SelectionEvent se = (SelectionEvent)event;
+				String cmd = se.getCommand();
+				if("select".equals(cmd)) {
+					BinderRow row = model.getObject(se.getIndex());
+					Activateable2 activateable = doOpenBinder(ureq, row);
+					if(activateable != null) {
+						activateable.activate(ureq, null, null);
+					}
+				}
+			}
 		} else if(source instanceof FormLink) {
 			FormLink link = (FormLink)source;
 			String cmd = link.getCmd();
@@ -394,6 +407,7 @@ public class BinderListController extends FormBasicController
 		} else {
 			removeAsListenerAndDispose(binderCtrl);
 			
+			portfolioService.updateBinderUserInformations(binder, getIdentity());
 			OLATResourceable binderOres = OresHelper.createOLATResourceableInstance("Binder", binder.getKey());
 			WindowControl swControl = addToHistory(ureq, binderOres, null);
 			BinderSecurityCallback secCallback = BinderSecurityCallbackFactory.getCallbackForOwnedBinder(binder);

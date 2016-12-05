@@ -59,10 +59,8 @@ public class AssessmentTestBuilder {
 	
 	private Double cutValue;
 	private Double maxScore;
-	private OutcomeCondition cutValueRule;
-	
-	private boolean testScore = false;
 	private OutcomeRule testScoreRule;
+	private OutcomeCondition cutValueRule;
 	
 	private TestFeedbackBuilder passedFeedback;
 	private TestFeedbackBuilder failedFeedback;
@@ -93,7 +91,6 @@ public class AssessmentTestBuilder {
 				if(outcomeRule instanceof SetOutcomeValue) {
 					SetOutcomeValue setOutcomeValue = (SetOutcomeValue)outcomeRule;
 					if(QTI21Constants.SCORE_IDENTIFIER.equals(setOutcomeValue.getIdentifier())) {
-						testScore = true;
 						testScoreRule = outcomeRule;
 					}
 				}
@@ -164,14 +161,6 @@ public class AssessmentTestBuilder {
 	
 	public AssessmentTest getAssessmentTest() {
 		return assessmentTest;
-	}
-	
-	public boolean isExportScore() {
-		return testScore;
-	}
-	
-	public void setExportScore(boolean export) {
-		testScore = export;
 	}
 	
 	public Double getCutValue() {
@@ -262,24 +251,19 @@ public class AssessmentTestBuilder {
 	</setOutcomeValue>
 	*/
 	private void buildTestScore() {
-		if(testScore) {
-			if(testScoreRule == null) {
-				SetOutcomeValue scoreRule = new SetOutcomeValue(assessmentTest);
-				scoreRule.setIdentifier(QTI21Constants.SCORE_IDENTIFIER);
-				
-				Sum sum = new Sum(scoreRule);
-				scoreRule.getExpressions().add(sum);
-				
-				TestVariables testVariables = new TestVariables(sum);
-				sum.getExpressions().add(testVariables);
-				testVariables.setVariableIdentifier(QTI21Constants.SCORE_IDENTIFIER);
-				
-				assessmentTest.getOutcomeProcessing().getOutcomeRules().add(0, scoreRule);
-
-				testScoreRule = scoreRule;
-			}
-		} else if(testScoreRule != null) {
-			assessmentTest.getOutcomeProcessing().getOutcomeRules().remove(testScoreRule);
+		if(testScoreRule == null) {
+			SetOutcomeValue scoreRule = new SetOutcomeValue(assessmentTest);
+			scoreRule.setIdentifier(QTI21Constants.SCORE_IDENTIFIER);
+			
+			Sum sum = new Sum(scoreRule);
+			scoreRule.getExpressions().add(sum);
+			
+			TestVariables testVariables = new TestVariables(sum);
+			sum.getExpressions().add(testVariables);
+			testVariables.setVariableIdentifier(QTI21Constants.SCORE_IDENTIFIER);
+			
+			assessmentTest.getOutcomeProcessing().getOutcomeRules().add(0, scoreRule);
+			testScoreRule = scoreRule;
 		}
 	}
 	

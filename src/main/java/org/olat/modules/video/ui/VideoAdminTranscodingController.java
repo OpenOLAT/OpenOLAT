@@ -29,13 +29,22 @@ import java.util.Set;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
-import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
+import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.BooleanCellRenderer;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiCellRenderer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.modules.video.VideoManager;
+import org.olat.modules.video.VideoMetadata;
+import org.olat.modules.video.VideoModule;
 import org.olat.modules.video.VideoTranscoding;
+import org.olat.modules.video.ui.TranscodingTableModel.TranscodingCols;
 import org.olat.resource.OLATResource;
 import org.olat.resource.OLATResourceManager;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -49,25 +58,23 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class VideoAdminTranscodingController extends FormBasicController {
 	
-	private MultipleSelectionElement enable2160SelectionEl;
-	private MultipleSelectionElement enable1080SelectionEl;
-	private MultipleSelectionElement enable720SelectionEl;
-	private MultipleSelectionElement enable480SelectionEl;
-	private MultipleSelectionElement enable360SelectionEl;
-	private MultipleSelectionElement enable240SelectionEl;
-	
-	private Map<Integer,Set<Long>> availableTranscodings;
+	private Map<Integer,Set<OLATResource>> availableTranscodings;
 	private List<OLATResource> olatresources;
+	private TranscodingTableModel tableModel;
+	private FlexiTableElement transcodingTable;
 	
+	private List<TranscodingRow> resolutions;
 	
 	@Autowired
 	private OLATResourceManager olatresourceManager;
 	@Autowired 
 	private VideoManager videoManager;
+	@Autowired
+	private VideoModule videoModule;
 
 	public VideoAdminTranscodingController(UserRequest ureq, WindowControl wControl) {
-		super(ureq,wControl);
-
+		super(ureq, wControl, "transcoding_admin");
+		resolutions = new ArrayList<>();
 		generateStatusOfTranscodings();
 
 		initForm(ureq);
@@ -79,83 +86,94 @@ public class VideoAdminTranscodingController extends FormBasicController {
 		setFormDescription("manage.transcodings.description");
 		setFormContextHelp("Portfolio template: Administration and editing#configuration");		
 		
-		String[] enableKeys = new String[]{ "on" };
-		String[] enableValues = new String[]{ translate("on") };
-
-		enable2160SelectionEl = uifactory.addCheckboxesHorizontal("quality.resolution.2160", formLayout, enableKeys, enableValues);
-		enable2160SelectionEl.addActionListener(FormEvent.ONCHANGE);
-		enable2160SelectionEl.setUserObject(2160);
+		FlexiTableColumnModel transcodingModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
+		transcodingModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TranscodingCols.resolutions));
+		transcodingModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TranscodingCols.sumVideos));
+		transcodingModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TranscodingCols.numberTranscodings));
+		transcodingModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TranscodingCols.missingTranscodings));
+		transcodingModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TranscodingCols.transcode, "quality.transcode", 
+				new BooleanCellRenderer(new StaticFlexiCellRenderer(translate("quality.transcode"), "quality.transcode"), null)));
+		transcodingModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TranscodingCols.delete, "quality.delete", 
+				new BooleanCellRenderer(new StaticFlexiCellRenderer(translate("quality.delete"), "quality.delete"), null)));
+		tableModel = new TranscodingTableModel(transcodingModel, getTranslator());
 		
-		enable1080SelectionEl = uifactory.addCheckboxesHorizontal("quality.resolution.1080", formLayout, enableKeys, enableValues);
-		enable1080SelectionEl.addActionListener(FormEvent.ONCHANGE);
-		enable1080SelectionEl.setUserObject(1080);
-		
-		enable720SelectionEl = uifactory.addCheckboxesHorizontal("quality.resolution.720", formLayout, enableKeys, enableValues);
-		enable720SelectionEl.addActionListener(FormEvent.ONCHANGE);
-		enable720SelectionEl.setUserObject(720);
-		
-		enable480SelectionEl = uifactory.addCheckboxesHorizontal("quality.resolution.480", formLayout, enableKeys, enableValues);
-		enable480SelectionEl.addActionListener(FormEvent.ONCHANGE);
-		enable480SelectionEl.setUserObject(480);
-		
-		enable360SelectionEl = uifactory.addCheckboxesHorizontal("quality.resolution.360", formLayout, enableKeys, enableValues);
-		enable360SelectionEl.addActionListener(FormEvent.ONCHANGE);
-		enable360SelectionEl.setUserObject(360);
-		
-		enable240SelectionEl = uifactory.addCheckboxesHorizontal("quality.resolution.240", formLayout, enableKeys, enableValues);
-		enable240SelectionEl.addActionListener(FormEvent.ONCHANGE);
-		enable240SelectionEl.setUserObject(240);
-		
+		transcodingTable = uifactory.addTableElement(getWindowControl(), "table", tableModel, getTranslator(), formLayout);
+		transcodingTable.setCustomizeColumns(false);
+		transcodingTable.setNumOfRowsEnabled(false);
+				
 		setChecks();
 	}
 	
-	public void setChecks(){	
-		
-		generateStatusOfTranscodings();
-		
-		MultipleSelectionElement[] resolutionSelectionEls = {enable240SelectionEl,enable360SelectionEl,
-				enable480SelectionEl, enable720SelectionEl,enable1080SelectionEl,enable2160SelectionEl};
-		
-		//iterate all MultiSelectionElements and decide if checked or not
-		for (MultipleSelectionElement mse : resolutionSelectionEls) {
-			int sizeOfTranscodings = availableTranscodings.get((int) mse.getUserObject()).size();
-			if (sizeOfTranscodings == olatresources.size()){
-				mse.select("on",true);
-			} else {
-				mse.select("on",false);
-			}
-			String transcoded = " " + translate("number.transcodings");
-			mse.setKeysAndValues(new String[]{ "on" }, new String[]{ sizeOfTranscodings + "/" + olatresources.size() + transcoded});
+	private boolean mayTranscode(int resolution){
+		if (!videoModule.isTranscodingEnabled()) {
+			return false;
 		}
+		int[] transcodingRes = videoModule.getTranscodingResolutions();
+		for (int i = 0; i < transcodingRes.length; i++) {
+			if (resolution == transcodingRes[i]){
+				return true;
+			}
+		}
+		return false;
+	}
+	
+	private void loadTable(){
+		//Hardcoded same as VideoAdminSetController
+		int[] resolution = {2160, 1080, 720, 480, 360, 240};
+		//FIXME:FK fetch using one single SQL query
+		for (int i = 0; i < resolution.length; i++) {
+			int sizeOfTranscodings = availableTranscodings.get(resolution[i]).size();
+			int counter = 0;
+			for (OLATResource videoResource : olatresources) {
+				VideoMetadata videoMetadata = videoManager.readVideoMetadataFile(videoResource);
+				if (videoMetadata != null && videoMetadata.getHeight() >= resolution[i]) counter++;
+			}
+			resolutions.add(new TranscodingRow(resolution[i], sizeOfTranscodings, counter, mayTranscode(resolution[i])));
+		}		
+		if (resolutions != null) tableModel.setObjects(resolutions);
+		transcodingTable.reset(true, true, true);	
+	}
+	
+	/**
+	 * Update Table Content of all available Transcodings
+	 */
+	public void setChecks(){	
+		generateStatusOfTranscodings();
+		resolutions.clear();
+		loadTable();
 	}
 
+
+	
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if (source == enable2160SelectionEl){
-			queueCreateOrDeleteTranscoding(source);
-		} else if (source == enable1080SelectionEl){
-			queueCreateOrDeleteTranscoding(source);
-		} else if (source == enable720SelectionEl){
-			queueCreateOrDeleteTranscoding(source);
-		} else if (source == enable480SelectionEl){
-			queueCreateOrDeleteTranscoding(source);
-		} else if (source == enable360SelectionEl){
-			queueCreateOrDeleteTranscoding(source);
-		} else if (source == enable240SelectionEl){	
-			queueCreateOrDeleteTranscoding(source);	
+		if(source == transcodingTable) {
+			if(event instanceof SelectionEvent) {
+				SelectionEvent se = (SelectionEvent)event;
+				TranscodingRow currentObject = (TranscodingRow) tableModel.getObject(se.getIndex());
+				if ("quality.delete".equals(se.getCommand())){
+					queueDeleteTranscoding(currentObject);
+					showInfo("delete.transcodings");
+				} else if ("quality.transcode".equals(se.getCommand())){
+					queueCreateTranscoding(currentObject);
+					showInfo("info.transcoding");
+				} 
+			}
 		}
+		
 		//refresh checks
 		setChecks();
 	}
 	
 	private void generateStatusOfTranscodings() {
+		//FIXME:FK fetch using one single SQL query
 		availableTranscodings = new HashMap<>();
-		availableTranscodings.put(240, new HashSet<Long>());
-		availableTranscodings.put(360, new HashSet<Long>());
-		availableTranscodings.put(480, new HashSet<Long>());
-		availableTranscodings.put(720, new HashSet<Long>());
-		availableTranscodings.put(1080, new HashSet<Long>());
-		availableTranscodings.put(2160, new HashSet<Long>());
+		availableTranscodings.put(240, new HashSet<OLATResource>());
+		availableTranscodings.put(360, new HashSet<OLATResource>());
+		availableTranscodings.put(480, new HashSet<OLATResource>());
+		availableTranscodings.put(720, new HashSet<OLATResource>());
+		availableTranscodings.put(1080, new HashSet<OLATResource>());
+		availableTranscodings.put(2160, new HashSet<OLATResource>());
 		//determine resource type of interest
 		List<String> types = new ArrayList<>();
 		types.add("FileResource.VIDEO");
@@ -167,46 +185,45 @@ public class VideoAdminTranscodingController extends FormBasicController {
 			List<VideoTranscoding> transcodings = videoManager.getVideoTranscodings(videoResource);
 			//map resource IDs to resolution
 			for (VideoTranscoding videoTranscoding : transcodings) {
-				if (videoTranscoding.getStatus() != -1 || true) {
-					availableTranscodings.get(videoTranscoding.getResolution())
-							.add(videoTranscoding.getVideoResource().getKey());
+				if (videoTranscoding != null) {
+					Set<OLATResource> oneResolution = availableTranscodings.get(videoTranscoding.getResolution());
+					if (oneResolution != null) {
+						oneResolution.add(videoTranscoding.getVideoResource());						
+					}
 				}
 			}
 		}
 	}
 	
-	//create of delete resources, depended on MultiSelectionElement status
-	private void queueCreateOrDeleteTranscoding(FormItem source){
-		if (source instanceof MultipleSelectionElement && ((MultipleSelectionElement)source).isSelected(0)){
-			queueCreateTranscoding(source);
-		} else {
-			queueDeleteTranscoding(source);
-		}	
-	}
 	
 	//state orders for inexistent transcodings
-	private void queueCreateTranscoding(FormItem source){
+	private void queueCreateTranscoding(TranscodingRow source){
 		for (OLATResource videoResource : olatresources) {
-			if (!availableTranscodings.get((int) source.getUserObject()).contains(videoResource.getKey())){
-				videoManager.createTranscoding(videoResource, (int) source.getUserObject(), "mp4");				
+			if (!availableTranscodings.get(source.getResolution()).contains(videoResource)){
+				VideoMetadata videoMetadata = videoManager.readVideoMetadataFile(videoResource);
+				if (videoMetadata != null && videoMetadata.getHeight() >= source.getResolution()) {					
+					videoManager.createTranscoding(videoResource, source.getResolution(), "mp4");				
+				}
 			}
 		}
 	}
 	
 	//go through all and delete selection
-	private void queueDeleteTranscoding(FormItem source) {
+	private void queueDeleteTranscoding(TranscodingRow source) {
 		for (OLATResource videoResource : olatresources) {
-			if (availableTranscodings.get((int) source.getUserObject()).contains(videoResource.getKey())) {
+			if (availableTranscodings.get(source.getResolution()).contains(videoResource)) {
 				List<VideoTranscoding> videoTranscodings = videoManager.getVideoTranscodings(videoResource);
 
 				for (VideoTranscoding videoTranscoding : videoTranscodings) {
-					if (videoTranscoding.getResolution() == (int) source.getUserObject()) {
+					if (videoTranscoding.getResolution() == source.getResolution()) {
 						videoManager.deleteVideoTranscoding(videoTranscoding);
 					}
 				}
 			}
 		}
 	}
+	
+
 
 	@Override
 	protected void formOK(UserRequest ureq) {

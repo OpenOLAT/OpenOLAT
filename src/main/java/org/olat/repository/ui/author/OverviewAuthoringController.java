@@ -62,8 +62,9 @@ public class OverviewAuthoringController extends BasicController implements Acti
 	private final VelocityContainer mainVC;
 	private final SegmentViewComponent segmentView;
 	private Link favoriteLink;
-	private final Link myEntriesLink, searchLink;
+	private final Link myEntriesLink, searchLink, deletedLink;
 	private AuthorListController currentCtrl, markedCtrl, myEntriesCtrl, searchEntriesCtrl;
+	private AuthorDeletedListController deletedEntriesCtrl;
 
 	private final boolean isGuestonly;
 	private boolean favoritDirty, myDirty;
@@ -90,6 +91,8 @@ public class OverviewAuthoringController extends BasicController implements Acti
 		segmentView.addSegment(myEntriesLink, false);
 		searchLink = LinkFactory.createLink("search.generic", mainVC, this);
 		segmentView.addSegment(searchLink, false);
+		deletedLink = LinkFactory.createLink("search.deleted", mainVC, this);
+		segmentView.addSegment(deletedLink, false);
 
 		eventBus = ureq.getUserSession().getSingleUserEventCenter();
 		eventBus.registerFor(this, getIdentity(), RepositoryService.REPOSITORY_EVENT_ORES);
@@ -160,6 +163,9 @@ public class OverviewAuthoringController extends BasicController implements Acti
 			} else if("Search".equals(segment)) {
 				doSearchEntries(ureq).activate(ureq, subEntries, entry.getTransientState());
 				segmentView.select(searchLink);
+			} else if("Deleted".equals(segment)) {
+				doOpenDeletedEntries(ureq).activate(ureq, subEntries, entry.getTransientState());
+				segmentView.select(deletedLink);
 			} else {
 				doOpenMyEntries(ureq).activate(ureq, subEntries, entry.getTransientState());
 				segmentView.select(myEntriesLink);
@@ -180,6 +186,8 @@ public class OverviewAuthoringController extends BasicController implements Acti
 					doOpenMyEntries(ureq);
 				} else if (clickedLink == searchLink) {
 					doSearchEntries(ureq);
+				} else if(clickedLink == deletedLink) {
+					doOpenDeletedEntries(ureq);
 				}
 			}
 		}
@@ -247,5 +255,28 @@ public class OverviewAuthoringController extends BasicController implements Acti
 		addToHistory(ureq, searchEntriesCtrl);
 		mainVC.put("segmentCmp", searchEntriesCtrl.getStackPanel());
 		return searchEntriesCtrl;
+	}
+	
+	private AuthorListController doOpenDeletedEntries(UserRequest ureq) {
+		if(deletedEntriesCtrl == null) {
+			SearchAuthorRepositoryEntryViewParams searchParams
+				= new SearchAuthorRepositoryEntryViewParams(getIdentity(), ureq.getUserSession().getRoles());
+			searchParams.setOwnedResourcesOnly(true);
+			searchParams.setDeleted(true);
+	
+			OLATResourceable ores = OresHelper.createOLATResourceableInstance("Deleted", 0l);
+			ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ores));
+			WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ores, null, getWindowControl());
+			deletedEntriesCtrl = new AuthorDeletedListController(ureq, bwControl, "search.deleted", searchParams, false);
+			listenTo(deletedEntriesCtrl);	
+		} else if(myDirty) {
+			deletedEntriesCtrl.reloadRows();
+		}
+		myDirty = false;
+		
+		currentCtrl = deletedEntriesCtrl;
+		addToHistory(ureq, deletedEntriesCtrl);
+		mainVC.put("segmentCmp", deletedEntriesCtrl.getStackPanel());
+		return deletedEntriesCtrl;
 	}
 }

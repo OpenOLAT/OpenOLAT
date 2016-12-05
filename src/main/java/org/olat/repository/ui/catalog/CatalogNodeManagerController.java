@@ -122,14 +122,15 @@ public class CatalogNodeManagerController extends FormBasicController implements
 	private CloseableModalController cmc;
 	private ContactFormController contactCtrl;
 	private RepositorySearchController entrySearchCtrl;
+
 	private CatalogNodeManagerController childNodeCtrl;
 	private CatalogEntryMoveController categoryMoveCtrl;
 	private CatalogEntryMoveController entryResourceMoveCtrl;
 	private CatalogEntryEditController addEntryCtrl, editEntryCtrl;
 	private DialogBoxController dialogDeleteLink, dialogDeleteSubtree;
 	
-	private FlexiTableElement entriesEl;
-	private CatalogEntryRowModel entriesModel;
+	private FlexiTableElement entriesEl, closedEntriesEl;
+	private CatalogEntryRowModel entriesModel, closedEntriesModel;
 	
 	private Link editLink, moveLink, deleteLink;
 	private Link nominateLink, contactLink;
@@ -216,13 +217,23 @@ public class CatalogNodeManagerController extends FormBasicController implements
 			flc.contextPut("extLink", url);
 		}
 		
+		FlexiTableColumnModel entriesColumnsModel = getCatalogFlexiTableColumnModel("opened-");
+		entriesModel = new CatalogEntryRowModel(entriesColumnsModel);
+		entriesEl = uifactory.addTableElement(getWindowControl(), "entries", entriesModel, getTranslator(), formLayout);
+		
+		FlexiTableColumnModel closedEntriesColumnsModel = getCatalogFlexiTableColumnModel("closed-");
+		closedEntriesModel = new CatalogEntryRowModel(closedEntriesColumnsModel);
+		closedEntriesEl = uifactory.addTableElement(getWindowControl(), "closedEntries", closedEntriesModel, getTranslator(), formLayout);
+	}
+	
+	private FlexiTableColumnModel getCatalogFlexiTableColumnModel(String cmdPrefix) {
 		//add the table
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Cols.key.i18nKey(), Cols.key.ordinal(), true, OrderBy.key.name()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(true, Cols.type.i18nKey(), Cols.type.ordinal(), true, OrderBy.type.name(),
 				FlexiColumnModel.ALIGNMENT_LEFT, new TypeRenderer()));
-		FlexiCellRenderer renderer = new StaticFlexiCellRenderer("select", new TextFlexiCellRenderer());
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.displayName.i18nKey(), Cols.displayName.ordinal(), "select",
+		FlexiCellRenderer renderer = new StaticFlexiCellRenderer(cmdPrefix + "select", new TextFlexiCellRenderer());
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.displayName.i18nKey(), Cols.displayName.ordinal(), cmdPrefix + "select",
 				true, OrderBy.displayname.name(), renderer));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Cols.authors.i18nKey(), Cols.authors.ordinal(),
 				true, OrderBy.authors.name()));
@@ -246,13 +257,11 @@ public class CatalogNodeManagerController extends FormBasicController implements
 				true, OrderBy.ac.name(), FlexiColumnModel.ALIGNMENT_LEFT, new ACRenderer()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Cols.creationDate.i18nKey(), Cols.creationDate.ordinal(),
 				true, OrderBy.creationDate.name()));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.delete.i18nKey(), translate(Cols.delete.i18nKey()), "delete"));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.move.i18nKey(), translate(Cols.move.i18nKey()), "move"));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.detailsSupported.i18nKey(), Cols.detailsSupported.ordinal(), "details",
-				new StaticFlexiCellRenderer("", "details", "o_icon o_icon-lg o_icon_details", translate("details"))));
-		
-		entriesModel = new CatalogEntryRowModel(columnsModel);
-		entriesEl = uifactory.addTableElement(getWindowControl(), "entries", entriesModel, getTranslator(), formLayout);
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.delete.i18nKey(), translate(Cols.delete.i18nKey()), cmdPrefix + "delete"));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.move.i18nKey(), translate(Cols.move.i18nKey()), cmdPrefix + "move"));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.detailsSupported.i18nKey(), Cols.detailsSupported.ordinal(), cmdPrefix + "details",
+				new StaticFlexiCellRenderer("", cmdPrefix + "details", "o_icon o_icon-lg o_icon_details", translate("details"))));
+		return columnsModel;
 	}
 
 	private void loadEntryInfos() {
@@ -283,7 +292,8 @@ public class CatalogNodeManagerController extends FormBasicController implements
 
 		List<OLATResourceAccess> resourcesWithOffer = acService.getAccessMethodForResources(resourceKeys, null, true, new Date());
 		
-		List<CatalogEntryRow> items = new ArrayList<CatalogEntryRow>();
+		List<CatalogEntryRow> items = new ArrayList<>();
+		List<CatalogEntryRow> closedItems = new ArrayList<>();
 		for(RepositoryEntry entry:repoEntries) {
 			CatalogEntryRow row = new CatalogEntryRow(entry);
 			List<PriceMethod> types = new ArrayList<PriceMethod>();
@@ -309,13 +319,21 @@ public class CatalogNodeManagerController extends FormBasicController implements
 			if(!types.isEmpty()) {
 				row.setAccessTypes(types);
 			}
-
-			items.add(row);
+			
+			if(entry.getRepositoryEntryStatus().isClosed()) {
+				closedItems.add(row);
+			} else {
+				items.add(row);
+			}
 		}
 		
 		entriesModel.setObjects(items);
 		entriesEl.reset();
 		entriesEl.setVisible(entriesModel.getRowCount() > 0);
+		
+		closedEntriesModel.setObjects(closedItems);
+		closedEntriesEl.reset();
+		closedEntriesEl.setVisible(closedEntriesModel.getRowCount() > 0);
 	}
 	
 	protected void loadNodesChildren() {
@@ -456,16 +474,34 @@ public class CatalogNodeManagerController extends FormBasicController implements
 			if(event instanceof SelectionEvent) {
 				SelectionEvent se = (SelectionEvent)event;
 				String cmd = se.getCommand();
-				CatalogEntryRow row = entriesModel.getObject(se.getIndex());
-				if("details".equals(cmd) || "select".equals(cmd)) {
-					launchDetails(ureq, row);	
-				} else if("move".equals(cmd)) {
-					doMoveCategory(ureq, row);
-				} else if("delete".equals(cmd)) {
-					doConfirmDelete(ureq, row);
+				if(cmd != null && cmd.startsWith("opened-")) {
+					CatalogEntryRow row = entriesModel.getObject(se.getIndex());
+					if("opened-details".equals(cmd) || "opened-select".equals(cmd)) {
+						launchDetails(ureq, row);	
+					} else if("opened-move".equals(cmd)) {
+						doMoveCategory(ureq, row);
+					} else if("opened-delete".equals(cmd)) {
+						doConfirmDelete(ureq, row);
+					}
+				}
+			}
+		} else if(closedEntriesEl == source) {
+			if(event instanceof SelectionEvent) {
+				SelectionEvent se = (SelectionEvent)event;
+				String cmd = se.getCommand();
+				if(cmd != null && cmd.startsWith("closed-")) {
+					CatalogEntryRow row = closedEntriesModel.getObject(se.getIndex());
+					if("closed-details".equals(cmd) || "closed-select".equals(cmd)) {
+						launchDetails(ureq, row);	
+					} else if("closed-move".equals(cmd)) {
+						doMoveCategory(ureq, row);
+					} else if("closed-delete".equals(cmd)) {
+						doConfirmDelete(ureq, row);
+					}
 				}
 			}
 		}
+		
 		super.formInnerEvent(ureq, source, event);
 	}
 

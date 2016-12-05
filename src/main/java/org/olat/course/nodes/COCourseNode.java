@@ -36,7 +36,6 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.messages.MessageUIFactory;
 import org.olat.core.gui.control.generic.tabbable.TabbableController;
-import org.olat.core.gui.translator.PackageTranslator;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Roles;
 import org.olat.core.util.StringHelper;
@@ -106,9 +105,14 @@ public class COCourseNode extends AbstractAccessableCourseNode {
         // Do not allow guests to send anonymous emails
         Roles roles = ureq.getUserSession().getRoles();
         if (roles.isGuestOnly()) {
-            Translator trans = new PackageTranslator(PACKAGE, ureq.getLocale());
+            Translator trans = Util.createPackageTranslator(COCourseNode.class, ureq.getLocale());
             String title = trans.translate("guestnoaccess.title");
             String message = trans.translate("guestnoaccess.message");
+            controller = MessageUIFactory.createInfoMessage(ureq, wControl, title, message);
+        } else if(userCourseEnv.isCourseReadOnly()) {
+            Translator trans = Util.createPackageTranslator(COCourseNode.class, ureq.getLocale());
+            String title = trans.translate("freezenoaccess.title");
+            String message = trans.translate("freezenoaccess.message");
             controller = MessageUIFactory.createInfoMessage(ureq, wControl, title, message);
         } else {
             controller = new CORunController(getModuleConfiguration(), ureq, wControl, userCourseEnv);

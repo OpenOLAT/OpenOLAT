@@ -392,7 +392,7 @@ public class PortfolioCourseNode extends AbstractAccessableCourseNode implements
 		}
 		
 		if(referenceSoftkey != null) {
-			return am.getAssessmentEntry(this, mySelf, referenceSoftkey);
+			return am.getAssessmentEntry(this, mySelf);
 		}
 		return null;
 	}
@@ -437,15 +437,16 @@ public class PortfolioCourseNode extends AbstractAccessableCourseNode implements
 	}
 
 	@Override
-	public Controller getDetailsEditController(UserRequest ureq, WindowControl wControl, BreadcrumbPanel stackPanel, UserCourseEnvironment userCourseEnvironment) {
+	public Controller getDetailsEditController(UserRequest ureq, WindowControl wControl, BreadcrumbPanel stackPanel,
+			UserCourseEnvironment coachCourseEnv, UserCourseEnvironment assessedUserCourseEnv) {
 		RepositoryEntry mapEntry = getReferencedRepositoryEntry();
 		if(mapEntry != null && BinderTemplateResource.TYPE_NAME.equals(mapEntry.getOlatResource().getResourceableTypeName())) {
-			Identity assessedIdentity = userCourseEnvironment.getIdentityEnvironment().getIdentity();
-			RepositoryEntry courseEntry = userCourseEnvironment.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
+			Identity assessedIdentity = assessedUserCourseEnv.getIdentityEnvironment().getIdentity();
+			RepositoryEntry courseEntry = assessedUserCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
 			return new PortfolioAssessmentDetailsController(ureq, wControl,
 					courseEntry, this, mapEntry, assessedIdentity);
 		}
-		return new PortfolioResultDetailsController(ureq, wControl, stackPanel, this, userCourseEnvironment);
+		return new PortfolioResultDetailsController(ureq, wControl, stackPanel, this, assessedUserCourseEnv);
 	}
 
 	@Override

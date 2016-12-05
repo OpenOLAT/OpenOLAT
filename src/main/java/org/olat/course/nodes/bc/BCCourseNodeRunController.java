@@ -42,6 +42,7 @@ import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.id.Identity;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
+import org.olat.core.util.UserSession;
 import org.olat.core.util.vfs.NamedContainerImpl;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
@@ -54,6 +55,7 @@ import org.olat.course.groupsandrights.CourseRights;
 import org.olat.course.nodes.BCCourseNode;
 import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.course.run.userview.NodeEvaluation;
+import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
 import org.olat.util.logging.activity.LoggingResourceable;
@@ -78,11 +80,13 @@ public class BCCourseNodeRunController extends DefaultController implements Acti
 	 * @param bcCourseNode
 	 * @param scallback
 	 */
-	public BCCourseNodeRunController(UserRequest ureq, WindowControl wContr, CourseEnvironment courseEnv, BCCourseNode courseNode, NodeEvaluation ne) {
+	public BCCourseNodeRunController(UserRequest ureq, WindowControl wContr, UserCourseEnvironment userCourseEnv, BCCourseNode courseNode, NodeEvaluation ne) {
 		super(wContr);
-
-		boolean isOlatAdmin = ureq.getUserSession().getRoles().isOLATAdmin();
-		boolean isGuestOnly = ureq.getUserSession().getRoles().isGuestOnly();
+		
+		CourseEnvironment courseEnv = userCourseEnv.getCourseEnvironment();
+		UserSession usess = ureq.getUserSession();
+		boolean isOlatAdmin = usess.getRoles().isOLATAdmin();
+		boolean isGuestOnly = usess.getRoles().isGuestOnly();
 		// set logger on this run controller
 		addLoggingResourceable(LoggingResourceable.wrap(courseNode));
 
@@ -124,6 +128,11 @@ public class BCCourseNodeRunController extends DefaultController implements Acti
 
 			scallback = new FolderNodeCallback(VFSManager.getRelativeItemPath(target, courseEnv.getCourseFolderContainer(), null), ne, isOlatAdmin, isGuestOnly, nodefolderSubContext);
 		}
+		//course is read only, override the security callback
+		if(userCourseEnv.isCourseReadOnly()) {
+			scallback = new FolderNodeReadOnlyCallback(nodefolderSubContext);
+		}
+		
 		if(!noFolder) {
 			target.setLocalSecurityCallback(scallback);
 
@@ -157,7 +166,8 @@ public class BCCourseNodeRunController extends DefaultController implements Acti
 				olatNamed.setLocalSecurityCallback(scallback);
 			}
 	
-			frc = new FolderRunController(olatNamed, true, true, true, ureq, getWindowControl(), null, null, courseContainer);
+			boolean canMail = !userCourseEnv.isCourseReadOnly();
+			frc = new FolderRunController(olatNamed, true, true, canMail, ureq, getWindowControl(), null, null, courseContainer);
 			setInitialComponent(frc.getInitialComponent());
 		}
 	}

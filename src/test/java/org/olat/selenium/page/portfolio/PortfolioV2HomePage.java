@@ -89,4 +89,29 @@ public class PortfolioV2HomePage {
 		OOGraphene.waitElement(myEntriesBy, 5, browser);
 		return new EntriesPage(browser);
 	}
+	
+	public EntriesPage openDeletedEntries() {
+		By goToTrashBy = By.xpath("//div[contains(@class,'o_button_group')]//a[contains(@onclick,'go.to.trash')]");
+		OOGraphene.waitElement(goToTrashBy, 5, browser);
+		browser.findElement(goToTrashBy).click();
+		OOGraphene.waitBusy(browser);
+		return new EntriesPage(browser);
+	}
+	
+	public BindersPage openDeletedBinders() {
+		openDeletedEntries();
+		
+		By deletedBindersBy = By.xpath("//div[contains(@class,'o_segments')]//a[contains(@onclick,'binders')]");
+		OOGraphene.waitElement(deletedBindersBy, 5, browser);
+		browser.findElement(deletedBindersBy).click();
+		OOGraphene.waitBusy(browser);
+		return new BindersPage(browser);
+	}
+	
+	public PortfolioV2HomePage clickToolbarBack() {
+		By toolbarBackBy = By.cssSelector("li.o_breadcrumb_back>a");
+		browser.findElement(toolbarBackBy).click();
+		OOGraphene.waitBusy(browser);
+		return assertHome();
+	}
 }

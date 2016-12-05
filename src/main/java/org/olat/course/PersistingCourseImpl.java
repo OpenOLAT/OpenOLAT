@@ -183,6 +183,14 @@ public class PersistingCourseImpl implements ICourse, OLATResourceable, Serializ
 		courseFolderContainer.init(this);
 		return courseFolderContainer;
 	}
+	
+	@Override
+	public VFSContainer getCourseFolderContainer(boolean overrideReadOnly) {
+		// add local course folder's children as read/write source and any sharedfolder as subfolder
+		MergedCourseContainer courseFolderContainer = new MergedCourseContainer(resourceableId, getCourseTitle(), null, overrideReadOnly);
+		courseFolderContainer.init(this);
+		return courseFolderContainer;
+	}
 
 	@Override
 	public VFSContainer getCourseFolderContainer(IdentityEnvironment identityEnv) {

@@ -150,6 +150,7 @@ public abstract class AbstractBusinessGroupListController extends FormBasicContr
 	protected CloseableModalController cmc;
 
 	private final boolean admin;
+	protected final boolean readOnly;
 	private final boolean showAdminTools;
 	private final boolean startExtendedSearch;
 	@Autowired
@@ -174,16 +175,17 @@ public abstract class AbstractBusinessGroupListController extends FormBasicContr
 	private final String prefsKey;
 	
 	public AbstractBusinessGroupListController(UserRequest ureq, WindowControl wControl, String page, String prefsKey) {
-		this(ureq, wControl, page, false, false, prefsKey, null);
+		this(ureq, wControl, page, false, false, false, prefsKey, null);
 	}
 	
 	public AbstractBusinessGroupListController(UserRequest ureq, WindowControl wControl, String page,
-			boolean showAdminTools, boolean startExtendedSearch, String prefsKey, Object userObject) {
+			boolean showAdminTools, boolean startExtendedSearch, boolean readOnly, String prefsKey, Object userObject) {
 		super(ureq, wControl, page);
 		setTranslator(Util.createPackageTranslator(AbstractBusinessGroupListController.class, ureq.getLocale(), getTranslator()));
 
 		Roles roles = ureq.getUserSession().getRoles();
 		admin = roles.isOLATAdmin() || roles.isGroupManager();
+		this.readOnly = readOnly;
 		this.showAdminTools = showAdminTools && admin;
 		this.userObject = userObject;
 		this.startExtendedSearch = startExtendedSearch;

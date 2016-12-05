@@ -41,12 +41,19 @@ public class DENListTableDataModel extends DefaultTableDataModel<KalendarEvent> 
 	private final Translator translator;
 	private final DENManager denManager;
 	private final UserManager userManager;
+	
+	private final boolean readOnly;
 
-	public DENListTableDataModel(List<KalendarEvent> objects, Translator translator) {
+	public DENListTableDataModel(List<KalendarEvent> objects, Translator translator, boolean readOnly) {
 		super(objects);
 		denManager = DENManager.getInstance();
 		userManager = CoreSpringFactory.getImpl(UserManager.class);
 		this.translator = translator;
+		this.readOnly = readOnly;
+	}
+	
+	public boolean isReadOnly() {
+		return readOnly;
 	}
 
 	@Override

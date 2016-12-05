@@ -35,6 +35,7 @@ import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.TimeoutException;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
+import org.openqa.selenium.interactions.Actions;
 
 /**
  * 
@@ -85,6 +86,17 @@ public class OOGraphene {
 	
 	public static void waitElement(WebElement element, WebDriver browser) {
 		Graphene.waitModel(browser).pollingEvery(poolingDuration, TimeUnit.MILLISECONDS).until().element(element).is().visible();
+	}
+	
+	public static void waitGui(WebDriver browser) {
+		Graphene.waitGui(browser);
+	}
+	
+	public static WebElement moveTo(WebElement element, WebDriver browser) {
+		Actions actions = new Actions(browser);
+		actions.moveToElement(element);
+		actions.perform();
+		return element;
 	}
 	
 	// top.tinymce.get('o_fi1000000416').setContent('<p>Hacked</p>');

@@ -46,7 +46,7 @@ public abstract class AbstractStandardBusinessGroupListController extends Abstra
 	
 	public AbstractStandardBusinessGroupListController(UserRequest ureq, WindowControl wControl, String page,
 			boolean showAdminTools, boolean startExtendedSearch, String prefsKey, Object userObject) {
-		super(ureq, wControl, page, showAdminTools, startExtendedSearch, prefsKey, userObject);
+		super(ureq, wControl, page, showAdminTools, startExtendedSearch, false, prefsKey, userObject);
 	}
 
 	@Override

@@ -111,13 +111,16 @@ public class ChecklistManageCheckpointsController extends BasicController {
 	private CloseableModalController cmcUserInfo;
 	private UserInfoMainController uimc;
 	
-	protected ChecklistManageCheckpointsController(UserRequest ureq, WindowControl wControl, Checklist checklist, ICourse course) {
+	private final boolean readOnly;
+	
+	protected ChecklistManageCheckpointsController(UserRequest ureq, WindowControl wControl, Checklist checklist, ICourse course, boolean readOnly) {
 		super(ureq, wControl, Util.createPackageTranslator(UserPropertyHandler.class, ureq.getLocale()));
 		this.checklist = checklist;
 		this.course = course;
 		this.allIdentities = new ArrayList<Identity>();
 		this.notInGroupIdentities = new ArrayList<Identity>();
 		this.lstGroups = new ArrayList<BusinessGroup>();
+		this.readOnly = readOnly;
 		
 		securityManager = BaseSecurityManager.getInstance();
 		userManager = CoreSpringFactory.getImpl(UserManager.class);
@@ -256,8 +259,11 @@ public class ChecklistManageCheckpointsController extends BasicController {
 			manageChecklistTable.addColumnDescriptor(new ChecklistMultiSelectColumnDescriptor(pointTitle, j++));
 			cols++;
 		}
-		manageChecklistTable.addColumnDescriptor(new StaticColumnDescriptor(EDIT_ACTION, "cl.edit.title", translate(EDIT_ACTION)));
-		cols++;
+		
+		if(!readOnly) {
+			manageChecklistTable.addColumnDescriptor(new StaticColumnDescriptor(EDIT_ACTION, "cl.edit.title", translate(EDIT_ACTION)));
+			cols++;
+		}
 		
 		manageChecklistTable.setMultiSelect(false);
 		manageTableData = new ChecklistManageTableDataModel(checkpointList, lstIdents, userPropertyHandlers, cols);

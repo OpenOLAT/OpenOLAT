@@ -590,7 +590,8 @@ public class STCourseNode extends AbstractAccessableCourseNode implements Calcul
 	 *      org.olat.course.run.userview.UserCourseEnvironment)
 	 */
 	@Override
-	public Controller getDetailsEditController(UserRequest ureq, WindowControl wControl, BreadcrumbPanel stackPanel, UserCourseEnvironment userCourseEnvironment) {
+	public Controller getDetailsEditController(UserRequest ureq, WindowControl wControl, BreadcrumbPanel stackPanel,
+			UserCourseEnvironment coachCourseEnv, UserCourseEnvironment assessedUserCourseEnv) {
 		throw new OLATRuntimeException(STCourseNode.class, "Details controler not available in ST nodes", null);
 	}
 

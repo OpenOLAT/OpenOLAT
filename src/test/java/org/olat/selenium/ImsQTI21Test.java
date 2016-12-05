@@ -36,10 +36,12 @@ import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.olat.ims.qti21.QTI21DeliveryOptions.ShowResultsOnFinish;
 import org.olat.selenium.page.LoginPage;
 import org.olat.selenium.page.NavigationPage;
 import org.olat.selenium.page.course.CourseEditorPageFragment;
 import org.olat.selenium.page.course.CoursePageFragment;
+import org.olat.selenium.page.qti.QTI21EditorPage;
 import org.olat.selenium.page.qti.QTI21Page;
 import org.olat.test.ArquillianDeployments;
 import org.olat.test.JunitTestHelper;
@@ -168,5 +170,82 @@ public class ImsQTI21Test {
 		
 		//TODO check the results
 	}
+	
+	/**
+	 * Create a test, import the CSV example, remove the
+	 * first single choice which come if someone create a
+	 * test. Change the delivery settings of the test to
+	 * show the detailled results.<br>
+	 * Run the test and check the results. 
+	 * 
+	 * @param loginPage
+	 * @throws IOException
+	 * @throws URISyntaxException
+	 */
+	@Test
+	@RunAsClient
+	public void importQuestionsCSV(@InitialPage LoginPage authorLoginPage)
+	throws IOException, URISyntaxException {
+		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
+		authorLoginPage.loginAs(author.getLogin(), author.getPassword());
+		
+		//upload a test
+		String qtiTestTitle = "Excel QTI 2.1 " + UUID.randomUUID();
+		navBar
+			.openAuthoringEnvironment()
+			.createQTI21Test(qtiTestTitle)
+			.clickToolbarBack();
 
+		QTI21Page qtiPage = QTI21Page
+			.getQTI12Page(browser);
+		QTI21EditorPage qtiEditor = qtiPage
+			.edit();
+		
+		// import a single choice, a multiple and 2 gap texts
+		qtiEditor
+			.importTable()
+			.importFile("import_qti21_excel.txt")
+			.next()
+			.assertOnNumberOfQuestions(5)
+			.finish();
+		
+		//remove the single choice which come from the creation
+		// of the test
+		qtiEditor
+			.selectNode("Single choice")
+			.deleteNode();
+		
+		// go to options and show the results
+		qtiPage
+			.clickToolbarBack()
+			.options()
+			.showResults(Boolean.TRUE, ShowResultsOnFinish.details)
+			.save();
+		
+		//go to the test
+		qtiPage
+			.clickToolbarBack()
+			.assertOnAssessmentItem()
+			.answerGapText("verbannen", "_RESPONSE_1")
+			.saveAnswer().nextAnswer()
+			.answerGapText(",", "_RESPONSE_1")
+			.answerGapText("", "_RESPONSE_2")
+			.answerGapText("", "_RESPONSE_3")
+			.saveAnswer().nextAnswer()
+			.answerMultipleChoice("Deutschland", "Brasilien", "S\u00FCdafrika")
+			.saveAnswer().nextAnswer()
+			.answerSingleChoice("Italien")
+			.saveAnswer().nextAnswer()
+			.answerCorrectKPrim("Deutschland", "Uruguay")
+			.answerIncorrectKPrim("Frankreich", "Spanien")
+			.saveAnswer()
+			.endTest()
+			.closeTest();
+		
+		//check the results
+		qtiPage
+			.assertOnResults()
+			.assertOnAssessmentTestScore(9)
+			.assertOnAssessmentTestMaxScore(9);
+	}
 }

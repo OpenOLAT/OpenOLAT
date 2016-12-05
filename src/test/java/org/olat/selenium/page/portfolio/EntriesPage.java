@@ -19,10 +19,14 @@
  */
 package org.olat.selenium.page.portfolio;
 
+import java.util.List;
+
+import org.junit.Assert;
 import org.olat.selenium.page.graphene.OOGraphene;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
+import org.openqa.selenium.support.ui.Select;
 
 /**
  * 
@@ -59,6 +63,63 @@ public class EntriesPage {
 		submitButton.click();
 		OOGraphene.waitBusy(browser);
 		return new EntryPage(browser);
+	}
+	
+	public EntryPage selectPageInTableView(String title) {
+		By selectBy = By.xpath("//div[contains(@class,'o_binder_page_listing')]/table//a/span[contains(@class,'o_pf_page')][contains(text(),'" + title + "')]");
+		browser.findElement(selectBy).click();
+		OOGraphene.waitBusy(browser);
+		return new EntryPage(browser);
+	}
+	
+	public EntriesPage assertOnPage(String title) {
+		By pageTitleBy = By.xpath("//div[contains(@class,'o_portfolio_page')]/div/h4[contains(text(),'" + title + "')]");
+		List<WebElement> pageTitleEls = browser.findElements(pageTitleBy);
+		Assert.assertEquals(1, pageTitleEls.size());
+		return this;
+	}
+	
+	public EntriesPage assertOnPageTableView(String title) {
+		By pageTitleBy = By.xpath("//div[contains(@class,'o_binder_page_listing')]/table//a/span[contains(text(),'" + title + "')]");
+		OOGraphene.waitElement(pageTitleBy, 5, browser);
+		List<WebElement> pageTitleEls = browser.findElements(pageTitleBy);
+		Assert.assertEquals(1, pageTitleEls.size());
+		return this;
+	}
+	
+	public EntriesPage switchTableView() {
+		By tableViewBy = By.xpath("//a[i[contains(@class,'o_icon o_icon_table o_icon-lg')]]");
+		browser.findElement(tableViewBy).click();
+		OOGraphene.waitBusy(browser);
+		
+		By classicViewBy = By.cssSelector(".o_rendertype_classic");
+		OOGraphene.waitElement(classicViewBy, 5, browser);
+		return this;
+	}
+	
+	public EntriesPage assertEmptyTableView() {
+		By emptyMessageBy = By.cssSelector("div.o_portfolio_entries div.o_info");
+		OOGraphene.waitElement(emptyMessageBy, 5, browser);
+		return this;
+	}
+	
+	public EntriesPage restore(String title, String binder, String section) {
+		By restoreBy = By.xpath("//table//tr[td/a/span[contains(text(),'" + title + "')]]/td/a[contains(@href,'restore')]");
+		browser.findElement(restoreBy).click();
+		OOGraphene.waitBusy(browser);
+		
+		By selectBinderBy = By.cssSelector("#o_cobinders_SELBOX select");
+		WebElement selectBinderEl = browser.findElement(selectBinderBy);
+		new Select(selectBinderEl).selectByVisibleText(binder);
+
+		By selectSectionBy = By.cssSelector("#o_cosections_SELBOX select");
+		WebElement selectSectionEl = browser.findElement(selectSectionBy);
+		new Select(selectSectionEl).selectByVisibleText(section);
+		
+		By restoreButtonBy = By.cssSelector("div.modal-dialog button");
+		browser.findElement(restoreButtonBy).click();
+		OOGraphene.waitBusy(browser);
+		return this;
 	}
 	
 }

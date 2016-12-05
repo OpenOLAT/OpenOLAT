@@ -84,39 +84,42 @@ public class CourseBusinessGroupListController extends AbstractBusinessGroupList
 	private DialogBoxController confirmRemoveMultiResource;
 	private SelectBusinessGroupController selectController;
 	
-	public CourseBusinessGroupListController(UserRequest ureq, WindowControl wControl, RepositoryEntry re, boolean groupManagementRight) {
-		super(ureq, wControl, "group_list", false, false, "course", re);
+	public CourseBusinessGroupListController(UserRequest ureq, WindowControl wControl, RepositoryEntry re,
+			boolean groupManagementRight, boolean readOnly) {
+		super(ureq, wControl, "group_list", false, false, readOnly, "course", re);
 		this.re = re;
 		this.groupManagementRight = groupManagementRight;
 	}
 
 	@Override
 	protected void initButtons(FormItemContainer formLayout, UserRequest ureq) {
-		initButtons(formLayout, ureq, true, false, false);
+		initButtons(formLayout, ureq, !readOnly, false, false);
 		
-		tableEl.setMultiSelect(true);
-		tableEl.setSelectAllEnable(true);
+		tableEl.setMultiSelect(!readOnly);
+		tableEl.setSelectAllEnable(!readOnly);
 		
 		boolean managed = RepositoryEntryManagedFlag.isManaged(re, RepositoryEntryManagedFlag.groups);
-		if(!managed) {
+		if(!managed && !readOnly) {
 			duplicateButton = uifactory.addFormLink("table.duplicate", TABLE_ACTION_DUPLICATE, "table.duplicate", null, formLayout, Link.BUTTON);
 			mergeButton = uifactory.addFormLink("table.merge", TABLE_ACTION_MERGE, "table.merge", null, formLayout, Link.BUTTON);
 		}
-		usersButton = uifactory.addFormLink("table.users.management", TABLE_ACTION_USERS, "table.users.management", null, formLayout, Link.BUTTON);
-		configButton = uifactory.addFormLink("table.config", TABLE_ACTION_CONFIG, "table.config", null, formLayout, Link.BUTTON);
-		emailButton = uifactory.addFormLink("table.email", TABLE_ACTION_EMAIL, "table.email", null, formLayout, Link.BUTTON);
+		if(!readOnly) {
+			usersButton = uifactory.addFormLink("table.users.management", TABLE_ACTION_USERS, "table.users.management", null, formLayout, Link.BUTTON);
+			configButton = uifactory.addFormLink("table.config", TABLE_ACTION_CONFIG, "table.config", null, formLayout, Link.BUTTON);
+			emailButton = uifactory.addFormLink("table.email", TABLE_ACTION_EMAIL, "table.email", null, formLayout, Link.BUTTON);
+		}
 
-		if(!managed) {
+		if(!managed && !readOnly) {
 			removeGroups = uifactory.addFormLink("table.header.remove", TABLE_ACTION_MULTI_UNLINK, "table.header.remove", null, formLayout, Link.BUTTON);
 		}
 
 		createGroup = uifactory.addFormLink("group.create", formLayout, Link.BUTTON);
 		createGroup.setElementCssClass("o_sel_course_new_group");
-		createGroup.setVisible(!managed);
+		createGroup.setVisible(!managed && !readOnly);
 		createGroup.setIconLeftCSS("o_icon o_icon-fw o_icon_add");
 		addGroup = uifactory.addFormLink("group.add", formLayout, Link.BUTTON);
 		addGroup.setElementCssClass("o_sel_course_select_group");
-		addGroup.setVisible(!managed);
+		addGroup.setVisible(!managed && !readOnly);
 		addGroup.setIconLeftCSS("o_icon o_icon-fw o_icon_add_search");
 	}
 
@@ -153,9 +156,10 @@ public class CourseBusinessGroupListController extends AbstractBusinessGroupList
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(true, Cols.accessTypes.i18n(), Cols.accessTypes.ordinal(),
 				true, Cols.accessTypes.name(), FlexiColumnModel.ALIGNMENT_LEFT, new BGAccessControlledCellRenderer()));
 
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("table.header.edit", translate("table.header.edit"), TABLE_ACTION_EDIT));
-		
-		if(!managed) {
+		if(!readOnly) {
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("table.header.edit", translate("table.header.edit"), TABLE_ACTION_EDIT));
+		}
+		if(!managed && !readOnly) {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("table.header.remove", Cols.unlink.ordinal(), TABLE_ACTION_UNLINK,
 					new BooleanCellRenderer(new StaticFlexiCellRenderer(translate("table.header.remove"), TABLE_ACTION_UNLINK), null)));
 		}

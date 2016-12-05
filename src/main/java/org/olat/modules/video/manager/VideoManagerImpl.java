@@ -258,7 +258,7 @@ public class VideoManagerImpl implements VideoManager {
 			ch.close();
 
 			return true;
-		} catch (Exception e) {
+		} catch (Exception | AssertionError e) {
 			log.error("Could not get frame::" + frameNumber + " for video::" + videoFile.getAbsolutePath(), e);
 			return false;
 		} 
@@ -309,7 +309,16 @@ public class VideoManagerImpl implements VideoManager {
 	public VideoMetadata readVideoMetadataFile(OLATResource videoResource){
 		VFSContainer baseContainer= FileResourceManager.getInstance().getFileResourceRootImpl(videoResource);
 		VFSLeaf metaDataFile = VFSManager.resolveOrCreateLeafFromPath(baseContainer, FILENAME_VIDEO_METADATA_XML);
-		return (VideoMetadata) XStreamHelper.readObject(XStreamHelper.createXStreamInstance(), metaDataFile);
+		try {
+			return (VideoMetadata) XStreamHelper.readObject(XStreamHelper.createXStreamInstance(), metaDataFile);
+		} catch (Exception e) {
+			log.error("Error while parsing XStream file for videoResource::" + videoResource, e);
+			// return an empty, so at least it displays something and not an error
+			VideoMetadata meta =  new VideoMetadataImpl();
+			meta.setWidth(800);
+			meta.setHeight(600);
+			return meta;
+		}
 	}
 	
 	@Override
@@ -524,8 +533,8 @@ public class VideoManagerImpl implements VideoManager {
 			metaData.setWidth(videoSize.getWidth());
 			metaData.setHeight(videoSize.getHeight());			
 		} else {
-			metaData.setWidth(600);
-			metaData.setHeight(800);						
+			metaData.setHeight(600);
+			metaData.setWidth(800);						
 		}
 		// calculate video duration
 		long duration = movieService.getDuration(targetFile, FILETYPE_MP4);
@@ -550,6 +559,27 @@ public class VideoManagerImpl implements VideoManager {
 		}
 		
 		return true;
+	}
+	
+	@Override
+	public VideoMetadata getMetaDataFromOLATResource (OLATResource videoResource){
+		VFSContainer masterContainer = getMasterContainer(videoResource);
+		VFSLeaf targetFile = (VFSLeaf) masterContainer.resolve(FILENAME_VIDEO_MP4);
+		
+		// 1) generate Metadata file
+		VideoMetadata metaData = new VideoMetadataImpl();
+		// calculate video size
+		Size videoSize = movieService.getSize(targetFile, FILETYPE_MP4);
+		if (videoSize != null) {
+			metaData.setWidth(videoSize.getWidth());
+			metaData.setHeight(videoSize.getHeight());			
+		} else {
+			metaData.setWidth(800);
+			metaData.setHeight(600);						
+		}
+		// 2) update XML file
+		writeVideoMetadataFile(metaData, videoResource);
+		return metaData;
 	}
 
 	@Override
@@ -721,6 +751,14 @@ public class VideoManagerImpl implements VideoManager {
 				log.error("Unable to load WEBVTT File for resource::" + videoResource,e);
 			}
 		}
+	}
+	
+	@Override
+	public long getVideoDuration (OLATResource videoResource){
+		VFSContainer masterContainer = getMasterContainer(videoResource);
+		VFSLeaf video = (VFSLeaf) masterContainer.resolve(FILENAME_VIDEO_MP4);	
+		long duration = movieService.getDuration(video, FILETYPE_MP4);
+		return duration;
 	}
 
 }

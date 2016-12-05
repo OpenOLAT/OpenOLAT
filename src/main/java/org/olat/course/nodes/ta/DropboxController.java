@@ -134,6 +134,7 @@ public class DropboxController extends BasicController {
 		myContent = createVelocityContainer("dropbox");
 		
 		ulButton = LinkFactory.createButton("dropbox.upload", myContent, this);
+		ulButton.setVisible(!userCourseEnv.isCourseReadOnly());
 		
 		if (!previewMode) {
 			VFSContainer fDropbox = getDropBox(ureq.getIdentity());

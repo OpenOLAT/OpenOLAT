@@ -75,6 +75,7 @@ public class AssessmentForm extends FormBasicController {
 	private final boolean hasScore, hasPassed, hasComment, hasAttempts;
 	private Float min, max, cut;
 
+	private final UserCourseEnvironment coachCourseEnv;
 	private final UserCourseEnvironment assessedUserCourseEnv;
 	private final AssessableCourseNode assessableCourseNode;
 	
@@ -91,7 +92,7 @@ public class AssessmentForm extends FormBasicController {
 	 * @param trans The package translator
 	 */
 	public AssessmentForm(UserRequest ureq, WindowControl wControl, AssessableCourseNode assessableCourseNode,
-			UserCourseEnvironment assessedUserCourseEnv) {
+			UserCourseEnvironment coachCourseEnv, UserCourseEnvironment assessedUserCourseEnv) {
 		super(ureq, wControl);
 		setTranslator(Util.createPackageTranslator(AssessmentModule.class, getLocale(), getTranslator()));
 		
@@ -100,6 +101,7 @@ public class AssessmentForm extends FormBasicController {
 		hasPassed = assessableCourseNode.hasPassedConfigured();
 		hasComment = assessableCourseNode.hasCommentConfigured();
 		
+		this.coachCourseEnv = coachCourseEnv;
 		this.assessedUserCourseEnv = assessedUserCourseEnv;
 		this.assessableCourseNode = assessableCourseNode;
 
@@ -337,25 +339,25 @@ public class AssessmentForm extends FormBasicController {
 		boolean closed = (scoreEval != null && scoreEval.getAssessmentStatus() == AssessmentEntryStatus.done);
 		
 		if(hasPassed) {
-			passed.setEnabled(!closed && cut == null);
+			passed.setEnabled(!closed && cut == null && !coachCourseEnv.isCourseReadOnly());
 		}
 		
 		if(hasScore) {
-			score.setEnabled(!closed);
+			score.setEnabled(!closed && !coachCourseEnv.isCourseReadOnly());
 		}
 		
 		if(hasComment) {
-			userComment.setEnabled(!closed);
+			userComment.setEnabled(!closed && !coachCourseEnv.isCourseReadOnly());
 		}
-		coachComment.setEnabled(!closed);
+		coachComment.setEnabled(!closed && !coachCourseEnv.isCourseReadOnly());
 			
 		if (hasAttempts) {
-			attempts.setEnabled(!closed);
+			attempts.setEnabled(!closed && !coachCourseEnv.isCourseReadOnly());
 		}
 		
-		submitButton.setVisible(!closed);
-		saveAndDoneLink.setVisible(!closed);
-		reopenLink.setVisible(closed);
+		submitButton.setVisible(!closed && !coachCourseEnv.isCourseReadOnly());
+		saveAndDoneLink.setVisible(!closed && !coachCourseEnv.isCourseReadOnly());
+		reopenLink.setVisible(closed && !coachCourseEnv.isCourseReadOnly());
 	}
 
 	@Override

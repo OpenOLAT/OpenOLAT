@@ -121,24 +121,31 @@ public class BasicLTICourseNode extends AbstractAccessableCourseNode implements 
 			UserCourseEnvironment userCourseEnv, NodeEvaluation ne, String nodecmd) {
 		updateModuleConfigDefaults(false);
 		
+				ModuleConfiguration config = getModuleConfiguration();
 		Controller runCtrl;
-		Roles roles = ureq.getUserSession().getRoles();
-		if (roles.isGuestOnly()) {
-			ModuleConfiguration config = getModuleConfiguration();
-			boolean assessable = config.getBooleanSafe(BasicLTICourseNode.CONFIG_KEY_HAS_SCORE_FIELD, false);
-			boolean sendName = config.getBooleanSafe(LTIConfigForm.CONFIG_KEY_SENDNAME, false);
-			boolean sendEmail = config.getBooleanSafe(LTIConfigForm.CONFIG_KEY_SENDEMAIL, false);
-			boolean customValues = StringHelper.containsNonWhitespace(config.getStringValue(LTIConfigForm.CONFIG_KEY_CUSTOM));
-			if(assessable || sendName || sendEmail || customValues) {
-				Translator trans = Util.createPackageTranslator(BasicLTICourseNode.class, ureq.getLocale());
-				String title = trans.translate("guestnoaccess.title");
-				String message = trans.translate("guestnoaccess.message");
-				runCtrl = MessageUIFactory.createInfoMessage(ureq, wControl, title, message);
+		if(userCourseEnv.isCourseReadOnly()) {
+			Translator trans = Util.createPackageTranslator(BasicLTICourseNode.class, ureq.getLocale());
+            String title = trans.translate("freezenoaccess.title");
+            String message = trans.translate("freezenoaccess.message");
+            runCtrl = MessageUIFactory.createInfoMessage(ureq, wControl, title, message);
+		} else {
+			Roles roles = ureq.getUserSession().getRoles();
+			if (roles.isGuestOnly()) {
+				boolean assessable = config.getBooleanSafe(BasicLTICourseNode.CONFIG_KEY_HAS_SCORE_FIELD, false);
+				boolean sendName = config.getBooleanSafe(LTIConfigForm.CONFIG_KEY_SENDNAME, false);
+				boolean sendEmail = config.getBooleanSafe(LTIConfigForm.CONFIG_KEY_SENDEMAIL, false);
+				boolean customValues = StringHelper.containsNonWhitespace(config.getStringValue(LTIConfigForm.CONFIG_KEY_CUSTOM));
+				if(assessable || sendName || sendEmail || customValues) {
+					Translator trans = Util.createPackageTranslator(BasicLTICourseNode.class, ureq.getLocale());
+					String title = trans.translate("guestnoaccess.title");
+					String message = trans.translate("guestnoaccess.message");
+					runCtrl = MessageUIFactory.createInfoMessage(ureq, wControl, title, message);
+				} else {
+					runCtrl = new LTIRunController(wControl, getModuleConfiguration(), ureq, this, userCourseEnv);
+				}
 			} else {
 				runCtrl = new LTIRunController(wControl, getModuleConfiguration(), ureq, this, userCourseEnv);
 			}
-		} else {
-			runCtrl = new LTIRunController(wControl, getModuleConfiguration(), ureq, this, userCourseEnv);
 		}
 		Controller ctrl = TitledWrapperHelper.getWrapper(ureq, wControl, runCtrl, this, "o_lti_icon");
 		return new NodeRunConstructionResult(ctrl);
@@ -333,14 +340,14 @@ public class BasicLTICourseNode extends AbstractAccessableCourseNode implements 
 	@Override
 	public AssessmentEntry getUserAssessmentEntry(UserCourseEnvironment userCourseEnv) {
 		AssessmentManager am = userCourseEnv.getCourseEnvironment().getAssessmentManager();
-		return am.getAssessmentEntry(this, userCourseEnv.getIdentityEnvironment().getIdentity(), null);
+		return am.getAssessmentEntry(this, userCourseEnv.getIdentityEnvironment().getIdentity());
 	}
 
 	@Override
 	public AssessmentEvaluation getUserScoreEvaluation(UserCourseEnvironment userCourseEnv) {
 		AssessmentManager am = userCourseEnv.getCourseEnvironment().getAssessmentManager();
 		Identity mySelf = userCourseEnv.getIdentityEnvironment().getIdentity();
-		AssessmentEntry entry = am.getAssessmentEntry(this, mySelf, null);
+		AssessmentEntry entry = am.getAssessmentEntry(this, mySelf);
 		return getUserScoreEvaluation(entry) ;
 	}
 
@@ -390,9 +397,9 @@ public class BasicLTICourseNode extends AbstractAccessableCourseNode implements 
 
 	@Override
 	public Controller getDetailsEditController(UserRequest ureq, WindowControl wControl,
-			BreadcrumbPanel stackPanel, UserCourseEnvironment userCourseEnvironment) {
-		Identity assessedIdentity = userCourseEnvironment.getIdentityEnvironment().getIdentity();
-		OLATResource resource = userCourseEnvironment.getCourseEnvironment().getCourseGroupManager().getCourseResource();
+			BreadcrumbPanel stackPanel, UserCourseEnvironment coachCourseEnv, UserCourseEnvironment assessedUserCourseEnv) {
+		Identity assessedIdentity = assessedUserCourseEnv.getIdentityEnvironment().getIdentity();
+		OLATResource resource = assessedUserCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseResource();
 		return new LTIResultDetailsController(ureq, wControl, assessedIdentity, resource, getIdent());
 	}
 

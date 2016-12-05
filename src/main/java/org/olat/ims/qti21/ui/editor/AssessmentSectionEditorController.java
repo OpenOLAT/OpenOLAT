@@ -71,7 +71,7 @@ public class AssessmentSectionEditorController extends ItemSessionControlControl
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormTitle("assessment.section.config");
-		setFormContextHelp("Test and Questionnaire Editor in Detail#details_testeditor_test_konf");
+		setFormContextHelp("Test editor QTI 2.1 in detail#details_testeditor_section");
 		if(!editable) {
 			setFormWarning("warning.alien.assessment.test");
 		}
@@ -100,6 +100,10 @@ public class AssessmentSectionEditorController extends ItemSessionControlControl
 		}
 		
 		super.initForm(formLayout, listener, ureq);
+		allowSkippingEl.setHelpUrlForManualPage("Test editor QTI 2.1 in detail#details_testeditor_section");
+		allowCommentEl.setHelpUrlForManualPage("Test editor QTI 2.1 in detail#details_testeditor_section");
+		allowReviewEl.setHelpUrlForManualPage("Test editor QTI 2.1 in detail#details_testeditor_section");
+		showSolutionEl.setHelpUrlForManualPage("Test editor QTI 2.1 in detail#details_testeditor_section");
 		
 		//shuffle
 		String[] yesnoValues = new String[]{ translate("yes"), translate("no") };

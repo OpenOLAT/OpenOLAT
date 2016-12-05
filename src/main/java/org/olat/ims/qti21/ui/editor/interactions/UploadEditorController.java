@@ -44,7 +44,7 @@ import org.olat.ims.qti21.ui.editor.events.AssessmentItemEvent;
  *
  */
 public class UploadEditorController extends FormBasicController {
-	
+
 	private TextElement titleEl;
 	private RichTextElement textEl;
 
@@ -52,18 +52,16 @@ public class UploadEditorController extends FormBasicController {
 	private final File rootDirectory;
 	private final VFSContainer rootContainer;
 	
-	private final boolean restrictedEdit;
 	private final UploadAssessmentItemBuilder itemBuilder;
 	
 	public UploadEditorController(UserRequest ureq, WindowControl wControl, UploadAssessmentItemBuilder itemBuilder,
-			File rootDirectory, VFSContainer rootContainer, File itemFile, boolean restrictedEdit) {
+			File rootDirectory, VFSContainer rootContainer, File itemFile) {
 		super(ureq, wControl);
 		setTranslator(Util.createPackageTranslator(AssessmentTestEditorController.class, getLocale()));
 		this.itemFile = itemFile;
 		this.itemBuilder = itemBuilder;
 		this.rootDirectory = rootDirectory;
 		this.rootContainer = rootContainer;
-		this.restrictedEdit = restrictedEdit;
 		initForm(ureq);
 	}
 
@@ -78,7 +76,7 @@ public class UploadEditorController extends FormBasicController {
 		VFSContainer itemContainer = (VFSContainer)rootContainer.resolve(relativePath);
 
 		String description = itemBuilder.getQuestion();
-		textEl = uifactory.addRichTextElementForQTI21("desc", "form.imd.descr", description, 8, -1, itemContainer,
+		textEl = uifactory.addRichTextElementForQTI21("desc", "form.imd.descr", description, 16, -1, itemContainer,
 				formLayout, ureq.getUserSession(), getWindowControl());
 
 		// Submit Button
@@ -110,10 +108,11 @@ public class UploadEditorController extends FormBasicController {
 	protected void formOK(UserRequest ureq) {
 		//title
 		itemBuilder.setTitle(titleEl.getValue());
+
 		//question
 		String questionText = textEl.getRawValue();
 		itemBuilder.setQuestion(questionText);
 		
-		fireEvent(ureq, new AssessmentItemEvent(AssessmentItemEvent.ASSESSMENT_ITEM_CHANGED, itemBuilder.getAssessmentItem(), QTI21QuestionType.essay));
+		fireEvent(ureq, new AssessmentItemEvent(AssessmentItemEvent.ASSESSMENT_ITEM_CHANGED, itemBuilder.getAssessmentItem(), QTI21QuestionType.upload));
 	}
 }

@@ -30,7 +30,6 @@ import org.olat.admin.user.UserSearchController;
 import org.olat.basesecurity.events.MultiIdentityChosenEvent;
 import org.olat.basesecurity.events.SingleIdentityChosenEvent;
 import org.olat.commons.calendar.model.KalendarEvent;
-import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
@@ -58,6 +57,7 @@ import org.olat.core.util.mail.MailNotificationEditController;
 import org.olat.core.util.mail.MailTemplate;
 import org.olat.core.util.mail.MailerResult;
 import org.olat.modules.co.ContactFormController;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import de.bps.course.nodes.DENCourseNode;
 
@@ -91,19 +91,20 @@ public class DENManageParticipantsController extends BasicController {
 	private CloseableModalController manageParticipantsModalCntrl;
 	
 	private DENManager denManager;
+	@Autowired
 	private MailManager mailManager;
 	
-	public DENManageParticipantsController(UserRequest ureq, WindowControl wControl, OLATResourceable ores, DENCourseNode courseNode) {
+	public DENManageParticipantsController(UserRequest ureq, WindowControl wControl,
+			OLATResourceable ores, DENCourseNode courseNode, boolean readOnly) {
 		super(ureq, wControl);
 		
 		this.ores = ores;
 		this.courseNode = courseNode;
 		denManager = DENManager.getInstance();
-		mailManager = CoreSpringFactory.getImpl(MailManager.class);
 		
 		//prepare list of enrolled participants
 		dateList = denManager.getDENEvents(ores.getResourceableId(), courseNode.getIdent());
-		listTableData = new DENListTableDataModel(dateList, getTranslator());
+		listTableData = new DENListTableDataModel(dateList, getTranslator(), readOnly);
 		tableListParticipants = denManager.createListParticipantsTable(ureq, wControl, getTranslator(), listTableData);
 		listenTo(tableListParticipants);
 		

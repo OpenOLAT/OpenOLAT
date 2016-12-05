@@ -65,4 +65,51 @@ public class BindersPage {
 		OOGraphene.waitElement(contentBy, 5, browser);
 		return new BinderPage(browser);
 	}
+	
+	public BinderPage selectBinder(String title) {
+		By binderBy = By.xpath("//div[contains(@class,'o_binder')][div/h4[contains(text(),'" + title + "')]]//div[contains(@class,'pull-right')]/a");
+		browser.findElement(binderBy).click();
+		OOGraphene.waitBusy(browser);
+		return new BinderPage(browser);
+	}
+	
+	public BindersPage switchTableView() {
+		By tableViewBy = By.xpath("//a[i[contains(@class,'o_icon o_icon_table o_icon-lg')]]");
+		browser.findElement(tableViewBy).click();
+		OOGraphene.waitBusy(browser);
+		
+		By classicViewBy = By.cssSelector(".o_rendertype_classic");
+		OOGraphene.waitElement(classicViewBy, 5, browser);
+		return this;
+	}
+	
+	/**
+	 * Only check the presence of the message "table empty".
+	 * 
+	 * @return
+	 */
+	public BindersPage assertEmptyTableView() {
+		By emptyMessageBy = By.cssSelector("div.o_segments_content div.o_info");
+		OOGraphene.waitElement(emptyMessageBy, 5, browser);
+		return this;
+	}
+	
+	public BinderPage selectBinderInTableView(String title) {
+		By binderBy = By.xpath("//table//tr/td/a[contains(text(),'" + title + "')]");
+		browser.findElement(binderBy).click();
+		OOGraphene.waitBusy(browser);
+		return new BinderPage(browser);
+	}
+	
+	public BindersPage restoreBinder(String title) {
+		By restoreBy = By.xpath("//table//tr[td/a[contains(text(),'" + title + "')]]/td/a[contains(@href,'restore')]");
+		browser.findElement(restoreBy).click();
+		OOGraphene.waitBusy(browser);
+		
+		By confirmButtonBy = By.xpath("//div[contains(@class,'modal-dialo')]//div[contains(@class,'modal-footer')]/a[contains(@onclick,'link_0')]");
+		OOGraphene.waitElement(confirmButtonBy, 5, browser);
+		browser.findElement(confirmButtonBy).click();
+		OOGraphene.waitAndCloseBlueMessageWindow(browser);
+		return this;
+	}
 }

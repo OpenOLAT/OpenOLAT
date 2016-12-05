@@ -71,7 +71,7 @@ public class DENCourseNodeNotificationHandler implements NotificationsHandler {
 			if (NotificationsManager.getInstance().isPublisherValid(p) && compareDate.before(latestNews)) {
 				Long courseId = new Long(p.getData());
 				final ICourse course = loadCourseFromId(courseId);
-				if (course != null) {
+				if (courseStatus(course)) {
 					final List<DENCourseNode> denNodes = getCourseDENNodes(course);
 					final Translator trans = Util.createPackageTranslator(DENCourseNodeNotificationHandler.class, locale);
 
@@ -98,6 +98,12 @@ public class DENCourseNodeNotificationHandler implements NotificationsHandler {
 		}
 
 		return si;
+	}
+	
+	private boolean courseStatus(ICourse course) {
+		return course != null
+				&& !course.getCourseEnvironment().getCourseGroupManager().getCourseEntry().getRepositoryEntryStatus().isUnpublished()
+				&& !course.getCourseEnvironment().getCourseGroupManager().getCourseEntry().getRepositoryEntryStatus().isClosed();
 	}
 	
 	private void checkPublisher(Publisher p) {

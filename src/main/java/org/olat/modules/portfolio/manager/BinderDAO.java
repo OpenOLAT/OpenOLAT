@@ -78,6 +78,8 @@ public class BinderDAO {
 	private AssignmentDAO assignmentDao;
 	@Autowired
 	private AssessmentSectionDAO assessmentSectionDao;
+	@Autowired
+	private BinderUserInformationsDAO userInformationsDAO;
 	
 	public BinderImpl createAndPersist(String title, String summary, String imagePath, RepositoryEntry entry) {
 		BinderImpl binder = new BinderImpl();
@@ -343,7 +345,7 @@ public class BinderDAO {
 	}
 	
 	public int deleteBinder(BinderRef binderRef) {
-		int rows = 0;
+		int rows = userInformationsDAO.deleteBinderUserInfos(binderRef);
 		
 		BinderImpl binder = (BinderImpl)loadByKey(binderRef.getKey());
 		List<Section> sections = new ArrayList<>(binder.getSections());
@@ -370,6 +372,7 @@ public class BinderDAO {
 		
 		binder.getSections().clear();
 		
+		
 		Group baseGroup = binder.getBaseGroup();
 		rows += groupDao.removeMemberships(baseGroup);
 		dbInstance.getCurrentEntityManager().remove(binder);
@@ -378,6 +381,8 @@ public class BinderDAO {
 	}
 	
 	public int deleteBinderTemplate(BinderImpl binder) {
+		int rows = userInformationsDAO.deleteBinderUserInfos(binder);
+		
 		List<Section> sections = new ArrayList<>(binder.getSections());
 		for(Section section:sections) {
 			binder = (BinderImpl)deleteSection(binder, section);
@@ -387,7 +392,7 @@ public class BinderDAO {
 		
 		//remove reference via template
 		String sb = "update pfbinder binder set binder.template=null where binder.template.key=:binderKey";
-		int rows = dbInstance.getCurrentEntityManager()
+		rows += dbInstance.getCurrentEntityManager()
 			.createQuery(sb)
 			.setParameter("binderKey", binder.getKey())
 			.executeUpdate();
@@ -904,7 +909,7 @@ public class BinderDAO {
 			.getResultList();
 		return sections == null || sections.isEmpty() ? null : sections.get(0);
 	}
-	/*
+	
 	public List<Section> getSections(BinderRef binder) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select section from pfsection as section")
@@ -916,13 +921,13 @@ public class BinderDAO {
 			.createQuery(sb.toString(), Section.class)
 			.setParameter("binderKey", binder.getKey())
 			.getResultList();
-	}*/
+	}
 	
-	public List<Section> getSections(BinderRef binder) {
+	/*public List<Section> getSections(BinderRef binder) {
 		BinderImpl refBinder = dbInstance.getCurrentEntityManager()
 				.getReference(BinderImpl.class, binder.getKey());
 		return refBinder.getSections();
-	}
+	}*/
 	
 	public Binder moveUpSection(BinderImpl binder, Section section) {
 		binder.getSections().size();

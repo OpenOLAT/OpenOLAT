@@ -115,7 +115,7 @@ public class ScormRunController extends BasicController implements ScormAPICallb
 		// assertion to make sure the moduleconfig is valid
 		if (!ScormEditController.isModuleConfigValid(config))
 			throw new AssertException("scorm run controller had an invalid module config:" + config.toString());
-		this.isPreview = isPreview;
+		this.isPreview = isPreview || userCourseEnv.isCourseReadOnly();
 		this.userCourseEnv = userCourseEnv;
 		this.config = config;
 		this.scormNode = scormNode;
@@ -146,7 +146,7 @@ public class ScormRunController extends BasicController implements ScormAPICallb
 		// score was given back by the SCORM
 		// set start button if max attempts are not reached
 		if (!maxAttemptsReached()) {
-			chooseScormRunMode = new ChooseScormRunModeForm(ureq, getWindowControl(), !isAssessable);
+			chooseScormRunMode = new ChooseScormRunModeForm(ureq, getWindowControl(), !isAssessable, userCourseEnv.isCourseReadOnly());
 			listenTo(chooseScormRunMode);
 			startPage.put("chooseScormRunMode", chooseScormRunMode.getInitialComponent());
 			startPage.contextPut("maxAttemptsReached", Boolean.FALSE);
@@ -334,7 +334,6 @@ public class ScormRunController extends BasicController implements ScormAPICallb
 		// configure some display options
 		boolean showNavButtons = config.getBooleanSafe(ScormEditController.CONFIG_SHOWNAVBUTTONS, true);
 		scormDispC.showNavButtons(showNavButtons);
-		DeliveryOptions deliveryOptions = (DeliveryOptions)config.get(ScormEditController.CONFIG_DELIVERY_OPTIONS);
 		if(deliveryOptions != null && deliveryOptions.getInherit() != null && deliveryOptions.getInherit().booleanValue()) {
 			ScormPackageConfig pConfig = ScormMainManager.getInstance().getScormPackageConfig(cpRoot);
 			deliveryOptions = (pConfig == null ? null : pConfig.getDeliveryOptions());

@@ -79,6 +79,7 @@ public class GTASampleSolutionsEditController extends FormBasicController {
 	private HTMLEditorController newSolutionEditorCtrl, editSolutionEditorCtrl;
 	
 	private final File solutionDir;
+	private final boolean readOnly;
 	private final GTACourseNode gtaNode;
 	private final CourseEnvironment courseEnv;
 	private final VFSContainer solutionContainer;
@@ -93,9 +94,11 @@ public class GTASampleSolutionsEditController extends FormBasicController {
 	@Autowired
 	private NotificationsManager notificationsManager;
 	
-	public GTASampleSolutionsEditController(UserRequest ureq, WindowControl wControl, GTACourseNode gtaNode, CourseEnvironment courseEnv) {
+	public GTASampleSolutionsEditController(UserRequest ureq, WindowControl wControl, GTACourseNode gtaNode,
+			CourseEnvironment courseEnv, boolean readOnly) {
 		super(ureq, wControl, "edit_solution_list");
 		this.gtaNode = gtaNode;
+		this.readOnly = readOnly;
 		this.courseEnv = courseEnv;
 		solutionDir = gtaManager.getSolutionsDirectory(courseEnv, gtaNode);
 		solutionContainer = gtaManager.getSolutionsContainer(courseEnv, gtaNode);
@@ -109,19 +112,23 @@ public class GTASampleSolutionsEditController extends FormBasicController {
 		addSolutionLink = uifactory.addFormLink("add.solution", formLayout, Link.BUTTON);
 		addSolutionLink.setElementCssClass("o_sel_course_gta_add_solution");
 		addSolutionLink.setIconLeftCSS("o_icon o_icon_upload");
+		addSolutionLink.setVisible(!readOnly);
 		createSolutionLink = uifactory.addFormLink("create.solution", formLayout, Link.BUTTON);
 		createSolutionLink.setElementCssClass("o_sel_course_gta_create_solution");
 		createSolutionLink.setIconLeftCSS("o_icon o_icon_edit");
+		createSolutionLink.setVisible(!readOnly);
 
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(SolCols.title.i18nKey(), SolCols.title.ordinal()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(SolCols.file.i18nKey(), SolCols.file.ordinal()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(SolCols.author.i18nKey(), SolCols.author.ordinal()));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("table.header.edit", SolCols.edit.ordinal(), "edit",
-				new BooleanCellRenderer(
-						new StaticFlexiCellRenderer(translate("edit"), "edit"),
-						new StaticFlexiCellRenderer(translate("replace"), "edit"))));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("table.header.edit", translate("delete"), "delete"));
+		if(!readOnly) {
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("table.header.edit", SolCols.edit.ordinal(), "edit",
+					new BooleanCellRenderer(
+							new StaticFlexiCellRenderer(translate("edit"), "edit"),
+							new StaticFlexiCellRenderer(translate("replace"), "edit"))));
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("table.header.edit", translate("delete"), "delete"));
+		}
 
 		solutionModel = new SolutionTableModel(columnsModel);
 		solutionTable = uifactory.addTableElement(getWindowControl(), "table", solutionModel, getTranslator(), formLayout);

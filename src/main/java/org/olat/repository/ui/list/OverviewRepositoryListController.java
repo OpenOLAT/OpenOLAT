@@ -68,7 +68,7 @@ public class OverviewRepositoryListController extends BasicController implements
 	private final VelocityContainer mainVC;
 	private final SegmentViewComponent segmentView;
 	private final Link myCourseLink;
-	private Link favoriteLink, catalogLink, searchCourseLink;
+	private Link favoriteLink, catalogLink, searchCourseLink, closedCourseLink;
 	
 	private Controller currentCtrl;
 	private RepositoryEntryListController markedCtrl;
@@ -78,6 +78,7 @@ public class OverviewRepositoryListController extends BasicController implements
 	private CatalogNodeController catalogCtrl;
 	private BreadcrumbedStackedPanel catalogStackPanel;
 	private RepositoryEntryListController searchCoursesCtrl;
+	private RepositoryEntryListController closedCoursesCtrl;
 	private BreadcrumbedStackedPanel searchCoursesStackPanel;
 	
 	private final boolean isGuestOnly;
@@ -122,6 +123,9 @@ public class OverviewRepositoryListController extends BasicController implements
 			searchCourseLink.setElementCssClass("o_sel_mycourses_search");
 			segmentView.addSegment(searchCourseLink, false);
 		}
+		closedCourseLink = LinkFactory.createLink("search.courses.closed", mainVC, this);
+		closedCourseLink.setElementCssClass("o_sel_mycourses_closed");
+		segmentView.addSegment(closedCourseLink, false);
 		
 		eventBus = ureq.getUserSession().getSingleUserEventCenter();
 		eventBus.registerFor(this, getIdentity(), RepositoryService.REPOSITORY_EVENT_ORES);
@@ -179,6 +183,9 @@ public class OverviewRepositoryListController extends BasicController implements
 			} else if("Search".equalsIgnoreCase(segment) && searchCourseLink != null) {
 				doOpenSearchCourses(ureq).activate(ureq, subEntries, entry.getTransientState());
 				segmentView.select(searchCourseLink);
+			} else if("Closed".equalsIgnoreCase(segment) && closedCourseLink != null) {
+				doOpenClosedCourses(ureq).activate(ureq, subEntries, entry.getTransientState());
+				segmentView.select(closedCourseLink);
 			} else {
 				//default if the others fail
 				doOpenMyCourses(ureq).activate(ureq, subEntries, entry.getTransientState());
@@ -225,6 +232,8 @@ public class OverviewRepositoryListController extends BasicController implements
 					doOpenCatalog(ureq);
 				} else if(clickedLink == searchCourseLink) {
 					doOpenSearchCourses(ureq);
+				} else if(clickedLink == closedCourseLink) {
+					doOpenClosedCourses(ureq);
 				}
 			}
 		}
@@ -269,6 +278,7 @@ public class OverviewRepositoryListController extends BasicController implements
 		SearchMyRepositoryEntryViewParams searchParams
 			= new SearchMyRepositoryEntryViewParams(getIdentity(), ureq.getUserSession().getRoles());
 		searchParams.setMembershipMandatory(true);
+		searchParams.setClosed(Boolean.FALSE);
 
 		OLATResourceable ores = OresHelper.createOLATResourceableInstance("My", 0l);
 		ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ores));
@@ -330,5 +340,28 @@ public class OverviewRepositoryListController extends BasicController implements
 		addToHistory(ureq, searchCoursesCtrl);
 		mainVC.put("segmentCmp", searchCoursesStackPanel);
 		return searchCoursesCtrl;
+	}
+	
+	private RepositoryEntryListController doOpenClosedCourses(UserRequest ureq) {
+		cleanUp();
+		
+		SearchMyRepositoryEntryViewParams searchParams
+			= new SearchMyRepositoryEntryViewParams(getIdentity(), ureq.getUserSession().getRoles());
+		searchParams.setMembershipMandatory(true);
+		searchParams.setClosed(Boolean.TRUE);
+
+		OLATResourceable ores = OresHelper.createOLATResourceableInstance("Closed", 0l);
+		ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ores));
+		WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ores, null, getWindowControl());
+		myCoursesStackPanel = new BreadcrumbedStackedPanel("mystack", getTranslator(), this);
+		closedCoursesCtrl = new RepositoryEntryListController(ureq, bwControl, searchParams, true, false, "closed", myCoursesStackPanel);
+		myCoursesStackPanel.pushController(translate("search.mycourses.student"), closedCoursesCtrl);
+		listenTo(closedCoursesCtrl);
+		currentCtrl = closedCoursesCtrl;
+		myDirty = false;
+
+		addToHistory(ureq, closedCoursesCtrl);
+		mainVC.put("segmentCmp", myCoursesStackPanel);
+		return closedCoursesCtrl;
 	}
 }

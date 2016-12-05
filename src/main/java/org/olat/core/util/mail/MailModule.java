@@ -21,7 +21,7 @@ package org.olat.core.util.mail;
 
 import java.io.File;
 
-import org.olat.core.commons.modules.bc.FolderConfig;
+import org.olat.core.commons.modules.bc.FolderModule;
 import org.olat.core.configuration.AbstractSpringModule;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.WebappHelper;
@@ -42,7 +42,7 @@ import org.springframework.stereotype.Service;
  * @author srosse, stephane.rosse@frentix.com, http.//www.frentix.com
  */
 @Service("mailModule")
-public class MailModule extends AbstractSpringModule{
+public class MailModule extends AbstractSpringModule {
 	
 	private static final String INTERN_MAIL_SYSTEM = "internSystem";
 	private static final String SHOW_RECIPIENT_NAMES = "showRecipientNames";
@@ -63,9 +63,12 @@ public class MailModule extends AbstractSpringModule{
 	private static final String ATTACHMENT_DEFAULT = "/mail";
 	private String attachmentsRoot = ATTACHMENT_DEFAULT;
 	
+	private final FolderModule folderModule;
+	
 	@Autowired
-	public MailModule(CoordinatorManager coordinatorManager) {
+	public MailModule(CoordinatorManager coordinatorManager, FolderModule folderModule) {
 		super(coordinatorManager);
+		this.folderModule = folderModule;
 	}
 
 	@Override
@@ -89,7 +92,7 @@ public class MailModule extends AbstractSpringModule{
 		if(StringHelper.containsNonWhitespace(showMailAddressesValue)) {
 			showMailAddresses = "true".equalsIgnoreCase(showMailAddressesValue);
 		}
-}
+	}
 
 	@Override
 	protected void initFromChangedProperties() {
@@ -170,7 +173,7 @@ public class MailModule extends AbstractSpringModule{
 	}
 	
 	public VFSContainer getRootForAttachments() {
-		String root = FolderConfig.getCanonicalRoot() + attachmentsRoot;
+		String root = folderModule.getCanonicalRoot() + attachmentsRoot;
 		File rootFile = new File(root);
 		if(!rootFile.exists()) {
 			rootFile.mkdirs();

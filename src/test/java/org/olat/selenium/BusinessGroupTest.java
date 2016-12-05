@@ -671,7 +671,7 @@ public class BusinessGroupTest {
 			.edit()
 			.setDescription("Special", null, null)
 			.save()
-			.configureModifyOneOccurence()
+			.confirmModifyOneOccurence()
 			.assertOnEvents("Special", 1)
 			.assertOnEvents("Recurring", 3);
 		
@@ -681,7 +681,7 @@ public class BusinessGroupTest {
 			.edit()
 			.setBeginEnd(11, 12).assertOnEvents("Special", 1)
 			.save()
-			.configureModifyAllOccurences()
+			.confirmModifyAllOccurences()
 			.assertOnEventsAt("Recurring", 3, 11);
 	}
 	

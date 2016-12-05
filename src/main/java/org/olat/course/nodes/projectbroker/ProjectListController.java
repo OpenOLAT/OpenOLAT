@@ -176,7 +176,7 @@ public class ProjectListController extends BasicController implements GenericEve
 			getLogger().info("no project-broker exist => create a new one projectBrokerId=" + projectBrokerId);
 		}
 		
-		tableController = this.createTableController(ureq, wControl);
+		tableController = createTableController(ureq, wControl);
 		
 		OLATResourceable projectBroker = projectBrokerManager.getProjectBroker(projectBrokerId);
 		CoordinatorManager.getInstance().getCoordinator().getEventBus().registerFor(this, ureq.getIdentity(), projectBroker);
@@ -336,16 +336,13 @@ public class ProjectListController extends BasicController implements GenericEve
 		updateProjectListModelOf(tableController, urequest.getIdentity());
 	}
 
-
-	private void updateProjectListModelOf(TableController tableController, Identity identity) {
+	private void updateProjectListModelOf(TableController tableCtrl, Identity identity) {
 		List<Project> projects = new ArrayList<Project>(projectBrokerManager.getProjectListBy(projectBrokerId));	
 		nbrSelectedProjects = projectBrokerManager.getNbrSelectedProjects(identity, projects);
 		isParticipantInAnyProject = projectBrokerManager.isParticipantInAnyProject( identity,  projects);
 		projectListTableModel = new ProjectListTableModel(projects, identity, getTranslator(), moduleConfig, numberOfCustomFieldInTable, numberOfEventInTable, nbrSelectedProjects, isParticipantInAnyProject);
-		tableController.setTableDataModel(projectListTableModel);
-		
+		tableCtrl.setTableDataModel(projectListTableModel);
 	}
-
 
 	private void activateUserController(final Project projectAt, UserRequest urequest, TableEvent tableEvent) {
 		if (projectAt.getProjectLeaders().isEmpty()) {
@@ -413,7 +410,7 @@ public class ProjectListController extends BasicController implements GenericEve
 		listenTo(tableController);
 		
 		int dataColumn = 0;
-		tableController.addColumnDescriptor(new DefaultColumnDescriptor("projectlist.tableheader.title", dataColumn++, TABLE_ACTION_SHOW_DETAIL, ureq.getLocale()));
+		tableController.addColumnDescriptor(new DefaultColumnDescriptor("projectlist.tableheader.title", dataColumn++, TABLE_ACTION_SHOW_DETAIL, getLocale()));
 		
 		CustomRenderColumnDescriptor projectManagerDescriptor = new CustomRenderColumnDescriptor("projectlist.tableheader.account.manager", dataColumn++, TABLE_ACTION_ACCOUNT_MANAGER, ureq.getLocale(), ColumnDescriptor.ALIGNMENT_LEFT, new ProjectManagerColumnRenderer()){
 
@@ -442,7 +439,7 @@ public class ProjectListController extends BasicController implements GenericEve
 			CustomField customField = iterator.next();
 			if (customField.isTableViewEnabled()) {
 				numberOfCustomFieldInTable++;
-				DefaultColumnDescriptor columnDescriptor = new DefaultColumnDescriptor(customField.getName(), dataColumn++,null, ureq.getLocale());
+				DefaultColumnDescriptor columnDescriptor = new DefaultColumnDescriptor(customField.getName(), dataColumn++,null, getLocale());
 				columnDescriptor.setTranslateHeaderKey(false);
 				tableController.addColumnDescriptor(columnDescriptor);				
 			}
@@ -452,18 +449,20 @@ public class ProjectListController extends BasicController implements GenericEve
 			if (moduleConfig.isProjectEventEnabled(eventType) && moduleConfig.isProjectEventTableViewEnabled(eventType)) {
 				numberOfEventInTable ++;
 				tableController.addColumnDescriptor(new CustomRenderColumnDescriptor("projectlist.tableheader.event." + eventType.getI18nKey(), dataColumn++, 
-						null, ureq.getLocale(), ColumnDescriptor.ALIGNMENT_LEFT, new ProjectEventColumnRenderer()));
+						null, getLocale(), ColumnDescriptor.ALIGNMENT_LEFT, new ProjectEventColumnRenderer()));
 			}
 		}
 		
 		tableController.addColumnDescriptor(new CustomRenderColumnDescriptor("projectlist.tableheader.state", dataColumn++, 
 				null, ureq.getLocale(), ColumnDescriptor.ALIGNMENT_LEFT, new ProjectStateColumnRenderer()));
-		tableController.addColumnDescriptor(new DefaultColumnDescriptor("projectlist.tableheader.numbers", dataColumn++, null, ureq.getLocale()));
-		tableController.addColumnDescriptor(new BooleanColumnDescriptor("projectlist.tableheader.select", dataColumn++, TABLE_ACTION_SELECT, 
+		tableController.addColumnDescriptor(new DefaultColumnDescriptor("projectlist.tableheader.numbers", dataColumn++, null, getLocale()));
+		
+		String selectCmd = userCourseEnv.isCourseReadOnly() ? null : TABLE_ACTION_SELECT;
+		tableController.addColumnDescriptor(new BooleanColumnDescriptor("projectlist.tableheader.select", dataColumn++, selectCmd, 
 				translate("table.action.select"), "-" ));
-		tableController.addColumnDescriptor(new BooleanColumnDescriptor("projectlist.tableheader.cancel.select", dataColumn++, TABLE_ACTION_CANCEL_SELECT, 
+		String cancelCmd = userCourseEnv.isCourseReadOnly() ? null : TABLE_ACTION_CANCEL_SELECT;
+		tableController.addColumnDescriptor(new BooleanColumnDescriptor("projectlist.tableheader.cancel.select", dataColumn++, cancelCmd, 
 				translate("projectlist.tableheader.cancel.select"), "-" ));
-
 		return tableController;
 
 	}

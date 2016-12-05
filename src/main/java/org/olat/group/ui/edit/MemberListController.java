@@ -37,7 +37,7 @@ public class MemberListController extends AbstractMemberListController {
 	
 	public MemberListController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
 			BusinessGroup group, SearchMembersParams searchParams) {
-		super(ureq, wControl, group, "all_member_list", stackPanel);
+		super(ureq, wControl, group, "all_member_list", false, stackPanel);
 		this.searchParams = searchParams;
 	}
 	

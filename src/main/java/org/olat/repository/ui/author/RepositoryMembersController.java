@@ -73,7 +73,7 @@ public class RepositoryMembersController extends AbstractMemberListController {
 	private BusinessGroupService businessGroupService;
 
 	public RepositoryMembersController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel, RepositoryEntry repoEntry) {
-		super(ureq, wControl, repoEntry, null, "all_member_list", stackPanel,
+		super(ureq, wControl, repoEntry, null, "all_member_list", false, stackPanel,
 				Util.createPackageTranslator(RepositoryService.class, ureq.getLocale(),
 						Util.createPackageTranslator(AbstractMemberListController.class, ureq.getLocale())));
 
@@ -135,7 +135,7 @@ public class RepositoryMembersController extends AbstractMemberListController {
 	private void doChooseMembers(UserRequest ureq) {
 		removeAsListenerAndDispose(importMembersWizard);
 
-		Step start = new ImportMember_1b_ChooseMemberStep(ureq, repoEntry, null);
+		Step start = new ImportMember_1b_ChooseMemberStep(ureq, repoEntry, null, false);
 		StepRunnerCallback finish = new StepRunnerCallback() {
 			@Override
 			public Step execute(UserRequest uureq, WindowControl wControl, StepsRunContext runContext) {
@@ -153,7 +153,7 @@ public class RepositoryMembersController extends AbstractMemberListController {
 	private void doImportMembers(UserRequest ureq) {
 		removeAsListenerAndDispose(importMembersWizard);
 
-		Step start = new ImportMember_1a_LoginListStep(ureq, repoEntry, null);
+		Step start = new ImportMember_1a_LoginListStep(ureq, repoEntry, null, false);
 		StepRunnerCallback finish = new StepRunnerCallback() {
 			@Override
 			public Step execute(UserRequest uureq, WindowControl wControl, StepsRunContext runContext) {

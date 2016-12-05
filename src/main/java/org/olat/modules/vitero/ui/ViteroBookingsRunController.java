@@ -52,17 +52,19 @@ public class ViteroBookingsRunController extends BasicController {
 	private ViteroBookingsController bookingsController;
 	private ViteroBookingsEditController adminController;
 	
+	private final boolean readOnly;
 	private final BusinessGroup group;
 	private final OLATResourceable ores;
 	private final String subIdentifier;
 	private final String resourceName;
 	
 	public ViteroBookingsRunController(UserRequest ureq, WindowControl wControl, BusinessGroup group, OLATResourceable ores,
-			String subIdentifier, String resourceName, boolean admin) {
+			String subIdentifier, String resourceName, boolean admin, boolean readOnly) {
 		super(ureq, wControl);
 		
 		this.group = group;
 		this.ores = ores;
+		this.readOnly = readOnly;
 		this.subIdentifier = subIdentifier;
 		this.resourceName = resourceName;
 		
@@ -82,7 +84,7 @@ public class ViteroBookingsRunController extends BasicController {
 			
 			putInitialPanel(mainVC);
 		} else {
-			bookingsController = new ViteroBookingsController(ureq, wControl,group, ores, subIdentifier);
+			bookingsController = new ViteroBookingsController(ureq, wControl,group, ores, subIdentifier, readOnly);
 			listenTo(bookingsController);
 			putInitialPanel(bookingsController.getInitialComponent());
 		}
@@ -111,7 +113,7 @@ public class ViteroBookingsRunController extends BasicController {
 	
 	private void doOpenBookings(UserRequest ureq) {
 		if(bookingsController == null) {
-			bookingsController = new ViteroBookingsController(ureq, getWindowControl(), group, ores, subIdentifier);
+			bookingsController = new ViteroBookingsController(ureq, getWindowControl(), group, ores, subIdentifier, readOnly);
 			listenTo(bookingsController);
 		} 
 		mainVC.put("segmentCmp", bookingsController.getInitialComponent());
@@ -119,7 +121,7 @@ public class ViteroBookingsRunController extends BasicController {
 	
 	private void doOpenAdmin(UserRequest ureq) {
 		if(adminController == null) {
-			adminController = new ViteroBookingsEditController(ureq, getWindowControl(), group, ores, subIdentifier, resourceName);
+			adminController = new ViteroBookingsEditController(ureq, getWindowControl(), group, ores, subIdentifier, resourceName, readOnly);
 			listenTo(adminController);
 		} 
 		mainVC.put("segmentCmp", adminController.getInitialComponent());

@@ -14,6 +14,26 @@
 	border: 1px $o-portfolio-lead-border-color solid;
 }
 
+.o_section_lead.o_assignment_2_instantiate {
+	border-radius: $o-portfolio-lead-border-radius $o-portfolio-lead-border-radius 0px 0px;
+	border-bottom: none;
+	padding-bottom: 1px;
+	margin-bottom: 0px;
+}
+
+.o_assignment_2_instantiate {
+	padding: $o-portfolio-lead-space-sm $o-portfolio-lead-space-sm 0px $o-portfolio-lead-space-sm;
+	background-color: $o-portfolio-lead-background-color;
+	border-left: 1px $o-portfolio-lead-border-color solid;
+	border-right: 1px $o-portfolio-lead-border-color solid;
+}
+
+.o_assignment_2_instantiate.last {
+	padding-bottom: $o-portfolio-lead-space-sm;
+	border-bottom: 1px $o-portfolio-lead-border-color solid;
+	border-radius: 0px 0px $o-portfolio-lead-border-radius $o-portfolio-lead-border-radius;
+}
+
 .o_page_lead {
 	padding: $o-portfolio-lead-space-sm * 2;
 	

@@ -91,6 +91,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_customize:before { content: $fa-var-gear;}
 .o_icon_delete_item:before { content: $fa-var-trash;}
 .o_icon_delete:before { content: $fa-var-minus-circle; color: #A87E7E;}
+.o_icon_deleted:before { content: $fa-var-trash;}
 .o_icon_details:before { content: $fa-var-lightbulb-o; }
 .o_icon_description:before { content: $fa-var-info-circle; }
 .o_icon_dev:before { content: $fa-var-bug;}
@@ -421,8 +422,10 @@ $fa-css-prefix: "o_icon" !default;
 
 /* tests icons */
 .o_mi_qpool_import:before { content: $fa-var-database; }
+.o_mi_qtidrawing:before { content: $fa-var-paint-brush; }
 .o_mi_qtisection:before { content: $fa-var-cubes; }
 .o_mi_qtisc:before { content: $fa-var-dot-circle-o; }
+.o_mi_qtimatch:before { content: $fa-var-table; }
 .o_mi_qtimc:before { content: $fa-var-check-square-o; }
 .o_mi_qtikprim:before { content: $fa-var-check-square;  }
 .o_mi_qtifib:before { content: $fa-var-ellipsis-h; }

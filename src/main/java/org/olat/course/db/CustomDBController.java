@@ -79,13 +79,15 @@ public class CustomDBController extends FormBasicController {
 	private CloseableModalController cmc;
 	
 	private final Long courseKey;
+	private final boolean readOnly;
 	
 	@Autowired
 	private CourseDBManager courseDbManager;
 	
-	public CustomDBController(UserRequest ureq, WindowControl wControl, Long courseKey) {
+	public CustomDBController(UserRequest ureq, WindowControl wControl, Long courseKey, boolean readOnly) {
 		super(ureq, wControl, LAYOUT_VERTICAL);
 		this.courseKey = courseKey;
+		this.readOnly = readOnly;
 		initForm(ureq);
 	}
 	
@@ -99,6 +101,7 @@ public class CustomDBController extends FormBasicController {
 		updateDBList(dbListLayout);
 		
 		addDatabase = uifactory.addFormLink("command.new_db", formLayout, Link.BUTTON);
+		addDatabase.setVisible(!readOnly);
 	}
 	
 	public void updateUI() {
@@ -142,16 +145,17 @@ public class CustomDBController extends FormBasicController {
 			
 			final FormLayoutContainer buttonLayout = FormLayoutContainer.createButtonLayout("buttonLayout_" + count, getTranslator());
 			formLayout.add(buttonLayout);
-			
+
 			FormLink resetDb = uifactory.addFormLink("db-reset_" + count, "customDb.reset", "customDb.reset", buttonLayout, Link.BUTTON_SMALL);
 			resetDb.setUserObject(db);
+			resetDb.setVisible(!readOnly);
+			resetDbs.add(resetDb);
 			FormLink deleteDb = uifactory.addFormLink("db-delete_" + count, "delete", "delete", buttonLayout, Link.BUTTON_SMALL);
 			deleteDb.setUserObject(db);
+			deleteDb.setVisible(!readOnly);
+			deleteDbs.add(deleteDb);
 			FormLink exportDb = uifactory.addFormLink("db-export_" + count, "customDb.export", "customDb.export", buttonLayout, Link.BUTTON_SMALL);
 			exportDb.setUserObject(db);
-			
-			resetDbs.add(resetDb);
-			deleteDbs.add(deleteDb);
 			exportDbs.add(exportDb);
 			
 			count++;

@@ -68,7 +68,7 @@ final class PreviewAssessmentManager extends BasicManager implements AssessmentM
 	}
 
 	@Override
-	public AssessmentEntry getAssessmentEntry(CourseNode courseNode, Identity assessedIdentity, String referenceSoftKey) {
+	public AssessmentEntry getAssessmentEntry(CourseNode courseNode, Identity assessedIdentity) {
 		return null;
 	}
 

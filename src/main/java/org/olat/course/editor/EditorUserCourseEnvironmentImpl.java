@@ -139,6 +139,11 @@ public class EditorUserCourseEnvironmentImpl implements UserCourseEnvironment {
 	}
 
 	@Override
+	public boolean isCourseReadOnly() {
+		return false;
+	}
+
+	@Override
 	public boolean hasEfficiencyStatementOrCertificate(boolean update) {
 		return false;
 	}

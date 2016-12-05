@@ -89,7 +89,7 @@ public class KPrimEditorController extends FormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		FormLayoutContainer metadata = FormLayoutContainer.createDefaultFormLayout("metadata", getTranslator());
-		metadata.setFormContextHelp("Test and Questionnaire Editor in Detail#details_testeditor_fragetypen_kprim");
+		metadata.setFormContextHelp("Test editor QTI 2.1 in detail#details_testeditor_fragetypen_kprim");
 		metadata.setRootForm(mainForm);
 		formLayout.add(metadata);
 		formLayout.add("metadata", metadata);
@@ -195,12 +195,10 @@ public class KPrimEditorController extends FormBasicController {
 		}
 		
 		//update kprims
-		List<SimpleAssociableChoice> choiceList = new ArrayList<>();
 		for(KprimWrapper choiceWrapper:choiceWrappers) {
 			SimpleAssociableChoice choice = choiceWrapper.getSimpleChoice();
 			String answer = choiceWrapper.getAnswer().getRawValue();
 			itemBuilder.getHtmlHelper().appendHtml(choice, answer);
-			choiceList.add(choice);
 		}
 		
 		//set associations

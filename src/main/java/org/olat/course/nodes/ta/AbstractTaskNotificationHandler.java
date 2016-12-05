@@ -54,6 +54,7 @@ import org.olat.core.logging.LogDelegator;
 import org.olat.core.logging.OLog;
 import org.olat.core.util.Util;
 import org.olat.core.util.resource.OresHelper;
+import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
 
 /**
@@ -82,34 +83,38 @@ public abstract class AbstractTaskNotificationHandler extends LogDelegator {
 				}
 				final List<FileInfo> fInfos = FolderManager.getFileInfos(folderRoot, compareDate);
 				final Translator translator = Util.createPackageTranslator(AbstractTaskNotificationHandler.class, locale);
-				String displayName = RepositoryManager.getInstance().lookupDisplayNameByOLATResourceableId(p.getResId());
-				if(displayName == null) {
+				
+				RepositoryEntry re = RepositoryManager.getInstance().lookupRepositoryEntry(OresHelper.createOLATResourceableInstance("CourseModule", p.getResId()), false);
+				if(re == null) {
 					if(!checkPublisher(p)) {
 						return NotificationsManager.getInstance().getNoSubscriptionInfo();
 					}
+				} else if(re.getRepositoryEntryStatus().isClosed()) {
+					return NotificationsManager.getInstance().getNoSubscriptionInfo();
 				}
 				
+				String displayName = re.getDisplayname();
 				si = new SubscriptionInfo(subscriber.getKey(), p.getType(), new TitleItem(translator.translate(getNotificationHeaderKey(), new String[]{displayName}), getCssClassIcon() ), null);
 				SubscriptionListItem subListItem;
 				for (Iterator<FileInfo> it_infos = fInfos.iterator(); it_infos.hasNext();) {
-							FileInfo fi = it_infos.next();
-							MetaInfo metaInfo = fi.getMetaInfo();
-							String filePath = fi.getRelPath();
-							if(isLogDebugEnabled()) logDebug("filePath=", filePath);
-							String fullUserName = getUserNameFromFilePath(metaInfo, filePath);
+					FileInfo fi = it_infos.next();
+					MetaInfo metaInfo = fi.getMetaInfo();
+					String filePath = fi.getRelPath();
+					if(isLogDebugEnabled()) logDebug("filePath=", filePath);
+					String fullUserName = getUserNameFromFilePath(metaInfo, filePath);
 							
-							Date modDate = fi.getLastModified();
-							String desc = translator.translate(getNotificationEntryKey(), new String[] { filePath, fullUserName });
-							String businessPath = p.getBusinessPath();
-							String urlToSend = BusinessControlFactory.getInstance().getURLFromBusinessPathString(businessPath);
+					Date modDate = fi.getLastModified();
+					String desc = translator.translate(getNotificationEntryKey(), new String[] { filePath, fullUserName });
+					String businessPath = p.getBusinessPath();
+					String urlToSend = BusinessControlFactory.getInstance().getURLFromBusinessPathString(businessPath);
 							
-							String iconCssClass =  null;
-							if (metaInfo != null) {
-								iconCssClass = metaInfo.getIconCssClass();
-							}
-							subListItem = new SubscriptionListItem(desc, urlToSend, businessPath, modDate, iconCssClass);
-							si.addSubscriptionListItem(subListItem);						
-						}
+					String iconCssClass =  null;
+					if (metaInfo != null) {
+						iconCssClass = metaInfo.getIconCssClass();
+					}
+					subListItem = new SubscriptionListItem(desc, urlToSend, businessPath, modDate, iconCssClass);
+					si.addSubscriptionListItem(subListItem);						
+				}
 			} else {
 				si = NotificationsManager.getInstance().getNoSubscriptionInfo();
 			}

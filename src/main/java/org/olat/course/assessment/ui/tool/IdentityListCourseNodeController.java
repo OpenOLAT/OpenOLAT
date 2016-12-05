@@ -113,6 +113,7 @@ public class IdentityListCourseNodeController extends FormBasicController implem
 	private final RepositoryEntry courseEntry;
 	private final RepositoryEntry referenceEntry;
 	private final boolean isAdministrativeUser;
+	private final UserCourseEnvironment coachCourseEnv;
 	private final List<UserPropertyHandler> userPropertyHandlers;
 	private final AssessmentToolSecurityCallback assessmentCallback;
 	
@@ -140,8 +141,8 @@ public class IdentityListCourseNodeController extends FormBasicController implem
 	private AssessmentToolManager assessmentToolManager;
 	
 	public IdentityListCourseNodeController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
-			RepositoryEntry courseEntry, BusinessGroup group, CourseNode courseNode, AssessmentToolContainer toolContainer,
-			AssessmentToolSecurityCallback assessmentCallback) {
+			RepositoryEntry courseEntry, BusinessGroup group, CourseNode courseNode, UserCourseEnvironment coachCourseEnv,
+			AssessmentToolContainer toolContainer, AssessmentToolSecurityCallback assessmentCallback) {
 		super(ureq, wControl, "identity_courseelement");
 		setTranslator(Util.createPackageTranslator(AssessmentModule.class, getLocale(), getTranslator()));
 		setTranslator(userManager.getPropertyHandlerTranslator(getTranslator()));
@@ -151,6 +152,7 @@ public class IdentityListCourseNodeController extends FormBasicController implem
 		this.stackPanel = stackPanel;
 		this.courseEntry = courseEntry;
 		this.toolContainer = toolContainer;
+		this.coachCourseEnv = coachCourseEnv;
 		this.assessmentCallback = assessmentCallback;
 		
 		if(courseNode.needsReferenceToARepositoryEntry()) {
@@ -233,7 +235,7 @@ public class IdentityListCourseNodeController extends FormBasicController implem
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", usersTableModel, 20, false, getTranslator(), formLayout);
 		tableEl.setExportEnabled(true);
 		tableEl.setSearchEnabled(new AssessedIdentityListProvider(getIdentity(), courseEntry, referenceEntry, courseNode.getIdent(), assessmentCallback), ureq.getUserSession());
-		tableEl.setMultiSelect(true);
+		tableEl.setMultiSelect(!coachCourseEnv.isCourseReadOnly());
 		
 		List<FlexiTableFilter> filters = new ArrayList<>();
 		filters.add(new FlexiTableFilter(translate("filter.passed"), "passed"));
@@ -265,6 +267,7 @@ public class IdentityListCourseNodeController extends FormBasicController implem
 		
 		if(courseNode instanceof AssessableCourseNode && !(courseNode instanceof CalculatedAssessableCourseNode)) {
 			bulkDoneButton = uifactory.addFormLink("bulk.done", formLayout, Link.BUTTON);
+			bulkDoneButton.setVisible(!coachCourseEnv.isCourseReadOnly());
 		}
 	}
 	
@@ -332,7 +335,6 @@ public class IdentityListCourseNodeController extends FormBasicController implem
 		List<String> toolCmpNames = new ArrayList<>();
 		if(courseNode instanceof AssessableCourseNode) {
 			AssessableCourseNode acn = (AssessableCourseNode)courseNode;
-			ICourse course = CourseFactory.loadCourse(courseEntry);
 			AssessmentToolOptions options = new AssessmentToolOptions();
 			options.setAdmin(assessmentCallback.isAdmin());
 			if(group == null) {
@@ -343,7 +345,7 @@ public class IdentityListCourseNodeController extends FormBasicController implem
 			}
 			
 			//TODO qti filter by group?
-			List<Controller> tools = acn.createAssessmentTools(ureq, getWindowControl(), stackPanel, course.getCourseEnvironment(), options);
+			List<Controller> tools = acn.createAssessmentTools(ureq, getWindowControl(), stackPanel, coachCourseEnv, options);
 			int count = 0;
 			if(tools.size() > 0) {
 				for(Controller tool:tools) {
@@ -538,10 +540,10 @@ public class IdentityListCourseNodeController extends FormBasicController implem
 		WindowControl bwControl = addToHistory(ureq, ores, null);
 		if(courseNode.getParent() == null) {
 			currentIdentityCtrl = new AssessmentIdentityCourseController(ureq, bwControl, stackPanel,
-					courseEntry, assessedIdentity);
+					courseEntry, coachCourseEnv, assessedIdentity);
 		} else {
 			currentIdentityCtrl = new AssessmentIdentityCourseNodeController(ureq, getWindowControl(), stackPanel,
-					courseEntry, courseNode, assessedIdentity, true);
+					courseEntry, courseNode, coachCourseEnv, assessedIdentity, true);
 		}
 		listenTo(currentIdentityCtrl);
 		stackPanel.pushController(fullName, currentIdentityCtrl);
@@ -576,7 +578,7 @@ public class IdentityListCourseNodeController extends FormBasicController implem
 				Roles roles = securityManager.getRoles(assessedIdentity);
 				
 				IdentityEnvironment identityEnv = new IdentityEnvironment(assessedIdentity, roles);
-				UserCourseEnvironment assessedUserCourseEnv = new UserCourseEnvironmentImpl(identityEnv, course.getCourseEnvironment());
+				UserCourseEnvironment assessedUserCourseEnv = new UserCourseEnvironmentImpl(identityEnv, course.getCourseEnvironment(), coachCourseEnv.isCourseReadOnly());
 				assessedUserCourseEnv.getScoreAccounting().evaluateAll();
 
 				ScoreEvaluation scoreEval = assessableCourseNode.getUserScoreEvaluation(assessedUserCourseEnv);

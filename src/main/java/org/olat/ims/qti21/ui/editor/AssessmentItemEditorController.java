@@ -35,22 +35,27 @@ import org.olat.ims.qti21.model.QTI21QuestionType;
 import org.olat.ims.qti21.model.xml.AssessmentItemBuilder;
 import org.olat.ims.qti21.model.xml.ManifestBuilder;
 import org.olat.ims.qti21.model.xml.ManifestMetadataBuilder;
+import org.olat.ims.qti21.model.xml.interactions.DrawingAssessmentItemBuilder;
 import org.olat.ims.qti21.model.xml.interactions.EssayAssessmentItemBuilder;
 import org.olat.ims.qti21.model.xml.interactions.FIBAssessmentItemBuilder;
 import org.olat.ims.qti21.model.xml.interactions.HotspotAssessmentItemBuilder;
 import org.olat.ims.qti21.model.xml.interactions.KPrimAssessmentItemBuilder;
+import org.olat.ims.qti21.model.xml.interactions.MatchAssessmentItemBuilder;
 import org.olat.ims.qti21.model.xml.interactions.MultipleChoiceAssessmentItemBuilder;
 import org.olat.ims.qti21.model.xml.interactions.SingleChoiceAssessmentItemBuilder;
 import org.olat.ims.qti21.model.xml.interactions.UploadAssessmentItemBuilder;
 import org.olat.ims.qti21.ui.editor.events.AssessmentItemEvent;
 import org.olat.ims.qti21.ui.editor.interactions.ChoiceScoreController;
+import org.olat.ims.qti21.ui.editor.interactions.DrawingEditorController;
 import org.olat.ims.qti21.ui.editor.interactions.EssayEditorController;
-import org.olat.ims.qti21.ui.editor.interactions.LobFeedbackEditorController;
 import org.olat.ims.qti21.ui.editor.interactions.FIBEditorController;
 import org.olat.ims.qti21.ui.editor.interactions.FIBScoreController;
 import org.olat.ims.qti21.ui.editor.interactions.HotspotChoiceScoreController;
 import org.olat.ims.qti21.ui.editor.interactions.HotspotEditorController;
 import org.olat.ims.qti21.ui.editor.interactions.KPrimEditorController;
+import org.olat.ims.qti21.ui.editor.interactions.LobFeedbackEditorController;
+import org.olat.ims.qti21.ui.editor.interactions.MatchEditorController;
+import org.olat.ims.qti21.ui.editor.interactions.MatchScoreController;
 import org.olat.ims.qti21.ui.editor.interactions.MultipleChoiceEditorController;
 import org.olat.ims.qti21.ui.editor.interactions.SingleChoiceEditorController;
 import org.olat.ims.qti21.ui.editor.interactions.UploadEditorController;
@@ -172,9 +177,11 @@ public class AssessmentItemEditorController extends BasicController {
 			case fib: itemBuilder = initFIBEditors(ureq, type, item); break;
 			case numerical: itemBuilder = initFIBEditors(ureq, type, item); break;
 			case kprim: itemBuilder = initKPrimChoiceEditors(ureq, item); break;
+			case match: itemBuilder = initMatchChoiceEditors(ureq, item); break;
 			case hotspot: itemBuilder = initHotspotEditors(ureq, item); break;
 			case essay: itemBuilder = initEssayEditors(ureq, item); break;
 			case upload: itemBuilder = initUploadEditors(ureq, item); break;
+			case drawing: itemBuilder = initDrawingEditors(ureq, item); break;
 			default: initItemCreatedByUnkownEditor(ureq, item); break;
 		}
 		
@@ -198,7 +205,7 @@ public class AssessmentItemEditorController extends BasicController {
 				rootDirectory, rootContainer, itemFile, restrictedEdit);
 		listenTo(itemEditor);
 		scoreEditor = new ChoiceScoreController(ureq, getWindowControl(), scItemBuilder, itemRef, restrictedEdit,
-				"Test and Questionnaire Editor in Detail#details_testeditor_fragetypen_sc");
+				"Test editor QTI 2.1 in detail#details_testeditor_score");
 		listenTo(scoreEditor);
 		feedbackEditor = new FeedbackEditorController(ureq, getWindowControl(), scItemBuilder, restrictedEdit);
 		listenTo(feedbackEditor);
@@ -215,7 +222,7 @@ public class AssessmentItemEditorController extends BasicController {
 				rootDirectory, rootContainer, itemFile, restrictedEdit);
 		listenTo(itemEditor);
 		scoreEditor = new ChoiceScoreController(ureq, getWindowControl(), mcItemBuilder, itemRef, restrictedEdit,
-				"Test and Questionnaire Editor in Detail#details_testeditor_fragetypen_mc");
+				"Test editor QTI 2.1 in detail#details_testeditor_score");
 		listenTo(scoreEditor);
 		feedbackEditor = new FeedbackEditorController(ureq, getWindowControl(), mcItemBuilder, restrictedEdit);
 		listenTo(feedbackEditor);
@@ -232,7 +239,7 @@ public class AssessmentItemEditorController extends BasicController {
 				rootDirectory, rootContainer, itemFile, restrictedEdit);
 		listenTo(itemEditor);
 		scoreEditor = new MinimalScoreController(ureq, getWindowControl(), kprimItemBuilder, itemRef, restrictedEdit,
-				"Test and Questionnaire Editor in Detail#details_testeditor_fragetypen_kprim");
+				"Test editor QTI 2.1 in detail#details_testeditor_score");
 		listenTo(scoreEditor);
 		feedbackEditor = new FeedbackEditorController(ureq, getWindowControl(), kprimItemBuilder, restrictedEdit);
 		listenTo(feedbackEditor);
@@ -241,6 +248,22 @@ public class AssessmentItemEditorController extends BasicController {
 		tabbedPane.addTab(translate("form.score"), scoreEditor);
 		tabbedPane.addTab(translate("form.feedback"), feedbackEditor);
 		return kprimItemBuilder;
+	}
+	
+	private AssessmentItemBuilder initMatchChoiceEditors(UserRequest ureq, AssessmentItem item) {
+		MatchAssessmentItemBuilder matchItemBuilder = new MatchAssessmentItemBuilder(item, qtiService.qtiSerializer());
+		itemEditor = new MatchEditorController(ureq, getWindowControl(), matchItemBuilder,
+				rootDirectory, rootContainer, itemFile, restrictedEdit);
+		listenTo(itemEditor);
+		scoreEditor = new MatchScoreController(ureq, getWindowControl(), matchItemBuilder, itemRef, restrictedEdit);
+		listenTo(scoreEditor);
+		feedbackEditor = new FeedbackEditorController(ureq, getWindowControl(), matchItemBuilder, restrictedEdit);
+		listenTo(feedbackEditor);
+		
+		tabbedPane.addTab(translate("form.match"), itemEditor);
+		tabbedPane.addTab(translate("form.score"), scoreEditor);
+		tabbedPane.addTab(translate("form.feedback"), feedbackEditor);
+		return matchItemBuilder;
 	}
 	
 	private AssessmentItemBuilder initFIBEditors(UserRequest ureq, QTI21QuestionType preferedType, AssessmentItem item) {
@@ -281,7 +304,7 @@ public class AssessmentItemEditorController extends BasicController {
 				rootDirectory, rootContainer, itemFile, restrictedEdit);
 		listenTo(itemEditor);
 		scoreEditor = new MinimalScoreController(ureq, getWindowControl(), essayItemBuilder, itemRef, restrictedEdit,
-				"Test and Questionnaire Editor in Detail#details_testeditor_fragetypen_ft");
+				"Test editor QTI 2.1 in detail#details_testeditor_score");
 		listenTo(scoreEditor);
 		feedbackEditor = new LobFeedbackEditorController(ureq, getWindowControl(), essayItemBuilder, restrictedEdit);
 		listenTo(feedbackEditor);
@@ -295,6 +318,23 @@ public class AssessmentItemEditorController extends BasicController {
 	private AssessmentItemBuilder initUploadEditors(UserRequest ureq, AssessmentItem item) {
 		UploadAssessmentItemBuilder uploadItemBuilder = new UploadAssessmentItemBuilder(item, qtiService.qtiSerializer());
 		itemEditor = new UploadEditorController(ureq, getWindowControl(), uploadItemBuilder,
+				rootDirectory, rootContainer, itemFile);
+		listenTo(itemEditor);
+		scoreEditor = new MinimalScoreController(ureq, getWindowControl(), uploadItemBuilder, itemRef, restrictedEdit,
+				"Test editor QTI 2.1 in detail#details_testeditor_score");
+		listenTo(scoreEditor);
+		feedbackEditor = new LobFeedbackEditorController(ureq, getWindowControl(), uploadItemBuilder, restrictedEdit);
+		listenTo(feedbackEditor);
+		
+		tabbedPane.addTab(translate("form.upload"), itemEditor);
+		tabbedPane.addTab(translate("form.score"), scoreEditor);
+		tabbedPane.addTab(translate("form.feedback"), feedbackEditor);
+		return uploadItemBuilder;
+	}
+	
+	private AssessmentItemBuilder initDrawingEditors(UserRequest ureq, AssessmentItem item) {
+		DrawingAssessmentItemBuilder uploadItemBuilder = new DrawingAssessmentItemBuilder(item, qtiService.qtiSerializer());
+		itemEditor = new DrawingEditorController(ureq, getWindowControl(), uploadItemBuilder,
 				rootDirectory, rootContainer, itemFile, restrictedEdit);
 		listenTo(itemEditor);
 		scoreEditor = new MinimalScoreController(ureq, getWindowControl(), uploadItemBuilder, itemRef, restrictedEdit,
@@ -303,7 +343,7 @@ public class AssessmentItemEditorController extends BasicController {
 		feedbackEditor = new LobFeedbackEditorController(ureq, getWindowControl(), uploadItemBuilder, restrictedEdit);
 		listenTo(feedbackEditor);
 		
-		tabbedPane.addTab(translate("form.essay"), itemEditor);
+		tabbedPane.addTab(translate("form.drawing"), itemEditor);
 		tabbedPane.addTab(translate("form.score"), scoreEditor);
 		tabbedPane.addTab(translate("form.feedback"), feedbackEditor);
 		return uploadItemBuilder;

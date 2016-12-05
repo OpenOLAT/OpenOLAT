@@ -39,6 +39,7 @@ public class SharedItemRow extends UserPropertiesRow {
 	private Long binderKey;
 	private Date lastModified;
 	private String binderTitle;
+	private Date recentLaunch;
 	private int numOfOpenSections;
 	private String entryDisplayName;
 	private AssessmentEntryLight assessmentEntry;
@@ -113,6 +114,12 @@ public class SharedItemRow extends UserPropertiesRow {
 	public void setNumOfOpenSections(int numOfOpenSections) {
 		this.numOfOpenSections = numOfOpenSections;
 	}
-	
-	
+
+	public Date getRecentLaunch() {
+		return recentLaunch;
+	}
+
+	public void setRecentLaunch(Date recentLaunch) {
+		this.recentLaunch = recentLaunch;
+	}
 }

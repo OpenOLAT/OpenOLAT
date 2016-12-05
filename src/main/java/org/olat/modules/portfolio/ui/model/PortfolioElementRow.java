@@ -53,6 +53,10 @@ public class PortfolioElementRow {
 	
 	private final boolean assessable;
 	private final boolean assignments;
+	// calculated by the sort
+	private boolean lastAssignmentToInstantiate;
+	// calculated by the sort
+	private boolean sectionWithAssignmentToInstantiate;
 
 	private Collection<String> pageCategories;
 	private Collection<String> sectionCategories;
@@ -384,6 +388,26 @@ public class PortfolioElementRow {
 
 	public void setDownAssignmentLink(FormLink downAssignmentLink) {
 		this.downAssignmentLink = downAssignmentLink;
+	}
+	
+	public boolean isLastAssignmentToInstantiate() {
+		return lastAssignmentToInstantiate;
+	}
+
+	public void setLastAssignmentToInstantiate(boolean lastAssignmentToInstantiate) {
+		this.lastAssignmentToInstantiate = lastAssignmentToInstantiate;
+	}
+
+	public boolean isSectionWithAssignmentToInstantiate() {
+		return sectionWithAssignmentToInstantiate;
+	}
+	
+	public void setSectionWithAssignmentToInstantiate(boolean instatiate) {
+		sectionWithAssignmentToInstantiate = instatiate;
+	}
+	
+	public boolean isAssignmentToInstantiate() {
+		return instantiateAssignmentLink != null;
 	}
 
 	public FormLink getInstantiateAssignmentLink() {

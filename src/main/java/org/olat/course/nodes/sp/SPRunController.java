@@ -88,7 +88,7 @@ public class SPRunController extends BasicController implements Activateable2 {
 	private VFSContainer courseFolderContainer;
 	private String fileName;
 	
-	private boolean hasEditRights;
+	private final boolean hasEditRights;
 	private CustomLinkTreeModel linkTreeModel;
 	private CloneController cloneC;
 
@@ -117,7 +117,7 @@ public class SPRunController extends BasicController implements Activateable2 {
 		addLoggingResourceable(LoggingResourceable.wrap(courseNode));
 
 		// set up single page init parameters
-		this.fileName = (String) config.get(SPEditController.CONFIG_KEY_FILE);
+		fileName = (String)config.get(SPEditController.CONFIG_KEY_FILE);
 		if (fileName == null) throw new AssertException("bad configuration at lauchtime: fileName cannot be null in SinglePage!");
 		this.courseFolderContainer = courseFolderContainer;
 		
@@ -134,6 +134,8 @@ public class SPRunController extends BasicController implements Activateable2 {
 	}
 	
 	private boolean hasEditRights(UserRequest ureq) {
+		if(userCourseEnv.isCourseReadOnly()) return false;
+		
 		if(isFileTypeEditable(fileName)) {
 			Roles roles = ureq.getUserSession().getRoles();
 			if(roles.isOLATAdmin()) {
@@ -169,6 +171,7 @@ public class SPRunController extends BasicController implements Activateable2 {
 	/**
 	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest, org.olat.core.gui.components.Component, org.olat.core.gui.control.Event)
 	 */
+	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
 		//
 	}
@@ -202,7 +205,7 @@ public class SPRunController extends BasicController implements Activateable2 {
 		if (hasEditRightsTo) {
 			spCtr.allowPageEditing();
 			// set the link tree model to internal for the HTML editor
-			if (this.linkTreeModel != null) {
+			if (linkTreeModel != null) {
 				spCtr.setInternalLinkTreeModel(linkTreeModel);
 			}
 		}		

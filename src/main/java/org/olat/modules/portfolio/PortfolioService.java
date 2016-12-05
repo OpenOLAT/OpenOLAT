@@ -218,6 +218,15 @@ public interface PortfolioService {
 	
 	
 	public Binder getBinderByKey(Long portfolioKey);
+
+	/**
+	 * Update or create a user informations for the specified binder and identity.
+	 * The creation of the user informations is protected by a doInSync.
+	 * 
+	 * @param binder
+	 * @param user
+	 */
+	public void updateBinderUserInformations(Binder binder, Identity user);
 	
 	public Binder getBinderByResource(OLATResource resource);
 	

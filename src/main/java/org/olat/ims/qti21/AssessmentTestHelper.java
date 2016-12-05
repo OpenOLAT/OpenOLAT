@@ -155,5 +155,62 @@ public class AssessmentTestHelper {
 		}
 		return false;
 	}
+	
+	/**
+	 * Go through the assessmentTest, visit recursively its test parts, sections and
+	 * assessment item refs.
+	 * 
+	 * @param assessmentTest The assessment test to visit
+	 * @param visitor The visitor
+	 */
+	public static void visit(AssessmentTest assessmentTest, AssessmentTestVisitor visitor) {
+		List<TestPart> testParts = assessmentTest.getTestParts();
+		if(testParts != null && testParts.size() > 0) {
+			for(TestPart testPart:testParts) {
+				visitor.visit(testPart);
+				
+				List<AssessmentSection> sections = testPart.getAssessmentSections();
+				if(sections != null && sections.size() > 0) {
+					for(AssessmentSection section:sections) {
+						visit(section, visitor);
+					}
+				}
+			}
+		}
+	}
+	
+	/**
+	 * Go through the section part (assessmentSection or assessmentItemRef), visit recursively
+	 * the sections and assessment item refs.
+	 * 
+	 * @param sectionPart
+	 * @param visitor
+	 */
+	public static void visit(SectionPart sectionPart, AssessmentTestVisitor visitor) {
+		visitor.visit(sectionPart);
+		if(sectionPart instanceof AssessmentSection) {
+			AssessmentSection section = (AssessmentSection)sectionPart;
+			List<SectionPart> childParts = section.getChildAbstractParts();
+			if(childParts != null && childParts.size() > 0) {
+				for(SectionPart childPart:childParts) {
+					visit(childPart, visitor);
+				}
+			}
+		}
+	}
+	
+	
+	/**
+	 * 
+	 * Initial date: 21 nov. 2016<br>
+	 * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+	 *
+	 */
+	public interface AssessmentTestVisitor {
+		
+		public void visit(TestPart testPart);
+		
+		public void visit(SectionPart sectionPart);
 
+	}
 }

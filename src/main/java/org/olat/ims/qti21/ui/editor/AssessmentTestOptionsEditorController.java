@@ -21,7 +21,6 @@ package org.olat.ims.qti21.ui.editor;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
-import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
@@ -44,11 +43,8 @@ import uk.ac.ed.ph.jqtiplus.node.test.AssessmentTest;
  *
  */
 public class AssessmentTestOptionsEditorController extends FormBasicController {
-
-	private static final String[] yesnoKeys = new String[] { "y", "n" };
 	
 	private TextElement titleEl, maxScoreEl, cutValueEl;
-	private SingleSelection exportScoreEl;
 	
 	private final boolean restrictedEdit;
 	private final AssessmentTest assessmentTest;
@@ -65,24 +61,13 @@ public class AssessmentTestOptionsEditorController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		setFormContextHelp("Test and Questionnaire Editor in Detail#details_testeditor_test_konf");
+		setFormContextHelp("Test editor QTI 2.1 in detail#details_testeditor_test");
 		
 		String title = assessmentTest.getTitle();
 		titleEl = uifactory.addTextElement("title", "form.metadata.title", 255, title, formLayout);
 		titleEl.setMandatory(true);
 		titleEl.setEnabled(testBuilder.isEditable());
-		
-		//export score
-		String[] yesnoValues = new String[] { translate("yes"), translate("no") };
-		exportScoreEl = uifactory.addRadiosHorizontal("form.test.export.score", formLayout, yesnoKeys, yesnoValues);
-		exportScoreEl.setEnabled(!restrictedEdit);
-		exportScoreEl.setEnabled(testBuilder.isEditable());
-		if(testBuilder.isExportScore()) {
-			exportScoreEl.select(yesnoKeys[0], true);
-		} else {
-			exportScoreEl.select(yesnoKeys[1], false);
-		}
-		
+
 		//score
 		String maxScore = testBuilder.getMaxScore() == null ? "" : AssessmentHelper.getRoundedScore(testBuilder.getMaxScore());
 		maxScoreEl = uifactory.addTextElement("max.score", "max.score", 8, maxScore, formLayout);
@@ -140,8 +125,6 @@ public class AssessmentTestOptionsEditorController extends FormBasicController {
 	protected void formOK(UserRequest ureq) {
 		String title = titleEl.getValue();
 		assessmentTest.setTitle(title);
-		
-		testBuilder.setExportScore(exportScoreEl.isOneSelected() && exportScoreEl.isSelected(0));
 		
 		String cutValue = cutValueEl.getValue();
 		if(StringHelper.containsNonWhitespace(cutValue)) {

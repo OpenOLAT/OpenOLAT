@@ -79,7 +79,7 @@ import org.olat.repository.handlers.RepositoryHandlerFactory;
 import org.olat.repository.model.RepositoryEntrySecurity;
 import org.olat.repository.ui.author.AuthoringEditAccessController;
 import org.olat.repository.ui.author.CatalogSettingsController;
-import org.olat.repository.ui.author.ConfirmDeleteController;
+import org.olat.repository.ui.author.ConfirmDeleteSoftlyController;
 import org.olat.repository.ui.author.CopyRepositoryEntryController;
 import org.olat.repository.ui.author.RepositoryEditDescriptionController;
 import org.olat.repository.ui.author.RepositoryMembersController;
@@ -117,12 +117,12 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 	private OrdersAdminController ordersCtlr;
 	private CatalogSettingsController catalogCtlr;
 	private CopyRepositoryEntryController copyCtrl;
-	private ConfirmDeleteController confirmDeleteCtrl;
+	private ConfirmDeleteSoftlyController confirmDeleteCtrl;
 	protected AuthoringEditAccessController accessCtrl;
 	private RepositoryEntryDetailsController detailsCtrl;
 	private RepositoryMembersController membersEditController;
 	protected RepositoryEditDescriptionController descriptionCtrl;
-	private RepositoryEntryLifeCycleChangeController lifeCycleChangeCtr;
+	protected RepositoryEntryLifeCycleChangeController lifeCycleChangeCtr;
 	
 	private Dropdown tools;
 	private Dropdown settings;
@@ -142,6 +142,7 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 	protected final boolean allowBookmark;
 	
 	protected boolean corrupted;
+	protected boolean overrideReadOnly = false;
 	private RepositoryEntry re;
 	private LockResult lockResult;
 	private boolean assessmentLock;// by Assessment mode
@@ -187,13 +188,17 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 		//! check corrupted
 		corrupted = isCorrupted(re);
 		assessmentLock = isAssessmentLock(ureq, re, reSecurity);
+
+		UserSession session = ureq.getUserSession();
+		Object wcard = session.removeEntry("override_readonly_" + re.getKey());
+		if(Boolean.TRUE.equals(wcard)) {
+			overrideReadOnly = true;
+		}
 		
 		this.re = re;
 		this.showInfos = showInfos;
 		this.allowBookmark = allowBookmark;
 		this.runtimeControllerCreator = runtimeControllerCreator;
-		
-		UserSession session = ureq.getUserSession();
 		
 		if(assessmentLock) {
 			TransientAssessmentMode mode = session.getLockMode();
@@ -785,7 +790,10 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 				AccessResult acResult = acService.isAccessible(re, getIdentity(), security.isMember(), false);
 				if(acResult.isAccessible()) {
 					launchContent(ureq, security);
-				} else if (re != null && acResult.getAvailableMethods().size() > 0) {
+				} else if (re != null
+						&& !re.getRepositoryEntryStatus().isUnpublished()
+						&& !re.getRepositoryEntryStatus().isClosed()
+						&& acResult.getAvailableMethods().size() > 0) {
 					//try auto booking
 					ACResultAndSecurity autoResult = tryAutoBooking(ureq, acResult, security);
 					acResult = autoResult.getAcResult();
@@ -918,7 +926,7 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 		}
 
 		List<RepositoryEntry> entryToDelete = Collections.singletonList(getRepositoryEntry());
-		confirmDeleteCtrl = new ConfirmDeleteController(ureq, getWindowControl(), entryToDelete, false);
+		confirmDeleteCtrl = new ConfirmDeleteSoftlyController(ureq, getWindowControl(), entryToDelete, false);
 		listenTo(confirmDeleteCtrl);
 		
 		String title = translate("del.header", re.getDisplayname());

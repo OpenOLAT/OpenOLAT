@@ -105,6 +105,7 @@ import org.olat.modules.portfolio.BinderSecurityCallbackFactory;
 import org.olat.modules.portfolio.PortfolioLoggingAction;
 import org.olat.modules.portfolio.PortfolioService;
 import org.olat.modules.portfolio.PortfolioV2Module;
+import org.olat.modules.portfolio.manager.BinderUserInformationsDAO;
 import org.olat.modules.portfolio.ui.BinderController;
 import org.olat.modules.wiki.WikiManager;
 import org.olat.modules.wiki.WikiSecurityCallback;
@@ -519,6 +520,7 @@ public class CollaborationTools implements Serializable {
 						if(moduleV2.isEnabled()) {
 							PortfolioService portfolioService = CoreSpringFactory.getImpl(PortfolioService.class);
 							Binder binder = portfolioService.createNewBinder(group.getName(), group.getDescription(), null, null);
+							CoreSpringFactory.getImpl(BinderUserInformationsDAO.class).updateBinderUserInformationsInSync(binder, ureq.getIdentity());
 							mapKeyProperty = npm.createPropertyInstance(null, null, PROP_CAT_BG_COLLABTOOLS, KEY_PORTFOLIO, null, binder.getKey(), "2", null);
 							BinderSecurityCallback secCallback = BinderSecurityCallbackFactory.getCallbackForBusinessGroup();
 							BinderController binderCtrl = new BinderController(ureq, wControl, stackPanel, secCallback, binder, BinderConfiguration.createBusinessGroupConfig());					
@@ -562,7 +564,9 @@ public class CollaborationTools implements Serializable {
 		
 		Controller ctrl;
 		if("2".equals(version)) {
-			Binder binder = CoreSpringFactory.getImpl(PortfolioService.class).getBinderByKey(key);
+			PortfolioService portfolioService = CoreSpringFactory.getImpl(PortfolioService.class);
+			Binder binder = portfolioService.getBinderByKey(key);
+			portfolioService.updateBinderUserInformations(binder, ureq.getIdentity());
 			BinderSecurityCallback secCallback = BinderSecurityCallbackFactory.getCallbackForBusinessGroup();
 			BinderController binderCtrl = new BinderController(ureq, wControl, stackPanel, secCallback, binder, BinderConfiguration.createBusinessGroupConfig());
 			List<ContextEntry> entries = BusinessControlFactory.getInstance().createCEListFromResourceType("Toc");
@@ -578,7 +582,7 @@ public class CollaborationTools implements Serializable {
 	}
 	
 	public Controller createOpenMeetingsController(final UserRequest ureq, WindowControl wControl, final BusinessGroup group, boolean admin) {
-		OpenMeetingsRunController runController = new OpenMeetingsRunController(ureq, wControl, group, null, null, admin, admin);
+		OpenMeetingsRunController runController = new OpenMeetingsRunController(ureq, wControl, group, null, null, admin, admin, false);
 		return runController;
 	}
 

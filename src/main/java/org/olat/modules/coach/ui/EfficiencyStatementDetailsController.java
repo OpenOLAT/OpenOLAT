@@ -48,9 +48,13 @@ import org.olat.course.assessment.UserEfficiencyStatement;
 import org.olat.course.assessment.manager.EfficiencyStatementManager;
 import org.olat.course.assessment.ui.tool.AssessmentIdentityCourseController;
 import org.olat.course.certificate.ui.CertificateAndEfficiencyStatementController;
+import org.olat.course.run.userview.UserCourseEnvironment;
+import org.olat.course.run.userview.UserCourseEnvironmentImpl;
 import org.olat.modules.assessment.ui.event.AssessmentFormEvent;
 import org.olat.modules.coach.model.EfficiencyStatementEntry;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryManager;
+import org.olat.repository.model.RepositoryEntrySecurity;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -84,6 +88,8 @@ public class EfficiencyStatementDetailsController extends BasicController implem
 	@Autowired
 	private BaseSecurity securityManager;
 	@Autowired
+	private RepositoryManager repositoryManager;
+	@Autowired
 	private EfficiencyStatementManager efficiencyStatementManager;
 
 	public EfficiencyStatementDetailsController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
@@ -111,7 +117,8 @@ public class EfficiencyStatementDetailsController extends BasicController implem
 			mainVC.put("segmentCmp", statementCtrl.getInitialComponent());
 		} else {
 			try {
-				assessmentCtrl = new AssessmentIdentityCourseController(ureq, wControl, stackPanel, entry, assessedIdentity);
+				UserCourseEnvironment coachCourseEnv = loadUserCourseEnvironment(ureq, entry);
+				assessmentCtrl = new AssessmentIdentityCourseController(ureq, wControl, stackPanel, entry, coachCourseEnv, assessedIdentity);
 				listenTo(assessmentCtrl);
 				
 				segmentView = SegmentViewFactory.createSegmentView("segments", mainVC, this);
@@ -132,6 +139,16 @@ public class EfficiencyStatementDetailsController extends BasicController implem
 		}
 
 		putInitialPanel(mainVC);
+	}
+	
+	private UserCourseEnvironment loadUserCourseEnvironment(UserRequest ureq, RepositoryEntry entry) {
+		RepositoryEntrySecurity reSecurity = repositoryManager.isAllowed(ureq, entry);
+		return new UserCourseEnvironmentImpl(ureq.getUserSession().getIdentityEnvironment(), null, getWindowControl(),
+				null, null, null,
+				reSecurity.isCourseCoach() || reSecurity.isGroupCoach(),
+				reSecurity.isEntryAdmin(),
+				reSecurity.isCourseParticipant() || reSecurity.isGroupParticipant(),
+				reSecurity.isReadOnly());
 	}
 
 	@Override

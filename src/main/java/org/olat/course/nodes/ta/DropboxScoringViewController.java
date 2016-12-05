@@ -69,6 +69,7 @@ import org.olat.core.util.mail.MailerResult;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.vfs.Quota;
 import org.olat.core.util.vfs.QuotaManager;
+import org.olat.core.util.vfs.callbacks.ReadOnlyCallback;
 import org.olat.core.util.vfs.callbacks.VFSSecurityCallback;
 import org.olat.course.auditing.UserNodeAuditManager;
 import org.olat.course.nodes.AssessableCourseNode;
@@ -143,6 +144,7 @@ public class DropboxScoringViewController extends BasicController {
 		myContent = createVelocityContainer("dropboxscoring");
 		taskLaunchButton = LinkFactory.createButton("task.launch", myContent, this);
 		cancelTaskButton = LinkFactory.createButton("task.cancel", myContent, this);
+		cancelTaskButton.setVisible(!userCourseEnv.isCourseReadOnly());
 		putInitialPanel(myContent);		
 
 		ModuleConfiguration modConfig = node.getModuleConfiguration();
@@ -163,7 +165,7 @@ public class DropboxScoringViewController extends BasicController {
 
 		// notification
 		if (hasNotification) {
-		subsContext = DropboxFileUploadNotificationHandler.getSubscriptionContext(userCourseEnv.getCourseEnvironment(), node);
+			subsContext = DropboxFileUploadNotificationHandler.getSubscriptionContext(userCourseEnv.getCourseEnvironment(), node);
 			if (subsContext != null) {
 				String path = DropboxController.getDropboxPathRelToFolderRoot(userCourseEnv.getCourseEnvironment(), node);
 				contextualSubscriptionCtr = AbstractTaskNotificationHandler.createContextualSubscriptionController(ureq, this.getWindowControl(), path, subsContext, DropboxController.class);
@@ -203,7 +205,7 @@ public class DropboxScoringViewController extends BasicController {
 		boolean isTutor  = userCourseEnv.getCourseEnvironment().getCourseGroupManager().isIdentityCourseCoach(ureq.getIdentity());
 		if ( ((AssessableCourseNode)node).hasStatusConfigured() && (isAuthor || isTutor)) {
 			myContent.contextPut("hasStatusPullDown", Boolean.TRUE);
-			statusForm = new StatusForm(ureq, getWindowControl());
+			statusForm = new StatusForm(ureq, getWindowControl(), userCourseEnv.isCourseReadOnly());
 			listenTo(statusForm);
 
 			// get identity not from request (this would be an author)
@@ -222,10 +224,14 @@ public class DropboxScoringViewController extends BasicController {
 	}
 	
 	protected VFSSecurityCallback getDropboxVfsSecurityCallback() {
+		if(userCourseEnv.isCourseReadOnly()) return new ReadOnlyCallback();
+		
 		return new ReadOnlyAndDeleteCallback();
 	}
 
 	protected VFSSecurityCallback getReturnboxVfsSecurityCallback(String returnboxRelPath, Identity assessedIdentity) {
+		if(userCourseEnv.isCourseReadOnly()) return new ReadOnlyCallback();
+		
 		SubscriptionContext subscriptionContext = ReturnboxFileUploadNotificationHandler
 				.getSubscriptionContext(userCourseEnv.getCourseEnvironment(), node, assessedIdentity);
 		return new ReturnboxFullAccessCallback(returnboxRelPath, subscriptionContext);
@@ -234,6 +240,7 @@ public class DropboxScoringViewController extends BasicController {
 	/**
 	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest, org.olat.core.gui.components.Component, org.olat.core.gui.control.Event)
 	 */
+	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
 		if (source == taskLaunchButton) {
 			File fTaskfolder = new File(FolderConfig.getCanonicalRoot()
@@ -262,6 +269,7 @@ public class DropboxScoringViewController extends BasicController {
 	/**
 	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest, org.olat.core.gui.control.Controller, org.olat.core.gui.control.Event)
 	 */
+	@Override
 	public void event(UserRequest ureq, Controller source, Event event) {
 		if (source == dropboxFolderRunController) {
 			if (event instanceof FolderEvent) {

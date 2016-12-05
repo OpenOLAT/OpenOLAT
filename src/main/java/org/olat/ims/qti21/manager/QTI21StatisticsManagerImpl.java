@@ -42,9 +42,11 @@ import org.olat.ims.qti21.model.QTI21StatisticSearchParams;
 import org.olat.ims.qti21.model.statistics.AbstractTextEntryInteractionStatistics;
 import org.olat.ims.qti21.model.statistics.HotspotChoiceStatistics;
 import org.olat.ims.qti21.model.statistics.KPrimStatistics;
+import org.olat.ims.qti21.model.statistics.MatchStatistics;
 import org.olat.ims.qti21.model.statistics.NumericalInputInteractionStatistics;
 import org.olat.ims.qti21.model.statistics.SimpleChoiceStatistics;
 import org.olat.ims.qti21.model.statistics.TextEntryInteractionStatistics;
+import org.olat.ims.qti21.model.xml.QtiNodesExtractor;
 import org.olat.ims.qti21.model.xml.interactions.FIBAssessmentItemBuilder;
 import org.olat.ims.qti21.model.xml.interactions.FIBAssessmentItemBuilder.NumericalEntry;
 import org.olat.modules.vitero.model.GroupRole;
@@ -52,6 +54,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import uk.ac.ed.ph.jqtiplus.node.item.AssessmentItem;
+import uk.ac.ed.ph.jqtiplus.node.item.CorrectResponse;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.ChoiceInteraction;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.HotspotInteraction;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.MatchInteraction;
@@ -419,6 +422,48 @@ public class QTI21StatisticsManagerImpl implements QTI21StatisticsManager {
 			kprimPoints.add(new KPrimStatistics(choice.getIdentifier(), isCorrectRight, numCorrect, numIncorrect, numUnanswered));
 		}
 		return kprimPoints;
+	}
+	
+	@Override
+	public List<MatchStatistics> getMatchStatistics(String itemRefIdent, AssessmentItem item, MatchInteraction interaction,
+			QTI21StatisticSearchParams searchParams) {
+		List<RawData> rawDatas = getRawDatas(itemRefIdent, interaction.getResponseIdentifier().toString(), searchParams);
+		SimpleMatchSet sourceMatchSets = interaction.getSimpleMatchSets().get(0);
+		SimpleMatchSet targetMatchSets = interaction.getSimpleMatchSets().get(1);
+		
+		List<MatchStatistics> matchPoints = new ArrayList<>();
+		ResponseDeclaration responseDeclaration = item.getResponseDeclaration(interaction.getResponseIdentifier());
+		
+		//readable responses
+		Map<Identifier,List<Identifier>> associations = new HashMap<>();
+		CorrectResponse correctResponse = responseDeclaration.getCorrectResponse();
+		QtiNodesExtractor.extractIdentifiersFromCorrectResponse(correctResponse, associations);
+		
+		for(SimpleAssociableChoice sourceChoice:sourceMatchSets.getSimpleAssociableChoices()) {
+			for(SimpleAssociableChoice targetChoice:targetMatchSets.getSimpleAssociableChoices()) {
+				DirectedPairValue dKey = new DirectedPairValue(sourceChoice.getIdentifier(), targetChoice.getIdentifier());
+				String choiceIdentifier = dKey.toQtiString();
+				String marker = "[" + choiceIdentifier + "]";
+				
+				boolean correct = associations.containsKey(sourceChoice.getIdentifier())
+						&& associations.get(sourceChoice.getIdentifier()).contains(targetChoice.getIdentifier());
+
+				long numCorrect = 0;
+				long numIncorrect = 0;
+				for(RawData rawData:rawDatas) {
+					String response = rawData.getStringuifiedResponse();
+					if(response.indexOf(marker) >= 0) {
+						if(correct) {
+							numCorrect += rawData.getCount();
+						} else {
+							numIncorrect += rawData.getCount();
+						}
+					}
+				}
+				matchPoints.add(new MatchStatistics(sourceChoice.getIdentifier(), targetChoice.getIdentifier(), numCorrect, numIncorrect));
+			}
+		}
+		return matchPoints;
 	}
 	
 	@Override

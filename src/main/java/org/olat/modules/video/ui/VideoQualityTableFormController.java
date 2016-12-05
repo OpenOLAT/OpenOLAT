@@ -1,6 +1,6 @@
 /**
- * <a href="http://www.openolat.org">
  * OpenOLAT - Online Learning and Training</a><br>
+ * <a href="http://www.openolat.org">
  * <p>
  * Licensed under the Apache License, Version 2.0 (the "License"); <br>
  * you may not use this file except in compliance with the License.<br>
@@ -40,6 +40,8 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.modules.video.VideoManager;
@@ -68,6 +70,8 @@ public class VideoQualityTableFormController extends FormBasicController {
 	private FormLink refreshbtn;
 
 	private int count = 0;
+	
+	private static final OLog log = Tracing.createLoggerFor(VideoQualityTableFormController.class);
 
 	@Autowired
 	private VideoManager videoManager;
@@ -131,15 +135,17 @@ public class VideoQualityTableFormController extends FormBasicController {
 		}
 		List<Integer> missingResolutions = videoManager.getMissingTranscodings(videoResource);
 		if (videoModule.isTranscodingEnabled()) {
-		 	for(Integer missingRes: missingResolutions){
-				String title = videoManager.getDisplayTitleForResolution(missingRes, getTranslator());
-				FormLink transcodeLink = uifactory.addFormLink("res_" + count++, "startTranscoding", "quality.transcode", "quality.transcode", flc, Link.LINK);
-				transcodeLink.setUserObject(missingRes);
-				transcodeLink.setIconLeftCSS("o_icon o_icon_refresh o_icon-fw");
-				
-				FormLink previewMissingLink= uifactory.addFormLink("res_" + count++, "viewQuality", title, title, flc, Link.LINK + Link.NONTRANSLATED);
-				previewMissingLink.setEnabled(false);
-				rows.add(new QualityTableRow(previewMissingLink, missingRes.toString(),  "-", "mp4", transcodeLink));
+		 	for(Integer missingRes : missingResolutions){
+				if (missingRes <= videoMetadata.getHeight()) {
+					String title = videoManager.getDisplayTitleForResolution(missingRes, getTranslator());
+					FormLink transcodeLink = uifactory.addFormLink("res_" + count++, "startTranscoding", "quality.transcode", "quality.transcode", flc, Link.LINK);
+					transcodeLink.setUserObject(missingRes);
+					transcodeLink.setIconLeftCSS("o_icon o_icon_refresh o_icon-fw");
+					
+					FormLink previewMissingLink= uifactory.addFormLink("res_" + count++, "viewQuality", title, title, flc, Link.LINK + Link.NONTRANSLATED);
+					previewMissingLink.setEnabled(false);
+					rows.add(new QualityTableRow(previewMissingLink, missingRes.toString(),  "-", "mp4", transcodeLink));
+				}
 			}
 		}
 	 	rows.sort(new VideoComparator());
@@ -235,16 +241,29 @@ public class VideoQualityTableFormController extends FormBasicController {
 	private class VideoComparator implements Comparator<QualityTableRow> {
 
 		@Override
-		public int compare(QualityTableRow row1, QualityTableRow row2) {	
-			if (translate(row1.getResolution().getI18nKey()).equals("Master video"))return -1;
-			else if (translate(row2.getResolution().getI18nKey()).equals("Master video"))return 1;
-			else { 
-				String s1 =translate(row1.getResolution().getI18nKey());
-				String s2 = translate(row2.getResolution().getI18nKey());
-				return Integer.parseInt(s2.substring(0,s2.length()<30?s2.length():30).replaceAll("[^0-9]", "")) 
-						- Integer.parseInt(s1.substring(0,s1.length()<30?s1.length():30).replaceAll("[^0-9]", ""));
+		public int compare(QualityTableRow row1, QualityTableRow row2) {
+			
+			if (row1 == null || row1.getResolution() == null) return -1;
+			if (row2 == null || row2.getResolution() == null) return -1;
+			
+			String s1 = translate(row1.getResolution().getI18nKey());
+			String s2 = translate(row2.getResolution().getI18nKey());
+			
+			if (s1 == null || s1.length() == 0) return -1;	
+			if (s2 == null || s2.length() == 0) return 1;	
+			
+			if ("Master video".equals(s1)) return -1;
+			else if ("Master video".equals(s2)) return 1;
+			else {
+				try {
+					int comp = Integer.parseInt(s2.substring(0, s2.length() < 30 ? s2.length() : 30).replaceAll("[^0-9]", ""))
+							- Integer.parseInt(s1.substring(0, s1.length() < 30 ? s1.length() : 30).replaceAll("[^0-9]", ""));
+					return comp;
+				} catch (Exception e) {
+					log.error("No valid transcoding resolution available", e);
+					return 0;
+				}
 			}
 		}
-		
 	}
 }

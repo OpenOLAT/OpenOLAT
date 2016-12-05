@@ -53,6 +53,7 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
+import org.olat.core.util.ValidationStatus;
 import org.olat.core.util.WebappHelper;
 import org.olat.core.util.vfs.LocalFileImpl;
 import org.olat.core.util.vfs.VFSContainer;
@@ -122,6 +123,8 @@ public class HotspotEditorController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		setFormContextHelp("Test editor QTI 2.1 in detail#details_testeditor_fragetypen_hotspot");
+		
 		titleEl = uifactory.addTextElement("title", "form.imd.title", -1, itemBuilder.getTitle(), formLayout);
 		titleEl.setMandatory(true);
 		
@@ -141,7 +144,7 @@ public class HotspotEditorController extends FormBasicController {
 		}
 		backgroundEl.addActionListener(FormEvent.ONCHANGE);
 		backgroundEl.setDeleteEnabled(true);
-		backgroundEl.limitToMimeType(mimeTypes, null, null);
+		backgroundEl.limitToMimeType(mimeTypes, "error.mimetype", new String[]{ mimeTypes.toString() });
 
 		//responses
 		String page = velocity_root + "/hotspots.html";
@@ -201,6 +204,10 @@ public class HotspotEditorController extends FormBasicController {
 		if(backgroundImage == null && initialBackgroundImage == null) {
 			backgroundEl.setErrorKey("form.legende.mandatory", null);
 			allOk &= false;
+		} else {
+			List<ValidationStatus> status = new ArrayList<>();
+			backgroundEl.validate(status);
+			allOk &= status.isEmpty();
 		}
 		
 		return allOk & super.validateFormLogic(ureq);
@@ -246,8 +253,12 @@ public class HotspotEditorController extends FormBasicController {
 				}
 				flc.setDirty(true);
 			} else if (backgroundEl.isUploadSuccess()) {
-				flc.setDirty(true);
-				backgroundImage = backgroundEl.moveUploadFileTo(itemFile.getParentFile());
+				List<ValidationStatus> status = new ArrayList<>();
+				backgroundEl.validate(status);
+				if(status.isEmpty()) {
+					flc.setDirty(true);
+					backgroundImage = backgroundEl.moveUploadFileTo(itemFile.getParentFile());
+				}
 			}
 			updateBackground();
 			updateHotspots(ureq);

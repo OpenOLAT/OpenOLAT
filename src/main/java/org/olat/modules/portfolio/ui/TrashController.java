@@ -34,6 +34,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.modules.portfolio.BinderSecurityCallback;
 import org.olat.modules.portfolio.ui.event.DeleteBinderEvent;
+import org.olat.modules.portfolio.ui.event.PageDeletedEvent;
 import org.olat.modules.portfolio.ui.event.RestoreBinderEvent;
 
 /**
@@ -95,9 +96,11 @@ public class TrashController extends BasicController {
 	
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
-		if(event instanceof RestoreBinderEvent || event instanceof DeleteBinderEvent) {
+		if(event instanceof RestoreBinderEvent
+				|| event instanceof DeleteBinderEvent
+				|| event instanceof PageDeletedEvent) {
 			stackPanel.popUpToController(this);
-		}
+		} 
 		super.event(ureq, source, event);
 	}
 

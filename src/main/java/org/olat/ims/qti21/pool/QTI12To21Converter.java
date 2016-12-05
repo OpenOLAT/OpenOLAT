@@ -159,7 +159,6 @@ public class QTI12To21Converter {
 		}
 
 		AssessmentTestBuilder assessmentTestBuilder = new AssessmentTestBuilder(assessmentTest);
-		assessmentTestBuilder.setExportScore(true);
 
 		//root
 		List<Section> sections = assessment.getSections();

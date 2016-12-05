@@ -53,6 +53,11 @@ public class AccessRenderer implements FlexiCellRenderer {
 				sb.append(translator.translate("table.header.access.membersonly")); 
 			} else {
 				switch (re.getAccess()) {
+					case RepositoryEntry.DELETED: {
+
+						sb.append(translator.translate("table.header.access.deleted"));
+						break;
+					}
 					case RepositoryEntry.ACC_OWNERS:
 						sb.append(translator.translate("table.header.access.owner"));
 						break;

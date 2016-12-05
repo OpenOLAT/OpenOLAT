@@ -127,25 +127,15 @@ public class AssessmentEntryDAO {
 		return entries.isEmpty() ? null : entries.get(0);
 	}
 	
-	public AssessmentEntry loadAssessmentEntry(IdentityRef assessedIdentity, RepositoryEntryRef entry, String subIdent, String referenceSoftKey) {
+	public AssessmentEntry loadAssessmentEntry(IdentityRef assessedIdentity, RepositoryEntryRef entry, String subIdent) {
 		StringBuilder sb = new StringBuilder();
 		
 		sb.append("select data from assessmententry data");
-		if(referenceSoftKey != null) {
-			sb.append(" inner join data.referenceEntry referenceEntry");
-		}
-		
 		sb.append(" where data.repositoryEntry.key=:repositoryEntryKey and data.identity.key=:identityKey");
 		if(subIdent != null) {
 			sb.append(" and data.subIdent=:subIdent");
 		} else {
 			sb.append(" and data.subIdent is null");
-		}
-		
-		if(referenceSoftKey != null) {
-			sb.append(" and referenceEntry.softkey=:softkey");
-		} else {
-			sb.append(" and data.referenceEntry is null");
 		}
 
 		TypedQuery<AssessmentEntry> query = dbInstance.getCurrentEntityManager()
@@ -154,9 +144,6 @@ public class AssessmentEntryDAO {
 				.setParameter("identityKey", assessedIdentity.getKey());
 		if(subIdent != null) {
 			query.setParameter("subIdent", subIdent);
-		}
-		if(referenceSoftKey != null) {
-			query.setParameter("softkey", referenceSoftKey);
 		}
 		List<AssessmentEntry> entries = query.getResultList();
 		return entries.isEmpty() ? null : entries.get(0);
@@ -285,9 +272,9 @@ public class AssessmentEntryDAO {
 	 * @param entry
 	 * @return
 	 */
-	public int deleteEntryForReferenceEntry(RepositoryEntryRef entry) {
+	public int removeEntryForReferenceEntry(RepositoryEntryRef entry) {
 		StringBuilder sb = new StringBuilder();
-		sb.append("delete from assessmententry data where data.referenceEntry.key=:referenceKey");
+		sb.append("update assessmententry data set data.referenceEntry.key=null where data.referenceEntry.key=:referenceKey");
 		return dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString())
 				.setParameter("referenceKey", entry.getKey())

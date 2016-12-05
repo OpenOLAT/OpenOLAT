@@ -60,10 +60,12 @@ public class TypeRenderer implements FlexiCellRenderer {
 		
 		String cssClass = "";
 		boolean managed = false;
+		int access = -1;
 		if(cellValue instanceof AuthoringEntryRow) {
 			AuthoringEntryRow re = (AuthoringEntryRow) cellValue;
 			cssClass = RepositoyUIFactory.getIconCssClass(re);
 			managed = re.isManaged();
+			access = re.getAccess();
 		} else if (cellValue instanceof RepositoryEntryShort) {
 			RepositoryEntryShort re = (RepositoryEntryShort) cellValue;
 			cssClass = RepositoyUIFactory.getIconCssClass(re);
@@ -71,6 +73,7 @@ public class TypeRenderer implements FlexiCellRenderer {
 			RepositoryEntry re = (RepositoryEntry) cellValue;
 			cssClass = RepositoyUIFactory.getIconCssClass(re);
 			managed = StringHelper.containsNonWhitespace(re.getManagedFlagsString());
+			access = re.getStatusCode();
 		}
 		
 		if(renderer == null) {
@@ -78,9 +81,12 @@ public class TypeRenderer implements FlexiCellRenderer {
 			target.append(type);
 		} else {
 			target.append("<div class='o_nowrap o_repoentry_type'>")
-			      .append("<i class='o_icon o_icon-lg ").append(cssClass).append("' title=\"").append(type).append("\"></i>");
+			      .append("<i class='o_icon o_icon-lg ").append(cssClass).append("' title=\"").append(type).append("\"> </i>");
 			if (managed) {
-				target.append(" <i class='o_icon o_icon_managed' title=\"").append(translator.translate("cif.managedflags")).append("\"></i> ");
+				target.append(" <i class='o_icon o_icon_managed' title=\"").append(translator.translate("cif.managedflags")).append("\"> </i> ");
+			}
+			if (access == 0) {
+				target.append(" <i class='o_icon o_icon-lg o_icon_deleted'> </i> ");
 			}
 			target.append("</div>");
 		}

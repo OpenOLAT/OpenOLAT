@@ -22,7 +22,6 @@ package org.olat.modules.vitero.ui;
 import java.util.Collections;
 import java.util.List;
 
-import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.table.DefaultColumnDescriptor;
@@ -44,6 +43,7 @@ import org.olat.modules.vitero.manager.VmsNotAvailableException;
 import org.olat.modules.vitero.model.StartBookingComparator;
 import org.olat.modules.vitero.model.ViteroBooking;
 import org.olat.modules.vitero.model.ViteroStatus;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -64,16 +64,16 @@ public class ViteroBookingsController extends BasicController {
 	private final BusinessGroup group;
 	private final OLATResourceable ores;
 	private final String subIdentifier;
-	private final ViteroManager viteroManager;
+	@Autowired
+	private ViteroManager viteroManager;
 
 	public ViteroBookingsController(UserRequest ureq, WindowControl wControl,
-			BusinessGroup group, OLATResourceable ores, String subIdentifier) {
+			BusinessGroup group, OLATResourceable ores, String subIdentifier, boolean readOnly) {
 		super(ureq, wControl);
 
 		this.ores = ores;
 		this.group = group;
 		this.subIdentifier = subIdentifier;
-		viteroManager = (ViteroManager) CoreSpringFactory.getBean("viteroManager");
 
 		TableGuiConfiguration tableConfig = new TableGuiConfiguration();
 		tableConfig.setTableEmptyMessage(translate("table.empty"));
@@ -84,12 +84,13 @@ public class ViteroBookingsController extends BasicController {
 		tableCtr.addColumnDescriptor(new DefaultColumnDescriptor("booking.end", ViteroBookingDataModel.Column.end.ordinal(), null, ureq.getLocale()));
 		tableCtr.addColumnDescriptor(new OpenGroupColumnDescriptor("booking.group", ViteroBookingDataModel.Column.group.ordinal(), ureq.getLocale(), getTranslator()));
 
-		StartColumnDescriptor startRoom = new StartColumnDescriptor("start", "start", ureq.getLocale(), viteroManager, getTranslator());
-		startRoom.setIsPopUpWindowAction(true, "");
-		tableCtr.addColumnDescriptor(startRoom);
-		
-		tableCtr.addColumnDescriptor(new SignColumnDescriptor("signin", ViteroBookingDataModel.Column.sign.ordinal(), ureq.getLocale(), getTranslator()));
-
+		if(!readOnly) {
+			StartColumnDescriptor startRoom = new StartColumnDescriptor("start", "start", ureq.getLocale(), viteroManager, getTranslator());
+			startRoom.setIsPopUpWindowAction(true, "");
+			tableCtr.addColumnDescriptor(startRoom);
+			
+			tableCtr.addColumnDescriptor(new SignColumnDescriptor("signin", ViteroBookingDataModel.Column.sign.ordinal(), ureq.getLocale(), getTranslator()));
+		}
 		loadModel();
 		
 		tableCtr.setSortColumn(1, true);// timeframe

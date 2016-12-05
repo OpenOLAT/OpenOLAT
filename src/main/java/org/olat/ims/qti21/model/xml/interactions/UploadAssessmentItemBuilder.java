@@ -105,7 +105,6 @@ public class UploadAssessmentItemBuilder extends LobAssessmentItemBuilder {
 		}
 		question = sb.toString();
 	}
-	
 
 	@Override
 	protected void buildResponseAndOutcomeDeclarations() {

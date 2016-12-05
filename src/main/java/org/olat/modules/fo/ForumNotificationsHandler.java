@@ -47,9 +47,11 @@ import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
+import org.olat.core.util.resource.OresHelper;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
 import org.olat.modules.fo.manager.ForumManager;
+import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
 
 /**
@@ -86,6 +88,14 @@ public class ForumNotificationsHandler extends LogDelegator implements Notificat
 					NotificationsManager.getInstance().deactivate(p);
 					return NotificationsManager.getInstance().getNoSubscriptionInfo();
 				}
+				
+				if("CourseModule".equals(p.getResName())) {
+					RepositoryEntry re = RepositoryManager.getInstance().lookupRepositoryEntry(OresHelper.createOLATResourceableInstance(p.getResName(), p.getResId()), false);
+					if(re.getRepositoryEntryStatus().isClosed() || re.getRepositoryEntryStatus().isUnpublished()) {
+						return NotificationsManager.getInstance().getNoSubscriptionInfo();
+					}
+				}
+				
 				final List<Message> mInfos = ForumManager.getInstance().getNewMessageInfo(forumKey, compareDate);
 				final Translator translator = Util.createPackageTranslator(ForumNotificationsHandler.class, locale);
 				

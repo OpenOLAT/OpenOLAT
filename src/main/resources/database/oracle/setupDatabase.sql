@@ -1649,6 +1649,19 @@ create table o_pf_assignment (
    primary key (id)
 );
 
+create table o_pf_binder_user_infos (
+   id number(20) GENERATED ALWAYS AS IDENTITY,
+   creationdate date not null,
+   lastmodified date not null,
+   p_initiallaunchdate date,
+   p_recentlaunchdate date,
+   p_visit number(20),
+   fk_identity number(20),
+   fk_binder number(20),
+   unique(fk_identity, fk_binder),
+   primary key (id)
+);
+
 create table o_qp_pool (
    id number(20) not null,
    creationdate date not null,
@@ -2724,6 +2737,11 @@ alter table o_pf_assignment add constraint pf_assign_page_idx foreign key (fk_pa
 create index idx_pf_assign_page_idx on o_pf_assignment (fk_page_id);
 alter table o_pf_assignment add constraint pf_assign_assignee_idx foreign key (fk_assignee_id) references o_bs_identity (id);
 create index idx_pf_assign_assignee_idx on o_pf_assignment (fk_assignee_id);
+
+alter table o_pf_binder_user_infos add constraint binder_user_to_identity_idx foreign key (fk_identity) references o_bs_identity (id);
+create index idx_binder_user_to_ident_idx on o_pf_binder_user_infos (fk_identity);
+alter table o_pf_binder_user_infos add constraint binder_user_binder_idx foreign key (fk_binder) references o_pf_binder (id);
+create index idx_binder_user_binder_idx on o_pf_binder_user_infos (fk_binder);
 
 -- question pool
 alter table o_qp_pool add constraint idx_qp_pool_owner_grp_id foreign key (fk_ownergroup) references o_bs_secgroup(id);

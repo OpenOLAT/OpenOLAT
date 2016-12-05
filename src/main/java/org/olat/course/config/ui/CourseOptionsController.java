@@ -201,6 +201,7 @@ public class CourseOptionsController extends FormBasicController {
 			boolean calendarEnabled = courseConfig.isCalendarEnabled();
 			boolean managedCal = RepositoryEntryManagedFlag.isManaged(entry, RepositoryEntryManagedFlag.calendar);
 			calendarEl = uifactory.addCheckboxesHorizontal("calIsOn", "chkbx.calendar.onoff", calendarCont, onKeys, onValues);
+			calendarEl.setElementCssClass("o_sel_course_options_calendar");
 			calendarEl.addActionListener(FormEvent.ONCHANGE);
 			calendarEl.select("xx", calendarEnabled);
 			calendarEl.setEnabled(editable && !managedCal);
@@ -280,6 +281,7 @@ public class CourseOptionsController extends FormBasicController {
 			saveCont.setRootForm(mainForm);
 			formLayout.add(saveCont);
 			saveButton = uifactory.addFormLink("save", saveCont, Link.BUTTON);
+			saveButton.setElementCssClass("o_sel_course_options_save");
 			saveButton.setPrimary(true);
 		}
 	}

@@ -108,7 +108,7 @@ public class AssessmentEntryImpl implements Persistable, ModifiedInfo, CreateInf
 	private String subIdent;
 	
 	@ManyToOne(targetEntity=RepositoryEntry.class,fetch=FetchType.LAZY,optional=true)
-	@JoinColumn(name="fk_reference_entry", nullable=true, insertable=true, updatable=false)
+	@JoinColumn(name="fk_reference_entry", nullable=true, insertable=true, updatable=true)
     private RepositoryEntry referenceEntry;
 
     @Column(name="a_anon_identifier", nullable=true, insertable=true, updatable=false)

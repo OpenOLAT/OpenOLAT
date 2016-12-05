@@ -46,6 +46,8 @@ import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.Util;
+import org.olat.core.util.resource.OresHelper;
+import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
 
 /**
@@ -77,12 +79,17 @@ public class FileUploadNotificationHandler implements NotificationsHandler {
 		// there could be news for me, investigate deeper
 		try {
 			if (NotificationsManager.getInstance().isPublisherValid(p) && compareDate.before(latestNews)) {
-				String displayname = RepositoryManager.getInstance().lookupDisplayNameByOLATResourceableId(p.getResId());
-				if(displayname == null) {
+				RepositoryEntry re = RepositoryManager.getInstance().lookupRepositoryEntry(OresHelper.createOLATResourceableInstance(p.getResName(), p.getResId()), false);
+				if(re == null) {
 					if(!checkPublisher(subscriber.getPublisher())) {
 						return NotificationsManager.getInstance().getNoSubscriptionInfo();
 					}
+				} else if(re.getRepositoryEntryStatus().isClosed() || re.getRepositoryEntryStatus().isUnpublished()) {
+					return NotificationsManager.getInstance().getNoSubscriptionInfo();
 				}
+
+				String displayname = re.getDisplayname();
+				
 				DialogElementsPropertyManager mgr = DialogElementsPropertyManager.getInstance();
 				DialogPropertyElements elements = mgr.findDialogElements(p.getResId(), p.getSubidentifier());
 				final List<DialogElement> dialogElements = elements.getDialogPropertyElements();

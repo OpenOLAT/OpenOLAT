@@ -67,14 +67,22 @@ public class UserCourseEnvironmentImpl implements UserCourseEnvironment {
 	private Boolean adminAnyCourse, coachAnyCourse, participantAnyCourse;
 	
 	private Boolean certification;
+	private Boolean courseReadOnly;
 	
 	public UserCourseEnvironmentImpl(IdentityEnvironment identityEnvironment, CourseEnvironment courseEnvironment) {
-		this(identityEnvironment, courseEnvironment, null, null, null, null, null, null, null);
+		this(identityEnvironment, courseEnvironment, null, null, null, null, null, null, null, null);
+		if(courseEnvironment != null) {
+			courseReadOnly = courseEnvironment.getCourseGroupManager().getCourseEntry().getRepositoryEntryStatus().isClosed();
+		}
+	}
+	
+	public UserCourseEnvironmentImpl(IdentityEnvironment identityEnvironment, CourseEnvironment courseEnvironment, Boolean courseReadOnly) {
+		this(identityEnvironment, courseEnvironment, null, null, null, null, null, null, null, courseReadOnly);
 	}
 	
 	public UserCourseEnvironmentImpl(IdentityEnvironment identityEnvironment, CourseEnvironment courseEnvironment, WindowControl windowControl,
 			List<BusinessGroup> coachedGroups, List<BusinessGroup> participatingGroups, List<BusinessGroup> waitingLists,
-			Boolean coach, Boolean admin, Boolean participant) {
+			Boolean coach, Boolean admin, Boolean participant, Boolean courseReadOnly) {
 		this.courseEnvironment = courseEnvironment;
 		this.identityEnvironment = identityEnvironment;
 		this.scoreAccounting = new ScoreAccounting(this);
@@ -86,6 +94,7 @@ public class UserCourseEnvironmentImpl implements UserCourseEnvironment {
 		this.admin = admin;
 		this.participant = participant;
 		this.windowControl = windowControl;
+		this.courseReadOnly = courseReadOnly;
 	}
 
 	/**
@@ -267,6 +276,15 @@ public class UserCourseEnvironmentImpl implements UserCourseEnvironment {
 			return Collections.emptyList();
 		}
 		return waitingLists;
+	}
+	
+	@Override
+	public boolean isCourseReadOnly() {
+		return courseReadOnly == null ? false : courseReadOnly.booleanValue();
+	}
+	
+	public void setCourseReadOnly(Boolean courseReadOnly) {
+		this.courseReadOnly = courseReadOnly;
 	}
 	
 	@Override

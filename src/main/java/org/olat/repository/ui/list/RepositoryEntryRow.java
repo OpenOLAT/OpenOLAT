@@ -156,7 +156,7 @@ public class RepositoryEntryRow implements RepositoryEntryRef {
 	}
 
 	public boolean isClosed() {
-		return new RepositoryEntryStatus(statusCode).isClosed();
+		return new RepositoryEntryStatus(statusCode).isClosed() || new RepositoryEntryStatus(statusCode).isUnpublished() ;
 	}
 
 	public int getAccess() {

@@ -24,7 +24,6 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
-import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -47,6 +46,7 @@ import org.olat.group.BusinessGroup;
 import org.olat.modules.vitero.manager.ViteroManager;
 import org.olat.modules.vitero.manager.VmsNotAvailableException;
 import org.olat.modules.vitero.model.ViteroBooking;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -71,21 +71,23 @@ public class ViteroBookingsEditController extends FormBasicController {
 	private ViteroUserToGroupController usersController;
 	private VelocityContainer viteroGroupVC;
 	
+	private final boolean readOnly;
 	private final String resourceName;
 	private final BusinessGroup group;
 	private final OLATResourceable ores;
 	private final String subIdentifier;
-	private final ViteroManager viteroManager;
+	@Autowired
+	private ViteroManager viteroManager;
 
 	public ViteroBookingsEditController(UserRequest ureq, WindowControl wControl, BusinessGroup group, OLATResourceable ores,
-			String subIdentifier, String resourceName) {
+			String subIdentifier, String resourceName, boolean readOnly) {
 		super(ureq, wControl, "edit");
 		
 		this.group = group;
 		this.ores = ores;
+		this.readOnly = readOnly;
 		this.subIdentifier = subIdentifier;
 		this.resourceName = resourceName;
-		viteroManager = (ViteroManager)CoreSpringFactory.getBean("viteroManager");
 
 		initForm(ureq);
 	}
@@ -97,6 +99,7 @@ public class ViteroBookingsEditController extends FormBasicController {
 		FormLayoutContainer buttonLayout = FormLayoutContainer.createButtonLayout("buttons-cont", getTranslator());
 		formLayout.add(buttonLayout);
 		newButton = uifactory.addFormLink("new", buttonLayout, Link.BUTTON);
+		newButton.setVisible(!readOnly);
 		occupiedRoomsLink = uifactory.addFormLink("roomsOverview", buttonLayout, Link.BUTTON);
 	}
 
@@ -112,8 +115,10 @@ public class ViteroBookingsEditController extends FormBasicController {
 			int i=0;
 			for(ViteroBooking booking:bookings) {
 				BookingDisplay display = new BookingDisplay(booking);
-				display.setDeleteButton(uifactory.addFormLink("delete_" + i++, "delete", "delete", flc, Link.BUTTON));
-				display.setEditButton(uifactory.addFormLink("edit_" + i++, "edit", "edit", flc, Link.BUTTON));
+				if(!readOnly) {
+					display.setDeleteButton(uifactory.addFormLink("delete_" + i++, "delete", "delete", flc, Link.BUTTON));
+					display.setEditButton(uifactory.addFormLink("edit_" + i++, "edit", "edit", flc, Link.BUTTON));
+				}
 				display.setUsersButton(uifactory.addFormLink("users_" + i++, "users", "users", flc, Link.BUTTON));
 				display.setGroupButton(uifactory.addFormLink("group_" + i++, "group.open", "group.open", flc, Link.BUTTON));
 				bookingDisplays.add(display);
@@ -269,7 +274,7 @@ public class ViteroBookingsEditController extends FormBasicController {
 		removeAsListenerAndDispose(cmc);
 		removeAsListenerAndDispose(usersController);
 
-		usersController = new ViteroUserToGroupController(ureq, getWindowControl(), group, ores, viteroBooking);			
+		usersController = new ViteroUserToGroupController(ureq, getWindowControl(), group, ores, viteroBooking, readOnly);			
 		listenTo(usersController);
 		
 		String title = translate("users.title");

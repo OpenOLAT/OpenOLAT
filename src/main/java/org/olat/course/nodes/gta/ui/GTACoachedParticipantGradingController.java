@@ -67,21 +67,25 @@ public class GTACoachedParticipantGradingController extends BasicController {
 	private final GTACourseNode gtaNode;
 	private final Identity assessedIdentity;
 	private final OLATResourceable courseOres;
+	private final UserCourseEnvironment coachCourseEnv;
 
 	@Autowired
 	private GTAManager gtaManager;
 	
 	public GTACoachedParticipantGradingController(UserRequest ureq, WindowControl wControl,
-			OLATResourceable courseOres, GTACourseNode gtaNode, Task assignedTask, Identity assessedIdentity) {
+			OLATResourceable courseOres, GTACourseNode gtaNode, Task assignedTask, 
+			UserCourseEnvironment coachCourseEnv, Identity assessedIdentity) {
 		super(ureq, wControl);
 		this.gtaNode = gtaNode;
 		this.assignedTask = assignedTask;
 		this.courseOres = OresHelper.clone(courseOres);
 		this.assessedIdentity = assessedIdentity;
+		this.coachCourseEnv = coachCourseEnv;
 		
 		mainVC = createVelocityContainer("coach_grading");
 		
-		assessmentFormButton = LinkFactory.createCustomLink("coach.assessment", "assessment", "coach.assessment", Link.BUTTON, mainVC, this);
+		String i18nKey = coachCourseEnv.isCourseReadOnly() ? "details" : "coach.assessment";
+		assessmentFormButton = LinkFactory.createCustomLink("coach.assessment", "assessment", i18nKey, Link.BUTTON, mainVC, this);
 		assessmentFormButton.setCustomEnabledLinkCSS("btn btn-primary");
 		assessmentFormButton.setIconLeftCSS("o_icon o_icon o_icon_submit");
 		assessmentFormButton.setElementCssClass("o_sel_course_gta_assessment_button");
@@ -89,7 +93,7 @@ public class GTACoachedParticipantGradingController extends BasicController {
 		
 		reopenAssessmentButton = LinkFactory.createCustomLink("coach.reopen", "reopen", "coach.reopen", Link.BUTTON, mainVC, this);
 		reopenAssessmentButton.setElementCssClass("o_sel_course_gta_reopen_button");
-		reopenAssessmentButton.setVisible(assignedTask != null && assignedTask.getTaskStatus() == TaskProcess.graded);
+		reopenAssessmentButton.setVisible(!coachCourseEnv.isCourseReadOnly() && assignedTask != null && assignedTask.getTaskStatus() == TaskProcess.graded);
 
 		putInitialPanel(mainVC);
 		setAssessmentDatas(ureq);
@@ -164,7 +168,7 @@ public class GTACoachedParticipantGradingController extends BasicController {
 		
 		RepositoryEntry courseEntry = CourseFactory.loadCourse(courseOres).getCourseEnvironment().getCourseGroupManager().getCourseEntry();
 
-		assessmentForm = new AssessmentIdentityCourseNodeController(ureq, getWindowControl(), null, courseEntry, gtaNode, assessedIdentity, false);
+		assessmentForm = new AssessmentIdentityCourseNodeController(ureq, getWindowControl(), null, courseEntry, gtaNode, coachCourseEnv, assessedIdentity, false);
 		listenTo(assessmentForm);
 		
 		String title = translate("grading");

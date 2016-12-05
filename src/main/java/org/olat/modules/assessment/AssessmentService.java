@@ -60,17 +60,14 @@ public interface AssessmentService {
 	public AssessmentEntry getOrCreateAssessmentEntry(Identity assessedIdentity, String anonymousIdentifier,
 			RepositoryEntry entry, String subIdent, RepositoryEntry referenceEntry);
 	
-	public AssessmentEntry loadAssessmentEntry(Identity assessedIdentity, RepositoryEntry entry, String subIdent);
-	
 	/**
-	 * The search by the reference soft key is set not is null if the value is null.
+	 * 
 	 * @param assessedIdentity
 	 * @param entry
 	 * @param subIdent
-	 * @param referenceSoftKey
 	 * @return
 	 */
-	public AssessmentEntry loadAssessmentEntry(Identity assessedIdentity, RepositoryEntry entry, String subIdent, String referenceSoftKey);
+	public AssessmentEntry loadAssessmentEntry(Identity assessedIdentity, RepositoryEntry entry, String subIdent);
 	
 	/**
 	 * 

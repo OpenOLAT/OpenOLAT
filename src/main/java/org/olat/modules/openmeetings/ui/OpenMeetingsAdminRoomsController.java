@@ -193,7 +193,7 @@ public class OpenMeetingsAdminRoomsController extends BasicController {
 	
 	protected void confirmDelete(UserRequest ureq, OpenMeetingsRoom room) {
 		String title = translate("delete");
-		String text = translate("delete.confirm", new String[]{ room.getName() });
+		String text = translate("delete.confirm", new String[]{ StringHelper.escapeHtml(room.getName()) });
 		dialogCtr = activateOkCancelDialog(ureq, title, text, dialogCtr);
 		dialogCtr.setUserObject(room);
 	}

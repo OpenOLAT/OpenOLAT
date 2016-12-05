@@ -72,6 +72,7 @@ public class SharedItemsDataModel extends DefaultFlexiTableDataModel<SharedItemR
 				case selectSections: return itemRow;
 				case grading: return itemRow.getAssessmentEntry();
 				case lastModified: return itemRow.getLastModified();
+				case recentLaunch: return itemRow.getRecentLaunch();
 			}
 		}
 		
@@ -92,7 +93,8 @@ public class SharedItemsDataModel extends DefaultFlexiTableDataModel<SharedItemR
 		openSections("table.header.open.sections"),
 		selectSections("table.header.select.sections"),
 		grading("table.header.grading"),
-		lastModified("table.header.lastUpdate");
+		lastModified("table.header.lastUpdate"),
+		recentLaunch("table.header.recentLaunch");
 		
 		private final String i18nKey;
 		

@@ -24,6 +24,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.olat.core.commons.services.video.MovieService;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FileElement;
@@ -33,6 +34,7 @@ import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.util.Formatter;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSManager;
@@ -60,11 +62,14 @@ public class VideoResourceEditController extends FormBasicController {
 	
 	private VFSContainer vfsContainer;
 	private OLATResource videoResource;
+	private RepositoryEntry entry;
 	
 	@Autowired
 	private VideoManager videoManager;
 	@Autowired
 	private VideoModule videoModule;
+	@Autowired
+	private MovieService movieService;
 	
 	private StaticTextElement typeEl;
 	private FileElement uploadFileEl;
@@ -72,6 +77,7 @@ public class VideoResourceEditController extends FormBasicController {
 	
 	public VideoResourceEditController(UserRequest ureq, WindowControl wControl, RepositoryEntry entry){
 		super(ureq, wControl);
+		this.entry = entry;
 		this.videoResource = entry.getOlatResource();
 		vfsContainer = videoManager.getMasterContainer(videoResource);
 
@@ -108,7 +114,12 @@ public class VideoResourceEditController extends FormBasicController {
 		if (uploadFileEl.getUploadSize() > 0 && uploadFile.exists()){
 			video.delete();
 			VFSLeaf uploadVideo = vfsContainer.createChildLeaf(VIDEO_RESOURCE);
-			VFSManager.copyContent(uploadFile, uploadVideo);				
+			VFSManager.copyContent(uploadFile, uploadVideo);
+			// update video duration
+			long duration = movieService.getDuration(uploadVideo, VideoTranscoding.FORMAT_MP4);
+			if (duration != -1) {
+				entry.setExpenditureOfWork(Formatter.formatTimecode(duration));
+			}
 		} 
 	}
 
@@ -121,12 +132,15 @@ public class VideoResourceEditController extends FormBasicController {
 	
 	private void queueCreateTranscoding() {
 		List<Integer> missingResolutions = videoManager.getMissingTranscodings(videoResource);
-		VideoMetadata videoMetadata = videoManager.readVideoMetadataFile(videoResource);
-
+		VideoMetadata videoMetadata = videoManager.getMetaDataFromOLATResource(videoResource);
+		int height = videoMetadata.getHeight();
 		if (videoModule.isTranscodingEnabled()) {
+			// 1) setup transcoding job for original file size
+			videoManager.createTranscoding(videoResource, height, VideoTranscoding.FORMAT_MP4);
+			// 2) setup transcoding jobs for all configured sizes below the original size
 			for (Integer missingRes : missingResolutions) {
-				if(videoMetadata.getHeight() >= missingRes){
-					videoManager.createTranscoding(videoResource, missingRes, "mp4");					
+				if(height > missingRes){
+					videoManager.createTranscoding(videoResource, missingRes, VideoTranscoding.FORMAT_MP4);					
 				}
 			}
 		}

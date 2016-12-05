@@ -17,7 +17,7 @@ alter table o_area drop groupcontext_fk;
 alter table o_bs_invitation drop column fk_secgroup;
 alter table o_bs_invitation drop column version;
 
-alter table o_ep_struct_el drop column fk_ownergroup
+alter table o_ep_struct_el drop column fk_ownergroup;
 
 -- drop tables
 drop table o_gp_bgcontext;

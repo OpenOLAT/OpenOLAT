@@ -103,6 +103,7 @@ public class HotspotChoiceScoreController extends AssessmentItemRefEditorControl
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		super.initForm(formLayout, listener, ureq);
+		setFormContextHelp("Test editor QTI 2.1 in detail#details_testeditor_score");
 		
 		minScoreEl = uifactory.addTextElement("min.score", "min.score", 8, "0.0", formLayout);
 		minScoreEl.setEnabled(false);
@@ -203,12 +204,8 @@ public class HotspotChoiceScoreController extends AssessmentItemRefEditorControl
 
 		List<HotspotWrapper> choiceWrappers = new ArrayList<>();
 		List<HotspotChoice> choices = itemBuilder.getHotspotChoices();
-		String[] keys = new String[choices.size()];
-		String[] values = new String[choices.size()];
 		for(int i=0; i<choices.size(); i++) {
 			HotspotChoice choice = choices.get(i);
-			keys[i] = choice.getIdentifier().toString();
-			values[i] = Integer.toString(i + 1) + ".";
 			choiceWrappers.add(new HotspotWrapper(choice, itemBuilder));
 		}
 

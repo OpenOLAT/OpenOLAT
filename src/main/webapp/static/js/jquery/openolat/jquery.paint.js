@@ -1,3 +1,13 @@
+/*
+ * ========================================================
+ *  The code is heavily based on several blog entries:
+ *  http://codetheory.in/html5-canvas-drawing-lines-with-smooth-edges/
+ *  
+ *  	
+ *  
+ *  @author srosse, www.frentix.com
+ *  @date Mar. 2016
+ */
 (function($) {
     $.fn.paint = function(options) {
     	var paint = this.data("data-oo-paint");
@@ -53,13 +63,19 @@
 	
 		// current tool
 		var tool = 'brush';
+		jQuery('#tools a#brush').addClass("active");
 		jQuery('#tools a').on('click', function(){
 			tool = jQuery(this).attr('id');
+			jQuery('#tools a').removeClass("active");
+			jQuery(this).addClass('active');
 		});
 		// colors
 		jQuery('#colors a').on('click', function(){
 			tmp_ctx.strokeStyle = jQuery(this).attr('id');
 			tmp_ctx.fillStyle = tmp_ctx.strokeStyle;
+			
+			jQuery('#colors a').removeClass("active");
+			jQuery(this).addClass('active');
 			drawBrush();
 		});
 	
@@ -73,7 +89,7 @@
 			mouse.x = typeof e.offsetX !== 'undefined' ? e.offsetX : e.layerX;
 			mouse.y = typeof e.offsetY !== 'undefined' ? e.offsetY : e.layerY;
 		}, false);
-			
+	
 		//NEWTHING
 		var drawBrush = function() {
 			context_small.clearRect(0, 0, canvas_small.width, canvas_small.height);
@@ -95,6 +111,7 @@
 		tmp_ctx.lineCap = 'round';
 		tmp_ctx.strokeStyle = 'blue';
 		tmp_ctx.fillStyle = 'blue';
+		jQuery('#colors a.blue').addClass("active");
 		//tmp_ctx.globalAlpha = 0.5;
 				
 		//show current brush view  //NEWTHING
@@ -121,7 +138,19 @@
 		}, false);
 	
 		tmp_canvas.addEventListener('mouseup', function() {
+			stopPainting();
+		}, false);
+		
+		tmp_canvas.addEventListener('mouseleave', function(e) {
+			if(tool != "spray" && tool != "eraser") {
+				stopPainting();
+			}
+		}, false);
+		
+		var stopPainting = function() {
 			tmp_canvas.removeEventListener('mousemove', onPaint, false);
+			
+			jQuery('#tools a').removeClass("active");
 			
 			// for erasing
 			ctx.globalCompositeOperation = 'source-over';
@@ -140,13 +169,13 @@
 			jQuery('#' + inputHolderId).val(image);
 			undo_arr.push(image);
 			undo_count = 0; //NEWTHING
-		}, false);
-	
-		//NEWTHING
+		}
+
+		/*
 		document.getElementById("undo").addEventListener("click", function(){
 			if( undo_arr.length > 1 ) {
 				if ( undo_count + 1 < undo_arr.length ) {
-					if ( undo_count + 2 == undo_arr.length ) { 
+					if ( undo_count + 2 == undo_arr.length ) {
 						if (confirm("Do you really want to UNDO ??? WARNING ! You will not be able to REDO this step ")) {
 							undo_count++;
 							UndoFunc(undo_count); 
@@ -170,26 +199,54 @@
 				UndoFunc(undo_count);
 			}
 		});
-
-		//NEWTHING  
-		document.getElementById("width_range").addEventListener("change", function(){
+		*/
+		
+		jQuery("#width_range").on("input change", function() {
 			tmp_ctx.lineWidth = document.getElementById("width_range").value / 2;
-			
 			drawBrush();
-			//document.getElementById("brush_size")
 		});
 		
-		//NEWTHING
-		document.getElementById("opacity_range").addEventListener("change", function(){
+		jQuery("#opacity_range").on("change", function() {
 			tmp_ctx.globalAlpha = document.getElementById("opacity_range").value / 100;
 			drawBrush();
 		});
 	
 		//NEWTHING
-		document.getElementById("clear").addEventListener("click", function(){
-			if (confirm("Do you really want CLEAR the canvas?")) {
-				ctx.clearRect(0, 0, tmp_canvas.width, tmp_canvas.height);
+		document.getElementById("clear").addEventListener("click", function() {
+			var mainWin = o_getMainWin();
+			var cachedTrans;
+			if (mainWin) {
+				cachedTrans = jQuery(document).ooTranslator().getTranslator(mainWin.o_info.locale, 'org.olat.ims.qti21.ui');
+			} else {
+				cachedTrans = {	translate : function(key) { return key; } }
 			}
+			
+			var cancel = cachedTrans.translate('cancel');
+			var erase = cachedTrans.translate('paint.erase');
+			var eraseHint = cachedTrans.translate('paint.erase.hint');
+			
+			var modal = '';
+			modal += '<div id="paintModal" class="modal fade" tabindex="-1" role="dialog">';
+			modal += '  <div class="modal-dialog" role="document">';
+			modal += '    <div class="modal-content">';
+			modal += '      <div class="modal-body">';
+			modal += '        <p>' + eraseHint + '</p>';
+			modal += '      </div>';
+			modal += '      <div class="modal-footer">';
+			modal += '        <button type="button" class="btn btn-default" data-dismiss="modal">' + cancel + '</button>';
+			modal += '        <button type="button" class="btn btn-primary" data-dismiss="modal">' + erase + '</button>';
+			modal += '      </div>';
+			modal += '    </div>';
+			modal += '  </div>';
+			modal += '</div>';
+			jQuery("body").append(modal);
+			$('#paintModal').modal('show');
+			$('#paintModal button.btn-primary').on('click', function() {
+				ctx.clearRect(0, 0, tmp_canvas.width, tmp_canvas.height);
+			});
+			$('#paintModal').on('hidden.bs.modal', function (event) {
+				jQuery("#paintModal").remove();
+			});
 		});
 	
 		var onPaintCircle = function() {

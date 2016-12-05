@@ -22,6 +22,7 @@ package org.olat.modules.portfolio.ui;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.List;
 
 import org.olat.basesecurity.BaseSecurityModule;
@@ -137,6 +138,7 @@ public class SharedItemsController extends FormBasicController implements Activa
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ShareItemCols.binderName, "select"));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ShareItemCols.courseName, "select"));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ShareItemCols.lastModified));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ShareItemCols.recentLaunch));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ShareItemCols.openSections, "select"));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ShareItemCols.selectSections, new SelectSectionsCellRenderer()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ShareItemCols.grading,
@@ -172,6 +174,7 @@ public class SharedItemsController extends FormBasicController implements Activa
 			row.setLastModified(assessedBinder.getLastModified());
 			row.setEntryDisplayName(assessedBinder.getEntryDisplayname());
 			row.setAssessmentEntry(assessedBinder);
+			row.setRecentLaunch(assessedBinder.getRecentLaunch());
 			List<AssessedBinderSection> sections = assessedBinder.getSections();
 			if(sections != null && sections.size() > 1) {
 				Collections.sort(sections, new AssessedBinderSectionComparator());
@@ -296,7 +299,9 @@ public class SharedItemsController extends FormBasicController implements Activa
 			return null;
 		} else {
 			removeAsListenerAndDispose(binderCtrl);
-			
+
+			portfolioService.updateBinderUserInformations(binder, getIdentity());
+			row.setRecentLaunch(new Date());
 			OLATResourceable binderOres = OresHelper.createOLATResourceableInstance("Binder", binder.getKey());
 			WindowControl swControl = addToHistory(ureq, binderOres, null);
 			List<AccessRights> rights = portfolioService.getAccessRights(binder, getIdentity());

@@ -35,7 +35,6 @@ import org.olat.admin.securitygroup.gui.WaitingGroupController;
 import org.olat.basesecurity.Group;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.ui.GroupController;
-import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.velocity.VelocityContainer;
@@ -57,9 +56,11 @@ import org.olat.course.nodes.projectbroker.service.ProjectBrokerMailer;
 import org.olat.course.nodes.projectbroker.service.ProjectBrokerManager;
 import org.olat.course.nodes.projectbroker.service.ProjectBrokerModuleConfiguration;
 import org.olat.course.nodes.projectbroker.service.ProjectGroupManager;
+import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupAddResponse;
 import org.olat.group.BusinessGroupService;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -76,25 +77,26 @@ public class ProjectGroupController extends BasicController {
 
 	private ProjectBrokerModuleConfiguration projectBrokerModuleConfiguration;
 	
-	private final MailManager mailManager;
-	private final BusinessGroupService businessGroupService;
-	private final ProjectBrokerManager projectBrokerManager;
-	private final ProjectGroupManager projectGroupManager;
-	private final ProjectBrokerMailer projectBrokerMailer;
+	@Autowired
+	private MailManager mailManager;
+	@Autowired
+	private BusinessGroupService businessGroupService;
+	@Autowired
+	private ProjectBrokerManager projectBrokerManager;
+	@Autowired
+	private ProjectGroupManager projectGroupManager;
+	@Autowired
+	private ProjectBrokerMailer projectBrokerMailer;
 
 	/**
 	 * @param ureq
 	 * @param wControl
 	 * @param hpc
 	 */
-	public ProjectGroupController(UserRequest ureq, WindowControl wControl, Project project, ProjectBrokerModuleConfiguration projectBrokerModuleConfiguration) {
+	public ProjectGroupController(UserRequest ureq, WindowControl wControl,
+			UserCourseEnvironment userCourseEnv, Project project, ProjectBrokerModuleConfiguration projectBrokerModuleConfiguration) {
 		super(ureq, wControl);
 		getUserActivityLogger().setStickyActionType(ActionType.admin);
-		mailManager = CoreSpringFactory.getImpl(MailManager.class);
-		businessGroupService = CoreSpringFactory.getImpl(BusinessGroupService.class);
-		projectBrokerManager = CoreSpringFactory.getImpl(ProjectBrokerManager.class);
-		projectGroupManager = CoreSpringFactory.getImpl(ProjectGroupManager.class);
-		projectBrokerMailer = CoreSpringFactory.getImpl(ProjectBrokerMailer.class);
 		this.project = project;
 		this.projectBrokerModuleConfiguration = projectBrokerModuleConfiguration;
 		
@@ -104,12 +106,13 @@ public class ProjectGroupController extends BasicController {
 		BusinessGroup projectGroup = project.getProjectGroup();
 		Group group = businessGroupService.getGroup(projectGroup);
 		
-		projectLeaderController = new GroupController(ureq, getWindowControl(), true, true, true, false, true, false, group, GroupRoles.coach.name());
+		boolean mayModifyMembers = !userCourseEnv.isCourseReadOnly();
+		projectLeaderController = new GroupController(ureq, getWindowControl(), mayModifyMembers, true, true, false, true, false, group, GroupRoles.coach.name());
 		listenTo(projectLeaderController);
 		myContent.put("projectLeaderController", projectLeaderController.getInitialComponent());
 
 		// Project Member Management
-		projectMemberController = new GroupController(ureq, getWindowControl(), true, false, true, false, true, false, group, GroupRoles.participant.name());
+		projectMemberController = new GroupController(ureq, getWindowControl(), mayModifyMembers, false, true, false, true, false, group, GroupRoles.participant.name());
 		listenTo(projectMemberController);
 		myContent.put("projectMemberController", projectMemberController.getInitialComponent());
 		// add mail templates used when adding and removing users
@@ -120,7 +123,7 @@ public class ProjectGroupController extends BasicController {
 
 		// Project Candidates Management
 		if (projectBrokerModuleConfiguration.isAcceptSelectionManually()) {
-			projectCandidatesController = new WaitingGroupController(ureq, getWindowControl(), true, false, true, true, false, project.getCandidateGroup());
+			projectCandidatesController = new WaitingGroupController(ureq, getWindowControl(), mayModifyMembers, false, true, true, false, project.getCandidateGroup());
 			listenTo(projectCandidatesController);
 			myContent.contextPut("isProjectCandidatesListEmpty", projectGroupManager.isCandidateListEmpty(project.getCandidateGroup()) );
 			myContent.put("projectCandidatesController", projectCandidatesController.getInitialComponent());
@@ -139,9 +142,11 @@ public class ProjectGroupController extends BasicController {
 	/**
 	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest, org.olat.core.gui.components.Component, org.olat.core.gui.control.Event)
 	 */
+	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
 	}
-	
+
+	@Override
 	public void event(UserRequest urequest, Controller source, Event event) {
 		if ( projectBrokerManager.existsProject( project.getKey() ) ) {
 			if (source == projectLeaderController) {
@@ -231,6 +236,7 @@ public class ProjectGroupController extends BasicController {
 	 * 
 	 * @see org.olat.core.gui.control.DefaultController#doDispose(boolean)
 	 */
+	@Override
 	protected void doDispose() {
 		// child controller disposed by basic controller
 	}

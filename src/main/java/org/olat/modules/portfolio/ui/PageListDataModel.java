@@ -74,10 +74,23 @@ public class PageListDataModel extends DefaultFlexiTableDataModel<PortfolioEleme
 			} else {
 				row.setNewEntry(false);
 			}
+			if(row.isAssignmentToInstantiate()) {
+				if(previousRow.isSection()) {
+					previousRow.setSectionWithAssignmentToInstantiate(true);
+				}
+			}
+			
+			if(previousRow != null && previousRow.isAssignmentToInstantiate() && !row.isAssignmentToInstantiate()) {
+				previousRow.setLastAssignmentToInstantiate(true);
+			}
+			
 			previousRow = row;
 		}
 		if(lastNewEntry && previousRow != null) {
 			previousRow.setNewEntry(true);
+		}
+		if(previousRow != null && previousRow.isAssignmentToInstantiate()) {
+			previousRow.setLastAssignmentToInstantiate(true);
 		}
 		
 		super.setObjects(rows);

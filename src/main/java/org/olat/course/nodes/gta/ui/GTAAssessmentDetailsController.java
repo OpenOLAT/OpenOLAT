@@ -65,6 +65,7 @@ public class GTAAssessmentDetailsController extends BasicController implements A
 	private final GTACourseNode gtaNode;
 	private final CourseEnvironment courseEnv;
 	private final Identity assessedIdentity;
+	private final UserCourseEnvironment coachCourseEnv;
 	
 	@Autowired
 	private GTAManager gtaManager;
@@ -74,15 +75,16 @@ public class GTAAssessmentDetailsController extends BasicController implements A
 	private RepositoryManager repositoryManager;
 	
 	public GTAAssessmentDetailsController(UserRequest ureq, WindowControl wControl,
-			UserCourseEnvironment userCourseEnv, GTACourseNode gtaNode) {
+			UserCourseEnvironment coachCourseEnv, UserCourseEnvironment assessedUserCourseEnv, GTACourseNode gtaNode) {
 		super(ureq, wControl);
 		this.gtaNode = gtaNode;
-		this.courseEnv = userCourseEnv.getCourseEnvironment();
+		this.courseEnv = assessedUserCourseEnv.getCourseEnvironment();
+		this.coachCourseEnv = coachCourseEnv;
 		
 		mainVC = createVelocityContainer("assessment_details");
 		backLink = LinkFactory.createLinkBack(mainVC, this);
 		
-		assessedIdentity = userCourseEnv.getIdentityEnvironment().getIdentity();
+		assessedIdentity = assessedUserCourseEnv.getIdentityEnvironment().getIdentity();
 		
 		ModuleConfiguration config = gtaNode.getModuleConfiguration();
 		if(GTAType.group.name().equals(config.getStringValue(GTACourseNode.GTASK_TYPE))) {
@@ -116,7 +118,7 @@ public class GTAAssessmentDetailsController extends BasicController implements A
 			} else if(participatingGroups.size() == 1) {
 				doSelectBusinessGroup(ureq, participatingGroups.get(0));
 			} else {
-				groupListCtrl = new GTACoachedGroupListController(ureq, getWindowControl(), null, courseEnv, gtaNode, participatingGroups);
+				groupListCtrl = new GTACoachedGroupListController(ureq, getWindowControl(), null, coachCourseEnv, gtaNode, participatingGroups);
 				listenTo(groupListCtrl);
 				mainVC.put("list", groupListCtrl.getInitialComponent());
 			}	
@@ -176,14 +178,14 @@ public class GTAAssessmentDetailsController extends BasicController implements A
 	
 	private void doSelectBusinessGroup(UserRequest ureq, BusinessGroup group) {
 		removeAsListenerAndDispose(coachingCtrl);
-		coachingCtrl = new GTACoachController(ureq, getWindowControl(), courseEnv, gtaNode, group, true, true, true);
+		coachingCtrl = new GTACoachController(ureq, getWindowControl(),  courseEnv, gtaNode, coachCourseEnv, group, true, true, true);
 		listenTo(coachingCtrl);
 		mainVC.put("selection", coachingCtrl.getInitialComponent());
 	}
 	
 	private void doSelectParticipant(UserRequest ureq, Identity identity) {
 		removeAsListenerAndDispose(coachingCtrl);
-		coachingCtrl = new GTACoachController(ureq, getWindowControl(), courseEnv, gtaNode, identity, false, false, true);
+		coachingCtrl = new GTACoachController(ureq, getWindowControl(), courseEnv, gtaNode, coachCourseEnv, identity, false, false, true);
 		listenTo(coachingCtrl);
 		mainVC.put("selection", coachingCtrl.getInitialComponent());
 	}

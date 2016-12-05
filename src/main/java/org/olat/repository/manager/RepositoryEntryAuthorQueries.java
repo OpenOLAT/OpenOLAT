@@ -140,8 +140,17 @@ public class RepositoryEntryAuthorQueries {
 			  .append("    where rel.group.key=membership.group.key and membership.identity.key=:identityKey")
 			  .append("      and membership.role='").append(GroupRoles.owner.name()).append("'")
 			  .append(" )");
+			if(params.isDeleted()) {
+				sb.append(" and v.access=").append(RepositoryEntry.DELETED);
+			} else {
+				sb.append(" and v.access>=").append(RepositoryEntry.ACC_OWNERS);
+			}
 		} else if(admin) {
-			sb.append(" v.access>=").append(RepositoryEntry.ACC_OWNERS);
+			if(params.isDeleted()) {
+				sb.append(" v.access=").append(RepositoryEntry.DELETED);
+			} else {
+				sb.append(" v.access>=").append(RepositoryEntry.ACC_OWNERS);
+			}
 		} else {
 			needIdentity = true;
 			sb.append(" (v.access>=").append(RepositoryEntry.ACC_OWNERS_AUTHORS)

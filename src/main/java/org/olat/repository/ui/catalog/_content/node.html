@@ -76,6 +76,11 @@
 		$r.render("entries")
 	#end
 	
+	#if($r.available("closedEntries") && $r.visible("closedEntries"))
+		<h3><i class="o_icon o_CourseModule_icon_closed"> </i> $r.translate("closed.resources.title")</h3>
+		$r.render("closedEntries")
+	#end
+	
 	#if($extLink || $guestExtLink)
 	<div class="o_extlink clearfix o_block_large_bottom">
 		<h4>$r.translate("cat.externalLink")</h4>

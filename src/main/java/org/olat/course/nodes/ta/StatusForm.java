@@ -64,25 +64,28 @@ public class StatusForm extends FormBasicController {
 
 	private SingleSelection statusRadio;
 	private String keys[], values[];
+	private final boolean readOnly;
+	
 	/**
 	 * 
 	 * @param name   form name
 	 * @param locale locale of the request 
 	 */
-	public StatusForm(UserRequest ureq, WindowControl wControl) {
+	public StatusForm(UserRequest ureq, WindowControl wControl, boolean readOnly) {
 		super(ureq, wControl);
-  	values = new String[]{translate(PROPERTY_KEY_UNDEFINED),
+		this.readOnly = readOnly;
+		values = new String[]{translate(PROPERTY_KEY_UNDEFINED),
   			translate(PROPERTY_KEY_NOT_OK),
   			translate(PROPERTY_KEY_OK),
   			translate(PROPERTY_KEY_WORKING_ON)
-  	};
-  	keys = new String[]{
+		};
+		keys = new String[]{
   			STATUS_VALUE_UNDEFINED,
   			STATUS_VALUE_NOT_OK ,
   			STATUS_VALUE_OK,
   			STATUS_VALUE_WORKING_ON
-  	};
-    initForm(ureq);
+		};
+		initForm(ureq);
 	}
 	
 	public String getSelectedStatus() {
@@ -101,7 +104,10 @@ public class StatusForm extends FormBasicController {
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		statusRadio = uifactory.addRadiosVertical("status", "form.status.selection", formLayout, keys, values);
 		statusRadio.select(STATUS_VALUE_UNDEFINED, true);
-		uifactory.addFormSubmitButton("save", formLayout);
+		statusRadio.setEnabled(!readOnly);
+		if(!readOnly) {
+			uifactory.addFormSubmitButton("save", formLayout);
+		}
 	}
 
 	@Override

@@ -126,6 +126,7 @@ public class Table extends AbstractComponent {
 
 	// config
 	private boolean multiSelect = false;
+	private boolean multiSelectDisabled = false;
 	private boolean selectedRowUnselectable = false;
 	private boolean sortingEnabled = true;
 	private boolean displayTableHeader = true;
@@ -795,6 +796,14 @@ public class Table extends AbstractComponent {
 		}
 		// only update after state change checks (see above) are through
 		this.multiSelect = multiSelect;
+	}
+	
+	public boolean isMultiSelectAsDisabled() {
+		return multiSelectDisabled;
+	}
+	
+	public void setMultiSelectAsDisabled(boolean disabled) {
+		multiSelectDisabled = disabled;
 	}
 
 	protected void addMultiSelectAction(String label, String actionKeyi18n, String actionIdentifier) {

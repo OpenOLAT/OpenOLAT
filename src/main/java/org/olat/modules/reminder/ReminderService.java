@@ -79,7 +79,6 @@ public interface ReminderService {
 	
 	public List<SentReminder> getSentReminders(RepositoryEntryRef entry);
 	
-	
 	public void remindAll();
 	
 	public String toXML(ReminderRules rules);

@@ -77,14 +77,17 @@ public class ScormResultDetailsController extends BasicController {
 	private DialogBoxController resetConfirmationBox;
 	
 	private final ScormCourseNode node;
-	private final UserCourseEnvironment userCourseEnvironment;
+	private final UserCourseEnvironment coachCourseEnv;
+	private final UserCourseEnvironment assessedUserCourseEnv;
 
 
-	public ScormResultDetailsController(UserRequest ureq, WindowControl wControl, ScormCourseNode node, UserCourseEnvironment userCourseEnvironment) {
+	public ScormResultDetailsController(UserRequest ureq, WindowControl wControl, ScormCourseNode node,
+			UserCourseEnvironment coachCourseEnv, UserCourseEnvironment assessedUserCourseEnv) {
 		super(ureq, wControl);
 		
 		this.node = node;
-		this.userCourseEnvironment = userCourseEnvironment;
+		this.coachCourseEnv = coachCourseEnv;
+		this.assessedUserCourseEnv = assessedUserCourseEnv;
 		init(ureq);
 	}
 	
@@ -100,9 +103,9 @@ public class ScormResultDetailsController extends BasicController {
 		summaryTableCtr.addColumnDescriptor(new DefaultColumnDescriptor("summary.column.header.assesspoints", 2, null, ureq.getLocale()));
 		summaryTableCtr.addColumnDescriptor(new StaticColumnDescriptor("sel", "summary.column.header.details", getTranslator().translate("select")));
 
-		CourseEnvironment courseEnv = userCourseEnvironment.getCourseEnvironment();
+		CourseEnvironment courseEnv = assessedUserCourseEnv.getCourseEnvironment();
 
-		String username = userCourseEnvironment.getIdentityEnvironment().getIdentity().getName();
+		String username = assessedUserCourseEnv.getIdentityEnvironment().getIdentity().getName();
 		// <OLATCE-289>
 		Map<Date, List<CmiData>> rawDatas = ScormAssessmentManager.getInstance().visitScoDatasMultiResults(username, courseEnv, node);
 		summaryTableCtr.setTableDataModel(new SummaryTableDataModelMultiResults(rawDatas));
@@ -110,9 +113,10 @@ public class ScormResultDetailsController extends BasicController {
 		listenTo(summaryTableCtr);
 		
 		main.put("summary", summaryTableCtr.getInitialComponent());
-		//fxdiff FXOLAT-108: reset SCORM test
-		resetButton = LinkFactory.createButton("reset", main, this);
-		main.put("resetButton", resetButton);
+		if(!coachCourseEnv.isCourseReadOnly()) {
+			resetButton = LinkFactory.createButton("reset", main, this);
+			main.put("resetButton", resetButton);
+		}
 
 		putInitialPanel(main);
 	}
@@ -124,10 +128,9 @@ public class ScormResultDetailsController extends BasicController {
 
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
-		//fxdiff FXOLAT-108: reset SCORM test
 		if(source == resetButton) {
 			String title = translate("reset.title");
-			User user = userCourseEnvironment.getIdentityEnvironment().getIdentity().getUser();
+			User user = assessedUserCourseEnv.getIdentityEnvironment().getIdentity().getUser();
 			String name = user.getProperty(UserConstants.FIRSTNAME, null) + " " + user.getProperty(UserConstants.LASTNAME, null);
 			String text = translate("reset.text", new String[]{name});
 			resetConfirmationBox = activateOkCancelDialog(ureq, title, text, resetConfirmationBox);
@@ -163,12 +166,11 @@ public class ScormResultDetailsController extends BasicController {
 
 				cmc.activate();
 			}
-		//fxdiff FXOLAT-108: reset SCORM test
 		} else if ( source == resetConfirmationBox) {
 			if (DialogBoxUIFactory.isOkEvent(event)) {
 				//delete scorm
-				String username = userCourseEnvironment.getIdentityEnvironment().getIdentity().getName();
-				CourseEnvironment courseEnv = userCourseEnvironment.getCourseEnvironment();
+				String username = assessedUserCourseEnv.getIdentityEnvironment().getIdentity().getName();
+				CourseEnvironment courseEnv = assessedUserCourseEnv.getCourseEnvironment();
 				ScormAssessmentManager.getInstance().deleteResults(username, courseEnv, node);
 				fireEvent(ureq, Event.DONE_EVENT);
 			}

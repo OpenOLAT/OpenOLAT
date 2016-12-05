@@ -85,6 +85,23 @@ public interface RepositoryService {
 	public RepositoryEntry update(RepositoryEntry re);
 	
 	/**
+	 * Set the access to 0. The resource is not deleted on the database
+	 * but the resource is removed from the catalog.
+	 * 
+	 * 
+	 * @param entry
+	 */
+	public RepositoryEntry deleteSoftly(RepositoryEntry entry);
+	
+	/**
+	 * The access is set to B.
+	 * @param entry
+	 * @return
+	 */
+	public RepositoryEntry restoreRepositoryEntry(RepositoryEntry entry);
+	
+	
+	/**
 	 * Delete the learning resource with all its attached resources.
 	 * @param entry
 	 * @param identity
@@ -92,13 +109,38 @@ public interface RepositoryService {
 	 * @param locale
 	 * @return
 	 */
-	public ErrorList delete(RepositoryEntry entry, Identity identity, Roles roles, Locale locale);
+	public ErrorList deletePermanently(RepositoryEntry entry, Identity identity, Roles roles, Locale locale);
 	
 	/**
 	 * Delete only the database object
 	 * @param entry
 	 */
 	public void deleteRepositoryEntryAndBaseGroups(RepositoryEntry entry);
+	
+	/**
+	 * This will change the status of the repository entry to "closed" (statusCode=2).
+	 * 
+	 * @param entry
+	 * @param identity
+	 * @param roles
+	 * @param locale
+	 * @return The closed repository entry
+	 */
+	public RepositoryEntry closeRepositoryEntry(RepositoryEntry entry);
+	
+
+	public RepositoryEntry uncloseRepositoryEntry(RepositoryEntry entry);
+	
+	
+	/**
+	 * Batch method which close automatically the courses with a life-cycle.
+	 * 
+	 * 
+	 */
+	public void closeRespositoryEntries();
+	
+	
+	public RepositoryEntry unpublishRepositoryEntry(RepositoryEntry entry);
 	
 	/**
 	 * Increment the launch counter and the last usage date.
