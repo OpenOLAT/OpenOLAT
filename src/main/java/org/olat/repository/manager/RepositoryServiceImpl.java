@@ -324,7 +324,7 @@ public class RepositoryServiceImpl implements RepositoryService {
 	}
 	
 	@Override
-	public RepositoryEntry deleteSoftly(RepositoryEntry re) {
+	public RepositoryEntry deleteSoftly(RepositoryEntry re, boolean owners) {
 		RepositoryEntry reloadedRe = repositoryEntryDAO.loadForUpdate(re);
 		reloadedRe.setAccess(RepositoryEntry.DELETED);
 		reloadedRe = dbInstance.getCurrentEntityManager().merge(reloadedRe);
@@ -332,7 +332,11 @@ public class RepositoryServiceImpl implements RepositoryService {
 		//remove from catalog
 		catalogManager.resourceableDeleted(reloadedRe);
 		//remove participant and coach
-		removeMembers(reloadedRe, GroupRoles.coach.name(), GroupRoles.participant.name(), GroupRoles.waiting.name());
+		if(owners) {
+			removeMembers(reloadedRe, GroupRoles.owner.name(), GroupRoles.coach.name(), GroupRoles.participant.name(), GroupRoles.waiting.name());
+		} else {
+			removeMembers(reloadedRe, GroupRoles.coach.name(), GroupRoles.participant.name(), GroupRoles.waiting.name());
+		}
 		//remove relation to business groups
 		List<RepositoryEntryToGroupRelation> relations = reToGroupDao.getRelations(reloadedRe);
 		for(RepositoryEntryToGroupRelation relation:relations) {
@@ -461,19 +465,23 @@ public class RepositoryServiceImpl implements RepositoryService {
 	}
 
 	@Override
-	public void closeRespositoryEntries() {
-		List<RepositoryEntry> entries = repositoryEntryDAO.getRepositoryEntriesAfterTheEnd();
-		for(RepositoryEntry entry:entries) {
-			
-		}
-	}
-
-	@Override
 	public RepositoryEntry unpublishRepositoryEntry(RepositoryEntry entry) {
 		RepositoryEntry reloadedEntry = repositoryEntryDAO.loadForUpdate(entry);
 		reloadedEntry.setStatusCode(RepositoryEntryStatus.REPOSITORY_STATUS_UNPUBLISHED);
 		reloadedEntry = dbInstance.getCurrentEntityManager().merge(reloadedEntry);
 		dbInstance.commit();
+		// remove catalog entries
+		catalogManager.resourceableDeleted(reloadedEntry);
+		// remove users and participants
+		//remove participant and coach
+		removeMembers(reloadedEntry, GroupRoles.coach.name(), GroupRoles.participant.name(), GroupRoles.waiting.name());
+		//remove relation to business groups
+		List<RepositoryEntryToGroupRelation> relations = reToGroupDao.getRelations(reloadedEntry);
+		for(RepositoryEntryToGroupRelation relation:relations) {
+			if(!relation.isDefaultGroup()) {
+				reToGroupDao.removeRelation(relation);
+			}
+		}
 		return reloadedEntry;
 	}
 

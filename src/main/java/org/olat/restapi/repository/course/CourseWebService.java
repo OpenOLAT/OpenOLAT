@@ -335,7 +335,7 @@ public class CourseWebService {
 		
 		RepositoryService rs = CoreSpringFactory.getImpl(RepositoryService.class);
 		RepositoryEntry re = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
-		rs.deleteSoftly(re);
+		rs.deleteSoftly(re, true);
 		ThreadLocalUserActivityLogger.log(LearningResourceLoggingAction.LEARNING_RESOURCE_TRASH, getClass(),
 				LoggingResourceable.wrap(re, OlatResourceableType.genRepoEntry));
 		return Response.ok().build();

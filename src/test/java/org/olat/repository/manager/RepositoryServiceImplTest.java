@@ -141,7 +141,7 @@ public class RepositoryServiceImplTest extends OlatTestCase {
 	    dbInstance.commit();
 		
 		// kill it softly like A. Keys
-		repositoryService.deleteSoftly(re);
+		repositoryService.deleteSoftly(re, false);
 		dbInstance.commit();
 
 		//check that the members are removed

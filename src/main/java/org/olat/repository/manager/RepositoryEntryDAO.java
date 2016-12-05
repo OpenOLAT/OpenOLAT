@@ -192,15 +192,16 @@ public class RepositoryEntryDAO {
 				.getResultList();
 	}
 	
-	public List<RepositoryEntry> getRepositoryEntriesAfterTheEnd() {
+	public List<RepositoryEntry> getRepositoryEntriesAfterTheEnd(Date date) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select v from ").append(RepositoryEntry.class.getName()).append(" as v ")
 		  .append(" inner join fetch v.olatResource as ores")
 		  .append(" inner join fetch v.statistics as statistics")
 		  .append(" inner join fetch v.lifecycle as lifecycle")
-		  .append(" where lifecycle.validTo>:now");
+		  .append(" where lifecycle.validTo<:now");
 		
 		Calendar cal = Calendar.getInstance();
+		cal.setTime(date);
 		CalendarUtils.getEndOfDay(cal);
 		Date endOfDay = cal.getTime();
 		

@@ -90,8 +90,9 @@ public interface RepositoryService {
 	 * 
 	 * 
 	 * @param entry
+	 * @param owners If the owners need to be removed
 	 */
-	public RepositoryEntry deleteSoftly(RepositoryEntry entry);
+	public RepositoryEntry deleteSoftly(RepositoryEntry entry, boolean owners);
 	
 	/**
 	 * The access is set to B.
@@ -131,15 +132,14 @@ public interface RepositoryService {
 
 	public RepositoryEntry uncloseRepositoryEntry(RepositoryEntry entry);
 	
-	
 	/**
-	 * Batch method which close automatically the courses with a life-cycle.
+	 * The unpublish will remove the users (coaches and participants) but will let
+	 * the owners. Catalog entries will be removed and the relations to the business groups
+	 * will be deleted.
 	 * 
-	 * 
+	 * @param entry
+	 * @return
 	 */
-	public void closeRespositoryEntries();
-	
-	
 	public RepositoryEntry unpublishRepositoryEntry(RepositoryEntry entry);
 	
 	/**

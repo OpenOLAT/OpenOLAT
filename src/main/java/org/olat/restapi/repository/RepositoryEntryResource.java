@@ -758,7 +758,7 @@ public class RepositoryEntryResource {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		}
 		RepositoryService rs = CoreSpringFactory.getImpl(RepositoryService.class);
-		rs.deleteSoftly(re);
+		rs.deleteSoftly(re, true);
 		ThreadLocalUserActivityLogger.log(LearningResourceLoggingAction.LEARNING_RESOURCE_TRASH, getClass(),
 				LoggingResourceable.wrap(re, OlatResourceableType.genRepoEntry));
 		return Response.ok().build();

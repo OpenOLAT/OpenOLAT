@@ -39,6 +39,7 @@ import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
+import org.olat.core.util.UserSession;
 import org.olat.core.util.Util;
 import org.olat.core.util.event.EventBus;
 import org.olat.core.util.event.GenericEventListener;
@@ -66,14 +67,18 @@ public class OverviewAuthoringController extends BasicController implements Acti
 	private AuthorListController currentCtrl, markedCtrl, myEntriesCtrl, searchEntriesCtrl;
 	private AuthorDeletedListController deletedEntriesCtrl;
 
-	private final boolean isGuestonly;
+	private final boolean isOlatAdmin;
+	private final boolean isGuestOnly;
 	private boolean favoritDirty, myDirty;
 	private final EventBus eventBus;
 	
 	public OverviewAuthoringController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
 		setTranslator(Util.createPackageTranslator(RepositoryManager.class, getLocale(), getTranslator()));
-		isGuestonly = ureq.getUserSession().getRoles().isGuestOnly();
+		
+		UserSession usess = ureq.getUserSession();
+		isGuestOnly = usess.getRoles().isGuestOnly();
+		isOlatAdmin = usess.getRoles().isOLATAdmin();
 		
 		mainPanel = new MainPanel("authoringMainPanel");
 		mainPanel.setDomReplaceable(false);
@@ -83,7 +88,7 @@ public class OverviewAuthoringController extends BasicController implements Acti
 		segmentView = SegmentViewFactory.createSegmentView("segments", mainVC, this);
 		segmentView.setReselect(true);
 		
-		if(!isGuestonly) {
+		if(!isGuestOnly) {
 			favoriteLink = LinkFactory.createLink("search.mark", mainVC, this);
 			segmentView.addSegment(favoriteLink, false);
 		}
@@ -125,7 +130,7 @@ public class OverviewAuthoringController extends BasicController implements Acti
 	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
 		if(entries == null || entries.isEmpty()) {
 			if(currentCtrl == null) {
-				if(isGuestonly) {
+				if(isGuestOnly) {
 					doOpenMyEntries(ureq);
 					segmentView.select(myEntriesLink);
 				} else {
@@ -150,7 +155,7 @@ public class OverviewAuthoringController extends BasicController implements Acti
 			String segment = entry.getOLATResourceable().getResourceableTypeName();
 			List<ContextEntry> subEntries = entries.subList(1, entries.size());
 			if("Favorits".equals(segment)) {
-				if(isGuestonly) {
+				if(isGuestOnly) {
 					doOpenMyEntries(ureq).activate(ureq, subEntries, entry.getTransientState());
 					segmentView.select(myEntriesLink);
 				} else {
@@ -261,7 +266,9 @@ public class OverviewAuthoringController extends BasicController implements Acti
 		if(deletedEntriesCtrl == null) {
 			SearchAuthorRepositoryEntryViewParams searchParams
 				= new SearchAuthorRepositoryEntryViewParams(getIdentity(), ureq.getUserSession().getRoles());
-			searchParams.setOwnedResourcesOnly(true);
+			if(!isOlatAdmin) {
+				searchParams.setOwnedResourcesOnly(true);
+			}
 			searchParams.setDeleted(true);
 	
 			OLATResourceable ores = OresHelper.createOLATResourceableInstance("Deleted", 0l);

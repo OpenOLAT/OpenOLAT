@@ -63,6 +63,10 @@ public class RepositoryModule extends AbstractSpringModule {
 	
 	private static final String ALLOW_TO_LEAVE_DEFAULT_OPTION = "repo.allow.to.leave";
 	
+	private static final String LIFECYCLE_AUTO_CLOSE = "repo.lifecycle.auto.close";
+	private static final String LIFECYCLE_AUTO_UNPUBLISH = "repo.lifecycle.auto.unpublish";
+	private static final String LIFECYCLE_AUTO_DELETE = "repo.lifecycle.auto.delete";
+	
 	@Value("${site.catalog.enable:true}")
 	private boolean catalogSiteEnabled;
 	@Value("${catalog.enable:true}")
@@ -80,6 +84,13 @@ public class RepositoryModule extends AbstractSpringModule {
 	private boolean commentEnabled;
 	@Value("${repo.rating.enabled:true}")
 	private boolean ratingEnabled;
+
+	@Value("${repo.lifecycle.auto.close:}")
+	private String lifecycleAutoClose;
+	@Value("${repo.lifecycle.auto.unpublish:}")
+	private String lifecycleAutoUnpublish;
+	@Value("${repo.lifecycle.auto.delete:}")
+	private String lifecycleAutoDelete;
 	
 	@Value("${repo.allow.to.leave:atAnyTime}")
 	private String defaultAllowToLeaveOption;
@@ -172,6 +183,21 @@ public class RepositoryModule extends AbstractSpringModule {
 		String leaveOption = getStringPropertyValue(ALLOW_TO_LEAVE_DEFAULT_OPTION, true);
 		if(StringHelper.containsNonWhitespace(leaveOption)) {
 			defaultAllowToLeaveOption = leaveOption;
+		}
+		
+		String autoClose = getStringPropertyValue(LIFECYCLE_AUTO_CLOSE, true);
+		if(StringHelper.containsNonWhitespace(autoClose)) {
+			lifecycleAutoClose = autoClose;
+		}
+		
+		String autoUnpublish = getStringPropertyValue(LIFECYCLE_AUTO_UNPUBLISH, true);
+		if(StringHelper.containsNonWhitespace(autoUnpublish)) {
+			lifecycleAutoUnpublish = autoUnpublish;
+		}
+		
+		String autoDelete = getStringPropertyValue(LIFECYCLE_AUTO_DELETE, true);
+		if(StringHelper.containsNonWhitespace(autoDelete)) {
+			lifecycleAutoDelete = autoDelete;
 		}
 	}
 
@@ -284,4 +310,46 @@ public class RepositoryModule extends AbstractSpringModule {
 			setStringProperty(ALLOW_TO_LEAVE_DEFAULT_OPTION, option.name(), true);
 		}
 	}
+
+	public String getLifecycleAutoClose() {
+		return lifecycleAutoClose;
+	}
+	
+	public RepositoryEntryLifeCycleValue getLifecycleAutoCloseValue() {
+		return RepositoryEntryLifeCycleValue.parse(lifecycleAutoClose);
+	}
+
+	public void setLifecycleAutoClose(String lifecycleAutoClose) {
+		this.lifecycleAutoClose = lifecycleAutoClose;
+		setStringProperty(LIFECYCLE_AUTO_CLOSE, lifecycleAutoClose, true);
+	}
+
+	public String getLifecycleAutoUnpublish() {
+		return lifecycleAutoUnpublish;
+	}
+	
+	public RepositoryEntryLifeCycleValue getLifecycleAutoUnpublishValue() {
+		return RepositoryEntryLifeCycleValue.parse(lifecycleAutoUnpublish);
+	}
+
+	public void setLifecycleAutoUnpublish(String lifecycleAutoUnpublish) {
+		this.lifecycleAutoUnpublish = lifecycleAutoUnpublish;
+		setStringProperty(LIFECYCLE_AUTO_UNPUBLISH, lifecycleAutoUnpublish, true);
+	}
+
+	public String getLifecycleAutoDelete() {
+		return lifecycleAutoDelete;
+	}
+	
+	public RepositoryEntryLifeCycleValue getLifecycleAutoDeleteValue() {
+		return RepositoryEntryLifeCycleValue.parse(lifecycleAutoDelete);
+	}
+
+	public void setLifecycleAutoDelete(String lifecycleAutoDelete) {
+		this.lifecycleAutoDelete = lifecycleAutoDelete;
+		setStringProperty(LIFECYCLE_AUTO_DELETE, lifecycleAutoDelete, true);
+	}
+	
+
+	
 }

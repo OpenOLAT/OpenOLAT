@@ -164,7 +164,7 @@ public class ConfirmDeleteSoftlyController extends FormBasicController {
 		for(RepositoryEntry entry:entries) {
 			RepositoryEntry reloadedEntry = repositoryService.loadByKey(entry.getKey());
 			if(reloadedEntry != null) {
-				reloadedEntry = repositoryService.deleteSoftly(reloadedEntry);
+				reloadedEntry = repositoryService.deleteSoftly(reloadedEntry, false);
 				ThreadLocalUserActivityLogger.log(LearningResourceLoggingAction.LEARNING_RESOURCE_TRASH, getClass(),
 						LoggingResourceable.wrap(reloadedEntry, OlatResourceableType.genRepoEntry));
 			}

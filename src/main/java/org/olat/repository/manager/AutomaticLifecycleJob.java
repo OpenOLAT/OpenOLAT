@@ -23,7 +23,6 @@ import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.services.scheduler.JobWithDB;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
-import org.olat.repository.RepositoryService;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
 
@@ -33,15 +32,15 @@ import org.quartz.JobExecutionException;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class CloseResourcesJob extends JobWithDB {
+public class AutomaticLifecycleJob extends JobWithDB {
 	
-	private static final OLog logger = Tracing.createLoggerFor(CloseResourcesJob.class);
+	private static final OLog logger = Tracing.createLoggerFor(AutomaticLifecycleJob.class);
 
 	@Override
 	public void executeWithDB(JobExecutionContext context)
 	throws JobExecutionException {
 		try {
-			CoreSpringFactory.getImpl(RepositoryService.class).closeRespositoryEntries();
+			CoreSpringFactory.getImpl(AutomaticLifecycleService.class).manage();
 		} catch (Exception e) {
 			logger.error("", e);
 		}
