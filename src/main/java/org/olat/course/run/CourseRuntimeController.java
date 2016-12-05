@@ -266,7 +266,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 	private UserCourseEnvironmentImpl getUserCourseEnvironment() {
 		RunMainController run = getRunMainController();
 		UserCourseEnvironmentImpl uce = run == null ? null : run.getUce();
-		if(uce.isCourseReadOnly() && overrideReadOnly) {
+		if(uce != null && uce.isCourseReadOnly() && overrideReadOnly) {
 			uce.setCourseReadOnly(Boolean.FALSE);
 		}
 		return uce;

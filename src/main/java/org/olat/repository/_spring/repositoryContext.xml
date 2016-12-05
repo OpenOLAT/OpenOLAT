@@ -12,7 +12,7 @@
 	
 	<bean id="automaticLifecycleTrigger" class="org.springframework.scheduling.quartz.CronTriggerBean">
 	    <property name="jobDetail" ref="automaticLifecycleJob" />
-	    <property name="cronExpression" value="0 45 5 * * ?"" />
+	    <property name="cronExpression" value="0 45 5 * * ?" />
 	    <property name="startDelay" value="55000" />
 	</bean>
 	
