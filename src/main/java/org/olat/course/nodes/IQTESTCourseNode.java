@@ -90,6 +90,7 @@ import org.olat.ims.qti.statistics.ui.QTI12PullTestsToolController;
 import org.olat.ims.qti.statistics.ui.QTI12StatisticsToolController;
 import org.olat.ims.qti21.QTI21DeliveryOptions;
 import org.olat.ims.qti21.QTI21Service;
+import org.olat.ims.qti21.manager.AssessmentTestSessionDAO;
 import org.olat.ims.qti21.manager.archive.QTI21ArchiveFormat;
 import org.olat.ims.qti21.model.QTI21StatisticSearchParams;
 import org.olat.ims.qti21.ui.QTI21AssessmentDetailsController;
@@ -608,12 +609,15 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements Pe
 		// 1) Delete all properties: score, passed, log, comment, coach_comment,
 		// attempts
 		pm.deleteNodeProperties(this, null);
-		// 2) Delete all qtiresults for this node
+		// 2) Delete all qtiresults for this node (QTI 1.2 + qtiworks)
 		String repositorySoftKey = (String) getModuleConfiguration().get(IQEditController.CONFIG_KEY_REPOSITORY_SOFTKEY);
 		RepositoryEntry re = RepositoryManager.getInstance().lookupRepositoryEntryBySoftkey(repositorySoftKey, false);
 		if(re != null) {
 			QTIResultManager.getInstance().deleteAllResults(course.getResourceableId(), getIdent(), re.getKey());
 		}
+		// 3) Delete all assessment test sessions (QTI 2.1)
+		RepositoryEntry courseEntry = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
+		CoreSpringFactory.getImpl(AssessmentTestSessionDAO.class).deleteAllUserTestSessionsByCourse(courseEntry, getIdent());
 	}
 
 	@Override

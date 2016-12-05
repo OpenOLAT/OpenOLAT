@@ -60,6 +60,7 @@ import org.olat.core.util.vfs.VFSManager;
 import org.olat.course.assessment.manager.AssessmentModeDAO;
 import org.olat.course.assessment.manager.UserCourseInformationsManager;
 import org.olat.course.certificate.CertificatesManager;
+import org.olat.ims.qti21.manager.AssessmentTestSessionDAO;
 import org.olat.modules.assessment.manager.AssessmentEntryDAO;
 import org.olat.modules.reminder.manager.ReminderDAO;
 import org.olat.repository.ErrorList;
@@ -134,6 +135,8 @@ public class RepositoryServiceImpl implements RepositoryService {
 	private UserCourseInformationsManager userCourseInformationsManager;
 	@Autowired
 	private AssessmentModeDAO assessmentModeDao;
+	@Autowired
+	private AssessmentTestSessionDAO assessmentTestSessionDao;
 	@Autowired
 	private PersistentTaskDAO persistentTaskDao;
 	@Autowired
@@ -364,7 +367,9 @@ public class RepositoryServiceImpl implements RepositoryService {
 		// referenced resourceable a swell.
 		handler.cleanupOnDelete(entry, resource);
 		dbInstance.commit();
-		
+
+		//delete all test sessions
+		assessmentTestSessionDao.deleteAllUserTestSessionsByCourse(entry);
 		//nullify the reference
 		assessmentEntryDao.removeEntryForReferenceEntry(entry);
 		assessmentEntryDao.deleteEntryForRepositoryEntry(entry);

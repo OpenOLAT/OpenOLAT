@@ -63,6 +63,7 @@ import org.olat.ims.qti.export.QTIExportFormatterCSVType2;
 import org.olat.ims.qti.export.QTIExportManager;
 import org.olat.ims.qti.fileresource.TestFileResource;
 import org.olat.ims.qti.process.AssessmentInstance;
+import org.olat.ims.qti21.manager.AssessmentTestSessionDAO;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.iq.IQManager;
 import org.olat.modules.iq.IQSecurityCallback;
@@ -230,12 +231,15 @@ public class IQSELFCourseNode extends AbstractAccessableCourseNode implements Se
 	 */
 	@Override
 	public void cleanupOnDelete(ICourse course) {
-		// Delete all qtiresults for this node. No properties used on this node
+		// 1) Delete all qtiresults for this node. No properties used on this node
 		String repositorySoftKey = (String) getModuleConfiguration().get(IQEditController.CONFIG_KEY_REPOSITORY_SOFTKEY);
 		RepositoryEntry re = RepositoryManager.getInstance().lookupRepositoryEntryBySoftkey(repositorySoftKey, false);
 		if(re != null) {
 			QTIResultManager.getInstance().deleteAllResults(course.getResourceableId(), getIdent(), re.getKey());
 		}
+		// 2) Delete all assessment test sessions (QTI 2.1)
+		RepositoryEntry courseEntry = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
+		CoreSpringFactory.getImpl(AssessmentTestSessionDAO.class).deleteAllUserTestSessionsByCourse(courseEntry, getIdent());
 	}
 
 	@Override

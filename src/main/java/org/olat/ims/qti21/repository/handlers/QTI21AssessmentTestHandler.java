@@ -458,7 +458,7 @@ public class QTI21AssessmentTestHandler extends FileHandler {
 	@Override
 	public boolean cleanupOnDelete(RepositoryEntry entry, OLATResourceable res) {
 		boolean clean = super.cleanupOnDelete(entry, res);
-		assessmentTestSessionDao.deleteAllUserTestSessions(entry);
+		assessmentTestSessionDao.deleteAllUserTestSessionsByTest(entry);
 		return clean;
 	}
 
