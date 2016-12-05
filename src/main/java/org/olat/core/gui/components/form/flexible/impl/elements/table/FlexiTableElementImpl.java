@@ -1295,7 +1295,7 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 		if(StringHelper.containsNonWhitespace(search)) {
 			doSearch(ureq, FlexiTableSearchEvent.QUICK_SEARCH, search, null);
 		} else {
-			doResetSearch(ureq);
+			resetSearch(ureq);
 		}
 	}
 	
@@ -1367,7 +1367,8 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 				search, getSelectedFilters(), getSelectedExtendedFilters(), condQueries, FormEvent.ONCLICK));
 	}
 	
-	protected void doResetSearch(UserRequest ureq) {
+	@Override
+	public void resetSearch(UserRequest ureq) {
 		conditionalQueries = null;
 		currentPage = 0;
 		if(dataSource != null) {
