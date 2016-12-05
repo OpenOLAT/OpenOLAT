@@ -126,6 +126,7 @@ import org.olat.repository.RepositoryEntryManagedFlag;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.controllers.EntryChangedEvent;
 import org.olat.repository.model.RepositoryEntrySecurity;
+import org.olat.repository.ui.RepositoryEntryLifeCycleChangeController;
 import org.olat.repository.ui.RepositoryEntryRuntimeController;
 import org.olat.util.logging.activity.LoggingResourceable;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -826,7 +827,9 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 				processBusinessGroupModifiedEvent((BusinessGroupModifiedEvent)event);
 			}
 		} else if (lifeCycleChangeCtr == source) {
-			loadRepositoryEntry();
+			if (event != RepositoryEntryLifeCycleChangeController.deletedEvent) {
+				loadRepositoryEntry();
+			}
 		} else if (currentToolCtr == source) {
 			if (event == Event.DONE_EVENT) {
 				// special check for editor
