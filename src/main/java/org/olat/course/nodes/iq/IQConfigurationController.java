@@ -92,6 +92,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import de.bps.onyx.plugin.OnyxModule;
 import de.bps.onyx.plugin.course.nodes.iq.IQEditForm;
+import de.bps.onyx.plugin.run.OnyxRunController;
 import de.bps.webservices.clients.onyxreporter.OnyxReporterConnector;
 import de.bps.webservices.clients.onyxreporter.OnyxReporterException;
 
@@ -193,12 +194,8 @@ public class IQConfigurationController extends BasicController {
 
 			previewLink = LinkFactory.createCustomLink("command.preview", "command.preview", displayName, Link.NONTRANSLATED, myContent, this);
 			previewLink.setIconLeftCSS("o_icon o_icon-fw o_icon_preview");
-			if(isOnyx) {
-				previewLink.setEnabled(false);
-			} else {
-				previewLink.setCustomEnabledLinkCSS("o_preview");
-				previewLink.setTitle(translate("command.preview"));
-			}
+			previewLink.setCustomEnabledLinkCSS("o_preview");
+			previewLink.setTitle(translate("command.preview"));
 		}
 
 		String disclaimer = (String) moduleConfiguration.get(IQEditController.CONFIG_KEY_DISCLAIMER);
@@ -374,9 +371,14 @@ public class IQConfigurationController extends BasicController {
 		removeAsListenerAndDispose(previewLayoutCtr);
 		
 		RepositoryEntry re = getIQReference(moduleConfiguration, false);
-		if(re != null && !OnyxModule.isOnyxTest(re.getOlatResource())) {
+		if(re != null) {
 			Controller previewController;
-			if(ImsQTI21Resource.TYPE_NAME.equals(re.getOlatResource().getResourceableTypeName())) {
+			if(OnyxModule.isOnyxTest(re.getOlatResource())) {
+				Controller previewCtrl = new OnyxRunController(ureq, getWindowControl(), re, false);
+				listenTo(previewCtrl);
+				previewLayoutCtr = new LayoutMain3ColsController(ureq, getWindowControl(), previewCtrl);
+				stackPanel.pushController(translate("preview"), previewLayoutCtr);
+			} else if(ImsQTI21Resource.TYPE_NAME.equals(re.getOlatResource().getResourceableTypeName())) {
 				//TODO qti
 				/* need to clean up the assessment test session
 				QTI21DeliveryOptions deliveryOptions = qti21service.getDeliveryOptions(re);
