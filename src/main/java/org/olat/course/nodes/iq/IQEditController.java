@@ -105,6 +105,7 @@ import org.olat.user.UserManager;
 
 import de.bps.onyx.plugin.OnyxModule;
 import de.bps.onyx.plugin.course.nodes.iq.IQEditForm;
+import de.bps.onyx.plugin.run.OnyxRunController;
 import de.bps.webservices.clients.onyxreporter.OnyxReporterConnector;
 import de.bps.webservices.clients.onyxreporter.OnyxReporterException;
 
@@ -466,10 +467,21 @@ public class IQEditController extends ActivateableTabbableDefaultController impl
 		} else if (source == previewLink){
 			removeAsListenerAndDispose(previewLayoutCtr);
 			// handle preview
-			long courseResId = course.getResourceableId().longValue();
-			Controller previewController = iqManager.createIQDisplayController(moduleConfiguration, new IQPreviewSecurityCallback(), ureq, getWindowControl(), courseResId, courseNode.getIdent(), null);
-			previewLayoutCtr = new LayoutMain3ColsController(ureq, getWindowControl(), previewController);
-			stackPanel.pushController(translate("preview"), previewLayoutCtr);
+			if (moduleConfiguration.get(CONFIG_KEY_TYPE_QTI) != null && moduleConfiguration.get(CONFIG_KEY_TYPE_QTI).equals(CONFIG_VALUE_QTI2)) {
+				String repoSoftKey = (String)moduleConfiguration.get(CONFIG_KEY_REPOSITORY_SOFTKEY);
+				RepositoryEntry testRe = RepositoryManager.getInstance().lookupRepositoryEntryBySoftkey(repoSoftKey,false);
+				if(testRe != null) {
+					Controller previewCtrl = new OnyxRunController(ureq, getWindowControl(), testRe, false);
+					listenTo(previewCtrl);
+					previewLayoutCtr = new LayoutMain3ColsController(ureq, getWindowControl(), previewCtrl);
+					stackPanel.pushController(translate("preview"), previewLayoutCtr);
+				}
+			} else {
+				long courseResId = course.getResourceableId().longValue();
+				Controller previewController = iqManager.createIQDisplayController(moduleConfiguration, new IQPreviewSecurityCallback(), ureq, getWindowControl(), courseResId, courseNode.getIdent(), null);
+				previewLayoutCtr = new LayoutMain3ColsController(ureq, getWindowControl(), previewController);
+				stackPanel.pushController(translate("preview"), previewLayoutCtr);
+			}
 			
 		} else if (source == chooseTestButton){// initiate search controller
 			if (type.equals(AssessmentInstance.QMD_ENTRY_TYPE_SURVEY)) {
