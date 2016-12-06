@@ -22,6 +22,7 @@ package org.olat.course.run;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.olat.NewControllerFactory;
@@ -103,6 +104,7 @@ import org.olat.course.groupsandrights.CourseGroupManager;
 import org.olat.course.groupsandrights.CourseRights;
 import org.olat.course.member.MembersManagementMainController;
 import org.olat.course.nodes.CourseNode;
+import org.olat.course.nodes.ENCourseNode;
 import org.olat.course.reminder.ui.CourseRemindersController;
 import org.olat.course.run.calendar.CourseCalendarController;
 import org.olat.course.run.glossary.CourseGlossaryFactory;
@@ -129,6 +131,7 @@ import org.olat.repository.RepositoryService;
 import org.olat.repository.controllers.EntryChangedEvent;
 import org.olat.repository.model.RepositoryEntrySecurity;
 import org.olat.repository.ui.RepositoryEntryRuntimeController;
+import org.olat.resource.OLATResource;
 import org.olat.util.logging.activity.LoggingResourceable;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -623,7 +626,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 			
 			if(repositoryService.isParticipantAllowedToLeave(getRepositoryEntry())
 					&& !assessmentLock && !roles.isGuestOnly()
-					&& (uce.isParticipant() || !uce.getParticipatingGroups().isEmpty())) {
+					&& isAllowedToLeave(uce)) {
 				leaveLink = LinkFactory.createToolLink("sign.out", "leave", translate("sign.out"), this);
 				leaveLink.setIconLeftCSS("o_icon o_icon-fw o_icon_sign_out");
 				myCourse.addComponent(new Spacer("leaving-space"));
@@ -633,6 +636,36 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 		if(myCourse.size() > 0) {
 			toolbarPanel.addTool(myCourse, Align.right);
 		}
+	}
+	
+	private boolean isAllowedToLeave(UserCourseEnvironmentImpl uce) {
+		if(uce.getParticipatingGroups().size() > 0) {
+			CourseNode rootNode = uce.getCourseEnvironment().getRunStructure().getRootNode();
+			OLATResource courseResource = uce.getCourseEnvironment().getCourseGroupManager().getCourseResource();
+			
+			AtomicBoolean bool = new AtomicBoolean(false);
+			new TreeVisitor(new Visitor() {
+				@Override
+				public void visit(INode node) {
+					if(!bool.get() && node instanceof ENCourseNode) {
+						try {
+							ENCourseNode enNode = (ENCourseNode)node;
+							boolean cancelEnrollEnabled = enNode.getModuleConfiguration().getBooleanSafe(ENCourseNode.CONF_CANCEL_ENROLL_ENABLED);
+							if(!cancelEnrollEnabled && enNode.isUsedForEnrollment(uce.getParticipatingGroups(), courseResource)) {
+								bool.set(true);
+							}
+						} catch (Exception e) {
+							logError("", e);
+						}
+					}
+				}
+			}, rootNode, true).visitAll();
+
+			if(bool.get()) {
+				return false;// is in a enrollment group
+			}
+		}
+		return (uce.isParticipant() || !uce.getParticipatingGroups().isEmpty());
 	}
 	
 	private void initGeneralTools(ICourse course) {
