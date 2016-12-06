@@ -46,7 +46,9 @@ import javax.ws.rs.core.UriBuilder;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpDelete;
 import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpPut;
+import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.util.EntityUtils;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.type.TypeReference;
@@ -526,6 +528,44 @@ public class CourseTest extends OlatJerseyTestCase {
 		dbInstance.commit();
 		Assert.assertTrue(isParticipant1);
 		Assert.assertTrue(isParticipant2);
+	}
+	
+	@Test
+	public void changedStatus_closed() throws IOException, URISyntaxException {
+		Assert.assertTrue(conn.login("administrator", "openolat"));
+		ICourse courseToClose = CoursesWebService.createEmptyCourse(admin, "Course to close", "A course to close.", null);
+		dbInstance.closeSession();
+		
+		URI request = UriBuilder.fromUri(getContextURI()).path("repo").path("courses")
+				.path(courseToClose.getResourceableId().toString()).path("status").build();
+		HttpPost method = conn.createPost(request, MediaType.APPLICATION_JSON);
+		conn.addEntity(method, new BasicNameValuePair("newStatus", "closed"));
+		
+		HttpResponse response = conn.execute(method);
+		Assert.assertEquals(200, response.getStatusLine().getStatusCode());
+		EntityUtils.consume(response.getEntity());
+		
+		RepositoryEntry repositoryEntry = repositoryManager.lookupRepositoryEntry(courseToClose, true);
+		Assert.assertTrue(repositoryEntry.getRepositoryEntryStatus().isClosed());
+	}
+	
+	@Test
+	public void changedStatus_deleted() throws IOException, URISyntaxException {
+		Assert.assertTrue(conn.login("administrator", "openolat"));
+		ICourse courseToClose = CoursesWebService.createEmptyCourse(admin, "Course to delete (soft)", "A course to delete.", null);
+		dbInstance.closeSession();
+		
+		URI request = UriBuilder.fromUri(getContextURI()).path("repo").path("courses")
+				.path(courseToClose.getResourceableId().toString()).path("status").build();
+		HttpPost method = conn.createPost(request, MediaType.APPLICATION_JSON);
+		conn.addEntity(method, new BasicNameValuePair("newStatus", "deleted"));
+		
+		HttpResponse response = conn.execute(method);
+		Assert.assertEquals(200, response.getStatusLine().getStatusCode());
+		EntityUtils.consume(response.getEntity());
+		
+		RepositoryEntry repositoryEntry = repositoryManager.lookupRepositoryEntry(courseToClose, true);
+		Assert.assertEquals(0, repositoryEntry.getAccess());
 	}
 	
 	protected List<UserVO> parseUserArray(InputStream body) {

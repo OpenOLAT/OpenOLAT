@@ -412,6 +412,8 @@ create table if not exists o_repositoryentry (
    candownload bit not null,
    cancopy bit not null,
    canreference bit not null,
+   deletiondate datetime default null,
+   fk_deleted_by bigint default null,
    primary key (repositoryentry_id)
 );
 create table o_re_to_group (
@@ -2313,6 +2315,8 @@ alter table o_repositoryentry add constraint idx_re_lifecycle_fk foreign key (fk
 create index idx_re_lifecycle_soft_idx on o_repositoryentry_cycle (r_softkey);
 
 alter table o_repositoryentry add constraint repoentry_stats_ctx foreign key (fk_stats) references o_repositoryentry_stats (id);
+
+alter table o_repositoryentry add constraint re_deleted_to_identity_idx foreign key (fk_deleted_by) references o_bs_identity (id);
 
 -- access control
 create index ac_offer_to_resource_idx on o_ac_offer (fk_resource_id);

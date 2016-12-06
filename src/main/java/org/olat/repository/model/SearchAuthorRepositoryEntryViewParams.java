@@ -191,6 +191,8 @@ public class SearchAuthorRepositoryEntryViewParams {
 		lifecycleLabel,
 		lifecycleSoftkey,
 		lifecycleStart,
-		lifecycleEnd
+		lifecycleEnd,
+		deletionDate,
+		deletedBy
 	}
 }

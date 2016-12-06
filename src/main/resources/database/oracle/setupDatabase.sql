@@ -460,6 +460,8 @@ CREATE TABLE o_repositoryentry (
   candownload number NOT NULL,
   cancopy number NOT NULL,
   canreference number NOT NULL,
+  deletiondate date default null,
+  fk_deleted_by number(20) default null,
   CONSTRAINT u_o_repositoryentry UNIQUE (softkey),
   CONSTRAINT u_o_repositoryentry01 UNIQUE (fk_olatresource),
   CONSTRAINT u_o_repositoryentry02 UNIQUE (fk_stats),
@@ -2379,6 +2381,9 @@ create index idx_re_lifecycle_idx on o_repositoryentry (fk_lifecycle);
 
 alter table o_repositoryentry add constraint repoentry_stats_ctx foreign key (fk_stats) references o_repositoryentry_stats (id);
 -- create index repoentry_stats_idx on o_repositoryentry (fk_stats);
+
+alter table o_repositoryentry add constraint re_deleted_to_identity_idx foreign key (fk_deleted_by) references o_bs_identity (id);
+create index idx_re_deleted_to_identity_idx on o_repositoryentry (fk_deleted_by);
 
 -- access control
 create index ac_offer_to_resource_idx on o_ac_offer (fk_resource_id);

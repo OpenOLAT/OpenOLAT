@@ -92,7 +92,7 @@ public interface RepositoryService {
 	 * @param entry
 	 * @param owners If the owners need to be removed
 	 */
-	public RepositoryEntry deleteSoftly(RepositoryEntry entry, boolean owners);
+	public RepositoryEntry deleteSoftly(RepositoryEntry entry, Identity deletedBy, boolean owners);
 	
 	/**
 	 * The access is set to B.

@@ -14,3 +14,9 @@ alter table o_pf_binder_user_infos ENGINE = InnoDB;
 
 alter table o_pf_binder_user_infos add constraint binder_user_to_identity_idx foreign key (fk_identity) references o_bs_identity (id);
 alter table o_pf_binder_user_infos add constraint binder_user_binder_idx foreign key (fk_binder) references o_pf_binder (id);
+
+
+alter table o_repositoryentry add column deletiondate datetime default null;
+alter table o_repositoryentry add column fk_deleted_by bigint default null;
+alter table o_repositoryentry add constraint re_deleted_to_identity_idx foreign key (fk_deleted_by) references o_bs_identity (id);
+

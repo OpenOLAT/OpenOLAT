@@ -67,6 +67,9 @@ public class AuthoringEntryRow implements RepositoryEntryRef, RepositoryEntryLig
 	private Date lifecycleStart;
 	private Date lifecycleEnd;
 	
+	private final String deletedByFullName;
+	private final Date deletionDate;
+	
 	private List<PriceMethod> accessTypes;
 
 	private OLATResourceable olatResource;
@@ -114,6 +117,9 @@ public class AuthoringEntryRow implements RepositoryEntryRef, RepositoryEntryLig
 				lifecycleSoftKey = lifecycle.getSoftKey();
 			}
 		}
+		
+		deletedByFullName = view.getDeletedByFullName();
+		deletionDate = view.getDeletionDate();
 	}
 	
 	public String getCssClass() {
@@ -193,7 +199,15 @@ public class AuthoringEntryRow implements RepositoryEntryRef, RepositoryEntryLig
 	public Date getLifecycleEnd() {
 		return lifecycleEnd;
 	}
-	
+
+	public String getDeletedByFullName() {
+		return deletedByFullName;
+	}
+
+	public Date getDeletionDate() {
+		return deletionDate;
+	}
+
 	public List<PriceMethod> getAccessTypes() {
 		return accessTypes;
 	}

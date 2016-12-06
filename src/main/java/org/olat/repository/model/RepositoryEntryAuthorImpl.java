@@ -56,6 +56,9 @@ public class RepositoryEntryAuthorImpl implements RepositoryEntryAuthorView {
 	
 	private final Date lastUsage;
 	
+	private final Date deletionDate;
+	private final String deletedByFullName;
+	
 	private final OLATResource olatResource;
 	private final RepositoryEntryLifecycle lifecycle;
 	
@@ -63,7 +66,7 @@ public class RepositoryEntryAuthorImpl implements RepositoryEntryAuthorView {
 	
 	private final long offers;
 	
-	public RepositoryEntryAuthorImpl(RepositoryEntry re, boolean marked, long offers) {
+	public RepositoryEntryAuthorImpl(RepositoryEntry re, boolean marked, long offers, String deletedByFullName) {
 		key = re.getKey();
 		creationDate = re.getCreationDate();
 		
@@ -83,6 +86,9 @@ public class RepositoryEntryAuthorImpl implements RepositoryEntryAuthorView {
 		statusCode = re.getStatusCode();
 		
 		lastUsage = re.getStatistics().getLastUsage();
+		
+		deletionDate = re.getDeletionDate();
+		this.deletedByFullName = deletedByFullName;
 		
 		olatResource = re.getOlatResource();
 		lifecycle = re.getLifecycle();
@@ -197,5 +203,14 @@ public class RepositoryEntryAuthorImpl implements RepositoryEntryAuthorView {
 	@Override
 	public boolean isOfferAvailable() {
 		return offers > 0;
+	}
+
+	@Override
+	public String getDeletedByFullName() {
+		return deletedByFullName;
+	}
+
+	public Date getDeletionDate() {
+		return deletionDate;
 	}
 }

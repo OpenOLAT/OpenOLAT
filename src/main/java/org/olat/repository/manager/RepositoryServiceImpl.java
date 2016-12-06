@@ -327,9 +327,14 @@ public class RepositoryServiceImpl implements RepositoryService {
 	}
 	
 	@Override
-	public RepositoryEntry deleteSoftly(RepositoryEntry re, boolean owners) {
+	public RepositoryEntry deleteSoftly(RepositoryEntry re, Identity deletedBy, boolean owners) {
 		RepositoryEntry reloadedRe = repositoryEntryDAO.loadForUpdate(re);
 		reloadedRe.setAccess(RepositoryEntry.DELETED);
+		if(reloadedRe.getDeletionDate() == null) {
+			// don't write the name of an admin which make a restore -> delete operation
+			reloadedRe.setDeletedBy(deletedBy);
+			reloadedRe.setDeletionDate(new Date());
+		}
 		reloadedRe = dbInstance.getCurrentEntityManager().merge(reloadedRe);
 		dbInstance.commit();
 		//remove from catalog
