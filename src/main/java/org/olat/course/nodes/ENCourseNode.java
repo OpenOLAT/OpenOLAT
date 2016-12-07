@@ -41,6 +41,7 @@ import org.olat.core.gui.control.generic.tabbable.TabbableController;
 import org.olat.core.gui.translator.PackageTranslator;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Roles;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.filter.FilterFactory;
 import org.olat.course.ICourse;
@@ -56,12 +57,14 @@ import org.olat.course.properties.PersistingCoursePropertyManager;
 import org.olat.course.run.navigation.NodeRunConstructionResult;
 import org.olat.course.run.userview.NodeEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
+import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
 import org.olat.group.BusinessGroupShort;
 import org.olat.group.area.BGArea;
 import org.olat.group.area.BGAreaManager;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.repository.RepositoryEntry;
+import org.olat.resource.OLATResource;
 
 /**
  * Description:<BR>
@@ -159,6 +162,46 @@ public class ENCourseNode extends AbstractAccessableCourseNode {
 		}
 		Controller ctrl = TitledWrapperHelper.getWrapper(ureq, wControl, controller, this, "o_en_icon");
 		return new NodeRunConstructionResult(ctrl);
+	}
+	
+	public boolean isUsedForEnrollment(List<BusinessGroup> groups, OLATResource courseResource) {
+		if(groups == null || groups.isEmpty()) return false;
+		
+		ModuleConfiguration mc = getModuleConfiguration();
+		String groupNames = (String) mc.get(CONFIG_GROUPNAME);
+		List<Long> groupKeys = mc.getList(ENCourseNode.CONFIG_GROUP_IDS, Long.class);
+		if(groupKeys != null && groupKeys.size() > 0) {
+			for(BusinessGroup group:groups) {
+				if(groupKeys.contains(group.getKey())) {
+					return true;
+				}
+			}
+		} else if(StringHelper.containsNonWhitespace(groupNames)) {
+			String[] groupNameArr = groupNames.split(",");
+			for(BusinessGroup group:groups) {
+				for(String groupName:groupNameArr) {
+					if(groupName != null && group.getName() != null && groupName.equals(group.getName())) {
+						return true;
+					}
+				}
+			}
+		}
+		
+		List<Long> areaKeys = mc.getList(ENCourseNode.CONFIG_AREA_IDS, Long.class);
+		if(areaKeys == null || areaKeys.isEmpty()) {
+			String areaNames = (String) mc.get(CONFIG_AREANAME);
+			areaKeys = CoreSpringFactory.getImpl(BGAreaManager.class).toAreaKeys(areaNames, courseResource);
+		}
+		if(areaKeys != null && areaKeys.size() > 0) {
+			List<Long> areaGroupKeys = CoreSpringFactory.getImpl(BGAreaManager.class).findBusinessGroupKeysOfAreaKeys(areaKeys);
+			for(BusinessGroup group:groups) {
+				if(areaGroupKeys.contains(group.getKey())) {
+					return true;
+				}
+			}
+		}
+		
+		return false;
 	}
 
 	/**
