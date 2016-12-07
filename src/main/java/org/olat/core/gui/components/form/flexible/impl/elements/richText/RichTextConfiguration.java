@@ -112,6 +112,11 @@ public class RichTextConfiguration implements Disposable {
 	private static final String FORCED_ROOT_BLOCK_VALUE_NOROOT = "";
 	private static final String DOCUMENT_BASE_URL = "document_base_url";
 	private static final String PASTE_DATA_IMAGES = "paste_data_images";
+	private static final String AUTORESIZE_BOTTOM_MARGIN = "autoresize_bottom_margin";
+	private static final String AUTORESIZE_MAX_HEIGHT = "autoresize_max_height";
+	private static final String AUTORESIZE_MIN_HEIGHT = "autoresize_min_height";
+	private static final String AUTORESIZE_OVERFLOW_PADDING = "autoresize_overflow_padding";
+
 	//
 	// Generic boolean true / false values
 	private static final String VALUE_FALSE = "false";
@@ -573,6 +578,37 @@ public class RichTextConfiguration implements Disposable {
 		}
 	}
 
+
+	/**
+	 * Enable / disable the auto-resizing of the text input field. When enabled,
+	 * the editor will expand the input filed until the maxHeight is reached (if
+	 * set)
+	 * 
+	 * @param autoResizeEnabled true: enable auto-resize; false: no auto-resize (default)
+	 * @param maxHeight value of max height in pixels or -1 to indicate infinite height
+	 * @param minHeight value of min height in pixels or -1 to indicate no minimum height
+	 * @param bottomMargin value of bottom margin below or -1 to use html editor default
+	 */
+	public void setAutoResizeEnabled(boolean autoResizeEnabled, int maxHeight, int minHeight, int bottomMargin) {
+		if (autoResizeEnabled) {
+			this.tinyConfig = this.tinyConfig.enableAutoResize();
+			if (maxHeight > -1) {
+				setNonQuotedConfigValue(AUTORESIZE_MAX_HEIGHT, Integer.toString(maxHeight));
+			}
+			if (minHeight > -1) {
+				setNonQuotedConfigValue(AUTORESIZE_MIN_HEIGHT, Integer.toString(minHeight));				
+			}
+			if (bottomMargin > -1) {
+				setNonQuotedConfigValue(AUTORESIZE_BOTTOM_MARGIN, Integer.toString(bottomMargin));				
+			}
+		} else {
+			this.tinyConfig = this.tinyConfig.disableAutoResize();
+			
+		}
+	}
+	
+
+	
 	/**
 	 * Enable / disable the date and time insert plugin
 	 * 

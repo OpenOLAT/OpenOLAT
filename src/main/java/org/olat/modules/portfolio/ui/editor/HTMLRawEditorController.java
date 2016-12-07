@@ -79,6 +79,7 @@ public class HTMLRawEditorController extends FormBasicController implements Page
 		htmlItem = uifactory.addRichTextElementForStringDataCompact(cmpId, null, content, 8, 80, null, formLayout, ureq.getUserSession(), getWindowControl());
 		htmlItem.getEditorConfiguration().setSendOnBlur(true);
 		htmlItem.getEditorConfiguration().disableImageAndMovie();
+		htmlItem.getEditorConfiguration().setAutoResizeEnabled(true, -1, 40, 0);
 		
 		String formattedContent = Formatter.formatLatexFormulas(content);
 		staticItem = uifactory.addStaticTextElement(cmpId + "_static", formattedContent, formLayout);
