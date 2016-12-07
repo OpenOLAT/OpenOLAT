@@ -238,7 +238,8 @@ public class EnrollmentManager extends BasicManager {
 		}
 		return groups;
 	}
-	protected List<Long> getBusinessGroupKeys(List<Long> groupKeys, List<Long> areaKeys) {
+	
+	public List<Long> getBusinessGroupKeys(List<Long> groupKeys, List<Long> areaKeys) {
 		List<Long> allKeys = new ArrayList<>();
 		if(groupKeys != null && !groupKeys.isEmpty()) {
 			allKeys.addAll(groupKeys);
