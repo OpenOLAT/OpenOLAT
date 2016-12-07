@@ -78,7 +78,11 @@ public class UsrPropCfgManager extends AbstractSpringModule implements GenericEv
 	 * (I know, it's a hack...) 
 	 * 
 	 */
-	private static final String[] EXCEPTIONAL_CONTEXTS_FOR_MUSTBE_MANDATORY_PROPERTIES = {"org.olat.admin.user.UsermanagerUserSearchForm","org.olat.admin.user.UserSearchForm"};
+	private static final String[] EXCEPTIONAL_CONTEXTS_FOR_MUSTBE_MANDATORY_PROPERTIES = {
+			"org.olat.admin.user.UsermanagerUserSearchForm",
+			"org.olat.admin.user.UserSearchForm",
+			"org.olat.user.HomePageConfig"
+		};
                             
 	private static final String CONF_KEY_ACTUPROP = "activeuserpropertyhandlers";
 	private static final String CONF_KEY_DACTUPROP = "deactiveuserpropertyhandlers";
