@@ -49,13 +49,6 @@
 			<expiration max-idle="180000" interval="15000" />
 		</local-cache>
 		
-		<local-cache name="WebDAVManager@webdav" statistics="true">
-			<locking isolation="READ_COMMITTED" concurrency-level="1000" acquire-timeout="15000" striping="false" />
-			<transaction mode="NONE" auto-commit="true" />
-			<eviction max-entries="2013" strategy="LRU" />
-			<expiration max-idle="900000" interval="5000" />
-		</local-cache>
-		
 		<local-cache name="UserManager@username" statistics="true">
 			<locking isolation="READ_COMMITTED" concurrency-level="1000" acquire-timeout="15000" striping="false" />
 			<transaction mode="NONE" auto-commit="true" />
