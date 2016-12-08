@@ -14,8 +14,12 @@
 	</div>
 #end
 #if ($r.visible("unclose"))
-	<div class="o_button_group o_button_group_right">
-		$r.render("unclose")
+	<h4>$r.translate("details.unclose.resource.title")</h4>
+	<div class="o_info">
+		<p>$r.translate("details.unclose.resource.desc")</p>
+		<div class="o_button_group o_block_large_top">
+			$r.render("unclose")
+		</div>
 	</div>
 #end
 

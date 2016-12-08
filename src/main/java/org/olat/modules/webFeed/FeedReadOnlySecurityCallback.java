@@ -20,65 +20,45 @@
 package org.olat.modules.webFeed;
 
 /**
- * Feed resource security callback.
  * 
- * <P>
- * Initial Date: Aug 11, 2009 <br>
- * 
- * @author gwassmann
+ * Initial date: 7 déc. 2016<br>
+ * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ *
  */
-public class FeedResourceSecurityCallback implements FeedSecurityCallback {
+public class FeedReadOnlySecurityCallback implements FeedSecurityCallback {
 
-	private boolean isAdmin, isOwner;
-
-	public FeedResourceSecurityCallback(boolean isAdmin, boolean isOwner) {
-		this.isAdmin = isAdmin;
-		this.isOwner = isOwner;
-	}
-
-	/**
-	 * @see org.olat.modules.webFeed.FeedSecurityCallback#mayCreateItems()
-	 */
-	public boolean mayCreateItems() {
-		return isAdmin || isOwner;
-	}
-
-	/**
-	 * @see org.olat.modules.webFeed.FeedSecurityCallback#mayDeleteItems()
-	 */
-	public boolean mayDeleteItems() {
-		return isAdmin || isOwner;
-	}
-	
 	@Override
-	public boolean mayDeleteOwnItems() {
-		return true;
+	public boolean mayEditMetadata() {
+		return false;
 	}
 
-	/**
-	 * @see org.olat.modules.webFeed.FeedSecurityCallback#mayEditItems()
-	 */
+	@Override
+	public boolean mayCreateItems() {
+		return false;
+	}
+
+	@Override
 	public boolean mayEditItems() {
-		return isAdmin || isOwner;
+		return false;
 	}
 
 	@Override
 	public boolean mayEditOwnItems() {
-		return true;
+		return false;
+	}
+	
+	@Override
+	public boolean mayDeleteItems() {
+		return false;
 	}
 
-	/**
-	 * @see org.olat.modules.webFeed.FeedSecurityCallback#mayEditMetadata()
-	 */
-	public boolean mayEditMetadata() {
-		return isAdmin || isOwner;
+	@Override
+	public boolean mayDeleteOwnItems() {
+		return false;
 	}
 
-	/**
-	 * @see org.olat.modules.webFeed.FeedSecurityCallback#mayViewAllDrafts()
-	 */
 	@Override
 	public boolean mayViewAllDrafts() {
-		return isAdmin || isOwner;
+		return false;
 	}
 }

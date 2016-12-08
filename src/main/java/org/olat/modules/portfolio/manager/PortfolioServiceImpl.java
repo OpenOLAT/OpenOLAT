@@ -238,8 +238,6 @@ public class PortfolioServiceImpl implements PortfolioService {
 					if(copy && templateDirectory != null) {
 						FileUtils.copyDirContentsToDir(templateDirectory, newStorage, false, "Assignment attachments");
 					}
-				} else {
-					System.out.println("");
 				}
 			}
 		}

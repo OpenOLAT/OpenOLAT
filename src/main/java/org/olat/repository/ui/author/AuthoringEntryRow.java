@@ -30,6 +30,7 @@ import org.olat.repository.RepositoryEntryAuthorView;
 import org.olat.repository.RepositoryEntryLight;
 import org.olat.repository.RepositoryEntryManagedFlag;
 import org.olat.repository.RepositoryEntryRef;
+import org.olat.repository.RepositoryEntryStatus;
 import org.olat.repository.model.RepositoryEntryLifecycle;
 import org.olat.repository.ui.PriceMethod;
 
@@ -138,6 +139,10 @@ public class AuthoringEntryRow implements RepositoryEntryRef, RepositoryEntryLig
 	@Override
 	public int getStatusCode() {
 		return statusCode;
+	}
+	
+	public RepositoryEntryStatus getRepositoryEntryStatus() {
+		return new RepositoryEntryStatus(statusCode);
 	}
 
 	@Override

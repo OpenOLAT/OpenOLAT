@@ -62,6 +62,16 @@ public class WikiForumCallback implements ForumCallback {
 	public boolean mayReplyMessage() {
 		return !isGuestOnly;
 	}
+	
+	@Override
+	public boolean mayEditOwnMessage() {
+		return!isGuestOnly;
+	}
+
+	@Override
+	public boolean mayDeleteOwnMessage() {
+		return !isGuestOnly;
+	}
 
 	@Override
 	public boolean mayEditMessageAsModerator() {		

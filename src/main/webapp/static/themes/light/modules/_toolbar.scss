@@ -350,6 +350,18 @@
 	
 }
 
+#o_main_container .o_toolbar_message {
+	display: table;
+	margin: 0 auto $o-toolbar-margin-bottom auto;
+
+	&.o_warning {
+		padding-top:5px;
+		padding-bottom:5px;
+		border: 1px solid $o-box-warning-color;
+		border-radius: $border-radius-small;
+	}
+}
+
 /* render toolbar with zebra effect in edit mode */
 .o_edit_mode {
 	

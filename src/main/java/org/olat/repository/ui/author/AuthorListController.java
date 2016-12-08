@@ -52,7 +52,9 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFle
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableCssDelegate;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableRendererType;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableSearchEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiCellRenderer;
@@ -111,7 +113,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class AuthorListController extends FormBasicController implements Activateable2, AuthoringEntryDataSourceUIFactory {
+public class AuthorListController extends FormBasicController implements Activateable2, AuthoringEntryDataSourceUIFactory, FlexiTableCssDelegate {
 
 	private final String i18nName;
 	protected FlexiTableElement tableEl;
@@ -292,6 +294,7 @@ public class AuthorListController extends FormBasicController implements Activat
 		model = new AuthoringEntryDataModel(dataSource, columnsModel);
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", model, 20, false, getTranslator(), formLayout);
 		tableEl.setSearchEnabled(withSearch);
+		tableEl.setCssDelegate(this);
 		tableEl.setExportEnabled(true);
 		tableEl.setExtendedSearch(searchCtrl);
 		tableEl.setCustomizeColumns(true);
@@ -352,6 +355,31 @@ public class AuthorListController extends FormBasicController implements Activat
 		return resources;
 	}
 	
+	@Override
+	public String getWrapperCssClass(FlexiTableRendererType type) {
+		return null;
+	}
+
+	@Override
+	public String getTableCssClass(FlexiTableRendererType type) {
+		return null;
+	}
+
+	@Override
+	public String getRowCssClass(FlexiTableRendererType type, int pos) {
+		AuthoringEntryRow row = model.getObject(pos);
+		if(row.getAccess() == 0) {
+			return "o_entry_deleted";
+		}
+		if(row.getRepositoryEntryStatus().isClosed()) {
+			return "o_entry_closed";
+		}
+		if(row.getRepositoryEntryStatus().isUnpublished()) {
+			return "o_entry_unpublished";
+		}
+		return null;
+	}
+
 	public TooledStackedPanel getStackPanel() {
 		return stackPanel;
 	}

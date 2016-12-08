@@ -422,7 +422,7 @@ public class RepositoryTableModel extends DefaultTableDataModel<RepositoryEntry>
 	 */
 	private String getDisplayName(RepositoryEntry repositoryEntry, Locale locale) {
 		String displayName = repositoryEntry.getDisplayname();
-		if (repositoryEntry != null && RepositoryManager.getInstance().createRepositoryEntryStatus(repositoryEntry.getStatusCode()).isClosed()) {
+		if (repositoryEntry != null && repositoryEntry.getRepositoryEntryStatus().isClosed()) {
 			Translator pT = Util.createPackageTranslator(RepositoryEntryStatus.class, locale);
 			displayName = "[" + pT.translate("title.prefix.closed") + "] ".concat(displayName);
 		}

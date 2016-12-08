@@ -42,6 +42,11 @@ public interface FeedSecurityCallback {
 	 * @return Whether items may be edited or not
 	 */
 	boolean mayEditItems();
+	
+	/**
+	 * @return Wheter an author can edit is own entries.
+	 */
+	boolean mayEditOwnItems();
 
 	/**
 	 * @return Whether items may be deleted or not
@@ -49,8 +54,12 @@ public interface FeedSecurityCallback {
 	boolean mayDeleteItems();
 	
 	/**
+	 * @return Wheter an author can deleted is own entries.
+	 */
+	boolean mayDeleteOwnItems();
+	
+	/**
 	 * @return If the user can view all drafts
 	 */
-	//fxdiff BAKS-18
 	boolean mayViewAllDrafts();
 }

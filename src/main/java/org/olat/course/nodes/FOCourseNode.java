@@ -590,6 +590,16 @@ class ReadOnlyForumCallback implements ForumCallback {
 	public boolean mayReplyMessage() {
 		return false;
 	}
+	
+	@Override
+	public boolean mayEditOwnMessage() {
+		return false;
+	}
+
+	@Override
+	public boolean mayDeleteOwnMessage() {
+		return false;
+	}
 
 	@Override
 	public boolean mayEditMessageAsModerator() {
@@ -672,6 +682,18 @@ class ForumNodeForumCallback implements ForumCallback {
 	public boolean mayReplyMessage() {
 		if (isGuestOnly && !guestPostAllowed) return false;
 		return ne.isCapabilityAccessible("poster") || ne.isCapabilityAccessible("moderator") || isOlatAdmin;
+	}
+	
+	@Override
+	public boolean mayEditOwnMessage() {
+		if (isGuestOnly && !guestPostAllowed) return false;
+		return true;
+	}
+
+	@Override
+	public boolean mayDeleteOwnMessage() {
+		if (isGuestOnly && !guestPostAllowed) return false;
+		return true;
 	}
 
 	/**

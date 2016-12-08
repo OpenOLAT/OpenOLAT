@@ -45,6 +45,9 @@ public class TooledStackedPanel extends BreadcrumbedStackedPanel implements Stac
 	private boolean toolbarEnabled = true;
 	private boolean toolbarAutoEnabled = false;
 	
+	private String message;
+	private String messageCssClass;
+	
 	public TooledStackedPanel(String name, Translator translator, ComponentEventListener listener) {
 		this(name, translator, listener, null);
 	}
@@ -209,6 +212,24 @@ public class TooledStackedPanel extends BreadcrumbedStackedPanel implements Stac
 			toolbarEnabled = false;
 		}
 	}
+
+	public String getMessage() {
+		return message;
+	}
+
+	public void setMessage(String message) {
+		this.message = message;
+	}
+
+	public String getMessageCssClass() {
+		return messageCssClass;
+	}
+
+	public void setMessageCssClass(String messageCssClass) {
+		this.messageCssClass = messageCssClass;
+	}
+
+
 
 	public static class Tool {
 		private final  Align align;

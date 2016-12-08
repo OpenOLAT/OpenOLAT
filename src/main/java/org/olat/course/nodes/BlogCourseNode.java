@@ -46,6 +46,7 @@ import org.olat.course.run.navigation.NodeRunConstructionResult;
 import org.olat.course.run.userview.NodeEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.fileresource.types.BlogFileResource;
+import org.olat.modules.webFeed.FeedReadOnlySecurityCallback;
 import org.olat.modules.webFeed.FeedSecurityCallback;
 import org.olat.modules.webFeed.managers.FeedManager;
 import org.olat.modules.webFeed.ui.FeedMainController;
@@ -105,9 +106,13 @@ public class BlogCourseNode extends AbstractFeedCourseNode {
 		String nodeId = this.getIdent();
 		boolean isAdmin = ureq.getUserSession().getRoles().isOLATAdmin();
 		boolean isGuest = ureq.getUserSession().getRoles().isGuestOnly();
-		//fxdiff BAKS-18
 		boolean isOwner = RepositoryManager.getInstance().isOwnerOfRepositoryEntry(ureq.getIdentity(), entry);
-		FeedSecurityCallback callback = new FeedNodeSecurityCallback(ne, isAdmin, isOwner, isGuest);
+		FeedSecurityCallback callback;
+		if(userCourseEnv.isCourseReadOnly()) {
+			callback = new FeedReadOnlySecurityCallback();
+		} else {
+			callback = new FeedNodeSecurityCallback(ne, isAdmin, isOwner, isGuest);
+		}
 		ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrap(this));
 		FeedMainController blogCtr = BlogUIFactory.getInstance(ureq.getLocale()).createMainController(entry.getOlatResource(), ureq, wControl, callback,
 				courseId, nodeId);

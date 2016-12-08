@@ -183,6 +183,10 @@ public class DefaultFlexiColumnModel implements FlexiColumnModel {
 	public boolean isAlwaysVisible() {
 		return alwaysVisible;
 	}
+	
+	public void setAlwaysVisible(boolean alwaysVisible) {
+		this.alwaysVisible = alwaysVisible;
+	}
 
 	@Override
 	public String getAction() {

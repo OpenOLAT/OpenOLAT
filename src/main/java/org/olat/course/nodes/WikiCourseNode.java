@@ -123,9 +123,10 @@ public class WikiCourseNode extends AbstractAccessableCourseNode {
 	}
 
 	@Override
-	public NodeRunConstructionResult createNodeRunConstructionResult(UserRequest ureq, WindowControl wControl, UserCourseEnvironment userCourseEnv, NodeEvaluation ne, String nodecmd) {
+	public NodeRunConstructionResult createNodeRunConstructionResult(UserRequest ureq, WindowControl wControl,
+			UserCourseEnvironment userCourseEnv, NodeEvaluation ne, String nodecmd) {
 		if(ne.isCapabilityAccessible("access")) {
-			WikiRunController wikiController = new WikiRunController(wControl, ureq, this, userCourseEnv.getCourseEnvironment(), ne);
+			WikiRunController wikiController = new WikiRunController(wControl, ureq, this, userCourseEnv, ne);
 			return wikiController.createNodeRunConstructionResult();
 		}
 		Controller controller = MessageUIFactory.createInfoMessage(ureq, wControl, null, this.getNoAccessExplanation());

@@ -33,7 +33,6 @@ import org.olat.core.gui.components.dropdown.Dropdown.Spacer;
 import org.olat.core.gui.components.htmlheader.jscss.CustomCSS;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
-import org.olat.core.gui.components.stack.BreadcrumbedStackedPanel.BreadCrumb;
 import org.olat.core.gui.components.stack.PopEvent;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.components.stack.TooledStackedPanel.Align;
@@ -122,14 +121,13 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 	private RepositoryEntryDetailsController detailsCtrl;
 	private RepositoryMembersController membersEditController;
 	protected RepositoryEditDescriptionController descriptionCtrl;
-	protected RepositoryEntryLifeCycleChangeController lifeCycleChangeCtr;
 	
 	private Dropdown tools;
 	private Dropdown settings;
 	protected Link editLink, membersLink, ordersLink,
 				 editDescriptionLink, accessLink, catalogLink,
 				 detailsLink, bookmarkLink,
-				 copyLink, downloadLink, lifeCycleChangeLink, deleteLink;
+				 copyLink, downloadLink, deleteLink;
 	
 	protected final boolean isOlatAdmin;
 	protected final boolean isGuestOnly;
@@ -536,9 +534,7 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 			doCopy(ureq);
 		} else if(downloadLink == source) {
 			doDownload(ureq);
-		} else if (lifeCycleChangeLink == source) {
-			doLifeCycleChange(ureq);
-		}  else if(deleteLink == source) {
+		} else if(deleteLink == source) {
 			doDelete(ureq);
 		} else if(source == toolbarPanel) {
 			if (event == Event.CLOSE_EVENT) {
@@ -609,18 +605,6 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 				doClose(ureq);
 				cleanUp();
 			}
-		} else if (lifeCycleChangeCtr == source) {
-			if (event == RepositoryEntryLifeCycleChangeController.deletedEvent) {
-				doClose(ureq);
-				cleanUp();	
-			} else if (event == RepositoryEntryLifeCycleChangeController.closedEvent) {
-				if(editLink != null) {
-					editLink.setVisible(false);
-				}
-				if(currentToolCtr == editorCtrl) {
-					toolbarPanel.popUpToRootController(ureq);
-				}
-			}
 		} else if(copyCtrl == source) {
 			cmc.deactivate();
 			if (event == Event.DONE_EVENT) {
@@ -642,7 +626,6 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 	
 	protected void cleanUp() {		
 		removeAsListenerAndDispose(membersEditController);
-		removeAsListenerAndDispose(lifeCycleChangeCtr);
 		removeAsListenerAndDispose(confirmDeleteCtrl);
 		removeAsListenerAndDispose(accessController);
 		removeAsListenerAndDispose(descriptionCtrl);
@@ -654,7 +637,6 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 		removeAsListenerAndDispose(cmc);
 		
 		membersEditController = null;
-		lifeCycleChangeCtr = null;
 		confirmDeleteCtrl = null;
 		accessController = null;
 		descriptionCtrl = null;
@@ -902,21 +884,6 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 				handler.releaseLock(lockResult);
 				lockResult = null;
 			}
-		}
-	}
-	
-	private void doLifeCycleChange(UserRequest ureq) {
-		List<Link> breadCrumbs = toolbarPanel.getBreadCrumbs();
-		BreadCrumb lastCrumb = null;
-		if (breadCrumbs.size() > 0) {
-			lastCrumb = (BreadCrumb) breadCrumbs.get(breadCrumbs.size()-1).getUserObject();
-		}
-		if (lastCrumb == null || lastCrumb.getController() != lifeCycleChangeCtr) {
-			// only create and add to stack if not already there
-			lifeCycleChangeCtr = new RepositoryEntryLifeCycleChangeController(ureq, getWindowControl(), re, reSecurity, handler);
-			listenTo(lifeCycleChangeCtr);
-			currentToolCtr = lifeCycleChangeCtr;
-			toolbarPanel.pushController(translate("details.lifecycle.change"), lifeCycleChangeCtr);
 		}
 	}
 	

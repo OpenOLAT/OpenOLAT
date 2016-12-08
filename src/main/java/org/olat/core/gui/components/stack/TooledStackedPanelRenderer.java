@@ -34,6 +34,7 @@ import org.olat.core.gui.render.Renderer;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.util.StringHelper;
 
 /**
  * 
@@ -137,11 +138,19 @@ public class TooledStackedPanelRenderer extends DefaultComponentRenderer {
 			sb.append("</div>"); // o_toolbar
 		}
 		
+		if(StringHelper.containsNonWhitespace(panel.getMessage())) {
+			sb.append("<div class='o_toolbar_message ");
+			if(StringHelper.containsNonWhitespace(panel.getMessageCssClass())) {
+				sb.append(panel.getMessageCssClass());
+			}
+			sb.append("'>").append(panel.getMessage()).append("</div>");
+		}
+		
 		Component toRender = panel.getContent();
 		if(toRender != null) {
 			renderer.render(sb, toRender, args);
 		}
-		
+
 		sb.append("</div>"); // end of panel div
 	}
 	

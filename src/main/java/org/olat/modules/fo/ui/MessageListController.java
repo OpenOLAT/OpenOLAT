@@ -629,13 +629,13 @@ public class MessageListController extends BasicController implements GenericEve
 		}
 
 		if(!isThreadClosed) {
-			if((numOfChildren == 0 && userIsMsgCreator) || foCallback.mayDeleteMessageAsModerator()) {
+			if((numOfChildren == 0 && userIsMsgCreator && foCallback.mayDeleteOwnMessage()) || foCallback.mayDeleteMessageAsModerator()) {
 				Link deleteLink = LinkFactory.createCustomLink("dl_".concat(keyString), "dl", "msg.delete", Link.BUTTON_SMALL, mainVC, this);
 				deleteLink.setIconLeftCSS("o_icon o_icon-fw o_icon_delete_item");
 				deleteLink.setUserObject(messageView);
 			}
 			
-			if((numOfChildren == 0 && userIsMsgCreator) || foCallback.mayEditMessageAsModerator()) {
+			if((numOfChildren == 0 && userIsMsgCreator && foCallback.mayEditOwnMessage()) || foCallback.mayEditMessageAsModerator()) {
 				Link editLink = LinkFactory.createCustomLink("ed_".concat(keyString), "ed", "msg.update", Link.BUTTON_SMALL, mainVC, this);
 				editLink.setIconLeftCSS("o_icon o_icon-fw o_icon_edit");
 				editLink.setUserObject(messageView);

@@ -80,6 +80,16 @@ public class DialogNodeForumCallback implements ForumCallback {
 		return ne.isCapabilityAccessible("poster") || ne.isCapabilityAccessible("moderator") || isOlatAdmin;
 	}
 
+	@Override
+	public boolean mayEditOwnMessage() {
+		return true;
+	}
+
+	@Override
+	public boolean mayDeleteOwnMessage() {
+		return true;
+	}
+
 	/**
 	 * @see org.olat.modules.fo.ForumCallback#mayEditMessageAsModerator()
 	 */

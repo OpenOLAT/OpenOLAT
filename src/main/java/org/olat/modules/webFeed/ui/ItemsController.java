@@ -352,8 +352,8 @@ public class ItemsController extends BasicController implements Activateable2 {
 	 */
 	private void createButtonsForItem(UserRequest ureq, Feed feed, Item item) {
 		boolean author = getIdentity().getKey().equals(item.getAuthorKey());
-		boolean edit = callback.mayEditItems() || author;
-		boolean delete = callback.mayDeleteItems() || author;
+		boolean edit = callback.mayEditItems() || (author && callback.mayEditOwnItems());
+		boolean delete = callback.mayDeleteItems() || (author && callback.mayDeleteOwnItems());
 
 		String guid = item.getGuid();
 		String editId = "feed.edit.item.".concat(guid);
