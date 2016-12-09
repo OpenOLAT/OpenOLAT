@@ -26,6 +26,7 @@ package org.olat.commons.coordinate.cluster.lock;
 
 import java.util.List;
 
+import org.olat.basesecurity.IdentityRef;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.OLog;
@@ -88,19 +89,28 @@ public class ClusterLockManager {
 		dbInstance.getCurrentEntityManager().persist(alock);
 		log.info("saveLock: "+alock+" END");
 	}
-
-	void deleteLock(LockImpl li) {
-		log.info("deleteLock: "+li+" START");
-		dbInstance.getCurrentEntityManager().remove(li);
-		dbInstance.commit();//prevent stale object by logout login
-		log.info("deleteLock: "+li+" END");
+	
+	int deleteLock(String asset, IdentityRef owner) {
+		log.info("deleteLock: "+ asset + " owner: " + owner +" START");
+		String sb = "delete from org.olat.commons.coordinate.cluster.lock.LockImpl alock where alock.owner.key=:ownerKey and alock.asset=:asset";
+		int locks = dbInstance.getCurrentEntityManager()
+			.createQuery(sb)
+			.setParameter("ownerKey", owner.getKey())
+			.setParameter("asset", asset)
+			.executeUpdate();
+		log.info("deleteLock: "+ asset + " owner: " + owner +" END");
+		if(locks > 0) {
+			dbInstance.commit();
+		}
+		return locks;
 	}
 	
 	List<LockImpl> getAllLocks() {
 		log.info("getAllLocks START");
-		StringBuilder sb = new StringBuilder();
-		sb.append("select alock from org.olat.commons.coordinate.cluster.lock.LockImpl as alock inner join fetch alock.owner");
-		List<LockImpl> res = dbInstance.getCurrentEntityManager().createQuery(sb.toString(), LockImpl.class).getResultList();
+		String sb = "select alock from org.olat.commons.coordinate.cluster.lock.LockImpl as alock inner join fetch alock.owner";
+		List<LockImpl> res = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), LockImpl.class)
+				.getResultList();
 		log.info("getAllLocks END. res.length:"+ (res==null ? "null" : res.size()));
 		return res;
 	}
@@ -110,8 +120,7 @@ public class ClusterLockManager {
 	 */
 	public void releaseAllLocksFor(Long identityKey) {
 		log.info("releaseAllLocksFor: " + identityKey + " START");	
-		StringBuilder sb = new StringBuilder();
-		sb.append("delete from org.olat.commons.coordinate.cluster.lock.LockImpl alock where alock.owner.key=:ownerKey");
+		String sb = "delete from org.olat.commons.coordinate.cluster.lock.LockImpl alock where alock.owner.key=:ownerKey";
 		int locks = dbInstance.getCurrentEntityManager().createQuery(sb.toString())
 			.setParameter("ownerKey", identityKey)
 			.executeUpdate();
