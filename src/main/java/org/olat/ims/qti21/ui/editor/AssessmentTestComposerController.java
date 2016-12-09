@@ -713,12 +713,17 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 		TreeNode sectionNode = getNearestSection(selectedNode);
 		
 		String firstItemId = null;
+		boolean errorOnImport = false;
 		Map<AssessmentItemRef,AssessmentItem> flyingObjects = new HashMap<>();
 		try {
 			AssessmentSection section = (AssessmentSection)sectionNode.getUserObject();
-			
 			List<AssessmentItemAndMetadata> itemsAndMetadata = importPackage.getItems();
 			for(AssessmentItemAndMetadata itemAndMetadata:itemsAndMetadata) {
+				if(itemAndMetadata.isHasError()) {
+					errorOnImport = true;
+					continue;
+				}
+				
 				AssessmentItemBuilder itemBuilder = itemAndMetadata.getItemBuilder();
 				AssessmentItem assessmentItem = itemBuilder.getAssessmentItem();
 				AssessmentItemRef itemRef = doInsert(section, assessmentItem);
@@ -731,19 +736,24 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 				flyingObjects.put(itemRef, assessmentItem);
 			}
 		} catch (URISyntaxException e) {
-			showError("error.import.question");
+			errorOnImport = true;
 			logError("", e);
 		}
+		if(errorOnImport) {
+			showError("error.import.question");
+		}
 		
-		//persist metadata
-		doSaveAssessmentTest(flyingObjects);
-		doSaveManifest();
-		updateTreeModel(false);
+		if(firstItemId != null) {
+			//persist metadata
+			doSaveAssessmentTest(flyingObjects);
+			doSaveManifest();
+			updateTreeModel(false);
 		
-		TreeNode newItemNode = menuTree.getTreeModel().getNodeById(firstItemId);
-		menuTree.setSelectedNode(newItemNode);
-		menuTree.open(newItemNode);
-		partEditorFactory(ureq, newItemNode);
+			TreeNode newItemNode = menuTree.getTreeModel().getNodeById(firstItemId);
+			menuTree.setSelectedNode(newItemNode);
+			menuTree.open(newItemNode);
+			partEditorFactory(ureq, newItemNode);
+		}
 	}
 	
 	private AssessmentItemRef doInsert(AssessmentSection section, AssessmentItem assessmentItem)
