@@ -322,12 +322,17 @@ public class CSVToAssessmentItemConverter {
 	
 	private void build() {
 		if(currentItem != null) {
-			String question = currentItem.getItemBuilder().getQuestion();
-			if(!StringHelper.isHtml(question)) {
-				question = "<p>" + question + "</p>";
+			try {
+				String question = currentItem.getItemBuilder().getQuestion();
+				if(!StringHelper.isHtml(question)) {
+					question = "<p>" + question + "</p>";
+				}
+				currentItem.getItemBuilder().setQuestion(question);
+				currentItem.getItemBuilder().build();
+			} catch (Exception e) {
+				log.error("", e);
+				currentItem.setHasError(true);
 			}
-			currentItem.getItemBuilder().setQuestion(question);
-			currentItem.getItemBuilder().build();
 		}
 	}
 	
