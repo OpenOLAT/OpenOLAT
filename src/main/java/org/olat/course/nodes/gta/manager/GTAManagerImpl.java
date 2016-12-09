@@ -495,6 +495,8 @@ public class GTAManagerImpl implements GTAManager, DeletableGroupData {
 
 	@Override
 	public List<BusinessGroup> filterBusinessGroups(List<BusinessGroup> groups, GTACourseNode cNode) {
+		if(groups == null || groups.isEmpty()) return new ArrayList<>(1);
+		
 		List<BusinessGroup> filteredGroups = new ArrayList<>();
 
 		ModuleConfiguration config = cNode.getModuleConfiguration();
