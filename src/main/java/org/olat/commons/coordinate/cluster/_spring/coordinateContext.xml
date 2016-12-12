@@ -32,7 +32,6 @@
 
 	<bean id="clusterLocker" class="org.olat.commons.coordinate.cluster.lock.ClusterLocker" init-method="init">
 		<constructor-arg index="0" ref="clusterLockManager" />
-		<property name="pessimisticLockManager" ref="lockManager"/>
 		<property name="persistentLockManager" ref="persistentLockManager"/>
 		<property name="syncer" ref="org.olat.commons.coordinate.cluster.ClusterSyncer" />
 		<property name="eventBus" ref="org.olat.commons.coordinate.cluster.jms.ClusterEventBus" />

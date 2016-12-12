@@ -117,8 +117,9 @@ public class LockTest extends OlatTestCase {
 		assertEquals(li.getKey(), l2.getKey());
 		
 		// delete it 
-		clusterLockManager.deleteLock(l2);
+		int deletedLock = clusterLockManager.deleteLock(asset, ident);
 		dbInstance.closeSession();
+		Assert.assertEquals(1, deletedLock);
 		
 		// may not find it again
 		LockImpl l3 = clusterLockManager.findLock(asset);
