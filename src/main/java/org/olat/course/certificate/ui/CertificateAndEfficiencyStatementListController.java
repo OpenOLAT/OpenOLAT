@@ -339,7 +339,7 @@ public class CertificateAndEfficiencyStatementListController extends FormBasicCo
 	}
 	
 	private void doLaunchCoachingTool(UserRequest ureq) {
-		String businessPath = "[CoachSite:0][search:0][Identity:" + assessedIdentity.getKey() + "]";
+		String businessPath = "[CoachSite:0][Search:0][Identity:" + assessedIdentity.getKey() + "]";
 		NewControllerFactory.getInstance().launch(businessPath, ureq, getWindowControl());
 	}
 
