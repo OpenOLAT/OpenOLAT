@@ -275,7 +275,11 @@ public class BinderDAO {
 				&& StringHelper.isSame(currentAssignment.getSummary(), refAssignment.getSummary())
 				&& StringHelper.isSame(currentAssignment.getContent(), refAssignment.getContent())
 				&& StringHelper.isSame(currentAssignment.getStorage(), refAssignment.getStorage())
-				&& StringHelper.isSame(currentAssignment.getType(), refAssignment.getAssignmentType().name())) {
+				&& StringHelper.isSame(currentAssignment.getType(), refAssignment.getAssignmentType().name())
+				&& StringHelper.isSame(currentAssignment.isOnlyAutoEvaluation(), refAssignment.isOnlyAutoEvaluation())
+				&& StringHelper.isSame(currentAssignment.isReviewerSeeAutoEvaluation(), refAssignment.isReviewerSeeAutoEvaluation())
+				&& StringHelper.isSame(currentAssignment.isAnonymousExternalEvaluation(), refAssignment.isAnonymousExternalEvaluation())
+				&& StringHelper.isSame(currentAssignment.getFormEntry(), refAssignment.getFormEntry())) {
 			return currentAssignment;
 		}
 		
@@ -284,6 +288,16 @@ public class BinderDAO {
 		currentAssignment.setContent(refAssignment.getContent());
 		currentAssignment.setStorage(refAssignment.getStorage());
 		currentAssignment.setType(refAssignment.getAssignmentType().name());
+		currentAssignment.setOnlyAutoEvaluation(refAssignment.isOnlyAutoEvaluation());
+		currentAssignment.setReviewerSeeAutoEvaluation(refAssignment.isReviewerSeeAutoEvaluation());
+		currentAssignment.setAnonymousExternalEvaluation(refAssignment.isAnonymousExternalEvaluation());
+		
+		RepositoryEntry formEntry = refAssignment.getFormEntry();
+		if(formEntry != null) {
+			RepositoryEntry refFormEntry = dbInstance.getCurrentEntityManager()
+					.getReference(RepositoryEntry.class, formEntry.getKey());
+			currentAssignment.setFormEntry(refFormEntry);
+		}
 		return dbInstance.getCurrentEntityManager().merge(currentAssignment);
 	}
 	
@@ -859,7 +873,136 @@ public class BinderDAO {
 		}
 		return rightList;
 	}
+	
+	
+	public List<AccessRights> getBinderAccesRights(Page page)  {
+		if(page == null) {
+			return Collections.emptyList();
+		}
 
+		StringBuilder sb = new StringBuilder();
+		sb.append("select binder.key, section.key, page.key, membership.role, ident, invitation from pfpage as page")
+		  .append(" inner join page.section as section")
+		  .append(" inner join section.binder as binder")
+		  .append(" inner join binder.baseGroup as baseGroup")
+		  .append(" inner join baseGroup.members as membership")
+		  .append(" inner join membership.identity as ident")
+		  .append(" inner join fetch ident.user as identUser")
+		  .append(" left join binvitation as invitation on (invitation.baseGroup.key=binder.baseGroup.key and identUser.email=invitation.mail)")
+		  .append(" where page.key=:pageKey");
+
+		TypedQuery<Object[]> query = dbInstance.getCurrentEntityManager()
+			.createQuery(sb.toString(), Object[].class)
+			.setParameter("pageKey", page.getKey());
+
+		
+		List<Object[]> objects = query.getResultList();
+		List<AccessRights> rightList = new ArrayList<>(objects.size());
+		for(Object[] object:objects) {
+			Long binderKey = (Long)object[0];
+			Long sectionKey = (Long)object[1];
+			Long pageKey = (Long)object[2];
+			String role = (String)object[3];
+			Identity member = (Identity)object[4];
+			Invitation invitation = (Invitation)object[5];
+			
+			AccessRights rights = new AccessRights();
+			rights.setRole(PortfolioRoles.valueOf(role));
+			rights.setBinderKey(binderKey);
+			rights.setSectionKey(sectionKey);
+			rights.setPageKey(pageKey);
+			rights.setIdentity(member);
+			rights.setInvitation(invitation);
+			rightList.add(rights);
+		}
+		return rightList;
+	}
+	
+	public List<AccessRights> getSectionAccesRights(Page page)  {
+		if(page == null) {
+			return Collections.emptyList();
+		}
+
+		StringBuilder sb = new StringBuilder();
+		sb.append("select binder.key, section.key, page.key, membership.role, ident, invitation from pfpage as page")
+		  .append(" inner join page.section as section")
+		  .append(" inner join section.binder as binder")
+		  .append(" inner join section.baseGroup as baseGroup")
+		  .append(" inner join baseGroup.members as membership")
+		  .append(" inner join membership.identity as ident")
+		  .append(" inner join fetch ident.user as identUser")
+		  .append(" left join binvitation as invitation on (invitation.baseGroup.key=binder.baseGroup.key and identUser.email=invitation.mail)")
+		  .append(" where page.key=:pageKey");
+
+		TypedQuery<Object[]> query = dbInstance.getCurrentEntityManager()
+			.createQuery(sb.toString(), Object[].class)
+			.setParameter("pageKey", page.getKey());
+
+		
+		List<Object[]> objects = query.getResultList();
+		List<AccessRights> rightList = new ArrayList<>(objects.size());
+		for(Object[] object:objects) {
+			Long binderKey = (Long)object[0];
+			Long sectionKey = (Long)object[1];
+			Long pageKey = (Long)object[2];
+			String role = (String)object[3];
+			Identity member = (Identity)object[4];
+			Invitation invitation = (Invitation)object[5];
+			
+			AccessRights rights = new AccessRights();
+			rights.setRole(PortfolioRoles.valueOf(role));
+			rights.setBinderKey(binderKey);
+			rights.setSectionKey(sectionKey);
+			rights.setPageKey(pageKey);
+			rights.setIdentity(member);
+			rights.setInvitation(invitation);
+			rightList.add(rights);
+		}
+		return rightList;
+	}
+	
+	public List<AccessRights> getPageAccesRights(Page page)  {
+		if(page == null) {
+			return Collections.emptyList();
+		}
+
+		StringBuilder sb = new StringBuilder();
+		sb.append("select binder.key, section.key, page.key, membership.role, ident, invitation from pfpage as page")
+		  .append(" inner join page.section as section")
+		  .append(" inner join section.binder as binder")
+		  .append(" inner join page.baseGroup as baseGroup")
+		  .append(" inner join baseGroup.members as membership")
+		  .append(" inner join membership.identity as ident")
+		  .append(" inner join fetch ident.user as identUser")
+		  .append(" left join binvitation as invitation on (invitation.baseGroup.key=binder.baseGroup.key and identUser.email=invitation.mail)")
+		  .append(" where page.key=:pageKey");
+
+		TypedQuery<Object[]> query = dbInstance.getCurrentEntityManager()
+			.createQuery(sb.toString(), Object[].class)
+			.setParameter("pageKey", page.getKey());
+
+		
+		List<Object[]> objects = query.getResultList();
+		List<AccessRights> rightList = new ArrayList<>(objects.size());
+		for(Object[] object:objects) {
+			Long binderKey = (Long)object[0];
+			Long sectionKey = (Long)object[1];
+			Long pageKey = (Long)object[2];
+			String role = (String)object[3];
+			Identity member = (Identity)object[4];
+			Invitation invitation = (Invitation)object[5];
+			
+			AccessRights rights = new AccessRights();
+			rights.setRole(PortfolioRoles.valueOf(role));
+			rights.setBinderKey(binderKey);
+			rights.setSectionKey(sectionKey);
+			rights.setPageKey(pageKey);
+			rights.setIdentity(member);
+			rights.setInvitation(invitation);
+			rightList.add(rights);
+		}
+		return rightList;
+	}
 	
 	/**
 	 * Add a section to a binder. The binder must be a fresh reload one

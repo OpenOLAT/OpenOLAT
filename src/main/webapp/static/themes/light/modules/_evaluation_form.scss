@@ -1,0 +1,69 @@
+.o_evaluation_form {
+
+	.o_evaluation_step_labels div, .o_evaluation_step_labels span {
+		display:inline-block;
+		text-align: center;
+	}
+	
+	.o_evaluation_discrete_slider {
+		.o_evaluation_step_labels div {
+			display:inline-block;
+			text-align: left;
+		}
+		
+		.o_evaluation_step_labels div:last-child {
+			text-align: right;
+			float: right;
+		}
+		
+		.o_slider {
+			margin-bottom: 5px;
+		}
+	}
+	
+	.o_evaluation_discrete_radio {
+		.o_slider {
+			input[type='radio'] {
+				padding: 0;
+				margin: 0;
+				position: relative;
+			}
+			
+			label {
+				padding: 0;
+				margin: 0;
+				text-align: center;
+			}
+		}
+	}
+	
+	.o_evaluation_slider {
+		.o_slider {
+			margin-bottom: 5px;
+		}
+	}
+	
+	.o_evaluation_left_label {
+		text-align: right;
+	}
+	
+	.o_evaluation_right_label {
+		text-align: left;
+	}
+}
+
+.o_evaluation_editor_form {
+	margin: 10px 10px 0 10px;
+	
+	.o_slider_editor {
+		margin-top: 10px;
+	}
+	
+	.o_evaluation_step_labels {
+		display:inline-block;
+		
+		input {
+			width: 100%;
+		}
+	}
+}

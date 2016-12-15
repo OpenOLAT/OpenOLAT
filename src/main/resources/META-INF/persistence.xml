@@ -153,6 +153,8 @@
 		<class>org.olat.modules.fo.model.ReadMessageImpl</class>
 		<class>org.olat.modules.fo.model.MessageStatistics</class>
 		<class>org.olat.modules.fo.model.PseudonymImpl</class>
+		<class>org.olat.modules.forms.model.jpa.EvaluationFormSessionImpl</class>
+		<class>org.olat.modules.forms.model.jpa.EvaluationFormResponseImpl</class>
 		<class>org.olat.modules.gotomeeting.model.GoToMeetingImpl</class>
 		<class>org.olat.modules.gotomeeting.model.GoToOrganizerImpl</class>
 		<class>org.olat.modules.gotomeeting.model.GoToRegistrantImpl</class>
@@ -166,6 +168,7 @@
 		<class>org.olat.modules.portfolio.model.TitlePart</class>
 		<class>org.olat.modules.portfolio.model.MediaPart</class>
 		<class>org.olat.modules.portfolio.model.SpacerPart</class>
+		<class>org.olat.modules.portfolio.model.EvaluationFormPart</class>
 		<class>org.olat.modules.portfolio.model.CategoryImpl</class>
 		<class>org.olat.modules.portfolio.model.CategoryToElementImpl</class>
 		<class>org.olat.modules.portfolio.model.AssessmentSectionImpl</class>

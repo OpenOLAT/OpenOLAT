@@ -101,7 +101,8 @@ public interface PortfolioService {
 	 * @param section The section is mandatory
 	 * @return
 	 */
-	public Assignment addAssignment(String title, String summary, String content, AssignmentType type, Section section);
+	public Assignment addAssignment(String title, String summary, String content, AssignmentType type, Section section,
+			boolean onlyAutoEvaluation, boolean reviewerSeeAutoEvaluation, boolean anonymousExternEvaluation, RepositoryEntry formEntry);
 	
 	public Section moveUpAssignment(Section section, Assignment assignment);
 	
@@ -109,7 +110,16 @@ public interface PortfolioService {
 	
 	public void moveAssignment(SectionRef currentSection, Assignment assignment, SectionRef newParentSection);
 	
-	public Assignment updateAssignment(Assignment assignment, String title, String summary, String content, AssignmentType type);
+	public Assignment updateAssignment(Assignment assignment, String title, String summary, String content, AssignmentType type, boolean onlyAutoEvaluation,
+			boolean reviewerSeeAutoEvaluation, boolean anonymousExternEvaluation, RepositoryEntry formEntry);
+	
+	/**
+	 * Retrieve the assignment of a specific page body.
+	 * 
+	 * @param body
+	 * @return
+	 */
+	public Assignment getAssignment(PageBody body);
 
 	
 	public List<Assignment> getAssignments(PortfolioElement binder, String searchString);
@@ -295,6 +305,8 @@ public interface PortfolioService {
 	public List<AccessRights> getAccessRights(Binder binder);
 	
 	public List<AccessRights> getAccessRights(Binder binder, Identity identity);
+
+	public List<AccessRights> getAccessRights(Page page);
 	
 	public void addAccessRights(PortfolioElement element, Identity identity, PortfolioRoles role);
 	

@@ -49,6 +49,13 @@ public interface SingleSelection extends SelectionElement {
 	 * @return
 	 */
 	public int getSelected();
+	
+	/**
+	 * Set the width of the radio element.
+	 * 
+	 * @param width
+	 */
+	public void setWidthInPercent(int width);
 
 	
 	/**

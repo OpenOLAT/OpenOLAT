@@ -20,7 +20,7 @@
 package org.olat.modules.portfolio.ui.editor.event;
 
 import org.olat.core.gui.control.Event;
-import org.olat.modules.portfolio.PagePart;
+import org.olat.modules.portfolio.ui.editor.PageElement;
 
 /**
  * 
@@ -31,15 +31,15 @@ import org.olat.modules.portfolio.PagePart;
 public class ChangePartEvent extends Event {
 
 	private static final long serialVersionUID = -8752379808832328275L;
-	private final PagePart pagePart;
+	private final PageElement element;
 	
-	public ChangePartEvent(PagePart pagePart) {
+	public ChangePartEvent(PageElement element) {
 		super("ed-change-part");
-		this.pagePart = pagePart;
+		this.element = element;
 	}
 
-	public PagePart getPagePart() {
-		return pagePart;
+	public PageElement getElement() {
+		return element;
 	}
 
 }

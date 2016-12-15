@@ -37,12 +37,10 @@ import org.olat.core.gui.control.generic.closablewrapper.CalloutSettings;
 import org.olat.core.gui.control.generic.closablewrapper.CalloutSettings.CalloutOrientation;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
-import org.olat.core.gui.translator.PackageTranslator;
-import org.olat.core.util.Util;
-import org.olat.modules.portfolio.PagePart;
-import org.olat.modules.portfolio.ui.PageRunController;
+import org.olat.core.gui.translator.Translator;
 import org.olat.modules.portfolio.ui.editor.event.AddElementEvent;
 import org.olat.modules.portfolio.ui.editor.event.ChangePartEvent;
+import org.olat.modules.portfolio.ui.editor.event.ClosePartEvent;
 
 /**
  * 
@@ -60,20 +58,24 @@ public class PageEditorController extends BasicController {
 	private CloseableCalloutWindowController addCalloutCtrl;
 	
 	private int counter;
-	private PageEditorProvider provider;
+	private final PageEditorProvider provider;
+	private final PageEditorSecurityCallback secCallback;
+	
 	private List<EditorFragment> fragments = new ArrayList<>();
 	private Map<String,PageElementHandler> handlerMap = new HashMap<>();
 
-	public PageEditorController(UserRequest ureq, WindowControl wControl, PageEditorProvider provider) {
-		super(ureq, wControl);
+	public PageEditorController(UserRequest ureq, WindowControl wControl, PageEditorProvider provider,
+			PageEditorSecurityCallback secCallback, Translator fallbackTranslator) {
+		super(ureq, wControl, fallbackTranslator);
 		this.provider = provider;
+		this.secCallback = secCallback;
 		// Set a fallback translator from runtime package. Important to not do it the other way round
 		// because they have same keys in the package and overwrite each other otherwise.
-		PackageTranslator fallbackTrans = (PackageTranslator)Util.createPackageTranslator(PageRunController.class, getLocale());
+		/*PackageTranslator fallbackTrans = (PackageTranslator)Util.createPackageTranslator(PageRunController.class, getLocale());
 		if (getTranslator() instanceof PackageTranslator) {
 			PackageTranslator myTrans = (PackageTranslator) getTranslator();
 			myTrans.setFallBack(fallbackTrans);
-		}
+		}*/
 		
 		mainVC = createVelocityContainer("page_editor");
 		for(PageElementHandler handler:provider.getAvailableHandlers()) {
@@ -142,10 +144,12 @@ public class PageEditorController extends BasicController {
 			EditorFragment fragment = getEditorFragment(source);
 			if(event instanceof ChangePartEvent) {
 				ChangePartEvent changeEvent = (ChangePartEvent)event;
-				PagePart part = changeEvent.getPagePart();
-				fragment.setPageElement(part);
+				PageElement element = changeEvent.getElement();
+				fragment.setPageElement(element);
 				fireEvent(ureq, Event.CHANGED_EVENT);
-			}	
+			} else if(event instanceof ClosePartEvent) {
+				doSaveElement(ureq, fragment);
+			}
 		}
 		super.event(ureq, source, event);
 	}
@@ -230,12 +234,16 @@ public class PageEditorController extends BasicController {
 		addAboveLink.setIconLeftCSS("o_icon o_icon-sm o_icon_element_before");
 		addAboveLink.setElementCssClass("o_sel_add_element_above");
 		addAboveLink.setUserObject(fragment);
+		addAboveLink.setVisible(provider.getCreateHandlers().size() > 0);
+		addAboveLink.setEnabled(provider.getCreateHandlers().size() > 0);
 		fragment.setAddElementAboveLink(addAboveLink);
 
 		Link addBelowLink = LinkFactory.createLink("add.element.below", "add.element.below", getTranslator(), mainVC, this, Link.LINK);
 		addBelowLink.setIconLeftCSS("o_icon o_icon-sm o_icon_element_after");
 		addBelowLink.setElementCssClass("o_sel_add_element_below");
 		addBelowLink.setUserObject(fragment);
+		addBelowLink.setVisible(provider.getCreateHandlers().size() > 0);
+		addBelowLink.setEnabled(provider.getCreateHandlers().size() > 0);
 		fragment.setAddElementBelowLink(addBelowLink);
 
 		Link saveLink = LinkFactory.createLink("save.and.close", "save.element", getTranslator(), mainVC, this, Link.LINK);
@@ -250,7 +258,8 @@ public class PageEditorController extends BasicController {
 		moveUpLink.setCustomDisplayText("");
 		moveUpLink.setTitle(translate("move.up"));
 		moveUpLink.setUserObject(fragment);
-		moveUpLink.setEnabled(fragments.indexOf(fragment) > 0);
+		moveUpLink.setEnabled(fragments.indexOf(fragment) > 0 && secCallback.canMoveUpAndDown());
+		moveUpLink.setVisible(secCallback.canMoveUpAndDown());
 		fragment.setMoveUpLink(moveUpLink);
 		 
 		Link moveDownLink = LinkFactory.createLink("move.down", "move.down.element", getTranslator(), mainVC, this, Link.LINK + Link.NONTRANSLATED);
@@ -259,13 +268,16 @@ public class PageEditorController extends BasicController {
 		moveDownLink.setCustomDisplayText("");
 		moveUpLink.setTitle(translate("move.down"));
 		moveDownLink.setUserObject(fragment);
-		moveDownLink.setEnabled(fragments.indexOf(fragment) < (fragments.size() - 1));
+		moveDownLink.setEnabled((fragments.indexOf(fragment) < (fragments.size() - 1)) && secCallback.canMoveUpAndDown());
+		moveDownLink.setVisible(secCallback.canMoveUpAndDown());
 		fragment.setMoveDownLink(moveDownLink);
 		
 		Link deleteLink = LinkFactory.createLink("delete", "delete.element", getTranslator(), mainVC, this, Link.LINK);
 		deleteLink.setIconLeftCSS("o_icon o_icon-sm o_icon_delete_item");
 		deleteLink.setElementCssClass("o_sel_delete_element");
 		deleteLink.setUserObject(fragment);
+		deleteLink.setVisible(secCallback.canDeleteElement());
+		deleteLink.setEnabled(secCallback.canDeleteElement());
 		fragment.setDeleteLink(deleteLink);
 		
 		mainVC.setDirty(true);

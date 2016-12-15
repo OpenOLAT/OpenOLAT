@@ -230,6 +230,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_reviewer:before { content: $fa-var-user-md;}
 .o_icon_rss:before { content: $fa-var-rss;}
 .o_icon_rss_unsubscribe:before { content: $fa-var-rss; color: #996633;}
+.o_icon_rubric:before { content: $fa-var-sliders; }
 .o_icon_save:before { content: $fa-var-save;}
 .o_icon_search:before { content: $fa-var-search;}
 .o_icon_select:before { content: $fa-var-check; }
@@ -265,6 +266,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_table_custom:before { content: $fa-var-th-list; }
 .o_icon_table_large:before { content: $fa-var-th-large; }
 .o_icon_tags:before { content: $fa-var-tags; }
+.o_icon_textinput:before { content: $fa-var-align-left; }
 .o_icon_timelimit:before { content: $fa-var-bomb; }
 .o_icon_toggle:before { content: $fa-var-circle; }
 .o_icon_toggle_on:before { content: $fa-var-toggle-on; }
@@ -293,6 +295,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_EPStructuredMapTemplate_icon:before { content: $fa-var-puzzle-piece; }
 .o_FileResource-BLOG_icon:before { content: $fa-var-bullhorn; }
 .o_FileResource-IMSCP_icon:before { content: $fa-var-archive; }
+.o_FileResource-FORM_icon:before { content: $fa-var-sliders; }
 .o_FileResource-PODCAST_icon:before { content: $fa-var-video-camera; }
 .o_FileResource-SHAREDFOLDER:before { content: $fa-var-external-link; }
 .o_FileResource-SCORMCP_icon:before { content: $fa-var-archive; }

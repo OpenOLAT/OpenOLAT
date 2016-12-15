@@ -22,6 +22,7 @@ package org.olat.modules.portfolio;
 import java.util.Date;
 
 import org.olat.core.id.Identity;
+import org.olat.repository.RepositoryEntry;
 
 /**
  * 
@@ -63,4 +64,19 @@ public interface Assignment {
 	public Section getSection();
 	
 	public Assignment getTemplateReference();
+	
+	
+	public boolean isOnlyAutoEvaluation();
+
+	public void setOnlyAutoEvaluation(boolean onlyAutoEvaluation);
+
+	public boolean isReviewerSeeAutoEvaluation();
+
+	public void setReviewerSeeAutoEvaluation(boolean reviewerSeeAutoEvaluation);
+
+	public boolean isAnonymousExternalEvaluation();
+
+	public void setAnonymousExternalEvaluation(boolean anonymousExternalEvaluation);
+	
+	public RepositoryEntry getFormEntry();
 }

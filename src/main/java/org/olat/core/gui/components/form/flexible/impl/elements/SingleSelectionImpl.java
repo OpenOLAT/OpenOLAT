@@ -158,6 +158,11 @@ public class SingleSelectionImpl extends FormItemImpl implements SingleSelection
 		return values[which];
 	}
 
+	@Override
+	public void setWidthInPercent(int width) {
+		component.setWidthInPercent(width);
+	}
+
 	/**
 	 * @see org.olat.core.gui.components.form.flexible.elements.SelectionContainer#isSelected(int)
 	 */

@@ -38,6 +38,7 @@ import org.olat.basesecurity.Group;
 import org.olat.basesecurity.IdentityRef;
 import org.olat.basesecurity.manager.GroupDAO;
 import org.olat.core.commons.modules.bc.vfs.OlatRootFileImpl;
+import org.olat.core.commons.persistence.DB;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
@@ -61,6 +62,8 @@ import org.olat.fileresource.FileResourceManager;
 import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.assessment.AssessmentService;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
+import org.olat.modules.forms.EvaluationFormSessionStatus;
+import org.olat.modules.forms.manager.EvaluationFormSessionDAO;
 import org.olat.modules.portfolio.AssessmentSection;
 import org.olat.modules.portfolio.Assignment;
 import org.olat.modules.portfolio.AssignmentStatus;
@@ -129,6 +132,8 @@ public class PortfolioServiceImpl implements PortfolioService {
 	}
 	
 	@Autowired
+	private DB dbInstance;
+	@Autowired
 	private PageDAO pageDao;
 	@Autowired
 	private GroupDAO groupDao;
@@ -156,6 +161,8 @@ public class PortfolioServiceImpl implements PortfolioService {
 	private AssessmentService assessmentService;
 	@Autowired
 	private RepositoryService repositoryService;
+	@Autowired
+	private EvaluationFormSessionDAO evaluationFormSessionDao;
 	@Autowired
 	private BinderUserInformationsDAO binderUserInformationsDao;
 	
@@ -232,7 +239,9 @@ public class PortfolioServiceImpl implements PortfolioService {
 					
 					assignmentDao.createAssignment(transientAssignment.getTitle(), transientAssignment.getSummary(),
 							transientAssignment.getContent(), storage, transientAssignment.getAssignmentType(),
-							transientAssignment.getAssignmentStatus(), section);
+							transientAssignment.getAssignmentStatus(), section,
+							transientAssignment.isOnlyAutoEvaluation(), transientAssignment.isReviewerSeeAutoEvaluation(),
+							transientAssignment.isAnonymousExternalEvaluation(), transientAssignment.getFormEntry());
 					//copy attachments
 					File templateDirectory = portfolioFileStorage.getAssignmentDirectory(transientAssignment);
 					if(copy && templateDirectory != null) {
@@ -293,17 +302,20 @@ public class PortfolioServiceImpl implements PortfolioService {
 	}
 	
 	@Override
-	public Assignment addAssignment(String title, String summary, String content, AssignmentType type,
-			Section section) {
+	public Assignment addAssignment(String title, String summary, String content, AssignmentType type, Section section,
+			boolean onlyAutoEvaluation, boolean reviewerSeeAutoEvaluation, boolean anonymousExternEvaluation, RepositoryEntry formEntry) {
 		File newStorage = portfolioFileStorage.generateAssignmentSubDirectory();
 		String storage = portfolioFileStorage.getRelativePath(newStorage);
 
 		Section reloadedSection = binderDao.loadSectionByKey(section.getKey());
-		return assignmentDao.createAssignment(title, summary, content, storage, type, AssignmentStatus.template, reloadedSection);
+		return assignmentDao.createAssignment(title, summary, content, storage, type,
+				AssignmentStatus.template, reloadedSection,
+				onlyAutoEvaluation, reviewerSeeAutoEvaluation, anonymousExternEvaluation, formEntry);
 	}
 
 	@Override
-	public Assignment updateAssignment(Assignment assignment, String title, String summary, String content, AssignmentType type) {
+	public Assignment updateAssignment(Assignment assignment, String title, String summary, String content, AssignmentType type,
+			boolean onlyAutoEvaluation, boolean reviewerSeeAutoEvaluation, boolean anonymousExternEvaluation, RepositoryEntry formEntry) {
 		if(!StringHelper.containsNonWhitespace(assignment.getStorage())) {
 			File newStorage = portfolioFileStorage.generateAssignmentSubDirectory();
 			String newRelativeStorage = portfolioFileStorage.getRelativePath(newStorage);
@@ -315,6 +327,10 @@ public class PortfolioServiceImpl implements PortfolioService {
 		impl.setSummary(summary);
 		impl.setContent(content);
 		impl.setType(type.name());
+		impl.setOnlyAutoEvaluation(onlyAutoEvaluation);
+		impl.setReviewerSeeAutoEvaluation(reviewerSeeAutoEvaluation);
+		impl.setAnonymousExternalEvaluation(anonymousExternEvaluation);
+		impl.setFormEntry(formEntry);
 		return assignmentDao.updateAssignment(assignment);
 	}
 	
@@ -391,8 +407,23 @@ public class PortfolioServiceImpl implements PortfolioService {
 				Page page = appendNewPage(author, reloadedAssignment.getTitle(), reloadedAssignment.getSummary(), null, null, section);
 				reloadedAssignment = assignmentDao.startEssayAssignment(reloadedAssignment, page, author);
 			}
+		} else if(reloadedAssignment.getAssignmentType() == AssignmentType.form) {
+			if(reloadedAssignment.getPage() == null) {
+				Section section = reloadedAssignment.getSection();
+				RepositoryEntry formEntry = reloadedAssignment.getFormEntry();
+				Page page = appendNewPage(author, reloadedAssignment.getTitle(), reloadedAssignment.getSummary(), null, false, null, section);
+				reloadedAssignment = assignmentDao.startFormAssignment(reloadedAssignment, page, author);
+				//create the session for the assignee
+				evaluationFormSessionDao.createSessionForPortfolio(author, page.getBody(), formEntry);
+			}
 		}
+		dbInstance.commit();
 		return reloadedAssignment;
+	}
+
+	@Override
+	public Assignment getAssignment(PageBody body) {
+		return assignmentDao.loadAssignment(body);
 	}
 
 	@Override
@@ -586,6 +617,16 @@ public class PortfolioServiceImpl implements PortfolioService {
 		List<AccessRights> sectionRights = binderDao.getSectionAccesRights(binder, identity);
 		rights.addAll(sectionRights);
 		List<AccessRights> pageRights = binderDao.getPageAccesRights(binder, identity);
+		rights.addAll(pageRights);
+		return rights;
+	}
+
+	@Override
+	public List<AccessRights> getAccessRights(Page page) {
+		List<AccessRights> rights = binderDao.getBinderAccesRights(page);
+		List<AccessRights> sectionRights = binderDao.getSectionAccesRights(page);
+		rights.addAll(sectionRights);
+		List<AccessRights> pageRights = binderDao.getPageAccesRights(page);
 		rights.addAll(pageRights);
 		return rights;
 	}
@@ -789,11 +830,15 @@ public class PortfolioServiceImpl implements PortfolioService {
 
 	@Override
 	public Page appendNewPage(Identity owner, String title, String summary, String imagePath, PageImageAlign align, SectionRef section) {
+		return appendNewPage(owner, title, summary, imagePath, true, align, section);
+	}
+	
+	private Page appendNewPage(Identity owner, String title, String summary, String imagePath, boolean editable, PageImageAlign align, SectionRef section) {
 		Section reloadedSection = section == null ? null : binderDao.loadSectionByKey(section.getKey());
 		if(reloadedSection != null && reloadedSection.getSectionStatus() == SectionStatus.notStarted) {
 			((SectionImpl)reloadedSection).setSectionStatus(SectionStatus.inProgress);
 		}
-		Page page = pageDao.createAndPersist(title, summary, imagePath, align, reloadedSection, null);
+		Page page = pageDao.createAndPersist(title, summary, imagePath, align, editable, reloadedSection, null);
 		groupDao.addMembership(page.getBaseGroup(), owner, PortfolioRoles.owner.name());
 		return page;
 	}
@@ -990,8 +1035,17 @@ public class PortfolioServiceImpl implements PortfolioService {
 				((PageImpl)reloadedPage).setInitialPublicationDate(now);
 			}
 			((PageImpl)reloadedPage).setLastPublicationDate(now);
-			
 			Section section = reloadedPage.getSection();
+
+			// auto update the status of the evaluation form of the authors of the binder
+			Assignment assignment = assignmentDao.loadAssignment(page.getBody());
+			if(assignment != null && assignment.getAssignmentType() == AssignmentType.form) {
+				List<Identity> owners = getMembers(section.getBinder(), PortfolioRoles.owner.name());
+				for(Identity owner:owners) {
+					evaluationFormSessionDao.changeStatusOfSessionForPortfolioEvaluation(owner, page.getBody(), EvaluationFormSessionStatus.done);
+				}
+			}
+
 			if(section != null) {
 				SectionStatus sectionStatus = section.getSectionStatus();
 				if(currentStatus == PageStatus.closed) {
@@ -1006,6 +1060,16 @@ public class PortfolioServiceImpl implements PortfolioService {
 			}
 		} else if(status == PageStatus.inRevision) {
 			Section section = reloadedPage.getSection();
+
+			// auto update the status of the evaluation form of the authors of the binder
+			Assignment assignment = assignmentDao.loadAssignment(page.getBody());
+			if(assignment != null && assignment.getAssignmentType() == AssignmentType.form) {
+				List<Identity> owners = getMembers(section.getBinder(), PortfolioRoles.owner.name());
+				for(Identity owner:owners) {
+					evaluationFormSessionDao.changeStatusOfSessionForPortfolioEvaluation(owner, page.getBody(), EvaluationFormSessionStatus.inProgress);
+				}
+			}
+
 			if(section != null) {
 				SectionStatus sectionStatus = section.getSectionStatus();
 				if(sectionStatus == null || sectionStatus == SectionStatus.notStarted || sectionStatus == SectionStatus.closed) {

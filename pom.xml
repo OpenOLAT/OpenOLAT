@@ -162,6 +162,9 @@
 											</includes>
 										</aggregation>
 									</aggregations>
+									<excludes>
+										<exclude>**/sliderpips/jquery-ui-slider-pips.js</exclude>
+									</excludes>
 								</configuration>
 							</execution>														
 							<execution>
@@ -182,6 +185,7 @@
 									<excludes>
 										<exclude>**/*.min.js</exclude>
 										<exclude>**/mediaelementjs/*</exclude>
+										<exclude>**/sliderpips/jquery-ui-slider-pips.js</exclude>
 										<exclude>**/jw/*</exclude>
 									</excludes>
 								</configuration>
@@ -267,6 +271,9 @@
 											</includes>
 										</aggregation>
 									</aggregations>
+									<excludes>
+										<exclude>**/sliderpips/jquery-ui-slider-pips.js</exclude>
+									</excludes>
 								</configuration>
 							</execution>
 							<execution>
@@ -291,10 +298,14 @@
 												<include>${basedir}/target/jquery/jquery/tagsinput/bootstrap-tagsinput.min.css</include>
 												<include>${basedir}/target/jquery/jquery/fullcalendar/fullcalendar.min.css</include>
 												<include>${basedir}/target/jquery/jquery/cropper/cropper.min.css</include>
+												<include>${basedir}/target/jquery/jquery/sliderpips/jquery-ui-slider-pips.min.css</include>
 												<include>${basedir}/target/jquery/jquery/ui/jquery-ui-1.11.4.custom.min.css</include>
 											</includes>
 										</aggregation>
 									</aggregations>
+									<excludes>
+										<exclude>**/sliderpips/jquery-ui-slider-pips.js</exclude>
+									</excludes>
 								</configuration>
 							</execution>
 						</executions>

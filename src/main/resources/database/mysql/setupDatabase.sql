@@ -1632,6 +1632,7 @@ create table o_pf_page (
    creationdate datetime not null,
    lastmodified datetime not null,
    pos bigint default null,
+   p_editable bit default 1,
    p_title varchar(255),
    p_summary mediumtext,
    p_status varchar(32),
@@ -1690,6 +1691,7 @@ create table o_pf_page_part (
    p_layout_options varchar(2000),
    fk_media_id bigint,
    fk_page_body_id bigint,
+   fk_form_entry_id bigint default null,
    primary key (id)
 );
 
@@ -1737,6 +1739,10 @@ create table o_pf_assignment (
    fk_template_reference_id bigint,
    fk_page_id bigint,
    fk_assignee_id bigint,
+   p_only_auto_eva bit default 1,
+   p_reviewer_see_auto_eva bit default 0,
+   p_anon_extern_eva bit default 1,
+   fk_form_entry_id bigint default null,
    primary key (id)
 );
 
@@ -1750,6 +1756,32 @@ create table o_pf_binder_user_infos (
    fk_identity bigint,
    fk_binder bigint,
    unique(fk_identity, fk_binder),
+   primary key (id)
+);
+
+-- evaluation form
+create table o_eva_form_session (
+   id bigint not null auto_increment,
+   creationdate datetime not null,
+   lastmodified datetime not null,
+   e_status varchar(16),
+   e_submission_date datetime,
+   e_first_submission_date datetime,
+   fk_identity bigint not null,
+   fk_page_body bigint,
+   fk_form_entry bigint not null,
+   primary key (id)
+);
+
+create table o_eva_form_response (
+   id bigint not null auto_increment,
+   creationdate datetime not null,
+   lastmodified datetime not null,
+   e_responseidentifier varchar(64) not null,
+   e_responsedatatype varchar(16) not null,
+   e_numericalresponse decimal default null,
+   e_stringuifiedresponse mediumtext,
+   fk_session bigint not null,
    primary key (id)
 );
 
@@ -2187,6 +2219,8 @@ alter table o_pf_binder ENGINE = InnoDB;
 alter table o_pf_assessment_section ENGINE = InnoDB;
 alter table o_pf_assignment ENGINE = InnoDB;
 alter table o_pf_binder_user_infos ENGINE = InnoDB;
+alter table o_eva_form_session ENGINE = InnoDB;
+alter table o_eva_form_response ENGINE = InnoDB;
 
 
 -- rating
@@ -2559,6 +2593,7 @@ create index idx_category_rel_resid_idx on o_pf_media (p_business_path);
 
 alter table o_pf_page_part add constraint pf_page_page_body_idx foreign key (fk_page_body_id) references o_pf_page_body (id);
 alter table o_pf_page_part add constraint pf_page_media_idx foreign key (fk_media_id) references o_pf_media (id);
+alter table o_pf_page_part add constraint pf_part_form_idx foreign key (fk_form_entry_id) references o_repositoryentry (repositoryentry_id);
 
 create index idx_category_name_idx on o_pf_category (p_name);
 
@@ -2572,9 +2607,17 @@ alter table o_pf_assignment add constraint pf_assign_section_idx foreign key (fk
 alter table o_pf_assignment add constraint pf_assign_ref_assign_idx foreign key (fk_template_reference_id) references o_pf_assignment (id);
 alter table o_pf_assignment add constraint pf_assign_page_idx foreign key (fk_page_id) references o_pf_page (id);
 alter table o_pf_assignment add constraint pf_assign_assignee_idx foreign key (fk_assignee_id) references o_bs_identity (id);
+alter table o_pf_assignment add constraint pf_assign_form_idx foreign key (fk_form_entry_id) references o_repositoryentry (repositoryentry_id);
 
 alter table o_pf_binder_user_infos add constraint binder_user_to_identity_idx foreign key (fk_identity) references o_bs_identity (id);
 alter table o_pf_binder_user_infos add constraint binder_user_binder_idx foreign key (fk_binder) references o_pf_binder (id);
+
+-- evaluation form
+alter table o_eva_form_session add constraint eva_session_to_ident_idx foreign key (fk_identity) references o_bs_identity (id);
+alter table o_eva_form_session add constraint eva_session_to_body_idx foreign key (fk_page_body) references o_pf_page_body (id);
+alter table o_eva_form_session add constraint eva_session_to_form_idx foreign key (fk_form_entry) references o_repositoryentry (repositoryentry_id);
+
+alter table o_eva_form_response add constraint eva_resp_to_sess_idx foreign key (fk_session) references o_eva_form_session (id);
 
 -- question pool
 alter table o_qp_pool add constraint idx_qp_pool_owner_grp_id foreign key (fk_ownergroup) references o_bs_secgroup(id);

@@ -27,6 +27,7 @@ package org.olat.core.gui.components.form.flexible.impl.elements;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.form.flexible.elements.TextAreaElement;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.Util;
 
@@ -38,7 +39,7 @@ import org.olat.core.util.Util;
  * 
  * @author rhaag
  */
-public abstract class TextAreaElementImpl extends AbstractTextElement {
+public abstract class TextAreaElementImpl extends AbstractTextElement implements TextAreaElement {
 
 	protected final TextAreaElementComponent component;
 
@@ -68,7 +69,7 @@ public abstract class TextAreaElementImpl extends AbstractTextElement {
 	 */
 	protected TextAreaElementImpl(String name, int rows, int cols, boolean isAutoHeightEnabled) {
 		super(name);
-		this.component = new TextAreaElementComponent(this, rows, cols, isAutoHeightEnabled);
+		component = new TextAreaElementComponent(this, rows, cols, isAutoHeightEnabled);
 	}
 
 	/**
@@ -91,6 +92,15 @@ public abstract class TextAreaElementImpl extends AbstractTextElement {
 		return component;
 	}
 
+	@Override
+	public int getRows() {
+		return component.getRows();
+	}
+
+	@Override
+	public void setRows(int rows) {
+		component.setRows(rows);
+	}
 
 	@Override
 	public void setTranslator(Translator translator) {

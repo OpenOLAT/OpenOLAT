@@ -1543,6 +1543,7 @@ create table o_pf_page (
    creationdate date not null,
    lastmodified date not null,
    pos number(20) default null,
+   p_editable number default 1,
    p_title varchar2(255 char),
    p_summary varchar2(4000 char),
    p_status varchar2(32 char),
@@ -1601,6 +1602,7 @@ create table o_pf_page_part (
    p_layout_options varchar2(2000 char),
    fk_media_id number(20),
    fk_page_body_id number(20),
+   fk_form_entry_id number(20) default null,
    primary key (id)
 );
 
@@ -1648,6 +1650,10 @@ create table o_pf_assignment (
    fk_template_reference_id number(20),
    fk_page_id number(20),
    fk_assignee_id number(20),
+   p_only_auto_eva number default 1,
+   p_reviewer_see_auto_eva number default 0,
+   p_anon_extern_eva number default 1,
+   fk_form_entry_id number(20) default null,
    primary key (id)
 );
 
@@ -1661,6 +1667,31 @@ create table o_pf_binder_user_infos (
    fk_identity number(20),
    fk_binder number(20),
    unique(fk_identity, fk_binder),
+   primary key (id)
+);
+
+create table o_eva_form_session (
+   id number(20) GENERATED ALWAYS AS IDENTITY,
+   creationdate date not null,
+   lastmodified date not null,
+   e_status varchar2(16 char),
+   e_submission_date date,
+   e_first_submission_date date,
+   fk_identity number(20) not null,
+   fk_page_body number(20) not null,
+   fk_form_entry number(20) not null,
+   primary key (id)
+);
+
+create table o_eva_form_response (
+   id number(20) GENERATED ALWAYS AS IDENTITY,
+   creationdate date not null,
+   lastmodified date not null,
+   e_responseidentifier varchar2(64 char) not null,
+   e_responsedatatype varchar2(16 char) not null,
+   e_numericalresponse decimal default null,
+   e_stringuifiedresponse clob,
+   fk_session number(20) not null,
    primary key (id)
 );
 
@@ -2722,6 +2753,8 @@ alter table o_pf_page_part add constraint pf_page_page_body_idx foreign key (fk_
 create index idx_pf_page_page_body_idx on o_pf_page_part (fk_page_body_id);
 alter table o_pf_page_part add constraint pf_page_media_idx foreign key (fk_media_id) references o_pf_media (id);
 create index idx_pf_page_media_idx on o_pf_page_part (fk_media_id);
+alter table o_pf_page_part add constraint pf_part_form_idx foreign key (fk_form_entry_id) references o_repositoryentry (repositoryentry_id);
+create index idx_pf_part_form_idx on o_pf_page_part (fk_form_entry_id);
 
 create index idx_category_name_idx on o_pf_category (p_name);
 
@@ -2747,6 +2780,17 @@ alter table o_pf_binder_user_infos add constraint binder_user_to_identity_idx fo
 create index idx_binder_user_to_ident_idx on o_pf_binder_user_infos (fk_identity);
 alter table o_pf_binder_user_infos add constraint binder_user_binder_idx foreign key (fk_binder) references o_pf_binder (id);
 create index idx_binder_user_binder_idx on o_pf_binder_user_infos (fk_binder);
+
+-- evaluation form
+alter table o_eva_form_session add constraint eva_session_to_ident_idx foreign key (fk_identity) references o_bs_identity (id);
+create index idx_eva_session_to_ident_idx on o_eva_form_session (fk_identity);
+alter table o_eva_form_session add constraint eva_session_to_body_idx foreign key (fk_page_body) references o_pf_page_body (id);
+create index idx_eva_session_to_body_idx on o_eva_form_session (fk_page_body);
+alter table o_eva_form_session add constraint eva_session_to_form_idx foreign key (fk_form_entry) references o_repositoryentry (repositoryentry_id);
+create index idx_eva_session_to_form_idx on o_eva_form_session (fk_form_entry);
+
+alter table o_eva_form_response add constraint eva_resp_to_sess_idx foreign key (fk_session) references o_eva_form_session (id);
+create index idx_eva_resp_to_sess_idx on o_eva_form_response (fk_session);
 
 -- question pool
 alter table o_qp_pool add constraint idx_qp_pool_owner_grp_id foreign key (fk_ownergroup) references o_bs_secgroup(id);

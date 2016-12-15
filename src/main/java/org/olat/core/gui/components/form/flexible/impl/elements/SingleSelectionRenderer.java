@@ -85,7 +85,10 @@ class SingleSelectionRenderer extends DefaultComponentRenderer {
 		
 		// read write view
 		sb.append("<div class='radio'>", !inline); // normal radios need a wrapper (bootstrap) ...
-		sb.append("<label ").append("class='radio-inline' ", inline); // ... and inline a class on the label (bootstrap)			
+		sb.append("<label ").append("class='radio-inline' ", inline); // ... and inline a class on the label (bootstrap)
+		if(source.getWidthInPercent() > 0) {
+			sb.append("style='width:").append(source.getWidthInPercent()).append("%;'");
+		}
 		sb.append(" for=\"").append(formDispatchId).append("\">");
 		  
 		sb.append("<input id='").append(formDispatchId).append("' ")

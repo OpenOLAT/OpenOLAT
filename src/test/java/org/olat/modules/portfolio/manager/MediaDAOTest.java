@@ -120,7 +120,7 @@ public class MediaDAOTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		Section reloadedSection = binderDao.loadSectionByKey(section.getKey());
-		Page page = pageDao.createAndPersist("Page 1", "A page with content.", null, null, reloadedSection, null);
+		Page page = pageDao.createAndPersist("Page 1", "A page with content.", null, null, true, reloadedSection, null);
 		Media media = mediaDao.createMedia("Media", "Binder", "Une citation sur les classeurs", TextHandler.TEXT_MEDIA, "[Media:0]", null, 10, author);
 		dbInstance.commitAndCloseSession();
 

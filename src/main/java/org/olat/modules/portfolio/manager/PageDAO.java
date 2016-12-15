@@ -38,6 +38,7 @@ import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.resource.OresHelper;
+import org.olat.modules.forms.manager.EvaluationFormSessionDAO;
 import org.olat.modules.portfolio.AssignmentStatus;
 import org.olat.modules.portfolio.BinderRef;
 import org.olat.modules.portfolio.Page;
@@ -69,6 +70,8 @@ public class PageDAO {
 	private GroupDAO groupDao;
 	@Autowired
 	private UserCommentsDAO userCommentsDAO;
+	@Autowired
+	private EvaluationFormSessionDAO evaluationFormSessionDao;
 
 	/**
 	 * 
@@ -78,7 +81,7 @@ public class PageDAO {
 	 * @param body If the body is null, a new one is create.
 	 * @return
 	 */
-	public Page createAndPersist(String title, String summary, String imagePath, PageImageAlign align, Section section, PageBody body) {
+	public Page createAndPersist(String title, String summary, String imagePath, PageImageAlign align, boolean editable, Section section, PageBody body) {
 		PageImpl page = new PageImpl();
 		page.setCreationDate(new Date());
 		page.setLastModified(page.getCreationDate());
@@ -86,6 +89,7 @@ public class PageDAO {
 		page.setSummary(summary);
 		page.setImagePath(imagePath);
 		page.setImageAlignment(align);
+		page.setEditable(editable);
 		page.setBaseGroup(groupDao.createGroup());
 		if(body == null) {
 			page.setBody(createAndPersistPageBody());
@@ -438,11 +442,17 @@ public class PageDAO {
 				.setParameter("pageKey", page.getKey())
 				.executeUpdate();
 		
+		int evaluations = 0;
+		if(assignments > 0) {
+			// delete sessions and responses	
+			evaluations = evaluationFormSessionDao.deleteSessionForPortfolioEvaluation(body);
+		}
+		
 		dbInstance.getCurrentEntityManager().remove(page);
 		dbInstance.getCurrentEntityManager().remove(body);
 		
 		int comments = userCommentsDAO.deleteAllComments(ores, null);
-		
-		return comments + parts + assignments + 1;
+
+		return comments + parts + evaluations + assignments + 2;
 	}
 }

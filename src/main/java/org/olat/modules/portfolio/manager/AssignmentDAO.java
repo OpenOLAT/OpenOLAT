@@ -22,6 +22,7 @@ package org.olat.modules.portfolio.manager;
 import static org.olat.core.commons.persistence.PersistenceHelper.appendFuzzyLike;
 import static org.olat.core.commons.persistence.PersistenceHelper.makeFuzzyQueryString;
 
+import java.io.File;
 import java.util.Date;
 import java.util.List;
 
@@ -30,17 +31,22 @@ import javax.persistence.TypedQuery;
 import org.olat.basesecurity.IdentityRef;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
+import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
+import org.olat.modules.forms.handler.EvaluationFormHandler;
 import org.olat.modules.portfolio.Assignment;
 import org.olat.modules.portfolio.AssignmentStatus;
 import org.olat.modules.portfolio.AssignmentType;
 import org.olat.modules.portfolio.BinderRef;
 import org.olat.modules.portfolio.Page;
+import org.olat.modules.portfolio.PageBody;
 import org.olat.modules.portfolio.PortfolioRoles;
 import org.olat.modules.portfolio.Section;
 import org.olat.modules.portfolio.SectionRef;
 import org.olat.modules.portfolio.model.AssignmentImpl;
+import org.olat.modules.portfolio.model.EvaluationFormPart;
 import org.olat.modules.portfolio.model.SectionImpl;
+import org.olat.repository.RepositoryEntry;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -55,9 +61,14 @@ public class AssignmentDAO {
 	
 	@Autowired
 	private DB dbInstance;
+	@Autowired
+	private PageDAO pageDao;
+	@Autowired
+	private EvaluationFormHandler formHandler;
 	
 	public Assignment createAssignment(String title, String summary, String content,
-			String storage, AssignmentType type, AssignmentStatus status, Section section) {
+			String storage, AssignmentType type, AssignmentStatus status, Section section,
+			boolean onlyAutoEvaluation, boolean reviewerSeeAutoEvaluation, boolean anonymousExternEvaluation, RepositoryEntry formEntry) {
 		AssignmentImpl assignment = new AssignmentImpl();
 		assignment.setCreationDate(new Date());
 		assignment.setLastModified(assignment.getCreationDate());
@@ -68,6 +79,10 @@ public class AssignmentDAO {
 		assignment.setSection(section);
 		assignment.setType(type.name());
 		assignment.setStatus(status.name());
+		assignment.setOnlyAutoEvaluation(onlyAutoEvaluation);
+		assignment.setReviewerSeeAutoEvaluation(reviewerSeeAutoEvaluation);
+		assignment.setAnonymousExternalEvaluation(anonymousExternEvaluation);
+		assignment.setFormEntry(formEntry);
 		
 		((SectionImpl)section).getAssignments().size();
 		((SectionImpl)section).getAssignments().add(assignment);
@@ -87,6 +102,10 @@ public class AssignmentDAO {
 		assignment.setType(templateReference.getAssignmentType().name());
 		assignment.setTemplateReference(templateReference);
 		assignment.setStatus(status.name());
+		assignment.setOnlyAutoEvaluation(templateReference.isOnlyAutoEvaluation());
+		assignment.setReviewerSeeAutoEvaluation(templateReference.isReviewerSeeAutoEvaluation());
+		assignment.setAnonymousExternalEvaluation(templateReference.isAnonymousExternalEvaluation());
+		assignment.setFormEntry(templateReference.getFormEntry());
 
 		((SectionImpl)section).getAssignments().size();
 		((SectionImpl)section).getAssignments().add(assignment);
@@ -147,11 +166,31 @@ public class AssignmentDAO {
 		return dbInstance.getCurrentEntityManager().merge(assigment);
 	}
 	
+	public Assignment startFormAssignment(Assignment assignment, Page page, Identity assignee) {
+		((AssignmentImpl)assignment).setPage(page);
+		((AssignmentImpl)assignment).setAssignee(assignee);
+		((AssignmentImpl)assignment).setLastModified(new Date());
+		assignment.setAssignmentStatus(AssignmentStatus.inProgress);
+		
+		RepositoryEntry formEntry = assignment.getFormEntry();
+		if(formEntry.getOlatResource().getResourceableTypeName().equals(formHandler.getSupportedType())) {
+			File formFile = formHandler.getFormFile(formEntry);
+			String formXml = FileUtils.load(formFile, "UTF-8");
+			EvaluationFormPart formPart = new EvaluationFormPart();
+			formPart.setContent(formXml);
+			formPart.setFormEntry(formEntry);
+			pageDao.persistPart(page.getBody(), formPart);
+		}
+		return dbInstance.getCurrentEntityManager().merge(assignment);
+	}
+	
 	public Assignment loadAssignmentByKey(Long key) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select assignment from pfassignment as assignment")
 		  .append(" inner join fetch assignment.section as section")
 		  .append(" left join fetch assignment.page as page")
+		  .append(" left join fetch assignment.formEntry as formEntry")
+		  .append(" left join fetch formEntry.olatResource as resource")
 		  .append(" where assignment.key=:assignmentKey");
 		
 		List<Assignment> assignments = dbInstance.getCurrentEntityManager()
@@ -166,6 +205,7 @@ public class AssignmentDAO {
 		sb.append("select assignment from pfassignment as assignment")
 		  .append(" inner join fetch assignment.section as section")
 		  .append(" left join fetch assignment.page as page")
+		  .append(" left join fetch assignment.formEntry as formEntry")
 		  .append(" where section.binder.key=:binderKey");
 		if(StringHelper.containsNonWhitespace(searchString)) {
 			searchString = makeFuzzyQueryString(searchString);
@@ -193,6 +233,7 @@ public class AssignmentDAO {
 		sb.append("select assignment from pfassignment as assignment")
 		  .append(" inner join fetch assignment.section as section")
 		  .append(" left join fetch assignment.page as page")
+		  .append(" left join fetch assignment.formEntry as formEntry")
 		  .append(" where section.key=:sectionKey");
 		if(StringHelper.containsNonWhitespace(searchString)) {
 			searchString = makeFuzzyQueryString(searchString);
@@ -220,6 +261,7 @@ public class AssignmentDAO {
 		sb.append("select assignment from pfassignment as assignment")
 		  .append(" inner join fetch assignment.section as section")
 		  .append(" inner join fetch assignment.page as page")
+		  .append(" left join fetch assignment.formEntry as formEntry")
 		  .append(" where page.key=:pageKey");
 		if(StringHelper.containsNonWhitespace(searchString)) {
 			searchString = makeFuzzyQueryString(searchString);
@@ -259,6 +301,21 @@ public class AssignmentDAO {
 			.createQuery(sb.toString(), Assignment.class)
 			.setParameter("assigneeKey", assignee.getKey())
 			.getResultList();
+	}
+	
+	public Assignment loadAssignment(PageBody body) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select assignment from pfassignment as assignment")
+		  .append(" inner join fetch assignment.page as page")
+		  .append(" left join fetch assignment.formEntry as formEntry")
+		  .append(" left join fetch formEntry.olatResource as resource")
+		  .append(" where page.body.key=:bodyKey");
+
+		List<Assignment> assignments = dbInstance.getCurrentEntityManager()
+			.createQuery(sb.toString(), Assignment.class)
+			.setParameter("bodyKey", body.getKey())
+			.getResultList();
+		return assignments == null || assignments.isEmpty() ? null : assignments.get(0);
 	}
 	
 	public boolean isAssignmentInUse(Assignment assignment) {

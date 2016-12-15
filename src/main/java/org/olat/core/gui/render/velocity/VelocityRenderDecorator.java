@@ -388,7 +388,11 @@ public class VelocityRenderDecorator implements Closeable {
 		if(item == null) return new StringOutput(1);
 		return doRender(item.getComponent().getComponentName(), null);
 	}
-
+	
+	public StringOutput render(FormItem item, String arg1) {
+		if(item == null) return new StringOutput(1);
+		return doRender(item.getComponent().getComponentName(), new String[]{ arg1 });
+	}
 	
 	/**
 	 * Create a link wrapped with some markup to render a nice help button. The
@@ -724,6 +728,10 @@ public class VelocityRenderDecorator implements Closeable {
 	public boolean visible(String componentName) {
 		Component source = renderer.findComponent(componentName);
 		return (source != null && source.isVisible());
+	}
+	
+	public boolean visible(Component component) {
+		return (component != null && component.isVisible());
 	}
 	
 	/**

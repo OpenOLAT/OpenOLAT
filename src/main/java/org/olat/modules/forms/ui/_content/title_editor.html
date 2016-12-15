@@ -1,0 +1,13 @@
+$r.contextHelpWithWrapper("My portfolio binders#portfolioinhalt")		
+#if($editMode)
+	<div class="o_page_edit_title">
+		<div class="o_page_edit_toolbar"><ul  class="list-inline">
+		#foreach($headingFormatLinkName in $headingFormatLinkNames)
+			<li>$r.render($headingFormatLinkName)</li>
+		#end
+		</ul></div>
+		$r.render("$cmpId")
+	</div>
+#else
+	$r.render("${cmpId}_static")
+#end

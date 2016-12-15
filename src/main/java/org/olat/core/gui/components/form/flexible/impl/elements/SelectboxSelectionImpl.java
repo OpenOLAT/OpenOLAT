@@ -186,6 +186,11 @@ public class SelectboxSelectionImpl extends FormItemImpl implements SingleSelect
 			throw new AssertException("could not set <" + key + "> to " + select + " because key was not found!");
 		}
 	}
+	
+	@Override
+	public void setWidthInPercent(int width) {
+		//
+	}
 
 	/**
 	 * we are single selection, hence return always false here
