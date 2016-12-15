@@ -107,6 +107,7 @@ public class QTI21EditForm extends FormBasicController {
 		int maxAttempts = modConfig.getIntegerSafe(IQEditController.CONFIG_KEY_ATTEMPTS, deliveryOptions.getMaxAttempts());
 		if(maxAttempts > 0) {
 			limitAttemptsEl.select(onKeys[0], true);
+			maxAttemptsValue = Integer.toString(maxAttempts);
 		}
 		maxAttemptsEl = uifactory.addTextElement("maxAttempts", "qti.form.attempts", 8, maxAttemptsValue, formLayout);	
 		maxAttemptsEl.setDisplaySize(2);

@@ -273,22 +273,22 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if (source == displayCtrl) {
 			if(event == Event.CANCELLED_EVENT) {
-				doExitAssessment(ureq, event);
+				doExitAssessment(ureq, event, false);
 				exposeResults(ureq);
 				showInfo("assessment.test.cancelled");
 			} else if("suspend".equals(event.getCommand())) {
-				doExitAssessment(ureq, event);
+				doExitAssessment(ureq, event, false);
 				exposeResults(ureq);
 				showInfo("assessment.test.suspended");
 			} else if(event instanceof QTI21Event) {
 				QTI21Event qe = (QTI21Event)event;
 				if(QTI21Event.EXIT.equals(qe.getCommand())) {
 					if(!displayCtrl.isResultsVisible()) {
-						doExitAssessment(ureq, event);
+						doExitAssessment(ureq, event, true);
 						initAssessment(ureq);
 					}
 				} else if(QTI21Event.CLOSE_RESULTS.equals(qe.getCommand())) {
-					doExitAssessment(ureq, event);
+					doExitAssessment(ureq, event, true);
 					initAssessment(ureq);
 				}
 			}
@@ -354,8 +354,9 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 	 * Remove the runtime from the GUI stack only.
 	 * @param ureq
 	 * @param event
+	 * @param testEnded true if the test was ended and not suspended or cancelled (use to control increment of attempts)
 	 */
-	private void doExitAssessment(UserRequest ureq, Event event) {
+	private void doExitAssessment(UserRequest ureq, Event event, boolean testEnded) {
 		if(displayContainerController != null) {
 			displayContainerController.deactivate(ureq);
 		} else {
@@ -372,6 +373,10 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 			AssessmentEvent assessmentStoppedEvent = new AssessmentEvent(AssessmentEvent.TYPE.STOPPED, userSession);
 			singleUserEventCenter.fireEventToListenersOf(assessmentStoppedEvent, assessmentEventOres);
 		}
+		if(testEnded) {
+			incrementAttempts.set(true);
+		}
+		
 		fireEvent(ureq, event);
 	}
 
