@@ -34,14 +34,14 @@ import java.util.Stack;
 /**
  * 
  * Description:<br>
- * TODO: guido Class Description for ConditionExpression
+ * @author guido
  * 
  */
 public class ConditionExpression {
 	private String expressionString;
 	private String id;
 	private Stack<Exception> errorStack;
-	private Map<String, Set<String>> softReferences;
+	private Map<String, Set<Reference>> softReferences;
 
 	public ConditionExpression(String idName, String expression) {
 		this(idName);
@@ -70,31 +70,62 @@ public class ConditionExpression {
 		errorStack.push(e);
 	}
 
-	public void addSoftReference(String category, String softReference) {
-		Set<String> catSoftRefs;
+	public void addSoftReference(String category, String softReference, boolean cycleDetector) {
+		Set<Reference> catSoftRefs;
 		if (softReferences.containsKey(category)) {
 			catSoftRefs = softReferences.get(category);
 		} else {
-			catSoftRefs = new HashSet<String>();
+			catSoftRefs = new HashSet<>();
+			softReferences.put(category, catSoftRefs);
 		}
-		catSoftRefs.add(softReference);
-		softReferences.put(category, catSoftRefs);
+		
+		boolean found = false;
+		if(catSoftRefs.size() > 0) {
+			for(Reference catSoftRef:catSoftRefs) {
+				if(softReference.equals(catSoftRef.getSoftReference())) {
+					if(!catSoftRef.isCycleDetector() && cycleDetector) {
+						catSoftRef.setCycleDetector(true);
+					}
+					found = true;
+				}
+			}
+		}
+		if(!found) {
+			catSoftRefs.add(new Reference(softReference, cycleDetector));
+		}
 	}
 	
 	public Set<String> getSoftReferencesOf(String category) {
-		Set<String> catSoftRefs;
+		Set<String> softRefs = new HashSet<>();
 		if (softReferences.containsKey(category)) {
-			catSoftRefs = softReferences.get(category);
-		} else {
-			catSoftRefs = new HashSet<String>();
+			Set<Reference> catSoftRefs = softReferences.get(category);
+			softRefs = new HashSet<>();
+			for(Reference catSoftRef:catSoftRefs) {
+				softRefs.add(catSoftRef.getSoftReference());
+			}
 		}
-		return catSoftRefs;
+		return softRefs;
+	}
+	
+	public Set<String> getSoftReferencesForCycleDetectorOf(String category) {
+		Set<String> softRefs = new HashSet<>();
+		if (softReferences.containsKey(category)) {
+			Set<Reference> catSoftRefs = softReferences.get(category);
+			
+			for(Reference catSoftRef:catSoftRefs) {
+				if(catSoftRef.isCycleDetector()) {
+					softRefs.add(catSoftRef.getSoftReference());
+				}
+			}
+		}
+		return softRefs;
 	}
 
 	public Exception[] getExceptions() {
 		return errorStack.toArray(new Exception[errorStack.size()]);
 	}
 
+	@Override
 	public String toString() {
 		String retVal = "";
 		String softRefStr ="";
@@ -102,9 +133,9 @@ public class ConditionExpression {
 		for (Iterator<String> iter = keys.iterator(); iter.hasNext();) {
 			String category = iter.next();
 			softRefStr += "["+category+"::";
-			Set<String> catSoftRefs = softReferences.get(category);
-			for (Iterator<String> iterator = catSoftRefs.iterator(); iterator.hasNext();) {
-				String srs = iterator.next();
+			Set<Reference> catSoftRefs = softReferences.get(category);
+			for (Iterator<Reference> iterator = catSoftRefs.iterator(); iterator.hasNext();) {
+				String srs = iterator.next().getSoftReference();
 				softRefStr +=srs+",";
 			}
 			softRefStr +="]";
@@ -113,5 +144,27 @@ public class ConditionExpression {
 
 		return retVal;
 	}
+	
+	private static class Reference {
+		
+		private boolean cycleDetector;
+		private final String softReference;
+		
+		public Reference(String softReference, boolean cycleDetector) {
+			this.softReference = softReference;
+			this.cycleDetector = cycleDetector;
+		}
+		
+		public String getSoftReference() {
+			return softReference;
+		}
+		
+		public boolean isCycleDetector() {
+			return cycleDetector;
+		}
 
+		public void setCycleDetector(boolean cycleDetector) {
+			this.cycleDetector = cycleDetector;
+		}
+	}
 }

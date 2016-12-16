@@ -85,7 +85,7 @@ public class GetInitialEnrollmentDateFunction extends AbstractFunction {
 			// Remember the reference to the node id for this condition for cycle testing. 
 			// Allow self-referencing but do not allow dependencies to parents as they create cycles.
 			if (!nodeId.equals(cev.getCurrentCourseNodeId())) {
-				cev.addSoftReference("courseNodeId", nodeId);				
+				cev.addSoftReference("courseNodeId", nodeId, false);				
 			}
 			// return a valid value to continue with condition evaluation test
 			return defaultValue();

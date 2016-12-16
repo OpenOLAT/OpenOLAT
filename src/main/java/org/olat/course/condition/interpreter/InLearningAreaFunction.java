@@ -79,7 +79,7 @@ public class InLearningAreaFunction extends AbstractFunction {
 						"error.notfound.name", "solution.checkgroupmanagement"));
 			}
 			// remember the reference to the node id for this condtion
-			cev.addSoftReference("areaId", areaName);
+			cev.addSoftReference("areaId", areaName, false);
 			// return a valid value to continue with condition evaluation test
 			return defaultValue();
 		}

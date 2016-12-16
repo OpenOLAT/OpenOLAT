@@ -80,7 +80,7 @@ public class GetScoreFunction extends AbstractFunction {
 			// course nodes as score is calculated on these node. Do not allow
 			// dependencies to parents as they create cycles.
 			if (!childId.equals(cev.getCurrentCourseNodeId()) || cev.getNode(cev.getCurrentCourseNodeId()) instanceof STCourseNode) {
-				cev.addSoftReference("courseNodeId", childId);				
+				cev.addSoftReference("courseNodeId", childId, true);				
 			}
 			// return a valid value to continue with condition evaluation test
 			return defaultValue();

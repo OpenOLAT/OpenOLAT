@@ -58,6 +58,7 @@ public class GetAttemptsFunction extends AbstractFunction {
 	/**
 	 * @see com.neemsoft.jmep.FunctionCB#call(java.lang.Object[])
 	 */
+	@Override
 	public Object call(Object[] inStack) {
 		/*
 		 * argument check
@@ -83,7 +84,7 @@ public class GetAttemptsFunction extends AbstractFunction {
 			// Remember the reference to the node id for this condition for cycle testing. 
 			// Allow self-referencing but do not allow dependencies to parents as they create cycles.
 			if (!nodeId.equals(cev.getCurrentCourseNodeId())) {
-				cev.addSoftReference("courseNodeId", nodeId);				
+				cev.addSoftReference("courseNodeId", nodeId, false);				
 			}
 			// return a valid value to continue with condition evaluation test
 			return defaultValue();
@@ -95,7 +96,6 @@ public class GetAttemptsFunction extends AbstractFunction {
 		CourseNode node = getUserCourseEnv().getCourseEnvironment().getRunStructure().getNode(nodeId);
 		AssessmentManager am = getUserCourseEnv().getCourseEnvironment().getAssessmentManager();
 		Identity identity = getUserCourseEnv().getIdentityEnvironment().getIdentity();
-
 		return am.getNodeAttempts(node, identity);
 	}
 

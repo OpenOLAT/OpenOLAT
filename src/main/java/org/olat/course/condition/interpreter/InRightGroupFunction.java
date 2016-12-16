@@ -57,6 +57,7 @@ public class InRightGroupFunction extends AbstractFunction {
 	/**
 	 * @see com.neemsoft.jmep.FunctionCB#call(java.lang.Object[])
 	 */
+	@Override
 	public Object call(Object[] inStack) {
 		/*
 		 * argument check
@@ -64,23 +65,27 @@ public class InRightGroupFunction extends AbstractFunction {
 		if (inStack.length > 1) {
 			return handleException( new ArgumentParseException(ArgumentParseException.NEEDS_FEWER_ARGUMENTS, name, "", "error.fewerargs",
 					"solution.provideone.groupname"));
-		} else if (inStack.length < 1) { return handleException( new ArgumentParseException(ArgumentParseException.NEEDS_MORE_ARGUMENTS, name, "",
-				"error.moreargs", "solution.provideone.groupname")); }
+		} else if (inStack.length < 1) {
+			return handleException( new ArgumentParseException(ArgumentParseException.NEEDS_MORE_ARGUMENTS, name, "",
+				"error.moreargs", "solution.provideone.groupname"));
+		}
 		/*
 		 * argument type check
 		 */
 		if (!(inStack[0] instanceof String)) return handleException( new ArgumentParseException(ArgumentParseException.WRONG_ARGUMENT_FORMAT, name, "",
 				"error.argtype.groupnameexpected", "solution.example.name.infunction"));
-    String groupName = (String)inStack[0];
+		String groupName = (String)inStack[0];
 		/*
 		 * check reference integrity
 		 */
 		CourseEditorEnv cev = getUserCourseEnv().getCourseEditorEnv();
 		if (cev != null) {
-			if (!cev.existsGroup(groupName)) { return handleException( new ArgumentParseException(ArgumentParseException.REFERENCE_NOT_FOUND, name, groupName,
-					"error.notfound.name", "solution.checkgroupmanagement")); }
-			// remember the reference to the node id for this condtion
-			cev.addSoftReference("groupId", groupName);
+			if (!cev.existsGroup(groupName)) {
+				return handleException( new ArgumentParseException(ArgumentParseException.REFERENCE_NOT_FOUND, name, groupName,
+					"error.notfound.name", "solution.checkgroupmanagement"));
+			}
+			// remember the reference to the node id for this condition
+			cev.addSoftReference("groupId", groupName, false);
 			// return a valid value to continue with condition evaluation test
 			return defaultValue();
 		}
