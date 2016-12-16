@@ -74,6 +74,7 @@ public class EvaluationFormController extends FormBasicController {
 	private final Form form;
 	private PageBody anchor;
 	private boolean readOnly;
+	private boolean transientForm;
 	private final boolean doneButton;
 	private final Identity evaluator;
 	private final RepositoryEntry formEntry;
@@ -199,15 +200,19 @@ public class EvaluationFormController extends FormBasicController {
 		if(response != null && StringHelper.containsNonWhitespace(response.getStringuifiedResponse())) {
 			initialValue = response.getStringuifiedResponse();
 		}
-
-		TextElement textEl = uifactory.addTextAreaElement("textinput_" + (count++), 12, 72, initialValue, flc);
+		
+		int rows = 12;
+		if(element.getRows() > 0) {
+			rows = element.getRows();
+		}
+		TextElement textEl = uifactory.addTextAreaElement("textinput_" + (count++), rows, 72, initialValue, flc);
+		textEl.setEnabled(!readOnly);
 		FormLink saveButton = uifactory.addFormLink("save_" + (count++), "save", null, flc, Link.BUTTON);
-
+		saveButton.setVisible(!readOnly);
+		
 		TextInputWrapper textInputWrapper = new TextInputWrapper(element, textEl, saveButton);
 		saveButton.setUserObject(textInputWrapper);
-		saveButton.setVisible(!readOnly);
 		textEl.setUserObject(textInputWrapper);
-		textEl.setEnabled(!readOnly);
 		EvaluationFormElementWrapper wrapper = new EvaluationFormElementWrapper(element);
 		wrapper.setTextInputWrapper(textInputWrapper);
 		return wrapper;
@@ -363,6 +368,9 @@ public class EvaluationFormController extends FormBasicController {
 	}
 	
 	private void doSaveAsDone() {
+		//save text inputs
+		
+		
 		session = evaluationFormManager.changeSessionStatus(session, EvaluationFormSessionStatus.done);
 		readOnly = true;
 		updateElements();

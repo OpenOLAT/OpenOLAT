@@ -195,10 +195,10 @@ public class RubricEditorController extends FormBasicController implements PageE
 	
 	private SliderRow forgeSliderRow(Slider slider) {
 		String startLabel = slider.getStartLabel();
-		TextElement startLabelEl = uifactory.addTextElement("start.label." + count.incrementAndGet(), "start.label", 10, startLabel, flc);
+		TextElement startLabelEl = uifactory.addTextElement("start.label." + count.incrementAndGet(), "start.label", 256, startLabel, flc);
 		startLabelEl.setDomReplacementWrapperRequired(false);
 		String endLabel = slider.getEndLabel();
-		TextElement endLabelEl = uifactory.addTextElement("end.label." + count.incrementAndGet(), "end.label", 10, endLabel, flc);
+		TextElement endLabelEl = uifactory.addTextElement("end.label." + count.incrementAndGet(), "end.label", 256, endLabel, flc);
 		endLabelEl.setDomReplacementWrapperRequired(false);
 		return new SliderRow(slider, startLabelEl, endLabelEl);
 	}

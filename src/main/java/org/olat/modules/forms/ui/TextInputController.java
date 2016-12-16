@@ -21,8 +21,8 @@ package org.olat.modules.forms.ui;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.TextAreaElement;
-import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.link.Link;
@@ -39,18 +39,13 @@ import org.olat.modules.forms.model.xml.TextInput;
  */
 public class TextInputController extends FormBasicController {
 	
+	private FormLink saveButton;
 	private TextAreaElement textEl;
 	
 	private final TextInput textInput;
 	
 	public TextInputController(UserRequest ureq, WindowControl wControl, TextInput textInput) {
 		super(ureq, wControl, "textinput");
-		this.textInput = textInput;
-		initForm(ureq);
-	}
-	
-	public TextInputController(UserRequest ureq, WindowControl wControl, TextInput textInput, Form rootForm) {
-		super(ureq, wControl, LAYOUT_CUSTOM, "textinput", rootForm);
 		this.textInput = textInput;
 		initForm(ureq);
 	}
@@ -64,7 +59,8 @@ public class TextInputController extends FormBasicController {
 		
 		long postfix = CodeHelper.getRAMUniqueID();
 		textEl = uifactory.addTextAreaElement("textinput_" + postfix, rows, 72, "", formLayout);
-		uifactory.addFormLink("save_" + postfix, "save", null, formLayout, Link.BUTTON);
+		saveButton = uifactory.addFormLink("save_" + postfix, "save", null, formLayout, Link.BUTTON);
+		saveButton.setEnabled(false);
 		if(formLayout instanceof FormLayoutContainer) {
 			FormLayoutContainer layoutCont = (FormLayoutContainer)formLayout;
 			layoutCont.getFormItemComponent().contextPut("postfix", Long.toString(postfix));

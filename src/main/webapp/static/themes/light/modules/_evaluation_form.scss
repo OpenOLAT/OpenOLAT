@@ -1,8 +1,20 @@
 .o_evaluation_form {
 
-	.o_evaluation_step_labels div, .o_evaluation_step_labels span {
-		display:inline-block;
-		text-align: center;
+	.o_evaluation_step_labels {
+		margin-bottom: $o-evaluation-step-labels-margin-bottom;
+		
+		div, span {
+			display:inline-block;
+			text-align: center;
+		}
+	}
+	
+	.o_slider {
+		margin-bottom: $o-evaluation-slider-margin-bottom;
+	}
+	
+	.o_slider.hover {
+		background-color: $o-evaluation-slider-hover-background-color;
 	}
 	
 	.o_evaluation_discrete_slider {
@@ -15,14 +27,11 @@
 			text-align: right;
 			float: right;
 		}
-		
-		.o_slider {
-			margin-bottom: 5px;
-		}
 	}
 	
 	.o_evaluation_discrete_radio {
 		.o_slider {
+			
 			input[type='radio'] {
 				padding: 0;
 				margin: 0;
@@ -37,11 +46,13 @@
 		}
 	}
 	
-	.o_evaluation_slider {
-		.o_slider {
-			margin-bottom: 5px;
-		}
+	
+	
+	.o_slider .ui-slider.ui-slider-horizontal.ui-widget-content {
+		margin-top: 0.3em;
 	}
+	
+
 	
 	.o_evaluation_left_label {
 		text-align: right;

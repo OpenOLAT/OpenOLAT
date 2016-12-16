@@ -146,7 +146,7 @@ public class AssignmentEditController extends FormBasicController {
 		formLayout.setElementCssClass("o_sel_pf_edit_assignment_form");
 		
 		if(assignmentInUse) {
-			setFormWarning("");
+			setFormWarning("assignment.in.use");
 		}
 		
 		String title = assignment == null ? null : assignment.getTitle();

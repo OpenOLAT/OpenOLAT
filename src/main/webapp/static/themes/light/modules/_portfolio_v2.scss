@@ -312,7 +312,7 @@
 			width: 100%;
 			background: $o-portfolio-editor-border-color;
 			position: absolute;
-			z-index: 1;
+			z-index: 3;
 			left: 0;
 			top: -$o-portfolio-editor-border-width;
 			box-shadow: 3px -8px 10px 0px rgba(0, 0, 0, 0.2);
@@ -354,7 +354,7 @@
 		
 		.o_page_tools_dd {
 			position: absolute;
-			z-index: 2;
+			z-index: 4;
 			top: 0;
 			right: 0;
 			width: $o-portfolio-editor-border-width;
@@ -382,7 +382,7 @@
 				}
 								
 				&.o_sel_move_up_element {
-					z-index: 2;
+					z-index: 4;
 					top: -$o-portfolio-editor-border-width;			
 				}
 				&.o_sel_move_down_element {
@@ -400,7 +400,7 @@
 			}
 			.o_page_edit_toolbar {
 				position: absolute;
-				z-index: 3;
+				z-index: 5;
 				left: 5px;
 				top: -$o-portfolio-editor-border-width;
 				display: inline-block;
@@ -433,7 +433,7 @@
 		
 		.o_page_add_below {
 			position: absolute;
-			z-index: 1;
+			z-index: 3;
 			left: 0;
 			bottom: -$o-portfolio-editor-border-width;
 			height: $o-portfolio-editor-border-width;
