@@ -47,9 +47,8 @@
 	</div>
 	#end
 	
-	#set($Integer = 0)
-	#set($widthWithBorder = $Integer.parseInt(${interaction.object.width}) + 2)
-	#set($heightWithBorder = $Integer.parseInt(${interaction.object.height}) + 2)
+	#set($widthWithBorder = $r.parseInt(${interaction.object.width}) + 2)
+	#set($heightWithBorder = $r.parseInt(${interaction.object.height}) + 2)
 	<div id="sketch" style="border:1px solid black; width:${widthWithBorder}px; height:${heightWithBorder}px;" draggable="false" ondragstart="return false;">
 		<canvas id="paint" width="${interaction.object.width}" height="${interaction.object.height}" style="background:url('${r.convertLinkFull($interaction.object.data)}')" draggable="false" ondragstart="return false;"></canvas>
 	</div>

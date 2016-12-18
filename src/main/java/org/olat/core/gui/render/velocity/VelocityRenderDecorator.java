@@ -710,6 +710,17 @@ public class VelocityRenderDecorator implements Closeable {
 		return notEmpty;
 	}
 	
+	public int parseInt(String text) {
+		try {
+			if(StringHelper.containsNonWhitespace(text)) {
+				return Integer.parseInt(text);
+			}
+			return -1;
+		} catch (NumberFormatException e) {
+			return -1;
+		}
+	}
+	
 	/**
 	 * @param componentName
 	 * @return true if the component with name componentName is a child of the current container. Used to "if" the render 
