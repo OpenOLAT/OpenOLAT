@@ -28,6 +28,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.olat.core.commons.persistence.DB;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -56,8 +57,9 @@ import org.olat.modules.forms.model.xml.Rubric;
 import org.olat.modules.forms.model.xml.Rubric.SliderType;
 import org.olat.modules.forms.model.xml.Slider;
 import org.olat.modules.forms.model.xml.TextInput;
-import org.olat.modules.forms.ui.model.SliderWrapper;
 import org.olat.modules.forms.ui.model.EvaluationFormElementWrapper;
+import org.olat.modules.forms.ui.model.SliderWrapper;
+import org.olat.modules.forms.ui.model.TextInputWrapper;
 import org.olat.modules.portfolio.PageBody;
 import org.olat.repository.RepositoryEntry;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -74,7 +76,6 @@ public class EvaluationFormController extends FormBasicController {
 	private final Form form;
 	private PageBody anchor;
 	private boolean readOnly;
-	private boolean transientForm;
 	private final boolean doneButton;
 	private final Identity evaluator;
 	private final RepositoryEntry formEntry;
@@ -84,6 +85,8 @@ public class EvaluationFormController extends FormBasicController {
 	
 	private FormLink saveAsDoneButton;
 	
+	@Autowired
+	private DB dbInstance;
 	@Autowired
 	private EvaluationFormManager evaluationFormManager;
 	
@@ -137,7 +140,7 @@ public class EvaluationFormController extends FormBasicController {
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		updateElements();
 		
-		if(doneButton) {
+		if(doneButton && !readOnly) {
 			saveAsDoneButton = uifactory.addFormLink("save.as.done", formLayout, Link.BUTTON);
 		}
 	}
@@ -359,20 +362,23 @@ public class EvaluationFormController extends FormBasicController {
 		
 		EvaluationFormResponse response = identifierToResponses.get(responseIdentifier);
 		if(response == null) {
-			evaluationFormManager.createResponseForPortfolioEvaluation(responseIdentifier,
+			response = evaluationFormManager.createResponseForPortfolioEvaluation(responseIdentifier,
 					numericalValue, stringuifiedReponse, EvaluationFormResponseDataTypes.numerical, session);
 		} else {
 			response = evaluationFormManager.updateResponseForPortfolioEvaluation(numericalValue, stringuifiedReponse, response);
+		}
+		//update cache
+		if(response != null) {
 			identifierToResponses.put(responseIdentifier, response);
 		}
 	}
 	
 	private void doSaveAsDone() {
 		//save text inputs
-		
-		
 		session = evaluationFormManager.changeSessionStatus(session, EvaluationFormSessionStatus.done);
 		readOnly = true;
+		dbInstance.commit();
+		loadResponses();
 		updateElements();
 		saveAsDoneButton.setVisible(false);
 	}
@@ -385,34 +391,5 @@ public class EvaluationFormController extends FormBasicController {
 	@Override
 	protected void doDispose() {
 		//
-	}
-
-	public class TextInputWrapper {
-		
-		private final TextInput textInput;
-		private final TextElement textEl;
-		private final FormLink saveButton;
-		
-		public TextInputWrapper(TextInput textInput, TextElement textEl, FormLink saveButton) {
-			this.textInput = textInput;
-			this.textEl = textEl;
-			this.saveButton = saveButton;
-		}
-		
-		public String getId() {
-			return textInput.getId();
-		}
-
-		public TextInput getTextInput() {
-			return textInput;
-		}
-
-		public TextElement getTextEl() {
-			return textEl;
-		}
-
-		public FormLink getSaveButton() {
-			return saveButton;
-		}
 	}
 }

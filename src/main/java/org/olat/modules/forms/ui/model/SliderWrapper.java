@@ -23,6 +23,7 @@ import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.SliderElement;
 import org.olat.modules.forms.model.xml.Slider;
+import org.olat.modules.forms.ui.component.SliderOverviewElement;
 
 /**
  * 
@@ -35,19 +36,25 @@ public class SliderWrapper {
 	private final Slider slider;
 	private final SliderElement sliderEl;
 	private final SingleSelection radioEl;
+	private final SliderOverviewElement overviewEl;
 	
 	public SliderWrapper(Slider slider, SingleSelection radioEl) {
-		this(slider, radioEl, null);
+		this(slider, radioEl, null, null);
 	}
 	
 	public SliderWrapper(Slider slider, SliderElement sliderEl) {
-		this(slider, null, sliderEl);
+		this(slider, null, sliderEl, null);
 	}
 	
-	private SliderWrapper(Slider slider, SingleSelection radioEl, SliderElement sliderEl) {
+	public SliderWrapper(Slider slider, SliderOverviewElement overviewEl) {
+		this(slider, null, null, overviewEl);
+	}
+	
+	private SliderWrapper(Slider slider, SingleSelection radioEl, SliderElement sliderEl, SliderOverviewElement overviewEl) {
 		this.slider = slider;
 		this.radioEl = radioEl;
 		this.sliderEl = sliderEl;
+		this.overviewEl = overviewEl;
 	}
 	
 	public String getId() {
@@ -78,5 +85,9 @@ public class SliderWrapper {
 	
 	public SliderElement getSliderEl() {
 		return sliderEl;
+	}
+	
+	public SliderOverviewElement getOverviewEl() {
+		return overviewEl;
 	}
 }

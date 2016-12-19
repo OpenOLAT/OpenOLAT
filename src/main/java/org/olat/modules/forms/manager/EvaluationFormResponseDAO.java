@@ -20,14 +20,19 @@
 package org.olat.modules.forms.manager;
 
 import java.math.BigDecimal;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
+import java.util.stream.Collectors;
+
+import javax.persistence.TypedQuery;
 
 import org.olat.basesecurity.IdentityRef;
 import org.olat.core.commons.persistence.DB;
 import org.olat.modules.forms.EvaluationFormResponse;
 import org.olat.modules.forms.EvaluationFormResponseDataTypes;
 import org.olat.modules.forms.EvaluationFormSession;
+import org.olat.modules.forms.EvaluationFormSessionStatus;
 import org.olat.modules.forms.model.jpa.EvaluationFormResponseImpl;
 import org.olat.modules.portfolio.PageBody;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -69,6 +74,27 @@ public class EvaluationFormResponseDAO {
 				.setParameter("identityKey", identity.getKey())
 				.setParameter("bodyKey", anchor.getKey())
 				.getResultList();
+	}
+	
+	public List<EvaluationFormResponse> getResponsesFromPortfolioEvaluation(List<? extends IdentityRef> identities, PageBody anchor, EvaluationFormSessionStatus status) {
+		if(identities == null || identities.isEmpty()) return Collections.emptyList();
+		
+		List<Long> identitiyKeys = identities.stream().map(i -> i.getKey()).collect(Collectors.toList());
+		StringBuilder sb = new StringBuilder();
+		sb.append("select response from evaluationformresponse as response")
+		  .append(" inner join response.session as session")
+		  .append(" where session.identity.key in (:identityKeys) and session.pageBody.key=:bodyKey");
+		if(status != null) {
+			sb.append(" and session.status=:status");
+		}
+		TypedQuery<EvaluationFormResponse> rQuery = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), EvaluationFormResponse.class)
+				.setParameter("identityKeys", identitiyKeys)
+				.setParameter("bodyKey", anchor.getKey());
+		if(status != null) {
+			rQuery.setParameter("status", status.name());
+		}
+		return rQuery.getResultList();
 	}
 	
 	public EvaluationFormResponse updateResponse(BigDecimal numericalValue, String stringuifiedResponse, EvaluationFormResponse response) {

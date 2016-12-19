@@ -1,3 +1,22 @@
+/**
+ * <a href="http://www.openolat.org">
+ * OpenOLAT - Online Learning and Training</a><br>
+ * <p>
+ * Licensed under the Apache License, Version 2.0 (the "License"); <br>
+ * you may not use this file except in compliance with the License.<br>
+ * You may obtain a copy of the License at the
+ * <a href="http://www.apache.org/licenses/LICENSE-2.0">Apache homepage</a>
+ * <p>
+ * Unless required by applicable law or agreed to in writing,<br>
+ * software distributed under the License is distributed on an "AS IS" BASIS, <br>
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. <br>
+ * See the License for the specific language governing permissions and <br>
+ * limitations under the License.
+ * <p>
+ * Initial code contributed and copyrighted by<br>
+ * frentix GmbH, http://www.frentix.com
+ * <p>
+ */
 package org.olat.modules.portfolio.ui;
 
 import java.util.ArrayList;
@@ -15,6 +34,7 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.id.Identity;
+import org.olat.modules.forms.ui.CompareEvaluationsFormController;
 import org.olat.modules.forms.ui.EvaluationFormController;
 import org.olat.modules.portfolio.PageBody;
 import org.olat.repository.RepositoryEntry;
@@ -34,11 +54,15 @@ public class MultiEvaluationFormController extends BasicController {
 	private final Identity owner;
 	private final boolean readOnly;
 	private final RepositoryEntry formEntry;
+	private final List<Identity> otherEvaluators;
 	
 	private Link ownerLink;
+	private Link compareLink;
 	private final VelocityContainer mainVC;
 	private final SegmentViewComponent segmentView;
 	private List<Link> otherEvaluatorLinks = new ArrayList<>();
+	
+	private CompareEvaluationsFormController compareEvaluationCtrl;
 	
 	@Autowired
 	private UserManager userManager;
@@ -51,6 +75,7 @@ public class MultiEvaluationFormController extends BasicController {
 		this.anchor = anchor;
 		this.readOnly = readOnly;
 		this.formEntry = formEntry;
+		this.otherEvaluators = otherEvaluators;
 
 		mainVC = createVelocityContainer("multi_evaluation_form");
 		segmentView = SegmentViewFactory.createSegmentView("segments", mainVC, this);
@@ -90,6 +115,12 @@ public class MultiEvaluationFormController extends BasicController {
 			}
 		}
 		
+		if((owner != null && otherEvaluators != null && otherEvaluators.size() > 0) || (otherEvaluators != null && otherEvaluators.size() > 1)) {
+			compareLink = LinkFactory.createLink("compare.evaluations", mainVC, this);
+			compareLink.setUserObject(owner);
+			segmentView.addSegment(compareLink, false);
+		}
+		
 		mainVC.put("segments", segmentView);
 		putInitialPanel(mainVC);
 	}
@@ -108,6 +139,8 @@ public class MultiEvaluationFormController extends BasicController {
 				Component clickedLink = mainVC.getComponent(segmentCName);
 				if (clickedLink == ownerLink) {
 					doOpenEvalutationForm(ureq, owner);
+				} else if(clickedLink == compareLink) {
+					doOpenOverview(ureq);
 				} else if (clickedLink instanceof Link) {
 					Link link = (Link)clickedLink;
 					Object uobject = link.getUserObject();
@@ -125,5 +158,20 @@ public class MultiEvaluationFormController extends BasicController {
 		EvaluationFormController evalutionFormCtrl =  new EvaluationFormController(ureq, getWindowControl(), evaluator, anchor, formEntry, ro, doneButton);
 		listenTo(evalutionFormCtrl);
 		mainVC.put("segmentCmp", evalutionFormCtrl.getInitialComponent());
+	}
+	
+	private void doOpenOverview(UserRequest ureq) {
+		removeAsListenerAndDispose(compareEvaluationCtrl);
+		
+		List<Identity> evaluators = new ArrayList<>();
+		if(owner != null) {
+			evaluators.add(owner);
+		}
+		if(otherEvaluators != null) {
+			evaluators.addAll(otherEvaluators);
+		}
+		compareEvaluationCtrl = new CompareEvaluationsFormController(ureq, getWindowControl(), evaluators, anchor, formEntry);
+		listenTo(compareEvaluationCtrl);
+		mainVC.put("segmentCmp", compareEvaluationCtrl.getInitialComponent());
 	}
 }

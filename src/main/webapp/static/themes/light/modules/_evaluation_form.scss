@@ -63,6 +63,29 @@
 	}
 }
 
+.o_slider_overview {
+	width: 100%;
+	height: 20px;
+	position: relative;
+	
+	.o_slider_overview_line {
+		top: 5px;
+		left: 0px;
+		position: absolute;
+		width: 100%;
+		height: 11px;
+		border: 1px solid #999;
+		border-radius: 4px;
+	}
+	
+	.o_slider_overview_point {
+		position: absolute;
+		width: 10px;
+		height: 10px;
+		background-color: $o-slider-handler-background-color;
+	}
+}
+
 .o_evaluation_editor_form {
 	margin: 10px 10px 0 10px;
 	

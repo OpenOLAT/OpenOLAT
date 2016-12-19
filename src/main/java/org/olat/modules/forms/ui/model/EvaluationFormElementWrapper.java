@@ -30,7 +30,6 @@ import org.olat.modules.forms.model.xml.Rubric.SliderType;
 import org.olat.modules.forms.model.xml.Slider;
 import org.olat.modules.forms.model.xml.StepLabel;
 import org.olat.modules.forms.model.xml.TextInput;
-import org.olat.modules.forms.ui.EvaluationFormController.TextInputWrapper;
 
 /**
  * 
@@ -41,6 +40,7 @@ import org.olat.modules.forms.ui.EvaluationFormController.TextInputWrapper;
 public class EvaluationFormElementWrapper {
 
 	private boolean raw;
+	private boolean sliderOverview;
 	protected final AbstractElement element;
 	
 	private TextInputWrapper textInput;
@@ -61,6 +61,14 @@ public class EvaluationFormElementWrapper {
 	
 	public boolean isRubric() {
 		return element instanceof Rubric;
+	}
+	
+	public boolean isSliderOverview() {
+		return sliderOverview;
+	}
+	
+	public void setSliderOverview(boolean sliderOverview) {
+		this.sliderOverview = sliderOverview;
 	}
 	
 	public boolean isDiscreteRubric() {

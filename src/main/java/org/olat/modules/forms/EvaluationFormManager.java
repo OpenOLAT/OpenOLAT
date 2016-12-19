@@ -51,6 +51,8 @@ public interface EvaluationFormManager {
 	 */
 	public List<EvaluationFormResponse> getResponsesFromPortfolioEvaluation(IdentityRef identity, PageBody anchor);
 	
+	public List<EvaluationFormResponse> getResponsesFromPortfolioEvaluation(List<? extends IdentityRef> identities, PageBody anchor, EvaluationFormSessionStatus status);
+	
 	
 	public EvaluationFormResponse createResponseForPortfolioEvaluation(String responseIdentifier, BigDecimal numericalValue, String stringuifiedResponse,
 			EvaluationFormResponseDataTypes dataType, EvaluationFormSession session); 

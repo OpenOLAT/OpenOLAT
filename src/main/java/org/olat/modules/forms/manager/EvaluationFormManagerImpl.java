@@ -69,6 +69,11 @@ public class EvaluationFormManagerImpl implements EvaluationFormManager {
 	}
 
 	@Override
+	public List<EvaluationFormResponse> getResponsesFromPortfolioEvaluation(List<? extends IdentityRef> identities, PageBody anchor, EvaluationFormSessionStatus status) {
+		return evaluationFormResponseDao.getResponsesFromPortfolioEvaluation(identities, anchor, status);
+	}
+
+	@Override
 	public EvaluationFormResponse createResponseForPortfolioEvaluation(String responseIdentifier, BigDecimal numericalValue, String stringuifiedResponse,
 			EvaluationFormResponseDataTypes dataType, EvaluationFormSession session) {
 		return evaluationFormResponseDao.createResponse(responseIdentifier, numericalValue, stringuifiedResponse, dataType, session);
