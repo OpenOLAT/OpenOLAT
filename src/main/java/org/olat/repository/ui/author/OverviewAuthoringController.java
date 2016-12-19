@@ -69,7 +69,7 @@ public class OverviewAuthoringController extends BasicController implements Acti
 
 	private final boolean isOlatAdmin;
 	private final boolean isGuestOnly;
-	private boolean favoritDirty, myDirty;
+	private boolean favoritDirty, myDirty, deletedDirty;
 	private final EventBus eventBus;
 	
 	public OverviewAuthoringController(UserRequest ureq, WindowControl wControl) {
@@ -121,6 +121,9 @@ public class OverviewAuthoringController extends BasicController implements Acti
 				}
 				if(myEntriesCtrl != null && !myEntriesCtrl.getI18nName().equals(ece.getSource())) {
 					myDirty = true;
+				}
+				if(deletedEntriesCtrl != null && !deletedEntriesCtrl.getI18nName().equals(ece.getSource())) {
+					deletedDirty = true;
 				}
 			}
 		}
@@ -276,10 +279,10 @@ public class OverviewAuthoringController extends BasicController implements Acti
 			WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ores, null, getWindowControl());
 			deletedEntriesCtrl = new AuthorDeletedListController(ureq, bwControl, "search.deleted", searchParams, false);
 			listenTo(deletedEntriesCtrl);	
-		} else if(myDirty) {
+		} else if(deletedDirty) {
 			deletedEntriesCtrl.reloadRows();
 		}
-		myDirty = false;
+		deletedDirty = false;
 		
 		currentCtrl = deletedEntriesCtrl;
 		addToHistory(ureq, deletedEntriesCtrl);

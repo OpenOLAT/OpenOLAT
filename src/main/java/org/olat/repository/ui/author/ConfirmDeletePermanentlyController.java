@@ -297,7 +297,8 @@ public class ConfirmDeletePermanentlyController extends FormBasicController {
 					allOk = false;
 					errorList.add(errors);
 				} else {
-					fireEvent(ureq, new EntryChangedEvent(reloadedEntry, getIdentity(), Change.deleted, "delete"));
+					EntryChangedEvent e = new EntryChangedEvent(reloadedEntry, getIdentity(), Change.deleted, "delete");
+					ureq.getUserSession().getSingleUserEventCenter().fireEventToListenersOf(e, RepositoryService.REPOSITORY_EVENT_ORES);
 				}
 			}
 		}
