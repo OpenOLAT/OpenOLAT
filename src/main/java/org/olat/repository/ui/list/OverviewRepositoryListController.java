@@ -113,6 +113,10 @@ public class OverviewRepositoryListController extends BasicController implements
 		myCourseLink.setElementCssClass("o_sel_mycourses_my");
 		segmentView.addSegment(myCourseLink, false);
 		
+		closedCourseLink = LinkFactory.createLink("search.courses.closed", mainVC, this);
+		closedCourseLink.setElementCssClass("o_sel_mycourses_closed");
+		segmentView.addSegment(closedCourseLink, false);
+		
 		if(repositoryModule.isCatalogEnabled() && repositoryModule.isCatalogBrowsingEnabled()) {
 			catalogLink = LinkFactory.createLink("search.catalog", mainVC, this);
 			catalogLink.setElementCssClass("o_sel_mycourses_catlog");
@@ -123,10 +127,7 @@ public class OverviewRepositoryListController extends BasicController implements
 			searchCourseLink.setElementCssClass("o_sel_mycourses_search");
 			segmentView.addSegment(searchCourseLink, false);
 		}
-		closedCourseLink = LinkFactory.createLink("search.courses.closed", mainVC, this);
-		closedCourseLink.setElementCssClass("o_sel_mycourses_closed");
-		segmentView.addSegment(closedCourseLink, false);
-		
+
 		eventBus = ureq.getUserSession().getSingleUserEventCenter();
 		eventBus.registerFor(this, getIdentity(), RepositoryService.REPOSITORY_EVENT_ORES);
 		
