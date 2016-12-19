@@ -33,6 +33,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import javax.persistence.EntityNotFoundException;
 import javax.persistence.LockModeType;
@@ -1019,6 +1020,26 @@ public class BaseSecurityManager implements BaseSecurity {
 				.setParameter("username", identityNames)
 				.getResultList();
 		return identities;
+	}
+	
+	
+
+	@Override
+	public List<Identity> findIdentitiesByNameCaseInsensitive(Collection<String> identityNames) {
+		if (identityNames == null || identityNames.isEmpty()) return Collections.emptyList();
+
+		StringBuilder sb = new StringBuilder();
+		sb.append("select ident from ").append(IdentityImpl.class.getName()).append(" as ident")
+		  .append(" inner join fetch ident.user user")
+		  .append(" where lower(ident.name) in (:usernames)");
+		
+		List<String> loweredIdentityNames = identityNames.stream()
+				.map(id -> id.toLowerCase()).collect(Collectors.toList());
+
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Identity.class)
+				.setParameter("usernames", loweredIdentityNames)
+				.getResultList();
 	}
 
 	@Override

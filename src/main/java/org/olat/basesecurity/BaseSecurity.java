@@ -160,6 +160,8 @@ public interface BaseSecurity {
 	public Identity findIdentityByNameCaseInsensitive(String identityName);
 	
 	public List<Identity> findIdentitiesByName(Collection<String> identityName);
+	
+	public List<Identity> findIdentitiesByNameCaseInsensitive(Collection<String> identityNames);
 
 	/**
 	 * Find an identity by student/institutionalnumber (i.e., Matrikelnummer), using the getIdentititesByPowerSearch() method.
