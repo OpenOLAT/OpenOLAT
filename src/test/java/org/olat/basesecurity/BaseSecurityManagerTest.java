@@ -222,6 +222,31 @@ public class BaseSecurityManagerTest extends OlatTestCase {
 	}
 	
 	@Test
+	public void findIdentityByNamesCaseInsensitive() {
+		//create a user it
+		String username1 = "fINd-ME-4-" + UUID.randomUUID();
+		Identity id1 = JunitTestHelper.createAndPersistIdentityAsUser(username1);
+		String username2 = "fINd-ME-5-" + UUID.randomUUID();
+		Identity id2 = JunitTestHelper.createAndPersistIdentityAsUser(username2);
+		Assert.assertNotNull(id1);
+		Assert.assertEquals(username1, id1.getName());
+		Assert.assertNotNull(id2);
+		Assert.assertEquals(username2, id2.getName());
+		dbInstance.commitAndCloseSession();
+		
+		List<String> names = new ArrayList<String>(2);
+		names.add(username1);
+		names.add(username2);
+		
+		//find it
+		List<Identity> foundIds = securityManager.findIdentitiesByNameCaseInsensitive(names);
+		Assert.assertNotNull(foundIds);
+		Assert.assertEquals(2, foundIds.size());
+		Assert.assertTrue(foundIds.contains(id1));
+		Assert.assertTrue(foundIds.contains(id2));
+	}
+	
+	@Test
 	public void loadIdentityShortByKey() {
 		//create a user it
 		String idName = "find-me-short-1-" + UUID.randomUUID().toString();
