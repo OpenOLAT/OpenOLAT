@@ -31,7 +31,11 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.generic.messages.MessageController;
+import org.olat.core.gui.control.generic.messages.MessageUIFactory;
+import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
+import org.olat.core.util.Util;
 import org.olat.fileresource.FileResourceManager;
 import org.olat.modules.forms.ui.EvaluationFormController;
 import org.olat.modules.portfolio.Assignment;
@@ -43,6 +47,7 @@ import org.olat.modules.portfolio.PortfolioService;
 import org.olat.modules.portfolio.model.AccessRights;
 import org.olat.modules.portfolio.model.EvaluationFormPart;
 import org.olat.modules.portfolio.ui.MultiEvaluationFormController;
+import org.olat.modules.portfolio.ui.PortfolioHomeController;
 import org.olat.modules.portfolio.ui.editor.PageElement;
 import org.olat.modules.portfolio.ui.editor.PageElementHandler;
 import org.olat.repository.RepositoryEntry;
@@ -128,7 +133,12 @@ public class EvaluationFormHandler implements PageElementHandler {
 				}
 			}
 		}
-		return null;
+		
+		Translator translator = Util.createPackageTranslator(PortfolioHomeController.class, ureq.getLocale());
+		String title = translator.translate("warning.evaluation.not.visible.title");
+		String text = translator.translate("warning.evaluation.not.visible.text");
+		MessageController msg = MessageUIFactory.createWarnMessage(ureq, wControl, title, text);
+		return msg.getInitialComponent();
 	}
 	
 	private Identity getOwner(List<AccessRights> accessRights) {
