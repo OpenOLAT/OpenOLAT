@@ -36,7 +36,7 @@ public class SliderOverviewComponent extends FormBaseComponentImpl {
 	
 	private double minValue;
 	private double maxValue;
-	private List<Double> values;
+	private List<SliderPoint> values;
 	
 	private final SliderOverviewElement sliderElement;
 	
@@ -65,11 +65,11 @@ public class SliderOverviewComponent extends FormBaseComponentImpl {
 		maxValue = max;
 	}
 
-	public List<Double> getValues() {
+	public List<SliderPoint> getValues() {
 		return values;
 	}
 
-	public void setValues(List<Double> values) {
+	public void setValues(List<SliderPoint> values) {
 		this.values = values;
 	}
 

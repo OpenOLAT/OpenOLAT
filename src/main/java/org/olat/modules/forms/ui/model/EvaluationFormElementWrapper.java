@@ -22,6 +22,7 @@ package org.olat.modules.forms.ui.model;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.olat.core.gui.components.chart.RadarChartElement;
 import org.olat.core.util.StringHelper;
 import org.olat.modules.forms.model.xml.AbstractElement;
 import org.olat.modules.forms.model.xml.AbstractHTMLElement;
@@ -41,8 +42,10 @@ public class EvaluationFormElementWrapper {
 
 	private boolean raw;
 	private boolean sliderOverview;
+	private boolean radarOverview;
 	protected final AbstractElement element;
 	
+	private RadarChartElement radarEl;
 	private TextInputWrapper textInput;
 	private List<SliderWrapper> sliders;
 	
@@ -71,6 +74,14 @@ public class EvaluationFormElementWrapper {
 		this.sliderOverview = sliderOverview;
 	}
 	
+	public boolean isRadarOverview() {
+		return radarOverview;
+	}
+
+	public void setRadarOverview(boolean radarOverview) {
+		this.radarOverview = radarOverview;
+	}
+
 	public boolean isDiscreteRubric() {
 		if(element instanceof Rubric) {
 			Rubric rubric = (Rubric)element;
@@ -194,5 +205,13 @@ public class EvaluationFormElementWrapper {
 
 	public void setSliders(List<SliderWrapper> sliders) {
 		this.sliders = sliders;
+	}
+
+	public RadarChartElement getRadarEl() {
+		return radarEl;
+	}
+
+	public void setRadarEl(RadarChartElement radarEl) {
+		this.radarEl = radarEl;
 	}
 }

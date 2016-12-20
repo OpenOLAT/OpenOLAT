@@ -31,15 +31,31 @@ import org.olat.modules.forms.model.xml.TextInput;
  */
 public class TextInputWrapper {
 	
+	private final String name;
+	private final String color;
+	private final String content;
 	private final TextInput textInput;
 	private final TextElement textEl;
 	private final FormLink saveButton;
+	
+	public TextInputWrapper(String name, String color, String content, TextInput textInput) {
+		this.textInput = textInput;
+		this.textEl = null;
+		this.saveButton = null;
+		this.name = name;
+		this.color = color;
+		this.content = content;
+	}
 	
 	public TextInputWrapper(TextInput textInput, TextElement textEl, FormLink saveButton) {
 		this.textInput = textInput;
 		this.textEl = textEl;
 		this.saveButton = saveButton;
+		name = null;
+		color = null;
+		content = null;
 	}
+	
 	
 	public String getId() {
 		return textInput.getId();
@@ -55,5 +71,17 @@ public class TextInputWrapper {
 
 	public FormLink getSaveButton() {
 		return saveButton;
+	}
+
+	public String getName() {
+		return name;
+	}
+
+	public String getColor() {
+		return color;
+	}
+
+	public String getContent() {
+		return content;
 	}
 }

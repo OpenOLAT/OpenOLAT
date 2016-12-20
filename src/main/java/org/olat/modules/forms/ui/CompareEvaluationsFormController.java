@@ -28,14 +28,17 @@ import java.util.List;
 import java.util.Map;
 
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.chart.RadarChartComponent.Format;
+import org.olat.core.gui.components.chart.RadarChartElement;
+import org.olat.core.gui.components.chart.RadarSeries;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
-import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Identity;
+import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.xml.XStreamHelper;
 import org.olat.fileresource.FileResourceManager;
@@ -47,14 +50,17 @@ import org.olat.modules.forms.model.xml.AbstractElement;
 import org.olat.modules.forms.model.xml.Form;
 import org.olat.modules.forms.model.xml.FormXStream;
 import org.olat.modules.forms.model.xml.Rubric;
+import org.olat.modules.forms.model.xml.Rubric.SliderType;
 import org.olat.modules.forms.model.xml.Slider;
 import org.olat.modules.forms.model.xml.TextInput;
 import org.olat.modules.forms.ui.component.SliderOverviewElement;
+import org.olat.modules.forms.ui.component.SliderPoint;
 import org.olat.modules.forms.ui.model.EvaluationFormElementWrapper;
 import org.olat.modules.forms.ui.model.SliderWrapper;
 import org.olat.modules.forms.ui.model.TextInputWrapper;
 import org.olat.modules.portfolio.PageBody;
 import org.olat.repository.RepositoryEntry;
+import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -64,6 +70,11 @@ import org.springframework.beans.factory.annotation.Autowired;
  *
  */
 public class CompareEvaluationsFormController extends FormBasicController {
+	
+	private static final String[] colors = new String[]{
+			"#EDC951", "#CC333F", "#00A0B0", "#4E4E6C", "#8DC1A1",
+			"#F7BC00", "#BB6511", "#B28092", "#003D40", "#FF69D1"
+		};
 
 	private int count = 0;
 	private final Form form;
@@ -72,7 +83,11 @@ public class CompareEvaluationsFormController extends FormBasicController {
 	
 	private EvaluationFormSession session;
 	private final Map<String, List<EvaluationFormResponse>> identifierToResponses = new HashMap<>();
+	private final Map<Identity,String> evaluatorToColors = new HashMap<>();
+	private final Map<Identity,String> evaluatorToNumbers = new HashMap<>();
 	
+	@Autowired
+	private UserManager userManager;
 	@Autowired
 	private EvaluationFormManager evaluationFormManager;
 	
@@ -89,6 +104,18 @@ public class CompareEvaluationsFormController extends FormBasicController {
 		super(ureq, wControl, "run");
 		this.anchor = anchor;
 		this.evaluators = evaluators;
+		
+		int colorCount = 0;
+		int evaluatorCount = 0;
+		for(Identity evaluator:evaluators) {
+			int i = (colorCount++) % colors.length;
+			evaluatorToColors.put(evaluator, colors[i]);
+			if(evaluator.equals(getIdentity())) {
+				evaluatorToNumbers.put(evaluator, "0");
+			} else {
+				evaluatorToNumbers.put(evaluator, Integer.toString(++evaluatorCount));
+			}
+		}
 		
 		File repositoryDir = new File(FileResourceManager.getInstance().getFileResourceRoot(formEntry.getOlatResource()), FileResourceManager.ZIPDIR);
 		File formFile = new File(repositoryDir, FORM_XML_FILE);
@@ -139,7 +166,13 @@ public class CompareEvaluationsFormController extends FormBasicController {
 				wrappers.add(new EvaluationFormElementWrapper(element));
 				break;
 			case "formrubric":
-				EvaluationFormElementWrapper sliderWrapper = forgeRubric((Rubric)element);
+				Rubric rubric = (Rubric)element;
+				EvaluationFormElementWrapper sliderWrapper;
+				if(rubric.getSliders().size() > 2) {
+					sliderWrapper = forgeRadarRubric((Rubric)element);
+				} else {
+					sliderWrapper = forgeRubric((Rubric)element);
+				}
 				if(sliderWrapper != null) {
 					wrappers.add(sliderWrapper);
 				}
@@ -154,21 +187,19 @@ public class CompareEvaluationsFormController extends FormBasicController {
 	}
 
 	private List<EvaluationFormElementWrapper> forgeTextInput(TextInput element) {
-		int rows = 12;
-		if(element.getRows() > 0) {
-			rows = element.getRows();
-		}
-		
 		List<EvaluationFormResponse> responses = identifierToResponses.get(element.getId());
 		List<EvaluationFormElementWrapper> inputWrappers = new ArrayList<>(responses.size());
 		for(EvaluationFormResponse response:responses) {
 			if(StringHelper.containsNonWhitespace(response.getStringuifiedResponse())) {
 				String initialValue = response.getStringuifiedResponse();
-				TextElement textEl = uifactory.addTextAreaElement("textinput_" + (count++), rows, 72, initialValue, flc);
-				textEl.setEnabled(false);
+				if(initialValue != null) {
+					initialValue = Formatter.stripTabsAndReturns(initialValue).toString();
+				}
+				Identity evaluator = response.getSession().getIdentity();
+				String legend = getLegend(evaluator);
+				String color = evaluatorToColors.get(evaluator);
 		
-				TextInputWrapper textInputWrapper = new TextInputWrapper(element, textEl, null);
-				textEl.setUserObject(textInputWrapper);
+				TextInputWrapper textInputWrapper = new TextInputWrapper(legend, color, initialValue, null);
 				EvaluationFormElementWrapper wrapper = new EvaluationFormElementWrapper(element);
 				wrapper.setTextInputWrapper(textInputWrapper);
 				inputWrappers.add(wrapper);
@@ -192,6 +223,56 @@ public class CompareEvaluationsFormController extends FormBasicController {
 		return wrapper;
 	}
 	
+	private EvaluationFormElementWrapper forgeRadarRubric(Rubric element) {
+		EvaluationFormElementWrapper wrapper = new EvaluationFormElementWrapper(element);
+		wrapper.setRadarOverview(true);
+		List<Slider> sliders = element.getSliders();
+		Map<EvaluationFormSession,RadarSeries> series = new HashMap<>(sliders.size());
+		for(Slider slider:sliders) {
+			String axis;
+			if(StringHelper.containsNonWhitespace(slider.getStartLabel())) {
+				axis = slider.getStartLabel();
+			} else if(StringHelper.containsNonWhitespace(slider.getEndLabel())) {
+				axis = slider.getEndLabel();
+			} else {
+				axis = "";
+			}
+			String responseIdentifier = slider.getId();
+			List<EvaluationFormResponse> responses = identifierToResponses.get(responseIdentifier);
+			
+			for(EvaluationFormResponse response:responses) {
+				EvaluationFormSession responseSession = response.getSession();
+				if(!series.containsKey(responseSession)) {
+					Identity identity = responseSession.getIdentity();
+					String legend = getLegend(identity);
+					String color = evaluatorToColors.get(identity);
+					series.put(responseSession, new RadarSeries(legend, color));
+				}
+				if(response.getNumericalResponse() != null ) {
+					double value = response.getNumericalResponse().doubleValue();
+					series.get(responseSession).addPoint(axis, value);
+				}
+			}
+		}
+		
+		String id = "radar_" + (count++);
+		RadarChartElement radarEl = new RadarChartElement(id);
+		radarEl.setSeries(new ArrayList<>(series.values()));
+		radarEl.setShowLegend(true);
+		if(element.getSliderType() == SliderType.discrete || element.getSliderType() == SliderType.discrete_slider) {
+			radarEl.setLevels(element.getSteps());
+			radarEl.setMaxValue(element.getSteps());
+			radarEl.setFormat(Format.integer);
+		} else if(element.getSliderType() == SliderType.continuous) {
+			radarEl.setLevels(10);
+			radarEl.setMaxValue(100);
+			radarEl.setFormat(Format.integer);
+		}
+		wrapper.setRadarEl(radarEl);
+		flc.add(id, radarEl);
+		return wrapper;
+	}
+	
 	private SliderWrapper forgeSliderStats(Slider slider, Rubric element, List<EvaluationFormResponse> responses) {
 		String id = "overview_" + (count++);
 		SliderOverviewElement overviewEl = new SliderOverviewElement(id);
@@ -199,17 +280,31 @@ public class CompareEvaluationsFormController extends FormBasicController {
 		overviewEl.setMaxValue(element.getEnd());
 		flc.add(id, overviewEl);
 		
-		List<Double> values = new ArrayList<>();
+		List<SliderPoint> values = new ArrayList<>();
 		if(responses != null && responses.size() > 0) {
 			for(EvaluationFormResponse response:responses) {
 				if(response.getNumericalResponse() != null) {
-					values.add(response.getNumericalResponse().doubleValue());
+					Identity evaluator = response.getSession().getIdentity();
+					String color = evaluatorToColors.get(evaluator);
+					double value = response.getNumericalResponse().doubleValue();
+					values.add(new SliderPoint(color, value));
 				}
 			}
 		}
 		overviewEl.setValues(values);
 		
 		return new SliderWrapper(slider, overviewEl);
+	}
+	
+	private String getLegend(Identity identity) {
+		String legend;
+		if(identity.equals(getIdentity())) {
+			legend = userManager.getUserDisplayName(identity);
+		} else {
+			String nr = evaluatorToNumbers.get(identity);
+			legend = translate("evaluator", new String[]{ nr });
+		}
+		return legend;
 	}
 	
 	@Override

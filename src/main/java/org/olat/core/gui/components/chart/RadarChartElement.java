@@ -17,27 +17,28 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.forms.ui.component;
+package org.olat.core.gui.components.chart;
 
 import java.util.List;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.chart.RadarChartComponent.Format;
 import org.olat.core.gui.components.form.flexible.impl.FormItemImpl;
 
 /**
  * 
- * Initial date: 19 déc. 2016<br>
+ * Initial date: 20 déc. 2016<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class SliderOverviewElement extends FormItemImpl {
+public class RadarChartElement extends FormItemImpl {
 	
-	private final SliderOverviewComponent component;
+	private final RadarChartComponent component;
 	
-	public SliderOverviewElement(String name) {
+	public RadarChartElement(String name) {
 		super(name);
-		component = new SliderOverviewComponent(name, this);
+		component = new RadarChartComponent(name);
 	}
 
 	@Override
@@ -45,28 +46,44 @@ public class SliderOverviewElement extends FormItemImpl {
 		return component;
 	}
 	
-	public double getMinValue() {
-		return component.getMinValue();
+	public List<RadarSeries> getSeries() {
+		return component.getSeries();
 	}
 
-	public void setMinValue(double min) {
-		component.setMinValue(min);
+	public void setSeries(List<RadarSeries> series) {
+		component.setSeries(series);
+	}
+	
+	public int getLevels() {
+		return component.getLevels();
+	}
+
+	public void setLevels(int levels) {
+		component.setLevels(levels);
 	}
 
 	public double getMaxValue() {
 		return component.getMaxValue();
 	}
 
-	public void setMaxValue(double max) {
-		component.setMaxValue(max);
+	public void setMaxValue(double maxValue) {
+		component.setMaxValue(maxValue);
+	}
+
+	public boolean isShowLegend() {
+		return component.isShowLegend();
+	}
+
+	public void setShowLegend(boolean showLegend) {
+		component.setShowLegend(showLegend);
 	}
 	
-	public List<SliderPoint> getValues() {
-		return component.getValues();
+	public Format getFormat() {
+		return component.getFormat();
 	}
-	
-	public void setValues(List<SliderPoint> values) {
-		component.setValues(values);
+
+	public void setFormat(Format format) {
+		component.setFormat(format);
 	}
 
 	@Override
@@ -83,7 +100,4 @@ public class SliderOverviewElement extends FormItemImpl {
 	public void reset() {
 		//
 	}
-	
-	
-
 }

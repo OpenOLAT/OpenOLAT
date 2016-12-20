@@ -30,6 +30,7 @@ import org.olat.core.gui.render.Renderer;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.util.StringHelper;
 
 /**
  * 
@@ -51,28 +52,33 @@ public class SliderOverviewRenderer extends DefaultComponentRenderer {
 		double min = soc.getMinValue();
 		double max = soc.getMaxValue();
 		double size = max - min;// 100%
-		List<Double> values = soc.getValues();
-		
-		int maxCount = 0;
-		Map<Double,Integer> valueMap = new HashMap<>();
-		for(Double value:values) {
-			int newCount;
-			if(valueMap.containsKey(value)) {
-				newCount = valueMap.get(value).intValue() + 1;
-			} else {
-				newCount = 1;
-			}
-			valueMap.put(value, newCount);
-			maxCount = Math.max(maxCount, newCount);
-		}
-		
+		List<SliderPoint> values = soc.getValues();
+		int maxCount = getMaxCounts(values);
 		int bubbleStep = maxCount > 1 ? (10 / (maxCount - 1)) : 0;
 
+		Map<Double,Integer> counts = new HashMap<>();
 		if(values != null && values.size() > 0) {
-			for(Double val:values) {
-				int count = valueMap.get(val).intValue() - 1;
+			for(SliderPoint val:values) {
+				double value = val.getValue();
+				int count;
+				if(counts.containsKey(value)) {
+					count = counts.get(value).intValue() + 1;
+					counts.put(value, count);
+				} else {
+					count = 0;
+					counts.put(value, count);
+				}
+
 				int bubble = 10 + (bubbleStep * count);
-				sb.append("<div class='o_slider_overview_point' style='width:").append(bubble).append("px; height:").append(bubble).append("px; border-radius:").append(bubble).append("px;' data-oo-slider-point='").append(val.doubleValue()).append("'> </div>");
+				sb.append("<div class='o_slider_overview_point'")
+				  .append(" style='width:").append(bubble).append("px; height:").append(bubble).append("px;")
+				  .append(" z-index: ").append((50 - count)).append(";");
+				if(StringHelper.containsNonWhitespace(val.getColor())) {
+					sb.append(" background-color:").append(val.getColor()).append("; ");
+				}
+				sb.append(" border-radius:").append(bubble).append("px;'")
+				  .append(" data-oo-slider-point-nr='").append(count).append("'")
+				  .append(" data-oo-slider-point='").append(value).append("'> </div>");
 			}
 		}
 		sb.append("</div>");
@@ -99,16 +105,20 @@ public class SliderOverviewRenderer extends DefaultComponentRenderer {
 			  .append("</script>");
 	}
 	
-	/*
-	   .append("  var width = jQuery('#o_over").append(id).append("').width();\n")
-		  .append("  var height = jQuery('#o_over").append(id).append("').height();\n")
-		  .append("  var widthStep = width / ").append(size).append(";\n")
-		  .append("  jQuery('#o_over").append(id).append(" .o_slider_overview_point').each(function(index, el) {\n")
-		  .append("    var val = jQuery(el).data('oo-slider-point');\n")
-		  .append("    var pointWidth = jQuery(el).width() / 2;\n")
-		  .append("    var left = (val * widthStep) - pointWidth;\n")
-		  .append("    var top = (height - jQuery(el).height()) / 2;\n")
-		  .append("    jQuery(el).css({ 'left': left + 'px', 'top': top + 'px' });\n")
-		  .append("  });");
-	 */
+	private int getMaxCounts(List<SliderPoint> values) {
+		int maxCount = 0;
+		Map<Double,Integer> valueMap = new HashMap<>();
+		for(SliderPoint value:values) {
+			int newCount;
+			double val = value.getValue();
+			if(valueMap.containsKey(val)) {
+				newCount = valueMap.get(val).intValue() + 1;
+			} else {
+				newCount = 1;
+			}
+			valueMap.put(val, newCount);
+			maxCount = Math.max(maxCount, newCount);
+		}
+		return maxCount;
+	}
 }

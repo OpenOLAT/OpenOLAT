@@ -45,6 +45,10 @@
 				<div class="$colRight o_evaluation_right_label">$slider.endLabel</div>
 			</div>
 			#end
+		#elseif($element.isRadarOverview())	
+			<div class="clearfix">
+				$r.render($element.radarEl)
+			</div>
 		#elseif($element.isDiscreteRubric())
 		<div class="o_evaluation_discrete_radio">
 			#if($element.isStepLabels()) 
@@ -95,13 +99,18 @@
 		</div>
 		#end
 	#elseif($element.isTextInput())
-		<div class="clearfix o_block_large">
+		<div class="o_evaluation_textinput clearfix o_block_large">
+		#if($r.isNotNull($element.textInputWrapper.textEl))
 			$r.render($element.textInputWrapper.textEl)
 			#if($r.visible($element.textInputWrapper.saveButton))
 			<div class="o_button_group">
 				$r.render($element.textInputWrapper.saveButton)
 			</div>
 			#end
+		#else
+			<div class="o_evaluation_legend" style="border-left: 3px solid $element.textInputWrapper.color"><h6>$r.escapeHtml($element.textInputWrapper.name)</h6></div>
+			<div class="o_evaluation_text">$r.xssScan($element.textInputWrapper.content)</div>
+		#end
 		</div>
 	#end
 #end
@@ -120,7 +129,6 @@
 		}, function() {
 			jQuery(this).removeClass('hover');
 		});
-		
 	});
 /* ]]> */
 </script>
