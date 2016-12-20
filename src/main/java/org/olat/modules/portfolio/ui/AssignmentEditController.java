@@ -220,6 +220,7 @@ public class AssignmentEditController extends FormBasicController {
 		String editPage = Util.getPackageVelocityRoot(getClass()) + "/assignment_select_form.html";
 		selectFormLayout = FormLayoutContainer.createCustomFormLayout("selectFormLayout", getTranslator(), editPage);
 		selectFormLayout.setLabel("assignment.evaluation.form.entry", null);
+		selectFormLayout.setMandatory(true);
 		formLayout.add(selectFormLayout);
 		if(formEntry != null) {
 			String displayName = StringHelper.escapeHtml(formEntry.getDisplayname());
@@ -357,6 +358,21 @@ public class AssignmentEditController extends FormBasicController {
 				sectionsEl.setErrorKey("form.legende.mandatory", null);
 				allOk &= false;
 			}
+		}
+		
+		typeEl.clearError();
+		selectFormLayout.clearError();
+		if(typeEl.isOneSelected()) {
+			AssignmentType type = AssignmentType.valueOf(typeEl.getSelectedKey());
+			if(type == AssignmentType.form) {
+				if(formEntry == null) {
+					selectFormLayout.setErrorKey("form.legende.mandatory", null);
+					allOk &= false;
+				}	
+			}
+		} else {
+			typeEl.setErrorKey("form.legende.mandatory", null);
+			allOk &= false;
 		}
 
 		return allOk & super.validateFormLogic(ureq);
