@@ -256,7 +256,8 @@ public class IdentityListCourseNodeController extends FormBasicController implem
 			if(coachedGroups.size() > 0) {
 				List<FlexiTableFilter> groupFilters = new ArrayList<>();
 				for(BusinessGroup coachedGroup:coachedGroups) {
-					groupFilters.add(new FlexiTableFilter(coachedGroup.getName(), coachedGroup.getKey().toString(), "o_icon o_icon_group"));
+					String groupName = StringHelper.escapeHtml(coachedGroup.getName());
+					groupFilters.add(new FlexiTableFilter(groupName, coachedGroup.getKey().toString(), "o_icon o_icon_group"));
 				}
 				
 				tableEl.setExtendedFilterButton(translate("filter.groups"), groupFilters);
