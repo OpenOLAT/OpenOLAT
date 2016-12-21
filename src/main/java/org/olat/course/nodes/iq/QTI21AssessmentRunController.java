@@ -147,7 +147,7 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 	private void initAssessment(UserRequest ureq) {
 	    // config : show score info
 		boolean enableScoreInfo= config.getBooleanSafe(IQEditController.CONFIG_KEY_ENABLESCOREINFO);
-		mainVC.contextPut("enableScoreInfo", new Boolean(enableScoreInfo));	
+		mainVC.contextPut("enableScoreInfo", new Boolean(enableScoreInfo));
 	   
 	    // configuration data
 		int maxAttempts = deliveryOptions.getMaxAttempts();
@@ -212,15 +212,19 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 	}
 	
 	/**
+	 * WARNING! The variables showResultsOnHomePage, showResultsVisible and showChangelog are not used 
+	 * in the velocity template and the CONFIG_KEY_RESULT_ON_HOME_PAGE is not editable
+	 * in the configuration of the course element for QTI 2.1!!!!
+	 * 
 	 * Provides the show results button if results available or a message with the visibility period.
 	 * @param ureq
 	 */
 	private void exposeResults(UserRequest ureq) {
 		//migration: check if old tests have no summary configured
+		boolean showResultsOnHomePage = config.getBooleanSafe(IQEditController.CONFIG_KEY_RESULT_ON_HOME_PAGE);
 		String configuredSummary = config.getStringValue(IQEditController.CONFIG_KEY_SUMMARY);
 		boolean noSummary = configuredSummary == null || (configuredSummary!=null && configuredSummary.equals(AssessmentInstance.QMD_ENTRY_SUMMARY_NONE));
 		if(!noSummary) {
-			boolean showResultsOnHomePage = config.getBooleanSafe(IQEditController.CONFIG_KEY_RESULT_ON_HOME_PAGE);
 			mainVC.contextPut("showResultsOnHomePage",new Boolean(showResultsOnHomePage));			
 			boolean dateRelatedVisibility = AssessmentHelper.isResultVisible(config);		
 			if(showResultsOnHomePage && dateRelatedVisibility) {
@@ -237,7 +241,11 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 				mainVC.contextPut("visibilityPeriod", visibilityPeriod);
 				mainVC.contextPut("showResultsVisible", Boolean.FALSE);
 			}
-		}		
+		}
+		
+		UserNodeAuditManager am = userCourseEnv.getCourseEnvironment().getAuditManager();
+		mainVC.contextPut("log", am.getUserNodeLog(courseNode, getIdentity()));	
+		mainVC.contextPut("showChangelog", showResultsOnHomePage);
 	}
 	
 	@Override

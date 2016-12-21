@@ -130,3 +130,11 @@
 	
 	<div class="o_button_group">$r.render("start")</div>
 #end
+
+#if($r.isNotNull($log)) ##&& $showChangelog (in QTI 1.2)
+<div class="o_box">
+    #o_togglebox_start("o_course_run_log" $r.translate("log.title"))
+    <pre class="small">$log</pre>
+    #o_togglebox_end()
+</div>    
+#end
