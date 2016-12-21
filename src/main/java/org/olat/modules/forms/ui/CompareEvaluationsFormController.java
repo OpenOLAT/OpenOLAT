@@ -239,18 +239,19 @@ public class CompareEvaluationsFormController extends FormBasicController {
 			}
 			String responseIdentifier = slider.getId();
 			List<EvaluationFormResponse> responses = identifierToResponses.get(responseIdentifier);
-			
-			for(EvaluationFormResponse response:responses) {
-				EvaluationFormSession responseSession = response.getSession();
-				if(!series.containsKey(responseSession)) {
-					Identity identity = responseSession.getIdentity();
-					String legend = getLegend(identity);
-					String color = evaluatorToColors.get(identity);
-					series.put(responseSession, new RadarSeries(legend, color));
-				}
-				if(response.getNumericalResponse() != null ) {
-					double value = response.getNumericalResponse().doubleValue();
-					series.get(responseSession).addPoint(axis, value);
+			if(responses != null && responses.size() > 0) {
+				for(EvaluationFormResponse response:responses) {
+					EvaluationFormSession responseSession = response.getSession();
+					if(!series.containsKey(responseSession)) {
+						Identity identity = responseSession.getIdentity();
+						String legend = getLegend(identity);
+						String color = evaluatorToColors.get(identity);
+						series.put(responseSession, new RadarSeries(legend, color));
+					}
+					if(response.getNumericalResponse() != null ) {
+						double value = response.getNumericalResponse().doubleValue();
+						series.get(responseSession).addPoint(axis, value);
+					}
 				}
 			}
 		}
