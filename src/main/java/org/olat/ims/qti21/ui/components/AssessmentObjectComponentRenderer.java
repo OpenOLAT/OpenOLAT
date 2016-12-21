@@ -1033,7 +1033,7 @@ public abstract class AssessmentObjectComponentRenderer extends DefaultComponent
 			ItemSessionState itemSessionState, ExtendedTextInteraction interaction, String responseInputString) {
 		
 		String responseUniqueId = component.getResponseUniqueIdentifier(itemSessionState, interaction);
-		sb.append("<textarea id='").append(responseUniqueId).append("' name='qtiworks_response_").append(responseUniqueId).append("'");
+		sb.append("<textarea id='oo_").append(responseUniqueId).append("' name='qtiworks_response_").append(responseUniqueId).append("'");
 		if(component.isItemSessionEnded(itemSessionState, renderer.isSolutionMode())) {
 			sb.append(" disabled");
 		}
@@ -1072,13 +1072,12 @@ public abstract class AssessmentObjectComponentRenderer extends DefaultComponent
 			sb.append(responseInputString);
 		}
 		sb.append("</textarea>");
-		FormJSHelper.appendFlexiFormDirty(sb, component.getQtiItem().getRootForm(), responseUniqueId);
-		sb.append(FormJSHelper.getJSStartWithVarDeclaration(responseUniqueId))
-		//plain textAreas should not propagate the keypress "enter" (keynum = 13) as this would submit the form
-		  .append(responseUniqueId).append(".on('keypress', function(event, target){if (13 == event.keyCode) {event.stopPropagation()} })")
-		  .append(FormJSHelper.getJSEnd());
-	
 		
+		FormJSHelper.appendFlexiFormDirty(sb, component.getQtiItem().getRootForm(), "oo_" + responseUniqueId);
+		sb.append(FormJSHelper.getJSStartWithVarDeclaration("oo_" + responseUniqueId))
+		//plain textAreas should not propagate the keypress "enter" (keynum = 13) as this would submit the form
+		  .append("oo_").append(responseUniqueId).append(".on('keypress', function(event, target){if (13 == event.keyCode) {event.stopPropagation()} })")
+		  .append(FormJSHelper.getJSEnd());
 	}
 	
 	protected abstract void renderPrintedVariable(AssessmentRenderer renderer, StringOutput sb,

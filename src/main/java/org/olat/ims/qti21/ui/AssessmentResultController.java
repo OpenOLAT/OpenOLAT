@@ -29,11 +29,14 @@ import java.util.Map;
 
 import org.olat.admin.user.UserShortDescription;
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.control.Controller;
+import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.creator.ControllerCreator;
 import org.olat.core.id.Identity;
 import org.olat.core.util.StringHelper;
 import org.olat.course.assessment.AssessmentHelper;
@@ -49,9 +52,12 @@ import org.olat.ims.qti21.ui.components.InteractionResultFormItem;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import uk.ac.ed.ph.jqtiplus.node.item.AssessmentItem;
+import uk.ac.ed.ph.jqtiplus.node.item.interaction.DrawingInteraction;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.EndAttemptInteraction;
+import uk.ac.ed.ph.jqtiplus.node.item.interaction.ExtendedTextInteraction;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.Interaction;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.PositionObjectInteraction;
+import uk.ac.ed.ph.jqtiplus.node.item.interaction.UploadInteraction;
 import uk.ac.ed.ph.jqtiplus.node.result.AssessmentResult;
 import uk.ac.ed.ph.jqtiplus.node.result.ItemResult;
 import uk.ac.ed.ph.jqtiplus.node.result.ItemVariable;
@@ -87,10 +93,14 @@ public class AssessmentResultController extends FormBasicController {
 	private final ShowResultsOnFinish resultsOnfinish;
 	
 	private final boolean anonym;
+	private final boolean withPrint;
+	private final Identity assessedIdentity;
 	private final TestSessionState testSessionState;
 	private final AssessmentResult assessmentResult;
+	private final AssessmentTestSession candidateSession;
 	private final CandidateSessionContext candidateSessionContext;
 
+	private final File fUnzippedDirRoot;
 	private final URI assessmentObjectUri;
 	private final ResourceLocator inputResourceLocator;
 	private final ResolvedAssessmentTest resolvedAssessmentTest;
@@ -102,12 +112,17 @@ public class AssessmentResultController extends FormBasicController {
 	private QTI21Service qtiService;
 	
 	public AssessmentResultController(UserRequest ureq, WindowControl wControl, Identity assessedIdentity, boolean anonym,
-			AssessmentTestSession candidateSession, ShowResultsOnFinish resultsOnfinish, File fUnzippedDirRoot, String mapperUri) {
+			AssessmentTestSession candidateSession, ShowResultsOnFinish resultsOnfinish, File fUnzippedDirRoot, String mapperUri,
+			boolean withPrint) {
 		super(ureq, wControl, "assessment_results");
 		
 		this.anonym = anonym;
 		this.mapperUri = mapperUri;
+		this.withPrint = withPrint;
 		this.resultsOnfinish = resultsOnfinish;
+		this.assessedIdentity = assessedIdentity;
+		this.candidateSession = candidateSession;
+		this.fUnzippedDirRoot = fUnzippedDirRoot;
 
 		ResourceLocator fileResourceLocator = new PathResourceLocator(fUnzippedDirRoot.toPath());
 		inputResourceLocator = 
@@ -130,8 +145,16 @@ public class AssessmentResultController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+
 		if(formLayout instanceof FormLayoutContainer) {
 			FormLayoutContainer layoutCont = (FormLayoutContainer)formLayout;
+			layoutCont.contextPut("print", new Boolean(withPrint));
+			layoutCont.contextPut("printCommand", Boolean.FALSE);
+			if(withPrint) {
+				layoutCont.contextPut("winid", "w" + layoutCont.getFormItemComponent().getDispatchID());
+				layoutCont.getFormItemComponent().addListener(this);
+			}
+
 			if(assessedIdentityInfosCtrl != null) {
 				layoutCont.put("assessedIdentityInfos", assessedIdentityInfosCtrl.getInitialComponent());
 			} else if(anonym) {
@@ -226,11 +249,17 @@ public class AssessmentResultController extends FormBasicController {
 			layoutCont.add(responseId, responseFormItem);
 	
 			//solution
-			String solutionId = "solutionItem" + count++;
-			InteractionResultFormItem solutionFormItem = new InteractionResultFormItem(solutionId, interaction, resolvedAssessmentItem);
-			solutionFormItem.setShowSolution(true);
-			initInteractionResultFormItem(solutionFormItem, sessionState);
-			layoutCont.add(solutionId, solutionFormItem);
+			InteractionResultFormItem solutionFormItem;
+			
+			if(interaction instanceof ExtendedTextInteraction || interaction instanceof UploadInteraction || interaction instanceof DrawingInteraction) {
+				solutionFormItem = null;// no solution
+			} else {
+				String solutionId = "solutionItem" + count++;
+				solutionFormItem = new InteractionResultFormItem(solutionId, interaction, resolvedAssessmentItem);
+				solutionFormItem.setShowSolution(true);
+				initInteractionResultFormItem(solutionFormItem, sessionState);
+				layoutCont.add(solutionId, solutionFormItem);
+			}
 			
 			r.getInteractionResults().add(new InteractionResults(responseFormItem, solutionFormItem));
 		}
@@ -285,7 +314,29 @@ public class AssessmentResultController extends FormBasicController {
 	protected void formOK(UserRequest ureq) {
 		//
 	}
-	
+
+	@Override
+	public void event(UserRequest ureq, Component source, Event event) {
+		if(flc.getFormItemComponent() == source && "print".equals(event.getCommand())) {
+			doPrint(ureq);
+		}
+		super.event(ureq, source, event);
+	}
+
+	private void doPrint(UserRequest ureq) {
+		ControllerCreator creator = new ControllerCreator() {
+			@Override
+			public Controller createController(UserRequest uureq, WindowControl wwControl) {
+				AssessmentResultController printViewCtrl = new AssessmentResultController(uureq, wwControl, assessedIdentity, anonym,
+						candidateSession, resultsOnfinish, fUnzippedDirRoot, mapperUri, false);
+				printViewCtrl.flc.contextPut("printCommand", Boolean.TRUE);
+				listenTo(printViewCtrl);
+				return printViewCtrl;
+			}
+		};
+		openInNewBrowserWindow(ureq, creator);
+	}
+
 	public class InteractionResults {
 		private InteractionResultFormItem responseFormItem;
 		private InteractionResultFormItem solutionFormItem;
