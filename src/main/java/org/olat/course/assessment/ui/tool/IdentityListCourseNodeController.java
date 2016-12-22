@@ -434,13 +434,18 @@ public class IdentityListCourseNodeController extends FormBasicController implem
 		updateModel(ureq, null, tableEl.getSelectedFilters(), tableEl.getSelectedExtendedFilters());
 		
 		if(entries != null && entries.size() > 0) {
-			String resourceType = entries.get(0).getOLATResourceable().getResourceableTypeName();
+			ContextEntry entry = entries.get(0);
+			String resourceType = entry.getOLATResourceable().getResourceableTypeName();
 			if("Identity".equals(resourceType)) {
 				Long identityKey = entries.get(0).getOLATResourceable().getResourceableId();
 				for(int i=usersTableModel.getRowCount(); i--> 0; ) {
 					AssessedIdentityElementRow row = usersTableModel.getObject(i);
 					if(row.getIdentityKey().equals(identityKey)) {
-						doSelect(ureq, row);
+						Controller ctrl = doSelect(ureq, row);
+						if(ctrl instanceof Activateable2) {
+							List<ContextEntry> subEntries = entries.subList(1, entries.size());
+							((Activateable2)ctrl).activate(ureq, subEntries, entry.getTransientState());
+						}
 					}
 				}
 			}	
@@ -545,7 +550,7 @@ public class IdentityListCourseNodeController extends FormBasicController implem
 		return -1;
 	}
 	
-	private void doSelect(UserRequest ureq, AssessedIdentityElementRow row) {
+	private Controller doSelect(UserRequest ureq, AssessedIdentityElementRow row) {
 		removeAsListenerAndDispose(currentIdentityCtrl);
 		
 		Identity assessedIdentity = securityManager.loadIdentityByKey(row.getIdentityKey());
@@ -569,6 +574,7 @@ public class IdentityListCourseNodeController extends FormBasicController implem
 		nextLink = LinkFactory.createToolLink("nextelement","", this, "o_icon_next_toolbar");
 		nextLink.setTitle(translate("command.next"));
 		stackPanel.addTool(nextLink, Align.rightEdge, false, "o_tool_next");
+		return currentIdentityCtrl;
 	}
 	
 	private void doSetDone(UserRequest ureq) {

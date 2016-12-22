@@ -128,7 +128,9 @@ public class AssessmentIdentityCourseController extends BasicController implemen
 
 	@Override
 	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
-		//
+		if(entries != null || state != null) {
+			treeOverviewCtrl.activate(ureq, entries, state);
+		}
 	}
 
 	@Override

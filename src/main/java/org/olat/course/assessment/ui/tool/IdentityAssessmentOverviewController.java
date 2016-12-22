@@ -44,6 +44,9 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlex
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.generic.dtabs.Activateable2;
+import org.olat.core.id.context.ContextEntry;
+import org.olat.core.id.context.StateEntry;
 import org.olat.core.logging.AssertException;
 import org.olat.core.util.Util;
 import org.olat.course.Structure;
@@ -56,6 +59,7 @@ import org.olat.course.assessment.ui.tool.IdentityAssessmentOverviewTableModel.N
 import org.olat.course.nodes.AssessableCourseNode;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.run.userview.UserCourseEnvironment;
+import org.olat.modules.assessment.ui.AssessedIdentityListState;
 import org.olat.modules.assessment.ui.ScoreCellRenderer;
 
 /**
@@ -70,7 +74,7 @@ import org.olat.modules.assessment.ui.ScoreCellRenderer;
  *
  * @author gnaegi 
  */
-public class IdentityAssessmentOverviewController extends FormBasicController {
+public class IdentityAssessmentOverviewController extends FormBasicController implements Activateable2 {
 
 	private static final String CMD_SELECT_NODE = "cmd.select.node"; 
 	/** Event fired when a node has been selected, meaning when a row in the table has been selected **/
@@ -269,6 +273,15 @@ public class IdentityAssessmentOverviewController extends FormBasicController {
 		}
 		tableModel.setObjects(nodesTableList);
 		tableEl.reset(true, true, true);
+	}
+
+	@Override
+	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
+		if(state instanceof AssessedIdentityListState) {
+			AssessedIdentityListState listState = (AssessedIdentityListState)state;
+			tableEl.setSelectedFilterKey(listState.getFilter());
+			loadModel();
+		}	
 	}
 
 	@Override

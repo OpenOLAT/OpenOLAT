@@ -186,7 +186,8 @@ public class AssessmentToolController extends MainLayoutBasicController implemen
 				UserSelectionEvent use = (UserSelectionEvent)event;
 				if(use.getCourseNodeIdents() == null || use.getCourseNodeIdents().isEmpty() || use.getCourseNodeIdents().size() > 1) {
 					OLATResourceable resource = OresHelper.createOLATResourceableInstance("Identity", use.getIdentityKey());
-					List<ContextEntry> entries = BusinessControlFactory.getInstance().createCEListFromString(resource);
+					List<ContextEntry> entries = BusinessControlFactory.getInstance()
+							.createCEListFromResourceable(resource, new AssessedIdentityListState("inReview"));
 					doSelectUsersView(ureq, null).activate(ureq, entries, null);
 				} else {
 					OLATResourceable nodeRes = OresHelper.createOLATResourceableInstance("Node", new Long(use.getCourseNodeIdents().get(0)));

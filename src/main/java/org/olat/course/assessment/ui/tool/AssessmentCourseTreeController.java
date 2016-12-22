@@ -125,7 +125,17 @@ public class AssessmentCourseTreeController extends BasicController implements A
 		} else {
 			ContextEntry entry = entries.get(0);
 			String resourceTypeName = entry.getOLATResourceable().getResourceableTypeName();
-			if("Node".equalsIgnoreCase(resourceTypeName) || "CourseNode".equalsIgnoreCase(resourceTypeName)) {
+			if("Identity".equalsIgnoreCase(resourceTypeName)) {
+				TreeNode treeNode =  menuTree.getTreeModel().getRootNode();
+				CourseNode courseNode = (CourseNode)treeNode.getUserObject();
+				if(courseNode != null) {
+					view = View.users;
+					Controller ctrl = doSelectCourseNode(ureq, treeNode, courseNode);
+					if(ctrl instanceof Activateable2) {
+						((Activateable2)ctrl).activate(ureq, entries, null);
+					}
+				}
+			} else if("Node".equalsIgnoreCase(resourceTypeName) || "CourseNode".equalsIgnoreCase(resourceTypeName)) {
 				Long nodeIdent = entries.get(0).getOLATResourceable().getResourceableId();
 				CourseNode courseNode = CourseFactory.loadCourse(courseEntry).getRunStructure().getNode(nodeIdent.toString());
 				TreeNode treeNode = TreeHelper.findNodeByUserObject(courseNode, menuTree.getTreeModel().getRootNode());
