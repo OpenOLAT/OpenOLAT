@@ -96,6 +96,7 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 	private int currentPage;
 	private int pageSize;
 	private final int defaultPageSize;
+	private boolean bordered; 
 	private boolean editMode;
 	private boolean exportEnabled;
 	private boolean searchEnabled;
@@ -247,6 +248,16 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 
 	public FormLink getCustomTypeButton() {
 		return customTypeButton;
+	}
+
+	@Override
+	public boolean isBordered() {
+		return bordered;
+	}
+
+	@Override
+	public void setBordered(boolean bordered) {
+		this.bordered = bordered;
 	}
 
 	@Override
@@ -603,6 +614,21 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 		return selectedFilters;
 	}
 	
+	@Override
+	public void setSelectedExtendedFilters(List<FlexiTableFilter> filters) {
+		if(extendedFilters != null && extendedFilters.size() > 0) {
+			for(FlexiTableFilter extendedFilter:extendedFilters) {
+				boolean selected = false;
+				for(FlexiTableFilter filter:filters) {
+					if(filter.getFilter() != null && filter.getFilter().equals(extendedFilter.getFilter())) {
+						selected = true;
+					}
+				}
+				extendedFilter.setSelected(selected);
+			}
+		}
+	}
+
 	public FormLink getExtendedFilterButton() {
 		return extendedFilterButton;
 	}
@@ -786,6 +812,8 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 		String filter = form.getRequestParameter("filter");
 		String pagesize = form.getRequestParameter("pagesize");
 		String checkbox = form.getRequestParameter("chkbox");
+		String removeFilter = form.getRequestParameter("rm-filter");
+		String removeExtendedFilter = form.getRequestParameter("rm-extended-filter");
 		if("undefined".equals(dispatchuri)) {
 			evalSearchRequest(ureq);
 		} else if(StringHelper.containsNonWhitespace(checkbox)) {
@@ -822,8 +850,12 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 		} else if(extendedFilterButton != null
 				&& extendedFilterButton.getFormDispatchId().equals(dispatchuri)) {
 			extendedFilterCallout(ureq);
+		} else if(StringHelper.containsNonWhitespace(removeExtendedFilter)) {
+			removeExtendedFilter(ureq);
 		} else if(dispatchuri != null && StringHelper.containsNonWhitespace(filter)) {
 			doFilter(filter);
+		} else if(StringHelper.containsNonWhitespace(removeFilter)) {
+			doFilter(null);
 		} else if(exportButton != null
 				&& exportButton.getFormDispatchId().equals(dispatchuri)) {
 			doExport(ureq);
@@ -1033,6 +1065,15 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 			dataSource.load(null, selectedFilters, null, 0, getPageSize(), orderBy);
 		}
 		component.setDirty(true);
+	}
+	
+	private void removeExtendedFilter(UserRequest ureq) {
+		if(extendedFilters != null) {
+			for(FlexiTableFilter filter:extendedFilters) {
+				filter.setSelected(false);
+			}
+		}
+		doExtendedFilter(ureq);
 	}
 	
 	private void doExtendedFilter(UserRequest ureq) {

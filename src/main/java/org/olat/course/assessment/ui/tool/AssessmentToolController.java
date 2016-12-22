@@ -26,8 +26,10 @@ import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.stack.ButtonGroupComponent;
+import org.olat.core.gui.components.stack.PopEvent;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.components.stack.TooledStackedPanel.Align;
+import org.olat.core.gui.components.tree.TreeNode;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -67,9 +69,8 @@ public class AssessmentToolController extends MainLayoutBasicController implemen
 	private final AssessmentToolContainer toolContainer;
 	private final ButtonGroupComponent segmentButtonsCmp;
 	
+	private AssessmentCourseTreeController courseTreeCtrl;
 	private AssessmentCourseOverviewController overviewCtrl;
-	private AssessmentIdentityListCourseTreeController currentCtrl;
-	private AssessedBusinessGroupListCourseTreeController groupsCtrl;
 	private BulkAssessmentOverviewController bulkAssessmentOverviewCtrl;
 	private EfficiencyStatementAssessmentController efficiencyStatementCtrl;
 	
@@ -85,7 +86,8 @@ public class AssessmentToolController extends MainLayoutBasicController implemen
 		this.assessmentCallback = assessmentCallback;
 		
 		toolContainer = new AssessmentToolContainer();
-	
+
+		stackPanel.addListener(this);
 		segmentButtonsCmp = new ButtonGroupComponent("segments");
 		
 		overviewCtrl = new AssessmentCourseOverviewController(ureq, getWindowControl(), courseEntry, assessmentCallback);
@@ -130,7 +132,7 @@ public class AssessmentToolController extends MainLayoutBasicController implemen
 		String resName = entries.get(0).getOLATResourceable().getResourceableTypeName();
 		if("Users".equalsIgnoreCase(resName)) {
 			List<ContextEntry> subEntries = entries.subList(1, entries.size());
-			doSelectUsersView(ureq).activate(ureq, subEntries, entries.get(0).getTransientState());
+			doSelectUsersView(ureq, null).activate(ureq, subEntries, entries.get(0).getTransientState());
 		} else if("BusinessGroups".equalsIgnoreCase(resName) || "Groups".equalsIgnoreCase(resName)) {
 			List<ContextEntry> subEntries = entries.subList(1, entries.size());
 			doSelectGroupsView(ureq).activate(ureq, subEntries, entries.get(0).getTransientState());
@@ -145,7 +147,7 @@ public class AssessmentToolController extends MainLayoutBasicController implemen
 			addToHistory(ureq, getWindowControl());
 		} else if (source == usersLink) {
 			cleanUp();
-			doSelectUsersView(ureq);
+			doSelectUsersView(ureq, null);
 		} else if (groupsLink == source) {
 			cleanUp();
 			doSelectGroupsView(ureq);
@@ -155,6 +157,15 @@ public class AssessmentToolController extends MainLayoutBasicController implemen
 		} else if(bulkAssessmentLink == source) {
 			cleanUp();
 			doBulkAssessmentView(ureq);
+		} else if(stackPanel == source) {
+			if(event instanceof PopEvent) {
+				PopEvent pe = (PopEvent)event;
+				if(pe.getController() == courseTreeCtrl) {
+					removeAsListenerAndDispose(courseTreeCtrl);
+					courseTreeCtrl = null;
+					segmentButtonsCmp.setSelectedButton(overviewLink);
+				}
+			}
 		}
 	}
 
@@ -162,26 +173,26 @@ public class AssessmentToolController extends MainLayoutBasicController implemen
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if(overviewCtrl == source) {
 			if(event == AssessmentCourseOverviewController.SELECT_USERS_EVENT) {
-				doSelectUsersView(ureq);
+				doSelectUsersView(ureq, null);
 			} else if(event == AssessmentCourseOverviewController.SELECT_NODES_EVENT) {
-				doSelectUsersView(ureq);
+				doSelectUsersView(ureq, null);
 			} else if(event == AssessmentCourseOverviewController.SELECT_GROUPS_EVENT) {
 				doSelectGroupsView(ureq);
 			} else if(event == AssessmentCourseOverviewController.SELECT_PASSED_EVENT) {
-				doSelectPassedView(ureq);
+				doSelectUsersView(ureq, new AssessedIdentityListState("passed"));
 			} else if(event == AssessmentCourseOverviewController.SELECT_FAILED_EVENT) {
-				doSelectFailedView(ureq);
+				doSelectUsersView(ureq, new AssessedIdentityListState("failed"));
 			} else if (event instanceof UserSelectionEvent) {
 				UserSelectionEvent use = (UserSelectionEvent)event;
 				if(use.getCourseNodeIdents() == null || use.getCourseNodeIdents().isEmpty() || use.getCourseNodeIdents().size() > 1) {
 					OLATResourceable resource = OresHelper.createOLATResourceableInstance("Identity", use.getIdentityKey());
 					List<ContextEntry> entries = BusinessControlFactory.getInstance().createCEListFromString(resource);
-					doSelectUsersView(ureq).activate(ureq, entries, null);
+					doSelectUsersView(ureq, null).activate(ureq, entries, null);
 				} else {
 					OLATResourceable nodeRes = OresHelper.createOLATResourceableInstance("Node", new Long(use.getCourseNodeIdents().get(0)));
 					OLATResourceable idRes = OresHelper.createOLATResourceableInstance("Identity", use.getIdentityKey());
 					List<ContextEntry> entries = BusinessControlFactory.getInstance().createCEListFromString(nodeRes, idRes);
-					doSelectUsersView(ureq).activate(ureq, entries, null);
+					doSelectUsersView(ureq, null).activate(ureq, entries, null);
 				}
 			}
 		}
@@ -190,9 +201,7 @@ public class AssessmentToolController extends MainLayoutBasicController implemen
 	
 	private void cleanUp() {
 		removeAsListenerAndDispose(bulkAssessmentOverviewCtrl);
-		removeAsListenerAndDispose(currentCtrl);
 		bulkAssessmentOverviewCtrl = null;
-		currentCtrl = null;
 	}
 	
 	private void doBulkAssessmentView(UserRequest ureq) {
@@ -208,65 +217,31 @@ public class AssessmentToolController extends MainLayoutBasicController implemen
 	}
 	
 
-	private AssessedBusinessGroupListCourseTreeController doSelectGroupsView(UserRequest ureq) {
-		OLATResourceable ores = OresHelper.createOLATResourceableInstance("BusinessGroups", 0l);
-		WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ores, null, getWindowControl());
-		addToHistory(ureq, bwControl);
-		groupsCtrl = new AssessedBusinessGroupListCourseTreeController(ureq, bwControl, stackPanel, courseEntry, coachUserEnv, toolContainer, assessmentCallback);
-		listenTo(groupsCtrl);
-		stackPanel.popUpToController(this);
-		stackPanel.pushController(translate("groups"), groupsCtrl);
+	private AssessmentCourseTreeController doSelectGroupsView(UserRequest ureq) {
+		if(courseTreeCtrl == null || courseTreeCtrl.isDisposed()) {
+			stackPanel.popUpToController(this);
+			
+			courseTreeCtrl = new AssessmentCourseTreeController(ureq, getWindowControl(), stackPanel, courseEntry, coachUserEnv, toolContainer, assessmentCallback);
+			listenTo(courseTreeCtrl);
+			TreeNode node = courseTreeCtrl.getSelectedCourseNode();
+			stackPanel.pushController(node.getTitle(), "o_icon " + node.getIconCssClass(), courseTreeCtrl);
+		}
+		courseTreeCtrl.switchToBusinessGroupsView(ureq);
 		segmentButtonsCmp.setSelectedButton(groupsLink);
-		groupsCtrl.activate(ureq, null, null);
-		return groupsCtrl;
+		return courseTreeCtrl;
 	}
 
-	private AssessmentIdentityListCourseTreeController doSelectUsersView(UserRequest ureq) {
-		OLATResourceable ores = OresHelper.createOLATResourceableInstance("Users", 0l);
-		WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ores, null, getWindowControl());
-		addToHistory(ureq, bwControl);
-		AssessmentIdentityListCourseTreeController treeCtrl = new AssessmentIdentityListCourseTreeController(ureq, bwControl, stackPanel,
-				courseEntry, null, coachUserEnv, toolContainer, assessmentCallback);
-		listenTo(treeCtrl);
-		stackPanel.popUpToController(this);
-		stackPanel.pushController(translate("users"), treeCtrl);
+	private AssessmentCourseTreeController doSelectUsersView(UserRequest ureq, StateEntry stateUserList) {
+		if(courseTreeCtrl == null || courseTreeCtrl.isDisposed()) {
+			stackPanel.popUpToController(this);
+			
+			courseTreeCtrl = new AssessmentCourseTreeController(ureq, getWindowControl(), stackPanel, courseEntry, coachUserEnv, toolContainer, assessmentCallback);
+			listenTo(courseTreeCtrl);
+			TreeNode node = courseTreeCtrl.getSelectedCourseNode();
+			stackPanel.pushController(node.getTitle(), "o_icon " + node.getIconCssClass(), courseTreeCtrl);
+		}
+		courseTreeCtrl.switchToUsersView(ureq, stateUserList);
 		segmentButtonsCmp.setSelectedButton(usersLink);
-		currentCtrl = treeCtrl;
-		treeCtrl.activate(ureq, null, null);
-		return treeCtrl;
-	}
-	
-	private void doSelectPassedView(UserRequest ureq) {
-		OLATResourceable ores = OresHelper.createOLATResourceableInstance("Passed", 0l);
-		WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ores, null, getWindowControl());
-		addToHistory(ureq, bwControl);
-		AssessmentIdentityListCourseTreeController treeCtrl = new AssessmentIdentityListCourseTreeController(ureq, bwControl, stackPanel,
-				courseEntry, null, coachUserEnv, toolContainer, assessmentCallback);
-		listenTo(treeCtrl);
-		stackPanel.popUpToController(this);
-		stackPanel.pushController(translate("users"), treeCtrl);
-		segmentButtonsCmp.setSelectedButton(usersLink);
-		currentCtrl = treeCtrl;
-		
-		AssessedIdentityListState state = new AssessedIdentityListState();
-		state.setFilter("passed");
-		treeCtrl.activate(ureq, null, state);
-	}
-	
-	private void doSelectFailedView(UserRequest ureq) {
-		OLATResourceable ores = OresHelper.createOLATResourceableInstance("NotPassed", 0l);
-		WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ores, null, getWindowControl());
-		addToHistory(ureq, bwControl);
-		AssessmentIdentityListCourseTreeController treeCtrl = new AssessmentIdentityListCourseTreeController(ureq, bwControl, stackPanel,
-				courseEntry, null, coachUserEnv, toolContainer, assessmentCallback);
-		listenTo(treeCtrl);
-		stackPanel.popUpToController(this);
-		stackPanel.pushController(translate("users"), treeCtrl);
-		segmentButtonsCmp.setSelectedButton(usersLink);
-		currentCtrl = treeCtrl;
-		
-		AssessedIdentityListState state = new AssessedIdentityListState();
-		state.setFilter("failed");
-		treeCtrl.activate(ureq, null, state);
+		return courseTreeCtrl;
 	}
 }

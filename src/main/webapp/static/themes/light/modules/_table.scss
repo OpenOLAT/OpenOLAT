@@ -120,7 +120,15 @@ a.o_orderby, a.o_orderby:hover {
 .o_table_tools_indications {
 	margin-left: 10px;
 	padding-top:3px;
-	font-size:66%;
+	font-size:80%;
+	
+	a {
+		color: $brand-danger;
+	}
+}
+
+.o_table_toolbar_left .o_table_tools_indications {
+	text-align: right;
 }
 
 .o_table_count {

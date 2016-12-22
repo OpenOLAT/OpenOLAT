@@ -227,13 +227,18 @@ public class BreadcrumbedStackedPanel extends Panel implements StackedPanel, Bre
 				fireEvent(ureq, new VetoPopEvent());
 				return;
 			}
-			Controller popedCtrl = popController(source);
-			if(popedCtrl != null) {
+			BreadCrumb popedCrumb = popController(source);
+			if(popedCrumb != null) {
 				Controller last = getLastController();
 				if(last != null) {
 					addToHistory(ureq, last);
 				}
-				fireEvent(ureq, new PopEvent(popedCtrl));
+				
+				if(popedCrumb.getController() != null) {
+					fireEvent(ureq, new PopEvent(popedCrumb.getController()));
+				} else if(popedCrumb.getUserObject() != null) {
+					fireEvent(ureq, new PopEvent(popedCrumb.getUserObject()));
+				}
 			} else if(stack.indexOf(source) == 0) {
 				fireEvent(ureq, new RootEvent());
 				
@@ -288,12 +293,10 @@ public class BreadcrumbedStackedPanel extends Panel implements StackedPanel, Bre
 			for(int i=stack.size(); i-->(index+1); ) {
 				Link link = stack.remove(i);
 				popedCrumb = (BreadCrumb)link.getUserObject();
-				popedCrumb.getController().dispose();
+				popedCrumb.dispose();
 			}
 
-			Link currentLink = stack.get(index);
-			BreadCrumb crumb  = (BreadCrumb)currentLink.getUserObject();
-			setContent(crumb.getController());
+			setContent(index);
 			updateCloseLinkTitle();
 			return true;
 		}
@@ -308,12 +311,10 @@ public class BreadcrumbedStackedPanel extends Panel implements StackedPanel, Bre
 			for(int i=stack.size(); i--> index; ) {
 				Link link = stack.remove(i);
 				popedCrumb = (BreadCrumb)link.getUserObject();
-				popedCrumb.getController().dispose();
+				popedCrumb.dispose();
 			}
-
-			Link currentLink = stack.get(index - 1);
-			BreadCrumb crumb  = (BreadCrumb)currentLink.getUserObject();
-			setContent(crumb.getController());
+			
+			setContent(index - 1);
 			updateCloseLinkTitle();
 		}
 	}
@@ -347,7 +348,7 @@ public class BreadcrumbedStackedPanel extends Panel implements StackedPanel, Bre
 		return null;
 	}
 	
-	private Controller popController(Component source) {
+	private BreadCrumb popController(Component source) {
 		int index = stack.indexOf(source);
 		if(index < (stack.size() - 1)) {
 			
@@ -358,11 +359,9 @@ public class BreadcrumbedStackedPanel extends Panel implements StackedPanel, Bre
 				popedCrumb.dispose();
 			}
 
-			Link currentLink = stack.get(index);
-			BreadCrumb crumb  = (BreadCrumb)currentLink.getUserObject();
-			setContent(crumb.getController());
+			setContent(index);
 			updateCloseLinkTitle();
-			return popedCrumb.getController();
+			return popedCrumb;
 		}
 		return null;
 	}
@@ -404,22 +403,71 @@ public class BreadcrumbedStackedPanel extends Panel implements StackedPanel, Bre
 
 	@Override
 	public void pushController(String displayName, Controller controller) {
-		Link link = LinkFactory.createLink("crumb_" + stack.size(), (Translator)null, this);
-		link.setCustomDisplayText(StringHelper.escapeHtml(displayName));
-		link.setDomReplacementWrapperRequired(false);
-		link.setUserObject(createCrumb(controller));
-		stack.add(link);
-		setContent(controller);
-		updateCloseLinkTitle();
+		pushController(displayName, null, controller, null);
+	}
+
+	@Override
+	public void pushController(String displayName, String iconLeftCss, Controller controller) {
+		pushController(displayName, iconLeftCss, controller, null);
 	}
 	
+	@Override
+	public void pushController(String displayName, String iconLeftCss, Object uobject) {
+		pushController(displayName, iconLeftCss, null, uobject);
+	}
+
+	public void pushController(String displayName, String iconLeftCss, Controller controller, Object uobject) {
+		Link link = LinkFactory.createLink("crumb_" + stack.size(), (Translator)null, this);
+		link.setCustomDisplayText(StringHelper.escapeHtml(displayName));
+		if(StringHelper.containsNonWhitespace(iconLeftCss)) {
+			link.setIconLeftCSS(iconLeftCss);
+		}
+		link.setDomReplacementWrapperRequired(false);
+		link.setUserObject(createCrumb(controller, uobject));
+		stack.add(link);
+		if(controller != null) {
+			setContent(controller);
+		}
+		updateCloseLinkTitle();
+	}
+
 	public void changeDisplayname(String diplayName) {
 		stack.get(stack.size() - 1).setCustomDisplayText(diplayName);
 		setDirty(true);
 	}
+
+	@Override
+	public void changeDisplayname(String displayName, String iconLeftCss, Controller ctrl) {
+		for(int i=stack.size(); i-->1; ) {
+			Link link = stack.get(i);
+			BreadCrumb crumb = (BreadCrumb)link.getUserObject();
+			if(crumb.getController() == ctrl) {
+				link.setCustomDisplayText(StringHelper.escapeHtml(displayName));
+				if(StringHelper.containsNonWhitespace(iconLeftCss)) {
+					link.setIconLeftCSS(iconLeftCss);
+				} else {
+					link.setIconLeftCSS(null);
+				}
+			}
+		}
+	}
 	
-	protected BreadCrumb createCrumb(Controller controller) {
-		return new BreadCrumb(controller);
+	protected BreadCrumb createCrumb(Controller controller, Object uobject) {
+		return new BreadCrumb(controller, uobject);
+	}
+	
+	private void setContent(int crumbIndex) {
+		Link currentLink = stack.get(crumbIndex);
+		BreadCrumb crumb  = (BreadCrumb)currentLink.getUserObject();
+		if(crumb.getController() == null) {
+			if(crumbIndex - 1 >= 0) {
+				Link parentLink = stack.get(crumbIndex - 1);
+				BreadCrumb parentCrumb  = (BreadCrumb)parentLink.getUserObject();
+				setContent(parentCrumb.getController());
+			}
+		} else {
+			setContent(crumb.getController());
+		}
 	}
 	
 	private void setContent(Controller ctrl) {
@@ -479,10 +527,16 @@ public class BreadcrumbedStackedPanel extends Panel implements StackedPanel, Bre
 	}
 	
 	public static class BreadCrumb {
+		private final Object uobject;
 		private final Controller controller;
 		
-		public BreadCrumb(Controller controller) {
+		public BreadCrumb(Controller controller, Object uobject) {
+			this.uobject = uobject;
 			this.controller = controller;
+		}
+		
+		public Object getUserObject() {
+			return uobject;
 		}
 
 		public Controller getController() {
@@ -490,7 +544,9 @@ public class BreadcrumbedStackedPanel extends Panel implements StackedPanel, Bre
 		}
 
 		public void dispose() {
-			controller.dispose();
+			if(controller != null) {
+				controller.dispose();
+			}
 		}
 	}
 }

@@ -221,6 +221,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_rejected:before { content: $fa-var-thumbs-down;}
 .o_icon_reminder:before { content: $fa-var-hand-o-up; }
 .o_icon_remove:before { content: $fa-var-times; }
+.o_icon_remove_filters:before { content: $fa-var-times-circle; }
 .o_icon_replace:before { content: $fa-var-files-o; }
 .o_icon_reply:before { content: $fa-var-reply; }
 .o_icon_reply_with_quote:before { content: $fa-var-reply-all; }

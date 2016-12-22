@@ -23,7 +23,7 @@
 * under the Apache 2.0 license as the original file.
 */
 
-package org.olat.course.assessment;
+package org.olat.course.archiver;
 
 import java.util.List;
 

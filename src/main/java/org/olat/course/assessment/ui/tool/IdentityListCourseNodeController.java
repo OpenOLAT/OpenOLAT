@@ -166,6 +166,15 @@ public class IdentityListCourseNodeController extends FormBasicController implem
 		
 		initForm(ureq);
 	}
+	
+	public AssessedIdentityListState getListState() {
+		List<FlexiTableFilter> filters = tableEl.getSelectedFilters();
+		String filter = null;
+		if(filters != null && filters.size() > 0) {
+			filter = filters.get(0).getFilter();
+		}
+		return new AssessedIdentityListState(filter, tableEl.getSelectedExtendedFilters());
+	}
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
@@ -409,15 +418,20 @@ public class IdentityListCourseNodeController extends FormBasicController implem
 	@Override
 	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
 		String filter = null;
+		List<FlexiTableFilter> extendedFilters = null;
 		if(state instanceof AssessedIdentityListState) {
 			AssessedIdentityListState listState = (AssessedIdentityListState)state;
 			if(StringHelper.containsNonWhitespace(listState.getFilter())) {
 				filter = listState.getFilter();
 			}
+			extendedFilters = listState.getExtendedFilters();
 		}
 
 		tableEl.setSelectedFilterKey(filter);
-		updateModel(ureq, null, tableEl.getSelectedFilters(), null);
+		if(extendedFilters != null) {
+			tableEl.setSelectedExtendedFilters(extendedFilters);
+		}
+		updateModel(ureq, null, tableEl.getSelectedFilters(), tableEl.getSelectedExtendedFilters());
 		
 		if(entries != null && entries.size() > 0) {
 			String resourceType = entries.get(0).getOLATResourceable().getResourceableTypeName();

@@ -86,6 +86,18 @@ public interface FlexiTableElement extends FormItem {
 	 * @param componentDelegate
 	 */
 	public void setDetailsRenderer(VelocityContainer rowRenderer, FlexiTableComponentDelegate componentDelegate);
+	
+	/**
+	 * @return Return true if the table has border on every cell.
+	 */
+	public boolean isBordered();
+	
+	/**
+	 * If true, set a border to every cell.
+	 * 
+	 * @param bordered Set or not border to the cells
+	 */
+	public void setBordered(boolean bordered);
 
 	/**
 	 * @return True if muli selection is enabled
@@ -323,6 +335,8 @@ public interface FlexiTableElement extends FormItem {
 	public void setExtendedFilterButton(String label, List<FlexiTableFilter> extendedFilters);
 	
 	public List<FlexiTableFilter> getSelectedExtendedFilters();
+	
+	public void setSelectedExtendedFilters(List<FlexiTableFilter> filters);
 	
 	/**
 	 * Is the details view visible for this particular row?

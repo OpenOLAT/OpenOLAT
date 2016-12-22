@@ -363,7 +363,7 @@ public class AssessmentNotificationsHandler implements NotificationsHandler {
 								String urlToSend = null;
 								String businessPath = null;
 								if(p.getBusinessPath() != null) {
-									businessPath = p.getBusinessPath() + "[assessmentTool:0][Identity:" + assessedIdentity.getKey() + "][CourseNode:" + test.getIdent() + "]";
+									businessPath = p.getBusinessPath() + "[Users:0][Node:" + test.getIdent() + "][Identity:" + assessedIdentity.getKey() + "]";
 									urlToSend = BusinessControlFactory.getInstance().getURLFromBusinessPathString(businessPath);
 								}
 								
