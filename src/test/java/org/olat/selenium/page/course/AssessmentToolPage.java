@@ -84,7 +84,7 @@ public class AssessmentToolPage {
 	 * @return
 	 */
 	public AssessmentToolPage selectCourseNode(String nodeTitle) {
-		By rowsBy = By.xpath("//div[contains(@class,'o_table_wrapper')]//table//tr[td[contains(text(),'" + nodeTitle + "')]]//td//a[contains(@href,'cmd.select.node')]");
+		By rowsBy = By.xpath("//div[contains(@class,'o_table_wrapper')]//table//tr[td/span[contains(text(),'" + nodeTitle + "')]]/td/a[contains(@href,'cmd.select.node')]");
 		List<WebElement> rowEls = browser.findElements(rowsBy);
 		Assert.assertEquals(1, rowEls.size());
 		rowEls.get(0).click();
@@ -100,7 +100,7 @@ public class AssessmentToolPage {
 	 * @return
 	 */
 	public AssessmentToolPage assertUserPassedCourseNode(String nodeTitle) {
-		By rowsBy = By.xpath("//div[contains(@class,'o_table_wrapper')]//table//tr[td[contains(text(),'" + nodeTitle + "')]]");
+		By rowsBy = By.xpath("//div[contains(@class,'o_table_wrapper')]//table//tr[td/span[contains(text(),'" + nodeTitle + "')]]");
 		List<WebElement> rowEls = browser.findElements(rowsBy);
 		Assert.assertEquals(1, rowEls.size());
 		By passedBy = By.cssSelector("td span.o_state.o_passed");

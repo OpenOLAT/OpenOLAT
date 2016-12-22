@@ -123,7 +123,7 @@ public class IdentityAssessmentOverviewController extends FormBasicController {
 	 * @param assessmentCourseNodes List of maps containing the node assessment data using the AssessmentManager keys
 	 */
 	public IdentityAssessmentOverviewController(UserRequest ureq, WindowControl wControl, List<AssessmentNodeData> assessmentCourseNodes) {
-		super(ureq, wControl);
+		super(ureq, wControl, LAYOUT_BAREBONE);
 		setTranslator(Util.createPackageTranslator(AssessmentModule.class, getLocale(), getTranslator()));
 		
 		runStructure = null;
@@ -135,6 +135,7 @@ public class IdentityAssessmentOverviewController extends FormBasicController {
 		preloadedNodesList = assessmentCourseNodes;
 	
 		initForm(ureq);
+		loadModel();
 	}
 	
 	public boolean isRoot(CourseNode node) {
