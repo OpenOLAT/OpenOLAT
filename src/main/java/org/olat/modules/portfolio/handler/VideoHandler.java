@@ -29,7 +29,6 @@ import org.olat.core.commons.modules.bc.meta.MetaInfo;
 import org.olat.core.commons.modules.bc.meta.tagged.MetaTagged;
 import org.olat.core.commons.services.image.Size;
 import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.image.ImageComponent;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
@@ -48,9 +47,11 @@ import org.olat.modules.portfolio.PortfolioLoggingAction;
 import org.olat.modules.portfolio.manager.MediaDAO;
 import org.olat.modules.portfolio.manager.PortfolioFileStorage;
 import org.olat.modules.portfolio.model.MediaPart;
+import org.olat.modules.portfolio.ui.editor.PageRunComponent;
 import org.olat.modules.portfolio.ui.editor.InteractiveAddPageElementHandler;
 import org.olat.modules.portfolio.ui.editor.PageElement;
 import org.olat.modules.portfolio.ui.editor.PageElementAddController;
+import org.olat.modules.portfolio.ui.editor.PageRunElement;
 import org.olat.modules.portfolio.ui.media.CollectVideoMediaController;
 import org.olat.modules.portfolio.ui.media.UploadMedia;
 import org.olat.modules.portfolio.ui.media.VideoMediaController;
@@ -167,13 +168,13 @@ public class VideoHandler extends AbstractMediaHandler implements InteractiveAdd
 	}
 	
 	@Override
-	public Component getContent(UserRequest ureq, WindowControl wControl, PageElement element) {	
+	public PageRunElement getContent(UserRequest ureq, WindowControl wControl, PageElement element) {	
 		if(element instanceof Media) {
-			return getContent(ureq, (Media)element);
+			return new PageRunComponent(getContent(ureq, (Media)element));
 		}
 		if(element instanceof MediaPart) {
 			MediaPart mediaPart = (MediaPart)element;
-			return getContent(ureq, mediaPart.getMedia());
+			return new PageRunComponent(getContent(ureq, mediaPart.getMedia()));
 		}
 		return null;
 	}

@@ -69,7 +69,9 @@ import org.olat.modules.portfolio.ui.editor.PageElementAddController;
 import org.olat.modules.portfolio.ui.editor.PageElementEditorController;
 import org.olat.modules.portfolio.ui.editor.PageElementHandler;
 import org.olat.modules.portfolio.ui.editor.PageProvider;
+import org.olat.modules.portfolio.ui.editor.PageRunElement;
 import org.olat.modules.portfolio.ui.editor.SimpleAddPageElementHandler;
+import org.olat.modules.portfolio.ui.editor.ValidationMessage;
 import org.olat.modules.portfolio.ui.editor.handler.HTMLRawPageElementHandler;
 import org.olat.modules.portfolio.ui.editor.handler.SpacerElementHandler;
 import org.olat.modules.portfolio.ui.editor.handler.TitlePageElementHandler;
@@ -371,8 +373,21 @@ public class PageRunController extends BasicController implements TooledControll
 	}
 	
 	private void doConfirmPublish(UserRequest ureq) {
+		List<ValidationMessage> messages = new ArrayList<>();
+		pageCtrl.validateElements(ureq, messages);
+		
 		String title = translate("publish.confirm.title");
 		String text = translate("publish.confirm.descr", new String[]{ StringHelper.escapeHtml(page.getTitle()) });
+		
+		if(messages.size() > 0) {
+			StringBuilder sb = new StringBuilder();
+			sb.append("<p>").append(text).append("</p>");
+			for(ValidationMessage message:messages) {
+				sb.append("<p class='o_warning'>").append(message.getMessage()).append("</p>");
+			}
+			text = sb.toString();
+		}
+
 		confirmPublishCtrl = activateYesNoDialog(ureq, title, text, confirmPublishCtrl);
 	}
 	
@@ -625,7 +640,7 @@ public class PageRunController extends BasicController implements TooledControll
 		}
 
 		@Override
-		public Component getContent(UserRequest ureq, WindowControl wControl, PageElement element) {
+		public PageRunElement getContent(UserRequest ureq, WindowControl wControl, PageElement element) {
 			return null;
 		}
 

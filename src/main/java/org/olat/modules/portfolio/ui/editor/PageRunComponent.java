@@ -19,26 +19,32 @@
  */
 package org.olat.modules.portfolio.ui.editor;
 
+import java.util.List;
+
 import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.control.Controller;
-import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.components.Component;
 
 /**
  * 
- * Initial date: 04.07.2016<br>
+ * Initial date: 23 déc. 2016<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public interface PageElementHandler {
+public class PageRunComponent implements PageRunElement {
 	
-	public String getType();
+	private final Component component;
 	
-	public String getIconCssClass();
-	
-	public PageRunElement getContent(UserRequest ureq, WindowControl wControl, PageElement element);
-	
-	public Controller getEditor(UserRequest ureq, WindowControl wControl, PageElement element);
-	
-	
+	public PageRunComponent(Component component) {
+		this.component = component;
+	}
 
+	@Override
+	public Component getComponent() {
+		return component;
+	}
+
+	@Override
+	public boolean validate(UserRequest ureq, List<ValidationMessage> messages) {
+		return true;
+	}
 }

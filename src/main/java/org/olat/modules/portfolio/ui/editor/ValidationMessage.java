@@ -19,26 +19,31 @@
  */
 package org.olat.modules.portfolio.ui.editor;
 
-import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.control.Controller;
-import org.olat.core.gui.control.WindowControl;
-
 /**
  * 
- * Initial date: 04.07.2016<br>
+ * Initial date: 23 déc. 2016<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public interface PageElementHandler {
+public class ValidationMessage {
 	
-	public String getType();
+	private final Level level;
+	private final String message;
 	
-	public String getIconCssClass();
+	public ValidationMessage(Level level, String message) {
+		this.level = level;
+		this.message = message;
+	}
 	
-	public PageRunElement getContent(UserRequest ureq, WindowControl wControl, PageElement element);
-	
-	public Controller getEditor(UserRequest ureq, WindowControl wControl, PageElement element);
-	
-	
+	public Level getLevel() {
+		return level;
+	}
 
+	public String getMessage() {
+		return message;
+	}
+
+	public enum Level {
+		warning
+	}
 }

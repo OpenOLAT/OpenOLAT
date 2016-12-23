@@ -68,16 +68,26 @@ public class PageController extends BasicController {
 		//
 	}
 	
+	public boolean validateElements(UserRequest ureq, List<ValidationMessage> messages) {
+		boolean allOk = true;
+		for(PageFragment fragment:fragments) {
+			if(!fragment.validate(ureq, messages)) {
+				allOk &= false;
+			}
+		}
+		return allOk;
+	}
+	
 	public void loadElements(UserRequest ureq) {
 		List<? extends PageElement> elements = provider.getElements();
 		List<PageFragment> newFragments = new ArrayList<>(elements.size());
 		for(PageElement element:elements) {
 			PageElementHandler handler = handlerMap.get(element.getType());
 			if(handler != null) {
-				Component cmp = handler.getContent(ureq, getWindowControl(), element);
+				PageRunElement runElement = handler.getContent(ureq, getWindowControl(), element);
 				String cmpId = "cpt-" + (++counter);
-				newFragments.add(new PageFragment(cmpId, cmp));
-				mainVC.put(cmpId, cmp);
+				newFragments.add(new PageFragment(cmpId, runElement));
+				mainVC.put(cmpId, runElement.getComponent());
 			}
 		}
 		fragments = newFragments;
@@ -87,11 +97,11 @@ public class PageController extends BasicController {
 	public static final class PageFragment {
 		
 		private final String componentName;
-		private final Component component;
+		private final PageRunElement runElement;
 		
-		public PageFragment(String componentName, Component component) {
+		public PageFragment(String componentName, PageRunElement runElement) {
 			this.componentName = componentName;
-			this.component = component;
+			this.runElement = runElement;
 		}
 		
 		public String getComponentName() {
@@ -99,7 +109,15 @@ public class PageController extends BasicController {
 		}
 		
 		public Component getComponent() {
-			return component;
+			return runElement.getComponent();
+		}
+		
+		public PageRunElement getPageRunElement() {
+			return runElement;
+		}
+		
+		public boolean validate(UserRequest ureq, List<ValidationMessage> messages) {
+			return runElement.validate(ureq, messages);
 		}
 	}
 }

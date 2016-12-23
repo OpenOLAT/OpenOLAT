@@ -30,6 +30,8 @@ import org.olat.modules.portfolio.model.SpacerPart;
 import org.olat.modules.portfolio.ui.editor.PageElement;
 import org.olat.modules.portfolio.ui.editor.PageElementEditorController;
 import org.olat.modules.portfolio.ui.editor.PageElementHandler;
+import org.olat.modules.portfolio.ui.editor.PageRunComponent;
+import org.olat.modules.portfolio.ui.editor.PageRunElement;
 import org.olat.modules.portfolio.ui.editor.SimpleAddPageElementHandler;
 import org.olat.modules.portfolio.ui.editor.SpacerEditorController;
 
@@ -54,9 +56,10 @@ public class SpacerElementHandler implements PageElementHandler, SimpleAddPageEl
 	}
 
 	@Override
-	public Component getContent(UserRequest ureq, WindowControl wControl, PageElement element) {
+	public PageRunElement getContent(UserRequest ureq, WindowControl wControl, PageElement element) {
 		if(element instanceof SpacerPart) {
-			return new SpacerElementComponent("spacer_" + idGenerator.incrementAndGet());
+			Component cmp = new SpacerElementComponent("spacer_" + idGenerator.incrementAndGet());
+			return new PageRunComponent(cmp);
 		}
 		return null;
 	}

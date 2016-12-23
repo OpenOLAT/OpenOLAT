@@ -23,14 +23,16 @@ import java.util.Locale;
 import java.util.UUID;
 
 import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.components.Component;
+import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.modules.forms.model.xml.TextInput;
 import org.olat.modules.forms.ui.TextInputController;
 import org.olat.modules.forms.ui.TextInputEditorController;
+import org.olat.modules.portfolio.ui.editor.PageRunControllerElement;
 import org.olat.modules.portfolio.ui.editor.PageElement;
 import org.olat.modules.portfolio.ui.editor.PageElementEditorController;
 import org.olat.modules.portfolio.ui.editor.PageElementHandler;
+import org.olat.modules.portfolio.ui.editor.PageRunElement;
 import org.olat.modules.portfolio.ui.editor.SimpleAddPageElementHandler;
 
 /**
@@ -52,9 +54,10 @@ public class TextInputHandler implements PageElementHandler, SimpleAddPageElemen
 	}
 
 	@Override
-	public Component getContent(UserRequest ureq, WindowControl wControl, PageElement element) {
+	public PageRunElement getContent(UserRequest ureq, WindowControl wControl, PageElement element) {
 		if(element instanceof TextInput) {
-			return new TextInputController(ureq, wControl, (TextInput)element).getInitialComponent();
+			Controller ctrl = new TextInputController(ureq, wControl, (TextInput)element);
+			return new PageRunControllerElement(ctrl);
 		}
 		return null;
 	}

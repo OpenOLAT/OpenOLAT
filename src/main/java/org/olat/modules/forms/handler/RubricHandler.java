@@ -23,7 +23,6 @@ import java.util.Locale;
 import java.util.UUID;
 
 import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.components.Component;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.modules.forms.model.xml.Rubric;
@@ -31,8 +30,10 @@ import org.olat.modules.forms.model.xml.Rubric.SliderType;
 import org.olat.modules.forms.model.xml.Slider;
 import org.olat.modules.forms.ui.RubricController;
 import org.olat.modules.forms.ui.RubricEditorController;
+import org.olat.modules.portfolio.ui.editor.PageRunControllerElement;
 import org.olat.modules.portfolio.ui.editor.PageElement;
 import org.olat.modules.portfolio.ui.editor.PageElementHandler;
+import org.olat.modules.portfolio.ui.editor.PageRunElement;
 import org.olat.modules.portfolio.ui.editor.SimpleAddPageElementHandler;
 
 /**
@@ -60,9 +61,10 @@ public class RubricHandler implements PageElementHandler, SimpleAddPageElementHa
 	}
 
 	@Override
-	public Component getContent(UserRequest ureq, WindowControl wControl, PageElement element) {
+	public PageRunElement getContent(UserRequest ureq, WindowControl wControl, PageElement element) {
 		if(element instanceof Rubric) {
-			return new RubricController(ureq, wControl, (Rubric)element).getInitialComponent();
+			Controller ctrl = new RubricController(ureq, wControl, (Rubric)element);
+			return new PageRunControllerElement(ctrl);
 		}
 		return null;
 	}

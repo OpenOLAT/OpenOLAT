@@ -34,6 +34,8 @@ import org.olat.modules.portfolio.ui.editor.HTMLRawEditorController;
 import org.olat.modules.portfolio.ui.editor.PageElement;
 import org.olat.modules.portfolio.ui.editor.PageElementEditorController;
 import org.olat.modules.portfolio.ui.editor.PageElementHandler;
+import org.olat.modules.portfolio.ui.editor.PageRunComponent;
+import org.olat.modules.portfolio.ui.editor.PageRunElement;
 import org.olat.modules.portfolio.ui.editor.SimpleAddPageElementHandler;
 
 /**
@@ -57,13 +59,14 @@ public class HTMLRawPageElementHandler implements PageElementHandler, SimpleAddP
 	}
 
 	@Override
-	public Component getContent(UserRequest ureq, WindowControl wControl, PageElement element) {
+	public PageRunElement getContent(UserRequest ureq, WindowControl wControl, PageElement element) {
 		String content = "";
 		if(element instanceof HTMLPart) {
 			content = ((HTMLPart)element).getContent();
 			content = Formatter.formatLatexFormulas(content);
 		}
-		return TextFactory.createTextComponentFromString("htmlRawCmp" + CodeHelper.getRAMUniqueID(), content, null, false, null);
+		Component cmp = TextFactory.createTextComponentFromString("htmlRawCmp" + CodeHelper.getRAMUniqueID(), content, null, false, null);
+		return new PageRunComponent(cmp);
 	}
 
 	@Override

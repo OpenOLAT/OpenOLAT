@@ -19,26 +19,20 @@
  */
 package org.olat.modules.portfolio.ui.editor;
 
+import java.util.List;
+
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.Controller;
-import org.olat.core.gui.control.WindowControl;
 
 /**
  * 
- * Initial date: 04.07.2016<br>
+ * Initial date: 23 déc. 2016<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public interface PageElementHandler {
-	
-	public String getType();
-	
-	public String getIconCssClass();
-	
-	public PageRunElement getContent(UserRequest ureq, WindowControl wControl, PageElement element);
-	
-	public Controller getEditor(UserRequest ureq, WindowControl wControl, PageElement element);
+public interface ValidatingController extends Controller {
 	
 	
+	public boolean validate(UserRequest ureq, List<ValidationMessage> messages);
 
 }

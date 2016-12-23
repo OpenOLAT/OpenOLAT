@@ -32,6 +32,8 @@ import org.olat.modules.portfolio.model.TitlePart;
 import org.olat.modules.portfolio.ui.editor.PageElement;
 import org.olat.modules.portfolio.ui.editor.PageElementEditorController;
 import org.olat.modules.portfolio.ui.editor.PageElementHandler;
+import org.olat.modules.portfolio.ui.editor.PageRunComponent;
+import org.olat.modules.portfolio.ui.editor.PageRunElement;
 import org.olat.modules.portfolio.ui.editor.SimpleAddPageElementHandler;
 import org.olat.modules.portfolio.ui.editor.TitleEditorController;
 
@@ -56,12 +58,13 @@ public class TitlePageElementHandler implements PageElementHandler, SimpleAddPag
 	}
 
 	@Override
-	public Component getContent(UserRequest ureq, WindowControl wControl, PageElement element) {
+	public PageRunElement getContent(UserRequest ureq, WindowControl wControl, PageElement element) {
 		String content = "";
 		if(element instanceof TitlePart) {
 			content = ((TitlePart)element).getContent();
 		}
-		return TextFactory.createTextComponentFromString("title_" + idGenerator.incrementAndGet(), content, null, false, null);
+		Component cmp = TextFactory.createTextComponentFromString("title_" + idGenerator.incrementAndGet(), content, null, false, null);
+		return new PageRunComponent(cmp);
 	}
 
 	@Override

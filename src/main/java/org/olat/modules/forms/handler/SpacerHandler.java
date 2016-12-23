@@ -29,9 +29,11 @@ import org.olat.core.gui.components.form.flexible.impl.elements.SpacerElementCom
 import org.olat.core.gui.control.WindowControl;
 import org.olat.modules.forms.model.xml.Spacer;
 import org.olat.modules.forms.ui.SpacerEditorController;
+import org.olat.modules.portfolio.ui.editor.PageRunComponent;
 import org.olat.modules.portfolio.ui.editor.PageElement;
 import org.olat.modules.portfolio.ui.editor.PageElementEditorController;
 import org.olat.modules.portfolio.ui.editor.PageElementHandler;
+import org.olat.modules.portfolio.ui.editor.PageRunElement;
 import org.olat.modules.portfolio.ui.editor.SimpleAddPageElementHandler;
 
 /**
@@ -55,9 +57,10 @@ public class SpacerHandler implements PageElementHandler, SimpleAddPageElementHa
 	}
 
 	@Override
-	public Component getContent(UserRequest ureq, WindowControl wControl, PageElement element) {
+	public PageRunElement getContent(UserRequest ureq, WindowControl wControl, PageElement element) {
 		if(element instanceof Spacer) {
-			return new SpacerElementComponent("spacer_" + idGenerator.incrementAndGet());
+			Component cmp = new SpacerElementComponent("spacer_" + idGenerator.incrementAndGet());
+			return new PageRunComponent(cmp);
 		}
 		return null;
 	}

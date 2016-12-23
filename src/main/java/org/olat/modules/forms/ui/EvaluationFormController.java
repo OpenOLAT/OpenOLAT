@@ -43,6 +43,8 @@ import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.generic.modal.DialogBoxController;
+import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.id.Identity;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.xml.XStreamHelper;
@@ -63,6 +65,9 @@ import org.olat.modules.forms.ui.model.EvaluationFormElementWrapper;
 import org.olat.modules.forms.ui.model.SliderWrapper;
 import org.olat.modules.forms.ui.model.TextInputWrapper;
 import org.olat.modules.portfolio.PageBody;
+import org.olat.modules.portfolio.ui.editor.ValidatingController;
+import org.olat.modules.portfolio.ui.editor.ValidationMessage;
+import org.olat.modules.portfolio.ui.editor.ValidationMessage.Level;
 import org.olat.repository.RepositoryEntry;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -72,7 +77,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class EvaluationFormController extends FormBasicController {
+public class EvaluationFormController extends FormBasicController implements ValidatingController {
 
 	private int count = 0;
 	private final Form form;
@@ -83,9 +88,12 @@ public class EvaluationFormController extends FormBasicController {
 	private final RepositoryEntry formEntry;
 	
 	private EvaluationFormSession session;
+	private List<EvaluationFormElementWrapper> elementWrapperList = new ArrayList<>();
 	private final Map<String, EvaluationFormResponse> identifierToResponses = new HashMap<>();
 	
 	private FormSubmit saveAsDoneButton;
+	
+	private DialogBoxController confirmDoneCtrl;
 	
 	@Autowired
 	private DB dbInstance;
@@ -155,7 +163,7 @@ public class EvaluationFormController extends FormBasicController {
 				elementWrappers.add(wrapper);
 			}
 		}
-
+		elementWrapperList = elementWrappers;
 		flc.contextPut("elements", elementWrappers);
 	}
 	
@@ -303,6 +311,7 @@ public class EvaluationFormController extends FormBasicController {
 		radioEl.setDomReplacementWrapperRequired(false);
 		radioEl.addActionListener(FormEvent.ONCHANGE);
 		radioEl.setEnabled(!readOnly);
+		radioEl.setAllowNoSelection(true);
 		int widthInPercent = EvaluationFormElementWrapper.getWidthInPercent(element);
 		radioEl.setWidthInPercent(widthInPercent);
 		if(response != null && response.getNumericalResponse() != null) {
@@ -327,14 +336,70 @@ public class EvaluationFormController extends FormBasicController {
 	}
 
 	@Override
+	public boolean validate(UserRequest ureq, List<ValidationMessage> messages) {
+		boolean allFiled = true;
+		for(EvaluationFormElementWrapper elementWrapper:elementWrapperList) {
+			if(elementWrapper.isTextInput()) {
+				TextInputWrapper wrapper = elementWrapper.getTextInputWrapper();
+				if(wrapper != null && !hasResponse(wrapper.getId())) {
+					allFiled &= false;
+				}
+			} else if(elementWrapper.getSliders() != null && elementWrapper.getSliders().size() > 0) {
+				for(SliderWrapper slider:elementWrapper.getSliders()) {
+					if(slider != null && !hasResponse(slider.getId())) {
+						allFiled &= false;
+					}
+				}
+			}
+		}
+		
+		if(!allFiled) {
+			String msg = translate("warning.form.not.completed");
+			messages.add(new ValidationMessage(Level.warning, msg));
+		}
+		return validateFormLogic(ureq);
+	}
+	
+	private boolean hasResponse(String id) {
+		if(id == null) return true;//not a field
+		
+		if(!identifierToResponses.containsKey(id)) {
+			return false;
+		}
+		EvaluationFormResponse response = identifierToResponses.get(id);
+		if(response == null ||
+				(response.getNumericalResponse() == null && !StringHelper.containsNonWhitespace(response.getStringuifiedResponse()))) {
+			return false;
+		}
+		return true;
+	}
+
+	@Override
+	protected boolean validateFormLogic(UserRequest ureq) {
+		boolean allOk = true;
+		
+		return allOk & super.validateFormLogic(ureq);
+	}
+
+	@Override
+	protected void event(UserRequest ureq, Controller source, Event event) {
+		if(confirmDoneCtrl == source) {
+			if(DialogBoxUIFactory.isYesEvent(event)) {
+				saveAsDone(ureq);
+			}
+		}
+		super.event(ureq, source, event);
+	}
+
+	@Override
 	protected void formOK(UserRequest ureq) {
-		doSaveAsDone(ureq);
+		doConfirmDone(ureq);
 	}
 
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(saveAsDoneButton == source) {
-			doSaveAsDone(ureq);
+			doConfirmDone(ureq);
 		} else if(source instanceof SingleSelection) {
 			SingleSelection radioEl = (SingleSelection)source;
 			Object uobject = radioEl.getUserObject();
@@ -379,10 +444,8 @@ public class EvaluationFormController extends FormBasicController {
 		}
 	}
 	
-	private void doSaveAsDone(UserRequest ureq) {
-		@SuppressWarnings("unchecked")
-		List<EvaluationFormElementWrapper> elementWrappers = (List<EvaluationFormElementWrapper>)flc.contextGet("elements");
-		for(EvaluationFormElementWrapper elementWrapper:elementWrappers) {
+	private void doConfirmDone(UserRequest ureq) {
+		for(EvaluationFormElementWrapper elementWrapper:elementWrapperList) {
 			if(elementWrapper.isTextInput()) {
 				TextInputWrapper wrapper = elementWrapper.getTextInputWrapper();
 				String value = wrapper.getTextEl().getValue();
@@ -390,6 +453,20 @@ public class EvaluationFormController extends FormBasicController {
 			}	
 		}
 		
+		StringBuilder sb = new StringBuilder();
+		sb.append("<p>").append(translate("confirm.done")).append("</p>");
+		
+		List<ValidationMessage> messages = new ArrayList<>();
+		validate(ureq, messages);
+		if(messages.size() > 0) {
+			for(ValidationMessage message:messages) {
+				sb.append("<p class='o_warning'>").append(message.getMessage()).append("</p>");
+			}
+		}
+		confirmDoneCtrl = activateYesNoDialog(ureq, null, sb.toString(), confirmDoneCtrl);
+	}
+	
+	private void saveAsDone(UserRequest ureq) {
 		//save text inputs
 		session = evaluationFormManager.changeSessionStatus(session, EvaluationFormSessionStatus.done);
 		readOnly = true;
@@ -398,7 +475,6 @@ public class EvaluationFormController extends FormBasicController {
 		updateElements();
 		saveAsDoneButton.setVisible(false);
 		dbInstance.commit();
-		
 		fireEvent(ureq, Event.DONE_EVENT);
 	}
 

@@ -56,6 +56,10 @@ public interface SingleSelection extends SelectionElement {
 	 * @param width
 	 */
 	public void setWidthInPercent(int width);
+	
+	public boolean isAllowNoSelection();
+	
+	public void setAllowNoSelection(boolean allowNoSelection);
 
 	
 	/**
