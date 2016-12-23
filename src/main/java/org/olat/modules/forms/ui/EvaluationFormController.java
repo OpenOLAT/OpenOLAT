@@ -41,6 +41,7 @@ import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.FormSubmit;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
+import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Identity;
 import org.olat.core.util.StringHelper;
@@ -327,13 +328,13 @@ public class EvaluationFormController extends FormBasicController {
 
 	@Override
 	protected void formOK(UserRequest ureq) {
-		doSaveAsDone();
+		doSaveAsDone(ureq);
 	}
 
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(saveAsDoneButton == source) {
-			doSaveAsDone();
+			doSaveAsDone(ureq);
 		} else if(source instanceof SingleSelection) {
 			SingleSelection radioEl = (SingleSelection)source;
 			Object uobject = radioEl.getUserObject();
@@ -378,7 +379,7 @@ public class EvaluationFormController extends FormBasicController {
 		}
 	}
 	
-	private void doSaveAsDone() {
+	private void doSaveAsDone(UserRequest ureq) {
 		@SuppressWarnings("unchecked")
 		List<EvaluationFormElementWrapper> elementWrappers = (List<EvaluationFormElementWrapper>)flc.contextGet("elements");
 		for(EvaluationFormElementWrapper elementWrapper:elementWrappers) {
@@ -396,6 +397,9 @@ public class EvaluationFormController extends FormBasicController {
 		loadResponses();
 		updateElements();
 		saveAsDoneButton.setVisible(false);
+		dbInstance.commit();
+		
+		fireEvent(ureq, Event.DONE_EVENT);
 	}
 
 	@Override

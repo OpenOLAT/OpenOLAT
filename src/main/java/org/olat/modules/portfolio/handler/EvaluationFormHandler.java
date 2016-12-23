@@ -100,7 +100,8 @@ public class EvaluationFormHandler implements PageElementHandler {
 				} else if(hasRole(PortfolioRoles.coach, ureq.getIdentity(), accessRights)) {
 					Identity owner = getOwner(accessRights);
 					return new EvaluationFormController(ureq, wControl, owner, body, re, true, false).getInitialComponent();
-				} else if(hasRole(PortfolioRoles.reviewer, ureq.getIdentity(), accessRights)) {
+				} else if(hasRole(PortfolioRoles.reviewer, ureq.getIdentity(), accessRights)
+						|| hasRole(PortfolioRoles.invitee, ureq.getIdentity(), accessRights)) {
 					if(assignment.isReviewerSeeAutoEvaluation()) {
 						Identity owner = getOwner(accessRights);
 						return new EvaluationFormController(ureq, wControl, owner, body, re, true, false).getInitialComponent();
@@ -112,21 +113,21 @@ public class EvaluationFormHandler implements PageElementHandler {
 					Identity owner = getOwner(accessRights);
 					List<Identity> coachesAndReviewers = getCoachesAndReviewers(accessRights);
 					if(coachesAndReviewers.size() > 0) {
-						return new MultiEvaluationFormController(ureq, wControl, owner, coachesAndReviewers, body, re, readOnly, anonym).getInitialComponent();
+						return new MultiEvaluationFormController(ureq, wControl, owner, coachesAndReviewers, body, re, false, readOnly, anonym).getInitialComponent();
 					}
 					return new EvaluationFormController(ureq, wControl, ureq.getIdentity(), body, re, readOnly, false).getInitialComponent();
 				} else if(hasRole(PortfolioRoles.coach, ureq.getIdentity(), accessRights)) {
 					Identity owner = getOwner(accessRights);
 					List<Identity> coachesAndReviewers = getCoachesAndReviewers(accessRights);
 					boolean readOnly = (pageStatus == PageStatus.draft) || (pageStatus == PageStatus.closed) || (pageStatus == PageStatus.deleted);
-					return new MultiEvaluationFormController(ureq, wControl, owner, coachesAndReviewers, body, re, readOnly, anonym).getInitialComponent();
-				} else if(hasRole(PortfolioRoles.reviewer, ureq.getIdentity(), accessRights)) {
-					boolean seeAutoEvaluation = assignment.isReviewerSeeAutoEvaluation();
+					return new MultiEvaluationFormController(ureq, wControl, owner, coachesAndReviewers, body, re, false, readOnly, anonym).getInitialComponent();
+				} else if(hasRole(PortfolioRoles.reviewer, ureq.getIdentity(), accessRights)
+						|| hasRole(PortfolioRoles.invitee, ureq.getIdentity(), accessRights)) {
 					boolean readOnly = (pageStatus == PageStatus.draft) || (pageStatus == PageStatus.closed) || (pageStatus == PageStatus.deleted);
-					if(seeAutoEvaluation) {
+					if(assignment.isReviewerSeeAutoEvaluation()) {
 						Identity owner = getOwner(accessRights);
 						List<Identity> reviewers = Collections.singletonList(ureq.getIdentity());
-						return new MultiEvaluationFormController(ureq, wControl, owner, reviewers, body, re, readOnly, anonym).getInitialComponent();
+						return new MultiEvaluationFormController(ureq, wControl, owner, reviewers, body, re, true, readOnly, anonym).getInitialComponent();
 					} else {
 						return new EvaluationFormController(ureq, wControl, ureq.getIdentity(), body, re, readOnly, !readOnly).getInitialComponent();
 					}
@@ -153,7 +154,7 @@ public class EvaluationFormHandler implements PageElementHandler {
 	private List<Identity> getCoachesAndReviewers(List<AccessRights> accessRights) {
 		List<Identity> identities = new ArrayList<>(accessRights.size());
 		for(AccessRights accessRight:accessRights) {
-			if(PortfolioRoles.coach == accessRight.getRole() || PortfolioRoles.reviewer == accessRight.getRole()) {
+			if(PortfolioRoles.coach == accessRight.getRole() || PortfolioRoles.reviewer == accessRight.getRole() || PortfolioRoles.invitee == accessRight.getRole()) {
 				identities.add(accessRight.getIdentity());
 			}
 		}

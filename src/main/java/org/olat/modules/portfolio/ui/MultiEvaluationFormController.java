@@ -30,10 +30,14 @@ import org.olat.core.gui.components.segmentedview.SegmentViewComponent;
 import org.olat.core.gui.components.segmentedview.SegmentViewEvent;
 import org.olat.core.gui.components.segmentedview.SegmentViewFactory;
 import org.olat.core.gui.components.velocity.VelocityContainer;
+import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.id.Identity;
+import org.olat.modules.forms.EvaluationFormManager;
+import org.olat.modules.forms.EvaluationFormSession;
+import org.olat.modules.forms.EvaluationFormSessionStatus;
 import org.olat.modules.forms.ui.CompareEvaluationsFormController;
 import org.olat.modules.forms.ui.EvaluationFormController;
 import org.olat.modules.forms.ui.model.Evaluator;
@@ -54,6 +58,7 @@ public class MultiEvaluationFormController extends BasicController {
 	private final PageBody anchor;
 	private final Identity owner;
 	private final boolean readOnly;
+	private final boolean doneFirst;
 	private final RepositoryEntry formEntry;
 	
 	private Link ownerLink;
@@ -64,34 +69,47 @@ public class MultiEvaluationFormController extends BasicController {
 	private List<Evaluator> evaluators = new ArrayList<>();
 	private List<Link> otherEvaluatorLinks = new ArrayList<>();
 	
+	private EvaluationFormController currentEvalutionFormCtrl;
 	private CompareEvaluationsFormController compareEvaluationCtrl;
 	
 	@Autowired
 	private UserManager userManager;
+	@Autowired
+	private EvaluationFormManager evaluationFormManager;
 	
 	public MultiEvaluationFormController(UserRequest ureq, WindowControl wControl,
-			Identity owner, List<Identity> otherEvaluators, PageBody anchor,
-			RepositoryEntry formEntry, boolean readOnly, boolean anonym) {
+			Identity owner, List<Identity> otherEvaluators, PageBody anchor, RepositoryEntry formEntry,
+			boolean doneFirst, boolean readOnly, boolean anonym) {
 		super(ureq, wControl);
 		this.owner = owner;
 		this.anchor = anchor;
 		this.readOnly = readOnly;
+		this.doneFirst = doneFirst;
 		this.formEntry = formEntry;
 
 		mainVC = createVelocityContainer("multi_evaluation_form");
 		segmentView = SegmentViewFactory.createSegmentView("segments", mainVC, this);
 		
+		boolean viewOthers;
+		if(doneFirst) {
+			EvaluationFormSession session = evaluationFormManager.getSessionForPortfolioEvaluation(getIdentity(), anchor);
+			viewOthers = session == null ? false : session.getEvaluationFormSessionStatus() == EvaluationFormSessionStatus.done;
+		} else {
+			viewOthers = true;
+		}
+		
 		if(owner != null) {
 			String ownerFullname = userManager.getUserDisplayName(owner);
+			evaluators.add(new Evaluator(owner, ownerFullname));
+			
 			String id = "eva-" + (count++);
 			ownerLink = LinkFactory.createCustomLink(id, id, ownerFullname, Link.BUTTON | Link.NONTRANSLATED, mainVC, this);
 			ownerLink.setUserObject(owner);
-			boolean selected = owner.equals(ureq.getIdentity());
-			segmentView.addSegment(ownerLink, selected);
-			if(selected) {
+			boolean me = owner.equals(ureq.getIdentity());
+			segmentView.addSegment(ownerLink, me);
+			if(me) {
 				doOpenEvalutationForm(ureq, owner);
 			}
-			evaluators.add(new Evaluator(owner, ownerFullname));
 		}
 		
 		if(otherEvaluators != null && otherEvaluators.size() > 0) {
@@ -105,6 +123,7 @@ public class MultiEvaluationFormController extends BasicController {
 				} else {
 					evaluatorFullname = userManager.getUserDisplayName(evaluator);
 				}
+				evaluators.add(new Evaluator(evaluator, evaluatorFullname));
 				
 				String id = "eva-" + (count++);
 				Link evaluatorLink = LinkFactory.createCustomLink(id, id, evaluatorFullname, Link.BUTTON | Link.NONTRANSLATED, mainVC, this);
@@ -114,7 +133,6 @@ public class MultiEvaluationFormController extends BasicController {
 				if(me) {
 					doOpenEvalutationForm(ureq, evaluator);
 				}
-				evaluators.add(new Evaluator(evaluator, evaluatorFullname));
 			}
 		}
 		
@@ -124,6 +142,7 @@ public class MultiEvaluationFormController extends BasicController {
 			segmentView.addSegment(compareLink, false);
 		}
 		
+		segmentView.setVisible(viewOthers);
 		mainVC.put("segments", segmentView);
 		putInitialPanel(mainVC);
 	}
@@ -133,6 +152,22 @@ public class MultiEvaluationFormController extends BasicController {
 		//
 	}
 	
+	@Override
+	protected void event(UserRequest ureq, Controller source, Event event) {
+		if(currentEvalutionFormCtrl == source) {
+			if(event == Event.DONE_EVENT) {
+				if(doneFirst) {
+					// check if it's really done
+					EvaluationFormSession session = evaluationFormManager.getSessionForPortfolioEvaluation(getIdentity(), anchor);
+					if(session != null && session.getEvaluationFormSessionStatus() == EvaluationFormSessionStatus.done) {
+						segmentView.setVisible(true);
+					}
+				}
+			}
+		}
+		super.event(ureq, source, event);
+	}
+
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
 		if(source == segmentView) {
@@ -158,9 +193,9 @@ public class MultiEvaluationFormController extends BasicController {
 	private void doOpenEvalutationForm(UserRequest ureq, Identity evaluator) {
 		boolean ro = readOnly || !evaluator.equals(getIdentity());
 		boolean doneButton = !ro && evaluator.equals(getIdentity()) && (owner == null || !owner.equals(evaluator));
-		EvaluationFormController evalutionFormCtrl =  new EvaluationFormController(ureq, getWindowControl(), evaluator, anchor, formEntry, ro, doneButton);
-		listenTo(evalutionFormCtrl);
-		mainVC.put("segmentCmp", evalutionFormCtrl.getInitialComponent());
+		currentEvalutionFormCtrl =  new EvaluationFormController(ureq, getWindowControl(), evaluator, anchor, formEntry, ro, doneButton);
+		listenTo(currentEvalutionFormCtrl);
+		mainVC.put("segmentCmp", currentEvalutionFormCtrl.getInitialComponent());
 	}
 	
 	private void doOpenOverview(UserRequest ureq) {
