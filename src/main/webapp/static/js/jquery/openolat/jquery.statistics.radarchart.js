@@ -16,6 +16,7 @@
     		format: '%',
     		color: d3.scale.category10(),
     		legendOptions: [],
+    		axis: [],
     		values: []
         }, options);
     	
@@ -35,17 +36,16 @@
     /////////////////////////////////////////////////////////
 
     radarChart = function($obj, cfg) {
-    	var id = '#' + $obj.attr('id');
+    	var id = $obj.attr('id');
     	var data = cfg.values;
 
     	//If the supplied maxValue is smaller than the actual one, replace by the max in the data
     	var maxValue = Math.max(cfg.maxValue, d3.max(data, function(i){return d3.max(i.map(function(o){return o.value;}))}));
-    	
-    	var allAxis = (data[0].map(function(i, j){return i.axis})),	//Names of each axis
-    	total = allAxis.length,					//The number of different axes
-    	radius = Math.min(cfg.w/2, cfg.h/2), 	//Radius of the outermost circle
-    	Format = d3.format(cfg.format),			//Formatting (percent or integer...)
-    	angleSlice = Math.PI * 2 / total;		//The width in radians of each "slice"
+    	var allAxis = (cfg.axis.length > 0 ? cfg.axis : (data[0].map(function(i, j){return i.axis})));	//Names of each axis
+    	var total = allAxis.length,				//The number of different axes
+    	 radius = Math.min(cfg.w/2, cfg.h/2), 	//Radius of the outermost circle
+    	 Format = d3.format(cfg.format),		//Formatting (percent or integer...)
+    	 angleSlice = Math.PI * 2 / total;		//The width in radians of each "slice"
 
     	//Scale for the radius
     	var rScale = d3.scale.linear()
@@ -57,12 +57,12 @@
     	/////////////////////////////////////////////////////////
 
     	//Remove whatever chart with the same id/class was present before
-    	d3.select(id).select("svg").remove();
+    	d3.select('#' + id).select("svg").remove();
 
     	//Initiate the radar chart SVG
     	var width = cfg.w + cfg.margin.left + cfg.margin.right;
     	var height = cfg.h + cfg.margin.top + cfg.margin.bottom;
-    	var svg = d3.select(id).append("svg")
+    	var svg = d3.select('#' + id).append("svg")
     		.attr("width",  width)
     		.attr("height", height)
     		.attr("class", "radar"+id);
@@ -166,6 +166,7 @@
     	//Append the backgrounds	
     	blobWrapper
     		.append("path")
+    		.attr("id", function(d,i) { return "radarArea-" + id + "-" + i; })
     		.attr("class", "radarArea")
     		.attr("d", function(d,i) { return radarLine(d); })
     		.style("fill", function(d,i) { return cfg.color(i); })
@@ -189,6 +190,7 @@
 
     	//Create the outlines	
     	blobWrapper.append("path")
+			.attr("id", function(d,i) { return "radarStroke-" + id + "-" + i; })
     		.attr("class", "radarStroke")
     		.attr("d", function(d,i) { return radarLine(d); })
     		.style("stroke-width", cfg.strokeWidth + "px")
@@ -276,7 +278,32 @@
 	    		.attr("y", function(d, i){ return i * 20 + 9;})
 	    		.attr("font-size", "11px")
 	    		.attr("fill", "#737373")
-	    		.text(function(d) { return d; });	
+	    		.text(function(d) { return d; })
+	    		.on('mouseover', function (d,i){
+	    			//Dim all blobs
+	    			d3.selectAll(".radarArea")
+	    				.transition().duration(200)
+	    				.style("fill-opacity", 0.1);
+	    			d3.selectAll(".radarStroke")
+    					.transition().duration(200)
+    					.style("stroke-opacity", 0.1);  
+	    			//Bring back the hovered over blob
+	    			d3.select("#radarArea-" + id + "-" + i)
+	    				.transition().duration(200)
+	    				.style("fill-opacity", 0.7);
+	    			d3.select("#radarStroke-" + id + "-" + i)
+	    				.transition().duration(200)
+	    				.style("stroke-opacity", 1.0);
+	    		})
+	    		.on('mouseout', function(){
+	    			//Bring back all blobs
+	    			d3.selectAll(".radarArea")
+	    				.transition().duration(200)
+	    				.style("fill-opacity", cfg.opacityArea);
+	    			d3.selectAll(".radarStroke")
+    					.transition().duration(200)
+    					.style("stroke-opacity", 1.0);
+	    		});	
     	}
 
     	/////////////////////////////////////////////////////////

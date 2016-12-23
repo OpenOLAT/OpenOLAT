@@ -71,7 +71,7 @@ public class RadarSeries {
 		points.add(new RadarPoint(axis, value));
 	}
 	
-	protected static class RadarPoint {
+	public static class RadarPoint {
 		
 		private final String axis;
 		private final double value;

@@ -85,6 +85,14 @@ public class RadarChartElement extends FormItemImpl {
 	public void setFormat(Format format) {
 		component.setFormat(format);
 	}
+	
+	public List<String> getAxis() {
+		return component.getAxis();
+	}
+	
+	public void setAxis(List<String> axis) {
+		component.setAxis(axis);
+	}
 
 	@Override
 	protected void rootFormAvailable() {

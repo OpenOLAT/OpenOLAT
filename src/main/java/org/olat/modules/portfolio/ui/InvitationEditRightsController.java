@@ -245,6 +245,7 @@ public class InvitationEditRightsController extends FormBasicController {
 	protected boolean validateFormLogic(UserRequest ureq) {
 		boolean allOk = true;
 	
+		mailEl.clearError();
 		if (mailEl != null) {
 			String mail = mailEl.getValue();
 			if (StringHelper.containsNonWhitespace(mail)) {
@@ -263,6 +264,18 @@ public class InvitationEditRightsController extends FormBasicController {
 				mailEl.setErrorKey("form.legende.mandatory", null);
 				allOk &= false;
 			}
+		}
+		
+		firstNameEl.clearError();
+		if (!StringHelper.containsNonWhitespace(firstNameEl.getValue())) {
+			firstNameEl.setErrorKey("form.legende.mandatory", null);
+			allOk &= false;
+		}
+		
+		lastNameEl.clearError();
+		if (!StringHelper.containsNonWhitespace(lastNameEl.getValue())) {
+			lastNameEl.setErrorKey("form.legende.mandatory", null);
+			allOk &= false;
 		}
 		
 		return allOk & super.validateFormLogic(ureq);

@@ -55,7 +55,9 @@
 			<div class="clearfix">
 				<div class="$colLeft"></div>
 				<div class="$colMiddle o_evaluation_step_labels">
-				#foreach($stepLabel in $element.stepLabels)<div style="width:${element.getStepInPercent()}%;">$r.escapeHtml($stepLabel)</div>#end
+				#foreach($stepLabel in $element.stepLabels)
+					<div style="width:${element.getStepInPercent()}%;">$r.escapeHtml($stepLabel)</div>
+				#end
 				</div>
 				<div class="$colRight"></div>
 			</div>
@@ -74,7 +76,17 @@
 			<div class="clearfix">
 				<div class="$colLeft"></div>
 				<div class="$colMiddle o_evaluation_step_labels">
-				#foreach($stepLabel in $element.stepLabels)<div style="width:${element.getStepInPercent($foreach.index)}%;">$r.escapeHtml($stepLabel)</div>#end
+				#set($colWidth = 100 / (${element.getStepLabels().size()} - 1))
+				#set($marginWidth = $colWidth / 2)
+				#foreach($stepLabel in $element.stepLabels)
+					#if($foreach.first || $foreach.last) 
+						<div>$r.escapeHtml($stepLabel)</div>
+					#elseif($foreach.index == 1)
+						<div style="width: ${colWidth}%; margin-left:${marginWidth}%;">$r.escapeHtml($stepLabel)</div>
+					#else
+						<div style="width: ${colWidth}%;">$r.escapeHtml($stepLabel)</div>
+					#end
+				#end
 				</div>
 				<div class="$colRight"></div>
 			</div>

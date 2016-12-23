@@ -126,18 +126,6 @@ public class EvaluationFormElementWrapper {
 		return 0;
 	}
 	
-	public int getStepInPercent(int pos) {
-		if(element instanceof Rubric) {
-			Rubric rubric = (Rubric)element;
-			if(rubric.getStepLabels() != null && (pos + 1) < rubric.getStepLabels().size()) {
-				int steps = rubric.getSteps() - 1;
-				int stepInPercent = Math.round(100.0f / steps) - 1;
-				return stepInPercent;
-			}
-		}
-		return 0;
-	}
-	
 	public boolean isStepLabels() {
 		if(element instanceof Rubric) {
 			Rubric rubric = (Rubric)element;

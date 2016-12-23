@@ -18,14 +18,26 @@
 	}
 	
 	.o_evaluation_discrete_slider {
-		.o_evaluation_step_labels div {
-			display:inline-block;
-			text-align: left;
-		}
+		.o_evaluation_step_labels {
+			position: relative;
+					
 		
-		.o_evaluation_step_labels div:last-child {
-			text-align: right;
-			float: right;
+			div:first-child {
+				position: absolute;
+				left: 0px;
+				text-align: left;
+			}
+			
+			div {
+				display:inline-block;
+				text-align: center;
+			}
+			
+			div:last-child {
+				position: absolute;
+				right: 0px;
+				text-align: right;
+			}
 		}
 	}
 	
@@ -66,6 +78,18 @@
 	
 		.o_evaluation_text {
 			
+		}
+	}
+}
+
+@media (max-width: $screen-sm-min) {
+	.o_evaluation_form {
+		.o_evaluation_left_label {
+			text-align: left;
+		}
+	
+		.o_evaluation_right_label {
+			text-align: right;
 		}
 	}
 }

@@ -21,6 +21,7 @@ package org.olat.modules.forms.ui;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -275,6 +276,13 @@ public class RubricEditorController extends FormBasicController implements PageE
 			rubric.setStart(1);
 			rubric.setEnd(steps);
 			rubric.setSteps(steps);
+		}
+		
+		for(Iterator<Slider> sliderIt=rubric.getSliders().iterator(); sliderIt.hasNext(); ) {
+			Slider slider = sliderIt.next();
+			if(!StringHelper.containsNonWhitespace(slider.getStartLabel()) && !StringHelper.containsNonWhitespace(slider.getEndLabel())) {
+				sliderIt.remove();
+			}
 		}
 		
 		rubricCtrl.updateForm();

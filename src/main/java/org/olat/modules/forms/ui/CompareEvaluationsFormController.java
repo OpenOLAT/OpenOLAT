@@ -26,6 +26,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.chart.RadarChartComponent.Format;
@@ -56,11 +57,11 @@ import org.olat.modules.forms.model.xml.TextInput;
 import org.olat.modules.forms.ui.component.SliderOverviewElement;
 import org.olat.modules.forms.ui.component.SliderPoint;
 import org.olat.modules.forms.ui.model.EvaluationFormElementWrapper;
+import org.olat.modules.forms.ui.model.Evaluator;
 import org.olat.modules.forms.ui.model.SliderWrapper;
 import org.olat.modules.forms.ui.model.TextInputWrapper;
 import org.olat.modules.portfolio.PageBody;
 import org.olat.repository.RepositoryEntry;
-import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -79,15 +80,13 @@ public class CompareEvaluationsFormController extends FormBasicController {
 	private int count = 0;
 	private final Form form;
 	private PageBody anchor;
-	private final List<Identity> evaluators;
+	private final List<Evaluator> evaluators;
 	
 	private EvaluationFormSession session;
 	private final Map<String, List<EvaluationFormResponse>> identifierToResponses = new HashMap<>();
 	private final Map<Identity,String> evaluatorToColors = new HashMap<>();
-	private final Map<Identity,String> evaluatorToNumbers = new HashMap<>();
+	private final Map<Identity,Evaluator> evaluatorToNumbers = new HashMap<>();
 	
-	@Autowired
-	private UserManager userManager;
 	@Autowired
 	private EvaluationFormManager evaluationFormManager;
 	
@@ -100,21 +99,16 @@ public class CompareEvaluationsFormController extends FormBasicController {
 	 * @param anchor The database object which hold the evaluation.
 	 */
 	public CompareEvaluationsFormController(UserRequest ureq, WindowControl wControl,
-			List<Identity> evaluators, PageBody anchor, RepositoryEntry formEntry) {
+			List<Evaluator> evaluators, PageBody anchor, RepositoryEntry formEntry) {
 		super(ureq, wControl, "run");
 		this.anchor = anchor;
 		this.evaluators = evaluators;
 		
 		int colorCount = 0;
-		int evaluatorCount = 0;
-		for(Identity evaluator:evaluators) {
+		for(Evaluator evaluator:evaluators) {
 			int i = (colorCount++) % colors.length;
-			evaluatorToColors.put(evaluator, colors[i]);
-			if(evaluator.equals(getIdentity())) {
-				evaluatorToNumbers.put(evaluator, "0");
-			} else {
-				evaluatorToNumbers.put(evaluator, Integer.toString(++evaluatorCount));
-			}
+			evaluatorToColors.put(evaluator.getIdentity(), colors[i]);
+			evaluatorToNumbers.put(evaluator.getIdentity(), evaluator);
 		}
 		
 		File repositoryDir = new File(FileResourceManager.getInstance().getFileResourceRoot(formEntry.getOlatResource()), FileResourceManager.ZIPDIR);
@@ -145,8 +139,9 @@ public class CompareEvaluationsFormController extends FormBasicController {
 	
 	private void loadResponses() {
 		flc.contextPut("messageNotDone", Boolean.FALSE);
-
-		List<EvaluationFormResponse> responses = evaluationFormManager.getResponsesFromPortfolioEvaluation(evaluators, anchor, EvaluationFormSessionStatus.done);
+		
+		List<Identity> evaluatorIdentities = evaluators.stream().map(evaluator -> evaluator.getIdentity()).collect(Collectors.toList());
+		List<EvaluationFormResponse> responses = evaluationFormManager.getResponsesFromPortfolioEvaluation(evaluatorIdentities, anchor, EvaluationFormSessionStatus.done);
 		for(EvaluationFormResponse response:responses) {
 			List<EvaluationFormResponse> responseList = identifierToResponses.get(response.getResponseIdentifier());
 			if(responseList == null) {
@@ -226,8 +221,10 @@ public class CompareEvaluationsFormController extends FormBasicController {
 	private EvaluationFormElementWrapper forgeRadarRubric(Rubric element) {
 		EvaluationFormElementWrapper wrapper = new EvaluationFormElementWrapper(element);
 		wrapper.setRadarOverview(true);
+		
+		List<String> axisList = new ArrayList<>();
 		List<Slider> sliders = element.getSliders();
-		Map<EvaluationFormSession,RadarSeries> series = new HashMap<>(sliders.size());
+		Map<EvaluationFormSession,RadarSeries> series = new HashMap<>();
 		for(Slider slider:sliders) {
 			String axis;
 			if(StringHelper.containsNonWhitespace(slider.getStartLabel())) {
@@ -237,6 +234,8 @@ public class CompareEvaluationsFormController extends FormBasicController {
 			} else {
 				axis = "";
 			}
+			axisList.add(axis);
+			
 			String responseIdentifier = slider.getId();
 			List<EvaluationFormResponse> responses = identifierToResponses.get(responseIdentifier);
 			if(responses != null && responses.size() > 0) {
@@ -260,6 +259,7 @@ public class CompareEvaluationsFormController extends FormBasicController {
 		RadarChartElement radarEl = new RadarChartElement(id);
 		radarEl.setSeries(new ArrayList<>(series.values()));
 		radarEl.setShowLegend(true);
+		radarEl.setAxis(axisList);
 		if(element.getSliderType() == SliderType.discrete || element.getSliderType() == SliderType.discrete_slider) {
 			radarEl.setLevels(element.getSteps());
 			radarEl.setMaxValue(element.getSteps());
@@ -299,11 +299,10 @@ public class CompareEvaluationsFormController extends FormBasicController {
 	
 	private String getLegend(Identity identity) {
 		String legend;
-		if(identity.equals(getIdentity())) {
-			legend = userManager.getUserDisplayName(identity);
+		if(evaluatorToNumbers.containsKey(identity)) {
+			legend = evaluatorToNumbers.get(identity).getFullName();
 		} else {
-			String nr = evaluatorToNumbers.get(identity);
-			legend = translate("evaluator", new String[]{ nr });
+			legend = "???";
 		}
 		return legend;
 	}

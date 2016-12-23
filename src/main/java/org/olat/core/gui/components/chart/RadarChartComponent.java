@@ -39,8 +39,9 @@ public class RadarChartComponent extends DefaultD3Component {
 	private Format format;
 	private double maxValue;
 	private boolean showLegend;
-	private List<RadarSeries> series;
 	
+	private List<String> axis;
+	private List<RadarSeries> series;
 	
 	public RadarChartComponent(String name) {
 		super(name);
@@ -84,6 +85,14 @@ public class RadarChartComponent extends DefaultD3Component {
 
 	public void setFormat(Format format) {
 		this.format = format;
+	}
+
+	public List<String> getAxis() {
+		return axis;
+	}
+
+	public void setAxis(List<String> axis) {
+		this.axis = axis;
 	}
 
 	@Override

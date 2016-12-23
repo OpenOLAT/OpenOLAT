@@ -45,13 +45,13 @@ public class RadarChartComponentRenderer extends DefaultComponentRenderer {
 		String cmpId = soc.getDispatchID();
 		List<RadarSeries> series = soc.getSeries();
 		
-		sb.append("<div id='d").append(cmpId).append("d3holder' class='radarChart' style='max-width:800px; max-height:600px; margin:0 auto;'></div>\n");
+		sb.append("<div id='d").append(cmpId).append("d3holder' class='radarChart' style='max-width:800px; max-height:650px; margin:0 auto;'></div>\n");
 		sb.append("<script type='text/javascript'>\n")
 		  .append("/* <![CDATA[ */ \n")
 		  .append("jQuery(function() {\n")
 		  .append(" var render = function() {\n")
 		  .append("  var placeholderWidth = jQuery('#d").append(cmpId).append("d3holder').width();\n")
-		  .append("  var margin = {top: 50, right: 150, bottom: 50, left: 150};\n")
+		  .append("  var margin = {top: 75, right: 150, bottom: 75, left: 150};\n")
 		  .append("  var radarWidth = (placeholderWidth - margin.right - margin.left);\n")
 		  .append("  var radarHeight = radarWidth * (6.0 / 8.0);\n");
 		
@@ -60,12 +60,18 @@ public class RadarChartComponentRenderer extends DefaultComponentRenderer {
 		  .append("    w: radarWidth,\n")
 		  .append("    h: radarHeight,\n")
 		  .append("    margin: margin,\n")
-		  .append("    labelFactor: 1.1,\n")
+		  .append("    labelFactor: 1.25,\n")
 		  .append("    maxValue: ").append(soc.getMaxValue()).append(",\n")
 		  .append("    levels: ").append(soc.getLevels()).append(",\n")
 		  .append("    roundStrokes: true,\n")
+		  .append("    wrapWidth: 100,\n")
 		  .append("    format: '").append(soc.getFormat().format()).append("',")
 		  .append("    color: color,\n");
+		if(soc.getAxis() != null && soc.getAxis().size() > 0) {
+			sb.append("    axis: ");
+			renderAxis(sb, soc.getAxis());
+			sb.append(",\n");
+		}
 		if(soc.isShowLegend()) {
 			sb.append("    legendOptions: ");
 			renderLegends(sb, series);
@@ -105,6 +111,20 @@ public class RadarChartComponentRenderer extends DefaultComponentRenderer {
 		} else {
 			sb.append("  var color = d3.scale.category10();\n");
 		}
+	}
+	
+	private void renderAxis(StringOutput sb, List<String> axis) {
+		int numOfSeries = axis.size();
+		
+		sb.append("[");
+		for(int i=0; i<numOfSeries; i++) {
+			String name = StringHelper.escapeJavaScript(axis.get(i));
+			sb.append("\"").append(name).append("\"");
+			if(i < (numOfSeries - 1)) {
+				sb.append(",");
+			}
+		}
+		sb.append("]");
 	}
 
 	private void renderLegends(StringOutput sb, List<RadarSeries> series) {

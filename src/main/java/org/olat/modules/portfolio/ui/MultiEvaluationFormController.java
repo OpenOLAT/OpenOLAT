@@ -36,6 +36,7 @@ import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.id.Identity;
 import org.olat.modules.forms.ui.CompareEvaluationsFormController;
 import org.olat.modules.forms.ui.EvaluationFormController;
+import org.olat.modules.forms.ui.model.Evaluator;
 import org.olat.modules.portfolio.PageBody;
 import org.olat.repository.RepositoryEntry;
 import org.olat.user.UserManager;
@@ -54,12 +55,13 @@ public class MultiEvaluationFormController extends BasicController {
 	private final Identity owner;
 	private final boolean readOnly;
 	private final RepositoryEntry formEntry;
-	private final List<Identity> otherEvaluators;
 	
 	private Link ownerLink;
 	private Link compareLink;
 	private final VelocityContainer mainVC;
 	private final SegmentViewComponent segmentView;
+	
+	private List<Evaluator> evaluators = new ArrayList<>();
 	private List<Link> otherEvaluatorLinks = new ArrayList<>();
 	
 	private CompareEvaluationsFormController compareEvaluationCtrl;
@@ -75,7 +77,6 @@ public class MultiEvaluationFormController extends BasicController {
 		this.anchor = anchor;
 		this.readOnly = readOnly;
 		this.formEntry = formEntry;
-		this.otherEvaluators = otherEvaluators;
 
 		mainVC = createVelocityContainer("multi_evaluation_form");
 		segmentView = SegmentViewFactory.createSegmentView("segments", mainVC, this);
@@ -90,16 +91,17 @@ public class MultiEvaluationFormController extends BasicController {
 			if(selected) {
 				doOpenEvalutationForm(ureq, owner);
 			}
+			evaluators.add(new Evaluator(owner, ownerFullname));
 		}
 		
 		if(otherEvaluators != null && otherEvaluators.size() > 0) {
 			int countEva = 1;
 			for(Identity evaluator:otherEvaluators) {
-				boolean selected = evaluator.equals(ureq.getIdentity());
+				boolean me = evaluator.equals(ureq.getIdentity());
 				
 				String evaluatorFullname;
-				if(!selected && anonym) {
-					evaluatorFullname = translate("anonym.evaluator", new String[] { Integer.toString(++countEva) });
+				if(!me && anonym) {
+					evaluatorFullname = translate("anonym.evaluator", new String[] { Integer.toString(countEva++) });
 				} else {
 					evaluatorFullname = userManager.getUserDisplayName(evaluator);
 				}
@@ -108,10 +110,11 @@ public class MultiEvaluationFormController extends BasicController {
 				Link evaluatorLink = LinkFactory.createCustomLink(id, id, evaluatorFullname, Link.BUTTON | Link.NONTRANSLATED, mainVC, this);
 				evaluatorLink.setUserObject(evaluator);
 				otherEvaluatorLinks.add(evaluatorLink);
-				segmentView.addSegment(evaluatorLink, selected);
-				if(selected) {
+				segmentView.addSegment(evaluatorLink, me);
+				if(me) {
 					doOpenEvalutationForm(ureq, evaluator);
 				}
+				evaluators.add(new Evaluator(evaluator, evaluatorFullname));
 			}
 		}
 		
@@ -162,14 +165,6 @@ public class MultiEvaluationFormController extends BasicController {
 	
 	private void doOpenOverview(UserRequest ureq) {
 		removeAsListenerAndDispose(compareEvaluationCtrl);
-		
-		List<Identity> evaluators = new ArrayList<>();
-		if(owner != null) {
-			evaluators.add(owner);
-		}
-		if(otherEvaluators != null) {
-			evaluators.addAll(otherEvaluators);
-		}
 		compareEvaluationCtrl = new CompareEvaluationsFormController(ureq, getWindowControl(), evaluators, anchor, formEntry);
 		listenTo(compareEvaluationCtrl);
 		mainVC.put("segmentCmp", compareEvaluationCtrl.getInitialComponent());

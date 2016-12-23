@@ -38,6 +38,7 @@ import org.olat.core.gui.components.form.flexible.elements.SliderElement;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.FormSubmit;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
@@ -83,7 +84,7 @@ public class EvaluationFormController extends FormBasicController {
 	private EvaluationFormSession session;
 	private final Map<String, EvaluationFormResponse> identifierToResponses = new HashMap<>();
 	
-	private FormLink saveAsDoneButton;
+	private FormSubmit saveAsDoneButton;
 	
 	@Autowired
 	private DB dbInstance;
@@ -141,7 +142,7 @@ public class EvaluationFormController extends FormBasicController {
 		updateElements();
 		
 		if(doneButton && !readOnly) {
-			saveAsDoneButton = uifactory.addFormLink("save.as.done", formLayout, Link.BUTTON);
+			saveAsDoneButton = uifactory.addFormSubmitButton("save.as.done", formLayout);
 		}
 	}
 	
@@ -325,6 +326,11 @@ public class EvaluationFormController extends FormBasicController {
 	}
 
 	@Override
+	protected void formOK(UserRequest ureq) {
+		doSaveAsDone();
+	}
+
+	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(saveAsDoneButton == source) {
 			doSaveAsDone();
@@ -352,7 +358,6 @@ public class EvaluationFormController extends FormBasicController {
 				String value = wrapper.getTextEl().getValue();
 				saveResponse(null, value, wrapper.getId());
 			}
-			
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
@@ -374,6 +379,16 @@ public class EvaluationFormController extends FormBasicController {
 	}
 	
 	private void doSaveAsDone() {
+		@SuppressWarnings("unchecked")
+		List<EvaluationFormElementWrapper> elementWrappers = (List<EvaluationFormElementWrapper>)flc.contextGet("elements");
+		for(EvaluationFormElementWrapper elementWrapper:elementWrappers) {
+			if(elementWrapper.isTextInput()) {
+				TextInputWrapper wrapper = elementWrapper.getTextInputWrapper();
+				String value = wrapper.getTextEl().getValue();
+				saveResponse(null, value, wrapper.getId());
+			}	
+		}
+		
 		//save text inputs
 		session = evaluationFormManager.changeSessionStatus(session, EvaluationFormSessionStatus.done);
 		readOnly = true;
@@ -381,11 +396,6 @@ public class EvaluationFormController extends FormBasicController {
 		loadResponses();
 		updateElements();
 		saveAsDoneButton.setVisible(false);
-	}
-
-	@Override
-	protected void formOK(UserRequest ureq) {
-		//
 	}
 
 	@Override
