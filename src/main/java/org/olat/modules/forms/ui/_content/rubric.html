@@ -20,13 +20,36 @@
 	#set($colRight = "col-sm-0")
 #end
 
-#if($element.isDiscreteRubric())
-<div class="o_evaluation_discrete_radio">
+#if($element.isSliderOverview())
 	#if($element.isStepLabels()) 
 	<div class="clearfix">
 		<div class="$colLeft"></div>
 		<div class="$colMiddle o_evaluation_step_labels">
 		#foreach($stepLabel in $element.stepLabels)<div style="width:${element.getStepInPercent()}%;">$r.escapeHtml($stepLabel)</div>#end
+		</div>
+		<div class="$colRight"></div>
+	</div>
+	#end
+	#foreach($slider in $element.getSliders())
+	<div class="o_slider clearfix">
+		<div class="$colLeft o_evaluation_left_label">$slider.startLabel</div>
+		<div class="$colMiddle">$r.render($slider.overviewEl)</div>
+		<div class="$colRight o_evaluation_right_label">$slider.endLabel</div>
+	</div>
+	#end
+#elseif($element.isRadarOverview())	
+	<div class="clearfix">
+		$r.render($element.radarEl)
+	</div>
+#elseif($element.isDiscreteRubric())
+<div class="o_evaluation_discrete_radio">
+	#if($element.isStepLabels()) 
+	<div class="clearfix">
+		<div class="$colLeft"></div>
+		<div class="$colMiddle o_evaluation_step_labels">
+		#foreach($stepLabel in $element.stepLabels)
+			<div style="width:${element.getStepInPercent()}%;">$r.escapeHtml($stepLabel)</div>
+		#end
 		</div>
 		<div class="$colRight"></div>
 	</div>
@@ -45,7 +68,17 @@
 	<div class="clearfix">
 		<div class="$colLeft"></div>
 		<div class="$colMiddle o_evaluation_step_labels">
-		#foreach($stepLabel in $element.stepLabels)<div style="width:${element.getStepInPercent($foreach.index)}%;">$r.escapeHtml($stepLabel)</div>#end
+		#set($colWidth = 100 / (${element.getStepLabels().size()} - 1))
+		#set($marginWidth = $colWidth / 2)
+		#foreach($stepLabel in $element.stepLabels)
+			#if($foreach.first || $foreach.last) 
+				<div>$r.escapeHtml($stepLabel)</div>
+			#elseif($foreach.index == 1)
+				<div style="width: ${colWidth}%; margin-left:${marginWidth}%;">$r.escapeHtml($stepLabel)</div>
+			#else
+				<div style="width: ${colWidth}%;">$r.escapeHtml($stepLabel)</div>
+			#end
+		#end
 		</div>
 		<div class="$colRight"></div>
 	</div>
