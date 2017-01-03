@@ -141,8 +141,8 @@ public class AutoCompleterController extends BasicController {
 	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
 		if (source == myContent) {
-			if (event.getCommand().equals(COMMAND_SELECT)) {
-				List<String> selectedEntries = new ArrayList<String>(); // init empty result list
+			if (COMMAND_SELECT.equals(event.getCommand())) {
+				List<String> selectedEntries = new ArrayList<>(); // init empty result list
 				String key = ureq.getParameter(AutoCompleterMapper.PARAM_KEY);
 				if (key == null) {
 					// Fallback to submitted input field: the input field does not contain
