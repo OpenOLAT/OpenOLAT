@@ -30,11 +30,14 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.UriBuilder;
@@ -43,7 +46,10 @@ import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.cookie.Cookie;
 import org.apache.http.util.EntityUtils;
+import org.junit.Assert;
 import org.junit.Test;
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.restapi.security.RestSecurityHelper;
 import org.olat.test.OlatJerseyTestCase;
@@ -58,6 +64,8 @@ import org.olat.test.OlatJerseyTestCase;
  * @author srosse, stephane.rosse@frentix.com
  */
 public class AuthenticationTest extends OlatJerseyTestCase {
+	
+	private static final OLog log = Tracing.createLoggerFor(AuthenticationTest.class);
 
 	@Test
 	public void testSessionCookieLogin() throws IOException, URISyntaxException {
@@ -150,5 +158,73 @@ public class AuthenticationTest extends OlatJerseyTestCase {
 		assertTrue(StringHelper.containsNonWhitespace(securityToken));
 		
 		conn.shutdown();
+	}
+	
+	@Test
+	public void testBasicAuthentication_concurrent() throws IOException, URISyntaxException {
+		
+		int numOfThreads = 25;
+		final CountDownLatch doneSignal = new CountDownLatch(numOfThreads);
+		
+		AuthenticationThread[] threads = new AuthenticationThread[numOfThreads];
+		for(int i=numOfThreads; i-->0; ) {
+			threads[i] = new AuthenticationThread(doneSignal);
+		}
+		
+		for(int i=numOfThreads; i-->0; ) {
+			threads[i].start();
+		}
+
+		try {
+			boolean interrupt = doneSignal.await(2400, TimeUnit.SECONDS);
+			assertTrue("Test takes too long (more than 10s)", interrupt);
+		} catch (InterruptedException e) {
+			fail("" + e.getMessage());
+		}
+		
+		int errorCount = 0;
+		for(int i=numOfThreads; i-->0; ) {
+			errorCount += threads[i].getErrorCount();
+		}
+		Assert.assertEquals(0, errorCount);
+	}
+	
+	private class AuthenticationThread extends Thread {
+
+		private int errorCount;
+		private final CountDownLatch doneSignal;
+		
+		public AuthenticationThread(CountDownLatch doneSignal) {
+			this.doneSignal = doneSignal;
+		}
+		
+		public int getErrorCount() {
+			return errorCount;
+		}
+		
+		@Override
+		public void run() {
+			RestConnection conn = new RestConnection();
+			try {
+				sleep(10);
+				
+				//path is protected
+				URI uri = UriBuilder.fromUri(getContextURI()).path("users").path("version").build();
+				HttpGet method = conn.createGet(uri, MediaType.TEXT_PLAIN, false);
+				method.setHeader("Authorization", "Basic " + StringHelper.encodeBase64("administrator:openolat"));
+				HttpResponse response = conn.execute(method);
+				if(200 != response.getStatusLine().getStatusCode()) {
+					errorCount++;
+				} else if(!StringHelper.containsNonWhitespace(conn.getSecurityToken(response))) {
+					errorCount++;
+				}
+			} catch (Exception e) {
+				log.error("", e);
+				errorCount++;
+			} finally {
+				doneSignal.countDown();
+				conn.shutdown();
+			}
+		}
 	}
 }

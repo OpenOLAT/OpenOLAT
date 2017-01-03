@@ -25,15 +25,19 @@ import org.olat.core.id.Identity;
 
 /**
  * 
- * Description:<br>
- * TODO: srosse Class Description for RestSecurityBean
- * 
  * <P>
  * Initial Date:  7 apr. 2010 <br>
  * @author srosse, stephane.rosse@frentix.com
  */
 public interface RestSecurityBean {
 	
+	/**
+	 * The token is saved in the authentication table
+	 * 
+	 * @param identity
+	 * @param session
+	 * @return The security token
+	 */
 	public String generateToken(Identity identity, HttpSession session);
 	
 	public boolean isTokenRegistrated(String token, HttpSession session);
