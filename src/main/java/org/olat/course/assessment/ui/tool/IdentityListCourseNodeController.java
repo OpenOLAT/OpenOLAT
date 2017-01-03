@@ -247,6 +247,8 @@ public class IdentityListCourseNodeController extends FormBasicController implem
 		tableEl.setMultiSelect(!coachCourseEnv.isCourseReadOnly());
 		
 		List<FlexiTableFilter> filters = new ArrayList<>();
+		filters.add(new FlexiTableFilter(translate("filter.showAll"), "showAll", true));
+		filters.add(FlexiTableFilter.SPACER);
 		filters.add(new FlexiTableFilter(translate("filter.passed"), "passed"));
 		filters.add(new FlexiTableFilter(translate("filter.failed"), "failed"));
 		filters.add(new FlexiTableFilter(translate("filter.inProgress"), "inProgress"));

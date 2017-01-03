@@ -35,10 +35,19 @@ public class FlexiTableFilter {
 	private final FlexiTableFilterIconRenderer renderer;
 	
 	private boolean selected;
+	private boolean showAll = false;
 	
 	public FlexiTableFilter(String label, String filter) {
 		this.label = label;
 		this.filter = filter;
+		this.renderer = null;
+		this.iconLeftCSS = null;
+	}
+	
+	public FlexiTableFilter(String label, String filter, boolean showAll) {
+		this.label = label;
+		this.filter = filter;
+		this.showAll = showAll;
 		this.renderer = null;
 		this.iconLeftCSS = null;
 	}
@@ -63,6 +72,14 @@ public class FlexiTableFilter {
 	
 	public String getFilter() {
 		return filter;
+	}
+
+	public boolean isShowAll() {
+		return showAll;
+	}
+
+	public void setShowAll(boolean showAll) {
+		this.showAll = showAll;
 	}
 
 	public String getIconLeftCSS() {
