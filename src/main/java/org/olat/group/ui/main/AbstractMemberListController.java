@@ -249,7 +249,6 @@ public abstract class AbstractMemberListController extends FormBasicController i
 		editButton = uifactory.addFormLink("edit.members", formLayout, Link.BUTTON);
 		editButton.setVisible((!globallyManaged || overrideManaged) && !readOnly);
 		mailButton = uifactory.addFormLink("table.header.mail", formLayout, Link.BUTTON);
-		mailButton.setVisible(!readOnly);
 		removeButton = uifactory.addFormLink("table.header.remove", formLayout, Link.BUTTON);
 		removeButton.setVisible((!globallyManaged || overrideManaged) && !readOnly);
 	}
@@ -446,6 +445,8 @@ public abstract class AbstractMemberListController extends FormBasicController i
 		} else if (source == contactCtrl) {
 			if(cmc != null) {
 				cmc.deactivate();
+			} else {
+				toolbarPanel.popController(contactCtrl);
 			}
 			cleanUpPopups();
 		} else if(toolsCtrl == source) {
