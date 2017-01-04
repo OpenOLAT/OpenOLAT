@@ -292,7 +292,7 @@ public interface BaseSecurity {
 	 * @param credential the credentials or null if not used
 	 * @return the new identity
 	 */
-	public Identity createAndPersistIdentity(String username, User user, String provider, String authusername, String password);
+	//public Identity createAndPersistIdentity(String username, User user, String provider, String authusername, String password);
 	
 	/**
 	 * @param username the username

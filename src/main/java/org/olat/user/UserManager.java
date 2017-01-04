@@ -84,14 +84,6 @@ public abstract class UserManager extends BasicManager {
 	 */
 	public abstract User createUser(String firstName, String lastName, String eMail);
 
-	/**
-	 * @param firstName
-	 * @param lastName
-	 * @param email
-	 * @return a persistant User.
-	 */
-	public abstract User createAndPersistUser(String firstName, String lastName, String email);
-	
 	public abstract List<Long> findUserKeyWithProperty(String propName, String propValue);
 	
 	public abstract Identity findIdentityKeyWithProperty(String propName, String propValue);

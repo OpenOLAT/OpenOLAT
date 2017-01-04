@@ -171,9 +171,7 @@ CREATE TABLE o_bs_identity (
   name varchar2(128 char) NOT NULL,
   external_id varchar2(64 char),
   status number(11),
-  fk_user_id number(20),
   CONSTRAINT u_o_bs_identity UNIQUE (name),
-  CONSTRAINT u_o_bs_identity01 UNIQUE (fk_user_id),
   PRIMARY KEY (id)
 );
 
@@ -326,7 +324,8 @@ CREATE TABLE o_user (
    u_genericcheckboxproperty2 varchar2(255 char),
    u_genericcheckboxproperty3 varchar2(255 char),
    
-  PRIMARY KEY (user_id)
+   fk_identity number(20),
+   PRIMARY KEY (user_id)
 );
 
 
@@ -1949,7 +1948,7 @@ create view o_bs_identity_short_v as (
       us.u_lastname as last_name,
       us.u_email as email
    from o_bs_identity ident
-   inner join o_user us on (ident.fk_user_id = us.user_id)
+   inner join o_user us on (ident.id = us.fk_identity)
 );
 
 -- eportfolio views
@@ -2086,7 +2085,7 @@ create view o_gp_contactext_v as (
    from o_gp_business bgroup
    inner join o_bs_group_member bg_member on (bg_member.fk_group_id = bgroup.fk_group_id)
    inner join o_bs_identity id_member on (bg_member.fk_identity_id = id_member.id)
-   inner join o_user us_member on (id_member.fk_user_id = us_member.user_id)
+   inner join o_user us_member on (id_member.id = us_member.fk_identity)
    inner join o_bs_group_member bg_me on (bg_me.fk_group_id = bgroup.fk_group_id)
    where
       (bgroup.ownersintern>0 and bg_member.g_role='coach')
@@ -2331,7 +2330,6 @@ create index provider_idx on o_bs_authentication (provider);
 create index credential_idx on o_bs_authentication (credential);
 create index authusername_idx on o_bs_authentication (authusername);
 
-alter table o_bs_identity add constraint FKFF94111CD1A80C95 foreign key (fk_user_id) references o_user (user_id);
 -- index created by unique constraint
 create index identstatus_idx on o_bs_identity (status);
 create index idx_ident_creationdate_idx on o_bs_identity (creationdate);
@@ -2349,11 +2347,21 @@ create index FK7B6288B4B85B522C on o_bs_membership (secgroup_id);
 alter table o_bs_invitation add constraint inv_to_group_group_ctx foreign key (fk_group_id) references o_bs_group (id);
 create index idx_inv_to_group_group_ctx on o_bs_invitation (fk_group_id);
 
-
 -- user
 create index usr_notification_interval_idx on o_user (notification_interval);
+create index idx_user_firstname_idx on o_user (u_firstname);
+create index idx_user_lastname_idx on o_user (u_lastname);
+create index idx_user_email_idx on o_user (u_email);
+create index idx_user_instname_idx on o_user (u_institutionalname);
+create index idx_user_instid_idx on o_user (u_institutionaluseridentifier);
+create index idx_user_instemail_idx on o_user (u_institutionalemail);
+create index idx_user_creationdate_idx on o_user (creationdate);
 
 create index propvalue_idx on o_userproperty (propvalue);
+
+alter table o_user add constraint user_to_ident_idx foreign key (fk_identity) references o_bs_identity(id);
+create index idx_user_to_ident_idx on o_user (fk_identity);
+alter table o_user add constraint idx_un_user_to_ident_idx UNIQUE (fk_identity);
 
 -- pub sub
 create index name_idx2 on o_noti_pub (resname, resid, subident);

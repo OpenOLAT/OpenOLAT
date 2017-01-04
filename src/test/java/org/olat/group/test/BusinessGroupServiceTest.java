@@ -183,8 +183,8 @@ public class BusinessGroupServiceTest extends OlatTestCase {
 			bgWithWaitingList.setMaxParticipants(new Integer(2));
 			// Identities
 			String suffix = UUID.randomUUID().toString();
-			User userWg1 = userManager.createAndPersistUser("FirstName_" + suffix, "LastName_" + suffix, suffix + "_junittest@olat.unizh.ch");
-			wg1 = securityManager.createAndPersistIdentity(suffix, userWg1, BaseSecurityModule.getDefaultAuthProviderIdentifier(), suffix, "wg1");
+			User userWg1 = userManager.createUser("FirstName_" + suffix, "LastName_" + suffix, suffix + "_junittest@olat.unizh.ch");
+			wg1 = securityManager.createAndPersistIdentityAndUser(suffix, null, userWg1, BaseSecurityModule.getDefaultAuthProviderIdentifier(), suffix, "wg1");
 
 			dbInstance.commitAndCloseSession();
 

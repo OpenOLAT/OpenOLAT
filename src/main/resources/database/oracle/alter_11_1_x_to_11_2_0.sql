@@ -74,3 +74,48 @@ alter table o_eva_form_response add constraint eva_resp_to_sess_idx foreign key 
 create index idx_eva_resp_to_sess_idx on o_eva_form_response (fk_session);
 
 
+alter table o_user add fk_identity number(20);
+
+update o_user set fk_identity=(select id from o_bs_identity where user_id=fk_user_id) where fk_identity is null;
+
+alter table o_user add constraint user_to_ident_idx foreign key (fk_identity) references o_bs_identity(id);
+create index idx_user_to_ident_idx on o_user (fk_identity);
+alter table o_user add constraint idx_un_user_to_ident_idx UNIQUE (fk_identity);
+
+drop view o_bs_identity_short_v;
+create view o_bs_identity_short_v as (
+   select
+      ident.id as id_id,
+      ident.name as id_name,
+      ident.lastlogin as id_lastlogin,
+      ident.status as id_status,
+      us.user_id as us_id,
+      us.u_firstname as first_name,
+      us.u_lastname as last_name,
+      us.u_email as email
+   from o_bs_identity ident
+   inner join o_user us on (ident.id = us.fk_identity)
+);
+
+drop view o_gp_contactext_v;
+create view o_gp_contactext_v as (
+   select
+      bg_member.id as membership_id,
+      bg_member.fk_identity_id as member_id,
+      bg_member.g_role as membership_role,
+      id_member.name as member_name,
+      us_member.u_firstname as member_firstname,
+      us_member.u_lastname as member_lastname,
+      bg_me.fk_identity_id as me_id,
+      bgroup.group_id as bg_id,
+      bgroup.groupname as bg_name
+   from o_gp_business bgroup
+   inner join o_bs_group_member bg_member on (bg_member.fk_group_id = bgroup.fk_group_id)
+   inner join o_bs_identity id_member on (bg_member.fk_identity_id = id_member.id)
+   inner join o_user us_member on (id_member.id = us_member.fk_identity)
+   inner join o_bs_group_member bg_me on (bg_me.fk_group_id = bgroup.fk_group_id)
+   where
+      (bgroup.ownersintern>0 and bg_member.g_role='coach')
+      or
+      (bgroup.participantsintern>0 and bg_member.g_role='participant')
+);

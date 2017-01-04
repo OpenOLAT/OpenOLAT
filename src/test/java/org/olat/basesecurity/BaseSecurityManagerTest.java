@@ -106,6 +106,7 @@ public class BaseSecurityManagerTest extends OlatTestCase {
 		
 		//reload and check
 		Identity identitySecond = securityManager.loadIdentityByKey(identity.getKey());
+		dbInstance.commitAndCloseSession();//check the fetch join on user
 		Assert.assertEquals("firstname", identitySecond.getUser().getProperty(UserConstants.FIRSTNAME, null));
 		Assert.assertEquals("last" + username, identitySecond.getUser().getProperty(UserConstants.LASTNAME, null));
 		Assert.assertEquals(username + "@frentix.com", identitySecond.getUser().getProperty(UserConstants.EMAIL, null));

@@ -691,7 +691,7 @@ public class BaseSecurityManager implements BaseSecurity {
 	 * authentication token is generated.
 	 * @param credential the credentials or null if not used
 	 * @return Identity
-	 */
+	 *
 	@Override
 	public Identity createAndPersistIdentity(String username, User user, String provider, String authusername, String credential) {
 		IdentityImpl iimpl = new IdentityImpl(username, user);
@@ -702,7 +702,7 @@ public class BaseSecurityManager implements BaseSecurity {
 		}
 		notifyNewIdentityCreated(iimpl);
 		return iimpl;
-	}
+	}*/
 
 	/**
 	 * @param username The username
@@ -713,16 +713,7 @@ public class BaseSecurityManager implements BaseSecurity {
 	 */
 	@Override
 	public Identity createAndPersistIdentityAndUser(String username, String externalId, User user, String provider, String authusername) {
-		dbInstance.getCurrentEntityManager().persist(user);
-		IdentityImpl iimpl = new IdentityImpl(username, user);
-		iimpl.setExternalId(externalId);
-		dbInstance.getCurrentEntityManager().persist(iimpl);
-		((UserImpl)user).setIdentity(iimpl);
-		if (provider != null) { 
-			createAndPersistAuthenticationIntern(iimpl, provider, authusername, null, null);
-		}
-		notifyNewIdentityCreated(iimpl);
-		return iimpl;
+		return createAndPersistIdentityAndUser(username, externalId, user, provider, authusername, null);
 	}
 
 	/**
@@ -737,11 +728,15 @@ public class BaseSecurityManager implements BaseSecurity {
 	 */
 	@Override
 	public Identity createAndPersistIdentityAndUser(String username, String externalId, User user, String provider, String authusername, String credential) {
-		dbInstance.getCurrentEntityManager().persist(user);
-		IdentityImpl iimpl = new IdentityImpl(username, user);
+		IdentityImpl iimpl = new IdentityImpl();
+		iimpl.setUser(user);
+		iimpl.setName(username);
+		iimpl.setLastLogin(new Date());
 		iimpl.setExternalId(externalId);
-		dbInstance.getCurrentEntityManager().persist(iimpl);
+		iimpl.setStatus(Identity.STATUS_ACTIV);
 		((UserImpl)user).setIdentity(iimpl);
+		dbInstance.getCurrentEntityManager().persist(iimpl);
+
 		if (provider != null) { 
 			createAndPersistAuthenticationIntern(iimpl, provider, authusername, credential, loginModule.getDefaultHashAlgorithm());
 		}
@@ -1357,6 +1352,7 @@ public class BaseSecurityManager implements BaseSecurity {
 			auth = new AuthenticationImpl(ident, provider, authUserName, credentials);
 		}
 		dbInstance.getCurrentEntityManager().persist(auth);
+		dbInstance.commit();
 		log.audit("Create " + provider + " authentication (login=" + ident.getName() + ",authusername=" + authUserName + ")");
 		return auth;
 	}

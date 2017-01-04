@@ -28,25 +28,11 @@ package org.olat.basesecurity;
 import java.io.Serializable;
 import java.util.Date;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.OneToOne;
-import javax.persistence.Table;
-import javax.persistence.Temporal;
-import javax.persistence.TemporalType;
-import javax.persistence.Version;
-
-import org.hibernate.annotations.GenericGenerator;
-import org.hibernate.annotations.Parameter;
 import org.olat.core.id.CreateInfo;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Persistable;
 import org.olat.core.id.User;
 import org.olat.core.logging.AssertException;
-import org.olat.user.UserImpl;
 
 
 /**
@@ -54,45 +40,19 @@ import org.olat.user.UserImpl;
  * 
  * @author Felix Jost
  */
-@Entity
-@Table(name="o_bs_identity")
 public class IdentityImpl implements Identity, IdentityRef, CreateInfo, Persistable, Serializable {
 
 	private static final long serialVersionUID = 1762176135363569542L;
-	
-	@Id
-	@GeneratedValue(generator = "system-uuid")
-	@GenericGenerator(name = "system-uuid", strategy = "enhanced-sequence", parameters={
-		@Parameter(name="sequence_name", value="hibernate_unique_key"),
-		@Parameter(name="force_table_use", value="true"),
-		@Parameter(name="optimizer", value="legacy-hilo"),
-		@Parameter(name="value_column", value="next_hi"),
-		@Parameter(name="increment_size", value="32767"),
-		@Parameter(name="initial_value", value="32767")
-	})
-	@Column(name="id", nullable=false, unique=true, insertable=true, updatable=false)
+
 	private Long key;
 	
-	@Version
+	@SuppressWarnings("unused")
 	private int version = 0;
-
-	@Temporal(TemporalType.TIMESTAMP)
-	@Column(name="creationdate", nullable=false, insertable=true, updatable=false)
 	private Date creationDate;
-	@Temporal(TemporalType.TIMESTAMP)
-	@Column(name="lastlogin", nullable=false, insertable=true, updatable=true)
 	private Date lastLogin;
-	
-	@Column(name="name", nullable=true, insertable=true, updatable=false)
 	private String name;
-	@Column(name="external_id", nullable=true, insertable=true, updatable=true)
 	private String externalId;
-	
-	@OneToOne(targetEntity=UserImpl.class)
-	@JoinColumn (name="fk_user_id")
 	private User user;
-	
-	
 	/** status=[activ|deleted|permanent] */
 	private int status;
 	
@@ -101,18 +61,8 @@ public class IdentityImpl implements Identity, IdentityRef, CreateInfo, Persista
 	 */
 	public static final int NAME_MAXLENGTH = 128;
 
-	/**
-	 * both args are mandatory (in junit test you may omit the user)
-	 */
-	protected IdentityImpl() {
-	//  
-	}
-
-	IdentityImpl(String name, User user) {
-		this.name = name;
-		this.user = user;
-		status = Identity.STATUS_ACTIV;
-		this.setLastLogin(new Date());
+	public IdentityImpl() {
+		//  
 	}
 
 	@Override

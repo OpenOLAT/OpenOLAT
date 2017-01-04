@@ -32,8 +32,10 @@ import java.util.Map;
 import javax.persistence.Column;
 import javax.persistence.Embedded;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
@@ -77,7 +79,6 @@ public class UserImpl implements Persistable, User {
 	private static final long serialVersionUID = -2872102058369727753L;
 	private static final OLog log = Tracing.createLoggerFor(UserImpl.class);
 
-	
 	@Id
 	@GeneratedValue(generator = "system-uuid")
 	@GenericGenerator(name = "system-uuid", strategy = "enhanced-sequence", parameters={
@@ -98,7 +99,8 @@ public class UserImpl implements Persistable, User {
 	@Column(name="creationdate", nullable=false, insertable=true, updatable=false)
 	private Date creationDate;
 	
-	@OneToOne(targetEntity=IdentityImpl.class,mappedBy="user")
+	@OneToOne(targetEntity=IdentityImpl.class, optional=true, fetch=FetchType.LAZY)
+	@JoinColumn (name="fk_identity")
 	private Identity identity;
 	
 	@Transient

@@ -75,7 +75,6 @@
 		<!-- End upgraders mapping -->
 		
 		
-		<class>org.olat.basesecurity.IdentityImpl</class>
 		<class>org.olat.basesecurity.IdentityShort</class>
 		<class>org.olat.basesecurity.model.GroupImpl</class>
 		<class>org.olat.basesecurity.model.GrantImpl</class>
@@ -197,8 +196,8 @@
 			<property name="hibernate.generate_statistics" value="true"/>
 			<property name="hibernate.archive.autodetection" value=""/>
 			<property name="hibernate.max_fetch_depth" value="10"/>
-			<property name="hibernate.connection.release_mode" value="after_transaction"/>
-			<property name="hibernate.ejb.interceptor" value="org.olat.core.commons.persistence.AuditInterceptor"/>
+			<property name="hibernate.connection.handling_mode" value="DELAYED_ACQUISITION_AND_RELEASE_AFTER_TRANSACTION"/>
+			<property name="hibernate.session_factory.interceptor" value="org.olat.core.commons.persistence.AuditInterceptor"/>
 		</properties>
 	</persistence-unit>
 </persistence>
