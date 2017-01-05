@@ -25,6 +25,7 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.DateChooser;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
+import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.control.Controller;
@@ -51,7 +52,11 @@ public class OrdersSearchForm extends FormBasicController {
 	
 	public OrdersSearchForm(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
-		
+		initForm(ureq);
+	}
+	
+	public OrdersSearchForm(UserRequest ureq, WindowControl wControl, Form rootForm) {
+		super(ureq, wControl, LAYOUT_DEFAULT, null, rootForm);
 		initForm(ureq);
 	}
 
@@ -65,7 +70,6 @@ public class OrdersSearchForm extends FormBasicController {
 		buttonCont.setRootForm(mainForm);
 		formLayout.add(buttonCont);
 		uifactory.addFormSubmitButton("search", "search", buttonCont);
-		
 	}
 
 	@Override
@@ -135,6 +139,10 @@ public class OrdersSearchForm extends FormBasicController {
 
 	public Date getFrom() {
 		return fromEl.getDate();
+	}
+	
+	public void setFrom(Date from) {
+		fromEl.setDate(from);
 	}
 
 	@Override

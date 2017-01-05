@@ -32,6 +32,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.olat.core.commons.persistence.DB;
+import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.util.CodeHelper;
@@ -48,6 +49,7 @@ import org.olat.resource.accesscontrol.model.FreeAccessMethod;
 import org.olat.resource.accesscontrol.model.PriceImpl;
 import org.olat.resource.accesscontrol.model.RawOrderItem;
 import org.olat.resource.accesscontrol.model.TokenAccessMethod;
+import org.olat.resource.accesscontrol.ui.OrdersDataModel.OrderCol;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -194,9 +196,16 @@ public class ACOrderManagerTest extends OlatTestCase {
 		acTransactionManager.update(accessTransaction2, AccessTransactionStatus.CANCELED);
 
 		long start = System.nanoTime();
-		List<RawOrderItem> items = acOrderManager.findNativeOrderItems(randomOres, null, null, null, null, 0, -1);
+		List<RawOrderItem> items = acOrderManager.findNativeOrderItems(randomOres, null, null, null, null, null, 0, -1, null);
 		CodeHelper.printNanoTime(start, "Order itemized");
 		Assert.assertNotNull(items);
+		
+		//check the order by
+		for(OrderCol col:OrderCol.values()) {
+			List<RawOrderItem> rawItems = acOrderManager.findNativeOrderItems(randomOres, null, null, null, null, null,
+					0, -1, null, new SortKey(col.sortKey(), false));
+			Assert.assertNotNull(rawItems);
+		}
 	}
 	
 	@Test
@@ -222,7 +231,7 @@ public class ACOrderManagerTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		long start = System.nanoTime();
-		List<RawOrderItem> items = acOrderManager.findNativeOrderItems(randomOres, null, null, null, null, 0, -1);
+		List<RawOrderItem> items = acOrderManager.findNativeOrderItems(randomOres, null, null, null, null, null, 0, -1, null);
 		CodeHelper.printNanoTime(start, "Order itemized");
 		Assert.assertNotNull(items);
 	}

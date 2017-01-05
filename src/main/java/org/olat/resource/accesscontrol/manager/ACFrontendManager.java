@@ -34,6 +34,7 @@ import java.util.Set;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.IdentityRef;
 import org.olat.core.commons.persistence.DB;
+import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
 import org.olat.core.logging.OLog;
@@ -72,6 +73,7 @@ import org.olat.resource.accesscontrol.model.PSPTransactionStatus;
 import org.olat.resource.accesscontrol.model.RawOrderItem;
 import org.olat.resource.accesscontrol.ui.OrderTableItem;
 import org.olat.resource.accesscontrol.ui.OrderTableItem.Status;
+import org.olat.user.propertyhandlers.UserPropertyHandler;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -621,15 +623,22 @@ public class ACFrontendManager implements ACService {
 	}
 
 	@Override
+	public int countOrderItems(OLATResource resource, IdentityRef delivery, Long orderNr, Date from, Date to, OrderStatus[] status) {
+		return orderManager.countNativeOrderItems(resource, delivery, orderNr, from, to, status);
+	}
+
+	@Override
 	public List<OrderTableItem> findOrderItems(OLATResource resource, IdentityRef delivery, Long orderNr,
-			Date from, Date to, OrderStatus[] status, int firstResult, int maxResults) {
+			Date from, Date to, OrderStatus[] status, int firstResult, int maxResults,
+			List<UserPropertyHandler> userPropertyHandlers, SortKey... orderBy) {
 		List<AccessMethod> methods = methodManager.getAllMethods();
 		Map<String,AccessMethod> methodMap = new HashMap<>();
 		for(AccessMethod method:methods) {
 			methodMap.put(method.getKey().toString(), method);
 		}
 		
-		List<RawOrderItem> rawOrders = orderManager.findNativeOrderItems(resource, delivery, orderNr, from, to, firstResult, maxResults, status);
+		List<RawOrderItem> rawOrders = orderManager.findNativeOrderItems(resource, delivery, orderNr, from, to, status,
+				firstResult, maxResults, userPropertyHandlers, orderBy);
 		List<OrderTableItem> items = new ArrayList<>(rawOrders.size());
 		for(RawOrderItem rawOrder:rawOrders) {
 			String orderStatusStr = rawOrder.getOrderStatus();
@@ -649,7 +658,7 @@ public class ACFrontendManager implements ACService {
 			
 			OrderTableItem item = new OrderTableItem(rawOrder.getOrderKey(), rawOrder.getOrderNr(),
 					rawOrder.getTotal(), rawOrder.getCreationDate(), orderStatus, finalStatus,
-					rawOrder.getDeliveryKey(), orderMethods);
+					rawOrder.getDeliveryKey(), rawOrder.getUsername(), rawOrder.getUserProperties(), orderMethods);
 			item.setResourceDisplayname(rawOrder.getResourceName());
 			
 			items.add(item);

@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.olat.basesecurity.IdentityRef;
+import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
 import org.olat.group.BusinessGroup;
@@ -34,6 +35,7 @@ import org.olat.resource.accesscontrol.model.ACResourceInfo;
 import org.olat.resource.accesscontrol.model.AccessMethod;
 import org.olat.resource.accesscontrol.model.OLATResourceAccess;
 import org.olat.resource.accesscontrol.ui.OrderTableItem;
+import org.olat.user.propertyhandlers.UserPropertyHandler;
 
 /**
  * 
@@ -192,7 +194,11 @@ public interface ACService {
 	
 	public List<Order> findOrders(OLATResource resource, OrderStatus... status);
 	
+	public int countOrderItems(OLATResource resource, IdentityRef delivery, Long orderNr, Date from, Date to,
+			OrderStatus[] statuss);
+	
 	public List<OrderTableItem> findOrderItems(OLATResource resource, IdentityRef delivery, Long orderNr, Date from, Date to,
-			OrderStatus[] status, int firstResult, int maxResults);
+			OrderStatus[] status, int firstResult, int maxResults,
+			List<UserPropertyHandler> userPropertyHandlers, SortKey... orderBy);
 	
 }

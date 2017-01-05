@@ -19,11 +19,12 @@
  */
 package org.olat.resource.accesscontrol.ui;
 
-import java.util.Locale;
-
-import org.olat.core.gui.components.table.CustomCellRenderer;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiCellRenderer;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableComponent;
 import org.olat.core.gui.render.Renderer;
 import org.olat.core.gui.render.StringOutput;
+import org.olat.core.gui.render.URLBuilder;
+import org.olat.core.gui.translator.Translator;
 import org.olat.resource.accesscontrol.OrderStatus;
 
 /**
@@ -35,14 +36,11 @@ import org.olat.resource.accesscontrol.OrderStatus;
  * Initial Date:  27 mai 2011 <br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
-public class OrderStatusRenderer implements CustomCellRenderer {
+public class OrderStatusRenderer implements FlexiCellRenderer {
 
-	public OrderStatusRenderer() {
-		//
-	}
-	
 	@Override
-	public void render(StringOutput sb, Renderer renderer, Object val, Locale locale, int alignment, String action) {
+	public void render(Renderer renderer, StringOutput sb, Object val, int row, FlexiTableComponent source,
+			URLBuilder ubu, Translator translator) {
 		if(val instanceof OrderStatus) {
 			OrderStatus status = (OrderStatus)val;
 			String name = status.name().toLowerCase();
@@ -52,10 +50,10 @@ public class OrderStatusRenderer implements CustomCellRenderer {
 		} else if (val instanceof OrderTableItem) {
 			OrderTableItem item = (OrderTableItem)val;
 			switch(item.getStatus()) {
-				case ERROR: sb.append("<i class='o_icon o_icon-fw o_ac_order_status_error_icon'></i>"); break;
-				case WARNING: sb.append("<i class='o_icon o_icon-fw o_ac_order_status_warning_icon'></i>"); break;
-				case CANCELED: sb.append("<i class='o_icon o_icon-fw o_ac_order_status_canceled_icon'></i>"); break;
-				default: sb.append("<i class='o_icon o_icon-fw o_ac_order_status_payed_icon'></i>");
+				case ERROR: sb.append("<i class='o_icon o_icon-fw o_ac_order_status_error_icon'> </i>"); break;
+				case WARNING: sb.append("<i class='o_icon o_icon-fw o_ac_order_status_warning_icon'> </i>"); break;
+				case CANCELED: sb.append("<i class='o_icon o_icon-fw o_ac_order_status_canceled_icon'> </i>"); break;
+				default: sb.append("<i class='o_icon o_icon-fw o_ac_order_status_payed_icon'> </i>");
 			}
 		}
 	}
