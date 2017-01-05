@@ -460,7 +460,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_ac_status_canceled_icon:before { content: $fa-var-minus; color: $brand-warning;}
 .o_ac_status_error_icon:before { content: $fa-var-times; color: $brand-danger;}
 .o_ac_status_new_icon:before { content: $fa-var-asterisk; color: $brand-primary;}
-.o_ac_status_succes_icon:before { content: $fa-var-check; color: $brand-success;}
+.o_ac_status_success_icon:before { content: $fa-var-check; color: $brand-success;}
 .o_ac_status_waiting_icon:before { content: $fa-var-clock-o; color: $brand-primary;}
 .o_ac_order_status_new_icon:before { content: $fa-var-asterisk; color: $brand-primary;}
 .o_ac_order_status_prepayment_icon:before { content: $fa-var-money; color: $brand-info;}

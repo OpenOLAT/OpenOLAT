@@ -192,6 +192,7 @@ public interface ACService {
 	
 	public List<Order> findOrders(OLATResource resource, OrderStatus... status);
 	
-	public List<OrderTableItem> findOrderItems(OLATResource resource, IdentityRef delivery, Long orderNr, Date from, Date to, OrderStatus... status);
+	public List<OrderTableItem> findOrderItems(OLATResource resource, IdentityRef delivery, Long orderNr, Date from, Date to,
+			OrderStatus[] status, int firstResult, int maxResults);
 	
 }

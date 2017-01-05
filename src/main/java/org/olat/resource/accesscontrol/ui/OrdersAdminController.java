@@ -27,6 +27,7 @@ import org.olat.core.gui.ShortName;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.panel.StackedPanel;
+import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.components.table.ColumnDescriptor;
 import org.olat.core.gui.components.table.CustomRenderColumnDescriptor;
 import org.olat.core.gui.components.table.DefaultColumnDescriptor;
@@ -71,6 +72,7 @@ public class OrdersAdminController extends BasicController implements Activateab
 	private final VelocityContainer mainVC;
 	private final TableController tableCtr;
 	private OrdersSearchForm searchForm;
+	private final TooledStackedPanel stackPanel;
 	private OrderDetailController detailController;
 
 	private final OLATResource resource;
@@ -82,14 +84,20 @@ public class OrdersAdminController extends BasicController implements Activateab
 	@Autowired
 	private UserManager userManager;
 	
-	
+	/**
+	 * Constructor for the admin. extension
+	 * 
+	 * @param ureq
+	 * @param wControl
+	 */
 	public OrdersAdminController(UserRequest ureq, WindowControl wControl) {
-		this(ureq, wControl, null);
+		this(ureq, wControl, null, null);
 	}
 	
-	public OrdersAdminController(UserRequest ureq, WindowControl wControl, OLATResource resource) {
+	public OrdersAdminController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel, OLATResource resource) {
 		super(ureq, wControl);
 		this.resource = resource;
+		this.stackPanel = stackPanel;
 		
 		if(resource == null) {
 			searchForm = new OrdersSearchForm(ureq, wControl);
@@ -159,7 +167,7 @@ public class OrdersAdminController extends BasicController implements Activateab
 			to = searchForm.getTo();
 			orderNr = searchForm.getRefNo();
 		}
-		List<OrderTableItem> items = acService.findOrderItems(resource, null, orderNr, from, to, filter.getStatus());
+		List<OrderTableItem> items = acService.findOrderItems(resource, null, orderNr, from, to, filter.getStatus(), 0, -1);
 		tableCtr.setTableDataModel(new OrdersDataModel(items, getLocale(), userManager));
 	}
 	
@@ -218,7 +226,13 @@ public class OrdersAdminController extends BasicController implements Activateab
 		WindowControl bwControl = addToHistory(ureq, ores, null);
 		detailController = new OrderDetailController(ureq, bwControl, order.getOrderKey());
 		listenTo(detailController);
-		mainPanel.setContent(detailController.getInitialComponent());
+		
+		if(stackPanel == null) {
+			mainPanel.setContent(detailController.getInitialComponent());
+		} else {
+			detailController.hideBackLink();
+			stackPanel.pushController(order.getOrderNr(), detailController);
+		}
 	}
 
 	@Override

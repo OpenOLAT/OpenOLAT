@@ -21,7 +21,6 @@ package org.olat.resource.accesscontrol.ui;
 
 import java.util.Date;
 
-import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -38,6 +37,7 @@ import org.olat.resource.accesscontrol.Order;
 import org.olat.resource.accesscontrol.method.AccessMethodHandler;
 import org.olat.resource.accesscontrol.model.AccessMethod;
 import org.olat.resource.accesscontrol.ui.OrderDetailController.OrderItemWrapper;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -53,22 +53,19 @@ public class TransactionDetailsController extends FormBasicController {
 	
 	private final Order order;
 	private final OrderItemWrapper wrapper;
-	private final AccessControlModule acModule;
+	
+	@Autowired
+	private AccessControlModule acModule;
 	
 	public TransactionDetailsController(UserRequest ureq, WindowControl wControl, Order order, OrderItemWrapper wrapper) {
 		super(ureq, wControl, FormBasicController.LAYOUT_VERTICAL);
-		
 		this.order = order;
 		this.wrapper = wrapper;
-		acModule = (AccessControlModule)CoreSpringFactory.getBean("acModule");
-
 		initForm(ureq);
 	}
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		setFormTitle("transaction.details.title");
-
 		String page = velocity_root + "/transaction_details.html";
 		FormLayoutContainer detailsLayout = FormLayoutContainer.createCustomFormLayout("transaction-details-layout", getTranslator(), page);
 		formLayout.add(detailsLayout);

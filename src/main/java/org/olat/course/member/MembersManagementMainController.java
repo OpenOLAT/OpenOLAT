@@ -237,7 +237,7 @@ public class MembersManagementMainController extends MainLayoutBasicController  
 		} else if(CMD_BOOKING.equals(cmd)) {
 			if(acModule.isEnabled() && (entryAdmin || memberManagementRight)) {
 				if(ordersController == null) {
-					ordersController = new OrdersAdminController(ureq, bwControl, repoEntry.getOlatResource());
+					ordersController = new OrdersAdminController(ureq, bwControl, toolbarPanel, repoEntry.getOlatResource());
 					listenTo(ordersController);
 				}
 				mainVC.put("content", ordersController.getInitialComponent());

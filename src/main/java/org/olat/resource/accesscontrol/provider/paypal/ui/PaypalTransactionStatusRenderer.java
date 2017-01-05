@@ -20,13 +20,13 @@
  */
 package org.olat.resource.accesscontrol.provider.paypal.ui;
 
-import java.util.Locale;
-
-import org.olat.core.gui.components.table.CustomCellRenderer;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiCellRenderer;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableComponent;
 import org.olat.core.gui.render.Renderer;
 import org.olat.core.gui.render.StringOutput;
+import org.olat.core.gui.render.URLBuilder;
+import org.olat.core.gui.translator.Translator;
 import org.olat.resource.accesscontrol.provider.paypal.model.PaypalTransaction;
-import org.olat.resource.accesscontrol.provider.paypal.model.PaypalTransactionStatus;
 
 /**
  * 
@@ -37,51 +37,15 @@ import org.olat.resource.accesscontrol.provider.paypal.model.PaypalTransactionSt
  * Initial Date:  30 mai 2011 <br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
-public class PaypalTransactionStatusRenderer  implements CustomCellRenderer {
+public class PaypalTransactionStatusRenderer  implements FlexiCellRenderer {
 
 	@Override
-	public void render(StringOutput sb, Renderer renderer, Object val, Locale locale, int alignment, String action) {
-		if(val instanceof PaypalTransaction) {
-			PaypalTransaction trx = (PaypalTransaction)val;
-			String ack = trx.getAck();
-			String execStatus = trx.getPaymentExecStatus();
-			
-			PaypalTransactionStatus status = trx.getStatus();
-			String trxStatus = trx.getTransactionStatus();
-			
-			if("Success".equals(ack) && "CREATED".equals(execStatus)) {
-				
-				// – The sender’s transaction has completed
-				//PENDING – The transaction is awaiting further processing
-				//CREATED – The payment request was received; funds will be transferred
-				//PARTIALLY_REFUNDED– Transaction was partially refunded
-				//DENIED – The transaction was rejected by the receiver
-				//PROCESSING – The transaction is in progress
-				//REVERSED – The payment was returned to the sender
-				
-				if(trxStatus == null) {
-					if(status == PaypalTransactionStatus.SUCCESS) {
-						sb.append("<i class='o_icon o_icon-fw o_ac_status_success_icon'></i>");
-					}	else if(status == PaypalTransactionStatus.PENDING) {
-						sb.append("<i class='o_icon o_icon-fw o_ac_status_waiting_icon'></i>");
-					} else if(status == PaypalTransactionStatus.NEW || status == PaypalTransactionStatus.PREPAYMENT) {
-						sb.append("<i class='o_icon o_icon-fw o_ac_status_new_icon'></i>");
-					} else if(status == PaypalTransactionStatus.CANCELED) {
-						sb.append("<i class='o_icon o_icon-fw o_ac_status_canceled_icon'></i>");
-					}	else {
-						sb.append("<i class='o_icon o_icon-fw o_ac_status_error_icon'></i>");
-					}
-				} else if("SUCCESS".equalsIgnoreCase(trxStatus) || "CREATED".equalsIgnoreCase(trxStatus)
-						|| "PARTIALLY_REFUNDED".equalsIgnoreCase(trxStatus) || "Completed".equalsIgnoreCase(trxStatus)) {
-					sb.append("<i class='o_icon o_icon-fw o_ac_status_success_icon'></i>");
-				} else if("PROCESSING".equalsIgnoreCase(trxStatus) || "PENDING".equalsIgnoreCase(trxStatus)) {
-					sb.append("<i class='o_icon o_icon-fw o_ac_status_waiting_icon'></i>");
-				} else {
-					sb.append("<i class='o_icon o_icon-fw o_ac_status_error_icon'></i>");
-				}
-			} else {
-				sb.append("<i class='o_icon o_icon-fw o_ac_status_error_icon'></i>");
-			}
+	public void render(Renderer renderer, StringOutput sb, Object cellValue, int row, FlexiTableComponent source,
+			URLBuilder ubu, Translator translator) {
+		if(cellValue instanceof PaypalTransaction) {
+			PaypalTransaction trx = (PaypalTransaction)cellValue;
+			PaypalMergedState mState = PaypalMergedState.value(trx);
+			sb.append("<i class='o_icon o_icon-fw ").append(mState.cssClass()).append("'> </i>");
 		}
 	}
 }

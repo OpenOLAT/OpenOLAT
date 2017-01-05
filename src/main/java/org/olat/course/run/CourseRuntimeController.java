@@ -1008,7 +1008,9 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 		entries = removeRepositoryEntry(entries);
 		if(entries != null && entries.size() > 0) {
 			String type = entries.get(0).getOLATResourceable().getResourceableTypeName();
-			if("Editor".equalsIgnoreCase(type)) {
+			if("Payment".equalsIgnoreCase(type)) {
+				doPostSuccessfullAccess(ureq);
+			} else if("Editor".equalsIgnoreCase(type)) {
 				if (!isInEditor() && !RepositoryEntryManagedFlag.isManaged(getRepositoryEntry(), RepositoryEntryManagedFlag.editcontent)) {
 					doEdit(ureq);
 				}

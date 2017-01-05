@@ -175,7 +175,7 @@ public class ACOrderDAO {
 	 * @return
 	 */
 	public List<RawOrderItem> findNativeOrderItems(OLATResource resource, IdentityRef delivery, Long orderNr,
-			Date from, Date to, OrderStatus... status) {
+			Date from, Date to, int firstResult, int maxResults, OrderStatus... status) {
 		
 		NativeQueryBuilder sb = new NativeQueryBuilder(1024, dbInstance);
 		sb.append("select")
@@ -258,6 +258,10 @@ public class ACOrderDAO {
 			cal.set(Calendar.SECOND, 59);
 			cal.set(Calendar.MILLISECOND, 0);
 			query.setParameter("to", cal.getTime(), TemporalType.TIMESTAMP);
+		}
+		
+		if(maxResults > 0) {
+			query.setFirstResult(firstResult).setMaxResults(maxResults);
 		}
 		
 		List<?> rawOrders = query.getResultList();

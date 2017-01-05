@@ -68,7 +68,7 @@ public class PaypalAccessController extends FormBasicController implements FormC
 		acService = CoreSpringFactory.getImpl(ACService.class);
 		paypalManager = CoreSpringFactory.getImpl(PaypalManager.class);
 		
-		String businessPath = wControl.getBusinessControl().getAsString();
+		String businessPath = wControl.getBusinessControl().getAsString() + "[Payment:0]";
 		mapperUri = registerMapper(ureq, new PaypalMapper(businessPath, paypalManager));
 			
 		initForm(ureq);
@@ -81,7 +81,7 @@ public class PaypalAccessController extends FormBasicController implements FormC
 		acService = CoreSpringFactory.getImpl(ACService.class);
 		paypalManager = CoreSpringFactory.getImpl(PaypalManager.class);
 
-		String businessPath = wControl.getBusinessControl().getAsString();
+		String businessPath = wControl.getBusinessControl().getAsString() + "[Payment:0]";
 		mapperUri = registerMapper(ureq, new PaypalMapper(businessPath, paypalManager));
 			
 		initForm(ureq);
@@ -134,7 +134,7 @@ public class PaypalAccessController extends FormBasicController implements FormC
 				setFormWarning("paypal.before.redirect.error");
 			} else if (response.getResponseEnvelope().getAck().equals(AckCode.SUCCESS)){
 				redirectToPaypal(ureq, response);
-			} else if (response.getResponseEnvelope().getAck().equals(AckCode.SUCCESS_WITH_WARNING)){
+			} else if (response.getResponseEnvelope().getAck().equals(AckCode.SUCCESSWITHWARNING)){
 				redirectToPaypal(ureq, response);
 			} else {
 				setFormWarning("paypal.before.redirect.error");

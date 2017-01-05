@@ -194,7 +194,7 @@ public class ACOrderManagerTest extends OlatTestCase {
 		acTransactionManager.update(accessTransaction2, AccessTransactionStatus.CANCELED);
 
 		long start = System.nanoTime();
-		List<RawOrderItem> items = acOrderManager.findNativeOrderItems(randomOres, null, null, null, null);
+		List<RawOrderItem> items = acOrderManager.findNativeOrderItems(randomOres, null, null, null, null, 0, -1);
 		CodeHelper.printNanoTime(start, "Order itemized");
 		Assert.assertNotNull(items);
 	}
@@ -222,7 +222,7 @@ public class ACOrderManagerTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		long start = System.nanoTime();
-		List<RawOrderItem> items = acOrderManager.findNativeOrderItems(randomOres, null, null, null, null);
+		List<RawOrderItem> items = acOrderManager.findNativeOrderItems(randomOres, null, null, null, null, 0, -1);
 		CodeHelper.printNanoTime(start, "Order itemized");
 		Assert.assertNotNull(items);
 	}

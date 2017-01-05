@@ -2390,14 +2390,9 @@
 		
 		<!-- paypal -->
 		<dependency>
-			<groupId>com.paypal</groupId>
-			<artifactId>paypal_platform_base_AP</artifactId>
-			<version>0.76</version>
-		</dependency>
-		<dependency>
-			<groupId>com.paypal</groupId>
-			<artifactId>paypal_platform_stubs_AP</artifactId>
-			<version>0.76</version>
+			<groupId>com.paypal.sdk</groupId>
+			<artifactId>adaptivepaymentssdk</artifactId>
+			<version>2.9.117</version>
 		</dependency>
 		<!-- end Paypal -->
 

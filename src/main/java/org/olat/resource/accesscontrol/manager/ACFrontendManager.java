@@ -622,14 +622,14 @@ public class ACFrontendManager implements ACService {
 
 	@Override
 	public List<OrderTableItem> findOrderItems(OLATResource resource, IdentityRef delivery, Long orderNr,
-			Date from, Date to, OrderStatus... status) {
+			Date from, Date to, OrderStatus[] status, int firstResult, int maxResults) {
 		List<AccessMethod> methods = methodManager.getAllMethods();
 		Map<String,AccessMethod> methodMap = new HashMap<>();
 		for(AccessMethod method:methods) {
 			methodMap.put(method.getKey().toString(), method);
 		}
 		
-		List<RawOrderItem> rawOrders = orderManager.findNativeOrderItems(resource, delivery, orderNr, from, to, status);
+		List<RawOrderItem> rawOrders = orderManager.findNativeOrderItems(resource, delivery, orderNr, from, to, firstResult, maxResults, status);
 		List<OrderTableItem> items = new ArrayList<>(rawOrders.size());
 		for(RawOrderItem rawOrder:rawOrders) {
 			String orderStatusStr = rawOrder.getOrderStatus();

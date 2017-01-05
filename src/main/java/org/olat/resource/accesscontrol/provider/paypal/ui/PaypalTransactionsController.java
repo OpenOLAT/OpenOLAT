@@ -20,42 +20,38 @@
  */
 package org.olat.resource.accesscontrol.provider.paypal.ui;
 
-import java.util.Collections;
+import java.util.ArrayList;
 import java.util.List;
 
-import org.olat.core.CoreSpringFactory;
-import org.olat.core.gui.ShortName;
+import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
+import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
+import org.olat.core.gui.components.form.flexible.elements.FlexiTableSortOptions;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
-import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
-import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableSearchEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.components.link.Link;
-import org.olat.core.gui.components.table.ColumnDescriptor;
-import org.olat.core.gui.components.table.CustomRenderColumnDescriptor;
-import org.olat.core.gui.components.table.DefaultColumnDescriptor;
-import org.olat.core.gui.components.table.StaticColumnDescriptor;
-import org.olat.core.gui.components.table.Table;
-import org.olat.core.gui.components.table.TableController;
-import org.olat.core.gui.components.table.TableDataModel;
-import org.olat.core.gui.components.table.TableEvent;
-import org.olat.core.gui.components.table.TableGuiConfiguration;
 import org.olat.core.gui.control.Controller;
-import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.id.context.StateMapped;
-import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.resource.accesscontrol.provider.paypal.manager.PaypalManager;
 import org.olat.resource.accesscontrol.provider.paypal.model.PaypalTransaction;
+import org.olat.resource.accesscontrol.provider.paypal.ui.PaypalTransactionDataModel.Columns;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -71,71 +67,63 @@ public class PaypalTransactionsController extends FormBasicController implements
 	private static final String CMD_SELECT = "sel";
 	
 	private FormLink backLink;
-	private TextElement transactionIdEl;
-	private TableController transactionList;
+	private FlexiTableElement tableEl;
+	private PaypalTransactionDataModel dataModel;
+	
 	private PaypalTransactionDetailsController detailsController;
 	
-	private final PaypalManager paypalManager;
-	private final Formatter formatter;
+	@Autowired
+	private PaypalManager paypalManager;
 	
 	public PaypalTransactionsController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl, "paypal_transactions");
-		
-		paypalManager = CoreSpringFactory.getImpl(PaypalManager.class);
-		formatter = Formatter.getInstance(getLocale());
-		
 		initForm(ureq);
+		doSearch(ureq, null);
 	}
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		
-		//search fields
-		FormLayoutContainer searchFieldsLayout = FormLayoutContainer.createDefaultFormLayout("search-fields", getTranslator());
-		searchFieldsLayout.setRootForm(mainForm);
-		formLayout.add("search-fields", searchFieldsLayout);
-		
-		transactionIdEl = uifactory.addTextElement("search", "paypal.transaction.id", 32, "", searchFieldsLayout);
-
-		//results
-		TableGuiConfiguration tableConfig = new TableGuiConfiguration();
-		tableConfig.setDownloadOffered(true);
-		tableConfig.setPreferencesOffered(true, "PaypalTransaction");		
-		tableConfig.setTableEmptyMessage(translate("paypal.transactions.empty"));
-		
-		transactionList = new TableController(tableConfig, ureq, getWindowControl(), Collections.<ShortName>emptyList(), null, "" , null, false, getTranslator());
-		transactionList.addColumnDescriptor(new CustomRenderColumnDescriptor("paypal.transaction.status", Columns.status.ordinal(), null,
-				getLocale(), ColumnDescriptor.ALIGNMENT_LEFT, new PaypalTransactionStatusRenderer()));
-		transactionList.addColumnDescriptor(new DefaultColumnDescriptor("paypal.transaction.order", Columns.orderNr.ordinal(), null, getLocale()));
-		transactionList.addColumnDescriptor(new DefaultColumnDescriptor("paypal.transaction.response.date", Columns.payResponseDate.ordinal(), null, getLocale()));
-
-		transactionList.addColumnDescriptor(new DefaultColumnDescriptor("paypal.transaction.amount", Columns.payAmount.ordinal(), null, getLocale()));
-		transactionList.addColumnDescriptor(false, new DefaultColumnDescriptor("paypal.transaction.id", Columns.ipnTransactionId.ordinal(), null, getLocale()));
-		transactionList.addColumnDescriptor(new DefaultColumnDescriptor("paypal.transaction.status", Columns.ipnTransactionStatus.ordinal(), null, getLocale()));
-		transactionList.addColumnDescriptor(false, new DefaultColumnDescriptor("paypal.transaction.sender.id", Columns.ipnSenderTransactionId.ordinal(), null, getLocale()));
-		transactionList.addColumnDescriptor(false, new DefaultColumnDescriptor("paypal.transaction.sender.status", Columns.ipnSenderTransactionStatus.ordinal(), null, getLocale()));
-		transactionList.addColumnDescriptor(false, new DefaultColumnDescriptor("paypal.transaction.pending.reason", Columns.ipnPendingReason.ordinal(), null, getLocale()));
-		transactionList.addColumnDescriptor(false, new DefaultColumnDescriptor("paypal.transaction.sender", Columns.ipnSender.ordinal(), null, getLocale()));
-		//pay request
-		transactionList.addColumnDescriptor(false, new DefaultColumnDescriptor("paypal.transaction.ack", Columns.payAck.ordinal(), null, getLocale()));
-		transactionList.addColumnDescriptor(false, new DefaultColumnDescriptor("paypal.transaction.exec.status", Columns.payPaymentExecStatus.ordinal(), null, getLocale()));
-		transactionList.addColumnDescriptor(new DefaultColumnDescriptor("paypal.transaction.olat.status", Columns.olatStatus.ordinal(), null, getLocale()));
-		
-		transactionList.addColumnDescriptor(new StaticColumnDescriptor(CMD_SELECT, "select", getTranslator().translate("select")));
-
-		transactionList.setTableDataModel(new TransactionDataModel());
-		
-		transactionList.setSortColumn(Columns.payResponseDate.ordinal(), false);
-		listenTo(transactionList);
-		
 		backLink = uifactory.addFormLink("back", formLayout, Link.LINK_BACK);
 		
-		String page = velocity_root + "/paypal_transactions_list.html";
-		FormLayoutContainer resultsLayout = FormLayoutContainer.createCustomFormLayout("results", getTranslator(), page);
-		resultsLayout.setRootForm(mainForm);
-		formLayout.add("results", resultsLayout);
+		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Columns.status, new PaypalTransactionStatusRenderer()));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Columns.orderNr));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Columns.payResponseDate));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Columns.payAmount));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Columns.ipnTransactionId));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Columns.ipnTransactionStatus));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Columns.ipnSenderTransactionId));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Columns.ipnSenderTransactionStatus));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Columns.ipnPendingReason));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Columns.ipnSender));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Columns.payAck));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Columns.payPaymentExecStatus));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Columns.olatStatus));
+		DefaultFlexiColumnModel selectColumns = new DefaultFlexiColumnModel("select", translate("select"), CMD_SELECT);
+		selectColumns.setExportable(false);
+		selectColumns.setAlwaysVisible(true);
+		columnsModel.addFlexiColumnModel(selectColumns);
 		
-		resultsLayout.put("results", transactionList.getInitialComponent());
+		dataModel = new PaypalTransactionDataModel(columnsModel);
+		tableEl = uifactory.addTableElement(getWindowControl(), "results", dataModel, 25, false, getTranslator(), formLayout);
+		tableEl.setEmtpyTableMessageKey("paypal.transactions.empty");
+		tableEl.setCustomizeColumns(true);
+		tableEl.setExportEnabled(true);
+		tableEl.setSearchEnabled(true);
+		
+		FlexiTableSortOptions options = new FlexiTableSortOptions();
+		options.setDefaultOrderBy(new SortKey(Columns.payResponseDate.name(), false));
+		options.setFromColumnModel(true);
+		tableEl.setSortSettings(options);
+		
+		List<FlexiTableFilter> filters = new ArrayList<>();
+		filters.add(new FlexiTableFilter(translate("show.all"), "showAll"));
+		filters.add(FlexiTableFilter.SPACER);
+		for(PaypalMergedState state:PaypalMergedState.values()) {
+			filters.add(new FlexiTableFilter(translate("filter.".concat(state.name())), state.name()));
+		}
+		tableEl.setFilters("", filters, false);;
+		tableEl.setAndLoadPersistedPreferences(ureq, "FPaypalTransaction");
 	}
 	
 	@Override
@@ -145,8 +133,7 @@ public class PaypalTransactionsController extends FormBasicController implements
 
 	@Override
 	protected void formOK(UserRequest ureq) {
-		String transactionId = transactionIdEl.getValue();
-		doSearch(ureq, transactionId);
+		//
 	}
 
 	@Override
@@ -157,30 +144,24 @@ public class PaypalTransactionsController extends FormBasicController implements
 				removeAsListenerAndDispose(detailsController);
 			}
 			addSearchToHistory(ureq);
+		} else if(source == tableEl) {
+			if(event instanceof SelectionEvent) {
+				SelectionEvent se = (SelectionEvent)event;
+				PaypalTransaction row = dataModel.getObject(se.getIndex());
+				if(CMD_SELECT.equals(se.getCommand())) {
+					doSelectTransaction(ureq, row);
+				}
+			} else if(event instanceof FlexiTableSearchEvent) {
+				FlexiTableSearchEvent se = (FlexiTableSearchEvent)event;
+				doSearch(ureq, se.getSearch());
+			}
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
-
-	@Override
-	protected void event(UserRequest ureq, Controller source, Event event) {
-		if(source == transactionList) {
-			if (event.getCommand().equals(Table.COMMANDLINK_ROWACTION_CLICKED)) {
-				TableEvent te = (TableEvent) event;
-				String actionid = te.getActionId();
-				int rowid = te.getRowId();
-				PaypalTransaction transaction = (PaypalTransaction)transactionList.getTableDataModel().getObject(rowid);
-				if(CMD_SELECT.equals(actionid)) {
-					if(detailsController != null) {
-						removeAsListenerAndDispose(detailsController);
-					}
-					
-					selectTransaction(ureq, transaction);
-				}
-			}
-		}
-	}
 	
-	protected void selectTransaction(UserRequest ureq, PaypalTransaction transaction) {
+	protected void doSelectTransaction(UserRequest ureq, PaypalTransaction transaction) {
+		removeAsListenerAndDispose(detailsController);
+		
 		OLATResourceable ores = OresHelper.createOLATResourceableInstance(PaypalTransaction.class, transaction.getKey());
 		WindowControl bwControl = addToHistory(ureq, ores, null);
 		detailsController = new PaypalTransactionDetailsController(ureq, bwControl, transaction, mainForm);
@@ -190,12 +171,13 @@ public class PaypalTransactionsController extends FormBasicController implements
 
 	private void doSearch(UserRequest ureq, String transactionId) {
 		List<PaypalTransaction> transactions = paypalManager.findTransactions(transactionId);
-		transactionList.setTableDataModel(new TransactionDataModel(transactions));
+		dataModel.setObjects(transactions);
+		tableEl.reset(true, true, true);
 		addSearchToHistory(ureq);
 	}
 	
 	protected void addSearchToHistory(UserRequest ureq) {
-		String transactionId = transactionIdEl.getValue();
+		String transactionId = tableEl.getQuickSearchString();
 		StateMapped state = new StateMapped();
 		if(StringHelper.containsNonWhitespace(transactionId)) {
 			state.getDelegate().put("transactionId", transactionId);
@@ -214,111 +196,16 @@ public class PaypalTransactionsController extends FormBasicController implements
 			StateMapped map = (StateMapped)state;
 			String transactionId = map.getDelegate().get("transactionId");
 			if(StringHelper.containsNonWhitespace(transactionId)) {
-				transactionIdEl.setValue(transactionId);
-				doSearch(ureq, transactionId);
+				tableEl.quickSearch(ureq, transactionId);
 			}
 		}
 		
 		if(entries == null || entries.isEmpty()) return;
 		
 		Long trxId = entries.get(0).getOLATResourceable().getResourceableId();
-		TransactionDataModel model = (TransactionDataModel)transactionList.getTableDataModel();
-		PaypalTransaction trx = model.getTransaction(trxId);
+		PaypalTransaction trx = dataModel.getTransaction(trxId);
 		if(trx != null) {
-			selectTransaction(ureq, trx);
+			doSelectTransaction(ureq, trx);
 		}
-	}
-
-	private class TransactionDataModel implements TableDataModel<PaypalTransaction> {
-
-		private List<PaypalTransaction> transactions;
-		
-		public TransactionDataModel() {
-			this(Collections.<PaypalTransaction>emptyList());
-		}
-		
-		public TransactionDataModel(List<PaypalTransaction> transactions) {
-			this.transactions = transactions;
-		}
-		
-		@Override
-		public int getColumnCount() {
-			return 2;
-		}
-
-		@Override
-		public int getRowCount() {
-			return transactions == null ? 0 : transactions.size();
-		}
-
-		@Override
-		public Object getValueAt(int row, int col) {
-			PaypalTransaction transaction = getObject(row);
-			switch(Columns.values()[col]) {
-				case status: return transaction;
-				case orderNr: return transaction.getRefNo();
-				case ipnTransactionId: return transaction.getTransactionId();
-				case ipnTransactionStatus: return transaction.getTransactionStatus();
-				case ipnSenderTransactionId: return transaction.getSenderTransactionId();
-				case ipnSenderTransactionStatus: return transaction.getSenderTransactionStatus();
-				case ipnSender: return transaction.getSenderEmail();
-				case ipnPendingReason: return transaction.getPendingReason();
-				case payAmount: return transaction.getSecurePrice();
-				case payAck: return transaction.getAck();
-				case payPaymentExecStatus: return transaction.getPaymentExecStatus();
-				case payResponseDate: {
-					if(transaction.getPayResponseDate() == null) return "";
-					return formatter.formatDateAndTime(transaction.getPayResponseDate());
-				}
-				
-				case olatStatus: return transaction.getStatus() == null ? "???" : transaction.getStatus().name();
-				
-				default: return null;
-			}
-		}
-
-		@Override
-		public PaypalTransaction getObject(int row) {
-			return transactions.get(row);
-		}
-		
-		public  PaypalTransaction getTransaction(Long key) {
-			if(transactions == null) return null;
-			
-			for(PaypalTransaction trx:transactions) {
-				if(trx.getKey().equals(key)) {
-					return trx;
-				}
-			}
-			return null;
-		}
-
-		@Override
-		public void setObjects(List<PaypalTransaction> objects) {
-			transactions = objects;
-		}
-
-		@Override
-		public Object createCopyWithEmptyList() {
-			return new TransactionDataModel();
-		}
-	}
-	
-	private enum Columns {
-		status,
-		orderNr,
-		payResponseDate,
-		
-		ipnTransactionId,
-		ipnTransactionStatus,
-		ipnSenderTransactionId,
-		ipnSenderTransactionStatus,
-		ipnSender,
-		ipnPendingReason,
-		
-		payAmount,
-		payAck,
-		payPaymentExecStatus,
-		olatStatus,
 	}
 }

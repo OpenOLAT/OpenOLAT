@@ -551,10 +551,7 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 			cleanUp();
 		} else if (source == accessController) {
 			if(event.equals(AccessEvent.ACCESS_OK_EVENT)) {
-				reSecurity = repositoryManager.isAllowed(ureq, getRepositoryEntry());
-				launchContent(ureq, reSecurity);
-				initToolbar();
-				cleanUp();
+				doPostSuccessfullAccess(ureq);
 			} else if(event.equals(AccessEvent.ACCESS_FAILED_EVENT)) {
 				String msg = ((AccessEvent)event).getMessage();
 				if(StringHelper.containsNonWhitespace(msg)) {
@@ -677,6 +674,13 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 		currentToolCtr = accessCtrl;
 	}
 	
+	protected void doPostSuccessfullAccess(UserRequest ureq) {
+		reSecurity = repositoryManager.isAllowed(ureq, getRepositoryEntry());
+		launchContent(ureq, reSecurity);
+		initToolbar();
+		cleanUp();
+	}
+	
 	protected final void doClose(UserRequest ureq) {
 		// Now try to go back to place that is attacked to (optional) root back business path
 		getWindowControl().getWindowBackOffice().getWindow().getDTabs()
@@ -754,7 +758,7 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 		if(!reSecurity.isEntryAdmin()) return;
 
 		WindowControl bwControl = getSubWindowControl("Booking");
-		OrdersAdminController ctrl = new OrdersAdminController(ureq, addToHistory(ureq, bwControl), re.getOlatResource());
+		OrdersAdminController ctrl = new OrdersAdminController(ureq, addToHistory(ureq, bwControl), toolbarPanel, re.getOlatResource());
 		listenTo(ctrl);
 		ordersCtlr = pushController(ureq, translate("details.orders"), ctrl);
 		currentToolCtr = ordersCtlr;

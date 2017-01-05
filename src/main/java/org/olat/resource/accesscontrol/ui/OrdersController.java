@@ -125,10 +125,11 @@ public class OrdersController extends BasicController implements Activateable2 {
 	
 	private void loadModel() {
 		OrderStatusContextShortName filter = (OrderStatusContextShortName)tableCtr.getActiveFilter();
-		List<OrderTableItem> items = acService.findOrderItems(null, getIdentity(), null, null, null, filter.getStatus());
+		List<OrderTableItem> items = acService.findOrderItems(null, getIdentity(), null, null, null, filter.getStatus(), 0, -1);
 		tableCtr.setTableDataModel(new OrdersDataModel(items, getLocale(), userManager));
 	}
-	
+
+	@Override
 	protected void doDispose() {
 		//
 	}
