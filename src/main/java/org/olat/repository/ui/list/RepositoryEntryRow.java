@@ -45,30 +45,30 @@ public class RepositoryEntryRow implements RepositoryEntryRef {
 	private boolean marked;
 	private boolean selected;
 	
-	private Long key;
-	private String externalId;
-	private String externalRef;
-	private Date creationDate;
-	private String name;
-	private String authors;
-	private String location;
-	private String expenditureOfWork;
+	private final Long key;
+	private final String externalId;
+	private final String externalRef;
+	private final Date creationDate;
+	private final String name;
+	private final String authors;
+	private final String location;
+	private final String expenditureOfWork;
 	private String thumbnailRelPath;
-	private String shortenedDescription;
-	private int access;
-	private int statusCode;
+	private final String shortenedDescription;
+	private final int access;
+	private final int statusCode;
 	
-	private String score;
-	private Boolean passed;
-	private boolean isMembersOnly = false;
+	private final String score;
+	private final Boolean passed;
+	private final boolean isMembersOnly;
 	
 	private boolean member;
 	
-	private Integer myRating;
-	private Double averageRating;
-	private long numOfRatings;
-	private long numOfComments;
-	private long launchCounter;
+	private final Integer myRating;
+	private final Double averageRating;
+	private final long numOfRatings;
+	private final long numOfComments;
+	private final long launchCounter;
 
 	private String lifecycleLabel;
 	private String lifecycleSoftKey;
@@ -86,38 +86,43 @@ public class RepositoryEntryRow implements RepositoryEntryRef {
 	private OLATResourceable olatResource;
 	private FormItem ratingFormItem;
 	
-	public RepositoryEntryRow() {
-		//
-	}
-	
 	public RepositoryEntryRow(RepositoryEntryMyView entry) {
-		setKey(entry.getKey());
-		setCreationDate(entry.getCreationDate());
-		setExternalId(entry.getExternalId());
-		setExternalRef(entry.getExternalRef());
-		setDisplayName(entry.getDisplayname());
-		setShortenedDescription(entry.getDescription());
+		key = entry.getKey();
+		creationDate = entry.getCreationDate();
+		externalId = entry.getExternalId();
+		externalRef = entry.getExternalRef();
+		name = entry.getDisplayname();
+		if(entry.getDescription() != null) {
+			String shortDesc = FilterFactory.getHtmlTagsFilter().filter(entry.getDescription());
+			if(shortDesc.length() > 255) {
+				shortenedDescription = shortDesc.substring(0, 255);
+			} else {
+				shortenedDescription = shortDesc;
+			}
+		} else {
+			shortenedDescription = "";
+		}
 		setOLATResourceable(OresHelper.clone(entry.getOlatResource()));
-		setAuthors(entry.getAuthors());
-		setLocation(entry.getLocation());
-		setExpenditureOfWork(entry.getExpenditureOfWork());
-		setLaunchCounter(entry.getLaunchCounter());
-		setIsMembersOnly(entry.isMembersOnly());
-		setAccess(entry.getAccess());
-		setStatusCode(entry.getStatusCode());
+		authors = entry.getAuthors();
+		location = entry.getLocation();
+		expenditureOfWork = entry.getExpenditureOfWork();
+		launchCounter = entry.getLaunchCounter();
+		isMembersOnly = entry.isMembersOnly();
+		access = entry.getAccess();
+		statusCode = entry.getStatusCode();
 		
 		//bookmark
 		setMarked(entry.isMarked());
 		
 		//efficiency statement
-		setPassed(entry.getPassed());
-		setScore(AssessmentHelper.getRoundedScore(entry.getScore()));
+		passed = entry.getPassed();
+		score = AssessmentHelper.getRoundedScore(entry.getScore());
 		
 		//rating
-		setMyRating(entry.getMyRating());
-		setAverageRating(entry.getAverageRating());
-		setNumOfRatings(entry.getNumOfRatings());
-		setNumOfComments(entry.getNumOfComments());
+		myRating = entry.getMyRating();
+		averageRating = entry.getAverageRating();
+		numOfRatings = entry.getNumOfRatings();
+		numOfComments = entry.getNumOfComments();
 		
 		//lifecycle
 		RepositoryEntryLifecycle reLifecycle = entry.getLifecycle();
@@ -130,10 +135,6 @@ public class RepositoryEntryRow implements RepositoryEntryRef {
 			}
 		}
 	}
-	
-	private void setIsMembersOnly(boolean membersOnly) {
-		this.isMembersOnly = membersOnly;
-	}
 
 	public boolean isMembersOnly() {
 		return isMembersOnly;
@@ -142,17 +143,9 @@ public class RepositoryEntryRow implements RepositoryEntryRef {
 	public Long getKey() {
 		return key;
 	}
-	
-	public void setKey(Long key) {
-		this.key = key;
-	}
-	
+
 	public Date getCreationDate() {
 		return creationDate;
-	}
-
-	public void setCreationDate(Date creationDate) {
-		this.creationDate = creationDate;
 	}
 
 	public boolean isClosed() {
@@ -163,64 +156,24 @@ public class RepositoryEntryRow implements RepositoryEntryRef {
 		return access;
 	}
 
-	public void setAccess(int access) {
-		this.access = access;
-	}
-
 	public int getStatusCode() {
 		return statusCode;
-	}
-
-	public void setStatusCode(int statusCode) {
-		this.statusCode = statusCode;
 	}
 
 	public String getExternalId() {
 		return externalId;
 	}
 
-	public void setExternalId(String externalId) {
-		this.externalId = externalId;
-	}
-
 	public String getExternalRef() {
 		return externalRef;
-	}
-	
-	public void setExternalRef(String externalRef) {
-		this.externalRef = externalRef;
 	}
 
 	public String getDisplayName() {
 		return name;
 	}
-	
-	public void setDisplayName(String name) {
-		this.name = name;
-	}
 
 	public String getShortenedDescription() {
-		if(shortenedDescription != null) {
-			String shortDesc = FilterFactory.getHtmlTagsFilter().filter(shortenedDescription);
-			if(shortDesc.length() > 255) {
-				shortDesc = shortDesc.substring(0, 255);
-			}
-			return shortDesc;
-		}
 		return shortenedDescription;
-	}
-
-	public void setShortenedDescription(String description) {
-		if(description != null) {
-			String shortDesc = FilterFactory.getHtmlTagsFilter().filter(description);
-			if(shortDesc.length() > 255) {
-				shortenedDescription = shortDesc.substring(0, 255);
-			} else {
-				shortenedDescription = shortDesc;
-			}
-		} else {
-			shortenedDescription = "";
-		}
 	}
 
 	/**
@@ -230,7 +183,7 @@ public class RepositoryEntryRow implements RepositoryEntryRef {
 	public boolean isMember() {
 		return member;
 	}
-
+	
 	public void setMember(boolean member) {
 		this.member = member;
 	}
@@ -239,32 +192,16 @@ public class RepositoryEntryRow implements RepositoryEntryRef {
 		return myRating;
 	}
 
-	public void setMyRating(Integer myRating) {
-		this.myRating = myRating;
-	}
-
 	public Double getAverageRating() {
 		return averageRating;
-	}
-
-	public void setAverageRating(Double averageRating) {
-		this.averageRating = averageRating;
 	}
 
 	public long getNumOfRatings() {
 		return numOfRatings;
 	}
 
-	public void setNumOfRatings(long numOfRatings) {
-		this.numOfRatings = numOfRatings;
-	}
-
 	public long getNumOfComments() {
 		return numOfComments;
-	}
-
-	public void setNumOfComments(long numOfComments) {
-		this.numOfComments = numOfComments;
 	}
 
 	public String getLifecycleSoftKey() {
@@ -415,46 +352,30 @@ public class RepositoryEntryRow implements RepositoryEntryRef {
 		return authors;
 	}
 	
-	public void setAuthors(String authors) {
-		this.authors = authors;
-	}
-	
 	public String getLocation() {
 		return location;
-	}
-
-	public void setLocation(String location) {
-		this.location = location;
 	}
 
 	public String getExpenditureOfWork() {
 		return expenditureOfWork;
 	}
 
-	public void setExpenditureOfWork(String expenditureOfWork) {
-		this.expenditureOfWork = expenditureOfWork;
-	}
-
 	public long getLaunchCounter() {
 		return launchCounter;
-	}
-
-	public void setLaunchCounter(long launchCounter) {
-		this.launchCounter = launchCounter;
 	}
 
 	public String getThumbnailRelPath() {
 		return thumbnailRelPath;
 	}
 	
-	public void setThumbnailRelPath(String path) {
-		this.thumbnailRelPath = path;
-	}
-	
 	public boolean isThumbnailAvailable() {
 		return StringHelper.containsNonWhitespace(thumbnailRelPath);
 	}
 	
+	public void setThumbnailRelPath(String thumbnailRelPath) {
+		this.thumbnailRelPath = thumbnailRelPath;
+	}
+
 	public boolean isMarked() {
 		return marked;
 	}
@@ -475,16 +396,8 @@ public class RepositoryEntryRow implements RepositoryEntryRef {
 		return score;
 	}
 	
-	public void setScore(String score) {
-		this.score = score;
-	}
-	
 	public boolean isPassed() {
 		return passed != null && passed.booleanValue();
-	}
-	
-	public void setPassed(Boolean passed) {
-		this.passed = passed;
 	}
 	
 	public boolean isFailed() {
