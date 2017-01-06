@@ -237,7 +237,7 @@ public class PropertyTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		//delete user 1 datas
-		pm.deleteUserData(id1, "del-" + id1.getName());
+		pm.deleteUserData(id1, "del-" + id1.getName(), null);
 		dbInstance.commitAndCloseSession();
 		
 		//check if really deleted

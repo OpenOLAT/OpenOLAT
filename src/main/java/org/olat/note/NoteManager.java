@@ -25,6 +25,7 @@
 
 package org.olat.note;
 
+import java.io.File;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
@@ -155,7 +156,7 @@ public class NoteManager implements UserDataDeletable {
 	 * @param identity  Delete notes for this identity.
 	 */
 	@Override
-	public void deleteUserData(Identity identity,	String newDeletedUserName) {
+	public void deleteUserData(Identity identity, String newDeletedUserName, File archivePath) {
 		List<Note> userNotes = listUserNotes(identity);
 		for (Iterator<Note> iter = userNotes.iterator(); iter.hasNext();) {
 			deleteNote( iter.next() );			

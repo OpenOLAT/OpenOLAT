@@ -122,7 +122,7 @@ public class EfficiencyStatementManagerTest extends OlatTestCase {
 		Assert.assertEquals(2, statementsLight1.size());
 		
 		//delete user 1
-		effManager.deleteUserData(participant1, "deleted");
+		effManager.deleteEfficientyStatement(participant1);
 		dbInstance.commitAndCloseSession();
 		
 		//check the efficiency statements

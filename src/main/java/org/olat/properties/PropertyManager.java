@@ -25,6 +25,7 @@
 
 package org.olat.properties;
 
+import java.io.File;
 import java.util.Collections;
 import java.util.Date;
 import java.util.Iterator;
@@ -726,7 +727,7 @@ public class PropertyManager extends BasicManager implements UserDataDeletable {
 	 * @see org.olat.user.UserDataDeletable#deleteUserData(org.olat.core.id.Identity)
 	 */
 	@Override
-	public void deleteUserData(Identity identity, String newDeletedUserName) {
+	public void deleteUserData(Identity identity, String newDeletedUserName, File archivePath) {
 		List<Property> userProperterties = listProperties(identity, null, null, null, null, null);
 		for (Iterator<Property> iter = userProperterties.iterator(); iter.hasNext(); ) {
 			deleteProperty( iter.next());

@@ -719,7 +719,7 @@ public class ViteroManager implements UserDataDeletable {
 	}
 	
 	@Override
-	public void deleteUserData(Identity identity, String newDeletedUserName) {
+	public void deleteUserData(Identity identity, String newDeletedUserName, File archivePath) {
 		if(!viteroModule.isDeleteVmsUserOnUserDelete()) return;
 		
 		try {

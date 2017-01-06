@@ -25,6 +25,7 @@
 
 package org.olat.repository.manager;
 
+import java.io.File;
 import java.util.Iterator;
 import java.util.List;
 
@@ -73,7 +74,7 @@ public class RepositoryDeletionManager implements UserDataDeletable {
 	 * @see org.olat.user.UserDataDeletable#deleteUserData(org.olat.core.id.Identity)
 	 */
 	@Override
-	public void deleteUserData(Identity identity, String newDeletedUserName) {
+	public void deleteUserData(Identity identity, String newDeletedUserName, File archivePath) {
 		// Remove as owner
 		List<RepositoryEntry> repoEntries = RepositoryManager.getInstance().queryByOwner(identity, new String[] {}/*no type limit*/);
 		for (Iterator<RepositoryEntry> iter = repoEntries.iterator(); iter.hasNext();) {

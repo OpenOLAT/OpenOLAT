@@ -50,7 +50,6 @@ import org.springframework.stereotype.Service;
 @Service
 public class AssessmentTestSessionDAO {
 	
-
 	private final DateFormat formater = new SimpleDateFormat("yyyyMMdd'T'HHmmss");
 	
 	@Autowired
@@ -318,6 +317,18 @@ public class AssessmentTestSessionDAO {
 			query.setParameter("subIdent", courseSubIdent);
 		}
 		return query.getResultList();
+	}
+	
+	public List<AssessmentTestSession> getUserTestSessions(IdentityRef identity) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select session from qtiassessmenttestsession session")
+		  .append(" left join fetch session.testEntry testEntry")
+		  .append(" left join fetch testEntry.olatResource testResource")
+		  .append(" where session.identity.key=:identityKey ");;
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), AssessmentTestSession.class)
+				.setParameter("identityKey", identity.getKey())
+				.getResultList();
 	}
 
 	public List<AssessmentTestSession> getUserTestSessions(RepositoryEntryRef courseEntry, String courseSubIdent, IdentityRef identity) {

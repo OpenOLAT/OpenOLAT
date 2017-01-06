@@ -710,11 +710,17 @@ public class EfficiencyStatementManager implements UserDataDeletable {
 	}
 	
 	/**
-	 * Delete all efficiency-statements for certain identity.
+	 * Archive efficiency statement and than delete them for the specified identity.
+	 * 
 	 * @param identity  Delete data for this identity.
 	 */
 	@Override
-	public void deleteUserData(Identity identity, String newDeletedUserName) {
+	public void deleteUserData(Identity identity, String newDeletedUserName, File archivePath) {
+		archiveUserData(identity, archivePath);
+		deleteEfficientyStatement(identity);
+	}
+	
+	public void deleteEfficientyStatement(Identity identity) {
 		try {
 			StringBuilder sb = new StringBuilder();
 			sb.append("delete from ").append(UserEfficiencyStatementImpl.class.getName()).append(" as statement ")

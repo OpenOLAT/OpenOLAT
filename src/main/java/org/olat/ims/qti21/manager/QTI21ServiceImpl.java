@@ -86,6 +86,7 @@ import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.assessment.manager.AssessmentEntryDAO;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
+import org.olat.user.UserDataDeletable;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -144,7 +145,7 @@ import uk.ac.ed.ph.qtiworks.mathassess.MathAssessExtensionPackage;
  *
  */
 @Service
-public class QTI21ServiceImpl implements QTI21Service, InitializingBean, DisposableBean {
+public class QTI21ServiceImpl implements QTI21Service, UserDataDeletable, InitializingBean, DisposableBean {
 	
 	private static final OLog log = Tracing.createLoggerFor(QTI21ServiceImpl.class);
 	
@@ -361,7 +362,20 @@ public class QTI21ServiceImpl implements QTI21Service, InitializingBean, Disposa
 			}
 		});
 	}
-	
+
+	@Override
+	public int deleteUserDataPriority() {
+		return 10;
+	}
+
+	@Override
+	public void deleteUserData(Identity identity, String newDeletedUserName, File archivePath) {
+		List<AssessmentTestSession> sessions = testSessionDao.getUserTestSessions(identity);
+		for(AssessmentTestSession session:sessions) {
+			testSessionDao.deleteTestSession(session);
+		}
+	}
+
 	@Override
 	public boolean deleteAssessmentTestSession(List<Identity> identities, RepositoryEntryRef testEntry, RepositoryEntryRef entry, String subIdent) {
 		Set<AssessmentEntry> entries = new HashSet<>();

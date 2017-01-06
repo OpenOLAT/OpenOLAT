@@ -332,7 +332,7 @@ public class AssessmentToolManagerImpl implements AssessmentToolManager {
 			sb.append("count(ident.key)").append(" from ").append(IdentityImpl.class.getName()).append(" as ident ")
 			  .append(" inner join ident.user user ");
 		}
-		sb.append(" where ");
+		sb.append(" where ident.status<").append(Identity.STATUS_DELETED).append(" and");
 		if(params.getBusinessGroupKeys() != null && params.getBusinessGroupKeys().size() > 0) {
 			sb.append(" ident.key in (select participant.identity.key from repoentrytogroup as rel, businessgroup bgi, bgroupmember as participant")
 	          .append("    where rel.entry.key=:repoEntryKey and rel.group=bgi.baseGroup and rel.group=participant.group and bgi.key in (:businessGroupKeys) ")

@@ -19,6 +19,7 @@
  */
 package org.olat.modules.assessment.manager;
 
+import java.io.File;
 import java.util.Collections;
 import java.util.List;
 
@@ -30,6 +31,7 @@ import org.olat.modules.assessment.AssessmentService;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
+import org.olat.user.UserDataDeletable;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -40,7 +42,7 @@ import org.springframework.stereotype.Service;
  *
  */
 @Service
-public class AssessmentServiceImpl implements AssessmentService {
+public class AssessmentServiceImpl implements AssessmentService, UserDataDeletable {
 	
 	@Autowired
 	private DB dbInstance;
@@ -109,5 +111,10 @@ public class AssessmentServiceImpl implements AssessmentService {
 	public List<AssessmentEntry> updateAssessmentEntries(BusinessGroup group, RepositoryEntry entry, String subIdent,
 			RepositoryEntry referenceEntry, AssessmentEntryStatus status) {
 		return Collections.emptyList();
+	}
+
+	@Override
+	public void deleteUserData(Identity identity, String newDeletedUserName, File archivePath) {
+		assessmentEntryDao.deleteEntryForIdentity(identity);
 	}
 }

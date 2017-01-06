@@ -262,11 +262,6 @@ public abstract class NotificationsManager extends BasicManager {
 
 	public abstract SubscriptionInfo getNoSubscriptionInfo();
 
-	/**
-	 * Delete all subscribers for certain identity.
-	 * @param identity
-	 */
-	public abstract void deleteUserData(Identity identity, String newDeletedUserName);
 
 	/**
 	 * subscribers for ONE person (e.g. subscribed to 5 forums -> 5 subscribers

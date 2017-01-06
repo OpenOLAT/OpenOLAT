@@ -28,7 +28,9 @@ package org.olat.admin.user.delete.service;
 import java.io.File;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
@@ -39,12 +41,12 @@ import javax.persistence.TemporalType;
 import org.olat.admin.user.delete.SelectionController;
 import org.olat.basesecurity.Authentication;
 import org.olat.basesecurity.BaseSecurity;
-import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.basesecurity.IdentityImpl;
 import org.olat.basesecurity.SecurityGroup;
 import org.olat.basesecurity.manager.GroupDAO;
 import org.olat.commons.lifecycle.LifeCycleManager;
 import org.olat.core.CoreSpringFactory;
+import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.commons.persistence.DBQuery;
 import org.olat.core.gui.translator.Translator;
@@ -59,7 +61,6 @@ import org.olat.core.util.mail.MailBundle;
 import org.olat.core.util.mail.MailManager;
 import org.olat.core.util.mail.MailTemplate;
 import org.olat.core.util.mail.MailerResult;
-import org.olat.course.assessment.manager.EfficiencyStatementManager;
 import org.olat.properties.Property;
 import org.olat.properties.PropertyManager;
 import org.olat.registration.RegistrationManager;
@@ -70,6 +71,8 @@ import org.olat.user.UserManager;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import edu.emory.mathcs.backport.java.util.Collections;
 
 
 /**
@@ -108,6 +111,8 @@ public class UserDeletionManager extends BasicManager {
 	private MailManager mailManager;
 	@Autowired
 	private GroupDAO groupDao;
+	@Autowired
+	private DB dbInstance;
 
 	/**
 	 * [used by spring]
@@ -192,7 +197,7 @@ public class UserDeletionManager extends BasicManager {
 		sb.append("select ident from ").append(IdentityImpl.class.getName()).append(" as ident")
 		  .append(" inner join fetch ident.user as user")
 		  .append(" where ident.status=").append(Identity.STATUS_ACTIV).append(" and (ident.lastLogin = null or ident.lastLogin < :lastLogin)");	
-		List<Identity> identities = DBFactory.getInstance().getCurrentEntityManager()
+		List<Identity> identities = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), Identity.class)
 				.setParameter("lastLogin", lastLoginLimit.getTime(), TemporalType.TIMESTAMP)
 				.getResultList();
@@ -261,27 +266,23 @@ public class UserDeletionManager extends BasicManager {
 		logInfo("Start deleteIdentity for identity=" + identity);
 
 		String newName = getBackupStringWithDate(identity.getName());
-		
-
-		// TODO: chg: Workaround: instances each manager which implements UaserDataDeletable interface
-		// Each manager register themself as deletable 
-		// Should be better with new config concept
-		
-		logInfo("Start EfficiencyStatementManager.archiveUserData for identity=" + identity);
-		CoreSpringFactory.getImpl(EfficiencyStatementManager.class).archiveUserData(identity, getArchivFilePath(identity) );
 
 		logInfo("Start Deleting user=" + identity);
-		Map<String,UserDataDeletable> userDataDeletableResources = CoreSpringFactory.getBeansOfType(UserDataDeletable.class);
-		for (UserDataDeletable element : userDataDeletableResources.values()) {
+		File archiveFilePath = getArchivFilePath(identity);
+		Map<String,UserDataDeletable> userDataDeletableResourcesMap = CoreSpringFactory.getBeansOfType(UserDataDeletable.class);
+		List<UserDataDeletable> userDataDeletableResources = new ArrayList<>(userDataDeletableResourcesMap.values());
+		Collections.sort(userDataDeletableResources, new UserDataDeletableComparator());
+		System.out.println("");
+		for (UserDataDeletable element : userDataDeletableResources) {
 			logInfo("UserDataDeletable-Loop element=" + element);
-			element.deleteUserData(identity, newName);
+			element.deleteUserData(identity, newName, archiveFilePath);
 		}
+		
 		// Delete all authentications for certain identity
 		List<Authentication> authentications = securityManager.getAuthentications(identity);
-		for (Iterator<Authentication> iter = authentications.iterator(); iter.hasNext();) {
-			Authentication auth = iter.next();
+		for (Authentication auth:authentications) {
 			logInfo("deleteAuthentication auth=" + auth);
-			BaseSecurityManager.getInstance().deleteAuthentication(auth);
+			securityManager.deleteAuthentication(auth);
 			logDebug("Delete auth=" + auth + "  of identity="  + identity);
 		}
 		
@@ -326,7 +327,7 @@ public class UserDeletionManager extends BasicManager {
 		UserManager.getInstance().updateUserFromIdentity(identity);
 		
 		logInfo("deleteUserProperties user=" + persistedUser);
-		DBFactory.getInstance().commit();
+		dbInstance.commit();
 		identity = securityManager.loadIdentityByKey(identity.getKey());
 		//keep email only -> change login-name
 		if (!keepUserEmailAfterDeletion) {
@@ -340,7 +341,6 @@ public class UserDeletionManager extends BasicManager {
 		LifeCycleManager.createInstanceFor(identity).deleteTimestampFor(SEND_DELETE_EMAIL_ACTION);
 		LifeCycleManager.createInstanceFor(identity).markTimestampFor(USER_DELETED_ACTION, createLifeCycleLogDataFor(identity));
 
-		// TODO: chg: ev. logAudit at another place
 		logAudit("User-Deletion: Delete all userdata for identity=" + identity);
 	}
 	
@@ -447,5 +447,13 @@ public class UserDeletionManager extends BasicManager {
 	public static boolean isKeepUserLoginAfterDeletion() {
 		return keepUserLoginAfterDeletion;
 	}
-
+	
+	public static class UserDataDeletableComparator implements Comparator<UserDataDeletable> {
+		@Override
+		public int compare(UserDataDeletable o1, UserDataDeletable o2) {
+			int p1 = o1.deleteUserDataPriority();
+			int p2 = o2.deleteUserDataPriority();
+			return -Integer.compare(p1, p2);
+		}
+	}
 }

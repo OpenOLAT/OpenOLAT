@@ -151,7 +151,7 @@ public class HomePageConfigManagerImpl extends BasicManager implements HomePageC
 	 * @see org.olat.user.UserDataDeletable#deleteUserData(org.olat.core.id.Identity)
 	 */
 	@Override
-	public void deleteUserData(Identity identity, String newDeletedUserName) {
+	public void deleteUserData(Identity identity, String newDeletedUserName, File archivePath) {
 		String pathHomePage = FolderConfig.getCanonicalRoot() + FolderConfig.getUserHomePage(identity.getName());
 		File userHomePage = new File(pathHomePage);
 		if(userHomePage.exists()) {

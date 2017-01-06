@@ -251,7 +251,7 @@ public class AssessmentManagerTest extends OlatTestCase  {
 		efficiencyStatement = checkEfficiencyStatement(courseRepositoryEntry);
 		
 		//delete the efficiencyStatement of the student
-		efficiencyStatementManager.deleteUserData(student, "deleted_" + student.getName());
+		efficiencyStatementManager.deleteEfficientyStatement(student);
 		DBFactory.getInstance().closeSession();
 		efficiencyStatement = efficiencyStatementManager.getUserEfficiencyStatementByCourseRepositoryEntry(courseRepositoryEntry, student);
 		DBFactory.getInstance().closeSession();

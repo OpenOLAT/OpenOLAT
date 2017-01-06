@@ -275,7 +275,7 @@ public class DisplayPortraitManager extends BasicManager implements UserDataDele
 	 * @see org.olat.user.UserDataDeletable#deleteUserData(org.olat.core.id.Identity)
 	 */
 	@Override
-	public void deleteUserData(Identity identity, String newDeletedUserName) {
+	public void deleteUserData(Identity identity, String newDeletedUserName, File archivePath) {
 		String userHomePage = FolderConfig.getCanonicalRoot() + FolderConfig.getUserHomePage(identity.getName()); 
 		File portraitDir = new File(userHomePage, "portrait");
 		if(portraitDir.exists()) {
