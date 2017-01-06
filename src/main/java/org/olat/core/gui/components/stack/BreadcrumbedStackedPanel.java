@@ -235,7 +235,7 @@ public class BreadcrumbedStackedPanel extends Panel implements StackedPanel, Bre
 				}
 				
 				if(popedCrumb.getController() != null) {
-					fireEvent(ureq, new PopEvent(popedCrumb.getController()));
+					fireEvent(ureq, new PopEvent(popedCrumb.getController(), popedCrumb.getUserObject()));
 				} else if(popedCrumb.getUserObject() != null) {
 					fireEvent(ureq, new PopEvent(popedCrumb.getUserObject()));
 				}

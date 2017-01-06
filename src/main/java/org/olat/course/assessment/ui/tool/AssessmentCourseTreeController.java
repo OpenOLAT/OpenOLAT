@@ -44,6 +44,7 @@ import org.olat.core.util.tree.TreeHelper;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.assessment.AssessmentHelper;
+import org.olat.course.assessment.ui.tool.event.CourseNodeEvent;
 import org.olat.course.nodes.AssessableCourseNode;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.GTACourseNode;
@@ -67,10 +68,11 @@ public class AssessmentCourseTreeController extends BasicController implements A
 	private final TooledStackedPanel stackPanel;
 
 	private Controller currentCtrl;
-	private Controller businessGgroupListCtrl;
+	private Controller businessGroupListCtrl;
 	private IdentityListCourseNodeController identityListCtrl; 
 	
 	private View view = View.users;
+	private TreeNode selectedNodeChanged;
 	private final RepositoryEntry courseEntry;
 	private final UserCourseEnvironment coachCourseEnv;
 	private final AssessmentToolContainer toolContainer;
@@ -160,14 +162,7 @@ public class AssessmentCourseTreeController extends BasicController implements A
 				TreeNode selectedTreeNode = menuTree.getSelectedNode();
 				Object uo = selectedTreeNode.getUserObject();
 				if(uo instanceof CourseNode) {
-					StateEntry listState = null;
-					if(currentCtrl != null && currentCtrl == identityListCtrl) {
-						listState = identityListCtrl.getListState();
-					}
-					Controller ctrl = doSelectCourseNode(ureq, selectedTreeNode, (CourseNode)uo);
-					if(ctrl instanceof Activateable2) {
-						((Activateable2)ctrl).activate(ureq, null, listState);
-					}
+					processSelectCourseNodeWithMemory(ureq, selectedTreeNode, (CourseNode)uo);
 				}
 			}
 		} else if(stackPanel == source) {
@@ -176,12 +171,44 @@ public class AssessmentCourseTreeController extends BasicController implements A
 				if("users".equals(pe.getUserObject())) {
 					fixHistory(ureq, "Users", "users");
 				} else if("groups".equals(pe.getUserObject())) {
-					fixHistory(ureq, "BusinessGroups", "groups");
+					if(selectedNodeChanged != null) {
+						CourseNode cn = (CourseNode)selectedNodeChanged.getUserObject();
+						menuTree.setSelectedNode(selectedNodeChanged);
+						processSelectCourseNodeWithMemory(ureq, selectedNodeChanged, cn);
+						selectedNodeChanged = null;
+					} else {
+						fixHistory(ureq, "BusinessGroups", "groups");
+					}
 				}
 			}
 		}
 	}
 	
+	private void processSelectCourseNodeWithMemory(UserRequest ureq, TreeNode tn, CourseNode cn) {
+		StateEntry listState = null;
+		if(currentCtrl != null && currentCtrl == identityListCtrl) {
+			listState = identityListCtrl.getListState();
+		}
+		Controller ctrl = doSelectCourseNode(ureq, tn, cn);
+		if(ctrl instanceof Activateable2) {
+			((Activateable2)ctrl).activate(ureq, null, listState);
+		}
+	}
+	
+	@Override
+	protected void event(UserRequest ureq, Controller source, Event event) {
+		if(source == businessGroupListCtrl) {
+			if(event instanceof CourseNodeEvent) {
+				CourseNodeEvent cne = (CourseNodeEvent)event;
+				CourseNode courseNode = CourseFactory.loadCourse(courseEntry).getRunStructure().getNode(cne.getIdent());
+				TreeNode treeNode = TreeHelper.findNodeByUserObject(courseNode, menuTree.getTreeModel().getRootNode());
+				stackPanel.changeDisplayname(treeNode.getTitle(), "o_icon " + treeNode.getIconCssClass(), this);
+				selectedNodeChanged = treeNode;
+			}
+		}
+		super.event(ureq, source, event);
+	}
+
 	private void fixHistory(UserRequest ureq, String oresName, String i18nName) {
 		CourseNode courseNode;
 		if(menuTree.getSelectedNode() != null) {
@@ -270,14 +297,14 @@ public class AssessmentCourseTreeController extends BasicController implements A
 				} else {
 					coachedGroups = assessmentCallback.getCoachedGroups();
 				}
-				businessGgroupListCtrl = ((GTACourseNode)courseNode).getCoachedGroupListController(ureq, bbwControl, stackPanel,
+				businessGroupListCtrl = ((GTACourseNode)courseNode).getCoachedGroupListController(ureq, bbwControl, stackPanel,
 						coachCourseEnv, assessmentCallback.isAdmin(), coachedGroups);
 			}
 		} else {
-			businessGgroupListCtrl = new AssessedBusinessGroupCourseNodeListController(ureq, bbwControl, stackPanel,
+			businessGroupListCtrl = new AssessedBusinessGroupCourseNodeListController(ureq, bbwControl, stackPanel,
 					courseEntry, courseNode, coachCourseEnv, toolContainer, assessmentCallback);
 		}
-		return businessGgroupListCtrl;
+		return businessGroupListCtrl;
 	}
 	
 	private enum View {

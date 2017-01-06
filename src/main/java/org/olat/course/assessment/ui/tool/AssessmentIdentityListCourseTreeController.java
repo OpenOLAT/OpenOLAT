@@ -44,6 +44,7 @@ import org.olat.core.util.tree.TreeHelper;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.assessment.AssessmentHelper;
+import org.olat.course.assessment.ui.tool.event.CourseNodeEvent;
 import org.olat.course.nodes.AssessableCourseNode;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.GTACourseNode;
@@ -141,10 +142,12 @@ public class AssessmentIdentityListCourseTreeController extends BasicController 
 			if (event.getCommand().equals(MenuTree.COMMAND_TREENODE_CLICKED)) {
 				Object uo = menuTree.getSelectedNode().getUserObject();
 				if(uo instanceof CourseNode) {
-					Controller ctrl = doSelectCourseNode(ureq, (CourseNode)uo);
+					CourseNode cn = (CourseNode)uo;
+					Controller ctrl = doSelectCourseNode(ureq, cn);
 					if(ctrl instanceof Activateable2) {
 						((Activateable2)ctrl).activate(ureq, null, null);
 					}
+					fireEvent(ureq, new CourseNodeEvent(CourseNodeEvent.SELECT_COURSE_NODE, cn.getIdent()));
 				}
 			}
 		}

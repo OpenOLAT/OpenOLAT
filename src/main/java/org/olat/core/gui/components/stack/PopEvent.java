@@ -33,9 +33,9 @@ public class PopEvent extends Event {
 	private final Object uobject;
 	private final Controller controller;
 	
-	public PopEvent(Controller controller) {
+	public PopEvent(Controller controller, Object uobject) {
 		super("pop");
-		this.uobject = null;
+		this.uobject = uobject;
 		this.controller = controller;
 	}
 	
