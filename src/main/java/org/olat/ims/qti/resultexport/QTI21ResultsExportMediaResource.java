@@ -193,7 +193,7 @@ public class QTI21ResultsExportMediaResource implements MediaResource {
 				
 					Controller assessmentResultController = new AssessmentResultController(
 							ureq, mockwControl, identity, false, session,
-							ShowResultsOnFinish.details, fUnzippedDirRoot, null, false);
+							ShowResultsOnFinish.details, fUnzippedDirRoot, null, false, true);
 
 					Component component = assessmentResultController.getInitialComponent();
 					String componentHTML = createResultHTML(component); 

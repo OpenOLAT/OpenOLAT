@@ -80,6 +80,27 @@
 	#end
 #end
 
+#if($showResultsOnHomePage && $attempts > 0)	
+	<div class="panel panel-default o_results">
+	  	<div class="panel-heading">
+	  		<h4 class="panel-title">#if ($showResults && $r.available("command.hideResults"))
+				$r.render("command.hideResults")					  				  
+			#elseif($r.available("command.showResults"))
+				$r.render("command.showResults")
+			#else$r.translate("showResults.title")#end</h4>
+	  	</div>
+	  	#if($showResultsVisible)				
+	       	#if($showResults)
+	       	<div class="panel-collapse collapse in"><div class="panel-body">
+				<div id="o_qti_results" class="small">$r.render("resultReport")</div>
+			</div></div>
+	       	#end
+	  	#else
+	       	<div class="panel-collapse collapse in"><div class="panel-body">$visibilityPeriod</div></div>
+		#end
+	</div>
+#end
+
 
 #if (($attemptsConfig && $attemptsConfig > 0 && ($attemptsConfig <= $attempts)) || $blockAfterSuccess)
 	<div class="o_statusinfo">

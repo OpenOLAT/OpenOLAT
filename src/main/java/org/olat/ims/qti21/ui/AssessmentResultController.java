@@ -94,6 +94,7 @@ public class AssessmentResultController extends FormBasicController {
 	
 	private final boolean anonym;
 	private final boolean withPrint;
+	private final boolean withTitle;
 	private final Identity assessedIdentity;
 	private final TestSessionState testSessionState;
 	private final AssessmentResult assessmentResult;
@@ -113,12 +114,13 @@ public class AssessmentResultController extends FormBasicController {
 	
 	public AssessmentResultController(UserRequest ureq, WindowControl wControl, Identity assessedIdentity, boolean anonym,
 			AssessmentTestSession candidateSession, ShowResultsOnFinish resultsOnfinish, File fUnzippedDirRoot, String mapperUri,
-			boolean withPrint) {
+			boolean withPrint, boolean withTitle) {
 		super(ureq, wControl, "assessment_results");
 		
 		this.anonym = anonym;
 		this.mapperUri = mapperUri;
 		this.withPrint = withPrint;
+		this.withTitle = withTitle;
 		this.resultsOnfinish = resultsOnfinish;
 		this.assessedIdentity = assessedIdentity;
 		this.candidateSession = candidateSession;
@@ -142,12 +144,13 @@ public class AssessmentResultController extends FormBasicController {
 
 		initForm(ureq);
 	}
-
+	
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 
 		if(formLayout instanceof FormLayoutContainer) {
 			FormLayoutContainer layoutCont = (FormLayoutContainer)formLayout;
+			layoutCont.contextPut("title", new Boolean(withTitle));
 			layoutCont.contextPut("print", new Boolean(withPrint));
 			layoutCont.contextPut("printCommand", Boolean.FALSE);
 			if(withPrint) {
@@ -328,7 +331,7 @@ public class AssessmentResultController extends FormBasicController {
 			@Override
 			public Controller createController(UserRequest uureq, WindowControl wwControl) {
 				AssessmentResultController printViewCtrl = new AssessmentResultController(uureq, wwControl, assessedIdentity, anonym,
-						candidateSession, resultsOnfinish, fUnzippedDirRoot, mapperUri, false);
+						candidateSession, resultsOnfinish, fUnzippedDirRoot, mapperUri, false, true);
 				printViewCtrl.flc.contextPut("printCommand", Boolean.TRUE);
 				listenTo(printViewCtrl);
 				return printViewCtrl;

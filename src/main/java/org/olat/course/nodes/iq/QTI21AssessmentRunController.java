@@ -19,6 +19,8 @@
  */
 package org.olat.course.nodes.iq;
 
+import java.io.File;
+import java.net.URI;
 import java.text.DateFormat;
 import java.util.Date;
 import java.util.List;
@@ -47,6 +49,7 @@ import org.olat.core.util.event.GenericEventListener;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.course.DisposedCourseRestartController;
 import org.olat.course.assessment.AssessmentHelper;
+import org.olat.course.assessment.AssessmentManager;
 import org.olat.course.auditing.UserNodeAuditManager;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.IQSELFCourseNode;
@@ -54,14 +57,18 @@ import org.olat.course.nodes.IQTESTCourseNode;
 import org.olat.course.nodes.QTICourseNode;
 import org.olat.course.run.scoring.ScoreEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
+import org.olat.fileresource.FileResourceManager;
 import org.olat.ims.qti.process.AssessmentInstance;
+import org.olat.ims.qti21.AssessmentTestSession;
 import org.olat.ims.qti21.OutcomesListener;
 import org.olat.ims.qti21.QTI21DeliveryOptions;
 import org.olat.ims.qti21.QTI21DeliveryOptions.ShowResultsOnFinish;
 import org.olat.ims.qti21.QTI21LoggingAction;
 import org.olat.ims.qti21.QTI21Service;
+import org.olat.ims.qti21.ui.AssessmentResultController;
 import org.olat.ims.qti21.ui.AssessmentTestDisplayController;
 import org.olat.ims.qti21.ui.QTI21Event;
+import org.olat.ims.qti21.ui.ResourcesMapper;
 import org.olat.instantMessaging.InstantMessagingService;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.assessment.AssessmentEntry;
@@ -81,7 +88,7 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 	private static final OLATResourceable assessmentEventOres = OresHelper.createOLATResourceableType(AssessmentEvent.class);
 	private static final OLATResourceable assessmentInstanceOres = OresHelper.createOLATResourceableType(AssessmentInstance.class);
 	
-	private Link startButton;
+	private Link startButton, showResultsButton, hideResultsButton;
 	private final VelocityContainer mainVC;
 	
 	private boolean assessmentStopped = true;
@@ -97,6 +104,7 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 	// The test is really assessment not a self test or a survey
 	private final boolean assessmentType = true;
 	
+	private AssessmentResultController resultCtrl;
 	private AssessmentTestDisplayController displayCtrl;
 	private LayoutMain3ColsController displayContainerController;
 	private AtomicBoolean incrementAttempts = new AtomicBoolean(true);
@@ -222,13 +230,23 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 	private void exposeResults(UserRequest ureq) {
 		//migration: check if old tests have no summary configured
 		boolean showResultsOnHomePage = config.getBooleanSafe(IQEditController.CONFIG_KEY_RESULT_ON_HOME_PAGE);
-		String configuredSummary = config.getStringValue(IQEditController.CONFIG_KEY_SUMMARY);
+		
+		ShowResultsOnFinish showSummary = deliveryOptions.getShowResultsOnFinish();
+		String defaultConfSummary = showSummary == null ? AssessmentInstance.QMD_ENTRY_SUMMARY_COMPACT : showSummary.getIQEquivalent();
+		String configuredSummary = config.getStringValue(IQEditController.CONFIG_KEY_SUMMARY, defaultConfSummary);
 		boolean noSummary = configuredSummary == null || (configuredSummary!=null && configuredSummary.equals(AssessmentInstance.QMD_ENTRY_SUMMARY_NONE));
 		if(!noSummary) {
-			mainVC.contextPut("showResultsOnHomePage",new Boolean(showResultsOnHomePage));			
-			boolean dateRelatedVisibility = AssessmentHelper.isResultVisible(config);		
+			mainVC.contextPut("showResultsOnHomePage", new Boolean(showResultsOnHomePage));			
+			boolean dateRelatedVisibility = isResultVisible(config);		
 			if(showResultsOnHomePage && dateRelatedVisibility) {
 				mainVC.contextPut("showResultsVisible",Boolean.TRUE);
+				showResultsButton = LinkFactory.createLink("command.showResults", "command.showResults", getTranslator(), mainVC, this, Link.LINK | Link.NONTRANSLATED);
+				showResultsButton.setCustomDisplayText(translate("showResults.title"));
+				showResultsButton.setIconLeftCSS("o_icon o_icon-fw o_icon_open_togglebox");
+				
+				hideResultsButton = LinkFactory.createLink("command.hideResults", "command.hideResults", getTranslator(), mainVC, this, Link.LINK | Link.NONTRANSLATED);
+				hideResultsButton.setCustomDisplayText(translate("showResults.title"));
+				hideResultsButton.setIconLeftCSS("o_icon o_icon-fw o_icon_close_togglebox");
 			} else if(showResultsOnHomePage) {
 				Date startDate = config.getDateValue(IQEditController.CONFIG_KEY_RESULTS_START_DATE);
 				Date endDate = config.getDateValue(IQEditController.CONFIG_KEY_RESULTS_END_DATE);
@@ -246,6 +264,22 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 		UserNodeAuditManager am = userCourseEnv.getCourseEnvironment().getAuditManager();
 		mainVC.contextPut("log", am.getUserNodeLog(courseNode, getIdentity()));	
 		mainVC.contextPut("showChangelog", showResultsOnHomePage);
+	}
+	
+	private boolean isResultVisible(ModuleConfiguration modConfig) {
+		boolean isVisible = false;
+		boolean showResultsActive = modConfig.getBooleanSafe(IQEditController.CONFIG_KEY_DATE_DEPENDENT_RESULTS);
+		if(showResultsActive) {
+			Date startDate = modConfig.getDateValue(IQEditController.CONFIG_KEY_RESULTS_START_DATE);
+			Date endDate = modConfig.getDateValue(IQEditController.CONFIG_KEY_RESULTS_END_DATE);
+			Date currentDate = new Date();
+			if(startDate != null && currentDate.after(startDate) && (endDate == null || currentDate.before(endDate))) {
+				isVisible = true;
+			}
+		} else {
+			isVisible = true;
+		}
+		return isVisible;
 	}
 	
 	@Override
@@ -274,6 +308,10 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 	protected void event(UserRequest ureq, Component source, Event event) {
 		if(startButton == source && startButton.isEnabled() && startButton.isVisible()) {
 			doStart(ureq);
+		}else if(source == showResultsButton) {			
+			doShowResults(ureq);
+		} else if (source == hideResultsButton) {
+			doHideResults();
 		}
 	}
 	
@@ -302,6 +340,34 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 			}
 		}
 		super.event(ureq, source, event);
+	}
+	
+	private void doShowResults(UserRequest ureq) {
+		removeAsListenerAndDispose(resultCtrl);
+		
+		AssessmentManager am = userCourseEnv.getCourseEnvironment().getAssessmentManager();
+		AssessmentEntry assessmentEntry = am.getAssessmentEntry(courseNode, getIdentity());
+		AssessmentTestSession session = qtiService.getAssessmentTestSession(assessmentEntry.getAssessmentId());
+		if(session == null) {
+			mainVC.contextPut("showResults", Boolean.FALSE);
+		} else {
+			FileResourceManager frm = FileResourceManager.getInstance();
+			File fUnzippedDirRoot = frm.unzipFileResource(session.getTestEntry().getOlatResource());
+			URI assessmentObjectUri = qtiService.createAssessmentObjectUri(fUnzippedDirRoot);
+			File submissionDir = qtiService.getAssessmentResultFile(session);
+			String mapperUri = registerCacheableMapper(null, "QTI21CNResults::" + session.getTestEntry().getKey(),
+					new ResourcesMapper(assessmentObjectUri, submissionDir));
+	
+			resultCtrl = new AssessmentResultController(ureq, getWindowControl(), getIdentity(), true,
+					session, getDeliveryOptions().getShowResultsOnFinish(), fUnzippedDirRoot, mapperUri, false, false);
+			listenTo(resultCtrl);
+			mainVC.put("resultReport", resultCtrl.getInitialComponent());
+			mainVC.contextPut("showResults", Boolean.TRUE);
+		}
+	}
+	
+	private void doHideResults() {
+		mainVC.contextPut("showResults", Boolean.FALSE);
 	}
 
 	private void doStart(UserRequest ureq) {
