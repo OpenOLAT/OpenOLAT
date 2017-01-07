@@ -367,18 +367,17 @@ public class EfficiencyStatementManager implements UserDataDeletable {
 	
 	public boolean hasUserEfficiencyStatement(Long courseRepoEntryKey, IdentityRef identity) {
 		StringBuilder sb = new StringBuilder();
-		sb.append("select count(statement) from ").append(UserEfficiencyStatementLight.class.getName()).append(" as statement ")
+		sb.append("select statement.key from ").append(UserEfficiencyStatementLight.class.getName()).append(" as statement ")
 		  .append(" where statement.identity.key=:identityKey and statement.courseRepoKey=:repoKey");
 
 		List<Number> count = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), Number.class)
 				.setParameter("identityKey", identity.getKey())
 				.setParameter("repoKey", courseRepoEntryKey)
+				.setFirstResult(0)
+				.setMaxResults(1)
 				.getResultList();
-		if(count.isEmpty()) {
-			return false;
-		}
-		return count.get(0).intValue() > 0;
+		return count != null && count.size() > 0;
 	}
 	
 	public UserEfficiencyStatement getUserEfficiencyStatementLightByRepositoryEntry(RepositoryEntryRef courseRepo, IdentityRef identity) {

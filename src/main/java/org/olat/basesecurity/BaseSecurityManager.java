@@ -1900,20 +1900,6 @@ public class BaseSecurityManager implements BaseSecurity {
 		this.dbVendor = dbVendor;
 	}
 
-  /**
-   * @see org.olat.basesecurity.Manager#isIdentityVisible(java.lang.String)
-   */
-	public boolean isIdentityVisible(String identityName) {
-		if (identityName == null) throw new AssertException("findIdentitybyName: name was null");
-		String queryString = "select count(ident) from org.olat.basesecurity.IdentityImpl as ident where ident.name = :identityName and ident.status < :status";
-		DBQuery dbq = DBFactory.getInstance().createQuery(queryString);
-		dbq.setString("identityName", identityName);
-		dbq.setInteger("status", Identity.STATUS_VISIBLE_LIMIT);
-		List res = dbq.list();
-		Long cntL = (Long) res.get(0);
-		return (cntL.longValue() > 0);
-	}
-
 	@Override
 	public boolean isIdentityVisible(Identity identity) {
 		if(identity == null) return false;

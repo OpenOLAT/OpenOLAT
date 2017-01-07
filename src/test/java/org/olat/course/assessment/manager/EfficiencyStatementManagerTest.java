@@ -150,6 +150,28 @@ public class EfficiencyStatementManagerTest extends OlatTestCase {
 		Assert.assertEquals(1, reloadStatemets_2_2.size());
 	}
 	
+	@Test
+	public void hasUserEfficiencyStatement() throws URISyntaxException {
+		RepositoryEntry re = deployTestcourse();
+		
+		//add some members
+		Identity participant = JunitTestHelper.createAndPersistIdentityAsRndUser("Eff-Del-Part-3");
+		Identity notParticipant = JunitTestHelper.createAndPersistIdentityAsRndUser("Eff-Del-Part-4");
+		repositoryService.addRole(participant, re, GroupRoles.participant.name());
+		dbInstance.commit();
+
+		//make statements
+	    UserEfficiencyStatement statement = effManager.createUserEfficiencyStatement(new Date(), 6.0f, true, participant, re.getOlatResource());
+	    dbInstance.commitAndCloseSession();
+	    Assert.assertNotNull(statement);
+	    
+	    // has participant an efficiency statement
+	    boolean hasOne = effManager.hasUserEfficiencyStatement(re.getKey(), participant);
+	    Assert.assertTrue(hasOne);
+	    boolean hasNot = effManager.hasUserEfficiencyStatement(re.getKey(), notParticipant);
+	    Assert.assertFalse(hasNot);
+	}
+	
 	private RepositoryEntry deployTestcourse() throws URISyntaxException {
 		//deploy a course
 		URL courseWithForumsUrl = CoachingLargeTest.class.getResource("CoachingCourse.zip");

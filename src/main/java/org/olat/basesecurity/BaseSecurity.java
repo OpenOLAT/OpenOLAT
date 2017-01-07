@@ -648,13 +648,6 @@ public interface BaseSecurity {
 	
 	/**
 	 * Check if identity is visible. Deleted or login-denied users are not visible.
-	 * @param identityName
-	 * @return
-	 */
-	public boolean isIdentityVisible(String identityName);
-
-	/**
-	 * Check if identity is visible. Deleted or login-denied users are not visible.
 	 * @param identity
 	 * @return
 	 */

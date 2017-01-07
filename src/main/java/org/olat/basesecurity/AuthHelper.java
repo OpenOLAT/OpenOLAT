@@ -289,7 +289,7 @@ public class AuthHelper {
 		// continue only if user has login permission.
 		if (identity == null) return LOGIN_FAILED;
 		//test if a user may not logon, since he/she is in the PERMISSION_LOGON
-		if (!BaseSecurityManager.getInstance().isIdentityVisible(identity.getName())) {
+		if (!BaseSecurityManager.getInstance().isIdentityVisible(identity)) {
 			log.audit("was denied login");
 			return LOGIN_DENIED;			
 		}
