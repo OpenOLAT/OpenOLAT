@@ -20,8 +20,6 @@
 		background-color: $o-table-edit-bg;
 	}
 
-	.o_table_filter {
-	}
 	.o_table_search {
 		max-width:50em;
 	}
@@ -71,6 +69,15 @@
 			color: $o-table-header-color;
 			text-decoration: none;
 		}
+	}
+}
+
+.o_table_search {
+	a.btn.o_reset_quick_search {
+		width: 38px;
+		margin-left: -38px;
+		z-index:5;
+		color: grey;
 	}
 }
 

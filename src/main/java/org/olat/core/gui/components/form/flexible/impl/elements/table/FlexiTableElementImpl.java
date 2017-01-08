@@ -41,6 +41,7 @@ import org.olat.core.gui.components.ComponentEventListener;
 import org.olat.core.gui.components.choice.Choice;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemCollection;
+import org.olat.core.gui.components.form.flexible.elements.AutoCompleter;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableSort;
@@ -813,6 +814,7 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 		String pagesize = form.getRequestParameter("pagesize");
 		String checkbox = form.getRequestParameter("chkbox");
 		String removeFilter = form.getRequestParameter("rm-filter");
+		String resetQuickSearch = form.getRequestParameter("reset-search");
 		String removeExtendedFilter = form.getRequestParameter("rm-extended-filter");
 		if("undefined".equals(dispatchuri)) {
 			evalSearchRequest(ureq);
@@ -841,6 +843,8 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 				selectedObj = dataModel.getObject(selectedPosition);
 				doSelect(ureq, selectedPosition);
 			}
+		} else if(StringHelper.containsNonWhitespace(resetQuickSearch)) {
+			resetQuickSearch(ureq);
 		} else if(searchButton != null
 				&& searchButton.getFormDispatchId().equals(dispatchuri)) {
 			evalSearchRequest(ureq);
@@ -1325,19 +1329,34 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 		List<String> condQueries = extendedSearchCtrl.getConditionalQueries();
 		doSearch(ureq, FlexiTableSearchEvent.SEARCH, search, condQueries);
 	}
-
+	
 	protected void evalSearchRequest(UserRequest ureq) {
 		if(searchFieldEl == null || !searchFieldEl.isEnabled() || !searchFieldEl.isVisible()){
 			return;//this a default behavior which can occur without the search configured
 		}
 		searchFieldEl.evalFormRequest(ureq);
+		
+		String key = null;
+		if(searchFieldEl instanceof AutoCompleter) {
+			key = ((AutoCompleter)searchFieldEl).getKey();
+		}
 		String search = searchFieldEl.getValue();
 
-		if(StringHelper.containsNonWhitespace(search)) {
+		if(key != null) {
+			doSearch(ureq, FlexiTableSearchEvent.QUICK_SEARCH_KEY_SELECTION, key, null);
+		} else if(StringHelper.containsNonWhitespace(search)) {
 			doSearch(ureq, FlexiTableSearchEvent.QUICK_SEARCH, search, null);
 		} else {
 			resetSearch(ureq);
 		}
+	}
+	
+	protected void resetQuickSearch(UserRequest ureq) {
+		if(searchFieldEl instanceof AutoCompleter) {
+			((AutoCompleter)searchFieldEl).setKey(null);
+		}
+		searchFieldEl.setValue("");
+		resetSearch(ureq);
 	}
 	
 	@Override

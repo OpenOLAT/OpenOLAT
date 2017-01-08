@@ -211,9 +211,17 @@ public abstract class AbstractFlexiTableRenderer extends DefaultComponentRendere
 			RenderResult renderResult, String[] args) {
 
 		if(ftE.isSearchEnabled()) {
+			Form theForm = ftE.getRootForm();
+			String dispatchId = ftE.getFormDispatchId();
+			
 			sb.append("<div class='o_table_search input-group o_noprint'>");
 			renderFormItem(renderer, sb, ftE.getSearchElement(), ubu, translator, renderResult, args);
 			sb.append("<div class='input-group-btn'>");
+			// reset quick search
+			sb.append("<a href=\"javascript:")
+			  .append(FormJSHelper.getXHRFnCallFor(theForm, dispatchId, 1, true, true, new NameValuePair("reset-search", "true")))
+			  .append("\" class='btn o_reset_quick_search'><i class='o_icon o_icon_remove_filters'> </i></a>");
+						
 			renderFormItem(renderer, sb, ftE.getSearchButton(), ubu, translator, renderResult, args);
 			if(ftE.getExtendedSearchButton() != null) {
 				renderFormItem(renderer, sb, ftE.getExtendedSearchButton(), ubu, translator, renderResult, args);
@@ -230,9 +238,6 @@ public abstract class AbstractFlexiTableRenderer extends DefaultComponentRendere
 			sb.append("</div>");
 			sb.append("</div>");
 			if(filterIndication.length() > 0) {
-				Form theForm = ftE.getRootForm();
-				String dispatchId = ftE.getFormDispatchId();
-				
 				sb.append("<div class='o_table_tools_indications'>").append(filterIndication)
 				// remove filter
 				  .append("<a href=\"javascript:")

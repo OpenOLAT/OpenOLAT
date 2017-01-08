@@ -31,6 +31,12 @@ import org.olat.core.util.UserSession;
  */
 public interface AutoCompleter extends FormItem {
 	
+	public String getKey();
+	
+	public void setKey(String key);
+	
+	public String getValue();
+	
 	public String getMapperUri();
 	
 	public void setListProvider(ListProvider provider, UserSession usess);

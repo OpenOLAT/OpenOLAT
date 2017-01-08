@@ -55,6 +55,7 @@ public class AutoCompleterImpl extends AbstractTextElement implements AutoComple
 	private MapperKey mapperKey;
 	
 	private String noResults;
+	private String key;
 	
 	public AutoCompleterImpl(String id, String name) {
 		super(id, name, false);
@@ -71,7 +72,8 @@ public class AutoCompleterImpl extends AbstractTextElement implements AutoComple
 		mapper = new AutoCompleterMapper(provider);
 		mapperKey = CoreSpringFactory.getImpl(MapperService.class).register(usess, mapper);
 	}
-	
+
+	@Override
 	public String getMapperUri() {
 		return mapperKey.getUrl();
 	}
@@ -82,10 +84,20 @@ public class AutoCompleterImpl extends AbstractTextElement implements AutoComple
 	}
 
 	@Override
+	public String getKey() {
+		return key;
+	}
+
+	public void setKey(String key) {
+		this.key = key;
+	}
+
+	@Override
 	public void evalFormRequest(UserRequest ureq) {
 		String paramId = component.getFormDispatchId();
 		String paramValue = getRootForm().getRequestParameter(paramId);
-		if (paramValue != null) {
+		if (paramValue == null || !paramValue.equals(getValue())) {
+			setKey(null);
 			setValue(paramValue);
 		}
 	}

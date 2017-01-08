@@ -59,6 +59,9 @@ public class AutoCompleterComponent extends FormBaseComponentImpl {
 		String cmd = ureq.getParameter("cid");
 		if("select".equals(cmd)) {
 			String key = ureq.getParameter("key");
+			String value = ureq.getParameter("value");
+			autoCompleter.setKey(key);
+			autoCompleter.setValue(value);
 			fireEvent(ureq, new AutoCompleteEvent(AutoCompleteEvent.SELECT_EVENT, key));
 		}
 	}
