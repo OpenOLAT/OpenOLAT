@@ -259,6 +259,14 @@ public class QTI21EditForm extends FormBasicController {
 				allOk &= false;
 			}
 		}
+		
+		startDateElement.clearError();
+		if(showResultsDateDependentButton.isSelected(0)) {
+			if(startDateElement.getDate() == null) {
+				startDateElement.setErrorKey("form.legende.mandatory", null);
+				allOk &= false;
+			}
+		}
 
 		return allOk & super.validateFormLogic(ureq);
 	}
@@ -318,8 +326,10 @@ public class QTI21EditForm extends FormBasicController {
 		
 		modConfig.setBooleanEntry(IQEditController.CONFIG_KEY_ENABLESCOREINFO, scoreInfo.isSelected(0));
 		modConfig.setBooleanEntry(IQEditController.CONFIG_KEY_DATE_DEPENDENT_RESULTS, showResultsDateDependentButton.isSelected(0));
+		
 		modConfig.setDateValue(IQEditController.CONFIG_KEY_RESULTS_START_DATE, startDateElement.getDate());
 		modConfig.setDateValue(IQEditController.CONFIG_KEY_RESULTS_END_DATE, endDateElement.getDate());
+		
 		modConfig.setBooleanEntry(IQEditController.CONFIG_KEY_RESULT_ON_HOME_PAGE, showResultsOnHomePage.isSelected(0));
 		
 		if(showResultsOnFinishEl.isAtLeastSelected(1) || showResultsOnHomePage.isSelected(0)) {

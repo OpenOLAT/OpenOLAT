@@ -21,7 +21,6 @@ package org.olat.course.nodes.iq;
 
 import java.io.File;
 import java.net.URI;
-import java.text.DateFormat;
 import java.util.Date;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -250,10 +249,10 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 			} else if(showResultsOnHomePage) {
 				Date startDate = config.getDateValue(IQEditController.CONFIG_KEY_RESULTS_START_DATE);
 				Date endDate = config.getDateValue(IQEditController.CONFIG_KEY_RESULTS_END_DATE);
-				String visibilityStartDate = DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT, ureq.getLocale()).format(startDate);
+				String visibilityStartDate = Formatter.getInstance(getLocale()).formatDate(startDate);
 				String visibilityEndDate = "-";
 				if(endDate != null) {
-					visibilityEndDate = DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT, ureq.getLocale()).format(endDate);
+					visibilityEndDate = Formatter.getInstance(getLocale()).formatDate(endDate);
 				}
 				String visibilityPeriod = getTranslator().translate("showResults.visibility", new String[] { visibilityStartDate, visibilityEndDate});
 				mainVC.contextPut("visibilityPeriod", visibilityPeriod);
@@ -272,9 +271,13 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 		if(showResultsActive) {
 			Date startDate = modConfig.getDateValue(IQEditController.CONFIG_KEY_RESULTS_START_DATE);
 			Date endDate = modConfig.getDateValue(IQEditController.CONFIG_KEY_RESULTS_END_DATE);
-			Date currentDate = new Date();
-			if(startDate != null && currentDate.after(startDate) && (endDate == null || currentDate.before(endDate))) {
+			if(startDate == null && endDate == null) {
 				isVisible = true;
+			} else {
+				Date currentDate = new Date();
+				if(startDate != null && currentDate.after(startDate) && (endDate == null || currentDate.before(endDate))) {
+					isVisible = true;
+				}
 			}
 		} else {
 			isVisible = true;
