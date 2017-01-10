@@ -48,6 +48,7 @@ public class UserAvatarMapper implements Mapper {
 
 	@Override
 	public MediaResource handle(String relPath, HttpServletRequest request) {
+		MediaResource rsrc = null;
 		if(relPath != null && relPath.endsWith(POSTFIX_LARGE) || relPath.endsWith(POSTFIX_SMALL)) {
 			if(relPath.startsWith("/")) {
 				relPath = relPath.substring(1, relPath.length());
@@ -59,13 +60,16 @@ public class UserAvatarMapper implements Mapper {
 				Long key = Long.parseLong(idKey);
 				String username = userManager.getUsername(key);
 				if (useLarge) {
-					return portraitManager.getBigPortraitResource(username);					
+					rsrc = portraitManager.getBigPortraitResource(username);					
 				} else {					
-					return portraitManager.getSmallPortraitResource(username);
+					rsrc = portraitManager.getSmallPortraitResource(username);
+					if(rsrc == null) {
+						rsrc = portraitManager.getBigPortraitResource(username);
+					}
 				}
 			}
 		}
-		return null;
+		return rsrc;
 	}
 	
 	public String createPathFor(String mapperPath, Identity identity) {

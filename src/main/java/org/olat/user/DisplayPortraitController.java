@@ -164,6 +164,9 @@ public class DisplayPortraitController extends BasicController implements Generi
 				}
 			} else {
 				image = DisplayPortraitManager.getInstance().getSmallPortrait(portraitIdent.getName());
+				if(image == null) {
+					image = DisplayPortraitManager.getInstance().getBigPortrait(portraitIdent.getName());
+				}
 				if (image != null) {
 					myContent.contextPut("portraitCssClass", DisplayPortraitManager.AVATAR_SMALL_CSS_CLASS);					
 				} else if (isAnonymous) {
