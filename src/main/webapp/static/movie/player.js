@@ -152,6 +152,7 @@ var BPlayer = {
 			pluginPath: mediaElementBaseUrl,
 			flashName: 'flashmediaelement.swf',
 			silverlightName: 'silverlightmediaelement.xap',
+			features: ['playpause','current','volume','progress','duration','speed','fullscreen'],
 			enablePluginDebug: BPlayer.debugEnabled,
 			success: function(mediaElement, originalNode, player) {
 				if(config.autostart) {
