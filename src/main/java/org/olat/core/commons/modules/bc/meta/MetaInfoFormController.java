@@ -438,7 +438,8 @@ public class MetaInfoFormController extends FormBasicController {
 			}
 		}
 		
-		MetaInfo meta = CoreSpringFactory.getImpl(MetaInfoFactory.class).createMetaInfoFor((OlatRelPathImpl)item);
+		MetaInfo meta = item instanceof OlatRelPathImpl ? 
+				CoreSpringFactory.getImpl(MetaInfoFactory.class).createMetaInfoFor((OlatRelPathImpl)item) : null;
 		if(meta == null) {
 			return null;
 		}

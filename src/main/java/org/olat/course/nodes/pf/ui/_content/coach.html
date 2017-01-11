@@ -1,0 +1,15 @@
+<div class="clearfix">
+#if($r.available("single"))
+	$r.render("backLink")
+	<div class="o_block_bottom">$r.render("single")</div>
+#else
+	#if ($r.available("contextualSubscription"))
+	<div class="clearfix o_block_bottom">
+		$r.render("contextualSubscription")
+	</div>
+	#end
+	$r.render("table")
+	$r.render("buttons")
+#end
+</div>
+

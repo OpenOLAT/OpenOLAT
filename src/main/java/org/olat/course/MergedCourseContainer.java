@@ -37,7 +37,9 @@ import org.olat.core.util.vfs.filters.VFSItemFilter;
 import org.olat.course.config.CourseConfig;
 import org.olat.course.nodes.BCCourseNode;
 import org.olat.course.nodes.CourseNode;
+import org.olat.course.nodes.PFCourseNode;
 import org.olat.course.nodes.bc.BCCourseNodeEditController;
+import org.olat.course.nodes.pf.manager.PFManager;
 import org.olat.course.run.userview.NodeEvaluation;
 import org.olat.course.run.userview.TreeEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
@@ -217,6 +219,21 @@ public class MergedCourseContainer extends MergeSource {
 							nodesContainer.addContainer(courseNodeContainer);
 						}
 					}	
+				} else if (courseNodeChild instanceof PFCourseNode) {
+					final PFCourseNode pfNode = (PFCourseNode) courseNodeChild;					
+					// add folder not to merge source. Use name and node id to have unique name
+					PFManager pfManager = CoreSpringFactory.getImpl(PFManager.class);
+					folderName = getBCFolderName(nodesContainer, pfNode, folderName);
+					MergeSource courseNodeContainer = new MergeSource(nodesContainer, folderName);					
+					UserCourseEnvironment userCourseEnv = new UserCourseEnvironmentImpl(identityEnv, course.getCourseEnvironment());
+					VFSContainer rootFolder = pfManager.provideCoachOrParticipantContainer(pfNode, userCourseEnv, identityEnv.getIdentity());
+					VFSContainer nodeContentContainer = new NamedContainerImpl(folderName, rootFolder);
+					courseNodeContainer.addContainersChildren(nodeContentContainer, true);
+		
+					addFolderBuildingBlocks(course, courseNodeContainer, child);
+
+					nodesContainer.addContainer(courseNodeContainer);
+					
 				} else {
 					// For non-folder course nodes, add merge source (no files to show) ...
 					MergeSource courseNodeContainer = new MergeSource(null, folderName);
@@ -266,6 +283,8 @@ public class MergedCourseContainer extends MergeSource {
  					// Do recursion for all children
  					addFolderBuildingBlocks(course, courseNodeContainer, child);
  				}
+			} else if (child instanceof PFCourseNode) {
+				//FIXME check if something is to be done here
 			} else {
 				// For non-folder course nodes, add merge source (no files to show) ...
 				MergeSource courseNodeContainer = new MergeSource(null, folderName);
@@ -287,7 +306,7 @@ public class MergedCourseContainer extends MergeSource {
 	 * @param folderName
 	 * @return
 	 */
-	private String getBCFolderName(MergeSource nodesContainer, BCCourseNode bcNode, String folderName) {
+	private String getBCFolderName(MergeSource nodesContainer, CourseNode bcNode, String folderName) {
 		// add node ident if multiple files have same name
 		if (nodesContainer.getItems(new VFSItemFilter() {
 			@Override

@@ -53,6 +53,7 @@ import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSLockManager;
+import org.olat.core.util.vfs.VirtualContainer;
 import org.olat.core.util.vfs.lock.LockInfo;
 import org.olat.core.util.vfs.version.Versionable;
 import org.olat.core.util.vfs.version.Versions;
@@ -173,6 +174,8 @@ public class ListRenderer {
 	
 		// assume full access unless security callback tells us something different.
 		boolean canWrite = child.getParentContainer().canWrite() == VFSConstants.YES;
+		// special case: virtual folders are always read only. parent of child =! the current container
+		canWrite = canWrite && !(fc.getCurrentContainer() instanceof VirtualContainer);
 		boolean isAbstract = (child instanceof AbstractVirtualContainer);
 
 		Versions versions = null;

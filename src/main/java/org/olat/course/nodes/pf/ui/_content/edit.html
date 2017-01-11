@@ -1,0 +1,21 @@
+<fieldset class="o_sel_course_ms">
+	<legend>$r.contextHelpWithWrapper("Assessment#_bewertung_kursbaustein")
+	$r.translate("form.configuration")</legend>
+	
+	#if ($hasLogEntries)
+		#if ($isOverwriting)
+			<div class="o_warning">
+				<i>$r.translate("scoring.overwriting.note")</i>
+			</div>
+		#else
+			<div class="o_warning">
+				<i>$r.translate("scoring.overwriting")</i>
+			</div>
+			<div class="o_button_group">
+				$r.render("scoring.config.enable.button")
+			</div>			
+		#end		
+	#end
+</fieldset>
+$r.render("sfeditform")
+  
