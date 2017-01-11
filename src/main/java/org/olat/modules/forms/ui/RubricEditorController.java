@@ -201,7 +201,17 @@ public class RubricEditorController extends FormBasicController implements PageE
 		String endLabel = slider.getEndLabel();
 		TextElement endLabelEl = uifactory.addTextElement("end.label." + count.incrementAndGet(), "end.label", 256, endLabel, flc);
 		endLabelEl.setDomReplacementWrapperRequired(false);
-		return new SliderRow(slider, startLabelEl, endLabelEl);
+
+		SliderRow row = new SliderRow(slider, startLabelEl, endLabelEl);
+		if(!restrictedEdit) {
+			FormLink deleteButton = uifactory.addFormLink("del." + count.incrementAndGet(), "delete_slider", "", null, flc, Link.BUTTON | Link.NONTRANSLATED);
+			deleteButton.setDomReplacementWrapperRequired(false);
+			deleteButton.setIconLeftCSS("o_icon o_icon-lg o_icon_delete_item");
+			deleteButton.setUserObject(row);
+			row.setDeleteButton(deleteButton);
+			flc.contextPut("deleteButtons", Boolean.TRUE);
+		}
+		return row;
 	}
 
 	@Override
@@ -233,8 +243,20 @@ public class RubricEditorController extends FormBasicController implements PageE
 			if(validateFormLogic(ureq)) {
 				formOK(ureq);
 			}
+		} else if(source instanceof FormLink) {
+			FormLink button = (FormLink)source;
+			if("delete_slider".equals(button.getCmd())) {
+				doRemoveSlider((SliderRow)button.getUserObject());
+			}
 		}
 		super.formInnerEvent(ureq, source, event);
+	}
+	
+	private void doRemoveSlider(SliderRow row) {
+		updateSteps();
+		sliders.remove(row);
+		rubric.getSliders().remove(row.getSlider());
+		flc.setDirty(true);
 	}
 	
 	private void doAddSlider() {
@@ -363,6 +385,7 @@ public class RubricEditorController extends FormBasicController implements PageE
 		
 		private final TextElement startLabelEl;
 		private final TextElement endLabelEl;
+		private FormLink deleteButton;
 		
 		private final Slider slider;
 		
@@ -382,6 +405,14 @@ public class RubricEditorController extends FormBasicController implements PageE
 
 		public TextElement getEndLabelEl() {
 			return endLabelEl;
+		}
+		
+		public FormLink getDeleteButton() {
+			return deleteButton;
+		}
+		
+		public void setDeleteButton(FormLink deleteButton) {
+			this.deleteButton = deleteButton;
 		}
 	}
 }

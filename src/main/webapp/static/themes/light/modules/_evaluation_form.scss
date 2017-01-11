@@ -122,6 +122,7 @@
 	
 	.o_slider_editor {
 		margin-top: 10px;
+		position:relative;
 	}
 	
 	.o_evaluation_step_labels {
@@ -129,6 +130,15 @@
 		
 		input {
 			width: 100%;
+		}
+	}
+	
+	.o_slider_editor_delete {
+		padding-right: 48px;
+		
+		.o_slider_editor_delete_button {
+			position: absolute;
+			right: 15px;
 		}
 	}
 }
