@@ -85,8 +85,7 @@ public class ConfirmCloseController extends FormBasicController {
 				if(message.length() > 0) message.append(", ");
 				message.append(StringHelper.escapeHtml(row.getDisplayname()));
 			}
-			//uifactory.addStaticTextElement("rows", "details.read.only.entries", message.toString(), layoutCont);
-
+			
 			String[] acknowledge = new String[] { translate("details.read.only.acknowledge.msg") };
 			acknowledgeEl = uifactory.addCheckboxesHorizontal("confirm", "details.read.only.acknowledge", layoutCont, new String[]{ "" },  acknowledge);
 
