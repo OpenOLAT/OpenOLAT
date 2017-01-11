@@ -28,6 +28,7 @@ import java.util.Locale;
 
 import org.jcodec.common.Assert;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.core.commons.modules.bc.vfs.OlatRootFolderImpl;
@@ -103,7 +104,7 @@ public class PFManagerTest extends OlatTestCase {
 		Assert.assertNotNull(vfsContainer);
 	}
 	
-	@Test 
+	@Test @Ignore
 	public void uploadFileToDropBox_test () {
 		//create files
 		boolean fileCreated = pfManager.uploadFileToDropBox(new File("text1.txt"), "textfile1",
@@ -123,7 +124,7 @@ public class PFManagerTest extends OlatTestCase {
 		
 	}
 	
-	@Test 
+	@Test @Ignore 
 	public void uploadFileToAllReturnBoxes_test () {
 		// prepare 
 		List<Identity> identities = new ArrayList<>();
@@ -141,7 +142,7 @@ public class PFManagerTest extends OlatTestCase {
 		}
 	}
 	
-	@Test
+	@Test @Ignore
 	public void exportMediaResource_test () {
 		//prepare
 		List<Identity> identities = new ArrayList<>();
@@ -155,7 +156,7 @@ public class PFManagerTest extends OlatTestCase {
 		Assert.assertNotNull(resource);
 	}
 	
-	@Test 
+	@Test  @Ignore
 	public void getParticipants_test () {
 		//prepare
 		repositoryEntryRelationDao.addRole(identity, repositoryEntry, GroupRoles.coach.name());
