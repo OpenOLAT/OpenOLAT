@@ -47,6 +47,7 @@ import org.olat.core.util.vfs.NamedContainerImpl;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSManager;
+import org.olat.core.util.vfs.callbacks.ReadOnlyCallback;
 import org.olat.core.util.vfs.callbacks.VFSSecurityCallback;
 import org.olat.course.CourseFactory;
 import org.olat.course.CourseModule;
@@ -95,10 +96,10 @@ public class BCCourseNodeRunController extends DefaultController implements Acti
 		boolean noFolder = false;
 		VFSContainer target = null;
 		VFSSecurityCallback scallback;
-		if(courseNode.getModuleConfiguration().getBooleanSafe(BCCourseNodeEditController.CONFIG_AUTO_FOLDER)){
-			target = BCCourseNode.getNodeFolderContainer(courseNode, courseEnv);
-			scallback = new FolderNodeCallback(BCCourseNode.getNodeFolderContainer(courseNode, courseEnv).getRelPath(), ne, isOlatAdmin, isGuestOnly, nodefolderSubContext);
-
+		if(courseNode.getModuleConfiguration().getBooleanSafe(BCCourseNodeEditController.CONFIG_AUTO_FOLDER)) {
+			OlatNamedContainerImpl directory = BCCourseNode.getNodeFolderContainer(courseNode, courseEnv);
+			scallback = new FolderNodeCallback(directory.getRelPath(), ne, isOlatAdmin, isGuestOnly, nodefolderSubContext);
+			target = directory;
 		} else if(courseNode.isSharedFolder()) {
 			String subpath = courseNode.getModuleConfiguration().getStringValue(BCCourseNodeEditController.CONFIG_SUBPATH, "");
 			VFSItem item = courseEnv.getCourseFolderContainer().resolve(subpath);
@@ -112,22 +113,34 @@ public class BCCourseNodeRunController extends DefaultController implements Acti
 			if(courseEnv.getCourseConfig().isSharedFolderReadOnlyMount()) {
 				scallback = new FolderNodeReadOnlyCallback(nodefolderSubContext);
 			} else {
-				scallback = new FolderNodeCallback(BCCourseNode.getNodeFolderContainer(courseNode, courseEnv).getRelPath(), ne, isOlatAdmin, isGuestOnly, nodefolderSubContext);
+				String relPath = BCCourseNode.getNodeFolderContainer(courseNode, courseEnv).getRelPath();
+				scallback = new FolderNodeCallback(relPath, ne, isOlatAdmin, isGuestOnly, nodefolderSubContext);
 			}
 		} else{
 			//create folder automatically if not found
 			String subPath = courseNode.getModuleConfiguration().getStringValue(BCCourseNodeEditController.CONFIG_SUBPATH);
 			VFSContainer item = VFSManager.resolveOrCreateContainerFromPath(courseEnv.getCourseFolderContainer(), subPath);
-			if(item == null){
+			
+			String relPath;
+			if(item == null) {
 				noFolder = true;
 				BCCourseNodeNoFolderForm noFolderForm = new BCCourseNodeNoFolderForm(ureq, getWindowControl());
 				setInitialComponent(noFolderForm.getInitialComponent());
+				scallback = new ReadOnlyCallback();
 			} else {
 				target = new NamedContainerImpl(courseNode.getShortTitle(), item);
+				
+				VFSContainer inheritingContainer = VFSManager.findInheritingSecurityCallbackContainer(target);
+				if (inheritingContainer != null && inheritingContainer.getLocalSecurityCallback() != null
+						&& inheritingContainer.getLocalSecurityCallback() .getQuota() != null) {
+					relPath = inheritingContainer.getLocalSecurityCallback().getQuota().getPath();
+				} else {
+					relPath = VFSManager.getRelativeItemPath(target, courseEnv.getCourseFolderContainer(), null);
+				}
+				scallback = new FolderNodeCallback(relPath, ne, isOlatAdmin, isGuestOnly, nodefolderSubContext);
 			}
-
-			scallback = new FolderNodeCallback(VFSManager.getRelativeItemPath(target, courseEnv.getCourseFolderContainer(), null), ne, isOlatAdmin, isGuestOnly, nodefolderSubContext);
 		}
+		
 		//course is read only, override the security callback
 		if(userCourseEnv.isCourseReadOnly()) {
 			scallback = new FolderNodeReadOnlyCallback(nodefolderSubContext);
