@@ -137,6 +137,7 @@ public class PFEditFormController extends FormBasicController {
 			activateSettings();
 		} else if (source == limitFileCount) {
 			activateFileCount();
+			showInfo("limit.count.coach.info");
 		} else if (source == timeFrame) {
 			activateTimeFrame();
 		}
@@ -198,6 +199,8 @@ public class PFEditFormController extends FormBasicController {
 	protected void formOK(UserRequest ureq) {
 		if (!checkTimeFrameValid()) {
 			dateEnd.setErrorKey("timeframe.error", null);
+		} else if (!(studentDropBox.isSelected(0) || teacherDropBox.isSelected(0))) {
+			showError("folderselection.error");
 		} else {
 			pfNode.updateModuleConfig(studentDropBox.isSelected(0), 
 					teacherDropBox.isSelected(0), 

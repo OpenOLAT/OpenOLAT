@@ -257,7 +257,7 @@ public class PFManager {
 	}
 	
 	/**
-	 * Calculate callback dependent on CourseModule Settings.
+	 * Calculate callback dependent on ModuleConfiguration.
 	 *
 	 * @param pfNode 
 	 * @param dropbox
@@ -480,7 +480,7 @@ public class PFManager {
 		CourseGroupManager groupManager = courseEnv.getCourseGroupManager();
 		Set<Identity> identitiesSet = new HashSet<>();
 		// iterate course members
-		if (groupManager.isIdentityCourseCoach(id) || groupManager.isIdentityCourseAdministrator(id)) {
+		if (groupManager.isIdentityCourseAdministrator(id) || groupManager.isIdentityCourseAdministrator(id)) {
 			List<Identity> identities = groupManager.getParticipants();
 			for (Identity identity : identities) {
 				identitiesSet.add(identity);
@@ -515,7 +515,7 @@ public class PFManager {
 		Map<Identity, DropBoxRow> participantsMap = new HashMap<>();
 		CourseGroupManager groupManager = courseEnv.getCourseGroupManager();
 		// iterate course members
-		if (groupManager.isIdentityCourseCoach(id) || groupManager.isIdentityCourseAdministrator(id)) {
+		if (groupManager.isIdentityCourseAdministrator(id) || groupManager.isIdentityCourseAdministrator(id)) {
 			List<Identity> identities = groupManager.getParticipants();
 			for (Identity identity : identities) {
 				VFSContainer dropbox = resolveOrCreateDropFolder(courseEnv, pfNode, identity);

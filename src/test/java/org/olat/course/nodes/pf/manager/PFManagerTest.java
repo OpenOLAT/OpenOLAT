@@ -19,24 +19,22 @@
  */
 package org.olat.course.nodes.pf.manager;
 
+import static org.junit.Assert.assertNotNull;
+
 import java.io.File;
+import java.net.URISyntaxException;
+import java.net.URL;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Locale;
 
-import org.jcodec.common.Assert;
-import org.junit.Before;
-import org.junit.Ignore;
+import org.junit.Assert;
 import org.junit.Test;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.core.commons.modules.bc.vfs.OlatRootFolderImpl;
-import org.olat.core.gui.media.MediaResource;
-import org.olat.core.gui.util.SyntheticUserRequest;
 import org.olat.core.id.Identity;
 import org.olat.core.id.IdentityEnvironment;
-import org.olat.core.util.i18n.I18nManager;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSManager;
 import org.olat.course.CourseFactory;
@@ -56,64 +54,88 @@ import org.springframework.beans.factory.annotation.Autowired;
 *
 */
 public class PFManagerTest extends OlatTestCase {
-
-	private Identity identity;
-	private ICourse course;
-	private RepositoryEntry repositoryEntry;
-	private PFCourseNode pfNode;
-	private CourseEnvironment courseEnv;
-	private UserCourseEnvironment userCourseEnv;
-
+	
 	@Autowired
 	private PFManager pfManager;
 	@Autowired
 	private RepositoryEntryRelationDAO repositoryEntryRelationDao;
 
-	@Before
-	public void setUp() {
-		// prepare
-		identity = JunitTestHelper.createAndPersistIdentityAsRndUser("check-1");
+
+	@Test
+	public void provideParticipantContainer_test () {
+		// prepare 
+		Identity initialAuthor = JunitTestHelper.createAndPersistIdentityAsRndUser("check-15");
 		IdentityEnvironment ienv = new IdentityEnvironment();
-		pfNode = new PFCourseNode();
+		ienv.setIdentity(initialAuthor);
+		PFCourseNode pfNode = new PFCourseNode();
 		pfNode.getModuleConfiguration().setBooleanEntry(PFCourseNode.CONFIG_KEY_COACHBOX, true);
 		pfNode.getModuleConfiguration().setBooleanEntry(PFCourseNode.CONFIG_KEY_PARTICIPANTBOX, true);
 	
-		ienv.setIdentity(identity);
 		// import "Demo course" into the bcroot_junittest
-		repositoryEntry = JunitTestHelper.deployDemoCourse(identity);
-		Long resourceableId = repositoryEntry.getOlatResource().getResourceableId();
+		RepositoryEntry entry = JunitTestHelper.deployDemoCourse(initialAuthor);
+		Long resourceableId = entry.getOlatResource().getResourceableId();
 
-		course = CourseFactory.loadCourse(resourceableId);
-		userCourseEnv = new UserCourseEnvironmentImpl(ienv, course.getCourseEnvironment());
-	}
+		ICourse course = CourseFactory.loadCourse(resourceableId);
+		UserCourseEnvironment userCourseEnv = new UserCourseEnvironmentImpl(ienv, course.getCourseEnvironment());
 
-
-	@Test
-	public void provideParticipantView_test () {
 		Identity check3 = JunitTestHelper.createAndPersistIdentityAsRndUser("check-3");
-		repositoryEntryRelationDao.addRole(check3, repositoryEntry, GroupRoles.participant.name());
+		repositoryEntryRelationDao.addRole(check3, entry, GroupRoles.participant.name());
 		VFSContainer vfsContainer = pfManager.provideCoachOrParticipantContainer(pfNode, userCourseEnv, check3);
 		Assert.assertNotNull(vfsContainer);
+		Assert.assertTrue(vfsContainer.exists());
 	}
 
 	@Test
-	public void provideCoachView_test () {
+	public void provideCoachContainer_test () {
+		// prepare 
+		Identity initialAuthor = JunitTestHelper.createAndPersistIdentityAsRndUser("check-16");
+		IdentityEnvironment ienv = new IdentityEnvironment();
+		ienv.setIdentity(initialAuthor);
+		PFCourseNode pfNode = new PFCourseNode();
+		pfNode.getModuleConfiguration().setBooleanEntry(PFCourseNode.CONFIG_KEY_COACHBOX, true);
+		pfNode.getModuleConfiguration().setBooleanEntry(PFCourseNode.CONFIG_KEY_PARTICIPANTBOX, true);
+	
+		// import "Demo course" into the bcroot_junittest
+		RepositoryEntry entry = JunitTestHelper.deployDemoCourse(initialAuthor);
+		Long resourceableId = entry.getOlatResource().getResourceableId();
+
+		ICourse course = CourseFactory.loadCourse(resourceableId);
+		UserCourseEnvironment userCourseEnv = new UserCourseEnvironmentImpl(ienv, course.getCourseEnvironment());
+		
 		Identity check4 = JunitTestHelper.createAndPersistIdentityAsRndUser("check-4");
-		repositoryEntryRelationDao.addRole(check4, repositoryEntry, GroupRoles.coach.name());
+		repositoryEntryRelationDao.addRole(check4, entry, GroupRoles.coach.name());
 		VFSContainer vfsContainer = pfManager.provideCoachOrParticipantContainer(pfNode, userCourseEnv, check4);
 		Assert.assertNotNull(vfsContainer);
 	}
 	
-	@Test @Ignore
-	public void uploadFileToDropBox_test () {
+	@Test
+	public void uploadFileToDropBox_test () throws URISyntaxException{
+		// prepare 
+		Identity initialAuthor = JunitTestHelper.createAndPersistIdentityAsRndUser("check-17");
+		IdentityEnvironment ienv = new IdentityEnvironment();
+		ienv.setIdentity(initialAuthor);
+		PFCourseNode pfNode = new PFCourseNode();
+		pfNode.getModuleConfiguration().setBooleanEntry(PFCourseNode.CONFIG_KEY_COACHBOX, true);
+		pfNode.getModuleConfiguration().setBooleanEntry(PFCourseNode.CONFIG_KEY_PARTICIPANTBOX, true);
+	
+		// import "Demo course" into the bcroot_junittest
+		RepositoryEntry entry = JunitTestHelper.deployDemoCourse(initialAuthor);
+		Long resourceableId = entry.getOlatResource().getResourceableId();
+
+		ICourse course = CourseFactory.loadCourse(resourceableId);
+		CourseEnvironment courseEnv = course.getCourseEnvironment();
 		//create files
-		boolean fileCreated = pfManager.uploadFileToDropBox(new File("text1.txt"), "textfile1",
-				1, courseEnv, pfNode, identity);
-		boolean fileNotCreated = pfManager.uploadFileToDropBox(new File("text2.txt"), "textfile2",
-				0, courseEnv, pfNode, identity);
+		URL portraitUrl = JunitTestHelper.class.getResource("file_resources/IMG_1482.jpg");
+		assertNotNull(portraitUrl);
+		File portrait = new File(portraitUrl.toURI());
+
+		boolean fileCreated = pfManager.uploadFileToDropBox(portrait, "textfile1",
+				1, courseEnv, pfNode, initialAuthor);
+		boolean fileNotCreated = pfManager.uploadFileToDropBox(portrait, "textfile2",
+				0, courseEnv, pfNode, initialAuthor);
 		
 		Path relPath = Paths.get(PFManager.FILENAME_PARTICIPANTFOLDER, pfNode.getIdent(),
-				pfManager.getIdFolderName(identity), PFManager.FILENAME_DROPBOX); 
+				pfManager.getIdFolderName(initialAuthor), PFManager.FILENAME_DROPBOX); 
 		OlatRootFolderImpl baseContainer = courseEnv.getCourseBaseContainer();
 		VFSContainer dropboxContainer = VFSManager.resolveOrCreateContainerFromPath(baseContainer, relPath.toString());
 		
@@ -124,14 +146,32 @@ public class PFManagerTest extends OlatTestCase {
 		
 	}
 	
-	@Test @Ignore 
-	public void uploadFileToAllReturnBoxes_test () {
+	@Test 
+	public void uploadFileToAllReturnBoxes_test () throws URISyntaxException{
 		// prepare 
+		Identity initialAuthor = JunitTestHelper.createAndPersistIdentityAsRndUser("check-18");
+		IdentityEnvironment ienv = new IdentityEnvironment();
+		ienv.setIdentity(initialAuthor);
+		PFCourseNode pfNode = new PFCourseNode();
+		pfNode.getModuleConfiguration().setBooleanEntry(PFCourseNode.CONFIG_KEY_COACHBOX, true);
+		pfNode.getModuleConfiguration().setBooleanEntry(PFCourseNode.CONFIG_KEY_PARTICIPANTBOX, true);
+	
+		// import "Demo course" into the bcroot_junittest
+		RepositoryEntry entry = JunitTestHelper.deployDemoCourse(initialAuthor);
+		Long resourceableId = entry.getOlatResource().getResourceableId();
+
+		ICourse course = CourseFactory.loadCourse(resourceableId);
+		CourseEnvironment courseEnv = course.getCourseEnvironment();
+		
 		List<Identity> identities = new ArrayList<>();
 		for (int i = 0; i < 5; i++) {
 			identities.add(JunitTestHelper.createAndPersistIdentityAsRndUser("pf-user-" + i));
 		}
-		pfManager.uploadFileToAllReturnBoxes(new File("text3.txt"), "textfile3", courseEnv, pfNode, identities);
+		URL portraitUrl = JunitTestHelper.class.getResource("file_resources/IMG_1482.jpg");
+		assertNotNull(portraitUrl);
+		File portrait = new File(portraitUrl.toURI());
+		
+		pfManager.uploadFileToAllReturnBoxes(portrait, "textfile3", courseEnv, pfNode, identities);
 		//check
 		for (Identity identity : identities) {
 			Path relPath = Paths.get(PFManager.FILENAME_PARTICIPANTFOLDER, pfNode.getIdent(),
@@ -142,29 +182,23 @@ public class PFManagerTest extends OlatTestCase {
 		}
 	}
 	
-	@Test @Ignore
-	public void exportMediaResource_test () {
-		//prepare
-		List<Identity> identities = new ArrayList<>();
-		for (int i = 0; i < 5; i++) {
-			identities.add(JunitTestHelper.createAndPersistIdentityAsRndUser("pf-user-" + (i + 6)));
-		}
-		Identity check2 = JunitTestHelper.createAndPersistIdentityAsRndUser("check-2");
-		Locale locale = I18nManager.getInstance().getLocaleOrDefault(check2.getUser().getPreferences().getLanguage());
-		MediaResource resource = pfManager.exportMediaResource(new SyntheticUserRequest(check2, locale), identities, pfNode, courseEnv);
-		//check
-		Assert.assertNotNull(resource);
-	}
-	
-	@Test  @Ignore
+	@Test  
 	public void getParticipants_test () {
 		//prepare
-		repositoryEntryRelationDao.addRole(identity, repositoryEntry, GroupRoles.coach.name());
+		Identity initialAuthor = JunitTestHelper.createAndPersistIdentityAsRndUser("check-1");
+		RepositoryEntry entry = JunitTestHelper.deployDemoCourse(initialAuthor);
+		// import "Demo course" into the bcroot_junittest
+		Long resourceableId = entry.getOlatResource().getResourceableId();
+
+		ICourse course = CourseFactory.loadCourse(resourceableId);
+		CourseEnvironment courseEnv = course.getCourseEnvironment();
+		
+		repositoryEntryRelationDao.addRole(initialAuthor, entry, GroupRoles.coach.name());
 		for (int i = 0; i < 5; i++) {
 			Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("pf-user-" + (i+12));
-			repositoryEntryRelationDao.addRole(id, repositoryEntry, GroupRoles.participant.name());
+			repositoryEntryRelationDao.addRole(id, entry, GroupRoles.participant.name());
 		}
-		List<Identity> ids = pfManager.getParticipants(identity, courseEnv);
+		List<Identity> ids = pfManager.getParticipants(initialAuthor, courseEnv);
 		//check
 		Assert.assertEquals(ids.size(), 5);
 	}
