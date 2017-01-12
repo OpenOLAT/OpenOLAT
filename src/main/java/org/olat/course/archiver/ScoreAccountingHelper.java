@@ -40,6 +40,7 @@ import java.util.Set;
 import org.apache.commons.io.IOUtils;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.core.CoreSpringFactory;
+import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.IdentityEnvironment;
@@ -147,6 +148,7 @@ public class ScoreAccountingHelper {
 		Map<Long,Date> firstTimes = mgr.getInitialLaunchDates(courseResource, identities);
 		Formatter formatter = Formatter.getInstance(locale);
 
+		int count = 0;
 		for (Identity identity:identities) {
 			ContextEntry ce = BusinessControlFactory.getInstance().createContextEntry(identity);
 			String uname = BusinessControlFactory.getInstance().getAsURIString(Collections.singletonList(ce), false);
@@ -324,6 +326,10 @@ public class ScoreAccountingHelper {
 			tableContent.append("\t\n");
 			firstIteration = false;
 			rowNumber++;
+			
+			if(count++ % 20 == 0) {
+				DBFactory.getInstance().commitAndCloseSession();
+			}
 		}
 		//fxdiff VCRP-4: assessment overview with max score
 		StringBuilder tableFooter = new StringBuilder();
