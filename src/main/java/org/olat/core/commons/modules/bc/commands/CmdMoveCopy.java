@@ -58,6 +58,7 @@ import org.olat.core.util.vfs.VFSLockManager;
 import org.olat.core.util.vfs.VFSManager;
 import org.olat.core.util.vfs.VFSStatus;
 import org.olat.core.util.vfs.callbacks.VFSSecurityCallback;
+import org.olat.core.util.vfs.filters.VFSItemFilter;
 import org.olat.core.util.vfs.version.Versionable;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -98,7 +99,7 @@ public class CmdMoveCopy extends DefaultController implements FolderCommand {
 
 		selTree = new MenuTree(null, "seltree", this);
 		FolderTreeModel ftm = new FolderTreeModel(ureq.getLocale(), fc.getRootContainer(),
-				true, false, true, fc.getRootContainer().canWrite() == VFSConstants.YES, null);
+				true, false, true, fc.getRootContainer().canWrite() == VFSConstants.YES, new EditableFilter());
 		selTree.setTreeModel(ftm);
 		selectButton = LinkFactory.createButton(move ? "move" : "copy", main, this);
 		cancelButton = LinkFactory.createButton("cancel", main, this);
@@ -284,5 +285,17 @@ public class CmdMoveCopy extends DefaultController implements FolderCommand {
 	@Override
 	protected void doDispose() {
 		//
+	}
+	
+	private static final class EditableFilter implements VFSItemFilter {
+		
+		@Override
+		public boolean accept(VFSItem vfsItem) {
+			VFSSecurityCallback secCallback = vfsItem.getLocalSecurityCallback();
+			if(secCallback != null && !secCallback.canWrite()) {
+				return false;
+			}
+			return true;
+		}
 	}
 }
