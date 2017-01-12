@@ -30,7 +30,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.core.commons.modules.bc.vfs.OlatRootFolderImpl;
@@ -66,7 +65,7 @@ public class PFManagerTest extends OlatTestCase {
 
 
 	@Test
-	public void provideParticipantContainer_test () {
+	public void provideParticipantContainer() {
 		// prepare 
 		Identity initialAuthor = JunitTestHelper.createAndPersistIdentityAsRndUser("check-15");
 		IdentityEnvironment ienv = new IdentityEnvironment();
@@ -90,7 +89,7 @@ public class PFManagerTest extends OlatTestCase {
 	}
 
 	@Test
-	public void provideCoachContainer_test () {
+	public void provideCoachContainer() {
 		// prepare 
 		Identity initialAuthor = JunitTestHelper.createAndPersistIdentityAsRndUser("check-16");
 		IdentityEnvironment ienv = new IdentityEnvironment();
@@ -112,8 +111,8 @@ public class PFManagerTest extends OlatTestCase {
 		Assert.assertNotNull(vfsContainer);
 	}
 	
-	@Test @Ignore
-	public void uploadFileToDropBox_test () throws URISyntaxException{
+	@Test
+	public void uploadFileToDropBox() throws URISyntaxException{
 		// prepare 
 		Identity initialAuthor = JunitTestHelper.createAndPersistIdentityAsRndUser("check-17");
 		IdentityEnvironment ienv = new IdentityEnvironment();
@@ -129,7 +128,7 @@ public class PFManagerTest extends OlatTestCase {
 		ICourse course = CourseFactory.loadCourse(resourceableId);
 		CourseEnvironment courseEnv = course.getCourseEnvironment();
 		//create files
-		URL portraitUrl = JunitTestHelper.class.getResource("file_resources/IMG_1482.jpg");
+		URL portraitUrl = JunitTestHelper.class.getResource("file_resources/IMG_1482.JPG");
 		assertNotNull(portraitUrl);
 		File portrait = new File(portraitUrl.toURI());
 
@@ -147,11 +146,10 @@ public class PFManagerTest extends OlatTestCase {
 		Assert.assertTrue(fileCreated);
 		Assert.assertTrue(!fileNotCreated);
 		Assert.assertTrue("textfile1".equals(dropboxContainer.getItems().get(0).getName())); 
-		
 	}
 	
-	@Test @Ignore
-	public void uploadFileToAllReturnBoxes_test () throws URISyntaxException{
+	@Test
+	public void uploadFileToAllReturnBoxes() throws URISyntaxException {
 		// prepare 
 		Identity initialAuthor = JunitTestHelper.createAndPersistIdentityAsRndUser("check-18");
 		IdentityEnvironment ienv = new IdentityEnvironment();
@@ -171,7 +169,7 @@ public class PFManagerTest extends OlatTestCase {
 		for (int i = 0; i < 5; i++) {
 			identities.add(JunitTestHelper.createAndPersistIdentityAsRndUser("pf-user-" + i));
 		}
-		URL portraitUrl = JunitTestHelper.class.getResource("file_resources/IMG_1482.jpg");
+		URL portraitUrl = JunitTestHelper.class.getResource("file_resources/IMG_1482.JPG");
 		assertNotNull(portraitUrl);
 		File portrait = new File(portraitUrl.toURI());
 		
@@ -187,7 +185,7 @@ public class PFManagerTest extends OlatTestCase {
 	}
 	
 	@Test  
-	public void getParticipants_test () {
+	public void getParticipants() {
 		//prepare
 		Identity initialAuthor = JunitTestHelper.createAndPersistIdentityAsRndUser("check-1");
 		RepositoryEntry entry = JunitTestHelper.deployDemoCourse(initialAuthor);
@@ -210,6 +208,4 @@ public class PFManagerTest extends OlatTestCase {
 		Assert.assertEquals(ids.size(), 5);
 		Assert.assertFalse(ids.contains(initialAuthor));
 	}
-
-
 }
