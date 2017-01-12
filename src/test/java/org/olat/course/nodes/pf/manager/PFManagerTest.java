@@ -30,9 +30,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.core.commons.modules.bc.vfs.OlatRootFolderImpl;
+import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.core.id.IdentityEnvironment;
 import org.olat.core.util.vfs.VFSContainer;
@@ -55,6 +57,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 */
 public class PFManagerTest extends OlatTestCase {
 	
+	@Autowired
+	private DB dbInstance;
 	@Autowired
 	private PFManager pfManager;
 	@Autowired
@@ -108,7 +112,7 @@ public class PFManagerTest extends OlatTestCase {
 		Assert.assertNotNull(vfsContainer);
 	}
 	
-	@Test
+	@Test @Ignore
 	public void uploadFileToDropBox_test () throws URISyntaxException{
 		// prepare 
 		Identity initialAuthor = JunitTestHelper.createAndPersistIdentityAsRndUser("check-17");
@@ -146,7 +150,7 @@ public class PFManagerTest extends OlatTestCase {
 		
 	}
 	
-	@Test 
+	@Test @Ignore
 	public void uploadFileToAllReturnBoxes_test () throws URISyntaxException{
 		// prepare 
 		Identity initialAuthor = JunitTestHelper.createAndPersistIdentityAsRndUser("check-18");
@@ -198,9 +202,13 @@ public class PFManagerTest extends OlatTestCase {
 			Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("pf-user-" + (i+12));
 			repositoryEntryRelationDao.addRole(id, entry, GroupRoles.participant.name());
 		}
+		dbInstance.commitAndCloseSession();
+		
+		
 		List<Identity> ids = pfManager.getParticipants(initialAuthor, courseEnv);
 		//check
 		Assert.assertEquals(ids.size(), 5);
+		Assert.assertFalse(ids.contains(initialAuthor));
 	}
 
 
