@@ -224,10 +224,12 @@ public class QTI21EditForm extends FormBasicController {
 		typeShowResultsOnFinishEl.setVisible(showResultsOnFinishEl.isAtLeastSelected(1));
 		if(StringHelper.containsNonWhitespace(confSummary)) {
 			for(String typeShowResultsOnFinishKey:typeShowResultsOnFinishKeys) {
-				typeShowResultsOnFinishEl.select(typeShowResultsOnFinishKey, true);
+				if(typeShowResultsOnFinishKey.equals(confSummary)) {
+					typeShowResultsOnFinishEl.select(typeShowResultsOnFinishKey, true);
+				}
 			}
 		} 
-		if(typeShowResultsOnFinishEl.isOneSelected()) {
+		if(!typeShowResultsOnFinishEl.isOneSelected()) {
 			typeShowResultsOnFinishEl.select(AssessmentInstance.QMD_ENTRY_SUMMARY_COMPACT, true);
 		}
 		
