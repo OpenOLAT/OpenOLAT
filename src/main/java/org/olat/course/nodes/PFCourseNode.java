@@ -73,15 +73,20 @@ public class PFCourseNode extends AbstractAccessableCourseNode {
 	 */
 	public static final long serialVersionUID = 1L;
 
-	
-	public PFCourseNode(String type) {
-		super(type);
-
-	}
-	
 	public PFCourseNode() {
 		super(TYPE);
-		
+		updateModuleConfigDefaults(true);
+	}
+
+	/**
+	 * @see org.olat.course.nodes.GenericCourseNode#updateModuleConfigDefaults(boolean)
+	 */
+	@Override
+	public void updateModuleConfigDefaults(boolean isNewNode) {
+		if (isNewNode) {
+			// default is to enable both boxes without restrictions
+			updateModuleConfig(true,true,true, false, 0, false, null, null);
+		}
 	}
 
 	@Override

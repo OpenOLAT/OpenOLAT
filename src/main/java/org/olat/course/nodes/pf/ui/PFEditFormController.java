@@ -97,6 +97,7 @@ public class PFEditFormController extends FormBasicController {
 		spacerEl = uifactory.addSpacerElement("spacer1", formLayout, false);
 		
 		teacherDropBox = uifactory.addCheckboxesHorizontal("coach.drop", formLayout, new String[]{"xx"}, new String[]{null});
+		teacherDropBox.addActionListener(FormEvent.ONCLICK);
 		
 		// Create submit button
 		final FormLayoutContainer buttonLayout = FormLayoutContainer.createButtonLayout("buttonLayout", getTranslator());
@@ -143,6 +144,13 @@ public class PFEditFormController extends FormBasicController {
 		} else if (source == timeFrame) {
 			activateTimeFrame();
 		}
+		// at least one box must be enabled
+		if (!(studentDropBox.isSelected(0) || teacherDropBox.isSelected(0))) {
+			studentDropBox.setErrorKey("folderselection.error", null);
+		} else {
+			studentDropBox.clearError();
+		}
+
 	}
 	
 	private void activateSettings () {
@@ -182,15 +190,36 @@ public class PFEditFormController extends FormBasicController {
 		boolean allOk = true;
 		dateEnd.clearError();
 		dateStart.clearError();
+		fileCount.clearError();
+		studentDropBox.clearError();
 		
-		if(timeFrame.isSelected(0)) {
-			if(dateEnd.getDate() == null) {
-				dateEnd.setErrorKey("form.legende.mandatory", null);
-				allOk &= false;
-			}
-			if(dateStart.getDate() == null) {
-				dateStart.setErrorKey("form.legende.mandatory", null);
-				allOk &= false;
+		// at least one box must be enabled
+		if (!(studentDropBox.isSelected(0) || teacherDropBox.isSelected(0))) {
+			studentDropBox.setErrorKey("folderselection.error", null);
+			allOk &= false;
+		}
+		if (studentDropBox.isSelected(0)) {
+			// ensure valid time interval
+			if(timeFrame.isSelected(0)) {
+				if(dateEnd.getDate() == null) {
+					dateEnd.setErrorKey("form.legende.mandatory", null);
+					allOk &= false;
+				}
+				if(dateStart.getDate() == null) {
+					dateStart.setErrorKey("form.legende.mandatory", null);
+					allOk &= false;
+				}
+				if (allOk && !checkTimeFrameValid()) {
+					dateEnd.setErrorKey("timeframe.error", null);
+					allOk &= false;
+				}
+			}			
+			// if file limit is enabled, ensure limit is greater than 0
+			if (limitFileCount.isSelected(0)) {
+				if (1 > fileCount.getIntValue()) {
+					fileCount.setErrorKey("filecount.error", null);
+					allOk &= false;
+				}
 			}
 		}
 		return allOk & super.validateFormLogic(ureq);
@@ -199,23 +228,15 @@ public class PFEditFormController extends FormBasicController {
 
 	@Override
 	protected void formOK(UserRequest ureq) {
-		if (!checkTimeFrameValid()) {
-			dateEnd.setErrorKey("timeframe.error", null);
-		} else if (1 > fileCount.getIntValue()) {
-			fileCount.setErrorKey("filecount.error", null);
-		} else if (!(studentDropBox.isSelected(0) || teacherDropBox.isSelected(0))) {
-			showError("folderselection.error");
-		} else {
-			pfNode.updateModuleConfig(studentDropBox.isSelected(0), 
-					teacherDropBox.isSelected(0), 
-					alterFiles.isSelected(0), 
-					limitFileCount.isSelected(0), 
-					fileCount.getIntValue(),
-					timeFrame.isSelected(0), 
-					dateStart.getDate(), 
-					dateEnd.getDate());
-			fireEvent(ureq, Event.DONE_EVENT);
-		}
+		pfNode.updateModuleConfig(studentDropBox.isSelected(0), 
+				teacherDropBox.isSelected(0), 
+				alterFiles.isSelected(0), 
+				limitFileCount.isSelected(0), 
+				fileCount.getIntValue(),
+				timeFrame.isSelected(0), 
+				dateStart.getDate(), 
+				dateEnd.getDate());
+		fireEvent(ureq, Event.DONE_EVENT);
 	}
 
 	@Override

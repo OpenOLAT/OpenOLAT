@@ -9,7 +9,9 @@
 	</div>
 	#end
 	$r.render("table")
-	$r.render("buttons")
+	#if($hasParticipants)
+		$r.render("buttons")
+	#end
 #end
 </div>
 
