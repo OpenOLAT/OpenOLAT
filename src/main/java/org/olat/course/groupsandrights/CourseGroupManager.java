@@ -108,7 +108,7 @@ public interface CourseGroupManager {
 	public boolean isIdentityInLearningArea(Identity identity, Long areaKey);
 
 	/**
-	 * Checks if user is coach in any of the courses learning groups
+	 * Checks if user is coach in the course (of the repository entry or of a business group)
 	 * 
 	 * @param identity
 	 * @return true if user is coach

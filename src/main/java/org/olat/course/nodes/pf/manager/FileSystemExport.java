@@ -29,6 +29,7 @@ import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Set;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
@@ -37,10 +38,13 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.media.MediaResource;
+import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.Util;
 import org.olat.course.nodes.PFCourseNode;
+import org.olat.course.nodes.pf.ui.PFRunController;
 import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.user.UserManager;
 /**
@@ -56,12 +60,15 @@ public class FileSystemExport implements MediaResource {
 	private List<Identity> identities;
 	private PFCourseNode pfNode;
 	private CourseEnvironment courseEnv;
+	private Translator translator;
 
-	public FileSystemExport(List<Identity> identities, PFCourseNode pfNode, CourseEnvironment courseEnv) {
+	public FileSystemExport(List<Identity> identities, PFCourseNode pfNode, CourseEnvironment courseEnv, Locale locale) {
 		super();
 		this.identities = identities;
 		this.pfNode = pfNode;
 		this.courseEnv = courseEnv;
+		this.translator = Util.createPackageTranslator(PFRunController.class, locale);
+
 	}
 
 	@Override
@@ -94,10 +101,10 @@ public class FileSystemExport implements MediaResource {
 		try (ZipOutputStream zout = new ZipOutputStream(hres.getOutputStream())) {
 			zout.setLevel(9);
 			
-			String pfolder = "participantfolder/";
+			String pfolder = translator.translate("participant.folder") + "/";
 			
 			Path relPath = Paths.get(courseEnv.getCourseBaseContainer().getBasefile().getAbsolutePath(),
-					pfolder, pfNode.getIdent()); 
+					PFManager.FILENAME_PARTICIPANTFOLDER, pfNode.getIdent()); 
 						
 			fsToZip(zout, relPath, pfolder);
 			

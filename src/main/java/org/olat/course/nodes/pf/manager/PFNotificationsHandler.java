@@ -57,7 +57,7 @@ import org.springframework.stereotype.Service;
 public class PFNotificationsHandler implements NotificationsHandler {
 
 	private static final OLog log = Tracing.createLoggerFor(PFNotificationsHandler.class);
-	protected static final String CSS_CLASS_ICON = "o_gta_icon";
+	protected static final String CSS_CLASS_ICON = "o_pf_icon";
 
 	@Autowired
 	private NotificationsManager notificationsManager;

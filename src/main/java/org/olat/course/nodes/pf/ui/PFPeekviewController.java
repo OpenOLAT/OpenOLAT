@@ -22,6 +22,7 @@ package org.olat.course.nodes.pf.ui;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.List;
 
 import org.olat.core.CoreSpringFactory;
@@ -86,7 +87,7 @@ public class PFPeekviewController extends BasicController implements Controller 
 			// Add link to jump to course node
 			if (leaf instanceof LocalFileImpl) {
 				DownloadComponent dlComp = new DownloadComponent("nodeLinkDL_"+(i+1), leaf, forceDownload,
-						leaf.getName(), translate("preview.downloadfile"),
+						leaf.getName() + " " + new Date(leaf.getLastModified()), translate("peekview.downloadfile"),
 						CSSHelper.createFiletypeIconCssClassFor(leaf.getName()));
 				dlComp.setElementCssClass("o_gotoNode");
 				peekviewVC.put("nodeLinkDL_"+(i+1),dlComp);

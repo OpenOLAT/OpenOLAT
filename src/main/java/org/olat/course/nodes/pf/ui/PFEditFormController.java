@@ -67,19 +67,11 @@ public class PFEditFormController extends FormBasicController {
 		alterFiles = uifactory.addCheckboxesHorizontal("alter.file", "blank.label", formLayout, new String[]{"xx"}, alterfile);
 		alterFiles.addActionListener(FormEvent.ONCLICK);
 		
-		String[] limitcount = new String[]{ translate("limit.count") };
-		limitFileCount = uifactory.addCheckboxesHorizontal("limit.count", "blank.label", formLayout, new String[]{"xx"}, limitcount);
-		limitFileCount.addActionListener(FormEvent.ONCLICK);
-		limitFileCount.showLabel(Boolean.FALSE);
-		fileCount = uifactory.addIntegerElement("file.count", 3, formLayout);
-		fileCount.showLabel(Boolean.FALSE);
-
 		String[] timeframe = new String[]{ translate("time.frame") };
 		timeFrame = uifactory.addCheckboxesHorizontal("time.frame", "blank.label", formLayout, new String[]{"xx"}, timeframe);
 		timeFrame.addActionListener(FormEvent.ONCLICK);
 		timeFrame.showLabel(Boolean.FALSE);
-	
-		
+			
 		dateStart = new JSDateChooser("dateStart", getLocale());
 		dateStart.setLabel("date.start", null);
 		dateStart.setDateChooserTimeEnabled(true);
@@ -94,6 +86,14 @@ public class PFEditFormController extends FormBasicController {
 		dateEnd.setMandatory(true);
 		formLayout.add(dateEnd);
 		
+		String[] limitcount = new String[]{ translate("limit.count") };
+		limitFileCount = uifactory.addCheckboxesHorizontal("limit.count", "blank.label", formLayout, new String[]{"xx"}, limitcount);
+		limitFileCount.addActionListener(FormEvent.ONCLICK);
+		limitFileCount.showLabel(Boolean.FALSE);
+		fileCount = uifactory.addIntegerElement("file.count", 3, formLayout);
+		fileCount.showLabel(Boolean.FALSE);
+		fileCount.setHelpTextKey("limit.count.coach.info", null);
+
 		spacerEl = uifactory.addSpacerElement("spacer1", formLayout, false);
 		
 		teacherDropBox = uifactory.addCheckboxesHorizontal("coach.drop", formLayout, new String[]{"xx"}, new String[]{null});
@@ -137,7 +137,9 @@ public class PFEditFormController extends FormBasicController {
 			activateSettings();
 		} else if (source == limitFileCount) {
 			activateFileCount();
-			showInfo("limit.count.coach.info");
+			if (limitFileCount.isSelected(0)) {
+				showInfo("limit.count.coach.info");
+			}
 		} else if (source == timeFrame) {
 			activateTimeFrame();
 		}
@@ -199,6 +201,8 @@ public class PFEditFormController extends FormBasicController {
 	protected void formOK(UserRequest ureq) {
 		if (!checkTimeFrameValid()) {
 			dateEnd.setErrorKey("timeframe.error", null);
+		} else if (1 > fileCount.getIntValue()) {
+			fileCount.setErrorKey("filecount.error", null);
 		} else if (!(studentDropBox.isSelected(0) || teacherDropBox.isSelected(0))) {
 			showError("folderselection.error");
 		} else {

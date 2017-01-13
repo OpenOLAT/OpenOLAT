@@ -83,7 +83,7 @@ public class PFManagerTest extends OlatTestCase {
 
 		Identity check3 = JunitTestHelper.createAndPersistIdentityAsRndUser("check-3");
 		repositoryEntryRelationDao.addRole(check3, entry, GroupRoles.participant.name());
-		VFSContainer vfsContainer = pfManager.provideCoachOrParticipantContainer(pfNode, userCourseEnv, check3);
+		VFSContainer vfsContainer = pfManager.provideCoachOrParticipantContainer(pfNode, userCourseEnv, check3, false);
 		Assert.assertNotNull(vfsContainer);
 		Assert.assertTrue(vfsContainer.exists());
 	}
@@ -107,7 +107,7 @@ public class PFManagerTest extends OlatTestCase {
 		
 		Identity check4 = JunitTestHelper.createAndPersistIdentityAsRndUser("check-4");
 		repositoryEntryRelationDao.addRole(check4, entry, GroupRoles.coach.name());
-		VFSContainer vfsContainer = pfManager.provideCoachOrParticipantContainer(pfNode, userCourseEnv, check4);
+		VFSContainer vfsContainer = pfManager.provideCoachOrParticipantContainer(pfNode, userCourseEnv, check4, false);
 		Assert.assertNotNull(vfsContainer);
 	}
 	
@@ -203,7 +203,7 @@ public class PFManagerTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		
-		List<Identity> ids = pfManager.getParticipants(initialAuthor, courseEnv);
+		List<Identity> ids = pfManager.getParticipants(initialAuthor, courseEnv, true);
 		//check
 		Assert.assertEquals(ids.size(), 5);
 		Assert.assertFalse(ids.contains(initialAuthor));

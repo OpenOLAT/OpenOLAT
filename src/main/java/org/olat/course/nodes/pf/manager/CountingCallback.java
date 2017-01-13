@@ -19,21 +19,55 @@
  */
 package org.olat.course.nodes.pf.manager;
 
+import java.util.List;
+
+import org.olat.core.commons.modules.bc.components.FolderComponent;
 import org.olat.core.commons.services.notifications.SubscriptionContext;
 import org.olat.core.util.vfs.Quota;
+import org.olat.core.util.vfs.VFSContainer;
+import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.callbacks.VFSSecurityCallback;
+import org.olat.core.util.vfs.filters.VFSItemExcludePrefixFilter;
+import org.olat.core.util.vfs.filters.VFSItemFilter;
 /**
 *
 * @author Fabian Kiefer, fabian.kiefer@frentix.com, http://www.frentix.com
 *
 */
-public class ReadWriteCallback implements VFSSecurityCallback {
+public class CountingCallback implements VFSSecurityCallback {
 	
+	private static final VFSItemFilter attachmentExcludeFilter = new VFSItemExcludePrefixFilter(FolderComponent.ATTACHMENT_EXCLUDE_PREFIXES);
+
 	private SubscriptionContext subsContext;
-	
-	public ReadWriteCallback(SubscriptionContext subsContext) {
+	private VFSContainer dropbox;
+	private int limit;
+	private boolean alterFile;
+
+	public CountingCallback(SubscriptionContext subsContext, VFSContainer dropbox, int limit, boolean alterFile) {
 		super();
 		this.subsContext = subsContext;
+		this.dropbox = dropbox;
+		this.limit = limit;
+		this.alterFile = alterFile;
+	}
+	
+	private int countFiles(VFSContainer vfsContainer) {
+		int counter = 0;
+		if (vfsContainer.exists()) {
+			List<VFSItem> children = vfsContainer.getItems(attachmentExcludeFilter);
+			for (VFSItem vfsItem : children) {
+				if (vfsItem instanceof VFSContainer){
+					counter += countFiles((VFSContainer)vfsItem);
+				} else {
+					counter++;										
+				}
+			}
+		}
+		return counter;
+	}
+	
+	private boolean limitReached () {
+		return countFiles(dropbox) <= limit;
 	}
 
 	@Override
@@ -43,27 +77,27 @@ public class ReadWriteCallback implements VFSSecurityCallback {
 
 	@Override
 	public boolean canWrite() {
-		return true;
+		return limitReached();
 	}
 
 	@Override
 	public boolean canCreateFolder() {
-		return true;
+		return limitReached();
 	}
 
 	@Override
 	public boolean canDelete() {
-		return false;
+		return alterFile;
 	}
 
 	@Override
 	public boolean canList() {
-		return false;
+		return true;
 	}
 
 	@Override
 	public boolean canCopy() {
-		return true;
+		return limitReached();
 	}
 
 	@Override
@@ -78,8 +112,7 @@ public class ReadWriteCallback implements VFSSecurityCallback {
 
 	@Override
 	public void setQuota(Quota quota) {
-
-
+		
 	}
 
 	@Override

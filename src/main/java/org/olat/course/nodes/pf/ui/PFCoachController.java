@@ -272,8 +272,8 @@ public class PFCoachController extends FormBasicController implements Controller
 		dropboxTable.setSelectAllEnable(true);
 		dropboxTable.setExportEnabled(true);
 		dropboxTable.setAndLoadPersistedPreferences(ureq, this.getClass().getName() + "_" + pfView.name());
-
-		tableModel.setObjects(pfManager.getParticipants(identity, pfNode, userPropertyHandlers, getLocale(), courseEnv));
+		
+		tableModel.setObjects(pfManager.getParticipants(identity, pfNode, userPropertyHandlers, getLocale(), courseEnv, userCourseEnv.isAdmin()));
 
 		
 		FormLayoutContainer buttonGroupLayout = FormLayoutContainer.createButtonLayout("buttons", getTranslator());

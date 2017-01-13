@@ -94,7 +94,7 @@ public class PFNotifications {
 			this.displayname = entry.getDisplayname();
 			
 			if (groupManager.isIdentityCourseCoach(identity) || groupManager.isIdentityCourseAdministrator(identity)) {
-				List<Identity> participants = pfManager.getParticipants(identity, courseEnv);
+				List<Identity> participants = pfManager.getParticipants(identity, courseEnv, groupManager.isIdentityCourseAdministrator(identity));
 
 				for (Identity participant : participants) {					
 					gatherItems(participant, p, courseEnv, node);

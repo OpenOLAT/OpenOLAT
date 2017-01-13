@@ -79,7 +79,8 @@ public class PFParticipantController extends BasicController {
 		//CourseFreeze
 		readOnly = readOnly ? true : userCourseEnv.isCourseReadOnly();
 		
-		VFSContainer frc = pfManager.provideParticipantFolder(pfNode, pfView, courseEnv, identity, isCoach, readOnly);
+		VFSContainer frc = pfManager.provideParticipantFolder(pfNode, pfView, getTranslator(),courseEnv,
+				identity, isCoach, readOnly);
 		folderRunController = new FolderRunController(frc, false, false, false, false, ureq, wControl, null, null, null);
 		folderRunController.disableSubscriptionController();
 		listenTo(folderRunController);
