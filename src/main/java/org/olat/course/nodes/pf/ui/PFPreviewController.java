@@ -62,7 +62,7 @@ public class PFPreviewController extends BasicController {
 		participantController.disableSubscriptionController();
 		previewVC.put("folder", participantController.getInitialComponent());
 		
-		setInitialComponent(previewVC);
+		putInitialPanel(previewVC);
 	}
 
 	@Override
