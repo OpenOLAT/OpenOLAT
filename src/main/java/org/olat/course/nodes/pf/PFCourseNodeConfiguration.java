@@ -46,7 +46,7 @@ public class PFCourseNodeConfiguration extends AbstractCourseNodeConfiguration {
 
 	@Override
 	public String getGroup() {
-		return CourseNodeGroup.content.name();
+		return CourseNodeGroup.collaboration.name();
 	}
 
 	@Override
