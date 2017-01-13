@@ -149,7 +149,7 @@ public class PFRunController extends BasicController {
 	
 	public NodeRunConstructionResult createNodeRunConstructionResult(UserRequest ureq) {
 		// integrate it into the olat menu
-		Controller ctrl = TitledWrapperHelper.getWrapper(ureq, getWindowControl(), this, pfNode, "o_ta_icon");
+		Controller ctrl = TitledWrapperHelper.getWrapper(ureq, getWindowControl(), this, pfNode, "o_pf_icon");
 		return new NodeRunConstructionResult(ctrl);
 	}
 
