@@ -87,6 +87,24 @@
 }
 
 /*
+ * slider
+ */
+
+.ui-slider.ui-slider-horizontal.ui-widget-content {
+	border-color: $o-slider-border;
+	
+	&.ui-state-disabled {
+		opacity: 0.65;
+	}
+	
+	.ui-slider-handle {
+		border: 1px solid $o-slider-handler-border-color;
+		background-image: none;
+		background-color: $o-slider-handler-background-color;
+	}
+}
+
+/*
  * datepicker
  */
  

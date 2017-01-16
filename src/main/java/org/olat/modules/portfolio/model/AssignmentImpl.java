@@ -45,6 +45,7 @@ import org.olat.modules.portfolio.AssignmentStatus;
 import org.olat.modules.portfolio.AssignmentType;
 import org.olat.modules.portfolio.Page;
 import org.olat.modules.portfolio.Section;
+import org.olat.repository.RepositoryEntry;
 
 /**
  * 
@@ -107,6 +108,17 @@ public class AssignmentImpl implements Persistable, ModifiedInfo, CreateInfo, As
 	@ManyToOne(targetEntity=IdentityImpl.class,fetch=FetchType.LAZY,optional=true)
 	@JoinColumn(name="fk_assignee_id", nullable=true, insertable=true, updatable=true)
 	private Identity assignee;
+	
+	@Column(name="p_only_auto_eva", nullable=true, insertable=true, updatable=true)
+	private boolean onlyAutoEvaluation;
+	@Column(name="p_reviewer_see_auto_eva", nullable=true, insertable=true, updatable=true)
+	private boolean reviewerSeeAutoEvaluation;
+	@Column(name="p_anon_extern_eva", nullable=true, insertable=true, updatable=true)
+	private boolean anonymousExternalEvaluation;
+	
+	@ManyToOne(targetEntity=RepositoryEntry.class,fetch=FetchType.LAZY,optional=true)
+	@JoinColumn(name="fk_form_entry_id", nullable=true, insertable=true, updatable=true)
+	private RepositoryEntry formEntry;
 	
 	@Override
 	public Long getKey() {
@@ -249,6 +261,45 @@ public class AssignmentImpl implements Persistable, ModifiedInfo, CreateInfo, As
 
 	public void setAssignee(Identity assignee) {
 		this.assignee = assignee;
+	}
+
+	@Override
+	public boolean isOnlyAutoEvaluation() {
+		return onlyAutoEvaluation;
+	}
+
+	@Override
+	public void setOnlyAutoEvaluation(boolean onlyAutoEvaluation) {
+		this.onlyAutoEvaluation = onlyAutoEvaluation;
+	}
+
+	@Override
+	public boolean isReviewerSeeAutoEvaluation() {
+		return reviewerSeeAutoEvaluation;
+	}
+
+	@Override
+	public void setReviewerSeeAutoEvaluation(boolean reviewerSeeAutoEvaluation) {
+		this.reviewerSeeAutoEvaluation = reviewerSeeAutoEvaluation;
+	}
+
+	@Override
+	public boolean isAnonymousExternalEvaluation() {
+		return anonymousExternalEvaluation;
+	}
+
+	@Override
+	public void setAnonymousExternalEvaluation(boolean anonymousExternalEvaluation) {
+		this.anonymousExternalEvaluation = anonymousExternalEvaluation;
+	}
+
+	@Override
+	public RepositoryEntry getFormEntry() {
+		return formEntry;
+	}
+
+	public void setFormEntry(RepositoryEntry formEntry) {
+		this.formEntry = formEntry;
 	}
 
 	@Override

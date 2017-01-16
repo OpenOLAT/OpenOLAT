@@ -47,16 +47,19 @@ import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.BusinessControl;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
+import org.olat.core.util.UserSession;
 import org.olat.course.CourseFactory;
 import org.olat.course.nodes.TitledWrapperHelper;
 import org.olat.course.nodes.WikiCourseNode;
 import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.course.run.navigation.NodeRunConstructionResult;
 import org.olat.course.run.userview.NodeEvaluation;
+import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.wiki.Wiki;
 import org.olat.modules.wiki.WikiMainController;
 import org.olat.modules.wiki.WikiManager;
+import org.olat.modules.wiki.WikiReadOnlySecurityCallback;
 import org.olat.modules.wiki.WikiSecurityCallback;
 import org.olat.modules.wiki.WikiSecurityCallbackImpl;
 import org.olat.repository.RepositoryEntry;
@@ -78,9 +81,9 @@ public class WikiRunController extends BasicController implements Activateable2 
 	
 
 	public WikiRunController(WindowControl wControl, UserRequest ureq, WikiCourseNode wikiCourseNode,
-			CourseEnvironment cenv, NodeEvaluation ne) {
+			UserCourseEnvironment userCourseEnv, NodeEvaluation ne) {
 		super(ureq, wControl);
-		this.courseEnv = cenv;
+		this.courseEnv = userCourseEnv.getCourseEnvironment();
 		this.config = wikiCourseNode.getModuleConfiguration();
 		addLoggingResourceable(LoggingResourceable.wrap(wikiCourseNode));
 		
@@ -88,10 +91,11 @@ public class WikiRunController extends BasicController implements Activateable2 
 		RepositoryEntry re = WikiEditController.getWikiRepoReference(config, true);
 		
 		//check role
-		boolean isOLatAdmin = ureq.getUserSession().getRoles().isOLATAdmin();
-		boolean isGuestOnly = ureq.getUserSession().getRoles().isGuestOnly();
+		UserSession usess = ureq.getUserSession();
+		boolean isOlatAdmin = usess.getRoles().isOLATAdmin();
+		boolean isGuestOnly = usess.getRoles().isGuestOnly();
 		boolean isResourceOwner = false;
-		if (isOLatAdmin) isResourceOwner = true;
+		if (isOlatAdmin) isResourceOwner = true;
 		else {
 			isResourceOwner = RepositoryManager.getInstance().isOwnerOfRepositoryEntry(ureq.getIdentity(), re);
 		}
@@ -100,8 +104,13 @@ public class WikiRunController extends BasicController implements Activateable2 
 		BusinessControl bc = wControl.getBusinessControl();
 		ContextEntry ce = bc.popLauncherContextEntry();
 		
-		SubscriptionContext subsContext = WikiManager.createTechnicalSubscriptionContextForCourse(cenv, wikiCourseNode);
-		WikiSecurityCallback callback = new WikiSecurityCallbackImpl(ne, isOLatAdmin, isGuestOnly, false, isResourceOwner, subsContext);
+		SubscriptionContext subsContext = WikiManager.createTechnicalSubscriptionContextForCourse(courseEnv, wikiCourseNode);
+		WikiSecurityCallback callback;
+		if(userCourseEnv.isCourseReadOnly()) {
+			callback = new WikiReadOnlySecurityCallback(isGuestOnly, (isOlatAdmin || isResourceOwner));
+		} else {
+			callback = new WikiSecurityCallbackImpl(ne, isOlatAdmin, isGuestOnly, false, isResourceOwner, subsContext);
+		}
 		
 		if ( ce != null ) { //jump to a certain context
 			OLATResourceable ores = ce.getOLATResourceable();

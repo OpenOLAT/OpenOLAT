@@ -65,7 +65,7 @@ public class PageDAOTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		Section reloadedSection = binderDao.loadSectionByKey(section.getKey());
-		Page page = pageDao.createAndPersist("New page", "A brand new page.", null, null, reloadedSection, null);
+		Page page = pageDao.createAndPersist("New page", "A brand new page.", null, null, true, reloadedSection, null);
 		dbInstance.commitAndCloseSession();
 		Assert.assertNotNull(page);
 		Assert.assertNotNull(page.getKey());
@@ -83,7 +83,7 @@ public class PageDAOTest extends OlatTestCase {
 		
 		Section reloadedSection = binderDao.loadSectionByKey(section.getKey());
 		for(int i=0; i<5; i++) {
-			pageDao.createAndPersist("New page " + i, "A brand new page.", null, null, reloadedSection, null);
+			pageDao.createAndPersist("New page " + i, "A brand new page.", null, null, true, reloadedSection, null);
 		}
 		dbInstance.commitAndCloseSession();
 		
@@ -100,7 +100,7 @@ public class PageDAOTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		Section reloadedSection = binderDao.loadSectionByKey(section.getKey());
-		Page page = pageDao.createAndPersist("Page 1", "A page with content.", null, null, reloadedSection, null);
+		Page page = pageDao.createAndPersist("Page 1", "A page with content.", null, null, true, reloadedSection, null);
 		dbInstance.commitAndCloseSession();
 		
 		HTMLPart htmlPart = new HTMLPart();
@@ -130,9 +130,9 @@ public class PageDAOTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		Section reloadedSection = binderDao.loadSectionByKey(section.getKey());
-		Page page1 = pageDao.createAndPersist("Page 1", "A page with content.", null, null, reloadedSection, null);
-		Page page2 = pageDao.createAndPersist("Page 2", "A page with content.", null, null, reloadedSection, null);
-		Page page3 = pageDao.createAndPersist("Juno", "Juno is a spacecraft.", null, null, reloadedSection, null);
+		Page page1 = pageDao.createAndPersist("Page 1", "A page with content.", null, null, true, reloadedSection, null);
+		Page page2 = pageDao.createAndPersist("Page 2", "A page with content.", null, null, true, reloadedSection, null);
+		Page page3 = pageDao.createAndPersist("Juno", "Juno is a spacecraft.", null, null, true, reloadedSection, null);
 		dbInstance.commitAndCloseSession();
 
 		//reload
@@ -159,9 +159,9 @@ public class PageDAOTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		Section reloadedSection = binderDao.loadSectionByKey(section.getKey());
-		Page page1 = pageDao.createAndPersist("Page 1", "A page with content.", null, null, reloadedSection, null);
-		Page page2 = pageDao.createAndPersist("Page 2", "A page with content.", null, null, reloadedSection, null);
-		Page page3 = pageDao.createAndPersist("Page 3", "A page with the demonstration of Hawking about black hole'evaporation.", null, null, reloadedSection, null);
+		Page page1 = pageDao.createAndPersist("Page 1", "A page with content.", null, null, true, reloadedSection, null);
+		Page page2 = pageDao.createAndPersist("Page 2", "A page with content.", null, null, true, reloadedSection, null);
+		Page page3 = pageDao.createAndPersist("Page 3", "A page with the demonstration of Hawking about black hole'evaporation.", null, null, true, reloadedSection, null);
 		dbInstance.commitAndCloseSession();
 
 		//reload
@@ -182,9 +182,9 @@ public class PageDAOTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 
 		Section reloadedSection = binderDao.loadSectionByKey(section.getKey());
-		Page page1 = pageDao.createAndPersist("Page 1", "A page with content.", null, null, reloadedSection, null);
-		Page page2 = pageDao.createAndPersist("Page 2", "A page with content.", null, null, reloadedSection, null);
-		Page page3 = pageDao.createAndPersist("Anime", "Princess Mononoke is the second most famous anime of Miazaki.", null, null, reloadedSection, null);
+		Page page1 = pageDao.createAndPersist("Page 1", "A page with content.", null, null, true, reloadedSection, null);
+		Page page2 = pageDao.createAndPersist("Page 2", "A page with content.", null, null, true, reloadedSection, null);
+		Page page3 = pageDao.createAndPersist("Anime", "Princess Mononoke is the second most famous anime of Miazaki.", null, null, true, reloadedSection, null);
 		dbInstance.commitAndCloseSession();
 		
 		//a not owned binder
@@ -193,7 +193,7 @@ public class PageDAOTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		Section reloadedSectionAlt = binderDao.loadSectionByKey(sectionAlt.getKey());
-		Page pageAlt = pageDao.createAndPersist("Page alt", "A page with alternative content.", null, null, reloadedSectionAlt, null);
+		Page pageAlt = pageDao.createAndPersist("Page alt", "A page with alternative content.", null, null, true, reloadedSectionAlt, null);
 		dbInstance.commitAndCloseSession();
 
 		//reload
@@ -238,9 +238,9 @@ public class PageDAOTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 
 		Section reloadedSection = binderDao.loadSectionByKey(section.getKey());
-		Page page1 = pageDao.createAndPersist("Page 1", "A page with content.", null, null, reloadedSection, null);
+		Page page1 = pageDao.createAndPersist("Page 1", "A page with content.", null, null, true, reloadedSection, null);
 		sleep(1500);
-		Page page2 = pageDao.createAndPersist("Page 2", "A page with content.", null, null, reloadedSection, null);
+		Page page2 = pageDao.createAndPersist("Page 2", "A page with content.", null, null, true, reloadedSection, null);
 		sleep(1500);
 		Page page3 = portfolioService.appendNewPage(author, "Page 3", "A page with content.", null, null, null);
 		dbInstance.commitAndCloseSession();
@@ -259,7 +259,7 @@ public class PageDAOTest extends OlatTestCase {
 	
 	@Test
 	public void persistPart() {
-		Page page = pageDao.createAndPersist("Page 1", "A page with content.", null, null, null, null);
+		Page page = pageDao.createAndPersist("Page 1", "A page with content.", null, null, true, null, null);
 		dbInstance.commitAndCloseSession();
 		
 		HTMLPart htmlPart = new HTMLPart();
@@ -282,7 +282,7 @@ public class PageDAOTest extends OlatTestCase {
 	
 	@Test
 	public void moveParts() {
-		Page page = pageDao.createAndPersist("Page 1", "A page with content.", null, null, null, null);
+		Page page = pageDao.createAndPersist("Page 1", "A page with content.", null, null, true, null, null);
 		dbInstance.commitAndCloseSession();
 		
 		HTMLPart htmlPart = new HTMLPart();
@@ -347,7 +347,7 @@ public class PageDAOTest extends OlatTestCase {
 
 	@Test
 	public void deletePart() {
-		Page page = pageDao.createAndPersist("Page 10", "A page with content.", null, null, null, null);
+		Page page = pageDao.createAndPersist("Page 10", "A page with content.", null, null, true, null, null);
 		dbInstance.commitAndCloseSession();
 		
 		HTMLPart htmlPart = new HTMLPart();

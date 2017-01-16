@@ -589,7 +589,7 @@ public class UserMgmtTest extends OlatJerseyTestCase {
 
 		URI request = UriBuilder.fromUri(getContextURI()).path("users").build();
 		HttpPut method = conn.createPut(request, MediaType.APPLICATION_JSON, true);
-    conn.addJsonEntity(method, vo);
+		conn.addJsonEntity(method, vo);
 		method.addHeader("Accept-Language", "en");
 		
 		HttpResponse response = conn.execute(method);
@@ -643,13 +643,69 @@ public class UserMgmtTest extends OlatJerseyTestCase {
 		conn.shutdown();
 	}
 	
+	/**
+	 * Test if we can create two users with the same email addresses.
+	 */
+	@Test
+	public void testCreateUser_same_email() throws IOException, URISyntaxException {
+		RestConnection conn = new RestConnection();
+		assertTrue(conn.login("administrator", "openolat"));
+
+		String email = UUID.randomUUID() + "@frentix.com";
+		
+		UserVO vo = new UserVO();
+		String username = UUID.randomUUID().toString();
+		vo.setLogin(username);
+		vo.setFirstName("John");
+		vo.setLastName("Smith");
+		vo.setEmail(email);
+		vo.putProperty("gender", "male");//male or female
+
+		URI request = UriBuilder.fromUri(getContextURI()).path("users").build();
+		HttpPut method = conn.createPut(request, MediaType.APPLICATION_JSON, true);
+		conn.addJsonEntity(method, vo);
+		method.addHeader("Accept-Language", "en");
+		
+		HttpResponse response = conn.execute(method);
+		assertTrue(response.getStatusLine().getStatusCode() == 200 || response.getStatusLine().getStatusCode() == 201);
+		UserVO savedVo = conn.parse(response, UserVO.class);
+		Identity savedIdent = BaseSecurityManager.getInstance().findIdentityByName(username);
+
+		assertNotNull(savedVo);
+		assertNotNull(savedIdent);
+		assertEquals(savedVo.getKey(), savedIdent.getKey());
+		
+		//second 
+		UserVO vo2 = new UserVO();
+		vo2.setLogin(UUID.randomUUID().toString());
+		vo2.setFirstName("Eva");
+		vo2.setLastName("Smith");
+		vo2.setEmail(email);
+		vo2.putProperty("gender", "female");
+
+		URI request2 = UriBuilder.fromUri(getContextURI()).path("users").build();
+		HttpPut method2 = conn.createPut(request2, MediaType.APPLICATION_JSON, true);
+		conn.addJsonEntity(method2, vo2);
+		method2.addHeader("Accept-Language", "en");
+		
+		HttpResponse response2 = conn.execute(method2);
+		int  statusCode2 = response2.getStatusLine().getStatusCode();
+		Assert.assertEquals(406, statusCode2);
+		String errorMessage = EntityUtils.toString(response2.getEntity());
+		Assert.assertNotNull(errorMessage);
+
+		conn.shutdown();
+	}
+	
 	@Test
 	public void testCreateUserWithValidationError() throws IOException, URISyntaxException {
 		RestConnection conn = new RestConnection();
 		assertTrue(conn.login("administrator", "openolat"));
 		
+		String login = "rest-809-" + UUID.randomUUID();
+		
 		UserVO vo = new UserVO();
-		vo.setLogin("rest-809");
+		vo.setLogin(login);
 		vo.setFirstName("John");
 		vo.setLastName("Smith");
 		vo.setEmail("");
@@ -672,14 +728,171 @@ public class UserMgmtTest extends OlatJerseyTestCase {
 		assertNotNull(errors.get(1).getCode());
 		assertNotNull(errors.get(1).getTranslation());
 		
-		Identity savedIdent = BaseSecurityManager.getInstance().findIdentityByName("rest-809");
+		Identity savedIdent = BaseSecurityManager.getInstance().findIdentityByName(login);
 		assertNull(savedIdent);
+		conn.shutdown();
+	}
+	
+	/**
+	 * Test if we can create two users with the same email addresses.
+	 */
+	@Test
+	public void testCreateAndUpdateUser() throws IOException, URISyntaxException {
+		RestConnection conn = new RestConnection();
+		assertTrue(conn.login("administrator", "openolat"));
+
+		String username = UUID.randomUUID().toString();
+		String email = UUID.randomUUID() + "@frentix.com";
+		
+		UserVO vo = new UserVO();
+		vo.setLogin(username);
+		vo.setFirstName("Terence");
+		vo.setLastName("Smith");
+		vo.setEmail(email);
+		vo.putProperty("gender", "male");//male or female
+
+		URI request = UriBuilder.fromUri(getContextURI()).path("users").build();
+		HttpPut method = conn.createPut(request, MediaType.APPLICATION_JSON, true);
+		conn.addJsonEntity(method, vo);
+		method.addHeader("Accept-Language", "en");
+		
+		HttpResponse response = conn.execute(method);
+		assertTrue(response.getStatusLine().getStatusCode() == 200 || response.getStatusLine().getStatusCode() == 201);
+		UserVO savedVo = conn.parse(response, UserVO.class);
+		Identity savedIdent = securityManager.findIdentityByName(username);
+
+		Assert.assertNotNull(savedVo);
+		Assert.assertNotNull(savedIdent);
+		Assert.assertEquals(savedVo.getKey(), savedIdent.getKey());
+		Assert.assertEquals(username, savedIdent.getName());
+		Assert.assertEquals("Terence", savedIdent.getUser().getFirstName());
+		
+		//second 
+		UserVO updateVo = new UserVO();
+		updateVo.setKey(savedVo.getKey());
+		updateVo.setLogin(username);
+		updateVo.setFirstName("Maximilien");
+		updateVo.setLastName("Smith");
+		updateVo.setEmail(email);
+		updateVo.putProperty("gender", "male");
+
+		URI updateRequest = UriBuilder.fromUri(getContextURI()).path("users").path(savedVo.getKey().toString()).build();
+		HttpPost updateMethod = conn.createPost(updateRequest, MediaType.APPLICATION_JSON);
+		conn.addJsonEntity(updateMethod, updateVo);
+		updateMethod.addHeader("Accept-Language", "en");
+		
+		HttpResponse updateResponse = conn.execute(updateMethod);
+		int  statusCode = updateResponse.getStatusLine().getStatusCode();
+		Assert.assertEquals(200, statusCode);
+		UserVO updatedVo = conn.parse(updateResponse, UserVO.class);
+		dbInstance.commitAndCloseSession();
+		Identity updatedIdent = securityManager.loadIdentityByKey(savedVo.getKey());
+		
+		Assert.assertNotNull(updatedVo);
+		Assert.assertNotNull(updatedIdent);
+		Assert.assertEquals(updatedVo.getKey(), savedIdent.getKey());
+		Assert.assertEquals(updatedVo.getKey(), updatedIdent.getKey());
+		Assert.assertEquals(username, updatedIdent.getName());
+		Assert.assertEquals("Maximilien", updatedIdent.getUser().getFirstName());
+
+		conn.shutdown();
+	}
+	
+	/**
+	 * Test if we can create two users with the same email addresses.
+	 */
+	@Test
+	public void testCreateAndUpdateUser_same_email() throws IOException, URISyntaxException {
+		RestConnection conn = new RestConnection();
+		assertTrue(conn.login("administrator", "openolat"));
+
+		String email = UUID.randomUUID() + "@frentix.com";
+		
+		UserVO vo = new UserVO();
+		String username = UUID.randomUUID().toString();
+		vo.setLogin(username);
+		vo.setFirstName("John");
+		vo.setLastName("Smith");
+		vo.setEmail(email);
+		vo.putProperty("gender", "male");//male or female
+
+		URI request = UriBuilder.fromUri(getContextURI()).path("users").build();
+		HttpPut method = conn.createPut(request, MediaType.APPLICATION_JSON, true);
+		conn.addJsonEntity(method, vo);
+		method.addHeader("Accept-Language", "en");
+		
+		HttpResponse response = conn.execute(method);
+		assertTrue(response.getStatusLine().getStatusCode() == 200 || response.getStatusLine().getStatusCode() == 201);
+		UserVO savedVo = conn.parse(response, UserVO.class);
+		Identity savedIdent = securityManager.findIdentityByName(username);
+
+		Assert.assertNotNull(savedVo);
+		Assert.assertNotNull(savedIdent);
+		Assert.assertEquals(savedVo.getKey(), savedIdent.getKey());
+		
+		//second user
+		String secondEmail = UUID.randomUUID() + "@frentix.com";
+		String secondUsername = UUID.randomUUID().toString();
+		
+		UserVO secondVo = new UserVO();
+		secondVo.setLogin(secondUsername);
+		secondVo.setFirstName("Eva");
+		secondVo.setLastName("Smith");
+		secondVo.setEmail(secondEmail);
+		secondVo.putProperty("gender", "female");
+
+		URI secondRequest = UriBuilder.fromUri(getContextURI()).path("users").build();
+		HttpPut secondMethod = conn.createPut(secondRequest, MediaType.APPLICATION_JSON, true);
+		conn.addJsonEntity(secondMethod, secondVo);
+		secondMethod.addHeader("Accept-Language", "en");
+		
+		HttpResponse secondResponse = conn.execute(secondMethod);
+		int secondStatusCode = secondResponse.getStatusLine().getStatusCode();
+		Assert.assertEquals(200, secondStatusCode);
+		UserVO secondSavedVo = conn.parse(secondResponse, UserVO.class);
+		Assert.assertNotNull(secondSavedVo);
+		
+		dbInstance.commitAndCloseSession();
+		Identity secondSavedIdent = securityManager.findIdentityByName(secondUsername);
+		Assert.assertNotNull(secondSavedIdent);
+		Assert.assertEquals(secondSavedVo.getKey(), secondSavedIdent.getKey());
+		Assert.assertEquals(secondEmail, secondSavedIdent.getUser().getEmail());
+
+		// update second with new first name and the mail of the first user
+		UserVO updateVo = new UserVO();
+		updateVo.setKey(secondSavedVo.getKey());
+		updateVo.setLogin(secondUsername);
+		updateVo.setFirstName("Caprice");
+		updateVo.setLastName("Smith");
+		updateVo.setEmail(email);
+		updateVo.putProperty("gender", "female");
+
+		URI updateRequest = UriBuilder.fromUri(getContextURI()).path("users").path(secondSavedVo.getKey().toString()).build();
+		HttpPost updateMethod = conn.createPost(updateRequest, MediaType.APPLICATION_JSON);
+		conn.addJsonEntity(updateMethod, updateVo);
+		updateMethod.addHeader("Accept-Language", "en");
+		
+		HttpResponse updateResponse = conn.execute(updateMethod);
+		int  statusCode = updateResponse.getStatusLine().getStatusCode();
+		Assert.assertEquals(406, statusCode);
+		String errorMessage = EntityUtils.toString(updateResponse.getEntity());
+		Assert.assertNotNull(errorMessage);
+		
+		// check that nothing has changed for the second user
+		dbInstance.commitAndCloseSession();
+		Identity notUpdatedIdent = securityManager.findIdentityByName(secondUsername);
+		Assert.assertNotNull(notUpdatedIdent);
+		Assert.assertEquals(secondSavedVo.getKey(), notUpdatedIdent.getKey());
+		Assert.assertEquals("Eva", notUpdatedIdent.getUser().getFirstName());
+		Assert.assertEquals("Smith", notUpdatedIdent.getUser().getLastName());
+		Assert.assertEquals(secondEmail, notUpdatedIdent.getUser().getEmail());
+
 		conn.shutdown();
 	}
 	
 	@Test
 	public void testDeleteUser() throws IOException, URISyntaxException {
-		Identity idToDelete = JunitTestHelper.createAndPersistIdentityAsUser("user-to-delete-" + UUID.randomUUID().toString());
+		Identity idToDelete = JunitTestHelper.createAndPersistIdentityAsUser("user-to-delete-" + UUID.randomUUID());
 		dbInstance.commitAndCloseSession();
 		RestConnection conn = new RestConnection();
 		assertTrue(conn.login("administrator", "openolat"));

@@ -243,8 +243,9 @@ public class TableController extends BasicController {
 		table.setPageingEnabled(tableConfig.isPageingEnabled());
 		table.setResultsPerPage(tableConfig.getResultsPerPage());
 		table.setMultiSelect(tableConfig.isMultiSelect());
-		table.enableShowAllLink(tableConfig.isShowAllLinkEnabled());
+		table.setEnableShowAllLink(tableConfig.isShowAllLinkEnabled());
 		table.setDisplayTableGrid(tableConfig.isDisplayTableGrid());
+		table.setSuppressDirtyFormWarning(tableConfig.isSuppressDirtyFormWarning());
 
 
 		// table is embedded in a velocity page that renders the surrounding layout

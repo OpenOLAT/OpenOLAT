@@ -1,4 +1,25 @@
-<h3>$r.translate("head.assessment.details")</h3>
+<div class="o_header_with_buttons">
+	#if($title)
+	<h3>$r.translate("head.assessment.details")</h3>
+	#end
+	#if($print)
+	<div class="o_button_group o_button_group_right">
+		<script type="text/javascript">
+		/* <![CDATA[ */ 
+			function print() {
+				try {
+					var ww = window.open("$r.commandURI("print")", "$winid", "height=800,left=100,top=100,width=800,toolbar=no,titlebar=0,status=0,menubar=yes,location=no,scrollbars=1");
+					ww.focus();
+				} catch(e) {
+					if(jQuery(document).ooLog().isDebugEnabled()) jQuery(document).ooLog('debug','Error when trying to dock div id::$r.getId("undck")', "org.olat.core.gui.control.generic.docking._content.docked.html");
+				}
+			}
+		/* ]]> */
+		</script>
+		<a class="btn btn-default" href="javascript:print()" title="$r.translate("print")"><i class="o_icon o_icon_print"> </i> $r.translate("print")</a>	
+	</div>
+	#end
+</div>
 #if($r.visible("assessedIdentityInfos"))
 	$r.render("assessedIdentityInfos")
 #end
@@ -105,12 +126,29 @@
 </div>
 	#foreach($itemInteraction in $itemResult.interactionResults)
 	<div class="row #if(!$foreach.hasNext ) o_block_bottom #end">
-		<div class="col-sm-6"><h5>Response</h5>
-			$r.render($itemInteraction.responseFormItem.name)
-		</div>
-		<div class="col-sm-6"><h5>Solution</h5>
-			$r.render($itemInteraction.solutionFormItem.name)
-		</div>
+		#if($r.isNotNull($itemInteraction.solutionFormItem.name))
+			<div class="col-sm-6"><h5>$r.translate("response")</h5>
+				$r.render($itemInteraction.responseFormItem.name)
+			</div>
+			<div class="col-sm-6"><h5>$r.translate("solution")</h5>
+				$r.render($itemInteraction.solutionFormItem.name)
+			</div>
+		#else
+			<div class="col-sm-12"><h5>$r.translate("response")</h5>
+				$r.render($itemInteraction.responseFormItem.name)
+			</div>
+		#end
 	</div>
 	#end
+#end
+
+#if($printCommand)
+<script type="text/javascript">
+/* <![CDATA[ */ 
+	jQuery(function() {
+		window.focus();
+		window.print();
+	});
+/* ]]> */
+</script>
 #end

@@ -19,10 +19,15 @@
  */
 package org.olat.resource.accesscontrol.ui;
 
-import org.olat.core.extensions.action.GenericActionExtension;
+import java.util.Locale;
+
+import org.olat.admin.user.tools.UserTool;
+import org.olat.admin.user.tools.UserToolExtension;
+import org.olat.admin.user.tools.UserToolImpl;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.util.UserSession;
 import org.olat.resource.accesscontrol.AccessControlModule;
 
 /**
@@ -31,7 +36,7 @@ import org.olat.resource.accesscontrol.AccessControlModule;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class HomeOrdersActionExtension extends GenericActionExtension {
+public class HomeOrdersActionExtension extends UserToolExtension  {
 	
 	private final AccessControlModule acModule;
 	
@@ -43,10 +48,20 @@ public class HomeOrdersActionExtension extends GenericActionExtension {
 	public Controller createController(UserRequest ureq, WindowControl wControl, Object arg) {
 		return new OrdersController(ureq, wControl);
 	}
+	
+	@Override
+	public UserTool createUserTool(UserRequest ureq, WindowControl wControl, Locale locale) {
+		if(ureq == null) return null;
+		UserSession usess = ureq.getUserSession();
+		if(usess == null || usess.getRoles() == null || usess.getRoles().isGuestOnly() || usess.getRoles().isInvitee()) {
+			return null;
+		}
+		return new UserToolImpl(this, wControl, locale);
+	}
 
 	@Override
 	public boolean isEnabled() {
-		return acModule.isHomeOverviewEnabled() && acModule.isEnabled();
+		return acModule.isEnabled() && (acModule.isHomeOverviewEnabled() || acModule.isPaypalEnabled());
 	}
 
 }

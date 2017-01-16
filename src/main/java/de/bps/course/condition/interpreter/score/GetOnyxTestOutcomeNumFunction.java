@@ -94,7 +94,7 @@ public class GetOnyxTestOutcomeNumFunction extends AbstractFunction {
 			// Remember the reference to the node id for this condition for cycle testing. 
 			// Allow self-referencing but do not allow dependencies to parents as they create cycles.
 			if (!nodeId.equals(cev.getCurrentCourseNodeId())) {
-				cev.addSoftReference("courseNodeId", nodeId);				
+				cev.addSoftReference("courseNodeId", nodeId, true);				
 			}
 		}
 		

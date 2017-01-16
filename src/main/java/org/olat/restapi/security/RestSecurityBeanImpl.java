@@ -31,6 +31,7 @@ import javax.servlet.http.HttpSession;
 
 import org.olat.basesecurity.Authentication;
 import org.olat.basesecurity.BaseSecurity;
+import org.olat.basesecurity.manager.AuthenticationDAO;
 import org.olat.core.id.Identity;
 import org.olat.core.util.StringHelper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -58,6 +59,8 @@ public class RestSecurityBeanImpl implements RestSecurityBean {
 	
 	@Autowired
 	private BaseSecurity securityManager;
+	@Autowired
+	private AuthenticationDAO authenticationDao;
 
 	@Override
 	public String generateToken(Identity identity, HttpSession session) {
@@ -69,8 +72,7 @@ public class RestSecurityBeanImpl implements RestSecurityBean {
 		if(auth == null) {
 			auth = securityManager.createAndPersistAuthentication(identity, REST_AUTH_PROVIDER, identity.getName(), token, null);
 		} else {
-			auth.setCredential(token);
-			auth = securityManager.updateAuthentication(auth);
+			authenticationDao.updateCredential(auth, token);
 		}
 		return token;
 	}

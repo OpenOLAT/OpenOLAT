@@ -12,13 +12,7 @@
 	#if ($dontRenderRepositoryButton)
 		<div class="form-group">
 			<label class="control-label col-sm-3">$r.translate("file.name")</label>
-			<div class="col-sm-9"><p class="form-control-static">
-			#if ($isOnyx)
-				$onyxDisplayName
-			#else
-				$r.render("command.preview")
-			#end</p>
-			</div>
+			<div class="col-sm-9"><p class="form-control-static">$r.render("command.preview")</div>
 		</div>
 		<div class="form-group">
 			<div class="col-sm-offset-3 col-sm-9">

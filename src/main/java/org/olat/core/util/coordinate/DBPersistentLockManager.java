@@ -24,6 +24,8 @@
 */
 package org.olat.core.util.coordinate;
 
+import java.io.File;
+
 import org.hibernate.type.StandardBasicTypes;
 import org.hibernate.type.Type;
 import org.olat.basesecurity.BaseSecurityManager;
@@ -51,18 +53,12 @@ public class DBPersistentLockManager implements PersistentLockManager, UserDataD
 	private static final OLog log = Tracing.createLoggerFor(DBPersistentLockManager.class);
 	private static final String CATEGORY_PERSISTENTLOCK = "o_lock";
 	
-	/**
-	 * [used by spring]
-	 * @param userDeletionManager
-	 */
-	private DBPersistentLockManager() {
-		//
-	}
 
 	/**
 	 * @see org.olat.core.util.locks.PersistentLockManager#aquirePersistentLock(org.olat.core.id.OLATResourceable,
 	 *      org.olat.core.id.Identity, java.lang.String)
 	 */
+	@Override
 	public LockResult aquirePersistentLock(OLATResourceable ores, Identity ident, String locksubkey) {
 		//synchronisation is solved in the LockManager
 		LockResult lres;
@@ -109,6 +105,7 @@ public class DBPersistentLockManager implements PersistentLockManager, UserDataD
 	/**
 	 * @see org.olat.core.util.locks.PersistentLockManager#releasePersistentLock(org.olat.core.util.locks.LockEntry)
 	 */
+	@Override
 	public void releasePersistentLock(LockResult le) {
 		//synchronisation is solved in the LockManager
 		String derivedLockString = ((LockResultImpl)le).getLockEntry().getKey();
@@ -126,7 +123,8 @@ public class DBPersistentLockManager implements PersistentLockManager, UserDataD
 	 * Delete all persisting-locks for certain identity.
 	 * @see org.olat.user.UserDataDeletable#deleteUserData(org.olat.core.id.Identity)
 	 */
-	public void deleteUserData(Identity identity, String newDeletedUserName) {		
+	@Override
+	public void deleteUserData(Identity identity, String newDeletedUserName, File archivePath) {		
 		String query = "from v in class org.olat.properties.Property where v.category = ? and v.longValue = ?";
 		DBFactory.getInstance().delete(query, new Object[] { CATEGORY_PERSISTENTLOCK, identity.getKey() },
 				new Type[] { StandardBasicTypes.STRING, StandardBasicTypes.LONG });

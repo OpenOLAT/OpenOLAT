@@ -20,7 +20,6 @@
 package org.olat.modules.portfolio.ui.editor;
 
 import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.components.Component;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 
@@ -36,7 +35,7 @@ public interface PageElementHandler {
 	
 	public String getIconCssClass();
 	
-	public Component getContent(UserRequest ureq, WindowControl wControl, PageElement element);
+	public PageRunElement getContent(UserRequest ureq, WindowControl wControl, PageElement element);
 	
 	public Controller getEditor(UserRequest ureq, WindowControl wControl, PageElement element);
 	

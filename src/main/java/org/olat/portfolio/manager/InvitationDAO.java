@@ -107,9 +107,9 @@ public class InvitationDAO {
 	
 	public Identity createIdentityFrom(Invitation invitation, Locale locale) {
 		String tempUsername = UUID.randomUUID().toString();
-		User user = userManager.createAndPersistUser(invitation.getFirstName(), invitation.getLastName(), invitation.getMail());
+		User user = userManager.createUser(invitation.getFirstName(), invitation.getLastName(), invitation.getMail());
 		user.getPreferences().setLanguage(locale.toString());
-		Identity invitee = securityManager.createAndPersistIdentity(tempUsername, user, null, null, null);
+		Identity invitee = securityManager.createAndPersistIdentityAndUser(tempUsername, null, user, null, null);
 		groupDao.addMembership(invitation.getBaseGroup(), invitee, GroupRoles.invitee.name());
 		return invitee;
 	}
@@ -124,9 +124,9 @@ public class InvitationDAO {
 		Identity invitee = userManager.findIdentityByEmail(invitation.getMail());
 		if (invitee == null) {
 			String tempUsername = UUID.randomUUID().toString();
-			User user = userManager.createAndPersistUser(invitation.getFirstName(), invitation.getLastName(), invitation.getMail());
+			User user = userManager.createUser(invitation.getFirstName(), invitation.getLastName(), invitation.getMail());
 			user.getPreferences().setLanguage(locale.toString());
-			invitee = securityManager.createAndPersistIdentity(tempUsername, user, null, null, null);
+			invitee = securityManager.createAndPersistIdentityAndUser(tempUsername, null, user, null, null, null);
 		}
 		// add invitee to the security group of that portfolio element
 		groupDao.addMembership(group, invitee, GroupRoles.invitee.name());			

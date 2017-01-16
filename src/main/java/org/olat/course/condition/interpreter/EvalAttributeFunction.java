@@ -161,6 +161,7 @@ public class EvalAttributeFunction extends AbstractFunction {
 	/**
 	 * @see com.neemsoft.jmep.FunctionCB#call(java.lang.Object[])
 	 */
+	@Override
 	public Object call(Object[] inStack) {
 		/*
 		 * argument check
@@ -184,7 +185,7 @@ public class EvalAttributeFunction extends AbstractFunction {
 		CourseEditorEnv cev = getUserCourseEnv().getCourseEditorEnv();
 		if (cev != null) {
 			// remember the reference to the attribute for this condtion
-			cev.addSoftReference("attribute", attributeId);
+			cev.addSoftReference("attribute", attributeId, false);
 			// return a valid value to continue with condition evaluation test
 			return defaultValue();
 		}

@@ -25,6 +25,7 @@
 
 package org.olat.core.commons.services.notifications.manager;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
@@ -1209,7 +1210,8 @@ public class NotificationsManagerImpl extends NotificationsManager implements Us
 	 * Delete all subscribers for certain identity.
 	 * @param identity
 	 */
-	public void deleteUserData(Identity identity, String newDeletedUserName) {
+	@Override
+	public void deleteUserData(Identity identity, String newDeletedUserName, File archivePath) {
 		List<Subscriber> subscribers = getSubscribers(identity);
 		for (Iterator<Subscriber> iter = subscribers.iterator(); iter.hasNext();) {
 			deleteSubscriber( iter.next() );

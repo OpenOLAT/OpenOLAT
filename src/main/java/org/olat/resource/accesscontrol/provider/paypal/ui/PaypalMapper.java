@@ -79,7 +79,7 @@ public class PaypalMapper implements Mapper {
 		}
 		
 		String resourceUrl = BusinessControlFactory.getInstance().getBusinessPathAsURIFromCEList(entries);
-		MediaResource redirect = new RedirectMediaResource(Settings.getServerContextPathURI() + "/url/" + resourceUrl);
+		MediaResource redirect = new RedirectMediaResource(Settings.getServerContextPathURI() + "/auth/" + resourceUrl);
 		return redirect;
 	}
 }

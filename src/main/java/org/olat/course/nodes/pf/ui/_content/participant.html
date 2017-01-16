@@ -1,0 +1,19 @@
+<!-- <div class="panel panel-default o_personal"> -->
+<!-- 	<div class="panel-heading">$name $r.translate("drop.box")</div> -->
+<!-- 	<div>$r.translate("drop.info")</div> -->
+<!-- 	<div>$r.render("upload")</div> -->
+<!-- </div> -->
+<!-- <div class="panel panel-default o_personal"> -->
+<!-- 	<div class="panel-heading">$r.translate("return.box")</div> -->
+<!-- 	<div>$r.translate("return.info")</div> -->
+<!-- </div> -->
+#if ($limit)
+	<div class="o_note">$r.translate("limit.count.info", $limit)</div>
+#end
+
+#if ($r.available("contextualSubscription"))
+	$r.render("contextualSubscription")
+#end
+$r.render("folder")
+
+

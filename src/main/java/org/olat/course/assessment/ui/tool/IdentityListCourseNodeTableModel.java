@@ -83,6 +83,8 @@ public class IdentityListCourseNodeTableModel extends DefaultFlexiTableDataModel
 						filteredRows.add(row);
 					}
 				}
+			} else {
+				filteredRows.addAll(backups);
 			}
 			super.setObjects(filteredRows);
 		} else {

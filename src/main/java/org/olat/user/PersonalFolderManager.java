@@ -25,6 +25,8 @@
 
 package org.olat.user;
 
+import java.io.File;
+
 import org.olat.core.commons.modules.bc.BriefcaseWebDAVProvider;
 import org.olat.core.commons.modules.bc.vfs.OlatRootFolderImpl;
 import org.olat.core.id.Identity;
@@ -34,7 +36,7 @@ import org.olat.core.logging.Tracing;
 /**
  * Manager for the personal-folder of a user.
  */
-public class PersonalFolderManager extends BriefcaseWebDAVProvider implements  UserDataDeletable {
+public class PersonalFolderManager extends BriefcaseWebDAVProvider implements UserDataDeletable {
 	
 	private static final OLog log = Tracing.createLoggerFor(PersonalFolderManager.class);
 
@@ -59,7 +61,7 @@ public class PersonalFolderManager extends BriefcaseWebDAVProvider implements  U
 	 * Delete personal-folder homes/<username> (private & public) of an user.
 	 */
 	@Override
-	public void deleteUserData(Identity identity, String newDeletedUserName) {
+	public void deleteUserData(Identity identity, String newDeletedUserName, File archivePath) {
 		new OlatRootFolderImpl(getRootPathFor(identity), null).deleteSilently();
 		log.debug("Personal-folder deleted for identity=" + identity);
 	}

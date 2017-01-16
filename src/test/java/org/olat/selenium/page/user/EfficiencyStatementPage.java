@@ -115,7 +115,7 @@ public class EfficiencyStatementPage {
 	 * @return
 	 */
 	public EfficiencyStatementPage assertOnCourseDetails(String testNodeTitle, boolean passed) {
-		By courseCertificateBy = By.xpath("//div[contains(@class,'o_efficiencystatement')]//table//tr[td[contains(text(),'" + testNodeTitle + "')]]");
+		By courseCertificateBy = By.xpath("//div[contains(@class,'o_efficiencystatement')]//table//tr[td/span[contains(text(),'" + testNodeTitle + "')]]");
 		List<WebElement> certifiatesTable = browser.findElements(courseCertificateBy);
 		Assert.assertFalse(certifiatesTable.isEmpty());
 		

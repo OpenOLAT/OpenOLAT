@@ -19,6 +19,7 @@
  */
 package org.olat.portfolio.manager;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
@@ -171,7 +172,7 @@ public class EPFrontendManager implements UserDataDeletable, DeletableGroupData 
 	}
 	
 	@Override
-	public void deleteUserData(Identity identity, String newDeletedUserName) {
+	public void deleteUserData(Identity identity, String newDeletedUserName, File archivePath) {
 		deleteUsersArtefacts(identity);
 
 		List<PortfolioStructure> userPersonalMaps = getStructureElementsForUser(identity, ElementType.DEFAULT_MAP, ElementType.STRUCTURED_MAP);

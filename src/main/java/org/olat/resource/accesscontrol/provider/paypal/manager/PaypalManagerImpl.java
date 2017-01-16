@@ -20,6 +20,8 @@
  */
 package org.olat.resource.accesscontrol.provider.paypal.manager;
 
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -35,7 +37,8 @@ import javax.persistence.TypedQuery;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.helpers.Settings;
 import org.olat.core.id.Identity;
-import org.olat.core.manager.BasicManager;
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.resource.OLATResource;
 import org.olat.resource.accesscontrol.ACService;
@@ -61,9 +64,14 @@ import org.olat.resource.accesscontrol.provider.paypal.model.PaypalTransactionSt
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import adaptivepayments.AdaptivePayments;
-
-import com.paypal.svcs.services.PPFaultMessage;
+import com.paypal.exception.ClientActionRequiredException;
+import com.paypal.exception.HttpErrorException;
+import com.paypal.exception.InvalidCredentialException;
+import com.paypal.exception.InvalidResponseDataException;
+import com.paypal.exception.MissingCredentialException;
+import com.paypal.exception.SSLConfigurationException;
+import com.paypal.sdk.exceptions.OAuthException;
+import com.paypal.svcs.services.AdaptivePaymentsService;
 import com.paypal.svcs.types.ap.ConvertCurrencyRequest;
 import com.paypal.svcs.types.ap.ConvertCurrencyResponse;
 import com.paypal.svcs.types.ap.CurrencyCodeList;
@@ -81,8 +89,7 @@ import com.paypal.svcs.types.common.CurrencyType;
 import com.paypal.svcs.types.common.DetailLevelCode;
 import com.paypal.svcs.types.common.RequestEnvelope;
 import com.paypal.svcs.types.common.ResponseEnvelope;
-import common.com.paypal.platform.sdk.exceptions.FatalException;
-import common.com.paypal.platform.sdk.exceptions.SSLConnectionException;
+
 
 /**
  * 
@@ -95,30 +102,22 @@ import common.com.paypal.platform.sdk.exceptions.SSLConnectionException;
  */
 
 @Service("paypalManager")
-public class PaypalManagerImpl extends BasicManager implements PaypalManager {
+public class PaypalManagerImpl  implements PaypalManager {
 	
-	private static final String X_PAYPAL_SECURITY_USERID = "X-PAYPAL-SECURITY-USERID";
-	private static final String X_PAYPAL_SECURITY_PASSWORD = "X-PAYPAL-SECURITY-PASSWORD";
-	private static final String X_PAYPAL_SECURITY_SIGNATURE = "X-PAYPAL-SECURITY-SIGNATURE";
-	private static final String X_PAYPAL_APPLICATION_ID = "X-PAYPAL-APPLICATION-ID";
-	private static final String X_PAYPAL_SANDBOX_EMAIL_ADDRESS = "X-PAYPAL-SANDBOX-EMAIL-ADDRESS";
+	private static final OLog log = Tracing.createLoggerFor(PaypalManagerImpl.class);
+	
+	private static final String X_PAYPAL_SECURITY_USERID = "acct1.UserName";
+	private static final String X_PAYPAL_SECURITY_PASSWORD = "acct1.Password";
+	private static final String X_PAYPAL_SECURITY_SIGNATURE = "acct1.Signature";
+	private static final String X_PAYPAL_APPLICATION_ID = "acct1.AppId";
+	private static final String X_PAYPAL_SANDBOX_EMAIL_ADDRESS = "sandbox.EmailAddress";
 	private static final String X_PAYPAL_DEVICE_IPADDRESS = "X-PAYPAL-DEVICE-IPADDRESS";
 	
-	private static final String API_BASE_ENDPOINT = "API_BASE_ENDPOINT";
+	private static final String API_BASE_ENDPOINT = "service.EndPoint.AdaptivePayments";
 	
-	private static final String CLIENT_AUTH_SSL = "CLIENT_AUTH_SSL";
-	private static final String JSSE_PROVIDER = "JSSE_PROVIDER";
-	private static final String TRUST_ALL_CONNECTION = "TRUST_ALL_CONNECTION";
-	
-	private static final String LOGFILENAME = "LOGFILENAME";
-	private static final String LOGENABLED = "LOGENABLED";
-	
-	private static final String USE_PROXY = "USE_PROXY";
-	private static final String PROXY_HOST = "PROXY_HOST";
-	private static final String PROXY_PORT = "PROXY_PORT";
-
-	private static final String X_PAYPAL_REQUEST_DATA_FORMAT = "X-PAYPAL-REQUEST-DATA-FORMAT";
-	private static final String X_PAYPAL_RESPONSE_DATA_FORMAT = "X-PAYPAL-RESPONSE-DATA-FORMAT";
+	private static final String USE_PROXY = "http.UseProxy";
+	private static final String PROXY_HOST = "http.ProxyHost";
+	private static final String PROXY_PORT = "http.ProxyPort";
 	
 	private static final String SANDBOX_API_BASE_ENDPOINT = "https://svcs.sandbox.paypal.com";
 	private static final String LIFE_API_BASE_ENDPOINT = "https://svcs.paypal.com";
@@ -143,35 +142,24 @@ public class PaypalManagerImpl extends BasicManager implements PaypalManager {
 		accountProps.setProperty(X_PAYPAL_SECURITY_USERID, paypalModule.getPaypalSecurityUserId());
 		accountProps.setProperty(X_PAYPAL_SECURITY_PASSWORD, paypalModule.getPaypalSecurityPassword());
 		accountProps.setProperty(X_PAYPAL_SECURITY_SIGNATURE, paypalModule.getPaypalSecuritySignature());
-		accountProps.setProperty(CLIENT_AUTH_SSL, "false");
 		accountProps.setProperty(X_PAYPAL_APPLICATION_ID, paypalModule.getPaypalApplicationId());
 		
 		try {
 			accountProps.setProperty(X_PAYPAL_DEVICE_IPADDRESS, paypalModule.getDeviceIpAddress());
 		} catch (Exception e) {
-			logError("Cannot resolve the ip address from the server domain name", e);
+			log.error("Cannot resolve the ip address from the server domain name", e);
 		}
 		
 		if(sandboxed) {
 			accountProps.setProperty(X_PAYPAL_SANDBOX_EMAIL_ADDRESS, paypalModule.getPaypalSandboxEmailAddress());
 			accountProps.setProperty(API_BASE_ENDPOINT, SANDBOX_API_BASE_ENDPOINT);
-			accountProps.setProperty(TRUST_ALL_CONNECTION, "true");
 		} else {
 			accountProps.setProperty(API_BASE_ENDPOINT, LIFE_API_BASE_ENDPOINT);
-			accountProps.setProperty(TRUST_ALL_CONNECTION, "false");
 		}
 
-		accountProps.setProperty(JSSE_PROVIDER, "SunJSSE");
-		accountProps.setProperty(LOGFILENAME, "/HotCoffee/paypal_sdk.log");
-		accountProps.setProperty(LOGENABLED, "true");
-		
 		accountProps.setProperty(USE_PROXY, paypalModule.isUseProxy() ? "TRUE" : "FALSE");
 		accountProps.setProperty(PROXY_HOST, "");
 		accountProps.setProperty(PROXY_PORT, "8080");
-
-		accountProps.setProperty(X_PAYPAL_REQUEST_DATA_FORMAT, paypalModule.getPaypalDataFormat());
-		accountProps.setProperty(X_PAYPAL_RESPONSE_DATA_FORMAT, paypalModule.getPaypalDataFormat());  
-
 		return accountProps;
 	}
 	
@@ -185,7 +173,7 @@ public class PaypalManagerImpl extends BasicManager implements PaypalManager {
 
 	private RequestEnvelope getAppRequestEnvelope() {
 		RequestEnvelope en = new RequestEnvelope();
-		en.setDetailLevel(DetailLevelCode.RETURN_ALL);
+		en.setDetailLevel(DetailLevelCode.RETURNALL);
 		en.setErrorLanguage("en");
 		return en;
 	}
@@ -322,11 +310,10 @@ public class PaypalManagerImpl extends BasicManager implements PaypalManager {
 		
 		ResponseEnvelope resEnv = payResp.getResponseEnvelope();
 		AckCode ack = resEnv.getAck();
-		trx.setAck(ack == null ? null : ack.value());
+		trx.setAck(ack == null ? null : ack.getValue());
 		trx.setBuild(resEnv.getBuild());
 		trx.setCoorelationId(resEnv.getCorrelationId());
-		Date responseTime = resEnv.getTimestamp().toGregorianCalendar().getTime();
-		trx.setPayResponseDate(responseTime);
+		trx.setPayResponseDate(new Date());
 
 		dbInstance.updateObject(trx);
 	}
@@ -336,11 +323,11 @@ public class PaypalManagerImpl extends BasicManager implements PaypalManager {
 		PaypalTransaction trx = loadTransactionByUUID(uuid);
 		
 		if(uuid.equals(trx.getSecureSuccessUUID())) {
-			logAudit("Paypal transaction success: " + trx);
+			log.audit("Paypal transaction success: " + trx);
 			completeTransaction(trx, null);
 		} else if (uuid.equals(trx.getSecureCancelUUID())) {
 			//cancel -> return to the access panel
-			logAudit("Paypal transaction canceled by user: " + trx);
+			log.audit("Paypal transaction canceled by user: " + trx);
 			cancelTransaction(trx);
 		}
 	}
@@ -363,11 +350,11 @@ public class PaypalManagerImpl extends BasicManager implements PaypalManager {
 			if(trx != null) {
 				completeTransaction(trx, values);
 			} else {
-				logError("Paypal IPN Transaction not found: " + values, null);
+				log.error("Paypal IPN Transaction not found: " + values, null);
 			}
 		} else {
 			String invoiceId = values.get("transaction[0].invoiceId");
-			logError("Paypal IPN Transaction not verified: " + invoiceId + " raw values: " + values, null);
+			log.error("Paypal IPN Transaction not verified: " + invoiceId + " raw values: " + values, null);
 		}
 	}
 	
@@ -390,7 +377,7 @@ public class PaypalManagerImpl extends BasicManager implements PaypalManager {
 					ResourceReservation reservation = acService.getReservation(identity, resource);
 					if(reservation != null) {
 						acService.removeReservation(identity, identity, reservation);
-						logAudit("Remove reservation after cancellation for: " + reservation + " to " + identity, null);
+						log.audit("Remove reservation after cancellation for: " + reservation + " to " + identity, null);
 					}
 				}
 			}
@@ -452,18 +439,18 @@ public class PaypalManagerImpl extends BasicManager implements PaypalManager {
 					transaction = transactionManager.update(transaction, AccessTransactionStatus.ERROR);
 					for(OrderLine line:part.getOrderLines()) {
 						acService.denyAccesToResource(identity, line.getOffer());
-						logAudit("Paypal payed access revoked for: " + buildLogMessage(line, method) + " to " + identity, null);
+						log.audit("Paypal payed access revoked for: " + buildLogMessage(line, method) + " to " + identity, null);
 
 						ResourceReservation reservation = reservationDao.loadReservation(identity, line.getOffer().getResource());
 						if(reservation != null) {
 							acService.removeReservation(identity, identity, reservation);
-							logAudit("Remove reservation after cancellation for: " + reservation + " to " + identity, null);
+							log.audit("Remove reservation after cancellation for: " + reservation + " to " + identity, null);
 						}
 					}
 				}
 			}
 		} else {
-			logError("Order not in sync with PaypalTransaction", null);
+			log.error("Order not in sync with PaypalTransaction", null);
 		}
 	}
 	
@@ -486,17 +473,17 @@ public class PaypalManagerImpl extends BasicManager implements PaypalManager {
 					transaction = transactionManager.save(transaction);
 					for(OrderLine line:part.getOrderLines()) {
 						if(acService.allowAccesToResource(identity, line.getOffer())) {
-							logAudit("Paypal payed access granted for: " + buildLogMessage(line, method) + " to " + identity, null);
+							log.audit("Paypal payed access granted for: " + buildLogMessage(line, method) + " to " + identity, null);
 							transaction = transactionManager.update(transaction, AccessTransactionStatus.SUCCESS);
 						} else {
-							logError("Paypal payed access refused for: " + buildLogMessage(line, method) + " to " + identity, null);
+							log.error("Paypal payed access refused for: " + buildLogMessage(line, method) + " to " + identity, null);
 							transaction = transactionManager.update(transaction, AccessTransactionStatus.ERROR);
 						}
 					}
 				}
 			}
 		} else {
-			logError("Order not in sync with PaypalTransaction", null);
+			log.error("Order not in sync with PaypalTransaction", null);
 		}
 	}
 	
@@ -596,7 +583,7 @@ public class PaypalManagerImpl extends BasicManager implements PaypalManager {
 			CurrencyCodeList cclist = new CurrencyCodeList();
 			for (int i = 0; i < amountItems.length; i++) {
 				CurrencyType ct = new CurrencyType();
-				ct.setAmount(amountItems[i]);
+				ct.setAmount(amountItems[i].doubleValue());
 				ct.setCode(fromcodes[i]);
 				list.getCurrency().add(ct);
 
@@ -611,32 +598,49 @@ public class PaypalManagerImpl extends BasicManager implements PaypalManager {
 			req.setConvertToCurrencyList(cclist);
 			req.setRequestEnvelope(getAppRequestEnvelope());
 			
-			AdaptivePayments ap = new AdaptivePayments(getAccountProperties());
+			AdaptivePaymentsService ap = new AdaptivePaymentsService(getAccountProperties());
 			ConvertCurrencyResponse resp = ap.convertCurrency(req);
 
 			for (Iterator<CurrencyConversionList> iterator = resp.getEstimatedAmountTable().getCurrencyConversionList().iterator(); iterator.hasNext();) {
 				CurrencyConversionList ccclist = iterator.next();
-				logInfo(ccclist.getBaseAmount().getCode() + " :: "+ ccclist.getBaseAmount().getAmount());
+				log.info(ccclist.getBaseAmount().getCode() + " :: "+ ccclist.getBaseAmount().getAmount());
 
 				List<CurrencyType> l = ccclist.getCurrencyList().getCurrency();
 				for (int i = 0; i < l.size(); i++) {
 					CurrencyType ct = l.get(i);
-					logInfo(ct.getCode() + " :: "+ ct.getAmount());
+					log.info(ct.getCode() + " :: "+ ct.getAmount());
 				}
 			}
 			return true;
-			
-		} catch (FatalException e) {
-			logError("", e);
+		} catch (SSLConfigurationException e) {
+			log.error("Paypal error", e);
 			return false;
-		} catch (SSLConnectionException e) {
-			logError("Error with the SSL connection", e);
+		} catch (InvalidCredentialException e) {
+			log.error("Paypal error", e);
 			return false;
-		} catch (PPFaultMessage e) {
-			logError("", e);
+		} catch (UnsupportedEncodingException e) {
+			log.error("Paypal error", e);
+			return false;
+		} catch (HttpErrorException e) {
+			log.error("Paypal error", e);
+			return false;
+		} catch (InvalidResponseDataException e) {
+			log.error("Paypal error", e);
+			return false;
+		} catch (ClientActionRequiredException e) {
+			log.error("Paypal error", e);
+			return false;
+		} catch (MissingCredentialException e) {
+			log.error("Paypal error", e);
+			return false;
+		} catch (OAuthException e) {
+			log.error("Paypal error", e);
+			return false;
+		} catch (IOException | InterruptedException e) {
+			log.error("Paypal error", e);
 			return false;
 		} catch (Exception e) {
-			logError("", e);
+			log.error("", e);
 			return false;
 		}
 	}
@@ -669,11 +673,11 @@ public class PaypalManagerImpl extends BasicManager implements PaypalManager {
 			PaymentDetailsRequest paydetailReq = new PaymentDetailsRequest();
 			paydetailReq.setPayKey(key);
 			paydetailReq.setRequestEnvelope(getAppRequestEnvelope());
-			adaptivepayments.AdaptivePayments apd = new adaptivepayments.AdaptivePayments(getAccountProperties());
+			AdaptivePaymentsService apd = new AdaptivePaymentsService(getAccountProperties());
 			PaymentDetailsResponse paydetailsResp = apd.paymentDetails(paydetailReq);
 			return paydetailsResp;
 		} catch (Exception fe) {
-			logError("", fe);
+			log.error("", fe);
 			return null;
 		}
 	}
@@ -693,13 +697,15 @@ public class PaypalManagerImpl extends BasicManager implements PaypalManager {
 
 		ReceiverList list = new ReceiverList();
 		Receiver rec1 = new Receiver();
-		rec1.setAmount(amount.getAmount());
+		rec1.setAmount(amount.getAmount().doubleValue());
 		rec1.setEmail(paypalModule.getPaypalFirstReceiverEmailAddress());
 		rec1.setInvoiceId(order.getOrderNr());
 		list.getReceiver().add(rec1);
 		
 		String returnURL = url.toString() + "/" + trx.getSecureSuccessUUID() + ".html;jsessionid=" + sessionId + "?status=success";
 		String cancelURL = url.toString() + "/" + trx.getSecureCancelUUID() + ".html;jsessionid=" + sessionId + "?status=cancel";
+		
+		System.out.println(returnURL);
 
 		PayRequest payRequest = new PayRequest();
 		payRequest.setCancelUrl(cancelURL);
@@ -714,18 +720,30 @@ public class PaypalManagerImpl extends BasicManager implements PaypalManager {
 
 		PayResponse payResp = null;
 		try {
-			AdaptivePayments ap = new AdaptivePayments(getAccountProperties());
+			AdaptivePaymentsService ap = new AdaptivePaymentsService(getAccountProperties());
 			payResp = ap.pay(payRequest);
-			logAudit("Paypal send PayRequest: " + (payResp == null ? "no response" : payResp.getPayKey() + "/" + payResp.getPaymentExecStatus()));
+			log.audit("Paypal send PayRequest: " + (payResp == null ? "no response" : payResp.getPayKey() + "/" + payResp.getPaymentExecStatus()));
 			return payResp;
-		} catch (FatalException e) {
-			logError("Paypal error", e);
-		} catch (SSLConnectionException e) {
-			logError("Paypal error ssl", e);
-		} catch (PPFaultMessage e) {
-			logError("Paypal error PPFaultMessage", e);
+		} catch (SSLConfigurationException e) {
+			log.error("Paypal error", e);
+		} catch (InvalidCredentialException e) {
+			log.error("Paypal error", e);
+		} catch (UnsupportedEncodingException e) {
+			log.error("Paypal error", e);
+		} catch (HttpErrorException e) {
+			log.error("Paypal error", e);
+		} catch (InvalidResponseDataException e) {
+			log.error("Paypal error", e);
+		} catch (ClientActionRequiredException e) {
+			log.error("Paypal error", e);
+		} catch (MissingCredentialException e) {
+			log.error("Paypal error", e);
+		} catch (OAuthException e) {
+			log.error("Paypal error", e);
+		} catch (IOException | InterruptedException e) {
+			log.error("Paypal error", e);
 		} catch (Exception e) {
-			logError("Paypal error", e);
+			log.error("Paypal error", e);
 		} finally {
 			if(payResp == null) {
 				updateTransaction(trx, PaypalTransactionStatus.ERROR);

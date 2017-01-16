@@ -30,6 +30,19 @@
 	</bean>
 	
 	<!--  The "orders"  (Buchungen) in Home -->
+		<bean class="org.olat.instantMessaging.InstantMessagingUserToolExtension" init-method="initExtensionPoints">
+		<property name="order" value="118" />
+		<property name="navigationKey" value="imclient" />
+		<property name="translationPackage" value="org.olat.instantMessaging.ui" />
+		<property name="i18nActionKey" value="im.chat"/>
+		<property name="i18nDescriptionKey" value="im.chat"/>
+		<property name="extensionPoints">
+			<list>	
+				<value>org.olat.home.HomeMainController</value>
+			</list>
+		</property>
+	</bean>
+	
 	<bean class="org.olat.resource.accesscontrol.ui.HomeOrdersActionExtension" name="accesscontrol.actExt" init-method="initExtensionPoints">
 		<constructor-arg index="0" ref="acModule" />
 		<property name="order" value="109" />

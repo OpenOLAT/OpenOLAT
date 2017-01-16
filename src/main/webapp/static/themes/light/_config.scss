@@ -399,6 +399,11 @@ $o-forum-quote-color 			: $gray !default;
 $o-forum-quote-font-size		: $font-size-small !default;
 $o-forum-attachment-font-size	: $font-size-small !default;
 
+/* Evaluation forms */
+$o-evaluation-slider-margin-bottom			: 8px;
+$o-evaluation-step-labels-margin-bottom		: 8px;
+$o-evaluation-slider-hover-background-color	: $table-bg-hover;
+
 /* Portlets site */
 $o-portlet-border				: $panel-default-border !default;
 $o-portlet-border-radius		: $panel-border-radius !default;
@@ -478,7 +483,12 @@ $o-panel-placeholder-padding		: 10px !default;
 
 /* Citations */
 $o-cit-quote-font-size			: $font-size-large !default;
-$o-cit-quote-color				: $o-forum-quote-color !default; 
+$o-cit-quote-color				: $o-forum-quote-color !default;
+
+/* Sliders */
+$o-slider-border					: #999;
+$o-slider-handler-border-color		: $brand-primary !default;
+$o-slider-handler-background-color	: $brand-primary !default;
 
 /* other configurations */
 $o-portrait-radius				: 50% !default;

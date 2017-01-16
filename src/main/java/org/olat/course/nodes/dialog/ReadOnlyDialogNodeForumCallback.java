@@ -76,6 +76,16 @@ public class ReadOnlyDialogNodeForumCallback implements ForumCallback {
 		return false;
 	}
 
+	@Override
+	public boolean mayEditOwnMessage() {
+		return false;
+	}
+
+	@Override
+	public boolean mayDeleteOwnMessage() {
+		return false;
+	}
+
 	/**
 	 * @see org.olat.modules.fo.ForumCallback#mayEditMessageAsModerator()
 	 */

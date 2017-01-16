@@ -1,0 +1,144 @@
+.o_evaluation_form {
+
+	.o_evaluation_step_labels {
+		margin-bottom: $o-evaluation-step-labels-margin-bottom;
+		
+		div, span {
+			display:inline-block;
+			text-align: center;
+		}
+	}
+	
+	.o_slider {
+		margin-bottom: $o-evaluation-slider-margin-bottom;
+	}
+	
+	.o_slider.hover {
+		background-color: $o-evaluation-slider-hover-background-color;
+	}
+	
+	.o_evaluation_discrete_slider {
+		.o_evaluation_step_labels {
+			position: relative;
+					
+		
+			div:first-child {
+				position: absolute;
+				left: 0px;
+				text-align: left;
+			}
+			
+			div {
+				display:inline-block;
+				text-align: center;
+			}
+			
+			div:last-child {
+				position: absolute;
+				right: 0px;
+				text-align: right;
+			}
+		}
+	}
+	
+	.o_evaluation_discrete_radio {
+		.o_slider {
+			
+			input[type='radio'] {
+				padding: 0;
+				margin: 0;
+				position: relative;
+			}
+			
+			label {
+				padding: 0;
+				margin: 0;
+				text-align: center;
+			}
+		}
+	}
+	
+	.o_slider .ui-slider.ui-slider-horizontal.ui-widget-content {
+		margin-top: 0.3em;
+	}
+
+	.o_evaluation_left_label {
+		text-align: right;
+	}
+	
+	.o_evaluation_right_label {
+		text-align: left;
+	}
+	
+	.o_evaluation_textinput {
+		.o_evaluation_legend {
+			padding-left: 0.5em;
+			margin-bottom: 0.5em;
+		}
+	
+		.o_evaluation_text {
+			
+		}
+	}
+}
+
+@media (max-width: $screen-sm-min) {
+	.o_evaluation_form {
+		.o_evaluation_left_label {
+			text-align: left;
+		}
+	
+		.o_evaluation_right_label {
+			text-align: right;
+		}
+	}
+}
+
+.o_slider_overview {
+	width: 100%;
+	height: 20px;
+	position: relative;
+	
+	.o_slider_overview_line {
+		top: 5px;
+		left: 0px;
+		position: absolute;
+		width: 100%;
+		height: 11px;
+		border: 1px solid #999;
+		border-radius: 4px;
+	}
+	
+	.o_slider_overview_point {
+		position: absolute;
+		width: 10px;
+		height: 10px;
+		background-color: $o-slider-handler-background-color;
+	}
+}
+
+.o_evaluation_editor_form {
+	margin: 10px 10px 0 10px;
+	
+	.o_slider_editor {
+		margin-top: 10px;
+		position:relative;
+	}
+	
+	.o_evaluation_step_labels {
+		display:inline-block;
+		
+		input {
+			width: 100%;
+		}
+	}
+	
+	.o_slider_editor_delete {
+		padding-right: 48px;
+		
+		.o_slider_editor_delete_button {
+			position: absolute;
+			right: 15px;
+		}
+	}
+}

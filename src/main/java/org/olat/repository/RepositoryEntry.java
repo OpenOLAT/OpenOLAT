@@ -49,6 +49,7 @@ import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Parameter;
 import org.olat.basesecurity.IdentityImpl;
 import org.olat.core.id.CreateInfo;
+import org.olat.core.id.Identity;
 import org.olat.core.id.ModifiedInfo;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Persistable;
@@ -191,6 +192,13 @@ public class RepositoryEntry implements CreateInfo, Persistable , RepositoryEntr
 	private int statusCode;
 	@Column(name="allowToLeave", nullable=true, insertable=true, updatable=true)
 	private String allowToLeave;
+
+	@Temporal(TemporalType.TIMESTAMP)
+	@Column(name="deletiondate", nullable=true, insertable=true, updatable=true)
+	private Date deletionDate;
+	@ManyToOne(targetEntity=IdentityImpl.class,fetch=FetchType.LAZY, optional=true)
+	@JoinColumn(name="fk_deleted_by", nullable=true, insertable=true, updatable=true)
+	private Identity deletedBy;
 
 	
 	/**
@@ -581,6 +589,7 @@ public class RepositoryEntry implements CreateInfo, Persistable , RepositoryEntr
 	 * 
 	 * @see org.olat.core.id.ModifiedInfo#getLastModified()
 	 */
+	@Override
 	public Date getLastModified() {
 		return lastModified;
 	}
@@ -589,6 +598,7 @@ public class RepositoryEntry implements CreateInfo, Persistable , RepositoryEntr
 	 * 
 	 * @see org.olat.core.id.ModifiedInfo#setLastModified(java.util.Date)
 	 */
+	@Override
 	public void setLastModified(Date date) {
 		this.lastModified = date;
 	}
@@ -597,7 +607,22 @@ public class RepositoryEntry implements CreateInfo, Persistable , RepositoryEntr
 		this.creationDate = date;
 	}
 	
-	
+	public Date getDeletionDate() {
+		return deletionDate;
+	}
+
+	public void setDeletionDate(Date deletionDate) {
+		this.deletionDate = deletionDate;
+	}
+
+	public Identity getDeletedBy() {
+		return deletedBy;
+	}
+
+	public void setDeletedBy(Identity deletedBy) {
+		this.deletedBy = deletedBy;
+	}
+
 	@Override
 	public int hashCode() {
 		return getKey() == null ? 293485 : getKey().hashCode();

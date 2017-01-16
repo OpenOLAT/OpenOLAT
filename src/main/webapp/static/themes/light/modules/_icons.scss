@@ -221,6 +221,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_rejected:before { content: $fa-var-thumbs-down;}
 .o_icon_reminder:before { content: $fa-var-hand-o-up; }
 .o_icon_remove:before { content: $fa-var-times; }
+.o_icon_remove_filters:before { content: $fa-var-times-circle; }
 .o_icon_replace:before { content: $fa-var-files-o; }
 .o_icon_reply:before { content: $fa-var-reply; }
 .o_icon_reply_with_quote:before { content: $fa-var-reply-all; }
@@ -230,6 +231,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_reviewer:before { content: $fa-var-user-md;}
 .o_icon_rss:before { content: $fa-var-rss;}
 .o_icon_rss_unsubscribe:before { content: $fa-var-rss; color: #996633;}
+.o_icon_rubric:before { content: $fa-var-sliders; }
 .o_icon_save:before { content: $fa-var-save;}
 .o_icon_search:before { content: $fa-var-search;}
 .o_icon_select:before { content: $fa-var-check; }
@@ -265,6 +267,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_table_custom:before { content: $fa-var-th-list; }
 .o_icon_table_large:before { content: $fa-var-th-large; }
 .o_icon_tags:before { content: $fa-var-tags; }
+.o_icon_textinput:before { content: $fa-var-align-left; }
 .o_icon_timelimit:before { content: $fa-var-bomb; }
 .o_icon_toggle:before { content: $fa-var-circle; }
 .o_icon_toggle_on:before { content: $fa-var-toggle-on; }
@@ -293,6 +296,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_EPStructuredMapTemplate_icon:before { content: $fa-var-puzzle-piece; }
 .o_FileResource-BLOG_icon:before { content: $fa-var-bullhorn; }
 .o_FileResource-IMSCP_icon:before { content: $fa-var-archive; }
+.o_FileResource-FORM_icon:before { content: $fa-var-sliders; }
 .o_FileResource-PODCAST_icon:before { content: $fa-var-video-camera; }
 .o_FileResource-SHAREDFOLDER:before { content: $fa-var-external-link; }
 .o_FileResource-SCORMCP_icon:before { content: $fa-var-archive; }
@@ -330,6 +334,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_cal_icon:before { content: $fa-var-calendar; }
 .o_wiki_icon:before { content: $fa-var-globe; }
 .o_podcast_icon:before { content: $fa-var-video-camera; }
+.o_pf_icon:before { content: $fa-var-inbox; }
 .o_blog_icon:before { content: $fa-var-bullhorn; }
 .o_ep_icon:before { content: $fa-var-briefcase; }
 .o_ep_icon_v1:before { content: $fa-var-puzzle-piece; }
@@ -456,7 +461,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_ac_status_canceled_icon:before { content: $fa-var-minus; color: $brand-warning;}
 .o_ac_status_error_icon:before { content: $fa-var-times; color: $brand-danger;}
 .o_ac_status_new_icon:before { content: $fa-var-asterisk; color: $brand-primary;}
-.o_ac_status_succes_icon:before { content: $fa-var-check; color: $brand-success;}
+.o_ac_status_success_icon:before { content: $fa-var-check; color: $brand-success;}
 .o_ac_status_waiting_icon:before { content: $fa-var-clock-o; color: $brand-primary;}
 .o_ac_order_status_new_icon:before { content: $fa-var-asterisk; color: $brand-primary;}
 .o_ac_order_status_prepayment_icon:before { content: $fa-var-money; color: $brand-info;}

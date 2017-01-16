@@ -278,30 +278,47 @@ public class CollaborationTools implements Serializable {
 				return false;
 			}
 
+			@Override
 			public boolean mayOpenNewThread() {
 				return true;
 			}
 
+			@Override
 			public boolean mayReplyMessage() {
 				return true;
 			}
 
+			@Override
+			public boolean mayEditOwnMessage() {
+				return true;
+			}
+
+			@Override
+			public boolean mayDeleteOwnMessage() {
+				return true;
+			}
+
+			@Override
 			public boolean mayEditMessageAsModerator() {
 				return isAdm;
 			}
 
+			@Override
 			public boolean mayDeleteMessageAsModerator() {
 				return isAdm;
 			}
 
+			@Override
 			public boolean mayArchiveForum() {
 				return !isGuest;
 			}
-			
+
+			@Override
 			public boolean mayFilterForUser() {
 				return isAdm;
 			}
 
+			@Override
 			public SubscriptionContext getSubscriptionContext() {
 				return subsContext;
 			}

@@ -55,6 +55,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.OLATResourceable;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.event.EventBus;
 import org.olat.core.util.event.GenericEventListener;
 import org.olat.modules.qpool.QPoolService;
@@ -109,7 +110,6 @@ public abstract class AbstractItemListController extends FormBasicController
 		
 		extendedSearchCtrl = new ExtendedSearchController(ureq, getWindowControl(), key, mainForm);
 		extendedSearchCtrl.setEnabled(false);
-		listenTo(extendedSearchCtrl);
 		
 		initForm(ureq);
 		
@@ -167,6 +167,7 @@ public abstract class AbstractItemListController extends FormBasicController
 		itemsTable.setExtendedSearch(extendedSearchCtrl);
 		itemsTable.setColumnIndexForDragAndDropLabel(Cols.title.ordinal());
 		itemsTable.setAndLoadPersistedPreferences(ureq, "qpool-list-" + prefsKey);
+		listenTo(extendedSearchCtrl);
 		
 		VelocityContainer detailsVC = createVelocityContainer("item_list_details");
 		itemsTable.setDetailsRenderer(detailsVC, this);
@@ -225,6 +226,16 @@ public abstract class AbstractItemListController extends FormBasicController
 
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
+		if(extendedSearchCtrl == source) {
+			if(event == Event.CANCELLED_EVENT) {
+				String quickSearch = itemsTable.getQuickSearchString();
+				if(StringHelper.containsNonWhitespace(quickSearch)) {
+					itemsTable.quickSearch(ureq, quickSearch);
+				} else {
+					itemsTable.resetSearch(ureq);
+				}
+			}
+		}
 		super.event(ureq, source, event);
 	}
 

@@ -1,0 +1,353 @@
+/**
+ * <a href="http://www.openolat.org">
+ * OpenOLAT - Online Learning and Training</a><br>
+ * <p>
+ * Licensed under the Apache License, Version 2.0 (the "License"); <br>
+ * you may not use this file except in compliance with the License.<br>
+ * You may obtain a copy of the License at the
+ * <a href="http://www.apache.org/licenses/LICENSE-2.0">Apache homepage</a>
+ * <p>
+ * Unless required by applicable law or agreed to in writing,<br>
+ * software distributed under the License is distributed on an "AS IS" BASIS, <br>
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. <br>
+ * See the License for the specific language governing permissions and <br>
+ * limitations under the License.
+ * <p>
+ * Initial code contributed and copyrighted by<br>
+ * frentix GmbH, http://www.frentix.com
+ * <p>
+ */
+package org.olat.course.nodes.pf.ui;
+
+import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
+
+import org.olat.basesecurity.BaseSecurity;
+import org.olat.basesecurity.BaseSecurityModule;
+import org.olat.core.commons.services.notifications.PublisherData;
+import org.olat.core.commons.services.notifications.SubscriptionContext;
+import org.olat.core.commons.services.notifications.ui.ContextualSubscriptionController;
+import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.form.flexible.FormItem;
+import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
+import org.olat.core.gui.components.form.flexible.elements.FormLink;
+import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
+import org.olat.core.gui.components.form.flexible.impl.FormEvent;
+import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiCellRenderer;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.TextFlexiCellRenderer;
+import org.olat.core.gui.components.link.Link;
+import org.olat.core.gui.components.link.LinkFactory;
+import org.olat.core.gui.components.velocity.VelocityContainer;
+import org.olat.core.gui.control.Controller;
+import org.olat.core.gui.control.ControllerEventListener;
+import org.olat.core.gui.control.Event;
+import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
+import org.olat.core.id.Identity;
+import org.olat.core.id.Roles;
+import org.olat.core.id.UserConstants;
+import org.olat.core.util.resource.OresHelper;
+import org.olat.course.nodes.PFCourseNode;
+import org.olat.course.nodes.TitledWrapperHelper;
+import org.olat.course.nodes.pf.manager.PFManager;
+import org.olat.course.nodes.pf.manager.PFView;
+import org.olat.course.nodes.pf.ui.DropBoxTableModel.DropBoxCols;
+import org.olat.course.run.environment.CourseEnvironment;
+import org.olat.course.run.navigation.NodeRunConstructionResult;
+import org.olat.course.run.userview.UserCourseEnvironment;
+import org.olat.resource.OLATResource;
+import org.olat.user.HomePageConfig;
+import org.olat.user.HomePageDisplayController;
+import org.olat.user.UserManager;
+import org.olat.user.UserPropertiesRow;
+import org.olat.user.propertyhandlers.UserPropertyHandler;
+import org.springframework.beans.factory.annotation.Autowired;
+/**
+*
+* @author Fabian Kiefer, fabian.kiefer@frentix.com, http://www.frentix.com
+*
+*/
+public class PFCoachController extends FormBasicController implements ControllerEventListener {
+	
+	protected static final String USER_PROPS_ID = PFCoachController.class.getCanonicalName();
+
+	protected static final int USER_PROPS_OFFSET = 500;
+	
+	private PFCourseNode pfNode;
+	
+	private FormLink downloadLink, uploadLink, uploadAllLink;
+	private Link backLink;
+	private DropBoxTableModel tableModel;
+	private FlexiTableElement dropboxTable;
+	private VelocityContainer mainVC;
+	
+	private CloseableModalController cmc;
+	private PFFileUploadController pfFileUploadCtr;
+	private PFParticipantController pfParticipantController; 
+	private HomePageDisplayController homePageDisplayController;
+	private ContextualSubscriptionController contextualSubscriptionCtr;
+
+	private final List<UserPropertyHandler> userPropertyHandlers;
+	private final boolean isAdministrativeUser;
+
+	private UserCourseEnvironment userCourseEnv;
+	private CourseEnvironment courseEnv;
+	private Identity identity;
+	private PFView pfView;
+	@Autowired
+	private PFManager pfManager; 
+	@Autowired
+	private UserManager userManager;
+	@Autowired
+	private BaseSecurityModule securityModule;
+	@Autowired
+	private BaseSecurity securityManager;
+	
+	public PFCoachController(UserRequest ureq, WindowControl wControl, PFCourseNode sfNode, 
+			UserCourseEnvironment userCourseEnv, PFView pfView) {
+		super(ureq, wControl, "coach");
+		
+		this.userCourseEnv = userCourseEnv;
+		this.courseEnv = userCourseEnv.getCourseEnvironment();
+		this.pfNode = sfNode;
+		this.identity = ureq.getIdentity();
+		this.pfView = pfView;
+		
+		Roles roles = ureq.getUserSession().getRoles();
+		isAdministrativeUser = securityModule.isUserAllowedAdminProps(roles);
+		userPropertyHandlers = userManager.getUserPropertyHandlersFor(USER_PROPS_ID, isAdministrativeUser);
+		setTranslator(userManager.getPropertyHandlerTranslator(getTranslator()));
+		
+		initForm(ureq);
+	}
+
+	@Override
+	public void event(UserRequest ureq, Component source, Event event) {
+		if (source == backLink) {
+			back();
+		}
+		super.event(ureq, source, event);		
+	}
+	
+	@Override 
+	protected void event(UserRequest ureq, Controller source, Event event) {
+		if (source == pfFileUploadCtr) {
+			if (event == Event.DONE_EVENT) {
+				if (pfFileUploadCtr.isUploadToAll()) {
+					uploadToSelection(pfFileUploadCtr.getUpLoadFile(), pfFileUploadCtr.getUploadFileName());
+					showInfo("upload.success");
+					fireEvent(ureq, Event.CHANGED_EVENT);
+				} else {
+					pfManager.uploadFileToDropBox(pfFileUploadCtr.getUpLoadFile(),
+							pfFileUploadCtr.getUploadFileName(), 4, courseEnv, pfNode, identity);
+				}
+				cmc.deactivate();
+				cleanUpCMC();
+			}			
+		} else if (source == cmc) {
+			cleanUpCMC();
+		}
+		super.event(ureq, source, event);
+		
+	}
+
+	@Override
+	protected void doDispose() {
+		// nothing to dispose
+
+	}
+	
+	public NodeRunConstructionResult createNodeRunConstructionResult(UserRequest ureq) {
+		// integrate it into the olat menu
+		Controller ctrl = TitledWrapperHelper.getWrapper(ureq, getWindowControl(), this, pfNode, "o_pf_icon");
+		return new NodeRunConstructionResult(ctrl);
+	}
+
+	@Override
+	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
+		if (source == uploadLink) {
+			doOpenUploadController(ureq, false);
+		} else if (source == uploadAllLink) {
+			if (dropboxTable.getMultiSelectedIndex().size() > 0) {				
+				doOpenUploadController(ureq, true);
+			} else {
+				showWarning("table.no.selection");
+			}
+		} else if (source == downloadLink) {
+			if (dropboxTable.getMultiSelectedIndex().size() > 0) {
+				downloadFromSelection(ureq);				
+			} else {
+				showWarning("table.no.selection");
+			}
+		} else if(source == dropboxTable) {
+			if(event instanceof SelectionEvent) {
+				SelectionEvent se = (SelectionEvent)event;
+				DropBoxRow currentObject = (DropBoxRow) tableModel.getObject(se.getIndex());
+				if ("drop.box".equals(se.getCommand())){
+					doSelectParticipantFolder (ureq, currentObject.getIdentity(), PFView.displayDrop);
+				} else if ("return.box".equals(se.getCommand())){
+					doSelectParticipantFolder (ureq, currentObject.getIdentity(), PFView.displayReturn);
+				} else if ("open.box".equals(se.getCommand())){
+					doSelectParticipantFolder (ureq, currentObject.getIdentity(), PFView.dropAndReturn);
+				} else if ("firstName".equals(se.getCommand()) || "lastName".equals(se.getCommand())) {
+					doOpenHomePage(ureq, currentObject.getIdentity());
+				} 
+			}
+		}
+
+	}
+	
+	private void doSelectParticipantFolder (UserRequest ureq, UserPropertiesRow row, PFView pfView) {
+		Identity identity = securityManager.loadIdentityByKey(row.getIdentityKey());
+		removeAsListenerAndDispose(pfParticipantController);
+		pfParticipantController = new PFParticipantController(ureq, getWindowControl(), pfNode,
+				userCourseEnv, identity, pfView, true, false);
+		listenTo(pfParticipantController);
+		mainVC.put("single", pfParticipantController.getInitialComponent());
+	}
+	
+	@Override
+	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		mainVC = ((FormLayoutContainer) formLayout).getFormItemComponent();
+		
+		OLATResource course = courseEnv.getCourseGroupManager().getCourseResource();
+		String businessPath = getWindowControl().getBusinessControl().getAsString();
+		SubscriptionContext subsContext = new SubscriptionContext(course, pfNode.getIdent());
+		PublisherData publisherData = new PublisherData(OresHelper.calculateTypeName(PFCourseNode.class),
+				String.valueOf(course.getResourceableId()), businessPath);
+		contextualSubscriptionCtr = new ContextualSubscriptionController(ureq, getWindowControl(), subsContext,
+				publisherData);
+		listenTo(contextualSubscriptionCtr);
+		mainVC.put("contextualSubscription", contextualSubscriptionCtr.getInitialComponent());	
+		
+		backLink = LinkFactory.createLinkBack(mainVC, this);
+		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
+
+		int i = 0;
+		for (UserPropertyHandler userPropertyHandler : userPropertyHandlers) {
+			int colIndex = USER_PROPS_OFFSET + i++;
+			if (userPropertyHandler == null) continue;
+			
+			String propName = userPropertyHandler.getName();
+			boolean visible = userManager.isMandatoryUserProperty(USER_PROPS_ID , userPropertyHandler);
+
+			FlexiColumnModel col;
+			if(UserConstants.FIRSTNAME.equals(propName)
+					|| UserConstants.LASTNAME.equals(propName)) {
+				col = new DefaultFlexiColumnModel(userPropertyHandler.i18nColumnDescriptorLabelKey(),
+						colIndex, userPropertyHandler.getName(), true, propName,
+						new StaticFlexiCellRenderer(userPropertyHandler.getName(), new TextFlexiCellRenderer()));
+			} else {
+				col = new DefaultFlexiColumnModel(visible, userPropertyHandler.i18nColumnDescriptorLabelKey(), colIndex, true, propName);
+			}
+			columnsModel.addFlexiColumnModel(col);
+		}
+
+		if (pfNode.hasParticipantBoxConfigured()){
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(DropBoxCols.numberFiles,"drop.box"));
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(DropBoxCols.lastUpdate));
+		}
+		if (pfNode.hasCoachBoxConfigured()) {
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(DropBoxCols.numberFilesReturn,"return.box"));
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(DropBoxCols.lastUpdateReturn));
+		}
+		StaticFlexiCellRenderer openCellRenderer = new StaticFlexiCellRenderer(translate("open.box"), "open.box");
+		openCellRenderer.setIconRightCSS("o_icon_start o_icon-fw");
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(DropBoxCols.openbox,
+				"open.box", openCellRenderer));	
+		tableModel = new DropBoxTableModel(columnsModel, getTranslator());
+		
+		dropboxTable = uifactory.addTableElement(getWindowControl(), "table", tableModel, getTranslator(), formLayout);
+		
+		dropboxTable.setMultiSelect(true);
+		dropboxTable.setSelectAllEnable(true);
+		dropboxTable.setExportEnabled(true);
+		dropboxTable.setAndLoadPersistedPreferences(ureq, this.getClass().getName() + "_" + pfView.name());
+		dropboxTable.setEmtpyTableMessageKey("table.empty");
+		
+		tableModel.setObjects(pfManager.getParticipants(identity, pfNode, userPropertyHandlers, getLocale(), courseEnv, userCourseEnv.isAdmin()));
+		mainVC.contextPut("hasParticipants", tableModel.getRowCount() > 0);
+
+		
+		FormLayoutContainer buttonGroupLayout = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
+		buttonGroupLayout.setElementCssClass("o_button_group");
+		formLayout.add(buttonGroupLayout);
+		
+		downloadLink = uifactory.addFormLink("download.link", buttonGroupLayout, Link.BUTTON);
+		uploadAllLink = uifactory.addFormLink("upload.link", buttonGroupLayout, Link.BUTTON);
+	}
+	
+	
+	private void uploadToSelection (File uploadFile, String fileName) {
+		List<Long> identitykeys = new ArrayList<>();
+		for (int i : dropboxTable.getMultiSelectedIndex()) {			
+			identitykeys.add(tableModel.getObject(i).getIdentity().getIdentityKey());
+		}
+		List<Identity> identities = securityManager.loadIdentityByKeys(identitykeys);
+
+		pfManager.uploadFileToAllReturnBoxes(uploadFile, fileName, courseEnv, pfNode, identities);
+	}
+	
+	private void downloadFromSelection (UserRequest ureq) {
+		List<Long> identitykeys = new ArrayList<>();
+		for (int i : dropboxTable.getMultiSelectedIndex()) {			
+			identitykeys.add(tableModel.getObject(i).getIdentity().getIdentityKey());
+		}
+		List<Identity> identities = securityManager.loadIdentityByKeys(identitykeys);
+		
+		pfManager.exportMediaResource(ureq, identities, pfNode, courseEnv);
+	}
+
+
+	@Override
+	protected void formOK(UserRequest ureq) {
+		
+	}
+	
+	private void doOpenUploadController (UserRequest ureq, boolean uploadToAll) {
+		pfFileUploadCtr = new PFFileUploadController(ureq, getWindowControl(), uploadToAll);
+		listenTo(pfFileUploadCtr);
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), 
+				pfFileUploadCtr.getInitialComponent(), true, translate("upload.link"));
+		listenTo(cmc);
+		
+		cmc.activate();
+	}
+	
+	private void doOpenHomePage (UserRequest ureq, UserPropertiesRow row) {		
+
+		Identity identity = securityManager.loadIdentityByKey(row.getIdentityKey());
+		homePageDisplayController = new HomePageDisplayController(ureq, getWindowControl(), identity, new HomePageConfig());
+		listenTo(homePageDisplayController);
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), 
+				homePageDisplayController.getInitialComponent(), true, translate("upload.link"));
+		listenTo(cmc);
+		
+		cmc.activate();
+	}
+	
+	private void cleanUpCMC(){
+		removeAsListenerAndDispose(cmc);
+		removeAsListenerAndDispose(pfFileUploadCtr);
+		cmc = null;
+		pfFileUploadCtr = null;
+	}
+	
+	private void back() {
+		if(pfParticipantController != null) {
+			mainVC.remove(pfParticipantController.getInitialComponent());
+			removeAsListenerAndDispose(pfParticipantController);
+			pfParticipantController = null;
+		}
+	}
+
+}

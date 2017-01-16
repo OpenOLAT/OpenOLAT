@@ -179,7 +179,7 @@ public class ImportMemberOverviewIdentitiesController extends StepFormBasicContr
 			identListLowercase.add(ident.toLowerCase());
 		}
 		//search by names, must be lower case
-		List<Identity> identities = securityManager.findIdentitiesByName(identListLowercase);
+		List<Identity> identities = securityManager.findIdentitiesByNameCaseInsensitive(identListLowercase);
 		for(Identity identity:identities) {
 			identListLowercase.remove(identity.getName().toLowerCase());
 			if (!PersistenceHelper.containsPersistable(oks, identity)

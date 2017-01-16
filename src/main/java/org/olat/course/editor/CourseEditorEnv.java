@@ -124,7 +124,7 @@ public interface CourseEditorEnv {
 	 * @param category
 	 * @param softReference
 	 */
-	public void addSoftReference(String category, String softReference);
+	public void addSoftReference(String category, String softReference, boolean cycleDetector);
 
 	/**
 	 * after calling validate course, the course is checked for condition and
@@ -140,12 +140,6 @@ public interface CourseEditorEnv {
 	 * @return
 	 */
 	StatusDescription[] getCourseStatus();
-
-	/**
-	 * @param ident
-	 * @return list of nodes referencing the specified node
-	 */
-	List<String> getReferencingNodeIdsFor(String ident);
 
 	/**
 	 * check if the given node is of type enrollment

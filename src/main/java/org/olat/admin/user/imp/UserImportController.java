@@ -341,7 +341,7 @@ public class UserImportController extends BasicController {
 			}
 		}
 
-		List<Identity> nextIds = securityManager.findIdentitiesByName(usernames);
+		List<Identity> nextIds = securityManager.findIdentitiesByNameCaseInsensitive(usernames);
 		identities.addAll(nextIds);
 		return identities;
 	}

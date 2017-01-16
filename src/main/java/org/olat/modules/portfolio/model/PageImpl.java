@@ -86,6 +86,9 @@ public class PageImpl implements Persistable, ModifiedInfo, CreateInfo, Page {
 	@Column(name="p_image_align", nullable=true, insertable=true, updatable=true)
 	private String imageAlign;
 	
+	@Column(name="p_editable", nullable=false, insertable=true, updatable=true)
+	private boolean editable;
+	
 	@Column(name="p_version", nullable=true, insertable=true, updatable=true)
 	private int version;
 
@@ -164,6 +167,15 @@ public class PageImpl implements Persistable, ModifiedInfo, CreateInfo, Page {
 		this.status = status;
 	}
 	
+	@Override
+	public boolean isEditable() {
+		return editable;
+	}
+	
+	public void setEditable(boolean editable) {
+		this.editable = editable;
+	}
+
 	@Override
 	public Date getInitialPublicationDate() {
 		return initialPublicationDate;

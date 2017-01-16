@@ -27,7 +27,6 @@ import java.util.HashSet;
 import java.util.List;
 
 import org.olat.resource.accesscontrol.AccessTransaction;
-import org.olat.resource.accesscontrol.Order;
 import org.olat.resource.accesscontrol.OrderStatus;
 import org.olat.resource.accesscontrol.Price;
 import org.olat.resource.accesscontrol.model.AccessMethod;
@@ -57,19 +56,15 @@ public class OrderTableItem {
 	private String resourceDisplayname;
 	private Long deliveryKey;
 	
+	private String username;
+	private String[] userProperties;
+	
 	private Status status;
 	private List<AccessMethod> methods;
 	
-	public OrderTableItem(Order order) {
-		orderKey = order.getKey();
-		orderNr = order.getOrderNr();
-		orderStatus = order.getOrderStatus();
-		total = order.getTotal();
-		creationDate = order.getCreationDate();
-	}
-	
 	public OrderTableItem(Long orderKey, String orderNr, Price total, Date creationDate,
-			OrderStatus orderStatus, Status status, Long deliveryKey, List<AccessMethod> methods) {
+			OrderStatus orderStatus, Status status, Long deliveryKey,
+			String username, String[] userProperties, List<AccessMethod> methods) {
 		this.orderKey = orderKey;
 		this.orderNr = orderNr;
 		this.total = total;
@@ -78,6 +73,8 @@ public class OrderTableItem {
 		this.status = status;
 		this.deliveryKey = deliveryKey;
 		this.methods = methods;
+		this.username = username;
+		this.userProperties = userProperties;
 	}
 	
 	public Long getOrderKey() {
@@ -111,8 +108,14 @@ public class OrderTableItem {
 	public void setResourceDisplayname(String resourceDisplayname) {
 		this.resourceDisplayname = resourceDisplayname;
 	}
-	
-	
+
+	public String getUsername() {
+		return username;
+	}
+
+	public String[] getUserProperties() {
+		return userProperties;
+	}
 
 	public List<AccessMethod> getMethods() {
 		return methods;

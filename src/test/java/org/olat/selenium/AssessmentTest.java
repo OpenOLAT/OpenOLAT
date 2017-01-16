@@ -758,7 +758,8 @@ public class AssessmentTest {
 			.openMyEfficiencyStatement()
 			.assertOnEfficiencyStatmentPage()
 			.assertOnCertificateAndStatements(courseTitle)
-			.selectStatement(courseTitle).selectStatementSegment()
+			.selectStatement(courseTitle)
+			.selectStatementSegment()
 			.assertOnCourseDetails(testNodeTitle, true);
 	}
 	
@@ -862,7 +863,7 @@ public class AssessmentTest {
 	 * The author reviews the documents, use the assessment tool
 	 * for group within the course element to set passed to the
 	 * group.</br>
-	 * The 2 participants check if they sucessfully passed the task.
+	 * The 2 participants check if they successfully passed the task.
 	 * 
 	 * 
 	 * @param authorLoginPage

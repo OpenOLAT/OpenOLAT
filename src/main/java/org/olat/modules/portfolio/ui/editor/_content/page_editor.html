@@ -3,25 +3,37 @@
 		#if($fragment.editMode)
 			<div class="o_page_fragment_edit">
 				<div class="o_page_tools_above clearfix">
+					#if($r.visible($fragment.addElementAboveLink))
 					<div class="o_page_add_above">
 						$r.render($fragment.addElementAboveLink)
 					</div>
+					#end
+					
 					<div class="o_page_others_above">
 						<span class="o_page_type"><i class="o_icon $fragment.typeCssClass"> </i> $r.translate($fragment.type)</span>
 						$r.render($fragment.saveLink)
-						$r.render($fragment.deleteLink)
+						#if($r.visible($fragment.deleteLink))
+							$r.render($fragment.deleteLink)
+						#end
 					</div>
 				</div>
 				<div class="o_page_tools_dd">
+					#if($r.visible($fragment.moveUpLink))
 						$r.render($fragment.moveUpLink)
+					#end
+					#if($r.visible($fragment.moveDownLink))
 						$r.render($fragment.moveDownLink)
+					#end
 				</div>
 				<div class="o_page_part o_page_edit" data-oo-page-fragment="$fragment.componentName">
 				$r.render($fragment.componentName)
 				</div>
+				
+				#if($r.visible($fragment.addElementBelowLink))
 				<div class="o_page_add_below">
 				$r.render($fragment.addElementBelowLink)
 				</div>
+				#end
 			</div>
 		#else
 			<div class="o_page_part" data-oo-page-fragment="$fragment.componentName">
@@ -30,6 +42,7 @@
 		#end
 	#end
 	
+	#if($r.isNotEmpty($addElementLinks))
 	<div class="o_pf_add_contents panel panel-placeholder">
 		<div class="panel-heading">
 			<h4 class="panel-title">$r.translate("add.content.title")</h4>
@@ -45,6 +58,7 @@
 			</div>
 		</div>
 	</div>
+	#end
 </div>
 
 <script type="text/javascript">

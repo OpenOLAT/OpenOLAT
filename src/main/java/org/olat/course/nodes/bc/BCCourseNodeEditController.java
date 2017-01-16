@@ -27,6 +27,7 @@ package org.olat.course.nodes.bc;
 
 import org.olat.admin.quota.QuotaConstants;
 import org.olat.core.commons.modules.bc.FolderRunController;
+import org.olat.core.commons.modules.bc.vfs.OlatNamedContainerImpl;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
@@ -45,6 +46,7 @@ import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSManager;
 import org.olat.core.util.vfs.callbacks.FullAccessWithQuotaCallback;
+import org.olat.core.util.vfs.callbacks.ReadOnlyCallback;
 import org.olat.core.util.vfs.callbacks.VFSSecurityCallback;
 import org.olat.course.ICourse;
 import org.olat.course.assessment.AssessmentHelper;
@@ -54,6 +56,7 @@ import org.olat.course.config.CourseConfig;
 import org.olat.course.editor.NodeEditController;
 import org.olat.course.nodes.BCCourseNode;
 import org.olat.course.run.userview.UserCourseEnvironment;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * Initial Date: Apr 28, 2004
@@ -73,14 +76,19 @@ public class BCCourseNodeEditController extends ActivateableTabbableDefaultContr
 
 	private ICourse course;
 	private BCCourseNode bcNode;
+	
+	private Link vfButton;
+	private TabbedPane myTabbedPane;
 	private VelocityContainer accessabiliryContent, folderContent;
 
-	private ConditionEditController uploaderCondContr, downloaderCondContr;
-	private Controller quotaContr;
-	private TabbedPane myTabbedPane;
-	private Link vfButton;
+	private CloseableModalController cmc;
+	private FolderRunController folderCtrl;
 	private BCCourseNodeEditForm folderPathChoose;
-	private VFSContainer target;
+	private ConditionEditController uploaderCondContr, downloaderCondContr;
+	
+	
+	@Autowired
+	private QuotaManager quotaManager;
 
 	/**
 	 * Constructor for a folder course building block editor controller
@@ -136,36 +144,66 @@ public class BCCourseNodeEditController extends ActivateableTabbableDefaultContr
 	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest,
 	 *      org.olat.core.gui.components.Component, org.olat.core.gui.control.Event)
 	 */
+	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
 		if (source == vfButton){
-			if(bcNode.getModuleConfiguration().getBooleanSafe(CONFIG_AUTO_FOLDER)){
-				target = BCCourseNode.getNodeFolderContainer(bcNode, course.getCourseEnvironment());
-			}else{
-				String path = bcNode.getModuleConfiguration().getStringValue(CONFIG_SUBPATH, "");
-				VFSItem pathItem = course.getCourseFolderContainer().resolve(path);
-				if(pathItem instanceof VFSContainer){
-					target = (VFSContainer) pathItem;
+			doOpenFolder(ureq);
+		}
+	}
+	
+	private void doOpenFolder(UserRequest ureq) {
+		VFSContainer namedContainer = null;
+		if(bcNode.getModuleConfiguration().getBooleanSafe(CONFIG_AUTO_FOLDER)){
+			OlatNamedContainerImpl directory = BCCourseNode.getNodeFolderContainer(bcNode, course.getCourseEnvironment());
+			directory.setLocalSecurityCallback(getSecurityCallbackWithQuota(directory.getRelPath()));
+			namedContainer = directory;
+		} else {
+			VFSContainer courseContainer = course.getCourseFolderContainer();
+			String path = bcNode.getModuleConfiguration().getStringValue(CONFIG_SUBPATH, "");
+			VFSItem pathItem = courseContainer.resolve(path);
+			if(pathItem instanceof VFSContainer){
+				namedContainer = (VFSContainer) pathItem;
+				if(bcNode.isSharedFolder()) {
+					if(course.getCourseConfig().isSharedFolderReadOnlyMount()) {
+						namedContainer.setLocalSecurityCallback(new ReadOnlyCallback());
+					} else {
+						String relPath = BCCourseNode.getNodeFolderContainer(bcNode, course.getCourseEnvironment()).getRelPath();
+						namedContainer.setLocalSecurityCallback(getSecurityCallbackWithQuota(relPath));
+					}
+				} else {
+					VFSContainer inheritingContainer = VFSManager.findInheritingSecurityCallbackContainer(namedContainer);
+					if (inheritingContainer != null && inheritingContainer.getLocalSecurityCallback() != null
+							&& inheritingContainer.getLocalSecurityCallback() .getQuota() != null) {
+						Quota quota = inheritingContainer.getLocalSecurityCallback().getQuota();
+						namedContainer.setLocalSecurityCallback(new FullAccessWithQuotaCallback(quota));
+					} else {
+						namedContainer.setLocalSecurityCallback(new ReadOnlyCallback());
+					}
 				}
 			}
-			VFSContainer namedContainer = target;
-			Quota quota = QuotaManager.getInstance().getCustomQuota(VFSManager.getRealPath(namedContainer));
-			if (quota == null) {
-				Quota defQuota = QuotaManager.getInstance().getDefaultQuota(QuotaConstants.IDENTIFIER_DEFAULT_NODES);
-				quota = QuotaManager.getInstance().createQuota(VFSManager.getRealPath(namedContainer), defQuota.getQuotaKB(), defQuota.getUlLimitKB());
-			}
-			VFSSecurityCallback secCallback = new FullAccessWithQuotaCallback(quota);
-			namedContainer.setLocalSecurityCallback(secCallback);
-			CloseableModalController cmc = new CloseableModalController(getWindowControl(), translate("close"),
-					new FolderRunController(namedContainer, false, ureq, getWindowControl()).getInitialComponent());
-			cmc.activate();
-			return;
 		}
+		
+		folderCtrl = new FolderRunController(namedContainer, false, ureq, getWindowControl());
+		listenTo(folderCtrl);
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), folderCtrl.getInitialComponent());
+		listenTo(cmc);
+		cmc.activate();
+	}
+	
+	private VFSSecurityCallback getSecurityCallbackWithQuota(String relPath) {
+		Quota quota = quotaManager.getCustomQuota(relPath);
+		if (quota == null) {
+			Quota defQuota = QuotaManager.getInstance().getDefaultQuota(QuotaConstants.IDENTIFIER_DEFAULT_NODES);
+			quota = QuotaManager.getInstance().createQuota(relPath, defQuota.getQuotaKB(), defQuota.getUlLimitKB());
+		}
+		return new FullAccessWithQuotaCallback(quota);
 	}
 
 	/**
 	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest,
 	 *      org.olat.core.gui.control.Controller, org.olat.core.gui.control.Event)
 	 */
+	@Override
 	public void event(UserRequest urequest, Controller source, Event event) {
 		if (source == uploaderCondContr) {
 			if (event == Event.CHANGED_EVENT) {
@@ -179,43 +217,47 @@ public class BCCourseNodeEditController extends ActivateableTabbableDefaultContr
 				bcNode.setPreConditionDownloaders(cond);
 				fireEvent(urequest, NodeEditController.NODECONFIG_CHANGED_EVENT);
 			}
-		}
-		if (source == folderPathChoose){
+		} else if (source == folderPathChoose){
 			if(bcNode.getModuleConfiguration().getStringValue(CONFIG_SUBPATH, "").startsWith("/_sharedfolder")){
 				accessabiliryContent.contextPut("uploadable", false);
-			}else{
+			} else {
 				accessabiliryContent.contextPut("uploadable", true);
 			}
 			fireEvent(urequest, event);
+		} else if(cmc == source) {
+			cleanUp();
 		}
+	}
+	
+	private void cleanUp() {
+		removeAsListenerAndDispose(folderCtrl);
+		removeAsListenerAndDispose(cmc);
+		folderCtrl = null;
+		cmc = null;
 	}
 
 	/**
 	 * @see org.olat.core.gui.control.generic.tabbable.TabbableDefaultController#addTabs(org.olat.core.gui.components.TabbedPane)
 	 */
+	@Override
 	public void addTabs(TabbedPane tabbedPane) {
 		myTabbedPane = tabbedPane;
 		tabbedPane.addTab(translate(PANE_TAB_ACCESSIBILITY), accessabiliryContent);
 		tabbedPane.addTab(translate(PANE_TAB_FOLDER), folderContent);
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#doDispose(boolean)
-	 */
+	@Override
 	protected void doDispose() {
-    //child controllers registered with listenTo() get disposed in BasicController
-		if (quotaContr != null) {
-			quotaContr.dispose();
-			quotaContr = null;
-		}
+		//
 	}
-	
+
+	@Override
 	public String[] getPaneKeys() {
 		return paneKeys;
 	}
 
+	@Override
 	public TabbedPane getTabbedPane() {
 		return myTabbedPane;
 	}
-
 }

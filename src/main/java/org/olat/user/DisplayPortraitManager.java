@@ -169,13 +169,31 @@ public class DisplayPortraitManager extends BasicManager implements UserDataDele
 	public File getBigLogo(String username) {
 		return getPortraitFile(username, LOGO_BIG_FILENAME);
 	}
+	
+	public boolean hasPortrait(String username) {
+		File portraitDir = getPortraitDir(username);
+		if(portraitDir != null) {
+			File[] portraits = portraitDir.listFiles();
+			if(portraits.length > 0) {
+				for(File file:portraits) {
+					if(file.getName().startsWith(PORTRAIT_PREFIX_FILENAME)) {
+						return true;
+					}
+				}
+			}
+		}
+		return false;
+	}
 
 	private File getPortraitFile(String username, String prefix) {
 		File portraitDir = getPortraitDir(username);
 		if(portraitDir != null) {
-			for(File file:portraitDir.listFiles()) {
-				if(file.getName().startsWith(prefix)) {
-					return file;
+			File[] portraits = portraitDir.listFiles();
+			if(portraits.length > 0) {
+				for(File file:portraits) {
+					if(file.getName().startsWith(prefix)) {
+						return file;
+					}
 				}
 			}
 		}
@@ -275,7 +293,7 @@ public class DisplayPortraitManager extends BasicManager implements UserDataDele
 	 * @see org.olat.user.UserDataDeletable#deleteUserData(org.olat.core.id.Identity)
 	 */
 	@Override
-	public void deleteUserData(Identity identity, String newDeletedUserName) {
+	public void deleteUserData(Identity identity, String newDeletedUserName, File archivePath) {
 		String userHomePage = FolderConfig.getCanonicalRoot() + FolderConfig.getUserHomePage(identity.getName()); 
 		File portraitDir = new File(userHomePage, "portrait");
 		if(portraitDir.exists()) {

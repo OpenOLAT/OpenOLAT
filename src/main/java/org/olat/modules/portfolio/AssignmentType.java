@@ -29,7 +29,6 @@ public enum AssignmentType {
 	
 	essay,
 	document,
-	slider,
-	matrix
+	form
 
 }

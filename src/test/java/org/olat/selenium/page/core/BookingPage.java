@@ -128,20 +128,9 @@ public class BookingPage {
 	 * @return
 	 */
 	public BookingPage assertFirstNameInListIsOk(UserVO user) {
-		By firstNameBy = By.xpath("//td[contains(text(),'" + user.getFirstName() + "')]");
-		By okBy = By.className("o_ac_order_status_payed_icon");
-		By rowBy = By.cssSelector(".o_sel_order_list table.o_table.table tr");
-		boolean found = false;
-		List<WebElement> rows = browser.findElements(rowBy);
-		for(WebElement row:rows) {
-			List<WebElement> firstNameEl = row.findElements(firstNameBy);
-			List<WebElement> okEl = row.findElements(okBy);
-			if(firstNameEl.size() == 1 && okEl.size() == 1) {
-				found = true;
-				break;
-			}
-		}
-		Assert.assertTrue(found);
+		By rowsBy = By.xpath("//div[contains(@class,'o_sel_order_list')]//table//tr[td/i[contains(@class,'o_ac_order_status_payed_icon')]]/td[contains(text(),'" + user.getLastName() + "')]");
+		List<WebElement> rows = browser.findElements(rowsBy);
+		Assert.assertEquals(1, rows.size());
 		return this;
 	}
 }

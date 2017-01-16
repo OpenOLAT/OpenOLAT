@@ -20,7 +20,6 @@
 package org.olat.modules.portfolio.handler;
 
 import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.components.Component;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.modules.portfolio.Media;
@@ -28,8 +27,10 @@ import org.olat.modules.portfolio.MediaHandler;
 import org.olat.modules.portfolio.MediaInformations;
 import org.olat.modules.portfolio.MediaLight;
 import org.olat.modules.portfolio.model.MediaPart;
+import org.olat.modules.portfolio.ui.editor.PageRunControllerElement;
 import org.olat.modules.portfolio.ui.editor.PageElement;
 import org.olat.modules.portfolio.ui.editor.PageElementHandler;
+import org.olat.modules.portfolio.ui.editor.PageRunElement;
 
 /**
  * 
@@ -56,13 +57,13 @@ public abstract class AbstractMediaHandler implements MediaHandler, PageElementH
 	}
 
 	@Override
-	public Component getContent(UserRequest ureq, WindowControl wControl, PageElement element) {
+	public PageRunElement getContent(UserRequest ureq, WindowControl wControl, PageElement element) {
 		if(element instanceof Media) {
-			return getMediaController(ureq, wControl, (Media)element).getInitialComponent();
+			return new PageRunControllerElement(getMediaController(ureq, wControl, (Media)element));
 		}
 		if(element instanceof MediaPart) {
 			MediaPart mediaPart = (MediaPart)element;
-			return getMediaController(ureq, wControl, mediaPart.getMedia()).getInitialComponent();
+			return new PageRunControllerElement(getMediaController(ureq, wControl, mediaPart.getMedia()));
 		}
 		return null;
 	}

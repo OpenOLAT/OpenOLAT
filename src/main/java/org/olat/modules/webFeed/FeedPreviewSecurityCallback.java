@@ -32,6 +32,7 @@ public class FeedPreviewSecurityCallback implements FeedSecurityCallback {
 	/**
 	 * @see org.olat.modules.webFeed.FeedSecurityCallback#mayCreateItems()
 	 */
+	@Override
 	public boolean mayCreateItems() {
 		return false;
 	}
@@ -39,20 +40,34 @@ public class FeedPreviewSecurityCallback implements FeedSecurityCallback {
 	/**
 	 * @see org.olat.modules.webFeed.FeedSecurityCallback#mayDeleteItems()
 	 */
+	@Override
 	public boolean mayDeleteItems() {
 		return false;
 	}
 
+	@Override
+	public boolean mayDeleteOwnItems() {
+		return false;
+	}
+	
 	/**
 	 * @see org.olat.modules.webFeed.FeedSecurityCallback#mayEditItems()
 	 */
+	@Override
 	public boolean mayEditItems() {
 		return false;
 	}
 
+	@Override
+	public boolean mayEditOwnItems() {
+		return false;
+	}
+
+
 	/**
 	 * @see org.olat.modules.webFeed.FeedSecurityCallback#mayEditMetadata()
 	 */
+	@Override
 	public boolean mayEditMetadata() {
 		return false;
 	}

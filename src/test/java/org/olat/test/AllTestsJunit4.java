@@ -136,6 +136,7 @@ import org.junit.runners.Suite;
 	org.olat.course.nodes.en.EnrollmentManagerConcurrentTest.class,
 	org.olat.course.nodes.gta.manager.GTAManagerTest.class,
 	org.olat.course.nodes.gta.rule.GTAReminderRuleTest.class,
+	org.olat.course.nodes.pf.manager.PFManagerTest.class,
 	org.olat.course.assessment.AssessmentManagerTest.class,
 	org.olat.course.assessment.manager.UserCourseInformationsManagerTest.class,
 	org.olat.course.assessment.manager.AssessmentModeManagerTest.class,

@@ -20,8 +20,6 @@
 		background-color: $o-table-edit-bg;
 	}
 
-	.o_table_filter {
-	}
 	.o_table_search {
 		max-width:50em;
 	}
@@ -74,6 +72,15 @@
 	}
 }
 
+.o_table_search {
+	a.btn.o_reset_quick_search {
+		width: 38px;
+		margin-left: -38px;
+		z-index:5;
+		color: grey;
+	}
+}
+
 @media (max-width: $screen-xs-max) { 
 	.o_table_wrapper .o_table_rows_infos {
 		clear:both;
@@ -120,7 +127,15 @@ a.o_orderby, a.o_orderby:hover {
 .o_table_tools_indications {
 	margin-left: 10px;
 	padding-top:3px;
-	font-size:66%;
+	font-size:80%;
+	
+	a {
+		color: $brand-danger;
+	}
+}
+
+.o_table_toolbar_left .o_table_tools_indications {
+	text-align: right;
 }
 
 .o_table_count {

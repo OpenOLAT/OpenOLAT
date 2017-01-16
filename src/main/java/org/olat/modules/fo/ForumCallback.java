@@ -47,6 +47,10 @@ public interface ForumCallback {
 	 */
 	public boolean mayReplyMessage();
 	
+	public boolean mayEditOwnMessage();
+	
+	public boolean mayDeleteOwnMessage();
+	
 	/**
 	 * @return if allowed to moderate
 	 */

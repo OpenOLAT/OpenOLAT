@@ -132,7 +132,7 @@ public class OpenXMLUtils {
 	
 	public static final XMLStreamWriter createStreamWriter(ZipOutputStream out) {
 		try {
-			return XMLOutputFactory.newInstance().createXMLStreamWriter(new ShieldOutputStream(out));
+			return XMLOutputFactory.newInstance().createXMLStreamWriter(new ShieldOutputStream(out), "UTF-8");
 		} catch (XMLStreamException | FactoryConfigurationError e) {
 			log.error("", e);
 			return null;

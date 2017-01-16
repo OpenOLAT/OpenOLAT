@@ -375,18 +375,43 @@ public class QItemQueriesDAO {
 			boolean asc = orderBy[0].isAsc();
 			sb.append(" order by ");
 			switch(sortKey) {
-				case "itemType": sb.append(dbRef).append(".type.type"); break;
-				case "marks": sb.append("marks"); break;
-				case "rating": sb.append("rating"); break;
-				default: sb.append(dbRef).append(".").append(sortKey); break;
-			}
-			if(asc) {
-				sb.append(" asc ");
-			} else {
-				sb.append(" desc ");
+				case "itemType":
+					sb.append(dbRef).append(".type.type ");
+					appendAsc(sb, asc);
+					break;
+				case "marks":
+					sb.append("marks");
+					appendAsc(sb, asc);
+					break;
+				case "rating":
+					sb.append("rating");
+					appendAsc(sb, asc);
+					sb.append(" nulls last");
+					break;
+				case "keywords":
+				case "coverage":
+				case "additionalInformations":
+					sb.append("lower(").append(dbRef).append(".").append(sortKey).append(")");
+					appendAsc(sb, asc);
+					sb.append(" nulls last");
+					break;	
+				default:
+					sb.append(dbRef).append(".").append(sortKey);
+					appendAsc(sb, asc);
+					sb.append(" nulls last");
+					break;
 			}
 		} else {
 			sb.append(" order by item.key asc ");
 		}
+	}
+	
+	private final StringBuilder appendAsc(StringBuilder sb, boolean asc) {
+		if(asc) {
+			sb.append(" asc");
+		} else {
+			sb.append(" desc");
+		}
+		return sb;
 	}
 }

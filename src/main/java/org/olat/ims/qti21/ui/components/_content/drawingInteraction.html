@@ -46,15 +46,19 @@
 		</div>
 	</div>
 	#end
-	<div id="sketch" width="${interaction.object.width}" height="${interaction.object.height}">
-		<canvas id="paint" width="${interaction.object.width}" height="${interaction.object.height}" style="border: 1px solid black; background:url('${r.convertLinkFull($interaction.object.data)}')"></canvas>
+	
+	#set($widthWithBorder = $r.parseInt(${interaction.object.width}) + 2)
+	#set($heightWithBorder = $r.parseInt(${interaction.object.height}) + 2)
+	<div id="sketch" style="border:1px solid black; width:${widthWithBorder}px; height:${heightWithBorder}px;" draggable="false" ondragstart="return false;">
+		<canvas id="paint" width="${interaction.object.width}" height="${interaction.object.height}" style="background:url('${r.convertLinkFull($interaction.object.data)}')" draggable="false" ondragstart="return false;"></canvas>
 	</div>
 	<script type='text/javascript'>
 	jQuery(function() {
 		var itemOpen = $isItemSessionOpen; 
 		if(itemOpen) {
 			jQuery('#sketch').paint({
-				inputHolderId: 'op_${responseIdentifier}'
+				inputHolderId: 'op_${responseIdentifier}',
+				formDispatchFieldId: '$r.formDispatchFieldId'
 			});
 			
 			var val = jQuery('#op_${responseIdentifier}').val();

@@ -158,6 +158,11 @@ public class AssessmentObjectVelocityRenderDecorator extends VelocityRenderDecor
 		return "";
 	}
 	
+	public String appendFlexiFormDirtyOn(String id, String events) {
+		FormJSHelper.appendFlexiFormDirtyOn(target, avc.getQtiItem().getRootForm(), events, id);
+		return "";
+	}
+	
 	public String convertLink(String uri) {
 		return AssessmentRenderFunctions.convertLink(avc, resolvedAssessmentItem, uri);
 	}

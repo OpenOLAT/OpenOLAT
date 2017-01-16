@@ -49,12 +49,22 @@ public class FeedResourceSecurityCallback implements FeedSecurityCallback {
 	public boolean mayDeleteItems() {
 		return isAdmin || isOwner;
 	}
+	
+	@Override
+	public boolean mayDeleteOwnItems() {
+		return true;
+	}
 
 	/**
 	 * @see org.olat.modules.webFeed.FeedSecurityCallback#mayEditItems()
 	 */
 	public boolean mayEditItems() {
 		return isAdmin || isOwner;
+	}
+
+	@Override
+	public boolean mayEditOwnItems() {
+		return true;
 	}
 
 	/**

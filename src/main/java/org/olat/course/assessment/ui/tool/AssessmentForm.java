@@ -307,7 +307,7 @@ public class AssessmentForm extends FormBasicController {
 	 * Reload the data in the controller
 	 * @param updateScoreAccounting Force a recalculation of the whole scoring in the course for the assessed user.
 	 */
-	public void reloadData(boolean updateScoreAccounting) {
+	public void reloadData() {
 		ScoreAccounting scoreAccounting = assessedUserCourseEnv.getScoreAccounting();
 		scoreAccounting.evaluateAll(true);
 		ScoreEvaluation scoreEval = scoreAccounting.evalCourseNode(assessableCourseNode);

@@ -160,6 +160,8 @@ public interface BaseSecurity {
 	public Identity findIdentityByNameCaseInsensitive(String identityName);
 	
 	public List<Identity> findIdentitiesByName(Collection<String> identityName);
+	
+	public List<Identity> findIdentitiesByNameCaseInsensitive(Collection<String> identityNames);
 
 	/**
 	 * Find an identity by student/institutionalnumber (i.e., Matrikelnummer), using the getIdentititesByPowerSearch() method.
@@ -290,7 +292,7 @@ public interface BaseSecurity {
 	 * @param credential the credentials or null if not used
 	 * @return the new identity
 	 */
-	public Identity createAndPersistIdentity(String username, User user, String provider, String authusername, String password);
+	//public Identity createAndPersistIdentity(String username, User user, String provider, String authusername, String password);
 	
 	/**
 	 * @param username the username
@@ -644,13 +646,6 @@ public interface BaseSecurity {
 	 */
 	public Identity setExternalId(Identity identity, String externalId);
 	
-	/**
-	 * Check if identity is visible. Deleted or login-denied users are not visible.
-	 * @param identityName
-	 * @return
-	 */
-	public boolean isIdentityVisible(String identityName);
-
 	/**
 	 * Check if identity is visible. Deleted or login-denied users are not visible.
 	 * @param identity

@@ -166,6 +166,9 @@ public class NewControllerFactory {
 	public boolean launch(UserRequest ureq, WindowControl wControl) {
 		BusinessControl bc = wControl.getBusinessControl();
 		ContextEntry mainCe = bc.popLauncherContextEntry();
+		if(mainCe == null) {
+			return false;//nothing to launch
+		}
 		OLATResourceable ores = mainCe.getOLATResourceable();
 
 		// Check for RepositoryEntry resource

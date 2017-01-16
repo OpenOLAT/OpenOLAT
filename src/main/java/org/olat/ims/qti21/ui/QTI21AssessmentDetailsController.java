@@ -343,7 +343,7 @@ public class QTI21AssessmentDetailsController extends FormBasicController {
 				new ResourcesMapper(assessmentObjectUri, submissionDir));
 		
 		resultCtrl = new AssessmentResultController(ureq, getWindowControl(), assessedIdentity, false, session,
-				ShowResultsOnFinish.details, fUnzippedDirRoot, mapperUri);
+				ShowResultsOnFinish.details, fUnzippedDirRoot, mapperUri, true, true);
 		listenTo(resultCtrl);
 		cmc = new CloseableModalController(getWindowControl(), "close", resultCtrl.getInitialComponent(),
 				true, translate("table.header.results"));

@@ -351,6 +351,7 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 		} else {
 			waitingLists = Collections.emptyList();
 		}
+		uce.setCourseReadOnly(reSecurity.isReadOnly());
 		uce.setGroupMemberships(coachedGroups, participatedGroups, waitingLists);
 		needsRebuildAfterRunDone = true;
 	}
@@ -393,6 +394,10 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 		}
 		previousLink.setEnabled(hasPrevious);
 		nextLink.setEnabled(hasNext);
+	}
+	
+	protected boolean updateCurrentCourseNode(UserRequest ureq) {
+		return updateTreeAndContent(ureq, getCurrentCourseNode(), "", null, null);
 	}
 
 	/**

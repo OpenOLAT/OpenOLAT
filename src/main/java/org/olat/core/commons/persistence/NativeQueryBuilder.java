@@ -127,6 +127,16 @@ public class NativeQueryBuilder {
 		}
 		return this;
 	}
+	
+	public NativeQueryBuilder appendOrderBy(SortKey orderBy) {
+		sb.append(" order by ").append(orderBy.getKey());
+		if(orderBy.isAsc()) {
+			sb.append(" asc");
+		} else {
+			sb.append(" desc");
+		}
+		return this;
+	}
 
 	/**
 	 * @param i

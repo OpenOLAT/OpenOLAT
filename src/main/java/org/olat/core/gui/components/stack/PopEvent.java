@@ -29,11 +29,24 @@ import org.olat.core.gui.control.Event;
 public class PopEvent extends Event {
 
 	private static final long serialVersionUID = -8478820879485545321L;
+	
+	private final Object uobject;
 	private final Controller controller;
 	
-	public PopEvent(Controller controller) {
+	public PopEvent(Controller controller, Object uobject) {
 		super("pop");
+		this.uobject = uobject;
 		this.controller = controller;
+	}
+	
+	public PopEvent(Object uobject) {
+		super("pop");
+		this.uobject = uobject;
+		this.controller = null;
+	}
+	
+	public Object getUserObject() {
+		return uobject;
 	}
 
 	public Controller getController() {

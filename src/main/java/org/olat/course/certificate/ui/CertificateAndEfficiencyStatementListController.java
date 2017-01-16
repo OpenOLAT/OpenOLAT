@@ -33,6 +33,7 @@ import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.BooleanCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
@@ -182,22 +183,19 @@ public class CertificateAndEfficiencyStatementListController extends FormBasicCo
 		}
 		
 		FlexiTableColumnModel tableColumnModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
-		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.displayName.i18n(), Cols.displayName.ordinal(),
-				true, Cols.displayName.name()));
-		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.score.i18n(), Cols.score.ordinal(),
-				true, Cols.score.name()));
-		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.passed.i18n(), Cols.passed.ordinal(),
-				true, Cols.passed.name(), new PassedCellRenderer()));
+		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.displayName));
+		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.score));
+		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.passed, new PassedCellRenderer()));
 		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel("table.header.show",
 				translate("table.header.show"), CMD_SHOW));
-		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.lastModified.i18n(), Cols.lastModified.ordinal(),
-				true, Cols.lastModified.name()));
-		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.certificate.i18n(), Cols.certificate.ordinal(),
-				true, Cols.certificate.name(), new DownloadCertificateCellRenderer(assessedIdentity)));
+		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.lastModified));
+		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.certificate, new DownloadCertificateCellRenderer(assessedIdentity)));
 		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel("table.header.launchcourse",
 				translate("table.header.launchcourse"), CMD_LAUNCH_COURSE));
-		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel("table.header.delete",
-				translate("table.action.delete"), CMD_DELETE));
+		
+		DefaultFlexiColumnModel deleteColumn = new DefaultFlexiColumnModel(Cols.deleteEfficiencyStatement.i18nHeaderKey(), Cols.deleteEfficiencyStatement.ordinal(), CMD_DELETE,
+				new BooleanCellRenderer(new StaticFlexiCellRenderer(translate("table.action.delete"), CMD_DELETE), null));
+		tableColumnModel.addFlexiColumnModel(deleteColumn);
 		
 		//artefact
 		if(portfolioV2Module.isEnabled()) {
@@ -331,15 +329,17 @@ public class CertificateAndEfficiencyStatementListController extends FormBasicCo
 	
 	private void doDelete(Long efficiencyStatementKey) {
 		UserEfficiencyStatementLight efficiencyStatement = esm.getUserEfficiencyStatementLightByKey(efficiencyStatementKey);
-		esm.deleteEfficiencyStatement(efficiencyStatement);
-
+		if(efficiencyStatement != null) {
+			esm.deleteEfficiencyStatement(efficiencyStatement);
+		}
+		
 		loadModel();
 		tableEl.reset();
 		showInfo("info.efficiencyStatement.deleted");
 	}
 	
 	private void doLaunchCoachingTool(UserRequest ureq) {
-		String businessPath = "[CoachSite:0][search:0][Identity:" + assessedIdentity.getKey() + "]";
+		String businessPath = "[CoachSite:0][Search:0][Identity:" + assessedIdentity.getKey() + "]";
 		NewControllerFactory.getInstance().launch(businessPath, ureq, getWindowControl());
 	}
 

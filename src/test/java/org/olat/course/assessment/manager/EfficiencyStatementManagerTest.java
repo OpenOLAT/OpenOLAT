@@ -122,7 +122,7 @@ public class EfficiencyStatementManagerTest extends OlatTestCase {
 		Assert.assertEquals(2, statementsLight1.size());
 		
 		//delete user 1
-		effManager.deleteUserData(participant1, "deleted");
+		effManager.deleteEfficientyStatement(participant1);
 		dbInstance.commitAndCloseSession();
 		
 		//check the efficiency statements
@@ -148,6 +148,28 @@ public class EfficiencyStatementManagerTest extends OlatTestCase {
 		Assert.assertEquals(1, reloadStatemets_2_1.size());
 		List<UserEfficiencyStatementLight> reloadStatemets_2_2 = effManager.findEfficiencyStatementsLight(Collections.<Long>singletonList(statement2_2.getKey()));
 		Assert.assertEquals(1, reloadStatemets_2_2.size());
+	}
+	
+	@Test
+	public void hasUserEfficiencyStatement() throws URISyntaxException {
+		RepositoryEntry re = deployTestcourse();
+		
+		//add some members
+		Identity participant = JunitTestHelper.createAndPersistIdentityAsRndUser("Eff-Del-Part-3");
+		Identity notParticipant = JunitTestHelper.createAndPersistIdentityAsRndUser("Eff-Del-Part-4");
+		repositoryService.addRole(participant, re, GroupRoles.participant.name());
+		dbInstance.commit();
+
+		//make statements
+	    UserEfficiencyStatement statement = effManager.createUserEfficiencyStatement(new Date(), 6.0f, true, participant, re.getOlatResource());
+	    dbInstance.commitAndCloseSession();
+	    Assert.assertNotNull(statement);
+	    
+	    // has participant an efficiency statement
+	    boolean hasOne = effManager.hasUserEfficiencyStatement(re.getKey(), participant);
+	    Assert.assertTrue(hasOne);
+	    boolean hasNot = effManager.hasUserEfficiencyStatement(re.getKey(), notParticipant);
+	    Assert.assertFalse(hasNot);
 	}
 	
 	private RepositoryEntry deployTestcourse() throws URISyntaxException {

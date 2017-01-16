@@ -30,6 +30,7 @@ import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.DateFlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiCellRenderer;
@@ -49,6 +50,7 @@ import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryManagedFlag;
 import org.olat.repository.handlers.RepositoryHandler;
 import org.olat.repository.model.SearchAuthorRepositoryEntryViewParams;
+import org.olat.repository.model.SearchAuthorRepositoryEntryViewParams.OrderBy;
 import org.olat.repository.ui.author.AuthoringEntryDataModel.Cols;
 
 /**
@@ -78,6 +80,12 @@ public class AuthorDeletedListController extends AuthorListController {
 
 	@Override
 	protected void initActionsColumns(FlexiTableColumnModel columnsModel) {
+
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.deletedBy.i18nKey(), Cols.deletedBy.ordinal(),
+				true, OrderBy.deletedBy.name()));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.deletionDate.i18nKey(), Cols.deletionDate.ordinal(),
+				true, OrderBy.deletionDate.name(), new DateFlexiCellRenderer(getLocale())));
+		
 		DefaultFlexiColumnModel detailsColumn = new DefaultFlexiColumnModel(Cols.detailsSupported.i18nKey(), Cols.detailsSupported.ordinal(), "details",
 				new StaticFlexiCellRenderer("", "details", "o_icon o_icon-lg o_icon_details", translate("details")));
 		detailsColumn.setExportable(false);

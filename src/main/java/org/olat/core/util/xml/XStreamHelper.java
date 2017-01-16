@@ -34,6 +34,8 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
+import java.nio.file.Files;
+import java.nio.file.Path;
 
 import org.olat.core.logging.OLATRuntimeException;
 import org.olat.core.util.FileUtils;
@@ -268,6 +270,23 @@ public class XStreamHelper {
 			} catch (Exception e) {
 				// we did our best to close the inputStream
 			}
+		}
+	}
+	
+	/**
+	 * 
+	 * @param xStream
+	 * @param path
+	 * @return
+	 */
+	public static Object readObject(XStream xStream, Path path) {
+		try (InputStream in = Files.newInputStream(path);
+				InputStream bis = new BufferedInputStream(in)) {
+			return readObject(xStream, bis);
+		} catch (Exception e) {
+			throw new OLATRuntimeException(XStreamHelper.class,
+					"could not read Object from file: "
+							+ path, e);
 		}
 	}
 	

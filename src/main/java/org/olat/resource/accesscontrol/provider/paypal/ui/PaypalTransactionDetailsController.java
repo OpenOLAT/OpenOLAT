@@ -67,38 +67,38 @@ public class PaypalTransactionDetailsController extends FormBasicController impl
 		Formatter format = Formatter.getInstance(getLocale());
 
 		String ack = transaction.getAck();
-		uifactory.addStaticExampleText("ack", "paypal.transaction.ack", ack, formLayout);
+		uifactory.addStaticTextElement("ack", "paypal.transaction.ack", ack, formLayout);
 		
 		String execStatus = transaction.getPaymentExecStatus();
-		uifactory.addStaticExampleText("exec.status", "paypal.transaction.exec.status", execStatus, formLayout);
+		uifactory.addStaticTextElement("exec.status", "paypal.transaction.exec.status", execStatus, formLayout);
 
 		Date respDate = transaction.getPayResponseDate();
 		String respDateStr = format.formatDateAndTime(respDate);
-		uifactory.addStaticExampleText("resp.date", "paypal.transaction.response.date", respDateStr, formLayout);
+		uifactory.addStaticTextElement("resp.date", "paypal.transaction.response.date", respDateStr, formLayout);
 		
 		Price securePrice = transaction.getSecurePrice();
 		String securePriceStr = PriceFormat.fullFormat(securePrice);
-		uifactory.addStaticExampleText("amount", "paypal.transaction.amount", securePriceStr, formLayout);
+		uifactory.addStaticTextElement("amount", "paypal.transaction.amount", securePriceStr, formLayout);
 		
 		uifactory.addSpacerElement("ipn-spacer", formLayout, false);
 		
 		String transactionId = transaction.getTransactionId();
-		uifactory.addStaticExampleText("trx-id", "paypal.transaction.id", removeNull(transactionId) , formLayout);
+		uifactory.addStaticTextElement("trx-id", "paypal.transaction.id", removeNull(transactionId) , formLayout);
 
 		String trxStatus = transaction.getTransactionStatus();
-		uifactory.addStaticExampleText("trx-status", "paypal.transaction.status", removeNull(trxStatus), formLayout);
+		uifactory.addStaticTextElement("trx-status", "paypal.transaction.status", removeNull(trxStatus), formLayout);
 		
 		String senderTransactionId = transaction.getSenderTransactionId();
-		uifactory.addStaticExampleText("trx-sender-id", "paypal.transaction.sender.id", removeNull(senderTransactionId), formLayout);
+		uifactory.addStaticTextElement("trx-sender-id", "paypal.transaction.sender.id", removeNull(senderTransactionId), formLayout);
 		
 		String senderTrxStatus = transaction.getSenderTransactionStatus();
-		uifactory.addStaticExampleText("trx-sender-status", "paypal.transaction.sender.status", removeNull(senderTrxStatus), formLayout);
+		uifactory.addStaticTextElement("trx-sender-status", "paypal.transaction.sender.status", removeNull(senderTrxStatus), formLayout);
 		
 		String pendingReason = transaction.getPendingReason();
-		uifactory.addStaticExampleText("trx-pending-reason", "paypal.transaction.pending.reason", removeNull(pendingReason), formLayout);
+		uifactory.addStaticTextElement("trx-pending-reason", "paypal.transaction.pending.reason", removeNull(pendingReason), formLayout);
 
 		String senderEmail = transaction.getSenderEmail();
-		uifactory.addStaticExampleText("trx-sender", "paypal.transaction.sender", removeNull(senderEmail), formLayout);
+		uifactory.addStaticTextElement("trx-sender", "paypal.transaction.sender", removeNull(senderEmail), formLayout);
 
 	}
 	

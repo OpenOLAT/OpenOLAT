@@ -333,16 +333,28 @@ public class CourseWebService {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		}
 		
+		UserRequest ureq = getUserRequest(request);
 		RepositoryService rs = CoreSpringFactory.getImpl(RepositoryService.class);
 		RepositoryEntry re = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
-		rs.deleteSoftly(re);
-		ThreadLocalUserActivityLogger.log(LearningResourceLoggingAction.LEARNING_RESOURCE_TRASH, getClass(),
+		
+		ErrorList errors = rs.deletePermanently(re, ureq.getIdentity(), ureq.getUserSession().getRoles(), ureq.getLocale());
+		if(errors.hasErrors()) {
+			return Response.serverError().status(500).build();
+		}
+		ThreadLocalUserActivityLogger.log(LearningResourceLoggingAction.LEARNING_RESOURCE_DELETE, getClass(),
 				LoggingResourceable.wrap(re, OlatResourceableType.genRepoEntry));
 		return Response.ok().build();
 	}
 	
 	/**
-	 * Delete a course permanently by id.
+	 * Change the status of a course by id. The possible status are:
+	 * <ul>
+	 * 	<li>closed</li>
+	 * 	<li>unclosed</li>
+	 * 	<li>unpublished</li>
+	 * 	<li>deleted</li>
+	 * 	<li>restored</li>
+	 * </ul>
 	 * 
 	 * @response.representation.200.doc The metadatas of the deleted course
 	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
@@ -351,23 +363,44 @@ public class CourseWebService {
 	 * @return It returns the XML representation of the <code>Structure</code>
 	 *         object representing the course.
 	 */
-	@DELETE
+	@POST
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
-	@Path("permanent")
-	public Response deleteCoursePermanently(@Context HttpServletRequest request) {
+	@Path("status")
+	public Response deleteCoursePermanently(@FormParam("newStatus") String newStatus, @Context HttpServletRequest request) {
 		if(!isAuthor(request)) {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		} else if (!isAuthorEditor(course, request)) {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		}
 		
-		UserRequest ureq = getUserRequest(request);
 		RepositoryService rs = CoreSpringFactory.getImpl(RepositoryService.class);
 		RepositoryEntry re = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
-		
-		ErrorList errors = rs.deletePermanently(re, ureq.getIdentity(), ureq.getUserSession().getRoles(), ureq.getLocale());
-		if(errors.hasErrors()) {
-			return Response.serverError().status(500).build();
+		if("closed".equals(newStatus)) {
+			rs.closeRepositoryEntry(re);
+			log.audit("REST closing course: " + re.getDisplayname() + " [" + re.getKey() + "]");
+			ThreadLocalUserActivityLogger.log(LearningResourceLoggingAction.LEARNING_RESOURCE_CLOSE, getClass(),
+					LoggingResourceable.wrap(re, OlatResourceableType.genRepoEntry));
+		} else if("unclosed".equals(newStatus)) {
+			rs.uncloseRepositoryEntry(re);
+			log.audit("REST unclosing course: " + re.getDisplayname() + " [" + re.getKey() + "]");
+			ThreadLocalUserActivityLogger.log(LearningResourceLoggingAction.LEARNING_RESOURCE_UPDATE, getClass(),
+					LoggingResourceable.wrap(re, OlatResourceableType.genRepoEntry));
+		} else if("unpublished".equals(newStatus)) {
+			rs.unpublishRepositoryEntry(re);
+			log.audit("REST unpublishing course: " + re.getDisplayname() + " [" + re.getKey() + "]");
+			ThreadLocalUserActivityLogger.log(LearningResourceLoggingAction.LEARNING_RESOURCE_DEACTIVATE, getClass(),
+					LoggingResourceable.wrap(re, OlatResourceableType.genRepoEntry));
+		} else if("deleted".equals(newStatus)) {
+			Identity identity = getIdentity(request);
+			rs.deleteSoftly(re, identity, true);
+			log.audit("REST deleting (soft) course: " + re.getDisplayname() + " [" + re.getKey() + "]");
+			ThreadLocalUserActivityLogger.log(LearningResourceLoggingAction.LEARNING_RESOURCE_TRASH, getClass(),
+					LoggingResourceable.wrap(re, OlatResourceableType.genRepoEntry));
+		} else if("restored".equals(newStatus)) {
+			rs.restoreRepositoryEntry(re);
+			log.audit("REST restoring course: " + re.getDisplayname() + " [" + re.getKey() + "]");
+			ThreadLocalUserActivityLogger.log(LearningResourceLoggingAction.LEARNING_RESOURCE_RESTORE, getClass(),
+					LoggingResourceable.wrap(re, OlatResourceableType.genRepoEntry));
 		}
 		return Response.ok().build();
 	}

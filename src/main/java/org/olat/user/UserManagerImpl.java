@@ -123,24 +123,6 @@ public class UserManagerImpl extends UserManager {
 		prefs.setInformSessionTimeout(false);
 		return newUser;
 	}
-
-	/**
-	 * @see org.olat.user.UserManager#createAndPersistUser(java.lang.String, java.lang.String, java.lang.String)
-	 */
-	@Override
-	public User createAndPersistUser(String firstName, String lastName, String email) {
-		UserImpl user = new UserImpl();
-		user.setFirstName(firstName);
-		user.setLastName(lastName);
-		user.setEmail(email);
-		user.setCreationDate(new Date());
-		user.setPreferences(new PreferencesImpl());
-		user.getPreferences().setFontsize("normal");
-		user.getPreferences().setPresenceMessagesPublic(false);
-		user.getPreferences().setInformSessionTimeout(false);
-		dbInstance.getCurrentEntityManager().persist(user);
-		return user;
-	}
 	
 	@Override
 	public boolean isEmailInUse(String email) {

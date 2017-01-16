@@ -76,7 +76,8 @@ public abstract class AbstractFlexiTableRenderer extends DefaultComponentRendere
 			if (wrapperSelector != null) {
 				sb.append(" id='").append(wrapperSelector).append("'");
 			}
-			sb.append("><table id=\"").append(id).append("\" class=\"table table-condensed table-striped table-hover\">");
+			sb.append("><table id=\"").append(id).append("\" class=\"table table-condensed table-striped table-hover")
+			  .append(" table-bordered", ftE.isBordered()).append("\">");
 			
 			//render headers
 			renderHeaders(sb, ftC, translator);
@@ -129,7 +130,7 @@ public abstract class AbstractFlexiTableRenderer extends DefaultComponentRendere
 		}
 		
 		sb.append("<div class='row clearfix o_table_toolbar'>")
-		  .append("<div class='col-sm-6 col-xs-12'>");
+		  .append("<div class='col-sm-6 col-xs-12 o_table_toolbar_left'>");
 		if(searchCmp == null || !ftE.isExtendedSearchExpanded()) {
 			renderHeaderSearch(renderer, sb, ftE, ubu, translator, renderResult, args);
 		}
@@ -189,7 +190,16 @@ public abstract class AbstractFlexiTableRenderer extends DefaultComponentRendere
 		}
 		sb.append("</div>");
 		if(StringHelper.containsNonWhitespace(filterIndication)) {
-			sb.append("<div class='o_table_tools_indications'><i class='o_icon o_icon_filter o_icon-lg'> </i> ").append(filterIndication).append("</div>");
+			Form theForm = ftE.getRootForm();
+			String dispatchId = ftE.getFormDispatchId();
+			
+			sb.append("<div class='o_table_tools_indications'>").append(filterIndication)
+				// remove filter
+			  .append(" <a href=\"javascript:")
+			  .append(FormJSHelper.getXHRFnCallFor(theForm, dispatchId, 1, true, true,
+					  new NameValuePair("rm-filter", "true")))
+			  .append("\" title=\"").append(translator.translate("remove.filters")).append("\" ")
+			  .append("\">").append("<i class='o_icon o_icon_remove o_icon-fw'> </i> </a></li></div>"); 
 		}
 		sb.append("</div>");
 		
@@ -201,17 +211,41 @@ public abstract class AbstractFlexiTableRenderer extends DefaultComponentRendere
 			RenderResult renderResult, String[] args) {
 
 		if(ftE.isSearchEnabled()) {
+			Form theForm = ftE.getRootForm();
+			String dispatchId = ftE.getFormDispatchId();
+			
 			sb.append("<div class='o_table_search input-group o_noprint'>");
 			renderFormItem(renderer, sb, ftE.getSearchElement(), ubu, translator, renderResult, args);
 			sb.append("<div class='input-group-btn'>");
+			// reset quick search
+			sb.append("<a href=\"javascript:")
+			  .append(FormJSHelper.getXHRFnCallFor(theForm, dispatchId, 1, true, true, new NameValuePair("reset-search", "true")))
+			  .append("\" class='btn o_reset_quick_search'><i class='o_icon o_icon_remove_filters'> </i></a>");
+						
 			renderFormItem(renderer, sb, ftE.getSearchButton(), ubu, translator, renderResult, args);
 			if(ftE.getExtendedSearchButton() != null) {
 				renderFormItem(renderer, sb, ftE.getExtendedSearchButton(), ubu, translator, renderResult, args);
 			}
+			StringBuilder filterIndication = new StringBuilder();
 			if(ftE.getExtendedFilterButton() != null) {
+				ftE.getSelectedExtendedFilters().forEach(filter -> {
+					if(filterIndication.length() > 0) filterIndication.append(", ");
+					filterIndication.append(filter.getLabel());
+				});
+				
 				renderFormItem(renderer, sb, ftE.getExtendedFilterButton(), ubu, translator, renderResult, args);
 			}
-			sb.append("</div></div>");
+			sb.append("</div>");
+			sb.append("</div>");
+			if(filterIndication.length() > 0) {
+				sb.append("<div class='o_table_tools_indications'>").append(filterIndication)
+				// remove filter
+				  .append("<a href=\"javascript:")
+				  .append(FormJSHelper.getXHRFnCallFor(theForm, dispatchId, 1, true, true,
+						  new NameValuePair("rm-extended-filter", "true")))
+				  .append("\" title=\"").append(translator.translate("remove.filters")).append("\" ")
+				  .append("\">").append("<i class='o_icon o_icon_remove o_icon-fw'> </i> </a></li></div>");
+			}
 		} else if(ftE.getExtendedSearchButton() != null) {
 			renderFormItem(renderer, sb, ftE.getExtendedSearchButton(), ubu, translator, renderResult, args);
 		}
@@ -242,7 +276,7 @@ public abstract class AbstractFlexiTableRenderer extends DefaultComponentRendere
 					filter.getIconRenderer().render(sb, filter, ftE.getComponent(), ftE.getTranslator());
 				}
 				sb.append(filter.getLabel()).append("</a></li>");
-				if(filter.isSelected()) {
+				if(filter.isSelected() && !filter.isShowAll()) {
 					selected = filter.getLabel();
 				}
 			}

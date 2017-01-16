@@ -68,6 +68,11 @@ public class DefaultFlexiColumnModel implements FlexiColumnModel {
 				new StaticFlexiCellRenderer(action, new TextFlexiCellRenderer()));
 	}
 	
+	public DefaultFlexiColumnModel(boolean defVisible, FlexiSortableColumnDef def) {
+		this(defVisible, false, def.i18nHeaderKey(), def.ordinal(), null, def.sortable(), def.sortKey(), FlexiColumnModel.ALIGNMENT_LEFT,
+				new TextFlexiCellRenderer());
+	}
+	
 	public DefaultFlexiColumnModel(FlexiSortableColumnDef def, String action) {
 		this(true, false, def.i18nHeaderKey(), def.ordinal(), action, def.sortable(), def.sortKey(), FlexiColumnModel.ALIGNMENT_LEFT, 
 				new StaticFlexiCellRenderer(action, new TextFlexiCellRenderer()));
@@ -182,6 +187,10 @@ public class DefaultFlexiColumnModel implements FlexiColumnModel {
 	@Override
 	public boolean isAlwaysVisible() {
 		return alwaysVisible;
+	}
+	
+	public void setAlwaysVisible(boolean alwaysVisible) {
+		this.alwaysVisible = alwaysVisible;
 	}
 
 	@Override

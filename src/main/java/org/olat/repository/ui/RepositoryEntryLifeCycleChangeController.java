@@ -20,6 +20,7 @@
 package org.olat.repository.ui;
 
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 
 import org.olat.core.commons.persistence.DB;
@@ -36,11 +37,14 @@ import org.olat.core.gui.control.generic.closablewrapper.CloseableModalControlle
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.logging.OLATSecurityException;
+import org.olat.core.util.Formatter;
 import org.olat.core.util.Util;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryLifeCycleValue;
 import org.olat.repository.RepositoryEntryManagedFlag;
 import org.olat.repository.RepositoryEntryStatus;
 import org.olat.repository.RepositoryManager;
+import org.olat.repository.RepositoryModule;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.controllers.EntryChangedEvent;
 import org.olat.repository.controllers.EntryChangedEvent.Change;
@@ -63,6 +67,7 @@ public class RepositoryEntryLifeCycleChangeController extends BasicController{
 	
 	public static final Event closedEvent = new Event("closed");
 	public static final Event deletedEvent = new Event("deleted");
+	public static final Event unclosedEvent = new Event("unclosed");
 	
 	private Link closeLink, uncloseLink, deleteLink;
 	private VelocityContainer lifeCycleVC;
@@ -78,11 +83,13 @@ public class RepositoryEntryLifeCycleChangeController extends BasicController{
 	@Autowired
 	private DB dbInstance;
 	@Autowired
+	private RepositoryModule repositoryModule;
+	@Autowired
 	private RepositoryService repositoryService;
 	@Autowired
 	private RepositoryManager repositoryManager;
 	
-	protected RepositoryEntryLifeCycleChangeController(UserRequest ureq, WindowControl wControl, RepositoryEntry re, RepositoryEntrySecurity reSecurity, RepositoryHandler handler) {
+	public RepositoryEntryLifeCycleChangeController(UserRequest ureq, WindowControl wControl, RepositoryEntry re, RepositoryEntrySecurity reSecurity, RepositoryHandler handler) {
 		super(ureq, wControl);
 		setTranslator(Util.createPackageTranslator(RepositoryService.class, getLocale(), getTranslator()));
 		this.re = re;
@@ -102,9 +109,15 @@ public class RepositoryEntryLifeCycleChangeController extends BasicController{
 			closeLink.setVisible(!isClosed);
 			
 			uncloseLink = LinkFactory.createButton("unclose", lifeCycleVC, this);
-			uncloseLink.setCustomDisplayText(translate("details.unclose.ressoure"));
+			uncloseLink.setCustomDisplayText(translate("details.unclose.resource"));
 			uncloseLink.setElementCssClass("o_sel_repo_unclose");
 			uncloseLink.setVisible(isClosed);
+
+			RepositoryEntryLifeCycleValue autoCloseVal = repositoryModule.getLifecycleAutoCloseValue();
+			if(autoCloseVal != null && re.getLifecycle() != null && re.getLifecycle().getValidTo() != null) {
+				Date autoCloseDate = autoCloseVal.toDate(re.getLifecycle().getValidTo());
+				lifeCycleVC.contextPut("autoCloseDate", Formatter.getInstance(getLocale()).formatDate(autoCloseDate));
+			}
 		}
 
 		boolean deleteManaged = RepositoryEntryManagedFlag.isManaged(re, RepositoryEntryManagedFlag.delete);
@@ -114,6 +127,12 @@ public class RepositoryEntryLifeCycleChangeController extends BasicController{
 			deleteLink.setCustomDisplayText(translate("details.delete.alt", new String[]{ type }));
 			deleteLink.setIconLeftCSS("o_icon o_icon-fw o_icon_delete_item");
 			deleteLink.setElementCssClass("o_sel_repo_close");
+			
+			RepositoryEntryLifeCycleValue autoDeleteVal = repositoryModule.getLifecycleAutoDeleteValue();
+			if(autoDeleteVal != null && re.getLifecycle() != null && re.getLifecycle().getValidTo() != null) {
+				Date autoDeleteDate = autoDeleteVal.toDate(re.getLifecycle().getValidTo());
+				lifeCycleVC.contextPut("autoDeleteDate", Formatter.getInstance(getLocale()).formatDate(autoDeleteDate));
+			}
 		}
 	}
 
@@ -158,7 +177,7 @@ public class RepositoryEntryLifeCycleChangeController extends BasicController{
 				cleanUp();
 				doUncloseResource();
 				dbInstance.commit();//commit before sending events
-				fireEvent(ureq, closedEvent);
+				fireEvent(ureq, unclosedEvent);
 				EntryChangedEvent e = new EntryChangedEvent(re, getIdentity(), Change.unclosed, "runtime");
 				ureq.getUserSession().getSingleUserEventCenter().fireEventToListenersOf(e, RepositoryService.REPOSITORY_EVENT_ORES);
 			}

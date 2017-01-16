@@ -86,7 +86,7 @@ public class ScoreAccountingArchiveController extends BasicController {
 		} else if(source == downloadButton) {
 			File file = (File)downloadButton.getUserObject();
 			if(file != null) {
-				MediaResource resource = new FileMediaResource(file);
+				MediaResource resource = new FileMediaResource(file, true);
 				ureq.getDispatchResult().setResultingMediaResource(resource);
 			}
 		}

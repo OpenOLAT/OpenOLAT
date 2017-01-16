@@ -37,6 +37,8 @@ public interface Page extends PortfolioElement {
 	
 	public Date getLastPublicationDate();
 	
+	public boolean isEditable();
+	
 	public void setTitle(String title);
 	
 	public String getSummary();

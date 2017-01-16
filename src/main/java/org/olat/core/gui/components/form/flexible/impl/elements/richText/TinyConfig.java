@@ -133,7 +133,15 @@ public class TinyConfig {
 	public TinyConfig enableCode() {
 		return enableFeature("code");
 	}
-	
+
+	public TinyConfig enableAutoResize() {
+		return enableFeature("autoresize");
+	}
+
+	public TinyConfig disableAutoResize() {
+		return disableFeature("autoresize");
+	}
+
 	public TinyConfig enableImageAndMedia() {
 		return enableFeature("image")
 				.enableFeature("media")

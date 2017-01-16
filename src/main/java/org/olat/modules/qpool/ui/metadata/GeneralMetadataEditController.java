@@ -197,9 +197,21 @@ public class GeneralMetadataEditController extends FormBasicController {
 		if(item instanceof QuestionItemImpl) {
 			QuestionItemImpl itemImpl = (QuestionItemImpl)item;
 			itemImpl.setTitle(titleEl.getValue());
-			itemImpl.setKeywords(keywordsEl.getValue());
-			itemImpl.setCoverage(coverageEl.getValue());
-			itemImpl.setAdditionalInformations(addInfosEl.getValue());
+			if(StringHelper.containsNonWhitespace(keywordsEl.getValue())) {
+				itemImpl.setKeywords(keywordsEl.getValue());
+			} else {
+				itemImpl.setKeywords("");
+			}
+			if(StringHelper.containsNonWhitespace(coverageEl.getValue())) {
+				itemImpl.setCoverage(coverageEl.getValue());
+			} else {
+				itemImpl.setCoverage("");
+			}
+			if(StringHelper.containsNonWhitespace(addInfosEl.getValue())) {
+				itemImpl.setAdditionalInformations(addInfosEl.getValue());
+			} else {
+				itemImpl.setAdditionalInformations(null);
+			}
 			itemImpl.setLanguage(languageEl.getValue());
 			if(selectedTaxonomicPath != null) {
 				itemImpl.setTaxonomyLevel(selectedTaxonomicPath);

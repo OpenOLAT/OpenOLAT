@@ -33,6 +33,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import javax.persistence.EntityNotFoundException;
 import javax.persistence.LockModeType;
@@ -690,7 +691,7 @@ public class BaseSecurityManager implements BaseSecurity {
 	 * authentication token is generated.
 	 * @param credential the credentials or null if not used
 	 * @return Identity
-	 */
+	 *
 	@Override
 	public Identity createAndPersistIdentity(String username, User user, String provider, String authusername, String credential) {
 		IdentityImpl iimpl = new IdentityImpl(username, user);
@@ -701,7 +702,7 @@ public class BaseSecurityManager implements BaseSecurity {
 		}
 		notifyNewIdentityCreated(iimpl);
 		return iimpl;
-	}
+	}*/
 
 	/**
 	 * @param username The username
@@ -712,16 +713,7 @@ public class BaseSecurityManager implements BaseSecurity {
 	 */
 	@Override
 	public Identity createAndPersistIdentityAndUser(String username, String externalId, User user, String provider, String authusername) {
-		dbInstance.getCurrentEntityManager().persist(user);
-		IdentityImpl iimpl = new IdentityImpl(username, user);
-		iimpl.setExternalId(externalId);
-		dbInstance.getCurrentEntityManager().persist(iimpl);
-		((UserImpl)user).setIdentity(iimpl);
-		if (provider != null) { 
-			createAndPersistAuthenticationIntern(iimpl, provider, authusername, null, null);
-		}
-		notifyNewIdentityCreated(iimpl);
-		return iimpl;
+		return createAndPersistIdentityAndUser(username, externalId, user, provider, authusername, null);
 	}
 
 	/**
@@ -736,11 +728,15 @@ public class BaseSecurityManager implements BaseSecurity {
 	 */
 	@Override
 	public Identity createAndPersistIdentityAndUser(String username, String externalId, User user, String provider, String authusername, String credential) {
-		dbInstance.getCurrentEntityManager().persist(user);
-		IdentityImpl iimpl = new IdentityImpl(username, user);
+		IdentityImpl iimpl = new IdentityImpl();
+		iimpl.setUser(user);
+		iimpl.setName(username);
+		iimpl.setLastLogin(new Date());
 		iimpl.setExternalId(externalId);
-		dbInstance.getCurrentEntityManager().persist(iimpl);
+		iimpl.setStatus(Identity.STATUS_ACTIV);
 		((UserImpl)user).setIdentity(iimpl);
+		dbInstance.getCurrentEntityManager().persist(iimpl);
+
 		if (provider != null) { 
 			createAndPersistAuthenticationIntern(iimpl, provider, authusername, credential, loginModule.getDefaultHashAlgorithm());
 		}
@@ -1019,6 +1015,26 @@ public class BaseSecurityManager implements BaseSecurity {
 				.setParameter("username", identityNames)
 				.getResultList();
 		return identities;
+	}
+	
+	
+
+	@Override
+	public List<Identity> findIdentitiesByNameCaseInsensitive(Collection<String> identityNames) {
+		if (identityNames == null || identityNames.isEmpty()) return Collections.emptyList();
+
+		StringBuilder sb = new StringBuilder();
+		sb.append("select ident from ").append(IdentityImpl.class.getName()).append(" as ident")
+		  .append(" inner join fetch ident.user user")
+		  .append(" where lower(ident.name) in (:usernames)");
+		
+		List<String> loweredIdentityNames = identityNames.stream()
+				.map(id -> id.toLowerCase()).collect(Collectors.toList());
+
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Identity.class)
+				.setParameter("usernames", loweredIdentityNames)
+				.getResultList();
 	}
 
 	@Override
@@ -1336,6 +1352,7 @@ public class BaseSecurityManager implements BaseSecurity {
 			auth = new AuthenticationImpl(ident, provider, authUserName, credentials);
 		}
 		dbInstance.getCurrentEntityManager().persist(auth);
+		dbInstance.commit();
 		log.audit("Create " + provider + " authentication (login=" + ident.getName() + ",authusername=" + authUserName + ")");
 		return auth;
 	}
@@ -1881,20 +1898,6 @@ public class BaseSecurityManager implements BaseSecurity {
 	 */
 	public void setDbVendor(String dbVendor) {
 		this.dbVendor = dbVendor;
-	}
-
-  /**
-   * @see org.olat.basesecurity.Manager#isIdentityVisible(java.lang.String)
-   */
-	public boolean isIdentityVisible(String identityName) {
-		if (identityName == null) throw new AssertException("findIdentitybyName: name was null");
-		String queryString = "select count(ident) from org.olat.basesecurity.IdentityImpl as ident where ident.name = :identityName and ident.status < :status";
-		DBQuery dbq = DBFactory.getInstance().createQuery(queryString);
-		dbq.setString("identityName", identityName);
-		dbq.setInteger("status", Identity.STATUS_VISIBLE_LIMIT);
-		List res = dbq.list();
-		Long cntL = (Long) res.get(0);
-		return (cntL.longValue() > 0);
 	}
 
 	@Override

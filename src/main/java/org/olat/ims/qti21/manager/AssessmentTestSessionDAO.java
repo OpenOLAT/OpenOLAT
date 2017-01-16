@@ -50,7 +50,6 @@ import org.springframework.stereotype.Service;
 @Service
 public class AssessmentTestSessionDAO {
 	
-
 	private final DateFormat formater = new SimpleDateFormat("yyyyMMdd'T'HHmmss");
 	
 	@Autowired
@@ -319,6 +318,18 @@ public class AssessmentTestSessionDAO {
 		}
 		return query.getResultList();
 	}
+	
+	public List<AssessmentTestSession> getUserTestSessions(IdentityRef identity) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select session from qtiassessmenttestsession session")
+		  .append(" left join fetch session.testEntry testEntry")
+		  .append(" left join fetch testEntry.olatResource testResource")
+		  .append(" where session.identity.key=:identityKey ");;
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), AssessmentTestSession.class)
+				.setParameter("identityKey", identity.getKey())
+				.getResultList();
+	}
 
 	public List<AssessmentTestSession> getUserTestSessions(RepositoryEntryRef courseEntry, String courseSubIdent, IdentityRef identity) {
 		StringBuilder sb = new StringBuilder();
@@ -422,7 +433,7 @@ public class AssessmentTestSessionDAO {
 	 * @param testEntry
 	 * @return
 	 */
-	public int deleteAllUserTestSessions(RepositoryEntryRef testEntry) {
+	public int deleteAllUserTestSessionsByTest(RepositoryEntryRef testEntry) {
 		String marksSb = "delete from qtiassessmentmarks marks where marks.testEntry.key=:testEntryKey";
 		int marks = dbInstance.getCurrentEntityManager()
 				.createQuery(marksSb)
@@ -454,6 +465,84 @@ public class AssessmentTestSessionDAO {
 		int sessions = dbInstance.getCurrentEntityManager()
 				.createQuery(q)
 				.setParameter("testEntryKey", testEntry.getKey())
+				.executeUpdate();
+		return marks + itemSessions + sessions + responses;
+	}
+	
+	
+	public int deleteAllUserTestSessionsByCourse(RepositoryEntryRef entry, String subIdent) {
+		String marksSb = "delete from qtiassessmentmarks marks where marks.repositoryEntry.key=:entryKey and marks.subIdent=:subIdent";
+		int marks = dbInstance.getCurrentEntityManager()
+				.createQuery(marksSb)
+				.setParameter("entryKey", entry.getKey())
+				.setParameter("subIdent", subIdent)
+				.executeUpdate();
+		
+		StringBuilder responseSb  = new StringBuilder();
+		responseSb.append("delete from qtiassessmentresponse response where")
+		  .append("  response.assessmentItemSession.key in (")
+		  .append("   select itemSession from qtiassessmentitemsession itemSession, qtiassessmenttestsession session ")
+		  .append("   where itemSession.assessmentTestSession.key=session.key and session.repositoryEntry.key=:entryKey and session.subIdent=:subIdent")
+		  .append(" )");
+		int responses = dbInstance.getCurrentEntityManager()
+				.createQuery(responseSb.toString())
+				.setParameter("entryKey", entry.getKey())
+				.setParameter("subIdent", subIdent)
+				.executeUpdate();
+		
+		StringBuilder itemSb  = new StringBuilder();
+		itemSb.append("delete from qtiassessmentitemsession itemSession")
+		  .append(" where itemSession.assessmentTestSession.key in(")
+		  .append("  select session.key from qtiassessmenttestsession session where session.repositoryEntry.key=:entryKey and session.subIdent=:subIdent")
+		  .append(" )");
+		int itemSessions = dbInstance.getCurrentEntityManager()
+				.createQuery(itemSb.toString())
+				.setParameter("entryKey", entry.getKey())
+				.setParameter("subIdent", subIdent)
+				.executeUpdate();
+		
+		String q = "delete from qtiassessmenttestsession session where session.repositoryEntry.key=:entryKey and session.subIdent=:subIdent";
+		int sessions = dbInstance.getCurrentEntityManager()
+				.createQuery(q)
+				.setParameter("entryKey", entry.getKey())
+				.setParameter("subIdent", subIdent)
+				.executeUpdate();
+		return marks + itemSessions + sessions + responses;
+	}
+	
+	
+	public int deleteAllUserTestSessionsByCourse(RepositoryEntryRef entry) {
+		String marksSb = "delete from qtiassessmentmarks marks where marks.repositoryEntry.key=:entryKey";
+		int marks = dbInstance.getCurrentEntityManager()
+				.createQuery(marksSb)
+				.setParameter("entryKey", entry.getKey())
+				.executeUpdate();
+		
+		StringBuilder responseSb  = new StringBuilder();
+		responseSb.append("delete from qtiassessmentresponse response where")
+		  .append("  response.assessmentItemSession.key in (")
+		  .append("   select itemSession from qtiassessmentitemsession itemSession, qtiassessmenttestsession session ")
+		  .append("   where itemSession.assessmentTestSession.key=session.key and session.repositoryEntry.key=:entryKey")
+		  .append(" )");
+		int responses = dbInstance.getCurrentEntityManager()
+				.createQuery(responseSb.toString())
+				.setParameter("entryKey", entry.getKey())
+				.executeUpdate();
+		
+		StringBuilder itemSb  = new StringBuilder();
+		itemSb.append("delete from qtiassessmentitemsession itemSession")
+		  .append(" where itemSession.assessmentTestSession.key in(")
+		  .append("  select session.key from qtiassessmenttestsession session where session.repositoryEntry.key=:entryKey")
+		  .append(" )");
+		int itemSessions = dbInstance.getCurrentEntityManager()
+				.createQuery(itemSb.toString())
+				.setParameter("entryKey", entry.getKey())
+				.executeUpdate();
+		
+		String q = "delete from qtiassessmenttestsession session where session.repositoryEntry.key=:entryKey";
+		int sessions = dbInstance.getCurrentEntityManager()
+				.createQuery(q)
+				.setParameter("entryKey", entry.getKey())
 				.executeUpdate();
 		return marks + itemSessions + sessions + responses;
 	}

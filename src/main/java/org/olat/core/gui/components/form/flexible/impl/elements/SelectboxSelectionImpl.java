@@ -49,6 +49,7 @@ public class SelectboxSelectionImpl extends FormItemImpl implements SingleSelect
 	private String original = null;
 	private boolean originalSelect = false;
 	private int selectedIndex = -1;
+	private boolean allowNoSelection = false;
 
 	private final SelectboxComponent component;
 	
@@ -155,6 +156,16 @@ public class SelectboxSelectionImpl extends FormItemImpl implements SingleSelect
 	public String getValue(int which) {
 		return values[which];
 	}
+	
+	@Override
+	public boolean isAllowNoSelection() {
+		return allowNoSelection;
+	}
+
+	@Override
+	public void setAllowNoSelection(boolean allowNoSelection) {
+		this.allowNoSelection = allowNoSelection;
+	}
 
 	/**
 	 * @see org.olat.core.gui.components.form.flexible.elements.SelectionContainer#isSelected(int)
@@ -185,6 +196,11 @@ public class SelectboxSelectionImpl extends FormItemImpl implements SingleSelect
 		if (!found) {
 			throw new AssertException("could not set <" + key + "> to " + select + " because key was not found!");
 		}
+	}
+	
+	@Override
+	public void setWidthInPercent(int width) {
+		//
 	}
 
 	/**
@@ -222,7 +238,7 @@ public class SelectboxSelectionImpl extends FormItemImpl implements SingleSelect
 	
 	@Override
 	public void validate(List<ValidationStatus> validationResults) {
-		if (isVisible() && !isOneSelected()) {
+		if (!allowNoSelection && isVisible() && !isOneSelected()) {
 			validationResults.add(new ValidationStatusImpl(ValidationStatus.ERROR));
 			return;
 		}

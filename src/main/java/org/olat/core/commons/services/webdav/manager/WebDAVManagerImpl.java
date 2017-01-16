@@ -50,14 +50,11 @@ import org.olat.core.id.UserConstants;
 import org.olat.core.util.SessionInfo;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.UserSession;
-import org.olat.core.util.cache.CacheWrapper;
-import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.session.UserSessionManager;
 import org.olat.core.util.vfs.MergeSource;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VirtualContainer;
 import org.olat.core.util.vfs.callbacks.ReadOnlyCallback;
-import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -71,13 +68,10 @@ import org.springframework.stereotype.Service;
  * 
  */
 @Service("webDAVManager")
-public class WebDAVManagerImpl implements WebDAVManager, InitializingBean {
+public class WebDAVManagerImpl implements WebDAVManager {
 	private static boolean enabled = true;
 	
 	public static final String BASIC_AUTH_REALM = "OLAT WebDAV Access";
-	private CoordinatorManager coordinatorManager;
-
-	private CacheWrapper<CacheKey,UserSession> timedSessionCache;
 
 	@Autowired
 	private UserSessionManager sessionManager;
@@ -85,16 +79,6 @@ public class WebDAVManagerImpl implements WebDAVManager, InitializingBean {
 	private WebDAVAuthManager webDAVAuthManager;
 	@Autowired
 	private WebDAVModule webdavModule;
-
-	@Autowired
-	public WebDAVManagerImpl(CoordinatorManager coordinatorManager) {
-		this.coordinatorManager = coordinatorManager;
-	}
-
-	@Override
-	public void afterPropertiesSet() throws Exception {
-		timedSessionCache = coordinatorManager.getCoordinator().getCacher().getCache(WebDAVManager.class.getSimpleName(), "webdav");
-	}
 	
 	@Override
 	public WebResourceRoot getWebDAVRoot(HttpServletRequest req) {
@@ -149,11 +133,6 @@ public class WebDAVManagerImpl implements WebDAVManager, InitializingBean {
 	 */
 	@Override
 	public boolean handleAuthentication(HttpServletRequest req, HttpServletResponse resp) {
-		//manger not started
-		if(timedSessionCache == null) {
-			return false;
-		}
-		
 		UserSession usess = sessionManager.getUserSession(req);
 		if(usess != null && usess.isAuthenticated()) {
 			req.setAttribute(REQUEST_USERSESSION_KEY, usess);
@@ -184,10 +163,8 @@ public class WebDAVManagerImpl implements WebDAVManager, InitializingBean {
 		String authHeader = request.getHeader("Authorization");
 		if (authHeader != null) {
 			// fetch user session from a previous authentication
-			
-			String cacheKey = null;
+
 			UserSession usess = null;
-			String remoteAddr = request.getRemoteAddr();
 			
 			StringTokenizer st = new StringTokenizer(authHeader);
 			if (st.hasMoreTokens()) {
@@ -195,24 +172,15 @@ public class WebDAVManagerImpl implements WebDAVManager, InitializingBean {
 
 				// We only handle HTTP Basic authentication
 				if (basic.equalsIgnoreCase("Basic")) {
-					cacheKey = authHeader;
-					usess = timedSessionCache.get(new CacheKey(remoteAddr, authHeader));
-					if (usess == null || !usess.isAuthenticated()) {
-						String credentials = st.nextToken();
-						usess = handleBasicAuthentication(credentials, request);
-					}
+					String credentials = st.nextToken();
+					usess = handleBasicAuthentication(credentials, request);
 				} else if (basic.equalsIgnoreCase("Digest")) {
 					DigestAuthentication digestAuth = DigestAuthentication.parse(authHeader);
-					cacheKey = digestAuth.getUsername();
-					usess = timedSessionCache.get(new CacheKey(remoteAddr, digestAuth.getUsername()));
-					if (usess == null || !usess.isAuthenticated()) {
-						usess = handleDigestAuthentication(digestAuth, request);
-					}
+					usess = handleDigestAuthentication(digestAuth, request);
 				}
 			}
 	
-			if(usess != null && cacheKey != null) {
-				timedSessionCache.put(new CacheKey(remoteAddr, cacheKey), usess);
+			if(usess != null) {
 				return usess;
 			}
 		}
@@ -286,16 +254,15 @@ public class WebDAVManagerImpl implements WebDAVManager, InitializingBean {
 			// set the roles (admin, author, guest)
 			Roles roles = BaseSecurityManager.getInstance().getRoles(identity);
 			usess.setRoles(roles);
-			// set authprovider
-			//usess.getIdentityEnvironment().setAuthProvider(OLATAuthenticationController.PROVIDER_OLAT);
-		
 			// set session info
 			SessionInfo sinfo = new SessionInfo(identity.getKey(), identity.getName(), request.getSession());
 			User usr = identity.getUser();
 			sinfo.setFirstname(usr.getProperty(UserConstants.FIRSTNAME, null));
 			sinfo.setLastname(usr.getProperty(UserConstants.LASTNAME, null));
-			sinfo.setFromIP(request.getRemoteAddr());
-			sinfo.setFromFQN(request.getRemoteAddr());
+			
+			String remoteAddr = request.getRemoteAddr();
+			sinfo.setFromIP(remoteAddr);
+			sinfo.setFromFQN(remoteAddr);
 			try {
 				InetAddress[] iaddr = InetAddress.getAllByName(request.getRemoteAddr());
 				if (iaddr.length > 0) sinfo.setFromFQN(iaddr[0].getHostName());

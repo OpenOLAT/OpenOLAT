@@ -50,6 +50,7 @@ public class SingleSelectionImpl extends FormItemImpl implements SingleSelection
 	private String original = null;
 	private boolean originalSelect = false;
 	private int selectedIndex = -1;
+	private boolean allowNoSelection = false;
 
 	private final Layout layout;
 	private final SingleSelectionComponent component;
@@ -158,6 +159,21 @@ public class SingleSelectionImpl extends FormItemImpl implements SingleSelection
 		return values[which];
 	}
 
+	@Override
+	public void setWidthInPercent(int width) {
+		component.setWidthInPercent(width);
+	}
+
+	@Override
+	public boolean isAllowNoSelection() {
+		return allowNoSelection;
+	}
+
+	@Override
+	public void setAllowNoSelection(boolean allowNoSelection) {
+		this.allowNoSelection = allowNoSelection;
+	}
+
 	/**
 	 * @see org.olat.core.gui.components.form.flexible.elements.SelectionContainer#isSelected(int)
 	 */
@@ -225,7 +241,7 @@ public class SingleSelectionImpl extends FormItemImpl implements SingleSelection
 	
 	@Override
 	public void validate(List<ValidationStatus> validationResults) {
-		if (isVisible() && !isOneSelected()) {
+		if (!allowNoSelection && isVisible() && !isOneSelected()) {
 			validationResults.add(new ValidationStatusImpl(ValidationStatus.ERROR));
 			return;
 		}

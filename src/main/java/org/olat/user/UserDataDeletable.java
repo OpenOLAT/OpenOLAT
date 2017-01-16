@@ -25,6 +25,8 @@
 
 package org.olat.user;
 
+import java.io.File;
+
 import org.olat.core.id.Identity;
 
 
@@ -35,9 +37,14 @@ import org.olat.core.id.Identity;
  * @author Christian Guretzki
  */
 public interface UserDataDeletable {
+	
+	default public int deleteUserDataPriority() {
+		return 0;
+	}
+	
 	/**
 	 * Delete user data for certain user
 	 * @param identity  Data for this identity will be deleted 
 	 */
-	public void deleteUserData(Identity identity, String newDeletedUserName);
+	public void deleteUserData(Identity identity, String newDeletedUserName, File archivePath);
 }

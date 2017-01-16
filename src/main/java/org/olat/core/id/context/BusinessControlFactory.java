@@ -331,10 +331,17 @@ public class BusinessControlFactory {
 		List<ContextEntry> entries = new ArrayList<ContextEntry>();
 		if(resources != null && resources.length > 0) {
 			for(OLATResourceable resource:resources) {
-				ContextEntry entry = createContextEntry(resource);
-				entries.add(entry);
+				entries.add(createContextEntry(resource));
 			}
 		}
+		return entries;
+	}
+	
+	public List<ContextEntry> createCEListFromResourceable(OLATResourceable resource, StateEntry stateEntry) {
+		List<ContextEntry> entries = new ArrayList<ContextEntry>();
+		ContextEntry entry = createContextEntry(resource);
+		entry.setTransientState(stateEntry);
+		entries.add(entry);
 		return entries;
 	}
 	

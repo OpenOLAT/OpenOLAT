@@ -48,7 +48,6 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.creator.ControllerCreator;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
-import org.olat.core.gui.media.MediaResource;
 import org.olat.core.helpers.Settings;
 import org.olat.core.id.Identity;
 import org.olat.core.id.UserConstants;
@@ -319,8 +318,8 @@ public class MembersCourseNodeRunController extends FormBasicController {
 	}
 	
 	private Member createMember(Identity identity) {
-		MediaResource rsrc = portraitManager.getSmallPortraitResource(identity.getName());
-		
+		boolean hasPortrait = portraitManager.hasPortrait(identity.getName());
+
 		String portraitCssClass;
 		String gender = identity.getUser().getProperty(UserConstants.GENDER, Locale.ENGLISH);
 		if ("male".equalsIgnoreCase(gender)) {
@@ -331,7 +330,7 @@ public class MembersCourseNodeRunController extends FormBasicController {
 			portraitCssClass = DisplayPortraitManager.DUMMY_BIG_CSS_CLASS;
 		}
 		String fullname = userManager.getUserDisplayName(identity);
-		return new Member(identity, fullname, userPropertyHandlers, getLocale(), rsrc != null, portraitCssClass);
+		return new Member(identity, fullname, userPropertyHandlers, getLocale(), hasPortrait, portraitCssClass);
 	}
 	
 	@Override

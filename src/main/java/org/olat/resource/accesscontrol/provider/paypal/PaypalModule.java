@@ -78,8 +78,8 @@ public class PaypalModule extends AbstractSpringModule implements GenericEventLi
 	private boolean sandbox;
 	@Value("${paypal.sandbox.email}")
 	private String paypalSandboxEmailAddress;
-	// Email fo the first receiver/merchant
-	@Value("${paypal.first.receiver.email}	")
+	// Email for the first receiver/merchant
+	@Value("${paypal.first.receiver.email}")
 	private String paypalFirstReceiverEmailAddress;
 	private String deviceIpAddress;
 	

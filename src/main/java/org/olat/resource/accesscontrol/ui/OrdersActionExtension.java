@@ -51,7 +51,7 @@ public class OrdersActionExtension extends GenericActionExtension {
 		if(arg instanceof ICourse) {
 			ICourse course = (ICourse)arg;
 			OLATResource resource = OLATResourceManager.getInstance().findResourceable(course);
-			return new OrdersAdminController(ureq, wControl, resource);
+			return new OrdersAdminController(ureq, wControl, null, resource);
 		}
 		return super.createController(ureq, wControl, arg);
 	}

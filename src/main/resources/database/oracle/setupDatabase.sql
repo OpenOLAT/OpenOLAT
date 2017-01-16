@@ -171,9 +171,7 @@ CREATE TABLE o_bs_identity (
   name varchar2(128 char) NOT NULL,
   external_id varchar2(64 char),
   status number(11),
-  fk_user_id number(20),
   CONSTRAINT u_o_bs_identity UNIQUE (name),
-  CONSTRAINT u_o_bs_identity01 UNIQUE (fk_user_id),
   PRIMARY KEY (id)
 );
 
@@ -326,7 +324,8 @@ CREATE TABLE o_user (
    u_genericcheckboxproperty2 varchar2(255 char),
    u_genericcheckboxproperty3 varchar2(255 char),
    
-  PRIMARY KEY (user_id)
+   fk_identity number(20),
+   PRIMARY KEY (user_id)
 );
 
 
@@ -460,6 +459,8 @@ CREATE TABLE o_repositoryentry (
   candownload number NOT NULL,
   cancopy number NOT NULL,
   canreference number NOT NULL,
+  deletiondate date default null,
+  fk_deleted_by number(20) default null,
   CONSTRAINT u_o_repositoryentry UNIQUE (softkey),
   CONSTRAINT u_o_repositoryentry01 UNIQUE (fk_olatresource),
   CONSTRAINT u_o_repositoryentry02 UNIQUE (fk_stats),
@@ -1541,6 +1542,7 @@ create table o_pf_page (
    creationdate date not null,
    lastmodified date not null,
    pos number(20) default null,
+   p_editable number default 1,
    p_title varchar2(255 char),
    p_summary varchar2(4000 char),
    p_status varchar2(32 char),
@@ -1599,6 +1601,7 @@ create table o_pf_page_part (
    p_layout_options varchar2(2000 char),
    fk_media_id number(20),
    fk_page_body_id number(20),
+   fk_form_entry_id number(20) default null,
    primary key (id)
 );
 
@@ -1646,6 +1649,10 @@ create table o_pf_assignment (
    fk_template_reference_id number(20),
    fk_page_id number(20),
    fk_assignee_id number(20),
+   p_only_auto_eva number default 1,
+   p_reviewer_see_auto_eva number default 0,
+   p_anon_extern_eva number default 1,
+   fk_form_entry_id number(20) default null,
    primary key (id)
 );
 
@@ -1659,6 +1666,31 @@ create table o_pf_binder_user_infos (
    fk_identity number(20),
    fk_binder number(20),
    unique(fk_identity, fk_binder),
+   primary key (id)
+);
+
+create table o_eva_form_session (
+   id number(20) GENERATED ALWAYS AS IDENTITY,
+   creationdate date not null,
+   lastmodified date not null,
+   e_status varchar2(16 char),
+   e_submission_date date,
+   e_first_submission_date date,
+   fk_identity number(20) not null,
+   fk_page_body number(20) not null,
+   fk_form_entry number(20) not null,
+   primary key (id)
+);
+
+create table o_eva_form_response (
+   id number(20) GENERATED ALWAYS AS IDENTITY,
+   creationdate date not null,
+   lastmodified date not null,
+   e_responseidentifier varchar2(64 char) not null,
+   e_responsedatatype varchar2(16 char) not null,
+   e_numericalresponse decimal default null,
+   e_stringuifiedresponse clob,
+   fk_session number(20) not null,
    primary key (id)
 );
 
@@ -1916,7 +1948,7 @@ create view o_bs_identity_short_v as (
       us.u_lastname as last_name,
       us.u_email as email
    from o_bs_identity ident
-   inner join o_user us on (ident.fk_user_id = us.user_id)
+   inner join o_user us on (ident.id = us.fk_identity)
 );
 
 -- eportfolio views
@@ -2053,7 +2085,7 @@ create view o_gp_contactext_v as (
    from o_gp_business bgroup
    inner join o_bs_group_member bg_member on (bg_member.fk_group_id = bgroup.fk_group_id)
    inner join o_bs_identity id_member on (bg_member.fk_identity_id = id_member.id)
-   inner join o_user us_member on (id_member.fk_user_id = us_member.user_id)
+   inner join o_user us_member on (id_member.id = us_member.fk_identity)
    inner join o_bs_group_member bg_me on (bg_me.fk_group_id = bgroup.fk_group_id)
    where
       (bgroup.ownersintern>0 and bg_member.g_role='coach')
@@ -2298,7 +2330,6 @@ create index provider_idx on o_bs_authentication (provider);
 create index credential_idx on o_bs_authentication (credential);
 create index authusername_idx on o_bs_authentication (authusername);
 
-alter table o_bs_identity add constraint FKFF94111CD1A80C95 foreign key (fk_user_id) references o_user (user_id);
 -- index created by unique constraint
 create index identstatus_idx on o_bs_identity (status);
 create index idx_ident_creationdate_idx on o_bs_identity (creationdate);
@@ -2316,11 +2347,21 @@ create index FK7B6288B4B85B522C on o_bs_membership (secgroup_id);
 alter table o_bs_invitation add constraint inv_to_group_group_ctx foreign key (fk_group_id) references o_bs_group (id);
 create index idx_inv_to_group_group_ctx on o_bs_invitation (fk_group_id);
 
-
 -- user
 create index usr_notification_interval_idx on o_user (notification_interval);
+create index idx_user_firstname_idx on o_user (u_firstname);
+create index idx_user_lastname_idx on o_user (u_lastname);
+create index idx_user_email_idx on o_user (u_email);
+create index idx_user_instname_idx on o_user (u_institutionalname);
+create index idx_user_instid_idx on o_user (u_institutionaluseridentifier);
+create index idx_user_instemail_idx on o_user (u_institutionalemail);
+create index idx_user_creationdate_idx on o_user (creationdate);
 
 create index propvalue_idx on o_userproperty (propvalue);
+
+alter table o_user add constraint user_to_ident_idx foreign key (fk_identity) references o_bs_identity(id);
+create index idx_user_to_ident_idx on o_user (fk_identity);
+alter table o_user add constraint idx_un_user_to_ident_idx UNIQUE (fk_identity);
 
 -- pub sub
 create index name_idx2 on o_noti_pub (resname, resid, subident);
@@ -2379,6 +2420,9 @@ create index idx_re_lifecycle_idx on o_repositoryentry (fk_lifecycle);
 
 alter table o_repositoryentry add constraint repoentry_stats_ctx foreign key (fk_stats) references o_repositoryentry_stats (id);
 -- create index repoentry_stats_idx on o_repositoryentry (fk_stats);
+
+alter table o_repositoryentry add constraint re_deleted_to_identity_idx foreign key (fk_deleted_by) references o_bs_identity (id);
+create index idx_re_deleted_to_identity_idx on o_repositoryentry (fk_deleted_by);
 
 -- access control
 create index ac_offer_to_resource_idx on o_ac_offer (fk_resource_id);
@@ -2717,6 +2761,8 @@ alter table o_pf_page_part add constraint pf_page_page_body_idx foreign key (fk_
 create index idx_pf_page_page_body_idx on o_pf_page_part (fk_page_body_id);
 alter table o_pf_page_part add constraint pf_page_media_idx foreign key (fk_media_id) references o_pf_media (id);
 create index idx_pf_page_media_idx on o_pf_page_part (fk_media_id);
+alter table o_pf_page_part add constraint pf_part_form_idx foreign key (fk_form_entry_id) references o_repositoryentry (repositoryentry_id);
+create index idx_pf_part_form_idx on o_pf_page_part (fk_form_entry_id);
 
 create index idx_category_name_idx on o_pf_category (p_name);
 
@@ -2742,6 +2788,17 @@ alter table o_pf_binder_user_infos add constraint binder_user_to_identity_idx fo
 create index idx_binder_user_to_ident_idx on o_pf_binder_user_infos (fk_identity);
 alter table o_pf_binder_user_infos add constraint binder_user_binder_idx foreign key (fk_binder) references o_pf_binder (id);
 create index idx_binder_user_binder_idx on o_pf_binder_user_infos (fk_binder);
+
+-- evaluation form
+alter table o_eva_form_session add constraint eva_session_to_ident_idx foreign key (fk_identity) references o_bs_identity (id);
+create index idx_eva_session_to_ident_idx on o_eva_form_session (fk_identity);
+alter table o_eva_form_session add constraint eva_session_to_body_idx foreign key (fk_page_body) references o_pf_page_body (id);
+create index idx_eva_session_to_body_idx on o_eva_form_session (fk_page_body);
+alter table o_eva_form_session add constraint eva_session_to_form_idx foreign key (fk_form_entry) references o_repositoryentry (repositoryentry_id);
+create index idx_eva_session_to_form_idx on o_eva_form_session (fk_form_entry);
+
+alter table o_eva_form_response add constraint eva_resp_to_sess_idx foreign key (fk_session) references o_eva_form_session (id);
+create index idx_eva_resp_to_sess_idx on o_eva_form_response (fk_session);
 
 -- question pool
 alter table o_qp_pool add constraint idx_qp_pool_owner_grp_id foreign key (fk_ownergroup) references o_bs_secgroup(id);

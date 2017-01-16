@@ -253,6 +253,37 @@
 					</bean>
 				</entry>
 				
+				<entry key="org.olat.course.nodes.pf.ui.PFCoachController">
+					<bean class="org.olat.user.propertyhandlers.UserPropertyUsageContext">
+						<property name="propertyHandlers">
+							<list>
+								<ref bean="userPropertyUserName" />
+								<ref bean="userPropertyFirstName" />
+								<ref bean="userPropertyLastName" />
+								<ref bean="userPropertyEmail" />
+								<ref bean="userPropertyInstitutionalName" />
+								<ref bean="userPropertyInstitutionalUserIdentifier" />
+								<ref bean="userPropertyInstitutionalEmail" />
+							</list>
+						</property>
+						<property name="mandatoryProperties">
+							<set>
+								<ref bean="userPropertyLastName" />
+								<ref bean="userPropertyFirstName" />
+							</set>
+						</property>
+						<property name="adminViewOnlyProperties">
+							<set>
+								<ref bean="userPropertyUserName" />
+								<ref bean="userPropertyEmail" />
+								<ref bean="userPropertyInstitutionalName" />
+								<ref bean="userPropertyInstitutionalUserIdentifier" />
+								<ref bean="userPropertyInstitutionalEmail" />
+							</set>						
+						</property>
+					</bean>
+				</entry>
+				
 				<entry key="org.olat.course.member.MemberListController">
 					<bean class="org.olat.user.propertyhandlers.UserPropertyUsageContext">
 						<property name="propertyHandlers">
@@ -313,6 +344,30 @@
 								<ref bean="userPropertyInstitutionalUserIdentifier" />
 								<ref bean="userPropertyInstitutionalEmail" />
 							</list>
+						</property>
+					</bean>
+				</entry>
+				
+				<entry key="org.olat.resource.accesscontrol.ui.OrdersAdminController">
+					<bean class="org.olat.user.propertyhandlers.UserPropertyUsageContext">
+						<property name="description" value="Booking list" />
+						<property name="propertyHandlers">
+							<list>
+								<ref bean="userPropertyLastName" />
+								<ref bean="userPropertyFirstName" />
+								<ref bean="userPropertyInstitutionalUserIdentifier" />
+							</list>
+						</property>
+						<property name="mandatoryProperties">
+							<set>
+								<ref bean="userPropertyLastName" />
+								<ref bean="userPropertyFirstName" />
+							</set>
+						</property>
+						<property name="adminViewOnlyProperties">
+							<set>
+								<ref bean="userPropertyInstitutionalUserIdentifier" />
+							</set>
 						</property>
 					</bean>
 				</entry>

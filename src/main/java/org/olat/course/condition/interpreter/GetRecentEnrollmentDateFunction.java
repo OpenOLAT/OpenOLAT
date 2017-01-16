@@ -77,14 +77,18 @@ public class GetRecentEnrollmentDateFunction extends AbstractFunction {
 		 */
 		CourseEditorEnv cev = getUserCourseEnv().getCourseEditorEnv();
 		if (cev != null) {
-			if (!cev.existsNode(nodeId)) { return handleException( new ArgumentParseException(ArgumentParseException.REFERENCE_NOT_FOUND, name, nodeId,
-					"error.notfound.coursenodeid", "solution.copypastenodeid")); }
-			if (!cev.isEnrollmentNode(nodeId)) { return handleException(new ArgumentParseException(ArgumentParseException.REFERENCE_NOT_FOUND, name,
-					nodeId, "error.notenrollment.coursenodeid", "solution.chooseenrollment")); }
+			if (!cev.existsNode(nodeId)) {
+				return handleException( new ArgumentParseException(ArgumentParseException.REFERENCE_NOT_FOUND, name, nodeId,
+					"error.notfound.coursenodeid", "solution.copypastenodeid"));
+			}
+			if (!cev.isEnrollmentNode(nodeId)) {
+				return handleException(new ArgumentParseException(ArgumentParseException.REFERENCE_NOT_FOUND, name,
+					nodeId, "error.notenrollment.coursenodeid", "solution.chooseenrollment"));
+			}
 			// Remember the reference to the node id for this condition for cycle testing. 
 			// Allow self-referencing but do not allow dependencies to parents as they create cycles.
 			if (!nodeId.equals(cev.getCurrentCourseNodeId())) {
-				cev.addSoftReference("courseNodeId", nodeId);				
+				cev.addSoftReference("courseNodeId", nodeId, false);				
 			}
 			// return a valid value to continue with condition evaluation test
 			return defaultValue();
@@ -101,17 +105,15 @@ public class GetRecentEnrollmentDateFunction extends AbstractFunction {
 		CoursePropertyManager pm = getUserCourseEnv().getCourseEnvironment().getCoursePropertyManager();
 		Identity identity = getUserCourseEnv().getIdentityEnvironment().getIdentity();
 		
-    Property recentTime = pm.findCourseNodeProperty(node, 
-        identity, null, ENCourseNode.PROPERTY_RECENT_ENROLLMENT_DATE);
+		Property recentTime = pm.findCourseNodeProperty(node, identity, null, ENCourseNode.PROPERTY_RECENT_ENROLLMENT_DATE);
 
-    if (recentTime != null) {
-    	String firstTimeMillis = recentTime.getStringValue();
-    	return Double.valueOf(firstTimeMillis);
-    }
-    else {
-    	// what to do in case of no date available??? -> return date in the future
-    	return new Double(Double.POSITIVE_INFINITY);
-    }
+		if (recentTime != null) {
+			String firstTimeMillis = recentTime.getStringValue();
+			return Double.valueOf(firstTimeMillis);
+		} else {
+			// what to do in case of no date available??? -> return date in the future
+			return new Double(Double.POSITIVE_INFINITY);
+		}
 	}
 
 	protected Object defaultValue() {

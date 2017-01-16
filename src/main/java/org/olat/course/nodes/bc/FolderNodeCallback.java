@@ -62,7 +62,7 @@ public class FolderNodeCallback implements VFSSecurityCallback {
 		nodeFolderQuota = qm.getCustomQuota(relPath);
 		if (nodeFolderQuota == null) {
 			Quota defQuota = qm.getDefaultQuota(QuotaConstants.IDENTIFIER_DEFAULT_NODES);
-			nodeFolderQuota = QuotaManager.getInstance().createQuota(relPath, defQuota.getQuotaKB(), defQuota.getUlLimitKB());
+			nodeFolderQuota = qm.createQuota(relPath, defQuota.getQuotaKB(), defQuota.getUlLimitKB());
 		}
 	}
 

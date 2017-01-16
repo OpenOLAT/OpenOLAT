@@ -25,6 +25,7 @@
 
 package org.olat.ims.qti;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -335,7 +336,8 @@ public class QTIResultManager implements UserDataDeletable {
 	 * Delete all ResultSet for certain identity.
 	 * @param identity
 	 */
-	public void deleteUserData(Identity identity, String newDeletedUserName) {
+	@Override
+	public void deleteUserData(Identity identity, String newDeletedUserName, File archivePath) {
 		List<QTIResultSet> qtiResults = findQtiResultSets(identity);
 		for (QTIResultSet set:qtiResults) {
 			deleteResultSet(set);

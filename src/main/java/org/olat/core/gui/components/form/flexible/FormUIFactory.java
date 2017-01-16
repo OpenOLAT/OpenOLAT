@@ -47,8 +47,10 @@ import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElem
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement.Layout;
 import org.olat.core.gui.components.form.flexible.elements.RichTextElement;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
+import org.olat.core.gui.components.form.flexible.elements.SliderElement;
 import org.olat.core.gui.components.form.flexible.elements.SpacerElement;
 import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
+import org.olat.core.gui.components.form.flexible.elements.TextAreaElement;
 import org.olat.core.gui.components.form.flexible.elements.TextBoxListElement;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
@@ -70,6 +72,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.MultiSelectionTr
 import org.olat.core.gui.components.form.flexible.impl.elements.MultipleSelectionElementImpl;
 import org.olat.core.gui.components.form.flexible.impl.elements.SelectboxSelectionImpl;
 import org.olat.core.gui.components.form.flexible.impl.elements.SingleSelectionImpl;
+import org.olat.core.gui.components.form.flexible.impl.elements.SliderElementImpl;
 import org.olat.core.gui.components.form.flexible.impl.elements.SpacerElementImpl;
 import org.olat.core.gui.components.form.flexible.impl.elements.StaticTextElementImpl;
 import org.olat.core.gui.components.form.flexible.impl.elements.TextAreaElementImpl;
@@ -621,7 +624,7 @@ public class FormUIFactory {
 	 * @param formLayout
 	 * @return
 	 */
-	public TextElement addTextAreaElement(String name, final int rows, final int cols, String initialValue,	FormItemContainer formLayout) {
+	public TextAreaElement addTextAreaElement(String name, final int rows, final int cols, String initialValue,	FormItemContainer formLayout) {
 		return addTextAreaElement(name, name, -1, rows, cols, true, initialValue, formLayout);
 	}
 	
@@ -639,9 +642,9 @@ public class FormUIFactory {
 	 * @param formLayout
 	 * @return
 	 */
-	public TextElement addTextAreaElement(String name, final String i18nLabel, final int maxLen, final int rows, final int cols, boolean isAutoHeightEnabled, String initialValue,
+	public TextAreaElement addTextAreaElement(String name, final String i18nLabel, final int maxLen, final int rows, final int cols, boolean isAutoHeightEnabled, String initialValue,
 		FormItemContainer formLayout) {
-		TextElement te = new TextAreaElementImpl(name, initialValue, rows, cols, isAutoHeightEnabled) {
+		TextAreaElement te = new TextAreaElementImpl(name, initialValue, rows, cols, isAutoHeightEnabled) {
 			{
 				setNotLongerThanCheck(maxLen, "text.element.error.notlongerthan");
 				// the text.element.error.notlongerthan uses a variable {0} that
@@ -1203,5 +1206,12 @@ public class FormUIFactory {
 		setLabelIfNotNull(i18nLabel, fte);
 		formLayout.add(fte);
 		return fte;
+	}
+	
+	public SliderElement addSliderElement(String name, String i18nLabel, FormItemContainer formLayout) {
+		SliderElementImpl slider = new SliderElementImpl(name);
+		setLabelIfNotNull(i18nLabel, slider);
+		formLayout.add(slider);
+		return slider;
 	}
 }

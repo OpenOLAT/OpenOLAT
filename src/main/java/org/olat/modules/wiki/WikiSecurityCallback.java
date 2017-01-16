@@ -26,6 +26,7 @@
 package org.olat.modules.wiki;
 
 import org.olat.core.commons.services.notifications.SubscriptionContext;
+import org.olat.modules.fo.ForumCallback;
 
 /**
  * 
@@ -61,5 +62,7 @@ public interface WikiSecurityCallback {
 	 * @return true if admin or resource owner.
 	 */
 	public boolean mayModerateForum();
+	
+	public ForumCallback getForumCallback();
 
 }

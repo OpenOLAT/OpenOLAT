@@ -1,0 +1,105 @@
+<div class="o_evaluation_form">
+#set($hasLeftLabels = $element.leftLabels)
+#set($hasRightLabels = $element.rightLabels)
+
+#if($hasLeftLabels && $hasRightLabels)
+	#set($colLeft = "col-sm-3")
+	#set($colMiddle = "col-sm-6")
+	#set($colRight = "col-sm-3")
+#elseif($hasLeftLabels)
+	#set($colLeft = "col-sm-3")
+	#set($colMiddle = "col-sm-9")
+	#set($colRight = "col-sm-0")
+#elseif($hasRightLabels)
+	#set($colLeft = "col-sm-0")
+	#set($colMiddle = "col-sm-9")
+	#set($colRight = "col-sm-3")
+#else
+	#set($colLeft = "col-sm-0")
+	#set($colMiddle = "col-sm-12")
+	#set($colRight = "col-sm-0")
+#end
+
+#if($element.isSliderOverview())
+	#if($element.isStepLabels()) 
+	<div class="clearfix">
+		<div class="$colLeft"></div>
+		<div class="$colMiddle o_evaluation_step_labels">
+		#foreach($stepLabel in $element.stepLabels)<div style="width:${element.getStepInPercent()}%;">$r.escapeHtml($stepLabel)</div>#end
+		</div>
+		<div class="$colRight"></div>
+	</div>
+	#end
+	#foreach($slider in $element.getSliders())
+	<div class="o_slider clearfix">
+		<div class="$colLeft o_evaluation_left_label">$slider.startLabel</div>
+		<div class="$colMiddle">$r.render($slider.overviewEl)</div>
+		<div class="$colRight o_evaluation_right_label">$slider.endLabel</div>
+	</div>
+	#end
+#elseif($element.isRadarOverview())	
+	<div class="clearfix">
+		$r.render($element.radarEl)
+	</div>
+#elseif($element.isDiscreteRubric())
+<div class="o_evaluation_discrete_radio">
+	#if($element.isStepLabels()) 
+	<div class="clearfix">
+		<div class="$colLeft"></div>
+		<div class="$colMiddle o_evaluation_step_labels">
+		#foreach($stepLabel in $element.stepLabels)
+			<div style="width:${element.getStepInPercent()}%;">$r.escapeHtml($stepLabel)</div>
+		#end
+		</div>
+		<div class="$colRight"></div>
+	</div>
+	#end
+	#foreach($slider in $element.getSliders())
+	<div class="o_slider clearfix">
+		<div class="$colLeft o_evaluation_left_label">$slider.startLabel</div>
+		<div class="$colMiddle">$r.render($slider.formItem)</div>
+		<div class="$colRight o_evaluation_right_label">$slider.endLabel</div>
+	</div>
+	#end
+</div>
+#elseif($element.isDiscreteSliderRubric())
+<div class="o_evaluation_discrete_slider">
+	#if($element.isStepLabels()) 
+	<div class="clearfix">
+		<div class="$colLeft"></div>
+		<div class="$colMiddle o_evaluation_step_labels">
+		#set($colWidth = 100 / (${element.getStepLabels().size()} - 1))
+		#set($marginWidth = $colWidth / 2)
+		#foreach($stepLabel in $element.stepLabels)
+			#if($foreach.first || $foreach.last) 
+				<div>$r.escapeHtml($stepLabel)</div>
+			#elseif($foreach.index == 1)
+				<div style="width: ${colWidth}%; margin-left:${marginWidth}%;">$r.escapeHtml($stepLabel)</div>
+			#else
+				<div style="width: ${colWidth}%;">$r.escapeHtml($stepLabel)</div>
+			#end
+		#end
+		</div>
+		<div class="$colRight"></div>
+	</div>
+	#end
+	#foreach($slider in $element.getSliders())
+	<div class="o_slider clearfix">
+		<div class="$colLeft o_evaluation_left_label">$slider.startLabel</div>
+		<div class="$colMiddle">$r.render($slider.formItem)</div>
+		<div class="$colRight o_evaluation_right_label">$slider.endLabel</div>
+	</div>
+	#end
+</div>
+#else
+<div class="o_evaluation_slider">
+	#foreach($slider in $element.getSliders())
+	<div class="o_slider clearfix">
+		<div class="$colLeft o_evaluation_left_label">$slider.startLabel</div>
+		<div class="$colMiddle">$r.render($slider.formItem)</div>
+		<div class="$colRight o_evaluation_right_label">$slider.endLabel</div>
+	</div>
+	#end
+</div>
+#end
+</div>

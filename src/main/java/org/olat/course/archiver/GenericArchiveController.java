@@ -48,7 +48,6 @@ import org.olat.core.id.OLATResourceable;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.assessment.IndentedNodeRenderer;
-import org.olat.course.assessment.NodeTableDataModel;
 import org.olat.course.assessment.model.AssessmentNodeData;
 import org.olat.course.groupsandrights.CourseGroupManager;
 import org.olat.course.nodes.ArchiveOptions;

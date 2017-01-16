@@ -19,6 +19,9 @@
  */
 package org.olat.modules.assessment.ui;
 
+import java.util.List;
+
+import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
 import org.olat.core.id.context.StateEntry;
 
 /**
@@ -30,7 +33,9 @@ import org.olat.core.id.context.StateEntry;
 public class AssessedIdentityListState implements StateEntry {
 
 	private static final long serialVersionUID = -6546620154750599626L;
+	
 	private String filter;
+	private List<FlexiTableFilter> extendedFilters;
 	
 	public AssessedIdentityListState() {
 		//
@@ -38,6 +43,11 @@ public class AssessedIdentityListState implements StateEntry {
 	
 	public AssessedIdentityListState(String filter) {
 		this.filter = filter;
+	}
+	
+	public AssessedIdentityListState(String filter, List<FlexiTableFilter> extendedFilters) {
+		this.filter = filter;
+		this.extendedFilters = extendedFilters;
 	}
 
 	public String getFilter() {
@@ -48,10 +58,19 @@ public class AssessedIdentityListState implements StateEntry {
 		this.filter = filter;
 	}
 
+	public List<FlexiTableFilter> getExtendedFilters() {
+		return extendedFilters;
+	}
+
+	public void setExtendedFilters(List<FlexiTableFilter> extendedFilters) {
+		this.extendedFilters = extendedFilters;
+	}
+
 	@Override
 	public AssessedIdentityListState clone() {
 		AssessedIdentityListState clone = new AssessedIdentityListState();
 		clone.setFilter(getFilter());
+		clone.setExtendedFilters(getExtendedFilters());
 		return clone;
 	}
 }

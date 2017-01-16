@@ -388,7 +388,11 @@ public class VelocityRenderDecorator implements Closeable {
 		if(item == null) return new StringOutput(1);
 		return doRender(item.getComponent().getComponentName(), null);
 	}
-
+	
+	public StringOutput render(FormItem item, String arg1) {
+		if(item == null) return new StringOutput(1);
+		return doRender(item.getComponent().getComponentName(), new String[]{ arg1 });
+	}
 	
 	/**
 	 * Create a link wrapped with some markup to render a nice help button. The
@@ -706,6 +710,17 @@ public class VelocityRenderDecorator implements Closeable {
 		return notEmpty;
 	}
 	
+	public int parseInt(String text) {
+		try {
+			if(StringHelper.containsNonWhitespace(text)) {
+				return Integer.parseInt(text);
+			}
+			return -1;
+		} catch (NumberFormatException e) {
+			return -1;
+		}
+	}
+	
 	/**
 	 * @param componentName
 	 * @return true if the component with name componentName is a child of the current container. Used to "if" the render 
@@ -724,6 +739,15 @@ public class VelocityRenderDecorator implements Closeable {
 	public boolean visible(String componentName) {
 		Component source = renderer.findComponent(componentName);
 		return (source != null && source.isVisible());
+	}
+	
+	public boolean visible(Component component) {
+		return (component != null && component.isVisible());
+	}
+	
+	public boolean visible(FormItem item) {
+		if(item == null) return false;
+		return visible(item.getComponent());
 	}
 	
 	/**

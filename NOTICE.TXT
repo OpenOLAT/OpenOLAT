@@ -130,6 +130,8 @@ This produce uses software based on the MIT License
 * respond.js (MIT License) [https://github.com/scottjehl/Respond]
 * Fuel UX (MIT License) [http://exacttarget.github.io/fuelux]
 * mediaelementjs (MIT License) [http://mediaelementjs.com]
+* jQuery UI Slider Pips (MIT License) [https://github.com/simeydotme/jQuery-ui-Slider-Pips]
+* maphilight (MIT License) [https://github.com/kemayo/maphilight]
 
 -----------------------------------------------------------------------
 This product uses software based on the BSD License

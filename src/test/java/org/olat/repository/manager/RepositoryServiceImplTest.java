@@ -141,7 +141,7 @@ public class RepositoryServiceImplTest extends OlatTestCase {
 	    dbInstance.commit();
 		
 		// kill it softly like A. Keys
-		repositoryService.deleteSoftly(re);
+		repositoryService.deleteSoftly(re, initialAuthor, false);
 		dbInstance.commit();
 
 		//check that the members are removed
@@ -160,6 +160,12 @@ public class RepositoryServiceImplTest extends OlatTestCase {
 	    List<CatalogEntry> removedCatEntries = catalogManager.getCatalogCategoriesFor(re);
 	    Assert.assertNotNull(removedCatEntries);
 		Assert.assertEquals(0, removedCatEntries.size());
+		
+		RepositoryEntry reloadEntry = repositoryService.loadByKey(re.getKey());
+		Assert.assertNotNull(reloadEntry);
+		Assert.assertEquals(0, reloadEntry.getAccess());
+		Assert.assertNotNull(reloadEntry.getDeletionDate());
+		Assert.assertEquals(initialAuthor, reloadEntry.getDeletedBy());
 	}
 
 	@Test

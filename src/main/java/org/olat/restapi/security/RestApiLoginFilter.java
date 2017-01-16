@@ -186,10 +186,9 @@ public class RestApiLoginFilter implements Filter {
 						
 						int loginStatus = AuthHelper.doHeadlessLogin(identity, BaseSecurityModule.getDefaultAuthProviderIdentifier(), ureq, true);
 						if (loginStatus == AuthHelper.LOGIN_OK) {
-							//fxdiff: FXOLAT-268 update last login date and register active user
 							UserDeletionManager.getInstance().setIdentityAsActiv(identity);
 							//Forge a new security token
-							RestSecurityBean securityBean = (RestSecurityBean)CoreSpringFactory.getBean(RestSecurityBean.class);
+							RestSecurityBean securityBean = CoreSpringFactory.getImpl(RestSecurityBean.class);
 							String token = securityBean.generateToken(identity, request.getSession());
 							response.setHeader(RestSecurityHelper.SEC_TOKEN, token);
 						}

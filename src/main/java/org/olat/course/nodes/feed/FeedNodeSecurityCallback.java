@@ -72,6 +72,11 @@ public class FeedNodeSecurityCallback implements FeedSecurityCallback {
 		return ne.isCapabilityAccessible("moderator") || isOlatAdmin;
 	}
 
+	@Override
+	public boolean mayDeleteOwnItems() {
+		return true;
+	}
+	
 	/**
 	 * @see org.olat.modules.webFeed.FeedSecurityCallback#mayEditItems()
 	 */
@@ -79,6 +84,11 @@ public class FeedNodeSecurityCallback implements FeedSecurityCallback {
 	public boolean mayEditItems() {
 		if (isGuestOnly) return false;
 		return ne.isCapabilityAccessible("moderator") || isOlatAdmin;
+	}
+
+	@Override
+	public boolean mayEditOwnItems() {
+		return true;
 	}
 
 	/**

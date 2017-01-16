@@ -87,6 +87,7 @@ class TextAreaElementComponent extends FormBaseComponentImpl {
 
 	public void setRows(int rows) {
 		this.rows = rows;
+		setDirty(true);
 	}
 
 	public boolean isAutoHeightEnabled() {

@@ -202,27 +202,34 @@ public class MatchEditorController extends FormBasicController {
 		if(singleMultiEl.isOneSelected() && singleMultiEl.isSelected(0)) {
 			Map<String,String> sourseTargetMap = new HashMap<>();
 			String[] directedPairsIds = ureq.getHttpReq().getParameterValues("qtiworks_response_" + itemBuilder.getResponseIdentifier());
-			for(String directedPairIds: directedPairsIds) {
-				String[] pairs = directedPairIds.split(" ");
-				String sourceId = pairs[0];
-				String targetId = pairs[1];
-				if(sourseTargetMap.containsKey(sourceId)) {
-					for(MatchWrapper sourceWrapper:sourceWrappers) {
-						if(sourceId.equals(sourceWrapper.getIdentifierString())) {
-							sourceWrapper.setErrorSingleChoice(true);
-						}
-					}
-					allOk &= false;
-				} else {
-					sourseTargetMap.put(sourceId, targetId);
-				}
-			}
-
-			for(MatchWrapper sourceWrapper:sourceWrappers) {
-				String sourceId = sourceWrapper.getIdentifierString();
-				if(!sourseTargetMap.containsKey(sourceId)) {
+			if(directedPairsIds == null || directedPairsIds.length == 0) {
+				for(MatchWrapper sourceWrapper:sourceWrappers) {
 					sourceWrapper.setErrorSingleChoice(true);
 					allOk &= false;
+				}
+			} else {
+				for(String directedPairIds: directedPairsIds) {
+					String[] pairs = directedPairIds.split(" ");
+					String sourceId = pairs[0];
+					String targetId = pairs[1];
+					if(sourseTargetMap.containsKey(sourceId)) {
+						for(MatchWrapper sourceWrapper:sourceWrappers) {
+							if(sourceId.equals(sourceWrapper.getIdentifierString())) {
+								sourceWrapper.setErrorSingleChoice(true);
+							}
+						}
+						allOk &= false;
+					} else {
+						sourseTargetMap.put(sourceId, targetId);
+					}
+				}
+	
+				for(MatchWrapper sourceWrapper:sourceWrappers) {
+					String sourceId = sourceWrapper.getIdentifierString();
+					if(!sourseTargetMap.containsKey(sourceId)) {
+						sourceWrapper.setErrorSingleChoice(true);
+						allOk &= false;
+					}
 				}
 			}
 		}

@@ -31,6 +31,7 @@ import org.olat.basesecurity.IdentityRef;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.PersistenceHelper;
 import org.olat.core.commons.services.mark.impl.MarkImpl;
+import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
@@ -41,6 +42,7 @@ import org.olat.repository.model.RepositoryEntryAuthorImpl;
 import org.olat.repository.model.SearchAuthorRepositoryEntryViewParams;
 import org.olat.repository.model.SearchAuthorRepositoryEntryViewParams.OrderBy;
 import org.olat.user.UserImpl;
+import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -61,6 +63,8 @@ public class RepositoryEntryAuthorQueries {
 	
 	@Autowired
 	private DB dbInstance;
+	@Autowired
+	private UserManager userManager;
 	
 	public int countViews(SearchAuthorRepositoryEntryViewParams params) {
 		if(params.getIdentity() == null) {
@@ -92,7 +96,16 @@ public class RepositoryEntryAuthorQueries {
 			boolean hasMarks = numOfMarks == null ? false : numOfMarks.longValue() > 0;
 			Number numOffers = (Number)object[2];
 			long offers = numOffers == null ? 0l : numOffers.longValue();
-			views.add(new RepositoryEntryAuthorImpl(re, hasMarks, offers));
+			
+			String deletedByName = null;
+			if(params.isDeleted()) {
+				Identity deletedBy = re.getDeletedBy();
+				if(deletedBy != null) {
+					deletedByName = userManager.getUserDisplayName(deletedBy);
+				}
+			}
+			
+			views.add(new RepositoryEntryAuthorImpl(re, hasMarks, offers, deletedByName));
 		}
 		return views;
 	}
@@ -131,6 +144,10 @@ public class RepositoryEntryAuthorQueries {
 			  .append(" inner join ").append(oracle ? "" : "fetch").append(" v.olatResource as res")
 			  .append(" inner join fetch v.statistics as stats")
 			  .append(" left join fetch v.lifecycle as lifecycle ");
+			if(params.isDeleted()) {
+				sb.append(" left join fetch v.deletedBy as deletedBy")
+				  .append(" left join fetch deletedBy.user as deletedByUser");
+			}
 		}
 
 		sb.append(" where");
@@ -182,7 +199,7 @@ public class RepositoryEntryAuthorQueries {
 
 			sb.append(" and v.key in (select rel.entry.key from repoentrytogroup as rel, bgroupmember as membership, ")
 			     .append(IdentityImpl.class.getName()).append(" as identity, ").append(UserImpl.class.getName()).append(" as user")
-		         .append("    where rel.group.key=membership.group.key and membership.identity.key=identity.key and identity.user.key=user.key")
+		         .append("    where rel.group.key=membership.group.key and membership.identity.key=identity.key and user.identity.key=identity.key")
 		         .append("      and membership.role='").append(GroupRoles.owner.name()).append("'")
 		         .append("      and (");
 			PersistenceHelper.appendFuzzyLike(sb, "user.firstName", "author", dbInstance.getDbVendor());
@@ -255,7 +272,7 @@ public class RepositoryEntryAuthorQueries {
 		}
 
 		if(!count) {
-			appendAuthorViewOrderBy(params.getOrderBy(), params.isOrderByAsc(), sb);
+			appendAuthorViewOrderBy(params, sb);
 		}
 
 		TypedQuery<T> dbQuery = dbInstance.getCurrentEntityManager()
@@ -301,7 +318,10 @@ public class RepositoryEntryAuthorQueries {
 		return dbQuery;
 	}
 	
-	private void appendAuthorViewOrderBy(OrderBy orderBy, boolean asc, StringBuilder sb) {
+	private void appendAuthorViewOrderBy(SearchAuthorRepositoryEntryViewParams params, StringBuilder sb) {
+		OrderBy orderBy = params.getOrderBy();
+		boolean asc = params.isOrderByAsc();
+		
 		if(orderBy != null) {
 			switch(orderBy) {
 				case key:
@@ -380,6 +400,17 @@ public class RepositoryEntryAuthorQueries {
 				case lifecycleEnd:
 					sb.append(" order by lifecycle.validTo ");
 					appendAsc(sb, asc).append(" nulls last, lower(v.displayname) asc");
+					break;
+				case deletionDate:
+					sb.append(" order by v.deletionDate ");
+					appendAsc(sb, asc).append(" nulls last, lower(v.displayname) asc");
+					break;
+				case deletedBy:
+					if(params.isDeleted()) {
+						sb.append(" order by deletedByUser.lastName ");
+						appendAsc(sb, asc).append(" nulls last, deletedByUser.firstName ");
+						appendAsc(sb, asc).append(" nulls last, lower(v.displayname) asc");
+					}
 					break;
 			}
 		}

@@ -34,6 +34,7 @@ import org.olat.basesecurity.IdentityRef;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.NativeQueryBuilder;
 import org.olat.core.commons.persistence.PersistenceHelper;
+import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.id.Identity;
 import org.olat.resource.OLATResource;
 import org.olat.resource.accesscontrol.Offer;
@@ -46,6 +47,7 @@ import org.olat.resource.accesscontrol.model.OrderImpl;
 import org.olat.resource.accesscontrol.model.OrderLineImpl;
 import org.olat.resource.accesscontrol.model.OrderPartImpl;
 import org.olat.resource.accesscontrol.model.RawOrderItem;
+import org.olat.user.propertyhandlers.UserPropertyHandler;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -167,6 +169,7 @@ public class ACOrderDAO {
 		return orders;
 	}
 	
+
 	/**
 	 * The method is optimized for our settings: 1 order -> 1 order part -> 1 order line
 	 * 
@@ -174,24 +177,12 @@ public class ACOrderDAO {
 	 * @param delivery
 	 * @return
 	 */
-	public List<RawOrderItem> findNativeOrderItems(OLATResource resource, IdentityRef delivery, Long orderNr,
+	public int countNativeOrderItems(OLATResource resource, IdentityRef delivery, Long orderNr,
 			Date from, Date to, OrderStatus... status) {
 		
 		NativeQueryBuilder sb = new NativeQueryBuilder(1024, dbInstance);
-		sb.append("select")
-		  .append("  o.order_id as order_id,")
-		  .append("  o.total_currency_code as total_currency_code,")
-		  .append("  o.total_amount as total_amount,")
-		  .append("  o.creationdate as creationdate,")
-		  .append("  o.order_status as o_status,")
-		  .append("  o.fk_delivery_id as delivery_id,")
-		  .append("  ").appendToArray("offer.resourcedisplayname").append(" as resDisplaynames,")
-		  .append("  ").appendToArray("trx.trx_status").append(" as trxStatus,")
-		  .append("  ").appendToArray("trx.fk_method_id").append(" as trxMethodIds,")
-		  .append("  ").appendToArray("pspTrx.trx_status").append(" as pspTrxStatus")
+		sb.append("select count(o.order_id)")
 		  .append(" from o_ac_order o")
-		  .append(" left join o_ac_transaction trx on (o.order_id = trx.fk_order_id)")
-		  .append(" left join o_ac_paypal_transaction pspTrx on (o.order_id = pspTrx.order_id)")
 		  .append(" inner join o_ac_order_part order_part on (o.order_id=order_part.fk_order_id and order_part.pos=0)")
 		  .append(" inner join o_ac_order_line order_line on (order_part.order_part_id=order_line.fk_order_part_id and order_line.pos=0)")
 		  .append(" inner join o_ac_offer offer on (order_line.fk_offer_id=offer.offer_id)");
@@ -220,8 +211,6 @@ public class ACOrderDAO {
 			where = PersistenceHelper.appendAnd(sb, where);
 			sb.append("o.order_id=:orderNr");
 		}
-		
-		sb.append(" group by o.order_id, o.total_currency_code, o.total_amount, o.creationdate, o.order_status, o.fk_delivery_id");
 
 		Query query = dbInstance.getCurrentEntityManager()
 				.createNativeQuery(sb.toString());
@@ -260,24 +249,175 @@ public class ACOrderDAO {
 			query.setParameter("to", cal.getTime(), TemporalType.TIMESTAMP);
 		}
 		
+		Object rawOrders = query.getSingleResult();
+		return rawOrders instanceof Number ? ((Number)rawOrders).intValue() : 0;
+	}
+	
+	/**
+	 * The method is optimized for our settings: 1 order -> 1 order part -> 1 order line
+	 * 
+	 * @param resource
+	 * @param delivery
+	 * @return
+	 */
+	public List<RawOrderItem> findNativeOrderItems(OLATResource resource, IdentityRef delivery, Long orderNr,
+			Date from, Date to, OrderStatus[] status, int firstResult, int maxResults,
+			List<UserPropertyHandler> userPropertyHandlers,  SortKey... orderBy) {
+		
+		NativeQueryBuilder sb = new NativeQueryBuilder(1024, dbInstance);
+		sb.append("select")
+		  .append("  o.order_id as order_id,")
+		  .append("  o.total_currency_code as total_currency_code,")
+		  .append("  o.total_amount as total_amount,")
+		  .append("  o.creationdate as creationdate,")
+		  .append("  o.order_status as o_status,")
+		  .append("  o.fk_delivery_id as delivery_id,")
+		  .append("  ").appendToArray("offer.resourcedisplayname").append(" as resDisplaynames,")
+		  .append("  ").appendToArray("trx.trx_status").append(" as trxStatus,")
+		  .append("  ").appendToArray("trx.fk_method_id").append(" as trxMethodIds,")
+		  .append("  ").appendToArray("pspTrx.trx_status").append(" as pspTrxStatus");
+		if(delivery == null) {
+			sb.append("  ,delivery.id as delivery_ident_id")
+			  .append("  ,delivery.name as delivery_ident_name")
+			  .append("  ,delivery_user.user_id as delivery_user_id");
+			if(userPropertyHandlers != null) {
+				for(UserPropertyHandler handler:userPropertyHandlers) {
+					sb.append(" ,delivery_user.").append(handler.getDatabaseColumnName()).append(" as ")
+					  .append(handler.getName());
+				}
+			}
+		}
+		sb.append(" from o_ac_order o")
+		  .append(" inner join o_ac_order_part order_part on (o.order_id=order_part.fk_order_id and order_part.pos=0)")
+		  .append(" inner join o_ac_order_line order_line on (order_part.order_part_id=order_line.fk_order_part_id and order_line.pos=0)")
+		  .append(" inner join o_ac_offer offer on (order_line.fk_offer_id=offer.offer_id)");
+		if(delivery == null) {
+			sb.append(" inner join o_bs_identity delivery on (delivery.id=o.fk_delivery_id)")
+			  .append(" inner join o_user delivery_user on (delivery_user.fk_identity=delivery.id)");	  
+		}
+		sb.append(" left join o_ac_paypal_transaction pspTrx on (o.order_id = pspTrx.order_id)")
+		  .append(" left join o_ac_transaction trx on (o.order_id = trx.fk_order_id)");
+		
+		boolean where = false;
+		if(resource != null) {
+			where = PersistenceHelper.appendAnd(sb, where);
+			sb.append(" offer.fk_resource_id=:resourceKey ");
+		}
+		if(delivery != null) {
+			where = PersistenceHelper.appendAnd(sb, where);
+			sb.append(" o.fk_delivery_id=:deliveryKey ");
+		}
+		if(status != null && status.length > 0 && status[0] != null) {
+			where = PersistenceHelper.appendAnd(sb, where);
+			sb.append("o.order_status in (:status)");
+		}
+		if(from != null) {
+			where = PersistenceHelper.appendAnd(sb, where);
+			sb.append("o.creationdate >=:from");
+		}
+		if(to != null) {
+			where = PersistenceHelper.appendAnd(sb, where);
+			sb.append("o.creationdate <=:to");
+		}
+		if(orderNr != null) {
+			where = PersistenceHelper.appendAnd(sb, where);
+			sb.append("o.order_id=:orderNr");
+		}
+		
+		sb.append(" group by o.order_id");
+		if(dbInstance.isOracle()) {
+			sb.append(", o.total_currency_code, o.total_amount, o.creationdate, o.order_status, o.fk_delivery_id");
+		}
+		if(delivery == null) {
+			sb.append(", delivery.id, delivery_user.user_id");
+			if(dbInstance.isOracle()) {
+				sb.append(", delivery.name");
+				if(userPropertyHandlers != null) {
+					for(UserPropertyHandler handler:userPropertyHandlers) {
+						sb.append(", delivery_user.").append(handler.getDatabaseColumnName());
+					}
+				}
+			}
+		}
+
+		if(orderBy != null && orderBy.length > 0 && orderBy[0] != null) {
+			sb.appendOrderBy(orderBy[0]);
+		}
+
+		Query query = dbInstance.getCurrentEntityManager()
+				.createNativeQuery(sb.toString());
+		if(resource != null) {
+			query.setParameter("resourceKey", resource.getKey());
+		}
+		if(delivery != null) {
+			query.setParameter("deliveryKey", delivery.getKey());
+		}
+		if(status != null && status.length > 0 && status[0] != null) {
+			List<String> statusStr = new ArrayList<String>();
+			for(OrderStatus s:status) {
+				statusStr.add(s.name());
+			}
+			query.setParameter("status", statusStr);
+		}
+		if(orderNr != null) {
+			query.setParameter("orderNr", orderNr);
+		}
+		if(from != null) {
+			Calendar cal = Calendar.getInstance();
+			cal.setTime(from);
+			cal.set(Calendar.HOUR, 0);
+			cal.set(Calendar.MINUTE, 0);
+			cal.set(Calendar.SECOND, 0);
+			cal.set(Calendar.MILLISECOND, 0);
+			query.setParameter("from", cal.getTime(), TemporalType.TIMESTAMP);
+		}
+		if(to != null) {
+			Calendar cal = Calendar.getInstance();
+			cal.setTime(to);
+			cal.set(Calendar.HOUR, 23);
+			cal.set(Calendar.MINUTE, 59);
+			cal.set(Calendar.SECOND, 59);
+			cal.set(Calendar.MILLISECOND, 0);
+			query.setParameter("to", cal.getTime(), TemporalType.TIMESTAMP);
+		}
+		
+		if(maxResults > 0) {
+			query.setFirstResult(firstResult).setMaxResults(maxResults);
+		}
+
+		int numOfProperties = userPropertyHandlers == null ? 0 : userPropertyHandlers.size();
 		List<?> rawOrders = query.getResultList();
 		List<RawOrderItem> items = new ArrayList<>(rawOrders.size());
 		for(Object rawOrder:rawOrders) {
 			Object[] order = (Object[])rawOrder;
-			Long orderKey = ((Number)order[0]).longValue();
-			String totalCurrencyCode = (String)order[1];
-			BigDecimal totalAmount = (BigDecimal)order[2];
-			Date creationDate = (Date)order[3];
-			String orderStatus = (String)order[4];
-			Long deliveryKey = ((Number)order[5]).longValue();
-			String resourceName = (String)order[6];
-			String trxStatus = (String)order[7];
-			String trxMethodIds = (String)order[8];
-			String pspTrxStatus = (String)order[8];
+			int pos = 0;
+			
+			Long orderKey = ((Number)order[pos++]).longValue();
+			String totalCurrencyCode = (String)order[pos++];
+			BigDecimal totalAmount = (BigDecimal)order[pos++];
+			Date creationDate = (Date)order[pos++];
+			String orderStatus = (String)order[pos++];
+			Long deliveryKey = ((Number)order[pos++]).longValue();
+			String resourceName = (String)order[pos++];
+			String trxStatus = (String)order[pos++];
+			String trxMethodIds = (String)order[pos++];
+			String pspTrxStatus = (String)order[pos++];
+			
+			String username = null;
+			String[] userProperties = null;
+			if(numOfProperties > 0) {
+				pos++;//identityKey
+				username = (String)order[pos++];
+				pos++;//userKey
+				userProperties = new String[numOfProperties];
+				for(int i=0; i<numOfProperties; i++) {
+					userProperties[i] = (String)order[pos++];
+				}
+			}	
 			
 			RawOrderItem item = new RawOrderItem(orderKey, orderKey.toString(), totalCurrencyCode, totalAmount,
 					creationDate, orderStatus, deliveryKey, resourceName,
-					trxStatus, trxMethodIds, pspTrxStatus);
+					trxStatus, trxMethodIds, pspTrxStatus, username, userProperties);
 			items.add(item);
 		}
 		return items;

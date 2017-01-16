@@ -50,6 +50,7 @@ public class TableGuiConfiguration {
 	private boolean sortingEnabled = true;
 	private boolean selectedRowUnselectable = false;
 	private boolean multiSelect = false;
+	private boolean suppressDirtyFormWarning = false;
 
 	private boolean pageingEnabled = true;
 	private int resultsPerPage = 20;
@@ -253,6 +254,14 @@ public class TableGuiConfiguration {
 	 */
 	public boolean isDisplayTableGrid() {
 		return this.displayTableGrid;
+	}
+
+	public boolean isSuppressDirtyFormWarning() {
+		return suppressDirtyFormWarning;
+	}
+
+	public void setSuppressDirtyFormWarning(boolean suppressDirtyFormWarning) {
+		this.suppressDirtyFormWarning = suppressDirtyFormWarning;
 	}
 
 }

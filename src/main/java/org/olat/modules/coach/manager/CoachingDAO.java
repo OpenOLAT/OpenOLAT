@@ -658,7 +658,7 @@ public class CoachingDAO {
 		  .append(" inner join o_bs_group_member sg_coach on (sg_coach.fk_group_id=togroup.fk_group_id and sg_coach.g_role = 'coach')")
 		  .append(" inner join o_bs_group_member sg_participant on (sg_participant.fk_group_id=sg_coach.fk_group_id and sg_participant.g_role='participant')")
 		  .append(" inner join o_bs_identity sg_participant_id on (sg_participant_id.id=sg_participant.fk_identity_id)")
-		  .append(" inner join o_user sg_participant_user on (sg_participant_user.user_id=sg_participant_id.fk_user_id)")
+		  .append(" inner join o_user sg_participant_user on (sg_participant_user.fk_identity=sg_participant_id.id)")
 		  .append(" left join o_as_user_course_infos pg_initial_launch")
 		  .append("   on (pg_initial_launch.fk_resource_id = sg_re.fk_olatresource and pg_initial_launch.fk_identity = sg_participant.fk_identity_id)")
 		  .append(" where sg_coach.fk_identity_id=:coachKey and ( ")
@@ -728,7 +728,7 @@ public class CoachingDAO {
 		  .append(" inner join o_re_to_group togroup on (togroup.fk_entry_id = sg_re.repositoryentry_id)")
 		  .append(" inner join o_bs_group_member sg_participant on (sg_participant.fk_group_id=togroup.fk_group_id and sg_participant.g_role='participant')")
 		  .append(" inner join o_bs_identity sg_participant_id on (sg_participant_id.id=sg_participant.fk_identity_id)")
-		  .append(" inner join o_user sg_participant_user on (sg_participant_user.user_id=sg_participant_id.fk_user_id)")
+		  .append(" inner join o_user sg_participant_user on (sg_participant_user.fk_identity=sg_participant_id.id)")
 		  .append(" left join o_as_user_course_infos pg_initial_launch")
 		  .append("   on (pg_initial_launch.fk_resource_id = sg_re.fk_olatresource and pg_initial_launch.fk_identity = sg_participant_id.id)")
 		  .append(" where sg_re.accesscode >= ").append(RepositoryEntry.ACC_OWNERS).append(" and sg_re.fk_olatresource in (")
@@ -898,10 +898,10 @@ public class CoachingDAO {
 		  .append(" inner join o_bs_group_member sg_participant on (sg_participant.fk_group_id=togroup.fk_group_id and sg_participant.g_role='participant') ")
 		  .append(" inner join o_bs_identity id_participant on (sg_participant.fk_identity_id = id_participant.id) ")
 		  .append(" inner join o_bs_identity sg_participant_id on (sg_participant_id.id=sg_participant.fk_identity_id)")
-		  .append(" inner join o_user sg_participant_user on (sg_participant_user.user_id=sg_participant_id.fk_user_id)")
+		  .append(" inner join o_user sg_participant_user on (sg_participant_user.fk_identity=sg_participant_id.id)")
 		  .append(" left join o_as_user_course_infos pg_initial_launch ")
 		  .append("   on (pg_initial_launch.fk_resource_id = sg_re.fk_olatresource and pg_initial_launch.fk_identity = id_participant.id) ")
-		  .append(" inner join o_user user_participant on (user_participant.user_id=id_participant.fk_user_id)")
+		  .append(" inner join o_user user_participant on (user_participant.fk_identity=id_participant.id)")
 		  .append(" where sg_re.accesscode >= ").append(RepositoryEntry.ACC_OWNERS).append(" ");
 		appendUsersStatisticsSearchParams(params, queryParams, sb)
 		  .append(" group by sg_participant_id.id, sg_participant_user.user_id");
@@ -984,7 +984,7 @@ public class CoachingDAO {
 
 	private NativeQueryBuilder appendUsersStatisticsJoins(SearchCoachedIdentityParams params, NativeQueryBuilder sb) {
 		if(params != null && params.getUserProperties() != null && params.getUserProperties().size() > 0) {
-			sb.append(" inner join o_user user_participant on (user_participant.user_id=id_participant.fk_user_id)");
+			sb.append(" inner join o_user user_participant on (user_participant.fk_identity=id_participant.id)");
 		}
 		return sb;
 	}

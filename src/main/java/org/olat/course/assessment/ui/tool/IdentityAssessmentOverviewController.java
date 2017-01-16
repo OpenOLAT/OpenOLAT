@@ -28,36 +28,39 @@ package org.olat.course.assessment.ui.tool;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.olat.core.gui.ShortName;
 import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.components.Component;
-import org.olat.core.gui.components.panel.Panel;
-import org.olat.core.gui.components.table.BooleanColumnDescriptor;
-import org.olat.core.gui.components.table.ColumnDescriptor;
-import org.olat.core.gui.components.table.CustomRenderColumnDescriptor;
-import org.olat.core.gui.components.table.DefaultColumnDescriptor;
-import org.olat.core.gui.components.table.Table;
-import org.olat.core.gui.components.table.TableController;
-import org.olat.core.gui.components.table.TableEvent;
-import org.olat.core.gui.components.table.TableGuiConfiguration;
+import org.olat.core.gui.components.form.flexible.FormItem;
+import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
+import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
+import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
+import org.olat.core.gui.components.form.flexible.impl.FormEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.BooleanCellRenderer;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiCellRenderer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.gui.control.controller.BasicController;
-import org.olat.core.gui.control.generic.messages.MessageUIFactory;
+import org.olat.core.gui.control.generic.dtabs.Activateable2;
+import org.olat.core.id.context.ContextEntry;
+import org.olat.core.id.context.StateEntry;
 import org.olat.core.logging.AssertException;
 import org.olat.core.util.Util;
 import org.olat.course.Structure;
 import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.assessment.AssessmentModule;
-import org.olat.course.assessment.FilterName;
 import org.olat.course.assessment.IndentedNodeRenderer;
-import org.olat.course.assessment.NodeAssessmentTableDataModel;
-import org.olat.course.assessment.ScoreCellRenderer;
+import org.olat.course.assessment.bulk.PassedCellRenderer;
 import org.olat.course.assessment.model.AssessmentNodeData;
+import org.olat.course.assessment.ui.tool.IdentityAssessmentOverviewTableModel.NodeCols;
 import org.olat.course.nodes.AssessableCourseNode;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.run.userview.UserCourseEnvironment;
+import org.olat.modules.assessment.ui.AssessedIdentityListState;
+import org.olat.modules.assessment.ui.ScoreCellRenderer;
 
 /**
  * Description:<BR>
@@ -71,29 +74,24 @@ import org.olat.course.run.userview.UserCourseEnvironment;
  *
  * @author gnaegi 
  */
-public class IdentityAssessmentOverviewController extends BasicController {
+public class IdentityAssessmentOverviewController extends FormBasicController implements Activateable2 {
 
 	private static final String CMD_SELECT_NODE = "cmd.select.node"; 
 	/** Event fired when a node has been selected, meaning when a row in the table has been selected **/
 	public static final Event EVENT_NODE_SELECTED = new Event("event.node.selected");
 
-	private Panel main = new Panel("assessmentOverviewPanel");
 	private Structure runStructure;
 	private boolean nodesSelectable;
 	private boolean discardEmptyNodes;
 	private boolean allowTableFiltering;
-	private NodeAssessmentTableDataModel nodesTableModel;
-	private TableController tableFilterCtr;
-	
 
-	private UserCourseEnvironment userCourseEnvironment;
-	private AssessableCourseNode selectedCourseNode;
-	private List<ShortName> nodesoverviewTableFilters;
-	private ShortName discardEmptyNodesFilter;
-	private ShortName showAllNodesFilter;
-	private ShortName currentTableFilter;
-	private List<AssessmentNodeData> preloadedNodesList;
+	private FlexiTableElement tableEl;
+	private IdentityAssessmentOverviewTableModel tableModel;
+
 	private boolean loadNodesFromCourse;
+	private AssessableCourseNode selectedCourseNode;
+	private List<AssessmentNodeData> preloadedNodesList;
+	private UserCourseEnvironment userCourseEnvironment;
 
 	/**
 	 * Constructor for the identity assessment overview controller to be used in the assessment tool or in the users
@@ -107,7 +105,7 @@ public class IdentityAssessmentOverviewController extends BasicController {
 	 */
 	public IdentityAssessmentOverviewController(UserRequest ureq, WindowControl wControl, UserCourseEnvironment userCourseEnvironment, 
 			boolean nodesSelectable, boolean discardEmptyNodes, boolean allowTableFiltering) {
-		super(ureq, wControl);
+		super(ureq, wControl, LAYOUT_BAREBONE);
 		setTranslator(Util.createPackageTranslator(AssessmentModule.class, getLocale(), getTranslator()));
 		
 		this.runStructure = userCourseEnvironment.getCourseEnvironment().getRunStructure();
@@ -115,12 +113,10 @@ public class IdentityAssessmentOverviewController extends BasicController {
 		this.discardEmptyNodes = discardEmptyNodes;
 		this.allowTableFiltering = allowTableFiltering;
 		this.userCourseEnvironment = userCourseEnvironment;		
-		this.loadNodesFromCourse = true;
-				
-		if (this.allowTableFiltering) initNodesoverviewTableFilters();
+		loadNodesFromCourse = true;
 
-		doIdentityAssessmentOverview(ureq);		
-		putInitialPanel(main);   
+		initForm(ureq);
+		loadModel();
 	}
 
 	/**
@@ -131,19 +127,19 @@ public class IdentityAssessmentOverviewController extends BasicController {
 	 * @param assessmentCourseNodes List of maps containing the node assessment data using the AssessmentManager keys
 	 */
 	public IdentityAssessmentOverviewController(UserRequest ureq, WindowControl wControl, List<AssessmentNodeData> assessmentCourseNodes) {
-		super(ureq, wControl);
+		super(ureq, wControl, LAYOUT_BAREBONE);
 		setTranslator(Util.createPackageTranslator(AssessmentModule.class, getLocale(), getTranslator()));
 		
-		this.runStructure = null;
-		this.nodesSelectable = false;
-		this.discardEmptyNodes = true;
-		this.allowTableFiltering = false;
-		this.userCourseEnvironment = null;		
-		this.loadNodesFromCourse = false;
-		this.preloadedNodesList = assessmentCourseNodes;
-		
-		doIdentityAssessmentOverview(ureq);		
-		putInitialPanel(main);
+		runStructure = null;
+		nodesSelectable = false;
+		discardEmptyNodes = true;
+		allowTableFiltering = false;
+		userCourseEnvironment = null;		
+		loadNodesFromCourse = false;
+		preloadedNodesList = assessmentCourseNodes;
+	
+		initForm(ureq);
+		loadModel();
 	}
 	
 	public boolean isRoot(CourseNode node) {
@@ -151,7 +147,7 @@ public class IdentityAssessmentOverviewController extends BasicController {
 	}
 	
 	public int getNumberOfNodes() {
-		return nodesTableModel.getRowCount();
+		return tableModel.getRowCount();
 	}
 	
 	public CourseNode getNodeByIdent(String ident) {
@@ -164,10 +160,10 @@ public class IdentityAssessmentOverviewController extends BasicController {
 		String nodeIdent = null; 
 		if(index >= 0) {
 			int nextIndex = index + 1;//next
-			if(nextIndex >= 0 && nextIndex < nodesTableModel.getRowCount()) {
-				nodeIdent = nodesTableModel.getObject(nextIndex).getIdent();
-			} else if(nodesTableModel.getRowCount() > 0) {
-				nodeIdent = nodesTableModel.getObject(0).getIdent();
+			if(nextIndex >= 0 && nextIndex < tableModel.getRowCount()) {
+				nodeIdent = tableModel.getObject(nextIndex).getIdent();
+			} else if(tableModel.getRowCount() > 0) {
+				nodeIdent = tableModel.getObject(0).getIdent();
 			}
 		}
 		
@@ -183,10 +179,10 @@ public class IdentityAssessmentOverviewController extends BasicController {
 		String nodeIdent = null; 
 		if(index >= 0) {
 			int previousIndex = index - 1;//next
-			if(previousIndex >= 0 && previousIndex < nodesTableModel.getRowCount()) {
-				nodeIdent = nodesTableModel.getObject(previousIndex).getIdent();
-			} else if(nodesTableModel.getRowCount() > 0) {
-				nodeIdent = nodesTableModel.getObject(nodesTableModel.getRowCount() - 1).getIdent();
+			if(previousIndex >= 0 && previousIndex < tableModel.getRowCount()) {
+				nodeIdent = tableModel.getObject(previousIndex).getIdent();
+			} else if(tableModel.getRowCount() > 0) {
+				nodeIdent = tableModel.getObject(tableModel.getRowCount() - 1).getIdent();
 			}
 		}
 		
@@ -197,146 +193,13 @@ public class IdentityAssessmentOverviewController extends BasicController {
 	}
 	
 	public int getIndexOf(CourseNode node) {
-		for(int i=nodesTableModel.getRowCount(); i-->0; ) {
-			Object rowIdentityKey = nodesTableModel.getObject(i).getIdent();
+		for(int i=tableModel.getRowCount(); i-->0; ) {
+			Object rowIdentityKey = tableModel.getObject(i).getIdent();
 			if(rowIdentityKey.equals(node.getIdent())) {
 				return i;
 			}
 		}
 		return -1;
-	}
-	
-
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest,
-	 *      org.olat.core.gui.components.Component, org.olat.core.gui.control.Event)
-	 */
-	@Override
-	public void event(UserRequest ureq, Component source, Event event) {
-	// no events to catch
-	}
-	
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest,
-	 *      org.olat.core.gui.control.Controller, org.olat.core.gui.control.Event)
-	 */
-	@Override
-	public void event(UserRequest ureq, Controller source, Event event) {
-		if (source == tableFilterCtr) {
-			if (event.getCommand().equals(Table.COMMANDLINK_ROWACTION_CLICKED)) {
-				TableEvent te = (TableEvent) event;
-				String actionid = te.getActionId();
-				if (actionid.equals(CMD_SELECT_NODE)) {
-					int rowid = te.getRowId();
-					AssessmentNodeData nodeData = nodesTableModel.getObject(rowid);
-					CourseNode node = runStructure.getNode(nodeData.getIdent());
-					this.selectedCourseNode = (AssessableCourseNode) node;
-					// cast should be save, only assessable nodes are selectable
-					fireEvent(ureq, EVENT_NODE_SELECTED);
-				}
-			} else if (event.equals(TableController.EVENT_FILTER_SELECTED)) {
-				this.currentTableFilter = tableFilterCtr.getActiveFilter();
-				if (this.currentTableFilter.equals(this.discardEmptyNodesFilter)) this.discardEmptyNodes = true;
-				else if (this.currentTableFilter.equals(this.showAllNodesFilter)) this.discardEmptyNodes = false;
-				doIdentityAssessmentOverview(ureq);
-			}
-		}
-	}
-
-	public void doIdentityAssessmentOverview(UserRequest ureq) {
-		List<AssessmentNodeData> nodesTableList;
-		if (loadNodesFromCourse) {
-			// get list of course node and user data and populate table data model 	
-			nodesTableList = AssessmentHelper.getAssessmentNodeDataList(userCourseEnvironment, discardEmptyNodes, true);
-		} else {
-			// use list from efficiency statement 
-			nodesTableList = preloadedNodesList;
-		}
-			// only populate data model if data available
-		if (nodesTableList == null) {
-			String text = translate("nodesoverview.emptylist");
-			Controller messageCtr = MessageUIFactory.createSimpleMessage(ureq, getWindowControl(), text);
-			main.setContent(messageCtr.getInitialComponent());
-		} else {
-			TableGuiConfiguration tableConfig = new TableGuiConfiguration();
-			tableConfig.setDownloadOffered(false);
-			tableConfig.setSortingEnabled(true);
-			tableConfig.setDisplayTableHeader(true);
-			tableConfig.setDisplayRowCount(false);
-			tableConfig.setPageingEnabled(false);
-			tableConfig.setTableEmptyMessage(translate("nodesoverview.emptylist"));
-			tableConfig.setPreferencesOffered(true, "assessmentIdentityNodeList");
-			tableConfig.setDisplayTableGrid(true);
-
-			removeAsListenerAndDispose(tableFilterCtr);
-			if (allowTableFiltering) {
-				tableFilterCtr = new TableController(tableConfig, ureq, getWindowControl(), 
-						this.nodesoverviewTableFilters, this.currentTableFilter, 
-						translate("nodesoverview.filter.title"), null,getTranslator());
-			} else {
-				tableFilterCtr = new TableController(tableConfig, ureq, getWindowControl(), getTranslator());
-			}
-			listenTo(tableFilterCtr);
-			
-			final IndentedNodeRenderer nodeRenderer = new IndentedNodeRenderer() {
-				@Override
-				public boolean isIndentationEnabled() {
-					return tableFilterCtr.getTableSortAsc() && tableFilterCtr.getTableSortCol() == 0;
-				}
-			};
-			
-			// table columns
-			tableFilterCtr.addColumnDescriptor(new CustomRenderColumnDescriptor("table.header.node", 0, null, 
-					ureq.getLocale(), ColumnDescriptor.ALIGNMENT_LEFT, nodeRenderer){
-				@Override
-				public int compareTo(int rowa, int rowb) {
-					return rowa - rowb;
-				}
-			});
-			tableFilterCtr.addColumnDescriptor(new DefaultColumnDescriptor("table.header.details",1, null, getLocale()));
-			tableFilterCtr.addColumnDescriptor(new DefaultColumnDescriptor("table.header.attempts", 2, null, getLocale(), ColumnDescriptor.ALIGNMENT_RIGHT));
-			tableFilterCtr.addColumnDescriptor(new CustomRenderColumnDescriptor("table.header.score", 3, null, getLocale(),
-					ColumnDescriptor.ALIGNMENT_RIGHT, new ScoreCellRenderer()));
-			tableFilterCtr.addColumnDescriptor(false, new CustomRenderColumnDescriptor("table.header.min", 6, null, getLocale(), 
-					ColumnDescriptor.ALIGNMENT_RIGHT, new ScoreCellRenderer()));
-			tableFilterCtr.addColumnDescriptor(new CustomRenderColumnDescriptor("table.header.max", 7, null, getLocale(),
-					ColumnDescriptor.ALIGNMENT_RIGHT, new ScoreCellRenderer()));
-			tableFilterCtr.addColumnDescriptor(new CustomRenderColumnDescriptor("table.header.status", 8, null, getLocale(),
-					ColumnDescriptor.ALIGNMENT_RIGHT, new AssessmentStatusCellRenderer(getLocale())));
-			
-			tableFilterCtr.addColumnDescriptor(new BooleanColumnDescriptor("table.header.passed", 4, translate("passed.true"), translate("passed.false")));
-			// node selection only available if configured
-			if (nodesSelectable) {
-				tableFilterCtr.addColumnDescriptor(new DefaultColumnDescriptor("table.action.select",5 ,CMD_SELECT_NODE, ureq.getLocale()) {
-					@Override
-					public boolean isSortingAllowed() {
-						return false;
-					}
-				});
-			}
-			
-			nodesTableModel = new NodeAssessmentTableDataModel(nodesTableList, getTranslator(), nodesSelectable);
-			tableFilterCtr.setTableDataModel(nodesTableModel);
-
-			main.setContent(tableFilterCtr.getInitialComponent());
-		}
-	}
-	
-	private void initNodesoverviewTableFilters(){
-		// create filter for only nodes with values
-		discardEmptyNodesFilter = new FilterName(translate("nodesoverview.filter.discardEmptyNodes"));
-		// create filter for all nodes, even with no values
-		showAllNodesFilter = new FilterName(translate("nodesoverview.filter.showEmptyNodes"));
-		// add this two filter to the filters list
-		nodesoverviewTableFilters = new ArrayList<>(3);
-		nodesoverviewTableFilters.add(discardEmptyNodesFilter);
-		nodesoverviewTableFilters.add(showAllNodesFilter);
-		// set the current table filter according to configuration
-		if (discardEmptyNodes) {
-			currentTableFilter = discardEmptyNodesFilter;
-		} else {
-			currentTableFilter = showAllNodesFilter;	
-		}
 	}
 	
 	/**
@@ -352,7 +215,94 @@ public class IdentityAssessmentOverviewController extends BasicController {
 	}
 	
 	@Override
+	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
+
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(NodeCols.node, new IndentedNodeRenderer() {
+			@Override
+			public boolean isIndentationEnabled() {
+				return tableEl.getOrderBy() == null || tableEl.getOrderBy().length == 0;
+			}
+		}));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(NodeCols.attempts));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(NodeCols.score, new ScoreCellRenderer()));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(NodeCols.min, new ScoreCellRenderer()));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(NodeCols.max, new ScoreCellRenderer()));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(NodeCols.passed, new PassedCellRenderer()));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(NodeCols.status, new AssessmentStatusCellRenderer(getLocale())));
+		if(nodesSelectable) {
+			DefaultFlexiColumnModel selectCol = new DefaultFlexiColumnModel("select", NodeCols.select.ordinal(), CMD_SELECT_NODE,
+					new BooleanCellRenderer(new StaticFlexiCellRenderer(translate("select"), CMD_SELECT_NODE), null));
+			selectCol.setExportable(false);
+			columnsModel.addFlexiColumnModel(selectCol);
+		}
+
+		tableModel = new IdentityAssessmentOverviewTableModel(columnsModel); 
+		tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, 250, false, getTranslator(), formLayout);
+		tableEl.setExportEnabled(true);
+		tableEl.setEmtpyTableMessageKey("nodesoverview.emptylist");
+		tableEl.setBordered(true);
+		tableEl.setNumOfRowsEnabled(false);
+		
+		if (allowTableFiltering) {
+			List<FlexiTableFilter> filters = new ArrayList<>();
+			filters.add(new FlexiTableFilter(translate("filter.showAll"), "showAll", true));
+			filters.add(FlexiTableFilter.SPACER);
+			filters.add(new FlexiTableFilter(translate("filter.passed"), "passed"));
+			filters.add(new FlexiTableFilter(translate("filter.failed"), "failed"));
+			filters.add(new FlexiTableFilter(translate("filter.inProgress"), "inProgress"));
+			filters.add(new FlexiTableFilter(translate("filter.inReview"), "inReview"));
+			filters.add(new FlexiTableFilter(translate("filter.done"), "done"));
+			tableEl.setFilters("", filters, false);
+		}
+	}
+	
+	@Override
 	protected void doDispose() {
 		//
+	}
+	
+	protected void loadModel() {
+		List<AssessmentNodeData> nodesTableList;
+		if (loadNodesFromCourse) {
+			// get list of course node and user data and populate table data model 	
+			nodesTableList = AssessmentHelper.getAssessmentNodeDataList(userCourseEnvironment, discardEmptyNodes, true);
+		} else {
+			// use list from efficiency statement 
+			nodesTableList = preloadedNodesList;
+		}
+		tableModel.setObjects(nodesTableList);
+		tableEl.reset(true, true, true);
+	}
+
+	@Override
+	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
+		if(state instanceof AssessedIdentityListState) {
+			AssessedIdentityListState listState = (AssessedIdentityListState)state;
+			tableEl.setSelectedFilterKey(listState.getFilter());
+			loadModel();
+		}	
+	}
+
+	@Override
+	protected void formOK(UserRequest ureq) {
+		//
+	}
+
+	@Override
+	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
+		if(tableEl == source) {
+			if(event instanceof SelectionEvent) {
+				SelectionEvent se = (SelectionEvent)event;
+				String cmd = se.getCommand();
+				AssessmentNodeData nodeData = tableModel.getObject(se.getIndex());
+				if(CMD_SELECT_NODE.equals(cmd)) {
+					CourseNode node = runStructure.getNode(nodeData.getIdent());
+					selectedCourseNode = (AssessableCourseNode)node;
+					fireEvent(ureq, EVENT_NODE_SELECTED);
+				}
+			}
+		}
+		super.formInnerEvent(ureq, source, event);
 	}
 }

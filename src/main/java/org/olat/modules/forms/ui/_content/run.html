@@ -1,0 +1,148 @@
+#if($messageNotDone)
+	<div class="o_warning">$r.translate("evaluation.in.progress")</div>
+#else
+
+<div class="o_evaluation_form o_form form-horizontal">
+#foreach($element in $elements)
+	#if($element.isRaw())
+		<div class="clearfix">${element.getContent()}</div>	
+	#elseif($element.isRubric())
+		#set($hasLeftLabels = $element.leftLabels)
+		#set($hasRightLabels = $element.rightLabels)
+		
+		#if($hasLeftLabels && $hasRightLabels)
+			#set($colLeft = "col-sm-3")
+			#set($colMiddle = "col-sm-6")
+			#set($colRight = "col-sm-3")
+		#elseif($hasLeftLabels)
+			#set($colLeft = "col-sm-3")
+			#set($colMiddle = "col-sm-9")
+			#set($colRight = "col-sm-0")
+		#elseif($hasRightLabels)
+			#set($colLeft = "col-sm-0")
+			#set($colMiddle = "col-sm-9")
+			#set($colRight = "col-sm-3")
+		#else
+			#set($colLeft = "col-sm-0")
+			#set($colMiddle = "col-sm-12")
+			#set($colRight = "col-sm-0")
+		#end
+
+		#if($element.isSliderOverview())
+			#if($element.isStepLabels()) 
+			<div class="clearfix">
+				<div class="$colLeft"></div>
+				<div class="$colMiddle o_evaluation_step_labels">
+				#foreach($stepLabel in $element.stepLabels)<div style="width:${element.getStepInPercent()}%;">$r.escapeHtml($stepLabel)</div>#end
+				</div>
+				<div class="$colRight"></div>
+			</div>
+			#end
+			#foreach($slider in $element.getSliders())
+			<div class="o_slider clearfix">
+				<div class="$colLeft o_evaluation_left_label">$slider.startLabel</div>
+				<div class="$colMiddle">$r.render($slider.overviewEl)</div>
+				<div class="$colRight o_evaluation_right_label">$slider.endLabel</div>
+			</div>
+			#end
+		#elseif($element.isRadarOverview())	
+			<div class="clearfix">
+				$r.render($element.radarEl)
+			</div>
+		#elseif($element.isDiscreteRubric())
+		<div class="o_evaluation_discrete_radio">
+			#if($element.isStepLabels()) 
+			<div class="clearfix">
+				<div class="$colLeft"></div>
+				<div class="$colMiddle o_evaluation_step_labels">
+				#foreach($stepLabel in $element.stepLabels)
+					<div style="width:${element.getStepInPercent()}%;">$r.escapeHtml($stepLabel)</div>
+				#end
+				</div>
+				<div class="$colRight"></div>
+			</div>
+			#end
+			#foreach($slider in $element.getSliders())
+			<div class="o_slider clearfix">
+				<div class="$colLeft o_evaluation_left_label">$slider.startLabel</div>
+				<div class="$colMiddle">$r.render($slider.formItem)</div>
+				<div class="$colRight o_evaluation_right_label">$slider.endLabel</div>
+			</div>
+			#end
+		</div>
+		#elseif($element.isDiscreteSliderRubric())
+		<div class="o_evaluation_discrete_slider">
+			#if($element.isStepLabels()) 
+			<div class="clearfix">
+				<div class="$colLeft"></div>
+				<div class="$colMiddle o_evaluation_step_labels">
+				#set($colWidth = 100 / (${element.getStepLabels().size()} - 1))
+				#set($marginWidth = $colWidth / 2)
+				#foreach($stepLabel in $element.stepLabels)
+					#if($foreach.first || $foreach.last) 
+						<div>$r.escapeHtml($stepLabel)</div>
+					#elseif($foreach.index == 1)
+						<div style="width: ${colWidth}%; margin-left:${marginWidth}%;">$r.escapeHtml($stepLabel)</div>
+					#else
+						<div style="width: ${colWidth}%;">$r.escapeHtml($stepLabel)</div>
+					#end
+				#end
+				</div>
+				<div class="$colRight"></div>
+			</div>
+			#end
+			#foreach($slider in $element.getSliders())
+			<div class="o_slider clearfix">
+				<div class="$colLeft o_evaluation_left_label">$slider.startLabel</div>
+				<div class="$colMiddle">$r.render($slider.formItem)</div>
+				<div class="$colRight o_evaluation_right_label">$slider.endLabel</div>
+			</div>
+			#end
+		</div>
+		#else
+		<div class="o_evaluation_slider">
+			#foreach($slider in $element.getSliders())
+			<div class="o_slider clearfix">
+				<div class="$colLeft o_evaluation_left_label">$slider.startLabel</div>
+				<div class="$colMiddle">$r.render($slider.formItem)</div>
+				<div class="$colRight o_evaluation_right_label">$slider.endLabel</div>
+			</div>
+			#end
+		</div>
+		#end
+	#elseif($element.isTextInput())
+		<div class="o_evaluation_textinput clearfix o_block_large">
+		#if($r.isNotNull($element.textInputWrapper.textEl))
+			$r.render($element.textInputWrapper.textEl)
+			#if($r.visible($element.textInputWrapper.saveButton))
+			<div class="o_button_group">
+				$r.render($element.textInputWrapper.saveButton)
+			</div>
+			#end
+		#else
+			<div class="o_evaluation_legend" style="border-left: 3px solid $element.textInputWrapper.color"><h6>$r.escapeHtml($element.textInputWrapper.name)</h6></div>
+			<div class="o_evaluation_text">$r.xssScan($element.textInputWrapper.content)</div>
+		#end
+		</div>
+	#end
+#end
+</div>
+#if($r.available("save.as.done") && $r.visible("save.as.done"))
+<div class="o_button_group">
+	$r.render("save.as.done")
+</div>
+#end
+
+<script type="text/javascript">
+/* <![CDATA[ */
+	jQuery(function() {
+		jQuery(".o_slider").hover(function() {
+			jQuery(this).addClass('hover');
+		}, function() {
+			jQuery(this).removeClass('hover');
+		});
+	});
+/* ]]> */
+</script>
+
+#end

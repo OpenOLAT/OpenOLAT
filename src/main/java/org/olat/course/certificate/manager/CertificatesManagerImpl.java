@@ -371,16 +371,17 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 	@Override
 	public boolean hasCertificate(IdentityRef identity, Long resourceKey) {
 		StringBuilder sb = new StringBuilder();
-		sb.append("select count(cer) from certificate cer")
+		sb.append("select cer.key from certificate cer")
 		  .append(" where (cer.olatResource.key=:resourceKey or cer.archivedResourceKey=:resourceKey)")
 		  .append(" and cer.identity.key=:identityKey");
 		List<Number> certififcates = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), Number.class)
 				.setParameter("resourceKey", resourceKey)
 				.setParameter("identityKey", identity.getKey())
+				.setFirstResult(0)
 				.setMaxResults(1)
 				.getResultList();
-		return certififcates.isEmpty() ? false : certififcates.get(0).intValue() > 0;
+		return certififcates != null && certififcates.size() > 0;
 	}
 
 	@Override

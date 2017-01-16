@@ -22,6 +22,7 @@ package org.olat.course.run;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.olat.NewControllerFactory;
@@ -46,6 +47,7 @@ import org.olat.core.gui.components.link.LinkPopupSettings;
 import org.olat.core.gui.components.stack.PopEvent;
 import org.olat.core.gui.components.stack.TooledStackedPanel.Align;
 import org.olat.core.gui.components.stack.VetoPopEvent;
+import org.olat.core.gui.components.stack.BreadcrumbedStackedPanel.BreadCrumb;
 import org.olat.core.gui.control.ChiefController;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
@@ -101,6 +103,7 @@ import org.olat.course.groupsandrights.CourseGroupManager;
 import org.olat.course.groupsandrights.CourseRights;
 import org.olat.course.member.MembersManagementMainController;
 import org.olat.course.nodes.CourseNode;
+import org.olat.course.nodes.ENCourseNode;
 import org.olat.course.reminder.ui.CourseRemindersController;
 import org.olat.course.run.calendar.CourseCalendarController;
 import org.olat.course.run.glossary.CourseGlossaryFactory;
@@ -127,7 +130,9 @@ import org.olat.repository.RepositoryEntryManagedFlag;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.controllers.EntryChangedEvent;
 import org.olat.repository.model.RepositoryEntrySecurity;
+import org.olat.repository.ui.RepositoryEntryLifeCycleChangeController;
 import org.olat.repository.ui.RepositoryEntryRuntimeController;
+import org.olat.resource.OLATResource;
 import org.olat.util.logging.activity.LoggingResourceable;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -151,7 +156,8 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 		courseStatisticLink, surveyStatisticLink, testStatisticLink,
 		areaLink, dbLink,
 		//settings
-		layoutLink, optionsLink, certificatesOptionsLink, reminderLink, assessmentModeLink,
+		layoutLink, optionsLink, certificatesOptionsLink, reminderLink,
+		assessmentModeLink, lifeCycleChangeLink,
 		//my course
 		efficiencyStatementsLink, calendarLink, noteLink, chatLink, leaveLink,
 		//glossary
@@ -174,6 +180,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 	private AssessmentModeListController assessmentModeCtrl;
 	private CourseLayoutGeneratorController courseLayoutCtrl;
 	private CertificatesOptionsController certificatesOptionsCtrl;
+	protected RepositoryEntryLifeCycleChangeController lifeCycleChangeCtr;
 
 	private int currentUserCount;
 	private Map<String, Boolean> courseRightsCache;
@@ -242,6 +249,15 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 		UserCourseEnvironmentImpl uce = getUserCourseEnvironment();
 		if(uce != null) {
 			uce.setUserRoles(security.isEntryAdmin(), security.isCourseCoach() || security.isGroupCoach(), security.isCourseParticipant() || security.isGroupParticipant());
+			if(security.isReadOnly()) {
+				if(overrideReadOnly) {
+					uce.setCourseReadOnly(Boolean.FALSE);
+				} else {
+					uce.setCourseReadOnly(Boolean.TRUE);
+				}
+			} else {
+				uce.setCourseReadOnly(Boolean.FALSE);
+			}
 		}
 		
 		courseRightsCache = new HashMap<String, Boolean>();
@@ -266,7 +282,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 	private UserCourseEnvironmentImpl getUserCourseEnvironment() {
 		RunMainController run = getRunMainController();
 		UserCourseEnvironmentImpl uce = run == null ? null : run.getUce();
-		if(uce.isCourseReadOnly() && overrideReadOnly) {
+		if(uce != null && uce.isCourseReadOnly() && overrideReadOnly) {
 			uce.setCourseReadOnly(Boolean.FALSE);
 		}
 		return uce;
@@ -395,6 +411,13 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 		
 		if(getRunMainController() != null) {
 			getRunMainController().initToolbar();
+		}
+		
+		if(uce != null && uce.isCourseReadOnly()) {
+			toolbarPanel.setMessage(translate("course.closed"));
+			toolbarPanel.setMessageCssClass("o_warning");
+		} else {
+			toolbarPanel.setMessage(null);
 		}
 	}
 	
@@ -663,7 +686,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 			
 			if(repositoryService.isParticipantAllowedToLeave(getRepositoryEntry())
 					&& !assessmentLock && !roles.isGuestOnly() && !uce.isCourseReadOnly()
-					&& (uce.isParticipant() || !uce.getParticipatingGroups().isEmpty())) {
+					&& isAllowedToLeave(uce)) {
 				leaveLink = LinkFactory.createToolLink("sign.out", "leave", translate("sign.out"), this);
 				leaveLink.setIconLeftCSS("o_icon o_icon-fw o_icon_sign_out");
 				myCourse.addComponent(new Spacer("leaving-space"));
@@ -673,6 +696,36 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 		if(myCourse.size() > 0) {
 			toolbarPanel.addTool(myCourse, Align.right);
 		}
+	}
+	
+	private boolean isAllowedToLeave(UserCourseEnvironmentImpl uce) {
+		if(uce.getParticipatingGroups().size() > 0) {
+			CourseNode rootNode = uce.getCourseEnvironment().getRunStructure().getRootNode();
+			OLATResource courseResource = uce.getCourseEnvironment().getCourseGroupManager().getCourseResource();
+			
+			AtomicBoolean bool = new AtomicBoolean(false);
+			new TreeVisitor(new Visitor() {
+				@Override
+				public void visit(INode node) {
+					if(!bool.get() && node instanceof ENCourseNode) {
+						try {
+							ENCourseNode enNode = (ENCourseNode)node;
+							boolean cancelEnrollEnabled = enNode.getModuleConfiguration().getBooleanSafe(ENCourseNode.CONF_CANCEL_ENROLL_ENABLED);
+							if(!cancelEnrollEnabled && enNode.isUsedForEnrollment(uce.getParticipatingGroups(), courseResource)) {
+								bool.set(true);
+							}
+						} catch (Exception e) {
+							logError("", e);
+						}
+					}
+				}
+			}, rootNode, true).visitAll();
+
+			if(bool.get()) {
+				return false;// is in a enrollment group
+			}
+		}
+		return (uce.isParticipant() || !uce.getParticipatingGroups().isEmpty());
 	}
 	
 	private void initGeneralTools(ICourse course) {
@@ -781,6 +834,8 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 			doAssessmentMode(ureq);
 		} else if(certificatesOptionsLink == source) {
 			doCertificatesOptions(ureq);
+		} else if (lifeCycleChangeLink == source) {
+			doLifeCycleChange(ureq);
 		} else if(reminderLink == source) {
 			doReminders(ureq);
 		} else if(archiverLink == source) {
@@ -836,12 +891,14 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 				processBusinessGroupModifiedEvent((BusinessGroupModifiedEvent)event);
 			}
 		} else if (lifeCycleChangeCtr == source) {
-			loadRepositoryEntry();
-			String cmd = event.getCommand();
-			if("closed".equals(cmd) || "unclosed".equals(cmd) || "deleted".equals(cmd)) {
-				//do something
+			if (event == RepositoryEntryLifeCycleChangeController.deletedEvent) {
+				doClose(ureq);
+				cleanUp();	
+			} else if (event == RepositoryEntryLifeCycleChangeController.closedEvent
+					|| event == RepositoryEntryLifeCycleChangeController.unclosedEvent) {
+				processClosedUnclosedEvent(ureq);
 			}
-		} else if (currentToolCtr == source) {
+		}else if (currentToolCtr == source) {
 			if (event == Event.DONE_EVENT) {
 				// special check for editor
 				toolControllerDone(ureq);
@@ -905,6 +962,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 	
 	@Override
 	protected void cleanUp() {
+		removeAsListenerAndDispose(lifeCycleChangeCtr);
 		removeAsListenerAndDispose(assessmentToolCtr);
 		removeAsListenerAndDispose(courseFolderCtrl);
 		removeAsListenerAndDispose(courseLayoutCtrl);
@@ -916,6 +974,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 		removeAsListenerAndDispose(membersCtrl);
 		removeAsListenerAndDispose(areasCtrl);
 		removeAsListenerAndDispose(leaveDialogBox);
+		lifeCycleChangeCtr = null;
 		assessmentToolCtr = null;
 		courseFolderCtrl = null;
 		courseLayoutCtrl = null;
@@ -949,7 +1008,9 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 		entries = removeRepositoryEntry(entries);
 		if(entries != null && entries.size() > 0) {
 			String type = entries.get(0).getOLATResourceable().getResourceableTypeName();
-			if("Editor".equalsIgnoreCase(type)) {
+			if("Payment".equalsIgnoreCase(type)) {
+				doPostSuccessfullAccess(ureq);
+			} else if("Editor".equalsIgnoreCase(type)) {
 				if (!isInEditor() && !RepositoryEntryManagedFlag.isManaged(getRepositoryEntry(), RepositoryEntryManagedFlag.editcontent)) {
 					doEdit(ureq);
 				}
@@ -1145,6 +1206,22 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 		}
 
 		doClose(ureq);
+	}
+	
+	private void doLifeCycleChange(UserRequest ureq) {
+		List<Link> breadCrumbs = toolbarPanel.getBreadCrumbs();
+		BreadCrumb lastCrumb = null;
+		if (breadCrumbs.size() > 0) {
+			lastCrumb = (BreadCrumb) breadCrumbs.get(breadCrumbs.size()-1).getUserObject();
+		}
+		if (lastCrumb == null || lastCrumb.getController() != lifeCycleChangeCtr) {
+			// only create and add to stack if not already there
+			lifeCycleChangeCtr = new RepositoryEntryLifeCycleChangeController(ureq, getWindowControl(),
+					getRepositoryEntry(), reSecurity, handler);
+			listenTo(lifeCycleChangeCtr);
+			currentToolCtr = lifeCycleChangeCtr;
+			toolbarPanel.pushController(translate("details.lifecycle.change"), lifeCycleChangeCtr);
+		}
 	}
 	
 	private void doLayout(UserRequest ureq) {
@@ -1560,6 +1637,19 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 			return;// immediate return after opening new browser window!
 		}
 	}
+	
+	private void processClosedUnclosedEvent(UserRequest ureq) {
+		loadRepositoryEntry();
+		reSecurity = repositoryManager.isAllowed(getIdentity(), roles, getRepositoryEntry());
+		loadRights(reSecurity);
+		toolbarPanel.popUpToRootController(ureq);
+		initToolbar();
+		
+		RunMainController runCtrl = getRunMainController();
+		if(runCtrl != null && runCtrl.getCurrentCourseNode() != null) {
+			runCtrl.updateCurrentCourseNode(ureq);
+		}
+	}
 
 	private void processCourseConfigEvent(CourseConfigEvent event) {
 		switch(event.getType()) {
@@ -1617,8 +1707,8 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 		// was adding or removing of the user
 		if (bgme.wasMyselfAdded(identity) || bgme.wasMyselfRemoved(identity)) {
 			reSecurity = repositoryManager.isAllowed(getIdentity(), roles, getRepositoryEntry());
-			loadRights(reSecurity);
 			reloadGroupMemberships(reSecurity);
+			loadRights(reSecurity);
 			initToolbar();
 		} else if (bgme.getCommand().equals(BusinessGroupModifiedEvent.GROUPRIGHTS_MODIFIED_EVENT)) {
 			// check if this affects a right group where the user does participate.

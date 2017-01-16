@@ -75,7 +75,6 @@
 		<!-- End upgraders mapping -->
 		
 		
-		<class>org.olat.basesecurity.IdentityImpl</class>
 		<class>org.olat.basesecurity.IdentityShort</class>
 		<class>org.olat.basesecurity.model.GroupImpl</class>
 		<class>org.olat.basesecurity.model.GrantImpl</class>
@@ -153,6 +152,8 @@
 		<class>org.olat.modules.fo.model.ReadMessageImpl</class>
 		<class>org.olat.modules.fo.model.MessageStatistics</class>
 		<class>org.olat.modules.fo.model.PseudonymImpl</class>
+		<class>org.olat.modules.forms.model.jpa.EvaluationFormSessionImpl</class>
+		<class>org.olat.modules.forms.model.jpa.EvaluationFormResponseImpl</class>
 		<class>org.olat.modules.gotomeeting.model.GoToMeetingImpl</class>
 		<class>org.olat.modules.gotomeeting.model.GoToOrganizerImpl</class>
 		<class>org.olat.modules.gotomeeting.model.GoToRegistrantImpl</class>
@@ -166,6 +167,7 @@
 		<class>org.olat.modules.portfolio.model.TitlePart</class>
 		<class>org.olat.modules.portfolio.model.MediaPart</class>
 		<class>org.olat.modules.portfolio.model.SpacerPart</class>
+		<class>org.olat.modules.portfolio.model.EvaluationFormPart</class>
 		<class>org.olat.modules.portfolio.model.CategoryImpl</class>
 		<class>org.olat.modules.portfolio.model.CategoryToElementImpl</class>
 		<class>org.olat.modules.portfolio.model.AssessmentSectionImpl</class>
@@ -194,8 +196,8 @@
 			<property name="hibernate.generate_statistics" value="true"/>
 			<property name="hibernate.archive.autodetection" value=""/>
 			<property name="hibernate.max_fetch_depth" value="10"/>
-			<property name="hibernate.connection.release_mode" value="after_transaction"/>
-			<property name="hibernate.ejb.interceptor" value="org.olat.core.commons.persistence.AuditInterceptor"/>
+			<property name="hibernate.connection.handling_mode" value="DELAYED_ACQUISITION_AND_RELEASE_AFTER_TRANSACTION"/>
+			<property name="hibernate.session_factory.interceptor" value="org.olat.core.commons.persistence.AuditInterceptor"/>
 		</properties>
 	</persistence-unit>
 </persistence>

@@ -26,6 +26,7 @@ package org.olat.modules.wiki;
 
 import org.olat.core.commons.services.notifications.SubscriptionContext;
 import org.olat.course.run.userview.NodeEvaluation;
+import org.olat.modules.fo.ForumCallback;
 
 /**
  * Initial Date:  Nov 28, 2006 <br>
@@ -62,12 +63,14 @@ public class WikiSecurityCallbackImpl implements WikiSecurityCallback {
 	 * 
 	 * @return true if admin or allowed by preconditions
 	 */
+	@Override
 	public boolean mayEditAndCreateArticle(){
 		if(isGroupWiki) return true;
 		if(isGuestOnly) return false;
 		if(isOlatAdmin) return true;
 		//if(isResourceOwner) return true; //should not shortcut the nodeEvauation values			
-		if(ne != null && ne.isCapabilityAccessible("access") && ne.isCapabilityAccessible("editarticle")) {
+		if(ne != null && ne.isCapabilityAccessible("access")
+				&& ne.isCapabilityAccessible("editarticle")) {
 			return true;
 		}
 		if(ne == null) return true; //wiki is started from repo, and it's visible to this user, so creating pages is allowed
@@ -78,6 +81,7 @@ public class WikiSecurityCallbackImpl implements WikiSecurityCallback {
 	 * 
 	 * @return true if admin or resource owner or used in group context
 	 */
+	@Override
 	public boolean mayEditWikiMenu(){
 		if(isGroupWiki) return true;
 		if(isGuestOnly) return false;
@@ -89,15 +93,23 @@ public class WikiSecurityCallbackImpl implements WikiSecurityCallback {
 	/**
 	 * @return the subscriptionContext. if null, then no subscription must be offered
 	 */
+	@Override
 	public SubscriptionContext getSubscriptionContext()
 	{
 		return (isGuestOnly ? null : subscriptionContext);
 	}
 
+	@Override
 	public boolean mayModerateForum()	{
 		if(!isGuestOnly && (isOlatAdmin || isResourceOwner)) {
 			return true;		
 		}		
 		return false;
+	}
+
+	@Override
+	public ForumCallback getForumCallback() {
+		boolean isModerator = mayModerateForum();
+		return new WikiForumCallback(isGuestOnly, isModerator, subscriptionContext);
 	}
 }

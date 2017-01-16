@@ -284,7 +284,7 @@ public class TableRenderer extends DefaultComponentRenderer {
 			if (action != null) {
 				StringOutput so = new StringOutput(100);
 				cd.renderValue(so, i, renderer);
-				appendSingleDataRowActionColumn(target, ubu, iframePostEnabled, i, currentPosInModel, j, cd, action, so.toString());
+				appendSingleDataRowActionColumn(target, ubu, table, iframePostEnabled, i, currentPosInModel, j, cd, action, so.toString());
 			} else {
 				cd.renderValue(target, i, renderer);
 			}
@@ -292,7 +292,7 @@ public class TableRenderer extends DefaultComponentRenderer {
 		}
 	}
 
-	private void appendSingleDataRowActionColumn(StringOutput target, URLBuilder ubu, boolean ajaxEnabled, int i, int currentPosInModel, int j,
+	private void appendSingleDataRowActionColumn(StringOutput target, URLBuilder ubu, Table table, boolean ajaxEnabled, int i, int currentPosInModel, int j,
 			ColumnDescriptor cd, String action, String renderval) {
 		// If we have actions on the table rows, we just submit traditional style (not via form.submit())
 		// Note that changes in the state of multiselects will not be reflected in the model.
@@ -310,7 +310,7 @@ public class TableRenderer extends DefaultComponentRenderer {
 			target.append("');win.focus();}\">");
 		} else {
 			// render in same window
-			ubu.buildHrefAndOnclick(target, ajaxEnabled,
+			ubu.buildHrefAndOnclick(target, null, ajaxEnabled, !table.isSuppressDirtyFormWarning(), true,
 					new NameValuePair(Table.COMMANDLINK_ROWACTION_CLICKED, currentPosInModel),
 					new NameValuePair(Table.COMMANDLINK_ROWACTION_ID, action)).append(">");
 		}

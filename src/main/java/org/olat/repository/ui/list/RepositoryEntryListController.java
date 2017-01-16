@@ -225,7 +225,7 @@ public class RepositoryEntryListController extends FormBasicController
 	
 	private void initFilters(FlexiTableElement tableElement) {
 		List<FlexiTableFilter> filters = new ArrayList<>(16);
-		filters.add(new FlexiTableFilter(translate("filter.show.all"), Filter.showAll.name()));
+		filters.add(new FlexiTableFilter(translate("filter.show.all"), Filter.showAll.name(), true));
 		filters.add(FlexiTableFilter.SPACER);
 		filters.add(new FlexiTableFilter(translate("filter.current.courses"), Filter.currentCourses.name()));
 		filters.add(new FlexiTableFilter(translate("filter.upcoming.courses"), Filter.upcomingCourses.name()));

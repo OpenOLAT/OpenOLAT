@@ -26,8 +26,10 @@ import java.util.UUID;
 
 import org.junit.Assert;
 import org.junit.Test;
+import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.Group;
 import org.olat.basesecurity.Invitation;
+import org.olat.basesecurity.manager.GroupDAO;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.portfolio.model.structel.PortfolioStructureMap;
@@ -46,7 +48,11 @@ public class InvitationDAOTest extends OlatTestCase {
 	@Autowired
 	private DB dbInstance;
 	@Autowired
+	private GroupDAO groupDao;
+	@Autowired
 	private InvitationDAO invitationDao;
+	@Autowired
+	private BaseSecurity securityManager;
 	@Autowired
 	private EPPolicyManager policyManager;
 	@Autowired
@@ -119,6 +125,53 @@ public class InvitationDAOTest extends OlatTestCase {
 		Assert.assertEquals("Kanu", reloadedInvitation.getFirstName());
 		Assert.assertEquals("Unchou", reloadedInvitation.getLastName());
 		Assert.assertEquals("kanu.unchou@frentix.com", reloadedInvitation.getMail());
+	}
+	
+	@Test
+	public void createIdentityFrom_invitation() {
+		Invitation invitation = invitationDao.createAndPersistInvitation();
+		String uuid = UUID.randomUUID().toString().replace("-", "");
+		invitation = invitationDao.update(invitation, "Clara", uuid, uuid + "@frentix.com");
+		dbInstance.commit();
+		
+		// create the identity of the invitee
+		Identity invitee = invitationDao.createIdentityFrom(invitation, Locale.ENGLISH);
+		Assert.assertNotNull(invitee);
+		Assert.assertNotNull(invitee.getKey());
+		dbInstance.commitAndCloseSession();
+		
+		// reload and check
+		Identity reloadIdentity = securityManager.loadIdentityByKey(invitee.getKey());
+		Assert.assertNotNull(reloadIdentity);
+		Assert.assertNotNull(reloadIdentity.getUser());
+		Assert.assertEquals(invitee.getKey(), reloadIdentity.getKey());
+		Assert.assertEquals("Clara", reloadIdentity.getUser().getFirstName());
+		Assert.assertEquals(uuid, reloadIdentity.getUser().getLastName());
+		Assert.assertEquals(uuid + "@frentix.com", reloadIdentity.getUser().getEmail());
+	}
+	
+	@Test
+	public void loadOrCreateIdentityAndPersistInvitation() {
+		Invitation invitation = invitationDao.createAndPersistInvitation();
+		String uuid = UUID.randomUUID().toString().replace("-", "");
+		invitation = invitationDao.update(invitation, "Flora", uuid, uuid + "@frentix.com");
+		Group group = groupDao.createGroup();
+		dbInstance.commit();
+		
+		// use the create part of the method
+		Identity identity = invitationDao.loadOrCreateIdentityAndPersistInvitation(invitation, group, Locale.ENGLISH);
+		Assert.assertNotNull(identity);
+		Assert.assertNotNull(identity.getKey());
+		dbInstance.commitAndCloseSession();
+		
+		// reload and check
+		Identity reloadIdentity = securityManager.loadIdentityByKey(identity.getKey());
+		Assert.assertNotNull(reloadIdentity);
+		Assert.assertNotNull(reloadIdentity.getUser());
+		Assert.assertEquals(identity.getKey(), reloadIdentity.getKey());
+		Assert.assertEquals("Flora", reloadIdentity.getUser().getFirstName());
+		Assert.assertEquals(uuid, reloadIdentity.getUser().getLastName());
+		Assert.assertEquals(uuid + "@frentix.com", reloadIdentity.getUser().getEmail());
 	}
 	
 	@Test

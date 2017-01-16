@@ -137,9 +137,9 @@ public class CategoryDAOTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 
 		Section reloadedSection = binderDao.loadSectionByKey(section.getKey());
-		Page page1 = pageDao.createAndPersist("Jules Verne", "Cing semaine en ballon", null, null, reloadedSection, null);
-		Page page2 = pageDao.createAndPersist("J. Verne", "Une ville flottante", null, null, reloadedSection, null);
-		Page page3 = pageDao.createAndPersist("Verne", "Les Tribulations d'un Chinois en Chine", null, null, reloadedSection, null);
+		Page page1 = pageDao.createAndPersist("Jules Verne", "Cing semaine en ballon", null, null, true, reloadedSection, null);
+		Page page2 = pageDao.createAndPersist("J. Verne", "Une ville flottante", null, null, true, reloadedSection, null);
+		Page page3 = pageDao.createAndPersist("Verne", "Les Tribulations d'un Chinois en Chine", null, null, true, reloadedSection, null);
 		dbInstance.commitAndCloseSession();
 		
 		List<String> categories1 = new ArrayList<>();
@@ -177,7 +177,7 @@ public class CategoryDAOTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 
 		Section reloadedSection = binderDao.loadSectionByKey(section.getKey());
-		Page page = pageDao.createAndPersist("Jules Verne", "Deux ans de vacances", null, null, reloadedSection, null);
+		Page page = pageDao.createAndPersist("Jules Verne", "Deux ans de vacances", null, null, true, reloadedSection, null);
 		dbInstance.commitAndCloseSession();
 		
 		List<String> categoriesSection = new ArrayList<>();

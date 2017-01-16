@@ -128,7 +128,9 @@ public class AssessmentIdentityCourseController extends BasicController implemen
 
 	@Override
 	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
-		//
+		if(entries != null || state != null) {
+			treeOverviewCtrl.activate(ureq, entries, state);
+		}
 	}
 
 	@Override
@@ -153,7 +155,7 @@ public class AssessmentIdentityCourseController extends BasicController implemen
 		} else if(currentNodeCtrl == source) {
 			if(event instanceof AssessmentFormEvent) {
 				AssessmentFormEvent aee = (AssessmentFormEvent)event;
-				treeOverviewCtrl.doIdentityAssessmentOverview(ureq);
+				treeOverviewCtrl.loadModel();
 				if(aee.isClose()) {
 					stackPanel.popController(currentNodeCtrl);
 				}
@@ -161,7 +163,7 @@ public class AssessmentIdentityCourseController extends BasicController implemen
 			} else if(event == Event.CANCELLED_EVENT) {
 				stackPanel.popController(currentNodeCtrl);
 			} else if(event == Event.CHANGED_EVENT) {
-				treeOverviewCtrl.doIdentityAssessmentOverview(ureq);
+				treeOverviewCtrl.loadModel();
 				fireEvent(ureq, event);
 			}
 		}

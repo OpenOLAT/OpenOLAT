@@ -23,23 +23,23 @@ package org.olat.resource.accesscontrol.ui;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.olat.core.gui.ShortName;
 import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.components.Component;
-import org.olat.core.gui.components.panel.StackedPanel;
-import org.olat.core.gui.components.table.ColumnDescriptor;
-import org.olat.core.gui.components.table.CustomRenderColumnDescriptor;
-import org.olat.core.gui.components.table.DefaultColumnDescriptor;
-import org.olat.core.gui.components.table.StaticColumnDescriptor;
-import org.olat.core.gui.components.table.Table;
-import org.olat.core.gui.components.table.TableController;
-import org.olat.core.gui.components.table.TableEvent;
-import org.olat.core.gui.components.table.TableGuiConfiguration;
-import org.olat.core.gui.components.velocity.VelocityContainer;
+import org.olat.core.gui.components.form.flexible.FormItem;
+import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
+import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
+import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
+import org.olat.core.gui.components.form.flexible.impl.FormEvent;
+import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
+import org.olat.core.gui.components.stack.BreadcrumbPanel;
+import org.olat.core.gui.components.stack.BreadcrumbPanelAware;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.ContextEntry;
@@ -49,7 +49,7 @@ import org.olat.resource.accesscontrol.ACService;
 import org.olat.resource.accesscontrol.AccessControlModule;
 import org.olat.resource.accesscontrol.Order;
 import org.olat.resource.accesscontrol.OrderStatus;
-import org.olat.resource.accesscontrol.ui.OrdersDataModel.Col;
+import org.olat.resource.accesscontrol.ui.OrdersDataModel.OrderCol;
 import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -62,99 +62,93 @@ import org.springframework.beans.factory.annotation.Autowired;
  * Initial Date:  20 avr. 2011 <br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
-public class OrdersController extends BasicController implements Activateable2 {
+public class OrdersController extends FormBasicController implements Activateable2, BreadcrumbPanelAware {
 	
 	private static final String CMD_SELECT = "sel";
+	
 
-	private final StackedPanel mainPanel;
-	private final VelocityContainer mainVC;
-	private final TableController tableCtr;
+	private FlexiTableElement tableEl;
+	private OrdersDataSource dataSource;
+	private OrdersDataModel dataModel;
+	private BreadcrumbPanel stackPanel;
+
 	private OrderDetailController detailController;
 	
-	@Autowired
-	private AccessControlModule acModule;
 	@Autowired
 	private ACService acService;
 	@Autowired
 	private UserManager userManager;
+	@Autowired
+	private AccessControlModule acModule;
 	
 	public OrdersController(UserRequest ureq, WindowControl wControl) {
-		super(ureq, wControl);
-
-		TableGuiConfiguration tableConfig = new TableGuiConfiguration();
-		tableConfig.setDownloadOffered(true);
-		tableConfig.setPreferencesOffered(true, "Orders");		
-		tableConfig.setTableEmptyMessage(translate("table.order.empty"));
-		
-		List<ShortName> statusList = new ArrayList<ShortName>(); 
-		OrderStatusContextShortName payedStatus = new OrderStatusContextShortName(translate("order.status.payed"), OrderStatus.PAYED);
-		OrderStatusContextShortName errorStatus = new OrderStatusContextShortName(translate("order.status.error"), OrderStatus.ERROR);
-		statusList.add(payedStatus);
-		statusList.add(errorStatus);
-
-		tableCtr = new TableController(tableConfig, ureq, wControl, statusList, payedStatus, translate("order.status"), null, false, getTranslator());
-		tableCtr.addColumnDescriptor(new CustomRenderColumnDescriptor("order.status", Col.status.ordinal(), null, getLocale(),
-				ColumnDescriptor.ALIGNMENT_LEFT, new OrderStatusRenderer()) {
-			@Override
-			public int compareTo(int rowa, int rowb) {
-				OrderTableItem a = (OrderTableItem)table.getTableDataModel().getValueAt(rowa, dataColumn);
-				OrderTableItem b = (OrderTableItem)table.getTableDataModel().getValueAt(rowb, dataColumn);
-				return a.compareStatusTo(b);
-			}
-		});
-		tableCtr.addColumnDescriptor(new DefaultColumnDescriptor("order.nr", Col.orderNr.ordinal(), CMD_SELECT, getLocale()));
-		tableCtr.addColumnDescriptor(new DefaultColumnDescriptor("order.creationDate", Col.creationDate.ordinal(), null, getLocale()));
-		tableCtr.addColumnDescriptor(new DefaultColumnDescriptor("order.summary", Col.summary.ordinal(), null, getLocale()));
-		tableCtr.addColumnDescriptor(new CustomRenderColumnDescriptor("order.part.payment", Col.methods.ordinal(), null, getLocale(), 
-				ColumnDescriptor.ALIGNMENT_LEFT, new AccessMethodRenderer(acModule)));
-		
-		tableCtr.addColumnDescriptor(new DefaultColumnDescriptor("order.total", Col.total.ordinal(), null, getLocale()));
-		
-		tableCtr.addColumnDescriptor(new StaticColumnDescriptor(CMD_SELECT, "table.order.details", getTranslator().translate("order.details")));
-		listenTo(tableCtr);
-		
-		loadModel();
-		
-		mainVC = createVelocityContainer("orders");
-		mainVC.put("orderList", tableCtr.getInitialComponent());
-		mainVC.contextPut("title", translate("orders.my"));
-		mainVC.contextPut("description", translate("orders.my.desc"));
-
-		mainPanel = putInitialPanel(mainVC);
+		super(ureq, wControl, LAYOUT_BAREBONE);
+		initForm(ureq);
 	}
-	
-	private void loadModel() {
-		OrderStatusContextShortName filter = (OrderStatusContextShortName)tableCtr.getActiveFilter();
-		List<OrderTableItem> items = acService.findOrderItems(null, getIdentity(), null, null, null, filter.getStatus());
-		tableCtr.setTableDataModel(new OrdersDataModel(items, getLocale(), userManager));
+
+	@Override
+	public void setBreadcrumbPanel(BreadcrumbPanel stackPanel) {
+		this.stackPanel = stackPanel;
 	}
-	
+
+	@Override
+	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(OrderCol.status, new OrderStatusRenderer()));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(OrderCol.orderNr));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(OrderCol.creationDate));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(OrderCol.summary));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(OrderCol.methods, new AccessMethodRenderer(acModule)));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(OrderCol.total));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("table.order.details", translate("select"), CMD_SELECT));
+		
+		dataSource = new OrdersDataSource(acService, null, getIdentity(), null);
+		dataModel = new OrdersDataModel(dataSource, getLocale(), userManager, columnsModel);
+		tableEl = uifactory.addTableElement(getWindowControl(), "orderList", dataModel, 25, true, getTranslator(), formLayout);
+		tableEl.setExportEnabled(true);
+		tableEl.setEmtpyTableMessageKey("table.order.empty");
+
+		List<FlexiTableFilter> filters = new ArrayList<>();
+		filters.add(new FlexiTableFilter(translate("order.status.payed"), OrderStatus.PAYED.name()));
+		filters.add(new FlexiTableFilter(translate("order.status.error"), OrderStatus.ERROR.name()));
+		tableEl.setFilters("", filters, false);
+		
+		if(formLayout instanceof FormLayoutContainer) {
+			FormLayoutContainer layoutCont = (FormLayoutContainer)formLayout;
+			layoutCont.contextPut("title", translate("orders.my"));
+			layoutCont.contextPut("description", translate("orders.my.desc"));
+		}
+	}
+
+	@Override
 	protected void doDispose() {
 		//
 	}
-
+	
 	@Override
-	protected void event(UserRequest ureq, Component source, Event event) {
+	protected void formOK(UserRequest ureq) {
 		//
 	}
+
+	@Override
+	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
+		if(source == tableEl) {
+			if(event instanceof SelectionEvent) {
+				SelectionEvent se = (SelectionEvent)event;
+				OrderTableItem row = dataModel.getObject(se.getIndex());
+				if(CMD_SELECT.equals(se.getCommand())) {
+					doSelectOrder(ureq, row);
+				}
+			}
+		}
+		super.formInnerEvent(ureq, source, event);
+	}
+
 	
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
-		if(source == tableCtr) {
-			if (event.getCommand().equals(Table.COMMANDLINK_ROWACTION_CLICKED)) {
-				TableEvent te = (TableEvent) event;
-				String actionid = te.getActionId();
-				int rowid = te.getRowId();
-				OrderTableItem order = (OrderTableItem)tableCtr.getTableDataModel().getObject(rowid);
-				if(CMD_SELECT.equals(actionid)) {
-					selectOrder(ureq, order);
-				}
-			} else if (TableController.EVENT_FILTER_SELECTED == event) {
-				loadModel();
-			}
-		} else if (source == detailController) {
+		if (source == detailController) {
 			if(event == Event.BACK_EVENT) {
-				mainPanel.setContent(mainVC);
 				removeAsListenerAndDispose(detailController);
 				detailController = null;
 			}
@@ -163,7 +157,7 @@ public class OrdersController extends BasicController implements Activateable2 {
 	
 	@Override
 	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
-		if(entries == null || entries.isEmpty()) return;
+		/*if(entries == null || entries.isEmpty()) return;
 		
 		ContextEntry entry = entries.get(0);
 		String type = entry.getOLATResourceable().getResourceableTypeName();
@@ -175,16 +169,17 @@ public class OrdersController extends BasicController implements Activateable2 {
 					break;
 				}
 			}
-		}
+		}*/
 	}
 
-	protected void selectOrder(UserRequest ureq, OrderTableItem order) {
+	private void doSelectOrder(UserRequest ureq, OrderTableItem order) {
 		removeAsListenerAndDispose(detailController);
 
 		OLATResourceable ores = OresHelper.createOLATResourceableInstance(Order.class, order.getOrderKey());
 		WindowControl bwControl = addToHistory(ureq, ores, null);
 		detailController = new OrderDetailController(ureq, bwControl, order.getOrderKey());
+		detailController.hideBackLink();
 		listenTo(detailController);
-		mainPanel.setContent(detailController.getInitialComponent());
+		stackPanel.pushController(order.getOrderNr(), detailController);
 	}
 }

@@ -28,11 +28,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.olat.core.commons.persistence.DBFactory;
-import org.olat.core.commons.services.lock.pessimistic.PessimisticLockManager;
 import org.olat.core.gui.control.Event;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
-import org.olat.core.logging.AssertException;
 import org.olat.core.logging.DBRuntimeException;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
@@ -67,7 +65,6 @@ public class ClusterLocker implements Locker, GenericEventListener {
 	private EventBus eventBus;
 	private ClusterLockManager clusterLockManager;
 	private PersistentLockManager persistentLockManager;
-	private PessimisticLockManager pessimisticLockManager;
 	/**
 	 * [used by spring]
 	 *
@@ -97,19 +94,13 @@ public class ClusterLocker implements Locker, GenericEventListener {
 	public void setPersistentLockManager(PersistentLockManager persistentLockManager) {
 		this.persistentLockManager = persistentLockManager;
 	}
-	
-	/**
-	 * [used by Spring]
-	 * @param pessimisticLockManager
-	 */
-	public void setPessimisticLockManager(PessimisticLockManager pessimisticLockManager) {
-		this.pessimisticLockManager = pessimisticLockManager;
-	}
 
+	@Override
 	public LockResult acquireLock(final OLATResourceable ores, final Identity requestor, final String locksubkey) {
 		final String asset = OresHelper.createStringRepresenting(ores, locksubkey);
 		
 		LockResult res = syncer.doInSync(ores, new SyncerCallback<LockResult>(){
+			@Override
 			public LockResult execute() {
 				LockResultImpl lres;
 				LockImpl li = clusterLockManager.findLock(asset);
@@ -141,6 +132,7 @@ public class ClusterLocker implements Locker, GenericEventListener {
 	 * 
 	 * @see org.olat.core.util.event.GenericEventListener#event(org.olat.core.gui.control.Event)
 	 */
+	@Override
 	public void event(Event event) {
 		SignOnOffEvent se = (SignOnOffEvent) event;
 		if (!se.isSignOn() && se.isEventOnThisNode()) {
@@ -199,10 +191,10 @@ public class ClusterLocker implements Locker, GenericEventListener {
 	public void releaseLockEntry(LockEntry lockEntry) {
 		String asset = lockEntry.getKey();
 		Identity releaseRequestor = lockEntry.getOwner();
-		
+		clusterLockManager.deleteLock(asset, releaseRequestor);
 		
 		// cluster:: change to useage with syncer, but we don't have the olatresourceable yet
-		pessimisticLockManager.findOrPersistPLock(asset);
+		/*pessimisticLockManager.findOrPersistPLock(asset);
 
 		LockImpl li = clusterLockManager.findLock(asset);
 		if (li == null) {
@@ -217,7 +209,7 @@ public class ClusterLocker implements Locker, GenericEventListener {
 				throw new AssertException("cannot release lock since the requestor of the release ("+
 						releaseRequestor.getName()+") is not the owner ("+ownwer.getName()+") of the lock ("+asset+")");
 			}
-		}
+		}*/
 	}
 	
 	public List<LockEntry> adminOnlyGetLockEntries() {

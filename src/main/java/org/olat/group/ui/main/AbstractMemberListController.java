@@ -249,7 +249,6 @@ public abstract class AbstractMemberListController extends FormBasicController i
 		editButton = uifactory.addFormLink("edit.members", formLayout, Link.BUTTON);
 		editButton.setVisible((!globallyManaged || overrideManaged) && !readOnly);
 		mailButton = uifactory.addFormLink("table.header.mail", formLayout, Link.BUTTON);
-		mailButton.setVisible(!readOnly);
 		removeButton = uifactory.addFormLink("table.header.remove", formLayout, Link.BUTTON);
 		removeButton.setVisible((!globallyManaged || overrideManaged) && !readOnly);
 	}
@@ -278,6 +277,7 @@ public abstract class AbstractMemberListController extends FormBasicController i
 	
 	private SortKey initColumns(FlexiTableColumnModel columnsModel) {
 		SortKey defaultSortKey = null;
+		String editAction = readOnly ? null : TABLE_ACTION_EDIT;
 		
 		if(chatEnabled) {
 			DefaultFlexiColumnModel chatCol = new DefaultFlexiColumnModel(Cols.online.i18n(), Cols.online.ordinal());
@@ -285,8 +285,8 @@ public abstract class AbstractMemberListController extends FormBasicController i
 			columnsModel.addFlexiColumnModel(chatCol);
 		}
 		if(isAdministrativeUser) {
-			FlexiCellRenderer renderer = new StaticFlexiCellRenderer(TABLE_ACTION_EDIT, new TextFlexiCellRenderer());
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.username.i18n(), Cols.username.ordinal(), TABLE_ACTION_EDIT,
+			FlexiCellRenderer renderer = new StaticFlexiCellRenderer(editAction, new TextFlexiCellRenderer());
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.username.i18n(), Cols.username.ordinal(), editAction,
 					true, Cols.username.name(), renderer));
 			defaultSortKey = new SortKey(Cols.username.name(), true);
 		}
@@ -301,8 +301,8 @@ public abstract class AbstractMemberListController extends FormBasicController i
 			FlexiColumnModel col;
 			if(UserConstants.FIRSTNAME.equals(propName) || UserConstants.LASTNAME.equals(propName)) {
 				col = new DefaultFlexiColumnModel(userPropertyHandler.i18nColumnDescriptorLabelKey(),
-						colPos, TABLE_ACTION_EDIT, true, propName,
-						new StaticFlexiCellRenderer(TABLE_ACTION_EDIT, new TextFlexiCellRenderer()));
+						colPos, editAction, true, propName,
+						new StaticFlexiCellRenderer(editAction, new TextFlexiCellRenderer()));
 			} else {
 				col = new DefaultFlexiColumnModel(visible, userPropertyHandler.i18nColumnDescriptorLabelKey(), colPos, true, propName);
 			}
@@ -328,6 +328,7 @@ public abstract class AbstractMemberListController extends FormBasicController i
 		
 		DefaultFlexiColumnModel toolsCol = new DefaultFlexiColumnModel(Cols.tools.i18n(), Cols.tools.ordinal());
 		toolsCol.setExportable(false);
+		toolsCol.setAlwaysVisible(true);
 		columnsModel.addFlexiColumnModel(toolsCol);
 		return defaultSortKey;
 	}
@@ -444,6 +445,8 @@ public abstract class AbstractMemberListController extends FormBasicController i
 		} else if (source == contactCtrl) {
 			if(cmc != null) {
 				cmc.deactivate();
+			} else {
+				toolbarPanel.popController(contactCtrl);
 			}
 			cleanUpPopups();
 		} else if(toolsCtrl == source) {

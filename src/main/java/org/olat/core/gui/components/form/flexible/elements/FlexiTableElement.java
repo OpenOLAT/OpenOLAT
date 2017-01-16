@@ -86,6 +86,18 @@ public interface FlexiTableElement extends FormItem {
 	 * @param componentDelegate
 	 */
 	public void setDetailsRenderer(VelocityContainer rowRenderer, FlexiTableComponentDelegate componentDelegate);
+	
+	/**
+	 * @return Return true if the table has border on every cell.
+	 */
+	public boolean isBordered();
+	
+	/**
+	 * If true, set a border to every cell.
+	 * 
+	 * @param bordered Set or not border to the cells
+	 */
+	public void setBordered(boolean bordered);
 
 	/**
 	 * @return True if muli selection is enabled
@@ -324,6 +336,8 @@ public interface FlexiTableElement extends FormItem {
 	
 	public List<FlexiTableFilter> getSelectedExtendedFilters();
 	
+	public void setSelectedExtendedFilters(List<FlexiTableFilter> filters);
+	
 	/**
 	 * Is the details view visible for this particular row?
 	 */
@@ -379,6 +393,14 @@ public interface FlexiTableElement extends FormItem {
 	 * @param reloadData Reload the data
 	 */
 	public void reset(boolean page, boolean internal, boolean reloadData);
+	
+	/**
+	 * It will reload all the data without filter. Use it with cautious as
+	 * at some place, there are minimal restrictions to the search string.
+	 * 
+	 * @param ureq
+	 */
+	public void resetSearch(UserRequest ureq);
 	
 	public void reloadData();
 

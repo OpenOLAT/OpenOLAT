@@ -166,6 +166,15 @@ public class IdentityListCourseNodeController extends FormBasicController implem
 		
 		initForm(ureq);
 	}
+	
+	public AssessedIdentityListState getListState() {
+		List<FlexiTableFilter> filters = tableEl.getSelectedFilters();
+		String filter = null;
+		if(filters != null && filters.size() > 0) {
+			filter = filters.get(0).getFilter();
+		}
+		return new AssessedIdentityListState(filter, tableEl.getSelectedExtendedFilters());
+	}
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
@@ -238,6 +247,8 @@ public class IdentityListCourseNodeController extends FormBasicController implem
 		tableEl.setMultiSelect(!coachCourseEnv.isCourseReadOnly());
 		
 		List<FlexiTableFilter> filters = new ArrayList<>();
+		filters.add(new FlexiTableFilter(translate("filter.showAll"), "showAll", true));
+		filters.add(FlexiTableFilter.SPACER);
 		filters.add(new FlexiTableFilter(translate("filter.passed"), "passed"));
 		filters.add(new FlexiTableFilter(translate("filter.failed"), "failed"));
 		filters.add(new FlexiTableFilter(translate("filter.inProgress"), "inProgress"));
@@ -256,7 +267,8 @@ public class IdentityListCourseNodeController extends FormBasicController implem
 			if(coachedGroups.size() > 0) {
 				List<FlexiTableFilter> groupFilters = new ArrayList<>();
 				for(BusinessGroup coachedGroup:coachedGroups) {
-					groupFilters.add(new FlexiTableFilter(coachedGroup.getName(), coachedGroup.getKey().toString(), "o_icon o_icon_group"));
+					String groupName = StringHelper.escapeHtml(coachedGroup.getName());
+					groupFilters.add(new FlexiTableFilter(groupName, coachedGroup.getKey().toString(), "o_icon o_icon_group"));
 				}
 				
 				tableEl.setExtendedFilterButton(translate("filter.groups"), groupFilters);
@@ -408,24 +420,34 @@ public class IdentityListCourseNodeController extends FormBasicController implem
 	@Override
 	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
 		String filter = null;
+		List<FlexiTableFilter> extendedFilters = null;
 		if(state instanceof AssessedIdentityListState) {
 			AssessedIdentityListState listState = (AssessedIdentityListState)state;
 			if(StringHelper.containsNonWhitespace(listState.getFilter())) {
 				filter = listState.getFilter();
 			}
+			extendedFilters = listState.getExtendedFilters();
 		}
 
 		tableEl.setSelectedFilterKey(filter);
-		updateModel(ureq, null, tableEl.getSelectedFilters(), null);
+		if(extendedFilters != null) {
+			tableEl.setSelectedExtendedFilters(extendedFilters);
+		}
+		updateModel(ureq, null, tableEl.getSelectedFilters(), tableEl.getSelectedExtendedFilters());
 		
 		if(entries != null && entries.size() > 0) {
-			String resourceType = entries.get(0).getOLATResourceable().getResourceableTypeName();
+			ContextEntry entry = entries.get(0);
+			String resourceType = entry.getOLATResourceable().getResourceableTypeName();
 			if("Identity".equals(resourceType)) {
 				Long identityKey = entries.get(0).getOLATResourceable().getResourceableId();
 				for(int i=usersTableModel.getRowCount(); i--> 0; ) {
 					AssessedIdentityElementRow row = usersTableModel.getObject(i);
 					if(row.getIdentityKey().equals(identityKey)) {
-						doSelect(ureq, row);
+						Controller ctrl = doSelect(ureq, row);
+						if(ctrl instanceof Activateable2) {
+							List<ContextEntry> subEntries = entries.subList(1, entries.size());
+							((Activateable2)ctrl).activate(ureq, subEntries, entry.getTransientState());
+						}
 					}
 				}
 			}	
@@ -530,7 +552,7 @@ public class IdentityListCourseNodeController extends FormBasicController implem
 		return -1;
 	}
 	
-	private void doSelect(UserRequest ureq, AssessedIdentityElementRow row) {
+	private Controller doSelect(UserRequest ureq, AssessedIdentityElementRow row) {
 		removeAsListenerAndDispose(currentIdentityCtrl);
 		
 		Identity assessedIdentity = securityManager.loadIdentityByKey(row.getIdentityKey());
@@ -554,6 +576,7 @@ public class IdentityListCourseNodeController extends FormBasicController implem
 		nextLink = LinkFactory.createToolLink("nextelement","", this, "o_icon_next_toolbar");
 		nextLink.setTitle(translate("command.next"));
 		stackPanel.addTool(nextLink, Align.rightEdge, false, "o_tool_next");
+		return currentIdentityCtrl;
 	}
 	
 	private void doSetDone(UserRequest ureq) {

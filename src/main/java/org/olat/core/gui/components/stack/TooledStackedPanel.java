@@ -45,6 +45,9 @@ public class TooledStackedPanel extends BreadcrumbedStackedPanel implements Stac
 	private boolean toolbarEnabled = true;
 	private boolean toolbarAutoEnabled = false;
 	
+	private String message;
+	private String messageCssClass;
+	
 	public TooledStackedPanel(String name, Translator translator, ComponentEventListener listener) {
 		this(name, translator, listener, null);
 	}
@@ -74,8 +77,8 @@ public class TooledStackedPanel extends BreadcrumbedStackedPanel implements Stac
 	}
 	
 	@Override
-	protected BreadCrumb createCrumb(Controller controller) {
-		return new TooledBreadCrumb(controller);
+	protected BreadCrumb createCrumb(Controller controller, Object uobject) {
+		return new TooledBreadCrumb(controller, uobject);
 	}
 
 	/**
@@ -164,12 +167,17 @@ public class TooledStackedPanel extends BreadcrumbedStackedPanel implements Stac
 		}
 		return (TooledBreadCrumb)stack.get(stack.size() - 1).getUserObject();
 	}
-
+	
 	@Override
 	public void pushController(String displayName, Controller controller) {
+		pushController(displayName, null, controller);
+	}
+
+	@Override
+	public void pushController(String displayName, String iconLeftCss, Controller controller) {
 		TooledBreadCrumb currentCrumb = getCurrentCrumb();
 		if(currentCrumb == null || currentCrumb.getController() != controller) {
-			super.pushController(displayName, controller);
+			super.pushController(displayName, iconLeftCss, controller);
 			if(controller instanceof TooledController) {
 				((TooledController)controller).initTools();
 			}
@@ -210,6 +218,24 @@ public class TooledStackedPanel extends BreadcrumbedStackedPanel implements Stac
 		}
 	}
 
+	public String getMessage() {
+		return message;
+	}
+
+	public void setMessage(String message) {
+		this.message = message;
+	}
+
+	public String getMessageCssClass() {
+		return messageCssClass;
+	}
+
+	public void setMessageCssClass(String messageCssClass) {
+		this.messageCssClass = messageCssClass;
+	}
+
+
+
 	public static class Tool {
 		private final  Align align;
 		private final boolean inherit;
@@ -244,8 +270,8 @@ public class TooledStackedPanel extends BreadcrumbedStackedPanel implements Stac
 	public static class TooledBreadCrumb extends BreadCrumb {
 		private final List<Tool> tools = new ArrayList<>(5);
 
-		public TooledBreadCrumb(Controller controller) {
-			super(controller);
+		public TooledBreadCrumb(Controller controller, Object uobject) {
+			super(controller, uobject);
 		}
 		
 		public List<Tool> getTools() {

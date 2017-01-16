@@ -29,6 +29,7 @@ import org.olat.core.gui.render.Renderer;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.util.StringHelper;
 
 /**
  * 
@@ -53,7 +54,12 @@ public class AutoCompleterRenderer extends DefaultComponentRenderer {
 		ubu.createCopyFor(cmp).openXHREvent(command, null, false, false,
 				new NameValuePair(VelocityContainer.COMMAND_ID, "select"));
 		
-		sb.append("<input type='text' class='form-control' size='").append(inputSize).append("' id='").append(id).append("' name='").append(id).append("' value='' />");
+		sb.append("<input type='text' class='form-control' size='").append(inputSize).append("' id='").append(id)
+		  .append("' name='").append(id).append("' value=\"");
+		if(StringHelper.containsNonWhitespace(autoCompleter.getValue())) {
+			sb.append(StringHelper.escapeHtml(autoCompleter.getValue()));
+		}
+		sb.append("\" />");
 		sb.append("<script type='text/javascript'>\n")
 		  .append("/* <![CDATA[ */\n")
 		  .append("jQuery(function(){\n")
@@ -89,7 +95,7 @@ public class AutoCompleterRenderer extends DefaultComponentRenderer {
 		  .append("	  displayKey: 'fullName',\n")
 		  .append("	  source: fullNameTypeahead.ttAdapter()\n")
 		  .append(" }).on('typeahead:selected', function (e, object) {\n")
-		  .append("	  ").append(command).append(",'key',object.value);\n")
+		  .append("	  ").append(command).append(",'key',object.value,'value',object.fullName);\n")
 		  .append(" });\n")
 		  .append("});\n")
 		  .append("/* ]]> */\n")

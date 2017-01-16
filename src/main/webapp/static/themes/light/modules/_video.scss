@@ -123,6 +123,7 @@
 	ul li {
 		label {
 			font-weight: normal;
+			width: 140px;
 			&:hover {
 				color: #eee;
 			}
@@ -165,4 +166,24 @@
 			}
 		}
 	}	
+}
+/* beautify speed plugin */
+.mejs-controls .mejs-speed-button .mejs-speed-selector {
+	ul li {
+		label {
+			font-weight: normal;
+			font-size: 10px
+		}
+	}
+}
+
+/* fix overflow of chapters when not enough space */
+.mejs-chapters .mejs-chapter .mejs-chapter-block {
+	.ch-title,
+	.ch-time {
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+		display: block;
+	}
 }

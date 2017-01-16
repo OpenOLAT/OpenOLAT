@@ -438,7 +438,8 @@ public class IQManager implements UserDataDeletable {
 	 * Delete all qti.ser and qti-resreporting files.
 	 * @see org.olat.user.UserDataDeletable#deleteUserData(org.olat.core.id.Identity)
 	 */
-	public void deleteUserData(Identity identity, String newDeletedUserName) {
+	@Override
+	public void deleteUserData(Identity identity, String newDeletedUserName, File archivePath) {
 		FilePersister.deleteUserData(identity);
 		if(log.isDebug())
 			log.debug("Delete all qti.ser data and qti-resreporting data for identity=" + identity);

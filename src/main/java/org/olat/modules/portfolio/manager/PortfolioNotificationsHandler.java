@@ -46,6 +46,7 @@ import org.olat.core.id.Identity;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
+import org.olat.modules.forms.EvaluationFormSession;
 import org.olat.modules.portfolio.Binder;
 import org.olat.modules.portfolio.BinderSecurityCallback;
 import org.olat.modules.portfolio.BinderSecurityCallbackFactory;
@@ -149,6 +150,7 @@ public class PortfolioNotificationsHandler implements NotificationsHandler {
 		items.addAll(getCommentNotifications(binder, secCallback, compareDate, rootBusinessPath, translator));
 		items.addAll(getPageNotifications(binder, secCallback, compareDate, rootBusinessPath, translator));
 		items.addAll(getSectionNotifications(binder, secCallback, compareDate, rootBusinessPath, translator));
+		items.addAll(getEvaluationNotifications(binder, secCallback, compareDate, rootBusinessPath, translator));
 		Collections.sort(items, new PortfolioNotificationComparator());
 		return items;
 	}
@@ -280,6 +282,50 @@ public class PortfolioNotificationsHandler implements NotificationsHandler {
 		return items;
 	}
 	
+	public List<SubscriptionListItem> getEvaluationNotifications(Binder binder, BinderSecurityCallback secCallback,
+			Date compareDate, String rootBusinessPath, Translator translator) {
+		
+		StringBuilder sb = new StringBuilder();
+		sb.append("select page, evasession")
+		  .append(" from pfpage as page")
+		  .append(" inner join fetch page.section as section")
+		  .append(" inner join fetch section.binder as binder")
+		  .append(" left join evaluationformsession as evasession on (page.body.key = evasession.pageBody.key)")
+		  .append(" where binder.key=:binderKey and evasession.status='done' and evasession.submissionDate>=:compareDate");
+		
+		List<Object[]> objects = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Object[].class)
+				.setParameter("binderKey", binder.getKey())
+				.setParameter("compareDate", compareDate)
+				.getResultList();
+		
+		List<SubscriptionListItem> items = new ArrayList<>(objects.size());
+		for (Object[] object : objects) {
+			//page
+			Page page = (Page)object[0];
+			Long pageKey = page.getKey();
+			String pageTitle = page.getTitle();
+			//session
+			EvaluationFormSession evaluationSession = (EvaluationFormSession)object[1];
+			Date submissionDate = evaluationSession.getSubmissionDate();
+			Date firstSubmissionDate = evaluationSession.getFirstSubmissionDate();
+			
+			if(submissionDate != null && secCallback.canViewElement(page)) {
+				if(submissionDate.compareTo(firstSubmissionDate) == 0) {
+				
+					SubscriptionListItem item = evaluationNewItem(pageKey, pageTitle,
+							submissionDate, rootBusinessPath, translator);
+					items.add(item);
+				} else {
+					SubscriptionListItem item = evaluationModifiedItem(pageKey, pageTitle,
+							submissionDate, rootBusinessPath, translator);
+					items.add(item);
+				}
+			}
+		}
+		return items;
+	}
+	
 	private SubscriptionListItem sectionCreateItem(Long sectionKey, String sectionTitle,
 			Date sectionCreationDate, String rootBusinessPath, Translator translator) {
 		String title = translator.translate("notifications.new.section", new String[]{ sectionTitle });
@@ -330,6 +376,25 @@ public class PortfolioNotificationsHandler implements NotificationsHandler {
 		return item;
 	}
 	
+	private SubscriptionListItem evaluationNewItem(Long pageKey, String pageTitle,
+			Date pageCreationDate, String rootBusinessPath, Translator translator) {
+		String title = translator.translate("notifications.new.evaluation", new String[]{ pageTitle });
+		String bPath = rootBusinessPath + "[Page:" + pageKey + "]";
+		String linkUrl = BusinessControlFactory.getInstance().getURLFromBusinessPathString(bPath);
+		SubscriptionListItem item = new SubscriptionListItem(title, linkUrl, bPath, pageCreationDate, "o_icon_pf_page");
+		item.setUserObject(pageKey);
+		return item;
+	}
+	
+	private SubscriptionListItem evaluationModifiedItem(Long pageKey, String pageTitle,
+			Date pageCreationDate, String rootBusinessPath, Translator translator) {
+		String title = translator.translate("notifications.modified.evaluation", new String[]{ pageTitle });
+		String bPath = rootBusinessPath + "[Page:" + pageKey + "]";
+		String linkUrl = BusinessControlFactory.getInstance().getURLFromBusinessPathString(bPath);
+		SubscriptionListItem item = new SubscriptionListItem(title, linkUrl, bPath, pageCreationDate, "o_icon_pf_page");
+		item.setUserObject(pageKey);
+		return item;
+	}
 	
 	public List<SubscriptionListItem> getCommentNotifications(Binder binder, BinderSecurityCallback secCallback,
 			Date compareDate, String rootBusinessPath, Translator translator) {

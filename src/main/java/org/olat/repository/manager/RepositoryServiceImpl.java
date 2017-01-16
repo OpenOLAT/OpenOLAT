@@ -60,6 +60,7 @@ import org.olat.core.util.vfs.VFSManager;
 import org.olat.course.assessment.manager.AssessmentModeDAO;
 import org.olat.course.assessment.manager.UserCourseInformationsManager;
 import org.olat.course.certificate.CertificatesManager;
+import org.olat.ims.qti21.manager.AssessmentTestSessionDAO;
 import org.olat.modules.assessment.manager.AssessmentEntryDAO;
 import org.olat.modules.reminder.manager.ReminderDAO;
 import org.olat.repository.ErrorList;
@@ -135,6 +136,8 @@ public class RepositoryServiceImpl implements RepositoryService {
 	private UserCourseInformationsManager userCourseInformationsManager;
 	@Autowired
 	private AssessmentModeDAO assessmentModeDao;
+	@Autowired
+	private AssessmentTestSessionDAO assessmentTestSessionDao;
 	@Autowired
 	private PersistentTaskDAO persistentTaskDao;
 	@Autowired
@@ -324,15 +327,24 @@ public class RepositoryServiceImpl implements RepositoryService {
 	}
 	
 	@Override
-	public RepositoryEntry deleteSoftly(RepositoryEntry re) {
+	public RepositoryEntry deleteSoftly(RepositoryEntry re, Identity deletedBy, boolean owners) {
 		RepositoryEntry reloadedRe = repositoryEntryDAO.loadForUpdate(re);
 		reloadedRe.setAccess(RepositoryEntry.DELETED);
+		if(reloadedRe.getDeletionDate() == null) {
+			// don't write the name of an admin which make a restore -> delete operation
+			reloadedRe.setDeletedBy(deletedBy);
+			reloadedRe.setDeletionDate(new Date());
+		}
 		reloadedRe = dbInstance.getCurrentEntityManager().merge(reloadedRe);
 		dbInstance.commit();
 		//remove from catalog
 		catalogManager.resourceableDeleted(reloadedRe);
 		//remove participant and coach
-		removeMembers(reloadedRe, GroupRoles.coach.name(), GroupRoles.participant.name(), GroupRoles.waiting.name());
+		if(owners) {
+			removeMembers(reloadedRe, GroupRoles.owner.name(), GroupRoles.coach.name(), GroupRoles.participant.name(), GroupRoles.waiting.name());
+		} else {
+			removeMembers(reloadedRe, GroupRoles.coach.name(), GroupRoles.participant.name(), GroupRoles.waiting.name());
+		}
 		//remove relation to business groups
 		List<RepositoryEntryToGroupRelation> relations = reToGroupDao.getRelations(reloadedRe);
 		for(RepositoryEntryToGroupRelation relation:relations) {
@@ -396,7 +408,9 @@ public class RepositoryServiceImpl implements RepositoryService {
 		// referenced resourceable a swell.
 		handler.cleanupOnDelete(entry, resource);
 		dbInstance.commit();
-		
+
+		//delete all test sessions
+		assessmentTestSessionDao.deleteAllUserTestSessionsByCourse(entry);
 		//nullify the reference
 		assessmentEntryDao.removeEntryForReferenceEntry(entry);
 		assessmentEntryDao.deleteEntryForRepositoryEntry(entry);
@@ -461,19 +475,23 @@ public class RepositoryServiceImpl implements RepositoryService {
 	}
 
 	@Override
-	public void closeRespositoryEntries() {
-		List<RepositoryEntry> entries = repositoryEntryDAO.getRepositoryEntriesAfterTheEnd();
-		for(RepositoryEntry entry:entries) {
-			
-		}
-	}
-
-	@Override
 	public RepositoryEntry unpublishRepositoryEntry(RepositoryEntry entry) {
 		RepositoryEntry reloadedEntry = repositoryEntryDAO.loadForUpdate(entry);
 		reloadedEntry.setStatusCode(RepositoryEntryStatus.REPOSITORY_STATUS_UNPUBLISHED);
 		reloadedEntry = dbInstance.getCurrentEntityManager().merge(reloadedEntry);
 		dbInstance.commit();
+		// remove catalog entries
+		catalogManager.resourceableDeleted(reloadedEntry);
+		// remove users and participants
+		//remove participant and coach
+		removeMembers(reloadedEntry, GroupRoles.coach.name(), GroupRoles.participant.name(), GroupRoles.waiting.name());
+		//remove relation to business groups
+		List<RepositoryEntryToGroupRelation> relations = reToGroupDao.getRelations(reloadedEntry);
+		for(RepositoryEntryToGroupRelation relation:relations) {
+			if(!relation.isDefaultGroup()) {
+				reToGroupDao.removeRelation(relation);
+			}
+		}
 		return reloadedEntry;
 	}
 

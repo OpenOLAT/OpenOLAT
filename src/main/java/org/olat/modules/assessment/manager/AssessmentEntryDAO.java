@@ -289,11 +289,18 @@ public class AssessmentEntryDAO {
 	 * @return
 	 */
 	public int deleteEntryForRepositoryEntry(RepositoryEntryRef entry) {
-		StringBuilder sb = new StringBuilder();
-		sb.append("delete from assessmententry data where data.repositoryEntry.key=:entryKey");
+		String query = "delete from assessmententry data where data.repositoryEntry.key=:entryKey";
 		return dbInstance.getCurrentEntityManager()
-				.createQuery(sb.toString())
+				.createQuery(query)
 				.setParameter("entryKey", entry.getKey())
+				.executeUpdate();
+	}
+	
+	public int deleteEntryForIdentity(IdentityRef identity) {
+		String query = "delete from assessmententry data where data.identity.key=:identityKey";
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(query)
+				.setParameter("identityKey", identity.getKey())
 				.executeUpdate();
 	}
 }

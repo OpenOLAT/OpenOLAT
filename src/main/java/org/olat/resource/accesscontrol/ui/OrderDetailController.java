@@ -95,6 +95,10 @@ public class OrderDetailController extends FormBasicController {
 		
 		initForm(ureq);
 	}
+	
+	public void hideBackLink() {
+		backLink.setVisible(false);
+	}
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
@@ -251,7 +255,8 @@ public class OrderDetailController extends FormBasicController {
 		} else {
 			detailsCtlr = new TransactionDetailsController(ureq, getWindowControl(), order, wrapper);
 			listenTo(detailsCtlr);
-			cmc = new CloseableModalController(getWindowControl(), translate("close"), detailsCtlr.getInitialComponent());
+			String title = translate("transaction.details.title");
+			cmc = new CloseableModalController(getWindowControl(), translate("close"), detailsCtlr.getInitialComponent(), true, title, true);
 			listenTo(cmc);
 			cmc.activate();
 		}

@@ -39,6 +39,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.control.Controller;
+import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.id.OLATResourceable;
@@ -53,6 +54,7 @@ import org.olat.course.assessment.AssessmentToolManager;
 import org.olat.course.assessment.model.AssessedBusinessGroup;
 import org.olat.course.assessment.model.SearchAssessedIdentityParams;
 import org.olat.course.assessment.ui.tool.AssessedBusinessGroupTableModel.ABGCols;
+import org.olat.course.assessment.ui.tool.event.CourseNodeEvent;
 import org.olat.course.nodes.AssessableCourseNode;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.CourseNodeFactory;
@@ -198,8 +200,17 @@ public class AssessedBusinessGroupCourseNodeListController extends FormBasicCont
 			BusinessGroup businessGroup = businessGroupService.loadBusinessGroup(groupKey);
 			List<ContextEntry> subEntries = entries.subList(1, entries.size());
 			doSelect(ureq, businessGroup).activate(ureq, subEntries, entries.get(0).getTransientState());
+		}	
+	}
+
+	@Override
+	protected void event(UserRequest ureq, Controller source, Event event) {
+		if(source == currentCtrl) {
+			if(event instanceof CourseNodeEvent) {
+				fireEvent(ureq, event);
+			}
 		}
-		
+		super.event(ureq, source, event);
 	}
 
 	@Override
@@ -238,7 +249,7 @@ public class AssessedBusinessGroupCourseNodeListController extends FormBasicCont
 				courseEntry, businessGroup, coachCourseEnv, toolContainer, assessmentCallback);
 		listenTo(treeCtrl);
 
-		stackPanel.pushController(businessGroup.getName(), treeCtrl);
+		stackPanel.pushController(businessGroup.getName(), null, treeCtrl, "groups");
 		currentCtrl = treeCtrl;
 		
 		List<ContextEntry> entries = BusinessControlFactory.getInstance()

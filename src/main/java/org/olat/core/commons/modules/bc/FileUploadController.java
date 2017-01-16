@@ -310,7 +310,9 @@ public class FileUploadController extends FormBasicController {
 				fileEl.clearError();
 			} else if(metaDataCtr != null) {
 				String filename = fileEl.getUploadFileName();
-				if(!FileUtils.validateFilename(filename)) {
+				if(filename == null) {
+					metaDataCtr.getFilenameEl().setExampleKey("mf.filename.warning", null);
+				} else if(!FileUtils.validateFilename(filename)) {
 					String suffix = FileUtils.getFileSuffix(filename);
 					if(suffix != null && suffix.length() > 0) {
 						filename = filename.substring(0, filename.length() - suffix.length() - 1);
