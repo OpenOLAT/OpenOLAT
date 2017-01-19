@@ -62,6 +62,15 @@ public class AssessmentItemAndMetadata extends AssessmentItemMetadata {
 	}
 	
 	@Override
+	public void fromBuilder(ManifestMetadataBuilder metadata) {
+		super.fromBuilder(metadata);
+		description = metadata.getDescription();
+		if(StringHelper.containsNonWhitespace(metadata.getTitle()) && !StringHelper.containsNonWhitespace(item.getTitle())) {
+			setTitle(metadata.getTitle());
+		}
+	}
+	
+	@Override
 	public void toBuilder(ManifestMetadataBuilder metadata, Locale locale) {
 		super.toBuilder(metadata, locale);
 		metadata.setTechnicalFormat(ManifestBuilder.ASSESSMENTITEM_MIMETYPE);
