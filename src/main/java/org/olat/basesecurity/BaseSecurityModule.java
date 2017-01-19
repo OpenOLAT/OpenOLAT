@@ -91,6 +91,7 @@ public class BaseSecurityModule extends AbstractSpringModule {
 	public static Boolean USERMANAGER_CAN_MANAGE_INSTITUTIONAL_RESOURCE_MANAGER = true;
 	public static Boolean USERMANAGER_CAN_MANAGE_AUTHORS = true;
 	public static Boolean USERMANAGER_CAN_MANAGE_GUESTS = false;
+	public static Boolean USERMANAGER_CAN_MANAGE_STATUS = true;
 	public static Boolean USERMANAGER_CAN_BYPASS_EMAILVERIFICATION = true;
 	public static Boolean USERMANAGER_CAN_EDIT_ALL_PROFILE_FIELDS = true;
 	

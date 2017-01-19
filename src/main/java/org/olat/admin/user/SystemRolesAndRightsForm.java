@@ -29,7 +29,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.olat.basesecurity.BaseSecurity;
-import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.basesecurity.Constants;
 import org.olat.basesecurity.SecurityGroup;
@@ -47,6 +46,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Identity;
+import org.springframework.beans.factory.annotation.Autowired;
 
 
 /**
@@ -69,11 +69,12 @@ public class SystemRolesAndRightsForm extends FormBasicController {
 	private MultipleSelectionElement sendLoginDeniedEmailCB;
 	
 	private Identity identity;
-	private boolean iAmOlatAdmin, isAdmin, isUserManager, isAuthor, isGroupManager, isPoolManager, isGuestOnly, isInstitutionalResourceManager;
-	private boolean canGuestsByConfig, canAuthorsByConfig, canGroupmanagersByConfig, canPoolmanagersByConfig, canInstitutionalResourceManagerByConfig;
+	private final boolean iAmOlatAdmin;
+	private final boolean isAdmin, isUserManager, isAuthor, isGroupManager, isPoolManager, isGuestOnly, isInstitutionalResourceManager;
+	private final boolean canGuestsByConfig, canAuthorsByConfig, canGroupmanagersByConfig, canPoolmanagersByConfig, canInstitutionalResourceManagerByConfig, canStatus;
 
-	private List <String> statusKeys, statusValues;
-	private List <String> roleKeys, roleValues;
+	private List<String> statusKeys, statusValues;
+	private List<String> roleKeys, roleValues;
 	
 	private static final String KUSER   = "isUserManager";
 	private static final String KGROUP  = "isGroupManager";
@@ -82,14 +83,15 @@ public class SystemRolesAndRightsForm extends FormBasicController {
 	private static final String KADMIN  = "isAdmin";
 	private static final String KRESMAN = "isInstitutionalResourcemanager";
 	
+	@Autowired
+	private BaseSecurity secMgr;
+	
 	public SystemRolesAndRightsForm(UserRequest ureq, WindowControl wControl, Identity identity) {
 		super(ureq, wControl);
 		
 		this.identity = identity;
-		
 		iAmOlatAdmin = ureq.getUserSession().getRoles().isOLATAdmin();
-		
-		BaseSecurity secMgr = BaseSecurityManager.getInstance();
+
 		// get user system roles groups from security manager
 		SecurityGroup adminGroup = secMgr.findSecurityGroupByName(Constants.GROUP_ADMIN);
 		isAdmin = secMgr.isIdentityInSecurityGroup(identity, adminGroup);
@@ -112,13 +114,13 @@ public class SystemRolesAndRightsForm extends FormBasicController {
 		SecurityGroup institutionalResourceManager = secMgr.findSecurityGroupByName(Constants.GROUP_INST_ORES_MANAGER);
 		isInstitutionalResourceManager = secMgr.isIdentityInSecurityGroup(identity, institutionalResourceManager);
 		
-		statusKeys = new ArrayList<String>(4);
+		statusKeys = new ArrayList<>(4);
 		statusKeys.add(Integer.toString(Identity.STATUS_ACTIV));
 		statusKeys.add(Integer.toString(Identity.STATUS_PERMANENT));
 		statusKeys.add(Integer.toString(Identity.STATUS_LOGIN_DENIED));
 		
 		
-		statusValues = new ArrayList<String>(4);
+		statusValues = new ArrayList<>(4);
 		statusValues.add(translate("rightsForm.status.activ"));
 		statusValues.add(translate("rightsForm.status.permanent"));
 		statusValues.add(translate("rightsForm.status.login_denied"));
@@ -128,8 +130,8 @@ public class SystemRolesAndRightsForm extends FormBasicController {
 			statusValues.add(translate("rightsForm.status.deleted"));
 		}
 		
-		roleKeys = new ArrayList<String>();
-		roleValues =	new ArrayList<String>();
+		roleKeys = new ArrayList<>();
+		roleValues = new ArrayList<>();
 
 		canGuestsByConfig = BaseSecurityModule.USERMANAGER_CAN_MANAGE_GUESTS;	
 		canAuthorsByConfig = BaseSecurityModule.USERMANAGER_CAN_MANAGE_AUTHORS;
@@ -137,6 +139,7 @@ public class SystemRolesAndRightsForm extends FormBasicController {
 		canPoolmanagersByConfig = BaseSecurityModule.USERMANAGER_CAN_MANAGE_POOLMANAGERS;		
 		canGroupmanagersByConfig = BaseSecurityModule.USERMANAGER_CAN_MANAGE_GROUPMANAGERS;
 		canInstitutionalResourceManagerByConfig = BaseSecurityModule.USERMANAGER_CAN_MANAGE_INSTITUTIONAL_RESOURCE_MANAGER;
+		canStatus = BaseSecurityModule.USERMANAGER_CAN_MANAGE_INSTITUTIONAL_RESOURCE_MANAGER;
 
 		if (iAmOlatAdmin) {
 			roleKeys.add(KUSER);
@@ -289,7 +292,7 @@ public class SystemRolesAndRightsForm extends FormBasicController {
 		if (source == AnonymousRE) {
 			RolesSE.setVisible(!isAnonymous());
 			rolesSep.setVisible(!isAnonymous());
-		} else if (source == statusRE && iAmOlatAdmin) {
+		} else if (source == statusRE && (iAmOlatAdmin || canStatus)) {
 			sendLoginDeniedEmailCB.setVisible(statusRE.isSelected(2));
 		}
 		
@@ -327,7 +330,10 @@ public class SystemRolesAndRightsForm extends FormBasicController {
 		sendLoginDeniedEmailCB.setLabel(null, null);
 		
 		rolesSep.setVisible(iAmOlatAdmin);
-		statusRE.setVisible(iAmOlatAdmin);
+		statusRE.setVisible(iAmOlatAdmin || canStatus);
+		if(isAdmin) {
+			statusRE.setEnabled(false);
+		}
 		sendLoginDeniedEmailCB.setVisible(false);
 		
 		FormLayoutContainer buttonGroupLayout = FormLayoutContainer.createButtonLayout("buttonGroupLayout", getTranslator());
