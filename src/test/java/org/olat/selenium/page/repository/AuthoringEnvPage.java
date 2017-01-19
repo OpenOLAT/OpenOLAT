@@ -192,6 +192,12 @@ public class AuthoringEnvPage {
 		return this;
 	}
 	
+	public AuthoringEnvPage assertOnResourceType() {
+		By typeEl = By.cssSelector(".o_sel_author_type");
+		OOGraphene.waitElement(typeEl, 5, browser);
+		return this;
+	}
+	
 	public void selectResource(String title) {
 		By selectBy = By.xpath("//div[contains(@class,'o_coursetable')]//a[contains(text(),'" + title + "')]");
 		browser.findElement(selectBy).click();
