@@ -127,7 +127,7 @@ public class AssessedBusinessGroupCourseNodeListController extends FormBasicCont
 			}
 		}
 		
-		tableModel = new AssessedBusinessGroupTableModel(columnsModel); 
+		tableModel = new AssessedBusinessGroupTableModel(columnsModel, getLocale()); 
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, 20, false, getTranslator(), formLayout);
 		tableEl.setExportEnabled(true);
 		FlexiTableSortOptions options = new FlexiTableSortOptions();
