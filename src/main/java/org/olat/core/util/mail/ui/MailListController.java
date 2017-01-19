@@ -30,7 +30,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.services.mark.Mark;
 import org.olat.core.gui.ShortName;
 import org.olat.core.gui.UserRequest;
@@ -70,6 +69,7 @@ import org.olat.core.util.mail.model.DBMailRecipient;
 import org.olat.core.util.mail.ui.MailDataModel.Columns;
 import org.olat.core.util.mail.ui.MailDataModel.ContextPair;
 import org.olat.core.util.resource.OresHelper;
+import org.springframework.beans.factory.annotation.Autowired;
 
 
 /**
@@ -106,7 +106,8 @@ public class MailListController extends BasicController implements Activateable2
 	
 	private final boolean outbox;
 	private final String metaId;
-	private final MailManager mailManager;
+	@Autowired
+	private MailManager mailManager;
 	private final MailContextResolver contextResolver;
 	
 	public MailListController(UserRequest ureq, WindowControl wControl, boolean outbox, MailContextResolver resolver) {
@@ -119,8 +120,6 @@ public class MailListController extends BasicController implements Activateable2
 		this.outbox = outbox;
 		this.metaId = metaId;
 		this.contextResolver = resolver;
-		
-		mailManager = CoreSpringFactory.getImpl(MailManager.class);
 
 		TableGuiConfiguration tableConfig = new TableGuiConfiguration();
 		tableConfig.setDownloadOffered(true);

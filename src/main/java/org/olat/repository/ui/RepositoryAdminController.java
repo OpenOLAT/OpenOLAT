@@ -67,6 +67,7 @@ public class RepositoryAdminController extends FormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		FormLayoutContainer searchCont = FormLayoutContainer.createDefaultFormLayout("search", getTranslator());
+		searchCont.setFormContextHelp("Modules: Repository");
 		searchCont.setFormTitle(translate("repository.admin.title"));
 		formLayout.add(searchCont);
 		searchCont.setRootForm(mainForm);

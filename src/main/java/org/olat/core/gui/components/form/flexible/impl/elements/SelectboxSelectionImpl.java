@@ -198,8 +198,12 @@ public class SelectboxSelectionImpl extends FormItemImpl implements SingleSelect
 		}
 	}
 	
+	/**
+	 * These options is not supported by this element.
+	 * 
+	 */
 	@Override
-	public void setWidthInPercent(int width) {
+	public void setWidthInPercent(int width, boolean trailingSpace) {
 		//
 	}
 

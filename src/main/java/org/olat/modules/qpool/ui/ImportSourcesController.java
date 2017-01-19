@@ -39,9 +39,10 @@ public class ImportSourcesController extends BasicController {
 	
 	public static final String IMPORT_REPO = "qpool.import.repository";
 	public static final String IMPORT_FILE = "qpool.import.file";
-	public static final String IMPORT_EXCEL = "qpool.import.excellike";
+	public static final String IMPORT_EXCEL_QTI_12 = "qpool.import.excellike.12";
+	public static final String IMPORT_EXCEL_QTI_21 = "qpool.import.excellike.21";
 
-	private final Link importRepository, importFile, importExcelLike;
+	private final Link importRepository, importFile, importExcelLikeQTI12, importExcelLikeQTI21;
 	
 	public ImportSourcesController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
@@ -51,8 +52,10 @@ public class ImportSourcesController extends BasicController {
 		importRepository.setIconLeftCSS("o_icon o_icon-fw o_FileResource-TEST_icon");
 		importFile = LinkFactory.createLink("import.file", mainVC, this);
 		importFile.setIconLeftCSS("o_icon o_icon-fw o_filetype_file");
-		importExcelLike = LinkFactory.createLink("import.excellike", mainVC, this);
-		importExcelLike.setIconLeftCSS("o_icon o_icon-fw o_icon_table");
+		importExcelLikeQTI12 = LinkFactory.createLink("import.excellike.12", mainVC, this);
+		importExcelLikeQTI12.setIconLeftCSS("o_icon o_icon-fw o_icon_table");
+		importExcelLikeQTI21 = LinkFactory.createLink("import.excellike.21", mainVC, this);
+		importExcelLikeQTI21.setIconLeftCSS("o_icon o_icon-fw o_icon_table");
 		putInitialPanel(mainVC);
 	}
 
@@ -67,8 +70,10 @@ public class ImportSourcesController extends BasicController {
 			fireEvent(ureq, new Event(IMPORT_REPO));
 		} else if(importFile == source) {
 			fireEvent(ureq, new Event(IMPORT_FILE));
-		} else if(importExcelLike == source) {
-			fireEvent(ureq, new Event(IMPORT_EXCEL));
+		} else if(importExcelLikeQTI12 == source) {
+			fireEvent(ureq, new Event(IMPORT_EXCEL_QTI_12));
+		} else if(importExcelLikeQTI21 == source) {
+			fireEvent(ureq, new Event(IMPORT_EXCEL_QTI_21));
 		}
 	}
 }

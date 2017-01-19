@@ -64,11 +64,13 @@ import org.olat.group.ui.main.SelectBusinessGroupController;
 import org.olat.ims.qti.fileresource.SurveyFileResource;
 import org.olat.ims.qti.fileresource.TestFileResource;
 import org.olat.ims.qti.qpool.QTIQPoolServiceProvider;
-import org.olat.ims.qti.questionimport.ImportOptions;
 import org.olat.ims.qti.questionimport.ItemAndMetadata;
 import org.olat.ims.qti.questionimport.ItemsPackage;
-import org.olat.ims.qti.questionimport.QImport_1_InputStep;
 import org.olat.ims.qti21.pool.QTI21QPoolServiceProvider;
+import org.olat.ims.qti21.questionimport.AssessmentItemAndMetadata;
+import org.olat.ims.qti21.questionimport.AssessmentItemsPackage;
+import org.olat.ims.qti21.questionimport.ImportOptions;
+import org.olat.ims.qti21.questionimport.QImport_1_InputStep;
 import org.olat.modules.qpool.ExportFormatOptions;
 import org.olat.modules.qpool.Pool;
 import org.olat.modules.qpool.QItemFactory;
@@ -317,8 +319,10 @@ public class QuestionListController extends AbstractItemListController implement
 				doOpenFileImport(ureq);
 			} else if(ImportSourcesController.IMPORT_REPO.equals(event.getCommand())) {
 				doOpenRepositoryImport(ureq);
-			} else if(ImportSourcesController.IMPORT_EXCEL.equals(event.getCommand())) {
-				doOpenExcelImport(ureq);
+			} else if(ImportSourcesController.IMPORT_EXCEL_QTI_12.equals(event.getCommand())) {
+				doOpenExcelImportQTI12(ureq);
+			} else if(ImportSourcesController.IMPORT_EXCEL_QTI_21.equals(event.getCommand())) {
+				doOpenExcelImportQTI21(ureq);
 			}
 		} else if(source == newItemOptionsCtrl) {
 			cmc.deactivate();
@@ -647,7 +651,7 @@ public class QuestionListController extends AbstractItemListController implement
 		listenTo(cmc);
 	}
 	
-	private void doOpenExcelImport(UserRequest ureq) {
+	private void doOpenExcelImportQTI12(UserRequest ureq) {
 		removeAsListenerAndDispose(excelImportWizard);
 		
 		final ItemsPackage importPackage = new ItemsPackage();
@@ -656,15 +660,14 @@ public class QuestionListController extends AbstractItemListController implement
 			additionalStep = new EditableStep(ureq);
 		}
 		
-		final ImportOptions options = new ImportOptions();
+		final org.olat.ims.qti.questionimport.ImportOptions options = new org.olat.ims.qti.questionimport.ImportOptions();
 		options.setShuffle(true);
-		Step start = new QImport_1_InputStep(ureq, importPackage, options, additionalStep);
+		Step start = new org.olat.ims.qti.questionimport.QImport_1_InputStep(ureq, importPackage, options, additionalStep);
 		StepRunnerCallback finish = new StepRunnerCallback() {
 			@Override
 			public Step execute(UserRequest uureq, WindowControl wControl, StepsRunContext runContext) {
 				List<ItemAndMetadata> itemsToImport = importPackage.getItems();
-				QTIQPoolServiceProvider spi
-					= (QTIQPoolServiceProvider)CoreSpringFactory.getBean("qtiPoolServiceProvider");
+				QTIQPoolServiceProvider spi = CoreSpringFactory.getImpl (QTIQPoolServiceProvider.class);
 				List<QuestionItem> importItems = spi.importBeecomItem(getIdentity(), itemsToImport, getLocale());
 				
 				boolean editable = true;
@@ -681,7 +684,53 @@ public class QuestionListController extends AbstractItemListController implement
 		};
 		
 		excelImportWizard = new StepsMainRunController(ureq, getWindowControl(), start, finish, null,
-				translate("import.excellike"), "o_sel_qpool_excel_import_wizard");
+				translate("import.excellike.12"), "o_sel_qpool_excel_import_wizard");
+		listenTo(excelImportWizard);
+		getWindowControl().pushAsModalDialog(excelImportWizard.getInitialComponent());
+	}
+	
+	private void doOpenExcelImportQTI21(UserRequest ureq) {
+		removeAsListenerAndDispose(excelImportWizard);
+		
+		Step additionalStep = null;
+		if(getSource().askEditable()) {
+			additionalStep = new EditableStep(ureq);
+		}
+		
+		final AssessmentItemsPackage importPackage = new AssessmentItemsPackage();
+		final ImportOptions options = new ImportOptions();
+		options.setShuffle(true);
+
+		Step start = new QImport_1_InputStep(ureq, importPackage, options, additionalStep);
+		StepRunnerCallback finish = new StepRunnerCallback() {
+			@Override
+			public Step execute(UserRequest uureq, WindowControl wControl, StepsRunContext runContext) {
+				QTI21QPoolServiceProvider spi = CoreSpringFactory.getImpl(QTI21QPoolServiceProvider.class);
+				List<AssessmentItemAndMetadata> items = importPackage.getItems();
+				List<QuestionItem> importItems = new ArrayList<>();
+				for(AssessmentItemAndMetadata item:items) {
+					QuestionItem importedItem = spi.importExcelItem(getIdentity(), item, getLocale());
+					if(importedItem != null) {
+						importItems.add(importedItem);
+					}
+				}
+
+				boolean editable = true;
+				if(getSource().askEditable()) {
+					Object editableCtx = runContext.get("editable");
+					editable = (editableCtx instanceof Boolean) ? ((Boolean)editableCtx).booleanValue() : false;
+				}
+				int postImported = getSource().postImport(importItems, editable);
+				if(postImported > 0) {
+					getItemsTable().reset();
+				}
+			
+				return StepsMainRunController.DONE_MODIFIED;
+			}
+		};
+		
+		excelImportWizard = new StepsMainRunController(ureq, getWindowControl(), start, finish, null,
+				translate("import.excellike.21"), "o_sel_qpool_excel_import_wizard");
 		listenTo(excelImportWizard);
 		getWindowControl().pushAsModalDialog(excelImportWizard.getInitialComponent());
 	}
