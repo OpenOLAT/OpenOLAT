@@ -31,6 +31,7 @@ import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
@@ -61,8 +62,6 @@ import org.olat.ims.qti.QTIResultSet;
 import org.olat.ims.qti.process.AssessmentInstance;
 import org.olat.ims.qti.process.FilePersister;
 import org.olat.ims.qti.render.LocalizedXSLTransformer;
-
-import edu.emory.mathcs.backport.java.util.Collections;
 
 public class QTI12ResultsExportMediaResource implements MediaResource {
 

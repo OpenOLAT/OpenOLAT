@@ -20,7 +20,7 @@
 package org.olat.core.util.mail.ui;
 
 import java.util.Locale;
-import java.util.UUID;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.components.link.Link;
@@ -47,6 +47,8 @@ import org.olat.user.UserManager;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
 public class MailFromCellRenderer implements CustomCellRenderer {
+
+	private static final AtomicInteger counter = new AtomicInteger(100);
 	
 	private final Translator translator;
 	private VelocityContainer container;
@@ -68,7 +70,7 @@ public class MailFromCellRenderer implements CustomCellRenderer {
 			if(renderer == null) {
 				sb.appendHtmlEscaped(fullName);
 			} else {
-				Link link = LinkFactory.createLink("bp_" + UUID.randomUUID().toString(), container, listeningController);
+				Link link = LinkFactory.createLink("bp_" + counter.incrementAndGet(), container, listeningController);
 				link.setCustomDisplayText(StringHelper.escapeHtml(fullName));
 				link.setUserObject("[Identity:" + identity.getKey() + "]");
 				URLBuilder ubu = renderer.getUrlBuilder().createCopyFor(link);

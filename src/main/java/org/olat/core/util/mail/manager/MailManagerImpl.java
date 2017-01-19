@@ -560,7 +560,8 @@ public class MailManagerImpl implements MailManager, InitializingBean  {
 		sb.append("select mail from ").append(DBMailLightImpl.class.getName()).append(" mail")
 		  .append(" inner join fetch ").append(" mail.from fromRecipient")
 		  .append(" inner join ").append(fetchOption).append(" mail.recipients recipient")
-		  .append(" inner join ").append(fetchOption).append(" recipient.recipient recipientIdentity")
+		  .append(" left join ").append(fetchOption).append(" recipient.recipient recipientIdentity")
+		  .append(" left join ").append(fetchOption).append(" recipientIdentity.user recipientUser")
 		  .append(" where recipientIdentity.key=:recipientKey and recipient.deleted=false");
 		if(unreadOnly != null && unreadOnly.booleanValue()) {
 			sb.append(" and recipient.read=false");
