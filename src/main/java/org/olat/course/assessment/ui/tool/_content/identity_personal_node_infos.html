@@ -51,3 +51,11 @@
 #if($r.available("assessmentForm")) 
 	$r.render("assessmentForm")
 #end
+
+#if($r.isNotNull($log))
+<div class="o_box">
+    #o_togglebox_start("o_assessment_form_log" $r.translate("log.title"))
+    <pre class="small">$log</pre>
+    #o_togglebox_end()
+</div>    
+#end
