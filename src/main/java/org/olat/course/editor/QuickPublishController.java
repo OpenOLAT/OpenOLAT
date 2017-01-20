@@ -163,8 +163,7 @@ public class QuickPublishController extends BasicController {
 			
 			PublishEvents publishEvents = publishProcess.getPublishEvents();
 			try {
-				publishProcess.applyPublishSet(getIdentity(), getLocale());
-				publishProcess.applyUpdateSet(getIdentity(), getLocale());
+				publishProcess.applyPublishSet(getIdentity(), getLocale(), false);
 			} catch(Exception e) {
 				logError("",  e);
 			}

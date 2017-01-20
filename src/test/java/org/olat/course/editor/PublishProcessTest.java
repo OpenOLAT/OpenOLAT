@@ -286,7 +286,7 @@ public class PublishProcessTest extends OlatTestCase {
 		StatusDescription[] sds = set.getWarnings();
 		Assert.assertNotNull(sds);
 		Assert.assertEquals(0, sds.length);
-		pp.applyPublishSet(author, locale);
+		pp.applyPublishSet(author, locale, true);
 		CourseFactory.closeCourseEditSession(course.getResourceableId(), true);
 	}
 	
