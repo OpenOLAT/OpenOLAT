@@ -117,6 +117,7 @@ public class CheckListConfigurationController extends FormBasicController {
 		}
 		dueDateChooserEl = uifactory.addDateChooser("config.due.date", dueDate, formLayout);
 		dueDateChooserEl.setDateChooserTimeEnabled(true);
+		dueDateChooserEl.setMandatory(true);
 		if(dueDateBool != null && dueDateBool.booleanValue()) {
 			dueDateEl.select(onKeys[0], true);
 			dueDateChooserEl.setVisible(true);
@@ -342,6 +343,15 @@ public class CheckListConfigurationController extends FormBasicController {
 				maxPointsEl.setErrorKey("form.legende.mandatory", null);
 			}
 		}
+		
+		dueDateChooserEl.clearError();
+		if(dueDateEl.isAtLeastSelected(1)) {
+			if (dueDateChooserEl.isEmpty()) {
+				dueDateChooserEl.setErrorKey("form.error.date", null);
+				allOk &= false;
+			}
+		}
+		
 		return allOk & super.validateFormLogic(ureq);
 	}
 	

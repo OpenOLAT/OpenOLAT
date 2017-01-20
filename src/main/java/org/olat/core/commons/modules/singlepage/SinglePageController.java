@@ -328,37 +328,38 @@ public class SinglePageController extends BasicController implements CloneableCo
 	 * @param hideOverflow true: don't show scroll-bars; false: default behavior with scroll-bars
 	 */
 	public void setScaleFactorAndHeight(float scaleFactor, int displayHeight, boolean hideOverflow) {
-		String cssRule = "";
-		// add rule for scaling
-		if (scaleFactor > 0 && scaleFactor != 1) {
-			String formattedScaleFactor = Formatter.roundToString(scaleFactor, 2);
-			cssRule = "zoom: " + formattedScaleFactor + "; -moz-transform: scale(" + formattedScaleFactor + ");";								
-		}
-		// add rule to set fix height
-		if (displayHeight > 0) {
-			if (idc != null)  {
-				idc.setHeightPX(displayHeight);
-			} else {
-				// add to rule for html component, so such feature available
-				cssRule += "height: " + displayHeight + "px;";
+		if ((scaleFactor > 0 && scaleFactor != 1) || hideOverflow || displayHeight > 0) {
+			StringBuilder cssRule = new StringBuilder(128);
+			StringBuilder ieCssRule = new StringBuilder(32);
+			// add rule for scaling
+			if (scaleFactor > 0 && scaleFactor != 1) {
+				String formattedScaleFactor = Formatter.roundToString(scaleFactor, 2);
+				cssRule.append("transform: scale(").append(formattedScaleFactor).append("); transform-origin: top;")
+				       .append("--webkit-transform: scale(").append(formattedScaleFactor).append("); --webkit-transform-origin: top;")
+				       .append("--moz-transform: scale(").append(formattedScaleFactor).append("); --moz-transform-origin: top;");
+				
+				ieCssRule.append("zoom: ").append(formattedScaleFactor).append(";");
 			}
-		}
-		// add overflow rule
-		if (hideOverflow) {
-			cssRule += "overflow: hidden;";
-		}
-		// cleanup
-		if (cssRule.length() == 0) {
-			cssRule = null;
-		}
-
-		// apply css rule to iframe controller or html component
-		if (idc != null) {
-			if (cssRule == null) {
-				idc.setCustomHeaderContent(null);
-			} else {
-				idc.setCustomHeaderContent("<style type='text/css'>body {" + cssRule + "}</style>");								
+			// add rule to set fix height
+			if (displayHeight > 0) {
+				if (idc != null)  {
+					idc.setHeightPX(displayHeight);
+				} else {
+					// add to rule for html component, so such feature available
+					cssRule.append("height: ").append(displayHeight).append("px;");
+				}
 			}
+			// add overflow rule
+			if (hideOverflow) {
+				cssRule.append("overflow: hidden;");
+			}
+			
+			StringBuilder header = new StringBuilder(256);
+			header.append("<style type='text/css'>body {").append(cssRule).append("}</style>");
+			header.append("<!--[if lt IE 10]><style type='text/css'>body {").append(ieCssRule).append("}</style><![endif]-->");
+			idc.setCustomHeaderContent(header.toString());								
+		} else {
+			idc.setCustomHeaderContent(null);
 		}
 	}
 }
