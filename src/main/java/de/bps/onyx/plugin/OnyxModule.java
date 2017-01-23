@@ -372,7 +372,7 @@ public class OnyxModule extends AbstractSpringModule implements ConfigOnOff {
 		List<QTIResultSet> resultSets = qrm.getResultSets(courseResourceableId, courseNode.getIdent(), courseNode.getReferencedRepositoryEntry().getKey(),
 				identity);
 		for (QTIResultSet resultSet : resultSets) {
-			if(resultSet.getAssessmentID() == assessmentId && !resultSet.getSuspended()) {
+			if(Long.valueOf(resultSet.getAssessmentID()).equals(assessmentId) && !resultSet.getSuspended()) {
 				return true;
 			}
 		}

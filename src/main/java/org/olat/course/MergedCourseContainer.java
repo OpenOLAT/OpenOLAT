@@ -199,7 +199,7 @@ public class MergedCourseContainer extends MergeSource {
 							rootFolder.setLocalSecurityCallback(new ReadOnlyCallback());
 						}
 						
-						folderName = getBCFolderName(nodesContainer, bcNode, folderName);
+						folderName = getFolderName(nodesContainer, bcNode, folderName);
 						
 						// Create a container for this node content and wrap it with a merge source which is attached to tree
 						VFSContainer nodeContentContainer = new NamedContainerImpl(folderName, rootFolder);
@@ -223,7 +223,7 @@ public class MergedCourseContainer extends MergeSource {
 					final PFCourseNode pfNode = (PFCourseNode) courseNodeChild;					
 					// add folder not to merge source. Use name and node id to have unique name
 					PFManager pfManager = CoreSpringFactory.getImpl(PFManager.class);
-					folderName = getBCFolderName(nodesContainer, pfNode, folderName);
+					folderName = getFolderName(nodesContainer, pfNode, folderName);
 					MergeSource courseNodeContainer = new MergeSource(nodesContainer, folderName);					
 					UserCourseEnvironment userCourseEnv = new UserCourseEnvironmentImpl(identityEnv, course.getCourseEnvironment());
 					VFSContainer rootFolder = pfManager.provideCoachOrParticipantContainer(pfNode, userCourseEnv,
@@ -273,7 +273,7 @@ public class MergedCourseContainer extends MergeSource {
 					rootFolder.setLocalSecurityCallback(new ReadOnlyCallback());	
 				}
 
-				folderName = getBCFolderName(nodesContainer, bcNode, folderName);
+				folderName = getFolderName(nodesContainer, bcNode, folderName);
 
  				if(rootFolder != null) {
  					// Create a container for this node content and wrap it with a merge source which is attached to tree
@@ -288,15 +288,14 @@ public class MergedCourseContainer extends MergeSource {
 				final PFCourseNode pfNode = (PFCourseNode) child;					
 				// add folder not to merge source. Use name and node id to have unique name
 				PFManager pfManager = CoreSpringFactory.getImpl(PFManager.class);
-				folderName = getBCFolderName(nodesContainer, pfNode, folderName);
+				folderName = getFolderName(nodesContainer, pfNode, folderName);
 				MergeSource courseNodeContainer = new MergeSource(nodesContainer, folderName);					
 				VFSContainer rootFolder = pfManager.provideAdminContainer(pfNode, course.getCourseEnvironment());
 				VFSContainer nodeContentContainer = new NamedContainerImpl(folderName, rootFolder);
 				courseNodeContainer.addContainersChildren(nodeContentContainer, true);
-	
-				addFolderBuildingBlocks(course, courseNodeContainer, child);
-				// Do recursion for all children
 				nodesContainer.addContainer(courseNodeContainer);
+				// Do recursion for all children
+				addFolderBuildingBlocks(course, courseNodeContainer, child);
 			} else {
 				// For non-folder course nodes, add merge source (no files to show) ...
 				MergeSource courseNodeContainer = new MergeSource(null, folderName);
@@ -318,7 +317,7 @@ public class MergedCourseContainer extends MergeSource {
 	 * @param folderName
 	 * @return
 	 */
-	private String getBCFolderName(MergeSource nodesContainer, CourseNode bcNode, String folderName) {
+	private String getFolderName(MergeSource nodesContainer, CourseNode bcNode, String folderName) {
 		// add node ident if multiple files have same name
 		if (nodesContainer.getItems(new VFSItemFilter() {
 			@Override

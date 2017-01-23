@@ -35,6 +35,7 @@ import java.util.Map;
 
 import org.olat.basesecurity.IdentityRef;
 import org.olat.core.commons.persistence.DB;
+import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.logging.OLog;
@@ -677,8 +678,8 @@ public class EfficiencyStatementManager implements UserDataDeletable {
 			log.audit("Updating efficiency statements for course::" + course.getResourceableId() + ", this might produce temporary heavy load on the CPU");
 
 			// preload cache to speed up things
-			long start = System.currentTimeMillis();
 			AssessmentManager am = course.getCourseEnvironment().getAssessmentManager();		
+			int count = 0;
 			for (Identity identity : identities) {			
 				//o_clusterOK: by ld
 				OLATResourceable efficiencyStatementResourceable = am.createOLATResourceableForLocking(identity);
@@ -693,12 +694,10 @@ public class EfficiencyStatementManager implements UserDataDeletable {
 				if (Thread.interrupted()) {
 					break;
 				}
-			}
-			
-			if (log.isDebug()) {
-				long end = System.currentTimeMillis();
-				log.debug("Updated efficiency statements for course::" + course.getResourceableId() 
-					 + "ms; Updating statements: " + (end-start) + "ms; Users: " + identities.size());
+				
+				if(++count % 10 == 0) {
+					DBFactory.getInstance().commitAndCloseSession();
+				}
 			}
 		}
 	}

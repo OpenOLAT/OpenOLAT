@@ -127,11 +127,11 @@ public class RubricController extends FormBasicController {
 			theValues[i] = "";
 		}
 
-		SingleSelection radioEl = uifactory.addRadiosHorizontal("slider_" + (count++), null, flc, theKeys, theValues);
+		SingleSelection radioEl = uifactory.addRadiosVertical("slider_" + (count++), null, flc, theKeys, theValues);
 		radioEl.setDomReplacementWrapperRequired(false);
 		radioEl.addActionListener(FormEvent.ONCHANGE);
 		int widthInPercent = EvaluationFormElementWrapper.getWidthInPercent(element);
-		radioEl.setWidthInPercent(widthInPercent);
+		radioEl.setWidthInPercent(widthInPercent, true);
 
 		SliderWrapper sliderWrapper = new SliderWrapper(slider, radioEl);
 		radioEl.setUserObject(sliderWrapper);

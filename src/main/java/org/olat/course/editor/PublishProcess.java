@@ -367,14 +367,14 @@ public class PublishProcess {
 			childNode.removeAllChildren(); // remove all children after calling convertInCourseEditorTreeNode
 		}
 	}
-
-	
 	
 	/**
+	 * 
 	 * @param identity
 	 * @param locale
+	 * @param newCourse Optimization for new courses, it doesn't call upddateOnPublish of inserted/updated course nodes
 	 */
-	public void applyPublishSet(Identity identity, Locale locale) {
+	public void applyPublishSet(Identity identity, Locale locale, boolean newCourse) {
 		// the active runstructure and the new created runstructure
 		Structure existingCourseRun = course.getRunStructure();
 		EventBus orec = CoordinatorManager.getInstance().getCoordinator().getEventBus();
@@ -416,7 +416,7 @@ public class PublishProcess {
 		// old course structure accessible
 		orec.fireEventToListenersOf(beforePublish, course);
 		/*
-		 * TODO:pb: disucss with fj: listeners could add information to
+		 * TODO:pb: discuss with fj: listeners could add information to
 		 * beforePublish event such as a right to veto or add identities who is
 		 * currently in the course, thus stopping the publishing author from
 		 * publishing! i.e. if people are in a test or something like this.... we
@@ -492,6 +492,16 @@ public class PublishProcess {
 		existingCourseRun.setRootNode(resultingCourseRun.getRootNode());
 		CourseFactory.saveCourse(course.getResourceableId());
 		
+		//on old course, apply update to published nodes
+		if(!newCourse) {
+			for (CourseEditorTreeNode cetn:editorModelInsertedNodes) {
+				cetn.getCourseNode().updateOnPublish(locale, course, identity, publishEvents);
+			}
+			for (CourseEditorTreeNode cetn:editorModelModifiedNodes) {
+				cetn.getCourseNode().updateOnPublish(locale, course, identity, publishEvents);
+			}
+		}
+		
 		/*
 		 * broadcast event
 		 */
@@ -506,15 +516,6 @@ public class PublishProcess {
 		/*
 		 * END NEW STYLE PUBLISH
 		 */
-	}
-	
-	public void applyUpdateSet(Identity identity, Locale locale) {
-		for (CourseEditorTreeNode cetn:editorModelInsertedNodes) {
-			cetn.getCourseNode().updateOnPublish(locale, course, identity, publishEvents);
-		}
-		for (CourseEditorTreeNode cetn:editorModelModifiedNodes) {
-			cetn.getCourseNode().updateOnPublish(locale, course, identity, publishEvents);
-		}
 	}
 	
 	private void archiveDeletedNode(Identity identity, CourseNode cn, CourseNode oldCn, Locale locale, String charset) {

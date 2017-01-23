@@ -73,6 +73,7 @@ import org.olat.ims.qti21.model.xml.interactions.MatchAssessmentItemBuilder;
 import org.olat.ims.qti21.model.xml.interactions.MultipleChoiceAssessmentItemBuilder;
 import org.olat.ims.qti21.model.xml.interactions.SingleChoiceAssessmentItemBuilder;
 import org.olat.ims.qti21.model.xml.interactions.UploadAssessmentItemBuilder;
+import org.olat.ims.qti21.questionimport.AssessmentItemAndMetadata;
 import org.olat.ims.resources.IMSEntityResolver;
 import org.olat.imscp.xml.manifest.ResourceType;
 import org.olat.modules.qpool.ExportFormatOptions;
@@ -365,6 +366,33 @@ public class QTI21QPoolServiceProvider implements QPoolSPI {
 		ManifestBuilder manifest = ManifestBuilder.createAssessmentItemBuilder();
 		manifest.appendAssessmentItem(itemFile.getName());	
 		manifest.write(new File(itemFile.getParentFile(), "imsmanifest.xml"));
+		return qitem;
+	}
+	
+	public QuestionItemImpl importExcelItem(Identity owner, AssessmentItemAndMetadata itemAndMetadata, Locale defaultLocale) {
+		QTI21ImportProcessor processor =  new QTI21ImportProcessor(owner, defaultLocale,
+				questionItemDao, qItemTypeDao, qEduContextDao, taxonomyLevelDao, qLicenseDao, qpoolFileStorage, qtiService);
+		
+		String editor = itemAndMetadata.getEditor();
+		String editorVersion = itemAndMetadata.getEditorVersion();
+		AssessmentItemBuilder itemBuilder = itemAndMetadata.getItemBuilder();
+		itemBuilder.build();
+		AssessmentItem assessmentItem = itemBuilder.getAssessmentItem();
+		QuestionItemImpl qitem = processor.processItem(assessmentItem, null, null,
+				editor, editorVersion, itemAndMetadata);
+
+		String originalItemFilename = qitem.getRootFilename();
+		File itemStorage = qpoolFileStorage.getDirectory(qitem.getDirectory());
+		File itemFile = new File(itemStorage, originalItemFilename);
+		qtiService.persistAssessmentObject(itemFile, assessmentItem);
+
+		//create manifest
+		ManifestBuilder manifest = ManifestBuilder.createAssessmentItemBuilder();
+		ResourceType resource = manifest.appendAssessmentItem(UUID.randomUUID().toString(), originalItemFilename);
+		ManifestMetadataBuilder metadataBuilder = manifest.getMetadataBuilder(resource, true);
+		itemAndMetadata.toBuilder(metadataBuilder, defaultLocale);
+		manifest.write(new File(itemStorage, "imsmanifest.xml"));
+		
 		return qitem;
 	}
 	

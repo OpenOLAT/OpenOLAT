@@ -74,6 +74,10 @@ import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
+ * This controller is used by the assessment tools of the course and
+ * of the test resource. The assessment tool of the resource doesn't
+ * provide any user course environment or course node. Be aware!
+ * 
  * 
  * Initial date: 28.06.2016<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
@@ -90,10 +94,10 @@ public class QTI21AssessmentDetailsController extends FormBasicController {
 	private final boolean manualCorrections;
 	private final Identity assessedIdentity;
 	
-	private IQTESTCourseNode courseNode;
+	private final boolean readOnly;
+	private final IQTESTCourseNode courseNode;
 	private final RepositoryEntrySecurity reSecurity;
-	private UserCourseEnvironment coachCourseEnv;
-	private UserCourseEnvironment assessedUserCourseEnv;
+	private final UserCourseEnvironment assessedUserCourseEnv;
 	
 	private CloseableModalController cmc;
 	private AssessmentResultController resultCtrl;
@@ -112,6 +116,16 @@ public class QTI21AssessmentDetailsController extends FormBasicController {
 	@Autowired
 	private AssessmentService assessmentService;
 	
+	/**
+	 * The constructor used by the assessment tool of the course.
+	 * 
+	 * @param ureq
+	 * @param wControl
+	 * @param assessableEntry
+	 * @param courseNode
+	 * @param coachCourseEnv
+	 * @param assessedUserCourseEnv
+	 */
 	public QTI21AssessmentDetailsController(UserRequest ureq, WindowControl wControl,
 			RepositoryEntry assessableEntry, IQTESTCourseNode courseNode,
 			UserCourseEnvironment coachCourseEnv, UserCourseEnvironment assessedUserCourseEnv) {
@@ -119,7 +133,7 @@ public class QTI21AssessmentDetailsController extends FormBasicController {
 		entry = assessableEntry;
 		this.courseNode = courseNode;
 		subIdent = courseNode.getIdent();
-		this.coachCourseEnv = coachCourseEnv;
+		readOnly = coachCourseEnv.isCourseReadOnly();
 		this.assessedUserCourseEnv = assessedUserCourseEnv;
 		RepositoryEntry testEntry = courseNode.getReferencedRepositoryEntry();
 		assessedIdentity = assessedUserCourseEnv.getIdentityEnvironment().getIdentity();
@@ -132,11 +146,22 @@ public class QTI21AssessmentDetailsController extends FormBasicController {
 		updateModel();
 	}
 	
+	/**
+	 * The constructor used by the assessment tool of the test resource itself.
+	 * 
+	 * @param ureq
+	 * @param wControl
+	 * @param assessableEntry
+	 * @param assessedIdentity
+	 */
 	public QTI21AssessmentDetailsController(UserRequest ureq, WindowControl wControl,
 			RepositoryEntry assessableEntry, Identity assessedIdentity) {
 		super(ureq, wControl, "assessment_details");
 		entry = assessableEntry;
 		subIdent = null;
+		readOnly = false;
+		courseNode = null;
+		assessedUserCourseEnv = null;
 		this.assessedIdentity = assessedIdentity;
 		manualCorrections = qtiService.needManualCorrection(assessableEntry);
 		reSecurity = repositoryManager.isAllowed(ureq, assessableEntry);
@@ -152,14 +177,14 @@ public class QTI21AssessmentDetailsController extends FormBasicController {
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TSCols.duration, new TextFlexiCellRenderer(EscapeMode.none)));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TSCols.results, new TextFlexiCellRenderer(EscapeMode.none)));
 		
-		if(coachCourseEnv.isCourseReadOnly()) {
+		if(readOnly) {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("select", translate("select"), "open"));
 		} else {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TSCols.open.i18nHeaderKey(), TSCols.open.ordinal(), "open",
 					new BooleanCellRenderer(new StaticFlexiCellRenderer(translate("select"), "open"),
 							new StaticFlexiCellRenderer(translate("pull"), "open"))));
 		}
-		if(manualCorrections && !coachCourseEnv.isCourseReadOnly()) {
+		if(manualCorrections && !readOnly) {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TSCols.correction.i18nHeaderKey(), TSCols.correction.ordinal(), "correction",
 					new BooleanCellRenderer(new StaticFlexiCellRenderer(translate("correction"), "correction"), null)));
 		}
@@ -170,7 +195,7 @@ public class QTI21AssessmentDetailsController extends FormBasicController {
 		tableEl.setEmtpyTableMessageKey("results.empty");
 		
 		
-		if(reSecurity.isEntryAdmin() && !coachCourseEnv.isCourseReadOnly()) {
+		if(reSecurity.isEntryAdmin() && !readOnly) {
 			AssessmentToolOptions asOptions = new AssessmentToolOptions();
 			asOptions.setAdmin(reSecurity.isEntryAdmin());
 			asOptions.setIdentities(Collections.singletonList(assessedIdentity));
