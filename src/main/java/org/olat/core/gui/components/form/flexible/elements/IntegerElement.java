@@ -73,7 +73,11 @@ public interface IntegerElement extends TextElement {
 	 */
 	public void setMaxValueCheck(int maxValue, String errorKey);
 	
-	
-	
+	/**
+	 * Trigger input validation from the outside
+	 * 
+	 * @return true if valid, false if not
+	 */
+	public boolean validateIntValue();
 	
 }
