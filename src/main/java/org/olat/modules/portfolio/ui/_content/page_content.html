@@ -1,4 +1,7 @@
 $r.render("meta")
+#if ($isPersonalBinder)
+	$r.contextHelpWithWrapper("My portfolio binders#portfolioinhalt")
+#end		
 <div class="o_pf_content clearfix">$r.render("page")</div>
 #if($r.available("comments"))
 <div class="o_pf_comments clearfix">$r.render("comments")</div>

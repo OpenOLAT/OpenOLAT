@@ -27,6 +27,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.olat.core.CoreSpringFactory;
+import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.commons.services.webdav.WebDAVModule;
 import org.olat.core.commons.services.webdav.manager.WebDAVMergeSource;
 import org.olat.core.commons.services.webdav.servlets.RequestUtil;
@@ -105,6 +106,7 @@ class CoursefolderWebDAVMergeSource extends WebDAVMergeSource {
 			boolean prependReference, UniqueNames container) {	
 		
 		// Add all found repo entries to merge source
+		int count = 0;
 		for (RepositoryEntry re:courseEntries) {
 			if(container.isDuplicate(re)) {
 				continue;
@@ -143,6 +145,9 @@ class CoursefolderWebDAVMergeSource extends WebDAVMergeSource {
 				String name = container.getContainersUniqueName(courseTitle);
 				NamedContainerImpl cfContainer = new CoursefolderWebDAVNamedContainer(name, re, editor ? null : identityEnv);
 				addContainerToList(cfContainer, containers);
+			}
+			if(++count % 5 == 0) {
+				DBFactory.getInstance().commitAndCloseSession();
 			}
 		}
 	}

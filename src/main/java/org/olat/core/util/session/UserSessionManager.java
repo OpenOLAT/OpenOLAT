@@ -120,11 +120,7 @@ public class UserSessionManager implements GenericEventListener {
 			}
 		}
 		//set a possible changed session timeout interval
-		if(us.isAuthenticated()) {
-			session.setMaxInactiveInterval(sessionModule.getSessionTimeoutAuthenticated());
-		} else {
-			session.setMaxInactiveInterval(sessionModule.getSessionTimeout());
-		}
+		setHttpSessionTimeout(session, us);
 		return us;
 	}
 
@@ -151,12 +147,26 @@ public class UserSessionManager implements GenericEventListener {
 		}
 
 		UserSession us = (UserSession) session.getAttribute(USERSESSIONKEY);
-		if(us != null && us.isAuthenticated()) {
-			session.setMaxInactiveInterval(sessionModule.getSessionTimeoutAuthenticated());
-		} else {
-			session.setMaxInactiveInterval(sessionModule.getSessionTimeout());
-		}
+		setHttpSessionTimeout(session, us);
 		return us;
+	}
+	
+	private void setHttpSessionTimeout(HttpSession session, UserSession us) {
+		if(us == null || session == null) return;
+		
+		int interval;
+		if(us.isAuthenticated()) {
+			if(us.getSessionInfo() != null && (us.getSessionInfo().isREST() || us.getSessionInfo().isWebDAV())) {
+				interval = 300;
+			} else {
+				interval = sessionModule.getSessionTimeoutAuthenticated();
+			}
+		} else {
+			interval = sessionModule.getSessionTimeout();
+		}
+		if(interval != session.getMaxInactiveInterval()) {
+			session.setMaxInactiveInterval(interval);
+		}
 	}
 
   /**

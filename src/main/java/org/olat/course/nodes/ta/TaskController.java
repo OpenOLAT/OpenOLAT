@@ -63,8 +63,10 @@ import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.TACourseNode;
 import org.olat.course.properties.CoursePropertyManager;
 import org.olat.course.run.environment.CourseEnvironment;
+import org.olat.course.run.scoring.AssessmentEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.ModuleConfiguration;
+import org.olat.modules.assessment.model.AssessmentEntryStatus;
 import org.olat.properties.Property;
 
 /**
@@ -114,7 +116,7 @@ public class TaskController extends BasicController {
 	private Boolean hasPreview = Boolean.FALSE;
 	private Boolean isDeselectable = Boolean.FALSE;
 
-	private CourseNode node;
+	private TACourseNode node;
 	private CourseEnvironment courseEnv;
 	private UserCourseEnvironment userCourseEnv;
 	
@@ -134,7 +136,7 @@ public class TaskController extends BasicController {
 	 * @param courseEnv
 	 */
 	public TaskController(UserRequest ureq, WindowControl wControl, ModuleConfiguration config, 
-			CourseNode node, UserCourseEnvironment userCourseEnv) {
+			TACourseNode node, UserCourseEnvironment userCourseEnv) {
 		super(ureq, wControl);
 		
 		this.node = node;
@@ -346,6 +348,12 @@ public class TaskController extends BasicController {
 		CoursePropertyManager cpm = courseEnv.getCoursePropertyManager();
 		Property p = cpm.createCourseNodePropertyInstance(node, identity, null, PROP_ASSIGNED, null, null, task, null);
 		cpm.saveProperty(p);
+		
+		AssessmentEvaluation eval = node.getUserScoreEvaluation(userCourseEnv);
+		if(eval.getAssessmentStatus() == null || eval.getAssessmentStatus() == AssessmentEntryStatus.notStarted) {
+			eval = new AssessmentEvaluation(eval, AssessmentEntryStatus.inProgress);
+			node.updateUserScoreEvaluation(eval, userCourseEnv, getIdentity(), false);
+		}
 	}
 	
 	/**
