@@ -142,6 +142,7 @@ public class PageRunController extends BasicController implements TooledControll
 			pageEditCtrl = new PageEditorController(ureq, getWindowControl(), new PortfolioPageEditorProvider(),
 					new FullEditorSecurityCallback(), getTranslator());
 			listenTo(pageEditCtrl);
+			mainVC.contextPut("isPersonalBinder", (!secCallback.canNewAssignment() && secCallback.canEditMetadataBinder()));
 			mainVC.put("page", pageEditCtrl.getInitialComponent());
 		}
 	}
@@ -397,6 +398,7 @@ public class PageRunController extends BasicController implements TooledControll
 		loadMeta(ureq);
 		loadModel(ureq, false);
 		doRunPage(ureq);
+		mainVC.contextPut("isPersonalBinder", false);
 		fireEvent(ureq, Event.CHANGED_EVENT);
 	}
 	
@@ -473,6 +475,7 @@ public class PageRunController extends BasicController implements TooledControll
 			pageEditCtrl = new PageEditorController(ureq, getWindowControl(), new PortfolioPageEditorProvider(),
 					new FullEditorSecurityCallback(), getTranslator());
 			listenTo(pageEditCtrl);
+			mainVC.contextPut("isPersonalBinder", (!secCallback.canNewAssignment() && secCallback.canEditMetadataBinder()));
 			mainVC.put("page", pageEditCtrl.getInitialComponent());
 			editLink(false);
 		}
