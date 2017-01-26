@@ -50,11 +50,14 @@ import org.olat.core.id.UserConstants;
 import org.olat.core.util.SessionInfo;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.UserSession;
+import org.olat.core.util.cache.CacheWrapper;
+import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.session.UserSessionManager;
 import org.olat.core.util.vfs.MergeSource;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VirtualContainer;
 import org.olat.core.util.vfs.callbacks.ReadOnlyCallback;
+import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -68,10 +71,13 @@ import org.springframework.stereotype.Service;
  * 
  */
 @Service("webDAVManager")
-public class WebDAVManagerImpl implements WebDAVManager {
+public class WebDAVManagerImpl implements WebDAVManager, InitializingBean {
 	private static boolean enabled = true;
 	
 	public static final String BASIC_AUTH_REALM = "OLAT WebDAV Access";
+	private CoordinatorManager coordinatorManager;
+
+	private CacheWrapper<CacheKey,UserSession> timedSessionCache;
 
 	@Autowired
 	private UserSessionManager sessionManager;
@@ -79,6 +85,16 @@ public class WebDAVManagerImpl implements WebDAVManager {
 	private WebDAVAuthManager webDAVAuthManager;
 	@Autowired
 	private WebDAVModule webdavModule;
+
+	@Autowired
+	public WebDAVManagerImpl(CoordinatorManager coordinatorManager) {
+		this.coordinatorManager = coordinatorManager;
+	}
+
+	@Override
+	public void afterPropertiesSet() throws Exception {
+		timedSessionCache = coordinatorManager.getCoordinator().getCacher().getCache(WebDAVManager.class.getSimpleName(), "webdav");
+	}
 	
 	@Override
 	public WebResourceRoot getWebDAVRoot(HttpServletRequest req) {
@@ -133,6 +149,11 @@ public class WebDAVManagerImpl implements WebDAVManager {
 	 */
 	@Override
 	public boolean handleAuthentication(HttpServletRequest req, HttpServletResponse resp) {
+		//manger not started
+		if(timedSessionCache == null) {
+			return false;
+		}
+		
 		UserSession usess = sessionManager.getUserSession(req);
 		if(usess != null && usess.isAuthenticated()) {
 			req.setAttribute(REQUEST_USERSESSION_KEY, usess);
@@ -163,8 +184,10 @@ public class WebDAVManagerImpl implements WebDAVManager {
 		String authHeader = request.getHeader("Authorization");
 		if (authHeader != null) {
 			// fetch user session from a previous authentication
-
+			
+			String cacheKey = null;
 			UserSession usess = null;
+			String remoteAddr = request.getRemoteAddr();
 			
 			StringTokenizer st = new StringTokenizer(authHeader);
 			if (st.hasMoreTokens()) {
@@ -172,15 +195,24 @@ public class WebDAVManagerImpl implements WebDAVManager {
 
 				// We only handle HTTP Basic authentication
 				if (basic.equalsIgnoreCase("Basic")) {
-					String credentials = st.nextToken();
-					usess = handleBasicAuthentication(credentials, request);
+					cacheKey = authHeader;
+					usess = timedSessionCache.get(new CacheKey(remoteAddr, authHeader));
+					if (usess == null || !usess.isAuthenticated()) {
+						String credentials = st.nextToken();
+						usess = handleBasicAuthentication(credentials, request);
+					}
 				} else if (basic.equalsIgnoreCase("Digest")) {
 					DigestAuthentication digestAuth = DigestAuthentication.parse(authHeader);
-					usess = handleDigestAuthentication(digestAuth, request);
+					cacheKey = digestAuth.getUsername();
+					usess = timedSessionCache.get(new CacheKey(remoteAddr, digestAuth.getUsername()));
+					if (usess == null || !usess.isAuthenticated()) {
+						usess = handleDigestAuthentication(digestAuth, request);
+					}
 				}
 			}
 	
-			if(usess != null) {
+			if(usess != null && cacheKey != null) {
+				timedSessionCache.put(new CacheKey(remoteAddr, cacheKey), usess);
 				return usess;
 			}
 		}

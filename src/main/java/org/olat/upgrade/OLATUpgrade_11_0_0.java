@@ -1233,5 +1233,10 @@ public class OLATUpgrade_11_0_0 extends OLATUpgrade {
 		public Iterator<NewCacheKey> iterateKeys() {
 			return map.keySet().iterator();
 		}
+
+		@Override
+		public void addListener(Object obj) {
+			//
+		}
 	}
 }

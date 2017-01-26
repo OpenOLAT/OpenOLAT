@@ -122,5 +122,12 @@ public interface CacheWrapper<U, V> {
 	 * @return
 	 */
 	public Iterator<U> iterateKeys();
+	
+	/**
+	 * Annotated listener
+	 * 
+	 * @param obj
+	 */
+	public void addListener(Object obj);
 
 }
