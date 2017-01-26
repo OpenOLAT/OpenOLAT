@@ -339,6 +339,8 @@ public class CheckboxManagerImpl implements CheckboxManager {
 	}
 	
 	protected DBCheck loadCheck(DBCheckbox checkbox, Identity identity) {
+		if(checkbox == null || identity == null) return null;
+		
 		StringBuilder sb = new StringBuilder();
 		sb.append("select check from clcheck as check")
 		  .append(" where check.identity.key=:identityKey and check.checkbox.key=:checkboxKey");
