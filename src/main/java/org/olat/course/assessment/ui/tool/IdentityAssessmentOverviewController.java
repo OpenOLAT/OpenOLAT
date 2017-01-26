@@ -150,6 +150,11 @@ public class IdentityAssessmentOverviewController extends FormBasicController im
 		return tableModel.getRowCount();
 	}
 	
+	public CourseNode getNode(int row) {
+		AssessmentNodeData data = tableModel.getObject(row);
+		return getNodeByIdent(data.getIdent());
+	}
+	
 	public CourseNode getNodeByIdent(String ident) {
 		return runStructure.getNode(ident);
 	}
