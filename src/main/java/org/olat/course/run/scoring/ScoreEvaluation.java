@@ -89,6 +89,8 @@ public class ScoreEvaluation {
 		this.fullyAssessed = fullyAssessed;
 		this.assessmentStatus = assessmentStatus;
 	}
+	
+	
 
 	/**
 	 * @return Returns the passed.

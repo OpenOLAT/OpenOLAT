@@ -663,7 +663,8 @@ public class TACourseNode extends GenericCourseNode implements PersistentAssessa
 			Identity coachingIdentity, boolean incrementAttempts) {
 		AssessmentManager am = userCourseEnvironment.getCourseEnvironment().getAssessmentManager();
 		Identity mySelf = userCourseEnvironment.getIdentityEnvironment().getIdentity();
-		am.saveScoreEvaluation(this, coachingIdentity, mySelf, new ScoreEvaluation(scoreEvaluation.getScore(), scoreEvaluation.getPassed()), userCourseEnvironment, incrementAttempts);		
+		ScoreEvaluation newScoreEval = new ScoreEvaluation(scoreEvaluation.getScore(), scoreEvaluation.getPassed(), scoreEvaluation.getAssessmentStatus(), null, null);
+		am.saveScoreEvaluation(this, coachingIdentity, mySelf, newScoreEval, userCourseEnvironment, incrementAttempts);		
 	}
 
 	/**

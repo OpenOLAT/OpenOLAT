@@ -31,7 +31,7 @@ import org.olat.modules.assessment.model.AssessmentEntryStatus;
  */
 public class AssessmentEvaluation extends ScoreEvaluation {
 	
-	public static final AssessmentEvaluation EMPTY_EVAL = new AssessmentEvaluation(null, null);
+	public static final AssessmentEvaluation EMPTY_EVAL = new AssessmentEvaluation((Float)null, (Boolean)null);
 	
 	private final Integer attempts;
 	private final String comment;
@@ -59,6 +59,17 @@ public class AssessmentEvaluation extends ScoreEvaluation {
 		this.attempts = attempts;
 		this.comment = comment;
 		this.coachComment = coachComment;
+	}
+	
+	/**
+	 * Utility constructor to update only the status of the evaluation
+	 * 
+	 * @param eval
+	 * @param assessmentStatus
+	 */
+	public AssessmentEvaluation(AssessmentEvaluation eval, AssessmentEntryStatus assessmentStatus) {
+		this(eval.getScore(), eval.getPassed(), eval.getAttempts(), assessmentStatus,
+				eval.getFullyAssessed(), eval.getAssessmentID(), eval.getComment(), eval.getCoachComment());
 	}
 
 	public Integer getAttempts() {
