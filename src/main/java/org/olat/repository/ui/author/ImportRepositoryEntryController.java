@@ -107,6 +107,7 @@ public class ImportRepositoryEntryController extends FormBasicController {
 		spacerEl.setVisible(false);
 		
 		typeEl = uifactory.addStaticTextElement("cif.type", "cif.type", "", formLayout);
+		typeEl.setElementCssClass("o_sel_author_type");
 		typeEl.setVisible(false);
 		
 		selectType = uifactory.addDropdownSingleselect("cif.types", "cif.type", formLayout, new String[0], new String[0], null);

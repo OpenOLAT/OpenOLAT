@@ -24,6 +24,7 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
+import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
@@ -105,8 +106,9 @@ public class CreateRepositoryEntryController extends FormBasicController impleme
 		} else {
 			typeName = translate("cif.type.na");
 		}
-		uifactory.addStaticExampleText("cif.type", typeName, formLayout);
-
+		StaticTextElement typeEl = uifactory.addStaticTextElement("cif.type", typeName, formLayout);
+		typeEl.setElementCssClass("o_sel_author_type");
+		
 		displaynameEl = uifactory.addTextElement("cif.displayname", "cif.displayname", 100, "", formLayout);
 		displaynameEl.setElementCssClass("o_sel_author_displayname");
 		displaynameEl.setFocus(true);

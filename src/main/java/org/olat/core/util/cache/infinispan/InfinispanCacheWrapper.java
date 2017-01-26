@@ -73,7 +73,7 @@ public class InfinispanCacheWrapper<U,V> implements CacheWrapper<U,V> {
 	public V get(U key) {
 		V elem;
 		try {
-			elem = cache.get(key);				
+			elem = cache.get(key);
 		} catch (IllegalStateException e) {
 			throw new OLATRuntimeException("cache state error for cache " + cache.getName(), e);
 		} catch (Exception e) {//don't catch CacheException to be compatible with infinispan 5.2 to 6.0
@@ -122,5 +122,10 @@ public class InfinispanCacheWrapper<U,V> implements CacheWrapper<U,V> {
 	@Override
 	public Iterator<U> iterateKeys() {
 		return cache.keySet().iterator();
+	}
+
+	@Override
+	public void addListener(Object obj) {
+		cache.addListener(obj);
 	}
 }

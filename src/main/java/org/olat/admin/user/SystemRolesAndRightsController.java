@@ -83,12 +83,12 @@ public class SystemRolesAndRightsController extends BasicController {
 	 * Initialize a new SystemRolesAndRightsForm for the given identity using the
 	 * security manager
 	 * @param ureq
-	 * @param identity
+	 * @param myIdentity
 	 * @return SystemRolesAndRightsForm
 	 */
-	private void createForm(UserRequest ureq, Identity identity) {
+	private void createForm(UserRequest ureq, Identity myIdentity) {
 		removeAsListenerAndDispose(sysRightsForm);
-		sysRightsForm = new SystemRolesAndRightsForm(ureq, getWindowControl(), identity);
+		sysRightsForm = new SystemRolesAndRightsForm(ureq, getWindowControl(), myIdentity);
 		listenTo (sysRightsForm);
 	}
 
@@ -181,7 +181,8 @@ public class SystemRolesAndRightsController extends BasicController {
 			boolean isAdmin = form.isAdmin();
 			updateSecurityGroup(myIdentity, secMgr, adminGroup, hasBeenAdmin, isAdmin, Constants.GROUP_ADMIN);		
 		}
-		if (iAmOlatAdmin &&  !myIdentity.getStatus().equals(form.getStatus()) ) {			
+		Boolean canManageStatus =BaseSecurityModule.USERMANAGER_CAN_MANAGE_STATUS;	
+		if ((iAmOlatAdmin || canManageStatus.booleanValue()) &&  !myIdentity.getStatus().equals(form.getStatus()) ) {			
 			int oldStatus = myIdentity.getStatus();
 			String oldStatusText = (oldStatus == Identity.STATUS_PERMANENT ? "permanent"
 					: (oldStatus == Identity.STATUS_ACTIV ? "active"

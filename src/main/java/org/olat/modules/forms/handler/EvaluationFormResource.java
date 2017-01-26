@@ -68,7 +68,7 @@ public class EvaluationFormResource extends FileResource {
 			} else {
 				eval.setValid(false);
 			}
-		} catch (IOException e) {
+		} catch (IOException | IllegalArgumentException e) {
 			log.error("", e);
 			eval.setValid(false);
 		}

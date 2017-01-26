@@ -214,7 +214,7 @@ public class AssessmentToolManagerImpl implements AssessmentToolManager {
 			where = PersistenceHelper.appendAnd(sf, where);
 			sf.append(" aentry.referenceEntry.key=:referenceKey");
 		}
-		sf.append(" group by bgi.key, baseGroup.key");
+		sf.append(" group by bgi.key, bgi.name, baseGroup.key");
 
 		TypedQuery<Object[]> stats = dbInstance.getCurrentEntityManager()
 				.createQuery(sf.toString(), Object[].class)

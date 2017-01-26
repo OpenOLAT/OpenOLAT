@@ -339,6 +339,8 @@ public class CheckboxManagerImpl implements CheckboxManager {
 	}
 	
 	protected DBCheck loadCheck(DBCheckbox checkbox, Identity identity) {
+		if(checkbox == null || identity == null) return null;
+		
 		StringBuilder sb = new StringBuilder();
 		sb.append("select check from clcheck as check")
 		  .append(" where check.identity.key=:identityKey and check.checkbox.key=:checkboxKey");
@@ -395,7 +397,6 @@ public class CheckboxManagerImpl implements CheckboxManager {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select count(check) from clcheck check")
 		  .append(" inner join check.checkbox box")
-		  .append(" inner join check.identity ident")
 		  .append(" where check.identity.key=:identityKey and box.resName=:resName and box.resId=:resId")
 		  .append("  and check.checked=true");
 		if(StringHelper.containsNonWhitespace(resSubPath)) {
@@ -420,7 +421,6 @@ public class CheckboxManagerImpl implements CheckboxManager {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select sum(check.score) from clcheck check")
 		  .append(" inner join check.checkbox box")
-		  .append(" inner join check.identity ident")
 		  .append(" where check.identity.key=:identityKey and check.checked=true and box.resName=:resName and box.resId=:resId");
 		if(StringHelper.containsNonWhitespace(resSubPath)) {
 			sb.append(" and box.resSubPath=:resSubPath");

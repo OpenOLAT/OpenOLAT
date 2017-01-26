@@ -84,14 +84,17 @@ class SingleSelectionRenderer extends DefaultComponentRenderer {
 		String formDispatchId = ssec.getFormDispatchId();
 		
 		// read write view
-		sb.append("<div class='radio'>", !inline); // normal radios need a wrapper (bootstrap) ...
-		sb.append("<label ").append("class='radio-inline' ", inline); // ... and inline a class on the label (bootstrap)
-		if(source.getWidthInPercent() > 0) {
+		sb.append("<div class='radio'", !inline); // normal radios need a wrapper (bootstrap) ...
+		if(!inline && source.getWidthInPercent() > 0) {
 			sb.append("style='width:").append(source.getWidthInPercent()).append("%;'");
 		}
-		sb.append(" for=\"").append(formDispatchId).append("\">");
-		  
-		sb.append("<input id='").append(formDispatchId).append("' ")
+		sb.append(">", !inline)
+		  .append("<label ").append("class='radio-inline' ", inline); // ... and inline a class on the label (bootstrap)
+		if(inline && source.getWidthInPercent() > 0) {
+			sb.append("style='width:").append(source.getWidthInPercent()).append("%;'");
+		}
+		sb.append(" for=\"").append(formDispatchId).append("\">")
+		  .append("<input id='").append(formDispatchId).append("' ")
 		  .append("type='radio' ").append(subStrName)
 		  .append(" value='").append(key).append("' ")
 		  .append(" checked='checked' ", selected);
@@ -117,7 +120,8 @@ class SingleSelectionRenderer extends DefaultComponentRenderer {
 			FormJSHelper.appendFlexiFormDirtyForCheckbox(sb, ssec.getRootForm(), formDispatchId);
 		}
 		
-		sb.append("</label>");
-		sb.append("</div>", !inline); // normal radios need a wrapper (bootstrap)
+		sb.append("</label>")
+		  .append("</div>", !inline) // normal radios need a wrapper (bootstrap)
+		  .append(" ", source.isTrailingSpace());
 	}
 }

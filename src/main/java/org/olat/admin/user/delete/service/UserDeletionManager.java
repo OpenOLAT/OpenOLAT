@@ -30,6 +30,7 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.Iterator;
@@ -71,8 +72,6 @@ import org.olat.user.UserManager;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
-import edu.emory.mathcs.backport.java.util.Collections;
 
 
 /**
@@ -272,7 +271,6 @@ public class UserDeletionManager extends BasicManager {
 		Map<String,UserDataDeletable> userDataDeletableResourcesMap = CoreSpringFactory.getBeansOfType(UserDataDeletable.class);
 		List<UserDataDeletable> userDataDeletableResources = new ArrayList<>(userDataDeletableResourcesMap.values());
 		Collections.sort(userDataDeletableResources, new UserDataDeletableComparator());
-		System.out.println("");
 		for (UserDataDeletable element : userDataDeletableResources) {
 			logInfo("UserDataDeletable-Loop element=" + element);
 			element.deleteUserData(identity, newName, archiveFilePath);

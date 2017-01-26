@@ -1,2 +1,5 @@
 #if($r.isNotNull($formEntryName)) <i class="o_icon o_icon-lg o_FileResource-FORM_icon"> </i> $formEntryName #end
-#if($r.visible("select.form")) $r.render("select.form") #end
+#if($r.visible("select.form")) 
+	$r.contextHelpWithWrapper("Survey in the portfolio")
+	$r.render("select.form") 
+#end

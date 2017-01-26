@@ -307,13 +307,13 @@ public class EvaluationFormController extends FormBasicController implements Val
 			theValues[i] = "";
 		}
 
-		SingleSelection radioEl = uifactory.addRadiosHorizontal("slider_" + (count++), null, flc, theKeys, theValues);
+		SingleSelection radioEl = uifactory.addRadiosVertical("slider_" + (count++), null, flc, theKeys, theValues);
 		radioEl.setDomReplacementWrapperRequired(false);
 		radioEl.addActionListener(FormEvent.ONCHANGE);
 		radioEl.setEnabled(!readOnly);
 		radioEl.setAllowNoSelection(true);
 		int widthInPercent = EvaluationFormElementWrapper.getWidthInPercent(element);
-		radioEl.setWidthInPercent(widthInPercent);
+		radioEl.setWidthInPercent(widthInPercent, true);
 		if(response != null && response.getNumericalResponse() != null) {
 			double val = response.getNumericalResponse().doubleValue();
 			double error = step / 10.0d;

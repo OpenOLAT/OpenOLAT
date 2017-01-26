@@ -159,9 +159,16 @@ public class SingleSelectionImpl extends FormItemImpl implements SingleSelection
 		return values[which];
 	}
 
+	/**
+	 * Set a fix width to the enclosing div/label of the radio elements. Spaced
+	 * had a space after the end div/label.
+	 * 
+	 * @param widthInPercent The width (example: 9)
+	 * @param spaced If true had a trailing space
+	 */
 	@Override
-	public void setWidthInPercent(int width) {
-		component.setWidthInPercent(width);
+	public void setWidthInPercent(int width, boolean trailingSpace) {
+		component.setWidthInPercent(width, trailingSpace);
 	}
 
 	@Override

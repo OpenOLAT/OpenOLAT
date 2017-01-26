@@ -22,6 +22,7 @@ package org.olat.ims.qti21.model.xml;
 import java.math.BigDecimal;
 import java.util.Locale;
 
+import org.olat.core.util.StringHelper;
 import org.olat.ims.qti21.model.QTI21QuestionType;
 
 /**
@@ -192,27 +193,57 @@ public class AssessmentItemMetadata {
 			metadata.setOpenOLATMetadataQuestionType(getQuestionType().getPrefix());
 		}
 		metadata.setTechnicalFormat(ManifestBuilder.ASSESSMENTITEM_MIMETYPE);
+		
+		String lang = locale.getLanguage();
+		
+		// general
+		if(StringHelper.containsNonWhitespace(keywords)) {
+			metadata.setGeneralKeywords(keywords, lang);
+		}
+		if(StringHelper.containsNonWhitespace(coverage)) {
+			metadata.setCoverage(lang, lang);
+		}
 
-		/*
-		private String taxonomyPath;
-		private String keywords;
-		private String coverage;
-		private String level;
-		private String typicalLearningTime;
-		private String license;
-		private String editor;
-		private String editorVersion;
-		private int numOfAnswerAlternatives;
-		private BigDecimal difficulty;
-		private BigDecimal differentiation;
-		private BigDecimal stdevDifficulty;
-		*/
+		//educational
+		if(StringHelper.containsNonWhitespace(level)) {
+			metadata.setEducationalContext(level, lang);
+		}
+		if(StringHelper.containsNonWhitespace(typicalLearningTime)) {
+			metadata.setEducationalLearningTime(typicalLearningTime);
+		}
+
+		//classification
+		if(StringHelper.containsNonWhitespace(taxonomyPath)) {
+			metadata.setClassificationTaxonomy(taxonomyPath, lang);
+		}
+
+		// rights
+		if(StringHelper.containsNonWhitespace(license)) {
+			metadata.setLicense(license);
+		}
+
+		//qti metadata
+		if(StringHelper.containsNonWhitespace(editor) || StringHelper.containsNonWhitespace(editorVersion)) {
+			metadata.setQtiMetadataTool(editor, null, editorVersion);
+		}
+
+		//openolat metadata
+		if(differentiation != null) {
+			metadata.setOpenOLATMetadataMasterDiscriminationIndex(differentiation.doubleValue());
+		}
+		if(difficulty != null) {
+			metadata.setOpenOLATMetadataMasterDifficulty(difficulty.doubleValue());
+		}
+		if(stdevDifficulty != null) {
+			metadata.setOpenOLATMetadataMasterStandardDeviation(stdevDifficulty.doubleValue());
+		}
+		if(numOfAnswerAlternatives >= 0) {
+			metadata.setOpenOLATMetadataMasterDistractors(numOfAnswerAlternatives);
+		}
 	}
 	
-	public void fromBuilder(ManifestMetadataBuilder builder) {
-	
-		
-		
-		
+	public void fromBuilder(ManifestMetadataBuilder metadata) {
+		// general
+		keywords = metadata.getGeneralKeywords();
 	}
 }

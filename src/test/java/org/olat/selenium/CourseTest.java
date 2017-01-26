@@ -2238,4 +2238,28 @@ public class CourseTest {
 			.selectPage(firstPage)
 			.assertInIFrame(By.xpath("//h2[text()[contains(.,'Lorem Ipsum')]]"));
 	}
+	
+	/**
+	 * Try to import a typical Windows zip with encoding issues. The goal
+	 * is to check that no ugly red screen are produced.
+	 * 
+	 * @param loginPage
+	 */
+	@Test
+	@RunAsClient
+	public void tryImportOfWindowsZip(@InitialPage LoginPage loginPage)
+	throws IOException, URISyntaxException {
+		
+		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
+		loginPage.loginAs(author.getLogin(), author.getPassword());
+		
+		URL zipUrl = JunitTestHelper.class.getResource("file_resources/windows_zip.zip");
+		File zipFile = new File(zipUrl.toURI());
+		//go the authoring environment to create a CP
+		String zipTitle = "ZIP - " + UUID.randomUUID();
+		navBar
+			.openAuthoringEnvironment()
+			.uploadResource(zipTitle, zipFile)
+			.assertOnResourceType();
+	}
 }

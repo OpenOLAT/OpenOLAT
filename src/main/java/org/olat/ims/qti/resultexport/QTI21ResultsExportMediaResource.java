@@ -31,6 +31,7 @@ import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
@@ -71,8 +72,6 @@ import org.olat.ims.qti21.QTI21DeliveryOptions.ShowResultsOnFinish;
 import org.olat.ims.qti21.QTI21Service;
 import org.olat.ims.qti21.ui.AssessmentResultController;
 import org.olat.repository.RepositoryEntry;
-
-import edu.emory.mathcs.backport.java.util.Collections;
 
 public class QTI21ResultsExportMediaResource implements MediaResource {
 

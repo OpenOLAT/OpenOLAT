@@ -185,7 +185,8 @@ public class CourseController extends FormBasicController implements Activateabl
 		for (int i = 0; i < userPropertyHandlers.size(); i++) {
 			UserPropertyHandler userPropertyHandler	= userPropertyHandlers.get(i);
 			boolean visible = userManager.isMandatoryUserProperty(UserListController.usageIdentifyer , userPropertyHandler);
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(visible, userPropertyHandler.i18nColumnDescriptorLabelKey(), colIndex++, "select", true, null));
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(visible, userPropertyHandler.i18nColumnDescriptorLabelKey(), colIndex++, "select",
+					true, userPropertyHandler.i18nColumnDescriptorLabelKey()));
 		}
 		
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Columns.repoName));

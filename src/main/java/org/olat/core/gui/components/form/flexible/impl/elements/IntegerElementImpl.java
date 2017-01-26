@@ -89,17 +89,37 @@ public class IntegerElementImpl extends TextElementImpl implements
 		originalInt = predefinedValue;
 		setIntValue(predefinedValue);
 	}
-	
+
+	@Override
 	public int getIntValue() {
 		return Integer.parseInt(getValue());
 	}
 
+	@Override
 	public void setIntValue(int value) {
 		super.setValue(String.valueOf(value));
 	}
 
+	@Override
 	public void setIntValueCheck(String errorKey) {
 		intValueErrorKey = errorKey;
+	}
+
+	@Override
+	public boolean validateIntValue() {
+		boolean allOk = true;
+		if(intValueCheck()) {
+			List<ValidationStatus> v = new ArrayList<>(1);
+			validate(v);
+			if(v.size() > 0) {
+				setErrorKey(intValueErrorKey, null);
+				allOk &= false;
+			}
+			
+		} else {
+			allOk &= false;//intValueCheck() set an error message
+		}
+		return allOk;
 	}
 
 	private boolean intValueCheck() {

@@ -43,6 +43,7 @@ import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.assessment.ui.tool.event.CourseNodeEvent;
 import org.olat.course.config.CourseConfig;
+import org.olat.course.nodes.AssessableCourseNode;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.CourseNodeFactory;
 import org.olat.course.nodes.STCourseNode;
@@ -229,8 +230,10 @@ public class AssessmentIdentityCourseController extends BasicController implemen
 		CourseNode previousNode = treeOverviewCtrl.getPreviousNode(currentNodeCtrl.getCourseNode());
 		if(previousNode != null && previousNode.getParent() != null) {
 			if(previousNode instanceof STCourseNode) {
-				for(previousNode=treeOverviewCtrl.getPreviousNode(previousNode); previousNode instanceof STCourseNode; ) {
+				CourseNode node = previousNode;
+				for(previousNode=treeOverviewCtrl.getPreviousNode(previousNode); previousNode instanceof STCourseNode && node != previousNode; ) {
 					//search the previous node which is not a structure node
+					node = previousNode;
 				}
 			}
 
@@ -256,12 +259,9 @@ public class AssessmentIdentityCourseController extends BasicController implemen
 		listenTo(currentNodeCtrl);
 		stackPanel.pushController(courseNode.getShortTitle(), currentNodeCtrl);
 		
-		int index = treeOverviewCtrl.getIndexOf(courseNode);
-		int numOfNodes = treeOverviewCtrl.getNumberOfNodes();
-		
 		previousLink = LinkFactory.createToolLink("previouselement", translate("previous"), this, "o_icon_previous");
 		previousLink.setTitle(translate("command.previous"));
-		previousLink.setEnabled(index > 1 && index <= numOfNodes);
+		previousLink.setEnabled(hasPrevious(courseNode));
 		stackPanel.addTool(previousLink, Align.rightEdge, false);
 
 		courseNodeSelectionLink =  LinkFactory.createToolLink("node.select", "node.select", courseNode.getShortTitle(), this);
@@ -278,5 +278,19 @@ public class AssessmentIdentityCourseController extends BasicController implemen
 		boolean hasNext = (nextNode != null && nextNode.getParent() != null);
 		nextLink.setEnabled(hasNext);
 		stackPanel.addTool(nextLink, Align.rightEdge, false);
+	}
+	
+	private boolean hasPrevious(CourseNode courseNode) {
+		int index = treeOverviewCtrl.getIndexOf(courseNode);
+		int numOfNodes = treeOverviewCtrl.getNumberOfNodes();
+		if(index > 0 && index <= numOfNodes) {
+			for(int i=index; i-->0; ) {
+				CourseNode previousNode = treeOverviewCtrl.getNode(i);
+				if(previousNode instanceof AssessableCourseNode && !(previousNode instanceof STCourseNode)) {
+					return true;
+				}
+			}
+		}
+		return false;
 	}
 }

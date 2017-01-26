@@ -57,7 +57,7 @@
 	#foreach($slider in $element.getSliders())
 	<div class="o_slider clearfix">
 		<div class="$colLeft o_evaluation_left_label">$slider.startLabel</div>
-		<div class="$colMiddle">$r.render($slider.formItem)</div>
+		<div class="$colMiddle o_evaluation_steps">$r.render($slider.formItem)</div>
 		<div class="$colRight o_evaluation_right_label">$slider.endLabel</div>
 	</div>
 	#end

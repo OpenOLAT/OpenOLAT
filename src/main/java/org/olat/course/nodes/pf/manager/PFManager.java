@@ -417,12 +417,13 @@ public class PFManager {
 			VFSContainer userBaseContainer = VFSManager.resolveOrCreateContainerFromPath(courseElementBaseContainer, relPath.toString());
 			String participantfoldername = userManager.getUserDisplayName(participant);
 			VirtualContainer participantFolder = new VirtualContainer(participantfoldername);
+			participantFolder.setParentContainer(namedCourseFolder);
 			namedCourseFolder.addItem(participantFolder);
 			
 			if (pfNode.hasParticipantBoxConfigured()) {
 				VFSContainer dropContainer = new NamedContainerImpl(translator.translate("drop.box"),
 						VFSManager.resolveOrCreateContainerFromPath(userBaseContainer, FILENAME_DROPBOX));
-				dropContainer.setLocalSecurityCallback(new ReadWriteDeleteCallback(nodefolderSubContext));
+				dropContainer.setLocalSecurityCallback(new ReadOnlyCallback(nodefolderSubContext));
 				participantFolder.addItem(dropContainer);
 			}
 			

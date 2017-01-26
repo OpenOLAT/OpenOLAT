@@ -59,7 +59,6 @@ import org.olat.course.condition.Condition;
 import org.olat.course.condition.ConditionEditController;
 import org.olat.course.editor.NodeEditController;
 import org.olat.course.highscore.ui.HighScoreEditController;
-import org.olat.course.nodes.MSCourseNode;
 import org.olat.course.nodes.ScormCourseNode;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.fileresource.FileResourceManager;

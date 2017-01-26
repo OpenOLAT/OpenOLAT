@@ -154,7 +154,9 @@ public class AssessmentModule extends AbstractSpringModule implements GenericEve
 		synchronized (upcomingWork) { //o_clusterOK by:ld synchronized OK - only one cluster node must update the EfficiencyStatements (the course is locked for editing) (same as e.g. file indexer)
 			recalc = upcomingWork.contains(resId);
 			if (recalc) {
-				upcomingWork.remove(resId);
+				for(; upcomingWork.remove(resId); ) {
+					//remove all with the same res id
+				}
 			}
 		}
 		if (recalc) {

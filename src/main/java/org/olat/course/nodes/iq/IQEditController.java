@@ -45,7 +45,6 @@ import org.olat.course.nodes.AbstractAccessableCourseNode;
 import org.olat.course.nodes.IQSELFCourseNode;
 import org.olat.course.nodes.IQSURVCourseNode;
 import org.olat.course.nodes.IQTESTCourseNode;
-import org.olat.course.nodes.MSCourseNode;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.ims.qti.process.AssessmentInstance;
 import org.olat.modules.ModuleConfiguration;

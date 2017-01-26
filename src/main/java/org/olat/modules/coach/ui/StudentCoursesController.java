@@ -189,7 +189,8 @@ public class StudentCoursesController extends FormBasicController implements Act
 		int colIndex = UserListController.USER_PROPS_OFFSET;
 		for (int i = 0; i < userPropertyHandlers.size(); i++) {
 			UserPropertyHandler userPropertyHandler	= userPropertyHandlers.get(i);
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, userPropertyHandler.i18nColumnDescriptorLabelKey(), colIndex++, "select", true, null));
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, userPropertyHandler.i18nColumnDescriptorLabelKey(), colIndex++, "select",
+					true, userPropertyHandler.i18nColumnDescriptorLabelKey()));
 		}
 		
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Columns.repoName, "select"));

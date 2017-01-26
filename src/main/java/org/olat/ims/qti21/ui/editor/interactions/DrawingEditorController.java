@@ -100,7 +100,7 @@ public class DrawingEditorController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		setFormContextHelp("Test and Questionnaire Editor in Detail#details_testeditor_fragetypen_ft");
+		setFormContextHelp("Test editor QTI 2.1 in detail#details_testeditor_fragetypen_drawing");
 		
 		titleEl = uifactory.addTextElement("title", "form.imd.title", -1, itemBuilder.getTitle(), formLayout);
 		titleEl.setMandatory(true);

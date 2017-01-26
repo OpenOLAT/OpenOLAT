@@ -41,10 +41,13 @@ import org.olat.core.id.Roles;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.Formatter;
+import org.olat.core.util.StringHelper;
+import org.olat.core.util.Util;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.coordinate.LockResult;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
+import org.olat.course.assessment.AssessmentModule;
 import org.olat.course.assessment.OpenSubDetailsEvent;
 import org.olat.course.nodes.AssessableCourseNode;
 import org.olat.course.nodes.CourseNode;
@@ -91,7 +94,7 @@ public class AssessmentIdentityCourseNodeController extends BasicController impl
 	public AssessmentIdentityCourseNodeController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
 			RepositoryEntry courseEntry, CourseNode courseNode, UserCourseEnvironment coachCourseEnv,
 			Identity assessedIdentity, boolean courseNodeDetails) {
-		super(ureq, wControl);
+		super(ureq, wControl, Util.createPackageTranslator(AssessmentModule.class, ureq.getLocale()));
 		
 		this.stackPanel = stackPanel;
 		this.courseNode = courseNode;
@@ -130,6 +133,11 @@ public class AssessmentIdentityCourseNodeController extends BasicController impl
 			assessmentForm = new AssessmentForm(ureq, wControl, aCourseNode, coachCourseEnv, assessedUserCourseEnvironment);
 			listenTo(assessmentForm);
 			identityAssessmentVC.put("assessmentForm", assessmentForm.getInitialComponent());
+			
+			String nodeLog = aCourseNode.getUserLog(assessedUserCourseEnvironment);
+			if(StringHelper.containsNonWhitespace(nodeLog)) {
+				identityAssessmentVC.contextPut("log", nodeLog);
+			}
 		}
 		putInitialPanel(identityAssessmentVC);
 	}
