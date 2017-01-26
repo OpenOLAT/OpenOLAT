@@ -107,11 +107,16 @@ public class QTI21CorrectionToolController extends BasicController {
 	
 	public void doStartCorrection(UserRequest ureq) {
 		correctionCtrl = new IdentitiesAssessmentTestCorrectionController(ureq, getWindowControl(), courseEnv, asOptions, courseNode);
-		listenTo(correctionCtrl);
-		cmc = new CloseableModalController(getWindowControl(), "close", correctionCtrl.getInitialComponent(),
-				true, translate("correction"));
-		cmc.activate();
-		listenTo(cmc);
+		if(correctionCtrl.getNumberOfAssessedIdentities() == 0) {
+			showWarning("grade.nobody");
+			correctionCtrl = null;
+		} else {
+			listenTo(correctionCtrl);
+			cmc = new CloseableModalController(getWindowControl(), "close", correctionCtrl.getInitialComponent(),
+					true, translate("correction"));
+			cmc.activate();
+			listenTo(cmc);
+		}
 	}
 	
 	private void doUpdateCourseNode(AssessmentTestCorrection corrections, List<AssessmentTestSession> testSessionsToComplete) {
