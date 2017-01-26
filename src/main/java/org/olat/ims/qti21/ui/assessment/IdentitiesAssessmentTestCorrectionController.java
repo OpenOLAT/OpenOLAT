@@ -29,6 +29,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.olat.basesecurity.GroupRoles;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
@@ -42,6 +43,7 @@ import org.olat.core.id.Identity;
 import org.olat.course.nodes.IQTESTCourseNode;
 import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.fileresource.FileResourceManager;
+import org.olat.group.BusinessGroupService;
 import org.olat.ims.qti21.AssessmentItemSession;
 import org.olat.ims.qti21.AssessmentTestHelper;
 import org.olat.ims.qti21.AssessmentTestSession;
@@ -90,6 +92,8 @@ public class IdentitiesAssessmentTestCorrectionController extends BasicControlle
 	
 	@Autowired
 	private QTI21Service qtiService;
+	@Autowired
+	private BusinessGroupService businessGroupService;
 	
 	public IdentitiesAssessmentTestCorrectionController(UserRequest ureq, WindowControl wControl,
 			CourseEnvironment courseEnv, AssessmentToolOptions asOptions, IQTESTCourseNode courseNode) {
@@ -128,6 +132,10 @@ public class IdentitiesAssessmentTestCorrectionController extends BasicControlle
 		
 		overviewCtrl = new IdentitiesAssessmentTestOverviewController(ureq, getWindowControl(), testCorrections);
 		listenTo(overviewCtrl);
+	}
+	
+	public int getNumberOfAssessedIdentities() {
+		return assessedIdentities == null ? 0 : assessedIdentities.size();
 	}
 	
 	public AssessmentTestCorrection getTestCorrections() {
@@ -223,8 +231,17 @@ public class IdentitiesAssessmentTestCorrectionController extends BasicControlle
 	}
 	
 	private Set<Identity> getAssessedIdentities() {
-		List<Identity> identities = asOptions.getIdentities();
-		return new HashSet<>(identities);
+		List<Identity> identities;
+		if(asOptions.getGroup() != null) {
+			identities = businessGroupService.getMembers(asOptions.getGroup(), GroupRoles.participant.name());
+		} else {
+			identities = asOptions.getIdentities();
+		}
+		Set<Identity> uniqueIdentities = new HashSet<>();
+		if(identities != null) {
+			uniqueIdentities.addAll(identities);
+		}
+		return uniqueIdentities;
 	}
 	
 	private Map<Identity,AssessmentTestSession> getLastSessions(Set<Identity> identitiesSet) {

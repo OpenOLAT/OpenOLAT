@@ -47,7 +47,6 @@ import org.olat.core.helpers.Settings;
 import org.olat.core.id.Identity;
 import org.olat.core.id.UserConstants;
 import org.olat.core.util.StringHelper;
-import org.olat.core.util.WebappHelper;
 import org.olat.core.util.mail.ContactList;
 import org.olat.core.util.mail.MailBundle;
 import org.olat.core.util.mail.MailContext;
@@ -360,7 +359,7 @@ public class InvitationEditRightsController extends FormBasicController {
 			MailContext context = new MailContextImpl(binder, null, getWindowControl().getBusinessControl().getAsString()); 
 			MailBundle bundle = new MailBundle();
 			bundle.setContext(context);
-			bundle.setFrom(WebappHelper.getMailConfig("mailReplyTo"));
+			bundle.setFromId(getIdentity());
 			bundle.setContactList(contactList);
 			bundle.setContent(translate("invitation.mail.subject"), translate("invitation.mail.body", bodyArgs));
 
