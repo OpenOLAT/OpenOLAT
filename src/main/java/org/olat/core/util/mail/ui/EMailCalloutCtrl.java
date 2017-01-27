@@ -22,14 +22,13 @@ package org.olat.core.util.mail.ui;
 import java.util.List;
 
 import org.olat.admin.user.UserSearchListProvider;
-import org.olat.basesecurity.BaseSecurityManager;
+import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.basesecurity.events.SingleIdentityChosenEvent;
-import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.Windows;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
@@ -39,10 +38,12 @@ import org.olat.core.gui.control.generic.ajax.autocompletion.FlexiAutoCompleterC
 import org.olat.core.gui.control.generic.ajax.autocompletion.ListProvider;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
+import org.olat.core.util.CodeHelper;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.mail.MailHelper;
 import org.olat.core.util.mail.MailModule;
 import org.olat.user.UserManager;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -52,17 +53,21 @@ import org.olat.user.UserManager;
  */
 public class EMailCalloutCtrl extends FormBasicController {
 
+	private TextElement emailEl;
 	private FlexiAutoCompleterController autocompleterC;
-	private final BaseSecurityModule securityModule;
 	private final boolean allowExternalAddress;
+	
+	@Autowired
+	private UserManager userManager;
+	@Autowired
+	private BaseSecurity securityManager;
+	@Autowired
+	private BaseSecurityModule securityModule;
 	
 	public EMailCalloutCtrl(UserRequest ureq, WindowControl wControl, boolean allowExternalAddress) {
 		super(ureq, wControl, LAYOUT_VERTICAL);
-		setBasePackage(MailModule.class);
-		
+		setBasePackage(MailModule.class);		
 		this.allowExternalAddress = allowExternalAddress;
-		securityModule = CoreSpringFactory.getImpl(BaseSecurityModule.class); 
-		
 		initForm(ureq);
 	}
 
@@ -72,8 +77,7 @@ public class EMailCalloutCtrl extends FormBasicController {
 		Roles roles = ureq.getUserSession().getRoles();
 		boolean autoCompleteAllowed = securityModule.isUserAllowedAutoComplete(roles);
 		boolean isAdministrativeUser = securityModule.isUserAllowedAdminProps(roles);
-		boolean ajax = Windows.getWindows(ureq).getWindowManager().isAjaxEnabled();
-		if (ajax && autoCompleteAllowed) {
+		if (autoCompleteAllowed) {
 			ListProvider provider = new UserSearchListProvider();
 			autocompleterC = new FlexiAutoCompleterController(ureq, getWindowControl(), provider, null, isAdministrativeUser, allowExternalAddress, 60, 3, null, mainForm);
 			autocompleterC.setFormElement(false);
@@ -81,6 +85,8 @@ public class EMailCalloutCtrl extends FormBasicController {
 			
 			FormItem item = autocompleterC.getInitialFormItem();
 			formLayout.add(item);
+		} else if(allowExternalAddress) {
+			emailEl = uifactory.addTextElement("email" + CodeHelper.getRAMUniqueID(), "email", null, 256, "", formLayout);
 		}
 	}
 
@@ -101,11 +107,11 @@ public class EMailCalloutCtrl extends FormBasicController {
 	private void processSelection(UserRequest ureq, String mail) {
 		Identity identity = null;
 		if(StringHelper.isLong(mail)) {
-			identity = BaseSecurityManager.getInstance().loadIdentityByKey(Long.parseLong(mail));
+			identity = securityManager.loadIdentityByKey(Long.parseLong(mail));
 		}
 		if(MailHelper.isValidEmailAddress(mail)) {
 			if(identity == null) {
-				identity = UserManager.getInstance().findIdentityByEmail(mail);
+				identity = userManager.findIdentityByEmail(mail);
 			}
 			if(identity == null) {
 				identity = new EMailIdentity(mail, getLocale());
@@ -118,10 +124,34 @@ public class EMailCalloutCtrl extends FormBasicController {
 	}
 
 	@Override
-	protected void formOK(UserRequest ureq) {
-		//
+	protected boolean validateFormLogic(UserRequest ureq) {
+		boolean allOk = true;
+		
+		if(emailEl != null) {
+			emailEl.clearError();
+			if(!MailHelper.isValidEmailAddress(emailEl.getValue())) {
+				emailEl.setErrorKey("mailhelper.error.single.addressinvalid", null);
+				allOk &= false;
+			}
+		}
+		
+		return allOk & super.validateFormLogic(ureq);
 	}
 
+	@Override
+	protected void formOK(UserRequest ureq) {
+		if(emailEl != null) {
+			String mail = emailEl.getValue();
+			if(MailHelper.isValidEmailAddress(mail)) {
+				Identity identity = userManager.findIdentityByEmail(mail);
+				if(identity == null) {
+					identity = new EMailIdentity(mail, getLocale());
+				}
+				fireEvent(ureq, new SingleIdentityChosenEvent(identity));
+			}
+		}
+	}
+	
 	@Override
 	protected void doDispose() {
 		//

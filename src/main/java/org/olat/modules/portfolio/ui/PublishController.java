@@ -47,7 +47,6 @@ import org.olat.core.gui.control.generic.wizard.StepsMainRunController;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
 import org.olat.core.id.Identity;
 import org.olat.core.util.StringHelper;
-import org.olat.core.util.WebappHelper;
 import org.olat.core.util.mail.ContactList;
 import org.olat.core.util.mail.MailBundle;
 import org.olat.core.util.mail.MailContext;
@@ -404,7 +403,7 @@ public class PublishController extends BasicController implements TooledControll
 			MailContext context = new MailContextImpl(binder, null, getWindowControl().getBusinessControl().getAsString()); 
 			MailBundle bundle = new MailBundle();
 			bundle.setContext(context);
-			bundle.setFrom(WebappHelper.getMailConfig("mailReplyTo"));
+			bundle.setFromId(getIdentity());
 			bundle.setContactList(contactList);
 			bundle.setContent(mailTemplate.getSubjectTemplate(), mailTemplate.getBodyTemplate());
 			MailerResult result = mailManager.sendMessage(bundle);

@@ -1,5 +1,5 @@
 /**
- * <a href="http://www.openolat.org">
+12 * <a href="http://www.openolat.org">
  * OpenOLAT - Online Learning and Training</a><br>
  * <p>
  * Licensed under the Apache License, Version 2.0 (the "License"); <br>
@@ -118,18 +118,19 @@ public class PersistentTaskDAO {
 	public PersistentTask pickTaskForRun(Long taskKey) {
 		PersistentTask task = dbInstance.getCurrentEntityManager()
 				.find(PersistentTask.class, taskKey, LockModeType.PESSIMISTIC_WRITE);
-		
-		if(TaskStatus.newTask.equals(task.getStatus())) {
-			task.setStatus(TaskStatus.inWork);
-			task.setExecutorNode(Integer.toString(WebappHelper.getNodeId()));
-			task.setExecutorBootId(WebappHelper.getBootId());
-			task = dbInstance.getCurrentEntityManager().merge(task);
-		} else if(TaskStatus.inWork.equals(task.getStatus())) {
-			task.setExecutorNode(Integer.toString(WebappHelper.getNodeId()));
-			task.setExecutorBootId(WebappHelper.getBootId());
-			task = dbInstance.getCurrentEntityManager().merge(task);
-		} else if(TaskStatus.edition.equals(task.getStatus())) {
-			task = null;
+		if(task != null) {
+			if(TaskStatus.newTask.equals(task.getStatus())) {
+				task.setStatus(TaskStatus.inWork);
+				task.setExecutorNode(Integer.toString(WebappHelper.getNodeId()));
+				task.setExecutorBootId(WebappHelper.getBootId());
+				task = dbInstance.getCurrentEntityManager().merge(task);
+			} else if(TaskStatus.inWork.equals(task.getStatus())) {
+				task.setExecutorNode(Integer.toString(WebappHelper.getNodeId()));
+				task.setExecutorBootId(WebappHelper.getBootId());
+				task = dbInstance.getCurrentEntityManager().merge(task);
+			} else if(TaskStatus.edition.equals(task.getStatus())) {
+				task = null;
+			}
 		}
 		dbInstance.commit();
 		return task;

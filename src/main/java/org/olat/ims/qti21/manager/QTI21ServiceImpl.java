@@ -885,7 +885,7 @@ public class QTI21ServiceImpl implements QTI21Service, UserDataDeletable, Initia
 
 	@Override
 	public File importFileSubmission(AssessmentTestSession candidateSession, MultipartFileInfos multipartFile) {
-		File submissionDir = this.getSubmissionDirectory(candidateSession);
+		File submissionDir = getSubmissionDirectory(candidateSession);
         
         try {
         	//add the date in the file
@@ -905,7 +905,7 @@ public class QTI21ServiceImpl implements QTI21Service, UserDataDeletable, Initia
 			if(!datedFilename.equals(renamedFile)) {
 				submittedFile = new File(submissionDir, datedFilename);
 			}
-			Files.move(multipartFile.getFile().toPath(), submittedFile.toPath(), StandardCopyOption.ATOMIC_MOVE);
+			Files.move(multipartFile.getFile().toPath(), submittedFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
 			return submittedFile;
 		} catch (IOException e) {
 			log.error("", e);
