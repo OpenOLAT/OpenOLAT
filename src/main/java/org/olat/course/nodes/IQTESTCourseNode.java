@@ -28,14 +28,10 @@ package org.olat.course.nodes;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
-import java.util.Set;
-import java.util.stream.Collectors;
 import java.util.zip.ZipOutputStream;
 
-import org.olat.basesecurity.GroupRoles;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.stack.BreadcrumbPanel;
@@ -59,6 +55,7 @@ import org.olat.core.util.Util;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.course.ICourse;
+import org.olat.course.archiver.ScoreAccountingHelper;
 import org.olat.course.assessment.AssessmentManager;
 import org.olat.course.auditing.UserNodeAuditManager;
 import org.olat.course.editor.CourseEditorEnv;
@@ -79,8 +76,6 @@ import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.course.statistic.StatisticResourceOption;
 import org.olat.course.statistic.StatisticResourceResult;
 import org.olat.fileresource.types.ImsQTI21Resource;
-import org.olat.group.BusinessGroup;
-import org.olat.group.BusinessGroupService;
 import org.olat.ims.qti.QTI12ResultDetailsController;
 import org.olat.ims.qti.QTIResultManager;
 import org.olat.ims.qti.QTIResultSet;
@@ -641,18 +636,12 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements Pe
 		Long courseResourceableId = course.getResourceableId();
 
 		// 1) prepare result export
-		List<BusinessGroup> groups = course.getCourseEnvironment().getCourseGroupManager().getAllBusinessGroups();
-		Set<Identity> ids = new HashSet<>();
-		BusinessGroupService groupService = CoreSpringFactory.getImpl(BusinessGroupService.class);
-		for (BusinessGroup businessGroup : groups) {
-			ids.addAll(groupService.getMembers(businessGroup, GroupRoles.participant.toString()));
-		}
-		List<Identity> identities = ids.stream().collect(Collectors.toList());
+		CourseEnvironment courseEnv = course.getCourseEnvironment();
+		List<Identity> identities = ScoreAccountingHelper.loadUsers(courseEnv, options);
 		//create SyntheticUserRequest with UserSession to avoid Nullpointer in AssessmentResultController
 		UserRequest ureq = new SyntheticUserRequest(identities.get(0), locale, new UserSession());
 		Roles roles = new Roles(false, false, false, false, false, false, false);
 		ureq.getUserSession().setRoles(roles);
-		CourseEnvironment courseEnv = course.getCourseEnvironment();
 		MediaResource resource;
 		
 		try {
