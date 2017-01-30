@@ -52,6 +52,8 @@ import org.olat.course.nodes.CheckListCourseNode;
 import org.olat.course.nodes.DialogCourseNode;
 import org.olat.course.nodes.FOCourseNode;
 import org.olat.course.nodes.GTACourseNode;
+import org.olat.course.nodes.IQTESTCourseNode;
+import org.olat.course.nodes.PFCourseNode;
 import org.olat.course.nodes.ProjectBrokerCourseNode;
 import org.olat.course.nodes.ScormCourseNode;
 import org.olat.course.nodes.TACourseNode;
@@ -78,6 +80,8 @@ public class ArchiverMainController extends MainLayoutBasicController {
 	private static final String CMD_WIKIS = "wikis";
 	private static final String CMD_SCORM = "scorm";
 	private static final String CMD_CHECKLIST = "checklist";
+	private static final String CMD_PARTICIPANTFOLDER = "participantfolder";
+
 	
 	
 	private IArchiverCallback archiverCallback;
@@ -228,6 +232,13 @@ public class ArchiverMainController extends MainLayoutBasicController {
 			gtn.setAltText(translate("menu.dialogs.alt"));
 			root.addChild(gtn);
 		}
+		if (archiverCallback.mayArchiveParticipantFolder()) {
+			gtn = new GenericTreeNode();
+			gtn.setTitle(translate("menu.participantfolder"));
+			gtn.setUserObject(CMD_PARTICIPANTFOLDER);
+			gtn.setAltText("menu.participantfolder.alt");
+			root.addChild(gtn);
+		}
 		if (archiverCallback.mayArchiveWikis()) {
 			gtn = new GenericTreeNode();		
 			gtn.setTitle(translate("menu.wikis"));
@@ -249,6 +260,7 @@ public class ArchiverMainController extends MainLayoutBasicController {
 			gtn.setAltText(translate("menu.checklist.alt"));
 			root.addChild(gtn);
 		}
+		
 		
 		//add extension menues
 		ExtManager extm = ExtManager.getInstance();
@@ -284,7 +296,7 @@ public class ArchiverMainController extends MainLayoutBasicController {
 				contentCtr = new CourseQTIArchiveController(ureq, getWindowControl(), ores);
 				main.setContent(contentCtr.getInitialComponent());
 			} else if (menuCommand.equals(CMD_SCOREACCOUNTING)) {
-				contentCtr = new ScoreAccountingArchiveController(ureq, getWindowControl(), ores);
+				contentCtr = new ScoreAccountingArchiveController(ureq, getWindowControl(), ores, new IQTESTCourseNode());
 				main.setContent(contentCtr.getInitialComponent());
 			} else if (menuCommand.equals(CMD_ARCHIVELOGFILES)) {
 				contentCtr = new CourseLogsArchiveController(ureq, getWindowControl(), ores);
@@ -313,7 +325,11 @@ public class ArchiverMainController extends MainLayoutBasicController {
 			} else if (menuCommand.equals(CMD_CHECKLIST)) {
 				contentCtr = new GenericArchiveController(ureq, getWindowControl(), ores, new CheckListCourseNode());
 				main.setContent(contentCtr.getInitialComponent());
+			} else if (menuCommand.equals(CMD_PARTICIPANTFOLDER)) {
+				contentCtr = new GenericArchiveController(ureq, getWindowControl(), ores, new PFCourseNode());
+				main.setContent(contentCtr.getInitialComponent());
 			}
+			
 			listenTo(contentCtr);
 		}		
 	}

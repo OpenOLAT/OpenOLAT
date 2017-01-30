@@ -23,6 +23,8 @@ import java.io.File;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Date;
+import java.util.Locale;
+import java.util.zip.ZipOutputStream;
 
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.modules.bc.vfs.OlatRootFolderImpl;
@@ -33,6 +35,7 @@ import org.olat.core.gui.components.stack.BreadcrumbPanel;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.tabbable.TabbableController;
+import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.Util;
@@ -43,6 +46,7 @@ import org.olat.course.ICourse;
 import org.olat.course.editor.CourseEditorEnv;
 import org.olat.course.editor.NodeEditController;
 import org.olat.course.editor.StatusDescription;
+import org.olat.course.nodes.pf.manager.FileSystemExport;
 import org.olat.course.nodes.pf.manager.PFManager;
 import org.olat.course.nodes.pf.ui.PFEditController;
 import org.olat.course.nodes.pf.ui.PFPeekviewController;
@@ -274,6 +278,16 @@ public class PFCourseNode extends AbstractAccessableCourseNode {
 		if (root.exists()){
 			FileUtils.deleteDirsAndFiles(root, true, true);		
 		} 
+	}
+	
+	@Override
+	public boolean archiveNodeData(Locale locale, ICourse course, ArchiveOptions options, ZipOutputStream exportStream,
+			String charset) {
+		CourseEnvironment courseEnv = course.getCourseEnvironment();
+		Path sourceFolder = Paths.get(courseEnv.getCourseBaseContainer().getBasefile().getAbsolutePath(),
+				PFManager.FILENAME_PARTICIPANTFOLDER, getIdent()); 
+		Translator translator = Util.createPackageTranslator(PFRunController.class, locale);
+		return FileSystemExport.fsToZip(exportStream, sourceFolder, this, null, translator);		
 	}
 
 	@Override

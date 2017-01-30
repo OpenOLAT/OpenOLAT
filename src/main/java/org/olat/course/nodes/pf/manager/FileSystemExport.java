@@ -19,6 +19,7 @@
  */
 package org.olat.course.nodes.pf.manager;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.FileVisitResult;
@@ -42,6 +43,7 @@ import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.course.nodes.PFCourseNode;
 import org.olat.course.nodes.pf.ui.PFRunController;
@@ -101,14 +103,10 @@ public class FileSystemExport implements MediaResource {
 		try (ZipOutputStream zout = new ZipOutputStream(hres.getOutputStream())) {
 			zout.setLevel(9);
 			
-			String pfolder = translator.translate("participant.folder") + "/";
-			
 			Path relPath = Paths.get(courseEnv.getCourseBaseContainer().getBasefile().getAbsolutePath(),
 					PFManager.FILENAME_PARTICIPANTFOLDER, pfNode.getIdent()); 
 						
-			fsToZip(zout, relPath, pfolder);
-			
-			zout.close();
+			fsToZip(zout, relPath, pfNode, identities, translator);			
 			
 		} catch (IOException e) {
 			log.error("", e);
@@ -120,49 +118,84 @@ public class FileSystemExport implements MediaResource {
 		//
 	}
 	
-	private void fsToZip(ZipOutputStream zout, final Path sourceFolder, final String targetPath) throws IOException {
+	/**
+	 * Exports a given filesystem as Zip-Outputstream
+	 *
+	 * @param zout the Zip-Outputstream
+	 * @param sourceFolder the source folder
+	 * @param pfNode the PFCourseNode
+	 * @param identities
+	 * @param translator
+	 * @throws IOException Signals that an I/O exception has occurred.
+	 */
+	public static boolean fsToZip(ZipOutputStream zout, final Path sourceFolder, PFCourseNode pfNode,
+			List<Identity> identities, Translator translator) {
+		String targetPath = translator.translate("participant.folder") + "/";
 		UserManager userManager = CoreSpringFactory.getImpl(UserManager.class);
-		Set<Long> idKeys = new HashSet<>();
-		for (Identity identity : identities) {
-			idKeys.add(identity.getKey());
+		Set<String> idKeys = new HashSet<>();
+		if (identities != null) {
+			for (Identity identity : identities) {
+				idKeys.add(identity.getKey().toString());
+			}
+		} else {
+			for (File file : sourceFolder.toFile().listFiles()) {
+				if (file.isDirectory()) {
+					idKeys.add(file.getName());
+				}
+			}
 		}
-		Files.walkFileTree(sourceFolder, new SimpleFileVisitor<Path>() {
-			private String containsID (String relPath) {
-				for (Long key : idKeys) {
-					if (relPath.contains(key.toString())) {
-						String exportFolderName = userManager.getUserDisplayName(key).replace(", ", "_") + "_" + key;
-						return relPath.replace(key.toString(), exportFolderName);
+		try {
+			Files.walkFileTree(sourceFolder, new SimpleFileVisitor<Path>() {
+				//contains identity check  and changes identity key to user display name
+				private String containsID (String relPath) {
+					for (String key : idKeys) {
+						//additional check if folder is a identity-key (coming from fs)
+						if (relPath.contains(key) && StringHelper.isLong(key)) {
+							String exportFolderName = userManager.getUserDisplayName(Long.parseLong(key)).replace(", ", "_")
+									+ "_" + key;
+							return relPath.replace(key.toString(), exportFolderName);
+						}
 					}
+					return null;
 				}
-				return null;
-			}
-			
-			private boolean boxesEnabled(String relPath) {
-				return pfNode.hasParticipantBoxConfigured() && relPath.contains(PFManager.FILENAME_DROPBOX) 
-						|| pfNode.hasCoachBoxConfigured() && relPath.contains(PFManager.FILENAME_RETURNBOX);
-			}			
-			
-			@Override
-			public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
-				String relPath = sourceFolder.relativize(file).toString();
-				if ((relPath = containsID(relPath)) != null && boxesEnabled(relPath)) {
-					zout.putNextEntry(new ZipEntry(targetPath + relPath));
-					Files.copy(file, zout);
-					zout.closeEntry();
+				//checks module config and translates folder name
+				private String boxesEnabled(String relPath) {
+					if (pfNode.hasParticipantBoxConfigured() && relPath.contains(PFManager.FILENAME_DROPBOX)) {
+						return relPath.replace(PFManager.FILENAME_DROPBOX, translator.translate("drop.box"));
+					} else if (pfNode.hasCoachBoxConfigured() && relPath.contains(PFManager.FILENAME_RETURNBOX)) {
+						return relPath.replace(PFManager.FILENAME_RETURNBOX, translator.translate("return.box"));
+					} else {
+						return null;
+					}
+				}			
+				
+				@Override
+				public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
+					String relPath = sourceFolder.relativize(file).toString();
+					if ((relPath = containsID(relPath)) != null && (relPath = boxesEnabled(relPath)) != null) {
+						zout.putNextEntry(new ZipEntry(targetPath + relPath));
+						Files.copy(file, zout);
+						zout.closeEntry();
+					}
+					return FileVisitResult.CONTINUE;
 				}
-				return FileVisitResult.CONTINUE;
-			}
 
-			@Override
-			public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) throws IOException {
-				String relPath = sourceFolder.relativize(dir).toString() + "/";
-				if ((relPath = containsID(relPath)) != null && boxesEnabled(relPath)) {
-					zout.putNextEntry(new ZipEntry(targetPath + relPath));
-					zout.closeEntry();
+				@Override
+				public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) throws IOException {
+					String relPath = sourceFolder.relativize(dir).toString() + "/";
+					if ((relPath = containsID(relPath)) != null && (relPath = boxesEnabled(relPath)) != null) {
+						zout.putNextEntry(new ZipEntry(targetPath + relPath));
+						zout.closeEntry();
+					}
+					return FileVisitResult.CONTINUE;
 				}
-				return FileVisitResult.CONTINUE;
-			}
-		});
+			});
+			zout.close();
+			return true;
+		} catch (IOException e) {
+			log.error("Unable to export zip",e);
+			return false;
+		}
 	}
 	
 }
