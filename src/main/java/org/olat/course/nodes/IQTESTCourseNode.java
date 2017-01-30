@@ -28,10 +28,14 @@ package org.olat.course.nodes;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Set;
+import java.util.stream.Collectors;
 import java.util.zip.ZipOutputStream;
 
+import org.olat.basesecurity.GroupRoles;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.stack.BreadcrumbPanel;
@@ -40,7 +44,9 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.messages.MessageUIFactory;
 import org.olat.core.gui.control.generic.tabbable.TabbableController;
+import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.gui.util.SyntheticUserRequest;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Roles;
@@ -48,6 +54,7 @@ import org.olat.core.logging.DBRuntimeException;
 import org.olat.core.logging.KnownIssueException;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.UserSession;
 import org.olat.core.util.Util;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.resource.OresHelper;
@@ -72,6 +79,8 @@ import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.course.statistic.StatisticResourceOption;
 import org.olat.course.statistic.StatisticResourceResult;
 import org.olat.fileresource.types.ImsQTI21Resource;
+import org.olat.group.BusinessGroup;
+import org.olat.group.BusinessGroupService;
 import org.olat.ims.qti.QTI12ResultDetailsController;
 import org.olat.ims.qti.QTIResultManager;
 import org.olat.ims.qti.QTIResultSet;
@@ -82,7 +91,9 @@ import org.olat.ims.qti.fileresource.TestFileResource;
 import org.olat.ims.qti.process.AssessmentInstance;
 import org.olat.ims.qti.process.FilePersister;
 import org.olat.ims.qti.resultexport.QTI12ExportResultsReportController;
+import org.olat.ims.qti.resultexport.QTI12ResultsExportMediaResource;
 import org.olat.ims.qti.resultexport.QTI21ExportResultsReportController;
+import org.olat.ims.qti.resultexport.QTI21ResultsExportMediaResource;
 import org.olat.ims.qti.statistics.QTIStatisticResourceResult;
 import org.olat.ims.qti.statistics.QTIStatisticSearchParams;
 import org.olat.ims.qti.statistics.QTIType;
@@ -629,6 +640,21 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements Pe
 		String repositorySoftKey = (String)getModuleConfiguration().get(IQEditController.CONFIG_KEY_REPOSITORY_SOFTKEY);
 		Long courseResourceableId = course.getResourceableId();
 
+		// 1) prepare result export
+		List<BusinessGroup> groups = course.getCourseEnvironment().getCourseGroupManager().getAllBusinessGroups();
+		Set<Identity> ids = new HashSet<>();
+		BusinessGroupService groupService = CoreSpringFactory.getImpl(BusinessGroupService.class);
+		for (BusinessGroup businessGroup : groups) {
+			ids.addAll(groupService.getMembers(businessGroup, GroupRoles.participant.toString()));
+		}
+		List<Identity> identities = ids.stream().collect(Collectors.toList());
+		//create SyntheticUserRequest with UserSession to avoid Nullpointer in AssessmentResultController
+		UserRequest ureq = new SyntheticUserRequest(identities.get(0), locale, new UserSession());
+		Roles roles = new Roles(false, false, false, false, false, false, false);
+		ureq.getUserSession().setRoles(roles);
+		CourseEnvironment courseEnv = course.getCourseEnvironment();
+		MediaResource resource;
+		
 		try {
 			RepositoryEntry re = RepositoryManager.getInstance().lookupRepositoryEntryBySoftkey(repositorySoftKey, true);
 			boolean onyx = OnyxModule.isOnyxTest(re.getOlatResource());
@@ -640,11 +666,19 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements Pe
 				}
 				return true;
 			} else if(ImsQTI21Resource.TYPE_NAME.equals(re.getOlatResource().getResourceableTypeName())) {
+				// 2a) create export resource
+				QTI21Service qtiService = CoreSpringFactory.getImpl(QTI21Service.class);
+				resource = new QTI21ResultsExportMediaResource(courseEnv, identities, this,
+						qtiService, ureq, exportStream, locale);
+				// excel results				
 				QTI21ArchiveFormat qaf = new QTI21ArchiveFormat(locale, true, true, true);
 				RepositoryEntry courseEntry = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
 				qaf.export(courseEntry, getIdent(), re, exportStream);
 				return true;	
 			} else {
+				// 2b) create export resource
+				resource = new QTI12ResultsExportMediaResource(courseEnv, ureq, identities, this, exportStream);
+				// excel results
 				String shortTitle = getShortTitle();
 				QTIExportManager qem = QTIExportManager.getInstance();
 				QTIExportFormatter qef = new QTIExportFormatterCSVType1(locale, "\t", "\"", "\r\n", false);
