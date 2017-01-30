@@ -25,6 +25,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.velocity.VelocityContext;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.Constants;
 import org.olat.basesecurity.Invitation;
@@ -53,6 +54,7 @@ import org.olat.core.util.mail.MailContext;
 import org.olat.core.util.mail.MailContextImpl;
 import org.olat.core.util.mail.MailHelper;
 import org.olat.core.util.mail.MailManager;
+import org.olat.core.util.mail.MailTemplate;
 import org.olat.core.util.mail.MailerResult;
 import org.olat.modules.portfolio.Binder;
 import org.olat.modules.portfolio.Page;
@@ -80,6 +82,7 @@ public class InvitationEditRightsController extends FormBasicController {
 	
 	private FormLink removeLink;
 	private FormLink selectAll, deselectAll;
+	private TextElement subjectEl, bodyEl;
 	private TextElement firstNameEl, lastNameEl, mailEl;
 	
 	private int counter;
@@ -88,6 +91,7 @@ public class InvitationEditRightsController extends FormBasicController {
 	private Binder binder;
 	private Identity invitee;
 	private Invitation invitation;
+	private MailTemplate mailTemplate;
 	private BinderAccessRightsRow binderRow;
 	
 	@Autowired
@@ -117,6 +121,26 @@ public class InvitationEditRightsController extends FormBasicController {
 				invitation.setLastName(invitee.getUser().getLastName());
 			}
 		}
+		
+		String busLink = getInvitationLink();
+		String sender = userManager.getUserDisplayName(getIdentity());
+		String[] args = new String[] {
+			busLink,								// {0}
+			sender,									// {1}
+			getIdentity().getUser().getFirstName(),	// {2}
+			getIdentity().getUser().getLastName()	// {3}
+		};
+		
+		String subject = translate("invitation.extern.mail.subject", args);
+		String body = translate("invitation.extern.mail.body", args);
+		mailTemplate = new MailTemplate(subject, body, null) {
+			@Override
+			public void putVariablesInMailContext(VelocityContext vContext, Identity recipient) {
+				//
+			}
+		};
+		
+		
 		initForm(ureq);
 		loadModel();
 	}
@@ -166,6 +190,14 @@ public class InvitationEditRightsController extends FormBasicController {
 		StaticTextElement linkEl = uifactory.addStaticTextElement("invitation.link" , link, inviteeCont);
 		linkEl.setElementCssClass("o_sel_pf_invitation_url");
 		linkEl.setLabel("invitation.link", null);
+		
+		subjectEl = uifactory.addTextElement("subjectElem", "mail.subject", 128, mailTemplate.getSubjectTemplate(), inviteeCont);
+		subjectEl.setDisplaySize(60);
+		subjectEl.setMandatory(true);
+	
+		bodyEl = uifactory.addTextAreaElement("bodyElem", "mail.body", -1, 15, 60, true, mailTemplate.getBodyTemplate(), inviteeCont);
+		bodyEl.setHelpUrlForManualPage("E-Mail");
+		bodyEl.setMandatory(true);
 		
 		//binder
 		MultipleSelectionElement accessEl = uifactory.addCheckboxesHorizontal("access-" + (counter++), null, formLayout, theKeys, theValues);
@@ -347,21 +379,18 @@ public class InvitationEditRightsController extends FormBasicController {
 		String inviteeEmail = invitee.getUser().getProperty(UserConstants.EMAIL, getLocale());
 		ContactList contactList = new ContactList(inviteeEmail);
 		contactList.add(inviteeEmail);
-		String busLink = getInvitationLink();
 
 		boolean success = false;
 		try {
-			String first = getIdentity().getUser().getProperty(UserConstants.FIRSTNAME, null);
-			String last = getIdentity().getUser().getProperty(UserConstants.LASTNAME, null);
-			String sender = first + " " + last;
-			String[] bodyArgs = new String[]{busLink, sender};
+			mailTemplate.setSubjectTemplate(subjectEl.getValue());
+			mailTemplate.setBodyTemplate(bodyEl.getValue());
 
 			MailContext context = new MailContextImpl(binder, null, getWindowControl().getBusinessControl().getAsString()); 
 			MailBundle bundle = new MailBundle();
 			bundle.setContext(context);
 			bundle.setFromId(getIdentity());
 			bundle.setContactList(contactList);
-			bundle.setContent(translate("invitation.mail.subject"), translate("invitation.mail.body", bodyArgs));
+			bundle.setContent(subjectEl.getValue(), bodyEl.getValue());
 
 			MailerResult result = mailManager.sendExternMessage(bundle, null, true);
 			success = result.isSuccessful();
