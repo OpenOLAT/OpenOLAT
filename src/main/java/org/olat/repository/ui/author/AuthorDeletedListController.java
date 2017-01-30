@@ -121,6 +121,11 @@ public class AuthorDeletedListController extends AuthorListController {
 				reloadRows();
 			}
 			cleanUp();
+		} else if(dToolsCtrl == source) {
+			if(event == Event.DONE_EVENT) {
+				toolsCalloutCtrl.deactivate();
+				cleanUp();
+			}
 		}
 		super.event(ureq, source, event);
 	}
