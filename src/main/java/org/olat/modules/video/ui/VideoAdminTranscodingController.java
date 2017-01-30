@@ -41,12 +41,12 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlex
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.modules.video.VideoManager;
-import org.olat.modules.video.VideoMetadata;
 import org.olat.modules.video.VideoModule;
 import org.olat.modules.video.VideoTranscoding;
+import org.olat.modules.video.model.TranscodingCount;
+import org.olat.modules.video.model.VideoMetaImpl;
 import org.olat.modules.video.ui.TranscodingTableModel.TranscodingCols;
 import org.olat.resource.OLATResource;
-import org.olat.resource.OLATResourceManager;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -58,15 +58,11 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class VideoAdminTranscodingController extends FormBasicController {
 	
-	private Map<Integer,Set<OLATResource>> availableTranscodings;
-	private List<OLATResource> olatresources;
 	private TranscodingTableModel tableModel;
 	private FlexiTableElement transcodingTable;
 	
-	private List<TranscodingRow> resolutions;
+	private Map<OLATResource,Integer> nativeResolutions;
 	
-	@Autowired
-	private OLATResourceManager olatresourceManager;
 	@Autowired 
 	private VideoManager videoManager;
 	@Autowired
@@ -74,8 +70,13 @@ public class VideoAdminTranscodingController extends FormBasicController {
 
 	public VideoAdminTranscodingController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl, "transcoding_admin");
-		resolutions = new ArrayList<>();
-		generateStatusOfTranscodings();
+		nativeResolutions = new HashMap<>();
+		
+		List<VideoMetaImpl> olatresources = videoManager.getAllVideoResourcesMetadata();
+		//cache native resolutions
+		for (VideoMetaImpl videoResource : olatresources) {
+			nativeResolutions.put(videoResource.getVideoResource(), videoResource.getHeight());
+		}
 
 		initForm(ureq);
 	}
@@ -101,7 +102,7 @@ public class VideoAdminTranscodingController extends FormBasicController {
 		transcodingTable.setCustomizeColumns(false);
 		transcodingTable.setNumOfRowsEnabled(false);
 				
-		setChecks();
+		loadTable();
 	}
 	
 	private boolean mayTranscode(int resolution){
@@ -116,35 +117,37 @@ public class VideoAdminTranscodingController extends FormBasicController {
 		}
 		return false;
 	}
-	
-	private void loadTable(){
-		//Hardcoded same as VideoAdminSetController
-		int[] resolution = {2160, 1080, 720, 480, 360, 240};
-		//FIXME:FK fetch using one single SQL query
-		for (int i = 0; i < resolution.length; i++) {
-			int sizeOfTranscodings = availableTranscodings.get(resolution[i]).size();
+
+	private void loadTable() {
+		List<TranscodingRow> resolutions = new ArrayList<>();
+		// Hardcoded same as VideoAdminSetController
+		int[] fixresolution = { 2160, 1080, 720, 480, 360, 240 };
+		Map<Integer, Integer> resCount = new HashMap<>();
+		for (TranscodingCount transcodingCount : videoManager.getAllVideoTranscodingsCount()) {
+			resCount.put(transcodingCount.getResolution(), transcodingCount.getCount());
+		}
+		for (int i = 0; i < fixresolution.length; i++) {
 			int counter = 0;
-			for (OLATResource videoResource : olatresources) {
-				VideoMetadata videoMetadata = videoManager.readVideoMetadataFile(videoResource);
-				if (videoMetadata != null && videoMetadata.getHeight() >= resolution[i]) counter++;
+			for (OLATResource videoResource : nativeResolutions.keySet()) {
+				if (nativeResolutions.get(videoResource) >= fixresolution[i]) counter++;
 			}
-			resolutions.add(new TranscodingRow(resolution[i], sizeOfTranscodings, counter, mayTranscode(resolution[i])));
-		}		
-		if (resolutions != null) tableModel.setObjects(resolutions);
-		transcodingTable.reset(true, true, true);	
+			int rescount = resCount.get(fixresolution[i]) != null ? resCount.get(fixresolution[i]) : 0;
+			resolutions.add(new TranscodingRow(fixresolution[i], rescount, counter, mayTranscode(fixresolution[i])));
+		}
+		if (resolutions != null){
+			tableModel.setObjects(resolutions);
+		}
+		transcodingTable.reset(true, true, true);
 	}
+	
 	
 	/**
 	 * Update Table Content of all available Transcodings
 	 */
-	public void setChecks(){	
-		generateStatusOfTranscodings();
-		resolutions.clear();
+	public void reloadTable(){	
 		loadTable();
 	}
 
-
-	
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(source == transcodingTable) {
@@ -160,65 +163,40 @@ public class VideoAdminTranscodingController extends FormBasicController {
 				} 
 			}
 		}
-		
-		//refresh checks
-		setChecks();
+		reloadTable();
 	}
 	
-	private void generateStatusOfTranscodings() {
-		//FIXME:FK fetch using one single SQL query
-		availableTranscodings = new HashMap<>();
-		availableTranscodings.put(240, new HashSet<OLATResource>());
-		availableTranscodings.put(360, new HashSet<OLATResource>());
-		availableTranscodings.put(480, new HashSet<OLATResource>());
-		availableTranscodings.put(720, new HashSet<OLATResource>());
-		availableTranscodings.put(1080, new HashSet<OLATResource>());
-		availableTranscodings.put(2160, new HashSet<OLATResource>());
-		//determine resource type of interest
-		List<String> types = new ArrayList<>();
-		types.add("FileResource.VIDEO");
-		//retrieve all resources of type video
-		olatresources = olatresourceManager.findResourceByTypes(types);
-		//go through all video resources
-		for (OLATResource videoResource : olatresources) {
-			//retrieve all transcodings for each video resource
-			List<VideoTranscoding> transcodings = videoManager.getVideoTranscodings(videoResource);
-			//map resource IDs to resolution
-			for (VideoTranscoding videoTranscoding : transcodings) {
-				if (videoTranscoding != null) {
-					Set<OLATResource> oneResolution = availableTranscodings.get(videoTranscoding.getResolution());
-					if (oneResolution != null) {
-						oneResolution.add(videoTranscoding.getVideoResource());						
-					}
+	
+	// state orders for inexistent transcodings
+	private void queueCreateTranscoding(TranscodingRow source) {
+		List<VideoTranscoding> allVideoTranscodings = videoManager.getOneVideoResolution(source.getResolution());
+		Map<OLATResource, Set<Integer>> availableTranscodings = new HashMap<>();
+		for (VideoTranscoding videoTranscoding : allVideoTranscodings) {
+			if (availableTranscodings.containsKey(videoTranscoding.getVideoResource())) {
+				availableTranscodings.get(videoTranscoding.getVideoResource()).add(videoTranscoding.getResolution());
+			} else {
+				Set<Integer> availableresolutions = new HashSet<>();
+				availableresolutions.add(videoTranscoding.getResolution());
+				availableTranscodings.put(videoTranscoding.getVideoResource(), availableresolutions);
+			}
+		}
+		for (OLATResource videoResource : nativeResolutions.keySet()) {
+			if (availableTranscodings.get(videoResource) == null ||
+					!availableTranscodings.get(videoResource).contains(source.getResolution())) {
+				if (nativeResolutions.get(videoResource) >= source.getResolution()) {
+					videoManager.createTranscoding(videoResource, source.getResolution(), "mp4");
 				}
 			}
 		}
 	}
 	
-	
-	//state orders for inexistent transcodings
-	private void queueCreateTranscoding(TranscodingRow source){
-		for (OLATResource videoResource : olatresources) {
-			if (!availableTranscodings.get(source.getResolution()).contains(videoResource)){
-				VideoMetadata videoMetadata = videoManager.readVideoMetadataFile(videoResource);
-				if (videoMetadata != null && videoMetadata.getHeight() >= source.getResolution()) {					
-					videoManager.createTranscoding(videoResource, source.getResolution(), "mp4");				
-				}
-			}
-		}
-	}
 	
 	//go through all and delete selection
 	private void queueDeleteTranscoding(TranscodingRow source) {
-		for (OLATResource videoResource : olatresources) {
-			if (availableTranscodings.get(source.getResolution()).contains(videoResource)) {
-				List<VideoTranscoding> videoTranscodings = videoManager.getVideoTranscodings(videoResource);
-
-				for (VideoTranscoding videoTranscoding : videoTranscodings) {
-					if (videoTranscoding.getResolution() == source.getResolution()) {
-						videoManager.deleteVideoTranscoding(videoTranscoding);
-					}
-				}
+		List<VideoTranscoding> allVideoTranscodings = videoManager.getOneVideoResolution(source.getResolution());
+		for (VideoTranscoding videoTranscoding : allVideoTranscodings) {
+			if (videoTranscoding.getResolution() == source.getResolution()) {
+				videoManager.deleteVideoTranscoding(videoTranscoding);
 			}
 		}
 	}

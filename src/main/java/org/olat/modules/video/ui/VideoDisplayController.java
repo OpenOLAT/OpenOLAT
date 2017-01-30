@@ -22,6 +22,7 @@ package org.olat.modules.video.ui;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.olat.core.commons.services.commentAndRating.CommentAndRatingDefaultSecurityCallback;
 import org.olat.core.commons.services.commentAndRating.CommentAndRatingSecurityCallback;
@@ -45,7 +46,7 @@ import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSContainerMapper;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.modules.video.VideoManager;
-import org.olat.modules.video.VideoMetadata;
+import org.olat.modules.video.VideoMeta;
 import org.olat.modules.video.VideoModule;
 import org.olat.modules.video.VideoTranscoding;
 import org.olat.modules.video.manager.VideoMediaMapper;
@@ -115,7 +116,7 @@ public class VideoDisplayController extends BasicController {
 				
 		VFSLeaf video = videoManager.getMasterVideoFile(entry.getOlatResource());
 		if(video != null) {
-			VideoMetadata videoMetadata = videoManager.readVideoMetadataFile(entry.getOlatResource());
+			VideoMeta videoMetadata = videoManager.getVideoMetadata(entry.getOlatResource());
 			if(autoWidth){
 				mainVC.contextPut("height", 480);
 				mainVC.contextPut("width", "100%");
@@ -230,8 +231,8 @@ public class VideoDisplayController extends BasicController {
 			mainVC.contextPut("usePoster", Boolean.valueOf(poster != null && poster.getSize() > 0));
 			
 			// Load the track from config
-			HashMap<String, String> trackfiles = new HashMap<String, String>();
-			HashMap<String, VFSLeaf> configTracks = videoManager.getAllTracks(entry.getOlatResource());
+			Map<String, String> trackfiles = new HashMap<String, String>();
+			Map<String, VFSLeaf> configTracks = videoManager.getAllTracks(entry.getOlatResource());
 			for (HashMap.Entry<String, VFSLeaf> track : configTracks.entrySet()) {
 				trackfiles.put(track.getKey(), track.getValue().getName());
 			}

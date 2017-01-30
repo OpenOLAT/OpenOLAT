@@ -90,11 +90,11 @@ public class VideoTranscodingDAOTest extends OlatTestCase {
 			videoTranscodingDao.deleteVideoTranscoding(vTranscoding1);
 			dbInstance.commitAndCloseSession();
 			List<VideoTranscoding> results = videoTranscodingDao.getVideoTranscodings(resource);
-			Assert.assertTrue(results.size() == 3);
-			// delte all transcodings of resource
+			Assert.assertEquals(3,results.size());
+			// delete all transcodings of resource
 			videoTranscodingDao.deleteVideoTranscodings(resource);
 			dbInstance.commitAndCloseSession();
 			results = videoTranscodingDao.getVideoTranscodings(resource);
-			Assert.assertTrue(results.size() == 0);
+			Assert.assertEquals(0,results.size());
 	}
 }

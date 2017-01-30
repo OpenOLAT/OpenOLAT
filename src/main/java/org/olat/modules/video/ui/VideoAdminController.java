@@ -107,7 +107,7 @@ public class VideoAdminController extends BasicController  {
 			listenTo(adminTranscodingController);
 		}
 		mainVC.put("segmentCmp", adminTranscodingController.getInitialComponent());
-		adminTranscodingController.setChecks();
+		adminTranscodingController.reloadTable();
 	}
 
 	@Override

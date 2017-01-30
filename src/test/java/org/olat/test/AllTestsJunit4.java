@@ -170,6 +170,7 @@ import org.junit.runners.Suite;
 	org.olat.modules.reminder.manager.ReminderDAOTest.class,
 	org.olat.modules.reminder.manager.ReminderRuleEngineTest.class,
 	org.olat.modules.video.manager.VideoTranscodingDAOTest.class,
+	org.olat.modules.video.manager.VideoMetadataDAOTest.class,
 	org.olat.properties.PropertyTest.class,
 	org.olat.search.service.document.file.FileDocumentFactoryTest.class,
 	org.olat.search.service.indexer.repository.course.SPCourseNodeIndexerTest.class,

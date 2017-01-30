@@ -19,13 +19,16 @@
  */
 package org.olat.modules.video.manager;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
 import javax.persistence.EntityNotFoundException;
 
 import org.olat.core.commons.persistence.DB;
+import org.olat.modules.video.VideoManager;
 import org.olat.modules.video.VideoTranscoding;
+import org.olat.modules.video.model.TranscodingCount;
 import org.olat.modules.video.model.VideoTranscodingImpl;
 import org.olat.resource.OLATResource;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -44,6 +47,8 @@ public class VideoTranscodingDAO {
 
 	@Autowired
 	private DB dbInstance;
+	@Autowired 
+	private VideoManager videoManager;
 
 	/**
 	 * Factory method to create and persist new video transcoding objects for a
@@ -117,8 +122,65 @@ public class VideoTranscodingDAO {
 			.append(" inner join fetch trans.videoResource as res")
 			.append(" where res.key=:resourceKey")
 			.append(" order by trans.resolution desc");
-		return dbInstance.getCurrentEntityManager().createQuery(sb.toString(), VideoTranscoding.class)
-				.setParameter("resourceKey", videoResource.getKey()).getResultList();
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), VideoTranscoding.class)
+				.setParameter("resourceKey", videoResource.getKey())
+				.getResultList();
+	}
+	
+	/**
+	 * Gets all video transcodings.
+	 *
+	 * @return all video transcodings
+	 */
+	List<VideoTranscoding> getAllVideoTranscodings() {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select trans from videotranscoding as trans")
+			.append(" order by trans.resolution desc");
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), VideoTranscoding.class)
+				.getResultList();
+	}
+	
+	/**
+	 * Gets all transcodings of one video resolution.
+	 *
+	 * @param resolution
+	 * @return all videos of one resolution
+	 */
+	List<VideoTranscoding> getOneVideoResolution (int resolution) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select trans from videotranscoding as trans")
+			.append(" where trans.resolution=:resolution")
+			.append(" order by trans.lastModified desc");
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), VideoTranscoding.class)
+				.setParameter("resolution", resolution)
+				.getResultList();
+	}
+	
+	/**
+	 * Gets the all video transcodings count.
+	 *
+	 * @return the all video transcodings count
+	 */
+	List<TranscodingCount> getAllVideoTranscodingsCount() {
+		StringBuilder sb = new StringBuilder();
+		//[0] count of a distinct [1] resolution
+		sb.append("select count(trans.key), trans.resolution from videotranscoding as trans")
+		  .append(" group by trans.resolution");
+		
+		List<Object[]> rawData = dbInstance.getCurrentEntityManager()
+			.createQuery(sb.toString(), Object[].class)
+			.getResultList();
+		
+		List<TranscodingCount>  allTranscodings = new ArrayList<>();
+		for (Object[] data : rawData) {
+			Long count = (Long) data[0];
+			Integer resolution = (Integer) data[1];
+			allTranscodings.add(new TranscodingCount(count, resolution));
+		}
+		return allTranscodings;
 	}
 
 	/**

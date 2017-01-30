@@ -116,14 +116,15 @@ public class VideoHandler extends FileHandler {
 		OLATResource resource = OLATResourceManager.getInstance().createAndPersistOLATResourceInstance(ores);
 		RepositoryEntry repoEntry = CoreSpringFactory.getImpl(RepositoryService.class).create(initialAuthor, null, "",
 				displayname, description, resource, RepositoryEntry.ACC_OWNERS);
-		DBFactory.getInstance().commit();		
 		
 		if(fileName == null) {
 			fileName = file.getName();
 		}
 		fileName = fileName.toLowerCase();
-		VFSLeaf importFile = new LocalFileImpl(file);
+		VFSLeaf importFile = new LocalFileImpl(file);	
+		long filesize = importFile.getSize();
 		VideoManager videoManager = CoreSpringFactory.getImpl(VideoManager.class);
+
 		if (fileName.endsWith(".mp4")|| fileName.endsWith(".mov")) {
 			// 2a) import video from raw mp4 master video file
 			videoManager.importFromMasterFile(repoEntry, importFile);
@@ -131,7 +132,12 @@ public class VideoHandler extends FileHandler {
 		} else if (fileName.endsWith(".zip")) {
 			// 2b) import video from archive from another OpenOLAT instance
 			videoManager.importFromExportArchive(repoEntry, importFile);			
-		}
+		}	
+		// 3) Persist Meta data
+		videoManager.createVideoMetadata(repoEntry, filesize, fileName);
+		DBFactory.getInstance().commit();	
+		// 4) start transcoding process if enabled
+		videoManager.startTranscodingProcessIfEnabled(resource);
 		
 		return repoEntry;
 	}
@@ -231,6 +237,8 @@ public class VideoHandler extends FileHandler {
 			// remove transcodings
 			VideoManager videoManager = CoreSpringFactory.getImpl(VideoManager.class);
 			success = videoManager.deleteVideoTranscodings(entry.getOlatResource());
+			//remove metadata
+			success &= videoManager.deleteVideoMetadata(entry.getOlatResource());
 		}
 		return success;
 	}

@@ -45,7 +45,7 @@ import org.olat.core.logging.Tracing;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.modules.video.VideoManager;
-import org.olat.modules.video.VideoMetadata;
+import org.olat.modules.video.VideoMeta;
 import org.olat.modules.video.VideoModule;
 import org.olat.modules.video.VideoTranscoding;
 import org.olat.modules.video.manager.VideoMediaMapper;
@@ -103,7 +103,7 @@ public class VideoQualityTableFormController extends FormBasicController {
 	
 	private void initTable(){
 		List<QualityTableRow> rows = new ArrayList<>();
-		VideoMetadata videoMetadata = videoManager.readVideoMetadataFile(videoResource);
+		VideoMeta videoMetadata = videoManager.getVideoMetadata(videoResource);
 		// Add master video file
 		FormLink previewMasterLink = uifactory.addFormLink("view", "viewQuality", "quality.master", "quality.master", flc, Link.LINK);
 		rows.add(new QualityTableRow(previewMasterLink, videoMetadata.getWidth() +"x"+ videoMetadata.getHeight(), Formatter.formatBytes(videoManager.getVideoFile(videoResource).length()), "mp4",null));
@@ -200,7 +200,8 @@ public class VideoQualityTableFormController extends FormBasicController {
 			VideoTranscoding videoTranscoding = (VideoTranscoding) link.getUserObject();
 			if (videoTranscoding == null) {
 				// this is the master video
-				VideoMetadata videoMetadata = videoManager.readVideoMetadataFile(videoResource);
+//				VideoMetadata videoMetadata = videoManager.readVideoMetadataFile(videoResource);
+				VideoMeta videoMetadata = videoManager.getVideoMetadata(videoResource);
 				previewVC.contextPut("width", videoMetadata.getWidth());
 				previewVC.contextPut("height", videoMetadata.getHeight());
 				previewVC.contextPut("filename", "video.mp4");

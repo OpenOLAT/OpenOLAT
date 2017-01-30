@@ -1341,6 +1341,19 @@ create table o_vid_transcoding (
    primary key (id)
 );
 
+create table o_vid_metadata (
+  id number(20) GENERATED ALWAYS AS IDENTITY,
+  creationdate date not null,
+  lastmodified date not null,
+  vid_width number(20) default null,
+  vid_height number(20) default null,
+  vid_size number(20) default null,
+  vid_format varchar2(32 char) default null,
+  vid_length varchar2(32 char) default null,
+  fk_resource_id number(20) not null,
+  primary key (id)
+);
+
 -- calendar
 create table o_cal_use_config (
    id number(20) not null,
@@ -2668,6 +2681,8 @@ alter table o_vid_transcoding add constraint fk_resource_id_idx foreign key (fk_
 create index idx_vid_trans_resource_idx on o_vid_transcoding(fk_resource_id);
 create index vid_status_trans_idx on o_vid_transcoding(vid_status);
 create index vid_transcoder_trans_idx on o_vid_transcoding(vid_transcoder);
+alter table o_vid_metadata add constraint vid_meta_rsrc_idx foreign key (fk_resource_id) references o_olatresource (resource_id);
+create index idx_vid_meta_rsrc_idx on o_vid_metadata(fk_resource_id);
 
 -- calendar
 alter table o_cal_use_config add constraint cal_u_conf_to_ident_idx foreign key (fk_identity) references o_bs_identity (id);

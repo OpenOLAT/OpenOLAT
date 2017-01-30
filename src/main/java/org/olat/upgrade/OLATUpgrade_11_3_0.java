@@ -19,11 +19,25 @@
  */
 package org.olat.upgrade;
 
-import java.util.ArrayList;
+import java.io.File;
+import java.util.Date;
 import java.util.List;
+import java.util.Map.Entry;
 
+import org.apache.commons.io.FilenameUtils;
 import org.olat.core.commons.persistence.DB;
+import org.olat.core.commons.services.image.Size;
+import org.olat.core.util.vfs.VFSContainer;
+import org.olat.core.util.vfs.VFSItem;
+import org.olat.core.util.vfs.VFSLeaf;
+import org.olat.core.util.vfs.VFSManager;
+import org.olat.fileresource.types.VideoFileResource;
+import org.olat.modules.video.VideoManager;
+import org.olat.modules.video.VideoMetadata;
+import org.olat.modules.video.manager.VideoManagerImpl;
+import org.olat.modules.video.model.VideoMetaImpl;
 import org.olat.repository.RepositoryEntry;
+import org.olat.resource.OLATResource;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -39,7 +53,9 @@ public class OLATUpgrade_11_3_0 extends OLATUpgrade {
 	
 	@Autowired
 	private DB dbInstance;
-
+	@Autowired 
+	private VideoManager videoManager;
+	
 	public OLATUpgrade_11_3_0() {
 		super();
 	}
@@ -81,11 +97,11 @@ public class OLATUpgrade_11_3_0 extends OLATUpgrade {
 		boolean allOk = true;
 		if (!uhd.getBooleanDataValue(VIDEO_XML)) {
 			
-			List<RepositoryEntry> entries = new ArrayList<>();
+			List<RepositoryEntry> entries = videoManager.getAllVideoRepoEntries(VideoFileResource.TYPE_NAME);
 			for(RepositoryEntry entry:entries) {
 				if(entry == null) continue;
 
-				processVideoResource(entry);
+				allOk &= processVideoResource(entry);
 				dbInstance.commitAndCloseSession();
 			}
 			
@@ -95,7 +111,46 @@ public class OLATUpgrade_11_3_0 extends OLATUpgrade {
 		return allOk;
 	}
 	
-	private void processVideoResource(RepositoryEntry entry) {
-		//TODO 
+	private boolean processVideoResource(RepositoryEntry entry) {
+		try {
+			OLATResource videoResource = entry.getOlatResource();
+			// update trackfiles on filesystem
+			VFSContainer masterContainer = videoManager.getMasterContainer(videoResource);
+			VideoMetadata metafromXML = videoManager.readVideoMetadataFile(videoResource);
+			for (Entry<String, String> track : metafromXML.getAllTracks().entrySet()) {
+				VFSItem item = masterContainer.resolve(track.getValue());
+				if (item != null && item instanceof VFSLeaf) {
+					String path = VideoManagerImpl.TRACK + track.getKey() + VideoManagerImpl.DOT
+							+ FilenameUtils.getExtension(track.getValue());
+					//check if modified track file already exists
+					if (masterContainer.resolve(path) == null) {
+						VFSLeaf target = masterContainer.createChildLeaf(path);
+						VFSManager.copyContent((VFSLeaf) item, target);
+					}
+				}
+			}
+			// create entries on database
+			File videoFile = videoManager.getVideoFile(videoResource);
+			String fileName = videoFile.getName();
+			long size = videoFile.length();
+			String format = FilenameUtils.getExtension(fileName);
+			if (videoManager.getVideoMetadata(videoResource) == null) {
+				VideoMetaImpl entity = new VideoMetaImpl();
+				entity.setVideoResource(videoResource);
+				entity.setFormat(format);
+				entity.setCreationDate(new Date());
+				entity.setLastModified(new Date());
+				Size resolution = videoManager.getVideoResolutionFromOLATResource(videoResource);
+				entity.setHeight(resolution.getHeight());
+				entity.setWidth(resolution.getWidth());
+				entity.setSize(size);
+				entity.setLength(entry.getExpenditureOfWork());
+				dbInstance.getCurrentEntityManager().persist(entity);
+			}
+			return true;
+		} catch (Exception e) {
+			log.error("Update Metadata failed",e);
+			return false;
+		}
 	}
 }

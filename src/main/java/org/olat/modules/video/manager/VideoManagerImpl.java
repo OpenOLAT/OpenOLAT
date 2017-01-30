@@ -36,7 +36,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map.Entry;
+import java.util.Map;
 import java.util.TimeZone;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -45,6 +45,7 @@ import java.util.zip.ZipFile;
 
 import javax.imageio.ImageIO;
 
+import org.apache.commons.io.FilenameUtils;
 import org.jcodec.api.FrameGrab;
 import org.jcodec.common.FileChannelWrapper;
 import org.olat.core.commons.modules.bc.vfs.OlatRootFolderImpl;
@@ -66,13 +67,17 @@ import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSManager;
 import org.olat.core.util.vfs.VFSStatus;
+import org.olat.core.util.vfs.filters.VFSItemSuffixFilter;
 import org.olat.core.util.xml.XStreamHelper;
 import org.olat.fileresource.FileResourceManager;
 import org.olat.fileresource.types.ResourceEvaluation;
 import org.olat.modules.video.VideoManager;
+import org.olat.modules.video.VideoMeta;
 import org.olat.modules.video.VideoMetadata;
 import org.olat.modules.video.VideoModule;
 import org.olat.modules.video.VideoTranscoding;
+import org.olat.modules.video.model.TranscodingCount;
+import org.olat.modules.video.model.VideoMetaImpl;
 import org.olat.modules.video.model.VideoMetadataImpl;
 import org.olat.modules.video.ui.VideoChapterTableRow;
 import org.olat.repository.RepositoryEntry;
@@ -99,11 +104,14 @@ public class VideoManagerImpl implements VideoManager {
 	protected static final String DIRNAME_REPOENTRY = "repoentry";
 	public static final String FILETYPE_MP4 = "mp4";
 	private static final String FILETYPE_JPG = "jpg";
+	private static final String FILETYPE_SRT = "srt";
 	private static final String FILENAME_POSTER_JPG = "poster.jpg";
 	private static final String FILENAME_VIDEO_MP4 = "video.mp4";
 	private static final String FILENAME_CHAPTERS_VTT = "chapters.vtt";
 	private static final String FILENAME_VIDEO_METADATA_XML = "video_metadata.xml";
 	private static final String DIRNAME_MASTER = "master";
+	public static final String TRACK = "track_";
+	public static final String DOT = "." ;
 	
 	private static final SimpleDateFormat displayDateFormat = new SimpleDateFormat("HH:mm:ss");
 	private static final SimpleDateFormat vttDateFormat = new SimpleDateFormat("HH:mm:ss.SSS");
@@ -116,6 +124,8 @@ public class VideoManagerImpl implements VideoManager {
 	private RepositoryManager repositoryManager;
 	@Autowired
 	private VideoTranscodingDAO videoTranscodingDao;
+	@Autowired
+	private VideoMetadataDAO videoMetadataDao;
 	@Autowired
 	private Scheduler scheduler;
 	@Autowired
@@ -156,7 +166,7 @@ public class VideoManagerImpl implements VideoManager {
 	 * @param posterframe the newPosterFile
 	 */
 	public void setPosterframeResizeUploadfile(OLATResource videoResource, VFSLeaf newPosterFile) {
-		VideoMetadata videoMetadata = readVideoMetadataFile(videoResource);
+		VideoMeta videoMetadata = getVideoMetadata(videoResource);
 		Size posterRes = imageHelper.getSize(newPosterFile, FILETYPE_JPG);
 		// file size needs to be bigger than target resolution, otherwise use image as it comes
 		if (posterRes != null 
@@ -180,23 +190,23 @@ public class VideoManagerImpl implements VideoManager {
 		}
 	}
 
-	/**
-	 * add a subtitle-track to the videoresource
-	 */
-	@Override
-	public void addTrack(OLATResource videoResource, String lang, VFSLeaf trackFile){
-		VideoMetadata metaData = readVideoMetadataFile(videoResource);
-		metaData.addTrack(lang, trackFile.getName());
-		writeVideoMetadataFile(metaData, videoResource);
-	}
+//	/**
+//	 * add a subtitle-track to the videoresource
+//	 */
+//	@Override
+//	public void addTrack(OLATResource videoResource, String lang, VFSLeaf trackFile){
+//		VideoMetadata metaData = readVideoMetadataFile(videoResource);
+//		metaData.addTrack(lang, trackFile.getName());
+//		writeVideoMetadataFile(metaData, videoResource);
+//	}
 
 	/**
 	 * get a specific subtitle-track of the videoresource
 	 */
 	@Override
 	public VFSLeaf getTrack(OLATResource videoResource, String lang) {
-		VideoMetadata metaData = readVideoMetadataFile(videoResource);
-		return resolveFromMasterContainer(videoResource, metaData.getTrack(lang));
+		String path = TRACK + lang + DOT + FILETYPE_SRT;
+		return resolveFromMasterContainer(videoResource, path);
 	}
 	
 	/**
@@ -204,22 +214,31 @@ public class VideoManagerImpl implements VideoManager {
 	 */
 	@Override
 	public void removeTrack(OLATResource videoResource, String lang){
-		VideoMetadata metaData = readVideoMetadataFile(videoResource);
-		resolveFromMasterContainer(videoResource, metaData.getTrack(lang)).delete();
-		metaData.removeTrack(lang);
-		writeVideoMetadataFile(metaData, videoResource);
+		VFSContainer vfsContainer = getMasterContainer(videoResource);
+		for (VFSItem item : vfsContainer.getItems(new VFSItemSuffixFilter(new String[]{FILETYPE_SRT}))) {
+			if (item.getName().contains(lang)) {
+				item.delete();
+			}
+		}
 	}
 	
 	/**
 	 * get all tracks saved in the video metadata as map
 	 */
 	@Override
-	public HashMap<String, VFSLeaf> getAllTracks(OLATResource videoResource) {
-		VideoMetadata metaData = readVideoMetadataFile(videoResource);
-		HashMap<String, VFSLeaf> tracks = new HashMap<String, VFSLeaf>();
-		for(Entry<String, String> trackEntry : metaData.getAllTracks().entrySet()){
-			tracks.put(trackEntry.getKey(), resolveFromMasterContainer(videoResource, trackEntry.getValue()));
+	public Map<String, VFSLeaf> getAllTracks(OLATResource videoResource) {
+		Map<String, VFSLeaf> tracks = new HashMap<>();
+		VFSContainer vfsContainer = getMasterContainer(videoResource);
+		for (VFSItem item : vfsContainer.getItems(new VFSItemSuffixFilter(new String[]{FILETYPE_SRT}))) {
+			String itemname = item.getName();
+			String key = itemname.substring(itemname.indexOf("_") + 1, itemname.indexOf("."));
+			tracks.put(key, resolveFromMasterContainer(videoResource, itemname));
 		}
+//		VideoMetadata metaData = readVideoMetadataFile(videoResource);
+//		for(Entry<String, String> trackEntry : metaData.getAllTracks().entrySet()){
+//		for(Entry<String, String> trackEntry : alltracks.entrySet()){
+//			tracks.put(trackEntry.getKey(), resolveFromMasterContainer(videoResource, trackEntry.getValue()));
+//		}
 		return tracks;
 	}
 	
@@ -247,7 +266,7 @@ public class VideoManagerImpl implements VideoManager {
 			FileChannel ch = randomAccessFile.getChannel();
 			FileChannelWrapper in = new FileChannelWrapper(ch);
 			FrameGrab frameGrab = new FrameGrab(in).seekToFrameSloppy(frameNumber);
-			OutputStream frameOutputStream = frame.getOutputStream(true);
+			OutputStream frameOutputStream = frame.getOutputStream(false);
 
 			BufferedImage bufImg = frameGrab.getFrame();
 			ImageIO.write(bufImg, "JPG", frameOutputStream);
@@ -294,16 +313,16 @@ public class VideoManagerImpl implements VideoManager {
 		}
 	}
 
-	/**
-	 * Write the metdatadata-xml in the videoresource folder
-	 * @param metaData
-	 * @param videoResource
-	 */
-	private void writeVideoMetadataFile(VideoMetadata metaData, OLATResource videoResource){
-		VFSContainer baseContainer= FileResourceManager.getInstance().getFileResourceRootImpl(videoResource);
-		VFSLeaf metaDataFile = VFSManager.resolveOrCreateLeafFromPath(baseContainer, FILENAME_VIDEO_METADATA_XML);
-		XStreamHelper.writeObject(XStreamHelper.createXStreamInstance(), metaDataFile, metaData);
-	}
+//	/**
+//	 * Write the metdatadata-xml in the videoresource folder
+//	 * @param metaData
+//	 * @param videoResource
+//	 */
+//	private void writeVideoMetadataFile(VideoMetadata metaData, OLATResource videoResource){
+//		VFSContainer baseContainer= FileResourceManager.getInstance().getFileResourceRootImpl(videoResource);
+//		VFSLeaf metaDataFile = VFSManager.resolveOrCreateLeafFromPath(baseContainer, FILENAME_VIDEO_METADATA_XML);
+//		XStreamHelper.writeObject(XStreamHelper.createXStreamInstance(), metaDataFile, metaData);
+//	}
 
 	@Override
 	public VideoMetadata readVideoMetadataFile(OLATResource videoResource){
@@ -322,9 +341,16 @@ public class VideoManagerImpl implements VideoManager {
 	}
 	
 	@Override
+	public void startTranscodingProcessIfEnabled(OLATResource video) {
+		if (videoModule.isTranscodingEnabled()) {
+			startTranscodingProcess(video);
+		}
+	}
+	
+	@Override
 	public void startTranscodingProcess(OLATResource video) {
 		List<VideoTranscoding> existingTranscodings = getVideoTranscodings(video);
-		VideoMetadata videoMetadata = readVideoMetadataFile(video);
+		VideoMeta videoMetadata = getVideoMetadata(video);
 		int height = videoMetadata.getHeight();
 		// 1) setup transcoding job for original file size
 		createTranscodingIfNotCreatedAlready(video, height, VideoTranscoding.FORMAT_MP4, existingTranscodings);
@@ -372,6 +398,24 @@ public class VideoManagerImpl implements VideoManager {
 	public List<VideoTranscoding> getVideoTranscodings(OLATResource video){
 		List<VideoTranscoding> videoTranscodings = videoTranscodingDao.getVideoTranscodings(video);
 		return videoTranscodings;
+	}
+	
+	@Override
+	public List<VideoTranscoding> getAllVideoTranscodings() {
+		List<VideoTranscoding> videoTranscodings = videoTranscodingDao.getAllVideoTranscodings();
+		return videoTranscodings;
+	}
+	
+	@Override 
+	public List<TranscodingCount> getAllVideoTranscodingsCount() {
+		List<TranscodingCount> allVideoTranscodings = videoTranscodingDao.getAllVideoTranscodingsCount();
+		return allVideoTranscodings;
+	}
+	
+	@Override
+	public List<VideoTranscoding> getOneVideoResolution(int resolution) {
+		List<VideoTranscoding> oneResolution = videoTranscodingDao.getOneVideoResolution(resolution);
+		return oneResolution;
 	}
 	
 
@@ -489,15 +533,15 @@ public class VideoManagerImpl implements VideoManager {
 		try {
 			zipFile = new ZipFile(file);
 			// 1) Check if it contains a metadata file
-			ZipEntry metadataEntry = zipFile.getEntry(VideoManagerImpl.FILENAME_VIDEO_METADATA_XML);
-			VideoMetadata videoMetadataImpl = null;
-			if (metadataEntry != null) {
-				InputStream metaDataStream = zipFile.getInputStream(metadataEntry);
-				videoMetadataImpl = (VideoMetadata) XStreamHelper.readObject(XStreamHelper.createXStreamInstance(), metaDataStream);
-				if (videoMetadataImpl != null) {
-					eval.setValid(true);
-				}
-			}
+//			ZipEntry metadataEntry = zipFile.getEntry(VideoManagerImpl.FILENAME_VIDEO_METADATA_XML);
+//			VideoMetadata videoMetadataImpl = null;
+//			if (metadataEntry != null) {// does no harm
+//				InputStream metaDataStream = zipFile.getInputStream(metadataEntry);
+//				videoMetadataImpl = (VideoMetadata) XStreamHelper.readObject(XStreamHelper.createXStreamInstance(), metaDataStream);
+//				if (videoMetadataImpl != null) {
+//					eval.setValid(true);
+//				}
+//			}
 			// 2) Propose title from repo metadata
 			ZipEntry repoMetadataEntry = zipFile.getEntry(DIRNAME_REPOENTRY + "/" + RepositoryEntryImportExport.PROPERTIES_FILE);
 			RepositoryEntryImport repoMetadata = null;
@@ -525,17 +569,6 @@ public class VideoManagerImpl implements VideoManager {
 		VFSManager.copyContent(masterVideo, targetFile);
 		masterVideo.delete();
 
-		// 2) generate Metadata file
-		VideoMetadata metaData = new VideoMetadataImpl();
-		// calculate video size
-		Size videoSize = movieService.getSize(targetFile, FILETYPE_MP4);
-		if (videoSize != null) {
-			metaData.setWidth(videoSize.getWidth());
-			metaData.setHeight(videoSize.getHeight());			
-		} else {
-			metaData.setHeight(600);
-			metaData.setWidth(800);						
-		}
 		// calculate video duration
 		long duration = movieService.getDuration(targetFile, FILETYPE_MP4);
 		if (duration != -1) {
@@ -544,42 +577,56 @@ public class VideoManagerImpl implements VideoManager {
 		// generate a poster image, use 20th frame as a default
 		VFSLeaf posterResource = VFSManager.resolveOrCreateLeafFromPath(masterContainer, FILENAME_POSTER_JPG);
 		getFrame(videoResource, 20, posterResource);
-		// finally safe to disk
-		writeVideoMetadataFile(metaData, videoResource);
 
-		// 4) Set poster image for repo entry
+		// 2) Set poster image for repo entry
 		VFSLeaf posterImage = (VFSLeaf)masterContainer.resolve(FILENAME_POSTER_JPG);
 		if (posterImage != null) {
 			repositoryManager.setImage(posterImage, repoEntry);
 		}
-		
-		// 5) start transcoding process
-		if (videoModule.isTranscodingEnabled()) {
-			startTranscodingProcess(videoResource);
-		}
-		
+				
 		return true;
 	}
 	
 	@Override
-	public VideoMetadata getMetaDataFromOLATResource (OLATResource videoResource){
+	public Size getVideoResolutionFromOLATResource (OLATResource videoResource) {
 		VFSContainer masterContainer = getMasterContainer(videoResource);
 		VFSLeaf targetFile = (VFSLeaf) masterContainer.resolve(FILENAME_VIDEO_MP4);
-		
-		// 1) generate Metadata file
-		VideoMetadata metaData = new VideoMetadataImpl();
-		// calculate video size
 		Size videoSize = movieService.getSize(targetFile, FILETYPE_MP4);
-		if (videoSize != null) {
-			metaData.setWidth(videoSize.getWidth());
-			metaData.setHeight(videoSize.getHeight());			
-		} else {
-			metaData.setWidth(800);
-			metaData.setHeight(600);						
+		if (videoSize == null) {
+			videoSize = new Size(800, 600, false);
 		}
-		// 2) update XML file
-		writeVideoMetadataFile(metaData, videoResource);
-		return metaData;
+		return videoSize;
+	}
+	
+	@Override
+	public void exchangePoster (OLATResource videoResource) {
+		VFSContainer masterContainer = getMasterContainer(videoResource);
+		VFSLeaf posterResource = VFSManager.resolveOrCreateLeafFromPath(masterContainer, FILENAME_POSTER_JPG);
+		getFrame(videoResource, 20, posterResource);
+		// Update also repository entry image, use new posterframe
+		VFSLeaf posterImage = (VFSLeaf)masterContainer.resolve(FILENAME_POSTER_JPG);
+		if (posterImage != null) {
+			RepositoryEntry repoEntry = repositoryManager.lookupRepositoryEntry(videoResource, true);
+			repositoryManager.setImage(posterImage, repoEntry);
+		}
+	}
+	
+	@Override
+	public void updateVideoMetadata (OLATResource videoResource,VFSLeaf uploadVideo) {	
+		VideoMeta meta = getVideoMetadata(videoResource);
+
+		Size dimensions = movieService.getSize(uploadVideo, VideoManagerImpl.FILETYPE_MP4);
+		// update video duration
+		long duration = movieService.getDuration(uploadVideo, VideoTranscoding.FORMAT_MP4);
+
+		if (duration != -1) {
+			String length = Formatter.formatTimecode(duration);
+			meta.setSize(uploadVideo.getSize());
+			meta.setWidth(dimensions.getWidth());
+			meta.setHeight(dimensions.getHeight());
+			meta.setFormat(FilenameUtils.getExtension(uploadVideo.getName()));
+			meta.setLength(length);
+		}
 	}
 
 	@Override
@@ -604,10 +651,6 @@ public class VideoManagerImpl implements VideoManager {
 		VFSLeaf posterImage = (VFSLeaf)masterContainer.resolve(FILENAME_POSTER_JPG);
 		if (posterImage != null) {
 			repositoryManager.setImage(posterImage, repoEntry);
-		}
-		// 3) start transcoding process
-		if (videoModule.isTranscodingEnabled()) {
-			startTranscodingProcess(videoResource);
 		}
 
 		return true;
@@ -635,6 +678,12 @@ public class VideoManagerImpl implements VideoManager {
 		videoTranscodingDao.deleteVideoTranscodings(videoResource);
 		VFSStatus deleteStatus = getTranscodingContainer(videoResource).delete();
 		return (deleteStatus == VFSConstants.YES ? true : false);
+	}
+	
+	@Override
+	public boolean deleteVideoMetadata(OLATResource videoResource) {
+		int deleted = videoMetadataDao.deleteVideoMetadata(videoResource);
+		return 0 < deleted;
 	}
 
 	@Override
@@ -759,6 +808,28 @@ public class VideoManagerImpl implements VideoManager {
 		VFSLeaf video = (VFSLeaf) masterContainer.resolve(FILENAME_VIDEO_MP4);	
 		long duration = movieService.getDuration(video, FILETYPE_MP4);
 		return duration;
+	}
+	
+	@Override
+	public List<VideoMetaImpl> getAllVideoResourcesMetadata() {
+		List<VideoMetaImpl> metadata = videoMetadataDao.getAllVideoResourcesMetadata();
+		return metadata;
+	}
+	
+	@Override
+	public VideoMetaImpl getVideoMetadata(OLATResource videoResource) {
+		VideoMetaImpl meta = videoMetadataDao.getVideoMetadata(videoResource);
+		return meta;
+	}
+	
+	@Override 
+	public VideoMeta createVideoMetadata(RepositoryEntry repoEntry, long size, String fileName) {
+		return videoMetadataDao.createVideoMetadata(repoEntry, size, fileName); 
+	}
+	
+	@Override
+	public List<RepositoryEntry> getAllVideoRepoEntries(String typename) {
+		return videoMetadataDao.getAllVideoRepoEntries(typename);
 	}
 
 }
