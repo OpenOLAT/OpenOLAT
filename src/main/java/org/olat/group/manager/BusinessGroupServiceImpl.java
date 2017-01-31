@@ -1384,11 +1384,11 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 				reservationDao.deleteReservation(reservation);
 			}
 		} else if (reloadedGroup.getMaxParticipants() != null) {
-			int participantsCounter = businessGroupRelationDAO.countRoles(reloadedGroup, GroupRoles.participant.name());
+			int participantsCounter = businessGroupRelationDAO.countEnrollment(reloadedGroup);
 			int reservations = reservationDao.countReservations(reloadedGroup.getResource());
 			
 			log.info("doEnroll - participantsCounter: " + participantsCounter + ", reservations: " + reservations + " maxParticipants: " + reloadedGroup.getMaxParticipants().intValue(), identity.getName());
-			if (reservation == null && (participantsCounter + reservations) >= reloadedGroup.getMaxParticipants().intValue()) {
+			if ((participantsCounter + reservations) >= reloadedGroup.getMaxParticipants().intValue()) {
 				// already full, show error and updated choose page again
 				if (reloadedGroup.getWaitingListEnabled().booleanValue()) {
 					addToWaitingList(ureqIdentity, identity, reloadedGroup, mailing, events);

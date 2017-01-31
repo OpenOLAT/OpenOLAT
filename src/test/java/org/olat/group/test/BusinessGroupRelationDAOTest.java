@@ -93,7 +93,7 @@ public class BusinessGroupRelationDAOTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		Group group = ((BusinessGroupImpl)businessGroup).getBaseGroup();
-		groupDao.addMembership(group, coach, "coach");
+		groupDao.addMembershipTwoWay(group, coach, "coach");
 		dbInstance.commitAndCloseSession();
 		
 		List<String> roles = businessGroupRelationDao.getRoles(coach, businessGroup);
@@ -580,6 +580,36 @@ public class BusinessGroupRelationDAOTest extends OlatTestCase {
 		
 		int numOfAuthors = businessGroupRelationDao.countAuthors(group);
 		Assert.assertEquals(1, numOfAuthors);
+	}
+	
+	@Test
+	public void countRoles() {
+		Identity author = JunitTestHelper.createAndPersistIdentityAsAuthor("auth-" + UUID.randomUUID().toString());
+		Identity test = JunitTestHelper.createAndPersistIdentityAsRndUser("not-auth");
+		BusinessGroup group = businessGroupDao.createAndPersist(null, "rel-repo", "rel-repo-desc", 0, 10, true, false, false, false, false);
+		businessGroupRelationDao.addRole(author, group, GroupRoles.coach.name());
+		businessGroupRelationDao.addRole(test, group, GroupRoles.coach.name());
+		dbInstance.commitAndCloseSession();
+		
+		int numOfCoachs = businessGroupRelationDao.countRoles(group, GroupRoles.coach.name());
+		Assert.assertEquals(2, numOfCoachs);
+		int numOfParticipants = businessGroupRelationDao.countRoles(group, GroupRoles.participant.name());
+		Assert.assertEquals(0, numOfParticipants);
+	}
+	
+	@Test
+	public void countEnrollment() {
+		Identity author = JunitTestHelper.createAndPersistIdentityAsAuthor("auth-" + UUID.randomUUID().toString());
+		Identity participant1 = JunitTestHelper.createAndPersistIdentityAsRndUser("not-auth");
+		Identity participant2 = JunitTestHelper.createAndPersistIdentityAsRndUser("not-auth");
+		BusinessGroup group = businessGroupDao.createAndPersist(null, "rel-repo", "rel-repo-desc", 0, 10, true, false, false, false, false);
+		businessGroupRelationDao.addRole(author, group, GroupRoles.coach.name());
+		businessGroupRelationDao.addRole(participant1, group, GroupRoles.participant.name());
+		businessGroupRelationDao.addRole(participant2, group, GroupRoles.participant.name());
+		dbInstance.commitAndCloseSession();
+		
+		int numOfParticipants = businessGroupRelationDao.countEnrollment(group);
+		Assert.assertEquals(2, numOfParticipants);
 	}
 	
 	@Test

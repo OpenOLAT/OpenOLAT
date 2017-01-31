@@ -80,7 +80,11 @@ public class GroupDAO {
 		return group;
 	}
 	
-	public GroupMembership addMembership(Group group, Identity identity, String role) {
+	/**
+	 * Add a membership to the group, in the set of the group too which can be
+	 * reloaded.
+	 */
+	public GroupMembership addMembershipTwoWay(Group group, Identity identity, String role) {
 		GroupMembershipImpl membership = new GroupMembershipImpl();
 		membership.setCreationDate(new Date());
 		membership.setLastModified(new Date());
@@ -96,6 +100,19 @@ public class GroupDAO {
 		}
 		members.add(membership);
 		return membership;
+	}
+	
+	/**
+	 * Create a membership without updating the set in the group.
+	 */
+	public void addMembershipOneWay(Group group, Identity identity, String role) {
+		GroupMembershipImpl membership = new GroupMembershipImpl();
+		membership.setCreationDate(new Date());
+		membership.setLastModified(new Date());
+		membership.setGroup(group);
+		membership.setIdentity(identity);
+		membership.setRole(role);
+		dbInstance.getCurrentEntityManager().persist(membership);
 	}
 	
 	public int removeMemberships(Group group) {

@@ -89,7 +89,7 @@ public class InvitationDAO {
 		User user = userManager.createAndPersistUser(invitation.getFirstName(), invitation.getLastName(), invitation.getMail());
 		user.getPreferences().setLanguage(locale.toString());
 		Identity invitee = securityManager.createAndPersistIdentity(tempUsername, user, null, null, null);
-		groupDao.addMembership(invitation.getBaseGroup(), invitee, GroupRoles.invitee.name());
+		groupDao.addMembershipTwoWay(invitation.getBaseGroup(), invitee, GroupRoles.invitee.name());
 		return invitee;
 	}
 	

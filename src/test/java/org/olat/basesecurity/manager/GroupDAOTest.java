@@ -61,7 +61,7 @@ public class GroupDAOTest extends OlatTestCase {
 	public void createGroupMembership() {
 		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("bgrp-1-");
 		Group group = groupDao.createGroup();
-		GroupMembership membership = groupDao.addMembership(group, id, "author");
+		GroupMembership membership = groupDao.addMembershipTwoWay(group, id, "author");
 
 		dbInstance.commit();
 		
@@ -69,10 +69,18 @@ public class GroupDAOTest extends OlatTestCase {
 	}
 	
 	@Test
+	public void createGroupMembership_oneWay() {
+		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("bgrp-1-");
+		Group group = groupDao.createGroup();
+		groupDao.addMembershipOneWay(group, id, "author");
+		dbInstance.commit();
+	}
+	
+	@Test
 	public void createGroupMembership_v2() {
 		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("bgrp-1-");
 		Group group = groupDao.createGroup();
-		GroupMembership membership = groupDao.addMembership(group, id, "author");
+		GroupMembership membership = groupDao.addMembershipTwoWay(group, id, "author");
 		dbInstance.commit();
 		
 		Assert.assertNotNull(membership);
@@ -87,14 +95,40 @@ public class GroupDAOTest extends OlatTestCase {
 	}
 	
 	@Test
+	public void createGroupMembership_oneWay_v2() {
+		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("bgrp-1-");
+		Group group = groupDao.createGroup();
+		groupDao.addMembershipOneWay(group, id, "author");
+		dbInstance.commitAndCloseSession();
+		
+		GroupImpl loadedGroup = (GroupImpl)groupDao.loadGroup(group.getKey());
+		Assert.assertNotNull(loadedGroup);
+		Set<GroupMembership> members = loadedGroup.getMembers();
+		Assert.assertNotNull(members);
+		Assert.assertEquals(1, members.size());
+	}
+	
+	@Test
 	public void getMemberships() {
 		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("bgrp-1-");
 		Group group = groupDao.createGroup();
-		GroupMembership membership = groupDao.addMembership(group, id, "author");
+		GroupMembership membership = groupDao.addMembershipTwoWay(group, id, "author");
 		dbInstance.commit();
 		
 		Assert.assertNotNull(membership);
 		dbInstance.getCurrentEntityManager().detach(group);
+		dbInstance.commitAndCloseSession();
+		
+		List<GroupMembership> members = groupDao.getMemberships(group, "author");
+		Assert.assertNotNull(members);
+		Assert.assertEquals(1, members.size());
+	}
+	
+	@Test
+	public void getMemberships_oneWay() {
+		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("bgrp-1-");
+		Group group = groupDao.createGroup();
+		groupDao.addMembershipOneWay(group, id, "author");
 		dbInstance.commitAndCloseSession();
 		
 		List<GroupMembership> members = groupDao.getMemberships(group, "author");
@@ -107,7 +141,7 @@ public class GroupDAOTest extends OlatTestCase {
 		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("bgrp-2-");
 		Identity id2 = JunitTestHelper.createAndPersistIdentityAsRndUser("bgrp-2b-");
 		Group group = groupDao.createGroup();
-		GroupMembership membership = groupDao.addMembership(group, id, "author");
+		GroupMembership membership = groupDao.addMembershipTwoWay(group, id, "author");
 		dbInstance.commit();
 		
 		Assert.assertNotNull(membership);
@@ -126,7 +160,7 @@ public class GroupDAOTest extends OlatTestCase {
 	public void getMembers() {
 		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("bgrp-3-");
 		Group group = groupDao.createGroup();
-		GroupMembership membership = groupDao.addMembership(group, id, "author");
+		GroupMembership membership = groupDao.addMembershipTwoWay(group, id, "author");
 		dbInstance.commit();
 		
 		Assert.assertNotNull(membership);
@@ -143,9 +177,9 @@ public class GroupDAOTest extends OlatTestCase {
 		Identity id2 = JunitTestHelper.createAndPersistIdentityAsRndUser("bgrp-5-");
 		Identity id3 = JunitTestHelper.createAndPersistIdentityAsRndUser("bgrp-6-");
 		Group group = groupDao.createGroup();
-		GroupMembership membership1 = groupDao.addMembership(group, id1, "pilot");
-		GroupMembership membership2 = groupDao.addMembership(group, id2, "pilot");
-		GroupMembership membership3 = groupDao.addMembership(group, id3, "copilot");
+		GroupMembership membership1 = groupDao.addMembershipTwoWay(group, id1, "pilot");
+		GroupMembership membership2 = groupDao.addMembershipTwoWay(group, id2, "pilot");
+		GroupMembership membership3 = groupDao.addMembershipTwoWay(group, id3, "copilot");
 		dbInstance.commit();
 		
 		Assert.assertNotNull(membership1);
@@ -162,8 +196,8 @@ public class GroupDAOTest extends OlatTestCase {
 		Identity id1 = JunitTestHelper.createAndPersistIdentityAsRndUser("bgrp-7-");
 		Identity id2 = JunitTestHelper.createAndPersistIdentityAsRndUser("bgrp-8-");
 		Group group = groupDao.createGroup();
-		GroupMembership membership1 = groupDao.addMembership(group, id1, "pilot");
-		GroupMembership membership2 = groupDao.addMembership(group, id2, "pilot");
+		GroupMembership membership1 = groupDao.addMembershipTwoWay(group, id1, "pilot");
+		GroupMembership membership2 = groupDao.addMembershipTwoWay(group, id2, "pilot");
 		Assert.assertNotNull(membership1);
 		Assert.assertNotNull(membership2);
 		dbInstance.commitAndCloseSession();
@@ -189,9 +223,9 @@ public class GroupDAOTest extends OlatTestCase {
 		Identity id1 = JunitTestHelper.createAndPersistIdentityAsRndUser("bgrp-7-");
 		Identity id2 = JunitTestHelper.createAndPersistIdentityAsRndUser("bgrp-8-");
 		Group group = groupDao.createGroup();
-		GroupMembership membership1 = groupDao.addMembership(group, id1, "pilot");
-		GroupMembership membership2 = groupDao.addMembership(group, id2, "pilot");
-		GroupMembership membership2alt = groupDao.addMembership(group, id2, "commander");
+		GroupMembership membership1 = groupDao.addMembershipTwoWay(group, id1, "pilot");
+		GroupMembership membership2 = groupDao.addMembershipTwoWay(group, id2, "pilot");
+		GroupMembership membership2alt = groupDao.addMembershipTwoWay(group, id2, "commander");
 		Assert.assertNotNull(membership1);
 		Assert.assertNotNull(membership2);
 		Assert.assertNotNull(membership2alt);
@@ -226,8 +260,8 @@ public class GroupDAOTest extends OlatTestCase {
 		Identity id1 = JunitTestHelper.createAndPersistIdentityAsRndUser("bgrp-7-");
 		Identity id2 = JunitTestHelper.createAndPersistIdentityAsRndUser("bgrp-8-");
 		Group group = groupDao.createGroup();
-		GroupMembership membership1 = groupDao.addMembership(group, id1, "pilot");
-		GroupMembership membership2 = groupDao.addMembership(group, id2, "pilot");
+		GroupMembership membership1 = groupDao.addMembershipTwoWay(group, id1, "pilot");
+		GroupMembership membership2 = groupDao.addMembershipTwoWay(group, id2, "pilot");
 		Assert.assertNotNull(membership1);
 		Assert.assertNotNull(membership2);
 		dbInstance.commitAndCloseSession();
@@ -250,8 +284,8 @@ public class GroupDAOTest extends OlatTestCase {
 		Identity id1 = JunitTestHelper.createAndPersistIdentityAsRndUser("bgrp-12-");
 		Identity id2 = JunitTestHelper.createAndPersistIdentityAsRndUser("bgrp-13-");
 		Group group = groupDao.createGroup();
-		GroupMembership membership1 = groupDao.addMembership(group, id1, "pilot");
-		GroupMembership membership2 = groupDao.addMembership(group, id2, "copilot");
+		GroupMembership membership1 = groupDao.addMembershipTwoWay(group, id1, "pilot");
+		GroupMembership membership2 = groupDao.addMembershipTwoWay(group, id2, "copilot");
 		Assert.assertNotNull(membership1);
 		Assert.assertNotNull(membership2);
 		dbInstance.commitAndCloseSession();
@@ -278,14 +312,14 @@ public class GroupDAOTest extends OlatTestCase {
 		Identity id1 = JunitTestHelper.createAndPersistIdentityAsRndUser("bgrp-9-");
 		Identity id2 = JunitTestHelper.createAndPersistIdentityAsRndUser("bgrp-10-");
 		Group group1 = groupDao.createGroup();
-		GroupMembership membership1 = groupDao.addMembership(group1, id1, "pilot");
-		GroupMembership membership2 = groupDao.addMembership(group1, id2, "pilot");
+		GroupMembership membership1 = groupDao.addMembershipTwoWay(group1, id1, "pilot");
+		GroupMembership membership2 = groupDao.addMembershipTwoWay(group1, id2, "pilot");
 		Assert.assertNotNull(membership1);
 		Assert.assertNotNull(membership2);
 		dbInstance.commitAndCloseSession();
 		Group group2 = groupDao.createGroup();
-		GroupMembership membership3 = groupDao.addMembership(group2, id1, "passanger");
-		GroupMembership membership4 = groupDao.addMembership(group2, id2, "passanger");
+		GroupMembership membership3 = groupDao.addMembershipTwoWay(group2, id1, "passanger");
+		GroupMembership membership4 = groupDao.addMembershipTwoWay(group2, id2, "passanger");
 		Assert.assertNotNull(membership3);
 		Assert.assertNotNull(membership4);
 		dbInstance.commitAndCloseSession();
@@ -359,7 +393,7 @@ public class GroupDAOTest extends OlatTestCase {
 		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("grant-1-");
 		Group group = groupDao.createGroup();
 		String role = "hasGrant-role";
-		groupDao.addMembership(group, id, role);
+		groupDao.addMembershipTwoWay(group, id, role);
 		OLATResource resource = JunitTestHelper.createRandomResource();
 		groupDao.addGrant(group, role, "hasGrant-perm", resource);
 		dbInstance.commitAndCloseSession();
@@ -373,7 +407,7 @@ public class GroupDAOTest extends OlatTestCase {
 		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("grant-1-");
 		Group group = groupDao.createGroup();
 		String role = "getPermissions-role";
-		groupDao.addMembership(group, id, role);
+		groupDao.addMembershipTwoWay(group, id, role);
 		OLATResource resource = JunitTestHelper.createRandomResource();
 		groupDao.addGrant(group, role, "getPermissions-perm", resource);
 		dbInstance.commitAndCloseSession();
@@ -389,9 +423,9 @@ public class GroupDAOTest extends OlatTestCase {
 		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("grant-1-");
 		Group group = groupDao.createGroup();
 		String role1 = "getPermissions-role-1";
-		groupDao.addMembership(group, id, role1);
+		groupDao.addMembershipTwoWay(group, id, role1);
 		String role2 = "getPermissions-role-2";
-		groupDao.addMembership(group, id, role2);
+		groupDao.addMembershipTwoWay(group, id, role2);
 		OLATResource resource = JunitTestHelper.createRandomResource();
 		groupDao.addGrant(group, role1, "getPermissions-perm-1", resource);
 		groupDao.addGrant(group, role2, "getPermissions-perm-2", resource);
@@ -408,8 +442,8 @@ public class GroupDAOTest extends OlatTestCase {
 	public void addRemoveGrant() {
 		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("addremove-1-");
 		Group group = groupDao.createGroup();
-		groupDao.addMembership(group, id, "addremove-1");
-		groupDao.addMembership(group, id, "addremove-2");
+		groupDao.addMembershipTwoWay(group, id, "addremove-1");
+		groupDao.addMembershipTwoWay(group, id, "addremove-2");
 		OLATResource resource = JunitTestHelper.createRandomResource();
 		groupDao.addGrant(group, "addremove-1", "addremove-1-perm", resource);
 		groupDao.addGrant(group, "addremove-2", "addremove-2-perm", resource);
@@ -436,8 +470,8 @@ public class GroupDAOTest extends OlatTestCase {
 	public void addRemoveGrants() {
 		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("addremove-1-");
 		Group group = groupDao.createGroup();
-		groupDao.addMembership(group, id, "addremove-1");
-		groupDao.addMembership(group, id, "addremove-2");
+		groupDao.addMembershipTwoWay(group, id, "addremove-1");
+		groupDao.addMembershipTwoWay(group, id, "addremove-2");
 		OLATResource resource = JunitTestHelper.createRandomResource();
 		groupDao.addGrant(group, "addremove-1", "addremove-1-perm", resource);
 		groupDao.addGrant(group, "addremove-1", "addremove-11-perm", resource);

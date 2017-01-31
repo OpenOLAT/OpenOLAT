@@ -253,7 +253,7 @@ public class AuthHelper {
 			} else {
 				//fxdiff FXOLAT-151: add eventually the identity to the security group
 				if(!groupDao.hasRole(invitation.getBaseGroup(), identity, GroupRoles.invitee.name())) {
-					groupDao.addMembership(invitation.getBaseGroup(), identity, GroupRoles.invitee.name());
+					groupDao.addMembershipTwoWay(invitation.getBaseGroup(), identity, GroupRoles.invitee.name());
 					DBFactory.getInstance().commit();
 				}
 

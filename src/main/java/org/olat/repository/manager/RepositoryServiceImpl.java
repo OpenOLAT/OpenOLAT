@@ -208,7 +208,7 @@ public class RepositoryServiceImpl implements RepositoryService {
 		re.setGroups(rels);
 		
 		if(initialAuthor != null) {
-			groupDao.addMembership(group, initialAuthor, GroupRoles.owner.name());
+			groupDao.addMembershipTwoWay(group, initialAuthor, GroupRoles.owner.name());
 		}
 		
 		dbInstance.getCurrentEntityManager().persist(re);
