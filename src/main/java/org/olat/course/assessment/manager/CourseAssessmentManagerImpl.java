@@ -388,7 +388,7 @@ public class CourseAssessmentManagerImpl implements AssessmentManager {
 		
 		AssessmentEntry nodeAssessment = assessmentService
 				.loadAssessmentEntry(identity, cgm.getCourseEntry(), courseNode.getIdent());	
-		return nodeAssessment == null ? INTEGER_ZERO : nodeAssessment.getAttempts();
+		return nodeAssessment == null || nodeAssessment.getAttempts() == null  ? INTEGER_ZERO : nodeAssessment.getAttempts();
 	}
 
 	@Override
