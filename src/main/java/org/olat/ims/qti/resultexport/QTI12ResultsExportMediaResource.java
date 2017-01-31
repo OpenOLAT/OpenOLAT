@@ -35,6 +35,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 import java.util.TimeZone;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
@@ -82,8 +83,9 @@ public class QTI12ResultsExportMediaResource implements MediaResource {
 	private QTICourseNode courseNode;
 	private CourseEnvironment courseEnv;
 	private UserRequest ureq;
+	private Locale locale;
 	private ZipOutputStream exportStream;
-	private String title;
+	private String title, exportFolderName;
 	private Translator translator;
 	
 
@@ -92,21 +94,22 @@ public class QTI12ResultsExportMediaResource implements MediaResource {
 		this.courseNode = courseNode;
 		this.courseEnv = courseEnv;
 		this.ureq = ureq;
+		this.locale = null;
 		this.title = "qti12export";	
 		this.identities = identities;
 		this.velocityHelper = VelocityHelper.getInstance();
 		
 		translator = new PackageTranslator(QTI12ResultsExportMediaResource.class.getPackage().getName(), ureq.getLocale());
+		this.exportFolderName = translator.translate("export.folder.name");
 		
 		qtiResultManager = QTIResultManager.getInstance();
-
 	}
 	
-	public QTI12ResultsExportMediaResource(CourseEnvironment courseEnv, UserRequest ureq, List<Identity> identities, 
+	public QTI12ResultsExportMediaResource(CourseEnvironment courseEnv, Locale locale, List<Identity> identities, 
 			QTICourseNode courseNode, ZipOutputStream exportStream) {
 		this.courseNode = courseNode;
 		this.courseEnv = courseEnv;
-		this.ureq = ureq;
+		this.locale = locale;
 		this.title = "qti12export";	
 		this.identities = identities;
 		this.velocityHelper = VelocityHelper.getInstance();
@@ -114,11 +117,10 @@ public class QTI12ResultsExportMediaResource implements MediaResource {
 		
 		this.exportStream = exportStream;
 		
-		translator = new PackageTranslator(QTI12ResultsExportMediaResource.class.getPackage().getName(), ureq.getLocale());
+		translator = new PackageTranslator(QTI12ResultsExportMediaResource.class.getPackage().getName(), locale);
+		this.exportFolderName = translator.translate("export.folder.name");
 		
 		qtiResultManager = QTIResultManager.getInstance();
-
-		prepare(null);
 	}
 
 	@Override
@@ -148,9 +150,10 @@ public class QTI12ResultsExportMediaResource implements MediaResource {
 
 	@Override
 	public void prepare(HttpServletResponse hres) {
-		String exportFolderName = translator.translate("export.folder.name");
 
-		if (hres != null) {
+		boolean hasServletResponse = hres != null;
+		
+		if (hasServletResponse) {
 			String label = StringHelper.transformDisplayNameToFileSystemName(title);
 			if (label != null && !label.toLowerCase().endsWith(".zip")) {
 				label += ".zip";
@@ -160,83 +163,93 @@ public class QTI12ResultsExportMediaResource implements MediaResource {
 			hres.setHeader("Content-Disposition", "attachment; filename*=UTF-8''" + urlEncodedLabel);
 			hres.setHeader("Content-Description", urlEncodedLabel);
 		}
-
-		try { 			
-			ZipOutputStream zout = hres == null ? exportStream : new ZipOutputStream(hres.getOutputStream()); 
-			zout.setLevel(9);
-								
-			List<AssessedMember> assessedMembers = new ArrayList<AssessedMember>();
-			
-			for (Identity identity : identities) {
-				
-				String idDir = exportFolderName + "/" + DATA + identity.getName();
-				idDir = idDir.endsWith(SEP) ? idDir : idDir + SEP;
-				createZipDirectory(zout, idDir);
-				
-				//content of single assessed member
-				String userName = identity.getName();
-				String firstName = identity.getUser().getProperty(UserConstants.FIRSTNAME, null);
-				String lastName = identity.getUser().getProperty(UserConstants.LASTNAME, null);
-				
-				String memberEmail = identity.getUser().getProperty(UserConstants.EMAIL, null);
-				AssessedMember assessedMember = new AssessedMember (userName, lastName, firstName, memberEmail, null);
-				
-				Long resourceId = courseEnv.getCourseResourceableId();
-				String resourceDetail = courseNode.getIdent();
-				Long resid = courseNode.getReferencedRepositoryEntry().getKey();
-				List<QTIResultSet> resultSets = qtiResultManager.getResultSets(resourceId, resourceDetail, resid, identity);		
-									
-				List<ResultDetail> assessments = new ArrayList<ResultDetail>();
-				
-				for (QTIResultSet qtiResultSet : resultSets) {
-					
-					Long assessmentID = qtiResultSet.getAssessmentID();
-					String idPath = idDir + translator.translate("table.user.attempt") + (resultSets.indexOf(qtiResultSet)+1) + SEP;
-					createZipDirectory(zout, idPath);
-					
-					String linkToHTML = createHTMLfromQTIResultSet(idPath, idDir, zout, identity, qtiResultSet);
-					
-					// content of result table
-					ResultDetail resultDetail = new ResultDetail(createLink(String.valueOf(assessmentID), linkToHTML, true),
-							assessmentDateFormat.format(qtiResultSet.getCreationDate()), 
-							displayDateFormat.format(new Date(qtiResultSet.getDuration())),
-							qtiResultSet.getScore(), createPassedIcons(qtiResultSet.getIsPassed()), linkToHTML);
-					
-					assessments.add(resultDetail);
-					
-				}
-				
-				String oneUserHTML = createResultListingHTML(assessments, assessedMember);
-				convertToZipEntry(zout, exportFolderName + "/" + DATA + identity.getName() + "/index.html", oneUserHTML);
-				
-				String linkToUser = idDir.replace(exportFolderName + "/", "") + "index.html";				
-				//content of assessed members table
-				AssessedMember member = new AssessedMember();
-				member.setUsername(createLink(identity.getName(), linkToUser, false));
-				member.setLastname(createLink(identity.getUser().getProperty(UserConstants.LASTNAME, null),linkToUser,false));
-				member.setFirstname(createLink(identity.getUser().getProperty(UserConstants.FIRSTNAME, null),linkToUser,false));
-				member.setTries(String.valueOf(resultSets.size()));
-				assessedMembers.add(member);	
-				
-			}
-			
-			//convert velocity template to zip entry
-			String usersHTML = createMemberListingHTML(assessedMembers);	
-			convertToZipEntry(zout, exportFolderName + "/index.html", usersHTML);
-			
-			//Copy resource files or file trees to export file tree 
-			File sasstheme = new File(WebappHelper.getContextRealPath("/static/offline/qti"));
-			fsToZip(zout, sasstheme.toPath(), exportFolderName + "/css/offline/qti/");
-			
-			File fontawesome = new File(WebappHelper.getContextRealPath("/static/font-awesome"));
-			fsToZip(zout, fontawesome.toPath(), exportFolderName + "/css/font-awesome/");
-			
-			if (hres != null) {
-				zout.close();
-			}
-
+		try {
+			createZipStream(hres, hasServletResponse);
 		} catch (Exception e) {
 			log.error("Unknown error while assessment result resource export", e);
+		}
+	}
+	
+	private List<ResultDetail> createResultDetail (Identity identity, ZipOutputStream zout, String idDir) throws IOException {
+		Long resourceId = courseEnv.getCourseResourceableId();
+		String resourceDetail = courseNode.getIdent();
+		Long resid = courseNode.getReferencedRepositoryEntry().getKey();
+		List<QTIResultSet> resultSets = qtiResultManager.getResultSets(resourceId, resourceDetail, resid, identity);		
+							
+		List<ResultDetail> assessments = new ArrayList<ResultDetail>();
+		
+		for (QTIResultSet qtiResultSet : resultSets) {
+			
+			Long assessmentID = qtiResultSet.getAssessmentID();
+			String idPath = idDir + translator.translate("table.user.attempt") + (resultSets.indexOf(qtiResultSet)+1) + SEP;
+			createZipDirectory(zout, idPath);
+			
+			String linkToHTML = createHTMLfromQTIResultSet(idPath, idDir, zout, identity, qtiResultSet);
+			
+			// content of result table
+			ResultDetail resultDetail = new ResultDetail(createLink(String.valueOf(assessmentID), linkToHTML, true),
+					assessmentDateFormat.format(qtiResultSet.getCreationDate()), 
+					displayDateFormat.format(new Date(qtiResultSet.getDuration())),
+					qtiResultSet.getScore(), createPassedIcons(qtiResultSet.getIsPassed()), linkToHTML);
+			
+			assessments.add(resultDetail);			
+		}
+		return assessments;
+	}
+	
+	private List<AssessedMember> createAssessedMembersDetail (ZipOutputStream zout) throws IOException {
+		List<AssessedMember> assessedMembers = new ArrayList<AssessedMember>();		
+		for (Identity identity : identities) {
+			
+			String idDir = exportFolderName + "/" + DATA + identity.getName();
+			idDir = idDir.endsWith(SEP) ? idDir : idDir + SEP;
+			createZipDirectory(zout, idDir);
+			
+			//content of single assessed member
+			String userName = identity.getName();
+			String firstName = identity.getUser().getProperty(UserConstants.FIRSTNAME, null);
+			String lastName = identity.getUser().getProperty(UserConstants.LASTNAME, null);
+			
+			String memberEmail = identity.getUser().getProperty(UserConstants.EMAIL, null);
+			AssessedMember assessedMember = new AssessedMember (userName, lastName, firstName, memberEmail, null);
+			
+			List<ResultDetail> assessments = createResultDetail(identity, zout, idDir);
+			
+			String oneUserHTML = createResultListingHTML(assessments, assessedMember);
+			convertToZipEntry(zout, exportFolderName + "/" + DATA + identity.getName() + "/index.html", oneUserHTML);
+			
+			String linkToUser = idDir.replace(exportFolderName + "/", "") + "index.html";				
+			//content of assessed members table
+			AssessedMember member = new AssessedMember();
+			member.setUsername(createLink(identity.getName(), linkToUser, false));
+			member.setLastname(createLink(identity.getUser().getProperty(UserConstants.LASTNAME, null),linkToUser,false));
+			member.setFirstname(createLink(identity.getUser().getProperty(UserConstants.FIRSTNAME, null),linkToUser,false));
+			member.setTries(String.valueOf(assessments.size()));
+			assessedMembers.add(member);		
+		}
+		return assessedMembers;
+	}
+	
+	private void createZipStream (HttpServletResponse hres, boolean hasServletResponse) throws Exception {
+		
+		ZipOutputStream zout = hasServletResponse ? new ZipOutputStream(hres.getOutputStream()) : exportStream; 
+		zout.setLevel(9);
+							
+		List<AssessedMember> assessedMembers = createAssessedMembersDetail(zout);
+		
+		//convert velocity template to zip entry
+		String usersHTML = createMemberListingHTML(assessedMembers);	
+		convertToZipEntry(zout, exportFolderName + "/index.html", usersHTML);
+		
+		//Copy resource files or file trees to export file tree 
+		File sasstheme = new File(WebappHelper.getContextRealPath("/static/offline/qti"));
+		fsToZip(zout, sasstheme.toPath(), exportFolderName + "/css/offline/qti/");
+		
+		File fontawesome = new File(WebappHelper.getContextRealPath("/static/font-awesome"));
+		fsToZip(zout, fontawesome.toPath(), exportFolderName + "/css/font-awesome/");
+		
+		if (hasServletResponse) {
+			zout.close();
 		}
 	}
 	
@@ -318,7 +331,7 @@ public class QTI12ResultsExportMediaResource implements MediaResource {
 		}
 		
 		File resourceXML = retrieveXML(assessedIdentity, resultSet.getAssessmentID());			
-		String resultsHTML = LocalizedXSLTransformer.getInstance(ureq.getLocale()).renderResults(doc);		
+		String resultsHTML = LocalizedXSLTransformer.getInstance(locale != null ? locale : ureq.getLocale()).renderResults(doc);		
 		resultsHTML = createResultHTML(resultsHTML);
 		
 		String html = idPath + resultSet.getAssessmentID() + ".html";

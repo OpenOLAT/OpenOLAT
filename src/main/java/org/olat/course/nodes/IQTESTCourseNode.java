@@ -32,6 +32,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.zip.ZipOutputStream;
 
+import org.olat.admin.user.imp.TransientIdentity;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.stack.BreadcrumbPanel;
@@ -40,7 +41,6 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.messages.MessageUIFactory;
 import org.olat.core.gui.control.generic.tabbable.TabbableController;
-import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.gui.util.SyntheticUserRequest;
 import org.olat.core.id.Identity;
@@ -639,10 +639,9 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements Pe
 		CourseEnvironment courseEnv = course.getCourseEnvironment();
 		List<Identity> identities = ScoreAccountingHelper.loadUsers(courseEnv, options);
 		//create SyntheticUserRequest with UserSession to avoid Nullpointer in AssessmentResultController
-		UserRequest ureq = new SyntheticUserRequest(identities.get(0), locale, new UserSession());
+		UserRequest ureq = new SyntheticUserRequest(new TransientIdentity(), locale, new UserSession());
 		Roles roles = new Roles(false, false, false, false, false, false, false);
 		ureq.getUserSession().setRoles(roles);
-		MediaResource resource;
 		
 		try {
 			RepositoryEntry re = RepositoryManager.getInstance().lookupRepositoryEntryBySoftkey(repositorySoftKey, true);
@@ -657,8 +656,8 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements Pe
 			} else if(ImsQTI21Resource.TYPE_NAME.equals(re.getOlatResource().getResourceableTypeName())) {
 				// 2a) create export resource
 				QTI21Service qtiService = CoreSpringFactory.getImpl(QTI21Service.class);
-				resource = new QTI21ResultsExportMediaResource(courseEnv, identities, this,
-						qtiService, ureq, exportStream, locale);
+				new QTI21ResultsExportMediaResource(courseEnv, identities, this,
+						qtiService, ureq, exportStream, locale).prepare(null);;
 				// excel results				
 				QTI21ArchiveFormat qaf = new QTI21ArchiveFormat(locale, true, true, true);
 				RepositoryEntry courseEntry = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
@@ -666,7 +665,7 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements Pe
 				return true;	
 			} else {
 				// 2b) create export resource
-				resource = new QTI12ResultsExportMediaResource(courseEnv, ureq, identities, this, exportStream);
+				new QTI12ResultsExportMediaResource(courseEnv, locale, identities, this, exportStream).prepare(null);
 				// excel results
 				String shortTitle = getShortTitle();
 				QTIExportManager qem = QTIExportManager.getInstance();
