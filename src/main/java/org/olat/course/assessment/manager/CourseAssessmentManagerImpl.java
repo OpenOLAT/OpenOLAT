@@ -329,7 +329,7 @@ public class CourseAssessmentManagerImpl implements AssessmentManager {
 		}
 
 		if(course.getCourseConfig().isAutomaticCertificationEnabled()) {
-			CourseNode rootNode = userCourseEnv.getCourseEnvironment().getRunStructure().getRootNode();
+			CourseNode rootNode = courseEnv.getRunStructure().getRootNode();
 			ScoreEvaluation rootEval = scoreAccounting.evalCourseNode((AssessableCourseNode)rootNode);
 			if(rootEval != null && rootEval.getPassed() != null && rootEval.getPassed().booleanValue()
 					&& certificatesManager.isCertificationAllowed(assessedIdentity, cgm.getCourseEntry())) {

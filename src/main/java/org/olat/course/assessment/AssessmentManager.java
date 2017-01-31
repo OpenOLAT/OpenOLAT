@@ -163,17 +163,21 @@ public interface AssessmentManager {
 	 * @return
 	 */
 	public Date getScoreLastModifiedDate(CourseNode courseNode, Identity identity);
-	
+
 	/**
 	 * Save the users achieved ScoreEvaluation for this node. If there is already a score property available, it will be
-	 * overwritten with the new value <p>
-	 *
-	 * @param courseNode
-	 * @param identity
-	 * @param assessedIdentity
-	 * @param scoreEvaluation
+	 * overwritten with the new value.
+	 * 
+	 * @param courseNode The course element
+	 * @param identity The identity who make the changes
+	 * @param assessedIdentity The assessed identity
+	 * @param scoreEvaluation The updated score evaluation
+	 * @param userCourseEnvironment The user course env. of the assessed identity
+	 * @param incrementUserAttempts
 	 */
-	public void saveScoreEvaluation(AssessableCourseNode courseNode, Identity identity, Identity assessedIdentity, ScoreEvaluation scoreEvaluation, UserCourseEnvironment userCourseEnvironment, boolean incrementUserAttempts);
+	
+	public void saveScoreEvaluation(AssessableCourseNode courseNode, Identity identity, Identity assessedIdentity,
+			ScoreEvaluation scoreEvaluation, UserCourseEnvironment userCourseEnvironment, boolean incrementUserAttempts);
 	
 	/**
 	 * Provides an OLATResourceable for locking (of score/passed etc.) purposes (if doInSync is called on score/passed data)

@@ -380,10 +380,10 @@ public class CheckboxAssessmentController extends FormBasicController {
 			DBFactory.getInstance().commit();
 			ICourse course = CourseFactory.loadCourse(courseOres);
 			
-			List<Identity> identities = securityManager.loadIdentityByKeys(assessedIdentityToUpdate);
-			for(Identity identity:identities) {
-				UserCourseEnvironment userCourseEnv = AssessmentHelper.createAndInitUserCourseEnvironment(identity, course);
-				courseNode.updateScoreEvaluation(userCourseEnv, identity);
+			List<Identity> assessedIdentities = securityManager.loadIdentityByKeys(assessedIdentityToUpdate);
+			for(Identity assessedIdentity:assessedIdentities) {
+				UserCourseEnvironment assessedUserCourseEnv = AssessmentHelper.createAndInitUserCourseEnvironment(assessedIdentity, course);
+				courseNode.updateScoreEvaluation(getIdentity(), assessedUserCourseEnv, assessedIdentity);
 			}
 		}
 		

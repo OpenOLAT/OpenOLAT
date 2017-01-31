@@ -284,7 +284,7 @@ public class AssessedIdentityCheckListController extends FormBasicController {
 		}
 		checkboxManager.check(courseOres, courseNode.getIdent(), batchElements);
 		
-		courseNode.updateScoreEvaluation(assessedUserCourseEnv, assessedIdentity);
+		courseNode.updateScoreEvaluation(getIdentity(), assessedUserCourseEnv, assessedIdentity);
 	}
 	
 	private void doUpdateCheck(CheckboxWrapper wrapper, boolean check) {
