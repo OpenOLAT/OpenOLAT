@@ -35,6 +35,7 @@ import org.olat.modules.reminder.model.ReminderImpl;
 import org.olat.modules.reminder.model.ReminderInfos;
 import org.olat.modules.reminder.model.SentReminderImpl;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryService;
 import org.olat.repository.manager.RepositoryEntryRelationDAO;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
@@ -52,6 +53,8 @@ public class ReminderDAOTest extends OlatTestCase {
 	private DB dbInstance;
 	@Autowired
 	private ReminderDAO reminderDao;
+	@Autowired
+	private RepositoryService repositoryService;
 	@Autowired
 	private RepositoryEntryRelationDAO repositoryEntryRelationDao;
 	
@@ -139,6 +142,34 @@ public class ReminderDAOTest extends OlatTestCase {
 			}
 		}
 		Assert.assertTrue(found);	
+	}
+
+	@Test
+	public void getReminders_repositoryEntry_softDeleted() {
+		//create and reminder and an identity
+		Identity creator = JunitTestHelper.createAndPersistIdentityAsRndUser("creator-rem-12");
+		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
+		Reminder reminder = reminderDao.createReminder(entry, creator);
+		reminder.setConfiguration("<rules></rules>");
+		reminder.setDescription("Reminder - 12");
+		reminder.setEmailBody("Hello, I'm deleted");
+		Reminder savedReminder = reminderDao.save(reminder);
+		Assert.assertNotNull(savedReminder);
+		dbInstance.commitAndCloseSession();
+		
+		//check that we found the reminder
+		List<Reminder> loadedReminders = reminderDao.getReminders(new Date());
+		Assert.assertNotNull(loadedReminders);
+		Assert.assertTrue(loadedReminders.contains(savedReminder));
+		
+		// delete the resource
+		repositoryService.deleteSoftly(entry, creator, false);
+		dbInstance.commitAndCloseSession();
+		
+		// check we don't found the reminder
+		List<Reminder> reloadedReminders = reminderDao.getReminders(new Date());
+		Assert.assertNotNull(reloadedReminders);
+		Assert.assertFalse(reloadedReminders.contains(savedReminder));
 	}
 	
 	@Test
