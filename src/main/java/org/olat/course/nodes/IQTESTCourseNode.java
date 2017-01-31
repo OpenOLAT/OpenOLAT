@@ -87,8 +87,6 @@ import org.olat.ims.qti.process.AssessmentInstance;
 import org.olat.ims.qti.process.FilePersister;
 import org.olat.ims.qti.resultexport.QTI12ExportResultsReportController;
 import org.olat.ims.qti.resultexport.QTI12ResultsExportMediaResource;
-import org.olat.ims.qti.resultexport.QTI21ExportResultsReportController;
-import org.olat.ims.qti.resultexport.QTI21ResultsExportMediaResource;
 import org.olat.ims.qti.statistics.QTIStatisticResourceResult;
 import org.olat.ims.qti.statistics.QTIStatisticSearchParams;
 import org.olat.ims.qti.statistics.QTIType;
@@ -99,6 +97,8 @@ import org.olat.ims.qti21.QTI21Service;
 import org.olat.ims.qti21.manager.AssessmentTestSessionDAO;
 import org.olat.ims.qti21.manager.archive.QTI21ArchiveFormat;
 import org.olat.ims.qti21.model.QTI21StatisticSearchParams;
+import org.olat.ims.qti21.resultexport.QTI21ExportResultsReportController;
+import org.olat.ims.qti21.resultexport.QTI21ResultsExportMediaResource;
 import org.olat.ims.qti21.ui.QTI21AssessmentDetailsController;
 import org.olat.ims.qti21.ui.QTI21ResetToolController;
 import org.olat.ims.qti21.ui.QTI21RetrieveTestsToolController;
@@ -656,8 +656,7 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements Pe
 			} else if(ImsQTI21Resource.TYPE_NAME.equals(re.getOlatResource().getResourceableTypeName())) {
 				// 2a) create export resource
 				QTI21Service qtiService = CoreSpringFactory.getImpl(QTI21Service.class);
-				new QTI21ResultsExportMediaResource(courseEnv, identities, this,
-						qtiService, ureq, exportStream, locale).prepare(null);;
+				new QTI21ResultsExportMediaResource(courseEnv, identities, this, qtiService, ureq, locale).exportTestResults(exportStream);
 				// excel results				
 				QTI21ArchiveFormat qaf = new QTI21ArchiveFormat(locale, true, true, true);
 				RepositoryEntry courseEntry = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
@@ -665,7 +664,7 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements Pe
 				return true;	
 			} else {
 				// 2b) create export resource
-				new QTI12ResultsExportMediaResource(courseEnv, locale, identities, this, exportStream).prepare(null);
+				new QTI12ResultsExportMediaResource(courseEnv, locale, identities, this).exportTestResults(exportStream);
 				// excel results
 				String shortTitle = getShortTitle();
 				QTIExportManager qem = QTIExportManager.getInstance();

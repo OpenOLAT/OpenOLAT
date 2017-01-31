@@ -84,7 +84,6 @@ public class QTI12ResultsExportMediaResource implements MediaResource {
 	private CourseEnvironment courseEnv;
 	private UserRequest ureq;
 	private Locale locale;
-	private ZipOutputStream exportStream;
 	private String title, exportFolderName;
 	private Translator translator;
 	
@@ -104,18 +103,15 @@ public class QTI12ResultsExportMediaResource implements MediaResource {
 		
 		qtiResultManager = QTIResultManager.getInstance();
 	}
-	
-	public QTI12ResultsExportMediaResource(CourseEnvironment courseEnv, Locale locale, List<Identity> identities, 
-			QTICourseNode courseNode, ZipOutputStream exportStream) {
+
+	public QTI12ResultsExportMediaResource(CourseEnvironment courseEnv, Locale locale, List<Identity> identities,
+			QTICourseNode courseNode) {
 		this.courseNode = courseNode;
 		this.courseEnv = courseEnv;
 		this.locale = locale;
 		this.title = "qti12export";	
 		this.identities = identities;
 		this.velocityHelper = VelocityHelper.getInstance();
-
-		
-		this.exportStream = exportStream;
 		
 		translator = new PackageTranslator(QTI12ResultsExportMediaResource.class.getPackage().getName(), locale);
 		this.exportFolderName = translator.translate("export.folder.name");
@@ -150,21 +146,35 @@ public class QTI12ResultsExportMediaResource implements MediaResource {
 
 	@Override
 	public void prepare(HttpServletResponse hres) {
-
-		boolean hasServletResponse = hres != null;
-		
-		if (hasServletResponse) {
-			String label = StringHelper.transformDisplayNameToFileSystemName(title);
-			if (label != null && !label.toLowerCase().endsWith(".zip")) {
-				label += ".zip";
-			}
-
-			String urlEncodedLabel = StringHelper.urlEncodeUTF8(label);
-			hres.setHeader("Content-Disposition", "attachment; filename*=UTF-8''" + urlEncodedLabel);
-			hres.setHeader("Content-Description", urlEncodedLabel);
+	
+		String label = StringHelper.transformDisplayNameToFileSystemName(title);
+		if (label != null && !label.toLowerCase().endsWith(".zip")) {
+			label += ".zip";
 		}
+
+		String urlEncodedLabel = StringHelper.urlEncodeUTF8(label);
+		hres.setHeader("Content-Disposition", "attachment; filename*=UTF-8''" + urlEncodedLabel);
+		hres.setHeader("Content-Description", urlEncodedLabel);
+	
 		try {
-			createZipStream(hres, hasServletResponse);
+			ZipOutputStream zout = new ZipOutputStream(hres.getOutputStream()); 
+			zout.setLevel(9);
+								
+			List<AssessedMember> assessedMembers = createAssessedMembersDetail(zout);
+			
+			//convert velocity template to zip entry
+			String usersHTML = createMemberListingHTML(assessedMembers);	
+			convertToZipEntry(zout, exportFolderName + "/index.html", usersHTML);
+			
+			//Copy resource files or file trees to export file tree 
+			File sasstheme = new File(WebappHelper.getContextRealPath("/static/offline/qti"));
+			fsToZip(zout, sasstheme.toPath(), exportFolderName + "/css/offline/qti/");
+			
+			File fontawesome = new File(WebappHelper.getContextRealPath("/static/font-awesome"));
+			fsToZip(zout, fontawesome.toPath(), exportFolderName + "/css/font-awesome/");
+
+			zout.close();
+
 		} catch (Exception e) {
 			log.error("Unknown error while assessment result resource export", e);
 		}
@@ -230,11 +240,13 @@ public class QTI12ResultsExportMediaResource implements MediaResource {
 		return assessedMembers;
 	}
 	
-	private void createZipStream (HttpServletResponse hres, boolean hasServletResponse) throws Exception {
-		
-		ZipOutputStream zout = hasServletResponse ? new ZipOutputStream(hres.getOutputStream()) : exportStream; 
-		zout.setLevel(9);
-							
+	/**
+	 * Adds the result export to existing zip stream.
+	 *
+	 * @throws Exception
+	 */
+	public void exportTestResults(ZipOutputStream zout) throws IOException {		
+						
 		List<AssessedMember> assessedMembers = createAssessedMembersDetail(zout);
 		
 		//convert velocity template to zip entry
@@ -247,10 +259,6 @@ public class QTI12ResultsExportMediaResource implements MediaResource {
 		
 		File fontawesome = new File(WebappHelper.getContextRealPath("/static/font-awesome"));
 		fsToZip(zout, fontawesome.toPath(), exportFolderName + "/css/font-awesome/");
-		
-		if (hasServletResponse) {
-			zout.close();
-		}
 	}
 	
 	private String createLink(String name, String href, boolean userview){

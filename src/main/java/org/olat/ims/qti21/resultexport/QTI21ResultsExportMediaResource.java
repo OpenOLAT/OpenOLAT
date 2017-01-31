@@ -17,7 +17,7 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.ims.qti.resultexport;
+package org.olat.ims.qti21.resultexport;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -57,6 +57,7 @@ import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.render.velocity.VelocityHelper;
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.gui.util.WindowControlMocker;
 import org.olat.core.id.Identity;
 import org.olat.core.id.UserConstants;
 import org.olat.core.logging.OLog;
@@ -68,6 +69,9 @@ import org.olat.core.util.WebappHelper;
 import org.olat.course.nodes.QTICourseNode;
 import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.fileresource.FileResourceManager;
+import org.olat.ims.qti.resultexport.AssessedMember;
+import org.olat.ims.qti.resultexport.QTI12ExportResultsReportController;
+import org.olat.ims.qti.resultexport.ResultDetail;
 import org.olat.ims.qti21.AssessmentTestSession;
 import org.olat.ims.qti21.QTI21DeliveryOptions.ShowResultsOnFinish;
 import org.olat.ims.qti21.QTI21Service;
@@ -96,8 +100,6 @@ public class QTI21ResultsExportMediaResource implements MediaResource {
 	
 	private RepositoryEntry entry;
 	private UserRequest ureq;
-	private ZipOutputStream exportStream;
-	private Locale locale;
 
 
 	public QTI21ResultsExportMediaResource(CourseEnvironment courseEnv, List<Identity> identities, 
@@ -111,8 +113,8 @@ public class QTI21ResultsExportMediaResource implements MediaResource {
 		this.entry = courseEnv.getCourseGroupManager().getCourseEntry();
 	}
 	
-	public QTI21ResultsExportMediaResource(CourseEnvironment courseEnv, List<Identity> identities, 
-			QTICourseNode courseNode, QTI21Service qtiService, UserRequest ureq, ZipOutputStream exportStream, Locale locale) {
+	public QTI21ResultsExportMediaResource(CourseEnvironment courseEnv, List<Identity> identities, QTICourseNode courseNode, 
+			QTI21Service qtiService, UserRequest ureq, Locale locale) {
 		this.title = "qti21export";	
 		this.courseNode = courseNode;
 		this.identities = identities;
@@ -120,9 +122,8 @@ public class QTI21ResultsExportMediaResource implements MediaResource {
 		this.qtiService = qtiService;
 		this.ureq = ureq;		
 		this.entry = courseEnv.getCourseGroupManager().getCourseEntry();
-		this.exportStream = exportStream;
-		this.locale = locale;
-
+		this.translator = Util.createPackageTranslator(QTI21ResultsExportMediaResource.class, locale);
+		this.exportFolderName = translator.translate("export.folder.name");
 	}
 
 	@Override
@@ -153,23 +154,37 @@ public class QTI21ResultsExportMediaResource implements MediaResource {
 	@Override
 	public void prepare(HttpServletResponse hres) {
 		//init package translator
-		translator = Util.createPackageTranslator(QTI21ResultsExportMediaResource.class, hres == null ? locale : hres.getLocale());
+		translator = Util.createPackageTranslator(QTI21ResultsExportMediaResource.class, hres.getLocale());
 		exportFolderName = translator.translate("export.folder.name");
 		
-		boolean hasServletResponse = hres != null;
-		if (hasServletResponse) {
-			String label = StringHelper.transformDisplayNameToFileSystemName(title);
-			if (label != null && !label.toLowerCase().endsWith(".zip")) {
-				label += ".zip";
-			}
-
-			String urlEncodedLabel = StringHelper.urlEncodeUTF8(label);
-			hres.setHeader("Content-Disposition", "attachment; filename*=UTF-8''" + urlEncodedLabel);
-			hres.setHeader("Content-Description", urlEncodedLabel);
+		String label = StringHelper.transformDisplayNameToFileSystemName(title);
+		if (label != null && !label.toLowerCase().endsWith(".zip")) {
+			label += ".zip";
 		}
 
+		String urlEncodedLabel = StringHelper.urlEncodeUTF8(label);
+		hres.setHeader("Content-Disposition", "attachment; filename*=UTF-8''" + urlEncodedLabel);
+		hres.setHeader("Content-Description", urlEncodedLabel);
+
 		try { 			
-			createZipStream(hres, hasServletResponse);
+			ZipOutputStream zout = new ZipOutputStream(hres.getOutputStream());
+			zout.setLevel(9);
+			
+			List<AssessedMember> assessedMembers = createAssessedMembersDetail(zout);
+			
+			//convert velocity template to zip entry
+			String membersHTML = createMemberListingHTML(assessedMembers);	
+			convertToZipEntry(zout, exportFolderName + "/index.html", membersHTML);
+			
+			//Copy resource files or file trees to export file tree 
+			File sasstheme = new File(WebappHelper.getContextRealPath("/static/offline/qti"));
+			fsToZip(zout, sasstheme.toPath(), exportFolderName + "/css/offline/qti/");
+			
+			File fontawesome = new File(WebappHelper.getContextRealPath("/static/font-awesome"));
+			fsToZip(zout, fontawesome.toPath(), exportFolderName + "/css/font-awesome/");
+			
+			zout.close();
+
 		} catch (Exception e) {
 			log.error("Unknown error while assessment result resource export", e);
 		}
@@ -246,9 +261,12 @@ public class QTI21ResultsExportMediaResource implements MediaResource {
 	}
 		
 	
-	private void createZipStream (HttpServletResponse hres, boolean hasServletResponse) throws IOException {
-		ZipOutputStream zout = hasServletResponse ? new ZipOutputStream(hres.getOutputStream()) : exportStream; 
-		zout.setLevel(9);
+	/**
+	 * Adds the result export to existing zip stream.
+	 *
+	 * @throws IOException
+	 */
+	public void exportTestResults (ZipOutputStream zout) throws IOException {
 		
 		List<AssessedMember> assessedMembers = createAssessedMembersDetail(zout);
 		
@@ -262,13 +280,9 @@ public class QTI21ResultsExportMediaResource implements MediaResource {
 		
 		File fontawesome = new File(WebappHelper.getContextRealPath("/static/font-awesome"));
 		fsToZip(zout, fontawesome.toPath(), exportFolderName + "/css/font-awesome/");
-		
-		if (hasServletResponse) {
-			zout.close();
-		}
 	}
 	
-	private String createLink(String name, String href, boolean userview){
+	private String createLink(String name, String href, boolean userview) {
 		String targetLink = userview ? "_blank" : "_self";
 		return "<a href='" + href + "' target='" + targetLink + "' class='userLink'>" + name + "</a>";		
 	}
