@@ -566,10 +566,10 @@ public class CheckListAssessmentController extends FormBasicController implement
 			DBFactory.getInstance().commit();
 			
 			ICourse course = CourseFactory.loadCourse(courseOres);
-			List<Identity> identities = securityManager.loadIdentityByKeys(assessedIdentityToUpdate);
-			for(Identity identity:identities) {
-				UserCourseEnvironment assessedUserCourseEnv = AssessmentHelper.createAndInitUserCourseEnvironment(identity, course);
-				courseNode.updateScoreEvaluation(assessedUserCourseEnv, identity);
+			List<Identity> assessedIdentities = securityManager.loadIdentityByKeys(assessedIdentityToUpdate);
+			for(Identity assessedIdentity:assessedIdentities) {
+				UserCourseEnvironment assessedUserCourseEnv = AssessmentHelper.createAndInitUserCourseEnvironment(assessedIdentity, course);
+				courseNode.updateScoreEvaluation(getIdentity(), assessedUserCourseEnv, assessedIdentity);
 			}
 		}
 		

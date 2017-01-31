@@ -49,12 +49,13 @@ public class AccessRenderer implements FlexiCellRenderer {
 			int row, FlexiTableComponent source, URLBuilder ubu, Translator translator)  {
 		if(val instanceof RepositoryEntryLight) {
 			RepositoryEntryLight re = (RepositoryEntryLight)val;
-			if(re.isMembersOnly()) {
+			if(re.getAccess() == RepositoryEntry.DELETED) {
+				sb.append(translator.translate("table.header.access.deleted"));
+			} else if(re.isMembersOnly()) {
 				sb.append(translator.translate("table.header.access.membersonly")); 
 			} else {
 				switch (re.getAccess()) {
 					case RepositoryEntry.DELETED: {
-
 						sb.append(translator.translate("table.header.access.deleted"));
 						break;
 					}

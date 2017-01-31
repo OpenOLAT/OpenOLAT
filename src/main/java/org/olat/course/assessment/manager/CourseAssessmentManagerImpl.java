@@ -329,7 +329,7 @@ public class CourseAssessmentManagerImpl implements AssessmentManager {
 		}
 
 		if(course.getCourseConfig().isAutomaticCertificationEnabled()) {
-			CourseNode rootNode = userCourseEnv.getCourseEnvironment().getRunStructure().getRootNode();
+			CourseNode rootNode = courseEnv.getRunStructure().getRootNode();
 			ScoreEvaluation rootEval = scoreAccounting.evalCourseNode((AssessableCourseNode)rootNode);
 			if(rootEval != null && rootEval.getPassed() != null && rootEval.getPassed().booleanValue()
 					&& certificatesManager.isCertificationAllowed(assessedIdentity, cgm.getCourseEntry())) {
@@ -388,7 +388,7 @@ public class CourseAssessmentManagerImpl implements AssessmentManager {
 		
 		AssessmentEntry nodeAssessment = assessmentService
 				.loadAssessmentEntry(identity, cgm.getCourseEntry(), courseNode.getIdent());	
-		return nodeAssessment == null ? INTEGER_ZERO : nodeAssessment.getAttempts();
+		return nodeAssessment == null || nodeAssessment.getAttempts() == null  ? INTEGER_ZERO : nodeAssessment.getAttempts();
 	}
 
 	@Override

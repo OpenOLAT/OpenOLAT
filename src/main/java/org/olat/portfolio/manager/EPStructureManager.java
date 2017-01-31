@@ -1829,7 +1829,7 @@ public class EPStructureManager {
 		Group group = repositoryEntyRelationDao.getDefaultGroup(entry);
 		if(group == null) {
 			group = groupDao.createGroup();
-			groupDao.addMembership(group, identity, GroupRoles.owner.name());
+			groupDao.addMembershipTwoWay(group, identity, GroupRoles.owner.name());
 		}
 		
 		EPStructureElementToGroupRelation relation = createBaseRelation(el, group);
@@ -1885,7 +1885,7 @@ public class EPStructureManager {
 		relation.setCreationDate(new Date());
 		relation.setGroup(ownerGroup);
 		relation.setStructureElement(element);
-		groupDao.addMembership(ownerGroup, author, GroupRoles.owner.name());
+		groupDao.addMembershipTwoWay(ownerGroup, author, GroupRoles.owner.name());
 		return relation;
 	}
 	

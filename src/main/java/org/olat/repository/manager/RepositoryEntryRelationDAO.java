@@ -168,7 +168,7 @@ public class RepositoryEntryRelationDAO {
 	
 	public void addRole(Identity identity, RepositoryEntryRef re, String role) {
 		Group group = getDefaultGroup(re);
-		groupDao.addMembership(group, identity, role);
+		groupDao.addMembershipOneWay(group, identity, role);
 	}
 	
 	public int removeRole(IdentityRef identity, RepositoryEntryRef re, String role) {

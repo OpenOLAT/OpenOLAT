@@ -32,6 +32,7 @@ import org.olat.core.gui.control.navigation.SiteDefinition;
 import org.olat.core.gui.control.navigation.SiteDefinitions;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.OLATResourceable;
+import org.olat.core.id.Roles;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.ContextEntryControllerCreator;
@@ -94,6 +95,13 @@ public class CourseSiteContextEntryControllerCreator extends DefaultContextEntry
 		}
 		
 		UserSession usess = ureq.getUserSession();
+		if(re.getAccess() == RepositoryEntry.DELETED) {
+			Roles roles = usess.getRoles();
+			if(!roles.isInstitutionalResourceManager() && !roles.isOLATAdmin()) {
+				return messageController(ureq, wControl, "repositoryentry.deleted");
+			}
+		}
+		
 		if(usess.isInAssessmentModeProcess() && !usess.matchLockResource(re.getOlatResource())) {
 			return null;
 		}
