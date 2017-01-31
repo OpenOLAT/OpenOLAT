@@ -32,6 +32,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 
+import org.apache.commons.lang.StringEscapeUtils;
 import org.cyberneko.html.parsers.SAXParser;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.helpers.Settings;
@@ -631,6 +632,8 @@ public class QTI12To21Converter {
 				if(!trimmedText.startsWith("<p") && !trimmedText.startsWith("<div")) {
 					text = "<p>" + trimmedText + "</p>";
 				}	
+			} else {
+				text = StringEscapeUtils.unescapeHtml(text);
 			}
 		}
 		return text;
