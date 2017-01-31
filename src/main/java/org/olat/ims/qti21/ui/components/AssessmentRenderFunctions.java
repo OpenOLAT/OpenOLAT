@@ -616,14 +616,11 @@ public class AssessmentRenderFunctions {
   </xsl:function>
 	 */
 	public static final String convertLink(AssessmentObjectComponent component, ResolvedAssessmentItem resolvedAssessmentItem, String uri) {
-		if(uri.startsWith("http:") || uri.startsWith("https:") || uri.startsWith("mailto:")) {
+		if(uri != null && uri.startsWith("http:") || uri.startsWith("https:") || uri.startsWith("mailto:")) {
 			return uri;
 		}
-		
+
 		String relativePath = component.relativePathTo(resolvedAssessmentItem);
-		uri = component.getMapperUri() + "/file?href=" + relativePath + uri;
-		return uri;
+		return component.getMapperUri() + "/file?href=" + relativePath + (uri == null ? "" : uri);
 	}
-
-
 }
