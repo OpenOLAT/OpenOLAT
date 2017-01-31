@@ -225,7 +225,7 @@ public class EPPolicyManager {
 			Group secGroup = groupDao.createGroup();
 			relation = createBaseRelation(map, secGroup, EPMapPolicy.Type.user.name(), policy.getFrom(), policy.getTo());
 			for(Identity identity:policy.getIdentities()) {
-				groupDao.addMembership(secGroup, identity, GroupRoles.participant.name());
+				groupDao.addMembershipTwoWay(secGroup, identity, GroupRoles.participant.name());
 			}
 		} else {
 			EPStructureElementToGroupRelation currentPolicy = reusePolicyInSession(relation, map);
@@ -248,7 +248,7 @@ public class EPPolicyManager {
 				groupDao.removeMembership(secGroup, currentMember);
 			}
 			for(Identity newMember:newMembers) {
-				groupDao.addMembership(secGroup, newMember, GroupRoles.participant.name());
+				groupDao.addMembershipTwoWay(secGroup, newMember, GroupRoles.participant.name());
 			}
 		}
 		return relation;

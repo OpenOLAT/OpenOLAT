@@ -33,12 +33,14 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
+import java.util.Random;
 import java.util.UUID;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.GroupRoles;
@@ -58,6 +60,11 @@ import org.olat.core.id.context.BusinessControl;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
+import org.olat.core.logging.activity.OlatResourceableType;
+import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
+import org.olat.core.logging.activity.ThreadLocalUserActivityLoggerInstaller;
+import org.olat.core.util.SessionInfo;
+import org.olat.core.util.UserSession;
 import org.olat.core.util.Util;
 import org.olat.course.CourseFactory;
 import org.olat.course.CourseModule;
@@ -75,6 +82,7 @@ import org.olat.resource.OLATResource;
 import org.olat.resource.OLATResourceManager;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
+import org.olat.util.logging.activity.LoggingResourceable;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -249,23 +257,30 @@ public class EnrollmentManagerConcurrentTest extends OlatTestCase implements Win
 	
 	@Test
 	public void testConcurrentEnrollmentWithWaitingList() {
-		List<Identity> ids = new ArrayList<Identity>(30);	
-		for(int i=0; i<30; i++) {
+		int NUM_OF_USERS = 30;
+		List<Identity> ids = new ArrayList<Identity>(NUM_OF_USERS);	
+		for(int i=0; i<NUM_OF_USERS; i++) {
 			Identity id = JunitTestHelper.createAndPersistIdentityAsUser("enroll-a-" + i + "-" + UUID.randomUUID().toString());
 			ids.add(id);
 		}
 		
 		ENCourseNode enNode = new ENCourseNode();
-		OLATResource resource = resourceManager.createOLATResourceInstance(CourseModule.class);
-		RepositoryEntry addedEntry = repositoryService.create("Ayanami", "-", "Enrollment test course 2", "A JUnit course", resource);
+		
+		Identity author = JunitTestHelper.createAndPersistIdentityAsAuthor("enroller");
+		RepositoryEntry addedEntry = JunitTestHelper.deployBasicCourse(author);
 		CourseEnvironment cenv = CourseFactory.createCourse(addedEntry, "Test-Enroll", "Test", "Test enrollment with concurrent users").getCourseEnvironment();
 		BusinessGroup group = businessGroupService.createBusinessGroup(id1, "Enrollment", "Enroll", new Integer(1), new Integer(10), true, false, null);
 		Assert.assertNotNull(group);
 		dbInstance.commitAndCloseSession();
 
 		final CountDownLatch doneSignal = new CountDownLatch(ids.size());
+		EnrollThread[] threads = new EnrollThread[NUM_OF_USERS];
+		int t = 0;
 		for(Identity id:ids) {
-			EnrollThread thread = new EnrollThread(id, group, enNode, cenv, doneSignal);
+			threads[t++] = new EnrollThread(id, addedEntry, group, enNode, cenv, doneSignal);
+		}
+		
+		for(EnrollThread thread:threads) {
 			thread.start();
 		}
 		
@@ -275,6 +290,8 @@ public class EnrollmentManagerConcurrentTest extends OlatTestCase implements Win
 		} catch (InterruptedException e) {
 			fail("" + e.getMessage());
 		}
+		
+		dbInstance.commitAndCloseSession();
 
 		List<Identity> enrolledIds = businessGroupService.getMembers(group, GroupRoles.participant.name());
 		Assert.assertNotNull(enrolledIds);
@@ -284,17 +301,91 @@ public class EnrollmentManagerConcurrentTest extends OlatTestCase implements Win
 		Assert.assertNotNull(waitingIds);
 		Assert.assertEquals(ids.size() - 10, waitingIds.size());
 	}
+	
+	
+	@Test @Ignore
+	public void testConcurrentEnrollmentWithWaitingList_big() {
+		List<Identity> ids = new ArrayList<Identity>(100);	
+		for(int i=0; i<100; i++) {
+			Identity id = JunitTestHelper.createAndPersistIdentityAsUser("enroll-a-" + i + "-" + UUID.randomUUID().toString());
+			ids.add(id);
+		}
+		
+		Identity author = JunitTestHelper.createAndPersistIdentityAsAuthor("enroller");
+		RepositoryEntry addedEntry = JunitTestHelper.deployBasicCourse(author);
+		
+		ENCourseNode enNode1 = new ENCourseNode();
+		ENCourseNode enNode2 = new ENCourseNode();
+		ENCourseNode enNode3 = new ENCourseNode();
+		ENCourseNode enNode4 = new ENCourseNode();
+		ENCourseNode enNode5 = new ENCourseNode();
+
+		CourseEnvironment cenv = CourseFactory.loadCourse(addedEntry).getCourseEnvironment();
+		BusinessGroup group1 = businessGroupService.createBusinessGroup(author, "Enrollment 1", "Enroll 1", new Integer(1), new Integer(8), true, true, addedEntry);
+		BusinessGroup group2 = businessGroupService.createBusinessGroup(author, "Enrollment 2", "Enroll 2", new Integer(1), new Integer(10), true, true, addedEntry);
+		BusinessGroup group3 = businessGroupService.createBusinessGroup(author, "Enrollment 3", "Enroll 3", new Integer(1), new Integer(4), true, true, addedEntry);
+		BusinessGroup group4 = businessGroupService.createBusinessGroup(author, "Enrollment 4", "Enroll 4", new Integer(1), new Integer(10), true, true, addedEntry);
+		BusinessGroup group5 = businessGroupService.createBusinessGroup(author, "Enrollment 5", "Enroll 5", new Integer(1), new Integer(9), true, true, addedEntry);
+		dbInstance.commitAndCloseSession();
+
+		EnrollThread[] threads = new EnrollThread[100];
+		
+		final CountDownLatch doneSignal = new CountDownLatch(ids.size());
+		int t = 0;
+		for(int i=0; i<30; i++) {
+			threads[t++] = new EnrollThread(ids.get(i), addedEntry, group1, enNode1, cenv, doneSignal);
+		}
+		for(int i=30; i<50; i++) {
+			threads[t++] = new EnrollThread(ids.get(i), addedEntry, group2, enNode2, cenv, doneSignal);
+		}
+		for(int i=50; i<70; i++) {
+			threads[t++] = new EnrollThread(ids.get(i), addedEntry, group3, enNode3, cenv, doneSignal);
+		}
+		for(int i=70; i<90; i++) {
+			threads[t++] = new EnrollThread(ids.get(i), addedEntry, group4, enNode4, cenv, doneSignal);
+		}
+		for(int i=90; i<100; i++) {
+			threads[t++] = new EnrollThread(ids.get(i), addedEntry, group5, enNode5, cenv, doneSignal);
+		}
+		
+		for(EnrollThread thread:threads) {
+			thread.start();
+		}
+
+		try {
+			boolean interrupt = doneSignal.await(360, TimeUnit.SECONDS);
+			assertTrue("Test takes too long (more than 10s)", interrupt);
+		} catch (InterruptedException e) {
+			fail("" + e.getMessage());
+		}
+		
+		dbInstance.commitAndCloseSession();
+
+		List<Identity> enrolled_1_Ids = businessGroupService.getMembers(group1, GroupRoles.participant.name());
+		Assert.assertEquals(8, enrolled_1_Ids.size());
+		List<Identity> enrolled_2_Ids = businessGroupService.getMembers(group2, GroupRoles.participant.name());
+		Assert.assertEquals(10, enrolled_2_Ids.size());
+		List<Identity> enrolled_3_Ids = businessGroupService.getMembers(group3, GroupRoles.participant.name());
+		Assert.assertEquals(4, enrolled_3_Ids.size());
+		List<Identity> enrolled_4_Ids = businessGroupService.getMembers(group4, GroupRoles.participant.name());
+		Assert.assertEquals(10, enrolled_4_Ids.size());
+		List<Identity> enrolled_5_Ids = businessGroupService.getMembers(group5, GroupRoles.participant.name());
+		Assert.assertEquals(9, enrolled_5_Ids.size());
+	}
 
 	private class EnrollThread extends Thread {
 		private final ENCourseNode enNode;
 		private final Identity identity;
 		private final CourseEnvironment cenv;
 		private final BusinessGroup group;
+		private final RepositoryEntry courseEntry;
 		private final CountDownLatch doneSignal;
 		
-		public EnrollThread(Identity identity, BusinessGroup group, ENCourseNode enNode, CourseEnvironment cenv, CountDownLatch doneSignal) {
+		public EnrollThread(Identity identity, RepositoryEntry courseEntry, BusinessGroup group,
+				ENCourseNode enNode, CourseEnvironment cenv, CountDownLatch doneSignal) {
 			this.enNode = enNode;
 			this.group = group;
+			this.courseEntry = courseEntry;
 			this.identity = identity;
 			this.cenv = cenv;
 			this.doneSignal = doneSignal;
@@ -303,19 +394,30 @@ public class EnrollmentManagerConcurrentTest extends OlatTestCase implements Win
 		@Override
 		public void run() {
 			try {
-				sleep(10);
+				UserSession session = new UserSession();
+				session.setIdentity(identity);
+				session.setSessionInfo(new SessionInfo(identity.getKey(), identity.getName()));
+				ThreadLocalUserActivityLoggerInstaller.initUserActivityLogger(session);
+				
 				IdentityEnvironment ienv = new IdentityEnvironment();
 				ienv.setIdentity(identity);
 				UserCourseEnvironment userCourseEnv = new UserCourseEnvironmentImpl(ienv, cenv);
 				CoursePropertyManager coursePropertyManager = userCourseEnv.getCourseEnvironment().getCoursePropertyManager();
 				CourseGroupManager courseGroupManager = userCourseEnv.getCourseEnvironment().getCourseGroupManager();
 				
+				ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrap(courseEntry.getOlatResource(), OlatResourceableType.course));
+				ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrap(enNode));
+				ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrap(group));
+
+				sleep(Math.round(new Random().nextDouble() * 100l));
 				enrollmentManager.doEnroll(identity, JunitTestHelper.getUserRoles(), group, enNode, coursePropertyManager, EnrollmentManagerConcurrentTest.this /*WindowControl mock*/, testTranslator,
 						new ArrayList<Long>()/*enrollableGroupNames*/, new ArrayList<Long>()/*enrollableAreaNames*/, courseGroupManager);
-				DBFactory.getInstance().commitAndCloseSession();
+				DBFactory.getInstance().commit();
 			} catch (Exception e) {
 				log.error("", e);
 			}	finally {
+				ThreadLocalUserActivityLoggerInstaller.resetUserActivityLogger();
+				DBFactory.getInstance().commitAndCloseSession();
 				doneSignal.countDown();
 			}
 		}
