@@ -75,7 +75,7 @@ public class CoachingLargeTest extends OlatTestCase {
 	private static Identity coach10, coach11, coach12, coach13;
 	private static Identity coach20, coach21, coach22, coach23, coach24, coach25, coach26;
 	
-	private static Identity student10;
+	private static Identity aStudent;
 	
 	private static RepositoryEntry course10;
 
@@ -125,9 +125,6 @@ public class CoachingLargeTest extends OlatTestCase {
 		for(int i=0; i<NUM_OF_STUDENTS; i++) {
 			Identity student = JunitTestHelper.createAndPersistIdentityAsRndUser("student-" + i);
 			students.add(student);
-			if(i == 0) {
-				student10 = student;
-			}
 		}
 		
 		int qCount = 0;
@@ -166,6 +163,9 @@ public class CoachingLargeTest extends OlatTestCase {
 			
 			List<Identity> newStudents = reservoirSample(students, NUM_OF_STUDENTS / 2);
 			for(Identity newStudent:newStudents) {
+				if(aStudent == null) {
+					aStudent = newStudent;
+				}
 				addStudentToCourse(newStudent, re);
 				if(qCount++ % 20 == 0) {
 					dbInstance.intermediateCommit();
@@ -337,7 +337,7 @@ public class CoachingLargeTest extends OlatTestCase {
 	
 	@Test
 	public void getStudentsCourses() {
-		List<RepositoryEntry> courses = coachingService.getStudentsCourses(coach10, student10);
+		List<RepositoryEntry> courses = coachingService.getStudentsCourses(coach10, aStudent);
 		Assert.assertNotNull(courses);
 		
 		List<Long> myCourses = coachToCourseMap.get(coach10.getKey());
@@ -346,22 +346,22 @@ public class CoachingLargeTest extends OlatTestCase {
 	
 	@Test
 	public void getUserCourses() {
-		List<RepositoryEntry> courses = coachingService.getUserCourses(student10);
+		List<RepositoryEntry> courses = coachingService.getUserCourses(aStudent);
 		Assert.assertNotNull(courses);
-		Assert.assertEquals(studentToCourseMap.get(student10).size(), courses.size());
+		Assert.assertEquals(studentToCourseMap.get(aStudent).size(), courses.size());
 	}
 	
 	@Test
 	public void getUsersStatistics() {
 		SearchCoachedIdentityParams params = new SearchCoachedIdentityParams();
-		params.setLogin(student10.getName());
+		params.setLogin(aStudent.getName());
 		
 		List<StudentStatEntry> statEntries = coachingService.getUsersStatistics(params, userPropertyHandlers);
 		Assert.assertNotNull(statEntries);
 		Assert.assertEquals(1, statEntries.size());
 		
 		StudentStatEntry statEntry = statEntries.get(0);
-		Assert.assertEquals(student10.getKey(), statEntry.getIdentityKey());
-		Assert.assertEquals(studentToCourseMap.get(student10).size(), statEntry.getCountRepo());
+		Assert.assertEquals(aStudent.getKey(), statEntry.getIdentityKey());
+		Assert.assertEquals(studentToCourseMap.get(aStudent).size(), statEntry.getCountRepo());
 	}
 }
