@@ -124,13 +124,20 @@ public class VideoQualityTableFormController extends FormBasicController {
 			int height = videoTranscoding.getHeight();
 			String dimension = width +"x"+ height;
 			String fileSize = "";
-			if (videoTranscoding.getSize() != 0) {
+			int status = videoTranscoding.getStatus();
+			if (videoTranscoding.getSize() != 0 && status > -1) {
 				fileSize = Formatter.formatBytes(videoTranscoding.getSize());
-			} else if (videoTranscoding.getStatus() == VideoTranscoding.TRANSCODING_STATUS_WAITING) {
+			} else if (status == VideoTranscoding.TRANSCODING_STATUS_WAITING) {
 				fileSize = translate("transcoding.waiting");
-			} else if (videoTranscoding.getStatus() <= VideoTranscoding.TRANSCODING_STATUS_DONE){
+			} else if (status <= VideoTranscoding.TRANSCODING_STATUS_DONE && status > -1){
 				fileSize = translate("transcoding.processing") + ": " + videoTranscoding.getStatus() + "%";					
-			}
+			} else if (status == VideoTranscoding.TRANSCODING_STATUS_INEFFICIENT) {
+				fileSize = translate("transcoding.inefficient");
+			} else if (status == VideoTranscoding.TRANSCODING_STATUS_ERROR) {
+				fileSize = translate("transcoding.error");
+			} else if (status == VideoTranscoding.TRANSCODING_STATUS_TIMEOUT) {
+				fileSize = translate("transcoding.timeout");
+			} 
 			rows.add(new QualityTableRow(previewVersionLink, dimension,  fileSize, videoTranscoding.getFormat(), deleteLink));
 		}
 		List<Integer> missingResolutions = videoManager.getMissingTranscodings(videoResource);

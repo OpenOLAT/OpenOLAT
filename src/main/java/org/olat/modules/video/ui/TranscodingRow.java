@@ -29,16 +29,18 @@ public class TranscodingRow {
 	private int resolution;
 	private int sumVideos;
 	private int missingTranscodings;
+	private int failedTranscodings;
 	private int numberTranscodings;
 	private boolean allTranscoded;
 
-	public TranscodingRow(int resolution, int numberTranscodings, int sumVideos, boolean mayTranscode) {
+	public TranscodingRow(int resolution, int numberTranscodings, int failedTranscodings, int sumVideos, boolean mayTranscode) {
 		super();
 		this.resolution = resolution;
 		this.numberTranscodings = numberTranscodings;
 		this.sumVideos = sumVideos;
-		this.missingTranscodings = sumVideos - numberTranscodings;
-		this.allTranscoded = numberTranscodings < sumVideos && mayTranscode;		
+		this.missingTranscodings = sumVideos - numberTranscodings - failedTranscodings;
+		this.failedTranscodings = failedTranscodings;
+		this.allTranscoded = numberTranscodings + failedTranscodings < sumVideos && mayTranscode;		
 	}
 
 	
@@ -74,9 +76,17 @@ public class TranscodingRow {
 	public void setNumberTranscodings(int numberTranscodings) {
 		this.numberTranscodings = numberTranscodings;
 	}
+	
+	public int getFailedTranscodings() {
+		return failedTranscodings;
+	}
+
+	public void setFailedTranscodings(int failedTranscodings) {
+		this.failedTranscodings = failedTranscodings;
+	}
 
 	public int getMissingTranscodings() {
-		return missingTranscodings;
+		return missingTranscodings >= 0 ? missingTranscodings : 0;
 	}
 
 	public void setMissingTranscodings(int missingTranscodings) {

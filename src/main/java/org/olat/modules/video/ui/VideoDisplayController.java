@@ -28,6 +28,7 @@ import org.olat.core.commons.services.commentAndRating.CommentAndRatingDefaultSe
 import org.olat.core.commons.services.commentAndRating.CommentAndRatingSecurityCallback;
 import org.olat.core.commons.services.commentAndRating.ReadOnlyCommentsSecurityCallback;
 import org.olat.core.commons.services.commentAndRating.ui.UserCommentsAndRatingsController;
+import org.olat.core.commons.services.image.Size;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.htmlheader.jscss.JSAndCSSComponent;
@@ -194,6 +195,11 @@ public class VideoDisplayController extends BasicController {
 		mainVC.contextPut("authors", (StringHelper.containsNonWhitespace(authors) ? authors : null));
 
 		if(video != null) {
+			// get resolution of master video resource 
+			Size masterResolution = videoManager.getVideoResolutionFromOLATResource(entry.getOlatResource());
+			String masterTitle = videoManager.getDisplayTitleForResolution(masterResolution.getHeight(), getTranslator());
+			String masterSize = " (" + Formatter.formatBytes(videoManager.getVideoMetadata(entry.getOlatResource()).getSize()) + ")";
+			boolean addMaster = true;
 			// Mapper for Video
 			String masterMapperId = "master-" + entry.getOlatResource().getResourceableId();
 			String masterUrl = registerCacheableMapper(ureq, masterMapperId, new VideoMediaMapper(videoManager.getMasterContainer(entry.getOlatResource())));
@@ -213,6 +219,8 @@ public class VideoDisplayController extends BasicController {
 			for (VideoTranscoding videoTranscoding : videos) {
 				if (videoTranscoding.getStatus() == VideoTranscoding.TRANSCODING_STATUS_DONE) {
 					readyToPlayVideos.add(videoTranscoding);
+					// Check if at least one has equal height, else use master as resource
+					addMaster &= videoTranscoding.getHeight() < masterResolution.getHeight();
 					// Use the users preferred resolution or the next higher resolution
 					if (videoTranscoding.getResolution() >= userPreferredResolution.intValue()) {
 						preferredAvailableResolution = readyToPlayVideos.size() - 1;
@@ -222,6 +230,8 @@ public class VideoDisplayController extends BasicController {
 					displayTitles.add(title);
 				}
 			}
+			mainVC.contextPut("addMaster", addMaster);			
+			mainVC.contextPut("masterTitle", masterTitle + masterSize);
 			mainVC.contextPut("videos", readyToPlayVideos);
 			mainVC.contextPut("displayTitles", displayTitles);
 			mainVC.contextPut("useSourceChooser", Boolean.valueOf(readyToPlayVideos.size() > 1));

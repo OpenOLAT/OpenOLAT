@@ -58,6 +58,8 @@ public class TranscodingQueueTableModel extends DefaultFlexiTableDataModel<Trans
 			case size: return video.getSize();
 			case format: return video.getFormat();
 			case delete: return video.getDeleteLink();
+			case retranscode: return video.getRetranscodeLink();
+			case failureReason: return video.getFailureReason();
 			default: return "";
 		}
 	}
@@ -70,7 +72,9 @@ public class TranscodingQueueTableModel extends DefaultFlexiTableDataModel<Trans
 		dimension("quality.table.header.dimension"),
 		size("quality.table.header.size"),
 		format("quality.table.header.format"),
-		delete("quality.table.header.delete");
+		delete("quality.table.header.delete"),
+		retranscode("queue.table.header.retranscode"),
+		failureReason("queue.table.failure.reason");
 
 		private final String i18nKey;
 

@@ -42,7 +42,6 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.id.Identity;
-import org.olat.core.util.Formatter;
 import org.olat.course.CorruptedCourseException;
 import org.olat.modules.video.VideoManager;
 import org.olat.modules.video.VideoTranscoding;
@@ -58,13 +57,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
- * Initial Date: 26.10.2016
- * The Class VideoAdminListController.
+ * Initial Date: 31.01.2017
+ * The Class VideoAdminErrorController.
  * @author fkiefer fabian.kiefer@frentix.com
  * 
- * shows a list of all transcoding orders in waiting queue
+ * shows a list of all FAILED transcoding orders 
  */
-public class VideoAdminListController extends FormBasicController {
+public class VideoAdminErrorController extends FormBasicController {
 	
 	private TranscodingQueueTableModel tableModel;
 	private FlexiTableElement tableEl;
@@ -85,18 +84,20 @@ public class VideoAdminListController extends FormBasicController {
 	@Autowired
 	private BaseSecurity baseSecurity;   
 	@Autowired
-	protected RepositoryHandlerFactory repositoryHandlerFactory;
+	private RepositoryHandlerFactory repositoryHandlerFactory;
 
-	public VideoAdminListController(UserRequest ureq, WindowControl wControl) {
+	
+	public VideoAdminErrorController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl,"transcoding_queue");
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TranscodingQueueTableCols.resid));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TranscodingQueueTableCols.displayname));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TranscodingQueueTableCols.failureReason));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TranscodingQueueTableCols.creator));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TranscodingQueueTableCols.creationDate));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TranscodingQueueTableCols.dimension));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TranscodingQueueTableCols.size));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TranscodingQueueTableCols.format));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TranscodingQueueTableCols.retranscode));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TranscodingQueueTableCols.delete));
 		tableModel = new TranscodingQueueTableModel(columnsModel, getTranslator());
 		
@@ -115,26 +116,31 @@ public class VideoAdminListController extends FormBasicController {
 	}
 	
 	private void initTable () {
-		List<VideoTranscoding> videoTranscodings = videoManager.getVideoTranscodingsPendingAndInProgress();
+		List<VideoTranscoding> videoTranscodings = videoManager.getFailedVideoTranscodings();
 		List<TranscodingQueueTableRow> rows = new ArrayList<>();
 		
 		for (VideoTranscoding videoTranscoding : videoTranscodings) {
+
 			String title = videoManager.getDisplayTitleForResolution(videoTranscoding.getResolution(), getTranslator());
 			String resid = String.valueOf(videoTranscoding.getVideoResource().getResourceableId());
 			FormLink resourceLink = uifactory.addFormLink("res_" + counter++, "viewResource", resid, resid, flc, Link.LINK + Link.NONTRANSLATED);
 			resourceLink.setUserObject(videoTranscoding);
 			FormLink deleteLink = uifactory.addFormLink("del_" + counter++, "deleteQuality", "quality.delete", "quality.delete", flc, Link.LINK);
 			deleteLink.setUserObject(videoTranscoding);
-			deleteLink.setIconLeftCSS("o_icon o_icon_delete_item o_icon-fw");			
+			deleteLink.setIconLeftCSS("o_icon o_icon_delete_item o_icon-fw");
+			FormLink retranscodeLink = uifactory.addFormLink("trans_" + counter++, "retranscode", "queue.retranscode", "queue.retranscode", flc, Link.LINK);
+			retranscodeLink.setUserObject(videoTranscoding);
+			retranscodeLink.setIconLeftCSS("o_icon o_icon_refresh o_icon-fw");
 
-			String fileSize = "";
-			if (videoTranscoding.getSize() != 0) {
-				fileSize = Formatter.formatBytes(videoTranscoding.getSize());
-			} else if (videoTranscoding.getStatus() == VideoTranscoding.TRANSCODING_STATUS_WAITING) {
-				fileSize = translate("transcoding.waiting");
-			} else if (videoTranscoding.getStatus() <= VideoTranscoding.TRANSCODING_STATUS_DONE){
-				fileSize = translate("transcoding.processing") + ": " + videoTranscoding.getStatus() + "%";					
-			}
+			String failureReason = "";
+			if (videoTranscoding.getStatus() == VideoTranscoding.TRANSCODING_STATUS_INEFFICIENT) {
+				failureReason = translate("transcoding.inefficient");
+			} else if (videoTranscoding.getStatus() == VideoTranscoding.TRANSCODING_STATUS_ERROR) {
+				failureReason = translate("transcoding.error");
+			} else if (videoTranscoding.getStatus() == VideoTranscoding.TRANSCODING_STATUS_TIMEOUT) {
+				failureReason = translate("transcoding.timeout");
+			} 
+
 			RepositoryEntry videoRe = repositoryService.loadByResourceKey(videoTranscoding.getVideoResource().getKey());
 			if (videoRe == null) continue;
 			String displayname = videoRe.getDisplayname();
@@ -144,7 +150,12 @@ public class VideoAdminListController extends FormBasicController {
 					fullName, fullName, flc, Link.LINK + Link.NONTRANSLATED);
 			authorLink.setUserObject(initialAuthor);
 			Date creationDate = videoTranscoding.getCreationDate();
-			rows.add(new TranscodingQueueTableRow(resourceLink, displayname, creationDate, authorLink, title, fileSize, videoTranscoding.getFormat(), deleteLink));
+			TranscodingQueueTableRow transcodingrow = new TranscodingQueueTableRow(resourceLink, displayname, creationDate, authorLink,
+					title, null, videoTranscoding.getFormat(), deleteLink);
+			transcodingrow.setFailureReason(failureReason);
+			transcodingrow.setRetranscodeLink(retranscodeLink);
+			
+			rows.add(transcodingrow);
 		}
 		tableModel.setObjects(rows);
 		
@@ -161,7 +172,6 @@ public class VideoAdminListController extends FormBasicController {
 		
 		refreshButton = uifactory.addFormLink("button.refresh", formLayout,Link.BUTTON);
 		refreshButton.setIconLeftCSS("o_icon o_icon_refresh o_icon-fw");
-
 	}
 
 	@Override
@@ -185,13 +195,17 @@ public class VideoAdminListController extends FormBasicController {
 			videoManager.deleteVideoTranscoding(videoTranscoding);
 		} else if (source instanceof FormLink && ((FormLink) source).getCmd().equals("viewAuthor")) {
 			showUserInfo(ureq, baseSecurity.findIdentityByName((String) source.getUserObject()));
+		} else if (source instanceof FormLink && ((FormLink) source).getCmd().equals("retranscode")) {
+			FormLink link = (FormLink) source;
+			VideoTranscoding videoTranscoding = (VideoTranscoding) link.getUserObject();
+			videoManager.retranscodeFailedVideoTranscoding(videoTranscoding);
 		} else if (source instanceof FormLink && ((FormLink) source).getCmd().equals("viewResource")) {
 			FormLink link = (FormLink) source;
 			VideoTranscoding videoTranscoding = (VideoTranscoding) link.getUserObject();
 			launch(ureq, videoTranscoding);
 		}
 		initTable();
-	};
+	}
 
 	@Override
 	protected void formOK(UserRequest ureq) {
@@ -203,7 +217,7 @@ public class VideoAdminListController extends FormBasicController {
 		
 	}
 	
-	private void launch(UserRequest ureq, VideoTranscoding videoTranscoding) {
+	protected void launch(UserRequest ureq, VideoTranscoding videoTranscoding) {
 		RepositoryEntry videoRe = repositoryService.loadByResourceKey(videoTranscoding.getVideoResource().getKey());
 		try {
 			RepositoryHandler handler = repositoryHandlerFactory.getRepositoryHandler("FileResource.VIDEO");

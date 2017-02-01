@@ -40,12 +40,13 @@ public class VideoAdminController extends BasicController  {
 
 	
 	private final SegmentViewComponent segmentView;
-	private Link adminSetLink, adminListLink, adminTranscodingLink;
+	private Link adminSetLink, adminListLink, adminTranscodingLink, adminErrorLink;
 	private VelocityContainer mainVC;
 	
 	private VideoAdminSetController adminSetController;
 	private VideoAdminListController adminListController;
 	private VideoAdminTranscodingController adminTranscodingController;
+	private VideoAdminErrorController adminErrorController;
 
 	public VideoAdminController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
@@ -57,6 +58,8 @@ public class VideoAdminController extends BasicController  {
 		segmentView.addSegment(adminSetLink, true);
 		adminListLink = LinkFactory.createLink("tab.admin.list", mainVC, this);
 		segmentView.addSegment(adminListLink, false);
+		adminErrorLink = LinkFactory.createLink("tab.admin.error", mainVC, this);
+		segmentView.addSegment(adminErrorLink, false);
 		adminTranscodingLink = LinkFactory.createLink("tab.admin.transcoding", mainVC, this);
 		segmentView.addSegment(adminTranscodingLink, false);
 		
@@ -80,9 +83,19 @@ public class VideoAdminController extends BasicController  {
 					doOpenAdminList(ureq);
 				} else if (clickedLink == adminTranscodingLink){
 					doOpenTranscodingAdmin(ureq);
+				} else if (clickedLink == adminErrorLink) {
+					doOpenErrorAdmin(ureq);
 				}
 			}
 		}
+	}
+	
+	private void doOpenErrorAdmin(UserRequest ureq) {
+		if(adminErrorController == null) {
+			adminErrorController = new VideoAdminErrorController(ureq, getWindowControl());
+			listenTo(adminErrorController);
+		}
+		mainVC.put("segmentCmp", adminErrorController.getInitialComponent());
 	}
 	
 	private void doOpenAdminConfig(UserRequest ureq) {

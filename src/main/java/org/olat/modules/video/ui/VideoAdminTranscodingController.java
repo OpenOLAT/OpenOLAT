@@ -91,6 +91,7 @@ public class VideoAdminTranscodingController extends FormBasicController {
 		transcodingModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TranscodingCols.resolutions));
 		transcodingModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TranscodingCols.sumVideos));
 		transcodingModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TranscodingCols.numberTranscodings));
+		transcodingModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TranscodingCols.failedTranscodings));
 		transcodingModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TranscodingCols.missingTranscodings));
 		transcodingModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TranscodingCols.transcode, "quality.transcode", 
 				new BooleanCellRenderer(new StaticFlexiCellRenderer(translate("quality.transcode"), "quality.transcode"), null)));
@@ -122,17 +123,24 @@ public class VideoAdminTranscodingController extends FormBasicController {
 		List<TranscodingRow> resolutions = new ArrayList<>();
 		// Hardcoded same as VideoAdminSetController
 		int[] fixresolution = { 2160, 1080, 720, 480, 360, 240 };
-		Map<Integer, Integer> resCount = new HashMap<>();
-		for (TranscodingCount transcodingCount : videoManager.getAllVideoTranscodingsCount()) {
-			resCount.put(transcodingCount.getResolution(), transcodingCount.getCount());
+		Map<Integer, Integer> successCount = new HashMap<>();
+		int beginErrorCode = VideoTranscoding.TRANSCODING_STATUS_INEFFICIENT;
+		for (TranscodingCount transcodingCount : videoManager.getAllVideoTranscodingsCountSuccess(beginErrorCode)) {
+			successCount.put(transcodingCount.getResolution(), transcodingCount.getCount());
+		}
+		Map<Integer, Integer> failCount = new HashMap<>();
+		for (TranscodingCount transcodingCount : videoManager.getAllVideoTranscodingsCountFails(beginErrorCode)) {
+			failCount.put(transcodingCount.getResolution(), transcodingCount.getCount());
 		}
 		for (int i = 0; i < fixresolution.length; i++) {
 			int counter = 0;
 			for (OLATResource videoResource : nativeResolutions.keySet()) {
 				if (nativeResolutions.get(videoResource) >= fixresolution[i]) counter++;
 			}
-			int rescount = resCount.get(fixresolution[i]) != null ? resCount.get(fixresolution[i]) : 0;
-			resolutions.add(new TranscodingRow(fixresolution[i], rescount, counter, mayTranscode(fixresolution[i])));
+			int Scount = successCount.get(fixresolution[i]) != null ? successCount.get(fixresolution[i]) : 0;
+			int Fcount = failCount.get(fixresolution[i]) != null ? failCount.get(fixresolution[i]) : 0;
+			TranscodingRow transcodingRow = new TranscodingRow(fixresolution[i], Scount, Fcount, counter, mayTranscode(fixresolution[i])); 
+			resolutions.add(transcodingRow);
 		}
 		if (resolutions != null){
 			tableModel.setObjects(resolutions);
