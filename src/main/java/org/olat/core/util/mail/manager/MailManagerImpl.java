@@ -35,6 +35,7 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.zip.Adler32;
@@ -48,6 +49,7 @@ import javax.mail.BodyPart;
 import javax.mail.Message.RecipientType;
 import javax.mail.MessagingException;
 import javax.mail.Multipart;
+import javax.mail.SendFailedException;
 import javax.mail.Session;
 import javax.mail.Transport;
 import javax.mail.internet.AddressException;
@@ -872,6 +874,9 @@ public class MailManagerImpl implements MailManager, InitializingBean  {
 		MimeMessage mail = createMimeMessage(fromId, from, toId, to, cc, bccLists, content, result);
 		if(mail != null) {
 			sendMessage(mail, result);
+			if(result != null && !result.isSuccessful()) {
+				handleErrors(result, fromId, toId, cc, bccLists);
+			}
 		}
 		return result;
 	}
@@ -1060,6 +1065,9 @@ public class MailManagerImpl implements MailManager, InitializingBean  {
 				//check that we send an email to someone
 				if(!toAddress.isEmpty() || !ccAddress.isEmpty() || !bccAddress.isEmpty()) {
 					sendRealMessage(fromAddress, toAddress, ccAddress, bccAddress, subject, body, attachments, result);
+					if(result != null && !result.isSuccessful()) {
+						handleErrors(result, fromId, toId, cc, bccLists);
+					}
 				}
 			}
 
@@ -1078,6 +1086,83 @@ public class MailManagerImpl implements MailManager, InitializingBean  {
 			result.setReturnCode(MailerResult.RECIPIENT_ADDRESS_ERROR);
 			return null;
 		}
+	}
+	
+	/**
+	 * Basically try to find compare the list of invalid addresses return by the mail server
+	 * with the different recipients (in the form of Identity) of the mail. 
+	 * 
+	 * @param result The result which contains the invalid addresses
+	 * @param fromId A recipient of the mail (optional can be null)
+	 * @param toId A recipient of the mail (optional can be null)
+	 * @param cc A recipient of the mail (optional can be null)
+	 * @param bccLists A list of contact list of the mail (optional can be null or empty)
+	 */
+	private void handleErrors(MailerResult result, Identity fromId, Identity toId, Identity cc,  List<ContactList> bccLists) {
+		if(result == null) return;
+
+		List<String> invalidAddresses = result.getInvalidAddresses();
+		if(invalidAddresses.size() > 0) {
+			if(match(fromId, invalidAddresses, true)) {
+				result.addFailedIdentites(fromId);
+			}
+			if(match(toId, invalidAddresses, true)) {
+				result.addFailedIdentites(fromId);
+			}
+			if(match(cc, invalidAddresses, true)) {
+				result.addFailedIdentites(fromId);
+			}
+			if(bccLists != null && bccLists.size() > 0) {
+				for(ContactList bccList:bccLists) {
+					Map<String,Identity> emailToIdentityMap = bccList.getIdentiEmails();
+					for(Map.Entry<String,Identity> entry:emailToIdentityMap.entrySet()) {
+						if(match(entry.getKey(), invalidAddresses, true)) {
+							result.addFailedIdentites(entry.getValue());
+						}
+					}
+				}
+			}
+		}
+	}
+	
+	/**
+	 * Try to find the email or institutional email address of the identity in
+	 * the list of addresses.
+	 * 
+	 * @param identity The identity
+	 * @param invalidAddresses The list of addresses to compare with
+	 * @param removeMatch if true, the matched address will be removed of the list
+	 * @return true if found
+	 */
+	private boolean match(Identity identity, List<String> invalidAddresses, boolean removeMatch) {
+		boolean match = false;
+		if(identity != null) {
+			match |= match(identity.getUser().getEmail(), invalidAddresses, removeMatch);
+			match |= match(identity.getUser().getProperty(UserConstants.INSTITUTIONALEMAIL, null), invalidAddresses, removeMatch);
+		}
+		return match;
+	}
+	
+	/**
+	 * Try to find the email address the list of addresses.
+	 * 
+	 * @param identity The email to compare
+	 * @param invalidAddresses The list of addresses to compare with
+	 * @param removeMatch if true, the matched address will be removed of the list
+	 * @return true if found
+	 */
+	private boolean match(String email, List<String> invalidAddresses, boolean removeMatch) {
+		if(StringHelper.containsNonWhitespace(email) && invalidAddresses != null) {
+			for(String invalidAddress:invalidAddresses) {
+				if(email.toLowerCase().contains(invalidAddress.toLowerCase())) {
+					if(removeMatch) {
+						invalidAddresses.remove(invalidAddress);
+					}
+					return true;
+				}
+			}
+		}
+		return false;
 	}
 	
 	private void appendRecipients(DBMailImpl mail, List<ContactList> ccLists, List<Address> toAddress, List<Address> ccAddress,
@@ -1473,6 +1558,7 @@ public class MailManagerImpl implements MailManager, InitializingBean  {
 			p.put("mail.smtp.starttls.enable", "true");
 			p.put("mail.smtp.ssl.trust", mailhost);
 		}
+		p.put("mail.smtp.sendpartial", Boolean.TRUE);
 		
 		Session mailSession;
 		if (smtpAuth == null) {
@@ -1628,6 +1714,11 @@ public class MailManagerImpl implements MailManager, InitializingBean  {
 			} else {
 				result.setReturnCode(MailerResult.MAILHOST_UNDEFINED);
 			}
+		} catch(SendFailedException e) {
+			result.setReturnCode(MailerResult.RECIPIENT_ADDRESS_ERROR);
+			result.addInvalidAddresses(e.getInvalidAddresses());
+			result.addInvalidAddresses(e.getValidUnsentAddresses());
+			log.warn("Could not send mail", e);
 		} catch (MessagingException e) {
 			result.setReturnCode(MailerResult.SEND_GENERAL_ERROR);
 			log.warn("Could not send mail", e);
@@ -1637,15 +1728,29 @@ public class MailManagerImpl implements MailManager, InitializingBean  {
 	private void logMessage(MimeMessage msg) throws MessagingException {
 		try {
 			log.info("E-mail send: " + msg.getSubject());
+			logRecipients(msg, RecipientType.TO);
+			logRecipients(msg, RecipientType.BCC);
+			logRecipients(msg, RecipientType.CC);
 			log.info("Content    : " + msg.getContent());
 			
 			//File file = new File("/HotCoffee/tmp/mail_" + CodeHelper.getForeverUniqueID() + ".msg");
 			//OutputStream os = new FileOutputStream(file);
 			//msg.writeTo(os);
 			//IOUtils.closeQuietly(os);
-			
 		} catch (IOException e) {
 			log.error("", e);
+		}
+	}
+	
+	private void logRecipients(MimeMessage msg, RecipientType type) throws MessagingException {
+		Address[] recipients = msg.getRecipients(type);
+		if(recipients != null && recipients.length > 0) {
+			StringBuilder sb = new StringBuilder();
+			for(Address recipient:recipients) {
+				if(sb.length() > 0) sb.append(", ");
+				sb.append(recipient.toString());
+			}
+			log.info(type + "        : " + sb);
 		}
 	}
 	
