@@ -114,38 +114,51 @@ public class OLATUpgrade_11_3_0 extends OLATUpgrade {
 	private boolean processVideoResource(RepositoryEntry entry) {
 		try {
 			OLATResource videoResource = entry.getOlatResource();
-			// update trackfiles on filesystem
+			if (!videoManager.hasMasterContainer(videoResource)) {
+				log.error("RepoEntry: " + entry.getKey() + " has no valid master container.");
+				//log error but return true to proceed
+				return true;
+			}
+			// update track files on file system
 			VFSContainer masterContainer = videoManager.getMasterContainer(videoResource);
-			VideoMetadata metafromXML = videoManager.readVideoMetadataFile(videoResource);
-			for (Entry<String, String> track : metafromXML.getAllTracks().entrySet()) {
-				VFSItem item = masterContainer.resolve(track.getValue());
-				if (item != null && item instanceof VFSLeaf) {
-					String path = VideoManagerImpl.TRACK + track.getKey() + VideoManagerImpl.DOT
-							+ FilenameUtils.getExtension(track.getValue());
-					//check if modified track file already exists
-					if (masterContainer.resolve(path) == null) {
-						VFSLeaf target = masterContainer.createChildLeaf(path);
-						VFSManager.copyContent((VFSLeaf) item, target);
+			if (videoManager.isMetadataFileValid(videoResource)) {
+				VideoMetadata metafromXML = videoManager.readVideoMetadataFile(videoResource);
+				for (Entry<String, String> track : metafromXML.getAllTracks().entrySet()) {
+					VFSItem item = masterContainer.resolve(track.getValue());
+					if (item != null && item instanceof VFSLeaf) {
+						String path = VideoManagerImpl.TRACK + track.getKey() + VideoManagerImpl.DOT
+								+ FilenameUtils.getExtension(track.getValue());
+						//check if modified track file already exists
+						if (masterContainer.resolve(path) == null) {
+							VFSLeaf target = masterContainer.createChildLeaf(path);
+							VFSManager.copyContent((VFSLeaf) item, target);
+						}
 					}
 				}
+			} else {
+				log.error("RepoEntry: " + entry.getKey() + " has no valid Video Metadata XML file.");
 			}
-			// create entries on database
-			File videoFile = videoManager.getVideoFile(videoResource);
-			String fileName = videoFile.getName();
-			long size = videoFile.length();
-			String format = FilenameUtils.getExtension(fileName);
-			if (videoManager.getVideoMetadata(videoResource) == null) {
-				VideoMetaImpl entity = new VideoMetaImpl();
-				entity.setVideoResource(videoResource);
-				entity.setFormat(format);
-				entity.setCreationDate(new Date());
-				entity.setLastModified(new Date());
-				Size resolution = videoManager.getVideoResolutionFromOLATResource(videoResource);
-				entity.setHeight(resolution.getHeight());
-				entity.setWidth(resolution.getWidth());
-				entity.setSize(size);
-				entity.setLength(entry.getExpenditureOfWork());
-				dbInstance.getCurrentEntityManager().persist(entity);
+			// create meta data entries on database
+			if (videoManager.hasVideoFile(videoResource)) {
+				File videoFile = videoManager.getVideoFile(videoResource);
+				String fileName = videoFile.getName();
+				long size = videoFile.length();
+				String format = FilenameUtils.getExtension(fileName);
+				if (videoManager.getVideoMetadata(videoResource) == null) {
+					VideoMetaImpl entity = new VideoMetaImpl();
+					entity.setVideoResource(videoResource);
+					entity.setFormat(format);
+					entity.setCreationDate(new Date());
+					entity.setLastModified(new Date());
+					Size resolution = videoManager.getVideoResolutionFromOLATResource(videoResource);
+					entity.setHeight(resolution.getHeight());
+					entity.setWidth(resolution.getWidth());
+					entity.setSize(size);
+					entity.setLength(entry.getExpenditureOfWork());
+					dbInstance.getCurrentEntityManager().persist(entity);
+				}
+			} else {
+				log.error("RepoEntry: " + entry.getKey() + " has no valid resource.");
 			}
 			return true;
 		} catch (Exception e) {

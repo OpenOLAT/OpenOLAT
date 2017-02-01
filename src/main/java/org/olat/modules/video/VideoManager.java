@@ -46,6 +46,14 @@ import org.olat.resource.OLATResource;
 public interface VideoManager {
 	
 	/**
+	 * Checks for video file.
+	 *
+	 * @param videoResource the video resource
+	 * @return true, if successful
+	 */
+	public abstract boolean hasVideoFile(OLATResource videoResource);
+	
+	/**
 	 * get Videofile as File representation
 	 * @param videoResource
 	 * @return File 
@@ -158,6 +166,22 @@ public interface VideoManager {
 	 * @return the all video transcodings
 	 */
 	public abstract List<TranscodingCount> getAllVideoTranscodingsCount();
+	
+	/**
+	 * Gets the all video transcodings count success.
+	 *
+	 * @param errorcode the errorcode
+	 * @return the all video transcodings count success
+	 */
+	public List<TranscodingCount> getAllVideoTranscodingsCountSuccess(int errorcode);
+
+	/**
+	 * Gets the all video transcodings count fails.
+	 *
+	 * @param errorcode the errorcode
+	 * @return the all video transcodings count fails
+	 */
+	public List<TranscodingCount> getAllVideoTranscodingsCountFails(int errorcode);
 
 	/**
 	 * Get a human readable aspect ratio from the given video size. Recognizes
@@ -273,6 +297,13 @@ public interface VideoManager {
 	 * @return List of video transcodings which have not yet been done
 	 */
 	public abstract List<VideoTranscoding> getVideoTranscodingsPendingAndInProgress();
+	
+	/**
+	 * Gets the failed video transcodings.
+	 *
+	 * @return list of failed VideoTranscoding
+	 */
+	public abstract List<VideoTranscoding> getFailedVideoTranscodings();
 	
 	/**
 	 * Returns a list with 
@@ -399,5 +430,29 @@ public interface VideoManager {
 	 * @param video the video
 	 */
 	public void startTranscodingProcessIfEnabled(OLATResource video);
+	
+	/**
+	 * Retranscode failed video transcoding.
+	 *
+	 * @param videoTranscoding
+	 * @return 
+	 */
+	public VideoTranscoding retranscodeFailedVideoTranscoding(VideoTranscoding videoTranscoding);
+
+	/**
+	 * Checks if is metadata file valid.
+	 *
+	 * @param videoResource
+	 * @return true, if is metadata file valid
+	 */
+	public boolean isMetadataFileValid(OLATResource videoResource);
+
+	/**
+	 * Checks for master container.
+	 *
+	 * @param videoResource
+	 * @return true, if master container can be resolved
+	 */
+	boolean hasMasterContainer(OLATResource videoResource);
 
 }

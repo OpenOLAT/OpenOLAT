@@ -174,7 +174,59 @@ public class VideoTranscodingDAO {
 			.createQuery(sb.toString(), Object[].class)
 			.getResultList();
 		
-		List<TranscodingCount>  allTranscodings = new ArrayList<>();
+		List<TranscodingCount> allTranscodings = new ArrayList<>();
+		for (Object[] data : rawData) {
+			Long count = (Long) data[0];
+			Integer resolution = (Integer) data[1];
+			allTranscodings.add(new TranscodingCount(count, resolution));
+		}
+		return allTranscodings;
+	}
+	
+	/**
+	 * Gets the all video transcodings count FAILS.
+	 *
+	 * @return FAILS count
+	 */
+	List<TranscodingCount> getAllVideoTranscodingsCountFails(int errorcode) {
+		StringBuilder sb = new StringBuilder();
+		//[0] count of a distinct [1] resolution
+		sb.append("select count(trans.key), trans.resolution from videotranscoding as trans")
+			.append(" where trans.status <= :errorcode")
+			.append(" group by trans.resolution");
+		
+		List<Object[]> rawData = dbInstance.getCurrentEntityManager()
+			.createQuery(sb.toString(), Object[].class)
+			.setParameter("errorcode", errorcode)
+			.getResultList();
+		
+		List<TranscodingCount> allTranscodings = new ArrayList<>();
+		for (Object[] data : rawData) {
+			Long count = (Long) data[0];
+			Integer resolution = (Integer) data[1];
+			allTranscodings.add(new TranscodingCount(count, resolution));
+		}
+		return allTranscodings;
+	}
+	
+	/**
+	 * Gets the all video successful transcodings count.
+	 *
+	 * @return Success count
+	 */
+	List<TranscodingCount> getAllVideoTranscodingsCountSuccess(int errorcode) {
+		StringBuilder sb = new StringBuilder();
+		//[0] count of a distinct [1] resolution
+		sb.append("select count(trans.key), trans.resolution from videotranscoding as trans")
+			.append(" where trans.status > :errorcode")
+			.append(" group by trans.resolution");
+		
+		List<Object[]> rawData = dbInstance.getCurrentEntityManager()
+			.createQuery(sb.toString(), Object[].class)
+			.setParameter("errorcode", errorcode)
+			.getResultList();
+		
+		List<TranscodingCount> allTranscodings = new ArrayList<>();
 		for (Object[] data : rawData) {
 			Long count = (Long) data[0];
 			Integer resolution = (Integer) data[1];
@@ -193,9 +245,40 @@ public class VideoTranscodingDAO {
 		StringBuilder sb = new StringBuilder();
 			sb.append("select trans from videotranscoding as trans")
 			.append(" inner join fetch trans.videoResource as res")
-			.append(" where trans.status != 100")
+			.append(" where trans.status != 100 and trans.status > -2")//without error codes
 			.append(" order by trans.creationDate asc, trans.id asc");
 		return dbInstance.getCurrentEntityManager().createQuery(sb.toString(), VideoTranscoding.class).getResultList();
 	}
+	
+	/**
+	 * Gets the failed video transcodings.
+	 * currently error codes start at -2 until -4.
+	 *
+	 * @return the failed video transcodings
+	 */
+	List<VideoTranscoding> getFailedVideoTranscodings() {
+			StringBuilder sb = new StringBuilder();
+				sb.append("select trans from videotranscoding as trans")
+				.append(" inner join fetch trans.videoResource as res")
+				.append(" where trans.status <= -2")//error codes
+				.append(" order by trans.creationDate asc, trans.id asc");
+			return dbInstance.getCurrentEntityManager()
+					.createQuery(sb.toString(), VideoTranscoding.class)
+					.getResultList();
+	}
+	
+	/**
+	 * Update transcoding status so TranscodingJob can find the resource.
+	 *
+	 * @param videoTranscoding
+	 * @return updated videoTranscoding
+	 */
+	VideoTranscoding updateTranscodingStatus (VideoTranscoding videoTranscoding) {
+		((VideoTranscodingImpl) videoTranscoding).setLastModified(new Date());
+		videoTranscoding.setStatus(-1);
+		VideoTranscoding trans = dbInstance.getCurrentEntityManager().merge(videoTranscoding);
+		return trans;
+	}
+
 
 }

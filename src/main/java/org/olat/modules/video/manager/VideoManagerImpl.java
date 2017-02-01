@@ -325,9 +325,22 @@ public class VideoManagerImpl implements VideoManager {
 //	}
 
 	@Override
+	public boolean isMetadataFileValid(OLATResource videoResource) {
+		VFSContainer baseContainer = FileResourceManager.getInstance().getFileResourceRootImpl(videoResource);
+		VFSLeaf metaDataFile = (VFSLeaf) baseContainer.resolve(FILENAME_VIDEO_METADATA_XML);
+		try {
+			VideoMetadata meta = (VideoMetadata) XStreamHelper.readObject(XStreamHelper.createXStreamInstance(), metaDataFile);
+			return meta != null;
+		} catch (Exception e) {
+			log.error("Error while parsing XStream file for videoResource::" + videoResource, e);
+			return false;
+		}
+	}
+
+	@Override
 	public VideoMetadata readVideoMetadataFile(OLATResource videoResource){
 		VFSContainer baseContainer= FileResourceManager.getInstance().getFileResourceRootImpl(videoResource);
-		VFSLeaf metaDataFile = VFSManager.resolveOrCreateLeafFromPath(baseContainer, FILENAME_VIDEO_METADATA_XML);
+		VFSLeaf metaDataFile = (VFSLeaf) baseContainer.resolve(FILENAME_VIDEO_METADATA_XML);
 		try {
 			return (VideoMetadata) XStreamHelper.readObject(XStreamHelper.createXStreamInstance(), metaDataFile);
 		} catch (Exception e) {
@@ -345,6 +358,11 @@ public class VideoManagerImpl implements VideoManager {
 		if (videoModule.isTranscodingEnabled()) {
 			startTranscodingProcess(video);
 		}
+	}
+	
+	@Override
+	public VideoTranscoding retranscodeFailedVideoTranscoding(VideoTranscoding videoTranscoding) {
+		return videoTranscodingDao.updateTranscodingStatus(videoTranscoding);
 	}
 	
 	@Override
@@ -409,6 +427,18 @@ public class VideoManagerImpl implements VideoManager {
 	@Override 
 	public List<TranscodingCount> getAllVideoTranscodingsCount() {
 		List<TranscodingCount> allVideoTranscodings = videoTranscodingDao.getAllVideoTranscodingsCount();
+		return allVideoTranscodings;
+	}
+	
+	@Override 
+	public List<TranscodingCount> getAllVideoTranscodingsCountSuccess(int errorcode) {
+		List<TranscodingCount> allVideoTranscodings = videoTranscodingDao.getAllVideoTranscodingsCountSuccess(errorcode);
+		return allVideoTranscodings;
+	}
+	
+	@Override 
+	public List<TranscodingCount> getAllVideoTranscodingsCountFails(int errorcode) {
+		List<TranscodingCount> allVideoTranscodings = videoTranscodingDao.getAllVideoTranscodingsCountFails(errorcode);
 		return allVideoTranscodings;
 	}
 	
@@ -489,6 +519,12 @@ public class VideoManagerImpl implements VideoManager {
 		return title;
 	}
 	
+	@Override
+	public boolean hasMasterContainer (OLATResource videoResource) {
+		VFSContainer baseContainer =  FileResourceManager.getInstance().getFileResourceRootImpl(videoResource);
+		VFSContainer masterContainer = (VFSContainer) baseContainer.resolve(DIRNAME_MASTER);
+		return masterContainer != null;		
+	}
 	
 	@Override
 	public VFSContainer getMasterContainer(OLATResource videoResource) {
@@ -692,6 +728,11 @@ public class VideoManagerImpl implements VideoManager {
 	}
 	
 	@Override
+	public List<VideoTranscoding> getFailedVideoTranscodings() {
+		return videoTranscodingDao.getFailedVideoTranscodings();
+	}
+	
+	@Override
 	public void deleteVideoTranscoding(VideoTranscoding videoTranscoding) {
 		videoTranscodingDao.deleteVideoTranscoding(videoTranscoding);
 		VFSContainer container = getTranscodingContainer(videoTranscoding.getVideoResource());
@@ -830,6 +871,20 @@ public class VideoManagerImpl implements VideoManager {
 	@Override
 	public List<RepositoryEntry> getAllVideoRepoEntries(String typename) {
 		return videoMetadataDao.getAllVideoRepoEntries(typename);
+	}
+
+	@Override
+	public boolean hasVideoFile(OLATResource videoResource) {
+		try {
+			if (getVideoFile(videoResource) == null) {
+				return false;
+			} else {
+				return true;
+			}
+		} catch (Exception e) {
+			log.error("",e);
+			return false;
+		}		
 	}
 
 }
