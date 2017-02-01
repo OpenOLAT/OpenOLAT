@@ -523,7 +523,7 @@ public class VideoManagerImpl implements VideoManager {
 	public boolean hasMasterContainer (OLATResource videoResource) {
 		VFSContainer baseContainer =  FileResourceManager.getInstance().getFileResourceRootImpl(videoResource);
 		VFSContainer masterContainer = (VFSContainer) baseContainer.resolve(DIRNAME_MASTER);
-		return masterContainer != null;		
+		return masterContainer != null & masterContainer.exists();		
 	}
 	
 	@Override
@@ -875,16 +875,9 @@ public class VideoManagerImpl implements VideoManager {
 
 	@Override
 	public boolean hasVideoFile(OLATResource videoResource) {
-		try {
-			if (getVideoFile(videoResource) == null) {
-				return false;
-			} else {
-				return true;
-			}
-		} catch (Exception e) {
-			log.error("",e);
-			return false;
-		}		
+		VFSContainer masterContainer = getMasterContainer(videoResource);
+		LocalFileImpl videoFile = (LocalFileImpl) masterContainer.resolve(FILENAME_VIDEO_MP4);	
+		return videoFile != null & videoFile.exists();
 	}
 
 }
