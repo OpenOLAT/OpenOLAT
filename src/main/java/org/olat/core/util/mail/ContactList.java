@@ -64,6 +64,10 @@ public class ContactList extends LogDelegator {
 	private Map<String, Identity> identiEmails = new HashMap<String, Identity>();
 	private boolean emailPrioInstitutional = false;
 
+	public ContactList() {
+		//
+	}
+	
 	/**
 	 * A ContacList must have at least a name != null, matching ^[^;,:]*$
 	 * 
@@ -71,7 +75,6 @@ public class ContactList extends LogDelegator {
 	 */
 	public ContactList(String name) {
 		setName(name);
-		this.description = null;
 	}
 
 	/**
