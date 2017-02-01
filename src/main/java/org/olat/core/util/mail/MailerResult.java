@@ -28,6 +28,8 @@ package org.olat.core.util.mail;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.mail.Address;
+
 import org.olat.core.id.Identity;
 
 /**
@@ -49,7 +51,9 @@ public class MailerResult {
 	public static final int TEMPLATE_GENERAL_ERROR = 6;
 	public static final int ATTACHMENT_INVALID = 7;
 
-	private final List<Identity> failedIdentites = new ArrayList<Identity>();
+	private final List<String> invalidAddresses = new ArrayList<>();
+	private final List<Identity> failedIdentites = new ArrayList<>();
+	
 	private int returnCode = OK;
 
 	/**
@@ -80,6 +84,18 @@ public class MailerResult {
 	public void addFailedIdentites(Identity failedIdentity) {
 		this.failedIdentites.add(failedIdentity);
 	}
+	
+	public List<String> getInvalidAddresses() {
+		return invalidAddresses;
+	}
+	
+	public void addInvalidAddresses(Address[] addresses) {
+		if(addresses != null && addresses.length > 0) {
+			for(Address address:addresses) {
+				invalidAddresses.add(address.toString());
+			}
+		}
+	}
 
 	/**
 	 * Package helper to set the return code.
@@ -96,6 +112,9 @@ public class MailerResult {
 		}
 		if(newResult.getFailedIdentites() != null && newResult.getFailedIdentites().size() > 0) {
 			failedIdentites.addAll(newResult.getFailedIdentites());
+		}
+		if(newResult.getInvalidAddresses() != null && newResult.getInvalidAddresses().size() > 0) {
+			invalidAddresses.addAll(newResult.getInvalidAddresses());
 		}
 	}
 	
