@@ -90,7 +90,7 @@ public class PaypalModule extends AbstractSpringModule implements GenericEventLi
 
 	@Autowired
 	public PaypalModule(CoordinatorManager coordinatorManager) {
-		super(coordinatorManager);
+		super(coordinatorManager, "com.frentix.olat.accesscontrol.paypal.PaypalModule", true);
 	}
 
 	@Override

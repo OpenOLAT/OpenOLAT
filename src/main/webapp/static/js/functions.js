@@ -1258,7 +1258,7 @@ function o_removeIframe(id) {
 	jQuery('#' + id).remove();
 }
 
-function o_ffXHREvent(formNam, dispIdField, dispId, eventIdField, eventInt, dirtyCheck, push) {
+function o_ffXHREvent(formNam, dispIdField, dispId, eventIdField, eventInt, dirtyCheck, push, submit) {
 	if(dirtyCheck) {
 		if(!o2cl()) return false;
 	} else {
@@ -1266,11 +1266,23 @@ function o_ffXHREvent(formNam, dispIdField, dispId, eventIdField, eventInt, dirt
 	}
 	
 	var data = new Object();
+	if(submit) {
+		var form = jQuery('#' + formNam);
+		var formData = form.serializeArray();
+		var formLength = formData.length;
+		for(var i=0; i<formLength; i++) {
+			var nameValue = formData[i];//dispatchuri and dispatchevent will be overriden
+			if(nameValue.name != 'dispatchuri' && nameValue.name != 'dispatchevent') {
+				data[nameValue.name] = nameValue.value;
+			}
+		}
+	}
+	
 	data['dispatchuri'] = dispId;
 	data['dispatchevent'] = eventInt;
-	if(arguments.length > 7) {
+	if(arguments.length > 8) {
 		var argLength = arguments.length;
-		for(var i=7; i<argLength; i=i+2) {
+		for(var i=8; i<argLength; i=i+2) {
 			if(argLength > i+1) {
 				data[arguments[i]] = arguments[i+1];
 			}
