@@ -85,21 +85,47 @@ public class FormJSHelper {
 		return content;
 	}
 	
+	/**
+	 * Build the javascript method to send a flexi form event.
+	 * 
+	 * @param item The form item
+	 * @param dirtyCheck If false, the dirty check is by passed
+	 * @param pushState If true, the state (visible url in browser) will be pushed to the browser
+	 * @param pairs Additional name value pairs send by the link
+	 * @return
+	 */
 	public static String getXHRFnCallFor(FormItem item, boolean dirtyCheck, boolean pushState, NameValuePair... pairs) {
-		return getXHRFnCallFor(item.getRootForm(), item.getFormDispatchId(), 1, dirtyCheck, pushState, pairs);
+		return getXHRFnCallFor(item.getRootForm(), item.getFormDispatchId(), 1, dirtyCheck, pushState, false, pairs);
 	}
 	
 	/**
-	 * Build a flexi form event
-	 * @param form
-	 * @param id
-	 * @param actionIndex
-	 * @param dirtyCheck
-	 * @param pushState
-	 * @param pairs
+	 * Build the javascript method to send a flexi form event.
+	 * 
+	 * @param form The form object
+	 * @param id The id of the element
+	 * @param actionIndex The type of event (click...)
+	 * @param dirtyCheck If false, the dirty check is by passed
+	 * @param pushState If true, the state (visible url in browser) will be pushed to the browser
+	 * @param pairs Additional name value pairs send by the link
 	 * @return
 	 */
 	public static String getXHRFnCallFor(Form form, String id, int actionIndex, boolean dirtyCheck, boolean pushState, NameValuePair... pairs) {
+		return getXHRFnCallFor(form, id, actionIndex, dirtyCheck, pushState, false, pairs);
+	}
+	
+	/**
+	 * Build the javascript method to send a flexi form event with all possible settings.
+	 * 
+	 * @param form The form object
+	 * @param id The id of the element
+	 * @param actionIndex The type of event (click...)
+	 * @param dirtyCheck If false, the dirty check is by passed
+	 * @param pushState If true, the state (visible url in browser) will be pushed to the browser
+	 * @param submit If true, the form will be submitted but it only works for none multi part forms.
+	 * @param pairs Additional name value pairs send by the link
+	 * @return
+	 */
+	public static String getXHRFnCallFor(Form form, String id, int actionIndex, boolean dirtyCheck, boolean pushState, boolean submit, NameValuePair... pairs) {
 		StringOutput sb = new StringOutput(128);
 		sb.append("o_ffXHREvent('")
 		  .append(form.getFormName()).append("','")
@@ -108,7 +134,8 @@ public class FormJSHelper {
 		  .append(form.getEventFieldId()).append("','")
 		  .append(FormEvent.ON_DOTDOTDOT[actionIndex])
 		  .append("',").append(dirtyCheck)
-		  .append(",").append(pushState);
+		  .append(",").append(pushState)
+		  .append(",").append(submit);
 
 		if(pairs != null && pairs.length > 0) {
 			for(NameValuePair pair:pairs) {
@@ -149,6 +176,20 @@ public class FormJSHelper {
 		  .append("var dispId = '").append(id).append("';\n")
 		  .append("var eventIdField = '").append(form.getEventFieldId()).append("';\n")
 		  .append("var eventInt = ").append(FormEvent.ON_DOTDOTDOT[actionIndex]).append(";\n");
+		return sb.toString();
+	}
+	
+	public static String getXHRSubmit(Form form, NameValuePair... pairs) {
+		StringOutput sb = new StringOutput(128);
+		sb.append("o_ffXHRNFEvent('")
+		   .append(form.getFormName()).append("'");
+		if(pairs != null && pairs.length > 0) {
+			for(NameValuePair pair:pairs) {
+				sb.append(",'").append(pair.getName()).append("','").append(pair.getValue()).append("'");
+			}
+		}
+		sb.append(")");
+		IOUtils.closeQuietly(sb);
 		return sb.toString();
 	}
 

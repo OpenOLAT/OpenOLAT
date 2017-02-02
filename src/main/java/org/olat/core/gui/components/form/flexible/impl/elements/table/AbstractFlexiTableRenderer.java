@@ -196,7 +196,7 @@ public abstract class AbstractFlexiTableRenderer extends DefaultComponentRendere
 			sb.append("<div class='o_table_tools_indications'>").append(filterIndication)
 				// remove filter
 			  .append(" <a href=\"javascript:")
-			  .append(FormJSHelper.getXHRFnCallFor(theForm, dispatchId, 1, true, true,
+			  .append(FormJSHelper.getXHRFnCallFor(theForm, dispatchId, 1, true, true, true,
 					  new NameValuePair("rm-filter", "true")))
 			  .append("\" title=\"").append(translator.translate("remove.filters")).append("\" ")
 			  .append("\">").append("<i class='o_icon o_icon_remove o_icon-fw'> </i> </a></li></div>"); 
@@ -219,7 +219,8 @@ public abstract class AbstractFlexiTableRenderer extends DefaultComponentRendere
 			sb.append("<div class='input-group-btn'>");
 			// reset quick search
 			sb.append("<a href=\"javascript:")
-			  .append(FormJSHelper.getXHRFnCallFor(theForm, dispatchId, 1, true, true, new NameValuePair("reset-search", "true")))
+			  .append(FormJSHelper.getXHRFnCallFor(theForm, dispatchId, 1, true, true, true,
+					  new NameValuePair("reset-search", "true")))
 			  .append("\" class='btn o_reset_quick_search'><i class='o_icon o_icon_remove_filters'> </i></a>");
 						
 			renderFormItem(renderer, sb, ftE.getSearchButton(), ubu, translator, renderResult, args);
@@ -241,7 +242,7 @@ public abstract class AbstractFlexiTableRenderer extends DefaultComponentRendere
 				sb.append("<div class='o_table_tools_indications'>").append(filterIndication)
 				// remove filter
 				  .append("<a href=\"javascript:")
-				  .append(FormJSHelper.getXHRFnCallFor(theForm, dispatchId, 1, true, true,
+				  .append(FormJSHelper.getXHRFnCallFor(theForm, dispatchId, 1, true, true, true,
 						  new NameValuePair("rm-extended-filter", "true")))
 				  .append("\" title=\"").append(translator.translate("remove.filters")).append("\" ")
 				  .append("\">").append("<i class='o_icon o_icon_remove o_icon-fw'> </i> </a></li></div>");
@@ -266,7 +267,7 @@ public abstract class AbstractFlexiTableRenderer extends DefaultComponentRendere
 				sb.append("<li class='divider'></li>");
 			} else {
 				sb.append("<li><a href=\"javascript:")
-				  .append(FormJSHelper.getXHRFnCallFor(theForm, dispatchId, 1, true, true,
+				  .append(FormJSHelper.getXHRFnCallFor(theForm, dispatchId, 1, true, true, true,
 						  new NameValuePair("filter", filter.getFilter())))
 				  .append("\">").append("<i class='o_icon o_icon_check o_icon-fw'> </i> ", filter.isSelected());
 				if(filter.getIconLeftCSS() != null) {
@@ -304,7 +305,7 @@ public abstract class AbstractFlexiTableRenderer extends DefaultComponentRendere
 				sb.append("<li class='divider'></li>");
 			} else {
 				sb.append("<li><a href=\"javascript:")
-				  .append(FormJSHelper.getXHRFnCallFor(theForm, dispatchId, 1, true, true,
+				  .append(FormJSHelper.getXHRFnCallFor(theForm, dispatchId, 1, true, true, true,
 						  new NameValuePair("sort", sort.getSortKey().getKey()),
 						  new NameValuePair("asc",  sort.getSortKey().isAsc() ? "desc" : "asc")))
 				  .append("\">");
@@ -360,13 +361,15 @@ public abstract class AbstractFlexiTableRenderer extends DefaultComponentRendere
 
 			sb.append("<label class='checkbox-inline'><a id='")
 			  .append(dispatchId).append("_sa' href=\"javascript:o_table_toggleCheck('").append(formName).append("', true);")
-			  .append(FormJSHelper.getXHRFnCallFor(ftE.getRootForm(), dispatchId, 1, true, true, new NameValuePair("select", "checkall")))
+			  .append(FormJSHelper.getXHRFnCallFor(ftE.getRootForm(), dispatchId, 1, true, true, true,
+					  new NameValuePair("select", "checkall")))
 			  .append("\"><i class='o_icon o_icon-lg o_icon_check_on'> </i> <span>").append(translator.translate("form.checkall"))
 			  .append("</span></a></label>");
 
 			sb.append("<label class='checkbox-inline'><a id='")
 			  .append(dispatchId).append("_dsa' href=\"javascript:o_table_toggleCheck('").append(formName).append("', false);")
-			  .append(FormJSHelper.getXHRFnCallFor(ftE.getRootForm(), dispatchId, 1, true, true, new NameValuePair("select", "uncheckall")))
+			  .append(FormJSHelper.getXHRFnCallFor(ftE.getRootForm(), dispatchId, 1, true, true, true,
+					  new NameValuePair("select", "uncheckall")))
 			  .append("\"><i class='o_icon o_icon-lg o_icon_check_off'> </i> <span>").append(translator.translate("form.uncheckall"))
 			  .append("</span></a></label>");
 
@@ -467,14 +470,14 @@ public abstract class AbstractFlexiTableRenderer extends DefaultComponentRendere
 		}
 		for(int size:sizes) {
 			sb.append("<li><a href=\"javascript:")
-			  .append(FormJSHelper.getXHRFnCallFor(theForm, dispatchId, 1, true, true,
+			  .append(FormJSHelper.getXHRFnCallFor(theForm, dispatchId, 1, true, true, true,
 					  new NameValuePair("pagesize", Integer.toString(size))))
 			  .append("\">").append(Integer.toString(size)).append("</a></li>");
 		}
 		
 		if(ftE.isShowAllRowsEnabled()) {
 			sb.append("<li><a href=\"javascript:")
-			  .append(FormJSHelper.getXHRFnCallFor(theForm, dispatchId, 1, true, true,
+			  .append(FormJSHelper.getXHRFnCallFor(theForm, dispatchId, 1, true, true, true,
 					  new NameValuePair("pagesize", "all")))
 			  .append("\">").append(translator.translate("show.all")).append("</a></li>");
 		}
@@ -493,7 +496,7 @@ public abstract class AbstractFlexiTableRenderer extends DefaultComponentRendere
 			sb.append("#");
 		} else {
 			sb.append("javascript:")
-			  .append(FormJSHelper.getXHRFnCallFor(theForm, ftC.getFormDispatchId(), 1, true, true,
+			  .append(FormJSHelper.getXHRFnCallFor(theForm, ftC.getFormDispatchId(), 1, true, true, true,
 					  new NameValuePair("page", Integer.toString(page - 1))));
 		}
 		sb.append("\">").append("&laquo;").append("</a></li>");
@@ -508,7 +511,7 @@ public abstract class AbstractFlexiTableRenderer extends DefaultComponentRendere
 			sb.append("#");
 		} else {
 			sb.append("javascript:")
-			  .append(FormJSHelper.getXHRFnCallFor(theForm, ftC.getFormDispatchId(), 1, true, true,
+			  .append(FormJSHelper.getXHRFnCallFor(theForm, ftC.getFormDispatchId(), 1, true, true, true,
 					  new NameValuePair("page", Integer.toString(page + 1)))); 
 		}
 		sb.append("\">").append("&raquo;").append("</a></li>");
@@ -557,7 +560,7 @@ public abstract class AbstractFlexiTableRenderer extends DefaultComponentRendere
 		FlexiTableElementImpl ftE = ftC.getFlexiTableElement();
 		Form theForm = ftE.getRootForm();
 		sb.append("<li").append(" class='active'", (page == i)).append("><a href=\"javascript:")
-		  .append(FormJSHelper.getXHRFnCallFor(theForm, ftC.getFormDispatchId(), 1, true, true,
+		  .append(FormJSHelper.getXHRFnCallFor(theForm, ftC.getFormDispatchId(), 1, true, true, true,
 				  new NameValuePair("page", Integer.toString(i))))
 		  .append(";\">").append(i+1).append("</a></li>");
 	}
