@@ -125,7 +125,7 @@ public class VideoHandler extends FileHandler {
 		long filesize = importFile.getSize();
 		VideoManager videoManager = CoreSpringFactory.getImpl(VideoManager.class);
 
-		if (fileName.endsWith(".mp4")|| fileName.endsWith(".mov")) {
+		if (fileName.endsWith(".mp4") || fileName.endsWith(".mov") || fileName.endsWith(".m4v")) {
 			// 2a) import video from raw mp4 master video file
 			videoManager.importFromMasterFile(repoEntry, importFile);
 			

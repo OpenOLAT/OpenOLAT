@@ -137,9 +137,9 @@ public class VideoAdminTranscodingController extends FormBasicController {
 			for (OLATResource videoResource : nativeResolutions.keySet()) {
 				if (nativeResolutions.get(videoResource) >= fixresolution[i]) counter++;
 			}
-			int Scount = successCount.get(fixresolution[i]) != null ? successCount.get(fixresolution[i]) : 0;
-			int Fcount = failCount.get(fixresolution[i]) != null ? failCount.get(fixresolution[i]) : 0;
-			TranscodingRow transcodingRow = new TranscodingRow(fixresolution[i], Scount, Fcount, counter, mayTranscode(fixresolution[i])); 
+			int success = successCount.get(fixresolution[i]) != null ? successCount.get(fixresolution[i]) : 0;
+			int fails = failCount.get(fixresolution[i]) != null ? failCount.get(fixresolution[i]) : 0;
+			TranscodingRow transcodingRow = new TranscodingRow(fixresolution[i], success, fails, counter, mayTranscode(fixresolution[i])); 
 			resolutions.add(transcodingRow);
 		}
 		if (resolutions != null){
