@@ -88,6 +88,7 @@ public class HighScoreRunController extends FormBasicController{
 	public HighScoreRunController(UserRequest ureq, WindowControl wControl, UserCourseEnvironment userCourseEnv,
 			CourseNode courseNode) {
 		super(ureq, wControl, "highscore");
+		boolean adminORcoach = userCourseEnv.isAdmin() || userCourseEnv.isCoach();
 		
 		List<AssessmentEntry>  assessEntries = userCourseEnv.getCourseEnvironment()
 				.getAssessmentManager().getAssessmentEntries(courseNode);
@@ -100,10 +101,14 @@ public class HighScoreRunController extends FormBasicController{
 		
 		ownIdentity = ureq.getIdentity();
 		viewHighscore = config.getBooleanSafe(HighScoreEditController.CONFIG_KEY_HIGHSCORE);
-		// do not display highscore if current user has not yet a score
-		if (!highScoreManager.hasScore(assessEntries, ownIdentity))viewHighscore = false;
+		// do not display highscore if current user has not yet a score or is not coach or admin
+		if (!highScoreManager.hasScore(assessEntries, ownIdentity)) {
+			viewHighscore = adminORcoach;
+		}
 		// do not build form if high-score is not set
-		if (!viewHighscore)return;
+		if (!viewHighscore){
+			return;			
+		}
 		
 		viewTable = config.getBooleanSafe(HighScoreEditController.CONFIG_KEY_LISTING);
 		viewHistogram = config.getBooleanSafe(HighScoreEditController.CONFIG_KEY_HISTOGRAM);
@@ -134,7 +139,7 @@ public class HighScoreRunController extends FormBasicController{
 			scoreHistogramVC.contextPut("datas", BarSeries.datasToString(allScores));
 			//histogram marker for own position
 			scoreHistogramVC.contextPut("cutValue", 
-					ownIdIndices.size() > 0 ? allMembers.get(ownIdIndices.get(0)).getScore() : "");
+					ownIdIndices.size() > 0 ? allMembers.get(ownIdIndices.get(0)).getScore() : -1);
 			//find path for ownID image to display in histogram
 			UserAvatarMapper mapper = new UserAvatarMapper(false);
 			String mapperPath = registerMapper(ureq, mapper);

@@ -116,8 +116,8 @@ public class LTIRunController extends BasicController {
 		if (courseNode.getModuleConfiguration().getBooleanSafe(MSCourseNode.CONFIG_KEY_HAS_SCORE_FIELD,true)){
 			HighScoreRunController highScoreCtr = new HighScoreRunController(ureq, wControl, userCourseEnv, courseNode);
 			if (highScoreCtr.isViewHighscore()) {
-				Component compi = highScoreCtr.getInitialComponent();
-				run.put("highScore", compi);							
+				Component highScoreComponent = highScoreCtr.getInitialComponent();
+				run.put("highScore", highScoreComponent);							
 			}
 		}
 
@@ -324,8 +324,8 @@ public class LTIRunController extends BasicController {
 		if (courseNode.getModuleConfiguration().getBooleanSafe(MSCourseNode.CONFIG_KEY_HAS_SCORE_FIELD,false)){
 			HighScoreRunController highScoreCtr = new HighScoreRunController(ureq, getWindowControl(), userCourseEnv, courseNode);
 			if (highScoreCtr.isViewHighscore()) {
-				Component compi = highScoreCtr.getInitialComponent();
-				startPage.put("highScore", compi);							
+				Component highScoreComponent = highScoreCtr.getInitialComponent();
+				startPage.put("highScore", highScoreComponent);							
 			}
 		}
 		

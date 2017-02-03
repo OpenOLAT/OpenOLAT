@@ -136,8 +136,8 @@ public class ScormRunController extends BasicController implements ScormAPICallb
 			
 			HighScoreRunController highScoreCtr = new HighScoreRunController(ureq, getWindowControl(), userCourseEnv, scormNode);
 			if (highScoreCtr.isViewHighscore()) {
-				Component compi = highScoreCtr.getInitialComponent();
-				startPage.put("highScore", compi);							
+				Component highScoreComponent = highScoreCtr.getInitialComponent();
+				startPage.put("highScore", highScoreComponent);							
 			}
 		}
 

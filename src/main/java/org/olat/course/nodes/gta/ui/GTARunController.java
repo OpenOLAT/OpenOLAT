@@ -117,8 +117,8 @@ public class GTARunController extends BasicController {
 		if (gtaNode.getModuleConfiguration().getBooleanSafe(MSCourseNode.CONFIG_KEY_HAS_SCORE_FIELD,false)){
 			HighScoreRunController highScoreCtr = new HighScoreRunController(ureq, wControl, userCourseEnv, gtaNode);
 			if (highScoreCtr.isViewHighscore()) {
-				Component compi = highScoreCtr.getInitialComponent();
-				mainVC.put("highScore", compi);							
+				Component highScoreComponent = highScoreCtr.getInitialComponent();
+				mainVC.put("highScore", highScoreComponent);							
 			}
 		}
 	}

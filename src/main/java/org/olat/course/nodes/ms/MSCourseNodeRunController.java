@@ -79,8 +79,8 @@ public class MSCourseNodeRunController extends DefaultController {
 		if (msCourseNode.getModuleConfiguration().getBooleanSafe(MSCourseNode.CONFIG_KEY_HAS_SCORE_FIELD,false)){
 			HighScoreRunController highScoreCtr = new HighScoreRunController(ureq, wControl, userCourseEnv, msCourseNode);
 			if (highScoreCtr.isViewHighscore()) {
-				Component compi = highScoreCtr.getInitialComponent();
-				myContent.put("highScore", compi);							
+				Component highScoreComponent = highScoreCtr.getInitialComponent();
+				myContent.put("highScore", highScoreComponent);							
 			}
 		}
 				

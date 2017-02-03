@@ -788,7 +788,7 @@
 	  		.data(data)
 	  		.enter().append('g')
 	  		.attr('class', function(d, i) {
-	  		  console.log(data[i].x == cut, data[i].x,cut);
+//	  		  console.log(data[i].x == cut, data[i].x,cut);
 	  			if(cut == null) return 'o_empty';
 	  			else if(data[i].x == cut) return 'o_myself';
 	  			else return 'o_other';	  		  

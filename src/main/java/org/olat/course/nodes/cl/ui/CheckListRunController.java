@@ -146,8 +146,8 @@ public class CheckListRunController extends FormBasicController implements Contr
 			if (courseNode.getModuleConfiguration().getBooleanSafe(MSCourseNode.CONFIG_KEY_HAS_SCORE_FIELD,false)){
 				HighScoreRunController highScoreCtr = new HighScoreRunController(ureq, getWindowControl(), userCourseEnv, courseNode);
 				if (highScoreCtr.isViewHighscore()) {
-					Component compi = highScoreCtr.getInitialComponent();
-					layoutCont.put("highScore", compi);							
+					Component highScoreComponent = highScoreCtr.getInitialComponent();
+					layoutCont.put("highScore", highScoreComponent);							
 				}
 			}
 			

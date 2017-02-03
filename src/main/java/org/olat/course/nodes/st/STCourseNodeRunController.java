@@ -101,8 +101,8 @@ public class STCourseNodeRunController extends BasicController {
 		if (stCourseNode.getModuleConfiguration().getBooleanSafe(MSCourseNode.CONFIG_KEY_HAS_SCORE_FIELD,true)){
 			HighScoreRunController highScoreCtr = new HighScoreRunController(ureq, wControl, userCourseEnv, stCourseNode);
 			if (highScoreCtr.isViewHighscore()) {
-				Component compi = highScoreCtr.getInitialComponent();
-				myContent.put("highScore", compi);							
+				Component highScoreComponent = highScoreCtr.getInitialComponent();
+				myContent.put("highScore", highScoreComponent);							
 			}
 		}
 		// read display configuration
