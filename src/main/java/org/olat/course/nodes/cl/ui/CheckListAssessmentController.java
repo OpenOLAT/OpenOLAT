@@ -508,8 +508,8 @@ public class CheckListAssessmentController extends FormBasicController implement
 				for(int i=0; i<numOfCheckbox; i++) {
 					String checkName = "c" + i + "-" + row.getIdentityKey();
 					checkedEls[i] = uifactory.addCheckboxesHorizontal(checkName, null, flc, onKeys, onValues);
-					if(checked != null && i<checked.length && checked[i] != null) {
-						checkedEls[i].select(onKeys[0], checked[i].booleanValue());
+					if(checked != null && i<checked.length && checked[i] != null && checked[i].booleanValue()) {
+						checkedEls[i].select(onKeys[0], true);
 					}
 				}
 				row.setCheckedEl(checkedEls);

@@ -101,17 +101,17 @@ class FlexiTableClassicRenderer extends AbstractFlexiTableRenderer implements Co
 			Form theForm = ftE.getRootForm();
 			if(asc == null) {
 				sb.append("<a class='o_orderby' href=\"javascript:")
-				  .append(FormJSHelper.getXHRFnCallFor(theForm, ftC.getFormDispatchId(), 1, true, true,
+				  .append(FormJSHelper.getXHRFnCallFor(theForm, ftC.getFormDispatchId(), 1, true, true, true,
 						  new NameValuePair("sort", sortKey), new NameValuePair("asc", "asc")))
 				  .append("\">");
 			} else if(asc.booleanValue()) {
 				sb.append("<a class='o_orderby o_orderby_asc' href=\"javascript:")
-				  .append(FormJSHelper.getXHRFnCallFor(theForm, ftC.getFormDispatchId(), 1, true, true,
+				  .append(FormJSHelper.getXHRFnCallFor(theForm, ftC.getFormDispatchId(), 1, true, true, true,
 						  new NameValuePair("sort", sortKey), new NameValuePair("asc", "desc")))
 				  .append("\">");
 			} else {
 				sb.append("<a class='o_orderby o_orderby_desc' href=\"javascript:")
-				  .append(FormJSHelper.getXHRFnCallFor(theForm, ftC.getFormDispatchId(), 1, true, true,
+				  .append(FormJSHelper.getXHRFnCallFor(theForm, ftC.getFormDispatchId(), 1, true, true, true,
 						  new NameValuePair("sort", sortKey), new NameValuePair("asc", "asc")))
 				  .append("\">");
 			}
@@ -154,7 +154,8 @@ class FlexiTableClassicRenderer extends AbstractFlexiTableRenderer implements Co
 			target.append("<td>")
 			      .append("<input type='checkbox' name='tb_ms' value='").append(rowIdPrefix).append(row).append("'")
 			      .append(" onclick=\"javascript:")
-			      .append(FormJSHelper.getXHRFnCallFor(theForm, ftC.getFormDispatchId(), 1, false, false, new NameValuePair("chkbox", Integer.toString(row))))
+			      .append(FormJSHelper.getXHRFnCallFor(theForm, ftC.getFormDispatchId(), 1, false, false, false,
+			    		  new NameValuePair("chkbox", Integer.toString(row))))
 				  .append(";\"");	 
 			if(ftE.isMultiSelectedIndex(row)) {
 				target.append(" checked='checked'");
