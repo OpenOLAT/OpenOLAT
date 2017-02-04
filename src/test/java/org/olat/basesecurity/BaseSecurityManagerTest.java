@@ -248,6 +248,26 @@ public class BaseSecurityManagerTest extends OlatTestCase {
 	}
 	
 	@Test
+	public void findIdentitiesByNumber() {
+		//create a user it
+		String username = "fINd-ME-6-" + UUID.randomUUID();
+		String institutionalNumber = UUID.randomUUID().toString();
+		Identity id = JunitTestHelper.createAndPersistIdentityAsUser(username);
+		id.getUser().setProperty(UserConstants.INSTITUTIONALUSERIDENTIFIER, institutionalNumber);
+		userManager.updateUserFromIdentity(id);
+		dbInstance.commitAndCloseSession();
+		
+		List<String> numbers = new ArrayList<String>(2);
+		numbers.add(institutionalNumber);
+
+		//find it
+		List<Identity> foundIds = securityManager.findIdentitiesByNumber(numbers);
+		Assert.assertNotNull(foundIds);
+		Assert.assertEquals(1, foundIds.size());
+		Assert.assertTrue(foundIds.contains(id));
+	}
+	
+	@Test
 	public void loadIdentityShortByKey() {
 		//create a user it
 		String idName = "find-me-short-1-" + UUID.randomUUID().toString();

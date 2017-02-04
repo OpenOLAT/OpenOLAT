@@ -1811,9 +1811,13 @@ public class RepositoryManager {
 
 		boolean allOk = repositoryEntryRelationDao.removeMembers(re, members);
 		if (allOk) {
+			int count = 0;
 			List<RepositoryEntryMembershipModifiedEvent> deferredEvents = new ArrayList<>();
 			for(Identity identity:members) {
 				deferredEvents.add(RepositoryEntryMembershipModifiedEvent.removed(identity, re));
+				if(++count % 100 == 0) {
+					dbInstance.commitAndCloseSession();
+				}
 			}
 			dbInstance.commit();
 			sendDeferredEvents(deferredEvents, re);
@@ -2268,12 +2272,16 @@ public class RepositoryManager {
 	public void updateRepositoryEntryMemberships(Identity ureqIdentity, Roles ureqRoles, RepositoryEntry re,
 			List<RepositoryEntryPermissionChangeEvent> changes, MailPackage mailing) {
 
+		int count = 0;
 		List<RepositoryEntryMembershipModifiedEvent> deferredEvents = new ArrayList<>();
 		for(RepositoryEntryPermissionChangeEvent e:changes) {
 			updateRepositoryEntryMembership(ureqIdentity, ureqRoles, re, e, mailing, deferredEvents);
+			if(++count % 100 == 0) {
+				dbInstance.commitAndCloseSession();
+			}
 		}
 
-		dbInstance.commit();
+		dbInstance.commitAndCloseSession();
 		sendDeferredEvents(deferredEvents, re);
 	}
 	

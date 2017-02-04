@@ -991,13 +991,15 @@ public class BaseSecurityManager implements BaseSecurity {
 		if(identityNumbers == null || identityNumbers.isEmpty()) return Collections.emptyList();
 		
 		StringBuilder sb = new StringBuilder();
-		sb.append("select identity from ").append(IdentityImpl.class.getName()).append(" identity ")
-			.append(" inner join fetch identity.user user ")
-			.append(" where user.").append(UserConstants.INSTITUTIONALUSERIDENTIFIER).append(" in (:idNumbers) ");
+		sb.append("select ident from ").append(IdentityImpl.class.getName()).append(" ident ")
+			.append(" inner join fetch ident.user user ")
+			.append(" where user.").append(UserConstants.INSTITUTIONALUSERIDENTIFIER).append(" in (:idNumbers) ")
+			.append(" and ident.status<:status");
 
 		return dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), Identity.class)
 				.setParameter("idNumbers", identityNumbers)
+				.setParameter("status", Identity.STATUS_VISIBLE_LIMIT)
 				.getResultList();
 	}
 

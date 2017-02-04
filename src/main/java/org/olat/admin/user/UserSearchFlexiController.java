@@ -219,7 +219,7 @@ public class UserSearchFlexiController extends FlexiAutoCompleterController {
 			
 			Translator myTrans = userManager.getPropertyHandlerTranslator(getTranslator());
 			userTableModel = new UserSearchFlexiTableModel(Collections.<Identity>emptyList(), resultingPropertyHandlers, isAdministrativeUser, getLocale(), tableColumnModel);
-			tableEl = uifactory.addTableElement(getWindowControl(), "users", userTableModel, myTrans, formLayout);
+			tableEl = uifactory.addTableElement(getWindowControl(), "users", userTableModel, 250, false, myTrans, formLayout);
 			tableEl.setCustomizeColumns(false);
 			tableEl.setMultiSelect(true);
 			tableEl.setSelectAllEnable(true);
@@ -422,7 +422,8 @@ public class UserSearchFlexiController extends FlexiAutoCompleterController {
 		}
 
 		tableEl.reset();
-		List<Identity> users = searchUsers(login,	userPropertiesSearch, true);
+		
+		List<Identity> users = searchUsers(login, userPropertiesSearch, true);
 		if (!users.isEmpty()) {
 			userTableModel.setObjects(users);
 			flc.contextPut("showButton","true");
