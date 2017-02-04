@@ -26,6 +26,9 @@
 package org.olat.course.archiver;
 
 import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
 import java.util.List;
 
 import org.olat.core.gui.UserRequest;
@@ -45,7 +48,6 @@ import org.olat.core.util.ExportUtil;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.nodes.AssessableCourseNode;
-import org.olat.user.UserManager;
 
 /**
  * Description: Course-Results-Archiver using ScoreAccountingHelper.class
@@ -97,18 +99,16 @@ public class ScoreAccountingArchiveController extends BasicController {
 		List<Identity> users = ScoreAccountingHelper.loadUsers(course.getCourseEnvironment());
 		List<AssessableCourseNode> nodes = ScoreAccountingHelper.loadAssessableNodes(course.getCourseEnvironment());
 		
-		String result = ScoreAccountingHelper.createCourseResultsOverviewTable(users, nodes, course, getLocale());
-
 		String courseTitle = course.getCourseTitle();
-
-		String fileName = ExportUtil.createFileNameWithTimeStamp(courseTitle, "xls");
+		String fileName = ExportUtil.createFileNameWithTimeStamp(courseTitle, "xlsx");
 		// location for data export
 		File exportDirectory = CourseFactory.getOrCreateDataExportDirectory(getIdentity(), courseTitle);
-		// the user's charset
-		UserManager um = UserManager.getInstance();
-		String charset = um.getUserCharset(getIdentity());
-		
-		File downloadFile = ExportUtil.writeContentToFile(fileName, result, exportDirectory, charset);
+		File downloadFile = new File(exportDirectory, fileName);
+		try(OutputStream out=new FileOutputStream(downloadFile)) {
+			ScoreAccountingHelper.createCourseResultsOverviewXMLTable(users, nodes, course, getLocale(), out);
+		} catch(IOException e) {
+			logError("", e);
+		}
 
 		vcFeedback = createVelocityContainer("feedback");
 		vcFeedback.contextPut("body", translate("course.res.feedback", new String[] { downloadFile.getName() }));
