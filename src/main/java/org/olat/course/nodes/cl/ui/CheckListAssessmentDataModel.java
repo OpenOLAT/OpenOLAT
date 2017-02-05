@@ -24,6 +24,7 @@ import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 import org.apache.commons.lang.StringEscapeUtils;
 import org.olat.core.commons.persistence.SortKey;
@@ -36,7 +37,6 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiColum
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableComponent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableModelDelegate;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.render.EmptyURLBuilder;
 import org.olat.core.gui.render.StringOutput;
@@ -70,13 +70,15 @@ public class CheckListAssessmentDataModel extends DefaultFlexiTableDataModel<Che
 	public static final int USER_PROPS_OFFSET = 500;
 	public static final int CHECKBOX_OFFSET = 5000;
 	
+	private final Locale locale;
 	private final CheckboxList checkboxList;
 	private List<CheckListAssessmentRow> backupRows;
 	
 	public CheckListAssessmentDataModel(CheckboxList checkboxList, List<CheckListAssessmentRow> datas,
-			FlexiTableColumnModel columnModel) {
+			FlexiTableColumnModel columnModel, Locale locale) {
 		super(datas, columnModel);
 		backupRows = datas;
+		this.locale = locale;
 		this.checkboxList = checkboxList;
 	}
 	
@@ -89,13 +91,12 @@ public class CheckListAssessmentDataModel extends DefaultFlexiTableDataModel<Che
 
 	@Override
 	public DefaultFlexiTableDataModel<CheckListAssessmentRow> createCopyWithEmptyList() {
-		return new CheckListAssessmentDataModel(checkboxList, new ArrayList<CheckListAssessmentRow>(), getTableColumnModel());
+		return new CheckListAssessmentDataModel(checkboxList, new ArrayList<CheckListAssessmentRow>(), getTableColumnModel(), locale);
 	}
 	
 	@Override
 	public void sort(SortKey orderBy) {
-		SortableFlexiTableModelDelegate<CheckListAssessmentRow> sorter
-			= new SortableFlexiTableModelDelegate<>(orderBy, this, null);
+		CheckListAssessmentDataModelSorter sorter = new CheckListAssessmentDataModelSorter(orderBy, this, locale);
 		List<CheckListAssessmentRow> views = sorter.sort();
 		super.setObjects(views);
 	}
