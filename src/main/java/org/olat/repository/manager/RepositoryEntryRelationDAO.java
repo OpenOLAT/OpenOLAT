@@ -181,6 +181,14 @@ public class RepositoryEntryRelationDAO {
 		return groupDao.removeMemberships(group, role);
 	}
 
+	/**
+	 * Retrieve the default group of the repository entry (the one
+	 * marked with the flag defaultGroup=true). The query is cached
+	 * by hibernate 2nd level cache.
+	 * 
+	 * @param re The repository entry
+	 * @return The group
+	 */
 	public Group getDefaultGroup(RepositoryEntryRef re) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select baseGroup from ").append(RepositoryEntry.class.getName()).append(" as v ")
@@ -190,6 +198,7 @@ public class RepositoryEntryRelationDAO {
 
 		return dbInstance.getCurrentEntityManager().createQuery(sb.toString(), Group.class)
 				.setParameter("repoKey", re.getKey())
+				.setHint("org.hibernate.cacheable", Boolean.TRUE)
 				.getSingleResult();
 	}
 	

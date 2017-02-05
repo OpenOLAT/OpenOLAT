@@ -167,6 +167,10 @@ public class SortableFlexiTableModelDelegate<T> {
 		}
 		return a.compareTo(b);
 	}
+	
+	protected final int compareDoubles(double a, double b) {
+		return Double.compare(a, b);
+	}
 
 	protected final int compareNullObjects(final Object a, final Object b) {
 		boolean ba = (a == null);

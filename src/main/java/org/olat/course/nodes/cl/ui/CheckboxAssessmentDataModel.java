@@ -21,12 +21,12 @@ package org.olat.course.nodes.cl.ui;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableModelDelegate;
 
 /**
  * 
@@ -36,20 +36,22 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFl
  */
 public class CheckboxAssessmentDataModel extends DefaultFlexiTableDataModel<CheckboxAssessmentRow>
 	implements SortableFlexiTableDataModel<CheckboxAssessmentRow> {
+	
+	private final Locale locale;
 
-	public CheckboxAssessmentDataModel(List<CheckboxAssessmentRow> datas, FlexiTableColumnModel columnModel) {
+	public CheckboxAssessmentDataModel(List<CheckboxAssessmentRow> datas, FlexiTableColumnModel columnModel, Locale locale) {
 		super(datas, columnModel);
+		this.locale = locale;
 	}
 
 	@Override
 	public DefaultFlexiTableDataModel<CheckboxAssessmentRow> createCopyWithEmptyList() {
-		return new CheckboxAssessmentDataModel(new ArrayList<CheckboxAssessmentRow>(), getTableColumnModel());
+		return new CheckboxAssessmentDataModel(new ArrayList<CheckboxAssessmentRow>(), getTableColumnModel(), locale);
 	}
 	
 	@Override
 	public void sort(SortKey orderBy) {
-		SortableFlexiTableModelDelegate<CheckboxAssessmentRow> sorter
-			= new SortableFlexiTableModelDelegate<>(orderBy, this, null);
+		CheckboxAssessmentDataModelSorter sorter = new CheckboxAssessmentDataModelSorter(orderBy, this, locale);
 		List<CheckboxAssessmentRow> views = sorter.sort();
 		super.setObjects(views);
 	}

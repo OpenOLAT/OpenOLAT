@@ -173,7 +173,13 @@ public interface BaseSecurity {
 	 */
 	public Identity findIdentityByNumber(String identityNumber);
 	
-
+	/**
+	 * The list of visible identities with a institutional number like in the
+	 * specified list. Deleted ones are not included.
+	 * 
+	 * @param identityNumbers
+	 * @return A list of identities
+	 */
 	public List<Identity> findIdentitiesByNumber(Collection<String> identityNumbers);
 	
 	/**

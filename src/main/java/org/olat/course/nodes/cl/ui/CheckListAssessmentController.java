@@ -202,7 +202,8 @@ public class CheckListAssessmentController extends FormBasicController implement
 		
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		if(isAdministrativeUser) {
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.username.i18nKey(), Cols.username.ordinal()));
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.username.i18nKey(), Cols.username.ordinal(),
+					true, Cols.username.name()));
 		}
 		
 		int i=0;
@@ -247,7 +248,7 @@ public class CheckListAssessmentController extends FormBasicController implement
 		}
 
 		List<CheckListAssessmentRow> datas = loadDatas();
-		model = new CheckListAssessmentDataModel(checkboxList, datas, columnsModel);
+		model = new CheckListAssessmentDataModel(checkboxList, datas, columnsModel, getLocale());
 		table = uifactory.addTableElement(getWindowControl(), "checkbox-list", model, getTranslator(), formLayout);
 		if(coachCourseEnv instanceof UserCourseEnvironmentImpl) {
 			UserCourseEnvironmentImpl env = (UserCourseEnvironmentImpl)coachCourseEnv;

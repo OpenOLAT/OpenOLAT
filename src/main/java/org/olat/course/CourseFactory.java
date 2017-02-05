@@ -28,6 +28,8 @@ package org.olat.course;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
@@ -711,10 +713,13 @@ public class CourseFactory {
 		// archive course results overview
 		List<Identity> users = ScoreAccountingHelper.loadUsers(course.getCourseEnvironment());
 		List<AssessableCourseNode> nodes = ScoreAccountingHelper.loadAssessableNodes(course.getCourseEnvironment());
-
-		String result = ScoreAccountingHelper.createCourseResultsOverviewTable(users, nodes, course, locale);
-		String fileName = ExportUtil.createFileNameWithTimeStamp(course.getCourseTitle(), "xls");
-		ExportUtil.writeContentToFile(fileName, result, exportDirectory, charset);
+		
+		String fileName = ExportUtil.createFileNameWithTimeStamp(course.getCourseTitle(), "xlsx");
+		try(OutputStream out = new FileOutputStream(new File(exportDirectory, fileName))) {
+			ScoreAccountingHelper.createCourseResultsOverviewXMLTable(users, nodes, course, locale, out);
+		} catch(IOException e) {
+			log.error("", e);
+		}
 
 		// archive all nodes content
 		Visitor archiveV = new NodeArchiveVisitor(locale, course, exportDirectory, charset);
