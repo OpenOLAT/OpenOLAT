@@ -123,7 +123,7 @@ public class AssessmentItemEditorController extends BasicController {
 		
 		displayCtrl = new AssessmentItemPreviewController(ureq, getWindowControl(), resolvedAssessmentItem, rootDirectory, itemFile);
 		listenTo(displayCtrl);
-		displayTabPosition = tabbedPane.addTab(translate("preview"), displayCtrl.getInitialComponent());
+		displayTabPosition = tabbedPane.addTab(translate("preview"), displayCtrl);
 		
 		putInitialPanel(mainVC);
 	}
