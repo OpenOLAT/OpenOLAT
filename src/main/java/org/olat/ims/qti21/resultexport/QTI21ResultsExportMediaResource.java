@@ -70,7 +70,6 @@ import org.olat.course.nodes.QTICourseNode;
 import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.fileresource.FileResourceManager;
 import org.olat.ims.qti.resultexport.AssessedMember;
-import org.olat.ims.qti.resultexport.QTI12ExportResultsReportController;
 import org.olat.ims.qti.resultexport.ResultDetail;
 import org.olat.ims.qti21.AssessmentTestSession;
 import org.olat.ims.qti21.QTI21DeliveryOptions.ShowResultsOnFinish;
@@ -80,7 +79,7 @@ import org.olat.repository.RepositoryEntry;
 
 public class QTI21ResultsExportMediaResource implements MediaResource {
 
-	private static final OLog log = Tracing.createLoggerFor(QTI12ExportResultsReportController.class);
+	private static final OLog log = Tracing.createLoggerFor(QTI21ResultsExportMediaResource.class);
 	
 	private static final String DATA = "userdata/";
 	private static final String SEP = File.separator;

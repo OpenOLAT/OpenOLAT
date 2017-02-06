@@ -66,7 +66,7 @@ import org.olat.ims.qti.render.LocalizedXSLTransformer;
 
 public class QTI12ResultsExportMediaResource implements MediaResource {
 
-	private static final OLog log = Tracing.createLoggerFor(QTI12ExportResultsReportController.class);
+	private static final OLog log = Tracing.createLoggerFor(QTI12ResultsExportMediaResource.class);
 	
 	private static final String DATA = "userdata/";
 	private static final String SEP = File.separator;
