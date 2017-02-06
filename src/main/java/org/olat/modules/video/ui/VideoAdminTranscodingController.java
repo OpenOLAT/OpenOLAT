@@ -94,9 +94,11 @@ public class VideoAdminTranscodingController extends FormBasicController {
 		transcodingModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TranscodingCols.failedTranscodings));
 		transcodingModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TranscodingCols.missingTranscodings));
 		transcodingModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TranscodingCols.transcode, "quality.transcode", 
-				new BooleanCellRenderer(new StaticFlexiCellRenderer(translate("quality.transcode"), "quality.transcode"), null)));
+				new BooleanCellRenderer(new StaticFlexiCellRenderer(translate("quality.transcode"), "quality.transcode",
+						"", "o_icon o_icon_refresh o_icon-fw"), null)));
 		transcodingModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TranscodingCols.delete, "quality.delete", 
-				new BooleanCellRenderer(new StaticFlexiCellRenderer(translate("quality.delete"), "quality.delete"), null)));
+				new BooleanCellRenderer(new StaticFlexiCellRenderer(translate("quality.delete"), "quality.delete",
+						"", "o_icon o_icon_delete_item o_icon-fw"), null)));
 		tableModel = new TranscodingTableModel(transcodingModel, getTranslator());
 		
 		transcodingTable = uifactory.addTableElement(getWindowControl(), "table", tableModel, getTranslator(), formLayout);
