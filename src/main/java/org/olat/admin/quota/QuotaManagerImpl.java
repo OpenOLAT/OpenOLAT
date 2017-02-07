@@ -43,6 +43,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.OLATRuntimeException;
+import org.olat.core.logging.OLATSecurityException;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.resource.OresHelper;
@@ -400,13 +401,19 @@ public class QuotaManagerImpl extends QuotaManager {
 		return true;
 	}
 
-
 	/**
 	 * @see org.olat.core.util.vfs.QuotaManager#getQuotaEditorInstance(org.olat.core.gui.UserRequest, org.olat.core.gui.control.WindowControl, java.lang.String, boolean)
 	 */
 	@Override
 	public Controller getQuotaEditorInstance(UserRequest ureq, WindowControl wControl, String relPath, boolean modalMode) {
-		return new GenericQuotaEditController(ureq, wControl, relPath, modalMode);
+		try {
+			return new GenericQuotaEditController(ureq, wControl, relPath, modalMode);
+		} catch (OLATSecurityException e) {
+			log.warn("Try to access the quota editor without enough privilege", e);
+			GenericQuotaViewController viewCtrl = new GenericQuotaViewController(ureq, wControl, relPath, modalMode);
+			viewCtrl.setNotEnoughPrivilegeMessage();
+			return viewCtrl;
+		}
 	}
 	
 

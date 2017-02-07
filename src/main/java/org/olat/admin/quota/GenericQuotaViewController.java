@@ -31,7 +31,6 @@ import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
-import org.olat.core.logging.OLATSecurityException;
 import org.olat.core.util.vfs.Quota;
 import org.olat.core.util.vfs.QuotaManager;
 
@@ -69,7 +68,7 @@ public class GenericQuotaViewController extends BasicController {
 		QuotaManager qm = QuotaManager.getInstance();
 		currentQuota = qm.getCustomQuota(relPath);
 		// init velocity context
-		initMyContent(ureq);
+		initMyContent();
 		if (currentQuota == null) {
 			currentQuota = qm.createQuota(relPath, null, null);		
 		} else {
@@ -78,16 +77,16 @@ public class GenericQuotaViewController extends BasicController {
 		myContent.contextPut("editQuota", Boolean.FALSE);	
 	  putInitialPanel(myContent);
 	}
+	
+	public void setNotEnoughPrivilegeMessage() {
+		myContent.contextPut("notEnoughPrivilege", Boolean.TRUE);
+	}
 
-	private void initMyContent(UserRequest ureq) {
+	private void initMyContent() {
 		QuotaManager qm = QuotaManager.getInstance();
-		if (!qm.hasQuotaEditRights(ureq.getIdentity()))
-			throw new OLATSecurityException("Insufficient permissions to access QuotaController");
-
 		myContent = createVelocityContainer("edit");
+		myContent.contextPut("notEnoughPrivilege", Boolean.FALSE);
 		myContent.contextPut("modalMode", Boolean.valueOf(modalMode));
-		
-		//TODO loop over QuotaManager.getDefaultQuotaIdentifyers instead
 		myContent.contextPut("users",qm.getDefaultQuota(QuotaConstants.IDENTIFIER_DEFAULT_USERS));
 		myContent.contextPut("powerusers",qm.getDefaultQuota(QuotaConstants.IDENTIFIER_DEFAULT_POWER));
 		myContent.contextPut("groups",qm.getDefaultQuota(QuotaConstants.IDENTIFIER_DEFAULT_GROUPS));
@@ -95,7 +94,6 @@ public class GenericQuotaViewController extends BasicController {
 		myContent.contextPut("coursefolder",qm.getDefaultQuota(QuotaConstants.IDENTIFIER_DEFAULT_COURSE));
 		myContent.contextPut("nodefolder",qm.getDefaultQuota(QuotaConstants.IDENTIFIER_DEFAULT_NODES));
 		myContent.contextPut("feeds",qm.getDefaultQuota(QuotaConstants.IDENTIFIER_DEFAULT_FEEDS));
-		
 	}
 	
 	private void initQuotaForm(UserRequest ureq, Quota quota) {
