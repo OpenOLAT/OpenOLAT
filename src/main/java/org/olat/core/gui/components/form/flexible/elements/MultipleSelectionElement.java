@@ -31,15 +31,11 @@ import java.util.Set;
 
 
 /**
- * Description:<br>
- * TODO: patrickb Class Description for MultipleSelectionElement
  * 
- * <P>
  * Initial Date:  04.01.2007 <br>
  * @author felix
  * @author patrickb
  */
-
 public interface MultipleSelectionElement extends SelectionElement {
 
 	/**
@@ -119,6 +115,21 @@ public interface MultipleSelectionElement extends SelectionElement {
 	 * @param escapeHtml
 	 */
 	public void setEscapeHtml(boolean escapeHtml);
+	
+	/**
+	 * @return true if the state of a check box is changed only by ajax
+	 * 					events and not by the submission of a form.
+	 */
+	public boolean isAjaxOnly();
+	
+	/**
+	 * Set to true if the state of the element need to be only
+	 * changed by an ajax event and not by the submission of
+	 *  a form.
+	 *  
+	 * @param ajaxOnlyMode
+	 */
+	public void setAjaxOnly(boolean ajaxOnlyMode);
 	
 	public enum Layout {
 		horizontal,

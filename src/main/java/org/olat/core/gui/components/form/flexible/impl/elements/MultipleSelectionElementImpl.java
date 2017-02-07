@@ -33,6 +33,7 @@ import java.util.Set;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
+import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormItemImpl;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
@@ -59,6 +60,7 @@ public class MultipleSelectionElementImpl extends FormItemImpl implements Multip
 	private final int columns;
 	protected MultipleSelectionComponent component;
 	private String[] original = null;
+	private boolean ajaxOnlyMode = false;
 	private boolean originalIsDefined = false;
 	private boolean escapeHtml = true;
 	private boolean domReplacementWrapperRequired = true;
@@ -89,6 +91,17 @@ public class MultipleSelectionElementImpl extends FormItemImpl implements Multip
 		if(component != null) {
 			component.setDomReplacementWrapperRequired(required);
 		}
+	}
+
+	@Override
+	public boolean isAjaxOnly() {
+		return ajaxOnlyMode;
+	}
+
+	@Override
+	public void setAjaxOnly(boolean ajaxOnlyMode) {
+		this.ajaxOnlyMode = ajaxOnlyMode;
+		
 	}
 
 	public Layout getLayout() {
@@ -228,23 +241,33 @@ public class MultipleSelectionElementImpl extends FormItemImpl implements Multip
 
 	@Override
 	public void evalFormRequest(UserRequest ureq) {
-		if(!isEnabled()){
-			//if element is visible as disabled it would be resetted
-			return;
-		}
-		// which one was selected?
-		// selection change?
-		// mark corresponding comps as dirty
-		String[] reqVals = getRootForm().getRequestParameterValues(getName());
-		if (reqVals == null) {
-			// selection box?
-			reqVals = getRootForm().getRequestParameterValues(getName() + "_SELBOX");
-		}
-		//
-		selected = new HashSet<String>();
-		if (reqVals != null) {
-			for (int i = 0; i < reqVals.length; i++) {
-				selected.add(reqVals[i]);
+		Form form = getRootForm();
+		if(isAjaxOnly()) {
+			String dispatchuri = form.getRequestParameter("dispatchuri");
+			if(dispatchuri != null && dispatchuri.equals(component.getFormDispatchId())) {
+				String key = form.getRequestParameter("achkbox");
+				String checked = form.getRequestParameter("checked");
+				if("true".equals(checked)) {
+					selected.add(key);
+				} else if("false".equals(checked)) {
+					selected.remove(key);
+				}
+			}
+		} else if(isEnabled() ) {
+			// which one was selected?
+			// selection change?
+			// mark corresponding comps as dirty
+			String[] reqVals = form.getRequestParameterValues(getName());
+			if (reqVals == null) {
+				// selection box?
+				reqVals = form.getRequestParameterValues(getName() + "_SELBOX");
+			}
+			//
+			selected = new HashSet<String>();
+			if (reqVals != null) {
+				for (int i = 0; i < reqVals.length; i++) {
+					selected.add(reqVals[i]);
+				}
 			}
 		}
 	}
