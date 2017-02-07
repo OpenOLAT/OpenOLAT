@@ -527,7 +527,7 @@ public class QuestionListController extends AbstractItemListController implement
 		if(nextRow != null) {
 			QuestionItem nextItem = qpoolService.loadItemById(nextRow.getKey());
 			stackPanel.popUpToRootController(ureq);
-			doSelect(ureq, nextItem, row.isEditable());
+			doSelect(ureq, nextItem, nextRow.isEditable());
 		}
 	}
 	
@@ -537,7 +537,7 @@ public class QuestionListController extends AbstractItemListController implement
 		if(previousRow != null) {
 			QuestionItem previousItem = qpoolService.loadItemById(previousRow.getKey());
 			stackPanel.popUpToRootController(ureq);
-			doSelect(ureq, previousItem, row.isEditable());
+			doSelect(ureq, previousItem, previousRow.isEditable());
 		}
 	}
 	
