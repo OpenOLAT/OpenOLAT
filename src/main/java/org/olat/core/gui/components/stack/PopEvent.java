@@ -30,19 +30,26 @@ public class PopEvent extends Event {
 
 	private static final long serialVersionUID = -8478820879485545321L;
 	
+	private final boolean close;
 	private final Object uobject;
 	private final Controller controller;
 	
-	public PopEvent(Controller controller, Object uobject) {
+	public PopEvent(Controller controller, Object uobject, boolean close) {
 		super("pop");
+		this.close = close;
 		this.uobject = uobject;
 		this.controller = controller;
 	}
 	
-	public PopEvent(Object uobject) {
+	public PopEvent(Object uobject, boolean close) {
 		super("pop");
+		this.close = close;
 		this.uobject = uobject;
 		this.controller = null;
+	}
+	
+	public boolean isClose() {
+		return close;
 	}
 	
 	public Object getUserObject() {
