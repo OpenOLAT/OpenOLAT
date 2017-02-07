@@ -180,7 +180,6 @@ public class OnyxExportManager {
 
 	private String createTargetFilename(final String shortTitle, final String type) {
 		final StringBuilder tf = new StringBuilder();
-		tf.append(type);
 		tf.append(Formatter.makeStringFilesystemSave(shortTitle));
 		tf.append("_");
 		final DateFormat myformat = new SimpleDateFormat("yyyy-MM-dd__hh-mm-ss__SSS");

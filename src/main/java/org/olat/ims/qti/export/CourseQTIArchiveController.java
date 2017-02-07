@@ -49,9 +49,7 @@ import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.assessment.model.AssessmentNodeData;
 import org.olat.course.nodes.CourseNode;
-import org.olat.course.nodes.IQSELFCourseNode;
 import org.olat.course.nodes.IQSURVCourseNode;
-import org.olat.course.nodes.IQTESTCourseNode;
 
 /**
  * 
@@ -180,17 +178,12 @@ public class CourseQTIArchiveController extends BasicController {
 			}
 		}
 		
-		if (childrenData.size() > 0
-		        || courseNode instanceof IQTESTCourseNode
-		        || courseNode instanceof IQSELFCourseNode
-		        || courseNode instanceof IQSURVCourseNode) {
+		if (childrenData.size() > 0 || courseNode instanceof IQSURVCourseNode) {
 			// Store node data in hash map. This hash map serves as data model for 
 			// the tasks overview table. Leave user data empty since not used in
 			// this table. (use only node data)
 			AssessmentNodeData nodeData = new AssessmentNodeData(recursionLevel, courseNode);
-			if (courseNode instanceof IQTESTCourseNode
-			        || courseNode instanceof IQSELFCourseNode
-			        || courseNode instanceof IQSURVCourseNode){
+			if (courseNode instanceof IQSURVCourseNode) {
 				nodeData.setSelectable(true);
 			} else {
 				nodeData.setSelectable(false);

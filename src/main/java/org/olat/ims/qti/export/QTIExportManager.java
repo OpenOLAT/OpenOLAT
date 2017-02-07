@@ -116,7 +116,7 @@ public class QTIExportManager extends BasicManager{
 			qef.setQTIItemObjectList(qtiItemObjectList);
 			if (results.size() > 0) {
 				createContentOfExportFile(results, qtiItemObjectList, qef);
-				String targetFileName = getFilename(shortTitle, qef, fileNameSuffix);
+				String targetFileName = getFilename(shortTitle, fileNameSuffix);
 				
 				exportStream.putNextEntry(new ZipEntry(targetFileName));
 				IOUtils.write(qef.getReport(), exportStream);
@@ -191,17 +191,16 @@ public class QTIExportManager extends BasicManager{
 	 */
 	private String writeContentToFile(String shortTitle, File exportDirectory, String charset, QTIExportFormatter qef, String fileNameSuffix) {
 		// defining target filename
-		String targetFileName = getFilename(shortTitle, qef, fileNameSuffix);
+		String targetFileName = getFilename(shortTitle, fileNameSuffix);
 		File savedFile = ExportUtil.writeContentToFile(targetFileName, qef.getReport(), exportDirectory, charset);
 		return savedFile.getName();
 	}
 	
-	private String getFilename(String shortTitle, QTIExportFormatter qef, String fileNameSuffix) {
+	private String getFilename(String shortTitle, String fileNameSuffix) {
 		StringBuilder tf = new StringBuilder();
-		tf.append(qef.getFileNamePrefix());
 		tf.append(Formatter.makeStringFilesystemSave(shortTitle));
 		tf.append("_");
-		DateFormat myformat = new SimpleDateFormat("yyyy-MM-dd__hh-mm-ss__SSS");
+		DateFormat myformat = new SimpleDateFormat("yyyy-MM-dd__hh-mm");
 		String timestamp = myformat.format(new Date());
 		tf.append(timestamp);
 		tf.append(fileNameSuffix);
