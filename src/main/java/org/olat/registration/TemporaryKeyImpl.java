@@ -27,7 +27,21 @@ package org.olat.registration;
 
 import java.util.Date;
 
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.NamedQueries;
+import javax.persistence.NamedQuery;
+import javax.persistence.Table;
+import javax.persistence.Temporal;
+import javax.persistence.TemporalType;
+import javax.persistence.Version;
+
+import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.annotations.Parameter;
 import org.olat.core.id.CreateInfo;
+import org.olat.core.id.Persistable;
 
 /**
  *  Description:
@@ -35,37 +49,65 @@ import org.olat.core.id.CreateInfo;
  * 
  * @author Sabina Jeger
  */
-public class TemporaryKeyImpl implements CreateInfo, TemporaryKey {
+@Entity(name="otemporarykey")
+@Table(name="o_temporarykey")
+@NamedQueries({
+	@NamedQuery(name="loadTemporaryKeyByRegAction", query="select r from otemporarykey r where r.regAction=:action"),
+	@NamedQuery(name="loadTemporaryKeyByRegKey", query="select r from otemporarykey r where r.registrationKey=:regkey"),
+	@NamedQuery(name="loadTemporaryKeyByEmailAddress", query="select r from otemporarykey r where r.emailAddress=:email")
+})
+public class TemporaryKeyImpl implements Persistable, CreateInfo, TemporaryKey {
+
+	private static final long serialVersionUID = 2617181963956081372L;
 	
-	private Long key = null;
-	private String emailAddress = null;
-	private String ipAddress = null;
-	private Date creationDate = new Date();
-	private Date lastModified = null;
-	private String registrationKey = null;
-	private String regAction = null;
-	private boolean mailSent = false;
+	@Id
+	@GeneratedValue(generator = "system-uuid")
+	@GenericGenerator(name = "system-uuid", strategy = "enhanced-sequence", parameters={
+		@Parameter(name="sequence_name", value="hibernate_unique_key"),
+		@Parameter(name="force_table_use", value="true"),
+		@Parameter(name="optimizer", value="legacy-hilo"),
+		@Parameter(name="value_column", value="next_hi"),
+		@Parameter(name="increment_size", value="32767"),
+		@Parameter(name="initial_value", value="32767")
+	})
+	@Column(name="reglist_id", nullable=false, unique=true, insertable=true, updatable=false)
+	private Long key;
+	@Version
 	private int version;
 
-	/**
-	 * 
-	 */
-	protected TemporaryKeyImpl() {
-		super();
+	@Temporal(TemporalType.TIMESTAMP)
+	@Column(name="creationdate", nullable=false, insertable=true, updatable=false)
+	private Date creationDate;
+
+	@Column(name="email", nullable=false, unique=true, insertable=true, updatable=true)
+	private String emailAddress;
+	@Column(name="ip", nullable=false, unique=true, insertable=true, updatable=true)
+	private String ipAddress;
+	@Column(name="regkey", nullable=false, unique=true, insertable=true, updatable=true)
+	private String registrationKey;
+	@Column(name="action", nullable=false, unique=true, insertable=true, updatable=true)
+	private String regAction;
+	@Column(name="mailsent", nullable=false, unique=true, insertable=true, updatable=true)
+	private boolean mailSent = false;
+	
+	public TemporaryKeyImpl() {
+		//
+	}
+
+	@Override
+	public Long getKey() {
+		return key;
+	}
+
+	public void setKey(Long key) {
+		this.key = key;
 	}
 
 	/**
-	 * Temporary key database object.
-	 * @param emailaddress
-	 * @param ipaddress
-	 * @param registrationKey
-	 * @param action
+	 * @see org.olat.registration.TemporaryKey#setCreationDate(java.util.Date)
 	 */
-	public TemporaryKeyImpl(String emailaddress, String ipaddress, String registrationKey, String action) {
-		this.emailAddress = emailaddress;
-		this.ipAddress = ipaddress;
-		this.registrationKey = registrationKey;
-		this.regAction = action;
+	public void setCreationDate(Date date) {
+		creationDate = date;
 	}
 
 	/**
@@ -104,13 +146,6 @@ public class TemporaryKeyImpl implements CreateInfo, TemporaryKey {
 	}
 
 	/**
-	 * @see org.olat.registration.TemporaryKey#getLastModified()
-	 */
-	public Date getLastModified() {
-		return lastModified;
-	}
-
-	/**
 	 * @see org.olat.registration.TemporaryKey#getRegistrationKey()
 	 */
 	public String getRegistrationKey() {
@@ -138,53 +173,36 @@ public class TemporaryKeyImpl implements CreateInfo, TemporaryKey {
 		mailSent = b;
 	}
 
-	/**
-	 * @see org.olat.registration.TemporaryKey#getKey()
-	 */
-	public Long getKey() {
-		return key;
-	}
 
-	/**
-	 * @see org.olat.registration.TemporaryKey#setKey(java.lang.Long)
-	 */
-	public void setKey(Long long1) {
-		key = long1;
-	}
-
-	/**
-	 * @see org.olat.registration.TemporaryKey#setCreationDate(java.util.Date)
-	 */
-	public void setCreationDate(Date date) {
-		creationDate = date;
-	}
-
-	/**
-	 * @see org.olat.registration.TemporaryKey#setLastModified(java.util.Date)
-	 */
-	public void setLastModified(Date date) {
-		lastModified = date;
-	}
-
-	/**
-	 * @see org.olat.registration.TemporaryKey#getRegAction()
-	 */
+	@Override
 	public String getRegAction() {
 		return regAction;
 	}
 
-	/**
-	 * @see org.olat.registration.TemporaryKey#setRegAction(java.lang.String)
-	 */
+	@Override
 	public void setRegAction(String string) {
 		regAction = string;
 	}
 
-	public int getVersion() {
-		return this.version;
+	@Override
+	public int hashCode() {
+		return getKey() == null ? 8742558 : getKey().hashCode();
 	}
 
-	public void setVersion(int version) {
-		this.version = version;
+	@Override
+	public boolean equals(Object obj) {
+		if(this == obj) {
+			return true;
+		}
+		if(obj instanceof TemporaryKeyImpl) {
+			TemporaryKeyImpl tmpKey = (TemporaryKeyImpl)obj;
+			return getKey() != null && getKey().equals(tmpKey.getKey());
+		}
+		return false;
+	}
+
+	@Override
+	public boolean equalsByPersistableKey(Persistable persistable) {
+		return equals(persistable);
 	}
 }

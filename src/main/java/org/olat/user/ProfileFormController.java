@@ -65,7 +65,6 @@ import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.xml.XStreamHelper;
 import org.olat.registration.RegistrationManager;
 import org.olat.registration.TemporaryKey;
-import org.olat.registration.TemporaryKeyImpl;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -215,7 +214,7 @@ public class ProfileFormController extends FormBasicController {
 			// special case for email field
 			if (userPropertyHandler.getName().equals("email")) {
 				String key = user.getProperty("emchangeKey", null);
-				TemporaryKeyImpl tempKey = rm.loadTemporaryKeyByRegistrationKey(key);
+				TemporaryKey tempKey = rm.loadTemporaryKeyByRegistrationKey(key);
 				if (tempKey != null) {
 					XStream xml = XStreamHelper.createXStreamInstance();
 					@SuppressWarnings("unchecked")
@@ -488,7 +487,7 @@ public class ProfileFormController extends FormBasicController {
 						identityToModify.getUser().setProperty("email", currentEmail);
 					} else {
 						String key = identityToModify.getUser().getProperty("emchangeKey", null);
-						TemporaryKeyImpl tempKey = rm.loadTemporaryKeyByRegistrationKey(key);
+						TemporaryKey tempKey = rm.loadTemporaryKeyByRegistrationKey(key);
 						if (tempKey != null) {
 							rm.deleteTemporaryKey(tempKey);
 						}		

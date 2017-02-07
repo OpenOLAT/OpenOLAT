@@ -230,6 +230,7 @@ create table if not exists o_user (
    u_telprivate varchar(255),
    u_telmobile varchar(255),
    u_teloffice varchar(255),
+   u_smstelmobile varchar(255),
    u_skype varchar(255),
    u_msn varchar(255),
    u_xing varchar(255),
@@ -1905,6 +1906,18 @@ create table o_ex_task_modifier (
    primary key (id)
 );
 
+-- sms
+create table o_sms_message_log (
+   id bigint not null auto_increment,
+   creationdate datetime not null,
+   lastmodified datetime not null,
+   s_message_uuid varchar(256) not null,
+   s_server_response varchar(256),
+   s_service_id varchar(32) not null,
+   fk_identity bigint not null,
+   primary key (id)
+);
+
 -- user view
 create view o_bs_identity_short_v as (
    select
@@ -2235,7 +2248,7 @@ alter table o_pf_assignment ENGINE = InnoDB;
 alter table o_pf_binder_user_infos ENGINE = InnoDB;
 alter table o_eva_form_session ENGINE = InnoDB;
 alter table o_eva_form_response ENGINE = InnoDB;
-
+alter table o_sms_message_log ENGINE = InnoDB;
 
 -- rating
 alter table o_userrating add constraint FKF26C8375236F20X foreign key (creator_id) references o_bs_identity (id);
@@ -2691,6 +2704,9 @@ alter table o_cer_certificate add constraint cer_to_resource_idx foreign key (fk
 
 create index cer_archived_resource_idx on o_cer_certificate (c_archived_resource_id);
 create index cer_uuid_idx on o_cer_certificate (c_uuid);
+
+-- sms
+alter table o_sms_message_log add constraint sms_log_to_identity_idx foreign key (fk_identity) references o_bs_identity (id);
 
 -- o_logging_table
 create index log_target_resid_idx on o_loggingtable(targetresid);

@@ -44,7 +44,6 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.util.Util;
-import org.olat.core.util.ValidationStatus;
 
 /**
  * <h3>Description:</h3>
@@ -198,11 +197,6 @@ public class UserInterestsElement extends FormItemImpl implements FormItemCollec
 		if(editLink != null && editLink.getRootForm() != getRootForm()) {
 			editLink.setRootForm(getRootForm());
 		}
-	}
-
-	@Override
-	public void validate(List<ValidationStatus> validationResults) {
-		// Do nothing.
 	}
 
 	/**

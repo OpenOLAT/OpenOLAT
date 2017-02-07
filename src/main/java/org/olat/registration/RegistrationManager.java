@@ -43,7 +43,8 @@ import org.olat.core.helpers.Settings;
 import org.olat.core.id.Identity;
 import org.olat.core.id.User;
 import org.olat.core.id.UserConstants;
-import org.olat.core.manager.BasicManager;
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
 import org.olat.core.util.Encoder;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
@@ -62,13 +63,14 @@ import org.springframework.stereotype.Service;
  * @author Sabina Jeger
  */
 @Service("selfRegistrationManager")
-public class RegistrationManager extends BasicManager {
+public class RegistrationManager {
+	
+	private static final OLog log = Tracing.createLoggerFor(RegistrationManager.class);
 
 	public static final String PW_CHANGE = "PW_CHANGE";
-	public static final String REGISTRATION = "REGISTRATION";//fxdiff FXOLAT-113: business path in DMZ
+	public static final String REGISTRATION = "REGISTRATION";
 	public static final String EMAIL_CHANGE = "EMAIL_CHANGE";
 	protected static final int REG_WORKFLOW_STEPS = 5;
-	protected static final int PWCHANGE_WORKFLOW_STEPS = 4;
 	
 	@Autowired
 	private DB dbInstance;
@@ -106,7 +108,7 @@ public class RegistrationManager extends BasicManager {
 					break;
 				}
 			} catch (Exception e) {
-				logError("Error matching an email adress", e);
+				log.error("Error matching an email adress", e);
 			}
 		}
 		return valid;
@@ -130,7 +132,7 @@ public class RegistrationManager extends BasicManager {
 				emailDomain.matches(pattern);
 			} catch (Exception e) {
 				errors.add(domain);
-				logError("Error matching an email adress", e);
+				log.error("Error matching an email adress", e);
 			}
 		}
 		return errors;
@@ -153,7 +155,7 @@ public class RegistrationManager extends BasicManager {
 	 * @param tk Temporary key
 	 * @return the newly created subject or null
 	 */
-	public Identity createNewUserAndIdentityFromTemporaryKey(String login, String pwd, User myUser, TemporaryKeyImpl tk) {
+	public Identity createNewUserAndIdentityFromTemporaryKey(String login, String pwd, User myUser, TemporaryKey tk) {
 		Identity identity = securityManager.createAndPersistIdentityAndUserWithDefaultProviderAndUserGroup(login, null, pwd, myUser);
 		if (identity == null) return null;
 		deleteTemporaryKey(tk);
@@ -174,7 +176,7 @@ public class RegistrationManager extends BasicManager {
 			from = new InternetAddress(WebappHelper.getMailConfig("mailReplyTo"));
 			to = new Address[] { new InternetAddress(notificationMailAddress)};
 		} catch (AddressException e) {
-			logError("Could not send registration notification message, bad mail address", e);
+			log.error("Could not send registration notification message, bad mail address", e);
 			return;
 		}
 		MailerResult result = new MailerResult();
@@ -189,7 +191,7 @@ public class RegistrationManager extends BasicManager {
 		MimeMessage msg = mailManager.createMimeMessage(from, to, null, null, body, subject, null, result);
 		mailManager.sendMessage(msg, result);
 		if (result.getReturnCode() != MailerResult.OK ) {
-			logError("Could not send registration notification message, MailerResult was ::" + result.getReturnCode(), null);			
+			log.error("Could not send registration notification message, MailerResult was ::" + result.getReturnCode(), null);			
 		}
 	}
 	
@@ -202,16 +204,14 @@ public class RegistrationManager extends BasicManager {
 	 * 
 	 * @return TemporaryKey
 	 */
-	public TemporaryKeyImpl createTemporaryKeyByEmail(String email, String ip, String action) {
+	public TemporaryKey createTemporaryKeyByEmail(String email, String ip, String action) {
 		// check if the user is already registered
 		// we also try to find it in the temporarykey list
-		String q = "select r from org.olat.registration.TemporaryKeyImpl as r where r.emailAddress = :email";
-		List<TemporaryKeyImpl> tks = dbInstance.getCurrentEntityManager()
-				.createQuery(q, TemporaryKeyImpl.class)
+		List<TemporaryKey> tks = dbInstance.getCurrentEntityManager()
+				.createNamedQuery("loadTemporaryKeyByEmailAddress", TemporaryKey.class)
 				.setParameter("email", email)
 				.getResultList();
-		
-		TemporaryKeyImpl tk = null;
+		TemporaryKey tk;
 		if ((tks == null) || (tks.size() != 1)) { // no user found, create a new one
 			tk = register(email, ip, action);
 		} else {
@@ -227,7 +227,7 @@ public class RegistrationManager extends BasicManager {
 	 * 
 	 * @return true if successfully deleted
 	 */
-	public void deleteTemporaryKey(TemporaryKeyImpl key) {
+	public void deleteTemporaryKey(TemporaryKey key) {
 		TemporaryKeyImpl reloadedKey = dbInstance.getCurrentEntityManager()
 				.getReference(TemporaryKeyImpl.class, key.getKey());
 		dbInstance.getCurrentEntityManager().remove(reloadedKey);
@@ -241,13 +241,11 @@ public class RegistrationManager extends BasicManager {
 	 * 
 	 * @return the found temporary key or null if none is found
 	 */
-	public TemporaryKeyImpl loadTemporaryKeyByEmail(String email) {
-		String q = "select r from r in class org.olat.registration.TemporaryKeyImpl where r.emailAddress =:email";
-		List<TemporaryKeyImpl> tks = dbInstance.getCurrentEntityManager()
-				.createQuery(q, TemporaryKeyImpl.class)
+	public TemporaryKey loadTemporaryKeyByEmail(String email) {
+		List<TemporaryKey> tks = dbInstance.getCurrentEntityManager()
+				.createNamedQuery("loadTemporaryKeyByEmailAddress", TemporaryKey.class)
 				.setParameter("email", email)
 				.getResultList();
-		
 		if (tks.size() == 1) {
 			return tks.get(0);
 		}
@@ -263,12 +261,10 @@ public class RegistrationManager extends BasicManager {
 	 * @return the found temporary key or null if none is found
 	 */
 	public List<TemporaryKey> loadTemporaryKeyByAction(String action) {
-		String q = "select r from r in class org.olat.registration.TemporaryKeyImpl where r.regAction = :action";
 		List<TemporaryKey> tks = dbInstance.getCurrentEntityManager()
-				.createQuery(q, TemporaryKey.class)
+				.createNamedQuery("loadTemporaryKeyByRegAction", TemporaryKey.class)
 				.setParameter("action", action)
 				.getResultList();
-		
 		if (tks.size() > 0) {
 			return tks;
 		} else {
@@ -283,10 +279,9 @@ public class RegistrationManager extends BasicManager {
 	 * 
 	 * @return the found TemporaryKey or null if none is found
 	 */
-	public TemporaryKeyImpl loadTemporaryKeyByRegistrationKey(String regkey) {
-		String q = "select r from r in class org.olat.registration.TemporaryKeyImpl where r.registrationKey = :regkey";
-		List<TemporaryKeyImpl> tks = dbInstance.getCurrentEntityManager()
-				.createQuery(q, TemporaryKeyImpl.class)
+	public TemporaryKey loadTemporaryKeyByRegistrationKey(String regkey) {
+		List<TemporaryKey> tks = dbInstance.getCurrentEntityManager()
+				.createNamedQuery("loadTemporaryKeyByRegKey", TemporaryKey.class)
 				.setParameter("regkey", regkey)
 				.getResultList();
 		
@@ -305,10 +300,15 @@ public class RegistrationManager extends BasicManager {
 	 * 
 	 * @return newly created temporary key
 	 */
-	public TemporaryKeyImpl register(String emailaddress, String ipaddress, String action) {
+	public TemporaryKey register(String emailaddress, String ipaddress, String action) {
 		String today = new Date().toString();
 		String encryptMe = Encoder.md5hash(emailaddress + ipaddress + today);
-		TemporaryKeyImpl tk = new TemporaryKeyImpl(emailaddress, ipaddress, encryptMe, action);
+		TemporaryKeyImpl tk = new TemporaryKeyImpl();
+		tk.setCreationDate(new Date());
+		tk.setEmailAddress(emailaddress);
+		tk.setIpAddress(ipaddress);
+		tk.setRegistrationKey(encryptMe);
+		tk.setRegAction(action);
 		dbInstance.getCurrentEntityManager().persist(tk);
 		return tk;
 	}
@@ -318,7 +318,7 @@ public class RegistrationManager extends BasicManager {
 	 * @param keyValue
 	 */
 	public void deleteTemporaryKeyWithId(String keyValue) {
-		TemporaryKeyImpl tKey = loadTemporaryKeyByRegistrationKey(keyValue);
+		TemporaryKey tKey = loadTemporaryKeyByRegistrationKey(keyValue);
 		if(tKey != null) {
 			deleteTemporaryKey(tKey);
 		}
@@ -371,18 +371,5 @@ public class RegistrationManager extends BasicManager {
 	 */
 	public void revokeConfirmedDisclaimer(Identity identity) {
 		propertyManager.deleteProperties(identity, null, null, "user", "dislaimer_accepted");		
-	}
-	
-	/**
-	 * Get a list of all users that did already confirm the disclaimer
-	 * @return
-	 */
-	public List<Identity> getIdentitiesWithConfirmedDisclaimer() {
-		StringBuilder sb = new StringBuilder();
-		sb.append("select distinct ident from org.olat.core.id.Identity as ident, org.olat.properties.Property as prop ")
-		  .append(" where prop.identity=ident and prop.category='user' and prop.name='dislaimer_accepted'");
-		return dbInstance.getCurrentEntityManager()
-				.createQuery(sb.toString(), Identity.class)
-				.getResultList();
 	}
 }

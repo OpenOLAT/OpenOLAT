@@ -100,11 +100,11 @@ public class LDAPAuthenticationController extends AuthenticationController imple
 		loginComp = createVelocityContainer("ldaplogin");
 		
 		if(userModule.isAnyPasswordChangeAllowed() && ldapLoginModule.isPropagatePasswordChangedOnLdapServer()) {
-			Link link = LinkFactory.createLink("_olat_login_change_pwd", "menu.pw", loginComp, this);
+			Link link = LinkFactory.createLink("_ldap_login_change_pwd", "menu.pw", loginComp, this);
 			link.setElementCssClass("o_login_pwd");
 			pwLink = link;
 		} else if(StringHelper.containsNonWhitespace(ldapLoginModule.getChangePasswordUrl())) {
-			ExternalLink link = new ExternalLink("_olat_login_change_pwd", "menu.pw");
+			ExternalLink link = new ExternalLink("_ldap_login_change_pwd", "menu.pw");
 			link.setElementCssClass("o_login_pwd");
 			link.setName(translate("menu.pw"));
 			link.setUrl(ldapLoginModule.getChangePasswordUrl());

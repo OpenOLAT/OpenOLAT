@@ -34,7 +34,7 @@ import org.olat.core.id.Identity;
 import org.olat.core.id.User;
 import org.olat.core.util.Util;
 import org.olat.registration.RegistrationManager;
-import org.olat.registration.TemporaryKeyImpl;
+import org.olat.registration.TemporaryKey;
 import org.olat.user.ProfileAndHomePageEditController;
 import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -56,7 +56,7 @@ public class ChangeEMailController extends DefaultController {
 	
 	protected Translator pT;
 	protected String emKey;
-	protected TemporaryKeyImpl tempKey;
+	protected TemporaryKey tempKey;
 	protected UserRequest userRequest;
 	
 	@Autowired

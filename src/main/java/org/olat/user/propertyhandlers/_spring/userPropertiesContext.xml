@@ -25,6 +25,7 @@
 				<ref bean="userPropertyGender" />
 				<ref bean="userPropertyTelPrivate" />
 				<ref bean="userPropertyTelMobile" />
+				<ref bean="userPropertySmsTelMobile" />
 				<ref bean="userPropertyTelOffice" />
 				<ref bean="userPropertySkype" />
 				<ref bean="userPropertyMSN" />

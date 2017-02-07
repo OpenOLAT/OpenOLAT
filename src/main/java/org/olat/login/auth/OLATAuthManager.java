@@ -31,7 +31,6 @@ import java.util.Map;
 
 import org.olat.basesecurity.Authentication;
 import org.olat.basesecurity.BaseSecurity;
-import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.services.webdav.manager.WebDAVAuthManager;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
@@ -75,7 +74,7 @@ import com.thoughtworks.xstream.XStream;
 @Service("olatAuthenticationSpi")
 public class OLATAuthManager extends BasicManager implements AuthenticationSPI {
 	
-	private static OLog log = Tracing.createLoggerFor(OLATAuthManager.class);
+	private static final OLog log = Tracing.createLoggerFor(OLATAuthManager.class);
 	
 	@Autowired
 	private UserManager userManager;
@@ -89,6 +88,8 @@ public class OLATAuthManager extends BasicManager implements AuthenticationSPI {
 	private LoginModule loginModule;
 	@Autowired
 	private LDAPLoginModule ldapLoginModule;
+	@Autowired
+	private LDAPLoginManager ldapLoginManager;
 	@Autowired
 	private RegistrationManager registrationManager;
 	
@@ -201,7 +202,6 @@ public class OLATAuthManager extends BasicManager implements AuthenticationSPI {
 		if(ldapAuth != null) {
 			if(ldapLoginModule.isPropagatePasswordChangedOnLdapServer()) {
 				LDAPError ldapError = new LDAPError();
-				LDAPLoginManager ldapLoginManager = (LDAPLoginManager) CoreSpringFactory.getBean("org.olat.ldap.LDAPLoginManager");
 				ldapLoginManager.changePassword(identity, newPwd, ldapError);
 				log.audit(doer.getName() + " change the password on the LDAP server for identity: " + identity.getName());
 				allOk = ldapError.isEmpty();
@@ -229,7 +229,7 @@ public class OLATAuthManager extends BasicManager implements AuthenticationSPI {
 		String[] args = new String[] {
 				identity.getName(),//0: changed users username
 				identity.getUser().getProperty(UserConstants.EMAIL, locale),// 1: changed users email address
-				UserManager.getInstance().getUserDisplayName(doer.getUser()),// 2: Name (first and last name) of user who changed the password
+				userManager.getUserDisplayName(doer.getUser()),// 2: Name (first and last name) of user who changed the password
 				WebappHelper.getMailConfig("mailSupport"), //3: configured support email address
 				changePwUrl //4: direct link to change password workflow (e.g. https://xx.xx.xx/olat/url/changepw/0)
 		};
