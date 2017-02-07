@@ -24,6 +24,7 @@ import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.DefaultComponentRenderer;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement.Layout;
 import org.olat.core.gui.components.form.flexible.impl.FormJSHelper;
+import org.olat.core.gui.components.form.flexible.impl.NameValuePair;
 import org.olat.core.gui.render.RenderResult;
 import org.olat.core.gui.render.Renderer;
 import org.olat.core.gui.render.StringOutput;
@@ -143,6 +144,16 @@ public class MultipleSelectionRenderer extends DefaultComponentRenderer {
 		}
 		if(!stC.isEnabled() || !check.isEnabled()) {
 			sb.append(" disabled='disabled' ");
+		} else if(stF.isAjaxOnly()) {
+			// The implementation is conservative as it send the state of the check box,
+			// this is especially useful if an issue of double evaluation appears.
+			sb.append(" onclick=\"javascript: this.checked ?")
+		      .append(FormJSHelper.getXHRFnCallFor(stF.getRootForm(), stC.getFormDispatchId(), 1, false, false, false,
+		    		  new NameValuePair("achkbox", key), new NameValuePair("checked", "true")))
+		      .append(" : ")
+		      .append(FormJSHelper.getXHRFnCallFor(stF.getRootForm(), stC.getFormDispatchId(), 1, false, false, false,
+		    		  new NameValuePair("achkbox", key), new NameValuePair("checked", "false")))
+			  .append(";\"");
 		} else {
 			//use the selection form dispatch id and not the one of the element!
 			sb.append(FormJSHelper.getRawJSFor(check.getRootForm(), check.getSelectionElementFormDispatchId(), check.getAction()));

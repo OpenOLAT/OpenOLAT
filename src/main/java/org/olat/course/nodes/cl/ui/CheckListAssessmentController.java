@@ -38,12 +38,14 @@ import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.DBFactory;
+import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
+import org.olat.core.gui.components.form.flexible.elements.FlexiTableSortOptions;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
@@ -186,6 +188,7 @@ public class CheckListAssessmentController extends FormBasicController implement
 		maxScore = (Float)config.get(MSCourseNode.CONFIG_KEY_SCORE_MAX);
 
 		initForm(ureq);
+		reloadTable();
 	}
 
 	@Override
@@ -199,9 +202,11 @@ public class CheckListAssessmentController extends FormBasicController implement
 				layoutCont.contextPut("dueDate", dueDate);
 			}
 		}
-		
+
+		FlexiTableSortOptions options = new FlexiTableSortOptions();
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		if(isAdministrativeUser) {
+			options.setDefaultOrderBy(new SortKey(Cols.username.name(), true));
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.username.i18nKey(), Cols.username.ordinal(),
 					true, Cols.username.name()));
 		}
@@ -224,6 +229,9 @@ public class CheckListAssessmentController extends FormBasicController implement
 					col = new DefaultFlexiColumnModel(true, userPropertyHandler.i18nColumnDescriptorLabelKey(), colIndex, true, propName);
 				}
 				columnsModel.addFlexiColumnModel(col);
+				if(options.getDefaultOrderBy() == null) {
+					options.setDefaultOrderBy(new SortKey(propName, true));
+				}
 			}
 		}
 		
@@ -247,8 +255,7 @@ public class CheckListAssessmentController extends FormBasicController implement
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("table.header.edit.checkbox", translate("table.header.edit.checkbox"), "edit"));
 		}
 
-		List<CheckListAssessmentRow> datas = loadDatas();
-		model = new CheckListAssessmentDataModel(checkboxList, datas, columnsModel, getLocale());
+		model = new CheckListAssessmentDataModel(checkboxList, new ArrayList<>(), columnsModel, getLocale());
 		table = uifactory.addTableElement(getWindowControl(), "checkbox-list", model, getTranslator(), formLayout);
 		if(coachCourseEnv instanceof UserCourseEnvironmentImpl) {
 			UserCourseEnvironmentImpl env = (UserCourseEnvironmentImpl)coachCourseEnv;
@@ -264,6 +271,8 @@ public class CheckListAssessmentController extends FormBasicController implement
 		}
 		table.setExportEnabled(true);
 		table.setCustomizeColumns(true);
+		FlexiTableSortOptions sortOptions = new FlexiTableSortOptions();
+		table.setSortSettings(sortOptions);
 		table.setAndLoadPersistedPreferences(ureq, "checklist-assessment");
 		
 		pdfExportButton = uifactory.addFormLink("pdf.export", formLayout, Link.BUTTON);
@@ -437,7 +446,13 @@ public class CheckListAssessmentController extends FormBasicController implement
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
-	
+
+	@Override
+	protected void propagateDirtinessToContainer(FormItem fiSrc, FormEvent event) {
+		if(!(fiSrc instanceof MultipleSelectionElement)) {
+			super.propagateDirtinessToContainer(fiSrc, event);
+		}
+	}
 
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
@@ -514,6 +529,8 @@ public class CheckListAssessmentController extends FormBasicController implement
 				for(int i=0; i<numOfCheckbox; i++) {
 					String checkName = "c" + i + "-" + row.getIdentityKey();
 					checkedEls[i] = uifactory.addCheckboxesHorizontal(checkName, null, flc, onKeys, onValues);
+					checkedEls[i].setAjaxOnly(true);
+					checkedEls[i].setDomReplacementWrapperRequired(false);
 					if(checked != null && i<checked.length && checked[i] != null && checked[i].booleanValue()) {
 						checkedEls[i].select(onKeys[0], true);
 					}
