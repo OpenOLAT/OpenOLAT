@@ -538,7 +538,7 @@ public class CheckListAssessmentController extends FormBasicController implement
 	
 	private void doSave() {
 		int numOfCheckbox = checkboxList.getNumOfCheckbox();
-		List<CheckListAssessmentRow> rows = model.getObjects();
+		List<CheckListAssessmentRow> rows = model.getBackedUpRows();//save all rows
 		List<AssessmentBatch> batchElements = new ArrayList<>(rows.size());
 		Set<Long> assessedIdentityToUpdate = new HashSet<>();
 		for(CheckListAssessmentRow row:rows) {
