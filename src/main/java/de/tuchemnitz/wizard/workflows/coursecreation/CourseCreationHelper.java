@@ -336,7 +336,7 @@ public class CourseCreationHelper {
 			// no error and no warnings -> return immediate
 			log.error("Course Publishing failed", new AssertionError());
 		}
-		pp.applyPublishSet(ureq.getIdentity(), ureq.getLocale());
+		pp.applyPublishSet(ureq.getIdentity(), ureq.getLocale(), true);
 		CourseFactory.closeCourseEditSession(course.getResourceableId(), true);
 
 		// save catalog entry

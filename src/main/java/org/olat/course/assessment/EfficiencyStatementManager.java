@@ -35,6 +35,7 @@ import java.util.Map;
 
 import org.olat.basesecurity.IdentityRef;
 import org.olat.core.commons.persistence.DB;
+import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.manager.BasicManager;
@@ -703,20 +704,25 @@ public class EfficiencyStatementManager extends BasicManager implements UserData
 			// preload cache to speed up things
 			long start = System.currentTimeMillis();
 			AssessmentManager am = course.getCourseEnvironment().getAssessmentManager();
-
-			Iterator<Identity> iter = identities.iterator();			
-			while (iter.hasNext()) {
-				final Identity identity = iter.next();					
+			int count = 0;
+			for (Identity identity: identities) {			
 				//o_clusterOK: by ld
 				OLATResourceable efficiencyStatementResourceable = am.createOLATResourceableForLocking(identity);
 				CoordinatorManager.getInstance().getCoordinator().getSyncer().doInSync(efficiencyStatementResourceable, new SyncerExecutor() {
+					@Override
 					public void execute() {					
 						// create temporary user course env
 						UserCourseEnvironment uce = AssessmentHelper.createAndInitUserCourseEnvironment(identity, course);
 						updateUserEfficiencyStatement(uce, re.getKey(), course);
 					}
 				});
-				if (Thread.interrupted()) break;
+				if (Thread.interrupted()) {
+					break;
+				}
+				
+				if(++count % 10 == 0) {
+					DBFactory.getInstance().commitAndCloseSession();
+				}
 			}
 			//}
 			if (isLogDebugEnabled()) {

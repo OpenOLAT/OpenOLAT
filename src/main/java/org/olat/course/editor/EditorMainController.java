@@ -1083,8 +1083,7 @@ public class EditorMainController extends MainLayoutBasicController implements G
 					Collection<String> selectedNodeIds = (Collection<String>) runContext.get("publishSetCreatedFor");
 					hasChanges = (selectedNodeIds != null) && (selectedNodeIds.size() > 0);
 					if (hasChanges) {
-						publishManager.applyPublishSet(ureq1.getIdentity(), ureq1.getLocale());
-						publishManager.applyUpdateSet(ureq1.getIdentity(), ureq1.getLocale());
+						publishManager.applyPublishSet(ureq1.getIdentity(), ureq1.getLocale(), false);
 					}
 				}
 				

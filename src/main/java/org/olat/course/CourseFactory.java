@@ -635,7 +635,7 @@ public class CourseFactory {
 
 			 try {
 				 course = CourseFactory.openCourseEditSession(course.getResourceableId());
-				 publishProcess.applyPublishSet(identity, locale);
+				 publishProcess.applyPublishSet(identity, locale, false);
 			 } catch(Exception e) {
 				 log.error("",  e);
 			 } finally {

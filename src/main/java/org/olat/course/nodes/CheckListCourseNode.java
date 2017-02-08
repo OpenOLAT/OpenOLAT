@@ -31,6 +31,7 @@ import java.util.logging.Level;
 import java.util.zip.ZipOutputStream;
 
 import org.olat.core.CoreSpringFactory;
+import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.stack.BreadcrumbPanel;
 import org.olat.core.gui.control.Controller;
@@ -54,7 +55,6 @@ import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.course.ICourse;
 import org.olat.course.assessment.AssessmentManager;
-import org.olat.course.assessment.EfficiencyStatementEvent;
 import org.olat.course.auditing.UserNodeAuditManager;
 import org.olat.course.editor.CourseEditorEnv;
 import org.olat.course.editor.NodeEditController;
@@ -681,17 +681,17 @@ public class CheckListCourseNode extends AbstractAccessableCourseNode implements
 		CoursePropertyManager pm = course.getCourseEnvironment().getCoursePropertyManager();
 		List<Identity> assessedUsers = pm.getAllIdentitiesWithCourseAssessmentData(null);
 
+		int count = 0;
 		for(Identity assessedIdentity: assessedUsers) {
 			updateScorePassedOnPublish(assessedIdentity, publisher, checkboxManager, course);
+			if(++count % 10 == 0) {
+				DBFactory.getInstance().commitAndCloseSession();
+			}
 		}
 		super.updateOnPublish(locale, course, publisher, publishEvents);
-		
-		EfficiencyStatementEvent recalculateEvent = new EfficiencyStatementEvent(EfficiencyStatementEvent.CMD_RECALCULATE, course.getResourceableId());
-		publishEvents.addPostPublishingEvent(recalculateEvent);
 	}
 	
 	private void updateScorePassedOnPublish(Identity assessedIdentity, Identity coachIdentity, CheckboxManager checkboxManager, ICourse course) {
-		
 		AssessmentManager am = course.getCourseEnvironment().getAssessmentManager();
 		
 		Float currentScore = am.getNodeScore(this, assessedIdentity);
