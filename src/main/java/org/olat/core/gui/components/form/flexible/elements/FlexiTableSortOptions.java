@@ -59,6 +59,13 @@ public class FlexiTableSortOptions {
 	public boolean isFromColumnModel() {
 		return fromColumnModel;
 	}
+	
+	/**
+	 * @return true if a default order is set
+	 */
+	public boolean hasDefaultOrderBy() {
+		return defaultOrderBy != null;
+	}
 
 	public SortKey getDefaultOrderBy() {
 		return defaultOrderBy;

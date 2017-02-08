@@ -74,6 +74,7 @@ import org.olat.core.util.Util;
 import org.olat.core.util.WebappHelper;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.i18n.I18nManager;
+import org.olat.core.util.mail.ContactList;
 import org.olat.core.util.mail.MailBundle;
 import org.olat.core.util.mail.MailManager;
 import org.olat.core.util.mail.MailerResult;
@@ -92,6 +93,7 @@ import org.olat.course.certificate.CertificateLight;
 import org.olat.course.certificate.CertificateStatus;
 import org.olat.course.certificate.CertificateTemplate;
 import org.olat.course.certificate.CertificatesManager;
+import org.olat.course.certificate.CertificatesModule;
 import org.olat.course.certificate.EmailStatus;
 import org.olat.course.certificate.RecertificationTimeUnit;
 import org.olat.course.certificate.model.CertificateImpl;
@@ -160,6 +162,8 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 	private NotificationsManager notificationsManager;
 	@Autowired
 	private FolderModule folderModule;
+	@Autowired
+	private CertificatesModule certificatesModule;
 	
 
 	@Resource(name="certificateQueue")
@@ -935,6 +939,13 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 		bundle.setToId(to);
 		bundle.setFrom(WebappHelper.getMailConfig("mailReplyTo"));
 		
+		List<String> bccs = certificatesModule.getCertificatesBccEmails();
+		if(bccs.size() > 0) {
+			ContactList bcc = new ContactList();
+			bccs.forEach(email -> { bcc.add(email); });
+			bundle.setContactList(bcc);
+		}
+
 		String[] args = new String[] {
 			entry.getDisplayname(),
 			userManager.getUserDisplayName(to)

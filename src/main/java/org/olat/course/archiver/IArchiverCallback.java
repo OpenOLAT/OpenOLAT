@@ -69,6 +69,8 @@ public interface IArchiverCallback {
 	
 	public boolean mayArchiveChecklist();
 	
+	public boolean mayArchiveParticipantFolder();
+	
 	/**
 	 * @return true if user has rights to archive project-broker data
 	 */

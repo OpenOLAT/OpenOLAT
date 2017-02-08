@@ -85,7 +85,7 @@ public class MatchAssessmentItemBuilder extends AssessmentItemBuilder {
 
 	private String question;
 	private boolean shuffle;
-	private boolean multipleChoice = true;
+	private boolean multipleChoice;
 	private Identifier responseIdentifier;
 	protected ScoreEvaluation scoreEvaluation;
 	private MatchInteraction matchInteraction;

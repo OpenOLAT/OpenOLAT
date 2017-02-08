@@ -29,12 +29,6 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.mail.Address;
-import javax.mail.AuthenticationFailedException;
-import javax.mail.MessagingException;
-import javax.mail.SendFailedException;
-
-import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.control.Controller;
@@ -45,11 +39,8 @@ import org.olat.core.gui.control.generic.messages.MessageUIFactory;
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.id.Identity;
-import org.olat.core.logging.OLATRuntimeException;
-import org.olat.core.logging.OLog;
-import org.olat.core.logging.Tracing;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
-import org.olat.core.util.WebappHelper;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.mail.ContactList;
 import org.olat.core.util.mail.ContactMessage;
 import org.olat.core.util.mail.MailBundle;
@@ -59,6 +50,8 @@ import org.olat.core.util.mail.MailHelper;
 import org.olat.core.util.mail.MailLoggingAction;
 import org.olat.core.util.mail.MailManager;
 import org.olat.core.util.mail.MailerResult;
+import org.olat.user.UserManager;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * <b>Fires Event: </b>
@@ -92,22 +85,23 @@ import org.olat.core.util.mail.MailerResult;
  * <LI>contact messages with pre-initialized subject and/or body</LI>
  * </UL>
  * <P>
- * TODO:pb:b refactor ContactFormController and ContactForm to extract a ContactMessageManager,
- * setSubject(..) setRecipients.. etc. should not be in the controller. Refactor to use ContactMessage!
  * @see org.olat.modules.co.ContactList
  * Initial Date: Jul 19, 2004
  * @author patrick
  */
 public class ContactFormController extends BasicController {
-	
-	private static final OLog log = Tracing.createLoggerFor(ContactFormController.class);
-	//
+
 	private Identity emailFrom;
 	
 	private ContactForm cntctForm;
 	private DialogBoxController noUsersErrorCtr;
-	private ArrayList<String> myButtons;
+	private List<String> myButtons;
+	
+	@Autowired
 	private MailManager mailService;
+	@Autowired
+	private UserManager userManager;
+	
 	/**
 	 * 
 	 * @param ureq
@@ -122,8 +116,7 @@ public class ContactFormController extends BasicController {
 		super(ureq, windowControl);
 		
 		//init email form
-		this.emailFrom = cmsg.getFrom();
-		mailService = CoreSpringFactory.getImpl(MailManager.class);
+		emailFrom = cmsg.getFrom();
 		
 		cntctForm = new ContactForm(ureq, windowControl, emailFrom, isReadonly,isCanceable,hasRecipientsEditable);
 		listenTo(cntctForm);
@@ -183,6 +176,7 @@ public class ContactFormController extends BasicController {
 	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest,
 	 *      org.olat.core.gui.control.Controller, org.olat.core.gui.control.Event)
 	 */
+	@Override
 	public void event(UserRequest ureq, Controller source, Event event) {
 		if (source == noUsersErrorCtr) {
 			if(event.equals(Event.CANCELLED_EVENT)) {
@@ -196,212 +190,103 @@ public class ContactFormController extends BasicController {
 					fireEvent(ureq, Event.CANCELLED_EVENT);
 				}
 			}
-		}
-		else if (source == cntctForm) {
+		} else if (source == cntctForm) {
 			if (event == Event.DONE_EVENT) {
-				//
-				boolean success = false;
-				try {
-					File[] attachments = cntctForm.getAttachments();
-					MailContext context = new MailContextImpl(getWindowControl().getBusinessControl().getAsString());
-					
-					MailBundle bundle = new MailBundle();
-					bundle.setContext(context);
-					if (emailFrom == null) {
-						// in case the user provides his own email in form						
-						bundle.setFrom(cntctForm.getEmailFrom()); 
-					} else {
-						bundle.setFromId(emailFrom);						
-					}
-					bundle.setContactLists(cntctForm.getEmailToContactLists());
-					bundle.setContent(cntctForm.getSubject(), cntctForm.getBody(), attachments);
-					
-					MailerResult result = mailService.sendMessage(bundle);
-					success = result.isSuccessful();
-					if(cntctForm.isTcpFrom()) {
-						
-						MailBundle ccBundle = new MailBundle();
-						ccBundle.setContext(context);
-						if (emailFrom == null) {
-							// in case the user provides his own email in form
-							ccBundle.setFrom(cntctForm.getEmailFrom()); 
-							ccBundle.setTo(cntctForm.getEmailFrom()); 
-						} else {
-							ccBundle.setFromId(emailFrom); 
-							ccBundle.setCc(emailFrom);							
-						}
-						ccBundle.setContent(cntctForm.getSubject(), cntctForm.getBody(), attachments);
-						
-						MailerResult ccResult = mailService.sendMessage(ccBundle);
-						success = ccResult.isSuccessful();
-					}
-				} catch (Exception e) {
-					//error in recipient email address(es)
-					handleAddressException(success);
-				}
-				cntctForm.setDisplayOnly(true);
-				if (success) {
-					showInfo("msg.send.ok");
-					// do logging
-					ThreadLocalUserActivityLogger.log(MailLoggingAction.MAIL_SENT, getClass());
-					fireEvent(ureq, Event.DONE_EVENT);
-				} else {
-					showInfo("error.msg.send.nok");
-					fireEvent(ureq, Event.FAILED_EVENT);
-				}
+				doSend(ureq);
 			} else if (event == Event.CANCELLED_EVENT) {
 				fireEvent(ureq, Event.CANCELLED_EVENT);
 			}
 		}
 	}
+	
+	private void doSend(UserRequest ureq) {
 
-	/**
-	 * handles events from Components <BR>
-	 * creates an InfoMessage in the WindowController on error. <br>
-	 * <b>Fires: </b>
-	 * <UL>
-	 * <LI><b>Event.DONE_EVENT: </B> <BR>
-	 * email was sent successfully by the underlying Email subsystem</LI>
-	 * <LI><b>Event.FAILED_EVENT: </B> <BR>
-	 * email was not sent correct by the underlying Email subsystem <BR>
-	 * email may be partially sent correct, but some parts failed.</LI>
-	 * <LI><b>Event.CANCELLED_EVENT: </B> <BR>
-	 * user interaction, i.e. canceled message creation</LI>
-	 * </UL>
-	 * <p>
-	 * 
-	 * @param ureq
-	 * @param source
-	 * @param event
-	 */
+		MailerResult result;
+		try {
+			File[] attachments = cntctForm.getAttachments();
+			MailContext context = new MailContextImpl(getWindowControl().getBusinessControl().getAsString());
+			
+			MailBundle bundle = new MailBundle();
+			bundle.setContext(context);
+			if (emailFrom == null) {
+				// in case the user provides his own email in form						
+				bundle.setFrom(cntctForm.getEmailFrom()); 
+			} else {
+				bundle.setFromId(emailFrom);						
+			}
+			bundle.setContactLists(cntctForm.getEmailToContactLists());
+			bundle.setContent(cntctForm.getSubject(), cntctForm.getBody(), attachments);
+			
+			result = mailService.sendMessage(bundle);
+			if(cntctForm.isTcpFrom()) {
+				MailBundle ccBundle = new MailBundle();
+				ccBundle.setContext(context);
+				if (emailFrom == null) {
+					// in case the user provides his own email in form
+					ccBundle.setFrom(cntctForm.getEmailFrom()); 
+					ccBundle.setTo(cntctForm.getEmailFrom()); 
+				} else {
+					ccBundle.setFromId(emailFrom); 
+					ccBundle.setCc(emailFrom);							
+				}
+				ccBundle.setContent(cntctForm.getSubject(), cntctForm.getBody(), attachments);
+				
+				MailerResult ccResult = mailService.sendMessage(ccBundle);
+				result.append(ccResult);
+			}
+			
+			if(result != null) {
+				if (result.isSuccessful()) {
+					showInfo("msg.send.ok");
+					// do logging
+					ThreadLocalUserActivityLogger.log(MailLoggingAction.MAIL_SENT, getClass());
+					fireEvent(ureq, Event.DONE_EVENT);
+				} else {
+					showError(result);
+					fireEvent(ureq, Event.FAILED_EVENT);
+				}
+			}
+		} catch (Exception e) {
+			logError("", e);
+			showWarning("error.msg.send.nok");
+		}
+		cntctForm.setDisplayOnly(true);
+	}
+	
+	private void showError(MailerResult result) {
+		StringBuilder error = new StringBuilder(1024);
+		error.append(translate("error.msg.send.nok"));
+		if(result != null && (result.getFailedIdentites().size() > 0 || result.getInvalidAddresses().size() > 0)) {
+			error.append("<br />");
+
+			StringBuilder ids = new StringBuilder(1024);
+			for(Identity identity:result.getFailedIdentites()) {
+				if(ids.length() > 0) ids.append(", ");
+				
+				String fullname = userManager.getUserDisplayName(identity);
+				if(StringHelper.containsNonWhitespace(fullname)) {
+					ids.append(fullname);
+				}
+			}
+			for(String invalidAddress:result.getInvalidAddresses()) {
+				if(ids.length() > 0) ids.append(", ");
+				ids.append(invalidAddress);
+			}
+			error.append(translate("error.msg.send.invalid.rcps", new String[]{ ids.toString() }));
+		}
+		getWindowControl().setError(error.toString());
+	}
+
+	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
 		//
 	}
 
 	/**
-	 * @param success
-	 */
-	private void handleAddressException(boolean success) {
-		StringBuilder errorMessage = new StringBuilder();
-		if (success) {
-			errorMessage.append(translate("error.msg.send.partially.nok"));
-			errorMessage.append("<br />");
-			errorMessage.append(translate("error.msg.send.invalid.rcps"));
-		} else {
-			errorMessage.append(translate("error.msg.send.nok"));
-			errorMessage.append("<br />");
-			errorMessage.append(translate("error.msg.send.553"));
-		}
-		this.getWindowControl().setError(errorMessage.toString());
-	}
-
-	/**
-	 * handles the sendFailedException <p>generates an infoMessage
-	 * 
-	 * @param e
-	 * @throws OLATRuntimeException
-	 * return boolean true: handling was successful, exception can be ignored; 
-	 * false: handling was not successful, refuse to proceed.
-	 */
-	public boolean handleSendFailedException(SendFailedException e) {
-		//get wrapped excpetion
-		MessagingException me = (MessagingException) e.getNextException();
-		if (me instanceof AuthenticationFailedException) {
-			// catch this one separately, this kind of exception has no message 
-			// as the other below
-			StringBuilder infoMessage = new StringBuilder();
-			infoMessage.append(translate("error.msg.send.nok"));
-			infoMessage.append("<br />");
-			infoMessage.append(translate("error.msg.smtp.authentication.failed"));
-			this.getWindowControl().setInfo(infoMessage.toString());			
-			log.warn("Mail message could not be sent: ", e);
-			// message could not be sent, however let user proceed with his action
-			return true;
-		}		
-		String message = me.getMessage();
-		if (message.startsWith("553")) {
-			//javax.mail.MessagingException: 553 5.5.4 <invalid>... Domain name
-			// required for sender address invalid@id.unizh.ch
-			//javax.mail.MessagingException: 553 5.1.8 <invalid@invalid.>...
-			// Domain of sender address invalid@invalid does not exist
-			//...
-			StringBuilder infoMessage = new StringBuilder();
-			infoMessage.append(translate("error.msg.send.553"));
-			showInfo(infoMessage.toString());
-
-		} else if (message.startsWith("Invalid Addresses")) {
-			//            javax.mail.SendFailedException: Sending failed;
-			//              nested exception is:
-			//                class javax.mail.SendFailedException: Invalid Addresses;
-			//              nested exception is:
-			//                class javax.mail.SendFailedException: 550 5.1.1 <dfgh>... User
-			// unknownhandleSendFailedException
-			StringBuilder infoMessage = new StringBuilder();
-			infoMessage.append(translate("error.msg.send.nok"));
-			infoMessage.append("<br />");
-			infoMessage.append(translate("error.msg.send.invalid.rcps"));
-			infoMessage.append(addressesArr2HtmlOList(e.getInvalidAddresses()));
-			this.getWindowControl().setInfo(infoMessage.toString());
-		} else if (message.startsWith("503 5.0.0")) {
-			// message:503 5.0.0 Need RCPT (recipient) ,javax.mail.MessagingException
-			StringBuilder infoMessage = new StringBuilder();
-			infoMessage.append(translate("error.msg.send.nok"));
-			infoMessage.append("<br />");
-			infoMessage.append(translate("error.msg.send.no.rcps"));
-			this.getWindowControl().setInfo(infoMessage.toString());
-		} else if (message.startsWith("Unknown SMTP host")) {
-			StringBuilder infoMessage = new StringBuilder();
-			infoMessage.append(translate("error.msg.send.nok"));
-			infoMessage.append("<br />");
-			infoMessage.append(translate("error.msg.unknown.smtp", WebappHelper.getMailConfig("mailFrom")));
-			this.getWindowControl().setInfo(infoMessage.toString());			
-			log.warn("Mail message could not be sent: ", e);
-			// message could not be sent, however let user proceed with his action
-			return true;
-		} else if (message.startsWith("Could not connect to SMTP host")){
-			//could not connect to smtp host, no connection or connection timeout
-			StringBuilder infoMessage = new StringBuilder();
-			infoMessage.append(translate("error.msg.send.nok"));
-			infoMessage.append("<br />");
-			infoMessage.append(translate("error.msg.notconnectto.smtp", WebappHelper.getMailConfig("mailhost")));
-			this.getWindowControl().setInfo(infoMessage.toString());			
-			log.warn(null, e);
-			// message could not be sent, however let user proceed with his action
-			return true;
-		}
-		else {
-			throw new OLATRuntimeException(ContactFormController.class, "" + cntctForm.getEmailTo(), e.getNextException());
-		}
-		// message could not be sent, return false
-		return false;
-	}
-
-	/**
-	 * converts an Address[] to an HTML ordered list
-	 * 
-	 * @param invalidAdr Address[] with invalid addresses
-	 * @return StringBuilder
-	 */
-	private StringBuilder addressesArr2HtmlOList(Address[] invalidAdr) {
-		StringBuilder iAddressesSB = new StringBuilder();
-		if (invalidAdr != null && invalidAdr.length > 0) {
-			iAddressesSB.append("<ol>");
-			for (int i = 0; i < invalidAdr.length; i++) {
-				iAddressesSB.append("<li>");
-				iAddressesSB.append(invalidAdr[i].toString());
-				iAddressesSB.append("</li>");
-			}
-			iAddressesSB.append("</ol>");
-		}
-		return iAddressesSB;
-	}
-
-
-	/**
 	 * @see org.olat.core.gui.control.DefaultController#doDispose(boolean)
 	 */
+	@Override
 	protected void doDispose() {
 		//
 	}
-
 }

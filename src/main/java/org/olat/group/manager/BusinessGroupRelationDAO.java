@@ -39,6 +39,8 @@ import org.olat.basesecurity.model.IdentityRefImpl;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.PersistenceHelper;
 import org.olat.core.id.Identity;
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.course.assessment.manager.AssessmentModeDAO;
 import org.olat.group.BusinessGroup;
@@ -61,6 +63,8 @@ import org.springframework.stereotype.Service;
  */
 @Service("businessGroupRelationDao")
 public class BusinessGroupRelationDAO {
+	
+	private static final OLog log = Tracing.createLoggerFor(BusinessGroupRelationDAO.class);
 
 	@Autowired
 	private DB dbInstance;
@@ -75,9 +79,18 @@ public class BusinessGroupRelationDAO {
 		repositoryEntryRelationDao.createRelation(((BusinessGroupImpl)group).getBaseGroup(), re);
 	}
 	
-	public void addRole(Identity identity, BusinessGroupRef businessGroup, String role) {
-		Group group = getGroup(businessGroup);
-		groupDao.addMembership(group, identity, role);
+	public void addRole(Identity identity, BusinessGroup businessGroup, String role) {
+		Group group = null;
+		try {
+			group = businessGroup.getBaseGroup();
+			if(group == null) {
+				group = getGroup(businessGroup);
+			}
+		} catch(Exception e) {
+			log.warn("", e);
+			group = getGroup(businessGroup);
+		}
+		groupDao.addMembershipOneWay(group, identity, role);
 	}
 	
 	public boolean removeRole(Identity identity, BusinessGroupRef businessGroup, String role) {
@@ -192,6 +205,21 @@ public class BusinessGroupRelationDAO {
 			countQuery.setParameter("roles", roleList);
 		}		
 		Number count = countQuery.getSingleResult();
+		return count == null ? 0 : count.intValue();
+	}
+	
+	/**
+	 * Count the number of participants.
+	 * 
+	 * @param group
+	 * @return
+	 */
+	public int countEnrollment(BusinessGroup group) {
+		Number count = dbInstance.getCurrentEntityManager()
+				.createNamedQuery("countMembersByGroupAndRole", Number.class)
+				.setParameter("groupKey", group.getBaseGroup().getKey())
+				.setParameter("role", GroupRoles.participant.name())
+				.getSingleResult();
 		return count == null ? 0 : count.intValue();
 	}
 	

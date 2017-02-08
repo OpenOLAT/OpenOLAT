@@ -43,12 +43,20 @@ public class SyntheticUserRequest implements UserRequest {
 	private final Locale locale;
 	private final Identity identity;
 	private final Date requestTimestamp;
+	private UserSession userSession = null;
 	
 	public SyntheticUserRequest(Identity identity, Locale locale) {
 		this.identity = identity;
 		this.locale = locale;
 		requestTimestamp = new Date();
 	}
+	
+	public SyntheticUserRequest(Identity identity, Locale locale, UserSession userSession) {
+		this.identity = identity;
+		this.locale = locale;
+		this.userSession = userSession;
+		this.requestTimestamp = new Date();
+	} 
 	
 	@Override
 	public String getUuid() {
@@ -82,7 +90,7 @@ public class SyntheticUserRequest implements UserRequest {
 
 	@Override
 	public UserSession getUserSession() {
-		return null;
+		return userSession;
 	}
 
 	@Override

@@ -24,6 +24,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.apache.commons.io.FilenameUtils;
+import org.olat.core.commons.services.image.Size;
 import org.olat.core.commons.services.video.MovieService;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -39,9 +41,10 @@ import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSManager;
 import org.olat.modules.video.VideoManager;
-import org.olat.modules.video.VideoMetadata;
+import org.olat.modules.video.VideoMeta;
 import org.olat.modules.video.VideoModule;
 import org.olat.modules.video.VideoTranscoding;
+import org.olat.modules.video.manager.VideoManagerImpl;
 import org.olat.repository.RepositoryEntry;
 import org.olat.resource.OLATResource;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -108,19 +111,32 @@ public class VideoResourceEditController extends FormBasicController {
 
 	}
 
-	private void doReplace() {
+	private int doReplaceFileAndUpdateMetadata() {
 		VFSLeaf video = (VFSLeaf) vfsContainer.resolve(VIDEO_RESOURCE);		
 		File uploadFile = uploadFileEl.getUploadFile();
+//		VideoMetadata videoMetadata = videoManager.getMetaDataFromOLATResource(videoResource);
+		VideoMeta meta = videoManager.getVideoMetadata(videoResource);
 		if (uploadFileEl.getUploadSize() > 0 && uploadFile.exists()){
 			video.delete();
 			VFSLeaf uploadVideo = vfsContainer.createChildLeaf(VIDEO_RESOURCE);
 			VFSManager.copyContent(uploadFile, uploadVideo);
+			//update video dimensions
+			Size dimensions = movieService.getSize(uploadVideo, VideoManagerImpl.FILETYPE_MP4);
 			// update video duration
 			long duration = movieService.getDuration(uploadVideo, VideoTranscoding.FORMAT_MP4);
+			// exchange poster
+			videoManager.exchangePoster(videoResource);
 			if (duration != -1) {
-				entry.setExpenditureOfWork(Formatter.formatTimecode(duration));
+				String length = Formatter.formatTimecode(duration);
+				entry.setExpenditureOfWork(length);
+				meta.setSize(uploadFile.length());
+				meta.setWidth(dimensions.getWidth());
+				meta.setHeight(dimensions.getHeight());
+				meta.setFormat(FilenameUtils.getExtension(uploadVideo.getName()));
+				meta.setLength(length);
 			}
 		} 
+		return meta.getHeight();
 	}
 
 	private void queueDeleteTranscoding() {
@@ -130,10 +146,9 @@ public class VideoResourceEditController extends FormBasicController {
 		}
 	}
 	
-	private void queueCreateTranscoding() {
+	private void queueCreateTranscoding(int height) {
 		List<Integer> missingResolutions = videoManager.getMissingTranscodings(videoResource);
-		VideoMetadata videoMetadata = videoManager.getMetaDataFromOLATResource(videoResource);
-		int height = videoMetadata.getHeight();
+
 		if (videoModule.isTranscodingEnabled()) {
 			// 1) setup transcoding job for original file size
 			videoManager.createTranscoding(videoResource, height, VideoTranscoding.FORMAT_MP4);
@@ -150,8 +165,8 @@ public class VideoResourceEditController extends FormBasicController {
 	protected void formOK(UserRequest ureq) {
 		if (uploadFileEl.getUploadFile() != null && uploadFileEl.isUploadSuccess()) {
 			queueDeleteTranscoding();
-			doReplace();
-			queueCreateTranscoding();
+			int height = doReplaceFileAndUpdateMetadata();
+			queueCreateTranscoding(height);
 			typeEl.setValue(translate("admin.menu.title"));
 			typeEl.setVisible(true);
 			showInfo("video.replaced");

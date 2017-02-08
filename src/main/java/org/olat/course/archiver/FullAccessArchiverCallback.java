@@ -76,6 +76,11 @@ public class FullAccessArchiverCallback implements IArchiverCallback {
 	public boolean mayArchiveChecklist() {
 		return true;
 	}
+	
+	@Override
+	public boolean mayArchiveParticipantFolder() {
+		return true;
+	}
 
 	@Override
 	public boolean mayArchiveProjectBroker() {

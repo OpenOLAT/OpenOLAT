@@ -294,7 +294,7 @@ public class CheckListRunController extends FormBasicController implements Contr
 			//make sure all results is on the database before calculating some scores
 			//manager commit already DBFactory.getInstance().commit();
 			
-			courseNode.updateScoreEvaluation(userCourseEnv, getIdentity());
+			courseNode.updateScoreEvaluation(getIdentity(), userCourseEnv, getIdentity());
 			
 			Checkbox checkbox = wrapper.getCheckbox();
 			logUpdateCheck(checkbox.getCheckboxId(), checkbox.getTitle());

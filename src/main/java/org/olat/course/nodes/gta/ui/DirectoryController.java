@@ -21,6 +21,7 @@ package org.olat.course.nodes.gta.ui;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import org.olat.core.commons.modules.bc.meta.MetaInfo;
@@ -40,6 +41,7 @@ import org.olat.core.gui.media.FileMediaResource;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.util.CSSHelper;
 import org.olat.core.util.CodeHelper;
+import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.io.SystemFileFilter;
 import org.olat.core.util.vfs.VFSContainer;
@@ -68,6 +70,8 @@ public class DirectoryController extends BasicController {
 	@Autowired
 	private UserManager userManager;
 	
+	private final Formatter format;
+	
 	public DirectoryController(UserRequest ureq, WindowControl wControl,
 			File documentsDir, VFSContainer documentsContainer, String i18nDescription) {
 		this(ureq, wControl, documentsDir, documentsContainer, i18nDescription, null, null);
@@ -80,7 +84,9 @@ public class DirectoryController extends BasicController {
 		this.zipName = zipName;
 		this.documentsDir = documentsDir;
 		this.documentsContainer = documentsContainer;
-
+		
+		format = Formatter.getInstance(ureq.getLocale());
+		
 		VelocityContainer mainVC = createVelocityContainer("documents_readonly");
 		mainVC.contextPut("description", translate(i18nDescription));
 		
@@ -105,8 +111,10 @@ public class DirectoryController extends BasicController {
 			}
 			
 			String uploadedBy = null;
+			String lastModified = null;
 			if(documentsContainer != null) {
 				VFSItem item = documentsContainer.resolve(document.getName());
+				lastModified = format.formatDateAndTime(new Date(item.getLastModified()));
 				if(item instanceof MetaTagged) {
 					MetaInfo metaInfo = ((MetaTagged)item).getMetaInfo();
 					if(metaInfo != null && metaInfo.getAuthorIdentityKey() != null) {
@@ -115,7 +123,7 @@ public class DirectoryController extends BasicController {
 				}
 			}
 
-			linkNames.add(new DocumentInfos(link.getComponentName(), uploadedBy));
+			linkNames.add(new DocumentInfos(link.getComponentName(), uploadedBy, lastModified));
 		}
 		mainVC.contextPut("linkNames", linkNames);
 
@@ -175,10 +183,16 @@ public class DirectoryController extends BasicController {
 		
 		private final String linkName;
 		private final String uploadedBy;
+		private final String lastModified;
 		
 		public DocumentInfos(String linkName, String uploadedBy) {
+			this(linkName, uploadedBy, null);
+		}
+
+		public DocumentInfos(String linkName, String uploadedBy, String lastModified) {
 			this.linkName = linkName;
 			this.uploadedBy = uploadedBy;
+			this.lastModified = lastModified;
 		}
 
 		public String getLinkName() {
@@ -187,6 +201,10 @@ public class DirectoryController extends BasicController {
 
 		public String getUploadedBy() {
 			return uploadedBy;
+		}
+
+		public String getLastModified() {
+			return lastModified;
 		}
 	}
 }

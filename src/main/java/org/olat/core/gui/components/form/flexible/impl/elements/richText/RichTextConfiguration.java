@@ -983,15 +983,18 @@ public class RichTextConfiguration implements Disposable {
  		
  		String leftAndClear = "Left and clear";
  		String rightAndClear = "Right and clear";
+ 		String leftAndClearNomargin = "Left with caption";
  		if(translator != null) {
  			translator = Util.createPackageTranslator(RichTextConfiguration.class, translator.getLocale(), translator);
  			leftAndClear = translator.translate("left.clear");
  			rightAndClear = translator.translate("right.clear");
+ 			leftAndClearNomargin = translator.translate("left.clear.nomargin");
  		}
  		
  		tinyMenuSb.append("image_class_list: [\n")
  		  .append("  {title: 'Left', value: 'b_float_left'},\n")
  		  .append("  {title: '").append(leftAndClear).append("', value: 'b_float_left_clear'},\n")
+ 		  .append("  {title: '").append(leftAndClearNomargin).append("', value: 'b_float_left_clear_nomargin'},\n")
  		  .append("  {title: 'Center', value: 'b_centered'},\n")
  		  .append("  {title: 'Right', value: 'b_float_right'},\n")
  		  .append("  {title: '").append(rightAndClear).append("', value: 'b_float_right_clear'},\n")
@@ -1009,7 +1012,12 @@ public class RichTextConfiguration implements Disposable {
 		  .append("  {title: 'Grid', value: 'b_grid'},\n")
 		  .append("  {title: 'Border', value: 'b_border'},\n")
 		  .append("  {title: 'Full', value: 'b_full'},\n")
-		  .append("  {title: 'Middle', value: 'b_middle'}\n")
+		  .append("  {title: 'Middle', value: 'b_middle'},\n")
+		  .append("  {title: 'Gray', value: 'b_gray'},\n")
+		  .append("  {title: 'Red', value: 'b_red'},\n")
+		  .append("  {title: 'Green', value: 'b_green'},\n")
+		  .append("  {title: 'Blue', value: 'b_blue'},\n")
+		  .append("  {title: 'Yellow', value: 'b_yellow'}\n")
 		  .append("],\n");
  		
 		if (tinyConfig.getTool1() != null) {

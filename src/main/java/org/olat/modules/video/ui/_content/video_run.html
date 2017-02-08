@@ -1,14 +1,14 @@
 <div class="o_video_run o_block_large_bottom clearfix">
 	<div class="olatFlashMovieViewer">
 		<video id="$r.getId("o_vid")" width="$width" height="$height" #if($usePoster) poster="$masterUrl/poster.jpg" #end controls #if(!$hasChapters) preload="none" #end oncontextmenu="return false;" #if( $autoplay ) autoplay #end class="o_video">			
+	    	#if ($videos.size() == 0 || $addMaster)
+		    	<source type="video/mp4" src="$masterUrl/video.mp4" title="$masterTitle"/>
+		    #end
 	    	#foreach($video in $videos)
 	    		#set($position = $velocityCount - 1)
 	    		<source type="video/mp4" src="$transcodedUrl/${video.getResolution()}video.mp4" title="$displayTitles.get($position) ($r.formatBytes(${video.getSize()}))" />
 	    	#end	    	
 	    	## Use master video file if not optimized video is found
-	    	#if ($videos.size() == 0)
-		    	<source type="video/mp4" src="$masterUrl/video.mp4" />
-		    #end
 	    	
 	  		#if( $trackfiles )
 		  		#foreach( $track in $trackfiles.keySet())

@@ -559,21 +559,24 @@ public class CheckListCourseNode extends AbstractAccessableCourseNode implements
 	 * @param userCourseEnv
 	 * @param assessedIdentity
 	 */
-	public void updateScoreEvaluation(UserCourseEnvironment userCourseEnv, Identity assessedIdentity) {
+	public void updateScoreEvaluation(Identity identity, UserCourseEnvironment assessedUserCourseEnv, Identity assessedIdentity) {
 		ModuleConfiguration config = getModuleConfiguration();
 		Boolean sum = (Boolean)config.get(CheckListCourseNode.CONFIG_KEY_PASSED_SUM_CHECKBOX);
 		Float cutValue = (Float)config.get(MSCourseNode.CONFIG_KEY_PASSED_CUT_VALUE);
 		Float maxScore = (Float)config.get(MSCourseNode.CONFIG_KEY_SCORE_MAX);
+		Boolean manualCorrection = (Boolean)config.get(CheckListCourseNode.CONFIG_KEY_PASSED_MANUAL_CORRECTION);
 		if(cutValue != null) {
-			doUpdateAssessment(cutValue, maxScore, userCourseEnv, assessedIdentity);
-		} else if(sum != null) {
-			doUpdateAssessmentBySum(userCourseEnv, assessedIdentity);
+			doUpdateAssessment(cutValue, maxScore, identity, assessedUserCourseEnv, assessedIdentity);
+		} else if(sum != null && sum.booleanValue()) {
+			doUpdateAssessmentBySum(identity, assessedUserCourseEnv, assessedIdentity);
+		} else if(manualCorrection != null && manualCorrection.booleanValue()) {
+			doUpdateManualAssessment(maxScore, identity, assessedUserCourseEnv, assessedIdentity);
 		}
 	}
 	
-	private void doUpdateAssessment(Float cutValue, Float maxScore, UserCourseEnvironment userCourseEnv, Identity assessedIdentity) {
+	private void doUpdateAssessment(Float cutValue, Float maxScore, Identity identity, UserCourseEnvironment assessedUserCourseEnv, Identity assessedIdentity) {
 		OLATResourceable courseOres = OresHelper
-				.createOLATResourceableInstance("CourseModule", userCourseEnv.getCourseEnvironment().getCourseResourceableId());
+				.createOLATResourceableInstance("CourseModule", assessedUserCourseEnv.getCourseEnvironment().getCourseResourceableId());
 		
 		CheckboxManager checkboxManager = CoreSpringFactory.getImpl(CheckboxManager.class);
 		float score = checkboxManager.calculateScore(assessedIdentity, courseOres, getIdent());
@@ -588,14 +591,13 @@ public class CheckListCourseNode extends AbstractAccessableCourseNode implements
 		}
 		ScoreEvaluation sceval = new ScoreEvaluation(new Float(score), passed);
 		
-		AssessmentManager am = userCourseEnv.getCourseEnvironment().getAssessmentManager();
-		Identity mySelf = userCourseEnv.getIdentityEnvironment().getIdentity();
-		am.saveScoreEvaluation(this, mySelf, assessedIdentity, sceval, userCourseEnv, false);
+		AssessmentManager am = assessedUserCourseEnv.getCourseEnvironment().getAssessmentManager();
+		am.saveScoreEvaluation(this, identity, assessedIdentity, sceval, assessedUserCourseEnv, false);
 	}
 	
-	private void doUpdateAssessmentBySum(UserCourseEnvironment userCourseEnv, Identity assessedIdentity) {
+	private void doUpdateAssessmentBySum(Identity identity, UserCourseEnvironment assessedUserCourseEnv, Identity assessedIdentity) {
 		OLATResourceable courseOres = OresHelper
-				.createOLATResourceableInstance("CourseModule", userCourseEnv.getCourseEnvironment().getCourseResourceableId());
+				.createOLATResourceableInstance("CourseModule", assessedUserCourseEnv.getCourseEnvironment().getCourseResourceableId());
 		
 		ModuleConfiguration config = getModuleConfiguration();
 		CheckboxManager checkboxManager = CoreSpringFactory.getImpl(CheckboxManager.class);
@@ -619,9 +621,24 @@ public class CheckListCourseNode extends AbstractAccessableCourseNode implements
 
 		ScoreEvaluation sceval = new ScoreEvaluation(score, new Boolean(passed));
 		
-		AssessmentManager am = userCourseEnv.getCourseEnvironment().getAssessmentManager();
-		Identity mySelf = userCourseEnv.getIdentityEnvironment().getIdentity();
-		am.saveScoreEvaluation(this, mySelf, assessedIdentity, sceval, userCourseEnv, false);
+		AssessmentManager am = assessedUserCourseEnv.getCourseEnvironment().getAssessmentManager();
+		am.saveScoreEvaluation(this, identity, assessedIdentity, sceval, assessedUserCourseEnv, false);
+	}
+	
+	private void doUpdateManualAssessment(Float maxScore, Identity identity, UserCourseEnvironment assessedUserCourseEnv, Identity assessedIdentity) {
+		OLATResourceable courseOres = OresHelper
+				.createOLATResourceableInstance("CourseModule", assessedUserCourseEnv.getCourseEnvironment().getCourseResourceableId());
+		
+		CheckboxManager checkboxManager = CoreSpringFactory.getImpl(CheckboxManager.class);
+		float score = checkboxManager.calculateScore(assessedIdentity, courseOres, getIdent());
+		if(maxScore != null && maxScore.floatValue() < score) {
+			score = maxScore.floatValue();
+		}
+
+		AssessmentManager am = assessedUserCourseEnv.getCourseEnvironment().getAssessmentManager();
+		ScoreEvaluation currentEval = getUserScoreEvaluation(am.getAssessmentEntry(this, assessedIdentity));
+		ScoreEvaluation sceval = new ScoreEvaluation(new Float(score), currentEval.getPassed());
+		am.saveScoreEvaluation(this, identity, assessedIdentity, sceval, assessedUserCourseEnv, false);
 	}
 	
 	@Override

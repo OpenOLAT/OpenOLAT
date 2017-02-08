@@ -188,6 +188,7 @@
 		<class>org.olat.modules.reminder.model.ReminderImpl</class>
 		<class>org.olat.modules.reminder.model.SentReminderImpl</class>
 		<class>org.olat.modules.video.model.VideoTranscodingImpl</class>
+		<class>org.olat.modules.video.model.VideoMetaImpl</class>
 		<class>org.olat.ims.lti.model.LTIOutcomeImpl</class>
 		<class>org.olat.portfolio.model.InvitationImpl</class>
 		<class>org.olat.portfolio.model.structel.EPStructureElementToGroupRelation</class>

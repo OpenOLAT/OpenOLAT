@@ -91,7 +91,7 @@ public class VideoTrackEditController extends FormBasicController {
 
 		tableEl = uifactory.addTableElement(getWindowControl(), "tracks", tableModel, getTranslator(), generalCont);
 		tableEl.setCustomizeColumns(false);
-		HashMap<String, VFSLeaf> tracks = videoManager.getAllTracks(videoResource);
+		Map<String, VFSLeaf> tracks = videoManager.getAllTracks(videoResource);
 		rows = new HashMap<String,TrackTableRow>(tracks.size());
 		if (!tracks.isEmpty()) {
 			for (Map.Entry<String, VFSLeaf> entry : tracks.entrySet()) {
@@ -135,7 +135,6 @@ public class VideoTrackEditController extends FormBasicController {
 	@Override
 	public void event(UserRequest ureq, Controller source, Event event) {
 		if(source == trackUploadForm){
-			videoManager.addTrack(videoResource, trackUploadForm.getLang(),(VFSLeaf) ((FolderEvent) event).getItem());
 			rows.put(trackUploadForm.getLang(), new TrackTableRow(trackUploadForm.getLang(), (VFSLeaf) ((FolderEvent) event).getItem(), uifactory.addFormLink(trackUploadForm.getLang(),"deleteTrack", "track.delete", "track.delete", null, Link.BUTTON)));
 			tableModel.setObjects(new ArrayList<TrackTableRow>(rows.values()));
 			tableEl.reset();

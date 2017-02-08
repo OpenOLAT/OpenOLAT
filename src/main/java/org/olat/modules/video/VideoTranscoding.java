@@ -34,6 +34,9 @@ import org.olat.resource.OLATResource;
 public interface VideoTranscoding extends CreateInfo {
 	public static final int TRANSCODING_STATUS_WAITING = -1;
 	public static final int TRANSCODING_STATUS_DONE = 100;
+	public static final int TRANSCODING_STATUS_INEFFICIENT = -2;
+	public static final int TRANSCODING_STATUS_ERROR = -3;
+	public static final int TRANSCODING_STATUS_TIMEOUT = -4;
 	public static final String FORMAT_MP4 = "mp4";
 	public static final String TRANSCODER_LOCAL = "Local HandBrakeCLI";
 	

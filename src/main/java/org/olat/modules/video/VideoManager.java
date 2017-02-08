@@ -21,14 +21,17 @@ package org.olat.modules.video;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
+import org.olat.core.commons.services.image.Size;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.fileresource.types.ResourceEvaluation;
 import org.olat.modules.video.manager.VideoExportMediaResource;
+import org.olat.modules.video.model.TranscodingCount;
+import org.olat.modules.video.model.VideoMetaImpl;
 import org.olat.modules.video.ui.VideoChapterTableRow;
 import org.olat.repository.RepositoryEntry;
 import org.olat.resource.OLATResource;
@@ -41,6 +44,14 @@ import org.olat.resource.OLATResource;
  * @author Dirk Furrer, dirk.furrer@frentix.com, http://www.frentix.com
  */
 public interface VideoManager {
+	
+	/**
+	 * Checks for video file.
+	 *
+	 * @param videoResource the video resource
+	 * @return true, if successful
+	 */
+	public abstract boolean hasVideoFile(OLATResource videoResource);
 	
 	/**
 	 * get Videofile as File representation
@@ -76,15 +87,15 @@ public interface VideoManager {
 	 * @param videoResource
 	 * @return HashMap<String, VFSLeaf>
 	 */
-	public abstract HashMap<String, VFSLeaf> getAllTracks(OLATResource videoResource);
-
-	/**
-	 * add track file for given language to videoResource
-	 * @param videoResource
-	 * @param lang
-	 * @param trackFile
-	 */
-	public abstract void addTrack(OLATResource videoResource, String lang, VFSLeaf trackFile);
+	public abstract Map<String, VFSLeaf> getAllTracks(OLATResource videoResource);
+//
+//	/**
+//	 * add track file for given language to videoResource
+//	 * @param videoResource
+//	 * @param lang
+//	 * @param trackFile
+//	 */
+//	public abstract void addTrack(OLATResource videoResource, String lang, VFSLeaf trackFile);
 
 	/**
 	 * get Track in given lang as VFSLeaf
@@ -134,6 +145,43 @@ public interface VideoManager {
 	 * @return
 	 */
 	public abstract List<VideoTranscoding> getVideoTranscodings(OLATResource video);
+	
+	/**
+	 * Gets the all vidoe transcodings.
+	 *
+	 * @return the all vidoe transcodings
+	 */
+	public abstract List<VideoTranscoding> getAllVideoTranscodings();
+	
+	/**
+	 * Gets the one video resolution.
+	 *
+	 * @return the one video resolution
+	 */
+	public abstract List<VideoTranscoding> getOneVideoResolution(int resolution);
+	
+	/**
+	 * Gets the all video transcodings.
+	 *
+	 * @return the all video transcodings
+	 */
+	public abstract List<TranscodingCount> getAllVideoTranscodingsCount();
+	
+	/**
+	 * Gets the all video transcodings count success.
+	 *
+	 * @param errorcode the errorcode
+	 * @return the all video transcodings count success
+	 */
+	public List<TranscodingCount> getAllVideoTranscodingsCountSuccess(int errorcode);
+
+	/**
+	 * Gets the all video transcodings count fails.
+	 *
+	 * @param errorcode the errorcode
+	 * @return the all video transcodings count fails
+	 */
+	public List<TranscodingCount> getAllVideoTranscodingsCountFails(int errorcode);
 
 	/**
 	 * Get a human readable aspect ratio from the given video size. Recognizes
@@ -251,6 +299,13 @@ public interface VideoManager {
 	public abstract List<VideoTranscoding> getVideoTranscodingsPendingAndInProgress();
 	
 	/**
+	 * Gets the failed video transcodings.
+	 *
+	 * @return list of failed VideoTranscoding
+	 */
+	public abstract List<VideoTranscoding> getFailedVideoTranscodings();
+	
+	/**
 	 * Returns a list with 
 	 * @param videoResource
 	 * @return List with versions of videos which are 
@@ -297,12 +352,107 @@ public interface VideoManager {
 	 * @return the video duration
 	 */
 	public abstract long getVideoDuration(OLATResource videoResource);
+	
+	/**
+	 * Gets the video resolution from olat resource.
+	 *
+	 * @param videoResource the video resource
+	 * @return the video resolution from olat resource
+	 */
+	public Size getVideoResolutionFromOLATResource (OLATResource videoResource);
+
+//	/**
+//	 * Gets the meta data from olat resource.
+//	 *
+//	 * @param OLATResource videoResource the video resource
+//	 * @return the metadata from videoResource 
+//	 */
+//	public abstract VideoMetadata getMetaDataFromOLATResource(OLATResource videoResource);
+//	
+	/**
+	 * Gets the all video resources metadata.
+	 *
+	 * @return the all video resources metadata
+	 */
+	public abstract List<VideoMetaImpl> getAllVideoResourcesMetadata();
+	
+	/**
+	 * Gets the video meta data.
+	 *
+	 * @param videoResource the video resource
+	 * @return the video meta data
+	 */
+	public abstract VideoMetaImpl getVideoMetadata(OLATResource videoResource);
 
 	/**
-	 * Gets the meta data from olat resource.
+	 * Exchange poster of the new resource.
 	 *
-	 * @param OLATResource videoResource the video resource
-	 * @return the metadata from videoResource 
+	 * @param videoResource the OLATResource
 	 */
-	public abstract VideoMetadata getMetaDataFromOLATResource(OLATResource videoResource);
+	public void exchangePoster(OLATResource videoResource);
+
+	/**
+	 * Update video metadata.
+	 *
+	 * @param videoResource the OLATResource
+	 * @param uploadVideo the upload video
+	 */
+	public void updateVideoMetadata(OLATResource videoResource, VFSLeaf uploadVideo);
+	
+	/**
+	 * Gets the all video repo entries.
+	 *
+	 * @param typename of a type
+	 * @return repo entries
+	 */
+	public List<RepositoryEntry> getAllVideoRepoEntries (String typename);
+
+	/**
+	 * Delete video metadata.
+	 *
+	 * @param videoResource the video resource
+	 */
+	public boolean deleteVideoMetadata(OLATResource videoResource);
+
+	/**
+	 * Creates the video metadata.
+	 *
+	 * @param repoEntry the repo entry
+	 * @param size the size
+	 * @param fileName the file name
+	 * @return the video meta
+	 */
+	public VideoMeta createVideoMetadata(RepositoryEntry repoEntry, long size, String fileName);
+
+	/**
+	 * Start transcoding process if enabled.
+	 *
+	 * @param video the video
+	 */
+	public void startTranscodingProcessIfEnabled(OLATResource video);
+	
+	/**
+	 * Retranscode failed video transcoding.
+	 *
+	 * @param videoTranscoding
+	 * @return 
+	 */
+	public VideoTranscoding retranscodeFailedVideoTranscoding(VideoTranscoding videoTranscoding);
+
+	/**
+	 * Checks if is metadata file valid.
+	 *
+	 * @param videoResource
+	 * @return true, if is metadata file valid
+	 */
+	public boolean isMetadataFileValid(OLATResource videoResource);
+
+	/**
+	 * Checks for master container.
+	 *
+	 * @param videoResource
+	 * @return true, if master container can be resolved
+	 */
+	boolean hasMasterContainer(OLATResource videoResource);
+
 }

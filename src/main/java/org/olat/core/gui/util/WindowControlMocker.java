@@ -17,7 +17,7 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.ims.qti.resultexport;
+package org.olat.core.gui.util;
 
 import java.util.Collections;
 import java.util.List;

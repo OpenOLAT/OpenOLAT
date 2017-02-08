@@ -37,7 +37,6 @@ import java.util.Set;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
-import org.apache.commons.io.IOUtils;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.modules.bc.FolderConfig;
 import org.olat.core.commons.modules.bc.vfs.OlatNamedContainerImpl;
@@ -63,6 +62,7 @@ import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.ZipUtil;
+import org.olat.core.util.io.ShieldOutputStream;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSManager;
 import org.olat.course.ICourse;
@@ -861,13 +861,13 @@ public class TACourseNode extends GenericCourseNode implements PersistentAssessa
 			}
 			
 			String courseTitle = course.getCourseTitle();
-			String fileName = ExportUtil.createFileNameWithTimeStamp(courseTitle, "xls");
+			String fileName = ExportUtil.createFileNameWithTimeStamp(courseTitle, "xlsx");
 			List<AssessableCourseNode> nodes = Collections.<AssessableCourseNode>singletonList(this);
-			String s = ScoreAccountingHelper.createCourseResultsOverviewTable(users, nodes, course, locale);
 			// write course results overview table to filesystem
 			try {
 				exportStream.putNextEntry(new ZipEntry(dirName + "/" + fileName));
-				IOUtils.write(s, exportStream);
+				ScoreAccountingHelper.createCourseResultsOverviewXMLTable(users, nodes, course, locale,
+						new ShieldOutputStream(exportStream));
 				exportStream.closeEntry();
 			} catch (IOException e) {
 				log.error("", e);

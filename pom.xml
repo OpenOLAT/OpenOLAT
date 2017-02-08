@@ -65,15 +65,15 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<targetJdk>1.8</targetJdk>
 		<org.springframework.version>3.2.17.RELEASE</org.springframework.version>
-		<org.hibernate.version>5.2.6.Final</org.hibernate.version>
+		<org.hibernate.version>5.2.7.Final</org.hibernate.version>
 		<com.sun.jersey.version>1.19.1</com.sun.jersey.version>
 		<jackson.version>1.9.2</jackson.version>
-		<org.mysql.version>5.1.39</org.mysql.version>
-		<org.postgresql.version>9.4.1208</org.postgresql.version>
+		<org.mysql.version>5.1.40</org.mysql.version>
+		<org.postgresql.version>9.4.1212</org.postgresql.version>
 		<org.infinispan.version>8.1.0.Final</org.infinispan.version>
 		<lucene.version>4.8.0</lucene.version>
 		<version.selenium>2.53.1</version.selenium>
-		<version.drone>2.0.0.Final</version.drone>
+		<version.drone>2.0.1.Final</version.drone>
 		<activemq.version>5.11.1</activemq.version>
 		<qtiworks.version>1.0-SNAPSHOT</qtiworks.version>
 
@@ -2404,6 +2404,12 @@
 			<scope>test</scope>
 		</dependency>
 		<dependency>
+			<groupId>org.assertj</groupId>
+			<artifactId>assertj-core</artifactId>
+			<version>3.6.1</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
 			<groupId>xmlunit</groupId>
 			<artifactId>xmlunit</artifactId>
 			<version>1.5</version>
@@ -2437,7 +2443,7 @@
 		<dependency>
         	<groupId>org.jboss.arquillian.container</groupId>
         	<artifactId>arquillian-tomcat-managed-7</artifactId>
-        	<version>1.0.0.CR7</version>
+        	<version>1.0.0.CR9</version>
         	<scope>test</scope>
       	</dependency>
 		<dependency>
@@ -2523,7 +2529,7 @@
 			<dependency>
 				<groupId>org.jboss.arquillian</groupId>
 				<artifactId>arquillian-bom</artifactId>
-				<version>1.1.11.Final</version>
+				<version>1.1.12.Final</version>
 				<scope>import</scope>
 				<type>pom</type>
 			</dependency>

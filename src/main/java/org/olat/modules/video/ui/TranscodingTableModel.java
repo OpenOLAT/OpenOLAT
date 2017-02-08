@@ -52,6 +52,7 @@ public class TranscodingTableModel extends DefaultFlexiTableDataModel<Transcodin
 			case resolutions: return translator.translate("quality.resolution." + resolution.getResolution());
 			case sumVideos: return resolution.getSumVideos();
 			case numberTranscodings: return resolution.getNumberTranscodings();
+			case failedTranscodings: return resolution.getFailedTranscodings();
 			case missingTranscodings: return resolution.getMissingTranscodings();
 			case transcode: return resolution.isAllTranscoded();
 			case delete: return resolution.getNumberTranscodings() > 0;
@@ -63,6 +64,7 @@ public class TranscodingTableModel extends DefaultFlexiTableDataModel<Transcodin
 		resolutions("quality.table.header.resolution"),
 		sumVideos("sum.video"),
 		numberTranscodings("number.transcodings"),
+		failedTranscodings("number.transcodings.failed"),
 		missingTranscodings("missing.transcodings"),
 		transcode("quality.transcode"),
 		delete("quality.delete");

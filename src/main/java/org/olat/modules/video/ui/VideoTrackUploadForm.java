@@ -27,6 +27,7 @@ import java.util.Locale;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.apache.commons.io.FilenameUtils;
 import org.olat.core.commons.modules.bc.FolderEvent;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -39,6 +40,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.vfs.Quota;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.modules.video.VideoManager;
+import org.olat.modules.video.manager.VideoManagerImpl;
 import org.olat.resource.OLATResource;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -51,6 +53,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 
 public class VideoTrackUploadForm extends FormBasicController {
+	
 	private FileElement fileEl;
 	private SingleSelection langsItem;
 	private long remainingSpace;
@@ -107,10 +110,13 @@ public class VideoTrackUploadForm extends FormBasicController {
 					fileEl.getUploadFile().delete();
 					return;
 				}
-			}else{
+			} else {
+				String uploadfilename = VideoManagerImpl.TRACK + langsItem.getSelectedKey() + VideoManagerImpl.DOT
+						+ FilenameUtils.getExtension(fileEl.getUploadFileName());
+				fileEl.setUploadFileName(uploadfilename);
 				fireEvent(ureq, new FolderEvent(FolderEvent.UPLOAD_EVENT, fileEl.moveUploadFileTo(mediaContainer)));
 			}
-		}else{
+		} else {
 			fileEl.setErrorKey("track.upload.error.nofile", null);
 		}
 
@@ -124,7 +130,7 @@ public class VideoTrackUploadForm extends FormBasicController {
 
 	@Override
 	protected void doDispose() {
-		// TODO Auto-generated method stub
+		// nothing to dispose
 
 	}
 }

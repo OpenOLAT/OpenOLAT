@@ -31,12 +31,14 @@ import java.util.concurrent.ConcurrentMap;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.basesecurity.Group;
+import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
+import org.olat.core.gui.components.form.flexible.elements.FlexiTableSortOptions;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
@@ -194,8 +196,10 @@ public class IdentityListCourseNodeController extends FormBasicController implem
 				? "select" : null;
 
 		//add the table
+		FlexiTableSortOptions options = new FlexiTableSortOptions();
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		if(isAdministrativeUser) {
+			options.setDefaultOrderBy(new SortKey(IdentityCourseElementCols.username.sortKey(), true));
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(IdentityCourseElementCols.username, select));
 		}
 		
@@ -204,6 +208,9 @@ public class IdentityListCourseNodeController extends FormBasicController implem
 			UserPropertyHandler userPropertyHandler	= userPropertyHandlers.get(i);
 			boolean visible = UserManager.getInstance().isMandatoryUserProperty(AssessmentToolConstants.usageIdentifyer , userPropertyHandler);
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(visible, userPropertyHandler.i18nColumnDescriptorLabelKey(), colIndex, select, true, "userProp-" + colIndex));
+			if(!options.hasDefaultOrderBy()) {
+				options.setDefaultOrderBy(new SortKey("userProp-" + colIndex, true));
+			}
 			colIndex++;
 		}
 		AssessableCourseNode assessableNode = null;
@@ -245,7 +252,8 @@ public class IdentityListCourseNodeController extends FormBasicController implem
 		tableEl.setExportEnabled(true);
 		tableEl.setSearchEnabled(new AssessedIdentityListProvider(getIdentity(), courseEntry, referenceEntry, courseNode.getIdent(), assessmentCallback), ureq.getUserSession());
 		tableEl.setMultiSelect(!coachCourseEnv.isCourseReadOnly());
-		
+		tableEl.setSortSettings(options);
+
 		List<FlexiTableFilter> filters = new ArrayList<>();
 		filters.add(new FlexiTableFilter(translate("filter.showAll"), "showAll", true));
 		filters.add(FlexiTableFilter.SPACER);

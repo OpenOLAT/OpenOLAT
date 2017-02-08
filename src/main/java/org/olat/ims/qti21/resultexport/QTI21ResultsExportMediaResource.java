@@ -17,7 +17,7 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.ims.qti.resultexport;
+package org.olat.ims.qti21.resultexport;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -35,6 +35,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 import java.util.TimeZone;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
@@ -56,6 +57,7 @@ import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.render.velocity.VelocityHelper;
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.gui.util.WindowControlMocker;
 import org.olat.core.id.Identity;
 import org.olat.core.id.UserConstants;
 import org.olat.core.logging.OLog;
@@ -67,6 +69,9 @@ import org.olat.core.util.WebappHelper;
 import org.olat.course.nodes.QTICourseNode;
 import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.fileresource.FileResourceManager;
+import org.olat.ims.qti.resultexport.AssessedMember;
+import org.olat.ims.qti.resultexport.QTI12ExportResultsReportController;
+import org.olat.ims.qti.resultexport.ResultDetail;
 import org.olat.ims.qti21.AssessmentTestSession;
 import org.olat.ims.qti21.QTI21DeliveryOptions.ShowResultsOnFinish;
 import org.olat.ims.qti21.QTI21Service;
@@ -77,7 +82,7 @@ public class QTI21ResultsExportMediaResource implements MediaResource {
 
 	private static final OLog log = Tracing.createLoggerFor(QTI12ExportResultsReportController.class);
 	
-	private static final String DATA = "export/userdata/";
+	private static final String DATA = "userdata/";
 	private static final String SEP = File.separator;
 	private static final SimpleDateFormat assessmentDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 	private static final SimpleDateFormat displayDateFormat = new SimpleDateFormat("HH:mm:ss");
@@ -90,7 +95,7 @@ public class QTI21ResultsExportMediaResource implements MediaResource {
 	private List<Identity> identities;
 	private QTICourseNode courseNode;
 	private QTI21Service qtiService;
-	private String title;
+	private String title, exportFolderName;
 	private Translator translator;
 	
 	private RepositoryEntry entry;
@@ -106,6 +111,19 @@ public class QTI21ResultsExportMediaResource implements MediaResource {
 		this.qtiService = qtiService;
 		this.ureq = ureq;		
 		this.entry = courseEnv.getCourseGroupManager().getCourseEntry();
+	}
+	
+	public QTI21ResultsExportMediaResource(CourseEnvironment courseEnv, List<Identity> identities, QTICourseNode courseNode, 
+			QTI21Service qtiService, UserRequest ureq, Locale locale) {
+		this.title = "qti21export";	
+		this.courseNode = courseNode;
+		this.identities = identities;
+		this.velocityHelper = VelocityHelper.getInstance();
+		this.qtiService = qtiService;
+		this.ureq = ureq;		
+		this.entry = courseEnv.getCourseGroupManager().getCourseEntry();
+		this.translator = Util.createPackageTranslator(QTI21ResultsExportMediaResource.class, locale);
+		this.exportFolderName = translator.translate("export.folder.name");
 	}
 
 	@Override
@@ -137,7 +155,8 @@ public class QTI21ResultsExportMediaResource implements MediaResource {
 	public void prepare(HttpServletResponse hres) {
 		//init package translator
 		translator = Util.createPackageTranslator(QTI21ResultsExportMediaResource.class, hres.getLocale());
-
+		exportFolderName = translator.translate("export.folder.name");
+		
 		String label = StringHelper.transformDisplayNameToFileSystemName(title);
 		if (label != null && !label.toLowerCase().endsWith(".zip")) {
 			label += ".zip";
@@ -147,86 +166,22 @@ public class QTI21ResultsExportMediaResource implements MediaResource {
 		hres.setHeader("Content-Disposition", "attachment; filename*=UTF-8''" + urlEncodedLabel);
 		hres.setHeader("Content-Description", urlEncodedLabel);
 
-		try (ZipOutputStream zout = new ZipOutputStream(hres.getOutputStream())) {
-
+		try { 			
+			ZipOutputStream zout = new ZipOutputStream(hres.getOutputStream());
 			zout.setLevel(9);
 			
-			List<AssessedMember> assessedMembers = new ArrayList<AssessedMember>();
-			
-			for (Identity identity : identities) {
-				
-				String idDir = DATA + identity.getName();
-				idDir = idDir.endsWith(SEP) ? idDir : idDir + SEP;
-				createZipDirectory(zout, idDir);				
-				
-				//content of single assessed member
-				String userName = identity.getName();
-				String firstName = identity.getUser().getProperty(UserConstants.FIRSTNAME, null);
-				String lastName = identity.getUser().getProperty(UserConstants.LASTNAME, null);
-				
-				String memberEmail = identity.getUser().getProperty(UserConstants.EMAIL, null);
-				AssessedMember assessedMember = new AssessedMember (userName, lastName, firstName, memberEmail, null);
-							
-				List<AssessmentTestSession> sessions = qtiService.getAssessmentTestSessions(entry, courseNode.getIdent(), identity);
-				List<ResultDetail> assessments = new ArrayList<ResultDetail>();				
-				
-				for (AssessmentTestSession session : sessions) {
-					
-					Long assessmentID = session.getKey();
-					String idPath = idDir + translator.translate("table.user.attempt") + (sessions.indexOf(session)+1) + SEP;
-					createZipDirectory(zout, idPath);
-					
-					// content of result table
-					ResultDetail resultDetail = new ResultDetail(assessmentID.toString(), 
-							assessmentDateFormat.format(session.getCreationDate()),
-							displayDateFormat.format(new Date(session.getDuration())), session.getScore().floatValue(), 
-							createPassedIcons(session.getPassed() == null ? true : session.getPassed()),
-							idPath.replace(idDir, "") + assessmentID + ".html");
-					
-					assessments.add(resultDetail);
-					//WindowControlMocker needed because this is not a controller
-					WindowControl mockwControl = new WindowControlMocker();
-					
-					FileResourceManager frm = FileResourceManager.getInstance();
-					File fUnzippedDirRoot = frm.unzipFileResource(session.getTestEntry().getOlatResource());
-				
-					Controller assessmentResultController = new AssessmentResultController(
-							ureq, mockwControl, identity, false, session,
-							ShowResultsOnFinish.details, fUnzippedDirRoot, null, false, true);
-
-					Component component = assessmentResultController.getInitialComponent();
-					String componentHTML = createResultHTML(component); 
-					convertToZipEntry(zout, idPath + assessmentID +".html", componentHTML);	
-					
-					File resultXML = qtiService.getAssessmentResultFile(session);
-					convertToZipEntry(zout, idPath + assessmentID +".xml", resultXML);		
-					
-				}
-				
-				String singleUserInfoHTML = createResultListingHTML(assessments, assessedMember);
-				convertToZipEntry(zout, DATA + identity.getName() + "/index.html", singleUserInfoHTML);
-				
-				String linkToUser = idDir.replace("export/", "") + "index.html";				
-				//content of assessed members table
-				AssessedMember member = new AssessedMember();
-				member.setUsername(createLink(identity.getName(), linkToUser, false));
-				member.setLastname(createLink(identity.getUser().getProperty(UserConstants.LASTNAME, null),linkToUser,false));
-				member.setFirstname(createLink(identity.getUser().getProperty(UserConstants.FIRSTNAME, null),linkToUser,false));
-				member.setTries(String.valueOf(sessions.size()));
-				assessedMembers.add(member);	
-				
-			}
+			List<AssessedMember> assessedMembers = createAssessedMembersDetail(zout);
 			
 			//convert velocity template to zip entry
 			String membersHTML = createMemberListingHTML(assessedMembers);	
-			convertToZipEntry(zout, "export/index.html", membersHTML);
+			convertToZipEntry(zout, exportFolderName + "/index.html", membersHTML);
 			
 			//Copy resource files or file trees to export file tree 
 			File sasstheme = new File(WebappHelper.getContextRealPath("/static/offline/qti"));
-			fsToZip(zout, sasstheme.toPath(), "export/css/offline/qti/");
+			fsToZip(zout, sasstheme.toPath(), exportFolderName + "/css/offline/qti/");
 			
 			File fontawesome = new File(WebappHelper.getContextRealPath("/static/font-awesome"));
-			fsToZip(zout, fontawesome.toPath(), "export/css/font-awesome/");
+			fsToZip(zout, fontawesome.toPath(), exportFolderName + "/css/font-awesome/");
 			
 			zout.close();
 
@@ -235,7 +190,99 @@ public class QTI21ResultsExportMediaResource implements MediaResource {
 		}
 	}
 	
-	private String createLink(String name, String href, boolean userview){
+	private List<ResultDetail> createResultDetail (Identity identity, ZipOutputStream zout, String idDir) throws IOException {
+		List<ResultDetail> assessments = new ArrayList<ResultDetail>();				
+		List<AssessmentTestSession> sessions = qtiService.getAssessmentTestSessions(entry, courseNode.getIdent(), identity);
+		for (AssessmentTestSession session : sessions) {
+			Long assessmentID = session.getKey();
+			String idPath = idDir + translator.translate("table.user.attempt") + (sessions.indexOf(session)+1) + SEP;
+			createZipDirectory(zout, idPath);	
+			// content of result table
+			ResultDetail resultDetail = new ResultDetail(assessmentID.toString(), 
+					assessmentDateFormat.format(session.getCreationDate()),
+					displayDateFormat.format(new Date(session.getDuration())), session.getScore().floatValue(), 
+					createPassedIcons(session.getPassed() == null ? true : session.getPassed()),
+					idPath.replace(idDir, "") + assessmentID + ".html");
+			
+			assessments.add(resultDetail);
+			//WindowControlMocker needed because this is not a controller
+			WindowControl mockwControl = new WindowControlMocker();
+			
+			FileResourceManager frm = FileResourceManager.getInstance();
+			File fUnzippedDirRoot = frm.unzipFileResource(session.getTestEntry().getOlatResource());
+		
+			Controller assessmentResultController = new AssessmentResultController(
+					ureq, mockwControl, identity, false, session,
+					ShowResultsOnFinish.details, fUnzippedDirRoot, null, false, true);
+
+			Component component = assessmentResultController.getInitialComponent();
+			String componentHTML = createResultHTML(component); 
+			convertToZipEntry(zout, idPath + assessmentID +".html", componentHTML);	
+			
+			File resultXML = qtiService.getAssessmentResultFile(session);
+			convertToZipEntry(zout, idPath + assessmentID +".xml", resultXML);		
+			
+		}
+		return assessments;
+	}
+	
+	private List<AssessedMember> createAssessedMembersDetail (ZipOutputStream zout) throws IOException {
+		List<AssessedMember> assessedMembers = new ArrayList<AssessedMember>();		
+		for (Identity identity : identities) {
+			
+			String idDir = exportFolderName + "/" + DATA + identity.getName();
+			idDir = idDir.endsWith(SEP) ? idDir : idDir + SEP;
+			createZipDirectory(zout, idDir);				
+			
+			//content of single assessed member
+			String userName = identity.getName();
+			String firstName = identity.getUser().getProperty(UserConstants.FIRSTNAME, null);
+			String lastName = identity.getUser().getProperty(UserConstants.LASTNAME, null);
+			
+			String memberEmail = identity.getUser().getProperty(UserConstants.EMAIL, null);
+			AssessedMember assessedMember = new AssessedMember (userName, lastName, firstName, memberEmail, null);
+						
+			List<ResultDetail> assessments = createResultDetail(identity, zout, idDir);				
+			
+			String singleUserInfoHTML = createResultListingHTML(assessments, assessedMember);
+			convertToZipEntry(zout, exportFolderName + "/" + DATA + identity.getName() + "/index.html", singleUserInfoHTML);
+			
+			String linkToUser = idDir.replace(exportFolderName + "/", "") + "index.html";				
+			//content of assessed members table
+			AssessedMember member = new AssessedMember();
+			member.setUsername(createLink(identity.getName(), linkToUser, false));
+			member.setLastname(createLink(identity.getUser().getProperty(UserConstants.LASTNAME, null),linkToUser,false));
+			member.setFirstname(createLink(identity.getUser().getProperty(UserConstants.FIRSTNAME, null),linkToUser,false));
+			member.setTries(String.valueOf(assessments.size()));
+			assessedMembers.add(member);	
+			
+		}
+		return assessedMembers;
+	}
+		
+	
+	/**
+	 * Adds the result export to existing zip stream.
+	 *
+	 * @throws IOException
+	 */
+	public void exportTestResults (ZipOutputStream zout) throws IOException {
+		
+		List<AssessedMember> assessedMembers = createAssessedMembersDetail(zout);
+		
+		//convert velocity template to zip entry
+		String membersHTML = createMemberListingHTML(assessedMembers);	
+		convertToZipEntry(zout, exportFolderName + "/index.html", membersHTML);
+		
+		//Copy resource files or file trees to export file tree 
+		File sasstheme = new File(WebappHelper.getContextRealPath("/static/offline/qti"));
+		fsToZip(zout, sasstheme.toPath(), exportFolderName + "/css/offline/qti/");
+		
+		File fontawesome = new File(WebappHelper.getContextRealPath("/static/font-awesome"));
+		fsToZip(zout, fontawesome.toPath(), exportFolderName + "/css/font-awesome/");
+	}
+	
+	private String createLink(String name, String href, boolean userview) {
 		String targetLink = userview ? "_blank" : "_self";
 		return "<a href='" + href + "' target='" + targetLink + "' class='userLink'>" + name + "</a>";		
 	}

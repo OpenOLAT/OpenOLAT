@@ -110,7 +110,7 @@ public class InvitationDAO {
 		User user = userManager.createUser(invitation.getFirstName(), invitation.getLastName(), invitation.getMail());
 		user.getPreferences().setLanguage(locale.toString());
 		Identity invitee = securityManager.createAndPersistIdentityAndUser(tempUsername, null, user, null, null);
-		groupDao.addMembership(invitation.getBaseGroup(), invitee, GroupRoles.invitee.name());
+		groupDao.addMembershipTwoWay(invitation.getBaseGroup(), invitee, GroupRoles.invitee.name());
 		return invitee;
 	}
 	
@@ -129,7 +129,7 @@ public class InvitationDAO {
 			invitee = securityManager.createAndPersistIdentityAndUser(tempUsername, null, user, null, null, null);
 		}
 		// add invitee to the security group of that portfolio element
-		groupDao.addMembership(group, invitee, GroupRoles.invitee.name());			
+		groupDao.addMembershipTwoWay(group, invitee, GroupRoles.invitee.name());			
 		return invitee;
 	}
 	

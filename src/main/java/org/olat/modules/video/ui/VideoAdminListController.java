@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import org.olat.NewControllerFactory;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -42,11 +43,14 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.id.Identity;
 import org.olat.core.util.Formatter;
+import org.olat.course.CorruptedCourseException;
 import org.olat.modules.video.VideoManager;
 import org.olat.modules.video.VideoTranscoding;
 import org.olat.modules.video.ui.TranscodingQueueTableModel.TranscodingQueueTableCols;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryService;
+import org.olat.repository.handlers.RepositoryHandler;
+import org.olat.repository.handlers.RepositoryHandlerFactory;
 import org.olat.user.HomePageConfig;
 import org.olat.user.HomePageDisplayController;
 import org.olat.user.UserManager;
@@ -80,6 +84,8 @@ public class VideoAdminListController extends FormBasicController {
 	private RepositoryService repositoryService;
 	@Autowired
 	private BaseSecurity baseSecurity;   
+	@Autowired
+	protected RepositoryHandlerFactory repositoryHandlerFactory;
 
 	public VideoAdminListController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl,"transcoding_queue");
@@ -112,18 +118,15 @@ public class VideoAdminListController extends FormBasicController {
 		List<VideoTranscoding> videoTranscodings = videoManager.getVideoTranscodingsPendingAndInProgress();
 		List<TranscodingQueueTableRow> rows = new ArrayList<>();
 		
-		for(VideoTranscoding videoTranscoding:videoTranscodings){
+		for (VideoTranscoding videoTranscoding : videoTranscodings) {
 			String title = videoManager.getDisplayTitleForResolution(videoTranscoding.getResolution(), getTranslator());
 			String resid = String.valueOf(videoTranscoding.getVideoResource().getResourceableId());
-			FormLink previewVersionLink = uifactory.addFormLink("res_" + counter++, "viewQuality", resid, resid, flc, Link.LINK + Link.NONTRANSLATED);
+			FormLink resourceLink = uifactory.addFormLink("res_" + counter++, "viewResource", resid, resid, flc, Link.LINK + Link.NONTRANSLATED);
+			resourceLink.setUserObject(videoTranscoding);
 			FormLink deleteLink = uifactory.addFormLink("del_" + counter++, "deleteQuality", "quality.delete", "quality.delete", flc, Link.LINK);
 			deleteLink.setUserObject(videoTranscoding);
-			deleteLink.setIconLeftCSS("o_icon o_icon_delete_item o_icon-fw");
-			
-			previewVersionLink.setUserObject(videoTranscoding);
-			if (videoTranscoding.getStatus() < VideoTranscoding.TRANSCODING_STATUS_DONE) {
-				previewVersionLink.setEnabled(false);
-			}
+			deleteLink.setIconLeftCSS("o_icon o_icon_delete_item o_icon-fw");			
+
 			String fileSize = "";
 			if (videoTranscoding.getSize() != 0) {
 				fileSize = Formatter.formatBytes(videoTranscoding.getSize());
@@ -133,6 +136,7 @@ public class VideoAdminListController extends FormBasicController {
 				fileSize = translate("transcoding.processing") + ": " + videoTranscoding.getStatus() + "%";					
 			}
 			RepositoryEntry videoRe = repositoryService.loadByResourceKey(videoTranscoding.getVideoResource().getKey());
+			if (videoRe == null) continue;
 			String displayname = videoRe.getDisplayname();
 			String initialAuthor = videoRe.getInitialAuthor();
 			String fullName = userManager.getUserDisplayName(initialAuthor);
@@ -140,7 +144,7 @@ public class VideoAdminListController extends FormBasicController {
 					fullName, fullName, flc, Link.LINK + Link.NONTRANSLATED);
 			authorLink.setUserObject(initialAuthor);
 			Date creationDate = videoTranscoding.getCreationDate();
-			rows.add(new TranscodingQueueTableRow(resid, displayname, creationDate, authorLink, title, fileSize, videoTranscoding.getFormat(), deleteLink));
+			rows.add(new TranscodingQueueTableRow(resourceLink, displayname, creationDate, authorLink, title, fileSize, videoTranscoding.getFormat(), deleteLink));
 		}
 		tableModel.setObjects(rows);
 		
@@ -157,8 +161,6 @@ public class VideoAdminListController extends FormBasicController {
 		
 		refreshButton = uifactory.addFormLink("button.refresh", formLayout,Link.BUTTON);
 		refreshButton.setIconLeftCSS("o_icon o_icon_refresh o_icon-fw");
-
-
 
 	}
 
@@ -183,6 +185,10 @@ public class VideoAdminListController extends FormBasicController {
 			videoManager.deleteVideoTranscoding(videoTranscoding);
 		} else if (source instanceof FormLink && ((FormLink) source).getCmd().equals("viewAuthor")) {
 			showUserInfo(ureq, baseSecurity.findIdentityByName((String) source.getUserObject()));
+		} else if (source instanceof FormLink && ((FormLink) source).getCmd().equals("viewResource")) {
+			FormLink link = (FormLink) source;
+			VideoTranscoding videoTranscoding = (VideoTranscoding) link.getUserObject();
+			launch(ureq, videoTranscoding);
 		}
 		initTable();
 	};
@@ -195,6 +201,23 @@ public class VideoAdminListController extends FormBasicController {
 	@Override
 	protected void doDispose() {
 		
+	}
+	
+	private void launch(UserRequest ureq, VideoTranscoding videoTranscoding) {
+		RepositoryEntry videoRe = repositoryService.loadByResourceKey(videoTranscoding.getVideoResource().getKey());
+		try {
+			RepositoryHandler handler = repositoryHandlerFactory.getRepositoryHandler("FileResource.VIDEO");
+			if(handler != null) {
+
+				String businessPath = "[RepositoryEntry:" + videoRe.getKey() + "]";
+				if(!NewControllerFactory.getInstance().launch(businessPath, ureq, getWindowControl())) {
+					tableEl.reloadData();
+				}
+			}
+		} catch (CorruptedCourseException e) {
+			logError("Course corrupted: " + videoRe.getKey(), e);
+			showError("cif.error.corrupted");
+		}
 	}
 	
 	/**

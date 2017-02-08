@@ -19,200 +19,92 @@
  */
 package org.olat.course.certificate.ui;
 
-import java.util.List;
-
 import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.components.form.flexible.FormItem;
-import org.olat.core.gui.components.form.flexible.FormItemContainer;
-import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
-import org.olat.core.gui.components.form.flexible.elements.FormLink;
-import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
-import org.olat.core.gui.components.form.flexible.impl.FormEvent;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
+import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
-import org.olat.core.gui.control.Controller;
+import org.olat.core.gui.components.link.LinkFactory;
+import org.olat.core.gui.components.segmentedview.SegmentViewComponent;
+import org.olat.core.gui.components.segmentedview.SegmentViewEvent;
+import org.olat.core.gui.components.segmentedview.SegmentViewFactory;
+import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
-import org.olat.core.gui.control.generic.modal.DialogBoxController;
-import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
-import org.olat.course.certificate.CertificateTemplate;
-import org.olat.course.certificate.CertificatesManager;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.id.OLATResourceable;
+import org.olat.core.id.context.BusinessControlFactory;
+import org.olat.core.util.resource.OresHelper;
 
 /**
  * 
- * Initial date: 20.10.2014<br>
+ * Initial date: 31 janv. 2017<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class CertificatesAdminController extends FormBasicController {
+public class CertificatesAdminController extends BasicController {
 	
-	private FormLink uploadLink;
-	private FlexiTableElement tableEl;
-	private TemplatesDataModel tableModel;
+	private final VelocityContainer mainVC;
+	private final Link settingsLink, certificatesLink;
+	private final SegmentViewComponent segmentView;
 	
-	private CloseableModalController cmc;
-	private UploadCertificateController uploadCtrl;
-	private DialogBoxController confirmDeleteCtrl;
+	private CertificatesSettingsAdminController settingsCtrl;
+	private CertificatesListAdminController certificatesCtrl;
 
-	@Autowired
-	private CertificatesManager certificatesManager;
-	
 	public CertificatesAdminController(UserRequest ureq, WindowControl wControl) {
-		super(ureq, wControl, "admin_certificates");
+		super(ureq, wControl);
 		
-		initForm(ureq);
-	}
+		mainVC = createVelocityContainer("admin_certificates");
+		
+		segmentView = SegmentViewFactory.createSegmentView("segments", mainVC, this);
+		segmentView.setReselect(true);
 
-	@Override
-	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		settingsLink = LinkFactory.createLink("admin.certificates.settings", mainVC, this);
+		segmentView.addSegment(settingsLink, true);
+		certificatesLink = LinkFactory.createLink("admin.certificates.templates", mainVC, this);
+		segmentView.addSegment(certificatesLink, false);
 		
-		FlexiTableColumnModel tableColumnModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
-		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.name.i18n(), Cols.name.ordinal()));
-		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel("replace", translate("replace"), "replace"));
-		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel("delete", translate("delete"), "delete"));
+		doOpenSettings(ureq);
 		
-		tableModel = new TemplatesDataModel(tableColumnModel);
-		tableEl = uifactory.addTableElement(getWindowControl(), "templates", tableModel, getTranslator(), formLayout);
-
-		uploadLink = uifactory.addFormLink("upload", formLayout, Link.BUTTON);
-		updateDataModel();
-	}
-	
-	private void updateDataModel() {
-		List<CertificateTemplate> templates = certificatesManager.getTemplates();
-		tableModel.setObjects(templates);
-		tableEl.reset();
+		putInitialPanel(mainVC);
 	}
 	
 	@Override
 	protected void doDispose() {
 		//
 	}
-
-	@Override
-	protected void formOK(UserRequest ureq) {
-		//
-	}
-
-	@Override
-	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if(source == uploadLink) {
-			doUpload(ureq);
-		} else if(source == tableEl) {
-			SelectionEvent se = (SelectionEvent)event;
-			String cmd = se.getCommand();
-			CertificateTemplate selectedTemplate = tableModel.getObject(se.getIndex());
-			if("replace".equals(cmd)) {
-				doReplace(ureq, selectedTemplate);
-			} else if("delete".equals(cmd)) {
-				doConfirmDelete(ureq, selectedTemplate);
-			}
-		}
-	}
 	
 	@Override
-	protected void event(UserRequest ureq, Controller source, Event event) {
-		if(uploadCtrl == source) {
-			if(event == Event.DONE_EVENT) {
-				updateDataModel();
+	protected void event(UserRequest ureq, Component source, Event event) {
+		if(source == segmentView) {
+			if(event instanceof SegmentViewEvent) {
+				SegmentViewEvent sve = (SegmentViewEvent)event;
+				String segmentCName = sve.getComponentName();
+				Component clickedLink = mainVC.getComponent(segmentCName);
+				if (clickedLink == settingsLink) {
+					doOpenSettings(ureq);
+				} else if (clickedLink == certificatesLink) {
+					doOpenCertificatesList(ureq);
+				}
 			}
-			cmc.deactivate();
-			cleanUp();
-		} else if(confirmDeleteCtrl == source) {
-			if(DialogBoxUIFactory.isOkEvent(event)) {
-				CertificateTemplate template = (CertificateTemplate)confirmDeleteCtrl.getUserObject();
-				doDelete(template);
-			}
-		} else if(cmc == source) {
-			cleanUp();
-		}
-		super.event(ureq, source, event);
-	}
-	
-	private void cleanUp() {
-		removeAsListenerAndDispose(uploadCtrl);
-		removeAsListenerAndDispose(cmc);
-		uploadCtrl = null;
-		cmc = null;
-	}
-	private void doConfirmDelete(UserRequest ureq, CertificateTemplate selectedTemplate) {
-		String title = translate("confirm.delete.title");
-		String text = translate("confirm.delete.text");
-		confirmDeleteCtrl = activateOkCancelDialog(ureq, title, text, confirmDeleteCtrl);
-		confirmDeleteCtrl.setUserObject(selectedTemplate);
-	}
-	
-	private void doDelete(CertificateTemplate template) {
-		certificatesManager.deleteTemplate(template);
-		updateDataModel();
-		showInfo("confirm.certificate.template.deleted", template.getName());
-	}
-
-	private void doUpload(UserRequest ureq) {
-		removeAsListenerAndDispose(uploadCtrl);
-		removeAsListenerAndDispose(cmc);
-		
-		uploadCtrl = new UploadCertificateController(ureq, getWindowControl());
-		listenTo(uploadCtrl);
-		
-		String title = translate("upload.title");
-		cmc = new CloseableModalController(getWindowControl(), "close", uploadCtrl.getInitialComponent(), true, title);
-		listenTo(cmc);
-		cmc.activate();
-	}
-	
-	private void doReplace(UserRequest ureq, CertificateTemplate template) {
-		removeAsListenerAndDispose(uploadCtrl);
-		removeAsListenerAndDispose(cmc);
-		
-		uploadCtrl = new UploadCertificateController(ureq, getWindowControl(), template);
-		listenTo(uploadCtrl);
-		
-		String title = translate("upload.title");
-		cmc = new CloseableModalController(getWindowControl(), "close", uploadCtrl.getInitialComponent(), true, title);
-		listenTo(cmc);
-		cmc.activate();
-	}
-	
-	public static enum Cols {
-
-		name("template.name");
-		
-		private final String i18n;
-		
-		private Cols(String i18n) {
-			this.i18n = i18n;
-		}
-		
-		public String i18n() {
-			return i18n;
 		}
 	}
 	
-	private static class TemplatesDataModel extends DefaultFlexiTableDataModel<CertificateTemplate> {
-		
-		public TemplatesDataModel(FlexiTableColumnModel columnModel) {
-			super(columnModel);
+	private void doOpenSettings(UserRequest ureq) {
+		if(settingsCtrl == null) {
+			OLATResourceable ores = OresHelper.createOLATResourceableInstance("Certificates", 0l);
+			WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ores, null, getWindowControl());
+			settingsCtrl = new CertificatesSettingsAdminController(ureq, bwControl);
+			listenTo(settingsCtrl);
 		}
-
-		@Override
-		public DefaultFlexiTableDataModel<CertificateTemplate> createCopyWithEmptyList() {
-			return new TemplatesDataModel(getTableColumnModel());
+		mainVC.put("segmentCmp", settingsCtrl.getInitialComponent());
+	}
+	
+	private void doOpenCertificatesList(UserRequest ureq) {
+		if(certificatesCtrl == null) {
+			OLATResourceable ores = OresHelper.createOLATResourceableInstance("Certificates", 0l);
+			WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ores, null, getWindowControl());
+			certificatesCtrl = new CertificatesListAdminController(ureq, bwControl);
+			listenTo(certificatesCtrl);
 		}
-
-		@Override
-		public Object getValueAt(int row, int col) {
-			CertificateTemplate template = getObject(row);
-			switch(Cols.values()[col]) {
-				case name: return template.getName();
-			}
-			return null;
-		}
+		mainVC.put("segmentCmp", certificatesCtrl.getInitialComponent());
 	}
 }

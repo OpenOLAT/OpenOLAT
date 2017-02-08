@@ -141,7 +141,7 @@ public class BusinessGroupDAO {
 		Group group = groupDao.createGroup();
 		businessgroup.setBaseGroup(group);
 		if (creator != null) {
-			groupDao.addMembership(group, creator, GroupRoles.coach.name());
+			groupDao.addMembershipTwoWay(group, creator, GroupRoles.coach.name());
 		}
 
 		EntityManager em = dbInstance.getCurrentEntityManager();

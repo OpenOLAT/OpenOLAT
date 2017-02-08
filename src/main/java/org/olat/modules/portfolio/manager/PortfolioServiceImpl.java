@@ -173,7 +173,7 @@ public class PortfolioServiceImpl implements PortfolioService {
 	public Binder createNewBinder(String title, String summary, String imagePath, Identity owner) {
 		BinderImpl portfolio = binderDao.createAndPersist(title, summary, imagePath, null);
 		if(owner != null) {
-			groupDao.addMembership(portfolio.getBaseGroup(), owner, PortfolioRoles.owner.name());
+			groupDao.addMembershipTwoWay(portfolio.getBaseGroup(), owner, PortfolioRoles.owner.name());
 		}
 		return portfolio;
 	}
@@ -188,7 +188,7 @@ public class PortfolioServiceImpl implements PortfolioService {
 	public void createAndPersistBinderTemplate(Identity owner, RepositoryEntry entry, Locale locale) {
 		BinderImpl binder = binderDao.createAndPersist(entry.getDisplayname(), entry.getDescription(), null, entry);
 		if(owner != null) {
-			groupDao.addMembership(binder.getBaseGroup(), owner, PortfolioRoles.owner.name());
+			groupDao.addMembershipTwoWay(binder.getBaseGroup(), owner, PortfolioRoles.owner.name());
 		}
 		//add section
 		Translator pt = Util.createPackageTranslator(PortfolioHomeController.class, locale);
@@ -564,7 +564,7 @@ public class PortfolioServiceImpl implements PortfolioService {
 	public Binder assignBinder(Identity owner, BinderRef templateBinder, RepositoryEntry entry, String subIdent, Date deadline) {
 		BinderImpl reloadedTemplate = (BinderImpl)binderDao.loadByKey(templateBinder.getKey());
 		BinderImpl binder = binderDao.createCopy(reloadedTemplate, entry, subIdent);
-		groupDao.addMembership(binder.getBaseGroup(), owner, PortfolioRoles.owner.name());
+		groupDao.addMembershipTwoWay(binder.getBaseGroup(), owner, PortfolioRoles.owner.name());
 		return binder;
 	}
 
@@ -635,7 +635,7 @@ public class PortfolioServiceImpl implements PortfolioService {
 	public void addAccessRights(PortfolioElement element, Identity identity, PortfolioRoles role) {
 		Group baseGroup = element.getBaseGroup();
 		if(!groupDao.hasRole(baseGroup, identity, role.name())) {
-			groupDao.addMembership(baseGroup, identity, role.name());
+			groupDao.addMembershipTwoWay(baseGroup, identity, role.name());
 		}
 	}
 	
@@ -647,7 +647,7 @@ public class PortfolioServiceImpl implements PortfolioService {
 				if(change.isAdd()) {
 					if(!groupDao.hasRole(baseGroup, identity, change.getRole().name())) {
 						Group group = getGroup(change.getElement());
-						groupDao.addMembership(group, identity, change.getRole().name());
+						groupDao.addMembershipOneWay(group, identity, change.getRole().name());
 					}
 				} else {
 					if(groupDao.hasRole(baseGroup, identity, change.getRole().name())) {
@@ -839,7 +839,7 @@ public class PortfolioServiceImpl implements PortfolioService {
 			((SectionImpl)reloadedSection).setSectionStatus(SectionStatus.inProgress);
 		}
 		Page page = pageDao.createAndPersist(title, summary, imagePath, align, editable, reloadedSection, null);
-		groupDao.addMembership(page.getBaseGroup(), owner, PortfolioRoles.owner.name());
+		groupDao.addMembershipTwoWay(page.getBaseGroup(), owner, PortfolioRoles.owner.name());
 		return page;
 	}
 

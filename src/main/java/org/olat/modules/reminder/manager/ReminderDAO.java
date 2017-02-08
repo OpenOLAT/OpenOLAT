@@ -128,17 +128,18 @@ public class ReminderDAO {
 	}
 	
 	/**
-	 * Get all reminders of active repository entries.
+	 * Get all reminders of active repository entries (status must be
+	 * open and not "softly" deleted).
 	 * 
 	 * @param startDate
-	 * @return
+	 * @return A list of reminders
 	 */
 	public List<Reminder> getReminders(Date startDate) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select rem from reminder rem")
 		  .append(" inner join rem.entry entry")
 		  .append(" where (rem.startDate is null or rem.startDate<=:startDate)")
-		  .append(" and entry.statusCode=0");
+		  .append(" and entry.statusCode=0 and entry.access>").append(RepositoryEntry.DELETED);
 
 		return dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), Reminder.class)
@@ -146,6 +147,12 @@ public class ReminderDAO {
 				.getResultList();
 	}
 
+	/**
+	 * Get all reminders without restrictions.
+	 * 
+	 * @param entry
+	 * @return A list of remidners
+	 */
 	public List<Reminder> getReminders(RepositoryEntryRef entry) {
 		String q = "select rem from reminder rem inner join rem.entry entry where entry.key=:entryKey";
 		return dbInstance.getCurrentEntityManager()
