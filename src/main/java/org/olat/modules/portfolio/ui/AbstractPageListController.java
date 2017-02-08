@@ -211,7 +211,7 @@ implements Activateable2, TooledController, FlexiTableComponentDelegate {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(PageCols.comment));
 		}
 	
-		model = new PageListDataModel(columnsModel);
+		model = new PageListDataModel(columnsModel, getLocale());
 		String mapperThumbnailUrl = registerCacheableMapper(ureq, "page-list", new PageImageMapper(model, portfolioService));
 		
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", model, 20, false, getTranslator(), formLayout);

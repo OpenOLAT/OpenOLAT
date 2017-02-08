@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Set;
 
 import org.olat.core.commons.persistence.SortKey;
@@ -30,6 +31,8 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFle
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
 import org.olat.modules.portfolio.Section;
 import org.olat.modules.portfolio.ui.model.PortfolioElementRow;
 
@@ -42,16 +45,27 @@ import org.olat.modules.portfolio.ui.model.PortfolioElementRow;
 public class PageListDataModel extends DefaultFlexiTableDataModel<PortfolioElementRow>
 	implements SortableFlexiTableDataModel<PortfolioElementRow> {
 	
+	private static final OLog log = Tracing.createLoggerFor(PageListDataModel.class);
+	
+	private final Locale locale;
 	private List<PortfolioElementRow> backup;
 	
-	public PageListDataModel(FlexiTableColumnModel columnModel) {
+	
+	public PageListDataModel(FlexiTableColumnModel columnModel, Locale locale) {
 		super(columnModel);
+		this.locale = locale;
 	}
 	
 	@Override
 	public void sort(SortKey orderBy) {
-		PageListSortableDataModelDelegate sorter = new PageListSortableDataModelDelegate(orderBy, this, null);
-		List<PortfolioElementRow> rows = sorter.sort();
+		PageListSortableDataModelDelegate sorter = new PageListSortableDataModelDelegate(orderBy, this, locale);
+		List<PortfolioElementRow> rows;
+		try {
+			rows = sorter.sort();
+		} catch (IllegalArgumentException e) {
+			log.error("Cannot sort with: " + orderBy , e);
+			return;
+		}
 		
 		// This say where is the link to create a new entry
 		// if a section has assignments, it's at the end of
@@ -195,7 +209,7 @@ public class PageListDataModel extends DefaultFlexiTableDataModel<PortfolioEleme
 	
 	@Override
 	public DefaultFlexiTableDataModel<PortfolioElementRow> createCopyWithEmptyList() {
-		return new PageListDataModel(getTableColumnModel());
+		return new PageListDataModel(getTableColumnModel(), locale);
 	}
 
 	public enum PageCols implements FlexiSortableColumnDef {
