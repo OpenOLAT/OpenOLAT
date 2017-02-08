@@ -122,6 +122,7 @@ public class QTI12To21Converter {
 	
 	private final ManifestBuilder manifest;
 	private List<String> materialPath = new ArrayList<>();
+	private List<String> errors = new ArrayList<>();
 	
 	public QTI12To21Converter(File unzippedDirRoot, Locale locale) {
 		this.locale = locale;
@@ -212,23 +213,28 @@ public class QTI12To21Converter {
 		List<Item> items = section.getItems();
 		for(Item item:items) {
 			AssessmentItemBuilder itemBuilder = null;
-			int questionType = item.getQuestion().getType();
-			switch (questionType) {
-				case Question.TYPE_SC:
-					itemBuilder = convertSingleChoice(item);
-					break;
-				case Question.TYPE_MC:
-					itemBuilder = convertMultipleChoice(item);
-					break;
-				case Question.TYPE_KPRIM:
-					itemBuilder = convertKPrim(item);
-					break;
-				case Question.TYPE_FIB:
-					itemBuilder = convertFIB(item);
-					break;
-				case Question.TYPE_ESSAY:
-					itemBuilder = convertEssay(item);
-					break;
+			if(item != null && item.getQuestion() != null) {
+				int questionType = item.getQuestion().getType();
+				switch (questionType) {
+					case Question.TYPE_SC:
+						itemBuilder = convertSingleChoice(item);
+						break;
+					case Question.TYPE_MC:
+						itemBuilder = convertMultipleChoice(item);
+						break;
+					case Question.TYPE_KPRIM:
+						itemBuilder = convertKPrim(item);
+						break;
+					case Question.TYPE_FIB:
+						itemBuilder = convertFIB(item);
+						break;
+					case Question.TYPE_ESSAY:
+						itemBuilder = convertEssay(item);
+						break;
+				}
+			} else {
+				errors.add(item.getTitle());
+				log.error("Item without question: " + item);
 			}
 
 			if(itemBuilder != null) {
