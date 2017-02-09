@@ -467,7 +467,7 @@ public class MembersCourseNodeRunController extends FormBasicController {
 			@Override
 			public Controller createController(UserRequest lureq, WindowControl lwControl) {
 				lwControl.getWindowBackOffice().getChiefController().addBodyCssClass("o_cmembers_print");
-				return new MembersPrintController(lureq, lwControl, courseEnv, avatarBaseURL, userPropertyHandlers,
+				return new MembersPrintController(lureq, lwControl, courseEnv, userPropertyHandlers,
 						ownerList, coachList, participantList);
 			}					
 		};
