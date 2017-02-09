@@ -127,5 +127,10 @@ public class QTI21Constants {
 	
 	public static final ComplexReferenceIdentifier HINT_FEEDBACKMODAL_CLX_IDENTIFIER = ComplexReferenceIdentifier.parseString(HINT_FEEDBACKMODAL);
 	
+	
+	public static final String CORRECT_SOLUTION = "SOLUTIONMODAL";
+
+	public static final Identifier CORRECT_SOLUTION_IDENTIFIER  = Identifier.parseString(CORRECT_SOLUTION);
+	
 
 }

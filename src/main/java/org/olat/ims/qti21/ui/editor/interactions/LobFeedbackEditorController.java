@@ -46,7 +46,8 @@ public class LobFeedbackEditorController extends FormBasicController {
 	
 	private TextElement hintTitleEl;
 	private RichTextElement hintTextEl;
-	
+	private TextElement feedbackCorrectSolutionTitleEl;
+	private RichTextElement feedbackCorrectSolutionTextEl;
 	private TextElement feedbackTitleEl, feedbackEmptyTitleEl;
 	private RichTextElement feedbackTextEl, feedbackEmptyTextEl;
 
@@ -55,7 +56,7 @@ public class LobFeedbackEditorController extends FormBasicController {
 	
 	public LobFeedbackEditorController(UserRequest ureq, WindowControl wControl, LobAssessmentItemBuilder itemBuilder,
 			boolean restrictedEdit) {
-		super(ureq, wControl);
+		super(ureq, wControl, LAYOUT_DEFAULT_2_10);
 		setTranslator(Util.createPackageTranslator(FeedbackEditorController.class, getLocale(), getTranslator()));
 		
 		this.itemBuilder = itemBuilder;
@@ -67,42 +68,61 @@ public class LobFeedbackEditorController extends FormBasicController {
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormContextHelp("Test editor QTI 2.1 in detail#details_testeditor_feedback");
 
-		ModalFeedbackBuilder hint = itemBuilder.getHint();
-		String hintTitle = hint == null ? "" : hint.getTitle();
-		hintTitleEl = uifactory.addTextElement("hintTitle", "form.imd.hint.title", -1, hintTitle, formLayout);
-		hintTitleEl.setUserObject(hint);
-		hintTitleEl.setEnabled(!restrictedEdit);
-		String hintText = hint == null ? "" : hint.getText();
-		hintTextEl = uifactory.addRichTextElementForQTI21("hintText", "form.imd.hint.text", hintText, 8, -1, null,
-				formLayout, ureq.getUserSession(), getWindowControl());
-		hintTextEl.setEnabled(!restrictedEdit);
-		RichTextConfiguration hintConfig = hintTextEl.getEditorConfiguration();
-		hintConfig.setFileBrowserUploadRelPath("media");// set upload dir to the media dir
+		{
+			ModalFeedbackBuilder hint = itemBuilder.getHint();
+			String hintTitle = hint == null ? "" : hint.getTitle();
+			hintTitleEl = uifactory.addTextElement("hintTitle", "form.imd.hint.title", -1, hintTitle, formLayout);
+			hintTitleEl.setUserObject(hint);
+			hintTitleEl.setEnabled(!restrictedEdit);
+			String hintText = hint == null ? "" : hint.getText();
+			hintTextEl = uifactory.addRichTextElementForQTI21("hintText", "form.imd.hint.text", hintText, 8, -1, null,
+					formLayout, ureq.getUserSession(), getWindowControl());
+			hintTextEl.setEnabled(!restrictedEdit);
+			RichTextConfiguration hintConfig = hintTextEl.getEditorConfiguration();
+			hintConfig.setFileBrowserUploadRelPath("media");// set upload dir to the media dir
+		}
 		
-		//feedback if response
-		ModalFeedbackBuilder answeredFeedback = itemBuilder.getAnsweredFeedback();
-		String correctTitle = answeredFeedback == null ? "" : answeredFeedback.getTitle();
-		feedbackTitleEl = uifactory.addTextElement("answeredTitle", "form.imd.answered.title", -1, correctTitle, formLayout);
-		feedbackTitleEl.setUserObject(answeredFeedback);
-		feedbackTitleEl.setEnabled(!restrictedEdit);
-		String correctText = answeredFeedback == null ? "" : answeredFeedback.getText();
-		feedbackTextEl = uifactory.addRichTextElementForQTI21("answeredText", "form.imd.answered.text", correctText, 8, -1, null,
-				formLayout, ureq.getUserSession(), getWindowControl());
-		feedbackTextEl.setEnabled(!restrictedEdit);
-		RichTextConfiguration richTextConfig = feedbackTextEl.getEditorConfiguration();
-		richTextConfig.setFileBrowserUploadRelPath("media");// set upload dir to the media dir
+		{//correct solution feedback for Word
+			ModalFeedbackBuilder correctSolutionFeedback = itemBuilder.getCorrectSolutionFeedback();
+			String correctSolutionTitle = correctSolutionFeedback == null ? "" : correctSolutionFeedback.getTitle();
+			feedbackCorrectSolutionTitleEl = uifactory.addTextElement("correctSolutionTitle", "form.imd.correct.solution.title", -1, correctSolutionTitle, formLayout);
+			feedbackCorrectSolutionTitleEl.setUserObject(correctSolutionFeedback);
+			feedbackCorrectSolutionTitleEl.setEnabled(!restrictedEdit);
+			String correctSolutionText = correctSolutionFeedback == null ? "" : correctSolutionFeedback.getText();
+			feedbackCorrectSolutionTextEl = uifactory.addRichTextElementForQTI21("correctSolutionText", "form.imd.correct.solution.text.word", correctSolutionText, 8, -1, null,
+					formLayout, ureq.getUserSession(), getWindowControl());
+			feedbackCorrectSolutionTextEl.setEnabled(!restrictedEdit);
+			RichTextConfiguration richTextConfig2 = feedbackCorrectSolutionTextEl.getEditorConfiguration();
+			richTextConfig2.setFileBrowserUploadRelPath("media");// set upload dir to the media dir
+		}
 		
-		ModalFeedbackBuilder emptyFeedback = itemBuilder.getEmptyFeedback();
-		String emptyTitle = emptyFeedback == null ? "" : emptyFeedback.getTitle();
-		feedbackEmptyTitleEl = uifactory.addTextElement("emptyTitle", "form.imd.empty.title", -1, emptyTitle, formLayout);
-		feedbackEmptyTitleEl.setUserObject(emptyFeedback);
-		feedbackEmptyTitleEl.setEnabled(!restrictedEdit);
-		String emptyText = emptyFeedback == null ? "" : emptyFeedback.getText();
-		feedbackEmptyTextEl = uifactory.addRichTextElementForQTI21("emptyText", "form.imd.empty.text", emptyText, 8, -1, null,
-				formLayout, ureq.getUserSession(), getWindowControl());
-		feedbackEmptyTextEl.setEnabled(!restrictedEdit);
-		RichTextConfiguration emptyTextConfig = feedbackEmptyTextEl.getEditorConfiguration();
-		emptyTextConfig.setFileBrowserUploadRelPath("media");// set upload dir to the media dir
+		{//feedback if response
+			ModalFeedbackBuilder answeredFeedback = itemBuilder.getAnsweredFeedback();
+			String correctTitle = answeredFeedback == null ? "" : answeredFeedback.getTitle();
+			feedbackTitleEl = uifactory.addTextElement("answeredTitle", "form.imd.answered.title", -1, correctTitle, formLayout);
+			feedbackTitleEl.setUserObject(answeredFeedback);
+			feedbackTitleEl.setEnabled(!restrictedEdit);
+			String correctText = answeredFeedback == null ? "" : answeredFeedback.getText();
+			feedbackTextEl = uifactory.addRichTextElementForQTI21("answeredText", "form.imd.answered.text", correctText, 8, -1, null,
+					formLayout, ureq.getUserSession(), getWindowControl());
+			feedbackTextEl.setEnabled(!restrictedEdit);
+			RichTextConfiguration richTextConfig = feedbackTextEl.getEditorConfiguration();
+			richTextConfig.setFileBrowserUploadRelPath("media");// set upload dir to the media dir
+		}
+		
+		{// feedback if the answer is empty
+			ModalFeedbackBuilder emptyFeedback = itemBuilder.getEmptyFeedback();
+			String emptyTitle = emptyFeedback == null ? "" : emptyFeedback.getTitle();
+			feedbackEmptyTitleEl = uifactory.addTextElement("emptyTitle", "form.imd.empty.title", -1, emptyTitle, formLayout);
+			feedbackEmptyTitleEl.setUserObject(emptyFeedback);
+			feedbackEmptyTitleEl.setEnabled(!restrictedEdit);
+			String emptyText = emptyFeedback == null ? "" : emptyFeedback.getText();
+			feedbackEmptyTextEl = uifactory.addRichTextElementForQTI21("emptyText", "form.imd.empty.text", emptyText, 8, -1, null,
+					formLayout, ureq.getUserSession(), getWindowControl());
+			feedbackEmptyTextEl.setEnabled(!restrictedEdit);
+			RichTextConfiguration emptyTextConfig = feedbackEmptyTextEl.getEditorConfiguration();
+			emptyTextConfig.setFileBrowserUploadRelPath("media");// set upload dir to the media dir
+		}
 	
 		// Submit Button
 		if(!restrictedEdit) {
@@ -128,6 +148,19 @@ public class LobFeedbackEditorController extends FormBasicController {
 			hintBuilder.setText(hintText);
 		} else {
 			itemBuilder.removeHint();
+		}
+		
+		String correctSolutionTitle = feedbackCorrectSolutionTitleEl.getValue();
+		String correctSolutionText = feedbackCorrectSolutionTextEl.getValue();
+		if(StringHelper.containsNonWhitespace(FilterFactory.getHtmlTagsFilter().filter(correctSolutionText))) {
+			ModalFeedbackBuilder correctSolutionBuilder = itemBuilder.getCorrectSolutionFeedback();
+			if(correctSolutionBuilder == null) {
+				correctSolutionBuilder = itemBuilder.createCorrectSolutionFeedback();
+			}
+			correctSolutionBuilder.setTitle(correctSolutionTitle);
+			correctSolutionBuilder.setText(correctSolutionText);
+		} else {
+			itemBuilder.removeCorrectSolutionFeedback();
 		}
 		
 		String correctTitle = feedbackTitleEl.getValue();

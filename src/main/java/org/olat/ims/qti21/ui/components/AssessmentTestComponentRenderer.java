@@ -583,6 +583,7 @@ public class AssessmentTestComponentRenderer extends AssessmentObjectComponentRe
 		//<xsl:if test="($identifierMatch and @showHide='show') or (not($identifierMatch) and @showHide='hide')">
 		if((identifierMatch && testFeedback.getVisibilityMode() == VisibilityMode.SHOW_IF_MATCH)
 				|| (!identifierMatch && testFeedback.getVisibilityMode() == VisibilityMode.HIDE_IF_MATCH)) {
+			
 			sb.append("<h2>");
 			if(StringHelper.containsNonWhitespace(testFeedback.getTitle())) {
 				sb.append(StringHelper.escapeHtml(testFeedback.getTitle()));
@@ -592,7 +593,6 @@ public class AssessmentTestComponentRenderer extends AssessmentObjectComponentRe
 			sb.append("</h2>");
 			
 			final QtiSerializer serializer = CoreSpringFactory.getImpl(QTI21Service.class).qtiSerializer();
-			//TODO QTI flow: need to handle url, feedbackBlock... -->
 			testFeedback.getChildren().forEach((flow) -> sb.append(serializer.serializeJqtiObject(flow)));
 		}
 	}

@@ -631,7 +631,7 @@ public class AssessmentItemFactory {
 		ResponseDeclaration responseDeclaration = new ResponseDeclaration(assessmentItem);
 		responseDeclaration.setIdentifier(QTI21Constants.HINT_REQUEST_IDENTIFIER);
 		responseDeclaration.setCardinality(Cardinality.SINGLE);
-		responseDeclaration.setBaseType(BaseType.IDENTIFIER);
+		responseDeclaration.setBaseType(BaseType.BOOLEAN);
 		return responseDeclaration;
 	}
 	
@@ -915,6 +915,19 @@ public class AssessmentItemFactory {
 		return feedbackOutcomeDeclaration;
 	}
 	
+	public static OutcomeDeclaration createOutcomeDeclarationForCorrectSolutionFeedbackModal(AssessmentItem assessmentItem) {
+		OutcomeDeclaration feedbackOutcomeDeclaration = new OutcomeDeclaration(assessmentItem);
+		feedbackOutcomeDeclaration.setIdentifier(QTI21Constants.CORRECT_SOLUTION_IDENTIFIER);
+		feedbackOutcomeDeclaration.setCardinality(Cardinality.SINGLE);
+		feedbackOutcomeDeclaration.setBaseType(BaseType.IDENTIFIER);
+		
+		List<View> views = new ArrayList<>();
+		views.add(View.TEST_CONSTRUCTOR);
+		feedbackOutcomeDeclaration.setViews(views);
+
+		return feedbackOutcomeDeclaration;
+	}
+	
 	public static ChoiceInteraction createSingleChoiceInteraction(AssessmentItem assessmentItem, Identifier responseDeclarationId,
 			Orientation orientation, List<String> classAtrr) {
 		ChoiceInteraction choiceInteraction = new ChoiceInteraction(assessmentItem.getItemBody());
@@ -1060,6 +1073,102 @@ public class AssessmentItemFactory {
 			feedbackVal.setBaseTypeAttrValue(BaseType.IDENTIFIER);
 			feedbackVal.setSingleValue(new IdentifierValue(feedbackIdentifier));
 			multiple.getExpressions().add(feedbackVal);
+			
+			responseIf.getResponseRules().add(feedbackVar);
+		}
+		
+		return rule;
+	}
+	
+	
+	/**
+	 * Generate the special case for "correct solution" feedback which is almost the same as
+	 * incorrect feedback.
+	 * 
+	 * @param responseProcessing
+	 * @param feedbackIdentifier
+	 * @return
+	 */
+	public static ResponseCondition createCorrectSolutionModalFeedbackBasicRule(ResponseProcessing responseProcessing,
+			Identifier correctSolutionFeedbackIdentifier, Identifier incorrectFeedbackIdentifier, boolean hint) {
+		ResponseCondition rule = new ResponseCondition(responseProcessing);
+		/*
+		<responseIf>
+			<and>
+				<match>
+					<baseValue baseType="identifier">incorrect</baseValue>
+					<variable identifier="FEEDBACKBASIC" />
+				</match>
+			</and>
+			<setOutcomeValue identifier="FEEDBACKMODAL">
+				<multiple>
+					<variable identifier="FEEDBACKMODAL" />
+					<baseValue baseType="identifier">Feedback261171147</baseValue>
+				</multiple>
+			</setOutcomeValue>
+			<setOutcomeValue identifier="SOLUTIONMODAL">
+				<baseValue baseType="identifier">Feedback261171147</baseValue>
+			</setOutcomeValue>
+		</responseIf>
+		*/
+		
+		ResponseIf responseIf = new ResponseIf(rule);
+		rule.setResponseIf(responseIf);
+		
+		{//rule
+			And and = new And(responseIf);
+			responseIf.getExpressions().add(and);
+			
+			Match match = new Match(and);
+			and.getExpressions().add(match);
+
+			BaseValue feedbackVal = new BaseValue(match);
+			feedbackVal.setBaseTypeAttrValue(BaseType.IDENTIFIER);
+			feedbackVal.setSingleValue(new IdentifierValue(QTI21Constants.INCORRECT));
+			match.getExpressions().add(feedbackVal);
+			
+			Variable variable = new Variable(match);
+			variable.setIdentifier(ComplexReferenceIdentifier.parseString(QTI21Constants.FEEDBACKBASIC));
+			match.getExpressions().add(variable);
+			
+			//not match the HINT
+			if(hint) {
+				IsNull isNull = new IsNull(and);
+				and.getExpressions().add(isNull);
+				
+				Variable hintVar = new Variable(isNull);
+				hintVar.setIdentifier(QTI21Constants.HINT_FEEDBACKMODAL_CLX_IDENTIFIER);
+				isNull.getExpressions().add(hintVar);
+			}
+		}
+		
+		if(incorrectFeedbackIdentifier != null) {//outcome incorrect
+			SetOutcomeValue feedbackVar = new SetOutcomeValue(responseIf);
+			feedbackVar.setIdentifier(QTI21Constants.FEEDBACKMODAL_IDENTIFIER);
+			
+			Multiple multiple = new Multiple(feedbackVar);
+			feedbackVar.setExpression(multiple);
+			
+			Variable variable = new Variable(multiple);
+			variable.setIdentifier(ComplexReferenceIdentifier.parseString(QTI21Constants.FEEDBACKMODAL));
+			multiple.getExpressions().add(variable);
+			
+			BaseValue feedbackVal = new BaseValue(feedbackVar);
+			feedbackVal.setBaseTypeAttrValue(BaseType.IDENTIFIER);
+			feedbackVal.setSingleValue(new IdentifierValue(incorrectFeedbackIdentifier));
+			multiple.getExpressions().add(feedbackVal);
+			
+			responseIf.getResponseRules().add(feedbackVar);
+		}
+
+		if(correctSolutionFeedbackIdentifier != null) {//outcome correct solution
+			SetOutcomeValue feedbackVar = new SetOutcomeValue(responseIf);
+			feedbackVar.setIdentifier(QTI21Constants.CORRECT_SOLUTION_IDENTIFIER);
+
+			BaseValue feedbackVal = new BaseValue(feedbackVar);
+			feedbackVal.setBaseTypeAttrValue(BaseType.IDENTIFIER);
+			feedbackVal.setSingleValue(new IdentifierValue(correctSolutionFeedbackIdentifier));
+			feedbackVar.getExpressions().add(feedbackVal);
 			
 			responseIf.getResponseRules().add(feedbackVar);
 		}

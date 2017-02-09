@@ -612,6 +612,12 @@ public class QTI12To21Converter {
 			hint.setText(hintText);
 		}
 		
+		String solutionText = question.getSolutionText();
+		if(StringHelper.containsNonWhitespace(solutionText)) {
+			ModalFeedbackBuilder solution = itemBuilder.createCorrectSolutionFeedback();
+			solution.setText(solutionText);
+		}
+		
 		String feedbackMastery = QTIEditHelper.getFeedbackMasteryText(item);
 		if(StringHelper.containsNonWhitespace(feedbackMastery)) {
 			ModalFeedbackBuilder feedback = itemBuilder.createCorrectFeedback();

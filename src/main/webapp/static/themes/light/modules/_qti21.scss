@@ -486,6 +486,12 @@ tr.choiceinteraction {
 	}
 }
 
+/* Correct solution feedback */
+.o_togglebox_wrapper #modal-correct-solution div.o_togglebox_content {
+	background-color: $o-box-warning-bg; 
+	border-color: $o-box-warning-color;
+}
+
 /* Candidate comment */
 .o_candidatecomment {
 	padding: 0;

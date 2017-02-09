@@ -44,6 +44,7 @@ import uk.ac.ed.ph.jqtiplus.node.item.response.processing.SetOutcomeValue;
 import uk.ac.ed.ph.jqtiplus.node.outcome.declaration.OutcomeDeclaration;
 import uk.ac.ed.ph.jqtiplus.node.shared.declaration.DefaultValue;
 import uk.ac.ed.ph.jqtiplus.serialization.QtiSerializer;
+import uk.ac.ed.ph.jqtiplus.types.Identifier;
 import uk.ac.ed.ph.jqtiplus.value.BaseType;
 import uk.ac.ed.ph.jqtiplus.value.FloatValue;
 import uk.ac.ed.ph.jqtiplus.value.IdentifierValue;
@@ -69,7 +70,7 @@ public abstract class AssessmentItemBuilder {
 	protected ModalFeedbackBuilder hint;
 	protected ModalFeedbackBuilder emptyFeedback, answeredFeedback;
 	protected ModalFeedbackBuilder correctFeedback;
-	protected ModalFeedbackBuilder incorrectFeedback;
+	protected ModalFeedbackBuilder incorrectFeedback, correctSolutionFeedback;
 	private List<ModalFeedbackBuilder> additionalFeedbacks = new ArrayList<>();
 	
 	public AssessmentItemBuilder(AssessmentItem assessmentItem, QtiSerializer qtiSerializer) {
@@ -128,7 +129,11 @@ public abstract class AssessmentItemBuilder {
 				correctFeedback = feedbackBuilder;
 			} else if(feedbackBuilder.isIncorrectRule()) {
 				incorrectFeedback = feedbackBuilder;
-			} else if(feedbackBuilder.isEmptyRule()) {
+			} else if(feedbackBuilder.isCorrectSolutionRule()
+					|| (feedback.getOutcomeIdentifier() != null
+					&& QTI21Constants.CORRECT_SOLUTION_IDENTIFIER.equals(feedback.getOutcomeIdentifier()))) {
+				correctSolutionFeedback = feedbackBuilder;
+			}  else if(feedbackBuilder.isEmptyRule()) {
 				emptyFeedback = feedbackBuilder;
 			} else if(feedbackBuilder.isAnsweredRule()) {
 				answeredFeedback = feedbackBuilder;
@@ -181,7 +186,7 @@ public abstract class AssessmentItemBuilder {
 	}
 	
 	public ModalFeedbackBuilder createHint() {
-		hint = new ModalFeedbackBuilder(assessmentItem, null);
+		hint = new ModalFeedbackBuilder(assessmentItem);
 		return hint;
 	}	
 	
@@ -194,7 +199,7 @@ public abstract class AssessmentItemBuilder {
 	}
 	
 	public ModalFeedbackBuilder createCorrectFeedback() {
-		correctFeedback = new ModalFeedbackBuilder(assessmentItem, null);
+		correctFeedback = new ModalFeedbackBuilder(assessmentItem);
 		return correctFeedback;
 	}
 	
@@ -207,7 +212,7 @@ public abstract class AssessmentItemBuilder {
 	}
 	
 	public ModalFeedbackBuilder createEmptyFeedback() {
-		emptyFeedback = new ModalFeedbackBuilder(assessmentItem, null);
+		emptyFeedback = new ModalFeedbackBuilder(assessmentItem);
 		return emptyFeedback;
 	}
 	
@@ -220,7 +225,7 @@ public abstract class AssessmentItemBuilder {
 	}
 	
 	public ModalFeedbackBuilder createAnsweredFeedback() {
-		answeredFeedback = new ModalFeedbackBuilder(assessmentItem, null);
+		answeredFeedback = new ModalFeedbackBuilder(assessmentItem);
 		return answeredFeedback;
 	}
 	
@@ -233,12 +238,25 @@ public abstract class AssessmentItemBuilder {
 	}
 	
 	public ModalFeedbackBuilder createIncorrectFeedback() {
-		incorrectFeedback = new ModalFeedbackBuilder(assessmentItem, null);
+		incorrectFeedback = new ModalFeedbackBuilder(assessmentItem);
 		return incorrectFeedback;
 	}
 	
 	public void removeIncorrectFeedback() {
 		incorrectFeedback = null;
+	}
+	
+	public ModalFeedbackBuilder createCorrectSolutionFeedback() {
+		correctSolutionFeedback = new ModalFeedbackBuilder(assessmentItem);
+		return correctSolutionFeedback;
+	}
+	
+	public ModalFeedbackBuilder getCorrectSolutionFeedback() {
+		return correctSolutionFeedback;
+	}
+	
+	public void removeCorrectSolutionFeedback() {
+		correctSolutionFeedback = null;
 	}
 	
 	public BadRessourceHelper getHelper() {
@@ -360,7 +378,7 @@ public abstract class AssessmentItemBuilder {
 	 */
 	protected void buildModalFeedbacksAndHints(List<OutcomeDeclaration> outcomeDeclarations, List<ResponseRule> responseRules) {
 		if(correctFeedback != null || incorrectFeedback != null || emptyFeedback != null || answeredFeedback != null
-				|| additionalFeedbacks.size() > 0) {
+				|| correctSolutionFeedback != null || additionalFeedbacks.size() > 0) {
 			ensureFeedbackBasicOutcomeDeclaration();
 			
 			OutcomeDeclaration modalOutcomeDeclaration = AssessmentItemFactory
@@ -371,8 +389,15 @@ public abstract class AssessmentItemBuilder {
 			if(correctFeedback != null) {
 				appendModalFeedback(correctFeedback, QTI21Constants.CORRECT, modalFeedbacks, responseRules);
 			}
-			if(incorrectFeedback != null) {
-				appendModalFeedback(incorrectFeedback, QTI21Constants.INCORRECT, modalFeedbacks, responseRules);
+			//correct solution must be set before the "incorrect" feedback
+			if(correctSolutionFeedback != null) {
+				OutcomeDeclaration correctSolutionOutcomeDeclaration = AssessmentItemFactory
+						.createOutcomeDeclarationForCorrectSolutionFeedbackModal(assessmentItem);
+				outcomeDeclarations.add(correctSolutionOutcomeDeclaration);
+			}
+			
+			if(incorrectFeedback != null || correctSolutionFeedback != null) {
+				appendCorrectSolutionAndIncorrectModalFeedback(modalFeedbacks, responseRules);
 			}
 			if(emptyFeedback != null) {
 				appendModalFeedback(emptyFeedback, QTI21Constants.EMPTY, modalFeedbacks, responseRules);
@@ -383,13 +408,38 @@ public abstract class AssessmentItemBuilder {
 		}
 	}
 	
+	protected void appendCorrectSolutionAndIncorrectModalFeedback(List<ModalFeedback> modalFeedbacks, List<ResponseRule> responseRules) {
+		Identifier correctSolutionFeedbackIdentifier = null;
+		if(correctSolutionFeedback != null) {
+			correctSolutionFeedbackIdentifier = correctSolutionFeedback.getIdentifier();
+			ModalFeedback modalFeedback = AssessmentItemFactory.createModalFeedback(assessmentItem,
+					QTI21Constants.CORRECT_SOLUTION_IDENTIFIER, correctSolutionFeedback.getIdentifier(),
+					correctSolutionFeedback.getTitle(), correctSolutionFeedback.getText());
+			modalFeedbacks.add(modalFeedback);
+		}
+		
+		Identifier incorrectFeedbackIdentifier = null;
+		if(incorrectFeedback != null) {
+			incorrectFeedbackIdentifier = incorrectFeedback.getIdentifier();
+			ModalFeedback modalFeedback = AssessmentItemFactory
+					.createModalFeedback(assessmentItem, incorrectFeedback.getIdentifier(),
+							incorrectFeedback.getTitle(), incorrectFeedback.getText());
+			modalFeedbacks.add(modalFeedback);
+		}
+
+		ResponseCondition feedbackCondition = AssessmentItemFactory
+				.createCorrectSolutionModalFeedbackBasicRule(assessmentItem.getResponseProcessing(),
+						correctSolutionFeedbackIdentifier, incorrectFeedbackIdentifier, hint != null);
+		responseRules.add(feedbackCondition);
+	}
+	
 	protected void appendModalFeedback(ModalFeedbackBuilder feedbackBuilder, String inCorrect,
 			List<ModalFeedback> modalFeedbacks, List<ResponseRule> responseRules) {
 		
-		ModalFeedback emptyModalFeedback = AssessmentItemFactory
+		ModalFeedback modalFeedback = AssessmentItemFactory
 				.createModalFeedback(assessmentItem, feedbackBuilder.getIdentifier(),
 						feedbackBuilder.getTitle(), feedbackBuilder.getText());
-		modalFeedbacks.add(emptyModalFeedback);
+		modalFeedbacks.add(modalFeedback);
 		
 		ResponseCondition feedbackCondition = AssessmentItemFactory
 				.createModalFeedbackBasicRule(assessmentItem.getResponseProcessing(),

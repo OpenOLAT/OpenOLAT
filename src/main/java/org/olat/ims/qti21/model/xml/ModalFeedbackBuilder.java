@@ -52,6 +52,18 @@ public class ModalFeedbackBuilder {
 	private String text;
 	private Identifier identifier;
 	
+	public ModalFeedbackBuilder(AssessmentItem assessmentItem) {
+		this.assessmentItem = assessmentItem;
+		this.modalFeedback = null;
+		identifier = IdentifierGenerator.newNumberAsIdentifier("Feedback");
+	}
+	
+	public ModalFeedbackBuilder(AssessmentItem assessmentItem, Identifier identifier) {
+		this.assessmentItem = assessmentItem;
+		this.identifier = identifier;
+		this.modalFeedback = null;
+	}
+	
 	public ModalFeedbackBuilder(AssessmentItem assessmentItem, ModalFeedback modalFeedback) {
 		this.assessmentItem = assessmentItem;
 		this.modalFeedback = modalFeedback;
@@ -69,29 +81,29 @@ public class ModalFeedbackBuilder {
 		return modalFeedback.getIdentifier();
 	}
 	
-	public ResponseRule getResponseRule() {
-		ResponseRule feedbackRule = findFeedbackRule(modalFeedback.getIdentifier());
-		return feedbackRule;
-	}
-	
 	public boolean isCorrectRule() {
-		ResponseRule feedbackRule = findFeedbackRule(modalFeedback.getIdentifier());
-		return findFeedbackRule(feedbackRule, QTI21Constants.CORRECT_IDENTIFIER);
+		ResponseCondition feedbackRule = findFeedbackResponseCondition(modalFeedback.getIdentifier(), QTI21Constants.FEEDBACKMODAL_IDENTIFIER);
+		return findBaseValueInExpressionsOfResponseIf(feedbackRule, QTI21Constants.CORRECT_IDENTIFIER);
 	}
 	
 	public boolean isIncorrectRule() {
-		ResponseRule feedbackRule = findFeedbackRule(modalFeedback.getIdentifier());
-		return findFeedbackRule(feedbackRule, QTI21Constants.INCORRECT_IDENTIFIER);
+		ResponseCondition feedbackRule = findFeedbackResponseCondition(modalFeedback.getIdentifier(), QTI21Constants.FEEDBACKMODAL_IDENTIFIER);
+		return findBaseValueInExpressionsOfResponseIf(feedbackRule, QTI21Constants.INCORRECT_IDENTIFIER);
 	}
 	
 	public boolean isEmptyRule() {
-		ResponseRule feedbackRule = findFeedbackRule(modalFeedback.getIdentifier());
-		return findFeedbackRule(feedbackRule, QTI21Constants.EMPTY_IDENTIFIER);
+		ResponseCondition feedbackRule = findFeedbackResponseCondition(modalFeedback.getIdentifier(), QTI21Constants.FEEDBACKMODAL_IDENTIFIER);
+		return findBaseValueInExpressionsOfResponseIf(feedbackRule, QTI21Constants.EMPTY_IDENTIFIER);
 	}
 	
 	public boolean isAnsweredRule() {
-		ResponseRule feedbackRule = findFeedbackRule(modalFeedback.getIdentifier());
-		return findFeedbackRule(feedbackRule, QTI21Constants.ANSWERED_IDENTIFIER);
+		ResponseCondition feedbackRule = findFeedbackResponseCondition(modalFeedback.getIdentifier(), QTI21Constants.FEEDBACKMODAL_IDENTIFIER);
+		return findBaseValueInExpressionsOfResponseIf(feedbackRule, QTI21Constants.ANSWERED_IDENTIFIER);
+	}
+	
+	public boolean isCorrectSolutionRule() {
+		ResponseCondition feedbackRule = findFeedbackResponseCondition(modalFeedback.getIdentifier(), QTI21Constants.CORRECT_SOLUTION_IDENTIFIER);
+		return findBaseValueInExpressionsOfResponseIf(feedbackRule, QTI21Constants.INCORRECT_IDENTIFIER);
 	}
 	
 	public boolean isHint() {
@@ -123,19 +135,19 @@ public class ModalFeedbackBuilder {
 		this.identifier = identifier;
 	}
 
-	private ResponseRule findFeedbackRule(Identifier feedbackIdentifier) {
+	private ResponseCondition findFeedbackResponseCondition(Identifier feedbackIdentifier, Identifier outcomeValueIdentifier) {
 		List<ResponseRule> responseRules = assessmentItem.getResponseProcessing().getResponseRules();
 		for(ResponseRule responseRule:responseRules) {
 			if(responseRule instanceof ResponseCondition) {
-				if(findFeedbackRuleInSetOutcomeVariable(responseRule, feedbackIdentifier)) {
-					return responseRule;
+				if(findFeedbackRuleInSetOutcomeVariable(responseRule, feedbackIdentifier, outcomeValueIdentifier)) {
+					return (ResponseCondition)responseRule;
 				}
 			}
 		}
 		return null;
 	}
 	
-	private boolean findFeedbackRuleInSetOutcomeVariable(ResponseRule responseRule, Identifier feedbackIdentifier) {
+	private boolean findFeedbackRuleInSetOutcomeVariable(ResponseRule responseRule, Identifier feedbackIdentifier, Identifier outcomeValueIdentifier) {
 		if(responseRule instanceof ResponseCondition) {
 			ResponseCondition responseCondition = (ResponseCondition)responseRule;
 			ResponseIf responseIf = responseCondition.getResponseIf();
@@ -143,7 +155,7 @@ public class ModalFeedbackBuilder {
 			for(ResponseRule ifResponseRule:ifResponseRules) {
 				if(ifResponseRule instanceof SetOutcomeValue) {
 					SetOutcomeValue setOutcomeValue = (SetOutcomeValue)ifResponseRule;
-					if(findFeedbackRuleInExpression(setOutcomeValue.getExpression(), feedbackIdentifier)) {
+					if(outcomeValueIdentifier.equals(setOutcomeValue.getIdentifier()) && findBaseValueInExpression(setOutcomeValue.getExpression(), feedbackIdentifier)) {
 						return true;
 					}
 				}
@@ -152,28 +164,20 @@ public class ModalFeedbackBuilder {
 		return false;
 	}
 	
-	private boolean findFeedbackRule(ResponseRule responseRule, Identifier id) {
-		if(responseRule instanceof ResponseCondition) {
-			ResponseCondition responseCondition = (ResponseCondition)responseRule;
-			ResponseIf responseIf = responseCondition.getResponseIf();
-			List<Expression> expressions = responseIf.getExpressions();
-			if(findFeedbackRuleInExpression(expressions, id)) {
-				return true;
-			}
-		}
-		return false;
-	}
-
-	private boolean findFeedbackRuleInExpression(List<Expression> expressions, Identifier feedbackIdentifier) {
+	private boolean findBaseValueInExpressionsOfResponseIf(ResponseCondition responseCondition, Identifier feedbackIdentifier) {
+		if(responseCondition == null) return false;
+		
+		ResponseIf responseIf = responseCondition.getResponseIf();
+		List<Expression> expressions = responseIf.getExpressions();
 		for(Expression expression:expressions) {
-			if(findFeedbackRuleInExpression(expression, feedbackIdentifier)) {
+			if(findBaseValueInExpression(expression, feedbackIdentifier)) {
 				return true;
 			}
 		}
 		return false;
 	}
 	
-	private boolean findFeedbackRuleInExpression(Expression expression, Identifier feedbackIdentifier) {
+	private boolean findBaseValueInExpression(Expression expression, Identifier feedbackIdentifier) {
 		if(expression instanceof BaseValue) {
 			BaseValue bValue = (BaseValue)expression;
 			SingleValue sValue = bValue.getSingleValue();
@@ -186,7 +190,7 @@ public class ModalFeedbackBuilder {
 		} else {
 			List<Expression> childExpressions = expression.getExpressions();
 			for(Expression childExpression:childExpressions) {
-				if(findFeedbackRuleInExpression(childExpression, feedbackIdentifier)) {
+				if(findBaseValueInExpression(childExpression, feedbackIdentifier)) {
 					return true;
 				}
 			}

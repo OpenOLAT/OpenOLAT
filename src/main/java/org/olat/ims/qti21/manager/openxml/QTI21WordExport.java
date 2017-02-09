@@ -71,12 +71,14 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.xml.sax.Attributes;
 
+import uk.ac.ed.ph.jqtiplus.attribute.Attribute;
 import uk.ac.ed.ph.jqtiplus.node.content.basic.Block;
 import uk.ac.ed.ph.jqtiplus.node.content.variable.RubricBlock;
 import uk.ac.ed.ph.jqtiplus.node.content.xhtml.object.Object;
 import uk.ac.ed.ph.jqtiplus.node.expression.operator.Shape;
 import uk.ac.ed.ph.jqtiplus.node.item.AssessmentItem;
 import uk.ac.ed.ph.jqtiplus.node.item.CorrectResponse;
+import uk.ac.ed.ph.jqtiplus.node.item.ModalFeedback;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.DrawingInteraction;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.GraphicAssociateInteraction;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.GraphicOrderInteraction;
@@ -309,6 +311,8 @@ public class QTI21WordExport implements MediaResource {
 			case hotspot: typeDescription = translator.translate("form.hotspot"); break;
 			case essay: typeDescription = translator.translate("form.essay"); break;
 			case upload: typeDescription = translator.translate("form.upload"); break;
+			case drawing: typeDescription = translator.translate("form.drawing"); break;
+			case match: typeDescription = translator.translate("form.match"); break;
 			default: typeDescription = null; break;
 		}
 		
@@ -329,6 +333,34 @@ public class QTI21WordExport implements MediaResource {
 		List<Block> itemBodyBlocks = item.getItemBody().getBlocks();
 		String html = htmlBuilder.blocksString(itemBodyBlocks);
 		document.appendHtmlText(html, true, new QTI21AndHTMLToOpenXMLHandler(document, item, itemFile, withResponses, htmlBuilder, translator));
+	
+		if(withResponses && (type == QTI21QuestionType.essay || type == QTI21QuestionType.upload || type == QTI21QuestionType.drawing)) {
+			renderCorrectSolutionForWord(item, document, translator, htmlBuilder);
+		}
+	}
+	
+	private static void renderCorrectSolutionForWord(AssessmentItem item, OpenXMLDocument document,
+			 Translator translator, AssessmentHtmlBuilder htmlBuilder) {
+		List<ModalFeedback> feedbacks = item.getModalFeedbacks();
+		if(feedbacks != null && feedbacks.size() > 0) {
+			for(ModalFeedback feedback:feedbacks) {
+				if(feedback.getOutcomeIdentifier() != null
+						&& QTI21Constants.CORRECT_SOLUTION_IDENTIFIER.equals(feedback.getOutcomeIdentifier())) {
+					Attribute<?> title = feedback.getAttributes().get("title");
+					String feedbackTitle = null;
+					if(title != null && title.getValue() != null) {
+						feedbackTitle = title.getValue().toString();
+					}
+					if(!StringHelper.containsNonWhitespace(feedbackTitle)) {
+						feedbackTitle = translator.translate("correct.solution");
+					}
+					
+					document.appendHeading2(feedbackTitle, null);
+					String html = htmlBuilder.flowStaticString(feedback.getFlowStatics());
+					document.appendHtmlText(html, true);
+				}
+			}
+		}
 	}
 	
 	private static class QTI21AndHTMLToOpenXMLHandler extends HTMLToOpenXMLHandler {
@@ -381,7 +413,7 @@ public class QTI21WordExport implements MediaResource {
 				case "inlinechoiceinteraction":
 				case "hottextinteraction":
 				case "hottext":
-					break;
+					break;//TODO
 				case "matchinteraction":
 					renderElement = false;
 					
@@ -391,11 +423,13 @@ public class QTI21WordExport implements MediaResource {
 						QTI21QuestionType type = QTI21QuestionType.getTypeOfMatch(assessmentItem, matchInteraction);
 						if(type == QTI21QuestionType.kprim) {
 							startKPrim(matchInteraction);
+						} else {
+							//TODO
 						}
 					}
 					break;
 				case "gapmatchinteraction":
-					break;
+					break;//TODO
 				case "selectpointinteraction":
 					startSelectPointInteraction(attributes);
 					break;
@@ -407,13 +441,14 @@ public class QTI21WordExport implements MediaResource {
 					break;
 				case "graphicgapmatchinteraction":
 				case "associateinteraction":
+					break;//TODO
 				case "uploadinteraction":
 					break;
 				case "positionobjectinteraction":
 					startPositionObjectInteraction(attributes);
 					break;
 				case "sliderinteraction":
-					break;
+					break;//TODO
 				case "drawinginteraction":
 					startDrawingInteraction(attributes);
 					break;
