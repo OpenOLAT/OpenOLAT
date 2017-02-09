@@ -21,6 +21,11 @@ package org.olat.course.nodes.members;
 
 import java.util.List;
 
+import javax.servlet.http.HttpServletRequest;
+
+import org.olat.core.commons.modules.bc.meta.MetaInfo;
+import org.olat.core.commons.modules.bc.meta.tagged.MetaTagged;
+import org.olat.core.dispatcher.mapper.Mapper;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.panel.MainPanel;
@@ -28,8 +33,15 @@ import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.gui.media.MediaResource;
+import org.olat.core.gui.media.NotFoundMediaResource;
+import org.olat.core.util.vfs.VFSLeaf;
+import org.olat.core.util.vfs.VFSMediaResource;
 import org.olat.course.run.environment.CourseEnvironment;
+import org.olat.user.DisplayPortraitManager;
+import org.olat.user.UserManager;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -44,11 +56,17 @@ public class MembersPrintController extends BasicController {
 	
 	private final List<UserPropertyHandler> userPropertyHandlers;
 	
+	@Autowired
+	private UserManager userManager;
+	@Autowired
+	private DisplayPortraitManager portraitManager;
+	
 	public MembersPrintController(UserRequest ureq, WindowControl wControl,
-			CourseEnvironment courseEnv, String avatarBaseURL, List<UserPropertyHandler> userPropertyHandlers,
+			CourseEnvironment courseEnv, List<UserPropertyHandler> userPropertyHandlers,
 			List<Member> owners, List<Member> coaches, List<Member> participants) {
 		super(ureq, wControl);
-		this.avatarBaseURL = avatarBaseURL;
+
+		avatarBaseURL = registerCacheableMapper(ureq, "avatars-members-high-quality", new UserAvatarHQMapper());
 		this.userPropertyHandlers = userPropertyHandlers;
 		
 		mainVC = createVelocityContainer("print");
@@ -89,5 +107,35 @@ public class MembersPrintController extends BasicController {
 	@Override
 	protected void doDispose() {
 		//
+	}
+	
+	private class UserAvatarHQMapper implements Mapper {
+		@Override
+		public MediaResource handle(String relPath, HttpServletRequest request) {
+			MediaResource rsrc = null;
+			if(relPath != null) {
+				if(relPath.startsWith("/")) {
+					relPath = relPath.substring(1, relPath.length());
+				}
+				
+				int endKeyIndex = relPath.indexOf('/');
+				if(endKeyIndex > 0) {
+					String idKey = relPath.substring(0, endKeyIndex);
+					Long key = Long.parseLong(idKey);
+					String username = userManager.getUsername(key);
+					VFSLeaf portrait = portraitManager.getLargestVFSPortrait(username);
+					if(portrait instanceof MetaTagged) {
+						MetaInfo meta = ((MetaTagged)portrait).getMetaInfo();
+						portrait = meta.getThumbnail(300, 300, false);
+					}
+					
+					if(portrait == null) {
+						return new NotFoundMediaResource(relPath);
+					}
+					return new VFSMediaResource(portrait);
+				}
+			}
+			return rsrc;
+		}
 	}
 }
