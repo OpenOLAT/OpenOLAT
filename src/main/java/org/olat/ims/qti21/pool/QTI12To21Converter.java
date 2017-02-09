@@ -35,14 +35,17 @@ import java.util.Set;
 import org.apache.commons.lang.StringEscapeUtils;
 import org.cyberneko.html.parsers.SAXParser;
 import org.olat.core.CoreSpringFactory;
+import org.olat.core.gui.translator.Translator;
 import org.olat.core.helpers.Settings;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.Util;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
+import org.olat.ims.qti.QTIModule;
 import org.olat.ims.qti.editor.QTIEditHelper;
 import org.olat.ims.qti.editor.QTIEditorPackage;
 import org.olat.ims.qti.editor.beecom.objects.Assessment;
@@ -604,6 +607,8 @@ public class QTI12To21Converter {
 		String hintText = question.getHintText();
 		if(StringHelper.containsNonWhitespace(hintText)) {
 			ModalFeedbackBuilder hint = itemBuilder.createHint();
+			Translator translator = Util.createPackageTranslator(QTIModule.class, locale);
+			hint.setTitle(translator.translate("render.hint"));
 			hint.setText(hintText);
 		}
 		
