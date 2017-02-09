@@ -147,12 +147,12 @@ public class HotspotAssessmentItemBuilder extends AssessmentItemBuilder {
 	
 	private void extractCorrectAnswers() {
 		correctAnswers = new ArrayList<>(5);
-		
-		List<ResponseDeclaration> responseDeclarations = assessmentItem.getResponseDeclarations();
-		if(responseDeclarations.size() == 1) {
-			ResponseDeclaration responseDeclaration = responseDeclarations.get(0);
-			CorrectResponse correctResponse = responseDeclaration.getCorrectResponse();
-			if(correctResponse != null) {
+
+		if(hotspotInteraction != null) {
+			ResponseDeclaration responseDeclaration = assessmentItem
+					.getResponseDeclaration(hotspotInteraction.getResponseIdentifier());
+			if(responseDeclaration != null && responseDeclaration.getCorrectResponse() != null) {
+				CorrectResponse correctResponse = responseDeclaration.getCorrectResponse();
 				extractIdentifiersFromCorrectResponse(correctResponse, correctAnswers);
 			}
 		}

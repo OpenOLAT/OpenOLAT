@@ -129,8 +129,8 @@ public class MatchAssessmentItemBuilder extends AssessmentItemBuilder {
 	@Override
 	public void extract() {
 		super.extract();
-		extractCorrectResponse();
 		extractMatchInteraction();
+		extractCorrectResponse();
 		extractScoreEvaluationMode();
 		extractSingleChoice();
 		
@@ -169,11 +169,13 @@ public class MatchAssessmentItemBuilder extends AssessmentItemBuilder {
 	
 	private void extractCorrectResponse() {
 		associations = new HashMap<>();
-		
-		List<ResponseDeclaration> responseDeclarations = assessmentItem.getResponseDeclarations();
-		if(responseDeclarations.size() == 1) {
-			CorrectResponse correctResponse = responseDeclarations.get(0).getCorrectResponse();
-			if(correctResponse != null) {
+
+		if(matchInteraction != null) {
+			ResponseDeclaration responseDeclaration = assessmentItem
+					.getResponseDeclaration(matchInteraction.getResponseIdentifier());
+			
+			if(responseDeclaration != null && responseDeclaration.getCorrectResponse() != null) {
+				CorrectResponse correctResponse = responseDeclaration.getCorrectResponse();
 				List<FieldValue> values = correctResponse.getFieldValues();
 				for(FieldValue value:values) {
 					SingleValue sValue = value.getSingleValue();
