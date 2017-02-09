@@ -433,7 +433,7 @@ public class OpenXMLDocument {
 		try {
 			SAXParser parser = new SAXParser();
 			Element paragraphEl = getParagraphToAppendTo(newParagraph);
-			parser.setContentHandler(new HTMLToOpenXMLHandler(this, paragraphEl));
+			parser.setContentHandler(new HTMLToOpenXMLHandler(this, paragraphEl, true));
 			parser.parse(new InputSource(new StringReader(html)));
 		} catch (SAXException e) {
 			log.error("", e);

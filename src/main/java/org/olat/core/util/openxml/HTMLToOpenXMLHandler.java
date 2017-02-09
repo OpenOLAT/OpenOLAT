@@ -55,10 +55,11 @@ public class HTMLToOpenXMLHandler extends DefaultHandler {
 	private StringBuilder textBuffer;
 	private Spacing startSpacing;
 	
+	private boolean appendToCursor = true;
 	protected final OpenXMLDocument factory;
 	
-	protected List<Node> content = new ArrayList<Node>();
-	protected Deque<StyleStatus> styleStack = new ArrayDeque<StyleStatus>();
+	protected List<Node> content = new ArrayList<>();
+	protected Deque<StyleStatus> styleStack = new ArrayDeque<>();
 	
 	protected Table currentTable;
 	protected Element currentParagraph;
@@ -69,9 +70,16 @@ public class HTMLToOpenXMLHandler extends DefaultHandler {
 		this.factory = document;
 	}
 	
-	public HTMLToOpenXMLHandler(OpenXMLDocument document, Element paragraph) {
+
+	/**
+	 * @param document The OpenXML document
+	 * @param paragraph The current paragraph
+	 * @param appendToCursor If true, append automatically to the document
+	 */
+	public HTMLToOpenXMLHandler(OpenXMLDocument document, Element paragraph, boolean appendToCursor) {
 		this(document);
 		this.currentParagraph = paragraph;
+		this.appendToCursor = appendToCursor;
 	}
 	
 	public HTMLToOpenXMLHandler(OpenXMLDocument document, Spacing spacing) {
@@ -81,6 +89,10 @@ public class HTMLToOpenXMLHandler extends DefaultHandler {
 	
 	public void setInitialParagraph(Element paragraph) {
 		this.currentParagraph = paragraph;
+	}
+	
+	public List<Node> getContent() {
+		return content;
 	}
 	
 	/**
@@ -488,8 +500,10 @@ public class HTMLToOpenXMLHandler extends DefaultHandler {
 		//clean up trailing text and pack it in a last paragraph
 		closeParagraph();
 
-		for(Node node:content) {
-			factory.getCursor().appendChild(node);
+		if(appendToCursor) {
+			for(Node node:content) {
+				factory.getCursor().appendChild(node);
+			}
 		}
 	}
 	
@@ -592,11 +606,11 @@ public class HTMLToOpenXMLHandler extends DefaultHandler {
 			return currentRowEl.appendChild(currentCellEl);
 		}
 		
-		public Node addCellEl(Element cellEl, int colSpan) {
+		public Element addCellEl(Element cellEl, int colSpan) {
 			nextCol += closeCell(nextCol);
 			currentCellEl = cellEl;
 			nextCol += (colSpan <= 1 ? 1 : colSpan);
-			return currentRowEl.appendChild(currentCellEl);
+			return (Element)currentRowEl.appendChild(currentCellEl);
 		}
 		
 		public int closeCell(int lastIndex) {
