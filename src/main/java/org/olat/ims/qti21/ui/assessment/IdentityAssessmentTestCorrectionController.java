@@ -112,9 +112,9 @@ public class IdentityAssessmentTestCorrectionController extends FormBasicControl
         		ImsQTI21Resource.createResolvingResourceLocator(fileResourceLocator);
 		assessmentObjectUri = qtiService.createAssessmentObjectUri(fUnzippedDirRoot);
 		
-		File submissionFile = qtiService.getSubmissionDirectory(candidateSession);
-		mapperUri = registerCacheableMapper(null, "QTI21Resources::" + testEntry.getKey(),
-				new ResourcesMapper(assessmentObjectUri, submissionFile));
+		File submissionDir = qtiService.getSubmissionDirectory(candidateSession);
+		mapperUri = registerCacheableMapper(null, "QTI21CorrectionResources::" + session.getKey(),
+				new ResourcesMapper(assessmentObjectUri, submissionDir));
 		
 		resolvedAssessmentTest = qtiService.loadAndResolveAssessmentTest(fUnzippedDirRoot, false, false);
 		testSessionState = qtiService.loadTestSessionState(candidateSession);

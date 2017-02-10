@@ -128,6 +128,8 @@ public class BinderDAO {
 	}
 	
 	public Binder syncWithTemplate(BinderImpl template, BinderImpl binder, AtomicBoolean changes) {
+		binder.setImagePath(template.getImagePath());
+		
 		List<Section> templateSections = template.getSections();
 		Map<Assignment,Section> assignmentTemplateToSectionTemplatesMap = new HashMap<>();
 		for(Section templateSection:templateSections) {

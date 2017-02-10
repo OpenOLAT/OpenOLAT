@@ -36,7 +36,7 @@ import org.olat.modules.portfolio.model.BinderStatistics;
 public class BinderRow implements BinderRef {
 	
 	private final BinderStatistics binderStats;
-	private final VFSLeaf image;
+	private VFSLeaf image;
 	private final FormLink openLink;
 	private final boolean newBinder;
 	
@@ -107,6 +107,10 @@ public class BinderRow implements BinderRef {
 	
 	public VFSLeaf getBackgroundImage() {
 		return image;
+	}
+	
+	public void setBackgroundImage(VFSLeaf image) {
+		this.image = image;
 	}
 	
 	public String getImageName() {
