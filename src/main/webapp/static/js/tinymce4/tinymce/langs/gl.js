@@ -102,7 +102,7 @@ tinymce.addI18n('gl',{
 "Target": "Destino",
 "The URL you entered seems to be an email address. Do you want to add the required mailto: prefix?": "O URL que introduciu semella seren un enderezo de correo. Quere engadirlle o prefixo mailto: requirido?",
 "Insert\/edit link": "Inserir\/editar ligaz\u00f3n",
-"Insert\/edit video": "Inserir\/editar v\u00eddeo",
+"Insert\/edit media element": "Inserir\/editar v\u00eddeo",
 "Poster": "Cartel",
 "Alternative source": "Orixe alternativa",
 "Paste your embed code below:": "Pegue embaixo o c\u00f3digo integrado:",
