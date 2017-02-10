@@ -125,7 +125,7 @@ tinymce.addI18n('zh_TW',{
 "Target": "\u958b\u555f\u65b9\u5f0f",
 "The URL you entered seems to be an email address. Do you want to add the required mailto: prefix?": "\u4f60\u6240\u586b\u5beb\u7684URL\u70ba\u96fb\u5b50\u90f5\u4ef6\uff0c\u9700\u8981\u52a0\u4e0amailto:\u524d\u7db4\u55ce\uff1f",
 "Insert\/edit link": "\u63d2\u5165\/\u7de8\u8f2f\u9023\u7d50",
-"Insert\/edit video": "\u63d2\u4ef6\/\u7de8\u8f2f \u5f71\u97f3",
+"Insert\/edit media element": "\u63d2\u4ef6\/\u7de8\u8f2f \u5f71\u97f3",
 "Poster": "\u9810\u89bd\u5716\u7247",
 "Alternative source": "\u66ff\u4ee3\u5f71\u97f3",
 "Paste your embed code below:": "\u8acb\u5c07\u60a8\u7684\u5d4c\u5165\u5f0f\u7a0b\u5f0f\u78bc\u8cbc\u5728\u4e0b\u9762:",

@@ -864,7 +864,8 @@ public class QTI21ServiceImpl implements QTI21Service, UserDataDeletable, Initia
         		extension = "";
         	}
         	String date = testSessionDao.formatDate(new Date());
-        	String datedFilename = filename + date + extension;
+        	String datedFilename = FileUtils.normalizeFilename(filename) + "_" + date + extension;
+        	
         	//make sure we don't overwrite an existing file
 			File submittedFile = new File(submissionDir, datedFilename);
 			String renamedFile = FileUtils.rename(submittedFile);
@@ -898,7 +899,7 @@ public class QTI21ServiceImpl implements QTI21Service, UserDataDeletable, Initia
         		extension = "";
         	}
         	String date = testSessionDao.formatDate(new Date());
-        	String datedFilename = filename + date + extension;
+        	String datedFilename = FileUtils.normalizeFilename(filename) + "_" + date + extension;
         	//make sure we don't overwrite an existing file
 			File submittedFile = new File(submissionDir, datedFilename);
 			String renamedFile = FileUtils.rename(submittedFile);

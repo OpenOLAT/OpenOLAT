@@ -133,7 +133,7 @@ tinymce.addI18n('et',{
 "Target": "Sihtm\u00e4rk",
 "The URL you entered seems to be an email address. Do you want to add the required mailto: prefix?": "URL, mille sa sisestasid, n\u00e4ib olevat e-posti aadress. Kas sa soovid lisada sellele eesliite mailto: ?",
 "Insert\/edit link": "Lisa\/muuda link",
-"Insert\/edit video": "Lisa\/muuda video",
+"Insert\/edit media element": "Lisa\/muuda video",
 "Media": "Multimeedia",
 "Alternative source": "Teine allikas",
 "Paste your embed code below:": "Kleebi oma manustamiskood siia alla:",
