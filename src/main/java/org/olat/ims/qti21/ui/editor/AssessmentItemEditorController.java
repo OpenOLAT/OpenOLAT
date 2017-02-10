@@ -267,19 +267,19 @@ public class AssessmentItemEditorController extends BasicController {
 	}
 	
 	private AssessmentItemBuilder initFIBEditors(UserRequest ureq, QTI21QuestionType preferedType, AssessmentItem item) {
-		FIBAssessmentItemBuilder kprimItemBuilder = new FIBAssessmentItemBuilder(item, qtiService.qtiSerializer());
-		itemEditor = new FIBEditorController(ureq, getWindowControl(), preferedType, kprimItemBuilder,
+		FIBAssessmentItemBuilder fibItemBuilder = new FIBAssessmentItemBuilder(item, qtiService.qtiSerializer());
+		itemEditor = new FIBEditorController(ureq, getWindowControl(), preferedType, fibItemBuilder,
 				rootDirectory, rootContainer, itemFile, restrictedEdit);
 		listenTo(itemEditor);
-		scoreEditor = new FIBScoreController(ureq, getWindowControl(), kprimItemBuilder, itemRef, restrictedEdit);
+		scoreEditor = new FIBScoreController(ureq, getWindowControl(), fibItemBuilder, itemRef, restrictedEdit);
 		listenTo(scoreEditor);
-		feedbackEditor = new FeedbackEditorController(ureq, getWindowControl(), kprimItemBuilder, restrictedEdit);
+		feedbackEditor = new FeedbackEditorController(ureq, getWindowControl(), fibItemBuilder, restrictedEdit);
 		listenTo(feedbackEditor);
 		
 		tabbedPane.addTab(translate("form.fib"), itemEditor);
 		tabbedPane.addTab(translate("form.score"), scoreEditor);
 		tabbedPane.addTab(translate("form.feedback"), feedbackEditor);
-		return kprimItemBuilder;
+		return fibItemBuilder;
 	}
 	
 	private AssessmentItemBuilder initHotspotEditors(UserRequest ureq, AssessmentItem item) {

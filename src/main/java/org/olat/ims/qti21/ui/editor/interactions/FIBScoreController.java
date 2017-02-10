@@ -20,10 +20,10 @@
 package org.olat.ims.qti21.ui.editor.interactions;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -67,7 +67,7 @@ public class FIBScoreController extends AssessmentItemRefEditorController implem
 	private SingleSelection assessmentModeEl;
 
 	private FIBAssessmentItemBuilder itemBuilder;
-	private final List<TextEntryWrapper> wrappers = new ArrayList<>();
+	private final List<FIBEntryWrapper> wrappers = new ArrayList<>();
 	
 	private int counter = 0;
 	
@@ -128,14 +128,14 @@ public class FIBScoreController extends AssessmentItemRefEditorController implem
 		if(itemBuilder == assessmentItemBuilder) {
 			List<AbstractEntry> entries = itemBuilder.getOrderedTextEntries();
 			for(AbstractEntry entry:entries) {
-				TextEntryWrapper wrapper = getTextEntryWrapper(entry);
+				FIBEntryWrapper wrapper = getTextEntryWrapper(entry);
 				if(wrapper == null) {
 					wrappers.add(createTextEntryWrapper(entry));
 				}
 			}
 			
 			//remove removed entry
-			for(Iterator<TextEntryWrapper> wrapperIt=wrappers.iterator(); wrapperIt.hasNext(); ) {
+			for(Iterator<FIBEntryWrapper> wrapperIt=wrappers.iterator(); wrapperIt.hasNext(); ) {
 				Identifier responseIdentifier = wrapperIt.next().getEntry().getResponseIdentifier();
 				if(itemBuilder.getTextEntry(responseIdentifier.toString()) == null) {
 					wrapperIt.remove();
@@ -143,11 +143,13 @@ public class FIBScoreController extends AssessmentItemRefEditorController implem
 			}
 			
 			//reorder the wrappers
-			Map<AbstractEntry,TextEntryWrapper> wrapperMap = wrappers.stream()
-					.collect(Collectors.toMap(w -> w.getEntry(), w -> w));
-			List<TextEntryWrapper> reorderedWrappers = new ArrayList<>();
+			Map<AbstractEntry,FIBEntryWrapper> wrapperMap = new HashMap<>();
+			for(FIBEntryWrapper wrapper:wrappers) {
+				wrapperMap.put(wrapper.getEntry(), wrapper);
+			}
+			List<FIBEntryWrapper> reorderedWrappers = new ArrayList<>();
 			for(AbstractEntry entry:entries) {
-				TextEntryWrapper wrapper = wrapperMap.get(entry);
+				FIBEntryWrapper wrapper = wrapperMap.get(entry);
 				if(wrapper != null) {
 					reorderedWrappers.add(wrapper);
 					wrapperMap.remove(entry);
@@ -155,15 +157,19 @@ public class FIBScoreController extends AssessmentItemRefEditorController implem
 			}
 			
 			if(wrapperMap.size() > 0) {//paranoid security
-				reorderedWrappers.addAll(wrapperMap.values());
+				for(FIBEntryWrapper wrapper:wrapperMap.values()) {
+					if(!reorderedWrappers.contains(wrapper)) {
+						reorderedWrappers.add(wrapper);
+					}
+				}
 			}
 			wrappers.clear();
 			wrappers.addAll(reorderedWrappers);
 		}
 	}
 	
-	private TextEntryWrapper getTextEntryWrapper(AbstractEntry entry) {
-		for(TextEntryWrapper wrapper:wrappers) {
+	private FIBEntryWrapper getTextEntryWrapper(AbstractEntry entry) {
+		for(FIBEntryWrapper wrapper:wrappers) {
 			if(wrapper.getEntry() == entry) {
 				return wrapper;
 			}
@@ -171,7 +177,7 @@ public class FIBScoreController extends AssessmentItemRefEditorController implem
 		return null;
 	}
 	
-	private TextEntryWrapper createTextEntryWrapper(AbstractEntry entry) {
+	private FIBEntryWrapper createTextEntryWrapper(AbstractEntry entry) {
 		String points = "";
 		Double score = entry.getScore();
 		if(score != null) {
@@ -182,7 +188,7 @@ public class FIBScoreController extends AssessmentItemRefEditorController implem
 		pointEl.setDisplaySize(5);
 		pointEl.setEnabled(!restrictedEdit);
 		scoreCont.add(pointElId, pointEl);
-		return new TextEntryWrapper(entry, pointEl);
+		return new FIBEntryWrapper(entry, pointEl);
 	}
 
 	@Override
@@ -191,7 +197,7 @@ public class FIBScoreController extends AssessmentItemRefEditorController implem
 		allOk &= validateDouble(maxScoreEl);
 
 		if(assessmentModeEl.isOneSelected() && assessmentModeEl.isSelected(1)) {
-			for(TextEntryWrapper wrapper:wrappers) {
+			for(FIBEntryWrapper wrapper:wrappers) {
 				allOk &= validateDouble(wrapper.getPointsEl());
 			}
 		}
@@ -219,7 +225,7 @@ public class FIBScoreController extends AssessmentItemRefEditorController implem
 		
 		if(assessmentModeEl.isOneSelected() && assessmentModeEl.isSelected(1)) {
 			itemBuilder.setScoreEvaluationMode(ScoreEvaluation.perAnswer);
-			for(TextEntryWrapper wrapper:wrappers) {
+			for(FIBEntryWrapper wrapper:wrappers) {
 				String pointsStr = wrapper.getPointsEl().getValue();
 				Double points = new Double(pointsStr);
 				wrapper.getEntry().setScore(points);
@@ -236,16 +242,19 @@ public class FIBScoreController extends AssessmentItemRefEditorController implem
 		//
 	}
 	
-	public final class TextEntryWrapper {
+	public final class FIBEntryWrapper {
 		
-		private final String summary;
 		private final AbstractEntry entry;
 		private final TextElement pointsEl;
 		
-		public TextEntryWrapper(AbstractEntry entry, TextElement pointsEl) {
+		public FIBEntryWrapper(AbstractEntry entry, TextElement pointsEl) {
 			this.entry = entry;
 			this.pointsEl = pointsEl;
 			pointsEl.setUserObject(this);
+		}
+
+		public String getSummary() {
+			String summary;
 			if(entry instanceof TextEntry) {
 				summary = ((TextEntry)entry).getSolution();
 			} else if(entry instanceof NumericalEntry) {
@@ -254,9 +263,6 @@ public class FIBScoreController extends AssessmentItemRefEditorController implem
 			} else {
 				summary = "???";
 			}
-		}
-		
-		public String getSummary() {
 			return summary;
 		}
 		
@@ -266,6 +272,23 @@ public class FIBScoreController extends AssessmentItemRefEditorController implem
 		
 		public AbstractEntry getEntry() {
 			return entry;
+		}
+		
+		@Override
+		public int hashCode() {
+			return entry.hashCode();
+		}
+		
+		@Override
+		public boolean equals(Object obj) {
+			if(this == obj) {
+				return true;
+			}
+			if(obj instanceof FIBEntryWrapper) {
+				FIBEntryWrapper w = (FIBEntryWrapper)obj;
+				return entry == w.entry;
+			}
+			return false;
 		}
 	}
 }
