@@ -27,7 +27,6 @@
 package org.olat.search.service.document.file;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.io.File;
@@ -36,10 +35,13 @@ import java.net.URISyntaxException;
 import java.net.URL;
 
 import org.apache.lucene.document.Document;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.olat.core.commons.modules.bc.vfs.OlatNamedContainerImpl;
 import org.olat.core.commons.modules.bc.vfs.OlatRootFolderImpl;
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.vfs.LocalFileImpl;
@@ -54,6 +56,8 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author Christian Guretzki
  */
 public class FileDocumentFactoryTest extends OlatTestCase {
+	
+	private static final OLog log = Tracing.createLoggerFor(FileDocumentFactoryTest.class);
 
 	// variables for test fixture
 	
@@ -70,28 +74,41 @@ public class FileDocumentFactoryTest extends OlatTestCase {
 		rootPath = "/search_junit_test_folder";
 	}
 	
-	@Test public void testIsFileSupported() {
-		assertTrue("html must be supported", fileDocumentFactory.isFileSupported(new LocalFileImpl(new File("test.html"))));
-		assertTrue("htm must be supported", fileDocumentFactory.isFileSupported(new LocalFileImpl(new File("test.htm"))));
-		assertTrue("HTML must be supported", fileDocumentFactory.isFileSupported(new LocalFileImpl(new File("test.HTML"))));
-		assertTrue("HTM must be supported", fileDocumentFactory.isFileSupported(new LocalFileImpl(new File("test.HTM"))));
-		assertTrue("HTM must be supported", fileDocumentFactory.isFileSupported(new LocalFileImpl(new File("test.xhtml"))));
-		assertTrue("HTM must be supported", fileDocumentFactory.isFileSupported(new LocalFileImpl(new File("test.XHTML"))));
+	@Test
+	public void testIsFileSupported() {
+		Assert.assertTrue("html must be supported", fileDocumentFactory.isFileSupported("test.html"));
+		Assert.assertTrue("htm must be supported", fileDocumentFactory.isFileSupported("test.htm"));
+		Assert.assertTrue("HTML must be supported", fileDocumentFactory.isFileSupported("test.HTML"));
+		Assert.assertTrue("HTM must be supported", fileDocumentFactory.isFileSupported("test.HTM"));
+		Assert.assertTrue("HTM must be supported", fileDocumentFactory.isFileSupported("test.xhtml"));
+		Assert.assertTrue("HTM must be supported", fileDocumentFactory.isFileSupported("test.XHTML"));
 
-		assertTrue("pdf must be supported", fileDocumentFactory.isFileSupported(new LocalFileImpl(new File("test.pdf"))));
-		assertTrue("PDF must be supported", fileDocumentFactory.isFileSupported(new LocalFileImpl(new File("test.PDF"))));
+		Assert.assertTrue("pdf must be supported", fileDocumentFactory.isFileSupported("test.pdf"));
+		Assert.assertTrue("PDF must be supported", fileDocumentFactory.isFileSupported("test.PDF"));
 
-		assertTrue("DOC must be supported", fileDocumentFactory.isFileSupported(getVFSFile("test2.DOC")));
-		assertTrue("doc must be supported", fileDocumentFactory.isFileSupported(getVFSFile("test.doc")));
+		Assert.assertTrue("DOC must be supported", fileDocumentFactory.isFileSupported(getVFSFile("test2.DOC")));
+		Assert.assertTrue("doc must be supported", fileDocumentFactory.isFileSupported(getVFSFile("test.doc")));
 
-		assertTrue("TXT must be supported", fileDocumentFactory.isFileSupported(new LocalFileImpl(new File("test.TXT"))));
-		assertTrue("txt must be supported", fileDocumentFactory.isFileSupported(new LocalFileImpl(new File("test.txt"))));
-		assertTrue("txt must be supported", fileDocumentFactory.isFileSupported(new LocalFileImpl(new File("test.readme"))));
-		assertTrue("txt must be supported", fileDocumentFactory.isFileSupported(new LocalFileImpl(new File("test.README"))));
-		assertTrue("txt must be supported", fileDocumentFactory.isFileSupported(new LocalFileImpl(new File("test.csv"))));
-		assertTrue("txt must be supported", fileDocumentFactory.isFileSupported(new LocalFileImpl(new File("test.CSV"))));
-		assertTrue("XML must be supported", fileDocumentFactory.isFileSupported(new LocalFileImpl(new File("test.XML"))));
-		assertTrue("xml must be supported", fileDocumentFactory.isFileSupported(new LocalFileImpl(new File("test.xml"))));
+		Assert.assertTrue("TXT must be supported", fileDocumentFactory.isFileSupported("test.TXT"));
+		Assert.assertTrue("txt must be supported", fileDocumentFactory.isFileSupported("test.txt"));
+		Assert.assertTrue("txt must be supported", fileDocumentFactory.isFileSupported("test.readme"));
+		Assert.assertTrue("txt must be supported", fileDocumentFactory.isFileSupported("test.README"));
+		Assert.assertTrue("txt must be supported", fileDocumentFactory.isFileSupported("test.csv"));
+		Assert.assertTrue("txt must be supported", fileDocumentFactory.isFileSupported("test.CSV"));
+		Assert.assertTrue("XML must be supported", fileDocumentFactory.isFileSupported("test.XML"));
+		Assert.assertTrue("xml must be supported", fileDocumentFactory.isFileSupported("test.xml"));
+		
+		//this is excluded
+		Assert.assertFalse("xml must be supported", fileDocumentFactory.isFileSupported("imsmanifest.xml"));
+	}
+	
+	@Test
+	public void testIsFileSupported_realfile() throws IOException, DocumentException, DocumentAccessException, URISyntaxException {
+
+		Assert.assertTrue("html must be supported", fileDocumentFactory.isFileSupported(getVFSFile("test.html")));
+		Assert.assertTrue("html must be supported", fileDocumentFactory.isFileSupported(getVFSFile("test.doc")));
+		Assert.assertTrue("html must be supported", fileDocumentFactory.isFileSupported(getVFSFile("test2.DOC")));
+
 	}
 	
 	private VFSLeaf getVFSFile(String filename) {
@@ -100,7 +117,7 @@ public class FileDocumentFactoryTest extends OlatTestCase {
 			File file = new File(url.toURI());
 			return new LocalFileImpl(file);
 		} catch (URISyntaxException e) {
-			e.printStackTrace();
+			log.error("", e);
 			return null;
 		}
 	}
