@@ -29,6 +29,7 @@ import org.olat.core.commons.services.image.ImageService;
 import org.olat.core.gui.components.htmlheader.jscss.CustomCSS;
 import org.olat.core.helpers.GUISettings;
 import org.olat.core.helpers.Settings;
+import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.UserSession;
 import org.olat.core.util.WebappHelper;
@@ -70,10 +71,7 @@ public class CourseLayoutHelper {
 		public boolean accept(VFSItem it) {
 			if (!(it instanceof VFSContainer)) return false;
 			// remove unwanted meta-dirs
-			else if (it.getName().equalsIgnoreCase("CVS")) return false;
-			else if (it.getName().equalsIgnoreCase(".DS_Store")) return false;
-			else if (it.getName().equalsIgnoreCase(".sass-cache")) return false;
-			else if (it.getName().equalsIgnoreCase(".hg")) return false;
+			else if (FileUtils.isMetaFilename(it.getName())) return false;
 			// last check is blacklist
 			return !(layoutBlacklist.contains(it.getName()));
 		}
