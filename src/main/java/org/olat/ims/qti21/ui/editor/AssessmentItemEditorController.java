@@ -217,7 +217,8 @@ public class AssessmentItemEditorController extends BasicController {
 		scoreEditor = new ChoiceScoreController(ureq, getWindowControl(), scItemBuilder, itemRef, restrictedEdit,
 				"Test editor QTI 2.1 in detail#details_testeditor_score");
 		listenTo(scoreEditor);
-		feedbackEditor = new FeedbackEditorController(ureq, getWindowControl(), scItemBuilder, restrictedEdit);
+		feedbackEditor = new FeedbackEditorController(ureq, getWindowControl(), scItemBuilder,
+				rootDirectory, rootContainer, itemFile, restrictedEdit);
 		listenTo(feedbackEditor);
 		
 		tabbedPane.addTab(translate("form.choice"), itemEditor);
@@ -234,7 +235,8 @@ public class AssessmentItemEditorController extends BasicController {
 		scoreEditor = new ChoiceScoreController(ureq, getWindowControl(), mcItemBuilder, itemRef, restrictedEdit,
 				"Test editor QTI 2.1 in detail#details_testeditor_score");
 		listenTo(scoreEditor);
-		feedbackEditor = new FeedbackEditorController(ureq, getWindowControl(), mcItemBuilder, restrictedEdit);
+		feedbackEditor = new FeedbackEditorController(ureq, getWindowControl(), mcItemBuilder,
+				rootDirectory, rootContainer, itemFile, restrictedEdit);
 		listenTo(feedbackEditor);
 		
 		tabbedPane.addTab(translate("form.choice"), itemEditor);
@@ -251,7 +253,8 @@ public class AssessmentItemEditorController extends BasicController {
 		scoreEditor = new MinimalScoreController(ureq, getWindowControl(), kprimItemBuilder, itemRef, restrictedEdit,
 				"Test editor QTI 2.1 in detail#details_testeditor_score");
 		listenTo(scoreEditor);
-		feedbackEditor = new FeedbackEditorController(ureq, getWindowControl(), kprimItemBuilder, restrictedEdit);
+		feedbackEditor = new FeedbackEditorController(ureq, getWindowControl(), kprimItemBuilder,
+				rootDirectory, rootContainer, itemFile, restrictedEdit);
 		listenTo(feedbackEditor);
 		
 		tabbedPane.addTab(translate("form.kprim"), itemEditor);
@@ -267,7 +270,8 @@ public class AssessmentItemEditorController extends BasicController {
 		listenTo(itemEditor);
 		scoreEditor = new MatchScoreController(ureq, getWindowControl(), matchItemBuilder, itemRef, restrictedEdit);
 		listenTo(scoreEditor);
-		feedbackEditor = new FeedbackEditorController(ureq, getWindowControl(), matchItemBuilder, restrictedEdit);
+		feedbackEditor = new FeedbackEditorController(ureq, getWindowControl(), matchItemBuilder,
+				rootDirectory, rootContainer, itemFile, restrictedEdit);
 		listenTo(feedbackEditor);
 		
 		tabbedPane.addTab(translate("form.match"), itemEditor);
@@ -283,7 +287,8 @@ public class AssessmentItemEditorController extends BasicController {
 		listenTo(itemEditor);
 		scoreEditor = new FIBScoreController(ureq, getWindowControl(), fibItemBuilder, itemRef, restrictedEdit);
 		listenTo(scoreEditor);
-		feedbackEditor = new FeedbackEditorController(ureq, getWindowControl(), fibItemBuilder, restrictedEdit);
+		feedbackEditor = new FeedbackEditorController(ureq, getWindowControl(), fibItemBuilder,
+				rootDirectory, rootContainer, itemFile, restrictedEdit);
 		listenTo(feedbackEditor);
 		
 		tabbedPane.addTab(translate("form.fib"), itemEditor);
@@ -299,7 +304,8 @@ public class AssessmentItemEditorController extends BasicController {
 		listenTo(itemEditor);
 		scoreEditor = new HotspotChoiceScoreController(ureq, getWindowControl(), hotspotItemBuilder, itemRef, itemFile, restrictedEdit);
 		listenTo(scoreEditor);
-		feedbackEditor = new FeedbackEditorController(ureq, getWindowControl(), hotspotItemBuilder, restrictedEdit);
+		feedbackEditor = new FeedbackEditorController(ureq, getWindowControl(), hotspotItemBuilder,
+				rootDirectory, rootContainer, itemFile, restrictedEdit);
 		listenTo(feedbackEditor);
 		
 		tabbedPane.addTab(translate("form.hotspot"), itemEditor);
@@ -316,7 +322,8 @@ public class AssessmentItemEditorController extends BasicController {
 		scoreEditor = new MinimalScoreController(ureq, getWindowControl(), essayItemBuilder, itemRef, restrictedEdit,
 				"Test editor QTI 2.1 in detail#details_testeditor_score");
 		listenTo(scoreEditor);
-		feedbackEditor = new LobFeedbackEditorController(ureq, getWindowControl(), essayItemBuilder, restrictedEdit);
+		feedbackEditor = new LobFeedbackEditorController(ureq, getWindowControl(), essayItemBuilder,
+				rootDirectory, rootContainer, itemFile, restrictedEdit);
 		listenTo(feedbackEditor);
 		
 		tabbedPane.addTab(translate("form.essay"), itemEditor);
@@ -333,7 +340,8 @@ public class AssessmentItemEditorController extends BasicController {
 		scoreEditor = new MinimalScoreController(ureq, getWindowControl(), uploadItemBuilder, itemRef, restrictedEdit,
 				"Test editor QTI 2.1 in detail#details_testeditor_score");
 		listenTo(scoreEditor);
-		feedbackEditor = new LobFeedbackEditorController(ureq, getWindowControl(), uploadItemBuilder, restrictedEdit);
+		feedbackEditor = new LobFeedbackEditorController(ureq, getWindowControl(), uploadItemBuilder,
+				rootDirectory, rootContainer, itemFile, restrictedEdit);
 		listenTo(feedbackEditor);
 		
 		tabbedPane.addTab(translate("form.upload"), itemEditor);
@@ -350,7 +358,8 @@ public class AssessmentItemEditorController extends BasicController {
 		scoreEditor = new MinimalScoreController(ureq, getWindowControl(), uploadItemBuilder, itemRef, restrictedEdit,
 				"Test and Questionnaire Editor in Detail#details_testeditor_fragetypen_ft");
 		listenTo(scoreEditor);
-		feedbackEditor = new LobFeedbackEditorController(ureq, getWindowControl(), uploadItemBuilder, restrictedEdit);
+		feedbackEditor = new LobFeedbackEditorController(ureq, getWindowControl(), uploadItemBuilder,
+				rootDirectory, rootContainer, itemFile, restrictedEdit);
 		listenTo(feedbackEditor);
 		
 		tabbedPane.addTab(translate("form.drawing"), itemEditor);

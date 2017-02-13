@@ -19,6 +19,8 @@
  */
 package org.olat.ims.qti21.ui.editor.interactions;
 
+import java.io.File;
+
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.RichTextElement;
@@ -31,6 +33,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.filter.FilterFactory;
+import org.olat.core.util.vfs.VFSContainer;
 import org.olat.ims.qti21.model.xml.ModalFeedbackBuilder;
 import org.olat.ims.qti21.model.xml.interactions.LobAssessmentItemBuilder;
 import org.olat.ims.qti21.ui.editor.FeedbackEditorController;
@@ -51,22 +54,31 @@ public class LobFeedbackEditorController extends FormBasicController {
 	private TextElement feedbackTitleEl, feedbackEmptyTitleEl;
 	private RichTextElement feedbackTextEl, feedbackEmptyTextEl;
 
+	private final File itemFile;
+	private final File rootDirectory;
+	private final VFSContainer rootContainer;
 	private final boolean restrictedEdit;
 	private final LobAssessmentItemBuilder itemBuilder;
 	
 	public LobFeedbackEditorController(UserRequest ureq, WindowControl wControl, LobAssessmentItemBuilder itemBuilder,
-			boolean restrictedEdit) {
+			File rootDirectory, VFSContainer rootContainer, File itemFile, boolean restrictedEdit) {
 		super(ureq, wControl, LAYOUT_DEFAULT_2_10);
 		setTranslator(Util.createPackageTranslator(FeedbackEditorController.class, getLocale(), getTranslator()));
-		
 		this.itemBuilder = itemBuilder;
 		this.restrictedEdit = restrictedEdit;
+		this.itemFile = itemFile;
+		this.rootDirectory = rootDirectory;
+		this.rootContainer = rootContainer;
 		initForm(ureq);
 	}
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormContextHelp("Test editor QTI 2.1 in detail#details_testeditor_feedback");
+		
+
+		String relativePath = rootDirectory.toPath().relativize(itemFile.toPath().getParent()).toString();
+		VFSContainer itemContainer = (VFSContainer)rootContainer.resolve(relativePath);
 
 		{
 			ModalFeedbackBuilder hint = itemBuilder.getHint();
@@ -75,8 +87,8 @@ public class LobFeedbackEditorController extends FormBasicController {
 			hintTitleEl.setUserObject(hint);
 			hintTitleEl.setEnabled(!restrictedEdit);
 			String hintText = hint == null ? "" : hint.getText();
-			hintTextEl = uifactory.addRichTextElementForQTI21("hintText", "form.imd.hint.text", hintText, 8, -1, null,
-					formLayout, ureq.getUserSession(), getWindowControl());
+			hintTextEl = uifactory.addRichTextElementForQTI21("hintText", "form.imd.hint.text", hintText, 8, -1,
+					itemContainer, formLayout, ureq.getUserSession(), getWindowControl());
 			hintTextEl.setEnabled(!restrictedEdit);
 			RichTextConfiguration hintConfig = hintTextEl.getEditorConfiguration();
 			hintConfig.setFileBrowserUploadRelPath("media");// set upload dir to the media dir
@@ -89,8 +101,8 @@ public class LobFeedbackEditorController extends FormBasicController {
 			feedbackCorrectSolutionTitleEl.setUserObject(correctSolutionFeedback);
 			feedbackCorrectSolutionTitleEl.setEnabled(!restrictedEdit);
 			String correctSolutionText = correctSolutionFeedback == null ? "" : correctSolutionFeedback.getText();
-			feedbackCorrectSolutionTextEl = uifactory.addRichTextElementForQTI21("correctSolutionText", "form.imd.correct.solution.text.word", correctSolutionText, 8, -1, null,
-					formLayout, ureq.getUserSession(), getWindowControl());
+			feedbackCorrectSolutionTextEl = uifactory.addRichTextElementForQTI21("correctSolutionText", "form.imd.correct.solution.text.word", correctSolutionText, 8, -1,
+					itemContainer, formLayout, ureq.getUserSession(), getWindowControl());
 			feedbackCorrectSolutionTextEl.setEnabled(!restrictedEdit);
 			RichTextConfiguration richTextConfig2 = feedbackCorrectSolutionTextEl.getEditorConfiguration();
 			richTextConfig2.setFileBrowserUploadRelPath("media");// set upload dir to the media dir
@@ -103,8 +115,8 @@ public class LobFeedbackEditorController extends FormBasicController {
 			feedbackTitleEl.setUserObject(answeredFeedback);
 			feedbackTitleEl.setEnabled(!restrictedEdit);
 			String correctText = answeredFeedback == null ? "" : answeredFeedback.getText();
-			feedbackTextEl = uifactory.addRichTextElementForQTI21("answeredText", "form.imd.answered.text", correctText, 8, -1, null,
-					formLayout, ureq.getUserSession(), getWindowControl());
+			feedbackTextEl = uifactory.addRichTextElementForQTI21("answeredText", "form.imd.answered.text", correctText, 8, -1,
+					itemContainer, formLayout, ureq.getUserSession(), getWindowControl());
 			feedbackTextEl.setEnabled(!restrictedEdit);
 			RichTextConfiguration richTextConfig = feedbackTextEl.getEditorConfiguration();
 			richTextConfig.setFileBrowserUploadRelPath("media");// set upload dir to the media dir
@@ -117,8 +129,8 @@ public class LobFeedbackEditorController extends FormBasicController {
 			feedbackEmptyTitleEl.setUserObject(emptyFeedback);
 			feedbackEmptyTitleEl.setEnabled(!restrictedEdit);
 			String emptyText = emptyFeedback == null ? "" : emptyFeedback.getText();
-			feedbackEmptyTextEl = uifactory.addRichTextElementForQTI21("emptyText", "form.imd.empty.text", emptyText, 8, -1, null,
-					formLayout, ureq.getUserSession(), getWindowControl());
+			feedbackEmptyTextEl = uifactory.addRichTextElementForQTI21("emptyText", "form.imd.empty.text", emptyText, 8, -1,
+					itemContainer, formLayout, ureq.getUserSession(), getWindowControl());
 			feedbackEmptyTextEl.setEnabled(!restrictedEdit);
 			RichTextConfiguration emptyTextConfig = feedbackEmptyTextEl.getEditorConfiguration();
 			emptyTextConfig.setFileBrowserUploadRelPath("media");// set upload dir to the media dir
@@ -138,7 +150,7 @@ public class LobFeedbackEditorController extends FormBasicController {
 		if(restrictedEdit) return;
 		
 		String hintTitle = hintTitleEl.getValue();
-		String hintText = hintTextEl.getValue();
+		String hintText = hintTextEl.getRawValue();
 		if(StringHelper.containsNonWhitespace(FilterFactory.getHtmlTagsFilter().filter(hintText))) {
 			ModalFeedbackBuilder hintBuilder = itemBuilder.getHint();
 			if(hintBuilder == null) {
@@ -151,7 +163,7 @@ public class LobFeedbackEditorController extends FormBasicController {
 		}
 		
 		String correctSolutionTitle = feedbackCorrectSolutionTitleEl.getValue();
-		String correctSolutionText = feedbackCorrectSolutionTextEl.getValue();
+		String correctSolutionText = feedbackCorrectSolutionTextEl.getRawValue();
 		if(StringHelper.containsNonWhitespace(FilterFactory.getHtmlTagsFilter().filter(correctSolutionText))) {
 			ModalFeedbackBuilder correctSolutionBuilder = itemBuilder.getCorrectSolutionFeedback();
 			if(correctSolutionBuilder == null) {
@@ -164,7 +176,7 @@ public class LobFeedbackEditorController extends FormBasicController {
 		}
 		
 		String correctTitle = feedbackTitleEl.getValue();
-		String correctText = feedbackTextEl.getValue();
+		String correctText = feedbackTextEl.getRawValue();
 		if(StringHelper.containsNonWhitespace(FilterFactory.getHtmlTagsFilter().filter(correctText))) {
 			ModalFeedbackBuilder correctBuilder = itemBuilder.getAnsweredFeedback();
 			if(correctBuilder == null) {
@@ -177,7 +189,7 @@ public class LobFeedbackEditorController extends FormBasicController {
 		}
 
 		String emptyTitle = feedbackEmptyTitleEl.getValue();
-		String emptyText = feedbackEmptyTextEl.getValue();
+		String emptyText = feedbackEmptyTextEl.getRawValue();
 		if(StringHelper.containsNonWhitespace(FilterFactory.getHtmlTagsFilter().filter(emptyText))) {
 			ModalFeedbackBuilder emptyBuilder = itemBuilder.getEmptyFeedback();
 			if(emptyBuilder == null) {

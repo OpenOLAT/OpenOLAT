@@ -140,18 +140,22 @@ public class AssessmentTestComponent extends AssessmentObjectComponent  {
 	
 	@Override
 	public String relativePathTo(ResolvedAssessmentItem resolvedAssessmentItem) {
-		URI itemUri = resolvedAssessmentItem.getItemLookup().getSystemId();
-		File itemFile = new File(itemUri);
-		URI testUri = resolvedAssessmentTest.getTestLookup().getSystemId();
-		File testFile = new File(testUri);
-		Path relativePath = testFile.toPath().getParent().relativize(itemFile.toPath().getParent());
-		String relativePathString = relativePath.toString();
-		if(relativePathString.isEmpty()) {
-			return relativePathString;
-		} else if(relativePathString.endsWith("/")) {
-			return relativePathString;
+		if(resolvedAssessmentItem == null) {
+			return "/";
+		} else {
+			URI itemUri = resolvedAssessmentItem.getItemLookup().getSystemId();
+			File itemFile = new File(itemUri);
+			URI testUri = resolvedAssessmentTest.getTestLookup().getSystemId();
+			File testFile = new File(testUri);
+			Path relativePath = testFile.toPath().getParent().relativize(itemFile.toPath().getParent());
+			String relativePathString = relativePath.toString();
+			if(relativePathString.isEmpty()) {
+				return relativePathString;
+			} else if(relativePathString.endsWith("/")) {
+				return relativePathString;
+			}
+			return relativePathString.concat("/");
 		}
-		return relativePathString.concat("/");
 	}
 
 	public AssessmentTest getAssessmentTest() {

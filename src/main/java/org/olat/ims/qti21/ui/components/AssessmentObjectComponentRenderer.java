@@ -258,7 +258,7 @@ public abstract class AssessmentObjectComponentRenderer extends DefaultComponent
 			AssessmentObjectComponent component, ResolvedAssessmentItem resolvedAssessmentItem, ItemSessionState itemSessionState,
 			URLBuilder ubu, Translator translator) {
 		
-		sb.append("<div class='modalFeedback o_togglebox_wrapper o_block'>");
+		sb.append("<div class='modalFeedback o_togglebox_wrapper o_block clearfix'>");
 		Attribute<?> title = modalFeedback.getAttributes().get("title");
 		String feedbackTitle = null;
 		if(title != null && title.getValue() != null) {
@@ -303,7 +303,7 @@ public abstract class AssessmentObjectComponentRenderer extends DefaultComponent
 	protected void renderTestItemModalFeedback_standard(AssessmentRenderer renderer, StringOutput sb, ModalFeedback modalFeedback,
 			AssessmentObjectComponent component,
 			ResolvedAssessmentItem resolvedAssessmentItem, ItemSessionState itemSessionState, URLBuilder ubu, Translator translator) {
-		sb.append("<div class='modalFeedback o_info'>");
+		sb.append("<div class='modalFeedback o_info clearfix'>");
 		Attribute<?> title = modalFeedback.getAttributes().get("title");
 		if(title != null && title.getValue() != null) {
 			String feedbackTitle = title.getValue().toString();

@@ -19,6 +19,8 @@
  */
 package org.olat.ims.qti21.ui.editor;
 
+import java.io.File;
+
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.tabbedpane.TabbedPane;
@@ -28,6 +30,7 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.util.Util;
+import org.olat.core.util.vfs.VFSContainer;
 import org.olat.ims.qti21.model.xml.AssessmentTestBuilder;
 import org.olat.ims.qti21.ui.AssessmentTestDisplayController;
 import org.olat.ims.qti21.ui.editor.events.AssessmentTestEvent;
@@ -49,17 +52,25 @@ public class AssessmentTestEditorController extends BasicController {
 	private Controller optionsCtrl;
 	private AssessmentTestFeedbackEditorController feedbackCtrl;
 	
+	private final File testFile;
+	private final File rootDirectory;
+	private final VFSContainer rootContainer;
+	
 	private final boolean restrictedEdit;
 	private final TestPart testPart;
 	private final AssessmentTest assessmentTest;
 	private final AssessmentTestBuilder testBuilder;
 	
 	public AssessmentTestEditorController(UserRequest ureq, WindowControl wControl,
-			AssessmentTestBuilder testBuilder, TestPart testPart, boolean restrictedEdit) {
+			AssessmentTestBuilder testBuilder, TestPart testPart,
+			File rootDirectory, VFSContainer rootContainer, File testFile,boolean restrictedEdit) {
 		super(ureq, wControl, Util.createPackageTranslator(AssessmentTestDisplayController.class, ureq.getLocale()));
 		this.testBuilder = testBuilder;
 		this.testPart = testPart;
 		this.assessmentTest = testBuilder.getAssessmentTest();
+		this.testFile = testFile;
+		this.rootDirectory = rootDirectory;
+		this.rootContainer = rootContainer;
 		this.restrictedEdit = restrictedEdit;
 		
 		mainVC = createVelocityContainer("assessment_test_editor");
@@ -85,7 +96,8 @@ public class AssessmentTestEditorController extends BasicController {
 		}
 		listenTo(optionsCtrl);
 		
-		feedbackCtrl = new AssessmentTestFeedbackEditorController(ureq, getWindowControl(), testBuilder, restrictedEdit);
+		feedbackCtrl = new AssessmentTestFeedbackEditorController(ureq, getWindowControl(), testBuilder,
+				rootDirectory, rootContainer, testFile, restrictedEdit);
 		listenTo(feedbackCtrl);
 		
 		tabbedPane.addTab(translate("assessment.test.config"), optionsCtrl.getInitialComponent());
