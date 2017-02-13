@@ -774,7 +774,14 @@ function o_openPopUp(url, windowname, width, height, menubar) {
 	} else {
 		attributes += "location=no, menubar=no, status=no, toolbar=no";
 	}
-	var win = window.open(url, windowname, attributes);
+
+	var win;
+	try {
+		win = window.open(url, windowname, attributes);
+	} catch(e) {
+		win = window.open(url, 'OpenOLAT', attributes);
+	}
+	
 	win.focus();
 	if (o_info.linkbusy) {
 		o_afterserver();
