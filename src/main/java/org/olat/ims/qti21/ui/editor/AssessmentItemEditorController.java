@@ -83,9 +83,11 @@ public class AssessmentItemEditorController extends BasicController {
 	private final VelocityContainer mainVC;
 	
 	private final int displayTabPosition;
+	private final int solutionTabPosition;
 	private MetadataEditorController metadataEditor;
 	private AssessmentItemPreviewController displayCtrl;
 	private Controller itemEditor, scoreEditor, feedbackEditor;
+	private AssessmentItemPreviewSolutionController solutionCtrl;
 	
 	private final File itemFile;
 	private final File rootDirectory;
@@ -125,6 +127,10 @@ public class AssessmentItemEditorController extends BasicController {
 		listenTo(displayCtrl);
 		displayTabPosition = tabbedPane.addTab(translate("preview"), displayCtrl);
 		
+		solutionCtrl = new AssessmentItemPreviewSolutionController(ureq, getWindowControl(), resolvedAssessmentItem, rootDirectory, itemFile);
+		listenTo(displayCtrl);
+		solutionTabPosition = tabbedPane.addTab(translate("preview.solution"), solutionCtrl);
+		
 		putInitialPanel(mainVC);
 	}
 	
@@ -154,6 +160,10 @@ public class AssessmentItemEditorController extends BasicController {
 				resolvedAssessmentItem, itemRef, testEntry, assessmentEntry, rootDirectory, itemFile);
 		listenTo(displayCtrl);
 		displayTabPosition = tabbedPane.addTab(translate("preview"), displayCtrl);
+
+		solutionCtrl = new AssessmentItemPreviewSolutionController(ureq, getWindowControl(), resolvedAssessmentItem, rootDirectory, itemFile);
+		listenTo(displayCtrl);
+		solutionTabPosition = tabbedPane.addTab(translate("preview.solution"), solutionCtrl);
 		
 		putInitialPanel(mainVC);
 	}
@@ -366,6 +376,11 @@ public class AssessmentItemEditorController extends BasicController {
 				
 				listenTo(displayCtrl);
 				tabbedPane.replaceTab(displayTabPosition, displayCtrl);
+			} else if(selectedCtrl == solutionCtrl) {
+				solutionCtrl = new AssessmentItemPreviewSolutionController(ureq, getWindowControl(), resolvedAssessmentItem, rootDirectory, itemFile);
+
+				listenTo(displayCtrl);
+				tabbedPane.replaceTab(solutionTabPosition, solutionCtrl);
 			}
 		}
 	}
