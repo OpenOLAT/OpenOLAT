@@ -47,6 +47,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.creator.ControllerCreator;
 import org.olat.core.gui.media.MediaResource;
+import org.olat.core.util.CodeHelper;
 import org.olat.course.nodes.QTICourseNode;
 import org.olat.course.nodes.iq.IQEditController;
 import org.olat.ims.qti.editor.beecom.objects.Item;
@@ -101,12 +102,12 @@ public class QTI12AssessmentStatisticsController extends BasicController impleme
 		
 		mainVC.contextPut("printMode", new Boolean(printMode));
 		if(stackPanel != null) {
-			printLink = LinkFactory.createToolLink("print", translate("print"), this);
+			printLink = LinkFactory.createToolLink("print" + CodeHelper.getRAMUniqueID(), translate("print"), this);
 			printLink.setIconLeftCSS("o_icon o_icon_print o_icon-lg");
 			printLink.setPopup(new LinkPopupSettings(680, 500, "qti-stats"));
 			stackPanel.addTool(printLink, Align.right);
 
-			downloadRawLink = LinkFactory.createToolLink("download", translate("download.raw.data"), this);
+			downloadRawLink = LinkFactory.createToolLink("download" + CodeHelper.getRAMUniqueID(), translate("download.raw.data"), this);
 			stackPanel.addTool(downloadRawLink, Align.right);
 		} else {
 			printLink = null;
@@ -161,7 +162,8 @@ public class QTI12AssessmentStatisticsController extends BasicController impleme
 			stackPanel.removeTool(printLink);
 		}
 	}
-	
+
+	@Override
 	public void initTools() {
 		if(stackPanel != null) {
 			stackPanel.addTool(printLink, Align.right);

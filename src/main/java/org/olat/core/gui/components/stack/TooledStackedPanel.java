@@ -122,6 +122,7 @@ public class TooledStackedPanel extends BreadcrumbedStackedPanel implements Stac
 				it.remove();
 			}
 		}
+		setDirty(true);
 	}
 	
 	public void removeAllTools() {
