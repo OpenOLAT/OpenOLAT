@@ -61,7 +61,6 @@ import org.apache.lucene.store.FSDirectory;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
-import org.olat.core.util.WorkThreadInformations;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.search.QueryException;
 import org.olat.search.SearchModule;
@@ -225,14 +224,12 @@ public class OlatFullIndexer {
 	/**
 	 * Create index-writer object. In multi-threaded mode ctreates an array of index-workers.
 	 * Start indexing with main-index as root object. Index recursive all elements.
-	 * At the end optimze and close new index. 
+	 * At the end optimize and close new index. 
 	 * The new index is stored in [temporary-index-path]/main
 	 * @throws InterruptedException
 	 */
 	private void doIndex() throws InterruptedException{
 		try {
-			WorkThreadInformations.setLongRunningTask("indexer");
-			
 			if(indexerExecutor == null) {
 				BlockingQueue<Runnable> queue = new LinkedBlockingQueue<Runnable>(2);
 				indexerExecutor = new ThreadPoolExecutor(indexerPoolSize, indexerPoolSize, 0L, TimeUnit.MILLISECONDS,
@@ -275,7 +272,6 @@ public class OlatFullIndexer {
 		} catch (IOException e) {
 			log.warn("Can not create IndexWriter, indexname=" + tempIndexPath, e);
 		} finally {
-			WorkThreadInformations.unsetLongRunningTask("indexer");
 			DBFactory.getInstance().commitAndCloseSession();
 			log.debug("doIndex: commit & close session");
 			

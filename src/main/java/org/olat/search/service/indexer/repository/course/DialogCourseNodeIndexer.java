@@ -40,7 +40,6 @@ import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Roles;
 import org.olat.core.id.context.BusinessControl;
 import org.olat.core.id.context.ContextEntry;
-import org.olat.core.util.WorkThreadInformations;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.filters.VFSLeafFilter;
@@ -123,7 +122,6 @@ public class DialogCourseNodeIndexer extends DefaultIndexer implements CourseNod
 				leafResourceContext.setFilePath(filename);
 				leafResourceContext.setDocumentType(TYPE_FILE);
 				
-				WorkThreadInformations.set("Index Dialog VFSLeaf=" + filename + " at " + leafResourceContext.getResourceUrl());
 				Document document = CoreSpringFactory.getImpl(FileDocumentFactory.class).createDocument(leafResourceContext, leaf);
 				indexWriter.addDocument(document);
 			} else {
@@ -137,8 +135,6 @@ public class DialogCourseNodeIndexer extends DefaultIndexer implements CourseNod
 			throw new InterruptedException(iex.getMessage());
 		} catch (Exception ex) {
 			logWarn("Exception: Can not index leaf=" + leaf.getName(), ex);
-		} finally {
-			WorkThreadInformations.unset();
 		}
 	}
 

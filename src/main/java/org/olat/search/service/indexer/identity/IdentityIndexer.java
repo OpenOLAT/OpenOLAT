@@ -87,6 +87,7 @@ public class IdentityIndexer extends AbstractHierarchicalIndexer {
 				logWarn("Exception while indexing identity::" + identityKey + ". Skipping this user, try next one.", ex);
 				DBFactory.getInstance().rollbackAndCloseSession();
 			}
+			DBFactory.getInstance().commitAndCloseSession();
 		}
 		if (isLogDebugEnabled()) logDebug("IdentityIndexer finished with counter::" + counter);
 	}
