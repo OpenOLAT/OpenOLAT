@@ -33,14 +33,17 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
 import org.apache.commons.io.IOUtils;
+import org.olat.core.gui.translator.Translator;
 import org.olat.core.manager.BasicManager;
 import org.olat.core.util.ExportUtil;
 import org.olat.core.util.Formatter;
+import org.olat.core.util.Util;
 import org.olat.ims.qti.QTIResult;
 import org.olat.ims.qti.QTIResultManager;
 import org.olat.ims.qti.export.helper.QTIItemObject;
@@ -106,7 +109,7 @@ public class QTIExportManager extends BasicManager{
 	}
 	
 	public boolean selectAndExportResults(QTIExportFormatter qef, Long courseResId, String shortTitle,
-			String olatResourceDetail, RepositoryEntry testRe, ZipOutputStream exportStream,
+			String olatResourceDetail, RepositoryEntry testRe, ZipOutputStream exportStream, Locale locale,
 			String fileNameSuffix) throws IOException {
 		boolean resultsFoundAndExported = false;
 		QTIResultManager qrm = QTIResultManager.getInstance();
@@ -123,6 +126,13 @@ public class QTIExportManager extends BasicManager{
 				exportStream.closeEntry();
 				resultsFoundAndExported = true;
 			}			
+		} else {
+			String targetFileName = getFilename(shortTitle, fileNameSuffix);			
+			exportStream.putNextEntry(new ZipEntry(targetFileName));
+			Translator translator = Util.createPackageTranslator(QTIExportFormatter.class, locale);
+			IOUtils.write(translator.translate("archive.noresults.short"), exportStream);
+			exportStream.closeEntry();
+			resultsFoundAndExported = true;
 		}
 		return resultsFoundAndExported;
 	}

@@ -199,7 +199,7 @@ public class QTI21ArchiveFormat {
 		ICourse course = CourseFactory.loadCourse(courseEntry);
 		CourseNode courseNode = course.getRunStructure().getNode(subIdent);
 		String label = StringHelper.transformDisplayNameToFileSystemName(courseNode.getShortName())
-				+ "_" + Formatter.formatDatetimeFilesystemSave(new Date(System.currentTimeMillis()))
+				+ "_" + Formatter.formatDatetimeSave(new Date())
 				+ ".xlsx";
 		
 		if("iqself".equals(courseNode.getType())) {
