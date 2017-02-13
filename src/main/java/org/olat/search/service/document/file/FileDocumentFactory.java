@@ -223,7 +223,7 @@ public class FileDocumentFactory {
 		
 		if(leaf instanceof LocalImpl) {
 			String path = ((LocalImpl)leaf).getBasefile().getAbsolutePath();
-			if (searchModule.getFileBlackList().contains(path)) {
+			if (!isFileSupported(path)) {
 				return false;
 			}
 		}
@@ -245,6 +245,10 @@ public class FileDocumentFactory {
 			}
 		}
 		return true;
+	}
+	
+	public boolean isFileSupported(String path) {
+		return !searchModule.getFileBlackList().contains(path);
 	}
 	
 	public int getExcludedFileSizeCount( ) {
