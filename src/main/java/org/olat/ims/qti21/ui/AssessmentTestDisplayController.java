@@ -56,6 +56,7 @@ import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.logging.OLATRuntimeException;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.UserSession;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.event.GenericEventListener;
@@ -1261,12 +1262,23 @@ public class AssessmentTestDisplayController extends BasicController implements 
 		private ProgressBarItem scoreProgress, questionProgress;
 		private FormLink endTestPartButton, closeTestButton, cancelTestButton, suspendTestButton, closeResultsButton;
 		
+		private String menuWidth;
 		private boolean resultsVisible = false;
 		private final QtiWorksStatus qtiWorksStatus = new QtiWorksStatus();
 		
 		public QtiWorksController(UserRequest ureq, WindowControl wControl) {
 			super(ureq, wControl, "at_run");
+			initPreferences(ureq);
 			initForm(ureq);
+		}
+		
+		private void initPreferences(UserRequest ureq) {
+			try {
+				menuWidth = (String)ureq.getUserSession().getGuiPreferences()
+						.get(this.getClass(), getMenuPrefsKey());
+			} catch (Exception e) {
+				logError("", e);
+			}
 		}
 
 		@Override
@@ -1346,6 +1358,10 @@ public class AssessmentTestDisplayController extends BasicController implements 
 				}
 			}
 			
+			flc.getFormItemComponent().addListener(this);
+			if(StringHelper.containsNonWhitespace(menuWidth)) {
+				flc.contextPut("menuWidth", menuWidth);
+			}
 			updateStatusAndResults(ureq);
 		}
 
@@ -1359,6 +1375,18 @@ public class AssessmentTestDisplayController extends BasicController implements 
 		protected void formOK(UserRequest ureq) {
 			processResponse(ureq, qtiEl.getSubmitButton());
 			updateStatusAndResults(ureq);
+		}
+		
+		@Override
+		public void event(UserRequest ureq, Component source, Event event) {
+			if(source == flc.getFormItemComponent()) {
+				if("saveLeftColWidth".equals(event.getCommand())) {
+					String width = ureq.getParameter("newEmWidth");
+					doSaveMenuWidth(ureq, width);
+				}
+			}
+
+			super.event(ureq, source, event);
 		}
 
 		@Override
@@ -1456,6 +1484,23 @@ public class AssessmentTestDisplayController extends BasicController implements 
 		
 		private void doSuspendTest(UserRequest ureq) {
 			fireEvent(ureq, new Event("suspend"));
+		}
+		
+		private void doSaveMenuWidth(UserRequest ureq, String menuWidth) {
+			this.menuWidth = menuWidth;
+			if(StringHelper.containsNonWhitespace(menuWidth)) {
+				flc.contextPut("menuWidth", menuWidth);
+				if(testEntry != null) {
+					UserSession usess = ureq.getUserSession();
+					if (usess.isAuthenticated() && !usess.getRoles().isGuestOnly()) {
+						usess.getGuiPreferences().putAndSave(this.getClass(), getMenuPrefsKey(), menuWidth);
+					}
+				}
+			}
+		}
+		
+		private String getMenuPrefsKey() {
+			return "menuWidth_" + testEntry.getKey();
 		}
 		
 		public boolean isResultsVisible() {
