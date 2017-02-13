@@ -94,6 +94,7 @@ public class GroupIndexer extends AbstractHierarchicalIndexer {
 				logError("Error indexing group=" + businessGroup, err);
 				DBFactory.getInstance().rollbackAndCloseSession();
 			}
+			DBFactory.getInstance().commitAndCloseSession();
 	  }
 		long indexTime = System.currentTimeMillis() - startTime;
 		if (isLogDebugEnabled()) logDebug("GroupIndexer finished in " + indexTime + " ms");

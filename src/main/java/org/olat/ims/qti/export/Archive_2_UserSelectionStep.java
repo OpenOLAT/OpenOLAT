@@ -115,6 +115,18 @@ public class Archive_2_UserSelectionStep extends BasicStep {
 		}
 		
 		@Override
+		protected boolean validateFormLogic(UserRequest ureq) {
+			boolean allOk = true;
+			
+			if(!restrictionEl.isAtLeastSelected(1)) {
+				restrictionEl.setErrorKey("error.select.type.users", null);
+				allOk &= false;
+			}
+			
+			return allOk & super.validateFormLogic(ureq);
+		}
+
+		@Override
 		protected void formOK(UserRequest ureq) {
 			archiver.setParticipants(restrictionEl.isSelected(0));
 			archiver.setAllUsers(restrictionEl.isSelected(1));
