@@ -182,6 +182,10 @@ label.mce-label {
 	.mce-path {
     	display: none !important;
 	}
+	
+	.mce-menubtn.mce-fixed-width span {
+		width: auto;
+	}
 }
 
 i.mce-ico.mce-i-media, i.mce-ico.mce-i-movie, i.mce-ico.mce-i-help, i.mce-ico.mce-i-gaptext,i.mce-ico.mce-i-gapnumerical, i.mce-ico.mce-i-edit {

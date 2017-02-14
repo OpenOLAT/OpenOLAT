@@ -65,7 +65,7 @@ import org.olat.core.util.mail.MailerResult;
 import org.olat.properties.Property;
 import org.olat.properties.PropertyManager;
 import org.olat.registration.RegistrationManager;
-import org.olat.registration.TemporaryKeyImpl;
+import org.olat.registration.TemporaryKey;
 import org.olat.repository.RepositoryDeletionModule;
 import org.olat.user.UserDataDeletable;
 import org.olat.user.UserManager;
@@ -294,7 +294,7 @@ public class UserDeletionManager extends BasicManager {
 		groupDao.removeMemberships(identity);
 
 		String key = identity.getUser().getProperty("emchangeKey", null);
-		TemporaryKeyImpl tempKey = registrationManager.loadTemporaryKeyByRegistrationKey(key);
+		TemporaryKey tempKey = registrationManager.loadTemporaryKeyByRegistrationKey(key);
 		if (tempKey != null) {
 			registrationManager.deleteTemporaryKey(tempKey);
 		}		

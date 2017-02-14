@@ -94,10 +94,8 @@ public class ArchiveResource implements MediaResource {
 			log.error("", e);
 		}
 		
-		String label = courseNode.getType() + "_"
-				+ StringHelper.transformDisplayNameToFileSystemName(courseNode.getShortName())
-				+ "_" + Formatter.formatDatetimeFilesystemSave(new Date(System.currentTimeMillis()))
-				+ ".zip";
+		String label = StringHelper.transformDisplayNameToFileSystemName(courseNode.getShortName())
+				+ "_" + Formatter.formatDatetimeSave(new Date()) + ".zip";
 		String urlEncodedLabel = StringHelper.urlEncodeUTF8(label);
 		hres.setHeader("Content-Disposition","attachment; filename*=UTF-8''" + urlEncodedLabel);			
 		hres.setHeader("Content-Description", urlEncodedLabel);

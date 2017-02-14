@@ -30,7 +30,8 @@
 		var canvas = this.canvas;
 		var ctx = this.canvas.getContext('2d');
 	
-		var sketch = document.querySelector('#sketch');
+		var sketchId = jQuery(this.divPanel).attr('id');
+		var sketch = document.querySelector('#' + sketchId);
 		var sketch_style = getComputedStyle(sketch);
 	
 		var canvas_small = document.getElementById('brush_size');

@@ -60,6 +60,7 @@ import org.olat.core.helpers.Settings;
 public class Formatter {
 
 	private static final DateFormat formatterDatetimeFilesystem = new SimpleDateFormat("yyyy-MM-dd'T'HH-mm-ss_SSS");
+	private static final DateFormat formatterDatetime = new SimpleDateFormat("yyyy-MM-dd'T'HH-mm");
 	private static final DateFormat formatDateTime = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
 	private static final DateFormat shortFormatDateFileSystem = new SimpleDateFormat("yyyyMMdd");
 
@@ -300,6 +301,19 @@ public class Formatter {
 	public static String formatDatetimeFilesystemSave(Date d) {
 		synchronized (formatterDatetimeFilesystem) {
 			return formatterDatetimeFilesystem.format(d);
+		}
+	}
+	
+	/**
+	 * Use this for naming files or directories with a timestamp. No Seconds and millis!
+	 * As windows does not like ":" in filenames formatDateAndTime(d) does not work
+	 * 
+	 * @param d the date to be formatted
+	 * @return a String with the formatted date and time
+	 */
+	public static String formatDatetimeSave(Date d) {
+		synchronized (formatterDatetime) {
+			return formatterDatetime.format(d);
 		}
 	}
 	

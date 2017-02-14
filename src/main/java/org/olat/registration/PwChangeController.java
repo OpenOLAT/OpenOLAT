@@ -32,10 +32,10 @@ import java.util.List;
 import java.util.Locale;
 
 import org.olat.basesecurity.Authentication;
-import org.olat.basesecurity.BaseSecurityManager;
+import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityModule;
-import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.fullWebApp.LayoutMain3ColsController;
+import org.olat.core.commons.services.sms.SimpleMessageModule;
 import org.olat.core.dispatcher.DispatcherModule;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -53,6 +53,7 @@ import org.olat.core.helpers.Settings;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Preferences;
 import org.olat.core.id.UserConstants;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.i18n.I18nManager;
 import org.olat.core.util.mail.MailBundle;
@@ -72,23 +73,32 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class PwChangeController extends BasicController {
 
 	private static String SEPARATOR = "____________________________________________________________________\n";
-	private VelocityContainer myContent;
-	
-	private Panel pwarea;
-	private WizardInfoController wic;
-	private final MailManager mailManager;
-	private String pwKey;
-	private PwChangeForm pwf;
-	private TemporaryKeyImpl tempKey;
-	private EmailOrUsernameFormController emailOrUsernameCtr;
+
+	private Panel passwordPanel;
 	private Link pwchangeHomelink;
+	private final VelocityContainer myContent;
+	
+	private PwChangeForm pwf;
+	private WizardInfoController wic;
+	private SendMessageController sendSmsCtr;
+	private ConfirmTokenController confirmTokenCtr;
+	private EmailOrUsernameFormController emailOrUsernameCtr;
+	
+	private String pwKey;
+	private TemporaryKey tempKey;
 	
 	@Autowired
 	private UserModule userModule;
 	@Autowired
 	private RegistrationManager rm;
 	@Autowired
+	private MailManager mailManager;
+	@Autowired
 	private UserManager userManager;
+	@Autowired
+	private BaseSecurity securityManager;
+	@Autowired
+	private SimpleMessageModule smsModule;
 	
 	/**
 	 * Controller to change a user's password.
@@ -106,38 +116,34 @@ public class PwChangeController extends BasicController {
 	 */
 	public PwChangeController(UserRequest ureq, WindowControl wControl, String initialEmail, boolean modal) {
 		super(ureq, wControl);
-		mailManager = CoreSpringFactory.getImpl(MailManager.class);
 		myContent = createVelocityContainer("pwchange");
 		wic = new WizardInfoController(ureq, 4);
 		myContent.put("pwwizard", wic.getInitialComponent());
-		pwarea = new Panel("pwarea");
-		myContent.put("pwarea", pwarea);
+		passwordPanel = new Panel("pwarea");
+		myContent.put("pwarea", passwordPanel);
 		pwKey = ureq.getHttpReq().getParameter("key");
-		if (pwKey == null || pwKey.equals("")) {
-			// no temporarykey is given, we assume step 1
-			createEmailForm(ureq, wControl, initialEmail);
-		} else {
+		
+		if (StringHelper.containsNonWhitespace(pwKey)) {
 			// we check if given key is a valid temporary key
 			tempKey = rm.loadTemporaryKeyByRegistrationKey(pwKey);
 			// if key is not valid we redirect to first page
 			if (tempKey == null) {
 				// error, there should be an entry
-				getWindowControl().setError(translate("pwkey.missingentry"));
+				showError("pwkey.missingentry");
 				createEmailForm(ureq, wControl, initialEmail);
 			} else {
-				wic.setCurStep(3);
-				pwf = new PwChangeForm(ureq, wControl);
-				listenTo(pwf);
-				myContent.contextPut("pwdhelp", translate("pwdhelp"));
-				myContent.contextPut("text", translate("step3.pw.text"));
-				pwarea.setContent(pwf.getInitialComponent());				
+				showChangePasswordForm(ureq, tempKey);
 			}
+		} else {
+			// no temporarykey is given, we assume step 1
+			createEmailForm(ureq, wControl, initialEmail);
 		}
 		
 		if(modal) {
 			putInitialPanel(myContent);
 		} else {
 			LayoutMain3ColsController layoutCtr = new LayoutMain3ColsController(ureq, getWindowControl(), null, myContent, null);
+			listenTo(layoutCtr);
 			putInitialPanel(layoutCtr.getInitialComponent());
 		}
 	}
@@ -147,144 +153,204 @@ public class PwChangeController extends BasicController {
 	}
 
 	/**
-	 * just needed for creating EmailForm
+	 * Create the email / username form, the first step of the workflow.
 	 */
-	//fxdiff FXOLAT-113: business path in DMZ
 	private void createEmailForm(UserRequest ureq, WindowControl wControl, String initialEmail) {
 		myContent.contextPut("title", translate("step1.pw.title"));
 		myContent.contextPut("text", translate("step1.pw.text"));
 		removeAsListenerAndDispose(emailOrUsernameCtr);
 		emailOrUsernameCtr = new EmailOrUsernameFormController(ureq, wControl, initialEmail);
 		listenTo(emailOrUsernameCtr);
-		pwarea.setContent(emailOrUsernameCtr.getInitialComponent());
+		passwordPanel.setContent(emailOrUsernameCtr.getInitialComponent());
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest,
-	 *      org.olat.core.gui.components.Component, org.olat.core.gui.control.Event)
-	 */
+	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
 		if (source == pwchangeHomelink) {
 			DispatcherModule.redirectToDefaultDispatcher(ureq.getHttpResp());				
 		}
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest,
-	 *      org.olat.core.gui.control.Controller, org.olat.core.gui.control.Event)
-	 */
 	@Override
 	public void event(UserRequest ureq, Controller source, Event event) {
 		if (source == pwf) {
 			// pwchange Form was clicked
 			if (event == Event.DONE_EVENT) { // form
-				// validation was ok
-				wic.setCurStep(4);
-				myContent.contextPut("pwdhelp", "");
-				myContent.contextPut("text", translate("step4.pw.text"));
-				pwchangeHomelink = LinkFactory.createLink("pwchange.homelink", myContent, this);
-				pwchangeHomelink.setCustomEnabledLinkCSS("btn btn-primary");
-				//pwf.setVisible(false);
-				pwarea.setVisible(false);
-				List<Identity> identToChanges = userManager.findIdentitiesByEmail(Collections.singletonList(tempKey.getEmailAddress()));
-				if(identToChanges == null || identToChanges.size() == 0 || identToChanges.size() > 1) {
-					getWindowControl().setError(translate("pwchange.failed"));
-				} else {
-					Identity identToChange = identToChanges.get(0);
-					if(!pwf.saveFormData(identToChange)) {
-						getWindowControl().setError(translate("pwchange.failed"));
-					}
-				}
-				rm.deleteTemporaryKeyWithId(tempKey.getRegistrationKey());				
+				showChangePasswordEnd();
 			} else if (event == Event.CANCELLED_EVENT) {
-				getWindowControl().setInfo(translate("pwform.cancelled"));
+				showInfo("pwform.cancelled");
 				fireEvent(ureq, Event.CANCELLED_EVENT);
 			} 
 		} else if (source == emailOrUsernameCtr) {
 			// eMail Form was clicked
 			if (event == Event.DONE_EVENT) { // form
-				// Email requested for tempkey save the fields somewhere
-				String emailOrUsername = emailOrUsernameCtr.getEmailOrUsername();
-				emailOrUsername = emailOrUsername.trim();
-
-				// get remote address
-				String ip = ureq.getHttpReq().getRemoteAddr();
-				String today = DateFormat.getDateInstance(DateFormat.LONG, ureq.getLocale()).format(new Date());
-				// mailer configuration
-				String serverpath = Settings.getServerContextPathURI();
-				String servername = ureq.getHttpReq().getServerName();
-				if(isLogDebugEnabled()) {
-					logDebug("this servername is " + servername + " and serverpath is " + serverpath, null);
-				}
-
-				// Look for user in "Person" and "user" tables
-				Identity identity = null;
-				// See if the entered value is a username
-				identity = BaseSecurityManager.getInstance().findIdentityByName(emailOrUsername);
-				if (identity == null) {
-					// Try fallback with email, maybe user used his email address instead
-					// only do this, if its really an email, may lead to multiple results else.
-					if (MailHelper.isValidEmailAddress(emailOrUsername)) {
-						List<Identity> identities = userManager.findIdentitiesByEmail(Collections.singletonList(emailOrUsername));
-						if(identities.size() == 1) {
-							identity = identities.get(0);
-						}
-					}
-				}
-				if (identity != null) {
-					// check if user has an OLAT provider token, otherwhise a pwd change makes no sense
-					Authentication auth = BaseSecurityManager.getInstance().findAuthentication(identity, BaseSecurityModule.getDefaultAuthProviderIdentifier());
-					if (auth == null || !userModule.isPwdChangeAllowed(identity)) { 
-						getWindowControl().setWarning(translate("password.cantchange"));
-						return;
-					}
-					Preferences prefs = identity.getUser().getPreferences();
-					Locale locale = I18nManager.getInstance().getLocaleOrDefault(prefs.getLanguage());
-					ureq.getUserSession().setLocale(locale);
-					myContent.contextPut("locale", locale);
-					Translator userTrans = Util.createPackageTranslator(PwChangeController.class, locale) ;
-					String emailAdress = identity.getUser().getProperty(UserConstants.EMAIL, locale); 
-					TemporaryKey tk = rm.loadTemporaryKeyByEmail(emailAdress);
-					if (tk == null) tk = rm.createTemporaryKeyByEmail(emailAdress, ip, RegistrationManager.PW_CHANGE);
-					myContent.contextPut("pwKey", tk.getRegistrationKey());
-					StringBuilder body = new StringBuilder();
-					body.append(userTrans.translate("pwchange.intro", new String[] { identity.getName() }))
-					    .append(userTrans.translate("pwchange.body", new String[] { serverpath, tk.getRegistrationKey(), I18nManager.getInstance().getLocaleKey(ureq.getLocale()) }))
-					    .append(SEPARATOR)
-					    .append(userTrans.translate("reg.wherefrom", new String[] { serverpath, today, ip }));
-		
-					MailBundle bundle = new MailBundle();
-					bundle.setToId(identity);
-					bundle.setContent(userTrans.translate("pwchange.subject"), body.toString());
-					MailerResult result = mailManager.sendExternMessage(bundle, null, false);
-					if(result.getReturnCode() == 0) {
-						getWindowControl().setInfo(translate("email.sent"));
-						// prepare next step
-						wic.setCurStep(2);
-						myContent.contextPut("text", translate("step2.pw.text"));
-						emailOrUsernameCtr.getInitialComponent().setVisible(false);
-					} else {
-						getWindowControl().setError(translate("email.notsent"));
-					}
-				} else {
-					// no user exists, this is an error in the pwchange page
-					// REVIEW:pb:2009-11-23:gw, setter should not be necessary. -> check the error already in th emailOrUsernameCtr
-					emailOrUsernameCtr.setUserNotIdentifiedError();
-				}
+				doProcessEmailOrUsername(ureq);
 			} else if (event == Event.CANCELLED_EVENT) {
 				fireEvent(ureq, Event.CANCELLED_EVENT);
 			}
-		} 
+		} else if (source == sendSmsCtr) {
+			if (event == Event.DONE_EVENT) { // form
+				doConfirmSendToken(ureq, sendSmsCtr.getRecipient(), sendSmsCtr.getSentToken());
+			} else if (event == Event.CANCELLED_EVENT) {
+				fireEvent(ureq, Event.CANCELLED_EVENT);
+			}
+		} else if(source == confirmTokenCtr) {
+			if (event == Event.DONE_EVENT) { // form
+				showChangePasswordForm(ureq, confirmTokenCtr.getRecipient());
+			} else if (event == Event.CANCELLED_EVENT) {
+				fireEvent(ureq, Event.CANCELLED_EVENT);
+			}
+		}
+	}
+	
+	private void doProcessEmailOrUsername(UserRequest ureq) {
+		// Email requested for tempkey save the fields somewhere
+		String emailOrUsername = emailOrUsernameCtr.getEmailOrUsername();
+		emailOrUsername = emailOrUsername.trim();
+
+		Identity identity = findIdentityByUsernameOrEmail(emailOrUsername);
+		if (identity != null) {
+			if(smsModule.isEnabled() && smsModule.isResetPasswordEnabled()
+					&& StringHelper.containsNonWhitespace(identity.getUser().getProperty(UserConstants.SMSTELMOBILE, getLocale()))) {
+				tempKey = sendEmail(ureq, identity);
+				sendSms(ureq, identity);
+			} else {
+				sendEmail(ureq, identity);
+			}
+		} else {
+			// no user exists, this is an error in the pwchange page
+			// REVIEW:pb:2009-11-23:gw, setter should not be necessary. -> check the error already in th emailOrUsernameCtr
+			emailOrUsernameCtr.setUserNotIdentifiedError();
+		}
+	}
+	
+	private void sendSms(UserRequest ureq, Identity recipient) {
+		removeAsListenerAndDispose(sendSmsCtr);
+		
+		sendSmsCtr = new SendMessageController(ureq, getWindowControl(), recipient);
+		listenTo(sendSmsCtr);
+		passwordPanel.setContent(sendSmsCtr.getInitialComponent());	
+		
+		wic.setCurStep(2);
+		myContent.contextPut("text", translate("step2.pw.text"));
+	}
+	
+	private void doConfirmSendToken(UserRequest ureq, Identity recipient, String sentToken) {
+		confirmTokenCtr = new ConfirmTokenController(ureq, getWindowControl(), recipient, sentToken);
+		listenTo(confirmTokenCtr);
+		passwordPanel.setContent(confirmTokenCtr.getInitialComponent());	
+		
+		wic.setCurStep(3);
+		myContent.contextPut("text", translate("pw.change.confirm.descr"));
+	}
+	
+	private TemporaryKey sendEmail(UserRequest ureq, Identity identity) {
+		// check if user has an OLAT provider token, otherwhise a pwd change makes no sense
+		Authentication auth = securityManager.findAuthentication(identity, BaseSecurityModule.getDefaultAuthProviderIdentifier());
+		if (auth == null || !userModule.isPwdChangeAllowed(identity)) { 
+			getWindowControl().setWarning(translate("password.cantchange"));
+			return null;
+		}
+		Preferences prefs = identity.getUser().getPreferences();
+		Locale locale = I18nManager.getInstance().getLocaleOrDefault(prefs.getLanguage());
+		ureq.getUserSession().setLocale(locale);
+		myContent.contextPut("locale", locale);
+		
+		Translator userTrans = Util.createPackageTranslator(PwChangeController.class, locale) ;
+		String emailAdress = identity.getUser().getProperty(UserConstants.EMAIL, locale); 
+		
+		// get remote address
+		String ip = ureq.getHttpReq().getRemoteAddr();
+		String today = DateFormat.getDateInstance(DateFormat.LONG, ureq.getLocale()).format(new Date());
+		// mailer configuration
+		String serverpath = Settings.getServerContextPathURI();
+		
+		TemporaryKey tk = rm.loadTemporaryKeyByEmail(emailAdress);
+		if (tk == null) {
+			tk = rm.createTemporaryKeyByEmail(emailAdress, ip, RegistrationManager.PW_CHANGE);
+		}
+		myContent.contextPut("pwKey", tk.getRegistrationKey());
+		StringBuilder body = new StringBuilder();
+		body.append(userTrans.translate("pwchange.intro", new String[] { identity.getName() }))
+		    .append(userTrans.translate("pwchange.body", new String[] { serverpath, tk.getRegistrationKey(), I18nManager.getInstance().getLocaleKey(ureq.getLocale()) }))
+		    .append(SEPARATOR)
+		    .append(userTrans.translate("reg.wherefrom", new String[] { serverpath, today, ip }));
+
+		MailBundle bundle = new MailBundle();
+		bundle.setToId(identity);
+		bundle.setContent(userTrans.translate("pwchange.subject"), body.toString());
+		MailerResult result = mailManager.sendExternMessage(bundle, null, false);
+		if(result.getReturnCode() == MailerResult.OK) {
+			getWindowControl().setInfo(translate("email.sent"));
+			// prepare next step
+			wic.setCurStep(2);
+			myContent.contextPut("text", translate("step2.pw.text"));
+			emailOrUsernameCtr.getInitialComponent().setVisible(false);
+		} else {
+			showError("email.notsent");
+		}
+		return tk;
+	}
+	
+	/**
+	 * Look for user in "Person" and "user" tables. Fist search by user name
+	 * and if the user cannot be found, search by email address.
+	 * @return Identity or null if not found.
+	 */
+	private Identity findIdentityByUsernameOrEmail(String emailOrUsername) {
+		// See if the entered value is a username
+		Identity identity = securityManager.findIdentityByName(emailOrUsername);
+		if (identity == null) {
+			// Try fallback with email, maybe user used his email address instead
+			// only do this, if its really an email, may lead to multiple results else.
+			if (MailHelper.isValidEmailAddress(emailOrUsername)) {
+				List<Identity> identities = userManager.findIdentitiesByEmail(Collections.singletonList(emailOrUsername));
+				if(identities.size() == 1) {
+					identity = identities.get(0);
+				}
+			}
+		}
+		return identity;
+	}
+	
+	private void showChangePasswordForm(UserRequest ureq, TemporaryKey temporaryKey) {
+		wic.setCurStep(3);
+		pwf = new PwChangeForm(ureq, getWindowControl(), temporaryKey);
+		listenTo(pwf);
+		myContent.contextPut("pwdhelp", translate("pwdhelp"));
+		myContent.contextPut("text", translate("step3.pw.text"));
+		passwordPanel.setContent(pwf.getInitialComponent());
+	}
+	
+	private void showChangePasswordForm(UserRequest ureq, Identity identityToChange) {
+		wic.setCurStep(3);
+		pwf = new PwChangeForm(ureq, getWindowControl(), identityToChange, tempKey);
+		listenTo(pwf);
+		myContent.contextPut("pwdhelp", translate("pwdhelp"));
+		myContent.contextPut("text", translate("step3.pw.text"));
+		passwordPanel.setContent(pwf.getInitialComponent());
 	}
 
 	/**
-	 * @see org.olat.core.gui.control.DefaultController#doDispose(boolean)
+	 * Change the password of a confirmed identity (per SMS).
+	 * 
+	 * @param identToChange The identity to change the password
 	 */
+	private void showChangePasswordEnd() {
+		// validation was ok
+		wic.setCurStep(4);
+		myContent.contextPut("pwdhelp", "");
+		myContent.contextPut("text", translate("step4.pw.text"));
+		pwchangeHomelink = LinkFactory.createLink("pwchange.homelink", myContent, this);
+		pwchangeHomelink.setCustomEnabledLinkCSS("btn btn-primary");
+		passwordPanel.setVisible(false);
+	}
+
+	@Override
 	protected void doDispose() {
 		if (wic != null) {
 			wic.dispose();
 			wic = null;
 		}
 	}
-
 }

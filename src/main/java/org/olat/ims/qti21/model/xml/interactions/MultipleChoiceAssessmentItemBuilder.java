@@ -124,10 +124,11 @@ public class MultipleChoiceAssessmentItemBuilder extends SimpleChoiceAssessmentI
 		
 		correctAnswers = new ArrayList<>(5);
 		
-		List<ResponseDeclaration> responseDeclarations = assessmentItem.getResponseDeclarations();
-		if(responseDeclarations.size() == 1) {
-			CorrectResponse correctResponse = responseDeclarations.get(0).getCorrectResponse();
-			if(correctResponse != null) {
+		if(choiceInteraction != null) {
+			ResponseDeclaration responseDeclaration = assessmentItem
+					.getResponseDeclaration(choiceInteraction.getResponseIdentifier());
+			if(responseDeclaration != null && responseDeclaration.getCorrectResponse() != null) {
+				CorrectResponse correctResponse = responseDeclaration.getCorrectResponse();
 				Value value = FieldValue.computeValue(Cardinality.MULTIPLE, correctResponse.getFieldValues());
 				if(value instanceof MultipleValue) {
 					MultipleValue multiValue = (MultipleValue)value;

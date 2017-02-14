@@ -26,18 +26,27 @@
 package org.olat.user;
 
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
+import java.util.List;
 
 import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.modules.bc.FolderConfig;
+import org.olat.core.commons.modules.bc.vfs.OlatRootFolderImpl;
 import org.olat.core.commons.services.image.ImageService;
 import org.olat.core.commons.services.image.Size;
 import org.olat.core.gui.media.FileMediaResource;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.id.Identity;
-import org.olat.core.manager.BasicManager;
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.vfs.VFSContainer;
+import org.olat.core.util.vfs.VFSItem;
+import org.olat.core.util.vfs.VFSLeaf;
 
 /**
  * Description: <br>
@@ -47,17 +56,20 @@ import org.olat.core.util.StringHelper;
  * Initial Date: Sept 08, 2005 <br>
  * @author Alexander Schneider
  */
-public class DisplayPortraitManager extends BasicManager implements UserDataDeletable {
-
+public class DisplayPortraitManager implements UserDataDeletable {
+	private static final OLog log = Tracing.createLoggerFor(DisplayPortraitManager.class);
+	
 	private static DisplayPortraitManager singleton;
 	
 	private static final String LOGO_PREFIX_FILENAME = "logo";
 	private static final String LOGO_BIG_FILENAME = LOGO_PREFIX_FILENAME + "_big";
 	private static final String LOGO_SMALL_FILENAME = LOGO_PREFIX_FILENAME + "_small";
+	private static final String LOGO_MASTER_FILENAME = LOGO_PREFIX_FILENAME + "_master";
 
 	private static final String PORTRAIT_PREFIX_FILENAME = "portrait";
 	private static final String PORTRAIT_BIG_FILENAME = PORTRAIT_PREFIX_FILENAME + "_big";
 	private static final String PORTRAIT_SMALL_FILENAME = PORTRAIT_PREFIX_FILENAME + "_small";
+	private static final String PORTRAIT_MASTER_FILENAME = PORTRAIT_PREFIX_FILENAME + "_master";
 	// The following class names refer to CSS class names in olat.css 
 	public static final String AVATAR_BIG_CSS_CLASS = "o_portrait_avatar";
 	public static final String AVATAR_SMALL_CSS_CLASS = "o_portrait_avatar_small";
@@ -112,6 +124,13 @@ public class DisplayPortraitManager extends BasicManager implements UserDataDele
 		return getPortraitResource(identityKey, PORTRAIT_BIG_FILENAME);
 	}
 	
+	public MediaResource getMasterPortraitResource(String String) {
+		return getPortraitResource(String, PORTRAIT_MASTER_FILENAME);
+	}
+	public MediaResource getMasterPortraitResource(Long identityKey) {
+		return getPortraitResource(identityKey, PORTRAIT_MASTER_FILENAME);
+	}
+	
 	public MediaResource getSmallLogoResource(String username) {
 		return getPortraitResource(username, LOGO_SMALL_FILENAME);
 	}
@@ -162,12 +181,49 @@ public class DisplayPortraitManager extends BasicManager implements UserDataDele
 		return getPortraitFile(username, PORTRAIT_BIG_FILENAME);
 	}
 	
+	public File getMasterPortrait(String username) {
+		return getPortraitFile(username, PORTRAIT_MASTER_FILENAME);
+	}
+	
+	public VFSLeaf getLargestVFSPortrait(String username) {
+		VFSLeaf portrait = getPortraitLeaf(username, PORTRAIT_MASTER_FILENAME);
+		if(portrait == null || !portrait.exists()) {
+			portrait = getPortraitLeaf(username, PORTRAIT_BIG_FILENAME);
+		}
+		if(portrait == null || !portrait.exists()) {
+			portrait = getPortraitLeaf(username, PORTRAIT_SMALL_FILENAME);
+		}
+		return portrait;
+	}
+	
+	public File getLargestPortrait(String username) {
+		File portrait = getPortraitFile(username, PORTRAIT_MASTER_FILENAME);
+		if(portrait == null || !portrait.exists()) {
+			portrait = getPortraitFile(username, PORTRAIT_BIG_FILENAME);
+		}
+		if(portrait == null || !portrait.exists()) {
+			portrait = getPortraitFile(username, PORTRAIT_SMALL_FILENAME);
+		}
+		return portrait;
+	}
+	
 	public File getSmallLogo(String username) {
 		return getPortraitFile(username, LOGO_SMALL_FILENAME);
 	}
 	
 	public File getBigLogo(String username) {
 		return getPortraitFile(username, LOGO_BIG_FILENAME);
+	}
+	
+	public File getLargestLogo(String username) {
+		File portrait = getPortraitFile(username, LOGO_MASTER_FILENAME);
+		if(portrait == null || !portrait.exists()) {
+			portrait = getPortraitFile(username, LOGO_BIG_FILENAME);
+		}
+		if(portrait == null || !portrait.exists()) {
+			portrait = getPortraitFile(username, LOGO_SMALL_FILENAME);
+		}
+		return portrait;
 	}
 	
 	public boolean hasPortrait(String username) {
@@ -200,17 +256,35 @@ public class DisplayPortraitManager extends BasicManager implements UserDataDele
 		return null;
 	}
 	
+	private VFSLeaf getPortraitLeaf(String username, String prefix) {
+		VFSContainer portraitDir = getPortraitFolder(username);
+		if(portraitDir != null) {
+			List<VFSItem> portraits = portraitDir.getItems();
+			if(portraits.size() > 0) {
+				for(VFSItem file:portraits) {
+					if(file.getName().startsWith(prefix) && file instanceof VFSLeaf) {
+						return (VFSLeaf)file;
+					}
+				}
+			}
+		}
+		return null;
+	}
+	
 	public void setPortrait(File file, String filename, String username) {
-		setImage(file, filename, username, PORTRAIT_PREFIX_FILENAME, PORTRAIT_BIG_FILENAME, PORTRAIT_SMALL_FILENAME,
+		setImage(file, filename, username, PORTRAIT_PREFIX_FILENAME,
+				PORTRAIT_MASTER_FILENAME, PORTRAIT_BIG_FILENAME, PORTRAIT_SMALL_FILENAME,
 				WIDTH_PORTRAIT_BIG, WIDTH_PORTRAIT_SMALL);
 	}
 	
 	public void setLogo(File file, String filename, String username) {
-		setImage(file, filename, username, LOGO_PREFIX_FILENAME, LOGO_BIG_FILENAME, LOGO_SMALL_FILENAME,
+		setImage(file, filename, username, LOGO_PREFIX_FILENAME,
+				LOGO_MASTER_FILENAME, LOGO_BIG_FILENAME, LOGO_SMALL_FILENAME,
 				WIDTH_LOGO_BIG, WIDTH_LOGO_SMALL);
 	}
 
-	private void setImage(File file, String filename, String username, String prefix, String largeImagePrefix, String smallImagePrefix,
+	private void setImage(File file, String filename, String username, String prefix,
+			String masterImagePrefix, String largeImagePrefix, String smallImagePrefix,
 			int maxBigWidth, int maxSmallWidth) {
 		File directory = getPortraitDir(username);
 		if(directory != null) {
@@ -232,6 +306,14 @@ public class DisplayPortraitManager extends BasicManager implements UserDataDele
 				extension = "png";
 			}
 		}
+
+		try {
+			File masterFile = new File(directory, masterImagePrefix + "." + extension);
+			Files.copy(file.toPath(), masterFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
+		} catch (IOException e) {
+			log.error("", e);
+		}
+		
 		File bigFile = new File(directory, largeImagePrefix + "." + extension);
 		File smallFile = new File(directory, smallImagePrefix + "." + extension);
 		ImageService imageHelper = CoreSpringFactory.getImpl(ImageService.class);
@@ -288,6 +370,14 @@ public class DisplayPortraitManager extends BasicManager implements UserDataDele
 		return portraitDir;
 	}
 	
+	public OlatRootFolderImpl getPortraitFolder(String identityName) {
+		OlatRootFolderImpl folder = new OlatRootFolderImpl(FolderConfig.getUserHomePage(identityName) + "/portrait", null); 
+		if(!folder.exists()) {
+			folder.getBasefile().mkdirs();
+		}
+		return folder;
+	}
+	
 	/**
 	 * Delete home-page config-file of a certain user.
 	 * @see org.olat.user.UserDataDeletable#deleteUserData(org.olat.core.id.Identity)
@@ -299,6 +389,6 @@ public class DisplayPortraitManager extends BasicManager implements UserDataDele
 		if(portraitDir.exists()) {
 			FileUtils.deleteDirsAndFiles(portraitDir, true, true);
 		}
-		logDebug("Homepage-config file deleted for identity=" + identity);
+		log.debug("Homepage-config file deleted for identity=" + identity);
 	}
 }

@@ -175,13 +175,25 @@ public class OpenXMLDocument {
 		appendHeading(text, PredefinedStyle.heading1, additionalText);
 	}
 	
+	public Element createHeading1(String text, String additionalText) {
+		return createHeading(text, PredefinedStyle.heading1, additionalText);
+	}
+	
 	public void appendHeading2(String text, String additionalText) {
 		appendHeading(text, PredefinedStyle.heading2, additionalText);
 	}
 	
+	public Element createHeading2(String text, String additionalText) {
+		return createHeading(text, PredefinedStyle.heading2, additionalText);
+	}
+	
 	private void appendHeading(String text, PredefinedStyle style, String additionalText) {
 		if(!StringHelper.containsNonWhitespace(text)) return;
+		Element paragraphEl = createHeading(text, style, additionalText);
+		getCursor().appendChild(paragraphEl);
+	}
 
+	private Element createHeading(String text, PredefinedStyle style, String additionalText) {
 		Element textEl = createTextEl(text);
 		List<Element> runsEl = new ArrayList<Element>(2);
 		Element runEl = createRunEl(Collections.singletonList(textEl));
@@ -210,7 +222,7 @@ public class OpenXMLDocument {
 		}
 
 		Element paragraphEl = createParagraphEl(styleEl, runsEl);
-		getCursor().appendChild(paragraphEl);
+		return paragraphEl;
 	}
 	
 	public void appendSubtitle(String text) {
@@ -421,7 +433,7 @@ public class OpenXMLDocument {
 		try {
 			SAXParser parser = new SAXParser();
 			Element paragraphEl = getParagraphToAppendTo(newParagraph);
-			parser.setContentHandler(new HTMLToOpenXMLHandler(this, paragraphEl));
+			parser.setContentHandler(new HTMLToOpenXMLHandler(this, paragraphEl, true));
 			parser.parse(new InputSource(new StringReader(html)));
 		} catch (SAXException e) {
 			log.error("", e);

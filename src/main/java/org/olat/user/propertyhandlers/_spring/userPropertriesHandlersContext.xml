@@ -66,6 +66,12 @@
 		<property name="deletable" value="true" />
 	</bean>
 	
+	<bean id="userPropertySmsTelMobile" class="org.olat.user.propertyhandlers.SmsPhonePropertyHandler">
+		<property name="name" value="smsTelMobile" />
+		<property name="group" value="contact" />
+		<property name="deletable" value="true" />
+	</bean>
+	
 	<bean id="userPropertyTelOffice" class="org.olat.user.propertyhandlers.PhonePropertyHandler">
 		<property name="name" value="telOffice" />
 		<property name="group" value="contact" />

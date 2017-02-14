@@ -31,7 +31,6 @@ import java.io.IOException;
 import org.apache.lucene.document.Document;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.modules.bc.vfs.OlatRootFolderImpl;
-import org.olat.core.util.WorkThreadInformations;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.search.service.SearchResourceContext;
@@ -56,7 +55,6 @@ public abstract class LeafIndexer extends AbstractHierarchicalIndexer {
 				}
 				leafResourceContext.setFilePath(myFilePath);
 
-				WorkThreadInformations.set("Index VFSLeaf=" + myFilePath + " at " + leafResourceContext.getResourceUrl());
 				Document document = CoreSpringFactory.getImpl(FileDocumentFactory.class).createDocument(leafResourceContext, leaf);
 				indexWriter.addDocument(document);
 			} else {
@@ -70,8 +68,6 @@ public abstract class LeafIndexer extends AbstractHierarchicalIndexer {
 			throw new InterruptedException(iex.getMessage());
 		} catch (Exception ex) {
 			logWarn("Exception: Can not index leaf=" + leaf.getName(), ex);
-		} finally {
-			WorkThreadInformations.unset();
 		}
 	}
 	

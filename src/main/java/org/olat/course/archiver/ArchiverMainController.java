@@ -52,13 +52,14 @@ import org.olat.course.nodes.CheckListCourseNode;
 import org.olat.course.nodes.DialogCourseNode;
 import org.olat.course.nodes.FOCourseNode;
 import org.olat.course.nodes.GTACourseNode;
+import org.olat.course.nodes.IQSELFCourseNode;
+import org.olat.course.nodes.IQSURVCourseNode;
 import org.olat.course.nodes.IQTESTCourseNode;
 import org.olat.course.nodes.PFCourseNode;
 import org.olat.course.nodes.ProjectBrokerCourseNode;
 import org.olat.course.nodes.ScormCourseNode;
 import org.olat.course.nodes.TACourseNode;
 import org.olat.course.nodes.WikiCourseNode;
-import org.olat.ims.qti.export.CourseQTIArchiveController;
 
 /**
  * Initial Date:  May 26, 2004
@@ -69,7 +70,8 @@ public class ArchiverMainController extends MainLayoutBasicController {
 	private static boolean extensionLogged = false;
 
 	private static final String CMD_INDEX = "index";
-	private static final String CMD_QTIRESULTS = "qtiresults";
+	private static final String CMD_QTISURVRESULTS = "qtisurvresults";
+	private static final String CMD_QTITESTRESULTS = "qtitestresults";
 	private static final String CMD_SCOREACCOUNTING = "scoreaccounting";
 	private static final String CMD_ARCHIVELOGFILES = "archivelogfiles";
 	private static final String CMD_HANDEDINTASKS = "handedintasks";
@@ -179,8 +181,15 @@ public class ArchiverMainController extends MainLayoutBasicController {
 		if (archiverCallback.mayArchiveQtiResults()) {
 			gtn = new GenericTreeNode();		
 			gtn.setTitle(translate("menu.qtiresults"));
-			gtn.setUserObject(CMD_QTIRESULTS);
+			gtn.setUserObject(CMD_QTISURVRESULTS);
 			gtn.setAltText(translate("menu.qtiresults.alt"));
+			root.addChild(gtn);
+		}
+		if (archiverCallback.mayArchiveQtiTestResults()) {
+			gtn = new GenericTreeNode();
+			gtn.setTitle(translate("menu.qtitestresults"));
+			gtn.setUserObject(CMD_QTITESTRESULTS);
+			gtn.setAltText("menu.qtitestresults.alt");
 			root.addChild(gtn);
 		}
 		if (archiverCallback.mayArchiveProperties()) {
@@ -292,12 +301,15 @@ public class ArchiverMainController extends MainLayoutBasicController {
 			main.setContent(intro);
 		} else {
 			removeAsListenerAndDispose(contentCtr);
-			if (menuCommand.equals(CMD_QTIRESULTS)) {
-				contentCtr = new CourseQTIArchiveController(ureq, getWindowControl(), ores);
+			if (menuCommand.equals(CMD_QTISURVRESULTS)) {
+				contentCtr = new GenericArchiveController(ureq, getWindowControl(), ores, new IQSURVCourseNode());
+				main.setContent(contentCtr.getInitialComponent());
+			} else if (menuCommand.equals(CMD_QTITESTRESULTS)) {
+				contentCtr = new GenericArchiveController(ureq, getWindowControl(), ores, new IQTESTCourseNode(), new IQSELFCourseNode());
 				main.setContent(contentCtr.getInitialComponent());
 			} else if (menuCommand.equals(CMD_SCOREACCOUNTING)) {
-				contentCtr = new ScoreAccountingArchiveController(ureq, getWindowControl(), ores, new IQTESTCourseNode());
-				main.setContent(contentCtr.getInitialComponent());
+					contentCtr = new ScoreAccountingArchiveController(ureq, getWindowControl(), ores);
+					main.setContent(contentCtr.getInitialComponent());
 			} else if (menuCommand.equals(CMD_ARCHIVELOGFILES)) {
 				contentCtr = new CourseLogsArchiveController(ureq, getWindowControl(), ores);
 				main.setContent(contentCtr.getInitialComponent());

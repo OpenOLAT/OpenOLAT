@@ -91,7 +91,7 @@ public class VideoQualityTableFormController extends FormBasicController {
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(QualityTableCols.resolution));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(QualityTableCols.dimension));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(QualityTableCols.size));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(QualityTableCols.size, new TranscodingErrorIconRenderer()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(QualityTableCols.format));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(QualityTableCols.delete));
 
@@ -106,7 +106,8 @@ public class VideoQualityTableFormController extends FormBasicController {
 		VideoMeta videoMetadata = videoManager.getVideoMetadata(videoResource);
 		// Add master video file
 		FormLink previewMasterLink = uifactory.addFormLink("view", "viewQuality", "quality.master", "quality.master", flc, Link.LINK);
-		rows.add(new QualityTableRow(previewMasterLink, videoMetadata.getWidth() +"x"+ videoMetadata.getHeight(), Formatter.formatBytes(videoManager.getVideoFile(videoResource).length()), "mp4",null));
+		Object[] statusMaster = new Object[]{100, Formatter.formatBytes(videoManager.getVideoFile(videoResource).length())};
+		rows.add(new QualityTableRow(previewMasterLink, videoMetadata.getWidth() +"x"+ videoMetadata.getHeight(), statusMaster, "mp4",null));
 		// Add all the transcoded versions
 		List<VideoTranscoding> videoTranscodings = videoManager.getVideoTranscodings(videoResource);
 		for(VideoTranscoding videoTranscoding:videoTranscodings){
@@ -138,7 +139,8 @@ public class VideoQualityTableFormController extends FormBasicController {
 			} else if (status == VideoTranscoding.TRANSCODING_STATUS_TIMEOUT) {
 				fileSize = translate("transcoding.timeout");
 			} 
-			rows.add(new QualityTableRow(previewVersionLink, dimension,  fileSize, videoTranscoding.getFormat(), deleteLink));
+			Object[] statusTranscoding = new Object[]{status, fileSize};
+			rows.add(new QualityTableRow(previewVersionLink, dimension,statusTranscoding, videoTranscoding.getFormat(), deleteLink));
 		}
 		List<Integer> missingResolutions = videoManager.getMissingTranscodings(videoResource);
 		if (videoModule.isTranscodingEnabled()) {
@@ -151,7 +153,8 @@ public class VideoQualityTableFormController extends FormBasicController {
 					
 					FormLink previewMissingLink= uifactory.addFormLink("res_" + count++, "viewQuality", title, title, flc, Link.LINK + Link.NONTRANSLATED);
 					previewMissingLink.setEnabled(false);
-					rows.add(new QualityTableRow(previewMissingLink, missingRes.toString(),  "-", "mp4", transcodeLink));
+					Object[] status = new Object[]{-1, "-"};
+					rows.add(new QualityTableRow(previewMissingLink, missingRes.toString(),status, "mp4", transcodeLink));
 				}
 			}
 		}

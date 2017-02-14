@@ -134,5 +134,6 @@ public class ConfirmRestoreController extends FormBasicController {
 				fireEvent(ureq, new EntryChangedEvent(reloadedEntry, getIdentity(), Change.restored, "restored"));
 			}
 		}
+		fireEvent(ureq, Event.DONE_EVENT);
 	}
 }

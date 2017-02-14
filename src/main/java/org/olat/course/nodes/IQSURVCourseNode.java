@@ -328,7 +328,7 @@ public class IQSURVCourseNode extends AbstractAccessableCourseNode implements QT
 
 		QTIExportFormatter qef = new QTIExportFormatterCSVType3(locale, null,"\t", "\"", "\r\n", false);
 		try {
-			return qem.selectAndExportResults(qef, course.getResourceableId(), getShortTitle(), getIdent(), re, exportStream, ".xls");
+			return qem.selectAndExportResults(qef, course.getResourceableId(), getShortTitle(), getIdent(), re, exportStream, locale, ".xls");
 		} catch (IOException e) {
 			log.error("", e);
 			return false;

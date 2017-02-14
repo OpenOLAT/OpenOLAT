@@ -66,7 +66,7 @@ import org.olat.core.util.vfs.LocalFolderImpl;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
-import org.olat.core.util.vfs.filters.VFSItemExcludePrefixFilter;
+import org.olat.core.util.vfs.filters.VFSItemMetaFilter;
 import org.olat.modules.fo.Forum;
 import org.olat.modules.fo.ForumCallback;
 import org.olat.modules.fo.ForumChangedEvent;
@@ -99,7 +99,6 @@ public class MessageEditController extends FormBasicController {
 	// attached files anywhere at the time of deleting it
 	// likely to be resolved after user logs out, caches get cleared - and if not the server
 	// restart overnight definitely removes those .nfs files.
-	public static final String[] ATTACHMENT_EXCLUDE_PREFIXES = new String[]{".nfs", ".CVS", ".DS_Store"};
 	private static final String[] enableKeys = new String[]{ "on" };
 	
 	private RichTextElement bodyEl;
@@ -114,7 +113,7 @@ public class MessageEditController extends FormBasicController {
 	private VFSContainer tempUploadFolder;
 	private boolean userIsMsgCreator;
 	private boolean msgHasChildren;
-	private VFSItemExcludePrefixFilter exclFilter;
+	private VFSItemMetaFilter exclFilter;
 
 	private final Forum forum;
 	private final EditMode editMode;
@@ -157,7 +156,7 @@ public class MessageEditController extends FormBasicController {
 		this.guestOnly = ureq.getUserSession().getRoles().isGuestOnly();
 
 		tempUploadFolder = new LocalFolderImpl(new File(WebappHelper.getTmpDir(), CodeHelper.getUniqueID()));
-		exclFilter = new VFSItemExcludePrefixFilter(ATTACHMENT_EXCLUDE_PREFIXES);
+		exclFilter = new VFSItemMetaFilter();
 		
 		initForm(ureq);
 	}

@@ -166,7 +166,7 @@ public class LoginAuthprovidersController extends MainLayoutBasicController impl
 		contentBorn.put("loginComp", authController.getInitialComponent());
 		contentBorn.contextPut("currentProvider", authProvider.getName());		
 		Collection<AuthenticationProvider> providers = loginModule.getAuthenticationProviders();
-		List<AuthenticationProvider> providerSet = new ArrayList<AuthenticationProvider>(providers.size());
+		List<AuthenticationProvider> providerSet = new ArrayList<>(providers.size());
 		int count = 0;
 		for (AuthenticationProvider prov : providers) {
 			if (prov.isEnabled()) {

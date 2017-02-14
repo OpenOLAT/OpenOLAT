@@ -160,7 +160,9 @@ public class AssessmentToolController extends MainLayoutBasicController implemen
 		} else if(stackPanel == source) {
 			if(event instanceof PopEvent) {
 				PopEvent pe = (PopEvent)event;
-				if(pe.getController() == courseTreeCtrl) {
+				if(pe.isClose()) {
+					stackPanel.popUpToRootController(ureq);
+				} else if(pe.getController() == courseTreeCtrl) {
 					removeAsListenerAndDispose(courseTreeCtrl);
 					courseTreeCtrl = null;
 					segmentButtonsCmp.setSelectedButton(overviewLink);

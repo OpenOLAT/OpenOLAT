@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:context="http://www.springframework.org/schema/context" 
+	xsi:schemaLocation="
+  http://www.springframework.org/schema/beans 
+  http://www.springframework.org/schema/beans/spring-beans.xsd 
+  http://www.springframework.org/schema/context 
+  http://www.springframework.org/schema/context/spring-context.xsd">
+
+	<bean id="smsTelMobile.AfterLogin.Injection" class="org.springframework.beans.factory.config.MethodInvokingFactoryBean">
+		<property name="targetObject" ref="afterLoginInterceptionManager" />
+		<property name="targetMethod" value="addAfterLoginControllerConfig" />
+		<property name="arguments">
+			<ref bean="smsTelMobile.AfterLoginConfig"/>
+		</property>
+	</bean>
+
+	<bean id="smsTelMobile.AfterLoginConfig" class="org.olat.login.AfterLoginConfig">
+		<property name="afterLoginControllerList">
+			<list>
+				<map>
+					<entry key="controller">
+						<bean class="org.olat.core.gui.control.creator.AutoCreator" scope="prototype">
+							<property name="className" value="org.olat.core.commons.services.sms.ui.SMSPhoneController"/>
+						</bean>
+					</entry>
+					<entry key="forceUser"><value>false</value></entry>
+					<entry key="redoTimeout"><value>0</value></entry>
+					<entry key="i18nIntro"><value>org.olat.core.commons.services.sms.ui:confirm.sms.phone</value></entry>
+					<entry key="order"><value>0</value></entry>
+					<!-- 31536000 = 60 * 60 * 24 * 365 (or a year in seconds) -->
+					<entry key="redoTimeout"><value>31536000</value></entry>
+				</map>
+			</list>
+		</property>
+	</bean>
+	
+	<bean class="org.olat.core.extensions.action.GenericActionExtension" init-method="initExtensionPoints">
+		<property name="order" value="8835" />
+		<property name="actionController">	
+			<bean class="org.olat.core.gui.control.creator.AutoCreator" scope="prototype">
+				<property name="className" value="org.olat.core.commons.services.sms.ui.SimpleMessageServiceAdminController"/>
+			</bean>
+		</property>
+		<property name="navigationKey" value="smsAdmin" />
+		<property name="i18nActionKey" value="admin.menu.title"/>
+		<property name="i18nDescriptionKey" value="admin.menu.title.alt"/>
+		<property name="translationPackage" value="org.olat.core.commons.services.sms.ui"/>
+		<property name="parentTreeNodeIdentifier" value="loginAndSecurityParent" /> 
+		<property name="extensionPoints">
+			<list>	
+				<value>org.olat.admin.SystemAdminMainController</value>		
+			</list>
+		</property>
+	</bean>
+	
+</beans>

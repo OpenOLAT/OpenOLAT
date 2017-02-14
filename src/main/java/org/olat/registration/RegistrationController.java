@@ -95,7 +95,7 @@ public class RegistrationController extends BasicController implements Activatea
 	private RegistrationForm2 registrationForm;
 	private LanguageChooserController langChooserController;
 	private String uniqueRegistrationKey;
-	private TemporaryKeyImpl tempKey;
+	private TemporaryKey tempKey;
 	
 	@Autowired
 	private I18nManager i18nManager;

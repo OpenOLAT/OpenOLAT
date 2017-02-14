@@ -40,9 +40,8 @@ import org.olat.core.util.openxml.OpenXMLDocument.Style;
 import org.olat.core.util.vfs.LocalFileImpl;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
-import org.olat.core.util.vfs.filters.VFSItemExcludePrefixFilter;
+import org.olat.core.util.vfs.filters.VFSItemMetaFilter;
 import org.olat.modules.fo.archiver.MessageNode;
-import org.olat.modules.fo.ui.MessageEditController;
 
 /**
  * 
@@ -52,7 +51,7 @@ import org.olat.modules.fo.ui.MessageEditController;
  */
 public class ForumOpenXMLFormatter extends ForumFormatter {
 	
-	private final VFSItemExcludePrefixFilter filter = new VFSItemExcludePrefixFilter(MessageEditController.ATTACHMENT_EXCLUDE_PREFIXES);
+	private final VFSItemMetaFilter filter = new VFSItemMetaFilter();
 
 	private boolean firstThread = true;
 	

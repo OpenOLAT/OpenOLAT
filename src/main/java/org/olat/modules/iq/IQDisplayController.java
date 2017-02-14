@@ -317,8 +317,8 @@ public class IQDisplayController extends DefaultController implements GenericEve
 		boolean itemPageSequence = ((String)modConfig.get(IQEditController.CONFIG_KEY_SEQUENCE)).equals(AssessmentInstance.QMD_ENTRY_SEQUENCE_ITEM);
 		IQMenuDisplayConf mdc = new IQMenuDisplayConf(renderSectionsOnly.booleanValue(), enabledMenu, itemPageSequence);
 
-		tmp = modConfig.get(IQEditController.CONFIG_KEY_MEMO);
-		boolean memo = tmp == null ? false : ((Boolean)tmp).booleanValue();
+		Boolean tmpMemo = modConfig.getBooleanEntry(IQEditController.CONFIG_KEY_MEMO);
+		boolean memo = tmpMemo == null ? false : tmpMemo.booleanValue();
 		
 		qticomp = new IQComponent("qticomponent", translator, ai, mdc, memo);
 		

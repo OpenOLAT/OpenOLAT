@@ -445,6 +445,7 @@ public class CheckboxManagerImpl implements CheckboxManager {
 		sb.append("select check from clcheck check")
 		  .append(" inner join fetch check.checkbox box")
 		  .append(" inner join fetch check.identity ident")
+		  .append(" inner join fetch ident.user identUser")
 		  .append(" where box.resName=:resName and box.resId=:resId");
 		if(StringHelper.containsNonWhitespace(resSubPath)) {
 			sb.append(" and box.resSubPath=:resSubPath");

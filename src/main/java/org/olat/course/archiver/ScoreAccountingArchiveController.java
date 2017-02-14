@@ -48,7 +48,6 @@ import org.olat.core.util.ExportUtil;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.nodes.AssessableCourseNode;
-import org.olat.course.nodes.CourseNode;
 
 /**
  * Description: Course-Results-Archiver using ScoreAccountingHelper.class
@@ -64,7 +63,6 @@ public class ScoreAccountingArchiveController extends BasicController {
 	private VelocityContainer vcFeedback;
 	private Link startButton, downloadButton;
 	
-	private GenericArchiveController genericArchiveController;
 
 	/**
 	 * Constructor for the score accounting archive controller
@@ -72,15 +70,13 @@ public class ScoreAccountingArchiveController extends BasicController {
 	 * @param course
 	 */
 	public ScoreAccountingArchiveController(UserRequest ureq, WindowControl wControl, 
-			OLATResourceable ores, CourseNode... nodeTypes) {
+			OLATResourceable ores) {
 		super(ureq, wControl);
 		this.ores = ores;
 
 		myPanel = putInitialPanel(myPanel);
 		myContent = createVelocityContainer("start");
 		startButton = LinkFactory.createButtonSmall("cmd.start", myContent, this);
-		genericArchiveController = new GenericArchiveController(ureq, wControl, ores, nodeTypes);
-		myContent.put("genericarchive", genericArchiveController.getInitialComponent());
 		myPanel.setContent(myContent);
 	}
 
@@ -120,7 +116,6 @@ public class ScoreAccountingArchiveController extends BasicController {
 		vcFeedback.contextPut("body", translate("course.res.feedback", new String[] { downloadFile.getName() }));
 		downloadButton = LinkFactory.createButtonSmall("cmd.download", vcFeedback, this);
 		downloadButton.setUserObject(downloadFile);
-		vcFeedback.put("genericarchive", genericArchiveController.getInitialComponent());
 		myPanel.setContent(vcFeedback);
 	}
 

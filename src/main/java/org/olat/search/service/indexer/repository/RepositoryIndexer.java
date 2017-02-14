@@ -112,7 +112,6 @@ public class RepositoryIndexer extends AbstractHierarchicalIndexer {
 
 		final SearchRepositoryEntryParameters params = new SearchRepositoryEntryParameters();
 		params.setRoles(roles);
-		
 		boolean debug = isLogDebugEnabled();
 
 		
@@ -136,6 +135,10 @@ public class RepositoryIndexer extends AbstractHierarchicalIndexer {
 						logInfo("doIndex: repositoryEntry was deleted while we were indexing. The deleted repositoryEntry was: "+repositoryEntry);
 						continue;
 					}
+					if(repositoryEntry.getAccess() == RepositoryEntry.DELETED) {
+						continue;
+					}
+					
 					repositoryEntry = reloadedRepositoryEntry;
 					if (debug) {
 						logDebug("Index repositoryEntry=" + repositoryEntry + "  counter=" + counter++ + " with ResourceableId=" + repositoryEntry.getOlatResource().getResourceableId());
@@ -169,6 +172,7 @@ public class RepositoryIndexer extends AbstractHierarchicalIndexer {
 					logWarn("Exception=" + ex.getMessage() + " for repo entry " + entryDebug, ex);
 					dbInstance.rollbackAndCloseSession();
 				}
+				dbInstance.commitAndCloseSession();
 			}
 			counter += repositoryList.size();
 			

@@ -83,6 +83,7 @@ import org.olat.core.logging.Tracing;
 import org.olat.core.util.CodeHelper;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
+import org.olat.ims.qti21.QTI21Constants;
 import org.olat.ims.qti21.QTI21Module;
 import org.olat.ims.qti21.QTI21Service;
 import org.olat.ims.qti21.XmlUtilities;
@@ -90,7 +91,10 @@ import org.xml.sax.InputSource;
 import org.xml.sax.XMLReader;
 
 import uk.ac.ed.ph.jqtiplus.attribute.Attribute;
+import uk.ac.ed.ph.jqtiplus.attribute.AttributeList;
+import uk.ac.ed.ph.jqtiplus.attribute.ForeignAttribute;
 import uk.ac.ed.ph.jqtiplus.attribute.value.IntegerAttribute;
+import uk.ac.ed.ph.jqtiplus.attribute.value.StringMultipleAttribute;
 import uk.ac.ed.ph.jqtiplus.node.ForeignElement;
 import uk.ac.ed.ph.jqtiplus.node.QtiNode;
 import uk.ac.ed.ph.jqtiplus.node.content.InfoControl;
@@ -235,25 +239,87 @@ public abstract class AssessmentObjectComponentRenderer extends DefaultComponent
 		
 		if(modalFeedbacks.size() > 0) {
 			sb.append("<div class='modalFeedback'>")
-			  .append("<h2>").append(translator.translate("assessment.item.modal.feedback")).append("</h2>");
+			  .append("<h3>").append(translator.translate("assessment.item.modal.feedback")).append("</h3>");
 			for(ModalFeedback modalFeedback:modalFeedbacks) {
-				sb.append("<div class='modalFeedback o_info'>");
-				Attribute<?> title = modalFeedback.getAttributes().get("title");
-				if(title != null && title.getValue() != null) {
-					String feedbackTitle = title.getValue().toString();
-					if(StringHelper.containsNonWhitespace(feedbackTitle)) {
-						sb.append("<h4>").append(StringHelper.escapeHtml(feedbackTitle)).append("</h4>");
-					}
+				Identifier outcomeIdentifier = modalFeedback.getOutcomeIdentifier();
+				if(QTI21Constants.CORRECT_SOLUTION_IDENTIFIER.equals(outcomeIdentifier)) {
+					renderTestItemModalFeedback_correctSolution(renderer, sb, modalFeedback,
+							component, resolvedAssessmentItem, itemSessionState, ubu, translator);
+				} else {
+					renderTestItemModalFeedback_standard(renderer, sb, modalFeedback,
+							component, resolvedAssessmentItem, itemSessionState, ubu, translator);
 				}
-				
-				modalFeedback.getFlowStatics().forEach((flow)
-					-> renderFlow(renderer, sb, component, resolvedAssessmentItem, itemSessionState, flow, ubu, translator));
-
-				sb.append("</div>");
 			}
-			
 			sb.append("</div>");
 		}
+	}
+	
+	protected void renderTestItemModalFeedback_correctSolution(AssessmentRenderer renderer, StringOutput sb, ModalFeedback modalFeedback,
+			AssessmentObjectComponent component, ResolvedAssessmentItem resolvedAssessmentItem, ItemSessionState itemSessionState,
+			URLBuilder ubu, Translator translator) {
+		
+		sb.append("<div class='modalFeedback o_togglebox_wrapper o_block clearfix'>");
+		Attribute<?> title = modalFeedback.getAttributes().get("title");
+		String feedbackTitle = null;
+		if(title != null && title.getValue() != null) {
+			feedbackTitle = title.getValue().toString();
+		}
+		if(!StringHelper.containsNonWhitespace(feedbackTitle)) {
+			feedbackTitle = translator.translate("correct.solution");
+		}
+
+		sb.append("<h4><a href='#modal-correct-solution' data-toggle='collapse' data-target='#modal-correct-solution' class=\"o_opener\" onclick=\"jQuery(this).toggleClass('o_in'); return false;\"><i class='o_icon o_icon-fw o_icon-lg'> </i> ").append(StringHelper.escapeHtml(feedbackTitle)).append("</a></h4>");
+		sb.append("<div id='modal-correct-solution' class='collapse'><div class='o_togglebox_content clearfix'>");
+		
+		modalFeedback.getFlowStatics().forEach((flow)
+			-> renderFlow(renderer, sb, component, resolvedAssessmentItem, itemSessionState, flow, ubu, translator));
+
+		sb.append("</div></div></div>");
+		
+		/*
+		<div class="o_togglebox_wrapper o_block">
+		<a href="#$uid" data-toggle="collapse" data-target="#${uid}" class="o_opener" onclick="jQuery(this).toggleClass('o_in'); return false;">
+			<i class="o_icon o_icon-fw o_icon-lg"></i> 
+			$title
+		</a>
+		<div id="$uid" class="collapse">
+			<div class="o_togglebox_content clearfix">	
+		*/
+	}
+	
+
+	/**
+	 * Render the standard feedback in an info box.
+	 * 
+	 * @param renderer
+	 * @param sb
+	 * @param modalFeedback
+	 * @param component
+	 * @param resolvedAssessmentItem
+	 * @param itemSessionState
+	 * @param ubu
+	 * @param translator
+	 */
+	protected void renderTestItemModalFeedback_standard(AssessmentRenderer renderer, StringOutput sb, ModalFeedback modalFeedback,
+			AssessmentObjectComponent component,
+			ResolvedAssessmentItem resolvedAssessmentItem, ItemSessionState itemSessionState, URLBuilder ubu, Translator translator) {
+		sb.append("<div class='modalFeedback o_info clearfix'>");
+		Attribute<?> title = modalFeedback.getAttributes().get("title");
+		if(title != null && title.getValue() != null) {
+			String feedbackTitle = title.getValue().toString();
+			if(StringHelper.containsNonWhitespace(feedbackTitle)) {
+				sb.append("<h4>");
+				if(modalFeedback.getIdentifier() != null && QTI21Constants.HINT_IDENTIFIER.equals(modalFeedback.getIdentifier())) {
+					sb.append("<i class='o_icon o_icon_help'> </i> ");
+				}
+				sb.append(StringHelper.escapeHtml(feedbackTitle)).append("</h4>");
+			}
+		}
+		
+		modalFeedback.getFlowStatics().forEach((flow)
+			-> renderFlow(renderer, sb, component, resolvedAssessmentItem, itemSessionState, flow, ubu, translator));
+
+		sb.append("</div>");
 	}
 	
 	public void renderFlow(AssessmentRenderer renderer, StringOutput sb, AssessmentObjectComponent component,
@@ -1356,6 +1422,23 @@ public abstract class AssessmentObjectComponentRenderer extends DefaultComponent
             log.error("Rendering XSLT pipeline failed for request {}", e);
             throw new OLATRuntimeException("Unexpected Exception running rendering XML pipeline", e);
         }
+	}
+	
+	protected boolean containsClass(QtiNode element, String marker) {
+		AttributeList attributes = element.getAttributes();
+		for(int i=attributes.size(); i-->0; ) {
+			Attribute<?> attr = attributes.get(i);
+			if("class".equals(attr.getLocalName())) {
+				if(attr instanceof ForeignAttribute) {
+					String css = ((ForeignAttribute)attr).getValue();
+					return css != null && css.contains(marker);
+				} else if(attr instanceof StringMultipleAttribute) {
+					List<String> css = ((StringMultipleAttribute)attr).getValue();
+					return css != null && css.contains(marker);
+				}
+			}
+		}
+		return false;
 	}
 	
     public static class RenderingRequest {

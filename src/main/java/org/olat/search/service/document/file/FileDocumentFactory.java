@@ -205,16 +205,14 @@ public class FileDocumentFactory {
 	 */
 	public boolean isFileSupported(VFSLeaf leaf) {
 		String fileName = leaf.getName();
-		if (fileName != null && fileName.startsWith(".")) {
+		if (fileName == null || fileName.startsWith(".")) {
 			//don't index all mac os x hidden files
 			return false;
 		}
 		
-		String suffix;
-		try {
-			suffix = FileTypeDetector.getSuffix(leaf);
-		} catch (DocumentNotImplementedException e) {
-			return false;
+		long fileSize = leaf.getSize();
+		if(fileSize == 0) {
+			return false;// don't index empty files
 		}
 		
 		// 1. Check if file is not on fileBlackList
@@ -225,26 +223,32 @@ public class FileDocumentFactory {
 		
 		if(leaf instanceof LocalImpl) {
 			String path = ((LocalImpl)leaf).getBasefile().getAbsolutePath();
-			if (searchModule.getFileBlackList().contains(path)) {
+			if (!isFileSupported(path)) {
 				return false;
 			}
+		}
+		
+		String suffix;
+		try {
+			suffix = FileTypeDetector.getSuffix(leaf);
+		} catch (DocumentNotImplementedException e) {
+			return false;
 		}
 		
 		// 2. Check for certain file-type the file size
 		if (searchModule.getFileSizeSuffixes().contains(suffix)) {
 			long maxFileSize = searchModule.getMaxFileSize();
-			if ( (maxFileSize != 0) && (leaf.getSize() > maxFileSize) ) {
+			if ( (maxFileSize != 0) && (fileSize > maxFileSize) ) {
 				log.info("File too big, exlude from search index. filename=" + fileName);
 				excludedFileSizeCount++;
 				return false;
 			}
 		}
-		/* 3. Check if suffix is supported
-		if (supportedSuffixes.indexOf(suffix) >= 0) {
-			return true;
-		}*/
-		//index all files (index metadatas)
 		return true;
+	}
+	
+	public boolean isFileSupported(String path) {
+		return !searchModule.getFileBlackList().contains(path);
 	}
 	
 	public int getExcludedFileSizeCount( ) {

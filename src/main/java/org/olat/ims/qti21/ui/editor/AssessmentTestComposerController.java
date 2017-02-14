@@ -1021,8 +1021,11 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 		Object uobject = selectedNode.getUserObject();
 		if(uobject instanceof AssessmentTest) {
 			AssessmentTest test = (AssessmentTest)uobject;
+			URI testURI = resolvedAssessmentTest.getTestLookup().getSystemId();
+			File testFile = new File(testURI);
 			TestPart uniqueTestPart = test.getTestParts().size() == 1 ? test.getTestParts().get(0) : null;
-			currentEditorCtrl = new AssessmentTestEditorController(ureq, getWindowControl(), assessmentTestBuilder, uniqueTestPart, restrictedEdit);
+			currentEditorCtrl = new AssessmentTestEditorController(ureq, getWindowControl(), assessmentTestBuilder, uniqueTestPart,
+					unzippedDirRoot, unzippedContRoot, testFile, restrictedEdit);
 		} else if(uobject instanceof TestPart) {
 			currentEditorCtrl = new AssessmentTestPartEditorController(ureq, getWindowControl(), (TestPart)uobject,
 					restrictedEdit, assessmentTestBuilder.isEditable());

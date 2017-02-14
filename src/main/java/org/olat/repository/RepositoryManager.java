@@ -1227,7 +1227,7 @@ public class RepositoryManager {
 	 * check ownership of identity for a resource
 	 * @return true if the identity is member of the security group of the repository entry
 	 */
-	public boolean isOwnerOfRepositoryEntry(Identity identity, RepositoryEntry entry) {
+	public boolean isOwnerOfRepositoryEntry(IdentityRef identity, RepositoryEntryRef entry) {
 		if(entry == null || identity == null) {
 			return false;
 		}

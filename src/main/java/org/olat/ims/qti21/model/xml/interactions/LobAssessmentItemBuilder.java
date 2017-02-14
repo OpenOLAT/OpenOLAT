@@ -23,12 +23,14 @@ import java.util.List;
 
 import org.olat.ims.qti21.QTI21Constants;
 import org.olat.ims.qti21.model.xml.AssessmentItemBuilder;
+import org.olat.ims.qti21.model.xml.AssessmentItemFactory;
 
 import uk.ac.ed.ph.jqtiplus.node.expression.general.BaseValue;
 import uk.ac.ed.ph.jqtiplus.node.expression.general.Variable;
 import uk.ac.ed.ph.jqtiplus.node.expression.operator.IsNull;
 import uk.ac.ed.ph.jqtiplus.node.expression.operator.Not;
 import uk.ac.ed.ph.jqtiplus.node.item.AssessmentItem;
+import uk.ac.ed.ph.jqtiplus.node.item.ModalFeedback;
 import uk.ac.ed.ph.jqtiplus.node.item.response.processing.ResponseCondition;
 import uk.ac.ed.ph.jqtiplus.node.item.response.processing.ResponseElseIf;
 import uk.ac.ed.ph.jqtiplus.node.item.response.processing.ResponseIf;
@@ -140,4 +142,16 @@ public abstract class LobAssessmentItemBuilder extends AssessmentItemBuilder {
 			feedbackOutcomeValue.setExpression(answeredValue);
 		}
 	}
+
+	@Override
+	protected void appendCorrectSolutionAndIncorrectModalFeedback(List<ModalFeedback> modalFeedbacks, List<ResponseRule> responseRules) {
+		if(correctSolutionFeedback != null) {
+			ModalFeedback modalFeedback = AssessmentItemFactory.createModalFeedback(assessmentItem,
+					QTI21Constants.CORRECT_SOLUTION_IDENTIFIER, correctSolutionFeedback.getIdentifier(),
+					correctSolutionFeedback.getTitle(), correctSolutionFeedback.getText());
+			modalFeedbacks.add(modalFeedback);
+		}
+	}
+	
+	
 }

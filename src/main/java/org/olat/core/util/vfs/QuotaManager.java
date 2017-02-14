@@ -33,7 +33,6 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Identity;
-import org.olat.core.manager.BasicManager;
 
 /**
  * Initial Date: Feb 17, 2004
@@ -45,7 +44,7 @@ import org.olat.core.manager.BasicManager;
  * <br>
  * Comment: Refactoring to core package make default quotas generic
  */
-public abstract class QuotaManager extends BasicManager{
+public abstract class QuotaManager {
 
 	protected static QuotaManager INSTANCE;
 
@@ -153,7 +152,8 @@ public abstract class QuotaManager extends BasicManager{
 	
 	/**
 	 * Factory method to create a controller that is capable of editing the
-	 * quota for the given path.
+	 * quota for the given path. If the user has not enough privileges to edit
+	 * the quota, it will only see the quota's view.
 	 * <p>
 	 * The controller must fire the following events:
 	 * <ul> 

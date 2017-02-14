@@ -579,6 +579,45 @@ public class UserWebService {
 	 * @response.representation.200.doc The portrait as image
 	 * @response.representation.404.doc The identity or the portrait not found
 	 * @param identityKey The identity key of the user being searched
+	 * @return The image
+	 */
+	@HEAD
+	@Path("{identityKey}/portrait/{size}")
+	@Produces({"image/jpeg","image/jpg",MediaType.APPLICATION_OCTET_STREAM})
+	public Response getOriginalPortraitHead(@PathParam("identityKey") Long identityKey, @PathParam("size") String size) {
+		try {
+			IdentityShort identity = BaseSecurityManager.getInstance().loadIdentityShortByKey(identityKey);
+			if(identity == null) {
+				return Response.serverError().status(Status.NOT_FOUND).build();
+			}
+			
+			DisplayPortraitManager portraitManager = DisplayPortraitManager.getInstance();
+			
+			File portrait = null;
+			if("master".equals(size)) {
+				portrait = portraitManager.getMasterPortrait(identity.getName());
+			} else if("big".equals(size)) {
+				portrait = portraitManager.getBigPortrait(identity.getName());
+			} else if("small".equals(size)) {
+				portrait = portraitManager.getSmallPortrait(identity.getName());
+			}
+
+			if(portrait == null || !portrait.exists()) {
+				return Response.serverError().status(Status.NOT_FOUND).build();
+			}
+			Date lastModified = new Date(portrait.lastModified());
+			return Response.ok().lastModified(lastModified).build();
+		} catch (Throwable e) {
+			throw new WebApplicationException(e);
+		}
+	}
+	
+	/**
+	 * Retrieves the portrait of an user
+	 * @response.representation.200.mediaType application/octet-stream
+	 * @response.representation.200.doc The portrait as image
+	 * @response.representation.404.doc The identity or the portrait not found
+	 * @param identityKey The identity key of the user being searched
 	 * @param request The REST request
 	 * @return The image
 	 */

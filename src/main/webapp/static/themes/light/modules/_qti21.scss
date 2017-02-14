@@ -27,7 +27,7 @@ ul.sessionControl {
 }
 
 /* Drawing */
-#sketch {
+.sketch {
 	position: relative;
 	user-drag: none; 
 	user-select: none;
@@ -484,6 +484,12 @@ tr.choiceinteraction {
 	.longComma {
 		margin-right: 0.5em;
 	}
+}
+
+/* Correct solution feedback */
+.o_togglebox_wrapper #modal-correct-solution div.o_togglebox_content {
+	background-color: $o-box-warning-bg; 
+	border-color: $o-box-warning-color;
 }
 
 /* Candidate comment */

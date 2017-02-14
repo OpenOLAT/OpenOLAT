@@ -25,7 +25,9 @@
 
 package org.olat.registration;
 
-import org.olat.core.CoreSpringFactory;
+import java.util.Collections;
+import java.util.List;
+
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
@@ -38,6 +40,7 @@ import org.olat.core.util.Util;
 import org.olat.login.auth.OLATAuthManager;
 import org.olat.user.ChangePasswordForm;
 import org.olat.user.UserManager;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * Description:
@@ -49,24 +52,41 @@ public class PwChangeForm extends FormBasicController {
 	private TextElement newpass1;
 	private TextElement newpass2; // confirm
 	
-	private final OLATAuthManager olatAuthenticationSpi;
+	private TemporaryKey tempKey;
+	private Identity identityToChange;
+	
+	@Autowired
+	private RegistrationManager rm;
+	@Autowired
+	private UserManager userManager;
+	@Autowired
+	private OLATAuthManager olatAuthenticationSpi;
 	
 	/**
 	 * Password change form.
 	 * @param name
 	 */
-	public PwChangeForm(UserRequest ureq, WindowControl wControl) {
+	public PwChangeForm(UserRequest ureq, WindowControl wControl, Identity identityToChange, TemporaryKey tempKey) {
 		super(ureq, wControl, null, Util.createPackageTranslator(ChangePasswordForm.class, ureq.getLocale()));
-		
-		olatAuthenticationSpi = CoreSpringFactory.getImpl(OLATAuthManager.class);
-		
+		this.identityToChange = identityToChange;
+		this.tempKey = tempKey;
+		initForm(ureq);
+	}
+	
+	/**
+	 * Password change form.
+	 * @param name
+	 */
+	public PwChangeForm(UserRequest ureq, WindowControl wControl, TemporaryKey tempKey) {
+		super(ureq, wControl, null, Util.createPackageTranslator(ChangePasswordForm.class, ureq.getLocale()));
+		this.tempKey = tempKey;
 		initForm(ureq);
 	}
 
 	@Override
 	public boolean validateFormLogic(UserRequest ureq) {
 		
-		boolean newIsValid = UserManager.getInstance().syntaxCheckOlatPassword(newpass1.getValue());
+		boolean newIsValid = userManager.syntaxCheckOlatPassword(newpass1.getValue());
 		if (!newIsValid) {
 			newpass1.setErrorKey("form.checkPassword", null);
 		}
@@ -90,6 +110,24 @@ public class PwChangeForm extends FormBasicController {
 
 	@Override
 	protected void formOK(UserRequest ureq) {
+		if(tempKey != null) {
+			List<Identity> identToChanges = userManager.findIdentitiesByEmail(Collections.singletonList(tempKey.getEmailAddress()));
+			if(identToChanges == null || identToChanges.size() == 0 || identToChanges.size() > 1) {
+				showError("pwchange.failed");
+			} else {
+				Identity identToChange = identToChanges.get(0);
+				if(!saveFormData(identToChange)) {
+					showError("pwchange.failed");
+				}
+			}
+		} else if(identityToChange != null) {
+			if(!saveFormData(identityToChange)) {
+				showError("pwchange.failed");
+			}
+		}
+		if(tempKey != null) {
+			rm.deleteTemporaryKeyWithId(tempKey.getRegistrationKey());	
+		}
 		fireEvent (ureq, Event.DONE_EVENT);
 	}
 

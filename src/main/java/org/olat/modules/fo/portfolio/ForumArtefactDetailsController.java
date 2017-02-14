@@ -34,7 +34,7 @@ import org.olat.core.gui.util.CSSHelper;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
-import org.olat.core.util.vfs.filters.VFSItemExcludePrefixFilter;
+import org.olat.core.util.vfs.filters.VFSItemMetaFilter;
 import org.olat.portfolio.manager.EPFrontendManager;
 import org.olat.portfolio.model.artefacts.AbstractArtefact;
 
@@ -50,7 +50,6 @@ import org.olat.portfolio.model.artefacts.AbstractArtefact;
 public class ForumArtefactDetailsController extends BasicController {
 
 	private final VelocityContainer vC;
-	protected static final String[] ATTACHMENT_EXCLUDE_PREFIXES = new String[]{".nfs", ".CVS", ".DS_Store"}; // see: MessageEditController.ATTACHMENT_EXCLUDE_PREFIXES
 
 	public ForumArtefactDetailsController(UserRequest ureq, WindowControl wControl, AbstractArtefact artefact) {
 		super(ureq, wControl);
@@ -60,7 +59,7 @@ public class ForumArtefactDetailsController extends BasicController {
 		vC.contextPut("text", ePFMgr.getArtefactFullTextContent(fArtefact));
 		VFSContainer artContainer = ePFMgr.getArtefactContainer(artefact);
 		if (artContainer!=null && artContainer.getItems().size()!=0){
-			List<VFSItem> attachments = new ArrayList<VFSItem>(artContainer.getItems(new VFSItemExcludePrefixFilter(ATTACHMENT_EXCLUDE_PREFIXES)));
+			List<VFSItem> attachments = new ArrayList<VFSItem>(artContainer.getItems(new VFSItemMetaFilter()));
 			int i=1; //vc-shift!
 			for (VFSItem vfsItem : attachments) {
 				VFSLeaf file = (VFSLeaf) vfsItem;

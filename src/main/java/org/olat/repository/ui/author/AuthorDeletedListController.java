@@ -114,13 +114,18 @@ public class AuthorDeletedListController extends AuthorListController {
 			}
 			cleanUp();
 		} else if(confirmRestoreCtrl == source) {
-			if(cmc != null) {
-				cmc.deactivate();
-			}
 			if(event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
+				if(cmc != null) {
+					cmc.deactivate();
+				}
 				reloadRows();
+				cleanUp();
+			} else if(event == Event.CANCELLED_EVENT) {
+				if(cmc != null) {
+					cmc.deactivate();
+				}
+				cleanUp();
 			}
-			cleanUp();
 		} else if(dToolsCtrl == source) {
 			if(event == Event.DONE_EVENT) {
 				toolsCalloutCtrl.deactivate();
@@ -185,14 +190,15 @@ public class AuthorDeletedListController extends AuthorListController {
 			toolsCalloutCtrl.activate();
 		}
 	}
-	
 
 	private void doRestore(UserRequest ureq, List<AuthoringEntryRow> rows) {
 		Roles roles = ureq.getUserSession().getRoles();
 		List<Long> deleteableRowKeys = new ArrayList<>(rows.size());
 		for(AuthoringEntryRow row:rows) {
 			boolean managed = RepositoryEntryManagedFlag.isManaged(row.getManagedFlags(), RepositoryEntryManagedFlag.delete);
-			boolean canDelete = roles.isOLATAdmin() || repositoryManager.isInstitutionalRessourceManagerFor(getIdentity(), roles, row);
+			boolean canDelete = roles.isOLATAdmin()
+					|| repositoryService.hasRole(getIdentity(), row, GroupRoles.owner.name())
+					|| repositoryManager.isInstitutionalRessourceManagerFor(getIdentity(), roles, row);
 			if(canDelete && !managed) {
 				deleteableRowKeys.add(row.getKey());
 			}
@@ -263,9 +269,9 @@ public class AuthorDeletedListController extends AuthorListController {
 			Roles roles = ureq.getUserSession().getRoles();
 			boolean isInstitutionalResourceManager = !roles.isGuestOnly()
 						&& repositoryManager.isInstitutionalRessourceManagerFor(identity, roles, entry);
-			isOwner = isOlatAdmin || repositoryService.hasRole(ureq.getIdentity(), entry, GroupRoles.owner.name())
+			isOwner = isOlatAdmin || repositoryService.hasRole(identity, entry, GroupRoles.owner.name())
 						|| isInstitutionalResourceManager;
-			isAuthor = isOlatAdmin || roles.isAuthor() | isInstitutionalResourceManager;
+			isAuthor = isOlatAdmin || roles.isAuthor() || isInstitutionalResourceManager;
 			
 			RepositoryHandler handler = repositoryHandlerFactory.getRepositoryHandler(entry);
 

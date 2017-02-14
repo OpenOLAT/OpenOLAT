@@ -19,6 +19,8 @@
  */
 package org.olat.ims.qti21.ui.editor;
 
+import java.io.File;
+
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.RichTextElement;
@@ -30,6 +32,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.filter.FilterFactory;
+import org.olat.core.util.vfs.VFSContainer;
 import org.olat.ims.qti21.model.xml.AssessmentTestBuilder;
 import org.olat.ims.qti21.model.xml.TestFeedbackBuilder;
 import org.olat.ims.qti21.ui.editor.events.AssessmentTestEvent;
@@ -46,12 +49,19 @@ public class AssessmentTestFeedbackEditorController extends FormBasicController 
 	private TextElement feedbackPassedTitleEl, feedbackFailedTitleEl;
 	private RichTextElement feedbackPassedTextEl, feedbackFailedTextEl;
 
+	private final File testFile;
+	private final File rootDirectory;
+	private final VFSContainer rootContainer;
+	
 	private final boolean restrictedEdit;
 	private final AssessmentTestBuilder testBuilder;
 	
-	public AssessmentTestFeedbackEditorController(UserRequest ureq, WindowControl wControl,
-			AssessmentTestBuilder testBuilder, boolean restrictedEdit) {
+	public AssessmentTestFeedbackEditorController(UserRequest ureq, WindowControl wControl, AssessmentTestBuilder testBuilder,
+			File rootDirectory, VFSContainer rootContainer, File testFile, boolean restrictedEdit) {
 		super(ureq, wControl);
+		this.testFile = testFile;
+		this.rootDirectory = rootDirectory;
+		this.rootContainer = rootContainer;
 		this.testBuilder = testBuilder;
 		this.restrictedEdit = restrictedEdit;
 		initForm(ureq);
@@ -61,6 +71,10 @@ public class AssessmentTestFeedbackEditorController extends FormBasicController 
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormContextHelp("Test editor QTI 2.1 in detail#details_testeditor_feedback");
 		
+		
+		String relativePath = rootDirectory.toPath().relativize(testFile.toPath().getParent()).toString();
+		VFSContainer itemContainer = (VFSContainer)rootContainer.resolve(relativePath);
+		
 		//correct feedback
 		TestFeedbackBuilder passedFeedback = testBuilder.getPassedFeedback();
 		String passedTitle = passedFeedback == null ? "" : passedFeedback.getTitle();
@@ -68,8 +82,8 @@ public class AssessmentTestFeedbackEditorController extends FormBasicController 
 		feedbackPassedTitleEl.setUserObject(passedFeedback);
 		feedbackPassedTitleEl.setEnabled(!restrictedEdit);
 		String passedText = passedFeedback == null ? "" : passedFeedback.getText();
-		feedbackPassedTextEl = uifactory.addRichTextElementForQTI21("correctText", "form.test.correct.text", passedText, 8, -1, null,
-				formLayout, ureq.getUserSession(), getWindowControl());
+		feedbackPassedTextEl = uifactory.addRichTextElementForQTI21("correctText", "form.test.correct.text", passedText, 8, -1,
+				itemContainer, formLayout, ureq.getUserSession(), getWindowControl());
 		feedbackPassedTextEl.setEnabled(!restrictedEdit);
 		feedbackPassedTextEl.getEditorConfiguration().setFileBrowserUploadRelPath("media");
 
@@ -80,8 +94,8 @@ public class AssessmentTestFeedbackEditorController extends FormBasicController 
 		feedbackFailedTitleEl.setUserObject(failedFeedback);
 		feedbackFailedTitleEl.setEnabled(!restrictedEdit);
 		String fialedText = failedFeedback == null ? "" : failedFeedback.getText();
-		feedbackFailedTextEl = uifactory.addRichTextElementForQTI21("incorrectText", "form.test.incorrect.text", fialedText, 8, -1, null,
-				formLayout, ureq.getUserSession(), getWindowControl());
+		feedbackFailedTextEl = uifactory.addRichTextElementForQTI21("incorrectText", "form.test.incorrect.text", fialedText, 8, -1,
+				itemContainer, formLayout, ureq.getUserSession(), getWindowControl());
 		feedbackFailedTextEl.setEnabled(!restrictedEdit);
 		feedbackFailedTextEl.getEditorConfiguration().setFileBrowserUploadRelPath("media");
 	
@@ -113,7 +127,7 @@ public class AssessmentTestFeedbackEditorController extends FormBasicController 
 	protected void formOK(UserRequest ureq) {
 
 		String passedTitle = feedbackPassedTitleEl.getValue();
-		String passedText = feedbackPassedTextEl.getValue();
+		String passedText = feedbackPassedTextEl.getRawValue();
 		if(StringHelper.containsNonWhitespace(FilterFactory.getHtmlTagsFilter().filter(passedText))) {
 			TestFeedbackBuilder passedBuilder = testBuilder.getPassedFeedback();
 			if(passedBuilder == null) {
@@ -124,7 +138,7 @@ public class AssessmentTestFeedbackEditorController extends FormBasicController 
 		}
 		
 		String failedTitle = feedbackFailedTitleEl.getValue();
-		String failedText = feedbackFailedTextEl.getValue();
+		String failedText = feedbackFailedTextEl.getRawValue();
 		if(StringHelper.containsNonWhitespace(FilterFactory.getHtmlTagsFilter().filter(failedText))) {
 			TestFeedbackBuilder failedBuilder = testBuilder.getFailedFeedback();
 			if(failedBuilder == null) {

@@ -33,7 +33,7 @@ public class QualityTableRow {
 
 	private FormLink resolution;
 	private String dimension;
-	private String size;
+	private Object[] size;
 	private String format;
 	private FormLink deleteLink;
 
@@ -48,7 +48,7 @@ public class QualityTableRow {
 	 * @param viewLink
 	 * @param deleteLink FormLink for delete row and corresponding Videodata or null if no deleteLink should be shown
 	 */
-	public QualityTableRow(FormLink resolution, String dimension, String size, String format, FormLink deleteLink) {
+	public QualityTableRow(FormLink resolution, String dimension, Object[] size, String format, FormLink deleteLink) {
 		this.resolution = resolution;
 		this.resolution.setIconLeftCSS("o_icon o_icon-fw o_icon_preview");
 		this.dimension = dimension;
@@ -73,11 +73,11 @@ public class QualityTableRow {
 		this.dimension = dimension;
 	}
 
-	public String getSize() {
+	public Object[] getSize() {
 		return size;
 	}
 
-	public void setSize(String size) {
+	public void setSize(Object[] size) {
 		this.size = size;
 	}
 

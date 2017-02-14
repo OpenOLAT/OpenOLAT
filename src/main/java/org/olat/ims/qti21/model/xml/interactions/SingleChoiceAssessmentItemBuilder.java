@@ -114,15 +114,13 @@ public class SingleChoiceAssessmentItemBuilder extends SimpleChoiceAssessmentIte
 		
 		if(choiceInteraction != null) {
 			ResponseDeclaration responseDeclaration = assessmentItem.getResponseDeclaration(choiceInteraction.getResponseIdentifier());
-			if(responseDeclaration != null) {
+			if(responseDeclaration != null && responseDeclaration.getCorrectResponse() != null) {
 				CorrectResponse correctResponse = responseDeclaration.getCorrectResponse();
-				if(correctResponse != null) {
-					List<FieldValue> values = correctResponse.getFieldValues();
-					Value value = FieldValue.computeValue(Cardinality.SINGLE, values);
-					if(value instanceof IdentifierValue) {
-						IdentifierValue identifierValue = (IdentifierValue)value;
-						correctAnswer = identifierValue.identifierValue();
-					}
+				List<FieldValue> values = correctResponse.getFieldValues();
+				Value value = FieldValue.computeValue(Cardinality.SINGLE, values);
+				if(value instanceof IdentifierValue) {
+					IdentifierValue identifierValue = (IdentifierValue)value;
+					correctAnswer = identifierValue.identifierValue();
 				}
 			}
 		}

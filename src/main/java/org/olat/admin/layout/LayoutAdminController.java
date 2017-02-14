@@ -45,6 +45,7 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.helpers.GUISettings;
 import org.olat.core.helpers.Settings;
+import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.WebappHelper;
@@ -318,10 +319,9 @@ public class LayoutAdminController extends FormBasicController {
 					return false;
 				}
 				// remove unwanted meta-dirs
-				if (name.equalsIgnoreCase("CVS")) return false;
-				if (name.equalsIgnoreCase(".DS_Store")) return false;
-				if (name.equalsIgnoreCase(".sass-cache")) return false;
-				if (name.equalsIgnoreCase(".hg")) return false;
+				if (FileUtils.isMetaFilename(name)) {
+					return false;
+				}
 				return true;
 		}
 	}

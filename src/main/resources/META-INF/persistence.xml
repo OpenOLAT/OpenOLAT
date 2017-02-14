@@ -33,7 +33,6 @@
 		<mapping-file>org/olat/course/assessment/model/UserEfficiencyStatementImpl.hbm.xml</mapping-file>
 		<mapping-file>org/olat/modules/openmeetings/model/OpenMeetingsReference.hbm.xml</mapping-file>
 		<mapping-file>org/olat/properties/Property.hbm.xml</mapping-file>
-		<mapping-file>org/olat/registration/TemporaryKeyImpl.hbm.xml</mapping-file>
 		<mapping-file>org/olat/course/statistic/daily/DailyStat.hbm.xml</mapping-file>
 		<mapping-file>org/olat/course/statistic/dayofweek/DayOfWeekStat.hbm.xml</mapping-file>
 		<mapping-file>org/olat/course/statistic/hourofday/HourOfDayStat.hbm.xml</mapping-file>
@@ -92,6 +91,7 @@
 		<class>org.olat.core.commons.services.taskexecutor.model.PersistentTaskModifier</class>
 		<class>org.olat.core.commons.services.commentAndRating.model.UserRatingImpl</class>
 		<class>org.olat.core.commons.services.commentAndRating.model.UserCommentImpl</class>
+		<class>org.olat.core.commons.services.sms.model.MessageLogImpl</class>
 		<class>org.olat.course.assessment.model.AssessmentModeImpl</class>
 		<class>org.olat.course.assessment.model.AssessmentModeToAreaImpl</class>
 		<class>org.olat.course.assessment.model.AssessmentModeToGroupImpl</class>
@@ -115,6 +115,7 @@
 		<class>org.olat.group.model.GroupToBusinessGroup</class>
 		<class>org.olat.group.model.BusinessGroupToSearch</class>
 		<class>org.olat.group.BusinessGroupImpl</class>
+		<class>org.olat.registration.TemporaryKeyImpl</class>
 		<class>org.olat.repository.RepositoryEntry</class>
 		<class>org.olat.repository.model.RepositoryEntryToGroupRelation</class>
 		<class>org.olat.repository.model.RepositoryEntryLifecycle</class>

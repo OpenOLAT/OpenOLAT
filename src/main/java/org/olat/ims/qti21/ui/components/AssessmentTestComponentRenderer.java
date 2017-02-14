@@ -38,7 +38,6 @@ import javax.xml.transform.TransformerFactoryConfigurationError;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 
-import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormJSHelper;
@@ -53,7 +52,6 @@ import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.ims.qti21.AssessmentTestSession;
-import org.olat.ims.qti21.QTI21Service;
 import org.olat.ims.qti21.model.audit.CandidateEvent;
 import org.olat.ims.qti21.model.audit.CandidateTestEventType;
 import org.olat.ims.qti21.ui.CandidateSessionContext;
@@ -76,7 +74,6 @@ import uk.ac.ed.ph.jqtiplus.node.test.TestPart;
 import uk.ac.ed.ph.jqtiplus.node.test.VisibilityMode;
 import uk.ac.ed.ph.jqtiplus.resolution.ResolvedAssessmentItem;
 import uk.ac.ed.ph.jqtiplus.running.TestSessionController;
-import uk.ac.ed.ph.jqtiplus.serialization.QtiSerializer;
 import uk.ac.ed.ph.jqtiplus.state.AssessmentSectionSessionState;
 import uk.ac.ed.ph.jqtiplus.state.EffectiveItemSessionControl;
 import uk.ac.ed.ph.jqtiplus.state.ItemSessionState;
@@ -452,11 +449,11 @@ public class AssessmentTestComponentRenderer extends AssessmentObjectComponentRe
 		 // Show 'atEnd' testPart feedback 
 		TestPlanNode currentTestPartNode = component.getCurrentTestPartNode();
 		TestPart currentTestPart = component.getTestPart(currentTestPartNode.getIdentifier());
-		renderTestFeebacks(sb, currentTestPart.getTestFeedbacks(), component, TestFeedbackAccess.AT_END, translator);
+		renderTestFeebacks(renderer, sb, currentTestPart.getTestFeedbacks(), component, TestFeedbackAccess.AT_END, ubu, translator);
 
 		//Show 'atEnd' test feedback f there's only 1 testPart
 		if(!component.hasMultipleTestParts()) {
-			renderTestFeebacks(sb, component.getAssessmentTest().getTestFeedbacks(), component, TestFeedbackAccess.AT_END, translator);
+			renderTestFeebacks(renderer, sb, component.getAssessmentTest().getTestFeedbacks(), component, TestFeedbackAccess.AT_END, ubu, translator);
 		}
 		
 		//test part review
@@ -567,15 +564,17 @@ public class AssessmentTestComponentRenderer extends AssessmentObjectComponentRe
 		}
 	}
 	
-	private void renderTestFeebacks(StringOutput sb, List<TestFeedback> testFeedbacks, AssessmentTestComponent component, TestFeedbackAccess access, Translator translator) {
+	private void renderTestFeebacks(AssessmentRenderer renderer, StringOutput sb, List<TestFeedback> testFeedbacks, AssessmentTestComponent component, TestFeedbackAccess access,
+			URLBuilder ubu, Translator translator) {
 		for(TestFeedback testFeedback:testFeedbacks) {
 			if(testFeedback.getTestFeedbackAccess() == access) {
-				renderTestFeeback(sb, component, testFeedback, translator);
+				renderTestFeeback(renderer, sb, component, testFeedback, ubu, translator);
 			}
 		}
 	}
 	
-	private void renderTestFeeback(StringOutput sb, AssessmentTestComponent component, TestFeedback testFeedback, Translator translator) {
+	private void renderTestFeeback(AssessmentRenderer renderer, StringOutput sb, AssessmentTestComponent component, TestFeedback testFeedback,
+			URLBuilder ubu, Translator translator) {
 		//<xsl:variable name="identifierMatch" select="boolean(qw:value-contains(qw:get-test-outcome-value(@outcomeIdentifier), @identifier))" as="xs:boolean"/>
 		Identifier outcomeIdentifier = testFeedback.getOutcomeIdentifier();
 		Value outcomeValue = component.getTestSessionController().getTestSessionState().getOutcomeValue(outcomeIdentifier);
@@ -583,6 +582,7 @@ public class AssessmentTestComponentRenderer extends AssessmentObjectComponentRe
 		//<xsl:if test="($identifierMatch and @showHide='show') or (not($identifierMatch) and @showHide='hide')">
 		if((identifierMatch && testFeedback.getVisibilityMode() == VisibilityMode.SHOW_IF_MATCH)
 				|| (!identifierMatch && testFeedback.getVisibilityMode() == VisibilityMode.HIDE_IF_MATCH)) {
+			
 			sb.append("<h2>");
 			if(StringHelper.containsNonWhitespace(testFeedback.getTitle())) {
 				sb.append(StringHelper.escapeHtml(testFeedback.getTitle()));
@@ -590,10 +590,9 @@ public class AssessmentTestComponentRenderer extends AssessmentObjectComponentRe
 				sb.append(translator.translate("assessment.test.modal.feedback"));
 			}
 			sb.append("</h2>");
-			
-			final QtiSerializer serializer = CoreSpringFactory.getImpl(QTI21Service.class).qtiSerializer();
-			//TODO QTI flow: need to handle url, feedbackBlock... -->
-			testFeedback.getChildren().forEach((flow) -> sb.append(serializer.serializeJqtiObject(flow)));
+
+			testFeedback.getChildren().forEach((flow)
+				-> renderFlow(renderer, sb, component, null, null, flow, ubu, translator));
 		}
 	}
 	

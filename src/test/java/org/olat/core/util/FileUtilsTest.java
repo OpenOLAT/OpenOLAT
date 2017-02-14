@@ -46,4 +46,25 @@ public class FileUtilsTest {
 		String normalized = FileUtils.normalizeFilename(smorrebrod);
 		Assert.assertEquals(normalized, "Smorrebrod");
 	}
+
+
+	@Test
+	public void testMetaFiles() {
+		Assert.assertFalse(FileUtils.isMetaFilename(null));
+		Assert.assertFalse(FileUtils.isMetaFilename(""));
+		Assert.assertFalse(FileUtils.isMetaFilename("gugus"));
+		Assert.assertFalse(FileUtils.isMetaFilename(".Jüdelidü"));
+		Assert.assertFalse(FileUtils.isMetaFilename("./dings"));
+		
+		Assert.assertTrue(FileUtils.isMetaFilename(".DS_Store"));
+		Assert.assertTrue(FileUtils.isMetaFilename(".CVS"));
+		Assert.assertTrue(FileUtils.isMetaFilename(".nfs"));
+		Assert.assertTrue(FileUtils.isMetaFilename(".sass-cache"));
+		Assert.assertTrue(FileUtils.isMetaFilename(".hg"));
+
+		Assert.assertTrue(FileUtils.isMetaFilename("._"));
+		Assert.assertTrue(FileUtils.isMetaFilename("._gugus"));
+
+	}
+
 }

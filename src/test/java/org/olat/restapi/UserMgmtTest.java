@@ -1616,6 +1616,55 @@ public class UserMgmtTest extends OlatJerseyTestCase {
 		EntityUtils.consume(headNoResponse.getEntity());
 	}
 	
+	/**
+	 * Check the 3 sizes
+	 * @throws IOException
+	 * @throws URISyntaxException
+	 */
+	@Test
+	public void testPortrait_HEAD_sizes() throws IOException, URISyntaxException {
+		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("portrait-3");
+		
+		URL portraitUrl = UserMgmtTest.class.getResource("portrait.jpg");
+		Assert.assertNotNull(portraitUrl);
+		File portrait = new File(portraitUrl.toURI());
+		RestConnection conn = new RestConnection();
+		Assert.assertTrue(conn.login(id.getName(), "A6B7C8"));
+		
+		//upload portrait
+		URI request = UriBuilder.fromUri(getContextURI())
+				.path("users").path(id.getKey().toString()).path("portrait").build();
+		HttpPost method = conn.createPost(request, MediaType.APPLICATION_JSON);
+		conn.addMultipart(method, "portrait.jpg", portrait);
+		HttpResponse response = conn.execute(method);
+		assertEquals(200, response.getStatusLine().getStatusCode());
+		EntityUtils.consume(response.getEntity());
+		
+		//check 200
+		URI headMasterRequest = UriBuilder.fromUri(getContextURI())
+				.path("users").path(id.getKey().toString()).path("portrait").path("master").build();
+		HttpHead headMasterMethod = conn.createHead(headMasterRequest, MediaType.APPLICATION_OCTET_STREAM, true);
+		HttpResponse headMasterResponse = conn.execute(headMasterMethod);
+		assertEquals(200, headMasterResponse.getStatusLine().getStatusCode());
+		EntityUtils.consume(headMasterResponse.getEntity());
+		
+		//check 200
+		URI headBigRequest = UriBuilder.fromUri(getContextURI())
+				.path("users").path(id.getKey().toString()).path("portrait").path("big").build();
+		HttpHead headBigMethod = conn.createHead(headBigRequest, MediaType.APPLICATION_OCTET_STREAM, true);
+		HttpResponse headBigResponse = conn.execute(headBigMethod);
+		assertEquals(200, headBigResponse.getStatusLine().getStatusCode());
+		EntityUtils.consume(headBigResponse.getEntity());
+		
+		//check 200
+		URI headSmallRequest = UriBuilder.fromUri(getContextURI())
+				.path("users").path(id.getKey().toString()).path("portrait").path("small").build();
+		HttpHead headSmallMethod = conn.createHead(headSmallRequest, MediaType.APPLICATION_OCTET_STREAM, true);
+		HttpResponse headSmallResponse = conn.execute(headSmallMethod);
+		assertEquals(200, headSmallResponse.getStatusLine().getStatusCode());
+		EntityUtils.consume(headSmallResponse.getEntity());
+	}
+	
 	protected List<UserVO> parseUserArray(InputStream body) {
 		try {
 			ObjectMapper mapper = new ObjectMapper(jsonFactory); 

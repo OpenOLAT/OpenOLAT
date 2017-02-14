@@ -34,10 +34,10 @@ import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
-import org.olat.core.util.WorkThreadInformations;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
+import org.olat.core.util.vfs.filters.VFSItemFilter;
 import org.olat.search.service.SearchResourceContext;
 import org.olat.search.service.document.file.DocumentAccessException;
 import org.olat.search.service.document.file.FileDocumentFactory;
@@ -86,7 +86,7 @@ public class FolderIndexerWorker implements Callable<Boolean> {
 	throws IOException, InterruptedException {
 		// Items: List of VFSContainer & VFSLeaf
 		String myFilePath = fPath;
-		for (VFSItem item : cont.getItems()) {
+		for (VFSItem item : cont.getItems(new SystemFileFilter())) {
 			if (item instanceof VFSContainer) {
 				// ok it is a container go further
 				if (log.isDebug()) log.debug(item.getName() + " is a VFSContainer => go further ");
@@ -111,8 +111,6 @@ public class FolderIndexerWorker implements Callable<Boolean> {
 			if (docFactory.isFileSupported(leaf)) {
 				String myFilePath = fPath + "/" + leaf.getName();
 				leafResourceContext.setFilePath(myFilePath);
-				WorkThreadInformations.setInfoFiles(myFilePath, leaf);
-				WorkThreadInformations.set("Index VFSLeaf=" + myFilePath + " at " + leafResourceContext.getResourceUrl());
 				Document document = docFactory.createDocument(leafResourceContext, leaf);
 				if(document != null) {//document which are disabled return null
 					writer.addDocument(document);
@@ -128,8 +126,6 @@ public class FolderIndexerWorker implements Callable<Boolean> {
 			log.warn("IOException: Can not index leaf=" + leaf.getName(), ioEx);
 		} catch (Exception ex) {
 			log.warn("Exception: Can not index leaf=" + leaf.getName(), ex);
-		} finally {
-			WorkThreadInformations.unset();
 		}
 	}
 
@@ -151,5 +147,13 @@ public class FolderIndexerWorker implements Callable<Boolean> {
 
 	public void setAccessRule(FolderIndexerAccess accessRule) {
 		this.accessRule = accessRule;
+	}
+	
+	private static class SystemFileFilter implements VFSItemFilter {
+		@Override
+		public boolean accept(VFSItem vfsItem) {
+			String name = vfsItem.getName();
+			return !name.startsWith(".") && !name.equals("__MACOSX");
+		}
 	}
 }

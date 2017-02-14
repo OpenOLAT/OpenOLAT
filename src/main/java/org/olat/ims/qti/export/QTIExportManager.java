@@ -33,14 +33,17 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
 import org.apache.commons.io.IOUtils;
+import org.olat.core.gui.translator.Translator;
 import org.olat.core.manager.BasicManager;
 import org.olat.core.util.ExportUtil;
 import org.olat.core.util.Formatter;
+import org.olat.core.util.Util;
 import org.olat.ims.qti.QTIResult;
 import org.olat.ims.qti.QTIResultManager;
 import org.olat.ims.qti.export.helper.QTIItemObject;
@@ -106,7 +109,7 @@ public class QTIExportManager extends BasicManager{
 	}
 	
 	public boolean selectAndExportResults(QTIExportFormatter qef, Long courseResId, String shortTitle,
-			String olatResourceDetail, RepositoryEntry testRe, ZipOutputStream exportStream,
+			String olatResourceDetail, RepositoryEntry testRe, ZipOutputStream exportStream, Locale locale,
 			String fileNameSuffix) throws IOException {
 		boolean resultsFoundAndExported = false;
 		QTIResultManager qrm = QTIResultManager.getInstance();
@@ -116,13 +119,20 @@ public class QTIExportManager extends BasicManager{
 			qef.setQTIItemObjectList(qtiItemObjectList);
 			if (results.size() > 0) {
 				createContentOfExportFile(results, qtiItemObjectList, qef);
-				String targetFileName = getFilename(shortTitle, qef, fileNameSuffix);
+				String targetFileName = getFilename(shortTitle, fileNameSuffix);
 				
 				exportStream.putNextEntry(new ZipEntry(targetFileName));
 				IOUtils.write(qef.getReport(), exportStream);
 				exportStream.closeEntry();
 				resultsFoundAndExported = true;
 			}			
+		} else {
+			String targetFileName = getFilename(shortTitle, fileNameSuffix);			
+			exportStream.putNextEntry(new ZipEntry(targetFileName));
+			Translator translator = Util.createPackageTranslator(QTIExportFormatter.class, locale);
+			IOUtils.write(translator.translate("archive.noresults.short"), exportStream);
+			exportStream.closeEntry();
+			resultsFoundAndExported = true;
 		}
 		return resultsFoundAndExported;
 	}
@@ -191,17 +201,16 @@ public class QTIExportManager extends BasicManager{
 	 */
 	private String writeContentToFile(String shortTitle, File exportDirectory, String charset, QTIExportFormatter qef, String fileNameSuffix) {
 		// defining target filename
-		String targetFileName = getFilename(shortTitle, qef, fileNameSuffix);
+		String targetFileName = getFilename(shortTitle, fileNameSuffix);
 		File savedFile = ExportUtil.writeContentToFile(targetFileName, qef.getReport(), exportDirectory, charset);
 		return savedFile.getName();
 	}
 	
-	private String getFilename(String shortTitle, QTIExportFormatter qef, String fileNameSuffix) {
+	private String getFilename(String shortTitle, String fileNameSuffix) {
 		StringBuilder tf = new StringBuilder();
-		tf.append(qef.getFileNamePrefix());
 		tf.append(Formatter.makeStringFilesystemSave(shortTitle));
 		tf.append("_");
-		DateFormat myformat = new SimpleDateFormat("yyyy-MM-dd__hh-mm-ss__SSS");
+		DateFormat myformat = new SimpleDateFormat("yyyy-MM-dd__hh-mm");
 		String timestamp = myformat.format(new Date());
 		tf.append(timestamp);
 		tf.append(fileNameSuffix);

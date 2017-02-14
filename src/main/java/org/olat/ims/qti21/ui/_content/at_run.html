@@ -58,7 +58,7 @@
 			</div>
 		</div>
 	#elseif($r.visible("qtitree"))
-		<div id="o_main_left" style="">
+		<div id="o_main_left" style="#if($r.isNotNull($menuWidth))width: ${menuWidth}em;#end">
 			<div id="o_main_left_content" class="clearfix">$r.render("qtitree")</div>
 			<div id="o_main_left_toggle" class="hidden-print">
 				<span class="sr-only">Toggle content menu</span>
@@ -92,7 +92,7 @@ jQuery().ready(function() {
 	    	var leftCol = jQuery('#o_main_left');
 			var newEmWidth = Math.round(leftCol.width() / o_info.emPxFactor);
 			leftCol.width(newEmWidth + 'em');
-			jQuery.post('$r.commandURI("saveCol1Width")' + newEmWidth);
+			$r.openNoResponseJavaScriptCommand("saveLeftColWidth"), "newEmWidth", newEmWidth);
 	    }
 	});
 

@@ -207,7 +207,9 @@ public class BreadcrumbedStackedPanel extends Panel implements StackedPanel, Bre
 
 	@Override
 	public void dispatchEvent(UserRequest ureq, Component source, Event event) {
-		if (source.equals(backLink) || source.equals(closeLink)) {
+		boolean closeEvent = source.equals(closeLink);
+		boolean backEvent = source.equals(backLink);
+		if (backEvent || closeEvent) {
 			if (stack.size() > 1) {
 				// back means to one level down, change source to the stack item one below current
 				source = stack.get(stack.size()-2);
@@ -235,13 +237,12 @@ public class BreadcrumbedStackedPanel extends Panel implements StackedPanel, Bre
 				}
 				
 				if(popedCrumb.getController() != null) {
-					fireEvent(ureq, new PopEvent(popedCrumb.getController(), popedCrumb.getUserObject()));
+					fireEvent(ureq, new PopEvent(popedCrumb.getController(), popedCrumb.getUserObject(), closeEvent));
 				} else if(popedCrumb.getUserObject() != null) {
-					fireEvent(ureq, new PopEvent(popedCrumb.getUserObject()));
+					fireEvent(ureq, new PopEvent(popedCrumb.getUserObject(), closeEvent));
 				}
 			} else if(stack.indexOf(source) == 0) {
 				fireEvent(ureq, new RootEvent());
-				
 			}
 		}
 	}
@@ -397,7 +398,7 @@ public class BreadcrumbedStackedPanel extends Panel implements StackedPanel, Bre
 			BreadCrumb rootCrumb  = (BreadCrumb)rootLink.getUserObject();
 			setContent(rootCrumb.getController()); 
 			updateCloseLinkTitle();
-			fireEvent(ureq, new PopEvent(rootCrumb.getController()));
+			fireEvent(ureq, new PopEvent(rootCrumb.getController(), false));
 		}
 	}
 

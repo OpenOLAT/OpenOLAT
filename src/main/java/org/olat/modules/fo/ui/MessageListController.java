@@ -73,7 +73,7 @@ import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSMediaResource;
-import org.olat.core.util.vfs.filters.VFSItemExcludePrefixFilter;
+import org.olat.core.util.vfs.filters.VFSItemMetaFilter;
 import org.olat.modules.fo.Forum;
 import org.olat.modules.fo.ForumCallback;
 import org.olat.modules.fo.ForumChangedEvent;
@@ -593,7 +593,7 @@ public class MessageListController extends BasicController implements GenericEve
 		// message attachments
 		VFSContainer msgContainer = forumManager.getMessageContainer(forum.getKey(), m.getKey());
 		messageView.setMessageContainer(msgContainer);
-		List<VFSItem> attachments = new ArrayList<VFSItem>(msgContainer.getItems(new VFSItemExcludePrefixFilter(MessageEditController.ATTACHMENT_EXCLUDE_PREFIXES)));				
+		List<VFSItem> attachments = new ArrayList<VFSItem>(msgContainer.getItems(new VFSItemMetaFilter()));				
 		messageView.setAttachments(attachments);
 
 		// number of children and modify/delete permissions

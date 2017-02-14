@@ -259,6 +259,7 @@ CREATE TABLE o_user (
    u_telprivate varchar2(255 char),
    u_telmobile varchar2(255 char),
    u_teloffice varchar2(255 char),
+   u_smstelmobile varchar2(255 char),
    u_skype varchar2(255 char),
    u_msn varchar2(255 char),
    u_xing varchar2(255 char),
@@ -1949,6 +1950,18 @@ create table o_co_db_entry (
    primary key (id)
 );
 
+-- sms
+create table o_sms_message_log (
+   id number(20) GENERATED ALWAYS AS IDENTITY,
+   creationdate date not null,
+   lastmodified date not null,
+   s_message_uuid varchar2(256 char) not null,
+   s_server_response varchar2(256 char),
+   s_service_id varchar2(32 char) not null,
+   fk_identity number(20) not null,
+   primary key (id)
+);
+
 -- user view
 create view o_bs_identity_short_v as (
    select
@@ -2884,6 +2897,10 @@ alter table o_cer_certificate add constraint cer_to_resource_idx foreign key (fk
 create index cer_resource_idx on o_cer_certificate (fk_olatresource);
 create index cer_archived_resource_idx on o_cer_certificate (c_archived_resource_id);
 create index cer_uuid_idx on o_cer_certificate (c_uuid);
+
+-- sms
+alter table o_sms_message_log add constraint sms_log_to_identity_idx foreign key (fk_identity) references o_bs_identity (id);
+create index idx_sms_log_to_identity_idx on o_sms_message_log(fk_identity);
 
 -- o_logging_table
 create index log_target_resid_idx on o_loggingtable(targetresid);

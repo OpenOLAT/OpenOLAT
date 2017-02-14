@@ -228,6 +228,7 @@ create table o_user (
    u_telprivate varchar(255),
    u_telmobile varchar(255),
    u_teloffice varchar(255),
+   u_smstelmobile varchar(255),
    u_skype varchar(255),
    u_msn varchar(255),
    u_xing varchar(255),
@@ -1315,12 +1316,12 @@ create table o_vid_metadata (
   id bigserial not null,
   creationdate timestamp not null,
   lastmodified timestamp not null,
-  vid_width bigint default null,
-  vid_height bigint default null,
-  vid_size bigint default null,
+  vid_width int8 default null,
+  vid_height int8 default null,
+  vid_size int8 default null,
   vid_format varchar(32) default null,
   vid_length varchar(32) default null,
-  fk_resource_id bigint not null,
+  fk_resource_id int8 not null,
   primary key (id)
 );
 
@@ -1900,6 +1901,17 @@ create table o_ex_task_modifier (
    creationdate timestamp not null,
    fk_task_id int8 not null,
    fk_identity_id int8 not null,
+   primary key (id)
+);
+
+-- sms
+create table o_sms_message_log (
+   id bigserial not null,
+   creationdate timestamp not null,
+   lastmodified timestamp not null,
+   s_message_uuid varchar(256) not null,   s_server_response varchar(256),
+   s_service_id varchar(32) not null,
+   fk_identity int8 not null,
    primary key (id)
 );
 
@@ -2735,6 +2747,10 @@ alter table o_cer_certificate add constraint cer_to_resource_idx foreign key (fk
 create index cer_resource_idx on o_cer_certificate (fk_olatresource);
 create index cer_archived_resource_idx on o_cer_certificate (c_archived_resource_id);
 create index cer_uuid_idx on o_cer_certificate (c_uuid);
+
+-- sms
+alter table o_sms_message_log add constraint sms_log_to_identity_idx foreign key (fk_identity) references o_bs_identity (id);
+create index idx_sms_log_to_identity_idx on o_sms_message_log(fk_identity);
 
 -- o_logging_table
 create index log_target_resid_idx on o_loggingtable(targetresid);

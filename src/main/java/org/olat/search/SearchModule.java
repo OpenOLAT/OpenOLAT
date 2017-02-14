@@ -114,7 +114,9 @@ public class SearchModule extends AbstractSpringModule {
 	private String fullPdfTextBufferPath;
 
 	private long maxFileSize = 10485760;
-	private double ramBufferSizeMB = 16;
+
+	@Value("${search.ram.buffer.size:16}")
+	private double ramBufferSizeMB;
 	private boolean useCompoundFile = false;
 	
 	@Autowired @Qualifier("fileSizeSuffixes")
@@ -408,6 +410,10 @@ public class SearchModule extends AbstractSpringModule {
 
 	public double getRAMBufferSizeMB() {
 		return ramBufferSizeMB;
+	}
+	
+	public void setRAMBufferSizeMB(double ramBufferSizeMB) {
+		this.ramBufferSizeMB = ramBufferSizeMB;
 	}
 
 	public boolean getUseCompoundFile() {

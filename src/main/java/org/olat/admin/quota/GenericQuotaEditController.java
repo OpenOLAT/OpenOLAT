@@ -121,8 +121,9 @@ public class GenericQuotaEditController extends BasicController {
 
 	private void initMyContent(UserRequest ureq) {
 		QuotaManager qm = QuotaManager.getInstance();
-		if (!qm.hasQuotaEditRights(ureq.getIdentity()))
+		if (!qm.hasQuotaEditRights(ureq.getIdentity())) {
 			throw new OLATSecurityException("Insufficient permissions to access QuotaController");
+		}
 
 		myContent = createVelocityContainer("edit");
 		myContent.contextPut("modalMode", Boolean.valueOf(modalMode));
@@ -130,7 +131,6 @@ public class GenericQuotaEditController extends BasicController {
 		delQuotaButton = LinkFactory.createButtonSmall("qf.del", myContent, this);
 		cancelButton = LinkFactory.createButtonSmall("cancel", myContent, this);
 		
-		//TODO loop over QuotaManager.getDefaultQuotaIdentifyers instead
 		myContent.contextPut("users",qm.getDefaultQuota(QuotaConstants.IDENTIFIER_DEFAULT_USERS));
 		myContent.contextPut("powerusers",qm.getDefaultQuota(QuotaConstants.IDENTIFIER_DEFAULT_POWER));
 		myContent.contextPut("groups",qm.getDefaultQuota(QuotaConstants.IDENTIFIER_DEFAULT_GROUPS));

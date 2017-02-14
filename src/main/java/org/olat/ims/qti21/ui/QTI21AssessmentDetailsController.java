@@ -279,7 +279,7 @@ public class QTI21AssessmentDetailsController extends FormBasicController {
 				AssessmentTestSession row = tableModel.getObject(se.getIndex());
 				row = qtiService.getAssessmentTestSession(row.getKey());
 				if("open".equals(cmd)) {
-					if(row.getTerminationTime() == null) {
+					if(row.getFinishTime() == null) {
 						doConfirmPullSession(ureq, row);
 					} else {
 						doOpenResult(ureq, row);
@@ -363,8 +363,8 @@ public class QTI21AssessmentDetailsController extends FormBasicController {
 		FileResourceManager frm = FileResourceManager.getInstance();
 		File fUnzippedDirRoot = frm.unzipFileResource(session.getTestEntry().getOlatResource());
 		URI assessmentObjectUri = qtiService.createAssessmentObjectUri(fUnzippedDirRoot);
-		File submissionDir = qtiService.getAssessmentResultFile(session);
-		String mapperUri = registerCacheableMapper(null, "QTI21Resources::" + session.getTestEntry().getKey(),
+		File submissionDir = qtiService.getSubmissionDirectory(session);
+		String mapperUri = registerCacheableMapper(null, "QTI21DetailsResources::" + session.getKey(),
 				new ResourcesMapper(assessmentObjectUri, submissionDir));
 		
 		resultCtrl = new AssessmentResultController(ureq, getWindowControl(), assessedIdentity, false, session,
@@ -381,7 +381,13 @@ public class QTI21AssessmentDetailsController extends FormBasicController {
 		@Override
 		public int compare(AssessmentTestSession a1, AssessmentTestSession a2) {
 			Date t1 = a1.getTerminationTime();
+			if(t1 == null) {
+				t1 = a1.getFinishTime();
+			}
 			Date t2 = a2.getTerminationTime();
+			if(t2 == null) {
+				t2 = a2.getFinishTime();
+			}
 			
 			int c;
 			if(t1 == null && t2 == null) {

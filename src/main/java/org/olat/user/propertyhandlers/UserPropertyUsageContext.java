@@ -119,6 +119,16 @@ public class UserPropertyUsageContext {
 		if (propertyHandlers.contains(propertyHandler)) return; // do not add twice
 		propertyHandlers.add(propertyHandler);
 	}
+	
+	public void addPropertyHandler(int index, UserPropertyHandler propertyHandler) {
+		if (propertyHandlers.contains(propertyHandler)) return; // do not add twice
+		
+		if(index < 0 && index >= propertyHandlers.size()) {
+			propertyHandlers.add(propertyHandler);
+		} else {
+			propertyHandlers.add(index, propertyHandler);
+		}
+	}
 
 	/**
 	 * removes the given propertyHandler from this context
