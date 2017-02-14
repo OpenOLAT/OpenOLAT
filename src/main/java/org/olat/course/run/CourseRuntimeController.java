@@ -1432,7 +1432,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 		if (reSecurity.isEntryAdmin() || reSecurity.isCourseCoach() || reSecurity.isGroupCoach() || hasCourseRight(CourseRights.RIGHT_STATISTICS)) {
 			removeCustomCSS();
 			UserCourseEnvironmentImpl uce = getUserCourseEnvironment();
-			StatisticCourseNodesController ctrl = new StatisticCourseNodesController(ureq, swControl, toolbarPanel, uce, types);
+			StatisticCourseNodesController ctrl = new StatisticCourseNodesController(ureq, swControl, toolbarPanel,  reSecurity, uce, types);
 			listenTo(ctrl);
 			statsToolCtr = pushController(ureq, translate(i18nCrumbKey), ctrl);
 			currentToolCtr = statsToolCtr;

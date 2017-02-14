@@ -162,7 +162,7 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements Pe
 		Roles roles = ureq.getUserSession().getRoles();
 		Translator trans = Util.createPackageTranslator(IQTESTCourseNode.class, ureq.getLocale());
 		if (roles.isGuestOnly()) {
-			if(isGuestAllowedForQTI21()) {
+			if(isGuestAllowedForQTI21(getReferencedRepositoryEntry())) {
 				controller = new QTI21AssessmentRunController(ureq, wControl, userCourseEnv, this);
 			} else {
 				String title = trans.translate("guestnoaccess.title");
@@ -200,8 +200,7 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements Pe
 		return new NodeRunConstructionResult(ctrl);
 	}
 	
-	private boolean isGuestAllowedForQTI21() {
-		RepositoryEntry testEntry = getReferencedRepositoryEntry();
+	private boolean isGuestAllowedForQTI21(RepositoryEntry testEntry) {
 		OLATResource ores = testEntry.getOlatResource();
 		if(ImsQTI21Resource.TYPE_NAME.equals(ores.getResourceableTypeName())) {
 			QTI21DeliveryOptions options = CoreSpringFactory.getImpl(QTI21Service.class).getDeliveryOptions(testEntry);
@@ -291,10 +290,11 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements Pe
 		if(ImsQTI21Resource.TYPE_NAME.equals(qtiTestEntry.getOlatResource().getResourceableTypeName())) {
 			RepositoryEntry courseEntry = userCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
 			QTI21StatisticSearchParams searchParams = new QTI21StatisticSearchParams(qtiTestEntry, courseEntry, getIdent());
-			QTI21DeliveryOptions deliveryOptions = CoreSpringFactory.getImpl(QTI21Service.class)
-					.getDeliveryOptions(qtiTestEntry);
 			boolean admin = userCourseEnv.isAdmin();
-			QTI21StatisticsSecurityCallback secCallback = new QTI21StatisticsSecurityCallback(admin, admin && deliveryOptions.isAllowAnonym());
+			if(options.getParticipantsGroups() != null) {
+				searchParams.setLimitToGroups(options.getParticipantsGroups());
+			}
+			QTI21StatisticsSecurityCallback secCallback = new QTI21StatisticsSecurityCallback(admin, admin && isGuestAllowedForQTI21(qtiTestEntry));
 			return new QTI21StatisticResourceResult(qtiTestEntry, courseEntry, this, searchParams, secCallback);
 		}
 		
@@ -637,7 +637,6 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements Pe
 
 		// 1) prepare result export
 		CourseEnvironment courseEnv = course.getCourseEnvironment();
-		List<Identity> identities = ScoreAccountingHelper.loadUsers(courseEnv, options);
 		//create SyntheticUserRequest with UserSession to avoid Nullpointer in AssessmentResultController
 		UserRequest ureq = new SyntheticUserRequest(new TransientIdentity(), locale, new UserSession());
 		Roles roles = new Roles(false, false, false, false, false, false, false);
@@ -656,14 +655,18 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements Pe
 			} else if(ImsQTI21Resource.TYPE_NAME.equals(re.getOlatResource().getResourceableTypeName())) {
 				// 2a) create export resource
 				QTI21Service qtiService = CoreSpringFactory.getImpl(QTI21Service.class);
+
+				List<Identity> identities = ScoreAccountingHelper.loadUsers(courseEnv, options);
 				new QTI21ResultsExportMediaResource(courseEnv, identities, this, qtiService, ureq, locale).exportTestResults(exportStream);
-				// excel results				
-				QTI21ArchiveFormat qaf = new QTI21ArchiveFormat(locale, true, true, true);
+				// excel results
 				RepositoryEntry courseEntry = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
-				qaf.export(courseEntry, getIdent(), re, exportStream);
+				QTI21StatisticSearchParams searchParams = new QTI21StatisticSearchParams(options, re, courseEntry, getIdent());
+				QTI21ArchiveFormat qaf = new QTI21ArchiveFormat(locale, searchParams);
+				qaf.exportCourseElement(exportStream);
 				return true;	
 			} else {
 				// 2b) create export resource
+				List<Identity> identities = ScoreAccountingHelper.loadUsers(courseEnv, options);
 				new QTI12ResultsExportMediaResource(courseEnv, locale, identities, this).exportTestResults(exportStream);
 				// excel results
 				String shortTitle = getShortTitle();

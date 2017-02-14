@@ -25,11 +25,9 @@
 
 package org.olat.course.run.userview;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import org.olat.basesecurity.Group;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.PersistenceHelper;
 import org.olat.core.gui.control.WindowControl;
@@ -231,26 +229,6 @@ public class UserCourseEnvironmentImpl implements UserCourseEnvironment {
 			courseRepoEntry = courseEnvironment.getCourseGroupManager().getCourseEntry();
 		}
 		return courseRepoEntry;
-	}
-	
-	public List<Group> getCoachedBaseGroups(boolean withRepo, boolean withBusinessGroups) {
-		List<Group> groups;
-		if(isCoach()) {
-			boolean repoCoach = false;
-			groups = new ArrayList<Group>();
-			if(withBusinessGroups && sizeCoachedGroups() > 0) {
-				for(BusinessGroup businessGroup: getCoachedGroups()) {
-					groups.add(businessGroup.getBaseGroup());
-				}
-			}
-			
-			if(withRepo && repoCoach) {
-				//TODO groups 
-			}
-		} else {
-			groups = Collections.emptyList();
-		}
-		return groups;
 	}
 	
 	public int sizeCoachedGroups() {

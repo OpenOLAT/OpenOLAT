@@ -51,7 +51,11 @@ import org.olat.course.ICourse;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.course.run.userview.UserCourseEnvironmentImpl;
+import org.olat.group.BusinessGroup;
 import org.olat.ims.qti.statistics.QTIType;
+import org.olat.repository.RepositoryService;
+import org.olat.repository.model.RepositoryEntrySecurity;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -67,22 +71,31 @@ public class StatisticCourseNodesController extends BasicController implements A
 	private final QTIType[] types;
 	private final StatisticResourceOption options;
 	
+	@Autowired
+	private RepositoryService repositoryService;
+	
 	public StatisticCourseNodesController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
-			UserCourseEnvironment userCourseEnv, QTIType ... types) {
+			RepositoryEntrySecurity reSecurity, UserCourseEnvironment userCourseEnv, QTIType ... types) {
 		super(ureq, wControl);
 
 		this.types = types;
 		this.stackPanel = stackPanel;
 		options = new StatisticResourceOption();
-		
-		boolean admin = userCourseEnv.isAdmin();
-		boolean coach = userCourseEnv.isCoach();
-		if(coach && !admin) {
+
+		if(!reSecurity.isEntryAdmin() && !reSecurity.isOwner()) {
+			List<Group> groups = new ArrayList<>();
 			UserCourseEnvironmentImpl userCourseEnvImpl = (UserCourseEnvironmentImpl)userCourseEnv;
-			List<Group> coachedGroups = userCourseEnvImpl.getCoachedBaseGroups(true, true);
-			if(coachedGroups == null || coachedGroups.isEmpty()) {
-				options.setParticipantsGroups(coachedGroups);
+			if(reSecurity.isCourseCoach()) {
+				Group bGroup = repositoryService.getDefaultGroup(userCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry());
+				groups.add(bGroup);
 			}
+			if(reSecurity.isGroupCoach()) {
+				List<BusinessGroup> businessGroups = userCourseEnvImpl.getCoachedGroups();
+				for(BusinessGroup businessGroup:businessGroups) {
+					groups.add(businessGroup.getBaseGroup());
+				}
+			}
+			options.setParticipantsGroups(groups);
 		}
 
 		courseTree = new MenuTree("assessmentStatisticsTree");

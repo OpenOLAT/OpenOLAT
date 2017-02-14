@@ -52,7 +52,6 @@ import org.olat.ims.qti21.QTI21DeliveryOptions;
 import org.olat.ims.qti21.QTI21Service;
 import org.olat.ims.qti21.model.QTI21StatisticSearchParams;
 import org.olat.modules.assessment.AssessmentToolOptions;
-import org.olat.modules.assessment.AssessmentToolOptions.AlternativeToIdentities;
 import org.olat.repository.RepositoryEntry;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -82,6 +81,16 @@ public class QTI21StatisticsToolController extends BasicController implements Ac
 	@Autowired
 	private QTI21Service qtiService;
 	
+	/**
+	 * This is the statistics tool for the assessment tool.
+	 * 
+	 * @param ureq
+	 * @param wControl
+	 * @param stackPanel
+	 * @param courseEnv
+	 * @param asOptions
+	 * @param courseNode
+	 */
 	public QTI21StatisticsToolController(UserRequest ureq, WindowControl wControl, 
 			TooledStackedPanel stackPanel, CourseEnvironment courseEnv,
 			AssessmentToolOptions asOptions, QTICourseNode courseNode) {
@@ -98,14 +107,16 @@ public class QTI21StatisticsToolController extends BasicController implements Ac
 		secCallback = new QTI21StatisticsSecurityCallback(asOptions.isAdmin(), asOptions.isAdmin() && deliveryOptions.isAllowAnonym());
 		
 		searchParams = new QTI21StatisticSearchParams(testEntry, courseEntry, courseNode.getIdent());
-		searchParams.setViewAnonymUsers(secCallback.canViewAnonymousUsers());
+		searchParams.setViewAnonymUsers(false);//In assessment tool, no user allowed
+		searchParams.setViewAllUsers(false);
 		
-		if(asOptions.getGroup() != null) {
+		if(asOptions.getGroup() != null) {// filter by business group
 			List<Group> bGroups = Collections.singletonList(asOptions.getGroup().getBaseGroup());
 			searchParams.setLimitToGroups(bGroups);
-		} else if(asOptions.getAlternativeToIdentities() != null) {
-			AlternativeToIdentities alt = asOptions.getAlternativeToIdentities();
-			searchParams.setLimitToGroups(alt.getGroups());
+		} else if(asOptions.getGroups() != null) {
+			searchParams.setLimitToGroups(asOptions.getGroups());
+		} else {
+			searchParams.setViewNonMembers(asOptions.isNonMembers());
 		}
 		
 		statsButton = LinkFactory.createButton("menu.title", null, this);
@@ -168,6 +179,7 @@ public class QTI21StatisticsToolController extends BasicController implements Ac
 	private void doLaunchStatistics(UserRequest ureq, WindowControl wControl) {
 		if(result == null) {
 			result = new QTI21StatisticResourceResult(testEntry, courseEntry, courseNode, searchParams, secCallback);
+			result.setWithFilter(false);
 		}
 		
 		GenericTreeModel treeModel = new GenericTreeModel();

@@ -35,8 +35,10 @@ public class AssessmentToolOptions {
 	
 	private boolean admin;
 	private BusinessGroup group;
+	private List<Group> groups;
 	private List<Identity> identities;
-	private AlternativeToIdentities alternativeToIdentities;
+	
+	private boolean nonMembers;
 	
 	public AssessmentToolOptions() {
 		//
@@ -48,6 +50,14 @@ public class AssessmentToolOptions {
 
 	public void setAdmin(boolean admin) {
 		this.admin = admin;
+	}
+
+	public boolean isNonMembers() {
+		return nonMembers;
+	}
+
+	public void setNonMembers(boolean nonMembers) {
+		this.nonMembers = nonMembers;
 	}
 
 	public BusinessGroup getGroup() {
@@ -65,35 +75,15 @@ public class AssessmentToolOptions {
 	public void setIdentities(List<Identity> identities) {
 		this.identities = identities;
 	}
-	
-	public AlternativeToIdentities getAlternativeToIdentities() {
-		return alternativeToIdentities;
-	}
-	
-	public void setAlternativeToIdentities(List<Group> groups, boolean mayViewAllUsersAssessments) {
-		alternativeToIdentities = new AlternativeToIdentities();
-		alternativeToIdentities.setGroups(groups);
-		alternativeToIdentities.setMayViewAllUsersAssessments(mayViewAllUsersAssessments);
-	}
-	
-	public static class AlternativeToIdentities {
-		private List<Group> groups;
-		private boolean mayViewAllUsersAssessments;
 
-		public List<Group> getGroups() {
-			return groups;
-		}
-		
-		public void setGroups(List<Group> groups) {
-			this.groups = groups;
-		}
-		
-		public boolean isMayViewAllUsersAssessments() {
-			return mayViewAllUsersAssessments;
-		}
-		
-		public void setMayViewAllUsersAssessments(boolean mayViewAllUsersAssessments) {
-			this.mayViewAllUsersAssessments = mayViewAllUsersAssessments;
-		}	
+	public List<Group> getGroups() {
+		return groups;
 	}
+
+	public void setGroups(List<Group> groups) {
+		this.groups = groups;
+	}
+	
+	
+	
 }

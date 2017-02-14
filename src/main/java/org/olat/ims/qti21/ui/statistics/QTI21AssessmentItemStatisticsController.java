@@ -80,7 +80,8 @@ public class QTI21AssessmentItemStatisticsController extends BasicController {
 	private QTI21StatisticsManager qtiStatisticsManager;
 	
 	public QTI21AssessmentItemStatisticsController(UserRequest ureq, WindowControl wControl,
-			AssessmentItemRef itemRef, AssessmentItem item, String sectionTitle, QTI21StatisticResourceResult resourceResult, boolean printMode) {
+			AssessmentItemRef itemRef, AssessmentItem item, String sectionTitle, QTI21StatisticResourceResult resourceResult,
+			boolean withFilter, boolean printMode) {
 		super(ureq, wControl);
 		
 		this.item = item;
@@ -103,7 +104,7 @@ public class QTI21AssessmentItemStatisticsController extends BasicController {
 			mainVC.contextPut("itemCss", "o_mi_qtiunkown");
 		}
 		
-		if(resourceResult.canViewAnonymousUsers() || resourceResult.canViewNonParticipantUsers()) {
+		if(withFilter && (resourceResult.canViewAnonymousUsers() || resourceResult.canViewNonParticipantUsers())) {
 			filterCtrl = new UserFilterController(ureq, getWindowControl(),
 					resourceResult.canViewNonParticipantUsers(), resourceResult.canViewAnonymousUsers(),
 					resourceResult.isViewNonParticipantUsers(), resourceResult.isViewAnonymousUsers());

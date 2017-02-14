@@ -198,7 +198,6 @@ public class RepositoryEntryRelationDAO {
 
 		return dbInstance.getCurrentEntityManager().createQuery(sb.toString(), Group.class)
 				.setParameter("repoKey", re.getKey())
-				.setHint("org.hibernate.cacheable", Boolean.TRUE)
 				.getSingleResult();
 	}
 	
