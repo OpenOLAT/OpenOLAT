@@ -1,0 +1,191 @@
+@charset "UTF-8";
+
+/* Highscore component */
+$o-podium-first-bg				: gold;
+$o-podium-second-bg				: silver;
+$o-podium-third-bg				: #965A38;
+
+$o-rank-first-color				: black;
+$o-rank-second-color			: black;
+$o-rank-third-color				: white;
+
+$o-podium-height				: 300px;
+$o-podium-margin-bottom			: 50px;
+$o-podium-first-height			: 150px;
+$o-podium-second-height			: 100px;
+$o-podium-third-height			: 80px;
+
+$o-singleportrait-vertical-align: -125px;
+$o-position-height				: 30px;
+$o-position-fontsize			: 130%;
+
+$o-histogram-height				: 300px;
+$o-histogram-bottom				: -40px;
+$o-histogram-margin-bottom		: 40px;
+
+$o-histogram-axis-color				: #888;
+$o-histogram-text-color				: #888;
+$o-histogram-bar-myself-color		: blue;
+$o-histogram-bar-myself-hover-color	: lightblue;
+$o-histogram-bar-other-color		: silver;
+$o-histogram-bar-other-hover-color	: #eee;
+$o-histogram-bar-empty-color		: black;
+
+.o_highscore {
+
+	.o_position {
+		position: relative;
+		vertical-align: bottom;
+		height: $o-position-height;
+		width: 80%;
+		left: 10%;
+		background-color: $o-podium-second-bg	;
+		font-size: $o-position-fontsize;
+		color: $o-podium-third-bg;
+		padding-left: 20px;
+		border-style: ridge;
+		border-width: 3px;
+		border-color: $o-podium-first-bg	;
+	}
+
+	.o_podium {
+		position: relative;
+		vertical-align: bottom;
+		height: $o-podium-height;
+		margin-bottom: $o-podium-margin-bottom;
+	}
+
+	.o_rank {
+		width: 30%;
+		position: absolute;
+		bottom: 0;
+		&:before {
+			position: absolute;
+			bottom: 0;
+			left: 0;
+			width: 100%;
+			text-align: center;	
+		}
+		.o_name {
+			position: absolute;
+			top: 100%;
+			width: 100%;
+			text-align: center;
+			white-space: nowrap;
+			overflow: hidden;
+			text-overflow: ellipsis;
+			padding-top: 1em;
+		}
+		.o_score {
+			width: 100%;
+			text-align: center;
+			position: absolute;
+			top: -20px;
+		}
+		.o_singleportrait {
+			position: absolute;
+			width: 100%;
+			text-align: center;
+			top: $o-singleportrait-vertical-align;
+		}
+		.o_rank_portraits {
+			position: relative; 
+			left: 0; 
+			top:-200px; 
+			height: 180px; 
+			width: 100%; 
+			text-align: center; 
+			vertical-align: bottom;
+			display: table-cell;
+			lu {
+				display: inline-block;
+			}
+			.o_portrait {
+				margin: 5px;
+			}
+		}
+	}
+
+
+	.o_first {
+		height: $o-podium-first-height;
+		background-color: $o-podium-first-bg	;
+		left: 30%;
+		&:before {
+			content: "1";
+			font-size: 700%;
+			color: $o-rank-first-color	;
+		}
+	}
+
+	.o_second {
+		height: $o-podium-second-height;
+		background-color: $o-podium-second-bg	;
+		left: 0;
+		&:before {
+			content: "2";
+			font-size: 500%;
+			color: $o-rank-second-color;
+		}
+	}
+
+	.o_third {
+		height: $o-podium-third-height;
+		background-color: $o-podium-third-bg;
+		left: 60%;
+		&:before {
+			content: "3";
+			font-size: 300%;
+			color: $o-rank-third-color;
+		}
+	}
+
+
+	.o_histogram {
+		position: relative;
+		bottom: $o-histogram-bottom;
+		margin-bottom: $o-histogram-margin-bottom;
+		.d3chart {
+			width: 100%;
+			padding-top: 50px;
+			height: $o-histogram-height;
+			text {
+				fill: $o-histogram-text-color;
+			}
+			.axis {
+				path, line {
+					stroke: $o-histogram-axis-color;
+				}
+			}
+			.o_myself {
+				fill: $o-histogram-bar-myself-color;
+				&:hover {
+					fill: $o-histogram-bar-myself-hover-color;
+				}
+			}
+			.o_other {
+				fill: $o-histogram-bar-other-color;
+				&:hover {
+					fill: $o-histogram-bar-other-hover-color;
+				}
+			}
+			.o_empty {
+				fill: $o-histogram-bar-empty-color;	
+			}
+		}	
+	}
+
+
+	/* Align both tables the same way */
+	.o_listing {
+		table {
+			th {
+				&:nth-of-type(1),:nth-of-type(2) {
+					width: 5em;
+				}
+			}
+		}
+	}
+
+}
+
