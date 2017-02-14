@@ -116,13 +116,21 @@ public class QTI21StatisticsManagerImpl implements QTI21StatisticsManager {
 			  .append(" )");
 		} else if(searchParams.getLimitToGroups() != null && searchParams.getLimitToGroups().size() > 0) {
 			sb.append(" and asession.identity.key in ( select membership.identity.key from bgroupmember membership")
-			  .append("   where membership.group in (:baseGroups)")
+			  .append("   where membership.group in (:baseGroups) and membership.role='").append(GroupRole.participant).append("'")
 			  .append(" )");
 		} else {
 			//limit to participants
-			sb.append(" and asession.identity.key in ( select membership.identity.key from repoentrytogroup as rel, bgroup as reBaseGroup, bgroupmember membership ")
-			  .append("   where rel.entry.key=:repositoryEntryKey and rel.group.key=reBaseGroup.key and membership.group.key=reBaseGroup.key and membership.role='").append(GroupRole.participant).append("'")
-			  .append(" )");
+			sb.append(" and (asession.identity.key in ( select membership.identity.key from repoentrytogroup as rel, bgroupmember membership ")
+			  .append("   where rel.entry.key=:repositoryEntryKey and rel.group.key=membership.group.key and membership.role='").append(GroupRole.participant).append("'")
+			  //.append("   where rel.entry.key=:repositoryEntryKey and rel.group.key=reBaseGroup.key and membership.group.key=reBaseGroup.key and membership.role='").append(GroupRole.participant).append("'")
+			   .append(" )");
+			// add non members
+			if(searchParams.isViewNonMembers()) {
+				sb.append(" or asession.identity.key not in (select membership.identity.key from repoentrytogroup as rel, bgroupmember as membership")
+			      .append("    where rel.entry.key=:repositoryEntryKey and rel.group.key=membership.group.key")
+			      .append(" )");
+			}
+			sb.append(")");
 		}
 
 		return sb;

@@ -55,7 +55,7 @@ public class FileTypeDetector {
 		if("doc".equals(suffix)) {
 			if(checkMagicBytes(leaf, ZIP)) return "docx";
 		} else if("xls".equals(suffix)) {
-			if(checkMagicBytes(leaf, ZIP)) return "xslx";
+			if(checkMagicBytes(leaf, ZIP)) return "xlsx";
 		} else if("ppt".equals(suffix)) {
 			if(checkMagicBytes(leaf, ZIP)) return "pptx";
 		}

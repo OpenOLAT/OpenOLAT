@@ -1,4 +1,4 @@
-#if($r.available("filter"))
+#if($r.available("filter") && !$printMode)
 <div class="o_button_group o_button_group_right">
 	$r.render("filter")
 </div>

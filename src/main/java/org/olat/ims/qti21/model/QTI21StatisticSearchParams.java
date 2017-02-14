@@ -19,9 +19,12 @@
  */
 package org.olat.ims.qti21.model;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.olat.basesecurity.Group;
+import org.olat.core.id.Identity;
+import org.olat.course.nodes.ArchiveOptions;
 import org.olat.repository.RepositoryEntry;
 
 /**
@@ -37,14 +40,44 @@ public class QTI21StatisticSearchParams {
 	private final RepositoryEntry testEntry;
 
 	private List<Group> limitToGroups;
+	private List<Identity> limitToIdentities;
 	
 	private boolean viewAnonymUsers;
 	private boolean viewAllUsers;
+	private boolean viewNonMembers;
+	
+	public QTI21StatisticSearchParams(ArchiveOptions options, RepositoryEntry testEntry, RepositoryEntry courseEntry, String nodeIdent) {
+		this.testEntry = testEntry;
+		this.courseEntry = courseEntry;
+		this.nodeIdent = nodeIdent;
+		
+		if(options == null) {
+			viewAnonymUsers = true;
+			viewAllUsers = true;
+		} else if(options.getGroup() != null) {
+			limitToGroups = new ArrayList<>(2);
+			limitToGroups.add(options.getGroup().getBaseGroup());
+		} else if(options.getIdentities() != null) {
+			limitToIdentities = new ArrayList<>(options.getIdentities());
+		} else {
+			viewAnonymUsers = true;
+			viewAllUsers = true;
+		}
+	}
 	
 	public QTI21StatisticSearchParams(RepositoryEntry testEntry, RepositoryEntry courseEntry, String nodeIdent) {
 		this.nodeIdent = nodeIdent;
 		this.courseEntry = courseEntry;
 		this.testEntry = testEntry;
+	}
+	
+	public QTI21StatisticSearchParams(RepositoryEntry testEntry, RepositoryEntry courseEntry, String nodeIdent,
+			boolean viewAllUsers, boolean viewAnonymUsers) {
+		this.nodeIdent = nodeIdent;
+		this.courseEntry = courseEntry;
+		this.testEntry = testEntry;
+		this.viewAllUsers = viewAllUsers;
+		this.viewAnonymUsers = viewAnonymUsers;
 	}
 	
 	public RepositoryEntry getTestEntry() {
@@ -67,12 +100,28 @@ public class QTI21StatisticSearchParams {
 		this.limitToGroups = limitToGroups;
 	}
 	
+	public List<Identity> getLimitToIdentities() {
+		return limitToIdentities;
+	}
+
+	public void setLimitToIdentities(List<Identity> limitToIdentities) {
+		this.limitToIdentities = limitToIdentities;
+	}
+	
 	public boolean isViewAllUsers() {
 		return viewAllUsers;
 	}
 	
 	public void setViewAllUsers(boolean view) {
 		this.viewAllUsers = view;
+	}
+
+	public boolean isViewNonMembers() {
+		return viewNonMembers;
+	}
+
+	public void setViewNonMembers(boolean viewNonMembers) {
+		this.viewNonMembers = viewNonMembers;
 	}
 
 	public boolean isViewAnonymUsers() {

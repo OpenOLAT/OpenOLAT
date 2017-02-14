@@ -358,8 +358,12 @@ public class IdentityListCourseNodeController extends FormBasicController implem
 			AssessmentToolOptions options = new AssessmentToolOptions();
 			options.setAdmin(assessmentCallback.isAdmin());
 			if(group == null) {
-				options.setIdentities(assessedIdentities);
-				fillAlternativeToAssessableIdentityList(options);
+				if(assessmentCallback.isAdmin()) {
+					options.setNonMembers(params.isNonMembers());
+				} else {
+					options.setIdentities(assessedIdentities);
+					fillAlternativeToAssessableIdentityList(options, params);
+				}
 			} else {
 				options.setGroup(group);
 			}
@@ -383,29 +387,7 @@ public class IdentityListCourseNodeController extends FormBasicController implem
 		flc.contextPut("toolCmpNames", toolCmpNames);
 	}
 	
-	/*
-	private boolean accept(AssessmentEntry entry, SearchAssessedIdentityParams params) {
-		boolean ok = true;
-		
-		if(params.isPassed() && (entry == null || entry.getPassed() == null || !entry.getPassed().booleanValue())) {
-			ok &= false;
-		}
-		
-		if(params.isFailed() && (entry == null || entry.getPassed() == null || entry.getPassed().booleanValue())) {
-			ok &= false;
-		}
-		
-		if(params.getAssessmentStatus() != null && params.getAssessmentStatus().size() > 0) {
-			if(entry == null || entry.getAssessmentStatus() == null) {
-				ok &= false;
-			} else {
-				ok &= !params.getAssessmentStatus().contains(entry.getAssessmentStatus());
-			}
-		}
-		return ok;
-	}*/
-	
-	private void fillAlternativeToAssessableIdentityList(AssessmentToolOptions options) {
+	private void fillAlternativeToAssessableIdentityList(AssessmentToolOptions options, SearchAssessedIdentityParams params) {
 		List<Group> baseGroups = new ArrayList<>();
 		if((assessmentCallback.canAssessRepositoryEntryMembers()
 				&& (assessmentCallback.getCoachedGroups() == null || assessmentCallback.getCoachedGroups().isEmpty()))
@@ -417,7 +399,8 @@ public class IdentityListCourseNodeController extends FormBasicController implem
 				baseGroups.add(coachedGroup.getBaseGroup());
 			}
 		}
-		options.setAlternativeToIdentities(baseGroups, assessmentCallback.canAssessNonMembers());
+		options.setGroups(baseGroups);
+		options.setNonMembers(params.isNonMembers());
 	}
 
 	@Override

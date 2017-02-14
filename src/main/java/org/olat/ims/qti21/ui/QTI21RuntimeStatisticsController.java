@@ -27,6 +27,8 @@ import org.olat.core.commons.fullWebApp.LayoutMain3ColsController;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.panel.Panel;
+import org.olat.core.gui.components.stack.TooledController;
+import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.components.tree.MenuTree;
 import org.olat.core.gui.components.tree.TreeEvent;
 import org.olat.core.gui.components.tree.TreeModel;
@@ -46,7 +48,6 @@ import org.olat.ims.qti21.model.QTI21StatisticSearchParams;
 import org.olat.ims.qti21.ui.statistics.QTI21StatisticResourceResult;
 import org.olat.ims.qti21.ui.statistics.QTI21StatisticsSecurityCallback;
 import org.olat.modules.assessment.AssessmentToolOptions;
-import org.olat.modules.assessment.AssessmentToolOptions.AlternativeToIdentities;
 import org.olat.repository.RepositoryEntry;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -56,9 +57,11 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class QTI21RuntimeStatisticsController extends BasicController implements Activateable2 {
+public class QTI21RuntimeStatisticsController extends BasicController implements Activateable2, TooledController {
 
 	private MenuTree courseTree;
+	private TooledStackedPanel stackPanel;
+	
 	private Controller currentCtrl;
 	private LayoutMain3ColsController layoutCtr;
 
@@ -70,9 +73,10 @@ public class QTI21RuntimeStatisticsController extends BasicController implements
 	@Autowired
 	private QTI21Service qtiService;
 	
-	public QTI21RuntimeStatisticsController(UserRequest ureq, WindowControl wControl, 
+	public QTI21RuntimeStatisticsController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
 			RepositoryEntry testEntry, AssessmentToolOptions asOptions) {
 		super(ureq, wControl);
+		this.stackPanel = stackPanel;
 		options = new ArchiveOptions();
 		options.setGroup(asOptions.getGroup());
 		options.setIdentities(asOptions.getIdentities());
@@ -81,9 +85,8 @@ public class QTI21RuntimeStatisticsController extends BasicController implements
 		if(asOptions.getGroup() != null) {
 			List<Group> bGroups = Collections.singletonList(asOptions.getGroup().getBaseGroup());
 			searchParams.setLimitToGroups(bGroups);
-		} else if(asOptions.getAlternativeToIdentities() != null) {
-			AlternativeToIdentities alt = asOptions.getAlternativeToIdentities();
-			searchParams.setLimitToGroups(alt.getGroups());
+		} else if(asOptions.getGroups() != null) {
+			searchParams.setLimitToGroups(asOptions.getGroups());
 		}
 		
 		QTI21DeliveryOptions deliveryOptions = qtiService.getDeliveryOptions(testEntry);
@@ -101,6 +104,13 @@ public class QTI21RuntimeStatisticsController extends BasicController implements
 		
 		TreeNode rootNode = courseTree.getTreeModel().getRootNode();
 		doSelectNode(ureq, rootNode);
+	}
+	
+	@Override
+	public void initTools() {
+		if(currentCtrl instanceof TooledController) {
+			((TooledController)currentCtrl).initTools();
+		}
 	}
 
 	@Override
@@ -141,7 +151,7 @@ public class QTI21RuntimeStatisticsController extends BasicController implements
 	private void doSelectNode(UserRequest ureq, TreeNode selectedNode) {
 		removeAsListenerAndDispose(currentCtrl);
 		WindowControl swControl = addToHistory(ureq, OresHelper.createOLATResourceableInstance(selectedNode.getIdent(), 0l), null);
-		currentCtrl = resourceResult.getController(ureq, swControl, selectedNode, false);
+		currentCtrl = resourceResult.getController(ureq, swControl, stackPanel, selectedNode, false);
 		if(currentCtrl != null) {
 			listenTo(currentCtrl);
 			layoutCtr.setCol3(currentCtrl.getInitialComponent());

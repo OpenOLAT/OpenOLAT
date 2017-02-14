@@ -64,6 +64,7 @@ import org.olat.ims.qti.editor.beecom.parser.ItemParser;
 import org.olat.ims.qti.export.helper.QTIItemObject;
 import org.olat.ims.qti.export.helper.QTIObjectTreeBuilder;
 import org.olat.ims.qti21.manager.archive.QTI21ArchiveFormat;
+import org.olat.ims.qti21.model.QTI21StatisticSearchParams;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.handlers.RepositoryHandler;
 import org.olat.repository.handlers.RepositoryHandlerFactory;
@@ -223,7 +224,8 @@ public class QTIArchiver {
 	    } else if(ImsQTI21Resource.TYPE_NAME.equals(testRe.getOlatResource().getResourceableTypeName())) {
 	    	type = Type.qti21;
 	    	RepositoryEntry courseEntry = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
-	    	success = new QTI21ArchiveFormat(locale, participants, allUsers, anonymUsers).hasResults(courseEntry, courseNode.getIdent(), testRe);
+	    	QTI21StatisticSearchParams searchParams = new QTI21StatisticSearchParams(testRe, courseEntry, courseNode.getIdent(), allUsers, anonymUsers);
+	    	success = new QTI21ArchiveFormat(locale, searchParams).hasResults();
 	    } else {
 	    	type = Type.qti12;
 			success = qrm.hasResultSets(courseOres.getResourceableId(), courseNode.getIdent(), testRe.getKey());
@@ -268,7 +270,8 @@ public class QTIArchiver {
 		ICourse course = CourseFactory.loadCourse(courseOres);
 		RepositoryEntry testRe = courseNode.getReferencedRepositoryEntry();
     	RepositoryEntry courseEntry = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
-		return (new QTI21ArchiveFormat(locale, participants, allUsers, anonymUsers)).export(courseEntry, courseNode.getIdent(), testRe);
+    	QTI21StatisticSearchParams searchParams = new QTI21StatisticSearchParams(testRe, courseEntry, courseNode.getIdent(), allUsers, anonymUsers);
+		return new QTI21ArchiveFormat(locale, searchParams).exportCourseElement();
 	}
 	
 	public MediaResource exportQTI12() throws IOException {

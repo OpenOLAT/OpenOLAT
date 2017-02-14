@@ -1,0 +1,14 @@
+#if($r.isNotNull($courseTitle))
+<h3>$courseTitle</h3>
+#end
+<h3>$testTitle</h3>
+#foreach($pageName in $pageNames)
+	<div #if ($velocityCount > 1) class="o_print_break_before" #end>
+	$r.render($pageName)
+	</div>
+#end
+<script type='text/javascript'>
+/* <![CDATA[ */
+	window.print();
+/* ]]> */
+</script>

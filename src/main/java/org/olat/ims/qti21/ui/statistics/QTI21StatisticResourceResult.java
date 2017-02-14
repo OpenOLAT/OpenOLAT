@@ -77,6 +77,8 @@ public class QTI21StatisticResourceResult implements StatisticResourceResult {
 	
 	private final QTI21Service qtiService;
 	private final QTI21StatisticsManager qtiStatisticsManager;
+	
+	private boolean withFilter = true;
 
 	public QTI21StatisticResourceResult(RepositoryEntry testEntry, QTI21StatisticSearchParams searchParams,
 			QTI21StatisticsSecurityCallback secCallback) {
@@ -159,6 +161,14 @@ public class QTI21StatisticResourceResult implements StatisticResourceResult {
 		searchParams.setViewAllUsers(view);
 	}
 	
+	public boolean isWithFilter() {
+		return withFilter;
+	}
+
+	public void setWithFilter(boolean withFilter) {
+		this.withFilter = withFilter;
+	}
+
 	/**
 	 * Return the tree model for a test learn resource.
 	 * 
@@ -212,7 +222,6 @@ public class QTI21StatisticResourceResult implements StatisticResourceResult {
 					firstItem = itemNode;
 				}
 			}
-			rootTreeNode.setDelegate(firstItem);
 		} else {
 			int counter = 0;
 			for(TestPart part:parts) {
@@ -288,13 +297,13 @@ public class QTI21StatisticResourceResult implements StatisticResourceResult {
 
 	@Override
 	public Controller getController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel, TreeNode selectedNode) {
-		return getController(ureq, wControl, selectedNode, false);
+		return getController(ureq, wControl, stackPanel, selectedNode, false);
 	}
 	
-	public Controller getController(UserRequest ureq, WindowControl wControl,
+	public Controller getController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
 			TreeNode selectedNode, boolean printMode) {	
 		if(selectedNode instanceof StatisticResourceNode) {
-			return createAssessmentController(ureq, wControl, printMode);
+			return createAssessmentController(ureq, wControl, stackPanel, printMode);
 		} else {
 			Object uobject = selectedNode.getUserObject();
 			
@@ -304,14 +313,14 @@ public class QTI21StatisticResourceResult implements StatisticResourceResult {
 				return createAssessmentItemController(ureq, wControl,
 						(AssessmentItemRef)uobject, sectionTitle, printMode);
 			} else if(uobject instanceof AssessmentTest) {
-				return createAssessmentController(ureq, wControl, printMode);
+				return createAssessmentController(ureq, wControl, stackPanel, printMode);
 			}
 		}
 		return null;
 	}
 	
-	private Controller createAssessmentController(UserRequest ureq, WindowControl wControl, boolean printMode) {
-		Controller ctrl = new QTI21AssessmentTestStatisticsController(ureq, wControl, this, printMode);
+	private Controller createAssessmentController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel, boolean printMode) {
+		Controller ctrl = new QTI21AssessmentTestStatisticsController(ureq, wControl, stackPanel, this, withFilter, printMode);
 		if(courseNode != null) {
 			CourseNodeConfiguration cnConfig = CourseNodeFactory.getInstance()
 					.getCourseNodeConfigurationEvenForDisabledBB(courseNode.getType());
@@ -325,7 +334,7 @@ public class QTI21StatisticResourceResult implements StatisticResourceResult {
 			AssessmentItemRef assessmentItemRef, String sectionTitle, boolean printMode) {
 		ResolvedAssessmentItem resolvedAssessmentItem = resolvedAssessmentTest.getResolvedAssessmentItem(assessmentItemRef);
 		AssessmentItem assessmentItem = resolvedAssessmentItem.getItemLookup().getRootNodeHolder().getRootNode();
-		Controller ctrl = new QTI21AssessmentItemStatisticsController(ureq, wControl, assessmentItemRef, assessmentItem, sectionTitle, this, printMode);
+		Controller ctrl = new QTI21AssessmentItemStatisticsController(ureq, wControl, assessmentItemRef, assessmentItem, sectionTitle, this, withFilter, printMode);
 		String iconCssClass = "o_mi_qtisc";
 		if(courseNode != null) {
 			ctrl = TitledWrapperHelper.getWrapper(ureq, wControl, ctrl, courseNode, iconCssClass);

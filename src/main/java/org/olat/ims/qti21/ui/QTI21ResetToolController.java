@@ -59,6 +59,7 @@ import org.olat.course.run.userview.UserCourseEnvironmentImpl;
 import org.olat.group.BusinessGroupService;
 import org.olat.ims.qti21.QTI21Service;
 import org.olat.ims.qti21.manager.archive.QTI21ArchiveFormat;
+import org.olat.ims.qti21.model.QTI21StatisticSearchParams;
 import org.olat.modules.assessment.AssessmentToolOptions;
 import org.olat.repository.RepositoryEntry;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -218,7 +219,9 @@ public class QTI21ResetToolController extends BasicController {
 		
 		try(FileOutputStream fileStream = new FileOutputStream(exportFile);
 			ZipOutputStream exportStream = new ZipOutputStream(fileStream)) {
-			new QTI21ArchiveFormat(getLocale(), true, true, true).export(testEntry, exportStream);
+			//author can do this, also they can archive all users and anonyme users
+	    	QTI21StatisticSearchParams searchParams = new QTI21StatisticSearchParams(testEntry, null, null, true, true);
+			new QTI21ArchiveFormat(getLocale(), searchParams).exportResource(exportStream);
 		} catch (IOException e) {
 			logError("", e);
 		}
