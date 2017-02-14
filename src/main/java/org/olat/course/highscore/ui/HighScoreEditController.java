@@ -53,7 +53,9 @@ public class HighScoreEditController extends FormBasicController {
 	private final static String[] yesOrNoKeys = new String[] { "highscore.all", "highscore.bestonly" };
 	
 	/** configuration: boolean has a podium */
-	public static final String CONFIG_KEY_HIGHSCORE= "allowHighscore";
+	public static final String CONFIG_KEY_HIGHSCORE= "allowHighscore";	
+	/** configuration: boolean has a position */
+	public static final String CONFIG_KEY_POSITION= "position";
 	/** configuration: boolean has a podium */
 	public static final String CONFIG_KEY_PODIUM = "podium";
 	/** configuration: boolean has a histogram */
@@ -74,6 +76,7 @@ public class HighScoreEditController extends FormBasicController {
 	private SingleSelection horizontalRadioButtons;
 	
 	private SelectionElement allowHighScore;
+	private SelectionElement showPosition;
 	private SelectionElement showPodium;
 	private SelectionElement showHistogram;
 	private SelectionElement showListing;
@@ -113,17 +116,23 @@ public class HighScoreEditController extends FormBasicController {
 		dateStart.setDateChooserTimeEnabled(true);
 		dateStart.setValidDateCheck("valid.date");
 		formLayout.add(dateStart);
-		
-		uifactory.addSpacerElement("spacer", formLayout, false);
 
 		displayAnonymous = uifactory.addCheckboxesHorizontal("highscore.anonymize", formLayout, new String[] { "xx" },
 				new String[] { null });
+		
+		uifactory.addSpacerElement("spacer", formLayout, false);
+
+		showPosition = uifactory.addCheckboxesHorizontal("highscore.position", formLayout, new String[] { "xx" },
+				new String[] { translate("option.show") });	
+		showPosition.addActionListener(FormEvent.ONCLICK);
 		showPodium = uifactory.addCheckboxesHorizontal("highscore.podium", formLayout, new String[] { "xx" },
-				new String[] { null });
+				new String[] { translate("option.show") });
+		showPodium.addActionListener(FormEvent.ONCLICK);
 		showHistogram = uifactory.addCheckboxesHorizontal("highscore.histogram", formLayout, new String[] { "xx" },
-				new String[] { null });
+				new String[] { translate("option.show") });
+		showHistogram.addActionListener(FormEvent.ONCLICK);
 		showListing = uifactory.addCheckboxesHorizontal("highscore.listing", formLayout, new String[] { "xx" },
-				new String[] { null });
+				new String[] { translate("option.show") });
 		showListing.addActionListener(FormEvent.ONCLICK);
 
 		// Translate the keys to the yes and no option values
@@ -162,12 +171,20 @@ public class HighScoreEditController extends FormBasicController {
 		} else if (source == horizontalRadioButtons){
 			activateTopUsers();
 		}
+		
+		if (allowHighScore.isSelected(0) && (!showPosition.isSelected(0) && !showPodium.isSelected(0)
+				&& !showListing.isSelected(0) && !showHistogram.isSelected(0))) {
+			allowHighScore.setErrorKey("highscore.error.noselection", null);
+		} else {
+			allowHighScore.clearError();
+		}
 	}
 	
 	private void setFromConfig() {
 		config = msNode.getModuleConfiguration();
 		boolean allowhighscore = config.getBooleanSafe(CONFIG_KEY_HIGHSCORE);
 		allowHighScore.select("xx", allowhighscore);
+		showPosition.select("xx", config.getBooleanSafe(CONFIG_KEY_POSITION));
 		showPodium.select("xx", config.getBooleanSafe(CONFIG_KEY_PODIUM));
 		showHistogram.select("xx", config.getBooleanSafe(CONFIG_KEY_HISTOGRAM));
 		displayAnonymous.select("xx", config.getBooleanSafe(CONFIG_KEY_ANONYMIZE));
@@ -191,7 +208,7 @@ public class HighScoreEditController extends FormBasicController {
 	
 	private void activateForm (boolean init){
 		boolean formactive = allowHighScore.isSelected(0);
-		SelectionElement[] checkboxes = {showPodium,showHistogram,showListing,displayAnonymous};		
+		SelectionElement[] checkboxes = {showPosition,showPodium,showHistogram,showListing,displayAnonymous};		
 		for (int i = 0; i < checkboxes.length; i++) {
 			checkboxes[i].setEnabled(formactive);
 			if (!init) {
@@ -220,6 +237,7 @@ public class HighScoreEditController extends FormBasicController {
 	
 	public void updateModuleConfiguration(ModuleConfiguration moduleConfiguration) {
 		moduleConfiguration.set(CONFIG_KEY_HIGHSCORE, allowHighScore.isSelected(0));
+		moduleConfiguration.set(CONFIG_KEY_POSITION, showPosition.isSelected(0));
 		moduleConfiguration.set(CONFIG_KEY_PODIUM, showPodium.isSelected(0));
 		moduleConfiguration.set(CONFIG_KEY_HISTOGRAM, showHistogram.isSelected(0));
 		moduleConfiguration.set(CONFIG_KEY_LISTING, showListing.isSelected(0));
@@ -244,8 +262,7 @@ public class HighScoreEditController extends FormBasicController {
 
 	@Override
 	protected void doDispose() {
-		// TODO Auto-generated method stub
-
+		// nothing to dispose
 	}
 	
 	

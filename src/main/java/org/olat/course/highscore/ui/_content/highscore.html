@@ -1,186 +1,91 @@
-<style>
-.line {
-	fill: none;
-	stroke: steelblue;
-	stroke-width: 2px;
-}
-
-
-.o_podium {
-	position: relative;
-	vertical-align: bottom;
-	height: 300px;
-	margin-bottom: 50px;
-}
-
-.o_rank {
-	width: 30%;
-	position: absolute;
-	bottom: 0;
-}
-.o_rank:before {
-	position: absolute;
-	bottom: 0;
-	left: 0;
-	width: 100%;
-	text-align: center;
-}
-
-.o_rank .o_name {
-	position: absolute;
-	top: 100%;
-	width: 100%;
-	text-align: center;
-	white-space: nowrap;
-	overflow: hidden;
-	text-overflow: ellipsis;
-	padding-top: 1em;
-}
-
-.o_rank .o_score {
-	width: 100%;
-	text-align: center;
-	position: absolute;
-	top: -20px;
-}
-
-.o_first {
-	height: 150px;
-	background-color: gold;
-	left: 30%;
-}
-.o_first:before {
-	content: "1";
-	font-size: 700%;
-}
-
-.o_second {
-	height: 100px;
-	background-color: silver;
-	left: 0;
-}
-.o_second:before {
-	content: "2";
-	font-size: 500%;
-}
-
-.o_third {
-	height: 80px;
-	background-color: #965A38;
-	left: 60%;
-}
-
-.o_third:before {
-	content: "3";
-	font-size: 300%;
-}
-
-.o_rank .o_portrait {
-	position: absolute;
-	width: 100%;
-	text-align: center;
-}
-.o_rank.o_first .o_portrait {
-	top: -125px;
-}
-.o_rank.o_second .o_portrait {
-	top: -70px;
-}
-.o_rank.o_second .o_portrait .o_portrait_avatar_small, 
-.o_rank.o_second .o_portrait .o_portrait_dummy_small, 
-.o_rank.o_second .o_portrait .o_portrait_dummy_female_small, 
-.o_rank.o_second .o_portrait .o_portrait_dummy_male_small, 
-.o_rank.o_second .o_portrait .o_portrait_anonymous_small {
-	width: 50px;
-	height: 50px;
-}
-
-.o_rank.o_third .o_portrait {
-	top: -50px;
-}
-
-.o_histogram {
-	position: relative;
-	bottom: -40px;
-	margin-bottom: 40px;
-}
-.o_histogram .d3chart {
-	width: 100%;
-	padding-top: 50px;
-	height: 300px;
-}
-
-.o_histogram .d3chart .axis path, 
-.o_histogram .d3chart .axis line {
-	stroke: #888;
-}
-.o_histogram .d3chart text {
-	fill: #888;
-}
-
-/* Align both tables the same way */
-.o_listing table th:nth-of-type(1),
-.o_listing table th:nth-of-type(2) {
-	width: 5em;
-}
-
-.o_histogram .d3chart .o_myself {
-	fill: blue;
-}
-.o_histogram .d3chart .o_myself:hover {
-	fill: lightblue;
-}
-.o_histogram .d3chart .o_other {
-	fill: silver;
-}
-.o_histogram .d3chart .o_other:hover {
-	fill: #eee;
-}
-.o_histogram .d3chart .o_empty {
-	fill: black;
-}
-
-</style>
-
 <div class="panel panel-default o_comment">
-	<div class="panel-heading" data-toggle="collapse"
-		data-target="#collapseHighscore">
+	<div class="panel-heading" data-toggle="collapse" data-target="#o_collapseHighscore">
 		<h4 class="panel-title">
-			<i id="collapseHighscoreToggler"
-				class="o_icon o_icon-fw o_icon_close_togglebox"> </i>
+			<i id="o_collapseHighscoreToggler" class="o_icon o_icon-fw #if($showConfig) o_icon_close_togglebox #else o_icon_open_togglebox #end "> </i>
 			$r.translate("highscore.title")
 		</h4>
 	</div>
-	<div id="collapseHighscore" class="panel-collapse collapse in">
+	<div id="o_collapseHighscore" class="panel-collapse collapse #if($showConfig) in #end">
 		<div class="panel-body">
-			<div class="container-fluid">
+			<div class="container-fluid o_highscore">
 			<div class="row clearfix">
+			#if ($position) 
+				<div class="o_position">$position</div>
+			#end
 				#if ($first)
 				<div class="col-sm-6 o_podium">
 					<div class="o_rank o_first">
-						#if ($r.available("portrait1")) $r.render("portrait1") 
-						<div class="o_score">$score1 $r.translate("graph.axis.points")</div>
+						#if ($r.available("portrait1")) 
+							<div class="o_singleportrait">$r.render("portrait1")</div> 	
+						#else
+							#if ($number1) 
+								<ul class="list-inline o_rank_portraits">
+								 	#foreach ($i in [1..$number1])
+										<li>$r.render("portrait1-$i")</li>						
+									#end					
+								</ul>
+							#end
 						#end
-						<div class="o_name">$first</br>
-						#if ($r.available("link1")) $r.render("link1") #end 						
+						#if ($score1)
+							<div class="o_score">$score1 $r.translate("graph.axis.points")</div>
+						#end
+						<div class="o_name">
+						#if ($first != "")$first<br />#end
+						#if ($r.available("link1")) 
+							$r.render("link1") 
+						#elseif ($further1)
+							$further1
+						#end 						
 						</div>
 					</div>
 	
 					<div class="o_rank o_second">
-						#if ($r.available("portrait2")) $r.render("portrait2") 
-						<div class="o_score">$score2 $r.translate("graph.axis.points")</div>
+						#if ($r.available("portrait2")) 
+							<div class="o_singleportrait">$r.render("portrait2")</div>
+						#else
+							#if ($number2)
+								<ul class="list-inline o_rank_portraits">
+									#foreach ($i in [1..$number2])
+										<li>$r.render("portrait2-$i")</li>						
+									#end
+								</ul>
+							#end	
 						#end
-						<div class="o_name">$second</br>
-						#if ($r.available("link2")) $r.render("link2") #end 						
+						#if ($score2)
+							<div class="o_score">$score2 $r.translate("graph.axis.points")</div>
+						#end
+						<div class="o_name">
+						#if ($second != "")$second<br /> #end
+						#if ($r.available("link2")) 
+							$r.render("link2") 
+						#elseif ($further2)
+							$further2
+						#end 						
 						</div>
 					</div>
-	
+									
 					<div class="o_rank o_third">
-						#if ($r.available("portrait3")) $r.render("portrait3") 
-						<div class="o_score">$score3 $r.translate("graph.axis.points")</div>
+						#if ($r.available("portrait3")) 
+							<div class="o_singleportrait">$r.render("portrait3")</div> 
+						#else
+							#if ($number3)
+								<ul class="list-inline o_rank_portraits">
+								 	#foreach ($i in [1..$number3])
+										<li>$r.render("portrait3-$i")</li>						
+									#end
+								</ul>
+							#end
 						#end
-						<div class="o_name">$third</br>
-						#if ($r.available("link3")) $r.render("link3") #end 						
+						#if ($score3)
+							<div class="o_score">$score3 $r.translate("graph.axis.points")</div>
+						#end
+						<div class="o_name">
+						#if ($third != "")$third<br />#end
+						#if ($r.available("link3")) 
+							$r.render("link3")	
+						#elseif ($further3)
+							$further3 
+						#end 						
 						</div>
 					</div>
 	
@@ -205,3 +110,12 @@
 		</div>
 	</div>
 </div>
+<script type='text/javascript'>/* <![CDATA[ */
+		jQuery('#o_collapseHighscore').on('hide.bs.collapse', function () {
+			jQuery('#o_collapseHighscoreToggler').removeClass('o_icon_close_togglebox').addClass('o_icon_open_togglebox');
+	  		$r.backgroundCommand("hide")
+		}).on('show.bs.collapse', function () {
+			jQuery('#o_collapseHighscoreToggler').removeClass('o_icon_open_togglebox').addClass('o_icon_close_togglebox');
+			$r.backgroundCommand("show")
+		})
+	/* ]]> */</script>

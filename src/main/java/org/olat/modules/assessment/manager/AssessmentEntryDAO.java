@@ -208,8 +208,15 @@ public class AssessmentEntryDAO {
 	 * @return A list of assessment entries
 	 */
 	public List<AssessmentEntry> loadAssessmentEntryBySubIdent(RepositoryEntryRef entry, String subIdent) {
+		
+		StringBuilder sb = new StringBuilder();
+		sb.append("select data from assessmententry data ")
+		   .append(" left join fetch data.identity ident") 
+		   .append(" left join fetch ident.user identuser")
+		   .append(" where data.repositoryEntry.key=:repositoryEntryKey and data.subIdent=:subIdent");
+
 		return dbInstance.getCurrentEntityManager()
-				.createNamedQuery("loadAssessmentEntryByRepositoryEntryAndSubIdent", AssessmentEntry.class)
+				.createQuery(sb.toString(), AssessmentEntry.class)
 				.setParameter("repositoryEntryKey", entry.getKey())
 				.setParameter("subIdent", subIdent)
 				.getResultList();

@@ -455,6 +455,37 @@ $o-datecomp-month-color			: #fff !default;
 $o-datecomp-day-bg				: $body-bg !default;
 $o-datecomp-day-color			: $text-color !default;
 
+/* Highscore component */
+$o-hs-podium-first-bg				: gold !default;
+$o-hs-podium-second-bg				: silver !default;
+$o-hs-podium-third-bg				: #965A38 !default;
+
+$o-hs-rank-first-color				: black !default;
+$o-hs-rank-second-color				: black !default;
+$o-hs-rank-third-color				: white !default;
+
+$o-hs-podium-height					: 300px !default;
+$o-hs-podium-margin-bottom			: 50px !default;
+$o-hs-podium-first-height			: 150px !default;
+$o-hs-podium-second-height			: 100px !default;
+$o-hs-podium-third-height			: 80px !default;
+
+$o-hs-singleportrait-vertical-align	: -125px !default;
+$o-hs-position-height				: 30px !default;
+$o-hs-position-fontsize				: 130% !default;
+
+$o-hs-histogram-height				: 300px !default;
+$o-hs-histogram-bottom				: -40px !default;
+$o-hs-histogram-margin-bottom		: 40px !default;
+
+$o-hs-histogram-axis-color				: #888 !default;
+$o-hs-histogram-text-color				: #888 !default;
+$o-hs-histogram-bar-myself-color		: blue !default;
+$o-hs-histogram-bar-myself-hover-color	: lightblue !default;
+$o-hs-histogram-bar-other-color			: silver !default;
+$o-hs-histogram-bar-other-hover-color	: #eee !default;
+$o-hs-histogram-bar-empty-color			: black !default;
+
 /* Process step component */
 $o-step-border-width		: 4px !default;
 $o-step-milestone-size		: ($o-step-border-width * 4) !default;

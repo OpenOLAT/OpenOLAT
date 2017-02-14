@@ -4,6 +4,7 @@
             values: [],
             colors: [],
             cut: null,
+            step: null,
             participants: -1,
             mapperUrl: '-',
             barHeight: 40,
@@ -727,9 +728,14 @@
     	var cut = settings.cut;
      	var maxScore = d3.max(values, function(d) { return d; });
     	var minScore = d3.min(values, function(d) { return d; });
-    	var max = maxScore + 1;
-    	var min = minScore - 1;
 
+    	var step = 1;
+    	if (settings.step != null) {
+    		step = settings.step;
+    	}
+    	var max = maxScore + step;
+    	var min = minScore - step;
+    	
     	if(maxScore < 1.0) {
     		maxScore = 1.0;
     	}
@@ -738,15 +744,10 @@
     	  .range([0, width]);
     	
 //    	console.log(lquartile,hquartile,means,width,x(lquartile));
-    	var step = 1;
     	
-    	if (max-min>100){
-    		step = Math.round((max-min)/100);
-    	}
-    	var range = d3.range(min, max + 1 , step);
+    	var range = d3.range(min, max + step, step)
     	
     	var data = d3.layout.histogram()
-//    	  .bins(x.ticks((max-min)*4))
     	  .bins(range)
     	  (values);
     	
@@ -780,10 +781,10 @@
 	  	var svg = d3.select('#' + $obj.attr('id')).append('svg')
 	  	  .attr('width', width + margin.left + margin.right)
 	  	  .attr('height', height + margin.top + margin.bottom)
-	  	 .append('g')
+	  	  .append('g')
 	  	  .attr('transform', 'translate(' + margin.left + ',' + margin.top + ')');
 
-	  	var value = d3.range(min , max + 1 , 1)
+	  	var value = d3.range(min, max + step, step);
   		var bar = svg.selectAll('.bar')
 	  		.data(data)
 	  		.enter().append('g')
@@ -797,7 +798,6 @@
 	  		.append('rect')
 	  		.attr('x', function (d,i){ return - (width / value.length)/2;})
 	  		.attr('y', function (d){return height - y(d.y);})
-//	  		.attr('width', (width / value.length))
 	  		.attr('width', (width / range.length))
 	  		.attr('height', function (d){return 0;})
 	  		.style('opacity', 0)
@@ -807,57 +807,7 @@
 	 	  	.attr('height', function(d) { return height - y(d.y); })
 	 	  	.style('opacity', 1);
 	  	
-	  	var line = d3.svg.line()
-			.x(function(d) { return x(d.x); })
-			.y(function(d) { return y2(d.y); })
-			.interpolate('basis');
-	  	
-	  	
-	  	function normal (x){
-	  		sigma = Math.pow(d3.deviation(values),2);
-	  		fx = 1/(Math.sqrt(2*sigma*Math.PI))*Math.exp(-Math.pow(x-means,2)/(2*sigma));
-	  		return fx;
-	  	}
-	  	
-	  	var smoo = [];
-		for (var int2 = 0; int2 < value.length; int2++) {
-			smoo.push({'x': value[int2] , 'y': normal (value[int2])});		  		
-		}
- 	
-		var path = svg.append("path")
-		.attr("d", line(smoo))
-		.attr("stroke", "steelblue")
-		.attr("stroke-width", "2")
-		.attr("fill", "none");
-		
-		var totalLength = path.node().getTotalLength();
-		
-		var totalLength = path.node().getTotalLength();
-		
-		path.attr("stroke-dasharray", totalLength + " " + totalLength)
-		.attr("stroke-dashoffset", totalLength)
-		.transition()
-		.duration(2000)
-		.ease("linear")
-		.attr("stroke-dashoffset", 0);
-		
-		svg.on("click", function(){
-			path      
-			.transition()
-			.duration(2000)
-			.ease("linear")
-			.attr("stroke-dashoffset", totalLength);
-		})
-		
-		  	
-//	 if (values.length > 10){
-//		 svg.append("path")
-//		 .data([smoo])
-//		 .attr("class", "line")
-//		 .attr("d", line)
-//		 .attr('stroke', 'blue')
-//		 .attr('stroke-width', 2);	 
-//	 } 	
+
 	  	
 	  	svg.append('g')
 	  	  .attr('class', 'y axis')
@@ -893,47 +843,7 @@
 	  	  .style('text-anchor', 'middle')
 	  	  .text(settings.yRightLegend);
 	        
-		 if (values.length > 20) {
-		     svg.append("line")
-		        .attr("x1", x(lquartile))
-		        .attr("y1", 0)
-		        .attr("x2", x(lquartile))  
-		        .attr("y2", height)
-		        .style("stroke-width", 2)
-		        .style("stroke", "grey")
-		        .style("fill", "none");
-		     
-		     svg.append("line")
-		        .attr("x1", x(hquartile))  
-		        .attr("y1", 0)
-		        .attr("x2", x(hquartile))  
-		        .attr("y2", height)
-		        .style("stroke-width", 2)
-		        .style("stroke", "grey")
-		        .style("fill", "none");
-		 }
-		 
-	     var imgs = svg.selectAll(".image").data(data);
-	     imgs.enter()
-	     .append("image")
-	     .style('opacity', 0)
-//	     .attr("xlink:href", "https://github.com/favicon.ico")
-//	     .attr("xlink:href","http://www.openolat.com/wp-uploads/2013/04/openolat_logo_72.png")
-	     .attr("xlink:href", location.protocol + "//" + location.host + settings.mapperUrl)
-	     .attr("x", 0 )
-	     .attr("y", height)
-	     .attr("width", "0")
-	     .attr("height", "0")
-	     .transition()
-	     .delay(function(d,i) { return i; })
-	     .duration(500)
-	     .style('opacity', 1)     
-	     .attr("x", x(cut) -10 )
-	     .attr("y", -20)
-	     .attr("width", "20")
-	     .attr("height", "20");
 
   }
     
-
 }( jQuery ));

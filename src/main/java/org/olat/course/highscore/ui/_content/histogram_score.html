@@ -6,6 +6,7 @@ jQuery(function () {
 	jQuery('#histogram_$r.getCId()').qtiStatistics('highScore', {
 		values: [$datas],
         cut: #if($cutValue) $cutValue #else null #end,
+	    step: #if($step) $step #else null #end,
         mapperUrl: '$mapperUrl',
         xBottomLegend: '$r.translate("graph.axis.points")',
         yLeftLegend: '$r.translate("graph.axis.percent")',

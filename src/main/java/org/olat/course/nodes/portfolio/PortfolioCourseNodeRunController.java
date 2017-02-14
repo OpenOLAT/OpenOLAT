@@ -145,7 +145,8 @@ public class PortfolioCourseNodeRunController extends FormBasicController {
 		
 		VelocityContainer mainVC = ((FormLayoutContainer) formLayout).getFormItemComponent();
 		if (courseNode.getModuleConfiguration().getBooleanSafe(MSCourseNode.CONFIG_KEY_HAS_SCORE_FIELD,false)){
-			HighScoreRunController highScoreCtr = new HighScoreRunController(ureq, getWindowControl(), userCourseEnv, courseNode);
+			HighScoreRunController highScoreCtr = new HighScoreRunController(ureq, getWindowControl(), userCourseEnv,
+					courseNode, this.mainForm);
 			if (highScoreCtr.isViewHighscore()) {
 				Component highScoreComponent = highScoreCtr.getInitialComponent();
 				mainVC.put("highScore", highScoreComponent);							

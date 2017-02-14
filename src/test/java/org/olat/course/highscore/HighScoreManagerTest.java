@@ -108,8 +108,12 @@ public class HighScoreManagerTest extends OlatTestCase {
 		assertEquals(allMembers.size(), scores.length);
 		assertTrue(allScores[0] > 20);
 		assertTrue(allScores[2] < 10);
-		// Test for hasScore method
-		assertFalse(highScoreManager.hasScore(assessEntries, assessedIdentity));
+		
+		double[] histogramData = highScoreManager.processHistogramData(allScores, 0F, 30F);
+		assertNotNull(histogramData);
+
+		long classwidth = highScoreManager.getClasswidth();
+		assertEquals(2L, classwidth);
 		
 	}
 

@@ -1,7 +1,7 @@
 <div id="$r.getCId()" class="o_course_run">
 #if ($hasScore || $hasPassed)
 	<div class="panel panel-default o_personal">
-	  	<div class="panel-heading">$r.translate("score.title")</div>
+	  	<div class="panel-heading"><h4 class="panel-title">$r.translate("score.title")</h4></div>
 		<table class="table">
 		<tbody>
 			#if ($hasScore)
@@ -41,6 +41,11 @@
 			</div>
 		#end
 	</div>
+	
+	#if ($r.available("highScore"))
+		$r.render("highScore")
+	#end
+	
  #end
 
 #if ($children && $children.size() > 0)
@@ -59,9 +64,6 @@
 			#end
 		</div>
 	</div>
-#end
-#if ($r.available("highScore"))
-	$r.render("highScore")
 #end
 
 <script type="text/javascript">
