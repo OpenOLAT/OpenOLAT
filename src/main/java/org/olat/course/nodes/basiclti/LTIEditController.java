@@ -103,7 +103,7 @@ public class LTIEditController extends ActivateableTabbableDefaultController imp
 		previewButton = LinkFactory.createButtonSmall("command.preview", myContent, this);
 		previewButton.setIconLeftCSS("o_icon o_icon_preview");
 		
-		highScoreNodeConfigController = new HighScoreEditController(ureq, wControl, courseNode, euce);
+		highScoreNodeConfigController = new HighScoreEditController(ureq, wControl, courseNode);
 		listenTo(highScoreNodeConfigController);
 		
 		ltConfigForm = new LTIConfigForm(ureq, wControl, config);
@@ -116,7 +116,7 @@ public class LTIEditController extends ActivateableTabbableDefaultController imp
 		Condition accessCondition = courseNode.getPreConditionAccess();
 		accessibilityCondContr = new ConditionEditController(ureq, getWindowControl(), euce, accessCondition,
 				AssessmentHelper.getAssessableNodes(editorModel, ltCourseNode));		
-    this.listenTo(accessibilityCondContr);
+		this.listenTo(accessibilityCondContr);
 
 		// Enable preview button only if node configuration is valid
 		if (!(ltCourseNode.isConfigValid().isError())) myContent.contextPut("showPreviewButton", Boolean.TRUE);

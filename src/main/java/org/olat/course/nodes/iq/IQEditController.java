@@ -268,7 +268,7 @@ public class IQEditController extends ActivateableTabbableDefaultController impl
 		configurationCtrl = new IQConfigurationController(ureq, getWindowControl(), this.stackPanel, course, courseNode, euce, type);
 		listenTo(configurationCtrl);
 		
-		highScoreNodeConfigController = new HighScoreEditController(ureq, getWindowControl(), courseNode, euce);
+		highScoreNodeConfigController = new HighScoreEditController(ureq, getWindowControl(), courseNode);
 		listenTo(highScoreNodeConfigController);
 
 		Condition accessCondition = courseNode.getPreConditionAccess();

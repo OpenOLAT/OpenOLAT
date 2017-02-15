@@ -102,7 +102,7 @@ public class PortfolioCourseNodeEditController extends ActivateableTabbableDefau
 		listenTo(accessibilityCondContr);
 		
 		//highscore
-		highScoreNodeConfigController = new HighScoreEditController(ureq, wControl, node, euce);
+		highScoreNodeConfigController = new HighScoreEditController(ureq, wControl, node);
 		listenTo(highScoreNodeConfigController);
 		
 	// if there is already user data available, make for read only

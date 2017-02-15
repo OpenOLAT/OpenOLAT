@@ -704,12 +704,6 @@
     	  .attr('dy', '1em')
     	  .style('text-anchor', 'middle')
     	  .text(settings.yRightLegend);
-    	
-    	svg.append('g')
-    	  .attr('d', lineFunc(values))
-    	  .attr('stroke', 'blue')
-    	  .attr('stroke-width', 3)
-    	  .attr('fill', 'none');
     }
     
     highScore = function($obj, settings) {
@@ -742,9 +736,7 @@
     	var x = d3.scale.linear()
     	  .domain([min, max])
     	  .range([0, width]);
-    	
-//    	console.log(lquartile,hquartile,means,width,x(lquartile));
-    	
+    	  	
     	var range = d3.range(min, max + step, step)
     	
     	var data = d3.layout.histogram()
@@ -789,7 +781,6 @@
 	  		.data(data)
 	  		.enter().append('g')
 	  		.attr('class', function(d, i) {
-//	  		  console.log(data[i].x == cut, data[i].x,cut);
 	  			if(cut == null) return 'o_empty';
 	  			else if(data[i].x == cut) return 'o_myself';
 	  			else return 'o_other';	  		  

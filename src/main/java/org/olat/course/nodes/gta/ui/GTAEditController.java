@@ -106,7 +106,7 @@ public class GTAEditController extends ActivateableTabbableDefaultController {
 		solutionsCtrl = new GTASampleSolutionsEditController(ureq, getWindowControl(), gtaNode, courseEnv, false);
 		listenTo(solutionsCtrl);
 		//highscore
-		highScoreNodeConfigController = new HighScoreEditController(ureq, wControl, gtaNode, euce);
+		highScoreNodeConfigController = new HighScoreEditController(ureq, wControl, gtaNode);
 		listenTo(highScoreNodeConfigController);
 		if ("group".equals(config.get(GTACourseNode.GTASK_TYPE))) {
 			highScoreNodeConfigController.setFormInfoMessage("highscore.forminfo", getTranslator());			

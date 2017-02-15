@@ -189,7 +189,7 @@ public class STCourseNodeEditController extends ActivateableTabbableDefaultContr
 		listenTo(accessibilityCondContr);
 		
 		// HighScore Controller
-		highScoreNodeConfigController = new HighScoreEditController(ureq, wControl, stNode, euce);
+		highScoreNodeConfigController = new HighScoreEditController(ureq, wControl, stNode);
 		listenTo(highScoreNodeConfigController);
 
 		ScoreCalculator scoreCalc = stNode.getScoreCalculator();

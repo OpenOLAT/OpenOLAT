@@ -89,7 +89,7 @@ public class CheckListEditController extends ActivateableTabbableDefaultControll
 		configurationCtrl = new CheckListConfigurationController(ureq, wControl, courseNode, numOfChecks > 0);
 		listenTo(configurationCtrl);
 		
-		highScoreNodeConfigController = new HighScoreEditController(ureq, wControl, courseNode, euce);
+		highScoreNodeConfigController = new HighScoreEditController(ureq, wControl, courseNode);
 		listenTo(highScoreNodeConfigController);
 	}
 
