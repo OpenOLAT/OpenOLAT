@@ -105,7 +105,7 @@ public class AssessmentTreeComponentRenderer extends AssessmentObjectComponentRe
 	
 	private void renderNavigation(AssessmentRenderer renderer, StringOutput sb,
 			AssessmentTreeComponent component, URLBuilder ubu, Translator translator, RenderingRequest options) {
-		sb.append("<div id='o_qti_menu' class='qtiworks o_assessmenttest o_testpartnavigation'>");
+		sb.append("<div id='o_qti_menu' class='qtiworks o_assessmenttest o_testpartnavigation o_qti_menu_menustyle'>");
 		//part, sections and item refs
 		TestPlanNode currentTestPartNode = component.getCurrentTestPartNode();
 		if(currentTestPartNode != null) {
@@ -144,11 +144,23 @@ public class AssessmentTreeComponentRenderer extends AssessmentObjectComponentRe
 	
 	private void renderNavigationAssessmentItem(StringOutput sb, AssessmentTreeComponent component, TestPlanNode itemNode,
 			Translator translator, RenderingRequest options) {
-		sb.append("<li class='o_assessmentitem'>");
-		renderAssessmentItemLink(sb, component, itemNode);
+		
+		// check if currently rendered item is the active item
+		boolean active = false;
+		TestSessionController sessionCtr = component.getTestSessionController();
+		if (sessionCtr != null && itemNode != null) {
+			TestSessionState sessionState = sessionCtr.getTestSessionState();
+			if (sessionState != null && sessionState.getCurrentItemKey() != null) {
+				TestPlanNodeKey testPlanNodeKey = sessionState.getCurrentItemKey();
+				active = (testPlanNodeKey.getIdentifier().equals(itemNode.getIdentifier()));				
+			}
+		}
+		
+		sb.append("<li class='o_assessmentitem").append(" active", active).append("'>");
+		renderAssessmentItemMark(sb, component, itemNode, translator);
 		renderAssessmentItemAttempts(sb, component, itemNode, translator);
 		renderItemStatus(sb, component, itemNode, translator, options);
-		renderAssessmentItemMark(sb, component, itemNode);
+		renderAssessmentItemLink(sb, component, itemNode);
 		sb.append("</li>");
 	}
 	
@@ -210,7 +222,7 @@ public class AssessmentTreeComponentRenderer extends AssessmentObjectComponentRe
 		renderItemStatus(sb, itemSessionState, options, translator);
 	}
 	
-	private void renderAssessmentItemMark(StringOutput sb, AssessmentTreeComponent component, TestPlanNode itemNode) {	
+	private void renderAssessmentItemMark(StringOutput sb, AssessmentTreeComponent component, TestPlanNode itemNode, Translator translator) {	
 		String key = itemNode.getKey().toString();
 		Form form = component.getQtiItem().getRootForm();
 		String dispatchId = component.getQtiItem().getFormDispatchId();
@@ -221,7 +233,7 @@ public class AssessmentTreeComponentRenderer extends AssessmentObjectComponentRe
 				new NameValuePair("cid", Event.mark.name()), new NameValuePair("item", key)))
 		  .append("; o_toggleMark(this); return false;\" class='o_assessmentitem_marks'><i class='o_icon ")
 		  .append("o_icon_bookmark", "o_icon_bookmark_add", mark)
-		  .append("'>&nbsp;</i></a>");
+		  .append("' title='").append(StringHelper.escapeHtml(translator.translate("assessment.item.mark"))).append("'>&nbsp;</i></a>");
 	}
 	
 	private void renderAssessmentItemAttempts(StringOutput sb, AssessmentTreeComponent component, TestPlanNode itemNode,
@@ -236,13 +248,18 @@ public class AssessmentTreeComponentRenderer extends AssessmentObjectComponentRe
 			ItemSessionController itemSessionController = (ItemSessionController)itemProcessingContext;
 			maxAttempts = itemSessionController.getItemSessionControllerSettings().getMaxAttempts();
 		}		
-		sb.append("<span class='o_assessmentitem_attempts'");
+		sb.append("<span class='o_assessmentitem_attempts ");
 		if(maxAttempts > 0) {
+			if (maxAttempts - numOfAttempts > 0) {
+				sb.append("o_assessmentitem_attempts_limited");								
+			} else {
+				sb.append("o_assessmentitem_attempts_nomore");				
+			}
 			String title = translator.translate("attemptsleft", new String[] { Integer.toString((maxAttempts - numOfAttempts)) });
-			sb.append(" title=\"").append(StringHelper.escapeHtml(title)).append("\">")
-			  .append("<i class='o_icon o_icon_attempt_limit'> </i> ");
+			sb.append("' title=\"").append(StringHelper.escapeHtml(title)).append("\">")
+			  .append("<i class='o_icon o_icon_attempt_limit'>&nbsp;</i> ");
 		} else {
-			sb.append(">");
+			sb.append("'>");
 		}
 		sb.append(numOfAttempts).append("</span>");
 		

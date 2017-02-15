@@ -446,6 +446,16 @@ $fa-css-prefix: "o_icon" !default;
 .o_as_mode_followup:before { content: $fa-var-ban; }
 .o_as_mode_closed:before { content: '-'; }
 
+.o_icon_qti_notPresented:before { content: $fa-var-circle-thin; color: $o-qti-status-notPresented-color;}
+.o_icon_qti_notAnswered:before { content: $fa-var-play-circle; color: $o-qti-status-notAnswered-color;}
+.o_icon_qti_answered:before { content: $fa-var-check-circle; color: $o-qti-status-answered-color;}
+.o_icon_qti_ended:before { content: $fa-var-ban; color: $o-qti-status-ended-color;}
+.o_icon_qti_invalid:before { content: $fa-var-exclamation-circle; color: $o-qti-status-invalid-color;}
+.o_icon_qti_review:before { content: $fa-var-eye; color: $o-qti-status-review-color;}
+.o_icon_qti_reviewNotSeen:before,
+.o_icon_qti_reviewNotAnswered:before,
+.o_icon_qti_reviewInvalid:before { content: $fa-var-eye-slash; color: $o-qti-status-review-color;}
+
 /* coaching */
 .o_black_led:before { content: $fa-var-circle; color: $brand-primary; }
 .o_green_led:before { content: $fa-var-circle; color: $brand-success; }

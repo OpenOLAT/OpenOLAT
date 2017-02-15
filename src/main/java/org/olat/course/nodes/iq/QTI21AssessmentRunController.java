@@ -214,7 +214,9 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 				mainVC.contextPut("hasPassedValue", (passed == null ? Boolean.FALSE : Boolean.TRUE));
 				mainVC.contextPut("passed", passed);
 				StringBuilder comment = Formatter.stripTabsAndReturns(testCourseNode.getUserUserComment(userCourseEnv));
-				mainVC.contextPut("comment", StringHelper.xssScan(comment));
+				if (comment != null && comment.length() > 0) {
+					mainVC.contextPut("comment", StringHelper.xssScan(comment));					
+				}
 				Integer attempts = assessmentEntry.getAttempts();
 				mainVC.contextPut("attempts", attempts == null ? new Integer(0) : attempts);
 	

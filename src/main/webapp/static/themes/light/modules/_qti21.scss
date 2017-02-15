@@ -108,9 +108,29 @@ ul.sessionControl {
 	margin: 15px 0;
 }
 
-#o_qti_run_title, #o_qti_run_infos  {
+#o_qti_run_title {
 	 margin: 0 15px 0.5em 15px;
+	 h3 {
+	 	margin: 15px 0 0 0;
+	 }
 }
+#o_qti_run_infos {
+	border: 1px solid $o-qti-run-infos-border-color;
+	border-radius: $o-qti-run-infos-border-radius;
+	background: $o-qti-run-infos-bg;
+	padding: $padding-large-vertical 0;
+	margin: 0 15px 1em 15px;
+	
+	.progress {
+		background-color: $o-qti-run-infos-progress-bg;	
+	}
+	
+	#o_qti_run_scoreinfo,
+	#o_qti_run_scoreprogress {
+		white-space: nowrap;
+	}
+}
+
 
 /* drawing */
 .o_draw_circle.o_qti_hotspot_correct, .o_draw_rectangle.o_qti_hotspot_correct {
@@ -134,33 +154,6 @@ ul.sessionControl {
 .o_assessmentitem{
 	h1 {
 		margin-bottom: 0;
-	}
-
-	.o_assessmentitem_attempts {
-		float: right;
-		display: block;
-		padding: 0.3em;
-		border-radius: 0.5em;
-		border: 1px #eeeeee solid;
-		color: black;
-		font-size: 0.7em;
-	}
-	
-	.o_assessmentitem_status {
-		float: right;
-		display: block;
-		padding: 0.3em;
-		border-radius: 0.5em;
-		border-width: 1px;
-		color: white;
-		font-size: 0.8em;
-	}
-	
-	.o_assessmentitem_marks {
-		float: right;
-		display: block;
-		padding: 0.3em;
-		font-size: 0.8em;
 	}
 	
 	div.badResponse, span.badResponse {
@@ -281,34 +274,132 @@ ul.sessionControl {
 	}
 }
 
-.o_assessmentitem_status.ended {
-  background-color: #999999;
+/* item display wrapper to distinguish from the item tree */
+.o_assessmentitem_wrapper {
+	.itemTitle {
+		background: $o-qti-item-title-bg;
+		border: 1px solid $o-qti-item-title-border-color;
+		border-radius: $o-qti-item-title-border-radius $o-qti-item-title-border-radius 0 0;
+		margin-top: 0;
+		margin-bottom: 0;
+		padding: $padding-small-vertical $padding-small-horizontal;
+		line-height: 1.5em;
+	}
+	#itemBody {
+		min-height: $o-qti-item-min-height;
+		margin: 0;
+		padding: $padding-small-vertical $padding-small-horizontal;
+		border-left: 1px solid $o-qti-item-border-color;
+		border-right: 1px solid $o-qti-item-border-color;
+	}
+	.modalFeedback {
+		h4:first-of-type {
+			padding-left: $padding-small-horizontal;
+			margin-top: 0;
+		}
+		/* need to redeclare o_info since modalFeedback class is on same element */
+		.o_info {
+			@extend %o_info;
+			margin-bottom: 0;
+			margin-top: 0;
+		}
+	}
+}
+	
+	
+.o_assessmentitem_wrapper .o_assessmentitem_status,
+.o_qti_menu_buttonstyle .o_assessmentitem_status {
+	float: right;
+	display: block;
+	padding: 0.3em;
+	margin-left: 1em;
+	border-radius: 0.3em;
+	border-width: 1px;
+	font-size: 0.8em;
+	line-height: 1.2em;
+	color: #fff;
+	
+	&.ended {
+	  background-color: $o-qti-status-ended-color;
+	}
+	&.invalid {
+	  background-color: $o-qti-status-invalid-color;
+	}
+	&.answered {
+	  background-color: $o-qti-status-answered-color;
+	}
+	&.notAnswered {
+	  background-color: $o-qti-status-notAnswered-color;
+	}
+	&.notPresented {
+		background-color: $o-qti-status-notPresented-color;
+	}
+	&.review {
+		background-color: $o-qti-status-review-color;
+	}
+	&.reviewNotAllowed, 
+	&.reviewInvalid, 
+	&.reviewNotAnswered, 
+	&.reviewNotSeen {
+		background-color: $o-qti-status-review-color;
+		opacity: 0.7;
+	}
+	
+	i:before {
+		color: #fff;
+	}
 }
 
-.o_assessmentitem_status.invalid {
-  background-color: red;
+.o_assessmentitem_controls {
+	background: $o-qti-item-controls-bg;
+	border: 1px solid $o-qti-item-controls-border-color;
+	border-radius: 0 0 $o-qti-item-controls-border-radius $o-qti-item-controls-border-radius;
+	margin-top: 0;
+	margin-bottom: $padding-large-horizontal;
+	padding: $padding-small-vertical $padding-small-horizontal;
+	
+	button {
+		margin-bottom: 0;
+	}
+	
+	/* button icons */
+	.o_sel_assessment_item_submit span:before { 
+		@include o-make-icon(); 
+		content: $fa-var-check; 
+		padding-right: 0.5em
+	}
+	.o_sel_next_question span:after { 
+		@include o-make-icon(); 
+		content: $fa-var-chevron-right; 
+		padding-left: 0.5em
+	}
+	.o_sel_question_menu span:before { 
+		@include o-make-icon(); 
+		content: $fa-var-bars; 
+		padding-right: 0.5em
+	}
+	.o_sel_end_testpart span:before { 
+		@include o-make-icon(); 
+		content: $fa-var-check; 
+		padding-right: 0.5em
+	}
+	.o_sel_back_test_feedback span:before { 
+		@include o-make-icon(); 
+		content: $fa-var-comment-o; 
+		padding-right: 0.5em
+	}
+	.o_sel_show_solution span:before { 
+		@include o-make-icon(); 
+		content: $fa-var-info; 
+		padding-right: 0.5em
+	}
+	.o_sel_solution_hide span:before { 
+		@include o-make-icon(); 
+		content: $fa-var-info; 
+		padding-right: 0.5em
+	}
 }
 
-.o_assessmentitem_status.answered {
-  background-color: blue;
-}
-
-.o_assessmentitem_status.notAnswered {
-  background-color: #ff9900;
-}
-
-.o_assessmentitem_status.notPresented {
-	background-color: green;
-}
-
-.o_assessmentitem_status.review {
-	background-color: #f52887;
-}
-
-.o_assessmentitem_status.reviewNotAllowed, .o_assessmentitem_status.reviewInvalid, .o_assessmentitem_status.reviewNotAnswered, .o_assessmentitem_status.reviewNotSeen {
-	background-color: #f52887;
-	opacity: 0.5;
-}
 
 .itemPrompt {
 	margin: 1.5em 0;
@@ -495,26 +586,32 @@ tr.choiceinteraction {
 /* Candidate comment */
 .o_candidatecomment {
 	padding: 0;
-	margin: 2em 0;
+	margin: 2em 0 1em 0;
 	border: none;
 	
 	legend {
-	
+		font-size: 110%;
+		font-weight: bold;
+		color: $text-muted;
+		margin-bottom: $padding-small-horizontal;
+		border-bottom: 0;
 	}
 	
 	textarea {
 		display: block;
+		color: $text-muted;
 	}
 }
 
-ul.o_testpartnavigation {
+.o_qti_menu_menustyle ul.o_testpartnavigation {
 	list-style: none;
 	padding: 0;
 	margin: 0;
 	
 	li.o_assessmentsection {
-		border: 1px solid #eeeeee;
-		border-radius: 0.5em;
+		border: 1px solid $o-qti-menu-border-color;
+		border-radius: $o-qti-menu-border-radius;
+		background: $o-qti-menu-bg;
 		padding: 0 1em 0.5em 1em;
 		margin: 0 0 0.5em 0;
 		
@@ -535,24 +632,109 @@ ul.o_testpartnavigation {
 	
 	li.o_assessmentitem {
 		padding: 0.1em 0;
-		
-		a {
-			padding: 0;
-			text-decoration: none;
+	    a {
+	    	color : $o-qti-menu-link-color;
+	    	&:hover,
+			&:focus {
+				color: $o-qti-menu-link-hover-color;
+			}
+	    }
+		&.active a {
+			color : $o-qti-menu-link-active-color; 
+			&:hover,
+			&:focus {
+				color: $o-qti-menu-link-active-hover-color; 
+				background-color : $o-qti-menu-link-active-hover-bg;
+			}
+			font-weight: $o-qti-menu-link-active-font-weight;
 		}
+
+
 		
 		span {
 			vertical-align: middle;
 		}
-		
-		.itemStatus {
+
+		.o_assessmentitem_status {
 			display: inline;
-			float: none;
-			margin: 0.2em;
-			padding: 0.4em;
-			border-radius: 0.3em;
-			margin-left: 1em;
+			position: relative;
+			left: -0.3em;
+			background: transparent;
+			border: 0;
+			span {
+				/* hide status description */
+				display: none;
+			}
 		}
+
+		.o_assessmentitem_attempts {
+			float: right;
+			display: block;
+			padding: 0.3em;
+			border-radius: 2px;
+			background-color: #fafafa;
+			color: $o-qti-attempts-color;
+			font-size: 0.7em;
+			
+			&.o_assessmentitem_attempts_limited .o_icon_attempt_limit {
+				color: $o-qti-attempts-limited-color;
+			}
+			&.o_assessmentitem_attempts_nomore {
+				color: $o-qti-attempts-nomore-color;
+			}
+		}
+
+		.o_assessmentitem_marks {
+			float: right;
+			display: inline-block;
+			font-size: 0.8em;
+			position: relative;
+			top: 0.3em;
+			right: -0.5em;
+		}
+		
+		/* old badge style rendering
+		.o_assessmentitem_status {
+			float: right;
+			display: block;
+			padding: 0.3em;
+			border-radius: 0.3em;
+			border-width: 1px;
+			font-size: 0.8em;
+			color: #fff;
+			span { 
+				display: inline;
+			}
+			i { 
+				display: none;
+			}
+			&.ended {
+			  background-color: $o-qti-status-ended-color;
+			}
+			&.invalid {
+			  background-color: $o-qti-status-invalid-color;
+			}
+			&.answered {
+			  background-color: $o-qti-status-answered-color;
+			}
+			&.notAnswered {
+			  background-color: $o-qti-status-notAnswered-color;
+			}
+			&.notPresented {
+				background-color: $o-qti-status-notPresented-color;
+			}
+			&.review {
+				background-color: $o-qti-status-review-color;
+			}
+			&.reviewNotAllowed, 
+			&.reviewInvalid, 
+			&.reviewNotAnswered, 
+			&.reviewNotSeen {
+				background-color: $o-qti-status-review-color;
+				opacity: 0.7;
+			}
+		}
+		*/
 	}
 	
 	.o_assessmentitem .questionTitle {
@@ -560,6 +742,12 @@ ul.o_testpartnavigation {
 	}
 }
 
+/* Test feedback after test */
+.testFeedback {
+	h1:first-of-type {
+		margin-top: 0;
+	}
+}
 
 /* Test Item Presentation */
 ul.testPartDrilldown {
@@ -568,8 +756,9 @@ ul.testPartDrilldown {
 	margin: 0;
 	
 	li.o_assessmentsection {
-		border: 1px solid #eeeeee;
-		border-radius: 0.5em;
+		border: 1px solid $o-qti-menu-border-color;
+		border-radius: $o-qti-menu-border-radius;
+		background: $o-qti-menu-bg;
 		padding: 0 1em 0.5em 1em;
 		
 		header {
@@ -588,7 +777,7 @@ ul.testPartDrilldown {
 	}
 	
 	li.currentItem {
-		border: 1px solid #eeeeee;
+		border: 1px solid $o-qti-menu-border-color;
 		border-radius: 0.5em;
 		padding: 0 1em;
 		margin-top: 1em;

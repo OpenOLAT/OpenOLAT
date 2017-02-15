@@ -61,6 +61,7 @@ import javax.xml.transform.sax.TransformerHandler;
 import javax.xml.transform.stream.StreamResult;
 
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.velocity.VelocityContext;
 import org.apache.velocity.context.Context;
 import org.olat.core.CoreSpringFactory;
@@ -199,32 +200,41 @@ public abstract class AssessmentObjectComponentRenderer extends DefaultComponent
 	
 	protected void renderItemStatus(StringOutput sb, ItemSessionState itemSessionState, RenderingRequest options, Translator translator) {
 		if(options != null && options.isSolutionMode()) {
-			sb.append("<span class='o_assessmentitem_status review'>").append(translator.translate("assessment.item.status.modelSolution")).append("</span>");
+			renderItemStatusMessage("review", "assessment.item.status.modelSolution", sb, translator);
 		} else if(options != null && options.isReviewMode()) {
 			renderItemReviewStatus(sb, itemSessionState, translator);
 		} else if(itemSessionState.getEndTime() != null) {
-			sb.append("<span class='o_assessmentitem_status ended'>").append(translator.translate("assessment.item.status.finished")).append("</span>");
+			renderItemStatusMessage("ended", "assessment.item.status.finished", sb, translator);
 		} else if(!(itemSessionState.getUnboundResponseIdentifiers().isEmpty() && itemSessionState.getInvalidResponseIdentifiers().isEmpty())) {
-			sb.append("<span class='o_assessmentitem_status invalid'>").append(translator.translate("assessment.item.status.needsAttention")).append("</span>");
+			renderItemStatusMessage("invalid", "assessment.item.status.needsAttention", sb, translator);
 		} else if(itemSessionState.isResponded() || itemSessionState.getUncommittedResponseValues().size() > 0) {
-			sb.append("<span class='o_assessmentitem_status answered'>").append(translator.translate("assessment.item.status.answered")).append("</span>");
+			renderItemStatusMessage("answered", "assessment.item.status.answered", sb, translator);
 		} else if(itemSessionState.getEntryTime() != null) {
-			sb.append("<span class='o_assessmentitem_status notAnswered'>").append(translator.translate("assessment.item.status.notAnswered")).append("</span>");
+			renderItemStatusMessage("notAnswered", "assessment.item.status.notAnswered", sb, translator);
 		} else {
-			sb.append("<span class='o_assessmentitem_status notPresented'>").append(translator.translate("assessment.item.status.notSeen")).append("</span>");
+			renderItemStatusMessage("notPresented", "assessment.item.status.notSeen", sb, translator);
 		}
 	}
 	
 	protected void renderItemReviewStatus(StringOutput sb, ItemSessionState itemSessionState, Translator translator) {
 		if(!(itemSessionState.getUnboundResponseIdentifiers().isEmpty() && itemSessionState.getInvalidResponseIdentifiers().isEmpty())) {
-			sb.append("<span class='o_assessmentitem_status reviewInvalid'>").append(translator.translate("assessment.item.status.reviewInvalidAnswer")).append("</span>");
+			renderItemStatusMessage("reviewInvalid", "assessment.item.status.reviewInvalidAnswer", sb, translator);
 		} else if(itemSessionState.isResponded()) {
-			sb.append("<span class='o_assessmentitem_status review'>").append(translator.translate("assessment.item.status.review")).append("</span>");
+			renderItemStatusMessage("review", "assessment.item.status.review", sb, translator);
 		} else if(itemSessionState.getEntryTime() != null) {
-			sb.append("<span class='o_assessmentitem_status reviewNotAnswered'>").append(translator.translate("assessment.item.status.reviewNotAnswered")).append("</span>");
+			renderItemStatusMessage("reviewNotAnswered", "assessment.item.status.reviewNotAnswered", sb, translator);
 		} else {
-			sb.append("<span class='o_assessmentitem_status reviewNotSeen'>").append(translator.translate("assessment.item.status.reviewNotSeen")).append("</span>");
+			renderItemStatusMessage("reviewNotSeen", "assessment.item.status.reviewNotSeen", sb, translator);
 		}
+		// missing? see AssessmentTestComponentRenderer
+		// buildRenderStatus("reviewNotAllowed", "assessment.item.status.reviewNot", sb, translator);
+
+	}
+	
+	private void renderItemStatusMessage(String status, String i18nKey, StringOutput sb, Translator translator) {
+		String title = translator.translate(i18nKey);
+		sb.append("<span class='o_assessmentitem_status ").append(status).append(" ' title=\"").append(StringEscapeUtils.escapeHtml(title))
+		.append("\"><i class='o_icon o_icon-fw o_icon_qti_").append(status).append("'> </i><span>").append(title).append("</span></span>");
 	}
 	
 	protected void renderTestItemModalFeedback(AssessmentRenderer renderer, StringOutput sb, AssessmentObjectComponent component,
@@ -238,8 +248,7 @@ public abstract class AssessmentObjectComponentRenderer extends DefaultComponent
 		}
 		
 		if(modalFeedbacks.size() > 0) {
-			sb.append("<div class='modalFeedback'>")
-			  .append("<h3>").append(translator.translate("assessment.item.modal.feedback")).append("</h3>");
+			sb.append("<div class='modalFeedback'>");
 			for(ModalFeedback modalFeedback:modalFeedbacks) {
 				Identifier outcomeIdentifier = modalFeedback.getOutcomeIdentifier();
 				if(QTI21Constants.CORRECT_SOLUTION_IDENTIFIER.equals(outcomeIdentifier)) {

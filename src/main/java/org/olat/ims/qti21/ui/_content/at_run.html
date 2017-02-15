@@ -21,7 +21,7 @@
 	</div>
 
 	#if (!$qtiWorksStatus.isSurvey() && (($displayScoreProgress && $qtiWorksStatus.hasScore()) || $displayQuestionProgress))
-	<div id="o_qti_run_infos" class="panel panel-default"><div class="panel-body">
+	<div id="o_qti_run_infos" class="clearfix">
 		#if (!$qtiWorksStatus.isSurvey() && $displayScoreProgress && $qtiWorksStatus.score)
 		<div id="o_qti_scoreinfo">
 			<div id="o_qti_run_scoreinfo" class="col-md-2 col-sm-3">
@@ -47,7 +47,7 @@
 			<div id="o_qti_run_questionprogress" class="col-md-4 col-sm-3">$r.render("questionProgress", "nl")</div>
 		</div>
 		#end
-	</div></div>
+	</div>
 	#end
 	
 	#if($r.visible("qtiResults"))
