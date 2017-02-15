@@ -36,6 +36,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.gui.control.generic.iframe.IFrameDisplayController;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
@@ -46,6 +47,7 @@ import org.olat.core.util.Util;
 import org.olat.core.util.event.EventBus;
 import org.olat.core.util.event.GenericEventListener;
 import org.olat.core.util.resource.OresHelper;
+import org.olat.core.util.vfs.VFSContainer;
 import org.olat.course.DisposedCourseRestartController;
 import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.assessment.AssessmentManager;
@@ -155,6 +157,28 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 		startButton.setElementCssClass("o_sel_start_qti21assessment");
 		startButton.setPrimary(true);
 		startButton.setVisible(!userCourseEnv.isCourseReadOnly());
+		
+		// fetch disclaimer file
+		String sDisclaimer = (String)config.get(IQEditController.CONFIG_KEY_DISCLAIMER);
+		if (sDisclaimer != null) {
+			VFSContainer baseContainer = userCourseEnv.getCourseEnvironment().getCourseFolderContainer();
+			int lastSlash = sDisclaimer.lastIndexOf('/');
+			if (lastSlash != -1) {
+				baseContainer = (VFSContainer)baseContainer.resolve(sDisclaimer.substring(0, lastSlash));
+				sDisclaimer = sDisclaimer.substring(lastSlash);
+				// first check if disclaimer exists on filesystem
+				if (baseContainer == null || baseContainer.resolve(sDisclaimer) == null) {
+					showWarning("disclaimer.file.invalid", sDisclaimer);
+				} else {
+					//screenreader do not like iframes, display inline
+					IFrameDisplayController iFrameCtr = new IFrameDisplayController(ureq, getWindowControl(), baseContainer);
+					listenTo(iFrameCtr);//dispose automatically
+					mainVC.put("disc", iFrameCtr.getInitialComponent());
+					iFrameCtr.setCurrentURI(sDisclaimer);
+					mainVC.contextPut("hasDisc", Boolean.TRUE);
+				}
+			}
+		}
 		
 		if (assessmentType) {
 			checkChats(ureq);

@@ -29,6 +29,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.util.Util;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.ims.qti21.QTI21Service;
 import org.olat.ims.qti21.model.QTI21QuestionType;
@@ -44,6 +45,7 @@ import org.olat.ims.qti21.model.xml.interactions.MatchAssessmentItemBuilder;
 import org.olat.ims.qti21.model.xml.interactions.MultipleChoiceAssessmentItemBuilder;
 import org.olat.ims.qti21.model.xml.interactions.SingleChoiceAssessmentItemBuilder;
 import org.olat.ims.qti21.model.xml.interactions.UploadAssessmentItemBuilder;
+import org.olat.ims.qti21.ui.AssessmentItemDisplayController;
 import org.olat.ims.qti21.ui.editor.events.AssessmentItemEvent;
 import org.olat.ims.qti21.ui.editor.interactions.ChoiceScoreController;
 import org.olat.ims.qti21.ui.editor.interactions.DrawingEditorController;
@@ -79,11 +81,11 @@ public class AssessmentItemEditorController extends BasicController {
 	private final AssessmentItemRef itemRef;
 	private final ResolvedAssessmentItem resolvedAssessmentItem;
 	
-	private final TabbedPane tabbedPane;
+	private TabbedPane tabbedPane;
 	private final VelocityContainer mainVC;
 	
-	private final int displayTabPosition;
-	private final int solutionTabPosition;
+	private int displayTabPosition;
+	private int solutionTabPosition;
 	private MetadataEditorController metadataEditor;
 	private AssessmentItemPreviewController displayCtrl;
 	private Controller itemEditor, scoreEditor, feedbackEditor;
@@ -107,7 +109,7 @@ public class AssessmentItemEditorController extends BasicController {
 	public AssessmentItemEditorController(UserRequest ureq, WindowControl wControl,
 			ResolvedAssessmentItem resolvedAssessmentItem,
 			File rootDirectory, VFSContainer rootContainer, File itemFile, boolean restrictedEdit) {
-		super(ureq, wControl);
+		super(ureq, wControl, Util.createPackageTranslator(AssessmentItemDisplayController.class, ureq.getLocale()));
 		this.itemRef = null;
 		this.itemFile = itemFile;
 		this.rootDirectory = rootDirectory;
@@ -115,21 +117,27 @@ public class AssessmentItemEditorController extends BasicController {
 		this.restrictedEdit = restrictedEdit;
 		this.resolvedAssessmentItem = resolvedAssessmentItem;
 		
-		mainVC = createVelocityContainer("assessment_item_editor");
-		mainVC.contextPut("restrictedEdit", restrictedEdit);
-		tabbedPane = new TabbedPane("itemTabs", getLocale());
-		tabbedPane.addListener(this);
-		mainVC.put("tabbedpane", tabbedPane);
-
-		initItemEditor(ureq);
+		if(resolvedAssessmentItem == null) {
+			mainVC = createVelocityContainer("missing_resource");
+			mainVC.contextPut("uri", itemFile == null ? "" : itemFile);
+		} else {
+			mainVC = createVelocityContainer("assessment_item_editor");
+			mainVC.contextPut("restrictedEdit", restrictedEdit);
+			tabbedPane = new TabbedPane("itemTabs", getLocale());
+			tabbedPane.addListener(this);
+			mainVC.put("tabbedpane", tabbedPane);
+	
+			initItemEditor(ureq);
+			
+			displayCtrl = new AssessmentItemPreviewController(ureq, getWindowControl(), resolvedAssessmentItem, rootDirectory, itemFile);
+			listenTo(displayCtrl);
+			displayTabPosition = tabbedPane.addTab(translate("preview"), displayCtrl);
 		
-		displayCtrl = new AssessmentItemPreviewController(ureq, getWindowControl(), resolvedAssessmentItem, rootDirectory, itemFile);
-		listenTo(displayCtrl);
-		displayTabPosition = tabbedPane.addTab(translate("preview"), displayCtrl);
-		
-		solutionCtrl = new AssessmentItemPreviewSolutionController(ureq, getWindowControl(), resolvedAssessmentItem, rootDirectory, itemFile);
-		listenTo(displayCtrl);
-		solutionTabPosition = tabbedPane.addTab(translate("preview.solution"), solutionCtrl);
+			solutionCtrl = new AssessmentItemPreviewSolutionController(ureq, getWindowControl(), resolvedAssessmentItem, rootDirectory, itemFile);
+			listenTo(displayCtrl);
+			solutionTabPosition = tabbedPane.addTab(translate("preview.solution"), solutionCtrl);
+			
+		}
 		
 		putInitialPanel(mainVC);
 	}
@@ -137,7 +145,7 @@ public class AssessmentItemEditorController extends BasicController {
 	public AssessmentItemEditorController(UserRequest ureq, WindowControl wControl, RepositoryEntry testEntry,
 			ResolvedAssessmentItem resolvedAssessmentItem, AssessmentItemRef itemRef, ManifestMetadataBuilder metadataBuilder,
 			File rootDirectory, VFSContainer rootContainer, File itemFile, boolean restrictedEdit) {
-		super(ureq, wControl);
+		super(ureq, wControl, Util.createPackageTranslator(AssessmentItemDisplayController.class, ureq.getLocale()));
 		this.itemRef = itemRef;
 		this.metadataBuilder = metadataBuilder;
 		this.itemFile = itemFile;
@@ -147,24 +155,29 @@ public class AssessmentItemEditorController extends BasicController {
 		this.restrictedEdit = restrictedEdit;
 		this.resolvedAssessmentItem = resolvedAssessmentItem;
 		
-		mainVC = createVelocityContainer("assessment_item_editor");
-		mainVC.contextPut("restrictedEdit", restrictedEdit);
-		tabbedPane = new TabbedPane("itemTabs", getLocale());
-		tabbedPane.addListener(this);
-		mainVC.put("tabbedpane", tabbedPane);
+		if(resolvedAssessmentItem == null) {
+			mainVC = createVelocityContainer("missing_resource");
+			mainVC.contextPut("uri", itemFile == null ? "" : itemFile);
+		} else {
+			mainVC = createVelocityContainer("assessment_item_editor");
+			mainVC.contextPut("restrictedEdit", restrictedEdit);
+			tabbedPane = new TabbedPane("itemTabs", getLocale());
+			tabbedPane.addListener(this);
+			mainVC.put("tabbedpane", tabbedPane);
+	
+			initItemEditor(ureq);
+			
+			AssessmentEntry assessmentEntry = assessmentService.getOrCreateAssessmentEntry(getIdentity(), null, testEntry, null, testEntry);
+			displayCtrl = new AssessmentItemPreviewController(ureq, getWindowControl(),
+					resolvedAssessmentItem, itemRef, testEntry, assessmentEntry, rootDirectory, itemFile);
+			listenTo(displayCtrl);
+			displayTabPosition = tabbedPane.addTab(translate("preview"), displayCtrl);
 
-		initItemEditor(ureq);
-		
-		AssessmentEntry assessmentEntry = assessmentService.getOrCreateAssessmentEntry(getIdentity(), null, testEntry, null, testEntry);
-		displayCtrl = new AssessmentItemPreviewController(ureq, getWindowControl(),
-				resolvedAssessmentItem, itemRef, testEntry, assessmentEntry, rootDirectory, itemFile);
-		listenTo(displayCtrl);
-		displayTabPosition = tabbedPane.addTab(translate("preview"), displayCtrl);
+			solutionCtrl = new AssessmentItemPreviewSolutionController(ureq, getWindowControl(), resolvedAssessmentItem, rootDirectory, itemFile);
+			listenTo(displayCtrl);
+			solutionTabPosition = tabbedPane.addTab(translate("preview.solution"), solutionCtrl);
+		}
 
-		solutionCtrl = new AssessmentItemPreviewSolutionController(ureq, getWindowControl(), resolvedAssessmentItem, rootDirectory, itemFile);
-		listenTo(displayCtrl);
-		solutionTabPosition = tabbedPane.addTab(translate("preview.solution"), solutionCtrl);
-		
 		putInitialPanel(mainVC);
 	}
 	

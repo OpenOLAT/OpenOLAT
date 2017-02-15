@@ -134,6 +134,7 @@ public class MergeSource extends AbstractVirtualContainer {
 	/**
 	 * @see org.olat.core.util.vfs.VFSItem#getParent()
 	 */
+	@Override
 	public VFSContainer getParentContainer() {
 		return parentContainer;
 	}
@@ -141,6 +142,7 @@ public class MergeSource extends AbstractVirtualContainer {
 	/**
 	 * @see org.olat.core.util.vfs.VFSItem#setParentContainer(org.olat.core.util.vfs.VFSContainer)
 	 */
+	@Override
 	public void setParentContainer(VFSContainer parentContainer) {
 		this.parentContainer = parentContainer;
 	}
@@ -148,6 +150,7 @@ public class MergeSource extends AbstractVirtualContainer {
 	/**
 	 * @see org.olat.core.util.vfs.VFSContainer#getItems()
 	 */
+	@Override
 	public List<VFSItem> getItems() {
 		return getItems(null);
 	}
@@ -155,6 +158,7 @@ public class MergeSource extends AbstractVirtualContainer {
 	/**
 	 * @see org.olat.core.util.vfs.VFSContainer#getItems(org.olat.core.util.vfs.filters.VFSItemFilter)
 	 */
+	@Override
 	public List<VFSItem> getItems(VFSItemFilter filter) {
 		// remember: security callback and parent was already set during add to this MergeSource
 		// and refreshed on any setSecurityCallback() so no need to handle the quota of children here.
@@ -183,6 +187,7 @@ public class MergeSource extends AbstractVirtualContainer {
 	/**
 	 * @see org.olat.core.util.vfs.VFSItem#canCopyTo()
 	 */
+	@Override
 	public VFSStatus canWrite() {
 		if (rootWriteContainer == null) return VFSConstants.NO;
 		return rootWriteContainer.canWrite();
@@ -191,6 +196,7 @@ public class MergeSource extends AbstractVirtualContainer {
 	/**
 	 * @see org.olat.core.util.vfs.VFSContainer#createChildContainer(java.lang.String)
 	 */
+	@Override
 	public VFSContainer createChildContainer(String name) {
 		if (canWrite() != VFSConstants.YES) return null;
 		VFSContainer newContainer = rootWriteContainer.createChildContainer(name);
@@ -201,6 +207,7 @@ public class MergeSource extends AbstractVirtualContainer {
 	/**
 	 * @see org.olat.core.util.vfs.VFSContainer#createChildLeaf(java.lang.String)
 	 */
+	@Override
 	public VFSLeaf createChildLeaf(String name) {
 		if (canWrite() != VFSConstants.YES) return null;
 		return rootWriteContainer.createChildLeaf(name);
@@ -209,6 +216,7 @@ public class MergeSource extends AbstractVirtualContainer {
 	/**
 	 * @see org.olat.core.util.vfs.VFSContainer#copyFrom(org.olat.core.util.vfs.VFSItem)
 	 */
+	@Override
 	public VFSStatus copyFrom(VFSItem source) {
 		if (canWrite() != VFSConstants.YES) throw new AssertException("Cannot create child container in merge source if not writable.");
 		return rootWriteContainer.copyFrom(source);
@@ -217,15 +225,29 @@ public class MergeSource extends AbstractVirtualContainer {
 	/**
 	 * @see org.olat.core.util.vfs.VFSItem#resolveFile(java.lang.String)
 	 */
+	@Override
 	public VFSItem resolve(String path) {
 		path = VFSManager.sanitizePath(path);
 		if (path.equals("/")) return this;
 		
 		String childName = VFSManager.extractChild(path);
-		VFSItem vfsItem = null; 
+		String nextPath = path.substring(childName.length() + 1);
+		// simple case
 		for (VFSContainer container:mergedContainers) {
-			String nextPath = path.substring(childName.length() + 1);
-			// fxdiff FXOLAT-176 a namedContainer doesn't match with its own getName()! -> work with delegate
+			if (container.getName().equals(childName)) {
+				VFSItem vfsItem = container.resolve(nextPath);
+				// set default filter on resolved file if it is a container
+				if (vfsItem != null && vfsItem instanceof VFSContainer) {
+					VFSContainer resolvedContainer = (VFSContainer) vfsItem;
+					resolvedContainer.setDefaultItemFilter(defaultFilter);
+				}
+				return vfsItem;
+			}
+		}
+		
+		// check delegates
+		for (VFSContainer container:mergedContainers) {
+			// A namedContainer doesn't match with its own getName()! -> work with delegate
 			boolean nameMatch = container.getName().equals(childName);
 			if (container instanceof NamedContainerImpl && !nameMatch) {
 				// Special case: sometimes the path refers to the named containers
@@ -245,7 +267,7 @@ public class MergeSource extends AbstractVirtualContainer {
 				nameMatch = name.equals(childName);
 			}
 			if (nameMatch) {
-				vfsItem = container.resolve(nextPath);
+				VFSItem vfsItem = container.resolve(nextPath);
 				// set default filter on resolved file if it is a container
 				if (vfsItem != null && vfsItem instanceof VFSContainer) {
 					VFSContainer resolvedContainer = (VFSContainer) vfsItem;
@@ -256,11 +278,11 @@ public class MergeSource extends AbstractVirtualContainer {
 		}
 
 		for (VFSContainer container : mergedContainersChildren) {
-			// fxdiff FXOLAT-176 a namedContainer doesn't match with its own getName()! -> work with delegate
+			// A namedContainer doesn't match with its own getName()! -> work with delegate
 			if (container instanceof NamedContainerImpl) {
 				container = ((NamedContainerImpl) container).getDelegate();
 			}
-			vfsItem = container.resolve(path);
+			VFSItem vfsItem = container.resolve(path);
 			if (vfsItem != null) {
 				// set default filter on resolved file if it is a container
 				if (vfsItem instanceof VFSContainer) {
@@ -276,6 +298,7 @@ public class MergeSource extends AbstractVirtualContainer {
 	/**
 	 * @see org.olat.core.util.vfs.VFSItem#getLocalSecurityCallback()
 	 */
+	@Override
 	public VFSSecurityCallback getLocalSecurityCallback() {
 		return securityCallback;
 	}
@@ -283,10 +306,12 @@ public class MergeSource extends AbstractVirtualContainer {
 	/**
 	 * @see org.olat.core.util.vfs.VFSItem#setLocalSecurityCallback(org.olat.core.util.vfs.callbacks.VFSSecurityCallback)
 	 */
+	@Override
 	public void setLocalSecurityCallback(VFSSecurityCallback secCallback) {
 		securityCallback = secCallback;
 	}
 
+	@Override
 	public boolean isSame(VFSItem vfsItem) {
 		if (rootWriteContainer == null) {
 			// Unwriteable merge source (e.g. users private folder), compare on object identity 
