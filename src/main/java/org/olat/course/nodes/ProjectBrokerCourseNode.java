@@ -469,12 +469,12 @@ public class ProjectBrokerCourseNode extends GenericCourseNode implements Persis
 
 	@Override
 	public AssessmentEvaluation getUserScoreEvaluation(UserCourseEnvironment userCourseEnv) {
-		return null;
+		return getUserScoreEvaluation(getUserAssessmentEntry(userCourseEnv));
 	}
 
 	@Override
 	public AssessmentEvaluation getUserScoreEvaluation(AssessmentEntry entry) {
-		return null;
+		return AssessmentEvaluation.toAssessmentEvalutation(entry, this);
 	}
 
 	@Override
