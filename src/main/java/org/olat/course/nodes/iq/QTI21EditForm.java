@@ -117,6 +117,7 @@ public class QTI21EditForm extends FormBasicController {
 		}
 		maxAttemptsEl = uifactory.addTextElement("maxAttempts", "qti.form.attempts", 8, maxAttemptsValue, formLayout);	
 		maxAttemptsEl.setDisplaySize(2);
+		maxAttemptsEl.setMandatory(true);
 		maxAttemptsEl.setVisible(maxAttempts > 0);
 		
 		boolean blockAfterSuccess = modConfig.getBooleanSafe(IQEditController.CONFIG_KEY_BLOCK_AFTER_SUCCESS, deliveryOptions.isBlockAfterSuccess());
@@ -251,7 +252,10 @@ public class QTI21EditForm extends FormBasicController {
 			maxAttemptsEl.clearError();
 			if(StringHelper.containsNonWhitespace(maxAttemptsEl.getValue())) {
 				try {
-					Integer.parseInt(maxAttemptsEl.getValue());
+					int val = Integer.parseInt(maxAttemptsEl.getValue());
+					if(val <= 0) {
+						maxAttemptsEl.setErrorKey("form.error.nointeger", null);
+					}
 				} catch(NumberFormatException e) {
 					maxAttemptsEl.setErrorKey("form.error.nointeger", null);
 					allOk &= false;
