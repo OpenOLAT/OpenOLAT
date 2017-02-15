@@ -19,8 +19,12 @@
  */
 package org.olat.restapi.system;
 
+import java.io.File;
+
 import org.olat.core.configuration.AbstractSpringModule;
 import org.olat.core.configuration.ConfigOnOff;
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,6 +37,8 @@ import org.springframework.stereotype.Service;
  */
 @Service("monitoringModule")
 public class MonitoringModule extends AbstractSpringModule implements ConfigOnOff {
+	
+	private static final OLog log = Tracing.createLoggerFor(MonitoringModule.class);
 
 	private static final String ENABLED = "monitoring.enabled";
 	private static final String MONITORED_PROBES = "probes";
@@ -48,6 +54,8 @@ public class MonitoringModule extends AbstractSpringModule implements ConfigOnOf
 	private String server;
 	@Value("${monitoring.instance.description}")
 	private String description;
+	@Value("${monitoring.proc.file:}")
+	private String procFile;
 	
 	@Autowired
 	public MonitoringModule(CoordinatorManager coordinatorManager) {
@@ -72,6 +80,16 @@ public class MonitoringModule extends AbstractSpringModule implements ConfigOnOf
 		String descriptionObj = getStringPropertyValue(DESCRIPTION, true);
 		if(StringHelper.containsNonWhitespace(descriptionObj)) {
 			description = descriptionObj;
+		}
+		
+		if(StringHelper.containsNonWhitespace(procFile)) {
+			File xmlFile = new File(procFile);
+			if(!xmlFile.exists()) {
+				File parent = xmlFile.getParentFile();
+				if(!parent.exists() || !parent.canWrite()) {
+					log.warn("Cannot write proc file: " + xmlFile);
+				}
+			}
 		}
 	}
 	
@@ -122,4 +140,7 @@ public class MonitoringModule extends AbstractSpringModule implements ConfigOnOf
 		setStringProperty(DESCRIPTION, description, true);
 	}
 
+	public String getProcFile() {
+		return procFile;
+	}
 }
