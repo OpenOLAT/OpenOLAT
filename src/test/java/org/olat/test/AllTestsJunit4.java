@@ -303,7 +303,6 @@ import org.junit.runners.Suite;
 	 * tree is not available
 	 */
 	org.olat.core.commons.services.scheduler.SchedulerTest.class,
-	org.olat.course.TestDeployableRepositoryExport.class,
 	org.olat.upgrade.UpgradeDefinitionTest.class
 })
 public class AllTestsJunit4 {
