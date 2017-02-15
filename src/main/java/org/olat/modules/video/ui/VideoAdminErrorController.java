@@ -92,7 +92,7 @@ public class VideoAdminErrorController extends FormBasicController {
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TranscodingQueueTableCols.resid));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TranscodingQueueTableCols.displayname));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TranscodingQueueTableCols.failureReason));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TranscodingQueueTableCols.failureReason, new TranscodingErrorIconRenderer()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TranscodingQueueTableCols.creator));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TranscodingQueueTableCols.creationDate));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TranscodingQueueTableCols.dimension));
@@ -132,13 +132,16 @@ public class VideoAdminErrorController extends FormBasicController {
 			retranscodeLink.setUserObject(videoTranscoding);
 			retranscodeLink.setIconLeftCSS("o_icon o_icon_refresh o_icon-fw");
 
-			String failureReason = "";
+			Object[] failureReason = new Object[]{-1,""};
 			if (videoTranscoding.getStatus() == VideoTranscoding.TRANSCODING_STATUS_INEFFICIENT) {
-				failureReason = translate("transcoding.inefficient");
+				failureReason[0] = VideoTranscoding.TRANSCODING_STATUS_INEFFICIENT;
+				failureReason[1] = translate("transcoding.inefficient");
 			} else if (videoTranscoding.getStatus() == VideoTranscoding.TRANSCODING_STATUS_ERROR) {
-				failureReason = translate("transcoding.error");
+				failureReason[0] = VideoTranscoding.TRANSCODING_STATUS_ERROR;
+				failureReason[1] = translate("transcoding.error");
 			} else if (videoTranscoding.getStatus() == VideoTranscoding.TRANSCODING_STATUS_TIMEOUT) {
-				failureReason = translate("transcoding.timeout");
+				failureReason[0] = VideoTranscoding.TRANSCODING_STATUS_TIMEOUT;
+				failureReason[1] = translate("transcoding.timeout");
 			} 
 
 			RepositoryEntry videoRe = repositoryService.loadByResourceKey(videoTranscoding.getVideoResource().getKey());
