@@ -334,6 +334,9 @@ public class DropboxScoringViewController extends BasicController {
 				if(node instanceof AssessableCourseNode) {
 					AssessableCourseNode acn = (AssessableCourseNode)node;
 					AssessmentEvaluation eval = acn.getUserScoreEvaluation(userCourseEnv);
+					if (eval == null) {
+						eval = AssessmentEvaluation.EMPTY_EVAL;
+					}
 					if(eval.getAssessmentStatus() == null || eval.getAssessmentStatus() == AssessmentEntryStatus.notStarted) {
 						eval = new AssessmentEvaluation(eval, AssessmentEntryStatus.inProgress);
 						acn.updateUserScoreEvaluation(eval, userCourseEnv, getIdentity(), false);
