@@ -855,6 +855,20 @@ public class RepositoryManager {
 		dbquery.setCacheable(true);
 		return ((Long)dbquery.list().get(0)).intValue();
 	}
+	
+	public long countPublished(String restrictedType) {
+		StringBuilder query = new StringBuilder(400);
+		query.append("select count(*) from org.olat.repository.RepositoryEntry v")
+		     .append(" inner join v.olatResource res")
+		     .append(" where res.resName=:restrictedType ")
+		     .append(" and ((v.access=").append(RepositoryEntry.ACC_OWNERS).append(" and v.membersOnly=true) or v.access>=").append(RepositoryEntry.ACC_USERS).append(")");
+		
+		List<Number> count = dbInstance.getCurrentEntityManager()
+				.createQuery(query.toString(), Number.class)
+				.setParameter("restrictedType", restrictedType)
+				.getResultList();
+		return count == null || count.isEmpty() || count.get(0) == null ? null : count.get(0).longValue();
+	}
 
 	/**
 	 * Query by type, limit by ownership or role accessability.
