@@ -499,12 +499,13 @@ public class AssessmentTestComponentRenderer extends AssessmentObjectComponentRe
 			if(hasReviewableItems) {
 				sb.append("<h4>").append(translator.translate("review.responses")).append("</h4>");
 				sb.append("<p>").append(translator.translate("review.responses.desc")).append("</p>");
+				sb.append("<div class='o_qti_menu_buttonstyle'>");
 				sb.append("<ul class='o_testpartnavigation'>");
 				
 				node.getChildren().forEach((childNode)
 					-> renderReview(renderer, sb, component, childNode, ubu, translator));
 		
-				sb.append("</ul>");
+				sb.append("</ul></div>");
 			}
 		}
 	}
