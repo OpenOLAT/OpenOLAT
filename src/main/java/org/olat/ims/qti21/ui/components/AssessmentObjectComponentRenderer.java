@@ -68,6 +68,7 @@ import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.components.DefaultComponentRenderer;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormUIFactory;
+import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.FormJSHelper;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.render.RenderResult;
@@ -817,9 +818,17 @@ public abstract class AssessmentObjectComponentRenderer extends DefaultComponent
 		FormItem endAttemptButton = item.getFormComponent(id);
 		if(endAttemptButton == null) {
 			String title = StringHelper.escapeHtml(interaction.getTitle());
-			endAttemptButton = FormUIFactory.getInstance().addFormLink(id, id, title, null, null, Link.BUTTON | Link.NONTRANSLATED);
+			FormLink button = FormUIFactory.getInstance().addFormLink(id, id, title, null, null, Link.BUTTON | Link.NONTRANSLATED);
+			// use specific icon for known types
+			if (interaction.getResponseIdentifier().equals(QTI21Constants.HINT_REQUEST_IDENTIFIER)) {
+				button.setIconLeftCSS("o_icon o_icon-fw o_icon_qti_hint");
+				button.setElementCssClass("o_sel_assessment_item_hint");
+			}
+			endAttemptButton = button;
 			endAttemptButton.setTranslator(translator);
 			endAttemptButton.setUserObject(interaction);
+			
+			
 			if(item.getRootForm() != endAttemptButton.getRootForm()) {
 				endAttemptButton.setRootForm(item.getRootForm());
 			}

@@ -1302,17 +1302,29 @@ public class AssessmentTestDisplayController extends BasicController implements 
 					? "assessment.test.end.testPart" : "assessment.test.end.test";
 			endTestPartButton = uifactory.addFormLink("endTest", endName, null, formLayout, Link.BUTTON);
 			endTestPartButton.setElementCssClass("o_sel_end_testpart");
+			endTestPartButton.setPrimary(true);
+			endTestPartButton.setIconLeftCSS("o_icon o_icon-fw o_icon_qti_end_testpart");
+			
 			closeTestButton = uifactory.addFormLink("closeTest", "assessment.test.close.test", null, formLayout, Link.BUTTON);
 			closeTestButton.setElementCssClass("o_sel_close_test");
+			closeTestButton.setPrimary(true);
+			closeTestButton.setIconLeftCSS("o_icon o_icon-fw o_icon_qti_close_test");
+			
 			if(deliveryOptions.isEnableCancel()) {
 				cancelTestButton = uifactory.addFormLink("cancelTest", "cancel.test", null, formLayout, Link.BUTTON);
+				cancelTestButton.setIconLeftCSS("o_icon o_icon-fw o_icon_qti_cancel");
+
 			}
 			if(deliveryOptions.isEnableSuspend()) {
 				suspendTestButton = uifactory.addFormLink("suspendTest", "suspend.test", null, formLayout, Link.BUTTON);
+				suspendTestButton.setIconLeftCSS("o_icon o_icon-fw o_icon_qti_suspend");
+
 			}
 			
 			closeResultsButton = uifactory.addFormLink("closeResults", "assessment.test.close.results", null, formLayout, Link.BUTTON);
 			closeResultsButton.setElementCssClass("o_sel_close_results");
+			closeResultsButton.setIconLeftCSS("o_icon o_icon-fw o_icon_qti_close_results");
+			closeResultsButton.setPrimary(true);
 			closeResultsButton.setVisible(false);
 
 			ResourceLocator fileResourceLocator = new PathResourceLocator(fUnzippedDirRoot.toPath());

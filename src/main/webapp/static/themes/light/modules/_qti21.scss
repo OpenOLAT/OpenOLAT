@@ -157,12 +157,12 @@ ul.sessionControl {
 	}
 	
 	div.badResponse, span.badResponse {
-		color: red;
+		color: $o-qti-badResponse-color;
 		font-weight: bold;
 	}
 	
 	input.badResponse {
-  		border: 1px solid red;
+  		border: 1px solid $o-qti-badResponse-color;
 	}
 	
 	.infoControl{
@@ -190,16 +190,16 @@ ul.sessionControl {
 	
 	div.orderInteraction {
 		div.highlight {
-			border: 1px solid red;
+			border: 1px solid $o-qti-highlight-color;
 		}
 
 		div.box {
-			background-color: #eeeeee;
+			background-color: $o-qti-box-bg;
 		}
 
 		div.box span.info {
 			margin-left: 1em;
-			color: #666666;
+			color: $o-qti-box-color;
 			font-style: italic;
 			font-size: smaller;
 		}
@@ -307,46 +307,56 @@ ul.sessionControl {
 }
 	
 	
-.o_assessmentitem_wrapper .o_assessmentitem_status,
-.o_qti_menu_buttonstyle .o_assessmentitem_status {
-	float: right;
-	display: block;
-	padding: 0.3em;
-	margin-left: 1em;
-	border-radius: 0.3em;
-	border-width: 1px;
-	font-size: 0.8em;
-	line-height: 1.2em;
-	color: #fff;
+.o_assessmentitem_wrapper, .o_qti_menu_buttonstyle {
+	ul.o_testpartnavigation {
+		list-style: none;
+		padding: 0;
+		margin: 0;
+	}
+	li.o_assessmentitem {
+		margin-bottom: 2px;
+	}	
 	
-	&.ended {
-	  background-color: $o-qti-status-ended-color;
-	}
-	&.invalid {
-	  background-color: $o-qti-status-invalid-color;
-	}
-	&.answered {
-	  background-color: $o-qti-status-answered-color;
-	}
-	&.notAnswered {
-	  background-color: $o-qti-status-notAnswered-color;
-	}
-	&.notPresented {
-		background-color: $o-qti-status-notPresented-color;
-	}
-	&.review {
-		background-color: $o-qti-status-review-color;
-	}
-	&.reviewNotAllowed, 
-	&.reviewInvalid, 
-	&.reviewNotAnswered, 
-	&.reviewNotSeen {
-		background-color: $o-qti-status-review-color;
-		opacity: 0.7;
-	}
-	
-	i:before {
+	.o_assessmentitem_status {
+		float: right;
+		display: block;
+		padding: 0.3em;
+		margin-left: 1em;
+		border-radius: 0.3em;
+		border-width: 1px;
+		font-size: 0.8em;
+		line-height: 1.2em;
 		color: #fff;
+		
+		&.ended {
+		  background-color: $o-qti-status-ended-color;
+		}
+		&.invalid {
+		  background-color: $o-qti-status-invalid-color;
+		}
+		&.answered {
+		  background-color: $o-qti-status-answered-color;
+		}
+		&.notAnswered {
+		  background-color: $o-qti-status-notAnswered-color;
+		}
+		&.notPresented {
+			background-color: $o-qti-status-notPresented-color;
+		}
+		&.review {
+			background-color: $o-qti-status-review-color;
+		}
+		&.reviewNotAllowed, 
+		&.reviewInvalid, 
+		&.reviewNotAnswered, 
+		&.reviewNotSeen {
+			background-color: $o-qti-status-review-color;
+			opacity: 0.7;
+		}
+		
+		i:before {
+			color: #fff;
+		}
 	}
 }
 
@@ -385,7 +395,7 @@ ul.sessionControl {
 	}
 	.o_sel_back_test_feedback span:before { 
 		@include o-make-icon(); 
-		content: $fa-var-comment-o; 
+		content: $fa-var-chevron-left; 
 		padding-right: 0.5em
 	}
 	.o_sel_show_solution span:before { 
@@ -409,6 +419,10 @@ ul.sessionControl {
 
 #itemBody {
 	margin: 1em 0;
+}
+
+.o_sel_assessment_item_hint {
+	margin-top: 1em;
 }
 
 /* Choice interaction */
@@ -442,13 +456,13 @@ tr.choiceinteraction {
 }
 
 .choiceInteraction.choiceright table tr td.choiceInteraction {
-	background-color: #e7e7e7;
+	background-color: $o-qti-choice-tablelayout-bg;
 	border-bottom: 3px solid white;
 }
 
 /* Match interaction */
 .matchInteraction.choiceright table tr td.o_qti_item_kprim_text {
-	background-color: #e7e7e7;
+	background-color: $o-qti-choice-tablelayout-bg;
 	border-bottom: 3px solid white;
 }
 
@@ -458,8 +472,8 @@ tr.choiceinteraction {
 		width:auto;
 	}
 	
-	div.bar_green { background-color: $brand-success; }
-	div.bar_red { background-color: $brand-danger; }
+	div.bar_green { background-color: $o-qti-bar-green; }
+	div.bar_red { background-color: $o-qti-bar-red; }
 }
 
 /* MathEntryInteraction styling for MathAssess */
@@ -527,15 +541,15 @@ tr.choiceinteraction {
 	}
 
 	div.success {
-		background: green;
+		background: $o-qti-success;
 	}
 
 	div.failure {
-		background-color:gold;
+		background-color:$o-qti-failure;
 	}
 
 	div.error {
-		background-color:red;
+		background-color:$o-qti-error;
 	}
 
 	div.upConversionAjaxControlError {
