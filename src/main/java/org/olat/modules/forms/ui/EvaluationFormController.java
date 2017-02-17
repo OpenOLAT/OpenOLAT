@@ -101,6 +101,26 @@ public class EvaluationFormController extends FormBasicController implements Val
 	private EvaluationFormManager evaluationFormManager;
 	
 	/**
+	 * The responses are saved, it's aimed at the binder where the assignment was deleted.
+	 * 
+	 * @param ureq
+	 * @param wControl
+	 * @param xmlForm
+	 */
+	public EvaluationFormController(UserRequest ureq, WindowControl wControl, Identity evaluator, PageBody pageBody, String xmlForm, boolean readOnly) {
+		super(ureq, wControl, "run");
+		
+		form = (Form)XStreamHelper.readObject(FormXStream.getXStream(), xmlForm);
+		this.evaluator = evaluator;
+		this.readOnly = readOnly;
+		this.anchor = pageBody;
+		formEntry = null;
+		doneButton = false;
+		loadResponses();
+		initForm(ureq);
+	}
+	
+	/**
 	 * The responses are not saved, it's only a preview.
 	 * 
 	 * @param ureq

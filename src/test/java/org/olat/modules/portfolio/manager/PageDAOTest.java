@@ -124,6 +124,21 @@ public class PageDAOTest extends OlatTestCase {
 	}
 	
 	@Test
+	public void loadPageByBody() {
+		BinderImpl binder = binderDao.createAndPersist("Binder body", "A binder with a page and a page body", null, null);
+		Section section = binderDao.createSection("Section", "Body section", null, null, binder);
+		dbInstance.commitAndCloseSession();
+		
+		Section reloadedSection = binderDao.loadSectionByKey(section.getKey());
+		Page page = pageDao.createAndPersist("Page 1", "A page with body.", null, null, true, reloadedSection, null);
+		dbInstance.commitAndCloseSession();
+
+		Page reloadedPage = pageDao.loadByBody(page.getBody());
+		Assert.assertNotNull(reloadedPage);
+		Assert.assertEquals(page, reloadedPage);
+	}
+	
+	@Test
 	public void getPages_binder() {
 		BinderImpl binder = binderDao.createAndPersist("Binder p2", "A binder with 2 page", null, null);
 		Section section = binderDao.createSection("Section", "First section", null, null, binder);

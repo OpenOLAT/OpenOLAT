@@ -849,6 +849,11 @@ public class PortfolioServiceImpl implements PortfolioService {
 	}
 
 	@Override
+	public Page getPageByBody(PageBody body) {
+		return pageDao.loadByBody(body);
+	}
+
+	@Override
 	public Page getLastPage(Identity owner, boolean mandatoryBinder) {
 		return pageDao.getLastPage(owner, mandatoryBinder);
 	}
