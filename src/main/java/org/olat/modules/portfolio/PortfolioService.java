@@ -432,7 +432,21 @@ public interface PortfolioService {
 	 */
 	public Page appendNewPage(Identity owner, String title, String summary, String imagePath, PageImageAlign align, SectionRef section);
 	
+	/**
+	 * Load a page with its primary key.
+	 * 
+	 * @param key The primary key of the page
+	 * @return A page
+	 */
 	public Page getPageByKey(Long key);
+	
+	/**
+	 * Load the page associated with the specified page body.
+	 * 
+	 * @param body The body associated with the searched page
+	 * @return A page
+	 */
+	public Page getPageByBody(PageBody body);
 	
 	public Page getLastPage(Identity owner, boolean binderMandatory);
 	

@@ -26,6 +26,7 @@
 package org.olat.core.util.xml;
 
 import java.io.BufferedInputStream;
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -344,6 +345,22 @@ public class XStreamHelper {
 		} finally {
 			FileUtils.closeSafely(is);
 		}
+	}
+	
+	/**
+	 * Read an object from the given xml string using the xStream object.
+	 * 
+	 * @param xStream The XStream deserializer
+	 * @param xml XML in form of a string
+	 * @return
+	 */
+	public static Object readObject(XStream xStream, String xml) {
+		try(InputStream is = new ByteArrayInputStream(xml.getBytes(ENCODING))) {
+			return readObject(xStream, is);
+		} catch (Exception e) {
+			throw new OLATRuntimeException(XStreamHelper.class,
+					"could not read Object from string: " + xml, e);
+		} 
 	}
 
 	/**
