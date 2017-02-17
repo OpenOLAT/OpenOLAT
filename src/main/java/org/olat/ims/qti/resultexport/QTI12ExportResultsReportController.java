@@ -77,7 +77,7 @@ public class QTI12ExportResultsReportController extends BasicController {
 		} else {
 			identities = groupService.getMembers(group, GroupRoles.participant.toString());
 		}
-		if (identities.size() > 0) {
+		if (identities != null && identities.size() > 0) {
 			// 2) create export resource
 			MediaResource resource = new QTI12ResultsExportMediaResource(courseEnv, ureq, identities, courseNode);
 			// 3) download
