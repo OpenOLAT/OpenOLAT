@@ -114,7 +114,7 @@ public class CourseLinkProviderController extends FormBasicController implements
 		// otherwise, the modifications will be saver, when the user saves
 		// the calendar event.
 		if (kalendarEvent.getCalendar() != null) {
-			calendarManager.addEventTo(kalendarEvent.getCalendar(), kalendarEvent);
+			calendarManager.updateEventFrom(kalendarEvent.getCalendar(), kalendarEvent);
 		}
 		fireEvent(ureq, Event.DONE_EVENT);
 	}
