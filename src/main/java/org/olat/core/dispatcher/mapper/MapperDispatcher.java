@@ -68,12 +68,6 @@ public class MapperDispatcher extends LogDelegator implements Dispatcher {
 	 */
 	@Override
 	public void execute(HttpServletRequest hreq, HttpServletResponse hres) throws IOException {
-		if(!hreq.isRequestedSessionIdValid()) {
-			String pathInfo = hreq.getRequestURI();
-			DispatcherModule.sendForbidden(pathInfo, hres);
-			return;
-		}
-
 		String pathInfo = DispatcherModule.subtractContextPath(hreq);
 		// e.g. non-cacheable: 	23423/bla/blu.html
 		// e.g. cacheable: 		my.mapper.path/bla/blu.html
