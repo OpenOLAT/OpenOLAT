@@ -40,6 +40,7 @@ import javax.xml.transform.stream.StreamResult;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.StringHelper;
 import org.olat.ims.qti21.QTI21Constants;
 import org.olat.ims.qti21.model.QTI21QuestionType;
 import org.olat.ims.qti21.model.xml.AssessmentItemBuilder;
@@ -952,15 +953,20 @@ public class FIBAssessmentItemBuilder extends AssessmentItemBuilder {
 
 		@Override
 		public boolean match(String response) {
-			try {
-				double firstNumber = Double.parseDouble(response);
-				return toleranceMode.isEqual(firstNumber, solution,
-						lowerTolerance, upperTolerance,
-				        true, true);
-			} catch (Exception e) {
-				log.error("", e);
-				return false;
+			if(StringHelper.containsNonWhitespace(response)) {
+				try {
+					double firstNumber = Double.parseDouble(response);
+					double lTolerance = lowerTolerance == null ? 0.0d : lowerTolerance.doubleValue();
+					double uTolerance = upperTolerance == null ? 0.0d : upperTolerance.doubleValue();
+					return toleranceMode.isEqual(firstNumber, solution,
+							lTolerance, uTolerance,
+							true, true);
+				} catch (Exception e) {
+					log.error("", e);
+					return false;
+				}
 			}
+			return false;
 		}
 	}
 	
