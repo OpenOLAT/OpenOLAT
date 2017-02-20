@@ -49,6 +49,7 @@ import org.olat.ims.qti.QTIModule;
 import org.olat.ims.qti.editor.QTIEditHelper;
 import org.olat.ims.qti.editor.QTIEditorPackage;
 import org.olat.ims.qti.editor.beecom.objects.Assessment;
+import org.olat.ims.qti.editor.beecom.objects.ChoiceQuestion;
 import org.olat.ims.qti.editor.beecom.objects.Control;
 import org.olat.ims.qti.editor.beecom.objects.Duration;
 import org.olat.ims.qti.editor.beecom.objects.EssayQuestion;
@@ -435,8 +436,17 @@ public class QTI12To21Converter {
 		Question question = item.getQuestion();
 		itemBuilder.setShuffle(question.isShuffle());
 		
-		boolean singleCorrect = question.isSingleCorrect();
+		boolean hasNegative = false;
 		List<Response> responses = question.getResponses();
+		for(Response response:responses) {
+			if(response.getPoints() < 0.0f) {
+				hasNegative = true;
+			}
+		}
+		
+		
+
+		boolean singleCorrect = question.isSingleCorrect();
 		for(Response response:responses) {
 			String responseText = response.getContent().renderAsHtmlForEditor();
 			responseText = prepareContent(responseText);
@@ -452,15 +462,19 @@ public class QTI12To21Converter {
 			}
 			
 			itemBuilder.addSimpleChoice(newChoice);
-			if(response.isCorrect()) {
-				itemBuilder.addCorrectAnswer(newChoice.getIdentifier());
-			}
+			
 			double score = response.getPoints();
 			if(singleCorrect) {
+				if(response.isCorrect()) {
+					itemBuilder.addCorrectAnswer(newChoice.getIdentifier());
+				}
 				if(score > 0.0f) {
 					itemBuilder.setMaxScore(score);
 				}
 			} else {
+				if((hasNegative && response.getPoints() >= 0.0f) || (!hasNegative && response.getPoints() > 0.0f)) {
+					itemBuilder.addCorrectAnswer(newChoice.getIdentifier());
+				}
 				itemBuilder.setMapping(newChoice.getIdentifier(), score);
 			}
 		}
@@ -469,6 +483,11 @@ public class QTI12To21Converter {
 			itemBuilder.setScoreEvaluationMode(ScoreEvaluation.allCorrectAnswers);
 		} else {
 			itemBuilder.setScoreEvaluationMode(ScoreEvaluation.perAnswer);
+			if(question instanceof ChoiceQuestion) {
+				ChoiceQuestion choice = (ChoiceQuestion)question;
+				itemBuilder.setMinScore(new Double(choice.getMinValue()));
+				itemBuilder.setMaxScore(new Double(choice.getMaxValue()));
+			}
 		}
 		
 		return itemBuilder;
