@@ -686,6 +686,7 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 		TreeNode sectionNode = getNearestSection(selectedNode);
 		
 		String firstItemId = null;
+		Map<AssessmentItemRef,AssessmentItem> flyingObjects = new HashMap<>();
 		try {
 			AssessmentSection section = (AssessmentSection)sectionNode.getUserObject();
 			for(QuestionItemView item:items) {
@@ -694,18 +695,24 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 				if(firstItemId == null) {
 					firstItemId = itemRef.getIdentifier().toString();
 				}
+				flyingObjects.put(itemRef, assessmentItem);
 			}
 		} catch (IOException | URISyntaxException e) {
 			showError("error.import.question");
 			logError("", e);
 		}
 		
-		updateTreeModel(false);
+		if(firstItemId != null) {
+			//persist metadata
+			doSaveAssessmentTest(flyingObjects);
+			doSaveManifest();
+			updateTreeModel(false);
 		
-		TreeNode newItemNode = menuTree.getTreeModel().getNodeById(firstItemId);
-		menuTree.setSelectedNode(newItemNode);
-		menuTree.open(newItemNode);
-		partEditorFactory(ureq, newItemNode);
+			TreeNode newItemNode = menuTree.getTreeModel().getNodeById(firstItemId);
+			menuTree.setSelectedNode(newItemNode);
+			menuTree.open(newItemNode);
+			partEditorFactory(ureq, newItemNode);
+		}
 	}
 
 	private void doInsert(UserRequest ureq, AssessmentItemsPackage importPackage) {
