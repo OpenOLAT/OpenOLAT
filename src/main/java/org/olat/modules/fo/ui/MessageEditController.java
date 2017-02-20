@@ -71,6 +71,7 @@ import org.olat.modules.fo.Forum;
 import org.olat.modules.fo.ForumCallback;
 import org.olat.modules.fo.ForumChangedEvent;
 import org.olat.modules.fo.ForumLoggingAction;
+import org.olat.modules.fo.ForumModule;
 import org.olat.modules.fo.Message;
 import org.olat.modules.fo.Pseudonym;
 import org.olat.modules.fo.manager.ForumManager;
@@ -125,6 +126,8 @@ public class MessageEditController extends FormBasicController {
 
 	@Autowired
 	private ForumManager fm;
+	@Autowired
+	private ForumModule forumModule;
 	@Autowired
 	private BaseSecurity securityManager;
 	@Autowired
@@ -197,7 +200,8 @@ public class MessageEditController extends FormBasicController {
 		if(foCallback.mayUsePseudonym() || guestOnly) {
 			String[] enablePseudonymValues = new String[]{ translate("use.pseudonym.label") };
 			usePseudonymEl = uifactory.addCheckboxesHorizontal("use.pseudonym", formLayout, enableKeys, enablePseudonymValues);
-			if(StringHelper.containsNonWhitespace(message.getPseudonym()) || guestOnly) {
+			if(StringHelper.containsNonWhitespace(message.getPseudonym())
+					|| guestOnly || forumModule.isPseudonymForMessageEnabledByDefault()) {
 				usePseudonymEl.select(enableKeys[0], true);
 			}
 			pseudonymEl = uifactory.addTextElement("pseudonym", "pseudonym", 128, message.getPseudonym(), formLayout);
