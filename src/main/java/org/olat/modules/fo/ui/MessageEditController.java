@@ -201,7 +201,7 @@ public class MessageEditController extends FormBasicController {
 			String[] enablePseudonymValues = new String[]{ translate("use.pseudonym.label") };
 			usePseudonymEl = uifactory.addCheckboxesHorizontal("use.pseudonym", formLayout, enableKeys, enablePseudonymValues);
 			if(StringHelper.containsNonWhitespace(message.getPseudonym())
-					|| guestOnly || forumModule.isPseudonymForMessageEnabledByDefault()) {
+					|| guestOnly || foCallback.pseudonymAsDefault()) {
 				usePseudonymEl.select(enableKeys[0], true);
 			}
 			pseudonymEl = uifactory.addTextElement("pseudonym", "pseudonym", 128, message.getPseudonym(), formLayout);
