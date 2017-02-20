@@ -164,6 +164,14 @@ public class MultipleChoiceAssessmentItemBuilder extends SimpleChoiceAssessmentI
 	}
 
 	@Override
+	public void clearSimpleChoices() {
+		if(correctAnswers != null) {
+			correctAnswers.clear();
+		}
+		super.clearSimpleChoices();
+	}
+
+	@Override
 	protected void buildResponseAndOutcomeDeclarations() {
 		ResponseDeclaration responseDeclaration = AssessmentItemFactory
 				.createMultipleChoiceCorrectResponseDeclaration(assessmentItem, responseIdentifier, correctAnswers);
