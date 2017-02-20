@@ -41,6 +41,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.tabbable.TabbableController;
 import org.olat.core.gui.translator.PackageTranslator;
 import org.olat.core.id.OLATResourceable;
+import org.olat.core.id.Roles;
 import org.olat.core.id.context.BusinessControl;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.logging.OLATRuntimeException;
@@ -132,10 +133,10 @@ public class FOCourseNode extends AbstractAccessableCourseNode {
 	public NodeRunConstructionResult createNodeRunConstructionResult(UserRequest ureq, WindowControl wControl,
 			final UserCourseEnvironment userCourseEnv, NodeEvaluation ne, String nodecmd) {
 		updateModuleConfigDefaults(false);
-		
+		Roles roles = ureq.getUserSession().getRoles();
 		Forum theForum = loadOrCreateForum(userCourseEnv.getCourseEnvironment());
-		boolean isOlatAdmin = ureq.getUserSession().getRoles().isOLATAdmin();
-		boolean isGuestOnly = ureq.getUserSession().getRoles().isGuestOnly();
+		boolean isOlatAdmin = roles.isOLATAdmin();
+		boolean isGuestOnly = roles.isGuestOnly();
 		// Add message id to business path if nodemcd is available
 		if (nodecmd != null) {
 			try {
@@ -151,20 +152,26 @@ public class FOCourseNode extends AbstractAccessableCourseNode {
 
 		//for guests, check if posting is allowed
 		boolean pseudonymPostAllowed = false;
+		boolean defaultPseudonym = false;
 		boolean guestPostAllowed = false;
-		if(ureq.getUserSession().getRoles().isGuestOnly()) {
+		if(roles.isGuestOnly()) {
 			String config = getModuleConfiguration().getStringValue(FOCourseNodeEditController.GUEST_POST_ALLOWED);
 			guestPostAllowed = "true".equals(config);
 		} else {
+			ForumModule forumModule = CoreSpringFactory.getImpl(ForumModule.class);
 			String config = getModuleConfiguration().getStringValue(FOCourseNodeEditController.PSEUDONYM_POST_ALLOWED);
-			pseudonymPostAllowed = CoreSpringFactory.getImpl(ForumModule.class).isAnonymousPostingWithPseudonymEnabled()
+			pseudonymPostAllowed = forumModule.isAnonymousPostingWithPseudonymEnabled()
 					&& "true".equals(config);
+			if(pseudonymPostAllowed) {
+				defaultPseudonym = getModuleConfiguration().getBooleanSafe(FOCourseNodeEditController.PSEUDONYM_POST_DEFAULT,
+						forumModule.isPseudonymForMessageEnabledByDefault());
+			}
 		}
 		// Create subscription context and run controller
 		SubscriptionContext forumSubContext = CourseModule.createSubscriptionContext(userCourseEnv.getCourseEnvironment(), this);
 		ForumCallback foCallback = userCourseEnv.isCourseReadOnly() ?
 				new ReadOnlyForumCallback(ne, isOlatAdmin, isGuestOnly) :
-				new ForumNodeForumCallback(ne, isOlatAdmin, isGuestOnly, guestPostAllowed, pseudonymPostAllowed, forumSubContext);
+				new ForumNodeForumCallback(ne, isOlatAdmin, isGuestOnly, guestPostAllowed, pseudonymPostAllowed, defaultPseudonym, forumSubContext);
 		FOCourseNodeRunController forumC = new FOCourseNodeRunController(ureq, wControl, theForum, foCallback, this);
 		return new NodeRunConstructionResult(forumC);
 	}
@@ -490,6 +497,9 @@ public class FOCourseNode extends AbstractAccessableCourseNode {
 			boolean pseudonymAllowed = forumModule.isAnonymousPostingWithPseudonymEnabled()
 					&& forumModule.isPseudonymForCourseEnabledByDefault();
 			config.setStringValue(FOCourseNodeEditController.PSEUDONYM_POST_ALLOWED, pseudonymAllowed ? "true" : "false");
+			boolean pseudonymDefault = pseudonymAllowed
+					&& forumModule.isPseudonymForMessageEnabledByDefault();
+			config.setStringValue(FOCourseNodeEditController.PSEUDONYM_POST_DEFAULT, pseudonymDefault ? "true" : "false");
 			config.setStringValue(FOCourseNodeEditController.GUEST_POST_ALLOWED, "false");
 		}
 		if (isNewNode || config.getConfigurationVersion() < 2) {
@@ -641,6 +651,7 @@ class ForumNodeForumCallback implements ForumCallback {
 	private final boolean isGuestOnly;
 	private final boolean guestPostAllowed;
 	private final boolean anonymousPostAllowed;
+	private final boolean anonymousPostDefault;
 	private final SubscriptionContext subscriptionContext;
 
 	/**
@@ -650,13 +661,14 @@ class ForumNodeForumCallback implements ForumCallback {
 	 * @param subscriptionContext
 	 */
 	public ForumNodeForumCallback(NodeEvaluation ne, boolean isOlatAdmin, boolean isGuestOnly,
-			boolean guestPostAllowed, boolean anonymousPostAllowed,
+			boolean guestPostAllowed, boolean anonymousPostAllowed, boolean anonymousPostDefault,
 			SubscriptionContext subscriptionContext) {
 		this.ne = ne;
 		this.isOlatAdmin = isOlatAdmin;
 		this.isGuestOnly = isGuestOnly;
 		this.guestPostAllowed = guestPostAllowed;
 		this.anonymousPostAllowed = anonymousPostAllowed;
+		this.anonymousPostDefault = anonymousPostDefault;
 		this.subscriptionContext = subscriptionContext;
 	}
 
@@ -664,6 +676,11 @@ class ForumNodeForumCallback implements ForumCallback {
 	public boolean mayUsePseudonym() {
 		if (isGuestOnly) return false;
 		return anonymousPostAllowed;
+	}
+
+	@Override
+	public boolean pseudonymAsDefault() {
+		return anonymousPostDefault;
 	}
 
 	/**

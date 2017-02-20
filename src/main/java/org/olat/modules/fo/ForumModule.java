@@ -41,6 +41,8 @@ public class ForumModule extends AbstractSpringModule {
 	private String courseForumDefault;
 	@Value("${forum.group.default:disabled}")
 	private String groupForumDefault;
+	@Value("${forum.message.default:disabled}")
+	private String messageForumDefault;
 	
 	@Autowired
 	public ForumModule(CoordinatorManager coordinatorManager) {
@@ -65,6 +67,11 @@ public class ForumModule extends AbstractSpringModule {
 		String groupDefaultObj = getStringPropertyValue("forum.group.default", true);
 		if(StringHelper.containsNonWhitespace(groupDefaultObj)) {
 			groupForumDefault = groupDefaultObj;
+		}
+		
+		String messageDefaultObj = getStringPropertyValue("forum.message.default", true);
+		if(StringHelper.containsNonWhitespace(messageDefaultObj)) {
+			messageForumDefault = messageDefaultObj;
 		}
 	}
 	
@@ -93,5 +100,14 @@ public class ForumModule extends AbstractSpringModule {
 	public void setPseudonymForGroupEnabledByDefault(boolean enabled) {
 		groupForumDefault = enabled ? "enabled" : "disabled";
 		setStringProperty("forum.group.default", enabled ? "enabled" : "disabled", true);
+	}
+	
+	public boolean isPseudonymForMessageEnabledByDefault() {
+		return "enabled".equals(messageForumDefault);
+	}
+	
+	public void setPseudonymForMessageEnabledByDefault(boolean enabled) {
+		messageForumDefault = enabled ? "enabled" : "disabled";
+		setStringProperty("forum.message.default", enabled ? "enabled" : "disabled", true);
 	}
 }

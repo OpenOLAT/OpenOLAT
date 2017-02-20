@@ -42,7 +42,7 @@ public class SettingsController extends FormBasicController {
 	
 	private static final String[] allowKeys = new String[] { "on" };
 	
-	private MultipleSelectionElement allowPseudonymEl, allowGuestEl;
+	private MultipleSelectionElement allowPseudonymEl, pseudonymAsDefaultEl, allowGuestEl;
 
 	private final FOCourseNode foNode;
 	
@@ -53,6 +53,7 @@ public class SettingsController extends FormBasicController {
 		super(ureq, wControl, LAYOUT_VERTICAL);
 		this.foNode = foNode;
 		initForm(ureq);
+		updateUI();
 	}
 
 	@Override
@@ -72,6 +73,19 @@ public class SettingsController extends FormBasicController {
 			if("true".equals(foNode.getModuleConfiguration().getStringValue(FOCourseNodeEditController.PSEUDONYM_POST_ALLOWED))) {
 				allowPseudonymEl.select(allowKeys[0], true);
 			}
+
+			String[] defaultPseudonymValues = new String[] { translate("pseudonym.default") };
+			pseudonymAsDefaultEl = uifactory.addCheckboxesHorizontal("pseudonym.default", null, formLayout,
+					allowKeys, defaultPseudonymValues);
+			pseudonymAsDefaultEl.setElementCssClass("o_sel_course_forum_pseudo_default");
+			pseudonymAsDefaultEl.setLabel(null, null);
+			pseudonymAsDefaultEl.addActionListener(FormEvent.ONCHANGE);
+			
+			boolean defaultPseudonym = foNode.getModuleConfiguration().getBooleanSafe(FOCourseNodeEditController.PSEUDONYM_POST_DEFAULT,
+					forumModule.isPseudonymForMessageEnabledByDefault());
+			if(defaultPseudonym) {
+				pseudonymAsDefaultEl.select(allowKeys[0], true);
+			}
 		}
 		
 		String[] allowGuestValues = new String[] { translate("allow.guest.post") };
@@ -85,6 +99,12 @@ public class SettingsController extends FormBasicController {
 		}
 	}
 	
+	private void updateUI() {
+		if(pseudonymAsDefaultEl != null && allowPseudonymEl != null) {
+			pseudonymAsDefaultEl.setVisible(isPseudonymPostAllowed());
+		}
+	}
+	
 	@Override
 	protected void doDispose() {
 		//
@@ -94,14 +114,19 @@ public class SettingsController extends FormBasicController {
 		return allowPseudonymEl == null ? false : allowPseudonymEl.isAtLeastSelected(1);
 	}
 	
+	public boolean isDefaultPseudonym() {
+		return pseudonymAsDefaultEl == null ? false : pseudonymAsDefaultEl.isAtLeastSelected(1);
+	}
+	
 	public boolean isGuestPostAllowed() {
 		return allowGuestEl.isAtLeastSelected(1);
 	}
 	
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if(allowPseudonymEl == source) {
+		if(allowPseudonymEl == source || pseudonymAsDefaultEl == source) {
 			fireEvent(ureq, Event.CHANGED_EVENT);
+			updateUI();
 		} else if(allowGuestEl == source) {
 			fireEvent(ureq, Event.CHANGED_EVENT);
 		}

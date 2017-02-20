@@ -59,6 +59,17 @@ public class EvaluationFormSessionDAO {
 		return session;
 	}
 	
+	public boolean hasSessionForPortfolioEvaluation(PageBody anchor) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select session.key from evaluationformsession as session")
+		  .append(" where session.pageBody.key=:bodyKey");
+		List<Long> sessions = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Long.class)
+				.setParameter("bodyKey", anchor.getKey())
+				.getResultList();
+		return sessions == null || sessions.isEmpty() || sessions.get(0) == null ? false : sessions.get(0).longValue() > 0;
+	}
+	
 	public EvaluationFormSession getSessionForPortfolioEvaluation(IdentityRef identity, PageBody anchor) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select session from evaluationformsession as session")

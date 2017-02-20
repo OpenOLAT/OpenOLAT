@@ -229,6 +229,17 @@ public interface QTI21Service {
 	public List<AssessmentTestSession> getAssessmentTestSessions(RepositoryEntryRef courseEntry, String subIdent, IdentityRef identity);
 	
 	/**
+	 * Retrieve the last finished test session.
+	 * 
+	 * @param courseEntry
+	 * @param subIdent
+	 * @param testEntry
+	 * @param identity
+	 * @return
+	 */
+	public AssessmentTestSession getLastAssessmentTestSessions(RepositoryEntryRef courseEntry, String subIdent, RepositoryEntry testEntry, IdentityRef identity);
+	
+	/**
 	 * Retrieve the sessions for a test.
 	 * 
 	 * @param courseEntry

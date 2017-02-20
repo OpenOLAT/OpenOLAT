@@ -45,4 +45,17 @@ public interface SelfAssessableCourseNode extends CourseNode {
 	 * @return Returns the ScoreEvaluation.
 	 */
 	public ScoreEvaluation getUserScoreEvaluation(UserCourseEnvironment userCourseEnv);
+	
+	/**
+	 * @param userCourseEnvironment
+	 * @return The users attempts of this node
+	 */
+	public Integer getUserAttempts(UserCourseEnvironment userCourseEnvironment);
+	
+	/**
+	 * Increments the users attempts for this node and this user + 1. 
+	 * @param userCourseEnvironment
+	 */
+	public void incrementUserAttempts(UserCourseEnvironment userCourseEnvironment);
+	
 }

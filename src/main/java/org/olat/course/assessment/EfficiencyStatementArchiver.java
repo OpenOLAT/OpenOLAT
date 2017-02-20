@@ -26,7 +26,6 @@
 package org.olat.course.assessment;
 
 import java.io.File;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -81,10 +80,9 @@ public class EfficiencyStatementArchiver {
 		StringBuilder buf = new StringBuilder();
 		buf.append(translator.translate("efficiencystatement.title"));
 		appendIdentityIntro(buf, identity);
-		for (Iterator<EfficiencyStatement> iter = efficiencyStatements.iterator(); iter.hasNext();) {
+		for (EfficiencyStatement efficiencyStatement: efficiencyStatements) {
 			buf.append(EOL);
 			buf.append(EOL);
-			EfficiencyStatement efficiencyStatement = iter.next();
 			appendIntro(buf, efficiencyStatement);
 			buf.append(EOL);
 			appendDetailsHeader(buf);
@@ -109,8 +107,7 @@ public class EfficiencyStatementArchiver {
 	}
 
 	private void appendDetailsTable(StringBuilder buf, EfficiencyStatement efficiencyStatement) {
-		for (Iterator<Map<String,Object>> iter = efficiencyStatement.getAssessmentNodes().iterator(); iter.hasNext();) {
-			Map<String,Object> nodeData = iter.next();
+		for (Map<String,Object> nodeData : efficiencyStatement.getAssessmentNodes()) {
 			appendValue(buf, nodeData, AssessmentHelper.KEY_TITLE_SHORT);		
 			appendValue(buf, nodeData, AssessmentHelper.KEY_TITLE_LONG);
 			appendTypeValue(buf, nodeData, AssessmentHelper.KEY_TYPE);
@@ -149,10 +146,13 @@ public class EfficiencyStatementArchiver {
 		appendLine(buf, translator.translate("course"), efficiencyStatement.getCourseTitle() + "  (" + efficiencyStatement.getCourseRepoEntryKey().toString() +")");
 		appendLine(buf, translator.translate("date"), StringHelper.formatLocaleDateTime(efficiencyStatement.getLastUpdated(), I18nModule.getDefaultLocale()) );
 		
-		Map<String,Object> nodeData = efficiencyStatement.getAssessmentNodes().get(0);
-		if (nodeData != null) {
-			appendLabelValueLine(buf, nodeData, translator.translate("table.header.score"), AssessmentHelper.KEY_SCORE);
-			appendLabelValueLine(buf, nodeData, translator.translate("table.header.passed"), AssessmentHelper.KEY_PASSED);
+		List<Map<String,Object>> nodeDataList = efficiencyStatement.getAssessmentNodes();
+		if(nodeDataList.size() > 0) {
+			Map<String,Object> nodeData = nodeDataList.get(0);
+			if (nodeData != null) {
+				appendLabelValueLine(buf, nodeData, translator.translate("table.header.score"), AssessmentHelper.KEY_SCORE);
+				appendLabelValueLine(buf, nodeData, translator.translate("table.header.passed"), AssessmentHelper.KEY_PASSED);
+			}
 		}
 	}
 
