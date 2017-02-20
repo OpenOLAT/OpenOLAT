@@ -1,5 +1,5 @@
 #if ($enableScoreInfo)
-	#if($attempts && $attempts > 0)
+	#if($r.isNotNull($attempts) && $attempts > 0)
 		<div class="panel panel-default o_personal">
 		  	<div class="panel-heading">
 	  			<h4 class="panel-title">$r.translate("personal.title")</h4>
@@ -19,11 +19,11 @@
 				<tr class="o_attempts">
 					<th>$r.translate("attempts.yourattempts")</th>
 					<td>$attempts</td> 
-				</tr> 
+				</tr>
 				<tr class="o_score">
 					<th>$r.translate("score.yourscore")</th>
-					<td>$score</td> 
-				</tr> 
+					<td>#if($r.isNotNull($score))$score#end</td>
+				</tr>
 				<tr class="o_state #if ($hasPassedValue && $passed) o_passed #elseif($hasPassedValue && !$passed) o_failed #else o_unknown #end">
 					<th>$r.translate("passed.yourpassed")</th>
 					<td>

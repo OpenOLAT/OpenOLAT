@@ -1196,14 +1196,12 @@ public class AssessmentTestDisplayController extends BasicController implements 
             	}
             }
         }
-        
-        if(score != null || pass != null) {
-        	if(submit) {
-        		outcomesListener.submit(score, pass, candidateSession.getKey());
-        	} else {
-        		outcomesListener.updateOutcomes(score, pass);
-        	}
-        }
+
+    	if(submit) {
+    		outcomesListener.submit(score, pass, candidateSession.getKey());
+    	} else {
+    		outcomesListener.updateOutcomes(score, pass);
+    	}
     }
 	
     private AssessmentResult computeTestAssessmentResult(UserRequest ureq, final AssessmentTestSession testSession) {

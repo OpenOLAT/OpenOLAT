@@ -56,6 +56,7 @@ import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.IQSELFCourseNode;
 import org.olat.course.nodes.IQTESTCourseNode;
 import org.olat.course.nodes.QTICourseNode;
+import org.olat.course.nodes.SelfAssessableCourseNode;
 import org.olat.course.run.scoring.ScoreEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.fileresource.FileResourceManager;
@@ -187,9 +188,21 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 		} else {
 			mainVC.contextPut("attemptsConfig", Boolean.FALSE);
 		}
-	    // user data
 		
-		if(courseNode instanceof IQTESTCourseNode) {
+	    // user data
+		if (courseNode instanceof SelfAssessableCourseNode) {
+			SelfAssessableCourseNode acn = (SelfAssessableCourseNode)courseNode; 
+			ScoreEvaluation scoreEval = acn.getUserScoreEvaluation(userCourseEnv);
+			Integer attempts = acn.getUserAttempts(userCourseEnv);
+			if (scoreEval != null) {
+				mainVC.contextPut("hasResults", Boolean.TRUE);
+				mainVC.contextPut("score", AssessmentHelper.getRoundedScore(scoreEval.getScore()));
+				mainVC.contextPut("hasPassedValue", (scoreEval.getPassed() == null ? Boolean.FALSE : Boolean.TRUE));
+				mainVC.contextPut("passed", scoreEval.getPassed());
+				mainVC.contextPut("attempts", attempts); //at least one attempt
+				exposeResults(ureq);
+			}
+		} else if(courseNode instanceof IQTESTCourseNode) {
 			IQTESTCourseNode testCourseNode = (IQTESTCourseNode)courseNode;
 			AssessmentEntry assessmentEntry = testCourseNode.getUserAssessmentEntry(userCourseEnv);
 			if(assessmentEntry == null) {
@@ -223,9 +236,7 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 					mainVC.contextPut("log", am.getUserNodeLog(courseNode, identity));
 				}
 			}
-		}
-						
-		exposeResults(ureq);
+		}	
 	}
 	
 	private void checkChats (UserRequest ureq) {
@@ -505,10 +516,10 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 			if(increment) {
 				ThreadLocalUserActivityLogger.log(QTI21LoggingAction.QTI_CLOSE_IN_COURSE, getClass());
 			}
-		} else if(courseNode instanceof IQSELFCourseNode) {
+		} else if(courseNode instanceof SelfAssessableCourseNode) {
 			boolean increment = incrementAttempts.getAndSet(false);
 			if(increment) {
-				((IQSELFCourseNode)courseNode).incrementUserAttempts(userCourseEnv);
+				((SelfAssessableCourseNode)courseNode).incrementUserAttempts(userCourseEnv);
 			}
 		}
 	}
