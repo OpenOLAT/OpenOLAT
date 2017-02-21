@@ -51,6 +51,7 @@ public class SmsPhoneConfirmController extends FormBasicController {
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormDescription("sms.change.confirm.descr");
 		tokenEl = uifactory.addTextElement("token", "sms.change.confirm.token", 32, "", formLayout);
+		tokenEl.setFocus(true);
 		
 		FormLayoutContainer buttonsCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		formLayout.add(buttonsCont);

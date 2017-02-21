@@ -56,10 +56,11 @@ public class SmsPhoneElement extends FormItemImpl implements FormItemCollection,
 	private final SmsPhoneComponent component;
 	
 	private String phone;
+	private boolean forceFormDirty;
 	private final User editedUser;
 	private final UserPropertyHandler handler;
 	
-	private FormLink editLink;
+	private FormLink editLink, removeLink;
 	private SmsPhoneController smsPhoneCtrl;
 	private CloseableModalController cmc;
 	
@@ -83,6 +84,16 @@ public class SmsPhoneElement extends FormItemImpl implements FormItemCollection,
 	public FormLink getEditLink() {
 		return editLink;
 	}
+	
+	public FormLink getRemoveLink() {
+		return removeLink;
+	}
+	
+	public boolean getAndResetFormDirty() {
+		boolean ffd = forceFormDirty;
+		forceFormDirty = false;
+		return ffd;
+	}
 
 	@Override
 	public void dispatchEvent(UserRequest ureq, Controller source, Event event) {
@@ -92,9 +103,14 @@ public class SmsPhoneElement extends FormItemImpl implements FormItemCollection,
 		} else if(smsPhoneCtrl == source) {
 			if(event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
 				setPhone(smsPhoneCtrl.getPhone());
-				getComponent().setDirty(true);
+				forceFormDirty = true;
+				component.setDirty(true);
 			}
 			cmc.deactivate();
+			if(event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
+				String msg = getTranslator().translate("sms.phone.number.changed");
+				smsPhoneCtrl.getWindowControl().setInfo(msg);
+			}
 			smsPhoneCtrl = null;
 			cmc = null;
 		}
@@ -105,6 +121,9 @@ public class SmsPhoneElement extends FormItemImpl implements FormItemCollection,
 		List<FormItem> items = new ArrayList<>(1);
 		if(editLink != null) {
 			items.add(editLink);
+		}
+		if(removeLink != null) {
+			items.add(removeLink);
 		}
 		return items;
 	}
@@ -118,8 +137,14 @@ public class SmsPhoneElement extends FormItemImpl implements FormItemCollection,
 	public void setRootForm(Form rootForm) {
 		String dispatchId = component.getDispatchID();
 		editLink = new FormLinkImpl(dispatchId + "_editSmsButton", "editSms", "edit", Link.BUTTON);
+		editLink.setDomReplacementWrapperRequired(false);
 		editLink.setTranslator(getTranslator());
 		editLink.setIconLeftCSS("o_icon o_icon_edit");
+		
+		removeLink = new FormLinkImpl(dispatchId + "_removeSmsButton", "removeSms", "remove", Link.BUTTON);
+		removeLink.setDomReplacementWrapperRequired(false);
+		removeLink.setTranslator(getTranslator());
+		removeLink.setIconLeftCSS("o_icon o_icon_delete");
 		super.setRootForm(rootForm);
 	}
 
@@ -133,6 +158,9 @@ public class SmsPhoneElement extends FormItemImpl implements FormItemCollection,
 		if(editLink != null && editLink.getRootForm() != getRootForm()) {
 			editLink.setRootForm(getRootForm());
 		}
+		if(removeLink != null && removeLink.getRootForm() != getRootForm()) {
+			removeLink.setRootForm(getRootForm());
+		}
 	}
 
 	@Override
@@ -141,6 +169,8 @@ public class SmsPhoneElement extends FormItemImpl implements FormItemCollection,
 		String dispatchuri = form.getRequestParameter("dispatchuri");
 		if(editLink != null && editLink.getFormDispatchId().equals(dispatchuri)) {
 			doEdit(ureq);
+		} else if(removeLink != null && removeLink.getFormDispatchId().equals(dispatchuri)) {
+			doRemove();
 		}
 	}
 
@@ -163,5 +193,10 @@ public class SmsPhoneElement extends FormItemImpl implements FormItemCollection,
 			cmc.suppressDirtyFormWarningOnClose();
 			cmc.activate();
 		}
+	}
+
+	private void doRemove() {
+		setPhone(null);
+		component.setDirty(true);
 	}
 }

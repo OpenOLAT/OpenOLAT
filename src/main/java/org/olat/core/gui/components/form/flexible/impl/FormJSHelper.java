@@ -285,6 +285,21 @@ public class FormJSHelper {
 		return sb;
 	}
 	
+	/**
+	 * This is an hack because it use a timeout of 500ms to be executed after
+	 * o_afterserver() method
+	 * 
+	 * @param sb
+	 * @param form
+	 * @return
+	 */
+	public static StringOutput setFlexiFormDirtyOnLoad(StringOutput sb, Form form) {
+		sb.append("<script type=\"text/javascript\">\n /* <![CDATA[ */ \n")
+		  .append(" setTimeout(function(){ setFlexiFormDirty(\"").append(form.getDispatchFieldId()).append("\",").append(form.isHideDirtyMarkingMessage()).append(");}, 500);")
+		  .append("\n/* ]]> */ \n</script>");
+		return sb;
+	}
+	
 	public static String getSetFlexiFormDirtyFnCallOnly(Form form){
 		if(form.isDirtyMarking()){
 			return "setFlexiFormDirty('"+form.getDispatchFieldId()+"');";
