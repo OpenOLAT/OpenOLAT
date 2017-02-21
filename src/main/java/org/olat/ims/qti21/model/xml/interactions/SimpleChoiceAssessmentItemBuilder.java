@@ -27,7 +27,6 @@ import java.util.Map;
 import javax.xml.transform.stream.StreamResult;
 
 import org.olat.core.gui.render.StringOutput;
-import org.olat.ims.qti21.model.xml.AssessmentItemFactory;
 
 import uk.ac.ed.ph.jqtiplus.node.content.basic.Block;
 import uk.ac.ed.ph.jqtiplus.node.item.AssessmentItem;
@@ -37,9 +36,6 @@ import uk.ac.ed.ph.jqtiplus.node.item.interaction.choice.SimpleChoice;
 import uk.ac.ed.ph.jqtiplus.node.item.response.declaration.MapEntry;
 import uk.ac.ed.ph.jqtiplus.node.item.response.declaration.Mapping;
 import uk.ac.ed.ph.jqtiplus.node.item.response.declaration.ResponseDeclaration;
-import uk.ac.ed.ph.jqtiplus.node.item.response.processing.ResponseCondition;
-import uk.ac.ed.ph.jqtiplus.node.item.response.processing.ResponseRule;
-import uk.ac.ed.ph.jqtiplus.node.outcome.declaration.OutcomeDeclaration;
 import uk.ac.ed.ph.jqtiplus.serialization.QtiSerializer;
 import uk.ac.ed.ph.jqtiplus.types.Identifier;
 import uk.ac.ed.ph.jqtiplus.value.IdentifierValue;
@@ -235,16 +231,6 @@ public abstract class SimpleChoiceAssessmentItemBuilder extends ChoiceAssessment
 		if(choices != null) {
 			choices.clear();
 		}
-	}
-
-	@Override
-	protected void buildModalFeedbacksAndHints(List<OutcomeDeclaration> outcomeDeclarations, List<ResponseRule> responseRules) {
-		if(correctFeedback != null || incorrectFeedback != null) {
-			ResponseCondition responseCondition = AssessmentItemFactory.createModalFeedbackResponseConditionByScore(assessmentItem.getResponseProcessing());
-			responseRules.add(responseCondition);
-		}
-
-		super.buildModalFeedbacksAndHints(outcomeDeclarations, responseRules);
 	}
 
 	public enum ScoreEvaluation {

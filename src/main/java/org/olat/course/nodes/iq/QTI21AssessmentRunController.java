@@ -200,7 +200,6 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 				mainVC.contextPut("hasPassedValue", (scoreEval.getPassed() == null ? Boolean.FALSE : Boolean.TRUE));
 				mainVC.contextPut("passed", scoreEval.getPassed());
 				mainVC.contextPut("attempts", attempts); //at least one attempt
-				exposeResults(ureq);
 			}
 		} else if(courseNode instanceof IQTESTCourseNode) {
 			IQTESTCourseNode testCourseNode = (IQTESTCourseNode)courseNode;
@@ -238,7 +237,9 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 					mainVC.contextPut("log", am.getUserNodeLog(courseNode, identity));
 				}
 			}
-		}	
+		}
+		
+		exposeResults(ureq);
 	}
 	
 	private void checkChats (UserRequest ureq) {
@@ -385,26 +386,38 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 	private void doShowResults(UserRequest ureq) {
 		removeAsListenerAndDispose(resultCtrl);
 		
-		AssessmentManager am = userCourseEnv.getCourseEnvironment().getAssessmentManager();
-		AssessmentEntry assessmentEntry = am.getAssessmentEntry(courseNode, getIdentity());
-		AssessmentTestSession session = qtiService.getAssessmentTestSession(assessmentEntry.getAssessmentId());
+		AssessmentTestSession session = null;
+		if(courseNode instanceof SelfAssessableCourseNode) {
+			RepositoryEntry courseEntry = userCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
+			session = qtiService.getLastAssessmentTestSessions(courseEntry, courseNode.getIdent(), testEntry, getIdentity());
+		} else {
+			AssessmentManager am = userCourseEnv.getCourseEnvironment().getAssessmentManager();
+			AssessmentEntry assessmentEntry = am.getAssessmentEntry(courseNode, getIdentity());
+			session = qtiService.getAssessmentTestSession(assessmentEntry.getAssessmentId());
+		}
+		
 		if(session == null) {
 			mainVC.contextPut("showResults", Boolean.FALSE);
 		} else {
-			FileResourceManager frm = FileResourceManager.getInstance();
-			File fUnzippedDirRoot = frm.unzipFileResource(session.getTestEntry().getOlatResource());
-			URI assessmentObjectUri = qtiService.createAssessmentObjectUri(fUnzippedDirRoot);
-			File submissionDir = qtiService.getAssessmentResultFile(session);
-			String mapperUri = registerCacheableMapper(null, "QTI21CNResults::" + session.getTestEntry().getKey(),
-					new ResourcesMapper(assessmentObjectUri, submissionDir));
-	
-			resultCtrl = new AssessmentResultController(ureq, getWindowControl(), getIdentity(), true,
-					session, getDeliveryOptions().getShowResultsOnFinish(), fUnzippedDirRoot, mapperUri, false, false);
-			listenTo(resultCtrl);
-			mainVC.put("resultReport", resultCtrl.getInitialComponent());
-			mainVC.contextPut("showResults", Boolean.TRUE);
+			doShowResults(ureq, session);
 		}
 	}
+
+	private void doShowResults(UserRequest ureq, AssessmentTestSession session) {
+		FileResourceManager frm = FileResourceManager.getInstance();
+		File fUnzippedDirRoot = frm.unzipFileResource(session.getTestEntry().getOlatResource());
+		URI assessmentObjectUri = qtiService.createAssessmentObjectUri(fUnzippedDirRoot);
+		File submissionDir = qtiService.getAssessmentResultFile(session);
+		String mapperUri = registerCacheableMapper(null, "QTI21CNResults::" + session.getTestEntry().getKey(),
+				new ResourcesMapper(assessmentObjectUri, submissionDir));
+
+		resultCtrl = new AssessmentResultController(ureq, getWindowControl(), getIdentity(), true,
+				session, getDeliveryOptions().getShowResultsOnFinish(), fUnzippedDirRoot, mapperUri, false, false);
+		listenTo(resultCtrl);
+		mainVC.put("resultReport", resultCtrl.getInitialComponent());
+		mainVC.contextPut("showResults", Boolean.TRUE);
+	}
+	
 	
 	private void doHideResults() {
 		mainVC.contextPut("showResults", Boolean.FALSE);

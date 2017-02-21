@@ -13,6 +13,8 @@
         <span class="badResponse">
 		#if($responseDeclaration.cardinality.toQtiString() == "record")
 			$r.translate("error.textEntry.invalid.record")
+		#elseif($responseDeclaration.baseType == "FLOAT")
+			$r.translate("error.textEntry.invalid.float")
 		#else
 			$r.translate("error.textEntry.invalid")
 		#end

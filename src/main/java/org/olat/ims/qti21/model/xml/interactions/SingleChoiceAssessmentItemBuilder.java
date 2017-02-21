@@ -139,6 +139,12 @@ public class SingleChoiceAssessmentItemBuilder extends SimpleChoiceAssessmentIte
 	public void setCorrectAnswer(Identifier identifier) {
 		correctAnswer = identifier;
 	}
+	
+	@Override
+	public void clearSimpleChoices() {
+		correctAnswer = null;
+		super.clearSimpleChoices();
+	}
 
 	@Override
 	protected void buildResponseAndOutcomeDeclarations() {
