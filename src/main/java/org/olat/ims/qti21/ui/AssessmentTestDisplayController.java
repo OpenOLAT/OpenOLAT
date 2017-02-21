@@ -287,7 +287,7 @@ public class AssessmentTestDisplayController extends BasicController implements 
 
 		AssessmentTestSession lastSession = null;
 		if(deliveryOptions.isEnableSuspend()) {
-			lastSession = qtiService.getResumableAssessmentTestSession(assessedIdentity, anonymousIdentifier, entry, subIdent, testEntry);
+			lastSession = qtiService.getResumableAssessmentTestSession(assessedIdentity, anonymousIdentifier, entry, subIdent, testEntry, authorMode);
 		}
 		if(lastSession == null) {
 			candidateSession = qtiService.createAssessmentTestSession(assessedIdentity, anonymousIdentifier, assessmentEntry, entry, subIdent, testEntry, authorMode);

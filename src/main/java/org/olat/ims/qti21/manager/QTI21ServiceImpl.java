@@ -407,6 +407,13 @@ public class QTI21ServiceImpl implements QTI21Service, UserDataDeletable, Initia
 		}
 		return true;
 	}
+	
+	@Override
+	public boolean deleteAssessmentTestSession(AssessmentTestSession testSession) {
+		if(testSession == null || testSession.getKey() == null) return false;
+		int rows = testSessionDao.deleteTestSession(testSession);
+		return rows > 0;
+	}
 
 	@Override
 	public AssessmentSessionAuditLogger getAssessmentSessionAuditLogger(AssessmentTestSession session, boolean authorMode) {
@@ -444,8 +451,8 @@ public class QTI21ServiceImpl implements QTI21Service, UserDataDeletable, Initia
 
 	@Override
 	public AssessmentTestSession getResumableAssessmentTestSession(Identity identity, String anonymousIdentifier,
-			RepositoryEntry entry, String subIdent, RepositoryEntry testEntry) {
-		AssessmentTestSession session = testSessionDao.getLastTestSession(testEntry, entry, subIdent, identity, anonymousIdentifier);
+			RepositoryEntry entry, String subIdent, RepositoryEntry testEntry, boolean authorMode) {
+		AssessmentTestSession session = testSessionDao.getLastTestSession(testEntry, entry, subIdent, identity, anonymousIdentifier, authorMode);
 		if(session == null || session.isExploded() || session.getTerminationTime() != null) {
 			session = null;
 		} else {

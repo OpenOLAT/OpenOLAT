@@ -133,6 +133,13 @@ public interface QTI21Service {
 	 */
 	public boolean deleteAuthorAssessmentTestSession(RepositoryEntryRef testEntry);
 	
+	/**
+	 * Delete a specific test session.
+	 * 
+	 * @param testSession
+	 * @return
+	 */
+	public boolean deleteAssessmentTestSession(AssessmentTestSession testSession);
 	
 	/**
 	 * Set some extra options for the QTI package.
@@ -190,7 +197,7 @@ public interface QTI21Service {
 	public AssessmentSessionAuditLogger getAssessmentSessionAuditLogger(AssessmentTestSession session, boolean authorMode);
 	
 	public AssessmentTestSession getResumableAssessmentTestSession(Identity identity, String anonymousIdentifier,
-			RepositoryEntry entry, String subIdent, RepositoryEntry testEntry);
+			RepositoryEntry entry, String subIdent, RepositoryEntry testEntry, boolean authorMode);
 
 	public AssessmentTestSession reloadAssessmentTestSession(AssessmentTestSession session);
 	

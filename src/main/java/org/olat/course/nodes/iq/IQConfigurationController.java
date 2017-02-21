@@ -39,6 +39,7 @@ import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.stack.BreadcrumbPanel;
+import org.olat.core.gui.components.stack.PopEvent;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
@@ -77,9 +78,12 @@ import org.olat.ims.qti.fileresource.SurveyFileResource;
 import org.olat.ims.qti.fileresource.TestFileResource;
 import org.olat.ims.qti.process.AssessmentInstance;
 import org.olat.ims.qti.process.QTIHelper;
+import org.olat.ims.qti21.AssessmentTestSession;
 import org.olat.ims.qti21.QTI21DeliveryOptions;
 import org.olat.ims.qti21.QTI21DeliveryOptions.ShowResultsOnFinish;
 import org.olat.ims.qti21.QTI21Service;
+import org.olat.ims.qti21.model.InMemoryOutcomeListener;
+import org.olat.ims.qti21.ui.AssessmentTestDisplayController;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.iq.IQManager;
 import org.olat.modules.iq.IQPreviewSecurityCallback;
@@ -115,6 +119,7 @@ public class IQConfigurationController extends BasicController {
 	private CloseableModalController cmc;
 	private IQEditReplaceWizard replaceWizard;
 	private FileChooseCreateEditController fccecontr;
+	private AssessmentTestDisplayController previewQTI21Ctrl;
 	private ReferencableEntriesSearchController searchController;
 	
 	private IQEditForm modOnyxConfigForm;
@@ -196,6 +201,10 @@ public class IQConfigurationController extends BasicController {
 			previewLink.setIconLeftCSS("o_icon o_icon-fw o_icon_preview");
 			previewLink.setCustomEnabledLinkCSS("o_preview");
 			previewLink.setTitle(translate("command.preview"));
+		}
+		
+		if(stackPanel != null) {
+			stackPanel.addListener(this);
 		}
 
 		String disclaimer = (String) moduleConfiguration.get(IQEditController.CONFIG_KEY_DISCLAIMER);
@@ -304,6 +313,13 @@ public class IQConfigurationController extends BasicController {
 			}	
 		} else if (editTestButton == source) {
 			CourseNodeFactory.getInstance().launchReferencedRepoEntryEditor(ureq, getWindowControl(), courseNode);
+		} else if (stackPanel == source) {
+			if(event instanceof PopEvent) {
+				PopEvent pop = (PopEvent)event;
+				if(pop.getController() == previewQTI21Ctrl) {
+					cleanUpQti21PreviewSession();
+				}
+			}
 		}
 	}
 	
@@ -379,20 +395,33 @@ public class IQConfigurationController extends BasicController {
 				previewLayoutCtr = new LayoutMain3ColsController(ureq, getWindowControl(), previewCtrl);
 				stackPanel.pushController(translate("preview"), previewLayoutCtr);
 			} else if(ImsQTI21Resource.TYPE_NAME.equals(re.getOlatResource().getResourceableTypeName())) {
-				//TODO qti
-				/* need to clean up the assessment test session
+				cleanUpQti21PreviewSession();//clean up last session
+				// need to clean up the assessment test session
 				QTI21DeliveryOptions deliveryOptions = qti21service.getDeliveryOptions(re);
 				RepositoryEntry courseEntry = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
-				previewController = new AssessmentTestDisplayController(ureq, getWindowControl(), new InMemoryOutcomeListener(),
+				previewQTI21Ctrl = new AssessmentTestDisplayController(ureq, getWindowControl(), new InMemoryOutcomeListener(),
 						re, courseEntry, courseNode.getIdent(),
 						deliveryOptions, true, true, true);
-				*/
+				listenTo(previewQTI21Ctrl);
+				stackPanel.pushController(translate("preview"), previewQTI21Ctrl);
 			} else {
 				long courseResId = course.getResourceableId().longValue();
 				previewController = iqManager.createIQDisplayController(moduleConfiguration, new IQPreviewSecurityCallback(), ureq, getWindowControl(), courseResId, courseNode.getIdent(), null);
 				previewLayoutCtr = new LayoutMain3ColsController(ureq, getWindowControl(), previewController);
 				stackPanel.pushController(translate("preview"), previewLayoutCtr);
 			}
+		}
+	}
+	
+	/**
+	 * Delete the test session created by the preview controller
+	 * for the QTI 2.1 tests.
+	 * 
+	 */
+	private void cleanUpQti21PreviewSession() {
+		if(previewQTI21Ctrl != null) {
+			AssessmentTestSession previewSession = previewQTI21Ctrl.getCandidateSession();
+			qti21service.deleteAssessmentTestSession(previewSession);
 		}
 	}
 	
@@ -605,6 +634,9 @@ public class IQConfigurationController extends BasicController {
 						String defaultConfSummary = showSummary == null ? AssessmentInstance.QMD_ENTRY_SUMMARY_COMPACT : showSummary.getIQEquivalent();
 						moduleConfiguration.set(IQEditController.CONFIG_KEY_SUMMARY, defaultConfSummary);
 					}
+					if (isEditable(urequest.getIdentity(), urequest.getUserSession().getRoles(), re)) {
+						editTestButton = LinkFactory.createButtonSmall("command.editRepFile", myContent, this);
+					}
 				} else {
 					myContent.contextPut("showOutcomes", Boolean.FALSE);
 					moduleConfiguration.set(IQEditController.CONFIG_KEY_TYPE_QTI, IQEditController.CONFIG_VALUE_QTI1);
@@ -723,5 +755,6 @@ public class IQConfigurationController extends BasicController {
 			previewLayoutCtr.dispose();
 			previewLayoutCtr = null;
 		}
+		cleanUpQti21PreviewSession();
 	}
 }

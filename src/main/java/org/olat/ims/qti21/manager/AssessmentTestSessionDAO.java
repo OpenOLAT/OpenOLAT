@@ -84,11 +84,11 @@ public class AssessmentTestSessionDAO {
 	}
 	
 	public AssessmentTestSession getLastTestSession(RepositoryEntryRef testEntry,
-			RepositoryEntryRef entry, String subIdent, IdentityRef identity, String anonymousIdentifier) {
+			RepositoryEntryRef entry, String subIdent, IdentityRef identity, String anonymousIdentifier, boolean authorMode) {
 		
 		StringBuilder sb = new StringBuilder();
 		sb.append("select session from qtiassessmenttestsession session ")
-		  .append("where session.testEntry.key=:testEntryKey");
+		  .append("where session.testEntry.key=:testEntryKey and session.authorMode=:authorMode");
 		if(entry != null) {
 			sb.append(" and session.repositoryEntry.key=:courseEntryKey");
 		} else {
@@ -114,7 +114,8 @@ public class AssessmentTestSessionDAO {
 		
 		TypedQuery<AssessmentTestSession> query = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), AssessmentTestSession.class)
-				.setParameter("testEntryKey", testEntry.getKey());
+				.setParameter("testEntryKey", testEntry.getKey())
+				.setParameter("authorMode", authorMode);
 		if(entry != null) {
 			query.setParameter("courseEntryKey", entry.getKey());
 		}
