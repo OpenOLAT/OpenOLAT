@@ -406,6 +406,7 @@ public class OpenXMLDocument {
 	public void appendHtmlText(String html, Spacing spacing) {
 		if(!StringHelper.containsNonWhitespace(html)) return;
 		try {
+			html = cleanUpHTML(html);
 			SAXParser parser = new SAXParser();
 			parser.setContentHandler(new HTMLToOpenXMLHandler(this, spacing));
 			parser.parse(new InputSource(new StringReader(html)));
@@ -419,6 +420,7 @@ public class OpenXMLDocument {
 	public void appendHtmlText(String html, boolean newParagraph) {
 		if(!StringHelper.containsNonWhitespace(html)) return;
 		try {
+			html = cleanUpHTML(html);
 			SAXParser parser = new SAXParser();
 			Element paragraphEl = getParagraphToAppendTo(newParagraph);
 			parser.setContentHandler(new HTMLToOpenXMLHandler(this, paragraphEl));
@@ -433,6 +435,7 @@ public class OpenXMLDocument {
 	public void appendHtmlText(String html, boolean newParagraph, HTMLToOpenXMLHandler handler) {
 		if(!StringHelper.containsNonWhitespace(html)) return;
 		try {
+			html = cleanUpHTML(html);
 			SAXParser parser = new SAXParser();
 			Element paragraphEl = getParagraphToAppendTo(newParagraph);
 			handler.setInitialParagraph(paragraphEl);
@@ -443,6 +446,16 @@ public class OpenXMLDocument {
 		} catch (IOException e) {
 			log.error("", e);
 		}
+	}
+	
+	/**
+	 * The Neko HTMl parser has some issues with <p/>.
+	 * 
+	 * @param html The HTML to clean up
+	 * @return HTML code which Neko understands
+	 */
+	private String cleanUpHTML(String html) {
+		return html.replace("<p/>", "<p></p>");
 	}
 	
 	public Node appendTable(Integer... width) {
