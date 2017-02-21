@@ -84,6 +84,7 @@ public class ForumSettingsAdminController extends FormBasicController {
 		
 		defaultMessageEl = uifactory.addRadiosHorizontal("anonymous.message.default", "anonymous.message.default", formLayout,
 				defaultKeys, defaultValues);
+		defaultMessageEl.setHelpText(translate("anonymous.message.default.hint"));
 		if(forumModule.isPseudonymForMessageEnabledByDefault()) {
 			defaultMessageEl.select(defaultKeys[0], true);
 		} else {
