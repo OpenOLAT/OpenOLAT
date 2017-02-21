@@ -69,7 +69,7 @@ public class OpenXMLUtils {
 
 	public static final int convertPixelToEMUs(int pixel, int dpi, double resizeRatio) {
 		double rezDpi = dpi * 1.0d;
-		return (int)(((pixel / rezDpi) * emusPerInch) / resizeRatio);
+		return (int)(((pixel / rezDpi) * emusPerInch) * resizeRatio);
 	}
 	
 	public static final OpenXMLSize convertPixelToEMUs2(Size img, int dpi) {
