@@ -31,6 +31,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
+import java.util.concurrent.atomic.DoubleAdder;
 
 import org.apache.commons.lang.StringEscapeUtils;
 import org.cyberneko.html.parsers.SAXParser;
@@ -75,6 +76,7 @@ import org.olat.ims.qti21.model.xml.AssessmentTestFactory;
 import org.olat.ims.qti21.model.xml.ManifestBuilder;
 import org.olat.ims.qti21.model.xml.ManifestMetadataBuilder;
 import org.olat.ims.qti21.model.xml.ModalFeedbackBuilder;
+import org.olat.ims.qti21.model.xml.QtiNodesExtractor;
 import org.olat.ims.qti21.model.xml.interactions.EssayAssessmentItemBuilder;
 import org.olat.ims.qti21.model.xml.interactions.FIBAssessmentItemBuilder;
 import org.olat.ims.qti21.model.xml.interactions.FIBAssessmentItemBuilder.EntryType;
@@ -127,6 +129,7 @@ public class QTI12To21Converter {
 	private final ManifestBuilder manifest;
 	private List<String> materialPath = new ArrayList<>();
 	private List<String> errors = new ArrayList<>();
+	private final DoubleAdder atomicMaxScore = new DoubleAdder();
 	
 	public QTI12To21Converter(File unzippedDirRoot, Locale locale) {
 		this.locale = locale;
@@ -186,6 +189,8 @@ public class QTI12To21Converter {
 				}
 			}
 		}
+		
+		assessmentTestBuilder.setMaxScore(atomicMaxScore.doubleValue());
 
 		assessmentTest = assessmentTestBuilder.build();
 		persistAssessmentObject(testFile, assessmentTest);
@@ -255,6 +260,12 @@ public class QTI12To21Converter {
 				assessmentSection.getSectionParts().add(itemRef);
 				persistAssessmentObject(itemFile, assessmentItem);
 				appendResourceAndMetadata(item, itemBuilder, itemFile);
+				
+				//collect max score
+				Double maxScore = QtiNodesExtractor.extractMaxScore(assessmentItem);
+				if(maxScore != null) {
+					atomicMaxScore.add(maxScore.doubleValue());
+				}
 			}
 		}
 	}
@@ -444,8 +455,6 @@ public class QTI12To21Converter {
 			}
 		}
 		
-		
-
 		boolean singleCorrect = question.isSingleCorrect();
 		for(Response response:responses) {
 			String responseText = response.getContent().renderAsHtmlForEditor();
