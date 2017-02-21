@@ -53,7 +53,6 @@ public class CorrectResponsesUtilTest {
 		
 
 		double thousandVal = DataTypeBinder.parseFloat("42,0");
-		Assert.assertEquals(4200.0, thousandVal, 0.0001);
+		Assert.assertEquals(42.0, thousandVal, 0.0001);
 	}
-
 }
