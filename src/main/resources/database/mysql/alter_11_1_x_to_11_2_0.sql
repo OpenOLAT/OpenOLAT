@@ -114,6 +114,6 @@ create view o_gp_contactext_v as (
 );
 
 -- reset status code
-update o_repositoryentry set statuscode=0 where statuscode>0;
+update o_repositoryentry set statuscode=0 where statuscode=1;
 
 
