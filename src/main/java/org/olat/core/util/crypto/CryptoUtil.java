@@ -43,8 +43,12 @@ public class CryptoUtil {
 	 * @throws Exception
 	 */
 	public static X509CertificatePrivateKeyPair getX509CertificatePrivateKeyPairPfx(File certificate, String password) throws Exception {
-
-		KeyStore keyStore = KeyStore.getInstance("JKS");
+		KeyStore keyStore;
+		if(certificate.getName().equals("cacerts")) {
+			keyStore = KeyStore.getInstance("JKS");
+		} else  {
+			keyStore = KeyStore.getInstance("PKCS12");
+		}
 		keyStore.load(new FileInputStream(certificate), password.toCharArray());
 
 		PrivateKey privateKey = null;
