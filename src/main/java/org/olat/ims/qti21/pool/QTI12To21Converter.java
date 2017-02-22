@@ -207,7 +207,8 @@ public class QTI12To21Converter {
 		
 		RubricBlock rubricBlock = assessmentSection.getRubricBlocks().get(0);
 		rubricBlock.getBlocks().clear();
-		htmlBuilder.appendHtml(rubricBlock, section.getObjectives());
+		String objectives = section.getObjectives();
+		htmlBuilder.appendHtml(rubricBlock, prepareContent(objectives));
 
 		boolean shuffle = SelectionOrdering.RANDOM.equals(section.getSelection_ordering().getOrderType());
 		assessmentSection.getOrdering().setShuffle(shuffle);
@@ -263,7 +264,7 @@ public class QTI12To21Converter {
 				
 				//collect max score
 				Double maxScore = QtiNodesExtractor.extractMaxScore(assessmentItem);
-				if(maxScore != null) {
+				if(maxScore != null && maxScore.doubleValue() > 0.0d) {
 					atomicMaxScore.add(maxScore.doubleValue());
 				}
 			}

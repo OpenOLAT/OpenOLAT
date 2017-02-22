@@ -371,6 +371,23 @@ public class MultipleChoiceAssessmentItemBuilder extends SimpleChoiceAssessmentI
 		ResponseElse responseElse = new ResponseElse(rule);
 		rule.setResponseElse(responseElse);
 		
+		{//outcome score
+			SetOutcomeValue scoreOutcome = new SetOutcomeValue(responseElse);
+			scoreOutcome.setIdentifier(QTI21Constants.SCORE_IDENTIFIER);
+			responseElse.getResponseRules().add(scoreOutcome);
+			
+			Sum sum = new Sum(scoreOutcome);
+			scoreOutcome.getExpressions().add(sum);
+			
+			Variable scoreVar = new Variable(sum);
+			scoreVar.setIdentifier(QTI21Constants.SCORE_CLX_IDENTIFIER);
+			sum.getExpressions().add(scoreVar);
+			
+			MapResponse mapResponse = new MapResponse(sum);
+			mapResponse.setIdentifier(choiceInteraction.getResponseIdentifier());
+			sum.getExpressions().add(mapResponse);
+		}
+		
 		{// outcome feedback
 			SetOutcomeValue incorrectOutcomeValue = new SetOutcomeValue(responseElse);
 			incorrectOutcomeValue.setIdentifier(QTI21Constants.FEEDBACKBASIC_IDENTIFIER);
