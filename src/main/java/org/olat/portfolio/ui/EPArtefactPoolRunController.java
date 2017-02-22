@@ -123,7 +123,7 @@ public class EPArtefactPoolRunController extends BasicController implements Acti
 
 			putInitialPanel(viewComp);
 		} else {
-			putInitialPanel(new Panel("empty"));
+			putInitialPanel(createVelocityContainer("portfolio_disabled"));
 		}
 	}
 
@@ -278,16 +278,18 @@ public class EPArtefactPoolRunController extends BasicController implements Acti
 	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
 		if(entries == null || entries.isEmpty()) return;
 		
-		String type = entries.get(0).getOLATResourceable().getResourceableTypeName();
-		if("All".equalsIgnoreCase(type)) {
-			initTPAllView(ureq);
-			segmentView.select(artefactsLink);
-		} else if("Browse".equalsIgnoreCase(type)) {
-			initTPBrowseView(ureq);
-			segmentView.select(browseLink);
-		} else if("Search".equalsIgnoreCase(type)) {
-			initTPFilterView(ureq);
-			segmentView.select(searchLink);
+		if(portfolioModule.isEnabled()) {
+			String type = entries.get(0).getOLATResourceable().getResourceableTypeName();
+			if("All".equalsIgnoreCase(type)) {
+				initTPAllView(ureq);
+				segmentView.select(artefactsLink);
+			} else if("Browse".equalsIgnoreCase(type)) {
+				initTPBrowseView(ureq);
+				segmentView.select(browseLink);
+			} else if("Search".equalsIgnoreCase(type)) {
+				initTPFilterView(ureq);
+				segmentView.select(searchLink);
+			}
 		}
 	}
 
