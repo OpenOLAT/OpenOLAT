@@ -68,6 +68,12 @@
 			</td>
 		</tr>
 		#end
+		#if($r.isNotNull($signatureUrl))
+		<tr>
+			<th>$r.translate("digital.signature.download")</th>
+			<td><a href="$signatureUrl" target="_blank"><i class="o_icon o_icon-fw o_icon_download"> </i> $r.translate("digital.signature.download.link")</a></td> 
+		</tr>
+		#end
 	</tbody></table>
 </div>
 

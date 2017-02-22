@@ -69,6 +69,7 @@ import org.junit.runners.Suite;
 	org.olat.core.util.mail.manager.MailManagerTest.class,
 	org.olat.core.util.openxml.OpenXmlWorkbookTest.class,
 	org.olat.core.util.openxml.OpenXMLDocumentTest.class,
+	org.olat.core.util.xml.XMLDigitalSignatureUtilTest.class,
 	org.olat.core.id.context.BusinessControlFactoryTest.class,
 	org.olat.core.id.context.HistoryManagerTest.class,
 	org.olat.core.id.IdentityEnvironmentTest.class,

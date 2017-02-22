@@ -23,8 +23,10 @@ import java.io.File;
 import java.net.URI;
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.fullWebApp.LayoutMain3ColsController;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -37,6 +39,10 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.iframe.IFrameDisplayController;
+import org.olat.core.gui.media.FileMediaResource;
+import org.olat.core.gui.media.MediaResource;
+import org.olat.core.gui.media.NotFoundMediaResource;
+import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
@@ -46,6 +52,7 @@ import org.olat.core.util.UserSession;
 import org.olat.core.util.Util;
 import org.olat.core.util.event.EventBus;
 import org.olat.core.util.event.GenericEventListener;
+import org.olat.core.util.mail.MailBundle;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.course.DisposedCourseRestartController;
@@ -57,6 +64,7 @@ import org.olat.course.nodes.IQSELFCourseNode;
 import org.olat.course.nodes.IQTESTCourseNode;
 import org.olat.course.nodes.QTICourseNode;
 import org.olat.course.nodes.SelfAssessableCourseNode;
+import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.course.run.scoring.ScoreEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.fileresource.FileResourceManager;
@@ -67,6 +75,7 @@ import org.olat.ims.qti21.QTI21DeliveryOptions;
 import org.olat.ims.qti21.QTI21DeliveryOptions.ShowResultsOnFinish;
 import org.olat.ims.qti21.QTI21LoggingAction;
 import org.olat.ims.qti21.QTI21Service;
+import org.olat.ims.qti21.model.DigitalSignatureOptions;
 import org.olat.ims.qti21.ui.AssessmentResultController;
 import org.olat.ims.qti21.ui.AssessmentTestDisplayController;
 import org.olat.ims.qti21.ui.QTI21Event;
@@ -76,6 +85,7 @@ import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
 import org.olat.repository.RepositoryEntry;
+import org.olat.user.UserManager;
 import org.olat.util.logging.activity.LoggingResourceable;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -90,7 +100,7 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 	private static final OLATResourceable assessmentEventOres = OresHelper.createOLATResourceableType(AssessmentEvent.class);
 	private static final OLATResourceable assessmentInstanceOres = OresHelper.createOLATResourceableType(AssessmentInstance.class);
 	
-	private Link startButton, showResultsButton, hideResultsButton;
+	private Link startButton, showResultsButton, hideResultsButton, signatureDownloadLink;
 	private final VelocityContainer mainVC;
 	
 	private boolean assessmentStopped = true;
@@ -236,6 +246,23 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 					UserNodeAuditManager am = userCourseEnv.getCourseEnvironment().getAuditManager();
 					mainVC.contextPut("log", am.getUserNodeLog(courseNode, identity));
 				}
+				
+				if(deliveryOptions.isDigitalSignature()) {
+					AssessmentTestSession session = qtiService.getAssessmentTestSession(assessmentEntry.getAssessmentId());
+					if(session != null) {
+						File signature = qtiService.getAssessmentResultSignature(session);
+						if(signature != null && signature.exists()) {
+							signatureDownloadLink = LinkFactory.createLink("digital.signature.download.link", mainVC, this);
+							signatureDownloadLink.setIconLeftCSS("o_icon o_icon-fw o_icon_download");
+							signatureDownloadLink.setTarget("_blank");
+							
+							Date issueDate = qtiService.getAssessmentResultSignatureIssueDate(session);
+							if(issueDate != null) {
+								mainVC.contextPut("signatureIssueDate", Formatter.getInstance(getLocale()).formatDateAndTime(issueDate));
+							}
+						}
+					}
+				}
 			}
 		}
 		
@@ -353,6 +380,8 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 			doShowResults(ureq);
 		} else if (source == hideResultsButton) {
 			doHideResults();
+		} else if (source == signatureDownloadLink) {
+			doDownloadSignature(ureq);
 		}
 	}
 	
@@ -422,6 +451,23 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 	private void doHideResults() {
 		mainVC.contextPut("showResults", Boolean.FALSE);
 	}
+	
+	private void doDownloadSignature(UserRequest ureq) {
+		MediaResource resource = null;
+		if(courseNode instanceof IQTESTCourseNode) {
+			IQTESTCourseNode testCourseNode = (IQTESTCourseNode)courseNode;
+			AssessmentEntry assessmentEntry = testCourseNode.getUserAssessmentEntry(userCourseEnv);
+			AssessmentTestSession session = qtiService.getAssessmentTestSession(assessmentEntry.getAssessmentId());
+			File signature = qtiService.getAssessmentResultSignature(session);
+			if(signature.exists()) {
+				resource = new FileMediaResource(signature);
+			}
+		}
+		if(resource == null) {
+			resource = new NotFoundMediaResource("");
+		}
+		ureq.getDispatchResult().setResultingMediaResource(resource);
+	}
 
 	private void doStart(UserRequest ureq) {
 		removeAsListenerAndDispose(displayCtrl);
@@ -474,6 +520,8 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 		finalOptions.setShowResultsOnFinish(ShowResultsOnFinish.fromIQEquivalent(config.getStringValue(IQEditController.CONFIG_KEY_SUMMARY), ShowResultsOnFinish.compact));
 		finalOptions.setShowMenu(config.getBooleanSafe(IQEditController.CONFIG_KEY_ENABLEMENU, testOptions.isShowMenu()));
 		finalOptions.setAllowAnonym(config.getBooleanSafe(IQEditController.CONFIG_ALLOW_ANONYM, testOptions.isAllowAnonym()));
+		finalOptions.setDigitalSignature(config.getBooleanSafe(IQEditController.CONFIG_DIGITAL_SIGNATURE, testOptions.isDigitalSignature()));
+		finalOptions.setDigitalSignatureMail(config.getBooleanSafe(IQEditController.CONFIG_DIGITAL_SIGNATURE_SEND_MAIL, testOptions.isDigitalSignatureMail()));
 		return finalOptions;
 	}
 
@@ -505,6 +553,33 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 		}
 		
 		fireEvent(ureq, event);
+	}
+	
+	@Override
+	public void decorateConfirmation(AssessmentTestSession candidateSession, DigitalSignatureOptions options, Locale locale) {
+		decorateCourseConfirmation(candidateSession, options, userCourseEnv.getCourseEnvironment(), courseNode, testEntry, locale);
+	}
+	
+	public static void decorateCourseConfirmation(AssessmentTestSession candidateSession, DigitalSignatureOptions options,
+			CourseEnvironment courseEnv, CourseNode courseNode, RepositoryEntry testEntry, Locale locale)  {
+		MailBundle bundle = new MailBundle();
+		bundle.setToId(candidateSession.getIdentity());
+		String fullname = CoreSpringFactory.getImpl(UserManager.class).getUserDisplayName(candidateSession.getIdentity());
+
+		String[] args = new String[] {
+				courseEnv.getCourseTitle(),	// {0}
+				courseNode.getShortTitle(),								// {1}
+				testEntry.getDisplayname(),								// {2}
+				fullname,			// {3}
+				Formatter.getInstance(locale).formatDateAndTime(candidateSession.getFinishTime())
+		};
+
+		Translator translator = Util.createPackageTranslator(QTI21AssessmentRunController.class, locale);
+		String subject = translator.translate("digital.signature.mail.subject", args);
+		String body = translator.translate("digital.signature.mail.body", args);
+		bundle.setContent(subject, body);
+		options.setMailBundle(bundle);
+		options.setSubIdentName(courseNode.getShortTitle());
 	}
 
 	@Override

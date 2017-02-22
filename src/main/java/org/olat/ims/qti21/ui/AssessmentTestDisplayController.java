@@ -74,8 +74,10 @@ import org.olat.ims.qti21.OutcomesListener;
 import org.olat.ims.qti21.QTI21Constants;
 import org.olat.ims.qti21.QTI21DeliveryOptions;
 import org.olat.ims.qti21.QTI21DeliveryOptions.ShowResultsOnFinish;
+import org.olat.ims.qti21.QTI21Module;
 import org.olat.ims.qti21.QTI21Service;
 import org.olat.ims.qti21.manager.ResponseFormater;
+import org.olat.ims.qti21.model.DigitalSignatureOptions;
 import org.olat.ims.qti21.model.InMemoryAssessmentTestMarks;
 import org.olat.ims.qti21.model.ParentPartItemRefs;
 import org.olat.ims.qti21.model.ResponseLegality;
@@ -98,11 +100,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import uk.ac.ed.ph.jqtiplus.JqtiPlus;
 import uk.ac.ed.ph.jqtiplus.exception.QtiCandidateStateException;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.Interaction;
-import uk.ac.ed.ph.jqtiplus.node.result.AbstractResult;
 import uk.ac.ed.ph.jqtiplus.node.result.AssessmentResult;
 import uk.ac.ed.ph.jqtiplus.node.result.ItemResult;
 import uk.ac.ed.ph.jqtiplus.node.result.ItemVariable;
 import uk.ac.ed.ph.jqtiplus.node.result.OutcomeVariable;
+import uk.ac.ed.ph.jqtiplus.node.result.TestResult;
 import uk.ac.ed.ph.jqtiplus.node.test.AssessmentTest;
 import uk.ac.ed.ph.jqtiplus.node.test.NavigationMode;
 import uk.ac.ed.ph.jqtiplus.node.test.SubmissionMode;
@@ -180,6 +182,8 @@ public class AssessmentTestDisplayController extends BasicController implements 
 	private AssessmentSessionAuditLogger candidateAuditLogger;
 
 	@Autowired
+	private QTI21Module qtiModule;
+	@Autowired
 	private QTI21Service qtiService;
 	@Autowired
 	private AssessmentService assessmentService;
@@ -243,7 +247,8 @@ public class AssessmentTestDisplayController extends BasicController implements 
 		/* Handle immediate end of test session */
         if (testSessionController.getTestSessionState() != null && testSessionController.getTestSessionState().isEnded()) {
         	AssessmentResult assessmentResult = null;
-            qtiService.finishTestSession(candidateSession, testSessionController.getTestSessionState(), assessmentResult, currentRequestTimestamp);
+            qtiService.finishTestSession(candidateSession, testSessionController.getTestSessionState(), assessmentResult,
+            		currentRequestTimestamp, getDigitalSignatureOptions(), getIdentity());
         	mainVC = createVelocityContainer("end");
         } else {
         	mainVC = createVelocityContainer("run");
@@ -680,7 +685,8 @@ public class AssessmentTestDisplayController extends BasicController implements 
 
 	    /* If we ended the testPart and there are now no more available testParts, then finish the session now */
 	    if (nextItemNode==null && testSessionController.findNextEnterableTestPart()==null) {
-	    	candidateSession = qtiService.finishTestSession(candidateSession, testSessionState, assessmentResult, requestTimestamp);
+	    	candidateSession = qtiService.finishTestSession(candidateSession, testSessionState, assessmentResult,
+	    			requestTimestamp, getDigitalSignatureOptions(), getIdentity());
 	    }
 
 	    // Record and log event 
@@ -892,7 +898,8 @@ public class AssessmentTestDisplayController extends BasicController implements 
         // Record current result state
 	    final AssessmentResult assessmentResult = computeAndRecordTestAssessmentResult(ureq, testSessionState, nextTestPart == null);
         if(nextTestPart == null) {
-        	candidateSession = qtiService.finishTestSession(candidateSession, testSessionState, assessmentResult, requestTimestamp);
+        	candidateSession = qtiService.finishTestSession(candidateSession, testSessionState, assessmentResult,
+        			requestTimestamp, getDigitalSignatureOptions(), getIdentity());
         }
 	}
 	
@@ -956,8 +963,7 @@ public class AssessmentTestDisplayController extends BasicController implements 
                 testSessionController.exitTest(currentTimestamp);
                 candidateSession.setTerminationTime(currentTimestamp);
                 candidateSession = qtiService.updateAssessmentTestSession(candidateSession);
-            }
-            else {
+            } else {
                 eventType = CandidateTestEventType.ADVANCE_TEST_PART;
             }
         }
@@ -1083,7 +1089,8 @@ public class AssessmentTestDisplayController extends BasicController implements 
 
         /* Handle immediate end of test session */
         if (ended) {
-            qtiService.finishTestSession(candidateSession, testSessionState, assessmentResult, timestamp);
+            qtiService.finishTestSession(candidateSession, testSessionState, assessmentResult,
+            		timestamp, getDigitalSignatureOptions(), getIdentity());
         } else {
         	TestPart currentTestPart = testSessionController.getCurrentTestPart();
         	if(currentTestPart != null && currentTestPart.getNavigationMode() == NavigationMode.NONLINEAR) {
@@ -1095,6 +1102,16 @@ public class AssessmentTestDisplayController extends BasicController implements 
         }
         
         return testSessionController;
+	}
+	
+	private DigitalSignatureOptions getDigitalSignatureOptions() {
+		boolean sendMail = deliveryOptions.isDigitalSignatureMail();
+		boolean digitalSignature = deliveryOptions.isDigitalSignature() && qtiModule.isDigitalSignatureEnabled();
+		DigitalSignatureOptions options = new DigitalSignatureOptions(digitalSignature, sendMail, entry, testEntry);
+		if(digitalSignature) {
+			outcomesListener.decorateConfirmation(candidateSession, options, getLocale());
+		}
+		return options;
 	}
 	
 	private TestSessionController createNewTestSessionStateAndController(NotificationRecorder notificationRecorder) {
@@ -1175,7 +1192,7 @@ public class AssessmentTestDisplayController extends BasicController implements 
 		return assessmentResult;
 	}
 	
-	private void processOutcomeVariables(AbstractResult resultNode, boolean submit) {
+	private void processOutcomeVariables(TestResult resultNode, boolean submit) {
 		Float score = null;
 		Boolean pass = null;
 		
@@ -1496,14 +1513,14 @@ public class AssessmentTestDisplayController extends BasicController implements 
 			fireEvent(ureq, new Event("suspend"));
 		}
 		
-		private void doSaveMenuWidth(UserRequest ureq, String menuWidth) {
-			this.menuWidth = menuWidth;
-			if(StringHelper.containsNonWhitespace(menuWidth)) {
-				flc.contextPut("menuWidth", menuWidth);
+		private void doSaveMenuWidth(UserRequest ureq, String newMenuWidth) {
+			this.menuWidth = newMenuWidth;
+			if(StringHelper.containsNonWhitespace(newMenuWidth)) {
+				flc.contextPut("menuWidth", newMenuWidth);
 				if(testEntry != null) {
 					UserSession usess = ureq.getUserSession();
 					if (usess.isAuthenticated() && !usess.getRoles().isGuestOnly()) {
-						usess.getGuiPreferences().putAndSave(this.getClass(), getMenuPrefsKey(), menuWidth);
+						usess.getGuiPreferences().putAndSave(this.getClass(), getMenuPrefsKey(), newMenuWidth);
 					}
 				}
 			}

@@ -38,7 +38,9 @@ import org.olat.core.util.StringHelper;
 import org.olat.ims.qti.process.AssessmentInstance;
 import org.olat.ims.qti21.QTI21DeliveryOptions;
 import org.olat.ims.qti21.QTI21DeliveryOptions.ShowResultsOnFinish;
+import org.olat.ims.qti21.QTI21Module;
 import org.olat.modules.ModuleConfiguration;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -62,6 +64,7 @@ public class QTI21EditForm extends FormBasicController {
 	private MultipleSelectionElement displayQuestionProgressEl, displayScoreProgressEl;
 	private MultipleSelectionElement showResultsOnFinishEl;
 	private MultipleSelectionElement allowAnonymEl;
+	private MultipleSelectionElement digitalSignatureEl, digitalSignatureMailEl;
 	private SingleSelection typeShowResultsOnFinishEl;
 	private DateChooser startDateElement, endDateElement;
 	
@@ -72,6 +75,9 @@ public class QTI21EditForm extends FormBasicController {
 	private final QTI21DeliveryOptions deliveryOptions;
 	
 	private static final String[] correctionModeKeys = new String[]{ "auto", "manual" };
+	
+	@Autowired
+	private QTI21Module qtiModule;
 	
 	public QTI21EditForm(UserRequest ureq, WindowControl wControl, ModuleConfiguration modConfig,
 			QTI21DeliveryOptions deliveryOptions, boolean needManulCorrection) {
@@ -134,7 +140,24 @@ public class QTI21EditForm extends FormBasicController {
 		
 		boolean fullWindow = modConfig.getBooleanSafe(IQEditController.CONFIG_FULLWINDOW);
 		fullWindowEl = uifactory.addCheckboxesHorizontal("fullwindow", "qti.form.fullwindow", formLayout, new String[]{"x"}, new String[]{""});
-		fullWindowEl.select("x", fullWindow);
+		if(fullWindow) {
+			fullWindowEl.select("x", fullWindow);
+		}
+		
+		boolean digitalSignature = modConfig.getBooleanSafe(IQEditController.CONFIG_DIGITAL_SIGNATURE, deliveryOptions.isDigitalSignature());
+		digitalSignatureEl = uifactory.addCheckboxesHorizontal("digital.signature", "digital.signature", formLayout, new String[]{"x"}, new String[]{""});
+		if(digitalSignature) {
+			digitalSignatureEl.select("x", digitalSignature);
+		}
+		digitalSignatureEl.setVisible(qtiModule.isDigitalSignatureEnabled());
+		digitalSignatureEl.addActionListener(FormEvent.ONCHANGE);
+		
+		boolean digitalSignatureSendMail = modConfig.getBooleanSafe(IQEditController.CONFIG_DIGITAL_SIGNATURE_SEND_MAIL, deliveryOptions.isDigitalSignatureMail());
+		digitalSignatureMailEl = uifactory.addCheckboxesHorizontal("digital.signature.mail", "digital.signature.mail", formLayout, new String[]{"x"}, new String[]{""});
+		if(digitalSignatureSendMail) {
+			digitalSignatureMailEl.select("x", digitalSignatureSendMail);
+		}
+		digitalSignatureMailEl.setVisible(qtiModule.isDigitalSignatureEnabled() && digitalSignatureEl.isAtLeastSelected(1));
 
 		boolean showTitles = modConfig.getBooleanSafe(IQEditController.CONFIG_KEY_QUESTIONTITLE, deliveryOptions.isShowTitles());
 		showTitlesEl = uifactory.addCheckboxesHorizontal("showTitles", "qti.form.questiontitle", formLayout, onKeys, onValues);
@@ -285,6 +308,8 @@ public class QTI21EditForm extends FormBasicController {
 			update();
 		} else if(showResultsDateDependentButton == source || showResultsOnHomePage == source) {
 			update();
+		} else if(digitalSignatureEl == source) {
+			digitalSignatureMailEl.setVisible(digitalSignatureEl.isAtLeastSelected(1));
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
@@ -330,6 +355,14 @@ public class QTI21EditForm extends FormBasicController {
 		modConfig.setBooleanEntry(IQEditController.CONFIG_KEY_SCOREPROGRESS, displayScoreProgressEl.isSelected(0));
 		modConfig.setBooleanEntry(IQEditController.CONFIG_ALLOW_ANONYM, allowAnonymEl.isSelected(0));
 		
+		if(qtiModule.isDigitalSignatureEnabled() && digitalSignatureEl.isSelected(0)) {
+			modConfig.setBooleanEntry(IQEditController.CONFIG_DIGITAL_SIGNATURE, true);
+			modConfig.setBooleanEntry(IQEditController.CONFIG_DIGITAL_SIGNATURE_SEND_MAIL, digitalSignatureMailEl.isSelected(0));
+		} else {
+			modConfig.setBooleanEntry(IQEditController.CONFIG_DIGITAL_SIGNATURE, false);
+			modConfig.setBooleanEntry(IQEditController.CONFIG_DIGITAL_SIGNATURE_SEND_MAIL, false);
+		}
+
 		modConfig.setBooleanEntry(IQEditController.CONFIG_KEY_ENABLESCOREINFO, scoreInfo.isSelected(0));
 		modConfig.setBooleanEntry(IQEditController.CONFIG_KEY_DATE_DEPENDENT_RESULTS, showResultsDateDependentButton.isSelected(0));
 		

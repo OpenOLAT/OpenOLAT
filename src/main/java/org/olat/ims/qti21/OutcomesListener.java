@@ -19,6 +19,10 @@
  */
 package org.olat.ims.qti21;
 
+import java.util.Locale;
+
+import org.olat.ims.qti21.model.DigitalSignatureOptions;
+
 /**
  * 
  * Initial date: 20.05.2015<br>
@@ -26,6 +30,15 @@ package org.olat.ims.qti21;
  *
  */
 public interface OutcomesListener {
+	
+	/**
+	 * Add more useful informations to the signature as a mail bundle to send the signature per email.
+	 * 
+	 * @param candidateSession
+	 * @param options
+	 * @param locale
+	 */
+	public void decorateConfirmation(AssessmentTestSession candidateSession, DigitalSignatureOptions options, Locale locale);
 	
 	/**
 	 * Update the outcomes.

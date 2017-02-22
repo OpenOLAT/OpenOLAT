@@ -39,6 +39,7 @@ import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.StringHelper;
 import org.olat.ims.qti21.QTI21DeliveryOptions;
 import org.olat.ims.qti21.QTI21DeliveryOptions.ShowResultsOnFinish;
+import org.olat.ims.qti21.QTI21Module;
 import org.olat.ims.qti21.QTI21Service;
 import org.olat.repository.RepositoryEntry;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -61,6 +62,7 @@ public class QTI21DeliveryOptionsController extends FormBasicController implemen
 	private MultipleSelectionElement displayQuestionProgressEl, displayScoreProgressEl;
 	private MultipleSelectionElement showResultsOnFinishEl;
 	private MultipleSelectionElement allowAnonymEl;
+	private MultipleSelectionElement digitalSignatureEl, digitalSignatureMailEl;
 	private SingleSelection typeShowResultsOnFinishEl;
 	private TextElement maxAttemptsEl;
 	
@@ -68,6 +70,8 @@ public class QTI21DeliveryOptionsController extends FormBasicController implemen
 	private final RepositoryEntry testEntry;
 	private final QTI21DeliveryOptions deliveryOptions;
 	
+	@Autowired
+	private QTI21Module qtiModule;
 	@Autowired
 	private QTI21Service qtiService;
 	
@@ -150,6 +154,22 @@ public class QTI21DeliveryOptionsController extends FormBasicController implemen
 			enableCancelEl.select(onKeys[0], true);
 		}
 		
+		boolean digitalSignature = deliveryOptions.isDigitalSignature();
+		digitalSignatureEl = uifactory.addCheckboxesHorizontal("digital.signature", "digital.signature.test.option", formLayout, new String[]{"x"}, new String[]{""});
+		if(digitalSignature) {
+			digitalSignatureEl.select("x", digitalSignature);
+		}
+		digitalSignatureEl.setVisible(qtiModule.isDigitalSignatureEnabled());
+		digitalSignatureEl.addActionListener(FormEvent.ONCHANGE);
+		
+		boolean digitalSignatureSendMail = deliveryOptions.isDigitalSignatureMail();
+		digitalSignatureMailEl = uifactory.addCheckboxesHorizontal("digital.signature.mail", "digital.signature.mail.test.option", formLayout, new String[]{"x"}, new String[]{""});
+		if(digitalSignatureSendMail) {
+			digitalSignatureMailEl.select("x", digitalSignatureSendMail);
+		}
+		digitalSignatureMailEl.setVisible(qtiModule.isDigitalSignatureEnabled() && digitalSignatureEl.isAtLeastSelected(1));
+
+		
 		showResultsOnFinishEl = uifactory.addCheckboxesHorizontal("resultOnFiniish", "qti.form.results.onfinish", formLayout, onKeys, onValues);
 		showResultsOnFinishEl.addActionListener(FormEvent.ONCHANGE);
 		showResultsOnFinishEl.setElementCssClass("o_sel_qti_show_results");
@@ -218,9 +238,10 @@ public class QTI21DeliveryOptionsController extends FormBasicController implemen
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(limitAttemptsEl == source) {
 			maxAttemptsEl.setVisible(limitAttemptsEl.isAtLeastSelected(1));
-		}
-		if(showResultsOnFinishEl == source) {
+		} else if(showResultsOnFinishEl == source) {
 			typeShowResultsOnFinishEl.setVisible(showResultsOnFinishEl.isAtLeastSelected(1));
+		} else if(digitalSignatureEl == source) {
+			digitalSignatureMailEl.setVisible(digitalSignatureEl.isAtLeastSelected(1));
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
@@ -251,6 +272,14 @@ public class QTI21DeliveryOptionsController extends FormBasicController implemen
 		} else {
 			deliveryOptions.setShowResultsOnFinish(ShowResultsOnFinish.none);
 		}
+		if(qtiModule.isDigitalSignatureEnabled() && digitalSignatureEl.isAtLeastSelected(1)) {
+			deliveryOptions.setDigitalSignature(true);
+			deliveryOptions.setDigitalSignatureMail(digitalSignatureMailEl.isAtLeastSelected(1));
+		} else {
+			deliveryOptions.setDigitalSignature(false);
+			deliveryOptions.setDigitalSignatureMail(false);
+		}
+		
 		qtiService.setDeliveryOptions(testEntry, deliveryOptions);
 		changes = true;
 		fireEvent(ureq, Event.DONE_EVENT);

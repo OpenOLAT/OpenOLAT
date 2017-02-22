@@ -25,6 +25,7 @@ import java.util.Collections;
 import java.util.List;
 
 import org.olat.core.id.Identity;
+import org.olat.core.util.mail.model.SimpleMailContent;
 
 /**
  * 
@@ -129,34 +130,6 @@ public class MailBundle {
 				}
 			}
 		}
-		content = new SimpleContent(subject, body, attachmentList);
-	}
-
-	private static class SimpleContent implements MailContent {
-		
-		private String subject;
-		private String body;
-		private List<File> attachments;
-		
-		public SimpleContent(String subject, String body, List<File> attachments) {
-			this.subject = subject;
-			this.body = body;
-			this.attachments = attachments;
-		}
-
-		@Override
-		public String getSubject() {
-			return subject;
-		}
-
-		@Override
-		public String getBody() {
-			return body;
-		}
-
-		@Override
-		public List<File> getAttachments() {
-			return attachments;
-		}
+		content = new SimpleMailContent(subject, body, attachmentList);
 	}
 }

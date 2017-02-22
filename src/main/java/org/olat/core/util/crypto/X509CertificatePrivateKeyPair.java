@@ -17,33 +17,33 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.ims.qti21.model;
+package org.olat.core.util.crypto;
 
-import java.util.Locale;
-
-import org.olat.ims.qti21.AssessmentTestSession;
-import org.olat.ims.qti21.OutcomesListener;
+import java.security.PrivateKey;
+import java.security.cert.X509Certificate;
 
 /**
  * 
- * Initial date: 23.08.2016<br>
+ * Initial date: 16 févr. 2017<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class InMemoryOutcomeListener implements OutcomesListener {
+public class X509CertificatePrivateKeyPair {
+	
+	private final PrivateKey privateKey;
+    private final X509Certificate x509Cert;
+    
+    public X509CertificatePrivateKeyPair(X509Certificate x509Cert, PrivateKey privateKey) {
+    	this.x509Cert = x509Cert;
+    	this.privateKey = privateKey;
+    }
 
-	@Override
-	public void decorateConfirmation(AssessmentTestSession candidateSession, DigitalSignatureOptions options, Locale locale) {
-		//do nothing
+	public PrivateKey getPrivateKey() {
+		return privateKey;
 	}
 
-	@Override
-	public void updateOutcomes(Float score, Boolean pass) {
-		//
+	public X509Certificate getX509Cert() {
+		return x509Cert;
 	}
 
-	@Override
-	public void submit(Float score, Boolean pass, Long assessmentId) {
-		//
-	}
 }

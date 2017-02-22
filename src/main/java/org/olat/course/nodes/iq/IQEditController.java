@@ -124,6 +124,10 @@ public class IQEditController extends ActivateableTabbableDefaultController impl
 	public final static String CONFIG_CORRECTION_MODE = "correctionMode";
 	/** Test in full window mode*/
 	public final static String CONFIG_ALLOW_ANONYM = "allowAnonym";
+	/** Digitally signed the assessment results */
+	public final static String CONFIG_DIGITAL_SIGNATURE = "digitalSignature";
+	/** Send the signature per mail */
+	public final static String CONFIG_DIGITAL_SIGNATURE_SEND_MAIL = "digitalSignatureMail";
 	
 	public final static String CORRECTION_AUTO = "auto";
 	public final static String CORRECTION_MANUAL = "manual";

@@ -46,6 +46,9 @@ public class QTI21DeliveryOptions {
 	
 	private boolean allowAnonym;
 	
+	private boolean digitalSignature;
+	private boolean digitalSignatureMail;
+	
 	private Integer templateProcessingLimit;
 	
 	private ShowResultsOnFinish showResultsOnFinish;
@@ -130,6 +133,22 @@ public class QTI21DeliveryOptions {
 		this.maxAttempts = maxAttempts;
 	}
 
+	public boolean isDigitalSignature() {
+		return digitalSignature;
+	}
+
+	public void setDigitalSignature(boolean digitalSignature) {
+		this.digitalSignature = digitalSignature;
+	}
+
+	public boolean isDigitalSignatureMail() {
+		return digitalSignatureMail;
+	}
+
+	public void setDigitalSignatureMail(boolean digitalSignatureMail) {
+		this.digitalSignatureMail = digitalSignatureMail;
+	}
+
 	public ShowResultsOnFinish getShowResultsOnFinish() {
 		return showResultsOnFinish;
 	}
@@ -158,6 +177,8 @@ public class QTI21DeliveryOptions {
 		defaultSettings.allowAnonym = false;
 		defaultSettings.blockAfterSuccess = false;
 		defaultSettings.maxAttempts = 0;
+		defaultSettings.digitalSignature = false;
+		defaultSettings.digitalSignatureMail = false;
 		defaultSettings.showResultsOnFinish = ShowResultsOnFinish.none;
 		return defaultSettings;
 	}
@@ -175,6 +196,8 @@ public class QTI21DeliveryOptions {
 		clone.allowAnonym = allowAnonym;
 		clone.blockAfterSuccess = blockAfterSuccess;
 		clone.maxAttempts = maxAttempts;
+		clone.digitalSignature = digitalSignature;
+		clone.digitalSignatureMail = digitalSignatureMail;
 		clone.showResultsOnFinish = showResultsOnFinish;
 		return clone;
 	}

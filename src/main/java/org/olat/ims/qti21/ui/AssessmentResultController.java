@@ -27,7 +27,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.servlet.http.HttpServletRequest;
+
 import org.olat.admin.user.UserShortDescription;
+import org.olat.core.dispatcher.mapper.Mapper;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -37,7 +40,11 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.creator.ControllerCreator;
+import org.olat.core.gui.media.FileMediaResource;
+import org.olat.core.gui.media.MediaResource;
+import org.olat.core.gui.media.NotFoundMediaResource;
 import org.olat.core.id.Identity;
+import org.olat.core.util.CodeHelper;
 import org.olat.core.util.StringHelper;
 import org.olat.course.assessment.AssessmentHelper;
 import org.olat.fileresource.types.ImsQTI21Resource;
@@ -88,8 +95,9 @@ import uk.ac.ed.ph.jqtiplus.xmlutils.locators.ResourceLocator;
  *
  */
 public class AssessmentResultController extends FormBasicController {
-
+	
 	private final String mapperUri;
+	private String signatureMapperUri;
 	private final ShowResultsOnFinish resultsOnfinish;
 	
 	private final boolean anonym;
@@ -138,6 +146,12 @@ public class AssessmentResultController extends FormBasicController {
 		
 		resolvedAssessmentTest = qtiService.loadAndResolveAssessmentTest(fUnzippedDirRoot, false, false);
 		
+		File signature = qtiService.getAssessmentResultSignature(candidateSession);
+		if(signature != null) {
+			signatureMapperUri = registerCacheableMapper(null, "QTI21Signature::" + CodeHelper.getForeverUniqueID(),
+					new SignatureMapper(signature));
+		}
+		
 		testSessionState = qtiService.loadTestSessionState(candidateSession);
 		assessmentResult = qtiService.getAssessmentResult(candidateSession);
 		candidateSessionContext = new TerminatedStaticCandidateSessionContext(candidateSession);
@@ -171,6 +185,11 @@ public class AssessmentResultController extends FormBasicController {
 			TestResult testResult = assessmentResult.getTestResult();
 			if(testResult != null) {
 				extractOutcomeVariable(testResult.getItemVariables(), results);
+			}
+			
+			if(signatureMapperUri != null) {
+				String signatureUrl = signatureMapperUri + "/assessmentResultSignature.xml";
+				layoutCont.contextPut("signatureUrl", signatureUrl);
 			}
 
 			if(resultsOnfinish == ShowResultsOnFinish.sections || resultsOnfinish == ShowResultsOnFinish.details) {
@@ -484,6 +503,27 @@ public class AssessmentResultController extends FormBasicController {
 
 		public List<InteractionResults> getInteractionResults() {
 			return interactionResults;
+		}
+	}
+	
+	public class SignatureMapper implements Mapper {
+		
+		private final File signature;
+		
+		public SignatureMapper(File signature) {
+			this.signature = signature;
+		}
+
+		@Override
+		public MediaResource handle(String relPath, HttpServletRequest request) {
+
+			MediaResource resource;
+			if(signature.exists()) {
+				resource = new FileMediaResource(signature);
+			} else {
+				resource = new NotFoundMediaResource(relPath);
+			}
+			return resource;
 		}
 	}
 }

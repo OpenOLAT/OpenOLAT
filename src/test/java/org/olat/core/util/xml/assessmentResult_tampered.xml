@@ -1,0 +1,215 @@
+<assessmentResult xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                  xmlns="http://www.imsglobal.org/xsd/imsqti_result_v2p1"
+                  xsi:schemaLocation="http://www.imsglobal.org/xsd/imsqti_result_v2p1 http://www.imsglobal.org/xsd/imsqti_result_v2p1.xsd">
+  <context>
+    <sessionIdentifier sourceID="http://localhost:8081/auth/RepositoryEntry/720863232/TestSession/2038"
+                       identifier="testsession/2038"/>
+  </context>
+  <testResult identifier="test7501c21c-c3db-468d-b5b8-c40339aaf323.xml"
+              datestamp="2017-02-08T16:54:49">
+    <outcomeVariable identifier="SCORE" cardinality="single" baseType="float">
+      <value>0.0</value>
+    </outcomeVariable>
+    <outcomeVariable identifier="PASS" cardinality="single" baseType="boolean">
+      <value>true</value>
+    </outcomeVariable>
+  </testResult>
+  <itemResult identifier="sc1e214a9f4cfe90d2ecf0781c291f" datestamp="2017-02-08T16:54:49"
+              sequenceIndex="1"
+              sessionStatus="final">
+    <outcomeVariable identifier="completionStatus" cardinality="single" baseType="identifier">
+      <value>unknown</value>
+    </outcomeVariable>
+    <outcomeVariable identifier="FEEDBACKBASIC" cardinality="single" baseType="identifier"
+                     view="testConstructor">
+      <value>incorrect</value>
+    </outcomeVariable>
+    <outcomeVariable identifier="FEEDBACKMODAL" cardinality="multiple" baseType="identifier"
+                     view="testConstructor">
+      <value>Feedback95140378493387</value>
+    </outcomeVariable>
+    <outcomeVariable identifier="SOLUTIONMODAL" cardinality="single" baseType="identifier"
+                     view="testConstructor">
+      <value>Feedback95140378493385</value>
+    </outcomeVariable>
+    <outcomeVariable identifier="SCORE" cardinality="single" baseType="float">
+      <value>0.0</value>
+    </outcomeVariable>
+    <outcomeVariable identifier="MAXSCORE" cardinality="single" baseType="float">
+      <value>1.0</value>
+    </outcomeVariable>
+    <outcomeVariable identifier="HINTFEEDBACKMODAL" cardinality="single" baseType="identifier"/>
+    <outcomeVariable identifier="MINSCORE" cardinality="single" baseType="float"
+                     view="testConstructor">
+      <value>0.0</value>
+    </outcomeVariable>
+    <responseVariable identifier="duration" cardinality="single" baseType="float">
+      <candidateResponse>
+        <value>701.727</value>
+      </candidateResponse>
+    </responseVariable>
+    <responseVariable identifier="numAttempts" cardinality="single" baseType="integer">
+      <candidateResponse>
+        <value>12</value>
+      </candidateResponse>
+    </responseVariable>
+    <responseVariable identifier="HINTREQUEST" cardinality="single" baseType="identifier">
+      <candidateResponse>
+        <value>false</value>
+      </candidateResponse>
+    </responseVariable>
+    <responseVariable identifier="RESPONSE_1" cardinality="single" baseType="identifier">
+      <correctResponse>
+        <value>sccde3ab0fdd487ea26a3f9594ebf40f</value>
+      </correctResponse>
+      <candidateResponse>
+        <value>sc3a3fd5e8cb4cdba7199e984202437d</value>
+      </candidateResponse>
+    </responseVariable>
+  </itemResult>
+  <itemResult identifier="mce58c219bae4156adf4e0e02803512f" datestamp="2017-02-08T16:54:49"
+              sequenceIndex="1"
+              sessionStatus="initial">
+    <outcomeVariable identifier="completionStatus" cardinality="single" baseType="identifier">
+      <value>unknown</value>
+    </outcomeVariable>
+    <outcomeVariable identifier="FEEDBACKBASIC" cardinality="single" baseType="identifier"
+                     view="testConstructor">
+      <value>none</value>
+    </outcomeVariable>
+    <outcomeVariable identifier="FEEDBACKMODAL" cardinality="multiple" baseType="identifier"
+                     view="testConstructor"/>
+    <outcomeVariable identifier="SOLUTIONMODAL" cardinality="single" baseType="identifier"
+                     view="testConstructor"/>
+    <outcomeVariable identifier="SCORE" cardinality="single" baseType="float">
+      <value>0.0</value>
+    </outcomeVariable>
+    <outcomeVariable identifier="MAXSCORE" cardinality="single" baseType="float">
+      <value>1.0</value>
+    </outcomeVariable>
+    <outcomeVariable identifier="HINTFEEDBACKMODAL" cardinality="single" baseType="identifier"/>
+    <outcomeVariable identifier="MINSCORE" cardinality="single" baseType="float"
+                     view="testConstructor">
+      <value>0.0</value>
+    </outcomeVariable>
+    <responseVariable identifier="duration" cardinality="single" baseType="float">
+      <candidateResponse>
+        <value>0.0</value>
+      </candidateResponse>
+    </responseVariable>
+    <responseVariable identifier="numAttempts" cardinality="single" baseType="integer">
+      <candidateResponse>
+        <value>0</value>
+      </candidateResponse>
+    </responseVariable>
+    <responseVariable identifier="HINTREQUEST" cardinality="single" baseType="identifier">
+      <candidateResponse/>
+    </responseVariable>
+    <responseVariable identifier="RESPONSE_1" cardinality="multiple" baseType="identifier">
+      <correctResponse>
+        <value>mca7d05a516a4d1c9dbe4963b766a517</value>
+        <value>mc746c767ff24f3891f93546cbe4ef51</value>
+      </correctResponse>
+      <candidateResponse/>
+    </responseVariable>
+  </itemResult>
+  <itemResult identifier="kprimeeceecc4d94b08c9d0ea6f0a9eb" datestamp="2017-02-08T16:54:49"
+              sequenceIndex="1"
+              sessionStatus="initial">
+    <outcomeVariable identifier="completionStatus" cardinality="single" baseType="identifier">
+      <value>unknown</value>
+    </outcomeVariable>
+    <outcomeVariable identifier="FEEDBACKBASIC" cardinality="single" baseType="identifier"
+                     view="testConstructor">
+      <value>none</value>
+    </outcomeVariable>
+    <outcomeVariable identifier="FEEDBACKMODAL" cardinality="multiple" baseType="identifier"
+                     view="testConstructor"/>
+    <outcomeVariable identifier="SOLUTIONMODAL" cardinality="single" baseType="identifier"
+                     view="testConstructor"/>
+    <outcomeVariable identifier="SCORE" cardinality="single" baseType="float">
+      <value>0.0</value>
+    </outcomeVariable>
+    <outcomeVariable identifier="MAXSCORE" cardinality="single" baseType="float">
+      <value>1.0</value>
+    </outcomeVariable>
+    <outcomeVariable identifier="HINTFEEDBACKMODAL" cardinality="single" baseType="identifier"/>
+    <outcomeVariable identifier="MINSCORE" cardinality="single" baseType="float"
+                     view="testConstructor">
+      <value>0.0</value>
+    </outcomeVariable>
+    <responseVariable identifier="duration" cardinality="single" baseType="float">
+      <candidateResponse>
+        <value>0.0</value>
+      </candidateResponse>
+    </responseVariable>
+    <responseVariable identifier="numAttempts" cardinality="single" baseType="integer">
+      <candidateResponse>
+        <value>0</value>
+      </candidateResponse>
+    </responseVariable>
+    <responseVariable identifier="HINTREQUEST" cardinality="single" baseType="identifier">
+      <candidateResponse/>
+    </responseVariable>
+    <responseVariable identifier="KPRIM_RESPONSE_1" cardinality="multiple" baseType="directedPair">
+      <correctResponse>
+        <value>d95140378493395 wrong</value>
+        <value>a95140378493392 wrong</value>
+        <value>b95140378493393 wrong</value>
+        <value>c95140378493394 wrong</value>
+      </correctResponse>
+      <candidateResponse/>
+    </responseVariable>
+  </itemResult>
+  <itemResult identifier="fib1e0afaf7f48bcbf2c7410df0a9062" datestamp="2017-02-08T16:54:49"
+              sequenceIndex="1"
+              sessionStatus="initial">
+    <outcomeVariable identifier="completionStatus" cardinality="single" baseType="identifier">
+      <value>unknown</value>
+    </outcomeVariable>
+    <outcomeVariable identifier="FEEDBACKBASIC" cardinality="single" baseType="identifier"
+                     view="testConstructor">
+      <value>none</value>
+    </outcomeVariable>
+    <outcomeVariable identifier="FEEDBACKMODAL" cardinality="multiple" baseType="identifier"
+                     view="testConstructor"/>
+    <outcomeVariable identifier="SOLUTIONMODAL" cardinality="single" baseType="identifier"
+                     view="testConstructor"/>
+    <outcomeVariable identifier="SCORE" cardinality="single" baseType="float">
+      <value>0.0</value>
+    </outcomeVariable>
+    <outcomeVariable identifier="MAXSCORE" cardinality="single" baseType="float">
+      <value>1.0</value>
+    </outcomeVariable>
+    <outcomeVariable identifier="MINSCORE_RESPONSE_1" cardinality="single" baseType="float">
+      <value>0.0</value>
+    </outcomeVariable>
+    <outcomeVariable identifier="HINTFEEDBACKMODAL" cardinality="single" baseType="identifier"/>
+    <outcomeVariable identifier="MINSCORE" cardinality="single" baseType="float"
+                     view="testConstructor">
+      <value>0.0</value>
+    </outcomeVariable>
+    <outcomeVariable identifier="SCORE_RESPONSE_1" cardinality="single" baseType="float">
+      <value>0.0</value>
+    </outcomeVariable>
+    <responseVariable identifier="duration" cardinality="single" baseType="float">
+      <candidateResponse>
+        <value>0.0</value>
+      </candidateResponse>
+    </responseVariable>
+    <responseVariable identifier="numAttempts" cardinality="single" baseType="integer">
+      <candidateResponse>
+        <value>0</value>
+      </candidateResponse>
+    </responseVariable>
+    <responseVariable identifier="HINTREQUEST" cardinality="single" baseType="identifier">
+      <candidateResponse/>
+    </responseVariable>
+    <responseVariable identifier="RESPONSE_1" cardinality="single" baseType="string">
+      <correctResponse>
+        <value>gap</value>
+      </correctResponse>
+      <candidateResponse/>
+    </responseVariable>
+  </itemResult>
+</assessmentResult>

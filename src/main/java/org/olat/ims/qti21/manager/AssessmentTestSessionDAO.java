@@ -243,6 +243,12 @@ public class AssessmentTestSessionDAO {
 		return sessions == null || sessions.isEmpty() ? null : sessions.get(0);
 	}
 	
+	/**
+	 * Load the assessment test session and only fetch the user.
+	 * 
+	 * @param testSessionKey
+	 * @return
+	 */
 	public AssessmentTestSession loadFullByKey(Long testSessionKey) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select session from qtiassessmenttestsession session")
