@@ -305,10 +305,10 @@ public class WebDAVCommandsTest extends WebDAVTestCase {
 		//author check course folder
 		URI courseUri = conn.getBaseURI().path("webdav").path("coursefolders").build();
 		String publicXml = conn.propfind(courseUri, 2);
-		Assert.assertTrue(publicXml.indexOf("<D:href>/webdav/coursefolders/other/Kurs/_courseelementdata/</D:href>") > 0);
+		Assert.assertTrue(publicXml.indexOf("<D:href>/webdav/coursefolders/_other/Kurs/_courseelementdata/</D:href>") > 0);
 
 		//PUT in the folder
-		URI putUri = UriBuilder.fromUri(courseUri).path("other").path("Kurs").path("test.txt").build();
+		URI putUri = UriBuilder.fromUri(courseUri).path("_other").path("Kurs").path("test.txt").build();
 		HttpPut put = conn.createPut(putUri);
 		InputStream dataStream = WebDAVCommandsTest.class.getResourceAsStream("text.txt");
 		InputStreamEntity entity = new InputStreamEntity(dataStream, -1);
@@ -410,14 +410,14 @@ public class WebDAVCommandsTest extends WebDAVTestCase {
 		//author check course folder
 		URI courseUri = authorConn.getBaseURI().path("webdav").path("coursefolders").build();
 		String publicXml = authorConn.propfind(courseUri, 2);
-		Assert.assertTrue(publicXml.indexOf("<D:href>/webdav/coursefolders/other/Kurs/_courseelementdata/</D:href>") > 0);
+		Assert.assertTrue(publicXml.indexOf("<D:href>/webdav/coursefolders/_other/Kurs/_courseelementdata/</D:href>") > 0);
 
 		//coauthor check course folder
 		String assistantPublicXml = assistantConn.propfind(courseUri, 2);
-		Assert.assertTrue(assistantPublicXml.indexOf("<D:href>/webdav/coursefolders/other/Kurs/_courseelementdata/</D:href>") > 0);
+		Assert.assertTrue(assistantPublicXml.indexOf("<D:href>/webdav/coursefolders/_other/Kurs/_courseelementdata/</D:href>") > 0);
 
 		//PUT a file to lock
-		URI putUri = UriBuilder.fromUri(courseUri).path("other").path("Kurs").path("test.txt").build();
+		URI putUri = UriBuilder.fromUri(courseUri).path("_other").path("Kurs").path("test.txt").build();
 		HttpPut put = authorConn.createPut(putUri);
 		InputStream dataStream = WebDAVCommandsTest.class.getResourceAsStream("text.txt");
 		InputStreamEntity entity = new InputStreamEntity(dataStream, -1);
@@ -476,7 +476,7 @@ public class WebDAVCommandsTest extends WebDAVTestCase {
 		WebDAVConnection conn = new WebDAVConnection();
 		conn.setCredentials(author.getName(), "A6B7C8");
 		
-		URI toLockUri = conn.getBaseURI().path("webdav").path("coursefolders").path("other").path("Kurs").path("tolock.txt").build();
+		URI toLockUri = conn.getBaseURI().path("webdav").path("coursefolders").path("_other").path("Kurs").path("tolock.txt").build();
 		String propfindXml = conn.propfind(toLockUri, 2);
 
 		Assert.assertTrue(propfindXml.indexOf("<D:lockscope><D:exclusive/></D:lockscope>") > 0);//not really a test
@@ -664,16 +664,16 @@ public class WebDAVCommandsTest extends WebDAVTestCase {
 		URI courseUri = conn.getBaseURI().path("webdav").path("coursefolders").build();
 		String publicXml = conn.propfind(courseUri, 2);
 		//cannot access course storage
-		Assert.assertFalse(publicXml.contains("<D:href>/webdav/coursefolders/other/WebDAV%20course/Course%20storage/</D:href>"));
+		Assert.assertFalse(publicXml.contains("<D:href>/webdav/coursefolders/_other/WebDAV%20course/Course%20storage/</D:href>"));
 		//can access course elements
-		Assert.assertTrue(publicXml.contains("<D:href>/webdav/coursefolders/other/WebDAV%20course/_courseelementdata/</D:href>"));
+		Assert.assertTrue(publicXml.contains("<D:href>/webdav/coursefolders/_other/WebDAV%20course/_courseelementdata/</D:href>"));
 
 		URI courseElementUri = conn.getBaseURI().path("webdav").path("coursefolders")
-				.path("other").path("WebDAV%20course").path("_courseelementdata").build();
+				.path("_other").path("WebDAV%20course").path("_courseelementdata").build();
 		String publicElementXml = conn.propfind(courseElementUri, 2);
-		Assert.assertTrue(publicElementXml.contains("<D:href>/webdav/coursefolders/other/WebDAV%20course/_courseelementdata/Folder%20for%20all/</D:href>"));
-		Assert.assertFalse(publicElementXml.contains("<D:href>/webdav/coursefolders/other/WebDAV%20course/_courseelementdata/Student%20read-only%20%2890600786058954%29/Readonly%20students/</D:href>"));
-		Assert.assertFalse(publicElementXml.contains("<D:href>/webdav/coursefolders/other/WebDAV%20course/_courseelementdata/Not%20for%20students%20%2890600786058958%29/Not%20for%20students/</D:href>"));
+		Assert.assertTrue(publicElementXml.contains("<D:href>/webdav/coursefolders/_other/WebDAV%20course/_courseelementdata/Folder%20for%20all/</D:href>"));
+		Assert.assertFalse(publicElementXml.contains("<D:href>/webdav/coursefolders/_other/WebDAV%20course/_courseelementdata/Student%20read-only%20%2890600786058954%29/Readonly%20students/</D:href>"));
+		Assert.assertFalse(publicElementXml.contains("<D:href>/webdav/coursefolders/_other/WebDAV%20course/_courseelementdata/Not%20for%20students%20%2890600786058958%29/Not%20for%20students/</D:href>"));
 
 		conn.close();
 	}
@@ -695,17 +695,17 @@ public class WebDAVCommandsTest extends WebDAVTestCase {
 		URI courseUri = conn.getBaseURI().path("webdav").path("coursefolders").build();
 		String publicXml = conn.propfind(courseUri, 2);
 		//cane access course storage
-		Assert.assertTrue(publicXml.contains("<D:href>/webdav/coursefolders/other/WebDAV%20course/Course%20storage/</D:href>"));
+		Assert.assertTrue(publicXml.contains("<D:href>/webdav/coursefolders/_other/WebDAV%20course/Course%20storage/</D:href>"));
 		//can access course elements
-		Assert.assertTrue(publicXml.contains("<D:href>/webdav/coursefolders/other/WebDAV%20course/_courseelementdata/</D:href>"));
+		Assert.assertTrue(publicXml.contains("<D:href>/webdav/coursefolders/_other/WebDAV%20course/_courseelementdata/</D:href>"));
 
 		URI courseElementUri = conn.getBaseURI().path("webdav").path("coursefolders")
-				.path("other").path("WebDAV%20course").path("_courseelementdata").build();
+				.path("_other").path("WebDAV%20course").path("_courseelementdata").build();
 		String publicElementXml = conn.propfind(courseElementUri, 2);
 		//can access all 3 course nodes
-		Assert.assertTrue(publicElementXml.contains("<D:href>/webdav/coursefolders/other/WebDAV%20course/_courseelementdata/Folder%20for%20all/</D:href>"));
-		Assert.assertTrue(publicElementXml.contains("<D:href>/webdav/coursefolders/other/WebDAV%20course/_courseelementdata/Student%20read-only%20%2890600786058954%29/Readonly%20students/</D:href>"));
-		Assert.assertTrue(publicElementXml.contains("<D:href>/webdav/coursefolders/other/WebDAV%20course/_courseelementdata/Not%20for%20students%20%2890600786058958%29/Not%20for%20students/</D:href>"));
+		Assert.assertTrue(publicElementXml.contains("<D:href>/webdav/coursefolders/_other/WebDAV%20course/_courseelementdata/Folder%20for%20all/</D:href>"));
+		Assert.assertTrue(publicElementXml.contains("<D:href>/webdav/coursefolders/_other/WebDAV%20course/_courseelementdata/Student%20read-only%20%2890600786058954%29/Readonly%20students/</D:href>"));
+		Assert.assertTrue(publicElementXml.contains("<D:href>/webdav/coursefolders/_other/WebDAV%20course/_courseelementdata/Not%20for%20students%20%2890600786058958%29/Not%20for%20students/</D:href>"));
 
 		conn.close();
 	}
@@ -749,7 +749,7 @@ public class WebDAVCommandsTest extends WebDAVTestCase {
 		//participant try to put a file
 		WebDAVConnection conn = new WebDAVConnection();
 		conn.setCredentials(participant.getName(), "A6B7C8");
-		URI courseUri = conn.getBaseURI().path("webdav").path("coursefolders").path("other").path("Mkdirs").build();
+		URI courseUri = conn.getBaseURI().path("webdav").path("coursefolders").path("_other").path("Mkdirs").build();
 		
 		
 		//MKCOL in the folder at the second level
