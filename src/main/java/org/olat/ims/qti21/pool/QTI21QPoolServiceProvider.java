@@ -255,7 +255,7 @@ public class QTI21QPoolServiceProvider implements QPoolSPI {
 			ResourceType resource = clonedManifestBuilder.getResourceTypeByHref(relativePathToManifest);
 			ManifestMetadataBuilder metadata = clonedManifestBuilder.getMetadataBuilder(resource, true);
 			
-			QuestionItem qitem = importAssessmentItemRef(owner, assessmentItem, itemFile, metadata, unzippedDirRoot, defaultLocale);
+			QuestionItem qitem = importAssessmentItemRef(owner, assessmentItem, itemFile, metadata, defaultLocale);
 			importedItems.add(qitem);
 		}
 		
@@ -275,7 +275,7 @@ public class QTI21QPoolServiceProvider implements QPoolSPI {
 	@Override
 	public void exportItem(QuestionItemFull item, ZipOutputStream zout, Locale locale, Set<String> names) {
 		QTI21ExportProcessor processor = new QTI21ExportProcessor(qtiService, qpoolFileStorage, locale);
-		processor.process(item, zout, names);
+		processor.process(item, zout);
 	}
 
 	@Override
@@ -408,7 +408,7 @@ public class QTI21QPoolServiceProvider implements QPoolSPI {
 	 * @return
 	 */
 	public QuestionItem importAssessmentItemRef(Identity owner, AssessmentItem assessmentItem,
-			File itemFile, ManifestMetadataBuilder clonedMetadataBuilder, File fUnzippedDirRoot, Locale defaultLocale) {
+			File itemFile, ManifestMetadataBuilder clonedMetadataBuilder, Locale defaultLocale) {
 		QTI21ImportProcessor processor =  new QTI21ImportProcessor(owner, defaultLocale,
 				questionItemDao, qItemTypeDao, qEduContextDao, taxonomyLevelDao, qLicenseDao, qpoolFileStorage, qtiService);
 		

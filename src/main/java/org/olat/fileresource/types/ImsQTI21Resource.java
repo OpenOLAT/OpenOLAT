@@ -39,6 +39,7 @@ import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.PathUtils;
 import org.olat.ims.qti21.QTI21ContentPackage;
+import org.olat.ims.qti21.model.xml.BadRessourceHelper;
 
 import uk.ac.ed.ph.jqtiplus.reading.QtiXmlReader;
 import uk.ac.ed.ph.jqtiplus.xmlutils.XmlReadResult;
@@ -108,7 +109,12 @@ public class ImsQTI21Resource extends FileResource {
 				URI test = cp.getTest().toUri();
 				ResourceLocator chainedResourceLocator = createResolvingResourceLocator(resourceLocator);
 				XmlReadResult result = new QtiXmlReader().read(chainedResourceLocator, test, true, true);
-				return result != null && result.isSchemaValid();
+				if(result != null && !result.isSchemaValid()) {
+					StringBuilder out = new StringBuilder();
+					BadRessourceHelper.extractMessage(result.getXmlParseResult(), out);
+					log.warn(out.toString());
+				}
+				return result != null && result.isSchemaValid() || true;
 			}
 			return false;
 		} catch (Exception e) {

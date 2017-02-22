@@ -22,7 +22,9 @@ package org.olat.ims.qti21.pool;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.Writer;
 import java.net.URI;
+import java.nio.charset.Charset;
 import java.nio.file.FileSystems;
 import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
@@ -33,6 +35,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
+import javax.xml.parsers.SAXParser;
+import javax.xml.parsers.SAXParserFactory;
+import javax.xml.stream.XMLOutputFactory;
+import javax.xml.stream.XMLStreamWriter;
+
 import org.olat.core.id.Identity;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
@@ -40,7 +47,6 @@ import org.olat.core.util.PathUtils;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.io.ShieldInputStream;
 import org.olat.fileresource.types.ImsQTI21Resource;
-import org.olat.fileresource.types.ImsQTI21Resource.PathResourceLocator;
 import org.olat.ims.qti.qpool.QTIMetadataConverter;
 import org.olat.ims.qti21.QTI21Constants;
 import org.olat.ims.qti21.QTI21Service;
@@ -49,6 +55,7 @@ import org.olat.ims.qti21.model.QTI21QuestionType;
 import org.olat.ims.qti21.model.xml.AssessmentItemMetadata;
 import org.olat.ims.qti21.model.xml.ManifestBuilder;
 import org.olat.ims.qti21.model.xml.ManifestMetadataBuilder;
+import org.olat.ims.qti21.model.xml.OnyxToQtiWorksHandler;
 import org.olat.imscp.xml.manifest.ResourceType;
 import org.olat.modules.qpool.QuestionItem;
 import org.olat.modules.qpool.QuestionType;
@@ -71,6 +78,7 @@ import uk.ac.ed.ph.jqtiplus.reading.AssessmentObjectXmlLoader;
 import uk.ac.ed.ph.jqtiplus.reading.QtiXmlReader;
 import uk.ac.ed.ph.jqtiplus.resolution.ResolvedAssessmentItem;
 import uk.ac.ed.ph.jqtiplus.utils.QueryUtils;
+import uk.ac.ed.ph.jqtiplus.xmlutils.locators.FileResourceLocator;
 import uk.ac.ed.ph.jqtiplus.xmlutils.locators.ResourceLocator;
 
 /**
@@ -145,13 +153,19 @@ public class QTI21ImportProcessor {
 			if(Files.notExists(assessmentItemPath)) {
 				return null;
 			}
-			
+	
+			String dir = qpoolFileStorage.generateDir();
+			//storage
+			File itemStorage = qpoolFileStorage.getDirectory(dir);
+			File outputFile = new File(itemStorage, href);
+			convertXmlFile(assessmentItemPath, outputFile.toPath());
+
 			QtiXmlReader qtiXmlReader = new QtiXmlReader(qtiService.jqtiExtensionManager());
-			ResourceLocator fileResourceLocator = new PathResourceLocator(parentPath);
+			ResourceLocator fileResourceLocator = new FileResourceLocator();
 			ResourceLocator inputResourceLocator = 
 					ImsQTI21Resource.createResolvingResourceLocator(fileResourceLocator);
 			
-			URI assessmentObjectSystemId = new URI("zip", href, null);
+			URI assessmentObjectSystemId = outputFile.toURI();
 			AssessmentObjectXmlLoader assessmentObjectXmlLoader = new AssessmentObjectXmlLoader(qtiXmlReader, inputResourceLocator);
 			ResolvedAssessmentItem resolvedAssessmentItem = assessmentObjectXmlLoader.loadAndResolveAssessmentItem(assessmentObjectSystemId);
 			AssessmentItem assessmentItem = resolvedAssessmentItem.getRootNodeLookup().extractIfSuccessful();
@@ -168,12 +182,8 @@ public class QTI21ImportProcessor {
 			}
 
 			QuestionItemImpl qitem = processItem(assessmentItem, null, href,
-					editor, editorVersion, metadata);
-			
-			//storage
-			File itemStorage = qpoolFileStorage.getDirectory(qitem.getDirectory());
-			PathUtils.copyFileToDir(assessmentItemPath, itemStorage, href);
-			
+					editor, editorVersion, dir, metadata);
+
 			//create manifest
 			ManifestBuilder manifest = ManifestBuilder.createAssessmentItemBuilder();
 			String itemId = IdentifierGenerator.newAsIdentifier("item").toString();
@@ -196,6 +206,21 @@ public class QTI21ImportProcessor {
 			return null;
 		}
 	}
+	
+	private void convertXmlFile(Path inputFile, Path outputFile) {
+		try(InputStream in = Files.newInputStream(inputFile);
+				Writer out = Files.newBufferedWriter(outputFile, Charset.forName("UTF-8"))) {
+			XMLOutputFactory xof = XMLOutputFactory.newInstance();
+	        XMLStreamWriter xtw = xof.createXMLStreamWriter(out);
+	
+			SAXParser saxParser = SAXParserFactory.newInstance().newSAXParser();
+			OnyxToQtiWorksHandler myHandler = new OnyxToQtiWorksHandler(xtw, null);
+			saxParser.setProperty("http://xml.org/sax/properties/lexical-handler", myHandler);
+			saxParser.parse(in, myHandler);
+		} catch(Exception e) {
+			log.error("", e);
+		}
+	}
 
 	protected List<String> getMaterials(AssessmentItem item) {
 		List<String> materials = new ArrayList<>();
@@ -212,9 +237,15 @@ public class QTI21ImportProcessor {
 		});
 		return materials;
 	}
-
+	
 	protected QuestionItemImpl processItem(AssessmentItem assessmentItem, String comment, String originalItemFilename,
 			String editor, String editorVersion, AssessmentItemMetadata metadata) {
+		String dir = qpoolFileStorage.generateDir();
+		return processItem(assessmentItem, comment, originalItemFilename, editor, editorVersion, dir, metadata);
+	}
+
+	protected QuestionItemImpl processItem(AssessmentItem assessmentItem, String comment, String originalItemFilename,
+			String editor, String editorVersion, String dir, AssessmentItemMetadata metadata) {
 		//filename
 		String filename;
 		String ident = assessmentItem.getIdentifier();
@@ -225,7 +256,6 @@ public class QTI21ImportProcessor {
 		} else {
 			filename = "item.xml";
 		}
-		String dir = qpoolFileStorage.generateDir();
 		
 		//title
 		String title = assessmentItem.getTitle();

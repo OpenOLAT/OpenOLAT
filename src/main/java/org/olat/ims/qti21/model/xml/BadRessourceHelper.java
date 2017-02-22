@@ -35,6 +35,17 @@ import uk.ac.ed.ph.jqtiplus.xmlutils.XmlParseResult;
  */
 public class BadRessourceHelper {
 
+	public static boolean hasFatalErrors(BadResourceException e) {
+		if(e instanceof QtiXmlInterpretationException) {
+        	QtiXmlInterpretationException qe = (QtiXmlInterpretationException)e;
+        	if(qe.getXmlParseResult() != null) {
+        		XmlParseResult result = qe.getXmlParseResult();
+        		return (result.getFatalErrors() != null && result.getFatalErrors().size() > 0);
+        	}
+		}
+		return false;
+	}
+	
 	public static void extractMessage(BadResourceException e, StringBuilder out) {
         if(e instanceof QtiXmlInterpretationException) {
         	QtiXmlInterpretationException qe = (QtiXmlInterpretationException)e;
@@ -63,7 +74,7 @@ public class BadRessourceHelper {
         				int lineNumber = saxex.getLineNumber();
         				int columnNumber = saxex.getColumnNumber();
         				String msg = saxex.getMessage();
-    	        		out.append("Error: " + lineNumber + ":" + columnNumber + " :: " + msg + "\n");
+    	        		out.append("Warnings: " + lineNumber + ":" + columnNumber + " :: " + msg + "\n");
         			}
         		}
         		
@@ -86,5 +97,34 @@ public class BadRessourceHelper {
         		}
         	}
         }
+	}
+
+	public static void extractMessage(XmlParseResult result, StringBuilder out) {
+		if(result.getWarnings() != null) {
+			for(SAXParseException saxex : result.getWarnings()) {
+				int lineNumber = saxex.getLineNumber();
+				int columnNumber = saxex.getColumnNumber();
+				String msg = saxex.getMessage();
+        		out.append("Error: " + lineNumber + ":" + columnNumber + " :: " + msg + "\n");
+			}
+		}
+		
+		if(result.getErrors() != null) {
+			for(SAXParseException saxex : result.getErrors()) {
+				int lineNumber = saxex.getLineNumber();
+				int columnNumber = saxex.getColumnNumber();
+				String msg = saxex.getMessage();
+        		out.append("Error: " + lineNumber + ":" + columnNumber + " :: " + msg + "\n");
+			}
+		}
+		
+		if(result.getFatalErrors() != null) {
+			for(SAXParseException saxex : result.getFatalErrors()) {
+				int lineNumber = saxex.getLineNumber();
+				int columnNumber = saxex.getColumnNumber();
+				String msg = saxex.getMessage();
+        		out.append("Fatal: " + lineNumber + ":" + columnNumber + " :: " + msg + "\n");
+			}
+		}
 	}
 }

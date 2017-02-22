@@ -150,7 +150,7 @@ import uk.ac.ed.ph.jqtiplus.xmlutils.locators.ResourceLocator;
 public class AssessmentTestDisplayController extends BasicController implements CandidateSessionContext, GenericEventListener {
 	
 	private final File fUnzippedDirRoot;
-	private final String mapperUri;
+	private String mapperUri;
 	private final QTI21DeliveryOptions deliveryOptions;
 	
 	private VelocityContainer mainVC;
@@ -233,27 +233,34 @@ public class AssessmentTestDisplayController extends BasicController implements 
 		FileResourceManager frm = FileResourceManager.getInstance();
 		fUnzippedDirRoot = frm.unzipFileResource(testEntry.getOlatResource());
 		resolvedAssessmentTest = qtiService.loadAndResolveAssessmentTest(fUnzippedDirRoot, false, false);
-		
-		currentRequestTimestamp = ureq.getRequestTimestamp();
-		
-		initMarks();
-		initOrResumeAssessmentTestSession(ureq, authorMode);
-		
-		URI assessmentObjectUri = qtiService.createAssessmentObjectUri(fUnzippedDirRoot);
-		File submissionDir = qtiService.getSubmissionDirectory(candidateSession);
-		mapperUri = registerCacheableMapper(null, "QTI21Resources::" + testEntry.getKey(),
-				new ResourcesMapper(assessmentObjectUri, submissionDir));
-
-		/* Handle immediate end of test session */
-        if (testSessionController.getTestSessionState() != null && testSessionController.getTestSessionState().isEnded()) {
-        	AssessmentResult assessmentResult = null;
-            qtiService.finishTestSession(candidateSession, testSessionController.getTestSessionState(), assessmentResult,
-            		currentRequestTimestamp, getDigitalSignatureOptions(), getIdentity());
-        	mainVC = createVelocityContainer("end");
-        } else {
-        	mainVC = createVelocityContainer("run");
-        	initQtiWorks(ureq);
-        }
+		if(resolvedAssessmentTest.getRootNodeLookup().extractIfSuccessful() == null) {
+        	mainVC = createVelocityContainer("error");
+		} else {
+			currentRequestTimestamp = ureq.getRequestTimestamp();
+			
+			initMarks();
+			initOrResumeAssessmentTestSession(ureq, authorMode);
+			
+			URI assessmentObjectUri = qtiService.createAssessmentObjectUri(fUnzippedDirRoot);
+			File submissionDir = qtiService.getSubmissionDirectory(candidateSession);
+			mapperUri = registerCacheableMapper(null, "QTI21Resources::" + testEntry.getKey(),
+					new ResourcesMapper(assessmentObjectUri, submissionDir));
+	
+			/* Handle immediate end of test session */
+	        if (testSessionController.getTestSessionState() != null && testSessionController.getTestSessionState().isEnded()) {
+	        	AssessmentResult assessmentResult = null;
+	        	qtiService.finishTestSession(candidateSession, testSessionController.getTestSessionState(), assessmentResult,
+	             		currentRequestTimestamp, getDigitalSignatureOptions(), getIdentity());
+	         	mainVC = createVelocityContainer("end");
+	        } else {
+	        	mainVC = createVelocityContainer("run");
+	        	initQtiWorks(ureq);
+	        }
+	        
+	        OLATResourceable sessionOres = OresHelper
+	        		.createOLATResourceableInstance(AssessmentTestSession.class, candidateSession.getKey());
+	        CoordinatorManager.getInstance().getCoordinator().getEventBus().registerFor(this, getIdentity(), sessionOres);
+		}
         
         mainPanel = putInitialPanel(mainVC);
         

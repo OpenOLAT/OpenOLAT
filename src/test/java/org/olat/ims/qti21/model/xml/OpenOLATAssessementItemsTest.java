@@ -20,22 +20,14 @@
 package org.olat.ims.qti21.model.xml;
 
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.OutputStream;
-import java.io.OutputStreamWriter;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.UUID;
 
 import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.parsers.SAXParser;
-import javax.xml.parsers.SAXParserFactory;
-import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.XMLStreamWriter;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -44,8 +36,6 @@ import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
-import org.olat.core.util.FileUtils;
-import org.olat.core.util.WebappHelper;
 import org.olat.fileresource.types.ImsQTI21Resource.PathResourceLocator;
 import org.xml.sax.SAXException;
 
@@ -65,53 +55,34 @@ import uk.ac.ed.ph.jqtiplus.xmlutils.locators.ResourceLocator;
  *
  */
 @RunWith(Parameterized.class)
-public class OnyxToQtiAssessementItemsTest {
+public class OpenOLATAssessementItemsTest {
 	
-	private static final OLog log = Tracing.createLoggerFor(OnyxToQtiAssessementItemsTest.class);
+	private static final OLog log = Tracing.createLoggerFor(OpenOLATAssessementItemsTest.class);
 	
 	@Parameters
     public static Collection<Object[]> data() {
         return Arrays.asList(new Object[][] {
-                { "Auswahlaufgabe_1509468352.xml" },
-                { "Hotspotaufgabe_478898401.xml" },
-                { "Task_1597435347.xml" }
+                { "mca8e3671bb142ba8dd96d574cf0d0e0.xml" },
+                { "essay3c2454b4c4dbd64347ea9df54cd.xml" }
         });
     }
     
     private String xmlFilename;
     
-    public OnyxToQtiAssessementItemsTest(String xmlFilename) {
+    public OpenOLATAssessementItemsTest(String xmlFilename) {
     	this.xmlFilename = xmlFilename;
     }
 
 	@Test
-	public void fixItem()
+	public void ourItem()
 	throws IOException, XMLStreamException, SAXException, ParserConfigurationException, URISyntaxException {	
-		URL xmlUrl = OnyxToQtiAssessementItemsTest.class.getResource(xmlFilename);
+		URL xmlUrl = OpenOLATAssessementItemsTest.class.getResource("resources/openolat/" + xmlFilename);
 		File xmlFile = new File(xmlUrl.toURI());
-		File tmpDir = new File(WebappHelper.getTmpDir(), "onyx" + UUID.randomUUID());
-		tmpDir.mkdirs();
-
-		File outFile = new File(tmpDir, "text.xml");
-		OutputStream byteOut = new FileOutputStream(outFile);
-		OutputStreamWriter out = new OutputStreamWriter(byteOut, "UTF8");
-			// Parse the input
-		XMLOutputFactory xof = XMLOutputFactory.newInstance();
-		XMLStreamWriter xtw = xof.createXMLStreamWriter(out);
-
-		SAXParserFactory factory = SAXParserFactory.newInstance();
-		SAXParser saxParser = factory.newSAXParser();
-		OnyxToQtiWorksHandler myHandler = new OnyxToQtiWorksHandler(xtw);
-		saxParser.setProperty("http://xml.org/sax/properties/lexical-handler", myHandler);
-		saxParser.parse(xmlFile, myHandler);
-		
-		out.flush();
-		byteOut.flush();
 
 		QtiXmlReader qtiXmlReader = new QtiXmlReader(new JqtiExtensionManager());
-		ResourceLocator fileResourceLocator = new PathResourceLocator(outFile.toPath());
+		ResourceLocator fileResourceLocator = new PathResourceLocator(xmlFile.toPath());
         AssessmentObjectXmlLoader assessmentObjectXmlLoader = new AssessmentObjectXmlLoader(qtiXmlReader, fileResourceLocator);
-        ItemValidationResult itemResult = assessmentObjectXmlLoader.loadResolveAndValidateItem(outFile.toURI());
+        ItemValidationResult itemResult = assessmentObjectXmlLoader.loadResolveAndValidateItem(xmlFile.toURI());
        
         BadResourceException e = itemResult.getResolvedAssessmentItem().getItemLookup().getBadResourceException();
 		if(e != null) {
@@ -119,8 +90,7 @@ public class OnyxToQtiAssessementItemsTest {
 			BadRessourceHelper.extractMessage(e, err);
 			log.error(err.toString());
 		}
-        
-        FileUtils.deleteDirsAndFiles(tmpDir.toPath());
+
         Assert.assertFalse(xmlFilename + " has errors", (itemResult.getModelValidationErrors().size() > 0));
 	}
 }

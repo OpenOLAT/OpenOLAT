@@ -30,3 +30,10 @@ create table o_sms_message_log (
 
 alter table o_sms_message_log add constraint sms_log_to_identity_idx foreign key (fk_identity) references o_bs_identity (id);
 create index idx_sms_log_to_identity_idx on o_sms_message_log(fk_identity);
+
+
+
+alter table o_qti_assessmentitem_session modify q_itemidentifier varchar2(255 char);
+alter table o_qti_assessmentitem_session modify q_sectionidentifier varchar2(255 char);
+alter table o_qti_assessmentitem_session modify q_testpartidentifier varchar2(255 char);
+alter table o_qti_assessmenttest_session modify q_subident varchar2(255 char);

@@ -24,6 +24,9 @@ import java.util.Locale;
 
 import org.olat.core.util.StringHelper;
 import org.olat.ims.qti21.model.QTI21QuestionType;
+import org.olat.imsmd.xml.manifest.EducationalType;
+import org.olat.imsqti.xml.manifest.QTIMetadataType;
+import org.olat.oo.xml.manifest.OpenOLATMetadataType;
 
 /**
  * 
@@ -245,5 +248,36 @@ public class AssessmentItemMetadata {
 	public void fromBuilder(ManifestMetadataBuilder metadata) {
 		// general
 		keywords = metadata.getGeneralKeywords();
+		
+		EducationalType educational = metadata.getEducational(false);
+		if(educational != null) {
+			//
+		}
+		
+		//qti metadata
+		QTIMetadataType qtiMetadata = metadata.getQtiMetadata(false);
+		if(qtiMetadata.getToolName() != null) {
+			editor = qtiMetadata.getToolName();
+		}
+		if(qtiMetadata.getToolVersion() != null) {
+			editorVersion = qtiMetadata.getToolVersion();
+		}
+		
+		//openolat metadata
+		OpenOLATMetadataType openolatMetadata = metadata.getOpenOLATMetadata(false);
+		if(openolatMetadata != null) {
+			if(openolatMetadata.getDiscriminationIndex() != null) {
+				differentiation = new BigDecimal(openolatMetadata.getDiscriminationIndex());
+			}
+			if(openolatMetadata.getDifficulty() != null) {
+				difficulty = new BigDecimal(openolatMetadata.getDifficulty());
+			}
+			if(openolatMetadata.getStandardDeviation() != null) {
+				stdevDifficulty = new BigDecimal(openolatMetadata.getStandardDeviation());
+			}
+			if(openolatMetadata.getDistractors() != null) {
+				numOfAnswerAlternatives = openolatMetadata.getDistractors().intValue();
+			}
+		}
 	}
 }

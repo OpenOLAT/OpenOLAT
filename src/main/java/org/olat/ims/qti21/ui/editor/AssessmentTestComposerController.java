@@ -651,7 +651,7 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 		File itemFile = new File(rootNode.getSystemId());
 
 		qti21QPoolServiceProvider
-				.importAssessmentItemRef(getIdentity(), assessmentItem, itemFile, metadata, unzippedDirRoot, getLocale());
+				.importAssessmentItemRef(getIdentity(), assessmentItem, itemFile, metadata, getLocale());
 	}
 	
 	private void doExportDocx(UserRequest ureq) {
