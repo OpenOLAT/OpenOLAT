@@ -57,6 +57,7 @@ public class ConfirmTokenController extends FormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		tokenEl = uifactory.addTextElement("token", "pw.change.confirm.token", 32, "", formLayout);
+		tokenEl.setFocus(true);
 		
 		FormLayoutContainer buttonsCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		formLayout.add(buttonsCont);

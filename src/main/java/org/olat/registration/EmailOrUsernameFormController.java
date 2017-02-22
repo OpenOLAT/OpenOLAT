@@ -52,6 +52,7 @@ public class EmailOrUsernameFormController extends FormBasicController {
 	/**
 	 * @see org.olat.core.gui.components.form.flexible.impl.FormBasicController#doDispose()
 	 */
+	@Override
 	protected void doDispose() {
 	// nothing to do
 	}
@@ -59,6 +60,7 @@ public class EmailOrUsernameFormController extends FormBasicController {
 	/**
 	 * @see org.olat.core.gui.components.form.flexible.impl.FormBasicController#formOK(org.olat.core.gui.UserRequest)
 	 */
+	@Override
 	protected void formOK(UserRequest ureq) {
 		fireEvent(ureq, Event.DONE_EVENT);
 	}
@@ -80,6 +82,7 @@ public class EmailOrUsernameFormController extends FormBasicController {
 		emailOrUsername = uifactory.addTextElement("emailOrUsername", "email.or.username", -1, initialEmail, formLayout);
 		emailOrUsername.setMandatory(true);
 		emailOrUsername.setNotEmptyCheck("email.or.username.maynotbeempty");
+		emailOrUsername.setFocus(true);
 		
 		final FormLayoutContainer buttonLayout = FormLayoutContainer.createButtonLayout("button_layout", getTranslator());
 		flc.add(buttonLayout);
