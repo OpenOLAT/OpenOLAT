@@ -736,30 +736,4 @@ public class AssessmentTestComponentRenderer extends AssessmentObjectComponentRe
             throw new OLATRuntimeException("Unexpected Exception parsing TestPlanNodeKey " + keyString, e);
         }
     }
-    
-    public static class ItemRenderingRequest {
-
-    	private AssessmentItem assessmentItem;
-    	private ItemSessionState itemSessionState;
-    	
-    	public ItemRenderingRequest(AssessmentItem assessmentItem) {
-    		this.assessmentItem = assessmentItem;
-    	}
-
-		public AssessmentItem getAssessmentItem() {
-			return assessmentItem;
-		}
-
-		public void setAssessmentItem(AssessmentItem assessmentItem) {
-			this.assessmentItem = assessmentItem;
-		}
-
-		public ItemSessionState getItemSessionState() {
-			return itemSessionState;
-		}
-
-		public void setItemSessionState(ItemSessionState itemSessionState) {
-			this.itemSessionState = itemSessionState;
-		}
-    }
 }

@@ -148,7 +148,7 @@ ul.sessionControl {
 
 
 .o_info.o_assessmentsection_rubrics {
-	margin:0;
+	margin:0 0 0.5em 0;
 }
 
 .o_assessmentitem{
@@ -300,6 +300,24 @@ ul.sessionControl {
 		/* need to redeclare o_info since modalFeedback class is on same element */
 		.o_info {
 			@extend %o_info;
+			margin-bottom: 0;
+			margin-top: 0;
+		}
+		
+		.o_info.o_correct_modal_feedback {
+			@extend %o_note;
+			margin-bottom: 0;
+			margin-top: 0;
+		}
+
+		.o_info.o_incorrect_modal_feedback {
+			@extend %o_warning;
+			margin-bottom: 0;
+			margin-top: 0;
+		}
+
+		.o_info.o_empty_modal_feedback {
+			@extend %o_warning;
 			margin-bottom: 0;
 			margin-top: 0;
 		}
@@ -593,7 +611,7 @@ tr.choiceinteraction {
 
 /* Correct solution feedback */
 .o_togglebox_wrapper #modal-correct-solution div.o_togglebox_content {
-	background-color: $o-box-warning-bg; 
+	background-color: $o-box-warning-bg;
 	border-color: $o-box-warning-color;
 }
 
