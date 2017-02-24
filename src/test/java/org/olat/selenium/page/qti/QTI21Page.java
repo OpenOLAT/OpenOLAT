@@ -111,9 +111,11 @@ public class QTI21Page {
 	}
 	
 	public QTI21Page answerHotspot(String shape) {
-		By areaBy = By.cssSelector("div.hotspotInteraction area[shape='" + shape + "']");
-		OOGraphene.waitElement(areaBy, 5, browser);
-		browser.findElement(areaBy).click();
+		OOGraphene.waitElement(By.className("hotspotInteraction"), browser);
+		By areaBy = By.xpath("//div[contains(@class,'hotspotInteraction')]//map/area[@shape='" + shape + "']");
+		List<WebElement> elements = browser.findElements(areaBy);
+		Assert.assertEquals("Hotspot of shape " + shape, 1, elements.size()); 
+		elements.get(0).click();
 		return this;
 	}
 

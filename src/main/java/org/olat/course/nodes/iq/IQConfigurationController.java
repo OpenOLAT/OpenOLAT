@@ -65,7 +65,6 @@ import org.olat.ims.qti.fileresource.TestFileResource;
 import org.olat.ims.qti.process.AssessmentInstance;
 import org.olat.ims.qti21.AssessmentTestSession;
 import org.olat.ims.qti21.QTI21DeliveryOptions;
-import org.olat.ims.qti21.QTI21DeliveryOptions.ShowResultsOnFinish;
 import org.olat.ims.qti21.QTI21Service;
 import org.olat.ims.qti21.model.InMemoryOutcomeListener;
 import org.olat.ims.qti21.ui.AssessmentTestDisplayController;
@@ -559,12 +558,6 @@ public class IQConfigurationController extends BasicController {
 					moduleConfiguration.set(IQEditController.CONFIG_KEY_TYPE_QTI, IQEditController.CONFIG_VALUE_QTI2);
 				} else if(ImsQTI21Resource.TYPE_NAME.equals(re.getOlatResource().getResourceableTypeName())) {
 					moduleConfiguration.set(IQEditController.CONFIG_KEY_TYPE_QTI, IQEditController.CONFIG_VALUE_QTI21);
-					QTI21DeliveryOptions deliveryOptions = qti21service.getDeliveryOptions(re);
-					if(deliveryOptions != null) {
-						ShowResultsOnFinish showSummary = deliveryOptions.getShowResultsOnFinish();
-						String defaultConfSummary = showSummary == null ? AssessmentInstance.QMD_ENTRY_SUMMARY_COMPACT : showSummary.getIQEquivalent();
-						moduleConfiguration.set(IQEditController.CONFIG_KEY_SUMMARY, defaultConfSummary);
-					}
 					if (isEditable(urequest.getIdentity(), urequest.getUserSession().getRoles(), re)) {
 						editTestButton = LinkFactory.createButtonSmall("command.editRepFile", myContent, this);
 					}

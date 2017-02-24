@@ -152,7 +152,6 @@ public class QTI21DeliveryOptionsController extends FormBasicController implemen
 		};
 		assessmentResultsOnFinishEl = uifactory.addCheckboxesVertical("typeResultOnFiniish", "qti.form.summary", formLayout,
 				resultsOptionsKeys, resultsOptionsValues, 1);
-		assessmentResultsOnFinishEl.addActionListener(FormEvent.ONCHANGE);
 		assessmentResultsOnFinishEl.setElementCssClass("o_sel_qti_show_results_options");
 		
 		FormLayoutContainer buttonsLayout = FormLayoutContainer.createButtonLayout("buttons", getTranslator());

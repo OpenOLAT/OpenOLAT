@@ -73,7 +73,6 @@ import org.olat.ims.qti21.AssessmentTestSession;
 import org.olat.ims.qti21.OutcomesListener;
 import org.olat.ims.qti21.QTI21Constants;
 import org.olat.ims.qti21.QTI21DeliveryOptions;
-import org.olat.ims.qti21.QTI21DeliveryOptions.ShowResultsOnFinish;
 import org.olat.ims.qti21.QTI21Module;
 import org.olat.ims.qti21.QTI21Service;
 import org.olat.ims.qti21.manager.ResponseFormater;
@@ -1590,8 +1589,8 @@ public class AssessmentTestDisplayController extends BasicController implements 
 			//updateButtons();
 			resultsVisible = false;
 			if(testSessionController.getTestSessionState().isEnded()
-					&& deliveryOptions.getShowResultsOnFinish() != null
-					&& !ShowResultsOnFinish.none.equals(deliveryOptions.getShowResultsOnFinish())) {
+					&& deliveryOptions.getAssessmentResultsOptions() != null
+					&& !deliveryOptions.getAssessmentResultsOptions().none()) {
 				removeAsListenerAndDispose(resultCtrl);
 				resultCtrl = new AssessmentResultController(ureq, getWindowControl(), assessedIdentity, anonym,
 						AssessmentTestDisplayController.this.getCandidateSession(),

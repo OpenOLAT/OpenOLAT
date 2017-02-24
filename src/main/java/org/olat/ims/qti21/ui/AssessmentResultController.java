@@ -55,13 +55,11 @@ import org.olat.ims.qti21.QTI21AssessmentResultsOptions;
 import org.olat.ims.qti21.QTI21Constants;
 import org.olat.ims.qti21.QTI21Service;
 import org.olat.ims.qti21.model.QTI21QuestionType;
-import org.olat.ims.qti21.model.xml.AssessmentHtmlBuilder;
 import org.olat.ims.qti21.ui.assessment.TerminatedStaticCandidateSessionContext;
 import org.olat.ims.qti21.ui.components.InteractionResultFormItem;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import uk.ac.ed.ph.jqtiplus.node.item.AssessmentItem;
-import uk.ac.ed.ph.jqtiplus.node.item.ModalFeedback;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.DrawingInteraction;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.EndAttemptInteraction;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.ExtendedTextInteraction;
@@ -275,15 +273,7 @@ public class AssessmentResultController extends FormBasicController {
 			//solution
 			FormItem solutionFormItem = null;
 			if(interaction instanceof ExtendedTextInteraction || interaction instanceof UploadInteraction || interaction instanceof DrawingInteraction) {
-				
-				for(ModalFeedback modalFeedback :assessmentItem.getModalFeedbacks()) {
-					if(QTI21Constants.CORRECT_SOLUTION_IDENTIFIER.equals(modalFeedback.getOutcomeIdentifier())) {
-						String solutionId = "solutionItem" + count++;
-						String text = new AssessmentHtmlBuilder().flowStaticString(modalFeedback.getFlowStatics());
-						solutionFormItem = uifactory.addStaticTextElement(solutionId, text, layoutCont);
-						solutionFormItem.setLabel(null, null);
-					}
-				}
+				// OO correct solution only for Word
 			} else if(options.isCorrectSolutions()) {
 				String solutionId = "solutionItem" + count++;
 				InteractionResultFormItem formItem = new InteractionResultFormItem(solutionId, interaction, resolvedAssessmentItem);

@@ -73,7 +73,6 @@ import org.olat.ims.qti21.AssessmentTestSession;
 import org.olat.ims.qti21.OutcomesListener;
 import org.olat.ims.qti21.QTI21AssessmentResultsOptions;
 import org.olat.ims.qti21.QTI21DeliveryOptions;
-import org.olat.ims.qti21.QTI21DeliveryOptions.ShowResultsOnFinish;
 import org.olat.ims.qti21.QTI21LoggingAction;
 import org.olat.ims.qti21.QTI21Service;
 import org.olat.ims.qti21.model.DigitalSignatureOptions;
@@ -296,11 +295,8 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 		//migration: check if old tests have no summary configured
 		boolean showResultsOnHomePage = config.getBooleanSafe(IQEditController.CONFIG_KEY_RESULT_ON_HOME_PAGE);
 		
-		ShowResultsOnFinish showSummary = deliveryOptions.getShowResultsOnFinish();
-		String defaultConfSummary = showSummary == null ? AssessmentInstance.QMD_ENTRY_SUMMARY_COMPACT : showSummary.getIQEquivalent();
-		String configuredSummary = config.getStringValue(IQEditController.CONFIG_KEY_SUMMARY, defaultConfSummary);
-		boolean noSummary = configuredSummary == null || (configuredSummary !=null && configuredSummary.equals(AssessmentInstance.QMD_ENTRY_SUMMARY_NONE));
-		if(!noSummary) {
+		QTI21AssessmentResultsOptions showSummary = deliveryOptions.getAssessmentResultsOptions();
+		if(!showSummary.none()) {
 			mainVC.contextPut("showResultsOnHomePage", new Boolean(showResultsOnHomePage));			
 			boolean dateRelatedVisibility = isResultVisible(config);		
 			if(showResultsOnHomePage && dateRelatedVisibility) {
