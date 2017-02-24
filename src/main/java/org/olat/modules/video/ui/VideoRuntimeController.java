@@ -85,7 +85,7 @@ public class VideoRuntimeController extends RepositoryEntryRuntimeController {
 			// maybe something else needs to be done
 			super.event(ureq, source, event);
 		}
-		
+		doRefreshVideoPosterIfEntryAdmin();		
 	}
 	
 	private void doReplaceVideo (UserRequest ureq) {
@@ -104,6 +104,13 @@ public class VideoRuntimeController extends RepositoryEntryRuntimeController {
 		listenTo(configCtrl);
 		settingsCtr = pushController(ureq, translate("tab.video.settings"), configCtrl);
 		setActiveTool(settingsLink);
+	}
+	
+	private void doRefreshVideoPosterIfEntryAdmin() {
+		if (reSecurity.isEntryAdmin()){
+			VideoDisplayController videoDisplayCtr = (VideoDisplayController)getRuntimeController();
+			videoDisplayCtr.reloadVideoPoster();
+		}
 	}
 
 }

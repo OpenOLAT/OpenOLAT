@@ -167,6 +167,17 @@ public class VideoDisplayController extends BasicController {
 	}
 	
 	/**
+	 * Reload video poster when the video poster has been exchanged
+	 */
+	protected void reloadVideoPoster() {
+		// Check for null-value posters
+		VFSLeaf poster = videoManager.getPosterframe(entry.getOlatResource());
+		mainVC.contextPut("usePoster", Boolean.valueOf(poster != null && poster.getSize() > 0));
+		// avoid browser caching of poster resource
+		mainVC.contextPut("nocache", "?t=" + CodeHelper.getRAMUniqueID());
+	}
+	
+	/**
 	 * Set the text with url rewrite for embedded images, latex...
 	 * @param text
 	 * @param key
@@ -239,8 +250,6 @@ public class VideoDisplayController extends BasicController {
 			// Check for null-value posters
 			VFSLeaf poster = videoManager.getPosterframe(entry.getOlatResource());
 			mainVC.contextPut("usePoster", Boolean.valueOf(poster != null && poster.getSize() > 0));
-			// avoid browser caching of poster resource
-			mainVC.contextPut("nocache", "?t=" + CodeHelper.getRAMUniqueID());
 			
 			// Load the track from config
 			Map<String, String> trackfiles = new HashMap<String, String>();
