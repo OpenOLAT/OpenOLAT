@@ -501,6 +501,7 @@ public class AssessmentTestDisplayController extends BasicController implements 
 				break;
 			case response:
 				handleResponse(ureq, qe.getStringResponseMap(), qe.getFileResponseMap(), qe.getComment());
+				nextItemIfAllowed(ureq);
 				break;
 			case endTestPart:
 				confirmEndTestPart(ureq);
@@ -573,6 +574,33 @@ public class AssessmentTestDisplayController extends BasicController implements 
         CandidateEvent candidateEvent = qtiService.recordCandidateTestEvent(candidateSession, testEntry, entry,
         		CandidateTestEventType.SELECT_MENU, null, selectedNodeKey, testSessionState, notificationRecorder);
         candidateAuditLogger.logCandidateEvent(candidateEvent);
+	}
+	
+	/**
+	 * Try to go to the next item. It will check fi the current
+	 * item want to show some feedback (modal or element), has some
+	 * bad or invalid responses, state of the test session... or if
+	 * the item is an adaptive one.
+	 * 
+	 * @param ureq
+	 */
+	private void nextItemIfAllowed(UserRequest ureq) {
+        if(testSessionController.hasFollowingNonLinearItem()
+        		&& testSessionController.getTestSessionState() != null
+        		&& !testSessionController.getTestSessionState().isEnded()
+        		&& !testSessionController.getTestSessionState().isExited()) {
+            
+        	TestSessionState testSessionState = testSessionController.getTestSessionState();
+            TestPlanNodeKey itemNodeKey = testSessionState.getCurrentItemKey();
+            if(itemNodeKey != null) {
+				TestPlanNode currentItemNode = testSessionState.getTestPlan().getNode(itemNodeKey);
+	        	boolean hasFeedbacks = qtiWorksCtrl.willShowSomeFeedbacks(currentItemNode);
+	        	//allow skipping
+	        	if(!hasFeedbacks) {
+	        		processNextItem(ureq);
+	        	}
+            }
+        }
 	}
 	
 	private void processNextItem(UserRequest ureq) {
@@ -1397,6 +1425,16 @@ public class AssessmentTestDisplayController extends BasicController implements 
 				flc.contextPut("menuWidth", menuWidth);
 			}
 			updateStatusAndResults(ureq);
+		}
+		
+		public boolean willShowSomeFeedbacks(TestPlanNode itemNode) {
+			if(itemNode == null || testSessionController == null
+					|| testSessionController.getTestSessionState().isExited()
+					|| testSessionController.getTestSessionState().isEnded()) {
+				return true;
+			}
+			
+			return qtiEl.getComponent().willShowFeedbacks(itemNode);
 		}
 
 		@Override
