@@ -69,8 +69,8 @@ public abstract class AssessmentItemBuilder {
 
 	protected ModalFeedbackBuilder hint;
 	protected ModalFeedbackBuilder emptyFeedback, answeredFeedback;
-	protected ModalFeedbackBuilder correctFeedback;
-	protected ModalFeedbackBuilder incorrectFeedback, correctSolutionFeedback;
+	protected ModalFeedbackBuilder correctFeedback, incorrectFeedback;
+	protected ModalFeedbackBuilder correctSolutionFeedback;
 	private List<ModalFeedbackBuilder> additionalFeedbacks = new ArrayList<>();
 	
 	public AssessmentItemBuilder(AssessmentItem assessmentItem, QtiSerializer qtiSerializer) {

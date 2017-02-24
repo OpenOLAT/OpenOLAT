@@ -37,8 +37,8 @@ import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.StringHelper;
+import org.olat.ims.qti21.QTI21AssessmentResultsOptions;
 import org.olat.ims.qti21.QTI21DeliveryOptions;
-import org.olat.ims.qti21.QTI21DeliveryOptions.ShowResultsOnFinish;
 import org.olat.ims.qti21.QTI21DeliveryOptions.TestType;
 import org.olat.ims.qti21.QTI21Module;
 import org.olat.ims.qti21.QTI21Service;
@@ -56,6 +56,7 @@ public class QTI21DeliveryOptionsController extends FormBasicController implemen
 	private static final String[] onKeys = new String[]{ "on" };
 	private static final String[] onValues = new String[]{ "" };
 	private static final String[] settingTypeKeys = new String[]{ TestType.summative.name(), TestType.formative.name() };
+	private static final String[] resultsOptionsKeys = new String[] { "metadata", "sections", "questions", "responses", "solutions" };
 
 	private SingleSelection settingTypeEl;
 	private MultipleSelectionElement showTitlesEl, showMenuEl;
@@ -63,11 +64,10 @@ public class QTI21DeliveryOptionsController extends FormBasicController implemen
 	private MultipleSelectionElement enableCancelEl, enableSuspendEl;
 	private MultipleSelectionElement limitAttemptsEl, blockAfterSuccessEl;
 	private MultipleSelectionElement displayQuestionProgressEl, displayScoreProgressEl;
-	private MultipleSelectionElement showResultsOnFinishEl;
 	private MultipleSelectionElement allowAnonymEl;
 	private MultipleSelectionElement hideLmsEl;
 	private MultipleSelectionElement digitalSignatureEl, digitalSignatureMailEl;
-	private SingleSelection typeShowResultsOnFinishEl;
+	private MultipleSelectionElement showResultsOnFinishEl, assessmentResultsOnFinishEl;
 	private TextElement maxAttemptsEl;
 	
 	private boolean changes;
@@ -146,16 +146,15 @@ public class QTI21DeliveryOptionsController extends FormBasicController implemen
 		showResultsOnFinishEl.addActionListener(FormEvent.ONCHANGE);
 		showResultsOnFinishEl.setElementCssClass("o_sel_qti_show_results");
 		
-		String[] typeShowResultsOnFinishKeys = new String[] {
-			ShowResultsOnFinish.compact.name(), ShowResultsOnFinish.sections.name(), ShowResultsOnFinish.details.name()
+		String[] resultsOptionsValues = new String[] {
+				translate("qti.form.summary.metadata"), translate("qti.form.summary.sections"), translate("qti.form.summary.questions"),
+				translate("qti.form.summary.responses"), translate("qti.form.summary.solutions")
 		};
-		String[] typeShowResultsOnFinishValues = new String[] {
-			translate("qti.form.summary.compact"), translate("qti.form.summary.section"), translate("qti.form.summary.detailed")
-		};
-		typeShowResultsOnFinishEl = uifactory.addRadiosVertical("typeResultOnFiniish", "qti.form.summary", formLayout, typeShowResultsOnFinishKeys, typeShowResultsOnFinishValues);
-		typeShowResultsOnFinishEl.setVisible(showResultsOnFinishEl.isAtLeastSelected(1));
-		typeShowResultsOnFinishEl.setElementCssClass("o_sel_qti_show_results_options");
-
+		assessmentResultsOnFinishEl = uifactory.addCheckboxesVertical("typeResultOnFiniish", "qti.form.summary", formLayout,
+				resultsOptionsKeys, resultsOptionsValues, 1);
+		assessmentResultsOnFinishEl.addActionListener(FormEvent.ONCHANGE);
+		assessmentResultsOnFinishEl.setElementCssClass("o_sel_qti_show_results_options");
+		
 		FormLayoutContainer buttonsLayout = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		buttonsLayout.setRootForm(mainForm);
 		formLayout.add(buttonsLayout);
@@ -185,25 +184,37 @@ public class QTI21DeliveryOptionsController extends FormBasicController implemen
 		applyMultipleSelection(enableSuspendEl, options.isEnableSuspend());
 		applyMultipleSelection(enableCancelEl, options.isEnableCancel());
 		
+		QTI21AssessmentResultsOptions resultsOptions = options.getAssessmentResultsOptions();
+		if(!resultsOptions.none()) {
+			showResultsOnFinishEl.select(onKeys[0], true);
+			assessmentResultsOnFinishEl.uncheckAll();
+			if(resultsOptions.isMetadata()) {
+				assessmentResultsOnFinishEl.select(resultsOptionsKeys[0], true);
+			}
+			if(resultsOptions.isSectionSummary()) {
+				assessmentResultsOnFinishEl.select(resultsOptionsKeys[1], true);
+			}
+			if(resultsOptions.isQuestions()) {
+				assessmentResultsOnFinishEl.select(resultsOptionsKeys[2], true);
+			}
+			if(resultsOptions.isUserSolutions()) {
+				assessmentResultsOnFinishEl.select(resultsOptionsKeys[3], true);
+			}
+			if(resultsOptions.isCorrectSolutions()) {
+				assessmentResultsOnFinishEl.select(resultsOptionsKeys[4], true);
+			}
+		} else {
+			showResultsOnFinishEl.uncheckAll();
+			assessmentResultsOnFinishEl.uncheckAll();
+		}
+		assessmentResultsOnFinishEl.setVisible(showResultsOnFinishEl.isAtLeastSelected(1));
+		
 		boolean digitalSignature = options.isDigitalSignature();
 		applyMultipleSelection(digitalSignatureEl, digitalSignature);
 		
 		boolean digitalSignatureSendMail = options.isDigitalSignatureMail();
 		applyMultipleSelection(digitalSignatureMailEl, digitalSignatureSendMail);
 		digitalSignatureMailEl.setVisible(qtiModule.isDigitalSignatureEnabled() && digitalSignatureEl.isAtLeastSelected(1));
-
-		if(options.getShowResultsOnFinish() != null && !ShowResultsOnFinish.none.equals(options.getShowResultsOnFinish())) {
-			showResultsOnFinishEl.select(onKeys[0], true);
-		} else {
-			showResultsOnFinishEl.uncheckAll();
-		}
-		
-		if(options.getShowResultsOnFinish() != null && !ShowResultsOnFinish.none.equals(options.getShowResultsOnFinish())) {
-			typeShowResultsOnFinishEl.select(options.getShowResultsOnFinish().name(), true);
-		} else {
-			typeShowResultsOnFinishEl.select(ShowResultsOnFinish.compact.name(), true);
-		}
-		typeShowResultsOnFinishEl.setVisible(showResultsOnFinishEl.isAtLeastSelected(1));
 	}
 	
 	private void applyMultipleSelection(MultipleSelectionElement element, boolean option) {
@@ -254,10 +265,10 @@ public class QTI21DeliveryOptionsController extends FormBasicController implemen
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(limitAttemptsEl == source) {
 			maxAttemptsEl.setVisible(limitAttemptsEl.isAtLeastSelected(1));
-		} else if(showResultsOnFinishEl == source) {
-			typeShowResultsOnFinishEl.setVisible(showResultsOnFinishEl.isAtLeastSelected(1));
 		} else if(digitalSignatureEl == source) {
 			digitalSignatureMailEl.setVisible(digitalSignatureEl.isAtLeastSelected(1));
+		} else if(showResultsOnFinishEl == source) {
+			assessmentResultsOnFinishEl.setVisible(showResultsOnFinishEl.isAtLeastSelected(1));
 		} else if(settingTypeEl == source) {
 			if(settingTypeEl.isOneSelected()) {
 				String selectedType = settingTypeEl.getSelectedKey();
@@ -295,16 +306,17 @@ public class QTI21DeliveryOptionsController extends FormBasicController implemen
 		deliveryOptions.setDisplayScoreProgress(displayScoreProgressEl.isAtLeastSelected(1));
 		deliveryOptions.setAllowAnonym(allowAnonymEl.isAtLeastSelected(1));
 		deliveryOptions.setHideLms(hideLmsEl.isAtLeastSelected(1));
+		
 		if(showResultsOnFinishEl.isAtLeastSelected(1)) {
-			if(typeShowResultsOnFinishEl.isOneSelected()) {
-				String selectedType = typeShowResultsOnFinishEl.getSelectedKey();
-				deliveryOptions.setShowResultsOnFinish(ShowResultsOnFinish.valueOf(selectedType));
-			} else {
-				deliveryOptions.setShowResultsOnFinish(ShowResultsOnFinish.compact);
-			}
+			QTI21AssessmentResultsOptions resultsOptions = new QTI21AssessmentResultsOptions(assessmentResultsOnFinishEl.isSelected(0),
+					assessmentResultsOnFinishEl.isSelected(1), assessmentResultsOnFinishEl.isSelected(2),
+					assessmentResultsOnFinishEl.isSelected(3), assessmentResultsOnFinishEl.isSelected(4));
+			deliveryOptions.setAssessmentResultsOptions(resultsOptions);
 		} else {
-			deliveryOptions.setShowResultsOnFinish(ShowResultsOnFinish.none);
+			deliveryOptions.setAssessmentResultsOptions(QTI21AssessmentResultsOptions.noOptions());
 		}
+		deliveryOptions.setShowResultsOnFinish(null);// nullify old stuff
+
 		if(qtiModule.isDigitalSignatureEnabled() && digitalSignatureEl.isAtLeastSelected(1)) {
 			deliveryOptions.setDigitalSignature(true);
 			deliveryOptions.setDigitalSignatureMail(digitalSignatureMailEl.isAtLeastSelected(1));

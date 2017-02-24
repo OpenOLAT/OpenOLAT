@@ -54,6 +54,7 @@ public class QTI21DeliveryOptions {
 	
 	private TestType testType;
 	private ShowResultsOnFinish showResultsOnFinish;
+	private QTI21AssessmentResultsOptions assessmentResultsOptions;
 
 	public boolean isEnableCancel() {
 		return enableCancel;
@@ -166,7 +167,18 @@ public class QTI21DeliveryOptions {
 	public void setShowResultsOnFinish(ShowResultsOnFinish showResultsOnFinish) {
 		this.showResultsOnFinish = showResultsOnFinish;
 	}
-	
+
+	public QTI21AssessmentResultsOptions getAssessmentResultsOptions() {
+		if(assessmentResultsOptions == null) {
+			assessmentResultsOptions = QTI21AssessmentResultsOptions.convert(showResultsOnFinish);
+		}
+		return assessmentResultsOptions;
+	}
+
+	public void setAssessmentResultsOptions(QTI21AssessmentResultsOptions assessmentResultsOptions) {
+		this.assessmentResultsOptions = assessmentResultsOptions;
+	}
+
 	public Integer getTemplateProcessingLimit() {
 		return templateProcessingLimit;
 	}
@@ -198,7 +210,7 @@ public class QTI21DeliveryOptions {
 		defaultSettings.maxAttempts = 0;
 		defaultSettings.digitalSignature = false;
 		defaultSettings.digitalSignatureMail = false;
-		defaultSettings.showResultsOnFinish = ShowResultsOnFinish.none;
+		defaultSettings.assessmentResultsOptions = QTI21AssessmentResultsOptions.noOptions();
 		return defaultSettings;
 	}
 	
@@ -218,7 +230,7 @@ public class QTI21DeliveryOptions {
 		defaultSettings.digitalSignature = false;
 		defaultSettings.digitalSignatureMail = false;
 		defaultSettings.testType = TestType.formative;
-		defaultSettings.showResultsOnFinish = ShowResultsOnFinish.details;
+		defaultSettings.assessmentResultsOptions = QTI21AssessmentResultsOptions.allOptions();
 		return defaultSettings;
 	}
 	
@@ -238,7 +250,7 @@ public class QTI21DeliveryOptions {
 		defaultSettings.digitalSignature = false;
 		defaultSettings.digitalSignatureMail = false;
 		defaultSettings.testType = TestType.summative;
-		defaultSettings.showResultsOnFinish = ShowResultsOnFinish.none;
+		defaultSettings.assessmentResultsOptions = QTI21AssessmentResultsOptions.noOptions();
 		return defaultSettings;
 	}
 
@@ -258,7 +270,7 @@ public class QTI21DeliveryOptions {
 		clone.maxAttempts = maxAttempts;
 		clone.digitalSignature = digitalSignature;
 		clone.digitalSignatureMail = digitalSignatureMail;
-		clone.showResultsOnFinish = showResultsOnFinish;
+		clone.assessmentResultsOptions = getAssessmentResultsOptions().clone();
 		clone.testType = testType;
 		return clone;
 	}

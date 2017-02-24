@@ -78,6 +78,7 @@ import org.olat.ims.qti21.AssessmentSessionAuditLogger;
 import org.olat.ims.qti21.AssessmentTestHelper;
 import org.olat.ims.qti21.AssessmentTestMarks;
 import org.olat.ims.qti21.AssessmentTestSession;
+import org.olat.ims.qti21.QTI21AssessmentResultsOptions;
 import org.olat.ims.qti21.QTI21Constants;
 import org.olat.ims.qti21.QTI21ContentPackage;
 import org.olat.ims.qti21.QTI21DeliveryOptions;
@@ -164,6 +165,7 @@ public class QTI21ServiceImpl implements QTI21Service, UserDataDeletable, Initia
 	private static XStream configXstream = XStreamHelper.createXStreamInstance();
 	static {
 		configXstream.alias("deliveryOptions", QTI21DeliveryOptions.class);
+		configXstream.alias("assessmentResultsOptions", QTI21AssessmentResultsOptions.class);
 	}
 	
 	@Autowired
