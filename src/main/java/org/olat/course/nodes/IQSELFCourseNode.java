@@ -317,6 +317,7 @@ public class IQSELFCourseNode extends AbstractAccessableCourseNode implements Se
 			config.set(IQEditController.CONFIG_KEY_SEQUENCE, AssessmentInstance.QMD_ENTRY_SEQUENCE_ITEM);
 			config.set(IQEditController.CONFIG_KEY_TYPE, AssessmentInstance.QMD_ENTRY_TYPE_SELF);
 			config.set(IQEditController.CONFIG_KEY_SUMMARY, AssessmentInstance.QMD_ENTRY_SUMMARY_DETAILED);
+			config.set(IQEditController.CONFIG_KEY_CONFIG_REF, Boolean.TRUE);
 		}
 	}
 	

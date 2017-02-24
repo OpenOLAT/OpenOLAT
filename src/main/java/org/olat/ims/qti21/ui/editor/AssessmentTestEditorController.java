@@ -49,7 +49,8 @@ public class AssessmentTestEditorController extends BasicController {
 	private final TabbedPane tabbedPane;
 	private final VelocityContainer mainVC;
 	
-	private Controller optionsCtrl;
+	private AssessmentTestOptionsEditorController optionsCtrl;
+	private AssessmentTestPartEditorController testPartOptionsCtrl;
 	private AssessmentTestFeedbackEditorController feedbackCtrl;
 	
 	private final File testFile;
@@ -89,8 +90,10 @@ public class AssessmentTestEditorController extends BasicController {
 	}
 	
 	private void initTestEditor(UserRequest ureq) {
-		if(testPart != null) {
-			optionsCtrl = new AssessmentTestAndTestPartOptionsEditorController(ureq, getWindowControl(), assessmentTest, testPart, testBuilder, restrictedEdit);
+		if(testPart != null) {//combined test and single part editor
+			optionsCtrl = new AssessmentTestOptionsEditorController(ureq, getWindowControl(), assessmentTest, testBuilder, restrictedEdit);
+			testPartOptionsCtrl = new AssessmentTestPartEditorController(ureq, getWindowControl(), testPart, restrictedEdit, testBuilder.isEditable());
+			testPartOptionsCtrl.setFormTitle(null);
 		} else {
 			optionsCtrl = new AssessmentTestOptionsEditorController(ureq, getWindowControl(), assessmentTest, testBuilder, restrictedEdit);
 		}
@@ -103,6 +106,9 @@ public class AssessmentTestEditorController extends BasicController {
 		tabbedPane.addTab(translate("assessment.test.config"), optionsCtrl.getInitialComponent());
 		if(testBuilder.isEditable()) {
 			tabbedPane.addTab(translate("form.feedback"), feedbackCtrl.getInitialComponent());
+		}
+		if(testPartOptionsCtrl != null) {
+			tabbedPane.addTab(translate("assessment.test.expert.config"), testPartOptionsCtrl.getInitialComponent());
 		}
 	}
 

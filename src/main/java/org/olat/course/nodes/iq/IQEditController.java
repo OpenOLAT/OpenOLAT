@@ -61,6 +61,8 @@ import org.olat.repository.RepositoryManager;
 public class IQEditController extends ActivateableTabbableDefaultController implements ControllerEventListener {
 
 	public final String PANE_TAB_IQCONFIG_XXX;
+	public final String PANE_TAB_IQLAYOUTCONFIG = "pane.tab.iqconfig.layout";
+	
 	public static final String PANE_TAB_IQCONFIG_SURV = "pane.tab.iqconfig.surv";
 	public static final String PANE_TAB_IQCONFIG_SELF = "pane.tab.iqconfig.self";
 	public static final String PANE_TAB_IQCONFIG_TEST = "pane.tab.iqconfig.test";
@@ -128,6 +130,8 @@ public class IQEditController extends ActivateableTabbableDefaultController impl
 	public final static String CONFIG_DIGITAL_SIGNATURE = "digitalSignature";
 	/** Send the signature per mail */
 	public final static String CONFIG_DIGITAL_SIGNATURE_SEND_MAIL = "digitalSignatureMail";
+	/** configuration key: use configuration of the reference repository entry */
+	public static final String CONFIG_KEY_CONFIG_REF = "configFromRef";
 	
 	public final static String CORRECTION_AUTO = "auto";
 	public final static String CORRECTION_MANUAL = "manual";
@@ -162,6 +166,7 @@ public class IQEditController extends ActivateableTabbableDefaultController impl
 	
 	private ConditionEditController accessibilityCondContr;
 	private IQConfigurationController configurationCtrl;
+	private IQLayoutConfigurationController layoutConfigurationCtrl;
 
 	/**
 	 * Constructor for the IMS QTI edit controller for a test course node
@@ -266,8 +271,10 @@ public class IQEditController extends ActivateableTabbableDefaultController impl
 	}
 
 	private void init(UserRequest ureq) {		
-		configurationCtrl = new IQConfigurationController(ureq, getWindowControl(), this.stackPanel, course, courseNode, euce, type);
+		configurationCtrl = new IQConfigurationController(ureq, getWindowControl(), stackPanel, course, courseNode, euce, type);
 		listenTo(configurationCtrl);
+		layoutConfigurationCtrl = new IQLayoutConfigurationController(ureq, getWindowControl(), course, courseNode, euce, type);
+		listenTo(layoutConfigurationCtrl);
 
 		Condition accessCondition = courseNode.getPreConditionAccess();
 		accessibilityCondContr = new ConditionEditController(ureq, getWindowControl(), euce, accessCondition,
@@ -291,8 +298,15 @@ public class IQEditController extends ActivateableTabbableDefaultController impl
 		} else if (source == configurationCtrl) {
 			if (event == NodeEditController.NODECONFIG_CHANGED_EVENT) {
 				fireEvent(urequest, NodeEditController.NODECONFIG_CHANGED_EVENT);
+				layoutConfigurationCtrl.updateEditController(urequest);
 			}
-		} 
+		} else if (source == layoutConfigurationCtrl) {
+			if (event == NodeEditController.NODECONFIG_CHANGED_EVENT) {
+				fireEvent(urequest, NodeEditController.NODECONFIG_CHANGED_EVENT);
+				configurationCtrl.updateEditController(urequest);
+				layoutConfigurationCtrl.updateEditController(urequest);
+			}
+		}
 	}
 	
 	@Override
@@ -301,6 +315,7 @@ public class IQEditController extends ActivateableTabbableDefaultController impl
 		tabbedPane.addTab(translate(PANE_TAB_ACCESSIBILITY), accessibilityCondContr.getWrappedDefaultAccessConditionVC(translate("condition.accessibility.title")));
 		//PANE_TAB_IQCONFIG_XXX is set during construction time
 		tabbedPane.addTab(translate(PANE_TAB_IQCONFIG_XXX), configurationCtrl.getInitialComponent());
+		tabbedPane.addTab(translate(PANE_TAB_IQLAYOUTCONFIG), layoutConfigurationCtrl.getInitialComponent());
 	}
 
 	/**

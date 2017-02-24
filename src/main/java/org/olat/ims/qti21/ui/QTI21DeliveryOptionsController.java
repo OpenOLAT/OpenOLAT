@@ -39,6 +39,7 @@ import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.StringHelper;
 import org.olat.ims.qti21.QTI21DeliveryOptions;
 import org.olat.ims.qti21.QTI21DeliveryOptions.ShowResultsOnFinish;
+import org.olat.ims.qti21.QTI21DeliveryOptions.TestType;
 import org.olat.ims.qti21.QTI21Module;
 import org.olat.ims.qti21.QTI21Service;
 import org.olat.repository.RepositoryEntry;
@@ -54,7 +55,9 @@ public class QTI21DeliveryOptionsController extends FormBasicController implemen
 	
 	private static final String[] onKeys = new String[]{ "on" };
 	private static final String[] onValues = new String[]{ "" };
+	private static final String[] settingTypeKeys = new String[]{ TestType.summative.name(), TestType.formative.name() };
 
+	private SingleSelection settingTypeEl;
 	private MultipleSelectionElement showTitlesEl, showMenuEl;
 	private MultipleSelectionElement personalNotesEl;
 	private MultipleSelectionElement enableCancelEl, enableSuspendEl;
@@ -62,6 +65,7 @@ public class QTI21DeliveryOptionsController extends FormBasicController implemen
 	private MultipleSelectionElement displayQuestionProgressEl, displayScoreProgressEl;
 	private MultipleSelectionElement showResultsOnFinishEl;
 	private MultipleSelectionElement allowAnonymEl;
+	private MultipleSelectionElement hideLmsEl;
 	private MultipleSelectionElement digitalSignatureEl, digitalSignatureMailEl;
 	private SingleSelection typeShowResultsOnFinishEl;
 	private TextElement maxAttemptsEl;
@@ -80,6 +84,7 @@ public class QTI21DeliveryOptionsController extends FormBasicController implemen
 		this.testEntry = testEntry;
 		deliveryOptions = qtiService.getDeliveryOptions(testEntry);
 		initForm(ureq);
+		applyDeliveryOptions(deliveryOptions);
 	}
 
 	@Override
@@ -87,95 +92,59 @@ public class QTI21DeliveryOptionsController extends FormBasicController implemen
 		setFormTitle("tab.options");
 		setFormContextHelp("Test editor QTI 2.1 in detail#details_testeditor_test_konf_kurs");
 		formLayout.setElementCssClass("o_sel_qti_resource_options");
+		
+		String[] settingTypeValues = new String[]{ translate("qti.form.setting.summative"), translate("qti.form.setting.formative") };
+		settingTypeEl = uifactory.addRadiosHorizontal("settings.type", null, formLayout, settingTypeKeys, settingTypeValues);
+		settingTypeEl.addActionListener(FormEvent.ONCHANGE);
+		settingTypeEl.setAllowNoSelection(true);
+		if(deliveryOptions.getTestType() != null) {
+			settingTypeEl.select(deliveryOptions.getTestType().name(), true);
+		}
 
 		limitAttemptsEl = uifactory.addCheckboxesHorizontal("limitAttempts", "qti.form.limit.attempts", formLayout, onKeys, onValues);
 		limitAttemptsEl.addActionListener(FormEvent.ONCLICK);
-		String maxAttemptsValue = "";
-		int maxAttempts =  deliveryOptions.getMaxAttempts();
-		if(maxAttempts > 0) {
-			limitAttemptsEl.select(onKeys[0], true);
-		}
-		maxAttemptsEl = uifactory.addTextElement("maxAttempts", "qti.form.attempts", 8, maxAttemptsValue, formLayout);	
+		
+		maxAttemptsEl = uifactory.addTextElement("maxAttempts", "qti.form.attempts", 8, "", formLayout);	
 		maxAttemptsEl.setDisplaySize(2);
-		maxAttemptsEl.setVisible(maxAttempts > 0);
 		
 		blockAfterSuccessEl = uifactory.addCheckboxesHorizontal("blockAfterSuccess", "qti.form.block.afterSuccess", formLayout, onKeys, onValues);
-		if(deliveryOptions.isBlockAfterSuccess()) {
-			blockAfterSuccessEl.select(onKeys[0], true);
-		}
-		
+
 		allowAnonymEl = uifactory.addCheckboxesHorizontal("allowAnonym", "qti.form.allow.anonym", formLayout, onKeys, onValues);
 		allowAnonymEl.setHelpText(translate("qti.form.allow.anonym.hint"));
 		allowAnonymEl.setHelpUrlForManualPage("Test editor QTI 2.1 in detail#details_testeditor_test_konf_kurs");
-		if(deliveryOptions.isAllowAnonym()) {
-			allowAnonymEl.select(onKeys[0], true);
-		}
-
-		showTitlesEl = uifactory.addCheckboxesHorizontal("showTitles", "qti.form.questiontitle", formLayout, onKeys, onValues);
-		if(deliveryOptions.isShowTitles()) {
-			showTitlesEl.select(onKeys[0], true);
-		}
+	
+		hideLmsEl = uifactory.addCheckboxesHorizontal("hide.lms", "qti.form.hide.lms", formLayout, onKeys, onValues);
 		
+		showTitlesEl = uifactory.addCheckboxesHorizontal("showTitles", "qti.form.questiontitle", formLayout, onKeys, onValues);
+
 		showMenuEl = uifactory.addCheckboxesHorizontal("showMenu", "qti.form.menudisplay", formLayout, onKeys, onValues);
 		showMenuEl.setElementCssClass("o_sel_qti_show_menu");
-		if(deliveryOptions.isShowMenu()) {
-			showMenuEl.select(onKeys[0], true);
-		}
-		
+
 		personalNotesEl = uifactory.addCheckboxesHorizontal("personalNotes", "qti.form.auto.memofield", formLayout, onKeys, onValues);
 		personalNotesEl.setHelpText(translate("qti.form.auto.memofield.hint"));
 		personalNotesEl.setHelpUrlForManualPage("Test editor QTI 2.1 in detail#details_testeditor_test_konf_kurs");
 		personalNotesEl.setElementCssClass("o_sel_qti_personal_notes");
-		if(deliveryOptions.isPersonalNotes()) {
-			personalNotesEl.select(onKeys[0], true);
-		}
-		
+
 		displayQuestionProgressEl = uifactory.addCheckboxesHorizontal("questionProgress", "qti.form.questionprogress", formLayout, onKeys, onValues);
 		displayQuestionProgressEl.setElementCssClass("o_sel_qti_progress_questions");
-		if(deliveryOptions.isDisplayQuestionProgress()) {
-			displayQuestionProgressEl.select(onKeys[0], true);
-		}
-		
+
 		displayScoreProgressEl = uifactory.addCheckboxesHorizontal("scoreProgress", "qti.form.scoreprogress", formLayout, onKeys, onValues);
 		displayScoreProgressEl.setElementCssClass("o_sel_qti_progress_score");
-		if(deliveryOptions.isDisplayScoreProgress()) {
-			displayScoreProgressEl.select(onKeys[0], true);
-		}
-		
+
 		enableSuspendEl = uifactory.addCheckboxesHorizontal("suspend", "qti.form.enablesuspend", formLayout, onKeys, onValues);
 		enableSuspendEl.setElementCssClass("o_sel_qti_enable_suspend");
-		if(deliveryOptions.isEnableSuspend()) {
-			enableSuspendEl.select(onKeys[0], true);
-		}
-		
+
 		enableCancelEl = uifactory.addCheckboxesHorizontal("cancel", "qti.form.enablecancel", formLayout, onKeys, onValues);
 		enableCancelEl.setElementCssClass("o_sel_qti_enable_cancel");
-		if(deliveryOptions.isEnableCancel()) {
-			enableCancelEl.select(onKeys[0], true);
-		}
 		
-		boolean digitalSignature = deliveryOptions.isDigitalSignature();
-		digitalSignatureEl = uifactory.addCheckboxesHorizontal("digital.signature", "digital.signature.test.option", formLayout, new String[]{"x"}, new String[]{""});
-		if(digitalSignature) {
-			digitalSignatureEl.select("x", digitalSignature);
-		}
+		digitalSignatureEl = uifactory.addCheckboxesHorizontal("digital.signature", "digital.signature.test.option", formLayout, onKeys, onValues);
 		digitalSignatureEl.setVisible(qtiModule.isDigitalSignatureEnabled());
 		digitalSignatureEl.addActionListener(FormEvent.ONCHANGE);
-		
-		boolean digitalSignatureSendMail = deliveryOptions.isDigitalSignatureMail();
-		digitalSignatureMailEl = uifactory.addCheckboxesHorizontal("digital.signature.mail", "digital.signature.mail.test.option", formLayout, new String[]{"x"}, new String[]{""});
-		if(digitalSignatureSendMail) {
-			digitalSignatureMailEl.select("x", digitalSignatureSendMail);
-		}
-		digitalSignatureMailEl.setVisible(qtiModule.isDigitalSignatureEnabled() && digitalSignatureEl.isAtLeastSelected(1));
+		digitalSignatureMailEl = uifactory.addCheckboxesHorizontal("digital.signature.mail", "digital.signature.mail.test.option", formLayout, onKeys, onValues);
 
-		
 		showResultsOnFinishEl = uifactory.addCheckboxesHorizontal("resultOnFiniish", "qti.form.results.onfinish", formLayout, onKeys, onValues);
 		showResultsOnFinishEl.addActionListener(FormEvent.ONCHANGE);
 		showResultsOnFinishEl.setElementCssClass("o_sel_qti_show_results");
-		if(deliveryOptions.getShowResultsOnFinish() != null && !ShowResultsOnFinish.none.equals(deliveryOptions.getShowResultsOnFinish())) {
-			showResultsOnFinishEl.select(onKeys[0], true);
-		}
 		
 		String[] typeShowResultsOnFinishKeys = new String[] {
 			ShowResultsOnFinish.compact.name(), ShowResultsOnFinish.sections.name(), ShowResultsOnFinish.details.name()
@@ -186,16 +155,63 @@ public class QTI21DeliveryOptionsController extends FormBasicController implemen
 		typeShowResultsOnFinishEl = uifactory.addRadiosVertical("typeResultOnFiniish", "qti.form.summary", formLayout, typeShowResultsOnFinishKeys, typeShowResultsOnFinishValues);
 		typeShowResultsOnFinishEl.setVisible(showResultsOnFinishEl.isAtLeastSelected(1));
 		typeShowResultsOnFinishEl.setElementCssClass("o_sel_qti_show_results_options");
-		if(deliveryOptions.getShowResultsOnFinish() != null && !ShowResultsOnFinish.none.equals(deliveryOptions.getShowResultsOnFinish())) {
-			typeShowResultsOnFinishEl.select(deliveryOptions.getShowResultsOnFinish().name(), true);
-		} else {
-			typeShowResultsOnFinishEl.select(ShowResultsOnFinish.compact.name(), true);
-		}
-		
+
 		FormLayoutContainer buttonsLayout = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		buttonsLayout.setRootForm(mainForm);
 		formLayout.add(buttonsLayout);
 		uifactory.addFormSubmitButton("save", buttonsLayout);
+	}
+	
+	private void applyDeliveryOptions(QTI21DeliveryOptions options) {
+		String maxAttemptsValue = "";
+		int maxAttempts =  options.getMaxAttempts();
+		if(maxAttempts > 0) {
+			limitAttemptsEl.select(onKeys[0], true);
+			maxAttemptsValue = Integer.toString(maxAttempts);
+		} else {
+			limitAttemptsEl.uncheckAll();
+		}
+		maxAttemptsEl.setValue(maxAttemptsValue);
+		maxAttemptsEl.setVisible(maxAttempts > 0);
+		
+		applyMultipleSelection(blockAfterSuccessEl, options.isBlockAfterSuccess());
+		applyMultipleSelection(allowAnonymEl, options.isAllowAnonym());
+		applyMultipleSelection(hideLmsEl, options.isHideLms());
+		applyMultipleSelection(showTitlesEl, options.isShowTitles());
+		applyMultipleSelection(showMenuEl, options.isShowMenu());
+		applyMultipleSelection(personalNotesEl, options.isPersonalNotes());
+		applyMultipleSelection(displayQuestionProgressEl, options.isDisplayQuestionProgress());
+		applyMultipleSelection(displayScoreProgressEl, options.isDisplayScoreProgress());
+		applyMultipleSelection(enableSuspendEl, options.isEnableSuspend());
+		applyMultipleSelection(enableCancelEl, options.isEnableCancel());
+		
+		boolean digitalSignature = options.isDigitalSignature();
+		applyMultipleSelection(digitalSignatureEl, digitalSignature);
+		
+		boolean digitalSignatureSendMail = options.isDigitalSignatureMail();
+		applyMultipleSelection(digitalSignatureMailEl, digitalSignatureSendMail);
+		digitalSignatureMailEl.setVisible(qtiModule.isDigitalSignatureEnabled() && digitalSignatureEl.isAtLeastSelected(1));
+
+		if(options.getShowResultsOnFinish() != null && !ShowResultsOnFinish.none.equals(options.getShowResultsOnFinish())) {
+			showResultsOnFinishEl.select(onKeys[0], true);
+		} else {
+			showResultsOnFinishEl.uncheckAll();
+		}
+		
+		if(options.getShowResultsOnFinish() != null && !ShowResultsOnFinish.none.equals(options.getShowResultsOnFinish())) {
+			typeShowResultsOnFinishEl.select(options.getShowResultsOnFinish().name(), true);
+		} else {
+			typeShowResultsOnFinishEl.select(ShowResultsOnFinish.compact.name(), true);
+		}
+		typeShowResultsOnFinishEl.setVisible(showResultsOnFinishEl.isAtLeastSelected(1));
+	}
+	
+	private void applyMultipleSelection(MultipleSelectionElement element, boolean option) {
+		if(option) {
+			element.select(onKeys[0], true);
+		} else {
+			element.uncheckAll();
+		}
 	}
 	
 	@Override
@@ -242,12 +258,28 @@ public class QTI21DeliveryOptionsController extends FormBasicController implemen
 			typeShowResultsOnFinishEl.setVisible(showResultsOnFinishEl.isAtLeastSelected(1));
 		} else if(digitalSignatureEl == source) {
 			digitalSignatureMailEl.setVisible(digitalSignatureEl.isAtLeastSelected(1));
+		} else if(settingTypeEl == source) {
+			if(settingTypeEl.isOneSelected()) {
+				String selectedType = settingTypeEl.getSelectedKey();
+				if(TestType.formative.name().equals(selectedType)) {
+					applyDeliveryOptions(QTI21DeliveryOptions.formativeSettings());
+				} else if(TestType.summative.name().equals(selectedType)) {
+					applyDeliveryOptions(QTI21DeliveryOptions.summativeSettings());
+				}
+			}
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
+	
 
 	@Override
 	protected void formOK(UserRequest ureq) {
+		if(settingTypeEl.isOneSelected()) {
+			String type = settingTypeEl.getSelectedKey();
+			deliveryOptions.setTestType(TestType.valueOf(type));
+		} else {
+			deliveryOptions.setTestType(null);
+		}
 		if(limitAttemptsEl.isAtLeastSelected(1)) {
 			deliveryOptions.setMaxAttempts(Integer.parseInt(maxAttemptsEl.getValue()));
 		} else {
@@ -262,6 +294,7 @@ public class QTI21DeliveryOptionsController extends FormBasicController implemen
 		deliveryOptions.setDisplayQuestionProgress(displayQuestionProgressEl.isAtLeastSelected(1));
 		deliveryOptions.setDisplayScoreProgress(displayScoreProgressEl.isAtLeastSelected(1));
 		deliveryOptions.setAllowAnonym(allowAnonymEl.isAtLeastSelected(1));
+		deliveryOptions.setHideLms(hideLmsEl.isAtLeastSelected(1));
 		if(showResultsOnFinishEl.isAtLeastSelected(1)) {
 			if(typeShowResultsOnFinishEl.isOneSelected()) {
 				String selectedType = typeShowResultsOnFinishEl.getSelectedKey();

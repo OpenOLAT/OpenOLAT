@@ -35,22 +35,6 @@
 				</table>
 				#o_togglebox_end()
 			</div>
-		#else
-			<div class="o_block">
-				<table class="table table-condensed table-striped">
-					<tbody>			
-					#if ($minscore)
-						<tr><td>$r.translate("score.min"):</td><td>$minscore</td></tr>
-					#end
-					#if ($maxscore)
-						<tr><td>$r.translate("score.max"):</td><td>$maxscore</td></tr>
-					#end			
-					#if ($cutvalue)
-						<tr><td>$r.translate("score.cut"):</td><td>$cutvalue</td></tr>
-					#end
-					</tbody>
-				</table>
-			</div>
 		#end		
 	#else
 		<div class="form-group">
@@ -62,9 +46,6 @@
 		</div>	
 	#end
 </fieldset>
-$r.render("filechoosecreateedit")
-<fieldset>
-	<legend>
-	$r.translate("choosenlayout")</legend>
+#if($r.available("iqeditform"))
 	$r.render("iqeditform")
-</fieldset>
+#end

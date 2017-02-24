@@ -81,6 +81,11 @@ public class AssessmentTestPartEditorController extends ItemSessionControlContro
 		formLayout.add(buttonsCont);
 		uifactory.addFormSubmitButton("save", "save", buttonsCont);
 	}
+	
+	@Override
+	public void setFormTitle(String i18nKey) {
+		super.setFormTitle(i18nKey);
+	}
 
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {

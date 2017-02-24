@@ -110,16 +110,17 @@ public class OnyxReporterConnector {
 	 */
 	public Map<String, String> getPossibleOutcomeVariables(RepositoryEntry entry) throws OnyxReporterException {
 		OnyxReporterServices reporterService = connector.getService();
-		
-		HashMapWrapper resultVariables = reporterService.getResultVariables(1, getContentPackage(entry), new HashMapWrapper());
 		HashMap<String, String> results;
 		try {
-			results = resultVariables.getMap();
+			byte[] contentPackage = getContentPackage(entry);
+			results = reporterService.getResultVariables(1, contentPackage, new HashMapWrapper()).getMap();
 		} catch (OnyxReporterException e) {
 			log.error("Error in getPossibleOutcomeVariables reporter conversation! RepositoryEntry: " + entry.getResourceableId(), e);
 			results = new HashMap<String, String>();
+		} catch (Exception e) {
+			log.error("Unexpected error in getPossibleOutcomeVariables reporter conversation! RepositoryEntry: " + entry.getResourceableId(), e);
+			results = new HashMap<String, String>();
 		}
-
 		return results;
 	}
 	//<OLATCE-1012>	

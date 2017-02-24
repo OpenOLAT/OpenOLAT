@@ -40,6 +40,7 @@ public class QTI21DeliveryOptions {
 	private boolean showMenu;
 	private boolean showTitles;
 	private boolean personalNotes;
+	private boolean hideLms;
 	
 	private boolean blockAfterSuccess;
 	private int maxAttempts;
@@ -51,6 +52,7 @@ public class QTI21DeliveryOptions {
 	
 	private Integer templateProcessingLimit;
 	
+	private TestType testType;
 	private ShowResultsOnFinish showResultsOnFinish;
 
 	public boolean isEnableCancel() {
@@ -99,6 +101,14 @@ public class QTI21DeliveryOptions {
 
 	public void setShowMenu(boolean showMenu) {
 		this.showMenu = showMenu;
+	}
+
+	public boolean isHideLms() {
+		return hideLms;
+	}
+
+	public void setHideLms(boolean hideLms) {
+		this.hideLms = hideLms;
 	}
 
 	public boolean isPersonalNotes() {
@@ -165,12 +175,21 @@ public class QTI21DeliveryOptions {
 		this.templateProcessingLimit = templateProcessingLimit;
 	}
 
+	public TestType getTestType() {
+		return testType;
+	}
+
+	public void setTestType(TestType testType) {
+		this.testType = testType;
+	}
+
 	public static final QTI21DeliveryOptions defaultSettings() {
 		QTI21DeliveryOptions defaultSettings = new QTI21DeliveryOptions();
 		defaultSettings.enableCancel = false;
 		defaultSettings.enableSuspend = false;
 		defaultSettings.displayScoreProgress = false;
 		defaultSettings.displayQuestionProgress = false;
+		defaultSettings.hideLms = false;
 		defaultSettings.showMenu = true;
 		defaultSettings.showTitles = true;
 		defaultSettings.personalNotes = false;
@@ -182,6 +201,46 @@ public class QTI21DeliveryOptions {
 		defaultSettings.showResultsOnFinish = ShowResultsOnFinish.none;
 		return defaultSettings;
 	}
+	
+	public static final QTI21DeliveryOptions formativeSettings() {
+		QTI21DeliveryOptions defaultSettings = new QTI21DeliveryOptions();
+		defaultSettings.enableCancel = true;
+		defaultSettings.enableSuspend = true;
+		defaultSettings.displayScoreProgress = true;
+		defaultSettings.displayQuestionProgress = true;
+		defaultSettings.hideLms = true;
+		defaultSettings.showMenu = true;
+		defaultSettings.showTitles = true;
+		defaultSettings.personalNotes = false;
+		defaultSettings.allowAnonym = false;
+		defaultSettings.blockAfterSuccess = false;
+		defaultSettings.maxAttempts = 0;
+		defaultSettings.digitalSignature = false;
+		defaultSettings.digitalSignatureMail = false;
+		defaultSettings.testType = TestType.formative;
+		defaultSettings.showResultsOnFinish = ShowResultsOnFinish.details;
+		return defaultSettings;
+	}
+	
+	public static final QTI21DeliveryOptions summativeSettings() {
+		QTI21DeliveryOptions defaultSettings = new QTI21DeliveryOptions();
+		defaultSettings.enableCancel = false;
+		defaultSettings.enableSuspend = false;
+		defaultSettings.displayScoreProgress = false;
+		defaultSettings.displayQuestionProgress = true;
+		defaultSettings.hideLms = true;
+		defaultSettings.showMenu = true;
+		defaultSettings.showTitles = true;
+		defaultSettings.personalNotes = false;
+		defaultSettings.allowAnonym = false;
+		defaultSettings.blockAfterSuccess = false;
+		defaultSettings.maxAttempts = 1;
+		defaultSettings.digitalSignature = false;
+		defaultSettings.digitalSignatureMail = false;
+		defaultSettings.testType = TestType.summative;
+		defaultSettings.showResultsOnFinish = ShowResultsOnFinish.none;
+		return defaultSettings;
+	}
 
 	@Override
 	public QTI21DeliveryOptions clone() {
@@ -190,6 +249,7 @@ public class QTI21DeliveryOptions {
 		clone.enableSuspend = enableSuspend;
 		clone.displayScoreProgress = displayScoreProgress;
 		clone.displayQuestionProgress = displayQuestionProgress;
+		clone.hideLms = hideLms;
 		clone.showMenu = showMenu;
 		clone.showTitles = showTitles;
 		clone.personalNotes = personalNotes;
@@ -199,7 +259,13 @@ public class QTI21DeliveryOptions {
 		clone.digitalSignature = digitalSignature;
 		clone.digitalSignatureMail = digitalSignatureMail;
 		clone.showResultsOnFinish = showResultsOnFinish;
+		clone.testType = testType;
 		return clone;
+	}
+	
+	public enum TestType {
+		summative,
+		formative
 	}
 	
 	public enum ShowResultsOnFinish {

@@ -159,7 +159,7 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 		startButton.setVisible(!userCourseEnv.isCourseReadOnly());
 		
 		// fetch disclaimer file
-		String sDisclaimer = (String)config.get(IQEditController.CONFIG_KEY_DISCLAIMER);
+		String sDisclaimer = config.getStringValue(IQEditController.CONFIG_KEY_DISCLAIMER);
 		if (sDisclaimer != null) {
 			VFSContainer baseContainer = userCourseEnv.getCourseEnvironment().getCourseFolderContainer();
 			int lastSlash = sDisclaimer.lastIndexOf('/');
@@ -225,7 +225,7 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 				Boolean passed = assessmentEntry.getPassed();
 				//block if test passed (and config set to check it)
 				Boolean blocked = Boolean.FALSE;
-				boolean blockAfterSuccess = config.getBooleanSafe(IQEditController.CONFIG_KEY_BLOCK_AFTER_SUCCESS);
+				boolean blockAfterSuccess = deliveryOptions.isBlockAfterSuccess();
 				if(blockAfterSuccess && passed != null && passed.booleanValue()) {
 					blocked = Boolean.TRUE;
 				}
@@ -298,7 +298,7 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 		ShowResultsOnFinish showSummary = deliveryOptions.getShowResultsOnFinish();
 		String defaultConfSummary = showSummary == null ? AssessmentInstance.QMD_ENTRY_SUMMARY_COMPACT : showSummary.getIQEquivalent();
 		String configuredSummary = config.getStringValue(IQEditController.CONFIG_KEY_SUMMARY, defaultConfSummary);
-		boolean noSummary = configuredSummary == null || (configuredSummary!=null && configuredSummary.equals(AssessmentInstance.QMD_ENTRY_SUMMARY_NONE));
+		boolean noSummary = configuredSummary == null || (configuredSummary !=null && configuredSummary.equals(AssessmentInstance.QMD_ENTRY_SUMMARY_NONE));
 		if(!noSummary) {
 			mainVC.contextPut("showResultsOnHomePage", new Boolean(showResultsOnHomePage));			
 			boolean dateRelatedVisibility = isResultVisible(config);		
@@ -428,26 +428,21 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 		if(session == null) {
 			mainVC.contextPut("showResults", Boolean.FALSE);
 		} else {
-			doShowResults(ureq, session);
+			FileResourceManager frm = FileResourceManager.getInstance();
+			File fUnzippedDirRoot = frm.unzipFileResource(session.getTestEntry().getOlatResource());
+			URI assessmentObjectUri = qtiService.createAssessmentObjectUri(fUnzippedDirRoot);
+			File submissionDir = qtiService.getAssessmentResultFile(session);
+			String mapperUri = registerCacheableMapper(null, "QTI21CNResults::" + session.getTestEntry().getKey(),
+					new ResourcesMapper(assessmentObjectUri, submissionDir));
+
+			resultCtrl = new AssessmentResultController(ureq, getWindowControl(), getIdentity(), true,
+					session, getDeliveryOptions().getShowResultsOnFinish(), fUnzippedDirRoot, mapperUri, false, false);
+			listenTo(resultCtrl);
+			mainVC.put("resultReport", resultCtrl.getInitialComponent());
+			mainVC.contextPut("showResults", Boolean.TRUE);
 		}
 	}
 
-	private void doShowResults(UserRequest ureq, AssessmentTestSession session) {
-		FileResourceManager frm = FileResourceManager.getInstance();
-		File fUnzippedDirRoot = frm.unzipFileResource(session.getTestEntry().getOlatResource());
-		URI assessmentObjectUri = qtiService.createAssessmentObjectUri(fUnzippedDirRoot);
-		File submissionDir = qtiService.getAssessmentResultFile(session);
-		String mapperUri = registerCacheableMapper(null, "QTI21CNResults::" + session.getTestEntry().getKey(),
-				new ResourcesMapper(assessmentObjectUri, submissionDir));
-
-		resultCtrl = new AssessmentResultController(ureq, getWindowControl(), getIdentity(), true,
-				session, getDeliveryOptions().getShowResultsOnFinish(), fUnzippedDirRoot, mapperUri, false, false);
-		listenTo(resultCtrl);
-		mainVC.put("resultReport", resultCtrl.getInitialComponent());
-		mainVC.contextPut("showResults", Boolean.TRUE);
-	}
-	
-	
 	private void doHideResults() {
 		mainVC.contextPut("showResults", Boolean.FALSE);
 	}
@@ -492,7 +487,7 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 			Controller disposedRestartController = new LayoutMain3ColsController(ureq, getWindowControl(), empty, courseCloser.getInitialComponent(), "disposed");
 			displayContainerController.setDisposedMessageController(disposedRestartController);
 			
-			boolean fullWindow = config.getBooleanSafe(IQEditController.CONFIG_FULLWINDOW);
+			boolean fullWindow = deliveryOptions.isHideLms();
 			if(fullWindow) {
 				displayContainerController.setAsFullscreen(ureq);
 			}
@@ -509,19 +504,23 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 	private QTI21DeliveryOptions getDeliveryOptions() {
 		QTI21DeliveryOptions testOptions = qtiService.getDeliveryOptions(testEntry);
 		QTI21DeliveryOptions finalOptions = testOptions.clone();
-		finalOptions.setMaxAttempts(config.getIntegerSafe(IQEditController.CONFIG_KEY_ATTEMPTS, testOptions.getMaxAttempts()));
-		finalOptions.setBlockAfterSuccess(config.getBooleanSafe(IQEditController.CONFIG_KEY_BLOCK_AFTER_SUCCESS, testOptions.isBlockAfterSuccess()));
-		finalOptions.setShowTitles(config.getBooleanSafe(IQEditController.CONFIG_KEY_QUESTIONTITLE, testOptions.isShowTitles()));
-		finalOptions.setPersonalNotes(config.getBooleanSafe(IQEditController.CONFIG_KEY_MEMO, testOptions.isPersonalNotes()));
-		finalOptions.setEnableCancel(config.getBooleanSafe(IQEditController.CONFIG_KEY_ENABLECANCEL, testOptions.isEnableCancel()));
-		finalOptions.setEnableSuspend(config.getBooleanSafe(IQEditController.CONFIG_KEY_ENABLESUSPEND, testOptions.isEnableSuspend()));
-		finalOptions.setDisplayQuestionProgress(config.getBooleanSafe(IQEditController.CONFIG_KEY_QUESTIONPROGRESS, testOptions.isDisplayQuestionProgress()));
-		finalOptions.setDisplayScoreProgress(config.getBooleanSafe(IQEditController.CONFIG_KEY_SCOREPROGRESS, testOptions.isDisplayScoreProgress()));
-		finalOptions.setShowResultsOnFinish(ShowResultsOnFinish.fromIQEquivalent(config.getStringValue(IQEditController.CONFIG_KEY_SUMMARY), ShowResultsOnFinish.compact));
-		finalOptions.setShowMenu(config.getBooleanSafe(IQEditController.CONFIG_KEY_ENABLEMENU, testOptions.isShowMenu()));
-		finalOptions.setAllowAnonym(config.getBooleanSafe(IQEditController.CONFIG_ALLOW_ANONYM, testOptions.isAllowAnonym()));
-		finalOptions.setDigitalSignature(config.getBooleanSafe(IQEditController.CONFIG_DIGITAL_SIGNATURE, testOptions.isDigitalSignature()));
-		finalOptions.setDigitalSignatureMail(config.getBooleanSafe(IQEditController.CONFIG_DIGITAL_SIGNATURE_SEND_MAIL, testOptions.isDigitalSignatureMail()));
+		boolean configRef = config.getBooleanSafe(IQEditController.CONFIG_KEY_CONFIG_REF, false);
+		if(!configRef) {
+			finalOptions.setMaxAttempts(config.getIntegerSafe(IQEditController.CONFIG_KEY_ATTEMPTS, testOptions.getMaxAttempts()));
+			finalOptions.setBlockAfterSuccess(config.getBooleanSafe(IQEditController.CONFIG_KEY_BLOCK_AFTER_SUCCESS, testOptions.isBlockAfterSuccess()));
+			finalOptions.setHideLms(config.getBooleanSafe(IQEditController.CONFIG_FULLWINDOW, testOptions.isHideLms()));
+			finalOptions.setShowTitles(config.getBooleanSafe(IQEditController.CONFIG_KEY_QUESTIONTITLE, testOptions.isShowTitles()));
+			finalOptions.setPersonalNotes(config.getBooleanSafe(IQEditController.CONFIG_KEY_MEMO, testOptions.isPersonalNotes()));
+			finalOptions.setEnableCancel(config.getBooleanSafe(IQEditController.CONFIG_KEY_ENABLECANCEL, testOptions.isEnableCancel()));
+			finalOptions.setEnableSuspend(config.getBooleanSafe(IQEditController.CONFIG_KEY_ENABLESUSPEND, testOptions.isEnableSuspend()));
+			finalOptions.setDisplayQuestionProgress(config.getBooleanSafe(IQEditController.CONFIG_KEY_QUESTIONPROGRESS, testOptions.isDisplayQuestionProgress()));
+			finalOptions.setDisplayScoreProgress(config.getBooleanSafe(IQEditController.CONFIG_KEY_SCOREPROGRESS, testOptions.isDisplayScoreProgress()));
+			finalOptions.setShowResultsOnFinish(ShowResultsOnFinish.fromIQEquivalent(config.getStringValue(IQEditController.CONFIG_KEY_SUMMARY), ShowResultsOnFinish.compact));
+			finalOptions.setShowMenu(config.getBooleanSafe(IQEditController.CONFIG_KEY_ENABLEMENU, testOptions.isShowMenu()));
+			finalOptions.setAllowAnonym(config.getBooleanSafe(IQEditController.CONFIG_ALLOW_ANONYM, testOptions.isAllowAnonym()));
+			finalOptions.setDigitalSignature(config.getBooleanSafe(IQEditController.CONFIG_DIGITAL_SIGNATURE, testOptions.isDigitalSignature()));
+			finalOptions.setDigitalSignatureMail(config.getBooleanSafe(IQEditController.CONFIG_DIGITAL_SIGNATURE_SEND_MAIL, testOptions.isDigitalSignatureMail()));
+		}
 		return finalOptions;
 	}
 
