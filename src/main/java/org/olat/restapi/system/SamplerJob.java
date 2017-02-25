@@ -75,6 +75,8 @@ public class SamplerJob extends QuartzJobBean {
 				if(!parent.exists() || !parent.canWrite()) {
 					return;
 				}
+			} else if(!xmlFile.canWrite()) {
+				return;
 			}
 
 			Statistics statistics = CoreSpringFactory.getImpl(MonitoringService.class).getStatistics();
