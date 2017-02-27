@@ -28,7 +28,7 @@ import java.util.stream.Collectors;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
-import org.olat.course.highscore.model.HighScoreDataModel;
+import org.olat.course.highscore.model.HighScoreRankingResults;
 import org.olat.course.highscore.ui.HighScoreTableEntry;
 import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.user.UserManager;
@@ -49,7 +49,7 @@ public class HighScoreManager {
 	 * determine rank of each member dependent on score,
 	 * decide whether there is a second table or not
 	 */
-	public HighScoreDataModel sortRankByScore (List<AssessmentEntry>  assessEntries,
+	public HighScoreRankingResults sortRankByScore (List<AssessmentEntry>  assessEntries,
 			List<HighScoreTableEntry> allMembers, List<HighScoreTableEntry> ownIdMembers,
 			List<List<HighScoreTableEntry>> allPodium, List<Integer> ownIdIndices,	
 			int tableSize, Identity ownIdentity, UserManager userManager){
@@ -102,14 +102,14 @@ public class HighScoreManager {
 			log.audit("2nd Highscore Table established");
 		}
 		
-		return new HighScoreDataModel(allScores, ownTableEntry);
+		return new HighScoreRankingResults(allScores, ownTableEntry);
 	}
 	
 	/**
 	 * Process histogram data.
 	 *
 	 */
-	public HighScoreDataModel processHistogramData(double[] scores, Float lowerBorder, Float upperBorder) {
+	public HighScoreRankingResults processHistogramData(double[] scores, Float lowerBorder, Float upperBorder) {
 		try {
 			long classwidth;
 			// determine natural min, max and thus range
@@ -119,7 +119,7 @@ public class HighScoreManager {
 			// use original scores if range is too small else convert results to fit histogram
 			if (range <= 20) {
 				classwidth = 1;
-				return new HighScoreDataModel(scores, classwidth, min);
+				return new HighScoreRankingResults(scores, classwidth, min);
 			} else {
 				long numberofclasses = 10;
 				// primeRange increments range until a natural factor is found or upper/lower boundary is met
@@ -163,11 +163,11 @@ public class HighScoreManager {
 					double newscore = min + (n * classwidth);
 					allScores[i] = newscore;
 				}
-				return new HighScoreDataModel(allScores, classwidth, min);
+				return new HighScoreRankingResults(allScores, classwidth, min);
 			}
 		} catch (Exception e) {
 			log.error("",e);
-			return new HighScoreDataModel(new double[] {0,1,2,3}, 1L, 0D);
+			return new HighScoreRankingResults(new double[] {0,1,2,3}, 1L, 0D);
 		}
 	}
 

@@ -26,7 +26,7 @@ import org.olat.course.highscore.ui.HighScoreTableEntry;
  * 
  * @author fkiefer, fabian.kiefer@frentix.com
  */
-public class HighScoreDataModel {
+public class HighScoreRankingResults {
 	
 	private double[] scores;
 	private double[] modifiedScores;
@@ -34,14 +34,14 @@ public class HighScoreDataModel {
 	private long classwidth;
 	private HighScoreTableEntry ownTableEntry;
 
-	public HighScoreDataModel(double[] modifiedScores, long classwidth, double min) {
+	public HighScoreRankingResults(double[] modifiedScores, long classwidth, double min) {
 		super();
 		this.modifiedScores = modifiedScores;
 		this.classwidth = classwidth;
 		this.min = min;
 	}
 
-	public HighScoreDataModel(double[] scores, HighScoreTableEntry ownTableEntry) {
+	public HighScoreRankingResults(double[] scores, HighScoreTableEntry ownTableEntry) {
 		super();
 		this.scores = scores;
 		this.ownTableEntry = ownTableEntry;

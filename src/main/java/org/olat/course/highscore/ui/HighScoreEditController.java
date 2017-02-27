@@ -28,7 +28,7 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.IntegerElement;
-import org.olat.core.gui.components.form.flexible.elements.SelectionElement;
+import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
@@ -69,12 +69,12 @@ public class HighScoreEditController extends FormBasicController {
 	
 	private SingleSelection horizontalRadioButtons;
 	
-	private SelectionElement allowHighScore;
-	private SelectionElement showPosition;
-	private SelectionElement showPodium;
-	private SelectionElement showHistogram;
-	private SelectionElement showListing;
-	private SelectionElement displayAnonymous;
+	private MultipleSelectionElement allowHighScore;
+	private MultipleSelectionElement showPosition;
+	private MultipleSelectionElement showPodium;
+	private MultipleSelectionElement showHistogram;
+	private MultipleSelectionElement showListing;
+	private MultipleSelectionElement displayAnonymous;
 
 	private IntegerElement numTableRows;
 	private CourseNode msNode;	
@@ -98,36 +98,56 @@ public class HighScoreEditController extends FormBasicController {
 		setFormTitle("controller.title");
 		setFormDescription("highscore.description");
 		setFormContextHelp("ok");
+		
+		config = msNode.getModuleConfiguration();
 
 		allowHighScore = uifactory.addCheckboxesHorizontal("highscore.show", formLayout, new String[] { "xx" },
 				new String[] { null });
 		allowHighScore.addActionListener(FormEvent.ONCLICK);
-		allowHighScore.select("xx", true);
-
+		boolean allowhighscore = config.getBooleanSafe(CONFIG_KEY_HIGHSCORE,false);
+		if (allowhighscore) allowHighScore.select("xx", allowhighscore); else allowHighScore.uncheckAll();		
+		
 		dateStart = new JSDateChooser("startDate", getLocale());
 		dateStart.setLabel("highscore.datestart", null);
 		dateStart.setExampleKey("example.date", null);
 		dateStart.setDateChooserTimeEnabled(true);
 		dateStart.setValidDateCheck("valid.date");
 		formLayout.add(dateStart);
+		Date start = config.getBooleanEntry(CONFIG_KEY_DATESTART) != null ? (Date) config.get(CONFIG_KEY_DATESTART) : null;
+		dateStart.setDate(start);
 
 		displayAnonymous = uifactory.addCheckboxesHorizontal("highscore.anonymize", formLayout, new String[] { "xx" },
 				new String[] { null });
+		if (config.getBooleanSafe(CONFIG_KEY_ANONYMIZE,false)) displayAnonymous.select("xx", true); 
+		else displayAnonymous.uncheckAll();
 		
 		uifactory.addSpacerElement("spacer", formLayout, false);
 
 		showPosition = uifactory.addCheckboxesHorizontal("highscore.position", formLayout, new String[] { "xx" },
 				new String[] { translate("option.show") });	
 		showPosition.addActionListener(FormEvent.ONCLICK);
+		boolean showposition = config.getBooleanSafe(CONFIG_KEY_POSITION,false);
+		if (showposition) showPosition.select("xx", true); 
+		else showPosition.uncheckAll();
+
 		showPodium = uifactory.addCheckboxesHorizontal("highscore.podium", formLayout, new String[] { "xx" },
 				new String[] { translate("option.show") });
 		showPodium.addActionListener(FormEvent.ONCLICK);
+		if (config.getBooleanSafe(CONFIG_KEY_PODIUM,false)) showPodium.select("xx", true); 
+		else showPodium.uncheckAll();
+
 		showHistogram = uifactory.addCheckboxesHorizontal("highscore.histogram", formLayout, new String[] { "xx" },
 				new String[] { translate("option.show") });
 		showHistogram.addActionListener(FormEvent.ONCLICK);
+		if (config.getBooleanSafe(CONFIG_KEY_HISTOGRAM,false)) showHistogram.select("xx", true); 
+		else showHistogram.uncheckAll();
+
 		showListing = uifactory.addCheckboxesHorizontal("highscore.listing", formLayout, new String[] { "xx" },
 				new String[] { translate("option.show") });
 		showListing.addActionListener(FormEvent.ONCLICK);
+		boolean listing = config.getBooleanSafe(CONFIG_KEY_LISTING,false);
+		if (listing) showListing.select("xx", true); 
+		else showListing.uncheckAll();
 
 		// Translate the keys to the yes and no option values
 		final String[] yesOrNoOptions = new String[yesOrNoKeys.length];
@@ -136,15 +156,26 @@ public class HighScoreEditController extends FormBasicController {
 		}
 		horizontalRadioButtons = uifactory.addRadiosHorizontal("highscore.void", formLayout, yesOrNoKeys,
 				yesOrNoOptions);
+		int showAll = config.getBooleanEntry(CONFIG_KEY_BESTONLY) != null ? 
+				(int) config.get(CONFIG_KEY_BESTONLY) : 0;
+		horizontalRadioButtons.select(yesOrNoKeys[showAll], true);	
 		// A default value is needed for show/hide rules
-		horizontalRadioButtons.select(yesOrNoKeys[1], true);
-		horizontalRadioButtons.addActionListener(FormEvent.ONCLICK);//why
+//		horizontalRadioButtons.select(yesOrNoKeys[1], true);
+		horizontalRadioButtons.addActionListener(FormEvent.ONCLICK);
+		horizontalRadioButtons.setVisible(listing);
+
 		numTableRows = uifactory.addIntegerElement("textField", "highscore.tablesize", 10, formLayout);
 		numTableRows.setMandatory(true);
 		numTableRows.setNotEmptyCheck("highscore.emptycheck");
 		numTableRows.setMinValueCheck(1, "integerelement.toosmall");
 		numTableRows.setMaxValueCheck(100000, "integerelement.toobig");
 		numTableRows.setIntValueCheck("integerelement.noint");
+		if (showAll == 0 || !listing) {
+			numTableRows.setVisible(false);
+		}
+		int numuser = config.getBooleanEntry(CONFIG_KEY_NUMUSER) != null ? 
+				(int) config.get(CONFIG_KEY_NUMUSER) : 10;
+		numTableRows.setIntValue(numuser);
 		
 		// Create submit and cancel buttons
 		final FormLayoutContainer buttonLayout = FormLayoutContainer.createButtonLayout("buttonLayout",
@@ -153,7 +184,7 @@ public class HighScoreEditController extends FormBasicController {
 		uifactory.addFormSubmitButton("submit", buttonLayout);
 		uifactory.addFormCancelButton("cancel", buttonLayout, ureq, getWindowControl());
 		
-		setFromConfig();
+		activateForm(true);
 	}
 	
 	@Override
@@ -173,43 +204,19 @@ public class HighScoreEditController extends FormBasicController {
 			allowHighScore.clearError();
 		}
 	}
-	
-	private void setFromConfig() {
-		config = msNode.getModuleConfiguration();
-		boolean allowhighscore = config.getBooleanSafe(CONFIG_KEY_HIGHSCORE,false);
-		allowHighScore.select("xx", allowhighscore);
-		showPosition.select("xx", config.getBooleanSafe(CONFIG_KEY_POSITION,false));
-		showPodium.select("xx", config.getBooleanSafe(CONFIG_KEY_PODIUM,false));
-		showHistogram.select("xx", config.getBooleanSafe(CONFIG_KEY_HISTOGRAM,false));
-		displayAnonymous.select("xx", config.getBooleanSafe(CONFIG_KEY_ANONYMIZE,false));
-		Date start = config.getBooleanEntry(CONFIG_KEY_DATESTART) != null ? 
-				(Date) config.get(CONFIG_KEY_DATESTART) : null;
-		dateStart.setDate(start);
-		boolean listing = config.getBooleanSafe(CONFIG_KEY_LISTING,false);
-		showListing.select("xx", listing);
-		int showAll = config.getBooleanEntry(CONFIG_KEY_BESTONLY) != null ? 
-				(int) config.get(CONFIG_KEY_BESTONLY) : 0;
-		horizontalRadioButtons.select(yesOrNoKeys[showAll], true);
-		if (showAll == 0 || !listing) {
-			numTableRows.setVisible(false);
-		}
-		horizontalRadioButtons.setVisible(listing);
-		int numuser = config.getBooleanEntry(CONFIG_KEY_NUMUSER) != null ? 
-				(int) config.get(CONFIG_KEY_NUMUSER) : 10;
-		numTableRows.setIntValue(numuser);
-		activateForm(true);
-	}
-	
-	
-	
+		
 	private void activateForm (boolean init){
 		boolean formactive = allowHighScore.isSelected(0);
-		SelectionElement[] checkboxes = {showPosition,showPodium,showHistogram,showListing,displayAnonymous};		
+		MultipleSelectionElement[] checkboxes = {showPosition,showPodium,showHistogram,showListing,displayAnonymous};		
 		for (int i = 0; i < checkboxes.length; i++) {
 			checkboxes[i].setEnabled(formactive);
 			if (!init) {
-				checkboxes[i].select("xx", formactive);
-			}
+				if (formactive) {
+					checkboxes[i].select("xx", true);
+				} else {
+					checkboxes[i].uncheckAll();
+				}
+			} 			
 		}
 		if (!init) {
 			horizontalRadioButtons.setVisible(formactive);
@@ -243,6 +250,19 @@ public class HighScoreEditController extends FormBasicController {
 			moduleConfiguration.set(CONFIG_KEY_BESTONLY, horizontalRadioButtons.getSelected());
 			moduleConfiguration.set(CONFIG_KEY_NUMUSER, numTableRows.getIntValue());
 		}
+	}
+
+	@Override
+	protected boolean validateFormLogic(UserRequest ureq) {
+		boolean allOK = true;
+		if (allowHighScore.isSelected(0)) {
+			allOK &= showHistogram.isSelected(0) || showListing.isSelected(0) 
+					|| showPodium.isSelected(0) || showPosition.isSelected(0);
+		} 
+		if (dateStart.getDate() != null && new Date().after(dateStart.getDate())) {
+			allOK &= false;
+		}		
+		return allOK & super.validateFormLogic(ureq);
 	}
 
 	

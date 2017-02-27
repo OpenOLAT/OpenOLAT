@@ -51,7 +51,7 @@ import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowC
 import org.olat.core.id.Identity;
 import org.olat.core.util.prefs.Preferences;
 import org.olat.course.highscore.manager.HighScoreManager;
-import org.olat.course.highscore.model.HighScoreDataModel;
+import org.olat.course.highscore.model.HighScoreRankingResults;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.MSCourseNode;
 import org.olat.course.run.userview.UserCourseEnvironment;
@@ -79,7 +79,7 @@ public class HighScoreRunController extends FormBasicController{
 	private CloseableCalloutWindowController calloutCtr;
 	private Float lowerBorder, upperBorder;
 	
-	private HighScoreDataModel highscoreDataModel;
+	private HighScoreRankingResults highscoreDataModel;
 	private String nodeID;
 	
 	@Autowired
@@ -214,7 +214,7 @@ public class HighScoreRunController extends FormBasicController{
 		if (viewHistogram) {
 			VelocityContainer scoreHistogramVC = createVelocityContainer("histogram_score");
 			//transfer all scores to velocity container as base data for histogram
-			HighScoreDataModel modifiedData = highScoreManager.processHistogramData(allScores, lowerBorder, upperBorder);
+			HighScoreRankingResults modifiedData = highScoreManager.processHistogramData(allScores, lowerBorder, upperBorder);
 			allScores = modifiedData.getModifiedScores();
 			scoreHistogramVC.contextPut("datas", BarSeries.datasToString(allScores));
 			//histogram marker for own position
